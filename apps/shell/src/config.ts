@@ -4,19 +4,157 @@
 // We don't want to use NEXT_PUBLIC_ variables so that devops on backend
 // will not lock in Next-specific env vars.
 
-import { cleanEnv, url } from 'envalid'
-import type { AppConfig } from '@/types/config'
+import {
+	IconComponents,
+	IconDashboard,
+	IconLock,
+	IconMoodSmile,
+} from '@tabler/icons-react';
+import { z } from 'zod';
 
-const config = Object.freeze<AppConfig>(cleanEnv(process.env, {
-	// General
-	// apiUrl: process.env.NEXT_PUBLIC_API_URL || "",
-	// featureFlag: process.env.NEXT_PUBLIC_FEATURE_FLAG === "true",
 
-	//
-	// Modules - Each module can be deployed as a separate microservice.
-	//
+import type { AppConfig } from '@/types/config';
+import type { NavItem } from '@/types/navItem';
 
-	CORE_MOD_URL: url(),
-}));
+let config: Readonly<AppConfig>;
 
-export default config;
+export function initConfig(): Readonly<AppConfig> {
+	const envSchema = z.object({SHELL_API_URL: z.string().url()});
+	// const envSchema = z.object({});
+
+	const shellCfg: AppConfig['shell'] = envSchema.parse(process.env);
+	config = Object.freeze<AppConfig>({
+		shell: shellCfg,
+		// core: coreConfig,
+	});
+	return config;
+}
+
+export function getConfig(): AppConfig {
+	if (!config) {
+		throw new Error('Config not loaded');
+	}
+	return config;
+}
+
+// const coreConfig: AppConfig['core'] = cleanEnv(process.env, {
+// 	CORE_API_URL: url({ default: config.SHELL_API_URL}),
+// });
+
+
+export const navLinks: NavItem[] = [
+	{ label: 'Dashboard', icon: IconDashboard, link: '/dashboard' },
+
+	{
+		label: 'Components',
+		icon: IconComponents,
+		initiallyOpened: true,
+		links: [
+			{
+				label: 'Table',
+				link: '/dashboard/table',
+			},
+			{
+				label: 'Form',
+				link: '/dashboard/form',
+			},
+		],
+	},
+	{
+		label: 'Inventory',
+		icon: IconLock,
+		initiallyOpened: false,
+		links: [
+			{
+				label: 'Login',
+				link: '/login',
+			},
+			{
+				label: 'Register',
+				link: '/register',
+			},
+		],
+	},
+	{
+		label: 'Auth',
+		icon: IconLock,
+		initiallyOpened: true,
+		links: [
+			{
+				label: 'Login',
+				link: '/login',
+			},
+			{
+				label: 'Register',
+				link: '/register',
+			},
+		],
+	},
+	{
+		label: 'Sample',
+		icon: IconMoodSmile,
+		initiallyOpened: true,
+		links: [
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+			{
+				label: 'Landing',
+				link: '/',
+			},
+		],
+	},
+];

@@ -1,1 +1,1 @@
-export * from './graphqlProvider'
+export * from './restProvider';

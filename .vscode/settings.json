@@ -10,5 +10,7 @@
 	],
 	"editor.insertSpaces": false,
 	"editor.detectIndentation": true,
-  }
-  
+	"eslint.format.enable": true,
+	"editor.formatOnSave": true,
+	"eslint.run": "onSave"
+}
