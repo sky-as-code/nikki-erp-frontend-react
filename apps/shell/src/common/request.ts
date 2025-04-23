@@ -3,7 +3,7 @@ import kyLib from 'ky';
 import type { KyInstance, Input, Options, KyRequest, ResponsePromise } from 'ky';
 import type { HttpMethod } from 'ky/distribution/types/options';
 
-import { getAuthToken } from './storageManager';
+import { getAuthToken } from '../modules/core/auth/storageManager';
 
 export type { Input, Options } from 'ky';
 
@@ -70,8 +70,14 @@ export async function head<T>(url: Input, options?: Options): Promise<T> {
 type KyFn = KyInstance['get'];
 
 async function send<T>(method: HttpMethod, url: Input, options?: Options): Promise<T> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const fn = (api as any)[method] as KyFn;
-	const data = await fn.call(api, url, options).json<T>();
-	return data;
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const fn = (api as any)[method] as KyFn;
+		const data = await fn.call(api, url, options).json<T>();
+		return data;
+	}
+	catch (error) {
+		console.log(error);
+		throw new Error('Failed to send request to server');
+	}
 }

@@ -1,5 +1,8 @@
+'use client';
+
 import { ActionIcon, Box, Drawer, Stack, TextInput } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { OrgSwitchDropdown } from '@modules/core/organization/OrgSwitchDropdown';
 import { IconSearch, IconSettings } from '@tabler/icons-react';
 
 
@@ -8,8 +11,6 @@ import { Logo } from '../Logo/Logo';
 import { ThemeSwitcher } from '../ThemeSwitcher/ThemeSwitcher';
 
 import classes from './AppGridHeader.module.css';
-
-import { SearchableSelect } from '@/components/SearchableSelect';
 
 
 interface Props {
@@ -24,7 +25,7 @@ export function AppGridHeader({ burger }: Props) {
 			{burger && burger}
 			<Logo />
 			<Box style={{ flex: 1 }}></Box>
-			<SearchableSelect dropdownWidth={300} />
+			<OrgSwitchDropdown dropdownWidth={300} />
 			<ActionIcon onClick={open} variant='subtle'>
 				<IconSettings size='1.25rem' />
 			</ActionIcon>

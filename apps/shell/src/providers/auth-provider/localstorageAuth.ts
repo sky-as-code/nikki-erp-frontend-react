@@ -1,7 +1,7 @@
+import { setAuthData, getAuthData, clearAuthData, type AuthData } from '@modules/core/auth/storageManager';
 import { type AuthProvider } from '@refinedev/core';
 
 import axios from '@/common/axios';
-import { setAuthData, getAuthData, clearAuthData, type AuthData } from '@/common/storageManager';
 
 const authProvider: AuthProvider = {
 	login: async ({ email, password }) => {

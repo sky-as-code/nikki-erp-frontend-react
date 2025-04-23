@@ -1,13 +1,10 @@
+import { User } from '../types';
+
 const AUTH_KEY = 'nikki_auth';
 
 export type AuthData = {
 	token: string;
-	user: {
-		id: string;
-		email: string;
-		name: string;
-		avatar?: string;
-	};
+	user: User;
 };
 
 export function setAuthData(authData: AuthData): void {

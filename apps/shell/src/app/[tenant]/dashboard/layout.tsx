@@ -1,5 +1,6 @@
 'use client';
 
+import { navLinks } from '@common/envVars';
 import {
 	AppShell,
 	Burger,
@@ -11,7 +12,6 @@ import { useDisclosure } from '@mantine/hooks';
 
 import { AdminHeader } from '@/components/AdminHeader';
 import { Navbar } from '@/components/Navbar/Navbar';
-import { navLinks } from '@/config';
 
 interface Props {
 	children: React.ReactNode;

@@ -1,6 +1,5 @@
 import { Anchor, Box, Text, Title } from '@mantine/core';
-
-import { RegisterForm } from '@/components/auth/RegisterForm';
+import { RegisterForm } from '@modules/core/auth/RegisterForm';
 
 // NextJS config
 export const revalidate = 60;

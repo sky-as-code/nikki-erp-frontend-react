@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import next from '@next/eslint-plugin-next';
 import stylistic from '@stylistic/eslint-plugin';
+import tskQuery from '@tanstack/eslint-plugin-query';
 import parserTs from '@typescript-eslint/parser';
 import { defineConfig } from 'eslint/config';
 import importPlugin from 'eslint-plugin-import';
@@ -123,6 +124,16 @@ export default defineConfig([
 		},
 	},
 
+	// Tanstack Query configuration
+	{
+		plugins: {
+			'@tanstack/query': tskQuery,
+		},
+		rules: {
+			// '@tanstack/query/exhaustive-deps': 'error',
+		},
+	},
+
 	// TypeScript language options
 	{
 		files: ['**/*.ts'],
@@ -142,6 +153,7 @@ export default defineConfig([
 		rules: {
 			'@typescript-eslint/no-explicit-any': 'warn',
 			'@typescript-eslint/no-unused-vars': 'warn',
+			'@typescript-eslint/no-unused-expressions': 'warn',
 		},
 	},
 

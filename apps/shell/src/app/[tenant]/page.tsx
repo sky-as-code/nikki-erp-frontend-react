@@ -1,13 +1,12 @@
 'use client';
 
-import { AppGridHeader } from '@components/AppGridHeader';
-import { AppShell, Container, Text, useMantineColorScheme, useMantineTheme } from '@mantine/core';
+import { AppShell, Container, Text, useMantineColorScheme, useMantineTheme, Box } from '@mantine/core';
 import { TextInput } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { IconFilter } from '@tabler/icons-react';
 import { FC } from 'react';
 
 import { AppGrid } from '@/components/AppGrid/AppGrid';
+import { AppGridHeader } from '@/components/AppGridHeader';
 
 
 const AppListPage: FC = () => {
@@ -36,11 +35,16 @@ const AppListPage: FC = () => {
 					<AppGrid />
 				</Container>
 			</AppShell.Main>
-			<AppShell.Footer>
-				<Text w='full' size='sm' c='gray'>
-					Copyright © 2023 Nikki ERP
-				</Text>
-			</AppShell.Footer>
+			<Text component='footer'
+				w='100%' size='sm' c='gray'
+				bg='white' p='md'
+				style={{
+					borderRadius: 'var(--mantine-radius-md)',
+					borderTop: '1px solid var(--app-shell-border-color)',
+				}}
+			>
+				Copyright © 2023 Nikki ERP
+			</Text>
 		</AppShell>
 	);
 };

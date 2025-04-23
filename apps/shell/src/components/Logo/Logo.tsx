@@ -1,3 +1,5 @@
+'use client';
+
 import { Flex, Text } from '@mantine/core';
 import Link from 'next/link';
 

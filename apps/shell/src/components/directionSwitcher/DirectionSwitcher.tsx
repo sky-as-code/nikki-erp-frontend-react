@@ -1,3 +1,5 @@
+'use client';
+
 import { type Direction, Group, Radio, useDirection } from '@mantine/core';
 
 export const DirectionSwitcher = () => {

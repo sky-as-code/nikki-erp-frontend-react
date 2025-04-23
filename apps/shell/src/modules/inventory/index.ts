@@ -1,13 +1,13 @@
 
-const module = {
-	name: 'inventory',
-	routes: [
-		{
-			path: '/inventory',
-			element: <div>Inventory</div>,
-		},
-	],
-};
+// const module = {
+// 	name: 'inventory',
+// 	routes: [
+// 		{
+// 			path: '/inventory',
+// 			element: <div>Inventory</div>,
+// 		},
+// 	],
+// };
 
 /*
  Inventory Management - Main Menu Items
