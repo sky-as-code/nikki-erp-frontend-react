@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthProvider';
-import { useTenant } from '@/common/context/TenantProvider';
 import * as request from '@/common/request';
 import { EnvVars } from '@/types/envVars';
 import { UserSettings } from '../types';

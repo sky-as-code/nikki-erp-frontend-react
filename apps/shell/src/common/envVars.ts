@@ -64,12 +64,15 @@ function filterEnvVars() {
 }
 
 export const navLinks: NavItem[] = [
-	{ label: 'Dashboard', icon: IconDashboard, link: '/dashboard' },
+	{
+		label: 'Dashboard',
+		icon: IconDashboard,
+		link: '/dashboard',
+	},
 
 	{
 		label: 'Components',
 		icon: IconComponents,
-		initiallyOpened: true,
 		links: [
 			{
 				label: 'Table',
@@ -84,7 +87,6 @@ export const navLinks: NavItem[] = [
 	{
 		label: 'Inventory',
 		icon: IconLock,
-		initiallyOpened: false,
 		links: [
 			{
 				label: 'Login',
@@ -99,7 +101,6 @@ export const navLinks: NavItem[] = [
 	{
 		label: 'Auth',
 		icon: IconLock,
-		initiallyOpened: true,
 		links: [
 			{
 				label: 'Login',
@@ -114,7 +115,6 @@ export const navLinks: NavItem[] = [
 	{
 		label: 'Sample',
 		icon: IconMoodSmile,
-		initiallyOpened: true,
 		links: [
 			{
 				label: 'Landing 1',

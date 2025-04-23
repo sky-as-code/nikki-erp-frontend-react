@@ -10,6 +10,8 @@ type TenantContextType = {
 	subdomain: string | null;
 	org: string | null;
 	setOrg: (org: string) => void;
+	getFullPath: (modulePath: string) => string;
+	getOrgPath: () => string;
 };
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
@@ -36,6 +38,8 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({
 		subdomain,
 		org: appPath.orgSlug,
 		setOrg: redirectToOrgPage(appPath),
+		getFullPath: getFullPath(appPath),
+		getOrgPath: getOrgPath(appPath),
 	};
 
 	useEffect(() => {
@@ -84,6 +88,21 @@ function extractSubdomain(hostname: string, rootHostname: string): string | null
 	return null;
 }
 
+function getFullPath(appPath: AppPath) {
+	return (path: string): string => {
+		const newPath = appPath.clone();
+		return newPath.append(path);
+	};
+}
+
+function getOrgPath(appPath: AppPath) {
+	return (): string => {
+		const newPath = appPath.clone();
+		newPath.moduleSlug = '';
+		return newPath.toString();
+	};
+}
+
 function redirectToOrgPage(appPath: AppPath) {
 	return (orgSlug: string | null) => {
 		if (!orgSlug || orgSlug === appPath.orgSlug) return;
@@ -103,9 +122,9 @@ class AppPath {
 		}
 		fullPath = fullPath.replace(rootPath, '');
 		const parts = fullPath.split('/').filter(Boolean);
-		const appPath = new AppPath(rootPath, parts[0], '');		
+		const appPath = new AppPath(rootPath, parts[0], '');
 		if (parts.length > 1) {
-			appPath.modulePath = parts.slice(1).join('/');
+			appPath.moduleSlug = parts[1];
 		}
 		return appPath;
 	}
@@ -113,14 +132,19 @@ class AppPath {
 	constructor(
 		public rootPath: string,
 		public orgSlug: string,
-		public modulePath: string,
+		public moduleSlug: string,
 	) {}
 
 	public clone(): AppPath {
-		return new AppPath(this.rootPath, this.orgSlug, this.modulePath);
+		return new AppPath(this.rootPath, this.orgSlug, this.moduleSlug);
 	}
 
 	public toString(): string {
-		return [this.rootPath, this.orgSlug, this.modulePath].filter(Boolean).join('/');
+		return `${this.rootPath}/${this.orgSlug}/${this.moduleSlug}`;
+	}
+
+	public append(path: string): string {
+		if (path.startsWith('/')) path = path.slice(1);
+		return `${this.toString()}/${path}`;
 	}
 }

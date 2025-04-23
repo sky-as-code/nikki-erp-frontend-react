@@ -1,3 +1,4 @@
+import { useTenant } from '@common/context/TenantProvider';
 import {
 	Box,
 	Collapse,
@@ -36,6 +37,45 @@ interface NavLinksGroupProps {
 	link?: string;
 	initiallyOpened?: boolean;
 	links?: { label: string; link: string }[];
+}
+
+export function NavLinksGroup({
+	icon,
+	label,
+	link,
+	initiallyOpened,
+	links,
+}: NavLinksGroupProps) {
+	const pathname = usePathname();
+	const hasLinks = Array.isArray(links);
+	const [opened, setOpened] = useState(initiallyOpened || false);
+	const { getFullPath } = useTenant();
+
+	const items = (hasLinks ? links : []).map((link) => (
+		<LinkItem
+			key={link.label}
+			label={link.label}
+			link={getFullPath(link.link)}
+			pathname={pathname}
+		/>
+	));
+
+	return (
+		<>
+			{link ? (
+				<NavLink icon={icon} label={label} link={getFullPath(link)} pathname={pathname} />
+			) : (
+				<ControlButton
+					icon={icon}
+					label={label}
+					opened={opened}
+					hasLinks={hasLinks}
+					onClick={() => hasLinks && setOpened((o) => !o)}
+				/>
+			)}
+			{hasLinks ? <Collapse in={opened}>{items}</Collapse> : null}
+		</>
+	);
 }
 
 const LinkItem = ({ label, link, pathname }: LinkItemProps) => (
@@ -93,41 +133,3 @@ const NavLink = ({ link, pathname, icon, label }: NavLinksGroupProps & { pathnam
 		</Group>
 	</Link>
 );
-
-export function NavLinksGroup({
-	icon,
-	label,
-	link,
-	initiallyOpened,
-	links,
-}: NavLinksGroupProps) {
-	const pathname = usePathname();
-	const hasLinks = Array.isArray(links);
-	const [opened, setOpened] = useState(initiallyOpened || false);
-
-	const items = (hasLinks ? links : []).map((link) => (
-		<LinkItem
-			key={link.label}
-			label={link.label}
-			link={link.link}
-			pathname={pathname}
-		/>
-	));
-
-	return (
-		<>
-			{link ? (
-				<NavLink icon={icon} label={label} link={link} pathname={pathname} />
-			) : (
-				<ControlButton
-					icon={icon}
-					label={label}
-					opened={opened}
-					hasLinks={hasLinks}
-					onClick={() => hasLinks && setOpened((o) => !o)}
-				/>
-			)}
-			{hasLinks ? <Collapse in={opened}>{items}</Collapse> : null}
-		</>
-	);
-}

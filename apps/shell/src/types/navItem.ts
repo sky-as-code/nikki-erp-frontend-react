@@ -1,9 +1,21 @@
-import type { TablerIconsProps } from '@tabler/icons-react';
+import type { TablerIcon } from '@tabler/icons-react';
 
-export interface NavItem {
+
+export type NavItem = {
 	label: string;
-	icon: (props: TablerIconsProps) => JSX.Element;
+
+	/**
+	 * Icon only appears for top-level items
+	 */
+	icon: TablerIcon;
+
+	/**
+	 * Icon only appears for top-level items
+	 */
 	link?: string;
-	initiallyOpened?: boolean;
+
+	/**
+	 * Submenu links. If specified, `link` is ignored.
+	 */
 	links?: { label: string; link: string }[];
-}
+};

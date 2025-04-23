@@ -43,7 +43,7 @@ const AppListPage: FC = () => {
 					borderTop: '1px solid var(--app-shell-border-color)',
 				}}
 			>
-				Copyright © 2023 Nikki ERP
+				Copyright © 2025 Nikki ERP
 			</Text>
 		</AppShell>
 	);

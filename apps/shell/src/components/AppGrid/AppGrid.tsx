@@ -11,7 +11,7 @@ import {
 	IconCreditCard, IconBox, IconBuildingFactory, IconCertificate,
 	IconBarcode, IconTool, IconHammer, IconUserCircle, IconUserSquare,
 	IconReceipt2, IconStars, IconCoins, IconSearch, IconArrowBack,
-	IconClockPause, IconCircleDottedLetterN,
+	IconClockPause, IconCircleDottedLetterN, IconSettings,
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { FC } from 'react';
@@ -22,6 +22,7 @@ import { NikkiModule } from '@/modules/core/types';
 
 const apps: NikkiModule[] = [
 	{ label: 'Discuss', slug: 'discuss' },
+	{ icon: IconSettings, label: 'Settings', slug: 'settings' },
 	{ icon: IconCalendarEvent, label: 'Meeting Rooms', slug: 'meeting-rooms', color: 'teal' },
 	{ icon: IconChecklist, label: 'To-do', slug: 'todo', color: 'blue' },
 	{ icon: IconCalendar, label: 'Calendar', slug: 'calendar', color: 'orange' },

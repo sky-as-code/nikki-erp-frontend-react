@@ -4,16 +4,16 @@ import { IconSearch, IconSettings } from '@tabler/icons-react';
 
 
 import { DirectionSwitcher } from '../directionSwitcher/DirectionSwitcher';
-import { Logo } from '../Logo/Logo';
 import { ThemeSwitcher } from '../ThemeSwitcher/ThemeSwitcher';
 
 import classes from './AdminHeader.module.css';
 
-import { AppBar } from '@/components/AppBar';
+import { MenuBar } from '@/components/MenuBar';
+
 
 
 interface Props {
-	burger?: React.ReactNode;
+	burger: React.ReactNode;
 }
 
 export function AdminHeader({ burger }: Props) {
@@ -22,10 +22,8 @@ export function AdminHeader({ burger }: Props) {
 	return (
 		<header className={classes.header}>
 			{burger && burger}
-			<Logo />
-			<Box style={{ flex: 1 }}>
-				<AppBar />
-			</Box>
+			<Box size='sm' className='flex-1'></Box>
+			<MenuBar items={[]} />
 			<TextInput
 				placeholder='Search'
 				variant='filled'
