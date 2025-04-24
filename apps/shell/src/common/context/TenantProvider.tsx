@@ -107,8 +107,7 @@ function redirectToOrgPage(appPath: AppPath) {
 	return (orgSlug: string | null) => {
 		if (!orgSlug || orgSlug === appPath.orgSlug) return;
 
-		const newPath = appPath.clone();
-		newPath.orgSlug = orgSlug;
+		const newPath = new AppPath(appPath.rootPath, orgSlug, '');
 
 		// Do a full reload to new path
 		location.assign(newPath.toString());

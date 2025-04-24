@@ -1,6 +1,7 @@
 'use client';
 
-import { Combobox, ComboboxStore, Input, InputBase, PopoverWidth, ScrollArea, useCombobox } from '@mantine/core';
+import { Box, Combobox, ComboboxStore, Input, Anchor, PopoverWidth, ScrollArea, useCombobox } from '@mantine/core';
+import { IconCircleDottedLetterN } from '@tabler/icons-react';
 import { FC, JSX, useEffect, useState } from 'react';
 
 type GroceryItem = {
@@ -133,7 +134,7 @@ type ComboboxTargetProps = {
 
 const ComboboxTarget: FC<ComboboxTargetProps> = ({ value, combobox }) => (
 	<Combobox.Target>
-		<InputBase
+		{/* <InputBase
 			component='button'
 			type='button'
 			pointer
@@ -141,9 +142,26 @@ const ComboboxTarget: FC<ComboboxTargetProps> = ({ value, combobox }) => (
 			onClick={() => combobox.toggleDropdown()}
 			rightSectionPointerEvents='none'
 			w={200}
+			style={{
+				fontSize: '2rem',
+				fontWeight: 'bold',
+			}}
+
+		> */}
+		<button
+			className='flex flex-row items-center gap-1'
+			onClick={() => combobox.toggleDropdown()}
+			style={{
+				fontSize: '1.25rem',
+				fontWeight: 'bold',
+				cursor: 'pointer',
+			}}
 		>
+			<IconCircleDottedLetterN size={34} />
 			{value || <Input.Placeholder>Select organization</Input.Placeholder>}
-		</InputBase>
+			<Combobox.Chevron />
+		</button>
+		{/* </InputBase> */}
 	</Combobox.Target>
 );
 

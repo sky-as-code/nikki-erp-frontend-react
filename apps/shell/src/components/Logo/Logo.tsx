@@ -1,6 +1,8 @@
 'use client';
 
 import { Flex, Text } from '@mantine/core';
+import { IconCircleDottedLetterN } from '@tabler/icons-react';
+import cls from 'classnames';
 import Link from 'next/link';
 
 import classes from './Logo.module.css';
@@ -16,8 +18,9 @@ export const Logo: React.FC<Props> = () => {
 			<Link
 				href='/'
 				style={{ textDecoration: 'none' }}
-				className={classes.heading}
+				className={cls(classes.heading, 'flex flex-row')}
 			>
+				<IconCircleDottedLetterN size={34} />
 				<Text fw='bolder' size='xl'>
 					Nikki
 					<Text component='span' fw='normal' className={classes.subheading}>

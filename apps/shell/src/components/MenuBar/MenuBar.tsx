@@ -23,29 +23,23 @@ export const MenuBar: React.FC<MenuBarProps> = ({ items }) => {
 	const { getFullPath } = useTenant();
 
 	return (
-		<Box visibleFrom='md'>
-			<Container size='lg'>
-				<Group justify='space-between'>
-					<Group gap='md'>
-						{items.map((item) => (
-							item.links ? (
-								<NavMenu key={item.label} item={item} />
-							) : (
-								<Button
-									key={item.label}
-									variant='subtle'
-									leftSection={item.icon && <item.icon size={16} />}
-									component={Link}
-									href={getFullPath(item.link || '#')}
-								>
-									{item.label}
-								</Button>
-							)
-						))}
-					</Group>
-				</Group>
-			</Container>
-		</Box>
+		<Group visibleFrom='md' justify='space-between' gap='sm'>
+			{items.map((item) => (
+				item.links ? (
+					<NavMenu key={item.label} item={item} />
+				) : (
+					<Button
+						key={item.label}
+						variant='subtle'
+						leftSection={item.icon && <item.icon size={16} />}
+						component={Link}
+						href={getFullPath(item.link || '#')}
+					>
+						{item.label}
+					</Button>
+				)
+			))}
+		</Group>
 	);
 };
 
@@ -59,6 +53,7 @@ const NavMenu: React.FC<{ item: NavItem }> = ({ item }) => {
 					variant='subtle'
 					leftSection={item.icon && <item.icon size={16} />}
 					rightSection={<IconChevronDown style={{ width: rem(16) }} />}
+					className='font-normal'
 				>
 					{item.label}
 				</Button>
