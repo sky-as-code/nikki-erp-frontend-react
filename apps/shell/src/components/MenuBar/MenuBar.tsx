@@ -1,5 +1,6 @@
 'use client';
 
+import { useTenantUrl } from '@common/context/TenantUrlProvider';
 import {
 	Group,
 	Menu,
@@ -11,7 +12,6 @@ import {
 import { IconChevronDown } from '@tabler/icons-react';
 import Link from 'next/link';
 
-import { useTenant } from '@/common/context/TenantProvider';
 import { NavItem } from '@/types/navItem';
 
 
@@ -20,7 +20,7 @@ export type MenuBarProps = {
 };
 
 export const MenuBar: React.FC<MenuBarProps> = ({ items }) => {
-	const { getFullPath } = useTenant();
+	const { getFullPath } = useTenantUrl();
 
 	return (
 		<Group visibleFrom='md' justify='space-between' gap='sm'>
@@ -44,7 +44,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ items }) => {
 };
 
 const NavMenu: React.FC<{ item: NavItem }> = ({ item }) => {
-	const { getFullPath } = useTenant();
+	const { getFullPath } = useTenantUrl();
 
 	return (
 		<Menu shadow='md' width={200} position='bottom-start'>

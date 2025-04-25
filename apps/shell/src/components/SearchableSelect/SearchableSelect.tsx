@@ -1,101 +1,74 @@
 'use client';
 
-import { Box, Combobox, ComboboxStore, Input, Anchor, PopoverWidth, ScrollArea, useCombobox } from '@mantine/core';
+import { Button, ButtonProps, Combobox, ComboboxStore, Input, PopoverWidth, ScrollArea, useCombobox } from '@mantine/core';
 import { IconCircleDottedLetterN } from '@tabler/icons-react';
 import { FC, JSX, useEffect, useState } from 'react';
 
-type GroceryItem = {
-	id: string;
-	name: string;
-	slug: string;
-};
 
-const slugify = (text: string): string => {
-	return text
-		.toLowerCase()
-		.replace(/[^\w\s-]/g, '') // Remove non-word chars (except spaces and dashes)
-		.replace(/[\s_-]+/g, '-') // Replace spaces and underscores with single dash
-		.trim();
+export type SearchableSelectItem = {
+	value: string,
+	label: string,
 };
-
-const groceries: GroceryItem[] = [
-	'🍎 Apples',
-	'🍌 Bananas',
-	'🥦 Broccoli',
-	'🥕 Carrots',
-	'🍫 Chocolate',
-	'🍇 Grapes',
-	'🍋 Lemon',
-	'🥬 Lettuce',
-	'🍄 Mushrooms',
-	'🍊 Oranges',
-	'🥔 Potatoes',
-	'🍅 Tomatoes',
-	'🥚 Eggs',
-	'🥛 Milk',
-	'🍞 Bread',
-	'🍗 Chicken',
-	'🍔 Hamburger',
-	'🧀 Cheese',
-	'🥩 Steak',
-	'🍟 French Fries',
-	'🍕 Pizza',
-	'🥦 Cauliflower',
-	'🥜 Peanuts',
-	'🍦 Ice Cream',
-	'🍯 Honey',
-	'🥖 Baguette',
-	'🍣 Sushi',
-	'🥝 Kiwi',
-	'🍓 Strawberries',
-].map(item => {
-	const obj: any = {
-		id: item.match(/^\p{Emoji}/u)?.[0] || '',  // Get first emoji character
-		name: item, // Remove emoji and leading space
-		slug: slugify(item.replace(/^\p{Emoji}\s*/u, '').trim()),
-	};
-	return obj;
-});
 
 export type SearchableSelectProps = {
-	dropdownWidth?: PopoverWidth;
-	value?: string | null;
-	onChange?: (value: string) => void;
+	actionOptionLabel?: string,
+	dropdownWidth?: PopoverWidth,
+	items: SearchableSelectItem[],
+	triggerComponent?: typeof Button,
+	searchBoxEnabledAt?: number, // Show search box when there are more than this number of items
+	searchPlaceholder?: string,
+	unselectedPlaceholder?: string,
+	value?: string | null,
+	onChange?: (value: string) => void,
 };
 
 /**
  * @see https://mantine.dev/combobox/?e=SelectDropdownSearch
  */
-export const SearchableSelect: FC<SearchableSelectProps> = ({ dropdownWidth, value: activeValue, onChange }) => {
-	const { search, setSearch, value, setValue, combobox } = useSearchSelect();
+export const SearchableSelect: FC<SearchableSelectProps> = (props) => {
+	const { value: activeValue } = props;
+	const isSearchBoxEnabled = props.items.length >= Number(props.searchBoxEnabledAt);
+	const { search, setSearch, activeItem, setActiveItem, combobox } = useSearchSelect(isSearchBoxEnabled);
+	let selectedItem: SearchableSelectItem | undefined;
+
+	if (activeValue) {
+		selectedItem = findItem(props.items, activeValue);
+	}
 
 	useEffect(() => {
-		activeValue && setValue(activeValue);
+		selectedItem && setActiveItem(selectedItem);
+	}, [setActiveItem, activeValue, props.items]);
 
-	}, [setValue, activeValue]);
-
-	const options = groceries
-		.filter(item => item.name.toLowerCase().includes(search.toLowerCase().trim()))
+	const options = props.items
+		.filter(item => item.label?.toLowerCase().includes(search.toLowerCase().trim()))
 		.map(item => (
-			<Combobox.Option value={item.slug} key={item.slug} active={item.slug === activeValue}>
-				{item.name}
+			<Combobox.Option value={item.value} key={item.value} active={item.value === activeValue}>
+				{item.label || item.value}
 			</Combobox.Option>
 		));
 	return (
 		<Combobox
 			store={combobox}
 			withinPortal={false}
-			width={dropdownWidth}
+			width={props.dropdownWidth}
 			onOptionSubmit={(val) => {
-				const selected = groceries.find(item => item.slug === val)?.slug || '';
-				setValue(selected);
+				const selected = findItem(props.items, val);
+				setActiveItem(selected);
 				combobox.closeDropdown();
-				onChange?.(val);
+				props.onChange?.(val);
 			}}
 		>
-			<ComboboxTarget value={value} combobox={combobox} />
+			<ComboboxTarget
+				value={activeItem?.label}
+				combobox={combobox}
+				triggerComponent={props.triggerComponent}
+				unselectedPlaceholder={props.unselectedPlaceholder}
+			/>
 			<ComboboxDropdown
+				actionOptionLabel={props.actionOptionLabel}
 				search={search}
+				searchBoxEnabledAt={props.searchBoxEnabledAt}
+				searchPlaceholder={props.searchPlaceholder}
 				setSearch={setSearch}
 				options={options}
 			/>
@@ -103,18 +76,18 @@ export const SearchableSelect: FC<SearchableSelectProps> = ({ dropdownWidth, val
 	);
 };
 
-const useSearchSelect = () => {
+function useSearchSelect(isSearchBoxEnabled: boolean) {
 	const [search, setSearch] = useState('');
-	const [value, setValue] = useState<string | null>(null);
+	const [activeItem, setActiveItem] = useState<SearchableSelectItem | null | undefined>(null);
 
 	const combobox = useCombobox({
 		onDropdownClose: () => {
 			combobox.resetSelectedOption();
-			combobox.focusTarget();
+			// combobox.focusTarget();
 			setSearch('');
 		},
 		onDropdownOpen: (eventSource) => {
-			combobox.focusSearchInput();
+			isSearchBoxEnabled && combobox.focusSearchInput();
 			combobox.selectActiveOption();
 			// if (eventSource === 'keyboard') {
 			// }
@@ -124,67 +97,74 @@ const useSearchSelect = () => {
 		},
 	});
 
-	return { search, setSearch, value, setValue, combobox };
+	return { search, setSearch, activeItem, setActiveItem, combobox };
 };
+
+function findItem(items: SearchableSelectItem[], value: string) {
+	return items.find(item => item.value === value);
+}
 
 type ComboboxTargetProps = {
-	value: string | null;
-	combobox: ComboboxStore;
+	value?: string | null;
+	combobox: ComboboxStore,
+	triggerComponent?: typeof Button,
+	unselectedPlaceholder?: string,
 };
 
-const ComboboxTarget: FC<ComboboxTargetProps> = ({ value, combobox }) => (
-	<Combobox.Target>
-		{/* <InputBase
-			component='button'
-			type='button'
-			pointer
-			rightSection={<Combobox.Chevron />}
-			onClick={() => combobox.toggleDropdown()}
-			rightSectionPointerEvents='none'
-			w={200}
-			style={{
-				fontSize: '2rem',
-				fontWeight: 'bold',
-			}}
+const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
+	const { value, combobox } = props;
+	const TriggerComponent = props.triggerComponent ?? Button;
+	const targetProps: Partial<ButtonProps> & React.DOMAttributes<HTMLButtonElement> = {
+		// leftSection: <IconCircleDottedLetterN size={34} />,
+		rightSection: <Combobox.Chevron />,
+		onClick: () => combobox.toggleDropdown(),
+	};
 
-		> */}
-		<button
-			className='flex flex-row items-center gap-1'
-			onClick={() => combobox.toggleDropdown()}
-			style={{
-				fontSize: '1.25rem',
-				fontWeight: 'bold',
-				cursor: 'pointer',
-			}}
-		>
-			<IconCircleDottedLetterN size={34} />
-			{value || <Input.Placeholder>Select organization</Input.Placeholder>}
-			<Combobox.Chevron />
-		</button>
-		{/* </InputBase> */}
-	</Combobox.Target>
-);
+
+	return (
+		<Combobox.Target>
+			<TriggerComponent
+				{...targetProps}
+				variant='subtle'
+				size='compact-lg'
+				fz='xl'
+				fw='bolder'
+				p={0}
+				color='#000000'
+			>
+				{value || <Input.Placeholder>{props.unselectedPlaceholder ?? 'No item selected'}</Input.Placeholder>}
+			</TriggerComponent>
+		</Combobox.Target>
+	);
+};
 
 type ComboboxDropdownProps = {
+	actionOptionLabel?: string,
 	search: string;
+	searchBoxEnabledAt?: number; // Show search box when there are more than this number of items
+	searchPlaceholder?: string;
 	setSearch: (value: string) => void;
 	options: JSX.Element[];
 };
 
-const ComboboxDropdown: FC<ComboboxDropdownProps> = ({search, setSearch, options}) => (
-	<Combobox.Dropdown>
-		<Combobox.Search
-			value={search}
-			onChange={(event) => setSearch(event.currentTarget.value)}
-			placeholder='Search groceries'
-		/>
-		<Combobox.Options>
-			<ScrollArea.Autosize type='scroll' mah={200}>
-				<Combobox.Option value='$create'>Manage organization...</Combobox.Option>
-				<Combobox.Group label=' '>
-					{options.length > 0 ? options : <Combobox.Empty>Nothing found</Combobox.Empty>}
-				</Combobox.Group>
-			</ScrollArea.Autosize>
-		</Combobox.Options>
-	</Combobox.Dropdown>
-);
+const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
+	return (
+		<Combobox.Dropdown>
+			{props.options.length >= Number(props.searchBoxEnabledAt) && (
+				<Combobox.Search
+					value={props.search}
+					onChange={(event) => props.setSearch(event.currentTarget.value)}
+					placeholder={props.searchPlaceholder}
+				/>
+			)}
+			<Combobox.Options>
+				<ScrollArea.Autosize type='scroll' mah='50vh'>
+					{props.actionOptionLabel && <Combobox.Option value='$$action$$'>{props.actionOptionLabel}</Combobox.Option>}
+					<Combobox.Group label=' '>
+						{props.options.length > 0 ? props.options : <Combobox.Empty>Nothing found</Combobox.Empty>}
+					</Combobox.Group>
+				</ScrollArea.Autosize>
+			</Combobox.Options>
+		</Combobox.Dropdown>
+	);
+};

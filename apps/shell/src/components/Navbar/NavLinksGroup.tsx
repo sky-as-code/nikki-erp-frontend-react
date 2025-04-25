@@ -1,4 +1,4 @@
-import { useTenant } from '@common/context/TenantProvider';
+import { useTenantUrl } from '@common/context/TenantUrlProvider';
 import {
 	Box,
 	Collapse,
@@ -49,7 +49,7 @@ export function NavLinksGroup({
 	const pathname = usePathname();
 	const hasLinks = Array.isArray(links);
 	const [opened, setOpened] = useState(initiallyOpened || false);
-	const { getFullPath } = useTenant();
+	const { getFullPath } = useTenantUrl();
 
 	const items = (hasLinks ? links : []).map((link) => (
 		<LinkItem

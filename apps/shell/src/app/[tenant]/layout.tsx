@@ -1,15 +1,16 @@
 'use client';
 
-import { TenantProvider } from '@/common/context/TenantProvider';
+import { TenantUrlProvider } from '@common/context/TenantUrlProvider';
+
 import { AuthGuard } from '@/modules/core/auth/AuthGuard';
 
 
 const TenantRoot: React.FC<React.PropsWithChildren> = ({ children }) => {
 	return (
 		<AuthGuard>
-			<TenantProvider>
+			<TenantUrlProvider>
 				{children}
-			</TenantProvider>
+			</TenantUrlProvider>
 		</AuthGuard>
 	);
 };

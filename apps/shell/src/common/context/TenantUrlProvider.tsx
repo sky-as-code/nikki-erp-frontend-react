@@ -1,55 +1,74 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import React, { createContext, useContext, useEffect } from 'react';
 
 import { useConfig } from '@/modules/core/ConfigProvider/ConfigProvider';
 
 
-type TenantContextType = {
+type TenantUrlContextType = {
 	subdomain: string | null;
-	org: string | null;
-	setOrg: (org: string) => void;
+	orgSlug: string | null;
+	redirectToModule: (modSlug: string) => void;
+	redirectToOrg: (orgSlug: string) => void;
 	getFullPath: (modulePath: string) => string;
 	getOrgPath: () => string;
 };
 
-const TenantContext = createContext<TenantContextType | undefined>(undefined);
+const TenantUrlContext = createContext<TenantUrlContextType | undefined>(undefined);
 
-export const useTenant = () => {
-	const context = useContext(TenantContext);
-	if (!context) throw new Error('useTenant must be used within TenantProvider');
+export const useTenantUrl = () => {
+	const context = useContext(TenantUrlContext);
+	if (!context) throw new Error('useTenantUrl must be used within TenantUrlProvider');
 	return context;
 };
 
-export type TenantProviderProps = React.PropsWithChildren & {
-};
+export type TenantUrlProviderProps = React.PropsWithChildren;
 
-export const TenantProvider: React.FC<TenantProviderProps> = ({
+export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 	children,
 }) => {
-	const fullPath = window.location.pathname;
+	// const fullPath = window.location.pathname;
+	const fullPath = usePathname();
 	const router = useRouter();
-	const { envVars, setOrg } = useConfig();
+	const {
+		envVars, activeOrg,
+		setActiveOrg, setActiveModule,
+	} = useConfig();
 	const appPath = AppPath.fromFullPath(fullPath, envVars.ROOT_PATH);
 
 	const subdomain = extractAndValidateSubdomain(envVars.ROOT_DOMAIN, router);
-	const ctxVal = {
+	const ctxVal: TenantUrlContextType = {
 		subdomain,
-		org: appPath.orgSlug,
-		setOrg: redirectToOrgPage(appPath),
+		orgSlug: appPath.orgSlug,
+		redirectToModule: redirectToModulePage(appPath),
+		redirectToOrg: redirectToOrgPage(appPath),
 		getFullPath: getFullPath(appPath),
 		getOrgPath: getOrgPath(appPath),
 	};
 
 	useEffect(() => {
-		setOrg(appPath.orgSlug);
+		const foundLastActiveOrg = (activeOrg && activeOrg.slug != appPath.orgSlug);
+		// This case applies when user accesses root path "/"
+		if (foundLastActiveOrg) {
+			appPath.orgSlug = activeOrg?.slug;
+			redirectToOrgPage(appPath);
+		}
+		// This case applies after user was redirected to org path "/org-slug",
+		// either by above `redirectToOrgPage` call or by successful login.
+		else if (!activeOrg) {
+			setActiveOrg(appPath.orgSlug);
+		}
 	}, []);
 
+	useEffect(() => {
+		appPath.moduleSlug && setActiveModule(appPath.moduleSlug);
+	}, [appPath.moduleSlug]);
+
 	return (
-		<TenantContext.Provider value={ctxVal}>
-			{children}
-		</TenantContext.Provider>
+		<TenantUrlContext.Provider value={ctxVal}>
+			{activeOrg ? children : 'Loading...'}
+		</TenantUrlContext.Provider>
 	);
 };
 
@@ -108,6 +127,18 @@ function redirectToOrgPage(appPath: AppPath) {
 		if (!orgSlug || orgSlug === appPath.orgSlug) return;
 
 		const newPath = new AppPath(appPath.rootPath, orgSlug, '');
+
+		// Do a full reload to new path
+		location.assign(newPath.toString());
+	};
+};
+
+function redirectToModulePage(appPath: AppPath) {
+	return (modSlug: string | null) => {
+		if (!modSlug || modSlug === appPath.moduleSlug) return;
+
+		const newPath = appPath.clone();
+		newPath.moduleSlug = modSlug;
 
 		// Do a full reload to new path
 		location.assign(newPath.toString());

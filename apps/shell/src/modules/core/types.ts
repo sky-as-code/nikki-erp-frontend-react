@@ -16,18 +16,20 @@ export type User = {
 	orgs: Organization[];
 };
 
-export function defaultOrg(user: User): Organization {
-	return user.orgs.find((org) => org.isDefault) || user.orgs[0];
-}
-
 export type Organization = {
 	id: string;
+	logo?: string | typeof IconCircleDottedLetterN; // image path or an icon
 	name: string;
 	slug: string;
-	isDefault: boolean;
 };
 
 export type UserSettings = {
 	core: Record<string, any>
+	modules: NikkiModule[],
+	orgs: Organization[],
 	system: Record<string, any>
+};
+
+export type UserPreference = {
+	org?: string,
 };

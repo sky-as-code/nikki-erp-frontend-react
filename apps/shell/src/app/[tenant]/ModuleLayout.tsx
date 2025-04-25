@@ -95,7 +95,7 @@ export const ModuleLayout: React.FC<ModuleLayoutProps> = ({
 				<p>Content</p>
 				<p>Content</p>
 			</MainContent>
-			<Footer />
+			{/* <Footer /> */}
 		</div>
 	);
 };
