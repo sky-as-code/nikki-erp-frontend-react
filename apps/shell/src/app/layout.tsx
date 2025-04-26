@@ -1,12 +1,10 @@
-import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
-import 'mantine-react-table/styles.css';
 import '@/styles/global.css';
 
 import { ShellProviders } from '@common/context/ShellProviders';
 import { UIProviders } from '@common/context/UIProviders';
-import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
+import { Button, ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
+import { useContextMenu } from 'mantine-contextmenu';
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 
@@ -45,13 +43,13 @@ export default function RootLayout({children}: { children: React.ReactNode }) {
 	return (
 		<html lang='en-US' {...mantineHtmlProps}>
 			<head>
-				<ColorSchemeScript />
+				<ColorSchemeScript defaultColorScheme='light' />
 				<meta
 					name='viewport'
 					content='minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no'
 				/>
 			</head>
-			<body className={inter.className}>
+			<body className={`${inter.className} overflow-hidden`}>
 				<NoSSR>
 					<ShellProviders envVars={envVars}>
 						<UIProviders>

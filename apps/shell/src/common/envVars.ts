@@ -73,7 +73,7 @@ export const navLinks: NavItem[] = [
 	{
 		label: 'Components',
 		icon: IconComponents,
-		links: [
+		items: [
 			{
 				label: 'Table',
 				link: '/dashboard/table',
@@ -87,7 +87,7 @@ export const navLinks: NavItem[] = [
 	{
 		label: 'Inventory',
 		icon: IconLock,
-		links: [
+		items: [
 			{
 				label: 'Login',
 				link: '/login',
@@ -101,7 +101,7 @@ export const navLinks: NavItem[] = [
 	{
 		label: 'Auth',
 		icon: IconLock,
-		links: [
+		items: [
 			{
 				label: 'Login',
 				link: '/login',
@@ -115,7 +115,7 @@ export const navLinks: NavItem[] = [
 	{
 		label: 'Sample',
 		icon: IconMoodSmile,
-		links: [
+		items: [
 			{
 				label: 'Landing 1',
 				link: '/',

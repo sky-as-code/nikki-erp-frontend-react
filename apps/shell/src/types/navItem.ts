@@ -17,5 +17,8 @@ export type NavItem = {
 	/**
 	 * Submenu links. If specified, `link` is ignored.
 	 */
-	links?: { label: string; link: string }[];
+	items?: NavItem[];
+
+	specialFeture?: '$$recent$$';
+	specialFetureOpts?: any;
 };

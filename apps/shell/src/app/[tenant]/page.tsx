@@ -1,6 +1,6 @@
 'use client';
 
-import { AppShell, Container, Text, useMantineColorScheme, useMantineTheme, Box } from '@mantine/core';
+import { AppShell, Container, Text, useMantineColorScheme, useMantineTheme, Box, Button } from '@mantine/core';
 import { TextInput } from '@mantine/core';
 import { IconFilter } from '@tabler/icons-react';
 import { FC } from 'react';
@@ -27,6 +27,7 @@ const AppListPage: FC = () => {
 			</AppShell.Header>
 			<AppShell.Main bg={bg}>
 				<Container size='lg'>
+
 					<TextInput
 						placeholder='Filter'
 						leftSection={<IconFilter size='1rem' />}

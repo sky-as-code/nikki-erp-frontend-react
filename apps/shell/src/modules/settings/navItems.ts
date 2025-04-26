@@ -8,7 +8,7 @@ import type { NavItem } from '@/types/navItem';
 export default <NavItem[]>[{
 	label: 'Organizations',
 	icon: IconHierarchy2,
-	links: [
+	items: [
 		{
 			label: 'Organizations',
 			link: '/organizations',
@@ -22,10 +22,19 @@ export default <NavItem[]>[{
 {
 	label: 'Users',
 	icon: IconUserCog,
-	links: [
+	items: [
 		{
-			label: 'Users',
-			link: '/users',
+			label: 'User List',
+			items: [
+				{
+					label: 'View List',
+					link: '/users',
+				},
+				{
+					specialFeture: '$$recent$$',
+					specialFetureOpts: 'recentUsers',
+				},
+			],
 		},
 		{
 			label: 'User Groups',
@@ -36,7 +45,7 @@ export default <NavItem[]>[{
 {
 	label: 'Permissions',
 	icon: IconShieldCog,
-	links: [
+	items: [
 		{
 			label: 'Roles',
 			link: '/roles',

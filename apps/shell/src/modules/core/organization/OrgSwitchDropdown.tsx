@@ -32,6 +32,12 @@ export const OrgSwitchDropdown: React.FC<OrgSwitchDropdownProps> = (props) => {
 			actionOptionLabel='Manage organizations...'
 			searchPlaceholder='Search organization'
 			unselectedPlaceholder='Select organization'
+			targetClass='box-content'
+			targetColor='#000'
+			targetFz='h2'
+			targetFw='bolder'
+			targetPb='xs'
+			targetPt='xs'
 			dropdownWidth={props.dropdownWidth}
 			items={items}
 			value={orgSlug}

@@ -2,9 +2,9 @@
 
 import { useTenantUrl } from '@common/context/TenantUrlProvider';
 import { Logo } from '@components/Logo/Logo';
-import { Anchor, Box, Breadcrumbs, Button, Group, Stack, Text } from '@mantine/core';
+import { ActionIcon, Anchor, Box, Breadcrumbs, Button, Group, Stack, Text } from '@mantine/core';
 import { ModuleSwitchDropdown } from '@modules/core/organization/ModuleSwitchDropdown';
-import { IconApps } from '@tabler/icons-react';
+import { IconApps, IconFilter, IconLayoutDashboard, IconList, IconPlus, IconRefresh, IconSettings } from '@tabler/icons-react';
 import cls from 'classnames';
 import Link from 'next/link';
 
@@ -24,50 +24,18 @@ export const LayoutHeader: React.FC<LayoutHeaderProps> = ({ burger, navItems }) 
 	const { getOrgPath } = useTenantUrl();
 
 	return (
-		<Stack gap='xs'>
-			<Box
-				className={cls(
-					'flex flex-row items-center justify-start h-full',
-					classes.header,
-				)}
-			>
-				<Breadcrumbs separatorMargin='xs'>
-					<OrgSwitchDropdown dropdownWidth={300} />
-					<ModuleSwitchDropdown dropdownWidth={300} />
-					{/* <Anchor component={Link} href={getOrgPath()} className='flex items-center'>
-						<IconApps size={30} />
-					</Anchor>
-					<Text component='span' fw='bold' fz={'lg'} >
-						Settings
-					</Text> */}
-				</Breadcrumbs>
-				{/* <MenuBar items={navItems} /> */}
-			</Box>
-			<Group
-				gap='xs'
-				justify='space-between'
-				className={cls(
-					// 'flex flex-row items-center justify-start h-full',
-					classes.header,
-				)}
-			>
-				<Group
-					gap='xs'
-					justify='flex-start'
-				>
-					{burger}
-					<Text component='span' fw='bold' fz='h3' >
-						Current page
-					</Text>
-				</Group>
-				<Group
-					gap='xs'
-					justify='flex-end'
-				>
-					<Button variant='filled'>Add</Button>
-					<Button variant='outline'>Delete</Button>
-				</Group>
-			</Group>
-		</Stack>
+		<Box
+			className={cls(
+				'flex flex-row items-center justify-start h-full',
+				classes.headerRow,
+				classes.menuBar,
+			)}
+		>
+			<Breadcrumbs separatorMargin='xs'>
+				<OrgSwitchDropdown dropdownWidth={300} />
+				<ModuleSwitchDropdown dropdownWidth={300} />
+			</Breadcrumbs>
+			<MenuBar items={navItems} />
+		</Box>
 	);
 };

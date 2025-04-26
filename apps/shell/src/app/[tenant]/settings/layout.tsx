@@ -1,6 +1,6 @@
 'use client';
 
-import { ModuleLayout } from '../ModuleLayout';
+import { ModuleLayout } from '../CommonModuleLayout';
 
 import navItems from '@/modules/settings/navItems';
 

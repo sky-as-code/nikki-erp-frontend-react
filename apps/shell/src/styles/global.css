@@ -1,1 +1,11 @@
-@import "tailwindcss";
+@layer base, mantine, mantine-contextmenu, theme, components, utilities;
+
+@import '@mantine/core/styles.layer.css';
+
+@import "tailwindcss/theme.css" layer(theme);
+/* @import "tailwindcss/preflight.css" layer(base); */
+@import "tailwindcss/utilities.css" layer(utilities);
+
+html {
+	font-size: 14px;
+}
