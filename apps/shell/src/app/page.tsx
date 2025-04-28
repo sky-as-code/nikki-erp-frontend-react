@@ -1,3 +1,5 @@
+import { SimpleTable } from '@components/Table/SimpleTable';
+
 import { Footer } from '@/components/Footer/Footer';
 import { CTASection } from '@/components/Landing/CTASection';
 import { FAQSection } from '@/components/Landing/FAQSection';
@@ -7,6 +9,7 @@ import { HeroSection } from '@/components/Landing/HeroSection';
 import { LandingContainer } from '@/components/Landing/LandingContainer';
 import { PricingSection } from '@/components/Landing/PricingSection';
 import { SocialProofSection } from '@/components/Landing/SocialProofSection';
+import { DataTable } from '@/components/Table/DataTable';
 
 export default function Page() {
 	return (

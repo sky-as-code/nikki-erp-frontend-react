@@ -1,6 +1,8 @@
 'use client';
 
+import { useModuleLayout } from '@app/[tenant]/ModuleLayout';
 import {
+	Anchor,
 	Button, ButtonProps, Group, MantineStyleProps, NativeSelect, Popover, Stack, Text,
 } from '@mantine/core';
 import { notifications as notif } from '@mantine/notifications';
@@ -9,19 +11,23 @@ import {
 	IconFilter, IconLayoutDashboard, IconList, IconPlus, IconRefresh, IconSettings,
 } from '@tabler/icons-react';
 import clsx from 'classnames';
+import { MRT_ColumnDef } from 'mantine-react-table';
 import React, { DOMAttributes, useEffect } from 'react';
 
-import { PageLayout } from '../PageLayout';
+import { PageLayout } from '../../PageLayout';
+
+import UserDetailPage from './detail/page';
 
 import { useUIState } from '@/common/context/UIProviders';
 import { delay } from '@/common/utils';
 import { DataTable, TableContextType, createTableContext } from '@/components/Table/DataTable';
-import { data, columns } from '@/components/Table/SimpleTable';
+import { data, Person } from '@/components/Table/SimpleTable';
 
 
 let testCount = 0;
-const SettingsPage: React.FC = () => {
-	const { backgroundColor, setCurrentScreen } = useUIState();
+const UserListPage: React.FC = () => {
+	const { splitRequest } = useModuleLayout();
+	const { backgroundColor } = useUIState();
 	const { context, Provider } = createTableContext({
 		name: 'settings.users',
 		defaultPageSize: 50,
@@ -36,27 +42,87 @@ const SettingsPage: React.FC = () => {
 			return { rows: paginatedData, totalRows: data.length };
 		},
 	});
+	const isSplit = splitRequest instanceof UserSplitRequest;
+	const userSplitReq: UserSplitRequest = splitRequest as UserSplitRequest;
 
 	useEffect(() => {
-		setCurrentScreen('settings.users');
-	}, []);
+		if (isSplit) {
+			const { pathname } = window.location;
+			window.history.pushState({}, '', `${pathname}/${userSplitReq.id}`);
+		}
+	}, [isSplit]);
 
 	return (
-		<Provider>
-			<SettingsInner
-				backgroundColor={backgroundColor} tableContext={context}
-			/>
-		</Provider>
+		<>
+			<Provider>
+				<UserListInner
+					isSplit={isSplit}
+					backgroundColor={backgroundColor} tableContext={context}
+				/>
+			</Provider>
+			{isSplit && (
+				<UserDetailPage
+					id={userSplitReq.id}
+					isSplit={isSplit}
+				/>
+			)}
+		</>
 	);
 };
 
-export default SettingsPage;
+export default UserListPage;
+
+class UserSplitRequest {
+	constructor(
+		public id: string,
+	) {}
+}
+
+export const columns: MRT_ColumnDef<Person>[] = [
+	{
+		accessorKey: 'name.firstName', //access nested data with dot notation
+		header: 'First Name',
+		Cell: ({ cell }) => {
+			const { setSplitRequest } = useModuleLayout();
+			const model: Person = cell.row.original;
+			return (
+				<Anchor
+					href={`/${model.id}`}
+					onClick={(evt) => {
+						evt.preventDefault();
+						setSplitRequest(new UserSplitRequest(model.id));
+					}}
+					// className='text-blue-500 underline'
+				>
+					{cell.getValue<string>()}
+				</Anchor>
+			);
+		},
+	},
+	{
+		accessorKey: 'name.lastName',
+		header: 'Last Name',
+	},
+	{
+		accessorKey: 'address', //normal accessorKey
+		header: 'Address',
+	},
+	{
+		accessorKey: 'city',
+		header: 'City',
+	},
+	{
+		accessorKey: 'state',
+		header: 'State',
+	},
+];
 
 
-const SettingsInner: React.FC<{
-	backgroundColor: MantineStyleProps['bg'];
-	tableContext: React.Context<TableContextType>;
-}> = React.memo(({ backgroundColor, tableContext }) => {
+const UserListInner: React.FC<{
+	backgroundColor: MantineStyleProps['bg'],
+	isSplit: boolean,
+	tableContext: React.Context<TableContextType>,
+}> = React.memo(({ backgroundColor, isSplit, tableContext }) => {
 	const ctxVal = React.useContext(tableContext);
 	const columnsDef = React.useMemo(() => columns, []);
 
@@ -73,7 +139,10 @@ const SettingsInner: React.FC<{
 	}, [ctxVal.isError]);
 
 	return (
-		<PageLayout toolbar={<ContentHeader backgroundColor={backgroundColor} tableContext={tableContext} />}>
+		<PageLayout
+			isSplitSmall={isSplit}
+			toolbar={<ContentHeader backgroundColor={backgroundColor} tableContext={tableContext} />}
+		>
 			<DataTable
 				columnsDef={columnsDef as any}
 				rows={ctxVal.rows}

@@ -52,8 +52,9 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
 	const { isAuthenticated } = useAuth();
 	const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
 	const [activeOrgSlug, setOrgSlug] = useState<string | null>(userPrefs.org ?? null);
+	const [activeModuleSlug, setModuleSlug] = useState<string | null>(userPrefs.org ?? null);
 	const [activeOrg, setActiveOrg] = useActiveOrg({ userPrefs, userSettings });
-	const [activeModule, setModuleSlug] = useActiveModule({ userPrefs, userSettings });
+	const [activeModule, setActiveModule] = useActiveModule({ userPrefs, userSettings });
 	const [envVars] = useState(initialEnvVars);
 
 	const { data, isSuccess } = useQuery({
@@ -70,6 +71,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
 
 	useEffect(() => {
 		setActiveOrg(activeOrgSlug!);
+		setActiveModule(activeModuleSlug!);
 	}, [userSettings]);
 
 	const ctxVal: ConfigContextType = {

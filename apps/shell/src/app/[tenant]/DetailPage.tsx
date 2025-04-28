@@ -1,0 +1,131 @@
+'use client';
+
+import { useTenantUrl } from '@common/context/TenantUrlProvider';
+import { useUIState } from '@common/context/UIProviders';
+import {
+	Button,
+	ButtonProps,
+	CloseButton,
+	Group, MantineStyleProps, Text,
+} from '@mantine/core';
+import {
+	IconBriefcase,
+	IconDeviceFloppy, IconDots, IconFolders, IconRefresh, IconStar,
+} from '@tabler/icons-react';
+import clsx from 'classnames';
+import { usePathname, useRouter } from 'next/navigation';
+import { DOMAttributes, useEffect, useState } from 'react';
+
+import { PageLayout } from './PageLayout';
+
+
+export type DetailPageProps = {
+	component: React.FC<DetailComponentProps>,
+	pageSlug: string,
+};
+
+export type DetailComponentProps = {
+	id: string,
+	isSplit: boolean,
+};
+
+export const DetailPage: React.FC<DetailPageProps> = ({ component: Component, ...props }) => {
+	const { getModulePath } = useTenantUrl();
+	const router = useRouter();
+	const pathName = usePathname();
+	const [id, setId] = useState('');
+	const { backgroundColor } = useUIState();
+	const listingPath = `${getModulePath()}/${props.pageSlug}/`;
+
+	useEffect(() => {
+		const id = pathName.replace(listingPath, '');
+		setId(id);
+	}, [pathName]);
+
+	if (!id) return null;
+
+	const onCloseSplit = () => {
+		router.push(listingPath);
+	};
+	return (
+		<PageLayout
+			isSplitBig={true}
+			toolbar={<ContentHeader
+				backgroundColor={backgroundColor}
+				id={id}
+				isSplit={true}
+				onCloseSplit={onCloseSplit}
+			/>}
+		>
+			<Component
+				id={id}
+				isSplit={true}
+			/>
+		</PageLayout>
+	);
+};
+
+export default DetailPage;
+
+
+type ContentHeaderProps = {
+	backgroundColor: MantineStyleProps['bg'];
+	id?: string,
+	isSplit: boolean,
+	onCloseSplit: () => void,
+};
+
+const ContentHeader: React.FC<ContentHeaderProps> = ({ backgroundColor, id, ...props }) => {
+
+	return (
+		<>
+			<Group gap={0} justify='space-between' mt='xs' bg={backgroundColor}>
+				<Group gap='xs' justify='flex-start'>
+					<Text component='span' fw='normal' fz='md' c='gray'>User</Text>
+					<Text component='span' fw='bold' fz='h3'>{id ? id : 'Rein Chau'}</Text>
+					<IconStar />
+				</Group>
+				{props.isSplit && <CloseButton
+					size='lg'
+					onClick={props.onCloseSplit}
+				/>}
+			</Group>
+			<Group gap='xs' justify='space-between' mt='xs' mb='xs' bg={backgroundColor}>
+				<Group gap='xs' justify='flex-start'>
+					<ToolbarButton leftSection={<IconDeviceFloppy />}>Save</ToolbarButton>
+					<ToolbarButton leftSection={<IconFolders />}>Clone</ToolbarButton>
+					<ToolbarButton
+						onClick={() => {}}
+						leftSection={
+							<IconRefresh
+								className={clsx(
+									'transition-transform',
+									{'animate-spin': false},
+								)}
+							/>
+						}
+						disabled={false}
+					>
+						Refresh
+					</ToolbarButton>
+					<ToolbarButton leftSection={<IconBriefcase />}>Archive</ToolbarButton>
+					<ToolbarButton><IconDots /></ToolbarButton>
+				</Group>
+				{/* <Group gap='xs' justify='flex-end'>
+					<TableActions ctxVal={ctxVal} />
+				</Group> */}
+			</Group>
+		</>
+	);
+};
+
+type ToolbarButtonProps = ButtonProps & DOMAttributes<HTMLButtonElement> & {
+	isActive?: boolean;
+};
+const ToolbarButton: React.FC<ToolbarButtonProps> = ({ children, isActive, ...rest }) => {
+	return (
+		<Button size='compact-md' variant={isActive ? 'filled' : 'subtle'} fw='normal' {...rest}>
+			{children}
+		</Button>
+	);
+};

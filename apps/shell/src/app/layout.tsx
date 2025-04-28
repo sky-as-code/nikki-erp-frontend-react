@@ -2,9 +2,7 @@ import '@/styles/global.css';
 
 import { ShellProviders } from '@common/context/ShellProviders';
 import { UIProviders } from '@common/context/UIProviders';
-import { Button, ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
-import { Notifications } from '@mantine/notifications';
-import { useContextMenu } from 'mantine-contextmenu';
+import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 
@@ -54,7 +52,6 @@ export default function RootLayout({children}: { children: React.ReactNode }) {
 					<ShellProviders envVars={envVars}>
 						<UIProviders>
 							<Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-							<Notifications />
 						</UIProviders>
 					</ShellProviders>
 				</NoSSR>

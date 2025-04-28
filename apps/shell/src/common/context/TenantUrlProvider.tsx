@@ -13,6 +13,7 @@ type TenantUrlContextType = {
 	redirectToOrg: (orgSlug: string) => void;
 	getFullPath: (modulePath: string) => string;
 	getOrgPath: () => string;
+	getModulePath: () => string;
 };
 
 const TenantUrlContext = createContext<TenantUrlContextType | undefined>(undefined);
@@ -45,6 +46,7 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 		redirectToOrg: redirectToOrgPage(appPath),
 		getFullPath: getFullPath(appPath),
 		getOrgPath: getOrgPath(appPath),
+		getModulePath: getModulePath(appPath),
 	};
 
 	useEffect(() => {
@@ -63,7 +65,7 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 
 	useEffect(() => {
 		appPath.moduleSlug && setActiveModule(appPath.moduleSlug);
-	}, [appPath.moduleSlug]);
+	}, []);
 
 	return (
 		<TenantUrlContext.Provider value={ctxVal}>
@@ -118,6 +120,13 @@ function getOrgPath(appPath: AppPath) {
 	return (): string => {
 		const newPath = appPath.clone();
 		newPath.moduleSlug = '';
+		return newPath.toString();
+	};
+}
+
+function getModulePath(appPath: AppPath) {
+	return (): string => {
+		const newPath = appPath.clone();
 		return newPath.toString();
 	};
 }

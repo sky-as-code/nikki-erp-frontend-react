@@ -13,7 +13,6 @@ const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
 			retry: false,
-			gcTime: 0,
 		},
 	},
 });
