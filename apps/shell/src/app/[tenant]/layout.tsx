@@ -1,7 +1,6 @@
 'use client';
 
-import { TenantUrlProvider } from '@common/context/TenantUrlProvider';
-
+import { TenantUrlProvider } from '@/common/context/TenantUrlProvider';
 import { AuthGuard } from '@/modules/core/auth/AuthGuard';
 
 

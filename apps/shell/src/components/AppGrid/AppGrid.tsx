@@ -1,6 +1,5 @@
 'use client';
 
-import { useTenantUrl } from '@common/context/TenantUrlProvider';
 import { SimpleGrid, Paper, Text, Stack, ThemeIcon, Box } from '@mantine/core';
 import {
 	IconCalendarEvent, IconChecklist, IconCalendar,
@@ -17,6 +16,7 @@ import {
 import Link from 'next/link';
 import { FC } from 'react';
 
+import { useTenantUrl } from '@/common/context/TenantUrlProvider';
 import { NikkiModule } from '@/modules/core/types';
 
 

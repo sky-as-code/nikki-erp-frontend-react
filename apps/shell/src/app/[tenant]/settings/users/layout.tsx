@@ -27,6 +27,7 @@ const UserListPage: React.FC<React.PropsWithChildren> = ({children}) => {
 			cacheKey='settings.users'
 			columns={columns}
 			pageSlug='users'
+			pageName='Users'
 			fetchFn={fetchFn}
 		>
 			{children}

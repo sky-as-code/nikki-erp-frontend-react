@@ -1,6 +1,6 @@
 'use client';
 
-import DetailPage from '@app/[tenant]/DetailPage';
+import DetailPage from '../../../DetailPage';
 
 export const UserDetailPage: React.FC = () => {
 	return (

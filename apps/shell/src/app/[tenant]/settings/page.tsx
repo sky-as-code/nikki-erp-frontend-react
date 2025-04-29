@@ -8,7 +8,7 @@ import {
 	IconChevronLeft, IconChevronLeftPipe, IconChevronRight, IconChevronRightPipe,
 	IconFilter, IconLayoutDashboard, IconList, IconPlus, IconRefresh, IconSettings,
 } from '@tabler/icons-react';
-import clsx from 'classnames';
+import clsx from 'clsx';
 import React, { DOMAttributes, useEffect } from 'react';
 
 import { PageLayout } from '../PageLayout';

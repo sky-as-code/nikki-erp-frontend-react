@@ -1,12 +1,12 @@
 import '@/styles/global.css';
 
-import { ShellProviders } from '@common/context/ShellProviders';
-import { UIProviders } from '@common/context/UIProviders';
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 
 import { NoSSR } from '@/common/components/NoSSR';
+import { ShellProviders } from '@/common/context/ShellProviders';
+import { UIProviders } from '@/common/context/UIProviders';
 import { loadEnvVars } from '@/common/envVars';
 import { initRequestMaker } from '@/common/request';
 import { LoadingSpinner } from '@/components/loading';

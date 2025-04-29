@@ -1,7 +1,5 @@
 'use client';
 
-import { useTenantUrl } from '@common/context/TenantUrlProvider';
-import { useUIState } from '@common/context/UIProviders';
 import {
 	Button,
 	ButtonProps,
@@ -12,11 +10,15 @@ import {
 	IconBriefcase,
 	IconDeviceFloppy, IconDots, IconFolders, IconRefresh, IconStar,
 } from '@tabler/icons-react';
-import clsx from 'classnames';
+import clsx from 'clsx';
 import { usePathname, useRouter } from 'next/navigation';
 import { DOMAttributes, useEffect, useState } from 'react';
 
+import { useModuleLayout } from './ModuleLayout';
 import { PageLayout } from './PageLayout';
+
+import { useTenantUrl } from '@/common/context/TenantUrlProvider';
+import { useUIState } from '@/common/context/UIProviders';
 
 
 export type DetailPageProps = {
@@ -36,7 +38,13 @@ export const DetailPage: React.FC<DetailPageProps> = ({ component: Component, ..
 	const [id, setId] = useState('');
 	const { backgroundColor } = useUIState();
 	const listingPath = `${getModulePath()}/${props.pageSlug}/`;
+	const split = useModuleLayout();
 
+	useEffect(() => {
+		if (!split.is0_10 && !split.is1_9 && !split.is3_7) {
+			split.setSplitMode('0_10');
+		}
+	}, []);
 	useEffect(() => {
 		const id = pathName.replace(listingPath, '');
 		setId(id);
@@ -49,11 +57,11 @@ export const DetailPage: React.FC<DetailPageProps> = ({ component: Component, ..
 	};
 	return (
 		<PageLayout
-			isSplitBig={true}
+			isSplitBig={split.is3_7 || split.is1_9}
 			toolbar={<ContentHeader
 				backgroundColor={backgroundColor}
 				id={id}
-				isSplit={true}
+				isSplit={split.is3_7 || split.is1_9}
 				onCloseSplit={onCloseSplit}
 			/>}
 		>

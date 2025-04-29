@@ -34,10 +34,16 @@ const tableConfig: MRT_TableOptions<any> = {
 	data: [],
 	mantinePaperProps: {
 		shadow: '0', withBorder: false, radius: 0,
-		className: 'overflow-x-auto bg-transparent h-full',
+		className: 'flex overflow-x-auto bg-transparent w-full',
 	},
 	mantineTableContainerProps: {
-		className: 'h-full',
+		className: 'bg-transparent w-full',
+		// style: {
+		// 	maxHeight: 'calc(100vh - 50px - 117px)',
+		// },
+	},
+	mantineTableProps: {
+		className: 'table-auto',
 	},
 
 	enableRowSelection: true,

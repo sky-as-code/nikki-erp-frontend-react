@@ -2,7 +2,7 @@
 
 import { Flex, Text } from '@mantine/core';
 import { IconCircleDottedLetterN } from '@tabler/icons-react';
-import cls from 'classnames';
+import cls from 'clsx';
 import Link from 'next/link';
 
 import classes from './Logo.module.css';

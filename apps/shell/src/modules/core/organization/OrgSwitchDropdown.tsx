@@ -1,10 +1,10 @@
 'use client';
 
-import { useTenantUrl } from '@common/context/TenantUrlProvider';
 import React, { useMemo } from 'react';
 
 import { useConfig } from '../ConfigProvider';
 
+import { useTenantUrl } from '@/common/context/TenantUrlProvider';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@/components/SearchableSelect';
 
 

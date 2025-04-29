@@ -5,7 +5,7 @@ import { Logo } from '@components/Logo/Logo';
 import { ActionIcon, Anchor, Box, Breadcrumbs, Button, Group, Stack, Text } from '@mantine/core';
 import { ModuleSwitchDropdown } from '@modules/core/organization/ModuleSwitchDropdown';
 import { IconApps, IconFilter, IconLayoutDashboard, IconList, IconPlus, IconRefresh, IconSettings } from '@tabler/icons-react';
-import cls from 'classnames';
+import cls from 'clsx';
 import Link from 'next/link';
 
 import classes from './LayoutHeader.module.css';

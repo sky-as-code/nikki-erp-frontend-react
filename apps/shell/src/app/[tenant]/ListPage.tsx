@@ -1,19 +1,25 @@
 'use client';
 
 import {
+	ActionIcon,
 	Anchor,
 	Button, ButtonProps, Group, MantineStyleProps, NativeSelect, Popover, Stack, Text,
+	UnstyledButton,
 } from '@mantine/core';
 import {
 	IconChevronLeft, IconChevronLeftPipe, IconChevronRight, IconChevronRightPipe,
+	IconChevronsLeft,
+	IconChevronsRight,
 	IconFilter, IconLayoutDashboard, IconList, IconPlus, IconRefresh, IconSettings,
 } from '@tabler/icons-react';
-import clsx from 'classnames';
+import clsx from 'clsx';
 import { MRT_Cell, MRT_ColumnDef } from 'mantine-react-table';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { DOMAttributes, useEffect, useState } from 'react';
 
+import { useModuleLayout } from './ModuleLayout';
+import classes from './ModuleLayout.module.css';
 import { PageLayout } from './PageLayout';
 
 import { useTenantUrl } from '@/common/context/TenantUrlProvider';
@@ -21,26 +27,31 @@ import { useUIState } from '@/common/context/UIProviders';
 import { CreateTableContextReturn, DataTable, PaginationState, TableContextFetchResult, TableContextType, createTableContext } from '@/components/Table/DataTable';
 
 
-export type ListComponentProps = React.PropsWithChildren & {
-	isSplit: boolean,
-	backgroundColor: MantineStyleProps['bg'],
-	tableContext?: React.Context<TableContextType>,
-};
-
 export type ListPageProps = React.PropsWithChildren & {
-	component?: React.FC<ListComponentProps>,
 	columns: MRT_ColumnDef<any>[],
+	/**
+	 * Cache key used in query manager to cache and get data for listing.
+	 */
 	cacheKey: string,
 	defaultPageSize?: number,
 	enableTable?: boolean,
 	enableGrid?: boolean,
+	/** Page name to display in the header. */
+	pageName: string,
+	/**
+	 * The slug that should appear in address bar.
+	 * This value is used in page split feature.
+	 * */
 	pageSlug: string,
+	/**
+	 * Function to fetch data for listing.
+	 * This function is invoked on cache miss.
+	 */
 	fetchFn: (pagination: PaginationState) => Promise<TableContextFetchResult>,
 };
 
 export const ListPage: React.FC<ListPageProps> = (rawProps) => {
 	const {
-		component: Component,
 		enableGrid = true,
 		enableTable = true,
 		...props
@@ -48,8 +59,7 @@ export const ListPage: React.FC<ListPageProps> = (rawProps) => {
 	const pathName = usePathname();
 	const { backgroundColor } = useUIState();
 	const [ tableCtxResult, setTableCtxResult ] = useState<CreateTableContextReturn | null>(null);
-	const [ listVisible, setListVisible ] = useState(false);
-	const [splitState, setSplitState] = useState<'full' | 'split' | 'hidden'>('hidden');
+	const split = useModuleLayout();
 
 	useEffect(() => {
 		const result = createTableContext({
@@ -62,12 +72,7 @@ export const ListPage: React.FC<ListPageProps> = (rawProps) => {
 
 	useEffect(() => {
 		if (pathName.match(`/${props.pageSlug}/?$`)) {
-			setListVisible(true);
-			setSplitState('full');
-		}
-		else {
-			if (listVisible) setSplitState('split');
-			else setSplitState('hidden');
+			split.setSplitMode('10_0');
 		}
 	}, [pathName]);
 
@@ -76,14 +81,14 @@ export const ListPage: React.FC<ListPageProps> = (rawProps) => {
 
 	return (
 		<>
-			{(splitState != 'hidden') && <ListDataProvider>
+			{split.is0_10 || <ListDataProvider>
 				<ListStateProvider>
 					<ListInner
 						backgroundColor={backgroundColor}
 						columns={props.columns}
 						enableGrid={enableGrid}
 						enableTable={enableTable}
-						isSplit={splitState === 'split'}
+						pageName={props.pageName}
 						tableContext={context}
 					/>
 				</ListStateProvider>
@@ -99,12 +104,14 @@ const ListInner: React.FC<{
 	columns: MRT_ColumnDef<any>[],
 	enableTable?: boolean,
 	enableGrid?: boolean,
-	isSplit: boolean,
+	// isSplit: boolean,
+	pageName: string,
 	tableContext: React.Context<TableContextType>,
-}> = ({ backgroundColor, columns, isSplit, tableContext, ...props }) => {
+}> = ({ backgroundColor, columns, tableContext, ...props }) => {
 	const { notification: notif } = useUIState();
 	const ctxVal = React.useContext(tableContext);
 	const columnsDef = React.useMemo(() => columns, []);
+	const split = useModuleLayout();
 
 	useEffect(() => {
 		if (ctxVal.isError) {
@@ -114,16 +121,28 @@ const ListInner: React.FC<{
 
 	return (
 		<PageLayout
-			isSplitSmall={isSplit}
+			isSplitSmall={split.is3_7}
+			isCollapsed={split.is1_9}
 			toolbar={<ContentHeader
 				backgroundColor={backgroundColor}
 				tableContext={tableContext}
+				pageName={props.pageName}
 			/>}
 		>
 			{props.enableTable && <DataTable
 				columnsDef={columnsDef as any}
 				rows={ctxVal.rows}
 			/>}
+			<button
+				className={clsx(
+					'flex items-start absolute top-0 right-0 bottom-0 w-8 z-90 pt-4 border-none',
+					'cursor-pointer hover:bg-gray-300 active:bg-gray-400 transition-colors',
+					classes.showOnSplitCollapsed,
+				)}
+				onClick={() => split.setSplitMode('3_7')}
+			>
+				<IconChevronsRight size={20} />
+			</button>
 		</PageLayout>
 	);
 };
@@ -133,16 +152,28 @@ type ContentHeaderProps = {
 	enableTable?: boolean,
 	enableGrid?: boolean,
 	tableContext: React.Context<TableContextType>;
+	pageName: string,
 };
 
 const ContentHeader: React.FC<ContentHeaderProps> = ({ backgroundColor, tableContext, ...props }) => {
 	const ctxVal = React.useContext(tableContext);
+	const split = useModuleLayout();
 
 	return (
 		<>
-			<Group gap='xs' justify='flex-start' mt='xs' bg={backgroundColor}>
-				<Text component='span' fw='bold' fz='h3'>Settings</Text>
-				<IconSettings />
+			<Group justify='space-between' mt='xs' bg={backgroundColor}>
+				<Group gap='xs' justify='flex-start'>
+					<Text component='span' fw='bold' fz='h3'>{props.pageName}</Text>
+					<ActionIcon variant='subtle'><IconSettings /></ActionIcon>
+				</Group>
+				<ActionIcon
+					onClick={() => split.setSplitMode('1_9')}
+					variant='subtle'
+					className={classes.showOnSplit}
+					size='lg'
+				>
+					<IconChevronsLeft/>
+				</ActionIcon>
 			</Group>
 			<Group gap='xs' justify='space-between' mt='xs' mb='xs' bg={backgroundColor}>
 				<Group gap='xs' justify='flex-start'>
@@ -307,20 +338,24 @@ export const CellDetailLink: React.FC<CelDetailLinkProps> = (props) => {
 		idField = 'id',
 		pageSlug,
 	} = props;
-	// const { setSplitRequest } = useModuleLayout();
+	const { setSplitMode } = useModuleLayout();
+	const router = useRouter();
 	const { getModulePath } = useTenantUrl();
 	const modulePath = getModulePath();
 	const model = cell.row.original;
+	const url = `${modulePath}/${pageSlug}/${model[idField]}`;
 
 	return (
 		<Anchor
 			component={Link}
-			href={`${modulePath}/${pageSlug}/${model[idField]}`}
-			// onClick={() => {
-			// 	setTimeout(() => {
-			// 		setSplitRequest(new SplitRequestSideBar());
-			// 	}, 0);
-			// }}
+			href={url}
+			onClick={(evt) => {
+				evt.preventDefault();
+				setSplitMode('3_7');
+				setTimeout(() => {
+					router.push(url);
+				}, 0);
+			}}
 		>
 			{cell.getValue<string>()}
 		</Anchor>

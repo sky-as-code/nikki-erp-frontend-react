@@ -10,7 +10,7 @@ import {
 	IconChevronLeft, IconChevronLeftPipe, IconChevronRight, IconChevronRightPipe,
 	IconFilter, IconLayoutDashboard, IconList, IconPlus, IconRefresh, IconSettings,
 } from '@tabler/icons-react';
-import clsx from 'classnames';
+import clsx from 'clsx';
 import { MRT_ColumnDef } from 'mantine-react-table';
 import React, { DOMAttributes, useEffect } from 'react';
 

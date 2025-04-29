@@ -2,7 +2,6 @@
 
 import { ActionIcon, Box, Drawer, Stack, TextInput } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { OrgSwitchDropdown } from '@modules/core/organization/OrgSwitchDropdown';
 import { IconSearch, IconSettings } from '@tabler/icons-react';
 
 
@@ -11,6 +10,8 @@ import { Logo } from '../Logo/Logo';
 import { ThemeSwitcher } from '../ThemeSwitcher/ThemeSwitcher';
 
 import classes from './AppGridHeader.module.css';
+
+import { OrgSwitchDropdown } from '@/modules/core/organization/OrgSwitchDropdown';
 
 
 interface Props {
