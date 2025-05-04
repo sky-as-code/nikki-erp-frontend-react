@@ -1,0 +1,16 @@
+{
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "always"
+	},
+	"eslint.validate": [
+		"javascript",
+		"javascriptreact",
+		"typescript",
+		"typescriptreact"
+	],
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": true,
+	"eslint.format.enable": true,
+	"editor.formatOnSave": true,
+	"eslint.run": "onSave"
+}

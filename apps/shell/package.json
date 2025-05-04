@@ -1,0 +1,57 @@
+{
+	"name": "shell",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "eslint --fix src/**/*.{js,jsx,ts,tsx}"
+	},
+	"dependencies": {
+		"@emotion/react": "~11.14.0",
+		"@hookform/resolvers": "~5.0.1",
+		"@mantine/core": "~7.17.4",
+		"@mantine/dates": "~7.17.4",
+		"@mantine/dropzone": "~7.17.4",
+		"@mantine/form": "~7.17.4",
+		"@mantine/hooks": "~7.17.4",
+		"@mantine/modals": "~7.17.4",
+		"@mantine/notifications": "~7.17.4",
+		"@tabler/icons-react": "~3.31.0",
+		"@tanstack/react-query": "~5.74.4",
+		"@tanstack/react-table": "~8.21.3",
+		"@urql/core": "~5.1.1",
+		"chart.js": "~4.4.9",
+		"clsx": "~2.1.1",
+		"dayjs": "~1.11.13",
+		"ky": "~1.8.1",
+		"mantine-react-table": "2.0.0-beta.9",
+		"next": "~15.3.1",
+		"react": "~19.1.0",
+		"react-chartjs-2": "~5.3.0",
+		"react-data-grid": "7.0.0-beta.52",
+		"react-dom": "~19.1.0",
+		"react-hook-form": "~7.56.0",
+		"zod": "~3.24.3"
+	},
+	"devDependencies": {
+		"@tailwindcss/postcss": "~4.1.4",
+		"@tanstack/react-query-devtools": "~5.74.6",
+		"@types/node": "~22.14.1",
+		"@types/react": "~19.1.2",
+		"@types/react-dom": "~19.1.2",
+		"@typescript-eslint/parser": "~8.30.1",
+		"cross-env": "~7.0.3",
+		"pnpm": "~10.9.0",
+		"postcss": "~8.5.3",
+		"postcss-preset-mantine": "~1.17.0",
+		"postcss-simple-vars": "~7.0.1",
+		"tailwindcss": "~4.1.4",
+		"typescript": "~5.8.3"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"packageManager": "pnpm@10.8.1+sha512.c50088ba998c67b8ca8c99df8a5e02fd2ae2e2b29aaf238feaa9e124248d3f48f9fb6db2424949ff901cffbb5e0f0cc1ad6aedb602cd29450751d11c35023677"
+}
