@@ -21,16 +21,15 @@ type PageLayoutProps = React.PropsWithChildren<{
 export const PageLayout: React.FC<PageLayoutProps> = ({
 	children, isCollapsed, isSplitSmall, isSplitBig, toolbar,
 }) => {
-	const { isMobile, isScrollingUp, backgroundColor } = useUIState();
+	const { isMobile, isScrollingUp } = useUIState();
 
 	return (
 		<Box
 			component='section'
-			bg={backgroundColor}
 			className={clsx(
-				'page-layout flex flex-col items-start min-w-0 relative', {
-					'split-small flex-[1] overflow-x-hidden': isSplitSmall,
-					'split-big flex-[3] shadow-lg shadow-black/30 z-100': isSplitBig,
+				'page-layout flex flex-col items-start min-w-0 relative overflow-hidden', {
+					'split-small flex-[1]': isSplitSmall,
+					'split-big flex-[3] shadow-md shadow-black/30 z-100': isSplitBig,
 					'split-collapsed w-8': isCollapsed,
 					'no-split flex-1': !isSplitSmall && !isSplitBig && !isCollapsed,
 				})}
@@ -39,13 +38,10 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 			}}
 		>
 			{toolbar && (
-				<Paper
+				<Box
 					component='header'
-					bg={backgroundColor}
-					shadow='sm'
-					radius={0}
 					className={clsx(
-						'page-toolbar w-full shrink-0 z-90 px-4',
+						'page-toolbar w-full shrink-0 z-90 px-4 shadow-md',
 						'transition-transform duration-300 translate-y-0',
 						classes.headerRow,
 						{
@@ -55,7 +51,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 					)}
 				>
 					{toolbar}
-				</Paper>
+				</Box>
 			)}
 			{children}
 		</Box>

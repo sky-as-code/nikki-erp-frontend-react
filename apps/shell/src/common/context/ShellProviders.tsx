@@ -27,7 +27,7 @@ export const ShellProviders: React.FC<ShellProvidersProps> = ({ children, envVar
 			<QueryClientProvider client={queryClient}>
 				<ConfigProvider envVars={envVars}>
 					{children}
-					<ReactQueryDevtools initialIsOpen={false} />
+					{/* <ReactQueryDevtools initialIsOpen={false} /> */}
 				</ConfigProvider>
 			</QueryClientProvider>
 		</AuthProvider>

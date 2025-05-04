@@ -31,8 +31,11 @@ function createFlatButton(preProps: FlatSearchableSelectProps) {
 	const FlatButton: typeof Button = (({children, ...props}: ButtonProps) => {
 		return (
 			<Button
+				style={{
+					color: 'var(--mantine-color-text)',
+				}}
 				{...props}
-				color={preProps.targetColor}
+				// color={preProps.targetColor}
 				className={preProps.targetClass}
 				fz={preProps.targetFz}
 				fw={preProps.targetFw}

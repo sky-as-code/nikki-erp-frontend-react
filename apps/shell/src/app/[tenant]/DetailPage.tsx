@@ -1,10 +1,7 @@
 'use client';
 
 import {
-	Button,
-	ButtonProps,
-	CloseButton,
-	Group, MantineStyleProps, Text,
+	Button, ButtonProps, CloseButton, Group, Text,
 } from '@mantine/core';
 import {
 	IconBriefcase,
@@ -18,7 +15,7 @@ import { useModuleLayout } from './ModuleLayout';
 import { PageLayout } from './PageLayout';
 
 import { useTenantUrl } from '@/common/context/TenantUrlProvider';
-import { useUIState } from '@/common/context/UIProviders';
+
 
 
 export type DetailPageProps = {
@@ -36,7 +33,6 @@ export const DetailPage: React.FC<DetailPageProps> = ({ component: Component, ..
 	const router = useRouter();
 	const pathName = usePathname();
 	const [id, setId] = useState('');
-	const { backgroundColor } = useUIState();
 	const listingPath = `${getModulePath()}/${props.pageSlug}/`;
 	const split = useModuleLayout();
 
@@ -59,7 +55,6 @@ export const DetailPage: React.FC<DetailPageProps> = ({ component: Component, ..
 		<PageLayout
 			isSplitBig={split.is3_7 || split.is1_9}
 			toolbar={<ContentHeader
-				backgroundColor={backgroundColor}
 				id={id}
 				isSplit={split.is3_7 || split.is1_9}
 				onCloseSplit={onCloseSplit}
@@ -77,17 +72,16 @@ export default DetailPage;
 
 
 type ContentHeaderProps = {
-	backgroundColor: MantineStyleProps['bg'];
 	id?: string,
 	isSplit: boolean,
 	onCloseSplit: () => void,
 };
 
-const ContentHeader: React.FC<ContentHeaderProps> = ({ backgroundColor, id, ...props }) => {
+const ContentHeader: React.FC<ContentHeaderProps> = ({ id, ...props }) => {
 
 	return (
 		<>
-			<Group gap={0} justify='space-between' mt='xs' bg={backgroundColor}>
+			<Group gap={0} justify='space-between' mt='xs'>
 				<Group gap='xs' justify='flex-start'>
 					<Text component='span' fw='normal' fz='md' c='gray'>User</Text>
 					<Text component='span' fw='bold' fz='h3'>{id ? id : 'Rein Chau'}</Text>
@@ -98,7 +92,7 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({ backgroundColor, id, ...p
 					onClick={props.onCloseSplit}
 				/>}
 			</Group>
-			<Group gap='xs' justify='space-between' mt='xs' mb='xs' bg={backgroundColor}>
+			<Group gap='xs' justify='space-between' mt='xs' mb='xs'>
 				<Group gap='xs' justify='flex-start'>
 					<ToolbarButton leftSection={<IconDeviceFloppy />}>Save</ToolbarButton>
 					<ToolbarButton leftSection={<IconFolders />}>Clone</ToolbarButton>
@@ -119,9 +113,6 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({ backgroundColor, id, ...p
 					<ToolbarButton leftSection={<IconBriefcase />}>Archive</ToolbarButton>
 					<ToolbarButton><IconDots /></ToolbarButton>
 				</Group>
-				{/* <Group gap='xs' justify='flex-end'>
-					<TableActions ctxVal={ctxVal} />
-				</Group> */}
 			</Group>
 		</>
 	);

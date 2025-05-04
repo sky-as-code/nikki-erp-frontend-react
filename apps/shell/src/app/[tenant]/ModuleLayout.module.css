@@ -29,3 +29,12 @@
 :global(.split-collapsed) .showOnSplitCollapsed {
 	display: flex;
 }
+
+
+:global(.split-small) .hideOnSplit {
+	display: none;
+}
+
+:global(.split-collapsed) .hideOnSplit {
+	display: none;
+}

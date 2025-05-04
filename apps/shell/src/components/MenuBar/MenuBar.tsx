@@ -10,6 +10,7 @@ import {
 } from '@mantine/core';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import Link from 'next/link';
+import React from 'react';
 
 import { useTenantUrl } from '@/common/context/TenantUrlProvider';
 import { Menu } from '@/components/mantine/Menu';
@@ -75,10 +76,11 @@ const NavMenu: React.FC<{ item: NavItem }> = ({ item }) => {
 				</Button>
 			</Menu.Target>
 			<Menu.Dropdown closeOnMouseLeave={false}>
-				{item.items?.map((link) => {
+				{item.items?.map((link, i) => {
 					if (link.items) {
 						return (
 							<NestedMenu
+								key={i}
 								items={link.items}
 								parent={
 									<Menu.Item
@@ -124,24 +126,28 @@ const NestedMenu: React.FC<{ items: NavItem[], parent: React.ReactNode }> = ({ i
 			<Menu.Dropdown closeOnMouseLeave={false}>
 				{items.map((subItem) => {
 					if (subItem.specialFeture === '$$recent$$') {
-						return (<>
-							<Menu.Divider />
-							<Menu.Label>Recent viewed</Menu.Label>
-							<Menu.Item
-								key='1'
-								component={Link}
-								href='#'
+						return (
+							<React.Fragment
+								key={subItem.specialFeture}
 							>
-								Recent #1
-							</Menu.Item>
-							<Menu.Item
-								key='2'
-								component={Link}
-								href='#'
-							>
-								Recent #2
-							</Menu.Item>
-						</>);
+								<Menu.Divider />
+								<Menu.Label>Recent viewed</Menu.Label>
+								<Menu.Item
+									key='1'
+									component={Link}
+									href='#'
+								>
+									Recent #1
+								</Menu.Item>
+								<Menu.Item
+									key='2'
+									component={Link}
+									href='#'
+								>
+									Recent #2
+								</Menu.Item>
+							</React.Fragment>
+						);
 					}
 					return (<Menu.Item
 						key={subItem.link}

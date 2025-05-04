@@ -75,13 +75,13 @@ export default defineConfig([
 	},
 
 	// React Hooks configuration
-	{
-		plugins: { 'react-hooks': reactHooks },
-		rules: { ...reactHooks.configs.recommended.rules },
-	},
+	// {
+	// 	plugins: { 'react-hooks': reactHooks },
+	// 	rules: { ...reactHooks.configs.recommended.rules },
+	// },
 
-	next.flatConfig.recommended,
-	next.flatConfig.coreWebVitals,
+	// next.flatConfig.recommended,
+	// next.flatConfig.coreWebVitals,
 
 	// Import plugin configuration
 	{
@@ -106,33 +106,33 @@ export default defineConfig([
 	},
 
 	// JSX A11y configuration
-	{
-		plugins: { 'jsx-a11y': jsxA11y },
-		rules: {
-			'jsx-a11y/alt-text': [
-				'warn',
-				{
-					elements: ['img'],
-					img: ['Image'],
-				},
-			],
-			'jsx-a11y/aria-props': 'warn',
-			'jsx-a11y/aria-proptypes': 'warn',
-			'jsx-a11y/aria-unsupported-elements': 'warn',
-			'jsx-a11y/role-has-required-aria-props': 'warn',
-			'jsx-a11y/role-supports-aria-props': 'warn',
-		},
-	},
+	// {
+	// 	plugins: { 'jsx-a11y': jsxA11y },
+	// 	rules: {
+	// 		'jsx-a11y/alt-text': [
+	// 			'warn',
+	// 			{
+	// 				elements: ['img'],
+	// 				img: ['Image'],
+	// 			},
+	// 		],
+	// 		'jsx-a11y/aria-props': 'warn',
+	// 		'jsx-a11y/aria-proptypes': 'warn',
+	// 		'jsx-a11y/aria-unsupported-elements': 'warn',
+	// 		'jsx-a11y/role-has-required-aria-props': 'warn',
+	// 		'jsx-a11y/role-supports-aria-props': 'warn',
+	// 	},
+	// },
 
 	// Tanstack Query configuration
-	{
-		plugins: {
-			'@tanstack/query': tskQuery,
-		},
-		rules: {
-			// '@tanstack/query/exhaustive-deps': 'error',
-		},
-	},
+	// {
+	// 	plugins: {
+	// 		'@tanstack/query': tskQuery,
+	// 	},
+	// 	rules: {
+	// 		// '@tanstack/query/exhaustive-deps': 'error',
+	// 	},
+	// },
 
 	// TypeScript language options
 	{

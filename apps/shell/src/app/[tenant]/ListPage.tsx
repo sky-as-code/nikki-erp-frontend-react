@@ -3,9 +3,10 @@
 import {
 	ActionIcon,
 	Anchor,
-	Button, ButtonProps, Group, MantineStyleProps, NativeSelect, Popover, Stack, Text,
+	Button, ButtonProps, Group, MantineStyleProps, NativeSelect, Popover, Stack, Switch, Text,
 	UnstyledButton,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import {
 	IconChevronLeft, IconChevronLeftPipe, IconChevronRight, IconChevronRightPipe,
 	IconChevronsLeft,
@@ -57,7 +58,6 @@ export const ListPage: React.FC<ListPageProps> = (rawProps) => {
 		...props
 	} = rawProps;
 	const pathName = usePathname();
-	const { backgroundColor } = useUIState();
 	const [ tableCtxResult, setTableCtxResult ] = useState<CreateTableContextReturn | null>(null);
 	const split = useModuleLayout();
 
@@ -71,7 +71,7 @@ export const ListPage: React.FC<ListPageProps> = (rawProps) => {
 	}, []);
 
 	useEffect(() => {
-		if (pathName.match(`/${props.pageSlug}/?$`)) {
+		if (pathName.match(`/${props.pageSlug}/*$`)) {
 			split.setSplitMode('10_0');
 		}
 	}, [pathName]);
@@ -84,7 +84,6 @@ export const ListPage: React.FC<ListPageProps> = (rawProps) => {
 			{split.is0_10 || <ListDataProvider>
 				<ListStateProvider>
 					<ListInner
-						backgroundColor={backgroundColor}
 						columns={props.columns}
 						enableGrid={enableGrid}
 						enableTable={enableTable}
@@ -100,14 +99,13 @@ export const ListPage: React.FC<ListPageProps> = (rawProps) => {
 
 
 const ListInner: React.FC<{
-	backgroundColor: MantineStyleProps['bg'],
 	columns: MRT_ColumnDef<any>[],
-	enableTable?: boolean,
-	enableGrid?: boolean,
+	enableTable: boolean,
+	enableGrid: boolean,
 	// isSplit: boolean,
 	pageName: string,
 	tableContext: React.Context<TableContextType>,
-}> = ({ backgroundColor, columns, tableContext, ...props }) => {
+}> = ({ columns, tableContext, ...props }) => {
 	const { notification: notif } = useUIState();
 	const ctxVal = React.useContext(tableContext);
 	const columnsDef = React.useMemo(() => columns, []);
@@ -124,7 +122,8 @@ const ListInner: React.FC<{
 			isSplitSmall={split.is3_7}
 			isCollapsed={split.is1_9}
 			toolbar={<ContentHeader
-				backgroundColor={backgroundColor}
+				enableGrid={props.enableGrid}
+				enableTable={props.enableTable}
 				tableContext={tableContext}
 				pageName={props.pageName}
 			/>}
@@ -133,6 +132,16 @@ const ListInner: React.FC<{
 				columnsDef={columnsDef as any}
 				rows={ctxVal.rows}
 			/>}
+			<Group
+				justify='flex-end'
+				className='w-full px-4 py-2'
+			>
+				<TableActions
+					ctxVal={ctxVal}
+					enableGrid={props.enableGrid}
+					enableTable={props.enableTable}
+				/>
+			</Group>
 			<button
 				className={clsx(
 					'flex items-start absolute top-0 right-0 bottom-0 w-8 z-90 pt-4 border-none',
@@ -148,20 +157,19 @@ const ListInner: React.FC<{
 };
 
 type ContentHeaderProps = {
-	backgroundColor: MantineStyleProps['bg'];
-	enableTable?: boolean,
-	enableGrid?: boolean,
+	enableTable: boolean,
+	enableGrid: boolean,
 	tableContext: React.Context<TableContextType>;
 	pageName: string,
 };
 
-const ContentHeader: React.FC<ContentHeaderProps> = ({ backgroundColor, tableContext, ...props }) => {
+const ContentHeader: React.FC<ContentHeaderProps> = ({ tableContext, ...props }) => {
 	const ctxVal = React.useContext(tableContext);
 	const split = useModuleLayout();
 
 	return (
 		<>
-			<Group justify='space-between' mt='xs' bg={backgroundColor}>
+			<Group justify='space-between' mt='xs'>
 				<Group gap='xs' justify='flex-start'>
 					<Text component='span' fw='bold' fz='h3'>{props.pageName}</Text>
 					<ActionIcon variant='subtle'><IconSettings /></ActionIcon>
@@ -175,7 +183,7 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({ backgroundColor, tableCon
 					<IconChevronsLeft/>
 				</ActionIcon>
 			</Group>
-			<Group gap='xs' justify='space-between' mt='xs' mb='xs' bg={backgroundColor}>
+			<Group gap='xs' justify='space-between' mt='xs' mb='xs'>
 				<Group gap='xs' justify='flex-start'>
 					<ToolbarButton fw='bold' leftSection={<IconPlus />}>Create</ToolbarButton>
 					<ToolbarButton
@@ -193,8 +201,8 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({ backgroundColor, tableCon
 						Refresh
 					</ToolbarButton>
 				</Group>
-				<Group gap='xs' justify='flex-end'>
-					<TableActions
+				<Group gap={0} justify='flex-end'>
+					<TableSettings
 						ctxVal={ctxVal}
 						enableGrid={props.enableGrid}
 						enableTable={props.enableTable}
@@ -218,6 +226,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({ children, isActive, ...re
 
 const TableActions: React.FC<{
 	ctxVal: TableContextType,
+	className?: string,
 	enableTable?: boolean,
 	enableGrid?: boolean,
 }> = ({ ctxVal, ...props }) => {
@@ -233,8 +242,7 @@ const TableActions: React.FC<{
 	);
 
 	return (
-		<Button.Group>
-			<ToolbarButton><IconFilter /></ToolbarButton>
+		<Button.Group className={props.className}>
 			<ToolbarButton
 				disabled={pageIndex === 0}
 				onClick={ctxVal.firstPage}
@@ -254,11 +262,6 @@ const TableActions: React.FC<{
 				disabled={pageIndex === lastPage}
 				onClick={ctxVal.lastPage}
 			><IconChevronRightPipe /></ToolbarButton>
-			<TableSettings
-				ctxVal={ctxVal}
-				enableGrid={props.enableGrid}
-				enableTable={props.enableTable}
-			/>
 		</Button.Group>
 	);
 };
@@ -268,49 +271,115 @@ const TableSettings: React.FC<{
 	enableTable?: boolean,
 	enableGrid?: boolean,
 }> = ({ ctxVal, ...props }) => {
-	const { viewMode, setViewMode } = React.useContext(ListStateContext);
+	const { enableAutoRefresh, toggleAutoRefresh, viewMode, setViewMode } = React.useContext(ListStateContext);
+	const { isMobile } = useUIState();
 
 	return (
-		<Popover position='bottom' withArrow shadow='md'>
-			<Popover.Target>
-				<ToolbarButton><IconSettings /></ToolbarButton>
-			</Popover.Target>
-			<Popover.Dropdown>
-				<Stack gap='sm'>
-					<Group justify='space-between' align='center'>
-						<Text size='md'>Rows per page</Text>
-						<NativeSelect
-							defaultValue={ctxVal.pagination.pageSize}
-							onChange={(e) => ctxVal.setPagination({
-								...ctxVal.pagination,
-								pageSize: Number(e.target.value),
-							})}
-							data={['50', '100', '200', '500']}
-							fz='md'
-							style={{ width: '70px' }}
-						/>
-					</Group>
-					<Group justify='space-between' align='center'>
-						<Text size='md'>View mode</Text>
-						<Button.Group>
-							{props.enableTable && <ToolbarButton
-								isActive={viewMode === 'table'}
-								onClick={() => (viewMode !== 'grid') && setViewMode('grid')}
-							><IconList /></ToolbarButton>}
-							{props.enableGrid && <ToolbarButton
-								isActive={viewMode === 'grid'}
-								onClick={() => (viewMode !== 'table') && setViewMode('table')}
-							><IconLayoutDashboard /></ToolbarButton>}
-						</Button.Group>
-					</Group>
-				</Stack>
-			</Popover.Dropdown>
-		</Popover>
+		<>
+			<ToolbarButton><IconFilter /></ToolbarButton>
+			<TableActions
+				ctxVal={ctxVal}
+				className={clsx(classes.hideOnSplit, { 'hidden': isMobile })}
+				{...props}
+			/>
+			<Popover
+				position='bottom'
+				shadow='md'
+				width={300}
+				withArrow
+			>
+				<Popover.Target>
+					<ToolbarButton><IconSettings /></ToolbarButton>
+				</Popover.Target>
+				<Popover.Dropdown>
+					<Stack gap='sm'>
+						<table className='border-non'>
+							<tr className='h-0'><th className='w-[50%]'></th><th className='w-[50%]'></th></tr>
+							<RowsPerPageSetting ctxVal={ctxVal} />
+							<ViewModeSetting {...props} viewMode={viewMode} setViewMode={setViewMode} />
+							<AutoRefreshSetting
+								checked={enableAutoRefresh}
+								onClick={toggleAutoRefresh}
+							/>
+						</table>
+					</Stack>
+				</Popover.Dropdown>
+			</Popover>
+		</>
 	);
 };
 
-type ListStateContextType = {
+const RowsPerPageSetting: React.FC<{
+	ctxVal: TableContextType,
+}> = ({ ctxVal }) => (
+	<tr className='h-[40px]'>
+		<td>
+			{/* <Group justify='space-between' align='center'> */}
+			<Text size='md'>Rows per page</Text>
+		</td>
+		<td>
+			<NativeSelect
+				defaultValue={ctxVal.pagination.pageSize}
+				onChange={(e) => ctxVal.setPagination({
+					...ctxVal.pagination,
+					pageSize: Number(e.target.value),
+				})}
+				data={['50', '100', '200', '500']}
+				fz='md'
+				style={{ width: '70px' }}
+			/>
+			{/* </Group> */}
+		</td>
+	</tr>
+);
+
+const ViewModeSetting: React.FC<{
+	enableTable?: boolean,
+	enableGrid?: boolean,
 	viewMode: 'table' | 'grid',
+	setViewMode: (s: 'table' | 'grid') => void,
+}> = ({ enableTable, enableGrid, viewMode, setViewMode }) => (
+	<tr className='h-[40px]'>
+		<td>
+			{/* <Group justify='space-between' align='center'> */}
+			<Text size='md'>View mode</Text>
+		</td>
+		<td>
+			<Button.Group>
+				{enableTable && <ToolbarButton
+					isActive={viewMode === 'table'}
+					onClick={() => (viewMode !== 'table') && setViewMode('table')}
+				><IconList /></ToolbarButton>}
+				{enableGrid && <ToolbarButton
+					isActive={viewMode === 'grid'}
+					onClick={() => (viewMode !== 'grid') && setViewMode('grid')}
+				><IconLayoutDashboard /></ToolbarButton>}
+			</Button.Group>
+			{/* </Group> */}
+		</td>
+	</tr>
+);
+
+const AutoRefreshSetting: React.FC<{
+	checked: boolean,
+	onClick: () => void,
+}> = ({ checked, onClick }) => (
+	<tr className='h-[40px]'>
+		<td>
+			{/* <Group justify='space-between' align='center'> */}
+			<Text size='md'>Auto refresh</Text>
+		</td>
+		<td>
+			<Switch checked={checked} onClick={onClick} />
+			{/* </Group> */}
+		</td>
+	</tr>
+);
+
+type ListStateContextType = {
+	enableAutoRefresh: boolean,
+	viewMode: 'table' | 'grid',
+	toggleAutoRefresh: () => void,
 	setViewMode: (s: 'table' | 'grid') => void,
 };
 
@@ -318,9 +387,18 @@ const ListStateContext = React.createContext<ListStateContextType>({} as any);
 
 const ListStateProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
 	const [viewMode, setViewMode] = React.useState<ListStateContextType['viewMode']>('table');
+	// const [enableAutoRefresh, setEnableAutoRefresh] = React.useState(true);
+	const [ enableAutoRefresh, { toggle: toggleAutoRefresh} ] = useDisclosure(true);
+
+	const val: ListStateContextType = {
+		enableAutoRefresh,
+		viewMode,
+		toggleAutoRefresh,
+		setViewMode,
+	};
 
 	return (
-		<ListStateContext.Provider value={{ viewMode, setViewMode }}>
+		<ListStateContext.Provider value={val}>
 			{children}
 		</ListStateContext.Provider>
 	);

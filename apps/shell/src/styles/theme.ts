@@ -13,7 +13,7 @@ export const theme = createTheme({
 			'#7a87e9',
 			'#5362e1',
 			'#3a4bdd',
-			'#2c40dc',
+			'#0078d4', // '#2c40dc', // Azure color
 			'#1f32c4',
 			'#182cb0',
 			'#0a259c',

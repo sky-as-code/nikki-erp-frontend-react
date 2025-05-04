@@ -1,6 +1,7 @@
 'use client';
 
-import { Box, Breadcrumbs, Group } from '@mantine/core';
+import { ActionIcon, Avatar, Breadcrumbs, Button, Group, Stack, useMantineColorScheme } from '@mantine/core';
+import { IconChevronDown, IconMoonStars, IconPalette, IconSun } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { createContext, useContext, useState } from 'react';
 
@@ -54,21 +55,21 @@ export const ModuleLayout: React.FC<ModuleLayoutProps> = ({
 
 	return (
 		<ModuleLayoutContext.Provider value={contextValue}>
-			<Box
+			<Stack
 				component='div'
 				bg={backgroundColor}
-				className='module-layout flex flex-col h-screen'
+				gap={0}
+				className='module-layout h-screen'
 			>
 				<Header navItems={navItems} />
 				<Group
 					component='div'
 					gap={0}
-					bg={backgroundColor}
 					className='flex-1'
 				>
 					{children}
 				</Group>
-			</Box>
+			</Stack>
 		</ModuleLayoutContext.Provider>
 	);
 };
@@ -79,20 +80,56 @@ const Header: React.FC<{ navItems: NavItem[] }> = ({ navItems }) => {
 	if (isMobile) return null;
 
 	return (
-		<Box
+		<Group
 			component='header'
+			align='center'
+			justify='space-between'
+			gap={0}
 			className={clsx(
-				'w-full h-[50px] shrink-0 z-100',
-				'flex flex-row items-center justify-start',
+				'w-full h-[50px] shrink-0 z-100 px-4',
 				classes.headerRow,
 				classes.menuBar,
 			)}
 		>
-			<Breadcrumbs separatorMargin='xs'>
-				<OrgSwitchDropdown dropdownWidth={300} />
-				<ModuleSwitchDropdown dropdownWidth={300} />
-			</Breadcrumbs>
-			<MenuBar items={navItems} />
-		</Box>
+			<Group
+				component='section'
+				align='center'
+				justify='flex-start'
+				gap={0}
+				className={'flex flex-row items-center justify-start'}
+			>
+				<Breadcrumbs separatorMargin='xs'>
+					<OrgSwitchDropdown dropdownWidth={300} />
+					<ModuleSwitchDropdown dropdownWidth={300} />
+				</Breadcrumbs>
+				<MenuBar items={navItems} />
+			</Group>
+			<Group
+				component='section'
+				align='center'
+				justify='flex-end'
+				gap='sm'
+			>
+				<ThemeSwitcher />
+				<ActionIcon variant='subtle' size='compact-md'>
+					<Avatar size={50} />
+				</ActionIcon>
+			</Group>
+		</Group>
+	);
+};
+
+const ThemeSwitcher: React.FC = () => {
+	const { colorScheme, setColorScheme } = useMantineColorScheme();
+	return (
+		<Button
+			variant='subtle'
+			size='compact-md'
+			rightSection={<IconChevronDown size={20} />}
+		>
+			{/* <IconPalette /> */}
+			{(colorScheme === 'dark') && <IconMoonStars onClick={() => setColorScheme('light')} />}
+			{(colorScheme === 'light') && <IconSun onClick={() => setColorScheme('dark')} />}
+		</Button>
 	);
 };

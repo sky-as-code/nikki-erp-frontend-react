@@ -33,7 +33,7 @@ export const OrgSwitchDropdown: React.FC<OrgSwitchDropdownProps> = (props) => {
 			searchPlaceholder='Search organization'
 			unselectedPlaceholder='Select organization'
 			targetClass='box-content'
-			targetColor='#000'
+			// targetColor='#000'
 			targetFz='h2'
 			targetFw='bolder'
 			targetPb='xs'
