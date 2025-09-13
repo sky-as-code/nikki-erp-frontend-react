@@ -1,27 +1,17 @@
-import type { AuthData } from '@modules/core/auth/storageManager';
+import { Organization, User } from '../types';
 
-import { post } from '@/common/request';
 import { ApiResult } from '@/types/common';
-
 
 export type LoginUserResult = {
 	token: string;
-	user: {
-		id: string;
-		email: string;
-		name: string;
-		avatar?: string;
-	};
-	orgs: Organization[];
+	user?: User;
+	orgs?: Organization[];
 };
 
-type Organization = {
-	id: string;
-	name: string;
-	slug: string;
-};
-
-export async function loginUser(credentials: { email: string; password: string }): Promise<ApiResult<LoginUserResult>> {
+export async function loginUser(credentials: {
+	email: string;
+	password: string;
+}): Promise<ApiResult<LoginUserResult>> {
 	return {
 		data: {
 			token: 'test',
@@ -32,16 +22,10 @@ export async function loginUser(credentials: { email: string; password: string }
 			},
 		},
 	} as ApiResult<LoginUserResult>;
+}
 
-	// let response: ApiResult<LoginUserResult> = {};
-	// try {
-	// 	response = await post<ApiResult<LoginUserResult>>('/auth/login', {
-	// 		json: credentials,
-	// 	});
-	// }
-	// catch (error) {
-	// 	response.errors = Array(String(error));
-	// }
-
-	// return response;
+export async function logoutUser(): Promise<ApiResult<void>> {
+	return {
+		data: undefined,
+	} as ApiResult<void>;
 }

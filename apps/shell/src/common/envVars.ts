@@ -12,11 +12,9 @@ import {
 } from '@tabler/icons-react';
 import { z } from 'zod';
 
-
 import { EnvVars } from '../types/envVars';
 
 import type { NavItem } from '@/types/navItem';
-
 
 const envVarPrefix = 'NKPUBLIC_';
 
@@ -32,9 +30,11 @@ export function loadEnvVars(): Readonly<EnvVars> {
 
 	const envSchema = z.object({
 		BASE_API_URL: z.string().url(),
-		ROOT_PATH: z.string()
+		ROOT_PATH: z
+			.string()
 			.regex(/^(\/?[a-zA-Z0-9\-._~%!$&'()*+,;=:@]+)*\/?$/)
-			.optional().default('')
+			.optional()
+			.default('')
 			.transform((val) => {
 				if (val === '' || val === '/') return '';
 				// Add starting slash if not present,
@@ -43,7 +43,11 @@ export function loadEnvVars(): Readonly<EnvVars> {
 			}),
 		ROOT_DOMAIN: z.union([
 			z.literal('localhost'),
-			z.string().regex(/^(?=.{1,253}$)(?!.*[-]{2,})(?!.*\.-)(?!.*-\.)((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$/),
+			z
+				.string()
+				.regex(
+					/^(?=.{1,253}$)(?!.*[-]{2,})(?!.*\.-)(?!.*-\.)((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$/
+				),
 		]),
 	});
 	// const envSchema = z.object({});
@@ -56,10 +60,9 @@ export function loadEnvVars(): Readonly<EnvVars> {
 
 function filterEnvVars() {
 	return Object.fromEntries(
-		Object
-			.entries(process.env)
+		Object.entries(process.env)
 			.filter(([key]) => key.startsWith(envVarPrefix))
-			.map(([key, value]) => [key.replace(envVarPrefix, ''), value]),
+			.map(([key, value]) => [key.replace(envVarPrefix, ''), value])
 	);
 }
 

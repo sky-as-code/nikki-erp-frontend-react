@@ -1,25 +1,33 @@
 'use client';
 
-import { Button, Combobox, ComboboxStore, Input, MantineStyleProps, PopoverWidth, ScrollArea, useCombobox } from '@mantine/core';
+import {
+	Button,
+	Combobox,
+	ComboboxStore,
+	Input,
+	MantineStyleProps,
+	PopoverWidth,
+	ScrollArea,
+	useCombobox,
+} from '@mantine/core';
 import { FC, JSX, useEffect, useState } from 'react';
 
-
 export type SearchableSelectItem = {
-	value: string,
-	label: string,
+	value: string;
+	label: string;
 };
 
 export type SearchableSelectProps = {
-	actionOptionLabel?: string,
-	dropdownWidth?: PopoverWidth,
-	items: SearchableSelectItem[],
-	searchBoxEnabledAt?: number, // Show search box when there are more than this number of items
-	searchPlaceholder?: string,
-	scrollAreaHeight?: MantineStyleProps['mah'],
-	triggerComponent?: typeof Button,
-	unselectedPlaceholder?: string,
-	value?: string | null,
-	onChange?: (value: string) => void,
+	actionOptionLabel?: string;
+	dropdownWidth?: PopoverWidth;
+	items: SearchableSelectItem[];
+	searchBoxEnabledAt?: number; // Show search box when there are more than this number of items
+	searchPlaceholder?: string;
+	scrollAreaHeight?: MantineStyleProps['mah'];
+	triggerComponent?: typeof Button;
+	unselectedPlaceholder?: string;
+	value?: string | null;
+	onChange?: (value: string) => void;
 };
 
 /**
@@ -31,8 +39,10 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 		searchBoxEnabledAt: rawProps.searchBoxEnabledAt ?? 5,
 	};
 	const { value: activeValue } = props;
-	const isSearchBoxEnabled = props.items.length >= Number(props.searchBoxEnabledAt);
-	const { search, setSearch, activeItem, setActiveItem, combobox } = useSearchSelect(isSearchBoxEnabled);
+	const isSearchBoxEnabled =
+		props.items.length >= Number(props.searchBoxEnabledAt);
+	const { search, setSearch, activeItem, setActiveItem, combobox } =
+		useSearchSelect(isSearchBoxEnabled);
 
 	useEffect(() => {
 		let selectedItem: SearchableSelectItem | undefined;
@@ -43,9 +53,15 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 	}, [activeValue, props.items]);
 
 	const options = props.items
-		.filter(item => item.label?.toLowerCase().includes(search.toLowerCase().trim()))
-		.map(item => (
-			<Combobox.Option value={item.value} key={item.value} active={item.value === activeValue}>
+		.filter((item) =>
+			item.label?.toLowerCase().includes(search.toLowerCase().trim())
+		)
+		.map((item) => (
+			<Combobox.Option
+				value={item.value}
+				key={item.value}
+				active={item.value === activeValue}
+			>
 				{item.label || item.value}
 			</Combobox.Option>
 		));
@@ -83,7 +99,9 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 
 function useSearchSelect(isSearchBoxEnabled: boolean) {
 	const [search, setSearch] = useState('');
-	const [activeItem, setActiveItem] = useState<SearchableSelectItem | null | undefined>(null);
+	const [activeItem, setActiveItem] = useState<
+		SearchableSelectItem | null | undefined
+	>(null);
 
 	const combobox = useCombobox({
 		onDropdownClose: () => {
@@ -103,17 +121,17 @@ function useSearchSelect(isSearchBoxEnabled: boolean) {
 	});
 
 	return { search, setSearch, activeItem, setActiveItem, combobox };
-};
+}
 
 function findItem(items: SearchableSelectItem[], value: string) {
-	return items.find(item => item.value === value);
+	return items.find((item) => item.value === value);
 }
 
 type ComboboxTargetProps = {
 	value?: string | null;
-	combobox: ComboboxStore,
-	triggerComponent?: typeof Button,
-	unselectedPlaceholder?: string,
+	combobox: ComboboxStore;
+	triggerComponent?: typeof Button;
+	unselectedPlaceholder?: string;
 };
 
 const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
@@ -126,21 +144,25 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 				rightSection={<Combobox.Chevron />}
 				onClick={() => combobox.toggleDropdown()}
 			>
-				{value || <Input.Placeholder>{props.unselectedPlaceholder ?? 'No item selected'}</Input.Placeholder>}
+				{value || (
+					<Input.Placeholder>
+						{props.unselectedPlaceholder ?? 'No item selected'}
+					</Input.Placeholder>
+				)}
 			</TriggerComponent>
 		</Combobox.Target>
 	);
 };
 
 type ComboboxDropdownProps = {
-	actionOptionLabel?: string,
-	search: string,
-	searchBoxEnabledAt?: number, // Show search box when there are more than this number of items
-	searchPlaceholder?: string,
-	setSearch: (value: string) => void,
-	scrollAreaHeight?: MantineStyleProps['mah'],
-	totalOptsCount: number, // Number of options without applied search/filter
-	options: JSX.Element[],
+	actionOptionLabel?: string;
+	search: string;
+	searchBoxEnabledAt?: number; // Show search box when there are more than this number of items
+	searchPlaceholder?: string;
+	setSearch: (value: string) => void;
+	scrollAreaHeight?: MantineStyleProps['mah'];
+	totalOptsCount: number; // Number of options without applied search/filter
+	options: JSX.Element[];
 };
 
 const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
@@ -154,10 +176,21 @@ const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
 				/>
 			)}
 			<Combobox.Options>
-				<ScrollArea.Autosize type='scroll' mah={props.scrollAreaHeight ?? '50vh'}>
-					{props.actionOptionLabel && <Combobox.Option value='$$action$$'>{props.actionOptionLabel}</Combobox.Option>}
+				<ScrollArea.Autosize
+					type='scroll'
+					mah={props.scrollAreaHeight ?? '50vh'}
+				>
+					{props.actionOptionLabel && (
+						<Combobox.Option value='$$action$$'>
+							{props.actionOptionLabel}
+						</Combobox.Option>
+					)}
 					<Combobox.Group label=' '>
-						{props.options.length > 0 ? props.options : <Combobox.Empty>Nothing found</Combobox.Empty>}
+						{props.options.length > 0 ? (
+							props.options
+						) : (
+							<Combobox.Empty>Nothing found</Combobox.Empty>
+						)}
 					</Combobox.Group>
 				</ScrollArea.Autosize>
 			</Combobox.Options>

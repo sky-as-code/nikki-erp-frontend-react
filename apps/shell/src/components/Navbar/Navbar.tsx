@@ -20,7 +20,7 @@ export function Navbar({ data }: Props) {
 	return (
 		<>
 			<div className={classes.header}>
-				<SearchableSelect />
+				<SearchableSelect items={[]} />
 			</div>
 
 			<ScrollArea className={classes.links}>

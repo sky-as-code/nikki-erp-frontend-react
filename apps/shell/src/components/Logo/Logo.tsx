@@ -18,7 +18,7 @@ export const Logo: React.FC<Props> = () => {
 			<Link
 				href='/'
 				style={{ textDecoration: 'none' }}
-				className={cls(classes.heading, 'flex flex-row')}
+				className={cls(classes.heading, 'flex flex-row items-center gap-1')}
 			>
 				<IconCircleDottedLetterN size={34} />
 				<Text fw='bolder' size='xl'>

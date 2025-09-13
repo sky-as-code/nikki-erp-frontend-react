@@ -13,9 +13,8 @@ import { LayoutHeader } from '@/components/LayoutHeader/LayoutHeader';
 import { Navbar } from '@/components/Navbar/Navbar';
 import { NavItem } from '@/types/navItem';
 
-
 export type ModuleLayoutProps = React.PropsWithChildren<{
-	navItems: NavItem[]
+	navItems: NavItem[];
 }>;
 
 export const ModuleLayout: React.FC<ModuleLayoutProps> = ({
@@ -25,8 +24,9 @@ export const ModuleLayout: React.FC<ModuleLayoutProps> = ({
 	const [opened, { toggle }] = useDisclosure();
 	const { colorScheme } = useMantineColorScheme();
 	const theme = useMantineTheme();
+	const bg =
+		colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
 
-	const bg = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
 	return (
 		<AppShell
 			header={{ height: 50 }}
@@ -40,11 +40,7 @@ export const ModuleLayout: React.FC<ModuleLayoutProps> = ({
 			transitionTimingFunction='ease'
 		>
 			<NavigationBar data={navItems} />
-			<Header
-				opened={opened}
-				toggle={toggle}
-				navItems={navItems}
-			/>
+			<Header opened={opened} toggle={toggle} navItems={navItems} />
 			<AppShell.Main bg={bg}>{children}</AppShell.Main>
 			<Footer />
 		</AppShell>
@@ -57,11 +53,11 @@ const NavigationBar: React.FC<{ data: NavItem[] }> = ({ data }) => (
 	</AppShell.Navbar>
 );
 
-const Header: React.FC<{ opened: boolean, toggle: () => void, navItems: NavItem[] }> = ({
-	opened,
-	toggle,
-	navItems,
-}) => (
+const Header: React.FC<{
+	opened: boolean;
+	toggle: () => void;
+	navItems: NavItem[];
+}> = ({ opened, toggle, navItems }) => (
 	<AppShell.Header>
 		<LayoutHeader
 			burger={

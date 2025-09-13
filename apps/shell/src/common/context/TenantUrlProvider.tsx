@@ -1,10 +1,10 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
+import { Organization } from '@modules/core/types';
+import { notFound, useRouter, usePathname } from 'next/navigation';
 import React, { createContext, useContext, useEffect } from 'react';
 
 import { useConfig } from '@/modules/core/ConfigProvider/ConfigProvider';
-
 
 type TenantUrlContextType = {
 	subdomain: string | null;
@@ -16,13 +16,20 @@ type TenantUrlContextType = {
 	getModulePath: () => string;
 };
 
-const TenantUrlContext = createContext<TenantUrlContextType | undefined>(undefined);
+const TenantUrlContext = createContext<TenantUrlContextType | undefined>(
+	undefined
+);
 
 export const useTenantUrl = () => {
 	const context = useContext(TenantUrlContext);
-	if (!context) throw new Error('useTenantUrl must be used within TenantUrlProvider');
+	if (!context)
+		throw new Error('useTenantUrl must be used within TenantUrlProvider');
 	return context;
 };
+
+function findOrg(orgs: Organization[], slug: string): Organization | null {
+	return orgs.find((org) => org.slug === slug) ?? null;
+}
 
 export type TenantUrlProviderProps = React.PropsWithChildren;
 
@@ -32,10 +39,8 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 	// const fullPath = window.location.pathname;
 	const fullPath = usePathname();
 	const router = useRouter();
-	const {
-		envVars, activeOrg,
-		setActiveOrg, setActiveModule,
-	} = useConfig();
+	const { envVars, activeOrg, setActiveOrg, setActiveModule, userSettings } =
+		useConfig();
 	const appPath = AppPath.fromFullPath(fullPath, envVars.ROOT_PATH);
 
 	const subdomain = extractAndValidateSubdomain(envVars.ROOT_DOMAIN, router);
@@ -50,7 +55,9 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 	};
 
 	useEffect(() => {
-		const foundLastActiveOrg = (activeOrg && activeOrg.slug != appPath.orgSlug);
+		if (!userSettings) return;
+
+		const foundLastActiveOrg = activeOrg && activeOrg.slug != appPath.orgSlug;
 		// This case applies when user accesses root path "/"
 		if (foundLastActiveOrg) {
 			appPath.orgSlug = activeOrg?.slug;
@@ -59,9 +66,15 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 		// This case applies after user was redirected to org path "/org-slug",
 		// either by above `redirectToOrgPage` call or by successful login.
 		else if (!activeOrg) {
-			setActiveOrg(appPath.orgSlug);
+			// setActiveOrg(appPath.orgSlug);
+			const allOrgs = userSettings?.orgs ?? [];
+			const org = findOrg(allOrgs, appPath.orgSlug);
+			if (!org) {
+				notFound();
+			}
+			setActiveOrg(org.slug);
 		}
-	}, []);
+	}, [userSettings]);
 
 	useEffect(() => {
 		appPath.moduleSlug && setActiveModule(appPath.moduleSlug);
@@ -76,7 +89,7 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 
 function extractAndValidateSubdomain(
 	rootHostname: string,
-	router: ReturnType<typeof useRouter>,
+	router: ReturnType<typeof useRouter>
 ) {
 	const hostname = window.location.hostname;
 	const subdomain = extractSubdomain(hostname, rootHostname);
@@ -96,8 +109,11 @@ function extractAndValidateSubdomain(
 // Also for multitenant SaaSFor but a tenant is using custom domain name:
 // * If corporatedomain.com, return corporatedomain.com
 // * If corporatedomain.com.vn, return corporatedomain.com.vn
-function extractSubdomain(hostname: string, rootHostname: string): string | null {
-	const isCustomDomain = (hostname === rootHostname);
+function extractSubdomain(
+	hostname: string,
+	rootHostname: string
+): string | null {
+	const isCustomDomain = hostname === rootHostname;
 	if (isCustomDomain) return hostname;
 
 	rootHostname = `.${rootHostname}`;
@@ -140,7 +156,7 @@ function redirectToOrgPage(appPath: AppPath) {
 		// Do a full reload to new path
 		location.assign(newPath.toString());
 	};
-};
+}
 
 function redirectToModulePage(appPath: AppPath) {
 	return (modSlug: string | null) => {
@@ -152,7 +168,7 @@ function redirectToModulePage(appPath: AppPath) {
 		// Do a full reload to new path
 		location.assign(newPath.toString());
 	};
-};
+}
 
 class AppPath {
 	static fromFullPath(fullPath: string, rootPath: string): AppPath {
@@ -171,7 +187,7 @@ class AppPath {
 	constructor(
 		public rootPath: string,
 		public orgSlug: string,
-		public moduleSlug: string,
+		public moduleSlug: string
 	) {}
 
 	public clone(): AppPath {

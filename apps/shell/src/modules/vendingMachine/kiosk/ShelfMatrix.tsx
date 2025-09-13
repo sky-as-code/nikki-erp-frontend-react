@@ -1,9 +1,8 @@
 'use client';
 
 import { ActionIcon, Anchor, Avatar, Group, Stack, Text } from '@mantine/core';
-import { IconCircleFilled, IconPencil, IconTrash } from '@tabler/icons-react';
+import { IconPencil, IconTrash } from '@tabler/icons-react';
 import {
-	Column,
 	ColumnDef,
 	createColumnHelper,
 	flexRender,
@@ -84,6 +83,7 @@ function createColumnDef(colIdx: number): ColumnDef<KioskSlot[]> {
 	return {
 		id: 'col-' + colIdx,
 		header: String(colIdx),
+
 		cell: (props) => {
 			// const row = props.row[props.rowIdx];
 			const { row: { index : rowIdx } } = props;
@@ -131,6 +131,7 @@ for (let i = 0; i < 10; ++i) {
 }
 
 
+// eslint-disable-next-line max-lines-per-function
 export const ShelfMatrix: React.FC = () => {
 	const maxCols = 10;
 	const columnDef: ColumnDef<KioskSlot[]>[] = [
@@ -158,7 +159,11 @@ export const ShelfMatrix: React.FC = () => {
 					{table.getHeaderGroups().map(headerGroup => (
 						<tr key={headerGroup.id}>
 							{headerGroup.headers.map(header => (
-								<th key={header.id} className='text-center p-2 min-w-[145px]'>
+								<th key={header.id}
+									className={clsx(
+										'text-center p-2 min-w-[145px]',
+										{'sticky left-0 !bg-white !z-20': header.index === 0},
+									)}>
 									{header.isPlaceholder
 										? null
 										: flexRender(
@@ -179,6 +184,9 @@ export const ShelfMatrix: React.FC = () => {
 									{
 										[classes.warningSlot]: row.index == 1 && cell.column.getIndex() == 1,
 									},
+									{
+										['sticky left-0 !z-10 !bg-white']: cell.column.getIndex() === 0,
+									}
 								)}>
 									{flexRender(cell.column.columnDef.cell, cell.getContext())}
 								</td>

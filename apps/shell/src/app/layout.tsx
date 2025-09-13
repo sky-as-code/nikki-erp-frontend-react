@@ -12,7 +12,6 @@ import { initRequestMaker } from '@/common/request';
 import { LoadingSpinner } from '@/components/loading';
 import { inter } from '@/styles/fonts';
 
-
 export const metadata: Metadata = {
 	metadataBase: new URL('https://mantine-admin.vercel.app/'),
 	title: { default: 'Mantine Admin', template: '%s | Mantine Admin' },
@@ -27,17 +26,23 @@ export const metadata: Metadata = {
 		'Admin Panel',
 		'Admin UI',
 	],
-	authors: [{
-		name: 'jotyy',
-		url: 'https://jotyy.vercel.app',
-	}],
+	authors: [
+		{
+			name: 'jotyy',
+			url: 'https://jotyy.vercel.app',
+		},
+	],
 	creator: 'jotyy',
 	manifest: 'https://mantine-admin.vercel.app/site.webmanifest',
 };
 
-export default function RootLayout({children}: { children: React.ReactNode }) {
+export default function RootLayout({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
 	const envVars = loadEnvVars();
-	initRequestMaker({baseUrl: envVars.BASE_API_URL});
+	initRequestMaker({ baseUrl: envVars.BASE_API_URL });
 	return (
 		<html lang='en-US' {...mantineHtmlProps}>
 			<head>

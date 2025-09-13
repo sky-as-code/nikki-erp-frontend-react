@@ -4,7 +4,7 @@ import { type AuthProvider } from '@refinedev/core';
 import axios from '@/common/axios';
 
 const authProvider: AuthProvider = {
-	login: async ({ email, password }) => {
+	login: async ({ email, password } : { email: string; password: string }) => {
 		try {
 			const response = await axios.instance().post<AuthData>('/auth/login', {
 				email,

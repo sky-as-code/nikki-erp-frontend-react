@@ -11,7 +11,6 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-
 export default defineConfig([
 	// Base configurations
 	js.configs.recommended,
@@ -20,12 +19,15 @@ export default defineConfig([
 	// Common rules for all files
 	{
 		rules: {
-			'max-lines-per-function': ['warn', {
-				max: 30,
-				skipBlankLines: true,
-				skipComments: true,
-				IIFEs: true,
-			}],
+			'max-lines-per-function': [
+				'warn',
+				{
+					max: 30,
+					skipBlankLines: true,
+					skipComments: true,
+					IIFEs: true,
+				},
+			],
 		},
 	},
 
@@ -34,29 +36,40 @@ export default defineConfig([
 	{
 		plugins: { '@stylistic': stylistic },
 		rules: {
-			'@stylistic/brace-style': ['error', 'stroustrup', { 'allowSingleLine': true }],
-			'@stylistic/comma-dangle': ['error', 'always-multiline'],
-			'@stylistic/comma-spacing': ['error', { 'before': false, 'after': true }],
+			'@stylistic/brace-style': [
+				'error',
+				'stroustrup',
+				{ allowSingleLine: true },
+			],
+			// '@stylistic/comma-dangle': ['error', 'always-multiline'],
+			'@stylistic/comma-spacing': ['error', { before: false, after: true }],
 			'@stylistic/comma-style': ['error', 'last'],
 			'@stylistic/indent': ['error', 'tab'],
 			'@stylistic/jsx-quotes': ['error', 'prefer-single'],
-			'@stylistic/max-len': ['error', {
-				code: 120,
-				tabWidth: 4,
-				ignoreUrls: true,
-				ignoreComments: true,
-				ignoreStrings: true,
-				ignoreTemplateLiterals: true,
-				ignoreRegExpLiterals: true,
-			}],
+			'@stylistic/max-len': [
+				'error',
+				{
+					code: 120,
+					tabWidth: 4,
+					ignoreUrls: true,
+					ignoreComments: true,
+					ignoreStrings: true,
+					ignoreTemplateLiterals: true,
+					ignoreRegExpLiterals: true,
+				},
+			],
 			'@stylistic/no-mixed-spaces-and-tabs': 'error',
 			'@stylistic/no-trailing-spaces': 'error',
-			'@stylistic/quotes': ['error', 'single', {
-				'avoidEscape': true,
-				'allowTemplateLiterals': true,
-			}],
+			'@stylistic/quotes': [
+				'error',
+				'single',
+				{
+					avoidEscape: true,
+					allowTemplateLiterals: true,
+				},
+			],
 			'@stylistic/semi': ['error', 'always'],
-			'@stylistic/space-infix-ops': ['error', { 'int32Hint': true }],
+			'@stylistic/space-infix-ops': ['error', { int32Hint: true }],
 		},
 	},
 
@@ -88,16 +101,21 @@ export default defineConfig([
 		plugins: { import: importPlugin },
 		rules: {
 			'import/no-anonymous-default-export': 'warn',
-			'import/order': ['error', {
-				'alphabetize': {
-					'order': 'asc',
-					'caseInsensitive': true,
+			'import/order': [
+				'error',
+				{
+					alphabetize: {
+						order: 'asc',
+						caseInsensitive: true,
+					},
+					'newlines-between': 'always',
 				},
-				'newlines-between': 'always',
-			}],
+			],
 		},
 		settings: {
-			'import/parsers': { '@typescript-eslint/parser': ['.ts', '.tsx', '.d.ts'] },
+			'import/parsers': {
+				'@typescript-eslint/parser': ['.ts', '.tsx', '.d.ts'],
+			},
 			'import/resolver': {
 				node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
 				typescript: { alwaysTryTypes: true },
@@ -161,12 +179,15 @@ export default defineConfig([
 	{
 		files: ['**/*.jsx', '**/*.tsx'],
 		rules: {
-			'max-lines-per-function': ['warn', {
-				max: 50,
-				skipBlankLines: true,
-				skipComments: true,
-				IIFEs: true,
-			}],
+			'max-lines-per-function': [
+				'warn',
+				{
+					max: 70,
+					skipBlankLines: true,
+					skipComments: true,
+					IIFEs: true,
+				},
+			],
 		},
 	},
 

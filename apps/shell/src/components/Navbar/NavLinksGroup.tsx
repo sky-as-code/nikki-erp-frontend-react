@@ -1,4 +1,3 @@
-import { useTenantUrl } from '@common/context/TenantUrlProvider';
 import {
 	Box,
 	Collapse,
@@ -13,6 +12,8 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import classes from './NavLinksGroup.module.css';
+
+import { useTenantUrl } from '@/common/context/TenantUrlProvider';
 
 interface LinkItemProps {
 	label: string;
@@ -63,7 +64,12 @@ export function NavLinksGroup({
 	return (
 		<>
 			{link ? (
-				<NavLink icon={icon} label={label} link={getFullPath(link)} pathname={pathname} />
+				<NavLink
+					icon={icon}
+					label={label}
+					link={getFullPath(link)}
+					pathname={pathname}
+				/>
 			) : (
 				<ControlButton
 					icon={icon}
@@ -111,7 +117,13 @@ const ChevronButton = ({ opened, dir }: { opened: boolean; dir: string }) => {
 	);
 };
 
-const ControlButton = ({ icon, label, opened, hasLinks, onClick }: ControlButtonProps) => {
+const ControlButton = ({
+	icon,
+	label,
+	opened,
+	hasLinks,
+	onClick,
+}: ControlButtonProps) => {
 	const { dir } = useDirection();
 	return (
 		<UnstyledButton onClick={onClick} className={classes.control}>
@@ -123,10 +135,17 @@ const ControlButton = ({ icon, label, opened, hasLinks, onClick }: ControlButton
 	);
 };
 
-const NavLink = ({ link, pathname, icon, label }: NavLinksGroupProps & { pathname: string }) => (
+const NavLink = ({
+	link,
+	pathname,
+	icon,
+	label,
+}: NavLinksGroupProps & { pathname: string }) => (
 	<Link
 		href={link!}
-		className={`${classes.control} ${link === pathname && classes.activeControl}`}
+		className={`${classes.control} ${
+			link === pathname && classes.activeControl
+		}`}
 	>
 		<Group gap={0} justify='space-between'>
 			<IconBox icon={icon} label={label} />

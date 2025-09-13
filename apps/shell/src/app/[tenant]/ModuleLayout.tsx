@@ -1,7 +1,9 @@
 'use client';
 
-import { ActionIcon, Avatar, Breadcrumbs, Button, Group, Stack, useMantineColorScheme } from '@mantine/core';
-import { IconChevronDown, IconMoonStars, IconPalette, IconSun } from '@tabler/icons-react';
+import { ThemeSwitcher } from '@common/components/ThemeSwitcher/ThemeSwitcher';
+import { UserAvatar } from '@common/components/UserAvatar/UserAvatar';
+import { Logo } from '@components/Logo/Logo';
+import { Breadcrumbs, Group, Stack } from '@mantine/core';
 import clsx from 'clsx';
 import { createContext, useContext, useState } from 'react';
 
@@ -13,18 +15,20 @@ import { ModuleSwitchDropdown } from '@/modules/core/organization/ModuleSwitchDr
 import { OrgSwitchDropdown } from '@/modules/core/organization/OrgSwitchDropdown';
 import { NavItem } from '@/types/navItem';
 
-
 export type LayoutSplitMode = '3_7' | '1_9' | '10_0' | '0_10';
 
 export type ModuleLayoutContextType = {
-	is3_7: boolean,
-	is1_9: boolean,
-	is0_10: boolean,
-	is10_0: boolean,
-	setSplitMode: (mode: LayoutSplitMode) => void,
+	is3_7: boolean;
+	is1_9: boolean;
+	is0_10: boolean;
+	is10_0: boolean;
+	setSplitMode: (mode: LayoutSplitMode) => void;
+	splitRequest: any;
 };
 
-const ModuleLayoutContext = createContext<ModuleLayoutContextType | undefined>(undefined);
+const ModuleLayoutContext = createContext<ModuleLayoutContextType | undefined>(
+	undefined
+);
 
 export const useModuleLayout = (): ModuleLayoutContextType => {
 	const context = useContext(ModuleLayoutContext);
@@ -51,6 +55,7 @@ export const ModuleLayout: React.FC<ModuleLayoutProps> = ({
 		is0_10: splitMode === '0_10',
 		is10_0: splitMode === '10_0',
 		setSplitMode,
+		splitRequest: null,
 	};
 
 	return (
@@ -62,11 +67,7 @@ export const ModuleLayout: React.FC<ModuleLayoutProps> = ({
 				className='module-layout h-screen'
 			>
 				<Header navItems={navItems} />
-				<Group
-					component='div'
-					gap={0}
-					className='flex-1'
-				>
+				<Group component='div' gap={0} className='flex-1'>
 					{children}
 				</Group>
 			</Stack>
@@ -88,7 +89,7 @@ const Header: React.FC<{ navItems: NavItem[] }> = ({ navItems }) => {
 			className={clsx(
 				'w-full h-[50px] shrink-0 z-100 px-4',
 				classes.headerRow,
-				classes.menuBar,
+				classes.menuBar
 			)}
 		>
 			<Group
@@ -99,37 +100,16 @@ const Header: React.FC<{ navItems: NavItem[] }> = ({ navItems }) => {
 				className={'flex flex-row items-center justify-start'}
 			>
 				<Breadcrumbs separatorMargin='xs'>
+					<Logo />
 					<OrgSwitchDropdown dropdownWidth={300} />
 					<ModuleSwitchDropdown dropdownWidth={300} />
 				</Breadcrumbs>
 				<MenuBar items={navItems} />
 			</Group>
-			<Group
-				component='section'
-				align='center'
-				justify='flex-end'
-				gap='sm'
-			>
+			<Group component='section' align='center' justify='flex-end' gap='sm'>
 				<ThemeSwitcher />
-				<ActionIcon variant='subtle' size='compact-md'>
-					<Avatar size={50} />
-				</ActionIcon>
+				<UserAvatar />
 			</Group>
 		</Group>
-	);
-};
-
-const ThemeSwitcher: React.FC = () => {
-	const { colorScheme, setColorScheme } = useMantineColorScheme();
-	return (
-		<Button
-			variant='subtle'
-			size='compact-md'
-			rightSection={<IconChevronDown size={20} />}
-		>
-			{/* <IconPalette /> */}
-			{(colorScheme === 'dark') && <IconMoonStars onClick={() => setColorScheme('light')} />}
-			{(colorScheme === 'light') && <IconSun onClick={() => setColorScheme('dark')} />}
-		</Button>
 	);
 };

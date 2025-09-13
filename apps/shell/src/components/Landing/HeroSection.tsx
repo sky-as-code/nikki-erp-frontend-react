@@ -12,9 +12,9 @@ export function HeroSection() {
 	return (
 		<Container pt='sm' size='lg' className={classes.wrapper}>
 			<div className={classes.inner}>
-				<Title className={classes.title}>MantineAdmin</Title>
+				<Title className={classes.title}>NikkiERP</Title>
 				<Title className={classes.subtitle}>
-					Modern Admin Dashboard Template Built with Next.js 14 and Mantine UI
+					Modern ERP for the modern enterprise
 				</Title>
 
 				<Group mt={60}>
@@ -24,7 +24,7 @@ export function HeroSection() {
 						gradient={{ from: 'primary', to: 'pink' }}
 						className={classes.control}
 						onClick={() => {
-							router.push('/dashboard');
+							router.push('/bananas');
 						}}
 						rightSection={<IconArrowRight size={16} />}
 					>
@@ -35,10 +35,6 @@ export function HeroSection() {
 						color='dark'
 						size='lg'
 						className={classes.control}
-						onClick={() => {
-							// open github
-							window.open('https://github.com/jotyy/mantine-admin');
-						}}
 						rightSection={<IconStar size={16} />}
 					>
 						Give a Star

@@ -1,13 +1,12 @@
 import type { TablerIcon } from '@tabler/icons-react';
 
-
 export type NavItem = {
 	label: string;
 
 	/**
 	 * Icon only appears for top-level items
 	 */
-	icon: TablerIcon;
+	icon?: TablerIcon;
 
 	/**
 	 * Icon only appears for top-level items

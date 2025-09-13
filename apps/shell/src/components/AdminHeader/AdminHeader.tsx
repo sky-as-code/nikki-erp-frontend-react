@@ -3,8 +3,8 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconSearch, IconSettings } from '@tabler/icons-react';
 
 
+import { ThemeSwitcher } from '../../common/components/ThemeSwitcher/ThemeSwitcher';
 import { DirectionSwitcher } from '../directionSwitcher/DirectionSwitcher';
-import { ThemeSwitcher } from '../ThemeSwitcher/ThemeSwitcher';
 
 import classes from './AdminHeader.module.css';
 
