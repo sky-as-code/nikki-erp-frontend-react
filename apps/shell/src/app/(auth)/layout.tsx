@@ -6,7 +6,7 @@ interface Props {
 
 export default function AuthLayout({ children }: Props) {
 	return (
-		<Box className='w-full h-screen dark:text-[--mantine-colors-dark] flex flex-col items-center justify-center'>
+		<Box className='w-full h-screen dark:text-[--mantine-colors-dark] flex flex-col items-center justify-center overflow-auto' p='lg'>
 			{children}
 		</Box>
 	);

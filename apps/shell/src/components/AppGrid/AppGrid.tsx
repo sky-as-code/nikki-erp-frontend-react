@@ -12,6 +12,7 @@ import {
 	IconBarcode, IconTool, IconHammer, IconUserCircle, IconUserSquare,
 	IconReceipt2, IconStars, IconCoins, IconSearch, IconArrowBack,
 	IconClockPause, IconCircleDottedLetterN, IconSettings,
+	IconDeviceImacCog,
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { FC } from 'react';
@@ -64,10 +65,12 @@ const apps: NikkiModule[] = [
 	{ icon: IconArrowBack, label: 'Referrals', slug: 'referrals', color: 'pink' },
 	{ icon: IconClockPause, label: 'Time Off', slug: 'time-off', color: 'orange' },
 	{ icon: IconReceipt2, label: 'Expenses', slug: 'expenses', color: 'blue' },
+	{ icon: IconDeviceImacCog, label: 'Vending Machine', slug: 'vending-machine', color: 'teal' },
 ];
 
 export const AppGrid: FC = () => {
 	const { orgSlug: org } = useTenantUrl();
+
 	return (
 		<SimpleGrid
 			cols={{ base: 2, sm: 4, md: 6 }}

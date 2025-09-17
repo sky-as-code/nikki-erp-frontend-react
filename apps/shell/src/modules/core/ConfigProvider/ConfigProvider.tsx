@@ -11,6 +11,7 @@ import {
 	IconBarcode, IconTool, IconHammer, IconUserCircle, IconUserSquare,
 	IconReceipt2, IconStars, IconCoins, IconSearch, IconArrowBack,
 	IconClockPause, IconSettings,
+	IconDeviceImacCog,
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -271,4 +272,5 @@ const modules: NikkiModule[] = [
 	{ icon: IconArrowBack, label: 'Referrals', slug: 'referrals', color: 'pink' },
 	{ icon: IconClockPause, label: 'Time Off', slug: 'time-off', color: 'orange' },
 	{ icon: IconReceipt2, label: 'Expenses', slug: 'expenses', color: 'blue' },
+	{ icon: IconDeviceImacCog, label: 'Vending Machine', slug: 'vending-machine', color: 'teal' },
 ];

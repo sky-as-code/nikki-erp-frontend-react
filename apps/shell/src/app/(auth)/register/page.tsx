@@ -6,7 +6,11 @@ export const revalidate = 60;
 
 export default function Register() {
 	return (
-		<>
+		<Box
+			className='w-full max-w-[400px]'
+			px='md'
+			mx='auto'
+		>
 			<Title order={1} fw='bolder'>
 				Mantine Admin
 			</Title>
@@ -19,6 +23,6 @@ export default function Register() {
 			<Box w={400}>
 				<RegisterForm />
 			</Box>
-		</>
+		</Box>
 	);
 }

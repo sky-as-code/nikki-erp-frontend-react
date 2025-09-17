@@ -29,3 +29,12 @@ export async function logoutUser(): Promise<ApiResult<void>> {
 		data: undefined,
 	} as ApiResult<void>;
 }
+
+
+export async function createLoginAttempt({ email } : { email: string }): Promise<ApiResult<{ attemptId: string }>> {
+	return {
+		data: {
+			attemptId: 'attemptId',
+		},
+	} as ApiResult<{ attemptId: string }>;
+}
