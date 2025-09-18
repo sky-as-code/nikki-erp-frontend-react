@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState } from 'react';
 
-import { getAuthData, setAuthData, clearAuthData, type AuthData } from './storageManager';
+import { getAuthData, setAuthData, clearAuthData, type AuthData } from '../services/storageManager';
 
 
 type AuthContextType = {

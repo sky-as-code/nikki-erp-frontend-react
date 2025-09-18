@@ -3,7 +3,7 @@ import kyLib from 'ky';
 import type { KyInstance, Input, Options, KyRequest, ResponsePromise } from 'ky';
 import type { HttpMethod } from 'ky/distribution/types/options';
 
-import { getAuthToken } from '../modules/core/auth/storageManager';
+import { getAuthToken } from '../modules/authenticate/services/storageManager';
 
 export type { Input, Options } from 'ky';
 

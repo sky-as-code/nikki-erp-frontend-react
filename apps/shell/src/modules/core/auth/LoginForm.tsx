@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { loginUser } from './service';
+import { loginUser } from '../../authenticate/services/service';
 
 
 
