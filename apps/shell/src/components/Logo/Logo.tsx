@@ -10,13 +10,14 @@ import classes from './Logo.module.css';
 interface Props {
 	width?: string;
 	height?: string;
+	enableLink?: boolean;
 }
 
-export const Logo: React.FC<Props> = () => {
+export const Logo: React.FC<Props> = ({ enableLink = true }) => {
 	return (
 		<Flex direction='row' align='center' gap={4}>
 			<Link
-				href='/'
+				href={enableLink ? '/' : '#'}
 				style={{ textDecoration: 'none' }}
 				className={cls(classes.heading, 'flex flex-row items-center gap-1')}
 			>

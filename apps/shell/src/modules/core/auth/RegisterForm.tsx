@@ -1,21 +1,28 @@
 'use client';
 
-import { Button, Card, PasswordInput, Space, TextInput } from '@mantine/core';
+import { Box, Button, Text, PasswordInput, Space, TextInput } from '@mantine/core';
 
 export function RegisterForm() {
 	return (
-		<Card withBorder shadow='md' p={30} mt={30} radius='md'>
-			<TextInput label='Email' placeholder='test@example.com' required />
+		<Box>
+			<Text size='xl' mb='md' className='text-center'>
+				Sign Up
+			</Text>
+
+			<TextInput label='Email' placeholder='test@example.com' required mb={'md'} size='md' labelProps={{ className: 'text-gray-600' }} />
 			<PasswordInput
 				label='Password'
+				labelProps={{ className: 'text-gray-600' }}
 				placeholder='Your password'
 				required
-				mt='md'
+				size='md'
+				mb='md'
 			/>
+
 			<Space h='md' />
-			<Button fullWidth mt='xl'>
+			<Button fullWidth mt='md' size='md'>
 				Sign Up
 			</Button>
-		</Card>
+		</Box>
 	);
 }

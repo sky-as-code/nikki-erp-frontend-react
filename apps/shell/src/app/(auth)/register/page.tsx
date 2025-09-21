@@ -1,28 +1,5 @@
-import { Anchor, Box, Text, Title } from '@mantine/core';
-import { RegisterForm } from '@modules/core/auth/RegisterForm';
+'use client';
 
-// NextJS config
-export const revalidate = 60;
+import { RegisterPage } from '@modules/core/auth/RegisterPage';
 
-export default function Register() {
-	return (
-		<Box
-			className='w-full max-w-[400px]'
-			px='md'
-			mx='auto'
-		>
-			<Title order={1} fw='bolder'>
-				Mantine Admin
-			</Title>
-			<Text c='dimmed' size='sm' mt={5}>
-				Already have an account?{' '}
-				<Anchor size='sm' href='/login'>
-					Log In
-				</Anchor>
-			</Text>
-			<Box w={400}>
-				<RegisterForm />
-			</Box>
-		</Box>
-	);
-}
+export default RegisterPage;

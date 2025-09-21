@@ -182,7 +182,7 @@ export default defineConfig([
 			'max-lines-per-function': [
 				'warn',
 				{
-					max: 70,
+					max: 100,
 					skipBlankLines: true,
 					skipComments: true,
 					IIFEs: true,
