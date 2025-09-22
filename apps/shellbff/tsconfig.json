@@ -1,0 +1,45 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"target": "es2024",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"noEmit": false,
+		"outDir": "dist",
+		"baseUrl": ".",
+		"rootDir": ".",
+		// 	"allowJs": true,
+		// 	"alwaysStrict": true,
+		// 	"allowSyntheticDefaultImports": true,
+		// 	"baseUrl": ".",
+		// 	"checkJs": true,
+		// 	"declaration": true,
+		// 	"declarationMap": false,
+		// 	"esModuleInterop": true,
+		// 	"forceConsistentCasingInFileNames": true,
+		// 	"incremental": true,
+		// 	"jsx": "react-jsxdev",
+		// 	"lib": [
+		// 		"DOM",
+		// 		"DOM.Iterable",
+		// 		"ESNext"
+		// 	],
+		// 	"strict": true,
+		// 	"outDir": "dist/app",
+		// 	"module": "ESNext",
+		// 	"moduleResolution": "Node",
+		// 	"skipLibCheck": true,
+		// 	"sourceMap": false,
+		// 	"target": "ESNext"
+		// },
+		// "include": [
+		// 	"api/**/*",
+		// 	"types/*",
+		// 	"server.ts"
+		// ],
+		// "exclude": [
+		// 	"dist",
+		// 	"src/**/*.tsx"
+		// ],
+	}
+}
