@@ -1,5 +1,5 @@
 'use client';
 
-import { LoginPage } from '@modules/core/auth/LoginPage';
+import { LoginPage } from '@/modules/authenticate/components/LoginPage/LoginPage';
 
 export default LoginPage;

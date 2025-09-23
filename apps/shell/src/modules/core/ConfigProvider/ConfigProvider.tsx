@@ -15,7 +15,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../../authenticate/components/AuthProvider';
 import { NikkiModule, Organization, UserPreference, UserSettings } from '../types';
 
 import * as request from '@/common/request';

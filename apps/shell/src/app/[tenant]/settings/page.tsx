@@ -21,7 +21,7 @@ import { data, columns } from '@/components/Table/SimpleTable';
 
 let testCount = 0;
 const SettingsPage: React.FC = () => {
-	const { backgroundColor, setCurrentScreen } = useUIState();
+	const { backgroundColor, screen: { setCurrentScreen } } = useUIState();
 	const { context, Provider } = createTableContext({
 		name: 'settings.users',
 		defaultPageSize: 50,

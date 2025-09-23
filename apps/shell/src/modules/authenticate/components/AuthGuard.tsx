@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { useAuth } from '@/modules/core/auth/AuthProvider';
+import { useAuth } from '@/modules/authenticate/components/AuthProvider';
 
 type AuthGuardProps = {
 	children: React.ReactNode;
