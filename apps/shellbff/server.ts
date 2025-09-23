@@ -6,14 +6,25 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import * as vite from 'vite';
 
 import { router } from './api';
+import * as config from './config';
 
-const isLocal = process.env.NODE_ENV === 'local';
-const clientRootPath = process.env.BFF_CLIENT_ROOT_PATH || '';
+const isLocal = config.mustGetNodeEnv() === 'local';
+const clientRootPath = config.mustGetBffConfig('CLIENT_ROOT_PATH') || '';
+
+(async () => {
+	const server = await createServer();
+	const host = config.getBffConfig('HTTP_HOST');
+	const port = config.mustGetBffConfig('HTTP_PORT');
+	const bindAddress = host ? `${host}:${port}` : port;
+	server.listen(bindAddress, () => {
+		console.log(`Shell BFF Server running on http://${host || 'localhost'}:${port}`);
+	});
+})();
 
 async function createServer(): Promise<Express>{
 	console.log('Client Root Path:', clientRootPath);
 	const app = express();
-	app.use('/api', router);
+	app.use('/api/config', router);
 
 	let viteServer: vite.ViteDevServer | undefined;
 	if (isLocal) {
@@ -27,14 +38,6 @@ async function createServer(): Promise<Express>{
 
 	return app;
 };
-
-(async () => {
-	const server = await createServer();
-	const port = process.env.PORT || 3000;
-	server.listen(port, () => {
-		console.log(`Shell BFF Server running on http://localhost:${port}`);
-	});
-})();
 
 async function initViteServer(app: Express): Promise<vite.ViteDevServer> {
 	console.log('Initializing Vite Server...');

@@ -1,11 +1,11 @@
 {
-	"name": "shell",
+	"name": "vite",
 	"private": true,
 	"type": "module",
 	"version": "0.0.0",
 	"scripts": {
 		"clean": "rimraf dist",
-		"dev": "cd ../shellbff && pnpm dev",
+		"dev": "echo 'Go to shellbff and run pnpm dev'",
 		"build": "npm run clean && npm run build:client && npm run build:server",
 		"build:client": "tsc && vite build --outDir dist/app/client",
 		"build:server": "tsc -p tsconfig.server.json",
