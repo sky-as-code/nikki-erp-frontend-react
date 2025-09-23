@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"allowJs": true,
+		"alwaysStrict": true,
+		"checkJs": false,
+		"declaration": false,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+		"incremental": true,
+		"noEmit": true,
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"strict": true,
+	},
+	"exclude": [
+		"node_modules"
+	]
+}
