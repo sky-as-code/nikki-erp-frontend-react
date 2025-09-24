@@ -1,5 +1,3 @@
-'use client';
-
 import { TenantUrlProvider } from '@/common/context/TenantUrlProvider';
 import { AuthGuard } from '@/modules/core/auth/AuthGuard';
 import { createFileRoute, Outlet } from '@tanstack/react-router';

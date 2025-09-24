@@ -5,8 +5,6 @@ import { AuthProvider } from '@/modules/core/auth/AuthProvider';
 import { ConfigProvider } from '@/modules/core/ConfigProvider';
 import { EnvVars } from '@/types/envVars';
 
-
-
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
@@ -19,7 +17,10 @@ export type ShellProvidersProps = React.PropsWithChildren & {
 	envVars: EnvVars;
 };
 
-export const ShellProviders: React.FC<ShellProvidersProps> = ({ children, envVars }) => {
+export const ShellProviders: React.FC<ShellProvidersProps> = ({
+	children,
+	envVars,
+}) => {
 	return (
 		<AuthProvider>
 			<QueryClientProvider client={queryClient}>

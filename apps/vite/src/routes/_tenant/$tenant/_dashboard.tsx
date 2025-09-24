@@ -1,5 +1,3 @@
-'use client';
-
 import { navLinks } from '@common/envVars';
 import {
 	AppShell,
@@ -14,17 +12,13 @@ import { AdminHeader } from '@/components/AdminHeader';
 import { Navbar } from '@/components/Navbar/Navbar';
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 
-
-
 export const Route = createFileRoute('/_tenant/$tenant/_dashboard')({
-		component: () => (
-		  <DashboardLayout>
+	component: () => (
+		<DashboardLayout>
 			<Outlet />
-		  </DashboardLayout>
-		),
-})
-
-
+		</DashboardLayout>
+	),
+});
 
 interface Props {
 	children: React.ReactNode;
@@ -35,7 +29,8 @@ function DashboardLayout({ children }: Props) {
 	const { colorScheme } = useMantineColorScheme();
 	const theme = useMantineTheme();
 
-	const bg = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+	const bg =
+		colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
 
 	return (
 		<AppShell
@@ -72,5 +67,5 @@ function DashboardLayout({ children }: Props) {
 				</Text>
 			</AppShell.Footer>
 		</AppShell>
-	)
+	);
 }

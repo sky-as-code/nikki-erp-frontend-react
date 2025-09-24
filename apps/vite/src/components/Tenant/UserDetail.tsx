@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-
+import { TableContextType } from '@components/Table/DataTable';
 import {
 	Button,
 	ButtonProps,
@@ -10,7 +10,6 @@ import {
 	Stack,
 	Text,
 } from '@mantine/core';
-import { notifications as notif } from '@mantine/notifications';
 import {
 	IconChevronLeft,
 	IconChevronLeftPipe,
@@ -19,114 +18,64 @@ import {
 	IconFilter,
 	IconLayoutDashboard,
 	IconList,
-	IconPlus,
 	IconRefresh,
+	IconStar,
 	IconSettings,
+	IconDots,
+	IconBriefcase,
+	IconDeviceFloppy,
+	IconFolders,
 } from '@tabler/icons-react';
 import clsx from 'clsx';
-import React, { DOMAttributes, useEffect } from 'react';
+import React, { DOMAttributes } from 'react';
 
 import { useUIState } from '@/common/context/UIProviders';
-import { delay } from '@/common/utils';
-import {
-	DataTable,
-	TableContextType,
-	createTableContext,
-} from '@/components/Table/DataTable';
-import { data, columns } from '@/components/Table/SimpleTable';
 import { PageLayout } from '@/components/Tenant/PageLayout';
+import DetailPage from '@/components/Tenant/DetailPage';
 
-// let testCount = 0;
-const SettingsPage: React.FC = () => {
-	const {
-		backgroundColor,
-		screen: { setCurrentScreen },
-	} = useUIState();
-	const { context, Provider } = createTableContext({
-		name: 'settings.users',
-		defaultPageSize: 50,
-		fetchFn: async (pagination) => {
-			const start = pagination.pageIndex * pagination.pageSize;
-			const end = start + pagination.pageSize;
-			const paginatedData = data.slice(start, end);
-			await delay(1000);
-			// if (++testCount % 2 === 0) {
-			// 	throw new Error('Test fetching error');
-			// }
-			return { rows: paginatedData, totalRows: data.length };
-		},
-	});
-
-	useEffect(() => {
-		setCurrentScreen('settings.users');
-	}, []);
-
-	return (
-		<Provider>
-			<SettingsInner backgroundColor={backgroundColor} tableContext={context} />
-		</Provider>
-	);
+export const UserDetailPage: React.FC = () => {
+	return <DetailPage pageSlug='users' component={UserDetailInner} />;
 };
 
-export const Route = createFileRoute('/_tenant/$tenant/_settings/settings/')({
-	component: SettingsPage,
-});
+// type UserDetailPageProps = {
+// 	id?: string,
+// 	isSplit?: boolean,
+// };
 
-const SettingsInner: React.FC<{
-	backgroundColor: MantineStyleProps['bg'];
-	tableContext: React.Context<TableContextType>;
-}> = React.memo(({ backgroundColor, tableContext }) => {
-	const ctxVal = React.useContext(tableContext);
-	const columnsDef = React.useMemo(() => columns, []);
-
-	useEffect(() => {
-		if (ctxVal.isError) {
-			notif.show({
-				title: 'Failed to load data',
-				message: 'You are served with cached data which may be stale.',
-				color: 'red',
-				autoClose: false,
-				withBorder: true,
-			});
-		}
-	}, [ctxVal.isError]);
-
+const UserDetailInner: React.FC<{
+	id: string;
+	isSplit: boolean;
+}> = React.memo(({ id, isSplit }) => {
+	const { backgroundColor } = useUIState();
 	return (
 		<PageLayout
-			toolbar={
-				<ContentHeader
-					backgroundColor={backgroundColor}
-					tableContext={tableContext}
-				/>
-			}
+			isSplitBig={isSplit}
+			toolbar={<ContentHeader backgroundColor={backgroundColor} id={id} />}
 		>
-			<DataTable
-				columnsDef={columnsDef as any}
-				rows={ctxVal.rows}
-				// rowsUpdatedAt={ctxVal.rowsUpdatedAt}
-			/>
+			User detail
 		</PageLayout>
 	);
 });
 
 type ContentHeaderProps = {
 	backgroundColor: MantineStyleProps['bg'];
-	tableContext: React.Context<TableContextType>;
+	id?: string;
 };
 
 const ContentHeader: React.FC<ContentHeaderProps> = ({
 	backgroundColor,
-	tableContext,
+	id,
 }) => {
-	const ctxVal = React.useContext(tableContext);
-
 	return (
 		<>
 			<Group gap='xs' justify='flex-start' mt='xs' bg={backgroundColor}>
-				<Text component='span' fw='bold' fz='h3'>
-					Settings
+				<Text component='span' fw='normal' fz='md' c='gray'>
+					User
 				</Text>
-				<IconSettings />
+				<Text component='span' fw='bold' fz='h3'>
+					{id ? id : 'Rein Chau'}
+				</Text>
+				<IconStar />
 			</Group>
 			<Group
 				gap='xs'
@@ -136,25 +85,28 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
 				bg={backgroundColor}
 			>
 				<Group gap='xs' justify='flex-start'>
-					<ToolbarButton fw='bold' leftSection={<IconPlus />}>
-						Create
-					</ToolbarButton>
+					<ToolbarButton leftSection={<IconDeviceFloppy />}>Save</ToolbarButton>
+					<ToolbarButton leftSection={<IconFolders />}>Clone</ToolbarButton>
 					<ToolbarButton
-						onClick={ctxVal.refetch}
+						onClick={() => {}}
 						leftSection={
 							<IconRefresh
 								className={clsx('transition-transform', {
-									'animate-spin': ctxVal.isFetching,
+									'animate-spin': false,
 								})}
 							/>
 						}
-						disabled={ctxVal.isFetching}
+						disabled={false}
 					>
 						Refresh
 					</ToolbarButton>
+					<ToolbarButton leftSection={<IconBriefcase />}>Archive</ToolbarButton>
+					<ToolbarButton>
+						<IconDots />
+					</ToolbarButton>
 				</Group>
 				<Group gap='xs' justify='flex-end'>
-					<TableActions ctxVal={ctxVal} />
+					{/* <TableActions ctxVal={ctxVal} /> */}
 				</Group>
 			</Group>
 		</>

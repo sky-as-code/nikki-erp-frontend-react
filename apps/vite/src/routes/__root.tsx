@@ -1,18 +1,37 @@
 import { ShellProviders } from '@/common/context/ShellProviders';
 import { UIProviders } from '@/common/context/UIProviders';
+import { loadEnvVars } from '@/common/envVars';
+import { initRequestMaker } from '@/common/request';
 import { LoadingSpinner } from '@/components/loading';
+import { EnvVars } from '@/types/envVars';
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
-import { createRootRoute, Outlet } from '@tanstack/react-router'
-import { Suspense } from 'react';
+import { createRootRoute, Outlet } from '@tanstack/react-router';
+import { Suspense, useEffect, useState } from 'react';
 
 export const Route = createRootRoute({
-  component: () => ( <RootLayout>
+	component: () => (
+		<RootLayout>
 			<Outlet />
-		</RootLayout> ),
-})
+		</RootLayout>
+	),
+});
 
+const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
+	const [envVars, setEnvVars] = useState<EnvVars | null>(null);
 
-const RootLayout: React.FC<React.PropsWithChildren> = ({children}) => {
+	// const envVars = loadEnvVars();
+	useEffect(() => {
+		loadEnvVars().then((envVarsRes) => {
+			console.debug('🚀 ~ RootLayout ~ envVarsRes:', envVarsRes);
+			if (envVarsRes) {
+				setEnvVars(envVarsRes);
+				initRequestMaker({ baseUrl: envVarsRes.BASE_API_URL });
+			}
+		});
+	}, []);
+
+	if (!envVars) return <html />;
+
 	return (
 		<html lang='en-US' {...mantineHtmlProps}>
 			<head>
@@ -23,14 +42,12 @@ const RootLayout: React.FC<React.PropsWithChildren> = ({children}) => {
 				/>
 			</head>
 			<body className={'overflow-hidden'}>
-				{/* <NoSSR> */}
-					<ShellProviders envVars={{BASE_API_URL: 'http://localhost:4000/api', ROOT_PATH: '', ROOT_DOMAIN: 'localhost'}}>
-						<UIProviders>
-							<Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-						</UIProviders>
-					</ShellProviders>
-				{/* </NoSSR> */}
+				<ShellProviders envVars={envVars}>
+					<UIProviders>
+						<Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+					</UIProviders>
+				</ShellProviders>
 			</body>
 		</html>
 	);
-}
+};

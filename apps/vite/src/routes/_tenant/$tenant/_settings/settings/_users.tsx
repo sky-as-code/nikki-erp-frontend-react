@@ -1,8 +1,6 @@
-'use client';;
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 
 import { MRT_ColumnDef } from 'mantine-react-table';
-
 
 import { delay } from '@/common/utils';
 import { PaginationState } from '@/components/Table/DataTable';
@@ -32,12 +30,18 @@ const UserListPage: React.FC<React.PropsWithChildren> = ({ children }) => {
 		>
 			{children}
 		</ListPage>
-	)
+	);
 };
 
-export const Route = createFileRoute('/_tenant/$tenant/_settings/settings/_users')({
-	component: ()  => {
-		return <UserListPage><Outlet/></UserListPage>;
+export const Route = createFileRoute(
+	'/_tenant/$tenant/_settings/settings/_users'
+)({
+	component: () => {
+		return (
+			<UserListPage>
+				<Outlet />
+			</UserListPage>
+		);
 	},
 });
 

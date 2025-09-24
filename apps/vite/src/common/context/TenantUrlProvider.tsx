@@ -38,16 +38,14 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 	// const fullPath = usePathname();
 	// const router = useRouter();
 	const routerState = useRouterState();
-	
-	const fullPath = routerState.location.pathname
-	console.debug("🚀 ~ TenantUrlProvider ~ fullPath:", fullPath)
-	
+
+	const fullPath = routerState.location.pathname;
+
 	const router = useRouter();
-	
+
 	const { envVars, activeOrg, setActiveOrg, setActiveModule, userSettings } =
 		useConfig();
 	const appPath = AppPath.fromFullPath(fullPath, envVars.ROOT_PATH);
-	console.debug("🚀 ~ TenantUrlProvider ~ appPath:", appPath)
 
 	const subdomain = extractAndValidateSubdomain(envVars.ROOT_DOMAIN, router);
 	const ctxVal: TenantUrlContextType = {
@@ -64,7 +62,6 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 		if (!userSettings) return;
 
 		const foundLastActiveOrg = activeOrg && activeOrg.slug != appPath.orgSlug;
-		console.debug("🚀 ~ TenantUrlProvider ~ foundLastActiveOrg:", foundLastActiveOrg)
 		// This case applies when user accesses root path "/"
 		if (foundLastActiveOrg) {
 			appPath.orgSlug = activeOrg?.slug;
@@ -78,7 +75,7 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 			const org = findOrg(allOrgs, appPath.orgSlug);
 			if (!org) {
 				// notFound();
-				return
+				return;
 			}
 			setActiveOrg(org.slug);
 		}
@@ -107,7 +104,10 @@ function extractAndValidateSubdomain(
 		// TODO: Show error saying that root domain config is wrong.
 		// router.push(`/error/invalid-domain?hostname=${hostnameUri}`);
 		console.log('Invalid domain');
-		router.navigate({ to: '/error/invalid-domain', search: { hostname: hostnameUri } });
+		router.navigate({
+			to: '/error/invalid-domain',
+			search: { hostname: hostnameUri },
+		});
 		return null;
 	}
 	return subdomain;

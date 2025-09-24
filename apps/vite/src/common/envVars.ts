@@ -16,7 +16,7 @@ import { EnvVars } from '../types/envVars';
 
 import type { NavItem } from '@/types/navItem';
 
-const envVarPrefix = 'NKPUBLIC_';
+const envVarPrefix = 'NIKKI_PUBLIC_';
 
 let envVars: Readonly<EnvVars>;
 
@@ -25,7 +25,7 @@ let envVars: Readonly<EnvVars>;
  * This function must be invoked by a SSR-ed component.
  * It only loads MFE Shell configs which, by conventions, are prefixed with `SHELL_`.
  */
-export function loadEnvVars(): Readonly<EnvVars> {
+export async function loadEnvVars(): Promise<Readonly<EnvVars>> {
 	if (envVars) return envVars;
 
 	const envSchema = z.object({
@@ -50,17 +50,18 @@ export function loadEnvVars(): Readonly<EnvVars> {
 				),
 		]),
 	});
-	// const envSchema = z.object({});
 
-	const raw = filterEnvVars();
+	const res = await fetch('/api/config');
+	const raw = await res.json();
+
 	const parsed = envSchema.parse(raw);
 	envVars = Object.freeze<EnvVars>(parsed);
 	return envVars;
 }
 
-function filterEnvVars() {
+function filterEnvVars(rawEnvs: Record<string, string>) {
 	return Object.fromEntries(
-		Object.entries(process.env)
+		Object.entries(rawEnvs)
 			.filter(([key]) => key.startsWith(envVarPrefix))
 			.map(([key, value]) => [key.replace(envVarPrefix, ''), value])
 	);
