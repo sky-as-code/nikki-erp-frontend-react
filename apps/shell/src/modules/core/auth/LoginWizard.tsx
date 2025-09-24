@@ -10,17 +10,15 @@ import {
 	Stack,
 	PasswordInput,
 } from '@mantine/core';
-// import { useAuth } from '@modules/core/auth/AuthProvider';
-import {
-	IconAlertCircle,
-	IconArrowLeft,
-} from '@tabler/icons-react';
+import { useAuth } from '@modules/core/auth/AuthProvider';
+import { IconAlertCircle, IconArrowLeft } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { FC, JSX, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { createLoginAttempt, loginUser } from './service';
+import { useRouter } from '@tanstack/react-router';
 
 export type AuthPayload = {
 	attemptId: string;
@@ -36,11 +34,8 @@ type LoginStepProps = {
 	authPayload: AuthPayload;
 };
 
-
-
-
 export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
-	// const router = useRouter();
+	const router = useRouter();
 
 	const [loginStep, setLoginStep] = useState(0);
 	const [attemptId, setAttemptId] = useState<string | null>(null);
@@ -60,9 +55,8 @@ export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
 					currentMethod: method,
 				});
 			}
-		}
-		else {
-			// router.push(returnUrl);
+		} else {
+			router.navigate({ to: returnUrl });
 		}
 	};
 
@@ -72,11 +66,15 @@ export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
 		}
 	};
 
-
-	const loginSteps:{ name: string; key: string; component: React.ComponentType<LoginStepProps> }[] = [
+	const loginSteps: {
+		name: string;
+		key: string;
+		component: React.ComponentType<LoginStepProps>;
+	}[] = [
 		...loginCommonSteps,
-		(authPayload.currentMethod ?
-			loginMethodSteps[authPayload.currentMethod] ?? loginMethodSteps.Password : loginMethodSteps.Password),
+		authPayload.currentMethod
+			? loginMethodSteps[authPayload.currentMethod] ?? loginMethodSteps.Password
+			: loginMethodSteps.Password,
 	];
 
 	const CurrentStep = loginSteps[loginStep]?.component || PasswordMethod;
@@ -116,7 +114,7 @@ const EmailAttemptStep: FC<{
 		handleSubmit,
 		formState: { errors },
 	} = form;
-	// const router = useRouter();
+	const router = useRouter();
 
 	const onSubmit = async (data: LoginAttemptFormData) => {
 		onSubmitForm(data, () => {
@@ -159,7 +157,7 @@ const EmailAttemptStep: FC<{
 					color='gray'
 					variant='light'
 					size='md'
-					// onClick={() => router.push('/register')}
+					onClick={() => router.navigate({ to: '/register' })}
 				>
 					Sign Up
 				</Button>
@@ -173,37 +171,36 @@ export const LoginMethods: FC<{
 	setAuthPayload: (data: AuthPayload) => void;
 	authPayload: AuthPayload;
 }> = ({ handleNextStep, authPayload }) => {
-
 	return (
 		<Box>
 			<Stack gap='xs' mb='md' align='center'>
-				<Pill className='px-5' bg={'var(--mantine-color-gray-3)'} size='lg'>{authPayload.username}</Pill>
+				<Pill className='px-5' bg={'var(--mantine-color-gray-3)'} size='lg'>
+					{authPayload.username}
+				</Pill>
 			</Stack>
 			<Text size='xl' my='xl' className='text-center'>
 				Select Method
 			</Text>
 
-			<Stack
-				align='stretch'
-				justify='center'
-				gap='md'
-			>
-				{authPayload?.methods.filter((m) => loginMethodSteps[m]).map((currentMethod) => {
-					const detailMethod = loginMethodSteps[currentMethod];
-					return (
-						<Box key={currentMethod}>
-							<Button
-								fullWidth
-								size='md'
-								type='button'
-								variant='default'
-								onClick={() => handleNextStep(currentMethod)}
-							>
-								{detailMethod.name}
-							</Button>
-						</Box>
-					);
-				})}
+			<Stack align='stretch' justify='center' gap='md'>
+				{authPayload?.methods
+					.filter((m) => loginMethodSteps[m])
+					.map((currentMethod) => {
+						const detailMethod = loginMethodSteps[currentMethod];
+						return (
+							<Box key={currentMethod}>
+								<Button
+									fullWidth
+									size='md'
+									type='button'
+									variant='default'
+									onClick={() => handleNextStep(currentMethod)}
+								>
+									{detailMethod.name}
+								</Button>
+							</Box>
+						);
+					})}
 			</Stack>
 		</Box>
 	);
@@ -224,12 +221,13 @@ const PasswordMethod: FC<{
 	return (
 		<Box>
 			<Stack gap='xs' mb='md' align='center'>
-				<Pill className='px-5' bg={'var(--mantine-color-gray-3)'} size='lg'>{authPayload.username}</Pill>
+				<Pill className='px-5' bg={'var(--mantine-color-gray-3)'} size='lg'>
+					{authPayload.username}
+				</Pill>
 			</Stack>
 			<Text size='xl' my='xl' className='text-center'>
 				Enter Your Password
 			</Text>
-
 
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<PasswordInput
@@ -256,13 +254,11 @@ const PasswordMethod: FC<{
 	);
 };
 
-
 const OtpMethod: FC<{
 	handleNextStep: () => void;
 	setAuthPayload: (data: AuthPayload) => void;
 	authPayload: AuthPayload;
 }> = ({ handleNextStep, authPayload }) => {
-
 	const { form, apiErrors, onSubmit } = useLoginForm('/');
 	const {
 		register,
@@ -273,12 +269,13 @@ const OtpMethod: FC<{
 	return (
 		<Box>
 			<Stack gap='xs' mb='md' align='center'>
-				<Pill className='px-5' bg={'var(--mantine-color-gray-3)'} size='lg'>{authPayload.username}</Pill>
+				<Pill className='px-5' bg={'var(--mantine-color-gray-3)'} size='lg'>
+					{authPayload.username}
+				</Pill>
 			</Stack>
 			<Text size='xl' my='xl' className='text-center'>
 				Login with OTP
 			</Text>
-
 
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<PasswordInput
@@ -304,7 +301,6 @@ const OtpMethod: FC<{
 		</Box>
 	);
 };
-
 
 const loginAttemptSchema = z.object({
 	email: z.string().email('Invalid email address'),
@@ -344,8 +340,8 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const useLoginForm = (returnUrl: string) => {
 	const form = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
-	// const router = useRouter();
-	// const { login } = useAuth();
+	const router = useRouter();
+	const { login } = useAuth();
 	const [apiErrors, setApiErrors] = useState<string[]>([]);
 
 	const onSubmit = async (data: LoginFormData) => {
@@ -354,8 +350,8 @@ const useLoginForm = (returnUrl: string) => {
 			setApiErrors(authData.errors);
 			return;
 		}
-		// login(authData.data!);
-		// router.push(returnUrl);
+		login(authData.data!);
+		router.navigate({ to: returnUrl });
 	};
 
 	return { form, apiErrors, onSubmit };
@@ -370,11 +366,11 @@ const ErrorAlert = ({ errors }: { errors: string[] }) =>
 		</Alert>
 	);
 
-
-
 // Các step theo từng method
-const loginMethodSteps: Record<string,
-	{key: string; name: string; component: React.ComponentType<LoginStepProps> }> = {
+const loginMethodSteps: Record<
+	string,
+	{ key: string; name: string; component: React.ComponentType<LoginStepProps> }
+> = {
 	password: {
 		name: 'Password',
 		key: 'password',
@@ -387,9 +383,11 @@ const loginMethodSteps: Record<string,
 	},
 };
 
-
-
-const loginCommonSteps: { name: string; key: string; component: React.ComponentType<LoginStepProps> }[] = [
+const loginCommonSteps: {
+	name: string;
+	key: string;
+	component: React.ComponentType<LoginStepProps>;
+}[] = [
 	{
 		name: 'Email',
 		key: 'email',

@@ -1,19 +1,17 @@
+import React from 'react';
 import '@mantine/core/styles.css';
 
-import { createRouter, RouterProvider } from '@tanstack/react-router'
-
-import { routeTree  } from './routeTree.gen'
-import { MantineProvider } from '@mantine/core';
-import { theme } from './styles/theme';
+import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
 
 import './styles/index.css';
 
-const router = createRouter({ routeTree })
+const router = createRouter({ routeTree });
 
 export default function App() {
-  return (
-    <MantineProvider theme={theme}>
-      <RouterProvider router={router} />
-    </MantineProvider>
-  );
+	return (
+		<React.StrictMode>
+			<RouterProvider router={router} />
+		</React.StrictMode>
+	);
 }

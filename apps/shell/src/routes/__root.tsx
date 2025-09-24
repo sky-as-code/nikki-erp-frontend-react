@@ -19,10 +19,8 @@ export const Route = createRootRoute({
 const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
 	const [envVars, setEnvVars] = useState<EnvVars | null>(null);
 
-	// const envVars = loadEnvVars();
 	useEffect(() => {
 		loadEnvVars().then((envVarsRes) => {
-			console.debug('🚀 ~ RootLayout ~ envVarsRes:', envVarsRes);
 			if (envVarsRes) {
 				setEnvVars(envVarsRes);
 				initRequestMaker({ baseUrl: envVarsRes.BASE_API_URL });
@@ -30,24 +28,24 @@ const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
 		});
 	}, []);
 
-	if (!envVars) return <html />;
+	if (!envVars) return null;
 
 	return (
-		<html lang='en-US' {...mantineHtmlProps}>
-			<head>
-				<ColorSchemeScript defaultColorScheme='light' />
-				<meta
-					name='viewport'
-					content='minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no'
-				/>
-			</head>
-			<body className={'overflow-hidden'}>
-				<ShellProviders envVars={envVars}>
-					<UIProviders>
-						<Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-					</UIProviders>
-				</ShellProviders>
-			</body>
-		</html>
+		// <html lang='en-US' {...mantineHtmlProps}>
+		// 	<head>
+		// 		<ColorSchemeScript defaultColorScheme='light' />
+		// 		<meta
+		// 			name='viewport'
+		// 			content='minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no'
+		// 		/>
+		// 	</head>
+		// <body className={'overflow-hidden'}>
+		<ShellProviders envVars={envVars}>
+			<UIProviders>
+				<Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+			</UIProviders>
+		</ShellProviders>
+		// </body>
+		// </html>
 	);
 };
