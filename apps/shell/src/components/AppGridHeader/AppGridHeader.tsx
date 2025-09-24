@@ -1,5 +1,3 @@
-'use client';
-
 import { ThemeSwitcher } from '@common/components/ThemeSwitcher/ThemeSwitcher';
 import { UserAvatar } from '@common/components/UserAvatar/UserAvatar';
 import {  Box, Breadcrumbs, Group } from '@mantine/core';

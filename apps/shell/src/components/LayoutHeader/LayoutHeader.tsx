@@ -1,4 +1,4 @@
-'use client';
+
 
 import { useTenantUrl } from '@common/context/TenantUrlProvider';
 import { Logo } from '@components/Logo/Logo';
@@ -23,7 +23,6 @@ import {
 	IconSettings,
 } from '@tabler/icons-react';
 import cls from 'clsx';
-import Link from 'next/link';
 
 import classes from './LayoutHeader.module.css';
 

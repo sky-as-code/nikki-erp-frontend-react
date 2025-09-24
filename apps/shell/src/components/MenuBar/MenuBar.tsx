@@ -1,4 +1,4 @@
-'use client';
+
 
 import {
 	Group,
@@ -9,12 +9,12 @@ import {
 	Text,
 } from '@mantine/core';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
-import Link from 'next/link';
 import React from 'react';
 
 import { useTenantUrl } from '@/common/context/TenantUrlProvider';
 import { Menu } from '@/components/mantine/Menu';
 import { NavItem } from '@/types/navItem';
+import { Link } from '@tanstack/react-router';
 
 
 export type MenuBarProps = {

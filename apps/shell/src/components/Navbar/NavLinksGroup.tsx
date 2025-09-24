@@ -7,13 +7,12 @@ import {
 	useDirection,
 } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import classes from './NavLinksGroup.module.css';
 
 import { useTenantUrl } from '@/common/context/TenantUrlProvider';
+import { Link, useRouterState } from '@tanstack/react-router';
 
 interface LinkItemProps {
 	label: string;
@@ -47,7 +46,8 @@ export function NavLinksGroup({
 	initiallyOpened,
 	links,
 }: NavLinksGroupProps) {
-	const pathname = usePathname();
+	const routerState = useRouterState();
+	const pathname = routerState.location.pathname;
 	const hasLinks = Array.isArray(links);
 	const [opened, setOpened] = useState(initiallyOpened || false);
 	const { getFullPath } = useTenantUrl();
@@ -86,7 +86,7 @@ export function NavLinksGroup({
 
 const LinkItem = ({ label, link, pathname }: LinkItemProps) => (
 	<Link
-		href={link}
+		to={link}
 		key={label}
 		className={`${classes.link} ${link === pathname && classes.activeLink}`}
 	>
@@ -142,11 +142,10 @@ const NavLink = ({
 	label,
 }: NavLinksGroupProps & { pathname: string }) => (
 	<Link
-		href={link!}
-		className={`${classes.control} ${
-			link === pathname && classes.activeControl
-		}`}
-	>
+		// href={link!}
+		className={`${classes.control} ${link === pathname && classes.activeControl}`} 
+		to={link!}	
+		>
 		<Group gap={0} justify='space-between'>
 			<IconBox icon={icon} label={label} />
 		</Group>

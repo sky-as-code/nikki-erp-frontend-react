@@ -1,7 +1,3 @@
-
-
-'use client';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	Alert,
@@ -14,13 +10,12 @@ import {
 	Stack,
 	PasswordInput,
 } from '@mantine/core';
-import { useAuth } from '@modules/core/auth/AuthProvider';
+// import { useAuth } from '@modules/core/auth/AuthProvider';
 import {
 	IconAlertCircle,
 	IconArrowLeft,
 } from '@tabler/icons-react';
 import clsx from 'clsx';
-import { useRouter } from 'next/navigation';
 import { FC, JSX, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -45,7 +40,7 @@ type LoginStepProps = {
 
 
 export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
-	const router = useRouter();
+	// const router = useRouter();
 
 	const [loginStep, setLoginStep] = useState(0);
 	const [attemptId, setAttemptId] = useState<string | null>(null);
@@ -67,7 +62,7 @@ export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
 			}
 		}
 		else {
-			router.push(returnUrl);
+			// router.push(returnUrl);
 		}
 	};
 
@@ -121,7 +116,7 @@ const EmailAttemptStep: FC<{
 		handleSubmit,
 		formState: { errors },
 	} = form;
-	const router = useRouter();
+	// const router = useRouter();
 
 	const onSubmit = async (data: LoginAttemptFormData) => {
 		onSubmitForm(data, () => {
@@ -164,7 +159,7 @@ const EmailAttemptStep: FC<{
 					color='gray'
 					variant='light'
 					size='md'
-					onClick={() => router.push('/register')}
+					// onClick={() => router.push('/register')}
 				>
 					Sign Up
 				</Button>
@@ -321,8 +316,8 @@ const useLoginAttemptForm = () => {
 	const form = useForm<LoginAttemptFormData>({
 		resolver: zodResolver(loginAttemptSchema),
 	});
-	const router = useRouter();
-	const { login } = useAuth();
+	// const router = useRouter();
+	// const { login } = useAuth();
 	const [apiErrors, setApiErrors] = useState<string[]>([]);
 
 	const onSubmit = async (
@@ -349,8 +344,8 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const useLoginForm = (returnUrl: string) => {
 	const form = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
-	const router = useRouter();
-	const { login } = useAuth();
+	// const router = useRouter();
+	// const { login } = useAuth();
 	const [apiErrors, setApiErrors] = useState<string[]>([]);
 
 	const onSubmit = async (data: LoginFormData) => {
@@ -359,8 +354,8 @@ const useLoginForm = (returnUrl: string) => {
 			setApiErrors(authData.errors);
 			return;
 		}
-		login(authData.data!);
-		router.push(returnUrl);
+		// login(authData.data!);
+		// router.push(returnUrl);
 	};
 
 	return { form, apiErrors, onSubmit };

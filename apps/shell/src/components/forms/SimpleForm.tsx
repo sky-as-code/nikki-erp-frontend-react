@@ -1,4 +1,4 @@
-'use client';
+
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, Paper, Space, Text, TextInput } from '@mantine/core';

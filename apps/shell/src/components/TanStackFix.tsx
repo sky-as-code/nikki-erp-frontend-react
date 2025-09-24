@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useState, FC, PropsWithChildren } from 'react';
 
 /**

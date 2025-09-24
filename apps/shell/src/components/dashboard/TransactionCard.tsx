@@ -1,4 +1,4 @@
-'use client';
+
 
 
 import { Card, CardSection, Title } from '@mantine/core';

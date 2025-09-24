@@ -1,4 +1,4 @@
-'use client';
+
 
 import { ActionIcon, Anchor, Avatar, Group, Stack, Text } from '@mantine/core';
 import { IconPencil, IconTrash } from '@tabler/icons-react';

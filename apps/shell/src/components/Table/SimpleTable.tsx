@@ -1,5 +1,5 @@
 
-'use client';
+
 
 import { Anchor, Paper, Space, Title } from '@mantine/core';
 import { type MRT_ColumnDef, MantineReactTable, useMantineReactTable } from 'mantine-react-table';

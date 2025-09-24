@@ -1,36 +1,70 @@
-'use client';
-
 import {
-	IconCalendarEvent, IconChecklist, IconCalendar,
-	IconClock, IconBook, IconUsers, IconBuildingStore, IconChartBar,
-	IconLayoutDashboard, IconRefresh, IconKey, IconCalculator,
-	IconFiles, IconCheckbox, IconClock24, IconChartPie, IconFirstAidKit,
-	IconWorld, IconLibrary, IconHeart, IconMailShare,
-	IconBrandCampaignmonitor, IconChartDots, IconFlame, IconForms,
-	IconCreditCard, IconBox, IconBuildingFactory, IconCertificate,
-	IconBarcode, IconTool, IconHammer, IconUserCircle, IconUserSquare,
-	IconReceipt2, IconStars, IconCoins, IconSearch, IconArrowBack,
-	IconClockPause, IconSettings,
+	IconCalendarEvent,
+	IconChecklist,
+	IconCalendar,
+	IconClock,
+	IconBook,
+	IconUsers,
+	IconBuildingStore,
+	IconChartBar,
+	IconLayoutDashboard,
+	IconRefresh,
+	IconKey,
+	IconCalculator,
+	IconFiles,
+	IconCheckbox,
+	IconClock24,
+	IconChartPie,
+	IconFirstAidKit,
+	IconWorld,
+	IconLibrary,
+	IconHeart,
+	IconMailShare,
+	IconBrandCampaignmonitor,
+	IconChartDots,
+	IconFlame,
+	IconForms,
+	IconCreditCard,
+	IconBox,
+	IconBuildingFactory,
+	IconCertificate,
+	IconBarcode,
+	IconTool,
+	IconHammer,
+	IconUserCircle,
+	IconUserSquare,
+	IconReceipt2,
+	IconStars,
+	IconCoins,
+	IconSearch,
+	IconArrowBack,
+	IconClockPause,
+	IconSettings,
 	IconDeviceImacCog,
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { useAuth } from '../auth/AuthProvider';
-import { NikkiModule, Organization, UserPreference, UserSettings } from '../types';
+import {
+	NikkiModule,
+	Organization,
+	UserPreference,
+	UserSettings,
+} from '../types';
 
 import * as request from '@/common/request';
 import { delay } from '@/common/utils';
 import { EnvVars } from '@/types/envVars';
 
 export type ConfigContextType = {
-	envVars: EnvVars,
-	userSettings: UserSettings | null,
-	userPreference: UserPreference,
-	activeModule: NikkiModule | null,
-	activeOrg: Organization | null,
-	setActiveModule: (moduleSlug: string) => void,
-	setActiveOrg: (orgSlug: string) => void,
+	envVars: EnvVars;
+	userSettings: UserSettings | null;
+	userPreference: UserPreference;
+	activeModule: NikkiModule | null;
+	activeOrg: Organization | null;
+	setActiveModule: (moduleSlug: string) => void;
+	setActiveOrg: (orgSlug: string) => void;
 };
 
 const ConfigContext = createContext<ConfigContextType>(null as any);
@@ -42,7 +76,7 @@ export const useConfig = (): ConfigContextType => {
 };
 
 export type ConfigProviderProps = React.PropsWithChildren & {
-	envVars: EnvVars,
+	envVars: EnvVars;
 };
 
 export const ConfigProvider: React.FC<ConfigProviderProps> = ({
@@ -52,16 +86,23 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
 	const userPrefs = loadLocalPreferences();
 	const { isAuthenticated } = useAuth();
 	const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
-	const [activeOrgSlug, setOrgSlug] = useState<string | null>(userPrefs.org ?? null);
-	const [activeModuleSlug, setModuleSlug] = useState<string | null>(userPrefs.org ?? null);
+	const [activeOrgSlug, setOrgSlug] = useState<string | null>(
+		userPrefs.org ?? null
+	);
+	const [activeModuleSlug, setModuleSlug] = useState<string | null>(
+		userPrefs.org ?? null
+	);
 	const [activeOrg, setActiveOrg] = useActiveOrg({ userPrefs, userSettings });
-	const [activeModule, setActiveModule] = useActiveModule({ userPrefs, userSettings });
+	const [activeModule, setActiveModule] = useActiveModule({
+		userPrefs,
+		userSettings,
+	});
 	const [envVars] = useState(initialEnvVars);
 
 	const { data, isSuccess } = useQuery({
 		queryKey: ['userSettings', activeOrg],
 		queryFn: () => fetchUserSettings(activeOrg?.slug),
-		enabled: isAuthenticated && Boolean(activeOrgSlug) && !activeOrg,
+		// enabled: isAuthenticated && Boolean(activeOrgSlug) && !activeOrg,
 	});
 
 	useEffect(() => {
@@ -86,9 +127,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
 	};
 
 	return (
-		<ConfigContext.Provider value={ctxVal}>
-			{children}
-		</ConfigContext.Provider>
+		<ConfigContext.Provider value={ctxVal}>{children}</ConfigContext.Provider>
 	);
 };
 
@@ -96,23 +135,23 @@ type SetStringFn = (orgSlug: string) => void;
 type SetNullableOrgFn = (org: Organization | null) => void;
 type SetNullableModuleFn = (org: NikkiModule | null) => void;
 type ActiveOrgParams = {
-	userPrefs: UserPreference,
-	userSettings: UserSettings | null,
+	userPrefs: UserPreference;
+	userSettings: UserSettings | null;
 };
-function useActiveOrg({ userPrefs, userSettings }: ActiveOrgParams): [Organization | null, SetStringFn] {
+function useActiveOrg({
+	userPrefs,
+	userSettings,
+}: ActiveOrgParams): [Organization | null, SetStringFn] {
 	const allOrgs = userSettings?.orgs ?? [];
 	const org = findOrg(allOrgs, userPrefs.org!);
 	const [activeOrg, setActiveOrg] = useState<Organization | null>(org);
-	return [
-		activeOrg,
-		setActiveOrgFactory(userPrefs, allOrgs, setActiveOrg),
-	];
+	return [activeOrg, setActiveOrgFactory(userPrefs, allOrgs, setActiveOrg)];
 }
 
 function setActiveOrgFactory(
 	userPrefs: UserPreference,
 	allOrgs: Organization[],
-	setActiveOrg: SetNullableOrgFn,
+	setActiveOrg: SetNullableOrgFn
 ): SetStringFn {
 	return (orgSlug: string): void => {
 		const org = findOrg(allOrgs, orgSlug!);
@@ -124,18 +163,17 @@ function setActiveOrgFactory(
 	};
 }
 
-function useActiveModule({ userSettings }: ActiveOrgParams): [NikkiModule | null, SetStringFn] {
+function useActiveModule({
+	userSettings,
+}: ActiveOrgParams): [NikkiModule | null, SetStringFn] {
 	const allMods = userSettings?.modules ?? [];
 	const [activeModule, setActiveModule] = useState<NikkiModule | null>(null);
-	return [
-		activeModule,
-		setActiveModuleFactory(allMods, setActiveModule),
-	];
+	return [activeModule, setActiveModuleFactory(allMods, setActiveModule)];
 }
 
 function setActiveModuleFactory(
 	allMods: NikkiModule[],
-	setActiveModule: SetNullableModuleFn,
+	setActiveModule: SetNullableModuleFn
 ): SetStringFn {
 	return (modSlug: string): void => {
 		const mod = findModule(allMods, modSlug!);
@@ -161,14 +199,13 @@ function loadLocalPreferences(): UserPreference {
 	if (!encoded) {
 		saveLocalPreferences({});
 		return {};
-	};
+	}
 
 	try {
 		const decoded = atob(encoded);
 		const userPref = JSON.parse(decoded) as UserPreference;
 		return userPref;
-	}
-	catch {
+	} catch {
 		saveLocalPreferences({});
 		return {};
 	}
@@ -179,8 +216,7 @@ function saveLocalPreferences(preferences: UserPreference): void {
 		const jsonString = JSON.stringify(preferences);
 		const encodedData = btoa(jsonString);
 		localStorage.setItem(userPrefKey, encodedData);
-	}
-	catch (error) {
+	} catch (error) {
 		console.error('Failed to save local settings:', error);
 	}
 }
@@ -227,50 +263,129 @@ const orgs: Organization[] = [
 	// { id: '29', name: 'Strawberries', slug: 'strawberries', logo: '🍓' },
 ];
 
-
 const modules: NikkiModule[] = [
 	{ label: 'Discuss', slug: 'discuss' },
 	{ icon: IconSettings, label: 'Settings', slug: 'settings' },
-	{ icon: IconCalendarEvent, label: 'Meeting Rooms', slug: 'meeting-rooms', color: 'teal' },
+	{
+		icon: IconCalendarEvent,
+		label: 'Meeting Rooms',
+		slug: 'meeting-rooms',
+		color: 'teal',
+	},
 	{ icon: IconChecklist, label: 'To-do', slug: 'todo', color: 'blue' },
 	{ icon: IconCalendar, label: 'Calendar', slug: 'calendar', color: 'orange' },
-	{ icon: IconClock, label: 'Appointments', slug: 'appointments', color: 'teal' },
+	{
+		icon: IconClock,
+		label: 'Appointments',
+		slug: 'appointments',
+		color: 'teal',
+	},
 	{ icon: IconLibrary, label: 'Knowledge', slug: 'knowledge', color: 'teal' },
 	{ icon: IconUsers, label: 'Contacts', slug: 'contacts', color: 'teal' },
 	{ icon: IconBuildingStore, label: 'CRM', slug: 'crm', color: 'cyan' },
 	{ icon: IconChartBar, label: 'Sales', slug: 'sales', color: 'red' },
-	{ icon: IconLayoutDashboard, label: 'Dashboards', slug: 'dashboards', color: 'blue' },
-	{ icon: IconRefresh, label: 'Subscriptions', slug: 'subscriptions', color: 'green' },
+	{
+		icon: IconLayoutDashboard,
+		label: 'Dashboards',
+		slug: 'dashboards',
+		color: 'blue',
+	},
+	{
+		icon: IconRefresh,
+		label: 'Subscriptions',
+		slug: 'subscriptions',
+		color: 'green',
+	},
 	{ icon: IconKey, label: 'Rental', slug: 'rental', color: 'violet' },
-	{ icon: IconCalculator, label: 'Accounting', slug: 'accounting', color: 'orange' },
+	{
+		icon: IconCalculator,
+		label: 'Accounting',
+		slug: 'accounting',
+		color: 'orange',
+	},
 	{ icon: IconFiles, label: 'Documents', slug: 'documents', color: 'blue' },
 	{ icon: IconCheckbox, label: 'Project', slug: 'project', color: 'teal' },
-	{ icon: IconClock24, label: 'Timesheets', slug: 'timesheets', color: 'indigo' },
+	{
+		icon: IconClock24,
+		label: 'Timesheets',
+		slug: 'timesheets',
+		color: 'indigo',
+	},
 	{ icon: IconChartPie, label: 'Planning', slug: 'planning', color: 'orange' },
 	{ icon: IconFirstAidKit, label: 'Helpdesk', slug: 'helpdesk', color: 'teal' },
 	{ icon: IconWorld, label: 'Website', slug: 'website', color: 'cyan' },
 	{ icon: IconBook, label: 'eLearning', slug: 'elearning', color: 'blue' },
-	{ icon: IconHeart, label: 'Social Marketing', slug: 'social-marketing', color: 'red' },
-	{ icon: IconMailShare, label: 'Marketing Automation', slug: 'marketing-automation', color: 'blue' },
-	{ icon: IconBrandCampaignmonitor, label: 'Email Marketing', slug: 'email-marketing', color: 'indigo' },
-	{ icon: IconChartDots, label: 'SMS Marketing', slug: 'sms-marketing', color: 'cyan' },
+	{
+		icon: IconHeart,
+		label: 'Social Marketing',
+		slug: 'social-marketing',
+		color: 'red',
+	},
+	{
+		icon: IconMailShare,
+		label: 'Marketing Automation',
+		slug: 'marketing-automation',
+		color: 'blue',
+	},
+	{
+		icon: IconBrandCampaignmonitor,
+		label: 'Email Marketing',
+		slug: 'email-marketing',
+		color: 'indigo',
+	},
+	{
+		icon: IconChartDots,
+		label: 'SMS Marketing',
+		slug: 'sms-marketing',
+		color: 'cyan',
+	},
 	{ icon: IconFlame, label: 'Events', slug: 'events', color: 'orange' },
 	{ icon: IconForms, label: 'Surveys', slug: 'surveys', color: 'blue' },
 	{ icon: IconCreditCard, label: 'Purchase', slug: 'purchase', color: 'teal' },
 	{ icon: IconBox, label: 'Inventory', slug: 'inventory', color: 'orange' },
-	{ icon: IconBuildingFactory, label: 'Manufacturing', slug: 'manufacturing', color: 'cyan' },
+	{
+		icon: IconBuildingFactory,
+		label: 'Manufacturing',
+		slug: 'manufacturing',
+		color: 'cyan',
+	},
 	{ icon: IconCertificate, label: 'Quality', slug: 'quality', color: 'violet' },
 	{ icon: IconBarcode, label: 'Barcode', slug: 'barcode', color: 'grape' },
 	{ icon: IconTool, label: 'Maintenance', slug: 'maintenance', color: 'blue' },
 	{ icon: IconHammer, label: 'Repairs', slug: 'repairs', color: 'teal' },
 	{ icon: IconUserCircle, label: 'PLM', slug: 'plm', color: 'indigo' },
-	{ icon: IconUserSquare, label: 'Employees', slug: 'employees', color: 'violet' },
+	{
+		icon: IconUserSquare,
+		label: 'Employees',
+		slug: 'employees',
+		color: 'violet',
+	},
 	{ icon: IconReceipt2, label: 'Payroll', slug: 'payroll', color: 'grape' },
 	{ icon: IconStars, label: 'Appraisals', slug: 'appraisals', color: 'orange' },
-	{ icon: IconCoins, label: 'Attendances', slug: 'attendances', color: 'yellow' },
-	{ icon: IconSearch, label: 'Recruitment', slug: 'recruitment', color: 'teal' },
+	{
+		icon: IconCoins,
+		label: 'Attendances',
+		slug: 'attendances',
+		color: 'yellow',
+	},
+	{
+		icon: IconSearch,
+		label: 'Recruitment',
+		slug: 'recruitment',
+		color: 'teal',
+	},
 	{ icon: IconArrowBack, label: 'Referrals', slug: 'referrals', color: 'pink' },
-	{ icon: IconClockPause, label: 'Time Off', slug: 'time-off', color: 'orange' },
+	{
+		icon: IconClockPause,
+		label: 'Time Off',
+		slug: 'time-off',
+		color: 'orange',
+	},
 	{ icon: IconReceipt2, label: 'Expenses', slug: 'expenses', color: 'blue' },
-	{ icon: IconDeviceImacCog, label: 'Vending Machine', slug: 'vending-machine', color: 'teal' },
+	{
+		icon: IconDeviceImacCog,
+		label: 'Vending Machine',
+		slug: 'vending-machine',
+		color: 'teal',
+	},
 ];

@@ -1,5 +1,3 @@
-'use client';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	Alert,
@@ -13,12 +11,12 @@ import {
 } from '@mantine/core';
 import { useAuth } from '@modules/core/auth/AuthProvider';
 import { IconAlertCircle } from '@tabler/icons-react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { loginUser } from './service';
+import { useRouter } from '@tanstack/react-router';
 
 
 
@@ -77,7 +75,7 @@ const useLoginForm = (returnUrl: string) => {
 			return;
 		}
 		login(authData.data!);
-		router.push(returnUrl);
+		router.navigate({ to: returnUrl });
 	};
 
 	return { form, apiErrors, onSubmit };

@@ -1,4 +1,3 @@
-'use client';
 
 import { Box, Button, Text, PasswordInput, Space, TextInput } from '@mantine/core';
 

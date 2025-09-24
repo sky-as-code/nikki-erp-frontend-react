@@ -1,4 +1,4 @@
-'use client';
+
 
 import { Card, Group, SimpleGrid, Text, useMantineTheme } from '@mantine/core';
 import { IconArrowDownRight, IconArrowUpRight } from '@tabler/icons-react';

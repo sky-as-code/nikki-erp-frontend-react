@@ -1,5 +1,3 @@
-'use client';
-
 import { SimpleGrid, Paper, Text, Stack, ThemeIcon, Box } from '@mantine/core';
 import {
 	IconCalendarEvent, IconChecklist, IconCalendar,
@@ -14,11 +12,11 @@ import {
 	IconClockPause, IconCircleDottedLetterN, IconSettings,
 	IconDeviceImacCog,
 } from '@tabler/icons-react';
-import Link from 'next/link';
 import { FC } from 'react';
 
 import { useTenantUrl } from '@/common/context/TenantUrlProvider';
 import { NikkiModule } from '@/modules/core/types';
+import { Link } from '@tanstack/react-router';
 
 
 const apps: NikkiModule[] = [

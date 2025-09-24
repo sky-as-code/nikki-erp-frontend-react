@@ -1,4 +1,3 @@
-'use client';
 
 import { Tabs as MTabs } from '@mantine/core';
 import React from 'react';

@@ -1,10 +1,8 @@
-'use client';
-
 import { Organization } from '@modules/core/types';
-import { notFound, useRouter, usePathname } from 'next/navigation';
 import React, { createContext, useContext, useEffect } from 'react';
 
 import { useConfig } from '@/modules/core/ConfigProvider/ConfigProvider';
+import { useRouter, useRouterState } from '@tanstack/react-router';
 
 type TenantUrlContextType = {
 	subdomain: string | null;
@@ -37,8 +35,14 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 	children,
 }) => {
 	// const fullPath = window.location.pathname;
-	const fullPath = usePathname();
+	// const fullPath = usePathname();
+	// const router = useRouter();
+	const routerState = useRouterState();
+
+	const fullPath = routerState.location.pathname;
+
 	const router = useRouter();
+
 	const { envVars, activeOrg, setActiveOrg, setActiveModule, userSettings } =
 		useConfig();
 	const appPath = AppPath.fromFullPath(fullPath, envVars.ROOT_PATH);
@@ -70,7 +74,8 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 			const allOrgs = userSettings?.orgs ?? [];
 			const org = findOrg(allOrgs, appPath.orgSlug);
 			if (!org) {
-				notFound();
+				// notFound();
+				return;
 			}
 			setActiveOrg(org.slug);
 		}
@@ -97,7 +102,12 @@ function extractAndValidateSubdomain(
 	if (subdomain === null) {
 		const hostnameUri = encodeURIComponent(hostname);
 		// TODO: Show error saying that root domain config is wrong.
-		router.push(`/error/invalid-domain?hostname=${hostnameUri}`);
+		// router.push(`/error/invalid-domain?hostname=${hostnameUri}`);
+		console.log('Invalid domain');
+		router.navigate({
+			to: '/error/invalid-domain',
+			search: { hostname: hostnameUri },
+		});
 		return null;
 	}
 	return subdomain;

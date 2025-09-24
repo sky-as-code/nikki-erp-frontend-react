@@ -1,4 +1,4 @@
-'use client';
+
 
 import { useCustomTable } from '@hooks/useCustomTable';
 import { Badge, Paper, Rating, Space, Title } from '@mantine/core';

@@ -1,5 +1,3 @@
-'use client';
-
 import { Card, Title } from '@mantine/core';
 import {CategoryScale,
 	Chart as ChartJS,

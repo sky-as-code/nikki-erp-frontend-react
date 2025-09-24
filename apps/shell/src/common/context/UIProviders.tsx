@@ -1,5 +1,3 @@
-'use client';
-
 import {
 	DirectionProvider, MantineProvider, MantineStyleProps,
 	useMantineColorScheme, useMantineTheme,

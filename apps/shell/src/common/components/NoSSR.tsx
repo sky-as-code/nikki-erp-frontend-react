@@ -1,5 +1,3 @@
-'use client';
-
 import { FC, PropsWithChildren, useState, useEffect } from 'react';
 
 // Fix NextJS bug (Error: Hydration failed because the server rendered HTML didn't match the client)

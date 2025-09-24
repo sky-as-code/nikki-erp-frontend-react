@@ -1,11 +1,9 @@
-'use client';
-
 import { Flex, Text } from '@mantine/core';
 import { IconCircleDottedLetterN } from '@tabler/icons-react';
 import cls from 'clsx';
-import Link from 'next/link';
 
 import classes from './Logo.module.css';
+import { Link } from '@tanstack/react-router';
 
 interface Props {
 	width?: string;
@@ -17,7 +15,7 @@ export const Logo: React.FC<Props> = ({ enableLink = true }) => {
 	return (
 		<Flex direction='row' align='center' gap={4}>
 			<Link
-				href={enableLink ? '/' : '#'}
+				to={enableLink ? '/' : '#'}
 				style={{ textDecoration: 'none' }}
 				className={cls(classes.heading, 'flex flex-row items-center gap-1')}
 			>
