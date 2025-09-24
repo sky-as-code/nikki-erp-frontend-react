@@ -1,0 +1,11 @@
+.header {}
+
+.headerRow {
+	padding: 0 var(--mantine-spacing-lg);
+	color: lightdark(var(--mantine-color-white), var(--mantine-color-dark));
+	gap: var(--mantine-spacing-md);
+}
+
+.menuBar {
+	border-bottom: 1px solid var(--mantine-color-gray-3);
+}

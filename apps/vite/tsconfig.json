@@ -17,11 +17,20 @@
 			"ESNext"
 		],
 		"paths": {
+			"@/*": [
+				"./src/*"
+			],
+			"@*": [
+				"./src/*"
+			],
 			"@components/*": [
 				"./src/components/*"
 			],
+			"@modules/*": [
+				"./src/modules/*"
+			],
 			"@core/*": [
-				"./src/core/*"
+				"./src/modules/core/*"
 			],
 			"@assets/*": [
 				"./src/assets/*"
