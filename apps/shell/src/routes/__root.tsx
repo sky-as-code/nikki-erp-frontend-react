@@ -1,12 +1,12 @@
+import { createRootRoute, Outlet } from '@tanstack/react-router';
+import { Suspense, useEffect, useState } from 'react';
+
+import { LoadingSpinner } from '@/common/components/loading';
 import { ShellProviders } from '@/common/context/ShellProviders';
 import { UIProviders } from '@/common/context/UIProviders';
 import { loadEnvVars } from '@/common/envVars';
 import { initRequestMaker } from '@/common/request';
-import { LoadingSpinner } from '@/components/loading';
 import { EnvVars } from '@/types/envVars';
-import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
-import { createRootRoute, Outlet } from '@tanstack/react-router';
-import { Suspense, useEffect, useState } from 'react';
 
 export const Route = createRootRoute({
 	component: () => (

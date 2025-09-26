@@ -1,13 +1,9 @@
-'use client';
-import { createFileRoute } from '@tanstack/react-router';
-
 import {
 	ActionIcon,
 	Anchor,
 	Avatar,
 	Grid,
 	Group,
-	Paper,
 	Stack,
 	TabsPanel,
 	Text,
@@ -15,18 +11,16 @@ import {
 } from '@mantine/core';
 import {
 	IconCircleFilled,
-	IconMessageCircle,
 	IconPencil,
-	IconPhoto,
-	IconSettings,
 	IconTrash,
 } from '@tabler/icons-react';
+import { createFileRoute } from '@tanstack/react-router';
 import React from 'react';
 import { DataGrid, Column } from 'react-data-grid';
 
+import DetailPage from '@/common/components/layout/DetailPage';
 import { TabList, TabListItem, Tabs } from '@/common/components/Tabs/Tabs';
 import { ShelfMatrix } from '@/modules/vendingMachine/kiosk/ShelfMatrix';
-import DetailPage from '@/components/Tenant/DetailPage';
 
 const UserDetailPage: React.FC = () => {
 	return <DetailPage component={UserDetailInner} pageSlug='users' />;

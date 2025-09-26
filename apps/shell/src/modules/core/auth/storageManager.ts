@@ -38,5 +38,5 @@ export default {
 	setAuthData,
 	getAuthData,
 	getAuthToken,
-	clearAuthData,
+	clearAuthData
 };

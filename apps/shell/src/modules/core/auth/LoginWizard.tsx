@@ -12,13 +12,13 @@ import {
 } from '@mantine/core';
 import { useAuth } from '@modules/core/auth/AuthProvider';
 import { IconAlertCircle, IconArrowLeft } from '@tabler/icons-react';
+import { useRouter } from '@tanstack/react-router';
 import clsx from 'clsx';
-import { FC, JSX, useState } from 'react';
+import { FC, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { createLoginAttempt, loginUser } from './service';
-import { useRouter } from '@tanstack/react-router';
 
 export type AuthPayload = {
 	attemptId: string;
@@ -55,7 +55,8 @@ export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
 					currentMethod: method,
 				});
 			}
-		} else {
+		}
+		else {
 			router.navigate({ to: returnUrl });
 		}
 	};

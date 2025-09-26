@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
 
 import { useAuth } from '@modules/core/auth/AuthProvider';
 import { useRouter } from '@tanstack/react-router';
+import { useEffect } from 'react';
 
 type AuthGuardProps = {
 	children: React.ReactNode;

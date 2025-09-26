@@ -1,11 +1,10 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
-
 import { MRT_ColumnDef } from 'mantine-react-table';
 
+import { CellDetailLink, ListPage } from '@/common/components/layout/ListPage';
 import { delay } from '@/common/utils';
-import { PaginationState } from '@/components/Table/DataTable';
-import { data } from '@/components/Table/SimpleTable';
-import { CellDetailLink, ListPage } from '@/components/Tenant/ListPage';
+import { PaginationState } from '@/common/components/Table/DataTable';
+import { data } from '@/common/components/Table/SimpleTable';
 
 // let testCount = 0;
 const fetchFn = async (pagination: PaginationState) => {

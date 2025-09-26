@@ -1,20 +1,11 @@
-import { TenantUrlProvider } from '@/common/context/TenantUrlProvider';
-import { AuthGuard } from '@/modules/core/auth/AuthGuard';
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 
-
-const TenantRoot: React.FC<React.PropsWithChildren> = ({ children }) => {
-	return (
-		<AuthGuard>
-			<TenantUrlProvider>{children}</TenantUrlProvider>
-		</AuthGuard>
-	)
-};
+import { TenantRootLayout } from '@/modules/core/apps/layout/TenantRootLayout';
 
 export const Route = createFileRoute('/_tenant')({
-		component: () => (
-		  <TenantRoot>
+	component: () => (
+		<TenantRootLayout>
 			<Outlet />
-		  </TenantRoot>
-		),
-})
+		</TenantRootLayout>
+	),
+});

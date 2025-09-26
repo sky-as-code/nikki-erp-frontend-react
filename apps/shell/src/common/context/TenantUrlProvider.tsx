@@ -1,8 +1,8 @@
 import { Organization } from '@modules/core/types';
+import { useRouter, useRouterState } from '@tanstack/react-router';
 import React, { createContext, useContext, useEffect } from 'react';
 
-import { useConfig } from '@/modules/core/ConfigProvider/ConfigProvider';
-import { useRouter, useRouterState } from '@tanstack/react-router';
+import { useConfig } from '@/modules/core/provider/ConfigProvider';
 
 type TenantUrlContextType = {
 	subdomain: string | null;
@@ -82,6 +82,7 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 	}, [userSettings]);
 
 	useEffect(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		appPath.moduleSlug && setActiveModule(appPath.moduleSlug);
 	}, []);
 

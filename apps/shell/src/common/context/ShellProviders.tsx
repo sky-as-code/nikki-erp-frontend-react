@@ -1,8 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import { AuthProvider } from '@/modules/core/auth/AuthProvider';
-import { ConfigProvider } from '@/modules/core/ConfigProvider';
+import { ConfigProvider } from '@/modules/core/provider/ConfigProvider';
 import { EnvVars } from '@/types/envVars';
 
 const queryClient = new QueryClient({

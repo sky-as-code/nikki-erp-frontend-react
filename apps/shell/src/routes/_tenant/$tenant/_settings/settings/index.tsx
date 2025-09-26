@@ -32,9 +32,9 @@ import {
 	DataTable,
 	TableContextType,
 	createTableContext,
-} from '@/components/Table/DataTable';
-import { data, columns } from '@/components/Table/SimpleTable';
-import { PageLayout } from '@/components/Tenant/PageLayout';
+} from '@/common/components/Table/DataTable';
+import { data, columns } from '@/common/components/Table/SimpleTable';
+import { PageLayout } from '@/common/components/layout/PageLayout';
 
 // let testCount = 0;
 const SettingsPage: React.FC = () => {

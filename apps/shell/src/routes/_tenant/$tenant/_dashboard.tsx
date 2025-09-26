@@ -7,10 +7,10 @@ import {
 	useMantineTheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-
-import { AdminHeader } from '@/components/AdminHeader';
-import { Navbar } from '@/components/Navbar/Navbar';
 import { createFileRoute, Outlet } from '@tanstack/react-router';
+
+import { Navbar } from '@/common/components/Navbar/Navbar';
+import { AdminHeader } from '@/modules/core/dashboard/AdminHeader';
 
 export const Route = createFileRoute('/_tenant/$tenant/_dashboard')({
 	component: () => (

@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { ModuleLayout } from '@/components/Tenant/ModuleLayout';
+import { ModuleLayout } from '@/common/components/layout/ModuleLayout';
 import navItems from '@/modules/settings/navItems';
 
 

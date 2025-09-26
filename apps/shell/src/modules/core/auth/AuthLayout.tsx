@@ -1,4 +1,5 @@
 import { Box, Text } from '@mantine/core';
+import { FC } from 'react';
 
 import authBackground from '@/assets/images/backgrounds/auth-background.jpg';
 
@@ -6,7 +7,7 @@ interface Props {
 	children: React.ReactNode;
 }
 
-export default function AuthLayout({ children }: Props) {
+export const AuthLayout: FC<Props> = ({ children }) => {
 	return (
 		<Box
 			className='w-full h-screen dark:text-[--mantine-colors-dark] flex flex-col'
@@ -23,7 +24,7 @@ export default function AuthLayout({ children }: Props) {
 			<Footer/>
 		</Box>
 	);
-}
+};
 
 
 const Footer: React.FC = () => (
