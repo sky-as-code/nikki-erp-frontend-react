@@ -6,9 +6,18 @@
 		"dev": "turbo run dev",
 		"dev:shell": "turbo run dev --filter=shellbff",
 		"lint": "eslint --fix ./**/*.{ts,tsx,js,jsx,mjs,json}",
-		"check-types": "turbo run check-types"
+		"lint:staged": "lint-staged",
+		"check-types": "turbo run check-types",
+		"prepare": "husky"
+	},
+	"lint-staged": {
+		"*.{ts,tsx,js,jsx}": [
+			"eslint --fix"
+		]
 	},
 	"devDependencies": {
+		"@commitlint/cli": "^20.0.0",
+		"@commitlint/config-conventional": "^20.0.0",
 		"@eslint/js": "~9.25.1",
 		"@next/eslint-plugin-next": "~15.3.1",
 		"@stylistic/eslint-plugin": "~4.2.0",
@@ -31,5 +40,9 @@
 	"engines": {
 		"node": ">=22.19.0",
 		"pnpm": ">=10.17.0"
+	},
+	"dependencies": {
+		"husky": "^9.1.7",
+		"lint-staged": "^16.2.1"
 	}
 }
