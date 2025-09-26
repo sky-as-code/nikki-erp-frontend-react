@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import { Tabs as MTabs } from '@mantine/core';
-import React from 'react';
+import { Tabs as MTabs } from '@mantine/core'
+import React from 'react'
 
-import classes from './Tabs.module.css';
+import classes from './Tabs.module.css'
 
 
-export type TabsProps = Omit<React.ComponentProps<typeof MTabs>, 'classNames'>;
+export type TabsProps = Omit<React.ComponentProps<typeof MTabs>, 'classNames'>
 
 export const Tabs: React.FC<TabsProps> = (props) => {
 	return (
@@ -16,9 +16,9 @@ export const Tabs: React.FC<TabsProps> = (props) => {
 		>
 			{props.children}
 		</MTabs>
-	);
-};
+	)
+}
 
-export const TabList = MTabs.List;
-export const TabListItem = MTabs.Tab;
-export const TabPanel = MTabs.Panel;
+export const TabList = MTabs.List
+export const TabListItem = MTabs.Tab
+export const TabPanel = MTabs.Panel

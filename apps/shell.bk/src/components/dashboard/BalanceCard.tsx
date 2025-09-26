@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {Button,
 	Card, CardSection,
@@ -8,10 +8,10 @@ import {Button,
 	Space,
 	Stack,
 	Text,
-	Title} from '@mantine/core';
-import { IconArrowRight, IconArrowUp } from '@tabler/icons-react';
+	Title} from '@mantine/core'
+import { IconArrowRight, IconArrowUp } from '@tabler/icons-react'
 
-import classes from './Dashboard.module.css';
+import classes from './Dashboard.module.css'
 
 const BalanceLeftStack = () => (
 	<Stack gap='md' style={{ flex: 1 }}>
@@ -47,7 +47,7 @@ const BalanceLeftStack = () => (
 			View more
 		</Button>
 	</Stack>
-);
+)
 
 const BalanceRightStack = () => (
 	<Stack style={{ flex: 1 }}>
@@ -85,7 +85,7 @@ const BalanceRightStack = () => (
 			</Title>
 		</Stack>
 	</Stack>
-);
+)
 
 export function BalanceCard() {
 	return (
@@ -107,5 +107,5 @@ export function BalanceCard() {
 				<BalanceRightStack />
 			</CardSection>
 		</Card>
-	);
+	)
 }

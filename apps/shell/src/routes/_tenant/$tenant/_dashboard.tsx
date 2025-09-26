@@ -1,16 +1,16 @@
-import { navLinks } from '@common/envVars';
+import { navLinks } from '@common/envVars'
 import {
 	AppShell,
 	Burger,
 	Text,
 	useMantineColorScheme,
 	useMantineTheme,
-} from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+} from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
-import { Navbar } from '@/common/components/Navbar/Navbar';
-import { AdminHeader } from '@/modules/core/dashboard/AdminHeader';
+import { Navbar } from '@/common/components/Navbar/Navbar'
+import { AdminHeader } from '@/modules/core/dashboard/AdminHeader'
 
 export const Route = createFileRoute('/_tenant/$tenant/_dashboard')({
 	component: () => (
@@ -18,19 +18,19 @@ export const Route = createFileRoute('/_tenant/$tenant/_dashboard')({
 			<Outlet />
 		</DashboardLayout>
 	),
-});
+})
 
 interface Props {
 	children: React.ReactNode;
 }
 
 function DashboardLayout({ children }: Props) {
-	const [opened, { toggle }] = useDisclosure();
-	const { colorScheme } = useMantineColorScheme();
-	const theme = useMantineTheme();
+	const [opened, { toggle }] = useDisclosure()
+	const { colorScheme } = useMantineColorScheme()
+	const theme = useMantineTheme()
 
 	const bg =
-		colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+		colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0]
 
 	return (
 		<AppShell
@@ -67,5 +67,5 @@ function DashboardLayout({ children }: Props) {
 				</Text>
 			</AppShell.Footer>
 		</AppShell>
-	);
+	)
 }

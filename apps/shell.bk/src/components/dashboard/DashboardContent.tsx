@@ -1,13 +1,13 @@
-import { Flex, Grid, GridCol } from '@mantine/core';
+import { Flex, Grid, GridCol } from '@mantine/core'
 
-import { StatsGroup } from '../StatsGroup';
-import { mockData } from '../StatsGroup/mock';
+import { StatsGroup } from '../StatsGroup'
+import { mockData } from '../StatsGroup/mock'
 
-import { BalanceCard } from './BalanceCard';
-import { OverviewCard } from './OverviewCard';
-import { ProfileCard } from './ProfileCard';
-import { TransactionCard } from './TransactionCard';
-import { WelcomeCard } from './WelcomeCard';
+import { BalanceCard } from './BalanceCard'
+import { OverviewCard } from './OverviewCard'
+import { ProfileCard } from './ProfileCard'
+import { TransactionCard } from './TransactionCard'
+import { WelcomeCard } from './WelcomeCard'
 
 export function DashboardContent() {
 	return (
@@ -39,5 +39,5 @@ export function DashboardContent() {
 				<TransactionCard />
 			</GridCol>
 		</Grid>
-	);
+	)
 }

@@ -13,12 +13,13 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TenantRouteImport } from './routes/_tenant'
 import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as TenantTenantIndexRouteImport } from './routes/_tenant/$tenant/index'
 import { Route as TenantTenantSettingsRouteImport } from './routes/_tenant/$tenant/_settings'
 import { Route as TenantTenantDashboardRouteImport } from './routes/_tenant/$tenant/_dashboard'
-import { Route as TenantTenantSplatRouteImport } from './routes/_tenant/$tenant/$'
 import { Route as TenantTenantSettingsSettingsIndexRouteImport } from './routes/_tenant/$tenant/_settings/settings/index'
 import { Route as TenantTenantDashboardDashboardIndexRouteImport } from './routes/_tenant/$tenant/_dashboard/dashboard/index'
 import { Route as TenantTenantSettingsSettingsUsersRouteImport } from './routes/_tenant/$tenant/_settings/settings/_users'
@@ -43,6 +44,11 @@ const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -63,6 +69,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRoute,
 } as any)
+const TenantTenantIndexRoute = TenantTenantIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TenantTenantRoute,
+} as any)
 const TenantTenantSettingsRoute = TenantTenantSettingsRouteImport.update({
   id: '/_settings',
   getParentRoute: () => TenantTenantRoute,
@@ -70,11 +81,6 @@ const TenantTenantSettingsRoute = TenantTenantSettingsRouteImport.update({
 const TenantTenantDashboardRoute = TenantTenantDashboardRouteImport.update({
   id: '/_dashboard',
   getParentRoute: () => TenantTenantRoute,
-} as any)
-const TenantTenantSplatRoute = TenantTenantSplatRouteImport.update({
-  id: '/$tenant/$',
-  path: '/$tenant/$',
-  getParentRoute: () => TenantRoute,
 } as any)
 const TenantTenantSettingsSettingsRoute =
   TenantTenantSettingsSettingsRouteImport.update({
@@ -144,10 +150,11 @@ const TenantTenantSettingsSettingsUsersUsersUserIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
-  '/$tenant/$': typeof TenantTenantSplatRoute
   '/$tenant': typeof TenantTenantSettingsRouteWithChildren
+  '/$tenant/': typeof TenantTenantIndexRoute
   '/$tenant/settings': typeof TenantTenantSettingsSettingsUsersRouteWithChildren
   '/$tenant/dashboard': typeof TenantTenantDashboardDashboardIndexRoute
   '/$tenant/settings/': typeof TenantTenantSettingsSettingsIndexRoute
@@ -161,10 +168,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
-  '/$tenant/$': typeof TenantTenantSplatRoute
-  '/$tenant': typeof TenantTenantSettingsRouteWithChildren
+  '/$tenant': typeof TenantTenantIndexRoute
   '/$tenant/settings': typeof TenantTenantSettingsSettingsIndexRoute
   '/$tenant/dashboard': typeof TenantTenantDashboardDashboardIndexRoute
   '/$tenant/dashboard/chart': typeof TenantTenantDashboardDashboardChartIndexRoute
@@ -178,14 +185,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/_auth': typeof AuthRouteWithChildren
   '/_tenant': typeof TenantRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
-  '/_tenant/$tenant/$': typeof TenantTenantSplatRoute
   '/_tenant/$tenant': typeof TenantTenantRouteWithChildren
   '/_tenant/$tenant/_dashboard': typeof TenantTenantDashboardRouteWithChildren
   '/_tenant/$tenant/_settings': typeof TenantTenantSettingsRouteWithChildren
+  '/_tenant/$tenant/': typeof TenantTenantIndexRoute
   '/_tenant/$tenant/_settings/settings': typeof TenantTenantSettingsSettingsRouteWithChildren
   '/_tenant/$tenant/_settings/settings/_users': typeof TenantTenantSettingsSettingsUsersRouteWithChildren
   '/_tenant/$tenant/_dashboard/dashboard/': typeof TenantTenantDashboardDashboardIndexRoute
@@ -202,10 +210,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$'
     | '/login'
     | '/register'
-    | '/$tenant/$'
     | '/$tenant'
+    | '/$tenant/'
     | '/$tenant/settings'
     | '/$tenant/dashboard'
     | '/$tenant/settings/'
@@ -219,9 +228,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$'
     | '/login'
     | '/register'
-    | '/$tenant/$'
     | '/$tenant'
     | '/$tenant/settings'
     | '/$tenant/dashboard'
@@ -235,14 +244,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/$'
     | '/_auth'
     | '/_tenant'
     | '/_auth/login'
     | '/_auth/register'
-    | '/_tenant/$tenant/$'
     | '/_tenant/$tenant'
     | '/_tenant/$tenant/_dashboard'
     | '/_tenant/$tenant/_settings'
+    | '/_tenant/$tenant/'
     | '/_tenant/$tenant/_settings/settings'
     | '/_tenant/$tenant/_settings/settings/_users'
     | '/_tenant/$tenant/_dashboard/dashboard/'
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
   AuthRoute: typeof AuthRouteWithChildren
   TenantRoute: typeof TenantRouteWithChildren
 }
@@ -276,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: ''
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -306,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_tenant/$tenant/': {
+      id: '/_tenant/$tenant/'
+      path: '/'
+      fullPath: '/$tenant/'
+      preLoaderRoute: typeof TenantTenantIndexRouteImport
+      parentRoute: typeof TenantTenantRoute
+    }
     '/_tenant/$tenant/_settings': {
       id: '/_tenant/$tenant/_settings'
       path: ''
@@ -319,13 +344,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/$tenant'
       preLoaderRoute: typeof TenantTenantDashboardRouteImport
       parentRoute: typeof TenantTenantRoute
-    }
-    '/_tenant/$tenant/$': {
-      id: '/_tenant/$tenant/$'
-      path: '/$tenant/$'
-      fullPath: '/$tenant/$'
-      preLoaderRoute: typeof TenantTenantSplatRouteImport
-      parentRoute: typeof TenantRoute
     }
     '/_tenant/$tenant/_settings/settings': {
       id: '/_tenant/$tenant/_settings/settings'
@@ -499,11 +517,13 @@ const TenantTenantSettingsRouteWithChildren =
 interface TenantTenantRouteChildren {
   TenantTenantDashboardRoute: typeof TenantTenantDashboardRouteWithChildren
   TenantTenantSettingsRoute: typeof TenantTenantSettingsRouteWithChildren
+  TenantTenantIndexRoute: typeof TenantTenantIndexRoute
 }
 
 const TenantTenantRouteChildren: TenantTenantRouteChildren = {
   TenantTenantDashboardRoute: TenantTenantDashboardRouteWithChildren,
   TenantTenantSettingsRoute: TenantTenantSettingsRouteWithChildren,
+  TenantTenantIndexRoute: TenantTenantIndexRoute,
 }
 
 const TenantTenantRouteWithChildren = TenantTenantRoute._addFileChildren(
@@ -511,12 +531,10 @@ const TenantTenantRouteWithChildren = TenantTenantRoute._addFileChildren(
 )
 
 interface TenantRouteChildren {
-  TenantTenantSplatRoute: typeof TenantTenantSplatRoute
   TenantTenantRoute: typeof TenantTenantRouteWithChildren
 }
 
 const TenantRouteChildren: TenantRouteChildren = {
-  TenantTenantSplatRoute: TenantTenantSplatRoute,
   TenantTenantRoute: TenantTenantRouteWithChildren,
 }
 
@@ -525,6 +543,7 @@ const TenantRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
   AuthRoute: AuthRouteWithChildren,
   TenantRoute: TenantRouteWithChildren,
 }

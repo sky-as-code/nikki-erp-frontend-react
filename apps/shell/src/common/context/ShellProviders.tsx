@@ -1,8 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-import { AuthProvider } from '@/modules/core/auth/AuthProvider';
-import { ConfigProvider } from '@/modules/core/provider/ConfigProvider';
-import { EnvVars } from '@/types/envVars';
+import { AuthProvider } from '@/modules/core/auth/AuthProvider'
+import { ConfigProvider } from '@/modules/core/provider/ConfigProvider'
+import { EnvVars } from '@/types/envVars'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -10,11 +10,11 @@ const queryClient = new QueryClient({
 			retry: false,
 		},
 	},
-});
+})
 
 export type ShellProvidersProps = React.PropsWithChildren & {
 	envVars: EnvVars;
-};
+}
 
 export const ShellProviders: React.FC<ShellProvidersProps> = ({
 	children,
@@ -29,5 +29,5 @@ export const ShellProviders: React.FC<ShellProvidersProps> = ({
 				</ConfigProvider>
 			</QueryClientProvider>
 		</AuthProvider>
-	);
-};
+	)
+}

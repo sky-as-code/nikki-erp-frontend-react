@@ -9,13 +9,13 @@ import {
 	PopoverWidth,
 	ScrollArea,
 	useCombobox,
-} from '@mantine/core';
-import { FC, JSX, useEffect, useState } from 'react';
+} from '@mantine/core'
+import { FC, JSX, useEffect, useState } from 'react'
 
 export type SearchableSelectItem = {
 	value: string;
 	label: string;
-};
+}
 
 export type SearchableSelectProps = {
 	actionOptionLabel?: string;
@@ -28,29 +28,30 @@ export type SearchableSelectProps = {
 	unselectedPlaceholder?: string;
 	value?: string | null;
 	onChange?: (value: string) => void;
-};
+}
 
 /**
  * @see https://mantine.dev/combobox/?e=SelectDropdownSearch
  */
+// eslint-disable-next-line max-lines-per-function
 export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 	const props = {
 		...rawProps,
 		searchBoxEnabledAt: rawProps.searchBoxEnabledAt ?? 5,
-	};
-	const { value: activeValue } = props;
+	}
+	const { value: activeValue } = props
 	const isSearchBoxEnabled =
-		props.items.length >= Number(props.searchBoxEnabledAt);
+		props.items.length >= Number(props.searchBoxEnabledAt)
 	const { search, setSearch, activeItem, setActiveItem, combobox } =
-		useSearchSelect(isSearchBoxEnabled);
+		useSearchSelect(isSearchBoxEnabled)
 
 	useEffect(() => {
-		let selectedItem: SearchableSelectItem | undefined;
+		let selectedItem: SearchableSelectItem | undefined
 		if (activeValue) {
-			selectedItem = findItem(props.items, activeValue);
-			selectedItem && setActiveItem(selectedItem);
+			selectedItem = findItem(props.items, activeValue)
+			selectedItem && setActiveItem(selectedItem)
 		}
-	}, [activeValue, props.items]);
+	}, [activeValue, props.items])
 
 	const options = props.items
 		.filter((item) =>
@@ -64,17 +65,19 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 			>
 				{item.label || item.value}
 			</Combobox.Option>
-		));
+		))
+
+
 	return (
 		<Combobox
 			store={combobox}
 			withinPortal={false}
 			width={props.dropdownWidth}
 			onOptionSubmit={(val) => {
-				const selected = findItem(props.items, val);
-				setActiveItem(selected);
-				combobox.closeDropdown();
-				props.onChange?.(val);
+				const selected = findItem(props.items, val)
+				setActiveItem(selected)
+				combobox.closeDropdown()
+				props.onChange?.(val)
 			}}
 		>
 			<ComboboxTarget
@@ -94,37 +97,37 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 				options={options}
 			/>
 		</Combobox>
-	);
-};
+	)
+}
 
 function useSearchSelect(isSearchBoxEnabled: boolean) {
-	const [search, setSearch] = useState('');
+	const [search, setSearch] = useState('')
 	const [activeItem, setActiveItem] = useState<
 		SearchableSelectItem | null | undefined
-	>(null);
+	>(null)
 
 	const combobox = useCombobox({
 		onDropdownClose: () => {
-			combobox.resetSelectedOption();
+			combobox.resetSelectedOption()
 			// combobox.focusTarget();
-			setSearch('');
+			setSearch('')
 		},
 		onDropdownOpen: (eventSource) => {
-			isSearchBoxEnabled && combobox.focusSearchInput();
-			combobox.selectActiveOption();
+			isSearchBoxEnabled && combobox.focusSearchInput()
+			combobox.selectActiveOption()
 			// if (eventSource === 'keyboard') {
 			// }
 			// else {
 			// 	combobox.updateSelectedOptionIndex('active');
 			// }
 		},
-	});
+	})
 
-	return { search, setSearch, activeItem, setActiveItem, combobox };
+	return { search, setSearch, activeItem, setActiveItem, combobox }
 }
 
 function findItem(items: SearchableSelectItem[], value: string) {
-	return items.find((item) => item.value === value);
+	return items.find((item) => item.value === value)
 }
 
 type ComboboxTargetProps = {
@@ -132,11 +135,11 @@ type ComboboxTargetProps = {
 	combobox: ComboboxStore;
 	triggerComponent?: typeof Button;
 	unselectedPlaceholder?: string;
-};
+}
 
 const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
-	const { value, combobox } = props;
-	const TriggerComponent = props.triggerComponent ?? Button;
+	const { value, combobox } = props
+	const TriggerComponent = props.triggerComponent ?? Button
 
 	return (
 		<Combobox.Target>
@@ -151,8 +154,8 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 				)}
 			</TriggerComponent>
 		</Combobox.Target>
-	);
-};
+	)
+}
 
 type ComboboxDropdownProps = {
 	actionOptionLabel?: string;
@@ -163,7 +166,7 @@ type ComboboxDropdownProps = {
 	scrollAreaHeight?: MantineStyleProps['mah'];
 	totalOptsCount: number; // Number of options without applied search/filter
 	options: JSX.Element[];
-};
+}
 
 const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
 	return (
@@ -195,5 +198,5 @@ const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
 				</ScrollArea.Autosize>
 			</Combobox.Options>
 		</Combobox.Dropdown>
-	);
-};
+	)
+}

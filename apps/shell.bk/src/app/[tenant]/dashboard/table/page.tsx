@@ -1,6 +1,6 @@
-import { PageContainer } from '@/components/PageContainer/PageContainer';
-import { PaginationTable } from '@/components/Table/PaginationTable';
-import { SimpleTable } from '@/components/Table/SimpleTable';
+import { PageContainer } from '@/components/PageContainer/PageContainer'
+import { PaginationTable } from '@/components/Table/PaginationTable'
+import { SimpleTable } from '@/components/Table/SimpleTable'
 
 export default function TablePage() {
 	return (
@@ -8,5 +8,5 @@ export default function TablePage() {
 			<SimpleTable />
 			<PaginationTable />
 		</PageContainer>
-	);
+	)
 }

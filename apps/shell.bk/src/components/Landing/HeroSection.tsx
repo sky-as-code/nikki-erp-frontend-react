@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import { Button, Container, Group, Text, Title } from '@mantine/core';
-import { IconArrowRight, IconStar } from '@tabler/icons-react';
-import { useRouter } from 'next/navigation';
+import { Button, Container, Group, Text, Title } from '@mantine/core'
+import { IconArrowRight, IconStar } from '@tabler/icons-react'
+import { useRouter } from 'next/navigation'
 
-import classes from './HeroSection.module.css';
+import classes from './HeroSection.module.css'
 
 export function HeroSection() {
-	const router = useRouter();
+	const router = useRouter()
 
 	return (
 		<Container pt='sm' size='lg' className={classes.wrapper}>
@@ -24,7 +24,7 @@ export function HeroSection() {
 						gradient={{ from: 'primary', to: 'pink' }}
 						className={classes.control}
 						onClick={() => {
-							router.push('/bananas');
+							router.push('/bananas')
 						}}
 						rightSection={<IconArrowRight size={16} />}
 					>
@@ -42,5 +42,5 @@ export function HeroSection() {
 				</Group>
 			</div>
 		</Container>
-	);
+	)
 }

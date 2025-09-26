@@ -1,7 +1,8 @@
 
-import { Logo } from '@/common/components/Logo/Logo';
-import {  Box, Button, Card, Divider, Stack } from '@mantine/core';
-import { RegisterForm } from '@modules/core/auth/RegisterForm';
+import {  Box, Button, Card, Divider, Stack } from '@mantine/core'
+import { RegisterForm } from '@modules/core/auth/RegisterForm'
+
+import { Logo } from '@/common/components/Logo/Logo'
 
 
 export const RegisterPage = () => {
@@ -32,5 +33,5 @@ export const RegisterPage = () => {
 			</Card>
 		</Box>
 
-	);
-};
+	)
+}

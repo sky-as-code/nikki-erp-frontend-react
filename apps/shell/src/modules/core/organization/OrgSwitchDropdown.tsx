@@ -1,30 +1,30 @@
 
 
-import React, { useMemo } from 'react';
+import React, { useMemo } from 'react'
 
-import { useConfig } from '../provider/ConfigProvider';
+import { useConfig } from '../provider/ConfigProvider'
 
-import { useTenantUrl } from '@/common/context/TenantUrlProvider';
-import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@/common/components/SearchableSelect';
+import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@/common/components/SearchableSelect'
+import { useTenantUrl } from '@/common/context/TenantUrlProvider'
 
 
-export type OrgSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'>;
+export type OrgSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'>
 
 export const OrgSwitchDropdown: React.FC<OrgSwitchDropdownProps> = (props) => {
-	const { userSettings } = useConfig();
-	const { orgSlug, redirectToOrg } = useTenantUrl();
+	const { userSettings } = useConfig()
+	const { orgSlug, redirectToOrg } = useTenantUrl()
 
 	const items = useMemo(() => {
-		if (!userSettings?.orgs) return [];
+		if (!userSettings?.orgs) return []
 		return userSettings.orgs.map<SearchableSelectItem>((org) => ({
 			value: org.slug,
 			label: org.name,
-		}));
-	}, [userSettings?.orgs]);
+		}))
+	}, [userSettings?.orgs])
 
 	const handleOrgChange = (orgSlug: string) => {
-		redirectToOrg(orgSlug);
-	};
+		redirectToOrg(orgSlug)
+	}
 
 	return (
 		<FlatSearchableSelect
@@ -43,5 +43,5 @@ export const OrgSwitchDropdown: React.FC<OrgSwitchDropdownProps> = (props) => {
 			value={orgSlug}
 			onChange={handleOrgChange}
 		/>
-	);
-};
+	)
+}

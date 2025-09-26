@@ -14,4 +14,4 @@ export const mockData = [
 		value: '$ 0.745',
 		diff: 18,
 	},
-];
+]

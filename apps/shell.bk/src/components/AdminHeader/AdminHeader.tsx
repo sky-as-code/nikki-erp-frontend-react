@@ -1,14 +1,14 @@
-import { ActionIcon, Box, Drawer, Stack, TextInput } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { IconSearch, IconSettings } from '@tabler/icons-react';
+import { ActionIcon, Box, Drawer, Stack, TextInput } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
+import { IconSearch, IconSettings } from '@tabler/icons-react'
 
 
-import { ThemeSwitcher } from '../../common/components/ThemeSwitcher/ThemeSwitcher';
-import { DirectionSwitcher } from '../directionSwitcher/DirectionSwitcher';
+import { ThemeSwitcher } from '../../common/components/ThemeSwitcher/ThemeSwitcher'
+import { DirectionSwitcher } from '../directionSwitcher/DirectionSwitcher'
 
-import classes from './AdminHeader.module.css';
+import classes from './AdminHeader.module.css'
 
-import { MenuBar } from '@/components/MenuBar';
+import { MenuBar } from '@/components/MenuBar'
 
 
 
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function AdminHeader({ burger }: Props) {
-	const [opened, { close, open }] = useDisclosure(false);
+	const [opened, { close, open }] = useDisclosure(false)
 
 	return (
 		<header className={classes.header}>
@@ -47,5 +47,5 @@ export function AdminHeader({ burger }: Props) {
 				</Stack>
 			</Drawer>
 		</header>
-	);
+	)
 }

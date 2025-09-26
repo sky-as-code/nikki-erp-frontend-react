@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
 
-import { Logo } from '@components/Logo/Logo';
-import {  Box, Button, Card, Divider, Stack } from '@mantine/core';
-import { RegisterForm } from '@modules/core/auth/RegisterForm';
-import { useRouter } from 'next/navigation';
+import { Logo } from '@components/Logo/Logo'
+import {  Box, Button, Card, Divider, Stack } from '@mantine/core'
+import { RegisterForm } from '@modules/core/auth/RegisterForm'
+import { useRouter } from 'next/navigation'
 
 
 export const RegisterPage = () => {
-	const router = useRouter();
+	const router = useRouter()
 
 	return (
 		<Box className='w-full max-w-[500px] min-w-[400px] p-10' mx='auto'>
@@ -35,5 +35,5 @@ export const RegisterPage = () => {
 			</Card>
 		</Box>
 
-	);
-};
+	)
+}

@@ -1,9 +1,9 @@
-import { Button, useMantineColorScheme } from '@mantine/core';
-import { IconMoonStars, IconSun } from '@tabler/icons-react';
+import { Button, useMantineColorScheme } from '@mantine/core'
+import { IconMoonStars, IconSun } from '@tabler/icons-react'
 
 
 export const ThemeSwitcher: React.FC = () => {
-	const { colorScheme, setColorScheme } = useMantineColorScheme();
+	const { colorScheme, setColorScheme } = useMantineColorScheme()
 	return (
 		<Button
 			variant='subtle'
@@ -12,8 +12,8 @@ export const ThemeSwitcher: React.FC = () => {
 			{(colorScheme === 'dark') && <IconMoonStars onClick={() => setColorScheme('light')} />}
 			{(colorScheme === 'light') && <IconSun onClick={() => setColorScheme('dark')} />}
 		</Button>
-	);
-};
+	)
+}
 
 
 // export const ThemeSwitcher = () => {

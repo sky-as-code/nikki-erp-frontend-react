@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import { type Direction, Group, Radio, useDirection } from '@mantine/core';
+import { type Direction, Group, Radio, useDirection } from '@mantine/core'
 
 export const DirectionSwitcher = () => {
-	const { dir, setDirection } = useDirection();
+	const { dir, setDirection } = useDirection()
 
 	return (
 		<Radio.Group
@@ -17,5 +17,5 @@ export const DirectionSwitcher = () => {
 				<Radio value='rtl' label='RTL' />
 			</Group>
 		</Radio.Group>
-	);
-};
+	)
+}

@@ -1,1 +1,1 @@
-export * from './AppGridHeader';
+export * from './AppGridHeader'

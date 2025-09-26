@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import DetailPage from '@app/[tenant]/DetailPage';
-import { TableContextType } from '@components/Table/DataTable';
+import DetailPage from '@app/[tenant]/DetailPage'
+import { TableContextType } from '@components/Table/DataTable'
 import {
 	Button,
 	ButtonProps,
@@ -11,7 +11,7 @@ import {
 	Popover,
 	Stack,
 	Text,
-} from '@mantine/core';
+} from '@mantine/core'
 import {
 	IconChevronLeft,
 	IconChevronLeftPipe,
@@ -27,19 +27,19 @@ import {
 	IconBriefcase,
 	IconDeviceFloppy,
 	IconFolders,
-} from '@tabler/icons-react';
-import clsx from 'clsx';
-import React, { DOMAttributes } from 'react';
+} from '@tabler/icons-react'
+import clsx from 'clsx'
+import React, { DOMAttributes } from 'react'
 
-import { PageLayout } from '../../../PageLayout';
+import { PageLayout } from '../../../PageLayout'
 
-import { useUIState } from '@/common/context/UIProviders';
+import { useUIState } from '@/common/context/UIProviders'
 
 export const UserDetailPage: React.FC = () => {
-	return <DetailPage pageSlug='users' component={UserDetailInner} />;
-};
+	return <DetailPage pageSlug='users' component={UserDetailInner} />
+}
 
-export default UserDetailPage;
+export default UserDetailPage
 
 // type UserDetailPageProps = {
 // 	id?: string,
@@ -50,7 +50,7 @@ const UserDetailInner: React.FC<{
 	id: string;
 	isSplit: boolean;
 }> = React.memo(({ id, isSplit }) => {
-	const { backgroundColor } = useUIState();
+	const { backgroundColor } = useUIState()
 	return (
 		<PageLayout
 			isSplitBig={isSplit}
@@ -58,13 +58,13 @@ const UserDetailInner: React.FC<{
 		>
 			User detail
 		</PageLayout>
-	);
-});
+	)
+})
 
 type ContentHeaderProps = {
 	backgroundColor: MantineStyleProps['bg'];
 	id?: string;
-};
+}
 
 const ContentHeader: React.FC<ContentHeaderProps> = ({
 	backgroundColor,
@@ -114,13 +114,13 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
 				</Group>
 			</Group>
 		</>
-	);
-};
+	)
+}
 
 type ToolbarButtonProps = ButtonProps &
 	DOMAttributes<HTMLButtonElement> & {
 		isActive?: boolean;
-	};
+	}
 const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 	children,
 	isActive,
@@ -135,17 +135,17 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 		>
 			{children}
 		</Button>
-	);
-};
+	)
+}
 
 const TableActions: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 	const {
 		totalRows,
 		pagination: { pageIndex, pageSize },
-	} = ctxVal;
-	const lastPage = Math.floor(totalRows / pageSize);
-	const start = pageIndex * pageSize + 1;
-	const end = Math.min((pageIndex + 1) * pageSize, totalRows);
+	} = ctxVal
+	const lastPage = Math.floor(totalRows / pageSize)
+	const start = pageIndex * pageSize + 1
+	const end = Math.min((pageIndex + 1) * pageSize, totalRows)
 
 	return (
 		<Button.Group>
@@ -175,8 +175,8 @@ const TableActions: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 			</ToolbarButton>
 			<TableSettings ctxVal={ctxVal} />
 		</Button.Group>
-	);
-};
+	)
+}
 
 const TableSettings: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 	return (
@@ -217,5 +217,5 @@ const TableSettings: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 				</Stack>
 			</Popover.Dropdown>
 		</Popover>
-	);
-};
+	)
+}

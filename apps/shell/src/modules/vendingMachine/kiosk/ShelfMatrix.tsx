@@ -1,18 +1,18 @@
 
 
-import { ActionIcon, Anchor, Avatar, Group, Stack, Text } from '@mantine/core';
-import { IconPencil, IconTrash } from '@tabler/icons-react';
+import { ActionIcon, Anchor, Avatar, Group, Stack, Text } from '@mantine/core'
+import { IconPencil, IconTrash } from '@tabler/icons-react'
 import {
 	ColumnDef,
 	createColumnHelper,
 	flexRender,
 	getCoreRowModel,
 	useReactTable,
-} from '@tanstack/react-table';
-import clsx from 'clsx';
-import * as React from 'react';
+} from '@tanstack/react-table'
+import clsx from 'clsx'
+import * as React from 'react'
 
-import classes from './ShelfMatrix.module.css';
+import classes from './ShelfMatrix.module.css'
 
 type Person = {
 	firstName: string
@@ -21,7 +21,7 @@ type Person = {
 	visits: number
 	status: string
 	progress: number
-};
+}
 
 type KioskSlot = {
 	// TODO: Product should be another type
@@ -32,7 +32,7 @@ type KioskSlot = {
 	maxQuantity: number,
 	currentQuantity: number,
 	isAlert: boolean,
-};
+}
 
 const defaultData: Person[] = [
 	{
@@ -59,9 +59,9 @@ const defaultData: Person[] = [
 		status: 'Complicated',
 		progress: 10,
 	},
-];
+]
 
-const columnHelper = createColumnHelper<KioskSlot[]>();
+const columnHelper = createColumnHelper<KioskSlot[]>()
 
 function createRowHeaderDef(): ColumnDef<KioskSlot[]> {
 	return columnHelper.display({
@@ -74,9 +74,9 @@ function createRowHeaderDef(): ColumnDef<KioskSlot[]> {
 					<Text size='md'>Push Tape</Text>
 					<ActionIcon variant='subtle' size='xl'><IconTrash color='red' /></ActionIcon>
 				</Stack>
-			);
+			)
 		},
-	});
+	})
 }
 
 function createColumnDef(colIdx: number): ColumnDef<KioskSlot[]> {
@@ -86,9 +86,9 @@ function createColumnDef(colIdx: number): ColumnDef<KioskSlot[]> {
 
 		cell: (props) => {
 			// const row = props.row[props.rowIdx];
-			const { row: { index : rowIdx } } = props;
-			const colIdx = props.column.getIndex();
-			const model = props.row.original[colIdx];
+			const { row: { index : rowIdx } } = props
+			const colIdx = props.column.getIndex()
+			const model = props.row.original[colIdx]
 
 			return (
 				<Stack gap='sm' className={clsx({
@@ -111,12 +111,12 @@ function createColumnDef(colIdx: number): ColumnDef<KioskSlot[]> {
 						{/* <IconCircleFilled color={(rowIdx + colIdx) % 2 === 0 ? 'orange' : 'green'} /> */}
 					</Group>
 				</Stack>
-			);
+			)
 		},
-	};
+	}
 }
 
-const matrix: KioskSlot[][] = [];
+const matrix: KioskSlot[][] = []
 
 for (let i = 0; i < 10; ++i) {
 	matrix.push(Array(10).fill({
@@ -127,30 +127,30 @@ for (let i = 0; i < 10; ++i) {
 		maxQuantity: 5,
 		currentQuantity: 5,
 		isAlert: true,
-	}));
+	}))
 }
 
 
 // eslint-disable-next-line max-lines-per-function
 export const ShelfMatrix: React.FC = () => {
-	const maxCols = 10;
+	const maxCols = 10
 	const columnDef: ColumnDef<KioskSlot[]>[] = [
 		createRowHeaderDef(),
-	];
+	]
 
 	for (let i = 1; i <= maxCols; ++i) {
-		columnDef.push(createColumnDef(i));
+		columnDef.push(createColumnDef(i))
 	}
 
-	const columns = React.useMemo(() => columnDef, []);
+	const columns = React.useMemo(() => columnDef, [])
 
-	const [data, _setData] = React.useState(() => [...defaultData]);
+	const [data, _setData] = React.useState(() => [...defaultData])
 
 	const table = useReactTable({
 		data: matrix,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
-	});
+	})
 
 	return (
 		<div className={classes.shelfMatrix}>
@@ -212,5 +212,5 @@ export const ShelfMatrix: React.FC = () => {
 				</tfoot>
 			</table>
 		</div>
-	);
-};
+	)
+}

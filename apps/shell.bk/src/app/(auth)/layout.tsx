@@ -1,6 +1,6 @@
-import { Box, Text } from '@mantine/core';
+import { Box, Text } from '@mantine/core'
 
-import authBackground from '@/assets/images/backgrounds/auth-background.jpg';
+import authBackground from '@/assets/images/backgrounds/auth-background.jpg'
 
 interface Props {
 	children: React.ReactNode;
@@ -22,7 +22,7 @@ export default function AuthLayout({ children }: Props) {
 			</Box>
 			<Footer/>
 		</Box>
-	);
+	)
 }
 
 
@@ -40,4 +40,4 @@ const Footer: React.FC = () => (
 	>
 		Copyright © 2025 Nikki ERP
 	</Text>
-);
+)

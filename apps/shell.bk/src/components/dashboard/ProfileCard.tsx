@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
 	ActionIcon,
@@ -12,18 +12,18 @@ import {
 	Stack,
 	Text,
 	Title,
-} from '@mantine/core';
+} from '@mantine/core'
 import {
 	IconDots, IconEye, IconFileZip, IconTrash,
-} from '@tabler/icons-react';
+} from '@tabler/icons-react'
 
 const sectionStyle = {
 	padding: 'var(--mantine-spacing-md)',
 	borderTop: '1px solid lightdark(var(--mantine-colors-gray-3), var(--mantine-colors-dark-4))',
-};
+}
 
 function formatWalletAddress(address: string) {
-	return `${address.slice(0, 12)}..${address.slice(-4)}`;
+	return `${address.slice(0, 12)}..${address.slice(-4)}`
 }
 
 function ProfileMenu() {
@@ -47,7 +47,7 @@ function ProfileMenu() {
 				</MenuItem>
 			</MenuDropdown>
 		</Menu>
-	);
+	)
 }
 
 function ProfileHeader() {
@@ -72,7 +72,7 @@ function ProfileHeader() {
 				</Text>
 			</Flex>
 		</>
-	);
+	)
 }
 
 function BalanceInfo() {
@@ -91,7 +91,7 @@ function BalanceInfo() {
 				<Title order={3}>Etherum</Title>
 			</Stack>
 		</Group>
-	);
+	)
 }
 
 function ActionButtons() {
@@ -100,7 +100,7 @@ function ActionButtons() {
 			<Button variant='light'>Deposit</Button>
 			<Button>Buy/Sell</Button>
 		</Group>
-	);
+	)
 }
 
 export function ProfileCard() {
@@ -118,5 +118,5 @@ export function ProfileCard() {
 				<ActionButtons />
 			</CardSection>
 		</Card>
-	);
+	)
 }

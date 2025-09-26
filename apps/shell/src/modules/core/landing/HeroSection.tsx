@@ -1,13 +1,13 @@
 
 
-import { Button, Container, Group, Title } from '@mantine/core';
-import { IconArrowRight, IconStar } from '@tabler/icons-react';
-import { useNavigate } from '@tanstack/react-router';
+import { Button, Container, Group, Title } from '@mantine/core'
+import { IconArrowRight, IconStar } from '@tabler/icons-react'
+import { useNavigate } from '@tanstack/react-router'
 
-import classes from './HeroSection.module.css';
+import classes from './HeroSection.module.css'
 
 export function HeroSection() {
-	const navigate = useNavigate();
+	const navigate = useNavigate()
 
 	return (
 		<Container pt='sm' size='lg' className={classes.wrapper}>
@@ -24,7 +24,7 @@ export function HeroSection() {
 						gradient={{ from: 'primary', to: 'pink' }}
 						className={classes.control}
 						onClick={() => {
-							navigate({ to: '/bananas' });
+							navigate({ to: '/bananas' })
 						}}
 						rightSection={<IconArrowRight size={16} />}
 					>
@@ -42,5 +42,5 @@ export function HeroSection() {
 				</Group>
 			</div>
 		</Container>
-	);
+	)
 }

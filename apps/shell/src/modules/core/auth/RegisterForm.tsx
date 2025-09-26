@@ -1,5 +1,5 @@
 
-import { Box, Button, Text, PasswordInput, Space, TextInput } from '@mantine/core';
+import { Box, Button, Text, PasswordInput, Space, TextInput } from '@mantine/core'
 
 export function RegisterForm() {
 	return (
@@ -23,5 +23,5 @@ export function RegisterForm() {
 				Sign Up
 			</Button>
 		</Box>
-	);
+	)
 }

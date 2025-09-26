@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react'
 
-import { mockData } from './mock';
+import { mockData } from './mock'
 
-import { StatsGroup } from '.';
+import { StatsGroup } from '.'
 
 const meta: Meta<typeof StatsGroup> = {
 	title: 'Components/StatsGroup',
@@ -13,9 +13,9 @@ const meta: Meta<typeof StatsGroup> = {
 		// More on how to position stories at: https://storybook.js.org/docs/7.0/react/configure/story-layout
 		layout: 'centered',
 	},
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof StatsGroup>;
+export default meta
+type Story = StoryObj<typeof StatsGroup>
 
-export const Default: Story = {render: () => <StatsGroup data={mockData} />};
+export const Default: Story = {render: () => <StatsGroup data={mockData} />}

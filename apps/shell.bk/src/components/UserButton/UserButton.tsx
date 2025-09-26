@@ -2,9 +2,9 @@ import {Avatar,
 	Flex,
 	Text,
 	UnstyledButton,
-	type UnstyledButtonProps} from '@mantine/core';
+	type UnstyledButtonProps} from '@mantine/core'
 
-import classes from './UserButton.module.css';
+import classes from './UserButton.module.css'
 
 interface UserButtonProps extends UnstyledButtonProps {
 	image: string;
@@ -31,5 +31,5 @@ export function UserButton({
 				</div>
 			</Flex>
 		</UnstyledButton>
-	);
+	)
 }

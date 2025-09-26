@@ -20,4 +20,4 @@ export type EnvVars = {
 	 * Eg: If application is deployed at example.com, then root domain is example.com
 	 */
 	ROOT_DOMAIN: string,
-};
+}

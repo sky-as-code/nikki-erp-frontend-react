@@ -1,30 +1,30 @@
 
 
-import { useMemo } from 'react';
+import { useMemo } from 'react'
 
-import { useConfig } from '../provider';
+import { useConfig } from '../provider'
 
-import { useTenantUrl } from '@/common/context/TenantUrlProvider';
-import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@/common/components/SearchableSelect';
+import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@/common/components/SearchableSelect'
+import { useTenantUrl } from '@/common/context/TenantUrlProvider'
 
 
-export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'>;
+export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'>
 
 export const ModuleSwitchDropdown: React.FC<ModuleSwitchDropdownProps> = (props) => {
-	const { redirectToModule } = useTenantUrl();
-	const { userSettings, activeModule } = useConfig();
+	const { redirectToModule } = useTenantUrl()
+	const { userSettings, activeModule } = useConfig()
 
 	const items = useMemo(() => {
-		if (!userSettings?.modules) return [];
+		if (!userSettings?.modules) return []
 		return userSettings?.modules.map<SearchableSelectItem>((mod) => ({
 			value: mod.slug,
 			label: mod.label,
-		}));
-	}, [userSettings?.modules]);
+		}))
+	}, [userSettings?.modules])
 
 	const handleModuleChange = (modSlug: string) => {
-		redirectToModule(modSlug);
-	};
+		redirectToModule(modSlug)
+	}
 
 	return (
 		<FlatSearchableSelect
@@ -43,5 +43,5 @@ export const ModuleSwitchDropdown: React.FC<ModuleSwitchDropdownProps> = (props)
 			value={activeModule?.slug}
 			onChange={handleModuleChange}
 		/>
-	);
-};
+	)
+}

@@ -1,16 +1,16 @@
-import '@/styles/global.css';
+import '@/styles/global.css'
 
-import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
-import type { Metadata } from 'next';
-import React, { Suspense } from 'react';
+import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core'
+import type { Metadata } from 'next'
+import React, { Suspense } from 'react'
 
-import { NoSSR } from '@/common/components/NoSSR';
-import { ShellProviders } from '@/common/context/ShellProviders';
-import { UIProviders } from '@/common/context/UIProviders';
-import { loadEnvVars } from '@/common/envVars';
-import { initRequestMaker } from '@/common/request';
-import { LoadingSpinner } from '@/components/loading';
-import { inter } from '@/styles/fonts';
+import { NoSSR } from '@/common/components/NoSSR'
+import { ShellProviders } from '@/common/context/ShellProviders'
+import { UIProviders } from '@/common/context/UIProviders'
+import { loadEnvVars } from '@/common/envVars'
+import { initRequestMaker } from '@/common/request'
+import { LoadingSpinner } from '@/components/loading'
+import { inter } from '@/styles/fonts'
 
 export const metadata: Metadata = {
 	metadataBase: new URL('https://mantine-admin.vercel.app/'),
@@ -34,15 +34,15 @@ export const metadata: Metadata = {
 	],
 	creator: 'jotyy',
 	manifest: 'https://mantine-admin.vercel.app/site.webmanifest',
-};
+}
 
 export default function RootLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const envVars = loadEnvVars();
-	initRequestMaker({ baseUrl: envVars.BASE_API_URL });
+	const envVars = loadEnvVars()
+	initRequestMaker({ baseUrl: envVars.BASE_API_URL })
 	return (
 		<html lang='en-US' {...mantineHtmlProps}>
 			<head>
@@ -62,5 +62,5 @@ export default function RootLayout({
 				</NoSSR>
 			</body>
 		</html>
-	);
+	)
 }

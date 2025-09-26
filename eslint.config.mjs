@@ -1,11 +1,11 @@
-import js from '@eslint/js';
-import stylistic from '@stylistic/eslint-plugin';
-import parserTs from '@typescript-eslint/parser';
-import { defineConfig } from 'eslint/config';
-import importPlugin from 'eslint-plugin-import';
-import react from 'eslint-plugin-react';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+import js from '@eslint/js'
+import stylistic from '@stylistic/eslint-plugin'
+import parserTs from '@typescript-eslint/parser'
+import { defineConfig } from 'eslint/config'
+import importPlugin from 'eslint-plugin-import'
+import react from 'eslint-plugin-react'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
 export default defineConfig([
 	// Base configurations
@@ -40,7 +40,7 @@ export default defineConfig([
 			// '@stylistic/comma-dangle': ['error', 'always-multiline'],
 			'@stylistic/comma-spacing': ['error', { before: false, after: true }],
 			'@stylistic/comma-style': ['error', 'last'],
-			'@stylistic/indent': ['error', 'tab'],
+			// '@stylistic/indent': ['error', 'tab'],
 			'@stylistic/jsx-quotes': ['error', 'prefer-single'],
 			'@stylistic/max-len': [
 				'error',
@@ -64,7 +64,7 @@ export default defineConfig([
 					allowTemplateLiterals: true,
 				},
 			],
-			'@stylistic/semi': ['error', 'always'],
+			'@stylistic/semi': ['warn', 'never'],
 			'@stylistic/space-infix-ops': ['error', { int32Hint: true }],
 		},
 	},
@@ -228,4 +228,4 @@ export default defineConfig([
 			'**/public/',
 		],
 	},
-]);
+])

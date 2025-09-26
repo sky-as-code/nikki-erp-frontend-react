@@ -6,13 +6,13 @@ import {
 	factory,
 	Factory,
 	useProps,
-} from '@mantine/core';
+} from '@mantine/core'
 
-import { useMenuContext } from '../Menu.context';
-import classes from '../Menu.module.css';
+import { useMenuContext } from '../Menu.context'
+import classes from '../Menu.module.css'
 
 
-export type MenuLabelStylesNames = 'label';
+export type MenuLabelStylesNames = 'label'
 
 export interface MenuLabelProps
 	extends BoxProps,
@@ -24,17 +24,17 @@ export type MenuLabelFactory = Factory<{
 	ref: HTMLDivElement;
 	stylesNames: MenuLabelStylesNames;
 	compound: true;
-}>;
+}>
 
-const defaultProps: Partial<MenuLabelProps> = {};
+const defaultProps: Partial<MenuLabelProps> = {}
 
 export const MenuLabel = factory<MenuLabelFactory>((props, ref) => {
 	const { classNames, className, style, styles, vars, ...others } = useProps(
 		'MenuLabel',
 		defaultProps,
 		props,
-	);
-	const ctx = useMenuContext();
+	)
+	const ctx = useMenuContext()
 
 	return (
 		<Box
@@ -42,8 +42,8 @@ export const MenuLabel = factory<MenuLabelFactory>((props, ref) => {
 			{...ctx.getStyles('label', { className, style, styles, classNames })}
 			{...others}
 		/>
-	);
-});
+	)
+})
 
-MenuLabel.classes = classes;
-MenuLabel.displayName = '@mantine/core/MenuLabel';
+MenuLabel.classes = classes
+MenuLabel.displayName = '@mantine/core/MenuLabel'

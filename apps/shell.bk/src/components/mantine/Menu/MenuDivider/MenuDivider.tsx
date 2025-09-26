@@ -6,13 +6,13 @@ import {
 	factory,
 	Factory,
 	useProps,
-} from '@mantine/core';
+} from '@mantine/core'
 
-import { useMenuContext } from '../Menu.context';
-import classes from '../Menu.module.css';
+import { useMenuContext } from '../Menu.context'
+import classes from '../Menu.module.css'
 
 
-export type MenuDividerStylesNames = 'divider';
+export type MenuDividerStylesNames = 'divider'
 
 export interface MenuDividerProps
 	extends BoxProps,
@@ -24,17 +24,17 @@ export type MenuDividerFactory = Factory<{
 	ref: HTMLDivElement;
 	stylesNames: MenuDividerStylesNames;
 	compound: true;
-}>;
+}>
 
-const defaultProps: Partial<MenuDividerProps> = {};
+const defaultProps: Partial<MenuDividerProps> = {}
 
 export const MenuDivider = factory<MenuDividerFactory>((props, ref) => {
 	const { classNames, className, style, styles, vars, ...others } = useProps(
 		'MenuDivider',
 		defaultProps,
 		props,
-	);
-	const ctx = useMenuContext();
+	)
+	const ctx = useMenuContext()
 
 	return (
 		<Box
@@ -42,8 +42,8 @@ export const MenuDivider = factory<MenuDividerFactory>((props, ref) => {
 			{...ctx.getStyles('divider', { className, style, styles, classNames })}
 			{...others}
 		/>
-	);
-});
+	)
+})
 
-MenuDivider.classes = classes;
-MenuDivider.displayName = '@mantine/core/MenuDivider';
+MenuDivider.classes = classes
+MenuDivider.displayName = '@mantine/core/MenuDivider'

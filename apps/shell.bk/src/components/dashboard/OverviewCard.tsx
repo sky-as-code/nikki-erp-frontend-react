@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import { Card, Title } from '@mantine/core';
+import { Card, Title } from '@mantine/core'
 import {CategoryScale,
 	Chart as ChartJS,
 	Legend,
 	LinearScale,
 	LineElement,
 	PointElement,
-	Tooltip} from 'chart.js';
-import { Line } from 'react-chartjs-2';
+	Tooltip} from 'chart.js'
+import { Line } from 'react-chartjs-2'
 
 ChartJS.register(
 	CategoryScale,
@@ -17,15 +17,15 @@ ChartJS.register(
 	LineElement,
 	Tooltip,
 	Legend,
-);
+)
 
 export const options = {
 	responsive: true,
 	smooth: true,
 	plugins: {legend: {position: 'top' as const}},
-};
+}
 
-const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July']
 
 export const data = {
 	labels,
@@ -45,7 +45,7 @@ export const data = {
 			backgroundColor: '#748FFC',
 		},
 	],
-};
+}
 
 export function OverviewCard() {
 	return (
@@ -62,5 +62,5 @@ export function OverviewCard() {
 			<Title order={5}>Overview</Title>
 			<Line options={options} data={data} />
 		</Card>
-	);
+	)
 }

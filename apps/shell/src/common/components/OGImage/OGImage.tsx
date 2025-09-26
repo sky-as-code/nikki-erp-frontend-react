@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export const OGImage = () => {
 	return (
@@ -59,5 +59,5 @@ export const OGImage = () => {
 				Mantine Admin
 			</div>
 		</div>
-	);
-};
+	)
+}

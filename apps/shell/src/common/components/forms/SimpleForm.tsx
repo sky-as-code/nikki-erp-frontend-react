@@ -1,24 +1,24 @@
 
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Button, Paper, Space, Text, TextInput } from '@mantine/core';
-import { modals } from '@mantine/modals';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Box, Button, Paper, Space, Text, TextInput } from '@mantine/core'
+import { modals } from '@mantine/modals'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
 const schema = z.object({
 	name: z.string().min(1, { message: 'Username is required' }),
 	email: z.string().email('Email is not valid'),
-});
+})
 
-type User = z.infer<typeof schema>;
+type User = z.infer<typeof schema>
 
 export const SimpleForm = () => {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<User>({resolver: zodResolver(schema)});
+	} = useForm<User>({resolver: zodResolver(schema)})
 
 	const onSubmit = (data: User) =>
 		modals.openConfirmModal({
@@ -26,7 +26,7 @@ export const SimpleForm = () => {
 			children: <Text size='sm'>{data.name}</Text>,
 			labels: { confirm: 'Confirm', cancel: 'Cancel' },
 			onConfirm: () => console.log('Confirmed'),
-		});
+		})
 
 	return (
 		<Paper withBorder shadow='md' p='md' w='400px'>
@@ -52,5 +52,5 @@ export const SimpleForm = () => {
 				<Button onClick={handleSubmit(onSubmit)}>Register</Button>
 			</Box>
 		</Paper>
-	);
-};
+	)
+}

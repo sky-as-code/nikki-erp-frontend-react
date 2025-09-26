@@ -11,15 +11,15 @@ import {
 	useDirection,
 	useMantineTheme,
 	useProps,
-} from '@mantine/core';
-import { useMergedRef } from '@mantine/hooks';
-import { useRef } from 'react';
+} from '@mantine/core'
+import { useMergedRef } from '@mantine/hooks'
+import { useRef } from 'react'
 
-import { useMenuContext } from '../Menu.context';
-import classes from '../Menu.module.css';
+import { useMenuContext } from '../Menu.context'
+import classes from '../Menu.module.css'
 
 
-export type MenuItemStylesNames = 'item' | 'itemLabel' | 'itemSection';
+export type MenuItemStylesNames = 'item' | 'itemLabel' | 'itemSection'
 
 export interface MenuItemProps extends BoxComponentProps, CompoundStylesApiProps<MenuItemFactory> {
 	'data-disabled'?: boolean;
@@ -49,9 +49,9 @@ export type MenuItemFactory = PolymorphicFactory<{
 	defaultComponent: 'button';
 	stylesNames: MenuItemStylesNames;
 	compound: true;
-}>;
+}>
 
-const defaultProps: Partial<MenuItemProps> = {};
+const defaultProps: Partial<MenuItemProps> = {}
 
 export const MenuItem = polymorphicFactory<MenuItemFactory>((props, ref) => {
 	const {
@@ -68,38 +68,38 @@ export const MenuItem = polymorphicFactory<MenuItemFactory>((props, ref) => {
 		disabled,
 		'data-disabled': dataDisabled,
 		...others
-	} = useProps('MenuItem', defaultProps, props);
+	} = useProps('MenuItem', defaultProps, props)
 
-	const ctx = useMenuContext();
-	const theme = useMantineTheme();
-	const { dir } = useDirection();
-	const itemRef = useRef<HTMLButtonElement>(null);
-	const itemIndex = ctx.getItemIndex(itemRef.current!);
-	const _others: any = others;
+	const ctx = useMenuContext()
+	const theme = useMantineTheme()
+	const { dir } = useDirection()
+	const itemRef = useRef<HTMLButtonElement>(null)
+	const itemIndex = ctx.getItemIndex(itemRef.current!)
+	const _others: any = others
 
-	const handleMouseLeave = createEventHandler(_others.onMouseLeave, () => ctx.setHovered(-1));
+	const handleMouseLeave = createEventHandler(_others.onMouseLeave, () => ctx.setHovered(-1))
 	const handleMouseEnter = createEventHandler(_others.onMouseEnter, () =>
 		ctx.setHovered(ctx.getItemIndex(itemRef.current!)),
-	);
+	)
 
 	const handleClick = createEventHandler(_others.onClick, () => {
 		if (dataDisabled) {
-			return;
+			return
 		}
 		if (typeof closeMenuOnClick === 'boolean') {
-			closeMenuOnClick && ctx.closeDropdownImmediately();
+			closeMenuOnClick && ctx.closeDropdownImmediately()
 		}
 		else {
-			ctx.closeOnItemClick && ctx.closeDropdownImmediately();
+			ctx.closeOnItemClick && ctx.closeDropdownImmediately()
 		}
-	});
+	})
 
 	const handleFocus = createEventHandler(_others.onFocus, () =>
 		ctx.setHovered(ctx.getItemIndex(itemRef.current!)),
-	);
+	)
 
-	const colors = color ? theme.variantColorResolver({ color, theme, variant: 'light' }) : undefined;
-	const parsedThemeColor = color ? parseThemeColor({ color, theme }) : null;
+	const colors = color ? theme.variantColorResolver({ color, theme, variant: 'light' }) : undefined
+	const parsedThemeColor = color ? parseThemeColor({ color, theme }) : null
 
 	return (
 		<UnstyledButton
@@ -145,8 +145,8 @@ export const MenuItem = polymorphicFactory<MenuItemFactory>((props, ref) => {
 				</div>
 			)}
 		</UnstyledButton>
-	);
-});
+	)
+})
 
-MenuItem.classes = classes;
-MenuItem.displayName = '@mantine/core/MenuItem';
+MenuItem.classes = classes
+MenuItem.displayName = '@mantine/core/MenuItem'

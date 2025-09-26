@@ -1,4 +1,4 @@
-import { SimpleGrid, Paper, Text, Stack, ThemeIcon, Box } from '@mantine/core';
+import { SimpleGrid, Paper, Text, Stack, ThemeIcon, Box } from '@mantine/core'
 import {
 	IconCalendarEvent, IconChecklist, IconCalendar,
 	IconClock, IconBook, IconUsers, IconBuildingStore, IconChartBar,
@@ -11,12 +11,12 @@ import {
 	IconReceipt2, IconStars, IconCoins, IconSearch, IconArrowBack,
 	IconClockPause, IconCircleDottedLetterN, IconSettings,
 	IconDeviceImacCog,
-} from '@tabler/icons-react';
-import { Link } from '@tanstack/react-router';
-import { FC } from 'react';
+} from '@tabler/icons-react'
+import { Link } from '@tanstack/react-router'
+import { FC } from 'react'
 
-import { useTenantUrl } from '@/common/context/TenantUrlProvider';
-import { NikkiModule } from '@/modules/core/types';
+import { useTenantUrl } from '@/common/context/TenantUrlProvider'
+import { NikkiModule } from '@/modules/core/types'
 
 
 const apps: NikkiModule[] = [
@@ -64,10 +64,10 @@ const apps: NikkiModule[] = [
 	{ icon: IconClockPause, label: 'Time Off', slug: 'time-off', color: 'orange' },
 	{ icon: IconReceipt2, label: 'Expenses', slug: 'expenses', color: 'blue' },
 	{ icon: IconDeviceImacCog, label: 'Vending Machine', slug: 'vending-machine', color: 'teal' },
-];
+]
 
 export const AppGrid: FC = () => {
-	const { orgSlug: org } = useTenantUrl();
+	const { orgSlug: org } = useTenantUrl()
 
 	return (
 		<SimpleGrid
@@ -110,7 +110,7 @@ export const AppGrid: FC = () => {
 				</Box>
 			))}
 		</SimpleGrid>
-	);
-};
+	)
+}
 
 

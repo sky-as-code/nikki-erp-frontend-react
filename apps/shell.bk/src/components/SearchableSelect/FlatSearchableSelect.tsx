@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import { Button, ButtonProps } from '@mantine/core';
-import React from 'react';
+import { Button, ButtonProps } from '@mantine/core'
+import React from 'react'
 
 import {
 	SearchableSelect,
 	SearchableSelectProps,
-} from '@/components/SearchableSelect';
+} from '@/components/SearchableSelect'
 
 export type FlatSearchableSelectProps = Omit<
 	SearchableSelectProps,
@@ -21,15 +21,15 @@ export type FlatSearchableSelectProps = Omit<
 	targetPt?: ButtonProps['pt'];
 	targetSize?: ButtonProps['size'];
 	targetVariant?: ButtonProps['variant'];
-};
+}
 
 export const FlatSearchableSelect: React.FC<FlatSearchableSelectProps> = (
 	props
 ) => {
 	return (
 		<SearchableSelect {...props} triggerComponent={createFlatButton(props)} />
-	);
-};
+	)
+}
 
 function createFlatButton(preProps: FlatSearchableSelectProps) {
 	const FlatButton: typeof Button = (({ children, ...props }: ButtonProps) => {
@@ -55,7 +55,7 @@ function createFlatButton(preProps: FlatSearchableSelectProps) {
 			>
 				{children}
 			</Button>
-		);
-	}) as any;
-	return FlatButton;
+		)
+	}) as any
+	return FlatButton
 }

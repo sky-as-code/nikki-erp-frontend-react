@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
 	AppShell,
@@ -6,20 +6,20 @@ import {
 	Text,
 	useMantineColorScheme,
 	useMantineTheme,
-} from '@mantine/core';
-import { TextInput } from '@mantine/core';
-import { IconFilter } from '@tabler/icons-react';
-import { FC } from 'react';
+} from '@mantine/core'
+import { TextInput } from '@mantine/core'
+import { IconFilter } from '@tabler/icons-react'
+import { FC } from 'react'
 
-import { AppGrid } from '@/components/AppGrid/AppGrid';
-import { AppGridHeader } from '@/components/AppGridHeader';
+import { AppGrid } from '@/components/AppGrid/AppGrid'
+import { AppGridHeader } from '@/components/AppGridHeader'
 
 const AppListPage: FC = () => {
-	const { colorScheme } = useMantineColorScheme();
-	const theme = useMantineTheme();
+	const { colorScheme } = useMantineColorScheme()
+	const theme = useMantineTheme()
 
 	const bg =
-		colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+		colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0]
 
 	return (
 		<AppShell
@@ -57,7 +57,7 @@ const AppListPage: FC = () => {
 				</Text>
 			</AppShell.Main>
 		</AppShell>
-	);
-};
+	)
+}
 
-export default AppListPage;
+export default AppListPage

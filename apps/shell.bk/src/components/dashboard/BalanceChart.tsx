@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import { ArcElement, Chart as ChartJS, Legend, Tooltip } from 'chart.js';
-import React from 'react';
-import { Doughnut } from 'react-chartjs-2';
+import { ArcElement, Chart as ChartJS, Legend, Tooltip } from 'chart.js'
+import React from 'react'
+import { Doughnut } from 'react-chartjs-2'
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 export const data = {
 	labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
@@ -31,8 +31,8 @@ export const data = {
 			borderWidth: 1,
 		},
 	],
-};
+}
 
 export function BalanceChart() {
-	return <Doughnut data={data} />;
+	return <Doughnut data={data} />
 }

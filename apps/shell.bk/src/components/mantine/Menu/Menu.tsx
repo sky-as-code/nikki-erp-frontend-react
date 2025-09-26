@@ -10,17 +10,17 @@ import {
 	useResolvedStylesApi,
 	useStyles,
 	__PopoverProps, Popover, PopoverStylesNames,
-} from '@mantine/core';
-import { useDidUpdate, useUncontrolled } from '@mantine/hooks';
-import { useState } from 'react';
+} from '@mantine/core'
+import { useDidUpdate, useUncontrolled } from '@mantine/hooks'
+import { useState } from 'react'
 
-import { MenuContextProvider } from './Menu.context';
-import classes from './Menu.module.css';
-import { MenuDivider } from './MenuDivider/MenuDivider';
-import { MenuDropdown } from './MenuDropdown/MenuDropdown';
-import { MenuItem } from './MenuItem/MenuItem';
-import { MenuLabel } from './MenuLabel/MenuLabel';
-import { MenuTarget } from './MenuTarget/MenuTarget';
+import { MenuContextProvider } from './Menu.context'
+import classes from './Menu.module.css'
+import { MenuDivider } from './MenuDivider/MenuDivider'
+import { MenuDropdown } from './MenuDropdown/MenuDropdown'
+import { MenuItem } from './MenuItem/MenuItem'
+import { MenuLabel } from './MenuLabel/MenuLabel'
+import { MenuTarget } from './MenuTarget/MenuTarget'
 
 
 export type MenuStylesNames =
@@ -29,13 +29,13 @@ export type MenuStylesNames =
   | 'itemSection'
   | 'label'
   | 'divider'
-  | PopoverStylesNames;
+  | PopoverStylesNames
 
 export type MenuFactory = Factory<{
 	props: MenuProps;
 	ref: HTMLDivElement;
 	stylesNames: MenuStylesNames;
-}>;
+}>
 
 export interface MenuProps extends __PopoverProps, StylesApiProps<MenuFactory> {
 	variant?: string;
@@ -105,10 +105,10 @@ const defaultProps: Partial<MenuProps> = {
 	openDelay: 0,
 	closeDelay: 100,
 	menuItemTabIndex: -1,
-};
+}
 
 export function Menu(_props: MenuProps) {
-	const props = useProps('Menu', defaultProps, _props);
+	const props = useProps('Menu', defaultProps, _props)
 	const {
 		children,
 		onOpen,
@@ -132,7 +132,7 @@ export function Menu(_props: MenuProps) {
 		keepMounted,
 		withInitialFocusPlaceholder,
 		...others
-	} = props;
+	} = props
 
 	const getStyles = useStyles<MenuFactory>({
 		name: 'Menu',
@@ -141,46 +141,46 @@ export function Menu(_props: MenuProps) {
 		classNames,
 		styles,
 		unstyled,
-	});
+	})
 
-	const [hovered, { setHovered, resetHovered }] = useHovered();
+	const [hovered, { setHovered, resetHovered }] = useHovered()
 	const [_opened, setOpened] = useUncontrolled({
 		value: opened,
 		defaultValue: defaultOpened,
 		finalValue: false,
 		onChange,
-	});
-	const [openedViaClick, setOpenedViaClick] = useState(false);
+	})
+	const [openedViaClick, setOpenedViaClick] = useState(false)
 
 	const close = () => {
-		setOpened(false);
-		setOpenedViaClick(false);
-		_opened && onClose?.();
-	};
+		setOpened(false)
+		setOpenedViaClick(false)
+		_opened && onClose?.()
+	}
 
 	const open = () => {
-		setOpened(true);
-		!_opened && onOpen?.();
-	};
+		setOpened(true)
+		!_opened && onOpen?.()
+	}
 
 	const toggleDropdown = () => {
-		_opened ? close() : open();
-	};
+		_opened ? close() : open()
+	}
 
-	const { openDropdown, closeDropdown } = useDelayedHover({ open, close, closeDelay, openDelay });
+	const { openDropdown, closeDropdown } = useDelayedHover({ open, close, closeDelay, openDelay })
 
 	const getItemIndex = (node: HTMLButtonElement) =>
-		getContextItemIndex('[data-menu-item]', '[data-menu-dropdown]', node);
+		getContextItemIndex('[data-menu-item]', '[data-menu-dropdown]', node)
 
 	const { resolvedClassNames, resolvedStyles } = useResolvedStylesApi<MenuFactory>({
 		classNames,
 		styles,
 		props,
-	});
+	})
 
 	useDidUpdate(() => {
-		resetHovered();
-	}, [_opened]);
+		resetHovered()
+	}, [_opened])
 
 	return (
 		<MenuContextProvider
@@ -221,15 +221,15 @@ export function Menu(_props: MenuProps) {
 				{children}
 			</Popover>
 		</MenuContextProvider>
-	);
+	)
 }
 
-Menu.extend = (input: ExtendComponent<MenuFactory>) => input;
-Menu.withProps = getWithProps<MenuProps, MenuProps>(Menu as any);
-Menu.classes = classes as Record<string, string>;
-Menu.displayName = '@mantine/core/Menu';
-Menu.Item = MenuItem;
-Menu.Label = MenuLabel;
-Menu.Dropdown = MenuDropdown;
-Menu.Target = MenuTarget;
-Menu.Divider = MenuDivider;
+Menu.extend = (input: ExtendComponent<MenuFactory>) => input
+Menu.withProps = getWithProps<MenuProps, MenuProps>(Menu as any)
+Menu.classes = classes as Record<string, string>
+Menu.displayName = '@mantine/core/Menu'
+Menu.Item = MenuItem
+Menu.Label = MenuLabel
+Menu.Dropdown = MenuDropdown
+Menu.Target = MenuTarget
+Menu.Divider = MenuDivider

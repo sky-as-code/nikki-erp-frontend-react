@@ -1,21 +1,21 @@
-'use client';
+'use client'
 
-import { ThemeSwitcher } from '@common/components/ThemeSwitcher/ThemeSwitcher';
-import { UserAvatar } from '@common/components/UserAvatar/UserAvatar';
-import { Logo } from '@components/Logo/Logo';
-import { Breadcrumbs, Group, Stack } from '@mantine/core';
-import clsx from 'clsx';
-import { createContext, useContext, useState } from 'react';
+import { ThemeSwitcher } from '@common/components/ThemeSwitcher/ThemeSwitcher'
+import { UserAvatar } from '@common/components/UserAvatar/UserAvatar'
+import { Logo } from '@components/Logo/Logo'
+import { Breadcrumbs, Group, Stack } from '@mantine/core'
+import clsx from 'clsx'
+import { createContext, useContext, useState } from 'react'
 
-import classes from './ModuleLayout.module.css';
+import classes from './ModuleLayout.module.css'
 
-import { useUIState } from '@/common/context/UIProviders';
-import { MenuBar } from '@/components/MenuBar';
-import { ModuleSwitchDropdown } from '@/modules/core/organization/ModuleSwitchDropdown';
-import { OrgSwitchDropdown } from '@/modules/core/organization/OrgSwitchDropdown';
-import { NavItem } from '@/types/navItem';
+import { useUIState } from '@/common/context/UIProviders'
+import { MenuBar } from '@/components/MenuBar'
+import { ModuleSwitchDropdown } from '@/modules/core/organization/ModuleSwitchDropdown'
+import { OrgSwitchDropdown } from '@/modules/core/organization/OrgSwitchDropdown'
+import { NavItem } from '@/types/navItem'
 
-export type LayoutSplitMode = '3_7' | '1_9' | '10_0' | '0_10';
+export type LayoutSplitMode = '3_7' | '1_9' | '10_0' | '0_10'
 
 export type ModuleLayoutContextType = {
 	is3_7: boolean;
@@ -24,30 +24,30 @@ export type ModuleLayoutContextType = {
 	is10_0: boolean;
 	setSplitMode: (mode: LayoutSplitMode) => void;
 	splitRequest: any;
-};
+}
 
 const ModuleLayoutContext = createContext<ModuleLayoutContextType | undefined>(
 	undefined
-);
+)
 
 export const useModuleLayout = (): ModuleLayoutContextType => {
-	const context = useContext(ModuleLayoutContext);
+	const context = useContext(ModuleLayoutContext)
 	if (!context) {
-		throw new Error('useModuleLayout must be used within ModuleLayoutProvider');
+		throw new Error('useModuleLayout must be used within ModuleLayoutProvider')
 	}
-	return context;
-};
+	return context
+}
 
 export type ModuleLayoutProps = React.PropsWithChildren<{
 	navItems: NavItem[];
-}>;
+}>
 
 export const ModuleLayout: React.FC<ModuleLayoutProps> = ({
 	children,
 	navItems,
 }) => {
-	const { backgroundColor } = useUIState();
-	const [splitMode, setSplitMode] = useState<LayoutSplitMode | null>(null);
+	const { backgroundColor } = useUIState()
+	const [splitMode, setSplitMode] = useState<LayoutSplitMode | null>(null)
 
 	const contextValue: ModuleLayoutContextType = {
 		is3_7: splitMode === '3_7',
@@ -56,7 +56,7 @@ export const ModuleLayout: React.FC<ModuleLayoutProps> = ({
 		is10_0: splitMode === '10_0',
 		setSplitMode,
 		splitRequest: null,
-	};
+	}
 
 	return (
 		<ModuleLayoutContext.Provider value={contextValue}>
@@ -72,13 +72,13 @@ export const ModuleLayout: React.FC<ModuleLayoutProps> = ({
 				</Group>
 			</Stack>
 		</ModuleLayoutContext.Provider>
-	);
-};
+	)
+}
 
 const Header: React.FC<{ navItems: NavItem[] }> = ({ navItems }) => {
-	const { isMobile } = useUIState();
+	const { isMobile } = useUIState()
 
-	if (isMobile) return null;
+	if (isMobile) return null
 
 	return (
 		<Group
@@ -111,5 +111,5 @@ const Header: React.FC<{ navItems: NavItem[] }> = ({ navItems }) => {
 				<UserAvatar />
 			</Group>
 		</Group>
-	);
-};
+	)
+}

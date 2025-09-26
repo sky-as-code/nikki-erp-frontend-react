@@ -1,9 +1,9 @@
 
-'use client';
+'use client'
 
-import { Anchor, Paper, Space, Title } from '@mantine/core';
-import { type MRT_ColumnDef, MantineReactTable, useMantineReactTable } from 'mantine-react-table';
-import { useMemo } from 'react';
+import { Anchor, Paper, Space, Title } from '@mantine/core'
+import { type MRT_ColumnDef, MantineReactTable, useMantineReactTable } from 'mantine-react-table'
+import { useMemo } from 'react'
 
 export type Person = {
 	id: string,
@@ -14,7 +14,7 @@ export type Person = {
 	address: string,
 	city: string,
 	state: string,
-};
+}
 
 export const data: Person[] = [
 	{
@@ -724,14 +724,14 @@ export const data: Person[] = [
 		city: 'Seattle',
 		state: 'Washington',
 	},
-];
+]
 
 export const columns: MRT_ColumnDef<Person>[] = [
 	{
 		accessorKey: 'name.firstName', //access nested data with dot notation
 		header: 'First Name',
 		Cell: ({ cell }) => {
-			const model: Person = cell.row.original;
+			const model: Person = cell.row.original
 			return (
 				<Anchor
 					href={`/${model.id}`}
@@ -739,7 +739,7 @@ export const columns: MRT_ColumnDef<Person>[] = [
 				>
 					{cell.getValue<string>()}
 				</Anchor>
-			);
+			)
 		},
 	},
 	{
@@ -758,7 +758,7 @@ export const columns: MRT_ColumnDef<Person>[] = [
 		accessorKey: 'state',
 		header: 'State',
 	},
-];
+]
 
 export const SimpleTable = () => {
 	//should be memoized or stable
@@ -805,7 +805,7 @@ export const SimpleTable = () => {
 		enableBottomToolbar: true,
 		enablePagination: true,
 		positionPagination: 'both',
-	});
+	})
 
 	return (
 		<MantineReactTable
@@ -857,5 +857,5 @@ export const SimpleTable = () => {
 		// 	<Title order={5}>Simple</Title>
 		// 	<Space h='md' />
 		// </Paper>
-	);
-};
+	)
+}

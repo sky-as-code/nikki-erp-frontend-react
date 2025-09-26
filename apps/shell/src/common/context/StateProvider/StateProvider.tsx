@@ -3,5 +3,5 @@ export const StateProvider: React.FC<React.PropsWithChildren> = ({children}) => 
 		<>
 			{children}
 		</>
-	);
-};
+	)
+}

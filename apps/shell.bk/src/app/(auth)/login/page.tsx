@@ -1,5 +1,5 @@
-'use client';
+'use client'
 
-import { LoginPage } from '@modules/core/auth/LoginPage';
+import { LoginPage } from '@modules/core/auth/LoginPage'
 
-export default LoginPage;
+export default LoginPage

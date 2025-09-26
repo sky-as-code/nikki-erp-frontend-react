@@ -5,14 +5,14 @@ import {
 	ThemeIcon,
 	UnstyledButton,
 	useDirection,
-} from '@mantine/core';
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
-import { useState } from 'react';
+} from '@mantine/core'
+import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
+import { Link, useRouterState } from '@tanstack/react-router'
+import { useState } from 'react'
 
-import classes from './NavLinksGroup.module.css';
+import classes from './NavLinksGroup.module.css'
 
-import { useTenantUrl } from '@/common/context/TenantUrlProvider';
-import { Link, useRouterState } from '@tanstack/react-router';
+import { useTenantUrl } from '@/common/context/TenantUrlProvider'
 
 interface LinkItemProps {
 	label: string;
@@ -46,11 +46,11 @@ export function NavLinksGroup({
 	initiallyOpened,
 	links,
 }: NavLinksGroupProps) {
-	const routerState = useRouterState();
-	const pathname = routerState.location.pathname;
-	const hasLinks = Array.isArray(links);
-	const [opened, setOpened] = useState(initiallyOpened || false);
-	const { getFullPath } = useTenantUrl();
+	const routerState = useRouterState()
+	const pathname = routerState.location.pathname
+	const hasLinks = Array.isArray(links)
+	const [opened, setOpened] = useState(initiallyOpened || false)
+	const { getFullPath } = useTenantUrl()
 
 	const items = (hasLinks ? links : []).map((link) => (
 		<LinkItem
@@ -59,7 +59,7 @@ export function NavLinksGroup({
 			link={getFullPath(link.link)}
 			pathname={pathname}
 		/>
-	));
+	))
 
 	return (
 		<>
@@ -81,7 +81,7 @@ export function NavLinksGroup({
 			)}
 			{hasLinks ? <Collapse in={opened}>{items}</Collapse> : null}
 		</>
-	);
+	)
 }
 
 const LinkItem = ({ label, link, pathname }: LinkItemProps) => (
@@ -92,7 +92,7 @@ const LinkItem = ({ label, link, pathname }: LinkItemProps) => (
 	>
 		{label}
 	</Link>
-);
+)
 
 const IconBox = ({ icon: Icon, label }: IconBoxProps) => (
 	<Box style={{ display: 'flex', alignItems: 'center' }}>
@@ -101,10 +101,10 @@ const IconBox = ({ icon: Icon, label }: IconBoxProps) => (
 		</ThemeIcon>
 		<Box ml='md'>{label}</Box>
 	</Box>
-);
+)
 
 const ChevronButton = ({ opened, dir }: { opened: boolean; dir: string }) => {
-	const ChevronIcon = dir === 'ltr' ? IconChevronRight : IconChevronLeft;
+	const ChevronIcon = dir === 'ltr' ? IconChevronRight : IconChevronLeft
 	return (
 		<ChevronIcon
 			className={classes.chevron}
@@ -114,8 +114,8 @@ const ChevronButton = ({ opened, dir }: { opened: boolean; dir: string }) => {
 				transform: opened ? `rotate(${dir === 'rtl' ? -90 : 90}deg)` : 'none',
 			}}
 		/>
-	);
-};
+	)
+}
 
 const ControlButton = ({
 	icon,
@@ -124,7 +124,7 @@ const ControlButton = ({
 	hasLinks,
 	onClick,
 }: ControlButtonProps) => {
-	const { dir } = useDirection();
+	const { dir } = useDirection()
 	return (
 		<UnstyledButton onClick={onClick} className={classes.control}>
 			<Group gap={0} justify='space-between'>
@@ -132,8 +132,8 @@ const ControlButton = ({
 				{hasLinks && <ChevronButton opened={opened} dir={dir} />}
 			</Group>
 		</UnstyledButton>
-	);
-};
+	)
+}
 
 const NavLink = ({
 	link,
@@ -143,11 +143,11 @@ const NavLink = ({
 }: NavLinksGroupProps & { pathname: string }) => (
 	<Link
 		// href={link!}
-		className={`${classes.control} ${link === pathname && classes.activeControl}`} 
-		to={link!}	
+		className={`${classes.control} ${link === pathname && classes.activeControl}`}
+		to={link!}
 		>
 		<Group gap={0} justify='space-between'>
 			<IconBox icon={icon} label={label} />
 		</Group>
 	</Link>
-);
+)

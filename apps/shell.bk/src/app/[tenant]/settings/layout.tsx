@@ -1,8 +1,8 @@
-'use client';
+'use client'
 
-import { ModuleLayout } from '../ModuleLayout';
+import { ModuleLayout } from '../ModuleLayout'
 
-import navItems from '@/modules/settings/navItems';
+import navItems from '@/modules/settings/navItems'
 
 
 const SettingsLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
@@ -12,7 +12,7 @@ const SettingsLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
 		>
 			{children}
 		</ModuleLayout>
-	);
-};
+	)
+}
 
-export default SettingsLayout;
+export default SettingsLayout

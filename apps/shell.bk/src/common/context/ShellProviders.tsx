@@ -1,11 +1,11 @@
-'use client';
+'use client'
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import { AuthProvider } from '@/modules/core/auth/AuthProvider';
-import { ConfigProvider } from '@/modules/core/ConfigProvider';
-import { EnvVars } from '@/types/envVars';
+import { AuthProvider } from '@/modules/core/auth/AuthProvider'
+import { ConfigProvider } from '@/modules/core/ConfigProvider'
+import { EnvVars } from '@/types/envVars'
 
 
 
@@ -15,11 +15,11 @@ const queryClient = new QueryClient({
 			retry: false,
 		},
 	},
-});
+})
 
 export type ShellProvidersProps = React.PropsWithChildren & {
 	envVars: EnvVars;
-};
+}
 
 export const ShellProviders: React.FC<ShellProvidersProps> = ({ children, envVars }) => {
 	return (
@@ -31,5 +31,5 @@ export const ShellProviders: React.FC<ShellProvidersProps> = ({ children, envVar
 				</ConfigProvider>
 			</QueryClientProvider>
 		</AuthProvider>
-	);
-};
+	)
+}

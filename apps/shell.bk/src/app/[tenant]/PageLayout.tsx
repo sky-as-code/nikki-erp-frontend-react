@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import { Box } from '@mantine/core';
-import clsx from 'clsx';
+import { Box } from '@mantine/core'
+import clsx from 'clsx'
 
-import classes from './ModuleLayout.module.css';
+import classes from './ModuleLayout.module.css'
 
-import { useUIState } from '@/common/context/UIProviders';
+import { useUIState } from '@/common/context/UIProviders'
 
 type PageLayoutProps = React.PropsWithChildren<{
 	isSplitSmall?: boolean;
 	isSplitBig?: boolean;
 	isCollapsed?: boolean;
 	toolbar?: React.ReactNode;
-}>;
+}>
 
 export const PageLayout: React.FC<PageLayoutProps> = ({
 	children,
@@ -21,7 +21,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 	isSplitBig,
 	toolbar,
 }) => {
-	const { isMobile, isScrollingUp } = useUIState();
+	const { isMobile, isScrollingUp } = useUIState()
 
 	return (
 		<Box
@@ -57,5 +57,5 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 			)}
 			{children}
 		</Box>
-	);
-};
+	)
+}

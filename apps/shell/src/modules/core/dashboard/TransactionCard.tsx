@@ -1,13 +1,13 @@
 
 
 
-import { Card, CardSection, Title } from '@mantine/core';
-import { MRT_ColumnDef, MRT_Table } from 'mantine-react-table';
+import { Card, CardSection, Title } from '@mantine/core'
+import { MRT_ColumnDef, MRT_Table } from 'mantine-react-table'
 
-import classes from './Dashboard.module.css';
+import classes from './Dashboard.module.css'
 
-import { TanStackFix } from '@/common/components/TanStackFix';
-import { useCustomTable } from '@/hooks/useCustomTable';
+import { TanStackFix } from '@/common/components/TanStackFix'
+import { useCustomTable } from '@/hooks/useCustomTable'
 
 
 interface Block {
@@ -56,7 +56,7 @@ const tableColumns: MRT_ColumnDef<Block>[] = [
 		accessorFn: (row) => new Date(row.block_time * 1000).toLocaleString(),
 		header: 'Age',
 	},
-];
+]
 
 function TransactionTable({ data }: { data: Block[] }) {
 	const table = useCustomTable({
@@ -70,13 +70,13 @@ function TransactionTable({ data }: { data: Block[] }) {
 				pageSize: 5,
 			},
 		},
-	});
+	})
 
 	return (
 		<TanStackFix>
 			<MRT_Table table={table} />;
 		</TanStackFix>
-	);
+	)
 }
 
 function CardHeader() {
@@ -84,7 +84,7 @@ function CardHeader() {
 		<CardSection className={classes.section}>
 			<Title order={5}>Latest Block</Title>
 		</CardSection>
-	);
+	)
 }
 
 export function TransactionCard() {
@@ -95,7 +95,7 @@ export function TransactionCard() {
 				<TransactionTable data={mockData} />
 			</CardSection>
 		</Card>
-	);
+	)
 }
 
 // Mock data moved to bottom for better readability
@@ -208,4 +208,4 @@ const mockData: Block[] = [
 		total_compute_units_limit: 563319258,
 		block_time: 1693323137,
 	},
-];
+]

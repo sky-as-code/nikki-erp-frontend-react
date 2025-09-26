@@ -1,11 +1,11 @@
-import { ScrollArea } from '@mantine/core';
+import { ScrollArea } from '@mantine/core'
 
-import classes from './Navbar.module.css';
-import { NavLinksGroup } from './NavLinksGroup';
+import classes from './Navbar.module.css'
+import { NavLinksGroup } from './NavLinksGroup'
 
-import { SearchableSelect } from '@/components/SearchableSelect';
-import { UserButton } from '@/components/UserButton/UserButton';
-import type { NavItem } from '@/types/navItem';
+import { SearchableSelect } from '@/components/SearchableSelect'
+import { UserButton } from '@/components/UserButton/UserButton'
+import type { NavItem } from '@/types/navItem'
 
 interface Props {
 	data: NavItem[];
@@ -15,7 +15,7 @@ interface Props {
 export function Navbar({ data }: Props) {
 	const links = data.map((item) => (
 		<NavLinksGroup key={item.label} {...item} />
-	));
+	))
 
 	return (
 		<>
@@ -35,5 +35,5 @@ export function Navbar({ data }: Props) {
 				/>
 			</div>
 		</>
-	);
+	)
 }

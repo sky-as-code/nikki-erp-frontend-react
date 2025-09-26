@@ -41,20 +41,20 @@ import {
 	IconClockPause,
 	IconSettings,
 	IconDeviceImacCog,
-} from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
-import { createContext, useContext, useEffect, useState } from 'react';
+} from '@tabler/icons-react'
+import { useQuery } from '@tanstack/react-query'
+import { createContext, useContext, useEffect, useState } from 'react'
 
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../auth/AuthProvider'
 import {
 	NikkiModule,
 	Organization,
 	UserPreference,
 	UserSettings,
-} from '../types';
+} from '../types'
 
-import { delay } from '@/common/utils';
-import { EnvVars } from '@/types/envVars';
+import { delay } from '@/common/utils'
+import { EnvVars } from '@/types/envVars'
 
 export type ConfigContextType = {
 	envVars: EnvVars;
@@ -64,56 +64,56 @@ export type ConfigContextType = {
 	activeOrg: Organization | null;
 	setActiveModule: (moduleSlug: string) => void;
 	setActiveOrg: (orgSlug: string) => void;
-};
+}
 
-const ConfigContext = createContext<ConfigContextType | null>(null);
+const ConfigContext = createContext<ConfigContextType | null>(null)
 
 export const useConfig = (): ConfigContextType => {
-	const context = useContext(ConfigContext);
-	if (!context) throw new Error('useConfig must be used within ConfigProvider');
-	return context;
-};
+	const context = useContext(ConfigContext)
+	if (!context) throw new Error('useConfig must be used within ConfigProvider')
+	return context
+}
 
 export type ConfigProviderProps = React.PropsWithChildren & {
 	envVars: EnvVars;
-};
+}
 
 export const ConfigProvider: React.FC<ConfigProviderProps> = ({
 	children,
 	envVars: initialEnvVars,
 }) => {
-	const userPrefs = loadLocalPreferences();
-	const { isAuthenticated } = useAuth();
-	const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
+	const userPrefs = loadLocalPreferences()
+	const { isAuthenticated } = useAuth()
+	const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
 	const [activeOrgSlug, setOrgSlug] = useState<string | null>(
 		userPrefs.org ?? null
-	);
+	)
 	const [activeModuleSlug, setModuleSlug] = useState<string | null>(
 		userPrefs.org ?? null
-	);
-	const [activeOrg, setActiveOrg] = useActiveOrg({ userPrefs, userSettings });
+	)
+	const [activeOrg, setActiveOrg] = useActiveOrg({ userPrefs, userSettings })
 	const [activeModule, setActiveModule] = useActiveModule({
 		userPrefs,
 		userSettings,
-	});
-	const [envVars] = useState(initialEnvVars);
+	})
+	const [envVars] = useState(initialEnvVars)
 
 	const { data, isSuccess } = useQuery({
 		queryKey: ['userSettings', activeOrg],
 		queryFn: () => fetchUserSettings(activeOrg?.slug),
 		enabled: isAuthenticated && Boolean(activeOrgSlug) && !activeOrg,
-	});
+	})
 
 	useEffect(() => {
 		if (isSuccess) {
-			setUserSettings(data);
+			setUserSettings(data)
 		}
-	}, [isSuccess]);
+	}, [isSuccess])
 
 	useEffect(() => {
-		setActiveOrg(activeOrgSlug!);
-		setActiveModule(activeModuleSlug!);
-	}, [userSettings]);
+		setActiveOrg(activeOrgSlug!)
+		setActiveModule(activeModuleSlug!)
+	}, [userSettings])
 
 	const ctxVal: ConfigContextType = {
 		envVars,
@@ -123,28 +123,28 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
 		activeModule,
 		setActiveOrg: setOrgSlug,
 		setActiveModule: setModuleSlug,
-	};
+	}
 
 	return (
 		<ConfigContext.Provider value={ctxVal}>{children}</ConfigContext.Provider>
-	);
-};
+	)
+}
 
-type SetStringFn = (orgSlug: string) => void;
-type SetNullableOrgFn = (org: Organization | null) => void;
-type SetNullableModuleFn = (org: NikkiModule | null) => void;
+type SetStringFn = (orgSlug: string) => void
+type SetNullableOrgFn = (org: Organization | null) => void
+type SetNullableModuleFn = (org: NikkiModule | null) => void
 type ActiveOrgParams = {
 	userPrefs: UserPreference;
 	userSettings: UserSettings | null;
-};
+}
 function useActiveOrg({
 	userPrefs,
 	userSettings,
 }: ActiveOrgParams): [Organization | null, SetStringFn] {
-	const allOrgs = userSettings?.orgs ?? [];
-	const org = findOrg(allOrgs, userPrefs.org!);
-	const [activeOrg, setActiveOrg] = useState<Organization | null>(org);
-	return [activeOrg, setActiveOrgFactory(userPrefs, allOrgs, setActiveOrg)];
+	const allOrgs = userSettings?.orgs ?? []
+	const org = findOrg(allOrgs, userPrefs.org!)
+	const [activeOrg, setActiveOrg] = useState<Organization | null>(org)
+	return [activeOrg, setActiveOrgFactory(userPrefs, allOrgs, setActiveOrg)]
 }
 
 function setActiveOrgFactory(
@@ -153,21 +153,21 @@ function setActiveOrgFactory(
 	setActiveOrg: SetNullableOrgFn
 ): SetStringFn {
 	return (orgSlug: string): void => {
-		const org = findOrg(allOrgs, orgSlug!);
+		const org = findOrg(allOrgs, orgSlug!)
 		if (!org) {
-			return;
+			return
 		}
-		saveLocalPreferences({ ...userPrefs, org: org.slug });
-		setActiveOrg(org);
-	};
+		saveLocalPreferences({ ...userPrefs, org: org.slug })
+		setActiveOrg(org)
+	}
 }
 
 function useActiveModule({
 	userSettings,
 }: ActiveOrgParams): [NikkiModule | null, SetStringFn] {
-	const allMods = userSettings?.modules ?? [];
-	const [activeModule, setActiveModule] = useState<NikkiModule | null>(null);
-	return [activeModule, setActiveModuleFactory(allMods, setActiveModule)];
+	const allMods = userSettings?.modules ?? []
+	const [activeModule, setActiveModule] = useState<NikkiModule | null>(null)
+	return [activeModule, setActiveModuleFactory(allMods, setActiveModule)]
 }
 
 function setActiveModuleFactory(
@@ -175,50 +175,50 @@ function setActiveModuleFactory(
 	setActiveModule: SetNullableModuleFn
 ): SetStringFn {
 	return (modSlug: string): void => {
-		const mod = findModule(allMods, modSlug!);
+		const mod = findModule(allMods, modSlug!)
 		if (!mod) {
-			return;
+			return
 		}
-		setActiveModule(mod);
-	};
+		setActiveModule(mod)
+	}
 }
 
 function findOrg(orgs: Organization[], slug: string): Organization | null {
-	return orgs.find((org) => org.slug === slug) ?? null;
+	return orgs.find((org) => org.slug === slug) ?? null
 }
 
 function findModule(mods: NikkiModule[], slug: string): NikkiModule | null {
-	return mods.find((mod) => mod.slug === slug) ?? null;
+	return mods.find((mod) => mod.slug === slug) ?? null
 }
 
-const userPrefKey = 'nikkiPrefs';
+const userPrefKey = 'nikkiPrefs'
 
 function loadLocalPreferences(): UserPreference {
-	const encoded = localStorage.getItem(userPrefKey);
+	const encoded = localStorage.getItem(userPrefKey)
 	if (!encoded) {
-		saveLocalPreferences({});
-		return {};
+		saveLocalPreferences({})
+		return {}
 	}
 
 	try {
-		const decoded = atob(encoded);
-		const userPref = JSON.parse(decoded) as UserPreference;
-		return userPref;
+		const decoded = atob(encoded)
+		const userPref = JSON.parse(decoded) as UserPreference
+		return userPref
 	}
 	catch {
-		saveLocalPreferences({});
-		return {};
+		saveLocalPreferences({})
+		return {}
 	}
 }
 
 function saveLocalPreferences(preferences: UserPreference): void {
 	try {
-		const jsonString = JSON.stringify(preferences);
-		const encodedData = btoa(jsonString);
-		localStorage.setItem(userPrefKey, encodedData);
+		const jsonString = JSON.stringify(preferences)
+		const encodedData = btoa(jsonString)
+		localStorage.setItem(userPrefKey, encodedData)
 	}
 	catch (error) {
-		console.error('Failed to save local settings:', error);
+		console.error('Failed to save local settings:', error)
 	}
 }
 
@@ -226,10 +226,10 @@ async function fetchUserSettings(org: string | null | undefined) {
 	// const data = await request.get<UserSettings>(`/users/settings`, {
 	// 	searchParams: { org }
 	// });
-	console.log('fetchUserSettings');
-	await delay(1_000);
-	const data = { modules, orgs } as UserSettings;
-	return data;
+	console.log('fetchUserSettings')
+	await delay(1_000)
+	const data = { modules, orgs } as UserSettings
+	return data
 }
 
 const orgs: Organization[] = [
@@ -262,7 +262,7 @@ const orgs: Organization[] = [
 	// { id: '27', name: 'Sushi', slug: 'sushi', logo: '🍣' },
 	// { id: '28', name: 'Kiwi', slug: 'kiwi', logo: '🥝' },
 	// { id: '29', name: 'Strawberries', slug: 'strawberries', logo: '🍓' },
-];
+]
 
 const modules: NikkiModule[] = [
 	{ label: 'Discuss', slug: 'discuss' },
@@ -389,4 +389,4 @@ const modules: NikkiModule[] = [
 		slug: 'vending-machine',
 		color: 'teal',
 	},
-];
+]

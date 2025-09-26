@@ -1,14 +1,14 @@
-import { Box, Card, Stack } from '@mantine/core';
+import { Box, Card, Stack } from '@mantine/core'
 
-import { AuthLayout } from './AuthLayout';
-import { LoginWizard } from './LoginWizard';
+import { AuthLayout } from './AuthLayout'
+import { LoginWizard } from './LoginWizard'
 
-import { Logo } from '@/common/components/Logo/Logo';
+import { Logo } from '@/common/components/Logo/Logo'
 
 export const LoginPage: React.FC = () => {
 	// const searchParams = useSearchParams();
 	// const returnUrl = searchParams.get('to') || '/';
-	const returnUrl = '/';
+	const returnUrl = '/'
 
 	return (
 		<AuthLayout>
@@ -22,5 +22,5 @@ export const LoginPage: React.FC = () => {
 				</Card>
 			</Box>
 		</AuthLayout>
-	);
-};
+	)
+}

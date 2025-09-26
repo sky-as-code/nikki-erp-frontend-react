@@ -1,8 +1,8 @@
 
 
-'use client';
+'use client'
 
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
 	Alert,
 	Box,
@@ -13,19 +13,19 @@ import {
 	Pill,
 	Stack,
 	PasswordInput,
-} from '@mantine/core';
-import { useAuth } from '@modules/core/auth/AuthProvider';
+} from '@mantine/core'
+import { useAuth } from '@modules/core/auth/AuthProvider'
 import {
 	IconAlertCircle,
 	IconArrowLeft,
-} from '@tabler/icons-react';
-import clsx from 'clsx';
-import { useRouter } from 'next/navigation';
-import { FC, JSX, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+} from '@tabler/icons-react'
+import clsx from 'clsx'
+import { useRouter } from 'next/navigation'
+import { FC, JSX, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
-import { createLoginAttempt, loginUser } from './service';
+import { createLoginAttempt, loginUser } from './service'
 
 export type AuthPayload = {
 	attemptId: string;
@@ -33,58 +33,58 @@ export type AuthPayload = {
 	password?: string;
 	currentMethod: string;
 	methods: string[];
-};
+}
 
 type LoginStepProps = {
 	handleNextStep: () => void;
 	setAuthPayload: (data: AuthPayload) => void;
 	authPayload: AuthPayload;
-};
+}
 
 
 
 
 export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
-	const router = useRouter();
+	const router = useRouter()
 
-	const [loginStep, setLoginStep] = useState(0);
-	const [attemptId, setAttemptId] = useState<string | null>(null);
+	const [loginStep, setLoginStep] = useState(0)
+	const [attemptId, setAttemptId] = useState<string | null>(null)
 	const [authPayload, setAuthPayload] = useState<AuthPayload>({
 		attemptId: '',
 		username: '',
 		currentMethod: 'password',
 		methods: ['password', 'otpCode', 'captcha'],
-	});
+	})
 
 	const handleNextStep = (method?: string) => {
 		if (loginStep < loginSteps.length - 1) {
-			setLoginStep(loginStep + 1);
+			setLoginStep(loginStep + 1)
 			if (method) {
 				setAuthPayload({
 					...authPayload,
 					currentMethod: method,
-				});
+				})
 			}
 		}
 		else {
-			router.push(returnUrl);
+			router.push(returnUrl)
 		}
-	};
+	}
 
 	const handlePrevStep = () => {
 		if (loginStep > 0) {
-			setLoginStep(loginStep - 1);
+			setLoginStep(loginStep - 1)
 		}
-	};
+	}
 
 
 	const loginSteps:{ name: string; key: string; component: React.ComponentType<LoginStepProps> }[] = [
 		...loginCommonSteps,
 		(authPayload.currentMethod ?
 			loginMethodSteps[authPayload.currentMethod] ?? loginMethodSteps.Password : loginMethodSteps.Password),
-	];
+	]
 
-	const CurrentStep = loginSteps[loginStep]?.component || PasswordMethod;
+	const CurrentStep = loginSteps[loginStep]?.component || PasswordMethod
 
 	return (
 		<Box>
@@ -107,31 +107,31 @@ export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
 				authPayload={authPayload}
 			/>
 		</Box>
-	);
-};
+	)
+}
 
 const EmailAttemptStep: FC<{
 	handleNextStep: () => void;
 	setAuthPayload: (data: AuthPayload) => void;
 	authPayload: AuthPayload;
 }> = ({ handleNextStep, setAuthPayload, authPayload }) => {
-	const { form, apiErrors, onSubmit: onSubmitForm } = useLoginAttemptForm();
+	const { form, apiErrors, onSubmit: onSubmitForm } = useLoginAttemptForm()
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
-	} = form;
-	const router = useRouter();
+	} = form
+	const router = useRouter()
 
 	const onSubmit = async (data: LoginAttemptFormData) => {
 		onSubmitForm(data, () => {
-			handleNextStep();
+			handleNextStep()
 			setAuthPayload({
 				...authPayload,
 				username: data.email,
-			});
-		});
-	};
+			})
+		})
+	}
 
 	return (
 		<Box>
@@ -170,8 +170,8 @@ const EmailAttemptStep: FC<{
 				</Button>
 			</Box>
 		</Box>
-	);
-};
+	)
+}
 
 export const LoginMethods: FC<{
 	handleNextStep: (method: string) => void;
@@ -194,7 +194,7 @@ export const LoginMethods: FC<{
 				gap='md'
 			>
 				{authPayload?.methods.filter((m) => loginMethodSteps[m]).map((currentMethod) => {
-					const detailMethod = loginMethodSteps[currentMethod];
+					const detailMethod = loginMethodSteps[currentMethod]
 					return (
 						<Box key={currentMethod}>
 							<Button
@@ -207,24 +207,24 @@ export const LoginMethods: FC<{
 								{detailMethod.name}
 							</Button>
 						</Box>
-					);
+					)
 				})}
 			</Stack>
 		</Box>
-	);
-};
+	)
+}
 
 const PasswordMethod: FC<{
 	handleNextStep: (method?: string) => void;
 	setAuthPayload: (data: AuthPayload) => void;
 	authPayload: AuthPayload;
 }> = ({ handleNextStep, authPayload }) => {
-	const { form, apiErrors, onSubmit } = useLoginForm('/');
+	const { form, apiErrors, onSubmit } = useLoginForm('/')
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
-	} = form;
+	} = form
 
 	return (
 		<Box>
@@ -258,8 +258,8 @@ const PasswordMethod: FC<{
 				</Button>
 			</form>
 		</Box>
-	);
-};
+	)
+}
 
 
 const OtpMethod: FC<{
@@ -268,12 +268,12 @@ const OtpMethod: FC<{
 	authPayload: AuthPayload;
 }> = ({ handleNextStep, authPayload }) => {
 
-	const { form, apiErrors, onSubmit } = useLoginForm('/');
+	const { form, apiErrors, onSubmit } = useLoginForm('/')
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
-	} = form;
+	} = form
 
 	return (
 		<Box>
@@ -307,64 +307,64 @@ const OtpMethod: FC<{
 				</Button>
 			</form>
 		</Box>
-	);
-};
+	)
+}
 
 
 const loginAttemptSchema = z.object({
 	email: z.string().email('Invalid email address'),
-});
+})
 
-type LoginAttemptFormData = z.infer<typeof loginAttemptSchema>;
+type LoginAttemptFormData = z.infer<typeof loginAttemptSchema>
 
 const useLoginAttemptForm = () => {
 	const form = useForm<LoginAttemptFormData>({
 		resolver: zodResolver(loginAttemptSchema),
-	});
-	const router = useRouter();
-	const { login } = useAuth();
-	const [apiErrors, setApiErrors] = useState<string[]>([]);
+	})
+	const router = useRouter()
+	const { login } = useAuth()
+	const [apiErrors, setApiErrors] = useState<string[]>([])
 
 	const onSubmit = async (
 		data: LoginAttemptFormData,
 		handleNextStep: () => void
 	) => {
-		const attemptData = await createLoginAttempt(data);
+		const attemptData = await createLoginAttempt(data)
 		if (attemptData.errors) {
-			setApiErrors(attemptData.errors);
-			return;
+			setApiErrors(attemptData.errors)
+			return
 		}
-		handleNextStep();
-	};
+		handleNextStep()
+	}
 
-	return { form, apiErrors, onSubmit };
-};
+	return { form, apiErrors, onSubmit }
+}
 
 const loginSchema = z.object({
 	email: z.string().email('Invalid email address'),
 	password: z.string().min(6, 'Password must be at least 6 characters'),
-});
+})
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = z.infer<typeof loginSchema>
 
 const useLoginForm = (returnUrl: string) => {
-	const form = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
-	const router = useRouter();
-	const { login } = useAuth();
-	const [apiErrors, setApiErrors] = useState<string[]>([]);
+	const form = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) })
+	const router = useRouter()
+	const { login } = useAuth()
+	const [apiErrors, setApiErrors] = useState<string[]>([])
 
 	const onSubmit = async (data: LoginFormData) => {
-		const authData = await loginUser(data);
+		const authData = await loginUser(data)
 		if (authData.errors) {
-			setApiErrors(authData.errors);
-			return;
+			setApiErrors(authData.errors)
+			return
 		}
-		login(authData.data!);
-		router.push(returnUrl);
-	};
+		login(authData.data!)
+		router.push(returnUrl)
+	}
 
-	return { form, apiErrors, onSubmit };
-};
+	return { form, apiErrors, onSubmit }
+}
 
 const ErrorAlert = ({ errors }: { errors: string[] }) =>
 	errors.length > 0 && (
@@ -373,7 +373,7 @@ const ErrorAlert = ({ errors }: { errors: string[] }) =>
 				<div key={index}>{error}</div>
 			))}
 		</Alert>
-	);
+	)
 
 
 
@@ -390,7 +390,7 @@ const loginMethodSteps: Record<string,
 		name: 'OTP Code',
 		component: OtpMethod,
 	},
-};
+}
 
 
 
@@ -405,4 +405,4 @@ const loginCommonSteps: { name: string; key: string; component: React.ComponentT
 		key: 'selectMethod',
 		component: LoginMethods,
 	},
-];
+]

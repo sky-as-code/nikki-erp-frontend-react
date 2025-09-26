@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { IconCalendarStats } from '@tabler/icons-react';
+import type { Meta, StoryObj } from '@storybook/react'
+import { IconCalendarStats } from '@tabler/icons-react'
 
-import { NavLinksGroup } from './NavLinksGroup';
+import { NavLinksGroup } from './NavLinksGroup'
 
 const meta: Meta<typeof NavLinksGroup> = {
 	title: 'Components/NavLinksGroup',
@@ -12,10 +12,10 @@ const meta: Meta<typeof NavLinksGroup> = {
 		// More on how to position stories at: https://storybook.js.org/docs/7.0/react/configure/story-layout
 		layout: 'fullscreen',
 	},
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof NavLinksGroup>;
+export default meta
+type Story = StoryObj<typeof NavLinksGroup>
 
 const hasLinks = {
 	label: 'Releases',
@@ -25,14 +25,14 @@ const hasLinks = {
 		{ label: 'Previous releases', link: '/' },
 		{ label: 'Releases schedule', link: '/' },
 	],
-};
+}
 
-export const HasLinks: Story = {render: () => <NavLinksGroup {...hasLinks} />};
+export const HasLinks: Story = {render: () => <NavLinksGroup {...hasLinks} />}
 
 const noLinks = {
 	label: 'Releases',
 	icon: IconCalendarStats,
 	link: '/',
-};
+}
 
-export const NoLinks: Story = {render: () => <NavLinksGroup {...noLinks} />};
+export const NoLinks: Story = {render: () => <NavLinksGroup {...noLinks} />}

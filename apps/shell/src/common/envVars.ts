@@ -9,16 +9,16 @@ import {
 	IconDashboard,
 	IconLock,
 	IconMoodSmile,
-} from '@tabler/icons-react';
-import { z } from 'zod';
+} from '@tabler/icons-react'
+import { z } from 'zod'
 
-import { EnvVars } from '../types/envVars';
+import { EnvVars } from '../types/envVars'
 
-import type { NavItem } from '@/types/navItem';
+import type { NavItem } from '@/types/navItem'
 
-const envVarPrefix = 'NIKKI_PUBLIC_';
+const envVarPrefix = 'NIKKI_PUBLIC_'
 
-let envVars: Readonly<EnvVars>;
+let envVars: Readonly<EnvVars>
 
 /**
  * Loads configuration from backend environment variables.
@@ -26,7 +26,7 @@ let envVars: Readonly<EnvVars>;
  * It only loads MFE Shell configs which, by conventions, are prefixed with `SHELL_`.
  */
 export async function loadEnvVars(): Promise<Readonly<EnvVars>> {
-	if (envVars) return envVars;
+	if (envVars) return envVars
 
 	const envSchema = z.object({
 		BASE_API_URL: z.string().url(),
@@ -36,10 +36,10 @@ export async function loadEnvVars(): Promise<Readonly<EnvVars>> {
 			.optional()
 			.default('')
 			.transform((val) => {
-				if (val === '' || val === '/') return '';
+				if (val === '' || val === '/') return ''
 				// Add starting slash if not present,
 				// remove trailing slash if any
-				return `/${val.replace(/^\/|\/$/g, '')}`;
+				return `/${val.replace(/^\/|\/$/g, '')}`
 			}),
 		ROOT_DOMAIN: z.union([
 			z.literal('localhost'),
@@ -49,14 +49,14 @@ export async function loadEnvVars(): Promise<Readonly<EnvVars>> {
 					/^(?=.{1,253}$)(?!.*[-]{2,})(?!.*\.-)(?!.*-\.)((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$/
 				),
 		]),
-	});
+	})
 
-	const res = await fetch('/api/config');
-	const raw = await res.json();
+	const res = await fetch('/api/config')
+	const raw = await res.json()
 
-	const parsed = envSchema.parse(raw);
-	envVars = Object.freeze<EnvVars>(parsed);
-	return envVars;
+	const parsed = envSchema.parse(raw)
+	envVars = Object.freeze<EnvVars>(parsed)
+	return envVars
 }
 
 function filterEnvVars(rawEnvs: Record<string, string>) {
@@ -64,7 +64,7 @@ function filterEnvVars(rawEnvs: Record<string, string>) {
 		Object.entries(rawEnvs)
 			.filter(([key]) => key.startsWith(envVarPrefix))
 			.map(([key, value]) => [key.replace(envVarPrefix, ''), value])
-	);
+	)
 }
 
 export const navLinks: NavItem[] = [
@@ -162,4 +162,4 @@ export const navLinks: NavItem[] = [
 			},
 		],
 	},
-];
+]

@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import { ActionIcon, Anchor, Avatar, Grid, Group, Paper, Stack, TabsPanel, Text, useMantineColorScheme } from '@mantine/core';
-import { IconCircleFilled, IconMessageCircle, IconPencil, IconPhoto, IconSettings, IconTrash } from '@tabler/icons-react';
-import React from 'react';
-import { DataGrid, Column } from 'react-data-grid';
+import { ActionIcon, Anchor, Avatar, Grid, Group, Paper, Stack, TabsPanel, Text, useMantineColorScheme } from '@mantine/core'
+import { IconCircleFilled, IconMessageCircle, IconPencil, IconPhoto, IconSettings, IconTrash } from '@tabler/icons-react'
+import React from 'react'
+import { DataGrid, Column } from 'react-data-grid'
 
-import DetailPage from '../../../DetailPage';
+import DetailPage from '../../../DetailPage'
 
-import { TabList, TabListItem, Tabs } from '@/common/components/Tabs/Tabs';
-import { ShelfMatrix } from '@/modules/vendingMachine/kiosk/ShelfMatrix';
+import { TabList, TabListItem, Tabs } from '@/common/components/Tabs/Tabs'
+import { ShelfMatrix } from '@/modules/vendingMachine/kiosk/ShelfMatrix'
 
 
 export const UserDetailPage: React.FC = () => {
@@ -17,10 +17,10 @@ export const UserDetailPage: React.FC = () => {
 			component={UserDetailInner}
 			pageSlug='users'
 		/>
-	);
-};
+	)
+}
 
-export default UserDetailPage;
+export default UserDetailPage
 
 const UserDetailInner: React.FC<{
 	id?: string,
@@ -59,17 +59,17 @@ const UserDetailInner: React.FC<{
 				{/* </Paper> */}
 			</Grid.Col>
 		</Grid>
-	);
-};
+	)
+}
 
 const KioskMatrix: React.FC = () => {
-	const maxCols = 10;
+	const maxCols = 10
 	const columnDef: Column<KioskSlot[]>[] = [
 		createRowHeaderDef(),
-	];
+	]
 
 	for (let i = 1; i <= maxCols; ++i) {
-		columnDef.push(createColumnDef(i));
+		columnDef.push(createColumnDef(i))
 	}
 
 	return (
@@ -77,17 +77,17 @@ const KioskMatrix: React.FC = () => {
 			columnsDef={columnDef}
 			rows={matrix}
 		/>
-	);
-};
+	)
+}
 
 export type DataTableProps = {
 	columnsDef: Column<KioskSlot[]>[],
 	rows: any[],
-};
+}
 
 export const DataTable: React.FC<DataTableProps> = React.memo((props) => {
-	const columns = React.useMemo<any>(() => props.columnsDef, []);
-	const { colorScheme } = useMantineColorScheme();
+	const columns = React.useMemo<any>(() => props.columnsDef, [])
+	const { colorScheme } = useMantineColorScheme()
 
 	return (
 		<DataGrid
@@ -97,8 +97,8 @@ export const DataTable: React.FC<DataTableProps> = React.memo((props) => {
 			headerRowHeight={30}
 			className={`h-full rdg-${colorScheme}`}
 		/>
-	);
-});
+	)
+})
 
 function createRowHeaderDef(): Column<KioskSlot[]> {
 	return {
@@ -113,7 +113,7 @@ function createRowHeaderDef(): Column<KioskSlot[]> {
 					<Text size='md'>Push Tape</Text>
 					<ActionIcon variant='subtle' size='xl'><IconTrash color='red' /></ActionIcon>
 				</Stack>
-			);
+			)
 		},
 		// header: '__',
 		// Cell: ({ cell }) => {
@@ -127,7 +127,7 @@ function createRowHeaderDef(): Column<KioskSlot[]> {
 		// 		</Stack>
 		// 	);
 		// },
-	};
+	}
 }
 
 function createColumnDef(colIdx: number): Column<KioskSlot[]> {
@@ -137,8 +137,8 @@ function createColumnDef(colIdx: number): Column<KioskSlot[]> {
 		headerCellClass: 'text-center',
 		renderCell: (props) => {
 			// const row = props.row[props.rowIdx];
-			const { rowIdx } = props;
-			const colIdx = props.column.idx;
+			const { rowIdx } = props
+			const colIdx = props.column.idx
 			return (
 				<Stack gap='sm'>
 					<Text size='md' fw='bold'>{rowIdx}-{colIdx}. Coca Zero Chất Xơ </Text>
@@ -158,9 +158,9 @@ function createColumnDef(colIdx: number): Column<KioskSlot[]> {
 						<IconCircleFilled color={(rowIdx + colIdx) % 2 === 0 ? 'orange' : 'green'} />
 					</Group>
 				</Stack>
-			);
+			)
 		},
-	};
+	}
 }
 
 type KioskShelfType = {
@@ -168,12 +168,12 @@ type KioskShelfType = {
 	engine: 'hangingConveyor' | 'pushTape' | 'conveyor' | 'spring',
 	unit: 'switch' | 'timer',
 	slotCount: number,
-};
+}
 
 type KioskShelf = {
 	type: KioskShelfType,
 	slots: KioskSlot[],
-};
+}
 
 type KioskSlot = {
 	// TODO: Product should be another type
@@ -184,7 +184,7 @@ type KioskSlot = {
 	maxQuantity: number,
 	currentQuantity: number,
 	isAlert: boolean,
-};
+}
 
 // const row: KioskSlot[] = [
 // 	{
@@ -195,10 +195,10 @@ type KioskSlot = {
 // 	},
 // ];
 
-const matrix: KioskSlot[][] = [];
+const matrix: KioskSlot[][] = []
 
 for (let i = 0; i < 10; ++i) {
-	matrix.push(Array(10).fill({}));
+	matrix.push(Array(10).fill({}))
 }
 
 

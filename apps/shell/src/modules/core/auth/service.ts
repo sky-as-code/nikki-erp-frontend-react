@@ -1,12 +1,12 @@
-import { Organization, User } from '../types';
+import { Organization, User } from '../types'
 
-import { ApiResult } from '@/types/common';
+import { ApiResult } from '@/types/common'
 
 export type LoginUserResult = {
 	token: string;
 	user?: User;
 	orgs?: Organization[];
-};
+}
 
 export async function loginUser(credentials: {
 	email: string;
@@ -21,13 +21,13 @@ export async function loginUser(credentials: {
 				name: 'test',
 			},
 		},
-	} as ApiResult<LoginUserResult>;
+	} as ApiResult<LoginUserResult>
 }
 
 export async function logoutUser(): Promise<ApiResult<void>> {
 	return {
 		data: undefined,
-	} as ApiResult<void>;
+	} as ApiResult<void>
 }
 
 
@@ -36,5 +36,5 @@ export async function createLoginAttempt({ email } : { email: string }): Promise
 		data: {
 			attemptId: 'attemptId',
 		},
-	} as ApiResult<{ attemptId: string }>;
+	} as ApiResult<{ attemptId: string }>
 }

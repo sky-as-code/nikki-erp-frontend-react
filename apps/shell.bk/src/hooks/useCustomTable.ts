@@ -1,7 +1,7 @@
 import {
 	type MRT_TableOptions,
 	useMantineReactTable,
-} from 'mantine-react-table';
+} from 'mantine-react-table'
 
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
 export type CustomTableOptions<TData extends Record<string, any> = object> = Omit<
@@ -13,7 +13,7 @@ export type CustomTableOptions<TData extends Record<string, any> = object> = Omi
   | 'mantineTableProps.align'
   | 'mantinePaperProps'
   | 'initialState.density'
->;
+>
 
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
 export const useCustomTable = <TData extends Record<string, any> = object>(
@@ -58,5 +58,5 @@ export const useCustomTable = <TData extends Record<string, any> = object>(
 			data: [],
 		},
 		...tableOptions,
-	});
-};
+	})
+}

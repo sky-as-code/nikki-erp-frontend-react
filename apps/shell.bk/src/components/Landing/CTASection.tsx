@@ -1,7 +1,7 @@
-import { Container, Title, Text, Button, Group } from '@mantine/core';
-import { IconArrowRight } from '@tabler/icons-react';
+import { Container, Title, Text, Button, Group } from '@mantine/core'
+import { IconArrowRight } from '@tabler/icons-react'
 
-import classes from './CTASection.module.css';
+import classes from './CTASection.module.css'
 
 export function CTASection() {
 	return (
@@ -25,5 +25,5 @@ export function CTASection() {
 				</Button>
 			</Group>
 		</Container>
-	);
+	)
 }

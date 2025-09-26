@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
 	Burger,
@@ -9,13 +9,13 @@ import {
 	Menu,
 	rem,
 	Stack,
-} from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { IconChevronDown } from '@tabler/icons-react';
+} from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
+import { IconChevronDown } from '@tabler/icons-react'
 
-import classes from './Header.module.css';
+import classes from './Header.module.css'
 
-import { Logo } from '@/components/Logo/Logo';
+import { Logo } from '@/components/Logo/Logo'
 
 interface HeaderActionProps {
 	links: {
@@ -26,11 +26,11 @@ interface HeaderActionProps {
 }
 
 export function Header({ links }: HeaderActionProps) {
-	const [opened, { toggle }] = useDisclosure(false);
+	const [opened, { toggle }] = useDisclosure(false)
 	const items = links.map((link) => {
 		const menuItems = link.links?.map((item) => (
 			<Menu.Item key={item.link}>{item.label}</Menu.Item>
-		));
+		))
 
 		if (menuItems) {
 			return (
@@ -54,7 +54,7 @@ export function Header({ links }: HeaderActionProps) {
 					</Menu.Target>
 					<Menu.Dropdown>{menuItems}</Menu.Dropdown>
 				</Menu>
-			);
+			)
 		}
 
 		return (
@@ -66,8 +66,8 @@ export function Header({ links }: HeaderActionProps) {
 			>
 				{link.label}
 			</a>
-		);
-	});
+		)
+	})
 
 	return (
 		<header className={classes.header}>
@@ -95,5 +95,5 @@ export function Header({ links }: HeaderActionProps) {
 				</Drawer>
 			</Group>
 		</header>
-	);
+	)
 }

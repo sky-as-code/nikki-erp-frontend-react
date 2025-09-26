@@ -5,22 +5,22 @@ import {
 	Text,
 	useMantineColorScheme,
 	useMantineTheme,
-} from '@mantine/core';
-import { TextInput } from '@mantine/core';
-import { IconFilter } from '@tabler/icons-react';
-import { FC } from 'react';
+} from '@mantine/core'
+import { TextInput } from '@mantine/core'
+import { IconFilter } from '@tabler/icons-react'
+import { FC } from 'react'
 
-import { AppGrid } from '@/modules/core/apps/AppGrid/AppGrid';
-import { AppGridHeader } from '@/modules/core/apps/AppGridHeader';
+import { AppGrid } from '@/modules/core/apps/AppGrid/AppGrid'
+import { AppGridHeader } from '@/modules/core/apps/AppGridHeader'
 
 
 
 export const AppListPage: FC = () => {
-	const { colorScheme } = useMantineColorScheme();
-	const theme = useMantineTheme();
+	const { colorScheme } = useMantineColorScheme()
+	const theme = useMantineTheme()
 
 	const bg =
-    colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+    colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0]
 
 	return (
 		<AppShell
@@ -58,7 +58,7 @@ export const AppListPage: FC = () => {
 				</Text>
 			</AppShell.Main>
 		</AppShell>
-	);
-};
+	)
+}
 
 

@@ -1,6 +1,6 @@
-import { createSafeContext, GetStylesApi } from '@mantine/core';
+import { createSafeContext, GetStylesApi } from '@mantine/core'
 
-import type { MenuFactory } from './Menu';
+import type { MenuFactory } from './Menu'
 
 interface MenuContext {
 	toggleDropdown: () => void;
@@ -24,4 +24,4 @@ interface MenuContext {
 
 export const [MenuContextProvider, useMenuContext] = createSafeContext<MenuContext>(
 	'Menu component was not found in the tree',
-);
+)

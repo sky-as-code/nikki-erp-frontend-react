@@ -1,8 +1,8 @@
 import {
 	IconHierarchy2, IconShieldCog, IconUserCog, IconWorldCog,
-} from '@tabler/icons-react';
+} from '@tabler/icons-react'
 
-import type { NavItem } from '@/types/navItem';
+import type { NavItem } from '@/types/navItem'
 
 
 export default <NavItem[]>[{
@@ -56,4 +56,4 @@ export default <NavItem[]>[{
 	label: 'System',
 	icon: IconWorldCog,
 	link: '/system',
-}];
+}]

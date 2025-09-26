@@ -1,33 +1,33 @@
 
 
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import {
 	MantineReactTable, useMantineReactTable,
 	MRT_TableOptions, MRT_ColumnDef,
-} from 'mantine-react-table';
-import React, { createContext, useEffect, useMemo, useState } from 'react';
+} from 'mantine-react-table'
+import React, { createContext, useEffect, useMemo, useState } from 'react'
 
 
 export type DataTableProps = {
 	columnsDef: MRT_ColumnDef<any>[],
 	rows: any[],
-};
+}
 
 export const DataTable: React.FC<DataTableProps> = React.memo((props) => {
-	const columns = React.useMemo<any>(() => props.columnsDef, []);
+	const columns = React.useMemo<any>(() => props.columnsDef, [])
 
 	const table = useMantineReactTable({
 		...tableConfig,
 		columns,
 		data: props.rows,
-	});
+	})
 
 	return (
 		<MantineReactTable
 			table={table}
 		/>
-	);
-});
+	)
+})
 
 const tableConfig: MRT_TableOptions<any> = {
 	columns: [],
@@ -62,12 +62,12 @@ const tableConfig: MRT_TableOptions<any> = {
 	enablePagination: false,
 	manualPagination: true,
 	positionToolbarAlertBanner: 'none',
-};
+}
 
 export type PaginationState = {
 	pageIndex: number,
 	pageSize: number,
-};
+}
 
 export type TableContextType = {
 	// Is true when there is no data yet
@@ -88,12 +88,12 @@ export type TableContextType = {
 	lastPage: () => void,
 	prevPage: () => void,
 	nextPage: () => void,
-};
+}
 
 export type TableContextFetchResult = {
 	rows: any[],
 	totalRows: number,
-};
+}
 
 export type CreateTableContextProps = {
 	/**
@@ -103,18 +103,18 @@ export type CreateTableContextProps = {
 	name: string,
 	defaultPageSize: number,
 	fetchFn: (pagination: PaginationState) => Promise<TableContextFetchResult>,
-};
+}
 
 export type CreateTableContextReturn = {
 	context: React.Context<TableContextType>,
 	Provider: React.FC<React.PropsWithChildren>,
-};
+}
 export function createTableContext(props: CreateTableContextProps): CreateTableContextReturn {
-	const context = createContext<TableContextType>({} as any);
+	const context = createContext<TableContextType>({} as any)
 	return {
 		context,
 		Provider: createTableProvider(context, props),
-	};
+	}
 }
 
 export function createTableProvider(
@@ -125,25 +125,25 @@ export function createTableProvider(
 		const [pagination, setPagination] = useState<PaginationState>({
 			pageIndex: 0,
 			pageSize: props.defaultPageSize,
-		});
+		})
 
 		const queryResult = useQuery({
 			queryKey: [props.name, pagination.pageIndex, pagination.pageSize],
 			queryFn: () => props.fetchFn(pagination),
 			placeholderData: (previousData) => previousData,
-		});
-		const value = useContextValue(queryResult, pagination, setPagination);
+		})
+		const value = useContextValue(queryResult, pagination, setPagination)
 
 		useEffect(() => {
-			queryResult.error && console.error(queryResult.error);
-		}, [queryResult.error]);
+			queryResult.error && console.error(queryResult.error)
+		}, [queryResult.error])
 
 		return (
 			<ctx.Provider value={value}>
 				{children}
 			</ctx.Provider>
-		);
-	};
+		)
+	}
 }
 
 function createPaginationActions(
@@ -155,7 +155,7 @@ function createPaginationActions(
 		lastPage: () => setPagination(p => ({ ...p, pageIndex: maxPageIdx })),
 		prevPage: () => setPagination(p => ({ ...p, pageIndex: Math.max(0, p.pageIndex - 1) })),
 		nextPage: () => setPagination(p => ({ ...p, pageIndex: Math.min(p.pageIndex + 1, maxPageIdx) })),
-	};
+	}
 }
 
 function useContextValue(
@@ -166,16 +166,16 @@ function useContextValue(
 	const {
 		dataUpdatedAt, error, refetch,
 		isPending, isFetching, isError, isSuccess,
-	} = queryResult;
+	} = queryResult
 
-	const rows = queryResult.data?.rows ?? [];
-	const totalRows = queryResult.data?.totalRows ?? 0;
+	const rows = queryResult.data?.rows ?? []
+	const totalRows = queryResult.data?.totalRows ?? 0
 
-	const maxPageIdx = Math.floor(totalRows / pagination.pageSize);
-	const paginationActions = createPaginationActions(setPagination, maxPageIdx);
+	const maxPageIdx = Math.floor(totalRows / pagination.pageSize)
+	const paginationActions = createPaginationActions(setPagination, maxPageIdx)
 
 	const value: TableContextType = useMemo(() => {
-		const maskedError = error ? new Error('Error while fetching data') : null;
+		const maskedError = error ? new Error('Error while fetching data') : null
 
 		return {
 			isPending, isFetching, isError, isSuccess,
@@ -187,11 +187,11 @@ function useContextValue(
 			setPagination,
 			refetch,
 			...paginationActions,
-		};
+		}
 	}, [
 		isPending, isFetching, isError, isSuccess,
 		error, rows, totalRows, dataUpdatedAt > 0,
 		pagination.pageIndex, pagination.pageSize,
-	]);
-	return value;
+	])
+	return value
 }

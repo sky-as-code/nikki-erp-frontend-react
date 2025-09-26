@@ -1,22 +1,22 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { MRT_ColumnDef } from 'mantine-react-table';
+import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { MRT_ColumnDef } from 'mantine-react-table'
 
-import { CellDetailLink, ListPage } from '@/common/components/layout/ListPage';
-import { delay } from '@/common/utils';
-import { PaginationState } from '@/common/components/Table/DataTable';
-import { data } from '@/common/components/Table/SimpleTable';
+import { CellDetailLink, ListPage } from '@/common/components/layout/ListPage'
+import { PaginationState } from '@/common/components/Table/DataTable'
+import { data } from '@/common/components/Table/SimpleTable'
+import { delay } from '@/common/utils'
 
 // let testCount = 0;
 const fetchFn = async (pagination: PaginationState) => {
-	const start = pagination.pageIndex * pagination.pageSize;
-	const end = start + pagination.pageSize;
-	const paginatedData = data.slice(start, end);
-	await delay(1000);
+	const start = pagination.pageIndex * pagination.pageSize
+	const end = start + pagination.pageSize
+	const paginatedData = data.slice(start, end)
+	await delay(1000)
 	// if (++testCount % 2 === 0) {
 	// 	return Promise.reject(new Error('Test fetching error'));
 	// }
-	return { rows: paginatedData, totalRows: data.length };
-};
+	return { rows: paginatedData, totalRows: data.length }
+}
 
 const UserListPage: React.FC<React.PropsWithChildren> = ({ children }) => {
 	return (
@@ -29,8 +29,8 @@ const UserListPage: React.FC<React.PropsWithChildren> = ({ children }) => {
 		>
 			{children}
 		</ListPage>
-	);
-};
+	)
+}
 
 export const Route = createFileRoute(
 	'/_tenant/$tenant/_settings/settings/_users'
@@ -40,16 +40,16 @@ export const Route = createFileRoute(
 			<UserListPage>
 				<Outlet />
 			</UserListPage>
-		);
+		)
 	},
-});
+})
 
 const columns: MRT_ColumnDef<any>[] = [
 	{
 		accessorKey: 'name.firstName', //access nested data with dot notation
 		header: 'First Name',
 		Cell: ({ cell }) => {
-			return <CellDetailLink cell={cell} idField='id' pageSlug='users' />;
+			return <CellDetailLink cell={cell} idField='id' pageSlug='users' />
 		},
 	},
 	{
@@ -68,4 +68,4 @@ const columns: MRT_ColumnDef<any>[] = [
 		accessorKey: 'state',
 		header: 'State',
 	},
-];
+]

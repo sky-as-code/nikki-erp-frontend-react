@@ -1,11 +1,11 @@
-'use client';
+'use client'
 
-import { Flex, Text } from '@mantine/core';
-import { IconCircleDottedLetterN } from '@tabler/icons-react';
-import cls from 'clsx';
-import Link from 'next/link';
+import { Flex, Text } from '@mantine/core'
+import { IconCircleDottedLetterN } from '@tabler/icons-react'
+import cls from 'clsx'
+import Link from 'next/link'
 
-import classes from './Logo.module.css';
+import classes from './Logo.module.css'
 
 interface Props {
 	width?: string;
@@ -30,5 +30,5 @@ export const Logo: React.FC<Props> = ({ enableLink = true }) => {
 				</Text>
 			</Link>
 		</Flex>
-	);
-};
+	)
+}

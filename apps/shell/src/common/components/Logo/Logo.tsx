@@ -1,9 +1,9 @@
-import { Flex, Text } from '@mantine/core';
-import { IconCircleDottedLetterN } from '@tabler/icons-react';
-import { Link } from '@tanstack/react-router';
-import cls from 'clsx';
+import { Flex, Text } from '@mantine/core'
+import { IconCircleDottedLetterN } from '@tabler/icons-react'
+import { Link } from '@tanstack/react-router'
+import cls from 'clsx'
 
-import classes from './Logo.module.css';
+import classes from './Logo.module.css'
 
 interface Props {
 	width?: string;
@@ -28,5 +28,5 @@ export const Logo: React.FC<Props> = ({ enableLink = true }) => {
 				</Text>
 			</Link>
 		</Flex>
-	);
-};
+	)
+}

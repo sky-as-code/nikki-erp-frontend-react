@@ -1,1 +1,1 @@
-export * from './restProvider';
+export * from './restProvider'

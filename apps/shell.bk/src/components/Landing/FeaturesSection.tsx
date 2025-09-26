@@ -1,9 +1,9 @@
 import {IconGitBranch,
 	IconTestPipe,
 	IconServer,
-	IconCode} from '@tabler/icons-react';
+	IconCode} from '@tabler/icons-react'
 
-import classes from './FeatureSection.module.css';
+import classes from './FeatureSection.module.css'
 
 interface FeatureCardProps {
 	icon: React.ReactNode;
@@ -19,7 +19,7 @@ const FeatureCard = ({
 		<h3 className={classes.featureTitle}>{title}</h3>
 		<p className={classes.featureDescription}>{description}</p>
 	</div>
-);
+)
 
 export function Features() {
 	const features = [
@@ -47,7 +47,7 @@ export function Features() {
 			description:
 				'Pre-configured ESLint, Prettier, and TypeScript. Hot reload, error overlay, and automatic import organization for rapid development.',
 		},
-	];
+	]
 
 	return (
 		<section className={classes.wrapper}>
@@ -63,5 +63,5 @@ export function Features() {
 				))}
 			</div>
 		</section>
-	);
+	)
 }

@@ -1,7 +1,7 @@
-import { rem } from '@mantine/core';
-import type { Meta, StoryObj } from '@storybook/react';
+import { rem } from '@mantine/core'
+import type { Meta, StoryObj } from '@storybook/react'
 
-import { Logo } from './Logo';
+import { Logo } from './Logo'
 
 const meta: Meta<typeof Logo> = {
 	title: 'Components/Logo',
@@ -12,9 +12,9 @@ const meta: Meta<typeof Logo> = {
 		// More on how to position stories at: https://storybook.js.org/docs/7.0/react/configure/story-layout
 		layout: 'centered',
 	},
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof Logo>;
+export default meta
+type Story = StoryObj<typeof Logo>
 
-export const Default: Story = {render: () => <Logo width={rem(50)} />};
+export const Default: Story = {render: () => <Logo width={rem(50)} />}

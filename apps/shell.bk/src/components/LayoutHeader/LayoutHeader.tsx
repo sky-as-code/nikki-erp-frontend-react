@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import { useTenantUrl } from '@common/context/TenantUrlProvider';
-import { Logo } from '@components/Logo/Logo';
+import { useTenantUrl } from '@common/context/TenantUrlProvider'
+import { Logo } from '@components/Logo/Logo'
 import {
 	ActionIcon,
 	Anchor,
@@ -11,8 +11,8 @@ import {
 	Group,
 	Stack,
 	Text,
-} from '@mantine/core';
-import { ModuleSwitchDropdown } from '@modules/core/organization/ModuleSwitchDropdown';
+} from '@mantine/core'
+import { ModuleSwitchDropdown } from '@modules/core/organization/ModuleSwitchDropdown'
 import {
 	IconApps,
 	IconFilter,
@@ -21,26 +21,26 @@ import {
 	IconPlus,
 	IconRefresh,
 	IconSettings,
-} from '@tabler/icons-react';
-import cls from 'clsx';
-import Link from 'next/link';
+} from '@tabler/icons-react'
+import cls from 'clsx'
+import Link from 'next/link'
 
-import classes from './LayoutHeader.module.css';
+import classes from './LayoutHeader.module.css'
 
-import { MenuBar } from '@/components/MenuBar';
-import { OrgSwitchDropdown } from '@/modules/core/organization/OrgSwitchDropdown';
-import { NavItem } from '@/types/navItem';
+import { MenuBar } from '@/components/MenuBar'
+import { OrgSwitchDropdown } from '@/modules/core/organization/OrgSwitchDropdown'
+import { NavItem } from '@/types/navItem'
 
 export type LayoutHeaderProps = {
 	burger: React.ReactNode;
 	navItems: NavItem[];
-};
+}
 
 export const LayoutHeader: React.FC<LayoutHeaderProps> = ({
 	burger,
 	navItems,
 }) => {
-	const { getOrgPath } = useTenantUrl();
+	const { getOrgPath } = useTenantUrl()
 
 	return (
 		<Box
@@ -56,5 +56,5 @@ export const LayoutHeader: React.FC<LayoutHeaderProps> = ({
 			</Breadcrumbs>
 			<MenuBar items={navItems} />
 		</Box>
-	);
-};
+	)
+}

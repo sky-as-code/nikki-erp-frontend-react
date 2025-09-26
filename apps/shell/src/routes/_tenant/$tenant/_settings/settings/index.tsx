@@ -1,4 +1,3 @@
-import { createFileRoute } from '@tanstack/react-router';
 
 import {
 	Button,
@@ -9,8 +8,8 @@ import {
 	Popover,
 	Stack,
 	Text,
-} from '@mantine/core';
-import { notifications as notif } from '@mantine/notifications';
+} from '@mantine/core'
+import { notifications as notif } from '@mantine/notifications'
 import {
 	IconChevronLeft,
 	IconChevronLeftPipe,
@@ -22,62 +21,63 @@ import {
 	IconPlus,
 	IconRefresh,
 	IconSettings,
-} from '@tabler/icons-react';
-import clsx from 'clsx';
-import React, { DOMAttributes, useEffect } from 'react';
+} from '@tabler/icons-react'
+import { createFileRoute } from '@tanstack/react-router'
+import clsx from 'clsx'
+import React, { DOMAttributes, useEffect } from 'react'
 
-import { useUIState } from '@/common/context/UIProviders';
-import { delay } from '@/common/utils';
+import { PageLayout } from '@/common/components/layout/PageLayout'
 import {
 	DataTable,
 	TableContextType,
 	createTableContext,
-} from '@/common/components/Table/DataTable';
-import { data, columns } from '@/common/components/Table/SimpleTable';
-import { PageLayout } from '@/common/components/layout/PageLayout';
+} from '@/common/components/Table/DataTable'
+import { data, columns } from '@/common/components/Table/SimpleTable'
+import { useUIState } from '@/common/context/UIProviders'
+import { delay } from '@/common/utils'
 
-// let testCount = 0;
+// let testCount = 0
 const SettingsPage: React.FC = () => {
 	const {
 		backgroundColor,
 		screen: { setCurrentScreen },
-	} = useUIState();
+	} = useUIState()
 	const { context, Provider } = createTableContext({
 		name: 'settings.users',
 		defaultPageSize: 50,
 		fetchFn: async (pagination) => {
-			const start = pagination.pageIndex * pagination.pageSize;
-			const end = start + pagination.pageSize;
-			const paginatedData = data.slice(start, end);
-			await delay(1000);
+			const start = pagination.pageIndex * pagination.pageSize
+			const end = start + pagination.pageSize
+			const paginatedData = data.slice(start, end)
+			await delay(1000)
 			// if (++testCount % 2 === 0) {
-			// 	throw new Error('Test fetching error');
+			// 	throw new Error('Test fetching error')
 			// }
-			return { rows: paginatedData, totalRows: data.length };
+			return { rows: paginatedData, totalRows: data.length }
 		},
-	});
+	})
 
 	useEffect(() => {
-		setCurrentScreen('settings.users');
-	}, []);
+		setCurrentScreen('settings.users')
+	}, [])
 
 	return (
 		<Provider>
 			<SettingsInner backgroundColor={backgroundColor} tableContext={context} />
 		</Provider>
-	);
-};
+	)
+}
 
 export const Route = createFileRoute('/_tenant/$tenant/_settings/settings/')({
 	component: SettingsPage,
-});
+})
 
 const SettingsInner: React.FC<{
-	backgroundColor: MantineStyleProps['bg'];
-	tableContext: React.Context<TableContextType>;
+	backgroundColor: MantineStyleProps['bg']
+	tableContext: React.Context<TableContextType>
 }> = React.memo(({ backgroundColor, tableContext }) => {
-	const ctxVal = React.useContext(tableContext);
-	const columnsDef = React.useMemo(() => columns, []);
+	const ctxVal = React.useContext(tableContext)
+	const columnsDef = React.useMemo(() => columns, [])
 
 	useEffect(() => {
 		if (ctxVal.isError) {
@@ -87,9 +87,9 @@ const SettingsInner: React.FC<{
 				color: 'red',
 				autoClose: false,
 				withBorder: true,
-			});
+			})
 		}
-	}, [ctxVal.isError]);
+	}, [ctxVal.isError])
 
 	return (
 		<PageLayout
@@ -106,19 +106,19 @@ const SettingsInner: React.FC<{
 				// rowsUpdatedAt={ctxVal.rowsUpdatedAt}
 			/>
 		</PageLayout>
-	);
-});
+	)
+})
 
 type ContentHeaderProps = {
-	backgroundColor: MantineStyleProps['bg'];
-	tableContext: React.Context<TableContextType>;
-};
+	backgroundColor: MantineStyleProps['bg']
+	tableContext: React.Context<TableContextType>
+}
 
 const ContentHeader: React.FC<ContentHeaderProps> = ({
 	backgroundColor,
 	tableContext,
 }) => {
-	const ctxVal = React.useContext(tableContext);
+	const ctxVal = React.useContext(tableContext)
 
 	return (
 		<>
@@ -158,13 +158,13 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
 				</Group>
 			</Group>
 		</>
-	);
-};
+	)
+}
 
 type ToolbarButtonProps = ButtonProps &
 	DOMAttributes<HTMLButtonElement> & {
-		isActive?: boolean;
-	};
+		isActive?: boolean
+	}
 const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 	children,
 	isActive,
@@ -179,17 +179,17 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 		>
 			{children}
 		</Button>
-	);
-};
+	)
+}
 
 const TableActions: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 	const {
 		totalRows,
 		pagination: { pageIndex, pageSize },
-	} = ctxVal;
-	const lastPage = Math.floor(totalRows / pageSize);
-	const start = pageIndex * pageSize + 1;
-	const end = Math.min((pageIndex + 1) * pageSize, totalRows);
+	} = ctxVal
+	const lastPage = Math.floor(totalRows / pageSize)
+	const start = pageIndex * pageSize + 1
+	const end = Math.min((pageIndex + 1) * pageSize, totalRows)
 
 	return (
 		<Button.Group>
@@ -219,8 +219,8 @@ const TableActions: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 			</ToolbarButton>
 			<TableSettings ctxVal={ctxVal} />
 		</Button.Group>
-	);
-};
+	)
+}
 
 const TableSettings: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 	return (
@@ -261,5 +261,5 @@ const TableSettings: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 				</Stack>
 			</Popover.Dropdown>
 		</Popover>
-	);
-};
+	)
+}

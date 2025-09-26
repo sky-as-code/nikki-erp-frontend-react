@@ -3,14 +3,14 @@ import {Anchor,
 	Container,
 	type ContainerProps,
 	Space,
-	Title} from '@mantine/core';
-import type { FC, ReactNode } from 'react';
+	Title} from '@mantine/core'
+import type { FC, ReactNode } from 'react'
 
 type PageContainerProps = {
 	children: ReactNode;
 	title: string;
 	items?: { label: string; href: string }[];
-} & Pick<ContainerProps, 'fluid'>;
+} & Pick<ContainerProps, 'fluid'>
 
 export const PageContainer: FC<PageContainerProps> = ({
 	children,
@@ -36,5 +36,5 @@ export const PageContainer: FC<PageContainerProps> = ({
 
 			{children}
 		</Container>
-	);
-};
+	)
+}

@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import { useModuleLayout } from '@app/[tenant]/ModuleLayout';
+import { useModuleLayout } from '@app/[tenant]/ModuleLayout'
 import {
 	Anchor,
 	Button,
@@ -11,8 +11,8 @@ import {
 	Popover,
 	Stack,
 	Text,
-} from '@mantine/core';
-import { notifications as notif } from '@mantine/notifications';
+} from '@mantine/core'
+import { notifications as notif } from '@mantine/notifications'
 import {
 	IconChevronLeft,
 	IconChevronLeftPipe,
@@ -24,51 +24,51 @@ import {
 	IconPlus,
 	IconRefresh,
 	IconSettings,
-} from '@tabler/icons-react';
-import clsx from 'clsx';
-import { MRT_ColumnDef } from 'mantine-react-table';
-import React, { DOMAttributes, useEffect } from 'react';
+} from '@tabler/icons-react'
+import clsx from 'clsx'
+import { MRT_ColumnDef } from 'mantine-react-table'
+import React, { DOMAttributes, useEffect } from 'react'
 
-import { PageLayout } from '../../PageLayout';
+import { PageLayout } from '../../PageLayout'
 
-import UserDetailPage from './detail/page';
+import UserDetailPage from './detail/page'
 
-import { useUIState } from '@/common/context/UIProviders';
-import { delay } from '@/common/utils';
+import { useUIState } from '@/common/context/UIProviders'
+import { delay } from '@/common/utils'
 import {
 	DataTable,
 	TableContextType,
 	createTableContext,
-} from '@/components/Table/DataTable';
-import { data, Person } from '@/components/Table/SimpleTable';
+} from '@/components/Table/DataTable'
+import { data, Person } from '@/components/Table/SimpleTable'
 
 // const testCount = 0;
 const UserListPage: React.FC = () => {
-	const { splitRequest } = useModuleLayout();
-	const { backgroundColor } = useUIState();
+	const { splitRequest } = useModuleLayout()
+	const { backgroundColor } = useUIState()
 	const { context, Provider } = createTableContext({
 		name: 'settings.users',
 		defaultPageSize: 50,
 		fetchFn: async (pagination) => {
-			const start = pagination.pageIndex * pagination.pageSize;
-			const end = start + pagination.pageSize;
-			const paginatedData = data.slice(start, end);
-			await delay(1000);
+			const start = pagination.pageIndex * pagination.pageSize
+			const end = start + pagination.pageSize
+			const paginatedData = data.slice(start, end)
+			await delay(1000)
 			// if (++testCount % 2 === 0) {
 			// 	throw new Error('Test fetching error');
 			// }
-			return { rows: paginatedData, totalRows: data.length };
+			return { rows: paginatedData, totalRows: data.length }
 		},
-	});
-	const isSplit = splitRequest instanceof UserSplitRequest;
-	const userSplitReq: UserSplitRequest = splitRequest as UserSplitRequest;
+	})
+	const isSplit = splitRequest instanceof UserSplitRequest
+	const userSplitReq: UserSplitRequest = splitRequest as UserSplitRequest
 
 	useEffect(() => {
 		if (isSplit) {
-			const { pathname } = window.location;
-			window.history.pushState({}, '', `${pathname}/${userSplitReq.id}`);
+			const { pathname } = window.location
+			window.history.pushState({}, '', `${pathname}/${userSplitReq.id}`)
 		}
-	}, [isSplit]);
+	}, [isSplit])
 
 	return (
 		<>
@@ -81,10 +81,10 @@ const UserListPage: React.FC = () => {
 			</Provider>
 			{isSplit && <UserDetailPage id={userSplitReq.id} isSplit={isSplit} />}
 		</>
-	);
-};
+	)
+}
 
-export default UserListPage;
+export default UserListPage
 
 class UserSplitRequest {
 	constructor(public id: string) {}
@@ -95,20 +95,20 @@ export const columns: MRT_ColumnDef<Person>[] = [
 		accessorKey: 'name.firstName', //access nested data with dot notation
 		header: 'First Name',
 		Cell: ({ cell }) => {
-			const { setSplitRequest } = useModuleLayout();
-			const model: Person = cell.row.original;
+			const { setSplitRequest } = useModuleLayout()
+			const model: Person = cell.row.original
 			return (
 				<Anchor
 					href={`/${model.id}`}
 					onClick={(evt) => {
-						evt.preventDefault();
-						setSplitRequest(new UserSplitRequest(model.id));
+						evt.preventDefault()
+						setSplitRequest(new UserSplitRequest(model.id))
 					}}
 					// className='text-blue-500 underline'
 				>
 					{cell.getValue<string>()}
 				</Anchor>
-			);
+			)
 		},
 	},
 	{
@@ -127,15 +127,15 @@ export const columns: MRT_ColumnDef<Person>[] = [
 		accessorKey: 'state',
 		header: 'State',
 	},
-];
+]
 
 const UserListInner: React.FC<{
 	backgroundColor: MantineStyleProps['bg'];
 	isSplit: boolean;
 	tableContext: React.Context<TableContextType>;
 }> = React.memo(({ backgroundColor, isSplit, tableContext }) => {
-	const ctxVal = React.useContext(tableContext);
-	const columnsDef = React.useMemo(() => columns, []);
+	const ctxVal = React.useContext(tableContext)
+	const columnsDef = React.useMemo(() => columns, [])
 
 	useEffect(() => {
 		if (ctxVal.isError) {
@@ -145,9 +145,9 @@ const UserListInner: React.FC<{
 				color: 'red',
 				autoClose: false,
 				withBorder: true,
-			});
+			})
 		}
-	}, [ctxVal.isError]);
+	}, [ctxVal.isError])
 
 	return (
 		<PageLayout
@@ -165,19 +165,19 @@ const UserListInner: React.FC<{
 				// rowsUpdatedAt={ctxVal.rowsUpdatedAt}
 			/>
 		</PageLayout>
-	);
-});
+	)
+})
 
 type ContentHeaderProps = {
 	backgroundColor: MantineStyleProps['bg'];
 	tableContext: React.Context<TableContextType>;
-};
+}
 
 const ContentHeader: React.FC<ContentHeaderProps> = ({
 	backgroundColor,
 	tableContext,
 }) => {
-	const ctxVal = React.useContext(tableContext);
+	const ctxVal = React.useContext(tableContext)
 
 	return (
 		<>
@@ -217,13 +217,13 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
 				</Group>
 			</Group>
 		</>
-	);
-};
+	)
+}
 
 type ToolbarButtonProps = ButtonProps &
 	DOMAttributes<HTMLButtonElement> & {
 		isActive?: boolean;
-	};
+	}
 const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 	children,
 	isActive,
@@ -238,17 +238,17 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 		>
 			{children}
 		</Button>
-	);
-};
+	)
+}
 
 const TableActions: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 	const {
 		totalRows,
 		pagination: { pageIndex, pageSize },
-	} = ctxVal;
-	const lastPage = Math.floor(totalRows / pageSize);
-	const start = pageIndex * pageSize + 1;
-	const end = Math.min((pageIndex + 1) * pageSize, totalRows);
+	} = ctxVal
+	const lastPage = Math.floor(totalRows / pageSize)
+	const start = pageIndex * pageSize + 1
+	const end = Math.min((pageIndex + 1) * pageSize, totalRows)
 
 	return (
 		<Button.Group>
@@ -278,8 +278,8 @@ const TableActions: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 			</ToolbarButton>
 			<TableSettings ctxVal={ctxVal} />
 		</Button.Group>
-	);
-};
+	)
+}
 
 const TableSettings: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 	return (
@@ -320,5 +320,5 @@ const TableSettings: React.FC<{ ctxVal: TableContextType }> = ({ ctxVal }) => {
 				</Stack>
 			</Popover.Dropdown>
 		</Popover>
-	);
-};
+	)
+}

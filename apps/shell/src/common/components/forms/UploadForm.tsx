@@ -4,13 +4,13 @@ import {Group,
 	rem,
 	Text,
 	useMantineColorScheme,
-	useMantineTheme} from '@mantine/core';
-import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
-import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
+	useMantineTheme} from '@mantine/core'
+import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone'
+import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react'
 
 export const UploadForm = () => {
-	const theme = useMantineTheme();
-	const { colorScheme } = useMantineColorScheme();
+	const theme = useMantineTheme()
+	const { colorScheme } = useMantineColorScheme()
 
 	return (
 		<Dropzone
@@ -54,5 +54,5 @@ export const UploadForm = () => {
 				</div>
 			</Group>
 		</Dropzone>
-	);
-};
+	)
+}

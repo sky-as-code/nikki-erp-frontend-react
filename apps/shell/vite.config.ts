@@ -1,10 +1,11 @@
 /// <reference types="vitest" />
 
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
-import { resolve } from 'path';
-import tailwindcssVite from '@tailwindcss/vite';
-import { tanstackRouter } from '@tanstack/router-plugin/vite';
+import { resolve } from 'path'
+
+import tailwindcssVite from '@tailwindcss/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 // import tsconfigPaths from 'vite-tsconfig-paths';
 
@@ -36,4 +37,4 @@ export default defineConfig({
 			'@tabler/icons-react': '@tabler/icons-react/dist/esm/icons',
 		},
 	},
-});
+})

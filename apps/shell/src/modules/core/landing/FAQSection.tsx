@@ -1,6 +1,6 @@
-import { Container, Title, Text, Accordion, AccordionItem, AccordionControl, AccordionPanel } from '@mantine/core';
+import { Container, Title, Text, Accordion, AccordionItem, AccordionControl, AccordionPanel } from '@mantine/core'
 
-import classes from './FAQSection.module.css';
+import classes from './FAQSection.module.css'
 
 interface FAQItem {
 	question: string;
@@ -33,7 +33,7 @@ export function FAQSection() {
 			question: 'What kind of support do you provide?',
 			answer: 'We provide 24/7 email support for all plans. Professional plans include priority support, while Enterprise plans get dedicated support with phone and video call options.',
 		},
-	];
+	]
 
 	return (
 		<Container size='lg' py={120}>
@@ -62,5 +62,5 @@ export function FAQSection() {
 				))}
 			</Accordion>
 		</Container>
-	);
+	)
 }

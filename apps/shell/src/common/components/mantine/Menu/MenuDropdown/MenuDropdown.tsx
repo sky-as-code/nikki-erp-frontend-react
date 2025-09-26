@@ -7,15 +7,15 @@ import {
 	Factory,
 	useProps,
 	Popover,
-} from '@mantine/core';
-import { useMergedRef } from '@mantine/hooks';
-import { useRef } from 'react';
+} from '@mantine/core'
+import { useMergedRef } from '@mantine/hooks'
+import { useRef } from 'react'
 
-import { useMenuContext } from '../Menu.context';
-import classes from '../Menu.module.css';
+import { useMenuContext } from '../Menu.context'
+import classes from '../Menu.module.css'
 
 
-export type MenuDropdownStylesNames = 'dropdown';
+export type MenuDropdownStylesNames = 'dropdown'
 
 export interface MenuDropdownProps
 	extends BoxProps,
@@ -29,9 +29,9 @@ export type MenuDropdownFactory = Factory<{
 	ref: HTMLDivElement;
 	stylesNames: MenuDropdownStylesNames;
 	compound: true;
-}>;
+}>
 
-const defaultProps: Partial<MenuDropdownProps> = {};
+const defaultProps: Partial<MenuDropdownProps> = {}
 
 export const MenuDropdown = factory<MenuDropdownFactory>((props, ref) => {
 	const {
@@ -46,29 +46,29 @@ export const MenuDropdown = factory<MenuDropdownFactory>((props, ref) => {
 		children,
 		closeOnMouseLeave = true,
 		...others
-	} = useProps('MenuDropdown', defaultProps, props);
+	} = useProps('MenuDropdown', defaultProps, props)
 
-	const wrapperRef = useRef<HTMLDivElement>(null);
-	const ctx = useMenuContext();
+	const wrapperRef = useRef<HTMLDivElement>(null)
+	const ctx = useMenuContext()
 
 	const handleKeyDown = createEventHandler<any>(onKeyDown, (event) => {
 		if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-			event.preventDefault();
+			event.preventDefault()
 			wrapperRef.current
 				?.querySelectorAll<HTMLButtonElement>('[data-menu-item]:not(:disabled)')[0]
-				?.focus();
+				?.focus()
 		}
-	});
+	})
 
 	const handleMouseEnter = createEventHandler<any>(
 		onMouseEnter,
 		() => (ctx.trigger === 'hover' || ctx.trigger === 'click-hover') && ctx.openDropdown(),
-	);
+	)
 
 	const handleMouseLeave = createEventHandler<any>(
 		onMouseLeave,
 		() => (ctx.trigger === 'hover' || ctx.trigger === 'click-hover') && closeOnMouseLeave && ctx.closeDropdown(),
-	);
+	)
 
 	return (
 		<Popover.Dropdown
@@ -94,8 +94,8 @@ export const MenuDropdown = factory<MenuDropdownFactory>((props, ref) => {
 			)}
 			{children}
 		</Popover.Dropdown>
-	);
-});
+	)
+})
 
-MenuDropdown.classes = classes;
-MenuDropdown.displayName = '@mantine/core/MenuDropdown';
+MenuDropdown.classes = classes
+MenuDropdown.displayName = '@mantine/core/MenuDropdown'

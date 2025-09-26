@@ -1,7 +1,7 @@
-import { Container, Text, Card, Group, Button, List, ListItem, ThemeIcon, SimpleGrid } from '@mantine/core';
-import { IconCheck, IconX } from '@tabler/icons-react';
+import { Container, Text, Card, Group, Button, List, ListItem, ThemeIcon, SimpleGrid } from '@mantine/core'
+import { IconCheck, IconX } from '@tabler/icons-react'
 
-import classes from './PricingSection.module.css';
+import classes from './PricingSection.module.css'
 
 interface PlanFeature {
 	text: string;
@@ -20,7 +20,7 @@ interface PricingPlan {
 function PricingCard({ plan }: { plan: PricingPlan }) {
 	const {
 		name, price, description, features, highlighted, buttonText,
-	} = plan;
+	} = plan
 
 	return (
 		<Card className={`${classes.card} ${highlighted ? classes.highlighted : ''}`} padding='xl'>
@@ -88,7 +88,7 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
 				{buttonText}
 			</Button>
 		</Card>
-	);
+	)
 }
 
 export function PricingSection() {
@@ -136,7 +136,7 @@ export function PricingSection() {
 				{ text: 'Enterprise security', included: true },
 			],
 		},
-	];
+	]
 
 	return (
 		<Container size='lg' py={120}>
@@ -155,5 +155,5 @@ export function PricingSection() {
 				))}
 			</SimpleGrid>
 		</Container>
-	);
+	)
 }

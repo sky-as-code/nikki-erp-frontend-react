@@ -1,17 +1,17 @@
-'use client';
+'use client'
 
-import { useCustomTable } from '@hooks/useCustomTable';
-import { Badge, Paper, Rating, Space, Title } from '@mantine/core';
-import { MantineReactTable, type MRT_ColumnDef } from 'mantine-react-table';
-import { useMemo } from 'react';
+import { useCustomTable } from '@hooks/useCustomTable'
+import { Badge, Paper, Rating, Space, Title } from '@mantine/core'
+import { MantineReactTable, type MRT_ColumnDef } from 'mantine-react-table'
+import { useMemo } from 'react'
 
-import { useProducts } from '@/services/products';
-import type { Product } from '@/services/products/types';
+import { useProducts } from '@/services/products'
+import type { Product } from '@/services/products/types'
 
 export function PaginationTable() {
 	const {
 		data, isError, isFetching, isLoading,
-	} = useProducts();
+	} = useProducts()
 
 	const columns = useMemo<MRT_ColumnDef<Product>[]>(
 		() => [
@@ -43,11 +43,11 @@ export function PaginationTable() {
 				accessorKey: 'inventoryStatus',
 				header: 'Status',
 				Cell: ({ cell }) => {
-					const status = cell.getValue<'INSTOCK' | 'OUTOFSTOCK' | 'LOWSTOCK'>();
-					let color: 'red' | 'yellow' | 'green' = 'red';
-					if (status === 'INSTOCK') color = 'green';
-					else if (status === 'LOWSTOCK') color = 'yellow';
-					return <Badge color={color}>{status}</Badge>;
+					const status = cell.getValue<'INSTOCK' | 'OUTOFSTOCK' | 'LOWSTOCK'>()
+					let color: 'red' | 'yellow' | 'green' = 'red'
+					if (status === 'INSTOCK') color = 'green'
+					else if (status === 'LOWSTOCK') color = 'yellow'
+					return <Badge color={color}>{status}</Badge>
 				},
 				filterVariant: 'select',
 				mantineFilterSelectProps: {
@@ -60,7 +60,7 @@ export function PaginationTable() {
 			},
 		],
 		[],
-	);
+	)
 
 	const table = useCustomTable<Product>({
 		columns,
@@ -71,7 +71,7 @@ export function PaginationTable() {
 			showAlertBanner: isError,
 			showProgressBars: isFetching,
 		},
-	});
+	})
 
 	return (
 		<Paper withBorder radius='md' p='md' mt='lg'>
@@ -79,5 +79,5 @@ export function PaginationTable() {
 			<Space h='md' />
 			<MantineReactTable table={table} />
 		</Paper>
-	);
+	)
 }

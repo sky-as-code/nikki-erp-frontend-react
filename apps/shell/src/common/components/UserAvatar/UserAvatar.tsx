@@ -1,22 +1,22 @@
-import { useUIState } from '@common/context/UIProviders';
-import { ActionIcon, Avatar, Menu, Text } from '@mantine/core';
-import { useAuth } from '@modules/core/auth/AuthProvider';
+import { useUIState } from '@common/context/UIProviders'
+import { ActionIcon, Avatar, Menu, Text } from '@mantine/core'
+import { useAuth } from '@modules/core/auth/AuthProvider'
 import {
 	IconArrowsLeftRight,
 	IconMessageCircle,
 	IconPhoto,
 	IconSettings,
 	IconTrash,
-} from '@tabler/icons-react';
+} from '@tabler/icons-react'
 
 export const UserAvatar = () => {
-	const { logout } = useAuth();
-	const { notification: notif } = useUIState();
+	const { logout } = useAuth()
+	const { notification: notif } = useUIState()
 
 	const handleLogout = () => {
-		logout();
-		notif.showInfo('You have been logged out', 'Logout');
-	};
+		logout()
+		notif.showInfo('You have been logged out', 'Logout')
+	}
 
 	return (
 		<Menu shadow='md' width={200}>
@@ -55,5 +55,5 @@ export const UserAvatar = () => {
 				</Menu.Item>
 			</Menu.Dropdown>
 		</Menu>
-	);
-};
+	)
+}

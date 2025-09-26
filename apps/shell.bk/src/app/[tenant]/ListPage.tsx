@@ -1,31 +1,31 @@
-'use client';
+'use client'
 
 import {
 	ActionIcon,
 	Anchor,
 	Button, ButtonProps, Group, MantineStyleProps, NativeSelect, Popover, Stack, Switch, Text,
 	UnstyledButton,
-} from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+} from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
 import {
 	IconChevronLeft, IconChevronLeftPipe, IconChevronRight, IconChevronRightPipe,
 	IconChevronsLeft,
 	IconChevronsRight,
 	IconFilter, IconLayoutDashboard, IconList, IconPlus, IconRefresh, IconSettings,
-} from '@tabler/icons-react';
-import clsx from 'clsx';
-import { MRT_Cell, MRT_ColumnDef } from 'mantine-react-table';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import React, { DOMAttributes, useEffect, useState } from 'react';
+} from '@tabler/icons-react'
+import clsx from 'clsx'
+import { MRT_Cell, MRT_ColumnDef } from 'mantine-react-table'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import React, { DOMAttributes, useEffect, useState } from 'react'
 
-import { useModuleLayout } from './ModuleLayout';
-import classes from './ModuleLayout.module.css';
-import { PageLayout } from './PageLayout';
+import { useModuleLayout } from './ModuleLayout'
+import classes from './ModuleLayout.module.css'
+import { PageLayout } from './PageLayout'
 
-import { useTenantUrl } from '@/common/context/TenantUrlProvider';
-import { useUIState } from '@/common/context/UIProviders';
-import { CreateTableContextReturn, DataTable, PaginationState, TableContextFetchResult, TableContextType, createTableContext } from '@/components/Table/DataTable';
+import { useTenantUrl } from '@/common/context/TenantUrlProvider'
+import { useUIState } from '@/common/context/UIProviders'
+import { CreateTableContextReturn, DataTable, PaginationState, TableContextFetchResult, TableContextType, createTableContext } from '@/components/Table/DataTable'
 
 
 export type ListPageProps = React.PropsWithChildren & {
@@ -49,35 +49,35 @@ export type ListPageProps = React.PropsWithChildren & {
 	 * This function is invoked on cache miss.
 	 */
 	fetchFn: (pagination: PaginationState) => Promise<TableContextFetchResult>,
-};
+}
 
 export const ListPage: React.FC<ListPageProps> = (rawProps) => {
 	const {
 		enableGrid = true,
 		enableTable = true,
 		...props
-	} = rawProps;
-	const pathName = usePathname();
-	const [ tableCtxResult, setTableCtxResult ] = useState<CreateTableContextReturn | null>(null);
-	const split = useModuleLayout();
+	} = rawProps
+	const pathName = usePathname()
+	const [ tableCtxResult, setTableCtxResult ] = useState<CreateTableContextReturn | null>(null)
+	const split = useModuleLayout()
 
 	useEffect(() => {
 		const result = createTableContext({
 			name: props.cacheKey,
 			defaultPageSize: props.defaultPageSize ?? 50,
 			fetchFn: props.fetchFn,
-		});
-		setTableCtxResult(result);
-	}, []);
+		})
+		setTableCtxResult(result)
+	}, [])
 
 	useEffect(() => {
 		if (pathName.match(`/${props.pageSlug}/*$`)) {
-			split.setSplitMode('10_0');
+			split.setSplitMode('10_0')
 		}
-	}, [pathName]);
+	}, [pathName])
 
-	if (!tableCtxResult) return null;
-	const { context, Provider: ListDataProvider } = tableCtxResult;
+	if (!tableCtxResult) return null
+	const { context, Provider: ListDataProvider } = tableCtxResult
 
 	return (
 		<>
@@ -94,8 +94,8 @@ export const ListPage: React.FC<ListPageProps> = (rawProps) => {
 			</ListDataProvider>}
 			{props.children}
 		</>
-	);
-};
+	)
+}
 
 
 const ListInner: React.FC<{
@@ -106,16 +106,16 @@ const ListInner: React.FC<{
 	pageName: string,
 	tableContext: React.Context<TableContextType>,
 }> = ({ columns, tableContext, ...props }) => {
-	const { notification: notif } = useUIState();
-	const ctxVal = React.useContext(tableContext);
-	const columnsDef = React.useMemo(() => columns, []);
-	const split = useModuleLayout();
+	const { notification: notif } = useUIState()
+	const ctxVal = React.useContext(tableContext)
+	const columnsDef = React.useMemo(() => columns, [])
+	const split = useModuleLayout()
 
 	useEffect(() => {
 		if (ctxVal.isError) {
-			notif.showError('You are served with cached data which may be stale.', 'Failed to load data');
+			notif.showError('You are served with cached data which may be stale.', 'Failed to load data')
 		}
-	}, [ctxVal.isError]);
+	}, [ctxVal.isError])
 
 	return (
 		<PageLayout
@@ -153,19 +153,19 @@ const ListInner: React.FC<{
 				<IconChevronsRight size={20} />
 			</button>
 		</PageLayout>
-	);
-};
+	)
+}
 
 type ContentHeaderProps = {
 	enableTable: boolean,
 	enableGrid: boolean,
 	tableContext: React.Context<TableContextType>;
 	pageName: string,
-};
+}
 
 const ContentHeader: React.FC<ContentHeaderProps> = ({ tableContext, ...props }) => {
-	const ctxVal = React.useContext(tableContext);
-	const split = useModuleLayout();
+	const ctxVal = React.useContext(tableContext)
+	const split = useModuleLayout()
 
 	return (
 		<>
@@ -210,19 +210,19 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({ tableContext, ...props })
 				</Group>
 			</Group>
 		</>
-	);
-};
+	)
+}
 
 type ToolbarButtonProps = ButtonProps & DOMAttributes<HTMLButtonElement> & {
 	isActive?: boolean;
-};
+}
 const ToolbarButton: React.FC<ToolbarButtonProps> = ({ children, isActive, ...rest }) => {
 	return (
 		<Button size='compact-md' variant={isActive ? 'filled' : 'subtle'} fw='normal' {...rest}>
 			{children}
 		</Button>
-	);
-};
+	)
+}
 
 const TableActions: React.FC<{
 	ctxVal: TableContextType,
@@ -233,13 +233,13 @@ const TableActions: React.FC<{
 	const {
 		totalRows,
 		pagination: {pageIndex, pageSize},
-	} = ctxVal;
-	const lastPage = Math.floor(totalRows / pageSize);
-	const start = pageIndex * pageSize + 1;
+	} = ctxVal
+	const lastPage = Math.floor(totalRows / pageSize)
+	const start = pageIndex * pageSize + 1
 	const end = Math.min(
 		(pageIndex + 1) * pageSize,
 		totalRows,
-	);
+	)
 
 	return (
 		<Button.Group className={props.className}>
@@ -263,16 +263,16 @@ const TableActions: React.FC<{
 				onClick={ctxVal.lastPage}
 			><IconChevronRightPipe /></ToolbarButton>
 		</Button.Group>
-	);
-};
+	)
+}
 
 const TableSettings: React.FC<{
 	ctxVal: TableContextType,
 	enableTable?: boolean,
 	enableGrid?: boolean,
 }> = ({ ctxVal, ...props }) => {
-	const { enableAutoRefresh, toggleAutoRefresh, viewMode, setViewMode } = React.useContext(ListStateContext);
-	const { isMobile } = useUIState();
+	const { enableAutoRefresh, toggleAutoRefresh, viewMode, setViewMode } = React.useContext(ListStateContext)
+	const { isMobile } = useUIState()
 
 	return (
 		<>
@@ -306,8 +306,8 @@ const TableSettings: React.FC<{
 				</Popover.Dropdown>
 			</Popover>
 		</>
-	);
-};
+	)
+}
 
 const RowsPerPageSetting: React.FC<{
 	ctxVal: TableContextType,
@@ -331,7 +331,7 @@ const RowsPerPageSetting: React.FC<{
 			{/* </Group> */}
 		</td>
 	</tr>
-);
+)
 
 const ViewModeSetting: React.FC<{
 	enableTable?: boolean,
@@ -358,7 +358,7 @@ const ViewModeSetting: React.FC<{
 			{/* </Group> */}
 		</td>
 	</tr>
-);
+)
 
 const AutoRefreshSetting: React.FC<{
 	checked: boolean,
@@ -374,68 +374,68 @@ const AutoRefreshSetting: React.FC<{
 			{/* </Group> */}
 		</td>
 	</tr>
-);
+)
 
 type ListStateContextType = {
 	enableAutoRefresh: boolean,
 	viewMode: 'table' | 'grid',
 	toggleAutoRefresh: () => void,
 	setViewMode: (s: 'table' | 'grid') => void,
-};
+}
 
-const ListStateContext = React.createContext<ListStateContextType>({} as any);
+const ListStateContext = React.createContext<ListStateContextType>({} as any)
 
 const ListStateProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-	const [viewMode, setViewMode] = React.useState<ListStateContextType['viewMode']>('table');
+	const [viewMode, setViewMode] = React.useState<ListStateContextType['viewMode']>('table')
 	// const [enableAutoRefresh, setEnableAutoRefresh] = React.useState(true);
-	const [ enableAutoRefresh, { toggle: toggleAutoRefresh} ] = useDisclosure(true);
+	const [ enableAutoRefresh, { toggle: toggleAutoRefresh} ] = useDisclosure(true)
 
 	const val: ListStateContextType = {
 		enableAutoRefresh,
 		viewMode,
 		toggleAutoRefresh,
 		setViewMode,
-	};
+	}
 
 	return (
 		<ListStateContext.Provider value={val}>
 			{children}
 		</ListStateContext.Provider>
-	);
-} ;
+	)
+}
 
 export type CelDetailLinkProps = {
 	cell: MRT_Cell<any>,
 	idField?: string,
 	pageSlug: string,
-};
+}
 
 export const CellDetailLink: React.FC<CelDetailLinkProps> = (props) => {
 	const {
 		cell,
 		idField = 'id',
 		pageSlug,
-	} = props;
-	const { setSplitMode } = useModuleLayout();
-	const router = useRouter();
-	const { getModulePath } = useTenantUrl();
-	const modulePath = getModulePath();
-	const model = cell.row.original;
-	const url = `${modulePath}/${pageSlug}/${model[idField]}`;
+	} = props
+	const { setSplitMode } = useModuleLayout()
+	const router = useRouter()
+	const { getModulePath } = useTenantUrl()
+	const modulePath = getModulePath()
+	const model = cell.row.original
+	const url = `${modulePath}/${pageSlug}/${model[idField]}`
 
 	return (
 		<Anchor
 			component={Link}
 			href={url}
 			onClick={(evt) => {
-				evt.preventDefault();
-				setSplitMode('3_7');
+				evt.preventDefault()
+				setSplitMode('3_7')
 				setTimeout(() => {
-					router.push(url);
-				}, 0);
+					router.push(url)
+				}, 0)
 			}}
 		>
 			{cell.getValue<string>()}
 		</Anchor>
-	);
-};
+	)
+}

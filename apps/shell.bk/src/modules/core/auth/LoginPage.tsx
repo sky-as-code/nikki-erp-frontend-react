@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import { Logo } from '@components/Logo/Logo';
-import { Box, Card, Stack } from '@mantine/core';
-import { useSearchParams } from 'next/navigation';
+import { Logo } from '@components/Logo/Logo'
+import { Box, Card, Stack } from '@mantine/core'
+import { useSearchParams } from 'next/navigation'
 
-import { LoginWizard } from './LoginWizard';
+import { LoginWizard } from './LoginWizard'
 
 export const LoginPage: React.FC = () => {
-	const searchParams = useSearchParams();
-	const returnUrl = searchParams.get('to') || '/';
+	const searchParams = useSearchParams()
+	const returnUrl = searchParams.get('to') || '/'
 
 	return (
 		<Box className='w-full max-w-[500px] min-w-[400px] p-10' mx='auto'>
@@ -20,5 +20,5 @@ export const LoginPage: React.FC = () => {
 				<LoginWizard returnUrl={returnUrl} />
 			</Card>
 		</Box>
-	);
-};
+	)
+}

@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
 	Group,
@@ -7,22 +7,22 @@ import {
 	Box,
 	Container,
 	Text,
-} from '@mantine/core';
-import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
-import Link from 'next/link';
-import React from 'react';
+} from '@mantine/core'
+import { IconChevronDown, IconChevronRight } from '@tabler/icons-react'
+import Link from 'next/link'
+import React from 'react'
 
-import { useTenantUrl } from '@/common/context/TenantUrlProvider';
-import { Menu } from '@/components/mantine/Menu';
-import { NavItem } from '@/types/navItem';
+import { useTenantUrl } from '@/common/context/TenantUrlProvider'
+import { Menu } from '@/components/mantine/Menu'
+import { NavItem } from '@/types/navItem'
 
 
 export type MenuBarProps = {
 	items: NavItem[]
-};
+}
 
 export const MenuBar: React.FC<MenuBarProps> = ({ items }) => {
-	const { getFullPath } = useTenantUrl();
+	const { getFullPath } = useTenantUrl()
 
 	return (
 		<Group visibleFrom='md' justify='space-between' gap='xs'>
@@ -47,11 +47,11 @@ export const MenuBar: React.FC<MenuBarProps> = ({ items }) => {
 				))}
 			</Button.Group>
 		</Group>
-	);
-};
+	)
+}
 
 const NavMenu: React.FC<{ item: NavItem }> = ({ item }) => {
-	const { getFullPath } = useTenantUrl();
+	const { getFullPath } = useTenantUrl()
 
 	return (
 		<Menu
@@ -90,7 +90,7 @@ const NavMenu: React.FC<{ item: NavItem }> = ({ item }) => {
 										{link.label}
 									</Menu.Item>
 								} />
-						);
+						)
 					}
 					return (
 						<Menu.Item
@@ -100,16 +100,16 @@ const NavMenu: React.FC<{ item: NavItem }> = ({ item }) => {
 						>
 							{link.label}
 						</Menu.Item>
-					);
+					)
 				})}
 			</Menu.Dropdown>
 		</Menu>
-	);
-};
+	)
+}
 
 
 const NestedMenu: React.FC<{ items: NavItem[], parent: React.ReactNode }> = ({ items, parent }) => {
-	const { getFullPath } = useTenantUrl();
+	const { getFullPath } = useTenantUrl()
 
 	return (
 		<Menu
@@ -147,7 +147,7 @@ const NestedMenu: React.FC<{ items: NavItem[], parent: React.ReactNode }> = ({ i
 									Recent #2
 								</Menu.Item>
 							</React.Fragment>
-						);
+						)
 					}
 					return (<Menu.Item
 						key={subItem.link}
@@ -155,9 +155,9 @@ const NestedMenu: React.FC<{ items: NavItem[], parent: React.ReactNode }> = ({ i
 						href={getFullPath(subItem.link!)}
 					>
 						{subItem.label}
-					</Menu.Item>);
+					</Menu.Item>)
 				})}
 			</Menu.Dropdown>
 		</Menu>
-	);
-};
+	)
+}

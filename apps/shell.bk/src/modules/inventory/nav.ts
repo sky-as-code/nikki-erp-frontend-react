@@ -1,8 +1,8 @@
-import type { NavItem } from '@/types/navItem';
+import type { NavItem } from '@/types/navItem'
 
 const navItems: NavItem[] = [
 
-];
+]
 
 /*
  Inventory Management - Main Menu Items

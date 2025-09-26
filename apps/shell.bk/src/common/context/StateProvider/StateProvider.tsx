@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
 export const StateProvider: React.FC<React.PropsWithChildren> = ({children}) => {
 	return (
 		<>
 			{children}
 		</>
-	);
-};
+	)
+}

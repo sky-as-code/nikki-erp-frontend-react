@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import { ThemeSwitcher } from '@common/components/ThemeSwitcher/ThemeSwitcher';
-import { UserAvatar } from '@common/components/UserAvatar/UserAvatar';
-import {  Box, Breadcrumbs, Group } from '@mantine/core';
+import { ThemeSwitcher } from '@common/components/ThemeSwitcher/ThemeSwitcher'
+import { UserAvatar } from '@common/components/UserAvatar/UserAvatar'
+import {  Box, Breadcrumbs, Group } from '@mantine/core'
 
-import { Logo } from '../Logo/Logo';
+import { Logo } from '../Logo/Logo'
 
-import classes from './AppGridHeader.module.css';
+import classes from './AppGridHeader.module.css'
 
-import { OrgSwitchDropdown } from '@/modules/core/organization/OrgSwitchDropdown';
+import { OrgSwitchDropdown } from '@/modules/core/organization/OrgSwitchDropdown'
 
 
 interface Props {
@@ -36,7 +36,7 @@ export function AppGridHeader({ burger }: Props) {
 				<UserAvatar/>
 			</Group>
 		</header>
-	);
+	)
 }
 
 
