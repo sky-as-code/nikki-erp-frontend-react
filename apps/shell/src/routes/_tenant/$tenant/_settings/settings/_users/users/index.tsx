@@ -1,8 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-const UserListPage: React.FC = () => {
-	return <></>
-}
+import { UserListPage } from '@/modules/core/page/UsersListPage'
+
 
 export const Route = createFileRoute(
 	'/_tenant/$tenant/_settings/settings/_users/users/'

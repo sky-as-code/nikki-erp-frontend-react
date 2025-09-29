@@ -1,8 +1,8 @@
-import { Organization } from '@modules/core/types'
 import { useRouter, useRouterState } from '@tanstack/react-router'
 import React, { createContext, useContext, useEffect } from 'react'
 
-import { useConfig } from '@/modules/core/provider/ConfigProvider'
+import { useConfig } from '@/common/context/ConfigProvider'
+import { Organization } from '@/modules/core/types'
 
 type TenantUrlContextType = {
 	subdomain: string | null;
@@ -73,7 +73,7 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 			const allOrgs = userSettings?.orgs ?? []
 			const org = findOrg(allOrgs, appPath.orgSlug)
 			if (!org) {
-				router.navigate({to: '/'})
+				router.navigate({to: '/not-found'})
 				return
 			}
 			setActiveOrg(org.slug)

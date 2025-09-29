@@ -1,5 +1,3 @@
-'use client'
-
 import { ThemeSwitcher } from '@common/components/ThemeSwitcher/ThemeSwitcher'
 import { UserAvatar } from '@common/components/UserAvatar/UserAvatar'
 import { Breadcrumbs, Group, Stack } from '@mantine/core'
@@ -11,8 +9,8 @@ import classes from './ModuleLayout.module.css'
 import { Logo } from '@/common/components/Logo/Logo'
 import { MenuBar } from '@/common/components/MenuBar'
 import { useUIState } from '@/common/context/UIProviders'
-import { ModuleSwitchDropdown } from '@/modules/core/organization/ModuleSwitchDropdown'
-import { OrgSwitchDropdown } from '@/modules/core/organization/OrgSwitchDropdown'
+import { ModuleSwitchDropdown } from '@/modules/core/components/organization/ModuleSwitchDropdown'
+import { OrgSwitchDropdown } from '@/modules/core/components/organization/OrgSwitchDropdown'
 import { NavItem } from '@/types/navItem'
 
 export type LayoutSplitMode = '3_7' | '1_9' | '10_0' | '0_10'

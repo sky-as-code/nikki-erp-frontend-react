@@ -165,8 +165,8 @@ export default defineConfig([
 		files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.mjs'],
 		rules: {
 			'@typescript-eslint/no-explicit-any': 'warn',
-			'@typescript-eslint/no-unused-vars': 'warn',
 			'@typescript-eslint/no-unused-expressions': 'warn',
+			'@typescript-eslint/no-unused-vars': [ 'warn', { 'varsIgnorePattern': '^_', 'argsIgnorePattern': '^_' }],
 		},
 	},
 

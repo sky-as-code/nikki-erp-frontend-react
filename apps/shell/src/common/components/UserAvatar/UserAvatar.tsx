@@ -1,6 +1,5 @@
 import { useUIState } from '@common/context/UIProviders'
 import { ActionIcon, Avatar, Menu, Text } from '@mantine/core'
-import { useAuth } from '@modules/core/auth/AuthProvider'
 import {
 	IconArrowsLeftRight,
 	IconMessageCircle,
@@ -8,6 +7,8 @@ import {
 	IconSettings,
 	IconTrash,
 } from '@tabler/icons-react'
+
+import { useAuth } from '@/modules/core/components/auth/AuthProvider'
 
 export const UserAvatar = () => {
 	const { logout } = useAuth()

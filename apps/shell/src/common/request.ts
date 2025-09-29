@@ -1,9 +1,8 @@
 
 import kyLib from 'ky'
 import type { KyInstance, Input, Options, KyRequest } from 'ky'
-import type { HttpMethod } from 'ky/distribution/types/options'
 
-import { getAuthToken } from '../modules/core/auth/storageManager'
+import { getAuthToken } from '../modules/core/components/auth/storageManager'
 
 export type { Input, Options } from 'ky'
 
@@ -69,7 +68,7 @@ export async function head<T>(url: Input, options?: Options): Promise<T> {
 
 type KyFn = KyInstance['get']
 
-async function send<T>(method: HttpMethod, url: Input, options?: Options): Promise<T> {
+async function send<T>(method: keyof KyInstance, url: Input, options?: Options): Promise<T> {
 	try {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const fn = (api as any)[method] as KyFn
