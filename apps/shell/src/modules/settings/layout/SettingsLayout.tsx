@@ -3,10 +3,7 @@ import navItems from '@/modules/settings/components/navItems'
 
 export const SettingsLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
     return (
-	<ModuleLayout
-		navItems={navItems}
-        >
+	<ModuleLayout navItems={navItems}>
 		{children}
-	</ModuleLayout>
-    )
+	</ModuleLayout>)
 }

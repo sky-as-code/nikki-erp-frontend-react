@@ -34,7 +34,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ items }) => {
 							size='compact-md'
 							className='font-normal box-content'
 							radius={0}
-							pt='xs' pb='xs'
+							// pt='xs' pb='xs'
 							component={Link}
 							href={getFullPath(item.link || '#')}
 						>
@@ -57,7 +57,6 @@ const NavMenu: React.FC<{ item: NavItem }> = ({ item }) => {
 			transitionProps={{ transition: 'fade-down', duration: 300 }}
 			loop={false} withinPortal={false} trapFocus={false}
 			menuItemTabIndex={0} offset={0}
-
 			shadow='md' width={200}
 		>
 			<Menu.Target>
@@ -67,7 +66,6 @@ const NavMenu: React.FC<{ item: NavItem }> = ({ item }) => {
 					rightSection={<IconChevronDown style={{ width: rem(16) }} />}
 					className='font-normal box-content'
 					radius={0}
-					pt='xs' pb='xs'
 				>
 					{item.label}
 				</Button>

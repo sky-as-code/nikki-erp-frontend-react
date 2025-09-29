@@ -25,7 +25,7 @@ export const UsersLayout: React.FC<React.PropsWithChildren> = ({ children }) => 
 		pageSlug='users'
 		pageName='Users'
 		fetchFn={fetchFn}
-        >
+    >
 		{children}
 	</ListPageLayout>
     )

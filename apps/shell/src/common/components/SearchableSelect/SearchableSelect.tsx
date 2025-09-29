@@ -70,6 +70,7 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 
 	return (
 		<Combobox
+			size='md'
 			store={combobox}
 			withinPortal={false}
 			width={props.dropdownWidth}

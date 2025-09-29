@@ -36,8 +36,6 @@ export const OrgSwitchDropdown: React.FC<OrgSwitchDropdownProps> = (props) => {
 			// targetColor='#000'
 			targetFz='h3'
 			targetFw='bolder'
-			targetPb='xs'
-			targetPt='xs'
 			dropdownWidth={props.dropdownWidth}
 			items={items}
 			value={orgSlug}

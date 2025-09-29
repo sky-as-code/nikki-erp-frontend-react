@@ -23,9 +23,7 @@ export type FlatSearchableSelectProps = Omit<
 	targetVariant?: ButtonProps['variant'];
 }
 
-export const FlatSearchableSelect: React.FC<FlatSearchableSelectProps> = (
-	props
-) => {
+export const FlatSearchableSelect: React.FC<FlatSearchableSelectProps> = (props) => {
 	return (
 		<SearchableSelect {...props} triggerComponent={createFlatButton(props)} />
 	)
