@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import ky from 'ky'
 
-import type { Product } from './types'
+import { Product } from '../types'
+
 
 export const getProducts = async () => {
 	// const res = await ky.get('/mock/products.json').json<{ data: Product[] }>();

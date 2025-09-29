@@ -12,9 +12,9 @@ import {
 } from '@tabler/icons-react'
 import { z } from 'zod'
 
-import { EnvVars } from '../types/envVars'
+import { EnvVars } from './types/envVars'
 
-import type { NavItem } from '@/types/navItem'
+import type { NavItem } from '@/common/types/navItem'
 
 const envVarPrefix = 'NIKKI_PUBLIC_'
 

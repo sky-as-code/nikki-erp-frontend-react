@@ -1,6 +1,6 @@
 import { Organization, User } from '../types'
 
-import { ApiResult } from '@/types/common'
+import { ApiResult } from '@/common/types/common'
 
 export type LoginUserResult = {
 	token: string;

@@ -1,6 +1,6 @@
 import { IconHierarchy2, IconShieldCog, IconUserCog, IconWorldCog } from '@tabler/icons-react'
 
-import type { NavItem } from '@/types/navItem'
+import type { NavItem } from '@/common/types/navItem'
 
 
 export default <NavItem[]>[{

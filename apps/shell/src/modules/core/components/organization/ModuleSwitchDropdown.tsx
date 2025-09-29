@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@/common/components/SearchableSelect'
 import { useConfig } from '@/common/context/ConfigProvider'
-import { useTenantUrl } from '@/common/context/TenantUrlProvider'
+import { useTenantUrl } from '@/modules/core/context/TenantUrlProvider'
 
 
 export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'>

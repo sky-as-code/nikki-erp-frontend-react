@@ -7,7 +7,7 @@ import { MRT_ColumnDef, MRT_Table } from 'mantine-react-table'
 import classes from './Dashboard.module.css'
 
 import { TanStackFix } from '@/common/components/TanStackFix'
-import { useCustomTable } from '@/hooks/useCustomTable'
+import { useCustomTable } from '@/common/hooks/useCustomTable'
 
 
 interface Block {

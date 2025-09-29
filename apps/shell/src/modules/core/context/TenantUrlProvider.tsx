@@ -34,9 +34,6 @@ export type TenantUrlProviderProps = React.PropsWithChildren
 export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 	children,
 }) => {
-	// const fullPath = window.location.pathname;
-	// const fullPath = usePathname();
-	// const router = useRouter();
 	const routerState = useRouterState()
 	const fullPath = routerState.location.pathname
 

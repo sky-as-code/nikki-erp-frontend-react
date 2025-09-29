@@ -53,8 +53,8 @@ import {
 	UserSettings,
 } from '../../modules/core/types'
 
+import { EnvVars } from '@/common/types/envVars'
 import { delay } from '@/common/utils'
-import { EnvVars } from '@/types/envVars'
 
 export type ConfigContextType = {
 	envVars: EnvVars;

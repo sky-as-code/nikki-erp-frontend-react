@@ -7,7 +7,7 @@ import { DOMAttributes, useEffect, useState } from 'react'
 import { useModuleLayout } from './ModuleLayout'
 
 import { PageLayout } from '@/common/components/layout/PageLayout'
-import { useTenantUrl } from '@/common/context/TenantUrlProvider'
+import { useTenantUrl } from '@/modules/core/context/TenantUrlProvider'
 
 
 

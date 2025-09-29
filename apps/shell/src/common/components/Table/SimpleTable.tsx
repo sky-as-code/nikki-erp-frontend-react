@@ -1,9 +1,5 @@
-
-
-
-import { Anchor, Paper, Space, Title } from '@mantine/core'
+import { Anchor } from '@mantine/core'
 import { type MRT_ColumnDef, MantineReactTable, useMantineReactTable } from 'mantine-react-table'
-import { useMemo } from 'react'
 
 export type Person = {
 	id: string,

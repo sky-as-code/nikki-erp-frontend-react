@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
+import { UIProviders } from './UIProviders'
+
 import { ConfigProvider } from '@/common/context/ConfigProvider'
+import { EnvVars } from '@/common/types/envVars'
 import { AuthProvider } from '@/modules/core/components/auth/AuthProvider'
-import { EnvVars } from '@/types/envVars'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -24,8 +26,9 @@ export const ShellProviders: React.FC<ShellProvidersProps> = ({
 		<AuthProvider>
 			<QueryClientProvider client={queryClient}>
 				<ConfigProvider envVars={envVars}>
-					{children}
-					{/* <ReactQueryDevtools initialIsOpen={false} /> */}
+					<UIProviders>
+						{children}
+					</UIProviders>
 				</ConfigProvider>
 			</QueryClientProvider>
 		</AuthProvider>

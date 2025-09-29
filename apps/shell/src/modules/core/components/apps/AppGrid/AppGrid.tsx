@@ -15,7 +15,7 @@ import {
 import { Link } from '@tanstack/react-router'
 import { FC } from 'react'
 
-import { useTenantUrl } from '@/common/context/TenantUrlProvider'
+import { useTenantUrl } from '@/modules/core/context/TenantUrlProvider'
 import { NikkiModule } from '@/modules/core/types'
 
 

@@ -9,9 +9,9 @@ import classes from './ModuleLayout.module.css'
 import { Logo } from '@/common/components/Logo/Logo'
 import { MenuBar } from '@/common/components/MenuBar'
 import { useUIState } from '@/common/context/UIProviders'
+import { NavItem } from '@/common/types/navItem'
 import { ModuleSwitchDropdown } from '@/modules/core/components/organization/ModuleSwitchDropdown'
 import { OrgSwitchDropdown } from '@/modules/core/components/organization/OrgSwitchDropdown'
-import { NavItem } from '@/types/navItem'
 
 export type LayoutSplitMode = '3_7' | '1_9' | '10_0' | '0_10'
 

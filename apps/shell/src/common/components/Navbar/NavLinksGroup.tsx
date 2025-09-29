@@ -12,7 +12,7 @@ import { useState } from 'react'
 
 import classes from './NavLinksGroup.module.css'
 
-import { useTenantUrl } from '@/common/context/TenantUrlProvider'
+import { useTenantUrl } from '@/modules/core/context/TenantUrlProvider'
 
 interface LinkItemProps {
 	label: string;

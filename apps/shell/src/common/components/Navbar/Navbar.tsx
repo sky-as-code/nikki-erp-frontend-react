@@ -5,7 +5,7 @@ import { NavLinksGroup } from './NavLinksGroup'
 
 import { SearchableSelect } from '@/common/components/SearchableSelect'
 import { UserButton } from '@/common/components/UserButton/UserButton'
-import type { NavItem } from '@/types/navItem'
+import type { NavItem } from '@/common/types/navItem'
 
 interface Props {
 	data: NavItem[];

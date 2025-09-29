@@ -2,10 +2,9 @@ import { Suspense, useEffect, useState } from 'react'
 
 import { LoadingSpinner } from '@/common/components/loading'
 import { ShellProviders } from '@/common/context/ShellProviders'
-import { UIProviders } from '@/common/context/UIProviders'
 import { loadEnvVars } from '@/common/envVars'
 import { initRequestMaker } from '@/common/request'
-import { EnvVars } from '@/types/envVars'
+import { EnvVars } from '@/common/types/envVars'
 
 export const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
 	const [envVars, setEnvVars] = useState<EnvVars | null>(null)
@@ -32,9 +31,7 @@ export const RootLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
 		// 	</head>
 		// <body className={'overflow-hidden'}>
 		<ShellProviders envVars={envVars}>
-			<UIProviders>
-				<Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-			</UIProviders>
+			<Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
 		</ShellProviders>
 		// </body>
 		// </html>

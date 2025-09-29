@@ -10,8 +10,8 @@ import { Link } from '@tanstack/react-router'
 import React from 'react'
 
 import { Menu } from '@/common/components/mantine/Menu'
-import { useTenantUrl } from '@/common/context/TenantUrlProvider'
-import { NavItem } from '@/types/navItem'
+import { NavItem } from '@/common/types/navItem'
+import { useTenantUrl } from '@/modules/core/context/TenantUrlProvider'
 
 
 export type MenuBarProps = {

@@ -51,7 +51,7 @@
 				"./src/utils/*"
 			],
 			"@hooks/*": [
-				"./src/hooks/*"
+				"src/common/hooks/*"
 			],
 			"@types/*": [
 				"./types/*"

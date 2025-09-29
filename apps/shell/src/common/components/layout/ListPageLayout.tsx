@@ -20,8 +20,8 @@ import classes from './ModuleLayout.module.css'
 import { PageLayout } from './PageLayout'
 
 import { CreateTableContextReturn, DataTable, PaginationState, TableContextFetchResult, TableContextType, createTableContext } from '@/common/components/Table/DataTable'
-import { useTenantUrl } from '@/common/context/TenantUrlProvider'
 import { useUIState } from '@/common/context/UIProviders'
+import { useTenantUrl } from '@/modules/core/context/TenantUrlProvider'
 
 
 export type ListPageProps = React.PropsWithChildren & {
