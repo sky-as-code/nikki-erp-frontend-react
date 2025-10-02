@@ -34,6 +34,7 @@ export async function logoutUser(): Promise<ApiResult<void>> {
 
 
 export async function createLoginAttempt({ email } : { email: string }): Promise<ApiResult<{ attemptId: string }>> {
+
 	const _result = await post<{ error: string, attemptId: string }>('auth/login-attempt', { json: { email } }).then(res => {
 		return res
 	}).catch(err => {

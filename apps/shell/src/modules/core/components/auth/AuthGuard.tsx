@@ -1,5 +1,5 @@
 
-import { useRouter } from '@tanstack/react-router'
+import { useRouter, useRouterState } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
 import { useAuth } from '@/modules/core/components/auth/AuthProvider'
@@ -12,15 +12,16 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 	const { isAuthenticated } = useAuth()
 	const router = useRouter()
 
+	const routerState = useRouterState()
+	const pathname = routerState.location.pathname
+
 	useEffect(() => {
 		if (!isAuthenticated) {
-			const pathname = window.location.pathname
-			const returnUrl = encodeURIComponent(pathname)
-			console.log('Not authenticated, redirecting to login...')
+			const returnUrl = (pathname && pathname !== '/undefined') ? encodeURIComponent(pathname) : null
 
 			router.navigate({
 				to: '/login',
-				search: { to: returnUrl },
+				search: returnUrl ? { to: returnUrl } : null,
 			})
 		}
 	}, [isAuthenticated])

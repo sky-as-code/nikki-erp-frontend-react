@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
-	Alert,
 	Box,
 	Button,
 	Divider,
@@ -8,9 +7,8 @@ import {
 	Text,
 	Pill,
 	Stack,
-	PasswordInput,
 } from '@mantine/core'
-import { IconAlertCircle, IconArrowLeft } from '@tabler/icons-react'
+import { IconArrowLeft } from '@tabler/icons-react'
 import { useRouter } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { FC, useState } from 'react'
@@ -18,8 +16,11 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
-import { useAuth } from '@/modules/core/components/auth/AuthProvider'
-import { createLoginAttempt, loginUser } from '@/modules/core/services'
+import { LoginOtp } from './LoginOtp'
+import { LoginPassword } from './LoginPassword'
+
+import { ErrorAlert } from '@/common/components/alerts/ErrorAlert'
+import { createLoginAttempt } from '@/modules/core/services'
 
 
 export type AuthPayload = {
@@ -59,9 +60,6 @@ export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
 				})
 			}
 		}
-		else {
-			router.navigate({ to: returnUrl })
-		}
 	}
 
 	const handlePrevStep = () => {
@@ -81,7 +79,7 @@ export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
 			: loginMethodSteps.Password,
 	]
 
-	const CurrentStep = loginSteps[loginStep]?.component || PasswordMethod
+	const CurrentStep = loginSteps[loginStep]?.component || LoginPassword
 
 	return (
 		<Box>
@@ -213,101 +211,7 @@ export const LoginMethods: FC<{
 	)
 }
 
-const PasswordMethod: FC<{
-	handleNextStep: (method?: string) => void;
-	setAuthPayload: (data: AuthPayload) => void;
-	authPayload: AuthPayload;
-}> = ({ handleNextStep, authPayload }) => {
-	const { form, apiErrors, onSubmit } = useLoginForm('/')
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = form
 
-	return (
-		<Box>
-			<Stack gap='xs' mb='md' align='center'>
-				<Pill className='px-5' bg={'var(--mantine-color-gray-3)'} size='lg'>
-					{authPayload.username}
-				</Pill>
-			</Stack>
-			<Text size='xl' my='xl' className='text-center'>
-				Enter Your Password
-			</Text>
-
-			<form onSubmit={handleSubmit(onSubmit)}>
-				<PasswordInput
-					label='Password'
-					required
-					size='md'
-					placeholder='Your password'
-					labelProps={{ className: 'text-gray-600' }}
-					error={errors.password?.message}
-					{...register('password')}
-				/>
-
-				<TextInput
-					className='hidden'
-					value={authPayload.username}
-					{...register('email')}
-				/>
-
-				<Button type='submit' fullWidth mt='xl' size='md'>
-					Sign In
-				</Button>
-			</form>
-		</Box>
-	)
-}
-
-const OtpMethod: FC<{
-	handleNextStep: () => void;
-	setAuthPayload: (data: AuthPayload) => void;
-	authPayload: AuthPayload;
-}> = ({ handleNextStep, authPayload }) => {
-	const { form, apiErrors, onSubmit } = useLoginForm('/')
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = form
-
-	return (
-		<Box>
-			<Stack gap='xs' mb='md' align='center'>
-				<Pill className='px-5' bg={'var(--mantine-color-gray-3)'} size='lg'>
-					{authPayload.username}
-				</Pill>
-			</Stack>
-			<Text size='xl' my='xl' className='text-center'>
-				Login with OTP
-			</Text>
-
-			<form onSubmit={handleSubmit(onSubmit)}>
-				<PasswordInput
-					label='Otp Code'
-					required
-					size='md'
-					placeholder='Enter Otp'
-					labelProps={{ className: 'text-gray-600' }}
-					error={errors.password?.message}
-					{...register('password')}
-				/>
-
-				<TextInput
-					className='hidden'
-					value={authPayload.username}
-					{...register('email')}
-				/>
-
-				<Button type='submit' fullWidth mt='xl' size='md'>
-					Sign In
-				</Button>
-			</form>
-		</Box>
-	)
-}
 
 const loginAttemptSchema = z.object({
 	email: z.string().email('Invalid email address'),
@@ -319,8 +223,6 @@ const useLoginAttemptForm = () => {
 	const form = useForm<LoginAttemptFormData>({
 		resolver: zodResolver(loginAttemptSchema),
 	})
-	// const router = useRouter();
-	// const { login } = useAuth();
 	const [apiErrors, setApiErrors] = useState<string[]>([])
 
 	const onSubmit = async (
@@ -338,40 +240,6 @@ const useLoginAttemptForm = () => {
 	return { form, apiErrors, onSubmit }
 }
 
-const loginSchema = z.object({
-	email: z.string().email('Invalid email address'),
-	password: z.string().min(6, 'Password must be at least 6 characters'),
-})
-
-type LoginFormData = z.infer<typeof loginSchema>
-
-const useLoginForm = (returnUrl: string) => {
-	const form = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) })
-	const router = useRouter()
-	const { login } = useAuth()
-	const [apiErrors, setApiErrors] = useState<string[]>([])
-
-	const onSubmit = async (data: LoginFormData) => {
-		const authData = await loginUser(data)
-		if (authData.errors) {
-			setApiErrors(authData.errors)
-			return
-		}
-		login(authData.data!)
-		router.navigate({ to: returnUrl })
-	}
-
-	return { form, apiErrors, onSubmit }
-}
-
-const ErrorAlert = ({ errors }: { errors: string[] }) =>
-	errors.length > 0 && (
-		<Alert icon={<IconAlertCircle size={16} />} color='red' mb='lg'>
-			{errors.map((error, index) => (
-				<div key={index}>{error}</div>
-			))}
-		</Alert>
-	)
 
 // Các step theo từng method
 const loginMethodSteps: Record<
@@ -381,12 +249,12 @@ const loginMethodSteps: Record<
 	password: {
 		name: 'Password',
 		key: 'password',
-		component: PasswordMethod,
+		component: LoginPassword,
 	},
 	otpCode: {
 		key: 'otpCode',
 		name: 'OTP Code',
-		component: OtpMethod,
+		component: LoginOtp,
 	},
 }
 

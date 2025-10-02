@@ -31,16 +31,15 @@ function findOrg(orgs: Organization[], slug: string): Organization | null {
 
 export type TenantUrlProviderProps = React.PropsWithChildren
 
+
 export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 	children,
 }) => {
+	const router = useRouter()
 	const routerState = useRouterState()
 	const fullPath = routerState.location.pathname
 
-	const router = useRouter()
-
-	const { envVars, activeOrg, setActiveOrg, setActiveModule, userSettings } =
-		useConfig()
+	const { envVars, activeOrg, setActiveOrg, setActiveModule, userSettings } = useConfig()
 	const appPath = AppPath.fromFullPath(fullPath, envVars.ROOT_PATH)
 
 	const subdomain = extractAndValidateSubdomain(envVars.ROOT_DOMAIN, router)
@@ -55,26 +54,29 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 	}
 
 	useEffect(() => {
-		if (!userSettings || !appPath.orgSlug) return
+		if (!userSettings) return
 
-		const foundLastActiveOrg = activeOrg && activeOrg.slug != appPath.orgSlug
+		if (appPath.orgSlug) {
+			const orgBySlug = findOrg(userSettings?.orgs ?? [], appPath.orgSlug)
+			if (orgBySlug) {
+				setActiveOrg(orgBySlug.slug)
+				router.navigate({to: `/${appPath.orgSlug}`})
+				return
+			}
+		}
 
+		// const foundLastActiveOrg = activeOrg && activeOrg.slug != appPath.orgSlug
 		// This case applies when user accesses root path "/"
-		if (foundLastActiveOrg) {
+		if (activeOrg) {
 			appPath.orgSlug = activeOrg?.slug
 			redirectToOrgPage(appPath)
 			router.navigate({to: `/${appPath.orgSlug}`})
 		}
 		// This case applies after user was redirected to org path "/org-slug",
 		// either by above `redirectToOrgPage` call or by successful login.
-		else if (!activeOrg) {
-			const allOrgs = userSettings?.orgs ?? []
-			const org = findOrg(allOrgs, appPath.orgSlug)
-			if (!org) {
-				router.navigate({to: '/not-found'})
-				return
-			}
-			setActiveOrg(org.slug)
+		else {
+			router.navigate({to: '/not-found'})
+			return
 		}
 
 	}, [userSettings, appPath.orgSlug])

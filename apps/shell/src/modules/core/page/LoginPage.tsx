@@ -6,10 +6,6 @@ import { AuthLayout } from '../layout/AuthLayout'
 import { Logo } from '@/common/components/Logo/Logo'
 
 export const LoginPage: React.FC = () => {
-	// const searchParams = useSearchParams();
-	// const returnUrl = searchParams.get('to') || '/';
-	const returnUrl = '/'
-
 	return (
 		<AuthLayout>
 			<Box className='w-full max-w-[500px] min-w-[400px] p-10' mx='auto'>
@@ -18,7 +14,7 @@ export const LoginPage: React.FC = () => {
 						<Logo enableLink={false} />
 					</Stack>
 
-					<LoginWizard returnUrl={returnUrl} />
+					<LoginWizard returnUrl={'/'} />
 				</Card>
 			</Box>
 		</AuthLayout>
