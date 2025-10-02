@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
-import { UsersLayout } from '@/modules/core/layout/UsersLayout'
+import { UsersLayout } from '@/modules/settings/layout/UsersLayout'
 
 export const Route = createFileRoute(
 	'/_tenant/$tenant/_settings/settings/_users'

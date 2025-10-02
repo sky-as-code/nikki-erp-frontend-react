@@ -5,7 +5,7 @@ import {  Box, Breadcrumbs, Group } from '@mantine/core'
 import classes from './AppGridHeader.module.css'
 
 import { Logo } from '@/common/components/Logo/Logo'
-import { OrgSwitchDropdown } from '@/modules/core/components/organization/OrgSwitchDropdown'
+import { OrgSwitchDropdown } from '@/modules/settings/components/organization/OrgSwitchDropdown'
 
 
 interface Props {

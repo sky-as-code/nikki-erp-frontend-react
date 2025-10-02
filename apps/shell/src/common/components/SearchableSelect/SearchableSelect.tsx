@@ -30,9 +30,7 @@ export type SearchableSelectProps = {
 	onChange?: (value: string) => void;
 }
 
-/**
- * @see https://mantine.dev/combobox/?e=SelectDropdownSearch
- */
+
 // eslint-disable-next-line max-lines-per-function
 export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 	const props = {
@@ -72,7 +70,7 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 		<Combobox
 			size='md'
 			store={combobox}
-			withinPortal={false}
+			withinPortal={true}
 			width={props.dropdownWidth}
 			onOptionSubmit={(val) => {
 				const selected = findItem(props.items, val)

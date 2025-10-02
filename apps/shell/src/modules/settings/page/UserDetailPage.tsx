@@ -6,5 +6,5 @@ import { DetailPageLayout } from '@/common/components/layout/DetailPageLayout'
 
 
 export const UserDetailPage: React.FC = () => {
-    return <DetailPageLayout component={UserDetail} pageSlug='users' />
+	return <DetailPageLayout component={UserDetail} pageSlug='users' />
 }

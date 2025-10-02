@@ -15,11 +15,12 @@ import { useRouter } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
-import { createLoginAttempt, loginUser } from '../../services/auth.service'
-
 import { useAuth } from '@/modules/core/components/auth/AuthProvider'
+import { createLoginAttempt, loginUser } from '@/modules/core/services'
+
 
 export type AuthPayload = {
 	attemptId: string;
@@ -35,6 +36,7 @@ type LoginStepProps = {
 	authPayload: AuthPayload;
 }
 
+// eslint-disable-next-line max-lines-per-function
 export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
 	const router = useRouter()
 
@@ -85,10 +87,10 @@ export const LoginWizard = ({ returnUrl }: { returnUrl: string }) => {
 		<Box>
 			<Button
 				className={clsx(
-					{ hidden: loginStep <= 0 },
+					{ '!hidden': loginStep <= 0 },
 					'absolute',
-					'top-6',
-					'left-6'
+					'-top-14',
+					'-left-5'
 				)}
 				onClick={handlePrevStep}
 				variant='subtle'
@@ -109,6 +111,7 @@ const EmailAttemptStep: FC<{
 	handleNextStep: () => void;
 	setAuthPayload: (data: AuthPayload) => void;
 	authPayload: AuthPayload;
+// eslint-disable-next-line max-lines-per-function
 }> = ({ handleNextStep, setAuthPayload, authPayload }) => {
 	const { form, apiErrors, onSubmit: onSubmitForm } = useLoginAttemptForm()
 	const {
@@ -117,6 +120,8 @@ const EmailAttemptStep: FC<{
 		formState: { errors },
 	} = form
 	const router = useRouter()
+
+	const { t } = useTranslation()
 
 	const onSubmit = async (data: LoginAttemptFormData) => {
 		onSubmitForm(data, () => {
@@ -131,7 +136,7 @@ const EmailAttemptStep: FC<{
 	return (
 		<Box>
 			<Text size='xl' mb='md' className='text-center'>
-				Login
+				{t('login.login')}
 			</Text>
 
 			<ErrorAlert errors={apiErrors} />

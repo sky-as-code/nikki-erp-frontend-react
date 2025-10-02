@@ -1,0 +1,17 @@
+{
+	"login": {
+		"login": "Log In",
+		"username": "Username",
+		"enterUsername": "Enter your username",
+		"password": "Password",
+		"enterPassword": "Enter your password",
+		"forgotPassword": "Forgot Password",
+		"messages": {
+			"loginSuccess": "Login successfully!",
+			"loginFail": "Login fail!",
+			"usernameRequired": "Username is required",
+			"passwordRequired": "Password is required",
+			"usernameOrPasswordIncorrect": "Username or password is incorrect"
+		}
+	}
+}

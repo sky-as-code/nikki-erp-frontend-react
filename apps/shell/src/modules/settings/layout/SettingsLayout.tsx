@@ -1,9 +1,9 @@
 import { ModuleLayout } from '@/common/components/layout/ModuleLayout'
-import navItems from '@/modules/settings/components/navItems'
+import navItems from '@/modules/settings/configs/navItems'
 
 export const SettingsLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
-    return (
-	<ModuleLayout navItems={navItems}>
-		{children}
-	</ModuleLayout>)
+	return (
+		<ModuleLayout navItems={navItems}>
+			{children}
+		</ModuleLayout>)
 }

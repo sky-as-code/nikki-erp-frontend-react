@@ -6,8 +6,12 @@ import { useNavigate } from '@tanstack/react-router'
 
 import classes from './HeroSection.module.css'
 
+import { useConfig } from '@/common/context/ConfigProvider'
+
 export function HeroSection() {
 	const navigate = useNavigate()
+
+	const {  activeOrg } = useConfig()
 
 	return (
 		<Container pt='sm' size='lg' className={classes.wrapper}>
@@ -24,7 +28,7 @@ export function HeroSection() {
 						gradient={{ from: 'primary', to: 'pink' }}
 						className={classes.control}
 						onClick={() => {
-							navigate({ to: '/bananas' })
+							navigate({ to: `/${activeOrg?.slug}` })
 						}}
 						rightSection={<IconArrowRight size={16} />}
 					>

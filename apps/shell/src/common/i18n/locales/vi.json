@@ -1,0 +1,17 @@
+{
+    "login": {
+        "login": "Đăng nhập",
+        "username": "Tên đăng nhập",
+        "enterUserName": "Nhập tên đăng nhập",
+        "password": "Mật khẩu",
+        "enterPassword": "Nhập mật khẩu",
+        "forgotPassword": "Quên mật khẩu",
+        "messages": {
+            "loginSuccess": "Đăng nhập thành công!",
+            "loginFail": "Đăng nhập thất bại!",
+            "usernameRequired": "Tên đăng nhập là bắt buộc",
+            "passwordRequired": "Mật khẩu là bắt buộc",
+            "usernameOrPasswordIncorrect": "Tên đăng nhập hoặc mật khẩu không chính xác"
+        }
+    }
+}

@@ -19,16 +19,26 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as TenantTenantIndexRouteImport } from './routes/_tenant/$tenant/index'
+import { Route as TenantTenantVendingMachineRouteImport } from './routes/_tenant/$tenant/_vending-machine'
 import { Route as TenantTenantSettingsRouteImport } from './routes/_tenant/$tenant/_settings'
 import { Route as TenantTenantDashboardRouteImport } from './routes/_tenant/$tenant/_dashboard'
+import { Route as TenantTenantVendingMachineVendingMachineIndexRouteImport } from './routes/_tenant/$tenant/_vending-machine/vending-machine/index'
 import { Route as TenantTenantSettingsSettingsIndexRouteImport } from './routes/_tenant/$tenant/_settings/settings/index'
 import { Route as TenantTenantDashboardDashboardIndexRouteImport } from './routes/_tenant/$tenant/_dashboard/dashboard/index'
 import { Route as TenantTenantSettingsSettingsUsersRouteImport } from './routes/_tenant/$tenant/_settings/settings/_users'
+import { Route as TenantTenantSettingsSettingsSystemRouteImport } from './routes/_tenant/$tenant/_settings/settings/_system'
+import { Route as TenantTenantSettingsSettingsRolesRouteImport } from './routes/_tenant/$tenant/_settings/settings/_roles'
+import { Route as TenantTenantSettingsSettingsOrganizationsRouteImport } from './routes/_tenant/$tenant/_settings/settings/_organizations'
+import { Route as TenantTenantSettingsSettingsGroupsRouteImport } from './routes/_tenant/$tenant/_settings/settings/_groups'
 import { Route as TenantTenantDashboardDashboardTableIndexRouteImport } from './routes/_tenant/$tenant/_dashboard/dashboard/table/index'
 import { Route as TenantTenantDashboardDashboardSettingsIndexRouteImport } from './routes/_tenant/$tenant/_dashboard/dashboard/settings/index'
 import { Route as TenantTenantDashboardDashboardFormIndexRouteImport } from './routes/_tenant/$tenant/_dashboard/dashboard/form/index'
 import { Route as TenantTenantDashboardDashboardChartIndexRouteImport } from './routes/_tenant/$tenant/_dashboard/dashboard/chart/index'
 import { Route as TenantTenantSettingsSettingsUsersUsersIndexRouteImport } from './routes/_tenant/$tenant/_settings/settings/_users/users/index'
+import { Route as TenantTenantSettingsSettingsSystemSystemIndexRouteImport } from './routes/_tenant/$tenant/_settings/settings/_system/system/index'
+import { Route as TenantTenantSettingsSettingsRolesRolesIndexRouteImport } from './routes/_tenant/$tenant/_settings/settings/_roles/roles/index'
+import { Route as TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRouteImport } from './routes/_tenant/$tenant/_settings/settings/_organizations/organizations/index'
+import { Route as TenantTenantSettingsSettingsGroupsGroupsIndexRouteImport } from './routes/_tenant/$tenant/_settings/settings/_groups/groups/index'
 import { Route as TenantTenantSettingsSettingsUsersUsersUserIdRouteImport } from './routes/_tenant/$tenant/_settings/settings/_users/users/$userId'
 
 const TenantTenantRouteImport = createFileRoute('/_tenant/$tenant')()
@@ -79,6 +89,11 @@ const TenantTenantIndexRoute = TenantTenantIndexRouteImport.update({
   path: '/',
   getParentRoute: () => TenantTenantRoute,
 } as any)
+const TenantTenantVendingMachineRoute =
+  TenantTenantVendingMachineRouteImport.update({
+    id: '/_vending-machine',
+    getParentRoute: () => TenantTenantRoute,
+  } as any)
 const TenantTenantSettingsRoute = TenantTenantSettingsRouteImport.update({
   id: '/_settings',
   getParentRoute: () => TenantTenantRoute,
@@ -92,6 +107,12 @@ const TenantTenantSettingsSettingsRoute =
     id: '/settings',
     path: '/settings',
     getParentRoute: () => TenantTenantSettingsRoute,
+  } as any)
+const TenantTenantVendingMachineVendingMachineIndexRoute =
+  TenantTenantVendingMachineVendingMachineIndexRouteImport.update({
+    id: '/vending-machine/',
+    path: '/vending-machine/',
+    getParentRoute: () => TenantTenantVendingMachineRoute,
   } as any)
 const TenantTenantSettingsSettingsIndexRoute =
   TenantTenantSettingsSettingsIndexRouteImport.update({
@@ -108,6 +129,26 @@ const TenantTenantDashboardDashboardIndexRoute =
 const TenantTenantSettingsSettingsUsersRoute =
   TenantTenantSettingsSettingsUsersRouteImport.update({
     id: '/_users',
+    getParentRoute: () => TenantTenantSettingsSettingsRoute,
+  } as any)
+const TenantTenantSettingsSettingsSystemRoute =
+  TenantTenantSettingsSettingsSystemRouteImport.update({
+    id: '/_system',
+    getParentRoute: () => TenantTenantSettingsSettingsRoute,
+  } as any)
+const TenantTenantSettingsSettingsRolesRoute =
+  TenantTenantSettingsSettingsRolesRouteImport.update({
+    id: '/_roles',
+    getParentRoute: () => TenantTenantSettingsSettingsRoute,
+  } as any)
+const TenantTenantSettingsSettingsOrganizationsRoute =
+  TenantTenantSettingsSettingsOrganizationsRouteImport.update({
+    id: '/_organizations',
+    getParentRoute: () => TenantTenantSettingsSettingsRoute,
+  } as any)
+const TenantTenantSettingsSettingsGroupsRoute =
+  TenantTenantSettingsSettingsGroupsRouteImport.update({
+    id: '/_groups',
     getParentRoute: () => TenantTenantSettingsSettingsRoute,
   } as any)
 const TenantTenantDashboardDashboardTableIndexRoute =
@@ -140,6 +181,32 @@ const TenantTenantSettingsSettingsUsersUsersIndexRoute =
     path: '/users/',
     getParentRoute: () => TenantTenantSettingsSettingsUsersRoute,
   } as any)
+const TenantTenantSettingsSettingsSystemSystemIndexRoute =
+  TenantTenantSettingsSettingsSystemSystemIndexRouteImport.update({
+    id: '/system/',
+    path: '/system/',
+    getParentRoute: () => TenantTenantSettingsSettingsSystemRoute,
+  } as any)
+const TenantTenantSettingsSettingsRolesRolesIndexRoute =
+  TenantTenantSettingsSettingsRolesRolesIndexRouteImport.update({
+    id: '/roles/',
+    path: '/roles/',
+    getParentRoute: () => TenantTenantSettingsSettingsRolesRoute,
+  } as any)
+const TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRoute =
+  TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRouteImport.update(
+    {
+      id: '/organizations/',
+      path: '/organizations/',
+      getParentRoute: () => TenantTenantSettingsSettingsOrganizationsRoute,
+    } as any,
+  )
+const TenantTenantSettingsSettingsGroupsGroupsIndexRoute =
+  TenantTenantSettingsSettingsGroupsGroupsIndexRouteImport.update({
+    id: '/groups/',
+    path: '/groups/',
+    getParentRoute: () => TenantTenantSettingsSettingsGroupsRoute,
+  } as any)
 const TenantTenantSettingsSettingsUsersUsersUserIdRoute =
   TenantTenantSettingsSettingsUsersUsersUserIdRouteImport.update({
     id: '/users/$userId',
@@ -153,16 +220,21 @@ export interface FileRoutesByFullPath {
   '/not-found': typeof NotFoundRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
-  '/$tenant': typeof TenantTenantSettingsRouteWithChildren
+  '/$tenant': typeof TenantTenantVendingMachineRouteWithChildren
   '/$tenant/': typeof TenantTenantIndexRoute
   '/$tenant/settings': typeof TenantTenantSettingsSettingsUsersRouteWithChildren
   '/$tenant/dashboard': typeof TenantTenantDashboardDashboardIndexRoute
   '/$tenant/settings/': typeof TenantTenantSettingsSettingsIndexRoute
+  '/$tenant/vending-machine': typeof TenantTenantVendingMachineVendingMachineIndexRoute
   '/$tenant/dashboard/chart': typeof TenantTenantDashboardDashboardChartIndexRoute
   '/$tenant/dashboard/form': typeof TenantTenantDashboardDashboardFormIndexRoute
   '/$tenant/dashboard/settings': typeof TenantTenantDashboardDashboardSettingsIndexRoute
   '/$tenant/dashboard/table': typeof TenantTenantDashboardDashboardTableIndexRoute
   '/$tenant/settings/users/$userId': typeof TenantTenantSettingsSettingsUsersUsersUserIdRoute
+  '/$tenant/settings/groups': typeof TenantTenantSettingsSettingsGroupsGroupsIndexRoute
+  '/$tenant/settings/organizations': typeof TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRoute
+  '/$tenant/settings/roles': typeof TenantTenantSettingsSettingsRolesRolesIndexRoute
+  '/$tenant/settings/system': typeof TenantTenantSettingsSettingsSystemSystemIndexRoute
   '/$tenant/settings/users': typeof TenantTenantSettingsSettingsUsersUsersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -174,11 +246,16 @@ export interface FileRoutesByTo {
   '/$tenant': typeof TenantTenantIndexRoute
   '/$tenant/settings': typeof TenantTenantSettingsSettingsIndexRoute
   '/$tenant/dashboard': typeof TenantTenantDashboardDashboardIndexRoute
+  '/$tenant/vending-machine': typeof TenantTenantVendingMachineVendingMachineIndexRoute
   '/$tenant/dashboard/chart': typeof TenantTenantDashboardDashboardChartIndexRoute
   '/$tenant/dashboard/form': typeof TenantTenantDashboardDashboardFormIndexRoute
   '/$tenant/dashboard/settings': typeof TenantTenantDashboardDashboardSettingsIndexRoute
   '/$tenant/dashboard/table': typeof TenantTenantDashboardDashboardTableIndexRoute
   '/$tenant/settings/users/$userId': typeof TenantTenantSettingsSettingsUsersUsersUserIdRoute
+  '/$tenant/settings/groups': typeof TenantTenantSettingsSettingsGroupsGroupsIndexRoute
+  '/$tenant/settings/organizations': typeof TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRoute
+  '/$tenant/settings/roles': typeof TenantTenantSettingsSettingsRolesRolesIndexRoute
+  '/$tenant/settings/system': typeof TenantTenantSettingsSettingsSystemSystemIndexRoute
   '/$tenant/settings/users': typeof TenantTenantSettingsSettingsUsersUsersIndexRoute
 }
 export interface FileRoutesById {
@@ -193,16 +270,26 @@ export interface FileRoutesById {
   '/_tenant/$tenant': typeof TenantTenantRouteWithChildren
   '/_tenant/$tenant/_dashboard': typeof TenantTenantDashboardRouteWithChildren
   '/_tenant/$tenant/_settings': typeof TenantTenantSettingsRouteWithChildren
+  '/_tenant/$tenant/_vending-machine': typeof TenantTenantVendingMachineRouteWithChildren
   '/_tenant/$tenant/': typeof TenantTenantIndexRoute
   '/_tenant/$tenant/_settings/settings': typeof TenantTenantSettingsSettingsRouteWithChildren
+  '/_tenant/$tenant/_settings/settings/_groups': typeof TenantTenantSettingsSettingsGroupsRouteWithChildren
+  '/_tenant/$tenant/_settings/settings/_organizations': typeof TenantTenantSettingsSettingsOrganizationsRouteWithChildren
+  '/_tenant/$tenant/_settings/settings/_roles': typeof TenantTenantSettingsSettingsRolesRouteWithChildren
+  '/_tenant/$tenant/_settings/settings/_system': typeof TenantTenantSettingsSettingsSystemRouteWithChildren
   '/_tenant/$tenant/_settings/settings/_users': typeof TenantTenantSettingsSettingsUsersRouteWithChildren
   '/_tenant/$tenant/_dashboard/dashboard/': typeof TenantTenantDashboardDashboardIndexRoute
   '/_tenant/$tenant/_settings/settings/': typeof TenantTenantSettingsSettingsIndexRoute
+  '/_tenant/$tenant/_vending-machine/vending-machine/': typeof TenantTenantVendingMachineVendingMachineIndexRoute
   '/_tenant/$tenant/_dashboard/dashboard/chart/': typeof TenantTenantDashboardDashboardChartIndexRoute
   '/_tenant/$tenant/_dashboard/dashboard/form/': typeof TenantTenantDashboardDashboardFormIndexRoute
   '/_tenant/$tenant/_dashboard/dashboard/settings/': typeof TenantTenantDashboardDashboardSettingsIndexRoute
   '/_tenant/$tenant/_dashboard/dashboard/table/': typeof TenantTenantDashboardDashboardTableIndexRoute
   '/_tenant/$tenant/_settings/settings/_users/users/$userId': typeof TenantTenantSettingsSettingsUsersUsersUserIdRoute
+  '/_tenant/$tenant/_settings/settings/_groups/groups/': typeof TenantTenantSettingsSettingsGroupsGroupsIndexRoute
+  '/_tenant/$tenant/_settings/settings/_organizations/organizations/': typeof TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRoute
+  '/_tenant/$tenant/_settings/settings/_roles/roles/': typeof TenantTenantSettingsSettingsRolesRolesIndexRoute
+  '/_tenant/$tenant/_settings/settings/_system/system/': typeof TenantTenantSettingsSettingsSystemSystemIndexRoute
   '/_tenant/$tenant/_settings/settings/_users/users/': typeof TenantTenantSettingsSettingsUsersUsersIndexRoute
 }
 export interface FileRouteTypes {
@@ -218,11 +305,16 @@ export interface FileRouteTypes {
     | '/$tenant/settings'
     | '/$tenant/dashboard'
     | '/$tenant/settings/'
+    | '/$tenant/vending-machine'
     | '/$tenant/dashboard/chart'
     | '/$tenant/dashboard/form'
     | '/$tenant/dashboard/settings'
     | '/$tenant/dashboard/table'
     | '/$tenant/settings/users/$userId'
+    | '/$tenant/settings/groups'
+    | '/$tenant/settings/organizations'
+    | '/$tenant/settings/roles'
+    | '/$tenant/settings/system'
     | '/$tenant/settings/users'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -234,11 +326,16 @@ export interface FileRouteTypes {
     | '/$tenant'
     | '/$tenant/settings'
     | '/$tenant/dashboard'
+    | '/$tenant/vending-machine'
     | '/$tenant/dashboard/chart'
     | '/$tenant/dashboard/form'
     | '/$tenant/dashboard/settings'
     | '/$tenant/dashboard/table'
     | '/$tenant/settings/users/$userId'
+    | '/$tenant/settings/groups'
+    | '/$tenant/settings/organizations'
+    | '/$tenant/settings/roles'
+    | '/$tenant/settings/system'
     | '/$tenant/settings/users'
   id:
     | '__root__'
@@ -252,16 +349,26 @@ export interface FileRouteTypes {
     | '/_tenant/$tenant'
     | '/_tenant/$tenant/_dashboard'
     | '/_tenant/$tenant/_settings'
+    | '/_tenant/$tenant/_vending-machine'
     | '/_tenant/$tenant/'
     | '/_tenant/$tenant/_settings/settings'
+    | '/_tenant/$tenant/_settings/settings/_groups'
+    | '/_tenant/$tenant/_settings/settings/_organizations'
+    | '/_tenant/$tenant/_settings/settings/_roles'
+    | '/_tenant/$tenant/_settings/settings/_system'
     | '/_tenant/$tenant/_settings/settings/_users'
     | '/_tenant/$tenant/_dashboard/dashboard/'
     | '/_tenant/$tenant/_settings/settings/'
+    | '/_tenant/$tenant/_vending-machine/vending-machine/'
     | '/_tenant/$tenant/_dashboard/dashboard/chart/'
     | '/_tenant/$tenant/_dashboard/dashboard/form/'
     | '/_tenant/$tenant/_dashboard/dashboard/settings/'
     | '/_tenant/$tenant/_dashboard/dashboard/table/'
     | '/_tenant/$tenant/_settings/settings/_users/users/$userId'
+    | '/_tenant/$tenant/_settings/settings/_groups/groups/'
+    | '/_tenant/$tenant/_settings/settings/_organizations/organizations/'
+    | '/_tenant/$tenant/_settings/settings/_roles/roles/'
+    | '/_tenant/$tenant/_settings/settings/_system/system/'
     | '/_tenant/$tenant/_settings/settings/_users/users/'
   fileRoutesById: FileRoutesById
 }
@@ -338,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TenantTenantIndexRouteImport
       parentRoute: typeof TenantTenantRoute
     }
+    '/_tenant/$tenant/_vending-machine': {
+      id: '/_tenant/$tenant/_vending-machine'
+      path: ''
+      fullPath: '/$tenant'
+      preLoaderRoute: typeof TenantTenantVendingMachineRouteImport
+      parentRoute: typeof TenantTenantRoute
+    }
     '/_tenant/$tenant/_settings': {
       id: '/_tenant/$tenant/_settings'
       path: ''
@@ -359,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TenantTenantSettingsSettingsRouteImport
       parentRoute: typeof TenantTenantSettingsRoute
     }
+    '/_tenant/$tenant/_vending-machine/vending-machine/': {
+      id: '/_tenant/$tenant/_vending-machine/vending-machine/'
+      path: '/vending-machine'
+      fullPath: '/$tenant/vending-machine'
+      preLoaderRoute: typeof TenantTenantVendingMachineVendingMachineIndexRouteImport
+      parentRoute: typeof TenantTenantVendingMachineRoute
+    }
     '/_tenant/$tenant/_settings/settings/': {
       id: '/_tenant/$tenant/_settings/settings/'
       path: '/'
@@ -375,9 +496,37 @@ declare module '@tanstack/react-router' {
     }
     '/_tenant/$tenant/_settings/settings/_users': {
       id: '/_tenant/$tenant/_settings/settings/_users'
-      path: '/settings'
+      path: ''
       fullPath: '/$tenant/settings'
       preLoaderRoute: typeof TenantTenantSettingsSettingsUsersRouteImport
+      parentRoute: typeof TenantTenantSettingsSettingsRoute
+    }
+    '/_tenant/$tenant/_settings/settings/_system': {
+      id: '/_tenant/$tenant/_settings/settings/_system'
+      path: ''
+      fullPath: '/$tenant/settings'
+      preLoaderRoute: typeof TenantTenantSettingsSettingsSystemRouteImport
+      parentRoute: typeof TenantTenantSettingsSettingsRoute
+    }
+    '/_tenant/$tenant/_settings/settings/_roles': {
+      id: '/_tenant/$tenant/_settings/settings/_roles'
+      path: ''
+      fullPath: '/$tenant/settings'
+      preLoaderRoute: typeof TenantTenantSettingsSettingsRolesRouteImport
+      parentRoute: typeof TenantTenantSettingsSettingsRoute
+    }
+    '/_tenant/$tenant/_settings/settings/_organizations': {
+      id: '/_tenant/$tenant/_settings/settings/_organizations'
+      path: ''
+      fullPath: '/$tenant/settings'
+      preLoaderRoute: typeof TenantTenantSettingsSettingsOrganizationsRouteImport
+      parentRoute: typeof TenantTenantSettingsSettingsRoute
+    }
+    '/_tenant/$tenant/_settings/settings/_groups': {
+      id: '/_tenant/$tenant/_settings/settings/_groups'
+      path: '/settings'
+      fullPath: '/$tenant/settings'
+      preLoaderRoute: typeof TenantTenantSettingsSettingsGroupsRouteImport
       parentRoute: typeof TenantTenantSettingsSettingsRoute
     }
     '/_tenant/$tenant/_dashboard/dashboard/table/': {
@@ -414,6 +563,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/$tenant/settings/users'
       preLoaderRoute: typeof TenantTenantSettingsSettingsUsersUsersIndexRouteImport
       parentRoute: typeof TenantTenantSettingsSettingsUsersRoute
+    }
+    '/_tenant/$tenant/_settings/settings/_system/system/': {
+      id: '/_tenant/$tenant/_settings/settings/_system/system/'
+      path: '/system'
+      fullPath: '/$tenant/settings/system'
+      preLoaderRoute: typeof TenantTenantSettingsSettingsSystemSystemIndexRouteImport
+      parentRoute: typeof TenantTenantSettingsSettingsSystemRoute
+    }
+    '/_tenant/$tenant/_settings/settings/_roles/roles/': {
+      id: '/_tenant/$tenant/_settings/settings/_roles/roles/'
+      path: '/roles'
+      fullPath: '/$tenant/settings/roles'
+      preLoaderRoute: typeof TenantTenantSettingsSettingsRolesRolesIndexRouteImport
+      parentRoute: typeof TenantTenantSettingsSettingsRolesRoute
+    }
+    '/_tenant/$tenant/_settings/settings/_organizations/organizations/': {
+      id: '/_tenant/$tenant/_settings/settings/_organizations/organizations/'
+      path: '/organizations'
+      fullPath: '/$tenant/settings/organizations'
+      preLoaderRoute: typeof TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRouteImport
+      parentRoute: typeof TenantTenantSettingsSettingsOrganizationsRoute
+    }
+    '/_tenant/$tenant/_settings/settings/_groups/groups/': {
+      id: '/_tenant/$tenant/_settings/settings/_groups/groups/'
+      path: '/groups'
+      fullPath: '/$tenant/settings/groups'
+      preLoaderRoute: typeof TenantTenantSettingsSettingsGroupsGroupsIndexRouteImport
+      parentRoute: typeof TenantTenantSettingsSettingsGroupsRoute
     }
     '/_tenant/$tenant/_settings/settings/_users/users/$userId': {
       id: '/_tenant/$tenant/_settings/settings/_users/users/$userId'
@@ -463,6 +640,66 @@ const TenantTenantDashboardRouteWithChildren =
     TenantTenantDashboardRouteChildren,
   )
 
+interface TenantTenantSettingsSettingsGroupsRouteChildren {
+  TenantTenantSettingsSettingsGroupsGroupsIndexRoute: typeof TenantTenantSettingsSettingsGroupsGroupsIndexRoute
+}
+
+const TenantTenantSettingsSettingsGroupsRouteChildren: TenantTenantSettingsSettingsGroupsRouteChildren =
+  {
+    TenantTenantSettingsSettingsGroupsGroupsIndexRoute:
+      TenantTenantSettingsSettingsGroupsGroupsIndexRoute,
+  }
+
+const TenantTenantSettingsSettingsGroupsRouteWithChildren =
+  TenantTenantSettingsSettingsGroupsRoute._addFileChildren(
+    TenantTenantSettingsSettingsGroupsRouteChildren,
+  )
+
+interface TenantTenantSettingsSettingsOrganizationsRouteChildren {
+  TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRoute: typeof TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRoute
+}
+
+const TenantTenantSettingsSettingsOrganizationsRouteChildren: TenantTenantSettingsSettingsOrganizationsRouteChildren =
+  {
+    TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRoute:
+      TenantTenantSettingsSettingsOrganizationsOrganizationsIndexRoute,
+  }
+
+const TenantTenantSettingsSettingsOrganizationsRouteWithChildren =
+  TenantTenantSettingsSettingsOrganizationsRoute._addFileChildren(
+    TenantTenantSettingsSettingsOrganizationsRouteChildren,
+  )
+
+interface TenantTenantSettingsSettingsRolesRouteChildren {
+  TenantTenantSettingsSettingsRolesRolesIndexRoute: typeof TenantTenantSettingsSettingsRolesRolesIndexRoute
+}
+
+const TenantTenantSettingsSettingsRolesRouteChildren: TenantTenantSettingsSettingsRolesRouteChildren =
+  {
+    TenantTenantSettingsSettingsRolesRolesIndexRoute:
+      TenantTenantSettingsSettingsRolesRolesIndexRoute,
+  }
+
+const TenantTenantSettingsSettingsRolesRouteWithChildren =
+  TenantTenantSettingsSettingsRolesRoute._addFileChildren(
+    TenantTenantSettingsSettingsRolesRouteChildren,
+  )
+
+interface TenantTenantSettingsSettingsSystemRouteChildren {
+  TenantTenantSettingsSettingsSystemSystemIndexRoute: typeof TenantTenantSettingsSettingsSystemSystemIndexRoute
+}
+
+const TenantTenantSettingsSettingsSystemRouteChildren: TenantTenantSettingsSettingsSystemRouteChildren =
+  {
+    TenantTenantSettingsSettingsSystemSystemIndexRoute:
+      TenantTenantSettingsSettingsSystemSystemIndexRoute,
+  }
+
+const TenantTenantSettingsSettingsSystemRouteWithChildren =
+  TenantTenantSettingsSettingsSystemRoute._addFileChildren(
+    TenantTenantSettingsSettingsSystemRouteChildren,
+  )
+
 interface TenantTenantSettingsSettingsUsersRouteChildren {
   TenantTenantSettingsSettingsUsersUsersUserIdRoute: typeof TenantTenantSettingsSettingsUsersUsersUserIdRoute
   TenantTenantSettingsSettingsUsersUsersIndexRoute: typeof TenantTenantSettingsSettingsUsersUsersIndexRoute
@@ -482,12 +719,24 @@ const TenantTenantSettingsSettingsUsersRouteWithChildren =
   )
 
 interface TenantTenantSettingsSettingsRouteChildren {
+  TenantTenantSettingsSettingsGroupsRoute: typeof TenantTenantSettingsSettingsGroupsRouteWithChildren
+  TenantTenantSettingsSettingsOrganizationsRoute: typeof TenantTenantSettingsSettingsOrganizationsRouteWithChildren
+  TenantTenantSettingsSettingsRolesRoute: typeof TenantTenantSettingsSettingsRolesRouteWithChildren
+  TenantTenantSettingsSettingsSystemRoute: typeof TenantTenantSettingsSettingsSystemRouteWithChildren
   TenantTenantSettingsSettingsUsersRoute: typeof TenantTenantSettingsSettingsUsersRouteWithChildren
   TenantTenantSettingsSettingsIndexRoute: typeof TenantTenantSettingsSettingsIndexRoute
 }
 
 const TenantTenantSettingsSettingsRouteChildren: TenantTenantSettingsSettingsRouteChildren =
   {
+    TenantTenantSettingsSettingsGroupsRoute:
+      TenantTenantSettingsSettingsGroupsRouteWithChildren,
+    TenantTenantSettingsSettingsOrganizationsRoute:
+      TenantTenantSettingsSettingsOrganizationsRouteWithChildren,
+    TenantTenantSettingsSettingsRolesRoute:
+      TenantTenantSettingsSettingsRolesRouteWithChildren,
+    TenantTenantSettingsSettingsSystemRoute:
+      TenantTenantSettingsSettingsSystemRouteWithChildren,
     TenantTenantSettingsSettingsUsersRoute:
       TenantTenantSettingsSettingsUsersRouteWithChildren,
     TenantTenantSettingsSettingsIndexRoute:
@@ -511,15 +760,32 @@ const TenantTenantSettingsRouteChildren: TenantTenantSettingsRouteChildren = {
 const TenantTenantSettingsRouteWithChildren =
   TenantTenantSettingsRoute._addFileChildren(TenantTenantSettingsRouteChildren)
 
+interface TenantTenantVendingMachineRouteChildren {
+  TenantTenantVendingMachineVendingMachineIndexRoute: typeof TenantTenantVendingMachineVendingMachineIndexRoute
+}
+
+const TenantTenantVendingMachineRouteChildren: TenantTenantVendingMachineRouteChildren =
+  {
+    TenantTenantVendingMachineVendingMachineIndexRoute:
+      TenantTenantVendingMachineVendingMachineIndexRoute,
+  }
+
+const TenantTenantVendingMachineRouteWithChildren =
+  TenantTenantVendingMachineRoute._addFileChildren(
+    TenantTenantVendingMachineRouteChildren,
+  )
+
 interface TenantTenantRouteChildren {
   TenantTenantDashboardRoute: typeof TenantTenantDashboardRouteWithChildren
   TenantTenantSettingsRoute: typeof TenantTenantSettingsRouteWithChildren
+  TenantTenantVendingMachineRoute: typeof TenantTenantVendingMachineRouteWithChildren
   TenantTenantIndexRoute: typeof TenantTenantIndexRoute
 }
 
 const TenantTenantRouteChildren: TenantTenantRouteChildren = {
   TenantTenantDashboardRoute: TenantTenantDashboardRouteWithChildren,
   TenantTenantSettingsRoute: TenantTenantSettingsRouteWithChildren,
+  TenantTenantVendingMachineRoute: TenantTenantVendingMachineRouteWithChildren,
   TenantTenantIndexRoute: TenantTenantIndexRoute,
 }
 

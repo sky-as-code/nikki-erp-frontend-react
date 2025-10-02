@@ -2,7 +2,7 @@
 import kyLib from 'ky'
 import type { KyInstance, Input, Options, KyRequest } from 'ky'
 
-import { getAuthToken } from '../modules/core/components/auth/storageManager'
+import { getAuthToken } from '../modules/core/helpers'
 
 export type { Input, Options } from 'ky'
 

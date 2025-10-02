@@ -1,6 +1,6 @@
+import { getAuthData, setAuthData, clearAuthData, type AuthData } from '@modules/core/helpers'
 import { createContext, useContext, useState } from 'react'
 
-import { getAuthData, setAuthData, clearAuthData, type AuthData } from './storageManager'
 
 
 type AuthContextType = {

@@ -55,18 +55,19 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 	}
 
 	useEffect(() => {
-		if (!userSettings) return
+		if (!userSettings || !appPath.orgSlug) return
 
 		const foundLastActiveOrg = activeOrg && activeOrg.slug != appPath.orgSlug
+
 		// This case applies when user accesses root path "/"
 		if (foundLastActiveOrg) {
 			appPath.orgSlug = activeOrg?.slug
 			redirectToOrgPage(appPath)
+			router.navigate({to: `/${appPath.orgSlug}`})
 		}
 		// This case applies after user was redirected to org path "/org-slug",
 		// either by above `redirectToOrgPage` call or by successful login.
 		else if (!activeOrg) {
-			// setActiveOrg(appPath.orgSlug);
 			const allOrgs = userSettings?.orgs ?? []
 			const org = findOrg(allOrgs, appPath.orgSlug)
 			if (!org) {
@@ -75,7 +76,9 @@ export const TenantUrlProvider: React.FC<TenantUrlProviderProps> = ({
 			}
 			setActiveOrg(org.slug)
 		}
-	}, [userSettings])
+
+	}, [userSettings, appPath.orgSlug])
+
 
 	useEffect(() => {
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions

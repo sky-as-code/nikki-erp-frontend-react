@@ -1,4 +1,4 @@
-import { Organization, User } from '../../types'
+import { Organization, User } from '../types'
 
 const AUTH_KEY = 'nikki_auth'
 
