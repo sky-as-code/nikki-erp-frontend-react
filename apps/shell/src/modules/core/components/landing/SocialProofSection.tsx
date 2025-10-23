@@ -1,7 +1,7 @@
-import { Container, Text, Card, SimpleGrid } from '@mantine/core'
-import { IconUsers, IconCode, IconServer, IconStar } from '@tabler/icons-react'
+import { Container, Text, Card, SimpleGrid } from '@mantine/core';
+import { IconUsers, IconCode, IconServer, IconStar } from '@tabler/icons-react';
 
-import classes from './SocialProofSection.module.css'
+import classes from './SocialProofSection.module.css';
 
 interface StatCardProps {
 	icon: React.ReactNode;
@@ -22,7 +22,7 @@ function StatCard({
 				{label}
 			</Text>
 		</Card>
-	)
+	);
 }
 
 export function SocialProofSection() {
@@ -47,7 +47,7 @@ export function SocialProofSection() {
 			label: 'Customer Rating',
 			value: '4.9/5',
 		},
-	]
+	];
 
 	return (
 		<Container size='lg' py={80}>
@@ -63,5 +63,5 @@ export function SocialProofSection() {
 				))}
 			</SimpleGrid>
 		</Container>
-	)
+	);
 }

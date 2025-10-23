@@ -1,8 +1,23 @@
 {
-  "extends": "@repo/typescript-config/react-library.json",
-  "compilerOptions": {
-    "outDir": "dist"
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "../../apps/shell/tsconfig.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"outDir": "dist",
+		"paths": {
+			// Will have error when building from "shell"
+			// "@/*": [
+			// 	"./src/*"
+			// ],
+		}
+	},
+	"include": [
+		"src/**/*",
+		"types/*",
+		"node_modules/vite/types/*",
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+	]
 }

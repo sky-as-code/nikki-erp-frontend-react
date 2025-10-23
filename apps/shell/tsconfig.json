@@ -5,12 +5,8 @@
 		"outDir": "dist",
 		"jsx": "react-jsxdev",
 		"sourceMap": true,
-		"module": "esnext",
-		"moduleResolution": "bundler",
 		"target": "es2020",
-		"types": [
-			"vitest/globals"
-		],
+		"resolvePackageJsonExports": true,
 		"lib": [
 			"DOM",
 			"DOM.Iterable",
@@ -18,48 +14,6 @@
 		],
 		"paths": {
 			"@/*": [
-				"./src/*"
-			],
-			"@*": [
-				"./src/*"
-			],
-			"@components/*": [
-				"./src/components/*"
-			],
-			"@modules/*": [
-				"./src/modules/*"
-			],
-			"@core/*": [
-				"./src/modules/core/*"
-			],
-			"@assets/*": [
-				"./src/assets/*"
-			],
-			"@lib/*": [
-				"./src/lib/*"
-			],
-			"@screens/*": [
-				"./src/screens/*"
-			],
-			"@server/*": [
-				"./server"
-			],
-			"@public/*": [
-				"./public"
-			],
-			"@utils/*": [
-				"./src/utils/*"
-			],
-			"@hooks/*": [
-				"src/common/hooks/*"
-			],
-			"@types/*": [
-				"./types/*"
-			],
-			"@loaders/*": [
-				"./src/loaders/*"
-			],
-			"@client/*": [
 				"./src/*"
 			],
 		}
@@ -71,6 +25,6 @@
 	],
 	"exclude": [
 		"node_modules",
-		"dist"
+		"dist",
 	]
 }

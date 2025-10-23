@@ -1,9 +1,9 @@
-import { ActionIcon, Anchor, Container, Group, Text } from '@mantine/core'
+import { ActionIcon, Anchor, Container, Group, Text } from '@mantine/core';
 import {IconBrandInstagram,
 	IconBrandTwitter,
-	IconBrandYoutube} from '@tabler/icons-react'
+	IconBrandYoutube} from '@tabler/icons-react';
 
-import classes from './Footer.module.css'
+import classes from './Footer.module.css';
 
 export function Footer() {
 	return (
@@ -38,5 +38,5 @@ export function Footer() {
 				</Group>
 			</Container>
 		</div>
-	)
+	);
 }

@@ -1,7 +1,7 @@
 
 
-import { Card, List, ListItem, Space, Text, ThemeIcon, Title } from '@mantine/core'
-import { IconCircleCheck } from '@tabler/icons-react'
+import { Card, List, ListItem, Space, Text, ThemeIcon, Title } from '@mantine/core';
+import { IconCircleCheck } from '@tabler/icons-react';
 
 export function WelcomeCard() {
 	return (
@@ -26,5 +26,5 @@ export function WelcomeCard() {
 				<ListItem>It would be necessary</ListItem>
 			</List>
 		</Card>
-	)
+	);
 }

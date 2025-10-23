@@ -1,3 +1,6 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "!apps/shell.bk"
+  - "!apps/ext_*"
+  - "!packages/ext_*"

@@ -1,11 +1,13 @@
-import js from '@eslint/js'
-import stylistic from '@stylistic/eslint-plugin'
-import parserTs from '@typescript-eslint/parser'
-import { defineConfig } from 'eslint/config'
-import importPlugin from 'eslint-plugin-import'
-import react from 'eslint-plugin-react'
-import globals from 'globals'
-import tseslint from 'typescript-eslint'
+import js from '@eslint/js';
+import stylistic from '@stylistic/eslint-plugin';
+import parserTs from '@typescript-eslint/parser';
+import { defineConfig } from 'eslint/config';
+import importPlugin from 'eslint-plugin-import';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import react from 'eslint-plugin-react';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+
 
 export default defineConfig([
 	// Base configurations
@@ -37,7 +39,7 @@ export default defineConfig([
 				'stroustrup',
 				{ allowSingleLine: true },
 			],
-			// '@stylistic/comma-dangle': ['error', 'always-multiline'],
+			'@stylistic/comma-dangle': ['warn', 'always-multiline'],
 			'@stylistic/comma-spacing': ['error', { before: false, after: true }],
 			'@stylistic/comma-style': ['error', 'last'],
 			'@stylistic/indent': ['error', 'tab'],
@@ -61,10 +63,10 @@ export default defineConfig([
 				'single',
 				{
 					avoidEscape: true,
-					allowTemplateLiterals: true,
+					allowTemplateLiterals: 'always',
 				},
 			],
-			'@stylistic/semi': ['warn', 'never'],
+			'@stylistic/semi': ['error', 'always'],
 			'@stylistic/space-infix-ops': ['error', { int32Hint: true }],
 		},
 	},
@@ -83,15 +85,6 @@ export default defineConfig([
 		},
 	},
 
-	// React Hooks configuration
-	// {
-	// 	plugins: { 'react-hooks': reactHooks },
-	// 	rules: { ...reactHooks.configs.recommended.rules },
-	// },
-
-	// next.flatConfig.recommended,
-	// next.flatConfig.coreWebVitals,
-
 	// Import plugin configuration
 	{
 		plugins: { import: importPlugin },
@@ -100,6 +93,20 @@ export default defineConfig([
 			'import/order': [
 				'error',
 				{
+					groups: [
+						'builtin',
+						'external',
+						'internal',
+						['parent', 'sibling', 'index'],
+						'object',
+						'type',
+					],
+					pathGroups: [{
+						pattern: '**/*.css',
+						group: 'object',     // treat as a separate group below everything else
+						position: 'after',  // place after all JS/TS imports
+					}],
+					pathGroupsExcludedImportTypes: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
 					alphabetize: {
 						order: 'asc',
 						caseInsensitive: true,
@@ -107,6 +114,7 @@ export default defineConfig([
 					'newlines-between': 'always',
 				},
 			],
+			'import/newline-after-import': ['error', { 'count': 2 }],
 		},
 		settings: {
 			'import/parsers': {
@@ -120,32 +128,23 @@ export default defineConfig([
 	},
 
 	// JSX A11y configuration
-	// {
-	// 	plugins: { 'jsx-a11y': jsxA11y },
-	// 	rules: {
-	// 		'jsx-a11y/alt-text': [
-	// 			'warn',
-	// 			{
-	// 				elements: ['img'],
-	// 				img: ['Image'],
-	// 			},
-	// 		],
-	// 		'jsx-a11y/aria-props': 'warn',
-	// 		'jsx-a11y/aria-proptypes': 'warn',
-	// 		'jsx-a11y/aria-unsupported-elements': 'warn',
-	// 		'jsx-a11y/role-has-required-aria-props': 'warn',
-	// 		'jsx-a11y/role-supports-aria-props': 'warn',
-	// 	},
-	// },
-
-	// Tanstack Query configuration
-	// {
-	// 	plugins: {
-	// 		'@tanstack/query': tskQuery,
-	// 	},
-	// 	rules: {
-	// 	},
-	// },
+	{
+		plugins: { 'jsx-a11y': jsxA11y },
+		rules: {
+			'jsx-a11y/alt-text': [
+				'warn',
+				{
+					elements: ['img'],
+					img: ['Image'],
+				},
+			],
+			'jsx-a11y/aria-props': 'warn',
+			'jsx-a11y/aria-proptypes': 'warn',
+			'jsx-a11y/aria-unsupported-elements': 'warn',
+			'jsx-a11y/role-has-required-aria-props': 'warn',
+			'jsx-a11y/role-supports-aria-props': 'warn',
+		},
+	},
 
 	// TypeScript language options
 	{
@@ -166,32 +165,18 @@ export default defineConfig([
 		rules: {
 			'@typescript-eslint/no-explicit-any': 'warn',
 			'@typescript-eslint/no-unused-expressions': 'warn',
-			'@typescript-eslint/no-unused-vars': [ 'warn', { 'varsIgnorePattern': '^_', 'argsIgnorePattern': '^_' }],
+			'@typescript-eslint/no-unused-vars': ['warn', { 'varsIgnorePattern': '^_', 'argsIgnorePattern': '^_' }],
 		},
 	},
 
 	// React components
-	{
-		files: ['**/*.js', '**/*.ts'],
-		rules: {
-			'max-lines-per-function': [
-				'warn',
-				{
-					max: 100,
-					skipBlankLines: true,
-					skipComments: true,
-					IIFEs: true,
-				},
-			],
-		},
-	},
 	{
 		files: ['**/*.jsx', '**/*.tsx', '**/*.js', '**/*.ts'],
 		rules: {
 			'max-lines-per-function': [
 				'warn',
 				{
-					max: 50,
+					max: 70,
 					skipBlankLines: true,
 					skipComments: true,
 					IIFEs: true,
@@ -227,5 +212,8 @@ export default defineConfig([
 			'**/coverage/',
 			'**/public/',
 		],
+		settings: {
+			'import/resolver': { typescript: { alwaysTryTypes: true } },
+		},
 	},
-])
+]);

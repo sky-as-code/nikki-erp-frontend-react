@@ -1,10 +1,11 @@
-import navItems from '../configs/navItems'
+// import { ModuleLayout } from '@nikkierp/ui/components';
 
-import { ModuleLayout } from '@/common/components/layout/ModuleLayout'
+// import navItems from '../configs/navItems';
 
-export const VendingMachineLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
-	return (
-		<ModuleLayout navItems={navItems}>
-			{children}
-		</ModuleLayout>)
-}
+
+// export const VendingMachineLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
+// 	return (
+// 		<ModuleLayout navItems={navItems}>
+// 			{children}
+// 		</ModuleLayout>);
+// };

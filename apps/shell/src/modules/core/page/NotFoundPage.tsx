@@ -1,4 +1,4 @@
-import { Button } from '@mantine/core'
+import { Button } from '@mantine/core';
 
 export const NotFoundPage = () => {
 	return (
@@ -16,5 +16,5 @@ export const NotFoundPage = () => {
 				Quay lại
 			</Button>
 		</div>
-	)
-}
+	);
+};

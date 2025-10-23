@@ -1,1 +1,1 @@
-export * from './TenantUrlProvider'
+export * from './TenantUrlProvider';

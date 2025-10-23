@@ -1,11 +1,11 @@
-@import 'tailwindcss';
+/* @import 'tailwindcss'; */
 
 @import '@mantine/core/styles.layer.css';
 @import '@mantine/notifications/styles.layer.css';
 
-/* @import "tailwindcss/theme.css" layer(theme); */
 /* @import "tailwindcss/preflight.css" layer(base); */
-/* @import "tailwindcss/utilities.css" layer(utilities); */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
 
 /* @import 'mantine-react-table/styles.css' layer(mantine-table); */
 @import 'react-data-grid/lib/styles.css' layer(data-grid);
@@ -14,10 +14,14 @@
 @import './nikki.css';
 
 
-@layer base, mantine, data-grid, components;
+@layer base, theme, mantine, data-grid, nikki, components, utilities;
 
 html {
-	font-size: 14px;
+	font-size: 16px;
+}
+
+#root {
+	position: relative;
 }
 
 @layer mantine {
@@ -29,6 +33,7 @@ html {
 
 @layer theme {
 
+	/* React Data Grid */
 	:not(.rdg-light),
 	.rdg-dark {
 		--rdg-color: var(--mantine-color-text);

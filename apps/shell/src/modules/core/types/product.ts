@@ -10,4 +10,4 @@ export type Product = {
 	quantity: number;
 	inventoryStatus: string;
 	rating: number;
-}
+};

@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query';
 
-import { Product } from '../types'
+import { Product } from '../types';
 
 
 export const getProducts = async () => {
@@ -368,11 +368,11 @@ export const getProducts = async () => {
 			'inventoryStatus': 'INSTOCK',
 			'rating': 8,
 		},
-	]
-}
+	];
+};
 
 export const useProducts = () =>
 	useQuery<Product[]>({
 		queryKey: ['products'],
 		queryFn: () => getProducts(),
-	})
+	});

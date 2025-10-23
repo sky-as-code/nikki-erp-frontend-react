@@ -1,8 +1,9 @@
-import type { NavItem } from '@/common/types/navItem'
+import type { NavItem } from '@nikkierp/ui/types';
+
 
 const navItems: NavItem[] = [
 
-]
+];
 
 /*
  Inventory Management - Main Menu Items

@@ -1,5 +1,5 @@
-import { AuthGuard } from '@/modules/core/components/auth/AuthGuard'
-import { TenantUrlProvider } from '@/modules/core/context/TenantUrlProvider'
+import { AuthGuard } from '@/modules/core/components/auth/AuthGuard';
+import { TenantUrlProvider } from '@/modules/core/context/TenantUrlProvider';
 
 export const TenantLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
 	return (
@@ -8,8 +8,8 @@ export const TenantLayout: React.FC<React.PropsWithChildren> = ({ children }) =>
 				{children}
 			</TenantUrlProvider>
 		</AuthGuard>
-	)
-}
+	);
+};
 
 
 

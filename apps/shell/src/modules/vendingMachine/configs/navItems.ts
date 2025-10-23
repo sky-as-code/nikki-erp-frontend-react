@@ -1,6 +1,6 @@
-import { IconHierarchy2, IconWorldCog } from '@tabler/icons-react'
+import { IconHierarchy2, IconWorldCog } from '@tabler/icons-react';
 
-import type { NavItem } from '@/common/types/navItem'
+import type { NavItem } from '@nikkierp/ui/types';
 
 
 export default <NavItem[]>[{
@@ -17,4 +17,4 @@ export default <NavItem[]>[{
 	label: 'Events',
 	icon: IconWorldCog,
 	link: '/events',
-}]
+}];
