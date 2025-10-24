@@ -1,0 +1,30 @@
+/// <reference types="vitest" />
+
+import path from 'node:path';
+
+import tailwindcssVite from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
+
+
+export default defineConfig({
+	build: {
+		rollupOptions: {
+			input: {
+				index: path.resolve(__dirname, '../shellbff/public/index.html'),
+			},
+		},
+	},
+	plugins: [
+		tsconfigPaths(),
+		react(),
+		tailwindcssVite(),
+	],
+	resolve: {
+		alias: {
+			// Tree-shaking
+			'@tabler/icons-react': '@tabler/icons-react/dist/esm/icons',
+		},
+	},
+});

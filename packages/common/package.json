@@ -1,8 +1,8 @@
 {
 	"name": "@nikkierp/common",
+	"version": "0.0.1",
 	"private": false,
 	"type": "module",
-	"version": "0.0.1",
 	"scripts": {
 		"clean": "rimraf dist",
 		"dev": "echo 'Go to shellbff and run pnpm dev'",

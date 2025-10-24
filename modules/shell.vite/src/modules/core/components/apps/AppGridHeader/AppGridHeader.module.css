@@ -1,0 +1,13 @@
+.header {
+	/* padding: var(--mantine-spacing-sm) var(--mantine-spacing-md); */
+	padding: 0 var(--mantine-spacing-xl);
+	color: lightdark(var(--mantine-color-white), var(--mantine-color-dark));
+	background-color: var(--nikki-primary);
+	/* background-color: red; */
+	/* background-color: var(--mantine-color-red-6); */
+	gap: var(--mantine-spacing-md);
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+}

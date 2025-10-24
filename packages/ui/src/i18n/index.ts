@@ -1,13 +1,16 @@
-import i18n from 'i18next'
-import { initReactI18next } from 'react-i18next'
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+// import HttpBackend from 'i18next-http-backend';
+
+// TODO: Implement fallback backend. Ref: https://www.i18next.com/how-to/backend-fallback
 
 
-import en from './locales/en.json'
-import vi from './locales/vi.json'
+import en from './locales/en.json';
+import vi from './locales/vi.json';
 
 
 i18n
-	// .use(i18nextHttpBackend)
+	// .use(HttpBackend)
 	.use(initReactI18next)
 	.init({
 		resources: {
@@ -31,7 +34,7 @@ i18n
 		interpolation: {
 			escapeValue: false,
 		},
-	})
+	});
 
 
-export default i18n
+export default i18n;

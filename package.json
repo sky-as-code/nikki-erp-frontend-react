@@ -5,6 +5,7 @@
 		"build": "turbo run build",
 		"dev": "turbo run dev",
 		"dev:shell": "turbo run dev --filter=shellbff",
+		"dev:webapp": "turbo run dev --filter=webapp",
 		"lint": "eslint --fix ./**/*.{ts,tsx,js,jsx,mjs,json}",
 		"lint:staged": "lint-staged",
 		"check-types": "turbo run check-types",

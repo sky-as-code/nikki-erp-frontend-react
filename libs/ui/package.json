@@ -1,0 +1,83 @@
+{
+	"name": "@nikkierp/ui",
+	"version": "0.0.1",
+	"private": false,
+	"type": "module",
+	"scripts": {
+		"clean": "rimraf dist",
+		"build": "npm run clean && tsc && vite build --outDir dist",
+		"typecheck": "tsc --noEmit",
+		"lint": "npm run eslint && npm run stylelint",
+		"eslint": "eslint . --cache",
+		"stylelint": "stylelint '**/*.css' --cache",
+		"test": "npm run typecheck && npm run prettier && npm run lint && npm run vitest && npm run build"
+	},
+	"dependencies": {
+		"@hookform/resolvers": "~5.0.1",
+		"@mantine/core": "~8.3.5",
+		"@mantine/dates": "~8.3.5",
+		"@mantine/dropzone": "~8.3.5",
+		"@mantine/form": "~8.3.5",
+		"@mantine/hooks": "8.3.5",
+		"@mantine/modals": "~8.3.5",
+		"@mantine/notifications": "~8.3.5",
+		"@nikkierp/common": "workspace:*",
+		"@reduxjs/toolkit": "~2.9.1",
+		"@tabler/icons-react": "~3.31.0",
+		"chart.js": "~4.4.9",
+		"clsx": "~2.1.1",
+		"dayjs": "~1.11.18",
+		"i18next": "~25.5.2",
+		"ky": "~1.12.0",
+		"react-hook-form": "~7.56.0",
+		"react-i18next": "~16.0.0",
+		"zod": "~4.1.12"
+	},
+	"devDependencies": {
+		"@storybook/react": "~9.1.7",
+		"@tailwindcss/postcss": "~4.1.4",
+		"@tailwindcss/vite": "~4.1.13",
+		"@testing-library/dom": "~10.4.1",
+		"@testing-library/jest-dom": "~6.8.0",
+		"@testing-library/react": "~16.3.0",
+		"@testing-library/user-event": "~14.6.1",
+		"@types/node": "~22.14.1",
+		"@types/react": "~19.1.12",
+		"@types/react-dom": "~19.1.9",
+		"@vitejs/plugin-react": "~5.0.3",
+		"cross-env": "~7.0.3",
+		"postcss": "~8.5.6",
+		"postcss-preset-mantine": "1.18.0",
+		"postcss-simple-vars": "~7.0.1",
+		"react": "~19.2.0",
+		"react-dom": "~19.2.0",
+		"react-redux": "~9.2.0",
+		"react-router": "~7.9.4",
+		"react-router-dom": "~7.9.4",
+		"tailwindcss": "~4.1.4",
+		"typescript": "~5.9.2",
+		"vite": "~7.1.7",
+		"vite-tsconfig-paths": "~5.1.4",
+		"vitest": "~3.2.4"
+	},
+	"peerDependencies": {
+		"react": "~19.2.0",
+		"react-dom": "~19.2.0",
+		"react-router": "~7.9.4",
+		"react-router-dom": "~7.9.4"
+	},
+	"sideEffects": [
+		"**/*.css"
+	],
+	"exports": {
+		".": "./src/index.ts",
+		"./components": "./src/components/index.tsx",
+		"./hooks": "./src/hooks/index.ts",
+		"./i18n": "./src/i18n/index.ts",
+		"./types": "./src/types/index.ts"
+	},
+	"files": [
+		"src",
+		"README.md"
+	]
+}

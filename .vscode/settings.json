@@ -16,5 +16,5 @@
 			"mode": "auto"
 		}
 	],
-	"eslint.experimental.useFlatConfig": true
+	"eslint.useFlatConfig": true
 }
