@@ -10,7 +10,6 @@ import * as config from './config';
 
 
 const isLocal = config.mustGetNodeEnv() === 'local';
-const htmlDirPath = path.resolve(__dirname, '../public');
 const clientRootPath = config.mustGetBffConfig('CLIENT_ROOT_PATH') || '';
 
 (async () => {
@@ -103,7 +102,7 @@ async function renderWithVite(req: Request, res: Response, viteServer: vite.Vite
 async function readIndexHtml(): Promise<string> {
 	// Read raw index.html
 	const html = await fs.readFile(
-		path.join(htmlDirPath, 'index.html'),
+		path.join(clientRootPath, 'index.html'),
 		'utf-8',
 	);
 
@@ -112,6 +111,9 @@ async function readIndexHtml(): Promise<string> {
 }
 
 function injectClientConfig(html: string, config: Record<string, string>): string {
+	if (!html.includes('$$CLIENT_CONFIG$$')) {
+		console.warn('WARNING: Variable placeholder $$CLIENT_CONFIG$$ not found in index.html');
+	}
 	const serializedConfig = JSON.stringify(config);
 	const scriptText = `window.__CLIENT_CONFIG__ = ${serializedConfig};`;
 	return html.replace('$$CLIENT_CONFIG$$', scriptText);

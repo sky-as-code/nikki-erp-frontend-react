@@ -1,7 +1,7 @@
 
 import kyLib from 'ky';
 
-import { getAuthToken } from './storageManager';
+import { getAuthToken } from '../storageManager';
 
 import type { KyInstance, Input, Options, KyRequest } from 'ky';
 

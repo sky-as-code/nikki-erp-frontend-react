@@ -1,7 +1,17 @@
+import path from 'node:path';
+
 import * as dotenv from 'dotenv';
 
+
+const envPath = path.resolve(__dirname, '..');
+
 // The first value set for a variable will win
-dotenv.config({ path: ['.env.local', '.env'] });
+dotenv.config({
+	path: [
+		path.join(envPath, '.env.local'),
+		path.join(envPath, '.env'),
+	],
+});
 
 const FE_PREFIX = 'NIKKI_PUBLIC_';
 const BFF_PREFIX = 'NIKKI_BFF_';

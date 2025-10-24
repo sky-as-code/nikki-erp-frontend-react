@@ -1,6 +1,6 @@
 {
-	"name": "@nikkierp/shell.vite",
-	"version": "0.0.1",
+	"name": "@nikkierp/shell",
+	"version": "0.0.0",
 	"private": false,
 	"type": "module",
 	"scripts": {
@@ -80,7 +80,7 @@
 		"**/*.css"
 	],
 	"exports": {
-		".": "./src/index.ts"
+		".": "./src/index.tsx"
 	},
 	"files": [
 		"src",
