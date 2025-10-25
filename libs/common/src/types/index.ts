@@ -1,4 +1,4 @@
 export * from './common';
 export * from './envVars';
-export * from './microapp';
+export * from './microApp';
 export * from './user';

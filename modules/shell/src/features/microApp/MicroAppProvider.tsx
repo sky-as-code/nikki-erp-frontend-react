@@ -1,7 +1,8 @@
-import { MicroAppMetadata } from '@nikkierp/common/types';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { MicroAppMetadata, IMicroAppWebComponent } from '@nikkierp/ui/types';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
-import { MicroAppManager } from './MicroAppManager';
+import { MicroAppManager, MicroAppPack } from './MicroAppManager';
+import { registerReducerFactory } from '../../redux/store';
 
 
 const MicroAppContext = createContext<MicroAppManager | null>(null);
@@ -15,11 +16,11 @@ export const useMicroAppManager = () => {
 };
 
 export type MicroAppProviderProps = React.PropsWithChildren & {
-	remoteApps: MicroAppMetadata[];
+	microApps: MicroAppMetadata[];
 };
 
-export const MicroAppProvider: React.FC<MicroAppProviderProps> = ({ children, remoteApps }) => {
-	const manager = new MicroAppManager(remoteApps);
+export const MicroAppProvider: React.FC<MicroAppProviderProps> = ({ children, microApps }) => {
+	const manager = new MicroAppManager(microApps);
 	return (
 		<MicroAppContext.Provider value= { manager } >
 			{ children }
@@ -28,24 +29,49 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = ({ children, re
 };
 
 export const LazyMicroApp: React.FC<{ slug: string }> = ({ slug }) => {
-	const [microApp, setMicroApp] = useState<MicroAppMetadata | null>(null);
-	const manager = useMicroAppManager();
+	const [microAppPack, setMicroAppPack] = useState<MicroAppPack | null>(null);
 
+	useFetchMicroAppPack(slug, setMicroAppPack);
+	const ref = useSetupMicroApp(slug, microAppPack);
+
+	if (!microAppPack) return <div>Loading...</div>;
+
+	return React.createElement(microAppPack.htmlTag, { ref });
+};
+
+function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack) => void): void {
+	const manager = useMicroAppManager();
 	useEffect(() => {
 		let isMounted = true;
 
-		manager.fetchMicroApp(slug).then((microApp) => {
-			if (isMounted) setMicroApp(microApp);
+		manager.fetchMicroApp(slug).then((pack) => {
+			if (isMounted) {
+				pack.bundle();
+				setMicroAppPack(pack);
+			}
 		});
 
 		return () => {
 			isMounted = false;
 		};
 	}, [slug]);
+}
 
-	if (!microApp) return <div>Loading...</div>;
+function useSetupMicroApp(
+	slug: string,
+	microAppPack: MicroAppPack | null,
+): React.RefObject<IMicroAppWebComponent | null> {
+	const ref = useRef<IMicroAppWebComponent | null>(null);
+	useEffect(() => {
+		if (ref.current && microAppPack) {
+			ref.current.props = {
+				config: microAppPack.config,
+				stateMgmt: {
+					registerReducer: registerReducerFactory(slug),
+				},
+			};
+		}
+	}, [microAppPack]);
 
-	// The module defines a <{moduleName}-app> custom element.
-	const TagName = microApp.htmlTag;
-	return <TagName />;
-};
+	return ref;
+}

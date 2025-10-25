@@ -123,6 +123,9 @@ importers:
       '@nikkierp/common':
         specifier: workspace:*
         version: link:../../libs/common
+      '@nikkierp/microapp-essential':
+        specifier: workspace:*
+        version: link:../../modules/essential
       '@nikkierp/shell':
         specifier: workspace:*
         version: link:../../modules/shell
@@ -327,6 +330,145 @@ importers:
         specifier: ~4.1.12
         version: 4.1.12
     devDependencies:
+      '@storybook/react':
+        specifier: ~9.1.7
+        version: 9.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.13(@testing-library/dom@10.4.1)(prettier@3.6.2)(vite@7.1.12(@types/node@22.14.1)(jiti@2.6.1)(lightningcss@1.30.2)(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.3)
+      '@tailwindcss/postcss':
+        specifier: ~4.1.4
+        version: 4.1.16
+      '@tailwindcss/vite':
+        specifier: ~4.1.13
+        version: 4.1.16(vite@7.1.12(@types/node@22.14.1)(jiti@2.6.1)(lightningcss@1.30.2)(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.5)(yaml@2.8.1))
+      '@testing-library/dom':
+        specifier: ~10.4.1
+        version: 10.4.1
+      '@testing-library/jest-dom':
+        specifier: ~6.8.0
+        version: 6.8.0
+      '@testing-library/react':
+        specifier: ~16.3.0
+        version: 16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.1.11(@types/react@19.1.17))(@types/react@19.1.17)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@testing-library/user-event':
+        specifier: ~14.6.1
+        version: 14.6.1(@testing-library/dom@10.4.1)
+      '@types/node':
+        specifier: ~22.14.1
+        version: 22.14.1
+      '@types/react':
+        specifier: ~19.1.12
+        version: 19.1.17
+      '@types/react-dom':
+        specifier: ~19.1.9
+        version: 19.1.11(@types/react@19.1.17)
+      '@vitejs/plugin-react':
+        specifier: ~5.0.3
+        version: 5.0.4(vite@7.1.12(@types/node@22.14.1)(jiti@2.6.1)(lightningcss@1.30.2)(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.5)(yaml@2.8.1))
+      cross-env:
+        specifier: ~7.0.3
+        version: 7.0.3
+      postcss:
+        specifier: ~8.5.6
+        version: 8.5.6
+      postcss-preset-mantine:
+        specifier: 1.18.0
+        version: 1.18.0(postcss@8.5.6)
+      postcss-simple-vars:
+        specifier: ~7.0.1
+        version: 7.0.1(postcss@8.5.6)
+      react:
+        specifier: ~19.2.0
+        version: 19.2.0
+      react-dom:
+        specifier: ~19.2.0
+        version: 19.2.0(react@19.2.0)
+      react-redux:
+        specifier: ~9.2.0
+        version: 9.2.0(@types/react@19.1.17)(react@19.2.0)(redux@5.0.1)
+      react-router:
+        specifier: ~7.9.4
+        version: 7.9.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      react-router-dom:
+        specifier: ~7.9.4
+        version: 7.9.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      tailwindcss:
+        specifier: ~4.1.4
+        version: 4.1.16
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.3
+      vite:
+        specifier: ~7.1.7
+        version: 7.1.12(@types/node@22.14.1)(jiti@2.6.1)(lightningcss@1.30.2)(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.5)(yaml@2.8.1)
+      vite-tsconfig-paths:
+        specifier: ~5.1.4
+        version: 5.1.4(typescript@5.9.3)(vite@7.1.12(@types/node@22.14.1)(jiti@2.6.1)(lightningcss@1.30.2)(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.5)(yaml@2.8.1))
+      vitest:
+        specifier: ~3.2.4
+        version: 3.2.4(@types/node@22.14.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.5)(yaml@2.8.1)
+
+  modules/essential:
+    dependencies:
+      '@hookform/resolvers':
+        specifier: ~5.0.1
+        version: 5.0.1(react-hook-form@7.56.4(react@19.2.0))
+      '@mantine/core':
+        specifier: ~8.3.5
+        version: 8.3.5(@mantine/hooks@8.3.5(react@19.2.0))(@types/react@19.1.17)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@mantine/dates':
+        specifier: ~8.3.5
+        version: 8.3.5(@mantine/core@8.3.5(@mantine/hooks@8.3.5(react@19.2.0))(@types/react@19.1.17)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@mantine/hooks@8.3.5(react@19.2.0))(dayjs@1.11.18)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@mantine/dropzone':
+        specifier: ~8.3.5
+        version: 8.3.5(@mantine/core@8.3.5(@mantine/hooks@8.3.5(react@19.2.0))(@types/react@19.1.17)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@mantine/hooks@8.3.5(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@mantine/form':
+        specifier: ~8.3.5
+        version: 8.3.5(react@19.2.0)
+      '@mantine/hooks':
+        specifier: 8.3.5
+        version: 8.3.5(react@19.2.0)
+      '@mantine/modals':
+        specifier: ~8.3.5
+        version: 8.3.5(@mantine/core@8.3.5(@mantine/hooks@8.3.5(react@19.2.0))(@types/react@19.1.17)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@mantine/hooks@8.3.5(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@mantine/notifications':
+        specifier: ~8.3.5
+        version: 8.3.5(@mantine/core@8.3.5(@mantine/hooks@8.3.5(react@19.2.0))(@types/react@19.1.17)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@mantine/hooks@8.3.5(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@nikkierp/common':
+        specifier: workspace:*
+        version: link:../../libs/common
+      '@nikkierp/ui':
+        specifier: workspace:*
+        version: link:../../libs/ui
+      '@tabler/icons-react':
+        specifier: ~3.31.0
+        version: 3.31.0(react@19.2.0)
+      chart.js:
+        specifier: ~4.4.9
+        version: 4.4.9
+      clsx:
+        specifier: ~2.1.1
+        version: 2.1.1
+      dayjs:
+        specifier: ~1.11.18
+        version: 1.11.18
+      i18next:
+        specifier: ~25.5.2
+        version: 25.5.3(typescript@5.9.3)
+      ky:
+        specifier: ~1.12.0
+        version: 1.12.0
+      react-hook-form:
+        specifier: ~7.56.0
+        version: 7.56.4(react@19.2.0)
+      react-i18next:
+        specifier: ~16.0.0
+        version: 16.0.1(i18next@25.5.3(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+      zod:
+        specifier: ~4.1.12
+        version: 4.1.12
+    devDependencies:
+      '@reduxjs/toolkit':
+        specifier: ~2.9.1
+        version: 2.9.2(react-redux@9.2.0(@types/react@19.1.17)(react@19.2.0)(redux@5.0.1))(react@19.2.0)
       '@storybook/react':
         specifier: ~9.1.7
         version: 9.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(storybook@9.1.13(@testing-library/dom@10.4.1)(prettier@3.6.2)(vite@7.1.12(@types/node@22.14.1)(jiti@2.6.1)(lightningcss@1.30.2)(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.5)(yaml@2.8.1)))(typescript@5.9.3)

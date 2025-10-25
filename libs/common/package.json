@@ -6,14 +6,14 @@
 	"scripts": {
 		"clean": "rimraf dist",
 		"dev": "echo 'Go to shellbff and run pnpm dev'",
-		"build": "npm run clean && npm run build:client && npm run build:server",
+		"build": "pnpm clean && pnpm build:client && pnpm build:server",
 		"build:client": "tsc && vite build --outDir dist/app/client",
 		"build:server": "tsc -p tsconfig.server.json",
 		"typecheck": "tsc --noEmit",
-		"lint": "npm run eslint && npm run stylelint",
+		"lint": "pnpm eslint && pnpm stylelint",
 		"eslint": "eslint . --cache",
 		"stylelint": "stylelint '**/*.css' --cache",
-		"test": "npm run typecheck && npm run prettier && npm run lint && npm run vitest && npm run build"
+		"test": "pnpm typecheck && pnpm lint && pnpm vitest"
 	},
 	"dependencies": {
 		"chart.js": "~4.4.9",

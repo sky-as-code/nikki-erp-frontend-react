@@ -5,12 +5,12 @@
 	"type": "module",
 	"scripts": {
 		"clean": "rimraf dist",
-		"build": "npm run clean && tsc && vite build --outDir dist",
+		"build": "pnpm clean && tsc && vite build --outDir dist",
 		"typecheck": "tsc --noEmit",
-		"lint": "npm run eslint && npm run stylelint",
+		"lint": "pnpm eslint && pnpm stylelint",
 		"eslint": "eslint . --cache",
 		"stylelint": "stylelint '**/*.css' --cache",
-		"test": "npm run typecheck && npm run prettier && npm run lint && npm run vitest && npm run build"
+		"test": "pnpm typecheck && pnpm lint && pnpm vitest"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "~5.2.2",

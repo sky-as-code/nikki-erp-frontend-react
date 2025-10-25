@@ -1,16 +1,12 @@
+/*
+* This lib doesn't contains React code, so it has different tsconfig.json than the React libs.
+*/
 {
-	"$schema": "https://json.schemastore.org/tsconfig",
-	"extends": "../../modules/shell/tsconfig.json",
+	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"baseUrl": ".",
 		"outDir": "dist",
-		"rootDir": "./src",
-		"paths": {
-			// Will have error when building from "shell"
-			// "@/*": [
-			// 	"./src/*"
-			// ]
-		}
+		"target": "es2020",
 	},
 	"include": [
 		"src/**/*",

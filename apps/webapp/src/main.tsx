@@ -1,33 +1,36 @@
-import { MicroAppMetadata } from '@nikkierp/common/types';
 import * as shell from '@nikkierp/shell';
+import { MicroAppDomType, MicroAppMetadata, MicroAppShellBundle } from '@nikkierp/ui/types';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router';
 
-import * as remoteApps from './modules.json';
+import remoteApps from './modules.json';
 
 
 const microApps: MicroAppMetadata[] = [
 	{
 		slug: 'identity',
-		url: '@nikkierp/microapp-identity',
-		// url: () => import('@nikkierp/microapp-identity'),
-		domType: 'shared',
+		bundleUrl: '@nikkierp/microapp-identity',
+		// bundleUrl: () => import('http://localhost:3000/index.ts'),
+		// configUrl: 'http://localhost:3001/config',
+		domType: MicroAppDomType.SHARED,
 		htmlTag: 'microapp-identity',
+	},
+	{
+		slug: 'essential',
+		bundleUrl: () => import('@nikkierp/microapp-essential'),
+		domType: MicroAppDomType.SHARED,
+		htmlTag: 'nikkiapp-essential',
 	},
 	...remoteApps,
 ];
 
-interface IShell {
-	ShellRoutes: React.FC;
-}
-
 const App: React.FC = () => {
-	const { ShellRoutes } = shell as IShell;
+	const { AppShell } = shell as MicroAppShellBundle;
 	return (
 		<React.StrictMode>
 			<Router>
-				<ShellRoutes />
+				<AppShell microApps={microApps} />
 			</Router>
 		</React.StrictMode>
 	);

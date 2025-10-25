@@ -1,15 +1,8 @@
 {
-	"$schema": "https://json.schemastore.org/tsconfig",
-	"extends": "../../modules/shell/tsconfig.json",
+	"extends": "../../tsconfig-react.base.json",
 	"compilerOptions": {
 		"baseUrl": ".",
-		"outDir": "dist",
-		"paths": {
-			// Will have error when building from "shell"
-			// "@/*": [
-			// 	"./src/*"
-			// ],
-		}
+		"outDir": "dist"
 	},
 	"include": [
 		"src/**/*",

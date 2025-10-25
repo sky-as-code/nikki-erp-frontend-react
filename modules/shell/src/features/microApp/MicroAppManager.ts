@@ -1,5 +1,4 @@
-import { MicroAppMetadata } from '@nikkierp/common/types';
-import { ImportResult } from '@nikkierp/ui/types';
+import { ImportResult, MicroAppBundle, MicroAppConfig, MicroAppMetadata } from '@nikkierp/ui/types';
 
 
 export type RetryOptions = {
@@ -8,11 +7,16 @@ export type RetryOptions = {
 	maxDelayMs?: number;
 };
 
-type AppSlug = string;
+type MicroAppSlug = string;
+export type MicroAppPack = {
+	bundle: MicroAppBundle;
+	config: MicroAppConfig | undefined;
+	htmlTag: string;
+};
 
 export class MicroAppManager {
-	private readonly registeredApps: Map<AppSlug, MicroAppMetadata> = new Map();
-	private readonly downloadedBundles: Map<AppSlug, ImportResult> = new Map();
+	private readonly registeredApps: Map<MicroAppSlug, MicroAppMetadata> = new Map();
+	private readonly downloadedPacks: Map<MicroAppSlug, MicroAppPack> = new Map();
 	private readonly retryOptions: RetryOptions;
 
 	constructor(
@@ -29,31 +33,72 @@ export class MicroAppManager {
 	}
 
 	/**
-	 * Attempts to fetch the bundle from the registered micro-app with specified slug.
+	 * Attempts to fetch the bundle and config from the registered micro-app with specified slug.
 	 * If the bundle is already downloaded, returns the downloaded bundle,
 	 * otherwise, downloads and returns it with retry logic.
 	 */
-	public async fetchMicroApp(slug: string): Promise<MicroAppMetadata> {
+	public async fetchMicroApp(slug: string): Promise<MicroAppPack> {
 		const app = this.registeredApps.get(slug);
 		if (!app) {
-			throw new Error(`Bundle ${slug} not found`);
+			throw new Error(`Bundle ${slug} is not registered`);
 		}
 
-		if (!this.downloadedBundles.has(slug)) {
-			const bundle = await this.importWithRetry(app);
-			this.downloadedBundles.set(slug, bundle);
+		let pack = this.downloadedPacks.get(slug);
+		if (!pack) {
+			const [bundle, config] = await Promise.all([
+				this.importBundle(app),
+				this.fetchConfig(app),
+			]);
+
+			pack = {
+				bundle: bundle.default,
+				config,
+				htmlTag: app.htmlTag,
+			};
+			this.downloadedPacks.set(slug, pack);
 		}
 
-		return app;
+		return pack;
 	}
 
-	private async importWithRetry(app: MicroAppMetadata): Promise<ImportResult> {
+	private async importBundle(app: MicroAppMetadata): Promise<ImportResult<MicroAppBundle>> {
+		return this.fetchWithRetry<ImportResult<MicroAppBundle>>(
+			() => {
+				return (typeof app.bundleUrl === 'string' ? import(app.bundleUrl) : app.bundleUrl());
+			},
+			`Bundle import for ${app.slug}`,
+		);
+	}
+
+	private async fetchConfig(app: MicroAppMetadata): Promise<MicroAppConfig | undefined> {
+		if (!app.configUrl) {
+			return undefined;
+		}
+
+		const config = await this.fetchWithRetry<MicroAppConfig>(
+			async () => {
+				const response = await fetch(app.configUrl!);
+				if (!response.ok) {
+					throw new Error(`Failed to fetch config: ${response.statusText}`);
+				}
+				return response.json();
+			},
+			`Config fetch for ${app.slug}`,
+		);
+
+		return config;
+	}
+
+	private async fetchWithRetry<T>(
+		operation: () => Promise<T>,
+		action: string,
+	): Promise<T> {
 		const { maxAttempts, baseDelayMs: baseDelay, maxDelayMs: maxDelay } = this.retryOptions;
 		let lastError: Error;
 
 		for (let attempt = 1; attempt <= maxAttempts!; attempt++) {
 			try {
-				return await (typeof app.url === 'string' ? import(app.url) : app.url());
+				return await operation();
 			}
 			catch (error) {
 				lastError = error as Error;
@@ -65,7 +110,7 @@ export class MicroAppManager {
 				const delayMs = calculateExponentialBackoffDelay(attempt, baseDelay!, maxDelay!);
 
 				console.warn(
-					`Bundle import attempt ${attempt} failed for ${typeof app.url === 'string' ? app.url : 'function'}. Retrying in ${delay}ms...`,
+					`${action} attempt ${attempt} failed. Retrying in ${delayMs}ms...`,
 					error,
 				);
 
@@ -74,7 +119,7 @@ export class MicroAppManager {
 		}
 
 		throw new Error(
-			`Failed to import bundle after ${maxAttempts} attempts. Last error: ${lastError!.message}`,
+			`${action} failed after ${maxAttempts} attempts. Last error: ${lastError!.message}`,
 		);
 	}
 }

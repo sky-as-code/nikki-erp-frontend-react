@@ -1,4 +1,5 @@
-import { EnvVars, MicroAppMetadata } from '@nikkierp/common/types';
+import { EnvVars } from '@nikkierp/common/types';
+import { MicroAppMetadata } from '@nikkierp/ui/types';
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router';
 
@@ -6,10 +7,10 @@ import { ShellProviders } from '../context/ShellProviders';
 
 
 export type RootLayoutProps = {
-	remoteApps: MicroAppMetadata[];
+	microApps: MicroAppMetadata[];
 };
 
-export const RootLayout: React.FC<RootLayoutProps> = ({ remoteApps }) => {
+export const RootLayout: React.FC<RootLayoutProps> = ({ microApps }) => {
 	// const [envVars, setEnvVars] = useState<EnvVars | null>(null);
 
 	// useEffect(() => {
@@ -25,7 +26,7 @@ export const RootLayout: React.FC<RootLayoutProps> = ({ remoteApps }) => {
 
 	return (
 		<ShellProviders
-			remoteApps={remoteApps}
+			microApps={microApps}
 			// envVars={envVars}
 		>
 			<Outlet />

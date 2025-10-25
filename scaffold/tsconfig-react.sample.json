@@ -1,0 +1,26 @@
+/*
+ * Copy this file to your React folder and rename it to tsconfig.json
+ * Modify the "compilerOptions" and "extends" path to your needs. All the paths must be defined in your React's tsconfig.json,
+ * because they are relative to the tsconfig.json's parent folder, they will not work properly if inherited/extended from base file.
+ */
+{
+	"extends": "../../tsconfig-react.base.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"outDir": "dist",
+		"paths": {
+			"@/*": [
+				"./src/*"
+			],
+		}
+	},
+	"include": [
+		"src/**/*",
+		"types/*",
+		"node_modules/vite/types/*",
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+	]
+}

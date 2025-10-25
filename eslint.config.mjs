@@ -71,9 +71,28 @@ export default defineConfig([
 		},
 	},
 
+	// TypeScript language
+	{
+		files: ['**/*.ts', '**/*.tsx', '**/*.mts'],
+		languageOptions: {
+			parser: parserTs,
+			parserOptions: {
+				project: ['./tsconfig.json'],
+				ecmaVersion: 'latest',
+				sourceType: 'module',
+			},
+		},
+		rules: {
+			'@typescript-eslint/no-explicit-any': 'off',
+			'@typescript-eslint/no-unused-expressions': 'warn',
+			'@typescript-eslint/no-unused-vars': ['warn', { 'varsIgnorePattern': '^_', 'argsIgnorePattern': '^_' }],
+		},
+	},
+
 	// React configurations
 	{
 		...react.configs.flat.recommended,
+		files: ['**/*.jsx', '**/*.tsx'],
 		settings: { react: { version: 'detect' } },
 		rules: {
 			'react/react-in-jsx-scope': 'off',
@@ -82,6 +101,15 @@ export default defineConfig([
 			'react/jsx-no-target-blank': 'off',
 			'react/jsx-indent': ['error', 'tab'],
 			'react/jsx-indent-props': ['error', 'tab'],
+			'max-lines-per-function': [
+				'warn',
+				{
+					max: 70,
+					skipBlankLines: true,
+					skipComments: true,
+					IIFEs: true,
+				},
+			],
 		},
 	},
 
@@ -143,45 +171,6 @@ export default defineConfig([
 			'jsx-a11y/aria-unsupported-elements': 'warn',
 			'jsx-a11y/role-has-required-aria-props': 'warn',
 			'jsx-a11y/role-supports-aria-props': 'warn',
-		},
-	},
-
-	// TypeScript language options
-	{
-		files: ['**/*.ts'],
-		languageOptions: {
-			parser: parserTs,
-			parserOptions: {
-				project: ['./tsconfig.json'],
-				ecmaVersion: 'latest',
-				sourceType: 'module',
-			},
-		},
-	},
-
-	// TypeScript rules
-	{
-		files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.mjs'],
-		rules: {
-			'@typescript-eslint/no-explicit-any': 'warn',
-			'@typescript-eslint/no-unused-expressions': 'warn',
-			'@typescript-eslint/no-unused-vars': ['warn', { 'varsIgnorePattern': '^_', 'argsIgnorePattern': '^_' }],
-		},
-	},
-
-	// React components
-	{
-		files: ['**/*.jsx', '**/*.tsx', '**/*.js', '**/*.ts'],
-		rules: {
-			'max-lines-per-function': [
-				'warn',
-				{
-					max: 70,
-					skipBlankLines: true,
-					skipComments: true,
-					IIFEs: true,
-				},
-			],
 		},
 	},
 
