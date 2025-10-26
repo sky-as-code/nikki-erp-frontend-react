@@ -1,5 +1,5 @@
 import * as shell from '@nikkierp/shell';
-import { MicroAppDomType, MicroAppMetadata, MicroAppShellBundle } from '@nikkierp/ui/types';
+import { MicroAppMetadata, MicroAppShellBundle } from '@nikkierp/ui/types';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router';
@@ -7,19 +7,22 @@ import { BrowserRouter as Router } from 'react-router';
 import remoteApps from './modules.json';
 
 
+// Uncomment one of these when mounting as ShadowDOM
+// const essentialBundleUrl = 'http://localhost:3000/@fs/F:/github/sky-as-code/nikki-erp-frontend-react/modules/essential/src/index.tsx';
+// const essentialBundleUrl = 'http://localhost:3000/@fs/F:/github/sky-as-code/nikki-erp-frontend-react/modules/essential/dist/nikkiapp-essential-CTTUpnC9.js';
 const microApps: MicroAppMetadata[] = [
 	{
 		slug: 'identity',
 		bundleUrl: '@nikkierp/microapp-identity',
 		// bundleUrl: () => import('http://localhost:3000/index.ts'),
 		// configUrl: 'http://localhost:3001/config',
-		domType: MicroAppDomType.SHARED,
 		htmlTag: 'microapp-identity',
 	},
 	{
 		slug: 'essential',
+		// Uncomment when mounting as ShadowDOM
+		// bundleUrl: () => import(essentialBundleUrl),
 		bundleUrl: () => import('@nikkierp/microapp-essential'),
-		domType: MicroAppDomType.SHARED,
 		htmlTag: 'nikkiapp-essential',
 	},
 	...remoteApps,

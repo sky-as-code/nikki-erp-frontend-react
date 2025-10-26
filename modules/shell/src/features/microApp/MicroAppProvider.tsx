@@ -1,5 +1,6 @@
-import { MicroAppMetadata, IMicroAppWebComponent } from '@nikkierp/ui/types';
+import { MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType } from '@nikkierp/ui/types';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { MicroAppManager, MicroAppPack } from './MicroAppManager';
 import { registerReducerFactory } from '../../redux/store';
@@ -31,22 +32,39 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = ({ children, mi
 export const LazyMicroApp: React.FC<{ slug: string }> = ({ slug }) => {
 	const [microAppPack, setMicroAppPack] = useState<MicroAppPack | null>(null);
 
-	useFetchMicroAppPack(slug, setMicroAppPack);
+	const domType = useFetchMicroAppPack(slug, setMicroAppPack);
 	const ref = useSetupMicroApp(slug, microAppPack);
 
 	if (!microAppPack) return <div>Loading...</div>;
 
-	return React.createElement(microAppPack.htmlTag, { ref });
+	let children: React.ReactNode = null;
+	if (ref.current && domType === MicroAppDomType.SHARED) {
+		children = (
+			<ref.current.Component {...ref.current.props} />
+		);
+	}
+
+	return (
+		<>
+			{React.createElement(microAppPack.htmlTag, {
+				children,
+				ref,
+			})}
+		</>
+	);
 };
 
-function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack) => void): void {
+function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack) => void): MicroAppDomType | null {
+	const [domType, setDomType] = useState<MicroAppDomType | null>(null);
 	const manager = useMicroAppManager();
+
 	useEffect(() => {
 		let isMounted = true;
 
 		manager.fetchMicroApp(slug).then((pack) => {
 			if (isMounted) {
-				pack.bundle();
+				const result = pack.initBundle({ htmlTag: pack.metadata.htmlTag });
+				setDomType(result.domType);
 				setMicroAppPack(pack);
 			}
 		});
@@ -55,13 +73,17 @@ function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack
 			isMounted = false;
 		};
 	}, [slug]);
+
+	return domType;
 }
 
 function useSetupMicroApp(
 	slug: string,
 	microAppPack: MicroAppPack | null,
 ): React.RefObject<IMicroAppWebComponent | null> {
+	const [, forceRerender] = useState(0);
 	const ref = useRef<IMicroAppWebComponent | null>(null);
+
 	useEffect(() => {
 		if (ref.current && microAppPack) {
 			ref.current.props = {
@@ -70,8 +92,9 @@ function useSetupMicroApp(
 					registerReducer: registerReducerFactory(slug),
 				},
 			};
+			forceRerender(n => n + 1);
 		}
-	}, [microAppPack]);
+	}, [microAppPack, ref.current]);
 
 	return ref;
 }

@@ -9,13 +9,6 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 
 export default defineConfig({
-	build: {
-		rollupOptions: {
-			input: {
-				index: path.resolve(__dirname, '../shellbff/public/index.html'),
-			},
-		},
-	},
 	plugins: [
 		tsconfigPaths(),
 		react(),

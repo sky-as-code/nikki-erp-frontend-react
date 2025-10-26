@@ -4,6 +4,7 @@ import { Link, Navigate, Route, Routes, useNavigate } from 'react-router';
 import { useAuthData, useFirstOrgSlug } from './features/auth';
 import { LazyMicroApp } from './features/microApp';
 import { RootLayout } from './pages/RootLayout';
+import './react';
 
 import './styles/index.css';
 

@@ -20,7 +20,7 @@ export type MicroAppMetadata = {
 	 * - `shared`: Light DOM.
 	 * - `isolated`: Shadow DOM.
 	 */
-	domType: MicroAppDomType;
+	// domType: MicroAppDomType;
 
 	/**
 	 * The slug used as unique identifier for the micro app, as well as
@@ -46,7 +46,28 @@ export type MicroAppMetadata = {
 	configUrl?: string,
 };
 
-export type MicroAppBundle = () => void;
+/**
+ * Defines web component, register reducer with state management, etc.
+ */
+export type MicroAppBundle = (opts: MicroAppBundleOptions) => MicroAppBundleInitResult;
+
+export type MicroAppBundleOptions = {
+	/**
+	 * The web component tag name.
+	 * The Shell will determine this tag name to avoid conflicts with other micro apps.
+	 */
+	htmlTag: string;
+};
+
+export type MicroAppBundleInitResult = {
+	/**
+	 * How the micro app is mounted under the web component root.
+	 * - `shared`: Light DOM.
+	 * - `isolated`: Shadow DOM.
+	 */
+	domType: MicroAppDomType;
+};
+
 export type MicroAppConfig = Record<string, any>;
 export enum MicroAppDomType {
 	SHARED = 'shared',
@@ -74,6 +95,8 @@ export function defineWebComponent(Component: React.ComponentType<MicroAppProps>
 }
 
 export interface IMicroAppWebComponent {
+	readonly Component: React.ComponentType<MicroAppProps>;
+	readonly mountElem: HTMLElement;
 	props: MicroAppProps;
 }
 
@@ -84,12 +107,24 @@ function createMicroAppClass(
 	return class MicroAppWebComponent extends HTMLElement implements IMicroAppWebComponent {
 		private _stateMgmt: { registerReducer: RegisterReducerFn; } = undefined as any;
 		private _config?: Record<string, any> = undefined;
-		private _mountElem?: HTMLDivElement = undefined;
+		private _mountElem?: HTMLElement = undefined;
+		private _isRendered = false;
+
+		public get Component(): React.ComponentType<MicroAppProps> {
+			return Component;
+		}
+
+		public get mountElem(): HTMLElement {
+			return this._mountElem!;
+		}
 
 		public set props(props: MicroAppProps) {
 			this._stateMgmt = props.stateMgmt;
 			this._config = props.config;
-			this._render();
+			if (domType === MicroAppDomType.ISOLATED) {
+				this._render();
+			}
+			// else: Light DOM will be rendered by the parent React.createPortal()
 		}
 
 		public get props(): MicroAppProps {
@@ -101,20 +136,24 @@ function createMicroAppClass(
 
 		public connectedCallback() {
 			if (this.shadowRoot) return; // avoid re-mount
-			const mount = this._mountElem = document.createElement('div');
-			mount.id = 'root';
 
 			if (domType === MicroAppDomType.ISOLATED) {
+				const mount = this._mountElem = document.createElement('div');
+				mount.id = 'root';
 				const root = this.attachShadow({ mode: 'open' });
 				root.appendChild(mount);
 			}
 			else { // Light DOM
-				this.appendChild(mount);
+				// this.appendChild(mount);
+				this._mountElem = this;
 			}
 		}
 
 		private _render() {
-			ReactDOM.createRoot(this._mountElem!).render(<Component {...this.props} />);
+			if (!this._isRendered) {
+				this._isRendered = true;
+				ReactDOM.createRoot(this._mountElem!).render(<Component {...this.props} />);
+			}
 		}
 	};
 }

@@ -10,10 +10,11 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
 	build: {
-		rollupOptions: {
-			input: {
-				index: path.resolve(__dirname, '../shellbff/public/index.html'),
-			},
+		outDir: 'dist',
+		lib: {
+			entry: path.resolve(__dirname, 'src/index.tsx'),
+			fileName: 'nikkiapp-essential-[hash]',
+			formats: ['es'],
 		},
 	},
 	plugins: [

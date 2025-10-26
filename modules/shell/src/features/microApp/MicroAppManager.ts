@@ -9,9 +9,10 @@ export type RetryOptions = {
 
 type MicroAppSlug = string;
 export type MicroAppPack = {
-	bundle: MicroAppBundle;
+	initBundle: MicroAppBundle;
 	config: MicroAppConfig | undefined;
 	htmlTag: string;
+	metadata: MicroAppMetadata;
 };
 
 export class MicroAppManager {
@@ -51,9 +52,10 @@ export class MicroAppManager {
 			]);
 
 			pack = {
-				bundle: bundle.default,
+				initBundle: bundle.default,
 				config,
 				htmlTag: app.htmlTag,
+				metadata: app,
 			};
 			this.downloadedPacks.set(slug, pack);
 		}

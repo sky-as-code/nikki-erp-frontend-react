@@ -2,6 +2,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 
 import compression from 'compression';
+import cors from 'cors';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import * as vite from 'vite';
 
@@ -25,6 +26,10 @@ const clientRootPath = config.mustGetBffConfig('CLIENT_ROOT_PATH') || '';
 async function createServer(): Promise<Express> {
 	console.log('Client Root Path:', clientRootPath);
 	const app = express();
+
+	// CORS middleware - allow all origins
+	app.use(cors());
+
 	app.use('/api/config', router);
 
 	let viteServer: vite.ViteDevServer | undefined;
