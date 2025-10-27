@@ -1,6 +1,6 @@
 import { MantineProvider, Paper } from '@mantine/core';
 import { MicroAppMetadata, MicroAppShellBundle } from '@nikkierp/ui/microApp';
-import { Link, Navigate, Route, Routes, useNavigate } from 'react-router';
+import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 
 import { useAuthData, useFirstOrgSlug } from './features/auth';
 import { LazyMicroApp, LazyMicroWidget } from './features/microApp';
@@ -31,14 +31,18 @@ const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
 						<Link to='/essential'>Essential</Link><br/>
 						<Link to='/smart'>Smart</Link><br/>
 						<Link to='/login'>Login</Link><br/>
-						<Link to='/:orgSlug'>:orgSlug</Link><br/>
+						<Link to='/someorg'>:orgSlug</Link><br/>
+						<Link to='/someorg/sub'>:orgSlug/sub</Link><br/>
 					</>
 				} />
 				<Route path='essential/*' element={<EssentialTest />} />
 				<Route path='smart' element={<SmartNavigate />} />
 				<Route path='login' element={<>Login</>} />
 				<Route path=':orgSlug'>
-					<Route index element={<>Shell</>} />
+					<Route index element={<OrgSub />} />
+					<Route path='sub'>
+						<Route index element={<OrgSub />} />
+					</Route>
 				</Route>
 
 				{/* <Route element={<DomainLayout />}>
@@ -49,13 +53,21 @@ const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
 	);
 };
 
+const OrgSub: React.FC = () => {
+	const location = useLocation();
+	return (
+		<b>{location.pathname}</b>
+	);
+};
+
+
 const EssentialTest: React.FC = () => {
 	return (
 		<>
 			<Paper shadow='xs' p='xl'>
-				<LazyMicroWidget slug='essential' widgetPath='/org-home' />
+				<LazyMicroWidget slug='essential' widgetName='org-home' />
 			</Paper>
-			<LazyMicroApp slug='essential' basePath='essential' />
+			{/* <LazyMicroApp slug='essential' basePath='essential' /> */}
 		</>
 	);
 };

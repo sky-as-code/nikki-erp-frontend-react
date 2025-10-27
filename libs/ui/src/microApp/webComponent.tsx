@@ -8,7 +8,10 @@ import { RegisterReducerFn } from '../stateManagement/AppStateProvider';
 export type MicroAppProps = {
 	config?: Record<string, any>,
 	basePath?: string,
-	widgetPath?: string,
+	domType: MicroAppDomType;
+	widgetName?: string,
+	widgetProps?: Record<string, any>,
+	slug: string,
 	stateMgmt: {
 		registerReducer: RegisterReducerFn,
 	},

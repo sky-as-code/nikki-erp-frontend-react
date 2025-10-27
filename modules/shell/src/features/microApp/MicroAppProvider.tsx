@@ -1,5 +1,6 @@
-import { MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType } from '@nikkierp/ui/microApp';
+import { MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps } from '@nikkierp/ui/microApp';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { MicroAppManager, MicroAppPack } from './MicroAppManager';
 import { registerReducerFactory } from '../../redux/store';
@@ -34,7 +35,7 @@ export const LazyMicroApp: React.FC<LazyMicroAppProps> = (props) => {
 	return <InternalLazyMicroApp {...props} />;
 };
 
-export type LazyMicroWidgetProps = Pick<InternalLazyMicroAppProps, 'slug' | 'widgetPath'>;
+export type LazyMicroWidgetProps = Pick<InternalLazyMicroAppProps, 'slug' | 'widgetName'>;
 
 export const LazyMicroWidget: React.FC<LazyMicroWidgetProps> = (props) => {
 	return <InternalLazyMicroApp {...props} />;
@@ -43,30 +44,37 @@ export const LazyMicroWidget: React.FC<LazyMicroWidgetProps> = (props) => {
 type InternalLazyMicroAppProps = {
 	slug: string;
 	basePath?: string;
-	widgetPath?: string;
+	widgetName?: string;
 };
 
-const InternalLazyMicroApp: React.FC<InternalLazyMicroAppProps> = ({ slug, basePath, widgetPath }) => {
+const InternalLazyMicroApp: React.FC<InternalLazyMicroAppProps> = ({ slug, basePath, widgetName }) => {
 	const [microAppPack, setMicroAppPack] = useState<MicroAppPack | null>(null);
 
 	const domType = useFetchMicroAppPack(slug, setMicroAppPack);
-	const ref = useSetupMicroApp(slug, basePath, widgetPath, microAppPack);
+	const ref = useSetupMicroApp(microAppPack, {
+		slug,
+		basePath,
+		widgetName,
+		domType: domType!, // domType is guaranteed to be not null by the time useSetupMicroApp's useEffect runs.
+	});
 
 	if (!microAppPack) return <div>Loading...</div>;
 
-	let children: React.ReactNode = null;
-	if (ref.current && domType === MicroAppDomType.SHARED) {
-		children = (
-			<ref.current.Component {...ref.current.props} />
-		);
-	}
+	// let children: React.ReactNode = null;
+	// if (ref.current && domType === MicroAppDomType.SHARED) {
+	// 	children = (
+	// 		<ref.current.Component {...ref.current.props} />
+	// 	);
+	// }
 
 	return (
 		<>
 			{React.createElement(microAppPack.htmlTag, {
-				children,
+				// children,
 				ref,
 			})}
+			{ref.current && domType === MicroAppDomType.SHARED &&
+			createPortal(<ref.current.Component {...ref.current.props} />, ref.current.mountElem)}
 		</>
 	);
 };
@@ -94,11 +102,11 @@ function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack
 	return domType;
 }
 
+type UseSetupMicroAppOptions = Omit<MicroAppProps, 'stateMgmt'>;
+
 function useSetupMicroApp(
-	slug: string,
-	basePath: string | undefined,
-	widgetPath: string | undefined,
 	microAppPack: MicroAppPack | null,
+	opts: UseSetupMicroAppOptions,
 ): React.RefObject<IMicroAppWebComponent | null> {
 	const [, forceRerender] = useState(0);
 	const ref = useRef<IMicroAppWebComponent | null>(null);
@@ -107,11 +115,10 @@ function useSetupMicroApp(
 		if (ref.current && microAppPack) {
 			ref.current.props = {
 				config: microAppPack.config,
-				basePath,
-				widgetPath,
 				stateMgmt: {
-					registerReducer: registerReducerFactory(slug),
+					registerReducer: registerReducerFactory(opts.slug),
 				},
+				...opts,
 			};
 			forceRerender(n => n + 1);
 		}
