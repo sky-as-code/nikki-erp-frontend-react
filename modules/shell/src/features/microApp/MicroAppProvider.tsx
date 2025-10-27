@@ -1,6 +1,5 @@
-import { MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType } from '@nikkierp/ui/types';
+import { MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType } from '@nikkierp/ui/microApp';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 
 import { MicroAppManager, MicroAppPack } from './MicroAppManager';
 import { registerReducerFactory } from '../../redux/store';
@@ -29,11 +28,29 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = ({ children, mi
 	);
 };
 
-export const LazyMicroApp: React.FC<{ slug: string }> = ({ slug }) => {
+export type LazyMicroAppProps = Pick<InternalLazyMicroAppProps, 'slug' | 'basePath'>;
+
+export const LazyMicroApp: React.FC<LazyMicroAppProps> = (props) => {
+	return <InternalLazyMicroApp {...props} />;
+};
+
+export type LazyMicroWidgetProps = Pick<InternalLazyMicroAppProps, 'slug' | 'widgetPath'>;
+
+export const LazyMicroWidget: React.FC<LazyMicroWidgetProps> = (props) => {
+	return <InternalLazyMicroApp {...props} />;
+};
+
+type InternalLazyMicroAppProps = {
+	slug: string;
+	basePath?: string;
+	widgetPath?: string;
+};
+
+const InternalLazyMicroApp: React.FC<InternalLazyMicroAppProps> = ({ slug, basePath, widgetPath }) => {
 	const [microAppPack, setMicroAppPack] = useState<MicroAppPack | null>(null);
 
 	const domType = useFetchMicroAppPack(slug, setMicroAppPack);
-	const ref = useSetupMicroApp(slug, microAppPack);
+	const ref = useSetupMicroApp(slug, basePath, widgetPath, microAppPack);
 
 	if (!microAppPack) return <div>Loading...</div>;
 
@@ -79,6 +96,8 @@ function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack
 
 function useSetupMicroApp(
 	slug: string,
+	basePath: string | undefined,
+	widgetPath: string | undefined,
 	microAppPack: MicroAppPack | null,
 ): React.RefObject<IMicroAppWebComponent | null> {
 	const [, forceRerender] = useState(0);
@@ -88,6 +107,8 @@ function useSetupMicroApp(
 		if (ref.current && microAppPack) {
 			ref.current.props = {
 				config: microAppPack.config,
+				basePath,
+				widgetPath,
 				stateMgmt: {
 					registerReducer: registerReducerFactory(slug),
 				},
