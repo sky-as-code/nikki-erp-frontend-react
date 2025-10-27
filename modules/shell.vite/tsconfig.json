@@ -1,0 +1,30 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"outDir": "dist",
+		"jsx": "react-jsxdev",
+		"sourceMap": true,
+		"target": "es2020",
+		"resolvePackageJsonExports": true,
+		"lib": [
+			"DOM",
+			"DOM.Iterable",
+			"ESNext"
+		],
+		"paths": {
+			"@/*": [
+				"./src/*"
+			],
+		}
+	},
+	"include": [
+		"src/**/*",
+		"types/*",
+		"node_modules/vite/types/*",
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+	]
+}

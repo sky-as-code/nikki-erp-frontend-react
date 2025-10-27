@@ -1,0 +1,20 @@
+/*
+* This lib doesn't contains React code, so it has different tsconfig.json than the React libs.
+*/
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"outDir": "dist",
+		"target": "es2020",
+	},
+	"include": [
+		"src/**/*",
+		"types/*",
+		"node_modules/vite/types/*",
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+	]
+}

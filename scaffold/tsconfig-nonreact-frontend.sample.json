@@ -1,0 +1,22 @@
+/*
+ * Copy this file to your non-React, frontend lib folder and rename it to tsconfig.json
+ * Modify the "compilerOptions" and "extends" path to your needs. All the paths must be defined in your React's tsconfig.json,
+ * because they are relative to the tsconfig.json's parent folder, they will not work properly if inherited/extended from base file.
+ */
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"outDir": "dist",
+		"target": "es2020",
+	},
+	"include": [
+		"src/**/*",
+		"types/*",
+		"node_modules/vite/types/*",
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+	]
+}

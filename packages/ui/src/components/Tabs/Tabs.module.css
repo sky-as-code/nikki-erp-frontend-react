@@ -1,0 +1,19 @@
+.list {
+	--tabs-list-border-width: 1px;
+	--tabs-list-border-style: solid var(--tabs-list-border-width) var(--mantine-color-gray-3);
+
+	border-bottom: var(--tabs-list-border-style);
+	padding: 0 25px;
+}
+
+.tab {
+	background-color: var(--mantine-color-body);
+	border: var(--tabs-list-border-style);
+	margin-bottom: calc(-1 * var(--tabs-list-border-width));
+	margin-left: -1px;
+
+	&[data-active] {
+		border-top-color: var(--mantine-color-primary-light-color);
+		border-bottom-color: var(--mantine-color-body);
+	}
+}

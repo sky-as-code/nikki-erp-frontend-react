@@ -1,0 +1,46 @@
+{
+	"name": "@nikkierp/common",
+	"private": false,
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"clean": "rimraf dist",
+		"dev": "echo 'Go to shellbff and run pnpm dev'",
+		"build": "pnpm clean && pnpm build:client && pnpm build:server",
+		"build:client": "tsc && vite build --outDir dist/app/client",
+		"build:server": "tsc -p tsconfig.server.json",
+		"typecheck": "tsc --noEmit",
+		"lint": "pnpm eslint && pnpm stylelint",
+		"eslint": "eslint . --cache",
+		"stylelint": "stylelint '**/*.css' --cache",
+		"test": "pnpm typecheck && pnpm lint && pnpm vitest"
+	},
+	"dependencies": {
+		"chart.js": "~4.4.9",
+		"clsx": "~2.1.1",
+		"dayjs": "~1.11.18",
+		"ky": "~1.12.0"
+	},
+	"devDependencies": {
+		"@types/node": "~22.14.1",
+		"cross-env": "~7.0.3",
+		"typescript": "~5.9.2",
+		"vite": "~7.1.7",
+		"vite-tsconfig-paths": "~5.1.4",
+		"vitest": "~3.2.4"
+	},
+	"peerDependencies": {
+		"typescript": "~5.9.2"
+	},
+	"sideEffects": false,
+	"exports": {
+		".": "./src/index.ts",
+		"./request": "./src/request/request.ts",
+		"./types": "./src/types/index.ts",
+		"./utils": "./src/utils/index.ts"
+	},
+	"files": [
+		"src",
+		"README.md"
+	]
+}

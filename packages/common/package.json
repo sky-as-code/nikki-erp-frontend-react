@@ -1,0 +1,45 @@
+{
+	"name": "@nikkierp/common",
+	"version": "0.0.1",
+	"private": false,
+	"type": "module",
+	"scripts": {
+		"clean": "rimraf dist",
+		"dev": "echo 'Go to shellbff and run pnpm dev'",
+		"build": "npm run clean && npm run build:client && npm run build:server",
+		"build:client": "tsc && vite build --outDir dist/app/client",
+		"build:server": "tsc -p tsconfig.server.json",
+		"typecheck": "tsc --noEmit",
+		"lint": "npm run eslint && npm run stylelint",
+		"eslint": "eslint . --cache",
+		"stylelint": "stylelint '**/*.css' --cache",
+		"test": "npm run typecheck && npm run prettier && npm run lint && npm run vitest && npm run build"
+	},
+	"dependencies": {
+		"chart.js": "~4.4.9",
+		"clsx": "~2.1.1",
+		"dayjs": "~1.11.18",
+		"ky": "~1.12.0"
+	},
+	"devDependencies": {
+		"@types/node": "~22.14.1",
+		"cross-env": "~7.0.3",
+		"typescript": "~5.9.2",
+		"vite": "~7.1.7",
+		"vite-tsconfig-paths": "~5.1.4",
+		"vitest": "~3.2.4"
+	},
+	"peerDependencies": {
+		"typescript": "~5.9.2"
+	},
+	"sideEffects": false,
+	"exports": {
+		".": "./src/index.ts",
+		"./types": "./src/types/index.ts",
+		"./utils": "./src/utils/index.ts"
+	},
+	"files": [
+		"src",
+		"README.md"
+	]
+}
