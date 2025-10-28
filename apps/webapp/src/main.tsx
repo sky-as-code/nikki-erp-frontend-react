@@ -31,11 +31,11 @@ const microApps: MicroAppMetadata[] = [
 const App: React.FC = () => {
 	const { AppShell } = shell as MicroAppShellBundle;
 	return (
-		<React.StrictMode>
-			<Router>
-				<AppShell microApps={microApps} />
-			</Router>
-		</React.StrictMode>
+		// <React.StrictMode>
+		<Router>
+			<AppShell microApps={microApps} />
+		</Router>
+		// </React.StrictMode>
 	);
 };
 

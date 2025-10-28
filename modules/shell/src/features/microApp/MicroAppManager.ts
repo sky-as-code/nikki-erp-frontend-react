@@ -1,4 +1,5 @@
-import { ImportResult, MicroAppBundle, MicroAppConfig, MicroAppMetadata } from '@nikkierp/ui/types';
+import { MicroAppBundle, MicroAppConfig, MicroAppMetadata } from '@nikkierp/ui/microApp';
+import { ImportResult } from '@nikkierp/ui/types';
 
 
 export type RetryOptions = {
