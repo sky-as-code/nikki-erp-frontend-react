@@ -1,31 +1,32 @@
-import { MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps } from '@nikkierp/ui/microApp';
+import { MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps, MicroAppRoutingInput } from '@nikkierp/ui/microApp';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useInRouterContext, useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
 
 import { MicroAppManager, MicroAppPack } from './MicroAppManager';
 import { registerReducerFactory } from '../../redux/store';
 
 
-const MicroAppContext = createContext<MicroAppManager | null>(null);
+const MicroAppHostContext = createContext<MicroAppManager | null>(null);
 
 export const useMicroAppManager = () => {
-	const context = useContext(MicroAppContext);
+	const context = useContext(MicroAppHostContext);
 	if (!context) {
 		throw new Error('useMicroAppManager must be used within a MicroAppProvider');
 	}
 	return context;
 };
 
-export type MicroAppProviderProps = React.PropsWithChildren & {
+export type MicroAppHostProviderProps = React.PropsWithChildren & {
 	microApps: MicroAppMetadata[];
 };
 
-export const MicroAppProvider: React.FC<MicroAppProviderProps> = ({ children, microApps }) => {
+export const MicroAppHostProvider: React.FC<MicroAppHostProviderProps> = ({ children, microApps }) => {
 	const manager = new MicroAppManager(microApps);
 	return (
-		<MicroAppContext.Provider value= { manager } >
+		<MicroAppHostContext.Provider value= { manager } >
 			{ children }
-		</MicroAppContext.Provider>
+		</MicroAppHostContext.Provider>
 	);
 };
 
@@ -60,21 +61,21 @@ const InternalLazyMicroApp: React.FC<InternalLazyMicroAppProps> = ({ slug, baseP
 
 	if (!microAppPack) return <div>Loading...</div>;
 
-	// let children: React.ReactNode = null;
-	// if (ref.current && domType === MicroAppDomType.SHARED) {
-	// 	children = (
-	// 		<ref.current.Component {...ref.current.props} />
-	// 	);
-	// }
+	let children: React.ReactNode = null;
+	if (ref.current && domType === MicroAppDomType.SHARED) {
+		children = (
+			<ref.current.Component {...ref.current.props} />
+		);
+	}
 
 	return (
 		<>
 			{React.createElement(microAppPack.htmlTag, {
-				// children,
+				children,
 				ref,
 			})}
-			{ref.current && domType === MicroAppDomType.SHARED &&
-			createPortal(<ref.current.Component {...ref.current.props} />, ref.current.mountElem)}
+			{/* {ref.current && domType === MicroAppDomType.SHARED &&
+			createPortal(<ref.current.Component {...ref.current.props} />, ref.current.mountElem)} */}
 		</>
 	);
 };
@@ -102,7 +103,9 @@ function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack
 	return domType;
 }
 
-type UseSetupMicroAppOptions = Omit<MicroAppProps, 'stateMgmt'>;
+type UseSetupMicroAppOptions = Omit<MicroAppProps, 'registerReducer' | 'routing'> & {
+	basePath?: string;
+};
 
 function useSetupMicroApp(
 	microAppPack: MicroAppPack | null,
@@ -110,19 +113,31 @@ function useSetupMicroApp(
 ): React.RefObject<IMicroAppWebComponent | null> {
 	const [, forceRerender] = useState(0);
 	const ref = useRef<IMicroAppWebComponent | null>(null);
+	const routingInput = useGetRouting(opts.basePath);
 
 	useEffect(() => {
 		if (ref.current && microAppPack) {
 			ref.current.props = {
 				config: microAppPack.config,
-				stateMgmt: {
-					registerReducer: registerReducerFactory(opts.slug),
-				},
+				registerReducer: registerReducerFactory(opts.slug),
+				routing: routingInput,
 				...opts,
 			};
 			forceRerender(n => n + 1);
 		}
-	}, [microAppPack, ref.current]);
+	}, [microAppPack, ref.current, routingInput.location]);
 
 	return ref;
+}
+
+function useGetRouting(basePath?: string): MicroAppRoutingInput {
+	const isInRouter = useInRouterContext();
+	if (isInRouter) {
+		return {
+			basePath,
+			location: useLocation(),
+			navigator: useContext(UNSAFE_NavigationContext).navigator,
+		};
+	}
+	return {};
 }

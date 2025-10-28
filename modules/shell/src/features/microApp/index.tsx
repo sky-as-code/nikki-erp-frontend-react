@@ -1,1 +1,1 @@
-export * from './MicroAppProvider';
+export * from './MicroAppHostProvider';

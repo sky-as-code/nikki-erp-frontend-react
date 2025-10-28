@@ -1,6 +1,6 @@
 import i18n from '@nikkierp/ui/i18n';
 // import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MicroAppMetadata } from '@nikkierp/ui/types';
+import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 import { I18nextProvider } from 'react-i18next';
 import { Provider as ReduxProvider } from 'react-redux';
 
@@ -8,7 +8,7 @@ import { UIProviders } from './UIProviders';
 import { store } from '../redux/store';
 
 import { ClientConfigProvider } from '@/context/ClientConfigProvider';
-import { MicroAppProvider } from '@/features/microApp/MicroAppProvider';
+import { MicroAppHostProvider } from '@/features/microApp/MicroAppHostProvider';
 // import { AuthProvider } from '@/modules/core/components/auth/AuthProvider';
 
 
@@ -27,7 +27,7 @@ export type ShellProvidersProps = React.PropsWithChildren & {
 
 export const ShellProviders: React.FC<ShellProvidersProps> = ({children, microApps}) => {
 	return (
-		<MicroAppProvider microApps={microApps}>
+		<MicroAppHostProvider microApps={microApps}>
 			<ReduxProvider store={store}>
 				{/* <AuthProvider> */}
 				{/* <QueryClientProvider client={queryClient}> */}
@@ -41,6 +41,6 @@ export const ShellProviders: React.FC<ShellProvidersProps> = ({children, microAp
 				{/* </QueryClientProvider> */}
 				{/* </AuthProvider> */}
 			</ReduxProvider>
-		</MicroAppProvider>
+		</MicroAppHostProvider>
 	);
 };

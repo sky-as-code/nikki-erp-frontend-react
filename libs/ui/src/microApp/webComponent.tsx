@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { Location, Navigator } from 'react-router-dom';
 
 import { MicroAppDomType } from './types';
 import { RegisterReducerFn } from '../stateManagement/AppStateProvider';
@@ -7,14 +8,18 @@ import { RegisterReducerFn } from '../stateManagement/AppStateProvider';
 
 export type MicroAppProps = {
 	config?: Record<string, any>,
-	basePath?: string,
 	domType: MicroAppDomType;
 	widgetName?: string,
 	widgetProps?: Record<string, any>,
 	slug: string,
-	stateMgmt: {
-		registerReducer: RegisterReducerFn,
-	},
+	registerReducer: RegisterReducerFn,
+	routing: MicroAppRoutingInput,
+};
+
+export type MicroAppRoutingInput = {
+	basePath?: string,
+	location?: Location,
+	navigator?: Navigator,
 };
 
 export type DefineWebComponentOpts = {
@@ -55,20 +60,20 @@ function createMicroAppClass(
 	domType: MicroAppDomType = MicroAppDomType.SHARED,
 ) {
 	return class MicroAppWebComponent extends HTMLElement implements IMicroAppWebComponent {
-		private _props: MicroAppProps = undefined as any;
-		private _mountElem?: HTMLElement = undefined;
-		private _isRendered = false;
+		#props: MicroAppProps = undefined as any;
+		#mountElem?: HTMLElement = undefined;
+		#reactRoot?: ReactDOM.Root = undefined;
 
 		public get Component(): React.ComponentType<MicroAppProps> {
 			return Component;
 		}
 
 		public get mountElem(): HTMLElement {
-			return this._mountElem!;
+			return this.#mountElem!;
 		}
 
 		public set props(props: MicroAppProps) {
-			this._props = props;
+			this.#props = props;
 			if (domType === MicroAppDomType.ISOLATED) {
 				this._render();
 			}
@@ -77,7 +82,7 @@ function createMicroAppClass(
 
 		public get props(): MicroAppProps {
 			return {
-				...this._props,
+				...this.#props,
 			};
 		}
 
@@ -85,21 +90,25 @@ function createMicroAppClass(
 			if (this.shadowRoot) return; // avoid re-mount
 
 			if (domType === MicroAppDomType.ISOLATED) {
-				const mount = this._mountElem = document.createElement('div');
+				const mount = this.#mountElem = document.createElement('div');
 				mount.id = 'root';
 				const root = this.attachShadow({ mode: 'open' });
 				root.appendChild(mount);
 			}
 			else { // Light DOM
-				this._mountElem = this;
+				this.#mountElem = this;
 			}
+		}
+		//
+		public disconnectedCallback() {
+			this.#reactRoot?.unmount();
 		}
 
 		private _render() {
-			if (!this._isRendered) {
-				this._isRendered = true;
-				ReactDOM.createRoot(this._mountElem!).render(<Component {...this._props} />);
+			if (!this.#reactRoot) {
+				this.#reactRoot = ReactDOM.createRoot(this.#mountElem!);
 			}
+			this.#reactRoot.render(<Component {...this.#props} />);
 		}
 	};
 }

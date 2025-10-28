@@ -65,9 +65,9 @@ const EssentialTest: React.FC = () => {
 	return (
 		<>
 			<Paper shadow='xs' p='xl'>
-				<LazyMicroWidget slug='essential' widgetName='org-home' />
+				<LazyMicroWidget slug='essential' widgetName='module-management' />
 			</Paper>
-			{/* <LazyMicroApp slug='essential' basePath='essential' /> */}
+			<LazyMicroApp slug='essential' basePath='essential' />
 		</>
 	);
 };

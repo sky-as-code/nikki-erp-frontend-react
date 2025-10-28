@@ -6,6 +6,9 @@ export const OrgHomePage: React.FC = () => {
 	return (
 		<div>
 			<h3>Organization Home Page</h3>
+			<button onClick={() => navigate('../module-management')}>
+				Go to Module Management
+			</button>
 			<button onClick={() => navigate(-1)}>
 				Go Back
 			</button>

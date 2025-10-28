@@ -1,28 +1,40 @@
 // import { createMemoryHistory, MemoryHistory } from 'history';
 import React from 'react';
-import { BrowserRouter, Routes } from 'react-router-dom';
+import { BrowserRouter, Router, Routes } from 'react-router-dom';
 
+import { useMicroAppContext } from './MicroAppProvider';
 import { MicroAppDomType } from './types';
+import { MicroAppProps } from './webComponent';
 
 
 export { Route as AppRoute } from 'react-router-dom';
 
 export type MicroAppRouterProps = React.PropsWithChildren & {
+	/**
+	 * Indicates how the parent Shell has mounted this micro-app.
+	 */
 	domType: MicroAppDomType;
 
 	/**
-	 * If specified, the BrowserRouter will be used to provide URL-based routing
+	 * Only effective in ISOLATED domType. This will be passed to the micro-app's router.
 	 */
 	basePath?: string;
 
 	/**
-	 * The routing path to directly navigate to when this MicroApp is used as a widget.
+	 * The wiget route name to render the corresponding widget component.
+	 * If specified, `basePath` will be ignored because widget is supposed to be static with no routing.
 	 */
 	widgetName?: string;
+
+	/**
+	 * This object is passed as-is to the widget component.
+	 */
 	widgetProps?: Record<string, any>,
 };
 
 export const MicroAppRouter: React.FC<MicroAppRouterProps> = ({children, ...props}) => {
+	const { routing } = useMicroAppContext();
+
 	if (props.widgetName && props.basePath) {
 		throw new Error('widgetPath and basePath must not be specified at the same time');
 	}
@@ -41,27 +53,8 @@ export const MicroAppRouter: React.FC<MicroAppRouterProps> = ({children, ...prop
 		if (!routeGroupElem) {
 			throw new Error(`<MicroAppRouter> in app mode requires one child of type <AppRoutes>`);
 		};
-		return renderAppRoutes(props, routeGroupElem);
+		return renderAppRoutes(props, routeGroupElem, routing);
 	}
-
-	// if (props.domType === MicroAppDomType.ISOLATED) {
-	// 	return (
-	// 		<ShadowDOMRoutes basePath={props.basePath}
-	// 			widgetPath={props.widgetName}
-	// 			widgetProps={props.widgetProps}>
-	// 			{routeGroupElem}
-	// 		</ShadowDOMRoutes>
-	// 	);
-	// }
-	// else {
-	// 	return (
-	// 		<SharedDOMRoutes basePath={props.basePath}
-	// 			widgetPath={props.widgetName}
-	// 			widgetProps={props.widgetProps}>
-	// 			{routeGroupElem}
-	// 		</SharedDOMRoutes>
-	// 	);
-	// }
 };
 
 
@@ -88,14 +81,27 @@ function findChildRouteGroup(
 function renderAppRoutes(
 	props: MicroAppRouterProps,
 	routeGroupElem: React.ReactElement<React.PropsWithChildren>,
+	routing: MicroAppProps['routing'],
 ): React.ReactNode {
-	if (props.domType === MicroAppDomType.ISOLATED) {
+	// If this micro-app is not mounted under a Router in Shell.
+	if (!routing.location) {
 		return (
 			<BrowserRouter basename={props.basePath}>
 				<Routes>
 					{routeGroupElem.props.children}
 				</Routes>
 			</BrowserRouter>
+		);
+	}
+
+	if (props.domType === MicroAppDomType.ISOLATED) {
+		// TODO: location and navgator are not sync with Shell's Router.
+		return (
+			<Router basename={props.basePath} location={routing.location!} navigator={routing.navigator!}>
+				<Routes>
+					{routeGroupElem.props.children}
+				</Routes>
+			</Router>
 		);
 	}
 	else {
