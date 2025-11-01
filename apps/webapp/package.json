@@ -27,6 +27,7 @@
 		"@mantine/notifications": "~8.3.5",
 		"@nikkierp/common": "workspace:*",
 		"@nikkierp/microapp-essential": "workspace:*",
+		"@nikkierp/microapp-identity": "workspace:*",
 		"@nikkierp/shell": "workspace:*",
 		"@nikkierp/ui": "workspace:*",
 		"@tailwindcss/vite": "~4.1.15",

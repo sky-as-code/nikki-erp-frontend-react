@@ -1,3 +1,4 @@
+import { RegisterReducerFn } from '@nikkierp/ui/stateManagement';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
 import * as auth from '../features/auth/authSlice';
@@ -34,10 +35,15 @@ export function registerReducerFactory(slug: string) {
 		injectReducer(slug, reducer);
 		return {
 			dispatch: store.dispatch,
-			selectState: () => {
+			selectMicroAppState: () => {
 				const state = store.getState() as any;
 				return state[slug];
 			},
+			selectRootState: () => {
+				const state = store.getState() as any;
+				return state;
+			},
 		};
-	};
+	} as RegisterReducerFn;
 }
+

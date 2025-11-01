@@ -13,7 +13,7 @@ import remoteApps from './modules.json';
 const microApps: MicroAppMetadata[] = [
 	{
 		slug: 'identity',
-		bundleUrl: '@nikkierp/microapp-identity',
+		bundleUrl: () => import('@nikkierp/microapp-identity'),
 		// bundleUrl: () => import('http://localhost:3000/index.ts'),
 		// configUrl: 'http://localhost:3001/config',
 		htmlTag: 'microapp-identity',

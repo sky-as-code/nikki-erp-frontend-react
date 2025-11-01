@@ -29,6 +29,7 @@ const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
 				<Route index element={
 					<>
 						<Link to='/essential'>Essential</Link><br/>
+						<Link to='/identity'>Identity</Link><br/>
 						<Link to='/smart'>Smart</Link><br/>
 						<Link to='/login'>Login</Link><br/>
 						<Link to='/someorg'>:orgSlug</Link><br/>
@@ -36,6 +37,7 @@ const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
 					</>
 				} />
 				<Route path='essential/*' element={<EssentialTest />} />
+				<Route path='identity/*' element={<IdentityTest />} />
 				<Route path='smart' element={<SmartNavigate />} />
 				<Route path='login' element={<>Login</>} />
 				<Route path=':orgSlug'>
@@ -68,6 +70,16 @@ const EssentialTest: React.FC = () => {
 				<LazyMicroWidget slug='essential' widgetName='module-management' />
 			</Paper>
 			<LazyMicroApp slug='essential' basePath='essential' />
+		</>
+	);
+};
+
+const IdentityTest: React.FC = () => {
+	return (
+		<>
+			<Paper shadow='xs' p='xl'>
+				<LazyMicroApp slug='identity' basePath='identity' />
+			</Paper>
 		</>
 	);
 };

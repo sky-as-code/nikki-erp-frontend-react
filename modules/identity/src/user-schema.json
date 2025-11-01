@@ -1,0 +1,152 @@
+{
+	"name": "user",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.general.fields.id' }",
+			"required": {
+				"update": true
+			},
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "unique",
+					"message": "{ \"$ref\": 'nikki.identity.user.duplidate_id' }"
+				},
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.constraints.required' }"
+				},
+				{
+					"type": "length",
+					"max": 36,
+					"message": "{ \"$ref\": 'nikki.general.constraints.length' }"
+				}
+			]
+		},
+		"email": {
+			"type": "email",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.email' }",
+			"required": {
+				"create": true
+			},
+			"constraints": [
+				{
+					"type": "unique",
+					"message": "{ \"$ref\": 'nikki.identity.user.duplidate_email' }"
+				},
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.constraints.required' }"
+				},
+				{
+					"type": "length",
+					"min": 10,
+					"max": 255,
+					"message": "{ \"$ref\": 'nikki.general.constraints.length' }"
+				}
+			]
+		},
+		"password": {
+			"type": "password",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.password' }",
+			"required": {
+				"create": true,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.constraints.required' }"
+				},
+				{
+					"type": "length",
+					"min": 10,
+					"max": 255,
+					"message": "{ \"$ref\": 'nikki.general.constraints.length' }"
+				}
+			]
+		},
+		"passwordConfirm": {
+			"type": "password",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.password_confirm' }",
+			"required": {
+				"create": true,
+				"update": true
+			},
+			"frontendOnly": true,
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.constraints.required' }"
+				},
+				{
+					"type": "length",
+					"min": 10,
+					"max": 255,
+					"message": "{ \"$ref\": 'nikki.general.constraints.length' }"
+				}
+			]
+		},
+		"dateOfBirth": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.date_of_birth' }",
+			"constraints": [
+				{
+					"type": "date_range",
+					"allow_today": false,
+					"allow_future": false,
+					"allow_past": true,
+					"min": "1900-01-01",
+					"max": "2050-12-31",
+					"message": "{ \"$ref\": 'nikki.general.constraints.date_range' }"
+				}
+			]
+		},
+		"dependantNum": {
+			"type": "integer",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.dependant_num' }",
+			"constraints": [
+				{
+					"type": "value_range",
+					"min": 0,
+					"max": 10,
+					"message": "{ \"$ref\": 'nikki.general.constraints.value_range' }"
+				}
+			]
+		},
+		"gender": {
+			"type": "enum",
+			"enum": [
+				{
+					"value": "male",
+					"label": "{ \"$ref\": 'nikki.identity.user.fields.gender.male' }"
+				},
+				{
+					"value": "female",
+					"label": "{ \"$ref\": 'nikki.identity.user.fields.gender.female' }"
+				}
+			],
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.gender' }"
+		},
+		"nationality": {
+			"type": "enum",
+			"enumSrc": {
+				"stateSource": "essential.nationality",
+				"key": "id",
+				"label": "name"
+			},
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.nationality' }"
+		}
+	},
+	"constraints": [
+		{
+			"type": "unique",
+			"fields": [
+				"field1",
+				"field2"
+			],
+			"message": "{ \"$ref\": 'nikki.identity.user.duplidate_field' }"
+		}
+	]
+}

@@ -1,4 +1,4 @@
-import { MicroAppBundle, MicroAppConfig, MicroAppMetadata } from '@nikkierp/ui/microApp';
+import { MicroAppBundle, MicroAppBundleInitFn, MicroAppConfig, MicroAppMetadata, MicroAppSlug } from '@nikkierp/ui/microApp';
 import { ImportResult } from '@nikkierp/ui/types';
 
 
@@ -8,9 +8,8 @@ export type RetryOptions = {
 	maxDelayMs?: number;
 };
 
-type MicroAppSlug = string;
 export type MicroAppPack = {
-	initBundle: MicroAppBundle;
+	init: MicroAppBundleInitFn;
 	config: MicroAppConfig | undefined;
 	htmlTag: string;
 	metadata: MicroAppMetadata;
@@ -18,7 +17,7 @@ export type MicroAppPack = {
 
 export class MicroAppManager {
 	private readonly registeredApps: Map<MicroAppSlug, MicroAppMetadata> = new Map();
-	private readonly downloadedPacks: Map<MicroAppSlug, MicroAppPack> = new Map();
+	private readonly downloadedPacks: Map<MicroAppSlug, MicroAppPack | Promise<MicroAppPack>> = new Map();
 	private readonly retryOptions: RetryOptions;
 
 	constructor(
@@ -34,6 +33,14 @@ export class MicroAppManager {
 		};
 	}
 
+	public getMicroApp(slug: string): MicroAppPack | undefined {
+		const packOrPromise = this.downloadedPacks.get(slug);
+		if (packOrPromise && !isPromise(packOrPromise)) {
+			return packOrPromise;
+		}
+		return undefined;
+	}
+
 	/**
 	 * Attempts to fetch the bundle and config from the registered micro-app with specified slug.
 	 * If the bundle is already downloaded, returns the downloaded bundle,
@@ -45,27 +52,41 @@ export class MicroAppManager {
 			throw new Error(`Bundle ${slug} is not registered`);
 		}
 
-		let pack = this.downloadedPacks.get(slug);
-		if (!pack) {
-			const [bundle, config] = await Promise.all([
-				this.importBundle(app),
-				this.fetchConfig(app),
-			]);
-
-			pack = {
-				initBundle: bundle.default,
-				config,
-				htmlTag: app.htmlTag,
-				metadata: app,
-			};
-			this.downloadedPacks.set(slug, pack);
+		let fetchPackPromise: Promise<MicroAppPack>;
+		let dependenciesPromise: Promise<MicroAppPack>[] = [];
+		let pack = this.getMicroApp(slug);
+		if (pack && isPromise(pack)) {
+			fetchPackPromise = pack;
 		}
+		else {
+			fetchPackPromise = this.fetchPack(app);
+			if (app.dependsOn && app.dependsOn.length) {
+				dependenciesPromise = app.dependsOn.map(slug => this.fetchMicroApp(slug));
+			}
+		}
+		[pack] = await Promise.all([fetchPackPromise, ...dependenciesPromise]);
+		this.downloadedPacks.set(slug, pack);
 
 		return pack;
 	}
 
+	private async fetchPack(app: MicroAppMetadata): Promise<MicroAppPack> {
+		const [bundle, config] = await Promise.all([
+			this.importBundle(app),
+			this.fetchConfig(app),
+		]);
+
+		const pack: MicroAppPack = {
+			init: bundle.default.init,
+			config,
+			htmlTag: app.htmlTag,
+			metadata: app,
+		};
+		return pack;
+	}
+
 	private async importBundle(app: MicroAppMetadata): Promise<ImportResult<MicroAppBundle>> {
-		return this.fetchWithRetry<ImportResult<MicroAppBundle>>(
+		return this.invokeWithRetry<ImportResult<MicroAppBundle>>(
 			() => {
 				return (typeof app.bundleUrl === 'string' ? import(app.bundleUrl) : app.bundleUrl());
 			},
@@ -78,21 +99,25 @@ export class MicroAppManager {
 			return undefined;
 		}
 
-		const config = await this.fetchWithRetry<MicroAppConfig>(
+		const config = await this.invokeWithRetry<MicroAppConfig>(
 			async () => {
-				const response = await fetch(app.configUrl!);
+				const response = await fetch(app.configUrl!, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
 				if (!response.ok) {
-					throw new Error(`Failed to fetch config: ${response.statusText}`);
+					throw new Error(response.statusText);
 				}
 				return response.json();
 			},
 			`Config fetch for ${app.slug}`,
 		);
-
 		return config;
 	}
 
-	private async fetchWithRetry<T>(
+	private async invokeWithRetry<T>(
 		operation: () => Promise<T>,
 		action: string,
 	): Promise<T> {
@@ -136,4 +161,8 @@ function calculateExponentialBackoffDelay(attempt: number, baseDelay: number, ma
 
 function delay(ms: number): Promise<void> {
 	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isPromise<T = any>(value: T | Promise<T>): value is Promise<T> {
+	return value instanceof Promise;
 }

@@ -3,8 +3,7 @@ import React from 'react';
 import { BrowserRouter, Router, Routes } from 'react-router-dom';
 
 import { useMicroAppContext } from './MicroAppProvider';
-import { MicroAppDomType } from './types';
-import { MicroAppProps } from './webComponent';
+import { MicroAppDomType, MicroAppProps } from './types';
 
 
 export { Route as AppRoute } from 'react-router-dom';

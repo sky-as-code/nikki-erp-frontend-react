@@ -89,7 +89,11 @@ function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack
 
 		manager.fetchMicroApp(slug).then((pack) => {
 			if (isMounted) {
-				const result = pack.initBundle({ htmlTag: pack.metadata.htmlTag });
+				const result = pack.init({
+					htmlTag: pack.metadata.htmlTag,
+					config: pack.config,
+					registerReducer: registerReducerFactory(slug),
+				});
 				setDomType(result.domType);
 				setMicroAppPack(pack);
 			}
@@ -119,7 +123,6 @@ function useSetupMicroApp(
 		if (ref.current && microAppPack) {
 			ref.current.props = {
 				config: microAppPack.config,
-				registerReducer: registerReducerFactory(opts.slug),
 				routing: routingInput,
 				...opts,
 			};

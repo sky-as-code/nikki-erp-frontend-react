@@ -4,7 +4,7 @@ import {
 	MicroAppProvider,
 	MicroAppRouter, WidgetRoute, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
-import { AppStateProvider } from '@nikkierp/ui/stateManagement';
+import { AppStateProvider, initAppStateContext } from '@nikkierp/ui/stateManagement';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -14,11 +14,9 @@ import { reducer } from './state';
 
 
 const Main: React.FC<MicroAppProps> = (props) => {
-	const result = props.registerReducer(reducer);
-
 	return (
 		<MicroAppProvider {...props}>
-			<AppStateProvider registerResult={result}>
+			<AppStateProvider>
 				<MantineProvider>
 					<Alert variant='filled' color='blue'><h1>Essential Module</h1></Alert>
 					<MicroAppRouter domType={props.domType} basePath={props.routing.basePath}
@@ -44,15 +42,20 @@ const Main: React.FC<MicroAppProps> = (props) => {
 	);
 };
 
-const initBundle: MicroAppBundle = ({ htmlTag }) => {
-	const domType = MicroAppDomType.SHARED;
-	defineWebComponent(Main, {
-		htmlTag,
-		domType,
-	});
-	return {
-		domType,
-	};
+const bundle: MicroAppBundle = {
+	init({ htmlTag, registerReducer }) {
+		const domType = MicroAppDomType.SHARED;
+		defineWebComponent(Main, {
+			htmlTag,
+			domType,
+		});
+
+		const result = registerReducer(reducer);
+		initAppStateContext(result);
+		return {
+			domType,
+		};
+	},
 };
 
-export default initBundle;
+export default bundle;
