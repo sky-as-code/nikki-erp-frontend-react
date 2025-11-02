@@ -94,9 +94,9 @@
 			"constraints": [
 				{
 					"type": "date_range",
-					"allow_today": false,
-					"allow_future": false,
-					"allow_past": true,
+					"allowToday": false,
+					"allowFuture": false,
+					"allowPast": true,
 					"min": "1900-01-01",
 					"max": "2050-12-31",
 					"message": "{ \"$ref\": 'nikki.general.constraints.date_range' }"
