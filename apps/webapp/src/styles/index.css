@@ -1,0 +1,3 @@
+@import "@nikkierp/shell/styles/index.css";
+/* Include files in .gitignore */
+@source "../../node_modules/@nikkierp*.{js,ts,jsx,tsx}";

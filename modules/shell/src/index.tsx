@@ -28,12 +28,14 @@ const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
 			<Route path='/' element={<RootLayout microApps={microApps} />}>
 				<Route index element={
 					<>
-						<Link to='/essential'>Essential</Link><br/>
-						<Link to='/identity'>Identity</Link><br/>
-						<Link to='/smart'>Smart</Link><br/>
-						<Link to='/login'>Login</Link><br/>
-						<Link to='/someorg'>:orgSlug</Link><br/>
-						<Link to='/someorg/sub'>:orgSlug/sub</Link><br/>
+						<Link to='/essential'>Essential</Link><br />
+						<Link to='/identity'>
+							<div className='text-blue-500 py-4 border-b border-blue-500'>Identity</div>
+						</Link>
+						<Link to='/smart'>Smart</Link><br />
+						<Link to='/login'>Login</Link><br />
+						<Link to='/someorg'>:orgSlug</Link><br />
+						<Link to='/someorg/sub'>:orgSlug/sub</Link><br />
 					</>
 				} />
 				<Route path='essential/*' element={<EssentialTest />} />

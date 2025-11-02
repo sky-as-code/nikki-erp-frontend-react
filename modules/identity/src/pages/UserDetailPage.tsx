@@ -1,29 +1,23 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import {
-	ActionIcon,
 	Box,
 	Button,
-	Grid,
-	Input,
-	NumberInput,
-	Select,
 	Stack,
-	Text,
 } from '@mantine/core';
-import { IconEye, IconEyeOff } from '@tabler/icons-react';
-import { DateInput } from '@mantine/dates';
-import { useId } from '@mantine/hooks';
-import React, { createContext, useContext, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { z, ZodNumber, ZodString } from 'zod';
-
+import { withWindowTitle } from '@nikkierp/ui/components';
 import {
-	FieldDefinition, FieldConstraint, buildValidationSchema, FormStyleProvider, FormFieldProvider,
-	AutoField,
+	FormStyleProvider, FormFieldProvider, AutoField,
 } from '@nikkierp/ui/components/form';
+import { FieldConstraint, FieldDefinition } from '@nikkierp/ui/model';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/stateManagement';
+import React from 'react';
+import { useParams } from 'react-router';
 
 
+import { IdentityDispatch, userActions } from '../appState';
+import { selectUserState } from '../appState/user';
+import { UserState } from '../features/users/userSlice';
 import userSchema from '../user-schema.json';
+
 
 type UserSchema = {
 	name: string;
@@ -31,44 +25,53 @@ type UserSchema = {
 	constraints?: FieldConstraint[];
 };
 
-export const UserDetailPage: React.FC = () => {
+export const UserDetailPageBody: React.FC = () => {
+	const { userId } = useParams();
+	const dispatch: IdentityDispatch = useMicroAppDispatch();
+	const { userDetail, isLoadingDetail }: UserState = useMicroAppSelector(selectUserState);
+	console.log({ userDetail });
 	const schema = userSchema as UserSchema;
-	const zodSchema = buildValidationSchema(schema);
 
-	type FormData = z.infer<typeof zodSchema>;
+	React.useEffect(() => {
+		dispatch(userActions.getUser(userId!));
+	}, [userId, dispatch]);
 
-	const form = useForm<FormData>({
-		resolver: zodResolver(zodSchema),
-		defaultValues: {},
-	});
-
-	const { register, control, handleSubmit, formState: { errors } } = form;
-
-	const onSubmit = (data: FormData) => {
+	const onSubmit = (data: any) => {
 		console.log('Form submitted:', data);
 	};
 
 	return (
-		<FormStyleProvider layout='twocol'>
-			<FormFieldProvider pageVariant='create' schema={schema} register={register} control={control} errors={errors}>
-				<Box p='md'>
-					<form onSubmit={handleSubmit(onSubmit)} noValidate>
-						<Stack gap='xs'>
-							<AutoField name='id' />
-							<AutoField name='email' />
-							<AutoField name='password' />
-							<AutoField name='passwordConfirm' />
-							<AutoField name='dateOfBirth' />
-							<AutoField name='dependantNum' />
-							<AutoField name='gender' />
-							<AutoField name='nationality' />
-							<Button type='submit' mt='xl'>
-								Submit
-							</Button>
-						</Stack>
-					</form>
-				</Box>
+		<FormStyleProvider layout='onecol'>
+			{/* <FormFieldProvider
+				formVariant='update' modelSchema={schema} modelValue={userDetail} modelLoading={isLoadingDetail}
+			> */}
+			<FormFieldProvider
+				formVariant='create' modelSchema={schema}
+			>
+				{({ handleSubmit }) => (
+					<Box p='md'>
+						<form onSubmit={handleSubmit(onSubmit)} noValidate>
+							<Stack gap='xs'>
+								<AutoField name='id' />
+								<AutoField name='email' autoFocused inputProps={{
+									size: 'lg',
+								}} />
+								<AutoField name='password' />
+								<AutoField name='passwordConfirm' />
+								<AutoField name='dateOfBirth' />
+								<AutoField name='dependantNum' />
+								<AutoField name='gender' />
+								<AutoField name='nationality' />
+								<Button type='submit' mt='xl'>
+									Submit
+								</Button>
+							</Stack>
+						</form>
+					</Box>
+				)}
 			</FormFieldProvider>
 		</FormStyleProvider>
 	);
 };
+
+export const UserDetailPage: React.FC = withWindowTitle('User Detail', UserDetailPageBody);

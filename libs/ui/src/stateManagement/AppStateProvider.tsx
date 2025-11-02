@@ -1,15 +1,15 @@
 import { createContext, useContext } from 'react';
-import { useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 
-export type StateDispatchFn = ReturnType<typeof useDispatch>;
+export type MicroAppDispatchFn = ReturnType<typeof useDispatch>;
 
 export type ReducerFn = (state: any, action: any) => any;
 
 export type ReducerMap = Record<string, ReducerFn>;
 
 export type RegisterReducersResult = {
-	dispatch: StateDispatchFn,
+	dispatch: MicroAppDispatchFn,
 	selectMicroAppState: () => unknown,
 	selectRootState: () => unknown,
 };
@@ -69,7 +69,7 @@ export const useRootSelector: UseStateSelectorFn<any> = (selector) => {
 	if (!ctxVal) {
 		throw new Error('useRootSelector must be used within AppStateProvider');
 	}
-	const appState = useSelector(ctxVal.selectMicroAppState);
+	const appState = useSelector(ctxVal.selectRootState);
 	return selector(appState);
 };
 
@@ -77,7 +77,7 @@ export const useRootSelector: UseStateSelectorFn<any> = (selector) => {
  * Dispatches an action to Shell's store.
  * Use this instead of useDispatch from react-redux.
  */
-export const useStateDispatch = (): StateDispatchFn => {
+export const useMicroAppDispatch = (): MicroAppDispatchFn => {
 	const ctxVal = useContext(appStateContext);
 	if (!ctxVal) {
 		throw new Error('useAppDispatch must be used within AppStateProvider');

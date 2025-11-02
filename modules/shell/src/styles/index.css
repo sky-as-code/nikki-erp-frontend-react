@@ -1,5 +1,3 @@
-/* @import 'tailwindcss'; */
-
 @import '@mantine/core/styles.layer.css';
 @import '@mantine/notifications/styles.layer.css';
 @import '@mantine/dates/styles.layer.css';
@@ -33,6 +31,8 @@ html {
 	html {
 		--input-label-size: var(--mantine-font-size-md);
 		--input-error-size: var(--mantine-font-size-md);
+		--input-description-size: var(--mantine-font-size-md);
+		--input-fz: var(--mantine-font-size-md);
 	}
 }
 

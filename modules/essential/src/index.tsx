@@ -8,9 +8,9 @@ import { AppStateProvider, initAppStateContext } from '@nikkierp/ui/stateManagem
 import React from 'react';
 import { Link } from 'react-router';
 
+import { reducer } from './appState';
 import { ModuleManagementPage } from './pages/ModuleManagement';
 import { OrgHomePage } from './pages/OrgHomePage';
-import { reducer } from './state';
 
 
 const Main: React.FC<MicroAppProps> = (props) => {

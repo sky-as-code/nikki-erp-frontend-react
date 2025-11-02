@@ -8,6 +8,8 @@ export type ModelSchema = {
 export type FieldDefinition = {
     type: 'string' | 'email' | 'password' | 'date' | 'integer' | 'enum';
     label: string;
+    description?: string;
+    placeholder?: string;
     required?: {
         create?: boolean;
         update?: boolean;

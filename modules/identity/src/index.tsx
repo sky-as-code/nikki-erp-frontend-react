@@ -4,12 +4,14 @@ import {
 	MicroAppProvider,
 	MicroAppRouter, WidgetRoute, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
-import { AppStateProvider } from '@nikkierp/ui/stateManagement';
+import { AppStateProvider, initAppStateContext } from '@nikkierp/ui/stateManagement';
 import React from 'react';
 import { Link } from 'react-router';
 
+import { reducer } from './appState';
 import { UserDetailPage } from './pages/UserDetailPage';
 import { UserListPage } from './pages/UserListPage';
+import { UserListSplitDetail } from './pages/UserListSplitDetail';
 
 
 const Main: React.FC<MicroAppProps> = (props) => {
@@ -28,9 +30,11 @@ const Main: React.FC<MicroAppProps> = (props) => {
 						<AppRoute index element={<>
 							<Link to='user-detail'>User Detail</Link><br />
 							<Link to='user-list'>User List</Link><br />
+							<Link to='users'>User Split</Link><br />
 						</>} />
-						<AppRoute path='user-detail' element={<UserDetailPage />} />
-						<AppRoute path='user-list' element={<UserListPage />} />
+						<AppRoute path='users' element={<UserListPage />} />
+						<AppRoute path='users/:userId' element={<UserDetailPage />} />
+						{/* <AppRoute path='users' element={<UserListSplitDetail />} /> */}
 					</AppRoutes>
 					{/* <WidgetRoutes>
 						<WidgetRoute name='org-home' Component={OrgHomePage} />
@@ -51,8 +55,8 @@ const bundle: MicroAppBundle = {
 			domType,
 		});
 
-		// const result = registerReducer(reducer);
-		// initAppStateContext(result);
+		const result = registerReducer(reducer);
+		initAppStateContext(result);
 		return {
 			domType,
 		};
