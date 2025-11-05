@@ -9,6 +9,7 @@ import { RootLayout } from './pages/RootLayout';
 import './react';
 
 import './styles/index.css';
+import { LoginPage } from './pages/public/LoginPage/LoginPage';
 
 
 export const AppShell: MicroAppShellBundle['AppShell'] = ({ microApps }) => {
@@ -41,7 +42,7 @@ const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
 				<Route path='essential/*' element={<EssentialTest />} />
 				<Route path='identity/*' element={<IdentityTest />} />
 				<Route path='smart' element={<SmartNavigate />} />
-				<Route path='login' element={<>Login</>} />
+				<Route path='login' element={<LoginPage />} />
 				<Route path=':orgSlug'>
 					<Route index element={<OrgSub />} />
 					<Route path='sub'>

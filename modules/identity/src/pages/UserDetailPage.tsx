@@ -55,11 +55,14 @@ export const UserDetailPageBody: React.FC = () => {
 								<AutoField name='id' />
 								<AutoField name='email' autoFocused inputProps={{
 									size: 'lg',
+									disabled: true,
 								}} />
 								<AutoField name='password' />
 								<AutoField name='passwordConfirm' />
 								<AutoField name='dateOfBirth' />
-								<AutoField name='dependantNum' />
+								<AutoField name='dependantNum' htmlProps={{
+									readOnly: true,
+								}} />
 								<AutoField name='gender' />
 								<AutoField name='nationality' />
 								<Button type='submit' mt='xl'>
