@@ -1,22 +1,35 @@
-import { Button, Paper } from '@mantine/core';
+import { Paper } from '@mantine/core';
+import { AutoTable, withWindowTitle } from '@nikkierp/ui/components';
+import { ModelSchema } from '@nikkierp/ui/model';
+import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/stateManagement';
+import React from 'react';
 
-import { withPageTitle } from '@/common/components/withPageTitle';
-import { useConfig } from '@/common/context/ConfigProvider';
-import { UIProviders } from '@/common/context/UIProviders';
-
-import '@/styles/index.css';
+import { IdentityDispatch, userActions, selectUserState } from '../appState';
+import userSchema from '../user-schema.json';
 
 
-export const UserListPage: React.FC = withPageTitle('User List', () => {
-	const { envVars } = useConfig();
+export const UserListPageBody: React.FC = () => {
+	const { users, isLoadingList } = useMicroAppSelector(selectUserState);
+	const dispatch: IdentityDispatch = useMicroAppDispatch();
+	const schema = userSchema as ModelSchema;
+	const columns = ['id', 'email', 'dateOfBirth', 'dependantNum', 'gender', 'nationality'];
+
+	React.useEffect(() => {
+		dispatch(userActions.listUsers());
+	}, [dispatch]);
+
 	return (
-		<UIProviders>
-			<Paper className='p-4'>
-				User List: {envVars.BASE_API_URL}
-				<p>
-					<Button>Click me</Button>
-				</p>
-			</Paper>
-		</UIProviders>
+		<Paper className='p-4'>
+			<AutoTable
+				columns={columns}
+				columnAsLink='email'
+				data={users}
+				schema={schema}
+				isLoading={isLoadingList}
+			/>
+		</Paper>
 	);
-});
+};
+
+
+export const UserListPage: React.FC = withWindowTitle('User List', UserListPageBody);

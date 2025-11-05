@@ -81,7 +81,8 @@
 		"**/*.css"
 	],
 	"exports": {
-		".": "./src/index.tsx"
+		".": "./src/index.tsx",
+		"./styles/*": "./src/styles/*"
 	},
 	"files": [
 		"src",

@@ -15,7 +15,8 @@
 		"stylelint": "stylelint '**/*.css' --cache",
 		"test": "npm run typecheck && npm run prettier && npm run lint && npm run vitest && npm run build",
 		"storybook": "storybook dev -p 6006",
-		"storybook:build": "storybook build"
+		"storybook:build": "storybook build",
+		"init:tailwind": "tailwindcss init"
 	},
 	"dependencies": {
 		"@mantine/core": "8.3.5",
@@ -27,6 +28,7 @@
 		"@mantine/notifications": "~8.3.5",
 		"@nikkierp/common": "workspace:*",
 		"@nikkierp/microapp-essential": "workspace:*",
+		"@nikkierp/microapp-identity": "workspace:*",
 		"@nikkierp/shell": "workspace:*",
 		"@nikkierp/ui": "workspace:*",
 		"@tailwindcss/vite": "~4.1.15",
@@ -60,7 +62,7 @@
 		"storybook": "~9.1.13",
 		"stylelint": "~16.25.0",
 		"stylelint-config-standard-scss": "~16.0.0",
-		"tailwindcss": "~4.1.15",
+		"tailwindcss": "~4.1.16",
 		"typescript": "~5.9.3",
 		"vite": "~7.1.11",
 		"vite-tsconfig-paths": "~5.1.4",

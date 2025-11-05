@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router';
 
 import remoteApps from './modules.json';
-
+import './styles/index.css';
 
 // Uncomment one of these when mounting as ShadowDOM
 // const essentialBundleUrl = 'http://localhost:3000/@fs/F:/github/sky-as-code/nikki-erp-frontend-react/modules/essential/src/index.tsx';
@@ -13,7 +13,7 @@ import remoteApps from './modules.json';
 const microApps: MicroAppMetadata[] = [
 	{
 		slug: 'identity',
-		bundleUrl: '@nikkierp/microapp-identity',
+		bundleUrl: () => import('@nikkierp/microapp-identity'),
 		// bundleUrl: () => import('http://localhost:3000/index.ts'),
 		// configUrl: 'http://localhost:3001/config',
 		htmlTag: 'microapp-identity',
@@ -31,11 +31,11 @@ const microApps: MicroAppMetadata[] = [
 const App: React.FC = () => {
 	const { AppShell } = shell as MicroAppShellBundle;
 	return (
-		// <React.StrictMode>
-		<Router>
-			<AppShell microApps={microApps} />
-		</Router>
-		// </React.StrictMode>
+		<>
+			<Router>
+				<AppShell microApps={microApps} />
+			</Router>
+		</>
 	);
 };
 

@@ -75,10 +75,12 @@
 	],
 	"exports": {
 		".": "./src/index.ts",
+		"./components/form": "./src/components/form/index.tsx",
 		"./components": "./src/components/index.tsx",
 		"./hooks": "./src/hooks/index.ts",
 		"./i18n": "./src/i18n/index.ts",
 		"./microApp": "./src/microApp/index.tsx",
+		"./model": "./src/model/index.ts",
 		"./stateManagement": "./src/stateManagement/index.tsx",
 		"./types": "./src/types/index.ts",
 		"./vite": "./src/vite/index.ts"

@@ -1,26 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { Location, Navigator } from 'react-router-dom';
 
-import { MicroAppDomType } from './types';
-import { RegisterReducerFn } from '../stateManagement/AppStateProvider';
+import { MicroAppDomType, MicroAppProps } from './types';
 
-
-export type MicroAppProps = {
-	config?: Record<string, any>,
-	domType: MicroAppDomType;
-	widgetName?: string,
-	widgetProps?: Record<string, any>,
-	slug: string,
-	registerReducer: RegisterReducerFn,
-	routing: MicroAppRoutingInput,
-};
-
-export type MicroAppRoutingInput = {
-	basePath?: string,
-	location?: Location,
-	navigator?: Navigator,
-};
 
 export type DefineWebComponentOpts = {
 	domType?: MicroAppDomType;

@@ -1,0 +1,30 @@
+{
+	"name": "login-email",
+	"fields": {
+		"email": {
+			"type": "email",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.email' }",
+			"description": "{ \"$ref\": 'nikki.identity.user.fields.email_description' }",
+			"placeholder": "{ \"$ref\": 'nikki.identity.user.fields.email_placeholder' }",
+			"required": {
+				"create": true
+			},
+			"constraints": [
+				{
+					"type": "unique",
+					"message": "{ \"$ref\": 'nikki.identity.user.errors.duplidate_email' }"
+				},
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				},
+				{
+					"type": "length",
+					"min": 10,
+					"max": 255,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		}
+	}
+}

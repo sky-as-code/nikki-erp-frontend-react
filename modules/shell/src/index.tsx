@@ -9,6 +9,7 @@ import { RootLayout } from './pages/RootLayout';
 import './react';
 
 import './styles/index.css';
+import { LoginPage } from './pages/public/LoginPage/LoginPage';
 
 
 export const AppShell: MicroAppShellBundle['AppShell'] = ({ microApps }) => {
@@ -28,16 +29,20 @@ const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
 			<Route path='/' element={<RootLayout microApps={microApps} />}>
 				<Route index element={
 					<>
-						<Link to='/essential'>Essential</Link><br/>
-						<Link to='/smart'>Smart</Link><br/>
-						<Link to='/login'>Login</Link><br/>
-						<Link to='/someorg'>:orgSlug</Link><br/>
-						<Link to='/someorg/sub'>:orgSlug/sub</Link><br/>
+						<Link to='/essential'>Essential</Link><br />
+						<Link to='/identity'>
+							<div className='text-blue-500 py-4 border-b border-blue-500'>Identity</div>
+						</Link>
+						<Link to='/smart'>Smart</Link><br />
+						<Link to='/login'>Login</Link><br />
+						<Link to='/someorg'>:orgSlug</Link><br />
+						<Link to='/someorg/sub'>:orgSlug/sub</Link><br />
 					</>
 				} />
 				<Route path='essential/*' element={<EssentialTest />} />
+				<Route path='identity/*' element={<IdentityTest />} />
 				<Route path='smart' element={<SmartNavigate />} />
-				<Route path='login' element={<>Login</>} />
+				<Route path='login' element={<LoginPage />} />
 				<Route path=':orgSlug'>
 					<Route index element={<OrgSub />} />
 					<Route path='sub'>
@@ -68,6 +73,16 @@ const EssentialTest: React.FC = () => {
 				<LazyMicroWidget slug='essential' widgetName='module-management' />
 			</Paper>
 			<LazyMicroApp slug='essential' basePath='essential' />
+		</>
+	);
+};
+
+const IdentityTest: React.FC = () => {
+	return (
+		<>
+			<Paper shadow='xs' p='xl'>
+				<LazyMicroApp slug='identity' basePath='identity' />
+			</Paper>
 		</>
 	);
 };

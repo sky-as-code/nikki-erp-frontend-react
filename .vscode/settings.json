@@ -1,4 +1,6 @@
 {
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": true,
 	"editor.formatOnSave": true,
 	"editor.codeActionsOnSave": {
 		"source.fixAll": "explicit",
