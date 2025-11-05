@@ -10,7 +10,7 @@ export type MicroAppShellProps = {
 };
 
 export type MicroAppShellBundle = {
-	AppShell: React.FC<MicroAppShellProps>;
+	MicroAppShell: React.FC<MicroAppShellProps>;
 };
 
 export type MicroAppMetadata = {
@@ -20,6 +20,12 @@ export type MicroAppMetadata = {
 	 * Must be in camelCase.
 	 */
 	slug: MicroAppSlug;
+
+	/**
+	 * The base path for the micro app in the URL.
+	 * If not specified, the micro app can only be used in widget mode.
+	 */
+	basePath?: string;
 
 	/**
 	 * The web component tag name.

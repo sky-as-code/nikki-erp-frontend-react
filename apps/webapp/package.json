@@ -31,6 +31,7 @@
 		"@nikkierp/microapp-identity": "workspace:*",
 		"@nikkierp/shell": "workspace:*",
 		"@nikkierp/ui": "workspace:*",
+		"@tabler/icons-react": "~3.35.0",
 		"@tailwindcss/vite": "~4.1.15",
 		"clsx": "~2.1.1",
 		"react": "~19.2.0",

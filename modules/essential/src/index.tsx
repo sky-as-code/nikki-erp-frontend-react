@@ -1,10 +1,11 @@
 import { Alert, MantineProvider } from '@mantine/core';
+import { actions as layoutActions, MenuBarItem } from '@nikkierp/ui/layout';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider,
 	MicroAppRouter, WidgetRoute, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
-import { AppStateProvider, initAppStateContext } from '@nikkierp/ui/stateManagement';
+import { AppStateProvider, initAppStateContext, useMicroAppDispatch } from '@nikkierp/ui/stateManagement';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -13,7 +14,72 @@ import { ModuleManagementPage } from './pages/ModuleManagement';
 import { OrgHomePage } from './pages/OrgHomePage';
 
 
-const Main: React.FC<MicroAppProps> = (props) => {
+function createMenuBarItems(basePath: string): MenuBarItem[] {
+	return [
+		{
+			label: 'Home',
+			items: [
+				{
+					label: 'Org Home',
+					link: `${basePath}/org-home/sub`,
+				},
+			],
+		},
+		{
+			label: 'Management',
+			items: [
+				{
+					label: 'Management lvl 2.1',
+					items: [
+						{
+							label: 'Management lvl 3',
+							link: `${basePath}/module-management`,
+							items: [
+								{
+									label: 'Management lvl 4',
+									link: `${basePath}/module-management`,
+									items: [
+										{
+											label: 'Org Home Sub',
+											link: `${basePath}/org-home`,
+										},
+									],
+								},
+							],
+						},
+					],
+				},
+				{
+					label: 'Management lvl 2.2',
+					items: [
+						{
+							label: 'Management lvl 2.2.1',
+							items: [
+								{
+									label: 'Org Home Sub',
+									link: `${basePath}/module-management`,
+								},
+							],
+						},
+					],
+				},
+			],
+		},
+	];
+}
+
+function Main(props: MicroAppProps) {
+	const dispatch = useMicroAppDispatch();
+
+	const menuBarItems = React.useMemo(
+		() => createMenuBarItems(props.routing.basePath || ''),
+		[props.routing.basePath],
+	);
+
+	React.useEffect(() => {
+		dispatch(layoutActions.setMenuBarItems(menuBarItems));
+	}, [menuBarItems]);
+
 	return (
 		<MicroAppProvider {...props}>
 			<AppStateProvider>
@@ -40,7 +106,7 @@ const Main: React.FC<MicroAppProps> = (props) => {
 			</AppStateProvider>
 		</MicroAppProvider>
 	);
-};
+}
 
 const bundle: MicroAppBundle = {
 	init({ htmlTag, registerReducer }) {

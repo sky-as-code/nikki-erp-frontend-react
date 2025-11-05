@@ -3,7 +3,7 @@ import * as path from 'node:path';
 
 import compression from 'compression';
 import cors from 'cors';
-import express, { Express, NextFunction, Request, Response } from 'express';
+import express, { Express, NextFunction, Request, RequestHandler, Response } from 'express';
 import * as vite from 'vite';
 
 import { router } from './api';
@@ -66,7 +66,7 @@ async function initViteServer(app: Express): Promise<vite.ViteDevServer> {
 
 function initStaticServer(app: Express): void {
 	console.log('Initializing Static Server...');
-	app.use(compression());
+	app.use(compression() as RequestHandler);
 	app.use(
 		express.static(clientRootPath, {
 			// Disable directory listing

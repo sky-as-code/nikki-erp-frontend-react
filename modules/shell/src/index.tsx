@@ -2,21 +2,25 @@ import { MantineProvider, Paper } from '@mantine/core';
 import { MicroAppMetadata, MicroAppShellBundle } from '@nikkierp/ui/microApp';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 
+import { ShellProviders } from './context/ShellProviders';
 import { useAuthData, useFirstOrgSlug } from './features/auth';
 import { LazyMicroApp, LazyMicroWidget } from './features/microApp';
-import { RootLayout } from './pages/RootLayout';
+import { RootLayout } from './layout/RootLayout';
+import { LoginPage } from './pages/public/LoginPage/LoginPage';
 
 import './react';
 
 import './styles/index.css';
-import { LoginPage } from './pages/public/LoginPage/LoginPage';
 
 
-export const AppShell: MicroAppShellBundle['AppShell'] = ({ microApps }) => {
+export const MicroAppShell: MicroAppShellBundle['MicroAppShell'] = ({ microApps }) => {
 	return (
-		<>
+		<ShellProviders
+			microApps={microApps}
+		// envVars={envVars}
+		>
 			<ShellRoutes microApps={microApps} />
-		</>
+		</ShellProviders>
 	);
 };
 
@@ -70,9 +74,9 @@ const EssentialTest: React.FC = () => {
 	return (
 		<>
 			<Paper shadow='xs' p='xl'>
-				<LazyMicroWidget slug='essential' widgetName='module-management' />
+				<LazyMicroWidget slug='nikkierp.essential' widgetName='module-management' />
 			</Paper>
-			<LazyMicroApp slug='essential' basePath='essential' />
+			<LazyMicroApp slug='nikkierp.essential' basePath='essential' />
 		</>
 	);
 };
@@ -81,7 +85,7 @@ const IdentityTest: React.FC = () => {
 	return (
 		<>
 			<Paper shadow='xs' p='xl'>
-				<LazyMicroApp slug='identity' basePath='identity' />
+				<LazyMicroApp slug='nikkierp.identity' basePath='identity' />
 			</Paper>
 		</>
 	);

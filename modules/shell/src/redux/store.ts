@@ -1,3 +1,4 @@
+import * as layout from '@nikkierp/ui/layout';
 import { RegisterReducerFn } from '@nikkierp/ui/stateManagement';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
@@ -8,11 +9,17 @@ import * as userContext from '../features/auth/userContextSlice';
 const localReducers = {
 	[auth.SLICE_NAME]: auth.reducer,
 	[userContext.SLICE_NAME]: userContext.reducer,
+	[layout.SLICE_NAME]: layout.reducer,
 };
+const shellReducer = combineReducers(localReducers);
+
 const lazyReducers: Record<string, any> = {};
 
 function createRootReducer() {
-	return combineReducers({ ...localReducers, ...lazyReducers });
+	return combineReducers({
+		shell: shellReducer,
+		...lazyReducers,
+	});
 }
 
 export const store = configureStore({

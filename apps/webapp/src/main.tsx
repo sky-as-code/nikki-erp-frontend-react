@@ -12,14 +12,16 @@ import './styles/index.css';
 // const essentialBundleUrl = 'http://localhost:3000/@fs/F:/github/sky-as-code/nikki-erp-frontend-react/modules/essential/dist/nikkiapp-essential-CLPVZYir.js';
 const microApps: MicroAppMetadata[] = [
 	{
-		slug: 'identity',
+		slug: 'nikkierp.identity',
+		basePath: '/identity',
 		bundleUrl: () => import('@nikkierp/microapp-identity'),
 		// bundleUrl: () => import('http://localhost:3000/index.ts'),
 		// configUrl: 'http://localhost:3001/config',
 		htmlTag: 'microapp-identity',
 	},
 	{
-		slug: 'essential',
+		slug: 'nikkierp.essential',
+		basePath: 'essential',
 		// Uncomment when mounting as ShadowDOM
 		// bundleUrl: () => import(essentialBundleUrl),
 		bundleUrl: () => import('@nikkierp/microapp-essential'),
@@ -29,11 +31,11 @@ const microApps: MicroAppMetadata[] = [
 ];
 
 const App: React.FC = () => {
-	const { AppShell } = shell as MicroAppShellBundle;
+	const { MicroAppShell } = shell as MicroAppShellBundle;
 	return (
 		<>
 			<Router>
-				<AppShell microApps={microApps} />
+				<MicroAppShell microApps={microApps} />
 			</Router>
 		</>
 	);
