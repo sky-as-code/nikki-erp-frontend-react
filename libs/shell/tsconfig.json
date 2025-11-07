@@ -2,14 +2,13 @@
 	"extends": "../../tsconfig-react.base.json",
 	"compilerOptions": {
 		"baseUrl": ".",
-		"outDir": "dist",
+		"rootDir": ".",
+		"outDir": "dist"
 	},
 	"include": [
 		"src/**/*",
 		"types/*",
 		"node_modules/vite/types/*",
-		"../../libs/ui/src/auth/strategies",
-		"../../libs/shell/src/stateMangement",
 	],
 	"exclude": [
 		"node_modules",

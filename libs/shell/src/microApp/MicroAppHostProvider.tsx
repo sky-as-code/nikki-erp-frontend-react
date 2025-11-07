@@ -1,10 +1,11 @@
-import { MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps, MicroAppRoutingInput } from '@nikkierp/ui/microApp';
+import { MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps, MicroAppRoutingOptions, MicroAppApiOptions } from '@nikkierp/ui/microApp';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useInRouterContext, useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
 
 import { MicroAppManager, MicroAppPack } from './MicroAppManager';
-import { registerReducerFactory } from '../../redux/store';
+import { registerReducerFactory } from '../appState/store';
+import { authService } from '../auth';
+import { useShellEnvVars } from '../config';
 
 
 const MicroAppHostContext = createContext<MicroAppManager | null>(null);
@@ -21,26 +22,26 @@ export type MicroAppHostProviderProps = React.PropsWithChildren & {
 	microApps: MicroAppMetadata[];
 };
 
-export const MicroAppHostProvider: React.FC<MicroAppHostProviderProps> = ({ children, microApps }) => {
+export function MicroAppHostProvider({ children, microApps }: MicroAppHostProviderProps): React.ReactNode {
 	const manager = new MicroAppManager(microApps);
 	return (
-		<MicroAppHostContext.Provider value= { manager } >
-			{ children }
+		<MicroAppHostContext.Provider value={manager} >
+			{children}
 		</MicroAppHostContext.Provider>
 	);
-};
+}
 
 export type LazyMicroAppProps = Pick<InternalLazyMicroAppProps, 'slug' | 'basePath'>;
 
-export const LazyMicroApp: React.FC<LazyMicroAppProps> = (props) => {
+export function LazyMicroApp(props: LazyMicroAppProps): React.ReactNode {
 	return <InternalLazyMicroApp {...props} />;
-};
+}
 
 export type LazyMicroWidgetProps = Pick<InternalLazyMicroAppProps, 'slug' | 'widgetName'>;
 
-export const LazyMicroWidget: React.FC<LazyMicroWidgetProps> = (props) => {
+export function LazyMicroWidget(props: LazyMicroWidgetProps): React.ReactNode {
 	return <InternalLazyMicroApp {...props} />;
-};
+}
 
 type InternalLazyMicroAppProps = {
 	slug: string;
@@ -48,7 +49,7 @@ type InternalLazyMicroAppProps = {
 	widgetName?: string;
 };
 
-const InternalLazyMicroApp: React.FC<InternalLazyMicroAppProps> = ({ slug, basePath, widgetName }) => {
+function InternalLazyMicroApp({ slug, basePath, widgetName }: InternalLazyMicroAppProps): React.ReactNode {
 	const [microAppPack, setMicroAppPack] = useState<MicroAppPack | null>(null);
 
 	const domType = useFetchMicroAppPack(slug, setMicroAppPack);
@@ -78,7 +79,7 @@ const InternalLazyMicroApp: React.FC<InternalLazyMicroAppProps> = ({ slug, baseP
 			createPortal(<ref.current.Component {...ref.current.props} />, ref.current.mountElem)} */}
 		</>
 	);
-};
+}
 
 function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack) => void): MicroAppDomType | null {
 	const [domType, setDomType] = useState<MicroAppDomType | null>(null);
@@ -107,7 +108,7 @@ function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack
 	return domType;
 }
 
-type UseSetupMicroAppOptions = Omit<MicroAppProps, 'registerReducer' | 'routing'> & {
+type UseSetupMicroAppOptions = Omit<MicroAppProps, 'registerReducer' | 'routing' | 'api'> & {
 	basePath?: string;
 };
 
@@ -117,23 +118,25 @@ function useSetupMicroApp(
 ): React.RefObject<IMicroAppWebComponent | null> {
 	const [, forceRerender] = useState(0);
 	const ref = useRef<IMicroAppWebComponent | null>(null);
-	const routingInput = useGetRouting(opts.basePath);
+	const routingOpts = useRoutingOpts(opts.basePath);
+	const apiOpts = useApiOptions();
 
 	useEffect(() => {
 		if (ref.current && microAppPack) {
 			ref.current.props = {
 				config: microAppPack.config,
-				routing: routingInput,
+				routing: routingOpts,
+				api: apiOpts,
 				...opts,
 			};
 			forceRerender(n => n + 1);
 		}
-	}, [microAppPack, ref.current, routingInput.location]);
+	}, [microAppPack, ref.current, routingOpts.location]);
 
 	return ref;
 }
 
-function useGetRouting(basePath?: string): MicroAppRoutingInput {
+function useRoutingOpts(basePath?: string): MicroAppRoutingOptions {
 	const isInRouter = useInRouterContext();
 	if (isInRouter) {
 		return {
@@ -143,4 +146,12 @@ function useGetRouting(basePath?: string): MicroAppRoutingInput {
 		};
 	}
 	return {};
+}
+
+function useApiOptions(): MicroAppApiOptions {
+	const envVars = useShellEnvVars();
+	return {
+		defaultBaseUrl: envVars.BASE_API_URL,
+		getAccessToken: authService.strategy!.getAccessToken.bind(authService.strategy),
+	};
 }

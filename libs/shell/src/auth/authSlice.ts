@@ -1,15 +1,26 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction, ActionReducerMapBuilder } from '@reduxjs/toolkit';
 
 import { authService } from './authService';
 import { fetchProfileAction } from './userContextSlice';
 
 
+
 export const SLICE_NAME = 'shellAuth';
+
 export type User = {
 	id: string;
 	email: string;
 	name: string;
 	role: string;
+};
+
+export type AuthState = {
+	isAuthenticated: boolean;
+	user: User | null;
+	token: string | null;
+	refreshToken: string | null;
+	loading: boolean;
+	error: string | null;
 };
 
 export type LoginCredentials = {
@@ -24,15 +35,6 @@ export type LoginResponse = {
 	refreshToken: string;
 };
 
-export type AuthState = {
-	isAuthenticated: boolean;
-	user: User | null;
-	token: string | null;
-	refreshToken: string | null;
-	loading: boolean;
-	error: string | null;
-};
-
 const initialState: AuthState = {
 	isAuthenticated: false,
 	user: null,
@@ -41,6 +43,7 @@ const initialState: AuthState = {
 	loading: false,
 	error: null,
 };
+
 
 export const signInAction = createAsyncThunk<
 	LoginResponse,
@@ -101,47 +104,56 @@ const authSlice = createSlice({
 		},
 	},
 	extraReducers: (builder) => {
-		builder
-			.addCase(signInAction.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(signInAction.fulfilled, (state, action) => {
-				state.loading = false;
-				state.isAuthenticated = true;
-				state.user = action.payload.user;
-				state.token = action.payload.token;
-				state.refreshToken = action.payload.refreshToken;
-				state.error = null;
-			})
-			.addCase(signInAction.rejected, (state, action) => {
-				state.loading = false;
-				state.isAuthenticated = false;
-				state.user = null;
-				state.token = null;
-				state.refreshToken = null;
-				state.error = action.payload || 'Login failed';
-			})
-			.addCase(signOutAction.pending, (state) => {
-				state.isAuthenticated = false;
-				state.user = null;
-				state.token = null;
-				state.refreshToken = null;
-				state.error = null;
-			})
-			.addCase(signOutAction.fulfilled, (state) => {
-				state.loading = false;
-				state.isAuthenticated = false;
-				state.user = null;
-				state.token = null;
-				state.refreshToken = null;
-				state.error = null;
-			})
-			.addCase(signOutAction.rejected, (state, action) => {
-				console.error(action.payload);
-			});
+		addSignInReducers(builder);
+		addSignOutReducers(builder);
 	},
 });
+
+function addSignInReducers(builder: ActionReducerMapBuilder<AuthState>): void {
+	builder
+		.addCase(signInAction.pending, (state) => {
+			state.loading = true;
+			state.error = null;
+		})
+		.addCase(signInAction.fulfilled, (state, action) => {
+			state.loading = false;
+			state.isAuthenticated = true;
+			state.user = action.payload.user;
+			state.token = action.payload.token;
+			state.refreshToken = action.payload.refreshToken;
+			state.error = null;
+		})
+		.addCase(signInAction.rejected, (state, action) => {
+			state.loading = false;
+			state.isAuthenticated = false;
+			state.user = null;
+			state.token = null;
+			state.refreshToken = null;
+			state.error = action.payload || 'Login failed';
+		});
+}
+
+function addSignOutReducers(builder: ActionReducerMapBuilder<AuthState>): void {
+	builder
+		.addCase(signOutAction.pending, (state) => {
+			state.isAuthenticated = false;
+			state.user = null;
+			state.token = null;
+			state.refreshToken = null;
+			state.error = null;
+		})
+		.addCase(signOutAction.fulfilled, (state) => {
+			state.loading = false;
+			state.isAuthenticated = false;
+			state.user = null;
+			state.token = null;
+			state.refreshToken = null;
+			state.error = null;
+		})
+		.addCase(signOutAction.rejected, (state, action) => {
+			console.error(action.payload);
+		});
+}
 
 // Action creators are generated for each case reducer function
 export const {

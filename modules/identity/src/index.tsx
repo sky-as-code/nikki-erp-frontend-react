@@ -4,7 +4,7 @@ import {
 	MicroAppProvider,
 	MicroAppRouter, WidgetRoute, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
-import { AppStateProvider, initAppStateContext } from '@nikkierp/ui/stateManagement';
+import { AppStateProvider, initAppStateContext } from '@nikkierp/ui/appState';
 import React from 'react';
 import { Link } from 'react-router';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Location, Navigator } from 'react-router-dom';
 
-import { RegisterReducerFn } from '../stateManagement';
+import { RegisterReducerFn } from '../appState';
 import { ImportFn } from '../types/miscs';
 
 
@@ -104,7 +104,9 @@ export type MicroAppBundleInitResult = {
 // 	registerReducer: RegisterReducerFn
 // };
 
-export type MicroAppConfig = Record<string, any>;
+export type MicroAppConfig = Record<string, any> & {
+	apiBaseUrl?: string,
+};
 export type MicroAppSlug = string;
 
 export enum MicroAppDomType {
@@ -114,16 +116,22 @@ export enum MicroAppDomType {
 
 
 export type MicroAppProps = {
+	api: MicroAppApiOptions,
 	config?: MicroAppConfig,
 	domType: MicroAppDomType;
 	widgetName?: string,
 	widgetProps?: Record<string, any>,
 	slug: string,
-	routing: MicroAppRoutingInput,
+	routing: MicroAppRoutingOptions,
 };
 
-export type MicroAppRoutingInput = {
+export type MicroAppRoutingOptions = {
 	basePath?: string,
 	location?: Location,
 	navigator?: Navigator,
+};
+
+export type MicroAppApiOptions = {
+	defaultBaseUrl: string,
+	getAccessToken: () => string,
 };

@@ -1,10 +1,11 @@
 import { MantineProvider, Paper } from '@mantine/core';
+import { useAuthData, useFirstOrgSlug } from '@nikkierp/shell/auth';
+import { ShellProviders } from '@nikkierp/shell/contexts';
+import { LazyMicroApp, LazyMicroWidget } from '@nikkierp/shell/microApp';
 import { MicroAppMetadata, MicroAppShellBundle } from '@nikkierp/ui/microApp';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 
-import { ShellProviders } from './context/ShellProviders';
-import { useAuthData, useFirstOrgSlug } from './features/auth';
-import { LazyMicroApp, LazyMicroWidget } from './features/microApp';
+import { UIProviders } from './context/UIProviders';
 import { RootLayout } from './layout/RootLayout';
 import { LoginPage } from './pages/public/LoginPage/LoginPage';
 
@@ -13,13 +14,20 @@ import './react';
 import './styles/index.css';
 
 
+type ShellWindow = typeof window & {
+	/** Config object injected by shellbff */
+	__CLIENT_CONFIG__: Record<string, unknown>;
+};
+
 export const MicroAppShell: MicroAppShellBundle['MicroAppShell'] = ({ microApps }) => {
 	return (
 		<ShellProviders
 			microApps={microApps}
-		// envVars={envVars}
+			envVars={(window as ShellWindow).__CLIENT_CONFIG__}
 		>
-			<ShellRoutes microApps={microApps} />
+			<UIProviders>
+				<ShellRoutes microApps={microApps} />
+			</UIProviders>
 		</ShellProviders>
 	);
 };

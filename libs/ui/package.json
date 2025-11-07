@@ -22,7 +22,6 @@
 		"ky": "~1.13.0",
 		"react-hook-form": "~7.65.0",
 		"react-i18next": "~16.2.0",
-		"reselect": "~5.1.1",
 		"zod": "~4.1.12"
 	},
 	"devDependencies": {
@@ -86,14 +85,15 @@
 	],
 	"exports": {
 		".": "./src/index.ts",
+		"./appState": "./src/appState/index.tsx",
 		"./components/form": "./src/components/form/index.tsx",
 		"./components": "./src/components/index.tsx",
+		"./contexts": "./src/contexts/index.tsx",
 		"./hooks": "./src/hooks/index.ts",
 		"./i18n": "./src/i18n/index.ts",
 		"./layout": "./src/layout/index.tsx",
 		"./microApp": "./src/microApp/index.tsx",
 		"./model": "./src/model/index.ts",
-		"./stateManagement": "./src/stateManagement/index.tsx",
 		"./types": "./src/types/index.ts",
 		"./vite": "./src/vite/index.ts"
 	},

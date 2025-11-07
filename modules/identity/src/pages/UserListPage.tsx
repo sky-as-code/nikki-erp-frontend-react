@@ -1,7 +1,7 @@
 import { Paper } from '@mantine/core';
 import { AutoTable, withWindowTitle } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
-import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/stateManagement';
+import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/appState';
 import React from 'react';
 
 import { IdentityDispatch, userActions, selectUserState } from '../appState';

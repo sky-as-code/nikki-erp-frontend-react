@@ -8,7 +8,7 @@ import {
 	FormStyleProvider, FormFieldProvider, AutoField,
 } from '@nikkierp/ui/components/form';
 import { FieldConstraint, FieldDefinition } from '@nikkierp/ui/model';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/stateManagement';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/appState';
 import React from 'react';
 import { useParams } from 'react-router';
 

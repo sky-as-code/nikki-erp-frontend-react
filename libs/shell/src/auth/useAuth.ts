@@ -5,7 +5,7 @@ import { signInAction, signOutAction, clearSignInErrorAction } from './authSlice
 import { UserContextState } from './userContextSlice';
 
 import type { LoginCredentials } from './authSlice';
-import type { RootState, AppDispatch } from '../../redux/store';
+import type { RootState, AppDispatch } from '../appState/store';
 
 
 const selectAuthData = (state: RootState) => state.shellAuth;
@@ -22,7 +22,7 @@ export const useAuthData = () => useSelector(selectAuthData);
 export const useFirstOrgSlug = () => useSelector(selectFirstOrgSlug);
 export const useUserContext = () => useSelector(selectUserContext);
 
-export const useAuthDispatch = () => {
+export function useAuthDispatch() {
 	const dispatch = useDispatch<AppDispatch>();
 
 	return {
@@ -36,4 +36,4 @@ export const useAuthDispatch = () => {
 			dispatch(clearSignInErrorAction());
 		},
 	};
-};
+}

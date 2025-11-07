@@ -1,4 +1,4 @@
-import * as shell from '@nikkierp/shell';
+import * as shell from '@nikkierp/nikkiportal-shell';
 import { MicroAppMetadata, MicroAppShellBundle } from '@nikkierp/ui/microApp';
 import React from 'react';
 import ReactDOM from 'react-dom/client';

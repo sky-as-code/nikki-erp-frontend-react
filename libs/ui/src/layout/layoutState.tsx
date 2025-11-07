@@ -1,8 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createSelector } from 'reselect';
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 
 
-export const SLICE_NAME = 'layout';
+export const SLICE_NAME = 'shellLayout';
 
 export type LayoutState = {
 	menuBarItems: MenuBarItem[];
@@ -34,7 +33,7 @@ export const actions = {
 
 export const { reducer } = layoutSlice;
 
-export const selectLayoutState = (state: any) => state.shell[SLICE_NAME];
+export const selectLayoutState = (state: any) => state[SLICE_NAME];
 
 export const selectMenuBarItems = createSelector(
 	selectLayoutState,
