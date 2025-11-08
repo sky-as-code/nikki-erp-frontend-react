@@ -1,15 +1,14 @@
 import { Button, Group, Menu } from '@mantine/core';
-import { MenuBarItem, selectMenuBarItems } from '@nikkierp/ui/layout';
+import { MenuBarItem, useMenuBarItems } from '@nikkierp/ui/appState';
 import clsx from 'clsx';
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router';
 
 import styles from './MenuBar.module.css';
 
 
 export function MenuBar(): React.ReactNode {
-	const menuBarItems = useSelector(selectMenuBarItems);
+	const menuBarItems = useMenuBarItems();
 	const location = useLocation();
 
 	return (

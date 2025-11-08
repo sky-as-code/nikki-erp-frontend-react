@@ -7,8 +7,8 @@ import { withWindowTitle } from '@nikkierp/ui/components';
 import {
 	FormStyleProvider, FormFieldProvider, AutoField,
 } from '@nikkierp/ui/components/form';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { FieldConstraint, FieldDefinition } from '@nikkierp/ui/model';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/appState';
 import React from 'react';
 import { useParams } from 'react-router';
 

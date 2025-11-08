@@ -86,6 +86,8 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./appState": "./src/appState/index.tsx",
+		"./appState/routingSlice": "./src/appState/routingSlice.ts",
+		"./appState/layoutSlice": "./src/appState/layoutSlice.ts",
 		"./components/form": "./src/components/form/index.tsx",
 		"./components": "./src/components/index.tsx",
 		"./contexts": "./src/contexts/index.tsx",

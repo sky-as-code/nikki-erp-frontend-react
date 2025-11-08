@@ -1,6 +1,7 @@
 import { initRequestMaker } from '@nikkierp/common/request';
 import React from 'react';
 
+import { MicroAppStateProvider } from './MicroAppStateProvider';
 import { MicroAppApiOptions, MicroAppProps, MicroAppRoutingOptions } from './types';
 
 
@@ -38,7 +39,9 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = (props) => {
 			api: props.api,
 			routing: props.routing,
 		}}>
-			{props.children}
+			<MicroAppStateProvider>
+				{props.children}
+			</MicroAppStateProvider>
 		</MicroAppContext.Provider>
 	);
 };

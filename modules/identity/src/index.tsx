@@ -1,10 +1,9 @@
 import { Alert, MantineProvider } from '@mantine/core';
+import { initMicroAppStateContext } from '@nikkierp/ui/microApp';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
-	MicroAppProvider,
-	MicroAppRouter, WidgetRoute, WidgetRoutes,
+	MicroAppProvider, MicroAppRouter, WidgetRoute, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
-import { AppStateProvider, initAppStateContext } from '@nikkierp/ui/appState';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -19,7 +18,6 @@ const Main: React.FC<MicroAppProps> = (props) => {
 
 	return (
 		<MicroAppProvider {...props}>
-			{/* <AppStateProvider registerResult={result}> */}
 			<MantineProvider>
 				<Alert variant='filled' color='blue'><h1>Identity Module</h1></Alert>
 				<MicroAppRouter domType={props.domType} basePath={props.routing.basePath}
@@ -42,7 +40,6 @@ const Main: React.FC<MicroAppProps> = (props) => {
 					</WidgetRoutes> */}
 				</MicroAppRouter>
 			</MantineProvider>
-			{/* </AppStateProvider> */}
 		</MicroAppProvider>
 	);
 };
@@ -56,7 +53,7 @@ const bundle: MicroAppBundle = {
 		});
 
 		const result = registerReducer(reducer);
-		initAppStateContext(result);
+		initMicroAppStateContext(result);
 		return {
 			domType,
 		};

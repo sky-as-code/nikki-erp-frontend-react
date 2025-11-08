@@ -1,61 +1,56 @@
 import { createAsyncThunk, createSlice, PayloadAction, ActionReducerMapBuilder } from '@reduxjs/toolkit';
 
-import { authService } from './authService';
-import { fetchProfileAction } from './userContextSlice';
-
+import { authService, User } from './authService';
+import { SignInResult } from './types';
+// import { fetchProfileAction } from './userContextSlice';
 
 
 export const SLICE_NAME = 'shellAuth';
 
-export type User = {
-	id: string;
-	email: string;
-	name: string;
-	role: string;
-};
-
 export type AuthState = {
-	isAuthenticated: boolean;
-	user: User | null;
-	token: string | null;
-	refreshToken: string | null;
-	loading: boolean;
 	error: string | null;
-};
-
-export type LoginCredentials = {
-	email: string;
-	password: string;
-	rememberMe?: boolean;
-};
-
-export type LoginResponse = {
-	user: User;
-	token: string;
-	refreshToken: string;
+	isAuthenticated: boolean;
+	isLoading: boolean;
+	user: User | null;
+	signInProgress: UnknownRecord | null;
 };
 
 const initialState: AuthState = {
 	isAuthenticated: false,
 	user: null,
-	token: null,
-	refreshToken: null,
-	loading: false,
+	isLoading: false,
 	error: null,
+	signInProgress: null,
 };
 
+export const startAttemptAction = createAsyncThunk<
+	UnknownRecord,
+	{ email: string },
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/startSignInAttempt`,
+	async (_, { rejectWithValue }) => {
+		try {
+			return await authService.startSession();
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Start sign in attempt failed';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
 
 export const signInAction = createAsyncThunk<
-	LoginResponse,
-	LoginCredentials,
-	{ rejectValue: string; dispatch: (action: ReturnType<typeof fetchProfileAction>) => void }
+	SignInResult,
+	UnknownRecord,
+	{ rejectValue: string }
+// { rejectValue: string; dispatch: (action: ReturnType<typeof fetchProfileAction>) => void }
 >(
 	`${SLICE_NAME}/signIn`,
-	async (credentials, { rejectWithValue, dispatch }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			const result = await authService.signIn(credentials);
-			// Defer to dispatch fetchProfileAction after signInAction.fulfilled has run.
-			queueMicrotask(() => dispatch(fetchProfileAction()));
+			const result = await authService.signIn(params);
+			// queueMicrotask(() => dispatch(fetchProfileAction()));
 			return result;
 		}
 		catch (error) {
@@ -83,7 +78,6 @@ export const signOutAction = createAsyncThunk<
 	},
 );
 
-
 const authSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
@@ -91,8 +85,6 @@ const authSlice = createSlice({
 		signOut: (state) => {
 			state.isAuthenticated = false;
 			state.user = null;
-			state.token = null;
-			state.refreshToken = null;
 			state.error = null;
 		},
 		clearSignInError: (state) => {
@@ -106,30 +98,30 @@ const authSlice = createSlice({
 	extraReducers: (builder) => {
 		addSignInReducers(builder);
 		addSignOutReducers(builder);
+		addStartAttemptReducers(builder);
 	},
 });
 
 function addSignInReducers(builder: ActionReducerMapBuilder<AuthState>): void {
 	builder
 		.addCase(signInAction.pending, (state) => {
-			state.loading = true;
+			state.isLoading = true;
 			state.error = null;
 		})
 		.addCase(signInAction.fulfilled, (state, action) => {
-			state.loading = false;
-			state.isAuthenticated = true;
-			state.user = action.payload.user;
-			state.token = action.payload.token;
-			state.refreshToken = action.payload.refreshToken;
+			state.isLoading = false;
 			state.error = null;
+			if (action.payload.done) {
+				state.signInProgress = null;
+				state.isAuthenticated = true;
+			}
+			else {
+				state.signInProgress = Object.assign({}, state.signInProgress, action.payload);
+			}
 		})
 		.addCase(signInAction.rejected, (state, action) => {
-			state.loading = false;
-			state.isAuthenticated = false;
-			state.user = null;
-			state.token = null;
-			state.refreshToken = null;
-			state.error = action.payload || 'Login failed';
+			state.isLoading = false;
+			state.error = action.payload!;
 		});
 }
 
@@ -138,20 +130,33 @@ function addSignOutReducers(builder: ActionReducerMapBuilder<AuthState>): void {
 		.addCase(signOutAction.pending, (state) => {
 			state.isAuthenticated = false;
 			state.user = null;
-			state.token = null;
-			state.refreshToken = null;
 			state.error = null;
 		})
 		.addCase(signOutAction.fulfilled, (state) => {
-			state.loading = false;
+			state.isLoading = false;
 			state.isAuthenticated = false;
 			state.user = null;
-			state.token = null;
-			state.refreshToken = null;
 			state.error = null;
 		})
 		.addCase(signOutAction.rejected, (state, action) => {
 			console.error(action.payload);
+		});
+}
+
+function addStartAttemptReducers(builder: ActionReducerMapBuilder<AuthState>): void {
+	builder
+		.addCase(startAttemptAction.pending, (state) => {
+			state.isLoading = true;
+			state.error = null;
+		})
+		.addCase(startAttemptAction.fulfilled, (state, action) => {
+			state.isLoading = false;
+			state.signInProgress = Object.assign({}, state.signInProgress, action.payload);
+		})
+		.addCase(startAttemptAction.rejected, (state, action) => {
+			state.isLoading = false;
+			state.signInProgress = null;
+			state.error = action.payload!;
 		});
 }
 

@@ -1,9 +1,13 @@
-import { MantineProvider, Paper } from '@mantine/core';
-import { useAuthData, useFirstOrgSlug } from '@nikkierp/shell/auth';
+import { Paper } from '@mantine/core';
+import { useFirstOrgSlug, useIsAuthenticated } from '@nikkierp/shell/auth';
 import { ShellProviders } from '@nikkierp/shell/contexts';
 import { LazyMicroApp, LazyMicroWidget } from '@nikkierp/shell/microApp';
+import { tempNavigateToAction } from '@nikkierp/ui/appState/routingSlice';
+import { AuthorizedGuard } from '@nikkierp/ui/components';
 import { MicroAppMetadata, MicroAppShellBundle } from '@nikkierp/ui/microApp';
-import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
+import React from 'react';
+import { useDispatch } from 'react-redux';
+import { Link, Route, Routes, useLocation, useNavigate } from 'react-router';
 
 import { UIProviders } from './context/UIProviders';
 import { RootLayout } from './layout/RootLayout';
@@ -45,22 +49,24 @@ const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
 						<Link to='/identity'>
 							<div className='text-blue-500 py-4 border-b border-blue-500'>Identity</div>
 						</Link>
+						<Link to='/authorized'>Authorized</Link><br />
 						<Link to='/smart'>Smart</Link><br />
-						<Link to='/login'>Login</Link><br />
+						<Link to='/signin'>Sign In</Link><br />
 						<Link to='/someorg'>:orgSlug</Link><br />
 						<Link to='/someorg/sub'>:orgSlug/sub</Link><br />
 					</>
 				} />
 				<Route path='essential/*' element={<EssentialTest />} />
 				<Route path='identity/*' element={<IdentityTest />} />
+				<Route path='authorized' element={<AuthorizedPage />} />
 				<Route path='smart' element={<SmartNavigate />} />
 				<Route path='signin' element={<SignInPage />} />
-				<Route path=':orgSlug'>
+				{/* <Route path=':orgSlug'>
 					<Route index element={<OrgSub />} />
 					<Route path='sub'>
 						<Route index element={<OrgSub />} />
 					</Route>
-				</Route>
+				</Route> */}
 
 				{/* <Route element={<DomainLayout />}>
 					<Route index element={<ModuleListPage />} />
@@ -100,17 +106,33 @@ const IdentityTest: React.FC = () => {
 };
 
 const SmartNavigate: React.FC = () => {
-	const navigate = useNavigate();
-	const { isAuthenticated } = useAuthData();
-	const { slug: firstOrgSlug, isLoading: isLoadingFirstOrgSlug } = useFirstOrgSlug();
+	const dispatch = useDispatch();
+	// const navigate = useNavigate();
+	const isAuthenticated = useIsAuthenticated();
+	// const { slug: firstOrgSlug, isLoading: isLoadingFirstOrgSlug } = useFirstOrgSlug();
+
+	React.useEffect(() => {
+		if (!isAuthenticated) {
+			dispatch(tempNavigateToAction('/signin'));
+		}
+		// else if (!isLoadingFirstOrgSlug) {
+		// 	navigate(`/${firstOrgSlug}`);
+		// }
+	}, [isAuthenticated]);
 
 	if (!isAuthenticated) {
-		navigate('/login');
+		return null;
 	}
-	else if (isLoadingFirstOrgSlug) {
-		return (
-			<>Loading user context...</>
-		);
-	}
-	navigate(`/${firstOrgSlug}`);
+
+	return (
+		<>Smart Navigate</>
+	);
 };
+
+function AuthorizedPage(): React.ReactNode {
+	return (
+		<AuthorizedGuard>
+			<>Shell Authorized Page</>
+		</AuthorizedGuard>
+	);
+}

@@ -1,5 +1,6 @@
-import { RegisterReducerFn } from '@nikkierp/ui/appState';
-import * as layout from '@nikkierp/ui/layout';
+import * as layout from '@nikkierp/ui/appState/layoutSlice';
+import * as routing from '@nikkierp/ui/appState/routingSlice';
+import { RegisterReducerFn } from '@nikkierp/ui/microApp';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
 import * as auth from '../auth/authSlice';
@@ -9,9 +10,10 @@ import * as shellConfig from '../config/shellConfigSlice';
 
 const localReducers = {
 	[auth.SLICE_NAME]: auth.reducer,
-	[userContext.SLICE_NAME]: userContext.reducer,
 	[layout.SLICE_NAME]: layout.reducer,
+	[routing.SLICE_NAME]: routing.reducer,
 	[shellConfig.SLICE_NAME]: shellConfig.reducer,
+	[userContext.SLICE_NAME]: userContext.reducer,
 };
 
 const lazyReducers: Record<string, any> = {};

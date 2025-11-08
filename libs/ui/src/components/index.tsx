@@ -1,3 +1,4 @@
+export * from './AuthorizedGuard';
 export * from './form';
 export * from './hoc';
 export * from './Table';

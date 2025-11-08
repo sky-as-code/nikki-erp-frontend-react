@@ -16,30 +16,37 @@ export type RegisterReducersResult = {
 
 export type RegisterReducerFn = (reducer: ReducerFn) => RegisterReducersResult;
 
-export type AppStateContextType = RegisterReducersResult & {
+type MicroAppStateContextType = RegisterReducersResult & {
 };
 
 let appStateContextValue: RegisterReducersResult;
 let appStateContext: React.Context<RegisterReducersResult>;
 // const appStateContext = createContext<AppStateContextType>({} as any);
 
-export function initAppStateContext(registerResult: RegisterReducersResult) {
-	appStateContext = createContext<RegisterReducersResult>(registerResult);
+export function initMicroAppStateContext(registerResult: RegisterReducersResult) {
+	appStateContext = createContext<MicroAppStateContextType>(registerResult);
 	appStateContextValue = registerResult;
 }
 
-function useAppStateContext() {
+function useMicroAppStateContext(): MicroAppStateContextType {
 	if (!appStateContext) {
-		throw new Error('AppStateContext must be initialized with initAppStateContext() before use');
+		throw new Error('MicroAppStateContext must be initialized with initMicroAppStateContext() before use');
 	}
-	const ctxVal = useContext(appStateContext);
+	const ctxVal = useContext<MicroAppStateContextType>(appStateContext);
 	return ctxVal;
 }
 
-export type AppStateProviderProps = React.PropsWithChildren & {
+export function useIsMicroApp(): boolean {
+	if (!appStateContext) return false;
+
+	const ctxVal = useContext(appStateContext);
+	return Boolean(ctxVal);
+}
+
+export type MicroAppStateProviderProps = React.PropsWithChildren & {
 };
 
-export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) => {
+export const MicroAppStateProvider: React.FC<MicroAppStateProviderProps> = ({ children }) => {
 	return (
 		<appStateContext.Provider value={appStateContextValue}>
 			{children}
@@ -53,9 +60,9 @@ export type UseStateSelectorFn<T> = <K extends keyof T>(selector: (microRootStat
  * Invokes `selector` with this micro-app's state, which is a subset of the Shell's state.
  */
 export const useMicroAppSelector: UseStateSelectorFn<any> = (selector) => {
-	const ctxVal = useAppStateContext();
+	const ctxVal = useMicroAppStateContext();
 	if (!ctxVal) {
-		throw new Error('useMicroAppSelector must be used within AppStateProvider');
+		throw new Error('useMicroAppSelector must be used within MicroAppStateProvider');
 	}
 	const appState = useSelector(ctxVal.selectMicroAppState);
 	return selector(appState);
@@ -65,9 +72,9 @@ export const useMicroAppSelector: UseStateSelectorFn<any> = (selector) => {
  * Invokes `selector` with the Shell's root state.
  */
 export const useRootSelector: UseStateSelectorFn<any> = (selector) => {
-	const ctxVal = useAppStateContext();
+	const ctxVal = useMicroAppStateContext();
 	if (!ctxVal) {
-		throw new Error('useRootSelector must be used within AppStateProvider');
+		throw new Error('useRootSelector must be used within MicroAppStateProvider');
 	}
 	const appState = useSelector(ctxVal.selectRootState);
 	return selector(appState);
@@ -80,7 +87,7 @@ export const useRootSelector: UseStateSelectorFn<any> = (selector) => {
 export const useMicroAppDispatch = (): MicroAppDispatchFn => {
 	const ctxVal = useContext(appStateContext);
 	if (!ctxVal) {
-		throw new Error('useAppDispatch must be used within AppStateProvider');
+		throw new Error('useAppDispatch must be used within MicroAppStateProvider');
 	}
 	return ctxVal.dispatch;
 };

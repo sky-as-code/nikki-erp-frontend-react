@@ -1,44 +1,24 @@
-import * as request from '@nikkierp/common/request';
+import { decodeBase64, encodeBase64 } from '@nikkierp/common/utils';
+
+import { AccessToken, ITokenService } from './types';
 
 
 const ACCESS_TOKEN_KEY = 'accessToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
 
-type TokenObj = {
-	token: string;
-	expiresAt: number;
-};
+// export const ErrRefreshTokenNotFound = new Error('No refresh token found');
+// export const ErrRefreshTokenExpired = new Error('Refresh token expired');
 
-export const ErrRefreshTokenNotFound = new Error('No refresh token found');
-export const ErrRefreshTokenExpired = new Error('Refresh token expired');
-
-export class LocalStorageTokenService {
-
-	public async getActiveAccessToken(): Promise<string | null> {
-		let accessTokenObj: TokenObj | null;
-		accessTokenObj = localStorage.getItem(ACCESS_TOKEN_KEY) as TokenObj | null;
-		if (!accessTokenObj) return null;
-		if (accessTokenObj.expiresAt < Date.now()) {
-			accessTokenObj = await this._refreshAccessToken();
-		};
-		return accessTokenObj.token;
+export class SessionStorageTokenService implements ITokenService {
+	public setAccessToken(token: AccessToken): void {
+		const json = JSON.stringify(token);
+		const encoded = encodeBase64(json);
+		sessionStorage.setItem(ACCESS_TOKEN_KEY, encoded);
 	}
 
-	private async _refreshAccessToken(): Promise<TokenObj> {
-		const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY) as TokenObj | null;
-		if (!refreshToken) throw ErrRefreshTokenNotFound;
-		if (refreshToken.expiresAt < Date.now()) throw ErrRefreshTokenExpired;
-
-		const response = await request.post<TokenObj>('/refresh-token', {
-			json: { refreshToken },
-		});
-		localStorage.setItem(ACCESS_TOKEN_KEY, JSON.stringify(response));
-		return response;
-	}
-
-	public getAccessToken(): string {
-		return localStorage.getItem(ACCESS_TOKEN_KEY) ?? '';
+	public getAccessToken(): AccessToken | null {
+		const encoded = sessionStorage.getItem(ACCESS_TOKEN_KEY);
+		if (!encoded) return null;
+		const json = decodeBase64(encoded);
+		return JSON.parse(json) as AccessToken;
 	}
 }
-
-export const tokenService = new LocalStorageTokenService();

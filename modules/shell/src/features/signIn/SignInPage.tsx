@@ -1,40 +1,38 @@
-import { Anchor, Button, Card, Container, Group, Stack, Text, Title } from '@mantine/core';
-import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
-import { ModelSchema } from '@nikkierp/ui/model';
-import React, { useState, useEffect, useRef } from 'react';
+import { Card, Container, Stack, Text, Title } from '@mantine/core';
+import { useIsAuthenticated } from '@nikkierp/shell/auth';
+import { navigateReturnToAction } from '@nikkierp/ui/appState/routingSlice';
+import React from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate, useSearchParams } from 'react-router';
 
-// Import schemas for each step
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - JSON import
-import emailSchema from './email-schema.json';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - JSON import
-import passwordSchema from './password-schema.json';
+import { EmailStep } from './EmailStep';
+import { PasswordStep } from './PasswordStep';
+import { SignInStepProps } from './SignInStep.types';
 
-
-const emailSchemaTyped = emailSchema as ModelSchema;
-const passwordSchemaTyped = passwordSchema as ModelSchema;
-
-type SignInStepProps = {
-	ref?: React.RefObject<HTMLInputElement | null>;
-	isActive?: boolean;
-	onNext?: () => void;
-	onBack?: () => void;
-};
 
 type SignInStep = {
-	id: SignInStepId;
+	id: string;
 	component: React.ComponentType<SignInStepProps>;
-	fieldName: string;
 };
 
 const SIGNIN_STEPS: SignInStep[] = [
-	{ id: 'email', component: EmailStep, fieldName: 'email' },
-	{ id: 'password', component: PasswordStep, fieldName: 'password' },
+	{ id: 'email', component: EmailStep },
+	{ id: 'password', component: PasswordStep },
 ];
 
 export function SignInPage(): React.ReactNode {
-	const [currentStepIndex, setCurrentStepIndex] = useState(0);
+	const [currentStepIndex, setCurrentStepIndex] = React.useState(0);
+	const isAuthenticated = useIsAuthenticated();
+	const dispatch = useDispatch();
+	// const navigate = useNavigate();
+	// const [searchParams] = useSearchParams();
+	// const returnTo = searchParams.get('returnTo');
+
+	React.useEffect(() => {
+		if (isAuthenticated) {
+			dispatch(navigateReturnToAction());
+		}
+	}, [isAuthenticated]);
 
 	const handleNext = () => {
 		if (currentStepIndex < SIGNIN_STEPS.length - 1) {
@@ -59,166 +57,6 @@ export function SignInPage(): React.ReactNode {
 				/>
 			</Container>
 		</div>
-	);
-}
-
-type SignInStepId = 'email' | 'password';
-
-function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
-	const formRef = useRef<HTMLFormElement>(null);
-
-	const handleNext = async (_data: { email: string }) => {
-		if (onNext) {
-			onNext();
-		}
-	};
-
-	return (
-		<FormStyleProvider layout='onecol'>
-			<FormFieldProvider
-				formVariant='create'
-				modelSchema={emailSchemaTyped}
-			>
-				{({ handleSubmit }) => (
-					<form
-						ref={formRef}
-						onSubmit={handleSubmit(handleNext)}
-						noValidate
-					>
-						<EmailStepFormContent ref={ref} isActive={isActive} />
-					</form>
-				)}
-			</FormFieldProvider>
-		</FormStyleProvider>
-	);
-}
-
-type BaseFormContentProps = {
-	ref?: React.RefObject<HTMLInputElement | null>;
-	isActive: boolean;
-};
-
-function EmailStepFormContent({ ref, isActive }: BaseFormContentProps): React.ReactNode {
-	return (
-		<Stack gap='md'>
-			<AutoField name='email' ref={ref} inputProps={{
-				disabled: !isActive,
-			}} />
-
-			{isActive && (<>
-
-				<Group justify='flex-end'>
-					<Anchor
-						href='#'
-						size='md'
-						className='text-blue-600 hover:text-blue-800 transition-colors'
-					>
-						Forgot Email?
-					</Anchor>
-				</Group>
-
-				<Button
-					type='submit'
-					fullWidth
-					size='lg'
-					className='bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors'
-				>
-					Next
-				</Button>
-
-				<div className='text-center pt-4 border-t border-gray-200'>
-					<Text size='md' c='dimmed'>
-						Don't have an account?{' '}
-						<Anchor
-							href='#'
-							className='text-blue-600 hover:text-blue-800 font-medium'
-						>
-							Sign up here
-						</Anchor>
-					</Text>
-				</div>
-			</>)}
-		</Stack>
-	);
-}
-
-function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps): React.ReactNode {
-	const formRef = useRef<HTMLFormElement>(null);
-	const handleSubmit = async (data: { password: string }) => {
-		// This would be passed as a prop in a real implementation
-		console.log('SignIn attempt:', data);
-	};
-
-	return (
-		<FormStyleProvider layout='onecol'>
-			<FormFieldProvider
-				formVariant='create'
-				modelSchema={passwordSchemaTyped}
-			>
-				{({ handleSubmit: formHandleSubmit }) => (
-					<form
-						ref={formRef}
-						onSubmit={formHandleSubmit(handleSubmit)}
-						noValidate
-					>
-						<PasswordStepFormContent
-							onBack={onBack!} ref={ref} isActive={isActive}
-						/>
-					</form>
-				)}
-			</FormFieldProvider>
-		</FormStyleProvider>
-	);
-}
-
-type PasswordStepFormContentProps = BaseFormContentProps & {
-	onBack: () => void;
-};
-
-function PasswordStepFormContent(props: PasswordStepFormContentProps): React.ReactNode {
-	const [loading, _] = useState(false);
-
-	return (
-		<Stack gap='md'>
-			<AutoField name='password' ref={props.ref} inputProps={{
-				disabled: !props.isActive,
-			}} />
-
-			{props.isActive && (<>
-
-				<Group justify='flex-end'>
-					<Anchor
-						href='#'
-						size='sm'
-						className='text-blue-600 hover:text-blue-800 transition-colors'
-					>
-						Forgot password?
-					</Anchor>
-				</Group>
-
-				<Group gap='md'>
-					<Button
-						type='button'
-						variant='outline'
-						fullWidth
-						size='lg'
-						onClick={props.onBack}
-						className='rounded-lg font-medium'
-					>
-						Back
-					</Button>
-					<Button
-						type='submit'
-						fullWidth
-						size='lg'
-						loading={loading}
-						className='bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors'
-					>
-						{loading ? 'Signing in...' : 'Sign In'}
-					</Button>
-				</Group>
-			</>)}
-		</Stack>
 	);
 }
 
@@ -293,9 +131,9 @@ function MultiStepFormContainer({
 }
 
 function ExposedArea({ children }: React.PropsWithChildren) {
-	const ref = useRef<HTMLDivElement>(null);
+	const ref = React.useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
+	React.useEffect(() => {
 		if (ref.current) {
 			ref.current.scrollLeft = 0;
 		}
@@ -359,7 +197,7 @@ function useFocusActiveStep(steps: SignInStep[], currentStepIndex: number) {
 		[steps.length],
 	);
 
-	useEffect(
+	React.useEffect(
 		() => {
 			ref[currentStepIndex].current?.focus();
 		},
