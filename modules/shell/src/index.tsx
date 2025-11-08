@@ -7,7 +7,7 @@ import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-r
 
 import { UIProviders } from './context/UIProviders';
 import { RootLayout } from './layout/RootLayout';
-import { LoginPage } from './pages/public/LoginPage/LoginPage';
+import { SignInPage } from './pages/public/SignInPage';
 
 import './react';
 
@@ -54,7 +54,7 @@ const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
 				<Route path='essential/*' element={<EssentialTest />} />
 				<Route path='identity/*' element={<IdentityTest />} />
 				<Route path='smart' element={<SmartNavigate />} />
-				<Route path='login' element={<LoginPage />} />
+				<Route path='signin' element={<SignInPage />} />
 				<Route path=':orgSlug'>
 					<Route index element={<OrgSub />} />
 					<Route path='sub'>
