@@ -1,21 +1,29 @@
 
 import kyLib from 'ky';
 
-import { getAuthToken } from '../storageManager';
-
 import type { KyInstance, Input, Options, KyRequest } from 'ky';
 
 
 export type { Input, Options } from 'ky';
 
-let api: KyInstance;
+let api: KyInstance | null = null;
 
 
 export type RequestMakerOts = {
 	baseUrl: string,
+	auth: {
+		tokenType?: string,
+		getToken: () => string | null,
+	},
 };
 
 export function initRequestMaker(opts: RequestMakerOts) {
+	if (api) return;
+
+	const {
+		tokenType = 'Bearer',
+		getToken,
+	} = opts.auth || {};
 	api = kyLib.create({
 		prefixUrl: opts.baseUrl,
 		headers: {
@@ -26,15 +34,17 @@ export function initRequestMaker(opts: RequestMakerOts) {
 		hooks: {
 			beforeRequest: [
 				(request: KyRequest) => {
-					const token = getAuthToken();
-					request.headers.set('Authorization', `Bearer ${token}`);
+					if (opts.auth) {
+						const token = getToken!();
+						request.headers.set('Authorization', `${tokenType} ${token}`);
+					}
 				},
 			],
 		},
 	});
 }
 
-export function ky(): KyInstance {
+export function ky(): KyInstance | null {
 	return api;
 }
 
@@ -71,8 +81,9 @@ export async function head<T>(url: Input, options?: Options): Promise<T> {
 type KyFn = KyInstance['get'];
 
 async function send<T>(method: keyof KyInstance, url: Input, options?: Options): Promise<T> {
+	if (!api) throw new Error('Must call initRequestMaker() before sending requests');
+
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const fn = (api as any)[method] as KyFn;
 		const data = await fn.call(api, url, options).json<T>();
 		return data;

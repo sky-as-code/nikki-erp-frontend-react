@@ -1,4 +1,4 @@
-import { createSelector } from 'reselect';
+import { createSelector } from '@reduxjs/toolkit';
 
 import { reducer, actions, listUsers, getUser, UserState } from '../features/users/userSlice';
 

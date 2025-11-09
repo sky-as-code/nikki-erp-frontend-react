@@ -8,6 +8,20 @@ import { MicroAppDomType, MicroAppProps } from './types';
 
 export { Route as AppRoute } from 'react-router-dom';
 
+type MicroAppRouterContextType = {
+	basePath?: string;
+};
+
+const RouterContext = React.createContext<MicroAppRouterContextType | null>(null);
+
+export function useMicroAppRouterContext(): MicroAppRouterContextType {
+	const context = React.useContext(RouterContext);
+	if (!context) {
+		throw new Error('useRouterContext must be used within a MicroAppRouterContext.Provider');
+	}
+	return context;
+}
+
 export type MicroAppRouterProps = React.PropsWithChildren & {
 	/**
 	 * Indicates how the parent Shell has mounted this micro-app.
@@ -31,7 +45,7 @@ export type MicroAppRouterProps = React.PropsWithChildren & {
 	widgetProps?: Record<string, any>,
 };
 
-export const MicroAppRouter: React.FC<MicroAppRouterProps> = ({children, ...props}) => {
+export function MicroAppRouter({ children, ...props }: MicroAppRouterProps) {
 	const { routing } = useMicroAppContext();
 
 	if (props.widgetName && props.basePath) {
@@ -39,27 +53,34 @@ export const MicroAppRouter: React.FC<MicroAppRouterProps> = ({children, ...prop
 	}
 
 	let routeGroupElem: React.ReactElement<React.PropsWithChildren> | null = null;
+	let reactNode: React.ReactNode = null;
 
 	if (props.widgetName) {
 		routeGroupElem = findChildRouteGroup(children, WidgetRoutes);
 		if (!routeGroupElem) {
 			throw new Error(`<MicroAppRouter> in widget mode requires one child of type <WidgetRoutes>`);
 		};
-		return <WidgetRouter routeGroupElem={routeGroupElem} {...props} />;
+		reactNode = <WidgetRouter routeGroupElem={routeGroupElem} {...props} />;
 	}
 	else {
 		routeGroupElem = findChildRouteGroup(children, AppRoutes);
 		if (!routeGroupElem) {
 			throw new Error(`<MicroAppRouter> in app mode requires one child of type <AppRoutes>`);
 		};
-		return renderAppRoutes(props, routeGroupElem, routing);
+		reactNode = renderAppRoutes(props, routeGroupElem, routing);
 	}
-};
+
+	return (
+		<RouterContext.Provider value={{ basePath: props.basePath }}>
+			{reactNode}
+		</RouterContext.Provider>
+	);
+}
 
 
 function findChildRouteGroup(
 	children: React.ReactNode, Component: React.ComponentType<any>,
-) : React.ReactElement<React.PropsWithChildren> | null {
+): React.ReactElement<React.PropsWithChildren> | null {
 	let routeGroupElem: React.ReactElement<React.PropsWithChildren> | null = null;
 
 	React.Children.forEach(children, (element) => {
@@ -113,22 +134,22 @@ function renderAppRoutes(
 	}
 }
 
-export const AppRoutes: React.FC<React.PropsWithChildren> = () => {
+export function AppRoutes(_props: React.PropsWithChildren): null {
 	return null;
-};
+}
 
-export const WidgetRoutes: React.FC<React.PropsWithChildren> = () => {
+export function WidgetRoutes(_props: React.PropsWithChildren): null {
 	return null;
-};
+}
 
 export type WidgetRouteProps = {
 	name: string,
 	Component: React.ComponentType<WidgetComponentProps>,
 };
 
-export const WidgetRoute: React.FC<WidgetRouteProps> = () => {
+export function WidgetRoute(_props: WidgetRouteProps): null {
 	return null;
-};
+}
 
 export type WidgetComponentProps = {
 	domType: MicroAppDomType,
@@ -143,13 +164,13 @@ type WidgetRouterProps = Omit<MicroAppRouterProps, 'children'> & {
  * In-memory router for widget mod.
  * In Light DOM mode, the Shell's router will not complain about this nested router.
  */
-const WidgetRouter: React.FC<WidgetRouterProps> = (props) => {
+function WidgetRouter(props: WidgetRouterProps) {
 	const Comp = React.useMemo<React.ComponentType<WidgetComponentProps>>(() => {
 		let MatchedComp: React.ComponentType<WidgetComponentProps> | null = null;
 		React.Children.forEach(props.routeGroupElem.props.children, (element) => {
 			if (MatchedComp || !React.isValidElement(element)) {
-			// Ignore non-elements. This allows people to more easily inline
-			// conditionals in their route config.
+				// Ignore non-elements. This allows people to more easily inline
+				// conditionals in their route config.
 				return;
 			}
 			if (element.type == WidgetRoute) {
@@ -161,7 +182,7 @@ const WidgetRouter: React.FC<WidgetRouterProps> = (props) => {
 			}
 			else {
 				throw new Error(`[${typeof element.type === 'string' ? element.type : element.type.name}]` +
-				' is unexpected component. All component children of <WidgetRoutes> must be <WidgetRoute>',
+					' is unexpected component. All component children of <WidgetRoutes> must be <WidgetRoute>',
 				);
 			}
 		});
@@ -172,4 +193,4 @@ const WidgetRouter: React.FC<WidgetRouterProps> = (props) => {
 		domType: props.domType,
 		widgetProps: props.widgetProps,
 	});
-};
+}

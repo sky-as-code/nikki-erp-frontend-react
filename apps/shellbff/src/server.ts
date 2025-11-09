@@ -3,15 +3,12 @@ import * as path from 'node:path';
 
 import compression from 'compression';
 import cors from 'cors';
-import express, { Express, NextFunction, Request, Response } from 'express';
+import express, { Express, NextFunction, Request, RequestHandler, Response } from 'express';
 import * as vite from 'vite';
 
 import { router } from './api';
 import * as config from './config';
 
-
-const isLocal = config.mustGetNodeEnv() === 'local';
-const clientRootPath = config.mustGetBffConfig('CLIENT_ROOT_PATH') || '';
 
 (async () => {
 	const server = await createServer();
@@ -24,7 +21,7 @@ const clientRootPath = config.mustGetBffConfig('CLIENT_ROOT_PATH') || '';
 })();
 
 async function createServer(): Promise<Express> {
-	console.log('Client Root Path:', clientRootPath);
+	console.log('Client Root Path:', config.clientRootPath);
 	const app = express();
 
 	// CORS middleware - allow all origins
@@ -33,7 +30,7 @@ async function createServer(): Promise<Express> {
 	app.use('/api/config', router);
 
 	let viteServer: vite.ViteDevServer | undefined;
-	if (isLocal) {
+	if (config.isLocal) {
 		viteServer = await initViteServer(app);
 	}
 	else {
@@ -48,7 +45,7 @@ async function createServer(): Promise<Express> {
 async function initViteServer(app: Express): Promise<vite.ViteDevServer> {
 	console.log('Initializing Vite Server...');
 	const viteServer = await vite.createServer({
-		root: clientRootPath,
+		root: config.clientRootPath,
 		logLevel: 'info',
 		server: {
 			middlewareMode: true,
@@ -66,9 +63,9 @@ async function initViteServer(app: Express): Promise<vite.ViteDevServer> {
 
 function initStaticServer(app: Express): void {
 	console.log('Initializing Static Server...');
-	app.use(compression());
+	app.use(compression() as RequestHandler);
 	app.use(
-		express.static(clientRootPath, {
+		express.static(config.clientRootPath, {
 			// Disable directory listing
 			index: false,
 		}),
@@ -107,7 +104,7 @@ async function renderWithVite(req: Request, res: Response, viteServer: vite.Vite
 async function readIndexHtml(): Promise<string> {
 	// Read raw index.html
 	const html = await fs.readFile(
-		path.join(clientRootPath, 'index.html'),
+		path.join(config.clientRootPath, 'index.html'),
 		'utf-8',
 	);
 

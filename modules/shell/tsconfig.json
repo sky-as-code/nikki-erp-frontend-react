@@ -3,16 +3,13 @@
 	"compilerOptions": {
 		"baseUrl": ".",
 		"outDir": "dist",
-		"paths": {
-			"@/*": [
-				"./src/*"
-			],
-		}
 	},
 	"include": [
 		"src/**/*",
 		"types/*",
 		"node_modules/vite/types/*",
+		"../../libs/ui/src/auth/strategies",
+		"../../libs/shell/src/stateMangement",
 	],
 	"exclude": [
 		"node_modules",

@@ -1,0 +1,58 @@
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
+import React from 'react';
+import { useSelector } from 'react-redux';
+
+import { MicroAppDispatchFn } from '../microApp';
+
+
+export const SLICE_NAME = 'shellLayout';
+
+export type LayoutState = {
+	menuBarItems: MenuBarItem[];
+};
+
+export type MenuBarItem = {
+	label: string;
+	link?: string;
+	items?: MenuBarItem[];
+};
+
+const initialState: LayoutState = {
+	menuBarItems: [],
+};
+
+const layoutSlice = createSlice({
+	name: SLICE_NAME,
+	initialState,
+	reducers: {
+		setMenuBarItems: (state, action: PayloadAction<MenuBarItem[]>) => {
+			state.menuBarItems = action.payload;
+		},
+		clearMenuBarItems: (state) => {
+			state.menuBarItems = [];
+		},
+	},
+});
+
+export const layoutActions = layoutSlice.actions;
+
+export const { reducer } = layoutSlice;
+
+const selectLayoutState = (state: any) => state[SLICE_NAME];
+
+const selectMenuBarItems = createSelector(
+	selectLayoutState,
+	(state: LayoutState) => state.menuBarItems,
+);
+
+export const useLayoutState = () => useSelector(selectLayoutState);
+export const useMenuBarItems = () => useSelector(selectMenuBarItems);
+
+export function useSetMenuBarItems(items: MenuBarItem[], dispatch: MicroAppDispatchFn) {
+	React.useEffect(() => {
+		dispatch(layoutActions.setMenuBarItems(items));
+		return () => {
+			dispatch(layoutActions.clearMenuBarItems());
+		};
+	}, [items]);
+}

@@ -1,51 +1,91 @@
 import { Alert, MantineProvider } from '@mantine/core';
+import { MenuBarItem, useSetMenuBarItems } from '@nikkierp/ui/appState/layoutSlice';
+import { initMicroAppStateContext, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
-	MicroAppProvider,
-	MicroAppRouter, WidgetRoute, WidgetRoutes,
+	MicroAppProvider, MicroAppRouter, WidgetRoute, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
-import { AppStateProvider, initAppStateContext } from '@nikkierp/ui/stateManagement';
 import React from 'react';
-import { Link } from 'react-router';
+import { Link, Navigate } from 'react-router';
 
 import { reducer } from './appState';
-import { UserDetailPage } from './pages/UserDetailPage';
-import { UserListPage } from './pages/UserListPage';
-import { UserListSplitDetail } from './pages/UserListSplitDetail';
+import { UserDetailPage } from './pages/user/UserDetailPage';
+import { UserListPage } from './pages/user/UserListPage';
 
 
-const Main: React.FC<MicroAppProps> = (props) => {
-	// const result = props.registerReducer(reducer);
+const menuBarItems: MenuBarItem[] = [
+	{
+		label: 'Overview',
+		link: `/overview`,
+	},
+	{
+		label: 'Users',
+		items: [
+			{
+				label: 'Users',
+				link: `/users`,
+			},
+			{
+				label: 'Groups',
+				link: `/groups`,
+			},
+		],
+	},
+	{
+		label: 'Organizations',
+		items: [
+			{
+				label: 'Organizations',
+				link: `/organizations`,
+			},
+			{
+				label: 'Hierarchy Levels',
+				link: `/hierarchy-levels`,
+			},
+		],
+	},
+	{
+		label: 'Settings',
+		link: `/settings`,
+	},
+];
+
+function Main(props: MicroAppProps) {
+	const dispatch = useMicroAppDispatch();
+	useSetMenuBarItems(menuBarItems, dispatch);
 
 	return (
 		<MicroAppProvider {...props}>
-			{/* <AppStateProvider registerResult={result}> */}
-			<MantineProvider>
-				<Alert variant='filled' color='blue'><h1>Identity Module</h1></Alert>
-				<MicroAppRouter domType={props.domType} basePath={props.routing.basePath}
-					widgetName={props.widgetName}
-					widgetProps={props.widgetProps}
-				>
-					<AppRoutes>
-						<AppRoute index element={<>
-							<Link to='user-detail'>User Detail</Link><br />
-							<Link to='user-list'>User List</Link><br />
-							<Link to='users'>User Split</Link><br />
-						</>} />
-						<AppRoute path='users' element={<UserListPage />} />
-						<AppRoute path='users/:userId' element={<UserDetailPage />} />
-						{/* <AppRoute path='users' element={<UserListSplitDetail />} /> */}
-					</AppRoutes>
-					{/* <WidgetRoutes>
+			<MicroAppRouter domType={props.domType} basePath={props.routing.basePath}
+				widgetName={props.widgetName}
+				widgetProps={props.widgetProps}
+			>
+				<AppRoutes>
+					<AppRoute index element={<Navigate to='overview' replace />} />
+					<AppRoute path='overview' element={<OverviewPage />} />
+					<AppRoute path='users' element={<UserListPage />} />
+					<AppRoute path='users/:userId' element={<UserDetailPage />} />
+					{/* <AppRoute path='users' element={<UserListSplitDetail />} /> */}
+				</AppRoutes>
+				{/* <WidgetRoutes>
 						<WidgetRoute name='org-home' Component={OrgHomePage} />
 						<WidgetRoute name='module-management' Component={ModuleManagementPage} />
 					</WidgetRoutes> */}
-				</MicroAppRouter>
-			</MantineProvider>
-			{/* </AppStateProvider> */}
+			</MicroAppRouter>
 		</MicroAppProvider>
 	);
-};
+}
+
+function OverviewPage(): React.ReactNode {
+	return (
+		<>
+			<Alert variant='filled' color='blue'><h1>Identity Module</h1></Alert>
+			<Link to='user-detail'>User Detail</Link><br />
+			<Link to='user-list'>User List</Link><br />
+			<Link to='users'>User Split</Link><br />
+		</>
+	);
+}
 
 const bundle: MicroAppBundle = {
 	init({ htmlTag, registerReducer }) {
@@ -56,7 +96,7 @@ const bundle: MicroAppBundle = {
 		});
 
 		const result = registerReducer(reducer);
-		initAppStateContext(result);
+		initMicroAppStateContext(result);
 		return {
 			domType,
 		};

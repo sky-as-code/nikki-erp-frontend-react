@@ -8,6 +8,79 @@ import { Controller } from 'react-hook-form';
 import { extractLabel, useFieldData, useFormField, useFormStyle } from './formContext';
 
 
+export type AutoFieldProps = {
+	name: string;
+	autoFocused?: boolean;
+	inputProps?: Partial<InputProps>;
+	htmlProps?: FilteredInputHTMLAttributes;
+	ref?: React.RefObject<any>;
+};
+
+export function AutoField(props: AutoFieldProps) {
+	const { getFieldDef } = useFormField();
+	const fieldDef = getFieldDef(props.name);
+	const ref = React.useRef<HTMLInputElement | null>(null);
+
+	if (!fieldDef) {
+		return null;
+	}
+
+	if (fieldDef.hidden) {
+		return null;
+	}
+
+	switch (fieldDef.type) {
+		case 'string':
+			return <TextInputField
+				name={props.name} type='text' autoFocused={props.autoFocused}
+				inputProps={props.inputProps} htmlProps={props.htmlProps}
+				ref={props.ref ?? ref}
+			/>;
+		case 'email':
+			return <TextInputField
+				name={props.name} type='email' autoFocused={props.autoFocused}
+				inputProps={props.inputProps} htmlProps={props.htmlProps}
+				ref={props.ref ?? ref}
+			/>;
+		case 'password':
+			return <PasswordInputField
+				name={props.name} autoFocused={props.autoFocused}
+				inputProps={props.inputProps} htmlProps={props.htmlProps}
+				ref={props.ref ?? ref}
+			/>;
+		case 'integer':
+			return <NumberInputField
+				name={props.name} autoFocused={props.autoFocused}
+				inputProps={props.inputProps as Partial<NumberInputProps>} htmlProps={props.htmlProps}
+				ref={props.ref ?? ref}
+			/>;
+		case 'date':
+			return <DateInputField
+				name={props.name} autoFocused={props.autoFocused}
+				inputProps={props.inputProps as Partial<DateInputProps>} htmlProps={props.htmlProps}
+				ref={props.ref ?? ref}
+			/>;
+		case 'enum':
+			if (fieldDef.enum) {
+				return <StaticEnumSelectField
+					name={props.name} autoFocused={props.autoFocused}
+					inputProps={props.inputProps as Partial<SelectProps>} htmlProps={props.htmlProps}
+					ref={props.ref ?? ref}
+				/>;
+			}
+			if (fieldDef.enumSrc) {
+				return <DynamicEnumSelectField
+					name={props.name} autoFocused={props.autoFocused}
+					inputProps={props.inputProps as Partial<SelectProps>} htmlProps={props.htmlProps}
+					ref={props.ref ?? ref}
+				/>;
+			}
+			return null;
+		default:
+			return null;
+	}
+}
+
 type SelectProps = React.ComponentPropsWithoutRef<typeof Select>;
 
 function useDefaultInputProps(inputProps?: Partial<InputProps>): Partial<InputProps> {
@@ -35,7 +108,7 @@ function useAutoFocusById(
 	formVariant: 'create' | 'update',
 ) {
 	React.useEffect(() => {
-		if (autoFocused && formVariant === 'create') {
+		if (autoFocused) {
 			const input = document.getElementById(inputId) as HTMLInputElement;
 			if (input) {
 				setTimeout(() => {
@@ -105,9 +178,9 @@ type BaseFieldWrapperProps = {
 	};
 };
 
-const BaseFieldWrapper: React.FC<BaseFieldWrapperProps> = ({
+function BaseFieldWrapper({
 	inputId, label, description, isRequired, error, children, ariaProps,
-}) => {
+}: BaseFieldWrapperProps) {
 	const { layout } = useFormStyle();
 	const twoColumnLayout = layout === 'twocol';
 	const descriptionId = useId();
@@ -148,26 +221,29 @@ const BaseFieldWrapper: React.FC<BaseFieldWrapperProps> = ({
 			</Grid.Col>
 		</Grid>
 	);
-};
+}
 
 type FilteredInputHTMLAttributes = Omit<
 	React.InputHTMLAttributes<HTMLInputElement>,
 	'size' | 'type' | 'onChange' | 'onBlur' | 'value' | 'defaultValue' | 'name' | 'id' | 'ref' | 'disabled' | 'min' | 'max' | 'step'
 >;
 
-export type TextInputFieldProps = {
+type BaseInputProps<TInputProp> = {
 	name: string;
-	type: 'text' | 'email';
 	autoFocused?: boolean;
-	inputProps?: Partial<InputProps>;
+	inputProps?: Partial<TInputProp>;
 	htmlProps?: FilteredInputHTMLAttributes;
+	ref: React.RefObject<HTMLInputElement | null>;
 };
 
-export const TextInputField: React.FC<TextInputFieldProps> = ({ name, type, autoFocused, inputProps, htmlProps }) => {
+export type TextInputFieldProps = BaseInputProps<InputProps> & {
+	type: 'text' | 'email';
+};
+
+export function TextInputField({ name, type, autoFocused, inputProps, htmlProps, ref }: TextInputFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { register, modelValue, modelLoading, formVariant } = useFormField();
-	const inputRef = React.useRef<HTMLInputElement>(null);
 
 	if (!fieldData) {
 		return null;
@@ -175,7 +251,7 @@ export const TextInputField: React.FC<TextInputFieldProps> = ({ name, type, auto
 
 	const defaultValue = modelValue?.[name];
 	const defaultInputProps = useDefaultInputProps(inputProps);
-	useAutoFocus(autoFocused, inputRef, formVariant);
+	useAutoFocus(autoFocused, ref, formVariant);
 
 	return (
 		<BaseFieldWrapper
@@ -196,7 +272,7 @@ export const TextInputField: React.FC<TextInputFieldProps> = ({ name, type, auto
 							if (typeof registerResult.ref === 'function') {
 								registerResult.ref(e);
 							}
-							inputRef.current = e;
+							ref.current = e;
 						},
 					};
 				})()}
@@ -210,21 +286,15 @@ export const TextInputField: React.FC<TextInputFieldProps> = ({ name, type, auto
 			/>
 		</BaseFieldWrapper>
 	);
-};
+}
 
-export type PasswordInputFieldProps = {
-	name: string;
-	autoFocused?: boolean;
-	inputProps?: Partial<InputProps>;
-	htmlProps?: FilteredInputHTMLAttributes;
-};
+export type PasswordInputFieldProps = BaseInputProps<InputProps>;
 
-export const PasswordInputField: React.FC<PasswordInputFieldProps> = ({ name, autoFocused, inputProps, htmlProps }) => {
+export function PasswordInputField({ name, autoFocused, inputProps, htmlProps, ref }: PasswordInputFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { register, modelValue, modelLoading, formVariant } = useFormField();
 	const [showPassword, setShowPassword] = React.useState(false);
-	const inputRef = React.useRef<HTMLInputElement>(null);
 
 	if (!fieldData) {
 		return null;
@@ -232,7 +302,7 @@ export const PasswordInputField: React.FC<PasswordInputFieldProps> = ({ name, au
 
 	const defaultValue = modelValue?.[name];
 	const defaultInputProps = useDefaultInputProps(inputProps);
-	useAutoFocus(autoFocused, inputRef, formVariant);
+	useAutoFocus(autoFocused, ref, formVariant);
 
 	const actionIcon = usePasswordToggle(showPassword, setShowPassword);
 
@@ -255,7 +325,7 @@ export const PasswordInputField: React.FC<PasswordInputFieldProps> = ({ name, au
 							if (typeof registerResult.ref === 'function') {
 								registerResult.ref(e);
 							}
-							inputRef.current = e;
+							ref.current = e;
 						},
 					};
 				})()}
@@ -272,20 +342,14 @@ export const PasswordInputField: React.FC<PasswordInputFieldProps> = ({ name, au
 			/>
 		</BaseFieldWrapper>
 	);
-};
+}
 
-export type NumberInputFieldProps = {
-	name: string;
-	autoFocused?: boolean;
-	inputProps?: Partial<NumberInputProps>;
-	htmlProps?: FilteredInputHTMLAttributes;
-};
+export type NumberInputFieldProps = BaseInputProps<NumberInputProps>;
 
-export const NumberInputField: React.FC<NumberInputFieldProps> = ({ name, autoFocused, inputProps, htmlProps }) => {
+export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref }: NumberInputFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
-	const inputRef = React.useRef<HTMLInputElement>(null);
 
 	if (!fieldData) {
 		return null;
@@ -293,7 +357,7 @@ export const NumberInputField: React.FC<NumberInputFieldProps> = ({ name, autoFo
 
 	const defaultValue = modelValue?.[name];
 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
-	useAutoFocus(autoFocused, inputRef, formVariant);
+	useAutoFocus(autoFocused, ref, formVariant);
 
 	return (
 		<BaseFieldWrapper
@@ -319,7 +383,7 @@ export const NumberInputField: React.FC<NumberInputFieldProps> = ({ name, autoFo
 							name={field.name}
 							ref={(e) => {
 								field.ref(e);
-								inputRef.current = e;
+								ref.current = e;
 							}}
 							disabled={modelLoading}
 							placeholder={fieldData.placeholder}
@@ -331,16 +395,11 @@ export const NumberInputField: React.FC<NumberInputFieldProps> = ({ name, autoFo
 			/>
 		</BaseFieldWrapper>
 	);
-};
+}
 
-export type DateInputFieldProps = {
-	name: string;
-	autoFocused?: boolean;
-	inputProps?: Partial<DateInputProps>;
-	htmlProps?: FilteredInputHTMLAttributes;
-};
+export type DateInputFieldProps = BaseInputProps<DateInputProps>;
 
-export const DateInputField: React.FC<DateInputFieldProps> = ({ name, autoFocused, inputProps, htmlProps }) => {
+export function DateInputField({ name, autoFocused, inputProps, htmlProps, ref }: DateInputFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
@@ -386,6 +445,7 @@ export const DateInputField: React.FC<DateInputFieldProps> = ({ name, autoFocuse
 							onChange={(date) => field.onChange(date || undefined)}
 							disabled={modelLoading}
 							placeholder={fieldData.placeholder}
+							ref={ref}
 							{...htmlProps}
 							{...(defaultInputProps as DateInputProps)}
 						/>
@@ -394,18 +454,11 @@ export const DateInputField: React.FC<DateInputFieldProps> = ({ name, autoFocuse
 			/>
 		</BaseFieldWrapper>
 	);
-};
+}
 
-export type StaticEnumSelectFieldProps = {
-	name: string;
-	autoFocused?: boolean;
-	inputProps?: Partial<SelectProps>;
-	htmlProps?: FilteredInputHTMLAttributes;
-};
+export type StaticEnumSelectFieldProps = BaseInputProps<SelectProps>;
 
-export const StaticEnumSelectField: React.FC<StaticEnumSelectFieldProps> = ({
-	name, autoFocused, inputProps, htmlProps,
-}) => {
+export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps, ref }: StaticEnumSelectFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
@@ -446,6 +499,7 @@ export const StaticEnumSelectField: React.FC<StaticEnumSelectFieldProps> = ({
 							onChange={field.onChange}
 							disabled={modelLoading}
 							placeholder={fieldData.placeholder}
+							ref={ref}
 							{...htmlProps}
 							{...(defaultInputProps as SelectProps)}
 						/>
@@ -454,18 +508,12 @@ export const StaticEnumSelectField: React.FC<StaticEnumSelectFieldProps> = ({
 			/>
 		</BaseFieldWrapper>
 	);
-};
+}
 
-export type DynamicEnumSelectFieldProps = {
-	name: string;
-	autoFocused?: boolean;
-	inputProps?: Partial<SelectProps>;
-	htmlProps?: FilteredInputHTMLAttributes;
-};
+export type DynamicEnumSelectFieldProps = BaseInputProps<SelectProps>;
 
-export const DynamicEnumSelectField: React.FC<DynamicEnumSelectFieldProps> = ({
-	name, autoFocused, inputProps, htmlProps,
-}) => {
+export function DynamicEnumSelectField({
+	name, autoFocused, inputProps, htmlProps, ref }: DynamicEnumSelectFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
@@ -501,6 +549,7 @@ export const DynamicEnumSelectField: React.FC<DynamicEnumSelectFieldProps> = ({
 							onChange={field.onChange}
 							placeholder={fieldData.placeholder || `TODO: Load from ${fieldData.fieldDef.enumSrc?.stateSource}`}
 							disabled={modelLoading}
+							ref={ref}
 							{...htmlProps}
 							{...(defaultInputProps as SelectProps)}
 						/>
@@ -509,61 +558,4 @@ export const DynamicEnumSelectField: React.FC<DynamicEnumSelectFieldProps> = ({
 			/>
 		</BaseFieldWrapper>
 	);
-};
-
-export type AutoFieldProps = {
-	name: string;
-	autoFocused?: boolean;
-	inputProps?: Partial<InputProps>;
-	htmlProps?: FilteredInputHTMLAttributes;
-};
-
-export const AutoField: React.FC<AutoFieldProps> = ({ name, autoFocused, inputProps, htmlProps }) => {
-	const { getFieldDef } = useFormField();
-	const fieldDef = getFieldDef(name);
-
-	if (!fieldDef) {
-		return null;
-	}
-
-	if (fieldDef.hidden) {
-		return null;
-	}
-
-	switch (fieldDef.type) {
-		case 'string':
-			return <TextInputField name={name} type='text' autoFocused={autoFocused} inputProps={inputProps} htmlProps={htmlProps} />;
-		case 'email':
-			return <TextInputField name={name} type='email' autoFocused={autoFocused} inputProps={inputProps} htmlProps={htmlProps} />;
-		case 'password':
-			return <PasswordInputField name={name} autoFocused={autoFocused}
-				inputProps={inputProps} htmlProps={htmlProps}
-			/>;
-		case 'integer':
-			return <NumberInputField name={name} autoFocused={autoFocused}
-				inputProps={inputProps as Partial<NumberInputProps>}
-				htmlProps={htmlProps}
-			/>;
-		case 'date':
-			return <DateInputField name={name} autoFocused={autoFocused}
-				inputProps={inputProps as Partial<DateInputProps>}
-				htmlProps={htmlProps}
-			/>;
-		case 'enum':
-			if (fieldDef.enum) {
-				return <StaticEnumSelectField name={name} autoFocused={autoFocused}
-					inputProps={inputProps as Partial<SelectProps>}
-					htmlProps={htmlProps}
-				/>;
-			}
-			if (fieldDef.enumSrc) {
-				return <DynamicEnumSelectField name={name} autoFocused={autoFocused}
-					inputProps={inputProps as Partial<SelectProps>}
-					htmlProps={htmlProps}
-				/>;
-			}
-			return null;
-		default:
-			return null;
-	}
-};
+}

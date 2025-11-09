@@ -3,19 +3,25 @@ import path from 'node:path';
 import * as dotenv from 'dotenv';
 
 
+const FE_PREFIX = 'NIKKI_PUBLIC_';
+const BFF_PREFIX = 'NIKKI_BFF_';
+
+export const clientRootPath = mustGetBffConfig('CLIENT_ROOT_PATH') || '';
+
 const envPath = path.resolve(__dirname, '..');
+
 
 // The first value set for a variable will win
 dotenv.config({
 	path: [
+		path.join(clientRootPath, '.env.local'),
+		path.join(clientRootPath, '.env'),
 		path.join(envPath, '.env.local'),
 		path.join(envPath, '.env'),
 	],
 });
 
-const FE_PREFIX = 'NIKKI_PUBLIC_';
-const BFF_PREFIX = 'NIKKI_BFF_';
-
+export const isLocal = mustGetNodeEnv() === 'local';
 export const clientConfig = parseFrontend();
 
 /**

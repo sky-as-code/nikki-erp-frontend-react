@@ -35,7 +35,7 @@
 	"sideEffects": false,
 	"exports": {
 		".": "./src/index.ts",
-		"./request": "./src/request/request.ts",
+		"./request": "./src/request/index.ts",
 		"./types": "./src/types/index.ts",
 		"./utils": "./src/utils/index.ts"
 	},
