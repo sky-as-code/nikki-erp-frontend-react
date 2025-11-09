@@ -1,4 +1,4 @@
-export * from './AuthorizedGuard';
+export * from '../../../../modules/shell/src/layout/AuthorizedGuard';
 export * from './form';
 export * from './hoc';
 export * from './Table';

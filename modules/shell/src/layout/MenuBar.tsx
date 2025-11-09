@@ -1,5 +1,6 @@
-import { Button, Group, Menu } from '@mantine/core';
+import { Button, ButtonProps, Group, Menu } from '@mantine/core';
 import { MenuBarItem, useMenuBarItems } from '@nikkierp/ui/appState';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import clsx from 'clsx';
 import React from 'react';
 import { Link, useLocation } from 'react-router';
@@ -10,35 +11,33 @@ import styles from './MenuBar.module.css';
 export function MenuBar(): React.ReactNode {
 	const menuBarItems = useMenuBarItems();
 	const location = useLocation();
+	const { orgSlug, moduleSlug } = useActiveOrgModule();
+	const pathPrefix = `/${orgSlug}/${moduleSlug}`;
+
+	const getPath = (link: string): string => {
+		if (link.startsWith('/')) return `${pathPrefix}${link}`;
+		return link;
+	};
 
 	return (
 		<Group gap='xs'>
 			{menuBarItems.map((item: MenuBarItem) => (
 				item.items ? (
-					<NavMenu key={item.label} item={item} currentPath={location.pathname} />
+					<NavMenu
+						key={item.label} item={item}
+						currentPath={location.pathname}
+						getPath={getPath}
+					/>
 				) : (
-					item.link ? (
-						<Button
-							key={item.label}
-							// variant={isPathActive(item.link, location.pathname) ? 'filled' : 'subtle'}
-							variant='subtle'
-							c='dark'
-							className={clsx({
-								[styles.active]: isPathActive(item.link, location.pathname),
-							})}
-							component={Link}
-							to={item.link}
-						>
-							{item.label}
-						</Button>
-					) : (
-						<Button
-							key={item.label}
-							variant='subtle'
-						>
-							{item.label}
-						</Button>
-					)
+					<Button
+						key={item.label}
+						// variant={isPathActive(item.link, location.pathname) ? 'filled' : 'subtle'}
+						{...buttonProps(isPathActive(item.link ?? '/', location.pathname))}
+						component={Link}
+						to={getPath(item.link ?? '/')}
+					>
+						{item.label}
+					</Button>
 				)
 			))}
 		</Group>
@@ -48,9 +47,10 @@ export function MenuBar(): React.ReactNode {
 type NavMenuProps = {
 	item: MenuBarItem;
 	currentPath: string;
+	getPath: (link: string) => string;
 };
 
-const NavMenu: React.FC<NavMenuProps> = ({ item, currentPath }) => {
+function NavMenu({ item, currentPath, getPath }: NavMenuProps): React.ReactNode {
 	const hasActiveChild = item.items?.some(subItem =>
 		isPathActive(subItem.link || '', currentPath) ||
 		hasActiveNestedItem(subItem, currentPath),
@@ -60,11 +60,7 @@ const NavMenu: React.FC<NavMenuProps> = ({ item, currentPath }) => {
 		<Menu width={200} position='bottom-start' trigger='click-hover'>
 			<Menu.Target>
 				<Button
-					variant='subtle'
-					className={clsx({
-						[styles.active]: hasActiveChild,
-					})}
-					c='dark'
+					{...buttonProps(hasActiveChild)}
 				>
 					{item.label}
 				</Button>
@@ -72,19 +68,17 @@ const NavMenu: React.FC<NavMenuProps> = ({ item, currentPath }) => {
 
 			<Menu.Dropdown>
 				{item.items?.map((subItem, index) => (
-					<MenuItemRenderer key={index} item={subItem} currentPath={currentPath} />
+					<MenuItemRenderer
+						key={index} item={subItem}
+						currentPath={currentPath} getPath={getPath}
+					/>
 				))}
 			</Menu.Dropdown>
 		</Menu>
 	);
 };
 
-type MenuItemRendererProps = {
-	item: MenuBarItem;
-	currentPath: string;
-};
-
-const MenuItemRenderer: React.FC<MenuItemRendererProps> = ({ item, currentPath }) => {
+function MenuItemRenderer({ item, currentPath, getPath }: NavMenuProps): React.ReactNode {
 	const isActive = item.link ? isPathActive(item.link, currentPath) : false;
 	const hasActiveChild = item.items?.some(subItem =>
 		isPathActive(subItem.link || '', currentPath) ||
@@ -99,18 +93,14 @@ const MenuItemRenderer: React.FC<MenuItemRendererProps> = ({ item, currentPath }
 					{item.link ? (
 						<Menu.Sub.Item
 							component={Link}
-							to={item.link}
-							className={clsx({
-								[styles.active]: isActive || hasActiveChild,
-							})}
+							to={getPath(item.link)}
+							{...itemProps(isActive || hasActiveChild)}
 						>
 							{item.label}
 						</Menu.Sub.Item>
 					) : (
 						<Menu.Sub.Item
-							className={clsx({
-								[styles.active]: hasActiveChild,
-							})}
+							{...itemProps(hasActiveChild)}
 						>
 							{item.label}
 						</Menu.Sub.Item>
@@ -119,7 +109,10 @@ const MenuItemRenderer: React.FC<MenuItemRendererProps> = ({ item, currentPath }
 
 				<Menu.Sub.Dropdown>
 					{item.items.map((nestedItem, nestedIndex) => (
-						<MenuItemRenderer key={nestedIndex} item={nestedItem} currentPath={currentPath} />
+						<MenuItemRenderer
+							key={nestedIndex} item={nestedItem}
+							currentPath={currentPath} getPath={getPath}
+						/>
 					))}
 				</Menu.Sub.Dropdown>
 			</Menu.Sub>
@@ -131,10 +124,8 @@ const MenuItemRenderer: React.FC<MenuItemRendererProps> = ({ item, currentPath }
 		return (
 			<Menu.Item
 				component={Link}
-				to={item.link}
-				className={clsx({
-					[styles.active]: isActive,
-				})}
+				to={getPath(item.link)}
+				{...itemProps(isActive)}
 			>
 				{item.label}
 			</Menu.Item>
@@ -146,7 +137,33 @@ const MenuItemRenderer: React.FC<MenuItemRendererProps> = ({ item, currentPath }
 			{item.label}
 		</Menu.Item>
 	);
-};
+}
+
+function buttonProps(isActive: boolean): ButtonProps {
+	return {
+		variant: 'subtle',
+		c: 'dark',
+		size: 'md',
+		className: clsx({
+			[styles.active]: isActive,
+		}),
+	};
+}
+
+type MenuSubItemProps = React.ComponentProps<typeof Menu.Sub.Item>;
+
+function itemProps(isActive: boolean): MenuSubItemProps {
+	return {
+		className: clsx({
+			[styles.active]: isActive,
+		}),
+		styles: {
+			itemLabel: {
+				fontSize: 'var(--mantine-font-size-md)',
+			},
+		},
+	};
+}
 
 // Helper function to normalize a path (ensure it starts with /)
 function normalizePath(path: string): string {

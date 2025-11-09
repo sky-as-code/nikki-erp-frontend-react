@@ -1,5 +1,8 @@
 import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
+import React from 'react';
 import { useSelector } from 'react-redux';
+
+import { MicroAppDispatchFn } from '../microApp';
 
 
 export const SLICE_NAME = 'shellLayout';
@@ -25,6 +28,9 @@ const layoutSlice = createSlice({
 		setMenuBarItems: (state, action: PayloadAction<MenuBarItem[]>) => {
 			state.menuBarItems = action.payload;
 		},
+		clearMenuBarItems: (state) => {
+			state.menuBarItems = [];
+		},
 	},
 });
 
@@ -41,3 +47,12 @@ const selectMenuBarItems = createSelector(
 
 export const useLayoutState = () => useSelector(selectLayoutState);
 export const useMenuBarItems = () => useSelector(selectMenuBarItems);
+
+export function useSetMenuBarItems(items: MenuBarItem[], dispatch: MicroAppDispatchFn) {
+	React.useEffect(() => {
+		dispatch(layoutActions.setMenuBarItems(items));
+		return () => {
+			dispatch(layoutActions.clearMenuBarItems());
+		};
+	}, [items]);
+}

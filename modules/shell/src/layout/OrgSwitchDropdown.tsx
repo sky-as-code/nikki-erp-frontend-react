@@ -1,7 +1,9 @@
 import { useIsAuthenticated } from '@nikkierp/shell/auth';
 import { useMyOrgs } from '@nikkierp/shell/userContext';
+import { navigateToAction, useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
 import React, { useMemo } from 'react';
+import { useDispatch } from 'react-redux';
 
 
 export type OrgSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'> & {
@@ -11,7 +13,9 @@ export type OrgSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWi
 export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNode {
 	// const { userSettings } = useConfig();
 	// const { orgSlug, redirectToOrg } = useTenantUrl();
+	const dispatch = useDispatch();
 	const isAuthenticated = useIsAuthenticated();
+	const { orgSlug } = useActiveOrgModule();
 	const orgs = useMyOrgs();
 
 	const items = useMemo(() => {
@@ -22,8 +26,8 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 		}));
 	}, [orgs, isAuthenticated]);
 
-	const handleOrgChange = (orgSlug: string) => {
-		// redirectToOrg(orgSlug);
+	const handleOrgChange = (newOrgSlug: string) => {
+		dispatch(navigateToAction(`/${newOrgSlug}`));
 	};
 
 	return isAuthenticated && (orgs.length || !props.hideIfEmpty) && (
@@ -38,7 +42,7 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 			targetFw='bolder'
 			dropdownWidth={props.dropdownWidth}
 			items={items}
-			// value={orgSlug}
+			value={orgSlug}
 			onChange={handleOrgChange}
 		/>
 	);

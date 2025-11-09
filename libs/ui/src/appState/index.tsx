@@ -3,6 +3,6 @@ export {
 	type RoutingState,
 } from './routingSlice';
 export {
-	layoutActions, useLayoutState, useMenuBarItems,
+	layoutActions, useLayoutState, useMenuBarItems, useSetMenuBarItems,
 	type LayoutState, type MenuBarItem,
 } from './layoutSlice';

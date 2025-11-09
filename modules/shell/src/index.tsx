@@ -2,11 +2,12 @@ import { Center, Paper, Stack, Text } from '@mantine/core';
 import { ShellProviders } from '@nikkierp/shell/contexts';
 import { LazyMicroApp, LazyMicroWidget } from '@nikkierp/shell/microApp';
 import { useFindMyModule, useFindMyOrg, useFirstOrgSlug } from '@nikkierp/shell/userContext';
-import { AuthorizedGuard } from '@nikkierp/ui/components';
+import { setActiveModuleAction, setActiveOrgAction } from '@nikkierp/ui/appState/routingSlice';
 import { MicroAppMetadata, MicroAppShellProps } from '@nikkierp/ui/microApp';
 import { IconHomeCancel } from '@tabler/icons-react';
 import React from 'react';
-import { Link, Navigate, Outlet, Route, Routes, useParams } from 'react-router';
+import { useDispatch } from 'react-redux';
+import { Link, Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router';
 
 import { UIProviders } from './context/UIProviders';
 import { PrivateLayout } from './layout/PrivateLayout';
@@ -50,8 +51,10 @@ function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 				<Route path='/' element={<ToDefaultOrg />} />
 				<Route element={<OrgSubLayout />}>
 					<Route path=':orgSlug'>
-						<Route index element={<ModuleList />} />
-						<Route path=':moduleSlug/*' element={<LazyModule microApps={props.microApps} />} />
+						<Route element={<ModuleSubLayout />}>
+							<Route index element={<ModuleList />} />
+							<Route path=':moduleSlug/*' element={<LazyModule microApps={props.microApps} />} />
+						</Route>
 					</Route>
 				</Route>
 			</Route>
@@ -60,19 +63,42 @@ function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 }
 
 function OrgSubLayout(): React.ReactNode {
+	const dispatch = useDispatch();
+	const location = useLocation();
 	const { orgSlug } = useParams();
 	const found = useFindMyOrg(orgSlug!);
+
+	React.useEffect(() => {
+		dispatch(setActiveOrgAction(orgSlug!));
+	}, [location]);
+
 	if (found) {
 		return <Outlet />;
 	}
 	return <Navigate to='/notfound' replace />;
 }
 
+function ModuleSubLayout(): React.ReactNode {
+	const dispatch = useDispatch();
+	const location = useLocation();
+	const { moduleSlug } = useParams();
+
+	React.useEffect(() => {
+		dispatch(setActiveModuleAction(moduleSlug));
+	}, [location]);
+
+	return <Outlet />;
+}
+
 function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): React.ReactNode {
+	const dispatch = useDispatch();
+	const location = useLocation();
 	const { moduleSlug } = useParams();
 	const { orgSlug } = useParams();
 	const foundModule = useFindMyModule(orgSlug!, moduleSlug!);
 	const foundApp = microApps.find(app => app.basePath === moduleSlug);
+
+
 	if (!foundModule || !foundApp) {
 		return <Navigate to='/notfound' replace />;
 	}
@@ -85,7 +111,9 @@ function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): React.Rea
 function ModuleList(): React.ReactNode {
 	return (
 		<>
-			<Link to='essential'>Essential</Link><br />
+			<Link to='essential'>
+				<div className='text-blue-500 py-4 border-b border-blue-500'>Essential</div>
+			</Link><br />
 			<Link to='identity'>
 				<div className='text-blue-500 py-4 border-b border-blue-500'>Identity</div>
 			</Link>
@@ -97,11 +125,9 @@ function ModuleList(): React.ReactNode {
 function ToDefaultOrg(): React.ReactNode {
 	const { slug: firstOrgSlug } = useFirstOrgSlug();
 
-	return (
-		<AuthorizedGuard>
-			{firstOrgSlug ? <Navigate to={`/${firstOrgSlug}`} replace /> : <NoOrg />}
-		</AuthorizedGuard>
-	);
+	return firstOrgSlug ?
+		<Navigate to={`/${firstOrgSlug}`} replace /> :
+		<NoOrg />;
 }
 
 function NoOrg(): React.ReactNode {

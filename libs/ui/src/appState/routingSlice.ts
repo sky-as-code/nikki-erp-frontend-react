@@ -11,9 +11,15 @@ export type RoutingState = {
 	actionParams?: UnknownRecord,
 	currentPath: string,
 	returnTo: string | null
+	activeOrg: string | null,
+	activeModule: string | null,
 };
 
-const initialState: RoutingState = getActualPath();
+const initialState: RoutingState = {
+	...getActualPath(),
+	activeOrg: null,
+	activeModule: null,
+};
 
 const routingSlice = createSlice({
 	name: SLICE_NAME,
@@ -57,6 +63,12 @@ const routingSlice = createSlice({
 				to: action.payload,
 			};
 		},
+		setActiveOrg: (state, action: PayloadAction<string | undefined | null>) => {
+			state.activeOrg = action.payload ?? null;
+		},
+		setActiveModule: (state, action: PayloadAction<string | undefined | null>) => {
+			state.activeModule = action.payload ?? null;
+		},
 	},
 });
 
@@ -79,6 +91,8 @@ export const {
 	tempNavigateTo: tempNavigateToAction,
 	navigateReturnTo: navigateReturnToAction,
 	navigateTo: navigateToAction,
+	setActiveOrg: setActiveOrgAction,
+	setActiveModule: setActiveModuleAction,
 } = routingSlice.actions;
 
 export const { reducer } = routingSlice;
@@ -96,7 +110,15 @@ const selectAction = createSelector(
 		actionParams: state.actionParams,
 	}),
 );
+const selectActiveOrgModule = createSelector(
+	selectRoutingState,
+	(state: RoutingState) => ({
+		moduleSlug: state.activeModule,
+		orgSlug: state.activeOrg,
+	}),
+);
 
+export const useActiveOrgModule = () => useSelector(selectActiveOrgModule);
 export const useRoutingAction = () => useSelector(selectAction);
 export const useRoutingState = () => useSelector(selectRoutingState);
 export const useCurrentStoredPath = () => useSelector(selectCurrentPath);

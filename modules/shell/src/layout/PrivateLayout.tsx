@@ -10,6 +10,7 @@ import React from 'react';
 import { Outlet } from 'react-router';
 
 import { MenuBar } from './MenuBar';
+import { ModuleSwitchDropdown } from './ModuleSwitchDropdown';
 import { OrgSwitchDropdown } from './OrgSwitchDropdown';
 import classes from './RootLayout.module.css';
 
@@ -71,9 +72,8 @@ const Header: React.FC = () => {
 				className={'flex flex-row items-center justify-start'}
 			>
 				<Breadcrumbs separatorMargin='xs'>
-					<OrgSwitchDropdown hideIfEmpty />
-					{/* <OrgSwitchDropdown dropdownWidth={300} />
-					<ModuleSwitchDropdown dropdownWidth={300} /> */}
+					<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
+					<ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />
 				</Breadcrumbs>
 				{/* <MenuBar items={navItems} /> */}
 				<MenuBar />

@@ -1,5 +1,5 @@
 import { Alert, MantineProvider } from '@mantine/core';
-import { layoutActions, MenuBarItem } from '@nikkierp/ui/appState';
+import { MenuBarItem, useSetMenuBarItems } from '@nikkierp/ui/appState';
 import { AuthorizedGuard } from '@nikkierp/ui/components';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
@@ -14,71 +14,61 @@ import { ModuleManagementPage } from './pages/ModuleManagement';
 import { OrgHomePage } from './pages/OrgHomePage';
 
 
-function createMenuBarItems(basePath: string): MenuBarItem[] {
-	return [
-		{
-			label: 'Home',
-			items: [
-				{
-					label: 'Org Home',
-					link: `${basePath}/org-home/sub`,
-				},
-			],
-		},
-		{
-			label: 'Management',
-			items: [
-				{
-					label: 'Management lvl 2.1',
-					items: [
-						{
-							label: 'Management lvl 3',
-							link: `${basePath}/module-management`,
-							items: [
-								{
-									label: 'Management lvl 4',
-									link: `${basePath}/module-management`,
-									items: [
-										{
-											label: 'Org Home Sub',
-											link: `${basePath}/org-home`,
-										},
-									],
-								},
-							],
-						},
-					],
-				},
-				{
-					label: 'Management lvl 2.2',
-					items: [
-						{
-							label: 'Management lvl 2.2.1',
-							items: [
-								{
-									label: 'Org Home Sub',
-									link: `${basePath}/module-management`,
-								},
-							],
-						},
-					],
-				},
-			],
-		},
-	];
-}
+const menuBarItems: MenuBarItem[] = [
+	{
+		label: 'Home',
+		items: [
+			{
+				label: 'Org Home',
+				link: `/org-home/sub`,
+			},
+		],
+	},
+	{
+		label: 'Management',
+		items: [
+			{
+				label: 'Management lvl 2.1',
+				items: [
+					{
+						label: 'Management lvl 3',
+						link: `/module-management`,
+						items: [
+							{
+								label: 'Management lvl 4',
+								link: `/module-management`,
+								items: [
+									{
+										label: 'Org Home Sub',
+										link: `/org-home`,
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+			{
+				label: 'Management lvl 2.2',
+				items: [
+					{
+						label: 'Management lvl 2.2.1',
+						items: [
+							{
+								label: 'Org Home Sub',
+								link: `/module-management`,
+							},
+						],
+					},
+				],
+			},
+		],
+	},
+];
 
 function Main(props: MicroAppProps) {
 	const dispatch = useMicroAppDispatch();
-
-	const menuBarItems = React.useMemo(
-		() => createMenuBarItems(props.routing.basePath || ''),
-		[props.routing.basePath],
-	);
-
-	React.useEffect(() => {
-		dispatch(layoutActions.setMenuBarItems(menuBarItems));
-	}, [menuBarItems]);
+	useSetMenuBarItems(menuBarItems, dispatch);
 
 	return (
 		<MicroAppProvider {...props}>

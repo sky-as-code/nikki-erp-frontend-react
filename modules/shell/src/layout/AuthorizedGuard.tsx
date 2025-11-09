@@ -1,12 +1,11 @@
+import { useIsAuthenticated } from '@nikkierp/shell/auth';
+import { tempNavigateToAction } from '@nikkierp/ui/appState/routingSlice';
 import React from 'react';
-
-import { tempNavigateToAction } from '../appState/routingSlice';
-import { useSmartDispatch } from '../hooks/appState';
-import { useIsAuthenticated } from '../hooks/auth';
+import { useDispatch } from 'react-redux';
 
 
 export function AuthorizedGuard({ children }: React.PropsWithChildren): React.ReactNode {
-	const dispatch = useSmartDispatch();
+	const dispatch = useDispatch();
 	const isAuthenticated = useIsAuthenticated();
 
 	React.useEffect(() => {
