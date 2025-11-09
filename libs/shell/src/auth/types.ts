@@ -1,3 +1,6 @@
+export const ErrRefreshTokenExpired = new Error('Refresh token expired');
+
+
 export type AuthenticatedSession = {
 	accessToken: string;
 	accessTokenExpiresAt: number;
@@ -15,17 +18,25 @@ export type SignInResult = UnknownRecord & {
 export type AuthenticatedCallback = (session: AuthenticatedSession) => void;
 
 export interface ISignInStrategy {
-	start(params?: UnknownRecord): Promise<UnknownRecord>;
-	continue(params?: UnknownRecord): Promise<SignInResult>;
+	startSignIn(params?: UnknownRecord): Promise<UnknownRecord>;
+	continueSignIn(params?: UnknownRecord): Promise<SignInResult>;
 	onAuthenticated(callback: AuthenticatedCallback): void;
+	refreshSession(refreshToken: string): Promise<AuthenticatedSession>;
 }
 
-export type AccessToken = {
-	accessToken: string;
-	accessTokenExpiresAt: number;
+export class TokenObj {
+	public constructor(
+		public readonly token: string,
+		public readonly expiresAt: number,
+	) {
+	}
+
+	public get isExpired(): boolean {
+		return this.expiresAt < Date.now();
+	}
 };
 
-export interface ITokenService {
-	getAccessToken(): AccessToken | null;
-	setAccessToken(token: AccessToken): void;
+export interface ITokenStorage {
+	getToken(): TokenObj | null;
+	setToken(token: TokenObj): void;
 }

@@ -1,10 +1,10 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
-import { signInAction, signOutAction, clearSignInErrorAction, AuthState } from './authSlice';
+import { AuthState } from './authSlice';
 import { UserContextState } from './userContextSlice';
 
-import type { RootState, AppDispatch } from '../appState/store';
+import type { RootState } from '../appState/store';
 
 
 const selectAuthData = (state: RootState) => state.shellAuth;
@@ -20,10 +20,19 @@ const selectSignInProgress = createSelector(selectAuthData, (state: AuthState) =
 	return state.signInProgress;
 });
 const selectIsAuthenticated = createSelector(selectAuthData, (state: AuthState) => state.isAuthenticated);
+const selectAuthenticatedStatus = createSelector(selectAuthData, (state: AuthState) => {
+	if (state.sessionExpiresAt == null) return null;
+	return {
+		isAuthenticated: state.isAuthenticated,
+		sessionExpiresAt: state.sessionExpiresAt,
+		isLoading: state.isLoading,
+	};
+});
 
 export const useAuthData = () => useSelector(selectAuthData);
 export const useSignInProgress = () => useSelector(selectSignInProgress);
 export const useIsAuthenticated = () => useSelector(selectIsAuthenticated);
+export const useAuthenticatedStatus = () => useSelector(selectAuthenticatedStatus);
 
 export const useFirstOrgSlug = () => useSelector(selectFirstOrgSlug);
 export const useUserContext = () => useSelector(selectUserContext);

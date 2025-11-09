@@ -13,7 +13,7 @@ export type RequestMakerOts = {
 	baseUrl: string,
 	auth: {
 		tokenType?: string,
-		getToken: () => string,
+		getToken: () => string | null,
 	},
 };
 

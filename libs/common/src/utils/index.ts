@@ -16,3 +16,7 @@ export function decodeBase64(base64: string): string {
 	const decoded = new TextDecoder().decode(decodedBytes);
 	return decoded;
 }
+
+export function randomString(length: number): string {
+	return Math.random().toString(36).substring(2, 2 + length);
+}

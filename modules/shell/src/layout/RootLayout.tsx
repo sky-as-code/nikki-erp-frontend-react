@@ -1,4 +1,5 @@
-import { Avatar, Box, Breadcrumbs, Combobox, Group, Input, InputBase, Stack, useCombobox, useMantineColorScheme, useMantineTheme } from '@mantine/core';
+import { Avatar, Box, Breadcrumbs, Center, Combobox, Group, Input, InputBase, Loader, Stack, Text, useCombobox, useMantineColorScheme, useMantineTheme } from '@mantine/core';
+import { useAuthenticatedStatus } from '@nikkierp/shell/auth';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 import { IconUserFilled } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -13,10 +14,11 @@ export type RootLayoutProps = {
 	microApps: MicroAppMetadata[];
 };
 
-export const RootLayout: React.FC<RootLayoutProps> = () => {
-
+export function RootLayout(props: RootLayoutProps): React.ReactNode {
 	const { colorScheme } = useMantineColorScheme();
 	const theme = useMantineTheme();
+	const status = useAuthenticatedStatus();
+	const alreadyHasSession = Boolean(status);
 
 	const bg = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
 
@@ -30,7 +32,14 @@ export const RootLayout: React.FC<RootLayoutProps> = () => {
 		>
 			<Header />
 			<Box component='main'>
-				<Outlet />
+				{alreadyHasSession ? <Outlet /> : (
+					<Center w='100%' h='100vh'>
+						<Stack align='center' gap='xs'>
+							<Loader />
+							<Text c='dimmed'>Restoring your session...</Text>
+						</Stack>
+					</Center>
+				)}
 			</Box>
 		</Stack>
 	);

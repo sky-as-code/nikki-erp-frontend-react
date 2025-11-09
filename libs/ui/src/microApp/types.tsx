@@ -1,7 +1,7 @@
 import React from 'react';
 import { Location, Navigator } from 'react-router-dom';
 
-import { RegisterReducerFn } from '../appState';
+import { RegisterReducerFn } from '../microApp';
 import { ImportFn } from '../types/miscs';
 
 
@@ -133,5 +133,5 @@ export type MicroAppRoutingOptions = {
 
 export type MicroAppApiOptions = {
 	defaultBaseUrl: string,
-	getAccessToken: () => string,
+	getAccessToken: () => string | null,
 };

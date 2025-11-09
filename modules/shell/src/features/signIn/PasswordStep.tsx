@@ -1,6 +1,6 @@
 import { Anchor, Button, Group, Stack } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
-import { useAuthData, useSignInProgress, signInAction } from '@nikkierp/shell/auth';
+import { useAuthData, useSignInProgress, continueSignInAction } from '@nikkierp/shell/auth';
 import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useRef } from 'react';
@@ -27,7 +27,7 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 	const handleSubmit = async (data: { password: string }) => {
 		// This would be passed as a prop in a real implementation
 		console.log('SignIn attempt:', data);
-		dispatch(signInAction({ password: data.password }));
+		dispatch(continueSignInAction({ password: data.password }));
 	};
 
 	return (

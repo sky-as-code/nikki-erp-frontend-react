@@ -21,7 +21,6 @@ type MicroAppStateContextType = RegisterReducersResult & {
 
 let appStateContextValue: RegisterReducersResult;
 let appStateContext: React.Context<RegisterReducersResult>;
-// const appStateContext = createContext<AppStateContextType>({} as any);
 
 export function initMicroAppStateContext(registerResult: RegisterReducersResult) {
 	appStateContext = createContext<MicroAppStateContextType>(registerResult);
@@ -82,7 +81,7 @@ export const useRootSelector: UseStateSelectorFn<any> = (selector) => {
 
 /**
  * Dispatches an action to Shell's store.
- * Use this instead of useDispatch from react-redux.
+ * Micro-apps must use this instead of useDispatch from react-redux.
  */
 export const useMicroAppDispatch = (): MicroAppDispatchFn => {
 	const ctxVal = useContext(appStateContext);

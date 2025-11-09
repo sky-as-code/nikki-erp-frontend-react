@@ -1,6 +1,6 @@
 import { Anchor, Button, Group, Loader, Stack, Text } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
-import { startAttemptAction, useAuthData, useSignInProgress } from '@nikkierp/shell/auth';
+import { startSignInAction, useAuthData, useSignInProgress } from '@nikkierp/shell/auth';
 import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import { IconLoader2 } from '@tabler/icons-react';
@@ -28,7 +28,7 @@ export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	}, [isLoading, signInProgress?.nextStep]);
 
 	const handleNext = async (data: { email: string }) => {
-		dispatch(startAttemptAction({ email: data.email }));
+		dispatch(startSignInAction({ email: data.email }));
 	};
 
 	return (

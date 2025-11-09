@@ -1,6 +1,6 @@
 import { initRequestMaker } from '@nikkierp/common/request';
 import { useRoutingAction, useCurrentStoredPath } from '@nikkierp/ui/appState';
-import { resetCurrentPathAction, tempNavigateToAction } from '@nikkierp/ui/appState/routingSlice';
+import { resetCurrentPathAction } from '@nikkierp/ui/appState/routingSlice';
 import i18n from '@nikkierp/ui/i18n';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 import React from 'react';
@@ -8,10 +8,11 @@ import { I18nextProvider } from 'react-i18next';
 import { Provider as ReduxProvider, useDispatch } from 'react-redux';
 import { Location, useLocation, useNavigate } from 'react-router';
 
-import { authService, SessionStorageTokenService } from '@nikkierp/shell/auth';
+import { initAuthService, TokenLocalStorage, TokenSessionStorage } from '@nikkierp/shell/auth';
 import { NikkiAuthenticateStrategy } from '@nikkierp/shell/auth/strategies';
 
 import { store } from '../appState/store';
+import { AuthProvider } from '../auth/AuthProvider';
 import { setEnvVarsAction } from '../config/shellConfigSlice';
 import { MicroAppHostProvider } from '../microApp';
 import { ShellEnvVars } from '../types';
@@ -24,16 +25,19 @@ export type ShellProvidersProps = React.PropsWithChildren & {
 
 export function ShellProviders(props: ShellProvidersProps) {
 	const signInStrategy = new NikkiAuthenticateStrategy();
-	authService.strategy = signInStrategy;
-
-	const tokenService = new SessionStorageTokenService();
-	authService.tokenService = tokenService;
+	const accessTokenStorage = new TokenSessionStorage('nikki_access_token');
+	const refreshTokenStorage = new TokenLocalStorage('nikki_refresh_token');
+	const authService = initAuthService({
+		strategy: signInStrategy,
+		accessTokenStorage: accessTokenStorage,
+		refreshTokenStorage: refreshTokenStorage,
+	});
 
 	const envVars = props.envVars as ShellEnvVars;
 	initRequestMaker({
 		baseUrl: envVars.BASE_API_URL,
 		auth: {
-			getToken: signInStrategy.getAccessToken.bind(signInStrategy),
+			getToken: authService.getAccessToken.bind(authService),
 		},
 	});
 
@@ -68,9 +72,11 @@ function InnerShellProviders(props: ShellProvidersProps): React.ReactNode {
 
 	return (
 		<I18nextProvider i18n={i18n}>
-			<MicroAppHostProvider microApps={props.microApps}>
-				{props.children}
-			</MicroAppHostProvider>
+			<AuthProvider>
+				<MicroAppHostProvider microApps={props.microApps}>
+					{props.children}
+				</MicroAppHostProvider>
+			</AuthProvider>
 		</I18nextProvider>
 	);
 }

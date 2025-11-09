@@ -39,6 +39,7 @@ export const MicroAppShell: MicroAppShellBundle['MicroAppShell'] = ({ microApps 
 type ShellRoutesProps = {
 	microApps: MicroAppMetadata[];
 };
+
 const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
 	return (
 		<Routes>

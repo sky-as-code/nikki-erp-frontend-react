@@ -1,7 +1,7 @@
 import * as request from '@nikkierp/common/request';
 
 import {
-	AccessToken, AuthenticatedSession, ITokenService, ISignInStrategy,
+	TokenObj, AuthenticatedSession, ITokenStorage, ISignInStrategy,
 	SignInResult,
 } from './types';
 
@@ -15,33 +15,50 @@ export type User = {
 
 export type LoginCredentials = Record<string, unknown>;
 
+export type InitAuthServiceParams = {
+	strategy: ISignInStrategy;
+	accessTokenStorage: ITokenStorage;
+	refreshTokenStorage: ITokenStorage;
+};
+
+let authServiceInstance: AuthService | null = null;
+
+export function initAuthService(params: InitAuthServiceParams): AuthService {
+	return authServiceInstance = new AuthService(params);
+}
+
+export function authService(): AuthService {
+	if (!authServiceInstance) {
+		throw new Error('Auth service must be initialized with initAuthService() before use');
+	}
+	return authServiceInstance;
+}
+
 export class AuthService {
-	private _strategy?: ISignInStrategy;
-	private _tokenService?: ITokenService;
+	#strategy: ISignInStrategy;
+	#accessTokenStorage: ITokenStorage;
+	#refreshTokenStorage: ITokenStorage;
 
-	public get strategy(): ISignInStrategy | undefined {
-		return this._strategy;
+	public constructor(params: InitAuthServiceParams) {
+		this.#strategy = params.strategy;
+		this.#accessTokenStorage = params.accessTokenStorage;
+		this.#refreshTokenStorage = params.refreshTokenStorage;
 	}
 
-	public set strategy(strategy: ISignInStrategy) {
-		this._strategy = strategy;
-		this._strategy!.onAuthenticated(this._onSignInSuccess.bind(this));
+	public get sessionExpiresAt(): number {
+		return this.#accessTokenStorage.getToken()?.expiresAt ?? 0;
 	}
 
-	public get tokenService(): ITokenService | undefined {
-		return this._tokenService;
+	public getAccessToken(): string | null {
+		return this.#accessTokenStorage.getToken()?.token ?? null;
 	}
 
-	public set tokenService(tokenService: ITokenService) {
-		this._tokenService = tokenService;
+	public startSignIn(params?: UnknownRecord): Promise<UnknownRecord> {
+		return this.#strategy.startSignIn(params);
 	}
 
-	public startSession(params?: UnknownRecord): Promise<UnknownRecord> {
-		return this._strategy!.start(params);
-	}
-
-	public async signIn(params: UnknownRecord): Promise<SignInResult> {
-		const result = await this._strategy!.continue(params);
+	public async continueSignIn(params: UnknownRecord): Promise<SignInResult> {
+		const result = await this.#strategy.continueSignIn(params);
 		if (result?.done) {
 			this._onSignInSuccess(result.data!);
 		}
@@ -52,22 +69,31 @@ export class AuthService {
 		await request.post('/logout');
 	}
 
-	public async refreshToken(refreshToken: string): Promise<{ token: string }> {
-		const response = await request.post<{ token: string }>('/refresh-token', {
-			json: { refreshToken },
-		});
-		return response;
+	public async refreshSession(refreshToken: string): Promise<void> {
+		const result = await this.#strategy.refreshSession(refreshToken);
+		this._onSignInSuccess(result);
 	}
 
-	public getAccessToken(): AccessToken | null {
-		return this._tokenService?.getAccessToken() ?? null;
+	public async restoreAuthSession(): Promise<boolean> {
+		const refreshToken = this.#refreshTokenStorage.getToken();
+		if (refreshToken && !refreshToken.isExpired) {
+			await this.refreshSession(refreshToken.token);
+			return true;
+		}
+		return false;
 	}
 
 	private _onSignInSuccess(session: AuthenticatedSession): void {
-		this._tokenService?.setAccessToken({
-			accessToken: session.accessToken,
-			accessTokenExpiresAt: session.accessTokenExpiresAt,
-		});
+		this.#accessTokenStorage.setToken(new TokenObj(
+			session.accessToken,
+			session.accessTokenExpiresAt,
+		));
+		if (session.refreshToken) {
+			this.#refreshTokenStorage.setToken(new TokenObj(
+				session.refreshToken,
+				session.refreshTokenExpiresAt!,
+			));
+		}
 	}
 
 	// public async fetchProfile(): Promise<User> {
@@ -75,5 +101,3 @@ export class AuthService {
 	// 	return response;
 	// }
 }
-
-export const authService = new AuthService();

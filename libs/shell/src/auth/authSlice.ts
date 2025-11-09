@@ -11,27 +11,29 @@ export type AuthState = {
 	error: string | null;
 	isAuthenticated: boolean;
 	isLoading: boolean;
-	user: User | null;
+	sessionExpiresAt: number | null;
 	signInProgress: UnknownRecord | null;
+	user: User | null;
 };
 
 const initialState: AuthState = {
-	isAuthenticated: false,
-	user: null,
-	isLoading: false,
 	error: null,
+	isAuthenticated: false,
+	isLoading: false,
+	sessionExpiresAt: null,
 	signInProgress: null,
+	user: null,
 };
 
-export const startAttemptAction = createAsyncThunk<
+export const startSignInAction = createAsyncThunk<
 	UnknownRecord,
 	{ email: string },
 	{ rejectValue: string }
 >(
-	`${SLICE_NAME}/startSignInAttempt`,
+	`${SLICE_NAME}/startSignIn`,
 	async (_, { rejectWithValue }) => {
 		try {
-			return await authService.startSession();
+			return await authService().startSignIn();
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Start sign in attempt failed';
@@ -40,16 +42,16 @@ export const startAttemptAction = createAsyncThunk<
 	},
 );
 
-export const signInAction = createAsyncThunk<
+export const continueSignInAction = createAsyncThunk<
 	SignInResult,
 	UnknownRecord,
 	{ rejectValue: string }
 // { rejectValue: string; dispatch: (action: ReturnType<typeof fetchProfileAction>) => void }
 >(
-	`${SLICE_NAME}/signIn`,
+	`${SLICE_NAME}/continueSignIn`,
 	async (params, { rejectWithValue }) => {
 		try {
-			const result = await authService.signIn(params);
+			const result = await authService().continueSignIn(params);
 			// queueMicrotask(() => dispatch(fetchProfileAction()));
 			return result;
 		}
@@ -68,11 +70,29 @@ export const signOutAction = createAsyncThunk<
 	`${SLICE_NAME}/signOut`,
 	async (_, { rejectWithValue }) => {
 		try {
-			await authService.signOut();
+			await authService().signOut();
 			return;
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Logout failed';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
+export const restoreAuthSessionAction = createAsyncThunk<
+	boolean,
+	void,
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/restoreAuthSession`,
+	async (_, { rejectWithValue }) => {
+		try {
+			const isSuccess = await authService().restoreAuthSession();
+			return isSuccess;
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Restore auth session failed';
 			return rejectWithValue(errorMessage);
 		}
 	},
@@ -90,25 +110,49 @@ const authSlice = createSlice({
 		clearSignInError: (state) => {
 			state.error = null;
 		},
+		// restoreAuthSession: (state) => {
+		// 	const sessionExpiresAt = authService().sessionExpiresAt;
+		// 	if (!sessionExpiresAt) return;
+		// 	state.isAuthenticated = true;
+		// 	state.sessionExpiresAt = sessionExpiresAt;
+		// },
 		setUser: (state, action: PayloadAction<User>) => {
 			state.user = action.payload;
 			state.isAuthenticated = true;
 		},
 	},
 	extraReducers: (builder) => {
-		addSignInReducers(builder);
+		addStartSignInReducers(builder);
+		addContSignInReducers(builder);
 		addSignOutReducers(builder);
-		addStartAttemptReducers(builder);
+		addRestoreAuthSessionReducers(builder);
 	},
 });
 
-function addSignInReducers(builder: ActionReducerMapBuilder<AuthState>): void {
+function addStartSignInReducers(builder: ActionReducerMapBuilder<AuthState>): void {
 	builder
-		.addCase(signInAction.pending, (state) => {
+		.addCase(startSignInAction.pending, (state) => {
 			state.isLoading = true;
 			state.error = null;
 		})
-		.addCase(signInAction.fulfilled, (state, action) => {
+		.addCase(startSignInAction.fulfilled, (state, action) => {
+			state.isLoading = false;
+			state.signInProgress = Object.assign({}, state.signInProgress, action.payload);
+		})
+		.addCase(startSignInAction.rejected, (state, action) => {
+			state.isLoading = false;
+			state.signInProgress = null;
+			state.error = action.payload!;
+		});
+}
+
+function addContSignInReducers(builder: ActionReducerMapBuilder<AuthState>): void {
+	builder
+		.addCase(continueSignInAction.pending, (state) => {
+			state.isLoading = true;
+			state.error = null;
+		})
+		.addCase(continueSignInAction.fulfilled, (state, action) => {
 			state.isLoading = false;
 			state.error = null;
 			if (action.payload.done) {
@@ -119,7 +163,7 @@ function addSignInReducers(builder: ActionReducerMapBuilder<AuthState>): void {
 				state.signInProgress = Object.assign({}, state.signInProgress, action.payload);
 			}
 		})
-		.addCase(signInAction.rejected, (state, action) => {
+		.addCase(continueSignInAction.rejected, (state, action) => {
 			state.isLoading = false;
 			state.error = action.payload!;
 		});
@@ -143,26 +187,33 @@ function addSignOutReducers(builder: ActionReducerMapBuilder<AuthState>): void {
 		});
 }
 
-function addStartAttemptReducers(builder: ActionReducerMapBuilder<AuthState>): void {
+function addRestoreAuthSessionReducers(builder: ActionReducerMapBuilder<AuthState>): void {
 	builder
-		.addCase(startAttemptAction.pending, (state) => {
+		.addCase(restoreAuthSessionAction.pending, (state) => {
 			state.isLoading = true;
 			state.error = null;
 		})
-		.addCase(startAttemptAction.fulfilled, (state, action) => {
+		.addCase(restoreAuthSessionAction.fulfilled, (state, action) => {
 			state.isLoading = false;
-			state.signInProgress = Object.assign({}, state.signInProgress, action.payload);
+			state.error = null;
+			if (action.payload) {
+				state.isAuthenticated = true;
+				state.sessionExpiresAt = authService().sessionExpiresAt;
+			}
+			else {
+				state.isAuthenticated = false;
+				state.sessionExpiresAt = 0;
+			}
 		})
-		.addCase(startAttemptAction.rejected, (state, action) => {
+		.addCase(restoreAuthSessionAction.rejected, (state, action) => {
 			state.isLoading = false;
-			state.signInProgress = null;
 			state.error = action.payload!;
 		});
 }
 
-// Action creators are generated for each case reducer function
 export const {
 	clearSignInError: clearSignInErrorAction,
+	// restoreAuthSession: restoreAuthSessionAction,
 	setUser: setUserAction,
 } = authSlice.actions;
 
