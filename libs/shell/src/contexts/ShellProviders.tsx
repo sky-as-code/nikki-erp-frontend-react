@@ -12,7 +12,7 @@ import { initAuthService, TokenLocalStorage, TokenSessionStorage } from '@nikkie
 import { NikkiAuthenticateStrategy } from '@nikkierp/shell/auth/strategies';
 
 import { store } from '../appState/store';
-import { AuthProvider } from '../auth/AuthProvider';
+import { SessionRestore } from '../auth/SessionRestore';
 import { setEnvVarsAction } from '../config/shellConfigSlice';
 import { MicroAppHostProvider } from '../microApp';
 import { ShellEnvVars } from '../types';
@@ -72,11 +72,11 @@ function InnerShellProviders(props: ShellProvidersProps): React.ReactNode {
 
 	return (
 		<I18nextProvider i18n={i18n}>
-			<AuthProvider>
+			<SessionRestore>
 				<MicroAppHostProvider microApps={props.microApps}>
 					{props.children}
 				</MicroAppHostProvider>
-			</AuthProvider>
+			</SessionRestore>
 		</I18nextProvider>
 	);
 }

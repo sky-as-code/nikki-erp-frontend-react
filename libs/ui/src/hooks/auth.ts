@@ -4,8 +4,15 @@ import { useSelector } from 'react-redux';
 import { useIsMicroApp, useRootSelector } from '../microApp';
 
 
-const selectAuthData = (state: any) => state.shellAuth as any;
-const selectIsAuthenticated = createSelector(selectAuthData, (state: any) => state.isAuthenticated as boolean);
+const selectAuthState = (state: any) => state.shellAuth as any;
+const selectUserContext = (state: any) => state.shellUserContext;
+
+const selectIsAuthenticated = createSelector(
+	selectAuthState,
+	selectUserContext,
+	(authData: any, userContext: any) =>
+		authData.isSignInSuccess && Boolean(userContext.user),
+);
 
 export function useIsAuthenticated(): boolean {
 	const isMicroApp = useIsMicroApp();

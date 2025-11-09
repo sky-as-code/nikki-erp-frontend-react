@@ -4,8 +4,8 @@ import { RegisterReducerFn } from '@nikkierp/ui/microApp';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
 import * as auth from '../auth/authSlice';
-import * as userContext from '../auth/userContextSlice';
 import * as shellConfig from '../config/shellConfigSlice';
+import * as userContext from '../userContext/userContextSlice';
 
 
 const localReducers = {

@@ -13,7 +13,7 @@ import './styles/index.css';
 const microApps: MicroAppMetadata[] = [
 	{
 		slug: 'nikkierp.identity',
-		basePath: '/identity',
+		basePath: 'identity',
 		bundleUrl: () => import('@nikkierp/microapp-identity'),
 		// bundleUrl: () => import('http://localhost:3000/index.ts'),
 		// configUrl: 'http://localhost:3001/config',

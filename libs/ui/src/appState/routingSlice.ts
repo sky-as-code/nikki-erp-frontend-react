@@ -50,6 +50,13 @@ const routingSlice = createSlice({
 				to: state.returnTo ? decodeURIComponent(state.returnTo) : '/',
 			};
 		},
+		navigateTo: (state, action: PayloadAction<string>) => {
+			state.action = 'navigateTo';
+			state.actionUpdatedAt = Date.now();
+			state.actionParams = {
+				to: action.payload,
+			};
+		},
 	},
 });
 
@@ -71,6 +78,7 @@ export const {
 	resetCurrentPath: resetCurrentPathAction,
 	tempNavigateTo: tempNavigateToAction,
 	navigateReturnTo: navigateReturnToAction,
+	navigateTo: navigateToAction,
 } = routingSlice.actions;
 
 export const { reducer } = routingSlice;

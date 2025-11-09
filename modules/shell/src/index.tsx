@@ -1,19 +1,18 @@
-import { Paper } from '@mantine/core';
-import { useFirstOrgSlug, useIsAuthenticated } from '@nikkierp/shell/auth';
+import { Center, Paper, Stack, Text } from '@mantine/core';
 import { ShellProviders } from '@nikkierp/shell/contexts';
 import { LazyMicroApp, LazyMicroWidget } from '@nikkierp/shell/microApp';
-import { tempNavigateToAction } from '@nikkierp/ui/appState/routingSlice';
+import { useFindMyModule, useFindMyOrg, useFirstOrgSlug } from '@nikkierp/shell/userContext';
 import { AuthorizedGuard } from '@nikkierp/ui/components';
-import { MicroAppMetadata, MicroAppShellBundle } from '@nikkierp/ui/microApp';
+import { MicroAppMetadata, MicroAppShellProps } from '@nikkierp/ui/microApp';
+import { IconHomeCancel } from '@tabler/icons-react';
 import React from 'react';
-import { useDispatch } from 'react-redux';
-import { Link, Route, Routes, useLocation, useNavigate } from 'react-router';
+import { Link, Navigate, Outlet, Route, Routes, useParams } from 'react-router';
 
 import { UIProviders } from './context/UIProviders';
-import { RootLayout } from './layout/RootLayout';
+import { PrivateLayout } from './layout/PrivateLayout';
+import { PublicLayout } from './layout/PublicLayout';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { SignInPage } from './pages/public/SignInPage';
-
-import './react';
 
 import './styles/index.css';
 
@@ -23,7 +22,7 @@ type ShellWindow = typeof window & {
 	__CLIENT_CONFIG__: Record<string, unknown>;
 };
 
-export const MicroAppShell: MicroAppShellBundle['MicroAppShell'] = ({ microApps }) => {
+export function MicroAppShell({ microApps }: MicroAppShellProps): React.ReactNode {
 	return (
 		<ShellProviders
 			microApps={microApps}
@@ -34,55 +33,87 @@ export const MicroAppShell: MicroAppShellBundle['MicroAppShell'] = ({ microApps 
 			</UIProviders>
 		</ShellProviders>
 	);
-};
+}
 
 type ShellRoutesProps = {
 	microApps: MicroAppMetadata[];
 };
 
-const ShellRoutes: React.FC<ShellRoutesProps> = ({ microApps }) => {
+function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 	return (
 		<Routes>
-			<Route path='/' element={<RootLayout microApps={microApps} />}>
-				<Route index element={
-					<>
-						<Link to='/essential'>Essential</Link><br />
-						<Link to='/identity'>
-							<div className='text-blue-500 py-4 border-b border-blue-500'>Identity</div>
-						</Link>
-						<Link to='/authorized'>Authorized</Link><br />
-						<Link to='/smart'>Smart</Link><br />
-						<Link to='/signin'>Sign In</Link><br />
-						<Link to='/someorg'>:orgSlug</Link><br />
-						<Link to='/someorg/sub'>:orgSlug/sub</Link><br />
-					</>
-				} />
-				<Route path='essential/*' element={<EssentialTest />} />
-				<Route path='identity/*' element={<IdentityTest />} />
-				<Route path='authorized' element={<AuthorizedPage />} />
-				<Route path='smart' element={<SmartNavigate />} />
+			<Route element={<PublicLayout />}>
 				<Route path='signin' element={<SignInPage />} />
-				{/* <Route path=':orgSlug'>
-					<Route index element={<OrgSub />} />
-					<Route path='sub'>
-						<Route index element={<OrgSub />} />
+				<Route path='notfound' element={<NotFoundPage />} />
+			</Route>
+			<Route element={<PrivateLayout />}>
+				<Route path='/' element={<ToDefaultOrg />} />
+				<Route element={<OrgSubLayout />}>
+					<Route path=':orgSlug'>
+						<Route index element={<ModuleList />} />
+						<Route path=':moduleSlug/*' element={<LazyModule microApps={props.microApps} />} />
 					</Route>
-				</Route> */}
-
-				{/* <Route element={<DomainLayout />}>
-					<Route index element={<ModuleListPage />} />
-				</Route> */}
+				</Route>
 			</Route>
 		</Routes>
 	);
-};
+}
 
-const OrgSub: React.FC = () => {
-	const location = useLocation();
+function OrgSubLayout(): React.ReactNode {
+	const { orgSlug } = useParams();
+	const found = useFindMyOrg(orgSlug!);
+	if (found) {
+		return <Outlet />;
+	}
+	return <Navigate to='/notfound' replace />;
+}
+
+function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): React.ReactNode {
+	const { moduleSlug } = useParams();
+	const { orgSlug } = useParams();
+	const foundModule = useFindMyModule(orgSlug!, moduleSlug!);
+	const foundApp = microApps.find(app => app.basePath === moduleSlug);
+	if (!foundModule || !foundApp) {
+		return <Navigate to='/notfound' replace />;
+	}
+
 	return (
-		<b>{location.pathname}</b>
+		<LazyMicroApp slug={foundApp.slug} basePath={foundApp.basePath} />
 	);
-};
+}
+
+function ModuleList(): React.ReactNode {
+	return (
+		<>
+			<Link to='essential'>Essential</Link><br />
+			<Link to='identity'>
+				<div className='text-blue-500 py-4 border-b border-blue-500'>Identity</div>
+			</Link>
+			<Link to='/signin'>Sign In</Link><br />
+		</>
+	);
+}
+
+function ToDefaultOrg(): React.ReactNode {
+	const { slug: firstOrgSlug } = useFirstOrgSlug();
+
+	return (
+		<AuthorizedGuard>
+			{firstOrgSlug ? <Navigate to={`/${firstOrgSlug}`} replace /> : <NoOrg />}
+		</AuthorizedGuard>
+	);
+}
+
+function NoOrg(): React.ReactNode {
+	return (
+		<Center w='100%' h='90vh'>
+			<Stack align='center' gap='xs'>
+				<IconHomeCancel size={100} />
+				<Text c='dimmed'>You don't have any organization assigned to you...</Text>
+			</Stack>
+		</Center>
+	);
+}
 
 
 const EssentialTest: React.FC = () => {
@@ -95,45 +126,3 @@ const EssentialTest: React.FC = () => {
 		</>
 	);
 };
-
-const IdentityTest: React.FC = () => {
-	return (
-		<>
-			<Paper shadow='xs' p='xl'>
-				<LazyMicroApp slug='nikkierp.identity' basePath='identity' />
-			</Paper>
-		</>
-	);
-};
-
-const SmartNavigate: React.FC = () => {
-	const dispatch = useDispatch();
-	// const navigate = useNavigate();
-	const isAuthenticated = useIsAuthenticated();
-	// const { slug: firstOrgSlug, isLoading: isLoadingFirstOrgSlug } = useFirstOrgSlug();
-
-	React.useEffect(() => {
-		if (!isAuthenticated) {
-			dispatch(tempNavigateToAction('/signin'));
-		}
-		// else if (!isLoadingFirstOrgSlug) {
-		// 	navigate(`/${firstOrgSlug}`);
-		// }
-	}, [isAuthenticated]);
-
-	if (!isAuthenticated) {
-		return null;
-	}
-
-	return (
-		<>Smart Navigate</>
-	);
-};
-
-function AuthorizedPage(): React.ReactNode {
-	return (
-		<AuthorizedGuard>
-			<>Shell Authorized Page</>
-		</AuthorizedGuard>
-	);
-}

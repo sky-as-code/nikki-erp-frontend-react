@@ -1,6 +1,6 @@
 import { Anchor, Button, Group, Loader, Stack, Text } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
-import { startSignInAction, useAuthData, useSignInProgress } from '@nikkierp/shell/auth';
+import { startSignInAction, useAuthState, useSignInProgress } from '@nikkierp/shell/auth';
 import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import { IconLoader2 } from '@tabler/icons-react';
@@ -18,7 +18,7 @@ const emailSchemaTyped = emailSchema as ModelSchema;
 export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	const formRef = React.useRef<HTMLFormElement>(null);
 	const dispatch = useDispatch<AppDispatch>();
-	const { isLoading } = useAuthData();
+	const { isLoading } = useAuthState();
 	const signInProgress = useSignInProgress();
 
 	React.useEffect(() => {

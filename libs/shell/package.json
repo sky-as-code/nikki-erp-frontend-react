@@ -90,7 +90,8 @@
 		"./auth": "./src/auth/index.ts",
 		"./auth/strategies": "./src/auth/strategies/index.ts",
 		"./contexts": "./src/contexts/index.tsx",
-		"./microApp": "./src/microApp/index.tsx"
+		"./microApp": "./src/microApp/index.tsx",
+		"./userContext": "./src/userContext/index.ts"
 	},
 	"files": [
 		"src",

@@ -6,13 +6,6 @@ import {
 } from './types';
 
 
-export type User = {
-	id: string;
-	email: string;
-	name: string;
-	role: string;
-};
-
 export type LoginCredentials = Record<string, unknown>;
 
 export type InitAuthServiceParams = {
@@ -95,9 +88,4 @@ export class AuthService {
 			));
 		}
 	}
-
-	// public async fetchProfile(): Promise<User> {
-	// 	const response = await request.get<User>('/profile');
-	// 	return response;
-	// }
 }

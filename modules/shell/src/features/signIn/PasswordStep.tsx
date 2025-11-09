@@ -1,6 +1,6 @@
 import { Anchor, Button, Group, Stack } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
-import { useAuthData, useSignInProgress, continueSignInAction } from '@nikkierp/shell/auth';
+import { useAuthState, useSignInProgress, continueSignInAction } from '@nikkierp/shell/auth';
 import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useRef } from 'react';
@@ -21,7 +21,7 @@ type PasswordStepFormContentProps = BaseFormContentProps & {
 export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps): React.ReactNode {
 	const formRef = useRef<HTMLFormElement>(null);
 	const dispatch = useDispatch<AppDispatch>();
-	const { isLoading } = useAuthData();
+	const { isLoading } = useAuthState();
 	const signInProgress = useSignInProgress();
 
 	const handleSubmit = async (data: { password: string }) => {

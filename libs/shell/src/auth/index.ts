@@ -1,5 +1,5 @@
 export * from './authService';
 export * from './authSlice';
-export * from './authSelector';
-export * from './AuthProvider';
+export * from './authSelectors';
+export * from './SessionRestore';
 export * from './tokenStorage';

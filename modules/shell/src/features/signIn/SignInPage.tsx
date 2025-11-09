@@ -3,7 +3,6 @@ import { useIsAuthenticated } from '@nikkierp/shell/auth';
 import { navigateReturnToAction } from '@nikkierp/ui/appState/routingSlice';
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate, useSearchParams } from 'react-router';
 
 import { EmailStep } from './EmailStep';
 import { PasswordStep } from './PasswordStep';

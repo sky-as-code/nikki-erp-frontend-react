@@ -26,7 +26,7 @@ export class NikkiAuthenticateStrategy implements ISignInStrategy {
 	}
 
 	public async startSignIn(_?: UnknownRecord): Promise<SignInAttempt> {
-		await delay(2_000);
+		await delay(1_000);
 		return {
 			attemptId: randomString(10),
 			attemptExpiredAt: Date.now() + 1000 * 60 * 5,
@@ -35,7 +35,7 @@ export class NikkiAuthenticateStrategy implements ISignInStrategy {
 	}
 
 	public async continueSignIn(params?: SignInContinueParams): Promise<SignInContinueResult> {
-		await delay(2_000);
+		await delay(1_000);
 		return {
 			done: true,
 			data: {
@@ -48,7 +48,7 @@ export class NikkiAuthenticateStrategy implements ISignInStrategy {
 	}
 
 	public async refreshSession(refreshToken: string): Promise<AuthenticatedSession> {
-		await delay(2_000);
+		await delay(500);
 		return {
 			accessToken: randomString(10),
 			accessTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
