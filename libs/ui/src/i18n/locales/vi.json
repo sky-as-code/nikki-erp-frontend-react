@@ -1,17 +1,61 @@
 {
-    "login": {
-        "login": "Đăng nhập",
-        "username": "Tên đăng nhập",
-        "enterUserName": "Nhập tên đăng nhập",
-        "password": "Mật khẩu",
-        "enterPassword": "Nhập mật khẩu",
-        "forgotPassword": "Quên mật khẩu",
-        "messages": {
-            "loginSuccess": "Đăng nhập thành công!",
-            "loginFail": "Đăng nhập thất bại!",
-            "usernameRequired": "Tên đăng nhập là bắt buộc",
-            "passwordRequired": "Mật khẩu là bắt buộc",
-            "usernameOrPasswordIncorrect": "Tên đăng nhập hoặc mật khẩu không chính xác"
-        }
-    }
+	"login": {
+		"login": "Đăng nhập",
+		"username": "Tên đăng nhập",
+		"enterUserName": "Nhập tên đăng nhập",
+		"password": "Mật khẩu",
+		"enterPassword": "Nhập mật khẩu",
+		"forgotPassword": "Quên mật khẩu",
+		"messages": {
+			"loginSuccess": "Đăng nhập thành công!",
+			"loginFail": "Đăng nhập thất bại!",
+			"usernameRequired": "Tên đăng nhập là bắt buộc",
+			"passwordRequired": "Mật khẩu là bắt buộc",
+			"usernameOrPasswordIncorrect": "Tên đăng nhập hoặc mật khẩu không chính xác"
+		}
+	},
+	"nikki": {
+		"general": {
+			"fields": {
+				"id": "Mã định danh"
+			},
+			"errors": {
+				"required": "Trường này là bắt buộc",
+				"length": "Độ dài giá trị không hợp lệ"
+			}
+		},
+		"authorize": {
+			"resource": {
+				"fields": {
+					"id": "Mã tài nguyên",
+					"name": "Tên tài nguyên",
+					"description": "Mô tả",
+					"resource_type": {
+						"label": "Loại tài nguyên",
+						"description": "Chọn hệ thống sở hữu tài nguyên",
+						"nikki_application": "Ứng dụng Nikki ERP",
+						"custom": "Tài nguyên tùy chỉnh"
+					},
+					"resource_ref": "Tham chiếu tài nguyên",
+					"scope_type": {
+						"label": "Phạm vi áp dụng",
+						"description": "Xác định phạm vi cao nhất có thể truy cập",
+						"domain": "Miền (toàn bộ tenant)",
+						"org": "Tổ chức",
+						"hierarchy": "Cấp phân cấp",
+						"private": "Cá nhân"
+					},
+					"scope_ref": "Tham chiếu phạm vi",
+					"actions_count": "Số hành động",
+					"created_at": "Ngày tạo",
+					"updated_at": "Ngày cập nhật"
+				},
+				"placeholders": {
+					"name": "Nhập tên tài nguyên",
+					"description": "Mô tả cách sử dụng tài nguyên",
+					"scope_ref": "Nhập tham chiếu phạm vi (org, hierarchy ...)"
+				}
+			}
+		}
+	}
 }

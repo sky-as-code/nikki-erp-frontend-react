@@ -56,8 +56,8 @@ const mockModules: Module[] = [
 	},
 	{
 		id: '3',
-		name: 'Authorized',
-		slug: 'authorized',
+		name: 'Authorize',
+		slug: 'authorize',
 	},
 ];
 
