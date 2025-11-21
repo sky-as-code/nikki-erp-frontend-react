@@ -15,6 +15,15 @@
 		}
 	},
 	"nikki": {
+		"general": {
+			"fields": {
+				"id": "ID"
+			},
+			"errors": {
+				"required": "This field is required",
+				"length": "Value length is invalid"
+			}
+		},
 		"identity": {
 			"user": {
 				"title": "Users",
@@ -152,6 +161,39 @@
 					"updateError": "Failed to update organization",
 					"deleteError": "Failed to delete organization",
 					"noOrganizations": "No organizations found"
+				}
+			}
+		},
+		"authorize": {
+			"resource": {
+				"fields": {
+					"id": "Resource ID",
+					"name": "Resource name",
+					"description": "Description",
+					"resource_type": {
+						"label": "Resource type",
+						"description": "Select the system that owns this resource",
+						"nikki_application": "Nikki ERP application",
+						"custom": "Custom resource"
+					},
+					"resource_ref": "Resource reference",
+					"scope_type": {
+						"label": "Scope",
+						"description": "Define the highest scope that can see this resource",
+						"domain": "Domain (entire tenant)",
+						"org": "Organization",
+						"hierarchy": "Hierarchy level",
+						"private": "Private"
+					},
+					"scope_ref": "Scope reference",
+					"actions_count": "Available actions",
+					"created_at": "Created at",
+					"updated_at": "Updated at"
+				},
+				"placeholders": {
+					"name": "Enter resource name",
+					"description": "Describe how this resource will be used",
+					"scope_ref": "Enter scope reference (org, hierarchy, ...)"
 				}
 			}
 		}

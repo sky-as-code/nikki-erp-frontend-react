@@ -117,6 +117,9 @@ function ModuleList(): React.ReactNode {
 			<Link to='identity'>
 				<div className='text-blue-500 py-4 border-b border-blue-500'>Identity</div>
 			</Link>
+			<Link to='authorize'>
+				<div className='text-gray-800 py-4 border-b border-blue-500'>Authorize</div>
+			</Link>
 			<Link to='/signin'>Sign In</Link><br />
 		</>
 	);
