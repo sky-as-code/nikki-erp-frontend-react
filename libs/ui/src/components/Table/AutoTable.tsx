@@ -23,6 +23,7 @@ export type AutoTableProps = {
 	columnAsLink?: string;
 	columnAsLinkHref?: (rowData: any) => string;
 	columnAsId?: string;
+	columnRenderers?: Record<string, (row: Record<string, unknown>) => React.ReactNode>;
 	data: Record<string, unknown>[];
 	isLoading?: boolean;
 	schema: ModelSchema;
@@ -38,8 +39,14 @@ export const AutoTable: React.FC<AutoTableProps> = (props) => {
 	};
 	const validColumns = useMemo(() => {
 		const available = getAvailableColumns(props.schema);
-		return props.columns.filter((col) => available.includes(col));
-	}, [props.columns, props.schema]);
+		return props.columns.filter((col) => {
+			// Allow columns that have custom renderers even if not in schema
+			if (props.columnRenderers?.[col]) {
+				return true;
+			}
+			return available.includes(col);
+		});
+	}, [props.columns, props.schema, props.columnRenderers]);
 
 	return (
 		<Table>
@@ -76,8 +83,14 @@ export const AutoTable: React.FC<AutoTableProps> = (props) => {
 
 
 function formatCellValue(
-	fieldName: string, rowData: Record<string, unknown>, tableProps: AutoTableProps,
+	fieldName: string,
+	rowData: Record<string, unknown>,
+	tableProps: AutoTableProps,
 ): React.ReactNode {
+	if (tableProps.columnRenderers?.[fieldName]) {
+		return tableProps.columnRenderers[fieldName](rowData);
+	}
+
 	const value = rowData[fieldName];
 	if (value === null || value === undefined) return '';
 

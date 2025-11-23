@@ -8,12 +8,12 @@ import {
 import { Navigate } from 'react-router';
 
 import { reducer } from './appState';
-import { ActionListPage } from './pages/action/ActionListPage';
-import { EntitlementListPage } from './pages/entitlement/EntitlementListPage';
+import { ActionListPage } from './pages/actions/ActionListPage';
+import { EntitlementListPage } from './pages/entitlements/EntitlementListPage';
 import { GrantRequestListPage } from './pages/grantRequest/GrantRequestListPage';
 import { OverviewPage } from './pages/overview/OverviewPage';
-import { ResourceDetailPage } from './pages/resource/ResourceDetailPage';
-import { ResourceListPage } from './pages/resource/ResourceListPage';
+import { ResourceFormPage } from './pages/resources/ResourceFormPage';
+import { ResourceListPage } from './pages/resources/ResourceListPage';
 import { RevokeRequestListPage } from './pages/revokeRequest/RevokeRequestListPage';
 import { RoleDetailPage } from './pages/role/RoleDetailPage';
 import { RoleListPage } from './pages/role/RoleListPage';
@@ -87,7 +87,8 @@ function Main(props: MicroAppProps) {
 						<AppRoute index element={<Navigate to='overview' replace />} />
 						<AppRoute path='overview' element={<OverviewPage />} />
 						<AppRoute path='resources' element={<ResourceListPage />} />
-						<AppRoute path='resources/:resourceId' element={<ResourceDetailPage />} />
+						<AppRoute path='resources/new' element={<ResourceFormPage />} />
+						<AppRoute path='resources/:resourceId/edit' element={<ResourceFormPage />} />
 						<AppRoute path='actions' element={<ActionListPage />} />
 						<AppRoute path='entitlements' element={<EntitlementListPage />} />
 						<AppRoute path='roles' element={<RoleListPage />} />
@@ -103,7 +104,6 @@ function Main(props: MicroAppProps) {
 		</MicroAppProvider>
 	);
 }
-
 
 const bundle: MicroAppBundle = {
 	init({ htmlTag, registerReducer }) {

@@ -1,0 +1,71 @@
+{
+	"name": "action",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.name' }",
+			"placeholder": "{ \"$ref\": 'nikki.authorize.action.placeholders.name' }",
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				},
+				{
+					"type": "length",
+					"min": 1,
+					"max": 64,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"resourceId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.resource_id' }",
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.description' }",
+			"placeholder": "{ \"$ref\": 'nikki.authorize.action.placeholders.description' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 255,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"entitlementsCount": {
+			"type": "integer",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.entitlements_count' }",
+			"frontendOnly": true
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.created_at' }",
+			"hidden": true
+		},
+		"updatedAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.updated_at' }",
+			"hidden": true
+		}
+	}
+}
+
