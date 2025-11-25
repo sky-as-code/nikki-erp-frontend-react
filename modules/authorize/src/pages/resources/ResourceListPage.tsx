@@ -15,116 +15,170 @@ import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp'
 import { ModelSchema } from '@nikkierp/ui/model';
 import { IconEdit, IconEye, IconPlus, IconRefresh, IconTrash, IconUpload } from '@tabler/icons-react';
 import React from 'react';
-import { useNavigate } from 'react-router';
 
 import { ResourceDetailModal } from './ResourceDetailModal';
+import { ResourceFormDialog } from './ResourceFormDialog';
 import { AuthorizeDispatch, resourceActions, selectResourceState } from '../../appState';
 import resourceSchema from '../../features/resources/resource-schema.json';
 import { Resource } from '../../features/resources/types';
 
 
-function useResourceListHandlers() {
-	const navigate = useNavigate();
-	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { resourceDetail, isLoadingDetail } = useMicroAppSelector(selectResourceState);
+type ResourceFormDialogState = { mode: 'create' | 'edit'; resource?: Resource };
+
+function useResourceDetailHandlers(resources: Resource[]) {
 	const [detailModalOpened, setDetailModalOpened] = React.useState(false);
-	const [selectedResourceId, setSelectedResourceId] = React.useState<string | null>(null);
-	const [deleteModalOpened, setDeleteModalOpened] = React.useState(false);
-	const [resourceToDelete, setResourceToDelete] = React.useState<string | null>(null);
+	const [selectedResourceName, setSelectedResourceName] = React.useState<string | null>(null);
 
 	const selectedResource = React.useMemo(() => {
-		if (!selectedResourceId) return undefined;
-		if (selectedResourceId === resourceDetail?.id) {
-			return resourceDetail;
-		}
-		return undefined;
-	}, [selectedResourceId, resourceDetail]);
+		if (!selectedResourceName) return undefined;
+		return resources.find((resource) => resource.name === selectedResourceName);
+	}, [selectedResourceName, resources]);
 
-	React.useEffect(() => {
-		if (selectedResourceId && detailModalOpened) {
-			dispatch(resourceActions.getResource(selectedResourceId));
-		}
-	}, [selectedResourceId, detailModalOpened, dispatch]);
-
-	const handleViewDetail = (resourceId: string) => {
-		setSelectedResourceId(resourceId);
+	const handleViewDetail = React.useCallback((resourceName: string) => {
+		setSelectedResourceName(resourceName);
 		setDetailModalOpened(true);
-	};
+	}, []);
 
-	const handleEdit = (resourceId: string) => {
-		navigate(`${resourceId}/edit`);
-	};
-
-	const handleDelete = (resourceId: string) => {
-		setResourceToDelete(resourceId);
-		setDeleteModalOpened(true);
-	};
-
-	const confirmDelete = () => {
-		if (resourceToDelete) {
-			// TODO: Dispatch delete action
-			console.log('Delete resource:', resourceToDelete);
-			setDeleteModalOpened(false);
-			setResourceToDelete(null);
-		}
-	};
-
-	const closeDetailModal = () => {
+	const closeDetailModal = React.useCallback(() => {
 		setDetailModalOpened(false);
-		setSelectedResourceId(null);
-	};
-
-	const closeDeleteModal = () => {
-		setDeleteModalOpened(false);
-		setResourceToDelete(null);
-	};
+		setSelectedResourceName(null);
+	}, []);
 
 	return {
-		navigate,
-		dispatch,
 		selectedResource,
-		isLoadingDetail,
-		detailModalOpened,
-		deleteModalOpened,
 		handleViewDetail,
-		handleEdit,
-		handleDelete,
-		confirmDelete,
+		detailModalOpened,
 		closeDetailModal,
+	};
+}
+
+function useResourceDeleteHandlers(resources: Resource[], dispatch: AuthorizeDispatch) {
+	const [deleteModalOpened, setDeleteModalOpened] = React.useState(false);
+	const [resourceToDelete, setResourceToDelete] = React.useState<Resource | null>(null);
+
+	const handleDeleteRequest = React.useCallback((resourceId: string) => {
+		const resource = resources.find((entry) => entry.id === resourceId);
+		if (!resource) {
+			return;
+		}
+		setResourceToDelete(resource);
+		setDeleteModalOpened(true);
+	}, [resources]);
+
+	const confirmDelete = React.useCallback(() => {
+		if (!resourceToDelete) {
+			return;
+		}
+		dispatch(resourceActions.deleteResource({
+			name: resourceToDelete.name,
+		})).then(() => {
+			setDeleteModalOpened(false);
+			setResourceToDelete(null);
+		});
+	}, [dispatch, resourceToDelete]);
+
+	const closeDeleteModal = React.useCallback(() => {
+		setDeleteModalOpened(false);
+		setResourceToDelete(null);
+	}, []);
+
+	return {
+		deleteModalOpened,
+		resourceToDelete,
+		handleDeleteRequest,
+		confirmDelete,
 		closeDeleteModal,
+	};
+}
+
+function useResourceFormHandlers(resources: Resource[]) {
+	const [formDialogState, setFormDialogState] = React.useState<ResourceFormDialogState | null>(null);
+
+	const openCreateDialog = React.useCallback(() => {
+		setFormDialogState({
+			mode: 'create',
+		});
+	}, []);
+
+	const openEditDialog = React.useCallback((resourceId: string) => {
+		const resource = resources.find((entry) => entry.id === resourceId);
+		if (!resource) {
+			return;
+		}
+		setFormDialogState({
+			mode: 'edit',
+			resource,
+		});
+	}, [resources]);
+
+	const closeFormDialog = React.useCallback(() => {
+		setFormDialogState(null);
+	}, []);
+
+	return {
+		formDialogState,
+		openCreateDialog,
+		openEditDialog,
+		closeFormDialog,
 	};
 }
 
 function ResourceListPageBody(): React.ReactNode {
 	const { resources, isLoadingList } = useMicroAppSelector(selectResourceState);
-	const schema = resourceSchema as ModelSchema;
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const viewHandlers = useResourceDetailHandlers(resources);
+	const formHandlers = useResourceFormHandlers(resources);
+	const deleteHandlers = useResourceDeleteHandlers(resources, dispatch);
+
 	const columns = ['name', 'description', 'resourceType', 'scopeType', 'actionsCount', 'actions'];
-	const {
-		navigate,
-		dispatch,
-		selectedResource,
-		isLoadingDetail,
-		detailModalOpened,
-		deleteModalOpened,
-		handleViewDetail,
-		handleEdit,
-		handleDelete,
-		confirmDelete,
-		closeDetailModal,
-		closeDeleteModal,
-	} = useResourceListHandlers();
+	const schema = resourceSchema as ModelSchema;
 
 	React.useEffect(() => {
 		dispatch(resourceActions.listResources());
 	}, [dispatch]);
 
 	return (
+		<ResourceListView
+			columns={columns}
+			schema={schema}
+			resources={resources}
+			isLoadingList={isLoadingList}
+			onRefresh={() => dispatch(resourceActions.listResources())}
+			viewHandlers={viewHandlers}
+			formHandlers={formHandlers}
+			deleteHandlers={deleteHandlers}
+		/>
+	);
+}
+
+interface ResourceListViewProps {
+	columns: string[];
+	schema: ModelSchema;
+	resources: Resource[];
+	isLoadingList: boolean;
+	onRefresh: () => void;
+	viewHandlers: ReturnType<typeof useResourceDetailHandlers>;
+	formHandlers: ReturnType<typeof useResourceFormHandlers>;
+	deleteHandlers: ReturnType<typeof useResourceDeleteHandlers>;
+}
+
+function ResourceListView({
+	columns,
+	schema,
+	resources,
+	isLoadingList,
+	onRefresh,
+	viewHandlers,
+	formHandlers,
+	deleteHandlers,
+}: ResourceListViewProps): React.ReactNode {
+	return (
 		<>
 			<Stack gap='md'>
 				<ResourceListHeader />
 				<ResourceListActions
-					onCreate={() => navigate('new')}
-					onRefresh={() => dispatch(resourceActions.listResources())}
+					onCreate={formHandlers.openCreateDialog}
+					onRefresh={onRefresh}
 				/>
 				<Paper className='p-4'>
 					<ResourceTable
@@ -132,28 +186,35 @@ function ResourceListPageBody(): React.ReactNode {
 						resources={resources}
 						isLoading={isLoadingList}
 						schema={schema}
-						onViewDetail={handleViewDetail}
-						onEdit={handleEdit}
-						onDelete={handleDelete}
+						onViewDetail={viewHandlers.handleViewDetail}
+						onEdit={formHandlers.openEditDialog}
+						onDelete={deleteHandlers.handleDeleteRequest}
 					/>
 				</Paper>
 			</Stack>
 
 			<ResourceDetailModal
-				opened={detailModalOpened}
-				onClose={closeDetailModal}
-				resource={selectedResource}
-				isLoading={isLoadingDetail}
+				opened={viewHandlers.detailModalOpened}
+				onClose={viewHandlers.closeDetailModal}
+				resource={viewHandlers.selectedResource}
+				isLoading={false}
 			/>
 
 			<ConfirmDialog
-				opened={deleteModalOpened}
-				onClose={closeDeleteModal}
-				onConfirm={confirmDelete}
+				opened={deleteHandlers.deleteModalOpened}
+				onClose={deleteHandlers.closeDeleteModal}
+				onConfirm={deleteHandlers.confirmDelete}
 				title='Delete Resource'
-				message='Are you sure you want to delete this resource? This action cannot be undone.'
+				message={deleteHandlers.resourceToDelete ? `Are you sure you want to delete ${deleteHandlers.resourceToDelete.name}? This action cannot be undone.` : 'Are you sure you want to delete this resource? This action cannot be undone.'}
 				confirmLabel='Delete'
 				confirmColor='red'
+			/>
+
+			<ResourceFormDialog
+				opened={Boolean(formHandlers.formDialogState)}
+				mode={formHandlers.formDialogState?.mode ?? 'create'}
+				resource={formHandlers.formDialogState?.resource}
+				onClose={formHandlers.closeFormDialog}
 			/>
 		</>
 	);
@@ -210,7 +271,7 @@ interface ResourceTableProps {
 	resources: Resource[];
 	isLoading: boolean;
 	schema: ModelSchema;
-	onViewDetail: (resourceId: string) => void;
+	onViewDetail: (resourceName: string) => void;
 	onEdit: (resourceId: string) => void;
 	onDelete: (resourceId: string) => void;
 }
@@ -232,13 +293,13 @@ function ResourceTable({
 			isLoading={isLoading}
 			columnRenderers={{
 				name: (row: Record<string, unknown>) => {
-					const resourceId = row.id as string;
+					const resourceName = row.name as string;
 					return (
 						<Text
 							style={{ cursor: 'pointer', textDecoration: 'underline' }}
 							onClick={(e) => {
 								e.preventDefault();
-								onViewDetail(resourceId);
+								onViewDetail(resourceName);
 							}}
 						>
 							{String(row.name || '')}
@@ -253,7 +314,7 @@ function ResourceTable({
 								<ActionIcon
 									variant='subtle'
 									color='gray'
-									onClick={() => onViewDetail(resourceId)}
+									onClick={() => onViewDetail(row.name as string)}
 								>
 									<IconEye size={16} />
 								</ActionIcon>

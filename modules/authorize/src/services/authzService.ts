@@ -1,4 +1,4 @@
-import { get, type Options } from '@nikkierp/common';
+import { del, get, post, put, type Options } from '@nikkierp/common';
 
 
 export type AuthzResourceDto = {
@@ -8,8 +8,13 @@ export type AuthzResourceDto = {
 	resourceType?: string;
 	resourceRef?: string;
 	scopeType?: string;
+	scopeRef?: string;
+	createdAt?: string;
+	updatedAt?: string;
+	createdBy?: string;
 	etag?: string;
 	actions?: AuthzActionDto[];
+	actionsCount?: number;
 	[key: string]: unknown;
 };
 
@@ -52,14 +57,11 @@ export type ListQuery = {
 };
 
 export async function listResources(
-	params?: ListQuery,
+	params?: ListQuery & { withActions?: boolean },
 ): Promise<ListResponse<AuthzResourceDto>> {
 	const options: Options = {};
 	if (params) {
-		(options as any).searchParams = {
-			...params,
-			withActions: true,
-		};
+		(options as any).searchParams = params;
 	}
 	return get<ListResponse<AuthzResourceDto>>('authorize/resources', options);
 }
@@ -72,4 +74,37 @@ export async function listEntitlements(
 		(options as any).searchParams = params;
 	}
 	return get<ListResponse<AuthzEntitlementDto>>('authorize/entitlements', options);
+}
+
+export async function getResource(name: string): Promise<AuthzResourceDto> {
+	return get<AuthzResourceDto>(`authorize/resources/${name}`);
+}
+
+export async function createResource(
+	data: Omit<AuthzResourceDto, 'id' | 'createdAt' | 'updatedAt' | 'etag'>,
+): Promise<AuthzResourceDto> {
+	return post<AuthzResourceDto>('authorize/resources', {
+		json: data,
+	});
+}
+
+export async function updateResource(
+	id: string,
+	data: Partial<Omit<AuthzResourceDto, 'id' | 'createdAt' | 'updatedAt'>>,
+	etag?: string,
+): Promise<AuthzResourceDto> {
+	const options: Options = {
+		json: data,
+	};
+	if (etag) {
+		options.headers = {
+			'If-Match': etag,
+		};
+	}
+	return put<AuthzResourceDto>(`authorize/resources/${id}`, options);
+}
+
+export async function deleteResource(name: string): Promise<void> {
+	const options: Options = {};
+	return del<void>(`authorize/resources/${name}`, options);
 }

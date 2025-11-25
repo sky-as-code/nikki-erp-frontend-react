@@ -18,7 +18,7 @@ interface Resource {
 	name: string;
 	description?: string;
 	resourceType: ResourceType;
-	resourceRef?: string; // ULID reference to actual object
+	resourceRef?: string; // ID reference to actual object
 	scopeType: ScopeType;
 	scopeRef?: string;
 	createdAt: string;

@@ -10,20 +10,15 @@ import {
 	FormStyleProvider, FormFieldProvider, AutoField,
 } from '@nikkierp/ui/components/form';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { FieldConstraint, FieldDefinition } from '@nikkierp/ui/model';
+import { ModelSchema } from '@nikkierp/ui/model';
 import { IconArrowLeft, IconCheck } from '@tabler/icons-react';
 import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
 import { AuthorizeDispatch, resourceActions, selectResourceState } from '../../appState';
 import resourceSchema from '../../features/resources/resource-schema.json';
+import { Resource } from '../../features/resources/types';
 
-
-type ResourceSchema = {
-	name: string;
-	fields: Record<string, FieldDefinition>;
-	constraints?: FieldConstraint[];
-};
 
 function useResourceForm() {
 	const { resourceId } = useParams();
@@ -46,14 +41,43 @@ function useResourceForm() {
 
 export const ResourceFormPageBody: React.FC = () => {
 	const navigate = useNavigate();
-	const schema = resourceSchema as ResourceSchema;
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const schema = resourceSchema as ModelSchema;
 	const { resourceDetail, isLoadingDetail, isCreate } = useResourceForm();
 
-	const onSubmit = (data: unknown) => {
-		console.log('Form submitted:', data);
-		// TODO: Dispatch create or update action
-		// After success, navigate back to list
-		// navigate('/resources');
+	const onSubmit = async (data: unknown) => {
+		const resourceData = data as Partial<Resource>;
+		try {
+			if (isCreate) {
+				await dispatch(resourceActions.createResource({
+					name: resourceData.name!,
+					description: resourceData.description,
+					resourceType: resourceData.resourceType!,
+					resourceRef: resourceData.resourceRef,
+					scopeType: resourceData.scopeType!,
+					scopeRef: resourceData.scopeRef,
+					createdBy: resourceData.createdBy || '',
+				})).unwrap();
+			}
+			else {
+				await dispatch(resourceActions.updateResource({
+					id: resourceDetail!.id,
+					resource: {
+						name: resourceData.name,
+						description: resourceData.description,
+						resourceType: resourceData.resourceType,
+						resourceRef: resourceData.resourceRef,
+						scopeType: resourceData.scopeType,
+						scopeRef: resourceData.scopeRef,
+					},
+					etag: resourceDetail?.etag,
+				})).unwrap();
+			}
+			navigate('/resources');
+		}
+		catch (error) {
+			console.error('Failed to save resource:', error);
+		}
 	};
 
 	return (
@@ -110,7 +134,7 @@ function ResourceFormActions(): React.ReactNode {
 }
 
 interface ResourceFormContentProps {
-	schema: ResourceSchema;
+	schema: ModelSchema;
 	isCreate: boolean;
 	resourceDetail: unknown;
 	isLoadingDetail: boolean;
@@ -129,7 +153,7 @@ function ResourceFormContent({
 			<FormFieldProvider
 				formVariant={isCreate ? 'create' : 'update'}
 				modelSchema={schema}
-				modelValue={isCreate ? undefined : resourceDetail}
+				modelValue={isCreate ? undefined : (resourceDetail as Record<string, any>)}
 				modelLoading={isCreate ? false : isLoadingDetail}
 			>
 				{({ handleSubmit }) => (
