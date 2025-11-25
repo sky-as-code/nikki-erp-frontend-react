@@ -15,9 +15,8 @@ const envPath = path.resolve(__dirname, '..');
 dotenv.config({
 	path: [
 		path.join(clientRootPath, '.env.local'),
-		path.join(clientRootPath, '.env'),
 		path.join(envPath, '.env.local'),
-		path.join(envPath, '.env'),
+		path.join(envPath, '.env.default'),
 	],
 });
 

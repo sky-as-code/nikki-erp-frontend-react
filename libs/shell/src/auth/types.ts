@@ -39,4 +39,5 @@ export class TokenObj {
 export interface ITokenStorage {
 	getToken(): TokenObj | null;
 	setToken(token: TokenObj): void;
+	clear(): void;
 }

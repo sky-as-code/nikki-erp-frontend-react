@@ -13,5 +13,14 @@
             "passwordRequired": "Mật khẩu là bắt buộc",
             "usernameOrPasswordIncorrect": "Tên đăng nhập hoặc mật khẩu không chính xác"
         }
-    }
+    },
+    "nikki": {
+		"general": {
+			"labels": {
+                "darkLightMode": "Chế độ sáng / tối",
+				"myAccount": "Tài khoản của tôi",
+				"signOut": "Đăng xuất"
+			}
+		}
+	}
 }

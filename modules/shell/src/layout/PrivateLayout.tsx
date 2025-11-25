@@ -9,9 +9,12 @@ import clsx from 'clsx';
 import React from 'react';
 import { Outlet } from 'react-router';
 
+import { LangSwitchDropdown } from './LangSwitchDropDown';
 import { MenuBar } from './MenuBar';
 import { ModuleSwitchDropdown } from './ModuleSwitchDropdown';
+import { NotificationDropdown } from './NotificationDropdown';
 import { OrgSwitchDropdown } from './OrgSwitchDropdown';
+import { ProfileMenuDropdown } from './ProfileMenuDropdown';
 import classes from './RootLayout.module.css';
 
 
@@ -29,9 +32,10 @@ export function PrivateLayout(): React.ReactNode {
 				bg={bg}
 				gap={0}
 				className='module-layout h-screen'
+				display={'flex'}
 			>
 				<Header />
-				<Box component='main'>
+				<Box component='main' flex={1}>
 					<Outlet />
 				</Box>
 			</Stack>
@@ -48,6 +52,46 @@ export function PrivateLayout(): React.ReactNode {
 
 
 const Header: React.FC = () => {
+	const { colorScheme } = useMantineColorScheme();
+	const theme = useMantineTheme();
+	const bg = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+
+	return (
+		<Group
+			component='header'
+			align='center'
+			justify='space-between'
+			gap={0}
+			bg={bg}
+			className={clsx(
+				'w-full h-[50px] shrink-0 z-100 px-4',
+				classes.headerRow,
+				classes.menuBar,
+			)}
+		>
+			<Group
+				component='section'
+				align='center'
+				justify='flex-start'
+				gap={0}
+				className={'flex flex-row items-center justify-start'}
+			>
+				<Breadcrumbs separatorMargin='xs'>
+					<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
+				</Breadcrumbs>
+			</Group>
+
+			<Group component='section' align='center' justify='flex-end' gap='sm'>
+				<LangSwitchDropdown/>
+				<NotificationDropdown />
+				<ProfileMenuDropdown/>
+			</Group>
+		</Group>
+
+	);
+};
+
+const _HeaderModuleList: React.FC = () => {
 	// const { isMobile } = useUIState();
 
 	// if (isMobile) return null;
@@ -75,7 +119,6 @@ const Header: React.FC = () => {
 					<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
 					<ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />
 				</Breadcrumbs>
-				{/* <MenuBar items={navItems} /> */}
 				<MenuBar />
 			</Group>
 			<Group component='section' align='center' justify='flex-end' gap='sm'>

@@ -6,8 +6,11 @@ import {
 	MantineStyleProps,
 	PopoverWidth,
 	ScrollArea,
+	Text,
 	useCombobox,
+	Image,
 } from '@mantine/core';
+import { IconChevronDown, IconSearch } from '@tabler/icons-react';
 import { FC, JSX, useEffect, useState } from 'react';
 
 
@@ -140,14 +143,16 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 	return (
 		<Combobox.Target>
 			<TriggerComponent
-				rightSection={<Combobox.Chevron />}
+				px={'sm'}
+				rightSection={<IconChevronDown size={20}/>}
+				leftSection={<Image mb={2} alt='org.logo' src={'/icon.ico'} width={20} height={20}/>}
 				onClick={() => combobox.toggleDropdown()}
 			>
-				{value || (
-					<Input.Placeholder>
+				{value ?
+					<Text ta={'left'} fz={'xl'} fw={900} miw={100}>{value}</Text>
+					: <Input.Placeholder>
 						{props.unselectedPlaceholder ?? 'No item selected'}
-					</Input.Placeholder>
-				)}
+					</Input.Placeholder>}
 			</TriggerComponent>
 		</Combobox.Target>
 	);

@@ -58,8 +58,10 @@ export class AuthService {
 		return result;
 	}
 
-	public async signOut(): Promise<void> {
-		await request.post('/logout');
+	public signOut(): void {
+		request.post('logout');
+		this.#accessTokenStorage.clear();
+		this.#refreshTokenStorage.clear();
 	}
 
 	public async refreshSession(refreshToken: string): Promise<void> {

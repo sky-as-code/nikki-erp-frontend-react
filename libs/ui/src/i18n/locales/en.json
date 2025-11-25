@@ -13,5 +13,14 @@
 			"passwordRequired": "Password is required",
 			"usernameOrPasswordIncorrect": "Username or password is incorrect"
 		}
+	},
+	"nikki": {
+		"general": {
+			"labels": {
+				"darkLightMode": "Dark / Light Mode",
+				"myAccount": "My Account",
+				"signOut": "Sign Out"
+			}
+		}
 	}
 }
