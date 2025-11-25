@@ -1,0 +1,136 @@
+{
+	"name": "organization",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.organization.fields.id' }",
+			"required": {
+				"create": true,
+				"update": true
+			},
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required"
+				},
+				{
+					"type": "length",
+					"max": 36
+				}
+			]
+		},
+		"slug": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.organization.fields.slug' }",
+			"required": {
+				"create": true
+			},
+			"constraints": [
+				{
+					"type": "required"
+				},
+				{
+					"type": "length",
+					"min": 2,
+					"max": 100
+				}
+			]
+		},
+		"displayName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.organization.fields.displayName' }",
+			"required": {
+				"create": true
+			},
+			"constraints": [
+				{
+					"type": "required"
+				},
+				{
+					"type": "length",
+					"min": 2,
+					"max": 255
+				}
+			]
+		},
+		"legalName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.organization.fields.legalName' }",
+			"required": {
+				"create": false
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"max": 255
+				}
+			]
+		},
+		"address": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.organization.fields.address' }",
+			"required": {
+				"create": false
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"max": 500,
+					"message": "Address must not exceed 500 characters"
+				}
+			]
+		},
+		"phoneNumber": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.organization.fields.phoneNumber' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 20
+				},
+				{
+					"type": "regex",
+					"pattern": "^[0-9+\\-\\s()]*$",
+					"message": "{ \"$ref\": 'nikki.identity.organization.messages.phoneNumberInvalid' }"
+				}
+			]
+		},
+		"status": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.identity.organization.fields.status' }",
+			"enum": [
+				{
+					"value": "active",
+					"label": "{ \"$ref\": 'nikki.identity.organization.status.active' }"
+				},
+				{
+					"value": "inactive",
+					"label": "{ \"$ref\": 'nikki.identity.organization.status.inactive' }"
+				}
+			]
+		},
+		"etag": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.organization.fields.etag' }",
+			"required": {
+				"update": true
+			},
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required"
+				}
+			]
+		},
+		"createdAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "{ \"$ref\": 'nikki.identity.organization.fields.createdAt' }"
+		},
+		"updatedAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "{ \"$ref\": 'nikki.identity.organization.fields.updatedAt' }"
+		}
+	}
+}

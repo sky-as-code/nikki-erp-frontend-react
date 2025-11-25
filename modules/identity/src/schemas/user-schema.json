@@ -1,0 +1,172 @@
+{
+	"name": "user",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "length",
+					"max": 36,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"email": {
+			"type": "email",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.email' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"min": 10,
+					"max": 255,
+					"message": "Email must be between 10 and 255 characters"
+				}
+			]
+		},
+		"password": {
+			"type": "password",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.password' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"min": 8,
+					"max": 100
+				}
+			],
+			"frontendOnly": true
+		},
+		"confirmPassword": {
+			"type": "password",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.confirmPassword' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"min": 8,
+					"max": 100
+				}
+			],
+			"frontendOnly": true
+		},
+		"displayName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.displayName' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"min": 2,
+					"max": 100
+				}
+			]
+		},
+		"status": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.status' }",
+			"enum": [
+				{
+					"value": "active",
+					"label": "{ \"$ref\": 'nikki.identity.user.status.active' }"
+				},
+				{
+					"value": "archived",
+					"label": "{ \"$ref\": 'nikki.identity.user.status.archived' }"
+				},
+				{
+					"value": "locked",
+					"label": "{ \"$ref\": 'nikki.identity.user.status.locked' }"
+				}
+			]
+		},
+		"avatarUrl": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.avatarUrl' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 500,
+					"message": "Avatar URL must not exceed 500 characters"
+				}
+			]
+		},
+		"etag": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.etag' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required"
+				}
+			]
+		},
+		"createdAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.createdAt' }"
+		},
+		"updatedAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.updatedAt' }"
+		},
+		"hierarchy": {
+			"type": "object",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.hierarchy' }",
+			"readOnly": true,
+			"properties": {
+				"id": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.identity.user.fields.hierarchy.id' }"
+				},
+				"name": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.identity.user.fields.hierarchy.name' }"
+				}
+			}
+		},
+		"groups": {
+			"type": "array",
+			"label": "{ \"$ref\": 'nikki.identity.user.fields.groups' }",
+			"items": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"label": "{ \"$ref\": 'nikki.identity.group.fields.id' }"
+					},
+					"name": {
+						"type": "string",
+						"label": "{ \"$ref\": 'nikki.identity.group.fields.name' }"
+					}
+				}
+			},
+			"frontendOnly": true
+		}
+	},
+	"constraints": [
+		{
+			"type": "unique",
+			"fields": [
+				"field1",
+				"field2"
+			],
+			"message": "{ \"$ref\": 'nikki.identity.user.errors.duplidate_field' }"
+		}
+	]
+}

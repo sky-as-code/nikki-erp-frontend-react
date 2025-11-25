@@ -1,0 +1,56 @@
+{
+	"name": "hierarchy",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.hierarchy.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "length",
+					"max": 36
+				}
+			]
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.hierarchy.fields.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"min": 2,
+					"max": 100
+				}
+			]
+		},
+		"parentId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.hierarchy.fields.parentId' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 36
+				}
+			]
+		},
+		"etag": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.hierarchy.fields.etag' }",
+			"hidden": true
+		},
+		"createdAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "{ \"$ref\": 'nikki.identity.hierarchy.fields.createdAt' }"
+		},
+		"updatedAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "{ \"$ref\": 'nikki.identity.hierarchy.fields.updatedAt' }"
+		}
+	}
+}

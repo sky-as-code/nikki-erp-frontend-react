@@ -1,5 +1,6 @@
 import { Anchor, Loader, Table } from '@mantine/core';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { ModelSchema } from '../../model';
@@ -23,12 +24,14 @@ export type AutoTableProps = {
 	columnAsLink?: string;
 	columnAsLinkHref?: (rowData: any) => string;
 	columnAsId?: string;
+	columnRenderers?: Record<string, (row: Record<string, unknown>) => React.ReactNode>;
 	data: Record<string, unknown>[];
 	isLoading?: boolean;
 	schema: ModelSchema;
 };
 
 export const AutoTable: React.FC<AutoTableProps> = (props) => {
+	const { t: translate } = useTranslation();
 	const {
 		columnAsId = 'id',
 	} = props;
@@ -38,16 +41,26 @@ export const AutoTable: React.FC<AutoTableProps> = (props) => {
 	};
 	const validColumns = useMemo(() => {
 		const available = getAvailableColumns(props.schema);
-		return props.columns.filter((col) => available.includes(col));
-	}, [props.columns, props.schema]);
+		return props.columns.filter((col) => {
+			// Allow columns that have custom renderers even if not in schema
+			if (props.columnRenderers?.[col]) {
+				return true;
+			}
+			return available.includes(col);
+		});
+	}, [props.columns, props.schema, props.columnRenderers]);
 
 	return (
 		<Table>
 			<Table.Thead>
 				<Table.Tr>
-					{validColumns.map((col) => (
-						<Table.Th key={col}>{getColumnLabel(props.schema, col)}</Table.Th>
-					))}
+					{validColumns.map((col) => {
+						const hasCustomRenderer = props.columnRenderers?.[col];
+						const label = hasCustomRenderer && !props.schema.fields[col]
+							? col.charAt(0).toUpperCase() + col.slice(1)
+							: translate(getColumnLabel(props.schema, col));
+						return <Table.Th key={col}>{label}</Table.Th>;
+					})}
 				</Table.Tr>
 			</Table.Thead>
 			<Table.Tbody>
@@ -76,8 +89,14 @@ export const AutoTable: React.FC<AutoTableProps> = (props) => {
 
 
 function formatCellValue(
-	fieldName: string, rowData: Record<string, unknown>, tableProps: AutoTableProps,
+	fieldName: string,
+	rowData: Record<string, unknown>,
+	tableProps: AutoTableProps,
 ): React.ReactNode {
+	if (tableProps.columnRenderers?.[fieldName]) {
+		return tableProps.columnRenderers[fieldName](rowData);
+	}
+
 	const value = rowData[fieldName];
 	if (value === null || value === undefined) return '';
 

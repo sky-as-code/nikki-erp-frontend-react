@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { reducer, actions, listUsers, getUser, UserState } from '../features/users/userSlice';
+import { reducer, actions, listUsers, getUser, createUser, updateUser, deleteUser, UserState, listUsersByGroupId } from '../features/users/userSlice';
 
 
 const STATE_KEY = 'user';
@@ -12,6 +12,10 @@ export const userReducer = {
 export const userActions = {
 	listUsers,
 	getUser,
+	createUser,
+	updateUser,
+	deleteUser,
+	listUsersByGroupId,
 	...actions,
 };
 

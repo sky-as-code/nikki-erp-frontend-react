@@ -1,0 +1,1 @@
+export { TextBadge, type TextBadgeItem } from './TextBadge';

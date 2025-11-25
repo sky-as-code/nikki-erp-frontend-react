@@ -1,72 +1,151 @@
-// import * as request from '@nikkierp/common/request';
+import * as request from '@nikkierp/common/request';
 
-import { delay } from '@nikkierp/common/utils';
-
-import { User } from './types';
+import {
+	User,
+	SearchUsersResponse,
+	CreateUserRequest,
+	CreateUserResponse,
+	UpdateUserResponse,
+	UpdateUserRequest,
+} from './types';
 
 
 export const userService = {
-	async listUsers(): Promise<User[]> {
-		// const response = await request.post<LoginResponse>('/login', {
-		// 	json: credentials,
-		// });
-		await delay(2_000);
-		return Promise.resolve(data);
+	async listUsers(orgId: string): Promise<User[]> {
+		const graph = JSON.stringify({
+			if: ['orgs.id', '*', orgId],
+		});
+		const response = await request.get<SearchUsersResponse>('identity/users', {
+			searchParams: { graph, withGroups: 'true', withHierarchy: 'true' },
+		});
+		return response.items;
 	},
+
+	async listUsersByGroupId(groupId: string): Promise<User[]> {
+		const graph = JSON.stringify({
+			if: ['groups.id', '*', groupId],
+		});
+
+		const response = await request.get<SearchUsersResponse>(`identity/users`, {
+			searchParams: { graph },
+		});
+		return response.items;
+	},
+
 	async getUser(id: string): Promise<User | undefined> {
-		await delay(2_000);
-		return Promise.resolve(data.find((user) => user.id === id));
+		try {
+			const response = await request.get<User>(`identity/users/${id}`, {
+				searchParams: { withGroup: 'true', withHierarchy: 'true' },
+			});
+			return response;
+		}
+		catch (error) {
+			console.error('Failed to get user:', error);
+			return undefined;
+		}
+	},
+
+	async createUser(data: CreateUserRequest): Promise<CreateUserResponse> {
+		const response = await request.post<CreateUserResponse>('identity/users', { json: data });
+		return response;
+	},
+
+	async updateUser(id: string, data: Partial<UpdateUserRequest>): Promise<UpdateUserResponse> {
+		const response = await request.put<UpdateUserResponse>(`identity/users/${id}`, { json: data });
+		return response;
+	},
+
+	async deleteUser(id: string): Promise<void> {
+		await request.del(`identity/users/${id}`);
 	},
 };
 
 
-const data: User[] = [
-	{
-		id: '550e8400-e29b-41d4-a716-446655440000',
-		email: 'john.doe@example.com',
-		dateOfBirth: '1990-05-15',
-		dependantNum: 2,
-		gender: 'male',
-		nationality: 'US',
-	},
-	{
-		id: '550e8400-e29b-41d4-a716-446655440001',
-		email: 'jane.smith@example.com',
-		dateOfBirth: '1985-08-22',
-		dependantNum: 1,
-		gender: 'female',
-		nationality: 'UK',
-	},
-	{
-		id: '550e8400-e29b-41d4-a716-446655440002',
-		email: 'michael.johnson@example.com',
-		dateOfBirth: '1992-12-03',
-		dependantNum: 0,
-		gender: 'male',
-		nationality: 'CA',
-	},
-	{
-		id: '550e8400-e29b-41d4-a716-446655440003',
-		email: 'sarah.williams@example.com',
-		dateOfBirth: '1988-03-18',
-		dependantNum: 3,
-		gender: 'female',
-		nationality: 'AU',
-	},
-	{
-		id: '550e8400-e29b-41d4-a716-446655440004',
-		email: 'david.brown@example.com',
-		dateOfBirth: '1995-07-25',
-		dependantNum: 1,
-		gender: 'male',
-		nationality: 'DE',
-	},
-	{
-		id: '550e8400-e29b-41d4-a716-446655440005',
-		email: 'emily.davis@example.com',
-		dateOfBirth: '1991-11-09',
-		dependantNum: 2,
-		gender: 'female',
-		nationality: 'FR',
-	},
-];
+// const data: User[] = [
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440000',
+// 		email: 'john.doe@example.com',
+// 		displayName: 'John Wick',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440001',
+// 		email: 'jane.smith@example.com',
+// 		displayName: 'Jane Smith',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440002',
+// 		email: 'michael.johnson@example.com',
+// 		displayName: 'Michael Johnson',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440003',
+// 		email: 'sarah.williams@example.com',
+// 		displayName: 'Sarah Williams',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440004',
+// 		email: 'david.brown@example.com',
+// 		displayName: 'David Brown',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440005',
+// 		email: 'emily.davis@example.com',
+// 		displayName: 'Emily Davis',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// ];
+// const data: User[] = [
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440000',
+// 		email: 'john.doe@example.com',
+// 		displayName: 'John Wick',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440001',
+// 		email: 'jane.smith@example.com',
+// 		displayName: 'Jane Smith',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440002',
+// 		email: 'michael.johnson@example.com',
+// 		displayName: 'Michael Johnson',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440003',
+// 		email: 'sarah.williams@example.com',
+// 		displayName: 'Sarah Williams',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440004',
+// 		email: 'david.brown@example.com',
+// 		displayName: 'David Brown',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// 	{
+// 		id: '550e8400-e29b-41d4-a716-446655440005',
+// 		email: 'emily.davis@example.com',
+// 		displayName: 'Emily Davis',
+// 		avatarUrl: '',
+// 		status: 'active',
+// 	},
+// ];
