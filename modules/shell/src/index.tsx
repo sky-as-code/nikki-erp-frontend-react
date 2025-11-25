@@ -13,6 +13,7 @@ import { UIProviders } from './context/UIProviders';
 import { PrivateLayout } from './layout/PrivateLayout';
 import { PublicLayout } from './layout/PublicLayout';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { ModuleHomePage } from './pages/private/ModuleHomePage';
 import { SignInPage } from './pages/public/SignInPage';
 
 import './styles/index.css';
@@ -52,7 +53,7 @@ function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 				<Route element={<OrgSubLayout />}>
 					<Route path=':orgSlug'>
 						<Route element={<ModuleSubLayout />}>
-							<Route index element={<ModuleList />} />
+							<Route index element={<ModuleHomePage />} />
 							<Route path=':moduleSlug/*' element={<LazyModule microApps={props.microApps} />} />
 						</Route>
 					</Route>
@@ -91,8 +92,8 @@ function ModuleSubLayout(): React.ReactNode {
 }
 
 function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): React.ReactNode {
-	const dispatch = useDispatch();
-	const location = useLocation();
+	// const dispatch = useDispatch();
+	// const location = useLocation();
 	const { moduleSlug } = useParams();
 	const { orgSlug } = useParams();
 	const foundModule = useFindMyModule(orgSlug!, moduleSlug!);
@@ -145,7 +146,7 @@ function NoOrg(): React.ReactNode {
 }
 
 
-const EssentialTest: React.FC = () => {
+const _EssentialTest: React.FC = () => {
 	return (
 		<>
 			<Paper shadow='xs' p='xl'>

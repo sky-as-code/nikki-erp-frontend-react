@@ -9,9 +9,12 @@ import type { RootState } from '../appState/store';
 
 
 const selectAuthState = (state: RootState) => state.shellAuth;
-const selectSignInProgress = createSelector(selectAuthState, (state: AuthState) => {
-	return state.signInProgress;
-});
+const selectSignInProgress = createSelector(
+	selectAuthState,
+	(state: AuthState) => {
+		return state.signInProgress;
+	},
+);
 const selectIsAuthenticated = createSelector(
 	selectAuthState,
 	selectUserContext,
@@ -37,9 +40,11 @@ const selectAuthenticatedStatus = createSelector(
 			isSessionRestoring,
 			sessionExpiresAt: state.sessionExpiresAt,
 		};
-	});
+	},
+);
 
 export const useAuthState = () => useSelector(selectAuthState);
 export const useSignInProgress = () => useSelector(selectSignInProgress);
 export const useIsAuthenticated = () => useSelector(selectIsAuthenticated);
-export const useAuthenticatedStatus = () => useSelector(selectAuthenticatedStatus);
+export const useAuthenticatedStatus = () =>
+	useSelector(selectAuthenticatedStatus);

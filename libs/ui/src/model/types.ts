@@ -6,19 +6,19 @@ export type ModelSchema = {
 };
 
 export type FieldDefinition = {
-    type: 'string' | 'email' | 'password' | 'date' | 'integer' | 'enum' | 'boolean' | 'object' | 'array';
-    label: string;
-    description?: string;
-    placeholder?: string;
-    required?: {
-        create?: boolean;
-        update?: boolean;
-    };
-    hidden?: boolean;
-    frontendOnly?: boolean;
-    constraints?: FieldConstraint[];
-    enum?: FieldEnumOption[];
-    enumSrc?: FieldEnumSource;
+	type: 'string' | 'email' | 'password' | 'date' | 'integer' | 'enum' | 'boolean' | 'object' | 'array';
+	label: string;
+	description?: string;
+	placeholder?: string;
+	required?: {
+		create?: boolean;
+		update?: boolean;
+	};
+	hidden?: boolean;
+	frontendOnly?: boolean;
+	constraints?: FieldConstraint[];
+	enum?: FieldEnumOption[];
+	enumSrc?: FieldEnumSource;
 };
 
 export type FieldEnumOption = {

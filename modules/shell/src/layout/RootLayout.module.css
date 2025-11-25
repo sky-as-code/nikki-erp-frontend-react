@@ -1,8 +1,27 @@
 .headerRow {
 	color: lightdark(var(--mantine-color-white), var(--mantine-color-dark));
 	gap: var(--mantine-spacing-md);
+	box-shadow: 2px 2px 6px 0px #00000033;
+	position: sticky;
+	top: 0;
+	z-index: 100;
 }
 
 .menuBar {
 	border-bottom: 1px solid var(--mantine-color-gray-3);
+}
+
+.avatar {
+	border: 1px solid #868e96;
+	&:hover {
+		border: 1px solid var(--nikki-color-black);
+	};
+
+
+	/* ?????????? */
+	&:focus {
+		outline: none !important;
+		border: 1px solid var(--nikki-color-black) !important;
+		box-shadow: 0px 0px 0px 3px var(--nikki-color-black-shadow) !important;
+	};	
 }
