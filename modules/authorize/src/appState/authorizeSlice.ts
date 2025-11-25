@@ -177,7 +177,6 @@ function listEntitlementsReducers(builder: ActionReducerMapBuilder<AuthorizeStat
 
 export const selectAuthorizeState = (state: AuthorizeState) => state;
 
-// Action creators cho case reducers + thunk (để import tiện hơn)
 export const actions = {
 	...authorizeSlice.actions,
 	listResources,

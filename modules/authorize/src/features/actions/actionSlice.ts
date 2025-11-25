@@ -118,10 +118,8 @@ function getActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 		});
 }
 
-
 export const actions = {
 	...actionSlice.actions,
 };
 
 export const { reducer } = actionSlice;
-
