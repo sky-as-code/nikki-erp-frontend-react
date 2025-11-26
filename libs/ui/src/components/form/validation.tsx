@@ -22,6 +22,7 @@ export function createBaseSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 				return z.enum(enumValues).optional();
 			}
 			return z.string();
+		// warning?: array and object are temporarily disabled for validation
 		case 'array':
 			// Handle array type - allow it to pass through without strict validation
 			return z.array(z.any()).optional();
@@ -132,22 +133,10 @@ function applyConstraint(
 	switch (constraint.type) {
 		case 'required':
 			if (fieldSchema instanceof ZodString) {
-				// Check if schema is optional (might be used with Select)
-				// If optional, use refine to handle undefined/null/empty string
-				if (fieldSchema.isOptional()) {
-					return fieldSchema.refine(
-						(val) => val !== undefined && val !== null && val !== '',
-						{ message: message || 'Required' },
-					);
-				}
-				// Otherwise use min(1) for non-optional strings
 				return fieldSchema.min(1, { message: message || 'Required' });
 			}
-			// For enum (which is optional), use refine to check if value exists
-			return fieldSchema.refine(
-				(val) => val !== undefined && val !== null && val !== '',
-				{ message: message || 'Required' },
-			);
+
+			return fieldSchema;
 		case 'length':
 			if (fieldSchema instanceof ZodString) {
 				return applyLengthConstraint(fieldSchema, constraint, message);
@@ -182,17 +171,6 @@ function applyConstraint(
 export function buildFieldSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 	let fieldSchema = createBaseSchema(fieldDef);
 
-	// Check if field has required constraint (might be used with Select component)
-	const hasRequiredConstraint = fieldDef.constraints?.some((c) => c.type === 'required');
-	const isRequired = fieldDef.required?.create || fieldDef.required?.update;
-
-	// For string fields with required constraint, make optional initially
-	// (similar to enum) so they can accept undefined from Select components
-	// The required constraint will handle validation with refine
-	if (fieldDef.type === 'string' && hasRequiredConstraint) {
-		fieldSchema = fieldSchema.optional();
-	}
-
 	// Apply constraints
 	if (fieldDef.constraints) {
 		fieldDef.constraints.forEach((constraint) => {
@@ -200,9 +178,9 @@ export function buildFieldSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 		});
 	}
 
-	// Make optional if not required (enum is already optional from createBaseSchema)
-	// Only apply .optional() to non-enum fields that are not required and don't have required constraint
-	if (fieldDef.type !== 'enum' && !isRequired && !hasRequiredConstraint) {
+	// Make optional if not required
+	const isRequired = fieldDef.required?.create || fieldDef.required?.update;
+	if (!isRequired && !fieldDef.constraints?.some((c) => c.type === 'required')) {
 		fieldSchema = fieldSchema.optional();
 	}
 
@@ -218,35 +196,8 @@ export function buildValidationSchema(schema: ModelSchema): z.ZodObject<any> {
 			return;
 		}
 
-		let fieldSchema = buildFieldSchema(fieldDef);
-
-		// For frontendOnly fields that are not required in update mode, make them optional
-		// to allow undefined values from backend
-		if (fieldDef.frontendOnly && !fieldDef.required?.update) {
-			fieldSchema = fieldSchema.optional();
-		}
-
-		shape[fieldName] = fieldSchema;
+		shape[fieldName] = buildFieldSchema(fieldDef);
 	});
 
-	const baseSchema = z.object(shape);
-
-	// Add password confirmation validation if both password and confirmPassword fields exist
-	if (shape.password && shape.confirmPassword) {
-		return baseSchema.refine(
-			(data) => {
-				// Only validate if both fields have values
-				if (!data.password && !data.confirmPassword) {
-					return true;
-				}
-				return data.password === data.confirmPassword;
-			},
-			{
-				message: 'Passwords do not match',
-				path: ['confirmPassword'], // Show error on confirmPassword field
-			},
-		);
-	}
-
-	return baseSchema;
-}
+	return z.object(shape);
+};

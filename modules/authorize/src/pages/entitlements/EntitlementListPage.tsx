@@ -10,7 +10,7 @@ import {
 	Tooltip,
 	Typography,
 } from '@mantine/core';
-import { AutoTable, ConfirmDialog, withWindowTitle } from '@nikkierp/ui/components';
+import { AutoTable, ConfirmModal, withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import { IconEdit, IconEye, IconPlus, IconRefresh, IconTrash, IconUpload } from '@tabler/icons-react';
@@ -146,7 +146,7 @@ function EntitlementListPageBody(): React.ReactNode {
 				isLoading={isLoadingDetail}
 			/>
 
-			<ConfirmDialog
+			<ConfirmModal
 				opened={deleteModalOpened}
 				onClose={closeDeleteModal}
 				onConfirm={confirmDelete}

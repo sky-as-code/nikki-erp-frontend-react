@@ -18,7 +18,6 @@ function mapDtoToResource(dto: AuthzResourceDto): Resource {
 		resourceType: (dto.resourceType as ResourceType) || ResourceType.CUSTOM,
 		resourceRef: dto.resourceRef,
 		scopeType: (dto.scopeType as ScopeType) || ScopeType.ORG,
-		scopeRef: dto.scopeRef,
 		createdAt: dto.createdAt || new Date().toISOString(),
 		updatedAt: dto.updatedAt || new Date().toISOString(),
 		createdBy: dto.createdBy || '',
@@ -43,7 +42,6 @@ function mapResourceToDto(resource: Partial<Resource>): Partial<AuthzResourceDto
 		resourceType: resource.resourceType,
 		resourceRef: resource.resourceRef,
 		scopeType: resource.scopeType,
-		scopeRef: resource.scopeRef,
 	};
 }
 

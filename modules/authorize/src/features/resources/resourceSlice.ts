@@ -222,8 +222,8 @@ function deleteResourceReducers(builder: ActionReducerMapBuilder<ResourceState>)
 		})
 		.addCase(deleteResource.fulfilled, (state, action) => {
 			state.isLoadingDetail = false;
-			state.resources = state.resources.filter((r) => r.id !== action.meta.arg.id);
-			if (state.resourceDetail?.id === action.meta.arg.id) {
+			state.resources = state.resources.filter((r) => r.name !== action.meta.arg.name);
+			if (state.resourceDetail?.name === action.meta.arg.name) {
 				state.resourceDetail = undefined;
 			}
 			state.errorDetail = null;

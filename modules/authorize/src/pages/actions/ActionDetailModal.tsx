@@ -4,7 +4,7 @@ import {
 	Group,
 	Text,
 } from '@mantine/core';
-import { DetailDialog, DetailView } from '@nikkierp/ui/components';
+import { DetailModal, DetailView } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 
@@ -84,14 +84,14 @@ export const ActionDetailModal: React.FC<ActionDetailModalProps> = ({
 	}
 
 	return (
-		<DetailDialog
+		<DetailModal
 			opened={opened}
 			onClose={onClose}
 			title={action?.name || 'Action Details'}
 			isLoading={isLoading}
 		>
 			{action && <ActionDetailContent action={action} />}
-		</DetailDialog>
+		</DetailModal>
 	);
 };
 

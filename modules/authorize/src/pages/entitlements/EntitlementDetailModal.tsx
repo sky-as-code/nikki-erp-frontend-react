@@ -4,7 +4,7 @@ import {
 	Group,
 	Text,
 } from '@mantine/core';
-import { DetailDialog, DetailView } from '@nikkierp/ui/components';
+import { DetailModal, DetailView } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 
@@ -96,14 +96,14 @@ export const EntitlementDetailModal: React.FC<EntitlementDetailModalProps> = ({
 	}
 
 	return (
-		<DetailDialog
+		<DetailModal
 			opened={opened}
 			onClose={onClose}
 			title={entitlement?.name || 'Entitlement Details'}
 			isLoading={isLoading}
 		>
 			{entitlement && <EntitlementDetailContent entitlement={entitlement} />}
-		</DetailDialog>
+		</DetailModal>
 	);
 };
 
