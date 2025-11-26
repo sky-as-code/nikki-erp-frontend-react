@@ -41,4 +41,5 @@ export type FieldConstraint = {
 	allowFuture?: boolean;
 	allowPast?: boolean;
 	fields?: string[];
+	pattern?: string;
 };

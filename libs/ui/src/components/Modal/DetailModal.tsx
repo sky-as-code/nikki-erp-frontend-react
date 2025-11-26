@@ -2,7 +2,7 @@ import { Loader, Modal, Stack, Text, Title } from '@mantine/core';
 import React from 'react';
 
 
-export interface DetailDialogProps {
+export interface DetailModalProps {
 	opened: boolean;
 	onClose: () => void;
 	title: string;
@@ -11,7 +11,7 @@ export interface DetailDialogProps {
 	size?: string | number;
 }
 
-export const DetailDialog: React.FC<DetailDialogProps> = ({
+export const DetailModal: React.FC<DetailModalProps> = ({
 	opened,
 	onClose,
 	title,
@@ -25,6 +25,7 @@ export const DetailDialog: React.FC<DetailDialogProps> = ({
 			onClose={onClose}
 			title={<Title order={4}>{title}</Title>}
 			size={size}
+			centered
 		>
 			{isLoading ? (
 				<Stack align='center' gap='md'>

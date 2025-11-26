@@ -2,7 +2,7 @@ import { Button, Group, Modal, Stack, Text, Title } from '@mantine/core';
 import React from 'react';
 
 
-export interface ConfirmDialogProps {
+export interface ConfirmModalProps {
 	opened: boolean;
 	onClose: () => void;
 	onConfirm: () => void;
@@ -14,7 +14,7 @@ export interface ConfirmDialogProps {
 	size?: string | number;
 }
 
-export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 	opened,
 	onClose,
 	onConfirm,
@@ -31,6 +31,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 			onClose={onClose}
 			title={<Title order={4}>{title}</Title>}
 			size={size}
+			centered
 		>
 			<Stack gap='md'>
 				<Text>{message}</Text>

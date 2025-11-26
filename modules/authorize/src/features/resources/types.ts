@@ -20,7 +20,6 @@ interface Resource {
 	resourceType: ResourceType;
 	resourceRef?: string; // ID reference to actual object
 	scopeType: ScopeType;
-	scopeRef?: string;
 	createdAt: string;
 	updatedAt: string;
 	createdBy: string;

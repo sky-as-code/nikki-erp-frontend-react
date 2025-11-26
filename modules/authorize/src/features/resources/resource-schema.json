@@ -16,16 +16,21 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.name' }",
 			"placeholder": "{ \"$ref\": 'nikki.authorize.resource.placeholders.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
-				},
 				{
 					"type": "length",
 					"min": 3,
 					"max": 64,
 					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				},
+				{
+					"type": "regex",
+					"pattern": "^[a-zA-Z0-9]+$",
+					"message": "{ \"$ref\": 'nikki.authorize.resource.errors.name_alphanumeric' }"
 				}
 			]
 		},
@@ -43,8 +48,11 @@
 		},
 		"resourceType": {
 			"type": "enum",
-			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_type.label' }",
-			"description": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_type.description' }",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_type' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"enum": [
 				{
 					"value": "nikki_application",
@@ -54,23 +62,24 @@
 					"value": "custom",
 					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_type.custom' }"
 				}
-			],
-			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
-				}
 			]
 		},
 		"resourceRef": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_ref' }",
-			"hidden": true
+			"placeholder": "{ \"$ref\": 'nikki.authorize.resource.placeholders.resource_ref' }",
+			"required": {
+				"create": true,
+				"update": false
+			}
 		},
 		"scopeType": {
 			"type": "enum",
-			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type.label' }",
-			"description": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type.description' }",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"enum": [
 				{
 					"value": "domain",
@@ -88,18 +97,7 @@
 					"value": "private",
 					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type.private' }"
 				}
-			],
-			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
-				}
 			]
-		},
-		"scopeRef": {
-			"type": "string",
-			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_ref' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.resource.placeholders.scope_ref' }"
 		},
 		"actionsCount": {
 			"type": "integer",

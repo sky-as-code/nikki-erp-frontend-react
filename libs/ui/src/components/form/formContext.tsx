@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
 import { buildValidationSchema } from './validation';
@@ -86,8 +86,8 @@ export type FormFieldProviderProps = {
 	modelLoading?: boolean;
 	children: (props: {
 		handleSubmit: (onValid: (data: any) => void | Promise<void>) => (e?: React.BaseSyntheticEvent) => Promise<void>;
-		reset: ReturnType<typeof useForm>['reset'];
-		form: ReturnType<typeof useForm>;
+		reset: () => void;
+		form: UseFormReturn<any>;
 	}) => React.ReactNode;
 };
 

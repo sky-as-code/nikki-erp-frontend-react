@@ -4,8 +4,10 @@ import React from 'react';
 import { ModelSchema } from '../../model';
 import { FormFieldProvider, FormStyleProvider } from '../form';
 
+import type { UseFormReturn } from 'react-hook-form';
 
-export interface FormDialogProps {
+
+export interface FormModalProps {
 	opened: boolean;
 	onClose: () => void;
 	title: string;
@@ -18,12 +20,13 @@ export interface FormDialogProps {
 			onValid: (data: unknown) => void | Promise<void>,
 		) => (e?: React.BaseSyntheticEvent) => Promise<void>;
 		reset: () => void;
+		form: UseFormReturn<any>;
 	}) => React.ReactNode;
 	size?: string | number;
 	layout?: 'onecol' | 'twocol';
 }
 
-export const FormDialog: React.FC<FormDialogProps> = ({
+export const FormModal: React.FC<FormModalProps> = ({
 	opened,
 	onClose,
 	title,
@@ -41,6 +44,7 @@ export const FormDialog: React.FC<FormDialogProps> = ({
 			onClose={onClose}
 			title={<Title order={4}>{title}</Title>}
 			size={size}
+			centered
 		>
 			<FormStyleProvider layout={layout}>
 				<FormFieldProvider
@@ -49,7 +53,7 @@ export const FormDialog: React.FC<FormDialogProps> = ({
 					modelValue={modelValue}
 					modelLoading={modelLoading}
 				>
-					{({ handleSubmit, reset }) => children({ handleSubmit, reset })}
+					{({ handleSubmit, reset, form }) => children({ handleSubmit, reset, form })}
 				</FormFieldProvider>
 			</FormStyleProvider>
 		</Modal>
