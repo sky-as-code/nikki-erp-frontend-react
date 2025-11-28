@@ -4,6 +4,7 @@ import { useId } from '@mantine/hooks';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import React from 'react';
 import { Controller } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 import { extractLabel, useFieldData, useFormField, useFormStyle } from './formContext';
 
@@ -243,6 +244,7 @@ export type TextInputFieldProps = BaseInputProps<InputProps> & {
 export function TextInputField({ name, type, autoFocused, inputProps, htmlProps, ref }: TextInputFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
+	const { t: translate } = useTranslation();
 	const { register, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -256,10 +258,10 @@ export function TextInputField({ name, type, autoFocused, inputProps, htmlProps,
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={fieldData.label}
-			description={fieldData.description}
+			label={translate(fieldData.label)}
+			description={translate(fieldData.description ?? '')}
 			isRequired={fieldData.isRequired}
-			error={fieldData.error}
+			error={translate(fieldData.error ?? '')}
 		>
 			<Input
 				id={inputId}
@@ -461,6 +463,7 @@ export type StaticEnumSelectFieldProps = BaseInputProps<SelectProps>;
 export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps, ref }: StaticEnumSelectFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
+	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -471,7 +474,7 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
 	const selectData = fieldData.fieldDef.enum!.map((opt) => ({
 		value: opt.value,
-		label: extractLabel(opt.label),
+		label: translate(extractLabel(opt.label)),
 	}));
 
 	useAutoFocusById(autoFocused, inputId, formVariant);
@@ -479,10 +482,10 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={fieldData.label}
-			description={fieldData.description}
+			label={translate(fieldData.label)}
+			description={translate(fieldData.description ?? '')}
 			isRequired={fieldData.isRequired}
-			error={fieldData.error}
+			error={translate(fieldData.error ?? '')}
 		>
 			<Controller
 				name={name}
@@ -493,7 +496,8 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 					return (
 						<Select
 							id={inputId}
-							error={fieldData.error}
+							// fix: duplicate error
+							// error={fieldData.error}
 							data={selectData}
 							value={(value as string) || null}
 							onChange={field.onChange}
@@ -516,6 +520,7 @@ export function DynamicEnumSelectField({
 	name, autoFocused, inputProps, htmlProps, ref }: DynamicEnumSelectFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
+	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -529,10 +534,10 @@ export function DynamicEnumSelectField({
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={fieldData.label}
-			description={fieldData.description}
+			label={translate(fieldData.label)}
+			description={translate(fieldData.description ?? '')}
 			isRequired={fieldData.isRequired}
-			error={fieldData.error}
+			error={translate(fieldData.error ?? '')}
 		>
 			<Controller
 				name={name}
@@ -543,7 +548,8 @@ export function DynamicEnumSelectField({
 					return (
 						<Select
 							id={inputId}
-							error={fieldData.error}
+							// fix: duplicate error
+							// error={fieldData.error}
 							data={[]}
 							value={(value as string) || null}
 							onChange={field.onChange}

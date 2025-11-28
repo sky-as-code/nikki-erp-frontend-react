@@ -57,7 +57,9 @@ export function useFieldData(fieldName: string) {
 	const description = fieldDef.description ? extractLabel(fieldDef.description) : undefined;
 	const placeholder = fieldDef.placeholder ? extractLabel(fieldDef.placeholder) : undefined;
 	const isRequired = Boolean(fieldDef.required?.[formVariant]);
-	const error = errors[fieldName]?.message as string | undefined;
+	const rawError = errors[fieldName]?.message as string | undefined;
+	// Extract translation key from $ref format if present
+	const error = rawError ? extractTranslationKey(rawError) : undefined;
 
 	return {
 		label,
@@ -154,4 +156,27 @@ export function extractLabel(labelRef: string): string {
 	}
 
 	return labelRef;
+}
+
+/**
+ * Extract full translation key from $ref format: { "$ref": "translation.key.path" }
+ * Returns the full key path for i18n translation
+ * If not a $ref format, returns the original string
+ */
+export function extractTranslationKey(ref: string): string {
+	try {
+		const parsed = JSON.parse(ref);
+		if (parsed && parsed.$ref) {
+			return parsed.$ref;
+		}
+	}
+	catch {
+		// If parsing fails, try to extract from string format with single quotes
+		const match = ref.match(/'([^']+)'/);
+		if (match) {
+			return match[1];
+		}
+	}
+
+	return ref;
 }

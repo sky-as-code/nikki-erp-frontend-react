@@ -15,7 +15,6 @@
 		"name": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.name' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.resource.placeholders.name' }",
 			"required": {
 				"create": true,
 				"update": false
@@ -37,7 +36,6 @@
 		"description": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.description' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.resource.placeholders.description' }",
 			"constraints": [
 				{
 					"type": "length",
@@ -48,11 +46,17 @@
 		},
 		"resourceType": {
 			"type": "enum",
-			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_type' }",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_type.label' }",
 			"required": {
 				"create": true,
 				"update": false
 			},
+			"constraints": [
+				{
+				  "type": "required",
+				  "message": "{ \"$ref\": 'nikki.authorize.resource.errors.resource_type_required' }"
+				}
+			],
 			"enum": [
 				{
 					"value": "nikki_application",
@@ -67,7 +71,6 @@
 		"resourceRef": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_ref' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.resource.placeholders.resource_ref' }",
 			"required": {
 				"create": true,
 				"update": false
@@ -75,7 +78,7 @@
 		},
 		"scopeType": {
 			"type": "enum",
-			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type' }",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type.label' }",
 			"required": {
 				"create": true,
 				"update": false
@@ -96,6 +99,12 @@
 				{
 					"value": "private",
 					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type.private' }"
+				}
+			],
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.authorize.resource.errors.scope_type_required' }"
 				}
 			]
 		},

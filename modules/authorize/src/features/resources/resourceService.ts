@@ -19,8 +19,6 @@ function mapDtoToResource(dto: AuthzResourceDto): Resource {
 		resourceRef: dto.resourceRef,
 		scopeType: (dto.scopeType as ScopeType) || ScopeType.ORG,
 		createdAt: dto.createdAt || new Date().toISOString(),
-		updatedAt: dto.updatedAt || new Date().toISOString(),
-		createdBy: dto.createdBy || '',
 		etag: dto.etag,
 		actions: dto.actions?.map((action) => ({
 			id: action.id,
@@ -58,8 +56,8 @@ export const resourceService = {
 		return mapDtoToResource(dto);
 	},
 
-	async createResource(resource: Omit<Resource, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'actions' | 'actionsCount'>): Promise<Resource> {
-		const dto = await createResourceApi(mapResourceToDto(resource) as Omit<AuthzResourceDto, 'id' | 'createdAt' | 'updatedAt' | 'etag'>);
+	async createResource(resource: Omit<Resource, 'id' | 'createdAt' | 'etag' | 'actions' | 'actionsCount'>): Promise<Resource> {
+		const dto = await createResourceApi(mapResourceToDto(resource) as Omit<AuthzResourceDto, 'id' | 'createdAt' | 'etag'>);
 		return mapDtoToResource(dto);
 	},
 

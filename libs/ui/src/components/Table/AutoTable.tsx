@@ -1,5 +1,6 @@
 import { Anchor, Loader, Table } from '@mantine/core';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { ModelSchema } from '../../model';
@@ -30,6 +31,7 @@ export type AutoTableProps = {
 };
 
 export const AutoTable: React.FC<AutoTableProps> = (props) => {
+	const { t: translate } = useTranslation();
 	const {
 		columnAsId = 'id',
 	} = props;
@@ -53,7 +55,7 @@ export const AutoTable: React.FC<AutoTableProps> = (props) => {
 			<Table.Thead>
 				<Table.Tr>
 					{validColumns.map((col) => (
-						<Table.Th key={col}>{getColumnLabel(props.schema, col)}</Table.Th>
+						<Table.Th key={col}>{translate(getColumnLabel(props.schema, col))}</Table.Th>
 					))}
 				</Table.Tr>
 			</Table.Thead>

@@ -10,8 +10,6 @@ export type AuthzResourceDto = {
 	scopeType?: string;
 	scopeRef?: string;
 	createdAt?: string;
-	updatedAt?: string;
-	createdBy?: string;
 	etag?: string;
 	actions?: AuthzActionDto[];
 	actionsCount?: number;
@@ -81,7 +79,7 @@ export async function getResource(name: string): Promise<AuthzResourceDto> {
 }
 
 export async function createResource(
-	data: Omit<AuthzResourceDto, 'id' | 'createdAt' | 'updatedAt' | 'etag'>,
+	data: Omit<AuthzResourceDto, 'id' | 'createdAt' | 'etag'>,
 ): Promise<AuthzResourceDto> {
 	return post<AuthzResourceDto>('authorize/resources', {
 		json: data,

@@ -64,7 +64,7 @@ export const getResource = createAsyncThunk<
 
 export const createResource = createAsyncThunk<
 	Resource,
-	Omit<Resource, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'actions' | 'actionsCount'>,
+	Omit<Resource, 'id' | 'createdAt' | 'etag' | 'actions' | 'actionsCount'>,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createResource`,

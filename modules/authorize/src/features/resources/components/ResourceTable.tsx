@@ -6,7 +6,7 @@ import {
 } from '@mantine/core';
 import { AutoTable } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
-import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
+import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 
 import { Resource } from '../types';
@@ -18,7 +18,7 @@ export interface ResourceTableProps {
 	isLoading: boolean;
 	schema: ModelSchema;
 	onViewDetail: (resourceName: string) => void;
-	onEdit: (resourceId: string) => void;
+	onEdit: (resourceName: string) => void;
 	onDelete: (resourceId: string) => void;
 }
 
@@ -54,22 +54,14 @@ export const ResourceTable: React.FC<ResourceTableProps> = ({
 				},
 				actions: (row: Record<string, unknown>) => {
 					const resourceId = row.id as string;
+					const resourceName = row.name as string;
 					return (
 						<Group gap='xs' justify='flex-end'>
-							<Tooltip label='View Details'>
-								<ActionIcon
-									variant='subtle'
-									color='gray'
-									onClick={() => onViewDetail(row.name as string)}
-								>
-									<IconEye size={16} />
-								</ActionIcon>
-							</Tooltip>
 							<Tooltip label='Edit'>
 								<ActionIcon
 									variant='subtle'
 									color='gray'
-									onClick={() => onEdit(resourceId)}
+									onClick={() => onEdit(resourceName)}
 								>
 									<IconEdit size={16} />
 								</ActionIcon>

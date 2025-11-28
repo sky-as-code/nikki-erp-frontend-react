@@ -138,7 +138,7 @@ function useNotification() {
 			title,
 			message,
 			color: 'red',
-			autoClose: false,
+			autoClose: true,
 			withBorder: true,
 		});
 	};
