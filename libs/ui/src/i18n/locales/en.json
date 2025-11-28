@@ -194,6 +194,13 @@
 					"name": "Enter resource name",
 					"description": "Describe how this resource will be used",
 					"scope_ref": "Enter scope reference (org, hierarchy, ...)"
+				},
+				"errors": {
+					"resource_ref_required": "Resource reference is required",
+					"resource_ref_invalid_ulid": "Resource reference must be a valid ULID",
+					"name_alphanumeric": "Name must be alphanumeric",
+					"resource_type_required": "Please select a resource type",
+					"scope_type_required": "Please select a scope type"
 				}
 			}
 		}

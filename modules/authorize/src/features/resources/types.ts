@@ -21,8 +21,6 @@ interface Resource {
 	resourceRef?: string; // ID reference to actual object
 	scopeType: ScopeType;
 	createdAt: string;
-	updatedAt: string;
-	createdBy: string;
 	etag?: string;
 	// Relations
 	actions?: Action[];

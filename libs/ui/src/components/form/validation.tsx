@@ -135,8 +135,11 @@ function applyConstraint(
 			if (fieldSchema instanceof ZodString) {
 				return fieldSchema.min(1, { message: message || 'Required' });
 			}
-
-			return fieldSchema;
+			// For enum (which is optional), use refine to check if value exists
+			return fieldSchema.refine(
+				(val) => val !== undefined && val !== null && val !== '',
+				{ message: message || 'Required' },
+			);
 		case 'length':
 			if (fieldSchema instanceof ZodString) {
 				return applyLengthConstraint(fieldSchema, constraint, message);
@@ -178,9 +181,12 @@ export function buildFieldSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 		});
 	}
 
-	// Make optional if not required
+	// Make optional if not required (enum is already optional from createBaseSchema)
 	const isRequired = fieldDef.required?.create || fieldDef.required?.update;
-	if (!isRequired && !fieldDef.constraints?.some((c) => c.type === 'required')) {
+	const hasRequiredConstraint = fieldDef.constraints?.some((c) => c.type === 'required');
+
+	// Only apply .optional() to non-enum fields that are not required
+	if (fieldDef.type !== 'enum' && !isRequired && !hasRequiredConstraint) {
 		fieldSchema = fieldSchema.optional();
 	}
 

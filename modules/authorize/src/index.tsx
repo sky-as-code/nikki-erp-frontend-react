@@ -12,6 +12,8 @@ import { ActionListPage } from './pages/actions/ActionListPage';
 import { EntitlementListPage } from './pages/entitlements/EntitlementListPage';
 import { GrantRequestListPage } from './pages/grantRequest/GrantRequestListPage';
 import { OverviewPage } from './pages/overview/OverviewPage';
+import { ResourceCreatePage } from './pages/resources/ResourceCreatePage';
+import { ResourceDetailPage } from './pages/resources/ResourceDetailPage';
 import { ResourceListPage } from './pages/resources/ResourceListPage';
 import { RevokeRequestListPage } from './pages/revokeRequest/RevokeRequestListPage';
 import { RoleDetailPage } from './pages/role/RoleDetailPage';
@@ -86,6 +88,8 @@ function Main(props: MicroAppProps) {
 						<AppRoute index element={<Navigate to='overview' replace />} />
 						<AppRoute path='overview' element={<OverviewPage />} />
 						<AppRoute path='resources' element={<ResourceListPage />} />
+						<AppRoute path='resources/create' element={<ResourceCreatePage />} />
+						<AppRoute path='resources/:resourceName' element={<ResourceDetailPage />} />
 						<AppRoute path='actions' element={<ActionListPage />} />
 						<AppRoute path='entitlements' element={<EntitlementListPage />} />
 						<AppRoute path='roles' element={<RoleListPage />} />
