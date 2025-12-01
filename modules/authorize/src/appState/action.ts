@@ -1,6 +1,15 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { reducer, actions, listActions, getAction, ActionState } from '../features/actions/actionSlice';
+import {
+	reducer,
+	actions,
+	listActions,
+	getAction,
+	createAction,
+	updateAction,
+	deleteAction,
+	ActionState,
+} from '../features/actions/actionSlice';
 
 
 const STATE_KEY = 'action';
@@ -12,6 +21,9 @@ export const actionReducer = {
 export const actionActions = {
 	listActions,
 	getAction,
+	createAction,
+	updateAction,
+	deleteAction,
 	...actions,
 };
 

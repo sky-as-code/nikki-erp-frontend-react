@@ -18,6 +18,7 @@ interface Entitlement {
 	resourceId: string;
 	scopeRef?: string;
 	description?: string;
+	etag?: string;
 	orgId: string;
 	createdAt: string;
 	updatedAt: string;

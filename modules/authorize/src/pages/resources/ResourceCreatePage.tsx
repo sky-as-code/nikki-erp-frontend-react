@@ -9,12 +9,12 @@ import { resolvePath, useLocation, useNavigate } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 import { AuthorizeDispatch, resourceActions } from '../../appState';
+import { BackButton } from '../../features/resources/components/Button';
 import {
-	BackButton,
 	ResourceFormActions,
 	ResourceFormContainer,
 	ResourceFormFields,
-} from '../../features/resources/components/ResourceFormFields';
+} from '../../features/resources/components/ResourceForm';
 import resourceSchema from '../../features/resources/resource-schema.json';
 import { Resource } from '../../features/resources/types';
 import { validateResourceForm } from '../../features/resources/validation/resourceFormValidation';
@@ -70,14 +70,18 @@ function useResourceCreateHandlers() {
 }
 
 function ResourceCreatePageBody(): React.ReactNode {
-	const { isSubmitting, handleGoBack, handleSubmit } = useResourceCreateHandlers();
-	const { t } = useTranslation();
+	const {
+		isSubmitting,
+		handleGoBack,
+		handleSubmit,
+	} = useResourceCreateHandlers();
+	const { t: translate } = useTranslation();
 	const schema = resourceSchema as ModelSchema;
 
 	return (
 		<Stack gap='md'>
 			<BackButton onClick={handleGoBack} />
-			<ResourceFormContainer title={t('nikki.authorize.resource.title_create')}>
+			<ResourceFormContainer title={translate('nikki.authorize.resource.title_create')}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit, form }) => (

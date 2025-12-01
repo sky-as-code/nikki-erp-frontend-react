@@ -179,7 +179,7 @@ type BaseFieldWrapperProps = {
 	};
 };
 
-function BaseFieldWrapper({
+export function BaseFieldWrapper({
 	inputId, label, description, isRequired, error, children, ariaProps,
 }: BaseFieldWrapperProps) {
 	const { layout } = useFormStyle();

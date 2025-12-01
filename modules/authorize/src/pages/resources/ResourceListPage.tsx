@@ -6,6 +6,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import { useUIState } from '../../../../shell/src/context/UIProviders';
 import {
 	AuthorizeDispatch,
 	resourceActions,
@@ -21,6 +22,8 @@ import { Resource } from '../../features/resources/types';
 
 
 function useResourceDeleteHandler(resources: Resource[], dispatch: AuthorizeDispatch) {
+	const { notification } = useUIState();
+	const { t: translate } = useTranslation();
 	const [deleteModalOpened, setDeleteModalOpened] = React.useState(false);
 	const [resourceToDelete, setResourceToDelete] = React.useState<Resource | null>(null);
 
@@ -35,11 +38,23 @@ function useResourceDeleteHandler(resources: Resource[], dispatch: AuthorizeDisp
 		if (!resourceToDelete) return;
 		dispatch(resourceActions.deleteResource({
 			name: resourceToDelete.name,
-		})).then(() => {
+		})).then((result) => {
+			if (result.meta.requestStatus === 'fulfilled') {
+				notification.showInfo(
+					translate('nikki.authorize.resource.messages.delete_success', { name: resourceToDelete.name }),
+					translate('nikki.general.messages.success'),
+				);
+
+				dispatch(resourceActions.listResources());
+			}
+			else {
+				const errorMessage = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.delete_failed');
+				notification.showError(errorMessage, translate('nikki.general.messages.error'));
+			}
 			setDeleteModalOpened(false);
 			setResourceToDelete(null);
 		});
-	}, [dispatch, resourceToDelete]);
+	}, [dispatch, resourceToDelete, notification, translate]);
 
 	const closeDeleteModal = React.useCallback(() => {
 		setDeleteModalOpened(false);
@@ -100,19 +115,19 @@ function ResourceListPageBody(): React.ReactNode {
 				</Paper>
 			</Stack>
 
-		<ConfirmModal
-			opened={deleteHandler.deleteModalOpened}
-			onClose={deleteHandler.closeDeleteModal}
-			onConfirm={deleteHandler.confirmDelete}
-			title={translate('nikki.authorize.resource.title_delete')}
-			message={
-				deleteHandler.resourceToDelete
-					? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.resourceToDelete.name })
-					: translate('nikki.general.messages.delete_confirm')
-			}
-			confirmLabel={translate('nikki.general.actions.delete')}
-			confirmColor='red'
-		/>
+			<ConfirmModal
+				opened={deleteHandler.deleteModalOpened}
+				onClose={deleteHandler.closeDeleteModal}
+				onConfirm={deleteHandler.confirmDelete}
+				title={translate('nikki.authorize.resource.title_delete')}
+				message={
+					deleteHandler.resourceToDelete
+						? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.resourceToDelete.name })
+						: translate('nikki.general.messages.delete_confirm')
+				}
+				confirmLabel={translate('nikki.general.actions.delete')}
+				confirmColor='red'
+			/>
 		</>
 	);
 }

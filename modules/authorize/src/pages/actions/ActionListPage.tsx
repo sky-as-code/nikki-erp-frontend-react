@@ -1,121 +1,110 @@
-import {
-	ActionIcon,
-	Breadcrumbs,
-	Button,
-	Group,
-	Paper,
-	Stack,
-	TagsInput,
-	Text,
-	Tooltip,
-	Typography,
-} from '@mantine/core';
-import { AutoTable, ConfirmModal, withWindowTitle } from '@nikkierp/ui/components';
+import { Paper, Stack } from '@mantine/core';
+import { ConfirmModal } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
-import { IconEdit, IconEye, IconPlus, IconRefresh, IconTrash, IconUpload } from '@tabler/icons-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { ActionDetailModal } from './ActionDetailModal';
-import { AuthorizeDispatch, actionActions, selectActionState } from '../../appState';
+import { useUIState } from '../../../../shell/src/context/UIProviders';
+import {
+	AuthorizeDispatch,
+	actionActions,
+	resourceActions,
+	selectActionState,
+	selectResourceState,
+} from '../../appState';
 import actionSchema from '../../features/actions/action-schema.json';
+import {
+	ActionListActions,
+	ActionListHeader,
+	ActionTable,
+} from '../../features/actions/components';
 import { Action } from '../../features/actions/types';
 
 
-function useActionListHandlers() {
-	const navigate = useNavigate();
-	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { actionDetail, isLoadingDetail } = useMicroAppSelector(selectActionState);
-	const [detailModalOpened, setDetailModalOpened] = React.useState(false);
-	const [selectedActionId, setSelectedActionId] = React.useState<string | null>(null);
+function useActionDeleteHandler(actions: Action[], dispatch: AuthorizeDispatch) {
+	const { notification } = useUIState();
+	const { t: translate } = useTranslation();
 	const [deleteModalOpened, setDeleteModalOpened] = React.useState(false);
-	const [actionToDelete, setActionToDelete] = React.useState<string | null>(null);
+	const [actionToDelete, setActionToDelete] = React.useState<Action | null>(null);
 
-	const selectedAction = React.useMemo(() => {
-		if (!selectedActionId) return undefined;
-		if (selectedActionId === actionDetail?.id) {
-			return actionDetail;
-		}
-		return undefined;
-	}, [selectedActionId, actionDetail]);
-
-	React.useEffect(() => {
-		if (selectedActionId && detailModalOpened) {
-			dispatch(actionActions.getAction(selectedActionId));
-		}
-	}, [selectedActionId, detailModalOpened, dispatch]);
-
-	const handleViewDetail = (actionId: string) => {
-		setSelectedActionId(actionId);
-		setDetailModalOpened(true);
-	};
-
-	const handleEdit = (actionId: string) => {
-		navigate(`${actionId}/edit`);
-	};
-
-	const handleDelete = (actionId: string) => {
-		setActionToDelete(actionId);
+	const handleDeleteRequest = React.useCallback((actionId: string) => {
+		const action = actions.find((entry) => entry.id === actionId);
+		if (!action) return;
+		setActionToDelete(action);
 		setDeleteModalOpened(true);
-	};
+	}, [actions]);
 
-	const confirmDelete = () => {
-		if (actionToDelete) {
-			// TODO: Dispatch delete action
-			console.log('Delete action:', actionToDelete);
+	const confirmDelete = React.useCallback(() => {
+		if (!actionToDelete) return;
+		dispatch(actionActions.deleteAction({
+			actionId: actionToDelete.id,
+		})).then((result) => {
+			if (result.meta.requestStatus === 'fulfilled') {
+				notification.showInfo(
+					translate('nikki.authorize.action.messages.delete_success', { name: actionToDelete.name }),
+					translate('nikki.general.messages.success'),
+				);
+
+				dispatch(actionActions.listActions(undefined));
+			}
+			else {
+				const errorMessage = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.delete_failed');
+				notification.showError(errorMessage, translate('nikki.general.messages.error'));
+			}
+
 			setDeleteModalOpened(false);
 			setActionToDelete(null);
-		}
-	};
+		});
+	}, [dispatch, actionToDelete, notification, translate]);
 
-	const closeDetailModal = () => {
-		setDetailModalOpened(false);
-		setSelectedActionId(null);
-	};
-
-	const closeDeleteModal = () => {
+	const closeDeleteModal = React.useCallback(() => {
 		setDeleteModalOpened(false);
 		setActionToDelete(null);
-	};
+	}, []);
 
-	return {
-		navigate,
-		dispatch,
-		selectedAction,
-		isLoadingDetail,
-		detailModalOpened,
-		deleteModalOpened,
-		handleViewDetail,
-		handleEdit,
-		handleDelete,
-		confirmDelete,
-		closeDetailModal,
-		closeDeleteModal,
-	};
+	return { deleteModalOpened, actionToDelete, handleDeleteRequest, confirmDelete, closeDeleteModal };
 }
 
 function ActionListPageBody(): React.ReactNode {
+	const navigate = useNavigate();
+	const { t: translate } = useTranslation();
 	const { actions, isLoadingList } = useMicroAppSelector(selectActionState);
+	const { resources } = useMicroAppSelector(selectResourceState);
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const deleteHandler = useActionDeleteHandler(actions, dispatch);
+
+	const columns = ['name', 'description', 'resourceId', 'actions'];
 	const schema = actionSchema as ModelSchema;
-	const columns = ['name', 'description', 'resourceId', 'entitlementsCount', 'actions'];
-	const {
-		navigate,
-		dispatch,
-		selectedAction,
-		isLoadingDetail,
-		detailModalOpened,
-		deleteModalOpened,
-		handleViewDetail,
-		handleEdit,
-		handleDelete,
-		confirmDelete,
-		closeDetailModal,
-		closeDeleteModal,
-	} = useActionListHandlers();
 
 	React.useEffect(() => {
-		dispatch(actionActions.listActions());
+		dispatch(actionActions.listActions(undefined));
+		if (resources.length === 0) {
+			dispatch(resourceActions.listResources());
+		}
+	}, [dispatch, resources.length]);
+
+	const handleViewDetail = React.useCallback((actionId: string) => {
+		const action = actions.find((a: Action) => a.id === actionId);
+		if (action) {
+			navigate(`${action.id}`);
+		}
+	}, [navigate, actions]);
+
+	const handleEdit = React.useCallback((actionId: string) => {
+		const action = actions.find((a: Action) => a.id === actionId);
+		if (action) {
+			navigate(`${action.id}`);
+		}
+	}, [navigate, actions]);
+
+	const handleCreate = React.useCallback(() => {
+		navigate('create');
+	}, [navigate]);
+
+	const handleRefresh = React.useCallback(() => {
+		dispatch(actionActions.listActions(undefined));
 	}, [dispatch]);
 
 	return (
@@ -123,166 +112,46 @@ function ActionListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<ActionListHeader />
 				<ActionListActions
-					onCreate={() => navigate('new')}
-					onRefresh={() => dispatch(actionActions.listActions())}
+					onCreate={handleCreate}
+					onRefresh={handleRefresh}
 				/>
 				<Paper className='p-4'>
 					<ActionTable
 						columns={columns}
 						actions={actions}
+						resources={resources}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}
 						onEdit={handleEdit}
-						onDelete={handleDelete}
+						onDelete={deleteHandler.handleDeleteRequest}
 					/>
 				</Paper>
 			</Stack>
 
-			<ActionDetailModal
-				opened={detailModalOpened}
-				onClose={closeDetailModal}
-				action={selectedAction}
-				isLoading={isLoadingDetail}
-			/>
-
 			<ConfirmModal
-				opened={deleteModalOpened}
-				onClose={closeDeleteModal}
-				onConfirm={confirmDelete}
-				title='Delete Action'
-				message='Are you sure you want to delete this action? This action cannot be undone.'
-				confirmLabel='Delete'
+				opened={deleteHandler.deleteModalOpened}
+				onClose={deleteHandler.closeDeleteModal}
+				onConfirm={deleteHandler.confirmDelete}
+				title={translate('nikki.authorize.action.title_delete')}
+				message={
+					deleteHandler.actionToDelete
+						? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.actionToDelete.name })
+						: translate('nikki.general.messages.delete_confirm')
+				}
+				confirmLabel={translate('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>
 		</>
 	);
 }
 
-function ActionListHeader(): React.ReactNode {
-	return (
-		<Group>
-			<Breadcrumbs style={{
-				minWidth: '30%',
-			}}>
-				<Typography>
-					<h4>Actions</h4>
-				</Typography>
-			</Breadcrumbs>
-			<TagsInput
-				placeholder='Search'
-				w='500px'
-			/>
-		</Group>
-	);
-}
+const ActionListPageWithTitle: React.FC = () => {
+	const { t: translate } = useTranslation();
+	React.useEffect(() => {
+		document.title = translate('nikki.authorize.action.title');
+	}, [translate]);
+	return <ActionListPageBody />;
+};
 
-interface ActionListActionsProps {
-	onCreate: () => void;
-	onRefresh: () => void;
-}
-
-function ActionListActions({ onCreate, onRefresh }: ActionListActionsProps): React.ReactNode {
-	return (
-		<Group>
-			<Button
-				size='compact-md'
-				leftSection={<IconPlus size={16} />}
-				onClick={onCreate}
-			>
-				Create
-			</Button>
-			<Button
-				size='compact-md'
-				variant='outline'
-				leftSection={<IconRefresh size={16} />}
-				onClick={onRefresh}
-			>
-				Refresh
-			</Button>
-			<Button size='compact-md' variant='outline' leftSection={<IconUpload size={16} />}>Import</Button>
-		</Group>
-	);
-}
-
-interface ActionTableProps {
-	columns: string[];
-	actions: Action[];
-	isLoading: boolean;
-	schema: ModelSchema;
-	onViewDetail: (actionId: string) => void;
-	onEdit: (actionId: string) => void;
-	onDelete: (actionId: string) => void;
-}
-
-function ActionTable({
-	columns,
-	actions,
-	isLoading,
-	schema,
-	onViewDetail,
-	onEdit,
-	onDelete,
-}: ActionTableProps): React.ReactNode {
-	return (
-		<AutoTable
-			columns={columns}
-			data={actions as unknown as Record<string, unknown>[]}
-			schema={schema}
-			isLoading={isLoading}
-			columnRenderers={{
-				name: (row: Record<string, unknown>) => {
-					const actionId = row.id as string;
-					return (
-						<Text
-							style={{ cursor: 'pointer', textDecoration: 'underline' }}
-							onClick={(e) => {
-								e.preventDefault();
-								onViewDetail(actionId);
-							}}
-						>
-							{String(row.name || '')}
-						</Text>
-					);
-				},
-				actions: (row: Record<string, unknown>) => {
-					const actionId = row.id as string;
-					return (
-						<Group gap='xs' justify='flex-end'>
-							<Tooltip label='View Details'>
-								<ActionIcon
-									variant='subtle'
-									color='gray'
-									onClick={() => onViewDetail(actionId)}
-								>
-									<IconEye size={16} />
-								</ActionIcon>
-							</Tooltip>
-							<Tooltip label='Edit'>
-								<ActionIcon
-									variant='subtle'
-									color='gray'
-									onClick={() => onEdit(actionId)}
-								>
-									<IconEdit size={16} />
-								</ActionIcon>
-							</Tooltip>
-							<Tooltip label='Delete'>
-								<ActionIcon
-									variant='subtle'
-									color='red'
-									onClick={() => onDelete(actionId)}
-								>
-									<IconTrash size={16} />
-								</ActionIcon>
-							</Tooltip>
-						</Group>
-					);
-				},
-			}}
-		/>
-	);
-}
-
-
-export const ActionListPage: React.FC = withWindowTitle('Actions', ActionListPageBody);
+export const ActionListPage: React.FC = ActionListPageWithTitle;

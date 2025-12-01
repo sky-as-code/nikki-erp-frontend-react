@@ -4,12 +4,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 
-export interface ResourceListActionsProps {
+export interface EntitlementListActionsProps {
 	onCreate: () => void;
 	onRefresh: () => void;
 }
 
-export const ResourceListActions: React.FC<ResourceListActionsProps> = ({ onCreate, onRefresh }) => {
+export const EntitlementListActions: React.FC<EntitlementListActionsProps> = ({ onCreate, onRefresh }) => {
 	const { t: translate } = useTranslation();
 	return (
 		<Group>
@@ -34,5 +34,4 @@ export const ResourceListActions: React.FC<ResourceListActionsProps> = ({ onCrea
 		</Group>
 	);
 };
-
 

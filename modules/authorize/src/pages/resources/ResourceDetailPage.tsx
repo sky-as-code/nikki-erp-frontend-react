@@ -9,15 +9,15 @@ import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 import { AuthorizeDispatch, resourceActions, selectResourceState } from '../../appState';
+import { BackButton } from '../../features/resources/components/Button';
 import {
-	BackButton,
 	ResourceActionsField,
 	ResourceFormActions,
 	ResourceFormContainer,
 	ResourceFormFields,
 	ResourceLoadingState,
 	ResourceNotFound,
-} from '../../features/resources/components/ResourceFormFields';
+} from '../../features/resources/components/ResourceForm';
 import resourceSchema from '../../features/resources/resource-schema.json';
 import { Resource } from '../../features/resources/types';
 import { validateResourceForm } from '../../features/resources/validation/resourceFormValidation';
@@ -49,7 +49,7 @@ function useResourceDetailHandlers(resource: Resource | undefined) {
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
-	const { t } = useTranslation();
+	const { t: translate } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
 	const handleGoBack = React.useCallback(() => {
@@ -63,53 +63,53 @@ function useResourceDetailHandlers(resource: Resource | undefined) {
 		const formData = cleanFormData(data as Partial<Resource>);
 		setIsSubmitting(true);
 
-			if (!validateResourceForm(formData, false, form)) {
-				setIsSubmitting(false);
-				return;
-			}
+		if (!validateResourceForm(formData, false, form)) {
+			setIsSubmitting(false);
+			return;
+		}
 
 		const newDescription = formData.description ?? null;
 		const originalDescription = resource.description ?? null;
 
-	if (newDescription === originalDescription) {
-		notification.showError(
-			t('nikki.authorize.resource.errors.description_not_changed'),
-			t('nikki.general.messages.no_changes'),
-		);
-		setIsSubmitting(false);
-		return;
-	}
+		if (newDescription === originalDescription) {
+			notification.showError(
+				translate('nikki.authorize.resource.errors.description_not_changed'),
+				translate('nikki.general.messages.no_changes'),
+			);
+			setIsSubmitting(false);
+			return;
+		}
 
-	if (originalDescription !== null && originalDescription !== undefined && originalDescription !== '' && newDescription === null) {
-		notification.showError(
-			t('nikki.authorize.resource.errors.description_cannot_remove'),
-			t('nikki.general.messages.invalid_change'),
-		);
-		setIsSubmitting(false);
-		return;
-	}
+		if (originalDescription !== null && originalDescription !== undefined && originalDescription !== '' && newDescription === null) {
+			notification.showError(
+				translate('nikki.authorize.resource.errors.description_cannot_remove'),
+				translate('nikki.general.messages.invalid_change'),
+			);
+			setIsSubmitting(false);
+			return;
+		}
 
 		const result = await dispatch(resourceActions.updateResource({
 			id: resource.id,
 			etag: resource.etag,
-			description: newDescription,
+			description: newDescription ?? undefined,
 		}));
 
-	if (result.meta.requestStatus === 'fulfilled') {
-		notification.showInfo(
-			t('nikki.authorize.resource.messages.update_success', { name: formData.name || resource.name }),
-			t('nikki.general.messages.success'),
-		);
-		const parent = resolvePath('..', location.pathname).pathname;
-		navigate(parent);
-	}
-	else {
-		const errorMessage = typeof result.payload === 'string' ? result.payload : t('nikki.general.errors.update_failed');
-		notification.showError(errorMessage, t('nikki.general.messages.error'));
-	}
+		if (result.meta.requestStatus === 'fulfilled') {
+			notification.showInfo(
+				translate('nikki.authorize.resource.messages.update_success', { name: formData.name || resource.name }),
+				translate('nikki.general.messages.success'),
+			);
+			const parent = resolvePath('..', location.pathname).pathname;
+			navigate(parent);
+		}
+		else {
+			const errorMessage = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.update_failed');
+			notification.showError(errorMessage, translate('nikki.general.messages.error'));
+		}
 
 		setIsSubmitting(false);
-	}, [dispatch, notification, resource, navigate, location, t]);
+	}, [dispatch, notification, resource, navigate, location, translate]);
 
 	return { isSubmitting, handleGoBack, handleSubmit };
 }

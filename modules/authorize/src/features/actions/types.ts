@@ -6,8 +6,8 @@ interface Action {
 	name: string;
 	resourceId: string;
 	description?: string;
+	etag: string;
 	createdAt: string;
-	updatedAt: string;
 	createdBy: string;
 	// Relations
 	resource?: Resource;

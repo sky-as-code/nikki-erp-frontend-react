@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 
-export const ResourceListHeader: React.FC = () => {
+export const ActionListHeader: React.FC = () => {
 	const { t: translate } = useTranslation();
 	return (
 		<Group>
@@ -11,7 +11,7 @@ export const ResourceListHeader: React.FC = () => {
 				minWidth: '30%',
 			}}>
 				<Typography>
-					<h4>{translate('nikki.authorize.resource.title')}</h4>
+					<h4>{translate('nikki.authorize.action.title')}</h4>
 				</Typography>
 			</Breadcrumbs>
 			<TagsInput
@@ -21,5 +21,4 @@ export const ResourceListHeader: React.FC = () => {
 		</Group>
 	);
 };
-
 

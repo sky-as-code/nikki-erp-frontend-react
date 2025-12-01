@@ -1,6 +1,3 @@
-export * from './ResourceListHeader';
-export * from './ResourceListActions';
+export * from './Button';
+export * from './ResourceForm';
 export * from './ResourceTable';
-export * from './ResourceFormFields';
-
-
