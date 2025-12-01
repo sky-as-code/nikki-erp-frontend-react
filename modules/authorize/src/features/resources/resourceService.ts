@@ -34,13 +34,18 @@ function mapDtoToResource(dto: AuthzResourceDto): Resource {
 }
 
 function mapResourceToDto(resource: Partial<Resource>): Partial<AuthzResourceDto> {
-	return {
+	const dto: Partial<AuthzResourceDto> = {
 		name: resource.name,
-		description: resource.description,
 		resourceType: resource.resourceType,
 		resourceRef: resource.resourceRef,
 		scopeType: resource.scopeType,
 	};
+
+	if (resource.description !== undefined && resource.description !== '') {
+		dto.description = resource.description;
+	}
+
+	return dto;
 }
 
 export const resourceService = {
@@ -63,10 +68,10 @@ export const resourceService = {
 
 	async updateResource(
 		id: string,
-		resource: Partial<Omit<Resource, 'id' | 'createdAt' | 'updatedAt' | 'actions' | 'actionsCount'>>,
-		etag?: string,
+		etag: string,
+		description?: string | null,
 	): Promise<Resource> {
-		const dto = await updateResourceApi(id, mapResourceToDto(resource), etag);
+		const dto = await updateResourceApi(id, etag, description);
 		return mapDtoToResource(dto);
 	},
 

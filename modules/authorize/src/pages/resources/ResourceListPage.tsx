@@ -1,8 +1,9 @@
 import { Paper, Stack } from '@mantine/core';
-import { ConfirmModal, withWindowTitle } from '@nikkierp/ui/components';
+import { ConfirmModal } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import {
@@ -50,6 +51,7 @@ function useResourceDeleteHandler(resources: Resource[], dispatch: AuthorizeDisp
 
 function ResourceListPageBody(): React.ReactNode {
 	const navigate = useNavigate();
+	const { t: translate } = useTranslation();
 	const { resources, isLoadingList } = useMicroAppSelector(selectResourceState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useResourceDeleteHandler(resources, dispatch);
@@ -98,21 +100,29 @@ function ResourceListPageBody(): React.ReactNode {
 				</Paper>
 			</Stack>
 
-			<ConfirmModal
-				opened={deleteHandler.deleteModalOpened}
-				onClose={deleteHandler.closeDeleteModal}
-				onConfirm={deleteHandler.confirmDelete}
-				title='Delete Resource'
-				message={
-					deleteHandler.resourceToDelete
-						? `Are you sure you want to delete ${deleteHandler.resourceToDelete.name}? This action cannot be undone.`
-						: 'Are you sure you want to delete this resource? This action cannot be undone.'
-				}
-				confirmLabel='Delete'
-				confirmColor='red'
-			/>
+		<ConfirmModal
+			opened={deleteHandler.deleteModalOpened}
+			onClose={deleteHandler.closeDeleteModal}
+			onConfirm={deleteHandler.confirmDelete}
+			title={translate('nikki.authorize.resource.title_delete')}
+			message={
+				deleteHandler.resourceToDelete
+					? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.resourceToDelete.name })
+					: translate('nikki.general.messages.delete_confirm')
+			}
+			confirmLabel={translate('nikki.general.actions.delete')}
+			confirmColor='red'
+		/>
 		</>
 	);
 }
 
-export const ResourceListPage: React.FC = withWindowTitle('Resources', ResourceListPageBody);
+const ResourceListPageWithTitle: React.FC = () => {
+	const { t: translate } = useTranslation();
+	React.useEffect(() => {
+		document.title = translate('nikki.authorize.resource.title');
+	}, [translate]);
+	return <ResourceListPageBody />;
+};
+
+export const ResourceListPage: React.FC = ResourceListPageWithTitle;

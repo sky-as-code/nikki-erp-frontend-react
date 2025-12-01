@@ -5,6 +5,7 @@ import {
 	MicroAppProvider, initMicroAppStateContext, useMicroAppDispatch,
 	MicroAppRouter, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
+import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router';
 
 import { reducer } from './appState';
@@ -21,58 +22,62 @@ import { RoleListPage } from './pages/role/RoleListPage';
 import { RoleSuiteListPage } from './pages/role_suite/RoleSuiteListPage';
 
 
-const menuBarItems: MenuBarItem[] = [
+function useMenuBarItems(): MenuBarItem[] {
+	const { t: translate } = useTranslation();
+	return [
 	{
-		label: 'Overview',
+			label: translate('nikki.authorize.menu.overview'),
 		link: '/overview',
 	},
 	{
-		label: 'Resources & Actions',
+			label: translate('nikki.authorize.menu.resources_actions'),
 		items: [
 			{
-				label: 'Resources',
+					label: translate('nikki.authorize.menu.resources'),
 				link: '/resources',
 			},
 			{
-				label: 'Actions',
+					label: translate('nikki.authorize.menu.actions'),
 				link: '/actions',
 			},
 			{
-				label: 'Entitlements',
+					label: translate('nikki.authorize.menu.entitlements'),
 				link: '/entitlements',
 			},
 		],
 	},
 	{
-		label: 'Roles',
+			label: translate('nikki.authorize.menu.roles'),
 		items: [
 			{
-				label: 'Roles',
+					label: translate('nikki.authorize.menu.roles'),
 				link: '/roles',
 			},
 			{
-				label: 'Role Suites',
+					label: translate('nikki.authorize.menu.role_suites'),
 				link: '/role-suites',
 			},
 		],
 	},
 	{
-		label: 'Requests',
+			label: translate('nikki.authorize.menu.requests'),
 		items: [
 			{
-				label: 'Grant Requests',
+					label: translate('nikki.authorize.menu.grant_requests'),
 				link: '/grant-requests',
 			},
 			{
-				label: 'Revoke Requests',
+					label: translate('nikki.authorize.menu.revoke_requests'),
 				link: '/revoke-requests',
 			},
 		],
 	},
 ];
+}
 
 function Main(props: MicroAppProps) {
 	const dispatch = useMicroAppDispatch();
+	const menuBarItems = useMenuBarItems();
 	useSetMenuBarItems(menuBarItems, dispatch);
 
 	return (

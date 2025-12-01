@@ -1,6 +1,7 @@
 import { Button, Group } from '@mantine/core';
 import { IconPlus, IconRefresh, IconUpload } from '@tabler/icons-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 
 export interface ResourceListActionsProps {
@@ -9,6 +10,7 @@ export interface ResourceListActionsProps {
 }
 
 export const ResourceListActions: React.FC<ResourceListActionsProps> = ({ onCreate, onRefresh }) => {
+	const { t: translate } = useTranslation();
 	return (
 		<Group>
 			<Button
@@ -16,7 +18,7 @@ export const ResourceListActions: React.FC<ResourceListActionsProps> = ({ onCrea
 				leftSection={<IconPlus size={16} />}
 				onClick={onCreate}
 			>
-				Create
+				{translate('nikki.general.actions.create')}
 			</Button>
 			<Button
 				size='compact-md'
@@ -24,9 +26,11 @@ export const ResourceListActions: React.FC<ResourceListActionsProps> = ({ onCrea
 				leftSection={<IconRefresh size={16} />}
 				onClick={onRefresh}
 			>
-				Refresh
+				{translate('nikki.general.actions.refresh')}
 			</Button>
-			<Button size='compact-md' variant='outline' leftSection={<IconUpload size={16} />}>Import</Button>
+			<Button size='compact-md' variant='outline' leftSection={<IconUpload size={16} />}>
+				{translate('nikki.general.actions.import')}
+			</Button>
 		</Group>
 	);
 };

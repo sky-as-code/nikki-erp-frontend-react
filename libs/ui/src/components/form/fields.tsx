@@ -500,7 +500,10 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 							// error={fieldData.error}
 							data={selectData}
 							value={(value as string) || null}
-							onChange={field.onChange}
+							onChange={(val) => {
+								// Transform null or empty string to undefined for optional enum
+								field.onChange(val === null || val === '' ? undefined : val);
+							}}
 							disabled={modelLoading}
 							placeholder={fieldData.placeholder}
 							ref={ref}
@@ -552,7 +555,10 @@ export function DynamicEnumSelectField({
 							// error={fieldData.error}
 							data={[]}
 							value={(value as string) || null}
-							onChange={field.onChange}
+							onChange={(val) => {
+								// Transform null or empty string to undefined for optional enum
+								field.onChange(val === null || val === '' ? undefined : val);
+							}}
 							placeholder={fieldData.placeholder || `TODO: Load from ${fieldData.fieldDef.enumSrc?.stateSource}`}
 							disabled={modelLoading}
 							ref={ref}

@@ -8,6 +8,7 @@ import { AutoTable } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Resource } from '../types';
 
@@ -31,6 +32,7 @@ export const ResourceTable: React.FC<ResourceTableProps> = ({
 	onEdit,
 	onDelete,
 }) => {
+	const { t: translate } = useTranslation();
 	return (
 		<AutoTable
 			columns={columns}
@@ -57,7 +59,7 @@ export const ResourceTable: React.FC<ResourceTableProps> = ({
 					const resourceName = row.name as string;
 					return (
 						<Group gap='xs' justify='flex-end'>
-							<Tooltip label='Edit'>
+							<Tooltip label={translate('nikki.general.actions.edit')}>
 								<ActionIcon
 									variant='subtle'
 									color='gray'
@@ -66,7 +68,7 @@ export const ResourceTable: React.FC<ResourceTableProps> = ({
 									<IconEdit size={16} />
 								</ActionIcon>
 							</Tooltip>
-							<Tooltip label='Delete'>
+							<Tooltip label={translate('nikki.general.actions.delete')}>
 								<ActionIcon
 									variant='subtle'
 									color='red'
