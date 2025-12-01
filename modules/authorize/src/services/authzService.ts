@@ -5,12 +5,11 @@ export type AuthzResourceDto = {
 	id: string;
 	name: string;
 	description?: string;
-	resourceType?: string;
+	resourceType: string;
 	resourceRef?: string;
-	scopeType?: string;
-	scopeRef?: string;
-	createdAt?: string;
-	etag?: string;
+	scopeType: string;
+	createdAt: string;
+	etag: string;
 	actions?: AuthzActionDto[];
 	actionsCount?: number;
 	[key: string]: unknown;
@@ -88,18 +87,12 @@ export async function createResource(
 
 export async function updateResource(
 	id: string,
-	data: Partial<Omit<AuthzResourceDto, 'id' | 'createdAt' | 'updatedAt'>>,
-	etag?: string,
+	etag: string,
+	description?: string | null,
 ): Promise<AuthzResourceDto> {
-	const options: Options = {
-		json: data,
-	};
-	if (etag) {
-		options.headers = {
-			'If-Match': etag,
-		};
-	}
-	return put<AuthzResourceDto>(`authorize/resources/${id}`, options);
+	return put<AuthzResourceDto>(`authorize/resources/${id}`, {
+		json: { description, etag },
+	});
 }
 
 export async function deleteResource(name: string): Promise<void> {

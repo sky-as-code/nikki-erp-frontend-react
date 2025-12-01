@@ -1,8 +1,10 @@
 import { Stack } from '@mantine/core';
+import { cleanFormData } from '@nikkierp/common/utils';
 import { FormFieldProvider, FormStyleProvider, withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
@@ -25,6 +27,7 @@ function useResourceCreateHandlers() {
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
+	const { t: translate } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
 	const handleGoBack = React.useCallback(() => {
@@ -33,7 +36,7 @@ function useResourceCreateHandlers() {
 	}, [navigate, location]);
 
 	const handleSubmit = React.useCallback(async (data: unknown, form: FormType) => {
-		const formData = data as Partial<Resource>;
+		const formData = cleanFormData(data as Partial<Resource>);
 		setIsSubmitting(true);
 
 		if (!validateResourceForm(formData, true, form)) {
@@ -46,17 +49,21 @@ function useResourceCreateHandlers() {
 		));
 
 		if (result.meta.requestStatus === 'fulfilled') {
-			notification.showInfo(`Resource "${formData.name}" has been created successfully`, 'Success');
+			notification.showInfo(
+				translate('nikki.authorize.resource.messages.create_success', { name: formData.name }),
+				translate('nikki.general.messages.success'),
+			);
 		}
 		else {
-			notification.showError(result.payload as string ?? 'Error', 'Failed to create resource');
+			const errorMessage = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.create_failed');
+			notification.showError(errorMessage, translate('nikki.general.messages.error'));
 		}
 
 		const parent = resolvePath('..', location.pathname).pathname;
 		navigate(parent);
 
 		setIsSubmitting(false);
-	}, [dispatch, notification, location]);
+	}, [dispatch, notification, location, translate]);
 
 
 	return { isSubmitting, handleGoBack, handleSubmit };
@@ -64,12 +71,13 @@ function useResourceCreateHandlers() {
 
 function ResourceCreatePageBody(): React.ReactNode {
 	const { isSubmitting, handleGoBack, handleSubmit } = useResourceCreateHandlers();
+	const { t } = useTranslation();
 	const schema = resourceSchema as ModelSchema;
 
 	return (
 		<Stack gap='md'>
 			<BackButton onClick={handleGoBack} />
-			<ResourceFormContainer title='Create New Resource'>
+			<ResourceFormContainer title={t('nikki.authorize.resource.title_create')}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit, form }) => (

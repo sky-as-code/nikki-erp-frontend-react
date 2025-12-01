@@ -2,6 +2,7 @@ import { Badge, Button, Group, Loader, Paper, Stack, Text, TextInput, Title } fr
 import { AutoField } from '@nikkierp/ui/components/form';
 import { IconArrowLeft, IconCheck } from '@tabler/icons-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Action } from '../../actions';
 
@@ -11,13 +12,17 @@ interface BackButtonProps {
 	label?: string;
 }
 
-export const BackButton: React.FC<BackButtonProps> = ({ onClick, label = 'Back to Resources' }) => (
-	<Group>
-		<Button variant='subtle' leftSection={<IconArrowLeft size={16} />} onClick={onClick}>
-			{label}
-		</Button>
-	</Group>
-);
+export const BackButton: React.FC<BackButtonProps> = ({ onClick, label }) => {
+	const { t: translate } = useTranslation();
+	const defaultLabel = translate('nikki.general.actions.back');
+	return (
+		<Group>
+			<Button variant='subtle' leftSection={<IconArrowLeft size={16} />} onClick={onClick}>
+				{label || defaultLabel}
+			</Button>
+		</Group>
+	);
+};
 
 export const ResourceFormFields: React.FC<{ isCreate: boolean }> = ({ isCreate }) => (
 	<>
@@ -67,27 +72,30 @@ interface ResourceActionsFieldProps {
 	actions?: Action[];
 }
 
-export const ResourceActionsField: React.FC<ResourceActionsFieldProps> = ({ actions }) => (
-	<div>
-		<TextInput
-			label='Actions'
-			value=''
-			readOnly
-			styles={{ input: { display: 'none' } }}
-		/>
-		{actions && actions.length > 0 ? (
-			<Group gap='xs' mt='xs'>
-				{actions.map((action) => (
-					<Badge key={action.id} color='blue' variant='light' size='sm'>
-						{action.name}
-					</Badge>
-				))}
-			</Group>
-		) : (
-			<Text size='sm' c='dimmed'>No actions defined</Text>
-		)}
-	</div>
-);
+export const ResourceActionsField: React.FC<ResourceActionsFieldProps> = ({ actions }) => {
+	const { t } = useTranslation();
+	return (
+		<div>
+			<TextInput
+				label={t('nikki.authorize.resource.messages.actions')}
+				value=''
+				readOnly
+				styles={{ input: { display: 'none' } }}
+			/>
+			{actions && actions.length > 0 ? (
+				<Group gap='xs' mt='xs'>
+					{actions.map((action) => (
+						<Badge key={action.id} color='blue' variant='light' size='sm'>
+							{action.name}
+						</Badge>
+					))}
+				</Group>
+			) : (
+				<Text size='sm' c='dimmed'>{t('nikki.authorize.resource.messages.no_actions_defined')}</Text>
+			)}
+		</div>
+	);
+};
 
 interface ResourceFormActionsProps {
 	isSubmitting: boolean;
@@ -99,16 +107,19 @@ export const ResourceFormActions: React.FC<ResourceFormActionsProps> = ({
 	isSubmitting,
 	onCancel,
 	isCreate,
-}) => (
-	<Group mt='xl'>
-		<Button type='submit' leftSection={<IconCheck size={16} />} loading={isSubmitting}>
-			{isCreate ? 'Create' : 'Update'}
-		</Button>
-		<Button type='button' variant='outline' onClick={onCancel} disabled={isSubmitting}>
-			Cancel
-		</Button>
-	</Group>
-);
+}) => {
+	const { t } = useTranslation();
+	return (
+		<Group mt='xl'>
+			<Button type='submit' leftSection={<IconCheck size={16} />} loading={isSubmitting}>
+				{isCreate ? t('nikki.general.actions.create') : t('nikki.general.actions.update')}
+			</Button>
+			<Button type='button' variant='outline' onClick={onCancel} disabled={isSubmitting}>
+				{t('nikki.general.actions.cancel')}
+			</Button>
+		</Group>
+	);
+};
 
 interface ResourceFormContainerProps {
 	title: string;
@@ -122,22 +133,28 @@ export const ResourceFormContainer: React.FC<ResourceFormContainerProps> = ({ ti
 	</Paper>
 );
 
-export const ResourceLoadingState: React.FC = () => (
-	<Stack align='center' justify='center' h={400}>
-		<Loader size='lg' />
-		<Text c='dimmed'>Loading resource...</Text>
-	</Stack>
-);
+export const ResourceLoadingState: React.FC = () => {
+	const { t } = useTranslation();
+	return (
+		<Stack align='center' justify='center' h={400}>
+			<Loader size='lg' />
+			<Text c='dimmed'>{t('nikki.authorize.resource.messages.loading')}</Text>
+		</Stack>
+	);
+};
 
 interface ResourceNotFoundProps {
 	onGoBack: () => void;
 }
 
-export const ResourceNotFound: React.FC<ResourceNotFoundProps> = ({ onGoBack }) => (
-	<Stack gap='md'>
-		<BackButton onClick={onGoBack} />
-		<Paper p='lg'>
-			<Text c='dimmed'>Resource not found</Text>
-		</Paper>
-	</Stack>
-);
+export const ResourceNotFound: React.FC<ResourceNotFoundProps> = ({ onGoBack }) => {
+	const { t } = useTranslation();
+	return (
+		<Stack gap='md'>
+			<BackButton onClick={onGoBack} />
+			<Paper p='lg'>
+				<Text c='dimmed'>{t('nikki.authorize.resource.messages.not_found')}</Text>
+			</Paper>
+		</Stack>
+	);
+};

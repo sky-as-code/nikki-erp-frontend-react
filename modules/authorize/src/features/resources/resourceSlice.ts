@@ -82,13 +82,13 @@ export const createResource = createAsyncThunk<
 
 export const updateResource = createAsyncThunk<
 	Resource,
-	{ id: string; resource: Partial<Omit<Resource, 'id' | 'createdAt' | 'updatedAt' | 'actions' | 'actionsCount'>>; etag?: string },
+	{ id: string; etag: string; description?: string | null },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateResource`,
-	async ({ id, resource, etag }, { rejectWithValue }) => {
+	async ({ id, etag, description }, { rejectWithValue }) => {
 		try {
-			const result = await resourceService.updateResource(id, resource, etag);
+			const result = await resourceService.updateResource(id, etag, description);
 			return result;
 		}
 		catch (error) {

@@ -1,9 +1,11 @@
 import { Stack } from '@mantine/core';
+import { cleanFormData } from '@nikkierp/common/utils';
 import { FormFieldProvider, FormStyleProvider, withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
-import { resolvePath, useLocation, useNavigate, useParams, useResolvedPath } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 import { AuthorizeDispatch, resourceActions, selectResourceState } from '../../appState';
@@ -47,6 +49,7 @@ function useResourceDetailHandlers(resource: Resource | undefined) {
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
 	const handleGoBack = React.useCallback(() => {
@@ -57,36 +60,56 @@ function useResourceDetailHandlers(resource: Resource | undefined) {
 	const handleSubmit = React.useCallback(async (data: unknown, form: FormType) => {
 		if (!resource) return;
 
-		const formData = data as Partial<Resource>;
+		const formData = cleanFormData(data as Partial<Resource>);
 		setIsSubmitting(true);
 
-		try {
 			if (!validateResourceForm(formData, false, form)) {
 				setIsSubmitting(false);
 				return;
 			}
 
-			await dispatch(resourceActions.updateResource({
-				id: resource.id,
-				resource: {
-					name: formData.name,
-					description: formData.description,
-					resourceType: formData.resourceType,
-					resourceRef: formData.resourceRef,
-					scopeType: formData.scopeType,
-				},
-				etag: resource.etag,
-			})).unwrap();
+		const newDescription = formData.description ?? null;
+		const originalDescription = resource.description ?? null;
 
-			notification.showInfo(`Resource "${formData.name || resource.name}" has been updated`, 'Success');
-		}
-		catch {
-			notification.showError('Something went wrong. Please try again later.', 'Failed to update resource');
-		}
-		finally {
-			setIsSubmitting(false);
-		}
-	}, [dispatch, notification, resource]);
+	if (newDescription === originalDescription) {
+		notification.showError(
+			t('nikki.authorize.resource.errors.description_not_changed'),
+			t('nikki.general.messages.no_changes'),
+		);
+		setIsSubmitting(false);
+		return;
+	}
+
+	if (originalDescription !== null && originalDescription !== undefined && originalDescription !== '' && newDescription === null) {
+		notification.showError(
+			t('nikki.authorize.resource.errors.description_cannot_remove'),
+			t('nikki.general.messages.invalid_change'),
+		);
+		setIsSubmitting(false);
+		return;
+	}
+
+		const result = await dispatch(resourceActions.updateResource({
+			id: resource.id,
+			etag: resource.etag,
+			description: newDescription,
+		}));
+
+	if (result.meta.requestStatus === 'fulfilled') {
+		notification.showInfo(
+			t('nikki.authorize.resource.messages.update_success', { name: formData.name || resource.name }),
+			t('nikki.general.messages.success'),
+		);
+		const parent = resolvePath('..', location.pathname).pathname;
+		navigate(parent);
+	}
+	else {
+		const errorMessage = typeof result.payload === 'string' ? result.payload : t('nikki.general.errors.update_failed');
+		notification.showError(errorMessage, t('nikki.general.messages.error'));
+	}
+
+		setIsSubmitting(false);
+	}, [dispatch, notification, resource, navigate, location, t]);
 
 	return { isSubmitting, handleGoBack, handleSubmit };
 }

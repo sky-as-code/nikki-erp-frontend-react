@@ -19,9 +19,35 @@
 			"fields": {
 				"id": "Mã định danh"
 			},
+			"actions": {
+				"back": "Quay lại",
+				"create": "Tạo",
+				"update": "Cập nhật",
+				"delete": "Xóa",
+				"edit": "Chỉnh sửa",
+				"cancel": "Hủy",
+				"search": "Tìm kiếm",
+				"refresh": "Làm mới",
+				"import": "Nhập",
+				"save": "Lưu",
+				"confirm": "Xác nhận"
+			},
+			"messages": {
+				"success": "Thành công",
+				"error": "Lỗi",
+				"loading": "Đang tải...",
+				"not_found": "Không tìm thấy",
+				"no_changes": "Không có thay đổi",
+				"invalid_change": "Thay đổi không hợp lệ",
+				"delete_confirm": "Bạn có chắc chắn muốn xóa? Hành động này không thể hoàn tác.",
+				"delete_confirm_name": "Bạn có chắc chắn muốn xóa {{name}}? Hành động này không thể hoàn tác."
+			},
 			"errors": {
 				"required": "Trường này là bắt buộc",
-				"length": "Độ dài giá trị không hợp lệ"
+				"length": "Độ dài giá trị không hợp lệ",
+				"update_failed": "Cập nhật thất bại",
+				"create_failed": "Tạo thất bại",
+				"delete_failed": "Xóa thất bại"
 			}
 		},
         "identity": {
@@ -202,8 +228,49 @@
                 }
             }
         },
-        "authorize": {
+		"authorize": {
+			"menu": {
+				"overview": "Tổng quan",
+				"resources_actions": "Tài nguyên & Hành động",
+				"resources": "Tài nguyên",
+				"actions": "Hành động",
+				"entitlements": "Quyền truy cập",
+				"roles": "Vai trò",
+				"role_suites": "Bộ Vai trò",
+				"requests": "Yêu cầu",
+				"grant_requests": "Yêu cầu Cấp quyền",
+				"revoke_requests": "Yêu cầu Thu hồi"
+			},
+			"overview": {
+				"title": "Tổng quan Phân quyền - Nikki ERP",
+				"pending_requests": "Yêu cầu Đang chờ",
+				"pending_requests_message": "Bạn có <strong>{{count}}</strong> yêu cầu cấp quyền đang chờ xử lý.",
+				"view_all_requests": "Xem tất cả yêu cầu",
+				"statistics": "Thống kê",
+				"recent_activity": "Hoạt động Gần đây",
+				"quick_links": "Liên kết Nhanh",
+				"manage_resources": "Quản lý Tài nguyên",
+				"manage_resources_desc": "Định nghĩa và quản lý tài nguyên được bảo vệ",
+				"manage_roles": "Quản lý Vai trò",
+				"manage_roles_desc": "Tạo và gán vai trò cho người dùng",
+				"process_requests": "Xử lý Yêu cầu",
+				"process_requests_desc": "Xem xét và phê duyệt yêu cầu cấp quyền",
+				"grant": "Cấp quyền",
+				"pending": "Đang chờ",
+				"revoke": "Thu hồi",
+				"was_granted": "đã được cấp",
+				"role": "vai trò",
+				"had_revoked": "đã bị",
+				"role_revoked": "thu hồi vai trò",
+				"hours_ago": "{{count}} giờ trước",
+				"day_ago": "{{count}} ngày trước",
+				"days_ago": "{{count}} ngày trước"
+			},
 			"resource": {
+				"title": "Tài nguyên",
+				"title_create": "Tạo Tài nguyên Mới",
+				"title_detail": "Chi tiết Tài nguyên",
+				"title_delete": "Xóa Tài nguyên",
 				"fields": {
 					"id": "Mã tài nguyên",
 					"name": "Tên tài nguyên",
@@ -236,9 +303,20 @@
 				"errors": {
 					"resource_ref_required": "Tham chiếu tài nguyên là bắt buộc",
 					"resource_ref_invalid_ulid": "Tham chiếu tài nguyên phải là ULID hợp lệ",
+					"resource_ref_invalid_uuid": "Tham chiếu tài nguyên phải là UUID hợp lệ",
 					"name_alphanumeric": "Tên chỉ được chứa chữ cái và số",
 					"resource_type_required": "Vui lòng chọn loại tài nguyên",
-					"scope_type_required": "Vui lòng chọn phạm vi"
+					"scope_type_required": "Vui lòng chọn phạm vi",
+					"description_not_changed": "Mô tả không thay đổi",
+					"description_cannot_remove": "Không thể xóa mô tả. Vui lòng cung cấp giá trị mới hoặc giữ nguyên giá trị hiện tại."
+				},
+				"messages": {
+					"actions": "Hành động",
+					"no_actions_defined": "Không có hành động nào được định nghĩa",
+					"loading": "Đang tải tài nguyên...",
+					"not_found": "Không tìm thấy tài nguyên",
+					"create_success": "Tài nguyên \"{{name}}\" đã được tạo thành công",
+					"update_success": "Tài nguyên \"{{name}}\" đã được cập nhật thành công"
 				}
 			}
 		}

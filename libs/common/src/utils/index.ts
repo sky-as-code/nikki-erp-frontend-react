@@ -20,3 +20,17 @@ export function decodeBase64(base64: string): string {
 export function randomString(length: number): string {
 	return Math.random().toString(36).substring(2, 2 + length);
 }
+
+export function cleanFormData<T extends Record<string, any>>(data: T): T {
+	const cleaned = { ...data };
+
+	for (const key in cleaned) {
+		const value = cleaned[key];
+		// Convert empty string to undefined (will be omitted in JSON)
+		if (value === '') {
+			cleaned[key] = undefined as any;
+		}
+	}
+
+	return cleaned;
+}

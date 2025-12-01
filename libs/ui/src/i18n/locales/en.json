@@ -19,9 +19,35 @@
 			"fields": {
 				"id": "ID"
 			},
+			"actions": {
+				"back": "Back",
+				"create": "Create",
+				"update": "Update",
+				"delete": "Delete",
+				"edit": "Edit",
+				"cancel": "Cancel",
+				"search": "Search",
+				"refresh": "Refresh",
+				"import": "Import",
+				"save": "Save",
+				"confirm": "Confirm"
+			},
+			"messages": {
+				"success": "Success",
+				"error": "Error",
+				"loading": "Loading...",
+				"not_found": "Not found",
+				"no_changes": "No changes",
+				"invalid_change": "Invalid change",
+				"delete_confirm": "Are you sure you want to delete? This action cannot be undone.",
+				"delete_confirm_name": "Are you sure you want to delete {{name}}? This action cannot be undone."
+			},
 			"errors": {
 				"required": "This field is required",
-				"length": "Value length is invalid"
+				"length": "Value length is invalid",
+				"update_failed": "Failed to update",
+				"create_failed": "Failed to create",
+				"delete_failed": "Failed to delete"
 			}
 		},
 		"identity": {
@@ -165,7 +191,48 @@
 			}
 		},
 		"authorize": {
+			"menu": {
+				"overview": "Overview",
+				"resources_actions": "Resources & Actions",
+				"resources": "Resources",
+				"actions": "Actions",
+				"entitlements": "Entitlements",
+				"roles": "Roles",
+				"role_suites": "Role Suites",
+				"requests": "Requests",
+				"grant_requests": "Grant Requests",
+				"revoke_requests": "Revoke Requests"
+			},
+			"overview": {
+				"title": "Authorize Overview - Nikki ERP",
+				"pending_requests": "Pending Requests",
+				"pending_requests_message": "You have <strong>{{count}}</strong> pending grant requests requiring attention.",
+				"view_all_requests": "View all requests",
+				"statistics": "Statistics",
+				"recent_activity": "Recent Activity",
+				"quick_links": "Quick Links",
+				"manage_resources": "Manage Resources",
+				"manage_resources_desc": "Define and manage protected resources",
+				"manage_roles": "Manage Roles",
+				"manage_roles_desc": "Create and assign roles to users",
+				"process_requests": "Process Requests",
+				"process_requests_desc": "Review and approve grant requests",
+				"grant": "Grant",
+				"pending": "Pending",
+				"revoke": "Revoke",
+				"was_granted": "was granted",
+				"role": "role",
+				"had_revoked": "had",
+				"role_revoked": "role revoked",
+				"hours_ago": "{{count}} hours ago",
+				"day_ago": "{{count}} day ago",
+				"days_ago": "{{count}} days ago"
+			},
 			"resource": {
+				"title": "Resources",
+				"title_create": "Create New Resource",
+				"title_detail": "Resource Details",
+				"title_delete": "Delete Resource",
 				"fields": {
 					"id": "Resource ID",
 					"name": "Resource name",
@@ -198,9 +265,20 @@
 				"errors": {
 					"resource_ref_required": "Resource reference is required",
 					"resource_ref_invalid_ulid": "Resource reference must be a valid ULID",
+					"resource_ref_invalid_uuid": "Resource reference must be a valid UUID",
 					"name_alphanumeric": "Name must be alphanumeric",
 					"resource_type_required": "Please select a resource type",
-					"scope_type_required": "Please select a scope type"
+					"scope_type_required": "Please select a scope type",
+					"description_not_changed": "Description has not changed",
+					"description_cannot_remove": "Cannot remove description. Please provide a new value or keep the existing one."
+				},
+				"messages": {
+					"actions": "Actions",
+					"no_actions_defined": "No actions defined",
+					"loading": "Loading resource...",
+					"not_found": "Resource not found",
+					"create_success": "Resource \"{{name}}\" has been created successfully",
+					"update_success": "Resource \"{{name}}\" has been updated successfully"
 				}
 			}
 		}
