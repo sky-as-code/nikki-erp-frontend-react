@@ -15,23 +15,31 @@
 		"name": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.action.fields.name' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.action.placeholders.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
-				},
 				{
 					"type": "length",
 					"min": 1,
 					"max": 64,
 					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				},
+				{
+					"type": "regex",
+					"pattern": "^[a-zA-Z0-9]+$",
+					"message": "{ \"$ref\": 'nikki.authorize.action.errors.name_alphanumeric' }"
 				}
 			]
 		},
 		"resourceId": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.action.fields.resource_id' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
 				{
 					"type": "required",
@@ -42,7 +50,6 @@
 		"description": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.action.fields.description' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.action.placeholders.description' }",
 			"constraints": [
 				{
 					"type": "length",
@@ -59,11 +66,6 @@
 		"createdAt": {
 			"type": "date",
 			"label": "{ \"$ref\": 'nikki.authorize.action.fields.created_at' }",
-			"hidden": true
-		},
-		"updatedAt": {
-			"type": "date",
-			"label": "{ \"$ref\": 'nikki.authorize.action.fields.updated_at' }",
 			"hidden": true
 		}
 	}

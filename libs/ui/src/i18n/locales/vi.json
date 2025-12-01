@@ -25,6 +25,7 @@
 				"update": "Cập nhật",
 				"delete": "Xóa",
 				"edit": "Chỉnh sửa",
+				"view": "Xem",
 				"cancel": "Hủy",
 				"search": "Tìm kiếm",
 				"refresh": "Làm mới",
@@ -241,6 +242,89 @@
 				"grant_requests": "Yêu cầu Cấp quyền",
 				"revoke_requests": "Yêu cầu Thu hồi"
 			},
+			"action": {
+				"title": "Hành động",
+				"title_create": "Tạo Hành động Mới",
+				"title_detail": "Chi tiết Hành động",
+				"title_delete": "Xóa Hành động",
+				"fields": {
+					"id": "Mã hành động",
+					"name": "Tên hành động",
+					"description": "Mô tả",
+					"resource_id": "Tài nguyên",
+					"entitlements_count": "Số quyền",
+					"created_at": "Ngày tạo",
+					"updated_at": "Ngày cập nhật"
+				},
+				"placeholders": {
+					"name": "Nhập tên hành động (vd: Xem, Tạo, Sửa, Xóa)",
+					"description": "Mô tả hành động này cho phép làm gì",
+					"resource_id": "Chọn một tài nguyên"
+				},
+				"errors": {
+					"resource_required": "Vui lòng chọn tài nguyên",
+					"name_alphanumeric": "Tên chỉ được chứa chữ cái và số"
+				},
+				"messages": {
+					"loading": "Đang tải hành động...",
+					"not_found": "Không tìm thấy hành động",
+					"create_success": "Hành động \"{{name}}\" đã được tạo thành công",
+					"update_success": "Hành động \"{{name}}\" đã được cập nhật thành công",
+					"delete_success": "Hành động \"{{name}}\" đã được xóa thành công",
+					"select_resource_first": "Vui lòng chọn tài nguyên trước"
+				}
+			},
+			"entitlement": {
+				"title": "Quyền truy cập",
+				"title_create": "Tạo Quyền Mới",
+				"title_detail": "Chi tiết Quyền",
+				"title_delete": "Xóa Quyền",
+				"fields": {
+					"id": "Mã quyền",
+					"name": "Tên quyền",
+					"description": "Mô tả",
+					"action_id": "Hành động",
+					"action_expr": "Biểu thức điều kiện",
+					"resource_id": "Tài nguyên",
+					"scope_ref": "Tham chiếu phạm vi",
+					"org_id": "Tổ chức",
+					"subject_type": {
+						"label": "Loại chủ thể",
+						"nikki_user": "Người dùng Nikki",
+						"nikki_group": "Nhóm Nikki",
+						"nikki_role": "Vai trò Nikki",
+						"custom": "Tùy chỉnh"
+					},
+					"subject_ref": "Tham chiếu chủ thể",
+					"assignments_count": "Số phân công",
+					"roles_count": "Số vai trò",
+					"created_at": "Ngày tạo",
+					"updated_at": "Ngày cập nhật"
+				},
+				"placeholders": {
+					"name": "Nhập tên quyền",
+					"description": "Mô tả quyền này cấp những gì",
+					"action_expr": "Nhập biểu thức điều kiện (tùy chọn)",
+					"scope_ref": "Nhập tham chiếu phạm vi",
+					"subject_ref": "Nhập tham chiếu chủ thể",
+					"resource_id": "Chọn một tài nguyên",
+					"action_id": "Chọn một hành động",
+					"select_resource_first": "Vui lòng chọn tài nguyên trước",
+					"no_actions_available": "Không có hành động nào cho tài nguyên này"
+				},
+				"errors": {
+					"action_required": "Vui lòng chọn hành động",
+					"resource_required": "Vui lòng chọn tài nguyên"
+				},
+				"messages": {
+					"loading": "Đang tải quyền...",
+					"not_found": "Không tìm thấy quyền",
+					"create_success": "Quyền \"{{name}}\" đã được tạo thành công",
+					"update_success": "Quyền \"{{name}}\" đã được cập nhật thành công",
+					"delete_success": "Quyền \"{{name}}\" đã được xóa thành công",
+					"no_actions_for_resource": "Tài nguyên này không có hành động nào. Vui lòng tạo hành động cho tài nguyên này trước."
+				}
+			},
 			"overview": {
 				"title": "Tổng quan Phân quyền - Nikki ERP",
 				"pending_requests": "Yêu cầu Đang chờ",
@@ -316,7 +400,8 @@
 					"loading": "Đang tải tài nguyên...",
 					"not_found": "Không tìm thấy tài nguyên",
 					"create_success": "Tài nguyên \"{{name}}\" đã được tạo thành công",
-					"update_success": "Tài nguyên \"{{name}}\" đã được cập nhật thành công"
+					"update_success": "Tài nguyên \"{{name}}\" đã được cập nhật thành công",
+					"delete_success": "Tài nguyên \"{{name}}\" đã được xóa thành công"
 				}
 			}
 		}

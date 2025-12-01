@@ -1,6 +1,15 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { reducer, actions, listEntitlements, getEntitlement, EntitlementState } from '../features/entitlements/entitlementSlice';
+import {
+	reducer,
+	actions,
+	listEntitlements,
+	getEntitlement,
+	createEntitlement,
+	updateEntitlement,
+	deleteEntitlement,
+	EntitlementState,
+} from '../features/entitlements/entitlementSlice';
 
 
 const STATE_KEY = 'entitlement';
@@ -12,6 +21,9 @@ export const entitlementReducer = {
 export const entitlementActions = {
 	listEntitlements,
 	getEntitlement,
+	createEntitlement,
+	updateEntitlement,
+	deleteEntitlement,
 	...actions,
 };
 

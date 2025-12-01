@@ -25,6 +25,7 @@
 				"update": "Update",
 				"delete": "Delete",
 				"edit": "Edit",
+				"view": "View",
 				"cancel": "Cancel",
 				"search": "Search",
 				"refresh": "Refresh",
@@ -228,6 +229,89 @@
 				"day_ago": "{{count}} day ago",
 				"days_ago": "{{count}} days ago"
 			},
+			"action": {
+				"title": "Actions",
+				"title_create": "Create New Action",
+				"title_detail": "Action Details",
+				"title_delete": "Delete Action",
+				"fields": {
+					"id": "Action ID",
+					"name": "Action name",
+					"description": "Description",
+					"resource_id": "Resource",
+					"entitlements_count": "Entitlements",
+					"created_at": "Created at",
+					"updated_at": "Updated at"
+				},
+				"placeholders": {
+					"name": "Enter action name (e.g. View, Create, Update, Delete)",
+					"description": "Describe what this action allows",
+					"resource_id": "Select a resource"
+				},
+				"errors": {
+					"resource_required": "Please select a resource",
+					"name_alphanumeric": "Name must be alphanumeric"
+				},
+				"messages": {
+					"loading": "Loading action...",
+					"not_found": "Action not found",
+					"create_success": "Action \"{{name}}\" has been created successfully",
+					"update_success": "Action \"{{name}}\" has been updated successfully",
+					"delete_success": "Action \"{{name}}\" has been deleted successfully",
+					"select_resource_first": "Please select a resource first"
+				}
+			},
+			"entitlement": {
+				"title": "Entitlements",
+				"title_create": "Create New Entitlement",
+				"title_detail": "Entitlement Details",
+				"title_delete": "Delete Entitlement",
+				"fields": {
+					"id": "Entitlement ID",
+					"name": "Entitlement name",
+					"description": "Description",
+					"action_id": "Action",
+					"action_expr": "Action expression",
+					"resource_id": "Resource",
+					"scope_ref": "Scope reference",
+					"org_id": "Organization",
+					"subject_type": {
+						"label": "Subject type",
+						"nikki_user": "Nikki User",
+						"nikki_group": "Nikki Group",
+						"nikki_role": "Nikki Role",
+						"custom": "Custom"
+					},
+					"subject_ref": "Subject reference",
+					"assignments_count": "Assignments",
+					"roles_count": "Roles",
+					"created_at": "Created at",
+					"updated_at": "Updated at"
+				},
+				"placeholders": {
+					"name": "Enter entitlement name",
+					"description": "Describe what this entitlement grants",
+					"action_expr": "Enter conditional expression (optional)",
+					"scope_ref": "Enter scope reference",
+					"subject_ref": "Enter subject reference",
+					"resource_id": "Select a resource",
+					"action_id": "Select an action",
+					"select_resource_first": "Please select a resource first",
+					"no_actions_available": "No actions available for this resource"
+				},
+				"errors": {
+					"action_required": "Please select an action",
+					"resource_required": "Please select a resource"
+				},
+				"messages": {
+					"loading": "Loading entitlement...",
+					"not_found": "Entitlement not found",
+					"create_success": "Entitlement \"{{name}}\" has been created successfully",
+					"update_success": "Entitlement \"{{name}}\" has been updated successfully",
+					"delete_success": "Entitlement \"{{name}}\" has been deleted successfully",
+					"no_actions_for_resource": "This resource has no actions available. Please create actions for this resource first."
+				}
+			},
 			"resource": {
 				"title": "Resources",
 				"title_create": "Create New Resource",
@@ -278,7 +362,8 @@
 					"loading": "Loading resource...",
 					"not_found": "Resource not found",
 					"create_success": "Resource \"{{name}}\" has been created successfully",
-					"update_success": "Resource \"{{name}}\" has been updated successfully"
+					"update_success": "Resource \"{{name}}\" has been updated successfully",
+					"delete_success": "Resource \"{{name}}\" has been deleted successfully"
 				}
 			}
 		}

@@ -133,6 +133,15 @@ function applyConstraint(
 	switch (constraint.type) {
 		case 'required':
 			if (fieldSchema instanceof ZodString) {
+				// Check if schema is optional (might be used with Select)
+				// If optional, use refine to handle undefined/null/empty string
+				if (fieldSchema.isOptional()) {
+					return fieldSchema.refine(
+						(val) => val !== undefined && val !== null && val !== '',
+						{ message: message || 'Required' },
+					);
+				}
+				// Otherwise use min(1) for non-optional strings
 				return fieldSchema.min(1, { message: message || 'Required' });
 			}
 			// For enum (which is optional), use refine to check if value exists
@@ -174,6 +183,17 @@ function applyConstraint(
 export function buildFieldSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 	let fieldSchema = createBaseSchema(fieldDef);
 
+	// Check if field has required constraint (might be used with Select component)
+	const hasRequiredConstraint = fieldDef.constraints?.some((c) => c.type === 'required');
+	const isRequired = fieldDef.required?.create || fieldDef.required?.update;
+
+	// For string fields with required constraint, make optional initially
+	// (similar to enum) so they can accept undefined from Select components
+	// The required constraint will handle validation with refine
+	if (fieldDef.type === 'string' && hasRequiredConstraint) {
+		fieldSchema = fieldSchema.optional();
+	}
+
 	// Apply constraints
 	if (fieldDef.constraints) {
 		fieldDef.constraints.forEach((constraint) => {
@@ -182,10 +202,7 @@ export function buildFieldSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 	}
 
 	// Make optional if not required (enum is already optional from createBaseSchema)
-	const isRequired = fieldDef.required?.create || fieldDef.required?.update;
-	const hasRequiredConstraint = fieldDef.constraints?.some((c) => c.type === 'required');
-
-	// Only apply .optional() to non-enum fields that are not required
+	// Only apply .optional() to non-enum fields that are not required and don't have required constraint
 	if (fieldDef.type !== 'enum' && !isRequired && !hasRequiredConstraint) {
 		fieldSchema = fieldSchema.optional();
 	}

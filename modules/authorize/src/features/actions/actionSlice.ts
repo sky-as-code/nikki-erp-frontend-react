@@ -46,17 +46,71 @@ export const listActions = createAsyncThunk<
 
 export const getAction = createAsyncThunk<
 	Action | undefined,
-	string,
+	{ actionId: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/getAction`,
-	async (id, { rejectWithValue }) => {
+	async ({ actionId }, { rejectWithValue }) => {
 		try {
-			const result = await actionService.getAction(id);
+			const result = await actionService.getAction(actionId);
 			return result;
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to get action';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
+export const createAction = createAsyncThunk<
+	Action,
+	Omit<Action, 'id' | 'createdAt' | 'etag' | 'resources' | 'entitlementsCount'>,
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/createAction`,
+	async (action, { rejectWithValue }) => {
+		try {
+			const result = await actionService.createAction(action);
+			return result;
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to create action';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
+export const updateAction = createAsyncThunk<
+	Action,
+	{ actionId: string; etag: string; description?: string },
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/updateAction`,
+	async ({ actionId, etag, description }, { rejectWithValue }) => {
+		try {
+			const result = await actionService.updateAction(actionId, { etag, description });
+			return result;
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to update action';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
+export const deleteAction = createAsyncThunk<
+	void,
+	{ actionId: string },
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/deleteAction`,
+	async ({ actionId }, { rejectWithValue }) => {
+		try {
+			await actionService.deleteAction(actionId);
+			return undefined;
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to delete action';
 			return rejectWithValue(errorMessage);
 		}
 	},
@@ -79,6 +133,9 @@ const actionSlice = createSlice({
 	extraReducers: (builder) => {
 		listActionsReducers(builder);
 		getActionReducers(builder);
+		createActionReducers(builder);
+		updateActionReducers(builder);
+		deleteActionReducers(builder);
 	},
 });
 
@@ -117,6 +174,66 @@ function getActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 			state.errorDetail = action.payload || 'Failed to get action';
 		});
 }
+
+function createActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
+	builder
+		.addCase(createAction.pending, (state) => {
+			state.isLoadingDetail = true;
+			state.errorDetail = null;
+		})
+		.addCase(createAction.fulfilled, (state, action) => {
+			state.isLoadingDetail = false;
+			state.actionDetail = action.payload;
+			state.actions.push(action.payload);
+			state.errorDetail = null;
+		})
+		.addCase(createAction.rejected, (state, action) => {
+			state.isLoadingDetail = false;
+			state.errorDetail = action.payload || 'Failed to create action';
+		});
+}
+
+function updateActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
+	builder
+		.addCase(updateAction.pending, (state) => {
+			state.isLoadingDetail = true;
+			state.errorDetail = null;
+		})
+		.addCase(updateAction.fulfilled, (state, action) => {
+			state.isLoadingDetail = false;
+			state.actionDetail = action.payload;
+			const index = state.actions.findIndex((a) => a.id === action.payload.id);
+			if (index >= 0) {
+				state.actions[index] = action.payload;
+			}
+			state.errorDetail = null;
+		})
+		.addCase(updateAction.rejected, (state, action) => {
+			state.isLoadingDetail = false;
+			state.errorDetail = action.payload || 'Failed to update action';
+		});
+}
+
+function deleteActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
+	builder
+		.addCase(deleteAction.pending, (state) => {
+			state.isLoadingDetail = true;
+			state.errorDetail = null;
+		})
+		.addCase(deleteAction.fulfilled, (state, action) => {
+			state.isLoadingDetail = false;
+			state.actions = state.actions.filter((a) => a.id !== action.meta.arg.actionId);
+			if (state.actionDetail?.id === action.meta.arg.actionId) {
+				state.actionDetail = undefined;
+			}
+			state.errorDetail = null;
+		})
+		.addCase(deleteAction.rejected, (state, action) => {
+			state.isLoadingDetail = false;
+			state.errorDetail = action.payload || 'Failed to delete action';
+		});
+}
+
 
 export const actions = {
 	...actionSlice.actions,

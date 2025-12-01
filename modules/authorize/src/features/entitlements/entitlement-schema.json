@@ -15,7 +15,10 @@
 		"name": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.name' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.entitlement.placeholders.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
 				{
 					"type": "required",
@@ -32,6 +35,10 @@
 		"actionId": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.action_id' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
 				{
 					"type": "required",
@@ -41,12 +48,15 @@
 		},
 		"actionExpr": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.action_expr' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.entitlement.placeholders.action_expr' }"
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.action_expr' }"
 		},
 		"resourceId": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.resource_id' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
 				{
 					"type": "required",
@@ -56,13 +66,11 @@
 		},
 		"scopeRef": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.scope_ref' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.entitlement.placeholders.scope_ref' }"
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.scope_ref' }"
 		},
 		"description": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.description' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.entitlement.placeholders.description' }",
 			"constraints": [
 				{
 					"type": "length",

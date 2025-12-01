@@ -9,7 +9,11 @@ import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router';
 
 import { reducer } from './appState';
+import { ActionCreatePage } from './pages/actions/ActionCreatePage';
+import { ActionDetailPage } from './pages/actions/ActionDetailPage';
 import { ActionListPage } from './pages/actions/ActionListPage';
+import { EntitlementCreatePage } from './pages/entitlements/EntitlementCreatePage';
+import { EntitlementDetailPage } from './pages/entitlements/EntitlementDetailPage';
 import { EntitlementListPage } from './pages/entitlements/EntitlementListPage';
 import { GrantRequestListPage } from './pages/grantRequest/GrantRequestListPage';
 import { OverviewPage } from './pages/overview/OverviewPage';
@@ -25,54 +29,54 @@ import { RoleSuiteListPage } from './pages/role_suite/RoleSuiteListPage';
 function useMenuBarItems(): MenuBarItem[] {
 	const { t: translate } = useTranslation();
 	return [
-	{
+		{
 			label: translate('nikki.authorize.menu.overview'),
-		link: '/overview',
-	},
-	{
+			link: '/overview',
+		},
+		{
 			label: translate('nikki.authorize.menu.resources_actions'),
-		items: [
-			{
+			items: [
+				{
 					label: translate('nikki.authorize.menu.resources'),
-				link: '/resources',
-			},
-			{
+					link: '/resources',
+				},
+				{
 					label: translate('nikki.authorize.menu.actions'),
-				link: '/actions',
-			},
-			{
+					link: '/actions',
+				},
+				{
 					label: translate('nikki.authorize.menu.entitlements'),
-				link: '/entitlements',
-			},
-		],
-	},
-	{
+					link: '/entitlements',
+				},
+			],
+		},
+		{
 			label: translate('nikki.authorize.menu.roles'),
-		items: [
-			{
+			items: [
+				{
 					label: translate('nikki.authorize.menu.roles'),
-				link: '/roles',
-			},
-			{
+					link: '/roles',
+				},
+				{
 					label: translate('nikki.authorize.menu.role_suites'),
-				link: '/role-suites',
-			},
-		],
-	},
-	{
+					link: '/role-suites',
+				},
+			],
+		},
+		{
 			label: translate('nikki.authorize.menu.requests'),
-		items: [
-			{
+			items: [
+				{
 					label: translate('nikki.authorize.menu.grant_requests'),
-				link: '/grant-requests',
-			},
-			{
+					link: '/grant-requests',
+				},
+				{
 					label: translate('nikki.authorize.menu.revoke_requests'),
-				link: '/revoke-requests',
-			},
-		],
-	},
-];
+					link: '/revoke-requests',
+				},
+			],
+		},
+	];
 }
 
 function Main(props: MicroAppProps) {
@@ -92,14 +96,23 @@ function Main(props: MicroAppProps) {
 					<AppRoutes>
 						<AppRoute index element={<Navigate to='overview' replace />} />
 						<AppRoute path='overview' element={<OverviewPage />} />
+						{/* Resource routes */}
 						<AppRoute path='resources' element={<ResourceListPage />} />
 						<AppRoute path='resources/create' element={<ResourceCreatePage />} />
 						<AppRoute path='resources/:resourceName' element={<ResourceDetailPage />} />
+						{/* Action routes */}
 						<AppRoute path='actions' element={<ActionListPage />} />
+						<AppRoute path='actions/create' element={<ActionCreatePage />} />
+						<AppRoute path='actions/:actionId' element={<ActionDetailPage />} />
+						{/* Entitlement routes */}
 						<AppRoute path='entitlements' element={<EntitlementListPage />} />
+						<AppRoute path='entitlements/create' element={<EntitlementCreatePage />} />
+						<AppRoute path='entitlements/:entitlementId' element={<EntitlementDetailPage />} />
+						{/* Role routes */}
 						<AppRoute path='roles' element={<RoleListPage />} />
 						<AppRoute path='roles/:roleId' element={<RoleDetailPage />} />
 						<AppRoute path='role-suites' element={<RoleSuiteListPage />} />
+						{/* Request routes */}
 						<AppRoute path='grant-requests' element={<GrantRequestListPage />} />
 						<AppRoute path='revoke-requests' element={<RevokeRequestListPage />} />
 					</AppRoutes>

@@ -117,11 +117,6 @@
 			"type": "date",
 			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.created_at' }",
 			"hidden": true
-		},
-		"updatedAt": {
-			"type": "date",
-			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.updated_at' }",
-			"hidden": true
 		}
 	}
 }
