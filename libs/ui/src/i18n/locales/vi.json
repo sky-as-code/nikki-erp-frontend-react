@@ -286,7 +286,8 @@
 					"action_id": "Hành động",
 					"action_expr": "Biểu thức điều kiện",
 					"resource_id": "Tài nguyên",
-					"scope_ref": "Tham chiếu phạm vi",
+					"resource_all": "Tất cả tài nguyên (*)",
+					"action_all": "Tất cả hành động (*)",
 					"org_id": "Tổ chức",
 					"subject_type": {
 						"label": "Loại chủ thể",
@@ -307,8 +308,8 @@
 					"action_expr": "Nhập biểu thức điều kiện (tùy chọn)",
 					"scope_ref": "Nhập tham chiếu phạm vi",
 					"subject_ref": "Nhập tham chiếu chủ thể",
-					"resource_id": "Chọn một tài nguyên",
-					"action_id": "Chọn một hành động",
+					"resource_id": "Chọn một tài nguyên (hoặc Tất cả)",
+					"action_id": "Chọn một hành động (hoặc Tất cả)",
 					"select_resource_first": "Vui lòng chọn tài nguyên trước",
 					"no_actions_available": "Không có hành động nào cho tài nguyên này"
 				},
@@ -321,8 +322,7 @@
 					"not_found": "Không tìm thấy quyền",
 					"create_success": "Quyền \"{{name}}\" đã được tạo thành công",
 					"update_success": "Quyền \"{{name}}\" đã được cập nhật thành công",
-					"delete_success": "Quyền \"{{name}}\" đã được xóa thành công",
-					"no_actions_for_resource": "Tài nguyên này không có hành động nào. Vui lòng tạo hành động cho tài nguyên này trước."
+					"delete_success": "Quyền \"{{name}}\" đã được xóa thành công"
 				}
 			},
 			"overview": {

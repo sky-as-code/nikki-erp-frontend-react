@@ -7,13 +7,21 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
-import { AuthorizeDispatch, entitlementActions, selectEntitlementState } from '../../appState';
-import entitlementSchema from '../../features/entitlements/entitlement-schema.json';
+import {
+	AuthorizeDispatch,
+	actionActions,
+	entitlementActions,
+	resourceActions,
+	selectActionState,
+	selectEntitlementState,
+	selectResourceState,
+} from '../../appState';
 import {
 	EntitlementListActions,
 	EntitlementListHeader,
 	EntitlementTable,
 } from '../../features/entitlements/components';
+import entitlementSchema from '../../features/entitlements/entitlement-schema.json';
 import { Entitlement } from '../../features/entitlements/types';
 
 
@@ -61,6 +69,8 @@ function EntitlementListPageBody(): React.ReactNode {
 	const navigate = useNavigate();
 	const { t: translate } = useTranslation();
 	const { entitlements, isLoadingList } = useMicroAppSelector(selectEntitlementState);
+	const { resources } = useMicroAppSelector(selectResourceState);
+	const { actions } = useMicroAppSelector(selectActionState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useEntitlementDeleteHandler(entitlements, dispatch);
 
@@ -69,7 +79,13 @@ function EntitlementListPageBody(): React.ReactNode {
 
 	React.useEffect(() => {
 		dispatch(entitlementActions.listEntitlements());
-	}, [dispatch]);
+		if (resources.length === 0) {
+			dispatch(resourceActions.listResources());
+		}
+		if (actions.length === 0) {
+			dispatch(actionActions.listActions(undefined));
+		}
+	}, [dispatch, resources.length, actions.length]);
 
 	const handleViewDetail = React.useCallback((entitlementId: string) => {
 		navigate(entitlementId);
@@ -99,6 +115,8 @@ function EntitlementListPageBody(): React.ReactNode {
 					<EntitlementTable
 						columns={columns}
 						entitlements={entitlements}
+						resources={resources}
+						actions={actions}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}

@@ -16,14 +16,13 @@ function mapDtoToEntitlement(dto: AuthzEntitlementDto): Entitlement {
 		description: dto.description,
 		actionId: dto.actionId,
 		resourceId: dto.resourceId,
-		scopeRef: dto.scopeRef || undefined,
-		orgId: dto.orgId || '',
-		createdAt: dto.createdAt || new Date().toISOString(),
-		updatedAt: dto.createdAt || new Date().toISOString(),
-		createdBy: '',
+		actionExpr: dto.actionExpr,
+		orgId: dto.orgId,
+		createdAt: dto.createdAt,
+		createdBy: dto.createdBy,
 		etag: dto.etag,
-		assignmentsCount: dto.assignmentsCount || 0,
-		rolesCount: dto.rolesCount || 0,
+		assignmentsCount: dto.assignmentsCount,
+		rolesCount: dto.rolesCount,
 	};
 }
 
@@ -32,18 +31,11 @@ function mapEntitlementToDto(entitlement: Partial<Entitlement>): Partial<AuthzEn
 		name: entitlement.name,
 		actionId: entitlement.actionId,
 		resourceId: entitlement.resourceId,
+		actionExpr: entitlement.actionExpr,
+		orgId: entitlement.orgId,
+		description: entitlement.description,
+		createdBy: entitlement.createdBy,
 	};
-
-	// Only include description if it's not undefined and not empty string
-	if (entitlement.description !== undefined && entitlement.description !== '') {
-		dto.description = entitlement.description;
-	}
-	if (entitlement.scopeRef) {
-		dto.scopeRef = entitlement.scopeRef;
-	}
-	if (entitlement.orgId) {
-		dto.orgId = entitlement.orgId;
-	}
 
 	return dto;
 }
@@ -60,9 +52,9 @@ export const entitlementService = {
 	},
 
 	async createEntitlement(
-		entitlement: Omit<Entitlement, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
+		entitlement: Omit<Entitlement, 'id' | 'createdAt' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
 	): Promise<Entitlement> {
-		const dto = await createEntitlementApi(mapEntitlementToDto(entitlement) as Omit<AuthzEntitlementDto, 'id' | 'createdAt' | 'etag'>);
+		const dto = await createEntitlementApi(mapEntitlementToDto(entitlement) as Omit<AuthzEntitlementDto, 'id' | 'createdAt' | 'etag' | 'assignmentsCount' | 'rolesCount'>);
 		return mapDtoToEntitlement(dto);
 	},
 

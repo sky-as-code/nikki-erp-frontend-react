@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 
 
 export const EntitlementLoadingState: React.FC = () => {
-	const { t } = useTranslation();
+	const { t: translate } = useTranslation();
 	return (
 		<Stack align='center' justify='center' h={400}>
 			<Loader size='lg' />
-			<Text c='dimmed'>{t('nikki.authorize.entitlement.messages.loading')}</Text>
+			<Text c='dimmed'>{translate('nikki.authorize.entitlement.messages.loading')}</Text>
 		</Stack>
 	);
 };

@@ -34,17 +34,7 @@
 		},
 		"actionId": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.action_id' }",
-			"required": {
-				"create": true,
-				"update": false
-			},
-			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
-				}
-			]
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.action_id' }"
 		},
 		"actionExpr": {
 			"type": "string",
@@ -52,21 +42,7 @@
 		},
 		"resourceId": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.resource_id' }",
-			"required": {
-				"create": true,
-				"update": false
-			},
-			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
-				}
-			]
-		},
-		"scopeRef": {
-			"type": "string",
-			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.scope_ref' }"
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.resource_id' }"
 		},
 		"description": {
 			"type": "string",
@@ -81,13 +57,7 @@
 		},
 		"orgId": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.org_id' }",
-			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
-				}
-			]
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.org_id' }"
 		},
 		"assignmentsCount": {
 			"type": "integer",

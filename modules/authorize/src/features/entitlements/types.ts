@@ -13,15 +13,13 @@ export enum SubjectType {
 interface Entitlement {
 	id: string;
 	name: string;
-	actionId: string;
-	actionExpr?: string; // Conditional expression
-	resourceId: string;
-	scopeRef?: string;
+	actionId?: string;
+	actionExpr: string;
+	resourceId?: string;
 	description?: string;
-	etag?: string;
-	orgId: string;
+	etag: string;
+	orgId?: string;
 	createdAt: string;
-	updatedAt: string;
 	createdBy: string;
 	// Relations
 	action?: Action;

@@ -273,7 +273,8 @@
 					"action_id": "Action",
 					"action_expr": "Action expression",
 					"resource_id": "Resource",
-					"scope_ref": "Scope reference",
+					"resource_all": "All resources (*)",
+					"action_all": "All actions (*)",
 					"org_id": "Organization",
 					"subject_type": {
 						"label": "Subject type",
@@ -294,8 +295,8 @@
 					"action_expr": "Enter conditional expression (optional)",
 					"scope_ref": "Enter scope reference",
 					"subject_ref": "Enter subject reference",
-					"resource_id": "Select a resource",
-					"action_id": "Select an action",
+					"resource_id": "Select a resource (or choose All)",
+					"action_id": "Select an action (or choose All)",
 					"select_resource_first": "Please select a resource first",
 					"no_actions_available": "No actions available for this resource"
 				},
@@ -308,8 +309,7 @@
 					"not_found": "Entitlement not found",
 					"create_success": "Entitlement \"{{name}}\" has been created successfully",
 					"update_success": "Entitlement \"{{name}}\" has been updated successfully",
-					"delete_success": "Entitlement \"{{name}}\" has been deleted successfully",
-					"no_actions_for_resource": "This resource has no actions available. Please create actions for this resource first."
+					"delete_success": "Entitlement \"{{name}}\" has been deleted successfully"
 				}
 			},
 			"resource": {

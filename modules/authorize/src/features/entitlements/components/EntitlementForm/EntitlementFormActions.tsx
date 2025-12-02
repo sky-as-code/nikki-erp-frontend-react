@@ -15,14 +15,14 @@ export const EntitlementFormActions: React.FC<EntitlementFormActionsProps> = ({
 	onCancel,
 	isCreate,
 }) => {
-	const { t } = useTranslation();
+	const { t: translate } = useTranslation();
 	return (
 		<Group mt='xl'>
 			<Button type='submit' leftSection={<IconCheck size={16} />} loading={isSubmitting}>
-				{isCreate ? t('nikki.general.actions.create') : t('nikki.general.actions.update')}
+				{isCreate ? translate('nikki.general.actions.create') : translate('nikki.general.actions.update')}
 			</Button>
 			<Button type='button' variant='outline' onClick={onCancel} disabled={isSubmitting}>
-				{t('nikki.general.actions.cancel')}
+				{translate('nikki.general.actions.cancel')}
 			</Button>
 		</Group>
 	);
