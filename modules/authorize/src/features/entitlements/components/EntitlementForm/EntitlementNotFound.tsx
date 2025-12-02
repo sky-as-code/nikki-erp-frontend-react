@@ -10,12 +10,12 @@ interface EntitlementNotFoundProps {
 }
 
 export const EntitlementNotFound: React.FC<EntitlementNotFoundProps> = ({ onGoBack }) => {
-	const { t } = useTranslation();
+	const { t: translate } = useTranslation();
 	return (
 		<Stack gap='md'>
 			<BackButton onClick={onGoBack} />
 			<Paper p='lg'>
-				<Text c='dimmed'>{t('nikki.authorize.entitlement.messages.not_found')}</Text>
+				<Text c='dimmed'>{translate('nikki.authorize.entitlement.messages.not_found')}</Text>
 			</Paper>
 		</Stack>
 	);

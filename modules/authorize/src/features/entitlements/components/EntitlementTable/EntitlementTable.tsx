@@ -12,10 +12,15 @@ import { useTranslation } from 'react-i18next';
 
 import { Entitlement } from '../../types';
 
+import type { Action } from '../../../actions';
+import type { Resource } from '../../../resources';
+
 
 export interface EntitlementTableProps {
 	columns: string[];
 	entitlements: Entitlement[];
+	resources: Resource[];
+	actions: Action[];
 	isLoading: boolean;
 	schema: ModelSchema;
 	onViewDetail: (entitlementId: string) => void;
@@ -39,6 +44,32 @@ function renderNameColumn(
 			{String(row.name || '')}
 		</Text>
 	);
+}
+
+function renderResourceIdColumn(
+	row: Record<string, unknown>,
+	resourceMap: Map<string, string>,
+	translate: (key: string) => string,
+) {
+	const resourceId = row.resourceId as string | undefined;
+	if (!resourceId) {
+		return <Text>{translate('nikki.authorize.entitlement.fields.resource_all')}</Text>;
+	}
+	const resourceName = resourceMap.get(resourceId) || resourceId;
+	return <Text>{resourceName}</Text>;
+}
+
+function renderActionIdColumn(
+	row: Record<string, unknown>,
+	actionMap: Map<string, string>,
+	translate: (key: string) => string,
+) {
+	const actionId = row.actionId as string | undefined;
+	if (!actionId) {
+		return <Text>{translate('nikki.authorize.entitlement.fields.action_all')}</Text>;
+	}
+	const actionName = actionMap.get(actionId) || actionId;
+	return <Text>{actionName}</Text>;
 }
 
 function renderActionsColumn(
@@ -75,6 +106,8 @@ function renderActionsColumn(
 export const EntitlementTable: React.FC<EntitlementTableProps> = ({
 	columns,
 	entitlements,
+	resources,
+	actions,
 	isLoading,
 	schema,
 	onViewDetail,
@@ -82,6 +115,23 @@ export const EntitlementTable: React.FC<EntitlementTableProps> = ({
 	onDelete,
 }) => {
 	const { t: translate } = useTranslation();
+
+	const resourceMap = React.useMemo(() => {
+		const map = new Map<string, string>();
+		resources.forEach((r) => {
+			map.set(r.id, r.name);
+		});
+		return map;
+	}, [resources]);
+
+	const actionMap = React.useMemo(() => {
+		const map = new Map<string, string>();
+		actions.forEach((a) => {
+			map.set(a.id, a.name);
+		});
+		return map;
+	}, [actions]);
+
 	return (
 		<AutoTable
 			columns={columns}
@@ -90,6 +140,8 @@ export const EntitlementTable: React.FC<EntitlementTableProps> = ({
 			isLoading={isLoading}
 			columnRenderers={{
 				name: (row) => renderNameColumn(row, onViewDetail),
+				resourceId: (row) => renderResourceIdColumn(row, resourceMap, translate),
+				actionId: (row) => renderActionIdColumn(row, actionMap, translate),
 				actions: (row) => renderActionsColumn(row, onEdit, onDelete, translate),
 			}}
 		/>

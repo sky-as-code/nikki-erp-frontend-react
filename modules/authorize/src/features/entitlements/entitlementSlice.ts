@@ -64,7 +64,7 @@ export const getEntitlement = createAsyncThunk<
 
 export const createEntitlement = createAsyncThunk<
 	Entitlement,
-	Omit<Entitlement, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
+	Omit<Entitlement, 'id' | 'createdAt' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createEntitlement`,

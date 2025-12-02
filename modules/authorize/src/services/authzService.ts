@@ -32,17 +32,13 @@ export type AuthzEntitlementDto = {
 	id: string;
 	name: string;
 	description?: string;
-	etag?: string;
-	actionId: string;
-	resourceId: string;
-	subjectType?: string;
-	subjectRef?: string;
-	orgId?: string | null;
-	scopeRef?: string | null;
-	actionName?: string;
-	resourceName?: string;
-	subjectDisplayName?: string | null;
-	createdAt?: string;
+	etag: string;
+	actionId?: string;
+	resourceId?: string;
+	actionExpr: string;
+	orgId?: string;
+	createdAt: string;
+	createdBy: string;
 	assignmentsCount?: number;
 	rolesCount?: number;
 	[key: string]: unknown;
@@ -153,7 +149,7 @@ export async function getEntitlement(id: string): Promise<AuthzEntitlementDto> {
 }
 
 export async function createEntitlement(
-	data: Omit<AuthzEntitlementDto, 'id' | 'createdAt' | 'etag'>,
+	data: Omit<AuthzEntitlementDto, 'id' | 'createdAt' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
 ): Promise<AuthzEntitlementDto> {
 	return post<AuthzEntitlementDto>('authorize/entitlements', {
 		json: data,

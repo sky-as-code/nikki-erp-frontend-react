@@ -16,17 +16,29 @@ import {
 	selectActionState,
 	selectResourceState,
 } from '../../appState';
-import entitlementSchema from '../../features/entitlements/entitlement-schema.json';
+import { BackButton } from '../../features/entitlements/components/Button';
 import {
 	EntitlementFormActions,
 	EntitlementFormContainer,
 	EntitlementFormFields,
 } from '../../features/entitlements/components/EntitlementForm';
-import { BackButton } from '../../features/entitlements/components/Button';
+import entitlementSchema from '../../features/entitlements/entitlement-schema.json';
 import { Entitlement } from '../../features/entitlements/types';
+import {
+	buildActionExpr,
+	validateEntitlementForm,
+} from '../../features/entitlements/validation/entitlementFormValidation';
+
+import type { Action } from '../../features/actions';
+import type { Resource } from '../../features/resources';
 
 
-function useEntitlementCreateHandlers() {
+type FormType = Parameters<typeof validateEntitlementForm>[2];
+
+function useEntitlementCreateHandlers(
+	resources: Resource[],
+	actions: Action[],
+) {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
@@ -39,12 +51,20 @@ function useEntitlementCreateHandlers() {
 		navigate(parent);
 	}, [navigate, location]);
 
-	const handleSubmit = React.useCallback(async (data: unknown) => {
+	const handleSubmit = React.useCallback(async (data: unknown, form: FormType) => {
 		const formData = cleanFormData(data as Partial<Entitlement>);
 		setIsSubmitting(true);
 
+		if (!validateEntitlementForm(formData, true, form)) {
+			setIsSubmitting(false);
+			return;
+		}
+
+		formData.actionExpr = buildActionExpr(formData, resources, actions);
+		formData.createdBy = '01JWNNJGS70Y07MBEV3AQ0M526';
+
 		const result = await dispatch(entitlementActions.createEntitlement(
-			formData as Omit<Entitlement, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
+			formData as Omit<Entitlement, 'id' | 'createdAt' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
 		));
 
 		if (result.meta.requestStatus === 'fulfilled') {
@@ -61,22 +81,23 @@ function useEntitlementCreateHandlers() {
 		}
 
 		setIsSubmitting(false);
-	}, [dispatch, notification, location, translate, navigate]);
+	}, [dispatch, notification, location, translate, navigate, resources, actions]);
 
 	return { isSubmitting, handleGoBack, handleSubmit };
 }
 
 function EntitlementCreatePageBody(): React.ReactNode {
-	const {
-		isSubmitting,
-		handleGoBack,
-		handleSubmit,
-	} = useEntitlementCreateHandlers();
 	const { t: translate } = useTranslation();
 	const schema = entitlementSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { resources } = useMicroAppSelector(selectResourceState);
 	const { actions } = useMicroAppSelector(selectActionState);
+
+	const {
+		isSubmitting,
+		handleGoBack,
+		handleSubmit,
+	} = useEntitlementCreateHandlers(resources, actions);
 
 	React.useEffect(() => {
 		if (resources.length === 0) {
@@ -93,8 +114,8 @@ function EntitlementCreatePageBody(): React.ReactNode {
 			<EntitlementFormContainer title={translate('nikki.authorize.entitlement.title_create')}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
-						{({ handleSubmit: formHandleSubmit }) => (
-							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
+						{({ handleSubmit: formHandleSubmit, form }) => (
+							<form onSubmit={formHandleSubmit((data) => handleSubmit(data, form))} noValidate>
 								<Stack gap='xs'>
 									<EntitlementFormFields
 										isCreate
