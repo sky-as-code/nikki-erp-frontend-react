@@ -1,5 +1,7 @@
-import { Box, Image, Button, Checkbox, Container, Flex, Input, Select, Text, Accordion, Card, Group, Menu, ActionIcon} from '@mantine/core';
-import { IconDots, IconEye, IconFileZip, IconTrash } from '@tabler/icons-react';
+import { Box, Image, Button, Checkbox, Container, Flex,
+	Input, Select, Text, Accordion, Card, Group, Menu, ActionIcon,
+} from '@mantine/core';
+import { IconDots, IconEye, IconFileZip, IconStar, IconStarFilled, IconTrash } from '@tabler/icons-react';
 import { FC, useState } from 'react';
 
 
@@ -65,11 +67,8 @@ const ModuleList: FC = () => {
 		<Accordion.Item key={item.key} value={item.key}>
 			<Accordion.Control>{item.label}</Accordion.Control>
 			<Accordion.Panel>
-				<Group>
+				<Group justify='start' align='start' gap={'lg'}>
 					{item?.modules?.map((module: any) => (
-					// <Link key={module.slug} to={module.slug} className='block' style={{ textDecoration: 'none' }}>
-					// 	<Text className='text-blue-500 py-4 border-b border-blue-500'>{module.name}</Text>
-					// </Link>
 						<ModuleCard key={module.slug} module={module} />
 					))}
 				</Group>
@@ -86,48 +85,44 @@ const ModuleList: FC = () => {
 
 
 
-
-
-
 const ModuleCard: FC<{ module: any }> = ({ module }) => {
 
 	return (
-		<Card withBorder shadow='sm' radius='md' className={classes.cardHover} w={100} h={100}>
-			<Card.Section withBorder inheritPadding py='xs'>
-				<Group justify='space-between' align='center'>
-					<Menu withinPortal position='bottom-end' shadow='sm'>
-						<Menu.Target>
-							<ActionIcon variant='subtle' color='gray' className={classes.actionBtn}>
-								<IconDots size={16} />
-							</ActionIcon>
-						</Menu.Target>
+		<Card radius='sm' className={classes.cardHover} w={100} mih={100} p={0} bg={'transparent'}>
+			<Button pos='absolute' top={-5} left={0} variant='transparent' p={2}>
+				<IconStarFilled size={18} color='var(--mantine-color-yellow-4)' />
+			</Button>
 
-						<Menu.Dropdown>
-							<Menu.Item leftSection={<IconFileZip size={14} />}>
-								Download zip
-							</Menu.Item>
-							<Menu.Item leftSection={<IconEye size={14} />}>
-								Preview all
-							</Menu.Item>
-							<Menu.Item
-								leftSection={<IconTrash size={14} />}
-								color='red'
-							>
-								Delete all
-							</Menu.Item>
-						</Menu.Dropdown>
-					</Menu>
-				</Group>
+			<Box pos='absolute' top={0} right={0} style={{zIndex: 100}}>
+				<Menu withinPortal position='bottom-start' shadow='sm'>
+					<Menu.Target>
+						<ActionIcon variant='subtle' color='gray' className={classes.actionBtn}>
+							<IconDots size={16} />
+						</ActionIcon>
+					</Menu.Target>
+
+					<Menu.Dropdown>
+						<Menu.Item>
+							Unfavorite
+						</Menu.Item>
+						<Menu.Item>
+							Disable
+						</Menu.Item>
+					</Menu.Dropdown>
+				</Menu>
+			</Box>
+
+			<Card.Section>
+				<Box>
+					<Image mx='auto' w={80} h={80} alt='no image' src='https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-4.png' />
+				</Box>
 			</Card.Section>
 
-
-			<Card.Section mt='sm'>
-				<Image width={50} height={50} alt='no image' src='https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-4.png' />
-			</Card.Section>
-
-			<Text mt='sm' c='dimmed' size='sm'>
-				{module.name}
-			</Text>
+			<Box p={5} bg={'red'}>
+				<Text c='var(--mantine-color-text)' size='sm' ta='center' bg={'blue'} lineClamp={2}>
+					{module.name}
+				</Text>
+			</Box>
 		</Card>
 	);
 };
