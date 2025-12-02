@@ -169,3 +169,117 @@ export async function updateEntitlement(
 export async function deleteEntitlement(id: string): Promise<void> {
 	return del<void>(`authorize/entitlements/${id}`);
 }
+
+// ============ Role APIs ============
+export type AuthzRoleDto = {
+	id: string;
+	name: string;
+	description?: string;
+	ownerType: string;
+	ownerRef: string;
+	isRequestable: boolean;
+	isRequiredAttachment: boolean;
+	isRequiredComment: boolean;
+	orgId?: string;
+	createdAt: string;
+	updatedAt: string;
+	createdBy: string;
+	etag?: string;
+	entitlementsCount?: number;
+	assignmentsCount?: number;
+	suitesCount?: number;
+	ownerName?: string;
+	[key: string]: unknown;
+};
+
+export async function listRoles(
+	params?: ListQuery,
+): Promise<ListResponse<AuthzRoleDto>> {
+	const options: Options = {};
+	if (params) {
+		(options as any).searchParams = params;
+	}
+	return get<ListResponse<AuthzRoleDto>>('authorize/roles', options);
+}
+
+export async function getRole(id: string): Promise<AuthzRoleDto> {
+	return get<AuthzRoleDto>(`authorize/roles/${id}`);
+}
+
+export async function createRole(
+	data: Omit<AuthzRoleDto, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'entitlementsCount' | 'assignmentsCount' | 'suitesCount' | 'ownerName'>,
+): Promise<AuthzRoleDto> {
+	return post<AuthzRoleDto>('authorize/roles', {
+		json: data,
+	});
+}
+
+export async function updateRole(
+	id: string,
+	etag: string,
+	data: { name?: string; description?: string | null },
+): Promise<AuthzRoleDto> {
+	return put<AuthzRoleDto>(`authorize/roles/${id}`, {
+		json: { ...data, etag },
+	});
+}
+
+export async function deleteRole(id: string): Promise<void> {
+	return del<void>(`authorize/roles/${id}`);
+}
+
+// ============ RoleSuite APIs ============
+export type AuthzRoleSuiteDto = {
+	id: string;
+	name: string;
+	description?: string;
+	ownerType: string;
+	ownerRef: string;
+	isRequestable: boolean;
+	isRequiredAttachment: boolean;
+	isRequiredComment: boolean;
+	orgId?: string;
+	createdAt: string;
+	updatedAt: string;
+	createdBy: string;
+	etag?: string;
+	rolesCount?: number;
+	ownerName?: string;
+	[key: string]: unknown;
+};
+
+export async function listRoleSuites(
+	params?: ListQuery,
+): Promise<ListResponse<AuthzRoleSuiteDto>> {
+	const options: Options = {};
+	if (params) {
+		(options as any).searchParams = params;
+	}
+	return get<ListResponse<AuthzRoleSuiteDto>>('authorize/role-suites', options);
+}
+
+export async function getRoleSuite(id: string): Promise<AuthzRoleSuiteDto> {
+	return get<AuthzRoleSuiteDto>(`authorize/role-suites/${id}`);
+}
+
+export async function createRoleSuite(
+	data: Omit<AuthzRoleSuiteDto, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'rolesCount' | 'ownerName'>,
+): Promise<AuthzRoleSuiteDto> {
+	return post<AuthzRoleSuiteDto>('authorize/role-suites', {
+		json: data,
+	});
+}
+
+export async function updateRoleSuite(
+	id: string,
+	etag: string,
+	data: { name?: string; description?: string | null },
+): Promise<AuthzRoleSuiteDto> {
+	return put<AuthzRoleSuiteDto>(`authorize/role-suites/${id}`, {
+		json: { ...data, etag },
+	});
+}
+
+export async function deleteRoleSuite(id: string): Promise<void> {
+	return del<void>(`authorize/role-suites/${id}`);
+}

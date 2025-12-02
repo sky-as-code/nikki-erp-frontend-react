@@ -1,28 +1,86 @@
-import { delay } from '@nikkierp/common/utils';
-
+import { OwnerType } from '../roles';
 import { RoleSuite } from './types';
-import { fakeRoleSuites, fakeRoles } from '../../mock/fakeData';
+import {
+	createRoleSuite as createRoleSuiteApi,
+	deleteRoleSuite as deleteRoleSuiteApi,
+	getRoleSuite as getRoleSuiteApi,
+	listRoleSuites as listRoleSuitesApi,
+	updateRoleSuite as updateRoleSuiteApi,
+	type AuthzRoleSuiteDto,
+} from '../../services/authzService';
 
+
+function mapDtoToRoleSuite(dto: AuthzRoleSuiteDto): RoleSuite {
+	return {
+		id: dto.id,
+		name: dto.name,
+		description: dto.description,
+		ownerType: (dto.ownerType as OwnerType) || OwnerType.USER,
+		ownerRef: dto.ownerRef,
+		isRequestable: dto.isRequestable ?? false,
+		isRequiredAttachment: dto.isRequiredAttachment ?? false,
+		isRequiredComment: dto.isRequiredComment ?? false,
+		orgId: dto.orgId,
+		createdAt: dto.createdAt,
+		updatedAt: dto.updatedAt,
+		createdBy: dto.createdBy,
+		etag: dto.etag,
+		rolesCount: dto.rolesCount,
+		ownerName: dto.ownerName,
+	};
+}
+
+function mapRoleSuiteToDto(roleSuite: Partial<RoleSuite>): Partial<AuthzRoleSuiteDto> {
+	const dto: Partial<AuthzRoleSuiteDto> = {
+		name: roleSuite.name,
+		ownerType: roleSuite.ownerType,
+		ownerRef: roleSuite.ownerRef,
+		isRequestable: roleSuite.isRequestable ?? false,
+		isRequiredAttachment: roleSuite.isRequiredAttachment ?? false,
+		isRequiredComment: roleSuite.isRequiredComment ?? false,
+		createdBy: roleSuite.createdBy,
+	};
+
+	if (roleSuite.description !== undefined && roleSuite.description !== '') {
+		dto.description = roleSuite.description;
+	}
+
+	if (roleSuite.orgId !== undefined && roleSuite.orgId !== '') {
+		dto.orgId = roleSuite.orgId;
+	}
+
+	return dto;
+}
 
 export const roleSuiteService = {
 	async listRoleSuites(): Promise<RoleSuite[]> {
-		await delay(500);
-		// Attach roles to role suites
-		return Promise.resolve(fakeRoleSuites.map((suite) => ({
-			...suite,
-			roles: fakeRoles.filter((r) => r.suitesCount && r.suitesCount > 0),
-		})));
+		const result = await listRoleSuitesApi();
+		return result.items.map(mapDtoToRoleSuite);
 	},
 
 	async getRoleSuite(id: string): Promise<RoleSuite | undefined> {
-		await delay(500);
-		const suite = fakeRoleSuites.find((s) => s.id === id);
-		if (!suite) return undefined;
-		// Attach roles to role suite
-		return Promise.resolve({
-			...suite,
-			roles: fakeRoles.filter((r) => r.suitesCount && r.suitesCount > 0),
-		});
+		const dto = await getRoleSuiteApi(id);
+		return mapDtoToRoleSuite(dto);
+	},
+
+	async createRoleSuite(
+		roleSuite: Omit<RoleSuite, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'rolesCount' | 'ownerName'>,
+	): Promise<RoleSuite> {
+		const dto = await createRoleSuiteApi(mapRoleSuiteToDto(roleSuite) as Omit<AuthzRoleSuiteDto, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'rolesCount' | 'ownerName'>);
+		return mapDtoToRoleSuite(dto);
+	},
+
+	async updateRoleSuite(
+		id: string,
+		etag: string,
+		data: { name?: string; description?: string | null },
+	): Promise<RoleSuite> {
+		const dto = await updateRoleSuiteApi(id, etag, data);
+		return mapDtoToRoleSuite(dto);
+	},
+
+	async deleteRoleSuite(id: string): Promise<void> {
+		await deleteRoleSuiteApi(id);
 	},
 };
 

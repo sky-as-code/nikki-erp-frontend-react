@@ -309,10 +309,82 @@
 					"not_found": "Entitlement not found",
 					"create_success": "Entitlement \"{{name}}\" has been created successfully",
 					"update_success": "Entitlement \"{{name}}\" has been updated successfully",
-					"delete_success": "Entitlement \"{{name}}\" has been deleted successfully"
-				}
+				"delete_success": "Entitlement \"{{name}}\" has been deleted successfully"
+			}
+		},
+		"role": {
+			"title": "Roles",
+			"title_create": "Create New Role",
+			"title_detail": "Role Details",
+			"title_delete": "Delete Role",
+			"fields": {
+				"id": "Role ID",
+				"name": "Role name",
+				"description": "Description",
+				"owner_type": {
+					"label": "Owner type",
+					"user": "User",
+					"group": "Group"
+				},
+				"owner_ref": "Owner reference",
+				"is_requestable": "Requestable",
+				"is_required_attachment": "Required attachment",
+				"is_required_comment": "Required comment",
+				"org_id": "Organization",
+				"entitlements_count": "Entitlements",
+				"assignments_count": "Assignments",
+				"suites_count": "Suites",
+				"created_at": "Created at",
+				"updated_at": "Updated at"
 			},
-			"resource": {
+			"placeholders": {
+				"name": "Enter role name",
+				"description": "Describe what this role grants"
+			},
+			"messages": {
+				"loading": "Loading role...",
+				"not_found": "Role not found",
+				"create_success": "Role \"{{name}}\" has been created successfully",
+				"update_success": "Role \"{{name}}\" has been updated successfully",
+				"delete_success": "Role \"{{name}}\" has been deleted successfully"
+			}
+		},
+		"role_suite": {
+			"title": "Role Suites",
+			"title_create": "Create New Role Suite",
+			"title_detail": "Role Suite Details",
+			"title_delete": "Delete Role Suite",
+			"fields": {
+				"id": "Role Suite ID",
+				"name": "Role Suite name",
+				"description": "Description",
+				"owner_type": {
+					"label": "Owner type",
+					"user": "User",
+					"group": "Group"
+				},
+				"owner_ref": "Owner reference",
+				"is_requestable": "Requestable",
+				"is_required_attachment": "Required attachment",
+				"is_required_comment": "Required comment",
+				"org_id": "Organization",
+				"roles_count": "Roles",
+				"created_at": "Created at",
+				"updated_at": "Updated at"
+			},
+			"placeholders": {
+				"name": "Enter role suite name",
+				"description": "Describe what this role suite grants"
+			},
+			"messages": {
+				"loading": "Loading role suite...",
+				"not_found": "Role suite not found",
+				"create_success": "Role suite \"{{name}}\" has been created successfully",
+				"update_success": "Role suite \"{{name}}\" has been updated successfully",
+				"delete_success": "Role suite \"{{name}}\" has been deleted successfully"
+			}
+		},
+		"resource": {
 				"title": "Resources",
 				"title_create": "Create New Resource",
 				"title_detail": "Resource Details",

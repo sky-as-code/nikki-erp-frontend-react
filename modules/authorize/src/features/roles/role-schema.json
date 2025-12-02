@@ -85,13 +85,7 @@
 		},
 		"orgId": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.authorize.role.fields.org_id' }",
-			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
-				}
-			]
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.org_id' }"
 		},
 		"entitlementsCount": {
 			"type": "integer",

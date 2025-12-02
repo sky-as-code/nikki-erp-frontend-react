@@ -10,10 +10,11 @@ interface RoleSuite {
 	isRequestable: boolean;
 	isRequiredAttachment: boolean;
 	isRequiredComment: boolean;
-	orgId: string;
+	orgId?: string;
 	createdAt: string;
 	updatedAt: string;
 	createdBy: string;
+	etag?: string;
 	// Relations
 	roles?: Role[];
 	rolesCount?: number;
