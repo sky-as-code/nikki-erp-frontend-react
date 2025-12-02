@@ -9,9 +9,15 @@
 .cardHover .actionBtn {
 	opacity: 0;
 	transition: opacity 150ms ease;
-  }
+	background-color: var(--mantine-color-white);
+}
   
-  .cardHover:hover .actionBtn,
-  .cardHover:focus-within .actionBtn {
+.cardHover:hover .actionBtn,
+.cardHover:focus-within .actionBtn {
 	opacity: 1;
-  }
+}
+
+
+.cardHover:hover {
+	box-shadow: 0px 0px 4px 1px var(--nikki-color-black-shadow);
+}
