@@ -21,9 +21,12 @@ import { ResourceCreatePage } from './pages/resources/ResourceCreatePage';
 import { ResourceDetailPage } from './pages/resources/ResourceDetailPage';
 import { ResourceListPage } from './pages/resources/ResourceListPage';
 import { RevokeRequestListPage } from './pages/revokeRequest/RevokeRequestListPage';
-import { RoleDetailPage } from './pages/role/RoleDetailPage';
-import { RoleListPage } from './pages/role/RoleListPage';
-import { RoleSuiteListPage } from './pages/role_suite/RoleSuiteListPage';
+import { RoleSuiteCreatePage } from './pages/role_suites/RoleSuiteCreatePage';
+import { RoleSuiteDetailPage } from './pages/role_suites/RoleSuiteDetailPage';
+import { RoleSuiteListPage } from './pages/role_suites/RoleSuiteListPage';
+import { RoleCreatePage } from './pages/roles/RoleCreatePage';
+import { RoleDetailPage } from './pages/roles/RoleDetailPage';
+import { RoleListPage } from './pages/roles/RoleListPage';
 
 
 function useMenuBarItems(): MenuBarItem[] {
@@ -110,8 +113,12 @@ function Main(props: MicroAppProps) {
 						<AppRoute path='entitlements/:entitlementId' element={<EntitlementDetailPage />} />
 						{/* Role routes */}
 						<AppRoute path='roles' element={<RoleListPage />} />
+						<AppRoute path='roles/create' element={<RoleCreatePage />} />
 						<AppRoute path='roles/:roleId' element={<RoleDetailPage />} />
+						{/* RoleSuite routes */}
 						<AppRoute path='role-suites' element={<RoleSuiteListPage />} />
+						<AppRoute path='role-suites/create' element={<RoleSuiteCreatePage />} />
+						<AppRoute path='role-suites/:roleSuiteId' element={<RoleSuiteDetailPage />} />
 						{/* Request routes */}
 						<AppRoute path='grant-requests' element={<GrantRequestListPage />} />
 						<AppRoute path='revoke-requests' element={<RevokeRequestListPage />} />

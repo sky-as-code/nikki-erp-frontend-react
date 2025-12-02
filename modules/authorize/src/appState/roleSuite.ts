@@ -1,6 +1,15 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { reducer, actions, listRoleSuites, getRoleSuite, RoleSuiteState } from '../features/roleSuite/roleSuiteSlice';
+import {
+	reducer,
+	actions,
+	listRoleSuites,
+	getRoleSuite,
+	RoleSuiteState,
+	createRoleSuite,
+	updateRoleSuite,
+	deleteRoleSuite,
+} from '../features/roleSuite/roleSuiteSlice';
 
 
 const STATE_KEY = 'roleSuite';
@@ -12,6 +21,9 @@ export const roleSuiteReducer = {
 export const roleSuiteActions = {
 	listRoleSuites,
 	getRoleSuite,
+	createRoleSuite,
+	updateRoleSuite,
+	deleteRoleSuite,
 	...actions,
 };
 

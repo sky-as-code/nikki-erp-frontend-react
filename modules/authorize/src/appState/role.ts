@@ -1,6 +1,15 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { reducer, actions, listRoles, getRole, RoleState } from '../features/roles/roleSlice';
+import {
+	reducer,
+	actions,
+	listRoles,
+	getRole,
+	RoleState,
+	createRole,
+	updateRole,
+	deleteRole,
+} from '../features/roles/roleSlice';
 
 
 const STATE_KEY = 'role';
@@ -12,6 +21,9 @@ export const roleReducer = {
 export const roleActions = {
 	listRoles,
 	getRole,
+	createRole,
+	updateRole,
+	deleteRole,
 	...actions,
 };
 
