@@ -1,6 +1,6 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { FormFieldProvider, FormStyleProvider, withWindowTitle } from '@nikkierp/ui/components';
+import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -158,4 +158,12 @@ function ResourceDetailPageBody(): React.ReactNode {
 	);
 }
 
-export const ResourceDetailPage: React.FC = withWindowTitle('Resource Details', ResourceDetailPageBody);
+const ResourceDetailPageWithTitle: React.FC = () => {
+	const { t: translate } = useTranslation();
+	React.useEffect(() => {
+		document.title = translate('nikki.authorize.resource.title_detail');
+	}, [translate]);
+	return <ResourceDetailPageBody />;
+};
+
+export const ResourceDetailPage: React.FC = ResourceDetailPageWithTitle;

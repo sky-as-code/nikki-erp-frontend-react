@@ -1,11 +1,12 @@
 import { Stack } from '@mantine/core';
-import { FormFieldProvider, FormStyleProvider, withWindowTitle } from '@nikkierp/ui/components';
+import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { BackButton } from '@/features/roles/components/Button';
+import { AssignedEntitlementsList } from '@/features/roles/components/RoleEntitlements';
 import {
 	RoleDetailActions,
 	RoleFormContainer,
@@ -14,98 +15,70 @@ import {
 	RoleNotFound,
 } from '@/features/roles/components/RoleForm';
 import roleSchema from '@/features/roles/role-schema.json';
-import { Role } from '@/features/roles/types';
 
 import { useRoleDetailData, useRoleDetailHandlers } from './hooks/useRoleDetail';
 
 
-function RoleDetailForm({
-	role,
-	isSubmitting,
-	handleGoBack,
-	handleSubmit,
-	handleAddEntitlements,
-	handleRemoveEntitlements,
-	translate,
-	schema,
-}: {
-	role: Role;
-	isSubmitting: boolean;
-	handleGoBack: () => void;
-	handleSubmit: (data: unknown) => void;
-	handleAddEntitlements: () => void;
-	handleRemoveEntitlements: () => void;
-	translate: (key: string) => string;
-	schema: ModelSchema;
-}) {
-	return (
-		<RoleFormContainer title={translate('nikki.authorize.role.title_detail')}>
-			<FormStyleProvider layout='onecol'>
-				<FormFieldProvider
-					formVariant='update'
-					modelSchema={schema}
-					modelValue={role as unknown as Record<string, unknown>}
-					modelLoading={isSubmitting}
-				>
-					{({ handleSubmit: formHandleSubmit }) => (
-						<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
-							<Stack gap='xs'>
-								<RoleFormFields isCreate={false} />
-								<RoleDetailActions
-									role={role}
-									isSubmitting={isSubmitting}
-									onUpdate={() => {}}
-									onAddEntitlements={handleAddEntitlements}
-									onRemoveEntitlements={handleRemoveEntitlements}
-									onCancel={handleGoBack}
-								/>
-							</Stack>
-						</form>
-					)}
-				</FormFieldProvider>
-			</FormStyleProvider>
-		</RoleFormContainer>
-	);
-}
-
 function RoleDetailPageBody(): React.ReactNode {
 	const navigate = useNavigate();
-	const { role, isLoading } = useRoleDetailData();
+	const { role, resources, actions, isLoading } = useRoleDetailData();
 	const { isSubmitting, handleGoBack, handleSubmit } = useRoleDetailHandlers(role);
 	const { t: translate } = useTranslation();
 	const schema = roleSchema as ModelSchema;
 
-	if (isLoading) {
-		return <RoleLoadingState />;
-	}
+	const handleAddEntitlements = React.useCallback(() => navigate('add-entitlements'), [navigate]);
+	const handleRemoveEntitlements = React.useCallback(() => { /* TODO */ }, []);
 
-	if (!role) {
-		return <RoleNotFound onGoBack={handleGoBack} />;
-	}
-
-	const handleAddEntitlements = React.useCallback(() => {
-		navigate('add-entitlements');
-	}, [navigate]);
-
-	const handleRemoveEntitlements = React.useCallback(() => {
-		// TODO: Implement remove entitlements
-	}, []);
+	if (isLoading) return <RoleLoadingState />;
+	if (!role) return <RoleNotFound onGoBack={handleGoBack} />;
 
 	return (
 		<Stack gap='md'>
 			<BackButton onClick={handleGoBack} />
-			<RoleDetailForm
-				role={role}
-				isSubmitting={isSubmitting}
-				handleGoBack={handleGoBack}
-				handleSubmit={handleSubmit}
-				handleAddEntitlements={handleAddEntitlements}
-				handleRemoveEntitlements={handleRemoveEntitlements}
-				translate={translate}
-				schema={schema}
-			/>
+			<RoleFormContainer title={translate('nikki.authorize.role.title_detail')}>
+				<FormStyleProvider layout='onecol'>
+					<FormFieldProvider
+						formVariant='update'
+						modelSchema={schema}
+						modelValue={role as unknown as Record<string, unknown>}
+						modelLoading={isSubmitting}
+					>
+						{({ handleSubmit: formHandleSubmit }) => (
+							<form onSubmit={(e) => {
+								formHandleSubmit((data) => {
+									handleSubmit(data);
+								})(e);
+							}} noValidate>
+								<Stack gap='md'>
+									<RoleFormFields isCreate={false} />
+									<AssignedEntitlementsList
+										entitlements={role.entitlements || []}
+										resources={resources}
+										actions={actions}
+									/>
+									<RoleDetailActions
+										role={role}
+										isSubmitting={isSubmitting}
+										onAddEntitlements={handleAddEntitlements}
+										onRemoveEntitlements={handleRemoveEntitlements}
+										onCancel={handleGoBack}
+									/>
+								</Stack>
+							</form>
+						)}
+					</FormFieldProvider>
+				</FormStyleProvider>
+			</RoleFormContainer>
 		</Stack>
 	);
 }
 
-export const RoleDetailPage: React.FC = withWindowTitle('Role Details', RoleDetailPageBody);
+const RoleDetailPageWithTitle: React.FC = () => {
+	const { t: translate } = useTranslation();
+	React.useEffect(() => {
+		document.title = translate('nikki.authorize.role.title_detail');
+	}, [translate]);
+	return <RoleDetailPageBody />;
+};
+
+export const RoleDetailPage: React.FC = RoleDetailPageWithTitle;

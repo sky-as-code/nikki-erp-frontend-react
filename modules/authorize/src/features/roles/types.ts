@@ -17,14 +17,9 @@ export interface Role {
 	isRequiredComment: boolean;
 	orgId?: string;
 	createdAt: string;
-	updatedAt: string;
 	createdBy: string;
 	etag?: string;
 	// Relations
 	entitlements?: Entitlement[];
 	entitlementsCount?: number;
-	assignmentsCount?: number;
-	suitesCount?: number;
-	// Display info
-	ownerName?: string;
 }

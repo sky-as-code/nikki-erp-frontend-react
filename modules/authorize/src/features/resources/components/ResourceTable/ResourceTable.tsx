@@ -10,7 +10,7 @@ import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Resource } from '../types';
+import { Resource } from '@/features/resources/types';
 
 
 export interface ResourceTableProps {

@@ -15,7 +15,10 @@
 		"name": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.role.fields.name' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.role.placeholders.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
 				{
 					"type": "required",
@@ -32,7 +35,6 @@
 		"description": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.role.fields.description' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.role.placeholders.description' }",
 			"constraints": [
 				{
 					"type": "length",
@@ -54,6 +56,10 @@
 					"label": "{ \"$ref\": 'nikki.authorize.role.fields.owner_type.group' }"
 				}
 			],
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
 				{
 					"type": "required",
@@ -64,6 +70,10 @@
 		"ownerRef": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.role.fields.owner_ref' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
 				{
 					"type": "required",
@@ -73,15 +83,27 @@
 		},
 		"isRequestable": {
 			"type": "boolean",
-			"label": "{ \"$ref\": 'nikki.authorize.role.fields.is_requestable' }"
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.is_requestable' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
 		},
 		"isRequiredAttachment": {
 			"type": "boolean",
-			"label": "{ \"$ref\": 'nikki.authorize.role.fields.is_required_attachment' }"
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.is_required_attachment' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
 		},
 		"isRequiredComment": {
 			"type": "boolean",
-			"label": "{ \"$ref\": 'nikki.authorize.role.fields.is_required_comment' }"
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.is_required_comment' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
 		},
 		"orgId": {
 			"type": "string",
@@ -90,11 +112,6 @@
 		"entitlementsCount": {
 			"type": "integer",
 			"label": "{ \"$ref\": 'nikki.authorize.role.fields.entitlements_count' }",
-			"frontendOnly": true
-		},
-		"assignmentsCount": {
-			"type": "integer",
-			"label": "{ \"$ref\": 'nikki.authorize.role.fields.assignments_count' }",
 			"frontendOnly": true
 		},
 		"suitesCount": {
@@ -106,12 +123,6 @@
 			"type": "date",
 			"label": "{ \"$ref\": 'nikki.authorize.role.fields.created_at' }",
 			"hidden": true
-		},
-		"updatedAt": {
-			"type": "date",
-			"label": "{ \"$ref\": 'nikki.authorize.role.fields.updated_at' }",
-			"hidden": true
 		}
 	}
 }
-

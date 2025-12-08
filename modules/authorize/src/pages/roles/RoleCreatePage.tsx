@@ -1,5 +1,5 @@
 import { Stack } from '@mantine/core';
-import { FormFieldProvider, FormStyleProvider, withWindowTitle } from '@nikkierp/ui/components';
+import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -45,5 +45,13 @@ function RoleCreatePageBody(): React.ReactNode {
 	);
 }
 
-export const RoleCreatePage: React.FC = withWindowTitle('Create Role', RoleCreatePageBody);
+const RoleCreatePageWithTitle: React.FC = () => {
+	const { t: translate } = useTranslation();
+	React.useEffect(() => {
+		document.title = translate('nikki.authorize.role.title_create');
+	}, [translate]);
+	return <RoleCreatePageBody />;
+};
+
+export const RoleCreatePage: React.FC = RoleCreatePageWithTitle;
 

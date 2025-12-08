@@ -12,6 +12,8 @@ export function createBaseSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 			return z.string();
 		case 'integer':
 			return z.number().int();
+		case 'boolean':
+			return z.boolean();
 		case 'date':
 			return z.date().or(z.string().transform((str) => new Date(str)));
 		case 'enum':

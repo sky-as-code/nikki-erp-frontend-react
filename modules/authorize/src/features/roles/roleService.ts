@@ -37,19 +37,15 @@ function mapDtoToRole(dto: AuthzRoleDto): Role {
 		ownerType: (dto.ownerType as OwnerType) || OwnerType.USER,
 		ownerRef: dto.ownerRef,
 		isRequestable: dto.isRequestable ?? false,
+		orgId: dto.orgId,
 		isRequiredAttachment: dto.isRequiredAttachment ?? false,
 		isRequiredComment: dto.isRequiredComment ?? false,
-		orgId: dto.orgId,
 		createdAt: dto.createdAt,
-		updatedAt: dto.updatedAt,
 		createdBy: dto.createdBy,
 		etag: dto.etag,
-		entitlementsCount: dto.entitlementsCount,
-		assignmentsCount: dto.assignmentsCount,
-		suitesCount: dto.suitesCount,
-		ownerName: dto.ownerName,
-		entitlements: Array.isArray(dto.entitlements)
-			? dto.entitlements.map(mapDtoToEntitlement)
+		entitlementsCount: (dto.entitlements as AuthzEntitlementDto[])?.length || 0,
+		entitlements: Array.isArray(dto.entitlements as AuthzEntitlementDto[])
+			? (dto.entitlements as AuthzEntitlementDto[]).map(mapDtoToEntitlement)
 			: undefined,
 	};
 }

@@ -368,8 +368,10 @@
 				"add_title": "Thêm Quyền vào Vai trò",
 				"available": "Quyền Có sẵn",
 				"selected": "Quyền Đã chọn",
+				"assigned_title": "Quyền Đã gán",
 				"no_available": "Không có quyền nào có sẵn",
 				"no_selected": "Chưa chọn quyền nào",
+				"no_assigned": "Chưa có quyền nào được gán cho vai trò này",
 				"scope_ref": "Tham chiếu Phạm vi",
 				"scope_ref_placeholder": "Nhập tham chiếu phạm vi",
 				"search_placeholder": "Tìm kiếm quyền theo tên"

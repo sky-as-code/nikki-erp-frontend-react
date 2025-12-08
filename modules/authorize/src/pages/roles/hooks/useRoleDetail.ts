@@ -4,7 +4,15 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import { AuthorizeDispatch, roleActions, selectRoleState } from '@/appState';
+import {
+	AuthorizeDispatch,
+	actionActions,
+	resourceActions,
+	roleActions,
+	selectActionState,
+	selectResourceState,
+	selectRoleState,
+} from '@/appState';
 import { Role } from '@/features/roles/types';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
@@ -12,21 +20,20 @@ import { useUIState } from '../../../../../shell/src/context/UIProviders';
 import type { TFunction } from 'i18next';
 
 
-// ============ Helper Functions ============
+type NotificationType = ReturnType<typeof useUIState>['notification'];
 
-function findRoleById(roleId: string | undefined, roles: Role[], roleDetail: Role | null) {
-	if (!roleId) return undefined;
-	const fromList = roles.find((e: Role) => e.id === roleId);
-	if (fromList) return fromList;
-	return roleDetail?.id === roleId ? roleDetail : undefined;
+interface ValidationResult {
+	isValid: boolean;
+	newName?: string;
+	newDescription?: string | null;
 }
 
-function validateChanges(
+function validateRoleChanges(
 	formData: Partial<Role>,
 	role: Role,
-	notification: ReturnType<typeof useUIState>['notification'],
+	notification: NotificationType,
 	translate: TFunction,
-): { isValid: boolean; newName?: string; newDescription?: string | null } {
+): ValidationResult {
 	const newDescription = formData.description ?? null;
 	const originalDescription = role.description ?? null;
 	const newName = formData.name ?? role.name;
@@ -36,16 +43,16 @@ function validateChanges(
 		return { isValid: false };
 	}
 
-	if (originalDescription !== null && newDescription === null) {
-		const msg = translate('nikki.general.messages.invalid_change');
-		notification.showError(msg, translate('nikki.general.messages.error'));
+	const hasOriginalDesc = originalDescription !== null && originalDescription !== undefined && originalDescription !== '';
+	if (hasOriginalDesc && newDescription === null) {
+		notification.showError(translate('nikki.general.messages.invalid_change'), translate('nikki.general.messages.error'));
 		return { isValid: false };
 	}
 
 	return { isValid: true, newName, newDescription };
 }
 
-function buildUpdatePayload(role: Role, validation: ReturnType<typeof validateChanges>) {
+function buildUpdatePayload(role: Role, validation: ValidationResult) {
 	const descChanged = validation.newDescription !== (role.description ?? null);
 	return {
 		id: role.id,
@@ -56,28 +63,34 @@ function buildUpdatePayload(role: Role, validation: ReturnType<typeof validateCh
 }
 
 
-// ============ Data Hook ============
-
 export function useRoleDetailData() {
 	const { roleId } = useParams<{ roleId: string }>();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { roles, isLoadingList, roleDetail, isLoadingDetail } = useMicroAppSelector(selectRoleState);
+	const { resources } = useMicroAppSelector(selectResourceState);
+	const { actions } = useMicroAppSelector(selectActionState);
 
-	const role = React.useMemo(() => findRoleById(roleId, roles, roleDetail), [roleId, roles, roleDetail]);
+	const role = React.useMemo(() => {
+		if (!roleId) return undefined;
+		if (roleDetail?.id === roleId) return roleDetail;
+		return roles.find((e: Role) => e.id === roleId);
+	}, [roleId, roles, roleDetail]);
 
 	React.useEffect(() => {
-		if (roleId && !role) dispatch(roleActions.getRole(roleId));
-	}, [dispatch, roleId, role]);
+		if (roleId) dispatch(roleActions.getRole(roleId));
+	}, [dispatch, roleId]);
 
 	React.useEffect(() => {
 		if (roles.length === 0) dispatch(roleActions.listRoles());
 	}, [dispatch, roles.length]);
 
-	return { role, isLoading: isLoadingList || isLoadingDetail };
+	React.useEffect(() => {
+		dispatch(resourceActions.listResources());
+		dispatch(actionActions.listActions(undefined));
+	}, [dispatch]);
+
+	return { role, resources, actions, isLoading: isLoadingList || isLoadingDetail };
 }
-
-
-// ============ Handlers Hook ============
 
 export function useRoleDetailHandlers(role: Role | undefined) {
 	const navigate = useNavigate();
@@ -87,40 +100,24 @@ export function useRoleDetailHandlers(role: Role | undefined) {
 	const { t: translate } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-	const handleGoBack = React.useCallback(() => {
+	const navigateBack = React.useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate, location]);
 
-	const handleSubmit = useSubmitHandler(role, dispatch, notification, translate, setIsSubmitting, handleGoBack);
-
-	return { isSubmitting, handleGoBack, handleSubmit };
-}
-
-
-// ============ Submit Handler ============
-
-function useSubmitHandler(
-	role: Role | undefined,
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: TFunction,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-	handleGoBack: () => void,
-) {
-	return React.useCallback(async (data: unknown) => {
+	const handleSubmit = React.useCallback(async (data: unknown) => {
 		if (!role) return;
 
 		const formData = cleanFormData(data as Partial<Role>);
-		const validation = validateChanges(formData, role, notification, translate);
+		const validation = validateRoleChanges(formData, role, notification, translate);
+
 		if (!validation.isValid) return;
 
 		setIsSubmitting(true);
 		const result = await dispatch(roleActions.updateRole(buildUpdatePayload(role, validation)));
 
 		if (result.meta.requestStatus === 'fulfilled') {
-			const successMsg = translate('nikki.authorize.role.messages.update_success', { name: role.name });
-			notification.showInfo(successMsg, translate('nikki.general.messages.success'));
-			handleGoBack();
+			notification.showInfo(translate('nikki.authorize.role.messages.update_success', { name: role.name }), translate('nikki.general.messages.success'));
+			navigateBack();
 		}
 		else {
 			const errorMsg = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.update_failed');
@@ -128,5 +125,7 @@ function useSubmitHandler(
 		}
 
 		setIsSubmitting(false);
-	}, [dispatch, notification, role, translate, handleGoBack, setIsSubmitting]);
+	}, [dispatch, notification, role, translate, navigateBack]);
+
+	return { isSubmitting, handleGoBack: navigateBack, handleSubmit };
 }

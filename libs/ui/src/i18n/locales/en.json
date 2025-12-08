@@ -355,8 +355,10 @@
 				"add_title": "Add Entitlements to Role",
 				"available": "Available Entitlements",
 				"selected": "Selected Entitlements",
+				"assigned_title": "Assigned Entitlements",
 				"no_available": "No available entitlements",
 				"no_selected": "No selected entitlements",
+				"no_assigned": "No entitlements assigned to this role",
 				"scope_ref": "Scope Reference",
 				"scope_ref_placeholder": "Enter scope reference",
 				"search_placeholder": "Search entitlements by name"

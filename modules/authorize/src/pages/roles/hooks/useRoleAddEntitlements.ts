@@ -180,7 +180,7 @@ function useConfirmHandler(
 
 		if (result.meta.requestStatus === 'fulfilled') {
 			notification.showInfo(translate('nikki.authorize.role.messages.add_entitlements_success'), translate('nikki.general.messages.success'));
-			dispatch(roleActions.getRole(role.id));
+			await dispatch(roleActions.getRole(role.id));
 			handleGoBack();
 		}
 		else {

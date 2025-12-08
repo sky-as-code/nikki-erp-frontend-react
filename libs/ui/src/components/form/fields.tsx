@@ -1,4 +1,4 @@
-import { ActionIcon, Grid, Input, NumberInput, Select, Text, InputProps, NumberInputProps } from '@mantine/core';
+import { ActionIcon, Checkbox, Grid, Input, NumberInput, Select, Text, InputProps, NumberInputProps } from '@mantine/core';
 import { DateInput, DateInputProps } from '@mantine/dates';
 import { useId } from '@mantine/hooks';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
@@ -61,6 +61,8 @@ export function AutoField(props: AutoFieldProps) {
 				inputProps={props.inputProps as Partial<DateInputProps>} htmlProps={props.htmlProps}
 				ref={props.ref ?? ref}
 			/>;
+		case 'boolean':
+			return <BooleanField name={props.name} inputProps={props.inputProps} />;
 		case 'enum':
 			if (fieldDef.enum) {
 				return <StaticEnumSelectField
@@ -571,5 +573,50 @@ export function DynamicEnumSelectField({
 				}}
 			/>
 		</BaseFieldWrapper>
+	);
+}
+
+export type BooleanFieldProps = {
+	name: string;
+	inputProps?: Partial<InputProps>;
+};
+
+export function BooleanField({ name, inputProps }: BooleanFieldProps) {
+	const inputId = useId();
+	const fieldData = useFieldData(name);
+	const { t: translate } = useTranslation();
+	const { control, modelValue, modelLoading } = useFormField();
+
+	if (!fieldData) {
+		return null;
+	}
+
+	const defaultValue = modelValue?.[name] ?? false;
+
+	return (
+		<Grid grow gutter={0} mt='md'>
+			<Grid.Col span={12}>
+				<Controller
+					name={name}
+					control={control}
+					defaultValue={defaultValue}
+					render={({ field }) => {
+						const checked = field.value !== undefined ? Boolean(field.value) : Boolean(defaultValue);
+						return (
+							<Checkbox
+								id={inputId}
+								label={translate(fieldData.label)}
+								description={fieldData.description ? translate(fieldData.description) : undefined}
+								checked={checked}
+								onChange={(e) => field.onChange(e.currentTarget.checked)}
+								disabled={modelLoading || inputProps?.disabled}
+								size='md'
+							/>
+						);
+					}}
+				/>
+				{fieldData.error && <Input.Error>{translate(fieldData.error)}</Input.Error>}
+			</Grid.Col>
+		</Grid>
 	);
 }
