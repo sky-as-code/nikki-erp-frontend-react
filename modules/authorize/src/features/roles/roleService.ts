@@ -1,13 +1,33 @@
 import { Role, OwnerType } from './types';
 import {
+	addEntitlementsToRole as addEntitlementsToRoleApi,
 	createRole as createRoleApi,
 	deleteRole as deleteRoleApi,
 	getRole as getRoleApi,
 	listRoles as listRolesApi,
 	updateRole as updateRoleApi,
+	type AuthzEntitlementDto,
 	type AuthzRoleDto,
 } from '../../services/authzService';
+import { Entitlement } from '../entitlements/types';
 
+
+function mapDtoToEntitlement(dto: AuthzEntitlementDto): Entitlement {
+	return {
+		id: dto.id,
+		name: dto.name,
+		description: dto.description,
+		actionId: dto.actionId,
+		resourceId: dto.resourceId,
+		actionExpr: dto.actionExpr,
+		orgId: dto.orgId,
+		createdAt: dto.createdAt,
+		createdBy: dto.createdBy,
+		etag: dto.etag,
+		assignmentsCount: dto.assignmentsCount,
+		rolesCount: dto.rolesCount,
+	};
+}
 
 function mapDtoToRole(dto: AuthzRoleDto): Role {
 	return {
@@ -28,6 +48,9 @@ function mapDtoToRole(dto: AuthzRoleDto): Role {
 		assignmentsCount: dto.assignmentsCount,
 		suitesCount: dto.suitesCount,
 		ownerName: dto.ownerName,
+		entitlements: Array.isArray(dto.entitlements)
+			? dto.entitlements.map(mapDtoToEntitlement)
+			: undefined,
 	};
 }
 
@@ -82,6 +105,17 @@ export const roleService = {
 
 	async deleteRole(id: string): Promise<void> {
 		await deleteRoleApi(id);
+	},
+
+	async addEntitlementsToRole(
+		roleId: string,
+		etag: string,
+		entitlementInputs: Array<{ entitlementId: string; scopeRef?: string }>,
+	): Promise<void> {
+		await addEntitlementsToRoleApi(roleId, {
+			entitlementInputs,
+			etag,
+		});
 	},
 };
 

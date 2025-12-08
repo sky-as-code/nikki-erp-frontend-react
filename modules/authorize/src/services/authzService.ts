@@ -228,6 +228,25 @@ export async function deleteRole(id: string): Promise<void> {
 	return del<void>(`authorize/roles/${id}`);
 }
 
+export type EntitlementAssignmentInput = {
+	entitlementId: string;
+	scopeRef?: string;
+};
+
+export type AddEntitlementsToRoleRequest = {
+	entitlementInputs: EntitlementAssignmentInput[];
+	etag: string;
+};
+
+export async function addEntitlementsToRole(
+	roleId: string,
+	data: AddEntitlementsToRoleRequest,
+): Promise<void> {
+	return post<void>(`authorize/roles/${roleId}/entitlement-assignment`, {
+		json: data,
+	});
+}
+
 // ============ RoleSuite APIs ============
 export type AuthzRoleSuiteDto = {
 	id: string;

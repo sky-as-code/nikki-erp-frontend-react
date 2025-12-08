@@ -24,6 +24,7 @@ import { RevokeRequestListPage } from './pages/revokeRequest/RevokeRequestListPa
 import { RoleSuiteCreatePage } from './pages/role_suites/RoleSuiteCreatePage';
 import { RoleSuiteDetailPage } from './pages/role_suites/RoleSuiteDetailPage';
 import { RoleSuiteListPage } from './pages/role_suites/RoleSuiteListPage';
+import { RoleAddEntitlementsPage } from './pages/roles/RoleAddEntitlementsPage';
 import { RoleCreatePage } from './pages/roles/RoleCreatePage';
 import { RoleDetailPage } from './pages/roles/RoleDetailPage';
 import { RoleListPage } from './pages/roles/RoleListPage';
@@ -115,6 +116,7 @@ function Main(props: MicroAppProps) {
 						<AppRoute path='roles' element={<RoleListPage />} />
 						<AppRoute path='roles/create' element={<RoleCreatePage />} />
 						<AppRoute path='roles/:roleId' element={<RoleDetailPage />} />
+						<AppRoute path='roles/:roleId/add-entitlements' element={<RoleAddEntitlementsPage />} />
 						{/* RoleSuite routes */}
 						<AppRoute path='role-suites' element={<RoleSuiteListPage />} />
 						<AppRoute path='role-suites/create' element={<RoleSuiteCreatePage />} />
