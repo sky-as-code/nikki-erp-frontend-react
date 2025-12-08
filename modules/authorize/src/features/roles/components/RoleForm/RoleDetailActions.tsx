@@ -9,7 +9,6 @@ import { Role } from '@/features/roles/types';
 interface RoleDetailActionsProps {
 	role: Role;
 	isSubmitting: boolean;
-	onUpdate: () => void;
 	onAddEntitlements: () => void;
 	onRemoveEntitlements: () => void;
 	onCancel: () => void;
@@ -18,7 +17,6 @@ interface RoleDetailActionsProps {
 export const RoleDetailActions: React.FC<RoleDetailActionsProps> = ({
 	role,
 	isSubmitting,
-	onUpdate,
 	onAddEntitlements,
 	onRemoveEntitlements,
 	onCancel,

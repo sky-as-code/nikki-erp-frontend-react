@@ -1,6 +1,6 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { FormFieldProvider, FormStyleProvider, withWindowTitle } from '@nikkierp/ui/components';
+import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -99,4 +99,12 @@ function ResourceCreatePageBody(): React.ReactNode {
 	);
 }
 
-export const ResourceCreatePage: React.FC = withWindowTitle('Create Resource', ResourceCreatePageBody);
+const ResourceCreatePageWithTitle: React.FC = () => {
+	const { t: translate } = useTranslation();
+	React.useEffect(() => {
+		document.title = translate('nikki.authorize.resource.title_create');
+	}, [translate]);
+	return <ResourceCreatePageBody />;
+};
+
+export const ResourceCreatePage: React.FC = ResourceCreatePageWithTitle;

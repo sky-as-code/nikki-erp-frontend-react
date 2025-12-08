@@ -1,6 +1,6 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { FormFieldProvider, FormStyleProvider, withWindowTitle } from '@nikkierp/ui/components';
+import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -101,5 +101,13 @@ function ActionCreatePageBody(): React.ReactNode {
 	);
 }
 
-export const ActionCreatePage: React.FC = withWindowTitle('Create Action', ActionCreatePageBody);
+const ActionCreatePageWithTitle: React.FC = () => {
+	const { t: translate } = useTranslation();
+	React.useEffect(() => {
+		document.title = translate('nikki.authorize.action.title_create');
+	}, [translate]);
+	return <ActionCreatePageBody />;
+};
+
+export const ActionCreatePage: React.FC = ActionCreatePageWithTitle;
 

@@ -1,3 +1,4 @@
+export * from './AssignedEntitlementsList';
 export * from './EntitlementCard';
 export * from './EntitlementTransferList';
 export * from './FormActionsSection';

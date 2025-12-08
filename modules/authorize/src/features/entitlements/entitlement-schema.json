@@ -59,11 +59,6 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.org_id' }"
 		},
-		"assignmentsCount": {
-			"type": "integer",
-			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.assignments_count' }",
-			"frontendOnly": true
-		},
 		"rolesCount": {
 			"type": "integer",
 			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.roles_count' }",

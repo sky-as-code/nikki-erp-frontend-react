@@ -74,7 +74,7 @@ function EntitlementListPageBody(): React.ReactNode {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useEntitlementDeleteHandler(entitlements, dispatch);
 
-	const columns = ['name', 'description', 'actionId', 'resourceId', 'assignmentsCount', 'rolesCount', 'actions'];
+	const columns = ['name', 'description', 'actionId', 'resourceId', 'rolesCount', 'actions'];
 	const schema = entitlementSchema as ModelSchema;
 
 	React.useEffect(() => {

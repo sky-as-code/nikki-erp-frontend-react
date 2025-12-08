@@ -28,7 +28,7 @@ function RoleListPageBody(): React.ReactNode {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useRoleDeleteHandler(roles, dispatch);
 
-	const columns = ['name', 'description', 'ownerType', 'ownerRef', 'isRequestable', 'orgId', 'entitlementsCount', 'assignmentsCount', 'actions'];
+	const columns = ['name', 'description', 'ownerType', 'ownerRef', 'isRequestable', 'isRequiredAttachment', 'isRequiredComment', 'entitlementsCount', 'orgId', 'actions'];
 	const schema = roleSchema as ModelSchema;
 
 	React.useEffect(() => {

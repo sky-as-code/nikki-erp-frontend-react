@@ -39,6 +39,7 @@ function useCreateSubmitHandler(
 ) {
 	return React.useCallback(async (data: unknown) => {
 		const formData = cleanFormData(data as Partial<Role>);
+		formData.createdBy = '01JWNNJGS70Y07MBEV3AQ0M526';
 		setIsSubmitting(true);
 
 		const result = await dispatch(roleActions.createRole(formData as CreateRoleInput));

@@ -182,13 +182,10 @@ export type AuthzRoleDto = {
 	isRequiredComment: boolean;
 	orgId?: string;
 	createdAt: string;
-	updatedAt: string;
 	createdBy: string;
 	etag?: string;
+	entitlements?: AuthzEntitlementDto[];
 	entitlementsCount?: number;
-	assignmentsCount?: number;
-	suitesCount?: number;
-	ownerName?: string;
 	[key: string]: unknown;
 };
 
@@ -196,18 +193,38 @@ export async function listRoles(
 	params?: ListQuery,
 ): Promise<ListResponse<AuthzRoleDto>> {
 	const options: Options = {};
-	if (params) {
-		(options as any).searchParams = params;
-	}
+	// if (params) {
+	// 	(options as any).searchParams = params;
+	// }
+
+	const defaultParams: ListQuery = {
+		graph: {
+			order: [['id', 'asc']],
+		},
+	};
+
+	const finalParams = {
+		...defaultParams,
+		...params,
+	};
+
+	const { graph, ...rest } = finalParams;
+
+	(options as any).searchParams = {
+		...rest,
+		graph: graph ? JSON.stringify(graph) : undefined,
+	};
+
 	return get<ListResponse<AuthzRoleDto>>('authorize/roles', options);
 }
+
 
 export async function getRole(id: string): Promise<AuthzRoleDto> {
 	return get<AuthzRoleDto>(`authorize/roles/${id}`);
 }
 
 export async function createRole(
-	data: Omit<AuthzRoleDto, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'entitlementsCount' | 'assignmentsCount' | 'suitesCount' | 'ownerName'>,
+	data: Omit<AuthzRoleDto, 'id' | 'createdAt' | 'etag' | 'entitlementsCount' | 'entitlements'>,
 ): Promise<AuthzRoleDto> {
 	return post<AuthzRoleDto>('authorize/roles', {
 		json: data,

@@ -1,6 +1,6 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { FormFieldProvider, FormStyleProvider, withWindowTitle } from '@nikkierp/ui/components';
+import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -200,5 +200,13 @@ function EntitlementDetailPageBody(): React.ReactNode {
 	);
 }
 
-export const EntitlementDetailPage: React.FC = withWindowTitle('Entitlement Details', EntitlementDetailPageBody);
+const EntitlementDetailPageWithTitle: React.FC = () => {
+	const { t: translate } = useTranslation();
+	React.useEffect(() => {
+		document.title = translate('nikki.authorize.entitlement.title_detail');
+	}, [translate]);
+	return <EntitlementDetailPageBody />;
+};
+
+export const EntitlementDetailPage: React.FC = EntitlementDetailPageWithTitle;
 

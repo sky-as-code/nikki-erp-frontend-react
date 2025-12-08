@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Role } from '@/features/roles/types';
 
+import { AssignedEntitlementsList } from './AssignedEntitlementsList';
 import { EntitlementTransferList } from './EntitlementTransferList';
 import { FormActionsSection } from './FormActionsSection';
 import { RoleInfoSection } from './RoleInfoSection';
@@ -60,6 +61,12 @@ export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = (
 
 			<Stack gap='md'>
 				<RoleInfoSection role={role} />
+				<AssignedEntitlementsList
+					entitlements={role.entitlements || []}
+					resources={resources}
+					actions={actions}
+					maxHeight={200}
+				/>
 				<SearchSection
 					searchQuery={searchQuery}
 					onSearchQueryChange={onSearchQueryChange}

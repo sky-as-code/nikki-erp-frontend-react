@@ -6,11 +6,15 @@ export type ModelSchema = {
 };
 
 export type FieldDefinition = {
-	type: 'string' | 'email' | 'password' | 'date' | 'integer' | 'enum';
+	type: 'string' | 'email' | 'password' | 'date' | 'integer' | 'enum' | 'boolean';
 	label: string;
 	description?: string;
 	placeholder?: string;
 	required?: {
+		create?: boolean;
+		update?: boolean;
+	};
+	readOnly?: {
 		create?: boolean;
 		update?: boolean;
 	};
