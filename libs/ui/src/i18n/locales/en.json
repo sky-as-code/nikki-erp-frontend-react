@@ -346,7 +346,20 @@
 				"not_found": "Role not found",
 				"create_success": "Role \"{{name}}\" has been created successfully",
 				"update_success": "Role \"{{name}}\" has been updated successfully",
-				"delete_success": "Role \"{{name}}\" has been deleted successfully"
+				"delete_success": "Role \"{{name}}\" has been deleted successfully",
+				"add_entitlements_success": "Entitlements have been added to role successfully"
+			},
+			"entitlements": {
+				"add": "Add Entitlements",
+				"remove": "Remove Entitlements",
+				"add_title": "Add Entitlements to Role",
+				"available": "Available Entitlements",
+				"selected": "Selected Entitlements",
+				"no_available": "No available entitlements",
+				"no_selected": "No selected entitlements",
+				"scope_ref": "Scope Reference",
+				"scope_ref_placeholder": "Enter scope reference",
+				"search_placeholder": "Search entitlements by name"
 			}
 		},
 		"role_suite": {

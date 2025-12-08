@@ -359,7 +359,20 @@
 				"not_found": "Không tìm thấy vai trò",
 				"create_success": "Vai trò \"{{name}}\" đã được tạo thành công",
 				"update_success": "Vai trò \"{{name}}\" đã được cập nhật thành công",
-				"delete_success": "Vai trò \"{{name}}\" đã được xóa thành công"
+				"delete_success": "Vai trò \"{{name}}\" đã được xóa thành công",
+				"add_entitlements_success": "Quyền đã được thêm vào vai trò thành công"
+			},
+			"entitlements": {
+				"add": "Thêm Quyền",
+				"remove": "Xóa Quyền",
+				"add_title": "Thêm Quyền vào Vai trò",
+				"available": "Quyền Có sẵn",
+				"selected": "Quyền Đã chọn",
+				"no_available": "Không có quyền nào có sẵn",
+				"no_selected": "Chưa chọn quyền nào",
+				"scope_ref": "Tham chiếu Phạm vi",
+				"scope_ref_placeholder": "Nhập tham chiếu phạm vi",
+				"search_placeholder": "Tìm kiếm quyền theo tên"
 			}
 		},
 		"role_suite": {

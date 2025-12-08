@@ -10,7 +10,7 @@ import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Role } from '../../types';
+import { Role } from '@/features/roles/types';
 
 
 export interface RoleTableProps {

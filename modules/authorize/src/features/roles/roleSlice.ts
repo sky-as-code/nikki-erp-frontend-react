@@ -116,6 +116,24 @@ export const deleteRole = createAsyncThunk<
 	},
 );
 
+export const addEntitlementsToRole = createAsyncThunk<
+	void,
+	{ roleId: string; etag: string; entitlementInputs: Array<{ entitlementId: string; scopeRef?: string }> },
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/addEntitlementsToRole`,
+	async ({ roleId, etag, entitlementInputs }, { rejectWithValue }) => {
+		try {
+			await roleService.addEntitlementsToRole(roleId, etag, entitlementInputs);
+			return undefined;
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to add entitlements to role';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
 const roleSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,

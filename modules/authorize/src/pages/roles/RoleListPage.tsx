@@ -6,62 +6,20 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
 import {
 	AuthorizeDispatch,
 	roleActions,
 	selectRoleState,
-} from '../../appState';
+} from '@/appState';
 import {
 	RoleListActions,
 	RoleListHeader,
 	RoleTable,
-} from '../../features/roles/components';
-import roleSchema from '../../features/roles/role-schema.json';
-import { Role } from '../../features/roles/types';
+} from '@/features/roles/components';
+import roleSchema from '@/features/roles/role-schema.json';
 
+import { useRoleDeleteHandler } from './hooks/useRoleDelete';
 
-function useRoleDeleteHandler(roles: Role[], dispatch: AuthorizeDispatch) {
-	const { notification } = useUIState();
-	const { t: translate } = useTranslation();
-	const [deleteModalOpened, setDeleteModalOpened] = React.useState(false);
-	const [roleToDelete, setRoleToDelete] = React.useState<Role | null>(null);
-
-	const handleDeleteRequest = React.useCallback((roleId: string) => {
-		const role = roles.find((entry) => entry.id === roleId);
-		if (!role) return;
-		setRoleToDelete(role);
-		setDeleteModalOpened(true);
-	}, [roles]);
-
-	const confirmDelete = React.useCallback(() => {
-		if (!roleToDelete) return;
-		dispatch(roleActions.deleteRole({
-			id: roleToDelete.id,
-		})).then((result) => {
-			if (result.meta.requestStatus === 'fulfilled') {
-				notification.showInfo(
-					translate('nikki.authorize.role.messages.delete_success', { name: roleToDelete.name }),
-					translate('nikki.general.messages.success'),
-				);
-				dispatch(roleActions.listRoles());
-			}
-			else {
-				const errorMessage = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.delete_failed');
-				notification.showError(errorMessage, translate('nikki.general.messages.error'));
-			}
-			setDeleteModalOpened(false);
-			setRoleToDelete(null);
-		});
-	}, [dispatch, roleToDelete, notification, translate]);
-
-	const closeDeleteModal = React.useCallback(() => {
-		setDeleteModalOpened(false);
-		setRoleToDelete(null);
-	}, []);
-
-	return { deleteModalOpened, roleToDelete, handleDeleteRequest, confirmDelete, closeDeleteModal };
-}
 
 function RoleListPageBody(): React.ReactNode {
 	const navigate = useNavigate();
@@ -140,4 +98,3 @@ const RoleListPageWithTitle: React.FC = () => {
 };
 
 export const RoleListPage: React.FC = RoleListPageWithTitle;
-

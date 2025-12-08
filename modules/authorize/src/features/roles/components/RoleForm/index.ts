@@ -1,6 +1,7 @@
-export { RoleFormActions } from './RoleFormActions';
-export { RoleFormContainer } from './RoleFormContainer';
-export { RoleFormFields } from './RoleFormFields';
-export { RoleLoadingState } from './RoleLoadingState';
-export { RoleNotFound } from './RoleNotFound';
+export * from './RoleDetailActions';
+export * from './RoleFormActions';
+export * from './RoleFormContainer';
+export * from './RoleFormFields';
+export * from './RoleLoadingState';
+export * from './RoleNotFound';
 
