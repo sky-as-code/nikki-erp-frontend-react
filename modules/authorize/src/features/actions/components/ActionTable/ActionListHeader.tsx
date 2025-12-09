@@ -1,4 +1,4 @@
-import { Breadcrumbs, Group, TagsInput, Typography } from '@mantine/core';
+import { Breadcrumbs, Group, TagsInput, Title } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -10,9 +10,7 @@ export const ActionListHeader: React.FC = () => {
 			<Breadcrumbs style={{
 				minWidth: '30%',
 			}}>
-				<Typography>
-					<h4>{translate('nikki.authorize.action.title')}</h4>
-				</Typography>
+				<Title order={4}>{translate('nikki.authorize.action.title')}</Title>
 			</Breadcrumbs>
 			<TagsInput
 				placeholder={translate('nikki.general.actions.search')}

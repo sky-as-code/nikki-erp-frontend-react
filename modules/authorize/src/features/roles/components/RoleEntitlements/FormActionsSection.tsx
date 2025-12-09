@@ -2,7 +2,7 @@ import { Button, Group } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Entitlement } from '@/features/entitlements/types';
+import type { Entitlement } from '@/features/entitlements';
 
 
 interface FormActionsSectionProps {
@@ -21,20 +21,21 @@ export const FormActionsSection: React.FC<FormActionsSectionProps> = ({
 	const { t: translate } = useTranslation();
 
 	return (
-		<Group justify='flex-end' mt='md'>
-			<Button
-				variant='outline'
-				onClick={onCancel}
-				disabled={isSubmitting}
-			>
-				{translate('nikki.general.actions.cancel')}
-			</Button>
+		<Group justify='flex-start' mb='md'>
 			<Button
 				onClick={onConfirm}
 				loading={isSubmitting}
 				disabled={selectedEntitlements.length === 0}
 			>
 				{translate('nikki.general.actions.confirm')}
+			</Button>
+
+			<Button
+				variant='outline'
+				onClick={onCancel}
+				disabled={isSubmitting}
+			>
+				{translate('nikki.general.actions.cancel')}
 			</Button>
 		</Group>
 	);

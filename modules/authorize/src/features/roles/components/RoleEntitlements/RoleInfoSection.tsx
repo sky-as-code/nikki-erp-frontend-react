@@ -2,7 +2,7 @@ import { Paper, Stack, Text } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Role } from '@/features/roles/types';
+import type { Role } from '@/features/roles';
 
 
 interface RoleInfoSectionProps {

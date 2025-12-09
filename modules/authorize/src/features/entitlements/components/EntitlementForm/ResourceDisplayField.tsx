@@ -6,7 +6,7 @@ import React from 'react';
 import { useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import type { Resource } from '../../../resources';
+import type { Resource } from '@/features/resources';
 
 
 export const ResourceDisplayField: React.FC<{ resources?: Resource[] }> = ({ resources }) => {

@@ -1,23 +1,24 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
-import { AuthorizeDispatch, resourceActions } from '../../appState';
-import { BackButton } from '../../features/resources/components/Button';
+import { AuthorizeDispatch, resourceActions } from '@/appState';
 import {
 	ResourceFormActions,
 	ResourceFormContainer,
 	ResourceFormFields,
-} from '../../features/resources/components/ResourceForm';
-import resourceSchema from '../../features/resources/resource-schema.json';
-import { Resource } from '../../features/resources/types';
-import { validateResourceForm } from '../../features/resources/validation/resourceFormValidation';
+} from '@/features/resources/components/ResourceForm';
+import resourceSchema from '@/features/resources/resource-schema.json';
+import { validateResourceForm } from '@/features/resources/validation/resourceFormValidation';
+
+import { useUIState } from '../../../../shell/src/context/UIProviders';
+
+import type { Resource } from '@/features/resources';
 
 
 type FormType = Parameters<typeof validateResourceForm>[2];
@@ -30,7 +31,7 @@ function useResourceCreateHandlers() {
 	const { t: translate } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-	const handleGoBack = React.useCallback(() => {
+	const handleCancel = React.useCallback(() => {
 		const parent = resolvePath('..', location.pathname).pathname;
 		navigate(parent);
 	}, [navigate, location]);
@@ -66,13 +67,13 @@ function useResourceCreateHandlers() {
 	}, [dispatch, notification, location, translate]);
 
 
-	return { isSubmitting, handleGoBack, handleSubmit };
+	return { isSubmitting, handleCancel, handleSubmit };
 }
 
 function ResourceCreatePageBody(): React.ReactNode {
 	const {
 		isSubmitting,
-		handleGoBack,
+		handleCancel,
 		handleSubmit,
 	} = useResourceCreateHandlers();
 	const { t: translate } = useTranslation();
@@ -80,15 +81,21 @@ function ResourceCreatePageBody(): React.ReactNode {
 
 	return (
 		<Stack gap='md'>
-			<BackButton onClick={handleGoBack} />
-			<ResourceFormContainer title={translate('nikki.authorize.resource.title_create')}>
+			<BreadcrumbsHeader
+				currentTitle={translate('nikki.authorize.resource.title_create')}
+				autoBuild={true}
+				segmentKey='resources'
+				parentTitle={translate('nikki.authorize.resource.title')}
+			/>
+
+			<ResourceFormContainer>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit, form }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data, form))} noValidate>
 								<Stack gap='xs'>
+									<ResourceFormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
 									<ResourceFormFields isCreate />
-									<ResourceFormActions isSubmitting={isSubmitting} onCancel={handleGoBack} isCreate />
 								</Stack>
 							</form>
 						)}

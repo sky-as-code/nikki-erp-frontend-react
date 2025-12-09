@@ -1,11 +1,10 @@
 import { Stack } from '@mantine/core';
-import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { BackButton } from '@/features/roles/components/Button';
 import { AssignedEntitlementsList } from '@/features/roles/components/RoleEntitlements';
 import {
 	RoleDetailActions,
@@ -34,8 +33,14 @@ function RoleDetailPageBody(): React.ReactNode {
 
 	return (
 		<Stack gap='md'>
-			<BackButton onClick={handleGoBack} />
-			<RoleFormContainer title={translate('nikki.authorize.role.title_detail')}>
+			<BreadcrumbsHeader
+				currentTitle={translate('nikki.authorize.role.title_detail')}
+				autoBuild={true}
+				segmentKey='roles'
+				parentTitle={translate('nikki.authorize.role.title')}
+			/>
+
+			<RoleFormContainer title={role.name}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
 						formVariant='update'
@@ -49,19 +54,19 @@ function RoleDetailPageBody(): React.ReactNode {
 									handleSubmit(data);
 								})(e);
 							}} noValidate>
-								<Stack gap='md'>
-									<RoleFormFields isCreate={false} />
-									<AssignedEntitlementsList
-										entitlements={role.entitlements || []}
-										resources={resources}
-										actions={actions}
-									/>
+								<Stack gap='xs'>
 									<RoleDetailActions
 										role={role}
 										isSubmitting={isSubmitting}
 										onAddEntitlements={handleAddEntitlements}
 										onRemoveEntitlements={handleRemoveEntitlements}
 										onCancel={handleGoBack}
+									/>
+									<RoleFormFields isCreate={false} />
+									<AssignedEntitlementsList
+										entitlements={role.entitlements || []}
+										resources={resources}
+										actions={actions}
 									/>
 								</Stack>
 							</form>

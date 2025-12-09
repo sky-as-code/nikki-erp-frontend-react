@@ -8,13 +8,12 @@ import {
 import {
 	listEntitlements as listEntitlementsApi,
 	listResources as listResourcesApi,
-} from '../services/authzService';
+} from '@/services/authzService';
 
 import type {
-	AuthzEntitlementDto,
 	AuthzResourceDto,
 	ListResponse,
-} from '../services/authzService';
+} from '@/services/authzService';
 
 
 export const SLICE_NAME = 'authorize';
@@ -92,7 +91,7 @@ export const listEntitlements = createAsyncThunk<
 >(`${SLICE_NAME}/listEntitlements`, async (_, { rejectWithValue }) => {
 	try {
 		const result = await listEntitlementsApi();
-		return (result as ListResponse<AuthzEntitlementDto>).items;
+		return (result as ListResponse<AuthzEntitlement>).items;
 	}
 	catch (error) {
 		const errorMessage =

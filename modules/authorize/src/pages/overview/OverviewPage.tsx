@@ -10,7 +10,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
-import { RequestStatus } from '../../features/grantRequests';
+import { RequestStatus } from '@/features/grantRequests';
 import {
 	fakeActions,
 	fakeEntitlements,
@@ -18,7 +18,7 @@ import {
 	fakeResources,
 	fakeRoles,
 	fakeRoleSuites,
-} from '../../mock/fakeData';
+} from '@/mock/fakeData';
 
 
 interface StatCardProps {

@@ -5,9 +5,9 @@ import React from 'react';
 function useFieldReadOnly(fieldName: string): boolean {
 	const { getFieldDef, formVariant } = useFormField();
 	const fieldDef = getFieldDef(fieldName);
-	
+
 	if (!fieldDef?.readOnly) return false;
-	
+
 	return fieldDef.readOnly[formVariant] === true;
 }
 
@@ -15,7 +15,7 @@ export const RoleFormFields: React.FC<{ isCreate: boolean }> = ({ isCreate }) =>
 	const isRequestableReadOnly = useFieldReadOnly('isRequestable');
 	const isRequiredAttachmentReadOnly = useFieldReadOnly('isRequiredAttachment');
 	const isRequiredCommentReadOnly = useFieldReadOnly('isRequiredComment');
-	
+
 	return (
 		<>
 			{!isCreate && <AutoField name='id' />}
@@ -39,19 +39,19 @@ export const RoleFormFields: React.FC<{ isCreate: boolean }> = ({ isCreate }) =>
 					readOnly: true,
 				} : undefined}
 			/>
-			<AutoField 
+			<AutoField
 				name='isRequestable'
 				inputProps={{
 					disabled: isRequestableReadOnly,
 				}}
 			/>
-			<AutoField 
+			<AutoField
 				name='isRequiredAttachment'
 				inputProps={{
 					disabled: isRequiredAttachmentReadOnly,
 				}}
 			/>
-			<AutoField 
+			<AutoField
 				name='isRequiredComment'
 				inputProps={{
 					disabled: isRequiredCommentReadOnly,

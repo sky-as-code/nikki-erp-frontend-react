@@ -3,7 +3,8 @@ import {
 } from '@reduxjs/toolkit';
 
 import { roleSuiteService } from './roleSuiteService';
-import { RoleSuite } from './types';
+
+import type { RoleSuite } from './types';
 
 
 export const SLICE_NAME = 'authorize.roleSuite';

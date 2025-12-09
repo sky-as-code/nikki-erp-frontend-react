@@ -1,8 +1,8 @@
 import { Paper, Stack, Text } from '@mantine/core';
+import { BackButton } from '@nikkierp/ui/components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { BackButton } from '../Button';
 
 
 interface RoleNotFoundProps {

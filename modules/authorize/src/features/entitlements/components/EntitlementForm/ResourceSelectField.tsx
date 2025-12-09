@@ -6,8 +6,9 @@ import React from 'react';
 import { Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { Resource } from '../../../resources';
-import { ALL_RESOURCES_VALUE } from '../../validation/entitlementFormValidation';
+import { ALL_RESOURCES_VALUE } from '@/features/entitlements/validation/entitlementFormValidation';
+
+import type { Resource } from '@/features/resources';
 
 
 export const ResourceSelectField: React.FC<{ resources?: Resource[] }> = ({ resources }) => {

@@ -16,7 +16,7 @@ export const ActionFormActions: React.FC<ActionFormActionsProps> = ({
 }) => {
 	const { t } = useTranslation();
 	return (
-		<Group mt='xl'>
+		<Group>
 			<Button type='submit' leftSection={<IconCheck size={16} />} loading={isSubmitting}>
 				{isCreate ? t('nikki.general.actions.create') : t('nikki.general.actions.update')}
 			</Button>

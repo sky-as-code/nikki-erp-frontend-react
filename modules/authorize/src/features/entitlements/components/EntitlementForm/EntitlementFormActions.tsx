@@ -17,7 +17,7 @@ export const EntitlementFormActions: React.FC<EntitlementFormActionsProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 	return (
-		<Group mt='xl'>
+		<Group>
 			<Button type='submit' leftSection={<IconCheck size={16} />} loading={isSubmitting}>
 				{isCreate ? translate('nikki.general.actions.create') : translate('nikki.general.actions.update')}
 			</Button>

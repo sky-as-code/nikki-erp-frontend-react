@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { EntitlementCard } from './EntitlementCard';
 
 import type { Action } from '@/features/actions';
-import type { Entitlement } from '@/features/entitlements/types';
-import type { Resource } from '@/features/resources/types';
+import type { Entitlement } from '@/features/entitlements';
+import type { Resource } from '@/features/resources';
 
 
 export interface AssignedEntitlementsListProps {

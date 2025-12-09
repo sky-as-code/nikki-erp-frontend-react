@@ -1,15 +1,13 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
-import { AuthorizeDispatch, resourceActions, selectResourceState } from '../../appState';
-import { BackButton } from '../../features/resources/components/Button';
+import { AuthorizeDispatch, resourceActions, selectResourceState } from '@/appState';
 import {
 	ResourceActionsField,
 	ResourceFormActions,
@@ -17,10 +15,13 @@ import {
 	ResourceFormFields,
 	ResourceLoadingState,
 	ResourceNotFound,
-} from '../../features/resources/components/ResourceForm';
-import resourceSchema from '../../features/resources/resource-schema.json';
-import { Resource } from '../../features/resources/types';
-import { validateResourceForm } from '../../features/resources/validation/resourceFormValidation';
+} from '@/features/resources/components/ResourceForm';
+import resourceSchema from '@/features/resources/resource-schema.json';
+import { validateResourceForm } from '@/features/resources/validation/resourceFormValidation';
+
+import { useUIState } from '../../../../shell/src/context/UIProviders';
+
+import type { Resource } from '@/features/resources';
 
 
 type FormType = Parameters<typeof validateResourceForm>[2];
@@ -52,7 +53,7 @@ function useResourceDetailHandlers(resource: Resource | undefined) {
 	const { t: translate } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-	const handleGoBack = React.useCallback(() => {
+	const handleCancel = React.useCallback(() => {
 		const parent = resolvePath('..', location.pathname).pathname;
 		navigate(parent);
 	}, [navigate, location]);
@@ -111,12 +112,13 @@ function useResourceDetailHandlers(resource: Resource | undefined) {
 		setIsSubmitting(false);
 	}, [dispatch, notification, resource, navigate, location, translate]);
 
-	return { isSubmitting, handleGoBack, handleSubmit };
+	return { isSubmitting, handleCancel, handleSubmit };
 }
 
 function ResourceDetailPageBody(): React.ReactNode {
 	const { resource, isLoadingList } = useResourceDetailData();
-	const { isSubmitting, handleGoBack, handleSubmit } = useResourceDetailHandlers(resource);
+	const { isSubmitting, handleCancel, handleSubmit } = useResourceDetailHandlers(resource);
+	const { t: translate } = useTranslation();
 	const schema = resourceSchema as ModelSchema;
 
 	if (isLoadingList) {
@@ -124,12 +126,18 @@ function ResourceDetailPageBody(): React.ReactNode {
 	}
 
 	if (!resource) {
-		return <ResourceNotFound onGoBack={handleGoBack} />;
+		return <ResourceNotFound onGoBack={handleCancel} />;
 	}
 
 	return (
 		<Stack gap='md'>
-			<BackButton onClick={handleGoBack} />
+			<BreadcrumbsHeader
+				currentTitle={translate('nikki.authorize.resource.title_detail')}
+				autoBuild={true}
+				segmentKey='resources'
+				parentTitle={translate('nikki.authorize.resource.title')}
+			/>
+
 			<ResourceFormContainer title={resource.name}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
@@ -140,14 +148,14 @@ function ResourceDetailPageBody(): React.ReactNode {
 					>
 						{({ handleSubmit: formHandleSubmit, form }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data, form))} noValidate>
-								<Stack gap='md'>
-									<ResourceFormFields isCreate={false} />
-									<ResourceActionsField actions={resource.actions} />
+								<Stack gap='xs'>
 									<ResourceFormActions
 										isSubmitting={isSubmitting}
-										onCancel={handleGoBack}
+										onCancel={handleCancel}
 										isCreate={false}
 									/>
+									<ResourceFormFields isCreate={false} />
+									<ResourceActionsField actions={resource.actions} />
 								</Stack>
 							</form>
 						)}

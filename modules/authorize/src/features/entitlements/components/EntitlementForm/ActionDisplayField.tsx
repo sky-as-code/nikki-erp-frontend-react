@@ -6,7 +6,7 @@ import React from 'react';
 import { useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import type { Action } from '../../../actions';
+import type { Action } from '@/features/actions';
 
 
 export const ActionDisplayField: React.FC<{ actions?: Action[] }> = ({ actions }) => {

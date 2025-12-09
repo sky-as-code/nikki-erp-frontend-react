@@ -1,4 +1,4 @@
-import { Resource, ResourceType } from '../../resources/types';
+import { Resource, ResourceType } from '@/features/resources';
 
 import type { UseFormReturn } from 'react-hook-form';
 

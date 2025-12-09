@@ -9,7 +9,7 @@ import {
 	updateResource,
 	deleteResource,
 	ResourceState,
-} from '../features/resources/resourceSlice';
+} from '@/features/resources/resourceSlice';
 
 
 const STATE_KEY = 'resource';

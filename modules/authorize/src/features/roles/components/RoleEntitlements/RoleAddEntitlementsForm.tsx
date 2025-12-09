@@ -2,8 +2,6 @@ import { Paper, Stack, Title } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Role } from '@/features/roles/types';
-
 import { AssignedEntitlementsList } from './AssignedEntitlementsList';
 import { EntitlementTransferList } from './EntitlementTransferList';
 import { FormActionsSection } from './FormActionsSection';
@@ -11,8 +9,9 @@ import { RoleInfoSection } from './RoleInfoSection';
 import { SearchSection } from './SearchSection';
 
 import type { Action } from '@/features/actions';
-import type { Entitlement } from '@/features/entitlements/types';
-import type { Resource } from '@/features/resources/types';
+import type { Entitlement } from '@/features/entitlements';
+import type { Resource } from '@/features/resources';
+import type { Role } from '@/features/roles';
 
 
 
@@ -55,9 +54,15 @@ export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = (
 
 	return (
 		<Paper p='lg'>
-			<Title order={3} mb='lg'>
+			<Title order={4} mb='lg'>
 				{translate('nikki.authorize.role.entitlements.add_title')}
 			</Title>
+			<FormActionsSection
+				selectedEntitlements={selectedEntitlements}
+				onConfirm={onConfirm}
+				onCancel={onCancel}
+				isSubmitting={isSubmitting}
+			/>
 
 			<Stack gap='md'>
 				<RoleInfoSection role={role} />
@@ -81,12 +86,6 @@ export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = (
 					actions={actions}
 					selectedScopeRefs={selectedScopeRefs}
 					onScopeRefChange={onScopeRefChange}
-				/>
-				<FormActionsSection
-					selectedEntitlements={selectedEntitlements}
-					onConfirm={onConfirm}
-					onCancel={onCancel}
-					isSubmitting={isSubmitting}
 				/>
 			</Stack>
 		</Paper>

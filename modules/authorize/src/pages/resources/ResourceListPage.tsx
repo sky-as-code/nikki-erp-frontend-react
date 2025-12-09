@@ -6,19 +6,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
 import {
 	AuthorizeDispatch,
 	resourceActions,
 	selectResourceState,
-} from '../../appState';
+} from '@/appState';
 import {
 	ResourceListActions,
 	ResourceListHeader,
 	ResourceTable,
-} from '../../features/resources/components';
-import resourceSchema from '../../features/resources/resource-schema.json';
-import { Resource } from '../../features/resources/types';
+} from '@/features/resources/components';
+import resourceSchema from '@/features/resources/resource-schema.json';
+
+import { useUIState } from '../../../../shell/src/context/UIProviders';
+
+import type { Resource } from '@/features/resources';
 
 
 function useResourceDeleteHandler(resources: Resource[], dispatch: AuthorizeDispatch) {

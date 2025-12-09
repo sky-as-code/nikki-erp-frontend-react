@@ -6,7 +6,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
 import {
 	AuthorizeDispatch,
 	actionActions,
@@ -15,14 +14,16 @@ import {
 	selectActionState,
 	selectEntitlementState,
 	selectResourceState,
-} from '../../appState';
+} from '@/appState';
 import {
 	EntitlementListActions,
 	EntitlementListHeader,
 	EntitlementTable,
-} from '../../features/entitlements/components';
-import entitlementSchema from '../../features/entitlements/entitlement-schema.json';
-import { Entitlement } from '../../features/entitlements/types';
+} from '@/features/entitlements/components';
+import entitlementSchema from '@/features/entitlements/entitlement-schema.json';
+import { Entitlement } from '@/features/entitlements/types';
+
+import { useUIState } from '../../../../shell/src/context/UIProviders';
 
 
 function useEntitlementDeleteHandler(entitlements: Entitlement[], dispatch: AuthorizeDispatch) {

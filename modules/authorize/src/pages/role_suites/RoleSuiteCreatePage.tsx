@@ -1,22 +1,23 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { FormFieldProvider, FormStyleProvider, withWindowTitle } from '@nikkierp/ui/components';
+import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider, withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
-import { AuthorizeDispatch, roleSuiteActions } from '../../appState';
-import { BackButton } from '../../features/roleSuite/components/Button';
+import { AuthorizeDispatch, roleSuiteActions } from '@/appState';
 import {
 	RoleSuiteFormActions,
 	RoleSuiteFormContainer,
 	RoleSuiteFormFields,
-} from '../../features/roleSuite/components/RoleSuiteForm';
-import roleSuiteSchema from '../../features/roleSuite/roleSuite-schema.json';
-import { RoleSuite } from '../../features/roleSuite/types';
+} from '@/features/roleSuite/components/RoleSuiteForm';
+import roleSuiteSchema from '@/features/roleSuite/roleSuite-schema.json';
+
+import { useUIState } from '../../../../shell/src/context/UIProviders';
+
+import type { RoleSuite } from '@/features/roleSuite';
 
 
 function useRoleSuiteCreateHandlers() {
@@ -27,7 +28,7 @@ function useRoleSuiteCreateHandlers() {
 	const { t: translate } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-	const handleGoBack = React.useCallback(() => {
+	const handleCancel = React.useCallback(() => {
 		const parent = resolvePath('..', location.pathname).pathname;
 		navigate(parent);
 	}, [navigate, location]);
@@ -56,7 +57,7 @@ function useRoleSuiteCreateHandlers() {
 		setIsSubmitting(false);
 	}, [dispatch, notification, location, translate, navigate]);
 
-	return { isSubmitting, handleGoBack, handleSubmit };
+	return { isSubmitting, handleCancel, handleSubmit };
 }
 
 function RoleSuiteCreatePageBody(): React.ReactNode {
@@ -70,19 +71,25 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 
 	return (
 		<Stack gap='md'>
-			<BackButton onClick={handleGoBack} />
-			<RoleSuiteFormContainer title={translate('nikki.authorize.role_suite.title_create')}>
+			<BreadcrumbsHeader
+				currentTitle={translate('nikki.authorize.role_suite.title_create')}
+				autoBuild={true}
+				segmentKey='role-suites'
+				parentTitle={translate('nikki.authorize.role_suite.title')}
+			/>
+
+			<RoleSuiteFormContainer>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
-									<RoleSuiteFormFields isCreate />
 									<RoleSuiteFormActions
 										isSubmitting={isSubmitting}
-										onCancel={handleGoBack}
+										onCancel={handleCancel}
 										isCreate
 									/>
+									<RoleSuiteFormFields isCreate />
 								</Stack>
 							</form>
 						)}
