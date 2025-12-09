@@ -28,6 +28,7 @@ import { RoleAddEntitlementsPage } from './pages/roles/RoleAddEntitlementsPage';
 import { RoleCreatePage } from './pages/roles/RoleCreatePage';
 import { RoleDetailPage } from './pages/roles/RoleDetailPage';
 import { RoleListPage } from './pages/roles/RoleListPage';
+import { RoleRemoveEntitlementsPage } from './pages/roles/RoleRemoveEntitlementsPage';
 
 
 function useMenuBarItems(): MenuBarItem[] {
@@ -117,6 +118,7 @@ function Main(props: MicroAppProps) {
 						<AppRoute path='roles/create' element={<RoleCreatePage />} />
 						<AppRoute path='roles/:roleId' element={<RoleDetailPage />} />
 						<AppRoute path='roles/:roleId/add-entitlements' element={<RoleAddEntitlementsPage />} />
+						<AppRoute path='roles/:roleId/remove-entitlements' element={<RoleRemoveEntitlementsPage />} />
 						{/* RoleSuite routes */}
 						<AppRoute path='role-suites' element={<RoleSuiteListPage />} />
 						<AppRoute path='role-suites/create' element={<RoleSuiteCreatePage />} />

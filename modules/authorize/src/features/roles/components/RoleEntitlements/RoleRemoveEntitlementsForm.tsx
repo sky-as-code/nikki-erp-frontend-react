@@ -1,7 +1,7 @@
 import { Paper, Stack, Title } from '@mantine/core';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
-import { AssignedEntitlementsList } from './AssignedEntitlementsList';
 import { EntitlementTransferList } from './EntitlementTransferList';
 import { FormActionsSection } from './FormActionsSection';
 import { SearchSection } from './SearchSection';
@@ -12,8 +12,7 @@ import type { Resource } from '@/features/resources';
 import type { Role } from '@/features/roles';
 
 
-
-interface RoleAddEntitlementsFormProps {
+interface RoleRemoveEntitlementsFormProps {
 	role: Role;
 	availableEntitlements: Entitlement[];
 	selectedEntitlements: Entitlement[];
@@ -21,8 +20,6 @@ interface RoleAddEntitlementsFormProps {
 	onMoveToAvailable: (entitlementId: string) => void;
 	resources: Resource[];
 	actions: Action[];
-	selectedScopeRefs: Record<string, string>;
-	onScopeRefChange: (entitlementId: string, scopeRef: string) => void;
 	searchQuery: string;
 	onSearchQueryChange: (query: string) => void;
 	onSearch: () => void;
@@ -31,7 +28,11 @@ interface RoleAddEntitlementsFormProps {
 	isSubmitting: boolean;
 }
 
-export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = ({
+/**
+ * Form dedicated for removing entitlements from a role.
+ * Shows two lists: currently assigned vs. selected to remove.
+ */
+export const RoleRemoveEntitlementsForm: React.FC<RoleRemoveEntitlementsFormProps> = ({
 	role,
 	availableEntitlements,
 	selectedEntitlements,
@@ -39,8 +40,6 @@ export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = (
 	onMoveToAvailable,
 	resources,
 	actions,
-	selectedScopeRefs,
-	onScopeRefChange,
 	searchQuery,
 	onSearchQueryChange,
 	onSearch,
@@ -48,24 +47,23 @@ export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = (
 	onCancel,
 	isSubmitting,
 }) => {
+	const { t: translate } = useTranslation();
+
 	return (
 		<Paper p='lg'>
-			<Title order={4} mb='lg'>{role.name}</Title>
+			<Title order={4} mb='lg'>
+				{translate('nikki.authorize.role.entitlements.remove_title')} - {role.name}
+			</Title>
+
 			<FormActionsSection
 				selectedEntitlements={selectedEntitlements}
 				onConfirm={onConfirm}
 				onCancel={onCancel}
 				isSubmitting={isSubmitting}
-				actionVariant='add'
+				actionVariant='remove'
 			/>
 
 			<Stack gap='md'>
-				<AssignedEntitlementsList
-					entitlements={role.entitlements || []}
-					resources={resources}
-					actions={actions}
-					maxHeight={200}
-				/>
 				<SearchSection
 					searchQuery={searchQuery}
 					onSearchQueryChange={onSearchQueryChange}
@@ -78,12 +76,13 @@ export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = (
 					onMoveToAvailable={onMoveToAvailable}
 					resources={resources}
 					actions={actions}
-					selectedScopeRefs={selectedScopeRefs}
-					onScopeRefChange={onScopeRefChange}
-					variant='add'
+					selectedScopeRefs={{}}
+					onScopeRefChange={() => {}}
+					variant='remove'
 				/>
 			</Stack>
 		</Paper>
 	);
 };
+
 

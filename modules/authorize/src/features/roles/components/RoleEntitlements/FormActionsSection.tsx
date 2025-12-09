@@ -10,6 +10,9 @@ interface FormActionsSectionProps {
 	onConfirm: () => void;
 	onCancel: () => void;
 	isSubmitting: boolean;
+	confirmLabel?: string;
+	disableWhenEmpty?: boolean;
+	actionVariant?: 'add' | 'remove';
 }
 
 export const FormActionsSection: React.FC<FormActionsSectionProps> = ({
@@ -17,17 +20,24 @@ export const FormActionsSection: React.FC<FormActionsSectionProps> = ({
 	onConfirm,
 	onCancel,
 	isSubmitting,
+	confirmLabel,
+	disableWhenEmpty = true,
+	actionVariant = 'add',
 }) => {
 	const { t: translate } = useTranslation();
+	const isDisabled = disableWhenEmpty ? selectedEntitlements.length === 0 : false;
+	const fallbackLabel = actionVariant === 'remove'
+		? translate('nikki.general.actions.remove')
+		: translate('nikki.general.actions.confirm');
 
 	return (
 		<Group justify='flex-start' mb='md'>
 			<Button
 				onClick={onConfirm}
 				loading={isSubmitting}
-				disabled={selectedEntitlements.length === 0}
+				disabled={isDisabled}
 			>
-				{translate('nikki.general.actions.confirm')}
+				{confirmLabel || fallbackLabel}
 			</Button>
 
 			<Button
