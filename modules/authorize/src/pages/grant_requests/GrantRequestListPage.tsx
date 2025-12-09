@@ -25,7 +25,7 @@ import {
 import React from 'react';
 import { Link } from 'react-router';
 
-import { GrantRequest, RequestStatus } from '../../features/grantRequests';
+import { GrantRequest, RequestStatus } from '../../features/grant_requests';
 import { fakeGrantRequests } from '../../mock/fakeData';
 
 

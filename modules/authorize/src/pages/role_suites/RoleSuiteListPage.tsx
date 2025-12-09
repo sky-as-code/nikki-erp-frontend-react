@@ -15,55 +15,13 @@ import {
 	RoleSuiteListActions,
 	RoleSuiteListHeader,
 	RoleSuiteTable,
-} from '@/features/roleSuite/components';
-import roleSuiteSchema from '@/features/roleSuite/roleSuite-schema.json';
+} from '@/features/role_suites/components';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
+import { useRoleSuiteDeleteHandler } from './hooks/useRoleSuiteDelete';
 
-import type { RoleSuite } from '@/features/roleSuite';
+import roleSuiteSchema from '@/features/role_suites/roleSuite-schema.json';
 
 
-function useRoleSuiteDeleteHandler(roleSuites: RoleSuite[], dispatch: AuthorizeDispatch) {
-	const { notification } = useUIState();
-	const { t: translate } = useTranslation();
-	const [deleteModalOpened, setDeleteModalOpened] = React.useState(false);
-	const [roleSuiteToDelete, setRoleSuiteToDelete] = React.useState<RoleSuite | null>(null);
-
-	const handleDeleteRequest = React.useCallback((roleSuiteId: string) => {
-		const roleSuite = roleSuites.find((entry) => entry.id === roleSuiteId);
-		if (!roleSuite) return;
-		setRoleSuiteToDelete(roleSuite);
-		setDeleteModalOpened(true);
-	}, [roleSuites]);
-
-	const confirmDelete = React.useCallback(() => {
-		if (!roleSuiteToDelete) return;
-		dispatch(roleSuiteActions.deleteRoleSuite({
-			id: roleSuiteToDelete.id,
-		})).then((result) => {
-			if (result.meta.requestStatus === 'fulfilled') {
-				notification.showInfo(
-					translate('nikki.authorize.role_suite.messages.delete_success', { name: roleSuiteToDelete.name }),
-					translate('nikki.general.messages.success'),
-				);
-				dispatch(roleSuiteActions.listRoleSuites());
-			}
-			else {
-				const errorMessage = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.delete_failed');
-				notification.showError(errorMessage, translate('nikki.general.messages.error'));
-			}
-			setDeleteModalOpened(false);
-			setRoleSuiteToDelete(null);
-		});
-	}, [dispatch, roleSuiteToDelete, notification, translate]);
-
-	const closeDeleteModal = React.useCallback(() => {
-		setDeleteModalOpened(false);
-		setRoleSuiteToDelete(null);
-	}, []);
-
-	return { deleteModalOpened, roleSuiteToDelete, handleDeleteRequest, confirmDelete, closeDeleteModal };
-}
 
 function RoleSuiteListPageBody(): React.ReactNode {
 	const navigate = useNavigate();

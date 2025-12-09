@@ -83,13 +83,13 @@ export const createRoleSuite = createAsyncThunk<
 
 export const updateRoleSuite = createAsyncThunk<
 	RoleSuite,
-	{ id: string; etag: string; name?: string; description?: string | null },
+	{ id: string; etag: string; name?: string; description?: string | null; roles?: string[] },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateRoleSuite`,
-	async ({ id, etag, name, description }, { rejectWithValue }) => {
+	async ({ id, etag, name, description, roles }, { rejectWithValue }) => {
 		try {
-			const result = await roleSuiteService.updateRoleSuite(id, etag, { name, description });
+			const result = await roleSuiteService.updateRoleSuite(id, etag, { name, description, roles });
 			return result;
 		}
 		catch (error) {

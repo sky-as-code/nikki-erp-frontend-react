@@ -24,7 +24,7 @@ import {
 import React from 'react';
 import { Link } from 'react-router';
 
-import { RevokeRequest } from '../../features/revokeRequests';
+import { RevokeRequest } from '../../features/revoke_requests';
 import { fakeRevokeRequests } from '../../mock/fakeData';
 
 

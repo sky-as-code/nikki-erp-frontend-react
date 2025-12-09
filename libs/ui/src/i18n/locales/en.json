@@ -402,6 +402,13 @@
 				"create_success": "Role suite \"{{name}}\" has been created successfully",
 				"update_success": "Role suite \"{{name}}\" has been updated successfully",
 				"delete_success": "Role suite \"{{name}}\" has been deleted successfully"
+			},
+			"roles": {
+				"title": "Roles",
+				"available": "Available roles",
+				"selected": "Selected roles",
+				"no_available": "No roles available",
+				"no_selected": "No selected roles"
 			}
 		},
 		"resource": {

@@ -10,7 +10,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
-import { RequestStatus } from '@/features/grantRequests';
+import { RequestStatus } from '@/features/grant_requests';
 import {
 	fakeActions,
 	fakeEntitlements,

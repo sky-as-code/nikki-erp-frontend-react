@@ -415,6 +415,13 @@
 				"create_success": "Bộ vai trò \"{{name}}\" đã được tạo thành công",
 				"update_success": "Bộ vai trò \"{{name}}\" đã được cập nhật thành công",
 				"delete_success": "Bộ vai trò \"{{name}}\" đã được xóa thành công"
+			},
+			"roles": {
+				"title": "Vai trò",
+				"available": "Vai trò có sẵn",
+				"selected": "Vai trò đã chọn",
+				"no_available": "Không có vai trò nào có sẵn",
+				"no_selected": "Chưa chọn vai trò nào"
 			}
 		},
 		"overview": {
