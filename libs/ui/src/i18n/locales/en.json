@@ -31,7 +31,8 @@
 				"refresh": "Refresh",
 				"import": "Import",
 				"save": "Save",
-				"confirm": "Confirm"
+				"confirm": "Confirm",
+				"remove": "Remove"
 			},
 			"messages": {
 				"success": "Success",
@@ -353,12 +354,16 @@
 				"add": "Add Entitlements",
 				"remove": "Remove Entitlements",
 				"add_title": "Add Entitlements to Role",
+				"remove_title": "Remove Entitlements from Role",
 				"available": "Available Entitlements",
 				"selected": "Selected Entitlements",
+				"assigned": "Assigned Entitlements",
+				"to_remove": "Entitlements to Remove",
 				"assigned_title": "Assigned Entitlements",
 				"no_available": "No available entitlements",
 				"no_selected": "No selected entitlements",
 				"no_assigned": "No entitlements assigned to this role",
+				"no_to_remove": "No entitlements selected to remove",
 				"scope_ref": "Scope Reference",
 				"scope_ref_placeholder": "Enter scope reference",
 				"search_placeholder": "Search entitlements by name"

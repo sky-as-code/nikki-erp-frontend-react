@@ -26,7 +26,7 @@ function RoleDetailPageBody(): React.ReactNode {
 	const schema = roleSchema as ModelSchema;
 
 	const handleAddEntitlements = React.useCallback(() => navigate('add-entitlements'), [navigate]);
-	const handleRemoveEntitlements = React.useCallback(() => { /* TODO */ }, []);
+	const handleRemoveEntitlements = React.useCallback(() => navigate('remove-entitlements'), [navigate]);
 
 	if (isLoading) return <RoleLoadingState />;
 	if (!role) return <RoleNotFound onGoBack={handleGoBack} />;
