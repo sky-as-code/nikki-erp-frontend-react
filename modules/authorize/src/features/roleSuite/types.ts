@@ -1,4 +1,6 @@
-import { OwnerType, Role } from '../roles';
+import { OwnerType } from '@/features/roles';
+
+import type { Role } from '@/features/roles';
 
 
 interface RoleSuite {

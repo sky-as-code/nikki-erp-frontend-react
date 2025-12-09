@@ -1,4 +1,4 @@
-import { Breadcrumbs, Group, TagsInput, Typography } from '@mantine/core';
+import { Breadcrumbs, Group, TagsInput, Title } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -10,9 +10,9 @@ export const RoleListHeader: React.FC = () => {
 			<Breadcrumbs style={{
 				minWidth: '30%',
 			}}>
-				<Typography>
+				<Title order={4}>
 					<h4>{translate('nikki.authorize.role.title')}</h4>
-				</Typography>
+				</Title>
 			</Breadcrumbs>
 			<TagsInput
 				placeholder={translate('nikki.general.actions.search')}

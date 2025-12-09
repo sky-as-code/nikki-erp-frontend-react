@@ -1,4 +1,4 @@
-export { RoleSuiteListActions } from './RoleSuiteListActions';
-export { RoleSuiteListHeader } from './RoleSuiteListHeader';
-export { RoleSuiteTable } from './RoleSuiteTable';
+export * from './RoleSuiteListActions';
+export * from './RoleSuiteListHeader';
+export * from './RoleSuiteTable';
 

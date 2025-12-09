@@ -9,7 +9,7 @@ import {
 	updateEntitlement,
 	deleteEntitlement,
 	EntitlementState,
-} from '../features/entitlements/entitlementSlice';
+} from '@/features/entitlements/entitlementSlice';
 
 
 const STATE_KEY = 'entitlement';

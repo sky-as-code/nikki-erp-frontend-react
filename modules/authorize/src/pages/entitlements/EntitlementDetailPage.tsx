@@ -1,13 +1,12 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
 import {
 	AuthorizeDispatch,
 	actionActions,
@@ -16,17 +15,19 @@ import {
 	selectActionState,
 	selectEntitlementState,
 	selectResourceState,
-} from '../../appState';
-import { BackButton } from '../../features/entitlements/components/Button';
+} from '@/appState';
 import {
 	EntitlementFormActions,
 	EntitlementFormContainer,
 	EntitlementFormFields,
 	EntitlementLoadingState,
 	EntitlementNotFound,
-} from '../../features/entitlements/components/EntitlementForm';
-import entitlementSchema from '../../features/entitlements/entitlement-schema.json';
-import { Entitlement } from '../../features/entitlements/types';
+} from '@/features/entitlements/components/EntitlementForm';
+import entitlementSchema from '@/features/entitlements/entitlement-schema.json';
+
+import { useUIState } from '../../../../shell/src/context/UIProviders';
+
+import type { Entitlement } from '@/features/entitlements';
 
 
 function useEntitlementDetailData() {
@@ -71,7 +72,7 @@ function useEntitlementDetailHandlers(entitlement: Entitlement | undefined) {
 	const { t: translate } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-	const handleGoBack = React.useCallback(() => {
+	const handleCancel = React.useCallback(() => {
 		const parent = resolvePath('..', location.pathname).pathname;
 		navigate(parent);
 	}, [navigate, location]);
@@ -137,12 +138,12 @@ function useEntitlementDetailHandlers(entitlement: Entitlement | undefined) {
 		}
 	}, [dispatch, notification, entitlement, navigate, location, translate]);
 
-	return { isSubmitting, handleGoBack, handleSubmit };
+	return { isSubmitting, handleCancel, handleSubmit };
 }
 
 function EntitlementDetailPageBody(): React.ReactNode {
 	const { entitlement, isLoading } = useEntitlementDetailData();
-	const { isSubmitting, handleGoBack, handleSubmit } = useEntitlementDetailHandlers(entitlement);
+	const { isSubmitting, handleCancel, handleSubmit } = useEntitlementDetailHandlers(entitlement);
 	const { t: translate } = useTranslation();
 	const schema = entitlementSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
@@ -163,13 +164,19 @@ function EntitlementDetailPageBody(): React.ReactNode {
 	}
 
 	if (!entitlement) {
-		return <EntitlementNotFound onGoBack={handleGoBack} />;
+		return <EntitlementNotFound onGoBack={handleCancel} />;
 	}
 
 	return (
 		<Stack gap='md'>
-			<BackButton onClick={handleGoBack} />
-			<EntitlementFormContainer title={translate('nikki.authorize.entitlement.title_detail')}>
+			<BreadcrumbsHeader
+				currentTitle={translate('nikki.authorize.entitlement.title_detail')}
+				autoBuild={true}
+				segmentKey='entitlements'
+				parentTitle={translate('nikki.authorize.entitlement.title')}
+			/>
+
+			<EntitlementFormContainer title={entitlement.name}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
 						formVariant='update'
@@ -180,15 +187,15 @@ function EntitlementDetailPageBody(): React.ReactNode {
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
+									<EntitlementFormActions
+										isSubmitting={isSubmitting}
+										onCancel={handleCancel}
+										isCreate={false}
+									/>
 									<EntitlementFormFields
 										isCreate={false}
 										resources={resources}
 										actions={actions}
-									/>
-									<EntitlementFormActions
-										isSubmitting={isSubmitting}
-										onCancel={handleGoBack}
-										isCreate={false}
 									/>
 								</Stack>
 							</form>

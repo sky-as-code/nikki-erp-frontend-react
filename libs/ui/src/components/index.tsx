@@ -3,5 +3,7 @@ export * from './Modal';
 export * from './form';
 export * from './hoc';
 export * from './Table';
+export * from './Button';
+export * from './BreadcrumbsHeader';
 export * from './SearchableSelect/FlatSearchableSelect';
 export * from './SearchableSelect/SearchableSelect';

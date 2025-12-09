@@ -6,8 +6,8 @@ import { ActionSelectField } from './ActionSelectField';
 import { ResourceDisplayField } from './ResourceDisplayField';
 import { ResourceSelectField } from './ResourceSelectField';
 
-import type { Action } from '../../../actions';
-import type { Resource } from '../../../resources';
+import type { Action } from '@/features/actions';
+import type { Resource } from '@/features/resources';
 
 
 interface EntitlementFormFieldsProps {

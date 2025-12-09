@@ -6,8 +6,8 @@ import React from 'react';
 import { Control, Controller, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { Action } from '../../../actions';
-import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '../../validation/entitlementFormValidation';
+import { Action } from '@/features/actions';
+import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '@/features/entitlements/validation/entitlementFormValidation';
 
 
 type AnyControl = Control<any>;

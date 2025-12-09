@@ -1,22 +1,23 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
-import { AuthorizeDispatch, actionActions, resourceActions, selectResourceState } from '../../appState';
-import actionSchema from '../../features/actions/action-schema.json';
+import { AuthorizeDispatch, actionActions, resourceActions, selectResourceState } from '@/appState';
+import actionSchema from '@/features/actions/action-schema.json';
 import {
 	ActionFormActions,
 	ActionFormContainer,
 	ActionFormFields,
-} from '../../features/actions/components/ActionForm';
-import { BackButton } from '../../features/actions/components/Button';
-import { Action } from '../../features/actions/types';
+} from '@/features/actions/components';
+
+import { useUIState } from '../../../../shell/src/context/UIProviders';
+
+import type { Action } from '@/features/actions';
 
 
 function useActionCreateHandlers() {
@@ -26,11 +27,6 @@ function useActionCreateHandlers() {
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-	const handleGoBack = React.useCallback(() => {
-		const parent = resolvePath('..', location.pathname).pathname;
-		navigate(parent);
-	}, [navigate, location]);
 
 	const handleSubmit = React.useCallback(async (data: unknown) => {
 		const formData = cleanFormData(data as Partial<Action>);
@@ -57,14 +53,19 @@ function useActionCreateHandlers() {
 		setIsSubmitting(false);
 	}, [dispatch, notification, location, translate, navigate]);
 
-	return { isSubmitting, handleGoBack, handleSubmit };
+	const handleCancel = React.useCallback(() => {
+		const parent = resolvePath('..', location.pathname).pathname;
+		navigate(parent);
+	}, [navigate, location]);
+
+	return { isSubmitting, handleSubmit, handleCancel };
 }
 
 function ActionCreatePageBody(): React.ReactNode {
 	const {
 		isSubmitting,
-		handleGoBack,
 		handleSubmit,
+		handleCancel,
 	} = useActionCreateHandlers();
 	const { t: translate } = useTranslation();
 	const schema = actionSchema as ModelSchema;
@@ -79,18 +80,24 @@ function ActionCreatePageBody(): React.ReactNode {
 
 	return (
 		<Stack gap='md'>
-			<BackButton onClick={handleGoBack} />
-			<ActionFormContainer title={translate('nikki.authorize.action.title_create')}>
+			<BreadcrumbsHeader
+				currentTitle={translate('nikki.authorize.action.title_create')}
+				autoBuild={true}
+				segmentKey='actions'
+				parentTitle={translate('nikki.authorize.action.title')}
+			/>
+
+			<ActionFormContainer>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
+									<ActionFormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
 									<ActionFormFields
 										isCreate
 										resources={resources}
 									/>
-									<ActionFormActions isSubmitting={isSubmitting} onCancel={handleGoBack} isCreate />
 								</Stack>
 							</form>
 						)}

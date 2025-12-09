@@ -1,5 +1,5 @@
-import { OwnerType } from '../roles';
-import { RoleSuite } from './types';
+import { OwnerType } from '@/features/roles';
+
 import {
 	createRoleSuite as createRoleSuiteApi,
 	deleteRoleSuite as deleteRoleSuiteApi,
@@ -8,6 +8,8 @@ import {
 	updateRoleSuite as updateRoleSuiteApi,
 	type AuthzRoleSuiteDto,
 } from '../../services/authzService';
+
+import type { RoleSuite } from './types';
 
 
 function mapDtoToRoleSuite(dto: AuthzRoleSuiteDto): RoleSuite {

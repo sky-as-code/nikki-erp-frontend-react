@@ -1,24 +1,25 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
-import { AuthorizeDispatch, actionActions, selectActionState} from '../../appState';
-import actionSchema from '../../features/actions/action-schema.json';
+import { AuthorizeDispatch, actionActions, selectActionState } from '@/appState';
+import actionSchema from '@/features/actions/action-schema.json';
 import {
 	ActionNotFound,
 	ActionFormActions,
 	ActionFormContainer,
 	ActionFormFields,
 	ActionLoadingState,
-} from '../../features/actions/components/ActionForm';
-import { BackButton } from '../../features/actions/components/Button';
-import { Action } from '../../features/actions/types';
+} from '@/features/actions/components';
+
+import { useUIState } from '../../../../shell/src/context/UIProviders';
+
+import type { Action } from '@/features/actions';
 
 
 function useActionDetailData() {
@@ -58,8 +59,8 @@ function useActionDetailHandlers(action: Action | undefined) {
 	const { t: translate } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-	const handleGoBack = React.useCallback(() => {
-		const parent = resolvePath('../..', location.pathname).pathname;
+	const handleCancel = React.useCallback(() => {
+		const parent = resolvePath('..', location.pathname).pathname;
 		navigate(parent);
 	}, [navigate, location]);
 
@@ -92,7 +93,7 @@ function useActionDetailHandlers(action: Action | undefined) {
 				translate('nikki.authorize.action.messages.update_success', { name: action.name }),
 				translate('nikki.general.messages.success'),
 			);
-			const parent = resolvePath('../..', location.pathname).pathname;
+			const parent = resolvePath('..', location.pathname).pathname;
 			navigate(parent);
 		}
 		else {
@@ -103,12 +104,13 @@ function useActionDetailHandlers(action: Action | undefined) {
 		setIsSubmitting(false);
 	}, [dispatch, notification, action, navigate, location, translate]);
 
-	return { isSubmitting, handleGoBack, handleSubmit };
+	return { isSubmitting, handleCancel, handleSubmit };
 }
 
 function ActionDetailPageBody(): React.ReactNode {
 	const { action, isLoading } = useActionDetailData();
-	const { isSubmitting, handleGoBack, handleSubmit } = useActionDetailHandlers(action);
+	const { isSubmitting, handleCancel, handleSubmit } = useActionDetailHandlers(action);
+	const { t: translate } = useTranslation();
 	const schema = actionSchema as ModelSchema;
 
 	if (isLoading) {
@@ -116,12 +118,18 @@ function ActionDetailPageBody(): React.ReactNode {
 	}
 
 	if (!action) {
-		return <ActionNotFound onGoBack={handleGoBack} />;
+		return <ActionNotFound onGoBack={handleCancel} />;
 	}
 
 	return (
 		<Stack gap='md'>
-			<BackButton onClick={handleGoBack} />
+			<BreadcrumbsHeader
+				currentTitle={translate('nikki.authorize.action.title_detail')}
+				autoBuild={true}
+				segmentKey='actions'
+				parentTitle={translate('nikki.authorize.action.title')}
+			/>
+
 			<ActionFormContainer title={action.name}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
@@ -132,13 +140,13 @@ function ActionDetailPageBody(): React.ReactNode {
 					>
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
-								<Stack gap='md'>
-									<ActionFormFields isCreate={false} />
+								<Stack gap='xs'>
 									<ActionFormActions
 										isSubmitting={isSubmitting}
-										onCancel={handleGoBack}
+										onCancel={handleCancel}
 										isCreate={false}
 									/>
+									<ActionFormFields isCreate={false} />
 								</Stack>
 							</form>
 						)}

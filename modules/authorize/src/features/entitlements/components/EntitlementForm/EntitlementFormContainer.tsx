@@ -3,13 +3,13 @@ import React from 'react';
 
 
 interface EntitlementFormContainerProps {
-	title: string;
+	title?: string;
 	children: React.ReactNode;
 }
 
 export const EntitlementFormContainer: React.FC<EntitlementFormContainerProps> = ({ title, children }) => (
 	<Paper p='lg'>
-		<Title order={3} mb='lg'>{title}</Title>
+		{title && <Title order={4} mb='lg'>{title}</Title>}
 		{children}
 	</Paper>
 );

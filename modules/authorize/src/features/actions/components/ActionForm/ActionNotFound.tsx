@@ -1,9 +1,9 @@
 import { Stack } from '@mantine/core';
 import { Paper } from '@mantine/core';
 import { Text } from '@mantine/core';
+import { BackButton } from '@nikkierp/ui/components';
 import { useTranslation } from 'react-i18next';
 
-import { BackButton } from '../Button/BackButton';
 
 
 interface ActionNotFoundProps {

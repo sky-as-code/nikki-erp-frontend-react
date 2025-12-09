@@ -2,7 +2,7 @@ import { Badge, Group, Text, TextInput } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Action } from '../../../actions';
+import type { Action } from '@/features/actions';
 
 
 interface ResourceActionsFieldProps {

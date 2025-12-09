@@ -10,10 +10,9 @@ import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Entitlement } from '../../types';
-
-import type { Action } from '../../../actions';
-import type { Resource } from '../../../resources';
+import type { Action } from '@/features/actions';
+import type { Entitlement } from '@/features/entitlements';
+import type { Resource } from '@/features/resources';
 
 
 export interface EntitlementTableProps {

@@ -6,6 +6,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import actionSchema from '@/features/actions/action-schema.json';
+import {
+	ActionListActions,
+	ActionListHeader,
+	ActionTable,
+} from '@/features/actions/components';
+
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 import {
 	AuthorizeDispatch,
@@ -14,13 +21,8 @@ import {
 	selectActionState,
 	selectResourceState,
 } from '../../appState';
-import actionSchema from '../../features/actions/action-schema.json';
-import {
-	ActionListActions,
-	ActionListHeader,
-	ActionTable,
-} from '../../features/actions/components';
-import { Action } from '../../features/actions/types';
+
+import type { Action } from '@/features/actions';
 
 
 function useActionDeleteHandler(actions: Action[], dispatch: AuthorizeDispatch) {
@@ -109,7 +111,7 @@ function ActionListPageBody(): React.ReactNode {
 
 	return (
 		<>
-			<Stack gap='md'>
+			<Stack gap='lq'>
 				<ActionListHeader />
 				<ActionListActions
 					onCreate={handleCreate}

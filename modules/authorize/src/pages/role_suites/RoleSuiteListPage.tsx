@@ -6,19 +6,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
 import {
 	AuthorizeDispatch,
 	roleSuiteActions,
 	selectRoleSuiteState,
-} from '../../appState';
+} from '@/appState';
 import {
 	RoleSuiteListActions,
 	RoleSuiteListHeader,
 	RoleSuiteTable,
-} from '../../features/roleSuite/components';
-import roleSuiteSchema from '../../features/roleSuite/roleSuite-schema.json';
-import { RoleSuite } from '../../features/roleSuite/types';
+} from '@/features/roleSuite/components';
+import roleSuiteSchema from '@/features/roleSuite/roleSuite-schema.json';
+
+import { useUIState } from '../../../../shell/src/context/UIProviders';
+
+import type { RoleSuite } from '@/features/roleSuite';
 
 
 function useRoleSuiteDeleteHandler(roleSuites: RoleSuite[], dispatch: AuthorizeDispatch) {

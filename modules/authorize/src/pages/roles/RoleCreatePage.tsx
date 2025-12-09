@@ -1,10 +1,9 @@
 import { Stack } from '@mantine/core';
-import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { BackButton } from '@/features/roles/components/Button';
 import {
 	RoleFormActions,
 	RoleFormContainer,
@@ -18,7 +17,7 @@ import { useRoleCreateHandlers } from './hooks/useRoleCreate';
 function RoleCreatePageBody(): React.ReactNode {
 	const {
 		isSubmitting,
-		handleGoBack,
+		handleCancel,
 		handleSubmit,
 	} = useRoleCreateHandlers();
 	const { t: translate } = useTranslation();
@@ -26,15 +25,21 @@ function RoleCreatePageBody(): React.ReactNode {
 
 	return (
 		<Stack gap='md'>
-			<BackButton onClick={handleGoBack} />
-			<RoleFormContainer title={translate('nikki.authorize.role.title_create')}>
+			<BreadcrumbsHeader
+				currentTitle={translate('nikki.authorize.role.title_create')}
+				autoBuild={true}
+				segmentKey='roles'
+				parentTitle={translate('nikki.authorize.role.title')}
+			/>
+
+			<RoleFormContainer>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
+									<RoleFormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
 									<RoleFormFields isCreate />
-									<RoleFormActions isSubmitting={isSubmitting} onCancel={handleGoBack} isCreate />
 								</Stack>
 							</form>
 						)}

@@ -3,7 +3,7 @@ import { IconCheck, IconPlus, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Role } from '@/features/roles/types';
+import type { Role } from '@/features/roles';
 
 
 interface RoleDetailActionsProps {
@@ -25,7 +25,7 @@ export const RoleDetailActions: React.FC<RoleDetailActionsProps> = ({
 	const hasEntitlements = (role.entitlementsCount ?? 0) > 0;
 
 	return (
-		<Group mt='xl' gap='md'>
+		<Group mt='lg' gap='md'>
 			<Button
 				type='submit'
 				leftSection={<IconCheck size={16} />}

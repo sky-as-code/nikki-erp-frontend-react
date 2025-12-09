@@ -2,10 +2,11 @@ import { Box, Card, Stack, Text } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ScopeType, type Resource } from '@/features/resources/types';
+import { ScopeType } from '@/features/resources';
 
-import type { Action } from '@/features/actions';
-import type { Entitlement } from '@/features/entitlements/types';
+import type { Action } from '@/features';
+import type { Entitlement } from '@/features/entitlements';
+import type { Resource } from '@/features/resources';
 
 
 export interface EntitlementCardProps {
