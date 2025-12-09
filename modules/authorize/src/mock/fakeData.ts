@@ -4,12 +4,12 @@ import {
 	EntitlementAssignment,
 	SubjectType,
 } from '../features/entitlements';
-import { GrantRequest, GrantResponse, ReceiverType, RequestStatus, TargetType } from '../features/grantRequests';
+import { GrantRequest, GrantResponse, ReceiverType, RequestStatus, TargetType } from '../features/grant_requests';
 import { PermissionChangeReason, PermissionEffect, PermissionHistory } from '../features/permissionHistories';
 import { Resource, ResourceType, ScopeType } from '../features/resources/types';
-import { RevokeRequest } from '../features/revokeRequests';
+import { RevokeRequest } from '../features/revoke_requests';
 import { OwnerType, Role } from '../features/roles';
-import { RoleSuite } from '../features/roleSuite';
+import { RoleSuite } from '../features/role_suites';
 
 
 // ============= RESOURCES =============

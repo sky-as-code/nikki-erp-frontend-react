@@ -10,7 +10,7 @@ import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { RoleSuite } from '@/features/roleSuite';
+import type { RoleSuite } from '@/features/role_suites';
 
 
 export interface RoleSuiteTableProps {

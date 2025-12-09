@@ -1,6 +1,6 @@
-import { ReceiverType, TargetType } from '../grantRequests';
+import { ReceiverType, TargetType } from '../grant_requests';
+import { RoleSuite } from '../role_suites';
 import { Role } from '../roles';
-import { RoleSuite } from '../roleSuite';
 
 
 interface RevokeRequest {

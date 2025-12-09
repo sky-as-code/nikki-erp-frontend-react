@@ -1,6 +1,6 @@
 import { Entitlement } from '../entitlements';
 import { Role } from '../roles';
-import { RoleSuite } from '../roleSuite';
+import { RoleSuite } from '../role_suites';
 
 
 export enum PermissionEffect {
