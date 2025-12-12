@@ -400,14 +400,16 @@
 				"is_requestable": "Có thể yêu cầu",
 				"is_required_attachment": "Bắt buộc đính kèm",
 				"is_required_comment": "Bắt buộc bình luận",
-				"org_id": "Tổ chức",
+				"org_id": "Phạm vi Tổ chức",
+				"org_all": "Toàn cục (*)",
 				"roles_count": "Vai trò",
 				"created_at": "Ngày tạo",
 				"updated_at": "Ngày cập nhật"
 			},
 			"placeholders": {
 				"name": "Nhập tên bộ vai trò",
-				"description": "Mô tả bộ vai trò này cấp những gì"
+				"description": "Mô tả bộ vai trò này cấp những gì",
+				"org_id": "Chọn phạm vi tổ chức"
 			},
 			"messages": {
 				"loading": "Đang tải bộ vai trò...",
@@ -418,10 +420,29 @@
 			},
 			"roles": {
 				"title": "Vai trò",
-				"available": "Vai trò có sẵn",
-				"selected": "Vai trò đã chọn",
+				"available": "Vai trò Có sẵn",
+				"selected": "Vai trò Đã chọn",
 				"no_available": "Không có vai trò nào có sẵn",
-				"no_selected": "Chưa chọn vai trò nào"
+				"no_selected": "Chưa chọn vai trò nào",
+				"search_placeholder": "Tìm kiếm vai trò theo tên...",
+				"no_search_results": "Không tìm thấy vai trò phù hợp",
+				"new_badge": "MỚI",
+				"org_label": "Tổ chức",
+				"domain_level": "Cấp Miền"
+			},
+			"changes": {
+				"summary_title": "Tóm tắt Thay đổi",
+				"roles_to_add": "Vai trò sẽ Thêm",
+				"roles_to_remove": "Vai trò sẽ Xóa",
+				"roles_unchanged": "Vai trò Không đổi"
+			},
+			"confirm": {
+				"title": "Xác nhận Cập nhật Bộ Vai trò",
+				"message": "Bạn sắp cập nhật bộ vai trò \"{{name}}\". Vui lòng xem lại các thay đổi bên dưới.",
+				"role_changes": "Thay đổi vai trò",
+				"add_count": "Thêm {{count}} vai trò",
+				"remove_count": "Xóa {{count}} vai trò",
+				"warning": "Thao tác này sẽ ảnh hưởng đến tất cả người dùng được gán bộ vai trò này."
 			}
 		},
 		"overview": {

@@ -374,7 +374,7 @@
 			"title_create": "Create New Role Suite",
 			"title_detail": "Role Suite Details",
 			"title_delete": "Delete Role Suite",
-			"fields": {
+		"fields": {
 				"id": "Role Suite ID",
 				"name": "Role Suite name",
 				"description": "Description",
@@ -387,14 +387,16 @@
 				"is_requestable": "Requestable",
 				"is_required_attachment": "Required attachment",
 				"is_required_comment": "Required comment",
-				"org_id": "Organization",
+				"org_id": "Organization Scope",
+				"org_all": "Domain Level (*)",
 				"roles_count": "Roles",
 				"created_at": "Created at",
 				"updated_at": "Updated at"
 			},
 			"placeholders": {
 				"name": "Enter role suite name",
-				"description": "Describe what this role suite grants"
+				"description": "Describe what this role suite grants",
+				"org_id": "Select organization scope"
 			},
 			"messages": {
 				"loading": "Loading role suite...",
@@ -405,10 +407,29 @@
 			},
 			"roles": {
 				"title": "Roles",
-				"available": "Available roles",
-				"selected": "Selected roles",
+				"available": "Available Roles",
+				"selected": "Selected Roles",
 				"no_available": "No roles available",
-				"no_selected": "No selected roles"
+				"no_selected": "No selected roles",
+				"search_placeholder": "Search roles by name...",
+				"no_search_results": "No roles match your search",
+				"new_badge": "NEW",
+				"org_label": "Organization",
+				"domain_level": "Domain Level"
+			},
+			"changes": {
+				"summary_title": "Summary of Changes",
+				"roles_to_add": "Roles to Add",
+				"roles_to_remove": "Roles to Remove",
+				"roles_unchanged": "Unchanged Roles"
+			},
+			"confirm": {
+				"title": "Confirm Role Suite Update",
+				"message": "You are about to update the role suite \"{{name}}\". Please review the changes below.",
+				"role_changes": "Role changes",
+				"add_count": "Add {{count}} role(s)",
+				"remove_count": "Remove {{count}} role(s)",
+				"warning": "This will affect all users assigned to this role suite."
 			}
 		},
 		"resource": {

@@ -1,19 +1,27 @@
 import { AutoField } from '@nikkierp/ui/components/form';
 import React from 'react';
 
+import { OrgSelectField, OrgDisplayField } from '../org_select_field';
 
-export const RoleSuiteFormFields: React.FC<{ isCreate: boolean }> = ({ isCreate }) => (
+import type { Org } from '@/features/orgs';
+
+
+interface RoleSuiteFormFieldsProps {
+	isCreate: boolean;
+	orgs?: Org[];
+	onOrgIdChange?: (orgId: string | undefined) => void;
+}
+
+export const RoleSuiteFormFields: React.FC<RoleSuiteFormFieldsProps> = ({
+	isCreate,
+	orgs,
+	onOrgIdChange,
+}) => (
 	<>
 		{!isCreate && <AutoField name='id' />}
 		<AutoField
 			name='name'
 			autoFocused
-			inputProps={{
-				disabled: !isCreate,
-			}}
-			htmlProps={!isCreate ? {
-				readOnly: true,
-			} : undefined}
 		/>
 		<AutoField name='description' />
 		<AutoField
@@ -34,18 +42,32 @@ export const RoleSuiteFormFields: React.FC<{ isCreate: boolean }> = ({ isCreate 
 				readOnly: true,
 			} : undefined}
 		/>
-		<AutoField name='isRequestable' />
-		<AutoField name='isRequiredAttachment' />
-		<AutoField name='isRequiredComment' />
-		<AutoField
-			name='orgId'
+		<AutoField name='isRequestable'
 			inputProps={{
 				disabled: !isCreate,
 			}}
 			htmlProps={!isCreate ? {
 				readOnly: true,
-			} : undefined}
-		/>
+			} : undefined}/>
+		<AutoField name='isRequiredAttachment'
+			inputProps={{
+				disabled: !isCreate,
+			}}
+			htmlProps={!isCreate ? {
+				readOnly: true,
+			} : undefined}/>
+		<AutoField name='isRequiredComment'
+			inputProps={{
+				disabled: !isCreate,
+			}}
+			htmlProps={!isCreate ? {
+				readOnly: true,
+			} : undefined}/>
+		{isCreate ? (
+			<OrgSelectField orgs={orgs} onOrgIdChange={onOrgIdChange} />
+		) : (
+			<OrgDisplayField orgs={orgs} />
+		)}
 	</>
 );
 

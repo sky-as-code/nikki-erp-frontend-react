@@ -15,7 +15,10 @@
 		"name": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.name' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.role_suite.placeholders.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
 				{
 					"type": "required",
@@ -32,7 +35,6 @@
 		"description": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.description' }",
-			"placeholder": "{ \"$ref\": 'nikki.authorize.role_suite.placeholders.description' }",
 			"constraints": [
 				{
 					"type": "length",
@@ -44,6 +46,10 @@
 		"ownerType": {
 			"type": "enum",
 			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.owner_type.label' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"enum": [
 				{
 					"value": "user",
@@ -64,6 +70,10 @@
 		"ownerRef": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.owner_ref' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
 			"constraints": [
 				{
 					"type": "required",
@@ -87,19 +97,14 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.org_id' }"
 		},
-		"rolesCount": {
-			"type": "integer",
-			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.roles_count' }",
-			"frontendOnly": true
-		},
 		"createdAt": {
 			"type": "date",
 			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.created_at' }",
 			"hidden": true
 		},
-		"updatedAt": {
-			"type": "date",
-			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.updated_at' }",
+		"createdBy": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.created_by' }",
 			"hidden": true
 		}
 	}

@@ -11,7 +11,7 @@ export const RoleListHeader: React.FC = () => {
 				minWidth: '30%',
 			}}>
 				<Title order={4}>
-					<h4>{translate('nikki.authorize.role.title')}</h4>
+					{translate('nikki.authorize.role.title')}
 				</Title>
 			</Breadcrumbs>
 			<TagsInput

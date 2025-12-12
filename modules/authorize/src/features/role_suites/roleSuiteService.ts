@@ -56,6 +56,10 @@ function mapRoleSuiteToDto(roleSuite: Partial<RoleSuite>): Partial<AuthzRoleSuit
 		dto.roles = roleSuite.roles.map((r) => ({ id: r.id, name: r.name, orgId: r.orgId }));
 	}
 
+	if (roleSuite.roleIds) {
+		dto.roleIds = roleSuite.roleIds;
+	}
+
 	return dto;
 }
 
@@ -80,12 +84,9 @@ export const roleSuiteService = {
 	async updateRoleSuite(
 		id: string,
 		etag: string,
-		data: { name?: string; description?: string | null; roles?: string[] },
+		data: { name?: string; description?: string | null; roleIds?: string[] },
 	): Promise<RoleSuite> {
-		const dtoData: any = { ...data };
-		if (data.roles) {
-			dtoData.roles = data.roles.map((r) => ({ id: r }));
-		}
+		const dtoData = { ...data } as Partial<AuthzRoleSuiteDto>;
 		const dto = await updateRoleSuiteApi(id, etag, dtoData);
 		return mapDtoToRoleSuite(dto);
 	},

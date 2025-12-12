@@ -14,21 +14,19 @@ export const RoleSuiteListActions: React.FC<RoleSuiteListActionsProps> = ({ onCr
 	return (
 		<Group>
 			<Button
-				size='compact-md'
 				leftSection={<IconPlus size={16} />}
 				onClick={onCreate}
 			>
 				{translate('nikki.general.actions.create')}
 			</Button>
 			<Button
-				size='compact-md'
 				variant='outline'
 				leftSection={<IconRefresh size={16} />}
 				onClick={onRefresh}
 			>
 				{translate('nikki.general.actions.refresh')}
 			</Button>
-			<Button size='compact-md' variant='outline' leftSection={<IconUpload size={16} />}>
+			<Button variant='outline' leftSection={<IconUpload size={16} />}>
 				{translate('nikki.general.actions.import')}
 			</Button>
 		</Group>

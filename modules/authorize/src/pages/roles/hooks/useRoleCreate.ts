@@ -21,20 +21,20 @@ export function useRoleCreateHandlers() {
 	const { t: translate } = useTranslation();
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-	const handleGoBack = React.useCallback(() => {
+	const handleCancel = React.useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate, location]);
 
-	const handleSubmit = useCreateSubmitHandler(dispatch, notification, translate, handleGoBack, setIsSubmitting);
+	const handleSubmit = useCreateSubmitHandler(dispatch, notification, translate, handleCancel, setIsSubmitting);
 
-	return { isSubmitting, handleGoBack, handleSubmit };
+	return { isSubmitting, handleCancel, handleSubmit };
 }
 
 function useCreateSubmitHandler(
 	dispatch: AuthorizeDispatch,
 	notification: ReturnType<typeof useUIState>['notification'],
 	translate: ReturnType<typeof useTranslation>['t'],
-	handleGoBack: () => void,
+	handleCancel: () => void,
 	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
 	return React.useCallback(async (data: unknown) => {
@@ -47,7 +47,7 @@ function useCreateSubmitHandler(
 		if (result.meta.requestStatus === 'fulfilled') {
 			const msg = translate('nikki.authorize.role.messages.create_success', { name: formData.name });
 			notification.showInfo(msg, translate('nikki.general.messages.success'));
-			handleGoBack();
+			handleCancel();
 		}
 		else {
 			const errorMsg = typeof result.payload === 'string'
@@ -57,5 +57,5 @@ function useCreateSubmitHandler(
 		}
 
 		setIsSubmitting(false);
-	}, [dispatch, notification, translate, handleGoBack, setIsSubmitting]);
+	}, [dispatch, notification, translate, handleCancel, setIsSubmitting]);
 }
