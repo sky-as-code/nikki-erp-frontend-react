@@ -282,6 +282,7 @@ export type AuthzRoleSuiteDto = {
 	rolesCount?: number;
 	ownerName?: string;
 	roles?: Array<{ id: string; name?: string; orgId?: string }>;
+	roleIds?: string[];
 	[key: string]: unknown;
 };
 
@@ -310,10 +311,10 @@ export async function createRoleSuite(
 export async function updateRoleSuite(
 	id: string,
 	etag: string,
-	data: { name?: string; description?: string | null; roles?: string[] },
+	data: Partial<AuthzRoleSuiteDto>,
 ): Promise<AuthzRoleSuiteDto> {
 	return put<AuthzRoleSuiteDto>(`authorize/role-suites/${id}`, {
-		json: { ...data, etag },
+		json: { ...data, etag } as Partial<AuthzRoleSuiteDto>,
 	});
 }
 

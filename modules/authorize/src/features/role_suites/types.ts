@@ -19,6 +19,7 @@ interface RoleSuite {
 	etag?: string;
 	// Relations
 	roles?: Role[];
+	roleIds?: string[];
 	rolesCount?: number;
 	// Display info
 	ownerName?: string;

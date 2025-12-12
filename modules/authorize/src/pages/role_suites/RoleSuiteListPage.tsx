@@ -30,7 +30,7 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useRoleSuiteDeleteHandler(roleSuites, dispatch);
 
-	const columns = ['name', 'description', 'ownerType', 'ownerRef', 'isRequestable', 'orgId', 'rolesCount', 'actions'];
+	const columns = ['name', 'description', 'ownerType', 'ownerRef', 'isRequestable', 'orgId', 'actions'];
 	const schema = roleSuiteSchema as ModelSchema;
 
 	React.useEffect(() => {

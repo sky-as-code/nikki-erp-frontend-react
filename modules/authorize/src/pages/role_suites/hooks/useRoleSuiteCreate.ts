@@ -15,6 +15,11 @@ import type { Role } from '@/features/roles';
 
 type CreateRoleSuiteInput = Omit<RoleSuite, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'rolesCount' | 'ownerName'>;
 
+/**
+ * Validates that selected roles comply with cross-org constraints:
+ * - Suite org = null → roles must have org = null
+ * - Suite org = specific → roles can have org = null OR same org
+ */
 function validateRoleOrgConstraints(
 	selectedRoleIds: string[],
 	roles: Role[],
@@ -23,8 +28,10 @@ function validateRoleOrgConstraints(
 	return selectedRoleIds.find((id) => {
 		const role = roles.find((r: Role) => r.id === id);
 		if (!role) return false;
+		// Domain suite: role must be domain
 		if (!suiteOrgId) return !!role.orgId;
-		return role.orgId !== suiteOrgId;
+		// Org suite: role can be domain OR same org
+		return role.orgId !== undefined && role.orgId !== suiteOrgId;
 	});
 }
 
@@ -36,10 +43,17 @@ function useRolesLoader(dispatch: AuthorizeDispatch, roles: Role[]) {
 	}, [dispatch, roles.length]);
 }
 
+/**
+ * Cross-org validation logic:
+ * - Suite org = null (domain) → only domain roles (roles with orgId = null)
+ * - Suite org = specific → domain roles + same org roles
+ */
 function useAvailableRolesByOrg(roles: Role[]) {
 	return React.useCallback((orgId?: string) => {
+		// Domain level suite: only show domain roles
 		if (!orgId) return roles.filter((r: Role) => !r.orgId);
-		return roles.filter((r: Role) => r.orgId === orgId);
+		// Org-specific suite: show domain roles + same org roles
+		return roles.filter((r: Role) => !r.orgId || r.orgId === orgId);
 	}, [roles]);
 }
 
@@ -50,37 +64,30 @@ function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: Re
 	}, [navigate, location]);
 }
 
+function useCreateState() {
+	const [isSubmitting, setIsSubmitting] = React.useState(false);
+	const [selectedRoleIds, setSelectedRoleIds] = React.useState<string[]>([]);
+	return { isSubmitting, setIsSubmitting, selectedRoleIds, setSelectedRoleIds };
+}
+
 export function useRoleSuiteCreateHandlers() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
 	const { roles } = useMicroAppSelector(selectRoleState);
-	const [selectedRoleIds, setSelectedRoleIds] = React.useState<string[]>([]);
+	const { isSubmitting, setIsSubmitting, selectedRoleIds, setSelectedRoleIds } = useCreateState();
 
 	useRolesLoader(dispatch, roles);
-
 	const handleCancel = useCancelHandler(navigate, location);
-	const handleSubmit = useCreateSubmitHandler(
-		dispatch,
-		notification,
-		translate,
-		handleCancel,
-		setIsSubmitting,
-		selectedRoleIds,
-		roles,
-	);
 	const availableRolesByOrg = useAvailableRolesByOrg(roles);
+	const handleSubmit = useCreateSubmitHandler(
+		dispatch, notification, translate, handleCancel, setIsSubmitting, selectedRoleIds, roles,
+	);
 
 	return {
-		isSubmitting,
-		handleCancel,
-		handleSubmit,
-		selectedRoleIds,
-		setSelectedRoleIds,
-		availableRolesByOrg,
+		isSubmitting, handleCancel, handleSubmit, selectedRoleIds, setSelectedRoleIds, availableRolesByOrg, roles,
 	};
 }
 
@@ -144,12 +151,13 @@ function useCreateSubmitHandler(
 	return React.useCallback(async (data: unknown) => {
 		const formData = cleanFormData(data as Partial<RoleSuite>);
 		setIsSubmitting(true);
+		formData.createdBy = '01JWNNJGS70Y07MBEV3AQ0M526';
 
 		if (!validateCreateData(formData, selectedRoleIds, roles, notification, translate, setIsSubmitting)) {
 			return;
 		}
 
-		formData.roles = selectedRoleIds.map((id) => ({ id })) as any;
+		formData.roleIds = selectedRoleIds;
 
 		const result = await dispatch(roleSuiteActions.createRoleSuite(
 			formData as CreateRoleSuiteInput,

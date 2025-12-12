@@ -21,6 +21,11 @@ import type { TFunction } from 'i18next';
 
 type NotificationType = ReturnType<typeof useUIState>['notification'];
 
+/**
+ * Validates that selected roles comply with cross-org constraints:
+ * - Suite org = null (domain) → roles must have org = null
+ * - Suite org = specific → roles can have org = null (domain) OR same org
+ */
 function validateRoleOrgConstraints(
 	selectedRoleIds: string[],
 	roles: Role[],
@@ -29,35 +34,37 @@ function validateRoleOrgConstraints(
 	return selectedRoleIds.find((id) => {
 		const role = roles.find((r: Role) => r.id === id);
 		if (!role) return false;
+		// Domain suite: role must be domain
 		if (!suiteOrgId) return !!role.orgId;
+		// Org suite: role can be domain OR same org
+		// Domain role (orgId = undefined) is always valid for org suite
+		if (!role.orgId) return false;
 		return role.orgId !== suiteOrgId;
 	});
+}
+
+function hasRolesChanged(selectedRoleIds: string[], originalRoleIds: string[]): boolean {
+	if (selectedRoleIds.length !== originalRoleIds.length) return true;
+	const originalSet = new Set(originalRoleIds);
+	return selectedRoleIds.some((id) => !originalSet.has(id));
+}
+
+function hasAnyChanges(formData: Partial<RoleSuite>, roleSuite: RoleSuite, selected: string[], original: string[]) {
+	const descChanged = (formData.description ?? null) !== (roleSuite.description ?? null);
+	const nameChanged = (formData.name ?? roleSuite.name) !== roleSuite.name;
+	return descChanged || nameChanged || hasRolesChanged(selected, original);
 }
 
 function validateFormChanges(
 	formData: Partial<RoleSuite>,
 	roleSuite: RoleSuite,
+	selectedRoleIds: string[],
+	originalRoleIds: string[],
 	notification: NotificationType,
 	translate: TFunction,
 ): boolean {
-	const newDescription = formData.description ?? null;
-	const originalDescription = roleSuite.description ?? null;
-	const newName = formData.name ?? roleSuite.name;
-	const originalName = roleSuite.name;
-
-	if (newDescription === originalDescription && newName === originalName) {
-		notification.showError(
-			translate('nikki.general.messages.no_changes'),
-			translate('nikki.general.messages.error'),
-		);
-		return false;
-	}
-
-	if (originalDescription !== null && newDescription === null) {
-		notification.showError(
-			translate('nikki.general.messages.invalid_change'),
-			translate('nikki.general.messages.error'),
-		);
+	if (!hasAnyChanges(formData, roleSuite, selectedRoleIds, originalRoleIds)) {
+		notification.showError(translate('nikki.general.messages.no_changes'), translate('nikki.general.messages.error'));
 		return false;
 	}
 
@@ -73,7 +80,7 @@ function prepareUpdatePayload(
 	etag: string;
 	name?: string;
 	description?: string;
-	roles: string[];
+	roleIds: string[];
 } {
 	const newDescription = formData.description ?? null;
 	const originalDescription = roleSuite.description ?? null;
@@ -85,7 +92,7 @@ function prepareUpdatePayload(
 		etag: roleSuite.etag || '',
 		name: newName !== originalName ? newName : undefined,
 		description: newDescription !== originalDescription ? (newDescription ?? undefined) : undefined,
-		roles: selectedRoleIds,
+		roleIds: selectedRoleIds,
 	};
 }
 
@@ -117,11 +124,18 @@ function useRolesListLoader(dispatch: AuthorizeDispatch, roles: Role[]) {
 	}, [dispatch, roles.length]);
 }
 
+/**
+ * Cross-org validation logic:
+ * - Suite org = null (domain) → only domain roles (roles with orgId = null)
+ * - Suite org = specific → domain roles + same org roles
+ */
 function useAvailableRoles(roles: Role[], roleSuite: RoleSuite | undefined) {
 	return React.useMemo(() => {
 		const suiteOrgId = roleSuite?.orgId || undefined;
+		// Domain level suite: only show domain roles
 		if (!suiteOrgId) return roles.filter((r: Role) => !r.orgId);
-		return roles.filter((r: Role) => r.orgId === suiteOrgId);
+		// Org-specific suite: show domain roles + same org roles
+		return roles.filter((r: Role) => !r.orgId || r.orgId === suiteOrgId);
 	}, [roles, roleSuite?.orgId]);
 }
 
@@ -179,7 +193,8 @@ function validateUpdateData(
 		return false;
 	}
 
-	if (!validateFormChanges(formData, roleSuite, notification, translate)) {
+	const originalRoleIds = roleSuite.roles?.map((r: Role) => r.id) ?? [];
+	if (!validateFormChanges(formData, roleSuite, selectedRoleIds, originalRoleIds, notification, translate)) {
 		setIsSubmitting(false);
 		return false;
 	}
@@ -519,39 +534,43 @@ function useHandlers(
 function useStateHooks(roleSuite: RoleSuite | undefined) {
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 	const [selectedRoleIds, setSelectedRoleIds] = useSelectedRoleIds(roleSuite);
-	return { isSubmitting, setIsSubmitting, selectedRoleIds, setSelectedRoleIds };
+	const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
+	const originalRoleIds = React.useMemo(
+		() => roleSuite?.roles?.map((r: Role) => r.id) ?? [],
+		[roleSuite],
+	);
+	return {
+		isSubmitting,
+		setIsSubmitting,
+		selectedRoleIds,
+		setSelectedRoleIds,
+		isConfirmDialogOpen,
+		setIsConfirmDialogOpen,
+		originalRoleIds,
+	};
 }
 
-export function useRoleSuiteDetailHandlers(
-	roleSuite: RoleSuite | undefined,
-	availableRoles: Role[],
-	allRoles: Role[],
-) {
+function useDetailDependencies() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
-	const { isSubmitting, setIsSubmitting, selectedRoleIds, setSelectedRoleIds } = useStateHooks(roleSuite);
+	return { navigate, location, dispatch, notification, translate };
+}
 
+export function useRoleSuiteDetailHandlers(
+	roleSuite: RoleSuite | undefined,
+	_availableRoles: Role[],
+	allRoles: Role[],
+) {
+	const { navigate, location, dispatch, notification, translate } = useDetailDependencies();
+	const stateHooks = useStateHooks(roleSuite);
 	const { handleCancel, handleSubmit } = useHandlers(
-		dispatch,
-		roleSuite,
-		selectedRoleIds,
-		allRoles,
-		notification,
-		translate,
-		navigate,
-		location,
-		setIsSubmitting,
+		dispatch, roleSuite, stateHooks.selectedRoleIds, allRoles,
+		notification, translate, navigate, location, stateHooks.setIsSubmitting,
 	);
 
-	return {
-		isSubmitting,
-		handleCancel,
-		handleSubmit,
-		selectedRoleIds,
-		setSelectedRoleIds,
-	};
+	return { ...stateHooks, handleCancel, handleSubmit };
 }
 
