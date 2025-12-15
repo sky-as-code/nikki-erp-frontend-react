@@ -49,7 +49,8 @@
 				"length": "Value length is invalid",
 				"update_failed": "Failed to update",
 				"create_failed": "Failed to create",
-				"delete_failed": "Failed to delete"
+				"delete_failed": "Failed to delete",
+				"grant_request_create_failed": "Failed to create grant request"
 			}
 		},
 		"identity": {
@@ -393,6 +394,24 @@
 				"created_at": "Created at",
 				"updated_at": "Updated at"
 			},
+			"grant_request": {
+				"title": "Grant Requests",
+				"title_create": "Create Grant Request",
+				"title_detail": "Grant Request Detail",
+				"fields": {
+					"target": "Target",
+					"target_type": "Target Type",
+					"target_ref": "Target Reference",
+					"requestor": "Requestor",
+					"receiver": "Receiver",
+					"comment": "Comment",
+					"attachment": "Attachment",
+					"status": "Status"
+				},
+				"messages": {
+					"create_success": "Grant request created successfully"
+				}
+			},
 			"placeholders": {
 				"name": "Enter role suite name",
 				"description": "Describe what this role suite grants",
@@ -430,6 +449,42 @@
 				"add_count": "Add {{count}} role(s)",
 				"remove_count": "Remove {{count}} role(s)",
 				"warning": "This will affect all users assigned to this role suite."
+			}
+		},
+		"grant_request": {
+			"title": "Grant Requests",
+			"title_create": "Create Grant Request",
+			"title_detail": "Grant Request Detail",
+			"title_delete": "Delete Grant Request",
+			"fields": {
+				"id": "Request ID",
+				"target": "Target",
+				"target_type": "Target Type",
+				"target_type_description": "Type of target (role or suite)",
+				"target_ref": "Target Reference",
+				"target_ref_description": "ID of the role or suite",
+				"requestor": "Requestor",
+				"requestor_id": "Requestor ID",
+				"requestor_id_description": "ID of the user making the request",
+				"receiver": "Receiver",
+				"receiver_id": "Receiver ID",
+				"receiver_id_description": "ID of the user who will receive the grant",
+				"receiver_type": "Receiver Type",
+				"receiver_type_description": "Type of receiver (user or group)",
+				"comment": "Comment",
+				"comment_description": "Additional notes or justification",
+				"attachment": "Attachment URL",
+				"attachment_description": "URL to supporting documents",
+				"status": "Status",
+				"status_description": "Current status of the request",
+				"org_id": "Organization",
+				"org_id_description": "Organization scope",
+				"created_at": "Created At"
+			},
+			"messages": {
+				"create_success": "Grant request created successfully",
+				"delete_success": "Grant request for {{name}} deleted successfully",
+				"not_found": "Grant request not found"
 			}
 		},
 		"resource": {

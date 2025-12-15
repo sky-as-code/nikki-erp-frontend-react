@@ -445,6 +445,42 @@
 				"warning": "Thao tác này sẽ ảnh hưởng đến tất cả người dùng được gán bộ vai trò này."
 			}
 		},
+		"grant_request": {
+			"title": "Yêu cầu cấp quyền",
+			"title_create": "Tạo yêu cầu cấp quyền",
+			"title_detail": "Chi tiết yêu cầu cấp quyền",
+			"title_delete": "Xóa yêu cầu cấp quyền",
+			"fields": {
+				"id": "Mã yêu cầu",
+				"target": "Mục tiêu",
+				"target_type": "Loại mục tiêu",
+				"target_type_description": "Loại mục tiêu (vai trò hoặc bộ vai trò)",
+				"target_ref": "Tham chiếu mục tiêu",
+				"target_ref_description": "ID của vai trò hoặc bộ vai trò",
+				"requestor": "Người yêu cầu",
+				"requestor_id": "Mã người yêu cầu",
+				"requestor_id_description": "ID người dùng tạo yêu cầu",
+				"receiver": "Người nhận quyền",
+				"receiver_id": "Mã người nhận",
+				"receiver_id_description": "ID người dùng sẽ được cấp quyền",
+				"receiver_type": "Loại người nhận",
+				"receiver_type_description": "Loại người nhận (người dùng hoặc nhóm)",
+				"comment": "Ghi chú",
+				"comment_description": "Ghi chú hoặc lý do bổ sung",
+				"attachment": "URL tập tin đính kèm",
+				"attachment_description": "Đường dẫn tới tài liệu hỗ trợ",
+				"status": "Trạng thái",
+				"status_description": "Trạng thái hiện tại của yêu cầu",
+				"org_id": "Tổ chức",
+				"org_id_description": "Phạm vi tổ chức",
+				"created_at": "Ngày tạo"
+			},
+			"messages": {
+				"create_success": "Tạo yêu cầu cấp quyền thành công",
+				"delete_success": "Xóa yêu cầu cho {{name}} thành công",
+				"not_found": "Không tìm thấy yêu cầu cấp quyền"
+			}
+		},
 		"overview": {
 				"title": "Tổng quan Phân quyền - Nikki ERP",
 				"pending_requests": "Yêu cầu Đang chờ",

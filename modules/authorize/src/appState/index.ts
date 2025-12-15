@@ -2,6 +2,7 @@ import { combineReducers, Dispatch, ThunkDispatch, UnknownAction } from '@reduxj
 
 import { actionReducer } from './action';
 import { entitlementReducer } from './entitlement';
+import { grantRequestReducers } from './grantRequest';
 import { resourceReducer } from './resource';
 import { roleReducer } from './role';
 import { roleSuiteReducer } from './roleSuite';
@@ -9,6 +10,7 @@ import { roleSuiteReducer } from './roleSuite';
 
 export { actionActions, selectActionState, selectActionList } from './action';
 export { entitlementActions, selectEntitlementState, selectEntitlementList } from './entitlement';
+export { grantRequestActions, selectGrantRequestState, selectGrantRequestList } from './grantRequest';
 export { resourceActions, selectResourceState, selectResourceList } from './resource';
 export { roleActions, selectRoleState, selectRoleList } from './role';
 export { roleSuiteActions, selectRoleSuiteState, selectRoleSuiteList } from './roleSuite';
@@ -16,6 +18,7 @@ export { roleSuiteActions, selectRoleSuiteState, selectRoleSuiteList } from './r
 export const reducer = combineReducers({
 	...actionReducer,
 	...entitlementReducer,
+	...grantRequestReducers,
 	...resourceReducer,
 	...roleReducer,
 	...roleSuiteReducer,

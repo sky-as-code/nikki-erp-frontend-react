@@ -321,3 +321,60 @@ export async function updateRoleSuite(
 export async function deleteRoleSuite(id: string): Promise<void> {
 	return del<void>(`authorize/role-suites/${id}`);
 }
+
+// ============ GrantRequest APIs ============
+export type AuthzGrantRequestDto = {
+	id: string;
+	attachmentUrl?: string;
+	comment?: string;
+	approvalId?: string;
+	requestorId: string;
+	receiverId: string;
+	targetType: string;
+	targetRef: string;
+	responseId?: string | null;
+	status: string;
+	orgId?: string | null;
+	createdAt: string;
+	updatedAt?: string;
+	cancelledAt?: string;
+	deletedAt?: string;
+	approver?: { id: string; displayName?: string } | null;
+	requestor?: { id: string; displayName?: string };
+	receiver?: { id: string; displayName?: string };
+	target?: { id: string; name?: string };
+	etag?: string;
+};
+
+export async function listGrantRequests(params?: ListQuery): Promise<ListResponse<AuthzGrantRequestDto>> {
+	const options: Options = {};
+	if (params) (options as any).searchParams = params;
+	return get<ListResponse<AuthzGrantRequestDto>>('authorize/grant-requests', options);
+}
+
+export async function getGrantRequest(id: string): Promise<AuthzGrantRequestDto> {
+	return get<AuthzGrantRequestDto>(`authorize/grant-requests/${id}`);
+}
+
+export async function createGrantRequest(
+	data: Partial<AuthzGrantRequestDto>,
+): Promise<AuthzGrantRequestDto> {
+	return post<AuthzGrantRequestDto>('authorize/grant-requests', { json: data });
+}
+
+export async function respondGrantRequest(
+	id: string,
+	decision: 'approve' | 'deny',
+): Promise<AuthzGrantRequestDto> {
+	return post<AuthzGrantRequestDto>(`authorize/grant-requests/${id}/respond`, {
+		searchParams: { decision },
+	});
+}
+
+export async function cancelGrantRequest(id: string): Promise<void> {
+	await del<void>(`authorize/grant-requests/cancel/${id}`);
+}
+
+export async function deleteGrantRequest(id: string): Promise<void> {
+	await del<void>(`authorize/grant-requests/${id}`);
+}
