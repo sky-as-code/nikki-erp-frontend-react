@@ -1,5 +1,6 @@
-import { Role } from '../roles';
 import { RoleSuite } from '../role_suites';
+import { Role } from '../roles';
+
 
 
 export enum TargetType {
@@ -19,41 +20,36 @@ export enum RequestStatus {
 	CANCELLED = 'cancelled',
 }
 
-
-interface GrantRequest {
+export interface GrantRequest {
 	id: string;
-	requestorId: string;
-	requestorName: string;
-	receiverType: ReceiverType;
-	receiverId: string;
-	receiverName: string;
-	targetType: TargetType;
-	targetRef: string;
-	status: RequestStatus;
 	attachmentUrl?: string;
 	comment?: string;
 	approvalId?: string;
-	responseId?: string;
+	requestorId: string;
+	receiverId: string;
+	targetType: string;
+	targetRef: string;
+	responseId?: string | null;
+	status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+	orgId?: string | null;
 	createdAt: string;
-	updatedAt: string;
-	// Relations
-	target?: Role | RoleSuite;
-	targetName?: string;
-	responses?: GrantResponse[];
-	responsesCount?: number;
+	updatedAt?: string;
+	cancelledAt?: string;
+	deletedAt?: string;
+	approver?: { id: string; name?: string } | null;
+	requestor?: { id: string; name?: string };
+	receiver?: { id: string; name?: string };
+	target?: { id: string; name?: string };
+	etag?: string;
+	receiverType?: string;
+	grantResponses?: Array<{ id: string; responderName: string; isApproved: boolean }>;
 }
 
-interface GrantResponse {
-	id: string;
-	requestId: string;
-	responderId: string;
-	responderName: string;
-	isApproved: boolean;
-	reason?: string;
-	createdAt: string;
-	updatedAt: string;
-	// Relations
-	request?: GrantRequest;
+export interface GrantRequestState {
+	items: GrantRequest[];
+	isLoadingList: boolean;
+	errorList: string | null;
+	detail?: GrantRequest;
+	isLoadingDetail: boolean;
+	errorDetail: string | null;
 }
-
-export type { GrantRequest, GrantResponse };

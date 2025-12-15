@@ -15,6 +15,8 @@ import { ActionListPage } from './pages/actions/ActionListPage';
 import { EntitlementCreatePage } from './pages/entitlements/EntitlementCreatePage';
 import { EntitlementDetailPage } from './pages/entitlements/EntitlementDetailPage';
 import { EntitlementListPage } from './pages/entitlements/EntitlementListPage';
+import { GrantRequestCreatePage } from './pages/grant_requests/GrantRequestCreatePage';
+import { GrantRequestDetailPage } from './pages/grant_requests/GrantRequestDetailPage';
 import { GrantRequestListPage } from './pages/grant_requests/GrantRequestListPage';
 import { OverviewPage } from './pages/overview/OverviewPage';
 import { ResourceCreatePage } from './pages/resources/ResourceCreatePage';
@@ -123,8 +125,11 @@ function Main(props: MicroAppProps) {
 						<AppRoute path='role-suites' element={<RoleSuiteListPage />} />
 						<AppRoute path='role-suites/create' element={<RoleSuiteCreatePage />} />
 						<AppRoute path='role-suites/:roleSuiteId' element={<RoleSuiteDetailPage />} />
-						{/* Request routes */}
+						{/* GrantRequest routes */}
 						<AppRoute path='grant-requests' element={<GrantRequestListPage />} />
+						<AppRoute path='grant-requests/create' element={<GrantRequestCreatePage />} />
+						<AppRoute path='grant-requests/:grantRequestId' element={<GrantRequestDetailPage />} />
+						{/* Request routes */}
 						<AppRoute path='revoke-requests' element={<RevokeRequestListPage />} />
 					</AppRoutes>
 					<WidgetRoutes>
