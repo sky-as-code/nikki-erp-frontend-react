@@ -4,24 +4,18 @@ import {
 	Text,
 	Tooltip,
 } from '@mantine/core';
-import { AutoTable } from '@nikkierp/ui/components';
-import { ModelSchema } from '@nikkierp/ui/model';
+import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { Action } from '@/features/actions';
-import type { Entitlement } from '@/features/entitlements';
 import type { Resource } from '@/features/resources';
 
 
-export interface EntitlementTableProps {
-	columns: string[];
-	entitlements: Entitlement[];
-	resources: Resource[];
-	actions: Action[];
-	isLoading: boolean;
-	schema: ModelSchema;
+export interface EntitlementTableProps extends AutoTableProps {
+	resourcesData: Resource[];
+	actionsData: Action[];
 	onViewDetail: (entitlementId: string) => void;
 	onEdit: (entitlementId: string) => void;
 	onDelete: (entitlementId: string) => void;
@@ -104,9 +98,9 @@ function renderActionsColumn(
 
 export const EntitlementTable: React.FC<EntitlementTableProps> = ({
 	columns,
-	entitlements,
-	resources,
-	actions,
+	data,
+	resourcesData,
+	actionsData,
 	isLoading,
 	schema,
 	onViewDetail,
@@ -117,24 +111,24 @@ export const EntitlementTable: React.FC<EntitlementTableProps> = ({
 
 	const resourceMap = React.useMemo(() => {
 		const map = new Map<string, string>();
-		resources.forEach((r) => {
+		resourcesData.forEach((r) => {
 			map.set(r.id, r.name);
 		});
 		return map;
-	}, [resources]);
+	}, [resourcesData]);
 
 	const actionMap = React.useMemo(() => {
 		const map = new Map<string, string>();
-		actions.forEach((a) => {
+		actionsData.forEach((a) => {
 			map.set(a.id, a.name);
 		});
 		return map;
-	}, [actions]);
+	}, [actionsData]);
 
 	return (
 		<AutoTable
 			columns={columns}
-			data={entitlements as unknown as Record<string, unknown>[]}
+			data={data}
 			schema={schema}
 			isLoading={isLoading}
 			columnRenderers={{

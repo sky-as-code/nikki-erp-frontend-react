@@ -1,20 +1,44 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { grantRequestActions, grantRequestReducer } from '../features/grant_requests/grantRequestSlice';
+import {
+	actions,
+	reducer,
+	listGrantRequests,
+	getGrantRequest,
+	createGrantRequest,
+	respondGrantRequest,
+	cancelGrantRequest,
+	deleteGrantRequest,
+} from '@/features/grant_requests/grantRequestSlice';
 
-import type { GrantRequestState } from '../features/grant_requests';
+import type { GrantRequestState } from '@/features/grant_requests/types';
 
 
-const sliceKey = 'grantRequests';
+const STATE_KEY = 'grantRequest';
 
-export const grantRequestReducers = {
-	[sliceKey]: grantRequestReducer,
+export const grantRequestReducer = {
+	[STATE_KEY]: reducer,
 };
 
-const selectState = (state: { [sliceKey]: GrantRequestState }) => state[sliceKey];
+export const grantRequestActions = {
+	listGrantRequests,
+	getGrantRequest,
+	createGrantRequest,
+	respondGrantRequest,
+	cancelGrantRequest,
+	deleteGrantRequest,
+	...actions,
+};
 
-export const selectGrantRequestState = createSelector(selectState, (state) => state);
-export const selectGrantRequestList = createSelector(selectState, (state) => state.items);
+export const selectGrantRequestState = (state: { [STATE_KEY]: GrantRequestState }) => state[STATE_KEY];
 
-export { grantRequestActions };
+export const selectGrantRequestList = createSelector(
+	selectGrantRequestState,
+	(state) => state.grantRequests,
+);
+
+export const selectGrantRequestDetail = createSelector(
+	selectGrantRequestState,
+	(state) => state.grantRequestDetail,
+);
 

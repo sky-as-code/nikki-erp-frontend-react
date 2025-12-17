@@ -4,20 +4,13 @@ import {
 	Text,
 	Tooltip,
 } from '@mantine/core';
-import { AutoTable } from '@nikkierp/ui/components';
-import { ModelSchema } from '@nikkierp/ui/model';
+import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Role } from '@/features/roles';
 
-
-export interface RoleTableProps {
-	columns: string[];
-	roles: Role[];
-	isLoading: boolean;
-	schema: ModelSchema;
+export interface RoleTableProps extends AutoTableProps {
 	onViewDetail: (roleId: string) => void;
 	onEdit: (roleId: string) => void;
 	onDelete: (roleId: string) => void;
@@ -74,7 +67,7 @@ function renderActionsColumn(
 
 export const RoleTable: React.FC<RoleTableProps> = ({
 	columns,
-	roles,
+	data,
 	isLoading,
 	schema,
 	onViewDetail,
@@ -85,7 +78,7 @@ export const RoleTable: React.FC<RoleTableProps> = ({
 	return (
 		<AutoTable
 			columns={columns}
-			data={roles as unknown as Record<string, unknown>[]}
+			data={data}
 			schema={schema}
 			isLoading={isLoading}
 			columnRenderers={{

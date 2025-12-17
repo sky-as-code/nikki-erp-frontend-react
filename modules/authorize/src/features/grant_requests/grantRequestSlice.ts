@@ -6,17 +6,16 @@ import {
 } from '@reduxjs/toolkit';
 
 import { grantRequestService } from './grantRequestService';
-
-import type { GrantRequest, GrantRequestState } from './types';
+import { GrantRequest, GrantRequestState, RequestStatus } from './types';
 
 
 export const SLICE_NAME = 'authorize.grantRequests';
 
 const initialState: GrantRequestState = {
-	items: [],
+	grantRequests: [],
 	isLoadingList: false,
 	errorList: null,
-	detail: undefined,
+	grantRequestDetail: undefined,
 	isLoadingDetail: false,
 	errorDetail: null,
 };
@@ -107,12 +106,12 @@ export const deleteGrantRequest = createAsyncThunk<void, { id: string }, { rejec
 	},
 );
 
-const slice = createSlice({
+const grantRequestSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
 	reducers: {
-		setItems: (state, action: PayloadAction<GrantRequest[]>) => {
-			state.items = action.payload;
+		setGrantRequests: (state, action: PayloadAction<GrantRequest[]>) => {
+			state.grantRequests = action.payload;
 		},
 	},
 	extraReducers: (builder) => {
@@ -133,11 +132,11 @@ function listReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 		})
 		.addCase(listGrantRequests.fulfilled, (state, action) => {
 			state.isLoadingList = false;
-			state.items = action.payload;
+			state.grantRequests = action.payload;
 		})
 		.addCase(listGrantRequests.rejected, (state, action) => {
 			state.isLoadingList = false;
-			state.items = [];
+			state.grantRequests = [];
 			state.errorList = action.payload ?? null;
 		});
 }
@@ -150,11 +149,11 @@ function detailReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 		})
 		.addCase(getGrantRequest.fulfilled, (state, action) => {
 			state.isLoadingDetail = false;
-			state.detail = action.payload;
+			state.grantRequestDetail = action.payload;
 		})
 		.addCase(getGrantRequest.rejected, (state, action) => {
 			state.isLoadingDetail = false;
-			state.detail = undefined;
+			state.grantRequestDetail = undefined;
 			state.errorDetail = action.payload ?? null;
 		});
 }
@@ -167,8 +166,8 @@ function createReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 		})
 		.addCase(createGrantRequest.fulfilled, (state, action) => {
 			state.isLoadingDetail = false;
-			state.detail = action.payload;
-			state.items.push(action.payload);
+			state.grantRequestDetail = action.payload;
+			state.grantRequests.push(action.payload);
 		})
 		.addCase(createGrantRequest.rejected, (state, action) => {
 			state.isLoadingDetail = false;
@@ -178,38 +177,34 @@ function createReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 
 function respondReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 	builder.addCase(respondGrantRequest.fulfilled, (state, action) => {
-		state.detail = action.payload;
-		const idx = state.items.findIndex((i) => i.id === action.payload.id);
-		if (idx >= 0) state.items[idx] = action.payload;
+		state.grantRequestDetail = action.payload;
+		const idx = state.grantRequests.findIndex((i) => i.id === action.payload.id);
+		if (idx >= 0) state.grantRequests[idx] = action.payload;
 	});
 }
 
 function cancelReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 	builder.addCase(cancelGrantRequest.fulfilled, (state, action) => {
 		const id = action.meta.arg.id;
-		const item = state.items.find((i) => i.id === id);
-		if (item) item.status = 'cancelled';
-		if (state.detail?.id === id) state.detail.status = 'cancelled';
+		const item = state.grantRequests.find((i) => i.id === id);
+		if (item) item.status = RequestStatus.CANCELLED;
+		if (state.grantRequestDetail?.id === id) {
+			state.grantRequestDetail.status = RequestStatus.CANCELLED;
+		}
 	});
 }
 
 function deleteReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 	builder.addCase(deleteGrantRequest.fulfilled, (state, action) => {
 		const id = action.meta.arg.id;
-		state.items = state.items.filter((i) => i.id !== id);
-		if (state.detail?.id === id) state.detail = undefined;
+		state.grantRequests = state.grantRequests.filter((i) => i.id !== id);
+		if (state.grantRequestDetail?.id === id) state.grantRequestDetail = undefined;
 	});
 }
 
-export const grantRequestActions = {
-	...slice.actions,
-	listGrantRequests,
-	getGrantRequest,
-	createGrantRequest,
-	respondGrantRequest,
-	cancelGrantRequest,
-	deleteGrantRequest,
+export const actions = {
+	...grantRequestSlice.actions,
 };
 
-export const grantRequestReducer = slice.reducer;
+export const { reducer } = grantRequestSlice;
 

@@ -4,20 +4,14 @@ import {
 	Text,
 	Tooltip,
 } from '@mantine/core';
-import { AutoTable } from '@nikkierp/ui/components';
-import { ModelSchema } from '@nikkierp/ui/model';
+import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Resource } from '@/features/resources';
 
 
-export interface ResourceTableProps {
-	columns: string[];
-	resources: Resource[];
-	isLoading: boolean;
-	schema: ModelSchema;
+export interface ResourceTableProps extends AutoTableProps {
 	onViewDetail: (resourceName: string) => void;
 	onEdit: (resourceName: string) => void;
 	onDelete: (resourceId: string) => void;
@@ -75,7 +69,7 @@ function renderActionsColumn(
 
 export const ResourceTable: React.FC<ResourceTableProps> = ({
 	columns,
-	resources,
+	data,
 	isLoading,
 	schema,
 	onViewDetail,
@@ -86,7 +80,7 @@ export const ResourceTable: React.FC<ResourceTableProps> = ({
 	return (
 		<AutoTable
 			columns={columns}
-			data={resources as unknown as Record<string, unknown>[]}
+			data={data}
 			schema={schema}
 			isLoading={isLoading}
 			columnRenderers={{

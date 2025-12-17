@@ -24,13 +24,13 @@ import { useGrantRequestDeleteHandler } from './hooks/useGrantRequestDelete';
 function GrantRequestListPageBody(): React.ReactNode {
 	const navigate = useNavigate();
 	const { t: translate } = useTranslation();
-	const { items: grantRequests, isLoadingList } = useMicroAppSelector(selectGrantRequestState);
+	const { grantRequests, isLoadingList } = useMicroAppSelector(selectGrantRequestState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useGrantRequestDeleteHandler(grantRequests, dispatch);
 
 	const columns = [
-		'requestorId',
-		'receiverId',
+		'requestor',
+		'receiver',
 		'targetRef',
 		'status',
 		'comment',
@@ -66,7 +66,7 @@ function GrantRequestListPageBody(): React.ReactNode {
 				<Paper className='p-4'>
 					<GrantRequestTable
 						columns={columns}
-						grantRequests={grantRequests}
+						data={grantRequests}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}

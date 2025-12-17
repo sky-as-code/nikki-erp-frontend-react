@@ -107,7 +107,7 @@ function ResourceListPageBody(): React.ReactNode {
 				<Paper className='p-4'>
 					<ResourceTable
 						columns={columns}
-						resources={resources}
+						data={resources}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}

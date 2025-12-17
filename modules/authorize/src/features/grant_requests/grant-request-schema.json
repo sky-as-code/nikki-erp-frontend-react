@@ -74,33 +74,59 @@
 				}
 			]
 		},
-		"receiverId": {
-			"type": "string",
-			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.receiver_id' }",
+		"receiver": {
+			"type": "object",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.receiver' }",
 			"required": {
 				"create": true,
 				"update": false
 			},
-			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+			"properties": {
+				"id": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.receiver_id' }",
+					"constraints": [
+						{
+							"type": "required",
+							"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+						}
+					]
+				},
+				"name": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.receiver_name' }",
+					"constraints": [
+						{
+							"type": "required",
+							"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+						}
+					]
 				}
-			]
+			}
 		},
-		"requestorId": {
-			"type": "string",
-			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.requestor_id' }",
+		"requestor": {
+			"type": "object",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.requestor' }",
 			"required": {
 				"create": true,
 				"update": false
 			},
-			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+			"properties": {
+				"id": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.requestor_id' }",
+					"constraints": [
+						{
+							"type": "required",
+							"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+						}
+					]
+				},
+				"name": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.requestor_name' }"
 				}
-			]
+			}
 		},
 		"comment": {
 			"type": "string",

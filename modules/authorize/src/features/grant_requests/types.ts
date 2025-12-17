@@ -24,32 +24,26 @@ export interface GrantRequest {
 	id: string;
 	attachmentUrl?: string;
 	comment?: string;
-	approvalId?: string;
-	requestorId: string;
-	receiverId: string;
-	targetType: string;
+	targetType: TargetType;
 	targetRef: string;
 	responseId?: string | null;
-	status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+	status: RequestStatus;
 	orgId?: string | null;
 	createdAt: string;
-	updatedAt?: string;
-	cancelledAt?: string;
-	deletedAt?: string;
-	approver?: { id: string; name?: string } | null;
-	requestor?: { id: string; name?: string };
-	receiver?: { id: string; name?: string };
-	target?: { id: string; name?: string };
+	approver?: { id: string; name: string } | null;
+	requestor?: { id: string; name: string };
+	receiver?: { id: string; name: string };
+	target?: { id: string; name: string };
 	etag?: string;
-	receiverType?: string;
+	receiverType?: ReceiverType;
 	grantResponses?: Array<{ id: string; responderName: string; isApproved: boolean }>;
 }
 
 export interface GrantRequestState {
-	items: GrantRequest[];
+	grantRequests: GrantRequest[];
 	isLoadingList: boolean;
 	errorList: string | null;
-	detail?: GrantRequest;
+	grantRequestDetail?: GrantRequest;
 	isLoadingDetail: boolean;
 	errorDetail: string | null;
 }
