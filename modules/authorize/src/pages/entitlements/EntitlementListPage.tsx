@@ -115,9 +115,9 @@ function EntitlementListPageBody(): React.ReactNode {
 				<Paper className='p-4'>
 					<EntitlementTable
 						columns={columns}
-						entitlements={entitlements}
-						resources={resources}
-						actions={actions}
+						data={entitlements}
+						resourcesData={resources}
+						actionsData={actions}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}

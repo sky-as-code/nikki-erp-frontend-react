@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router';
 import { resolvePath } from 'react-router';
 
 import { AuthorizeDispatch, grantRequestActions, selectGrantRequestState } from '@/appState';
+import { GrantRequest } from '@/features/grant_requests';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
@@ -11,14 +12,15 @@ import { useUIState } from '../../../../../shell/src/context/UIProviders';
 export function useGrantRequestDetailData() {
 	const { grantRequestId } = useParams<{ grantRequestId: string }>();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { items, detail, isLoadingDetail } = useMicroAppSelector(selectGrantRequestState);
+	const { grantRequests, grantRequestDetail, isLoadingDetail } = useMicroAppSelector(selectGrantRequestState);
 
 	const item = React.useMemo(() => {
 		if (grantRequestId) {
-			return items.find((i) => i.id === grantRequestId) || (detail?.id === grantRequestId ? detail : undefined);
+			const found = grantRequests.find((i: GrantRequest) => i.id === grantRequestId);
+			return found || (grantRequestDetail?.id === grantRequestId ? grantRequestDetail : undefined);
 		}
 		return undefined;
-	}, [grantRequestId, items, detail]);
+	}, [grantRequestId, grantRequests, grantRequestDetail]);
 
 	React.useEffect(() => {
 		if (!item && grantRequestId) {
@@ -29,17 +31,19 @@ export function useGrantRequestDetailData() {
 	return { grantRequest: item, isLoading: isLoadingDetail };
 }
 
-export function useGrantRequestDetailHandlers(grantRequestId?: string) {
-	const navigate = useNavigate();
-	const { notification } = useUIState();
-	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-	const handleBack = React.useCallback(() => {
+function useBackHandler(navigate: ReturnType<typeof useNavigate>) {
+	return React.useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate]);
+}
 
-	const handleApprove = React.useCallback(async () => {
+function useApproveHandler(
+	grantRequestId: string | undefined,
+	dispatch: AuthorizeDispatch,
+	notification: ReturnType<typeof useUIState>['notification'],
+	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
+) {
+	return React.useCallback(async () => {
 		if (!grantRequestId) return;
 		setIsSubmitting(true);
 		const result = await dispatch(grantRequestActions.respondGrantRequest({ id: grantRequestId, decision: 'approve' }));
@@ -52,9 +56,16 @@ export function useGrantRequestDetailHandlers(grantRequestId?: string) {
 			notification.showError(msg, 'Error');
 		}
 		setIsSubmitting(false);
-	}, [dispatch, grantRequestId, notification]);
+	}, [dispatch, grantRequestId, notification, setIsSubmitting]);
+}
 
-	const handleReject = React.useCallback(async () => {
+function useRejectHandler(
+	grantRequestId: string | undefined,
+	dispatch: AuthorizeDispatch,
+	notification: ReturnType<typeof useUIState>['notification'],
+	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
+) {
+	return React.useCallback(async () => {
 		if (!grantRequestId) return;
 		setIsSubmitting(true);
 		const result = await dispatch(grantRequestActions.respondGrantRequest({ id: grantRequestId, decision: 'deny' }));
@@ -67,9 +78,16 @@ export function useGrantRequestDetailHandlers(grantRequestId?: string) {
 			notification.showError(msg, 'Error');
 		}
 		setIsSubmitting(false);
-	}, [dispatch, grantRequestId, notification]);
+	}, [dispatch, grantRequestId, notification, setIsSubmitting]);
+}
 
-	const handleCancelRequest = React.useCallback(async () => {
+function useCancelRequestHandler(
+	grantRequestId: string | undefined,
+	dispatch: AuthorizeDispatch,
+	notification: ReturnType<typeof useUIState>['notification'],
+	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
+) {
+	return React.useCallback(async () => {
 		if (!grantRequestId) return;
 		setIsSubmitting(true);
 		const result = await dispatch(grantRequestActions.cancelGrantRequest({ id: grantRequestId }));
@@ -82,7 +100,19 @@ export function useGrantRequestDetailHandlers(grantRequestId?: string) {
 			notification.showError(msg, 'Error');
 		}
 		setIsSubmitting(false);
-	}, [dispatch, grantRequestId, notification]);
+	}, [dispatch, grantRequestId, notification, setIsSubmitting]);
+}
+
+export function useGrantRequestDetailHandlers(grantRequestId?: string) {
+	const navigate = useNavigate();
+	const { notification } = useUIState();
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+	const handleBack = useBackHandler(navigate);
+	const handleApprove = useApproveHandler(grantRequestId, dispatch, notification, setIsSubmitting);
+	const handleReject = useRejectHandler(grantRequestId, dispatch, notification, setIsSubmitting);
+	const handleCancelRequest = useCancelRequestHandler(grantRequestId, dispatch, notification, setIsSubmitting);
 
 	return { handleBack, handleApprove, handleReject, handleCancelRequest, isSubmitting };
 }

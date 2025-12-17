@@ -327,22 +327,16 @@ export type AuthzGrantRequestDto = {
 	id: string;
 	attachmentUrl?: string;
 	comment?: string;
-	approvalId?: string;
-	requestorId: string;
-	receiverId: string;
 	targetType: string;
 	targetRef: string;
 	responseId?: string | null;
 	status: string;
 	orgId?: string | null;
 	createdAt: string;
-	updatedAt?: string;
-	cancelledAt?: string;
-	deletedAt?: string;
-	approver?: { id: string; displayName?: string } | null;
-	requestor?: { id: string; displayName?: string };
-	receiver?: { id: string; displayName?: string };
-	target?: { id: string; name?: string };
+	approver?: { id: string; name: string } | null;
+	requestor?: { id: string; name: string };
+	receiver?: { id: string; name: string };
+	target?: {id: string; name: string};
 	etag?: string;
 };
 

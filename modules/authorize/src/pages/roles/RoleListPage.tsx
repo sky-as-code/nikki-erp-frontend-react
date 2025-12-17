@@ -62,7 +62,7 @@ function RoleListPageBody(): React.ReactNode {
 				<Paper className='p-4'>
 					<RoleTable
 						columns={columns}
-						roles={roles}
+						data={roles}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}

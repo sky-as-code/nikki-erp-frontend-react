@@ -64,7 +64,7 @@ function RoleSuiteListPageBody(): React.ReactNode {
 				<Paper className='p-4'>
 					<RoleSuiteTable
 						columns={columns}
-						roleSuites={roleSuites}
+						data={roleSuites}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}

@@ -4,22 +4,16 @@ import {
 	Text,
 	Tooltip,
 } from '@mantine/core';
-import { AutoTable } from '@nikkierp/ui/components';
-import { ModelSchema } from '@nikkierp/ui/model';
+import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Action } from '@/features/actions';
-import { Resource } from '@/features/resources';
+import type { Resource } from '@/features/resources';
 
 
-export interface ActionTableProps {
-	columns: string[];
-	actions: Action[];
-	resources: Resource[];
-	isLoading: boolean;
-	schema: ModelSchema;
+export interface ActionTableProps extends AutoTableProps {
+	resourcesData: Resource[];
 	onViewDetail: (actionId: string) => void;
 	onEdit: (actionId: string) => void;
 	onDelete: (actionId: string) => void;
@@ -86,8 +80,8 @@ function renderActionsColumn(
 
 export const ActionTable: React.FC<ActionTableProps> = ({
 	columns,
-	actions,
-	resources,
+	data,
+	resourcesData,
 	isLoading,
 	schema,
 	onViewDetail,
@@ -98,16 +92,16 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
 	const resourceMap = React.useMemo(() => {
 		const map = new Map<string, string>();
-		resources.forEach((r) => {
+		resourcesData.forEach((r) => {
 			map.set(r.id, r.name);
 		});
 		return map;
-	}, [resources]);
+	}, [resourcesData]);
 
 	return (
 		<AutoTable
 			columns={columns}
-			data={actions as unknown as Record<string, unknown>[]}
+			data={data}
 			schema={schema}
 			isLoading={isLoading}
 			columnRenderers={{

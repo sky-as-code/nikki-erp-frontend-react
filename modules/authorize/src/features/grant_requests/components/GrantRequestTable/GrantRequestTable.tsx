@@ -5,8 +5,7 @@ import {
 	Text,
 	Tooltip,
 } from '@mantine/core';
-import { AutoTable } from '@nikkierp/ui/components';
-import { ModelSchema } from '@nikkierp/ui/model';
+import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
 import { IconEye, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,11 +13,7 @@ import { useTranslation } from 'react-i18next';
 import type { GrantRequest } from '@/features/grant_requests';
 
 
-export interface GrantRequestTableProps {
-	columns: string[];
-	grantRequests: GrantRequest[];
-	isLoading: boolean;
-	schema: ModelSchema;
+export interface GrantRequestTableProps extends AutoTableProps {
 	onViewDetail: (requestId: string) => void;
 	onDelete: (requestId: string) => void;
 }
@@ -31,15 +26,13 @@ const statusColors: Record<GrantRequest['status'], string> = {
 };
 
 function renderRequestorColumn(row: Record<string, unknown>) {
-	const requestor = row.requestor as { name?: string } | undefined;
-	const requestorId = row.requestorId as string;
-	return <Text size='sm' fw={500}>{requestor?.name || requestorId}</Text>;
+	const requestor = row.requestor as { name: string };
+	return <Text size='sm' fw={500}>{requestor.name}</Text>;
 }
 
 function renderReceiverColumn(row: Record<string, unknown>) {
-	const receiver = row.receiver as { name?: string } | undefined;
-	const receiverId = row.receiverId as string;
-	return <Text size='sm'>{receiver?.name || receiverId}</Text>;
+	const receiver = row.receiver as { name: string };
+	return <Text size='sm'>{receiver.name}</Text>;
 }
 
 function renderTargetColumn(row: Record<string, unknown>) {
@@ -98,7 +91,7 @@ function renderActionsColumn(
 
 export const GrantRequestTable: React.FC<GrantRequestTableProps> = ({
 	columns,
-	grantRequests,
+	data,
 	isLoading,
 	schema,
 	onViewDetail,
@@ -108,12 +101,12 @@ export const GrantRequestTable: React.FC<GrantRequestTableProps> = ({
 	return (
 		<AutoTable
 			columns={columns}
-			data={grantRequests as unknown as Record<string, unknown>[]}
+			data={data}
 			schema={schema}
 			isLoading={isLoading}
 			columnRenderers={{
-				requestorId: (row) => renderRequestorColumn(row),
-				receiverId: (row) => renderReceiverColumn(row),
+				requestor: (row) => renderRequestorColumn(row),
+				receiver: (row) => renderReceiverColumn(row),
 				targetRef: (row) => renderTargetColumn(row),
 				status: (row) => renderStatusColumn(row),
 				actions: (row) => renderActionsColumn(row, onViewDetail, onDelete, translate),

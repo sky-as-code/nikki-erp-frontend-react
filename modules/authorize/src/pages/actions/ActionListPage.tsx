@@ -120,8 +120,8 @@ function ActionListPageBody(): React.ReactNode {
 				<Paper className='p-4'>
 					<ActionTable
 						columns={columns}
-						actions={actions}
-						resources={resources}
+						data={actions}
+						resourcesData={resources}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}
