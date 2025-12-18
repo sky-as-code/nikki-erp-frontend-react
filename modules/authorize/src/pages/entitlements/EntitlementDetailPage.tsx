@@ -181,7 +181,7 @@ function EntitlementDetailPageBody(): React.ReactNode {
 					<FormFieldProvider
 						formVariant='update'
 						modelSchema={schema}
-						modelValue={entitlement as unknown as Record<string, unknown>}
+						modelValue={entitlement}
 						modelLoading={isSubmitting}
 					>
 						{({ handleSubmit: formHandleSubmit }) => (

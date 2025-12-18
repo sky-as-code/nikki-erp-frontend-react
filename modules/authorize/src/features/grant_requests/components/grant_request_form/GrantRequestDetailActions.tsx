@@ -12,7 +12,6 @@ interface GrantRequestDetailActionsProps {
 	onCancel: () => void;
 	onApprove: () => void;
 	onReject: () => void;
-	onCancelRequest: () => void;
 }
 
 export const GrantRequestDetailActions: React.FC<GrantRequestDetailActionsProps> = ({
@@ -21,7 +20,6 @@ export const GrantRequestDetailActions: React.FC<GrantRequestDetailActionsProps>
 	onCancel,
 	onApprove,
 	onReject,
-	onCancelRequest,
 }) => {
 	const { t } = useTranslation();
 	const isPending = grantRequest.status === 'pending';
@@ -45,14 +43,6 @@ export const GrantRequestDetailActions: React.FC<GrantRequestDetailActionsProps>
 						loading={isSubmitting}
 					>
 						{t('nikki.general.actions.reject')}
-					</Button>
-					<Button
-						variant='outline'
-						color='orange'
-						onClick={onCancelRequest}
-						loading={isSubmitting}
-					>
-						{t('nikki.general.actions.cancel')}
 					</Button>
 				</>
 			)}

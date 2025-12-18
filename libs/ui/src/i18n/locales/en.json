@@ -32,7 +32,9 @@
 				"import": "Import",
 				"save": "Save",
 				"confirm": "Confirm",
-				"remove": "Remove"
+				"remove": "Remove",
+				"approve": "Approve",
+				"reject": "Reject"
 			},
 			"messages": {
 				"success": "Success",
@@ -463,6 +465,8 @@
 				"target_type_description": "Type of target (role or suite)",
 				"target_ref": "Target Reference",
 				"target_ref_description": "ID of the role or suite",
+				"target_id": "Target ID",
+				"target_name": "Target Name",
 				"requestor": "Requestor",
 				"requestor_id": "Requestor ID",
 				"requestor_name": "Requestor Name",
@@ -479,7 +483,14 @@
 				"status_description": "Current status of the request",
 				"org_id": "Organization",
 				"org_id_description": "Organization scope",
-				"created_at": "Created At"
+				"created_at": "Created At",
+				"other_info": "Other Information"
+			},
+			"placeholders": {
+				"select_target_type_first": "Select target type first",
+				"no_targets_available": "No targets available",
+				"select_receiver_type_first": "Select receiver type first",
+				"no_receivers_available": "No receivers available"
 			},
 			"messages": {
 				"create_success": "Grant request created successfully",

@@ -32,7 +32,9 @@
 				"import": "Nhập",
 				"save": "Lưu",
 				"confirm": "Xác nhận",
-				"remove": "Loại bỏ"
+				"remove": "Loại bỏ",
+				"approve": "Phê duyệt",
+				"reject": "Từ chối"
 			},
 			"messages": {
 				"success": "Thành công",
@@ -457,6 +459,8 @@
 				"target_type_description": "Loại mục tiêu (vai trò hoặc bộ vai trò)",
 				"target_ref": "Tham chiếu mục tiêu",
 				"target_ref_description": "ID của vai trò hoặc bộ vai trò",
+				"target_id": "Mã mục tiêu",
+				"target_name": "Tên mục tiêu",
 				"requestor": "Người yêu cầu",
 				"requestor_id": "Mã người yêu cầu",
 				"requestor_name": "Tên người yêu cầu",
@@ -474,7 +478,14 @@
 				"status_description": "Trạng thái hiện tại của yêu cầu",
 				"org_id": "Tổ chức",
 				"org_id_description": "Phạm vi tổ chức",
-				"created_at": "Ngày tạo"
+				"created_at": "Ngày tạo",
+				"other_info": "Thông tin khác"
+			},
+			"placeholders": {
+				"select_target_type_first": "Chọn loại mục tiêu trước",
+				"no_targets_available": "Không có mục tiêu nào khả dụng",
+				"select_receiver_type_first": "Chọn loại người nhận trước",
+				"no_receivers_available": "Không có người nhận nào khả dụng"
 			},
 			"messages": {
 				"create_success": "Tạo yêu cầu cấp quyền thành công",

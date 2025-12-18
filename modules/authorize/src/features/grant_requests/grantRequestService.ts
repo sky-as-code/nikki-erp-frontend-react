@@ -27,6 +27,7 @@ function mapDtoToGrantRequest(dto: AuthzGrantRequestDto): GrantRequest {
 		receiver: dto.receiver,
 		target: dto.target,
 		etag: dto.etag,
+		receiverType: dto.receiverType as GrantRequest['receiverType'],
 	};
 }
 
@@ -42,12 +43,12 @@ export const grantRequestService = {
 	},
 
 	async create(data: Partial<GrantRequest>): Promise<GrantRequest> {
-		const dto = await createGrantRequestApi(data as any);
+		const dto = await createGrantRequestApi(data as Partial<AuthzGrantRequestDto>);
 		return mapDtoToGrantRequest(dto);
 	},
 
-	async respond(id: string, decision: 'approve' | 'deny'): Promise<GrantRequest> {
-		const dto = await respondGrantRequestApi(id, decision);
+	async respond(id: string, decision: 'approve' | 'deny', etag: string, responderId: string): Promise<GrantRequest> {
+		const dto = await respondGrantRequestApi(id, decision, etag, responderId);
 		return mapDtoToGrantRequest(dto);
 	},
 

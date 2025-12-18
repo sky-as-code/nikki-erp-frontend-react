@@ -143,7 +143,7 @@ function ResourceDetailPageBody(): React.ReactNode {
 					<FormFieldProvider
 						formVariant='update'
 						modelSchema={schema}
-						modelValue={resource as unknown as Record<string, unknown>}
+						modelValue={resource}
 						modelLoading={isSubmitting}
 					>
 						{({ handleSubmit: formHandleSubmit, form }) => (

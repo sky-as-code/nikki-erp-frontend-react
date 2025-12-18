@@ -10,10 +10,12 @@ import {
 	GrantRequestFormFields,
 	GrantRequestLoadingState,
 	GrantRequestNotFound,
-} from '@/features/grant_requests/components/GrantRequestForm';
+} from '@/features/grant_requests/components';
 import grantRequestSchema from '@/features/grant_requests/grant-request-schema.json';
 
 import { useGrantRequestDetailData, useGrantRequestDetailHandlers } from './hooks/useGrantRequestDetail';
+
+
 
 
 function GrantRequestDetailPageBody(): React.ReactNode {
@@ -23,8 +25,7 @@ function GrantRequestDetailPageBody(): React.ReactNode {
 		handleBack,
 		handleApprove,
 		handleReject,
-		handleCancelRequest,
-	} = useGrantRequestDetailHandlers(grantRequest?.id);
+	} = useGrantRequestDetailHandlers(grantRequest);
 	const { t: translate } = useTranslation();
 	const schema = grantRequestSchema as ModelSchema;
 
@@ -32,6 +33,13 @@ function GrantRequestDetailPageBody(): React.ReactNode {
 	if (!grantRequest) return <GrantRequestNotFound onGoBack={handleBack} />;
 
 	const targetName = grantRequest.target?.name || grantRequest.targetRef;
+
+	const flatModelValue = React.useMemo(() => ({
+		...grantRequest,
+		targetName: grantRequest.target?.name || '',
+		receiverName: grantRequest.receiver?.name || '',
+		requestorName: grantRequest.requestor?.name || '',
+	}), [grantRequest]);
 
 	return (
 		<Stack gap='md'>
@@ -47,7 +55,7 @@ function GrantRequestDetailPageBody(): React.ReactNode {
 					<FormFieldProvider
 						formVariant='update'
 						modelSchema={schema}
-						modelValue={grantRequest as unknown as Record<string, unknown>}
+						modelValue={flatModelValue}
 						modelLoading={isSubmitting}
 					>
 						{() => (
@@ -58,9 +66,10 @@ function GrantRequestDetailPageBody(): React.ReactNode {
 									onCancel={handleBack}
 									onApprove={handleApprove}
 									onReject={handleReject}
-									onCancelRequest={handleCancelRequest}
 								/>
+
 								<GrantRequestFormFields isCreate={false} />
+
 							</Stack>
 						)}
 					</FormFieldProvider>

@@ -40,7 +40,7 @@ export const RoleSuiteDetailForm: React.FC<RoleSuiteDetailFormProps> = ({
 				<FormFieldProvider
 					formVariant='update'
 					modelSchema={schema}
-					modelValue={roleSuite as unknown as Record<string, unknown>}
+					modelValue={roleSuite}
 					modelLoading={isSubmitting}
 				>
 					{({ handleSubmit: formHandleSubmit }) => (

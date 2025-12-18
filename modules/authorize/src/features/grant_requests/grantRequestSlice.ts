@@ -65,13 +65,13 @@ export const createGrantRequest = createAsyncThunk<
 
 export const respondGrantRequest = createAsyncThunk<
 	GrantRequest,
-	{ id: string; decision: 'approve' | 'deny' },
+	{ id: string; decision: 'approve' | 'deny'; etag: string; responderId: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/respond`,
-	async ({ id, decision }, { rejectWithValue }) => {
+	async ({ id, decision, etag, responderId }, { rejectWithValue }) => {
 		try {
-			return await grantRequestService.respond(id, decision);
+			return await grantRequestService.respond(id, decision, etag, responderId);
 		}
 		catch (error) {
 			const msg = error instanceof Error ? error.message : 'Failed to respond grant request';

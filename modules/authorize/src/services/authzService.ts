@@ -335,8 +335,12 @@ export type AuthzGrantRequestDto = {
 	createdAt: string;
 	approver?: { id: string; name: string } | null;
 	requestor?: { id: string; name: string };
+	requestorId?: string;
 	receiver?: { id: string; name: string };
+	receiverId?: string;
+	receiverType?: string;
 	target?: {id: string; name: string};
+	targetId?: string;
 	etag?: string;
 };
 
@@ -359,9 +363,11 @@ export async function createGrantRequest(
 export async function respondGrantRequest(
 	id: string,
 	decision: 'approve' | 'deny',
+	etag: string,
+	responderId: string,
 ): Promise<AuthzGrantRequestDto> {
 	return post<AuthzGrantRequestDto>(`authorize/grant-requests/${id}/respond`, {
-		searchParams: { decision },
+		json: { decision, etag, responderId },
 	});
 }
 
