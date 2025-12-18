@@ -33,8 +33,7 @@ function GrantRequestListPageBody(): React.ReactNode {
 		'receiver',
 		'targetRef',
 		'status',
-		'comment',
-		'createdAt',
+		'orgId',
 		'actions',
 	];
 	const schema = grantRequestSchema as ModelSchema;

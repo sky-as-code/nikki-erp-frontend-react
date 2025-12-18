@@ -1,8 +1,3 @@
-import { RoleSuite } from '../role_suites';
-import { Role } from '../roles';
-
-
-
 export enum TargetType {
 	ROLE = 'role',
 	SUITE = 'suite',
@@ -30,10 +25,13 @@ export interface GrantRequest {
 	status: RequestStatus;
 	orgId?: string | null;
 	createdAt: string;
-	approver?: { id: string; name: string } | null;
-	requestor?: { id: string; name: string };
-	receiver?: { id: string; name: string };
-	target?: { id: string; name: string };
+	approver?: { id: string; name?: string } | null;
+	requestor?: { id: string; name?: string };
+	requestorId?: string;
+	receiver?: { id: string; name?: string };
+	receiverId?: string;
+	target?: { id: string; name?: string };
+	targetId?: string;
 	etag?: string;
 	receiverType?: ReceiverType;
 	grantResponses?: Array<{ id: string; responderName: string; isApproved: boolean }>;

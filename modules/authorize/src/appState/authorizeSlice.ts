@@ -117,6 +117,7 @@ const authorizeSlice = createSlice({
 	},
 });
 
+// eslint-disable-next-line max-lines-per-function
 function listResourcesReducers(builder: ActionReducerMapBuilder<AuthorizeState>): void {
 	builder
 		.addCase(listResources.pending, (state) => {

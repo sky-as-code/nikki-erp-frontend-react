@@ -45,7 +45,7 @@ function RoleDetailPageBody(): React.ReactNode {
 					<FormFieldProvider
 						formVariant='update'
 						modelSchema={schema}
-						modelValue={role as unknown as Record<string, unknown>}
+						modelValue={role}
 						modelLoading={isSubmitting}
 					>
 						{({ handleSubmit: formHandleSubmit }) => (

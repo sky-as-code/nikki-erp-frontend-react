@@ -135,7 +135,7 @@ function ActionDetailPageBody(): React.ReactNode {
 					<FormFieldProvider
 						formVariant='update'
 						modelSchema={schema}
-						modelValue={action as unknown as Record<string, unknown>}
+						modelValue={action}
 						modelLoading={isSubmitting}
 					>
 						{({ handleSubmit: formHandleSubmit }) => (
