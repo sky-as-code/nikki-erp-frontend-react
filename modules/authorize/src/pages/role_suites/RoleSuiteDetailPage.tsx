@@ -4,10 +4,13 @@ import { ConfirmModal } from '@nikkierp/ui/components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { RoleSuiteDetailForm, RoleSuiteLoadingState } from '@/features/role_suites/components/role_suite_form';
-import { RoleSuiteNotFound } from '@/features/role_suites/components/RoleSuiteNotFound';
+import {
+	RoleSuiteDetailForm,
+	RoleSuiteLoadingState,
+	RoleSuiteNotFound,
+} from '@/features/role_suites/components';
 
-import { useRoleSuiteDetailData, useRoleSuiteDetailHandlers } from './hooks/useRoleSuiteDetail';
+import { useRoleSuiteDetailData, useRoleSuiteDetailHandlers } from './hooks';
 
 
 function RoleSuiteDetailPageBody(): React.ReactNode {

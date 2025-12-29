@@ -9,13 +9,13 @@ import { mapDtoToUser, mapDtoToGroup, type User, type Group } from './types';
 
 
 export const identityService = {
-	async listUsers(): Promise<User[]> {
-		const result = await listUsersApi();
+	async listUsers(params?: { query?: Record<string, unknown>; page?: number; size?: number }): Promise<User[]> {
+		const result = await listUsersApi(params);
 		return result.items.map(mapDtoToUser);
 	},
 
-	async listGroups(): Promise<Group[]> {
-		const result = await listGroupsApi();
+	async listGroups(params?: { query?: Record<string, unknown>; page?: number; size?: number }): Promise<Group[]> {
+		const result = await listGroupsApi(params);
 		return result.items.map(mapDtoToGroup);
 	},
 };

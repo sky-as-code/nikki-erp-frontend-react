@@ -1,148 +1,102 @@
-import {
-	ActionIcon,
-	Badge,
-	Breadcrumbs,
-	Button,
-	Group,
-	Paper,
-	Stack,
-	Table,
-	Text,
-	TextInput,
-	Title,
-	Tooltip,
-} from '@mantine/core';
-import { withWindowTitle } from '@nikkierp/ui/components';
-import {
-	IconEdit,
-	IconEye,
-	IconPlus,
-	IconRefresh,
-	IconSearch,
-	IconTrash,
-} from '@tabler/icons-react';
+import { Paper, Stack } from '@mantine/core';
+import { ConfirmModal } from '@nikkierp/ui/components';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
-import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
-import { RevokeRequest } from '../../features/revoke_requests';
-import { fakeRevokeRequests } from '../../mock/fakeData';
+import {
+	AuthorizeDispatch,
+	revokeRequestActions,
+	selectRevokeRequestState,
+} from '@/appState';
+import {
+	RevokeRequestListActions,
+	RevokeRequestListHeader,
+	RevokeRequestTable,
+} from '@/features/revoke_requests/components';
+import revokeRequestSchema from '@/features/revoke_requests/revoke-request-schema.json';
+
+import {
+	useRevokeRequestDeleteHandler,
+	useRevokeRequestList,
+} from './hooks';
 
 
 function RevokeRequestListPageBody(): React.ReactNode {
-	const [requests] = React.useState<RevokeRequest[]>(fakeRevokeRequests);
-	const [search, setSearch] = React.useState('');
+	const navigate = useNavigate();
+	const { t: translate } = useTranslation();
+	const { revokeRequests, isLoadingList } = useMicroAppSelector(selectRevokeRequestState);
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const deleteHandler = useRevokeRequestDeleteHandler(revokeRequests, dispatch);
+	const { handleRefresh } = useRevokeRequestList();
 
-	const filteredRequests = requests.filter(
-		(r) =>
-			r.requestorName.toLowerCase().includes(search.toLowerCase()) ||
-			r.receiverName.toLowerCase().includes(search.toLowerCase()) ||
-			r.targetName?.toLowerCase().includes(search.toLowerCase()),
-	);
+	const columns = [
+		'requestorName',
+		'receiverName',
+		'targetName',
+		'actions',
+	];
+	const schema = revokeRequestSchema as ModelSchema;
+
+	React.useEffect(() => {
+		dispatch(revokeRequestActions.listRevokeRequests());
+	}, [dispatch]);
+
+	const handleViewDetail = React.useCallback((requestId: string) => {
+		navigate(requestId);
+	}, [navigate]);
+
+	const handleCreate = React.useCallback(() => {
+		navigate('create');
+	}, [navigate]);
 
 	return (
-		<Stack gap='md'>
-			<Group justify='space-between'>
-				<TextInput
-					placeholder='Search revoke requests...'
-					leftSection={<IconSearch size={16} />}
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					w={400}
+		<>
+			<Stack gap='md'>
+				<RevokeRequestListHeader />
+				<RevokeRequestListActions
+					onCreate={handleCreate}
+					onRefresh={handleRefresh}
 				/>
-				<Group>
-					<Button
-						size='sm'
-						variant='outline'
-						leftSection={<IconRefresh size={16} />}
-					>
-						Refresh
-					</Button>
-					<Button
-						size='sm'
-						leftSection={<IconPlus size={16} />}
-					>
-						New Request
-					</Button>
-				</Group>
-			</Group>
+				<Paper className='p-4'>
+					<RevokeRequestTable
+						columns={columns}
+						data={revokeRequests}
+						isLoading={isLoadingList}
+						schema={schema}
+						onViewDetail={handleViewDetail}
+						onDelete={deleteHandler.handleDeleteRequest}
+					/>
+				</Paper>
+			</Stack>
 
-			<Paper withBorder>
-				<Table striped highlightOnHover>
-					<Table.Thead>
-						<Table.Tr>
-							<Table.Th>Requestor</Table.Th>
-							<Table.Th>Receiver</Table.Th>
-							<Table.Th>Target</Table.Th>
-							<Table.Th>Comment</Table.Th>
-							<Table.Th>Created At</Table.Th>
-							<Table.Th></Table.Th>
-						</Table.Tr>
-					</Table.Thead>
-					<Table.Tbody>
-						{filteredRequests.map((request) => (
-							<Table.Tr key={request.id}>
-								<Table.Td>
-									<Text size='sm' fw={500}>{request.requestorName}</Text>
-								</Table.Td>
-								<Table.Td>
-									<Group gap={4}>
-										<Badge color='blue' variant='light' size='sm'>
-											{request.receiverType}
-										</Badge>
-										<Text size='sm'>{request.receiverName}</Text>
-									</Group>
-								</Table.Td>
-								<Table.Td>
-									<Group gap={4}>
-										<Badge color='violet' variant='light' size='sm'>
-											{request.targetType}
-										</Badge>
-										<Text size='sm'>{request.targetName}</Text>
-									</Group>
-								</Table.Td>
-								<Table.Td>
-									<Text size='sm' c='dimmed' lineClamp={1}>
-										{request.comment || '—'}
-									</Text>
-								</Table.Td>
-								<Table.Td>
-									<Text size='sm' c='dimmed'>
-										{new Date(request.createdAt).toLocaleDateString()}
-									</Text>
-								</Table.Td>
-								<Table.Td>
-									<Group gap='xs' justify='flex-end'>
-										<Tooltip label='View'>
-											<ActionIcon variant='subtle' color='gray' component={Link} to={request.id}>
-												<IconEye size={16} />
-											</ActionIcon>
-										</Tooltip>
-										<Tooltip label='Process'>
-											<ActionIcon variant='subtle' color='blue'>
-												<IconEdit size={16} />
-											</ActionIcon>
-										</Tooltip>
-										<Tooltip label='Cancel'>
-											<ActionIcon variant='subtle' color='red'>
-												<IconTrash size={16} />
-											</ActionIcon>
-										</Tooltip>
-									</Group>
-								</Table.Td>
-							</Table.Tr>
-						))}
-					</Table.Tbody>
-				</Table>
-
-				{filteredRequests.length === 0 && (
-					<Text ta='center' c='dimmed' p='xl'>
-						No revoke requests found
-					</Text>
-				)}
-			</Paper>
-		</Stack>
+			<ConfirmModal
+				opened={deleteHandler.deleteModalOpened}
+				onClose={deleteHandler.closeDeleteModal}
+				onConfirm={deleteHandler.confirmDelete}
+				title={translate('nikki.authorize.revoke_request.title_delete')}
+				message={
+					deleteHandler.requestToDelete
+						? translate('nikki.general.messages.delete_confirm_name', {
+							name: deleteHandler.requestToDelete.target?.name || deleteHandler.requestToDelete.targetRef,
+						})
+						: translate('nikki.general.messages.delete_confirm')
+				}
+				confirmLabel={translate('nikki.general.actions.delete')}
+				confirmColor='red'
+			/>
+		</>
 	);
 }
 
-export const RevokeRequestListPage: React.FC = withWindowTitle('Revoke Requests - Nikki ERP', RevokeRequestListPageBody);
+const RevokeRequestListPageWithTitle: React.FC = () => {
+	const { t: translate } = useTranslation();
+	React.useEffect(() => {
+		document.title = translate('nikki.authorize.revoke_request.title');
+	}, [translate]);
+	return <RevokeRequestListPageBody />;
+};
 
+export const RevokeRequestListPage: React.FC = RevokeRequestListPageWithTitle;

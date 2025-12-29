@@ -28,13 +28,13 @@ const initialState: IdentityState = {
 
 export const listUsers = createAsyncThunk<
 	User[],
-	void,
+	{ query?: Record<string, unknown>; page?: number; size?: number } | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listUsers`,
-	async (_, { rejectWithValue }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			return await identityService.listUsers();
+			return await identityService.listUsers(params || undefined);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to list users';
@@ -45,13 +45,13 @@ export const listUsers = createAsyncThunk<
 
 export const listGroups = createAsyncThunk<
 	Group[],
-	void,
+	{ query?: Record<string, unknown>; page?: number; size?: number } | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listGroups`,
-	async (_, { rejectWithValue }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			return await identityService.listGroups();
+			return await identityService.listGroups(params || undefined);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to list groups';

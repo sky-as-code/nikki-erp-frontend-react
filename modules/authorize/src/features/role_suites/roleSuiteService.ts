@@ -64,8 +64,8 @@ function mapRoleSuiteToDto(roleSuite: Partial<RoleSuite>): Partial<AuthzRoleSuit
 }
 
 export const roleSuiteService = {
-	async listRoleSuites(): Promise<RoleSuite[]> {
-		const result = await listRoleSuitesApi();
+	async listRoleSuites(params?: { graph?: Record<string, unknown>; page?: number; size?: number }): Promise<RoleSuite[]> {
+		const result = await listRoleSuitesApi(params);
 		return result.items.map(mapDtoToRoleSuite);
 	},
 

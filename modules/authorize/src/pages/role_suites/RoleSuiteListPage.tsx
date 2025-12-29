@@ -17,7 +17,7 @@ import {
 	RoleSuiteTable,
 } from '@/features/role_suites/components';
 
-import { useRoleSuiteDeleteHandler } from './hooks/useRoleSuiteDelete';
+import { useRoleSuiteDeleteHandler } from './hooks';
 
 import roleSuiteSchema from '@/features/role_suites/roleSuite-schema.json';
 

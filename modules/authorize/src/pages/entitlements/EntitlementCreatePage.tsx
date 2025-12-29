@@ -19,7 +19,7 @@ import {
 	EntitlementFormActions,
 	EntitlementFormContainer,
 	EntitlementFormFields,
-} from '@/features/entitlements/components/EntitlementForm';
+} from '@/features/entitlements/components/entitlementForm';
 import entitlementSchema from '@/features/entitlements/entitlement-schema.json';
 import {
 	buildActionExpr,

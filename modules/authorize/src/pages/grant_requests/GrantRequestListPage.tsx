@@ -18,7 +18,7 @@ import {
 } from '@/features/grant_requests/components';
 import grantRequestSchema from '@/features/grant_requests/grant-request-schema.json';
 
-import { useGrantRequestDeleteHandler } from './hooks/useGrantRequestDelete';
+import { useGrantRequestDeleteHandler } from './hooks';
 
 
 function GrantRequestListPageBody(): React.ReactNode {

@@ -1,24 +1,28 @@
 import { ReceiverType, TargetType } from '../grant_requests';
-import { RoleSuite } from '../role_suites';
-import { Role } from '../roles';
 
 
-interface RevokeRequest {
+export interface RevokeRequest {
 	id: string;
-	requestorId: string;
-	requestorName: string;
+	etag?: string;
+	requestorId?: string;
+	requestor?: { id: string; name?: string };
 	receiverType: ReceiverType;
 	receiverId: string;
-	receiverName: string;
+	receiver?: { id: string; name?: string };
 	targetType: TargetType;
 	targetRef: string;
+	target?: { id: string; name?: string };
+	targetId?: string;
 	attachmentUrl?: string;
 	comment?: string;
 	createdAt: string;
-	updatedAt: string;
-	// Relations
-	target?: Role | RoleSuite;
-	targetName?: string;
 }
 
-export type { RevokeRequest };
+export interface RevokeRequestState {
+	revokeRequests: RevokeRequest[];
+	isLoadingList: boolean;
+	errorList: string | null;
+	revokeRequestDetail?: RevokeRequest;
+	isLoadingDetail: boolean;
+	errorDetail: string | null;
+}

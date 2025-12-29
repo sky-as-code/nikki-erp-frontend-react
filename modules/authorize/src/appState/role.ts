@@ -10,6 +10,7 @@ import {
 	updateRole,
 	deleteRole,
 	addEntitlementsToRole,
+	removeEntitlementsFromRole,
 } from '@/features/roles/roleSlice';
 
 
@@ -26,6 +27,7 @@ export const roleActions = {
 	updateRole,
 	deleteRole,
 	addEntitlementsToRole,
+	removeEntitlementsFromRole,
 	...actions,
 };
 

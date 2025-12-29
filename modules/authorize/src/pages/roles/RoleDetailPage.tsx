@@ -5,22 +5,25 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { AssignedEntitlementsList } from '@/features/roles/components/RoleEntitlements';
 import {
 	RoleDetailActions,
 	RoleFormContainer,
 	RoleFormFields,
 	RoleLoadingState,
 	RoleNotFound,
-} from '@/features/roles/components/RoleForm';
+	AssignedEntitlementsList,
+} from '@/features/roles/components';
 import roleSchema from '@/features/roles/role-schema.json';
 
-import { useRoleDetailData, useRoleDetailHandlers } from './hooks/useRoleDetail';
+import {
+	useRoleDetailData,
+	useRoleDetailHandlers,
+} from './hooks';
 
 
 function RoleDetailPageBody(): React.ReactNode {
 	const navigate = useNavigate();
-	const { role, resources, actions, isLoading } = useRoleDetailData();
+	const { role, isLoading } = useRoleDetailData();
 	const { isSubmitting, handleGoBack, handleSubmit } = useRoleDetailHandlers(role);
 	const { t: translate } = useTranslation();
 	const schema = roleSchema as ModelSchema;
@@ -65,8 +68,6 @@ function RoleDetailPageBody(): React.ReactNode {
 									<RoleFormFields isCreate={false} />
 									<AssignedEntitlementsList
 										entitlements={role.entitlements || []}
-										resources={resources}
-										actions={actions}
 									/>
 								</Stack>
 							</form>

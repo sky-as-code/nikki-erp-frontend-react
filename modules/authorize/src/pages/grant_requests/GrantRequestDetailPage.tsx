@@ -13,7 +13,7 @@ import {
 } from '@/features/grant_requests/components';
 import grantRequestSchema from '@/features/grant_requests/grant-request-schema.json';
 
-import { useGrantRequestDetailData, useGrantRequestDetailHandlers } from './hooks/useGrantRequestDetail';
+import { useGrantRequestDetailData, useGrantRequestDetailHandlers } from './hooks';
 
 
 

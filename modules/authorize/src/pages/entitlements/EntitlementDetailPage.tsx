@@ -22,7 +22,7 @@ import {
 	EntitlementFormFields,
 	EntitlementLoadingState,
 	EntitlementNotFound,
-} from '@/features/entitlements/components/EntitlementForm';
+} from '@/features/entitlements/components/entitlementForm';
 import entitlementSchema from '@/features/entitlements/entitlement-schema.json';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';

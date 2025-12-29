@@ -4,12 +4,11 @@ import {
 	EntitlementAssignment,
 	SubjectType,
 } from '../features/entitlements';
-import { GrantRequest, GrantResponse, ReceiverType, RequestStatus, TargetType } from '../features/grant_requests';
-import { PermissionChangeReason, PermissionEffect, PermissionHistory } from '../features/permissionHistories';
+import { GrantRequest, ReceiverType, RequestStatus, TargetType } from '../features/grant_requests';
 import { Resource, ResourceType, ScopeType } from '../features/resources/types';
 import { RevokeRequest } from '../features/revoke_requests';
-import { OwnerType, Role } from '../features/roles';
 import { RoleSuite } from '../features/role_suites';
+import { OwnerType, Role } from '../features/roles';
 
 
 // ============= RESOURCES =============
@@ -639,67 +638,6 @@ export const fakeRevokeRequests: RevokeRequest[] = [
 		comment: 'Iris chuyển sang phòng ban khác',
 		createdAt: '2025-01-17T10:00:00Z',
 		updatedAt: '2025-01-17T10:00:00Z',
-	},
-];
-
-// ============= PERMISSION HISTORY =============
-
-export const fakePermissionHistory: PermissionHistory[] = [
-	{
-		id: 'hist_01',
-		effect: PermissionEffect.GRANT,
-		reason: PermissionChangeReason.REQUEST_GRANTED,
-		approverId: 'user_manager',
-		approverName: 'Manager Nguyen',
-		receiverId: 'user_david',
-		receiverName: 'David Pham',
-		roleId: 'role_03',
-		grantRequestId: 'grant_02',
-		createdAt: '2025-01-18T09:00:00Z',
-	},
-	{
-		id: 'hist_02',
-		effect: PermissionEffect.GRANT,
-		reason: PermissionChangeReason.MANUAL_GRANT,
-		approverId: 'user_admin',
-		approverName: 'System Admin',
-		receiverId: 'user_alice',
-		receiverName: 'Alice Nguyen',
-		entitlementId: 'ent_01',
-		createdAt: '2025-01-17T10:00:00Z',
-	},
-	{
-		id: 'hist_03',
-		effect: PermissionEffect.REVOKE,
-		reason: PermissionChangeReason.USER_REMOVED,
-		approverId: 'user_admin',
-		approverName: 'System Admin',
-		receiverId: 'user_henry',
-		receiverName: 'Henry Tran',
-		roleId: 'role_02',
-		createdAt: '2025-01-18T10:00:00Z',
-	},
-	{
-		id: 'hist_04',
-		effect: PermissionEffect.GRANT,
-		reason: PermissionChangeReason.ROLE_ADDED,
-		approverId: 'user_admin',
-		approverName: 'System Admin',
-		receiverId: 'user_bob',
-		receiverName: 'Bob Tran',
-		roleId: 'role_01',
-		createdAt: '2025-01-16T10:00:00Z',
-	},
-	{
-		id: 'hist_05',
-		effect: PermissionEffect.REVOKE,
-		reason: PermissionChangeReason.ROLE_REMOVED,
-		approverId: 'user_admin',
-		approverName: 'System Admin',
-		receiverId: 'user_iris',
-		receiverName: 'Iris Le',
-		roleSuiteId: 'suite_02',
-		createdAt: '2025-01-17T10:00:00Z',
 	},
 ];
 

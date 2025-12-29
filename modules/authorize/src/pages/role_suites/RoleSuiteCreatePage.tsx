@@ -10,10 +10,10 @@ import {
 	RoleSuiteFormContainer,
 	RoleSuiteFormFields,
 	RoleSuiteRolesSelector,
-} from '@/features/role_suites/components/role_suite_form';
-import { RoleSuiteChangesSummary } from '@/features/role_suites/components/RoleSuiteChangesSummary';
+	RoleSuiteChangesSummary,
+} from '@/features/role_suites/components';
 
-import { useRoleSuiteCreateHandlers } from './hooks/useRoleSuiteCreate';
+import { useRoleSuiteCreateHandlers } from './hooks';
 
 import roleSuiteSchema from '@/features/role_suites/roleSuite-schema.json';
 

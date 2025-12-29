@@ -5,6 +5,7 @@ import { entitlementReducer } from './entitlement';
 import { grantRequestReducer } from './grantRequest';
 import { identityReducer } from './identity';
 import { resourceReducer } from './resource';
+import { revokeRequestReducer } from './revokeRequest';
 import { roleReducer } from './role';
 import { roleSuiteReducer } from './roleSuite';
 
@@ -14,6 +15,7 @@ export { entitlementActions, selectEntitlementState, selectEntitlementList } fro
 export { grantRequestActions, selectGrantRequestState, selectGrantRequestList } from './grantRequest';
 export { identityActions, selectIdentityState, selectUserList, selectGroupList } from './identity';
 export { resourceActions, selectResourceState, selectResourceList } from './resource';
+export { revokeRequestActions, selectRevokeRequestState, selectRevokeRequestList } from './revokeRequest';
 export { roleActions, selectRoleState, selectRoleList } from './role';
 export { roleSuiteActions, selectRoleSuiteState, selectRoleSuiteList } from './roleSuite';
 
@@ -23,6 +25,7 @@ export const reducer = combineReducers({
 	...grantRequestReducer,
 	...identityReducer,
 	...resourceReducer,
+	...revokeRequestReducer,
 	...roleReducer,
 	...roleSuiteReducer,
 });

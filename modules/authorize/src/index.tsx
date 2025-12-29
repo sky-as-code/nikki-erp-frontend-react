@@ -22,6 +22,8 @@ import { OverviewPage } from './pages/overview/OverviewPage';
 import { ResourceCreatePage } from './pages/resources/ResourceCreatePage';
 import { ResourceDetailPage } from './pages/resources/ResourceDetailPage';
 import { ResourceListPage } from './pages/resources/ResourceListPage';
+import { RevokeRequestCreatePage } from './pages/revoke_requests/RevokeRequestCreatePage';
+import { RevokeRequestDetailPage } from './pages/revoke_requests/RevokeRequestDetailPage';
 import { RevokeRequestListPage } from './pages/revoke_requests/RevokeRequestListPage';
 import { RoleSuiteCreatePage } from './pages/role_suites/RoleSuiteCreatePage';
 import { RoleSuiteDetailPage } from './pages/role_suites/RoleSuiteDetailPage';
@@ -129,8 +131,10 @@ function Main(props: MicroAppProps) {
 						<AppRoute path='grant-requests' element={<GrantRequestListPage />} />
 						<AppRoute path='grant-requests/create' element={<GrantRequestCreatePage />} />
 						<AppRoute path='grant-requests/:grantRequestId' element={<GrantRequestDetailPage />} />
-						{/* Request routes */}
+						{/* RevokeRequest routes */}
 						<AppRoute path='revoke-requests' element={<RevokeRequestListPage />} />
+						<AppRoute path='revoke-requests/create' element={<RevokeRequestCreatePage />} />
+						<AppRoute path='revoke-requests/:revokeRequestId' element={<RevokeRequestDetailPage />} />
 					</AppRoutes>
 					<WidgetRoutes>
 					</WidgetRoutes>

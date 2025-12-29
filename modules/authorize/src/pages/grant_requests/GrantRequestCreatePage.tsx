@@ -22,7 +22,7 @@ import {
 } from '@/features/grant_requests/components';
 import grantRequestSchema from '@/features/grant_requests/grant-request-schema.json';
 
-import { useGrantRequestCreateHandlers } from './hooks/useGrantRequestCreate';
+import { useGrantRequestCreateHandlers } from './hooks';
 
 
 function GrantRequestCreatePageBody(): React.ReactNode {

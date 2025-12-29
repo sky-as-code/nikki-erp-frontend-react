@@ -5,6 +5,7 @@ import {
 	deleteRole as deleteRoleApi,
 	getRole as getRoleApi,
 	listRoles as listRolesApi,
+	removeEntitlementsFromRole as removeEntitlementsFromRoleApi,
 	updateRole as updateRoleApi,
 	type AuthzEntitlementDto,
 	type AuthzRoleDto,
@@ -26,6 +27,7 @@ function mapDtoToEntitlement(dto: AuthzEntitlementDto): Entitlement {
 		etag: dto.etag,
 		assignmentsCount: dto.assignmentsCount,
 		rolesCount: dto.rolesCount,
+		scopeRef: dto.scopeRef,
 	};
 }
 
@@ -73,8 +75,8 @@ function mapRoleToDto(role: Partial<Role>): Partial<AuthzRoleDto> {
 }
 
 export const roleService = {
-	async listRoles(): Promise<Role[]> {
-		const result = await listRolesApi();
+	async listRoles(params?: { graph?: Record<string, unknown>; page?: number; size?: number }): Promise<Role[]> {
+		const result = await listRolesApi(params);
 		return result.items.map(mapDtoToRole);
 	},
 
@@ -109,6 +111,17 @@ export const roleService = {
 		entitlementInputs: Array<{ entitlementId: string; scopeRef?: string }>,
 	): Promise<void> {
 		await addEntitlementsToRoleApi(roleId, {
+			entitlementInputs,
+			etag,
+		});
+	},
+
+	async removeEntitlementsFromRole(
+		roleId: string,
+		etag: string,
+		entitlementInputs: Array<{ entitlementId: string; scopeRef?: string }>,
+	): Promise<void> {
+		await removeEntitlementsFromRoleApi(roleId, {
 			entitlementInputs,
 			etag,
 		});
