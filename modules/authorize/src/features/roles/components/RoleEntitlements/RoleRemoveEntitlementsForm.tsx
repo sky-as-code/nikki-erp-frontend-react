@@ -6,7 +6,6 @@ import { EntitlementTransferList } from './EntitlementTransferList';
 import { FormActionsSection } from './FormActionsSection';
 import { SearchSection } from './SearchSection';
 
-import type { Action } from '@/features/actions';
 import type { Entitlement } from '@/features/entitlements';
 import type { Resource } from '@/features/resources';
 import type { Role } from '@/features/roles';
@@ -16,10 +15,9 @@ interface RoleRemoveEntitlementsFormProps {
 	role: Role;
 	availableEntitlements: Entitlement[];
 	selectedEntitlements: Entitlement[];
-	onMoveToSelected: (entitlementId: string) => void;
-	onMoveToAvailable: (entitlementId: string) => void;
+	onMoveToSelected: (entitlement: Entitlement) => void;
+	onMoveToAvailable: (entitlement: Entitlement) => void;
 	resources: Resource[];
-	actions: Action[];
 	searchQuery: string;
 	onSearchQueryChange: (query: string) => void;
 	onSearch: () => void;
@@ -39,7 +37,6 @@ export const RoleRemoveEntitlementsForm: React.FC<RoleRemoveEntitlementsFormProp
 	onMoveToSelected,
 	onMoveToAvailable,
 	resources,
-	actions,
 	searchQuery,
 	onSearchQueryChange,
 	onSearch,
@@ -75,8 +72,6 @@ export const RoleRemoveEntitlementsForm: React.FC<RoleRemoveEntitlementsFormProp
 					onMoveToSelected={onMoveToSelected}
 					onMoveToAvailable={onMoveToAvailable}
 					resources={resources}
-					actions={actions}
-					selectedScopeRefs={{}}
 					onScopeRefChange={() => {}}
 					variant='remove'
 				/>

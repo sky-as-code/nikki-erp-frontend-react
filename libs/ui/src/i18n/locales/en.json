@@ -34,7 +34,9 @@
 				"confirm": "Confirm",
 				"remove": "Remove",
 				"approve": "Approve",
-				"reject": "Reject"
+				"reject": "Reject",
+				"select_all": "Select All",
+				"deselect_all": "Deselect All"
 			},
 			"messages": {
 				"success": "Success",
@@ -351,7 +353,8 @@
 				"create_success": "Role \"{{name}}\" has been created successfully",
 				"update_success": "Role \"{{name}}\" has been updated successfully",
 				"delete_success": "Role \"{{name}}\" has been deleted successfully",
-				"add_entitlements_success": "Entitlements have been added to role successfully"
+				"add_entitlements_success": "Entitlements have been added to role successfully",
+				"remove_entitlements_success": "Entitlements have been removed from role successfully"
 			},
 			"entitlements": {
 				"add": "Add Entitlements",
@@ -463,6 +466,8 @@
 				"target": "Target",
 				"target_type": "Target Type",
 				"target_type_description": "Type of target (role or suite)",
+				"target_type_role": "Role",
+				"target_type_suite": "Suite",
 				"target_ref": "Target Reference",
 				"target_ref_description": "ID of the role or suite",
 				"target_id": "Target ID",
@@ -475,6 +480,8 @@
 				"receiver_name": "Receiver Name",
 				"receiver_type": "Receiver Type",
 				"receiver_type_description": "Type of receiver (user or group)",
+				"receiver_type_user": "User",
+				"receiver_type_group": "Group",
 				"comment": "Comment",
 				"comment_description": "Additional notes or justification",
 				"attachment": "Attachment URL",
@@ -496,6 +503,69 @@
 				"create_success": "Grant request created successfully",
 				"delete_success": "Grant request for {{name}} deleted successfully",
 				"not_found": "Grant request not found"
+			}
+		},
+		"revoke_request": {
+			"title": "Revoke Requests",
+			"title_create": "Create Revoke Request",
+			"title_detail": "Revoke Request Detail",
+			"title_delete": "Delete Revoke Request",
+			"fields": {
+				"id": "Request ID",
+				"target": "Target",
+				"target_type": "Target Type",
+				"target_type_description": "Type of target (role or suite)",
+				"target_ref": "Target Reference",
+				"target_ref_description": "ID of the role or suite",
+				"target_id": "Target ID",
+				"target_name": "Target Name",
+				"requestor": "Requestor",
+				"requestor_id": "Requestor ID",
+				"requestor_name": "Requestor Name",
+				"receiver": "Receiver",
+				"receiver_id": "Receiver ID",
+				"receiver_name": "Receiver Name",
+				"receiver_type": "Receiver Type",
+				"receiver_type_description": "Type of receiver (user or group)",
+				"comment": "Comment",
+				"comment_description": "Additional notes or justification",
+				"attachment": "Attachment URL",
+				"attachment_description": "URL to supporting documents",
+				"created_at": "Created At",
+				"other_info": "Other Information"
+			},
+			"placeholders": {
+				"select_target_type_first": "Select target type first",
+				"no_targets_available": "No targets available",
+				"select_receiver_type_first": "Select receiver type first",
+				"no_receivers_available": "No receivers available"
+			},
+			"messages": {
+				"create_success": "Revoke request created successfully",
+				"revoke_success": "Successfully revoked {{count}} assignment(s)",
+				"delete_success": "Revoke request for {{name}} deleted successfully",
+				"not_found": "Revoke request not found"
+			},
+			"filter": {
+				"title": "Filter Assignments",
+				"mode": "Filter Mode",
+				"by_receiver": "Filter by Receiver",
+				"by_target": "Filter by Target",
+				"receiver_type": "Receiver Type",
+				"receiver": "Receiver",
+				"target_type": "Target Type",
+				"target": "Target"
+			},
+			"assignments": {
+				"title": "Assignments",
+				"no_assignments": "No assignments found. Please select a filter to view assignments.",
+				"target_type": "Target Type",
+				"target": "Target",
+				"receiver_type": "Receiver Type",
+				"receiver": "Receiver"
+			},
+			"actions": {
+				"revoke_selected": "Revoke Selected"
 			}
 		},
 		"resource": {

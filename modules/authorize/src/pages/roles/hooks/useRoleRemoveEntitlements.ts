@@ -5,24 +5,55 @@ import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
 import {
 	AuthorizeDispatch,
-	actionActions,
 	resourceActions,
 	roleActions,
-	selectActionState,
 	selectResourceState,
 	selectRoleState,
 } from '@/appState';
+import { createEntitlementKey } from '@/utils';
+
+import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { Entitlement } from '@/features/entitlements';
 import type { Role } from '@/features/roles';
 
+
+function buildEntitlementInputs(selected: Entitlement[]) {
+	return selected.map((ent) => ({
+		entitlementId: ent.id,
+		scopeRef: ent.scopeRef || undefined,
+	}));
+}
+
+function handleRemoveSuccess(
+	dispatch: AuthorizeDispatch,
+	notification: ReturnType<typeof useUIState>['notification'],
+	translate: ReturnType<typeof useTranslation>['t'],
+	role: Role,
+	handleGoBack: () => void,
+) {
+	const msg = translate('nikki.authorize.role.messages.remove_entitlements_success');
+	notification.showInfo(msg, translate('nikki.general.messages.success'));
+	dispatch(roleActions.getRole(role.id));
+	handleGoBack();
+}
+
+function handleRemoveError(
+	notification: ReturnType<typeof useUIState>['notification'],
+	translate: ReturnType<typeof useTranslation>['t'],
+	payload: unknown,
+) {
+	const errorMsg = typeof payload === 'string'
+		? payload
+		: translate('nikki.general.errors.update_failed');
+	notification.showError(errorMsg, translate('nikki.general.messages.error'));
+}
 
 export function useRoleRemoveEntitlementsData() {
 	const { roleId } = useParams<{ roleId: string }>();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { roles, roleDetail, isLoadingDetail, isLoadingList } = useMicroAppSelector(selectRoleState);
 	const { resources } = useMicroAppSelector(selectResourceState);
-	const { actions } = useMicroAppSelector(selectActionState);
 
 	const role = React.useMemo(() => {
 		if (!roleId) return undefined;
@@ -37,80 +68,116 @@ export function useRoleRemoveEntitlementsData() {
 	}, [dispatch, roleId]);
 
 	React.useEffect(() => {
-		dispatch(roleActions.listRoles());
-	}, [dispatch]);
+		if (roles.length === 0) dispatch(roleActions.listRoles());
+	}, [dispatch, roles.length]);
 
 	React.useEffect(() => {
 		dispatch(resourceActions.listResources());
-		dispatch(actionActions.listActions(undefined));
 	}, [dispatch]);
 
 	return {
 		role,
 		resources,
-		actions,
 		isLoading: isLoadingDetail || isLoadingList,
 	};
 }
 
-
-export function useRoleRemoveEntitlementsHandlers(role: Role | undefined) {
-	const navigate = useNavigate();
-	const location = useLocation();
-	const { t: translate } = useTranslation();
-	const [selectedEntitlements, setSelectedEntitlements] = React.useState<Entitlement[]>([]);
-	const [searchQuery, setSearchQuery] = React.useState('');
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-	const assignedEntitlements = role?.entitlements ?? [];
+function useEntitlementSelection(assignedEntitlements: Entitlement[], searchQuery: string) {
+	const [selectedEntitlementKeys, setSelectedEntitlementKeys] = React.useState<Set<string>>(new Set());
 
 	const availableEntitlements = React.useMemo(() => {
 		const lower = searchQuery.toLowerCase();
 		const filtered = assignedEntitlements.filter((ent) => ent.name.toLowerCase().includes(lower));
-		const selectedIds = new Set(selectedEntitlements.map((e) => e.id));
-		return filtered.filter((ent) => !selectedIds.has(ent.id));
-	}, [assignedEntitlements, searchQuery, selectedEntitlements]);
+		return filtered.filter((ent) => !selectedEntitlementKeys.has(createEntitlementKey(ent)));
+	}, [assignedEntitlements, searchQuery, selectedEntitlementKeys]);
 
-	const handleMoveToSelected = React.useCallback((id: string) => {
-		const ent = availableEntitlements.find((e) => e.id === id);
-		if (ent) setSelectedEntitlements((prev) => [...prev, ent]);
-	}, [availableEntitlements]);
+	const selectedEntitlements = React.useMemo(() => {
+		return assignedEntitlements.filter((ent) => selectedEntitlementKeys.has(createEntitlementKey(ent)));
+	}, [assignedEntitlements, selectedEntitlementKeys]);
 
-	const handleMoveToAvailable = React.useCallback((id: string) => {
-		setSelectedEntitlements((prev) => prev.filter((e) => e.id !== id));
+	const handleMoveToSelected = React.useCallback((entitlement: Entitlement) => {
+		setSelectedEntitlementKeys((prev) => new Set(prev).add(createEntitlementKey(entitlement)));
 	}, []);
 
-	const handleConfirm = React.useCallback(() => {
-		// UI-only placeholder: simulate submit and reset
+	const handleMoveToAvailable = React.useCallback((entitlement: Entitlement) => {
+		setSelectedEntitlementKeys((prev) => {
+			const next = new Set(prev);
+			next.delete(createEntitlementKey(entitlement));
+			return next;
+		});
+	}, []);
+
+	return {
+		selectedEntitlements,
+		availableEntitlements,
+		handleMoveToSelected,
+		handleMoveToAvailable,
+	};
+}
+
+function useRemoveConfirmHandler(
+	role: Role | undefined,
+	selectedEntitlements: Entitlement[],
+	assignedEntitlements: Entitlement[],
+	dispatch: AuthorizeDispatch,
+	notification: ReturnType<typeof useUIState>['notification'],
+	translate: ReturnType<typeof useTranslation>['t'],
+	handleGoBack: () => void,
+) {
+	const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+	const handleConfirm = React.useCallback(async () => {
+		if (!role) return;
+
 		setIsSubmitting(true);
-		setTimeout(() => setIsSubmitting(false), 400);
-	}, []);
+		const inputs = buildEntitlementInputs(selectedEntitlements);
+		const result = await dispatch(roleActions.removeEntitlementsFromRole({
+			roleId: role.id, etag: role.etag || '', entitlementInputs: inputs,
+		}));
 
-	const handleCancel = React.useCallback(() => {
-		const parent = resolvePath('..', location.pathname).pathname;
-		navigate(parent);
+		if (result.meta.requestStatus === 'fulfilled') {
+			handleRemoveSuccess(dispatch, notification, translate, role, handleGoBack);
+		}
+		else {
+			handleRemoveError(notification, translate, result.payload);
+		}
+
+		setIsSubmitting(false);
+	}, [dispatch, notification, role, selectedEntitlements, translate, handleGoBack]);
+
+	return { isSubmitting, handleConfirm };
+}
+
+function useNavigationHandlers() {
+	const navigate = useNavigate();
+	const location = useLocation();
+
+	const handleGoBack = React.useCallback(() => {
+		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate, location]);
 
-	const breadcrumbItems = React.useMemo(() => {
-		const pathSegments = location.pathname.split('/').filter(Boolean);
-		const rolesIndex = pathSegments.findIndex((seg) => seg === 'roles');
-		const roleIdIndex = rolesIndex >= 0 ? rolesIndex + 1 : -1;
+	return { handleGoBack };
+}
 
-		const items = [];
-		if (rolesIndex >= 0) {
-			items.push({
-				title: translate('nikki.authorize.role.title'),
-				path: '/' + pathSegments.slice(0, rolesIndex + 1).join('/'),
-			});
-		}
-		if (role && roleIdIndex >= 0 && roleIdIndex < pathSegments.length) {
-			items.push({
-				title: role.name,
-				path: '/' + pathSegments.slice(0, roleIdIndex + 1).join('/'),
-			});
-		}
-		return items;
-	}, [location.pathname, role, translate]);
+export function useRoleRemoveEntitlementsHandlers(role: Role | undefined) {
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const { notification } = useUIState();
+	const { t: translate } = useTranslation();
+	const [searchQuery, setSearchQuery] = React.useState('');
+	const { handleGoBack } = useNavigationHandlers();
+
+	const assignedEntitlements = role?.entitlements ?? [];
+	const {
+		selectedEntitlements,
+		availableEntitlements,
+		handleMoveToSelected,
+		handleMoveToAvailable,
+	} = useEntitlementSelection(assignedEntitlements, searchQuery);
+
+	const { isSubmitting, handleConfirm } = useRemoveConfirmHandler(
+		role, selectedEntitlements, assignedEntitlements,
+		dispatch, notification, translate, handleGoBack,
+	);
 
 	return {
 		selectedEntitlements,
@@ -121,9 +188,6 @@ export function useRoleRemoveEntitlementsHandlers(role: Role | undefined) {
 		handleMoveToSelected,
 		handleMoveToAvailable,
 		handleConfirm,
-		handleCancel,
-		translate,
-		breadcrumbItems,
+		handleCancel: handleGoBack,
 	};
 }
-

@@ -29,13 +29,13 @@ const initialState: RoleSuiteState = {
 
 export const listRoleSuites = createAsyncThunk<
 	RoleSuite[],
-	void,
+	{ graph?: Record<string, unknown>; page?: number; size?: number } | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listRoleSuites`,
-	async (_, { rejectWithValue }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			const result = await roleSuiteService.listRoleSuites();
+			const result = await roleSuiteService.listRoleSuites(params || undefined);
 			return result;
 		}
 		catch (error) {

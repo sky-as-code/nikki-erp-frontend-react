@@ -5,11 +5,9 @@ import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
 import {
 	AuthorizeDispatch,
-	actionActions,
 	entitlementActions,
 	resourceActions,
 	roleActions,
-	selectActionState,
 	selectEntitlementState,
 	selectResourceState,
 	selectRoleState,
@@ -22,11 +20,10 @@ import type { Entitlement } from '@/features/entitlements/types';
 
 
 // ============ Helper Functions ============
-
-function findRoleById(roleId: string | undefined, roles: Role[], roleDetail: Role | null) {
+function findRoleById(roleId: string | undefined, roles: Role[], roleDetail: Role | undefined) {
 	if (!roleId) return undefined;
-	const fromList = roles.find((r: Role) => r.id === roleId);
-	return fromList ?? (roleDetail?.id === roleId ? roleDetail : undefined);
+	if (roleDetail?.id === roleId) return roleDetail;
+	return roles.find((r) => r.id === roleId);
 }
 
 function computeAvailableEntitlements(
@@ -53,20 +50,18 @@ function computeAvailableEntitlements(
 	return result;
 }
 
-function buildEntitlementInputs(selected: Entitlement[], scopeRefs: Record<string, string>) {
-	return selected.map((ent) => ({ entitlementId: ent.id, scopeRef: scopeRefs[ent.id] || undefined }));
+function buildEntitlementInputs(selected: Entitlement[]) {
+	return selected.map((ent) => ({ entitlementId: ent.id, scopeRef: ent.scopeRef || undefined }));
 }
 
 
 // ============ Data Hook ============
-
 export function useRoleAddEntitlementsData() {
 	const { roleId } = useParams<{ roleId: string }>();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { roles, isLoadingList, roleDetail, isLoadingDetail } = useMicroAppSelector(selectRoleState);
 	const { entitlements } = useMicroAppSelector(selectEntitlementState);
 	const { resources } = useMicroAppSelector(selectResourceState);
-	const { actions } = useMicroAppSelector(selectActionState);
 
 	const role = React.useMemo(() => findRoleById(roleId, roles, roleDetail), [roleId, roles, roleDetail]);
 
@@ -81,18 +76,17 @@ export function useRoleAddEntitlementsData() {
 	React.useEffect(() => {
 		dispatch(entitlementActions.listEntitlements());
 		dispatch(resourceActions.listResources());
-		dispatch(actionActions.listActions(undefined));
 	}, [dispatch]);
 
-	return { role, entitlements, resources, actions, isLoading: isLoadingList || isLoadingDetail };
+	console.log('role', role);
+
+	return { role, entitlements, resources, isLoading: isLoadingList || isLoadingDetail };
 }
 
 
 // ============ Handlers Hook ============
-
 export function useRoleAddEntitlementsHandlers(role: Role | undefined, entitlements: Entitlement[]) {
 	const [selectedEntitlements, setSelectedEntitlements] = React.useState<Entitlement[]>([]);
-	const [selectedScopeRefs, setSelectedScopeRefs] = React.useState<Record<string, string>>({});
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 	const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -102,13 +96,13 @@ export function useRoleAddEntitlementsHandlers(role: Role | undefined, entitleme
 	);
 
 	const { handleGoBack, handleConfirm } = useRoleAddEntitlementsActions(
-		role, selectedEntitlements, selectedScopeRefs, setIsSubmitting,
+		role, selectedEntitlements, setIsSubmitting,
 	);
 
-	const handlers = useTransferHandlers(availableEntitlements, setSelectedEntitlements, setSelectedScopeRefs);
+	const handlers = useTransferHandlers(availableEntitlements, setSelectedEntitlements);
 
 	return {
-		selectedEntitlements, selectedScopeRefs, availableEntitlements, isSubmitting, searchQuery, setSearchQuery,
+		selectedEntitlements, availableEntitlements, isSubmitting, searchQuery, setSearchQuery,
 		handleGoBack, handleConfirm, ...handlers,
 	};
 }
@@ -116,32 +110,23 @@ export function useRoleAddEntitlementsHandlers(role: Role | undefined, entitleme
 function useTransferHandlers(
 	availableEntitlements: Entitlement[],
 	setSelectedEntitlements: React.Dispatch<React.SetStateAction<Entitlement[]>>,
-	setSelectedScopeRefs: React.Dispatch<React.SetStateAction<Record<string, string>>>,
 ) {
-	const handleMoveToSelected = React.useCallback((id: string) => {
-		const ent = availableEntitlements.find((e) => e.id === id);
-		if (ent) setSelectedEntitlements((prev) => [...prev, ent]);
-	}, [availableEntitlements, setSelectedEntitlements]);
+	const handleMoveToSelected = React.useCallback((entitlement: Entitlement) => {
+		setSelectedEntitlements((prev) => [...prev, entitlement]);
+	}, [setSelectedEntitlements]);
 
-	const handleMoveToAvailable = React.useCallback((id: string) => {
-		setSelectedEntitlements((prev) => prev.filter((e) => e.id !== id));
-		setSelectedScopeRefs((prev) => { const n = { ...prev }; delete n[id]; return n; });
-	}, [setSelectedEntitlements, setSelectedScopeRefs]);
+	const handleMoveToAvailable = React.useCallback((entitlement: Entitlement) => {
+		setSelectedEntitlements((prev) => prev.filter((e) => e.id !== entitlement.id));
+	}, [setSelectedEntitlements]);
 
-	const handleScopeRefChange = React.useCallback((id: string, val: string) => {
-		setSelectedScopeRefs((prev) => ({ ...prev, [id]: val }));
-	}, [setSelectedScopeRefs]);
-
-	return { handleMoveToSelected, handleMoveToAvailable, handleScopeRefChange };
+	return { handleMoveToSelected, handleMoveToAvailable };
 }
 
 
 // ============ Actions Hook ============
-
 function useRoleAddEntitlementsActions(
 	role: Role | undefined,
 	selectedEntitlements: Entitlement[],
-	selectedScopeRefs: Record<string, string>,
 	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
 	const navigate = useNavigate();
@@ -152,16 +137,39 @@ function useRoleAddEntitlementsActions(
 	}, [navigate, location]);
 
 	const handleConfirm = useConfirmHandler(
-		role, selectedEntitlements, selectedScopeRefs, setIsSubmitting, handleGoBack,
+		role, selectedEntitlements, setIsSubmitting, handleGoBack,
 	);
 
 	return { handleGoBack, handleConfirm };
 }
 
+function handleAddEntitlementsSuccess(
+	dispatch: AuthorizeDispatch,
+	notification: ReturnType<typeof useUIState>['notification'],
+	translate: ReturnType<typeof useTranslation>['t'],
+	role: Role,
+	handleGoBack: () => void,
+) {
+	const msg = translate('nikki.authorize.role.messages.add_entitlements_success');
+	notification.showInfo(msg, translate('nikki.general.messages.success'));
+	dispatch(roleActions.getRole(role.id));
+	handleGoBack();
+}
+
+function handleAddEntitlementsError(
+	notification: ReturnType<typeof useUIState>['notification'],
+	translate: ReturnType<typeof useTranslation>['t'],
+	payload: unknown,
+) {
+	const errorMsg = typeof payload === 'string'
+		? payload
+		: translate('nikki.general.errors.update_failed');
+	notification.showError(errorMsg, translate('nikki.general.messages.error'));
+}
+
 function useConfirmHandler(
 	role: Role | undefined,
 	selectedEntitlements: Entitlement[],
-	selectedScopeRefs: Record<string, string>,
 	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 	handleGoBack: () => void,
 ) {
@@ -173,21 +181,18 @@ function useConfirmHandler(
 		if (!role) return;
 
 		setIsSubmitting(true);
-		const inputs = buildEntitlementInputs(selectedEntitlements, selectedScopeRefs);
+		const inputs = buildEntitlementInputs(selectedEntitlements);
 		const result = await dispatch(roleActions.addEntitlementsToRole({
 			roleId: role.id, etag: role.etag || '', entitlementInputs: inputs,
 		}));
 
 		if (result.meta.requestStatus === 'fulfilled') {
-			notification.showInfo(translate('nikki.authorize.role.messages.add_entitlements_success'), translate('nikki.general.messages.success'));
-			await dispatch(roleActions.getRole(role.id));
-			handleGoBack();
+			handleAddEntitlementsSuccess(dispatch, notification, translate, role, handleGoBack);
 		}
 		else {
-			const msg = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.update_failed');
-			notification.showError(msg, translate('nikki.general.messages.error'));
+			handleAddEntitlementsError(notification, translate, result.payload);
 		}
 
 		setIsSubmitting(false);
-	}, [dispatch, notification, role, selectedEntitlements, selectedScopeRefs, translate, handleGoBack]);
+	}, [dispatch, notification, role, selectedEntitlements, translate, handleGoBack]);
 }

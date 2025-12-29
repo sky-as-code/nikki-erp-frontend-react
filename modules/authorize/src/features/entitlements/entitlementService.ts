@@ -2,12 +2,45 @@ import { Entitlement } from './types';
 import {
 	listEntitlements as listEntitlementsApi,
 	getEntitlement as getEntitlementApi,
+	getEntitlementsByIds as getEntitlementsByIdsApi,
 	createEntitlement as createEntitlementApi,
 	updateEntitlement as updateEntitlementApi,
 	deleteEntitlement as deleteEntitlementApi,
+	type AuthzActionDto,
 	type AuthzEntitlementDto,
+	type AuthzResourceDto,
 } from '../../services/authzService';
+import { Action } from '../actions/types';
+import { Resource, ResourceType } from '../resources/types';
+import { ScopeType } from '../resources/types';
 
+
+function mapDtoToAction(dto: AuthzActionDto | undefined): Action | undefined {
+	if (!dto) return undefined;
+	return {
+		id: dto.id,
+		name: dto.name,
+		description: dto.description,
+		resourceId: dto.resourceId,
+		createdBy: dto.createdBy,
+		etag: dto.etag,
+		createdAt: dto.createdAt,
+	};
+}
+
+function mapDtoToResource(dto: AuthzResourceDto | undefined): Resource | undefined {
+	if (!dto) return undefined;
+	return {
+		id: dto.id,
+		name: dto.name,
+		description: dto.description,
+		resourceType: dto.resourceType as ResourceType,
+		resourceRef: dto.resourceRef,
+		scopeType: dto.scopeType as ScopeType,
+		createdAt: dto.createdAt,
+		etag: dto.etag,
+	};
+}
 
 function mapDtoToEntitlement(dto: AuthzEntitlementDto): Entitlement {
 	return {
@@ -23,6 +56,10 @@ function mapDtoToEntitlement(dto: AuthzEntitlementDto): Entitlement {
 		etag: dto.etag,
 		assignmentsCount: dto.assignmentsCount,
 		rolesCount: dto.rolesCount,
+		scopeRef: dto.scopeRef,
+		// Map populated action and resource from API response
+		action: mapDtoToAction(dto.action as AuthzActionDto | undefined),
+		resource: mapDtoToResource(dto.resource as AuthzResourceDto | undefined),
 	};
 }
 
@@ -49,6 +86,11 @@ export const entitlementService = {
 	async getEntitlement(id: string): Promise<Entitlement | undefined> {
 		const dto = await getEntitlementApi(id);
 		return mapDtoToEntitlement(dto);
+	},
+
+	async getEntitlementsByIds(ids: string[]): Promise<Entitlement[]> {
+		const dto = await getEntitlementsByIdsApi(ids);
+		return dto.map(mapDtoToEntitlement);
 	},
 
 	async createEntitlement(

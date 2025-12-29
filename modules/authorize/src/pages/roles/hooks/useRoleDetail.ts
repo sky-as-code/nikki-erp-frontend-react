@@ -6,11 +6,7 @@ import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
 import {
 	AuthorizeDispatch,
-	actionActions,
-	resourceActions,
 	roleActions,
-	selectActionState,
-	selectResourceState,
 	selectRoleState,
 } from '@/appState';
 import { Role } from '@/features/roles/types';
@@ -62,19 +58,18 @@ function buildUpdatePayload(role: Role, validation: ValidationResult) {
 	};
 }
 
-
-export function useRoleDetailData() {
-	const { roleId } = useParams<{ roleId: string }>();
-	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { roles, isLoadingList, roleDetail, isLoadingDetail } = useMicroAppSelector(selectRoleState);
-	const { resources } = useMicroAppSelector(selectResourceState);
-	const { actions } = useMicroAppSelector(selectActionState);
-
-	const role = React.useMemo(() => {
+function useRoleFromState(roleId: string | undefined) {
+	const { roles, roleDetail } = useMicroAppSelector(selectRoleState);
+	return React.useMemo(() => {
 		if (!roleId) return undefined;
 		if (roleDetail?.id === roleId) return roleDetail;
 		return roles.find((e: Role) => e.id === roleId);
 	}, [roleId, roles, roleDetail]);
+}
+
+function useRoleDataFetching(roleId: string | undefined) {
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const { roles, isLoadingList, isLoadingDetail } = useMicroAppSelector(selectRoleState);
 
 	React.useEffect(() => {
 		if (roleId) dispatch(roleActions.getRole(roleId));
@@ -84,12 +79,21 @@ export function useRoleDetailData() {
 		if (roles.length === 0) dispatch(roleActions.listRoles());
 	}, [dispatch, roles.length]);
 
-	React.useEffect(() => {
-		dispatch(resourceActions.listResources());
-		dispatch(actionActions.listActions(undefined));
-	}, [dispatch]);
+	return { isLoadingList, isLoadingDetail };
+}
 
-	return { role, resources, actions, isLoading: isLoadingList || isLoadingDetail };
+export function useRoleDetailData() {
+	const { roleId } = useParams<{ roleId: string }>();
+	const role = useRoleFromState(roleId);
+	const {
+		isLoadingList,
+		isLoadingDetail,
+	} = useRoleDataFetching(roleId);
+
+	return {
+		role,
+		isLoading: isLoadingList || isLoadingDetail,
+	};
 }
 
 export function useRoleDetailHandlers(role: Role | undefined) {

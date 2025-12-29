@@ -90,5 +90,3 @@ export function buildActionExpr(
 
 	return `${resourceName}:${actionName}`;
 }
-
-

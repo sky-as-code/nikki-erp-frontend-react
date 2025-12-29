@@ -8,10 +8,10 @@ import {
 	RoleFormActions,
 	RoleFormContainer,
 	RoleFormFields,
-} from '@/features/roles/components/RoleForm';
+} from '@/features/roles/components';
 import roleSchema from '@/features/roles/role-schema.json';
 
-import { useRoleCreateHandlers } from './hooks/useRoleCreate';
+import { useRoleCreateHandlers } from './hooks';
 
 
 function RoleCreatePageBody(): React.ReactNode {

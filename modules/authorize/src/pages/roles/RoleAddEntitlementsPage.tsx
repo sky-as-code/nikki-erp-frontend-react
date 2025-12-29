@@ -4,14 +4,20 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
 
-import { RoleAddEntitlementsForm } from '@/features/roles/components/RoleEntitlements';
-import { RoleLoadingState, RoleNotFound } from '@/features/roles/components/RoleForm';
+import {
+	RoleAddEntitlementsForm,
+	RoleLoadingState,
+	RoleNotFound,
+} from '@/features/roles/components';
 
-import { useRoleAddEntitlementsData, useRoleAddEntitlementsHandlers } from './hooks/useRoleAddEntitlements';
+import {
+	useRoleAddEntitlementsData,
+	useRoleAddEntitlementsHandlers,
+} from './hooks';
 
 
 function RoleAddEntitlementsPageBody(): React.ReactNode {
-	const { role, entitlements, resources, actions, isLoading } = useRoleAddEntitlementsData();
+	const { role, entitlements, resources, isLoading } = useRoleAddEntitlementsData();
 	const handlers = useRoleAddEntitlementsHandlers(role, entitlements);
 	const { t: translate } = useTranslation();
 	const location = useLocation();
@@ -27,14 +33,12 @@ function RoleAddEntitlementsPageBody(): React.ReactNode {
 
 		const items = [];
 		if (rolesIndex >= 0) {
-			// Roles list
 			items.push({
 				title: translate('nikki.authorize.role.title'),
 				path: '/' + pathSegments.slice(0, rolesIndex + 1).join('/'),
 			});
 		}
 		if (roleIdIndex >= 0 && roleIdIndex < pathSegments.length) {
-			// Role detail
 			items.push({
 				title: role.name,
 				path: '/' + pathSegments.slice(0, roleIdIndex + 1).join('/'),
@@ -56,9 +60,7 @@ function RoleAddEntitlementsPageBody(): React.ReactNode {
 				onMoveToSelected={handlers.handleMoveToSelected}
 				onMoveToAvailable={handlers.handleMoveToAvailable}
 				resources={resources}
-				actions={actions}
-				selectedScopeRefs={handlers.selectedScopeRefs}
-				onScopeRefChange={handlers.handleScopeRefChange}
+				onScopeRefChange={() => {}}
 				searchQuery={handlers.searchQuery}
 				onSearchQueryChange={handlers.setSearchQuery}
 				onSearch={() => {}}

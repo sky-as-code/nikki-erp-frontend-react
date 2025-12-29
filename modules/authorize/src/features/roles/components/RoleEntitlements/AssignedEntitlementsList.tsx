@@ -2,24 +2,20 @@ import { Paper, ScrollArea, Stack, Text, Title } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { createEntitlementKey } from '@/utils';
+
 import { EntitlementCard } from './EntitlementCard';
 
-import type { Action } from '@/features/actions';
 import type { Entitlement } from '@/features/entitlements';
-import type { Resource } from '@/features/resources';
 
 
 export interface AssignedEntitlementsListProps {
 	entitlements: Entitlement[];
-	resources: Resource[];
-	actions: Action[];
 	maxHeight?: number;
 }
 
 export const AssignedEntitlementsList: React.FC<AssignedEntitlementsListProps> = ({
 	entitlements,
-	resources,
-	actions,
 	maxHeight = 300,
 }) => {
 	const { t: translate } = useTranslation();
@@ -41,12 +37,10 @@ export const AssignedEntitlementsList: React.FC<AssignedEntitlementsListProps> =
 			</Title>
 			<ScrollArea.Autosize mah={maxHeight}>
 				<Stack gap='xs'>
-					{entitlements.map((entitlement) => (
+					{entitlements.map((entitlement: Entitlement) => (
 						<EntitlementCard
-							key={entitlement.id}
+							key={createEntitlementKey(entitlement)}
 							entitlement={entitlement}
-							resources={resources}
-							actions={actions}
 						/>
 					))}
 				</Stack>

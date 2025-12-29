@@ -21,6 +21,7 @@ interface Entitlement {
 	orgId?: string;
 	createdAt: string;
 	createdBy: string;
+	scopeRef?: string;
 	// Relations
 	action?: Action;
 	resource?: Resource;

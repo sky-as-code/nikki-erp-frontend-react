@@ -18,7 +18,7 @@ import {
 } from '@/features/roles/components';
 import roleSchema from '@/features/roles/role-schema.json';
 
-import { useRoleDeleteHandler } from './hooks/useRoleDelete';
+import { useRoleDeleteHandler } from './hooks';
 
 
 function RoleListPageBody(): React.ReactNode {

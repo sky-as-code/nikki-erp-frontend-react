@@ -34,7 +34,9 @@
 				"confirm": "Xác nhận",
 				"remove": "Loại bỏ",
 				"approve": "Phê duyệt",
-				"reject": "Từ chối"
+				"reject": "Từ chối",
+				"select_all": "Chọn tất cả",
+				"deselect_all": "Bỏ chọn tất cả"
 			},
 			"messages": {
 				"success": "Thành công",
@@ -363,7 +365,8 @@
 				"create_success": "Vai trò \"{{name}}\" đã được tạo thành công",
 				"update_success": "Vai trò \"{{name}}\" đã được cập nhật thành công",
 				"delete_success": "Vai trò \"{{name}}\" đã được xóa thành công",
-				"add_entitlements_success": "Quyền đã được thêm vào vai trò thành công"
+				"add_entitlements_success": "Quyền đã được thêm vào vai trò thành công",
+				"remove_entitlements_success": "Quyền đã được loại bỏ khỏi vai trò thành công"
 			},
 			"entitlements": {
 				"add": "Thêm Quyền",
@@ -457,6 +460,8 @@
 				"target": "Mục tiêu",
 				"target_type": "Loại mục tiêu",
 				"target_type_description": "Loại mục tiêu (vai trò hoặc bộ vai trò)",
+				"target_type_role": "Vai trò",
+				"target_type_suite": "Bộ vai trò",
 				"target_ref": "Tham chiếu mục tiêu",
 				"target_ref_description": "ID của vai trò hoặc bộ vai trò",
 				"target_id": "Mã mục tiêu",
@@ -464,12 +469,14 @@
 				"requestor": "Người yêu cầu",
 				"requestor_id": "Mã người yêu cầu",
 				"requestor_name": "Tên người yêu cầu",
-				"receiver": "Người nhận quyền",
-				"receiver_id": "Mã người nhận",
-				"receiver_name": "Tên người nhận quyền",
-				"receiver_id_description": "ID người dùng sẽ được cấp quyền",
-				"receiver_type": "Loại người nhận",
-				"receiver_type_description": "Loại người nhận (người dùng hoặc nhóm)",
+				"receiver": "Đối tượng nhận quyền",
+				"receiver_id": "Mã đối tượng nhận",
+				"receiver_name": "Tên đối tượng nhận quyền",
+				"receiver_id_description": "ID đối tượng sẽ được cấp quyền",
+				"receiver_type": "Loại đối tượng nhận",
+				"receiver_type_description": "Loại đối tượng nhận (người dùng hoặc nhóm)",
+				"receiver_type_user": "Người dùng",
+				"receiver_type_group": "Nhóm",
 				"comment": "Ghi chú",
 				"comment_description": "Ghi chú hoặc lý do bổ sung",
 				"attachment": "URL tập tin đính kèm",
@@ -484,13 +491,77 @@
 			"placeholders": {
 				"select_target_type_first": "Chọn loại mục tiêu trước",
 				"no_targets_available": "Không có mục tiêu nào khả dụng",
-				"select_receiver_type_first": "Chọn loại người nhận trước",
-				"no_receivers_available": "Không có người nhận nào khả dụng"
+				"select_receiver_type_first": "Chọn loại đối tượng nhận trước",
+				"no_receivers_available": "Không có đối tượng nhận nào khả dụng"
 			},
 			"messages": {
 				"create_success": "Tạo yêu cầu cấp quyền thành công",
 				"delete_success": "Xóa yêu cầu cho {{name}} thành công",
 				"not_found": "Không tìm thấy yêu cầu cấp quyền"
+			}
+		},
+		"revoke_request": {
+			"title": "Yêu cầu tước quyền",
+			"title_create": "Tạo yêu cầu tước quyền",
+			"title_detail": "Chi tiết yêu cầu tước quyền",
+			"title_delete": "Xóa yêu cầu tước quyền",
+			"fields": {
+				"id": "Mã yêu cầu",
+				"target": "Mục tiêu",
+				"target_type": "Loại mục tiêu",
+				"target_type_description": "Loại mục tiêu (vai trò hoặc bộ vai trò)",
+				"target_ref": "Tham chiếu mục tiêu",
+				"target_ref_description": "ID của vai trò hoặc bộ vai trò",
+				"target_id": "Mã mục tiêu",
+				"target_name": "Tên mục tiêu",
+				"requestor": "Người yêu cầu",
+				"requestor_id": "Mã người yêu cầu",
+				"requestor_name": "Tên người yêu cầu",
+				"receiver": "Đối tượng bị tước quyền",
+				"receiver_id": "Mã đối tượng bị tước quyền",
+				"receiver_name": "Tên đối tượng bị tước quyền",
+				"receiver_id_description": "ID đối tượng sẽ bị tước quyền",
+				"receiver_type": "Loại đối tượng bị tước quyền",
+				"receiver_type_description": "Loại đối tượng bị tước quyền (người dùng hoặc nhóm)",
+				"comment": "Ghi chú",
+				"comment_description": "Ghi chú hoặc lý do bổ sung",
+				"attachment": "URL tập tin đính kèm",
+				"attachment_description": "Đường dẫn tới tài liệu hỗ trợ",
+				"created_at": "Ngày tạo",
+				"other_info": "Thông tin khác"
+			},
+			"placeholders": {
+				"select_target_type_first": "Chọn loại mục tiêu trước",
+				"no_targets_available": "Không có mục tiêu nào khả dụng",
+				"select_receiver_type_first": "Chọn loại đối tượng bị tước quyền trước",
+				"no_receivers_available": "Không có đối tượng bị tước quyền nào khả dụng"
+			},
+			"messages": {
+				"create_success": "Tạo yêu cầu tước quyền thành công",
+				"revoke_success": "Đã tước quyền thành công {{count}} gán quyền",
+				"delete_success": "Đã xóa yêu cầu tước quyền cho {{name}} thành công",
+				"not_found": "Không tìm thấy yêu cầu tước quyền"
+			},
+			"filter": {
+				"title": "Lọc Gán quyền",
+				"mode": "Chế độ Lọc",
+				"by_receiver": "Lọc theo Đối tượng nhận",
+				"by_target": "Lọc theo Mục tiêu",
+				"receiver_type": "Loại Đối tượng nhận",
+				"receiver": "Đối tượng nhận",
+				"target_type": "Loại Mục tiêu",
+				"target": "Mục tiêu"
+			},
+			"assignments": {
+				"title": "Gán quyền",
+				"no_assignments": "Không tìm thấy gán quyền nào. Vui lòng chọn bộ lọc để xem gán quyền.",
+				"target_type": "Loại Mục tiêu",
+				"target": "Mục tiêu",
+				"receiver_type": "Loại Đối tượng nhận",
+				"receiver": "Đối tượng nhận"
+			},
+			"actions": {
+				"revoke_selected": "Tước quyền đã chọn"
 			}
 		},
 		"overview": {

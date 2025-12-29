@@ -15,7 +15,7 @@ import {
 	ResourceFormFields,
 	ResourceLoadingState,
 	ResourceNotFound,
-} from '@/features/resources/components/ResourceForm';
+} from '@/features/resources/components/resourceForm';
 import resourceSchema from '@/features/resources/resource-schema.json';
 import { validateResourceForm } from '@/features/resources/validation/resourceFormValidation';
 

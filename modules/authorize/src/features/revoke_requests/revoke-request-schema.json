@@ -1,0 +1,164 @@
+{
+	"name": "revokeRequest",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"targetType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.target_type' }",
+			"enum": [
+				{
+					"value": "role",
+					"label": "Role"
+				},
+				{
+					"value": "suite",
+					"label": "Suite"
+				}
+			],
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"readOnly": {
+				"create": false,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"targetRef": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.target_name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"readOnly": {
+				"create": false,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"receiverType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.receiver_type' }",
+			"enum": [
+				{
+					"value": "user",
+					"label": "User"
+				},
+				{
+					"value": "group",
+					"label": "Group"
+				}
+			],
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"readOnly": {
+				"create": false,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"receiverId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.receiver_name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"readOnly": {
+				"create": false,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"comment": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.comment' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"max": 500,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"attachmentUrl": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.attachment' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.created_at' }",
+			"readOnly": {
+				"create": true,
+				"update": true
+			}
+		},
+		"targetName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.target_name' }",
+			"readOnly": {
+				"create": true,
+				"update": true
+			}
+		},
+		"receiverName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.receiver_name' }",
+			"readOnly": {
+				"create": true,
+				"update": true
+			}
+		},
+		"requestorName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.revoke_request.fields.requestor_name' }",
+			"readOnly": {
+				"create": true,
+				"update": true
+			}
+		}
+	}
+}
+

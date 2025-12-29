@@ -6,6 +6,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import {
+	AuthorizeDispatch,
+	actionActions,
+	resourceActions,
+	selectActionState,
+	selectResourceState,
+} from '@/appState';
 import actionSchema from '@/features/actions/action-schema.json';
 import {
 	ActionListActions,
@@ -14,13 +21,6 @@ import {
 } from '@/features/actions/components';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
-import {
-	AuthorizeDispatch,
-	actionActions,
-	resourceActions,
-	selectActionState,
-	selectResourceState,
-} from '../../appState';
 
 import type { Action } from '@/features/actions';
 

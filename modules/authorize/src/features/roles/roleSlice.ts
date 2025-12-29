@@ -4,6 +4,8 @@ import {
 
 import { roleService } from './roleService';
 import { Role } from './types';
+import { entitlementService } from '../entitlements/entitlementService';
+import { Entitlement } from '../entitlements/types';
 
 
 export const SLICE_NAME = 'authorize.role';
@@ -26,15 +28,37 @@ const initialState: RoleState = {
 	errorDetail: null,
 };
 
+async function hydrateEntitlements(
+	entitlements?: Entitlement[],
+): Promise<Entitlement[] | undefined> {
+	if (!entitlements?.length) return entitlements;
+
+	const ids = entitlements.map((e: Entitlement) => e.id);
+	const fullEntitlements = await entitlementService.getEntitlementsByIds(ids);
+
+	if (!fullEntitlements.length) return entitlements;
+
+	const map = new Map(fullEntitlements.map((e: Entitlement) => [e.id, e]));
+
+	const result = entitlements
+		.reduce((acc: Entitlement[], e: Entitlement): Entitlement[] => {
+			const full = map.get(e.id);
+			if (!full) return acc;
+			return [...acc, { ...full, scopeRef: e.scopeRef }];
+		}, []);
+
+	return result;
+}
+
 export const listRoles = createAsyncThunk<
 	Role[],
-	void,
+	{ graph?: Record<string, unknown>; page?: number; size?: number } | void,
 	{ rejectValue: string }
 >(
-	`${SLICE_NAME}/listRoles`,
-	async (_, { rejectWithValue }) => {
+	`${SLICE_NAME}/list`,
+	async (params, { rejectWithValue }) => {
 		try {
-			const result = await roleService.listRoles();
+			const result = await roleService.listRoles(params || undefined);
 			return result;
 		}
 		catch (error) {
@@ -45,19 +69,24 @@ export const listRoles = createAsyncThunk<
 );
 
 export const getRole = createAsyncThunk<
-	Role | undefined,
-	string,
-	{ rejectValue: string }
+  Role | undefined,
+  string,
+  { rejectValue: string }
 >(
-	`${SLICE_NAME}/getRole`,
-	async (id, { rejectWithValue }) => {
+	`${SLICE_NAME}/get`,
+	async (roleId, { rejectWithValue }) => {
 		try {
-			const result = await roleService.getRole(id);
-			return result;
+			const role = await roleService.getRole(roleId);
+			if (!role) return undefined;
+
+			const hydrated = await hydrateEntitlements(role.entitlements);
+
+			return { ...role, entitlements: hydrated as Entitlement[] };
 		}
 		catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'Failed to get role';
-			return rejectWithValue(errorMessage);
+			return rejectWithValue(
+				error instanceof Error ? error.message : 'Failed to get role',
+			);
 		}
 	},
 );
@@ -67,7 +96,7 @@ export const createRole = createAsyncThunk<
 	Omit<Role, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'entitlementsCount' | 'assignmentsCount' | 'suitesCount' | 'ownerName'>,
 	{ rejectValue: string }
 >(
-	`${SLICE_NAME}/createRole`,
+	`${SLICE_NAME}/create`,
 	async (role, { rejectWithValue }) => {
 		try {
 			const result = await roleService.createRole(role);
@@ -85,7 +114,7 @@ export const updateRole = createAsyncThunk<
 	{ id: string; etag: string; name?: string; description?: string | null },
 	{ rejectValue: string }
 >(
-	`${SLICE_NAME}/updateRole`,
+	`${SLICE_NAME}/update`,
 	async ({ id, etag, name, description }, { rejectWithValue }) => {
 		try {
 			const result = await roleService.updateRole(id, etag, { name, description });
@@ -103,7 +132,7 @@ export const deleteRole = createAsyncThunk<
 	{ id: string },
 	{ rejectValue: string }
 >(
-	`${SLICE_NAME}/deleteRole`,
+	`${SLICE_NAME}/delete`,
 	async ({ id }, { rejectWithValue }) => {
 		try {
 			await roleService.deleteRole(id);
@@ -121,7 +150,7 @@ export const addEntitlementsToRole = createAsyncThunk<
 	{ roleId: string; etag: string; entitlementInputs: Array<{ entitlementId: string; scopeRef?: string }> },
 	{ rejectValue: string }
 >(
-	`${SLICE_NAME}/addEntitlementsToRole`,
+	`${SLICE_NAME}/addEntitlements`,
 	async ({ roleId, etag, entitlementInputs }, { rejectWithValue }) => {
 		try {
 			await roleService.addEntitlementsToRole(roleId, etag, entitlementInputs);
@@ -129,6 +158,24 @@ export const addEntitlementsToRole = createAsyncThunk<
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to add entitlements to role';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
+export const removeEntitlementsFromRole = createAsyncThunk<
+	void,
+	{ roleId: string; etag: string; entitlementInputs: Array<{ entitlementId: string; scopeRef?: string }> },
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/removeEntitlements`,
+	async ({ roleId, etag, entitlementInputs }, { rejectWithValue }) => {
+		try {
+			await roleService.removeEntitlementsFromRole(roleId, etag, entitlementInputs);
+			return undefined;
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to remove entitlements from role';
 			return rejectWithValue(errorMessage);
 		}
 	},
