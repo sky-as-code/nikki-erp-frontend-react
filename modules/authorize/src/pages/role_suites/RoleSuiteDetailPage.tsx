@@ -1,14 +1,14 @@
 import { Stack } from '@mantine/core';
-import { BreadcrumbsHeader } from '@nikkierp/ui/components';
-import { ConfirmModal } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	ConfirmModal,
+	LoadingState,
+	NotFound,
+} from '@nikkierp/ui/components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import {
-	RoleSuiteDetailForm,
-	RoleSuiteLoadingState,
-	RoleSuiteNotFound,
-} from '@/features/role_suites/components';
+import { RoleSuiteDetailForm } from '@/features/role_suites/components';
 
 import { useRoleSuiteDetailData, useRoleSuiteDetailHandlers } from './hooks';
 
@@ -19,8 +19,18 @@ function RoleSuiteDetailPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const formDataRef = React.useRef<unknown>(null);
 
-	if (isLoading) return <RoleSuiteLoadingState />;
-	if (!roleSuite) return <RoleSuiteNotFound onGoBack={handlers.handleCancel} />;
+	if (isLoading) {
+		return <LoadingState messageKey='nikki.authorize.role_suite.messages.loading' />;
+	}
+	if (!roleSuite) {
+		return (
+			<NotFound
+				onGoBack={handlers.handleCancel}
+				messageKey='nikki.authorize.role_suite.messages.not_found'
+				showBackButton={false}
+			/>
+		);
+	}
 
 	const handleFormSubmit = (data: unknown) => {
 		formDataRef.current = data;

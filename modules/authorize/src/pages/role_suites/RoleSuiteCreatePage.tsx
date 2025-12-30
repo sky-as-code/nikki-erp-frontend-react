@@ -1,13 +1,16 @@
 import { Stack } from '@mantine/core';
-import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	FormFieldProvider,
+	FormStyleProvider,
+} from '@nikkierp/ui/components';
+import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { MOCK_ORGS } from '@/features/orgs/mockOrgs';
 import {
-	RoleSuiteFormActions,
-	RoleSuiteFormContainer,
 	RoleSuiteFormFields,
 	RoleSuiteRolesSelector,
 	RoleSuiteChangesSummary,
@@ -54,13 +57,13 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.role_suite.title')}
 			/>
 
-			<RoleSuiteFormContainer>
+			<FormContainer>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='md'>
-									<RoleSuiteFormActions
+									<FormActions
 										isSubmitting={isSubmitting}
 										onCancel={handleCancel}
 										isCreate
@@ -88,7 +91,7 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>
-			</RoleSuiteFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }

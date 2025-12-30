@@ -1,5 +1,5 @@
 import { Paper, Stack } from '@mantine/core';
-import { ConfirmModal } from '@nikkierp/ui/components';
+import { ConfirmModal, Headers, Actions } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -11,11 +11,7 @@ import {
 	grantRequestActions,
 	selectGrantRequestState,
 } from '@/appState';
-import {
-	GrantRequestListActions,
-	GrantRequestListHeader,
-	GrantRequestTable,
-} from '@/features/grant_requests/components';
+import { GrantRequestTable } from '@/features/grant_requests/components';
 import grantRequestSchema from '@/features/grant_requests/grant-request-schema.json';
 
 import { useGrantRequestDeleteHandler } from './hooks';
@@ -57,10 +53,11 @@ function GrantRequestListPageBody(): React.ReactNode {
 	return (
 		<>
 			<Stack gap='md'>
-				<GrantRequestListHeader />
-				<GrantRequestListActions
+				<Headers titleKey='nikki.authorize.grant_request.title' />
+				<Actions
 					onCreate={handleCreate}
 					onRefresh={handleRefresh}
+					showImport={false}
 				/>
 				<Paper className='p-4'>
 					<GrantRequestTable

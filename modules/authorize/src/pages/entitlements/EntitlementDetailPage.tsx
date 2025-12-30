@@ -1,6 +1,13 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	FormFieldProvider,
+	FormStyleProvider,
+	LoadingState,
+	NotFound,
+} from '@nikkierp/ui/components';
+import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -16,13 +23,7 @@ import {
 	selectEntitlementState,
 	selectResourceState,
 } from '@/appState';
-import {
-	EntitlementFormActions,
-	EntitlementFormContainer,
-	EntitlementFormFields,
-	EntitlementLoadingState,
-	EntitlementNotFound,
-} from '@/features/entitlements/components/entitlementForm';
+import { EntitlementFormFields } from '@/features/entitlements/components/entitlementForm';
 import entitlementSchema from '@/features/entitlements/entitlement-schema.json';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
@@ -160,11 +161,17 @@ function EntitlementDetailPageBody(): React.ReactNode {
 	}, [dispatch, resources.length, actions.length]);
 
 	if (isLoading) {
-		return <EntitlementLoadingState />;
+		return <LoadingState messageKey='nikki.authorize.entitlement.messages.loading' />;
 	}
 
 	if (!entitlement) {
-		return <EntitlementNotFound onGoBack={handleCancel} />;
+		return (
+			<NotFound
+				onGoBack={handleCancel}
+				messageKey='nikki.authorize.entitlement.messages.not_found'
+				showBackButton={false}
+			/>
+		);
 	}
 
 	return (
@@ -176,7 +183,7 @@ function EntitlementDetailPageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.entitlement.title')}
 			/>
 
-			<EntitlementFormContainer title={entitlement.name}>
+			<FormContainer title={entitlement.name}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
 						formVariant='update'
@@ -187,7 +194,7 @@ function EntitlementDetailPageBody(): React.ReactNode {
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
-									<EntitlementFormActions
+									<FormActions
 										isSubmitting={isSubmitting}
 										onCancel={handleCancel}
 										isCreate={false}
@@ -202,7 +209,7 @@ function EntitlementDetailPageBody(): React.ReactNode {
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>
-			</EntitlementFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }

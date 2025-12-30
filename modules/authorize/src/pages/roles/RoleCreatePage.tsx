@@ -1,14 +1,15 @@
 import { Stack } from '@mantine/core';
-import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	FormFieldProvider,
+	FormStyleProvider,
+} from '@nikkierp/ui/components';
+import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import {
-	RoleFormActions,
-	RoleFormContainer,
-	RoleFormFields,
-} from '@/features/roles/components';
+import { RoleFormFields } from '@/features/roles/components';
 import roleSchema from '@/features/roles/role-schema.json';
 
 import { useRoleCreateHandlers } from './hooks';
@@ -32,20 +33,20 @@ function RoleCreatePageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.role.title')}
 			/>
 
-			<RoleFormContainer>
+			<FormContainer>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
-									<RoleFormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
+									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
 									<RoleFormFields isCreate />
 								</Stack>
 							</form>
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>
-			</RoleFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }

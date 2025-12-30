@@ -1,13 +1,17 @@
 import { Stack } from '@mantine/core';
-import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	FormFieldProvider,
+	FormStyleProvider,
+	LoadingState,
+	NotFound,
+} from '@nikkierp/ui/components';
+import { FormContainer } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import {
-	RevokeRequestFormContainer,
-	RevokeRequestFormFields,
-} from '@/features/revoke_requests/components';
+import { RevokeRequestFormFields } from '@/features/revoke_requests/components';
 import revokeRequestSchema from '@/features/revoke_requests/revoke-request-schema.json';
 
 import { useRevokeRequestDetailData, useRevokeRequestDetailHandlers } from './hooks';
@@ -22,7 +26,7 @@ function RevokeRequestDetailPageBody(): React.ReactNode {
 	const schema = revokeRequestSchema as ModelSchema;
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <LoadingState messageKey='nikki.general.messages.loading' />;
 	}
 	if (!revokeRequest) {
 		return (
@@ -33,7 +37,11 @@ function RevokeRequestDetailPageBody(): React.ReactNode {
 					segmentKey='revoke-requests'
 					parentTitle={translate('nikki.authorize.revoke_request.title')}
 				/>
-				<div>Revoke Request not found</div>
+				<NotFound
+					onGoBack={() => {}}
+					messageKey='nikki.authorize.revoke_request.messages.not_found'
+					showBackButton={false}
+				/>
 			</Stack>
 		);
 	}
@@ -56,7 +64,7 @@ function RevokeRequestDetailPageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.revoke_request.title')}
 			/>
 
-			<RevokeRequestFormContainer title={targetName}>
+			<FormContainer title={targetName}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
 						formVariant='update'
@@ -71,7 +79,7 @@ function RevokeRequestDetailPageBody(): React.ReactNode {
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>
-			</RevokeRequestFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }

@@ -1,13 +1,11 @@
 import { Stack } from '@mantine/core';
-import { BreadcrumbsHeader } from '@nikkierp/ui/components';
+import { BreadcrumbsHeader, NotFound, LoadingState } from '@nikkierp/ui/components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
 
 import {
 	RoleRemoveEntitlementsForm,
-	RoleLoadingState,
-	RoleNotFound,
 } from '@/features/roles/components';
 
 import {
@@ -44,8 +42,8 @@ function RoleRemoveEntitlementsPageBody(): React.ReactNode {
 		return items;
 	}, [location.pathname, role, translate]);
 
-	if (isLoading) return <RoleLoadingState />;
-	if (!role) return <RoleNotFound onGoBack={handlers.handleCancel} />;
+	if (isLoading) return <LoadingState messageKey='nikki.authorize.role.messages.loading' />;
+	if (!role) return <NotFound messageKey='nikki.authorize.role.messages.not_found' onGoBack={handlers.handleCancel} />;
 
 	return (
 		<Stack gap='md'>

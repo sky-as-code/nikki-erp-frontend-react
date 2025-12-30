@@ -1,12 +1,10 @@
 import { Stack } from '@mantine/core';
-import { FormStyleProvider, FormFieldProvider } from '@nikkierp/ui/components';
+import { FormStyleProvider, FormFieldProvider, FormContainer, FormActions } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 
 import { MOCK_ORGS } from '@/features/orgs/mockOrgs';
 
 import { RoleSuiteChangesSummary } from '../RoleSuiteChangesSummary';
-import { RoleSuiteFormActions } from './RoleSuiteFormActions';
-import { RoleSuiteFormContainer } from './RoleSuiteFormContainer';
 import { RoleSuiteFormFields } from './RoleSuiteFormFields';
 import { RoleSuiteRolesSelector } from './RoleSuiteRolesSelector';
 
@@ -35,7 +33,7 @@ export const RoleSuiteDetailForm: React.FC<RoleSuiteDetailFormProps> = ({
 	const schema = roleSuiteSchema as ModelSchema;
 
 	return (
-		<RoleSuiteFormContainer title={roleSuite.name}>
+		<FormContainer title={roleSuite.name}>
 			<FormStyleProvider layout='onecol'>
 				<FormFieldProvider
 					formVariant='update'
@@ -46,7 +44,7 @@ export const RoleSuiteDetailForm: React.FC<RoleSuiteDetailFormProps> = ({
 					{({ handleSubmit: formHandleSubmit }) => (
 						<form onSubmit={formHandleSubmit(onFormSubmit)} noValidate>
 							<Stack gap='md'>
-								<RoleSuiteFormActions
+								<FormActions
 									isSubmitting={isSubmitting}
 									onCancel={handleCancel}
 									isCreate={false}
@@ -71,6 +69,6 @@ export const RoleSuiteDetailForm: React.FC<RoleSuiteDetailFormProps> = ({
 					)}
 				</FormFieldProvider>
 			</FormStyleProvider>
-		</RoleSuiteFormContainer>
+		</FormContainer>
 	);
 };

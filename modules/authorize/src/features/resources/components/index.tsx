@@ -1,2 +1,3 @@
-export * from './resourceForm';
-export * from './resourceTable';
+export * from './ListActions';
+export * from './ResourceFormFields';
+export * from './ResourceTable';

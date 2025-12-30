@@ -1,13 +1,11 @@
 import { Stack } from '@mantine/core';
-import { BreadcrumbsHeader } from '@nikkierp/ui/components';
+import { BreadcrumbsHeader, NotFound, LoadingState } from '@nikkierp/ui/components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
 
 import {
 	RoleAddEntitlementsForm,
-	RoleLoadingState,
-	RoleNotFound,
 } from '@/features/roles/components';
 
 import {
@@ -22,8 +20,8 @@ function RoleAddEntitlementsPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const location = useLocation();
 
-	if (isLoading) return <RoleLoadingState />;
-	if (!role) return <RoleNotFound onGoBack={handlers.handleGoBack} />;
+	if (isLoading) return <LoadingState messageKey='nikki.authorize.role.messages.loading' />;
+	if (!role) return <NotFound messageKey='nikki.authorize.role.messages.not_found' onGoBack={handlers.handleGoBack} />;
 
 	// Build breadcrumbs for 3 layers: Roles > Role Detail > Add Entitlements
 	const breadcrumbItems = React.useMemo(() => {

@@ -1,5 +1,5 @@
 import { Paper, Stack } from '@mantine/core';
-import { ConfirmModal } from '@nikkierp/ui/components';
+import { ConfirmModal, Headers, Actions } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -15,11 +15,7 @@ import {
 	selectEntitlementState,
 	selectResourceState,
 } from '@/appState';
-import {
-	EntitlementListActions,
-	EntitlementListHeader,
-	EntitlementTable,
-} from '@/features/entitlements/components';
+import { EntitlementTable } from '@/features/entitlements/components';
 import entitlementSchema from '@/features/entitlements/entitlement-schema.json';
 import { Entitlement } from '@/features/entitlements/types';
 
@@ -107,8 +103,8 @@ function EntitlementListPageBody(): React.ReactNode {
 	return (
 		<>
 			<Stack gap='md'>
-				<EntitlementListHeader />
-				<EntitlementListActions
+				<Headers titleKey='nikki.authorize.entitlement.title' />
+				<Actions
 					onCreate={handleCreate}
 					onRefresh={handleRefresh}
 				/>
