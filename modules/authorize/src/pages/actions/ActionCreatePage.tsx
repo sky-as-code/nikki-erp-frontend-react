@@ -1,6 +1,11 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	FormFieldProvider,
+	FormStyleProvider,
+} from '@nikkierp/ui/components';
+import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -8,12 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
 import { AuthorizeDispatch, actionActions, resourceActions, selectResourceState } from '@/appState';
-import actionSchema from '@/features/actions/action-schema.json';
-import {
-	ActionFormActions,
-	ActionFormContainer,
-	ActionFormFields,
-} from '@/features/actions/components';
+import { ActionFormFields, actionSchema } from '@/features/actions';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 
@@ -87,13 +87,13 @@ function ActionCreatePageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.action.title')}
 			/>
 
-			<ActionFormContainer>
+			<FormContainer>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
-									<ActionFormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
+									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
 									<ActionFormFields
 										isCreate
 										resources={resources}
@@ -103,7 +103,7 @@ function ActionCreatePageBody(): React.ReactNode {
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>
-			</ActionFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }

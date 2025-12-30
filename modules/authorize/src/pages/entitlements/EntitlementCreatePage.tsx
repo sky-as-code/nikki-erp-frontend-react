@@ -1,6 +1,11 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	FormFieldProvider,
+	FormStyleProvider,
+} from '@nikkierp/ui/components';
+import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -15,11 +20,7 @@ import {
 	selectActionState,
 	selectResourceState,
 } from '@/appState';
-import {
-	EntitlementFormActions,
-	EntitlementFormContainer,
-	EntitlementFormFields,
-} from '@/features/entitlements/components/entitlementForm';
+import { EntitlementFormFields } from '@/features/entitlements/components/entitlementForm';
 import entitlementSchema from '@/features/entitlements/entitlement-schema.json';
 import {
 	buildActionExpr,
@@ -117,17 +118,13 @@ function EntitlementCreatePageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.entitlement.title')}
 			/>
 
-			<EntitlementFormContainer>
+			<FormContainer>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit, form }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data, form))} noValidate>
 								<Stack gap='xs'>
-									<EntitlementFormActions
-										isSubmitting={isSubmitting}
-										onCancel={handleCancel}
-										isCreate
-									/>
+									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
 									<EntitlementFormFields
 										isCreate
 										resources={resources}
@@ -138,7 +135,7 @@ function EntitlementCreatePageBody(): React.ReactNode {
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>
-			</EntitlementFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }

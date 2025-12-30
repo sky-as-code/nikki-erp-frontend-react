@@ -1,5 +1,5 @@
 import { Paper, Stack } from '@mantine/core';
-import { ConfirmModal } from '@nikkierp/ui/components';
+import { ConfirmModal, Headers, Actions } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -11,11 +11,7 @@ import {
 	revokeRequestActions,
 	selectRevokeRequestState,
 } from '@/appState';
-import {
-	RevokeRequestListActions,
-	RevokeRequestListHeader,
-	RevokeRequestTable,
-} from '@/features/revoke_requests/components';
+import { RevokeRequestTable } from '@/features/revoke_requests/components';
 import revokeRequestSchema from '@/features/revoke_requests/revoke-request-schema.json';
 
 import {
@@ -55,10 +51,11 @@ function RevokeRequestListPageBody(): React.ReactNode {
 	return (
 		<>
 			<Stack gap='md'>
-				<RevokeRequestListHeader />
-				<RevokeRequestListActions
+				<Headers titleKey='nikki.authorize.revoke_request.title' />
+				<Actions
 					onCreate={handleCreate}
 					onRefresh={handleRefresh}
+					showImport={false}
 				/>
 				<Paper className='p-4'>
 					<RevokeRequestTable

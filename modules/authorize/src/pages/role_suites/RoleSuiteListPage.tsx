@@ -1,5 +1,5 @@
 import { Paper, Stack } from '@mantine/core';
-import { ConfirmModal } from '@nikkierp/ui/components';
+import { ConfirmModal, Headers, Actions } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -11,11 +11,7 @@ import {
 	roleSuiteActions,
 	selectRoleSuiteState,
 } from '@/appState';
-import {
-	RoleSuiteListActions,
-	RoleSuiteListHeader,
-	RoleSuiteTable,
-} from '@/features/role_suites/components';
+import { RoleSuiteTable } from '@/features/role_suites/components';
 
 import { useRoleSuiteDeleteHandler } from './hooks';
 
@@ -56,8 +52,8 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	return (
 		<>
 			<Stack gap='md'>
-				<RoleSuiteListHeader />
-				<RoleSuiteListActions
+				<Headers titleKey='nikki.authorize.role_suite.title' />
+				<Actions
 					onCreate={handleCreate}
 					onRefresh={handleRefresh}
 				/>

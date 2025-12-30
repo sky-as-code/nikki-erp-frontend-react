@@ -7,3 +7,6 @@ export * from './Button';
 export * from './BreadcrumbsHeader';
 export * from './SearchableSelect/FlatSearchableSelect';
 export * from './SearchableSelect/SearchableSelect';
+export * from './tableHeader';
+export * from './LoadingState';
+export * from './NotFound';

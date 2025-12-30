@@ -1,5 +1,4 @@
 export * from './orgSelectField';
 export * from './roleSuiteForm';
-export * from './roleSuiteTable';
+export * from './RoleSuiteTable';
 export * from './RoleSuiteChangesSummary';
-export * from './RoleSuiteNotFound';

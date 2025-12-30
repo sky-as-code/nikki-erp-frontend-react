@@ -1,2 +1,2 @@
-export * from './actionForm';
-export * from './actionTable';
+export * from './ActionFormFields';
+export * from './ActionTable';

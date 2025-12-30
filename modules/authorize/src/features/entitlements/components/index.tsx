@@ -1,2 +1,2 @@
 export * from './entitlementForm';
-export * from './entitlementTable';
+export * from './EntitlementTable';

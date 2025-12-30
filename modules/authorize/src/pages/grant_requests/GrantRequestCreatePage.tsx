@@ -1,5 +1,10 @@
 import { Stack } from '@mantine/core';
-import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	FormFieldProvider,
+	FormStyleProvider,
+} from '@nikkierp/ui/components';
+import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -15,11 +20,7 @@ import {
 	selectRoleSuiteList,
 	selectUserList,
 } from '@/appState';
-import {
-	GrantRequestFormActions,
-	GrantRequestFormContainer,
-	GrantRequestFormFields,
-} from '@/features/grant_requests/components';
+import { GrantRequestFormFields } from '@/features/grant_requests/components';
 import grantRequestSchema from '@/features/grant_requests/grant-request-schema.json';
 
 import { useGrantRequestCreateHandlers } from './hooks';
@@ -64,17 +65,13 @@ function GrantRequestCreatePageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.grant_request.title')}
 			/>
 
-			<GrantRequestFormContainer>
+			<FormContainer>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
-									<GrantRequestFormActions
-										isSubmitting={isSubmitting}
-										onCancel={handleCancel}
-										isCreate
-									/>
+									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
 									<GrantRequestFormFields
 										isCreate
 										roles={roles}
@@ -87,7 +84,7 @@ function GrantRequestCreatePageBody(): React.ReactNode {
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>
-			</GrantRequestFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }

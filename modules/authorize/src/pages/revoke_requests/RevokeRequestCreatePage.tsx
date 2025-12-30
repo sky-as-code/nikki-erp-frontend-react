@@ -1,12 +1,12 @@
 import { Button, Group, Stack, TextInput, Textarea } from '@mantine/core';
 import { BreadcrumbsHeader } from '@nikkierp/ui/components';
+import { FormContainer } from '@nikkierp/ui/components/form';
 import { IconCheck } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ReceiverType } from '@/features/grant_requests/types';
 import {
-	RevokeRequestFormContainer,
 	RevokeRequestAssignmentsList,
 	RevokeRequestFilter,
 } from '@/features/revoke_requests/components';
@@ -146,7 +146,7 @@ function RevokeRequestCreatePageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.revoke_request.title')}
 			/>
 
-			<RevokeRequestFormContainer>
+			<FormContainer>
 				<Stack gap='md'>
 					<ActionButtons
 						canSubmit={canSubmit}
@@ -180,7 +180,7 @@ function RevokeRequestCreatePageBody(): React.ReactNode {
 						isLoading={pageData.isLoading}
 					/>
 				</Stack>
-			</RevokeRequestFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }

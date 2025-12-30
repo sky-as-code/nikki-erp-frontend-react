@@ -1,6 +1,13 @@
 import { Stack } from '@mantine/core';
 import { cleanFormData } from '@nikkierp/common/utils';
-import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	FormFieldProvider,
+	FormStyleProvider,
+	LoadingState,
+	NotFound,
+} from '@nikkierp/ui/components';
+import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -8,14 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
 import { AuthorizeDispatch, actionActions, selectActionState } from '@/appState';
-import actionSchema from '@/features/actions/action-schema.json';
-import {
-	ActionNotFound,
-	ActionFormActions,
-	ActionFormContainer,
-	ActionFormFields,
-	ActionLoadingState,
-} from '@/features/actions/components';
+import { ActionFormFields, actionSchema } from '@/features/actions';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 
@@ -114,11 +114,17 @@ function ActionDetailPageBody(): React.ReactNode {
 	const schema = actionSchema as ModelSchema;
 
 	if (isLoading) {
-		return <ActionLoadingState />;
+		return <LoadingState messageKey='nikki.authorize.action.messages.loading' />;
 	}
 
 	if (!action) {
-		return <ActionNotFound onGoBack={handleCancel} />;
+		return (
+			<NotFound
+				onGoBack={handleCancel}
+				messageKey='nikki.authorize.action.messages.not_found'
+				showBackButton={false}
+			/>
+		);
 	}
 
 	return (
@@ -130,7 +136,7 @@ function ActionDetailPageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.action.title')}
 			/>
 
-			<ActionFormContainer title={action.name}>
+			<FormContainer title={action.name}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
 						formVariant='update'
@@ -141,7 +147,7 @@ function ActionDetailPageBody(): React.ReactNode {
 						{({ handleSubmit: formHandleSubmit }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
-									<ActionFormActions
+									<FormActions
 										isSubmitting={isSubmitting}
 										onCancel={handleCancel}
 										isCreate={false}
@@ -152,7 +158,7 @@ function ActionDetailPageBody(): React.ReactNode {
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>
-			</ActionFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }

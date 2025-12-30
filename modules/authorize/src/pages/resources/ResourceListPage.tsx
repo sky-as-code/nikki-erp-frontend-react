@@ -1,5 +1,5 @@
 import { Paper, Stack } from '@mantine/core';
-import { ConfirmModal } from '@nikkierp/ui/components';
+import { ConfirmModal, Headers, Actions } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -12,66 +12,19 @@ import {
 	selectResourceState,
 } from '@/appState';
 import {
-	ResourceListActions,
-	ResourceListHeader,
 	ResourceTable,
-} from '@/features/resources/components';
-import resourceSchema from '@/features/resources/resource-schema.json';
+	resourceSchema,
+} from '@/features/resources';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
+import { useResourceDelete } from './hooks';
 
-import type { Resource } from '@/features/resources';
-
-
-function useResourceDeleteHandler(resources: Resource[], dispatch: AuthorizeDispatch) {
-	const { notification } = useUIState();
-	const { t: translate } = useTranslation();
-	const [deleteModalOpened, setDeleteModalOpened] = React.useState(false);
-	const [resourceToDelete, setResourceToDelete] = React.useState<Resource | null>(null);
-
-	const handleDeleteRequest = React.useCallback((resourceId: string) => {
-		const resource = resources.find((entry) => entry.id === resourceId);
-		if (!resource) return;
-		setResourceToDelete(resource);
-		setDeleteModalOpened(true);
-	}, [resources]);
-
-	const confirmDelete = React.useCallback(() => {
-		if (!resourceToDelete) return;
-		dispatch(resourceActions.deleteResource({
-			name: resourceToDelete.name,
-		})).then((result) => {
-			if (result.meta.requestStatus === 'fulfilled') {
-				notification.showInfo(
-					translate('nikki.authorize.resource.messages.delete_success', { name: resourceToDelete.name }),
-					translate('nikki.general.messages.success'),
-				);
-
-				dispatch(resourceActions.listResources());
-			}
-			else {
-				const errorMessage = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.delete_failed');
-				notification.showError(errorMessage, translate('nikki.general.messages.error'));
-			}
-			setDeleteModalOpened(false);
-			setResourceToDelete(null);
-		});
-	}, [dispatch, resourceToDelete, notification, translate]);
-
-	const closeDeleteModal = React.useCallback(() => {
-		setDeleteModalOpened(false);
-		setResourceToDelete(null);
-	}, []);
-
-	return { deleteModalOpened, resourceToDelete, handleDeleteRequest, confirmDelete, closeDeleteModal };
-}
 
 function ResourceListPageBody(): React.ReactNode {
 	const navigate = useNavigate();
 	const { t: translate } = useTranslation();
 	const { resources, isLoadingList } = useMicroAppSelector(selectResourceState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const deleteHandler = useResourceDeleteHandler(resources, dispatch);
+	const deleteHandler = useResourceDelete.handler(resources, dispatch);
 
 	const columns = ['name', 'description', 'resourceType', 'scopeType', 'actionsCount', 'actions'];
 	const schema = resourceSchema as ModelSchema;
@@ -99,8 +52,8 @@ function ResourceListPageBody(): React.ReactNode {
 	return (
 		<>
 			<Stack gap='md'>
-				<ResourceListHeader />
-				<ResourceListActions
+				<Headers titleKey='nikki.authorize.resource.title' />
+				<Actions
 					onCreate={handleCreate}
 					onRefresh={handleRefresh}
 				/>

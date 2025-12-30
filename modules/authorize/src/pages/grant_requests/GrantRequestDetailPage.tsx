@@ -1,15 +1,19 @@
 import { Stack } from '@mantine/core';
-import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	FormFieldProvider,
+	FormStyleProvider,
+	LoadingState,
+	NotFound,
+} from '@nikkierp/ui/components';
+import { FormContainer } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
 	GrantRequestDetailActions,
-	GrantRequestFormContainer,
 	GrantRequestFormFields,
-	GrantRequestLoadingState,
-	GrantRequestNotFound,
 } from '@/features/grant_requests/components';
 import grantRequestSchema from '@/features/grant_requests/grant-request-schema.json';
 
@@ -29,8 +33,18 @@ function GrantRequestDetailPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const schema = grantRequestSchema as ModelSchema;
 
-	if (isLoading) return <GrantRequestLoadingState />;
-	if (!grantRequest) return <GrantRequestNotFound onGoBack={handleBack} />;
+	if (isLoading) {
+		return <LoadingState height={200} />;
+	}
+	if (!grantRequest) {
+		return (
+			<NotFound
+				onGoBack={handleBack}
+				titleKey='nikki.general.messages.not_found'
+				messageKey='nikki.authorize.grant_request.messages.not_found'
+			/>
+		);
+	}
 
 	const targetName = grantRequest.target?.name || grantRequest.targetRef;
 
@@ -50,7 +64,7 @@ function GrantRequestDetailPageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.grant_request.title')}
 			/>
 
-			<GrantRequestFormContainer title={targetName}>
+			<FormContainer title={targetName}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
 						formVariant='update'
@@ -74,7 +88,7 @@ function GrantRequestDetailPageBody(): React.ReactNode {
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>
-			</GrantRequestFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }

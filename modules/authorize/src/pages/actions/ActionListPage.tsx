@@ -1,5 +1,5 @@
 import { Paper, Stack } from '@mantine/core';
-import { ConfirmModal } from '@nikkierp/ui/components';
+import { ConfirmModal, Headers, Actions } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -13,12 +13,7 @@ import {
 	selectActionState,
 	selectResourceState,
 } from '@/appState';
-import actionSchema from '@/features/actions/action-schema.json';
-import {
-	ActionListActions,
-	ActionListHeader,
-	ActionTable,
-} from '@/features/actions/components';
+import { ActionTable, actionSchema } from '@/features/actions';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 
@@ -111,9 +106,9 @@ function ActionListPageBody(): React.ReactNode {
 
 	return (
 		<>
-			<Stack gap='lq'>
-				<ActionListHeader />
-				<ActionListActions
+			<Stack gap='md'>
+				<Headers titleKey='nikki.authorize.action.title' />
+				<Actions
 					onCreate={handleCreate}
 					onRefresh={handleRefresh}
 				/>

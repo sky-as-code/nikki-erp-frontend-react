@@ -1,3 +1,3 @@
 export * from './roleEntitlements';
 export * from './roleForm';
-export * from './roleTable';
+export * from './RoleTable';

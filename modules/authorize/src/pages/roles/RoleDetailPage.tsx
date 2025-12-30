@@ -1,5 +1,12 @@
 import { Stack } from '@mantine/core';
-import { BreadcrumbsHeader, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import {
+	BreadcrumbsHeader,
+	FormFieldProvider,
+	FormStyleProvider,
+	LoadingState,
+	NotFound,
+} from '@nikkierp/ui/components';
+import { FormContainer } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,10 +14,7 @@ import { useNavigate } from 'react-router';
 
 import {
 	RoleDetailActions,
-	RoleFormContainer,
 	RoleFormFields,
-	RoleLoadingState,
-	RoleNotFound,
 	AssignedEntitlementsList,
 } from '@/features/roles/components';
 import roleSchema from '@/features/roles/role-schema.json';
@@ -31,8 +35,18 @@ function RoleDetailPageBody(): React.ReactNode {
 	const handleAddEntitlements = React.useCallback(() => navigate('add-entitlements'), [navigate]);
 	const handleRemoveEntitlements = React.useCallback(() => navigate('remove-entitlements'), [navigate]);
 
-	if (isLoading) return <RoleLoadingState />;
-	if (!role) return <RoleNotFound onGoBack={handleGoBack} />;
+	if (isLoading) {
+		return <LoadingState messageKey='nikki.authorize.role.messages.loading' />;
+	}
+	if (!role) {
+		return (
+			<NotFound
+				onGoBack={handleGoBack}
+				messageKey='nikki.authorize.role.messages.not_found'
+				showBackButton={false}
+			/>
+		);
+	}
 
 	return (
 		<Stack gap='md'>
@@ -43,7 +57,7 @@ function RoleDetailPageBody(): React.ReactNode {
 				parentTitle={translate('nikki.authorize.role.title')}
 			/>
 
-			<RoleFormContainer title={role.name}>
+			<FormContainer title={role.name}>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
 						formVariant='update'
@@ -74,7 +88,7 @@ function RoleDetailPageBody(): React.ReactNode {
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>
-			</RoleFormContainer>
+			</FormContainer>
 		</Stack>
 	);
 }
