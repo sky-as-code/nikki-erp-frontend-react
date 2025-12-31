@@ -21,8 +21,8 @@ const selectIsAuthenticated = createSelector(
 const selectIsSessionRestoring = createSelector(
 	selectAuthState,
 	selectUserContext,
-	(authData: AuthState, userContext: UserContextState) =>
-		authData.isSignInSuccess != null && userContext.user == null,
+	(authData: AuthState, userContext: UserContextState) => false,
+	// authData.isSignInSuccess != null && userContext.user == null,
 );
 
 const selectAuthenticatedStatus = createSelector(

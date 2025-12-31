@@ -1,19 +1,21 @@
-import { Breadcrumbs, Button, Group, Paper, Stack, TagsInput, Typography } from '@mantine/core';
+import { ActionIcon, Anchor, Breadcrumbs, Button, Group, Paper, Stack, TagsInput, Tooltip, Typography } from '@mantine/core';
 import { AutoTable, withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
-import { IconPlus, IconRefresh, IconUpload } from '@tabler/icons-react';
+import { IconTrash, IconEdit, IconEye, IconPlus, IconRefresh, IconUpload } from '@tabler/icons-react';
 import React from 'react';
+import { Link, useNavigate } from 'react-router';
 
 import { IdentityDispatch, userActions, selectUserState } from '../../appState';
 import userSchema from '../../user-schema.json';
 
 
 function UserListPageBody(): React.ReactNode {
+	const navigate = useNavigate();
 	const { users, isLoadingList } = useMicroAppSelector(selectUserState);
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const schema = userSchema as ModelSchema;
-	const columns = ['id', 'email', 'dateOfBirth', 'dependantNum', 'gender', 'nationality'];
+	const columns = ['id', 'email', 'dateOfBirth', 'dependantNum', 'gender', 'nationality', 'actions'];
 
 	React.useEffect(() => {
 		dispatch(userActions.listUsers());
@@ -46,6 +48,21 @@ function UserListPageBody(): React.ReactNode {
 					data={users}
 					schema={schema}
 					isLoading={isLoadingList}
+					columnRenderers={{
+						actions: (row: Record<string, any>) => (
+							<Group gap='xs'>
+								<Anchor component={Link} to={`./${row.id}`}>
+									<IconEdit size={16} />
+								</Anchor>
+								<Anchor component={Link} to={`./${row.id}/edit`}>
+									<IconEye size={16} />
+								</Anchor>
+								<Anchor component={Link} to={`./${row.id}/delete`}>
+									<IconTrash size={16} />
+								</Anchor>
+							</Group>
+						),
+					}}
 				/>
 			</Paper>
 		</Stack>

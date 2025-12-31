@@ -1,0 +1,73 @@
+{
+	"name": "action",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"min": 1,
+					"max": 64,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				},
+				{
+					"type": "regex",
+					"pattern": "^[a-zA-Z0-9]+$",
+					"message": "{ \"$ref\": 'nikki.authorize.action.errors.name_alphanumeric' }"
+				}
+			]
+		},
+		"resourceId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.resource_id' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.description' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 255,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"entitlementsCount": {
+			"type": "integer",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.entitlements_count' }",
+			"frontendOnly": true
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.authorize.action.fields.created_at' }",
+			"hidden": true
+		}
+	}
+}
+
