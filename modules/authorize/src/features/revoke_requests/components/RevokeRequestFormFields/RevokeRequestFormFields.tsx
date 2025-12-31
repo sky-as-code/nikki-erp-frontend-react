@@ -3,8 +3,8 @@ import { AutoField } from '@nikkierp/ui/components/form';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ReceiverSelectField } from '@/features/grant_requests/components/ReceiverSelectField/ReceiverSelectField';
-import { TargetSelectField } from '@/features/grant_requests/components/TargetSelectField/TargetSelectField';
+import { ReceiverSelectField } from '@/features/revoke_requests/components/ReceiverSelectField/ReceiverSelectField';
+import { TargetSelectField } from '@/features/revoke_requests/components/TargetSelectField/TargetSelectField';
 
 import type { Group } from '@/features/identities';
 import type { User } from '@/features/identities';
