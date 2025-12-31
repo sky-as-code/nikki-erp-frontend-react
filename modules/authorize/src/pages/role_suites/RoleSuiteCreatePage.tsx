@@ -10,14 +10,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { MOCK_ORGS } from '@/features/orgs/mockOrgs';
-import {
-	RoleSuiteFormFields,
-	RoleSuiteRolesSelector,
-	RoleSuiteChangesSummary,
-} from '@/features/role_suites/components';
+import { RoleSuiteChangesSummary } from '@/features/role_suites/components/RoleSuiteChangesSummary';
+import { RoleSuiteFormFields } from '@/features/role_suites/components/RoleSuiteFormFields';
 
 import { useRoleSuiteCreateHandlers } from './hooks';
 
+import { RolesSelector } from '@/features/role_suites/components/RolesSelector';
 import roleSuiteSchema from '@/features/role_suites/roleSuite-schema.json';
 
 
@@ -78,7 +76,7 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 										selectedRoleIds={selectedRoleIds}
 										allRoles={roles}
 									/>
-									<RoleSuiteRolesSelector
+									<RolesSelector
 										availableRoles={availableRoles}
 										selectedRoleIds={selectedRoleIds}
 										onAdd={(id) => setSelectedRoleIds((prev) =>
