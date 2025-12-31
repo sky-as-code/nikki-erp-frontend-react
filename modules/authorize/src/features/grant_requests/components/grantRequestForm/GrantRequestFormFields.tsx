@@ -1,10 +1,9 @@
 import { Paper, Stack, Title } from '@mantine/core';
-import { AutoField } from '@nikkierp/ui/components/form';
+import { AutoField, EntitySelectField } from '@nikkierp/ui/components/form';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ReceiverSelectField } from '../ReceiverSelectField/ReceiverSelectField';
-import { TargetSelectField } from '../TargetSelectField/TargetSelectField';
+import { useReceiverSelectLogic, useTargetSelectLogic } from '@/pages/grant_requests/hooks';
 
 import type { Group } from '@/features/identities';
 import type { User } from '@/features/identities';
@@ -18,8 +17,9 @@ interface TargetFieldsProps {
 	roleSuites?: RoleSuite[];
 }
 
-const TargetFields: React.FC<TargetFieldsProps> = ({ isCreate, roles, roleSuites }) => {
+function TargetFields({ isCreate, roles, roleSuites }: TargetFieldsProps) {
 	const { t: translate } = useTranslation();
+	const { availableTargets, shouldDisable, placeholder } = useTargetSelectLogic(roles, roleSuites);
 
 	return (
 		<Paper p='md' withBorder>
@@ -32,7 +32,14 @@ const TargetFields: React.FC<TargetFieldsProps> = ({ isCreate, roles, roleSuites
 					htmlProps={!isCreate ? { readOnly: true } : undefined}
 				/>
 				{isCreate ? (
-					<TargetSelectField roles={roles} roleSuites={roleSuites} />
+					<EntitySelectField
+						fieldName='targetRef'
+						entities={availableTargets}
+						getEntityId={(t) => t.id}
+						getEntityName={(t) => t.name}
+						shouldDisable={shouldDisable}
+						placeholder={placeholder}
+					/>
 				) : (
 					<AutoField
 						name='targetName'
@@ -42,7 +49,7 @@ const TargetFields: React.FC<TargetFieldsProps> = ({ isCreate, roles, roleSuites
 			</Stack>
 		</Paper>
 	);
-};
+}
 
 interface ReceiverFieldsProps {
 	isCreate: boolean;
@@ -50,8 +57,9 @@ interface ReceiverFieldsProps {
 	groups?: Group[];
 }
 
-const ReceiverFields: React.FC<ReceiverFieldsProps> = ({ isCreate, users, groups }) => {
+function ReceiverFields({ isCreate, users, groups }: ReceiverFieldsProps) {
 	const { t: translate } = useTranslation();
+	const { availableReceivers, shouldDisable, placeholder } = useReceiverSelectLogic(users, groups);
 
 	return (
 		<Paper p='md' withBorder>
@@ -64,7 +72,14 @@ const ReceiverFields: React.FC<ReceiverFieldsProps> = ({ isCreate, users, groups
 					htmlProps={!isCreate ? { readOnly: true } : undefined}
 				/>
 				{isCreate ? (
-					<ReceiverSelectField users={users} groups={groups} />
+					<EntitySelectField
+						fieldName='receiverId'
+						entities={availableReceivers}
+						getEntityId={(r) => r.id}
+						getEntityName={(r) => r.name}
+						shouldDisable={shouldDisable}
+						placeholder={placeholder}
+					/>
 				) : (
 					<AutoField
 						name='receiverName'
@@ -74,13 +89,13 @@ const ReceiverFields: React.FC<ReceiverFieldsProps> = ({ isCreate, users, groups
 			</Stack>
 		</Paper>
 	);
-};
+}
 
 interface CommonFieldsProps {
 	isCreate: boolean;
 }
 
-const CommonFields: React.FC<CommonFieldsProps> = ({ isCreate }) => {
+function CommonFields({ isCreate }: CommonFieldsProps) {
 	const { t: translate } = useTranslation();
 
 	return (
@@ -115,7 +130,7 @@ const CommonFields: React.FC<CommonFieldsProps> = ({ isCreate }) => {
 			</Stack>
 		</Paper>
 	);
-};
+}
 
 interface GrantRequestFormFieldsProps {
 	isCreate: boolean;
@@ -138,4 +153,3 @@ export const GrantRequestFormFields: React.FC<GrantRequestFormFieldsProps> = ({
 		<CommonFields isCreate={isCreate} />
 	</Stack>
 );
-
