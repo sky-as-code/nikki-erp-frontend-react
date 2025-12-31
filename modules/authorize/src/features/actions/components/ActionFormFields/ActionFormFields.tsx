@@ -41,9 +41,6 @@ export const ActionFormFields: React.FC<ActionFormFieldsProps> = ({
 			<AutoField
 				name='name'
 				autoFocused
-				inputProps={{
-					disabled: !isCreate,
-				}}
 				htmlProps={!isCreate ? {
 					readOnly: true,
 				} : undefined}
@@ -80,7 +77,6 @@ export const ActionFormFields: React.FC<ActionFormFieldsProps> = ({
 			) : (
 				<AutoField
 					name='resourceId'
-					inputProps={{ disabled: true }}
 					htmlProps={{ readOnly: true }}
 				/>
 			)}

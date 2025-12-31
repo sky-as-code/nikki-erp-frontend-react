@@ -1,5 +1,4 @@
 import { Stack } from '@mantine/core';
-import { cleanFormData } from '@nikkierp/common/utils';
 import {
 	BreadcrumbsHeader,
 	FormFieldProvider,
@@ -10,56 +9,12 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { AuthorizeDispatch, actionActions, resourceActions, selectResourceState } from '@/appState';
+import { AuthorizeDispatch, resourceActions, selectResourceState } from '@/appState';
 import { ActionFormFields, actionSchema } from '@/features/actions';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
+import { useActionCreateHandlers } from './hooks';
 
-import type { Action } from '@/features/actions';
-
-
-function useActionCreateHandlers() {
-	const navigate = useNavigate();
-	const location = useLocation();
-	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { notification } = useUIState();
-	const { t: translate } = useTranslation();
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-	const handleSubmit = React.useCallback(async (data: unknown) => {
-		const formData = cleanFormData(data as Partial<Action>);
-		setIsSubmitting(true);
-
-		formData.createdBy = '01JWNNJGS70Y07MBEV3AQ0M526';
-		const result = await dispatch(actionActions.createAction(
-			formData as Omit<Action, 'id' | 'createdAt' | 'etag' | 'resources' | 'entitlementsCount'>,
-		));
-
-		if (result.meta.requestStatus === 'fulfilled') {
-			notification.showInfo(
-				translate('nikki.authorize.action.messages.create_success', { name: formData.name }),
-				translate('nikki.general.messages.success'),
-			);
-			const parent = resolvePath('..', location.pathname).pathname;
-			navigate(parent);
-		}
-		else {
-			const errorMessage = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.create_failed');
-			notification.showError(errorMessage, translate('nikki.general.messages.error'));
-		}
-
-		setIsSubmitting(false);
-	}, [dispatch, notification, location, translate, navigate]);
-
-	const handleCancel = React.useCallback(() => {
-		const parent = resolvePath('..', location.pathname).pathname;
-		navigate(parent);
-	}, [navigate, location]);
-
-	return { isSubmitting, handleSubmit, handleCancel };
-}
 
 function ActionCreatePageBody(): React.ReactNode {
 	const {
