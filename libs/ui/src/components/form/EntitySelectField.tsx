@@ -27,6 +27,7 @@ export interface EntitySelectFieldProps<TEntity> {
 	// Behavior customization
 	shouldDisable?: boolean;
 	placeholder?: string;
+	onChange?: (value: string | undefined) => void;
 
 	// Select props
 	selectProps?: Partial<React.ComponentPropsWithoutRef<typeof Select>>;
@@ -83,6 +84,7 @@ export function EntitySelectField<TEntity>({
 	appendOptions,
 	shouldDisable,
 	placeholder,
+	onChange,
 	selectProps,
 }: EntitySelectFieldProps<TEntity>) {
 	const { t: translate } = useTranslation();
@@ -132,7 +134,9 @@ export function EntitySelectField<TEntity>({
 						data={options}
 						value={isDisabled ? null : (field.value || null)}
 						onChange={(val) => {
-							field.onChange(val === null ? undefined : val);
+							const newValue = val === null ? undefined : val;
+							field.onChange(newValue);
+							onChange?.(newValue);
 						}}
 						searchable
 						clearable

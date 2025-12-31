@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import type { Role } from '@/features/roles';
 
 
-interface RoleSuiteRolesSelectorProps {
+interface RolesSelectorProps {
 	availableRoles: Role[];
 	selectedRoleIds: string[];
 	onAdd: (roleId: string) => void;
@@ -236,7 +236,7 @@ function SelectedRolesList({
 	);
 }
 
-export const RoleSuiteRolesSelector: React.FC<RoleSuiteRolesSelectorProps> = ({
+export const RolesSelector: React.FC<RolesSelectorProps> = ({
 	availableRoles,
 	selectedRoleIds,
 	onAdd,

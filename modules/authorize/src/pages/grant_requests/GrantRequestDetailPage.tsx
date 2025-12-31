@@ -34,7 +34,7 @@ function GrantRequestDetailPageBody(): React.ReactNode {
 	const schema = grantRequestSchema as ModelSchema;
 
 	if (isLoading) {
-		return <LoadingState height={200} />;
+		return <LoadingState minHeight={200} />;
 	}
 	if (!grantRequest) {
 		return (
