@@ -1,0 +1,4 @@
+# Thư mục này chứa các file ảnh được chia sẻ
+# Có thể import từ các module khác bằng cách:
+# import logo from '@nikkierp/ui/assets/images/logo.png'
+

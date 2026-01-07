@@ -1,7 +1,7 @@
 import { Box, Image, Button, Checkbox, Container, Flex,
 	Input, Select, Text, Accordion, Card, Group, Menu, ActionIcon,
 } from '@mantine/core';
-import { IconDots, IconEye, IconFileZip, IconStar, IconStarFilled, IconTrash } from '@tabler/icons-react';
+import { IconDots, IconStarFilled } from '@tabler/icons-react';
 import { FC, useState } from 'react';
 
 

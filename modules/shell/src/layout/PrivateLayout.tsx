@@ -31,7 +31,7 @@ export function PrivateLayout(): React.ReactNode {
 				component='div'
 				bg={bg}
 				gap={0}
-				className='module-layout h-screen'
+				className='module-layout'
 				display={'flex'}
 			>
 				<Header />
@@ -64,7 +64,7 @@ const Header: React.FC = () => {
 			gap={0}
 			bg={bg}
 			className={clsx(
-				'w-full h-[50px] shrink-0 z-100 px-4',
+				'sticky top-0 z-100 w-full h-[50px] shrink-0 px-4',
 				classes.headerRow,
 				classes.menuBar,
 			)}

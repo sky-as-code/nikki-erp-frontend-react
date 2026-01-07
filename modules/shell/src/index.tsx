@@ -48,6 +48,8 @@ function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 				<Route path='signin' element={<SignInPage />} />
 				<Route path='notfound' element={<NotFoundPage />} />
 			</Route>
+
+
 			<Route element={<PrivateLayout />}>
 				<Route path='/' element={<ToDefaultOrg />} />
 				<Route element={<OrgSubLayout />}>
