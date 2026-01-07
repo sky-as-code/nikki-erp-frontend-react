@@ -19,6 +19,31 @@ html {
 	font-size: 16px;
 }
 
+/* Custom scrollbar for entire page */
+html::-webkit-scrollbar {
+	width: 3px;
+	height: 3px;
+}
+
+html::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+	background-color: var(--mantine-color-gray-7);
+	border-radius: 3px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+	background-color: var(--mantine-color-gray-8);
+}
+
+/* Firefox */
+html {
+	scrollbar-width: thin;
+	scrollbar-color: var(--mantine-color-gray-5) transparent;
+}
+
 #root {
 	position: relative;
 }

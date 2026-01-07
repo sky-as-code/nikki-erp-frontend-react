@@ -4,7 +4,7 @@ import { IconBrightnessFilled, IconMoonStars, IconSun } from '@tabler/icons-reac
 import { forwardRef, useImperativeHandle } from 'react';
 
 
-export const ThemeModeSwitchModal = forwardRef((props, ref) => {
+export const ThemeSwitchModal = forwardRef((props, ref) => {
 	const [opened, { open, close }] = useDisclosure(false);
 
 	useImperativeHandle(ref, () => ({
@@ -39,9 +39,9 @@ const ThemeSwitcher = () => {
 	const { colorScheme, setColorScheme } = useMantineColorScheme();
 
 	const themes = [
-		{ label: 'Auto', value: 'auto', icon: <IconBrightnessFilled size={30} /> },
 		{ label: 'Light', value: 'light', icon: <IconSun size={30} /> },
 		{ label: 'Dark', value: 'dark', icon: <IconMoonStars size={30} /> },
+		{ label: 'Auto', value: 'auto', icon: <IconBrightnessFilled size={30} /> },
 	];
 
 	return (

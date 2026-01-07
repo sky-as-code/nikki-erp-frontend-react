@@ -88,6 +88,8 @@
 		"./appState": "./src/appState/index.tsx",
 		"./appState/routingSlice": "./src/appState/routingSlice.ts",
 		"./appState/layoutSlice": "./src/appState/layoutSlice.ts",
+		"./assets": "./src/assets/index.ts",
+		"./assets/*": "./src/assets/*",
 		"./components/form": "./src/components/form/index.tsx",
 		"./components": "./src/components/index.tsx",
 		"./contexts": "./src/contexts/index.tsx",

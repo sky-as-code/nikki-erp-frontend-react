@@ -1,0 +1,4 @@
+# Thư mục này chứa các file icon được chia sẻ
+# Có thể import từ các module khác bằng cách:
+# import icon from '@nikkierp/ui/assets/icons/icon.svg'
+

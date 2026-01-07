@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
 import classes from './RootLayout.module.css';
-import { ThemeModeSwitchModal } from './ThemeModeSwitchModal';
+import { ThemeSwitchModal } from './ThemeSwitchModal';
 
 
 export const ProfileMenuDropdown: React.FC = () => {
@@ -38,7 +38,7 @@ export const ProfileMenuDropdown: React.FC = () => {
 					<Menu.Item  onClick={handleLogout} leftSection={<IconLogout2 size={20} />}> {translate('nikki.general.labels.signOut')}</Menu.Item>
 				</Menu.Dropdown>
 			</Menu>
-			<ThemeModeSwitchModal ref={themeModeModalRef} />
+			<ThemeSwitchModal ref={themeModeModalRef} />
 		</>
 	);
 };

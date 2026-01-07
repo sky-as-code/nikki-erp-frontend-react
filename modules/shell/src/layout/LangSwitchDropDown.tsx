@@ -1,5 +1,9 @@
-import { Button, Menu } from '@mantine/core';
+import { Box, Button, Image, Menu } from '@mantine/core';
+import enIcon from '@nikkierp/ui/assets/icons/en.png';
+import viIcon from '@nikkierp/ui/assets/icons/vi.png';
+import { IconChevronDown } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+
 
 
 export const LangSwitchDropdown: React.FC = () => {
@@ -8,17 +12,35 @@ export const LangSwitchDropdown: React.FC = () => {
 		i18n.changeLanguage(lang);
 	};
 
+	const languages = [
+		{ label: 'Tiếng Việt', value: 'vi', icon: <Image width={20} height={20} fit='contain' src={viIcon} alt='vi' /> },
+		{ label: 'English', value: 'en', icon: <Image width={20} height={20} fit='contain' src={enIcon} alt='en' /> },
+	];
+
+	const langItems = languages.map((language) => (
+		<Menu.Item
+			key={language.value}
+			onClick={() => changeLang(language.value)}
+			leftSection={language.icon}
+		>
+			{language.label}
+		</Menu.Item>
+	));
+
+
+	const selectedLang = languages.find((language) => language.value === i18n.language);
+
 	return (
-		<Menu shadow='md' width={200}>
+		<Menu shadow='md' width={150} position='bottom-end'>
 			<Menu.Target>
-				<Button w={35} h={35} p={0} variant='outline'>
-					{i18n.language}
+				<Button px={6} variant='default'>
+					<Box w={24} h={20} p={0} mx={3}>{ selectedLang?.icon }</Box>
+					<IconChevronDown size={18} color='var(--mantine-color-gray-7)' />
 				</Button>
 			</Menu.Target>
 
 			<Menu.Dropdown>
-				<Menu.Item onClick={() => changeLang('vi')} leftSection={'🍎'}> Tiếng Việt</Menu.Item>
-				<Menu.Item  onClick={() => changeLang('en')} leftSection={'🍌'}> English</Menu.Item>
+				{langItems}
 			</Menu.Dropdown>
 		</Menu>
 	);
