@@ -2,7 +2,7 @@ import { Avatar, Badge, Box, Collapse, Drawer, Group, Paper, ScrollArea, Stack, 
 import { IconChevronDown, IconChevronRight, IconUsers } from '@tabler/icons-react';
 import React from 'react';
 
-import { User } from '../../../users/types';
+import { User } from '../../../user/types';
 import { HierarchyLevel } from '../../types';
 
 

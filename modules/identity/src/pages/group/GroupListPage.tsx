@@ -6,9 +6,9 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { IdentityDispatch, groupActions, selectGroupState } from '../../appState';
-import { ButtonListPage } from '../../components/ButtonListPage';
 import { HeaderListPage } from '../../components/HeaderListPage/HeaderListPage';
-import { GroupTable } from '../../features/groups/components';
+import { ListActionListPage } from '../../components/ListActionBar';
+import { GroupTable } from '../../features/group/components';
 import groupSchema from '../../schemas/group-schema.json';
 
 
@@ -51,7 +51,7 @@ export function GroupListPageBody(): React.ReactNode {
 				title='nikki.identity.group.title'
 				searchPlaceholder='nikki.identity.group.searchPlaceholder'
 			/>
-			<ButtonListPage
+			<ListActionListPage
 				onCreate={handleCreate}
 				onRefresh={handleRefresh}
 			/>

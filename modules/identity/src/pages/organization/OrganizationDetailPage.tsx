@@ -3,13 +3,14 @@ import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, organizationActions } from '../../appState';
-import { selectOrganizationState } from '../../appState/organizations';
+import { selectOrganizationState } from '../../appState/organization';
 import { HeaderDetailPage } from '../../components/HeaderDetailPage/HeaderDetailPage ';
-import { OrganizationDetailForm } from '../../features/organizations/components';
+import { OrganizationDetailForm } from '../../features/organization/components';
 import organizationSchema from '../../schemas/organization-schema.json';
 
 
@@ -17,17 +18,18 @@ function useOrganizationDetailHandlers(slug: string, etag: string) {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const navigate = useNavigate();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 
 	const handleUpdate = React.useCallback((data: any) => {
 		const dataWithTag = { ...data, etag, slug };
 		dispatch(organizationActions.updateOrganization(dataWithTag))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Organization updated successfully', 'Success');
+				notification.showInfo(t('nikki.identity.organization.messages.updateSuccess'), '');
 				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError('Failed to update organization. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.organization.messages.updateError'), '');
 			});
 	}, [slug, dispatch, etag, navigate, notification]);
 
@@ -35,11 +37,11 @@ function useOrganizationDetailHandlers(slug: string, etag: string) {
 		dispatch(organizationActions.deleteOrganization(slug))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Organization deleted successfully', 'Success');
+				notification.showInfo(t('nikki.identity.organization.messages.deleteSuccess'), '');
 				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError('Failed to delete organization. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.organization.messages.deleteError'), '');
 			});
 	}, [slug, dispatch, navigate, notification]);
 

@@ -3,6 +3,7 @@ import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
@@ -18,6 +19,7 @@ function useHierarchyCreateHandlers() {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const { orgSlug } = useParams<{ orgSlug: string }>();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 
 	const handleCreate = React.useCallback((data: any) => {
 		// Clean up parentId - remove if empty string
@@ -29,11 +31,11 @@ function useHierarchyCreateHandlers() {
 		dispatch(hierarchyActions.createHierarchy({ orgSlug: orgSlug!, data: cleanedData }))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Hierarchy created successfully', 'Success');
+				notification.showInfo(t('nikki.identity.hierarchy.messages.createSuccess'), '');
 				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError('Failed to create hierarchy. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.hierarchy.messages.createError'), '');
 			});
 	}, [dispatch, navigate, orgSlug, notification]);
 

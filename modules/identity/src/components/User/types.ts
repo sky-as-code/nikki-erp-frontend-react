@@ -12,13 +12,3 @@ export interface AvailableUser {
 	displayName?: string;
 	avatarUrl?: string;
 }
-
-export interface ListUserProps {
-	users: UserInGroup[];
-	availableUsers: AvailableUser[];
-	isLoading?: boolean;
-	onAddUsers: (userIds: string[]) => Promise<void>;
-	onRemoveUsers: (userIds: string[]) => Promise<void>;
-	title?: string;
-	emptyMessage?: string;
-}

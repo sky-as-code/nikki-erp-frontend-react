@@ -3,12 +3,13 @@ import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, organizationActions, selectOrganizationState } from '../../appState';
 import { HeaderCreatePage } from '../../components/HeaderCreatePage/HeaderCreatePage';
-import { OrganizationCreateForm } from '../../features/organizations/components';
+import { OrganizationCreateForm } from '../../features/organization/components';
 import organizationSchema from '../../schemas/organization-schema.json';
 
 
@@ -16,16 +17,17 @@ function useOrganizationCreateHandlers() {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const navigate = useNavigate();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 
 	const handleCreate = React.useCallback((data: any) => {
 		dispatch(organizationActions.createOrganization(data))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Organization created successfully', 'Success');
+				notification.showInfo(t('nikki.identity.organization.messages.createSuccess'), '');
 				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError(`Failed to create organization ${data.slug}. Please try again.`, 'Error');
+				notification.showError(t('nikki.identity.organization.messages.createError'), '');
 			});
 	}, [dispatch, navigate, notification]);
 

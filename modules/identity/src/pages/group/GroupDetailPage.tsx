@@ -3,14 +3,15 @@ import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, groupActions, userActions, selectUserState } from '../../appState';
 import { selectGroupState } from '../../appState/group';
 import { HeaderDetailPage } from '../../components/HeaderDetailPage/HeaderDetailPage ';
-import { ListUser } from '../../features/groups';
-import { GroupDetailForm } from '../../features/groups/components';
+import { ListUser } from '../../features/group';
+import { GroupDetailForm } from '../../features/group/components';
 import groupSchema from '../../schemas/group-schema.json';
 
 
@@ -20,6 +21,7 @@ function useGroupDetailHandlers(groupId: string) {
 	const { groupDetail } = useMicroAppSelector(selectGroupState);
 	const { orgSlug } = useParams<{ orgSlug: string }>();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 
 	const handleUpdate = React.useCallback((data: any) => {
 		const updatePayload = {
@@ -30,10 +32,11 @@ function useGroupDetailHandlers(groupId: string) {
 		dispatch(groupActions.updateGroup(updatePayload))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Group updated successfully', 'Success');
+				notification.showInfo(t('nikki.identity.group.messages.updateSuccess'), '');
+				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError('Failed to update group. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.group.messages.updateError'), '');
 			});
 	}, [groupId, dispatch, groupDetail?.etag, notification]);
 
@@ -41,11 +44,11 @@ function useGroupDetailHandlers(groupId: string) {
 		dispatch(groupActions.deleteGroup(groupId))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Group deleted successfully', 'Success');
+				notification.showInfo(t('nikki.identity.group.messages.deleteSuccess'), '');
 				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError('Failed to delete group. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.group.messages.deleteError'), '');
 			});
 	}, [groupId, dispatch, navigate, notification]);
 
@@ -67,6 +70,7 @@ function useGroupUserManagement(groupId: string) {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const { groupDetail } = useMicroAppSelector(selectGroupState);
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 
 	const handleAddUsers = React.useCallback((userIds: string[]) => {
 		if (!groupDetail?.etag) return Promise.resolve();
@@ -78,7 +82,7 @@ function useGroupUserManagement(groupId: string) {
 		}))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Users added successfully', 'Success');
+				notification.showInfo(t('nikki.identity.group.messages.addUsersSuccess'), '');
 				return Promise.all([
 					dispatch(groupActions.getGroup(groupId)),
 					dispatch(userActions.listUsersByGroupId(groupId)),
@@ -86,7 +90,7 @@ function useGroupUserManagement(groupId: string) {
 			})
 			.then(() => { })
 			.catch(() => {
-				notification.showError('Failed to add users. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.group.messages.addUsersError'), '');
 			});
 	}, [groupId, groupDetail?.etag, dispatch, notification]);
 
@@ -100,7 +104,7 @@ function useGroupUserManagement(groupId: string) {
 		}))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Users removed successfully', 'Success');
+				notification.showInfo(t('nikki.identity.group.messages.removeUsersSuccess'), '');
 				return Promise.all([
 					dispatch(groupActions.getGroup(groupId)),
 					dispatch(userActions.listUsersByGroupId(groupId)),
@@ -108,7 +112,7 @@ function useGroupUserManagement(groupId: string) {
 			})
 			.then(() => { })
 			.catch(() => {
-				notification.showError('Failed to remove users. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.group.messages.removeUsersError'), '');
 			});
 	}, [groupId, groupDetail?.etag, dispatch, notification]);
 
@@ -149,7 +153,7 @@ export const GroupDetailPageBody: React.FC = () => {
 	return (
 		<Stack gap='md'>
 			<HeaderDetailPage
-				title='nikki.identity.group.detail.title'
+				title='nikki.identity.group.title'
 				name={groupDetail?.name} />
 			<GroupDetailForm
 				schema={schema}

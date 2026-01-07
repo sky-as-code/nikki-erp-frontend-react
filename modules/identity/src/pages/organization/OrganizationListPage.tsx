@@ -6,9 +6,9 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 
 import { IdentityDispatch, organizationActions, selectOrganizationState } from '../../appState';
-import { ButtonListPage } from '../../components/ButtonListPage';
 import { HeaderListPage } from '../../components/HeaderListPage/HeaderListPage';
-import { OrganizationTable } from '../../features/organizations/components';
+import { ListActionListPage } from '../../components/ListActionBar';
+import { OrganizationTable } from '../../features/organization/components';
 import organizationSchema from '../../schemas/organization-schema.json';
 
 
@@ -47,7 +47,7 @@ export function OrganizationListPageBody(): React.ReactElement {
 				title='nikki.identity.organization.title'
 				searchPlaceholder='nikki.identity.organization.searchPlaceholder'
 			/>
-			<ButtonListPage
+			<ListActionListPage
 				onCreate={handleCreate}
 				onRefresh={handleRefresh}
 			/>

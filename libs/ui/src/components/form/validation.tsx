@@ -21,7 +21,6 @@ export function createBaseSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 				// Required constraint will handle validation with custom message
 				return z.enum(enumValues).optional();
 			}
-
 			return z.string();
 		case 'array':
 			// Handle array type - allow it to pass through without strict validation

@@ -17,32 +17,43 @@ import { useTranslation } from 'react-i18next';
 import { ListActionDetailPage } from '../../../../components/ListActionBar';
 
 
-interface HierarchyFieldsProps {
-	hierarchyDetail: any;
+interface OrganizationFieldsProps {
+	organizationDetail: any;
 	isLoading: boolean;
 }
 
-function HierarchyFields({ hierarchyDetail, isLoading }: HierarchyFieldsProps) {
+function OrganizationFields({
+	organizationDetail,
+	isLoading,
+}: OrganizationFieldsProps) {
 	const { t } = useTranslation();
 
 	return (
 		<Stack gap='md'>
-			<AutoField
-				name='name'
-				autoFocused
-				inputProps={{
-					size: 'lg',
-					disabled: isLoading,
-				}}
-			/>
 			<div>
 				<Text size='sm' fw={500} mb='xs'>
-					{t('nikki.identity.hierarchy.fields.createdAt')}
+					{t('nikki.identity.organization.fields.slug')}
+				</Text>
+				<TextInput
+					value={organizationDetail?.slug || ''}
+					size='md'
+					variant='filled'
+					readOnly
+				/>
+			</div>
+			<AutoField name='displayName' inputProps={{ disabled: isLoading }} />
+			<AutoField name='legalName' inputProps={{ disabled: isLoading }} />
+			<AutoField name='phoneNumber' inputProps={{ disabled: isLoading }} />
+			<AutoField name='address' inputProps={{ disabled: isLoading }} />
+			<AutoField name='status' inputProps={{ disabled: isLoading }} />
+			<div>
+				<Text size='sm' fw={500} mb='xs'>
+					{t('nikki.identity.organization.fields.createdAt')}
 				</Text>
 				<TextInput
 					value={
-						hierarchyDetail?.createdAt
-							? new Date(hierarchyDetail.createdAt).toLocaleString()
+						organizationDetail?.createdAt
+							? new Date(organizationDetail.createdAt).toLocaleString()
 							: ''
 					}
 					size='md'
@@ -52,12 +63,12 @@ function HierarchyFields({ hierarchyDetail, isLoading }: HierarchyFieldsProps) {
 			</div>
 			<div>
 				<Text size='sm' fw={500} mb='xs'>
-					{t('nikki.identity.hierarchy.fields.updatedAt')}
+					{t('nikki.identity.organization.fields.updatedAt')}
 				</Text>
 				<TextInput
 					value={
-						hierarchyDetail?.updatedAt
-							? new Date(hierarchyDetail.updatedAt).toLocaleString()
+						organizationDetail?.updatedAt
+							? new Date(organizationDetail.updatedAt).toLocaleString()
 							: ''
 					}
 					size='md'
@@ -69,23 +80,27 @@ function HierarchyFields({ hierarchyDetail, isLoading }: HierarchyFieldsProps) {
 	);
 }
 
-type HierarchySchema = {
+type OrganizationSchema = {
 	name: string;
 	fields: Record<string, FieldDefinition>;
 	constraints?: FieldConstraint[];
 };
 
-interface HierarchyDetailFormProps {
-	schema: HierarchySchema;
-	hierarchyDetail: any;
+interface OrganizationDetailFormProps {
+	schema: OrganizationSchema;
+	organizationDetail: any;
 	isLoading: boolean;
 	onSubmit: (data: any) => void;
 	onDelete: () => void;
 }
 
-export function HierarchyDetailForm({
-	schema, hierarchyDetail, isLoading, onSubmit, onDelete,
-}: HierarchyDetailFormProps): React.ReactElement {
+export function OrganizationDetailForm({
+	schema,
+	organizationDetail,
+	isLoading,
+	onSubmit,
+	onDelete,
+}: OrganizationDetailFormProps): React.ReactElement {
 	const { t } = useTranslation();
 	const [showSaveConfirm, setShowSaveConfirm] = React.useState(false);
 	const [pendingData, setPendingData] = React.useState<any>(null);
@@ -105,27 +120,26 @@ export function HierarchyDetailForm({
 
 	return (
 		<>
-			<Paper className='p-4'>
+			<Paper withBorder p='xl'>
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
 						formVariant='update'
 						modelSchema={schema}
-						modelValue={hierarchyDetail}
-						modelLoading={isLoading}
+						modelValue={organizationDetail}
 					>
 						{({ handleSubmit, form }) => (
 							<form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
-								<Stack gap='md'>
+								<Stack gap='xl'>
 									<ListActionDetailPage
 										onDelete={onDelete}
 										isLoading={isLoading}
 										disableSave={!form.formState.isDirty}
-										titleDelete={t('nikki.identity.hierarchy.actions.confirmDelete')}
-										titleConfirmDelete={t('nikki.identity.hierarchy.actions.delete')}
-										messageConfirmDelete={t('nikki.identity.hierarchy.messages.confirmDeleteMessage')}
+										titleDelete={t('nikki.identity.organization.actions.confirmDelete')}
+										titleConfirmDelete={t('nikki.identity.organization.actions.delete')}
+										messageConfirmDelete={t('nikki.identity.organization.messages.confirmDeleteMessage')}
 									/>
-									<HierarchyFields
-										hierarchyDetail={hierarchyDetail}
+									<OrganizationFields
+										organizationDetail={organizationDetail}
 										isLoading={isLoading}
 									/>
 								</Stack>
@@ -134,14 +148,13 @@ export function HierarchyDetailForm({
 					</FormFieldProvider>
 				</FormStyleProvider>
 			</Paper>
-
 			<ConfirmModal
 				opened={showSaveConfirm}
 				onClose={() => setShowSaveConfirm(false)}
 				onConfirm={handleConfirmSave}
-				title={t('nikki.identity.hierarchy.actions.confirmUpdate')}
-				message={t('nikki.identity.hierarchy.messages.confirmUpdateMessage')}
-				confirmLabel={t('nikki.identity.hierarchy.actions.save')}
+				title={t('nikki.identity.organization.actions.confirmUpdate')}
+				message={t('nikki.identity.organization.messages.confirmUpdateMessage')}
+				confirmLabel={t('nikki.identity.organization.actions.save')}
 			/>
 		</>
 	);

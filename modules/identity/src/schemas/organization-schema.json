@@ -90,7 +90,7 @@
 				},
 				{
 					"type": "regex",
-					"pattern": "^[0-9+\\-\\s()]*$",
+					"pattern": "^[0-9]*$",
 					"message": "{ \"$ref\": 'nikki.identity.organization.messages.phoneNumberInvalid' }"
 				}
 			]

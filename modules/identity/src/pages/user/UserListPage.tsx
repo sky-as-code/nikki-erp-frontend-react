@@ -6,9 +6,9 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { IdentityDispatch, userActions, selectUserState } from '../../appState';
-import { ButtonListPage } from '../../components/ButtonListPage';
 import { HeaderListPage } from '../../components/HeaderListPage/HeaderListPage';
-import { UserTable } from '../../features/users/components';
+import { ListActionListPage } from '../../components/ListActionBar';
+import { UserTable } from '../../features/user/components';
 import userSchema from '../../schemas/user-schema.json';
 
 
@@ -49,7 +49,7 @@ export function UserListPageBody(): React.ReactElement {
 				title='nikki.identity.user.title'
 				searchPlaceholder='nikki.identity.user.searchPlaceholder'
 			/>
-			<ButtonListPage
+			<ListActionListPage
 				onCreate={handleCreate}
 				onRefresh={handleRefresh}
 			/>

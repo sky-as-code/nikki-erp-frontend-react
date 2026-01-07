@@ -3,12 +3,13 @@ import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, userActions, selectUserState } from '../../appState';
 import { HeaderCreatePage } from '../../components/HeaderCreatePage/HeaderCreatePage';
-import { UserCreateForm } from '../../features/users/components';
+import { UserCreateForm } from '../../features/user/components';
 import userSchema from '../../schemas/user-schema.json';
 
 
@@ -17,16 +18,17 @@ function useUserCreateHandlers() {
 	const navigate = useNavigate();
 	const { notification } = useUIState();
 	const { orgSlug } = useParams<{ orgSlug: string }>();
+	const { t } = useTranslation();
 
 	const handleCreate = React.useCallback((data: any) => {
 		dispatch(userActions.createUser({ orgSlug: orgSlug!, data }))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('User created successfully', 'Success');
+				notification.showInfo(t('nikki.identity.user.messages.createSuccess'), '');
 				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError(`Failed to create user ${data.email}. Please try again.`, 'Error');
+				notification.showError(t('nikki.identity.user.messages.createError'), '');
 			});
 	}, [dispatch, navigate, notification, orgSlug]);
 

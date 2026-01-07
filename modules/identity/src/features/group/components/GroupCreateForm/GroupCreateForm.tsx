@@ -1,4 +1,6 @@
 import {
+	Button,
+	Group as MantineGroup,
 	Paper,
 	Stack,
 } from '@mantine/core';
@@ -13,21 +15,21 @@ import React from 'react';
 import { ListActionCreatePage } from '../../../../components/ListActionBar';
 
 
-type HierarchySchema = {
+type GroupSchema = {
 	name: string;
 	fields: Record<string, FieldDefinition>;
 	constraints?: FieldConstraint[];
 };
 
-interface HierarchyCreateFormProps {
-	schema: HierarchySchema;
+interface GroupCreateFormProps {
+	schema: GroupSchema;
 	isCreating: boolean;
 	onSubmit: (data: any) => void;
 }
 
-export function HierarchyCreateForm({ schema, isCreating, onSubmit }: HierarchyCreateFormProps): React.ReactElement {
+export function GroupCreateForm({ schema, isCreating, onSubmit }: GroupCreateFormProps): React.ReactElement {
 	return (
-		<Paper className='p-4' shadow='sm'>
+		<Paper className='p-4' >
 			<FormStyleProvider layout='onecol'>
 				<FormFieldProvider
 					formVariant='create'
@@ -37,19 +39,8 @@ export function HierarchyCreateForm({ schema, isCreating, onSubmit }: HierarchyC
 						<form onSubmit={handleSubmit(onSubmit)} noValidate autoComplete='off'>
 							<Stack gap='md'>
 								<Stack gap='md'>
-									<AutoField
-										name='name'
-										autoFocused
-										inputProps={{
-											disabled: isCreating,
-										}}
-									/>
-									<AutoField
-										name='parentId'
-										inputProps={{
-											disabled: isCreating,
-										}}
-									/>
+									<AutoField name='name' autoFocused inputProps={{ disabled: isCreating }} />
+									<AutoField name='description' inputProps={{ disabled: isCreating }} />
 								</Stack>
 
 								<ListActionCreatePage

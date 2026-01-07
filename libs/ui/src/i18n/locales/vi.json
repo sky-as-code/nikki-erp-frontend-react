@@ -41,15 +41,25 @@
                     "import": "Nhập",
                     "search": "Tìm kiếm",
                     "cancel": "Hủy",
+                    "delete": "Xóa",
                     "confirmUpdate": "Xác nhận cập nhật",
-                    "confirmDelete": "Xác nhận xóa",
-                    "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật người dùng này không?",
-                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa người dùng này không?"
+                    "confirmDelete": "Xác nhận xóa"
                 },
                 "status": {
                     "active": "Hoạt động",
                     "locked": "Khóa",
                     "archived": "Tạm ngưng"
+                },
+                "messages": {
+                    "createSuccess": "Tạo người dùng thành công",
+                    "updateSuccess": "Cập nhật người dùng thành công",
+                    "deleteSuccess": "Xóa người dùng thành công",
+                    "createError": "Tạo người dùng thất bại",
+                    "updateError": "Cập nhật người dùng thất bại",
+                    "deleteError": "Xóa người dùng thất bại",
+                    "noUsers": "Không tìm thấy người dùng nào",
+                    "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin người dùng này không?",
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa người dùng này không?"
                 }
             },
             "group": {
@@ -66,6 +76,7 @@
                     "users": "Thành viên"
                 },
                 "actions": {
+                    "add": "Thêm",
                     "create": "Tạo nhóm",
                     "createNew": "Tạo nhóm mới",
                     "refresh": "Làm mới",
@@ -81,7 +92,8 @@
                     "removeSelected": "Xóa đã chọn",
                     "selectUsers": "Chọn người dùng",
                     "selectUsersPlaceholder": "Tìm kiếm và chọn người dùng để thêm...",
-                    "add": "Thêm"
+                    "confirmDelete": "Xác nhận xóa nhóm",
+                    "confirmUpdate": "Xác nhận cập nhật nhóm"
                 },
                 "messages": {
                     "createSuccess": "Tạo nhóm thành công",
@@ -91,8 +103,12 @@
                     "updateError": "Cập nhật nhóm thất bại",
                     "noUsers": "Chưa có thành viên trong nhóm. Nhấn 'Thêm thành viên' để thêm người dùng.",
                     "addUsersSuccess": "Thêm thành viên thành công",
-                    "removeUserSuccess": "Xóa thành viên thành công",
-                    "manageUsersError": "Quản lý thành viên thất bại"
+                    "addUsersError": "Thêm thành viên thất bại",
+                    "removeUsersSuccess": "Xóa thành viên thành công",
+                    "removeUsersError": "Xóa thành viên thất bại",
+                    "manageUsersError": "Quản lý thành viên thất bại",
+                    "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin nhóm này không?",
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa nhóm này không?"
                 }
             },
             "hierarchy": {
@@ -106,11 +122,17 @@
                     "updatedAt": "Ngày cập nhật"
                 },
                 "actions": {
-                    "create": "Tạo chức vụ",
+                    "create": "Tạo",
                     "refresh": "Làm mới",
                     "save": "Lưu ",
                     "delete": "Xóa",
-                    "back": "Quay lại"
+                    "back": "Quay lại",
+                    "confirmUpdate": "Xác nhận cập nhật chức vụ",
+                    "confirmDelete": "Xác nhận xóa chức vụ",
+                    "addUsers": "Thêm thành viên",
+                    "removeUsers": "Xóa thành viên",
+                    "selectUsers": "Chọn người dùng",
+                    "selectUsersPlaceholder": "Tìm kiếm và chọn người dùng để thêm..."
                 },
                 "messages": {
                     "createSuccess": "Tạo chức vụ thành công",
@@ -118,7 +140,14 @@
                     "deleteSuccess": "Xóa chức vụ thành công",
                     "createError": "Tạo chức vụ thất bại",
                     "updateError": "Cập nhật chức vụ thất bại",
-                    "deleteError": "Xóa chức vụ thất bại"
+                    "deleteError": "Xóa chức vụ thất bại",
+                    "addUsersSuccess": "Thêm thành viên thành công",
+                    "addUsersError": "Thêm thành viên thất bại",
+                    "removeUsersSuccess": "Xóa thành viên thành công",
+                    "removeUsersError": "Xóa thành viên thất bại",
+                    "noHierarchies": "Không tìm thấy chức vụ nào",
+                    "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin chức vụ này không?",
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa chức vụ này không?"
                 }
             },
             "organization": {
@@ -142,7 +171,9 @@
                     "save": "Lưu",
                     "cancel": "Hủy",
                     "delete": "Xóa",
-                    "back": "Quay lại"
+                    "back": "Quay lại",
+                    "confirmUpdate": "Xác nhận cập nhật tổ chức",
+                    "confirmDelete": "Xác nhận xóa tổ chức"
                 },
                 "status": {
                     "active": "Hoạt động",
@@ -156,7 +187,9 @@
                     "updateError": "Cập nhật tổ chức thất bại",
                     "deleteError": "Xóa tổ chức thất bại",
                     "noOrganizations": "Không tìm thấy tổ chức nào",
-                    "phoneNumberInvalid": "Số điện thoại không hợp lệ"
+                    "phoneNumberInvalid": "Số điện thoại không hợp lệ",
+                    "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin tổ chức này không?",
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa tổ chức này không?"
                 }
             }
         }

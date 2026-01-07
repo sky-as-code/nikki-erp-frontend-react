@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { reducer, actions, listUsers, getUser, createUser, updateUser, deleteUser, UserState, listUsersByGroupId } from '../features/users/userSlice';
+import { reducer, actions, listUsers, getUser, createUser, updateUser, deleteUser, UserState, listUsersByGroupId } from '../features/user/userSlice';
 
 
 const STATE_KEY = 'user';

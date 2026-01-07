@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { AddUserModal } from './AddUserModal';
 import { ListUserHeader } from './ListUserHeader';
-import { ListUserProps, AvailableUser, UserInGroup } from './types';
+import { AvailableUser, UserInGroup } from './types';
 import { UserTableView } from './UserTableView';
 
 
@@ -97,6 +97,17 @@ function useListUserLogic(
 	};
 }
 
+export interface ListUserProps {
+	users: UserInGroup[];
+	availableUsers: AvailableUser[];
+	isLoading?: boolean;
+	onAddUsers: (userIds: string[]) => Promise<void>;
+	onRemoveUsers: (userIds: string[]) => Promise<void>;
+	title?: string;
+	emptyMessage?: string;
+}
+
+
 export const ListUser: React.FC<ListUserProps> = ({
 	users = [],
 	availableUsers = [],
@@ -130,7 +141,7 @@ export const ListUser: React.FC<ListUserProps> = ({
 
 	return (
 		<>
-			<Paper p='md' shadow='sm' withBorder>
+			<Paper p='md'>
 				<Stack gap='md'>
 					<ListUserHeader
 						userCount={users.length}

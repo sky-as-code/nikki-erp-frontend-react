@@ -3,6 +3,7 @@ import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
@@ -20,6 +21,7 @@ function useHierarchyDetailHandlers(hierarchyId: string) {
 	const { hierarchyDetail } = useMicroAppSelector(selectHierarchyState);
 	const { orgSlug } = useParams<{ orgSlug: string }>();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 
 	const handleUpdate = React.useCallback((data: any) => {
 		const updatePayload = {
@@ -30,10 +32,11 @@ function useHierarchyDetailHandlers(hierarchyId: string) {
 		dispatch(hierarchyActions.updateHierarchy(updatePayload))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Hierarchy updated successfully', 'Success');
+				notification.showInfo(t('nikki.identity.hierarchy.messages.updateSuccess'), '');
+				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError('Failed to update hierarchy. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.hierarchy.messages.updateError'), '');
 			});
 	}, [hierarchyId, dispatch, hierarchyDetail?.etag, notification]);
 
@@ -41,11 +44,11 @@ function useHierarchyDetailHandlers(hierarchyId: string) {
 		dispatch(hierarchyActions.deleteHierarchy(hierarchyId))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Hierarchy deleted successfully', 'Success');
+				notification.showInfo(t('nikki.identity.hierarchy.messages.deleteSuccess'), '');
 				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError('Failed to delete hierarchy. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.hierarchy.messages.deleteError'), '');
 			});
 	}, [hierarchyId, dispatch, navigate, notification]);
 
@@ -67,6 +70,7 @@ function useHierarchyUserManagement(hierarchyId: string) {
 	const { hierarchyDetail } = useMicroAppSelector(selectHierarchyState);
 	const { orgSlug } = useParams<{ orgSlug: string }>();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 
 	const handleAddUsers = React.useCallback((userIds: string[]) => {
 		if (!hierarchyDetail?.etag) return Promise.resolve();
@@ -78,7 +82,7 @@ function useHierarchyUserManagement(hierarchyId: string) {
 		}))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Users added successfully', 'Success');
+				notification.showInfo(t('nikki.identity.hierarchy.messages.addUsersSuccess'), '');
 				return Promise.all([
 					dispatch(hierarchyActions.getHierarchy(hierarchyId)),
 					dispatch(userActions.listUsers(orgSlug!)),
@@ -86,7 +90,7 @@ function useHierarchyUserManagement(hierarchyId: string) {
 			})
 			.then(() => { })
 			.catch(() => {
-				notification.showError('Failed to add users. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.hierarchy.messages.addUsersError'), '');
 			});
 	}, [hierarchyId, hierarchyDetail?.etag, dispatch, orgSlug, notification]);
 
@@ -100,7 +104,7 @@ function useHierarchyUserManagement(hierarchyId: string) {
 		}))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('Users removed successfully', 'Success');
+				notification.showInfo(t('nikki.identity.hierarchy.messages.removeUsersSuccess'), '');
 				return Promise.all([
 					dispatch(hierarchyActions.getHierarchy(hierarchyId)),
 					dispatch(userActions.listUsers(orgSlug!)),
@@ -108,7 +112,7 @@ function useHierarchyUserManagement(hierarchyId: string) {
 			})
 			.then(() => { })
 			.catch(() => {
-				notification.showError('Failed to remove users. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.hierarchy.messages.removeUsersError'), '');
 			});
 	}, [hierarchyId, hierarchyDetail?.etag, dispatch, orgSlug, notification]);
 
@@ -128,6 +132,7 @@ export const HierarchyDetailPageBody: React.FC = () => {
 	} = useMicroAppSelector(selectHierarchyState);
 	const { users, isLoadingList } = useMicroAppSelector(selectUserState);
 	const schema = hierarchySchema as ModelSchema;
+	const { t } = useTranslation();
 
 	const { handleUpdate, handleDelete } = useHierarchyDetailHandlers(hierarchyId!);
 	const { handleAddUsers, handleRemoveUsers } = useHierarchyUserManagement(hierarchyId!);
@@ -175,8 +180,8 @@ export const HierarchyDetailPageBody: React.FC = () => {
 				isLoading={isLoadingList || isManagingUsers}
 				onAddUsers={handleAddUsers}
 				onRemoveUsers={handleRemoveUsers}
-				title='Hierarchy Members'
-				emptyMessage='No users assigned to this hierarchy level'
+				title={t('nikki.identity.hierarchy.title')}
+				emptyMessage={t('nikki.identity.hierarchy.messages.noHierarchies')}
 			/>
 		</Stack>
 	);

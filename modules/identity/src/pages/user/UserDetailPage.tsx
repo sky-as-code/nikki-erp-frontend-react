@@ -3,13 +3,14 @@ import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
 import { useUIState } from '../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, userActions } from '../../appState';
 import { selectUserState } from '../../appState/user';
 import { HeaderDetailPage } from '../../components/HeaderDetailPage/HeaderDetailPage ';
-import { UserDetailForm } from '../../features/users/components';
+import { UserDetailForm } from '../../features/user/components';
 import userSchema from '../../schemas/user-schema.json';
 
 
@@ -17,17 +18,18 @@ function useUserDetailHandlers(userId: string, etag: string) {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const navigate = useNavigate();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 
 	const handleUpdate = React.useCallback((data: any) => {
 		const dataWithTag = { ...data, etag };
 		dispatch(userActions.updateUser({ id: userId, ...dataWithTag }))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('User updated successfully', 'Success');
+				notification.showInfo(t('nikki.identity.user.messages.updateSuccess'), '');
 				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError('Failed to update user. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.user.messages.updateError'), '');
 			});
 	}, [userId, dispatch, etag, navigate, notification]);
 
@@ -35,11 +37,11 @@ function useUserDetailHandlers(userId: string, etag: string) {
 		dispatch(userActions.deleteUser(userId))
 			.unwrap()
 			.then(() => {
-				notification.showInfo('User deleted successfully', 'Success');
+				notification.showInfo(t('nikki.identity.user.messages.deleteSuccess'), '');
 				navigate('..', { relative: 'path' });
 			})
 			.catch(() => {
-				notification.showError('Failed to delete user. Please try again.', 'Error');
+				notification.showError(t('nikki.identity.user.messages.deleteError'), '');
 			});
 	}, [userId, dispatch, navigate, notification]);
 

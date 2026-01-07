@@ -15,6 +15,7 @@ export const hierarchyService = {
 	async listHierarchies(orgId: string): Promise<HierarchyLevel[]> {
 		const graph = JSON.stringify({
 			if: ['org.id', '*', orgId],
+			order: [['created_at', 'desc']],
 		});
 		const response = await request.get<SearchHierarchyLevelsResponse>('identity/hierarchy', {
 			searchParams: { withParent: 'true', graph },
