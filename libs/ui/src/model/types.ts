@@ -6,7 +6,7 @@ export type ModelSchema = {
 };
 
 export type FieldDefinition = {
-    type: 'string' | 'email' | 'password' | 'date' | 'integer' | 'enum';
+    type: 'string' | 'email' | 'password' | 'date' | 'integer' | 'enum' | 'object' | 'array';
     label: string;
     description?: string;
     placeholder?: string;

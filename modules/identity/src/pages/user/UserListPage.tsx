@@ -1,53 +1,64 @@
-import { Breadcrumbs, Button, Group, Paper, Stack, TagsInput, Typography } from '@mantine/core';
-import { AutoTable, withWindowTitle } from '@nikkierp/ui/components';
+import { Stack } from '@mantine/core';
+import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
-import { IconPlus, IconRefresh, IconUpload } from '@tabler/icons-react';
 import React from 'react';
+import { useNavigate, useParams } from 'react-router';
 
 import { IdentityDispatch, userActions, selectUserState } from '../../appState';
-import userSchema from '../../user-schema.json';
+import { HeaderListPage } from '../../components/HeaderListPage/HeaderListPage';
+import { ListActionListPage } from '../../components/ListActionBar';
+import { UserTable } from '../../features/user/components';
+import userSchema from '../../schemas/user-schema.json';
 
 
-function UserListPageBody(): React.ReactNode {
-	const { users, isLoadingList } = useMicroAppSelector(selectUserState);
+function useUserListHandlers() {
+	const navigate = useNavigate();
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const schema = userSchema as ModelSchema;
-	const columns = ['id', 'email', 'dateOfBirth', 'dependantNum', 'gender', 'nationality'];
+	const { orgSlug } = useParams<{ orgSlug: string }>();
+
+	const handleCreate = React.useCallback(() => {
+		navigate('create');
+	}, [navigate]);
+
+	const handleRefresh = React.useCallback(() => {
+		dispatch(userActions.listUsers(orgSlug!));
+	}, [dispatch, orgSlug]);
 
 	React.useEffect(() => {
-		dispatch(userActions.listUsers());
-	}, [dispatch]);
+		dispatch(userActions.listUsers(orgSlug!));
+	}, [dispatch, orgSlug]);
+
+	return {
+		handleCreate,
+		handleRefresh,
+	};
+}
+
+export function UserListPageBody(): React.ReactElement {
+	const { users, isLoadingList } = useMicroAppSelector(selectUserState);
+	const schema = userSchema as ModelSchema;
+	const columns = ['avatar', 'email', 'displayName', 'status', 'groups', 'createdAt', 'updatedAt'];
+
+	const { handleCreate, handleRefresh } = useUserListHandlers();
+
 
 	return (
 		<Stack gap='md'>
-			<Group>
-				<Breadcrumbs style={{
-					minWidth: '30%',
-				}}>
-					<Typography>
-						<h4>Users</h4>
-					</Typography>
-				</Breadcrumbs>
-				<TagsInput
-					placeholder='Search'
-					w='500px'
-				/>
-			</Group>
-			<Group>
-				<Button size='compact-md' leftSection={<IconPlus size={16} />}>Create</Button>
-				<Button size='compact-md' variant='outline' leftSection={<IconRefresh size={16} />}>Refresh</Button>
-				<Button size='compact-md' variant='outline' leftSection={<IconUpload size={16} />}>Import</Button>
-			</Group>
-			<Paper className='p-4'>
-				<AutoTable
-					columns={columns}
-					columnAsLink='email'
-					data={users}
-					schema={schema}
-					isLoading={isLoadingList}
-				/>
-			</Paper>
+			<HeaderListPage
+				title='nikki.identity.user.title'
+				searchPlaceholder='nikki.identity.user.searchPlaceholder'
+			/>
+			<ListActionListPage
+				onCreate={handleCreate}
+				onRefresh={handleRefresh}
+			/>
+			<UserTable
+				columns={columns}
+				users={users}
+				isLoading={isLoadingList}
+				schema={schema}
+			/>
 		</Stack>
 	);
 }

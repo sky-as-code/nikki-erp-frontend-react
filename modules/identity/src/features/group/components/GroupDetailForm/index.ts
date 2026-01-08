@@ -1,0 +1,1 @@
+export { GroupDetailForm } from './GroupDetailForm';

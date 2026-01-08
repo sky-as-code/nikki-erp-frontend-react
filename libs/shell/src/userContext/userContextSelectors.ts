@@ -37,6 +37,13 @@ const selectFirstOrgSlug = createSelector(
 	}),
 );
 
+const selectMyOrgIdBySlug = createSelector(
+	selectMyOrgs,
+	(_, orgSlug: string) => orgSlug,
+	(orgs: Organization[], orgSlug) => orgs.find(o => o.slug === orgSlug)?.id ?? null,
+);
+
+export { selectMyOrgs, selectMyOrgIdBySlug };
 export const useFirstOrgSlug = () => useSelector(selectFirstOrgSlug);
 export const useUserContext = () => useSelector(selectUserContext);
 export const useMyOrgs = () => useSelector(selectMyOrgs);

@@ -1,103 +1,79 @@
-import {
-	Box,
-	Breadcrumbs,
-	Button,
-	Group,
-	Stack,
-	TagsInput,
-	Typography,
-} from '@mantine/core';
+import { Stack } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
-import {
-	FormStyleProvider, FormFieldProvider, AutoField,
-} from '@nikkierp/ui/components/form';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { FieldConstraint, FieldDefinition } from '@nikkierp/ui/model';
-import { IconArchive, IconPlus, IconRefresh, IconTrash } from '@tabler/icons-react';
+import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
-import { Link, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router';
 
-
+import { useUIState } from '../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, userActions } from '../../appState';
 import { selectUserState } from '../../appState/user';
-import { UserState } from '../../features/users/userSlice';
-import userSchema from '../../user-schema.json';
+import { HeaderDetailPage } from '../../components/HeaderDetailPage/HeaderDetailPage ';
+import { UserDetailForm } from '../../features/user/components';
+import userSchema from '../../schemas/user-schema.json';
 
 
-type UserSchema = {
-	name: string;
-	fields: Record<string, FieldDefinition>;
-	constraints?: FieldConstraint[];
-};
-
-export const UserDetailPageBody: React.FC = () => {
-	const { userId } = useParams();
+function useUserDetailHandlers(userId: string, etag: string) {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const { userDetail, isLoadingDetail }: UserState = useMicroAppSelector(selectUserState);
-	console.log({ userDetail });
-	const schema = userSchema as UserSchema;
+	const navigate = useNavigate();
+	const { notification } = useUIState();
+	const { t } = useTranslation();
+
+	const handleUpdate = React.useCallback((data: any) => {
+		const dataWithTag = { ...data, etag };
+		dispatch(userActions.updateUser({ id: userId, ...dataWithTag }))
+			.unwrap()
+			.then(() => {
+				notification.showInfo(t('nikki.identity.user.messages.updateSuccess'), '');
+				navigate('..', { relative: 'path' });
+			})
+			.catch(() => {
+				notification.showError(t('nikki.identity.user.messages.updateError'), '');
+			});
+	}, [userId, dispatch, etag, navigate, notification]);
+
+	const handleDelete = React.useCallback(() => {
+		dispatch(userActions.deleteUser(userId))
+			.unwrap()
+			.then(() => {
+				notification.showInfo(t('nikki.identity.user.messages.deleteSuccess'), '');
+				navigate('..', { relative: 'path' });
+			})
+			.catch(() => {
+				notification.showError(t('nikki.identity.user.messages.deleteError'), '');
+			});
+	}, [userId, dispatch, navigate, notification]);
 
 	React.useEffect(() => {
 		dispatch(userActions.getUser(userId!));
 	}, [userId, dispatch]);
 
-	const onSubmit = (data: any) => {
-		console.log('Form submitted:', data);
+	return {
+		handleDelete,
+		handleUpdate,
 	};
+}
+
+export const UserDetailPageBody: React.FC = () => {
+	const { userId } = useParams();
+	const { userDetail, isLoadingDetail } = useMicroAppSelector(selectUserState);
+	const schema = userSchema as ModelSchema;
+
+	const handlers = useUserDetailHandlers(userId!, userDetail?.etag);
 
 	return (
 		<Stack gap='md'>
-			<Group>
-				<Breadcrumbs style={{
-					minWidth: '30%',
-				}}>
-					<Typography>
-						<h4><Link to='../users'>Users</Link></h4>
-					</Typography>
-					<Typography>
-						<h5>{userDetail?.email}</h5>
-					</Typography>
-				</Breadcrumbs>
-			</Group>
-			<Group>
-				<Button leftSection={<IconPlus size={16} />} size='compact-md'>Create</Button>
-				<Button leftSection={<IconRefresh size={16} />} size='compact-md' variant='outline' disabled={isLoadingDetail}>Refresh</Button>
-				<Button leftSection={<IconTrash size={16} />} size='compact-md' variant='outline' disabled={isLoadingDetail}>Delete</Button>
-				<Button leftSection={<IconArchive size={16} />} size='compact-md' variant='outline' disabled={isLoadingDetail}>Archive</Button>
-			</Group>
-			<FormStyleProvider layout='onecol'>
-				{/* <FormFieldProvider
-				formVariant='update' modelSchema={schema} modelValue={userDetail} modelLoading={isLoadingDetail}
-			> */}
-				<FormFieldProvider
-					formVariant='create' modelSchema={schema}
-				>
-					{({ handleSubmit }) => (
-						<Box p='md'>
-							<form onSubmit={handleSubmit(onSubmit)} noValidate>
-								<Stack gap='xs'>
-									<AutoField name='id' />
-									<AutoField name='email' autoFocused inputProps={{
-										size: 'lg',
-										disabled: true,
-									}} />
-									<AutoField name='password' />
-									<AutoField name='passwordConfirm' />
-									<AutoField name='dateOfBirth' />
-									<AutoField name='dependantNum' htmlProps={{
-										readOnly: true,
-									}} />
-									<AutoField name='gender' />
-									<AutoField name='nationality' />
-									<Button type='submit' mt='xl'>
-										Submit
-									</Button>
-								</Stack>
-							</form>
-						</Box>
-					)}
-				</FormFieldProvider>
-			</FormStyleProvider>
+			<HeaderDetailPage
+				title='nikki.identity.user.title'
+				name={userDetail?.email} />
+			<UserDetailForm
+				schema={schema}
+				userDetail={userDetail}
+				isLoading={isLoadingDetail}
+				onSubmit={handlers.handleUpdate}
+				onDelete={handlers.handleDelete}
+			/>
 		</Stack>
 	);
 };

@@ -13,5 +13,185 @@
             "passwordRequired": "Mật khẩu là bắt buộc",
             "usernameOrPasswordIncorrect": "Tên đăng nhập hoặc mật khẩu không chính xác"
         }
+    },
+    "nikki": {
+        "identity": {
+            "user": {
+                "title": "Người dùng",
+                "searchPlaceholder": "Tìm kiếm người dùng...",
+                "fields": {
+                    "id": "ID",
+                    "email": "Email",
+                    "displayName": "Tên hiển thị",
+                    "avatarUrl": "Ảnh đại diện",
+                    "status": "Trạng thái",
+                    "groups": "Nhóm",
+                    "createdAt": "Ngày tạo",
+                    "updatedAt": "Ngày cập nhật",
+                    "password": "Mật khẩu",
+                    "confirmPassword": "Xác nhận mật khẩu",
+                    "mustChangePassword": "Phải đổi mật khẩu",
+                    "hierarchy": "Chức vụ"
+                },
+                "actions": {
+                    "create": "Tạo mới",
+                    "createNew": "Tạo người dùng mới",
+                    "save": "Lưu",
+                    "refresh": "Làm mới",
+                    "import": "Nhập",
+                    "search": "Tìm kiếm",
+                    "cancel": "Hủy",
+                    "delete": "Xóa",
+                    "confirmUpdate": "Xác nhận cập nhật",
+                    "confirmDelete": "Xác nhận xóa"
+                },
+                "status": {
+                    "active": "Hoạt động",
+                    "locked": "Khóa",
+                    "archived": "Tạm ngưng"
+                },
+                "messages": {
+                    "createSuccess": "Tạo người dùng thành công",
+                    "updateSuccess": "Cập nhật người dùng thành công",
+                    "deleteSuccess": "Xóa người dùng thành công",
+                    "createError": "Tạo người dùng thất bại",
+                    "updateError": "Cập nhật người dùng thất bại",
+                    "deleteError": "Xóa người dùng thất bại",
+                    "noUsers": "Không tìm thấy người dùng nào",
+                    "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin người dùng này không?",
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa người dùng này không?"
+                }
+            },
+            "group": {
+                "title": "Quản lý nhóm",
+                "searchPlaceholder": "Tìm kiếm nhóm...",
+                "fields": {
+                    "id": "ID",
+                    "name": "Tên nhóm",
+                    "description": "Mô tả",
+                    "avatarUrl": "Ảnh đại diện",
+                    "orgId": "Tổ chức",
+                    "createdAt": "Ngày tạo",
+                    "updatedAt": "Ngày cập nhật",
+                    "users": "Thành viên"
+                },
+                "actions": {
+                    "add": "Thêm",
+                    "create": "Tạo nhóm",
+                    "createNew": "Tạo nhóm mới",
+                    "refresh": "Làm mới",
+                    "import": "Nhập",
+                    "search": "Tìm kiếm nhóm...",
+                    "submit": "Gửi",
+                    "cancel": "Hủy",
+                    "save": "Lưu",
+                    "delete": "Xóa",
+                    "back": "Quay lại",
+                    "addUsers": "Thêm thành viên",
+                    "removeUser": "Xóa thành viên",
+                    "removeSelected": "Xóa đã chọn",
+                    "selectUsers": "Chọn người dùng",
+                    "selectUsersPlaceholder": "Tìm kiếm và chọn người dùng để thêm...",
+                    "confirmDelete": "Xác nhận xóa nhóm",
+                    "confirmUpdate": "Xác nhận cập nhật nhóm"
+                },
+                "messages": {
+                    "createSuccess": "Tạo nhóm thành công",
+                    "updateSuccess": "Cập nhật nhóm thành công",
+                    "deleteSuccess": "Xóa nhóm thành công",
+                    "createError": "Tạo nhóm thất bại",
+                    "updateError": "Cập nhật nhóm thất bại",
+                    "noUsers": "Chưa có thành viên trong nhóm. Nhấn 'Thêm thành viên' để thêm người dùng.",
+                    "addUsersSuccess": "Thêm thành viên thành công",
+                    "addUsersError": "Thêm thành viên thất bại",
+                    "removeUsersSuccess": "Xóa thành viên thành công",
+                    "removeUsersError": "Xóa thành viên thất bại",
+                    "manageUsersError": "Quản lý thành viên thất bại",
+                    "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin nhóm này không?",
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa nhóm này không?"
+                }
+            },
+            "hierarchy": {
+                "title": "Quản lý chức vụ",
+                "searchPlaceholder": "Tìm kiếm chức vụ...",
+                "fields": {
+                    "id": "ID",
+                    "name": "Tên chức vụ",
+                    "parentId": "Cấp trên",
+                    "createdAt": "Ngày tạo",
+                    "updatedAt": "Ngày cập nhật"
+                },
+                "actions": {
+                    "create": "Tạo",
+                    "refresh": "Làm mới",
+                    "save": "Lưu ",
+                    "delete": "Xóa",
+                    "back": "Quay lại",
+                    "confirmUpdate": "Xác nhận cập nhật chức vụ",
+                    "confirmDelete": "Xác nhận xóa chức vụ",
+                    "addUsers": "Thêm thành viên",
+                    "removeUsers": "Xóa thành viên",
+                    "selectUsers": "Chọn người dùng",
+                    "selectUsersPlaceholder": "Tìm kiếm và chọn người dùng để thêm..."
+                },
+                "messages": {
+                    "createSuccess": "Tạo chức vụ thành công",
+                    "updateSuccess": "Cập nhật chức vụ thành công",
+                    "deleteSuccess": "Xóa chức vụ thành công",
+                    "createError": "Tạo chức vụ thất bại",
+                    "updateError": "Cập nhật chức vụ thất bại",
+                    "deleteError": "Xóa chức vụ thất bại",
+                    "addUsersSuccess": "Thêm thành viên thành công",
+                    "addUsersError": "Thêm thành viên thất bại",
+                    "removeUsersSuccess": "Xóa thành viên thành công",
+                    "removeUsersError": "Xóa thành viên thất bại",
+                    "noHierarchies": "Không tìm thấy chức vụ nào",
+                    "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin chức vụ này không?",
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa chức vụ này không?"
+                }
+            },
+            "organization": {
+                "title": "Quản lý tổ chức",
+                "searchPlaceholder": "Tìm kiếm tổ chức...",
+                "fields": {
+                    "id": "ID",
+                    "slug": "Mã định danh",
+                    "displayName": "Tên hiển thị",
+                    "legalName": "Tên pháp lý",
+                    "phoneNumber": "Số điện thoại",
+                    "address": "Địa chỉ",
+                    "status": "Trạng thái",
+                    "etag": "ETag",
+                    "createdAt": "Ngày tạo",
+                    "updatedAt": "Ngày cập nhật"
+                },
+                "actions": {
+                    "create": "Tạo tổ chức",
+                    "refresh": "Làm mới",
+                    "save": "Lưu",
+                    "cancel": "Hủy",
+                    "delete": "Xóa",
+                    "back": "Quay lại",
+                    "confirmUpdate": "Xác nhận cập nhật tổ chức",
+                    "confirmDelete": "Xác nhận xóa tổ chức"
+                },
+                "status": {
+                    "active": "Hoạt động",
+                    "inactive": "Không hoạt động"
+                },
+                "messages": {
+                    "createSuccess": "Tạo tổ chức thành công",
+                    "updateSuccess": "Cập nhật tổ chức thành công",
+                    "deleteSuccess": "Xóa tổ chức thành công",
+                    "createError": "Tạo tổ chức thất bại",
+                    "updateError": "Cập nhật tổ chức thất bại",
+                    "deleteError": "Xóa tổ chức thất bại",
+                    "noOrganizations": "Không tìm thấy tổ chức nào",
+                    "phoneNumberInvalid": "Số điện thoại không hợp lệ",
+                    "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin tổ chức này không?",
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa tổ chức này không?"
+                }
+            }
+        }
     }
 }

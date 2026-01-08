@@ -1,0 +1,67 @@
+{
+	"name": "group",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.group.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "length",
+					"max": 36
+				}
+			]
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.group.fields.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"min": 2,
+					"max": 100
+				}
+			]
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.group.fields.description' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 500,
+					"message": "Description must not exceed 500 characters"
+				}
+			]
+		},
+		"orgId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.group.fields.orgId' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 36
+				}
+			]
+		},
+		"etag": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.identity.group.fields.etag' }",
+			"hidden": true
+		},
+		"createdAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "{ \"$ref\": 'nikki.identity.group.fields.createdAt' }"
+		},
+		"updatedAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "{ \"$ref\": 'nikki.identity.group.fields.updatedAt' }"
+		}
+	}
+}

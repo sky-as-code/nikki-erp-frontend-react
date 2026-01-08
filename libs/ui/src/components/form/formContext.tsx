@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
 import { buildValidationSchema } from './validation';
@@ -57,7 +57,9 @@ export function useFieldData(fieldName: string) {
 	const description = fieldDef.description ? extractLabel(fieldDef.description) : undefined;
 	const placeholder = fieldDef.placeholder ? extractLabel(fieldDef.placeholder) : undefined;
 	const isRequired = Boolean(fieldDef.required?.[formVariant]);
-	const error = errors[fieldName]?.message as string | undefined;
+	const rawError = errors[fieldName]?.message as string | undefined;
+	// Extract translation key from $ref format if present
+	const error = rawError ? extractTranslationKey(rawError) : undefined;
 
 	return {
 		label,
@@ -86,8 +88,8 @@ export type FormFieldProviderProps = {
 	modelLoading?: boolean;
 	children: (props: {
 		handleSubmit: (onValid: (data: any) => void | Promise<void>) => (e?: React.BaseSyntheticEvent) => Promise<void>;
-		reset: ReturnType<typeof useForm>['reset'];
-		form: ReturnType<typeof useForm>;
+		reset: () => void;
+		form: UseFormReturn<any>;
 	}) => React.ReactNode;
 };
 
@@ -99,6 +101,8 @@ export const FormFieldProvider: React.FC<FormFieldProviderProps> = (props) => {
 	const form = useForm<FormData>({
 		resolver: zodResolver(zodSchema),
 		defaultValues: modelValue || {},
+		mode: 'onChange',
+		reValidateMode: 'onChange',
 	});
 
 	const {
@@ -108,6 +112,11 @@ export const FormFieldProvider: React.FC<FormFieldProviderProps> = (props) => {
 		handleSubmit,
 		reset,
 	} = form;
+
+
+
+	console.log('FormFieldProvider errors:', errors);
+
 
 	// Reset form when modelValue changes
 	React.useEffect(() => {
@@ -154,4 +163,27 @@ export function extractLabel(labelRef: string): string {
 	}
 
 	return labelRef;
+}
+
+/**
+ * Extract full translation key from $ref format: { "$ref": "translation.key.path" }
+ * Returns the full key path for i18n translation
+ * If not a $ref format, returns the original string
+ */
+export function extractTranslationKey(ref: string): string {
+	try {
+		const parsed = JSON.parse(ref);
+		if (parsed && parsed.$ref) {
+			return parsed.$ref;
+		}
+	}
+	catch {
+		// If parsing fails, try to extract from string format with single quotes
+		const match = ref.match(/'([^']+)'/);
+		if (match) {
+			return match[1];
+		}
+	}
+
+	return ref;
 }

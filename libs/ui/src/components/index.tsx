@@ -1,4 +1,5 @@
 export * from '../../../../modules/shell/src/layout/AuthorizedGuard';
+export * from './Modal';
 export * from './form';
 export * from './hoc';
 export * from './Table';

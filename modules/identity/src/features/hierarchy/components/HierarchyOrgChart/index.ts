@@ -1,0 +1,1 @@
+export { HierarchyOrgChart } from './HierarchyOrgChart';

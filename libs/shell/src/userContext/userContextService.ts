@@ -1,4 +1,4 @@
-import { delay } from '@nikkierp/common/utils';
+import * as request from '@nikkierp/common/request';
 
 
 export type User = {
@@ -32,104 +32,74 @@ export type UserContext = {
 	permissions: EntitlementAssignment[];
 };
 
+type OrganizationApiResponse = {
+	id: string;
+	displayName: string;
+	slug: string;
+	status: string;
+	legalName: string | null;
+	address: string | null;
+	phoneNumber: string | null;
+	etag: string;
+	createdAt: number;
+	updatedAt: number | null;
+};
+
+type SearchOrganizationsResponse = {
+	items: OrganizationApiResponse[];
+	total: number;
+	page: number;
+	size: number;
+};
+
 export class UserContextService {
 	public async fetch(): Promise<UserContext> {
-		// const response = await request.get<User>('/profile');
-		// return response;
-		await delay(500);
-		return mockContext;
+		try {
+			const orgResponse = await request.get<SearchOrganizationsResponse>('identity/organizations');
+			const defaultModules: Module[] = [
+				{
+					id: '1',
+					name: 'Essential',
+					slug: 'essential',
+				},
+				{
+					id: '2',
+					name: 'Identity',
+					slug: 'identity',
+				},
+			];
+
+			const orgs: Organization[] = orgResponse.items.map(org => ({
+				id: org.id,
+				name: org.displayName,
+				slug: org.slug,
+				modules: defaultModules,
+			}));
+
+			return {
+				user: {
+					id: '01JWNNJGS70Y07MBEV3AQ0M526',
+					email: 'system@nikki.com',
+					displayName: 'System',
+				},
+				orgs,
+				permissions: [],
+			};
+		}
+		catch (error) {
+			console.error('Failed to fetch user context:', error);
+			// Return empty context on error
+			return {
+				user: {
+					id: '1',
+					email: 'test@test.com',
+					displayName: 'Test User',
+				},
+				orgs: [],
+				permissions: [],
+			};
+		}
 	}
 }
 
 export const userContextService = new UserContextService();
-
-const mockModules: Module[] = [
-	{
-		id: '1',
-		name: 'Essential',
-		slug: 'essential',
-	},
-	{
-		id: '2',
-		name: 'Identity',
-		slug: 'identity',
-	},
-	{
-		id: '3',
-		name: 'Authorized',
-		slug: 'authorized',
-	},
-];
-
-const mockOrgs: Organization[] = [
-	{
-		id: '1',
-		name: 'Apple',
-		slug: 'apple',
-		modules: mockModules,
-	},
-	{
-		id: '2',
-		name: 'Banana',
-		slug: 'banana',
-		modules: mockModules,
-	},
-	{
-		id: '3',
-		name: 'Cherry',
-		slug: 'cherry',
-		modules: mockModules,
-	},
-	{
-		id: '4',
-		name: 'Elderberry',
-		slug: 'elderberry',
-		modules: mockModules,
-	},
-	{
-		id: '5',
-		name: 'Fig',
-		slug: 'fig',
-		modules: mockModules,
-	},
-	{
-		id: '6',
-		name: 'Grape',
-		slug: 'grape',
-		modules: mockModules,
-	},
-	{
-		id: '7',
-		name: 'Honeydew',
-		slug: 'honeydew',
-		modules: mockModules,
-	},
-	{
-		id: '8',
-		name: 'Kiwi',
-		slug: 'kiwi',
-		modules: mockModules,
-	},
-	{
-		id: '9',
-		name: 'Lemon',
-		slug: 'lemon',
-		modules: mockModules,
-	},
-	{
-		id: '10',
-		name: 'Mango',
-		slug: 'mango',
-		modules: mockModules,
-	},
-];
-
-const mockContext: UserContext = {
-	user: {
-		id: '1',
-		email: 'test@test.com',
-		displayName: 'Test User',
-	},
-	orgs: mockOrgs,
-	permissions: [],
-};

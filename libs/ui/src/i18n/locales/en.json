@@ -13,5 +13,147 @@
 			"passwordRequired": "Password is required",
 			"usernameOrPasswordIncorrect": "Username or password is incorrect"
 		}
+	},
+	"nikki": {
+		"identity": {
+			"user": {
+				"title": "Users",
+				"fields": {
+					"id": "ID",
+					"email": "Email",
+					"displayName": "Display Name",
+					"avatarUrl": "Avatar",
+					"status": "Status",
+					"groups": "Groups",
+					"createdAt": "Created At",
+					"updatedAt": "Updated At",
+					"password": "Password",
+					"confirmPassword": "Confirm Password",
+					"mustChangePassword": "Must Change Password",
+					"etag": "ETag"
+				},
+				"actions": {
+					"create": "Create",
+					"createNew": "Create New User",
+					"save": "Save Changes",
+					"refresh": "Refresh",
+					"import": "Import",
+					"search": "Search"
+				},
+				"status": {
+					"active": "Active",
+					"locked": "Locked",
+					"archived": "Archived"
+				}
+			},
+			"group": {
+				"title": "Group Management",
+				"fields": {
+					"id": "ID",
+					"name": "Group Name",
+					"description": "Description",
+					"avatarUrl": "Avatar",
+					"orgId": "Organization",
+					"etag": "ETag",
+					"createdAt": "Created At",
+					"updatedAt": "Updated At",
+					"users": "Members"
+				},
+				"actions": {
+					"create": "Create Group",
+					"refresh": "Refresh",
+					"import": "Import",
+					"search": "Search groups...",
+					"submit": "Submit",
+					"cancel": "Cancel",
+					"save": "Save Changes",
+					"delete": "Delete",
+					"back": "Back to List",
+					"addUsers": "Add Users",
+					"removeUser": "Remove User",
+					"removeSelected": "Remove Selected",
+					"selectUsers": "Select Users",
+					"selectUsersPlaceholder": "Search and select users to add...",
+					"add": "Add"
+				},
+				"messages": {
+					"createSuccess": "Group created successfully",
+					"updateSuccess": "Group updated successfully",
+					"deleteSuccess": "Group deleted successfully",
+					"createError": "Failed to create group",
+					"updateError": "Failed to update group",
+					"noUsers": "No users in this group yet. Click 'Add Users' to add members.",
+					"addUsersSuccess": "Users added successfully",
+					"removeUserSuccess": "User removed successfully",
+					"manageUsersError": "Failed to manage group users"
+				}
+			},
+			"hierarchy": {
+				"title": "Hierarchy Management",
+				"fields": {
+					"id": "ID",
+					"name": "Hierarchy Level Name",
+					"parentId": "Parent Level",
+					"etag": "ETag",
+					"createdAt": "Created At",
+					"updatedAt": "Updated At"
+				},
+				"actions": {
+					"create": "Create Hierarchy",
+					"refresh": "Refresh",
+					"search": "Search hierarchies...",
+					"save": "Save Changes",
+					"delete": "Delete",
+					"back": "Back to List"
+				},
+				"messages": {
+					"createSuccess": "Hierarchy created successfully",
+					"updateSuccess": "Hierarchy updated successfully",
+					"deleteSuccess": "Hierarchy deleted successfully",
+					"createError": "Failed to create hierarchy",
+					"updateError": "Failed to update hierarchy",
+					"deleteError": "Failed to delete hierarchy"
+				}
+			},
+			"organization": {
+				"list": {
+					"title": "Organizations"
+				},
+				"detail": {
+					"title": "Organization Details"
+				},
+				"create": {
+					"title": "Create New Organization"
+				},
+				"fields": {
+					"id": "ID",
+					"slug": "Slug",
+					"displayName": "Display Name",
+					"legalName": "Legal Name",
+					"phoneNumber": "Phone Number",
+					"address": "Address",
+					"status": "Status",
+					"etag": "ETag",
+					"createdAt": "Created At",
+					"updatedAt": "Updated At"
+				},
+				"actions": {
+					"create": "Create Organization",
+					"refresh": "Refresh",
+					"save": "Save Changes",
+					"cancel": "Cancel",
+					"delete": "Delete"
+				},
+				"messages": {
+					"createSuccess": "Organization created successfully",
+					"updateSuccess": "Organization updated successfully",
+					"deleteSuccess": "Organization deleted successfully",
+					"createError": "Failed to create organization",
+					"updateError": "Failed to update organization",
+					"deleteError": "Failed to delete organization",
+					"noOrganizations": "No organizations found"
+				}
+			}
+		}
 	}
 }

@@ -4,6 +4,7 @@ import { useId } from '@mantine/hooks';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import React from 'react';
 import { Controller } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 import { extractLabel, useFieldData, useFormField, useFormStyle } from './formContext';
 
@@ -178,7 +179,7 @@ type BaseFieldWrapperProps = {
 	};
 };
 
-function BaseFieldWrapper({
+export function BaseFieldWrapper({
 	inputId, label, description, isRequired, error, children, ariaProps,
 }: BaseFieldWrapperProps) {
 	const { layout } = useFormStyle();
@@ -243,6 +244,7 @@ export type TextInputFieldProps = BaseInputProps<InputProps> & {
 export function TextInputField({ name, type, autoFocused, inputProps, htmlProps, ref }: TextInputFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
+	const { t: translate } = useTranslation();
 	const { register, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -256,10 +258,10 @@ export function TextInputField({ name, type, autoFocused, inputProps, htmlProps,
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={fieldData.label}
-			description={fieldData.description}
+			label={translate(fieldData.label)}
+			description={translate(fieldData.description ?? '')}
 			isRequired={fieldData.isRequired}
-			error={fieldData.error}
+			error={translate(fieldData.error ?? '')}
 		>
 			<Input
 				id={inputId}
@@ -293,6 +295,7 @@ export type PasswordInputFieldProps = BaseInputProps<InputProps>;
 export function PasswordInputField({ name, autoFocused, inputProps, htmlProps, ref }: PasswordInputFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
+	const { t: translate } = useTranslation();
 	const { register, modelValue, modelLoading, formVariant } = useFormField();
 	const [showPassword, setShowPassword] = React.useState(false);
 
@@ -309,10 +312,10 @@ export function PasswordInputField({ name, autoFocused, inputProps, htmlProps, r
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={fieldData.label}
-			description={fieldData.description}
+			label={translate(fieldData.label)}
+			description={translate(fieldData.description ?? '')}
 			isRequired={fieldData.isRequired}
-			error={fieldData.error}
+			error={translate(fieldData.error ?? '')}
 		>
 			<Input
 				id={inputId}
@@ -332,7 +335,7 @@ export function PasswordInputField({ name, autoFocused, inputProps, htmlProps, r
 				defaultValue={defaultValue}
 				error={fieldData.error}
 				disabled={modelLoading}
-				placeholder={fieldData.placeholder}
+				placeholder={translate(fieldData.placeholder ?? '')}
 				rightSectionPointerEvents='all'
 				rightSection={actionIcon}
 				ff='monospace'
@@ -402,6 +405,7 @@ export type DateInputFieldProps = BaseInputProps<DateInputProps>;
 export function DateInputField({ name, autoFocused, inputProps, htmlProps, ref }: DateInputFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
+	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -415,10 +419,10 @@ export function DateInputField({ name, autoFocused, inputProps, htmlProps, ref }
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={fieldData.label}
-			description={fieldData.description}
+			label={translate(fieldData.label)}
+			description={translate(fieldData.description ?? '')}
 			isRequired={fieldData.isRequired}
-			error={fieldData.error}
+			error={translate(fieldData.error ?? '')}
 		>
 			<Controller
 				name={name}
@@ -444,7 +448,7 @@ export function DateInputField({ name, autoFocused, inputProps, htmlProps, ref }
 							value={dateValue}
 							onChange={(date) => field.onChange(date || undefined)}
 							disabled={modelLoading}
-							placeholder={fieldData.placeholder}
+							placeholder={translate(fieldData.placeholder ?? '')}
 							ref={ref}
 							{...htmlProps}
 							{...(defaultInputProps as DateInputProps)}
@@ -461,6 +465,7 @@ export type StaticEnumSelectFieldProps = BaseInputProps<SelectProps>;
 export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps, ref }: StaticEnumSelectFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
+	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -471,7 +476,7 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
 	const selectData = fieldData.fieldDef.enum!.map((opt) => ({
 		value: opt.value,
-		label: extractLabel(opt.label),
+		label: translate(extractLabel(opt.label)),
 	}));
 
 	useAutoFocusById(autoFocused, inputId, formVariant);
@@ -479,10 +484,10 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={fieldData.label}
-			description={fieldData.description}
+			label={translate(fieldData.label)}
+			description={translate(fieldData.description ?? '')}
 			isRequired={fieldData.isRequired}
-			error={fieldData.error}
+			error={translate(fieldData.error ?? '')}
 		>
 			<Controller
 				name={name}
@@ -493,10 +498,14 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 					return (
 						<Select
 							id={inputId}
-							error={fieldData.error}
+							// fix: duplicate error
+							// error={fieldData.error}
 							data={selectData}
 							value={(value as string) || null}
-							onChange={field.onChange}
+							onChange={(val) => {
+								// Transform null or empty string to undefined for optional enum
+								field.onChange(val === null || val === '' ? undefined : val);
+							}}
 							disabled={modelLoading}
 							placeholder={fieldData.placeholder}
 							ref={ref}
@@ -516,6 +525,7 @@ export function DynamicEnumSelectField({
 	name, autoFocused, inputProps, htmlProps, ref }: DynamicEnumSelectFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
+	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -529,10 +539,10 @@ export function DynamicEnumSelectField({
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={fieldData.label}
-			description={fieldData.description}
+			label={translate(fieldData.label)}
+			description={translate(fieldData.description ?? '')}
 			isRequired={fieldData.isRequired}
-			error={fieldData.error}
+			error={translate(fieldData.error ?? '')}
 		>
 			<Controller
 				name={name}
@@ -543,10 +553,14 @@ export function DynamicEnumSelectField({
 					return (
 						<Select
 							id={inputId}
-							error={fieldData.error}
+							// fix: duplicate error
+							// error={fieldData.error}
 							data={[]}
 							value={(value as string) || null}
-							onChange={field.onChange}
+							onChange={(val) => {
+								// Transform null or empty string to undefined for optional enum
+								field.onChange(val === null || val === '' ? undefined : val);
+							}}
 							placeholder={fieldData.placeholder || `TODO: Load from ${fieldData.fieldDef.enumSrc?.stateSource}`}
 							disabled={modelLoading}
 							ref={ref}
