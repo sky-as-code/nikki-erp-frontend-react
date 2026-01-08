@@ -47,7 +47,7 @@ export default defineConfig([
 			'@stylistic/max-len': [
 				'error',
 				{
-					code: 130,
+					code: 120,
 					tabWidth: 4,
 					ignoreUrls: true,
 					ignoreComments: true,
