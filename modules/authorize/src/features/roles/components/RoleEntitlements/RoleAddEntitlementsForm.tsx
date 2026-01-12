@@ -16,8 +16,8 @@ interface RoleAddEntitlementsFormProps {
 	role: Role;
 	availableEntitlements: Entitlement[];
 	selectedEntitlements: Entitlement[];
-	onMoveToSelected: (entitlementId: string) => void;
-	onMoveToAvailable: (entitlementId: string) => void;
+	onMoveToSelected: (entitlement: Entitlement) => void;
+	onMoveToAvailable: (entitlement: Entitlement) => void;
 	resources: Resource[];
 	onScopeRefChange: (entitlementId: string, scopeRef: string) => void;
 	searchQuery: string;
