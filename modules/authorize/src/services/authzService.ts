@@ -1,5 +1,7 @@
 import { del, get, post, put, type Options } from '@nikkierp/common';
 
+import { Org } from '@/features/orgs';
+
 
 export type AuthzResourceDto = {
 	id: string;
@@ -187,7 +189,7 @@ export type AuthzRoleDto = {
 	isRequestable: boolean;
 	isRequiredAttachment: boolean;
 	isRequiredComment: boolean;
-	orgId?: string;
+	org?: Org;
 	createdAt: string;
 	createdBy: string;
 	etag?: string;
@@ -295,7 +297,8 @@ export type AuthzRoleSuiteDto = {
 	isRequestable: boolean;
 	isRequiredAttachment: boolean;
 	isRequiredComment: boolean;
-	orgId?: string;
+	// orgId?: string;
+	org?: Org;
 	createdAt: string;
 	updatedAt: string;
 	createdBy: string;
@@ -357,6 +360,7 @@ export type AuthzGrantRequestDto = {
 	responseId?: string | null;
 	status: string;
 	orgId?: string | null;
+	org?: Org | null;
 	createdAt: string;
 	approver?: { id: string; name: string } | null;
 	requestor?: { id: string; name: string };

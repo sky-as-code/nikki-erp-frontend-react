@@ -3,7 +3,9 @@ import {
 } from '@reduxjs/toolkit';
 
 import { identityService } from './identityService';
+
 import type { User, Group } from './types';
+import type { Org } from '@/features/orgs';
 
 
 export const SLICE_NAME = 'authorize.identity';
@@ -11,19 +13,25 @@ export const SLICE_NAME = 'authorize.identity';
 export type IdentityState = {
 	users: User[];
 	groups: Group[];
+	orgs: Org[];
 	isLoadingUsers: boolean;
 	errorUsers: string | null;
 	isLoadingGroups: boolean;
 	errorGroups: string | null;
+	isLoadingOrgs: boolean;
+	errorOrgs: string | null;
 };
 
 const initialState: IdentityState = {
 	users: [],
 	groups: [],
+	orgs: [],
 	isLoadingUsers: false,
 	errorUsers: null,
 	isLoadingGroups: false,
 	errorGroups: null,
+	isLoadingOrgs: false,
+	errorOrgs: null,
 };
 
 export const listUsers = createAsyncThunk<
@@ -60,6 +68,23 @@ export const listGroups = createAsyncThunk<
 	},
 );
 
+export const listOrgs = createAsyncThunk<
+	Org[],
+	{ query?: Record<string, unknown>; page?: number; size?: number } | void,
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/listOrgs`,
+	async (params, { rejectWithValue }) => {
+		try {
+			return await identityService.listOrgs(params || undefined);
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to list orgs';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
 const identitySlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
@@ -67,6 +92,7 @@ const identitySlice = createSlice({
 	extraReducers: (builder) => {
 		usersReducers(builder);
 		groupsReducers(builder);
+		orgsReducers(builder);
 	},
 });
 
@@ -101,6 +127,23 @@ function groupsReducers(builder: ActionReducerMapBuilder<IdentityState>) {
 		.addCase(listGroups.rejected, (state, action) => {
 			state.isLoadingGroups = false;
 			state.errorGroups = action.payload ?? null;
+		});
+}
+
+function orgsReducers(builder: ActionReducerMapBuilder<IdentityState>) {
+	builder
+		.addCase(listOrgs.pending, (state) => {
+			state.isLoadingOrgs = true;
+			state.errorOrgs = null;
+		})
+		.addCase(listOrgs.fulfilled, (state, action) => {
+			state.isLoadingOrgs = false;
+			state.errorOrgs = null;
+			state.orgs = action.payload;
+		})
+		.addCase(listOrgs.rejected, (state, action) => {
+			state.isLoadingOrgs = false;
+			state.errorOrgs = action.payload ?? null;
 		});
 }
 

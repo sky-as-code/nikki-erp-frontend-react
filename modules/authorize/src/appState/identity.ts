@@ -5,6 +5,7 @@ import {
 	actions,
 	listUsers,
 	listGroups,
+	listOrgs,
 	type IdentityState,
 } from '@/features/identities/identitySlice';
 
@@ -18,6 +19,7 @@ export const identityReducer = {
 export const identityActions = {
 	listUsers,
 	listGroups,
+	listOrgs,
 	...actions,
 };
 
@@ -31,4 +33,9 @@ export const selectUserList = createSelector(
 export const selectGroupList = createSelector(
 	selectIdentityState,
 	(state) => state.groups,
+);
+
+export const selectOrgList = createSelector(
+	selectIdentityState,
+	(state) => state.orgs,
 );

@@ -1,5 +1,8 @@
-import { AutoField, useFormField } from '@nikkierp/ui/components/form';
+import { AutoField, EntityDisplayField, EntitySelectField, useFormField } from '@nikkierp/ui/components/form';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+
+import type { Org } from '@/features/orgs';
 
 
 function useFieldReadOnly(fieldName: string): boolean {
@@ -11,10 +14,23 @@ function useFieldReadOnly(fieldName: string): boolean {
 	return fieldDef.readOnly[formVariant] === true;
 }
 
-export const RoleFormFields: React.FC<{ isCreate: boolean }> = ({ isCreate }) => {
+interface RoleFormFieldsProps {
+	isCreate: boolean;
+	orgs?: Org[];
+}
+
+export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({ isCreate, orgs = [] }) => {
+	const { t: translate } = useTranslation();
 	const isRequestableReadOnly = useFieldReadOnly('isRequestable');
 	const isRequiredAttachmentReadOnly = useFieldReadOnly('isRequiredAttachment');
 	const isRequiredCommentReadOnly = useFieldReadOnly('isRequiredComment');
+
+	const globalOption = React.useMemo(() => [
+		{
+			value: '',
+			label: translate('nikki.authorize.role.fields.org_all'),
+		},
+	], [translate]);
 
 	return (
 		<>
@@ -23,18 +39,12 @@ export const RoleFormFields: React.FC<{ isCreate: boolean }> = ({ isCreate }) =>
 			<AutoField name='description' />
 			<AutoField
 				name='ownerType'
-				inputProps={{
-					disabled: !isCreate,
-				}}
 				htmlProps={!isCreate ? {
 					readOnly: true,
 				} : undefined}
 			/>
 			<AutoField
 				name='ownerRef'
-				inputProps={{
-					disabled: !isCreate,
-				}}
 				htmlProps={!isCreate ? {
 					readOnly: true,
 				} : undefined}
@@ -57,15 +67,23 @@ export const RoleFormFields: React.FC<{ isCreate: boolean }> = ({ isCreate }) =>
 					disabled: isRequiredCommentReadOnly,
 				}}
 			/>
-			<AutoField
-				name='orgId'
-				inputProps={{
-					disabled: !isCreate,
-				}}
-				htmlProps={!isCreate ? {
-					readOnly: true,
-				} : undefined}
-			/>
+			{isCreate ? (
+				<EntitySelectField
+					fieldName='orgId'
+					entities={orgs}
+					getEntityId={(o) => o.id}
+					getEntityName={(o) => o.displayName}
+					prependOptions={globalOption}
+				/>
+			) : (
+				<EntityDisplayField
+					fieldName='orgId'
+					entities={orgs}
+					getEntityId={(o) => o.id}
+					getEntityName={(o) => o.displayName}
+					fallbackLabelKey='nikki.authorize.role.fields.org_all'
+				/>
+			)}
 		</>
 	);
 };

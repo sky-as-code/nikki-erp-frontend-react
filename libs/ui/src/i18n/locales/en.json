@@ -337,6 +337,7 @@
 				"is_required_attachment": "Required attachment",
 				"is_required_comment": "Required comment",
 				"org_id": "Organization",
+				"org_all": "Domain Level (*)",
 				"entitlements_count": "Entitlements",
 				"assignments_count": "Assignments",
 				"suites_count": "Suites",
@@ -345,7 +346,8 @@
 			},
 			"placeholders": {
 				"name": "Enter role name",
-				"description": "Describe what this role grants"
+				"description": "Describe what this role grants",
+				"org_id": "Select organization scope"
 			},
 			"messages": {
 				"loading": "Loading role...",
@@ -489,6 +491,7 @@
 				"status": "Status",
 				"status_description": "Current status of the request",
 				"org_id": "Organization",
+				"org_all": "Domain Level (*)",
 				"org_id_description": "Organization scope",
 				"created_at": "Created At",
 				"other_info": "Other Information"

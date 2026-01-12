@@ -1,3 +1,4 @@
+
 export enum TargetType {
 	ROLE = 'role',
 	SUITE = 'suite',
@@ -24,6 +25,8 @@ export interface GrantRequest {
 	responseId?: string | null;
 	status: RequestStatus;
 	orgId?: string | null;
+	// org?: Org | null;
+	orgDisplayName?: string;
 	createdAt: string;
 	approver?: { id: string; name?: string } | null;
 	requestor?: { id: string; name?: string };

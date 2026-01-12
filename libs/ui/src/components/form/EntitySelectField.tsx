@@ -132,7 +132,7 @@ export function EntitySelectField<TEntity>({
 						id={inputId}
 						placeholder={resolvedPlaceholder}
 						data={options}
-						value={isDisabled ? null : (field.value || null)}
+						value={isDisabled ? null : (field.value ?? null)}
 						onChange={(val) => {
 							const newValue = val === null ? undefined : val;
 							field.onChange(newValue);

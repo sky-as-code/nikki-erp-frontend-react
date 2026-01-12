@@ -109,6 +109,10 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.role.fields.org_id' }"
 		},
+		"orgDisplayName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.org_display_name' }"
+		},
 		"entitlementsCount": {
 			"type": "integer",
 			"label": "{ \"$ref\": 'nikki.authorize.role.fields.entitlements_count' }",

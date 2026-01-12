@@ -2,9 +2,10 @@ import { AutoField, EntityDisplayField, EntitySelectField } from '@nikkierp/ui/c
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { ALL_ORGS_VALUE } from '@/features/role_suites/validation/roleSuiteFormValidation';
+
 import type { Org } from '@/features/orgs';
 
-import { ALL_ORGS_VALUE } from '@/features/role_suites/validation/roleSuiteFormValidation';
 
 
 interface RoleSuiteFormFieldsProps {
@@ -81,12 +82,12 @@ function OrgIdField({ isCreate, orgs, onOrgIdChange }: {
 				getEntityId={(o) => o.id}
 				getEntityName={(o) => o.displayName}
 				prependOptions={[{
-					value: ALL_ORGS_VALUE,
+					value: '',
 					label: translate('nikki.authorize.role_suite.fields.org_all'),
 				}]}
 				onChange={(val) => {
-					// Convert ALL_ORGS_VALUE to undefined (domain level)
-					const newOrgId = (val === ALL_ORGS_VALUE) ? undefined : val;
+					// Convert empty string to undefined (domain level)
+					const newOrgId = (val === '' || val === ALL_ORGS_VALUE) ? undefined : val;
 					onOrgIdChange?.(newOrgId);
 				}}
 				selectProps={{

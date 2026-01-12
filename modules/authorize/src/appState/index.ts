@@ -13,7 +13,7 @@ import { roleSuiteReducer } from './roleSuite';
 export { actionActions, selectActionState, selectActionList } from './action';
 export { entitlementActions, selectEntitlementState, selectEntitlementList } from './entitlement';
 export { grantRequestActions, selectGrantRequestState, selectGrantRequestList } from './grantRequest';
-export { identityActions, selectIdentityState, selectUserList, selectGroupList } from './identity';
+export { identityActions, selectIdentityState, selectUserList, selectGroupList, selectOrgList } from './identity';
 export { resourceActions, selectResourceState, selectResourceList } from './resource';
 export { revokeRequestActions, selectRevokeRequestState, selectRevokeRequestList } from './revokeRequest';
 export { roleActions, selectRoleState, selectRoleList } from './role';

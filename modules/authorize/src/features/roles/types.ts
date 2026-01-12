@@ -16,6 +16,7 @@ export interface Role {
 	isRequiredAttachment: boolean;
 	isRequiredComment: boolean;
 	orgId?: string;
+	orgDisplayName?: string;
 	createdAt: string;
 	createdBy: string;
 	etag?: string;

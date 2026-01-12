@@ -16,6 +16,7 @@ import {
 	roleActions,
 	roleSuiteActions,
 	selectGroupList,
+	selectOrgList,
 	selectRoleList,
 	selectRoleSuiteList,
 	selectUserList,
@@ -40,6 +41,7 @@ function GrantRequestCreatePageBody(): React.ReactNode {
 	const roleSuites = useMicroAppSelector(selectRoleSuiteList);
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
+	const orgs = useMicroAppSelector(selectOrgList);
 
 	React.useEffect(() => {
 		if (roles.length === 0) {
@@ -54,7 +56,10 @@ function GrantRequestCreatePageBody(): React.ReactNode {
 		if (groups.length === 0) {
 			dispatch(identityActions.listGroups());
 		}
-	}, [dispatch, roles.length, roleSuites.length, users.length, groups.length]);
+		if (orgs.length === 0) {
+			dispatch(identityActions.listOrgs());
+		}
+	}, [dispatch, roles.length, roleSuites.length, users.length, groups.length, orgs.length]);
 
 	return (
 		<Stack gap='md'>
@@ -78,6 +83,7 @@ function GrantRequestCreatePageBody(): React.ReactNode {
 										roleSuites={roleSuites}
 										users={users}
 										groups={groups}
+										orgs={orgs}
 									/>
 								</Stack>
 							</form>

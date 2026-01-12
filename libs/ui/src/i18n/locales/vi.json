@@ -348,7 +348,10 @@
 				"is_requestable": "Có thể yêu cầu",
 				"is_required_attachment": "Bắt buộc đính kèm",
 				"is_required_comment": "Bắt buộc bình luận",
-				"org_id": "Tổ chức",
+				"org_id": "Mã Tổ chức",
+				"org_display_name": "Tên Tổ chức",
+				"org": "Tổ chức",
+				"org_all": "Toàn cục (*)",
 				"entitlements_count": "Quyền",
 				"assignments_count": "Phân công",
 				"suites_count": "Bộ vai trò",
@@ -357,7 +360,8 @@
 			},
 			"placeholders": {
 				"name": "Nhập tên vai trò",
-				"description": "Mô tả vai trò này cấp những gì"
+				"description": "Mô tả vai trò này cấp những gì",
+				"org_id": "Chọn phạm vi tổ chức"
 			},
 			"messages": {
 				"loading": "Đang tải vai trò...",
@@ -405,7 +409,9 @@
 				"is_requestable": "Có thể yêu cầu",
 				"is_required_attachment": "Bắt buộc đính kèm",
 				"is_required_comment": "Bắt buộc bình luận",
-				"org_id": "Phạm vi Tổ chức",
+				"org_id": "Mã Tổ chức",
+				"org_display_name": "Tên Tổ chức",
+				"org": "Tổ chức",
 				"org_all": "Toàn cục (*)",
 				"roles_count": "Vai trò",
 				"created_at": "Ngày tạo",
@@ -483,7 +489,10 @@
 				"attachment_description": "Đường dẫn tới tài liệu hỗ trợ",
 				"status": "Trạng thái",
 				"status_description": "Trạng thái hiện tại của yêu cầu",
-				"org_id": "Tổ chức",
+				"org_id": "Mã Tổ chức",
+				"org_display_name": "Tên Tổ chức",
+				"org": "Tổ chức",
+				"org_all": "Toàn cục (*)",
 				"org_id_description": "Phạm vi tổ chức",
 				"created_at": "Ngày tạo",
 				"other_info": "Thông tin khác"

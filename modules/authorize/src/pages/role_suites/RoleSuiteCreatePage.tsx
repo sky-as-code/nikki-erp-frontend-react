@@ -5,20 +5,26 @@ import {
 	FormStyleProvider,
 } from '@nikkierp/ui/components';
 import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { MOCK_ORGS } from '@/features/orgs/mockOrgs';
+import {
+	AuthorizeDispatch,
+	identityActions,
+	selectOrgList,
+} from '@/appState';
+import { RolesSelector } from '@/features/role_suites/components/RolesSelector';
 import { RoleSuiteChangesSummary } from '@/features/role_suites/components/RoleSuiteChangesSummary';
 import { RoleSuiteFormFields } from '@/features/role_suites/components/RoleSuiteFormFields';
+import roleSuiteSchema from '@/features/role_suites/roleSuite-schema.json';
 
 import { useRoleSuiteCreateHandlers } from './hooks';
 
-import { RolesSelector } from '@/features/role_suites/components/RolesSelector';
-import roleSuiteSchema from '@/features/role_suites/roleSuite-schema.json';
 
 
+// eslint-disable-next-line max-lines-per-function
 function RoleSuiteCreatePageBody(): React.ReactNode {
 	const {
 		isSubmitting,
@@ -31,18 +37,24 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 	} = useRoleSuiteCreateHandlers();
 	const { t: translate } = useTranslation();
 	const schema = roleSuiteSchema as ModelSchema;
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const orgs = useMicroAppSelector(selectOrgList);
 
 	// Track current orgId to compute available roles
 	const [currentOrgId, setCurrentOrgId] = React.useState<string | undefined>(undefined);
 	const availableRoles = availableRolesByOrg(currentOrgId);
 
+	React.useEffect(() => {
+		if (orgs.length === 0) {
+			dispatch(identityActions.listOrgs());
+		}
+	}, [dispatch, orgs.length]);
+
 	// Handle orgId change: filter selectedRoleIds to keep only valid roles
 	const handleOrgIdChange = React.useCallback((newOrgId: string | undefined) => {
 		setCurrentOrgId(newOrgId);
-		// Get available roles for the new orgId
 		const newAvailableRoles = availableRolesByOrg(newOrgId);
 		const availableRoleIds = new Set(newAvailableRoles.map((r) => r.id));
-		// Filter selectedRoleIds to only keep roles that are still valid
 		setSelectedRoleIds((prev) => prev.filter((id) => availableRoleIds.has(id)));
 	}, [availableRolesByOrg, setSelectedRoleIds]);
 
@@ -68,7 +80,7 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 									/>
 									<RoleSuiteFormFields
 										isCreate
-										orgs={MOCK_ORGS}
+										orgs={orgs}
 										onOrgIdChange={handleOrgIdChange}
 									/>
 									<RoleSuiteChangesSummary

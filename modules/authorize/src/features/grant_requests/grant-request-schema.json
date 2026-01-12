@@ -239,6 +239,10 @@
 				"update": true
 			}
 		},
+		"orgDisplayName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.org_display_name' }"
+		},
 		"createdAt": {
 			"type": "date",
 			"label": "{ \"$ref\": 'nikki.general.fields.created_at' }",

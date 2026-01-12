@@ -36,15 +36,14 @@ function renderReceiverColumn(row: Record<string, unknown>) {
 }
 
 function renderTargetColumn(row: Record<string, unknown>) {
-	const target = row.target as { name?: string } | undefined;
-	const targetRef = row.targetRef as string;
+	const target = row.target as { name?: string; id?: string } | undefined;
 	const targetType = row.targetType as string;
 	return (
 		<Group gap={4}>
 			<Badge color='violet' variant='light' size='sm'>
 				{targetType}
 			</Badge>
-			<Text size='sm'>{target?.name || targetRef}</Text>
+			<Text size='sm'>{target?.name || target?.id}</Text>
 		</Group>
 	);
 }
@@ -56,6 +55,11 @@ function renderStatusColumn(row: Record<string, unknown>) {
 			{status}
 		</Badge>
 	);
+}
+
+function renderOrgDisplayNameColumn(row: Record<string, unknown>) {
+	const orgDisplayName = row.orgDisplayName as string | undefined;
+	return <Text>{orgDisplayName || '-'}</Text>;
 }
 
 function renderActionsColumn(
@@ -107,8 +111,9 @@ export const GrantRequestTable: React.FC<GrantRequestTableProps> = ({
 			columnRenderers={{
 				requestor: (row) => renderRequestorColumn(row),
 				receiver: (row) => renderReceiverColumn(row),
-				targetRef: (row) => renderTargetColumn(row),
+				target: (row) => renderTargetColumn(row),
 				status: (row) => renderStatusColumn(row),
+				orgDisplayName: (row) => renderOrgDisplayNameColumn(row),
 				actions: (row) => renderActionsColumn(row, onViewDetail, onDelete, translate),
 			}}
 		/>

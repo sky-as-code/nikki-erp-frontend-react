@@ -5,10 +5,16 @@ import {
 	FormStyleProvider,
 } from '@nikkierp/ui/components';
 import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import {
+	AuthorizeDispatch,
+	identityActions,
+	selectOrgList,
+} from '@/appState';
 import { RoleFormFields } from '@/features/roles/components';
 import roleSchema from '@/features/roles/role-schema.json';
 
@@ -23,6 +29,14 @@ function RoleCreatePageBody(): React.ReactNode {
 	} = useRoleCreateHandlers();
 	const { t: translate } = useTranslation();
 	const schema = roleSchema as ModelSchema;
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const orgs = useMicroAppSelector(selectOrgList);
+
+	React.useEffect(() => {
+		if (orgs.length === 0) {
+			dispatch(identityActions.listOrgs());
+		}
+	}, [dispatch, orgs.length]);
 
 	return (
 		<Stack gap='md'>
@@ -40,7 +54,7 @@ function RoleCreatePageBody(): React.ReactNode {
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
 									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
-									<RoleFormFields isCreate />
+									<RoleFormFields isCreate orgs={orgs} />
 								</Stack>
 							</form>
 						)}

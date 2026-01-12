@@ -97,6 +97,10 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.org_id' }"
 		},
+		"orgDisplayName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.org_display_name' }"
+		},
 		"createdAt": {
 			"type": "date",
 			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.created_at' }",

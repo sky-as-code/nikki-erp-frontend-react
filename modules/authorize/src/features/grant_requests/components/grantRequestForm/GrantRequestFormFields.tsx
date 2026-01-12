@@ -1,5 +1,5 @@
 import { Paper, Stack, Title } from '@mantine/core';
-import { AutoField, EntitySelectField } from '@nikkierp/ui/components/form';
+import { AutoField, EntityDisplayField, EntitySelectField } from '@nikkierp/ui/components/form';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,6 +7,7 @@ import { useReceiverSelectLogic, useTargetSelectLogic } from '@/pages/grant_requ
 
 import type { Group } from '@/features/identities';
 import type { User } from '@/features/identities';
+import type { Org } from '@/features/orgs';
 import type { RoleSuite } from '@/features/role_suites';
 import type { Role } from '@/features/roles';
 
@@ -93,10 +94,18 @@ function ReceiverFields({ isCreate, users, groups }: ReceiverFieldsProps) {
 
 interface CommonFieldsProps {
 	isCreate: boolean;
+	orgs?: Org[];
 }
 
-function CommonFields({ isCreate }: CommonFieldsProps) {
+function CommonFields({ isCreate, orgs = [] }: CommonFieldsProps) {
 	const { t: translate } = useTranslation();
+
+	const globalOption = React.useMemo(() => [
+		{
+			value: '',
+			label: translate('nikki.authorize.grant_request.fields.org_all'),
+		},
+	], [translate]);
 
 	return (
 		<Paper p='md' withBorder>
@@ -118,10 +127,21 @@ function CommonFields({ isCreate }: CommonFieldsProps) {
 					name='attachmentUrl'
 					htmlProps={!isCreate ? { readOnly: true } : undefined}
 				/>
-				{!isCreate && (
-					<AutoField
-						name='orgId'
-						htmlProps={{ readOnly: true }}
+				{isCreate ? (
+					<EntitySelectField
+						fieldName='orgId'
+						entities={orgs}
+						getEntityId={(o) => o.id}
+						getEntityName={(o) => o.displayName}
+						prependOptions={globalOption}
+					/>
+				) : (
+					<EntityDisplayField
+						fieldName='orgId'
+						entities={orgs}
+						getEntityId={(o) => o.id}
+						getEntityName={(o) => o.displayName}
+						fallbackLabelKey='nikki.authorize.grant_request.fields.org_all'
 					/>
 				)}
 				{!isCreate && (
@@ -138,6 +158,7 @@ interface GrantRequestFormFieldsProps {
 	roleSuites?: RoleSuite[];
 	users?: User[];
 	groups?: Group[];
+	orgs?: Org[];
 }
 
 export const GrantRequestFormFields: React.FC<GrantRequestFormFieldsProps> = ({
@@ -146,10 +167,11 @@ export const GrantRequestFormFields: React.FC<GrantRequestFormFieldsProps> = ({
 	roleSuites,
 	users,
 	groups,
+	orgs,
 }) => (
 	<Stack gap='md'>
 		<TargetFields isCreate={isCreate} roles={roles} roleSuites={roleSuites} />
 		<ReceiverFields isCreate={isCreate} users={users} groups={groups} />
-		<CommonFields isCreate={isCreate} />
+		<CommonFields isCreate={isCreate} orgs={orgs} />
 	</Stack>
 );

@@ -35,6 +35,11 @@ function renderNameColumn(
 	);
 }
 
+function renderOrgDisplayNameColumn(row: Record<string, unknown>) {
+	const orgDisplayName = row.orgDisplayName as string | undefined;
+	return <Text>{orgDisplayName || '-'}</Text>;
+}
+
 function renderActionsColumn(
 	row: Record<string, unknown>,
 	onEdit: (roleSuiteId: string) => void,
@@ -84,6 +89,7 @@ export const RoleSuiteTable: React.FC<RoleSuiteTableProps> = ({
 			isLoading={isLoading}
 			columnRenderers={{
 				name: (row) => renderNameColumn(row, onViewDetail),
+				orgDisplayName: (row) => renderOrgDisplayNameColumn(row),
 				actions: (row) => renderActionsColumn(row, onEdit, onDelete, translate),
 			}}
 		/>

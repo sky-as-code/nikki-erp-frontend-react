@@ -27,9 +27,9 @@ function GrantRequestListPageBody(): React.ReactNode {
 	const columns = [
 		'requestor',
 		'receiver',
-		'targetRef',
+		'target',
 		'status',
-		'orgId',
+		'orgDisplayName',
 		'actions',
 	];
 	const schema = grantRequestSchema as ModelSchema;

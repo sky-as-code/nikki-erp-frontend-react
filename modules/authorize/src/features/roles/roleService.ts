@@ -39,7 +39,8 @@ function mapDtoToRole(dto: AuthzRoleDto): Role {
 		ownerType: (dto.ownerType as OwnerType) || OwnerType.USER,
 		ownerRef: dto.ownerRef,
 		isRequestable: dto.isRequestable ?? false,
-		orgId: dto.orgId,
+		orgId: dto.org?.id,
+		orgDisplayName: dto.org?.displayName,
 		isRequiredAttachment: dto.isRequiredAttachment ?? false,
 		isRequiredComment: dto.isRequiredComment ?? false,
 		createdAt: dto.createdAt,
@@ -75,7 +76,13 @@ function mapRoleToDto(role: Partial<Role>): Partial<AuthzRoleDto> {
 }
 
 export const roleService = {
-	async listRoles(params?: { graph?: Record<string, unknown>; page?: number; size?: number }): Promise<Role[]> {
+	async listRoles(
+		params?: {
+			graph?: Record<string, unknown>;
+			page?: number;
+			size?: number;
+		},
+	): Promise<Role[]> {
 		const result = await listRolesApi(params);
 		return result.items.map(mapDtoToRole);
 	},

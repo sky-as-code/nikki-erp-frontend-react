@@ -22,7 +22,8 @@ function mapDtoToRoleSuite(dto: AuthzRoleSuiteDto): RoleSuite {
 		isRequestable: dto.isRequestable ?? false,
 		isRequiredAttachment: dto.isRequiredAttachment ?? false,
 		isRequiredComment: dto.isRequiredComment ?? false,
-		orgId: dto.orgId,
+		orgId: dto.org?.id,
+		orgDisplayName: dto.org?.displayName,
 		createdAt: dto.createdAt,
 		updatedAt: dto.updatedAt,
 		createdBy: dto.createdBy,
@@ -64,7 +65,13 @@ function mapRoleSuiteToDto(roleSuite: Partial<RoleSuite>): Partial<AuthzRoleSuit
 }
 
 export const roleSuiteService = {
-	async listRoleSuites(params?: { graph?: Record<string, unknown>; page?: number; size?: number }): Promise<RoleSuite[]> {
+	async listRoleSuites(
+		params?: {
+			graph?: Record<string, unknown>;
+			page?: number;
+			size?: number;
+		},
+	): Promise<RoleSuite[]> {
 		const result = await listRoleSuitesApi(params);
 		return result.items.map(mapDtoToRoleSuite);
 	},

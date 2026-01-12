@@ -139,3 +139,31 @@ export async function deleteGroup(id: string): Promise<void> {
 	return del<void>(`identity/groups/${id}`);
 }
 
+// ============ Organization APIs ============
+export type IdentityOrgDto = {
+	id: string;
+	displayName: string;
+	legalName?: string;
+	email?: string;
+	phoneNumber?: string;
+	address?: string;
+	status: 'active' | 'archived';
+	slug: string;
+	etag?: string;
+	createdAt?: string;
+	updatedAt?: string;
+	deletedAt?: string;
+	[key: string]: unknown;
+};
+
+export async function listOrgs(params?: ListQuery): Promise<ListResponse<IdentityOrgDto>> {
+	const options: Options = {};
+	if (params) {
+		const { query, ...rest } = params;
+		(options as any).searchParams = {
+			...rest,
+			query: query ? JSON.stringify(query) : undefined,
+		};
+	}
+	return get<ListResponse<IdentityOrgDto>>('identity/organizations', options);
+}

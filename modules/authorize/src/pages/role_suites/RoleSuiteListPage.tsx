@@ -12,10 +12,10 @@ import {
 	selectRoleSuiteState,
 } from '@/appState';
 import { RoleSuiteTable } from '@/features/role_suites/components';
+import roleSuiteSchema from '@/features/role_suites/roleSuite-schema.json';
 
 import { useRoleSuiteDeleteHandler } from './hooks';
 
-import roleSuiteSchema from '@/features/role_suites/roleSuite-schema.json';
 
 
 
@@ -26,7 +26,15 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useRoleSuiteDeleteHandler(roleSuites, dispatch);
 
-	const columns = ['name', 'description', 'ownerType', 'ownerRef', 'isRequestable', 'orgId', 'actions'];
+	const columns = [
+		'name',
+		'description',
+		'ownerType',
+		'ownerRef',
+		'isRequestable',
+		'orgDisplayName',
+		'actions',
+	];
 	const schema = roleSuiteSchema as ModelSchema;
 
 	React.useEffect(() => {

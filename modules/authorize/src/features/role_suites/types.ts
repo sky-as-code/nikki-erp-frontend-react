@@ -13,6 +13,7 @@ interface RoleSuite {
 	isRequiredAttachment: boolean;
 	isRequiredComment: boolean;
 	orgId?: string;
+	orgDisplayName?: string;
 	createdAt: string;
 	updatedAt: string;
 	createdBy: string;
