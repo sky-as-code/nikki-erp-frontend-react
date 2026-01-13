@@ -20,13 +20,7 @@ export function NotFoundPage(): React.ReactNode {
 	};
 
 	return (
-		<Center
-			w='100%'
-			h='100vh'
-			style={{
-				background: `linear-gradient(135deg, ${theme.colors.gray[0]} 0%, ${theme.colors.blue[0]} 100%)`,
-			}}
-		>
+		<Center h='100%'>
 			<Stack align='center' gap='xl' p='xl'>
 				<NotFoundContent theme={theme} />
 				<ActionButtons

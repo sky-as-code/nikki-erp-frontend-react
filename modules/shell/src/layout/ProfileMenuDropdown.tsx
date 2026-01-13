@@ -1,20 +1,21 @@
 import { Avatar, Button, Divider, Menu } from '@mantine/core';
 import { signOutAction } from '@nikkierp/shell/auth';
 import { IconBrightnessFilled, IconLogout2, IconUserCog, IconUserFilled } from '@tabler/icons-react';
-import React, { useRef } from 'react';
+import clsx from 'clsx';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
-import classes from './RootLayout.module.css';
+import classes from './PrivateLayout.module.css';
 import { ThemeSwitchModal } from './ThemeSwitchModal';
 
 
 export const ProfileMenuDropdown: React.FC = () => {
+	const dispatch = useDispatch<any>();
 	const { t: translate } = useTranslation();
-
 	const themeModeModalRef = useRef<any>(null);
 
-	const dispatch = useDispatch<any>();
+	const [opened, setOpened] = useState<boolean>(false);
 
 	const handleLogout = () => {
 		dispatch(signOutAction());
@@ -22,11 +23,11 @@ export const ProfileMenuDropdown: React.FC = () => {
 
 	return (
 		<>
-			<Menu shadow='md' width={200}>
+			<Menu shadow='md' width={200} opened={opened} onChange={setOpened}>
 				<Menu.Target>
-					<Button w={35} h={35} p={0} variant='transparent' className={classes.avatar}>
-						<Avatar variant='transparent' radius={'sm'} size={35}>
-							<IconUserFilled />
+					<Button h={35} p={0} variant={'outline'} className={clsx(classes.avatar)} bd={opened ? '1px solid var(--mantine-color-blue-6)' : '1px solid var(--mantine-color-gray-6)'}>
+						<Avatar radius={'sm'} size={35} >
+							<IconUserFilled color={opened ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-6)'} />
 						</Avatar>
 					</Button>
 				</Menu.Target>

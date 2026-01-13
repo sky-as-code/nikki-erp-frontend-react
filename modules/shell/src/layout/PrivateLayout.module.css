@@ -1,0 +1,41 @@
+.headerRow {
+	color: lightdark(var(--mantine-color-white), var(--mantine-color-dark));
+	gap: var(--mantine-spacing-md);
+	box-shadow: 2px 2px 5px 0px #40404033;
+	z-index: 100;
+	background-color: red;
+}
+
+.mainPrivateContent {
+	overflow-y: auto;
+	flex: 1;
+	background: linear-gradient(135deg, var(--nikki-color-page-background), var(--nikki-color-page-background), var(--nikki-color-white));
+	scrollbar-gutter: stable both-edges;
+	scrollbar-width: auto;
+	scrollbar-color: var(--mantine-color-gray-6) transparent;
+}
+
+/* .mainPrivateContent::-webkit-scrollbar {
+    width: 3px;
+	height: 3px;
+} */
+
+/* .mainPrivateContent::-webkit-scrollbar-track {
+    background: transparent;
+} */
+
+/* .mainPrivateContent::-webkit-scrollbar-thumb {
+    background-color: var(--mantine-color-gray-7);
+	border-radius: 3px;
+} */
+
+/* .mainPrivateContent::-webkit-scrollbar-thumb:hover {
+    background-color: var(--mantine-color-red-5);
+} */
+
+.avatar {
+	border: 1px solid #868e96;
+	&:hover {
+		border: 1px solid var(--nikki-color-black);
+	};
+}
