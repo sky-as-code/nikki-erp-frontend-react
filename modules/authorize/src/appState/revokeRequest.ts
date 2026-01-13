@@ -9,7 +9,7 @@ import {
 	createRevokeRequests,
 	deleteRevokeRequest,
 	type RevokeRequestState,
-} from '@/features/revoke_requests/revokeRequestSlice';
+} from '@/features/revokeRequests/revokeRequestSlice';
 
 
 const STATE_KEY = 'revokeRequest';

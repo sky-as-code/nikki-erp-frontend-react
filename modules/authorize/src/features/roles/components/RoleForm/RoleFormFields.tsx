@@ -1,18 +1,9 @@
-import { AutoField, EntityDisplayField, EntitySelectField, useFormField } from '@nikkierp/ui/components/form';
+import { AutoField, EntityDisplayField, EntitySelectField } from '@nikkierp/ui/components/form';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { Org } from '@/features/orgs';
 
-
-function useFieldReadOnly(fieldName: string): boolean {
-	const { getFieldDef, formVariant } = useFormField();
-	const fieldDef = getFieldDef(fieldName);
-
-	if (!fieldDef?.readOnly) return false;
-
-	return fieldDef.readOnly[formVariant] === true;
-}
 
 interface RoleFormFieldsProps {
 	isCreate: boolean;
@@ -21,9 +12,6 @@ interface RoleFormFieldsProps {
 
 export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({ isCreate, orgs = [] }) => {
 	const { t: translate } = useTranslation();
-	const isRequestableReadOnly = useFieldReadOnly('isRequestable');
-	const isRequiredAttachmentReadOnly = useFieldReadOnly('isRequiredAttachment');
-	const isRequiredCommentReadOnly = useFieldReadOnly('isRequiredComment');
 
 	const globalOption = React.useMemo(() => [
 		{
@@ -51,20 +39,29 @@ export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({ isCreate, orgs =
 			/>
 			<AutoField
 				name='isRequestable'
+				htmlProps={!isCreate ? {
+					readOnly: true,
+				} : undefined}
 				inputProps={{
-					disabled: isRequestableReadOnly,
+					disabled: !isCreate,
 				}}
 			/>
 			<AutoField
 				name='isRequiredAttachment'
+				htmlProps={!isCreate ? {
+					readOnly: true,
+				} : undefined}
 				inputProps={{
-					disabled: isRequiredAttachmentReadOnly,
+					disabled: !isCreate,
 				}}
 			/>
 			<AutoField
 				name='isRequiredComment'
+				htmlProps={!isCreate ? {
+					readOnly: true,
+				} : undefined}
 				inputProps={{
-					disabled: isRequiredCommentReadOnly,
+					disabled: !isCreate,
 				}}
 			/>
 			{isCreate ? (

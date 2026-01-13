@@ -15,24 +15,24 @@ import { ActionListPage } from './pages/actions/ActionListPage';
 import { EntitlementCreatePage } from './pages/entitlements/EntitlementCreatePage';
 import { EntitlementDetailPage } from './pages/entitlements/EntitlementDetailPage';
 import { EntitlementListPage } from './pages/entitlements/EntitlementListPage';
-import { GrantRequestCreatePage } from './pages/grant_requests/GrantRequestCreatePage';
-import { GrantRequestDetailPage } from './pages/grant_requests/GrantRequestDetailPage';
-import { GrantRequestListPage } from './pages/grant_requests/GrantRequestListPage';
+import { GrantRequestCreatePage } from './pages/grantRequests/GrantRequestCreatePage';
+import { GrantRequestDetailPage } from './pages/grantRequests/GrantRequestDetailPage';
+import { GrantRequestListPage } from './pages/grantRequests/GrantRequestListPage';
 import { OverviewPage } from './pages/overview/OverviewPage';
 import { ResourceCreatePage } from './pages/resources/ResourceCreatePage';
 import { ResourceDetailPage } from './pages/resources/ResourceDetailPage';
 import { ResourceListPage } from './pages/resources/ResourceListPage';
-import { RevokeRequestCreatePage } from './pages/revoke_requests/RevokeRequestCreatePage';
-import { RevokeRequestDetailPage } from './pages/revoke_requests/RevokeRequestDetailPage';
-import { RevokeRequestListPage } from './pages/revoke_requests/RevokeRequestListPage';
-import { RoleSuiteCreatePage } from './pages/role_suites/RoleSuiteCreatePage';
-import { RoleSuiteDetailPage } from './pages/role_suites/RoleSuiteDetailPage';
-import { RoleSuiteListPage } from './pages/role_suites/RoleSuiteListPage';
+import { RevokeRequestCreatePage } from './pages/revokeRequests/RevokeRequestCreatePage';
+import { RevokeRequestDetailPage } from './pages/revokeRequests/RevokeRequestDetailPage';
+import { RevokeRequestListPage } from './pages/revokeRequests/RevokeRequestListPage';
 import { RoleAddEntitlementsPage } from './pages/roles/RoleAddEntitlementsPage';
 import { RoleCreatePage } from './pages/roles/RoleCreatePage';
 import { RoleDetailPage } from './pages/roles/RoleDetailPage';
 import { RoleListPage } from './pages/roles/RoleListPage';
 import { RoleRemoveEntitlementsPage } from './pages/roles/RoleRemoveEntitlementsPage';
+import { RoleSuiteCreatePage } from './pages/roleSuites/RoleSuiteCreatePage';
+import { RoleSuiteDetailPage } from './pages/roleSuites/RoleSuiteDetailPage';
+import { RoleSuiteListPage } from './pages/roleSuites/RoleSuiteListPage';
 
 
 function useMenuBarItems(): MenuBarItem[] {

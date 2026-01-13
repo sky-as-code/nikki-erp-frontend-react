@@ -4,11 +4,11 @@ import {
 	EntitlementAssignment,
 	SubjectType,
 } from '../features/entitlements';
-import { GrantRequest, ReceiverType, RequestStatus, TargetType } from '../features/grant_requests';
+import { GrantRequest, ReceiverType, RequestStatus, TargetType } from '../features/grantRequests';
 import { Resource, ResourceType, ScopeType } from '../features/resources/types';
-import { RevokeRequest } from '../features/revoke_requests';
-import { RoleSuite } from '../features/role_suites';
+import { RevokeRequest } from '../features/revokeRequests';
 import { OwnerType, Role } from '../features/roles';
+import { RoleSuite } from '../features/roleSuites';
 
 
 // ============= RESOURCES =============

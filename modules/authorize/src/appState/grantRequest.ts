@@ -9,9 +9,9 @@ import {
 	respondGrantRequest,
 	cancelGrantRequest,
 	deleteGrantRequest,
-} from '@/features/grant_requests/grantRequestSlice';
+} from '@/features/grantRequests/grantRequestSlice';
 
-import type { GrantRequestState } from '@/features/grant_requests/types';
+import type { GrantRequestState } from '@/features/grantRequests/types';
 
 
 const STATE_KEY = 'grantRequest';

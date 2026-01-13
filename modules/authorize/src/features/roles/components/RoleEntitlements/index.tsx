@@ -5,4 +5,3 @@ export * from './EntitlementTransferList';
 export * from './FormActionsSection';
 export * from './RoleAddEntitlementsForm';
 export * from './RoleRemoveEntitlementsForm';
-

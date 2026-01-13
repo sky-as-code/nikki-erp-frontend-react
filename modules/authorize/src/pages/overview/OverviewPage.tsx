@@ -10,7 +10,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
-import { RequestStatus } from '@/features/grant_requests';
+import { RequestStatus } from '@/features/grantRequests';
 import {
 	fakeActions,
 	fakeEntitlements,
@@ -59,7 +59,7 @@ function OverviewPageBody(): React.ReactNode {
 				<Alert variant='light' color='yellow' title={translate('nikki.authorize.overview.pending_requests')}>
 					<span dangerouslySetInnerHTML={{ __html: translate('nikki.authorize.overview.pending_requests_message', { count: pendingRequests.length }) }} />
 					{' '}
-					<Link to='/grant-requests'>{translate('nikki.authorize.overview.view_all_requests')}</Link>
+					<Link to='../grant-requests'>{translate('nikki.authorize.overview.view_all_requests')}</Link>
 				</Alert>
 			)}
 
@@ -71,7 +71,7 @@ function OverviewPageBody(): React.ReactNode {
 						value={fakeResources.length}
 						icon={<IconLock size={32} />}
 						color='var(--mantine-color-blue-6)'
-						link='/resources'
+						link='../resources'
 					/>
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
@@ -80,7 +80,7 @@ function OverviewPageBody(): React.ReactNode {
 						value={fakeActions.length}
 						icon={<IconKey size={32} />}
 						color='var(--mantine-color-cyan-6)'
-						link='/actions'
+						link='../actions'
 					/>
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
@@ -89,7 +89,7 @@ function OverviewPageBody(): React.ReactNode {
 						value={fakeEntitlements.length}
 						icon={<IconShield size={32} />}
 						color='var(--mantine-color-teal-6)'
-						link='/entitlements'
+						link='../entitlements'
 					/>
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
@@ -98,7 +98,7 @@ function OverviewPageBody(): React.ReactNode {
 						value={fakeRoles.length}
 						icon={<IconUserCheck size={32} />}
 						color='var(--mantine-color-grape-6)'
-						link='/roles'
+						link='../roles'
 					/>
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
@@ -107,7 +107,7 @@ function OverviewPageBody(): React.ReactNode {
 						value={fakeRoleSuites.length}
 						icon={<IconUsers size={32} />}
 						color='var(--mantine-color-violet-6)'
-						link='/role-suites'
+						link='../role-suites'
 					/>
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
@@ -116,7 +116,7 @@ function OverviewPageBody(): React.ReactNode {
 						value={fakeGrantRequests.length}
 						icon={<IconUserCheck size={32} />}
 						color='var(--mantine-color-yellow-6)'
-						link='/grant-requests'
+						link='../grant-requests'
 					/>
 				</Grid.Col>
 			</Grid>
@@ -157,19 +157,19 @@ function OverviewPageBody(): React.ReactNode {
 			<Title order={5} mt='lg'>{translate('nikki.authorize.overview.quick_links')}</Title>
 			<Grid>
 				<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-					<Paper withBorder p='md' component={Link} to='/resources' style={{ textDecoration: 'none', color: 'inherit' }}>
+					<Paper withBorder p='md' component={Link} to='../resources' style={{ textDecoration: 'none', color: 'inherit' }}>
 						<Text fw={500}>{translate('nikki.authorize.overview.manage_resources')}</Text>
 						<Text size='sm' c='dimmed'>{translate('nikki.authorize.overview.manage_resources_desc')}</Text>
 					</Paper>
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-					<Paper withBorder p='md' component={Link} to='/roles' style={{ textDecoration: 'none', color: 'inherit' }}>
+					<Paper withBorder p='md' component={Link} to='../roles' style={{ textDecoration: 'none', color: 'inherit' }}>
 						<Text fw={500}>{translate('nikki.authorize.overview.manage_roles')}</Text>
 						<Text size='sm' c='dimmed'>{translate('nikki.authorize.overview.manage_roles_desc')}</Text>
 					</Paper>
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-					<Paper withBorder p='md' component={Link} to='/grant-requests' style={{ textDecoration: 'none', color: 'inherit' }}>
+					<Paper withBorder p='md' component={Link} to='../grant-requests' style={{ textDecoration: 'none', color: 'inherit' }}>
 						<Text fw={500}>{translate('nikki.authorize.overview.process_requests')}</Text>
 						<Text size='sm' c='dimmed'>{translate('nikki.authorize.overview.process_requests_desc')}</Text>
 					</Paper>
