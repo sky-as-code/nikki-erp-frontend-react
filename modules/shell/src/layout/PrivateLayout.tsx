@@ -14,31 +14,25 @@ import { MenuBar } from './MenuBar';
 import { ModuleSwitchDropdown } from './ModuleSwitchDropdown';
 import { NotificationDropdown } from './NotificationDropdown';
 import { OrgSwitchDropdown } from './OrgSwitchDropdown';
+import classes from './PrivateLayout.module.css';
 import { ProfileMenuDropdown } from './ProfileMenuDropdown';
-import classes from './RootLayout.module.css';
+
 
 
 export function PrivateLayout(): React.ReactNode {
-	const { colorScheme } = useMantineColorScheme();
-	const theme = useMantineTheme();
 	const status = useAuthenticatedStatus();
-
-	const bg = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
 
 	return status && !status.isSessionRestoring ? (
 		<AuthorizedGuard>
-			<Stack
-				component='div'
-				bg={bg}
-				gap={0}
-				className='module-layout'
-				display={'flex'}
-			>
-				<Header />
-				<Box component='main' flex={1}>
-					<Outlet />
-				</Box>
-			</Stack>
+			<AuthorizedGuard>
+				<Stack gap={0} h='100vh'>
+					<Header />
+
+					<Box className={clsx( classes.mainPrivateContent )} >
+						<Outlet />
+					</Box>
+				</Stack>
+			</AuthorizedGuard>
 		</AuthorizedGuard>
 	) : (
 		<Center w='100%' h='90vh'>
@@ -49,6 +43,8 @@ export function PrivateLayout(): React.ReactNode {
 		</Center>
 	);
 };
+
+
 
 
 const Header: React.FC = () => {
@@ -63,11 +59,9 @@ const Header: React.FC = () => {
 			justify='space-between'
 			gap={0}
 			bg={bg}
-			className={clsx(
-				'sticky top-0 z-100 w-full h-[50px] shrink-0 px-4',
-				classes.headerRow,
-				classes.menuBar,
-			)}
+			h={50}
+			px={'md'}
+			className={clsx( classes.headerRow )}
 		>
 			<Group
 				component='section'
@@ -105,7 +99,6 @@ const _HeaderModuleList: React.FC = () => {
 			className={clsx(
 				'w-full h-[50px] shrink-0 z-100 px-4',
 				classes.headerRow,
-				classes.menuBar,
 			)}
 		>
 			<Group

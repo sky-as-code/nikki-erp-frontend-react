@@ -1,73 +1,189 @@
-import { Box, Image, Button, Checkbox, Container, Flex,
-	Input, Select, Text, Accordion, Card, Group, Menu, ActionIcon,
+import {
+	Box,
+	Button,
+	Checkbox,
+	Container,
+	Flex,
+	Input,
+	Select,
+	Text,
+	Accordion,
+	Group,
+	TextInput,
+	createTheme,
+	MantineProvider,
+	SimpleGrid,
 } from '@mantine/core';
-import { IconDots, IconStarFilled } from '@tabler/icons-react';
+import { IconLayoutGrid, IconList } from '@tabler/icons-react';
+import clsx from 'clsx';
 import { FC, useState } from 'react';
 
-
+import { mockModules as mockModuleListByCategory } from './mockModules';
+import { ModuleCard } from './ModuleCard';
 import classes from './ModuleHomePage.module.css';
 
 
+
+type ViewMode = 'grid' | 'group-list';
+
 export function ModuleHomePage(): React.ReactNode {
+	const [viewMode, setViewMode] = useState<ViewMode>('group-list');
+
 	return (
-		<Box bg={`linear-gradient(135deg, var(--nikki-color-page-background), var(--nikki-color-page-background), var(--nikki-color-white))`} mih={'100%'} style={{}}>
-			<Container pt={{'xl': 50, 'sm': 30, 'base': 20}} size={'lg'}>
-				<Flex gap={'xl'}>
-					<Box px={{'xl': 15, 'sm': 10}} display={{'base': 'none', 'sm': 'block'}}>
-						<ModuleFilterPanel />
+		<Box className={classes.homeContent}>
+			<Container pt={{ xl: 30, sm: 20, base: 10 }} size={'lg'} pb={'xl'} h={'100%'}>
+				<Flex gap={'lg'} h={'100%'}>
+					<Box px={{ xl: 15, sm: 10 }} display={{ base: 'none', sm: 'block' }}>
+						<ModuleFilterPanel viewMode={viewMode} onViewModeChange={setViewMode} />
 					</Box>
-					<Box flex={1}>
+					<Flex direction='column' gap={'lg'} flex={1}>
 						<ModuleSearchPanel />
-						<ModuleList />
-						<ModuleList />
-						<ModuleList />
-						<ModuleList />
-						<ModuleList />
-					</Box>
+						<Box h={'100%'} p={'md'}>
+							<ModuleList viewMode={viewMode} />
+						</Box>
+					</Flex>
 				</Flex>
 			</Container>
 		</Box>
 	);
 }
 
-const ModuleFilterPanel: FC = () => {
+const ModuleFilterPanel: FC<{ viewMode: ViewMode; onViewModeChange: (mode: ViewMode) => void }> = ({
+	viewMode,
+	onViewModeChange,
+}) => {
 	return (
-		<Flex p={{'xl': 20, 'sm': 10}} bg={'var(--mantine-color-white)'} bdrs={'md'} direction={'column'} gap={'md'} className={classes.filterPanel}>
-			<Checkbox color='var(--mantine-color-black)' onChange={() => {}} label='Show disabled modules' />
-			<Checkbox color='var(--mantine-color-black)' onChange={() => {}} label='Show orphaned modules' />
-			<Select
-				label={<Text className='capitalize' size={'sm'} fw={700}>Sort by</Text>}
-				placeholder='Pick value'
-				data={['Name', 'Vue', 'Svelte']}
+		<Flex
+			p={{ xl: 30, sm: 15 }}
+			bg={'var(--mantine-color-white)'}
+			bdrs={'md'}
+			direction={'column'}
+			gap={'lg'}
+			className={classes.filterPanel}
+		>
+			<Box>
+				<Text className='capitalize' size={'sm'} fw={700} mb={'xs'}>
+					View Mode
+				</Text>
+				<Button.Group>
+					<Button
+						variant={viewMode === 'group-list' ? 'filled' : 'default'}
+						size='sm'
+						onClick={() => onViewModeChange('group-list')}
+						flex={1}
+					>
+						<IconList size={16} />
+					</Button>
+					<Button
+						variant={viewMode === 'grid' ? 'filled' : 'default'}
+						size='sm'
+						onClick={() => onViewModeChange('grid')}
+						flex={1}
+					>
+						<IconLayoutGrid size={16} />
+					</Button>
+				</Button.Group>
+			</Box>
+			<Checkbox
+				color='var(--mantine-color-black)'
+				onChange={() => {}}
+				label='Show disabled modules'
+			/>
+			<Checkbox
+				color='var(--mantine-color-black)'
+				onChange={() => {}}
+				label='Show orphaned modules'
 			/>
 			<Select
-				label={<Text className='capitalize' size={'sm'} fw={700}>Group by</Text>}
+				label={
+					<Text className='capitalize' size={'sm'} fw={700}>
+						Sort by
+					</Text>
+				}
 				placeholder='Pick value'
-				data={['Category', 'Vue', 'Svelte']}
+				data={['Name', 'Commonly used']}
+			/>
+			<Select
+				label={
+					<Text className='capitalize' size={'sm'} fw={700}>
+						Group by
+					</Text>
+				}
+				placeholder='Pick value'
+				data={['Category', 'Status']}
 			/>
 		</Flex>
 	);
 };
 
 const ModuleSearchPanel: FC = () => {
+	const theme = createTheme({
+		components: {
+			Input: Input.extend({
+				classNames: {
+					input: classes.searchInput,
+				},
+			}),
+		},
+	});
+
+	const [value, setValue] = useState<string>('');
+
 	return (
-		<Flex gap={'sm'} mb={20} justify={{'base': 'center', 'sm': 'flex-start'}}>
-			<Input placeholder='Search modules' w={'100%'} maw={500} bd={'1px solid #868e96'} bdrs={'sm'} />
-			<Button>Search</Button>
+		<Flex gap={'sm'} justify={{ base: 'center', sm: 'flex-center' }} px={'md'}>
+			<MantineProvider theme={theme}>
+				<TextInput
+					placeholder='Search modules'
+					size='sm'
+					flex={1}
+					w={'100%'}
+					// maw={500}
+					value={value}
+					onChange={(event) => setValue(event.currentTarget.value)}
+					rightSection={value !== '' ? <Input.ClearButton onClick={() => setValue('')} /> : undefined}
+					rightSectionPointerEvents='auto'
+				/>
+			</MantineProvider>
+			<Button size='sm'>Search</Button>
 		</Flex>
 	);
 };
 
-const ModuleList: FC = () => {
-	const [moduleListByCategory, setModuleListByCategory] = useState<any[]>(mockModuleListByCategory);
-	const [value, setValue] = useState<string[]>(moduleListByCategory.map(itm=>itm.key));
+const GridView: FC<{ moduleListByCategory: any[] }> = ({ moduleListByCategory }) => {
+	// Flatten all modules from all categories for grid view
+	const allModules = moduleListByCategory.flatMap((category) =>
+		category.modules.map((module: any) => ({
+			...module,
+			categoryLabel: category.label,
+		})),
+	);
 
+	return (
+		<SimpleGrid
+			cols={{ base: 2, sm: 3, md: 4, lg: 5, xl: 6 }}
+			spacing={{ base: 'sm', sm: 'md', lg: 'lg' }}
+			p={'sm'}
+		>
+			{allModules.map((module: any) => (
+				<ModuleCard key={`${module.categoryLabel}-${module.slug}`} module={module} />
+			))}
+		</SimpleGrid>
+	);
+};
 
+const GroupListView: FC<{ moduleListByCategory: any[] }> = ({ moduleListByCategory }) => {
+	const [accordionValue, setAccordionValue] = useState<string[]>(
+		moduleListByCategory.map((itm) => itm.key).slice(0, 2),
+	);
+
+	// Group list view (default)
 	const items = moduleListByCategory.map((item) => (
-		<Accordion.Item key={item.key} value={item.key}>
-			<Accordion.Control>{item.label}</Accordion.Control>
+		<Accordion.Item key={item.key} value={item.key} className={classes.accordionItem}>
+			<Accordion.Control className={classes.accordionItemControl}>
+				{item.label}
+			</Accordion.Control>
 			<Accordion.Panel>
-				<Group justify='start' align='start' gap={'lg'}>
+				<Group justify='start' align='start' gap={'xs'}>
 					{item?.modules?.map((module: any) => (
 						<ModuleCard key={module.slug} module={module} />
 					))}
@@ -77,146 +193,26 @@ const ModuleList: FC = () => {
 	));
 
 	return (
-		<Accordion multiple chevronPosition='left' variant='unstyled' value={value} onChange={setValue}>
+		<Accordion
+			multiple
+			chevronPosition='left'
+			variant='unstyled'
+			value={accordionValue}
+			onChange={setAccordionValue}
+		>
 			{items}
 		</Accordion>
 	);
 };
 
-
-
-const ModuleCard: FC<{ module: any }> = ({ module }) => {
-
-	return (
-		<Card radius='sm' className={classes.cardHover} w={100} mih={100} p={0} bg={'transparent'}>
-			<Button pos='absolute' top={-5} left={0} variant='transparent' p={2}>
-				<IconStarFilled size={18} color='var(--mantine-color-yellow-4)' />
-			</Button>
-
-			<Box pos='absolute' top={0} right={0} style={{zIndex: 100}}>
-				<Menu withinPortal position='bottom-start' shadow='sm'>
-					<Menu.Target>
-						<ActionIcon variant='subtle' color='gray' className={classes.actionBtn}>
-							<IconDots size={16} />
-						</ActionIcon>
-					</Menu.Target>
-
-					<Menu.Dropdown>
-						<Menu.Item>
-							Unfavorite
-						</Menu.Item>
-						<Menu.Item>
-							Disable
-						</Menu.Item>
-					</Menu.Dropdown>
-				</Menu>
-			</Box>
-
-			<Card.Section>
-				<Box>
-					<Image mx='auto' w={80} h={80} alt='no image' src='https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-4.png' />
-				</Box>
-			</Card.Section>
-
-			<Box p={5} bg={'red'}>
-				<Text c='var(--mantine-color-text)' size='sm' ta='center' bg={'blue'} lineClamp={2}>
-					{module.name}
-				</Text>
-			</Box>
-		</Card>
+const ModuleList: FC<{ viewMode: ViewMode }> = ({ viewMode }) => {
+	const [moduleListByCategory] = useState<any[]>(
+		mockModuleListByCategory,
 	);
+
+	if (viewMode === 'grid') {
+		return <GridView moduleListByCategory={moduleListByCategory} />;
+	}
+	return <GroupListView moduleListByCategory={moduleListByCategory} />;
 };
 
-
-
-const mockModuleListByCategory: any[] = [
-	{
-		key: 'favouritesAndRecentlyUsed',
-		label: 'Favourites and Recently Used',
-		modules: [
-			{
-				name: 'Essential',
-				slug: 'essential',
-				category: 'Essential',
-				icon: 'icon-essential',
-				isDisabled: false,
-				isOrphaned: false,
-				isFavourite: true,
-				lastUsed: '2025-01-01',
-			},
-			{
-				name: 'Identity',
-				slug: 'identity',
-				category: 'Identity',
-				icon: 'icon-identity',
-				isDisabled: false,
-				isOrphaned: false,
-				isFavourite: false,
-				lastUsed: '2025-01-01',
-			},
-			{
-				name: 'Inventory',
-				slug: 'inventory',
-				category: 'Inventory',
-				icon: 'icon-inventory',
-				isDisabled: false,
-				isOrphaned: false,
-				isFavourite: false,
-				lastUsed: '2025-01-01',
-			},
-			{
-				name: 'Sales',
-				slug: 'sales',
-				category: 'Sales',
-				icon: 'icon-sales',
-				isDisabled: false,
-				isOrphaned: false,
-				isFavourite: false,
-				lastUsed: '2025-01-01',
-			},
-			{
-				name: 'Purchase',
-				slug: 'purchase',
-				category: 'Purchase',
-				icon: 'icon-purchase',
-				isDisabled: false,
-				isOrphaned: false,
-				isFavourite: false,
-				lastUsed: '2025-01-01',
-			},
-		],
-	},
-	{
-		key: 'coreBusiness',
-		label: 'Core Business Operations (2)',
-		modules: [
-			{
-				name: 'File Drive',
-				slug: 'file-drive',
-				category: 'File Drive',
-				icon: 'icon-file-drive',
-				isDisabled: false,
-				isFavourite: false,
-				lastUsed: '2025-01-01',
-			},
-			{
-				name: 'HR Management',
-				slug: 'hr-management',
-				category: 'HR Management',
-				icon: 'icon-hr-management',
-				isDisabled: false,
-				isFavourite: false,
-				lastUsed: '2025-01-01',
-			},
-			{
-				name: 'Asset Management',
-				slug: 'asset-management',
-				category: 'Asset Management',
-				icon: 'icon-asset-management',
-				isDisabled: false,
-				isFavourite: false,
-				lastUsed: '2025-01-01',
-			},
-		],
-	},
-];
