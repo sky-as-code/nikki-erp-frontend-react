@@ -4,26 +4,37 @@ import {
 
 import { entitlementService } from './entitlementService';
 import { Entitlement } from './types';
+import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
 
 
 export const SLICE_NAME = 'authorize.entitlement';
 
 export type EntitlementState = {
 	entitlements: Entitlement[];
-	isLoadingList: boolean;
-	errorList: string | null;
-	entitlementDetail: Entitlement | undefined;
-	isLoadingDetail: boolean;
-	errorDetail: string | null;
+	entitlementDetail?: Entitlement;
+
+	list: {
+		isLoading: boolean;
+		error: string | null;
+	};
+
+	create: ReduxActionState<Entitlement>;
+	update: ReduxActionState<Entitlement>;
+	delete: ReduxActionState<void>;
 };
 
 const initialState: EntitlementState = {
 	entitlements: [],
-	isLoadingList: false,
-	errorList: null,
 	entitlementDetail: undefined,
-	isLoadingDetail: false,
-	errorDetail: null,
+
+	list: {
+		isLoading: false,
+		error: null,
+	},
+
+	create: createInitialReduxActionState(),
+	update: createInitialReduxActionState(),
+	delete: createInitialReduxActionState(),
 };
 
 export const listEntitlements = createAsyncThunk<
@@ -123,11 +134,14 @@ const entitlementSlice = createSlice({
 		setEntitlements: (state, action: PayloadAction<Entitlement[]>) => {
 			state.entitlements = action.payload;
 		},
-		setIsLoadingList: (state, action: PayloadAction<boolean>) => {
-			state.isLoadingList = action.payload;
+		resetCreateEntitlement: (state) => {
+			state.create = createInitialReduxActionState();
 		},
-		setErrorList: (state, action: PayloadAction<string | null>) => {
-			state.errorList = action.payload;
+		resetUpdateEntitlement: (state) => {
+			state.update = createInitialReduxActionState();
+		},
+		resetDeleteEntitlement: (state) => {
+			state.delete = createInitialReduxActionState();
 		},
 	},
 	extraReducers: (builder) => {
@@ -142,95 +156,91 @@ const entitlementSlice = createSlice({
 function listEntitlementsReducers(builder: ActionReducerMapBuilder<EntitlementState>) {
 	builder
 		.addCase(listEntitlements.pending, (state) => {
-			state.isLoadingList = true;
-			state.errorList = null;
+			state.list.isLoading = true;
+			state.list.error = null;
 		})
 		.addCase(listEntitlements.fulfilled, (state, action) => {
-			state.isLoadingList = false;
+			state.list.isLoading = false;
 			state.entitlements = action.payload;
-			state.errorList = null;
+			state.list.error = null;
 		})
 		.addCase(listEntitlements.rejected, (state, action) => {
-			state.isLoadingList = false;
+			state.list.isLoading = false;
 			state.entitlements = [];
-			state.errorList = action.payload || 'Failed to list entitlements';
+			state.list.error = action.payload || 'Failed to list entitlements';
 		});
 }
 
 function getEntitlementReducers(builder: ActionReducerMapBuilder<EntitlementState>) {
 	builder
 		.addCase(getEntitlement.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+			state.entitlementDetail = undefined;
 		})
 		.addCase(getEntitlement.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
 			state.entitlementDetail = action.payload;
-			state.errorDetail = null;
 		})
-		.addCase(getEntitlement.rejected, (state, action) => {
-			state.isLoadingDetail = false;
+		.addCase(getEntitlement.rejected, (state) => {
 			state.entitlementDetail = undefined;
-			state.errorDetail = action.payload || 'Failed to get entitlement';
 		});
 }
 
 function createEntitlementReducers(builder: ActionReducerMapBuilder<EntitlementState>) {
 	builder
-		.addCase(createEntitlement.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(createEntitlement.pending, (state, action) => {
+			state.create.status = 'pending';
+			state.create.error = null;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createEntitlement.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
-			state.entitlementDetail = action.payload;
+			state.create.status = 'success';
+			state.create.data = action.payload;
 			state.entitlements.push(action.payload);
-			state.errorDetail = null;
 		})
 		.addCase(createEntitlement.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to create entitlement';
+			state.create.status = 'error';
+			state.create.error = action.payload || 'Failed to create entitlement';
 		});
 }
 
 function updateEntitlementReducers(builder: ActionReducerMapBuilder<EntitlementState>) {
 	builder
-		.addCase(updateEntitlement.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(updateEntitlement.pending, (state, action) => {
+			state.update.status = 'pending';
+			state.update.error = null;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateEntitlement.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.update.status = 'success';
+			state.update.data = action.payload;
 			state.entitlementDetail = action.payload;
 			const index = state.entitlements.findIndex((e) => e.id === action.payload.id);
 			if (index >= 0) {
 				state.entitlements[index] = action.payload;
 			}
-			state.errorDetail = null;
 		})
 		.addCase(updateEntitlement.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to update entitlement';
+			state.update.status = 'error';
+			state.update.error = action.payload || 'Failed to update entitlement';
 		});
 }
 
 function deleteEntitlementReducers(builder: ActionReducerMapBuilder<EntitlementState>) {
 	builder
-		.addCase(deleteEntitlement.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(deleteEntitlement.pending, (state, action) => {
+			state.delete.status = 'pending';
+			state.delete.error = null;
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteEntitlement.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.delete.status = 'success';
 			state.entitlements = state.entitlements.filter((e) => e.id !== action.meta.arg);
 			if (state.entitlementDetail?.id === action.meta.arg) {
 				state.entitlementDetail = undefined;
 			}
-			state.errorDetail = null;
 		})
 		.addCase(deleteEntitlement.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to delete entitlement';
+			state.delete.status = 'error';
+			state.delete.error = action.payload || 'Failed to delete entitlement';
 		});
 }
 

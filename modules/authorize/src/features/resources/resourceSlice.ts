@@ -4,26 +4,37 @@ import {
 
 import { resourceService } from './resourceService';
 import { Resource } from './types';
+import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
 
 
 export const SLICE_NAME = 'authorize.resource';
 
 export type ResourceState = {
 	resources: Resource[];
-	isLoadingList: boolean;
-	errorList: string | null;
-	resourceDetail: Resource | undefined;
-	isLoadingDetail: boolean;
-	errorDetail: string | null;
+	resourceDetail?: Resource;
+
+	list: {
+		isLoading: boolean;
+		error: string | null;
+	};
+
+	create: ReduxActionState<Resource>;
+	update: ReduxActionState<Resource>;
+	delete: ReduxActionState<void>;
 };
 
 const initialState: ResourceState = {
 	resources: [],
-	isLoadingList: false,
-	errorList: null,
 	resourceDetail: undefined,
-	isLoadingDetail: false,
-	errorDetail: null,
+
+	list: {
+		isLoading: false,
+		error: null,
+	},
+
+	create: createInitialReduxActionState(),
+	update: createInitialReduxActionState(),
+	delete: createInitialReduxActionState(),
 };
 
 export const listResources = createAsyncThunk<
@@ -123,11 +134,14 @@ const resourceSlice = createSlice({
 		setResources: (state, action: PayloadAction<Resource[]>) => {
 			state.resources = action.payload;
 		},
-		setIsLoadingList: (state, action: PayloadAction<boolean>) => {
-			state.isLoadingList = action.payload;
+		resetCreateResource: (state) => {
+			state.create = createInitialReduxActionState();
 		},
-		setErrorList: (state, action: PayloadAction<string | null>) => {
-			state.errorList = action.payload;
+		resetUpdateResource: (state) => {
+			state.update = createInitialReduxActionState();
+		},
+		resetDeleteResource: (state) => {
+			state.delete = createInitialReduxActionState();
 		},
 	},
 	extraReducers: (builder) => {
@@ -142,95 +156,91 @@ const resourceSlice = createSlice({
 function listResourcesReducers(builder: ActionReducerMapBuilder<ResourceState>) {
 	builder
 		.addCase(listResources.pending, (state) => {
-			state.isLoadingList = true;
-			state.errorList = null;
+			state.list.isLoading = true;
+			state.list.error = null;
 		})
 		.addCase(listResources.fulfilled, (state, action) => {
-			state.isLoadingList = false;
+			state.list.isLoading = false;
 			state.resources = action.payload;
-			state.errorList = null;
+			state.list.error = null;
 		})
 		.addCase(listResources.rejected, (state, action) => {
-			state.isLoadingList = false;
+			state.list.isLoading = false;
 			state.resources = [];
-			state.errorList = action.payload || 'Failed to list resources';
+			state.list.error = action.payload || 'Failed to list resources';
 		});
 }
 
 function getResourceReducers(builder: ActionReducerMapBuilder<ResourceState>) {
 	builder
 		.addCase(getResource.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+			state.resourceDetail = undefined;
 		})
 		.addCase(getResource.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
 			state.resourceDetail = action.payload;
-			state.errorDetail = null;
 		})
-		.addCase(getResource.rejected, (state, action) => {
-			state.isLoadingDetail = false;
+		.addCase(getResource.rejected, (state) => {
 			state.resourceDetail = undefined;
-			state.errorDetail = action.payload || 'Failed to get resource';
 		});
 }
 
 function createResourceReducers(builder: ActionReducerMapBuilder<ResourceState>) {
 	builder
-		.addCase(createResource.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(createResource.pending, (state, action) => {
+			state.create.status = 'pending';
+			state.create.error = null;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createResource.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
-			state.resourceDetail = action.payload;
+			state.create.status = 'success';
+			state.create.data = action.payload;
 			state.resources.push(action.payload);
-			state.errorDetail = null;
 		})
 		.addCase(createResource.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to create resource';
+			state.create.status = 'error';
+			state.create.error = action.payload || 'Failed to create resource';
 		});
 }
 
 function updateResourceReducers(builder: ActionReducerMapBuilder<ResourceState>) {
 	builder
-		.addCase(updateResource.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(updateResource.pending, (state, action) => {
+			state.update.status = 'pending';
+			state.update.error = null;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateResource.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.update.status = 'success';
+			state.update.data = action.payload;
 			state.resourceDetail = action.payload;
 			const index = state.resources.findIndex((r) => r.id === action.payload.id);
 			if (index >= 0) {
 				state.resources[index] = action.payload;
 			}
-			state.errorDetail = null;
 		})
 		.addCase(updateResource.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to update resource';
+			state.update.status = 'error';
+			state.update.error = action.payload || 'Failed to update resource';
 		});
 }
 
 function deleteResourceReducers(builder: ActionReducerMapBuilder<ResourceState>) {
 	builder
-		.addCase(deleteResource.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(deleteResource.pending, (state, action) => {
+			state.delete.status = 'pending';
+			state.delete.error = null;
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteResource.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.delete.status = 'success';
 			state.resources = state.resources.filter((r) => r.name !== action.meta.arg.name);
 			if (state.resourceDetail?.name === action.meta.arg.name) {
 				state.resourceDetail = undefined;
 			}
-			state.errorDetail = null;
 		})
 		.addCase(deleteResource.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to delete resource';
+			state.delete.status = 'error';
+			state.delete.error = action.payload || 'Failed to delete resource';
 		});
 }
 

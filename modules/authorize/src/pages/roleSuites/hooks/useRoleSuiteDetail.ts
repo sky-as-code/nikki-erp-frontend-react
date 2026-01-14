@@ -4,19 +4,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import {
-	AuthorizeDispatch,
-	roleActions,
-	roleSuiteActions,
-	selectRoleState,
-	selectRoleSuiteState,
-} from '@/appState';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { Role } from '@/features/roles';
 import type { RoleSuite } from '@/features/roleSuites';
 import type { TFunction } from 'i18next';
+
+import {
+	AuthorizeDispatch,
+	roleActions,
+	roleSuiteActions,
+	selectRoleState,
+	selectRoleSuiteState,
+	selectUpdateRoleSuite,
+} from '@/appState';
 
 
 type NotificationType = ReturnType<typeof useUIState>['notification'];
@@ -144,9 +146,8 @@ export function useRoleSuiteDetailData() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const {
 		roleSuites,
-		isLoadingList,
+		list,
 		roleSuiteDetail,
-		isLoadingDetail,
 	} = useMicroAppSelector(selectRoleSuiteState);
 	const { roles } = useMicroAppSelector(selectRoleState);
 
@@ -169,7 +170,7 @@ export function useRoleSuiteDetailData() {
 		roleSuite,
 		availableRoles,
 		roles,
-		isLoading: isLoadingList || isLoadingDetail,
+		isLoading: list.isLoading,
 	};
 }
 
@@ -180,8 +181,7 @@ function validateUpdateData(
 	allRoles: Role[],
 	notification: NotificationType,
 	translate: TFunction,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-): boolean {
+): { isValid: boolean; originalRoleIds: string[] } {
 	const suiteOrgId = roleSuite.orgId || undefined;
 	const invalidRole = validateRoleOrgConstraints(selectedRoleIds, allRoles, suiteOrgId);
 	if (invalidRole) {
@@ -189,252 +189,15 @@ function validateUpdateData(
 			translate('nikki.general.errors.invalid_change'),
 			translate('nikki.general.messages.error'),
 		);
-		setIsSubmitting(false);
-		return false;
+		return { isValid: false, originalRoleIds: [] };
 	}
 
 	const originalRoleIds = roleSuite.roles?.map((r: Role) => r.id) ?? [];
 	if (!validateFormChanges(formData, roleSuite, selectedRoleIds, originalRoleIds, notification, translate)) {
-		setIsSubmitting(false);
-		return false;
+		return { isValid: false, originalRoleIds };
 	}
 
-	return true;
-}
-
-function handleUpdateSuccess(
-	result: { meta: { requestStatus: string } },
-	roleSuite: RoleSuite,
-	translate: TFunction,
-	notification: NotificationType,
-	navigate: (path: string) => void,
-	location: { pathname: string },
-): void {
-	if (result.meta.requestStatus === 'fulfilled') {
-		notification.showInfo(
-			translate('nikki.authorize.role_suite.messages.update_success', { name: roleSuite.name }),
-			translate('nikki.general.messages.success'),
-		);
-		const parent = resolvePath('..', location.pathname).pathname;
-		navigate(parent);
-	}
-}
-
-function handleUpdateError(
-	result: { payload: unknown },
-	translate: TFunction,
-	notification: NotificationType,
-): void {
-	const errorMessage = typeof result.payload === 'string'
-		? result.payload
-		: translate('nikki.general.errors.update_failed');
-	notification.showError(errorMessage, translate('nikki.general.messages.error'));
-}
-
-function performUpdate(
-	dispatch: AuthorizeDispatch,
-	formData: Partial<RoleSuite>,
-	roleSuite: RoleSuite,
-	selectedRoleIds: string[],
-	notification: NotificationType,
-	translate: TFunction,
-	navigate: (path: string) => void,
-	location: { pathname: string },
-): Promise<void> {
-	const payload = prepareUpdatePayload(formData, roleSuite, selectedRoleIds);
-	return dispatch(roleSuiteActions.updateRoleSuite(payload)).then((result) => {
-		handleUpdateSuccess(result, roleSuite, translate, notification, navigate, location);
-		if (result.meta.requestStatus !== 'fulfilled') {
-			handleUpdateError(result, translate, notification);
-		}
-	});
-}
-
-function validateAndPrepareUpdate(
-	formData: Partial<RoleSuite>,
-	roleSuite: RoleSuite,
-	selectedRoleIds: string[],
-	allRoles: Role[],
-	notification: NotificationType,
-	translate: TFunction,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-): boolean {
-	setIsSubmitting(true);
-	return validateUpdateData(
-		formData,
-		roleSuite,
-		selectedRoleIds,
-		allRoles,
-		notification,
-		translate,
-		setIsSubmitting,
-	);
-}
-
-function executeUpdate(
-	formData: Partial<RoleSuite>,
-	roleSuite: RoleSuite,
-	selectedRoleIds: string[],
-	dispatch: AuthorizeDispatch,
-	notification: NotificationType,
-	translate: TFunction,
-	navigate: (path: string) => void,
-	location: { pathname: string },
-): Promise<void> {
-	try {
-		return performUpdate(
-			dispatch,
-			formData,
-			roleSuite,
-			selectedRoleIds,
-			notification,
-			translate,
-			navigate,
-			location,
-		);
-	}
-	catch {
-		notification.showError(
-			translate('nikki.general.errors.update_failed'),
-			translate('nikki.general.messages.error'),
-		);
-		return Promise.resolve();
-	}
-}
-
-function checkValidation(
-	formData: Partial<RoleSuite>,
-	roleSuite: RoleSuite,
-	selectedRoleIds: string[],
-	allRoles: Role[],
-	notification: NotificationType,
-	translate: TFunction,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-): boolean {
-	return validateAndPrepareUpdate(
-		formData,
-		roleSuite,
-		selectedRoleIds,
-		allRoles,
-		notification,
-		translate,
-		setIsSubmitting,
-	);
-}
-
-function shouldExecuteUpdate(
-	formData: Partial<RoleSuite>,
-	roleSuite: RoleSuite,
-	selectedRoleIds: string[],
-	allRoles: Role[],
-	notification: NotificationType,
-	translate: TFunction,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-): boolean {
-	return checkValidation(
-		formData,
-		roleSuite,
-		selectedRoleIds,
-		allRoles,
-		notification,
-		translate,
-		setIsSubmitting,
-	);
-}
-
-function executeIfValid(
-	formData: Partial<RoleSuite>,
-	roleSuite: RoleSuite,
-	selectedRoleIds: string[],
-	dispatch: AuthorizeDispatch,
-	notification: NotificationType,
-	translate: TFunction,
-	navigate: (path: string) => void,
-	location: { pathname: string },
-): Promise<void> {
-	return executeUpdate(
-		formData,
-		roleSuite,
-		selectedRoleIds,
-		dispatch,
-		notification,
-		translate,
-		navigate,
-		location,
-	);
-}
-
-function getValidationResult(
-	formData: Partial<RoleSuite>,
-	roleSuite: RoleSuite,
-	selectedRoleIds: string[],
-	allRoles: Role[],
-	notification: NotificationType,
-	translate: TFunction,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-): boolean {
-	return shouldExecuteUpdate(
-		formData,
-		roleSuite,
-		selectedRoleIds,
-		allRoles,
-		notification,
-		translate,
-		setIsSubmitting,
-	);
-}
-
-function checkValidationAndExecute(
-	formData: Partial<RoleSuite>,
-	roleSuite: RoleSuite,
-	selectedRoleIds: string[],
-	allRoles: Role[],
-	dispatch: AuthorizeDispatch,
-	notification: NotificationType,
-	translate: TFunction,
-	navigate: (path: string) => void,
-	location: { pathname: string },
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-): Promise<void> {
-	const shouldExecute = getValidationResult(
-		formData,
-		roleSuite,
-		selectedRoleIds,
-		allRoles,
-		notification,
-		translate,
-		setIsSubmitting,
-	);
-	if (!shouldExecute) return Promise.resolve();
-	return executeIfValid(formData, roleSuite, selectedRoleIds, dispatch, notification, translate, navigate, location);
-}
-
-function handleUpdateSubmission(
-	formData: Partial<RoleSuite>,
-	roleSuite: RoleSuite,
-	selectedRoleIds: string[],
-	allRoles: Role[],
-	dispatch: AuthorizeDispatch,
-	notification: NotificationType,
-	translate: TFunction,
-	navigate: (path: string) => void,
-	location: { pathname: string },
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-): Promise<void> {
-	return checkValidationAndExecute(
-		formData,
-		roleSuite,
-		selectedRoleIds,
-		allRoles,
-		dispatch,
-		notification,
-		translate,
-		navigate,
-		location,
-		setIsSubmitting,
-	).finally(() => {
-		setIsSubmitting(false);
-	});
+	return { isValid: true, originalRoleIds };
 }
 
 function useUpdateSubmitHandler(
@@ -444,27 +207,18 @@ function useUpdateSubmitHandler(
 	allRoles: Role[],
 	notification: NotificationType,
 	translate: TFunction,
-	navigate: (path: string) => void,
-	location: { pathname: string },
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
-	return React.useCallback(async (data: unknown) => {
+	return React.useCallback((data: unknown) => {
 		if (!roleSuite) return;
 
 		const formData = cleanFormData(data as Partial<RoleSuite>);
-		await handleUpdateSubmission(
-			formData,
-			roleSuite,
-			selectedRoleIds,
-			allRoles,
-			dispatch,
-			notification,
-			translate,
-			navigate,
-			location,
-			setIsSubmitting,
-		);
-	}, [dispatch, roleSuite, selectedRoleIds, allRoles, notification, translate, navigate, location, setIsSubmitting]);
+		const validation = validateUpdateData(formData, roleSuite, selectedRoleIds, allRoles, notification, translate);
+
+		if (!validation.isValid) return;
+
+		const payload = prepareUpdatePayload(formData, roleSuite, selectedRoleIds);
+		dispatch(roleSuiteActions.updateRoleSuite(payload));
+	}, [dispatch, roleSuite, selectedRoleIds, allRoles, notification, translate]);
 }
 
 function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) {
@@ -480,59 +234,7 @@ function useSelectedRoleIds(roleSuite: RoleSuite | undefined) {
 	);
 }
 
-function useSubmitHandler(
-	dispatch: AuthorizeDispatch,
-	roleSuite: RoleSuite | undefined,
-	selectedRoleIds: string[],
-	allRoles: Role[],
-	notification: NotificationType,
-	translate: TFunction,
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-	return useUpdateSubmitHandler(
-		dispatch,
-		roleSuite,
-		selectedRoleIds,
-		allRoles,
-		notification,
-		translate,
-		navigate,
-		location,
-		setIsSubmitting,
-	);
-}
-
-function useHandlers(
-	dispatch: AuthorizeDispatch,
-	roleSuite: RoleSuite | undefined,
-	selectedRoleIds: string[],
-	allRoles: Role[],
-	notification: NotificationType,
-	translate: TFunction,
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-	const handleCancel = useCancelHandler(navigate, location);
-	const handleSubmit = useSubmitHandler(
-		dispatch,
-		roleSuite,
-		selectedRoleIds,
-		allRoles,
-		notification,
-		translate,
-		navigate,
-		location,
-		setIsSubmitting,
-	);
-
-	return { handleCancel, handleSubmit };
-}
-
 function useStateHooks(roleSuite: RoleSuite | undefined) {
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
 	const [selectedRoleIds, setSelectedRoleIds] = useSelectedRoleIds(roleSuite);
 	const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
 	const originalRoleIds = React.useMemo(
@@ -540,8 +242,6 @@ function useStateHooks(roleSuite: RoleSuite | undefined) {
 		[roleSuite],
 	);
 	return {
-		isSubmitting,
-		setIsSubmitting,
 		selectedRoleIds,
 		setSelectedRoleIds,
 		isConfirmDialogOpen,
@@ -556,7 +256,8 @@ function useDetailDependencies() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
-	return { navigate, location, dispatch, notification, translate };
+	const update = useMicroAppSelector(selectUpdateRoleSuite);
+	return { navigate, location, dispatch, notification, translate, update };
 }
 
 export function useRoleSuiteDetailHandlers(
@@ -564,13 +265,31 @@ export function useRoleSuiteDetailHandlers(
 	_availableRoles: Role[],
 	allRoles: Role[],
 ) {
-	const { navigate, location, dispatch, notification, translate } = useDetailDependencies();
+	const { navigate, location, dispatch, notification, translate, update } = useDetailDependencies();
 	const stateHooks = useStateHooks(roleSuite);
-	const { handleCancel, handleSubmit } = useHandlers(
-		dispatch, roleSuite, stateHooks.selectedRoleIds, allRoles,
-		notification, translate, navigate, location, stateHooks.setIsSubmitting,
+	const handleCancel = useCancelHandler(navigate, location);
+	const handleSubmit = useUpdateSubmitHandler(
+		dispatch, roleSuite, stateHooks.selectedRoleIds, allRoles, notification, translate,
 	);
 
-	return { ...stateHooks, handleCancel, handleSubmit };
-}
+	const isSubmitting = update.status === 'pending';
 
+	React.useEffect(() => {
+		if (update.status === 'success') {
+			notification.showInfo(
+				translate('nikki.authorize.role_suite.messages.update_success', { name: roleSuite?.name }),
+				translate('nikki.general.messages.success'),
+			);
+			dispatch(roleSuiteActions.resetUpdateRoleSuite());
+			const parent = resolvePath('..', location.pathname).pathname;
+			navigate(parent);
+		}
+		if (update.status === 'error') {
+			const errorMessage = update.error ?? translate('nikki.general.errors.update_failed');
+			notification.showError(errorMessage, translate('nikki.general.messages.error'));
+			dispatch(roleSuiteActions.resetUpdateRoleSuite());
+		}
+	}, [update.status, update.error, roleSuite, notification, translate, dispatch, navigate, location]);
+
+	return { ...stateHooks, isSubmitting, handleCancel, handleSubmit };
+}

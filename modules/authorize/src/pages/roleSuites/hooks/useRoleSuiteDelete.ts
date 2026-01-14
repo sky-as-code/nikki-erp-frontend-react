@@ -1,14 +1,17 @@
+import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AuthorizeDispatch, roleSuiteActions } from '@/appState';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { RoleSuite } from '@/features/roleSuites';
 
+import { AuthorizeDispatch, roleSuiteActions, selectDeleteRoleSuite } from '@/appState';
 
 
+
+// eslint-disable-next-line max-lines-per-function
 export function useRoleSuiteDeleteHandler(
 	roleSuites: RoleSuite[],
 	dispatch: AuthorizeDispatch,
@@ -17,6 +20,7 @@ export function useRoleSuiteDeleteHandler(
 	const { t: translate } = useTranslation();
 	const [deleteModalOpened, setDeleteModalOpened] = React.useState(false);
 	const [roleSuiteToDelete, setRoleSuiteToDelete] = React.useState<RoleSuite | null>(null);
+	const deleteCommand = useMicroAppSelector(selectDeleteRoleSuite);
 
 	const handleDeleteRequest = React.useCallback((roleSuiteId: string) => {
 		const roleSuite = roleSuites.find((entry) => entry.id === roleSuiteId);
@@ -25,14 +29,28 @@ export function useRoleSuiteDeleteHandler(
 		setDeleteModalOpened(true);
 	}, [roleSuites]);
 
-	const confirmDelete = useConfirmDeleteHandler(
-		roleSuiteToDelete,
-		dispatch,
-		notification,
-		translate,
-		setDeleteModalOpened,
-		setRoleSuiteToDelete,
-	);
+	const confirmDelete = React.useCallback(() => {
+		if (!roleSuiteToDelete) return;
+		dispatch(roleSuiteActions.deleteRoleSuite({ id: roleSuiteToDelete.id }));
+	}, [dispatch, roleSuiteToDelete]);
+
+	React.useEffect(() => {
+		if (deleteCommand.status === 'success') {
+			const msg = translate('nikki.authorize.role_suite.messages.delete_success', {
+				name: roleSuiteToDelete?.name,
+			});
+			notification.showInfo(msg, translate('nikki.general.messages.success'));
+			dispatch(roleSuiteActions.resetDeleteRoleSuite());
+			dispatch(roleSuiteActions.listRoleSuites());
+			setDeleteModalOpened(false);
+			setRoleSuiteToDelete(null);
+		}
+		if (deleteCommand.status === 'error') {
+			const errorMsg = deleteCommand.error ?? translate('nikki.general.errors.delete_failed');
+			notification.showError(errorMsg, translate('nikki.general.messages.error'));
+			dispatch(roleSuiteActions.resetDeleteRoleSuite());
+		}
+	}, [deleteCommand.status, deleteCommand.error, roleSuiteToDelete, notification, translate, dispatch]);
 
 	const closeDeleteModal = React.useCallback(() => {
 		setDeleteModalOpened(false);
@@ -40,36 +58,5 @@ export function useRoleSuiteDeleteHandler(
 	}, []);
 
 	return { deleteModalOpened, roleSuiteToDelete, handleDeleteRequest, confirmDelete, closeDeleteModal };
-}
-
-function useConfirmDeleteHandler(
-	roleSuiteToDelete: RoleSuite | null,
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	setDeleteModalOpened: React.Dispatch<React.SetStateAction<boolean>>,
-	setRoleSuiteToDelete: React.Dispatch<React.SetStateAction<RoleSuite | null>>,
-) {
-	return React.useCallback(() => {
-		if (!roleSuiteToDelete) return;
-
-		dispatch(roleSuiteActions.deleteRoleSuite({ id: roleSuiteToDelete.id })).then((result) => {
-			if (result.meta.requestStatus === 'fulfilled') {
-				const msg = translate('nikki.authorize.role_suite.messages.delete_success', {
-					name: roleSuiteToDelete.name,
-				});
-				notification.showInfo(msg, translate('nikki.general.messages.success'));
-				dispatch(roleSuiteActions.listRoleSuites());
-			}
-			else {
-				const errorMsg = typeof result.payload === 'string'
-					? result.payload
-					: translate('nikki.general.errors.delete_failed');
-				notification.showError(errorMsg, translate('nikki.general.messages.error'));
-			}
-			setDeleteModalOpened(false);
-			setRoleSuiteToDelete(null);
-		});
-	}, [dispatch, roleSuiteToDelete, notification, translate, setDeleteModalOpened, setRoleSuiteToDelete]);
 }
 

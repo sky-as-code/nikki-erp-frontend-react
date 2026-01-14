@@ -4,16 +4,19 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
+import { useUIState } from '../../../../../shell/src/context/UIProviders';
+
+import type { TFunction } from 'i18next';
+
 import {
 	AuthorizeDispatch,
 	roleActions,
 	selectRoleState,
+	selectUpdateRole,
 } from '@/appState';
 import { Role } from '@/features/roles/types';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
-import type { TFunction } from 'i18next';
 
 
 type NotificationType = ReturnType<typeof useUIState>['notification'];
@@ -69,7 +72,7 @@ function useRoleFromState(roleId: string | undefined) {
 
 function useRoleDataFetching(roleId: string | undefined) {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { roles, isLoadingList, isLoadingDetail } = useMicroAppSelector(selectRoleState);
+	const { roles, list } = useMicroAppSelector(selectRoleState);
 
 	React.useEffect(() => {
 		if (roleId) dispatch(roleActions.getRole(roleId));
@@ -79,7 +82,7 @@ function useRoleDataFetching(roleId: string | undefined) {
 		if (roles.length === 0) dispatch(roleActions.listRoles());
 	}, [dispatch, roles.length]);
 
-	return { isLoadingList, isLoadingDetail };
+	return { isLoadingList: list.isLoading, isLoadingDetail: list.isLoading };
 }
 
 export function useRoleDetailData() {
@@ -96,19 +99,22 @@ export function useRoleDetailData() {
 	};
 }
 
+// eslint-disable-next-line max-lines-per-function
 export function useRoleDetailHandlers(role: Role | undefined) {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
+	const update = useMicroAppSelector(selectUpdateRole);
+
+	const isSubmitting = update.status === 'pending';
 
 	const navigateBack = React.useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate, location]);
 
-	const handleSubmit = React.useCallback(async (data: unknown) => {
+	const handleSubmit = React.useCallback((data: unknown) => {
 		if (!role) return;
 
 		const formData = cleanFormData(data as Partial<Role>);
@@ -116,20 +122,21 @@ export function useRoleDetailHandlers(role: Role | undefined) {
 
 		if (!validation.isValid) return;
 
-		setIsSubmitting(true);
-		const result = await dispatch(roleActions.updateRole(buildUpdatePayload(role, validation)));
+		dispatch(roleActions.updateRole(buildUpdatePayload(role, validation)));
+	}, [dispatch, notification, role, translate]);
 
-		if (result.meta.requestStatus === 'fulfilled') {
-			notification.showInfo(translate('nikki.authorize.role.messages.update_success', { name: role.name }), translate('nikki.general.messages.success'));
+	React.useEffect(() => {
+		if (update.status === 'success') {
+			notification.showInfo(translate('nikki.authorize.role.messages.update_success', { name: role?.name }), translate('nikki.general.messages.success'));
+			dispatch(roleActions.resetUpdateRole());
 			navigateBack();
 		}
-		else {
-			const errorMsg = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.update_failed');
+		if (update.status === 'error') {
+			const errorMsg = update.error ?? translate('nikki.general.errors.update_failed');
 			notification.showError(errorMsg, translate('nikki.general.messages.error'));
+			dispatch(roleActions.resetUpdateRole());
 		}
-
-		setIsSubmitting(false);
-	}, [dispatch, notification, role, translate, navigateBack]);
+	}, [update.status, update.error, role, notification, translate, dispatch, navigateBack]);
 
 	return { isSubmitting, handleGoBack: navigateBack, handleSubmit };
 }

@@ -10,14 +10,14 @@ import { roleReducer } from './role';
 import { roleSuiteReducer } from './roleSuite';
 
 
-export { actionActions, selectActionState, selectActionList } from './action';
-export { entitlementActions, selectEntitlementState, selectEntitlementList } from './entitlement';
-export { grantRequestActions, selectGrantRequestState, selectGrantRequestList } from './grantRequest';
+export { actionActions, selectActionState, selectActionList, selectActionDetail, selectCreateAction, selectUpdateAction, selectDeleteAction } from './action';
+export { entitlementActions, selectEntitlementState, selectEntitlementList, selectCreateEntitlement, selectUpdateEntitlement, selectDeleteEntitlement } from './entitlement';
+export { grantRequestActions, selectGrantRequestState, selectGrantRequestList, selectCreateGrantRequest, selectRespondGrantRequest, selectCancelGrantRequest, selectDeleteGrantRequest } from './grantRequest';
 export { identityActions, selectIdentityState, selectUserList, selectGroupList, selectOrgList } from './identity';
-export { resourceActions, selectResourceState, selectResourceList } from './resource';
-export { revokeRequestActions, selectRevokeRequestState, selectRevokeRequestList } from './revokeRequest';
-export { roleActions, selectRoleState, selectRoleList } from './role';
-export { roleSuiteActions, selectRoleSuiteState, selectRoleSuiteList } from './roleSuite';
+export { resourceActions, selectResourceState, selectResourceList, selectCreateResource, selectUpdateResource, selectDeleteResource } from './resource';
+export { revokeRequestActions, selectRevokeRequestState, selectRevokeRequestList, selectCreateRevokeRequest, selectCreateManyRevokeRequest, selectDeleteRevokeRequest } from './revokeRequest';
+export { roleActions, selectRoleState, selectRoleList, selectCreateRole, selectUpdateRole, selectDeleteRole, selectAddEntitlementsRole, selectRemoveEntitlementsRole } from './role';
+export { roleSuiteActions, selectRoleSuiteState, selectRoleSuiteList, selectCreateRoleSuite, selectUpdateRoleSuite, selectDeleteRoleSuite } from './roleSuite';
 
 export const reducer = combineReducers({
 	...actionReducer,

@@ -1,13 +1,14 @@
-import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation, resolvePath } from 'react-router';
 
-import { AuthorizeDispatch, revokeRequestActions } from '@/appState';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { CreateRevokeRequestInput } from '@/features/revokeRequests/revokeRequestService';
+
+import { AuthorizeDispatch, revokeRequestActions, selectCreateRevokeRequest } from '@/appState';
 
 
 
@@ -29,45 +30,13 @@ function prepareCreateData(data: any): CreateRevokeRequestInput {
 	};
 }
 
-function handleCreateResult(
-	result: Awaited<ReturnType<ReturnType<typeof revokeRequestActions.createRevokeRequest>>>,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-) {
-	if (result.meta.requestStatus === 'fulfilled') {
-		notification.showInfo(
-			translate('nikki.authorize.revoke_request.messages.create_success'),
-			translate('nikki.general.messages.success'),
-		);
-		// Navigate to list page after successful create
-		const listPath = resolvePath('..', location.pathname).pathname;
-		navigate(listPath);
-	}
-	else {
-		const msg = typeof result.payload === 'string'
-			? result.payload
-			: translate('nikki.general.errors.create_failed');
-		notification.showError(msg, translate('nikki.general.messages.error'));
-	}
-}
-
 function useSubmitHandler(
 	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
-	return React.useCallback(async (data: any) => {
-		setIsSubmitting(true);
+	return React.useCallback((data: any) => {
 		const requestData = prepareCreateData(data);
-		const result = await dispatch(revokeRequestActions.createRevokeRequest(requestData));
-		handleCreateResult(result, notification, translate, navigate, location);
-		setIsSubmitting(false);
-	}, [dispatch, notification, translate, navigate, location, setIsSubmitting]);
+		dispatch(revokeRequestActions.createRevokeRequest(requestData));
+	}, [dispatch]);
 }
 
 export function useRevokeRequestCreateHandlers() {
@@ -76,10 +45,29 @@ export function useRevokeRequestCreateHandlers() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
+	const create = useMicroAppSelector(selectCreateRevokeRequest);
+
+	const isSubmitting = create.status === 'pending';
+
+	React.useEffect(() => {
+		if (create.status === 'success') {
+			notification.showInfo(
+				translate('nikki.authorize.revoke_request.messages.create_success'),
+				translate('nikki.general.messages.success'),
+			);
+			dispatch(revokeRequestActions.resetCreateRevokeRequest());
+			const listPath = resolvePath('..', location.pathname).pathname;
+			navigate(listPath);
+		}
+		if (create.status === 'error') {
+			const msg = create.error ?? translate('nikki.general.errors.create_failed');
+			notification.showError(msg, translate('nikki.general.messages.error'));
+			dispatch(revokeRequestActions.resetCreateRevokeRequest());
+		}
+	}, [create.status, create.error, notification, translate, dispatch, navigate, location]);
 
 	const handleCancel = useCancelHandler(navigate, location);
-	const handleSubmit = useSubmitHandler(dispatch, notification, translate, navigate, location, setIsSubmitting);
+	const handleSubmit = useSubmitHandler(dispatch);
 
 	return { isSubmitting, handleCancel, handleSubmit };
 }

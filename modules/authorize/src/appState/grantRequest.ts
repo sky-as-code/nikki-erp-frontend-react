@@ -1,5 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 
+import type { GrantRequestState } from '@/features/grantRequests/grantRequestSlice';
+
 import {
 	actions,
 	reducer,
@@ -11,7 +13,6 @@ import {
 	deleteGrantRequest,
 } from '@/features/grantRequests/grantRequestSlice';
 
-import type { GrantRequestState } from '@/features/grantRequests/types';
 
 
 const STATE_KEY = 'grantRequest';
@@ -42,3 +43,22 @@ export const selectGrantRequestDetail = createSelector(
 	(state) => state.grantRequestDetail,
 );
 
+export const selectCreateGrantRequest = createSelector(
+	selectGrantRequestState,
+	(state) => state.create,
+);
+
+export const selectRespondGrantRequest = createSelector(
+	selectGrantRequestState,
+	(state) => state.respond,
+);
+
+export const selectCancelGrantRequest = createSelector(
+	selectGrantRequestState,
+	(state) => state.cancel,
+);
+
+export const selectDeleteGrantRequest = createSelector(
+	selectGrantRequestState,
+	(state) => state.delete,
+);

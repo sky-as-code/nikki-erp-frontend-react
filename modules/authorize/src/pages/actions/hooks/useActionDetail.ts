@@ -4,17 +4,17 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import { AuthorizeDispatch, actionActions, selectActionState } from '@/appState';
-
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { Action } from '@/features/actions';
+
+import { AuthorizeDispatch, actionActions, selectActionState, selectUpdateAction } from '@/appState';
 
 
 function useActionDetailData() {
 	const { actionId } = useParams<{ actionId: string }>();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { actions, isLoadingList, actionDetail, isLoadingDetail } = useMicroAppSelector(selectActionState);
+	const { actions, list, actionDetail } = useMicroAppSelector(selectActionState);
 
 	const action = React.useMemo(() => {
 		if (!actionId) return undefined;
@@ -37,7 +37,7 @@ function useActionDetailData() {
 		}
 	}, [dispatch, actions.length]);
 
-	return { action, isLoading: isLoadingList || isLoadingDetail, actionId };
+	return { action, isLoading: list.isLoading, actionId };
 }
 
 function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) {
@@ -46,96 +46,20 @@ function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: Re
 	}, [navigate, location]);
 }
 
-function handleUpdateResult(
-	result: Awaited<ReturnType<ReturnType<typeof actionActions.updateAction>>>,
-	action: Action,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-) {
-	if (result.meta.requestStatus === 'fulfilled') {
-		notification.showInfo(
-			translate('nikki.authorize.action.messages.update_success', { name: action.name }),
-			translate('nikki.general.messages.success'),
-		);
-		const parent = resolvePath('..', location.pathname).pathname;
-		navigate(parent);
-	}
-	else {
-		const errorMessage = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.update_failed');
-		notification.showError(errorMessage, translate('nikki.general.messages.error'));
-	}
-}
-
 function validateDescriptionChange(
 	newDescription: string | null,
 	originalDescription: string | null,
 	notification: ReturnType<typeof useUIState>['notification'],
 	translate: ReturnType<typeof useTranslation>['t'],
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 ): boolean {
 	if (newDescription === originalDescription) {
 		notification.showError(
 			translate('nikki.authorize.resource.errors.description_not_changed'),
 			translate('nikki.general.messages.no_changes'),
 		);
-		setIsSubmitting(false);
 		return false;
 	}
 	return true;
-}
-
-function performActionUpdate(
-	action: Action,
-	formData: Partial<Action>,
-	newDescription: string | null,
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-) {
-	return dispatch(actionActions.updateAction({
-		actionId: action.id,
-		etag: action.etag || '',
-		description: newDescription ?? undefined,
-	})).then((result) => {
-		handleUpdateResult(result, action, notification, translate, navigate, location);
-	});
-}
-
-async function executeActionUpdate(
-	data: unknown,
-	action: Action,
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-	const formData = cleanFormData(data as Partial<Action>);
-	setIsSubmitting(true);
-
-	const newDescription = formData.description ?? null;
-	const originalDescription = action.description ?? null;
-
-	if (!validateDescriptionChange(newDescription, originalDescription, notification, translate, setIsSubmitting)) {
-		return;
-	}
-
-	await performActionUpdate(
-		action,
-		formData,
-		newDescription,
-		dispatch,
-		notification,
-		translate,
-		navigate,
-		location,
-	);
-	setIsSubmitting(false);
 }
 
 function useSubmitHandler(
@@ -143,23 +67,35 @@ function useSubmitHandler(
 	dispatch: AuthorizeDispatch,
 	notification: ReturnType<typeof useUIState>['notification'],
 	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
-	return React.useCallback(async (data: unknown) => {
+	return React.useCallback((data: unknown) => {
 		if (!action) return;
-		await executeActionUpdate(data, action, dispatch, notification, translate, navigate, location, setIsSubmitting);
-	}, [dispatch, notification, action, navigate, location, translate, setIsSubmitting]);
+
+		const formData = cleanFormData(data as Partial<Action>);
+		const newDescription = formData.description ?? null;
+		const originalDescription = action.description ?? null;
+
+		if (!validateDescriptionChange(newDescription, originalDescription, notification, translate)) {
+			return;
+		}
+
+		dispatch(actionActions.updateAction({
+			actionId: action.id,
+			etag: action.etag || '',
+			description: newDescription ?? undefined,
+		}));
+	}, [dispatch, notification, action, translate]);
 }
 
+// eslint-disable-next-line max-lines-per-function
 function useActionDetailHandlers(action: Action | undefined) {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+	const updateCommand = useMicroAppSelector(selectUpdateAction);
 
 	const handleCancel = useCancelHandler(navigate, location);
 	const handleSubmit = useSubmitHandler(
@@ -167,10 +103,30 @@ function useActionDetailHandlers(action: Action | undefined) {
 		dispatch,
 		notification,
 		translate,
-		navigate,
-		location,
-		setIsSubmitting,
 	);
+
+	const isSubmitting = updateCommand.status === 'pending';
+
+	React.useEffect(() => {
+		if (updateCommand.status === 'success') {
+			notification.showInfo(
+				translate('nikki.authorize.action.messages.update_success', { name: updateCommand.data?.name }),
+				translate('nikki.general.messages.success'),
+			);
+			dispatch(actionActions.resetUpdateAction());
+			const parent = resolvePath('..', location.pathname).pathname;
+			navigate(parent);
+		}
+
+		if (updateCommand.status === 'error') {
+			notification.showError(
+				updateCommand.error ?? translate('nikki.general.errors.update_failed'),
+				translate('nikki.general.messages.error'),
+			);
+			dispatch(actionActions.resetUpdateAction());
+		}
+	// eslint-disable-next-line @stylistic/max-len
+	}, [updateCommand.status, updateCommand.data, updateCommand.error, notification, translate, dispatch, navigate, location]);
 
 	return { isSubmitting, handleCancel, handleSubmit };
 }

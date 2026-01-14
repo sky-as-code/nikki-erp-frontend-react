@@ -3,16 +3,22 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { resolvePath } from 'react-router';
 
-import { AuthorizeDispatch, grantRequestActions, selectGrantRequestState } from '@/appState';
-import { GrantRequest } from '@/features/grantRequests';
-
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
+
+import {
+	AuthorizeDispatch,
+	grantRequestActions,
+	selectGrantRequestState,
+	selectRespondGrantRequest,
+	selectCancelGrantRequest,
+} from '@/appState';
+import { GrantRequest } from '@/features/grantRequests';
 
 
 export function useGrantRequestDetailData() {
 	const { grantRequestId } = useParams<{ grantRequestId: string }>();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { grantRequests, grantRequestDetail, isLoadingDetail } = useMicroAppSelector(selectGrantRequestState);
+	const { grantRequests, grantRequestDetail, list } = useMicroAppSelector(selectGrantRequestState);
 
 	const item = React.useMemo(() => {
 		if (grantRequestId) {
@@ -28,7 +34,7 @@ export function useGrantRequestDetailData() {
 		}
 	}, [dispatch, item, grantRequestId]);
 
-	return { grantRequest: item, isLoading: isLoadingDetail };
+	return { grantRequest: item, isLoading: list.isLoading };
 }
 
 function useBackHandler(navigate: ReturnType<typeof useNavigate>) {
@@ -40,111 +46,97 @@ function useBackHandler(navigate: ReturnType<typeof useNavigate>) {
 function useApproveHandler(
 	grantRequest: GrantRequest | undefined,
 	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 	responderId: string | undefined,
-	navigate: ReturnType<typeof useNavigate>,
 ) {
-	return React.useCallback(async () => {
+	return React.useCallback(() => {
 		if (!grantRequest || !grantRequest.etag || !responderId) return;
-		setIsSubmitting(true);
-		const result = await dispatch(grantRequestActions.respondGrantRequest({
+		dispatch(grantRequestActions.respondGrantRequest({
 			id: grantRequest.id,
 			decision: 'approve',
 			etag: grantRequest.etag,
 			responderId,
 		}));
-		if (result.meta.requestStatus === 'fulfilled') {
-			notification.showInfo('Request approved successfully', 'Success');
-			dispatch(grantRequestActions.listGrantRequests());
-			navigate(resolvePath('..', location.pathname).pathname);
-		}
-		else {
-			const msg = typeof result.payload === 'string' ? result.payload : 'Failed to approve';
-			notification.showError(msg, 'Error');
-		}
-		setIsSubmitting(false);
-	}, [dispatch, grantRequest, notification, setIsSubmitting, responderId, navigate]);
+	}, [dispatch, grantRequest, responderId]);
 }
 
 function useRejectHandler(
 	grantRequest: GrantRequest | undefined,
 	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 	responderId: string | undefined,
-	navigate: ReturnType<typeof useNavigate>,
 ) {
-	return React.useCallback(async () => {
+	return React.useCallback(() => {
 		if (!grantRequest || !grantRequest.etag || !responderId) return;
-		setIsSubmitting(true);
-		const result = await dispatch(grantRequestActions.respondGrantRequest({
+		dispatch(grantRequestActions.respondGrantRequest({
 			id: grantRequest.id,
 			decision: 'deny',
 			etag: grantRequest.etag,
 			responderId,
 		}));
-		if (result.meta.requestStatus === 'fulfilled') {
-			notification.showInfo('Request rejected', 'Success');
-			dispatch(grantRequestActions.listGrantRequests());
-			navigate(resolvePath('..', location.pathname).pathname);
-		}
-		else {
-			const msg = typeof result.payload === 'string' ? result.payload : 'Failed to reject';
-			notification.showError(msg, 'Error');
-		}
-		setIsSubmitting(false);
-	}, [dispatch, grantRequest, notification, setIsSubmitting, responderId, navigate]);
+	}, [dispatch, grantRequest, responderId]);
 }
 
 function useCancelRequestHandler(
 	grantRequestId: string | undefined,
 	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
-	return React.useCallback(async () => {
+	return React.useCallback(() => {
 		if (!grantRequestId) return;
-		setIsSubmitting(true);
-		const result = await dispatch(grantRequestActions.cancelGrantRequest({ id: grantRequestId }));
-		if (result.meta.requestStatus === 'fulfilled') {
-			notification.showInfo('Request cancelled', 'Success');
-			dispatch(grantRequestActions.getGrantRequest(grantRequestId));
-		}
-		else {
-			const msg = typeof result.payload === 'string' ? result.payload : 'Failed to cancel';
-			notification.showError(msg, 'Error');
-		}
-		setIsSubmitting(false);
-	}, [dispatch, grantRequestId, notification, setIsSubmitting]);
+		dispatch(grantRequestActions.cancelGrantRequest({ id: grantRequestId }));
+	}, [dispatch, grantRequestId]);
 }
 
+// eslint-disable-next-line max-lines-per-function
 export function useGrantRequestDetailHandlers(grantRequest?: GrantRequest) {
 	const navigate = useNavigate();
 	const { notification } = useUIState();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
 	//Mock data userId
 	const responderId = '01JWNMZ36QHC7CQQ748H9NQ6J6';
 
+	const respondCommand = useMicroAppSelector(selectRespondGrantRequest);
+	const cancelCommand = useMicroAppSelector(selectCancelGrantRequest);
+
 	const handleBack = useBackHandler(navigate);
-	const handleApprove = useApproveHandler(
-		grantRequest,
-		dispatch,
-		notification,
-		setIsSubmitting,
-		responderId,
-		navigate,
-	);
-	const handleReject = useRejectHandler(
-		grantRequest,
-		dispatch,
-		notification,
-		setIsSubmitting,
-		responderId,
-		navigate,
-	);
-	const handleCancelRequest = useCancelRequestHandler(grantRequest?.id, dispatch, notification, setIsSubmitting);
+	const handleApprove = useApproveHandler(grantRequest, dispatch, responderId);
+	const handleReject = useRejectHandler(grantRequest, dispatch, responderId);
+	const handleCancelRequest = useCancelRequestHandler(grantRequest?.id, dispatch);
+
+	const isSubmitting = respondCommand.status === 'pending' || cancelCommand.status === 'pending';
+
+	React.useEffect(() => {
+		if (respondCommand.status === 'success') {
+			notification.showInfo('Request responded successfully', 'Success');
+			dispatch(grantRequestActions.resetRespondGrantRequest());
+			dispatch(grantRequestActions.listGrantRequests());
+			navigate(resolvePath('..', location.pathname).pathname);
+		}
+
+		if (respondCommand.status === 'error') {
+			notification.showError(
+				respondCommand.error ?? 'Failed to respond',
+				'Error',
+			);
+			dispatch(grantRequestActions.resetRespondGrantRequest());
+		}
+	}, [respondCommand.status, respondCommand.error, notification, dispatch, navigate]);
+
+	React.useEffect(() => {
+		if (cancelCommand.status === 'success') {
+			notification.showInfo('Request cancelled', 'Success');
+			dispatch(grantRequestActions.resetCancelGrantRequest());
+			if (grantRequest?.id) {
+				dispatch(grantRequestActions.getGrantRequest(grantRequest.id));
+			}
+		}
+
+		if (cancelCommand.status === 'error') {
+			notification.showError(
+				cancelCommand.error ?? 'Failed to cancel',
+				'Error',
+			);
+			dispatch(grantRequestActions.resetCancelGrantRequest());
+		}
+	}, [cancelCommand.status, cancelCommand.error, grantRequest?.id, notification, dispatch]);
 
 	return { handleBack, handleApprove, handleReject, handleCancelRequest, isSubmitting };
 }

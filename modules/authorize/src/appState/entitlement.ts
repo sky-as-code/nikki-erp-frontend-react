@@ -39,3 +39,17 @@ export const selectEntitlementDetail = createSelector(
 	(state) => state.entitlementDetail,
 );
 
+export const selectCreateEntitlement = createSelector(
+	selectEntitlementState,
+	(state) => state.create,
+);
+
+export const selectUpdateEntitlement = createSelector(
+	selectEntitlementState,
+	(state) => state.update,
+);
+
+export const selectDeleteEntitlement = createSelector(
+	selectEntitlementState,
+	(state) => state.delete,
+);

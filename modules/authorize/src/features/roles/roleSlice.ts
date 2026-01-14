@@ -4,6 +4,7 @@ import {
 
 import { roleService } from './roleService';
 import { Role } from './types';
+import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
 import { entitlementService } from '../entitlements/entitlementService';
 import { Entitlement } from '../entitlements/types';
 
@@ -12,20 +13,34 @@ export const SLICE_NAME = 'authorize.role';
 
 export type RoleState = {
 	roles: Role[];
-	isLoadingList: boolean;
-	errorList: string | null;
 	roleDetail: Role | undefined;
-	isLoadingDetail: boolean;
-	errorDetail: string | null;
+
+	list: {
+		isLoading: boolean;
+		error: string | null;
+	};
+
+	create: ReduxActionState<Role>;
+	update: ReduxActionState<Role>;
+	delete: ReduxActionState<void>;
+	addEntitlements: ReduxActionState<void>;
+	removeEntitlements: ReduxActionState<void>;
 };
 
 const initialState: RoleState = {
 	roles: [],
-	isLoadingList: false,
-	errorList: null,
 	roleDetail: undefined,
-	isLoadingDetail: false,
-	errorDetail: null,
+
+	list: {
+		isLoading: false,
+		error: null,
+	},
+
+	create: createInitialReduxActionState(),
+	update: createInitialReduxActionState(),
+	delete: createInitialReduxActionState(),
+	addEntitlements: createInitialReduxActionState(),
+	removeEntitlements: createInitialReduxActionState(),
 };
 
 async function hydrateEntitlements(
@@ -189,10 +204,25 @@ const roleSlice = createSlice({
 			state.roles = action.payload;
 		},
 		setIsLoadingList: (state, action: PayloadAction<boolean>) => {
-			state.isLoadingList = action.payload;
+			state.list.isLoading = action.payload;
 		},
 		setErrorList: (state, action: PayloadAction<string | null>) => {
-			state.errorList = action.payload;
+			state.list.error = action.payload;
+		},
+		resetCreateRole: (state) => {
+			state.create = createInitialReduxActionState();
+		},
+		resetUpdateRole: (state) => {
+			state.update = createInitialReduxActionState();
+		},
+		resetDeleteRole: (state) => {
+			state.delete = createInitialReduxActionState();
+		},
+		resetAddEntitlementsRole: (state) => {
+			state.addEntitlements = createInitialReduxActionState();
+		},
+		resetRemoveEntitlementsRole: (state) => {
+			state.removeEntitlements = createInitialReduxActionState();
 		},
 	},
 	extraReducers: (builder) => {
@@ -201,101 +231,137 @@ const roleSlice = createSlice({
 		createRoleReducers(builder);
 		updateRoleReducers(builder);
 		deleteRoleReducers(builder);
+		addEntitlementsReducers(builder);
+		removeEntitlementsReducers(builder);
 	},
 });
 
 function listRolesReducers(builder: ActionReducerMapBuilder<RoleState>) {
 	builder
 		.addCase(listRoles.pending, (state) => {
-			state.isLoadingList = true;
-			state.errorList = null;
+			state.list.isLoading = true;
+			state.list.error = null;
 		})
 		.addCase(listRoles.fulfilled, (state, action) => {
-			state.isLoadingList = false;
+			state.list.isLoading = false;
 			state.roles = action.payload;
-			state.errorList = null;
+			state.list.error = null;
 		})
 		.addCase(listRoles.rejected, (state, action) => {
-			state.isLoadingList = false;
+			state.list.isLoading = false;
 			state.roles = [];
-			state.errorList = action.payload || 'Failed to list roles';
+			state.list.error = action.payload || 'Failed to list roles';
 		});
 }
 
 function getRoleReducers(builder: ActionReducerMapBuilder<RoleState>) {
 	builder
 		.addCase(getRole.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+			state.list.isLoading = true;
+			state.list.error = null;
 		})
 		.addCase(getRole.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.list.isLoading = false;
 			state.roleDetail = action.payload;
-			state.errorDetail = null;
+			state.list.error = null;
 		})
 		.addCase(getRole.rejected, (state, action) => {
-			state.isLoadingDetail = false;
+			state.list.isLoading = false;
 			state.roleDetail = undefined;
-			state.errorDetail = action.payload || 'Failed to get role';
+			state.list.error = action.payload || 'Failed to get role';
 		});
 }
 
 function createRoleReducers(builder: ActionReducerMapBuilder<RoleState>) {
 	builder
-		.addCase(createRole.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(createRole.pending, (state, action) => {
+			state.create.status = 'pending';
+			state.create.error = null;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createRole.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.create.status = 'success';
+			state.create.data = action.payload;
 			state.roleDetail = action.payload;
 			state.roles.push(action.payload);
-			state.errorDetail = null;
 		})
 		.addCase(createRole.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to create role';
+			state.create.status = 'error';
+			state.create.error = action.payload || 'Failed to create role';
 		});
 }
 
 function updateRoleReducers(builder: ActionReducerMapBuilder<RoleState>) {
 	builder
-		.addCase(updateRole.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(updateRole.pending, (state, action) => {
+			state.update.status = 'pending';
+			state.update.error = null;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateRole.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.update.status = 'success';
+			state.update.data = action.payload;
 			state.roleDetail = action.payload;
 			const index = state.roles.findIndex((r) => r.id === action.payload.id);
 			if (index >= 0) {
 				state.roles[index] = action.payload;
 			}
-			state.errorDetail = null;
 		})
 		.addCase(updateRole.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to update role';
+			state.update.status = 'error';
+			state.update.error = action.payload || 'Failed to update role';
 		});
 }
 
 function deleteRoleReducers(builder: ActionReducerMapBuilder<RoleState>) {
 	builder
-		.addCase(deleteRole.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(deleteRole.pending, (state, action) => {
+			state.delete.status = 'pending';
+			state.delete.error = null;
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteRole.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.delete.status = 'success';
 			state.roles = state.roles.filter((r) => r.id !== action.meta.arg.id);
 			if (state.roleDetail?.id === action.meta.arg.id) {
 				state.roleDetail = undefined;
 			}
-			state.errorDetail = null;
 		})
 		.addCase(deleteRole.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to delete role';
+			state.delete.status = 'error';
+			state.delete.error = action.payload || 'Failed to delete role';
+		});
+}
+
+function addEntitlementsReducers(builder: ActionReducerMapBuilder<RoleState>) {
+	builder
+		.addCase(addEntitlementsToRole.pending, (state, action) => {
+			state.addEntitlements.status = 'pending';
+			state.addEntitlements.error = null;
+			state.addEntitlements.requestId = action.meta.requestId;
+		})
+		.addCase(addEntitlementsToRole.fulfilled, (state) => {
+			state.addEntitlements.status = 'success';
+		})
+		.addCase(addEntitlementsToRole.rejected, (state, action) => {
+			state.addEntitlements.status = 'error';
+			state.addEntitlements.error = action.payload || 'Failed to add entitlements';
+		});
+}
+
+function removeEntitlementsReducers(builder: ActionReducerMapBuilder<RoleState>) {
+	builder
+		.addCase(removeEntitlementsFromRole.pending, (state, action) => {
+			state.removeEntitlements.status = 'pending';
+			state.removeEntitlements.error = null;
+			state.removeEntitlements.requestId = action.meta.requestId;
+		})
+		.addCase(removeEntitlementsFromRole.fulfilled, (state) => {
+			state.removeEntitlements.status = 'success';
+		})
+		.addCase(removeEntitlementsFromRole.rejected, (state, action) => {
+			state.removeEntitlements.status = 'error';
+			state.removeEntitlements.error = action.payload || 'Failed to remove entitlements';
 		});
 }
 

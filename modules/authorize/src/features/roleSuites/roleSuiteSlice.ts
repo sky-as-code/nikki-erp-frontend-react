@@ -3,6 +3,7 @@ import {
 } from '@reduxjs/toolkit';
 
 import { roleSuiteService } from './roleSuiteService';
+import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
 
 import type { RoleSuite } from './types';
 
@@ -11,20 +12,30 @@ export const SLICE_NAME = 'authorize.roleSuite';
 
 export type RoleSuiteState = {
 	roleSuites: RoleSuite[];
-	isLoadingList: boolean;
-	errorList: string | null;
 	roleSuiteDetail: RoleSuite | undefined;
-	isLoadingDetail: boolean;
-	errorDetail: string | null;
+
+	list: {
+		isLoading: boolean;
+		error: string | null;
+	};
+
+	create: ReduxActionState<RoleSuite>;
+	update: ReduxActionState<RoleSuite>;
+	delete: ReduxActionState<void>;
 };
 
 const initialState: RoleSuiteState = {
 	roleSuites: [],
-	isLoadingList: false,
-	errorList: null,
 	roleSuiteDetail: undefined,
-	isLoadingDetail: false,
-	errorDetail: null,
+
+	list: {
+		isLoading: false,
+		error: null,
+	},
+
+	create: createInitialReduxActionState(),
+	update: createInitialReduxActionState(),
+	delete: createInitialReduxActionState(),
 };
 
 export const listRoleSuites = createAsyncThunk<
@@ -125,10 +136,19 @@ const roleSuiteSlice = createSlice({
 			state.roleSuites = action.payload;
 		},
 		setIsLoadingList: (state, action: PayloadAction<boolean>) => {
-			state.isLoadingList = action.payload;
+			state.list.isLoading = action.payload;
 		},
 		setErrorList: (state, action: PayloadAction<string | null>) => {
-			state.errorList = action.payload;
+			state.list.error = action.payload;
+		},
+		resetCreateRoleSuite: (state) => {
+			state.create = createInitialReduxActionState();
+		},
+		resetUpdateRoleSuite: (state) => {
+			state.update = createInitialReduxActionState();
+		},
+		resetDeleteRoleSuite: (state) => {
+			state.delete = createInitialReduxActionState();
 		},
 	},
 	extraReducers: (builder) => {
@@ -143,95 +163,97 @@ const roleSuiteSlice = createSlice({
 function listRoleSuitesReducers(builder: ActionReducerMapBuilder<RoleSuiteState>) {
 	builder
 		.addCase(listRoleSuites.pending, (state) => {
-			state.isLoadingList = true;
-			state.errorList = null;
+			state.list.isLoading = true;
+			state.list.error = null;
 		})
 		.addCase(listRoleSuites.fulfilled, (state, action) => {
-			state.isLoadingList = false;
+			state.list.isLoading = false;
 			state.roleSuites = action.payload;
-			state.errorList = null;
+			state.list.error = null;
 		})
 		.addCase(listRoleSuites.rejected, (state, action) => {
-			state.isLoadingList = false;
+			state.list.isLoading = false;
 			state.roleSuites = [];
-			state.errorList = action.payload || 'Failed to list role suites';
+			state.list.error = action.payload || 'Failed to list role suites';
 		});
 }
 
 function getRoleSuiteReducers(builder: ActionReducerMapBuilder<RoleSuiteState>) {
 	builder
 		.addCase(getRoleSuite.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+			state.list.isLoading = true;
+			state.list.error = null;
 		})
 		.addCase(getRoleSuite.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.list.isLoading = false;
 			state.roleSuiteDetail = action.payload;
-			state.errorDetail = null;
+			state.list.error = null;
 		})
 		.addCase(getRoleSuite.rejected, (state, action) => {
-			state.isLoadingDetail = false;
+			state.list.isLoading = false;
 			state.roleSuiteDetail = undefined;
-			state.errorDetail = action.payload || 'Failed to get role suite';
+			state.list.error = action.payload || 'Failed to get role suite';
 		});
 }
 
 function createRoleSuiteReducers(builder: ActionReducerMapBuilder<RoleSuiteState>) {
 	builder
-		.addCase(createRoleSuite.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(createRoleSuite.pending, (state, action) => {
+			state.create.status = 'pending';
+			state.create.error = null;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createRoleSuite.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.create.status = 'success';
+			state.create.data = action.payload;
 			state.roleSuiteDetail = action.payload;
 			state.roleSuites.push(action.payload);
-			state.errorDetail = null;
 		})
 		.addCase(createRoleSuite.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to create role suite';
+			state.create.status = 'error';
+			state.create.error = action.payload || 'Failed to create role suite';
 		});
 }
 
 function updateRoleSuiteReducers(builder: ActionReducerMapBuilder<RoleSuiteState>) {
 	builder
-		.addCase(updateRoleSuite.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(updateRoleSuite.pending, (state, action) => {
+			state.update.status = 'pending';
+			state.update.error = null;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateRoleSuite.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.update.status = 'success';
+			state.update.data = action.payload;
 			state.roleSuiteDetail = action.payload;
 			const index = state.roleSuites.findIndex((r) => r.id === action.payload.id);
 			if (index >= 0) {
 				state.roleSuites[index] = action.payload;
 			}
-			state.errorDetail = null;
 		})
 		.addCase(updateRoleSuite.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to update role suite';
+			state.update.status = 'error';
+			state.update.error = action.payload || 'Failed to update role suite';
 		});
 }
 
 function deleteRoleSuiteReducers(builder: ActionReducerMapBuilder<RoleSuiteState>) {
 	builder
-		.addCase(deleteRoleSuite.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(deleteRoleSuite.pending, (state, action) => {
+			state.delete.status = 'pending';
+			state.delete.error = null;
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteRoleSuite.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.delete.status = 'success';
 			state.roleSuites = state.roleSuites.filter((r) => r.id !== action.meta.arg.id);
 			if (state.roleSuiteDetail?.id === action.meta.arg.id) {
 				state.roleSuiteDetail = undefined;
 			}
-			state.errorDetail = null;
 		})
 		.addCase(deleteRoleSuite.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to delete role suite';
+			state.delete.status = 'error';
+			state.delete.error = action.payload || 'Failed to delete role suite';
 		});
 }
 

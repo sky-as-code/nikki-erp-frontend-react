@@ -39,3 +39,17 @@ export const selectResourceDetail = createSelector(
 	(state) => state.resourceDetail,
 );
 
+export const selectCreateResource = createSelector(
+	selectResourceState,
+	(state) => state.create,
+);
+
+export const selectUpdateResource = createSelector(
+	selectResourceState,
+	(state) => state.update,
+);
+
+export const selectDeleteResource = createSelector(
+	selectResourceState,
+	(state) => state.delete,
+);

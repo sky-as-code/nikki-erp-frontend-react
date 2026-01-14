@@ -11,9 +11,10 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useActionDetail } from './hooks';
+
 import { ActionFormFields, actionSchema } from '@/features/actions';
 
-import { useActionDetail } from './hooks';
 
 
 function ActionDetailPageBody(): React.ReactNode {

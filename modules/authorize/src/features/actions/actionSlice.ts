@@ -4,26 +4,37 @@ import {
 
 import { actionService } from './actionService';
 import { Action } from './types';
+import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
 
 
 export const SLICE_NAME = 'authorize.action';
 
 export type ActionState = {
 	actions: Action[];
-	isLoadingList: boolean;
-	errorList: string | null;
-	actionDetail: Action | undefined;
-	isLoadingDetail: boolean;
-	errorDetail: string | null;
+	actionDetail?: Action;
+
+	list: {
+		isLoading: boolean;
+		error: string | null;
+	};
+
+	create: ReduxActionState<Action>;
+	update: ReduxActionState<Action>;
+	delete: ReduxActionState<void>;
 };
 
 const initialState: ActionState = {
 	actions: [],
-	isLoadingList: false,
-	errorList: null,
 	actionDetail: undefined,
-	isLoadingDetail: false,
-	errorDetail: null,
+
+	list: {
+		isLoading: false,
+		error: null,
+	},
+
+	create: createInitialReduxActionState(),
+	update: createInitialReduxActionState(),
+	delete: createInitialReduxActionState(),
 };
 
 export const listActions = createAsyncThunk<
@@ -123,11 +134,14 @@ const actionSlice = createSlice({
 		setActions: (state, action: PayloadAction<Action[]>) => {
 			state.actions = action.payload;
 		},
-		setIsLoadingList: (state, action: PayloadAction<boolean>) => {
-			state.isLoadingList = action.payload;
+		resetCreateAction: (state) => {
+			state.create = createInitialReduxActionState();
 		},
-		setErrorList: (state, action: PayloadAction<string | null>) => {
-			state.errorList = action.payload;
+		resetUpdateAction: (state) => {
+			state.update = createInitialReduxActionState();
+		},
+		resetDeleteAction: (state) => {
+			state.delete = createInitialReduxActionState();
 		},
 	},
 	extraReducers: (builder) => {
@@ -142,95 +156,91 @@ const actionSlice = createSlice({
 function listActionsReducers(builder: ActionReducerMapBuilder<ActionState>) {
 	builder
 		.addCase(listActions.pending, (state) => {
-			state.isLoadingList = true;
-			state.errorList = null;
+			state.list.isLoading = true;
+			state.list.error = null;
 		})
 		.addCase(listActions.fulfilled, (state, action) => {
-			state.isLoadingList = false;
+			state.list.isLoading = false;
 			state.actions = action.payload;
-			state.errorList = null;
+			state.list.error = null;
 		})
 		.addCase(listActions.rejected, (state, action) => {
-			state.isLoadingList = false;
+			state.list.isLoading = false;
 			state.actions = [];
-			state.errorList = action.payload || 'Failed to list actions';
+			state.list.error = action.payload || 'Failed to list actions';
 		});
 }
 
 function getActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 	builder
 		.addCase(getAction.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+			state.actionDetail = undefined;
 		})
 		.addCase(getAction.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
 			state.actionDetail = action.payload;
-			state.errorDetail = null;
 		})
-		.addCase(getAction.rejected, (state, action) => {
-			state.isLoadingDetail = false;
+		.addCase(getAction.rejected, (state) => {
 			state.actionDetail = undefined;
-			state.errorDetail = action.payload || 'Failed to get action';
 		});
 }
 
 function createActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 	builder
-		.addCase(createAction.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(createAction.pending, (state, action) => {
+			state.create.status = 'pending';
+			state.create.error = null;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createAction.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
-			state.actionDetail = action.payload;
+			state.create.status = 'success';
+			state.create.data = action.payload;
 			state.actions.push(action.payload);
-			state.errorDetail = null;
 		})
 		.addCase(createAction.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to create action';
+			state.create.status = 'error';
+			state.create.error = action.payload || 'Failed to create action';
 		});
 }
 
 function updateActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 	builder
-		.addCase(updateAction.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(updateAction.pending, (state, action) => {
+			state.update.status = 'pending';
+			state.update.error = null;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateAction.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.update.status = 'success';
+			state.update.data = action.payload;
 			state.actionDetail = action.payload;
 			const index = state.actions.findIndex((a) => a.id === action.payload.id);
 			if (index >= 0) {
 				state.actions[index] = action.payload;
 			}
-			state.errorDetail = null;
 		})
 		.addCase(updateAction.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to update action';
+			state.update.status = 'error';
+			state.update.error = action.payload || 'Failed to update action';
 		});
 }
 
 function deleteActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 	builder
-		.addCase(deleteAction.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+		.addCase(deleteAction.pending, (state, action) => {
+			state.delete.status = 'pending';
+			state.delete.error = null;
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteAction.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
+			state.delete.status = 'success';
 			state.actions = state.actions.filter((a) => a.id !== action.meta.arg.actionId);
 			if (state.actionDetail?.id === action.meta.arg.actionId) {
 				state.actionDetail = undefined;
 			}
-			state.errorDetail = null;
 		})
 		.addCase(deleteAction.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.errorDetail = action.payload || 'Failed to delete action';
+			state.delete.status = 'error';
+			state.delete.error = action.payload || 'Failed to delete action';
 		});
 }
 

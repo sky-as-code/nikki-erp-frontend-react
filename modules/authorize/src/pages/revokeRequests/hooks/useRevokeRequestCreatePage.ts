@@ -3,15 +3,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, resolvePath } from 'react-router';
 
-import {
-	AuthorizeDispatch,
-	identityActions,
-	revokeRequestActions,
-	selectGroupList,
-	selectRoleList,
-	selectRoleSuiteList,
-	selectUserList,
-} from '@/appState';
 
 
 import { useRevokeRequestFilter } from './useRevokeRequestFilter';
@@ -19,6 +10,17 @@ import { useUserContext } from '../../../../../../libs/shell/src/userContext/use
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { CreateRevokeRequestInput } from '@/features/revokeRequests/revokeRequestService';
+
+import {
+	AuthorizeDispatch,
+	identityActions,
+	revokeRequestActions,
+	selectCreateManyRevokeRequest,
+	selectGroupList,
+	selectRoleList,
+	selectRoleSuiteList,
+	selectUserList,
+} from '@/appState';
 
 
 function usePageData() {
@@ -73,78 +75,21 @@ function buildCreateItems(
 	}));
 }
 
-function handleSubmitSuccess(
-	result: Awaited<ReturnType<ReturnType<typeof revokeRequestActions.createRevokeRequests>>>,
-	items: CreateRevokeRequestInput[],
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-) {
-	notification.showInfo(
-		translate('nikki.authorize.revoke_request.messages.revoke_success', { count: items.length }),
-		translate('nikki.general.messages.success'),
-	);
-	dispatch(revokeRequestActions.listRevokeRequests());
-	navigate(resolvePath('..', location.pathname).pathname);
-}
-
-function handleSubmitError(
-	result: Awaited<ReturnType<ReturnType<typeof revokeRequestActions.createRevokeRequests>>>,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-) {
-	const msg = typeof result.payload === 'string'
-		? result.payload
-		: translate('nikki.general.errors.create_failed');
-	notification.showError(msg, translate('nikki.general.messages.error'));
-}
-
-function useSubmitState() {
-	return React.useState(false);
-}
-
-// eslint-disable-next-line max-lines-per-function
 function useSubmitCallback(
 	requestorId: string,
 	comment: string,
 	attachmentUrl: string,
 	getSelectedAssignments: () => SelectedAssignment[],
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const navigate = useNavigate();
-	const location = useLocation();
-	const { notification } = useUIState();
-	const { t: translate } = useTranslation();
 
-	return React.useCallback(async () => {
+	return React.useCallback(() => {
 		const selected = getSelectedAssignments();
 		if (selected.length === 0) return;
 
-		setIsSubmitting(true);
 		const items = buildCreateItems(selected, requestorId, comment, attachmentUrl);
-		const result = await dispatch(revokeRequestActions.createRevokeRequests({ items }));
-
-		if (result.meta.requestStatus === 'fulfilled') {
-			handleSubmitSuccess(result, items, dispatch, notification, translate, navigate, location);
-		}
-		else {
-			handleSubmitError(result, notification, translate);
-		}
-		setIsSubmitting(false);
-	}, [attachmentUrl,
-		comment,
-		dispatch,
-		getSelectedAssignments,
-		location,
-		navigate,
-		notification,
-		requestorId,
-		setIsSubmitting,
-		translate,
-	]);
+		dispatch(revokeRequestActions.createRevokeRequests({ items }));
+	}, [attachmentUrl, comment, dispatch, getSelectedAssignments, requestorId]);
 }
 
 function useSubmitHandler(
@@ -153,15 +98,13 @@ function useSubmitHandler(
 	attachmentUrl: string,
 	getSelectedAssignments: () => SelectedAssignment[],
 ) {
-	const [isSubmitting, setIsSubmitting] = useSubmitState();
 	const handleSubmit = useSubmitCallback(
 		requestorId,
 		comment,
 		attachmentUrl,
 		getSelectedAssignments,
-		setIsSubmitting,
 	);
-	return { handleSubmit, isSubmitting };
+	return { handleSubmit };
 }
 
 function useCancelHandler() {
@@ -172,19 +115,46 @@ function useCancelHandler() {
 	}, [navigate, location]);
 }
 
+// eslint-disable-next-line max-lines-per-function
 export function useRevokeRequestCreatePage() {
 	const userContext = useUserContext();
 	const requestorId = '01JWNMZ36QHC7CQQ748H9NQ6J6'; // Mock user ID - TODO: get from user context
 	const pageData = usePageData();
 	const formState = useFormState();
 	const filter = useRevokeRequestFilter();
-	const { handleSubmit, isSubmitting } = useSubmitHandler(
+	const { handleSubmit } = useSubmitHandler(
 		requestorId,
 		formState.comment,
 		formState.attachmentUrl,
 		filter.getSelectedAssignments,
 	);
 	const handleCancel = useCancelHandler();
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const navigate = useNavigate();
+	const location = useLocation();
+	const { notification } = useUIState();
+	const { t: translate } = useTranslation();
+	const createMany = useMicroAppSelector(selectCreateManyRevokeRequest);
+
+	const isSubmitting = createMany.status === 'pending';
+
+	React.useEffect(() => {
+		if (createMany.status === 'success') {
+			const count = createMany.data?.count ?? 0;
+			notification.showInfo(
+				translate('nikki.authorize.revoke_request.messages.revoke_success', { count }),
+				translate('nikki.general.messages.success'),
+			);
+			dispatch(revokeRequestActions.resetCreateManyRevokeRequest());
+			dispatch(revokeRequestActions.listRevokeRequests());
+			navigate(resolvePath('..', location.pathname).pathname);
+		}
+		if (createMany.status === 'error') {
+			const msg = createMany.error ?? translate('nikki.general.errors.create_failed');
+			notification.showError(msg, translate('nikki.general.messages.error'));
+			dispatch(revokeRequestActions.resetCreateManyRevokeRequest());
+		}
+	}, [createMany.status, createMany.data, createMany.error, notification, translate, dispatch, navigate, location]);
 
 	return {
 		...pageData,

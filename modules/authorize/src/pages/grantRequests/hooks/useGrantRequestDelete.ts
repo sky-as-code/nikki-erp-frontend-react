@@ -1,12 +1,14 @@
+import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AuthorizeDispatch, grantRequestActions } from '@/appState';
-import { GrantRequest } from '@/features/grantRequests/types';
-
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
+import { AuthorizeDispatch, grantRequestActions, selectDeleteGrantRequest } from '@/appState';
+import { GrantRequest } from '@/features/grantRequests/types';
 
+
+// eslint-disable-next-line max-lines-per-function
 export function useGrantRequestDeleteHandler(
 	grantRequests: GrantRequest[],
 	dispatch: AuthorizeDispatch,
@@ -16,6 +18,8 @@ export function useGrantRequestDeleteHandler(
 	const [deleteModalOpened, setDeleteModalOpened] = React.useState(false);
 	const [requestToDelete, setRequestToDelete] = React.useState<GrantRequest | null>(null);
 
+	const deleteCommand = useMicroAppSelector(selectDeleteGrantRequest);
+
 	const handleDeleteRequest = React.useCallback((requestId: string) => {
 		const request = grantRequests.find((entry) => entry.id === requestId);
 		if (!request) return;
@@ -23,14 +27,32 @@ export function useGrantRequestDeleteHandler(
 		setDeleteModalOpened(true);
 	}, [grantRequests]);
 
-	const confirmDelete = useConfirmDeleteHandler(
-		requestToDelete, dispatch, notification, translate, setDeleteModalOpened, setRequestToDelete,
-	);
+	const confirmDelete = useConfirmDeleteHandler(requestToDelete, dispatch);
 
 	const closeDeleteModal = React.useCallback(() => {
 		setDeleteModalOpened(false);
 		setRequestToDelete(null);
 	}, []);
+
+	React.useEffect(() => {
+		if (deleteCommand.status === 'success') {
+			const targetName = requestToDelete?.target?.name || requestToDelete?.targetRef;
+			const msg = translate('nikki.authorize.grant_request.messages.delete_success', { name: targetName });
+			notification.showInfo(msg, translate('nikki.general.messages.success'));
+			dispatch(grantRequestActions.resetDeleteGrantRequest());
+			dispatch(grantRequestActions.listGrantRequests());
+			setDeleteModalOpened(false);
+			setRequestToDelete(null);
+		}
+
+		if (deleteCommand.status === 'error') {
+			notification.showError(
+				deleteCommand.error ?? translate('nikki.general.errors.delete_failed'),
+				translate('nikki.general.messages.error'),
+			);
+			dispatch(grantRequestActions.resetDeleteGrantRequest());
+		}
+	}, [deleteCommand.status, deleteCommand.error, requestToDelete, notification, translate, dispatch]);
 
 	return { deleteModalOpened, requestToDelete, handleDeleteRequest, confirmDelete, closeDeleteModal };
 }
@@ -38,30 +60,10 @@ export function useGrantRequestDeleteHandler(
 function useConfirmDeleteHandler(
 	requestToDelete: GrantRequest | null,
 	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	setDeleteModalOpened: React.Dispatch<React.SetStateAction<boolean>>,
-	setRequestToDelete: React.Dispatch<React.SetStateAction<GrantRequest | null>>,
 ) {
 	return React.useCallback(() => {
 		if (!requestToDelete) return;
-
-		dispatch(grantRequestActions.deleteGrantRequest({ id: requestToDelete.id })).then((result) => {
-			if (result.meta.requestStatus === 'fulfilled') {
-				const targetName = requestToDelete.target?.name || requestToDelete.targetRef;
-				const msg = translate('nikki.authorize.grant_request.messages.delete_success', { name: targetName });
-				notification.showInfo(msg, translate('nikki.general.messages.success'));
-				dispatch(grantRequestActions.listGrantRequests());
-			}
-			else {
-				const errorMsg = typeof result.payload === 'string'
-					? result.payload
-					: translate('nikki.general.errors.delete_failed');
-				notification.showError(errorMsg, translate('nikki.general.messages.error'));
-			}
-			setDeleteModalOpened(false);
-			setRequestToDelete(null);
-		});
-	}, [dispatch, requestToDelete, notification, translate, setDeleteModalOpened, setRequestToDelete]);
+		dispatch(grantRequestActions.deleteGrantRequest({ id: requestToDelete.id }));
+	}, [dispatch, requestToDelete]);
 }
 

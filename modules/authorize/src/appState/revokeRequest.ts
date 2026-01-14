@@ -1,14 +1,14 @@
 import { createSelector } from '@reduxjs/toolkit';
 
 import {
-	reducer,
 	actions,
+	reducer,
 	listRevokeRequests,
 	getRevokeRequest,
 	createRevokeRequest,
 	createRevokeRequests,
 	deleteRevokeRequest,
-	type RevokeRequestState,
+	RevokeRequestState,
 } from '@/features/revokeRequests/revokeRequestSlice';
 
 
@@ -39,3 +39,17 @@ export const selectRevokeRequestDetail = createSelector(
 	(state) => state.revokeRequestDetail,
 );
 
+export const selectCreateRevokeRequest = createSelector(
+	selectRevokeRequestState,
+	(state) => state.create,
+);
+
+export const selectCreateManyRevokeRequest = createSelector(
+	selectRevokeRequestState,
+	(state) => state.createMany,
+);
+
+export const selectDeleteRevokeRequest = createSelector(
+	selectRevokeRequestState,
+	(state) => state.delete,
+);

@@ -39,12 +39,3 @@ export interface GrantRequest {
 	receiverType?: ReceiverType;
 	grantResponses?: Array<{ id: string; responderName: string; isApproved: boolean }>;
 }
-
-export interface GrantRequestState {
-	grantRequests: GrantRequest[];
-	isLoadingList: boolean;
-	errorList: string | null;
-	grantRequestDetail?: GrantRequest;
-	isLoadingDetail: boolean;
-	errorDetail: string | null;
-}

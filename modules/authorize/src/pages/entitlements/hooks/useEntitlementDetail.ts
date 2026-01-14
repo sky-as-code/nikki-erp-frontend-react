@@ -4,6 +4,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
+import { useUIState } from '../../../../../shell/src/context/UIProviders';
+
+import type { Entitlement } from '@/features/entitlements';
+
 import {
 	AuthorizeDispatch,
 	actionActions,
@@ -12,11 +16,9 @@ import {
 	selectActionState,
 	selectEntitlementState,
 	selectResourceState,
+	selectUpdateEntitlement,
 } from '@/appState';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
-
-import type { Entitlement } from '@/features/entitlements';
 
 
 function useEntitlementData(
@@ -73,9 +75,8 @@ function useEntitlementDetailData() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const {
 		entitlements,
-		isLoadingList,
+		list,
 		entitlementDetail,
-		isLoadingDetail,
 	} = useMicroAppSelector(selectEntitlementState);
 
 	const entitlement = useEntitlementData(entitlementId, entitlements, entitlementDetail);
@@ -85,7 +86,7 @@ function useEntitlementDetailData() {
 	const { actions } = useMicroAppSelector(selectActionState);
 	useResourcesAndActionsEffects(resources, actions, dispatch);
 
-	return { entitlement, isLoading: isLoadingList || isLoadingDetail, resources, actions };
+	return { entitlement, isLoading: list.isLoading, resources, actions };
 }
 
 function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) {
@@ -101,14 +102,12 @@ function validateEntitlementChanges(
 	originalName: string,
 	notification: ReturnType<typeof useUIState>['notification'],
 	translate: ReturnType<typeof useTranslation>['t'],
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 ): boolean {
 	if (newDescription === originalDescription && newName === originalName) {
 		notification.showError(
 			translate('nikki.general.messages.no_changes'),
 			translate('nikki.general.messages.error'),
 		);
-		setIsSubmitting(false);
 		return false;
 	}
 
@@ -117,254 +116,60 @@ function validateEntitlementChanges(
 			translate('nikki.general.messages.invalid_change'),
 			translate('nikki.general.messages.error'),
 		);
-		setIsSubmitting(false);
 		return false;
 	}
 
 	return true;
 }
 
-function handleUpdateResult(
-	result: Awaited<ReturnType<ReturnType<typeof entitlementActions.updateEntitlement>>>,
-	entitlement: Entitlement,
+// eslint-disable-next-line max-lines-per-function
+function useSubmitHandler(
+	entitlement: Entitlement | undefined,
+	dispatch: AuthorizeDispatch,
 	notification: ReturnType<typeof useUIState>['notification'],
 	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
 ) {
-	if (result.meta.requestStatus === 'fulfilled') {
-		notification.showInfo(
-			translate('nikki.authorize.entitlement.messages.update_success', { name: entitlement.name }),
-			translate('nikki.general.messages.success'),
-		);
-		const parent = resolvePath('..', location.pathname).pathname;
-		navigate(parent);
-	}
-	else {
-		const errorMessage = typeof result.payload === 'string' ? result.payload : translate('nikki.general.errors.update_failed');
-		notification.showError(errorMessage, translate('nikki.general.messages.error'));
-	}
-}
+	return React.useCallback((data: unknown) => {
+		if (!entitlement) return;
 
-function prepareUpdatePayload(
-	entitlement: Entitlement,
-	formData: Partial<Entitlement>,
-) {
-	const newDescription = formData.description ?? null;
-	const originalDescription = entitlement.description ?? null;
-	const newName = formData.name ?? entitlement.name;
-	const originalName = entitlement.name;
+		const formData = cleanFormData(data as Partial<Entitlement>);
 
-	return {
-		newDescription,
-		originalDescription,
-		newName,
-		originalName,
-		updatePayload: {
+		const newDescription = formData.description ?? null;
+		const originalDescription = entitlement.description ?? null;
+		const newName = formData.name ?? entitlement.name;
+		const originalName = entitlement.name;
+
+		if (!validateEntitlementChanges(
+			newDescription,
+			originalDescription,
+			newName,
+			originalName,
+			notification,
+			translate,
+		)) {
+			return;
+		}
+
+		dispatch(entitlementActions.updateEntitlement({
 			id: entitlement.id,
 			etag: entitlement.etag || '',
 			name: newName !== originalName ? newName : undefined,
 			description: newDescription !== originalDescription
 				? (newDescription ?? undefined)
 				: undefined,
-		},
-	};
+		}));
+	}, [dispatch, notification, entitlement, translate]);
 }
 
-function performEntitlementUpdate(
-	entitlement: Entitlement,
-	updatePayload: {
-		id: string;
-		etag: string;
-		name?: string;
-		description?: string;
-	},
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-) {
-	return dispatch(entitlementActions.updateEntitlement(updatePayload)).then((result) => {
-		handleUpdateResult(result, entitlement, notification, translate, navigate, location);
-	});
-}
-
-function checkValidation(
-	entitlement: Entitlement,
-	formData: Partial<Entitlement>,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-): boolean {
-	const {
-		newDescription,
-		originalDescription,
-		newName,
-		originalName,
-	} = prepareUpdatePayload(entitlement, formData);
-
-	return validateEntitlementChanges(
-		newDescription,
-		originalDescription,
-		newName,
-		originalName,
-		notification,
-		translate,
-		setIsSubmitting,
-	);
-}
-
-function validateAndPrepareUpdate(
-	entitlement: Entitlement,
-	formData: Partial<Entitlement>,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-): {
-	updatePayload: {
-		id: string;
-		etag: string;
-		name?: string;
-		description?: string;
-	};
-} | null {
-	if (!checkValidation(entitlement, formData, notification, translate, setIsSubmitting)) {
-		return null;
-	}
-
-	const { updatePayload } = prepareUpdatePayload(entitlement, formData);
-	return { updatePayload };
-}
-
-async function processEntitlementUpdate(
-	entitlement: Entitlement,
-	formData: Partial<Entitlement>,
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-	const validated = validateAndPrepareUpdate(
-		entitlement,
-		formData,
-		notification,
-		translate,
-		setIsSubmitting,
-	);
-
-	if (!validated) {
-		return;
-	}
-
-	await performEntitlementUpdate(
-		entitlement,
-		validated.updatePayload,
-		dispatch,
-		notification,
-		translate,
-		navigate,
-		location,
-	);
-}
-
-function handleUpdateError(
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-) {
-	notification.showError(
-		translate('nikki.general.errors.update_failed'),
-		translate('nikki.general.messages.error'),
-	);
-}
-
-async function handleEntitlementUpdate(
-	entitlement: Entitlement,
-	formData: Partial<Entitlement>,
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-	setIsSubmitting(true);
-	try {
-		await processEntitlementUpdate(
-			entitlement,
-			formData,
-			dispatch,
-			notification,
-			translate,
-			navigate,
-			location,
-			setIsSubmitting,
-		);
-	}
-	catch {
-		handleUpdateError(notification, translate);
-	}
-	finally {
-		setIsSubmitting(false);
-	}
-}
-
-async function executeEntitlementUpdate(
-	data: unknown,
-	entitlement: Entitlement,
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-	const formData = cleanFormData(data as Partial<Entitlement>);
-	await handleEntitlementUpdate(
-		entitlement,
-		formData,
-		dispatch,
-		notification,
-		translate,
-		navigate,
-		location,
-		setIsSubmitting,
-	);
-}
-
-function useSubmitHandler(
-	entitlement: Entitlement | undefined,
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	navigate: ReturnType<typeof useNavigate>,
-	location: ReturnType<typeof useLocation>,
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-	return React.useCallback(async (data: unknown) => {
-		if (!entitlement) return;
-		await executeEntitlementUpdate(
-			data,
-			entitlement,
-			dispatch,
-			notification,
-			translate,
-			navigate,
-			location,
-			setIsSubmitting,
-		);
-	}, [dispatch, notification, entitlement, navigate, location, translate, setIsSubmitting]);
-}
-
+// eslint-disable-next-line max-lines-per-function
 function useEntitlementDetailHandlers(entitlement: Entitlement | undefined) {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+	const updateCommand = useMicroAppSelector(selectUpdateEntitlement);
 
 	const handleCancel = useCancelHandler(navigate, location);
 	const handleSubmit = useSubmitHandler(
@@ -372,10 +177,30 @@ function useEntitlementDetailHandlers(entitlement: Entitlement | undefined) {
 		dispatch,
 		notification,
 		translate,
-		navigate,
-		location,
-		setIsSubmitting,
 	);
+
+	const isSubmitting = updateCommand.status === 'pending';
+
+	React.useEffect(() => {
+		if (updateCommand.status === 'success') {
+			notification.showInfo(
+				translate('nikki.authorize.entitlement.messages.update_success', { name: updateCommand.data?.name }),
+				translate('nikki.general.messages.success'),
+			);
+			dispatch(entitlementActions.resetUpdateEntitlement());
+			const parent = resolvePath('..', location.pathname).pathname;
+			navigate(parent);
+		}
+
+		if (updateCommand.status === 'error') {
+			notification.showError(
+				updateCommand.error ?? translate('nikki.general.errors.update_failed'),
+				translate('nikki.general.messages.error'),
+			);
+			dispatch(entitlementActions.resetUpdateEntitlement());
+		}
+	// eslint-disable-next-line @stylistic/max-len
+	}, [updateCommand.status, updateCommand.data, updateCommand.error, notification, translate, dispatch, navigate, location]);
 
 	return { isSubmitting, handleCancel, handleSubmit };
 }

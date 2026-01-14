@@ -43,3 +43,27 @@ export const selectRoleDetail = createSelector(
 	(state) => state.roleDetail,
 );
 
+export const selectCreateRole = createSelector(
+	selectRoleState,
+	(state) => state.create,
+);
+
+export const selectUpdateRole = createSelector(
+	selectRoleState,
+	(state) => state.update,
+);
+
+export const selectDeleteRole = createSelector(
+	selectRoleState,
+	(state) => state.delete,
+);
+
+export const selectAddEntitlementsRole = createSelector(
+	selectRoleState,
+	(state) => state.addEntitlements,
+);
+
+export const selectRemoveEntitlementsRole = createSelector(
+	selectRoleState,
+	(state) => state.removeEntitlements,
+);

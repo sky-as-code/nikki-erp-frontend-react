@@ -39,3 +39,17 @@ export const selectActionDetail = createSelector(
 	(state) => state.actionDetail,
 );
 
+export const selectCreateAction = createSelector(
+	selectActionState,
+	(state) => state.create,
+);
+
+export const selectUpdateAction = createSelector(
+	selectActionState,
+	(state) => state.update,
+);
+
+export const selectDeleteAction = createSelector(
+	selectActionState,
+	(state) => state.delete,
+);

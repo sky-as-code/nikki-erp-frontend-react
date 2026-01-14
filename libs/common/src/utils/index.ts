@@ -24,6 +24,8 @@ export function randomString(length: number): string {
 export function cleanFormData<T extends Record<string, any>>(data: T): T {
 	const cleaned = { ...data };
 
+	//object.entries thay
+
 	for (const key in cleaned) {
 		const value = cleaned[key];
 		// Convert empty string to undefined (will be omitted in JSON)

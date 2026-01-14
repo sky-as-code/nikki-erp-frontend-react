@@ -39,3 +39,17 @@ export const selectRoleSuiteDetail = createSelector(
 	(state) => state.roleSuiteDetail,
 );
 
+export const selectCreateRoleSuite = createSelector(
+	selectRoleSuiteState,
+	(state) => state.create,
+);
+
+export const selectUpdateRoleSuite = createSelector(
+	selectRoleSuiteState,
+	(state) => state.update,
+);
+
+export const selectDeleteRoleSuite = createSelector(
+	selectRoleSuiteState,
+	(state) => state.delete,
+);

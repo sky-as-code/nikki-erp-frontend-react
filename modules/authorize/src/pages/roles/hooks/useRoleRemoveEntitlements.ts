@@ -3,19 +3,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import {
-	AuthorizeDispatch,
-	resourceActions,
-	roleActions,
-	selectResourceState,
-	selectRoleState,
-} from '@/appState';
-import { createEntitlementKey } from '@/utils';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { Entitlement } from '@/features/entitlements';
 import type { Role } from '@/features/roles';
+
+import {
+	AuthorizeDispatch,
+	resourceActions,
+	roleActions,
+	selectRemoveEntitlementsRole,
+	selectResourceState,
+	selectRoleState,
+} from '@/appState';
+import { createEntitlementKey } from '@/utils';
 
 
 function buildEntitlementInputs(selected: Entitlement[]) {
@@ -25,34 +27,10 @@ function buildEntitlementInputs(selected: Entitlement[]) {
 	}));
 }
 
-function handleRemoveSuccess(
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	role: Role,
-	handleGoBack: () => void,
-) {
-	const msg = translate('nikki.authorize.role.messages.remove_entitlements_success');
-	notification.showInfo(msg, translate('nikki.general.messages.success'));
-	dispatch(roleActions.getRole(role.id));
-	handleGoBack();
-}
-
-function handleRemoveError(
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	payload: unknown,
-) {
-	const errorMsg = typeof payload === 'string'
-		? payload
-		: translate('nikki.general.errors.update_failed');
-	notification.showError(errorMsg, translate('nikki.general.messages.error'));
-}
-
 export function useRoleRemoveEntitlementsData() {
 	const { roleId } = useParams<{ roleId: string }>();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { roles, roleDetail, isLoadingDetail, isLoadingList } = useMicroAppSelector(selectRoleState);
+	const { roles, roleDetail, list } = useMicroAppSelector(selectRoleState);
 	const { resources } = useMicroAppSelector(selectResourceState);
 
 	const role = React.useMemo(() => {
@@ -78,7 +56,7 @@ export function useRoleRemoveEntitlementsData() {
 	return {
 		role,
 		resources,
-		isLoading: isLoadingDetail || isLoadingList,
+		isLoading: list.isLoading,
 	};
 }
 
@@ -115,6 +93,7 @@ function useEntitlementSelection(assignedEntitlements: Entitlement[], searchQuer
 	};
 }
 
+// eslint-disable-next-line max-lines-per-function
 function useRemoveConfirmHandler(
 	role: Role | undefined,
 	selectedEntitlements: Entitlement[],
@@ -124,28 +103,32 @@ function useRemoveConfirmHandler(
 	translate: ReturnType<typeof useTranslation>['t'],
 	handleGoBack: () => void,
 ) {
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
+	const remove = useMicroAppSelector(selectRemoveEntitlementsRole);
 
-	const handleConfirm = React.useCallback(async () => {
+	const handleConfirm = React.useCallback(() => {
 		if (!role) return;
-
-		setIsSubmitting(true);
 		const inputs = buildEntitlementInputs(selectedEntitlements);
-		const result = await dispatch(roleActions.removeEntitlementsFromRole({
+		dispatch(roleActions.removeEntitlementsFromRole({
 			roleId: role.id, etag: role.etag || '', entitlementInputs: inputs,
 		}));
+	}, [dispatch, role, selectedEntitlements]);
 
-		if (result.meta.requestStatus === 'fulfilled') {
-			handleRemoveSuccess(dispatch, notification, translate, role, handleGoBack);
+	React.useEffect(() => {
+		if (remove.status === 'success') {
+			const msg = translate('nikki.authorize.role.messages.remove_entitlements_success');
+			notification.showInfo(msg, translate('nikki.general.messages.success'));
+			dispatch(roleActions.resetRemoveEntitlementsRole());
+			if (role) dispatch(roleActions.getRole(role.id));
+			handleGoBack();
 		}
-		else {
-			handleRemoveError(notification, translate, result.payload);
+		if (remove.status === 'error') {
+			const errorMsg = remove.error ?? translate('nikki.general.errors.update_failed');
+			notification.showError(errorMsg, translate('nikki.general.messages.error'));
+			dispatch(roleActions.resetRemoveEntitlementsRole());
 		}
+	}, [remove.status, remove.error, role, notification, translate, dispatch, handleGoBack]);
 
-		setIsSubmitting(false);
-	}, [dispatch, notification, role, selectedEntitlements, translate, handleGoBack]);
-
-	return { isSubmitting, handleConfirm };
+	return { isSubmitting: remove.status === 'pending', handleConfirm };
 }
 
 function useNavigationHandlers() {

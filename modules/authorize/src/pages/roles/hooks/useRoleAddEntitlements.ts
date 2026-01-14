@@ -3,20 +3,23 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
+import { useUIState } from '../../../../../shell/src/context/UIProviders';
+
+import type { Entitlement } from '@/features/entitlements/types';
+
 import {
 	AuthorizeDispatch,
 	entitlementActions,
 	resourceActions,
 	roleActions,
+	selectAddEntitlementsRole,
 	selectEntitlementState,
 	selectResourceState,
 	selectRoleState,
 } from '@/appState';
 import { Role } from '@/features/roles/types';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
-import type { Entitlement } from '@/features/entitlements/types';
 
 
 // ============ Helper Functions ============
@@ -59,7 +62,7 @@ function buildEntitlementInputs(selected: Entitlement[]) {
 export function useRoleAddEntitlementsData() {
 	const { roleId } = useParams<{ roleId: string }>();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { roles, isLoadingList, roleDetail, isLoadingDetail } = useMicroAppSelector(selectRoleState);
+	const { roles, list, roleDetail } = useMicroAppSelector(selectRoleState);
 	const { entitlements } = useMicroAppSelector(selectEntitlementState);
 	const { resources } = useMicroAppSelector(selectResourceState);
 
@@ -80,14 +83,13 @@ export function useRoleAddEntitlementsData() {
 
 	console.log('role', role);
 
-	return { role, entitlements, resources, isLoading: isLoadingList || isLoadingDetail };
+	return { role, entitlements, resources, isLoading: list.isLoading };
 }
 
 
 // ============ Handlers Hook ============
 export function useRoleAddEntitlementsHandlers(role: Role | undefined, entitlements: Entitlement[]) {
 	const [selectedEntitlements, setSelectedEntitlements] = React.useState<Entitlement[]>([]);
-	const [isSubmitting, setIsSubmitting] = React.useState(false);
 	const [searchQuery, setSearchQuery] = React.useState('');
 
 	const availableEntitlements = React.useMemo(
@@ -95,9 +97,9 @@ export function useRoleAddEntitlementsHandlers(role: Role | undefined, entitleme
 		[entitlements, role?.entitlements, selectedEntitlements, searchQuery],
 	);
 
-	const { handleGoBack, handleConfirm } = useRoleAddEntitlementsActions(
-		role, selectedEntitlements, setIsSubmitting,
-	);
+	const { handleGoBack } = useRoleAddEntitlementsActions(role, selectedEntitlements);
+
+	const { handleConfirm, isSubmitting } = useConfirmHandler(role, selectedEntitlements, handleGoBack);
 
 	const handlers = useTransferHandlers(availableEntitlements, setSelectedEntitlements);
 
@@ -127,7 +129,6 @@ function useTransferHandlers(
 function useRoleAddEntitlementsActions(
 	role: Role | undefined,
 	selectedEntitlements: Entitlement[],
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -136,63 +137,42 @@ function useRoleAddEntitlementsActions(
 		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate, location]);
 
-	const handleConfirm = useConfirmHandler(
-		role, selectedEntitlements, setIsSubmitting, handleGoBack,
-	);
-
-	return { handleGoBack, handleConfirm };
+	return { handleGoBack };
 }
 
-function handleAddEntitlementsSuccess(
-	dispatch: AuthorizeDispatch,
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	role: Role,
-	handleGoBack: () => void,
-) {
-	const msg = translate('nikki.authorize.role.messages.add_entitlements_success');
-	notification.showInfo(msg, translate('nikki.general.messages.success'));
-	dispatch(roleActions.getRole(role.id));
-	handleGoBack();
-}
-
-function handleAddEntitlementsError(
-	notification: ReturnType<typeof useUIState>['notification'],
-	translate: ReturnType<typeof useTranslation>['t'],
-	payload: unknown,
-) {
-	const errorMsg = typeof payload === 'string'
-		? payload
-		: translate('nikki.general.errors.update_failed');
-	notification.showError(errorMsg, translate('nikki.general.messages.error'));
-}
-
+// eslint-disable-next-line max-lines-per-function
 function useConfirmHandler(
 	role: Role | undefined,
 	selectedEntitlements: Entitlement[],
-	setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
 	handleGoBack: () => void,
 ) {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
+	const add = useMicroAppSelector(selectAddEntitlementsRole);
 
-	return React.useCallback(async () => {
+	const handleConfirm = React.useCallback(() => {
 		if (!role) return;
-
-		setIsSubmitting(true);
 		const inputs = buildEntitlementInputs(selectedEntitlements);
-		const result = await dispatch(roleActions.addEntitlementsToRole({
+		dispatch(roleActions.addEntitlementsToRole({
 			roleId: role.id, etag: role.etag || '', entitlementInputs: inputs,
 		}));
+	}, [dispatch, role, selectedEntitlements]);
 
-		if (result.meta.requestStatus === 'fulfilled') {
-			handleAddEntitlementsSuccess(dispatch, notification, translate, role, handleGoBack);
+	React.useEffect(() => {
+		if (add.status === 'success') {
+			const msg = translate('nikki.authorize.role.messages.add_entitlements_success');
+			notification.showInfo(msg, translate('nikki.general.messages.success'));
+			dispatch(roleActions.resetAddEntitlementsRole());
+			if (role) dispatch(roleActions.getRole(role.id));
+			handleGoBack();
 		}
-		else {
-			handleAddEntitlementsError(notification, translate, result.payload);
+		if (add.status === 'error') {
+			const errorMsg = add.error ?? translate('nikki.general.errors.update_failed');
+			notification.showError(errorMsg, translate('nikki.general.messages.error'));
+			dispatch(roleActions.resetAddEntitlementsRole());
 		}
+	}, [add.status, add.error, role, notification, translate, dispatch, handleGoBack]);
 
-		setIsSubmitting(false);
-	}, [dispatch, notification, role, selectedEntitlements, translate, handleGoBack]);
+	return { handleConfirm, isSubmitting: add.status === 'pending' };
 }

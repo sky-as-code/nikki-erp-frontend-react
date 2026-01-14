@@ -5,10 +5,11 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useActionDeleteHandler, useActionList } from './hooks';
+
 import { AuthorizeDispatch } from '@/appState';
 import { ActionTable, actionSchema } from '@/features/actions';
 
-import { useActionDeleteHandler, useActionList } from './hooks';
 
 
 function ActionListPageBody(): React.ReactNode {

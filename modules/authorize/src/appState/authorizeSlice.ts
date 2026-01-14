@@ -5,15 +5,16 @@ import {
 	type PayloadAction,
 } from '@reduxjs/toolkit';
 
+import type {
+	AuthzResourceDto,
+	ListResponse,
+} from '@/services/authzService';
+
 import {
 	listEntitlements as listEntitlementsApi,
 	listResources as listResourcesApi,
 } from '@/services/authzService';
 
-import type {
-	AuthzResourceDto,
-	ListResponse,
-} from '@/services/authzService';
 
 
 export const SLICE_NAME = 'authorize';

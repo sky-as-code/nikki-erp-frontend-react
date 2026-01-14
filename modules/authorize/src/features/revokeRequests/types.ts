@@ -18,11 +18,4 @@ export interface RevokeRequest {
 	createdAt: string;
 }
 
-export interface RevokeRequestState {
-	revokeRequests: RevokeRequest[];
-	isLoadingList: boolean;
-	errorList: string | null;
-	revokeRequestDetail?: RevokeRequest;
-	isLoadingDetail: boolean;
-	errorDetail: string | null;
-}
+// RevokeRequestState moved to revokeRequestSlice.ts
