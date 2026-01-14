@@ -4,8 +4,7 @@ import {
 
 import { identityService } from './identityService';
 
-import type { User, Group } from './types';
-import type { Org } from '@/features/orgs';
+import type { User, Group, Org } from './types';
 
 
 export const SLICE_NAME = 'authorize.identity';

@@ -2,7 +2,7 @@ import { AutoField, EntityDisplayField, EntitySelectField } from '@nikkierp/ui/c
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Org } from '@/features/orgs';
+import type { Org } from '@/features/identities';
 
 
 interface RoleFormFieldsProps {

@@ -1,6 +1,6 @@
 import { del, get, post, put, type Options } from '@nikkierp/common';
 
-import { Org } from '@/features/orgs';
+import type { Org } from '@/features/identities';
 
 
 export type AuthzResourceDto = {

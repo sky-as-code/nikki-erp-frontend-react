@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ALL_ORGS_VALUE } from '@/features/roleSuites/validation/roleSuiteFormValidation';
 
-import type { Org } from '@/features/orgs';
+import type { Org } from '@/features/identities';
 
 
 

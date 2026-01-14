@@ -7,9 +7,9 @@ import { useReceiverSelectLogic, useTargetSelectLogic } from '@/pages/grantReque
 
 import type { Group } from '@/features/identities';
 import type { User } from '@/features/identities';
-import type { Org } from '@/features/orgs';
-import type { RoleSuite } from '@/features/roleSuites';
+import type { Org } from '@/features/identities';
 import type { Role } from '@/features/roles';
+import type { RoleSuite } from '@/features/roleSuites';
 
 
 interface TargetFieldsProps {

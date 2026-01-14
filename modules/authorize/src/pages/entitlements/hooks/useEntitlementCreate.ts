@@ -4,13 +4,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
-
-
-import type { Action } from '@/features/actions';
-import type { Entitlement } from '@/features/entitlements';
-import type { Resource } from '@/features/resources';
-
 import {
 	AuthorizeDispatch,
 	actionActions,
@@ -24,6 +17,14 @@ import {
 	buildActionExpr,
 	validateEntitlementForm,
 } from '@/features/entitlements/validation/entitlementFormValidation';
+
+import { useUIState } from '../../../../../shell/src/context/UIProviders';
+
+
+import type { Action } from '@/features/actions';
+import type { Entitlement } from '@/features/entitlements';
+import type { Resource } from '@/features/resources';
+
 
 
 type FormType = Parameters<typeof validateEntitlementForm>[2];

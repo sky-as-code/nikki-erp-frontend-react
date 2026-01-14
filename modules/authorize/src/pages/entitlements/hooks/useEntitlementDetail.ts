@@ -4,10 +4,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
-
-import type { Entitlement } from '@/features/entitlements';
-
 import {
 	AuthorizeDispatch,
 	actionActions,
@@ -18,6 +14,10 @@ import {
 	selectResourceState,
 	selectUpdateEntitlement,
 } from '@/appState';
+
+import { useUIState } from '../../../../../shell/src/context/UIProviders';
+
+import type { Entitlement } from '@/features/entitlements';
 
 
 

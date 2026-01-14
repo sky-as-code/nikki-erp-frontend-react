@@ -26,7 +26,7 @@ import roleSuiteSchema from '@/features/roleSuites/roleSuite-schema.json';
 
 import { useRoleSuiteDetailData, useRoleSuiteDetailHandlers } from './hooks';
 
-import type { Org } from '@/features/orgs';
+import type { Org } from '@/features/identities';
 
 
 

@@ -1,4 +1,4 @@
-import type { IdentityUserDto, IdentityGroupDto } from '@/services/identService';
+import type { IdentityUserDto, IdentityGroupDto, IdentityOrgDto } from '@/services/identService';
 
 
 export type User = {
@@ -29,6 +29,21 @@ export type Group = {
 	orgId?: string;
 	org?: { id: string; displayName: string; slug: string };
 };
+
+export interface Org {
+	id: string;
+	displayName: string;
+	legalName?: string;
+	email?: string;
+	phoneNumber?: string;
+	address?: string;
+	status: 'active' | 'archived';
+	slug: string;
+	etag?: string;
+	createdAt?: string;
+	updatedAt?: string;
+	deletedAt?: string;
+}
 
 export function mapDtoToUser(dto: IdentityUserDto): User {
 	return {
@@ -63,3 +78,21 @@ export function mapDtoToGroup(dto: IdentityGroupDto): Group {
 	};
 }
 
+export function mapDtoToOrg(dto: IdentityOrgDto): Org {
+	return {
+		id: dto.id,
+		displayName: dto.displayName,
+		legalName: dto.legalName,
+		email: dto.email,
+		phoneNumber: dto.phoneNumber,
+		address: dto.address,
+		status: dto.status,
+		slug: dto.slug,
+		etag: dto.etag,
+		createdAt: dto.createdAt,
+		updatedAt: dto.updatedAt,
+		deletedAt: dto.deletedAt,
+	};
+}
+
+export type { Org as Organization };
