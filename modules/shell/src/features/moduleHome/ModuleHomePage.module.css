@@ -1,0 +1,31 @@
+.filterPanel {
+	box-shadow: 2px 2px 6px 0px rgba(0, 0, 0, 0.1);
+}
+
+.accordionItem {
+	margin-bottom: var(--mantine-spacing-xs);
+}
+
+.accordionItemControl {
+	border: 1px solid transparent;
+	border-radius: var(--mantine-radius-md);
+	color: var(--mantine-color-gray-8);
+	font-size: var(--mantine-font-size-md);
+	transition: all 0.2s ease;
+	
+}
+
+.accordionItemControl span {
+	padding: 7px 0;
+}
+
+.accordionItemControl:hover {
+	border: 1px solid var(--mantine-color-gray-5);
+}
+
+
+.homeContent {
+	min-height: 100%;
+	height: max-content;
+	/* background: linear-gradient(135deg, var(--nikki-color-page-background), var(--nikki-color-page-background), var(--nikki-color-white)); */
+}

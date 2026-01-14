@@ -15,27 +15,26 @@
 	scrollbar-color: var(--mantine-color-gray-6) transparent;
 }
 
-/* .mainPrivateContent::-webkit-scrollbar {
-    width: 3px;
-	height: 3px;
-} */
+.iconButton {
+	position: relative;
+	overflow: visible;
+}
 
-/* .mainPrivateContent::-webkit-scrollbar-track {
-    background: transparent;
-} */
+.iconBrand {
+	opacity: 1;
+	transform: scale(1);
+}
 
-/* .mainPrivateContent::-webkit-scrollbar-thumb {
-    background-color: var(--mantine-color-gray-7);
-	border-radius: 3px;
-} */
+.iconHome {
+	opacity: 0;
+	transform: scale(0.8);
+}
 
-/* .mainPrivateContent::-webkit-scrollbar-thumb:hover {
-    background-color: var(--mantine-color-red-5);
-} */
+.iconHidden {
+	visibility: hidden;
+}
 
-.avatar {
-	border: 1px solid #868e96;
-	&:hover {
-		border: 1px solid var(--nikki-color-black);
-	};
+.iconButton:hover .iconHome:not(.iconHidden) {
+	opacity: 1;
+	transform: scale(1);
 }

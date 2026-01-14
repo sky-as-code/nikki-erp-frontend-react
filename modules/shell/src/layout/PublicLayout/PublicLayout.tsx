@@ -3,9 +3,9 @@ import clsx from 'clsx';
 import React from 'react';
 import { Outlet } from 'react-router';
 
-import { LangSwitchDropdown } from './LangSwitchDropDown';
 import classes from './PublicLayout.module.css';
-import { ThemeSwitchDropdown } from './ThemeSwitchDropDown';
+import { LangSwitchDropdown } from '../../components/LangSwitch/LangSwitchDropDown';
+import { ThemeSwitchDropdown } from '../../components/ThemeSwitch/ThemeSwitchDropDown';
 
 
 export function PublicLayout(): React.ReactNode {

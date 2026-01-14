@@ -6,34 +6,19 @@ import { useNavigate } from 'react-router';
 
 
 export function NotFoundPage(): React.ReactNode {
-	const theme = useMantineTheme();
-	const navigate = useNavigate();
-	const { slug: firstOrgSlug } = useFirstOrgSlug();
-
-	const handleGoHome = () => {
-		if (firstOrgSlug) {
-			navigate(`/${firstOrgSlug}`);
-		}
-		else {
-			navigate('/');
-		}
-	};
-
 	return (
 		<Center h='100%'>
 			<Stack align='center' gap='xl' p='xl'>
-				<NotFoundContent theme={theme} />
-				<ActionButtons
-					theme={theme}
-					onGoHome={handleGoHome}
-					onGoBack={() => navigate(-1)}
-				/>
+				<NotFoundContent />
+				<ActionButtons />
 			</Stack>
 		</Center>
 	);
 }
 
-function NotFoundContent({ theme }: { theme: ReturnType<typeof useMantineTheme> }): React.ReactNode {
+function NotFoundContent(): React.ReactNode {
+	const theme = useMantineTheme();
+
 	return (
 		<>
 			<Stack align='center' gap={0}>
@@ -76,22 +61,27 @@ function NotFoundContent({ theme }: { theme: ReturnType<typeof useMantineTheme> 
 	);
 }
 
-function ActionButtons({
-	theme,
-	onGoHome,
-	onGoBack,
-}: {
-	theme: ReturnType<typeof useMantineTheme>;
-	onGoHome: () => void;
-	onGoBack: () => void;
-}): React.ReactNode {
+function ActionButtons(): React.ReactNode {
+	const theme = useMantineTheme();
+	const navigate = useNavigate();
+	const { slug: firstOrgSlug } = useFirstOrgSlug();
+
+	const handleGoHome = () => {
+		if (firstOrgSlug) {
+			navigate(`/${firstOrgSlug}`);
+		}
+		else {
+			navigate('/');
+		}
+	};
+
 	return (
 		<Group gap='md' mt='xl'>
 			<Button
 				leftSection={<IconHome size={20} />}
 				size='lg'
 				variant='filled'
-				onClick={onGoHome}
+				onClick={handleGoHome}
 				style={{
 					background: `linear-gradient(135deg, ${theme.colors.blue[6]} 0%, ${theme.colors.cyan[6]} 100%)`,
 				}}
@@ -102,7 +92,7 @@ function ActionButtons({
 				leftSection={<IconArrowLeft size={20} />}
 				size='lg'
 				variant='outline'
-				onClick={onGoBack}
+				onClick={() => navigate(-1)}
 			>
 				Go Back
 			</Button>

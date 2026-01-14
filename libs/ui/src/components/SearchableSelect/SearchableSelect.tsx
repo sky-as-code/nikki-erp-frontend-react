@@ -145,7 +145,7 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 			<TriggerComponent
 				px={'sm'}
 				rightSection={<IconChevronDown size={20}/>}
-				leftSection={<Image mb={2} alt='org.logo' src={'/icon.ico'} width={20} height={20}/>}
+				// leftSection={<Image mb={2} alt='org.logo' src={'/icon.ico'} width={20} height={20}/>}
 				onClick={() => combobox.toggleDropdown()}
 			>
 				{value ?

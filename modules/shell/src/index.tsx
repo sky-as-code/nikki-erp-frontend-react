@@ -1,20 +1,20 @@
-import { Center, Paper, Stack, Text } from '@mantine/core';
+import { Center, Stack, Text } from '@mantine/core';
 import { ShellProviders } from '@nikkierp/shell/contexts';
-import { LazyMicroApp, LazyMicroWidget } from '@nikkierp/shell/microApp';
+import { LazyMicroApp } from '@nikkierp/shell/microApp';
 import { useFindMyModule, useFindMyOrg, useFirstOrgSlug } from '@nikkierp/shell/userContext';
 import { setActiveModuleAction, setActiveOrgAction } from '@nikkierp/ui/appState/routingSlice';
 import { MicroAppMetadata, MicroAppShellProps } from '@nikkierp/ui/microApp';
 import { IconHomeCancel } from '@tabler/icons-react';
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { Link, Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router';
+import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router';
 
 import { UIProviders } from './context/UIProviders';
-import { PrivateLayout } from './layout/PrivateLayout';
-import { PublicLayout } from './layout/PublicLayout';
+import { PrivateLayout } from './layout/PrivateLayout/PrivateLayout';
+import { PublicLayout } from './layout/PublicLayout/PublicLayout';
+import { ModuleHomePage } from './pages/ModuleHomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { ModuleHomePage } from './pages/private/ModuleHomePage';
-import { SignInPage } from './pages/public/SignInPage';
+import { SignInPage } from './pages/SignInPage';
 
 import './styles/index.css';
 
@@ -111,22 +111,6 @@ function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): React.Rea
 	);
 }
 
-function ModuleList(): React.ReactNode {
-	return (
-		<>
-			<Link to='essential'>
-				<div className='text-blue-500 py-4 border-b border-blue-500'>Essential</div>
-			</Link><br />
-			<Link to='identity'>
-				<div className='text-blue-500 py-4 border-b border-blue-500'>Identity</div>
-			</Link>
-			<Link to='authorize'>
-				<div className='text-gray-800 py-4 border-b border-blue-500'>Authorize</div>
-			</Link>
-			<Link to='/signin'>Sign In</Link><br />
-		</>
-	);
-}
 
 function ToDefaultOrg(): React.ReactNode {
 	const { slug: firstOrgSlug } = useFirstOrgSlug();
@@ -148,13 +132,28 @@ function NoOrg(): React.ReactNode {
 }
 
 
-const _EssentialTest: React.FC = () => {
-	return (
-		<>
-			<Paper shadow='xs' p='xl'>
-				<LazyMicroWidget slug='nikkierp.essential' widgetName='module-management' />
-			</Paper>
-			<LazyMicroApp slug='nikkierp.essential' basePath='essential' />
-		</>
-	);
-};
+
+// function ModuleList(): React.ReactNode {
+// 	return (
+// 		<>
+// 			<Link to='essential'>
+// 				<div className='text-blue-500 py-4 border-b border-blue-500'>Essential</div>
+// 			</Link><br />
+// 			<Link to='identity'>
+// 				<div className='text-blue-500 py-4 border-b border-blue-500'>Identity</div>
+// 			</Link>
+// 			<Link to='/signin'>Sign In</Link><br />
+// 		</>
+// 	);
+// }
+
+// const EssentialTest: React.FC = () => {
+// 	return (
+// 		<>
+// 			<Paper shadow='xs' p='xl'>
+// 				<LazyMicroWidget slug='nikkierp.essential' widgetName='module-management' />
+// 			</Paper>
+// 			<LazyMicroApp slug='nikkierp.essential' basePath='essential' />
+// 		</>
+// 	);
+// };
