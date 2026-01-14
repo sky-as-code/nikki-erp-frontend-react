@@ -1,11 +1,11 @@
 import { ActionIcon, Box, Group, ScrollArea, Stack, Text, Title } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 
-import { createEntitlementKey } from '@/utils';
-
 import { EntitlementCard } from './EntitlementCard';
 
 import type { Entitlement } from '@/features/entitlements';
+
+import { createEntitlementKey } from '@/utils';
 
 
 export interface SelectedEntitlementsListProps {
