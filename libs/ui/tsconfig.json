@@ -8,7 +8,7 @@
 		"src/**/*",
 		"types/*",
 		"node_modules/vite/types/*",
-		"../../modules/shell/src/layout/AuthorizedGuard.tsx",
+		"../../modules/shell/src/components/AuthorizedGuard.tsx",
 	],
 	"exclude": [
 		"node_modules",

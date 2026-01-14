@@ -40,8 +40,8 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 			// targetColor='#000'
 			targetFz='h3'
 			targetFw='normal'
-			targetPb='xs'
-			targetPt='xs'
+			// targetPb='xs'
+			// targetPt='xs'
 			dropdownWidth={props.dropdownWidth}
 			items={items}
 			value={moduleSlug ?? ''}

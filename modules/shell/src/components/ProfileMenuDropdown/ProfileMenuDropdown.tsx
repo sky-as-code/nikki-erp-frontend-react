@@ -6,8 +6,8 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
-import classes from './PrivateLayout.module.css';
-import { ThemeSwitchModal } from './ThemeSwitchModal';
+import classes from './ProfileMenuDropdown.module.css';
+import { ThemeSwitchModal } from '../ThemeSwitch';
 
 
 export const ProfileMenuDropdown: React.FC = () => {
