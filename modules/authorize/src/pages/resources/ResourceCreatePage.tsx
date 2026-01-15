@@ -12,9 +12,8 @@ import { useTranslation } from 'react-i18next';
 import {
 	ResourceFormFields,
 	resourceSchema,
+	useResourceCreate,
 } from '@/features/resources';
-
-import { useResourceCreateHandlers } from './hooks';
 
 
 function ResourceCreatePageBody(): React.ReactNode {
@@ -22,7 +21,7 @@ function ResourceCreatePageBody(): React.ReactNode {
 		isSubmitting,
 		handleCancel,
 		handleSubmit,
-	} = useResourceCreateHandlers();
+	} = useResourceCreate();
 	const { t: translate } = useTranslation();
 	const schema = resourceSchema as ModelSchema;
 

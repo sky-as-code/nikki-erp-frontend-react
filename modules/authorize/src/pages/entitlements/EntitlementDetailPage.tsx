@@ -11,10 +11,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { EntitlementFormFields } from '@/features/entitlements/components/EntitlementFormFields';
-import entitlementSchema from '@/features/entitlements/entitlement-schema.json';
-
-import { useEntitlementDetail } from './hooks';
+import { EntitlementFormFields, entitlementSchema, useEntitlementDetail } from '@/features/entitlements';
 
 
 function EntitlementDetailPageBody(): React.ReactNode {

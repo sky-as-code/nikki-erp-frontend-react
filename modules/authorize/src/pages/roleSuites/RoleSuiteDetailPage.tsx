@@ -19,16 +19,15 @@ import {
 	identityActions,
 	selectOrgList,
 } from '@/appState';
-import { RolesSelector } from '@/features/roleSuites/components/RolesSelector';
-import { RoleSuiteChangesSummary } from '@/features/roleSuites/components/RoleSuiteChangesSummary';
-import { RoleSuiteFormFields } from '@/features/roleSuites/components/RoleSuiteFormFields';
-import roleSuiteSchema from '@/features/roleSuites/roleSuite-schema.json';
-
-import { useRoleSuiteDetailData, useRoleSuiteDetailHandlers } from './hooks';
+import {
+	RolesSelector,
+	RoleSuiteChangesSummary,
+	RoleSuiteFormFields,
+	roleSuiteSchema,
+	useRoleSuiteDetail,
+} from '@/features/roleSuites';
 
 import type { Org } from '@/features/identities';
-
-
 
 
 function RoleSuiteDetailForm({
@@ -39,10 +38,10 @@ function RoleSuiteDetailForm({
 	formDataRef,
 	orgs,
 }: {
-	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetailData>['roleSuite']>;
-	handlers: ReturnType<typeof useRoleSuiteDetailHandlers>;
-	availableRoles: ReturnType<typeof useRoleSuiteDetailData>['availableRoles'];
-	roles: ReturnType<typeof useRoleSuiteDetailData>['roles'];
+	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
+	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
+	availableRoles: ReturnType<typeof useRoleSuiteDetail.detail>['availableRoles'];
+	roles: ReturnType<typeof useRoleSuiteDetail.detail>['roles'];
 	formDataRef: React.MutableRefObject<unknown>;
 	orgs: Org[];
 }) {
@@ -99,8 +98,8 @@ function RoleSuiteConfirmModal({
 	handlers,
 	formDataRef,
 }: {
-	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetailData>['roleSuite']>;
-	handlers: ReturnType<typeof useRoleSuiteDetailHandlers>;
+	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
+	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
 	formDataRef: React.MutableRefObject<unknown>;
 }) {
 	const { t: translate } = useTranslation();
@@ -131,10 +130,10 @@ function RoleSuiteDetailFormContent({
 	formDataRef,
 	orgs,
 }: {
-	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetailData>['roleSuite']>;
-	handlers: ReturnType<typeof useRoleSuiteDetailHandlers>;
-	availableRoles: ReturnType<typeof useRoleSuiteDetailData>['availableRoles'];
-	roles: ReturnType<typeof useRoleSuiteDetailData>['roles'];
+	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
+	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
+	availableRoles: ReturnType<typeof useRoleSuiteDetail.detail>['availableRoles'];
+	roles: ReturnType<typeof useRoleSuiteDetail.detail>['roles'];
 	formDataRef: React.MutableRefObject<unknown>;
 	orgs: Org[];
 }) {
@@ -158,8 +157,8 @@ function RoleSuiteDetailFormContent({
 }
 
 function RoleSuiteDetailPageBody(): React.ReactNode {
-	const { roleSuite, availableRoles, roles, isLoading } = useRoleSuiteDetailData();
-	const handlers = useRoleSuiteDetailHandlers(roleSuite, availableRoles, roles);
+	const { roleSuite, availableRoles, roles, isLoading } = useRoleSuiteDetail.detail();
+	const handlers = useRoleSuiteDetail.handlers(roleSuite, availableRoles, roles);
 	const { t: translate } = useTranslation();
 	const formDataRef = React.useRef<unknown>(null);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();

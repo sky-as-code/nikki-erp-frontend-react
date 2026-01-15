@@ -21,12 +21,7 @@ import {
 	selectRoleSuiteList,
 	selectUserList,
 } from '@/appState';
-import { GrantRequestFormFields } from '@/features/grantRequests/components';
-import grantRequestSchema from '@/features/grantRequests/grant-request-schema.json';
-
-import { useGrantRequestCreateHandlers } from './hooks';
-
-
+import { GrantRequestFormFields, grantRequestSchema, useGrantRequestCreate } from '@/features/grantRequests';
 
 
 function GrantRequestCreatePageBody(): React.ReactNode {
@@ -34,7 +29,7 @@ function GrantRequestCreatePageBody(): React.ReactNode {
 		isSubmitting,
 		handleCancel,
 		handleSubmit,
-	} = useGrantRequestCreateHandlers();
+	} = useGrantRequestCreate();
 	const { t: translate } = useTranslation();
 	const schema = grantRequestSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();

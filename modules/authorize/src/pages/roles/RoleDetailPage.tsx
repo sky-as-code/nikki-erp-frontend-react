@@ -22,19 +22,16 @@ import {
 	RoleDetailActions,
 	RoleFormFields,
 	AssignedEntitlementsList,
-} from '@/features/roles/components';
-import roleSchema from '@/features/roles/role-schema.json';
-
-import {
+	roleSchema,
 	useRoleDetailData,
-	useRoleDetailHandlers,
-} from './hooks';
+	useRoleDetail,
+} from '@/features/roles';
 
 
 function RoleDetailPageBody(): React.ReactNode {
 	const navigate = useNavigate();
 	const { role, isLoading } = useRoleDetailData();
-	const { isSubmitting, handleGoBack, handleSubmit } = useRoleDetailHandlers(role);
+	const { isSubmitting, handleGoBack, handleSubmit } = useRoleDetail(role);
 	const { t: translate } = useTranslation();
 	const schema = roleSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();

@@ -14,9 +14,8 @@ import {
 import {
 	ResourceTable,
 	resourceSchema,
+	useResourceDelete,
 } from '@/features/resources';
-
-import { useResourceDelete } from './hooks';
 
 
 function ResourceListPageBody(): React.ReactNode {

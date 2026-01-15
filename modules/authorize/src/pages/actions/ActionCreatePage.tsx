@@ -10,11 +10,8 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useActionCreateHandlers } from './hooks';
-
 import { AuthorizeDispatch, resourceActions, selectResourceState } from '@/appState';
-import { ActionFormFields, actionSchema } from '@/features/actions';
-
+import { ActionFormFields, actionSchema, useActionCreate } from '@/features/actions';
 
 
 function ActionCreatePageBody(): React.ReactNode {
@@ -22,7 +19,7 @@ function ActionCreatePageBody(): React.ReactNode {
 		isSubmitting,
 		handleSubmit,
 		handleCancel,
-	} = useActionCreateHandlers();
+	} = useActionCreate();
 	const { t: translate } = useTranslation();
 	const schema = actionSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();

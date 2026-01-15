@@ -11,15 +11,7 @@ import {
 	revokeRequestActions,
 	selectRevokeRequestState,
 } from '@/appState';
-import { RevokeRequestTable } from '@/features/revokeRequests/components';
-import revokeRequestSchema from '@/features/revokeRequests/revoke-request-schema.json';
-
-import {
-	useRevokeRequestDeleteHandler,
-	useRevokeRequestList,
-} from './hooks';
-
-
+import { RevokeRequestTable, revokeRequestSchema, useRevokeRequestDelete, useRevokeRequestList } from '@/features/revokeRequests';
 
 
 function RevokeRequestListPageBody(): React.ReactNode {
@@ -27,7 +19,7 @@ function RevokeRequestListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const { revokeRequests, isLoadingList } = useMicroAppSelector(selectRevokeRequestState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const deleteHandler = useRevokeRequestDeleteHandler(revokeRequests, dispatch);
+	const deleteHandler = useRevokeRequestDelete(revokeRequests, dispatch);
 	const { handleRefresh } = useRevokeRequestList();
 
 	const columns = [

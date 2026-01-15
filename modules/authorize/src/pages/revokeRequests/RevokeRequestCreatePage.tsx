@@ -1,6 +1,5 @@
 import { Button, Group, Stack, TextInput, Textarea } from '@mantine/core';
-import { BreadcrumbsHeader } from '@nikkierp/ui/components';
-import { FormContainer } from '@nikkierp/ui/components/form';
+import { BreadcrumbsHeader, FormContainer } from '@nikkierp/ui/components';
 import { IconCheck } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,9 +8,8 @@ import { ReceiverType } from '@/features/grantRequests/types';
 import {
 	RevokeRequestAssignmentsList,
 	RevokeRequestFilter,
-} from '@/features/revokeRequests/components';
-
-import { useRevokeRequestCreatePage } from './hooks';
+	useRevokeRequestCreate,
+} from '@/features/revokeRequests';
 
 
 interface ActionButtonsProps {
@@ -78,8 +76,8 @@ interface FilterSectionProps {
 	setReceiverType: (value: ReceiverType) => void;
 	receiverId: string | null;
 	setReceiverId: (value: string | null) => void;
-	users: ReturnType<typeof useRevokeRequestCreatePage>['users'];
-	groups: ReturnType<typeof useRevokeRequestCreatePage>['groups'];
+	users: ReturnType<typeof useRevokeRequestCreate>['users'];
+	groups: ReturnType<typeof useRevokeRequestCreate>['groups'];
 }
 
 function FilterSection({
@@ -103,7 +101,7 @@ function FilterSection({
 }
 
 interface AssignmentsListProps {
-	assignments: ReturnType<typeof useRevokeRequestCreatePage>['assignments'];
+	assignments: ReturnType<typeof useRevokeRequestCreate>['assignments'];
 	selectedAssignments: Set<string>;
 	onSelectionChange: (id: string, selected: boolean) => void;
 	onSelectAll: () => void;
@@ -134,7 +132,7 @@ function AssignmentsListSection({
 
 function RevokeRequestCreatePageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
-	const pageData = useRevokeRequestCreatePage();
+	const pageData = useRevokeRequestCreate();
 	const canSubmit = pageData.selectedAssignments.size > 0 && !pageData.isSubmitting;
 
 	return (

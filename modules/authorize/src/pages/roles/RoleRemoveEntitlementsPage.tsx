@@ -6,19 +6,16 @@ import { useLocation } from 'react-router';
 
 import {
 	RoleRemoveEntitlementsForm,
-} from '@/features/roles/components';
-
-import {
 	useRoleRemoveEntitlementsData,
-	useRoleRemoveEntitlementsHandlers,
-} from './hooks';
+	useRoleRemoveEntitlements,
+} from '@/features/roles';
 
 
 function RoleRemoveEntitlementsPageBody(): React.ReactNode {
 	const { role, resources, isLoading } = useRoleRemoveEntitlementsData();
 	const { t: translate } = useTranslation();
 	const location = useLocation();
-	const handlers = useRoleRemoveEntitlementsHandlers(role);
+	const handlers = useRoleRemoveEntitlements(role);
 
 	// Build breadcrumbs for 3 layers: Roles > Role Detail > Remove Entitlements
 	const breadcrumbItems = React.useMemo(() => {

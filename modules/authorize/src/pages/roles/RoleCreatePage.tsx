@@ -15,10 +15,7 @@ import {
 	identityActions,
 	selectOrgList,
 } from '@/appState';
-import { RoleFormFields } from '@/features/roles/components';
-import roleSchema from '@/features/roles/role-schema.json';
-
-import { useRoleCreateHandlers } from './hooks';
+import { RoleFormFields, roleSchema, useRoleCreate } from '@/features/roles';
 
 
 function RoleCreatePageBody(): React.ReactNode {
@@ -26,7 +23,7 @@ function RoleCreatePageBody(): React.ReactNode {
 		isSubmitting,
 		handleCancel,
 		handleSubmit,
-	} = useRoleCreateHandlers();
+	} = useRoleCreate();
 	const { t: translate } = useTranslation();
 	const schema = roleSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();

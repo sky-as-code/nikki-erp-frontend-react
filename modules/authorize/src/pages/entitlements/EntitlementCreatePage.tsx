@@ -9,10 +9,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { EntitlementFormFields } from '@/features/entitlements/components/EntitlementFormFields';
-import entitlementSchema from '@/features/entitlements/entitlement-schema.json';
-
-import { useEntitlementCreateHandlers } from './hooks';
+import { EntitlementFormFields, entitlementSchema, useEntitlementCreate } from '@/features/entitlements';
 
 
 function EntitlementCreatePageBody(): React.ReactNode {
@@ -24,7 +21,7 @@ function EntitlementCreatePageBody(): React.ReactNode {
 		handleSubmit,
 		resources,
 		actions,
-	} = useEntitlementCreateHandlers();
+	} = useEntitlementCreate();
 
 	return (
 		<Stack gap='md'>

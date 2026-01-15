@@ -2,10 +2,9 @@ import { AutoField, EntityDisplayField, EntitySelectField } from '@nikkierp/ui/c
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ALL_ORGS_VALUE } from '@/features/roleSuites/validation/roleSuiteFormValidation';
+import { ALL_ORGS_VALUE } from '@/features/roleSuites/helpers/roleSuiteFormValidation';
 
 import type { Org } from '@/features/identities';
-
 
 
 interface RoleSuiteFormFieldsProps {

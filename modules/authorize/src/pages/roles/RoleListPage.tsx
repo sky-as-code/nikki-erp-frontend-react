@@ -11,10 +11,7 @@ import {
 	roleActions,
 	selectRoleState,
 } from '@/appState';
-import { RoleTable } from '@/features/roles/components';
-import roleSchema from '@/features/roles/role-schema.json';
-
-import { useRoleDeleteHandler } from './hooks';
+import { RoleTable, roleSchema, useRoleDelete } from '@/features/roles';
 
 
 function RoleListPageBody(): React.ReactNode {
@@ -22,7 +19,7 @@ function RoleListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const { roles, isLoadingList } = useMicroAppSelector(selectRoleState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const deleteHandler = useRoleDeleteHandler(roles, dispatch);
+	const deleteHandler = useRoleDelete(roles, dispatch);
 
 	const columns = [
 		'name',

@@ -5,18 +5,16 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useActionDeleteHandler, useActionList } from './hooks';
 
 import { AuthorizeDispatch } from '@/appState';
-import { ActionTable, actionSchema } from '@/features/actions';
-
+import { ActionTable, actionSchema, useActionDelete, useActionList } from '@/features/actions';
 
 
 function ActionListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const { actions, isLoadingList, resources } = useActionList.data();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const deleteHandler = useActionDeleteHandler(actions, dispatch);
+	const deleteHandler = useActionDelete(actions, dispatch);
 	const { handleViewDetail, handleEdit, handleCreate, handleRefresh } = useActionList.handlers(actions);
 
 	const columns = ['name', 'description', 'resourceId', 'actions'];

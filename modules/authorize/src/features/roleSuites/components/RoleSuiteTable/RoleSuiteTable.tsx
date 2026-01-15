@@ -10,7 +10,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 
-
 export interface RoleSuiteTableProps extends AutoTableProps {
 	onViewDetail: (roleSuiteId: string) => void;
 	onEdit: (roleSuiteId: string) => void;

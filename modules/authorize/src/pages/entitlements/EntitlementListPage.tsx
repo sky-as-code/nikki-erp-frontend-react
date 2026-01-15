@@ -6,17 +6,14 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { AuthorizeDispatch } from '@/appState';
-import { EntitlementTable } from '@/features/entitlements/components';
-import entitlementSchema from '@/features/entitlements/entitlement-schema.json';
-
-import { useEntitlementDeleteHandler, useEntitlementList } from './hooks';
+import { EntitlementTable, entitlementSchema, useEntitlementDelete, useEntitlementList } from '@/features/entitlements';
 
 
 function EntitlementListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const { entitlements, isLoadingList, resources, actions } = useEntitlementList.data();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const deleteHandler = useEntitlementDeleteHandler(entitlements, dispatch);
+	const deleteHandler = useEntitlementDelete(entitlements, dispatch);
 	const { handleViewDetail, handleEdit, handleCreate, handleRefresh } = useEntitlementList.handlers();
 
 	const columns = ['name', 'description', 'actionId', 'resourceId', 'rolesCount', 'actions'];

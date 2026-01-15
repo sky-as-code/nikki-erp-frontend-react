@@ -11,14 +11,7 @@ import {
 	roleSuiteActions,
 	selectRoleSuiteState,
 } from '@/appState';
-import { RoleSuiteTable } from '@/features/roleSuites/components';
-import roleSuiteSchema from '@/features/roleSuites/roleSuite-schema.json';
-
-import { useRoleSuiteDeleteHandler } from './hooks';
-
-
-
-
+import { RoleSuiteTable, roleSuiteSchema, useRoleSuiteDelete } from '@/features/roleSuites';
 
 
 function RoleSuiteListPageBody(): React.ReactNode {
@@ -26,7 +19,7 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const { roleSuites, isLoadingList } = useMicroAppSelector(selectRoleSuiteState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const deleteHandler = useRoleSuiteDeleteHandler(roleSuites, dispatch);
+	const deleteHandler = useRoleSuiteDelete(roleSuites, dispatch);
 
 	const columns = [
 		'name',

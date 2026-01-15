@@ -15,18 +15,17 @@ import {
 	ListActions,
 	ResourceFormFields,
 	resourceSchema,
+	useResourceDetail,
 } from '@/features/resources';
-
-import { useResourceDetail } from './hooks';
 
 
 function ResourceDetailPageBody(): React.ReactNode {
-	const { resource, isLoadingList } = useResourceDetail.detail();
+	const { resource, isLoading } = useResourceDetail.detail();
 	const { isSubmitting, handleCancel, handleSubmit } = useResourceDetail.handlers(resource);
 	const { t: translate } = useTranslation();
 	const schema = resourceSchema as ModelSchema;
 
-	if (isLoadingList) {
+	if (isLoading) {
 		return <LoadingState messageKey='nikki.authorize.resource.messages.loading' />;
 	}
 

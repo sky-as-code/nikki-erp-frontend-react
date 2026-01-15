@@ -11,12 +11,7 @@ import {
 	grantRequestActions,
 	selectGrantRequestState,
 } from '@/appState';
-import { GrantRequestTable } from '@/features/grantRequests/components';
-import grantRequestSchema from '@/features/grantRequests/grant-request-schema.json';
-
-import { useGrantRequestDeleteHandler } from './hooks';
-
-
+import { GrantRequestTable, grantRequestSchema, useGrantRequestDelete } from '@/features/grantRequests';
 
 
 function GrantRequestListPageBody(): React.ReactNode {
@@ -24,7 +19,7 @@ function GrantRequestListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const { grantRequests, isLoadingList } = useMicroAppSelector(selectGrantRequestState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const deleteHandler = useGrantRequestDeleteHandler(grantRequests, dispatch);
+	const deleteHandler = useGrantRequestDelete(grantRequests, dispatch);
 
 	const columns = [
 		'requestor',

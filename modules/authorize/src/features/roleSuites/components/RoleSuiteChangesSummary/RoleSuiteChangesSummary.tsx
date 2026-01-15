@@ -3,7 +3,7 @@ import { IconCircleMinus, IconCirclePlus, IconEqual } from '@tabler/icons-react'
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useRoleChanges } from './hooks';
+import { useRoleChanges } from '../../hooks';
 
 import type { Role } from '@/features/roles';
 

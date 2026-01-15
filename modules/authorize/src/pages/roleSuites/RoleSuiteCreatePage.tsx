@@ -15,16 +15,13 @@ import {
 	identityActions,
 	selectOrgList,
 } from '@/appState';
-import { RolesSelector } from '@/features/roleSuites/components/RolesSelector';
-import { RoleSuiteChangesSummary } from '@/features/roleSuites/components/RoleSuiteChangesSummary';
-import { RoleSuiteFormFields } from '@/features/roleSuites/components/RoleSuiteFormFields';
-import roleSuiteSchema from '@/features/roleSuites/roleSuite-schema.json';
-
-import { useRoleSuiteCreateHandlers } from './hooks';
-
-
-
-
+import {
+	RolesSelector,
+	RoleSuiteChangesSummary,
+	RoleSuiteFormFields,
+	roleSuiteSchema,
+	useRoleSuiteCreate,
+} from '@/features/roleSuites';
 
 
 function RoleSuiteCreatePageBody(): React.ReactNode {
@@ -36,7 +33,7 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 		setSelectedRoleIds,
 		availableRolesByOrg,
 		roles,
-	} = useRoleSuiteCreateHandlers();
+	} = useRoleSuiteCreate();
 	const { t: translate } = useTranslation();
 	const schema = roleSuiteSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();

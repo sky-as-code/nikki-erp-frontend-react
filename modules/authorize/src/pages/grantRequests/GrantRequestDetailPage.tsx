@@ -14,20 +14,17 @@ import { useTranslation } from 'react-i18next';
 import {
 	DetailActions,
 	GrantRequestFormFields,
-} from '@/features/grantRequests/components';
-import grantRequestSchema from '@/features/grantRequests/grant-request-schema.json';
-
-import { useGrantRequestDetailData, useGrantRequestDetailHandlers } from './hooks';
-
-
+	grantRequestSchema,
+	useGrantRequestDetail,
+} from '@/features/grantRequests';
 
 
 function GrantRequestDetailForm({
 	grantRequest,
 	handlers,
 }: {
-	grantRequest: NonNullable<ReturnType<typeof useGrantRequestDetailData>['grantRequest']>;
-	handlers: ReturnType<typeof useGrantRequestDetailHandlers>;
+	grantRequest: NonNullable<ReturnType<typeof useGrantRequestDetail.detail>['grantRequest']>;
+	handlers: ReturnType<typeof useGrantRequestDetail.handlers>;
 }) {
 	const schema = grantRequestSchema as ModelSchema;
 	const targetName = grantRequest.target?.name || grantRequest.targetRef;
@@ -67,8 +64,8 @@ function GrantRequestDetailForm({
 }
 
 function GrantRequestDetailPageBody(): React.ReactNode {
-	const { grantRequest, isLoading } = useGrantRequestDetailData();
-	const handlers = useGrantRequestDetailHandlers(grantRequest);
+	const { grantRequest, isLoading } = useGrantRequestDetail.detail();
+	const handlers = useGrantRequestDetail.handlers(grantRequest);
 	const { t: translate } = useTranslation();
 
 	if (isLoading) {

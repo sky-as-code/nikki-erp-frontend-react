@@ -6,17 +6,14 @@ import { useLocation } from 'react-router';
 
 import {
 	RoleAddEntitlementsForm,
-} from '@/features/roles/components';
-
-import {
 	useRoleAddEntitlementsData,
-	useRoleAddEntitlementsHandlers,
-} from './hooks';
+	useRoleAddEntitlements,
+} from '@/features/roles';
 
 
 function RoleAddEntitlementsPageBody(): React.ReactNode {
 	const { role, entitlements, resources, isLoading } = useRoleAddEntitlementsData();
-	const handlers = useRoleAddEntitlementsHandlers(role, entitlements);
+	const handlers = useRoleAddEntitlements(role, entitlements);
 	const { t: translate } = useTranslation();
 	const location = useLocation();
 

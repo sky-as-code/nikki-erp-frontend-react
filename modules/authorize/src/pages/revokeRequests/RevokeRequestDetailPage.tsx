@@ -11,19 +11,12 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { RevokeRequestFormFields } from '@/features/revokeRequests/components';
-import revokeRequestSchema from '@/features/revokeRequests/revoke-request-schema.json';
-
-import { useRevokeRequestDetailData, useRevokeRequestDetailHandlers } from './hooks';
-
-
+import { RevokeRequestFormFields, revokeRequestSchema, useRevokeRequestDetail } from '@/features/revokeRequests';
 
 
 function RevokeRequestDetailPageBody(): React.ReactNode {
-	const { revokeRequest, isLoading } = useRevokeRequestDetailData();
-	const {
-		isSubmitting,
-	} = useRevokeRequestDetailHandlers(revokeRequest);
+	const { revokeRequest, isLoading } = useRevokeRequestDetail.detail();
+	const { isSubmitting } = useRevokeRequestDetail.handlers(revokeRequest);
 	const { t: translate } = useTranslation();
 	const schema = revokeRequestSchema as ModelSchema;
 

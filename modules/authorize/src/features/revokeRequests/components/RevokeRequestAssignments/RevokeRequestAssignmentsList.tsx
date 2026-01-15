@@ -2,7 +2,7 @@ import { Button, Checkbox, Group, Paper, Stack, Table, Title } from '@mantine/co
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { AssignmentItem } from '@/pages/revokeRequests/hooks/useRevokeRequestAssignments';
+import type { AssignmentItem } from '@/features/revokeRequests/hooks/useRevokeRequestAssignments';
 
 
 interface RevokeRequestAssignmentsListProps {

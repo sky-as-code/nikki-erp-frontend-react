@@ -3,7 +3,7 @@ import { AutoField, EntityDisplayField, EntitySelectField } from '@nikkierp/ui/c
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useReceiverSelectLogic, useTargetSelectLogic } from '@/pages/grantRequests/hooks';
+import { useReceiverSelectLogic, useTargetSelectLogic } from '@/features/grantRequests/hooks';
 
 import type { Group } from '@/features/identities';
 import type { User } from '@/features/identities';
