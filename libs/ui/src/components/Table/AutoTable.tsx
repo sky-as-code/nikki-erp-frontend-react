@@ -54,13 +54,9 @@ export const AutoTable: React.FC<AutoTableProps> = (props) => {
 		<Table>
 			<Table.Thead>
 				<Table.Tr>
-					{validColumns.map((col) => {
-						const hasCustomRenderer = props.columnRenderers?.[col];
-						const label = hasCustomRenderer && !props.schema.fields[col]
-							? col.charAt(0).toUpperCase() + col.slice(1)
-							: translate(getColumnLabel(props.schema, col));
-						return <Table.Th key={col}>{label}</Table.Th>;
-					})}
+					{validColumns.map((col) => (
+						<Table.Th key={col}>{translate(getColumnLabel(props.schema, col))}</Table.Th>
+					))}
 				</Table.Tr>
 			</Table.Thead>
 			<Table.Tbody>

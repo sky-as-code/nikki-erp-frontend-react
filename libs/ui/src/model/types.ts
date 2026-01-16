@@ -1,12 +1,12 @@
 
 export type ModelSchema = {
-    name: string;
-    fields: Record<string, FieldDefinition>;
-    constraints?: FieldConstraint[];
+	name: string;
+	fields: Record<string, FieldDefinition>;
+	constraints?: FieldConstraint[];
 };
 
 export type FieldDefinition = {
-    type: 'string' | 'email' | 'password' | 'date' | 'integer' | 'enum' | 'object' | 'array';
+    type: 'string' | 'email' | 'password' | 'date' | 'integer' | 'enum' | 'boolean' | 'object' | 'array';
     label: string;
     description?: string;
     placeholder?: string;
@@ -22,23 +22,24 @@ export type FieldDefinition = {
 };
 
 export type FieldEnumOption = {
-    value: string;
-    label: string;
+	value: string;
+	label: string;
 };
 
 export type FieldEnumSource = {
-    stateSource: string;
-    key: string;
-    label: string;
+	stateSource: string;
+	key: string;
+	label: string;
 };
 
 export type FieldConstraint = {
-    type: string;
-    message?: string;
-    min?: number | string;
-    max?: number | string;
-    allowToday?: boolean;
-    allowFuture?: boolean;
-    allowPast?: boolean;
-    fields?: string[];
+	type: string;
+	message?: string;
+	min?: number | string;
+	max?: number | string;
+	allowToday?: boolean;
+	allowFuture?: boolean;
+	allowPast?: boolean;
+	fields?: string[];
+	pattern?: string;
 };

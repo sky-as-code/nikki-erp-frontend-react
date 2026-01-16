@@ -1,0 +1,163 @@
+import { MantineProvider } from '@mantine/core';
+import { MenuBarItem, useSetMenuBarItems } from '@nikkierp/ui/appState';
+import {
+	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
+	MicroAppProvider, initMicroAppStateContext, useMicroAppDispatch,
+	MicroAppRouter, WidgetRoutes,
+} from '@nikkierp/ui/microApp';
+import { useTranslation } from 'react-i18next';
+import { Navigate } from 'react-router';
+
+import { reducer } from './appState';
+import { ActionCreatePage } from './pages/actions/ActionCreatePage';
+import { ActionDetailPage } from './pages/actions/ActionDetailPage';
+import { ActionListPage } from './pages/actions/ActionListPage';
+import { EntitlementCreatePage } from './pages/entitlements/EntitlementCreatePage';
+import { EntitlementDetailPage } from './pages/entitlements/EntitlementDetailPage';
+import { EntitlementListPage } from './pages/entitlements/EntitlementListPage';
+import { GrantRequestCreatePage } from './pages/grantRequests/GrantRequestCreatePage';
+import { GrantRequestDetailPage } from './pages/grantRequests/GrantRequestDetailPage';
+import { GrantRequestListPage } from './pages/grantRequests/GrantRequestListPage';
+import { OverviewPage } from './pages/overview/OverviewPage';
+import { ResourceCreatePage } from './pages/resources/ResourceCreatePage';
+import { ResourceDetailPage } from './pages/resources/ResourceDetailPage';
+import { ResourceListPage } from './pages/resources/ResourceListPage';
+import { RevokeRequestCreatePage } from './pages/revokeRequests/RevokeRequestCreatePage';
+import { RevokeRequestDetailPage } from './pages/revokeRequests/RevokeRequestDetailPage';
+import { RevokeRequestListPage } from './pages/revokeRequests/RevokeRequestListPage';
+import { RoleAddEntitlementsPage } from './pages/roles/RoleAddEntitlementsPage';
+import { RoleCreatePage } from './pages/roles/RoleCreatePage';
+import { RoleDetailPage } from './pages/roles/RoleDetailPage';
+import { RoleListPage } from './pages/roles/RoleListPage';
+import { RoleRemoveEntitlementsPage } from './pages/roles/RoleRemoveEntitlementsPage';
+import { RoleSuiteCreatePage } from './pages/roleSuites/RoleSuiteCreatePage';
+import { RoleSuiteDetailPage } from './pages/roleSuites/RoleSuiteDetailPage';
+import { RoleSuiteListPage } from './pages/roleSuites/RoleSuiteListPage';
+
+
+function useMenuBarItems(): MenuBarItem[] {
+	const { t: translate } = useTranslation();
+	return [
+		{
+			label: translate('nikki.authorize.menu.overview'),
+			link: '/overview',
+		},
+		{
+			label: translate('nikki.authorize.menu.resources_actions'),
+			items: [
+				{
+					label: translate('nikki.authorize.menu.resources'),
+					link: '/resources',
+				},
+				{
+					label: translate('nikki.authorize.menu.actions'),
+					link: '/actions',
+				},
+				{
+					label: translate('nikki.authorize.menu.entitlements'),
+					link: '/entitlements',
+				},
+			],
+		},
+		{
+			label: translate('nikki.authorize.menu.roles'),
+			items: [
+				{
+					label: translate('nikki.authorize.menu.roles'),
+					link: '/roles',
+				},
+				{
+					label: translate('nikki.authorize.menu.role_suites'),
+					link: '/role-suites',
+				},
+			],
+		},
+		{
+			label: translate('nikki.authorize.menu.requests'),
+			items: [
+				{
+					label: translate('nikki.authorize.menu.grant_requests'),
+					link: '/grant-requests',
+				},
+				{
+					label: translate('nikki.authorize.menu.revoke_requests'),
+					link: '/revoke-requests',
+				},
+			],
+		},
+	];
+}
+
+function Main(props: MicroAppProps) {
+	const dispatch = useMicroAppDispatch();
+	const menuBarItems = useMenuBarItems();
+	useSetMenuBarItems(menuBarItems, dispatch);
+
+	return (
+		<MicroAppProvider {...props}>
+			<MantineProvider>
+				<MicroAppRouter
+					domType={props.domType}
+					basePath={props.routing.basePath}
+					widgetName={props.widgetName}
+					widgetProps={props.widgetProps}
+				>
+					<AppRoutes>
+						<AppRoute index element={<Navigate to='overview' replace />} />
+						<AppRoute path='overview' element={<OverviewPage />} />
+						{/* Resource routes */}
+						<AppRoute path='resources' element={<ResourceListPage />} />
+						<AppRoute path='resources/create' element={<ResourceCreatePage />} />
+						<AppRoute path='resources/:resourceName' element={<ResourceDetailPage />} />
+						{/* Action routes */}
+						<AppRoute path='actions' element={<ActionListPage />} />
+						<AppRoute path='actions/create' element={<ActionCreatePage />} />
+						<AppRoute path='actions/:actionId' element={<ActionDetailPage />} />
+						{/* Entitlement routes */}
+						<AppRoute path='entitlements' element={<EntitlementListPage />} />
+						<AppRoute path='entitlements/create' element={<EntitlementCreatePage />} />
+						<AppRoute path='entitlements/:entitlementId' element={<EntitlementDetailPage />} />
+						{/* Role routes */}
+						<AppRoute path='roles' element={<RoleListPage />} />
+						<AppRoute path='roles/create' element={<RoleCreatePage />} />
+						<AppRoute path='roles/:roleId' element={<RoleDetailPage />} />
+						<AppRoute path='roles/:roleId/add-entitlements' element={<RoleAddEntitlementsPage />} />
+						<AppRoute path='roles/:roleId/remove-entitlements' element={<RoleRemoveEntitlementsPage />} />
+						{/* RoleSuite routes */}
+						<AppRoute path='role-suites' element={<RoleSuiteListPage />} />
+						<AppRoute path='role-suites/create' element={<RoleSuiteCreatePage />} />
+						<AppRoute path='role-suites/:roleSuiteId' element={<RoleSuiteDetailPage />} />
+						{/* GrantRequest routes */}
+						<AppRoute path='grant-requests' element={<GrantRequestListPage />} />
+						<AppRoute path='grant-requests/create' element={<GrantRequestCreatePage />} />
+						<AppRoute path='grant-requests/:grantRequestId' element={<GrantRequestDetailPage />} />
+						{/* RevokeRequest routes */}
+						<AppRoute path='revoke-requests' element={<RevokeRequestListPage />} />
+						<AppRoute path='revoke-requests/create' element={<RevokeRequestCreatePage />} />
+						<AppRoute path='revoke-requests/:revokeRequestId' element={<RevokeRequestDetailPage />} />
+					</AppRoutes>
+					<WidgetRoutes>
+					</WidgetRoutes>
+				</MicroAppRouter>
+			</MantineProvider>
+		</MicroAppProvider>
+	);
+}
+
+const bundle: MicroAppBundle = {
+	init({ htmlTag, registerReducer }) {
+		const domType = MicroAppDomType.SHARED;
+		defineWebComponent(Main, {
+			htmlTag,
+			domType,
+		});
+
+		const result = registerReducer(reducer);
+		initMicroAppStateContext(result);
+		return {
+			domType,
+		};
+	},
+};
+
+export default bundle;

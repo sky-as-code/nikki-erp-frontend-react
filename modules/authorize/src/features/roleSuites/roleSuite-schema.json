@@ -1,0 +1,116 @@
+{
+	"name": "roleSuite",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				},
+				{
+					"type": "length",
+					"min": 1,
+					"max": 64,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.description' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 255,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"ownerType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.owner_type.label' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"enum": [
+				{
+					"value": "user",
+					"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.owner_type.user' }"
+				},
+				{
+					"value": "group",
+					"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.owner_type.group' }"
+				}
+			],
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"ownerRef": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.owner_ref' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"isRequestable": {
+			"type": "boolean",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.is_requestable' }"
+		},
+		"isRequiredAttachment": {
+			"type": "boolean",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.is_required_attachment' }"
+		},
+		"isRequiredComment": {
+			"type": "boolean",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.is_required_comment' }"
+		},
+		"orgId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.org_id' }"
+		},
+		"orgDisplayName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.org_display_name' }"
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.created_at' }",
+			"hidden": true
+		},
+		"createdBy": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role_suite.fields.created_by' }",
+			"hidden": true
+		}
+	}
+}
+

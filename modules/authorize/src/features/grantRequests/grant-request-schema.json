@@ -1,0 +1,252 @@
+{
+	"name": "grantRequest",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"targetType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.target_type' }",
+			"enum": [
+				{
+					"value": "role",
+					"label": "Role"
+				},
+				{
+					"value": "suite",
+					"label": "Suite"
+				}
+			],
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"target": {
+			"type": "object",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.target' }",
+			"hidden": true,
+			"readOnly": {
+				"create": false,
+				"update": true
+			},
+			"properties": {
+				"id": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.target_id' }"
+				},
+				"name": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.target_name' }"
+				}
+			}
+		},
+		"targetName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.target_name' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
+		},
+		"targetId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.target_id' }",
+			"hidden": true,
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
+		},
+		"targetRef": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.target_name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"receiverType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.receiver_type' }",
+			"enum": [
+				{
+					"value": "user",
+					"label": "User"
+				},
+				{
+					"value": "group",
+					"label": "Group"
+				}
+			],
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"receiver": {
+			"type": "object",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.receiver' }",
+			"hidden": true,
+			"readOnly": {
+				"create": false,
+				"update": true
+			},
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"properties": {
+				"id": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.receiver_id' }"
+				},
+				"name": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.receiver_name' }"
+				}
+			}
+		},
+		"receiverName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.receiver_name' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
+		},
+		"receiverId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.receiver_name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"readOnly": {
+				"create": false,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"requestor": {
+			"type": "object",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.requestor' }",
+			"hidden": true,
+			"readOnly": {
+				"create": false,
+				"update": true
+			},
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"properties": {
+				"id": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.requestor_id' }"
+				},
+				"name": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.requestor_name' }"
+				}
+			}
+		},
+		"requestorName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.requestor_name' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
+		},
+		"comment": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.comment' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 500,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"attachmentUrl": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.attachment' }"
+		},
+		"status": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.status' }",
+			"enum": [
+				{
+					"value": "pending",
+					"label": "Pending"
+				},
+				{
+					"value": "approved",
+					"label": "Approved"
+				},
+				{
+					"value": "rejected",
+					"label": "Rejected"
+				},
+				{
+					"value": "cancelled",
+					"label": "Cancelled"
+				}
+			],
+			"readOnly": {
+				"create": true,
+				"update": true
+			}
+		},
+		"orgId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.org_id' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
+		},
+		"orgDisplayName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.grant_request.fields.org_display_name' }"
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.general.fields.created_at' }",
+			"hidden": true
+		}
+	}
+}

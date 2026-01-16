@@ -1,0 +1,132 @@
+{
+	"name": "role",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				},
+				{
+					"type": "length",
+					"min": 1,
+					"max": 64,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.description' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 255,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"ownerType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.owner_type.label' }",
+			"enum": [
+				{
+					"value": "user",
+					"label": "{ \"$ref\": 'nikki.authorize.role.fields.owner_type.user' }"
+				},
+				{
+					"value": "group",
+					"label": "{ \"$ref\": 'nikki.authorize.role.fields.owner_type.group' }"
+				}
+			],
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"ownerRef": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.owner_ref' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"isRequestable": {
+			"type": "boolean",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.is_requestable' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
+		},
+		"isRequiredAttachment": {
+			"type": "boolean",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.is_required_attachment' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
+		},
+		"isRequiredComment": {
+			"type": "boolean",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.is_required_comment' }",
+			"readOnly": {
+				"create": false,
+				"update": true
+			}
+		},
+		"orgId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.org_id' }"
+		},
+		"orgDisplayName": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.org_display_name' }"
+		},
+		"entitlementsCount": {
+			"type": "integer",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.entitlements_count' }",
+			"frontendOnly": true
+		},
+		"suitesCount": {
+			"type": "integer",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.suites_count' }",
+			"frontendOnly": true
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.authorize.role.fields.created_at' }",
+			"hidden": true
+		}
+	}
+}
