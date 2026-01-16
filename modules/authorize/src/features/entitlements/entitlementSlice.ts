@@ -4,7 +4,7 @@ import {
 
 import { entitlementService } from './entitlementService';
 import { Entitlement } from './types';
-import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
+import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActionState';
 
 
 export const SLICE_NAME = 'authorize.entitlement';
@@ -32,9 +32,9 @@ const initialState: EntitlementState = {
 		error: null,
 	},
 
-	create: createInitialReduxActionState(),
-	update: createInitialReduxActionState(),
-	delete: createInitialReduxActionState(),
+	create: baseReduxActionState,
+	update: baseReduxActionState,
+	delete: baseReduxActionState,
 };
 
 export const listEntitlements = createAsyncThunk<
@@ -135,13 +135,13 @@ const entitlementSlice = createSlice({
 			state.entitlements = action.payload;
 		},
 		resetCreateEntitlement: (state) => {
-			state.create = createInitialReduxActionState();
+			state.create = baseReduxActionState;
 		},
 		resetUpdateEntitlement: (state) => {
-			state.update = createInitialReduxActionState();
+			state.update = baseReduxActionState;
 		},
 		resetDeleteEntitlement: (state) => {
-			state.delete = createInitialReduxActionState();
+			state.delete = baseReduxActionState;
 		},
 	},
 	extraReducers: (builder) => {
@@ -186,10 +186,9 @@ function getEntitlementReducers(builder: ActionReducerMapBuilder<EntitlementStat
 
 function createEntitlementReducers(builder: ActionReducerMapBuilder<EntitlementState>) {
 	builder
-		.addCase(createEntitlement.pending, (state, action) => {
+		.addCase(createEntitlement.pending, (state, _action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
-			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createEntitlement.fulfilled, (state, action) => {
 			state.create.status = 'success';
@@ -204,10 +203,9 @@ function createEntitlementReducers(builder: ActionReducerMapBuilder<EntitlementS
 
 function updateEntitlementReducers(builder: ActionReducerMapBuilder<EntitlementState>) {
 	builder
-		.addCase(updateEntitlement.pending, (state, action) => {
+		.addCase(updateEntitlement.pending, (state, _action) => {
 			state.update.status = 'pending';
 			state.update.error = null;
-			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateEntitlement.fulfilled, (state, action) => {
 			state.update.status = 'success';
@@ -226,10 +224,9 @@ function updateEntitlementReducers(builder: ActionReducerMapBuilder<EntitlementS
 
 function deleteEntitlementReducers(builder: ActionReducerMapBuilder<EntitlementState>) {
 	builder
-		.addCase(deleteEntitlement.pending, (state, action) => {
+		.addCase(deleteEntitlement.pending, (state, _action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
-			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteEntitlement.fulfilled, (state, action) => {
 			state.delete.status = 'success';

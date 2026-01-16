@@ -8,21 +8,21 @@ import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router';
 
 import {
 	ResourceFormFields,
 	resourceSchema,
 	useResourceCreate,
 } from '@/features/resources';
+import { handleGoBack } from '@/utils';
 
 
 function ResourceCreatePageBody(): React.ReactNode {
-	const {
-		isSubmitting,
-		handleCancel,
-		handleSubmit,
-	} = useResourceCreate();
+	const {	isSubmitting, handleSubmit } = useResourceCreate();
 	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
+	const location = useLocation();
 	const schema = resourceSchema as ModelSchema;
 
 	return (
@@ -40,7 +40,10 @@ function ResourceCreatePageBody(): React.ReactNode {
 						{({ handleSubmit: formHandleSubmit, form }) => (
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data, form))} noValidate>
 								<Stack gap='xs'>
-									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
+									<FormActions
+										isSubmitting={isSubmitting}
+										onCancel={() => handleGoBack(navigate, location)}
+										isCreate />
 									<ResourceFormFields isCreate />
 								</Stack>
 							</form>

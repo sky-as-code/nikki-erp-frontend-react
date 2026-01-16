@@ -68,7 +68,7 @@ function OverviewPageBody(): React.ReactNode {
 				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
 					<StatCard
 						title={translate('nikki.authorize.menu.resources')}
-						value={resources.length}
+						value={resources.data?.length ?? 0}
 						icon={<IconLock size={32} />}
 						color='var(--mantine-color-blue-6)'
 						link='../resources'

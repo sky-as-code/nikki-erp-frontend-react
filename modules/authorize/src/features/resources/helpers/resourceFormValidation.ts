@@ -48,7 +48,6 @@ function validateResourceRef(
 
 export function validateResourceForm(
 	formData: FormValues,
-	isCreate: boolean,
 	form?: UseFormReturn<any>,
 ): boolean {
 	if (!form) {

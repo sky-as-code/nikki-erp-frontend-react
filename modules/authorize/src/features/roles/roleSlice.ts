@@ -4,7 +4,7 @@ import {
 
 import { roleService } from './roleService';
 import { Role } from './types';
-import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
+import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActionState';
 import { entitlementService } from '../entitlements/entitlementService';
 import { Entitlement } from '../entitlements/types';
 
@@ -36,11 +36,11 @@ const initialState: RoleState = {
 		error: null,
 	},
 
-	create: createInitialReduxActionState(),
-	update: createInitialReduxActionState(),
-	delete: createInitialReduxActionState(),
-	addEntitlements: createInitialReduxActionState(),
-	removeEntitlements: createInitialReduxActionState(),
+	create: baseReduxActionState,
+	update: baseReduxActionState,
+	delete: baseReduxActionState,
+	addEntitlements: baseReduxActionState,
+	removeEntitlements: baseReduxActionState,
 };
 
 async function hydrateEntitlements(
@@ -210,19 +210,19 @@ const roleSlice = createSlice({
 			state.list.error = action.payload;
 		},
 		resetCreateRole: (state) => {
-			state.create = createInitialReduxActionState();
+			state.create = baseReduxActionState;
 		},
 		resetUpdateRole: (state) => {
-			state.update = createInitialReduxActionState();
+			state.update = baseReduxActionState;
 		},
 		resetDeleteRole: (state) => {
-			state.delete = createInitialReduxActionState();
+			state.delete = baseReduxActionState;
 		},
 		resetAddEntitlementsRole: (state) => {
-			state.addEntitlements = createInitialReduxActionState();
+			state.addEntitlements = baseReduxActionState;
 		},
 		resetRemoveEntitlementsRole: (state) => {
-			state.removeEntitlements = createInitialReduxActionState();
+			state.removeEntitlements = baseReduxActionState;
 		},
 	},
 	extraReducers: (builder) => {
@@ -277,7 +277,6 @@ function createRoleReducers(builder: ActionReducerMapBuilder<RoleState>) {
 		.addCase(createRole.pending, (state, action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
-			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createRole.fulfilled, (state, action) => {
 			state.create.status = 'success';
@@ -293,10 +292,9 @@ function createRoleReducers(builder: ActionReducerMapBuilder<RoleState>) {
 
 function updateRoleReducers(builder: ActionReducerMapBuilder<RoleState>) {
 	builder
-		.addCase(updateRole.pending, (state, action) => {
+		.addCase(updateRole.pending, (state, _action) => {
 			state.update.status = 'pending';
 			state.update.error = null;
-			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateRole.fulfilled, (state, action) => {
 			state.update.status = 'success';
@@ -315,10 +313,9 @@ function updateRoleReducers(builder: ActionReducerMapBuilder<RoleState>) {
 
 function deleteRoleReducers(builder: ActionReducerMapBuilder<RoleState>) {
 	builder
-		.addCase(deleteRole.pending, (state, action) => {
+		.addCase(deleteRole.pending, (state, _action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
-			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteRole.fulfilled, (state, action) => {
 			state.delete.status = 'success';
@@ -335,10 +332,9 @@ function deleteRoleReducers(builder: ActionReducerMapBuilder<RoleState>) {
 
 function addEntitlementsReducers(builder: ActionReducerMapBuilder<RoleState>) {
 	builder
-		.addCase(addEntitlementsToRole.pending, (state, action) => {
+		.addCase(addEntitlementsToRole.pending, (state, _action) => {
 			state.addEntitlements.status = 'pending';
 			state.addEntitlements.error = null;
-			state.addEntitlements.requestId = action.meta.requestId;
 		})
 		.addCase(addEntitlementsToRole.fulfilled, (state) => {
 			state.addEntitlements.status = 'success';
@@ -351,10 +347,9 @@ function addEntitlementsReducers(builder: ActionReducerMapBuilder<RoleState>) {
 
 function removeEntitlementsReducers(builder: ActionReducerMapBuilder<RoleState>) {
 	builder
-		.addCase(removeEntitlementsFromRole.pending, (state, action) => {
+		.addCase(removeEntitlementsFromRole.pending, (state, _action) => {
 			state.removeEntitlements.status = 'pending';
 			state.removeEntitlements.error = null;
-			state.removeEntitlements.requestId = action.meta.requestId;
 		})
 		.addCase(removeEntitlementsFromRole.fulfilled, (state) => {
 			state.removeEntitlements.status = 'success';

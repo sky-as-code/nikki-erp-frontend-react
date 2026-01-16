@@ -3,7 +3,7 @@ import {
 } from '@reduxjs/toolkit';
 
 import { roleSuiteService } from './roleSuiteService';
-import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
+import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActionState';
 
 import type { RoleSuite } from './types';
 
@@ -33,9 +33,9 @@ const initialState: RoleSuiteState = {
 		error: null,
 	},
 
-	create: createInitialReduxActionState(),
-	update: createInitialReduxActionState(),
-	delete: createInitialReduxActionState(),
+	create: baseReduxActionState,
+	update: baseReduxActionState,
+	delete: baseReduxActionState,
 };
 
 export const listRoleSuites = createAsyncThunk<
@@ -142,13 +142,13 @@ const roleSuiteSlice = createSlice({
 			state.list.error = action.payload;
 		},
 		resetCreateRoleSuite: (state) => {
-			state.create = createInitialReduxActionState();
+			state.create = baseReduxActionState;
 		},
 		resetUpdateRoleSuite: (state) => {
-			state.update = createInitialReduxActionState();
+			state.update = baseReduxActionState;
 		},
 		resetDeleteRoleSuite: (state) => {
-			state.delete = createInitialReduxActionState();
+			state.delete = baseReduxActionState;
 		},
 	},
 	extraReducers: (builder) => {
@@ -198,10 +198,9 @@ function getRoleSuiteReducers(builder: ActionReducerMapBuilder<RoleSuiteState>) 
 
 function createRoleSuiteReducers(builder: ActionReducerMapBuilder<RoleSuiteState>) {
 	builder
-		.addCase(createRoleSuite.pending, (state, action) => {
+		.addCase(createRoleSuite.pending, (state, _action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
-			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createRoleSuite.fulfilled, (state, action) => {
 			state.create.status = 'success';
@@ -217,10 +216,9 @@ function createRoleSuiteReducers(builder: ActionReducerMapBuilder<RoleSuiteState
 
 function updateRoleSuiteReducers(builder: ActionReducerMapBuilder<RoleSuiteState>) {
 	builder
-		.addCase(updateRoleSuite.pending, (state, action) => {
+		.addCase(updateRoleSuite.pending, (state, _action) => {
 			state.update.status = 'pending';
 			state.update.error = null;
-			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateRoleSuite.fulfilled, (state, action) => {
 			state.update.status = 'success';
@@ -239,10 +237,9 @@ function updateRoleSuiteReducers(builder: ActionReducerMapBuilder<RoleSuiteState
 
 function deleteRoleSuiteReducers(builder: ActionReducerMapBuilder<RoleSuiteState>) {
 	builder
-		.addCase(deleteRoleSuite.pending, (state, action) => {
+		.addCase(deleteRoleSuite.pending, (state, _action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
-			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteRoleSuite.fulfilled, (state, action) => {
 			state.delete.status = 'success';

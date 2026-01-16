@@ -7,7 +7,7 @@ import {
 
 import { grantRequestService } from './grantRequestService';
 import { GrantRequest, RequestStatus } from './types';
-import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
+import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActionState';
 
 
 export const SLICE_NAME = 'authorize.grantRequests';
@@ -36,10 +36,10 @@ const initialState: GrantRequestState = {
 		error: null,
 	},
 
-	create: createInitialReduxActionState(),
-	respond: createInitialReduxActionState(),
-	cancel: createInitialReduxActionState(),
-	delete: createInitialReduxActionState(),
+	create: baseReduxActionState,
+	respond: baseReduxActionState,
+	cancel: baseReduxActionState,
+	delete: baseReduxActionState,
 };
 
 export const listGrantRequests = createAsyncThunk<GrantRequest[], void, { rejectValue: string }>(
@@ -136,16 +136,16 @@ const grantRequestSlice = createSlice({
 			state.grantRequests = action.payload;
 		},
 		resetCreateGrantRequest: (state) => {
-			state.create = createInitialReduxActionState();
+			state.create = baseReduxActionState;
 		},
 		resetRespondGrantRequest: (state) => {
-			state.respond = createInitialReduxActionState();
+			state.respond = baseReduxActionState;
 		},
 		resetCancelGrantRequest: (state) => {
-			state.cancel = createInitialReduxActionState();
+			state.cancel = baseReduxActionState;
 		},
 		resetDeleteGrantRequest: (state) => {
-			state.delete = createInitialReduxActionState();
+			state.delete = baseReduxActionState;
 		},
 	},
 	extraReducers: (builder) => {
@@ -190,10 +190,9 @@ function detailReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 
 function createReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 	builder
-		.addCase(createGrantRequest.pending, (state, action) => {
+		.addCase(createGrantRequest.pending, (state, _action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
-			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createGrantRequest.fulfilled, (state, action) => {
 			state.create.status = 'success';
@@ -209,10 +208,9 @@ function createReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 
 function respondReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 	builder
-		.addCase(respondGrantRequest.pending, (state, action) => {
+		.addCase(respondGrantRequest.pending, (state, _action) => {
 			state.respond.status = 'pending';
 			state.respond.error = null;
-			state.respond.requestId = action.meta.requestId;
 		})
 		.addCase(respondGrantRequest.fulfilled, (state, action) => {
 			state.respond.status = 'success';
@@ -229,10 +227,9 @@ function respondReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 
 function cancelReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 	builder
-		.addCase(cancelGrantRequest.pending, (state, action) => {
+		.addCase(cancelGrantRequest.pending, (state, _action) => {
 			state.cancel.status = 'pending';
 			state.cancel.error = null;
-			state.cancel.requestId = action.meta.requestId;
 		})
 		.addCase(cancelGrantRequest.fulfilled, (state, action) => {
 			state.cancel.status = 'success';
@@ -251,10 +248,9 @@ function cancelReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 
 function deleteReducers(builder: ActionReducerMapBuilder<GrantRequestState>) {
 	builder
-		.addCase(deleteGrantRequest.pending, (state, action) => {
+		.addCase(deleteGrantRequest.pending, (state, _action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
-			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteGrantRequest.fulfilled, (state, action) => {
 			state.delete.status = 'success';

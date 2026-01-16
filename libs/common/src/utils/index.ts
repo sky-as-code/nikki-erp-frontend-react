@@ -1,4 +1,3 @@
-
 export function delay(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -21,18 +20,19 @@ export function randomString(length: number): string {
 	return Math.random().toString(36).substring(2, 2 + length);
 }
 
-export function cleanFormData<T extends Record<string, any>>(data: T): T {
-	const cleaned = { ...data };
+export type Cleaned<T> = {
+	[K in keyof T]: T[K] | undefined
+};
 
-	//object.entries thay
+export function cleanFormData<T extends object>(data: T): Cleaned<T> {
+	const copy = { ...data } as Cleaned<T>;
 
-	for (const key in cleaned) {
-		const value = cleaned[key];
-		// Convert empty string to undefined (will be omitted in JSON)
-		if (value === '') {
-			cleaned[key] = undefined as any;
-		}
-	}
+	(Object.entries(data) as [keyof T, T[keyof T]][])
+		.forEach(([key, value]) => {
+			if (value === '') {
+				copy[key] = undefined;
+			}
+		});
 
-	return cleaned;
+	return copy;
 }

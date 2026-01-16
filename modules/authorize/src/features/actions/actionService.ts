@@ -1,5 +1,3 @@
-import { Action } from './types';
-
 import {
 	listActions as listActionsApi,
 	getAction as getActionApi,
@@ -9,6 +7,7 @@ import {
 	type AuthzActionDto,
 } from '@/services/authzService';
 
+import { Action } from './types';
 
 
 function mapDtoToAction(dto: AuthzActionDto): Action {

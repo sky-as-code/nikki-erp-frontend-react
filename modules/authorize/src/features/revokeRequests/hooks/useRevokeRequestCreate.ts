@@ -3,20 +3,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation, resolvePath } from 'react-router';
 
+import { AuthorizeDispatch, revokeRequestActions, selectCreateRevokeRequest } from '@/appState';
+import { handleGoBack } from '@/utils';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { CreateRevokeRequestInput } from '@/features/revokeRequests/revokeRequestService';
 
-import { AuthorizeDispatch, revokeRequestActions, selectCreateRevokeRequest } from '@/appState';
-
-
-
-function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) {
-	return React.useCallback(() => {
-		navigate(resolvePath('..', location.pathname).pathname);
-	}, [navigate, location]);
-}
 
 function prepareCreateData(data: any): CreateRevokeRequestInput {
 	return {
@@ -66,7 +59,7 @@ export function useRevokeRequestCreateHandlers() {
 		}
 	}, [create.status, create.error, notification, translate, dispatch, navigate, location]);
 
-	const handleCancel = useCancelHandler(navigate, location);
+	const handleCancel = handleGoBack(navigate, location);
 	const handleSubmit = useSubmitHandler(dispatch);
 
 	return { isSubmitting, handleCancel, handleSubmit };

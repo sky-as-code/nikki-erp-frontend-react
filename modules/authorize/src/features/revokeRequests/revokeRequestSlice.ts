@@ -3,7 +3,7 @@ import {
 } from '@reduxjs/toolkit';
 
 import { revokeRequestService } from './revokeRequestService';
-import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
+import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActionState';
 
 import type { CreateRevokeRequestInput } from './revokeRequestService';
 import type { RevokeRequest } from './types';
@@ -34,9 +34,9 @@ const initialState: RevokeRequestState = {
 		error: null,
 	},
 
-	create: createInitialReduxActionState(),
-	createMany: createInitialReduxActionState(),
-	delete: createInitialReduxActionState(),
+	create: baseReduxActionState,
+	createMany: baseReduxActionState,
+	delete: baseReduxActionState,
 };
 
 export const listRevokeRequests = createAsyncThunk<
@@ -129,13 +129,13 @@ const revokeRequestSlice = createSlice({
 	initialState,
 	reducers: {
 		resetCreateRevokeRequest: (state) => {
-			state.create = createInitialReduxActionState();
+			state.create = baseReduxActionState;
 		},
 		resetCreateManyRevokeRequest: (state) => {
-			state.createMany = createInitialReduxActionState();
+			state.createMany = baseReduxActionState;
 		},
 		resetDeleteRevokeRequest: (state) => {
-			state.delete = createInitialReduxActionState();
+			state.delete = baseReduxActionState;
 		},
 	},
 	extraReducers: (builder) => {
@@ -179,10 +179,9 @@ function detailReducers(builder: ActionReducerMapBuilder<RevokeRequestState>) {
 // eslint-disable-next-line max-lines-per-function
 function createReducers(builder: ActionReducerMapBuilder<RevokeRequestState>) {
 	builder
-		.addCase(createRevokeRequest.pending, (state, action) => {
+		.addCase(createRevokeRequest.pending, (state, _action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
-			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createRevokeRequest.fulfilled, (state, action) => {
 			state.create.status = 'success';
@@ -195,10 +194,9 @@ function createReducers(builder: ActionReducerMapBuilder<RevokeRequestState>) {
 		});
 
 	builder
-		.addCase(createRevokeRequests.pending, (state, action) => {
+		.addCase(createRevokeRequests.pending, (state, _action) => {
 			state.createMany.status = 'pending';
 			state.createMany.error = null;
-			state.createMany.requestId = action.meta.requestId;
 		})
 		.addCase(createRevokeRequests.fulfilled, (state, action) => {
 			state.createMany.status = 'success';
@@ -212,10 +210,9 @@ function createReducers(builder: ActionReducerMapBuilder<RevokeRequestState>) {
 
 function deleteReducers(builder: ActionReducerMapBuilder<RevokeRequestState>) {
 	builder
-		.addCase(deleteRevokeRequest.pending, (state, action) => {
+		.addCase(deleteRevokeRequest.pending, (state, _action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
-			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteRevokeRequest.fulfilled, (state, action) => {
 			state.delete.status = 'success';

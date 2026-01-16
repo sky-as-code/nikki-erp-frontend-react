@@ -317,313 +317,313 @@
 					"update_success": "Entitlement \"{{name}}\" has been updated successfully",
 				"delete_success": "Entitlement \"{{name}}\" has been deleted successfully"
 			}
-		},
-		"role": {
-			"title": "Roles",
-			"title_create": "Create New Role",
-			"title_detail": "Role Details",
-			"title_delete": "Delete Role",
-			"fields": {
-				"id": "Role ID",
-				"name": "Role name",
-				"description": "Description",
-				"owner_type": {
-					"label": "Owner type",
-					"user": "User",
-					"group": "Group"
+			},
+			"role": {
+				"title": "Roles",
+				"title_create": "Create New Role",
+				"title_detail": "Role Details",
+				"title_delete": "Delete Role",
+				"fields": {
+					"id": "Role ID",
+					"name": "Role name",
+					"description": "Description",
+					"owner_type": {
+						"label": "Owner type",
+						"user": "User",
+						"group": "Group"
+					},
+					"owner_ref": "Owner reference",
+					"is_requestable": "Requestable",
+					"is_required_attachment": "Required attachment",
+					"is_required_comment": "Required comment",
+					"org_id": "Organization",
+					"org_all": "Domain Level (*)",
+					"entitlements_count": "Entitlements",
+					"assignments_count": "Assignments",
+					"suites_count": "Suites",
+					"created_at": "Created at",
+					"updated_at": "Updated at"
 				},
-				"owner_ref": "Owner reference",
-				"is_requestable": "Requestable",
-				"is_required_attachment": "Required attachment",
-				"is_required_comment": "Required comment",
-				"org_id": "Organization",
-				"org_all": "Domain Level (*)",
-				"entitlements_count": "Entitlements",
-				"assignments_count": "Assignments",
-				"suites_count": "Suites",
-				"created_at": "Created at",
-				"updated_at": "Updated at"
-			},
-			"placeholders": {
-				"name": "Enter role name",
-				"description": "Describe what this role grants",
-				"org_id": "Select organization scope"
-			},
-			"messages": {
-				"loading": "Loading role...",
-				"not_found": "Role not found",
-				"create_success": "Role \"{{name}}\" has been created successfully",
-				"update_success": "Role \"{{name}}\" has been updated successfully",
-				"delete_success": "Role \"{{name}}\" has been deleted successfully",
-				"add_entitlements_success": "Entitlements have been added to role successfully",
-				"remove_entitlements_success": "Entitlements have been removed from role successfully"
-			},
-			"entitlements": {
-				"add": "Add Entitlements",
-				"remove": "Remove Entitlements",
-				"add_title": "Add Entitlements to Role",
-				"remove_title": "Remove Entitlements from Role",
-				"available": "Available Entitlements",
-				"selected": "Selected Entitlements",
-				"assigned": "Assigned Entitlements",
-				"to_remove": "Entitlements to Remove",
-				"assigned_title": "Assigned Entitlements",
-				"no_available": "No available entitlements",
-				"no_selected": "No selected entitlements",
-				"no_assigned": "No entitlements assigned to this role",
-				"no_to_remove": "No entitlements selected to remove",
-				"scope_ref": "Scope Reference",
-				"scope_ref_placeholder": "Enter scope reference",
-				"search_placeholder": "Search entitlements by name"
-			}
-		},
-		"role_suite": {
-			"title": "Role Suites",
-			"title_create": "Create New Role Suite",
-			"title_detail": "Role Suite Details",
-			"title_delete": "Delete Role Suite",
-		"fields": {
-				"id": "Role Suite ID",
-				"name": "Role Suite name",
-				"description": "Description",
-				"owner_type": {
-					"label": "Owner type",
-					"user": "User",
-					"group": "Group"
+				"placeholders": {
+					"name": "Enter role name",
+					"description": "Describe what this role grants",
+					"org_id": "Select organization scope"
 				},
-				"owner_ref": "Owner reference",
-				"is_requestable": "Requestable",
-				"is_required_attachment": "Required attachment",
-				"is_required_comment": "Required comment",
-				"org_id": "Organization Scope",
-				"org_all": "Domain Level (*)",
-				"roles_count": "Roles",
-				"created_at": "Created at",
-				"updated_at": "Updated at"
+				"messages": {
+					"loading": "Loading role...",
+					"not_found": "Role not found",
+					"create_success": "Role \"{{name}}\" has been created successfully",
+					"update_success": "Role \"{{name}}\" has been updated successfully",
+					"delete_success": "Role \"{{name}}\" has been deleted successfully",
+					"add_entitlements_success": "Entitlements have been added to role successfully",
+					"remove_entitlements_success": "Entitlements have been removed from role successfully"
+				},
+				"entitlements": {
+					"add": "Add Entitlements",
+					"remove": "Remove Entitlements",
+					"add_title": "Add Entitlements to Role",
+					"remove_title": "Remove Entitlements from Role",
+					"available": "Available Entitlements",
+					"selected": "Selected Entitlements",
+					"assigned": "Assigned Entitlements",
+					"to_remove": "Entitlements to Remove",
+					"assigned_title": "Assigned Entitlements",
+					"no_available": "No available entitlements",
+					"no_selected": "No selected entitlements",
+					"no_assigned": "No entitlements assigned to this role",
+					"no_to_remove": "No entitlements selected to remove",
+					"scope_ref": "Scope Reference",
+					"scope_ref_placeholder": "Enter scope reference",
+					"search_placeholder": "Search entitlements by name"
+				}
+			},
+			"role_suite": {
+				"title": "Role Suites",
+				"title_create": "Create New Role Suite",
+				"title_detail": "Role Suite Details",
+				"title_delete": "Delete Role Suite",
+				"fields": {
+					"id": "Role Suite ID",
+					"name": "Role Suite name",
+					"description": "Description",
+					"owner_type": {
+						"label": "Owner type",
+						"user": "User",
+						"group": "Group"
+					},
+					"owner_ref": "Owner reference",
+					"is_requestable": "Requestable",
+					"is_required_attachment": "Required attachment",
+					"is_required_comment": "Required comment",
+					"org_id": "Organization Scope",
+					"org_all": "Domain Level (*)",
+					"roles_count": "Roles",
+					"created_at": "Created at",
+					"updated_at": "Updated at"
+				},
+				"grant_request": {
+					"title": "Grant Requests",
+					"title_create": "Create Grant Request",
+					"title_detail": "Grant Request Detail",
+					"fields": {
+						"target": "Target",
+						"target_type": "Target Type",
+						"target_ref": "Target Reference",
+						"requestor": "Requestor",
+						"receiver": "Receiver",
+						"comment": "Comment",
+						"attachment": "Attachment",
+						"status": "Status"
+					},
+					"messages": {
+						"create_success": "Grant request created successfully"
+					}
+				},
+				"placeholders": {
+					"name": "Enter role suite name",
+					"description": "Describe what this role suite grants",
+					"org_id": "Select organization scope"
+				},
+				"messages": {
+					"loading": "Loading role suite...",
+					"not_found": "Role suite not found",
+					"create_success": "Role suite \"{{name}}\" has been created successfully",
+					"update_success": "Role suite \"{{name}}\" has been updated successfully",
+					"delete_success": "Role suite \"{{name}}\" has been deleted successfully"
+				},
+				"roles": {
+					"title": "Roles",
+					"available": "Available Roles",
+					"selected": "Selected Roles",
+					"no_available": "No roles available",
+					"no_selected": "No selected roles",
+					"search_placeholder": "Search roles by name...",
+					"no_search_results": "No roles match your search",
+					"new_badge": "NEW",
+					"org_label": "Organization",
+					"domain_level": "Domain Level"
+				},
+				"changes": {
+					"summary_title": "Summary of Changes",
+					"roles_to_add": "Roles to Add",
+					"roles_to_remove": "Roles to Remove",
+					"roles_unchanged": "Unchanged Roles"
+				},
+				"confirm": {
+					"title": "Confirm Role Suite Update",
+					"message": "You are about to update the role suite \"{{name}}\". Please review the changes below.",
+					"role_changes": "Role changes",
+					"add_count": "Add {{count}} role(s)",
+					"remove_count": "Remove {{count}} role(s)",
+					"warning": "This will affect all users assigned to this role suite."
+				}
 			},
 			"grant_request": {
 				"title": "Grant Requests",
 				"title_create": "Create Grant Request",
 				"title_detail": "Grant Request Detail",
+				"title_delete": "Delete Grant Request",
 				"fields": {
+					"id": "Request ID",
 					"target": "Target",
 					"target_type": "Target Type",
+					"target_type_description": "Type of target (role or suite)",
+					"target_type_role": "Role",
+					"target_type_suite": "Suite",
 					"target_ref": "Target Reference",
+					"target_ref_description": "ID of the role or suite",
+					"target_id": "Target ID",
+					"target_name": "Target Name",
 					"requestor": "Requestor",
+					"requestor_id": "Requestor ID",
+					"requestor_name": "Requestor Name",
 					"receiver": "Receiver",
+					"receiver_id": "Receiver ID",
+					"receiver_name": "Receiver Name",
+					"receiver_type": "Receiver Type",
+					"receiver_type_description": "Type of receiver (user or group)",
+					"receiver_type_user": "User",
+					"receiver_type_group": "Group",
 					"comment": "Comment",
-					"attachment": "Attachment",
-					"status": "Status"
-				},
-				"messages": {
-					"create_success": "Grant request created successfully"
-				}
-			},
-			"placeholders": {
-				"name": "Enter role suite name",
-				"description": "Describe what this role suite grants",
-				"org_id": "Select organization scope"
-			},
-			"messages": {
-				"loading": "Loading role suite...",
-				"not_found": "Role suite not found",
-				"create_success": "Role suite \"{{name}}\" has been created successfully",
-				"update_success": "Role suite \"{{name}}\" has been updated successfully",
-				"delete_success": "Role suite \"{{name}}\" has been deleted successfully"
-			},
-			"roles": {
-				"title": "Roles",
-				"available": "Available Roles",
-				"selected": "Selected Roles",
-				"no_available": "No roles available",
-				"no_selected": "No selected roles",
-				"search_placeholder": "Search roles by name...",
-				"no_search_results": "No roles match your search",
-				"new_badge": "NEW",
-				"org_label": "Organization",
-				"domain_level": "Domain Level"
-			},
-			"changes": {
-				"summary_title": "Summary of Changes",
-				"roles_to_add": "Roles to Add",
-				"roles_to_remove": "Roles to Remove",
-				"roles_unchanged": "Unchanged Roles"
-			},
-			"confirm": {
-				"title": "Confirm Role Suite Update",
-				"message": "You are about to update the role suite \"{{name}}\". Please review the changes below.",
-				"role_changes": "Role changes",
-				"add_count": "Add {{count}} role(s)",
-				"remove_count": "Remove {{count}} role(s)",
-				"warning": "This will affect all users assigned to this role suite."
-			}
-		},
-		"grant_request": {
-			"title": "Grant Requests",
-			"title_create": "Create Grant Request",
-			"title_detail": "Grant Request Detail",
-			"title_delete": "Delete Grant Request",
-			"fields": {
-				"id": "Request ID",
-				"target": "Target",
-				"target_type": "Target Type",
-				"target_type_description": "Type of target (role or suite)",
-				"target_type_role": "Role",
-				"target_type_suite": "Suite",
-				"target_ref": "Target Reference",
-				"target_ref_description": "ID of the role or suite",
-				"target_id": "Target ID",
-				"target_name": "Target Name",
-				"requestor": "Requestor",
-				"requestor_id": "Requestor ID",
-				"requestor_name": "Requestor Name",
-				"receiver": "Receiver",
-				"receiver_id": "Receiver ID",
-				"receiver_name": "Receiver Name",
-				"receiver_type": "Receiver Type",
-				"receiver_type_description": "Type of receiver (user or group)",
-				"receiver_type_user": "User",
-				"receiver_type_group": "Group",
-				"comment": "Comment",
-				"comment_description": "Additional notes or justification",
-				"attachment": "Attachment URL",
-				"attachment_description": "URL to supporting documents",
-				"status": "Status",
-				"status_description": "Current status of the request",
-				"org_id": "Organization",
-				"org_all": "Domain Level (*)",
-				"org_id_description": "Organization scope",
-				"created_at": "Created At",
-				"other_info": "Other Information"
-			},
-			"placeholders": {
-				"select_target_type_first": "Select target type first",
-				"no_targets_available": "No targets available",
-				"select_receiver_type_first": "Select receiver type first",
-				"no_receivers_available": "No receivers available"
-			},
-			"messages": {
-				"create_success": "Grant request created successfully",
-				"delete_success": "Grant request for {{name}} deleted successfully",
-				"not_found": "Grant request not found"
-			}
-		},
-		"revoke_request": {
-			"title": "Revoke Requests",
-			"title_create": "Create Revoke Request",
-			"title_detail": "Revoke Request Detail",
-			"title_delete": "Delete Revoke Request",
-			"fields": {
-				"id": "Request ID",
-				"target": "Target",
-				"target_type": "Target Type",
-				"target_type_description": "Type of target (role or suite)",
-				"target_ref": "Target Reference",
-				"target_ref_description": "ID of the role or suite",
-				"target_id": "Target ID",
-				"target_name": "Target Name",
-				"requestor": "Requestor",
-				"requestor_id": "Requestor ID",
-				"requestor_name": "Requestor Name",
-				"receiver": "Receiver",
-				"receiver_id": "Receiver ID",
-				"receiver_name": "Receiver Name",
-				"receiver_type": "Receiver Type",
-				"receiver_type_description": "Type of receiver (user or group)",
-				"comment": "Comment",
-				"comment_description": "Additional notes or justification",
-				"attachment": "Attachment URL",
-				"attachment_description": "URL to supporting documents",
-				"created_at": "Created At",
-				"other_info": "Other Information"
-			},
-			"placeholders": {
-				"select_target_type_first": "Select target type first",
-				"no_targets_available": "No targets available",
-				"select_receiver_type_first": "Select receiver type first",
-				"no_receivers_available": "No receivers available"
-			},
-			"messages": {
-				"create_success": "Revoke request created successfully",
-				"revoke_success": "Successfully revoked {{count}} assignment(s)",
-				"delete_success": "Revoke request for {{name}} deleted successfully",
-				"not_found": "Revoke request not found"
-			},
-			"filter": {
-				"title": "Filter Assignments",
-				"mode": "Filter Mode",
-				"by_receiver": "Filter by Receiver",
-				"by_target": "Filter by Target",
-				"receiver_type": "Receiver Type",
-				"receiver": "Receiver",
-				"target_type": "Target Type",
-				"target": "Target"
-			},
-			"assignments": {
-				"title": "Assignments",
-				"no_assignments": "No assignments found. Please select a filter to view assignments.",
-				"target_type": "Target Type",
-				"target": "Target",
-				"receiver_type": "Receiver Type",
-				"receiver": "Receiver"
-			},
-			"actions": {
-				"revoke_selected": "Revoke Selected"
-			}
-		},
-		"resource": {
-				"title": "Resources",
-				"title_create": "Create New Resource",
-				"title_detail": "Resource Details",
-				"title_delete": "Delete Resource",
-				"fields": {
-					"id": "Resource ID",
-					"name": "Resource name",
-					"description": "Description",
-					"resource_type": {
-						"label": "Resource type",
-						"description": "Select the system that owns this resource",
-						"nikki_application": "Nikki ERP application",
-						"custom": "Custom resource"
-					},
-					"resource_ref": "Resource reference",
-					"scope_type": {
-						"label": "Scope",
-						"description": "Define the highest scope that can see this resource",
-						"domain": "Domain (entire tenant)",
-						"org": "Organization",
-						"hierarchy": "Hierarchy level",
-						"private": "Private"
-					},
-					"scope_ref": "Scope reference",
-					"actions_count": "Available actions",
-					"created_at": "Created at",
-					"updated_at": "Updated at"
+					"comment_description": "Additional notes or justification",
+					"attachment": "Attachment URL",
+					"attachment_description": "URL to supporting documents",
+					"status": "Status",
+					"status_description": "Current status of the request",
+					"org_id": "Organization",
+					"org_all": "Domain Level (*)",
+					"org_id_description": "Organization scope",
+					"created_at": "Created At",
+					"other_info": "Other Information"
 				},
 				"placeholders": {
-					"name": "Enter resource name",
-					"description": "Describe how this resource will be used",
-					"scope_ref": "Enter scope reference (org, hierarchy, ...)"
-				},
-				"errors": {
-					"resource_ref_required": "Resource reference is required",
-					"resource_ref_invalid_ulid": "Resource reference must be a valid ULID",
-					"resource_ref_invalid_uuid": "Resource reference must be a valid UUID",
-					"name_alphanumeric": "Name must be alphanumeric",
-					"resource_type_required": "Please select a resource type",
-					"scope_type_required": "Please select a scope type",
-					"description_not_changed": "Description has not changed",
-					"description_cannot_remove": "Cannot remove description. Please provide a new value or keep the existing one."
+					"select_target_type_first": "Select target type first",
+					"no_targets_available": "No targets available",
+					"select_receiver_type_first": "Select receiver type first",
+					"no_receivers_available": "No receivers available"
 				},
 				"messages": {
-					"actions": "Actions",
-					"no_actions_defined": "No actions defined",
-					"loading": "Loading resource...",
-					"not_found": "Resource not found",
-					"create_success": "Resource \"{{name}}\" has been created successfully",
-					"update_success": "Resource \"{{name}}\" has been updated successfully",
-					"delete_success": "Resource \"{{name}}\" has been deleted successfully"
+					"create_success": "Grant request created successfully",
+					"delete_success": "Grant request for {{name}} deleted successfully",
+					"not_found": "Grant request not found"
 				}
+			},
+			"revoke_request": {
+				"title": "Revoke Requests",
+				"title_create": "Create Revoke Request",
+				"title_detail": "Revoke Request Detail",
+				"title_delete": "Delete Revoke Request",
+				"fields": {
+					"id": "Request ID",
+					"target": "Target",
+					"target_type": "Target Type",
+					"target_type_description": "Type of target (role or suite)",
+					"target_ref": "Target Reference",
+					"target_ref_description": "ID of the role or suite",
+					"target_id": "Target ID",
+					"target_name": "Target Name",
+					"requestor": "Requestor",
+					"requestor_id": "Requestor ID",
+					"requestor_name": "Requestor Name",
+					"receiver": "Receiver",
+					"receiver_id": "Receiver ID",
+					"receiver_name": "Receiver Name",
+					"receiver_type": "Receiver Type",
+					"receiver_type_description": "Type of receiver (user or group)",
+					"comment": "Comment",
+					"comment_description": "Additional notes or justification",
+					"attachment": "Attachment URL",
+					"attachment_description": "URL to supporting documents",
+					"created_at": "Created At",
+					"other_info": "Other Information"
+				},
+				"placeholders": {
+					"select_target_type_first": "Select target type first",
+					"no_targets_available": "No targets available",
+					"select_receiver_type_first": "Select receiver type first",
+					"no_receivers_available": "No receivers available"
+				},
+				"messages": {
+					"create_success": "Revoke request created successfully",
+					"revoke_success": "Successfully revoked {{count}} assignment(s)",
+					"delete_success": "Revoke request for {{name}} deleted successfully",
+					"not_found": "Revoke request not found"
+				},
+				"filter": {
+					"title": "Filter Assignments",
+					"mode": "Filter Mode",
+					"by_receiver": "Filter by Receiver",
+					"by_target": "Filter by Target",
+					"receiver_type": "Receiver Type",
+					"receiver": "Receiver",
+					"target_type": "Target Type",
+					"target": "Target"
+				},
+				"assignments": {
+					"title": "Assignments",
+					"no_assignments": "No assignments found. Please select a filter to view assignments.",
+					"target_type": "Target Type",
+					"target": "Target",
+					"receiver_type": "Receiver Type",
+					"receiver": "Receiver"
+				},
+				"actions": {
+					"revoke_selected": "Revoke Selected"
+				}
+			},
+			"resource": {
+					"title": "Resources",
+					"title_create": "Create New Resource",
+					"title_detail": "Resource Details",
+					"title_delete": "Delete Resource",
+					"fields": {
+						"id": "Resource ID",
+						"name": "Resource name",
+						"description": "Description",
+						"resource_type": {
+							"label": "Resource type",
+							"description": "Select the system that owns this resource",
+							"nikki_application": "Nikki ERP application",
+							"custom": "Custom resource"
+						},
+						"resource_ref": "Resource reference",
+						"scope_type": {
+							"label": "Scope",
+							"description": "Define the highest scope that can see this resource",
+							"domain": "Domain (entire tenant)",
+							"org": "Organization",
+							"hierarchy": "Hierarchy level",
+							"private": "Private"
+						},
+						"scope_ref": "Scope reference",
+						"actions_count": "Available actions",
+						"created_at": "Created at",
+						"updated_at": "Updated at"
+					},
+					"placeholders": {
+						"name": "Enter resource name",
+						"description": "Describe how this resource will be used",
+						"scope_ref": "Enter scope reference (org, hierarchy, ...)"
+					},
+					"errors": {
+						"resource_ref_required": "Resource reference is required",
+						"resource_ref_invalid_ulid": "Resource reference must be a valid ULID",
+						"resource_ref_invalid_uuid": "Resource reference must be a valid UUID",
+						"name_alphanumeric": "Name must be alphanumeric",
+						"resource_type_required": "Please select a resource type",
+						"scope_type_required": "Please select a scope type",
+						"description_not_changed": "Description has not changed",
+						"description_cannot_remove": "Cannot remove description. Please provide a new value or keep the existing one."
+					},
+					"messages": {
+						"actions": "Actions",
+						"no_actions_defined": "No actions defined",
+						"loading": "Loading resource...",
+						"not_found": "Resource not found",
+						"create_success": "Resource \"{{name}}\" has been created successfully",
+						"update_success": "Resource \"{{name}}\" has been updated successfully",
+						"delete_success": "Resource \"{{name}}\" has been deleted successfully"
+					}
 			}
 		}
 	}

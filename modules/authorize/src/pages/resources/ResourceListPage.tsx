@@ -1,97 +1,69 @@
-import { Paper, Stack } from '@mantine/core';
-import { ConfirmModal, Headers, Actions } from '@nikkierp/ui/components';
-import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
+import { Stack, Paper } from '@mantine/core';
+import { Headers, Actions, ConfirmModal } from '@nikkierp/ui/components';
+import { useConfirmModal } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import {
-	AuthorizeDispatch,
-	resourceActions,
-	selectResourceState,
-} from '@/appState';
-import {
-	ResourceTable,
-	resourceSchema,
-	useResourceDelete,
-} from '@/features/resources';
+import { ResourceTable, resourceSchema, type Resource, useResourceList, useResourceDelete } from '@/features/resources';
 
 
-function ResourceListPageBody(): React.ReactNode {
+export const ResourceListPage: React.FC = () => {
 	const navigate = useNavigate();
 	const { t: translate } = useTranslation();
-	const { resources, isLoadingList } = useMicroAppSelector(selectResourceState);
-	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const deleteHandler = useResourceDelete.handler(resources, dispatch);
-
-	const columns = ['name', 'description', 'resourceType', 'scopeType', 'actionsCount', 'actions'];
-	const schema = resourceSchema as ModelSchema;
+	const { resources, isLoadingList, handleRefresh } = useResourceList();
+	const { isOpen, item, configOpenModal, handleCloseModal } = useConfirmModal<Resource>();
+	const confirmDelete = useResourceDelete(handleRefresh);
 
 	React.useEffect(() => {
-		dispatch(resourceActions.listResources());
-	}, [dispatch]);
+		document.title = translate('nikki.authorize.resource.title');
+	}, []);
 
-	const handleViewDetail = React.useCallback((resourceName: string) => {
-		navigate(`${resourceName}`);
-	}, [navigate]);
+	const handleOpenModal = (resourceId: string) => {
+		const resource = resources.find((r: Resource) => r.id === resourceId);
+		if (resource) {
+			configOpenModal(resource);
+		}
+	};
 
-	const handleEdit = React.useCallback((resourceName: string) => {
-		navigate(`${resourceName}`);
-	}, [navigate]);
+	const handleDeleteConfirm = () => {
+		if (item) confirmDelete(item);
+		handleCloseModal();
+	};
 
-	const handleCreate = React.useCallback(() => {
-		navigate('create');
-	}, [navigate]);
-
-	const handleRefresh = React.useCallback(() => {
-		dispatch(resourceActions.listResources());
-	}, [dispatch]);
+	const handleDetailOrEdit = (resourceName: string) => navigate(`${resourceName}`);
+	const handleCreate = () => navigate('create');
 
 	return (
-		<>
-			<Stack gap='md'>
-				<Headers titleKey='nikki.authorize.resource.title' />
-				<Actions
-					onCreate={handleCreate}
-					onRefresh={handleRefresh}
+		<Stack gap='md'>
+			<Headers titleKey='nikki.authorize.resource.title' />
+			<Actions onCreate={handleCreate} onRefresh={handleRefresh} />
+			<Paper className='p-4'>
+				<ResourceTable
+					columns={['name', 'description', 'resourceType', 'scopeType', 'actionsCount', 'actions']}
+					data={resources}
+					schema={resourceSchema as ModelSchema}
+					isLoading={isLoadingList}
+					onViewDetail={handleDetailOrEdit}
+					onEdit={handleDetailOrEdit}
+					onDelete={handleOpenModal}
 				/>
-				<Paper className='p-4'>
-					<ResourceTable
-						columns={columns}
-						data={resources}
-						isLoading={isLoadingList}
-						schema={schema}
-						onViewDetail={handleViewDetail}
-						onEdit={handleEdit}
-						onDelete={deleteHandler.handleDeleteRequest}
-					/>
-				</Paper>
-			</Stack>
+			</Paper>
 
 			<ConfirmModal
-				opened={deleteHandler.deleteModalOpened}
-				onClose={deleteHandler.closeDeleteModal}
-				onConfirm={deleteHandler.confirmDelete}
-				title={translate('nikki.authorize.resource.title_delete')}
+				opened={isOpen}
+				onClose={handleCloseModal}
+				onConfirm={handleDeleteConfirm}
+				title={translate('nikki.general.messages.delete_confirm')}
 				message={
-					deleteHandler.resourceToDelete
-						? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.resourceToDelete.name })
+					item
+						? translate('nikki.general.messages.delete_confirm_name', { name: item.name })
 						: translate('nikki.general.messages.delete_confirm')
 				}
 				confirmLabel={translate('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>
-		</>
+		</Stack>
 	);
-}
-
-const ResourceListPageWithTitle: React.FC = () => {
-	const { t: translate } = useTranslation();
-	React.useEffect(() => {
-		document.title = translate('nikki.authorize.resource.title');
-	}, [translate]);
-	return <ResourceListPageBody />;
 };
-
-export const ResourceListPage: React.FC = ResourceListPageWithTitle;

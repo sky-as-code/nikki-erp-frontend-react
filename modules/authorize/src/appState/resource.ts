@@ -31,12 +31,12 @@ export const selectResourceState = (state: { [STATE_KEY]: ResourceState }) => st
 
 export const selectResourceList = createSelector(
 	selectResourceState,
-	(state) => state.resources,
+	(state) => state.list2,
 );
 
 export const selectResourceDetail = createSelector(
 	selectResourceState,
-	(state) => state.resourceDetail,
+	(state) => state.detail,
 );
 
 export const selectCreateResource = createSelector(

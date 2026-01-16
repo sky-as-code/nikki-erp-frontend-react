@@ -4,7 +4,7 @@ import {
 
 import { actionService } from './actionService';
 import { Action } from './types';
-import { ReduxActionState, createInitialReduxActionState } from '../../appState/reduxActionState';
+import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActionState';
 
 
 export const SLICE_NAME = 'authorize.action';
@@ -32,9 +32,9 @@ const initialState: ActionState = {
 		error: null,
 	},
 
-	create: createInitialReduxActionState(),
-	update: createInitialReduxActionState(),
-	delete: createInitialReduxActionState(),
+	create: baseReduxActionState,
+	update: baseReduxActionState,
+	delete: baseReduxActionState,
 };
 
 export const listActions = createAsyncThunk<
@@ -135,13 +135,13 @@ const actionSlice = createSlice({
 			state.actions = action.payload;
 		},
 		resetCreateAction: (state) => {
-			state.create = createInitialReduxActionState();
+			state.create = baseReduxActionState;
 		},
 		resetUpdateAction: (state) => {
-			state.update = createInitialReduxActionState();
+			state.update = baseReduxActionState;
 		},
 		resetDeleteAction: (state) => {
-			state.delete = createInitialReduxActionState();
+			state.delete = baseReduxActionState;
 		},
 	},
 	extraReducers: (builder) => {
@@ -186,10 +186,9 @@ function getActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 
 function createActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 	builder
-		.addCase(createAction.pending, (state, action) => {
+		.addCase(createAction.pending, (state, _action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
-			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createAction.fulfilled, (state, action) => {
 			state.create.status = 'success';
@@ -204,10 +203,9 @@ function createActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 
 function updateActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 	builder
-		.addCase(updateAction.pending, (state, action) => {
+		.addCase(updateAction.pending, (state, _action) => {
 			state.update.status = 'pending';
 			state.update.error = null;
-			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateAction.fulfilled, (state, action) => {
 			state.update.status = 'success';
@@ -226,10 +224,9 @@ function updateActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 
 function deleteActionReducers(builder: ActionReducerMapBuilder<ActionState>) {
 	builder
-		.addCase(deleteAction.pending, (state, action) => {
+		.addCase(deleteAction.pending, (state, _action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
-			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteAction.fulfilled, (state, action) => {
 			state.delete.status = 'success';

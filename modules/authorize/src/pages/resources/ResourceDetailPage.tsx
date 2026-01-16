@@ -10,19 +10,24 @@ import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router';
 
 import {
 	ListActions,
 	ResourceFormFields,
 	resourceSchema,
 	useResourceDetail,
+	useResourceEdit,
 } from '@/features/resources';
+import { handleGoBack } from '@/utils';
 
 
 function ResourceDetailPageBody(): React.ReactNode {
-	const { resource, isLoading } = useResourceDetail.detail();
-	const { isSubmitting, handleCancel, handleSubmit } = useResourceDetail.handlers(resource);
+	const { resource, isLoading } = useResourceDetail();
+	const { isSubmitting, handleSubmit } = useResourceEdit(resource);
 	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
+	const location = useLocation();
 	const schema = resourceSchema as ModelSchema;
 
 	if (isLoading) {
@@ -32,7 +37,7 @@ function ResourceDetailPageBody(): React.ReactNode {
 	if (!resource) {
 		return (
 			<NotFound
-				onGoBack={handleCancel}
+				onGoBack={() => handleGoBack(navigate, location)}
 				messageKey='nikki.authorize.resource.messages.not_found'
 				showBackButton={false}
 			/>
@@ -61,7 +66,7 @@ function ResourceDetailPageBody(): React.ReactNode {
 								<Stack gap='xs'>
 									<FormActions
 										isSubmitting={isSubmitting}
-										onCancel={handleCancel}
+										onCancel={() => handleGoBack(navigate, location)}
 										isCreate={false}
 									/>
 									<ResourceFormFields isCreate={false} />

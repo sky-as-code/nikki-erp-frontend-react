@@ -1,21 +1,23 @@
 import { del, get, post, put, type Options } from '@nikkierp/common';
 
+import { Resource } from '@/features/resources';
+
 import type { Org } from '@/features/identities';
 
 
-export type AuthzResourceDto = {
-	id: string;
-	name: string;
-	description?: string;
-	resourceType: string;
-	resourceRef?: string;
-	scopeType: string;
-	createdAt: string;
-	etag: string;
-	actions?: AuthzActionDto[];
-	actionsCount?: number;
-	[key: string]: unknown;
-};
+// export type AuthzResourceDto = {
+// 	id: string;
+// 	name: string;
+// 	description?: string;
+// 	resourceType: string;
+// 	resourceRef?: string;
+// 	scopeType: string;
+// 	createdAt: string;
+// 	etag: string;
+// 	actions?: AuthzActionDto[];
+// 	actionsCount?: number;
+// 	[key: string]: unknown;
+// };
 
 export type ListResponse<T> = {
 	total: number;
@@ -31,22 +33,22 @@ export type ListQuery = {
 // ============ Resource APIs ============
 export async function listResources(
 	params?: ListQuery & { withActions?: boolean },
-): Promise<ListResponse<AuthzResourceDto>> {
+): Promise<ListResponse<Resource>> {
 	const options: Options = {};
 	if (params) {
 		(options as any).searchParams = params;
 	}
-	return get<ListResponse<AuthzResourceDto>>('authorize/resources', options);
+	return get<ListResponse<Resource>>('authorize/resources', options);
 }
 
-export async function getResource(name: string): Promise<AuthzResourceDto> {
-	return get<AuthzResourceDto>(`authorize/resources/${name}`);
+export async function getResource(name: string): Promise<Resource> {
+	return get<Resource>(`authorize/resources/${name}`);
 }
 
 export async function createResource(
-	data: Omit<AuthzResourceDto, 'id' | 'createdAt' | 'etag' | 'actions' | 'actionsCount'>,
-): Promise<AuthzResourceDto> {
-	return post<AuthzResourceDto>('authorize/resources', {
+	data: Resource,
+): Promise<Resource> {
+	return post<Resource>('authorize/resources', {
 		json: data,
 	});
 }
@@ -55,8 +57,8 @@ export async function updateResource(
 	id: string,
 	etag: string,
 	description?: string | null,
-): Promise<AuthzResourceDto> {
-	return put<AuthzResourceDto>(`authorize/resources/${id}`, {
+): Promise<Resource> {
+	return put<Resource>(`authorize/resources/${id}`, {
 		json: { description, etag },
 	});
 }
