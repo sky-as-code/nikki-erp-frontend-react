@@ -23,8 +23,8 @@
 	},
 	"devDependencies": {
 		"@types/node": "~22.14.1",
-		"cross-env": "~7.0.3",
-		"typescript": "~5.9.2",
+			"cross-env": "~7.0.3",
+			"typescript": "~5.9.2",
 		"vite": "~7.1.7",
 		"vite-tsconfig-paths": "~5.1.4",
 		"vitest": "~3.2.4"

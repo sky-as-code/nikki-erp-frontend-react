@@ -1,0 +1,79 @@
+{
+	"name": "entitlement",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				},
+				{
+					"type": "length",
+					"min": 1,
+					"max": 64,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"actionId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.action_id' }"
+		},
+		"actionExpr": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.action_expr' }"
+		},
+		"resourceId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.resource_id' }"
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.description' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 255,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"orgId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.org_id' }"
+		},
+		"rolesCount": {
+			"type": "integer",
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.roles_count' }",
+			"frontendOnly": true
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.created_at' }",
+			"hidden": true
+		},
+		"updatedAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.updated_at' }",
+			"hidden": true
+		}
+	}
+}
+

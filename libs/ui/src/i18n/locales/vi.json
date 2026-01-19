@@ -15,6 +15,47 @@
         }
     },
     "nikki": {
+        "general": {
+			"fields": {
+				"id": "Mã định danh"
+			},
+			"actions": {
+				"back": "Quay lại",
+				"create": "Tạo",
+				"update": "Cập nhật",
+				"delete": "Xóa",
+				"edit": "Chỉnh sửa",
+				"view": "Xem",
+				"cancel": "Hủy",
+				"search": "Tìm kiếm",
+				"refresh": "Làm mới",
+				"import": "Nhập",
+				"save": "Lưu",
+				"confirm": "Xác nhận",
+				"remove": "Loại bỏ",
+				"approve": "Phê duyệt",
+				"reject": "Từ chối",
+				"select_all": "Chọn tất cả",
+				"deselect_all": "Bỏ chọn tất cả"
+			},
+			"messages": {
+				"success": "Thành công",
+				"error": "Lỗi",
+				"loading": "Đang tải...",
+				"not_found": "Không tìm thấy",
+				"no_changes": "Không có thay đổi",
+				"invalid_change": "Thay đổi không hợp lệ",
+				"delete_confirm": "Bạn có chắc chắn muốn xóa? Hành động này không thể hoàn tác.",
+				"delete_confirm_name": "Bạn có chắc chắn muốn xóa {{name}}? Hành động này không thể hoàn tác."
+			},
+			"errors": {
+				"required": "Trường này là bắt buộc",
+				"length": "Độ dài giá trị không hợp lệ",
+				"update_failed": "Cập nhật thất bại",
+				"create_failed": "Tạo thất bại",
+				"delete_failed": "Xóa thất bại"
+			}
+		},
         "identity": {
             "user": {
                 "title": "Người dùng",
@@ -192,6 +233,415 @@
                     "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa tổ chức này không?"
                 }
             }
-        }
+        },
+		"authorize": {
+			"menu": {
+				"overview": "Tổng quan",
+				"resources_actions": "Tài nguyên & Hành động",
+				"resources": "Tài nguyên",
+				"actions": "Hành động",
+				"entitlements": "Quyền truy cập",
+				"roles": "Vai trò",
+				"role_suites": "Bộ Vai trò",
+				"requests": "Yêu cầu",
+				"grant_requests": "Yêu cầu Cấp quyền",
+				"revoke_requests": "Yêu cầu Thu hồi"
+			},
+			"action": {
+				"title": "Hành động",
+				"title_create": "Tạo Hành động Mới",
+				"title_detail": "Chi tiết Hành động",
+				"title_delete": "Xóa Hành động",
+				"fields": {
+					"id": "Mã hành động",
+					"name": "Tên hành động",
+					"description": "Mô tả",
+					"resource_id": "Tài nguyên",
+					"entitlements_count": "Số quyền",
+					"created_at": "Ngày tạo",
+					"updated_at": "Ngày cập nhật"
+				},
+				"placeholders": {
+					"name": "Nhập tên hành động (vd: Xem, Tạo, Sửa, Xóa)",
+					"description": "Mô tả hành động này cho phép làm gì",
+					"resource_id": "Chọn một tài nguyên"
+				},
+				"errors": {
+					"resource_required": "Vui lòng chọn tài nguyên",
+					"name_alphanumeric": "Tên chỉ được chứa chữ cái và số"
+				},
+				"messages": {
+					"loading": "Đang tải hành động...",
+					"not_found": "Không tìm thấy hành động",
+					"create_success": "Hành động \"{{name}}\" đã được tạo thành công",
+					"update_success": "Hành động \"{{name}}\" đã được cập nhật thành công",
+					"delete_success": "Hành động \"{{name}}\" đã được xóa thành công",
+					"select_resource_first": "Vui lòng chọn tài nguyên trước"
+				}
+			},
+			"entitlement": {
+				"title": "Quyền truy cập",
+				"title_create": "Tạo Quyền Mới",
+				"title_detail": "Chi tiết Quyền",
+				"title_delete": "Xóa Quyền",
+				"fields": {
+					"id": "Mã quyền",
+					"name": "Tên quyền",
+					"description": "Mô tả",
+					"action_id": "Hành động",
+					"action_expr": "Biểu thức điều kiện",
+					"resource_id": "Tài nguyên",
+					"resource_all": "Tất cả tài nguyên (*)",
+					"action_all": "Tất cả hành động (*)",
+					"org_id": "Tổ chức",
+					"subject_type": {
+						"label": "Loại chủ thể",
+						"nikki_user": "Người dùng Nikki",
+						"nikki_group": "Nhóm Nikki",
+						"nikki_role": "Vai trò Nikki",
+						"custom": "Tùy chỉnh"
+					},
+					"subject_ref": "Tham chiếu chủ thể",
+					"assignments_count": "Số phân công",
+					"roles_count": "Số vai trò",
+					"created_at": "Ngày tạo",
+					"updated_at": "Ngày cập nhật"
+				},
+				"placeholders": {
+					"name": "Nhập tên quyền",
+					"description": "Mô tả quyền này cấp những gì",
+					"action_expr": "Nhập biểu thức điều kiện (tùy chọn)",
+					"scope_ref": "Nhập tham chiếu phạm vi",
+					"subject_ref": "Nhập tham chiếu chủ thể",
+					"resource_id": "Chọn một tài nguyên (hoặc Tất cả)",
+					"action_id": "Chọn một hành động (hoặc Tất cả)",
+					"select_resource_first": "Vui lòng chọn tài nguyên trước",
+					"no_actions_available": "Không có hành động nào cho tài nguyên này"
+				},
+				"errors": {
+					"action_required": "Vui lòng chọn hành động",
+					"resource_required": "Vui lòng chọn tài nguyên"
+				},
+				"messages": {
+					"loading": "Đang tải quyền...",
+					"not_found": "Không tìm thấy quyền",
+					"create_success": "Quyền \"{{name}}\" đã được tạo thành công",
+					"update_success": "Quyền \"{{name}}\" đã được cập nhật thành công",
+				"delete_success": "Quyền \"{{name}}\" đã được xóa thành công"
+			}
+			},
+			"role": {
+				"title": "Vai trò",
+				"title_create": "Tạo Vai trò Mới",
+				"title_detail": "Chi tiết Vai trò",
+				"title_delete": "Xóa Vai trò",
+				"fields": {
+					"id": "Mã vai trò",
+					"name": "Tên vai trò",
+					"description": "Chi tiết",
+					"owner_type": {
+						"label": "Đối tượng sở hữu",
+						"user": "Người dùng",
+						"group": "Nhóm"
+					},
+					"owner_ref": "Tham chiếu đối tượng",
+					"is_requestable": "Có thể yêu cầu",
+					"is_required_attachment": "Yêu cầu tập tin đính kèm",
+					"is_required_comment": "Yêu cầu giải thích",
+					"org_id": "Mã tổ chức",
+					"org_display_name": "Tên Tổ chức",
+					"org_all": "Toàn cục (*)",
+					"entitlements_count": "Số lượng quyền",
+					"assignments_count": "Số lượng phân công",
+					"suites_count": "Số lượng bộ vai trò",
+					"created_at": "Ngày tạo",
+					"updated_at": "Ngày cập nhập"
+				},
+				"placeholders": {
+					"name": "Nhập tên vai trò",
+					"description": "Mô tả vai trò này cấp những gì",
+						"org_id": "Chọn phạm vi tổ chức"
+					},
+				"entitlements": {
+					"add": "Thêm Quyền",
+					"remove": "Xóa Quyền",
+					"add_title": "Thêm Quyền vào Vai trò",
+					"remove_title": "Loại bỏ Quyền khỏi Vai trò",
+					"available": "Quyền Có sẵn",
+					"selected": "Quyền Đã chọn",
+					"assigned": "Quyền đã gán",
+					"to_remove": "Quyền muốn loại bỏ",
+					"assigned_title": "Quyền Đã gán",
+					"no_available": "Không có quyền nào có sẵn",
+					"no_selected": "Chưa chọn quyền nào",
+					"no_assigned": "Chưa có quyền nào được gán cho vai trò này",
+					"no_to_remove": "Chưa chọn quyền nào để loại bỏ",
+					"scope_ref": "Tham chiếu Phạm vi",
+					"scope_ref_placeholder": "Nhập tham chiếu phạm vi",
+					"search_placeholder": "Tìm kiếm quyền theo tên"
+				}
+			},
+			"role_suite": {
+				"title": "Bộ Vai trò",
+				"title_create": "Tạo Bộ Vai trò Mới",
+				"title_detail": "Chi tiết Bộ Vai trò",
+				"title_delete": "Xóa Bộ Vai trò",
+				"fields": {
+					"id": "Mã bộ vai trò",
+					"name": "Tên bộ vai trò",
+					"description": "Mô tả",
+					"owner_type": {
+						"label": "Loại chủ sở hữu",
+						"user": "Người dùng",
+						"group": "Nhóm"
+					},
+					"owner_ref": "Tham chiếu chủ sở hữu",
+					"is_requestable": "Có thể yêu cầu",
+					"is_required_attachment": "Bắt buộc đính kèm",
+					"is_required_comment": "Bắt buộc bình luận",
+					"org_id": "Mã Tổ chức",
+					"org_display_name": "Tên Tổ chức",
+					"org": "Tổ chức",
+					"org_all": "Toàn cục (*)",
+					"roles_count": "Vai trò",
+					"created_at": "Ngày tạo",
+					"updated_at": "Ngày cập nhật"
+				},
+				"placeholders": {
+					"name": "Nhập tên bộ vai trò",
+					"description": "Mô tả bộ vai trò này cấp những gì",
+					"org_id": "Chọn phạm vi tổ chức"
+				},
+				"messages": {
+					"loading": "Đang tải bộ vai trò...",
+					"not_found": "Không tìm thấy bộ vai trò",
+					"create_success": "Bộ vai trò \"{{name}}\" đã được tạo thành công",
+					"update_success": "Bộ vai trò \"{{name}}\" đã được cập nhật thành công",
+					"delete_success": "Bộ vai trò \"{{name}}\" đã được xóa thành công"
+				},
+				"roles": {
+					"title": "Vai trò",
+					"available": "Vai trò Có sẵn",
+					"selected": "Vai trò Đã chọn",
+					"no_available": "Không có vai trò nào có sẵn",
+					"no_selected": "Chưa chọn vai trò nào",
+					"search_placeholder": "Tìm kiếm vai trò theo tên...",
+					"no_search_results": "Không tìm thấy vai trò phù hợp",
+					"new_badge": "MỚI",
+					"org_label": "Tổ chức",
+					"domain_level": "Cấp Miền"
+				},
+				"changes": {
+					"summary_title": "Tóm tắt Thay đổi",
+					"roles_to_add": "Vai trò sẽ Thêm",
+					"roles_to_remove": "Vai trò sẽ Xóa",
+					"roles_unchanged": "Vai trò Không đổi"
+				},
+				"confirm": {
+					"title": "Xác nhận Cập nhật Bộ Vai trò",
+					"message": "Bạn sắp cập nhật bộ vai trò \"{{name}}\". Vui lòng xem lại các thay đổi bên dưới.",
+					"role_changes": "Thay đổi vai trò",
+					"add_count": "Thêm {{count}} vai trò",
+					"remove_count": "Xóa {{count}} vai trò",
+					"warning": "Thao tác này sẽ ảnh hưởng đến tất cả người dùng được gán bộ vai trò này."
+				}
+			},
+			"grant_request": {
+				"title": "Yêu cầu cấp quyền",
+				"title_create": "Tạo yêu cầu cấp quyền",
+				"title_detail": "Chi tiết yêu cầu cấp quyền",
+				"title_delete": "Xóa yêu cầu cấp quyền",
+				"fields": {
+					"id": "Mã yêu cầu",
+					"target": "Mục tiêu",
+					"target_type": "Loại mục tiêu",
+					"target_type_description": "Loại mục tiêu (vai trò hoặc bộ vai trò)",
+					"target_type_role": "Vai trò",
+					"target_type_suite": "Bộ vai trò",
+					"target_ref": "Tham chiếu mục tiêu",
+					"target_ref_description": "ID của vai trò hoặc bộ vai trò",
+					"target_id": "Mã mục tiêu",
+					"target_name": "Tên mục tiêu",
+					"requestor": "Người yêu cầu",
+					"requestor_id": "Mã người yêu cầu",
+					"requestor_name": "Tên người yêu cầu",
+					"receiver": "Đối tượng nhận quyền",
+					"receiver_id": "Mã đối tượng nhận",
+					"receiver_name": "Tên đối tượng nhận quyền",
+					"receiver_id_description": "ID đối tượng sẽ được cấp quyền",
+					"receiver_type": "Loại đối tượng nhận",
+					"receiver_type_description": "Loại đối tượng nhận (người dùng hoặc nhóm)",
+					"receiver_type_user": "Người dùng",
+					"receiver_type_group": "Nhóm",
+					"comment": "Ghi chú",
+					"comment_description": "Ghi chú hoặc lý do bổ sung",
+					"attachment": "URL tập tin đính kèm",
+					"attachment_description": "Đường dẫn tới tài liệu hỗ trợ",
+					"status": "Trạng thái",
+					"status_description": "Trạng thái hiện tại của yêu cầu",
+					"org_id": "Mã Tổ chức",
+					"org_display_name": "Tên Tổ chức",
+					"org": "Tổ chức",
+					"org_all": "Toàn cục (*)",
+					"org_id_description": "Phạm vi tổ chức",
+					"created_at": "Ngày tạo",
+					"other_info": "Thông tin khác"
+				},
+				"placeholders": {
+					"select_target_type_first": "Chọn loại mục tiêu trước",
+					"no_targets_available": "Không có mục tiêu nào khả dụng",
+					"select_receiver_type_first": "Chọn loại đối tượng nhận trước",
+					"no_receivers_available": "Không có đối tượng nhận nào khả dụng"
+				},
+				"messages": {
+					"create_success": "Tạo yêu cầu cấp quyền thành công",
+					"delete_success": "Xóa yêu cầu cho {{name}} thành công",
+					"not_found": "Không tìm thấy yêu cầu cấp quyền"
+				}
+			},
+			"revoke_request": {
+				"title": "Yêu cầu tước quyền",
+				"title_create": "Tạo yêu cầu tước quyền",
+				"title_detail": "Chi tiết yêu cầu tước quyền",
+				"title_delete": "Xóa yêu cầu tước quyền",
+				"fields": {
+					"id": "Mã yêu cầu",
+					"target": "Mục tiêu",
+					"target_type": "Loại mục tiêu",
+					"target_type_description": "Loại mục tiêu (vai trò hoặc bộ vai trò)",
+					"target_ref": "Tham chiếu mục tiêu",
+					"target_ref_description": "ID của vai trò hoặc bộ vai trò",
+					"target_id": "Mã mục tiêu",
+					"target_name": "Tên mục tiêu",
+					"requestor": "Người yêu cầu",
+					"requestor_id": "Mã người yêu cầu",
+					"requestor_name": "Tên người yêu cầu",
+					"receiver": "Đối tượng bị tước quyền",
+					"receiver_id": "Mã đối tượng bị tước quyền",
+					"receiver_name": "Tên đối tượng bị tước quyền",
+					"receiver_id_description": "ID đối tượng sẽ bị tước quyền",
+					"receiver_type": "Loại đối tượng bị tước quyền",
+					"receiver_type_description": "Loại đối tượng bị tước quyền (người dùng hoặc nhóm)",
+					"comment": "Ghi chú",
+					"comment_description": "Ghi chú hoặc lý do bổ sung",
+					"attachment": "URL tập tin đính kèm",
+					"attachment_description": "Đường dẫn tới tài liệu hỗ trợ",
+					"created_at": "Ngày tạo",
+					"other_info": "Thông tin khác"
+				},
+				"placeholders": {
+					"select_target_type_first": "Chọn loại mục tiêu trước",
+					"no_targets_available": "Không có mục tiêu nào khả dụng",
+					"select_receiver_type_first": "Chọn loại đối tượng bị tước quyền trước",
+					"no_receivers_available": "Không có đối tượng bị tước quyền nào khả dụng"
+				},
+				"messages": {
+					"create_success": "Tạo yêu cầu tước quyền thành công",
+					"revoke_success": "Đã tước quyền thành công {{count}} gán quyền",
+					"delete_success": "Đã xóa yêu cầu tước quyền cho {{name}} thành công",
+					"not_found": "Không tìm thấy yêu cầu tước quyền"
+				},
+				"filter": {
+					"title": "Lọc Gán quyền",
+					"mode": "Chế độ Lọc",
+					"by_receiver": "Lọc theo Đối tượng nhận",
+					"by_target": "Lọc theo Mục tiêu",
+					"receiver_type": "Loại Đối tượng nhận",
+					"receiver": "Đối tượng nhận",
+					"target_type": "Loại Mục tiêu",
+					"target": "Mục tiêu"
+				},
+				"assignments": {
+					"title": "Gán quyền",
+					"no_assignments": "Không tìm thấy gán quyền nào. Vui lòng chọn bộ lọc để xem gán quyền.",
+					"target_type": "Loại Mục tiêu",
+					"target": "Mục tiêu",
+					"receiver_type": "Loại Đối tượng nhận",
+					"receiver": "Đối tượng nhận"
+				},
+				"actions": {
+					"revoke_selected": "Tước quyền đã chọn"
+				}
+			},
+			"resource": {
+				"title": "Tài nguyên",
+				"title_create": "Tạo Tài nguyên Mới",
+				"title_detail": "Chi tiết Tài nguyên",
+				"title_delete": "Xóa Tài nguyên",
+				"fields": {
+					"id": "Mã tài nguyên",
+					"name": "Tên tài nguyên",
+					"description": "Mô tả",
+					"resource_type": {
+						"label": "Loại tài nguyên",
+						"description": "Chọn hệ thống sở hữu tài nguyên",
+						"nikki_application": "Ứng dụng Nikki ERP",
+						"custom": "Tài nguyên tùy chỉnh"
+					},
+					"resource_ref": "Tham chiếu tài nguyên",
+					"scope_type": {
+						"label": "Phạm vi áp dụng",
+						"description": "Xác định phạm vi cao nhất có thể truy cập",
+						"domain": "Miền (toàn bộ tenant)",
+						"org": "Tổ chức",
+						"hierarchy": "Cấp phân cấp",
+						"private": "Cá nhân"
+					},
+					"scope_ref": "Tham chiếu phạm vi",
+					"actions_count": "Số hành động",
+					"created_at": "Ngày tạo",
+					"updated_at": "Ngày cập nhật"
+				},
+				"placeholders": {
+					"name": "Nhập tên tài nguyên",
+					"description": "Mô tả cách sử dụng tài nguyên",
+					"scope_ref": "Nhập tham chiếu phạm vi (org, hierarchy ...)"
+				},
+				"errors": {
+					"resource_ref_required": "Tham chiếu tài nguyên là bắt buộc",
+					"resource_ref_invalid_ulid": "Tham chiếu tài nguyên phải là ULID hợp lệ",
+					"resource_ref_invalid_uuid": "Tham chiếu tài nguyên phải là UUID hợp lệ",
+					"name_alphanumeric": "Tên chỉ được chứa chữ cái và số",
+					"resource_type_required": "Vui lòng chọn loại tài nguyên",
+					"scope_type_required": "Vui lòng chọn phạm vi",
+					"description_not_changed": "Mô tả không thay đổi",
+					"description_cannot_remove": "Không thể xóa mô tả. Vui lòng cung cấp giá trị mới hoặc giữ nguyên giá trị hiện tại."
+				},
+				"messages": {
+					"actions": "Hành động",
+					"no_actions_defined": "Không có hành động nào được định nghĩa",
+					"loading": "Đang tải tài nguyên...",
+					"not_found": "Không tìm thấy tài nguyên",
+					"create_success": "Tài nguyên đã được tạo thành công",
+					"update_success": "Tài nguyên đã được cập nhật thành công",
+					"delete_success": "Tài nguyên đã được xóa thành công"
+				}
+			},
+			"overview": {
+				"title": "Tổng quan Phân quyền - Nikki ERP",
+				"pending_requests": "Yêu cầu Đang chờ",
+				"pending_requests_message": "Bạn có <strong>{{count}}</strong> yêu cầu cấp quyền đang chờ xử lý.",
+				"view_all_requests": "Xem tất cả yêu cầu",
+				"statistics": "Thống kê",
+				"recent_activity": "Hoạt động Gần đây",
+				"quick_links": "Liên kết Nhanh",
+				"manage_resources": "Quản lý Tài nguyên",
+				"manage_resources_desc": "Định nghĩa và quản lý tài nguyên được bảo vệ",
+				"manage_roles": "Quản lý Vai trò",
+				"manage_roles_desc": "Tạo và gán vai trò cho người dùng",
+				"process_requests": "Xử lý Yêu cầu",
+				"process_requests_desc": "Xem xét và phê duyệt yêu cầu cấp quyền",
+				"grant": "Cấp quyền",
+				"pending": "Đang chờ",
+				"revoke": "Thu hồi",
+				"was_granted": "đã được cấp",
+				"role": "vai trò",
+				"had_revoked": "đã bị",
+				"role_revoked": "thu hồi vai trò",
+				"hours_ago": "{{count}} giờ trước",
+				"day_ago": "{{count}} ngày trước",
+				"days_ago": "{{count}} ngày trước"
+			}
+		}
     }
 }

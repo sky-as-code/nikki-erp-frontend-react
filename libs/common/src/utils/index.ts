@@ -1,4 +1,3 @@
-
 export function delay(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -19,4 +18,21 @@ export function decodeBase64(base64: string): string {
 
 export function randomString(length: number): string {
 	return Math.random().toString(36).substring(2, 2 + length);
+}
+
+export type Cleaned<T> = {
+	[K in keyof T]: T[K] | undefined
+};
+
+export function cleanFormData<T extends object>(data: T): Cleaned<T> {
+	const copy = { ...data } as Cleaned<T>;
+
+	(Object.entries(data) as [keyof T, T[keyof T]][])
+		.forEach(([key, value]) => {
+			if (value === '') {
+				copy[key] = undefined;
+			}
+		});
+
+	return copy;
 }

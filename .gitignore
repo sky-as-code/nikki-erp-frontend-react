@@ -139,3 +139,6 @@ web_modules/
 
 **/.turbo
 **/.tanstack
+
+# Strange files
+.DS_Store

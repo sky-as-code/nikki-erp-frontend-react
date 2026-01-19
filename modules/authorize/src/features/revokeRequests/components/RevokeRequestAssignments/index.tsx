@@ -1,0 +1,2 @@
+export { RevokeRequestAssignmentsList } from './RevokeRequestAssignmentsList';
+

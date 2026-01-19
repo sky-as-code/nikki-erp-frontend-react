@@ -1,0 +1,123 @@
+{
+	"name": "resource",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.id' }",
+			"hidden": true,
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.name' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+					"type": "length",
+					"min": 3,
+					"max": 64,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				},
+				{
+					"type": "regex",
+					"pattern": "^[a-zA-Z0-9]+$",
+					"message": "{ \"$ref\": 'nikki.authorize.resource.errors.name_alphanumeric' }"
+				}
+			]
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.description' }",
+			"constraints": [
+				{
+					"type": "length",
+					"max": 255,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"resourceType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_type.label' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"constraints": [
+				{
+				  "type": "required",
+				  "message": "{ \"$ref\": 'nikki.authorize.resource.errors.resource_type_required' }"
+				}
+			],
+			"enum": [
+				{
+					"value": "nikki_application",
+					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_type.nikki_application' }"
+				},
+				{
+					"value": "custom",
+					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_type.custom' }"
+				}
+			]
+		},
+		"resourceRef": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_ref' }",
+			"required": {
+				"create": true,
+				"update": false
+			}
+		},
+		"scopeType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type.label' }",
+			"required": {
+				"create": true,
+				"update": false
+			},
+			"enum": [
+				{
+					"value": "domain",
+					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type.domain' }"
+				},
+				{
+					"value": "org",
+					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type.org' }"
+				},
+				{
+					"value": "hierarchy",
+					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type.hierarchy' }"
+				},
+				{
+					"value": "private",
+					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.scope_type.private' }"
+				}
+			],
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.authorize.resource.errors.scope_type_required' }"
+				}
+			]
+		},
+		"actionsCount": {
+			"type": "integer",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.actions_count' }",
+			"frontendOnly": true
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.created_at' }",
+			"hidden": true
+		}
+	}
+}
+

@@ -27,6 +27,14 @@ const microApps: MicroAppMetadata[] = [
 		bundleUrl: () => import('@nikkierp/microapp-essential'),
 		htmlTag: 'nikkiapp-essential',
 	},
+	{
+		slug: 'nikkierp.authorize',
+		basePath: 'authorize',
+		// Uncomment when mounting as ShadowDOM
+		// bundleUrl: () => import(authorizeBundleUrl),
+		bundleUrl: () => import('@nikkierp/microapp-authorize'),
+		htmlTag: 'nikkiapp-authorize',
+	},
 	...remoteApps,
 ];
 

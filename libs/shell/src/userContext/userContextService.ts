@@ -67,6 +67,11 @@ export class UserContextService {
 					name: 'Identity',
 					slug: 'identity',
 				},
+				{
+					id: '3',
+					name: 'Authorize',
+					slug: 'authorize',
+				}
 			];
 
 			const orgs: Organization[] = orgResponse.items.map(org => ({

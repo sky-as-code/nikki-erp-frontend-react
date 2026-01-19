@@ -12,6 +12,8 @@ export function createBaseSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 			return z.string();
 		case 'integer':
 			return z.number().int();
+		case 'boolean':
+			return z.boolean();
 		case 'date':
 			return z.date().or(z.string().transform((str) => new Date(str)));
 		case 'enum':
@@ -22,6 +24,7 @@ export function createBaseSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 				return z.enum(enumValues).optional();
 			}
 			return z.string();
+		// warning?: array and object are temporarily disabled for validation
 		case 'array':
 			// Handle array type - allow it to pass through without strict validation
 			return z.array(z.any()).optional();
@@ -218,35 +221,8 @@ export function buildValidationSchema(schema: ModelSchema): z.ZodObject<any> {
 			return;
 		}
 
-		let fieldSchema = buildFieldSchema(fieldDef);
-
-		// For frontendOnly fields that are not required in update mode, make them optional
-		// to allow undefined values from backend
-		if (fieldDef.frontendOnly && !fieldDef.required?.update) {
-			fieldSchema = fieldSchema.optional();
-		}
-
-		shape[fieldName] = fieldSchema;
+		shape[fieldName] = buildFieldSchema(fieldDef);
 	});
 
-	const baseSchema = z.object(shape);
-
-	// Add password confirmation validation if both password and confirmPassword fields exist
-	if (shape.password && shape.confirmPassword) {
-		return baseSchema.refine(
-			(data) => {
-				// Only validate if both fields have values
-				if (!data.password && !data.confirmPassword) {
-					return true;
-				}
-				return data.password === data.confirmPassword;
-			},
-			{
-				message: 'Passwords do not match',
-				path: ['confirmPassword'], // Show error on confirmPassword field
-			},
-		);
-	}
-
-	return baseSchema;
-}
+	return z.object(shape);
+};
