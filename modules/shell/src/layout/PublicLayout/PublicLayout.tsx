@@ -1,24 +1,23 @@
-import { Box, Group, Stack, useMantineColorScheme, useMantineTheme } from '@mantine/core';
+import {  Group, Stack, Text, useMantineColorScheme, useMantineTheme } from '@mantine/core';
 import clsx from 'clsx';
 import React from 'react';
 import { Outlet } from 'react-router';
 
+import { ContentContainer } from '@/components/ContentContainer';
+import { LangSwitchDropdown } from '@/components/LangSwitch';
+import { ThemeSwitchDropdown } from '@/components/ThemeSwitch';
+
 import classes from './PublicLayout.module.css';
-import { LangSwitchDropdown } from '../../components/LangSwitch/LangSwitchDropDown';
-import { ThemeSwitchDropdown } from '../../components/ThemeSwitch/ThemeSwitchDropDown';
 
 
 export function PublicLayout(): React.ReactNode {
-
 	return (
 		<Stack gap={0} h='100vh'>
-			<Stack gap={0} h='100vh'>
-				<Header />
-				<Box className={clsx( classes.mainPublicContent )} >
-					<Outlet />
-				</Box>
-				<Footer />
-			</Stack>
+			<Header />
+			<ContentContainer>
+				<Outlet />
+			</ContentContainer>
+			<Footer />
 		</Stack>
 	);
 };
@@ -51,8 +50,10 @@ const Header: React.FC = () => {
 
 const Footer: React.FC = () => {
 	return (
-		<Group component='footer' align='center' justify='center' h={35}>
-			{/* Footer content */}
+		<Group bg={'var(--nikki-color-white)'} component='footer' align='center' justify='center' h={30}>
+			<Text c='dimmed' fz='sm'>
+				Copyright © 2026 Nikki ERP
+			</Text>
 		</Group>
 	);
 };

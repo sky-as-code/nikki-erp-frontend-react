@@ -3,15 +3,4 @@
 	gap: var(--mantine-spacing-md);
 	box-shadow: 2px 2px 5px 0px #40404033;
 	z-index: 100;
-	background-color: red;
 }
-
-.mainPublicContent {
-	overflow-y: auto;
-	flex: 1;
-	background: linear-gradient(135deg, var(--nikki-color-page-background), var(--nikki-color-page-background), var(--nikki-color-white));
-	scrollbar-gutter: stable both-edges;
-	scrollbar-width: auto;
-	scrollbar-color: var(--mantine-color-gray-6) transparent;
-}
-

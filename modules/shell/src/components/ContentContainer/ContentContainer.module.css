@@ -1,0 +1,41 @@
+.contentContainer {
+	overflow-y: auto;
+	flex: 1;
+	background: linear-gradient(135deg, var(--nikki-color-page-background), var(--nikki-color-page-background), var(--nikki-color-white));
+	scrollbar-gutter: stable both-edges;
+}
+
+/* Private layout scrollbar */
+.contentContainer::-webkit-scrollbar {
+	background-color: transparent;
+	width: 9px;
+	height: 9px;
+}
+
+.contentContainer::-webkit-scrollbar-track {
+	background: var(--mantine-color-gray-1);
+}
+
+.contentContainer::-webkit-scrollbar-thumb {
+	border-radius: 5px;
+	background-color: var(--mantine-color-gray-5);
+	border: 2px solid var(--mantine-color-white);
+	transition: background-color 0.3s ease, border 0.3s ease;
+}
+
+/* Đổi màu thumb khi hover vào scrollbar area (detected bằng JavaScript) */
+.contentContainer.scrollbarHovered::-webkit-scrollbar-thumb {
+	background-color: var(--mantine-color-gray-6);
+	border: 1px solid var(--mantine-color-white);
+}
+
+.contentContainer.scrollbarHovered::-webkit-scrollbar-track {
+	background: var(--mantine-color-white);
+}
+
+/* Fallback: vẫn hỗ trợ hover trực tiếp vào thumb */
+.contentContainer::-webkit-scrollbar-thumb:hover {
+	background-color: var(--mantine-color-gray-6);
+	border: 1px solid var(--mantine-color-white);
+}
+
