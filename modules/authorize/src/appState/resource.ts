@@ -31,7 +31,7 @@ export const selectResourceState = (state: { [STATE_KEY]: ResourceState }) => st
 
 export const selectResourceList = createSelector(
 	selectResourceState,
-	(state) => state.list2,
+	(state) => state.list,
 );
 
 export const selectResourceDetail = createSelector(

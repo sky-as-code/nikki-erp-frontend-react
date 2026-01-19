@@ -335,6 +335,28 @@
 				"title_create": "Tạo Vai trò Mới",
 				"title_detail": "Chi tiết Vai trò",
 				"title_delete": "Xóa Vai trò",
+				"fields": {
+					"id": "Mã vai trò",
+					"name": "Tên vai trò",
+					"description": "Chi tiết",
+					"owner_type": {
+						"label": "Đối tượng sở hữu",
+						"user": "Người dùng",
+						"group": "Nhóm"
+					},
+					"owner_ref": "Tham chiếu đối tượng",
+					"is_requestable": "Có thể yêu cầu",
+					"is_required_attachment": "Yêu cầu tập tin đính kèm",
+					"is_required_comment": "Yêu cầu giải thích",
+					"org_id": "Mã tổ chức",
+					"org_display_name": "Tên Tổ chức",
+					"org_all": "Toàn cục (*)",
+					"entitlements_count": "Số lượng quyền",
+					"assignments_count": "Số lượng phân công",
+					"suites_count": "Số lượng bộ vai trò",
+					"created_at": "Ngày tạo",
+					"updated_at": "Ngày cập nhập"
+				},
 				"placeholders": {
 					"name": "Nhập tên vai trò",
 					"description": "Mô tả vai trò này cấp những gì",

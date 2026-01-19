@@ -20,10 +20,10 @@ function useActionListData() {
 
 	React.useEffect(() => {
 		dispatch(actionActions.listActions(undefined));
-		if (resources.length === 0) {
+		if (resources?.length === 0) {
 			dispatch(resourceActions.listResources());
 		}
-	}, [dispatch, resources.length]);
+	}, [resources]);
 
 	return { actions, isLoadingList, resources };
 }

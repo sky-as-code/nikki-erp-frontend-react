@@ -21,13 +21,13 @@ function useEntitlementListData() {
 
 	React.useEffect(() => {
 		dispatch(entitlementActions.listEntitlements());
-		if (resources.length === 0) {
+		if (resources?.length === 0) {
 			dispatch(resourceActions.listResources());
 		}
-		if (actions.length === 0) {
+		if (actions?.length === 0) {
 			dispatch(actionActions.listActions(undefined));
 		}
-	}, [dispatch, resources.length, actions.length]);
+	}, [dispatch, resources?.length, actions?.length]);
 
 	return { entitlements, isLoadingList, resources, actions };
 }

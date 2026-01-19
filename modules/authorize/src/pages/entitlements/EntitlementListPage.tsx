@@ -16,7 +16,7 @@ function EntitlementListPageBody(): React.ReactNode {
 	const deleteHandler = useEntitlementDelete(entitlements, dispatch);
 	const { handleViewDetail, handleEdit, handleCreate, handleRefresh } = useEntitlementList.handlers();
 
-	const columns = ['name', 'description', 'actionId', 'resourceId', 'rolesCount', 'actions'];
+	const columns = ['name', 'description', 'actionId', 'resourceId', 'actions'];
 	const schema = entitlementSchema as ModelSchema;
 
 	return (

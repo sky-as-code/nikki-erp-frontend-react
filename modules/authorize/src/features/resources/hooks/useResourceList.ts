@@ -6,20 +6,20 @@ import { AuthorizeDispatch, resourceActions, selectResourceList } from '@/appSta
 
 export function useResourceList() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const list2 = useMicroAppSelector(selectResourceList);
+	const list = useMicroAppSelector(selectResourceList);
 
 	React.useEffect(() => {
-		if (list2.status === 'idle') {
+		if (list.status === 'idle') {
 			dispatch(resourceActions.listResources());
 		}
-	}, [dispatch, list2]);
+	}, [dispatch, list]);
 
 
 	const handleRefresh = () => dispatch(resourceActions.listResources());
 
 	return {
-		resources: list2.data,
-		isLoadingList: list2.status === 'pending' || list2.status === 'idle',
+		resources: list.data,
+		isLoadingList: list.status === 'pending' || list.status === 'idle',
 		handleRefresh,
 	};
 }

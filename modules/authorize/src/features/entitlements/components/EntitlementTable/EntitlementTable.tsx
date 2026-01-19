@@ -111,7 +111,7 @@ export const EntitlementTable: React.FC<EntitlementTableProps> = ({
 
 	const resourceMap = React.useMemo(() => {
 		const map = new Map<string, string>();
-		resourcesData.forEach((r) => {
+		resourcesData?.forEach((r) => {
 			map.set(r.id, r.name);
 		});
 		return map;

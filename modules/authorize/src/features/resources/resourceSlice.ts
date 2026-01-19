@@ -14,7 +14,7 @@ export const SLICE_NAME = 'authorize.resource';
 
 export type ResourceState = {
 	detail: ReduxActionState<Resource>;
-	list2: ReduxActionState<Resource[]>;
+	list: ReduxActionState<Resource[]>;
 	create: ReduxActionState<Resource>;
 	update: ReduxActionState<Resource>;
 	delete: ReduxActionState<void>;
@@ -22,7 +22,7 @@ export type ResourceState = {
 
 const initialState: ResourceState = {
 	detail: baseReduxActionState,
-	list2: { ...baseReduxActionState, data: [] },
+	list: { ...baseReduxActionState, data: [] },
 	create: baseReduxActionState,
 	update: baseReduxActionState,
 	delete: baseReduxActionState,
@@ -124,7 +124,7 @@ const resourceSlice = createSlice({
 	initialState,
 	reducers: {
 		setResources: (state, action: PayloadAction<Resource[]>) => {
-			state.list2.data = action.payload;
+			state.list.data = action.payload;
 		},
 		resetCreateResource: (state) => {
 			state.create = baseReduxActionState;
@@ -148,19 +148,19 @@ const resourceSlice = createSlice({
 function listResourcesReducers(builder: ActionReducerMapBuilder<ResourceState>) {
 	builder
 		.addCase(listResources.pending, (state) => {
-			state.list2.status = 'pending';
-			state.list2.error = null;
+			state.list.status = 'pending';
+			state.list.error = null;
 		})
 		.addCase(listResources.fulfilled, (state, action) => {
-			state.list2.status = 'success';
-			state.list2.data = action.payload;
+			state.list.status = 'success';
+			state.list.data = action.payload;
 			// state.resources = action.payload;
-			state.list2.error = null;
+			state.list.error = null;
 		})
 		.addCase(listResources.rejected, (state, action) => {
-			state.list2.status = 'error';
-			state.list2.error = action.payload || 'Failed to list resources';
-			state.list2.data = [];
+			state.list.status = 'error';
+			state.list.error = action.payload || 'Failed to list resources';
+			state.list.data = [];
 			// state.resources = [];
 		});
 }
@@ -214,15 +214,15 @@ function updateResourceReducers(builder: ActionReducerMapBuilder<ResourceState>)
 			state.update.data = action.payload;
 			state.detail.data = action.payload;
 			// state.resourceDetail = action.payload;
-			if (state.list2.data) {
-				const listIndex = state.list2.data.findIndex((r) => r.id === action.payload.id);
+			if (state.list.data) {
+				const listIndex = state.list.data.findIndex((r) => r.id === action.payload.id);
 				if (listIndex >= 0) {
-					state.list2.data[listIndex] = action.payload;
+					state.list.data[listIndex] = action.payload;
 				}
 			}
-			/* const index = state.list2.data?.findIndex((r) => r.id === action.payload.id) ?? -1;
+			/* const index = state.list.data?.findIndex((r) => r.id === action.payload.id) ?? -1;
 			if (index >= 0) {
-				state.list2.data[index] = action.payload;
+				state.list.data[index] = action.payload;
 			} */
 		})
 		.addCase(updateResource.rejected, (state, action) => {
@@ -239,10 +239,10 @@ function deleteResourceReducers(builder: ActionReducerMapBuilder<ResourceState>)
 		})
 		.addCase(deleteResource.fulfilled, (state, action) => {
 			state.delete.status = 'success';
-			if (state.list2.data) {
-				state.list2.data = state.list2.data.filter((r) => r.name !== action.meta.arg.name);
+			if (state.list.data) {
+				state.list.data = state.list.data.filter((r) => r.name !== action.meta.arg.name);
 			}
-			state.list2.data = state.list2.data?.filter((r) => r.name !== action.meta.arg.name) ?? [];
+			state.list.data = state.list.data?.filter((r) => r.name !== action.meta.arg.name) ?? [];
 			if (state.detail.data?.name === action.meta.arg.name) {
 				state.detail.data = undefined;
 			}
