@@ -2,25 +2,27 @@ import * as request from '@nikkierp/common/request';
 
 import {
 	HierarchyLevel,
-	SearchHierarchyLevelsResponse,
+	SearchHierarchyLevelResponse,
 	CreateHierarchyLevelRequest,
 	CreateHierarchyLevelResponse,
 	UpdateHierarchyLevelRequest,
-	ManageHierarchyUsersRequest,
-	ManageHierarchyUsersResponse,
+	UpdateHierarchyLevelResponse,
+	ManageHierarchyLevelUsersRequest,
+	ManageHierarchyLevelUsersResponse,
+	DeleteHierarchyLevelResponse,
 } from './types';
 
 
 export const hierarchyService = {
-	async listHierarchies(orgId: string): Promise<HierarchyLevel[]> {
+	async listHierarchies(orgId: string): Promise<SearchHierarchyLevelResponse> {
 		const graph = JSON.stringify({
 			if: ['org.id', '*', orgId],
 			order: [['created_at', 'desc']],
 		});
-		const response = await request.get<SearchHierarchyLevelsResponse>('identity/hierarchy', {
+		const response = await request.get<SearchHierarchyLevelResponse>('identity/hierarchy', {
 			searchParams: { withParent: 'true', graph },
 		});
-		return response.items;
+		return response;
 	},
 
 	async createHierarchy(data: CreateHierarchyLevelRequest): Promise<CreateHierarchyLevelResponse> {
@@ -28,23 +30,24 @@ export const hierarchyService = {
 		return response;
 	},
 
-	async updateHierarchy(id: string, data: UpdateHierarchyLevelRequest): Promise<HierarchyLevel> {
-		const response = await request.put<HierarchyLevel>(`identity/hierarchy/${id}`, { json: data });
+	async updateHierarchy(data: UpdateHierarchyLevelRequest): Promise<UpdateHierarchyLevelResponse> {
+		const response = await request.put<UpdateHierarchyLevelResponse>(`identity/hierarchy/${data.id}`, { json: data });
 		return response;
 	},
 
-	async deleteHierarchy(id: string): Promise<void> {
-		await request.del(`identity/hierarchy/${id}`);
+	async deleteHierarchy(id: string): Promise<DeleteHierarchyLevelResponse> {
+		const response = await request.del<DeleteHierarchyLevelResponse>(`identity/hierarchy/${id}`);
+		return response;
 	},
 
-	async getHierarchy(id: string): Promise<HierarchyLevel | undefined> {
+	async getHierarchy(id: string): Promise<HierarchyLevel> {
 		const response = await request.get<HierarchyLevel>(`identity/hierarchy/${id}`);
 		return response;
 	},
 
-	async manageHierarchyUsers(data: ManageHierarchyUsersRequest): Promise<ManageHierarchyUsersResponse> {
-		const response = await request.post<ManageHierarchyUsersResponse>(
-			`identity/hierarchy/${data.hierarchyId}/manage-users`,
+	async manageHierarchyUsers(data: ManageHierarchyLevelUsersRequest): Promise<ManageHierarchyLevelUsersResponse> {
+		const response = await request.post<ManageHierarchyLevelUsersResponse>(
+			`identity/hierarchy/${data.id}/manage-users`,
 			{ json: data },
 		);
 		return response;

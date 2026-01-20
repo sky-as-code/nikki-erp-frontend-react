@@ -101,8 +101,8 @@ export interface ListUserProps {
 	users: UserInGroup[];
 	availableUsers: AvailableUser[];
 	isLoading?: boolean;
-	onAddUsers: (userIds: string[]) => Promise<void>;
-	onRemoveUsers: (userIds: string[]) => Promise<void>;
+	onAddUsers: (userIds: string[]) => any;
+	onRemoveUsers: (userIds: string[]) => any;
 	title?: string;
 	emptyMessage?: string;
 }

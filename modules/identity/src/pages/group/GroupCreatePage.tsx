@@ -1,55 +1,30 @@
-import { Stack } from '@mantine/core';
+import { Stack, Title } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
-import { IdentityDispatch, groupActions, selectGroupState } from '../../appState';
-import { HeaderCreatePage } from '../../components/HeaderCreatePage/HeaderCreatePage';
+import { selectGroupState } from '../../appState';
 import { GroupCreateForm } from '../../features/group/components';
+import { useGroupCreateHandlers } from '../../features/group/hooks/useGroupCreate';
 import groupSchema from '../../schemas/group-schema.json';
 
 
-function useGroupCreateHandlers() {
-	const navigate = useNavigate();
-	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const { orgSlug } = useParams<{ orgSlug: string }>();
-	const { notification } = useUIState();
+export const GroupCreatePageBody: React.FC = () => {
+	const schema = groupSchema as ModelSchema;
+	const { isLoading } = useMicroAppSelector(selectGroupState);
 	const { t } = useTranslation();
 
-	const handleCreate = React.useCallback((data: any) => {
-		dispatch(groupActions.createGroup({ orgSlug: orgSlug!, data }))
-			.unwrap()
-			.then(() => {
-				notification.showInfo(t('nikki.identity.group.messages.createSuccess'), '');
-				navigate('..', { relative: 'path' });
-			})
-			.catch(() => {
-				notification.showError(t('nikki.identity.group.messages.createError'), '');
-			});
-	}, [dispatch, navigate, orgSlug, notification]);
-
-	return {
-		handleCreate,
-	};
-}
-
-export const GroupCreatePageBody: React.FC = () => {
-	const { isCreatingGroup } = useMicroAppSelector(selectGroupState);
-	const schema = groupSchema as ModelSchema;
-
-	const { handleCreate } = useGroupCreateHandlers();
+	const { onSubmit } = useGroupCreateHandlers();
 
 	return (
 		<Stack gap='md'>
-			<HeaderCreatePage title='nikki.identity.group.actions.createNew' />
+			<Title order={2}>{t('nikki.identity.group.actions.createNew')}</Title>
 			<GroupCreateForm
 				schema={schema}
-				isCreating={isCreatingGroup}
-				onSubmit={handleCreate}
+				isLoading={isLoading}
+				onSubmit={onSubmit}
 			/>
 		</Stack>
 	);

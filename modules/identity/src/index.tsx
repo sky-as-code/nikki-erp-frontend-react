@@ -1,25 +1,12 @@
-import {
-	Card,
-	Container,
-	Grid,
-	Group,
-	Paper,
-	Stack,
-	Text,
-	Title,
-	ThemeIcon,
-} from '@mantine/core';
 import { MenuBarItem, useSetMenuBarItems } from '@nikkierp/ui/appState/layoutSlice';
-import { initMicroAppStateContext, useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import { initMicroAppStateContext, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, MicroAppRouter,
 } from '@nikkierp/ui/microApp';
-import { IconBuilding, IconHierarchy, IconShield, IconUsers } from '@tabler/icons-react';
 import React from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { Navigate } from 'react-router';
 
-import { selectUserState, selectGroupState, selectHierarchyState } from './appState';
 import { reducer } from './appState';
 import { GroupCreatePage } from './pages/group/GroupCreatePage';
 import { GroupDetailPage } from './pages/group/GroupDetailPage';
@@ -30,6 +17,7 @@ import { HierarchyListPage } from './pages/hierarchy/HierarchyListPage';
 import { OrganizationCreatePage } from './pages/organization/OrganizationCreatePage';
 import { OrganizationDetailPage } from './pages/organization/OrganizationDetailPage';
 import { OrganizationListPage } from './pages/organization/OrganizationListPage';
+import { OverviewPage } from './pages/overview/OverviewPage';
 import { UserCreatePage } from './pages/user/UserCreatePage';
 import { UserDetailPage } from './pages/user/UserDetailPage';
 import { UserListPage } from './pages/user/UserListPage';
@@ -66,10 +54,10 @@ const menuBarItems: MenuBarItem[] = [
 			},
 		],
 	},
-	{
-		label: 'Settings',
-		link: `/settings`,
-	},
+	// {
+	// 	label: 'Settings',
+	// 	link: `/settings`,
+	// },
 ];
 
 function Main(props: MicroAppProps) {
@@ -104,190 +92,6 @@ function Main(props: MicroAppProps) {
 					</WidgetRoutes> */}
 			</MicroAppRouter>
 		</MicroAppProvider>
-	);
-}
-
-interface StatCardProps {
-	title: string;
-	value: number | string;
-	icon: React.ReactNode;
-	color: string;
-	link: string;
-}
-
-function StatCard({ title, value, icon, color, link }: StatCardProps): React.ReactElement {
-	const navigate = useNavigate();
-
-	return (
-		<Card
-			shadow='sm'
-			padding='lg'
-			radius='md'
-			withBorder
-			style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
-			onClick={() => navigate(link)}
-			onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; }}
-			onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
-		>
-			<Group justify='space-between' align='flex-start'>
-				<Stack gap='xs'>
-					<Text size='sm' c='dimmed' fw={500}>
-						{title}
-					</Text>
-					<Title order={2}>{value}</Title>
-				</Stack>
-				<ThemeIcon size='xl' radius='md' variant='light' color={color}>
-					{icon}
-				</ThemeIcon>
-			</Group>
-		</Card>
-	);
-}
-
-interface QuickLinkProps {
-	title: string;
-	description: string;
-	icon: React.ReactNode;
-	color: string;
-	link: string;
-}
-
-function QuickLinkCard({ title, description, icon, color, link }: QuickLinkProps): React.ReactElement {
-	const navigate = useNavigate();
-
-	return (
-		<Paper
-			shadow='xs'
-			p='md'
-			withBorder
-			style={{ cursor: 'pointer', transition: 'all 0.2s' }}
-			onClick={() => navigate(link)}
-			onMouseEnter={(e) => {
-				e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-				e.currentTarget.style.transform = 'translateY(-2px)';
-			}}
-			onMouseLeave={(e) => {
-				e.currentTarget.style.boxShadow = '';
-				e.currentTarget.style.transform = 'translateY(0)';
-			}}
-		>
-			<Group gap='md'>
-				<ThemeIcon size='lg' radius='md' variant='light' color={color}>
-					{icon}
-				</ThemeIcon>
-				<Stack gap={4} style={{ flex: 1 }}>
-					<Text fw={600} size='sm'>
-						{title}
-					</Text>
-					<Text size='xs' c='dimmed'>
-						{description}
-					</Text>
-				</Stack>
-			</Group>
-		</Paper>
-	);
-}
-
-function OverviewPage(): React.ReactNode {
-	const { users } = useMicroAppSelector(selectUserState);
-	const { groups } = useMicroAppSelector(selectGroupState);
-	const { hierarchies } = useMicroAppSelector(selectHierarchyState);
-
-	return (
-		<Container size='xl' p='md'>
-			<Stack gap='xl'>
-				{/* Header */}
-				<Stack gap='xs'>
-					<Title order={1}>Identity & Access Management</Title>
-					<Text c='dimmed' size='lg'>
-						Manage users, groups, organizations, and hierarchy levels
-					</Text>
-				</Stack>
-
-				{/* Statistics Cards */}
-				<Grid>
-					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-						<StatCard
-							title='Total Users'
-							value={users.length}
-							icon={<IconUsers size={24} />}
-							color='blue'
-							link='/users'
-						/>
-					</Grid.Col>
-					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-						<StatCard
-							title='Groups'
-							value={groups.length}
-							icon={<IconShield size={24} />}
-							color='green'
-							link='/groups'
-						/>
-					</Grid.Col>
-					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-						<StatCard
-							title='Hierarchy Levels'
-							value={hierarchies.length}
-							icon={<IconHierarchy size={24} />}
-							color='violet'
-							link='/hierarchy-levels'
-						/>
-					</Grid.Col>
-					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-						<StatCard
-							title='Organizations'
-							value={0}
-							icon={<IconBuilding size={24} />}
-							color='orange'
-							link='/organizations'
-						/>
-					</Grid.Col>
-				</Grid>
-
-				{/* Quick Links */}
-				<Stack gap='md'>
-					<Title order={3}>Quick Actions</Title>
-					<Grid>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<QuickLinkCard
-								title='Manage Users'
-								description='View, create, and manage user accounts'
-								icon={<IconUsers size={20} />}
-								color='blue'
-								link='/users'
-							/>
-						</Grid.Col>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<QuickLinkCard
-								title='Manage Groups'
-								description='Configure user groups and permissions'
-								icon={<IconShield size={20} />}
-								color='green'
-								link='/groups'
-							/>
-						</Grid.Col>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<QuickLinkCard
-								title='Hierarchy Levels'
-								description='Organize users by hierarchy structure'
-								icon={<IconHierarchy size={20} />}
-								color='violet'
-								link='/hierarchy-levels'
-							/>
-						</Grid.Col>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<QuickLinkCard
-								title='Organizations'
-								description='Manage organizational units'
-								icon={<IconBuilding size={20} />}
-								color='orange'
-								link='/organizations'
-							/>
-						</Grid.Col>
-					</Grid>
-				</Stack>
-			</Stack>
-		</Container>
 	);
 }
 

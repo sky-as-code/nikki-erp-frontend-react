@@ -1,6 +1,16 @@
+import {
+	CreateResponse,
+	DeleteResponse,
+	ManageMembersRequest,
+	ManageMembersResponse,
+	SearchResponse,
+	UpdateResponse,
+} from '@nikkierp/ui/types';
+
+
 export type HierarchyLevel = {
 	id: string;
-	createdAt: number;
+	createdAt: Date;
 	name: string;
 	etag: string;
 	children?: HierarchyLevel[];
@@ -8,43 +18,31 @@ export type HierarchyLevel = {
 		id: string;
 		name: string;
 	};
-	updatedAt: number | null;
+	updatedAt?: Date;
 };
 
-export type SearchHierarchyLevelsResponse = {
-	items: HierarchyLevel[];
-	total: number;
-	page: number;
-	size: number;
-};
-
-export type CreateHierarchyLevelResponse = Pick<HierarchyLevel, 'id' | 'etag' | 'createdAt' | 'updatedAt'>;
-
-export type CreateHierarchyLevelRequest = Pick<HierarchyLevel, 'name'> & {
+export type CreateHierarchyLevelRequest = {
+	name: string;
 	parentId?: string;
+	orgId: string;
 };
 
 export type UpdateHierarchyLevelRequest = {
 	id: string;
-	name?: string;
 	etag: string;
+	name?: string;
 	parentId?: string;
 };
 
-export type DeleteHierarchyLevelRequest = {
-	id: string;
-	etag: string;
-};
 
-export type ManageHierarchyUsersRequest = {
-	hierarchyId: string;
-	add?: string[];
-	remove?: string[];
-	etag: string;
-};
+export type SearchHierarchyLevelResponse = SearchResponse<HierarchyLevel>;
 
-export type ManageHierarchyUsersResponse = {
-	id: string;
-	etag: string;
-	updatedAt: number;
-};
+export type CreateHierarchyLevelResponse = CreateResponse;
+
+export type UpdateHierarchyLevelResponse = UpdateResponse;
+
+export type ManageHierarchyLevelUsersRequest = ManageMembersRequest;
+
+export type ManageHierarchyLevelUsersResponse = ManageMembersResponse;
+
+export type DeleteHierarchyLevelResponse = DeleteResponse;

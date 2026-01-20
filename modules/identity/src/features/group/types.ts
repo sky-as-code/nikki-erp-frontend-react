@@ -1,49 +1,55 @@
+import {
+	CreateResponse,
+	DeleteResponse,
+	ManageMembersRequest,
+	ManageMembersResponse,
+	SearchResponse,
+	UpdateResponse,
+} from '@nikkierp/ui/types';
+
+
 export type Group = {
 	id: string;
-	createdAt: number;
+	createdAt: Date;
 	name: string;
-	description: string | null;
+	description?: string;
 	etag: string;
-	orgId: string;
 	org?: {
 		id: string;
 		displayName: string;
 		slug: string;
 	};
-	updatedAt: number | null;
+	updatedAt?: Date;
 	users?: Array<{
 		id: string;
 		email: string;
 		displayName?: string;
-		avatarUrl?: string | null;
+		avatarUrl?: string;
 		status?: string;
 	}>;
 };
 
-export type SearchGroupsResponse = {
-	items: Group[];
-	total: number;
-	page: number;
-	size: number;
+export type CreateGroupRequest = {
+	name: string;
+	description?: string;
+	orgId: string;
 };
 
-export type CreateGroupResponse = Pick<Group, 'id' | 'etag' | 'createdAt' | 'updatedAt'>;
-
-export type CreateGroupRequest = Pick<Group, 'name' | 'description' | 'orgId'>;
-
-export type UpdateGroupRequest = Pick<Group, 'id' | 'name' | 'description' | 'etag'>;
-
-export type UpdateGroupResponse = Pick<Group, 'id' | 'updatedAt' | 'etag'>;
-
-export type ManageGroupUsersRequest = {
-	groupId: string;
-	add?: string[];
-	remove?: string[];
-	etag: string;
-};
-
-export type ManageGroupUsersResponse = {
+export type UpdateGroupRequest = {
 	id: string;
 	etag: string;
-	updatedAt: number;
+	name?: string;
+	description?: string;
 };
+
+export type SearchGroupsResponse = SearchResponse<Group>;
+
+export type CreateGroupResponse = CreateResponse;
+
+export type UpdateGroupResponse = UpdateResponse;
+
+export type ManageGroupUsersRequest = ManageMembersRequest;
+
+export type ManageGroupUsersResponse = ManageMembersResponse;
+
+export type DeleteGroupResponse = DeleteResponse;

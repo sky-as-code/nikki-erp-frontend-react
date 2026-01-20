@@ -1,40 +1,50 @@
+import {
+	CreateResponse,
+	DeleteResponse,
+	SearchResponse,
+	UpdateResponse,
+} from '@nikkierp/ui/types';
+
+
 export type User = {
 	id: string;
 	email: string;
 	displayName: string;
-	avatarUrl: string;
-	password: string;
-	mustChangePassword: boolean;
+	avatarUrl?: string;
 	etag: string;
 	status: string;
-	hierarchyId: string | null;
-	orgId: string;
-	createdAt: Date | null;
-	updatedAt: Date | null;
+	createdAt: Date;
+	updatedAt?: Date;
 	groups?: Array<{
 		id: string;
 		name: string;
-		description?: string | null;
+		description?: string;
 	}>;
-	hierarchy?: Hierarchy;
+	hierarchy?: {
+		id: string;
+		name: string;
+	};
 };
 
-export type Hierarchy = {
+export type CreateUserRequest = {
+	email: string;
+	displayName: string;
+	password: string;
+	orgId: string;
+};
+
+export type UpdateUserRequest = {
 	id: string;
-	name: string;
+	avatarUrl?: string;
+	displayName?: string;
+	etag: string;
+	status?: string;
 };
 
-export type SearchUsersResponse = {
-	items: User[];
-	total: number;
-	page: number;
-	size: number;
-};
+export type SearchUserResponse = SearchResponse<User>;
 
-export type CreateUserResponse = Pick<User, 'id' | 'etag' | 'createdAt' | 'updatedAt'>;
+export type CreateUserResponse = CreateResponse;
 
-export type CreateUserRequest = Pick<User, 'displayName' | 'email' | 'password' | 'orgId'>;
+export type UpdateUserResponse = UpdateResponse;
 
-export type UpdateUserRequest = Pick<User, 'id' | 'avatarUrl' | 'email' | 'displayName' | 'etag' | 'status'>;
-
-export type UpdateUserResponse = Pick<User, 'id' | 'updatedAt' | 'etag'>;
+export type DeleteUserResponse = DeleteResponse;

@@ -1,4 +1,4 @@
-import { Button, Group, Modal, Stack, Text, Title } from '@mantine/core';
+import { Button, Group, Modal, Stack, Text } from '@mantine/core';
 import React from 'react';
 
 
@@ -29,7 +29,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 		<Modal
 			opened={opened}
 			onClose={onClose}
-			title={<Title order={4}>{title}</Title>}
+			title={title}
 			size={size}
 			centered
 		>

@@ -29,3 +29,18 @@ export const selectOrganizationDetail = createSelector(
 	selectOrganizationState,
 	(state) => state.organizationDetail,
 );
+
+export const selectCreateOrganization = createSelector(
+	selectOrganizationState,
+	(state) => state.create,
+);
+
+export const selectUpdateOrganization = createSelector(
+	selectOrganizationState,
+	(state) => state.update,
+);
+
+export const selectDeleteOrganization = createSelector(
+	selectOrganizationState,
+	(state) => state.delete,
+);

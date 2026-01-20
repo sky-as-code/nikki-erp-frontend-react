@@ -1,0 +1,75 @@
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
+
+import { useUIState } from '../../../../../shell/src/context/UIProviders';
+import { IdentityDispatch, organizationActions } from '../../../appState';
+import { selectDeleteOrganization, selectUpdateOrganization } from '../../../appState/organization';
+
+// eslint-disable-next-line max-lines-per-function
+export function useOrganizationDetailHandlers(id: string, slug: string, etag: string) {
+	const dispatch: IdentityDispatch = useMicroAppDispatch();
+	const navigate = useNavigate();
+	const { notification } = useUIState();
+	const { t } = useTranslation();
+
+	const updateCommand = useMicroAppSelector(selectUpdateOrganization);
+	const deleteCommand = useMicroAppSelector(selectDeleteOrganization);
+
+	React.useEffect(() => {
+		if (updateCommand.status === 'success') {
+			notification.showInfo(
+				t('nikki.identity.organization.messages.updateSuccess'), '',
+			);
+			dispatch(organizationActions.resetUpdateOrganization());
+			navigate('..', { relative: 'path' });
+		}
+
+		if (updateCommand.status === 'error') {
+			notification.showError(
+				t('nikki.identity.organization.messages.updateError'), '',
+			);
+			dispatch(organizationActions.resetUpdateOrganization());
+		}
+	}, [updateCommand.status, dispatch, navigate, notification, t]);
+
+	React.useEffect(() => {
+		if (deleteCommand.status === 'success') {
+			notification.showInfo(
+				t('nikki.identity.organization.messages.deleteSuccess'), '',
+			);
+			dispatch(organizationActions.resetDeleteOrganization());
+			navigate('..', { relative: 'path' });
+		}
+
+		if (deleteCommand.status === 'error') {
+			notification.showError(
+				t('nikki.identity.organization.messages.deleteError'), '',
+			);
+			dispatch(organizationActions.resetDeleteOrganization());
+		}
+	}, [deleteCommand.status, dispatch, navigate, notification, t]);
+
+	const handleUpdate = (data: any) => {
+		if (slug) {
+			dispatch(organizationActions.updateOrganization({
+				...data,
+				slug,
+				etag,
+				id,
+			}));
+		}
+	};
+
+	const handleDelete = () => {
+		if (slug) {
+			dispatch(organizationActions.deleteOrganization(slug));
+		}
+	};
+
+	return {
+		handleDelete,
+		handleUpdate,
+	};
+}

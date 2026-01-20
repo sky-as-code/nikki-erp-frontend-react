@@ -23,11 +23,11 @@ type GroupSchema = {
 
 interface GroupCreateFormProps {
 	schema: GroupSchema;
-	isCreating: boolean;
+	isLoading: boolean;
 	onSubmit: (data: any) => void;
 }
 
-export function GroupCreateForm({ schema, isCreating, onSubmit }: GroupCreateFormProps): React.ReactElement {
+export function GroupCreateForm({ schema, isLoading, onSubmit }: GroupCreateFormProps): React.ReactElement {
 	return (
 		<Paper className='p-4' >
 			<FormStyleProvider layout='onecol'>
@@ -39,12 +39,12 @@ export function GroupCreateForm({ schema, isCreating, onSubmit }: GroupCreateFor
 						<form onSubmit={handleSubmit(onSubmit)} noValidate autoComplete='off'>
 							<Stack gap='md'>
 								<Stack gap='md'>
-									<AutoField name='name' autoFocused inputProps={{ disabled: isCreating }} />
-									<AutoField name='description' inputProps={{ disabled: isCreating }} />
+									<AutoField name='name' inputProps={{ disabled: isLoading }} />
+									<AutoField name='description' inputProps={{ disabled: isLoading }} />
 								</Stack>
 
 								<ListActionCreatePage
-									isLoading={isCreating}
+									isLoading={isLoading}
 								/>
 							</Stack>
 						</form>

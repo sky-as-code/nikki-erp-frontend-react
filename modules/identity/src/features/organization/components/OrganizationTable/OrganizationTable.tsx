@@ -16,7 +16,11 @@ export interface OrganizationTableProps {
 	schema: ModelSchema;
 }
 
-export function OrganizationTable({ columns, organizations, isLoading, schema }: OrganizationTableProps): React.ReactElement {
+export function OrganizationTable({
+	columns,
+	organizations,
+	isLoading,
+	schema }: OrganizationTableProps): React.ReactElement {
 	const statusConfig: Record<string, StatusConfig> = {
 		active: { color: 'green', translationKey: 'nikki.identity.organization.status.active' },
 		inactive: { color: 'gray', translationKey: 'nikki.identity.organization.status.inactive' },

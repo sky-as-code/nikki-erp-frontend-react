@@ -13,7 +13,6 @@ import React from 'react';
 import { ListActionCreatePage } from '../../../../components/ListActionBar';
 
 
-
 type UserSchema = {
 	name: string;
 	fields: Record<string, FieldDefinition>;
@@ -21,12 +20,12 @@ type UserSchema = {
 };
 
 interface UserCreateFormProps {
-	isCreatingUser: boolean;
+	isLoading: boolean;
 	schema: UserSchema;
 	onSubmit: (data: any) => void;
 }
 
-export function UserCreateForm({ schema, isCreatingUser, onSubmit }: UserCreateFormProps): React.ReactElement {
+export function UserCreateForm({ schema, isLoading, onSubmit }: UserCreateFormProps): React.ReactElement {
 
 	return (
 		<FormStyleProvider layout='onecol'>
@@ -39,14 +38,14 @@ export function UserCreateForm({ schema, isCreatingUser, onSubmit }: UserCreateF
 						<Paper withBorder>
 							<Stack gap='md' p='md'>
 								<Stack gap='md'>
-									<AutoField name='email' autoFocused inputProps={{ disabled: isCreatingUser }} />
-									<AutoField name='displayName' inputProps={{ disabled: isCreatingUser }} />
-									<AutoField name='password' inputProps={{ disabled: isCreatingUser }} />
-									<AutoField name='confirmPassword' inputProps={{ disabled: isCreatingUser }} />
+									<AutoField name='email' autoFocused inputProps={{ disabled: isLoading }} />
+									<AutoField name='displayName' inputProps={{ disabled: isLoading }} />
+									<AutoField name='password' inputProps={{ disabled: isLoading }} />
+									<AutoField name='confirmPassword' inputProps={{ disabled: isLoading }} />
 								</Stack>
 
 								<ListActionCreatePage
-									isLoading={isCreatingUser}
+									isLoading={isLoading}
 								/>
 							</Stack>
 						</Paper>

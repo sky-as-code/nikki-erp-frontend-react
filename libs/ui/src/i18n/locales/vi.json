@@ -57,8 +57,37 @@
 			}
 		},
         "identity": {
+            "overview": {
+                "title": "Tổng quan về Quản lý Nhân sự",
+                "description": "Quản lý người dùng, nhóm, chức vụ và tổ chức của bạn",
+                "stats": {
+                    "users": "Người dùng",
+                    "groups": "Nhóm",
+                    "hierarchyLevels": "Cấp bậc chức vụ",
+                    "organizations": "Tổ chức"
+                },
+                "quickLinks": {
+                    "title": "Hành động nhanh",
+                    "manageUsers": {
+                        "title": "Quản lý người dùng",
+                        "description": "Xem, tạo và quản lý tài khoản người dùng"
+                    },
+                    "manageGroups": {
+                        "title": "Quản lý nhóm",
+                        "description": "Cấu hình nhóm người dùng và quyền hạn"
+                    },
+                    "hierarchyLevels": {
+                        "title": "Cấp bậc chức vụ",
+                        "description": "Tổ chức người dùng theo cấu trúc chức vụ"
+                    },
+                    "organizations": {
+                        "title": "Tổ chức",
+                        "description": "Quản lý các đơn vị tổ chức"
+                    }
+                }
+            },
             "user": {
-                "title": "Người dùng",
+                "title": "Quản lý người dùng",
                 "searchPlaceholder": "Tìm kiếm người dùng...",
                 "fields": {
                     "id": "ID",
@@ -143,11 +172,8 @@
                     "createError": "Tạo nhóm thất bại",
                     "updateError": "Cập nhật nhóm thất bại",
                     "noUsers": "Chưa có thành viên trong nhóm. Nhấn 'Thêm thành viên' để thêm người dùng.",
-                    "addUsersSuccess": "Thêm thành viên thành công",
-                    "addUsersError": "Thêm thành viên thất bại",
-                    "removeUsersSuccess": "Xóa thành viên thành công",
-                    "removeUsersError": "Xóa thành viên thất bại",
-                    "manageUsersError": "Quản lý thành viên thất bại",
+                    "manageUsersSuccess": "Cập nhật thành viên trong nhóm thành công",
+                    "manageUsersError": "Cập nhật thành viên trong nhóm thất bại",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin nhóm này không?",
                     "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa nhóm này không?"
                 }
@@ -155,6 +181,7 @@
             "hierarchy": {
                 "title": "Quản lý chức vụ",
                 "searchPlaceholder": "Tìm kiếm chức vụ...",
+                "noParent": "Không có cấp trên",
                 "fields": {
                     "id": "ID",
                     "name": "Tên chức vụ",
@@ -163,6 +190,7 @@
                     "updatedAt": "Ngày cập nhật"
                 },
                 "actions": {
+                    "createNew": "Tạo chức vụ mới",
                     "create": "Tạo",
                     "refresh": "Làm mới",
                     "save": "Lưu ",
@@ -182,10 +210,8 @@
                     "createError": "Tạo chức vụ thất bại",
                     "updateError": "Cập nhật chức vụ thất bại",
                     "deleteError": "Xóa chức vụ thất bại",
-                    "addUsersSuccess": "Thêm thành viên thành công",
-                    "addUsersError": "Thêm thành viên thất bại",
-                    "removeUsersSuccess": "Xóa thành viên thành công",
-                    "removeUsersError": "Xóa thành viên thất bại",
+                    "manageUsersSuccess": "Cập nhật thành viên trong chức vụ thành công",
+                    "manageUsersError": "Cập nhật thành viên trong chức vụ thất bại",
                     "noHierarchies": "Không tìm thấy chức vụ nào",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin chức vụ này không?",
                     "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa chức vụ này không?"
@@ -207,6 +233,7 @@
                     "updatedAt": "Ngày cập nhật"
                 },
                 "actions": {
+                    "createNew": "Tạo tổ chức mới",
                     "create": "Tạo tổ chức",
                     "refresh": "Làm mới",
                     "save": "Lưu",

@@ -1,78 +1,56 @@
-import { Stack } from '@mantine/core';
+import { Breadcrumbs, Stack, Typography } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, organizationActions } from '../../appState';
 import { selectOrganizationState } from '../../appState/organization';
-import { HeaderDetailPage } from '../../components/HeaderDetailPage/HeaderDetailPage ';
 import { OrganizationDetailForm } from '../../features/organization/components';
+import { useOrganizationDetailHandlers } from '../../features/organization/hooks';
 import organizationSchema from '../../schemas/organization-schema.json';
 
 
-function useOrganizationDetailHandlers(slug: string, etag: string) {
+export const OrganizationDetailPageBody: React.FC = () => {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const navigate = useNavigate();
-	const { notification } = useUIState();
+	const { slug } = useParams();
+	const { organizationDetail, isLoading } = useMicroAppSelector(selectOrganizationState);
+	const schema = organizationSchema as ModelSchema;
 	const { t } = useTranslation();
 
-	const handleUpdate = React.useCallback((data: any) => {
-		const dataWithTag = { ...data, etag, slug };
-		dispatch(organizationActions.updateOrganization(dataWithTag))
-			.unwrap()
-			.then(() => {
-				notification.showInfo(t('nikki.identity.organization.messages.updateSuccess'), '');
-				navigate('..', { relative: 'path' });
-			})
-			.catch(() => {
-				notification.showError(t('nikki.identity.organization.messages.updateError'), '');
-			});
-	}, [slug, dispatch, etag, navigate, notification]);
-
-	const handleDelete = React.useCallback(() => {
-		dispatch(organizationActions.deleteOrganization(slug))
-			.unwrap()
-			.then(() => {
-				notification.showInfo(t('nikki.identity.organization.messages.deleteSuccess'), '');
-				navigate('..', { relative: 'path' });
-			})
-			.catch(() => {
-				notification.showError(t('nikki.identity.organization.messages.deleteError'), '');
-			});
-	}, [slug, dispatch, navigate, notification]);
-
 	React.useEffect(() => {
-		dispatch(organizationActions.getOrganization(slug!));
+		if (slug) {
+			dispatch(organizationActions.getOrganization(slug));
+		}
 	}, [slug, dispatch]);
 
-	return {
-		handleDelete,
-		handleUpdate,
-	};
-}
-
-export const OrganizationDetailPageBody: React.FC = () => {
-	const { slug } = useParams();
-	const { organizationDetail, isLoadingDetail } = useMicroAppSelector(selectOrganizationState);
-	const schema = organizationSchema as ModelSchema;
-
-	const handlers = useOrganizationDetailHandlers(slug!, organizationDetail?.etag);
+	const { handleUpdate, handleDelete } = useOrganizationDetailHandlers(
+		organizationDetail?.id,
+		slug!,
+		organizationDetail?.etag);
 
 	return (
 		<Stack gap='md'>
-			<HeaderDetailPage
-				title='nikki.identity.organization.title'
-				name={organizationDetail?.slug} />
+			<Breadcrumbs>
+				<Typography>
+					<Link to='..'>
+						<h4>{t('nikki.identity.organization.title')}</h4>
+					</Link>
+				</Typography>
+				{organizationDetail?.slug && (
+					<Typography>
+						<h5>{organizationDetail.slug}</h5>
+					</Typography>
+				)}
+			</Breadcrumbs>
 			<OrganizationDetailForm
 				schema={schema}
 				organizationDetail={organizationDetail}
-				isLoading={isLoadingDetail}
-				onSubmit={handlers.handleUpdate}
-				onDelete={handlers.handleDelete}
+				isLoading={isLoading}
+				onSubmit={handleUpdate}
+				onDelete={handleDelete}
 			/>
 		</Stack>
 	);
