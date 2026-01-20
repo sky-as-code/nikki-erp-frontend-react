@@ -156,6 +156,7 @@ function addContSignInReducers(builder: ActionReducerMapBuilder<AuthState>): voi
 function addSignOutReducers(builder: ActionReducerMapBuilder<AuthState>): void {
 	builder
 		.addCase(signOutAction.pending, (state) => {
+			state.isLoading = true;
 			state.isSignInSuccess = false;
 			state.error = null;
 		})
@@ -165,6 +166,7 @@ function addSignOutReducers(builder: ActionReducerMapBuilder<AuthState>): void {
 			state.error = null;
 		})
 		.addCase(signOutAction.rejected, (state, action) => {
+			state.isLoading = false;
 			console.error(action.payload);
 		});
 }

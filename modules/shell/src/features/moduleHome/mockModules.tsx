@@ -64,7 +64,7 @@ export const mockModules = [
 				slug: 'file-drive',
 				category: 'File Drive',
 				icon: 'icon-file-drive',
-				isDisabled: false,
+				isDisabled: true,
 				isFavourite: false,
 				lastUsed: '2025-01-01',
 			},

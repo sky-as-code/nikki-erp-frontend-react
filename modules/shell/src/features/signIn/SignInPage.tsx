@@ -3,6 +3,7 @@ import { useIsAuthenticated } from '@nikkierp/shell/auth';
 import { navigateReturnToAction } from '@nikkierp/ui/appState/routingSlice';
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import { useSearchParams } from 'react-router';
 
 import { EmailStep } from './EmailStep';
 import { PasswordStep } from './PasswordStep';
@@ -24,12 +25,12 @@ export function SignInPage(): React.ReactNode {
 	const isAuthenticated = useIsAuthenticated();
 	const dispatch = useDispatch();
 	// const navigate = useNavigate();
-	// const [searchParams] = useSearchParams();
-	// const returnTo = searchParams.get('returnTo');
+	const [searchParams] = useSearchParams();
+	const returnTo = searchParams.get('returnTo');
 
 	React.useEffect(() => {
 		if (isAuthenticated) {
-			dispatch(navigateReturnToAction());
+			dispatch(navigateReturnToAction(returnTo));
 		}
 	}, [isAuthenticated]);
 

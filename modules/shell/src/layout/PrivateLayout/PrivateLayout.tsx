@@ -9,6 +9,8 @@ import clsx from 'clsx';
 import React from 'react';
 import { Outlet, useLocation } from 'react-router';
 
+import classes from './PrivateLayout.module.css';
+
 import { ContentContainer } from '@/components/ContentContainer';
 import { DomainLogoButton } from '@/components/DomainLogo';
 import { LangSwitchDropdown } from '@/components/LangSwitch';
@@ -17,7 +19,6 @@ import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { OrgSwitchDropdown } from '@/components/OrgSwitch';
 import { ProfileMenuDropdown } from '@/components/ProfileMenuDropdown';
 
-import classes from './PrivateLayout.module.css';
 
 
 

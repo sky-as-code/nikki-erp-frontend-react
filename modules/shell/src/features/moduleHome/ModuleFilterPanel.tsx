@@ -9,19 +9,39 @@ import {
 import { IconLayoutGrid, IconList } from '@tabler/icons-react';
 import { FC } from 'react';
 
-import { ModuleViewMode } from './ModuleHomePage';
+import { FilterState, GroupByOption, ModuleViewMode, SortByOption } from './ModuleHomePage';
 import classes from './ModuleHomePage.module.css';
 
 
 type ModuleFilterPanelProps = {
 	viewMode: ModuleViewMode;
 	onViewModeChange: (mode: ModuleViewMode) => void;
+	filters: FilterState;
+	onFiltersChange: (filters: FilterState) => void;
 };
 
 export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
 	viewMode,
 	onViewModeChange,
+	filters,
+	onFiltersChange,
 }) => {
+	const handleShowDisabledChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		onFiltersChange({ ...filters, showDisabled: event.currentTarget.checked });
+	};
+
+	const handleShowOrphanedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		onFiltersChange({ ...filters, showOrphaned: event.currentTarget.checked });
+	};
+
+	const handleSortByChange = (value: string | null) => {
+		onFiltersChange({ ...filters, sortBy: value as SortByOption | null });
+	};
+
+	const handleGroupByChange = (value: string | null) => {
+		onFiltersChange({ ...filters, groupBy: value as GroupByOption });
+	};
+
 	return (
 		<Stack
 			gap={'lg'} p={{ xl: 30, sm: 15 }}
@@ -36,44 +56,72 @@ export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
 			<Checkbox
 				label='Show disabled modules'
 				color='var(--mantine-color-black)'
-				onChange={() => {}}
+				checked={filters.showDisabled}
+				onChange={handleShowDisabledChange}
 			/>
 			<Checkbox
 				label='Show orphaned modules'
 				color='var(--mantine-color-black)'
-				onChange={() => {}}
+				checked={filters.showOrphaned}
+				onChange={handleShowOrphanedChange}
 			/>
 
-			<SortBySelect />
-			<GroupBySelect />
+			<SortBySelect
+				value={filters.sortBy}
+				onChange={handleSortByChange}
+			/>
+			<GroupBySelect
+				value={filters.groupBy}
+				onChange={handleGroupByChange}
+			/>
 		</Stack>
 	);
 };
 
 
-const GroupBySelect: FC = () => {
-	return (<Select
-		label={
-			<Text className='capitalize' size={'sm'} fw={700}>
-				Group by
-			</Text>
-		}
-		placeholder='Pick value'
-		data={['Category', 'Status']}
-	/>);
+type GroupBySelectProps = {
+	value: GroupByOption;
+	onChange: (value: GroupByOption) => void;
+};
+
+const GroupBySelect: FC<GroupBySelectProps> = ({ value, onChange }) => {
+	return (
+		<Select
+			label={
+				<Text className='capitalize' size={'sm'} fw={700}>
+					Group by
+				</Text>
+			}
+			placeholder='Pick value'
+			data={['Category', 'Status']}
+			value={value}
+			onChange={(val) => onChange(val as GroupByOption)}
+			clearable
+		/>
+	);
 };
 
 
-const SortBySelect: FC = () => {
-	return (<Select
-		label={
-			<Text className='capitalize' size={'sm'} fw={700}>
-				Sort by
-			</Text>
-		}
-		placeholder='Pick value'
-		data={['Name', 'Commonly used']}
-	/>);
+type SortBySelectProps = {
+	value: SortByOption | null;
+	onChange: (value: SortByOption | null) => void;
+};
+
+const SortBySelect: FC<SortBySelectProps> = ({ value, onChange }) => {
+	return (
+		<Select
+			label={
+				<Text className='capitalize' size={'sm'} fw={700}>
+					Sort by
+				</Text>
+			}
+			placeholder='Pick value'
+			data={['Name', 'Commonly used']}
+			value={value}
+			onChange={(val) => onChange(val as SortByOption | null)}
+			clearable
+		/>
+	);
 };
 
 

@@ -19,6 +19,7 @@
 		"@nikkierp/ui": "workspace:*",
 		"@reduxjs/toolkit": "~2.9.2",
 		"clsx": "~2.1.1",
+		"lodash": "~4.17.21",
 		"react-redux": "~9.2.0"
 	},
 	"devDependencies": {
@@ -40,6 +41,7 @@
 		"@testing-library/jest-dom": "~6.9.1",
 		"@testing-library/react": "~16.3.0",
 		"@testing-library/user-event": "~14.6.1",
+		"@types/lodash": "~4.17.23",
 		"@types/node": "~24.9.1",
 		"@types/react": "~19.2.2",
 		"@types/react-dom": "~19.2.2",

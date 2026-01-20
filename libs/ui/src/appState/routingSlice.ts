@@ -49,11 +49,11 @@ const routingSlice = createSlice({
 				to: finalPath,
 			};
 		},
-		navigateReturnTo: (state) => {
+		navigateReturnTo: (state, action: PayloadAction<string | null | undefined>) => {
 			state.action = 'navigateTo';
 			state.actionUpdatedAt = Date.now();
 			state.actionParams = {
-				to: state.returnTo ? decodeURIComponent(state.returnTo) : '/',
+				to: action.payload ? decodeURIComponent(action.payload) : '/',
 			};
 		},
 		navigateTo: (state, action: PayloadAction<string>) => {
