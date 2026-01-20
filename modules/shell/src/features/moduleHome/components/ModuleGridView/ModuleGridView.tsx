@@ -2,7 +2,7 @@ import { Center, SimpleGrid, Stack, Text } from '@mantine/core';
 import { IconBoxOff } from '@tabler/icons-react';
 import { FC, useMemo } from 'react';
 
-import { ModuleCard } from './ModuleCard';
+import { ModuleCard } from '../ModuleCard';
 
 
 export const ModuleGridView: FC<{ modules: any[] }> = ({ modules }) => {

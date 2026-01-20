@@ -1,8 +1,8 @@
 import { debounce } from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
 
-import { mockModules as mockModuleListByCategory } from './mockModules';
-import { FilterState, ModuleViewMode } from './ModuleHomePage';
+import { mockModules as mockModuleListByCategory } from '../components/mockModules';
+import { FilterState, ModuleViewMode } from '../components/ModuleHomePage';
 
 
 

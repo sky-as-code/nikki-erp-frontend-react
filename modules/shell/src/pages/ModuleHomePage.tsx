@@ -1,4 +1,4 @@
-import { ModuleHomePage as ModuleHomePageComponent } from '@/features/moduleHome/ModuleHomePage';
+import { ModuleHomePage as ModuleHomePageComponent } from '@/features/moduleHome/components/ModuleHomePage';
 
 
 export const ModuleHomePage = () => {

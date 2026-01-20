@@ -6,11 +6,11 @@ import {
 import { useMemo } from 'react';
 
 import { ModuleFilterPanel } from './ModuleFilterPanel';
-import { ModuleGridView } from './ModuleGridView';
+import { ModuleGridView } from './ModuleGridView/ModuleGridView';
 import classes from './ModuleHomePage.module.css';
 import { ModuleListView } from './ModuleListView';
-import { ModuleSearchPanel } from './ModuleSearchPanel';
-import { useQueryModule } from './useQueryModule';
+import { ModuleSearchPanel } from './ModuleSearchPanel/ModuleSearchPanel';
+import { useQueryModule } from '../hooks/useQueryModule';
 
 
 export type ModuleViewMode = 'grid' | 'list';

@@ -9,8 +9,8 @@ import {
 import { IconLayoutGrid, IconList } from '@tabler/icons-react';
 import { FC } from 'react';
 
-import { FilterState, GroupByOption, ModuleViewMode, SortByOption } from './ModuleHomePage';
-import classes from './ModuleHomePage.module.css';
+import { FilterState, GroupByOption, ModuleViewMode, SortByOption } from '../ModuleHomePage';
+import classes from './ModuleFilterPanel.module.css';
 
 
 type ModuleFilterPanelProps = {

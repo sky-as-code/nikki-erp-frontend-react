@@ -3,8 +3,8 @@ import { IconBoxOff } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { FC, useEffect, useMemo, useState } from 'react';
 
-import { ModuleCard } from './ModuleCard';
-import classes from './ModuleHomePage.module.css';
+import { ModuleCard } from '../ModuleCard';
+import classes from './ModuleListView.module.css';
 
 
 

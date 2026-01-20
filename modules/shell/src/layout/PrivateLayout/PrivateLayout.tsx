@@ -64,21 +64,13 @@ const Header: React.FC = () => {
 
 	return (
 		<Group
-			component='header'
-			align='center'
-			justify='space-between'
-			gap={0}
-			bg={bg}
-			h={50}
-			py={5}
-			px={'md'}
+			component='header' align='center' justify='space-between'
+			gap={0} h={50} px={'md'} py={5} bg={bg}
 			className={clsx( classes.headerRow )}
 		>
 			<Group
-				h={'100%'}
-				align='center'
-				justify='flex-start'
-				gap={'xs'}
+				h={'100%'} gap={'xs'}
+				align='center' justify='flex-start'
 			>
 				<DomainLogoButton isRootPath={isRootPath} />
 				<Breadcrumbs h={'100%'}>

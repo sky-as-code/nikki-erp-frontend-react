@@ -3,7 +3,7 @@ import { IconSearch } from '@tabler/icons-react';
 import { FC } from 'react';
 
 import classes from './ModuleSearchPanel.module.css';
-import { useModuleSearchInput } from './useModuleSearchInput';
+import { useModuleSearchInput } from '../../hooks/useModuleSearchInput';
 
 
 type ModuleSearchInputProps = {
