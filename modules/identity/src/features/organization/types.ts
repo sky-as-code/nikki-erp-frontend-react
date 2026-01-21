@@ -1,24 +1,25 @@
+import {
+	CreateResponse,
+	DeleteResponse,
+	ManageMembersRequest,
+	ManageMembersResponse,
+	SearchResponse,
+	UpdateResponse,
+} from '@nikkierp/ui/types';
+
+
 export type Organization = {
 	id: string;
-	address: string | null;
+	address?: string;
 	createdAt: Date;
 	displayName: string;
 	etag: string;
-	legalName: string | null;
-	phoneNumber: string | null;
+	legalName?: string;
+	phoneNumber?: string;
 	slug: string;
 	status: string;
-	updatedAt: Date | null;
+	updatedAt?: Date;
 };
-
-export type SearchOrganizationsResponse = {
-	items: Organization[];
-	total: number;
-	page: number;
-	size: number;
-};
-
-export type CreateOrganizationResponse = Pick<Organization, 'id' | 'etag' | 'createdAt' | 'updatedAt'>;
 
 export type CreateOrganizationRequest = {
 	address?: string;
@@ -40,7 +41,15 @@ export type UpdateOrganizationRequest = {
 	statusValue?: string;
 };
 
-export type DeleteOrganizationResponse = {
-	slug: string;
-	deletedAt: number;
-};
+
+export type SearchOrganizationResponse = SearchResponse<Organization>;
+
+export type CreateOrganizationResponse = CreateResponse;
+
+export type UpdateOrganizationResponse = UpdateResponse;
+
+export type ManageOrganizationUsersRequest = ManageMembersRequest;
+
+export type ManageOrganizationUsersResponse = ManageMembersResponse;
+
+export type DeleteOrganizationResponse = DeleteResponse;

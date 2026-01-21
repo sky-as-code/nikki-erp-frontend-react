@@ -23,10 +23,30 @@ export const selectGroupState = (state: { [STATE_KEY]: GroupState }) => state[ST
 
 export const selectGroupList = createSelector(
 	selectGroupState,
-	(state) => state.groups,
+	(state) => state.list,
 );
 
 export const selectGroupDetail = createSelector(
 	selectGroupState,
-	(state) => state.groupDetail,
+	(state) => state.detail,
+);
+
+export const selectCreateGroup = createSelector(
+	selectGroupState,
+	(state) => state.create,
+);
+
+export const selectUpdateGroup = createSelector(
+	selectGroupState,
+	(state) => state.update,
+);
+
+export const selectDeleteGroup = createSelector(
+	selectGroupState,
+	(state) => state.delete,
+);
+
+export const selectManageGroupUsers = createSelector(
+	selectGroupState,
+	(state) => state.manageUsers,
 );

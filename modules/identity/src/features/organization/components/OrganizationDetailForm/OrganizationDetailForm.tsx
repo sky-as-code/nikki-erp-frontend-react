@@ -104,6 +104,7 @@ export function OrganizationDetailForm({
 	const { t } = useTranslation();
 	const [showSaveConfirm, setShowSaveConfirm] = React.useState(false);
 	const [pendingData, setPendingData] = React.useState<any>(null);
+	console.log('organizationDetail', organizationDetail);
 
 	const handleFormSubmit = (data: any) => {
 		setPendingData(data);

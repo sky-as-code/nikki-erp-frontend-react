@@ -1,76 +1,69 @@
-import { Paper, Stack } from '@mantine/core';
+import { Breadcrumbs, Group, Paper, SegmentedControl, Stack, TagsInput, Typography } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
-import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
+import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 
-import { IdentityDispatch, hierarchyActions, selectHierarchyState, userActions, selectUserState } from '../../appState';
-import { HeaderListPage } from '../../components/HeaderListPage/HeaderListPage';
-import { HierarchyTable, HierarchyOrgChart, HierarchyListActions } from '../../features/hierarchy/components';
+import { selectHierarchyList } from '../../appState/hierarchy';
+import { selectUserList } from '../../appState/user';
+import { ListActionListPage } from '../../components/ListActionBar';
+import { HierarchyTable, HierarchyOrgChart } from '../../features/hierarchy/components';
+import { useHierarchyListHandlers } from '../../features/hierarchy/hooks';
 import hierarchySchema from '../../schemas/hierarchy-schema.json';
 
 
-function useHierarchyListHandlers() {
-	const navigate = useNavigate();
-	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const { orgSlug } = useParams<{ orgSlug: string }>();
-
-	const handleCreate = React.useCallback(() => {
-		navigate('create');
-	}, [navigate]);
-
-	const handleRefresh = React.useCallback(() => {
-		dispatch(hierarchyActions.listHierarchies(orgSlug!));
-	}, [dispatch, orgSlug]);
-
-	React.useEffect(() => {
-		dispatch(hierarchyActions.listHierarchies(orgSlug!));
-	}, [dispatch, orgSlug]);
-
-	React.useEffect(() => {
-		dispatch(userActions.listUsers(orgSlug!));
-	}, [dispatch, orgSlug]);
-	return {
-		handleCreate,
-		handleRefresh,
-	};
-}
-
 export function HierarchyListPageBody(): React.ReactNode {
-	const { hierarchies, isLoadingList } = useMicroAppSelector(selectHierarchyState);
-	const { users } = useMicroAppSelector(selectUserState);
+	const listHierarchy = useMicroAppSelector(selectHierarchyList);
+	const listUser = useMicroAppSelector(selectUserList);
 	const schema = hierarchySchema as ModelSchema;
 	const columns = ['id', 'name', 'createdAt', 'updatedAt'];
 	const [view, setView] = React.useState<'table' | 'orgChart'>('table');
+	const { t } = useTranslation();
+	const isLoading = listHierarchy.status === 'pending' || listUser.status === 'pending';
 
 	const { handleCreate, handleRefresh } = useHierarchyListHandlers();
 
 	return (
 		<Stack gap='md'>
-			<HeaderListPage
-				title='nikki.identity.hierarchy.title'
-				searchPlaceholder='nikki.identity.hierarchy.searchPlaceholder'
-			/>
-			<HierarchyListActions
-				onCreate={handleCreate}
-				onRefresh={handleRefresh}
-				view={view}
-				onViewChange={setView}
-			/>
+			<Group>
+				<Breadcrumbs style={{ minWidth: '30%' }}>
+					<Typography>
+						<h4>{t('nikki.identity.hierarchy.title')}</h4>
+					</Typography>
+				</Breadcrumbs>
+				<TagsInput
+					placeholder={t('nikki.identity.hierarchy.searchPlaceholder')}
+					w='500px'
+				/>
+			</Group>
+			<Group justify='space-between'>
+				<ListActionListPage
+					onCreate={handleCreate}
+					onRefresh={handleRefresh}
+				/>
+				<SegmentedControl
+					value={view}
+					onChange={(value) => setView(value as 'table' | 'orgChart')}
+					data={[
+						{ label: 'Table', value: 'table' },
+						{ label: 'Org Chart', value: 'orgChart' },
+					]}
+				/>
+			</Group>
 
 			{view === 'table' ? (
 				<HierarchyTable
 					columns={columns}
-					hierarchies={hierarchies}
-					isLoading={isLoadingList}
+					hierarchies={listHierarchy?.data}
+					isLoading={isLoading}
 					schema={schema}
 				/>
 			) : (
 				<Paper withBorder>
 					<HierarchyOrgChart
-						hierarchies={hierarchies}
-						usersByHierarchy={users}
+						hierarchies={listHierarchy?.data}
+						usersByHierarchy={listUser?.data}
 					/>
 				</Paper>
 			)}

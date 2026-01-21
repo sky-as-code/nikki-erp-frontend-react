@@ -104,8 +104,8 @@
 					"label": "{ \"$ref\": 'nikki.identity.organization.status.active' }"
 				},
 				{
-					"value": "inactive",
-					"label": "{ \"$ref\": 'nikki.identity.organization.status.inactive' }"
+					"value": "archived",
+					"label": "{ \"$ref\": 'nikki.identity.organization.status.archived' }"
 				}
 			]
 		},

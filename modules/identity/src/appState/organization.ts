@@ -22,10 +22,25 @@ export const selectOrganizationState = (state: { [STATE_KEY]: OrganizationState 
 
 export const selectOrganizationList = createSelector(
 	selectOrganizationState,
-	(state) => state.organizations,
+	(state) => state.list,
 );
 
 export const selectOrganizationDetail = createSelector(
 	selectOrganizationState,
-	(state) => state.organizationDetail,
+	(state) => state.detail,
+);
+
+export const selectCreateOrganization = createSelector(
+	selectOrganizationState,
+	(state) => state.create,
+);
+
+export const selectUpdateOrganization = createSelector(
+	selectOrganizationState,
+	(state) => state.update,
+);
+
+export const selectDeleteOrganization = createSelector(
+	selectOrganizationState,
+	(state) => state.delete,
 );

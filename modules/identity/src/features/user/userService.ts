@@ -2,48 +2,32 @@ import * as request from '@nikkierp/common/request';
 
 import {
 	User,
-	SearchUsersResponse,
+	SearchUserResponse,
 	CreateUserRequest,
 	CreateUserResponse,
 	UpdateUserResponse,
 	UpdateUserRequest,
+	DeleteUserResponse,
 } from './types';
 
 
 export const userService = {
-	async listUsers(orgId: string): Promise<User[]> {
+	async listUsers(orgId: string): Promise<SearchUserResponse> {
 		const graph = JSON.stringify({
 			if: ['orgs.id', '*', orgId],
 			order: [['created_at', 'desc']],
 		});
-		const response = await request.get<SearchUsersResponse>('identity/users', {
+		const response = await request.get<SearchUserResponse>('identity/users', {
 			searchParams: { graph, withGroups: 'true', withHierarchy: 'true' },
 		});
-		return response.items;
+		return response;
 	},
 
-	async listUsersByGroupId(groupId: string): Promise<User[]> {
-		const graph = JSON.stringify({
-			if: ['groups.id', '*', groupId],
+	async getUser(id: string): Promise<User> {
+		const response = await request.get<User>(`identity/users/${id}`, {
+			searchParams: { withGroup: 'true', withHierarchy: 'true' },
 		});
-
-		const response = await request.get<SearchUsersResponse>(`identity/users`, {
-			searchParams: { graph },
-		});
-		return response.items;
-	},
-
-	async getUser(id: string): Promise<User | undefined> {
-		try {
-			const response = await request.get<User>(`identity/users/${id}`, {
-				searchParams: { withGroup: 'true', withHierarchy: 'true' },
-			});
-			return response;
-		}
-		catch (error) {
-			console.error('Failed to get user:', error);
-			return undefined;
-		}
+		return response;
 	},
 
 	async createUser(data: CreateUserRequest): Promise<CreateUserResponse> {
@@ -51,18 +35,17 @@ export const userService = {
 		return response;
 	},
 
-	async updateUser(id: string, data: Partial<UpdateUserRequest>): Promise<UpdateUserResponse> {
-		const response = await request.put<UpdateUserResponse>(`identity/users/${id}`, { json: data });
+	async updateUser(data: UpdateUserRequest): Promise<UpdateUserResponse> {
+		const response = await request.put<UpdateUserResponse>(`identity/users/${data.id}`, { json: data });
 		return response;
 	},
 
-	async deleteUser(id: string): Promise<void> {
-		await request.del(`identity/users/${id}`);
+	async deleteUser(id: string): Promise<DeleteUserResponse> {
+		const response = await request.del<DeleteUserResponse>(`identity/users/${id}`);
+		return response;
 	},
 };
 
-
-// const data: User[] = [
 // 	{
 // 		id: '550e8400-e29b-41d4-a716-446655440000',
 // 		email: 'john.doe@example.com',

@@ -1,66 +1,50 @@
-import { selectMyOrgIdBySlug } from '@nikkierp/shell/userContext';
+import { baseReduxActionState, ReduxActionState } from '@nikkierp/ui/appState';
 import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
 
 import { groupService } from './groupService';
-import { CreateGroupResponse, Group, ManageGroupUsersRequest, ManageGroupUsersResponse } from './types';
-import { CreateGroupRequest } from './types';
+import {
+	CreateGroupRequest,
+	CreateGroupResponse,
+	DeleteGroupResponse,
+	Group,
+	ManageGroupUsersRequest,
+	ManageGroupUsersResponse,
+	SearchGroupsResponse,
+	UpdateGroupRequest,
+	UpdateGroupResponse,
+} from './types';
 
 
 export const SLICE_NAME = 'identity.group';
 
 export type GroupState = {
-	groups: Group[];
-	isLoadingList: boolean;
-	errorList: string | null;
-	groupDetail: Group | undefined;
-	createGroupResponse: CreateGroupResponse | null;
-	isLoadingDetail: boolean;
-	isCreatingGroup: boolean;
-	isUpdatingGroup: boolean;
-	isDeletingGroup: boolean;
-	isManagingUsers: boolean;
-	errorDetail: string | null;
-	createGroupError: string | null;
-	updateGroupError: string | null;
-	deleteGroupError: string | null;
-	manageUsersError: string | null;
+	detail: ReduxActionState<Group>;
+	list: ReduxActionState<Group[]>;
+	create: ReduxActionState<CreateGroupResponse>
+	update: ReduxActionState<UpdateGroupResponse>
+	delete: ReduxActionState<DeleteGroupResponse>
+	manageUsers: ReduxActionState<ManageGroupUsersResponse>
 };
 
 const initialState: GroupState = {
-	groups: [],
-	isLoadingList: false,
-	errorList: null,
-	groupDetail: undefined,
-	createGroupResponse: null,
-	isLoadingDetail: false,
-	isCreatingGroup: false,
-	isUpdatingGroup: false,
-	isDeletingGroup: false,
-	isManagingUsers: false,
-	errorDetail: null,
-	createGroupError: null,
-	updateGroupError: null,
-	deleteGroupError: null,
-	manageUsersError: null,
+	detail: baseReduxActionState,
+	list: { ...baseReduxActionState, data: [] },
+	create: baseReduxActionState,
+	update: baseReduxActionState,
+	delete: baseReduxActionState,
+	manageUsers: baseReduxActionState,
 };
 
 export const listGroups = createAsyncThunk<
-	Group[],
+	SearchGroupsResponse,
 	string,
-	{ rejectValue: string, state: any }
+	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchGroups`,
-	async (orgSlug, { rejectWithValue, getState }) => {
+	async (orgId, { rejectWithValue }) => {
 		try {
-			const state = getState();
-			const orgId = selectMyOrgIdBySlug(state, orgSlug);
-
-			if (!orgId) {
-				return rejectWithValue('Organization not found');
-			}
-
 			const result = await groupService.listGroups(orgId);
 			return result;
 		}
@@ -72,7 +56,7 @@ export const listGroups = createAsyncThunk<
 );
 
 export const getGroup = createAsyncThunk<
-	Group | undefined,
+	Group,
 	string,
 	{ rejectValue: string }
 >(
@@ -91,22 +75,13 @@ export const getGroup = createAsyncThunk<
 
 export const createGroup = createAsyncThunk<
 	CreateGroupResponse,
-	{ orgSlug: string; data: CreateGroupRequest },
-	{ rejectValue: string, state: any }
+	CreateGroupRequest,
+	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createGroup`,
-	async ({ orgSlug, data }, { rejectWithValue, getState }) => {
+	async (data, { rejectWithValue }) => {
 		try {
-			const state = getState();
-			const orgId = selectMyOrgIdBySlug(state, orgSlug);
-
-			if (!orgId) {
-				return rejectWithValue('Organization not found');
-			}
-
-			const dataWithOrg = { ...data, orgId };
-
-			const result = await groupService.createGroup(dataWithOrg);
+			const result = await groupService.createGroup(data);
 			return result;
 		}
 		catch (error) {
@@ -117,14 +92,14 @@ export const createGroup = createAsyncThunk<
 );
 
 export const updateGroup = createAsyncThunk<
-	Group,
-	{ id: string } & Partial<Group>,
+	UpdateGroupResponse,
+	UpdateGroupRequest,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateGroup`,
-	async ({ id, ...data }, { rejectWithValue }) => {
+	async (data, { rejectWithValue }) => {
 		try {
-			const result = await groupService.updateGroup(id, data as any);
+			const result = await groupService.updateGroup(data);
 			return result;
 		}
 		catch (error) {
@@ -175,13 +150,19 @@ const groupSlice = createSlice({
 	initialState,
 	reducers: {
 		setGroups: (state, action: PayloadAction<any[]>) => {
-			state.groups = action.payload;
+			state.list.data = action.payload;
 		},
-		setIsLoadingList: (state, action: PayloadAction<boolean>) => {
-			state.isLoadingList = action.payload;
+		resetCreateGroup: (state) => {
+			state.create = baseReduxActionState;
 		},
-		setErrorList: (state, action: PayloadAction<string | null>) => {
-			state.errorList = action.payload;
+		resetUpdateGroup: (state) => {
+			state.update = baseReduxActionState;
+		},
+		resetDeleteGroup: (state) => {
+			state.delete = baseReduxActionState;
+		},
+		resetManageUsers: (state) => {
+			state.manageUsers = baseReduxActionState;
 		},
 	},
 	extraReducers: (builder) => {
@@ -190,114 +171,128 @@ const groupSlice = createSlice({
 		createGroupReducers(builder);
 		updateGroupReducers(builder);
 		deleteGroupReducers(builder);
-		manageGroupUsersReducers(builder);
+		manageUsersReducers(builder);
 	},
 });
 
 function listGroupsReducers(builder: ActionReducerMapBuilder<GroupState>) {
 	builder
 		.addCase(listGroups.pending, (state) => {
-			state.isLoadingList = true;
-			state.errorList = null;
+			state.list.status = 'pending';
+			state.list.error = null;
+			state.list.data = [];
 		})
 		.addCase(listGroups.fulfilled, (state, action) => {
-			state.isLoadingList = false;
-			state.groups = action.payload;
-			state.errorList = null;
+			state.list.status = 'success';
+			state.list.data = action.payload.items;
+			state.list.error = null;
 		})
 		.addCase(listGroups.rejected, (state, action) => {
-			state.isLoadingList = false;
-			state.groups = [];
-			state.errorList = action.payload || 'Failed to list groups';
+			state.list.status = 'error';
+			state.list.data = [];
+			state.list.error = action.payload || 'Failed to list groups';
 		});
 }
 
 function getGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 	builder
 		.addCase(getGroup.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+			state.detail.status = 'pending';
+			state.detail.error = null;
+			state.detail.data = undefined;
 		})
 		.addCase(getGroup.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
-			state.groupDetail = action.payload;
-			state.errorDetail = null;
+			state.detail.status = 'success';
+			state.detail.data = action.payload;
+			state.detail.error = null;
 		})
 		.addCase(getGroup.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.groupDetail = undefined;
-			state.errorDetail = action.payload || 'Failed to get group';
+			state.detail.status = 'error';
+			state.detail.data = undefined;
+			state.detail.error = action.payload || 'Failed to get group';
 		});
 }
 
 function createGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 	builder
 		.addCase(createGroup.pending, (state) => {
-			state.isCreatingGroup = true;
-			state.createGroupError = null;
+			state.create.status = 'pending';
+			state.create.error = null;
+			state.create.data = undefined;
+
 		})
 		.addCase(createGroup.fulfilled, (state, action) => {
-			state.isCreatingGroup = false;
-			state.createGroupResponse = action.payload;
-			state.createGroupError = null;
+			state.create.status = 'success';
+			state.create.data = action.payload;
+			state.create.error = null;
 		})
 		.addCase(createGroup.rejected, (state, action) => {
-			state.isCreatingGroup = false;
-			state.createGroupError = action.payload || 'Failed to create group';
+			state.create.status = 'error';
+			state.create.error = action.payload || 'Failed to create group';
+			state.create.data = undefined;
 		});
 }
 
 function updateGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 	builder
 		.addCase(updateGroup.pending, (state) => {
-			state.isUpdatingGroup = true;
-			state.updateGroupError = null;
+			state.update.status = 'pending';
+			state.update.error = null;
+			state.update.data = undefined;
 		})
 		.addCase(updateGroup.fulfilled, (state, action) => {
-			state.isUpdatingGroup = false;
-			state.groupDetail = action.payload;
-			state.updateGroupError = null;
+			state.update.status = 'success';
+			if (state.detail.data) {
+				state.detail.data.etag = action.payload.etag;
+				state.detail.data.updatedAt = action.payload.updatedAt;
+			}
+			state.update.error = null;
 		})
 		.addCase(updateGroup.rejected, (state, action) => {
-			state.isUpdatingGroup = false;
-			state.updateGroupError = action.payload || 'Failed to update group';
+			state.update.status = 'error';
+			state.update.error = action.payload || 'Failed to update group';
+			state.update.data = undefined;
 		});
 }
 
 function deleteGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 	builder
 		.addCase(deleteGroup.pending, (state) => {
-			state.isDeletingGroup = true;
-			state.deleteGroupError = null;
+			state.delete.status = 'pending';
+			state.delete.error = null;
+			state.delete.data = undefined;
 		})
 		.addCase(deleteGroup.fulfilled, (state) => {
-			state.isDeletingGroup = false;
-			state.groupDetail = undefined;
-			state.deleteGroupError = null;
+			state.delete.status = 'success';
+			state.detail.data = undefined;
+			state.delete.error = null;
 		})
 		.addCase(deleteGroup.rejected, (state, action) => {
-			state.isDeletingGroup = false;
-			state.deleteGroupError = action.payload || 'Failed to delete group';
+			state.delete.status = 'error';
+			state.delete.error = action.payload || 'Failed to delete group';
+			state.delete.data = undefined;
 		});
 }
 
-function manageGroupUsersReducers(builder: ActionReducerMapBuilder<GroupState>) {
+function manageUsersReducers(builder: ActionReducerMapBuilder<GroupState>) {
 	builder
 		.addCase(manageGroupUsers.pending, (state) => {
-			state.isManagingUsers = true;
-			state.manageUsersError = null;
+			state.manageUsers.status = 'pending';
+			state.manageUsers.error = null;
+			state.manageUsers.data = undefined;
 		})
 		.addCase(manageGroupUsers.fulfilled, (state, action) => {
-			state.isManagingUsers = false;
-			if (state.groupDetail) {
-				state.groupDetail.etag = action.payload.etag;
-				state.groupDetail.updatedAt = action.payload.updatedAt;
+			state.manageUsers.status = 'success';
+			if (state.detail.data) {
+				state.detail.data.etag = action.payload.etag;
+				state.detail.data.updatedAt = action.payload.updatedAt;
 			}
-			state.manageUsersError = null;
+			state.manageUsers.error = null;
 		})
 		.addCase(manageGroupUsers.rejected, (state, action) => {
-			state.isManagingUsers = false;
-			state.manageUsersError = action.payload || 'Failed to manage group users';
+			state.manageUsers.status = 'error';
+			state.manageUsers.error = action.payload || 'Failed to manage group users';
+			state.manageUsers.data = undefined;
 		});
 }
 

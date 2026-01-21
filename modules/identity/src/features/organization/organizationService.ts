@@ -2,34 +2,29 @@ import * as request from '@nikkierp/common/request';
 
 import {
 	Organization,
-	SearchOrganizationsResponse,
+	SearchOrganizationResponse,
 	CreateOrganizationRequest,
 	CreateOrganizationResponse,
 	UpdateOrganizationRequest,
+	UpdateOrganizationResponse,
 	DeleteOrganizationResponse,
 } from './types';
 
 
 export const organizationService = {
-	async listOrganizations(): Promise<Organization[]> {
+	async listOrganizations(): Promise<SearchOrganizationResponse> {
 		const graph = JSON.stringify({
 			order: [['created_at', 'desc']],
 		});
-		const response = await request.get<SearchOrganizationsResponse>('identity/organizations', {
+		const response = await request.get<SearchOrganizationResponse>('identity/organizations', {
 			searchParams: { graph },
 		});
-		return response.items;
+		return response;
 	},
 
-	async getOrganization(slug: string): Promise<Organization | undefined> {
-		try {
-			const response = await request.get<Organization>(`identity/organizations/${slug}`);
-			return response;
-		}
-		catch (error) {
-			console.error('Failed to get organization:', error);
-			return undefined;
-		}
+	async getOrganization(slug: string): Promise<Organization> {
+		const response = await request.get<Organization>(`identity/organizations/${slug}`);
+		return response;
 	},
 
 	async createOrganization(data: CreateOrganizationRequest): Promise<CreateOrganizationResponse> {
@@ -37,8 +32,8 @@ export const organizationService = {
 		return response;
 	},
 
-	async updateOrganization(slug: string, data: UpdateOrganizationRequest): Promise<Organization> {
-		const response = await request.put<Organization>(`identity/organizations/${slug}`, { json: data });
+	async updateOrganization(data: UpdateOrganizationRequest): Promise<UpdateOrganizationResponse> {
+		const response = await request.put<UpdateOrganizationResponse>(`identity/organizations/${data.slug}`, { json: data });
 		return response;
 	},
 

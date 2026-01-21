@@ -86,6 +86,12 @@
 					"active": "Active",
 					"locked": "Locked",
 					"archived": "Archived"
+				},
+				"errors": {
+					"password_required": "Password is required",
+					"password_min_length_8": "Password must be at least 8 characters",
+					"confirm_password_required": "Confirm password is required",
+					"passwords_do_not_match": "Passwords do not match"
 				}
 			},
 			"group": {

@@ -1,93 +1,41 @@
-import { Stack } from '@mantine/core';
+import { Stack, Title } from '@mantine/core';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../shell/src/context/UIProviders';
-import { IdentityDispatch, hierarchyActions, selectHierarchyState } from '../../appState';
-import { HeaderCreatePage } from '../../components/HeaderCreatePage';
+import { IdentityDispatch, hierarchyActions } from '../../appState';
+import { selectHierarchyList } from '../../appState/hierarchy';
 import { HierarchyCreateForm } from '../../features/hierarchy/components';
-import { HierarchyLevel } from '../../features/hierarchy/types';
+import { useHierarchyCreateHandlers } from '../../features/hierarchy/hooks';
 import hierarchySchema from '../../schemas/hierarchy-schema.json';
 
 
-function useHierarchyCreateHandlers() {
-	const navigate = useNavigate();
-	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const { orgSlug } = useParams<{ orgSlug: string }>();
-	const { notification } = useUIState();
-	const { t } = useTranslation();
-
-	const handleCreate = React.useCallback((data: any) => {
-		// Clean up parentId - remove if empty string
-		const cleanedData = {
-			...data,
-			parentId: data.parentId && data.parentId !== '' ? data.parentId : undefined,
-		};
-
-		dispatch(hierarchyActions.createHierarchy({ orgSlug: orgSlug!, data: cleanedData }))
-			.unwrap()
-			.then(() => {
-				notification.showInfo(t('nikki.identity.hierarchy.messages.createSuccess'), '');
-				navigate('..', { relative: 'path' });
-			})
-			.catch(() => {
-				notification.showError(t('nikki.identity.hierarchy.messages.createError'), '');
-			});
-	}, [dispatch, navigate, orgSlug, notification]);
-
-	return {
-		handleCreate,
-	};
-}
-
 export const HierarchyCreatePageBody: React.FC = () => {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const { isCreatingHierarchy, hierarchies } = useMicroAppSelector(selectHierarchyState);
-	const { orgSlug } = useParams<{ orgSlug: string }>();
+	const list  = useMicroAppSelector(selectHierarchyList);
+	const activeOrg = useActiveOrgWithDetails();
+	const { t } = useTranslation();
 
-	// Fetch hierarchies list for parent selection
 	React.useEffect(() => {
-		if (orgSlug) {
-			dispatch(hierarchyActions.listHierarchies(orgSlug));
+		if (activeOrg?.id) {
+			dispatch(hierarchyActions.listHierarchies(activeOrg.id));
 		}
-	}, [dispatch, orgSlug]);
+	}, [dispatch, activeOrg?.id]);
 
-	// Create schema with dynamic enum options for parentId
-	const schema = React.useMemo(() => {
-		const updatedSchema = { ...hierarchySchema } as ModelSchema;
-
-		if (updatedSchema.fields.parentId) {
-			updatedSchema.fields.parentId = {
-				...updatedSchema.fields.parentId,
-				type: 'enum',
-				enum: [
-					{ value: '', label: '(No Parent)' },
-					...hierarchies.map((h: HierarchyLevel) => ({
-						value: h.id,
-						label: h.name,
-					})),
-				],
-			};
-		}
-
-		return updatedSchema;
-	}, [hierarchies]);
-
-	const { handleCreate } = useHierarchyCreateHandlers();
+	const schema = hierarchySchema as ModelSchema;
+	const {isLoading, onSubmit } = useHierarchyCreateHandlers();
 
 	return (
 		<Stack gap='md'>
-			<HeaderCreatePage
-				title='nikki.identity.hierarchy.title'
-			/>
+			<Title order={2}>{t('nikki.identity.hierarchy.actions.createNew')}</Title>
 			<HierarchyCreateForm
 				schema={schema}
-				isCreating={isCreatingHierarchy}
-				onSubmit={handleCreate}
+				hierarchies={list.data}
+				isCreating={isLoading}
+				onSubmit={onSubmit}
 			/>
 		</Stack>
 	);

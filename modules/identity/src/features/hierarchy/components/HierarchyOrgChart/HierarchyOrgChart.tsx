@@ -21,9 +21,6 @@ interface OrgNodeProps {
 	level: number;
 }
 
-/**
- * Build tree structure from flat hierarchy list with users
- */
 function buildHierarchyTree(
 	hierarchies: HierarchyLevel[],
 	usersByHierarchy?: User[],
@@ -33,7 +30,7 @@ function buildHierarchyTree(
 
 	// Group users by hierarchyId (support both hierarchyId and hierarchy.id)
 	const groupedUsers = usersByHierarchy?.reduce<Record<string, User[]>>((acc, user) => {
-		const hierarchyId = user.hierarchyId || user.hierarchy?.id;
+		const hierarchyId = user.hierarchy?.id || user.hierarchy?.id;
 		if (hierarchyId) {
 			(acc[hierarchyId] ??= []).push(user);
 		}
@@ -76,9 +73,6 @@ function buildHierarchyTree(
 	return rootNodes;
 }
 
-/**
- * User card component
- */
 function UserCard({ user }: { user: User }): React.ReactElement {
 	return (
 		<Paper p='sm' withBorder>
@@ -109,9 +103,7 @@ function UserCard({ user }: { user: User }): React.ReactElement {
 	);
 }
 
-/**
- * Single node in org chart with drill-down
- */
+// eslint-disable-next-line max-lines-per-function
 function OrgNode({ node, level }: OrgNodeProps): React.ReactElement {
 	const [expanded, setExpanded] = React.useState(level === 0);
 	const [drawerOpened, setDrawerOpened] = React.useState(false);
@@ -212,9 +204,7 @@ function OrgNode({ node, level }: OrgNodeProps): React.ReactElement {
 	);
 }
 
-/**
- * Organization Chart Component with Drill-down
- */
+
 export const HierarchyOrgChart: React.FC<HierarchyOrgChartProps> = ({
 	hierarchies,
 	usersByHierarchy,

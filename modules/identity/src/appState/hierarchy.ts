@@ -33,10 +33,30 @@ export const selectHierarchyState = (state: { [STATE_KEY]: HierarchyState }) => 
 
 export const selectHierarchyList = createSelector(
 	selectHierarchyState,
-	(state) => state.hierarchies,
+	(state) => state.list,
 );
 
 export const selectHierarchyDetail = createSelector(
 	selectHierarchyState,
-	(state) => state.hierarchyDetail,
+	(state) => state.detail,
+);
+
+export const selectCreateHierarchy = createSelector(
+	selectHierarchyState,
+	(state) => state.create,
+);
+
+export const selectUpdateHierarchy = createSelector(
+	selectHierarchyState,
+	(state) => state.update,
+);
+
+export const selectDeleteHierarchy = createSelector(
+	selectHierarchyState,
+	(state) => state.delete,
+);
+
+export const selectManageHierarchyUsers = createSelector(
+	selectHierarchyState,
+	(state) => state.manageUsers,
 );

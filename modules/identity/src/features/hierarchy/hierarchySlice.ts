@@ -1,4 +1,4 @@
-import { selectMyOrgIdBySlug } from '@nikkierp/shell/userContext';
+import { baseReduxActionState, ReduxActionState } from '@nikkierp/ui/appState';
 import {
 	ActionReducerMapBuilder,
 	createAsyncThunk,
@@ -12,64 +12,42 @@ import {
 	CreateHierarchyLevelRequest,
 	CreateHierarchyLevelResponse,
 	UpdateHierarchyLevelRequest,
-	ManageHierarchyUsersRequest,
-	ManageHierarchyUsersResponse,
+	ManageHierarchyLevelUsersRequest,
+	ManageHierarchyLevelUsersResponse,
+	UpdateHierarchyLevelResponse,
+	SearchHierarchyLevelResponse,
+	DeleteHierarchyLevelResponse,
 } from './types';
 
 
 export const SLICE_NAME = 'identity.hierarchy';
 
 export type HierarchyState = {
-	hierarchies: HierarchyLevel[];
-	isLoadingList: boolean;
-	errorList: string | null;
-	hierarchyDetail: HierarchyLevel | undefined;
-	createHierarchyResponse: CreateHierarchyLevelResponse | null;
-	isLoadingDetail: boolean;
-	isCreatingHierarchy: boolean;
-	isUpdatingHierarchy: boolean;
-	isDeletingHierarchy: boolean;
-	isManagingUsers: boolean;
-	errorDetail: string | null;
-	createHierarchyError: string | null;
-	updateHierarchyError: string | null;
-	deleteHierarchyError: string | null;
-	manageUsersError: string | null;
+	detail: ReduxActionState<HierarchyLevel>;
+	list: ReduxActionState<HierarchyLevel[]>;
+	create: ReduxActionState<CreateHierarchyLevelResponse>;
+	update: ReduxActionState<UpdateHierarchyLevelResponse>;
+	delete: ReduxActionState<DeleteHierarchyLevelResponse>;
+	manageUsers: ReduxActionState<ManageHierarchyLevelUsersResponse>;
 };
 
 const initialState: HierarchyState = {
-	hierarchies: [],
-	isLoadingList: false,
-	errorList: null,
-	hierarchyDetail: undefined,
-	createHierarchyResponse: null,
-	isLoadingDetail: false,
-	isCreatingHierarchy: false,
-	isUpdatingHierarchy: false,
-	isDeletingHierarchy: false,
-	isManagingUsers: false,
-	errorDetail: null,
-	createHierarchyError: null,
-	updateHierarchyError: null,
-	deleteHierarchyError: null,
-	manageUsersError: null,
+	detail: baseReduxActionState,
+	list: { ...baseReduxActionState, data: [] },
+	create: baseReduxActionState,
+	update: baseReduxActionState,
+	delete: baseReduxActionState,
+	manageUsers: baseReduxActionState,
 };
 
 export const listHierarchies = createAsyncThunk<
-	HierarchyLevel[],
+	SearchHierarchyLevelResponse,
 	string,
-	{ rejectValue: string, state: any }
+	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchHierarchies`,
-	async (orgSlug, { rejectWithValue, getState }) => {
+	async (orgId, { rejectWithValue }) => {
 		try {
-			const state = getState();
-			const orgId = selectMyOrgIdBySlug(state, orgSlug);
-
-			if (!orgId) {
-				return rejectWithValue('Organization not found');
-			}
-
 			const result = await hierarchyService.listHierarchies(orgId);
 			return result;
 		}
@@ -81,7 +59,7 @@ export const listHierarchies = createAsyncThunk<
 );
 
 export const getHierarchy = createAsyncThunk<
-	HierarchyLevel | undefined,
+	HierarchyLevel,
 	string,
 	{ rejectValue: string }
 >(
@@ -100,21 +78,13 @@ export const getHierarchy = createAsyncThunk<
 
 export const createHierarchy = createAsyncThunk<
 	CreateHierarchyLevelResponse,
-	{ orgSlug: string, data: CreateHierarchyLevelRequest },
-	{ rejectValue: string, state: any }
+	CreateHierarchyLevelRequest,
+	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createHierarchy`,
-	async ({ orgSlug, data }, { rejectWithValue, getState }) => {
+	async (data, { rejectWithValue }) => {
 		try {
-			const state = getState();
-			const orgId = selectMyOrgIdBySlug(state, orgSlug);
-
-			if (!orgId) {
-				return rejectWithValue('Organization not found');
-			}
-
-			const dataWithOrg = { ...data, orgId };
-			const result = await hierarchyService.createHierarchy(dataWithOrg);
+			const result = await hierarchyService.createHierarchy(data);
 			return result;
 		}
 		catch (error) {
@@ -126,14 +96,14 @@ export const createHierarchy = createAsyncThunk<
 );
 
 export const updateHierarchy = createAsyncThunk<
-	HierarchyLevel,
-	{ id: string } & Partial<HierarchyLevel>,
+	UpdateHierarchyLevelResponse,
+	UpdateHierarchyLevelRequest,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateHierarchy`,
-	async ({ id, ...data }, { rejectWithValue }) => {
+	async (data, { rejectWithValue }) => {
 		try {
-			const result = await hierarchyService.updateHierarchy(id, data as UpdateHierarchyLevelRequest);
+			const result = await hierarchyService.updateHierarchy(data);
 			return result;
 		}
 		catch (error) {
@@ -161,8 +131,8 @@ export const deleteHierarchy = createAsyncThunk<
 );
 
 export const manageHierarchyUsers = createAsyncThunk<
-	ManageHierarchyUsersResponse,
-	ManageHierarchyUsersRequest,
+	ManageHierarchyLevelUsersResponse,
+	ManageHierarchyLevelUsersRequest,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/manageHierarchyUsers`,
@@ -183,13 +153,19 @@ const hierarchySlice = createSlice({
 	initialState,
 	reducers: {
 		setHierarchies: (state, action: PayloadAction<HierarchyLevel[]>) => {
-			state.hierarchies = action.payload;
+			state.list.data = action.payload;
 		},
-		setIsLoadingList: (state, action: PayloadAction<boolean>) => {
-			state.isLoadingList = action.payload;
+		resetCreateHierarchy: (state) => {
+			state.create = baseReduxActionState;
 		},
-		setErrorList: (state, action: PayloadAction<string | null>) => {
-			state.errorList = action.payload;
+		resetUpdateHierarchy: (state) => {
+			state.update = baseReduxActionState;
+		},
+		resetDeleteHierarchy: (state) => {
+			state.delete = baseReduxActionState;
+		},
+		resetManageUsers: (state) => {
+			state.manageUsers = baseReduxActionState;
 		},
 	},
 	extraReducers: (builder) => {
@@ -198,112 +174,130 @@ const hierarchySlice = createSlice({
 		createHierarchyReducers(builder);
 		updateHierarchyReducers(builder);
 		deleteHierarchyReducers(builder);
-		manageHierarchyUsersReducers(builder);
+		manageUsersReducers(builder);
 	},
 });
 
 function listHierarchiesReducers(builder: ActionReducerMapBuilder<HierarchyState>) {
 	builder
 		.addCase(listHierarchies.pending, (state) => {
-			state.isLoadingList = true;
-			state.errorList = null;
+			state.list.status = 'pending';
+			state.list.error = null;
+			state.list.data = [];
 		})
 		.addCase(listHierarchies.fulfilled, (state, action) => {
-			state.isLoadingList = false;
-			state.hierarchies = action.payload;
-			state.errorList = null;
+			state.list.status = 'success';
+			state.list.data = action.payload.items;
+			state.list.error = null;
 		})
 		.addCase(listHierarchies.rejected, (state, action) => {
-			state.isLoadingList = false;
-			state.hierarchies = [];
-			state.errorList = action.payload || 'Failed to list hierarchies';
+			state.list.status = 'error';
+			state.list.data = [];
+			state.list.error = action.payload || 'Failed to list hierarchies';
 		});
 }
 
 function getHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState>) {
 	builder
 		.addCase(getHierarchy.pending, (state) => {
-			state.isLoadingDetail = true;
-			state.errorDetail = null;
+			state.detail.status = 'pending';
+			state.detail.error = null;
+			state.detail.data = undefined;
 		})
 		.addCase(getHierarchy.fulfilled, (state, action) => {
-			state.isLoadingDetail = false;
-			state.hierarchyDetail = action.payload;
-			state.errorDetail = null;
+			state.detail.status = 'success';
+			state.detail.data = action.payload;
+			state.detail.error = null;
 		})
 		.addCase(getHierarchy.rejected, (state, action) => {
-			state.isLoadingDetail = false;
-			state.hierarchyDetail = undefined;
-			state.errorDetail = action.payload || 'Failed to get hierarchy';
+			state.detail.status = 'error';
+			state.detail.data = undefined;
+			state.detail.error = action.payload || 'Failed to get hierarchy';
 		});
 }
 
 function createHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState>) {
 	builder
 		.addCase(createHierarchy.pending, (state) => {
-			state.isCreatingHierarchy = true;
-			state.createHierarchyError = null;
+			state.create.status = 'pending';
+			state.create.error = null;
+			state.create.data = undefined;
 		})
 		.addCase(createHierarchy.fulfilled, (state, action) => {
-			state.isCreatingHierarchy = false;
-			state.createHierarchyResponse = action.payload;
-			state.createHierarchyError = null;
+			state.create.status = 'success';
+			state.create.data = action.payload;
+			state.create.error = null;
 		})
 		.addCase(createHierarchy.rejected, (state, action) => {
-			state.isCreatingHierarchy = false;
-			state.createHierarchyError = action.payload || 'Failed to create hierarchy';
+			state.create.status = 'error';
+			state.create.error = action.payload || 'Failed to create hierarchy';
+			state.create.data = undefined;
 		});
 }
 
 function updateHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState>) {
 	builder
 		.addCase(updateHierarchy.pending, (state) => {
-			state.isUpdatingHierarchy = true;
-			state.updateHierarchyError = null;
+			state.update.status = 'pending';
+			state.update.error = null;
+			state.update.data = undefined;
 		})
 		.addCase(updateHierarchy.fulfilled, (state, action) => {
-			state.isUpdatingHierarchy = false;
-			state.hierarchyDetail = action.payload;
-			state.updateHierarchyError = null;
+			state.update.status = 'success';
+			if (state.detail.data) {
+				state.detail.data.etag = action.payload.etag;
+				state.detail.data.updatedAt = action.payload.updatedAt;
+			}
+			state.update.error = null;
 		})
 		.addCase(updateHierarchy.rejected, (state, action) => {
-			state.isUpdatingHierarchy = false;
-			state.updateHierarchyError = action.payload || 'Failed to update hierarchy';
+			state.update.status = 'error';
+			state.update.error = action.payload || 'Failed to update hierarchy';
+			state.update.data = undefined;
 		});
 }
 
 function deleteHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState>) {
 	builder
 		.addCase(deleteHierarchy.pending, (state) => {
-			state.isDeletingHierarchy = true;
-			state.deleteHierarchyError = null;
+			state.delete.status = 'pending';
+			state.delete.error = null;
+			state.delete.data = undefined;
 		})
 		.addCase(deleteHierarchy.fulfilled, (state) => {
-			state.isDeletingHierarchy = false;
-			state.hierarchyDetail = undefined;
-			state.deleteHierarchyError = null;
+			state.delete.status = 'success';
+			state.detail.data = undefined;
+			state.delete.error = null;
 		})
 		.addCase(deleteHierarchy.rejected, (state, action) => {
-			state.isDeletingHierarchy = false;
-			state.deleteHierarchyError = action.payload || 'Failed to delete hierarchy';
+			state.delete.status = 'error';
+			state.delete.error = action.payload || 'Failed to delete hierarchy';
+			state.delete.data = undefined;
 		});
 }
 
-function manageHierarchyUsersReducers(builder: ActionReducerMapBuilder<HierarchyState>) {
+function manageUsersReducers(builder: ActionReducerMapBuilder<HierarchyState>) {
 	builder
 		.addCase(manageHierarchyUsers.pending, (state) => {
-			state.isManagingUsers = true;
-			state.manageUsersError = null;
+			state.manageUsers.status = 'pending';
+			state.manageUsers.error = null;
+			state.manageUsers.data = undefined;
 		})
-		.addCase(manageHierarchyUsers.fulfilled, (state) => {
-			state.isManagingUsers = false;
-			state.manageUsersError = null;
+		.addCase(manageHierarchyUsers.fulfilled, (state, action) => {
+			state.manageUsers.status = 'success';
+			if (state.detail.data) {
+				state.detail.data.etag = action.payload.etag;
+				state.detail.data.updatedAt = action.payload.updatedAt;
+			}
+			state.manageUsers.error = null;
 		})
 		.addCase(manageHierarchyUsers.rejected, (state, action) => {
-			state.isManagingUsers = false;
-			state.manageUsersError = action.payload || 'Failed to manage hierarchy users';
+			state.manageUsers.status = 'error';
+			state.manageUsers.error = action.payload || 'Failed to manage users in hierarchy';
+			state.manageUsers.data = undefined;
 		});
 }
+
 
 export const actions = {
 	...hierarchySlice.actions,
