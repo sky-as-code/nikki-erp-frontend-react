@@ -5,7 +5,8 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { selectHierarchyState, selectUserState } from '../../appState';
+import { selectHierarchyList } from '../../appState/hierarchy';
+import { selectUserList } from '../../appState/user';
 import { ListActionListPage } from '../../components/ListActionBar';
 import { HierarchyTable, HierarchyOrgChart } from '../../features/hierarchy/components';
 import { useHierarchyListHandlers } from '../../features/hierarchy/hooks';
@@ -13,12 +14,13 @@ import hierarchySchema from '../../schemas/hierarchy-schema.json';
 
 
 export function HierarchyListPageBody(): React.ReactNode {
-	const { hierarchies, isLoading } = useMicroAppSelector(selectHierarchyState);
-	const { users } = useMicroAppSelector(selectUserState);
+	const listHierarchy = useMicroAppSelector(selectHierarchyList);
+	const listUser = useMicroAppSelector(selectUserList);
 	const schema = hierarchySchema as ModelSchema;
 	const columns = ['id', 'name', 'createdAt', 'updatedAt'];
 	const [view, setView] = React.useState<'table' | 'orgChart'>('table');
 	const { t } = useTranslation();
+	const isLoading = listHierarchy.status === 'pending' || listUser.status === 'pending';
 
 	const { handleCreate, handleRefresh } = useHierarchyListHandlers();
 
@@ -53,15 +55,15 @@ export function HierarchyListPageBody(): React.ReactNode {
 			{view === 'table' ? (
 				<HierarchyTable
 					columns={columns}
-					hierarchies={hierarchies}
+					hierarchies={listHierarchy?.data}
 					isLoading={isLoading}
 					schema={schema}
 				/>
 			) : (
 				<Paper withBorder>
 					<HierarchyOrgChart
-						hierarchies={hierarchies}
-						usersByHierarchy={users}
+						hierarchies={listHierarchy?.data}
+						usersByHierarchy={listUser?.data}
 					/>
 				</Paper>
 			)}

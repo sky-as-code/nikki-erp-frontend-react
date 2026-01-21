@@ -3,16 +3,17 @@ import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, groupActions, userActions } from '../../../appState';
-import { selectGroupState, selectManageGroupUsers, selectUpdateGroup, selectDeleteGroup } from '../../../appState/group';
+import { selectManageGroupUsers, selectUpdateGroup, selectDeleteGroup, selectGroupDetail } from '../../../appState/group';
 
 // eslint-disable-next-line max-lines-per-function
-export function useGroupDetailHandlers(groupId: string) {
+export function useGroupDetailHandlers() {
+	const { groupId } = useParams();
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const { groupDetail } = useMicroAppSelector(selectGroupState);
+	const groupDetail = useMicroAppSelector(selectGroupDetail);
 	const updateCommand = useMicroAppSelector(selectUpdateGroup);
 	const deleteCommand = useMicroAppSelector(selectDeleteGroup);
 
@@ -20,6 +21,7 @@ export function useGroupDetailHandlers(groupId: string) {
 	const { notification } = useUIState();
 	const { t } = useTranslation();
 	const activeOrg = useActiveOrgWithDetails();
+	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {
@@ -54,18 +56,18 @@ export function useGroupDetailHandlers(groupId: string) {
 	}, [deleteCommand.status, dispatch, navigate, notification, t]);
 
 	const handleUpdate = (data: any) => {
-		if (groupId) {
+		if (groupDetail?.data.id) {
+			const dataWithTag = { ...data, etag: groupDetail.data.etag };
 			dispatch(groupActions.updateGroup({
-				id: groupId,
-				...data,
-				etag: groupDetail?.etag,
+				id: groupDetail.data.id,
+				...dataWithTag,
 			}));
 		}
 	};
 
 	const handleDelete = () => {
-		if (groupId) {
-			dispatch(groupActions.deleteGroup(groupId));
+		if (groupDetail?.data.id) {
+			dispatch(groupActions.deleteGroup(groupDetail.data.id));
 		}
 	};
 
@@ -77,19 +79,21 @@ export function useGroupDetailHandlers(groupId: string) {
 	}, [groupId, dispatch, activeOrg]);
 
 	return {
+		isLoadingDetail,
 		handleUpdate,
 		handleDelete,
 	};
 }
 
 // eslint-disable-next-line max-lines-per-function
-export function useGroupUserManagement(groupId: string) {
+export function useGroupUserManagement() {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const { groupDetail } = useMicroAppSelector(selectGroupState);
 	const activeOrg = useActiveOrgWithDetails();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
+	const groupDetail = useMicroAppSelector(selectGroupDetail);
 	const manageUsersCommand = useMicroAppSelector(selectManageGroupUsers);
+	const isLoadingManageUsers = manageUsersCommand.status === 'pending';
 
 	React.useEffect(() => {
 		if (manageUsersCommand.status === 'success') {
@@ -108,26 +112,27 @@ export function useGroupUserManagement(groupId: string) {
 	}, [manageUsersCommand.status, manageUsersCommand.error, dispatch, notification, t]);
 
 	const handleAddUsers = (userIds: string[]) => {
-		if ((userIds).length === 0) return;
+		if ((userIds).length === 0 || !groupDetail?.data.id) return;
 
 		dispatch(groupActions.manageGroupUsers({
-			id: groupId,
+			id: groupDetail.data.id,
 			add: userIds,
-			etag: groupDetail.etag,
+			etag: groupDetail.data.etag,
 		}));
 	};
 
 	const handleRemoveUsers = (userIds: string[]) => {
-		if ((userIds).length === 0) return;
+		if ((userIds).length === 0 || !groupDetail?.data.id) return;
 
 		dispatch(groupActions.manageGroupUsers({
-			id: groupId,
+			id: groupDetail.data.id,
 			remove: userIds,
-			etag: groupDetail.etag,
+			etag: groupDetail.data.etag,
 		}));
 	};
 
 	return {
+		isLoadingManageUsers,
 		handleAddUsers,
 		handleRemoveUsers,
 	};

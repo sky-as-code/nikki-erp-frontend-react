@@ -1,21 +1,24 @@
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, userActions } from '../../../appState';
-import { selectDeleteUser, selectUpdateUser } from '../../../appState/user';
+import { selectDeleteUser, selectUpdateUser, selectUserDetail } from '../../../appState/user';
 
 // eslint-disable-next-line max-lines-per-function
-export function useUserDetailHandlers(userId: string, etag: string) {
+export function useUserDetailHandlers() {
+	const { userId } = useParams();
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const navigate = useNavigate();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
+	const userDetail = useMicroAppSelector(selectUserDetail);
 
 	const updateCommand = useMicroAppSelector(selectUpdateUser);
 	const deleteCommand = useMicroAppSelector(selectDeleteUser);
+	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {
@@ -52,25 +55,26 @@ export function useUserDetailHandlers(userId: string, etag: string) {
 	}, [deleteCommand.status, dispatch, navigate, notification, t]);
 
 	const handleUpdate = (data: any) => {
-		if (userId) {
-			const dataWithTag = { ...data, etag };
-			dispatch(userActions.updateUser({ id: userId, ...dataWithTag }));
+		if (userDetail?.data.id) {
+			const dataWithTag = { ...data, etag: userDetail.data.etag };
+			dispatch(userActions.updateUser({ id: userDetail.data.id, ...dataWithTag }));
 		}
 	};
 
 	const handleDelete = () => {
-		if (userId) {
-			dispatch(userActions.deleteUser(userId));
+		if (userDetail?.data.id) {
+			dispatch(userActions.deleteUser(userDetail.data.id));
 		}
 	};
 
 	React.useEffect(() => {
-		if (userId) {
-			dispatch(userActions.getUser(userId));
-		}
+		if (!userId) return;
+
+		dispatch(userActions.getUser(userId));
 	}, [userId, dispatch]);
 
 	return {
+		isLoadingDetail,
 		handleDelete,
 		handleUpdate,
 	};

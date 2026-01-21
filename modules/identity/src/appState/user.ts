@@ -22,12 +22,12 @@ export const selectUserState = (state: { [STATE_KEY]: UserState }) => state[STAT
 
 export const selectUserList = createSelector(
 	selectUserState,
-	(state) => state.users,
+	(state) => state.list,
 );
 
 export const selectUserDetail = createSelector(
 	selectUserState,
-	(state) => state.userDetail,
+	(state) => state.detail,
 );
 
 export const selectCreateUser = createSelector(

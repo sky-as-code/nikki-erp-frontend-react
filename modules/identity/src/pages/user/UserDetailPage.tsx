@@ -4,21 +4,20 @@ import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router';
+import { Link } from 'react-router';
 
-import { selectUserState } from '../../appState/user';
+import { selectUserDetail } from '../../appState/user';
 import { UserDetailForm } from '../../features/user/components';
 import { useUserDetailHandlers } from '../../features/user/hooks/useUserDetail';
 import userSchema from '../../schemas/user-schema.json';
 
 
 export const UserDetailPageBody: React.FC = () => {
-	const { userId } = useParams();
-	const { userDetail, isLoading } = useMicroAppSelector(selectUserState);
+	const userDetail = useMicroAppSelector(selectUserDetail);
 	const schema = userSchema as ModelSchema;
 	const { t } = useTranslation();
 
-	const handlers = useUserDetailHandlers(userId!, userDetail?.etag);
+	const {isLoadingDetail, handleUpdate, handleDelete } = useUserDetailHandlers();
 
 	return (
 		<Stack gap='md'>
@@ -28,18 +27,13 @@ export const UserDetailPageBody: React.FC = () => {
 						<h4>{t('nikki.identity.user.title')}</h4>
 					</Link>
 				</Typography>
-				{userDetail?.email && (
-					<Typography>
-						<h5>{userDetail.email}</h5>
-					</Typography>
-				)}
 			</Breadcrumbs>
 			<UserDetailForm
 				schema={schema}
-				userDetail={userDetail}
-				isLoading={isLoading}
-				onSubmit={handlers.handleUpdate}
-				onDelete={handlers.handleDelete}
+				userDetail={userDetail?.data}
+				isLoading={isLoadingDetail}
+				onSubmit={handleUpdate}
+				onDelete={handleDelete}
 			/>
 		</Stack>
 	);

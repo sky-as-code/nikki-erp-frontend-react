@@ -5,7 +5,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { selectOrganizationState } from '../../appState';
+import { selectOrganizationList } from '../../appState/organization';
 import { ListActionListPage } from '../../components/ListActionBar';
 import { OrganizationTable } from '../../features/organization/components';
 import { useOrganizationListHandlers } from '../../features/organization/hooks';
@@ -13,11 +13,12 @@ import organizationSchema from '../../schemas/organization-schema.json';
 
 
 export function OrganizationListPageBody(): React.ReactElement {
-	const { organizations, isLoadingList } = useMicroAppSelector(selectOrganizationState);
+	const listOrganization = useMicroAppSelector(selectOrganizationList);
 	const schema = organizationSchema as ModelSchema;
 	const columns = ['displayName', 'legalName', 'phoneNumber', 'status', 'createdAt', 'updatedAt'];
 	const { t } = useTranslation();
 
+	const isLoading = listOrganization.status === 'pending';
 	const { handleCreate, handleRefresh } = useOrganizationListHandlers();
 
 	return (
@@ -39,8 +40,8 @@ export function OrganizationListPageBody(): React.ReactElement {
 			/>
 			<OrganizationTable
 				columns={columns}
-				organizations={organizations}
-				isLoading={isLoadingList}
+				organizations={listOrganization?.data}
+				isLoading={isLoading}
 				schema={schema}
 			/>
 		</Stack>

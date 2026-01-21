@@ -15,6 +15,7 @@ export function useOrganizationCreateHandlers() {
 	const { t } = useTranslation();
 
 	const createCommand = useMicroAppSelector(selectCreateOrganization);
+	const isLoading = createCommand.status === 'pending';
 
 	React.useEffect(() => {
 		if (createCommand.status === 'success') {
@@ -38,6 +39,7 @@ export function useOrganizationCreateHandlers() {
 	};
 
 	return {
+		isLoading,
 		onSubmit: handleCreate,
 	};
 }

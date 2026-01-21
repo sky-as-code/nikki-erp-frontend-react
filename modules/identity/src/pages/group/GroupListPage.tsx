@@ -5,7 +5,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { selectGroupState } from '../../appState';
+import { selectGroupList } from '../../appState/group';
 import { ListActionListPage } from '../../components/ListActionBar';
 import { GroupTable } from '../../features/group/components';
 import { useGroupListHandlers } from '../../features/group/hooks/useGroupList';
@@ -13,10 +13,11 @@ import groupSchema from '../../schemas/group-schema.json';
 
 
 export function GroupListPageBody(): React.ReactNode {
-	const { groups, isLoading } = useMicroAppSelector(selectGroupState);
 	const schema = groupSchema as ModelSchema;
 	const columns = ['id', 'name', 'description', 'createdAt', 'updatedAt'];
 	const { t } = useTranslation();
+	const listGroup = useMicroAppSelector(selectGroupList);
+	const isLoadingList = listGroup.status === 'pending';
 
 	const { handleCreate, handleRefresh } = useGroupListHandlers();
 	return (
@@ -38,8 +39,8 @@ export function GroupListPageBody(): React.ReactNode {
 			/>
 			<GroupTable
 				columns={columns}
-				groups={groups}
-				isLoading={isLoading}
+				groups={listGroup?.data}
+				isLoading={isLoadingList}
 				schema={schema}
 			/>
 		</Stack>

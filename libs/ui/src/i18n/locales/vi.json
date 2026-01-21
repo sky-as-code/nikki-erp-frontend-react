@@ -130,6 +130,12 @@
                     "noUsers": "Không tìm thấy người dùng nào",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin người dùng này không?",
                     "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa người dùng này không?"
+				},
+				"errors": {
+					"password_required": "Mật khẩu là bắt buộc",
+					"password_min_length_8": "Mật khẩu phải có ít nhất 8 ký tự",
+					"confirm_password_required": "Xác nhận mật khẩu là bắt buộc",
+					"passwords_do_not_match": "Mật khẩu xác nhận không khớp"
                 }
             },
             "group": {
@@ -245,7 +251,7 @@
                 },
                 "status": {
                     "active": "Hoạt động",
-                    "inactive": "Không hoạt động"
+                    "archived": "Không hoạt động"
                 },
                 "messages": {
                     "createSuccess": "Tạo tổ chức thành công",

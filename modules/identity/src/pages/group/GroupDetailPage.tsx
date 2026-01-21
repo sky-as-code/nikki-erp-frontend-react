@@ -4,11 +4,11 @@ import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router';
+import { data, Link, useParams } from 'react-router';
 
 
-import { selectUserState } from '../../appState';
-import { selectGroupState } from '../../appState/group';
+import { selectGroupDetail } from '../../appState/group';
+import { selectUserList } from '../../appState/user';
 import { ListUser } from '../../components/User';
 import { GroupDetailForm } from '../../features/group/components';
 import { useGroupDetailHandlers, useGroupUserManagement } from '../../features/group/hooks/useGroupDetail';
@@ -18,17 +18,19 @@ import groupSchema from '../../schemas/group-schema.json';
 
 export const GroupDetailPageBody: React.FC = () => {
 	const { groupId } = useParams();
-	const { groupDetail, isLoading } = useMicroAppSelector(selectGroupState);
-	const { users } = useMicroAppSelector(selectUserState);
+	const groupDetail = useMicroAppSelector(selectGroupDetail);
+	const users = useMicroAppSelector(selectUserList);
 	const schema = groupSchema as ModelSchema;
 	const { t } = useTranslation();
 
-	const { handleUpdate, handleDelete } = useGroupDetailHandlers(groupId!);
-	const { handleAddUsers, handleRemoveUsers } = useGroupUserManagement(groupId!);
+	const { isLoadingDetail, handleUpdate, handleDelete } = useGroupDetailHandlers();
+	const { isLoadingManageUsers,
+		handleAddUsers,
+		handleRemoveUsers } = useGroupUserManagement();
 
 	const usersByGroup = React.useMemo(() => {
-		if (!groupId || !users.length) return [];
-		return users.filter((user: User) =>
+		if (!groupId || !users.data.length) return [];
+		return users.data.filter((user: User) =>
 			user.groups?.some(group => group.id === groupId),
 		);
 	}, [users, groupId]);
@@ -41,23 +43,18 @@ export const GroupDetailPageBody: React.FC = () => {
 						<h4>{t('nikki.identity.group.title')}</h4>
 					</Link>
 				</Typography>
-				{groupDetail?.name && (
-					<Typography>
-						<h5>{groupDetail.name}</h5>
-					</Typography>
-				)}
 			</Breadcrumbs>
 			<GroupDetailForm
 				schema={schema}
-				groupDetail={groupDetail}
-				isLoading={isLoading}
+				groupDetail={groupDetail?.data}
+				isLoading={isLoadingDetail}
 				onSubmit={handleUpdate}
 				onDelete={handleDelete}
 			/>
 			<ListUser
 				users={usersByGroup}
-				availableUsers={users}
-				isLoading={isLoading}
+				availableUsers={users?.data}
+				isLoading={isLoadingManageUsers}
 				onAddUsers={handleAddUsers}
 				onRemoveUsers={handleRemoveUsers}
 			/>

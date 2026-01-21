@@ -1,3 +1,4 @@
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { createSelector } from '@reduxjs/toolkit';
 import { useSelector } from 'react-redux';
 
@@ -37,13 +38,7 @@ const selectFirstOrgSlug = createSelector(
 	}),
 );
 
-const selectMyOrgIdBySlug = createSelector(
-	selectMyOrgs,
-	(_, orgSlug: string) => orgSlug,
-	(orgs: Organization[], orgSlug) => orgs.find(o => o.slug === orgSlug)?.id ?? null,
-);
-
-export { selectMyOrgs, selectMyOrgIdBySlug };
+export { selectMyOrgs };
 export const useFirstOrgSlug = () => useSelector(selectFirstOrgSlug);
 export const useUserContext = () => useSelector(selectUserContext);
 export const useMyOrgs = () => useSelector(selectMyOrgs);
@@ -51,4 +46,9 @@ export const useFindMyOrg = (orgSlug: string) => useSelector(state => selectFind
 export const useMyModules = (orgSlug: string) => useSelector(state => selectMyModules(state, orgSlug));
 export const useFindMyModule = (orgSlug: string, moduleSlug: string) => {
 	return useSelector(state => selectFindMyModule(state, orgSlug, moduleSlug));
+};
+
+export const useActiveOrgWithDetails = () => {
+	const { orgSlug } = useActiveOrgModule();
+	return useFindMyOrg(orgSlug ?? '');
 };

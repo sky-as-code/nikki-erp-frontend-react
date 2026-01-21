@@ -16,11 +16,11 @@ export function useGroupListHandlers() {
 		navigate('create');
 	}, [navigate]);
 
-	const handleRefresh = React.useCallback(() => {
+	const handleRefresh = () => {
 		if (activeOrg) {
 			dispatch(groupActions.listGroups(activeOrg.id));
 		}
-	}, [dispatch, activeOrg]);
+	};
 
 	React.useEffect(() => {
 		if (activeOrg) {

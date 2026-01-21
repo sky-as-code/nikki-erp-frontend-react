@@ -1,3 +1,4 @@
+import { baseReduxActionState, ReduxActionState } from '@nikkierp/ui/appState';
 import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
@@ -5,29 +6,25 @@ import {
 import { CreateUserResponse, SearchUserResponse, UpdateUserRequest, UpdateUserResponse, User, DeleteUserResponse } from './types';
 import { CreateUserRequest } from './types';
 import { userService } from './userService';
-import { initialReduxActionState, ReduxActionState } from '../../appState/reduxActionState';
 
 
 export const SLICE_NAME = 'identity.user';
 
 export type UserState = {
-	users: User[];
-	userDetail?: User;
-	isLoading: boolean;
-	error: string | null;
+	detail :ReduxActionState<User>;
+	list: ReduxActionState<User[]>;
 	create: ReduxActionState<CreateUserResponse>;
 	update: ReduxActionState<UpdateUserResponse>;
 	delete: ReduxActionState<DeleteUserResponse>;
 };
 
 const initialState: UserState = {
-	users: [],
-	userDetail: undefined,
-	isLoading: false,
-	error: null,
-	create: initialReduxActionState<CreateUserResponse>(),
-	update: initialReduxActionState<UpdateUserResponse>(),
-	delete: initialReduxActionState<DeleteUserResponse>(),
+	detail: baseReduxActionState,
+	list: { ...baseReduxActionState, data: [] },
+
+	create: baseReduxActionState,
+	update: baseReduxActionState,
+	delete: baseReduxActionState,
 };
 
 export const listUsers = createAsyncThunk<
@@ -124,22 +121,16 @@ const userSlice = createSlice({
 	initialState,
 	reducers: {
 		setUsers: (state, action: PayloadAction<User[]>) => {
-			state.users = action.payload;
-		},
-		setIsLoading: (state, action: PayloadAction<boolean>) => {
-			state.isLoading = action.payload;
-		},
-		setError: (state, action: PayloadAction<string | null>) => {
-			state.error = action.payload;
+			state.list.data = action.payload;
 		},
 		resetCreateUser: (state) => {
-			state.create = initialReduxActionState<CreateUserResponse>();
+			state.create = baseReduxActionState;
 		},
 		resetUpdateUser: (state) => {
-			state.update = initialReduxActionState<UpdateUserResponse>();
+			state.update = baseReduxActionState;
 		},
 		resetDeleteUser: (state) => {
-			state.delete = initialReduxActionState<DeleteUserResponse>();
+			state.delete = baseReduxActionState;
 		},
 	},
 	extraReducers: (builder) => {
@@ -154,36 +145,38 @@ const userSlice = createSlice({
 function listUsersReducers(builder: ActionReducerMapBuilder<UserState>) {
 	builder
 		.addCase(listUsers.pending, (state) => {
-			state.isLoading = true;
-			state.error = null;
+			state.list.status = 'pending';
+			state.list.error = null;
+			state.list.data = [];
 		})
 		.addCase(listUsers.fulfilled, (state, action) => {
-			state.isLoading = false;
-			state.users = action.payload.items;
-			state.error = null;
+			state.list.status = 'success';
+			state.list.data = action.payload.items;
+			state.list.error = null;
 		})
 		.addCase(listUsers.rejected, (state, action) => {
-			state.isLoading = false;
-			state.users = [];
-			state.error = action.payload || 'Failed to list users';
+			state.list.status = 'error';
+			state.list.data = [];
+			state.list.error = action.payload || 'Failed to list users';
 		});
 }
 
 function getUserReducers(builder: ActionReducerMapBuilder<UserState>) {
 	builder
 		.addCase(getUser.pending, (state) => {
-			state.isLoading = true;
-			state.error = null;
+			state.detail.status = 'pending';
+			state.detail.error = null;
+			state.detail.data = undefined;
 		})
 		.addCase(getUser.fulfilled, (state, action) => {
-			state.isLoading = false;
-			state.userDetail = action.payload;
-			state.error = null;
+			state.detail.status = 'success';
+			state.detail.data = action.payload;
+			state.detail.error = null;
 		})
 		.addCase(getUser.rejected, (state, action) => {
-			state.isLoading = false;
-			state.userDetail = undefined;
-			state.error = action.payload || 'Failed to get user';
+			state.detail.status = 'error';
+			state.detail.data = undefined;
+			state.detail.error = action.payload || 'Failed to get user';
 		});
 }
 
@@ -192,6 +185,7 @@ function createUserReducers(builder: ActionReducerMapBuilder<UserState>) {
 		.addCase(createUser.pending, (state) => {
 			state.create.status = 'pending';
 			state.create.error = null;
+			state.create.data = undefined;
 		})
 		.addCase(createUser.fulfilled, (state, action) => {
 			state.create.status = 'success';
@@ -201,6 +195,7 @@ function createUserReducers(builder: ActionReducerMapBuilder<UserState>) {
 		.addCase(createUser.rejected, (state, action) => {
 			state.create.status = 'error';
 			state.create.error = action.payload || 'Failed to create user';
+			state.create.data = undefined;
 		});
 }
 
@@ -209,18 +204,20 @@ function updateUserReducers(builder: ActionReducerMapBuilder<UserState>) {
 		.addCase(updateUser.pending, (state) => {
 			state.update.status = 'pending';
 			state.update.error = null;
+			state.update.data = undefined;
 		})
 		.addCase(updateUser.fulfilled, (state, action) => {
 			state.update.status = 'success';
-			if (state.userDetail) {
-				state.userDetail.etag = action.payload.etag;
-				state.userDetail.updatedAt = action.payload.updatedAt;
+			if (state.detail.data) {
+				state.detail.data.etag = action.payload.etag;
+				state.detail.data.updatedAt = action.payload.updatedAt;
 			}
 			state.update.error = null;
 		})
 		.addCase(updateUser.rejected, (state, action) => {
 			state.update.status = 'error';
 			state.update.error = action.payload || 'Failed to update user';
+			state.update.data = undefined;
 		});
 }
 
@@ -229,15 +226,17 @@ function deleteUserReducers(builder: ActionReducerMapBuilder<UserState>) {
 		.addCase(deleteUser.pending, (state) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
+			state.delete.data = undefined;
 		})
 		.addCase(deleteUser.fulfilled, (state) => {
 			state.delete.status = 'success';
-			state.userDetail = undefined;
+			state.detail.data = undefined;
 			state.delete.error = null;
 		})
 		.addCase(deleteUser.rejected, (state, action) => {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete user';
+			state.delete.data = undefined;
 		});
 }
 

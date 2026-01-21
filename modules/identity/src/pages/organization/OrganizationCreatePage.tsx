@@ -5,16 +5,17 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { selectOrganizationState } from '../../appState';
+import { selectCreateOrganization } from '../../appState/organization';
 import { OrganizationCreateForm } from '../../features/organization/components';
 import { useOrganizationCreateHandlers } from '../../features/organization/hooks';
 import organizationSchema from '../../schemas/organization-schema.json';
 
 
 export const OrganizationCreatePageBody: React.FC = () => {
-	const { isLoading } = useMicroAppSelector(selectOrganizationState);
+	const create = useMicroAppSelector(selectCreateOrganization);
 	const schema = organizationSchema as ModelSchema;
 	const { t } = useTranslation();
+	const isLoading = create.status === 'pending';
 
 	const { onSubmit } = useOrganizationCreateHandlers();
 

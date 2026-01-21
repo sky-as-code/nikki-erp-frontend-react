@@ -17,6 +17,7 @@ export function useHierarchyCreateHandlers() {
 	const activeOrg = useActiveOrgWithDetails();
 
 	const createCommand = useMicroAppSelector(selectCreateHierarchy);
+	const isLoading = createCommand.status === 'pending';
 
 	React.useEffect(() => {
 		if (createCommand.status === 'success') {
@@ -45,6 +46,7 @@ export function useHierarchyCreateHandlers() {
 	};
 
 	return {
+		isLoading,
 		onSubmit: handleCreate,
 	};
 }

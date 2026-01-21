@@ -2,21 +2,25 @@ import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, hierarchyActions, userActions } from '../../../appState';
-import { selectDeleteHierarchy, selectHierarchyState, selectManageHierarchyUsers, selectUpdateHierarchy } from '../../../appState/hierarchy';
+import { selectDeleteHierarchy, selectManageHierarchyUsers, selectUpdateHierarchy, selectHierarchyDetail } from '../../../appState/hierarchy';
 
 // eslint-disable-next-line max-lines-per-function
-export function useHierarchyDetailHandlers(hierarchyId: string, etag: string) {
+export function useHierarchyDetailHandlers() {
+	const { hierarchyId } = useParams();
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const navigate = useNavigate();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
+	const hierarchyDetail = useMicroAppSelector(selectHierarchyDetail);
+	const activeOrg = useActiveOrgWithDetails();
 
 	const updateCommand = useMicroAppSelector(selectUpdateHierarchy);
 	const deleteCommand = useMicroAppSelector(selectDeleteHierarchy);
+	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {
@@ -53,35 +57,44 @@ export function useHierarchyDetailHandlers(hierarchyId: string, etag: string) {
 	}, [deleteCommand.status, dispatch, navigate, notification, t]);
 
 	const handleUpdate = (data: any) => {
-		if (hierarchyId) {
+		if (hierarchyDetail?.data.id) {
+			const dataWithTag = { ...data, etag: hierarchyDetail.data.etag };
 			dispatch(hierarchyActions.updateHierarchy({
-				...data,
-				id: hierarchyId,
-				etag,
+				...dataWithTag,
+				id: hierarchyDetail.data.id,
 			}));
 		}
 	};
 
 	const handleDelete = () => {
-		if (hierarchyId) {
-			dispatch(hierarchyActions.deleteHierarchy(hierarchyId));
+		if (hierarchyDetail?.data.id) {
+			dispatch(hierarchyActions.deleteHierarchy(hierarchyDetail.data.id));
 		}
 	};
 
+	React.useEffect(() => {
+		if (!hierarchyId || !activeOrg) return;
+
+		dispatch(hierarchyActions.getHierarchy(hierarchyId));
+		dispatch(userActions.listUsers(activeOrg!.id));
+	}, [hierarchyId, activeOrg, dispatch]);
+
 	return {
+		isLoadingDetail,
 		handleDelete,
 		handleUpdate,
 	};
 }
 
 // eslint-disable-next-line max-lines-per-function
-export function useHierarchyUserManagement(hierarchyId: string) {
+export function useHierarchyUserManagement() {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const { hierarchyDetail } = useMicroAppSelector(selectHierarchyState);
 	const activeOrg = useActiveOrgWithDetails();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
+	const hierarchyDetail = useMicroAppSelector(selectHierarchyDetail);
 	const manageUsersCommand = useMicroAppSelector(selectManageHierarchyUsers);
+	const isLoadingManageUsers = manageUsersCommand.status === 'pending';
 
 	React.useEffect(() => {
 		if (manageUsersCommand.status === 'success') {
@@ -95,6 +108,7 @@ export function useHierarchyUserManagement(hierarchyId: string) {
 			notification.showError(
 				t('nikki.identity.hierarchy.messages.manageUsersError'), '',
 			);
+			dispatch(hierarchyActions.resetManageUsers());
 		}
 	}, [manageUsersCommand.status, manageUsersCommand.error, notification, t, dispatch, activeOrg]);
 
@@ -102,9 +116,9 @@ export function useHierarchyUserManagement(hierarchyId: string) {
 		if ((userIds).length === 0) return;
 
 		dispatch(hierarchyActions.manageHierarchyUsers({
-			id: hierarchyId,
+			id: hierarchyDetail!.data.id,
 			add: userIds,
-			etag: hierarchyDetail?.etag || '',
+			etag: hierarchyDetail!.data.etag,
 		}));
 	};
 
@@ -112,19 +126,14 @@ export function useHierarchyUserManagement(hierarchyId: string) {
 		if ((userIds).length === 0) return;
 
 		dispatch(hierarchyActions.manageHierarchyUsers({
-			id: hierarchyId,
+			id: hierarchyDetail!.data.id,
 			remove: userIds,
-			etag: hierarchyDetail?.etag || '',
+			etag: hierarchyDetail!.data.etag,
 		}));
 	};
 
-	React.useEffect(() => {
-		if (hierarchyId) {
-			dispatch(hierarchyActions.getHierarchy(hierarchyId));
-		}
-	}, [hierarchyId, dispatch]);
-
 	return {
+		isLoadingManageUsers,
 		handleAddUsers,
 		handleRemoveUsers,
 	};

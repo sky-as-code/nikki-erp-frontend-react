@@ -23,12 +23,12 @@ export const selectGroupState = (state: { [STATE_KEY]: GroupState }) => state[ST
 
 export const selectGroupList = createSelector(
 	selectGroupState,
-	(state) => state.groups,
+	(state) => state.list,
 );
 
 export const selectGroupDetail = createSelector(
 	selectGroupState,
-	(state) => state.groupDetail,
+	(state) => state.detail,
 );
 
 export const selectCreateGroup = createSelector(

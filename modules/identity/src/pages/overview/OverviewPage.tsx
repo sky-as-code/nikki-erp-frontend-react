@@ -12,12 +12,16 @@ import {
 import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { IconBuilding, IconHierarchy, IconShield, IconUsers } from '@tabler/icons-react';
-import { useActiveOrgWithDetails } from 'node_modules/@nikkierp/shell/src/userContext/userContextSelectors';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { selectUserState, selectGroupState, selectHierarchyState, organizationActions, IdentityDispatch, userActions, groupActions, hierarchyActions, selectOrganizationState } from '../../appState';
+import { useActiveOrgWithDetails } from '../../../../../libs/shell/src/userContext/userContextSelectors';
+import { organizationActions, IdentityDispatch, userActions, groupActions, hierarchyActions } from '../../appState';
+import { selectGroupList } from '../../appState/group';
+import { selectHierarchyList } from '../../appState/hierarchy';
+import { selectOrganizationList } from '../../appState/organization';
+import { selectUserList } from '../../appState/user';
 
 
 interface StatCardProps {
@@ -103,10 +107,10 @@ function QuickLinkCard({ title, description, icon, color, link }: QuickLinkProps
 
 // eslint-disable-next-line max-lines-per-function
 export const OverviewPageBody: React.FC = () => {
-	const { users } = useMicroAppSelector(selectUserState);
-	const { groups } = useMicroAppSelector(selectGroupState);
-	const { hierarchies } = useMicroAppSelector(selectHierarchyState);
-	const { organizations } = useMicroAppSelector(selectOrganizationState);
+	const users  = useMicroAppSelector(selectUserList);
+	const groups = useMicroAppSelector(selectGroupList);
+	const hierarchies = useMicroAppSelector(selectHierarchyList);
+	const organizations = useMicroAppSelector(selectOrganizationList);
 	const { t } = useTranslation();
 	const activeOrg = useActiveOrgWithDetails();
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
@@ -134,7 +138,7 @@ export const OverviewPageBody: React.FC = () => {
 					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
 						<StatCard
 							title={t('nikki.identity.overview.stats.users')}
-							value={users.length}
+							value={users?.data.length}
 							icon={<IconUsers size={24} />}
 							color='blue'
 							link='../users'
@@ -143,7 +147,7 @@ export const OverviewPageBody: React.FC = () => {
 					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
 						<StatCard
 							title={t('nikki.identity.overview.stats.groups')}
-							value={groups.length}
+							value={groups?.data.length}
 							icon={<IconShield size={24} />}
 							color='green'
 							link='../groups'
@@ -152,7 +156,7 @@ export const OverviewPageBody: React.FC = () => {
 					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
 						<StatCard
 							title={t('nikki.identity.overview.stats.hierarchyLevels')}
-							value={hierarchies.length}
+							value={hierarchies?.data.length}
 							icon={<IconHierarchy size={24} />}
 							color='violet'
 							link='../hierarchy-levels'
@@ -161,7 +165,7 @@ export const OverviewPageBody: React.FC = () => {
 					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
 						<StatCard
 							title={t('nikki.identity.overview.stats.organizations')}
-							value={organizations.length}
+							value={organizations?.data.length}
 							icon={<IconBuilding size={24} />}
 							color='orange'
 							link='../organizations'

@@ -5,7 +5,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { selectUserState } from '../../appState';
+import { selectUserList } from '../../appState/user';
 import { ListActionListPage } from '../../components/ListActionBar';
 import { UserTable } from '../../features/user/components';
 import { useUserListHandlers } from '../../features/user/hooks/useUserList';
@@ -13,10 +13,11 @@ import userSchema from '../../schemas/user-schema.json';
 
 
 export function UserListPageBody(): React.ReactElement {
-	const { users, isLoading } = useMicroAppSelector(selectUserState);
+	const listUser = useMicroAppSelector(selectUserList);
 	const schema = userSchema as ModelSchema;
 	const columns = ['avatar', 'email', 'displayName', 'status', 'groups', 'createdAt', 'updatedAt'];
 	const { t } = useTranslation();
+	const isLoading = listUser.status === 'pending';
 
 	const { handleCreate, handleRefresh } = useUserListHandlers();
 
@@ -40,7 +41,7 @@ export function UserListPageBody(): React.ReactElement {
 			/>
 			<UserTable
 				columns={columns}
-				users={users}
+				users={listUser?.data}
 				isLoading={isLoading}
 				schema={schema}
 			/>

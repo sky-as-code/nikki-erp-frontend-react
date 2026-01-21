@@ -18,6 +18,7 @@ export function useGroupCreateHandlers() {
 	const activeOrg = useActiveOrgWithDetails();
 
 	const createCommand = useMicroAppSelector(selectCreateGroup);
+	const isLoading = createCommand.status === 'loading';
 
 	React.useEffect(() => {
 		if (createCommand.status === 'success') {
@@ -46,6 +47,7 @@ export function useGroupCreateHandlers() {
 	};
 
 	return {
+		isLoading,
 		onSubmit: handleCreate,
 	};
 }

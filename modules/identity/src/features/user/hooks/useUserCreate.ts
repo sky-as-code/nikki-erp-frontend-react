@@ -16,6 +16,7 @@ export function useUserCreateHandlers() {
 	const activeOrg = useActiveOrgWithDetails();
 	const { t } = useTranslation();
 	const createCommand = useMicroAppSelector(selectCreateUser);
+	const isLoading = createCommand.status === 'pending';
 
 	React.useEffect(() => {
 		if (createCommand.status === 'success') {
@@ -45,6 +46,7 @@ export function useUserCreateHandlers() {
 	};
 
 	return {
+		isLoading,
 		handleCreate,
 	};
 }

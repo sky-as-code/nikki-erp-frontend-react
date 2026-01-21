@@ -1,21 +1,24 @@
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { useUIState } from '../../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, organizationActions } from '../../../appState';
-import { selectDeleteOrganization, selectUpdateOrganization } from '../../../appState/organization';
+import { selectDeleteOrganization, selectUpdateOrganization, selectOrganizationDetail } from '../../../appState/organization';
 
 // eslint-disable-next-line max-lines-per-function
-export function useOrganizationDetailHandlers(id: string, slug: string, etag: string) {
+export function useOrganizationDetailHandlers() {
+	const { slug } = useParams();
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const navigate = useNavigate();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
+	const organizationDetail = useMicroAppSelector(selectOrganizationDetail);
 
 	const updateCommand = useMicroAppSelector(selectUpdateOrganization);
 	const deleteCommand = useMicroAppSelector(selectDeleteOrganization);
+	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {
@@ -52,12 +55,12 @@ export function useOrganizationDetailHandlers(id: string, slug: string, etag: st
 	}, [deleteCommand.status, dispatch, navigate, notification, t]);
 
 	const handleUpdate = (data: any) => {
-		if (slug) {
+		if (organizationDetail?.data.id && slug) {
+			const dataWithTag = { ...data, etag: organizationDetail.data.etag };
 			dispatch(organizationActions.updateOrganization({
-				...data,
+				...dataWithTag,
 				slug,
-				etag,
-				id,
+				id: organizationDetail.data.id,
 			}));
 		}
 	};
@@ -68,7 +71,14 @@ export function useOrganizationDetailHandlers(id: string, slug: string, etag: st
 		}
 	};
 
+	React.useEffect(() => {
+		if (!slug) return;
+
+		dispatch(organizationActions.getOrganization(slug));
+	}, [slug, dispatch]);
+
 	return {
+		isLoadingDetail,
 		handleDelete,
 		handleUpdate,
 	};

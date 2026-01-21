@@ -6,7 +6,8 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { IdentityDispatch, hierarchyActions, selectHierarchyState } from '../../appState';
+import { IdentityDispatch, hierarchyActions } from '../../appState';
+import { selectHierarchyList } from '../../appState/hierarchy';
 import { HierarchyCreateForm } from '../../features/hierarchy/components';
 import { useHierarchyCreateHandlers } from '../../features/hierarchy/hooks';
 import hierarchySchema from '../../schemas/hierarchy-schema.json';
@@ -14,7 +15,7 @@ import hierarchySchema from '../../schemas/hierarchy-schema.json';
 
 export const HierarchyCreatePageBody: React.FC = () => {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const { isLoading, hierarchies } = useMicroAppSelector(selectHierarchyState);
+	const list  = useMicroAppSelector(selectHierarchyList);
 	const activeOrg = useActiveOrgWithDetails();
 	const { t } = useTranslation();
 
@@ -25,14 +26,14 @@ export const HierarchyCreatePageBody: React.FC = () => {
 	}, [dispatch, activeOrg?.id]);
 
 	const schema = hierarchySchema as ModelSchema;
-	const { onSubmit } = useHierarchyCreateHandlers();
+	const {isLoading, onSubmit } = useHierarchyCreateHandlers();
 
 	return (
 		<Stack gap='md'>
 			<Title order={2}>{t('nikki.identity.hierarchy.actions.createNew')}</Title>
 			<HierarchyCreateForm
 				schema={schema}
-				hierarchies={hierarchies}
+				hierarchies={list.data}
 				isCreating={isLoading}
 				onSubmit={onSubmit}
 			/>

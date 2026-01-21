@@ -217,7 +217,7 @@ export function buildValidationSchema(schema: ModelSchema): z.ZodObject<any> {
 
 	Object.entries(schema.fields).forEach(([fieldName, fieldDef]) => {
 		// Skip frontend-only fields in validation if needed, or hidden fields
-		if (fieldDef.hidden && !fieldDef.frontendOnly) {
+		if (fieldDef.hidden || fieldDef.frontendOnly) {
 			return;
 		}
 

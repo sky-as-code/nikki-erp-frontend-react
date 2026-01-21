@@ -1,3 +1,4 @@
+import { baseReduxActionState, ReduxActionState } from '@nikkierp/ui/appState';
 import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
@@ -12,29 +13,24 @@ import {
 	DeleteOrganizationResponse,
 } from './types';
 import { CreateOrganizationRequest } from './types';
-import { initialReduxActionState, ReduxActionState } from '../../appState/reduxActionState';
 
 
 export const SLICE_NAME = 'identity.organization';
 
 export type OrganizationState = {
-	organizations: Organization[];
-	organizationDetail?: Organization;
-	isLoading: boolean;
-	error: string | null;
+	detail: ReduxActionState<Organization>;
+	list: ReduxActionState<Organization[]>;
 	create: ReduxActionState<CreateOrganizationResponse>;
 	update: ReduxActionState<UpdateOrganizationResponse>;
 	delete: ReduxActionState<DeleteOrganizationResponse>;
 };
 
 const initialState: OrganizationState = {
-	organizations: [],
-	organizationDetail: undefined,
-	isLoading: false,
-	error: null,
-	create: initialReduxActionState<CreateOrganizationResponse>(),
-	update: initialReduxActionState<UpdateOrganizationResponse>(),
-	delete: initialReduxActionState<DeleteOrganizationResponse>(),
+	detail: baseReduxActionState,
+	list: { ...baseReduxActionState, data: [] },
+	create: baseReduxActionState,
+	update: baseReduxActionState,
+	delete: baseReduxActionState,
 };
 
 export const listOrganizations = createAsyncThunk<
@@ -131,22 +127,16 @@ const organizationSlice = createSlice({
 	initialState,
 	reducers: {
 		setOrganizations: (state, action: PayloadAction<Organization[]>) => {
-			state.organizations = action.payload;
-		},
-		setIsLoading: (state, action: PayloadAction<boolean>) => {
-			state.isLoading = action.payload;
-		},
-		setError: (state, action: PayloadAction<string | null>) => {
-			state.error = action.payload;
+			state.list.data = action.payload;
 		},
 		resetCreateOrganization: (state) => {
-			state.create = initialReduxActionState<CreateOrganizationResponse>();
+			state.create = baseReduxActionState;
 		},
 		resetUpdateOrganization: (state) => {
-			state.update = initialReduxActionState<UpdateOrganizationResponse>();
+			state.update = baseReduxActionState;
 		},
 		resetDeleteOrganization: (state) => {
-			state.delete = initialReduxActionState<DeleteOrganizationResponse>();
+			state.delete = baseReduxActionState;
 		},
 	},
 	extraReducers: (builder) => {
@@ -161,36 +151,38 @@ const organizationSlice = createSlice({
 function listOrganizationsReducers(builder: ActionReducerMapBuilder<OrganizationState>) {
 	builder
 		.addCase(listOrganizations.pending, (state) => {
-			state.isLoading = true;
-			state.error = null;
+			state.list.status = 'pending';
+			state.list.error = null;
+			state.list.data = [];
 		})
 		.addCase(listOrganizations.fulfilled, (state, action) => {
-			state.isLoading = false;
-			state.organizations = action.payload.items;
-			state.error = null;
+			state.list.status = 'success';
+			state.list.data = action.payload.items;
+			state.list.error = null;
 		})
 		.addCase(listOrganizations.rejected, (state, action) => {
-			state.isLoading = false;
-			state.organizations = [];
-			state.error = action.payload || 'Failed to list organizations';
+			state.list.status = 'error';
+			state.list.data = [];
+			state.list.error = action.payload || 'Failed to list organizations';
 		});
 }
 
 function getOrganizationReducers(builder: ActionReducerMapBuilder<OrganizationState>) {
 	builder
 		.addCase(getOrganization.pending, (state) => {
-			state.isLoading = true;
-			state.error = null;
+			state.detail.status = 'pending';
+			state.detail.error = null;
+			state.detail.data = undefined;
 		})
 		.addCase(getOrganization.fulfilled, (state, action) => {
-			state.isLoading = false;
-			state.organizationDetail = action.payload;
-			state.error = null;
+			state.detail.status = 'success';
+			state.detail.data = action.payload;
+			state.detail.error = null;
 		})
 		.addCase(getOrganization.rejected, (state, action) => {
-			state.isLoading = false;
-			state.organizationDetail = undefined;
-			state.error = action.payload || 'Failed to get organization';
+			state.detail.status = 'error';
+			state.detail.data = undefined;
+			state.detail.error = action.payload || 'Failed to get organization';
 		});
 }
 
@@ -199,6 +191,7 @@ function createOrganizationReducers(builder: ActionReducerMapBuilder<Organizatio
 		.addCase(createOrganization.pending, (state) => {
 			state.create.status = 'pending';
 			state.create.error = null;
+			state.create.data = undefined;
 		})
 		.addCase(createOrganization.fulfilled, (state, action) => {
 			state.create.status = 'success';
@@ -208,6 +201,7 @@ function createOrganizationReducers(builder: ActionReducerMapBuilder<Organizatio
 		.addCase(createOrganization.rejected, (state, action) => {
 			state.create.status = 'error';
 			state.create.error = action.payload || 'Failed to create organization';
+			state.create.data = undefined;
 		});
 }
 
@@ -216,18 +210,20 @@ function updateOrganizationReducers(builder: ActionReducerMapBuilder<Organizatio
 		.addCase(updateOrganization.pending, (state) => {
 			state.update.status = 'pending';
 			state.update.error = null;
+			state.update.data = undefined;
 		})
 		.addCase(updateOrganization.fulfilled, (state, action) => {
 			state.update.status = 'success';
-			if (state.organizationDetail) {
-				state.organizationDetail.etag = action.payload.etag;
-				state.organizationDetail.updatedAt = action.payload.updatedAt;
+			if (state.detail.data) {
+				state.detail.data.etag = action.payload.etag;
+				state.detail.data.updatedAt = action.payload.updatedAt;
 			}
 			state.update.error = null;
 		})
 		.addCase(updateOrganization.rejected, (state, action) => {
 			state.update.status = 'error';
 			state.update.error = action.payload || 'Failed to update organization';
+			state.update.data = undefined;
 		});
 }
 
@@ -236,15 +232,17 @@ function deleteOrganizationReducers(builder: ActionReducerMapBuilder<Organizatio
 		.addCase(deleteOrganization.pending, (state) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
+			state.delete.data = undefined;
 		})
 		.addCase(deleteOrganization.fulfilled, (state) => {
 			state.delete.status = 'success';
-			state.organizationDetail = undefined;
+			state.detail.data = undefined;
 			state.delete.error = null;
 		})
 		.addCase(deleteOrganization.rejected, (state, action) => {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete organization';
+			state.delete.data = undefined;
 		});
 }
 

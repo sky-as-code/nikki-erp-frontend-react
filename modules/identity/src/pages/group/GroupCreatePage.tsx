@@ -1,11 +1,9 @@
 import { Stack, Title } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
-import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { selectGroupState } from '../../appState';
 import { GroupCreateForm } from '../../features/group/components';
 import { useGroupCreateHandlers } from '../../features/group/hooks/useGroupCreate';
 import groupSchema from '../../schemas/group-schema.json';
@@ -13,10 +11,9 @@ import groupSchema from '../../schemas/group-schema.json';
 
 export const GroupCreatePageBody: React.FC = () => {
 	const schema = groupSchema as ModelSchema;
-	const { isLoading } = useMicroAppSelector(selectGroupState);
 	const { t } = useTranslation();
 
-	const { onSubmit } = useGroupCreateHandlers();
+	const { isLoading, onSubmit } = useGroupCreateHandlers();
 
 	return (
 		<Stack gap='md'>
