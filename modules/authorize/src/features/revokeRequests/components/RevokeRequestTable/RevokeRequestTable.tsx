@@ -101,4 +101,3 @@ export const RevokeRequestTable: React.FC<RevokeRequestTableProps> = ({
 		/>
 	);
 };
-

@@ -119,4 +119,3 @@ export const GrantRequestTable: React.FC<GrantRequestTableProps> = ({
 		/>
 	);
 };
-
