@@ -10,8 +10,8 @@ import { useDispatch } from 'react-redux';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router';
 
 import { UIProviders } from './context/UIProviders';
-import { PrivateLayout } from './layout/PrivateLayout/PrivateLayout';
-import { PublicLayout } from './layout/PublicLayout/PublicLayout';
+import { PrivateLayout } from './layout/PrivateLayout';
+import { PublicLayout } from './layout/PublicLayout';
 import { ModuleHomePage } from './pages/ModuleHomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SignInPage } from './pages/SignInPage';

@@ -4,12 +4,12 @@ import { IconEdit, IconTrash } from '@tabler/icons-react';
 
 export function renderNameColumn(
 	row: Record<string, unknown>,
-	onViewDetail: (resourceId: string) => void,
+	onViewDetail: (resourceName: string) => void,
 ) {
 	return (
 		<Text
 			style={{ cursor: 'pointer', textDecoration: 'underline' }}
-			onClick={() => onViewDetail(row.id as string)}
+			onClick={() => onViewDetail(row.name as string)}
 		>
 			{String(row.name || '')}
 		</Text>
