@@ -7,9 +7,9 @@ import React from 'react';
 export const NotificationDropdown: React.FC = () => {
 	const [notifications, _setNotifications] = React.useState<any[]>(mockNotifications);
 
-	const renderNotification = (notification: any) => {
+	const renderNotification = (notification: any, index: number) => {
 		return (
-			<Menu.Item key={notification.title} leftSection={notification.icon}>
+			<Menu.Item key={index} leftSection={notification.icon}>
 				<Text size='sm' fw={500}>
 					{notification.title}
 				</Text>

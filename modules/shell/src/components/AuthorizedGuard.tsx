@@ -22,6 +22,7 @@ export function AuthorizedGuard({ children }: React.PropsWithChildren): React.Re
 		// 3. User context is being loaded after successful session restore
 		// Only redirect when we're certain user is not authenticated
 		if (status !== null && !isSessionRestoring && !isUserContextLoading && !isAuthenticated) {
+			console.count('🚀 ~ AuthorizedGuard ~ redirecting to signin');
 			dispatch(tempNavigateToAction('/signin'));
 		}
 	}, [status, isAuthenticated, isSessionRestoring, isUserContextLoading, dispatch]);

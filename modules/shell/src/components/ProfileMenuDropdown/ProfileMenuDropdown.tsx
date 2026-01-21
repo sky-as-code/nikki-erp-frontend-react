@@ -32,11 +32,22 @@ export const ProfileMenuDropdown: React.FC = () => {
 					</Button>
 				</Menu.Target>
 
-				<Menu.Dropdown>
-					<Menu.Item onClick={() => themeModeModalRef?.current?.open()} leftSection={<IconBrightnessFilled size={20} />}> {translate('nikki.general.labels.darkLightMode')}</Menu.Item>
-					<Menu.Item leftSection={<IconUserCog size={20}/>}> {translate('nikki.general.labels.myAccount')}</Menu.Item>
+				<Menu.Dropdown className={classes.menuDropdown}>
+					<Menu.Item
+						onClick={() => themeModeModalRef?.current?.open()}
+						leftSection={<IconBrightnessFilled size={20} />}
+					>
+						{translate('nikki.general.labels.darkLightMode')}
+					</Menu.Item>
+
+					<Menu.Item leftSection={<IconUserCog size={20}/>}>
+						{translate('nikki.general.labels.myAccount')}
+					</Menu.Item>
+
 					<Divider my={4}/>
-					<Menu.Item  onClick={handleLogout} leftSection={<IconLogout2 size={20} />}> {translate('nikki.general.labels.signOut')}</Menu.Item>
+					<Menu.Item onClick={handleLogout} leftSection={<IconLogout2 size={20} />}>
+						{translate('nikki.general.labels.signOut')}
+					</Menu.Item>
 				</Menu.Dropdown>
 			</Menu>
 			<ThemeSwitchModal ref={themeModeModalRef} />
