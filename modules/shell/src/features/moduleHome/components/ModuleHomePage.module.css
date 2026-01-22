@@ -1,0 +1,5 @@
+.homeContent {
+	min-height: 100%;
+	height: max-content;
+	/* background: linear-gradient(135deg, var(--nikki-color-page-background), var(--nikki-color-page-background), var(--nikki-color-white)); */
+}

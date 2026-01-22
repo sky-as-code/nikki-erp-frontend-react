@@ -3,6 +3,7 @@ import { useIsAuthenticated } from '@nikkierp/shell/auth';
 import { navigateReturnToAction } from '@nikkierp/ui/appState/routingSlice';
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import { useSearchParams } from 'react-router';
 
 import { EmailStep } from './EmailStep';
 import { PasswordStep } from './PasswordStep';
@@ -24,12 +25,12 @@ export function SignInPage(): React.ReactNode {
 	const isAuthenticated = useIsAuthenticated();
 	const dispatch = useDispatch();
 	// const navigate = useNavigate();
-	// const [searchParams] = useSearchParams();
-	// const returnTo = searchParams.get('returnTo');
+	const [searchParams] = useSearchParams();
+	const returnTo = searchParams.get('returnTo');
 
 	React.useEffect(() => {
 		if (isAuthenticated) {
-			dispatch(navigateReturnToAction());
+			dispatch(navigateReturnToAction(returnTo));
 		}
 	}, [isAuthenticated]);
 
@@ -46,7 +47,7 @@ export function SignInPage(): React.ReactNode {
 	};
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4'>
+		<div className='h-full flex items-center justify-center p-4 bg-transparent'>
 			<Container size='sm' className='w-full'>
 				<SignInCard
 					steps={SIGNIN_STEPS}

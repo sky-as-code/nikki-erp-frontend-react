@@ -1,8 +1,6 @@
 .headerRow {
 	color: lightdark(var(--mantine-color-white), var(--mantine-color-dark));
 	gap: var(--mantine-spacing-md);
-}
-
-.menuBar {
-	border-bottom: 1px solid var(--mantine-color-gray-3);
+	box-shadow: 2px 2px 5px 0px #40404033;
+	z-index: 100;
 }

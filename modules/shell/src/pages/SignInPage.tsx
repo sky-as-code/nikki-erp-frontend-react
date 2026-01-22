@@ -1,4 +1,4 @@
-import * as signIn from '../../features/signIn/SignInPage';
+import * as signIn from '../features/signIn/SignInPage';
 
 
 export const SignInPage = () => {

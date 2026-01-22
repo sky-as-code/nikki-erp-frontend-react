@@ -39,8 +39,16 @@ const routingSlice = createSlice({
 
 			let finalPath = destPath.pathname;
 			const searchParams = new URLSearchParams(destPath.search || '');
-			state.returnTo = encodeURIComponent(`${actual.currentPath}${actual.search}`);
+
+			// Check if destination is the same path or a sub-path of current path
+			// This ensures we only preserve returnTo when navigating deeper into the same route hierarchy
+			const isSameOrSubPath = destPath.pathname === actual.currentPath ||
+				(actual.currentPath !== '/' && destPath.pathname.startsWith(actual.currentPath + '/'));
+			const returnTo = isSameOrSubPath ? actual.returnTo ?? '/' : `${actual.currentPath}${actual.search}`;
+
+			state.returnTo = encodeURIComponent(returnTo);
 			searchParams.set('returnTo', state.returnTo);
+
 			finalPath += `?${searchParams.toString()}`;
 
 			state.action = 'navigateTo';
@@ -49,11 +57,11 @@ const routingSlice = createSlice({
 				to: finalPath,
 			};
 		},
-		navigateReturnTo: (state) => {
+		navigateReturnTo: (state, action: PayloadAction<string | null | undefined>) => {
 			state.action = 'navigateTo';
 			state.actionUpdatedAt = Date.now();
 			state.actionParams = {
-				to: state.returnTo ? decodeURIComponent(state.returnTo) : '/',
+				to: decodeURIComponent(action.payload ?? '/'),
 			};
 		},
 		navigateTo: (state, action: PayloadAction<string>) => {
@@ -82,7 +90,7 @@ function getActualPath() {
 	return {
 		currentPath: parsed.pathname || '/',
 		search: parsed.search ?? '',
-		returnTo,
+		returnTo: returnTo ? decodeURIComponent(returnTo) : null,
 	};
 }
 

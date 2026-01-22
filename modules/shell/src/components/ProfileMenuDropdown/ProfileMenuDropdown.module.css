@@ -1,0 +1,29 @@
+.avatar {
+	border: 1px solid #868e96;
+	&:hover {
+		border: 1px solid var(--nikki-color-black);
+	};
+}
+
+.menuDropdown {
+	overflow-x: hidden;
+	max-width: 200px;
+}
+
+.menuDropdown :global([data-menu-item]) {
+	max-width: 100%;
+	overflow: hidden;
+}
+
+.menuDropdown :global([data-menu-item] > div[data-position]) {
+	flex-shrink: 0;
+}
+
+.menuDropdown :global([data-menu-item] > div:not([data-position])) {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 100%;
+	min-width: 0;
+	flex: 1;
+}

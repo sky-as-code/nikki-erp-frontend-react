@@ -17,6 +17,10 @@ export class TokenSessionStorage implements ITokenStorage {
 	public getToken(): TokenObj | null {
 		return getToken(this.#key, sessionStorage);
 	}
+
+	public clear(): void {
+		clearToken(this.#key, sessionStorage);
+	}
 }
 
 export class TokenLocalStorage implements ITokenStorage {
@@ -33,6 +37,10 @@ export class TokenLocalStorage implements ITokenStorage {
 	public getToken(): TokenObj | null {
 		return getToken(this.#key, localStorage);
 	}
+
+	public clear(): void {
+		clearToken(this.#key, localStorage);
+	}
 }
 
 function setToken(key: string, storage: Storage, token: TokenObj): void {
@@ -46,4 +54,8 @@ function getToken(key: string, storage: Storage): TokenObj | null {
 	if (!encoded) return null;
 	const json = decodeBase64(encoded);
 	return JSON.parse(json) as TokenObj;
+}
+
+function clearToken(key: string, storage: Storage): void {
+	storage.removeItem(key);
 }
