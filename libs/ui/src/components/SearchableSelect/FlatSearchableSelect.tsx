@@ -36,19 +36,15 @@ function createFlatButton(preProps: FlatSearchableSelectProps) {
 					color: 'var(--mantine-color-text)',
 				}}
 				{...props}
-				// color={preProps.targetColor}
+				color={preProps.targetColor ?? 'inherit'}
 				className={preProps.targetClass}
-				fz={preProps.targetFz}
-				fw={preProps.targetFw}
+				fz={preProps.targetFz ?? 'md'}
+				fw={preProps.targetFw ?? 'normal'}
 				p={preProps.targetP ?? 0}
 				pb={preProps.targetPb ?? 0}
 				pt={preProps.targetPt ?? 0}
 				size={preProps.targetSize ?? 'compact-lg'}
 				variant={preProps.targetVariant ?? 'subtle'}
-				// fz='xl'
-				// fw='bolder'
-				// p={0}
-				// color='#000000'
 			>
 				{children}
 			</Button>

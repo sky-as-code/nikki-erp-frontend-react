@@ -1,11 +1,14 @@
 import { Button, ButtonProps, Group, Menu } from '@mantine/core';
 import { MenuBarItem, useMenuBarItems } from '@nikkierp/ui/appState';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { IconChevronDown } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 import { Link, useLocation } from 'react-router';
 
-import styles from './MenuBar.module.css';
+
+
+import classes from './MenuBar.module.css';
 
 
 export function MenuBar(): React.ReactNode {
@@ -31,6 +34,8 @@ export function MenuBar(): React.ReactNode {
 				) : (
 					<Button
 						key={item.label}
+						size='md'
+						px={'xs'}
 						// variant={isPathActive(item.link, location.pathname) ? 'filled' : 'subtle'}
 						{...buttonProps(isPathActive(item.link ?? '/', location.pathname))}
 						component={Link}
@@ -57,16 +62,14 @@ function NavMenu({ item, currentPath, getPath }: NavMenuProps): React.ReactNode 
 	) || false;
 
 	return (
-		<Menu width={200} position='bottom-start' trigger='click-hover'>
+		<Menu position='bottom-start' trigger='click-hover'>
 			<Menu.Target>
-				<Button
-					{...buttonProps(hasActiveChild)}
-				>
+				<Button {...buttonProps(hasActiveChild)} rightSection={<IconChevronDown size={14} />} >
 					{item.label}
 				</Button>
 			</Menu.Target>
 
-			<Menu.Dropdown>
+			<Menu.Dropdown className={classes.menuDropdown}>
 				{item.items?.map((subItem, index) => (
 					<MenuItemRenderer
 						key={index} item={subItem}
@@ -133,7 +136,7 @@ function MenuItemRenderer({ item, currentPath, getPath }: NavMenuProps): React.R
 	}
 
 	return (
-		<Menu.Item>
+		<Menu.Item {...itemProps(isActive)}>
 			{item.label}
 		</Menu.Item>
 	);
@@ -142,10 +145,13 @@ function MenuItemRenderer({ item, currentPath, getPath }: NavMenuProps): React.R
 function buttonProps(isActive: boolean): ButtonProps {
 	return {
 		variant: 'subtle',
-		c: 'dark',
-		size: 'md',
+		c: 'var(--text-color)',
+		size: 'xs',
+		px: 'xs',
+		fz: 'sm',
+		fw: 'normal',
 		className: clsx({
-			[styles.active]: isActive,
+			[classes.active]: isActive,
 		}),
 	};
 }
@@ -155,11 +161,11 @@ type MenuSubItemProps = React.ComponentProps<typeof Menu.Sub.Item>;
 function itemProps(isActive: boolean): MenuSubItemProps {
 	return {
 		className: clsx({
-			[styles.active]: isActive,
+			[classes.active]: isActive,
 		}),
 		styles: {
 			itemLabel: {
-				fontSize: 'var(--mantine-font-size-md)',
+				fontSize: 'var(--mantine-font-size-sm)',
 			},
 		},
 	};

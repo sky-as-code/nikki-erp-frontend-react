@@ -1,13 +1,18 @@
 .avatar {
-	border: 1px solid #868e96;
-	&:hover {
-		border: 1px solid var(--nikki-color-black);
-	};
+	border: 1px solid transparent;
+}
+
+.avatar:hover {
+	border: 1px solid #a0a0a0;
+}
+
+.activeAvatar {
+	border: 1px solid #a0a0a0;
 }
 
 .menuDropdown {
 	overflow-x: hidden;
-	max-width: 200px;
+	max-width: 300px;
 }
 
 .menuDropdown :global([data-menu-item]) {

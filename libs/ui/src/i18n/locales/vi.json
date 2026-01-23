@@ -15,6 +15,16 @@
         }
     },
     "nikki": {
+        "shell": {
+            "title": "Nikki ERP",
+            "profileMenu": {
+                "profile": "Thông tin tài khoản",
+                "accountSettings": "Cài đặt tài khoản",
+                "themeMode": "Chế độ giao diện",
+                "switchAccount": "Chuyển tài khoản",
+                "signOut": "Đăng xuất"
+            }
+        },
         "general": {
 			"fields": {
 				"id": "Mã định danh"
@@ -36,13 +46,32 @@
 				"approve": "Phê duyệt",
 				"reject": "Từ chối",
 				"select_all": "Chọn tất cả",
-				"deselect_all": "Bỏ chọn tất cả"
+				"deselect_all": "Bỏ chọn tất cả",
+				"clear_filters": "Xóa bộ lọc",
+				"title": "Thao tác"
+			},
+			"view": {
+				"title": "Chế độ xem",
+				"list": "Danh sách",
+				"grid": "Lưới"
+			},
+			"search": {
+				"placeholder": "Tìm kiếm..."
+			},
+			"filters": {
+				"all": "Tất cả",
+				"status": "Lọc theo trạng thái"
+			},
+			"status": {
+				"active": "Hoạt động",
+				"inactive": "Không hoạt động"
 			},
 			"messages": {
 				"success": "Thành công",
 				"error": "Lỗi",
 				"loading": "Đang tải...",
 				"not_found": "Không tìm thấy",
+				"no_data": "Không có dữ liệu",
 				"no_changes": "Không có thay đổi",
 				"invalid_change": "Thay đổi không hợp lệ",
 				"delete_confirm": "Bạn có chắc chắn muốn xóa? Hành động này không thể hoàn tác.",
@@ -674,6 +703,174 @@
 				"hours_ago": "{{count}} giờ trước",
 				"day_ago": "{{count}} ngày trước",
 				"days_ago": "{{count}} ngày trước"
+			}
+		},
+		"vendingMachine": {
+			"menu": {
+				"overview": "Tổng quan",
+				"kiosks": "Kiosk",
+				"ads": "Quảng cáo",
+				"events": "Sự kiện",
+				"kiosk_settings": "Cài đặt Kiosk",
+				"kiosk_template": "Mẫu Kiosk",
+				"reports": "Báo cáo",
+				"revenue": "Doanh thu",
+				"inventory": "Hàng tồn"
+			},
+			"overview": {
+				"title": "Tổng quan - Máy bán hàng tự động",
+				"statistics": "Thống kê",
+				"total_kiosks": "Tổng số Kiosk",
+				"active_kiosks": "Kiosk đang hoạt động",
+				"inactive_kiosks": "Kiosk không hoạt động",
+				"avg_temperature": "Nhiệt độ trung bình",
+				"avg_humidity": "Độ ẩm trung bình",
+				"total_power": "Tổng tiêu thụ điện",
+				"kiosk_distribution": "Phân bổ Kiosk"
+			},
+			"kiosk": {
+				"title": "Quản lý Kiosk",
+				"detail": {
+					"title": "Chi tiết Kiosk"
+				},
+				"fields": {
+					"code": "Mã Kiosk",
+					"name": "Tên",
+					"address": "Địa chỉ",
+					"coordinates": "Tọa độ",
+					"isActive": "Trạng thái hoạt động",
+					"connectionStatus": "Kết nối",
+					"status": "Trạng thái",
+					"mode": "Chế độ",
+					"actions": "Thao tác",
+					"createdAt": "Ngày tạo",
+					"deletedAt": "Ngày xóa"
+				},
+				"status": {
+					"activated": "Đã kích hoạt",
+					"disabled": "Vô hiệu hóa",
+					"deleted": "Đã xóa"
+				},
+				"connectionStatus": {
+					"fast": "Nhanh",
+					"slow": "Chậm",
+					"disconnected": "Mất kết nối"
+				},
+				"connectionHistory": {
+					"title": "Lịch sử kết nối gần đây",
+					"no_history": "Không có lịch sử kết nối",
+					"just_now": "Vừa xong",
+					"minutes_ago": "{{count}} phút trước",
+					"hours_ago": "{{count}} giờ trước",
+					"days_ago": "{{count}} ngày trước"
+				},
+				"mode": {
+					"pending": "Đang chờ",
+					"selling": "Đang bán",
+					"adsOnly": "Chỉ quảng cáo"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái",
+					"connection": "Lọc theo kết nối",
+					"mode": "Lọc theo chế độ"
+				},
+				"messages": {
+					"no_kiosks": "Không tìm thấy kiosk nào",
+					"create_success": "Kiosk \"{{name}}\" đã được tạo thành công",
+					"update_success": "Kiosk \"{{name}}\" đã được cập nhật thành công",
+					"delete_success": "Kiosk đã được xóa thành công"
+				}
+			},
+			"ads": {
+				"detail": {
+					"title": "Chi tiết Quảng cáo"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã quảng cáo",
+					"name": "Tên",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"startDate": "Ngày bắt đầu",
+					"endDate": "Ngày kết thúc",
+					"createdAt": "Ngày tạo"
+				},
+				"status": {
+					"expired": "Đã hết hạn"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				}
+			},
+			"events": {
+				"detail": {
+					"title": "Chi tiết Sự kiện"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã sự kiện",
+					"name": "Tên",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"startDate": "Ngày bắt đầu",
+					"endDate": "Ngày kết thúc",
+					"createdAt": "Ngày tạo"
+				},
+				"status": {
+					"completed": "Đã hoàn thành"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				}
+			},
+			"kioskSettings": {
+				"detail": {
+					"title": "Chi tiết Cài đặt Kiosk"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã cài đặt",
+					"name": "Tên",
+					"description": "Mô tả",
+					"category": "Danh mục",
+					"value": "Giá trị",
+					"status": "Trạng thái",
+					"createdAt": "Ngày tạo"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				}
+			},
+			"kioskTemplate": {
+				"detail": {
+					"title": "Chi tiết Mẫu Kiosk"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã mẫu",
+					"name": "Tên",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"createdAt": "Ngày tạo"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				}
 			}
 		}
     }

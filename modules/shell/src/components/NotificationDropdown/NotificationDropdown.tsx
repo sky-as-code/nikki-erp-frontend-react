@@ -6,6 +6,7 @@ import React from 'react';
 
 export const NotificationDropdown: React.FC = () => {
 	const [notifications, _setNotifications] = React.useState<any[]>(mockNotifications);
+	const [opened, setOpened] = React.useState(false);
 
 	const renderNotification = (notification: any, index: number) => {
 		return (
@@ -22,9 +23,11 @@ export const NotificationDropdown: React.FC = () => {
 
 
 	return (
-		<Menu shadow='md' width={300}>
+		<Menu shadow='md' width={300} position='bottom-end'
+			opened={opened} onChange={setOpened}
+		>
 			<Menu.Target>
-				<Button w={35} h={35} p={0} variant='outline'>
+				<Button w={35} h={35} p={0} variant={opened ? 'outline' : 'subtle'}>
 					<IconBell/>
 				</Button>
 			</Menu.Target>

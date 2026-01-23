@@ -1,0 +1,50 @@
+{
+	"name": "kioskSetting",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.id' }",
+			"hidden": true
+		},
+		"code": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.code' }"
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.name' }"
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.description' }"
+		},
+		"category": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.category' }"
+		},
+		"value": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.value' }"
+		},
+		"status": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.status' }",
+			"enum": [
+				{
+					"value": "active",
+					"label": "{ \"$ref\": 'nikki.general.status.active' }"
+				},
+				{
+					"value": "inactive",
+					"label": "{ \"$ref\": 'nikki.general.status.inactive' }"
+				}
+			]
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.createdAt' }",
+			"hidden": true
+		}
+	}
+}
+

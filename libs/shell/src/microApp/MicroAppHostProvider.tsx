@@ -51,14 +51,28 @@ type InternalLazyMicroAppProps = {
 
 function InternalLazyMicroApp({ slug, basePath, widgetName }: InternalLazyMicroAppProps): React.ReactNode {
 	const [microAppPack, setMicroAppPack] = useState<MicroAppPack | null>(null);
+	const [error, setError] = useState<Error | null>(null);
 
-	const domType = useFetchMicroAppPack(slug, setMicroAppPack);
+	const domType = useFetchMicroAppPack(slug, setMicroAppPack, setError);
 	const ref = useSetupMicroApp(microAppPack, {
 		slug,
 		basePath,
 		widgetName,
 		domType: domType!, // domType is guaranteed to be not null by the time useSetupMicroApp's useEffect runs.
 	});
+
+	if (error) {
+		return (
+			<div style={{ padding: '20px', color: 'red' }}>
+				<h3>Failed to load module: {slug}</h3>
+				<p>{error.message}</p>
+				<details>
+					<summary>Error details</summary>
+					<pre>{error.stack}</pre>
+				</details>
+			</div>
+		);
+	}
 
 	if (!microAppPack) return <div>Loading...</div>;
 
@@ -81,29 +95,45 @@ function InternalLazyMicroApp({ slug, basePath, widgetName }: InternalLazyMicroA
 	);
 }
 
-function useFetchMicroAppPack(slug: string, setMicroAppPack: (pack: MicroAppPack) => void): MicroAppDomType | null {
+function useFetchMicroAppPack(
+	slug: string,
+	setMicroAppPack: (pack: MicroAppPack) => void,
+	setError: (error: Error | null) => void,
+): MicroAppDomType | null {
 	const [domType, setDomType] = useState<MicroAppDomType | null>(null);
 	const manager = useMicroAppManager();
 
 	useEffect(() => {
 		let isMounted = true;
+		setError(null);
 
 		manager.fetchMicroApp(slug).then((pack) => {
 			if (isMounted) {
-				const result = pack.init({
-					htmlTag: pack.metadata.htmlTag,
-					config: pack.config,
-					registerReducer: registerReducerFactory(slug),
-				});
-				setDomType(result.domType);
-				setMicroAppPack(pack);
+				try {
+					const result = pack.init({
+						htmlTag: pack.metadata.htmlTag,
+						config: pack.config,
+						registerReducer: registerReducerFactory(slug),
+					});
+					setDomType(result.domType);
+					setMicroAppPack(pack);
+				}
+				catch (initError) {
+					console.error(`Failed to init micro app ${slug}:`, initError);
+					setError(initError instanceof Error ? initError : new Error(String(initError)));
+				}
+			}
+		}).catch((error) => {
+			console.error(`Failed to fetch micro app ${slug}:`, error);
+			if (isMounted) {
+				setError(error instanceof Error ? error : new Error(String(error)));
 			}
 		});
 
 		return () => {
 			isMounted = false;
 		};
-	}, [slug]);
+	}, [slug, manager, setMicroAppPack, setError]);
 
 	return domType;
 }

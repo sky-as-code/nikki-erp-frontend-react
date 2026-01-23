@@ -1,0 +1,42 @@
+{
+	"name": "kioskTemplate",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskTemplate.fields.id' }",
+			"hidden": true
+		},
+		"code": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskTemplate.fields.code' }"
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskTemplate.fields.name' }"
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskTemplate.fields.description' }"
+		},
+		"status": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskTemplate.fields.status' }",
+			"enum": [
+				{
+					"value": "active",
+					"label": "{ \"$ref\": 'nikki.general.status.active' }"
+				},
+				{
+					"value": "inactive",
+					"label": "{ \"$ref\": 'nikki.general.status.inactive' }"
+				}
+			]
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskTemplate.fields.createdAt' }",
+			"hidden": true
+		}
+	}
+}
+

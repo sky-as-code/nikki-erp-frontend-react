@@ -1,5 +1,6 @@
+import { MenuBar } from '@/components/MenuBar';
 import {
-	Breadcrumbs, Center, Group, Loader, Stack, Text,
+	Center, Group, Loader, Stack, Text,
 	useMantineColorScheme, useMantineTheme,
 } from '@mantine/core';
 import { useAuthenticatedStatus } from '@nikkierp/shell/auth';
@@ -10,16 +11,16 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router';
 
 
+import classes from './PrivateLayout.module.css';
+
 import { ContentContainer } from '@/components/ContentContainer';
 import { DomainLogoButton } from '@/components/DomainLogo';
 import { LangSwitchDropdown } from '@/components/LangSwitch';
-import { MenuBar } from '@/components/MenuBar';
 import { ModuleSwitchDropdown } from '@/components/ModuleSwitch';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { OrgSwitchDropdown } from '@/components/OrgSwitch';
 import { ProfileMenuDropdown } from '@/components/ProfileMenuDropdown';
 
-import classes from './PrivateLayout.module.css';
 
 
 
@@ -75,17 +76,15 @@ const Header: React.FC = () => {
 				align='center' justify='flex-start'
 			>
 				<DomainLogoButton isRootPath={isRootPath} />
-				<Breadcrumbs h={'100%'}>
-					<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
-					{!isRootPath && <ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />}
-				</Breadcrumbs>
+				<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
+				{!isRootPath && <ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />}
 				<MenuBar />
 			</Group>
 
-			<Group component='section' align='center' justify='flex-end' gap='sm'>
-				<LangSwitchDropdown/>
+			<Group component='section' align='center' justify='flex-end' gap={6}>
+				<LangSwitchDropdown />
 				<NotificationDropdown />
-				<ProfileMenuDropdown/>
+				<ProfileMenuDropdown />
 			</Group>
 		</Group>
 

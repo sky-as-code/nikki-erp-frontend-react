@@ -1,4 +1,5 @@
-import type { TablerIcon } from '@tabler/icons-react'
+import type { TablerIcon } from '@tabler/icons-react';
+
 
 export type NavItem = {
 	label: string;
@@ -20,4 +21,4 @@ export type NavItem = {
 
 	specialFeture?: '$$recent$$';
 	specialFetureOpts?: any;
-}
+};

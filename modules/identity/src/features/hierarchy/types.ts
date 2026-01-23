@@ -5,7 +5,7 @@ import {
 	ManageMembersResponse,
 	SearchResponse,
 	UpdateResponse,
-} from '@nikkierp/ui/types';
+} from '@nikkierp/common';
 
 
 export type HierarchyLevel = {

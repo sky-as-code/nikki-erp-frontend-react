@@ -30,6 +30,7 @@
 		"@nikkierp/microapp-authorize": "workspace:*",
 		"@nikkierp/microapp-essential": "workspace:*",
 		"@nikkierp/microapp-identity": "workspace:*",
+		"@nikkierp/microapp-vendingMachine": "workspace:*",
 		"@nikkierp/nikkiportal-shell": "workspace:*",
 		"@nikkierp/ui": "workspace:*",
 		"@tabler/icons-react": "~3.35.0",

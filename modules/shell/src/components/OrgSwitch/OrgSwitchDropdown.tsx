@@ -11,8 +11,6 @@ export type OrgSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWi
 };
 
 export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNode {
-	// const { userSettings } = useConfig();
-	// const { orgSlug, redirectToOrg } = useTenantUrl();
 	const dispatch = useDispatch();
 	const isAuthenticated = useIsAuthenticated();
 	const { orgSlug } = useActiveOrgModule();
@@ -36,10 +34,6 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 			actionOptionLabel='Manage organizations...'
 			searchPlaceholder='Search organization'
 			unselectedPlaceholder='Select organization'
-			targetClass='box-content'
-			// targetColor='#000'
-			targetFz='h3'
-			targetFw='bolder'
 			dropdownWidth={props.dropdownWidth}
 			items={items}
 			value={orgSlug}

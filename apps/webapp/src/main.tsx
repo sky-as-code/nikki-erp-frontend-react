@@ -35,6 +35,15 @@ const microApps: MicroAppMetadata[] = [
 		bundleUrl: () => import('@nikkierp/microapp-authorize'),
 		htmlTag: 'nikkiapp-authorize',
 	},
+	{
+		slug: 'nikkierp.vendingMachine',
+		basePath: 'vending-machine',
+		// Uncomment when mounting as ShadowDOM
+		// bundleUrl: () => import(vendingMachineBundleUrl),
+		bundleUrl: () => import('@nikkierp/microapp-vendingMachine'),
+		htmlTag: 'nikkiapp-vending-machine',
+	},
+
 	...remoteApps,
 ];
 

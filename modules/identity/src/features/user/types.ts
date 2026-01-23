@@ -3,7 +3,7 @@ import {
 	DeleteResponse,
 	SearchResponse,
 	UpdateResponse,
-} from '@nikkierp/ui/types';
+} from '@nikkierp/common';
 
 
 export type User = {

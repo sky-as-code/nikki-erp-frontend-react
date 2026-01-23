@@ -13,14 +13,12 @@ export const DomainLogoButton: React.FC<{ isRootPath: boolean }> = ({ isRootPath
 	return (
 		<Button
 			className={classes.domainLogoButton}
-			h={'100%'}
-			variant='transparent'
-			p={0}
+			h={'100%'} variant='transparent' p={0}
 			onClick={() => {
 				navigate(`/`);
 			}}
 		>
-			<Flex align='center' justify='center' gap={2} style={{ minWidth: 'auto', position: 'relative' }}>
+			<Flex align='center' justify='center' gap={0} style={{ minWidth: 'auto', position: 'relative' }}>
 				<IconChevronLeft
 					size={26}
 					className={clsx(classes.iconHome, isRootPath && classes.iconHidden)}
