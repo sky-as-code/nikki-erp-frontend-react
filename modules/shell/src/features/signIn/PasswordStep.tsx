@@ -26,8 +26,8 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 
 	const handleSubmit = async (data: { password: string }) => {
 		// This would be passed as a prop in a real implementation
-		console.log('SignIn attempt:', data);
-		dispatch(continueSignInAction({ password: data.password }));
+		dispatch(continueSignInAction({ passwords: {password :data.password},
+			username: signInProgress?.email, attemptId: signInProgress?.attemptId }));
 	};
 
 	return (

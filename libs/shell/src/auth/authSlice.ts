@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice, ActionReducerMapBuilder } from '@reduxjs/toolkit';
+import { use } from 'react';
 
 import { authService } from './authService';
+import { getUserIdFromToken } from './tokenStorage';
 import { SignInResult } from './types';
 import { fetchUserContextAction } from '../userContext/userContextSlice';
 
@@ -29,9 +31,12 @@ export const startSignInAction = createAsyncThunk<
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/startSignIn`,
-	async (_, { rejectWithValue }) => {
+	async ({ email }, { rejectWithValue }) => {
 		try {
-			return await authService().startSignIn();
+			const result = await authService().startSignIn(
+				{ subjectType: 'user', username: email },
+			);
+			return result;
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Start sign-in attempt failed';
@@ -49,8 +54,9 @@ export const continueSignInAction = createAsyncThunk<
 	async (params, { rejectWithValue, dispatch }) => {
 		try {
 			const result = await authService().continueSignIn(params);
-			if (result.done) {
-				queueMicrotask(() => dispatch(fetchUserContextAction()));
+			if (result.done && result.data?.accessToken) {
+				const userId = getUserIdFromToken(result.data.accessToken);
+				queueMicrotask(() => dispatch(fetchUserContextAction(userId)));
 			}
 			return result;
 		}
@@ -89,7 +95,11 @@ export const restoreAuthSessionAction = createAsyncThunk<
 		try {
 			const isSuccess = await authService().restoreAuthSession();
 			if (isSuccess) {
-				queueMicrotask(() => dispatch(fetchUserContextAction()));
+				const accessToken = authService().getAccessToken();
+				if (accessToken) {
+					const userId = getUserIdFromToken(accessToken);
+					queueMicrotask(() => dispatch(fetchUserContextAction(userId)));
+				}
 			}
 			return isSuccess;
 		}
