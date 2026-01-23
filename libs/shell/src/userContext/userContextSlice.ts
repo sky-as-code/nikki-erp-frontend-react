@@ -25,13 +25,13 @@ const initialState: UserContextState = {
 
 export const fetchUserContextAction = createAsyncThunk<
 	UserContext,
-	void,
+	string,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchUserContext`,
-	async (_, { rejectWithValue }) => {
+	async (userId, { rejectWithValue }) => {
 		try {
-			const context = await userContextService.fetch();
+			const context = await userContextService.fetch(userId);
 			return context;
 		}
 		catch (error) {

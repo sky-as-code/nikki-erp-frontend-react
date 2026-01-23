@@ -32,30 +32,27 @@ export type UserContext = {
 	permissions: EntitlementAssignment[];
 };
 
-type OrganizationApiResponse = {
+export type GetUserByIdResponse = {
 	id: string;
+	email: string;
 	displayName: string;
-	slug: string;
-	status: string;
-	legalName: string | null;
-	address: string | null;
-	phoneNumber: string | null;
-	etag: string;
-	createdAt: number;
-	updatedAt: number | null;
+	orgs: {
+		id: string;
+		displayName: string;
+		slug: string;
+	}[];
 };
 
-type SearchOrganizationsResponse = {
-	items: OrganizationApiResponse[];
-	total: number;
-	page: number;
-	size: number;
-};
-
+/* eslint-disable max-lines-per-function */
 export class UserContextService {
-	public async fetch(): Promise<UserContext> {
+	public async fetch(userId: string): Promise<UserContext> {
 		try {
-			const orgResponse = await request.get<SearchOrganizationsResponse>('identity/organizations');
+			const response = await request.get<GetUserByIdResponse>(`identity/users/${userId}`, {
+				searchParams: {
+					withOrg: 'true',
+				},
+			});
+
 			const defaultModules: Module[] = [
 				{
 					id: '1',
@@ -74,7 +71,7 @@ export class UserContextService {
 				}
 			];
 
-			const orgs: Organization[] = orgResponse.items.map(org => ({
+			const orgs: Organization[] = response.orgs.map(org => ({
 				id: org.id,
 				name: org.displayName,
 				slug: org.slug,
@@ -83,9 +80,9 @@ export class UserContextService {
 
 			return {
 				user: {
-					id: '01JWNNJGS70Y07MBEV3AQ0M526',
-					email: 'system@nikki.com',
-					displayName: 'System',
+					id: response.id,
+					email: response.email,
+					displayName: response.displayName,
 				},
 				orgs,
 				permissions: [],
@@ -93,7 +90,6 @@ export class UserContextService {
 		}
 		catch (error) {
 			console.error('Failed to fetch user context:', error);
-			// Return empty context on error
 			return {
 				user: {
 					id: '1',
