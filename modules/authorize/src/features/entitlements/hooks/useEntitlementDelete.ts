@@ -1,10 +1,10 @@
+import { AuthorizeDispatch, entitlementActions, selectDeleteEntitlement } from '@/appState';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AuthorizeDispatch, entitlementActions, selectDeleteEntitlement } from '@/appState';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { Entitlement } from '@/features/entitlements';
 
@@ -19,7 +19,7 @@ function useConfirmDelete(
 	}, [dispatch, entitlementToDelete]);
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useEntitlementDelete(entitlements: Entitlement[], dispatch: AuthorizeDispatch) {
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();

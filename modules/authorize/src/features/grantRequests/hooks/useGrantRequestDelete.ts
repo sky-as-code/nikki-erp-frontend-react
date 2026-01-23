@@ -1,14 +1,14 @@
+import { AuthorizeDispatch, grantRequestActions, selectDeleteGrantRequest } from '@/appState';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AuthorizeDispatch, grantRequestActions, selectDeleteGrantRequest } from '@/appState';
 import { GrantRequest } from '@/features/grantRequests/types';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useGrantRequestDelete(
 	grantRequests: GrantRequest[],
 	dispatch: AuthorizeDispatch,

@@ -1,11 +1,11 @@
 
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, groupActions, userActions } from '../../../appState';
 import { selectManageGroupUsers, selectUpdateGroup, selectDeleteGroup, selectGroupDetail } from '../../../appState/group';
 
@@ -85,7 +85,7 @@ export function useGroupDetailHandlers() {
 	};
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useGroupUserManagement() {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const activeOrg = useActiveOrgWithDetails();

@@ -1,4 +1,3 @@
-import { MenuBar } from '@/components/MenuBar';
 import {
 	Center, Group, Loader, Stack, Text,
 	useMantineColorScheme, useMantineTheme,
@@ -16,13 +15,11 @@ import classes from './PrivateLayout.module.css';
 import { ContentContainer } from '@/components/ContentContainer';
 import { DomainLogoButton } from '@/components/DomainLogo';
 import { LangSwitchDropdown } from '@/components/LangSwitch';
+import { MenuBar } from '@/components/MenuBar';
 import { ModuleSwitchDropdown } from '@/components/ModuleSwitch';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { OrgSwitchDropdown } from '@/components/OrgSwitch';
 import { ProfileMenuDropdown } from '@/components/ProfileMenuDropdown';
-
-
-
 
 
 export function PrivateLayout(): React.ReactNode {

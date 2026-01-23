@@ -21,6 +21,7 @@
 		"@mantine/notifications": "~8.3.5",
 		"@nikkierp/common": "workspace:*",
 		"@nikkierp/ui": "workspace:*",
+		"@nikkierp/shell": "workspace:*",
 		"@tabler/icons-react": "~3.35.0",
 		"chart.js": "~4.5.1",
 		"clsx": "~2.1.1",

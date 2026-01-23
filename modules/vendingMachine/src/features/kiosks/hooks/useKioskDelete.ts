@@ -1,8 +1,8 @@
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appState';
 import { type Kiosk } from '@/features/kiosks';

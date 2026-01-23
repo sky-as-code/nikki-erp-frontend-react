@@ -5,7 +5,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ListActions } from '@/features/common/components';
+import { ListActions } from '@/components';
 import { EventDetailDrawer, EventTable, eventSchema, useEventDetail, useEventList } from '@/features/events';
 import { Event } from '@/features/events/types';
 

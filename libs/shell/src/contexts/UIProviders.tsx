@@ -6,8 +6,6 @@ import { ModalsProvider } from '@mantine/modals';
 import { Notifications, notifications as notif } from '@mantine/notifications';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-// import { theme } from '../styles/theme'
-
 
 export type UIProvidersProps = React.PropsWithChildren;
 

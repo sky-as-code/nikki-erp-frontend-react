@@ -1,10 +1,10 @@
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, hierarchyActions, userActions } from '../../../appState';
 import { selectDeleteHierarchy, selectManageHierarchyUsers, selectUpdateHierarchy, selectHierarchyDetail } from '../../../appState/hierarchy';
 
@@ -86,7 +86,7 @@ export function useHierarchyDetailHandlers() {
 	};
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useHierarchyUserManagement() {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const activeOrg = useActiveOrgWithDetails();

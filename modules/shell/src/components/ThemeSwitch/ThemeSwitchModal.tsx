@@ -50,14 +50,11 @@ const ThemeSwitcher = () => {
 				<Button
 					key={theme.value}
 					variant='subtle'
-					h={80}
-					w={80}
-					p={0}
-					radius='sm'
-					onClick={() => setColorScheme(theme.value as any)}
+					h={80} w={80} p={0}
+					bd={'1px solid black'} radius='sm'
 					bg={colorScheme === theme.value ? 'var(--mantine-color-gray-6)' : 'transparent'}
-					bd={'1px solid black'}
 					color={colorScheme === theme.value ? 'var(--nikki-color-black)' : 'dark:var(--nikki-color-white) light:var(--nikki-color-black)'}
+					onClick={() => setColorScheme(theme.value as any)}
 				>
 					<Flex direction='column' align='center' gap={4}>
 						{theme.icon}

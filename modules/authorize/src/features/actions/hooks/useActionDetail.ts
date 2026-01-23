@@ -1,12 +1,12 @@
+import { AuthorizeDispatch, actionActions, selectActionState, selectUpdateAction } from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import { AuthorizeDispatch, actionActions, selectActionState, selectUpdateAction } from '@/appState';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { Action } from '@/features/actions';
 
@@ -87,7 +87,7 @@ function useSubmitHandler(
 	}, [dispatch, notification, action, translate]);
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 function useActionDetailHandlers(action: Action | undefined) {
 	const navigate = useNavigate();
 	const location = useLocation();

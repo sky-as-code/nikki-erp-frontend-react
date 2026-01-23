@@ -2,7 +2,7 @@ import { AppRoute } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { Navigate } from 'react-router';
 
-import { VendingMachineLayout } from '../layout';
+import { VendingMachineLayout } from '../layouts';
 import { AdsPage } from '../pages/ads/AdsPage';
 import { EventsPage } from '../pages/events/EventsPage';
 import { KioskListPage } from '../pages/kiosks/KioskListPage';

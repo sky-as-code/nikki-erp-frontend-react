@@ -1,9 +1,3 @@
-import { cleanFormData } from '@nikkierp/common/utils';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { resolvePath, useLocation, useNavigate } from 'react-router';
-
 import {
 	AuthorizeDispatch,
 	actionActions,
@@ -13,16 +7,23 @@ import {
 	selectResourceState,
 	selectCreateEntitlement,
 } from '@/appState';
-import {
-	buildActionExpr,
-	validateEntitlementForm,
-} from '@/features/entitlements/helpers/entitlementFormValidation';
+import { cleanFormData } from '@nikkierp/common/utils';
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
+
 
 import type { Action } from '@/features/actions';
 import type { Entitlement } from '@/features/entitlements';
 import type { Resource } from '@/features/resources';
+
+import {
+	buildActionExpr,
+	validateEntitlementForm,
+} from '@/features/entitlements/helpers/entitlementFormValidation';
 
 
 type FormType = Parameters<typeof validateEntitlementForm>[2];
@@ -73,7 +74,7 @@ function useSubmitHandler(
 	}, [dispatch, notification, translate, resources, actions]);
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useEntitlementCreate() {
 	const navigate = useNavigate();
 	const location = useLocation();

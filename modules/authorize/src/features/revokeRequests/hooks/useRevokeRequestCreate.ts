@@ -1,14 +1,15 @@
+import { AuthorizeDispatch, revokeRequestActions, selectCreateRevokeRequest } from '@/appState';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation, resolvePath } from 'react-router';
 
-import { AuthorizeDispatch, revokeRequestActions, selectCreateRevokeRequest } from '@/appState';
+import type { CreateRevokeRequestInput } from '@/features/revokeRequests/revokeRequestService';
+
 import { handleGoBack } from '@/utils';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
-import type { CreateRevokeRequestInput } from '@/features/revokeRequests/revokeRequestService';
 
 
 function prepareCreateData(data: any): CreateRevokeRequestInput {

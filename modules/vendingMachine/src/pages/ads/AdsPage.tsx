@@ -5,9 +5,9 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { ListActions } from '@/components';
 import { AdDetailDrawer, AdTable, adSchema, useAdDetail, useAdList } from '@/features/ads';
 import { Ad } from '@/features/ads/types';
-import { ListActions } from '@/features/common/components';
 
 
 // eslint-disable-next-line max-lines-per-function

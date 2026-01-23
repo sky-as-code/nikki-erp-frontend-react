@@ -1,9 +1,9 @@
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 import { IdentityDispatch, userActions } from '../../../appState';
 import { selectDeleteUser, selectUpdateUser, selectUserDetail } from '../../../appState/user';
 

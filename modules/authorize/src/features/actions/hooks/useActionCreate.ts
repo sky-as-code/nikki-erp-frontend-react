@@ -1,12 +1,12 @@
+import { AuthorizeDispatch, actionActions, selectCreateAction } from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { AuthorizeDispatch, actionActions, selectCreateAction } from '@/appState';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { Action } from '@/features/actions';
 

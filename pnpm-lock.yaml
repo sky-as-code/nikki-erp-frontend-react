@@ -604,6 +604,9 @@ importers:
       '@nikkierp/common':
         specifier: workspace:*
         version: link:../../libs/common
+      '@nikkierp/shell':
+        specifier: workspace:*
+        version: link:../../libs/shell
       '@nikkierp/ui':
         specifier: workspace:*
         version: link:../../libs/ui
@@ -746,6 +749,9 @@ importers:
       '@nikkierp/common':
         specifier: workspace:*
         version: link:../../libs/common
+      '@nikkierp/shell':
+        specifier: workspace:*
+        version: link:../../libs/shell
       '@nikkierp/ui':
         specifier: workspace:*
         version: link:../../libs/ui
@@ -1187,6 +1193,9 @@ importers:
       '@nikkierp/common':
         specifier: workspace:*
         version: link:../../libs/common
+      '@nikkierp/shell':
+        specifier: workspace:*
+        version: link:../../libs/shell
       '@nikkierp/ui':
         specifier: workspace:*
         version: link:../../libs/ui

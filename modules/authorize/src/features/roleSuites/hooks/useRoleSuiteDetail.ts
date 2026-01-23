@@ -1,9 +1,3 @@
-import { cleanFormData } from '@nikkierp/common/utils';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
-
 import {
 	AuthorizeDispatch,
 	roleActions,
@@ -12,8 +6,14 @@ import {
 	selectRoleSuiteState,
 	selectUpdateRoleSuite,
 } from '@/appState';
+import { cleanFormData } from '@nikkierp/common/utils';
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
+
 
 import type { Role } from '@/features/roles';
 import type { RoleSuite } from '@/features/roleSuites';
