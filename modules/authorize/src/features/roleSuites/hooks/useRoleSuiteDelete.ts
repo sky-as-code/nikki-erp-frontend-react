@@ -1,15 +1,15 @@
+import { AuthorizeDispatch, roleSuiteActions, selectDeleteRoleSuite } from '@/appState';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AuthorizeDispatch, roleSuiteActions, selectDeleteRoleSuite } from '@/appState';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { RoleSuite } from '@/features/roleSuites';
 
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useRoleSuiteDelete(
 	roleSuites: RoleSuite[],
 	dispatch: AuthorizeDispatch,

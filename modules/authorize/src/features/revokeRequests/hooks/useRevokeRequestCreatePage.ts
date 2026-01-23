@@ -1,16 +1,3 @@
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate, resolvePath } from 'react-router';
-
-
-
-import { useRevokeRequestFilter } from './useRevokeRequestFilter';
-import { useUserContext } from '../../../../../../libs/shell/src/userContext/userContextSelectors';
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
-
-import type { CreateRevokeRequestInput } from '@/features/revokeRequests/revokeRequestService';
-
 import {
 	AuthorizeDispatch,
 	identityActions,
@@ -21,6 +8,19 @@ import {
 	selectRoleSuiteList,
 	selectUserList,
 } from '@/appState';
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate, resolvePath } from 'react-router';
+
+
+
+import { useRevokeRequestFilter } from './useRevokeRequestFilter';
+import { useUserContext } from '../../../../../../libs/shell/src/userContext/userContextSelectors';
+
+import type { CreateRevokeRequestInput } from '@/features/revokeRequests/revokeRequestService';
+
 
 
 function usePageData() {
@@ -115,7 +115,7 @@ function useCancelHandler() {
 	}, [navigate, location]);
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useRevokeRequestCreate() {
 	const userContext = useUserContext();
 	const requestorId = '01JWNMZ36QHC7CQQ748H9NQ6J6'; // Mock user ID - TODO: get from user context

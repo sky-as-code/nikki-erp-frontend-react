@@ -1,12 +1,12 @@
+import { AuthorizeDispatch, grantRequestActions, selectCreateGrantRequest } from '@/appState';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation, resolvePath } from 'react-router';
 
-import { AuthorizeDispatch, grantRequestActions, selectCreateGrantRequest } from '@/appState';
 import { GrantRequest } from '@/features/grantRequests/types';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 
 function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) {

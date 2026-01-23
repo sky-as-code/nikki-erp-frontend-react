@@ -1,12 +1,12 @@
+import { AuthorizeDispatch, roleActions, roleSuiteActions, selectCreateRoleSuite, selectRoleState } from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { AuthorizeDispatch, roleActions, roleSuiteActions, selectCreateRoleSuite, selectRoleState } from '@/appState';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { Role } from '@/features/roles';
 import type { RoleSuite } from '@/features/roleSuites';
@@ -68,7 +68,7 @@ function useCreateState() {
 	return { selectedRoleIds, setSelectedRoleIds };
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useRoleSuiteCreate() {
 	const navigate = useNavigate();
 	const location = useLocation();

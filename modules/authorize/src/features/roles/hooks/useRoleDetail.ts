@@ -1,20 +1,21 @@
-import { cleanFormData } from '@nikkierp/common/utils';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
-
 import {
 	AuthorizeDispatch,
 	roleActions,
 	selectRoleState,
 	selectUpdateRole,
 } from '@/appState';
-import { Role } from '@/features/roles/types';
-
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
+import { cleanFormData } from '@nikkierp/common/utils';
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
 import type { TFunction } from 'i18next';
+
+import { Role } from '@/features/roles/types';
+
+
 
 
 type NotificationType = ReturnType<typeof useUIState>['notification'];
@@ -97,7 +98,7 @@ export function useRoleDetailData() {
 	};
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useRoleDetail(role: Role | undefined) {
 	const navigate = useNavigate();
 	const location = useLocation();

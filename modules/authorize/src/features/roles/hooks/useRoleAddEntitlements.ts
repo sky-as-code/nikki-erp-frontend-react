@@ -1,8 +1,3 @@
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
-
 import {
 	AuthorizeDispatch,
 	entitlementActions,
@@ -13,11 +8,17 @@ import {
 	selectResourceState,
 	selectRoleState,
 } from '@/appState';
-import { Role } from '@/features/roles';
-
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
 import type { Entitlement } from '@/features/entitlements/types';
+
+import { Role } from '@/features/roles';
+
+
 
 
 // ============ Helper Functions ============
@@ -138,7 +139,7 @@ function useRoleAddEntitlementsActions(
 	return { handleGoBack };
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 function useConfirmHandler(
 	role: Role | undefined,
 	selectedEntitlements: Entitlement[],

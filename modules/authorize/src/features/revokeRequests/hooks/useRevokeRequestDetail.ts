@@ -1,12 +1,12 @@
+import { AuthorizeDispatch, revokeRequestActions, selectRevokeRequestState } from '@/appState';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { resolvePath } from 'react-router';
 
-import { AuthorizeDispatch, revokeRequestActions, selectRevokeRequestState } from '@/appState';
 import { RevokeRequest } from '@/features/revokeRequests/types';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 
 function useRevokeRequestDetailData() {

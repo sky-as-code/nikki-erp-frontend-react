@@ -1,10 +1,10 @@
+import { AuthorizeDispatch, actionActions, selectDeleteAction } from '@/appState';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AuthorizeDispatch, actionActions, selectDeleteAction } from '@/appState';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 import type { Action } from '@/features/actions';
 
@@ -21,7 +21,7 @@ function useConfirmDelete(
 	}, [dispatch, actionToDelete]);
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useActionDelete(actions: Action[], dispatch: AuthorizeDispatch) {
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();

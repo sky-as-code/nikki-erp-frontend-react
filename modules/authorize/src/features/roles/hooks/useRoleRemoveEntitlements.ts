@@ -1,8 +1,3 @@
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
-
 import {
 	AuthorizeDispatch,
 	resourceActions,
@@ -11,12 +6,18 @@ import {
 	selectResourceState,
 	selectRoleState,
 } from '@/appState';
-import { createEntitlementKey } from '@/utils';
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
+
 
 import type { Entitlement } from '@/features/entitlements';
 import type { Role } from '@/features/roles';
+
+import { createEntitlementKey } from '@/utils';
 
 
 function buildEntitlementInputs(selected: Entitlement[]) {
@@ -92,7 +93,7 @@ function useEntitlementSelection(assignedEntitlements: Entitlement[], searchQuer
 	};
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 function useRemoveConfirmHandler(
 	role: Role | undefined,
 	selectedEntitlements: Entitlement[],

@@ -7,7 +7,7 @@ import {
 } from '@nikkierp/ui/microApp';
 
 import { reducer } from './appState';
-import { useMenuBarItems } from './features/common/hooks';
+import { useMenuBarItems } from './hooks';
 import { AppRouteElements, WidgetRouteElements } from './routes';
 
 

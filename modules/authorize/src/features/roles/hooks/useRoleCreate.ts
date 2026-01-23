@@ -1,19 +1,19 @@
+import { AuthorizeDispatch, roleActions, selectCreateRole } from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
+import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { AuthorizeDispatch, roleActions, selectCreateRole } from '@/appState';
 import { Role } from '@/features/roles/types';
 
-import { useUIState } from '../../../../../shell/src/context/UIProviders';
 
 
 type CreateRoleInput = Omit<Role, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'entitlementsCount' | 'assignmentsCount' | 'suitesCount' | 'ownerName'>;
 
 
-// eslint-disable-next-line max-lines-per-function
+
 export function useRoleCreate() {
 	const navigate = useNavigate();
 	const location = useLocation();
