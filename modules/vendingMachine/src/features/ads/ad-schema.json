@@ -1,0 +1,54 @@
+{
+	"name": "ad",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.ads.fields.id' }",
+			"hidden": true
+		},
+		"code": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.ads.fields.code' }"
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.ads.fields.name' }"
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.ads.fields.description' }"
+		},
+		"status": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.ads.fields.status' }",
+			"enum": [
+				{
+					"value": "active",
+					"label": "{ \"$ref\": 'nikki.general.status.active' }"
+				},
+				{
+					"value": "inactive",
+					"label": "{ \"$ref\": 'nikki.general.status.inactive' }"
+				},
+				{
+					"value": "expired",
+					"label": "{ \"$ref\": 'nikki.vendingMachine.ads.status.expired' }"
+				}
+			]
+		},
+		"startDate": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.ads.fields.startDate' }"
+		},
+		"endDate": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.ads.fields.endDate' }"
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.ads.fields.createdAt' }",
+			"hidden": true
+		}
+	}
+}
+

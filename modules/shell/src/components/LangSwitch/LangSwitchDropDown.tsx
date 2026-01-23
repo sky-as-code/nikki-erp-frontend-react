@@ -27,15 +27,14 @@ export const LangSwitchDropdown: React.FC = () => {
 		</Menu.Item>
 	));
 
-
 	const selectedLang = languages.find((language) => language.value === i18n.language);
 
 	return (
 		<Menu shadow='md' width={150} position='bottom-end'>
 			<Menu.Target>
-				<Button px={6} variant='default'>
+				<Button px={'xs'} variant='default' h={35}>
 					<Box w={24} h={20} p={0} mx={3}>{ selectedLang?.icon }</Box>
-					<IconChevronDown size={18} color='var(--mantine-color-gray-7)' />
+					<IconChevronDown size={14} color='var(--mantine-color-gray-7)' />
 				</Button>
 			</Menu.Target>
 

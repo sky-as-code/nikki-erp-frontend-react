@@ -15,6 +15,16 @@
 		}
 	},
 	"nikki": {
+		"shell": {
+			"title": "Nikki ERP",
+			"profileMenu": {
+				"profile": "Profile",
+				"accountSettings": "Account Settings",
+				"themeMode": "Theme Mode",
+				"switchAccount": "Switch Account",
+				"signOut": "Sign Out"
+			}
+		},
 		"general": {
 			"fields": {
 				"id": "ID"
@@ -36,13 +46,32 @@
 				"approve": "Approve",
 				"reject": "Reject",
 				"select_all": "Select All",
-				"deselect_all": "Deselect All"
+				"deselect_all": "Deselect All",
+				"clear_filters": "Clear Filters",
+				"title": "Actions"
+			},
+			"view": {
+				"title": "View Mode",
+				"list": "List",
+				"grid": "Grid"
+			},
+			"search": {
+				"placeholder": "Search..."
+			},
+			"filters": {
+				"all": "All",
+				"status": "Filter by Status"
+			},
+			"status": {
+				"active": "Active",
+				"inactive": "Inactive"
 			},
 			"messages": {
 				"success": "Success",
 				"error": "Error",
 				"loading": "Loading...",
 				"not_found": "Not found",
+				"no_data": "No data",
 				"no_changes": "No changes",
 				"invalid_change": "Invalid change",
 				"delete_confirm": "Are you sure you want to delete? This action cannot be undone.",
@@ -631,6 +660,174 @@
 						"delete_success": "Resource \"{{name}}\" has been deleted successfully"
 					}
 			}
+		},
+		"vendingMachine": {
+				"menu": {
+					"overview": "Overview",
+					"kiosks": "Kiosks",
+					"ads": "Ads",
+					"events": "Events",
+					"kiosk_settings": "Kiosk Settings",
+					"kiosk_template": "Kiosk Template",
+					"reports": "Reports",
+					"revenue": "Revenue",
+					"inventory": "Inventory"
+				},
+				"overview": {
+					"title": "Vending Machine Overview",
+					"statistics": "Statistics",
+					"total_kiosks": "Total Kiosks",
+					"active_kiosks": "Active Kiosks",
+					"inactive_kiosks": "Inactive Kiosks",
+					"avg_temperature": "Average Temperature",
+					"avg_humidity": "Average Humidity",
+					"total_power": "Total Power Consumption",
+					"kiosk_distribution": "Kiosk Distribution"
+				},
+				"kiosk": {
+					"title": "Kiosks",
+					"detail": {
+						"title": "Kiosk Details"
+					},
+					"fields": {
+						"code": "Code",
+						"name": "Name",
+						"address": "Address",
+						"coordinates": "Coordinates",
+						"isActive": "Active Status",
+						"connectionStatus": "Connection Status",
+						"status": "Status",
+						"mode": "Mode",
+						"actions": "Actions",
+						"createdAt": "Created At",
+						"deletedAt": "Deleted At"
+					},
+					"status": {
+						"activated": "Activated",
+						"disabled": "Disabled",
+						"deleted": "Deleted"
+					},
+					"connectionStatus": {
+						"fast": "Fast",
+						"slow": "Slow",
+						"disconnected": "Disconnected"
+					},
+					"connectionHistory": {
+						"title": "Recent Connection History",
+						"no_history": "No connection history",
+						"just_now": "Just now",
+						"minutes_ago": "{{count}} minutes ago",
+						"hours_ago": "{{count}} hours ago",
+						"days_ago": "{{count}} days ago"
+					},
+					"mode": {
+						"pending": "Pending",
+						"selling": "Selling",
+						"adsOnly": "Ads Only"
+					},
+					"search": {
+						"placeholder": "Search by code or name..."
+					},
+					"filter": {
+						"status": "Filter by Status",
+						"connection": "Filter by Connection",
+						"mode": "Filter by Mode"
+					},
+					"messages": {
+						"no_kiosks": "No kiosks found",
+						"create_success": "Kiosk \"{{name}}\" has been created successfully",
+						"update_success": "Kiosk \"{{name}}\" has been updated successfully",
+						"delete_success": "Kiosk has been deleted successfully"
+					}
+				},
+				"ads": {
+					"detail": {
+						"title": "Ad Details"
+					},
+					"fields": {
+						"id": "ID",
+						"code": "Code",
+						"name": "Name",
+						"description": "Description",
+						"status": "Status",
+						"startDate": "Start Date",
+						"endDate": "End Date",
+						"createdAt": "Created At"
+					},
+					"status": {
+						"expired": "Expired"
+					},
+					"search": {
+						"placeholder": "Search by code or name..."
+					},
+					"filter": {
+						"status": "Filter by Status"
+					}
+				},
+				"events": {
+					"detail": {
+						"title": "Event Details"
+					},
+					"fields": {
+						"id": "ID",
+						"code": "Code",
+						"name": "Name",
+						"description": "Description",
+						"status": "Status",
+						"startDate": "Start Date",
+						"endDate": "End Date",
+						"createdAt": "Created At"
+					},
+					"status": {
+						"completed": "Completed"
+					},
+					"search": {
+						"placeholder": "Search by code or name..."
+					},
+					"filter": {
+						"status": "Filter by Status"
+					}
+				},
+				"kioskSettings": {
+					"detail": {
+						"title": "Kiosk Setting Details"
+					},
+					"fields": {
+						"id": "ID",
+						"code": "Code",
+						"name": "Name",
+						"description": "Description",
+						"category": "Category",
+						"value": "Value",
+						"status": "Status",
+						"createdAt": "Created At"
+					},
+					"search": {
+						"placeholder": "Search by code or name..."
+					},
+					"filter": {
+						"status": "Filter by Status"
+					}
+				},
+				"kioskTemplate": {
+					"detail": {
+						"title": "Kiosk Template Details"
+					},
+					"fields": {
+						"id": "ID",
+						"code": "Code",
+						"name": "Name",
+						"description": "Description",
+						"status": "Status",
+						"createdAt": "Created At"
+					},
+					"search": {
+						"placeholder": "Search by code or name..."
+					},
+					"filter": {
+						"status": "Filter by Status"
+					}
+				}
 		}
 	}
 }

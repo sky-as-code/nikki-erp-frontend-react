@@ -26,7 +26,7 @@ export const ThemeSwitchDropdown: React.FC = () => {
 	return (
 		<Menu shadow='md' width={120} position='bottom-end'>
 			<Menu.Target>
-				<Button px={6} variant='default'>
+				<Button px={'xs'} variant='default' h={35}>
 					<Box p={0} mx={3}>{ selectedTheme?.icon || <IconBrightnessFilled size={22} /> }</Box>
 					<IconChevronDown size={18} color='var(--mantine-color-gray-7)' />
 				</Button>

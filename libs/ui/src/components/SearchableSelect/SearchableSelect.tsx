@@ -8,9 +8,8 @@ import {
 	ScrollArea,
 	Text,
 	useCombobox,
-	Image,
 } from '@mantine/core';
-import { IconChevronDown, IconSearch } from '@tabler/icons-react';
+import { IconChevronDownRight } from '@tabler/icons-react';
 import { FC, JSX, useEffect, useState } from 'react';
 
 
@@ -67,6 +66,7 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 
 	return (
 		<Combobox
+			position='bottom-start'
 			size='md'
 			store={combobox}
 			withinPortal={true}
@@ -110,9 +110,10 @@ function useSearchSelect(isSearchBoxEnabled: boolean) {
 			// combobox.focusTarget();
 			setSearch('');
 		},
-		onDropdownOpen: (eventSource) => {
-			isSearchBoxEnabled && combobox.focusSearchInput();
+		onDropdownOpen: (_eventSource) => {
+			if(isSearchBoxEnabled) combobox.focusSearchInput();
 			combobox.selectActiveOption();
+
 			// if (eventSource === 'keyboard') {
 			// }
 			// else {
@@ -143,13 +144,12 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 	return (
 		<Combobox.Target>
 			<TriggerComponent
-				px={'sm'}
-				rightSection={<IconChevronDown size={20}/>}
-				// leftSection={<Image mb={2} alt='org.logo' src={'/icon.ico'} width={20} height={20}/>}
+				px={'xs'}
+				rightSection={<IconChevronDownRight size={16}/>}
 				onClick={() => combobox.toggleDropdown()}
 			>
-				{value ?
-					<Text ta={'left'} fz={'xl'} fw={900} miw={100}>{value}</Text>
+				{value
+					? <Text ta={'left'} fz={'md'} fw={'bolder'} miw={50}>{value}</Text>
 					: <Input.Placeholder>
 						{props.unselectedPlaceholder ?? 'No item selected'}
 					</Input.Placeholder>}

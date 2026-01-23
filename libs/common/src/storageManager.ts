@@ -34,9 +34,11 @@ export function clearAuthData(): void {
 	localStorage.removeItem(AUTH_KEY);
 }
 
-export default {
+const storageManager = {
 	setAuthData,
 	getAuthData,
 	getAuthToken,
 	clearAuthData,
 };
+
+export default storageManager;

@@ -56,24 +56,6 @@ export class UserContextService {
 	public async fetch(): Promise<UserContext> {
 		try {
 			const orgResponse = await request.get<SearchOrganizationsResponse>('identity/organizations');
-			const defaultModules: Module[] = [
-				{
-					id: '1',
-					name: 'Essential',
-					slug: 'essential',
-				},
-				{
-					id: '2',
-					name: 'Identity',
-					slug: 'identity',
-				},
-				{
-					id: '3',
-					name: 'Authorize',
-					slug: 'authorize',
-				}
-			];
-
 			const orgs: Organization[] = orgResponse.items.map(org => ({
 				id: org.id,
 				name: org.displayName,
@@ -108,3 +90,27 @@ export class UserContextService {
 }
 
 export const userContextService = new UserContextService();
+
+
+const defaultModules: Module[] = [
+	{
+		id: '1',
+		name: 'Essential',
+		slug: 'essential',
+	},
+	{
+		id: '2',
+		name: 'Identity',
+		slug: 'identity',
+	},
+	{
+		id: '3',
+		name: 'Authorize',
+		slug: 'authorize',
+	},
+	{
+		id: '4',
+		name: 'Vending Machine',
+		slug: 'vending-machine',
+	},
+];

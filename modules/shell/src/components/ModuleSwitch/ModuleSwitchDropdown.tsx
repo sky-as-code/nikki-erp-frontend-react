@@ -12,8 +12,6 @@ export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdow
 };
 
 export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.ReactNode {
-	// const { redirectToModule } = useTenantUrl();
-	// const { userSettings, activeModule } = useConfig();
 	const dispatch = useDispatch();
 	const isAuthenticated = useIsAuthenticated();
 	const { orgSlug, moduleSlug } = useActiveOrgModule();
@@ -36,12 +34,6 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 			actionOptionLabel='Manage modules...'
 			searchPlaceholder='Search module'
 			unselectedPlaceholder='Select module'
-			targetClass='box-content'
-			// targetColor='#000'
-			targetFz='h3'
-			targetFw='normal'
-			// targetPb='xs'
-			// targetPt='xs'
 			dropdownWidth={props.dropdownWidth}
 			items={items}
 			value={moduleSlug ?? ''}
