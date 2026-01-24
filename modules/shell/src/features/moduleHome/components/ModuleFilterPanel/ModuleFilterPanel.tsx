@@ -10,7 +10,6 @@ import { IconLayoutGrid, IconList } from '@tabler/icons-react';
 import { FC } from 'react';
 
 import { FilterState, GroupByOption, ModuleViewMode, SortByOption } from '../ModuleHomePage';
-import classes from './ModuleFilterPanel.module.css';
 
 
 type ModuleFilterPanelProps = {
@@ -43,24 +42,20 @@ export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
 	};
 
 	return (
-		<Stack
-			gap={'lg'} p={{ xl: 30, sm: 15 }}
-			bdrs={'md'} bg={'var(--mantine-color-white)'}
-			className={classes.filterPanel}
-		>
+		<Stack gap={'sm'} bdrs={'md'} bg={'var(--mantine-color-white)'} p={'md'}>
 			<ViewModeSegmentedControl
 				viewMode={viewMode}
 				onViewModeChange={onViewModeChange}
 			/>
 
 			<Checkbox
-				label='Show disabled modules'
+				label={<Text className='capitalize' size={'sm'} fw={500}>Show disabled modules</Text>}
 				color='var(--mantine-color-black)'
 				checked={filters.showDisabled}
 				onChange={handleShowDisabledChange}
 			/>
 			<Checkbox
-				label='Show orphaned modules'
+				label={<Text className='capitalize' size={'sm'} fw={500}>Show orphaned modules</Text>}
 				color='var(--mantine-color-black)'
 				checked={filters.showOrphaned}
 				onChange={handleShowOrphanedChange}

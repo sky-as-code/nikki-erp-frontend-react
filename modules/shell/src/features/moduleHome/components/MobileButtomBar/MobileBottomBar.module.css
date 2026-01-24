@@ -1,0 +1,26 @@
+.mobileBottomBar {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: var(--mantine-color-white);
+	border-top: 1px solid var(--mantine-color-gray-3);
+	z-index: 100;
+	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mobileSearchInput :global(.mantine-TextInput-input) {
+	border: 1px solid var(--mantine-color-gray-4);
+	box-shadow: none !important;
+	transition: none !important;
+}
+
+.mobileSearchInput :global(.mantine-TextInput-input:focus) {
+	border-color: var(--mantine-color-gray-5);
+	box-shadow: none !important;
+}
+
+.mobileSearchInput :global(.mantine-TextInput-wrapper) {
+	transition: none !important;
+	transform: none !important;
+}

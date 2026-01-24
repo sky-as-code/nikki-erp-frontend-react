@@ -2,6 +2,5 @@
 	color: lightdark(var(--mantine-color-white), var(--mantine-color-dark));
 	gap: var(--mantine-spacing-md);
 	box-shadow: 2px 2px 5px 0px #40404033;
-	z-index: 100;
-	background-color: red;
+	z-index: 300;
 }

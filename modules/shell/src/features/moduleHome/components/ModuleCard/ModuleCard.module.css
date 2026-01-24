@@ -5,6 +5,9 @@
 	border: 1px solid rgba(255, 255, 255, 0.9);
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	aspect-ratio: 1 / 1;
+	min-height: 60px;
+	min-width: 60px;
 }
 
 .moduleCard {

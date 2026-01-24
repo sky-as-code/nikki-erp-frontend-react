@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router';
 export function NotFoundPage(): React.ReactNode {
 	return (
 		<Center h='100%'>
-			<Stack align='center' gap='xl' p='xl'>
+			<Stack align='center' gap={'lg'} p={{ base: 'md', sm: 'xl' }}>
 				<NotFoundContent />
 				<ActionButtons />
 			</Stack>
@@ -79,7 +79,7 @@ function ActionButtons(): React.ReactNode {
 		<Group gap='md' mt='xl'>
 			<Button
 				leftSection={<IconHome size={20} />}
-				size='lg'
+				size={'md'}
 				variant='filled'
 				onClick={handleGoHome}
 				style={{
@@ -90,7 +90,7 @@ function ActionButtons(): React.ReactNode {
 			</Button>
 			<Button
 				leftSection={<IconArrowLeft size={20} />}
-				size='lg'
+				size={'md'}
 				variant='outline'
 				onClick={() => navigate(-1)}
 			>
