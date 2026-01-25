@@ -8,17 +8,16 @@ import {
 import { signOutAction, useAuthenticatedStatus } from '@nikkierp/shell/auth';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { AuthorizedGuard } from '@nikkierp/ui/components';
-import { IconBrightnessFilled, IconLogout2, IconMenu2, IconSettings, IconUser, IconUserFilled, IconUsers, IconX } from '@tabler/icons-react';
+import { IconBrightnessFilled, IconCaretLeft, IconChevronLeft, IconChevronRight, IconLogout2, IconMenu2, IconSettings, IconUser, IconUserFilled, IconUsers, IconX } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { Outlet, useLocation } from 'react-router';
+import { Outlet, useLocation, useNavigate } from 'react-router';
 
-
+import classes from './PrivateLayout.module.css';
 
 import { ContentContainer } from '@/components/ContentContainer';
-import { DomainLogoButton } from '@/components/DomainLogo';
 import { MenuBar } from '@/components/MenuBar';
 import { ModuleSwitchDropdown } from '@/components/ModuleSwitch';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
@@ -26,7 +25,6 @@ import { OrgSwitchDropdown } from '@/components/OrgSwitch';
 import { ProfileMenuDropdown } from '@/components/ProfileMenuDropdown';
 import { ThemeSwitchModal } from '@/components/ThemeSwitch';
 
-import classes from './PrivateLayout.module.css';
 
 
 export function PrivateLayout(): React.ReactNode {
@@ -70,42 +68,49 @@ const Header: React.FC = () => {
 	const isRootPath = pathname === `/${orgSlug ?? ''}` || pathname === '/';
 
 	return (
-		<Group
-			component='header' align='center' justify='space-between'
-			gap={0} h={50} px={'md'} py={5} bg={bg}
+		<Box
 			className={clsx( classes.headerRow )}
+			h={50} px={'md'} py={5} bg={bg}
 		>
 			<Group
-				h={'100%'} gap={'xs'}
-				display={{ base: 'none', sm: 'flex' }}
-				align='center' justify='flex-start'
+				component='header' align='center' justify='space-between'
+				h='100%'
+				display={{ base: 'none', md: 'flex' }} gap={0}
 			>
-				<DomainLogoButton isRootPath={isRootPath} />
-				<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
-				{!isRootPath && <ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />}
-				<MenuBar />
+				<Flex gap={0} h='100%' align='center'>
+					{!isRootPath && <AllAppsButton />}
+					<Flex gap={'xs'} align='center' justify='flex-start'>
+						<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
+						{!isRootPath && <ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />}
+						<MenuBar />
+					</Flex>
+				</Flex>
+
+				<Flex align='center' justify='flex-end' gap={6}>
+					<NotificationDropdown />
+					<ProfileMenuDropdown />
+				</Flex>
 			</Group>
 
-			<Group component='section' align='center' justify='flex-end' gap={6} display={{ base: 'none', sm: 'flex' }}>
-				<NotificationDropdown />
-				<ProfileMenuDropdown />
-			</Group>
-
-
-			<Box display={{ base: 'flex', sm: 'none' }}>
-				<BurgerMenuButton />
+			<Box display={{ base: 'flex', md: 'none' }} w='100%' h='100%'>
+				<HeaderMobile />
 			</Box>
-			<Group component='section' align='center' justify='flex-end' gap={6} display={{ base: 'flex', sm: 'none' }}>
-				<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
-			</Group>
-			<Group component='section' align='center' justify='flex-end' gap={6} display={{ base: 'flex', sm: 'none' }}>
-				<NotificationDropdown />
-			</Group>
-		</Group>
-
+		</Box>
 	);
 };
 
+const HeaderMobile: React.FC = () => {
+	return (
+		<Group align='center' justify='space-between' w='100%' h='100%'>
+			<BurgerMenuButton />
+			<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
+			<Group align='center' justify='flex-end' gap={4}>
+				<NotificationDropdown />
+				<ProfileMenuDrawer />
+			</Group>
+		</Group>
+	);
+};
 
 const ProfileMenuDrawerContent: React.FC<{
 	onClose: () => void;
@@ -209,7 +214,50 @@ const ProfileMenuDrawerContent: React.FC<{
 	);
 };
 
+const ProfileMenuDrawer: React.FC = () => {
+	const [drawerOpened, setDrawerOpened] = useState(false);
+	const themeModeModalRef = useRef<any>(null);
+
+	return (
+		<>
+			<Avatar
+				size={35}
+				onClick={() => setDrawerOpened(!drawerOpened)}
+			>
+				<IconUserFilled color={'var(--mantine-color-gray-6)'} />
+			</Avatar>
+
+			<Drawer.Root
+				opened={drawerOpened}
+				onClose={() => setDrawerOpened(false)}
+				position='right'
+				size={'md'}
+				offset={8} radius='md'
+			>
+				<Drawer.Overlay opacity={0.6} blur={4}/>
+				<Drawer.Content>
+					<Button variant='transparent' p={'xs'}
+						color='var(--mantine-color-gray-6)'
+						onClick={() => setDrawerOpened(false)}
+					>
+						<IconChevronRight size={20} />
+					</Button>
+					<Drawer.Body>
+						<ProfileMenuDrawerContent
+							onClose={() => setDrawerOpened(false)}
+							themeModeModalRef={themeModeModalRef}
+						/>
+					</Drawer.Body>
+				</Drawer.Content>
+			</Drawer.Root>
+
+			<ThemeSwitchModal ref={themeModeModalRef} />
+		</>
+	);
+};
+
 const BurgerMenuButton: React.FC = () => {
+	const navigate = useNavigate();
 	const [drawerOpened, setDrawerOpened] = useState(false);
 	const themeModeModalRef = useRef<any>(null);
 
@@ -219,24 +267,58 @@ const BurgerMenuButton: React.FC = () => {
 				{drawerOpened ? <IconX /> : <IconMenu2 />}
 			</Button>
 
-			<Drawer
+			<Drawer.Root
 				opened={drawerOpened}
 				onClose={() => setDrawerOpened(false)}
 				position='left'
-				size={'100%'}
-				title={null}
-				withCloseButton={false}
-				className={classes.profileMenuDrawer}
+				size={'md'}
+				offset={8} radius='md'
 			>
-				<Box pt={'50px'}>
-					<ProfileMenuDrawerContent
-						onClose={() => setDrawerOpened(false)}
-						themeModeModalRef={themeModeModalRef}
-					/>
-				</Box>
-			</Drawer>
+				<Drawer.Overlay opacity={0.6} blur={4}/>
+				<Drawer.Content>
+					<Flex justify='flex-end'>
+						<Button variant='transparent' p={'xs'}
+							color='var(--mantine-color-gray-6)'
+							onClick={() => setDrawerOpened(false)}
+						>
+							<IconChevronLeft size={20} />
+						</Button>
+					</Flex>
+					<Drawer.Body>
+						<Button onClick={() => {
+							setDrawerOpened(false);
+							navigate('/');
+						}}>All apps</Button>
+					</Drawer.Body>
+				</Drawer.Content>
+			</Drawer.Root>
 
 			<ThemeSwitchModal ref={themeModeModalRef} />
 		</>
+	);
+};
+
+const AllAppsButton: React.FC = () => {
+	const navigate = useNavigate();
+	const { orgSlug } = useActiveOrgModule();
+
+	const handleClick = () => {
+		if (orgSlug) {
+			navigate(`/${orgSlug}`);
+		}
+		else {
+			navigate('/');
+		}
+	};
+
+	return (
+		<Button
+			p={0} mb={2}
+			variant='transparent'
+			onClick={handleClick}
+			className={classes.allAppsButton}
+		>
+			<IconCaretLeft size={24} stroke={2}/>
+		</Button>
 	);
 };

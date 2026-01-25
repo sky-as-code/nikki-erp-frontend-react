@@ -1,4 +1,4 @@
-import { Button, Center, Drawer, Stack } from '@mantine/core';
+import {  Button, Drawer, Flex } from '@mantine/core';
 import { IconX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
@@ -26,34 +26,36 @@ export const ModuleFilterDrawer: React.FC<FilterDrawerProps> = ({
 	const { t } = useTranslation();
 
 	return (
-		<Drawer
+		<Drawer.Root
 			opened={opened}
 			onClose={onClose}
-			withCloseButton={false}
 			position={'bottom'}
 			size={'sm'}
-			radius={'sm'}
-			overlayProps={{ opacity: 0.6, blur: 4 }}
+			offset={8}
+			radius={'md'}
 		>
-			<Stack gap={'sm'}>
-				<ModuleFilterPanel
-					viewMode={viewMode}
-					onViewModeChange={onViewModeChange}
-					filters={filters}
-					onFiltersChange={onFiltersChange}
-				/>
-				<Center px={'md'}>
+			<Drawer.Overlay opacity={0.6} blur={4}/>
+			<Drawer.Content>
+				<Flex gap={'sm'} h='100%' direction='column' justify='space-between' p={'md'}>
+					<ModuleFilterPanel
+						viewMode={viewMode}
+						onViewModeChange={onViewModeChange}
+						filters={filters}
+						onFiltersChange={onFiltersChange}
+					/>
 					<Button
-						variant={'outline'}
+						variant={'light'}
+						bg='var(--mantine-color-gray-2)'
 						color='var(--mantine-color-gray-6)'
 						leftSection={<IconX size={20} />}
 						onClick={onClose}
 						fullWidth
+						radius='md'
 					>
 						{t('close')}
 					</Button>
-				</Center>
-			</Stack>
-		</Drawer>
+				</Flex>
+			</Drawer.Content>
+		</Drawer.Root>
 	);
 };

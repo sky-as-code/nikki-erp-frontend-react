@@ -88,7 +88,9 @@ export class MicroAppManager {
 	private async importBundle(app: MicroAppMetadata): Promise<ImportResult<MicroAppBundle>> {
 		return this.invokeWithRetry<ImportResult<MicroAppBundle>>(
 			() => {
-				return (typeof app.bundleUrl === 'string' ? import(app.bundleUrl) : app.bundleUrl());
+				return typeof app.bundleUrl === 'string'
+					? import(/* @vite-ignore */ app.bundleUrl)
+					: app.bundleUrl();
 			},
 			`Bundle import for ${app.slug}`,
 		);

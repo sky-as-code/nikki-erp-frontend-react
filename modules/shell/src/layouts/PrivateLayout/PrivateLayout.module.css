@@ -2,5 +2,20 @@
 	color: lightdark(var(--mantine-color-white), var(--mantine-color-dark));
 	gap: var(--mantine-spacing-md);
 	box-shadow: 2px 2px 5px 0px #40404033;
-	z-index: 300;
+	/* z-index: 300; */
+}
+
+.allAppsButton {
+	animation: scaleInRotateY 0.3s ease-out;
+}
+
+@keyframes scaleInRotateY {
+	from {
+		transform: rotateY(-90deg) scale(0.8);
+		opacity: 0;
+	}
+	to {
+		transform: rotateY(0deg) scale(1);
+		opacity: 1;
+	}
 }

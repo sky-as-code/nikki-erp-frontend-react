@@ -1,7 +1,7 @@
 import { Button, ButtonProps, Group, Menu } from '@mantine/core';
 import { MenuBarItem, useMenuBarItems } from '@nikkierp/ui/appState';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
-import { IconChevronDown } from '@tabler/icons-react';
+import { IconChevronDown, IconDots } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 import { Link, useLocation } from 'react-router';
@@ -11,6 +11,8 @@ import { Link, useLocation } from 'react-router';
 import classes from './MenuBar.module.css';
 
 
+const MAX_VISIBLE_ITEMS = 3;
+
 export function MenuBar(): React.ReactNode {
 	const menuBarItems = useMenuBarItems();
 	const location = useLocation();
@@ -18,16 +20,22 @@ export function MenuBar(): React.ReactNode {
 	const pathPrefix = `/${orgSlug}/${moduleSlug}`;
 
 	const getPath = (link: string): string => {
-		if (link.startsWith('/')) return `${pathPrefix}${link}`;
+		if (link.startsWith('/')) {
+			return `${pathPrefix}${link}`;
+		}
 		return link;
 	};
 
+	const visibleItems = menuBarItems.slice(0, MAX_VISIBLE_ITEMS);
+	const overflowItems = menuBarItems.slice(MAX_VISIBLE_ITEMS);
+
 	return (
 		<Group gap='xs'>
-			{menuBarItems.map((item: MenuBarItem) => (
+			{visibleItems.map((item: MenuBarItem) => (
 				item.items ? (
 					<NavMenu
-						key={item.label} item={item}
+						key={item.label}
+						item={item}
 						currentPath={location.pathname}
 						getPath={getPath}
 					/>
@@ -45,7 +53,42 @@ export function MenuBar(): React.ReactNode {
 					</Button>
 				)
 			))}
+			{overflowItems.length > 0 && (
+				<OverflowMenu
+					items={overflowItems}
+					currentPath={location.pathname}
+					getPath={getPath}
+				/>
+			)}
 		</Group>
+	);
+}
+
+type OverflowMenuProps = {
+	items: MenuBarItem[];
+	currentPath: string;
+	getPath: (link: string) => string;
+};
+
+function OverflowMenu({ items, currentPath, getPath }: OverflowMenuProps): React.ReactNode {
+	return (
+		<Menu position='bottom-start' trigger='click-hover'>
+			<Menu.Target>
+				<Button {...buttonProps(false)} rightSection={<IconChevronDown size={14} />}>
+					<IconDots size={16} />
+				</Button>
+			</Menu.Target>
+			<Menu.Dropdown className={classes.menuDropdown}>
+				{items.map((item, index) => (
+					<MenuItemRenderer
+						key={index}
+						item={item}
+						currentPath={currentPath}
+						getPath={getPath}
+					/>
+				))}
+			</Menu.Dropdown>
+		</Menu>
 	);
 }
 
