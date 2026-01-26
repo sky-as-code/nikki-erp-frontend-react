@@ -1,3 +1,4 @@
+export * from './useOwnerSelectLogic';
 export * from './useRoleAddEntitlements';
 export * from './useRoleCreate';
 export * from './useRoleDelete';

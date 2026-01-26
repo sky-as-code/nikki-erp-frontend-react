@@ -33,6 +33,21 @@
 				}
 			]
 		},
+		"resource": {
+			"type": "object",
+			"label":"{ \"$ref\": 'nikki.authorize.resource.title' }",
+			"readOnly": true,
+			"properties": {
+				"id": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.id' }"
+				},
+				"name": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.name' }"
+				}
+			}
+		},
 		"resourceId": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.action.fields.resource_id' }",

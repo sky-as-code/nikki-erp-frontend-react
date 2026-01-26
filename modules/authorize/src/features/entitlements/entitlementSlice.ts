@@ -23,7 +23,7 @@ export type EntitlementState = {
 	delete: ReduxActionState<void>;
 };
 
-const initialState: EntitlementState = {
+export const initialState: EntitlementState = {
 	entitlements: [],
 	entitlementDetail: undefined,
 

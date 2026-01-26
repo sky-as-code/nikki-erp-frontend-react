@@ -25,7 +25,7 @@ export type RevokeRequestState = {
 	delete: ReduxActionState<void>;
 };
 
-const initialState: RevokeRequestState = {
+export const initialState: RevokeRequestState = {
 	revokeRequests: [],
 	revokeRequestDetail: undefined,
 

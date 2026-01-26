@@ -1,13 +1,3 @@
-import {
-	AuthorizeDispatch,
-	actionActions,
-	entitlementActions,
-	resourceActions,
-	selectActionState,
-	selectEntitlementState,
-	selectResourceState,
-	selectUpdateEntitlement,
-} from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
@@ -15,9 +5,18 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-
-
 import type { Entitlement } from '@/features/entitlements';
+
+import {
+	AuthorizeDispatch,
+	actionActions,
+	entitlementActions,
+	resourceActions,
+	selectActionState,
+	selectEntitlementState,
+	selectResourceList,
+	selectUpdateEntitlement,
+} from '@/appState';
 
 
 function useEntitlementData(
@@ -55,18 +54,21 @@ function useEntitlementEffects(
 }
 
 function useResourcesAndActionsEffects(
-	resources: unknown[],
-	actions: unknown[],
+	resourceListState: ReturnType<typeof selectResourceList>,
+	actionState: ReturnType<typeof selectActionState>,
 	dispatch: AuthorizeDispatch,
 ) {
+	const resources = resourceListState.data ?? [];
+	const actions = actionState.actions ?? [];
+
 	React.useEffect(() => {
-		if (resources.length === 0) {
+		if (resourceListState.status === 'idle' || (resourceListState.status === 'success' && resources.length === 0)) {
 			dispatch(resourceActions.listResources());
 		}
-		if (actions.length === 0) {
+		if (!actionState.list.isLoading && actions.length === 0) {
 			dispatch(actionActions.listActions(undefined));
 		}
-	}, [dispatch, resources.length, actions.length]);
+	}, [resourceListState.status, resources.length, actionState.list.isLoading, actions.length]);
 }
 
 function useEntitlementDetailData() {
@@ -81,9 +83,12 @@ function useEntitlementDetailData() {
 	const entitlement = useEntitlementData(entitlementId, entitlements, entitlementDetail);
 	useEntitlementEffects(entitlementId, entitlement, entitlements, dispatch);
 
-	const { resources } = useMicroAppSelector(selectResourceState);
-	const { actions } = useMicroAppSelector(selectActionState);
-	useResourcesAndActionsEffects(resources, actions, dispatch);
+	const resourceListState = useMicroAppSelector(selectResourceList);
+	const actionState = useMicroAppSelector(selectActionState);
+	useResourcesAndActionsEffects(resourceListState, actionState, dispatch);
+
+	const resources = resourceListState.data ?? [];
+	const actions = actionState.actions ?? [];
 
 	return { entitlement, isLoading: list.isLoading, resources, actions };
 }
@@ -198,8 +203,7 @@ function useEntitlementDetailHandlers(entitlement: Entitlement | undefined) {
 			);
 			dispatch(entitlementActions.resetUpdateEntitlement());
 		}
-	// eslint-disable-next-line @stylistic/max-len
-	}, [updateCommand.status, updateCommand.data, updateCommand.error, notification, translate, dispatch, navigate, location]);
+	}, [updateCommand, location.pathname]);
 
 	return { isSubmitting, handleCancel, handleSubmit };
 }

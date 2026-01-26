@@ -13,7 +13,9 @@ import { useTranslation } from 'react-i18next';
 import {
 	AuthorizeDispatch,
 	identityActions,
+	selectGroupList,
 	selectOrgList,
+	selectUserList,
 } from '@/appState';
 import {
 	RolesSelector,
@@ -24,6 +26,7 @@ import {
 } from '@/features/roleSuites';
 
 
+// eslint-disable-next-line max-lines-per-function
 function RoleSuiteCreatePageBody(): React.ReactNode {
 	const {
 		isSubmitting,
@@ -38,8 +41,8 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 	const schema = roleSuiteSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const orgs = useMicroAppSelector(selectOrgList);
-
-	// Track current orgId to compute available roles
+	const users = useMicroAppSelector(selectUserList);
+	const groups = useMicroAppSelector(selectGroupList);
 	const [currentOrgId, setCurrentOrgId] = React.useState<string | undefined>(undefined);
 	const availableRoles = availableRolesByOrg(currentOrgId);
 
@@ -47,9 +50,14 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 		if (orgs.length === 0) {
 			dispatch(identityActions.listOrgs());
 		}
-	}, [dispatch, orgs.length]);
+		if (users.length === 0) {
+			dispatch(identityActions.listUsers());
+		}
+		if (groups.length === 0) {
+			dispatch(identityActions.listGroups());
+		}
+	}, [orgs.length, users.length, groups.length]);
 
-	// Handle orgId change: filter selectedRoleIds to keep only valid roles
 	const handleOrgIdChange = React.useCallback((newOrgId: string | undefined) => {
 		setCurrentOrgId(newOrgId);
 		const newAvailableRoles = availableRolesByOrg(newOrgId);
@@ -80,6 +88,8 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 									<RoleSuiteFormFields
 										isCreate
 										orgs={orgs}
+										users={users}
+										groups={groups}
 										onOrgIdChange={handleOrgIdChange}
 									/>
 									<RoleSuiteChangesSummary

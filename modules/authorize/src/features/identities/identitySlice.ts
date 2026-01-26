@@ -21,7 +21,7 @@ export type IdentityState = {
 	errorOrgs: string | null;
 };
 
-const initialState: IdentityState = {
+export const initialState: IdentityState = {
 	users: [],
 	groups: [],
 	orgs: [],

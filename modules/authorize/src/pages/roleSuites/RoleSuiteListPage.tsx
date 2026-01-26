@@ -8,8 +8,11 @@ import { useNavigate } from 'react-router';
 
 import {
 	AuthorizeDispatch,
+	identityActions,
 	roleSuiteActions,
+	selectGroupList,
 	selectRoleSuiteState,
+	selectUserList,
 } from '@/appState';
 import { RoleSuiteTable, roleSuiteSchema, useRoleSuiteDelete } from '@/features/roleSuites';
 
@@ -19,6 +22,8 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const { roleSuites, isLoadingList } = useMicroAppSelector(selectRoleSuiteState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const users = useMicroAppSelector(selectUserList);
+	const groups = useMicroAppSelector(selectGroupList);
 	const deleteHandler = useRoleSuiteDelete(roleSuites, dispatch);
 
 	const columns = [
@@ -27,6 +32,8 @@ function RoleSuiteListPageBody(): React.ReactNode {
 		'ownerType',
 		'ownerRef',
 		'isRequestable',
+		'isRequiredAttachment',
+		'isRequiredComment',
 		'orgDisplayName',
 		'actions',
 	];
@@ -34,7 +41,13 @@ function RoleSuiteListPageBody(): React.ReactNode {
 
 	React.useEffect(() => {
 		dispatch(roleSuiteActions.listRoleSuites());
-	}, [dispatch]);
+		if (users.length === 0) {
+			dispatch(identityActions.listUsers());
+		}
+		if (groups.length === 0) {
+			dispatch(identityActions.listGroups());
+		}
+	}, [dispatch, users.length, groups.length]);
 
 	const handleViewDetail = React.useCallback((roleSuiteId: string) => {
 		navigate(roleSuiteId);
@@ -66,6 +79,8 @@ function RoleSuiteListPageBody(): React.ReactNode {
 						data={roleSuites}
 						isLoading={isLoadingList}
 						schema={schema}
+						users={users}
+						groups={groups}
 						onViewDetail={handleViewDetail}
 						onEdit={handleEdit}
 						onDelete={deleteHandler.handleDeleteRequest}
@@ -83,6 +98,7 @@ function RoleSuiteListPageBody(): React.ReactNode {
 						? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.roleSuiteToDelete.name })
 						: translate('nikki.general.messages.delete_confirm')
 				}
+				cancelLabel={translate('nikki.general.actions.cancel')}
 				confirmLabel={translate('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>

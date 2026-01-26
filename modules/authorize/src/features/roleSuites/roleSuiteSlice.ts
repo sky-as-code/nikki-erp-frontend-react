@@ -24,7 +24,7 @@ export type RoleSuiteState = {
 	delete: ReduxActionState<void>;
 };
 
-const initialState: RoleSuiteState = {
+export const initialState: RoleSuiteState = {
 	roleSuites: [],
 	roleSuiteDetail: undefined,
 

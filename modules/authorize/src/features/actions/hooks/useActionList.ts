@@ -2,30 +2,24 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import React from 'react';
 import { useNavigate } from 'react-router';
 
+import type { Action } from '@/features/actions';
+
 import {
 	AuthorizeDispatch,
 	actionActions,
-	resourceActions,
 	selectActionState,
-	selectResourceState,
 } from '@/appState';
-
-import type { Action } from '@/features/actions';
 
 
 function useActionListData() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { actions, isLoadingList } = useMicroAppSelector(selectActionState);
-	const { resources } = useMicroAppSelector(selectResourceState);
 
 	React.useEffect(() => {
-		dispatch(actionActions.listActions(undefined));
-		if (resources?.length === 0) {
-			dispatch(resourceActions.listResources());
-		}
-	}, [resources]);
+		dispatch(actionActions.listActions());
+	}, []);
 
-	return { actions, isLoadingList, resources };
+	return { actions, isLoadingList };
 }
 
 function useActionListHandlers(actions: Action[]) {

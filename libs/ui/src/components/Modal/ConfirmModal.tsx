@@ -7,7 +7,7 @@ export interface ConfirmModalProps {
 	onClose: () => void;
 	onConfirm: () => void;
 	title: string;
-	message: string;
+	message?: string;
 	confirmLabel?: string;
 	cancelLabel?: string;
 	confirmColor?: string;
@@ -29,7 +29,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 		<Modal
 			opened={opened}
 			onClose={onClose}
-			title={title}
+			title={<Text fw={700} fz='lg'>{title}</Text>}
 			size={size}
 			centered
 		>

@@ -9,7 +9,6 @@ interface Action {
 	etag: string;
 	createdAt: string;
 	createdBy: string;
-	// Relations
 	resource?: Resource;
 	entitlementsCount?: number;
 }

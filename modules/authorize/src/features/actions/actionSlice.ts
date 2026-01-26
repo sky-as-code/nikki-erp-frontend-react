@@ -23,7 +23,7 @@ export type ActionState = {
 	delete: ReduxActionState<void>;
 };
 
-const initialState: ActionState = {
+export const initialState: ActionState = {
 	actions: [],
 	actionDetail: undefined,
 
