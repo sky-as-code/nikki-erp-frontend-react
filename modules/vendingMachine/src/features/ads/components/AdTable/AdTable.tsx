@@ -78,6 +78,13 @@ function renderActionsColumn(
 	);
 }
 
+function renderActionsHeader(
+	_: Record<string, unknown>,
+	translate: (key: string) => string,
+) {
+	return <Text fw={600} fz='sm' ta={'end'}>{translate('nikki.general.actions.title')}</Text>;
+}
+
 export const AdTable: React.FC<AdTableProps> = ({
 	columns,
 	data,
@@ -112,6 +119,9 @@ export const AdTable: React.FC<AdTableProps> = ({
 					startDate: (row) => renderDateColumn(row, 'startDate'),
 					endDate: (row) => renderDateColumn(row, 'endDate'),
 					actions: (row) => renderActionsColumn(row, onViewDetail, onEdit, onDelete, translate),
+				}}
+				headerRenderers={{
+					actions: (row) => renderActionsHeader(row, translate),
 				}}
 				columnAsLink='code'
 				columnAsLinkHref={(row) => {

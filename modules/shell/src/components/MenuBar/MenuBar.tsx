@@ -1,34 +1,61 @@
 import { Button, ButtonProps, Group, Menu } from '@mantine/core';
 import { MenuBarItem, useMenuBarItems } from '@nikkierp/ui/appState';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
-import { IconChevronDown } from '@tabler/icons-react';
+import { IconChevronDown, IconDots } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 import { Link, useLocation } from 'react-router';
 
-
-
+import {
+	getPathWithPrefix,
+	hasActiveNestedItemWithPrefix,
+	isPathActiveWithPrefix,
+} from './helper';
 import classes from './MenuBar.module.css';
+import { VerticalMenuBar } from './VerticalMenuBar';
 
 
-export function MenuBar(): React.ReactNode {
+const MAX_VISIBLE_HORIZONTAL_ITEMS = 4;
+
+export type MenuBarMode = 'horizontal' | 'vertical';
+
+export type MenuBarProps = {
+	mode?: MenuBarMode;
+	onItemClick?: (link?: string) => void;
+};
+
+
+export function MenuBar({ mode = 'horizontal' }: MenuBarProps): React.ReactNode {
 	const menuBarItems = useMenuBarItems();
 	const location = useLocation();
 	const { orgSlug, moduleSlug } = useActiveOrgModule();
 	const pathPrefix = `/${orgSlug}/${moduleSlug}`;
 
-	const getPath = (link: string): string => {
-		if (link.startsWith('/')) return `${pathPrefix}${link}`;
-		return link;
-	};
+	const getPath = (link: string): string => getPathWithPrefix(link, pathPrefix);
+
+	if (mode === 'vertical') {
+		return (
+			<VerticalMenuBar
+				items={menuBarItems}
+				pathPrefix={pathPrefix}
+				currentPath={location.pathname}
+			/>
+		);
+	}
+
+	// Horizontal mode (default)
+	const visibleItems = menuBarItems.slice(0, MAX_VISIBLE_HORIZONTAL_ITEMS);
+	const overflowItems = menuBarItems.slice(MAX_VISIBLE_HORIZONTAL_ITEMS);
 
 	return (
 		<Group gap='xs'>
-			{menuBarItems.map((item: MenuBarItem) => (
+			{visibleItems.map((item: MenuBarItem) => (
 				item.items ? (
 					<NavMenu
-						key={item.label} item={item}
+						key={item.label}
+						item={item}
 						currentPath={location.pathname}
+						pathPrefix={pathPrefix}
 						getPath={getPath}
 					/>
 				) : (
@@ -36,8 +63,13 @@ export function MenuBar(): React.ReactNode {
 						key={item.label}
 						size='md'
 						px={'xs'}
-						// variant={isPathActive(item.link, location.pathname) ? 'filled' : 'subtle'}
-						{...buttonProps(isPathActive(item.link ?? '/', location.pathname))}
+						{...buttonProps(
+							isPathActiveWithPrefix(
+								item.link ?? '/',
+								location.pathname,
+								pathPrefix,
+							),
+						)}
 						component={Link}
 						to={getPath(item.link ?? '/')}
 					>
@@ -45,21 +77,76 @@ export function MenuBar(): React.ReactNode {
 					</Button>
 				)
 			))}
+			{overflowItems.length > 0 && (
+				<OverflowMenu
+					items={overflowItems}
+					currentPath={location.pathname}
+					pathPrefix={pathPrefix}
+					getPath={getPath}
+				/>
+			)}
 		</Group>
+	);
+}
+
+// Horizontal Menu Components
+type OverflowMenuProps = {
+	items: MenuBarItem[];
+	currentPath: string;
+	pathPrefix: string;
+	getPath: (link: string) => string;
+};
+
+function OverflowMenu({
+	items,
+	currentPath,
+	pathPrefix,
+	getPath,
+}: OverflowMenuProps): React.ReactNode {
+	const hasActiveChild = items.some(subItem =>
+		hasActiveNestedItemWithPrefix(subItem, currentPath, pathPrefix),
+	);
+
+	return (
+		<Menu position='bottom-start' trigger='click-hover'>
+			<Menu.Target>
+				<Button {...buttonProps(hasActiveChild)} rightSection={<IconChevronDown size={14} />}>
+					<IconDots size={16} />
+				</Button>
+			</Menu.Target>
+			<Menu.Dropdown className={classes.menuDropdown}>
+				{items.map((item, index) => (
+					<MenuItemRenderer
+						key={index}
+						item={item}
+						currentPath={currentPath}
+						pathPrefix={pathPrefix}
+						getPath={getPath}
+					/>
+				))}
+			</Menu.Dropdown>
+		</Menu>
 	);
 }
 
 type NavMenuProps = {
 	item: MenuBarItem;
 	currentPath: string;
+	pathPrefix: string;
 	getPath: (link: string) => string;
 };
 
-function NavMenu({ item, currentPath, getPath }: NavMenuProps): React.ReactNode {
-	const hasActiveChild = item.items?.some(subItem =>
-		isPathActive(subItem.link || '', currentPath) ||
-		hasActiveNestedItem(subItem, currentPath),
-	) || false;
+function NavMenu({
+	item,
+	currentPath,
+	pathPrefix,
+	getPath,
+}: NavMenuProps): React.ReactNode {
+	const hasActiveChild = item.items
+		? item.items.some(subItem =>
+			hasActiveNestedItemWithPrefix(subItem, currentPath, pathPrefix),
+		)
+		: false;
 
 	return (
 		<Menu position='bottom-start' trigger='click-hover'>
@@ -72,21 +159,32 @@ function NavMenu({ item, currentPath, getPath }: NavMenuProps): React.ReactNode 
 			<Menu.Dropdown className={classes.menuDropdown}>
 				{item.items?.map((subItem, index) => (
 					<MenuItemRenderer
-						key={index} item={subItem}
-						currentPath={currentPath} getPath={getPath}
+						key={index}
+						item={subItem}
+						currentPath={currentPath}
+						pathPrefix={pathPrefix}
+						getPath={getPath}
 					/>
 				))}
 			</Menu.Dropdown>
 		</Menu>
 	);
-};
+}
 
-function MenuItemRenderer({ item, currentPath, getPath }: NavMenuProps): React.ReactNode {
-	const isActive = item.link ? isPathActive(item.link, currentPath) : false;
-	const hasActiveChild = item.items?.some(subItem =>
-		isPathActive(subItem.link || '', currentPath) ||
-		hasActiveNestedItem(subItem, currentPath),
-	) || false;
+function MenuItemRenderer({
+	item,
+	currentPath,
+	pathPrefix,
+	getPath,
+}: NavMenuProps): React.ReactNode {
+	const isActive = item.link
+		? isPathActiveWithPrefix(item.link, currentPath, pathPrefix)
+		: false;
+	const hasActiveChild = item.items
+		? item.items.some(subItem =>
+			hasActiveNestedItemWithPrefix(subItem, currentPath, pathPrefix),
+		)
+		: false;
 
 	if (item.items) {
 		// Item has nested items, render as a submenu
@@ -113,8 +211,11 @@ function MenuItemRenderer({ item, currentPath, getPath }: NavMenuProps): React.R
 				<Menu.Sub.Dropdown>
 					{item.items.map((nestedItem, nestedIndex) => (
 						<MenuItemRenderer
-							key={nestedIndex} item={nestedItem}
-							currentPath={currentPath} getPath={getPath}
+							key={nestedIndex}
+							item={nestedItem}
+							currentPath={currentPath}
+							pathPrefix={pathPrefix}
+							getPath={getPath}
 						/>
 					))}
 				</Menu.Sub.Dropdown>
@@ -151,7 +252,7 @@ function buttonProps(isActive: boolean): ButtonProps {
 		fz: 'sm',
 		fw: 'normal',
 		className: clsx({
-			[classes.active]: isActive,
+			[classes.activeMenuItem]: isActive,
 		}),
 	};
 }
@@ -161,7 +262,7 @@ type MenuSubItemProps = React.ComponentProps<typeof Menu.Sub.Item>;
 function itemProps(isActive: boolean): MenuSubItemProps {
 	return {
 		className: clsx({
-			[classes.active]: isActive,
+			[classes.activeMenuItem]: isActive,
 		}),
 		styles: {
 			itemLabel: {
@@ -169,44 +270,4 @@ function itemProps(isActive: boolean): MenuSubItemProps {
 			},
 		},
 	};
-}
-
-// Helper function to normalize a path (ensure it starts with /)
-function normalizePath(path: string): string {
-	if (!path) return '/';
-	// If it already starts with /, return as is
-	if (path.startsWith('/')) return path;
-	// Otherwise, add leading /
-	return `/${path}`;
-}
-
-// Helper function to check if a path is active
-function isPathActive(link: string, currentPath: string): boolean {
-	if (!link) return false;
-
-	// Normalize both paths to ensure consistent comparison
-	const normalizedLink = normalizePath(link);
-	const normalizedCurrentPath = normalizePath(currentPath);
-
-	// Exact match
-	if (normalizedLink === normalizedCurrentPath) return true;
-
-	// Check if current path starts with the link (for nested routes)
-	if (normalizedCurrentPath.startsWith(normalizedLink) && normalizedLink !== '/') {
-		// Ensure we're matching at a path segment boundary
-		const nextChar = normalizedCurrentPath[normalizedLink.length];
-		return nextChar === undefined || nextChar === '/' || nextChar === '?';
-	}
-	return false;
-}
-
-// Helper function to check if any nested item is active
-function hasActiveNestedItem(item: MenuBarItem, currentPath: string): boolean {
-	if (item.link && isPathActive(item.link, currentPath)) {
-		return true;
-	}
-	if (item.items) {
-		return item.items.some(subItem => hasActiveNestedItem(subItem, currentPath));
-	}
-	return false;
 }

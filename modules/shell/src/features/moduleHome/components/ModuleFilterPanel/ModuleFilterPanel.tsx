@@ -1,6 +1,7 @@
 import {
 	Center,
 	Checkbox,
+	MantineStyleProps,
 	SegmentedControl,
 	Select,
 	Stack,
@@ -10,10 +11,10 @@ import { IconLayoutGrid, IconList } from '@tabler/icons-react';
 import { FC } from 'react';
 
 import { FilterState, GroupByOption, ModuleViewMode, SortByOption } from '../ModuleHomePage';
-import classes from './ModuleFilterPanel.module.css';
 
 
 type ModuleFilterPanelProps = {
+	styleProps?: MantineStyleProps;
 	viewMode: ModuleViewMode;
 	onViewModeChange: (mode: ModuleViewMode) => void;
 	filters: FilterState;
@@ -21,6 +22,7 @@ type ModuleFilterPanelProps = {
 };
 
 export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
+	styleProps,
 	viewMode,
 	onViewModeChange,
 	filters,
@@ -44,9 +46,10 @@ export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
 
 	return (
 		<Stack
-			gap={'lg'} p={{ xl: 30, sm: 15 }}
-			bdrs={'md'} bg={'var(--mantine-color-white)'}
-			className={classes.filterPanel}
+			gap={'sm'} bg={'var(--mantine-color-white)'}
+			{...styleProps}
+			bdrs={styleProps?.bdrs || 'md'}
+			p={styleProps?.p || 'md'}
 		>
 			<ViewModeSegmentedControl
 				viewMode={viewMode}
@@ -54,13 +57,13 @@ export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
 			/>
 
 			<Checkbox
-				label='Show disabled modules'
+				label={<Text className='capitalize' size={'sm'} fw={500}>Show disabled modules</Text>}
 				color='var(--mantine-color-black)'
 				checked={filters.showDisabled}
 				onChange={handleShowDisabledChange}
 			/>
 			<Checkbox
-				label='Show orphaned modules'
+				label={<Text className='capitalize' size={'sm'} fw={500}>Show orphaned modules</Text>}
 				color='var(--mantine-color-black)'
 				checked={filters.showOrphaned}
 				onChange={handleShowOrphanedChange}

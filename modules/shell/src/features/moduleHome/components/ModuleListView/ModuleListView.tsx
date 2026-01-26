@@ -1,4 +1,4 @@
-import { Accordion, Center, Group, Stack, Text } from '@mantine/core';
+import { Accordion, Center, SimpleGrid, Stack, Text } from '@mantine/core';
 import { IconBoxOff } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { FC, useEffect, useMemo, useState } from 'react';
@@ -11,7 +11,6 @@ import classes from './ModuleListView.module.css';
 export const ModuleListView: FC<{ modules: any[] }> = ({ modules }) => {
 	const [accordionValue, setAccordionValue] = useState<string[]>([]);
 
-	// Reset accordion when modules change
 	useEffect(() => {
 		if (modules.length > 0) {
 			setAccordionValue(modules.map((itm) => itm.key).slice(0, 2));
@@ -28,11 +27,15 @@ export const ModuleListView: FC<{ modules: any[] }> = ({ modules }) => {
 					{item.label}
 				</Accordion.Control>
 				<Accordion.Panel>
-					<Group justify='start' align='start' gap={'xs'}>
-						{item?.modules?.map((module: any) => (
-							<ModuleCard key={module.slug} module={module} />
+					<SimpleGrid
+						cols={{ base: 3, xs: 4, sm: 5, md: 6}}
+						// spacing={{ base: 'md', md: 'lg' }}
+						spacing={3}
+					>
+						{item?.modules?.map((module: any, mIndex: number) => (
+							<ModuleCard key={mIndex} module={module} />
 						))}
-					</Group>
+					</SimpleGrid>
 				</Accordion.Panel>
 			</Accordion.Item>
 		)),

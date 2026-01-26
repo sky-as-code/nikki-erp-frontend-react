@@ -24,7 +24,7 @@ export const ModuleCard: FC<{ module: any }> = ({ module }) => {
 	return (
 		<Stack
 			className={clsx(classes.moduleCard, isActionMenuOpen && classes.moduleCardHover)}
-			pos='relative' justify='start' align='center' gap={0} w={110}
+			pos='relative' justify='start' align='center' gap={0} w={'100%'}
 			onClick={() => {
 				navigate(`/${orgSlug}/${module.slug}`);
 			}}
@@ -48,27 +48,29 @@ const ModuleCardContent: FC<ModuleCardContentProps> = ({ module, isActionMenuOpe
 	const [imageError, setImageError] = useState(false);
 
 	return (
-		<Box
-			pos='relative' h={90} w={90} p={5}
-			className={clsx(classes.moduleCardInner)}
-		>
-			{imageError || !module.icon ? (
-				<FallbackModuleIcon />
-			) : (
-				<Image
-					h={'100%'} w={'100%'} radius='md' fit='contain' bg='transparent'
-					src={module.icon || ''} alt={module.name || 'no image'}
-					onError={() => setImageError(true)}
-				/>
-			)}
+		<Flex justify='center' align='start' w={'100%'} p={10}>
+			<Box
+				pos='relative' w={'100%'} maw={90} p={5}
+				className={clsx(classes.moduleCardInner)}
+			>
+				{imageError || !module.icon ? (
+					<FallbackModuleIcon />
+				) : (
+					<Image
+						h={'100%'} w={'100%'} radius='md' fit='contain' bg='transparent'
+						src={module.icon || ''} alt={module.name || 'no image'}
+						onError={() => setImageError(true)}
+					/>
+				)}
 
-			<FavoriteButton />
-			<ModuleCardMenu
-				module={module}
-				isActionMenuOpen={isActionMenuOpen}
-				setIsActionMenuOpen={setIsActionMenuOpen}
-			/>
-		</Box>
+				<FavoriteButton />
+				<ModuleCardMenu
+					module={module}
+					isActionMenuOpen={isActionMenuOpen}
+					setIsActionMenuOpen={setIsActionMenuOpen}
+				/>
+			</Box>
+		</Flex>
 
 	);
 };
@@ -142,18 +144,19 @@ const FallbackModuleIcon: FC = () => {
 };
 
 
-const getModuleName = (name: string) => {
-	return name.length > 20 ? name.slice(0, 20) + '...' : name;
-};
 const ModuleCardFooter: FC<{ module: any }> = ({ module }) => {
 	return (
-		<Box py={8} px={4}>
+		<Box py={8} px={4} w='100%'>
 			<Text
-				size='sm' ta='center'
-				c='var(--mantine-color-text)' fw={500}
-				// lineClamp={2}
+				size='sm' ta='center' fw={500}
+				c='var(--mantine-color-text)'
+				style={{
+					overflow: 'hidden',
+					textOverflow: 'ellipsis',
+					whiteSpace: 'nowrap',
+				}}
 			>
-				{getModuleName(module.name)}
+				{module.name}
 			</Text>
 		</Box>
 	);

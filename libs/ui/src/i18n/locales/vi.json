@@ -17,6 +17,9 @@
     "nikki": {
         "shell": {
             "title": "Nikki ERP",
+            "menuBar": {
+                "allApps": "Tất cả ứng dụng"
+            },
             "profileMenu": {
                 "profile": "Thông tin tài khoản",
                 "accountSettings": "Cài đặt tài khoản",

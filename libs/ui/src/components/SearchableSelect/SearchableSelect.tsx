@@ -66,7 +66,6 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 
 	return (
 		<Combobox
-			position='bottom-start'
 			size='md'
 			store={combobox}
 			withinPortal={true}

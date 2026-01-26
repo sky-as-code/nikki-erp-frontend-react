@@ -29,8 +29,6 @@ export const ThemeSwitchModal = forwardRef((props, ref) => {
 				</Modal.Body>
 			</Modal.Content>
 		</Modal.Root>
-
-
 	);
 });
 

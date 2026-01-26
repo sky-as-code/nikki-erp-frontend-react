@@ -1,11 +1,8 @@
-import {
-	Box,
-	Container,
-	Flex,
-} from '@mantine/core';
-import { useMemo } from 'react';
+import {Box, Container, Flex } from '@mantine/core';
+import { useMemo, useState } from 'react';
 
-import { ModuleFilterPanel } from './ModuleFilterPanel';
+import { MobileBottomBar } from './MobileButtomBar';
+import { ModuleFilterDrawer, ModuleFilterPanel } from './ModuleFilterPanel';
 import { ModuleGridView } from './ModuleGridView/ModuleGridView';
 import classes from './ModuleHomePage.module.css';
 import { ModuleListView } from './ModuleListView';
@@ -16,7 +13,6 @@ import { useQueryModule } from '../hooks/useQueryModule';
 export type ModuleViewMode = 'grid' | 'list';
 export type SortByOption = 'Name' | 'Commonly used';
 export type GroupByOption = 'Category' | 'Status' | null;
-
 export interface FilterState {
 	showDisabled: boolean;
 	showOrphaned: boolean;
@@ -36,6 +32,8 @@ export function ModuleHomePage(): React.ReactNode {
 		filteredModules,
 	} = useQueryModule();
 
+	const [drawerOpened, setDrawerOpened] = useState(false);
+
 	const gridView = useMemo(
 		() => <ModuleGridView modules={filteredModules} />,
 		[filteredModules],
@@ -48,9 +46,16 @@ export function ModuleHomePage(): React.ReactNode {
 
 	return (
 		<Box className={classes.homeContent}>
-			<Container pt={{ xl: 30, sm: 20, base: 10 }} size={'lg'} pb={'xl'} h={'100%'}>
-				<Flex gap={'lg'} h={'100%'}>
-					<Box px={{ xl: 15, sm: 10 }} display={{ base: 'none', sm: 'block' }}>
+			<Container
+				size={'lg'} h={'100%'}
+				p={{ md: 'lg', sm: 'md', xs: 'sm', base: 'xs' }}
+				mb={'60px'}
+			>
+				<Flex h={'100%'} gap={{ lg: 'lg', md: 'md', base: 0}}>
+					<Box
+						display={{ base: 'none', md: 'block' }}
+						p={{ md: 'sm', xs: 'xs', base: 0 }}
+					>
 						<ModuleFilterPanel
 							viewMode={viewMode}
 							onViewModeChange={setViewMode}
@@ -58,18 +63,36 @@ export function ModuleHomePage(): React.ReactNode {
 							onFiltersChange={setFilters}
 						/>
 					</Box>
-					<Flex direction='column' gap={'lg'} flex={1}>
-						<ModuleSearchPanel
-							searchInputValue={searchInputValue}
-							onSearchChange={handleSearchChange}
-							onSearchClear={handleSearchClear}
-						/>
-						<Box h={'100%'} p={'md'}>
+					<Box flex={1} p={{ md: 'sm', xs: 'xs', base: 0 }} >
+						<Box display={{ base: 'none', md: 'block' }} mb={'xl'}>
+							<ModuleSearchPanel
+								searchInputValue={searchInputValue}
+								onSearchChange={handleSearchChange}
+								onSearchClear={handleSearchClear}
+							/>
+						</Box>
+						<Box h={'100%'} p={0}>
 							{viewMode === 'grid' ? gridView : listView}
 						</Box>
-					</Flex>
+					</Box>
 				</Flex>
 			</Container>
+
+			<MobileBottomBar
+				searchInputValue={searchInputValue}
+				onSearchChange={handleSearchChange}
+				onSearchClear={handleSearchClear}
+				onFilterClick={() => setDrawerOpened(true)}
+			/>
+
+			<ModuleFilterDrawer
+				opened={drawerOpened}
+				onClose={() => setDrawerOpened(false)}
+				viewMode={viewMode}
+				onViewModeChange={setViewMode}
+				filters={filters}
+				onFiltersChange={setFilters}
+			/>
 		</Box>
 	);
 }

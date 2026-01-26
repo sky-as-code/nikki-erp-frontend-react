@@ -47,6 +47,5 @@ export function useMenuBarItems(): MenuBarItem[] {
 				},
 			],
 		},
-
 	];
 }

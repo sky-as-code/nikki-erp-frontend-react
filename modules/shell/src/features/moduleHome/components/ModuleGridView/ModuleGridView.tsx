@@ -34,9 +34,8 @@ export const ModuleGridView: FC<{ modules: any[] }> = ({ modules }) => {
 
 	return (
 		<SimpleGrid
-			cols={{ base: 2, sm: 3, md: 4, lg: 5, xl: 6 }}
-			spacing={{ base: 'sm', sm: 'md', lg: 'lg' }}
-			p={'sm'}
+			cols={{ base: 3, xs: 4, sm: 5, md: 6}}
+			spacing={3}
 		>
 			{allModules.map((module: any) => (
 				<ModuleCard key={`${module.categoryLabel}-${module.slug}`} module={module} />

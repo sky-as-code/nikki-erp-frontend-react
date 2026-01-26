@@ -18,9 +18,8 @@ export const ModuleSearchPanel: FC<ModuleSearchPanelProps> = ({
 	return (
 		<Flex
 			justify={{ base: 'center', sm: 'flex-center' }} gap={'sm'}
-			py={'sm'} bdrs={'md'}
-			// bg='var(--mantine-color-gray-2)'
-			// bg='transparent'
+			px={{ xl: 'md', sm:  'xs' }}
+			bdrs={'md'}
 		>
 			<ModuleSearchInput
 				searchInputValue={searchInputValue}

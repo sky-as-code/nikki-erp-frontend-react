@@ -17,6 +17,9 @@
 	"nikki": {
 		"shell": {
 			"title": "Nikki ERP",
+			"menuBar": {
+				"allApps": "All Applications"
+			},
 			"profileMenu": {
 				"profile": "Profile",
 				"accountSettings": "Account Settings",
