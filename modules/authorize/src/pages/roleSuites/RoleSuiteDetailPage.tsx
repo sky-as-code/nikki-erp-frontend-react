@@ -14,10 +14,14 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { Group, Org, User } from '@/features/identities';
+
 import {
 	AuthorizeDispatch,
 	identityActions,
+	selectGroupList,
 	selectOrgList,
+	selectUserList,
 } from '@/appState';
 import {
 	RolesSelector,
@@ -27,8 +31,6 @@ import {
 	useRoleSuiteDetail,
 } from '@/features/roleSuites';
 
-import type { Org } from '@/features/identities';
-
 
 function RoleSuiteDetailForm({
 	roleSuite,
@@ -37,6 +39,8 @@ function RoleSuiteDetailForm({
 	roles,
 	formDataRef,
 	orgs,
+	users,
+	groups,
 }: {
 	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
 	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
@@ -44,6 +48,8 @@ function RoleSuiteDetailForm({
 	roles: ReturnType<typeof useRoleSuiteDetail.detail>['roles'];
 	formDataRef: React.MutableRefObject<unknown>;
 	orgs: Org[];
+	users: User[];
+	groups: Group[];
 }) {
 	const schema = roleSuiteSchema as ModelSchema;
 
@@ -69,7 +75,7 @@ function RoleSuiteDetailForm({
 									onCancel={handlers.handleCancel}
 									isCreate={false}
 								/>
-								<RoleSuiteFormFields isCreate={false} orgs={orgs} />
+								<RoleSuiteFormFields isCreate={false} orgs={orgs} users={users} groups={groups} />
 								<RoleSuiteChangesSummary
 									originalRoleIds={handlers.originalRoleIds}
 									selectedRoleIds={handlers.selectedRoleIds}
@@ -129,6 +135,8 @@ function RoleSuiteDetailFormContent({
 	roles,
 	formDataRef,
 	orgs,
+	users,
+	groups,
 }: {
 	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
 	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
@@ -136,6 +144,8 @@ function RoleSuiteDetailFormContent({
 	roles: ReturnType<typeof useRoleSuiteDetail.detail>['roles'];
 	formDataRef: React.MutableRefObject<unknown>;
 	orgs: Org[];
+	users: User[];
+	groups: Group[];
 }) {
 	return (
 		<>
@@ -146,6 +156,8 @@ function RoleSuiteDetailFormContent({
 				roles={roles}
 				formDataRef={formDataRef}
 				orgs={orgs}
+				users={users}
+				groups={groups}
 			/>
 			<RoleSuiteConfirmModal
 				roleSuite={roleSuite}
@@ -163,12 +175,20 @@ function RoleSuiteDetailPageBody(): React.ReactNode {
 	const formDataRef = React.useRef<unknown>(null);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const orgs = useMicroAppSelector(selectOrgList);
+	const users = useMicroAppSelector(selectUserList);
+	const groups = useMicroAppSelector(selectGroupList);
 
 	React.useEffect(() => {
 		if (orgs.length === 0) {
 			dispatch(identityActions.listOrgs());
 		}
-	}, [dispatch, orgs.length]);
+		if (users.length === 0) {
+			dispatch(identityActions.listUsers());
+		}
+		if (groups.length === 0) {
+			dispatch(identityActions.listGroups());
+		}
+	}, [dispatch, orgs.length, users.length, groups.length]);
 
 	if (isLoading) {
 		return <LoadingState messageKey='nikki.authorize.role_suite.messages.loading' />;
@@ -198,6 +218,8 @@ function RoleSuiteDetailPageBody(): React.ReactNode {
 				roles={roles}
 				formDataRef={formDataRef}
 				orgs={orgs}
+				users={users}
+				groups={groups}
 			/>
 		</Stack>
 	);

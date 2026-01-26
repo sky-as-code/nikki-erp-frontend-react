@@ -11,6 +11,7 @@ import {
 	deleteRole,
 	addEntitlementsToRole,
 	removeEntitlementsFromRole,
+	initialState
 } from '@/features/roles/roleSlice';
 
 
@@ -31,7 +32,7 @@ export const roleActions = {
 	...actions,
 };
 
-export const selectRoleState = (state: { [STATE_KEY]: RoleState }) => state[STATE_KEY];
+export const selectRoleState = (state: { [STATE_KEY]: RoleState }) => state[STATE_KEY] ?? initialState;
 
 export const selectRoleList = createSelector(
 	selectRoleState,

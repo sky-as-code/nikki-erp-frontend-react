@@ -13,7 +13,9 @@ import { useTranslation } from 'react-i18next';
 import {
 	AuthorizeDispatch,
 	identityActions,
+	selectGroupList,
 	selectOrgList,
+	selectUserList,
 } from '@/appState';
 import { RoleFormFields, roleSchema, useRoleCreate } from '@/features/roles';
 
@@ -28,12 +30,20 @@ function RoleCreatePageBody(): React.ReactNode {
 	const schema = roleSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const orgs = useMicroAppSelector(selectOrgList);
+	const users = useMicroAppSelector(selectUserList);
+	const groups = useMicroAppSelector(selectGroupList);
 
 	React.useEffect(() => {
 		if (orgs.length === 0) {
 			dispatch(identityActions.listOrgs());
 		}
-	}, [dispatch, orgs.length]);
+		if (users.length === 0) {
+			dispatch(identityActions.listUsers());
+		}
+		if (groups.length === 0) {
+			dispatch(identityActions.listGroups());
+		}
+	}, [dispatch, orgs.length, users.length, groups.length]);
 
 	return (
 		<Stack gap='md'>
@@ -51,7 +61,7 @@ function RoleCreatePageBody(): React.ReactNode {
 							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
 								<Stack gap='xs'>
 									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
-									<RoleFormFields isCreate orgs={orgs} />
+									<RoleFormFields isCreate orgs={orgs} users={users} groups={groups} />
 								</Stack>
 							</form>
 						)}

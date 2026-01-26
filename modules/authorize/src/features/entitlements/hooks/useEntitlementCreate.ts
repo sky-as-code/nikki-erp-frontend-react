@@ -1,12 +1,3 @@
-import {
-	AuthorizeDispatch,
-	actionActions,
-	entitlementActions,
-	resourceActions,
-	selectActionState,
-	selectResourceState,
-	selectCreateEntitlement,
-} from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
@@ -14,12 +5,19 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-
-
 import type { Action } from '@/features/actions';
 import type { Entitlement } from '@/features/entitlements';
 import type { Resource } from '@/features/resources';
 
+import {
+	AuthorizeDispatch,
+	actionActions,
+	entitlementActions,
+	resourceActions,
+	selectActionState,
+	selectResourceList,
+	selectCreateEntitlement,
+} from '@/appState';
 import {
 	buildActionExpr,
 	validateEntitlementForm,
@@ -30,17 +28,19 @@ type FormType = Parameters<typeof validateEntitlementForm>[2];
 
 function useEntitlementCreateData() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { resources } = useMicroAppSelector(selectResourceState);
-	const { actions } = useMicroAppSelector(selectActionState);
+	const resourceListState = useMicroAppSelector(selectResourceList);
+	const actionState = useMicroAppSelector(selectActionState);
+	const resources = resourceListState.data ?? [];
+	const actions = actionState.actions ?? [];
 
 	React.useEffect(() => {
-		if (resources.length === 0) {
+		if (resourceListState.status === 'idle' || (resourceListState.status === 'success' && resources.length === 0)) {
 			dispatch(resourceActions.listResources());
 		}
-		if (actions.length === 0) {
+		if (!actionState.list.isLoading && actions.length === 0) {
 			dispatch(actionActions.listActions(undefined));
 		}
-	}, [dispatch, resources.length, actions.length]);
+	}, [resourceListState.status, resources.length, actionState.list.isLoading, actions.length]);
 
 	return { resources, actions };
 }
@@ -114,8 +114,7 @@ export function useEntitlementCreate() {
 			);
 			dispatch(entitlementActions.resetCreateEntitlement());
 		}
-	// eslint-disable-next-line @stylistic/max-len
-	}, [createCommand.status, createCommand.data, createCommand.error, notification, translate, dispatch, navigate, location]);
+	}, [createCommand, location.pathname]);
 
 	return { isSubmitting, handleCancel, handleSubmit, resources, actions };
 }

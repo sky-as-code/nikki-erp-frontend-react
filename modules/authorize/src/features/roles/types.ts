@@ -1,5 +1,7 @@
 import { Entitlement } from '../entitlements';
 
+import type { Org } from '@/features/identities';
+
 
 export enum OwnerType {
 	USER = 'user',
@@ -17,6 +19,7 @@ export interface Role {
 	isRequiredComment: boolean;
 	orgId?: string;
 	orgDisplayName?: string;
+	org?: Org;
 	createdAt: string;
 	createdBy: string;
 	etag?: string;

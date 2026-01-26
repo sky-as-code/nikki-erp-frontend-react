@@ -27,7 +27,7 @@ export type GrantRequestState = {
 	delete: ReduxActionState<void>;
 };
 
-const initialState: GrantRequestState = {
+export const initialState: GrantRequestState = {
 	grantRequests: [],
 	grantRequestDetail: undefined,
 

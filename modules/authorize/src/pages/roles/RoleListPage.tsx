@@ -8,8 +8,11 @@ import { useNavigate } from 'react-router';
 
 import {
 	AuthorizeDispatch,
+	identityActions,
 	roleActions,
+	selectGroupList,
 	selectRoleState,
+	selectUserList,
 } from '@/appState';
 import { RoleTable, roleSchema, useRoleDelete } from '@/features/roles';
 
@@ -19,25 +22,22 @@ function RoleListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const { roles, isLoadingList } = useMicroAppSelector(selectRoleState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const users = useMicroAppSelector(selectUserList);
+	const groups = useMicroAppSelector(selectGroupList);
 	const deleteHandler = useRoleDelete(roles, dispatch);
 
-	const columns = [
-		'name',
-		'description',
-		'ownerType',
-		'ownerRef',
-		'isRequestable',
-		'isRequiredAttachment',
-		'isRequiredComment',
-		'entitlementsCount',
-		'orgDisplayName',
-		'actions',
-	];
+	const columns = ['name', 'description', 'ownerType', 'ownerRef', 'isRequestable', 'isRequiredAttachment', 'isRequiredComment', 'entitlementsCount', 'orgDisplayName', 'actions'];
 	const schema = roleSchema as ModelSchema;
 
 	React.useEffect(() => {
 		dispatch(roleActions.listRoles());
-	}, [dispatch]);
+		if (users.length === 0) {
+			dispatch(identityActions.listUsers());
+		}
+		if (groups.length === 0) {
+			dispatch(identityActions.listGroups());
+		}
+	}, [dispatch, users.length, groups.length]);
 
 	const handleViewDetail = React.useCallback((roleId: string) => {
 		navigate(roleId);
@@ -69,6 +69,8 @@ function RoleListPageBody(): React.ReactNode {
 						data={roles}
 						isLoading={isLoadingList}
 						schema={schema}
+						users={users}
+						groups={groups}
 						onViewDetail={handleViewDetail}
 						onEdit={handleEdit}
 						onDelete={deleteHandler.handleDeleteRequest}
@@ -86,6 +88,7 @@ function RoleListPageBody(): React.ReactNode {
 						? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.roleToDelete.name })
 						: translate('nikki.general.messages.delete_confirm')
 				}
+				cancelLabel={translate('nikki.general.actions.cancel')}
 				confirmLabel={translate('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>

@@ -1,23 +1,15 @@
 import { del, get, post, put, type Options } from '@nikkierp/common';
 
-import { Resource } from '@/features/resources';
+import type {
+	Action,
+	Resource,
+	Role,
+	RoleSuite,
+	Entitlement,
+	GrantRequest,
+	RevokeRequest,
+} from '@/features';
 
-import type { Org } from '@/features/identities';
-
-
-// export type AuthzResourceDto = {
-// 	id: string;
-// 	name: string;
-// 	description?: string;
-// 	resourceType: string;
-// 	resourceRef?: string;
-// 	scopeType: string;
-// 	createdAt: string;
-// 	etag: string;
-// 	actions?: AuthzActionDto[];
-// 	actionsCount?: number;
-// 	[key: string]: unknown;
-// };
 
 export type ListResponse<T> = {
 	total: number;
@@ -69,49 +61,37 @@ export async function deleteResource(name: string): Promise<void> {
 }
 
 // ============ Action APIs ============
-export type AuthzActionDto = {
-	id: string;
-	name: string;
-	description?: string;
-	etag: string;
-	resourceId: string;
-	resourceName?: string;
-	createdAt: string;
-	createdBy: string;
-	entitlementsCount?: number;
-	[key: string]: unknown;
-};
-
 export async function listActions(
 	params?: ListQuery,
-): Promise<ListResponse<AuthzActionDto>> {
+): Promise<ListResponse<Action>> {
 	const options: Options = {};
 	if (params) {
 		(options as any).searchParams = params;
 	}
-	return get<ListResponse<AuthzActionDto>>('authorize/actions', options);
+	return get<ListResponse<Action>>('authorize/actions', options);
 }
 
 export async function getAction(
 	actionId: string,
-): Promise<AuthzActionDto> {
-	return get<AuthzActionDto>(`authorize/actions/${actionId}`);
+): Promise<Action> {
+	return get<Action>(`authorize/actions/${actionId}`);
 }
 
 export async function createAction(
-	data: Omit<AuthzActionDto, 'id' | 'createdAt' | 'etag' | 'createdBy' | 'entitlementsCount'>,
-): Promise<AuthzActionDto> {
-	return post<AuthzActionDto>(`authorize/actions`, {
+	data: Action,
+): Promise<Action> {
+	return post<Action>(`authorize/actions`, {
 		json: data,
 	});
 }
 
 export async function updateAction(
 	actionId: string,
-	data: {etag: string, description?: string },
-): Promise<AuthzActionDto> {
-	return put<AuthzActionDto>(`authorize/actions/${actionId}`, {
-		json: data,
+	etag: string,
+	data: Action,
+): Promise<Action> {
+	return put<Action>(`authorize/actions/${actionId}`, {
+		json: { ...data, etag },
 	});
 }
 
@@ -122,47 +102,30 @@ export async function deleteAction(
 }
 
 // ============ Entitlement APIs ============
-export type AuthzEntitlementDto = {
-	id: string;
-	name: string;
-	description?: string;
-	etag: string;
-	actionId?: string;
-	resourceId?: string;
-	actionExpr: string;
-	orgId?: string;
-	createdAt: string;
-	createdBy: string;
-	assignmentsCount?: number;
-	rolesCount?: number;
-	scopeRef?: string;
-	[key: string]: unknown;
-};
-
 export async function listEntitlements(
 	params?: ListQuery,
-): Promise<ListResponse<AuthzEntitlementDto>> {
+): Promise<ListResponse<Entitlement>> {
 	const options: Options = {};
 	if (params) {
 		(options as any).searchParams = params;
 	}
-	return get<ListResponse<AuthzEntitlementDto>>('authorize/entitlements', options);
+	return get<ListResponse<Entitlement>>('authorize/entitlements', options);
 }
 
-export async function getEntitlement(id: string): Promise<AuthzEntitlementDto> {
-	return get<AuthzEntitlementDto>(`authorize/entitlements/${id}`);
+export async function getEntitlement(id: string): Promise<Entitlement> {
+	return get<Entitlement>(`authorize/entitlements/${id}`);
 }
 
-export async function getEntitlementsByIds(ids: string[]): Promise<AuthzEntitlementDto[]> {
-	return post<AuthzEntitlementDto[]>(`authorize/entitlements/ids`, {
+export async function getEntitlementsByIds(ids: string[]): Promise<Entitlement[]> {
+	return post<Entitlement[]>(`authorize/entitlements/ids`, {
 		json: { ids: ids },
 	});
 }
 
 export async function createEntitlement(
-	data: Omit<AuthzEntitlementDto, 'id' | 'createdAt' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
-): Promise<AuthzEntitlementDto> {
-	return post<AuthzEntitlementDto>('authorize/entitlements', {
+	data: Entitlement,
+): Promise<Entitlement> {
+	return post<Entitlement>('authorize/entitlements', {
 		json: data,
 	});
 }
@@ -170,9 +133,9 @@ export async function createEntitlement(
 export async function updateEntitlement(
 	id: string,
 	etag: string,
-	data: { name?: string; description?: string | null },
-): Promise<AuthzEntitlementDto> {
-	return put<AuthzEntitlementDto>(`authorize/entitlements/${id}`, {
+	data: Entitlement,
+): Promise<Entitlement> {
+	return put<Entitlement>(`authorize/entitlements/${id}`, {
 		json: { ...data, etag },
 	});
 }
@@ -182,27 +145,9 @@ export async function deleteEntitlement(id: string): Promise<void> {
 }
 
 // ============ Role APIs ============
-export type AuthzRoleDto = {
-	id: string;
-	name: string;
-	description?: string;
-	ownerType: string;
-	ownerRef: string;
-	isRequestable: boolean;
-	isRequiredAttachment: boolean;
-	isRequiredComment: boolean;
-	org?: Org;
-	createdAt: string;
-	createdBy: string;
-	etag?: string;
-	entitlements?: AuthzEntitlementDto[];
-	entitlementsCount?: number;
-	[key: string]: unknown;
-};
-
 export async function listRoles(
 	params?: ListQuery,
-): Promise<ListResponse<AuthzRoleDto>> {
+): Promise<ListResponse<Role>> {
 	const options: Options = {};
 	// if (params) {
 	// 	(options as any).searchParams = params;
@@ -226,18 +171,18 @@ export async function listRoles(
 		graph: graph ? JSON.stringify(graph) : undefined,
 	};
 
-	return get<ListResponse<AuthzRoleDto>>('authorize/roles', options);
+	return get<ListResponse<Role>>('authorize/roles', options);
 }
 
 
-export async function getRole(id: string): Promise<AuthzRoleDto> {
-	return get<AuthzRoleDto>(`authorize/roles/${id}`);
+export async function getRole(id: string): Promise<Role> {
+	return get<Role>(`authorize/roles/${id}`);
 }
 
 export async function createRole(
-	data: Omit<AuthzRoleDto, 'id' | 'createdAt' | 'etag' | 'entitlementsCount' | 'entitlements'>,
-): Promise<AuthzRoleDto> {
-	return post<AuthzRoleDto>('authorize/roles', {
+	data: Omit<Role, 'id' | 'createdAt' | 'etag' | 'entitlementsCount' | 'entitlements'>,
+): Promise<Role> {
+	return post<Role>('authorize/roles', {
 		json: data,
 	});
 }
@@ -245,9 +190,9 @@ export async function createRole(
 export async function updateRole(
 	id: string,
 	etag: string,
-	data: { name?: string; description?: string | null },
-): Promise<AuthzRoleDto> {
-	return put<AuthzRoleDto>(`authorize/roles/${id}`, {
+	data: Role,
+): Promise<Role> {
+	return put<Role>(`authorize/roles/${id}`, {
 		json: { ...data, etag },
 	});
 }
@@ -290,31 +235,9 @@ export async function removeEntitlementsFromRole(
 }
 
 // ============ RoleSuite APIs ============
-export type AuthzRoleSuiteDto = {
-	id: string;
-	name: string;
-	description?: string;
-	ownerType: string;
-	ownerRef: string;
-	isRequestable: boolean;
-	isRequiredAttachment: boolean;
-	isRequiredComment: boolean;
-	// orgId?: string;
-	org?: Org;
-	createdAt: string;
-	updatedAt: string;
-	createdBy: string;
-	etag?: string;
-	rolesCount?: number;
-	ownerName?: string;
-	roles?: Array<{ id: string; name?: string; orgId?: string }>;
-	roleIds?: string[];
-	[key: string]: unknown;
-};
-
 export async function listRoleSuites(
 	params?: ListQuery,
-): Promise<ListResponse<AuthzRoleSuiteDto>> {
+): Promise<ListResponse<RoleSuite>> {
 	const options: Options = {};
 	if (params) {
 		const { graph, ...rest } = params;
@@ -323,17 +246,17 @@ export async function listRoleSuites(
 			graph: graph ? JSON.stringify(graph) : undefined,
 		};
 	}
-	return get<ListResponse<AuthzRoleSuiteDto>>('authorize/role-suites', options);
+	return get<ListResponse<RoleSuite>>('authorize/role-suites', options);
 }
 
-export async function getRoleSuite(id: string): Promise<AuthzRoleSuiteDto> {
-	return get<AuthzRoleSuiteDto>(`authorize/role-suites/${id}`);
+export async function getRoleSuite(id: string): Promise<RoleSuite> {
+	return get<RoleSuite>(`authorize/role-suites/${id}`);
 }
 
 export async function createRoleSuite(
-	data: Omit<AuthzRoleSuiteDto, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'rolesCount' | 'ownerName'>,
-): Promise<AuthzRoleSuiteDto> {
-	return post<AuthzRoleSuiteDto>('authorize/role-suites', {
+	data: RoleSuite,
+): Promise<RoleSuite> {
+	return post<RoleSuite>('authorize/role-suites', {
 		json: data,
 	});
 }
@@ -341,10 +264,10 @@ export async function createRoleSuite(
 export async function updateRoleSuite(
 	id: string,
 	etag: string,
-	data: Partial<AuthzRoleSuiteDto>,
-): Promise<AuthzRoleSuiteDto> {
-	return put<AuthzRoleSuiteDto>(`authorize/role-suites/${id}`, {
-		json: { ...data, etag } as Partial<AuthzRoleSuiteDto>,
+	data: Partial<RoleSuite>,
+): Promise<RoleSuite> {
+	return put<RoleSuite>(`authorize/role-suites/${id}`, {
+		json: { ...data, etag } as Partial<RoleSuite>,
 	});
 }
 
@@ -353,42 +276,20 @@ export async function deleteRoleSuite(id: string): Promise<void> {
 }
 
 // ============ GrantRequest APIs ============
-export type AuthzGrantRequestDto = {
-	id: string;
-	attachmentUrl?: string;
-	comment?: string;
-	targetType: string;
-	targetRef: string;
-	responseId?: string | null;
-	status: string;
-	orgId?: string | null;
-	org?: Org | null;
-	createdAt: string;
-	approver?: { id: string; name: string } | null;
-	requestor?: { id: string; name: string };
-	requestorId?: string;
-	receiver?: { id: string; name: string };
-	receiverId?: string;
-	receiverType?: string;
-	target?: {id: string; name: string};
-	targetId?: string;
-	etag?: string;
-};
-
-export async function listGrantRequests(params?: ListQuery): Promise<ListResponse<AuthzGrantRequestDto>> {
+export async function listGrantRequests(params?: ListQuery): Promise<ListResponse<GrantRequest>> {
 	const options: Options = {};
 	if (params) (options as any).searchParams = params;
-	return get<ListResponse<AuthzGrantRequestDto>>('authorize/grant-requests', options);
+	return get<ListResponse<GrantRequest>>('authorize/grant-requests', options);
 }
 
-export async function getGrantRequest(id: string): Promise<AuthzGrantRequestDto> {
-	return get<AuthzGrantRequestDto>(`authorize/grant-requests/${id}`);
+export async function getGrantRequest(id: string): Promise<GrantRequest> {
+	return get<GrantRequest>(`authorize/grant-requests/${id}`);
 }
 
 export async function createGrantRequest(
-	data: Partial<AuthzGrantRequestDto>,
-): Promise<AuthzGrantRequestDto> {
-	return post<AuthzGrantRequestDto>('authorize/grant-requests', { json: data });
+	data: GrantRequest,
+): Promise<GrantRequest> {
+	return post<GrantRequest>('authorize/grant-requests', { json: data });
 }
 
 export async function respondGrantRequest(
@@ -396,8 +297,8 @@ export async function respondGrantRequest(
 	decision: 'approve' | 'deny',
 	etag: string,
 	responderId: string,
-): Promise<AuthzGrantRequestDto> {
-	return post<AuthzGrantRequestDto>(`authorize/grant-requests/${id}/respond`, {
+): Promise<GrantRequest> {
+	return post<GrantRequest>(`authorize/grant-requests/${id}/respond`, {
 		json: { decision, etag, responderId },
 	});
 }
@@ -411,23 +312,6 @@ export async function deleteGrantRequest(id: string): Promise<void> {
 }
 
 // ============ RevokeRequest APIs ============
-export type AuthzRevokeRequestDto = {
-	id: string;
-	etag?: string;
-	requestorId?: string;
-	requestor?: { id: string; name: string };
-	receiverType: string;
-	receiverId: string;
-	receiver?: { id: string; name: string };
-	targetType: string;
-	targetRef?: string;
-	target?: { id: string; name: string };
-	targetId?: string;
-	attachmentUrl?: string;
-	comment?: string;
-	createdAt: string;
-};
-
 export type AuthzBulkRevokeRequestInputDto = {
 	attachmentUrl?: string;
 	comment?: string;
@@ -452,7 +336,7 @@ export type AuthzBulkRevokeRequestResponseDto = {
 	items: AuthzBulkRevokeRequestItemDto[];
 };
 
-export async function listRevokeRequests(params?: ListQuery): Promise<ListResponse<AuthzRevokeRequestDto>> {
+export async function listRevokeRequests(params?: ListQuery): Promise<ListResponse<RevokeRequest>> {
 	const options: Options = {};
 	if (params) {
 		const { graph, ...rest } = params;
@@ -461,17 +345,17 @@ export async function listRevokeRequests(params?: ListQuery): Promise<ListRespon
 			graph: graph ? JSON.stringify(graph) : undefined,
 		};
 	}
-	return get<ListResponse<AuthzRevokeRequestDto>>('authorize/revoke-requests', options);
+	return get<ListResponse<RevokeRequest>>('authorize/revoke-requests', options);
 }
 
-export async function getRevokeRequest(id: string): Promise<AuthzRevokeRequestDto> {
-	return get<AuthzRevokeRequestDto>(`authorize/revoke-requests/${id}`);
+export async function getRevokeRequest(id: string): Promise<RevokeRequest> {
+	return get<RevokeRequest>(`authorize/revoke-requests/${id}`);
 }
 
 export async function createRevokeRequest(
-	data: Partial<AuthzRevokeRequestDto>,
-): Promise<AuthzRevokeRequestDto> {
-	return post<AuthzRevokeRequestDto>('authorize/revoke-requests', { json: data });
+	data: RevokeRequest,
+): Promise<RevokeRequest> {
+	return post<RevokeRequest>('authorize/revoke-requests', { json: data });
 }
 
 export async function bulkCreateRevokeRequests(

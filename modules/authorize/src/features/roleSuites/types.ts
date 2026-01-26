@@ -1,6 +1,8 @@
-import { OwnerType } from '@/features/roles';
 
+import type { Org } from '@/features/identities';
 import type { Role } from '@/features/roles';
+
+import { OwnerType } from '@/features/roles';
 
 
 interface RoleSuite {
@@ -14,6 +16,7 @@ interface RoleSuite {
 	isRequiredComment: boolean;
 	orgId?: string;
 	orgDisplayName?: string;
+	org?: Org;
 	createdAt: string;
 	updatedAt: string;
 	createdBy: string;

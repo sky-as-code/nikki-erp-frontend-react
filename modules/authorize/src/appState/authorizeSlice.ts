@@ -5,11 +5,9 @@ import {
 	type PayloadAction,
 } from '@reduxjs/toolkit';
 
-import type {
-	AuthzResourceDto,
-	ListResponse,
-} from '@/services/authzService';
+import type { ListResponse } from '@/services/authzService';
 
+import { Resource } from '@/features/resources';
 import {
 	listEntitlements as listEntitlementsApi,
 	listResources as listResourcesApi,
@@ -19,7 +17,7 @@ import {
 
 export const SLICE_NAME = 'authorize';
 
-export type AuthzResource = AuthzResourceDto;
+export type AuthzResource = Resource;
 
 export type AuthzActionRow = {
 	id: string;
@@ -76,7 +74,7 @@ export const listResources = createAsyncThunk<
 >(`${SLICE_NAME}/resources`, async (_, { rejectWithValue }) => {
 	try {
 		const result = await listResourcesApi();
-		return (result as ListResponse<AuthzResourceDto>).items;
+		return (result as ListResponse<Resource>).items;
 	}
 	catch (error) {
 		const errorMessage =
@@ -118,7 +116,7 @@ const authorizeSlice = createSlice({
 	},
 });
 
-// eslint-disable-next-line max-lines-per-function
+
 function listResourcesReducers(builder: ActionReducerMapBuilder<AuthorizeState>): void {
 	builder
 		.addCase(listResources.pending, (state) => {

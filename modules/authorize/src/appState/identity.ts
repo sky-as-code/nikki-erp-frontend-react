@@ -7,6 +7,7 @@ import {
 	listGroups,
 	listOrgs,
 	type IdentityState,
+	initialState,
 } from '@/features/identities/identitySlice';
 
 
@@ -23,7 +24,7 @@ export const identityActions = {
 	...actions,
 };
 
-export const selectIdentityState = (state: { [STATE_KEY]: IdentityState }) => state[STATE_KEY];
+export const selectIdentityState = (state: { [STATE_KEY]: IdentityState }) => state[STATE_KEY] ?? initialState;
 
 export const selectUserList = createSelector(
 	selectIdentityState,

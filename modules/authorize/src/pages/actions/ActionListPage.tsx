@@ -12,12 +12,12 @@ import { ActionTable, actionSchema, useActionDelete, useActionList } from '@/fea
 
 function ActionListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
-	const { actions, isLoadingList, resources } = useActionList.data();
+	const { actions, isLoadingList } = useActionList.data();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useActionDelete(actions, dispatch);
 	const { handleViewDetail, handleEdit, handleCreate, handleRefresh } = useActionList.handlers(actions);
 
-	const columns = ['name', 'description', 'resourceId', 'actions'];
+	const columns = ['name', 'description', 'resource', 'actions'];
 	const schema = actionSchema as ModelSchema;
 
 	return (
@@ -32,7 +32,6 @@ function ActionListPageBody(): React.ReactNode {
 					<ActionTable
 						columns={columns}
 						data={actions}
-						resourcesData={resources}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}
@@ -52,6 +51,7 @@ function ActionListPageBody(): React.ReactNode {
 						? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.actionToDelete.name })
 						: translate('nikki.general.messages.delete_confirm')
 				}
+				cancelLabel={translate('nikki.general.actions.cancel')}
 				confirmLabel={translate('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>

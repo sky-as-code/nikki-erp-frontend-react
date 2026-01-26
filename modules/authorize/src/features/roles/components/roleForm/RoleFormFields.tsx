@@ -1,24 +1,57 @@
-import { AutoField, EntityDisplayField, EntitySelectField } from '@nikkierp/ui/components/form';
+import { AutoField, EntityDisplayField, EntitySelectField, useFormField } from '@nikkierp/ui/components/form';
 import React from 'react';
+import { useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import type { Org } from '@/features/identities';
+import { useOwnerSelectLogic } from '../../hooks/useOwnerSelectLogic';
+
+import type { OwnerType } from '../../types';
+import type { Group, Org, User } from '@/features/identities';
 
 
 interface RoleFormFieldsProps {
 	isCreate: boolean;
 	orgs?: Org[];
+	users?: User[];
+	groups?: Group[];
 }
 
-export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({ isCreate, orgs = [] }) => {
+// eslint-disable-next-line max-lines-per-function
+export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({
+	isCreate,
+	orgs = [],
+	users = [],
+	groups = [],
+}) => {
 	const { t: translate } = useTranslation();
+	const { control } = useFormField();
+	const ownerLogic = useOwnerSelectLogic(users, groups);
+
+	const ownerType = useWatch({
+		control,
+		name: 'ownerType',
+	}) as OwnerType | undefined;
+
+	const displayEntities = React.useMemo(() => {
+		if (ownerType === 'user' && users) {
+			return users.map((u) => ({ id: u.id, name: u.displayName }));
+		}
+		if (ownerType === 'group' && groups) {
+			return groups.map((g) => ({ id: g.id, name: g.name }));
+		}
+
+		return [
+			...(users?.map((u) => ({ id: u.id, name: u.displayName })) ?? []),
+			...(groups?.map((g) => ({ id: g.id, name: g.name })) ?? []),
+		];
+	}, [ownerType, users, groups]);
 
 	const globalOption = React.useMemo(() => [
 		{
 			value: '',
 			label: translate('nikki.authorize.role.fields.org_all'),
 		},
-	], [translate]);
+	], []);
 
 	return (
 		<>
@@ -31,12 +64,23 @@ export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({ isCreate, orgs =
 					readOnly: true,
 				} : undefined}
 			/>
-			<AutoField
-				name='ownerRef'
-				htmlProps={!isCreate ? {
-					readOnly: true,
-				} : undefined}
-			/>
+			{isCreate ? (
+				<EntitySelectField
+					fieldName='ownerRef'
+					entities={ownerLogic.availableOwners}
+					getEntityId={(o) => o.id}
+					getEntityName={(o) => o.name}
+					shouldDisable={ownerLogic.shouldDisable}
+					placeholder={ownerLogic.placeholder}
+				/>
+			) : (
+				<EntityDisplayField
+					fieldName='ownerRef'
+					entities={displayEntities}
+					getEntityId={(o) => o.id}
+					getEntityName={(o) => o.name}
+				/>
+			)}
 			<AutoField
 				name='isRequestable'
 				htmlProps={!isCreate ? {

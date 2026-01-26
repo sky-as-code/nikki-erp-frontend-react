@@ -50,6 +50,10 @@
 				"clear_filters": "Clear Filters",
 				"title": "Actions"
 			},
+			"boolean": {
+				"yes": "Yes",
+				"no": "No"
+			},
 			"view": {
 				"title": "View Mode",
 				"list": "List",
@@ -382,7 +386,9 @@
 				"placeholders": {
 					"name": "Enter role name",
 					"description": "Describe what this role grants",
-					"org_id": "Select organization scope"
+					"org_id": "Select organization scope",
+					"select_owner_type_first": "Select owner type first",
+					"no_owners_available": "No owners available"
 				},
 				"messages": {
 					"loading": "Loading role...",
@@ -430,11 +436,18 @@
 					"is_requestable": "Requestable",
 					"is_required_attachment": "Required attachment",
 					"is_required_comment": "Required comment",
-					"org_id": "Organization Scope",
+					"org_id": "Organization",
 					"org_all": "Domain Level (*)",
 					"roles_count": "Roles",
 					"created_at": "Created at",
 					"updated_at": "Updated at"
+				},
+				"placeholders": {
+					"name": "Enter role suite name",
+					"description": "Describe what this role suite grants",
+					"org_id": "Select organization scope",
+					"select_owner_type_first": "Select owner type first",
+					"no_owners_available": "No owners available"
 				},
 				"grant_request": {
 					"title": "Grant Requests",

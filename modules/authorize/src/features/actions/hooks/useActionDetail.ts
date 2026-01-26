@@ -1,4 +1,3 @@
-import { AuthorizeDispatch, actionActions, selectActionState, selectUpdateAction } from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
@@ -6,9 +5,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-
-
 import type { Action } from '@/features/actions';
+
+import { AuthorizeDispatch, actionActions, selectActionState, selectUpdateAction } from '@/appState';
 
 
 function useActionDetailData() {
@@ -29,13 +28,13 @@ function useActionDetailData() {
 		if (actionId && !action) {
 			dispatch(actionActions.getAction({ actionId }));
 		}
-	}, [dispatch, actionId, action]);
+	}, [actionId, action]);
 
 	React.useEffect(() => {
-		if (actions.length === 0) {
+		if (actions?.length === 0) {
 			dispatch(actionActions.listActions(undefined));
 		}
-	}, [dispatch, actions.length]);
+	}, [actions?.length]);
 
 	return { action, isLoading: list.isLoading, actionId };
 }
@@ -125,8 +124,7 @@ function useActionDetailHandlers(action: Action | undefined) {
 			);
 			dispatch(actionActions.resetUpdateAction());
 		}
-	// eslint-disable-next-line @stylistic/max-len
-	}, [updateCommand.status, updateCommand.data, updateCommand.error, notification, translate, dispatch, navigate, location]);
+	}, [updateCommand, location.pathname]);
 
 	return { isSubmitting, handleCancel, handleSubmit };
 }

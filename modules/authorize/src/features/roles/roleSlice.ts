@@ -27,7 +27,7 @@ export type RoleState = {
 	removeEntitlements: ReduxActionState<void>;
 };
 
-const initialState: RoleState = {
+export const initialState: RoleState = {
 	roles: [],
 	roleDetail: undefined,
 
@@ -108,7 +108,7 @@ export const getRole = createAsyncThunk<
 
 export const createRole = createAsyncThunk<
 	Role,
-	Omit<Role, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'entitlementsCount' | 'assignmentsCount' | 'suitesCount' | 'ownerName'>,
+	Role,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/create`,
@@ -126,13 +126,13 @@ export const createRole = createAsyncThunk<
 
 export const updateRole = createAsyncThunk<
 	Role,
-	{ id: string; etag: string; name?: string; description?: string | null },
+	{ id: string; etag: string; role: Role },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/update`,
-	async ({ id, etag, name, description }, { rejectWithValue }) => {
+	async ({ id, etag, role }, { rejectWithValue }) => {
 		try {
-			const result = await roleService.updateRole(id, etag, { name, description });
+			const result = await roleService.updateRole(id, etag, role);
 			return result;
 		}
 		catch (error) {

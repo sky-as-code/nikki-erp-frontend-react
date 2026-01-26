@@ -52,6 +52,7 @@ function EntitlementListPageBody(): React.ReactNode {
 						? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.entitlementToDelete.name })
 						: translate('nikki.general.messages.delete_confirm')
 				}
+				cancelLabel={translate('nikki.general.actions.cancel')}
 				confirmLabel={translate('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>

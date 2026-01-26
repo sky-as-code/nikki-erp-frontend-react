@@ -13,7 +13,6 @@ import type { Resource } from '@/features/resources';
 
 
 export interface ActionTableProps extends AutoTableProps {
-	resourcesData: Resource[];
 	onViewDetail: (actionId: string) => void;
 	onEdit: (actionId: string) => void;
 	onDelete: (actionId: string) => void;
@@ -38,13 +37,11 @@ function renderNameColumn(
 	);
 }
 
-function renderResourceIdColumn(
+function renderResourceColumn(
 	row: Record<string, unknown>,
-	resourceMap: Map<string, string>,
 ) {
-	const resourceId = row.resourceId as string;
-	const resourceName = resourceMap.get(resourceId) || resourceId;
-	return <Text>{resourceName}</Text>;
+	const resourceName = (row.resource as Resource)?.name as string;
+	return <Text>{resourceName || ''}</Text>;
 }
 
 function renderActionsColumn(
@@ -81,7 +78,6 @@ function renderActionsColumn(
 export const ActionTable: React.FC<ActionTableProps> = ({
 	columns,
 	data,
-	resourcesData,
 	isLoading,
 	schema,
 	onViewDetail,
@@ -89,14 +85,6 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 	onDelete,
 }) => {
 	const { t: translate } = useTranslation();
-
-	const resourceMap = React.useMemo(() => {
-		const map = new Map<string, string>();
-		resourcesData?.forEach((r) => {
-			map.set(r.id, r.name);
-		});
-		return map;
-	}, [resourcesData]);
 
 	return (
 		<AutoTable
@@ -106,7 +94,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 			isLoading={isLoading}
 			columnRenderers={{
 				name: (row) => renderNameColumn(row, onViewDetail),
-				resourceId: (row) => renderResourceIdColumn(row, resourceMap),
+				resource: (row) => renderResourceColumn(row),
 				actions: (row) => renderActionsColumn(row, onEdit, onDelete, translate),
 			}}
 		/>

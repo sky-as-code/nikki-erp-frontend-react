@@ -1,4 +1,3 @@
-import { OwnerType } from '@/features/roles';
 
 import {
 	createRoleSuite as createRoleSuiteApi,
@@ -6,13 +5,30 @@ import {
 	getRoleSuite as getRoleSuiteApi,
 	listRoleSuites as listRoleSuitesApi,
 	updateRoleSuite as updateRoleSuiteApi,
-	type AuthzRoleSuiteDto,
 } from '../../services/authzService';
 
 import type { RoleSuite } from './types';
+import type { Org } from '@/features/identities';
+
+import { OwnerType } from '@/features/roles';
 
 
-function mapDtoToRoleSuite(dto: AuthzRoleSuiteDto): RoleSuite {
+function mapDtoToRoleSuite(dto: RoleSuite): RoleSuite {
+	const org: Org | undefined = dto.org ? {
+		id: dto.org.id,
+		displayName: dto.org.displayName,
+		slug: dto.org.slug || '',
+		status: (dto.org.status as 'active' | 'archived') || 'active',
+		legalName: dto.org.legalName,
+		email: dto.org.email,
+		phoneNumber: dto.org.phoneNumber,
+		address: dto.org.address,
+		etag: dto.org.etag,
+		createdAt: dto.org.createdAt,
+		updatedAt: dto.org.updatedAt,
+		deletedAt: dto.org.deletedAt,
+	} : undefined;
+
 	return {
 		id: dto.id,
 		name: dto.name,
@@ -24,6 +40,7 @@ function mapDtoToRoleSuite(dto: AuthzRoleSuiteDto): RoleSuite {
 		isRequiredComment: dto.isRequiredComment ?? false,
 		orgId: dto.org?.id,
 		orgDisplayName: dto.org?.displayName,
+		org,
 		createdAt: dto.createdAt,
 		updatedAt: dto.updatedAt,
 		createdBy: dto.createdBy,
@@ -32,36 +49,6 @@ function mapDtoToRoleSuite(dto: AuthzRoleSuiteDto): RoleSuite {
 		ownerName: dto.ownerName,
 		roles: dto.roles as any,
 	};
-}
-
-function mapRoleSuiteToDto(roleSuite: Partial<RoleSuite>): Partial<AuthzRoleSuiteDto> {
-	const dto: Partial<AuthzRoleSuiteDto> = {
-		name: roleSuite.name,
-		ownerType: roleSuite.ownerType,
-		ownerRef: roleSuite.ownerRef,
-		isRequestable: roleSuite.isRequestable ?? false,
-		isRequiredAttachment: roleSuite.isRequiredAttachment ?? false,
-		isRequiredComment: roleSuite.isRequiredComment ?? false,
-		createdBy: roleSuite.createdBy,
-	};
-
-	if (roleSuite.description !== undefined && roleSuite.description !== '') {
-		dto.description = roleSuite.description;
-	}
-
-	if (roleSuite.orgId !== undefined && roleSuite.orgId !== '') {
-		dto.orgId = roleSuite.orgId;
-	}
-
-	if (roleSuite.roles) {
-		dto.roles = roleSuite.roles.map((r) => ({ id: r.id, name: r.name, orgId: r.orgId }));
-	}
-
-	if (roleSuite.roleIds) {
-		dto.roleIds = roleSuite.roleIds;
-	}
-
-	return dto;
 }
 
 export const roleSuiteService = {
@@ -82,9 +69,9 @@ export const roleSuiteService = {
 	},
 
 	async createRoleSuite(
-		roleSuite: Omit<RoleSuite, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'rolesCount' | 'ownerName'>,
+		roleSuite: RoleSuite,
 	): Promise<RoleSuite> {
-		const dto = await createRoleSuiteApi(mapRoleSuiteToDto(roleSuite) as Omit<AuthzRoleSuiteDto, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'rolesCount' | 'ownerName'>);
+		const dto = await createRoleSuiteApi(roleSuite);
 		return mapDtoToRoleSuite(dto);
 	},
 
@@ -93,7 +80,7 @@ export const roleSuiteService = {
 		etag: string,
 		data: { name?: string; description?: string | null; roleIds?: string[] },
 	): Promise<RoleSuite> {
-		const dtoData = { ...data } as Partial<AuthzRoleSuiteDto>;
+		const dtoData = { ...data } as Partial<RoleSuite>;
 		const dto = await updateRoleSuiteApi(id, etag, dtoData);
 		return mapDtoToRoleSuite(dto);
 	},

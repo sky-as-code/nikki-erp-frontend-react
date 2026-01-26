@@ -9,6 +9,7 @@ import {
 	createRevokeRequests,
 	deleteRevokeRequest,
 	RevokeRequestState,
+	initialState,
 } from '@/features/revokeRequests/revokeRequestSlice';
 
 
@@ -27,7 +28,8 @@ export const revokeRequestActions = {
 	...actions,
 };
 
-export const selectRevokeRequestState = (state: { [STATE_KEY]: RevokeRequestState }) => state[STATE_KEY];
+export const selectRevokeRequestState =
+	(state: { [STATE_KEY]: RevokeRequestState }) => state[STATE_KEY] ?? initialState;
 
 export const selectRevokeRequestList = createSelector(
 	selectRevokeRequestState,

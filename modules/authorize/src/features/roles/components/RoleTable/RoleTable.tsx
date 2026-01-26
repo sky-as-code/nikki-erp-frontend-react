@@ -1,73 +1,26 @@
-import {
-	ActionIcon,
-	Group,
-	Text,
-	Tooltip,
-} from '@mantine/core';
 import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
-import { IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import {
+	renderNameColumn,
+	renderOwnerTypeColumn,
+	renderOwnerRefColumn,
+	renderBooleanColumn,
+	renderOrgNameColumn,
+	renderActionsColumn,
+} from './renderColumns';
+
+import type { Group as IdentityGroup } from '@/features/identities';
+import type { User } from '@/features/identities';
+
 
 export interface RoleTableProps extends AutoTableProps {
+	users?: User[];
+	groups?: IdentityGroup[];
 	onViewDetail: (roleId: string) => void;
 	onEdit: (roleId: string) => void;
 	onDelete: (roleId: string) => void;
-}
-
-function renderNameColumn(
-	row: Record<string, unknown>,
-	onViewDetail: (roleId: string) => void,
-) {
-	const roleId = row.id as string;
-	return (
-		<Text
-			style={{ cursor: 'pointer', textDecoration: 'underline' }}
-			onClick={(e) => {
-				e.preventDefault();
-				onViewDetail(roleId);
-			}}
-		>
-			{String(row.name || '')}
-		</Text>
-	);
-}
-
-function renderOrgDisplayNameColumn(row: Record<string, unknown>) {
-	const orgDisplayName = row.orgDisplayName as string | undefined;
-	return <Text>{orgDisplayName || '-'}</Text>;
-}
-
-function renderActionsColumn(
-	row: Record<string, unknown>,
-	onEdit: (roleId: string) => void,
-	onDelete: (roleId: string) => void,
-	translate: (key: string) => string,
-) {
-	const roleId = row.id as string;
-	return (
-		<Group gap='xs' justify='flex-end'>
-			<Tooltip label={translate('nikki.general.actions.edit')}>
-				<ActionIcon
-					variant='subtle'
-					color='gray'
-					onClick={() => onEdit(roleId)}
-				>
-					<IconEdit size={16} />
-				</ActionIcon>
-			</Tooltip>
-			<Tooltip label={translate('nikki.general.actions.delete')}>
-				<ActionIcon
-					variant='subtle'
-					color='red'
-					onClick={() => onDelete(roleId)}
-				>
-					<IconTrash size={16} />
-				</ActionIcon>
-			</Tooltip>
-		</Group>
-	);
 }
 
 export const RoleTable: React.FC<RoleTableProps> = ({
@@ -75,11 +28,30 @@ export const RoleTable: React.FC<RoleTableProps> = ({
 	data,
 	isLoading,
 	schema,
+	users = [],
+	groups = [],
 	onViewDetail,
 	onEdit,
 	onDelete,
 }) => {
 	const { t: translate } = useTranslation();
+
+	const userMap = React.useMemo(() => {
+		const map = new Map<string, string>();
+		users.forEach((u) => {
+			map.set(u.id, u.displayName);
+		});
+		return map;
+	}, [users]);
+
+	const groupMap = React.useMemo(() => {
+		const map = new Map<string, string>();
+		groups.forEach((g) => {
+			map.set(g.id, g.name);
+		});
+		return map;
+	}, [groups]);
+
 	return (
 		<AutoTable
 			columns={columns}
@@ -88,7 +60,12 @@ export const RoleTable: React.FC<RoleTableProps> = ({
 			isLoading={isLoading}
 			columnRenderers={{
 				name: (row) => renderNameColumn(row, onViewDetail),
-				orgDisplayName: (row) => renderOrgDisplayNameColumn(row),
+				ownerType: (row) => renderOwnerTypeColumn(row, translate),
+				ownerRef: (row) => renderOwnerRefColumn(row, userMap, groupMap),
+				isRequestable: (row) => renderBooleanColumn(row, 'isRequestable', translate),
+				isRequiredAttachment: (row) => renderBooleanColumn(row, 'isRequiredAttachment', translate),
+				isRequiredComment: (row) => renderBooleanColumn(row, 'isRequiredComment', translate),
+				orgDisplayName: (row) => renderOrgNameColumn(row),
 				actions: (row) => renderActionsColumn(row, onEdit, onDelete, translate),
 			}}
 		/>

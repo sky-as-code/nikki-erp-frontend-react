@@ -22,13 +22,13 @@ export const ListActions: React.FC<ListActionsProps> = ({ actions }) => {
 			{actions && actions.length > 0 ? (
 				<Group gap='xs' mt='xs'>
 					{actions.map((action) => (
-						<Badge key={action.id} color='blue' variant='light' size='sm'>
+						<Badge key={action.id} color='blue' variant='light' size='lg' tt='none'>
 							{action.name}
 						</Badge>
 					))}
 				</Group>
 			) : (
-				<Text size='sm' c='dimmed'>{t('nikki.authorize.resource.messages.no_actions_defined')}</Text>
+				<Text size='lg' c='dimmed'>{t('nikki.authorize.resource.messages.no_actions_defined')}</Text>
 			)}
 		</div>
 	);

@@ -1,19 +1,46 @@
-import { AutoField, EntityDisplayField, EntitySelectField } from '@nikkierp/ui/components/form';
+import { AutoField, EntityDisplayField, EntitySelectField, useFormField } from '@nikkierp/ui/components/form';
 import React from 'react';
+import { useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { ALL_ORGS_VALUE } from '@/features/roleSuites/helpers/roleSuiteFormValidation';
+import { useOwnerSelectLogic } from '../../hooks/useOwnerSelectLogic';
 
-import type { Org } from '@/features/identities';
+import type { Group, Org, User } from '@/features/identities';
+import type { OwnerType } from '@/features/roles';
+
+import { ALL_ORGS_VALUE } from '@/features/roleSuites/helpers/roleSuiteFormValidation';
 
 
 interface RoleSuiteFormFieldsProps {
 	isCreate: boolean;
 	orgs?: Org[];
+	users?: User[];
+	groups?: Group[];
 	onOrgIdChange?: (orgId: string | undefined) => void;
 }
 
-function BaseFields({ isCreate }: { isCreate: boolean }) {
+function BaseFields({ isCreate, users, groups }: { isCreate: boolean; users?: User[]; groups?: Group[] }) {
+	const { control } = useFormField();
+	const ownerLogic = useOwnerSelectLogic(users, groups);
+
+	const ownerType = useWatch({
+		control,
+		name: 'ownerType',
+	}) as OwnerType | undefined;
+
+	const displayEntities = React.useMemo(() => {
+		if (ownerType === 'user' && users) {
+			return users.map((u) => ({ id: u.id, name: u.displayName }));
+		}
+		if (ownerType === 'group' && groups) {
+			return groups.map((g) => ({ id: g.id, name: g.name }));
+		}
+		return [
+			...(users?.map((u) => ({ id: u.id, name: u.displayName })) ?? []),
+			...(groups?.map((g) => ({ id: g.id, name: g.name })) ?? []),
+		];
+	}, [ownerType, users, groups]);
+
 	return (
 		<>
 			{!isCreate && <AutoField name='id' />}
@@ -28,12 +55,23 @@ function BaseFields({ isCreate }: { isCreate: boolean }) {
 					readOnly: true,
 				} : undefined}
 			/>
-			<AutoField
-				name='ownerRef'
-				htmlProps={!isCreate ? {
-					readOnly: true,
-				} : undefined}
-			/>
+			{isCreate ? (
+				<EntitySelectField
+					fieldName='ownerRef'
+					entities={ownerLogic.availableOwners}
+					getEntityId={(o) => o.id}
+					getEntityName={(o) => o.name}
+					shouldDisable={ownerLogic.shouldDisable}
+					placeholder={ownerLogic.placeholder}
+				/>
+			) : (
+				<EntityDisplayField
+					fieldName='ownerRef'
+					entities={displayEntities}
+					getEntityId={(o) => o.id}
+					getEntityName={(o) => o.name}
+				/>
+			)}
 		</>
 	);
 }
@@ -110,10 +148,12 @@ function OrgIdField({ isCreate, orgs, onOrgIdChange }: {
 export const RoleSuiteFormFields: React.FC<RoleSuiteFormFieldsProps> = ({
 	isCreate,
 	orgs,
+	users,
+	groups,
 	onOrgIdChange,
 }) => (
 	<>
-		<BaseFields isCreate={isCreate} />
+		<BaseFields isCreate={isCreate} users={users} groups={groups} />
 		<BooleanFields isCreate={isCreate} />
 		<OrgIdField isCreate={isCreate} orgs={orgs} onOrgIdChange={onOrgIdChange} />
 	</>

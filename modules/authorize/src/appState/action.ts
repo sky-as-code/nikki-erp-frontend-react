@@ -9,6 +9,7 @@ import {
 	updateAction,
 	deleteAction,
 	ActionState,
+	initialState,
 } from '@/features/actions/actionSlice';
 
 
@@ -27,7 +28,7 @@ export const actionActions = {
 	...actions,
 };
 
-export const selectActionState = (state: { [STATE_KEY]: ActionState }) => state[STATE_KEY];
+export const selectActionState = (state: { [STATE_KEY]: ActionState }) => state[STATE_KEY] ?? initialState;
 
 export const selectActionList = createSelector(
 	selectActionState,

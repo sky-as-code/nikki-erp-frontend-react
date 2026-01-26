@@ -16,7 +16,9 @@ import { useNavigate } from 'react-router';
 import {
 	AuthorizeDispatch,
 	identityActions,
+	selectGroupList,
 	selectOrgList,
+	selectUserList,
 } from '@/appState';
 import {
 	RoleDetailActions,
@@ -36,6 +38,8 @@ function RoleDetailPageBody(): React.ReactNode {
 	const schema = roleSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const orgs = useMicroAppSelector(selectOrgList);
+	const users = useMicroAppSelector(selectUserList);
+	const groups = useMicroAppSelector(selectGroupList);
 
 	const handleAddEntitlements = React.useCallback(() => navigate('add-entitlements'), [navigate]);
 	const handleRemoveEntitlements = React.useCallback(() => navigate('remove-entitlements'), [navigate]);
@@ -44,7 +48,13 @@ function RoleDetailPageBody(): React.ReactNode {
 		if (orgs.length === 0) {
 			dispatch(identityActions.listOrgs());
 		}
-	}, [dispatch, orgs.length]);
+		if (users.length === 0) {
+			dispatch(identityActions.listUsers());
+		}
+		if (groups.length === 0) {
+			dispatch(identityActions.listGroups());
+		}
+	}, [orgs.length, users.length, groups.length]);
 
 	if (isLoading) {
 		return <LoadingState messageKey='nikki.authorize.role.messages.loading' />;
@@ -90,7 +100,7 @@ function RoleDetailPageBody(): React.ReactNode {
 										onRemoveEntitlements={handleRemoveEntitlements}
 										onCancel={handleGoBack}
 									/>
-									<RoleFormFields isCreate={false} orgs={orgs} />
+									<RoleFormFields isCreate={false} orgs={orgs} users={users} groups={groups} />
 									<AssignedEntitlementsList
 										entitlements={role.entitlements || []}
 									/>

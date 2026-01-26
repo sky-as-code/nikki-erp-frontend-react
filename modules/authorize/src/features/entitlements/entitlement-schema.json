@@ -36,6 +36,21 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.action_id' }"
 		},
+		"action": {
+			"type": "object",
+			"label":"{ \"$ref\": 'nikki.authorize.action.title' }",
+			"readOnly": true,
+			"properties": {
+				"id": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.action.fields.id' }"
+				},
+				"name": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.action.fields.name' }"
+				}
+			}
+		},
 		"actionExpr": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.action_expr' }"
@@ -43,6 +58,21 @@
 		"resourceId": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.entitlement.fields.resource_id' }"
+		},
+		"resource": {
+			"type": "object",
+			"label":"{ \"$ref\": 'nikki.authorize.resource.title' }",
+			"readOnly": true,
+			"properties": {
+				"id": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.id' }"
+				},
+				"name": {
+					"type": "string",
+					"label": "{ \"$ref\": 'nikki.authorize.resource.fields.name' }"
+				}
+			}
 		},
 		"description": {
 			"type": "string",
