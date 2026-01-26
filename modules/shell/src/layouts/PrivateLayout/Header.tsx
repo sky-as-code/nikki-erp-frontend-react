@@ -62,7 +62,7 @@ export const Header: React.FC = () => {
 
 const HeaderMobile: React.FC = () => {
 	return (
-		<Group align='center' justify='space-between' w='100%' h='100%'>
+		<Group align='center' justify='space-between' w='100%' h='100%' gap={'xs'}>
 			<MenuBarDrawer />
 			<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
 			<Group align='center' justify='flex-end' gap={4}>
