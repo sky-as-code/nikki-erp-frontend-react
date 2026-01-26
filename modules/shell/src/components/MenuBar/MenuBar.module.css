@@ -1,5 +1,5 @@
-.active {
-	background-color: var(--mantine-color-blue-2);
+.activeMenuItem {
+	background-color: var(--mantine-color-blue-1);
 }
 
 .menuDropdown {

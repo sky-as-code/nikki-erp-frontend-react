@@ -1,6 +1,7 @@
 import {
 	Center,
 	Checkbox,
+	MantineStyleProps,
 	SegmentedControl,
 	Select,
 	Stack,
@@ -13,6 +14,7 @@ import { FilterState, GroupByOption, ModuleViewMode, SortByOption } from '../Mod
 
 
 type ModuleFilterPanelProps = {
+	styleProps?: MantineStyleProps;
 	viewMode: ModuleViewMode;
 	onViewModeChange: (mode: ModuleViewMode) => void;
 	filters: FilterState;
@@ -20,6 +22,7 @@ type ModuleFilterPanelProps = {
 };
 
 export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
+	styleProps,
 	viewMode,
 	onViewModeChange,
 	filters,
@@ -42,7 +45,12 @@ export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
 	};
 
 	return (
-		<Stack gap={'sm'} bdrs={'md'} bg={'var(--mantine-color-white)'} p={'md'}>
+		<Stack
+			gap={'sm'} bg={'var(--mantine-color-white)'}
+			{...styleProps}
+			bdrs={styleProps?.bdrs || 'md'}
+			p={styleProps?.p || 'md'}
+		>
 			<ViewModeSegmentedControl
 				viewMode={viewMode}
 				onViewModeChange={onViewModeChange}

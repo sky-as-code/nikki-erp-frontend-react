@@ -1,11 +1,12 @@
 import { Avatar, Box, Divider, Flex, Menu, Text } from '@mantine/core';
-import { signOutAction } from '@nikkierp/shell/auth';
-import { IconBrightnessFilled, IconLogout2, IconSettings, IconUser, IconUserFilled, IconUsers } from '@tabler/icons-react';
+import { IconUserFilled } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
+import { handleMenuItemClick } from './helpers';
+import { PROFILE_MENU_CONFIG } from './menuConfig';
 import classes from './ProfileMenuDropdown.module.css';
 import { ThemeSwitchModal } from '../ThemeSwitch';
 
@@ -16,10 +17,6 @@ export const ProfileMenuDropdown: React.FC = () => {
 	const themeModeModalRef = useRef<any>(null);
 
 	const [opened, setOpened] = useState<boolean>(false);
-
-	const handleLogout = () => {
-		dispatch(signOutAction());
-	};
 
 	return (
 		<>
@@ -41,32 +38,21 @@ export const ProfileMenuDropdown: React.FC = () => {
 						</Box>
 					</Flex>
 
-					<Divider my={4}/>
+					{PROFILE_MENU_CONFIG.map((item) => {
+						if (item.type === 'divider') {
+							return <Divider key={item.id} my={4} />;
+						}
 
-					<Menu.Item leftSection={<IconUser size={20}/>}>
-						{translate('nikki.shell.profileMenu.profile')}
-					</Menu.Item>
-
-					<Menu.Item leftSection={<IconSettings size={20}/>}>
-						{translate('nikki.shell.profileMenu.accountSettings')}
-					</Menu.Item>
-
-					<Menu.Item
-						onClick={() => themeModeModalRef?.current?.open()}
-						leftSection={<IconBrightnessFilled size={20} />}
-					>
-						{translate('nikki.shell.profileMenu.themeMode')}
-					</Menu.Item>
-
-					<Divider my={4}/>
-
-					<Menu.Item leftSection={<IconUsers size={20} />}>
-						{translate('nikki.shell.profileMenu.switchAccount')}
-					</Menu.Item>
-
-					<Menu.Item onClick={handleLogout} leftSection={<IconLogout2 size={20} />}>
-						{translate('nikki.shell.profileMenu.signOut')}
-					</Menu.Item>
+						return (
+							<Menu.Item
+								key={item.id}
+								leftSection={item.icon}
+								onClick={() => handleMenuItemClick(item.action, dispatch, themeModeModalRef)}
+							>
+								{translate(item.translationKey)}
+							</Menu.Item>
+						);
+					})}
 				</Menu.Dropdown>
 			</Menu>
 			<ThemeSwitchModal ref={themeModeModalRef} />

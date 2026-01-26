@@ -2,10 +2,9 @@
 	color: lightdark(var(--mantine-color-white), var(--mantine-color-dark));
 	gap: var(--mantine-spacing-md);
 	box-shadow: 2px 2px 5px 0px #40404033;
-	/* z-index: 300; */
 }
 
-.allAppsButton {
+.goHomeButton {
 	animation: scaleInRotateY 0.3s ease-out;
 }
 
