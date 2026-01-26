@@ -76,10 +76,6 @@
 			"type": "boolean",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.isActive' }"
 		},
-		"actions": {
-			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.actions' }"
-		},
 		"createdAt": {
 			"type": "date",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.createdAt' }",

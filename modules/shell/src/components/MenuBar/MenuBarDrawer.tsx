@@ -2,8 +2,9 @@ import {
 	Button,
 	Divider, Drawer, Flex, Stack,
 } from '@mantine/core';
-import { IconMenu2, IconX } from '@tabler/icons-react';
+import { IconApps, IconMenu2, IconX } from '@tabler/icons-react';
 import React, { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 
@@ -16,6 +17,7 @@ export const MenuBarDrawer: React.FC = () => {
 	const navigate = useNavigate();
 	const [drawerOpened, setDrawerOpened] = useState(false);
 	const themeModeModalRef = useRef<any>(null);
+	const { t } = useTranslation();
 
 	const handleItemClick = (link?: string) => {
 		if (link) {
@@ -41,10 +43,7 @@ export const MenuBarDrawer: React.FC = () => {
 				<Drawer.Content>
 					<Flex justify='flex-end' p={4}>
 						<Button variant='transparent'
-							color='var(--mantine-color-gray-6)'
-							h={24}
-							w={24}
-							p={2}
+							color='var(--mantine-color-gray-6)' h={24} w={24} p={2}
 							onClick={() => setDrawerOpened(false)}
 						>
 							<IconX size={20} />
@@ -53,22 +52,18 @@ export const MenuBarDrawer: React.FC = () => {
 					<Drawer.Body>
 						<Stack gap={0}>
 							<Button
-								variant='subtle'
-								justify='flex-start'
-								fullWidth
-								pl={12}
-								pr={12}
-								py={8}
+								variant='subtle' justify='flex-start' fullWidth
+								px={12} py={8}
 								c='var(--mantine-color-gray-7)'
-								fw={500}
-								fz={15}
+								fw={500} fz={15} radius='md'
 								styles={{ inner: { justifyContent: 'flex-start' } }}
 								onClick={() => {
 									setDrawerOpened(false);
 									navigate('/');
 								}}
+								leftSection={<IconApps size={20} />}
 							>
-								All apps
+								{t('nikki.shell.menuBar.allApps')}
 							</Button>
 							<Divider my={8} />
 							<MenuBar mode='vertical' onItemClick={handleItemClick} />

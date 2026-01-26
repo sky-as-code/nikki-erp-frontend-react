@@ -74,7 +74,10 @@ const ProfileMenuDrawerContent: React.FC<ProfileMenuDrawerContentProps> = ({ onC
 
 	return (
 		<Stack gap={0}>
-			<Flex gap={'sm'} p={'sm'} align='center' bg={'var(--mantine-color-gray-1)'} mb='sm'>
+			<Flex gap={'sm'} p={'sm'} mb={'sm'} align='center'
+				bg={'var(--mantine-color-gray-1)'}
+				style={{ borderRadius: '3px' }}
+			>
 				<Avatar size={60}>
 					<IconUserFilled color={'var(--mantine-color-gray-6)'} />
 				</Avatar>
@@ -92,13 +95,10 @@ const ProfileMenuDrawerContent: React.FC<ProfileMenuDrawerContentProps> = ({ onC
 				return (
 					<Button
 						key={item.id}
-						variant='subtle'
-						justify='flex-start'
+						variant='subtle' justify='flex-start' fullWidth
 						leftSection={item.icon}
-						fullWidth
 						c='var(--mantine-color-gray-7)'
-						fw={500}
-						fz={15}
+						fw={500} fz={15}
 						styles={{ inner: { justifyContent: 'flex-start' } }}
 						onClick={() => handleMenuItemClick(item.action, dispatch, themeModeModalRef, onClose)}
 					>

@@ -25,7 +25,7 @@ export type MenuBarProps = {
 };
 
 
-export function MenuBar({ mode = 'horizontal', onItemClick }: MenuBarProps): React.ReactNode {
+export function MenuBar({ mode = 'horizontal' }: MenuBarProps): React.ReactNode {
 	const menuBarItems = useMenuBarItems();
 	const location = useLocation();
 	const { orgSlug, moduleSlug } = useActiveOrgModule();
@@ -39,7 +39,6 @@ export function MenuBar({ mode = 'horizontal', onItemClick }: MenuBarProps): Rea
 				items={menuBarItems}
 				pathPrefix={pathPrefix}
 				currentPath={location.pathname}
-				onItemClick={onItemClick}
 			/>
 		);
 	}
@@ -104,10 +103,14 @@ function OverflowMenu({
 	pathPrefix,
 	getPath,
 }: OverflowMenuProps): React.ReactNode {
+	const hasActiveChild = items.some(subItem =>
+		hasActiveNestedItemWithPrefix(subItem, currentPath, pathPrefix),
+	);
+
 	return (
 		<Menu position='bottom-start' trigger='click-hover'>
 			<Menu.Target>
-				<Button {...buttonProps(false)} rightSection={<IconChevronDown size={14} />}>
+				<Button {...buttonProps(hasActiveChild)} rightSection={<IconChevronDown size={14} />}>
 					<IconDots size={16} />
 				</Button>
 			</Menu.Target>

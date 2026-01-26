@@ -27,8 +27,11 @@ export const ProfileMenuDropdown: React.FC = () => {
 					</Avatar>
 				</Menu.Target>
 
-				<Menu.Dropdown className={classes.menuDropdown}>
-					<Flex gap={'sm'} p={'sm'} align='center' bg={'var(--mantine-color-gray-1)'}>
+				<Menu.Dropdown className={classes.menuDropdown} p={'xs'}>
+					<Flex gap={'sm'} p={'sm'} mb={'sm'} align='center'
+						bg={'var(--mantine-color-gray-1)'}
+						style={{ borderRadius: '3px' }}
+					>
 						<Avatar size={60}>
 							<IconUserFilled color={'var(--mantine-color-gray-6)'} />
 						</Avatar>

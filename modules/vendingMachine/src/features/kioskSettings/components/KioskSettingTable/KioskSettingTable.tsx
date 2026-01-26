@@ -76,6 +76,13 @@ function renderActionsColumn(
 	);
 }
 
+function renderActionsHeader(
+	_: Record<string, unknown>,
+	translate: (key: string) => string,
+) {
+	return <Text fw={600} fz='sm' ta={'end'}>{translate('nikki.general.actions.title')}</Text>;
+}
+
 export const KioskSettingTable: React.FC<KioskSettingTableProps> = ({
 	columns,
 	data,
@@ -109,6 +116,9 @@ export const KioskSettingTable: React.FC<KioskSettingTableProps> = ({
 					value: renderValueColumn,
 					status: (row) => renderStatusColumn(row, translate),
 					actions: (row) => renderActionsColumn(row, onViewDetail, onEdit, onDelete, translate),
+				}}
+				headerRenderers={{
+					actions: (row) => renderActionsHeader(row, translate),
 				}}
 				columnAsLink='code'
 				columnAsLinkHref={(row) => {

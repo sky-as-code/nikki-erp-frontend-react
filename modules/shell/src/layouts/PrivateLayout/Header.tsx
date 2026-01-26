@@ -5,7 +5,7 @@ import {
 	useMantineColorScheme, useMantineTheme,
 } from '@mantine/core';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
-import { IconCaretLeft } from '@tabler/icons-react';
+import { IconCaretLeftFilled } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router';
@@ -94,7 +94,7 @@ const GoHomeButton: React.FC = () => {
 			onClick={handleClick}
 			className={classes.goHomeButton}
 		>
-			<IconCaretLeft size={24} stroke={2}/>
+			<IconCaretLeftFilled size={24}/>
 		</Button>
 	);
 };
