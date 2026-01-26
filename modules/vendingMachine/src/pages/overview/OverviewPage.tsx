@@ -7,6 +7,8 @@ import {
 	Text,
 	Title,
 	ThemeIcon,
+	Center,
+	Container,
 } from '@mantine/core';
 import {
 	IconBolt,
@@ -15,15 +17,11 @@ import {
 	IconDroplet,
 	IconTemperature,
 } from '@tabler/icons-react';
-import maplibregl from 'maplibre-gl';
 import React from 'react';
-import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
-
-// MapLibreView.tsx
-import 'maplibre-gl/dist/maplibre-gl.css';
+import { KioskHitMap } from './components/KioskHitMap';
 
 
 // Mock data
@@ -66,11 +64,18 @@ function StatCard({ title, value, icon, color, link, suffix }: StatCardProps): R
 	return (
 		<Card
 			{...cardProps}
-			shadow='sm'
+			shadow='lg'
 			padding='lg'
 			radius='md'
 			withBorder
-			style={{ cursor: link ? 'pointer' : 'default', transition: 'transform 0.2s', height: '100%' }}
+			style={{
+				cursor: link ? 'pointer' : 'default',
+				transition: 'transform 0.2s',
+				height: '100%',
+				backgroundColor: 'var(--mantine-color-body)',
+				backdropFilter: 'blur(10px)',
+				opacity: 0.95,
+			}}
 			onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => { if (link) e.currentTarget.style.transform = 'translateY(-4px)'; }}
 			onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => { if (link) e.currentTarget.style.transform = 'translateY(0)'; }}
 		>
@@ -110,73 +115,110 @@ function OverviewPageBody(): React.ReactNode {
 	const totalPowerConsumption = mockKiosks.reduce((sum, k) => sum + k.powerConsumption, 0).toFixed(1);
 
 	return (
+		<Container fluid>
 
-		<Stack gap='md'>
-			<Title order={5} mt='md'>{translate('nikki.vendingMachine.overview.statistics') || 'Thống kê'}</Title>
-			<Grid>
-				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
-					<StatCard
-						title={translate('nikki.vendingMachine.overview.total_kiosks') || 'Tổng số Kiosk'}
-						value={totalKiosks}
-						icon={<IconDeviceDesktop size={32} />}
-						color='blue'
-						link='../kiosks'
-					/>
-				</Grid.Col>
-				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
-					<StatCard
-						title={translate('nikki.vendingMachine.overview.active_kiosks') || 'Kiosk đang hoạt động'}
-						value={activeKiosks}
-						icon={<IconDeviceDesktop size={32} />}
-						color='green'
-						link='../kiosks?status=active'
-					/>
-				</Grid.Col>
-				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
-					<StatCard
-						title={translate('nikki.vendingMachine.overview.inactive_kiosks') || 'Kiosk không hoạt động'}
-						value={inactiveKiosks}
-						icon={<IconDeviceDesktopOff size={32} />}
-						color='red'
-						link='../kiosks?status=inactive'
-					/>
-				</Grid.Col>
-				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
-					<StatCard
-						title={translate('nikki.vendingMachine.overview.avg_temperature') || 'Nhiệt độ trung bình'}
-						value={avgTemperature}
-						suffix='°C'
-						icon={<IconTemperature size={32} />}
-						color='orange'
-					/>
-				</Grid.Col>
-				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
-					<StatCard
-						title={translate('nikki.vendingMachine.overview.avg_humidity') || 'Độ ẩm trung bình'}
-						value={avgHumidity}
-						suffix='%'
-						icon={<IconDroplet size={32} />}
-						color='cyan'
-					/>
-				</Grid.Col>
-				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
-					<StatCard
-						title={translate('nikki.vendingMachine.overview.total_power') || 'Tổng tiêu thụ điện'}
-						value={totalPowerConsumption}
-						suffix='kW'
-						icon={<IconBolt size={32} />}
-						color='yellow'
-					/>
-				</Grid.Col>
-			</Grid>
-
-			<Title order={5} mt='lg'>{translate('nikki.vendingMachine.overview.kiosk_distribution') || 'Phân bổ Kiosk'}</Title>
-			<Grid>
-				<Grid.Col span={12}>
+			<Box
+				mt={50}
+				style={{
+					position: 'relative',
+					width: '100%',
+					// minHeight: '100vh',
+					height: '800px',
+					overflow: 'hidden',
+				}}
+			>
+				{/* Map as background */}
+				<Box
+					p='md'
+					bg='white'
+					style={{
+						position: 'absolute',
+						top: 0,
+						left: 0,
+						right: 0,
+						bottom: 0,
+						zIndex: 0,
+					}}
+				>
 					<KioskHitMap />
-				</Grid.Col>
-			</Grid>
-		</Stack>
+				</Box>
+
+				{/* StatCards positioned on top */}
+				<Box
+					style={{
+						position: 'relative',
+						zIndex: 1,
+						padding: '1rem',
+					}}
+				>
+					<Title order={5} mb='md' style={{ color: 'var(--mantine-color-text)' }}>
+						{translate('nikki.vendingMachine.overview.statistics') || 'Thống kê'}
+					</Title>
+					<Grid>
+						<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+							<StatCard
+								title={translate('nikki.vendingMachine.overview.total_kiosks') || 'Tổng số Kiosk'}
+								value={totalKiosks}
+								icon={<IconDeviceDesktop size={32} />}
+								color='blue'
+								link='../kiosks'
+							/>
+						</Grid.Col>
+						<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+							<StatCard
+								title={translate('nikki.vendingMachine.overview.active_kiosks') || 'Kiosk đang hoạt động'}
+								value={activeKiosks}
+								icon={<IconDeviceDesktop size={32} />}
+								color='green'
+								link='../kiosks?status=active'
+							/>
+						</Grid.Col>
+						<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+							<StatCard
+								title={translate('nikki.vendingMachine.overview.inactive_kiosks') || 'Kiosk không hoạt động'}
+								value={inactiveKiosks}
+								icon={<IconDeviceDesktopOff size={32} />}
+								color='red'
+								link='../kiosks?status=inactive'
+							/>
+						</Grid.Col>
+						<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+							<StatCard
+								title={translate('nikki.vendingMachine.overview.avg_temperature') || 'Nhiệt độ trung bình'}
+								value={avgTemperature}
+								suffix='°C'
+								icon={<IconTemperature size={32} />}
+								color='orange'
+							/>
+						</Grid.Col>
+						<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+							<StatCard
+								title={translate('nikki.vendingMachine.overview.avg_humidity') || 'Độ ẩm trung bình'}
+								value={avgHumidity}
+								suffix='%'
+								icon={<IconDroplet size={32} />}
+								color='cyan'
+							/>
+						</Grid.Col>
+						<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+							<StatCard
+								title={translate('nikki.vendingMachine.overview.total_power') || 'Tổng tiêu thụ điện'}
+								value={totalPowerConsumption}
+								suffix='kW'
+								icon={<IconBolt size={32} />}
+								color='yellow'
+							/>
+						</Grid.Col>
+					</Grid>
+				</Box>
+
+
+
+			</Box>
+			<Box mt={50} h={500} bg='white'>
+				<Center>Padding docks</Center>
+			</Box>
+		</Container>
 	);
 }
 
@@ -189,117 +231,3 @@ const OverviewPageWithTitle: React.FC = () => {
 };
 
 export const OverviewPage: React.FC = OverviewPageWithTitle;
-
-
-
-// Chuyển đổi mockKiosks sang GeoJSON format
-const geoJsonData: GeoJSON.FeatureCollection = {
-	type: 'FeatureCollection',
-	features: mockKiosks.map((kiosk) => ({
-		type: 'Feature',
-		geometry: {
-			type: 'Point',
-			coordinates: [kiosk.lng, kiosk.lat], // GeoJSON sử dụng [lng, lat]
-		},
-		properties: {
-			id: kiosk.id,
-			name: kiosk.name,
-			status: kiosk.status,
-			temperature: kiosk.temperature,
-			humidity: kiosk.humidity,
-			powerConsumption: kiosk.powerConsumption,
-		},
-	})),
-};
-
-function KioskHitMap() {
-	const mapContainerRef = useRef<HTMLDivElement | null>(null);
-	const mapRef = useRef<maplibregl.Map | null>(null);
-	const markersRef = useRef<maplibregl.Marker[]>([]);
-
-	useEffect(() => {
-		if (!mapContainerRef.current) return;
-
-		// Tính toán center từ tất cả các kiosk
-		const avgLng = mockKiosks.reduce((sum, k) => sum + k.lng, 0) / mockKiosks.length;
-		const avgLat = mockKiosks.reduce((sum, k) => sum + k.lat, 0) / mockKiosks.length;
-
-		const map = new maplibregl.Map({
-			container: mapContainerRef.current,
-			style: 'https://api.maptiler.com/maps/basic/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
-			center: [avgLng, avgLat],
-			zoom: 11,
-		});
-
-		map.addControl(new maplibregl.NavigationControl());
-
-		map.on('load', () => {
-			// Tạo marker cho mỗi điểm
-			geoJsonData.features.forEach((feature) => {
-				if (feature.geometry.type !== 'Point') return;
-				const [lng, lat] = feature.geometry.coordinates;
-				const status = feature.properties?.status || 'active';
-				const name = feature.properties?.name || '';
-				const temperature = feature.properties?.temperature || 0;
-				const humidity = feature.properties?.humidity || 0;
-				const powerConsumption = feature.properties?.powerConsumption || 0;
-
-				// Tạo element cho marker
-				const el = document.createElement('div');
-				el.className = 'custom-marker';
-				el.style.width = '32px';
-				el.style.height = '32px';
-				el.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24'%3E%3Cpath fill='${status === 'active' ? '%234caf50' : '%23f44336'}' d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E")`;
-				el.style.backgroundSize = 'contain';
-				el.style.backgroundRepeat = 'no-repeat';
-				el.style.backgroundPosition = 'center';
-				el.style.cursor = 'pointer';
-
-				// Tạo popup với thông tin kiosk
-				const popup = new maplibregl.Popup({ offset: 25 })
-					.setHTML(`
-						<div style="padding: 8px;">
-							<strong>${name}</strong><br/>
-							<span>Trạng thái: ${status === 'active' ? 'Đang hoạt động' : 'Không hoạt động'}</span>
-							${status === 'active' ? `
-								<br/>Nhiệt độ: ${temperature}°C
-								<br/>Độ ẩm: ${humidity}%
-								<br/>Tiêu thụ: ${powerConsumption}kW
-							` : ''}
-						</div>
-					`);
-
-				// Tạo marker
-				const marker = new maplibregl.Marker({
-					element: el,
-					anchor: 'bottom',
-				})
-					.setLngLat([lng, lat])
-					.setPopup(popup)
-					.addTo(map);
-
-				markersRef.current.push(marker);
-			});
-		});
-
-		mapRef.current = map;
-
-		return () => {
-			// Xóa tất cả markers
-			markersRef.current.forEach(marker => marker.remove());
-			markersRef.current = [];
-			map.remove();
-		};
-	}, []);
-
-	return (
-		<Box p='md' bg='white' style={{ borderRadius: '8px' }}>
-			<Box
-				ref={mapContainerRef}
-				w='100%'
-				h='500px'
-
-			/>
-		</Box>
-	);
-}

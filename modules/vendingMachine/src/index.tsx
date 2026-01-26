@@ -1,4 +1,3 @@
-import { MantineProvider } from '@mantine/core';
 import { useSetMenuBarItems } from '@nikkierp/ui/appState';
 import {
 	AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
@@ -19,21 +18,19 @@ function Main(props: MicroAppProps) {
 
 	return (
 		<MicroAppProvider {...props}>
-			<MantineProvider>
-				<MicroAppRouter
-					domType={props.domType}
-					basePath={props.routing.basePath}
-					widgetName={props.widgetName}
-					widgetProps={props.widgetProps}
-				>
-					<AppRoutes>
-						{AppRouteElements}
-					</AppRoutes>
-					<WidgetRoutes>
-						{WidgetRouteElements}
-					</WidgetRoutes>
-				</MicroAppRouter>
-			</MantineProvider>
+			<MicroAppRouter
+				domType={props.domType}
+				basePath={props.routing.basePath}
+				widgetName={props.widgetName}
+				widgetProps={props.widgetProps}
+			>
+				<AppRoutes>
+					{AppRouteElements}
+				</AppRoutes>
+				<WidgetRoutes>
+					{WidgetRouteElements}
+				</WidgetRoutes>
+			</MicroAppRouter>
 		</MicroAppProvider>
 	);
 }
