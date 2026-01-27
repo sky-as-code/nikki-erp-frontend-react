@@ -2,7 +2,7 @@
 	overflow-y: auto;
 	flex: 1;
 	background: linear-gradient(135deg, var(--nikki-color-page-background), var(--nikki-color-page-background), var(--nikki-color-white));
-	scrollbar-gutter: stable both-edges;
+	/* scrollbar-gutter: stable both-edges; */
 }
 
 /* Private layout scrollbar */

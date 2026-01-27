@@ -7,6 +7,11 @@ export interface ThemeModeModalRef {
 	close: () => void;
 }
 
+export interface LangSwitchModalRef {
+	open: () => void;
+	close: () => void;
+}
+
 /**
  * Handle logout action
  */
@@ -28,12 +33,24 @@ export const handleThemeMode = (themeModeModalRef: React.RefObject<ThemeModeModa
 };
 
 /**
+ * Handle language switch modal open
+ */
+export const handleLanguageSwitch =
+	(langSwitchModalRef: React.RefObject<LangSwitchModalRef>, onClose?: () => void) => {
+		langSwitchModalRef?.current?.open();
+		if (onClose) {
+			onClose();
+		}
+	};
+
+/**
  * Handle menu item click based on action type
  */
 export const handleMenuItemClick = (
 	action: string | undefined,
 	dispatch: any,
 	themeModeModalRef: React.RefObject<ThemeModeModalRef>,
+	langSwitchModalRef: React.RefObject<LangSwitchModalRef>,
 	onClose?: () => void,
 ) => {
 	switch (action) {
@@ -42,6 +59,9 @@ export const handleMenuItemClick = (
 			break;
 		case 'themeMode':
 			handleThemeMode(themeModeModalRef, onClose);
+			break;
+		case 'language':
+			handleLanguageSwitch(langSwitchModalRef, onClose);
 			break;
 		default:
 			// No action needed

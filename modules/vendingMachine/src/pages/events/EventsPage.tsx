@@ -1,6 +1,6 @@
 import { Paper, Stack, Title } from '@mantine/core';
 import { ConfirmModal } from '@nikkierp/ui/components';
-import { useConfirmModal } from '@nikkierp/ui/hooks';
+import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,9 +23,7 @@ export const EventsPage: React.FC = () => {
 
 	const { event: selectedEvent, isLoading: isLoadingDetail } = useEventDetail(selectedEventId);
 
-	React.useEffect(() => {
-		document.title = translate('nikki.vendingMachine.menu.events');
-	}, [translate]);
+	useDocumentTitle('nikki.vendingMachine.menu.events');
 
 	// Filter and search events
 	const filteredEvents = useMemo(() => {

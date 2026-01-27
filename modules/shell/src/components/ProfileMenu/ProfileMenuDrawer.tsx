@@ -9,6 +9,7 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
+import { LangSwitchModal } from '@/components/LangSwitch';
 import { ThemeSwitchModal } from '@/components/ThemeSwitch';
 
 import { handleMenuItemClick } from './helpers';
@@ -18,6 +19,7 @@ import { PROFILE_MENU_CONFIG } from './menuConfig';
 export const ProfileMenuDrawer: React.FC = () => {
 	const [drawerOpened, setDrawerOpened] = useState(false);
 	const themeModeModalRef = useRef<any>(null);
+	const langSwitchModalRef = useRef<any>(null);
 
 	return (
 		<>
@@ -50,12 +52,14 @@ export const ProfileMenuDrawer: React.FC = () => {
 						<ProfileMenuDrawerContent
 							onClose={() => setDrawerOpened(false)}
 							themeModeModalRef={themeModeModalRef}
+							langSwitchModalRef={langSwitchModalRef}
 						/>
 					</Drawer.Body>
 				</Drawer.Content>
 			</Drawer.Root>
 
 			<ThemeSwitchModal ref={themeModeModalRef} />
+			<LangSwitchModal ref={langSwitchModalRef} />
 		</>
 	);
 };
@@ -66,9 +70,12 @@ export const ProfileMenuDrawer: React.FC = () => {
 type ProfileMenuDrawerContentProps = {
 	onClose: () => void;
 	themeModeModalRef: React.RefObject<any>;
+	langSwitchModalRef: React.RefObject<any>;
 };
 
-const ProfileMenuDrawerContent: React.FC<ProfileMenuDrawerContentProps> = ({ onClose, themeModeModalRef }) => {
+const ProfileMenuDrawerContent: React.FC<ProfileMenuDrawerContentProps> = ({
+	onClose, themeModeModalRef, langSwitchModalRef,
+}) => {
 	const dispatch = useDispatch<any>();
 	const { t: translate } = useTranslation();
 
@@ -100,7 +107,13 @@ const ProfileMenuDrawerContent: React.FC<ProfileMenuDrawerContentProps> = ({ onC
 						c='var(--mantine-color-gray-7)'
 						fw={500} fz={15}
 						styles={{ inner: { justifyContent: 'flex-start' } }}
-						onClick={() => handleMenuItemClick(item.action, dispatch, themeModeModalRef, onClose)}
+						onClick={() => handleMenuItemClick(
+							item.action,
+							dispatch,
+							themeModeModalRef,
+							langSwitchModalRef,
+							onClose,
+						)}
 					>
 						{translate(item.translationKey)}
 					</Button>

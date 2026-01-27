@@ -24,8 +24,13 @@
                 "profile": "Thông tin tài khoản",
                 "accountSettings": "Cài đặt tài khoản",
                 "themeMode": "Chế độ giao diện",
+                "language": "Ngôn ngữ",
                 "switchAccount": "Chuyển tài khoản",
                 "signOut": "Đăng xuất"
+            },
+            "sessionRestoring": {
+                "title": "Đang khôi phục phiên làm việc",
+                "description": "Vui lòng đợi trong giây lát. Hệ thống đang khôi phục phiên làm việc của bạn..."
             }
         },
         "general": {

@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import { handleMenuItemClick } from './helpers';
 import { PROFILE_MENU_CONFIG } from './menuConfig';
 import classes from './ProfileMenuDropdown.module.css';
+import { LangSwitchModal } from '../LangSwitch';
 import { ThemeSwitchModal } from '../ThemeSwitch';
 
 
@@ -15,6 +16,7 @@ export const ProfileMenuDropdown: React.FC = () => {
 	const dispatch = useDispatch<any>();
 	const { t: translate } = useTranslation();
 	const themeModeModalRef = useRef<any>(null);
+	const langSwitchModalRef = useRef<any>(null);
 
 	const [opened, setOpened] = useState<boolean>(false);
 
@@ -50,7 +52,12 @@ export const ProfileMenuDropdown: React.FC = () => {
 							<Menu.Item
 								key={item.id}
 								leftSection={item.icon}
-								onClick={() => handleMenuItemClick(item.action, dispatch, themeModeModalRef)}
+								onClick={() => handleMenuItemClick(
+									item.action,
+									dispatch,
+									themeModeModalRef,
+									langSwitchModalRef)
+								}
 							>
 								{translate(item.translationKey)}
 							</Menu.Item>
@@ -59,6 +66,7 @@ export const ProfileMenuDropdown: React.FC = () => {
 				</Menu.Dropdown>
 			</Menu>
 			<ThemeSwitchModal ref={themeModeModalRef} />
+			<LangSwitchModal ref={langSwitchModalRef} />
 		</>
 	);
 };

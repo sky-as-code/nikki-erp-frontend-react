@@ -1,6 +1,6 @@
 import { Paper, Stack, Title } from '@mantine/core';
 import { ConfirmModal } from '@nikkierp/ui/components';
-import { useConfirmModal } from '@nikkierp/ui/hooks';
+import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,9 +29,7 @@ export const KioskSettingsPage: React.FC = () => {
 
 	const { setting: selectedSetting, isLoading: isLoadingDetail } = useKioskSettingDetail(selectedSettingId);
 
-	React.useEffect(() => {
-		document.title = translate('nikki.vendingMachine.menu.kiosk_settings');
-	}, [translate]);
+
 
 	// Filter and search settings
 	const filteredSettings = useMemo(() => {
@@ -90,6 +88,8 @@ export const KioskSettingsPage: React.FC = () => {
 		{ value: 'active', label: translate('nikki.general.status.active') },
 		{ value: 'inactive', label: translate('nikki.general.status.inactive') },
 	];
+
+	useDocumentTitle('nikki.vendingMachine.menu.kiosk_settings');
 
 	return (
 		<>

@@ -38,16 +38,16 @@ export function useMapZoom({ mapRef, mapContainerRef }: UseMapZoomProps) {
 				});
 			}
 
-
-			const center = mapRef.current.getCenter();
-			const zoom = mapRef.current.getZoom();
-			console.log('Map zoom changed:', {
-				center: {
-					lng: center.lng,
-					lat: center.lat,
-				},
-				zoom,
-			});
+			//* use this to log the map zoom changes, get the center and zoom of the map
+			// const center = mapRef.current.getCenter();
+			// const zoom = mapRef.current.getZoom();
+			// console.log('Map zoom changed:', {
+			// 	center: {
+			// 		lng: center.lng,
+			// 		lat: center.lat,
+			// 	},
+			// 	zoom,
+			// });
 		};
 
 		mapContainer.addEventListener('wheel', handleWheel, { passive: false });

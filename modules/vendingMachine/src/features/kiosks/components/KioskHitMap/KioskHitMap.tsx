@@ -45,9 +45,7 @@ export function KioskHitMap(): React.ReactElement {
 	useMapZoom({ mapRef, mapContainerRef });
 
 	return (
-		<Box w='100%' h='100%'>
-			<Box ref={mapContainerRef} w='100%' h='100%'/>
-		</Box>
+		<Box ref={mapContainerRef} w='100%' h='100%'/>
 	);
 }
 

@@ -24,8 +24,13 @@
 				"profile": "Profile",
 				"accountSettings": "Account Settings",
 				"themeMode": "Theme Mode",
+				"language": "Language",
 				"switchAccount": "Switch Account",
 				"signOut": "Sign Out"
+			},
+			"sessionRestoring": {
+				"title": "Restoring your session",
+				"description": "Please wait a moment. The system is restoring your session..."
 			}
 		},
 		"general": {

@@ -1,6 +1,6 @@
 import { Paper, Stack, Title } from '@mantine/core';
 import { ConfirmModal } from '@nikkierp/ui/components';
-import { useConfirmModal } from '@nikkierp/ui/hooks';
+import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,9 +29,6 @@ export const KioskTemplatePage: React.FC = () => {
 
 	const { template: selectedTemplate, isLoading: isLoadingDetail } = useKioskTemplateDetail(selectedTemplateId);
 
-	React.useEffect(() => {
-		document.title = translate('nikki.vendingMachine.menu.kiosk_template');
-	}, [translate]);
 
 	// Filter and search templates
 	const filteredTemplates = useMemo(() => {
@@ -90,6 +87,8 @@ export const KioskTemplatePage: React.FC = () => {
 		{ value: 'active', label: translate('nikki.general.status.active') },
 		{ value: 'inactive', label: translate('nikki.general.status.inactive') },
 	];
+
+	useDocumentTitle('nikki.vendingMachine.menu.kiosk_template');
 
 	return (
 		<>
