@@ -1,3 +1,4 @@
+import { MantineColorScheme } from '@mantine/core';
 import maplibregl from 'maplibre-gl';
 import { useEffect } from 'react';
 
@@ -12,8 +13,23 @@ const darkThemeColors = {
 	water: '#1e3a5f',
 };
 
-const updateMapThemeColors = (map: maplibregl.Map, isDark: boolean) => {
-	const themeColors = isDark ? darkThemeColors : lightThemeColors;
+type MapThemeColors = {
+	background: string;
+	water: string;
+};
+
+const mapThemeColors: Record<MantineColorScheme, MapThemeColors> = {
+	light: lightThemeColors,
+	dark: darkThemeColors,
+	auto: lightThemeColors,
+};
+
+const getMapThemeColors = (colorScheme: MantineColorScheme): MapThemeColors => {
+	return mapThemeColors[colorScheme] || lightThemeColors;
+};
+
+const updateMapThemeColors = (map: maplibregl.Map, colorScheme: MantineColorScheme) => {
+	const themeColors = getMapThemeColors(colorScheme);
 	const style = map.getStyle();
 
 	if (style && style.layers) {
@@ -50,14 +66,14 @@ const updateMapThemeColors = (map: maplibregl.Map, isDark: boolean) => {
 
 interface UseMapThemeProps {
 	mapRef: React.RefObject<maplibregl.Map | null>;
-	isDark: boolean;
-	getMapStyle: (dark: boolean) => string;
+	colorScheme: MantineColorScheme;
+	getMapStyle: (colorScheme: MantineColorScheme) => string;
 	onThemeUpdated?: (map: maplibregl.Map) => void;
 }
 
 export function useMapTheme({
 	mapRef,
-	isDark,
+	colorScheme,
 	getMapStyle,
 	onThemeUpdated,
 }: UseMapThemeProps) {
@@ -69,13 +85,13 @@ export function useMapTheme({
 		// Chỉ cập nhật theme nếu map đã load
 		if (!map.loaded()) {
 			map.once('load', () => {
-				updateMapThemeColors(map, isDark);
+				updateMapThemeColors(map, colorScheme);
 			});
 			return;
 		}
 
 		const updateTheme = () => {
-			const newMapStyle = getMapStyle(isDark);
+			const newMapStyle = getMapStyle(colorScheme);
 			const center = map.getCenter();
 			const zoom = map.getZoom();
 
@@ -84,12 +100,12 @@ export function useMapTheme({
 			map.once('style.load', () => {
 				map.setCenter(center);
 				map.setZoom(zoom);
-				updateMapThemeColors(map, isDark);
+				updateMapThemeColors(map, colorScheme);
 				onThemeUpdated?.(map);
 			});
 		};
 
 		updateTheme();
-	}, [isDark, getMapStyle, mapRef, onThemeUpdated]);
+	}, [colorScheme, getMapStyle, mapRef, onThemeUpdated]);
 }
 

@@ -37,6 +37,9 @@ export interface Kiosk {
 	mode: KioskMode;
 	connectionStatus: ConnectionStatus;
 	connectionHistory?: ConnectionHistory[];
+	temperature?: number;
+	humidity?: number;
+	powerConsumption?: number;
 	createdAt: string;
 	deletedAt?: string;
 	etag: string;
