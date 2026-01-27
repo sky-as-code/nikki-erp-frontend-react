@@ -10,6 +10,7 @@ import {
 	RevokeRequestFilter,
 	useRevokeRequestCreate,
 } from '@/features/revokeRequests';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 interface ActionButtonsProps {
@@ -17,21 +18,30 @@ interface ActionButtonsProps {
 	isSubmitting: boolean;
 	onSubmit: () => void;
 	onCancel: () => void;
+	showSubmit?: boolean;
 }
 
-function ActionButtons({ canSubmit, isSubmitting, onSubmit, onCancel }: ActionButtonsProps) {
+function ActionButtons({
+	canSubmit,
+	isSubmitting,
+	onSubmit,
+	onCancel,
+	showSubmit = true,
+}: ActionButtonsProps) {
 	const { t: translate } = useTranslation();
 
 	return (
 		<Group>
-			<Button
-				leftSection={<IconCheck size={16} />}
-				onClick={onSubmit}
-				disabled={!canSubmit}
-				loading={isSubmitting}
-			>
-				{translate('nikki.authorize.revoke_request.actions.revoke_selected')}
-			</Button>
+			{showSubmit && (
+				<Button
+					leftSection={<IconCheck size={16} />}
+					onClick={onSubmit}
+					disabled={!canSubmit}
+					loading={isSubmitting}
+				>
+					{translate('nikki.authorize.revoke_request.actions.revoke_selected')}
+				</Button>
+			)}
 			<Button
 				type='button'
 				variant='outline'
@@ -133,7 +143,10 @@ function AssignmentsListSection({
 function RevokeRequestCreatePageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const pageData = useRevokeRequestCreate();
-	const canSubmit = pageData.selectedAssignments.size > 0 && !pageData.isSubmitting;
+	const permissions = useAuthorizePermissions();
+	const canSubmit = permissions.revokeRequest.canCreate
+		&& pageData.selectedAssignments.size > 0
+		&& !pageData.isSubmitting;
 
 	return (
 		<Stack gap='md'>
@@ -149,8 +162,12 @@ function RevokeRequestCreatePageBody(): React.ReactNode {
 					<ActionButtons
 						canSubmit={canSubmit}
 						isSubmitting={pageData.isSubmitting}
-						onSubmit={pageData.handleSubmit}
+						onSubmit={() => {
+							if (!permissions.revokeRequest.canCreate) return;
+							pageData.handleSubmit();
+						}}
 						onCancel={pageData.handleCancel}
+						showSubmit={permissions.revokeRequest.canCreate}
 					/>
 
 					<FormFields

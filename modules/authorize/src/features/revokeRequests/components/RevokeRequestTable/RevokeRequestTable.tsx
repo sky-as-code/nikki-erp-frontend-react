@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 
 export interface RevokeRequestTableProps extends AutoTableProps {
 	onViewDetail: (requestId: string) => void;
-	onDelete: (requestId: string) => void;
+	onDelete?: (requestId: string) => void;
 }
 
 function renderRequestorColumn(row: Record<string, unknown>) {
@@ -49,7 +49,7 @@ function renderTargetColumn(row: Record<string, unknown>, translate: (key: strin
 function renderActionsColumn(
 	row: Record<string, unknown>,
 	onViewDetail: (requestId: string) => void,
-	onDelete: (requestId: string) => void,
+	onDelete: ((requestId: string) => void) | undefined,
 	translate: (key: string) => string,
 ) {
 	const requestId = row.id as string;
@@ -64,15 +64,17 @@ function renderActionsColumn(
 					<IconEye size={16} />
 				</ActionIcon>
 			</Tooltip>
-			<Tooltip label={translate('nikki.general.actions.delete')}>
-				<ActionIcon
-					variant='subtle'
-					color='red'
-					onClick={() => onDelete(requestId)}
-				>
-					<IconTrash size={16} />
-				</ActionIcon>
-			</Tooltip>
+			{onDelete && (
+				<Tooltip label={translate('nikki.general.actions.delete')}>
+					<ActionIcon
+						variant='subtle'
+						color='red'
+						onClick={() => onDelete(requestId)}
+					>
+						<IconTrash size={16} />
+					</ActionIcon>
+				</Tooltip>
+			)}
 		</Group>
 	);
 }

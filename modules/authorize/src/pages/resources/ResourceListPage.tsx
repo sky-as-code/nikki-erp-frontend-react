@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { ResourceTable, resourceSchema, type Resource, useResourceList, useResourceDelete } from '@/features/resources';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 export const ResourceListPage: React.FC = () => {
@@ -15,6 +16,7 @@ export const ResourceListPage: React.FC = () => {
 	const { resources, isLoadingList, handleRefresh } = useResourceList();
 	const { isOpen, item, configOpenModal, handleCloseModal } = useConfirmModal<Resource>();
 	const confirmDelete = useResourceDelete(handleRefresh);
+	const permissions = useAuthorizePermissions();
 
 	React.useEffect(() => {
 		document.title = translate('nikki.authorize.resource.title');
@@ -38,7 +40,7 @@ export const ResourceListPage: React.FC = () => {
 	return (
 		<Stack gap='md'>
 			<Headers titleKey='nikki.authorize.resource.title' />
-			<Actions onCreate={handleCreate} onRefresh={handleRefresh} />
+			<Actions onCreate={permissions.resource.canCreate ? handleCreate : undefined} onRefresh={handleRefresh} />
 			<Paper className='p-4'>
 				<ResourceTable
 					columns={['name', 'description', 'resourceType', 'scopeType', 'actionsCount', 'actions']}
@@ -46,8 +48,8 @@ export const ResourceListPage: React.FC = () => {
 					schema={resourceSchema as ModelSchema}
 					isLoading={isLoadingList}
 					onViewDetail={handleDetailOrEdit}
-					onEdit={handleDetailOrEdit}
-					onDelete={handleOpenModal}
+					onEdit={permissions.resource.canUpdate ? handleDetailOrEdit : undefined}
+					onDelete={permissions.resource.canDelete ? handleOpenModal : undefined}
 				/>
 			</Paper>
 

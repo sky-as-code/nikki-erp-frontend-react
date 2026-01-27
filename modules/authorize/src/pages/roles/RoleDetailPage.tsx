@@ -28,6 +28,7 @@ import {
 	useRoleDetailData,
 	useRoleDetail,
 } from '@/features/roles';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function RoleDetailPageBody(): React.ReactNode {
@@ -40,6 +41,7 @@ function RoleDetailPageBody(): React.ReactNode {
 	const orgs = useMicroAppSelector(selectOrgList);
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
+	const permissions = useAuthorizePermissions();
 
 	const handleAddEntitlements = React.useCallback(() => navigate('add-entitlements'), [navigate]);
 	const handleRemoveEntitlements = React.useCallback(() => navigate('remove-entitlements'), [navigate]);
@@ -87,11 +89,15 @@ function RoleDetailPageBody(): React.ReactNode {
 						modelLoading={isSubmitting}
 					>
 						{({ handleSubmit: formHandleSubmit }) => (
-							<form onSubmit={(e) => {
-								formHandleSubmit((data) => {
-									handleSubmit(data);
-								})(e);
-							}} noValidate>
+							<form
+								onSubmit={(e) => {
+									if (!permissions.role.canUpdate) return;
+									formHandleSubmit((data) => {
+										handleSubmit(data);
+									})(e);
+								}}
+								noValidate
+							>
 								<Stack gap='xs'>
 									<RoleDetailActions
 										role={role}
@@ -99,6 +105,9 @@ function RoleDetailPageBody(): React.ReactNode {
 										onAddEntitlements={handleAddEntitlements}
 										onRemoveEntitlements={handleRemoveEntitlements}
 										onCancel={handleGoBack}
+										canUpdate={permissions.role.canUpdate}
+										canAddEntitlement={permissions.role.canAddEntitlement}
+										canRemoveEntitlement={permissions.role.canRemoveEntitlement}
 									/>
 									<RoleFormFields isCreate={false} orgs={orgs} users={users} groups={groups} />
 									<AssignedEntitlementsList

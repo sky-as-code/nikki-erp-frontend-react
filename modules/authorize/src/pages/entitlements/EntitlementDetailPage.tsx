@@ -12,6 +12,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { EntitlementFormFields, entitlementSchema, useEntitlementDetail } from '@/features/entitlements';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function EntitlementDetailPageBody(): React.ReactNode {
@@ -19,6 +20,7 @@ function EntitlementDetailPageBody(): React.ReactNode {
 	const { isSubmitting, handleCancel, handleSubmit } = useEntitlementDetail.handlers(entitlement);
 	const { t: translate } = useTranslation();
 	const schema = entitlementSchema as ModelSchema;
+	const permissions = useAuthorizePermissions();
 
 	if (isLoading) {
 		return <LoadingState messageKey='nikki.authorize.entitlement.messages.loading' />;
@@ -52,12 +54,19 @@ function EntitlementDetailPageBody(): React.ReactNode {
 						modelLoading={isSubmitting}
 					>
 						{({ handleSubmit: formHandleSubmit }) => (
-							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
+							<form
+								onSubmit={formHandleSubmit((data) => {
+									if (!permissions.entitlement.canUpdate) return;
+									handleSubmit(data);
+								})}
+								noValidate
+							>
 								<Stack gap='xs'>
 									<FormActions
 										isSubmitting={isSubmitting}
 										onCancel={handleCancel}
 										isCreate={false}
+										showSubmit={permissions.entitlement.canUpdate}
 									/>
 									<EntitlementFormFields
 										isCreate={false}

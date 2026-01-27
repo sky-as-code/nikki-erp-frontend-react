@@ -19,6 +19,7 @@ import {
 	useResourceDetail,
 	useResourceEdit,
 } from '@/features/resources';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 import { handleGoBack } from '@/utils';
 
 
@@ -29,6 +30,7 @@ function ResourceDetailPageBody(): React.ReactNode {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const schema = resourceSchema as ModelSchema;
+	const permissions = useAuthorizePermissions();
 
 	if (isLoading) {
 		return <LoadingState messageKey='nikki.authorize.resource.messages.loading' />;
@@ -62,12 +64,19 @@ function ResourceDetailPageBody(): React.ReactNode {
 						modelLoading={isSubmitting}
 					>
 						{({ handleSubmit: formHandleSubmit, form }) => (
-							<form onSubmit={formHandleSubmit((data) => handleSubmit(data, form))} noValidate>
+							<form
+								onSubmit={formHandleSubmit((data) => {
+									if (!permissions.resource.canUpdate) return;
+									handleSubmit(data, form);
+								})}
+								noValidate
+							>
 								<Stack gap='xs'>
 									<FormActions
 										isSubmitting={isSubmitting}
 										onCancel={() => handleGoBack(navigate, location)}
 										isCreate={false}
+										showSubmit={permissions.resource.canUpdate}
 									/>
 									<ResourceFormFields isCreate={false} />
 									<ListActions actions={resource.actions} />

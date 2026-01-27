@@ -24,6 +24,7 @@ import {
 	roleSuiteSchema,
 	useRoleSuiteCreate,
 } from '@/features/roleSuites';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 // eslint-disable-next-line max-lines-per-function
@@ -45,6 +46,7 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 	const groups = useMicroAppSelector(selectGroupList);
 	const [currentOrgId, setCurrentOrgId] = React.useState<string | undefined>(undefined);
 	const availableRoles = availableRolesByOrg(currentOrgId);
+	const permissions = useAuthorizePermissions();
 
 	React.useEffect(() => {
 		if (orgs.length === 0) {
@@ -78,12 +80,19 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
-							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
+							<form
+								onSubmit={formHandleSubmit((data) => {
+									if (!permissions.roleSuite.canCreate) return;
+									handleSubmit(data);
+								})}
+								noValidate
+							>
 								<Stack gap='md'>
 									<FormActions
 										isSubmitting={isSubmitting}
 										onCancel={handleCancel}
 										isCreate
+										showSubmit={permissions.roleSuite.canCreate}
 									/>
 									<RoleSuiteFormFields
 										isCreate

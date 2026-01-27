@@ -12,8 +12,8 @@ import {
 
 export interface ResourceTableProps extends AutoTableProps {
 	onViewDetail: (resourceId: string) => void;
-	onEdit: (resourceId: string) => void;
-	onDelete: (resourceId: string) => void;
+	onEdit?: (resourceId: string) => void;
+	onDelete?: (resourceId: string) => void;
 }
 
 export const ResourceTable: React.FC<ResourceTableProps> = ({

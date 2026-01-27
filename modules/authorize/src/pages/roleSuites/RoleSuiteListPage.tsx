@@ -15,8 +15,10 @@ import {
 	selectUserList,
 } from '@/appState';
 import { RoleSuiteTable, roleSuiteSchema, useRoleSuiteDelete } from '@/features/roleSuites';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
+// eslint-disable-next-line max-lines-per-function
 function RoleSuiteListPageBody(): React.ReactNode {
 	const navigate = useNavigate();
 	const { t: translate } = useTranslation();
@@ -25,6 +27,7 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
 	const deleteHandler = useRoleSuiteDelete(roleSuites, dispatch);
+	const permissions = useAuthorizePermissions();
 
 	const columns = [
 		'name',
@@ -70,7 +73,7 @@ function RoleSuiteListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.role_suite.title' />
 				<Actions
-					onCreate={handleCreate}
+					onCreate={permissions.roleSuite.canCreate ? handleCreate : undefined}
 					onRefresh={handleRefresh}
 				/>
 				<Paper className='p-4'>
@@ -82,8 +85,8 @@ function RoleSuiteListPageBody(): React.ReactNode {
 						users={users}
 						groups={groups}
 						onViewDetail={handleViewDetail}
-						onEdit={handleEdit}
-						onDelete={deleteHandler.handleDeleteRequest}
+						onEdit={permissions.roleSuite.canUpdate ? handleEdit : undefined}
+						onDelete={permissions.roleSuite.canDelete ? deleteHandler.handleDeleteRequest : undefined}
 					/>
 				</Paper>
 			</Stack>

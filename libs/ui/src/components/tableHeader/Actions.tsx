@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 
 export interface ActionsProps {
-	onCreate: () => void;
+	onCreate?: () => void;
 	onRefresh: () => void;
 	showImport?: boolean;
 	onImport?: () => void;
@@ -20,12 +20,14 @@ export const Actions: React.FC<ActionsProps> = ({
 	const { t: translate } = useTranslation();
 	return (
 		<Group>
-			<Button
-				leftSection={<IconPlus size={16} />}
-				onClick={onCreate}
-			>
-				{translate('nikki.general.actions.create')}
-			</Button>
+			{onCreate && (
+				<Button
+					leftSection={<IconPlus size={16} />}
+					onClick={onCreate}
+				>
+					{translate('nikki.general.actions.create')}
+				</Button>
+			)}
 			<Button
 				variant='outline'
 				leftSection={<IconRefresh size={16} />}

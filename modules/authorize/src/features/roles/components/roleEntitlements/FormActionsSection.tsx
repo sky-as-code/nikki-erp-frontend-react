@@ -13,6 +13,7 @@ interface FormActionsSectionProps {
 	confirmLabel?: string;
 	disableWhenEmpty?: boolean;
 	actionVariant?: 'add' | 'remove';
+	showConfirm?: boolean;
 }
 
 export const FormActionsSection: React.FC<FormActionsSectionProps> = ({
@@ -23,6 +24,7 @@ export const FormActionsSection: React.FC<FormActionsSectionProps> = ({
 	confirmLabel,
 	disableWhenEmpty = true,
 	actionVariant = 'add',
+	showConfirm = true,
 }) => {
 	const { t: translate } = useTranslation();
 	const isDisabled = disableWhenEmpty ? selectedEntitlements.length === 0 : false;
@@ -32,13 +34,15 @@ export const FormActionsSection: React.FC<FormActionsSectionProps> = ({
 
 	return (
 		<Group justify='flex-start' mb='md'>
-			<Button
-				onClick={onConfirm}
-				loading={isSubmitting}
-				disabled={isDisabled}
-			>
-				{confirmLabel || fallbackLabel}
-			</Button>
+			{showConfirm && (
+				<Button
+					onClick={onConfirm}
+					loading={isSubmitting}
+					disabled={isDisabled}
+				>
+					{confirmLabel || fallbackLabel}
+				</Button>
+			)}
 
 			<Button
 				variant='outline'

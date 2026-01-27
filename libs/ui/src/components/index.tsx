@@ -10,3 +10,5 @@ export * from './SearchableSelect/SearchableSelect';
 export * from './tableHeader';
 export * from './LoadingState';
 export * from './NotFound';
+export * from './Unauthorized';
+export * from './PermissionGuard';

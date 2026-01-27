@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 import { AuthorizeDispatch } from '@/appState';
 import { ActionTable, actionSchema, useActionDelete, useActionList } from '@/features/actions';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function ActionListPageBody(): React.ReactNode {
@@ -16,6 +17,7 @@ function ActionListPageBody(): React.ReactNode {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useActionDelete(actions, dispatch);
 	const { handleViewDetail, handleEdit, handleCreate, handleRefresh } = useActionList.handlers(actions);
+	const permissions = useAuthorizePermissions();
 
 	const columns = ['name', 'description', 'resource', 'actions'];
 	const schema = actionSchema as ModelSchema;
@@ -25,7 +27,7 @@ function ActionListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.action.title' />
 				<Actions
-					onCreate={handleCreate}
+					onCreate={permissions.action.canCreate ? handleCreate : undefined}
 					onRefresh={handleRefresh}
 				/>
 				<Paper className='p-4'>
@@ -35,8 +37,8 @@ function ActionListPageBody(): React.ReactNode {
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}
-						onEdit={handleEdit}
-						onDelete={deleteHandler.handleDeleteRequest}
+						onEdit={permissions.action.canUpdate ? handleEdit : undefined}
+						onDelete={permissions.action.canDelete ? deleteHandler.handleDeleteRequest : undefined}
 					/>
 				</Paper>
 			</Stack>

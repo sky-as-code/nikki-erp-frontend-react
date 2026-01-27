@@ -17,6 +17,7 @@ import {
 	grantRequestSchema,
 	useGrantRequestDetail,
 } from '@/features/grantRequests';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function GrantRequestDetailForm({
@@ -28,6 +29,7 @@ function GrantRequestDetailForm({
 }) {
 	const schema = grantRequestSchema as ModelSchema;
 	const targetName = grantRequest.target?.name || grantRequest.targetRef;
+	const permissions = useAuthorizePermissions();
 
 	const flatModelValue = React.useMemo(() => ({
 		...grantRequest,
@@ -53,6 +55,7 @@ function GrantRequestDetailForm({
 								onCancel={handlers.handleBack}
 								onApprove={handlers.handleApprove}
 								onReject={handlers.handleReject}
+								canRespond={permissions.grantRequest.canRespond}
 							/>
 							<GrantRequestFormFields isCreate={false} />
 						</Stack>

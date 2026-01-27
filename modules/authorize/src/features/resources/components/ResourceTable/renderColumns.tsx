@@ -56,7 +56,7 @@ export function renderResourceTypeColumn(
 	const label = config ? translate(config.i18nKey) : value;
 	const color = config?.color ?? 'gray';
 	return (
-		<Badge color={color} variant='light' size='sm' tt='none'>
+		<Badge color={color} variant='light' size='lg' tt='none'>
 			{label}
 		</Badge>
 	);
@@ -71,7 +71,7 @@ export function renderScopeTypeColumn(
 	const label = config ? translate(config.i18nKey) : value;
 	const color = config?.color ?? 'gray';
 	return (
-		<Badge color={color} variant='light' size='sm' tt='none'>
+		<Badge color={color} variant='light' size='lg' tt='none'>
 			{label}
 		</Badge>
 	);
@@ -79,22 +79,26 @@ export function renderScopeTypeColumn(
 
 export function renderActionsColumn(
 	row: Record<string, unknown>,
-	onEdit: (resourceName: string) => void,
-	onDelete: (resourceId: string) => void,
+	onEdit: ((resourceName: string) => void) | undefined,
+	onDelete: ((resourceId: string) => void) | undefined,
 	translate: (key: string) => string,
 ) {
 	return (
 		<Group gap='xs' justify='flex-end'>
-			<Tooltip label={translate('nikki.general.actions.edit')}>
-				<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(row.name as string)}>
-					<IconEdit size={16} />
-				</ActionIcon>
-			</Tooltip>
-			<Tooltip label={translate('nikki.general.actions.delete')}>
-				<ActionIcon variant='subtle' color='red' onClick={() => onDelete(row.id as string)}>
-					<IconTrash size={16} />
-				</ActionIcon>
-			</Tooltip>
+			{onEdit && (
+				<Tooltip label={translate('nikki.general.actions.edit')}>
+					<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(row.name as string)}>
+						<IconEdit size={16} />
+					</ActionIcon>
+				</Tooltip>
+			)}
+			{onDelete && (
+				<Tooltip label={translate('nikki.general.actions.delete')}>
+					<ActionIcon variant='subtle' color='red' onClick={() => onDelete(row.id as string)}>
+						<IconTrash size={16} />
+					</ActionIcon>
+				</Tooltip>
+			)}
 		</Group>
 	);
 }

@@ -12,6 +12,7 @@ import {
 	selectRevokeRequestState,
 } from '@/appState';
 import { RevokeRequestTable, revokeRequestSchema, useRevokeRequestDelete, useRevokeRequestList } from '@/features/revokeRequests';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function RevokeRequestListPageBody(): React.ReactNode {
@@ -21,6 +22,7 @@ function RevokeRequestListPageBody(): React.ReactNode {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useRevokeRequestDelete(revokeRequests, dispatch);
 	const { handleRefresh } = useRevokeRequestList();
+	const permissions = useAuthorizePermissions();
 
 	const columns = [
 		'requestorName',
@@ -47,7 +49,7 @@ function RevokeRequestListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.revoke_request.title' />
 				<Actions
-					onCreate={handleCreate}
+					onCreate={permissions.revokeRequest.canCreate ? handleCreate : undefined}
 					onRefresh={handleRefresh}
 					showImport={false}
 				/>
@@ -58,7 +60,7 @@ function RevokeRequestListPageBody(): React.ReactNode {
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}
-						onDelete={deleteHandler.handleDeleteRequest}
+						onDelete={permissions.revokeRequest.canDelete ? deleteHandler.handleDeleteRequest : undefined}
 					/>
 				</Paper>
 			</Stack>

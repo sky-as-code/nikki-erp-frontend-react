@@ -13,6 +13,9 @@ interface RoleDetailActionsProps {
 	onAddEntitlements: () => void;
 	onRemoveEntitlements: () => void;
 	onCancel: () => void;
+	canUpdate: boolean;
+	canAddEntitlement: boolean;
+	canRemoveEntitlement: boolean;
 }
 
 export const RoleDetailActions: React.FC<RoleDetailActionsProps> = ({
@@ -21,6 +24,9 @@ export const RoleDetailActions: React.FC<RoleDetailActionsProps> = ({
 	onAddEntitlements,
 	onRemoveEntitlements,
 	onCancel,
+	canUpdate,
+	canAddEntitlement,
+	canRemoveEntitlement,
 }) => {
 	const { t: translate } = useTranslation();
 	const hasEntitlements = (role.entitlementsCount ?? 0) > 0;
@@ -30,27 +36,32 @@ export const RoleDetailActions: React.FC<RoleDetailActionsProps> = ({
 			isSubmitting={isSubmitting}
 			onCancel={onCancel}
 			isCreate={false}
+			showSubmit={canUpdate}
 			additionalActions={
 				<>
-					<Button
-						type='button'
-						variant='outline'
-						leftSection={<IconPlus size={16} />}
-						onClick={onAddEntitlements}
-						disabled={isSubmitting}
-					>
-						{translate('nikki.authorize.role.entitlements.add')}
-					</Button>
-					<Button
-						type='button'
-						variant='outline'
-						color='red'
-						leftSection={<IconTrash size={16} />}
-						onClick={onRemoveEntitlements}
-						disabled={isSubmitting || !hasEntitlements}
-					>
-						{translate('nikki.authorize.role.entitlements.remove')}
-					</Button>
+					{canAddEntitlement && (
+						<Button
+							type='button'
+							variant='outline'
+							leftSection={<IconPlus size={16} />}
+							onClick={onAddEntitlements}
+							disabled={isSubmitting}
+						>
+							{translate('nikki.authorize.role.entitlements.add')}
+						</Button>
+					)}
+					{canRemoveEntitlement && (
+						<Button
+							type='button'
+							variant='outline'
+							color='red'
+							leftSection={<IconTrash size={16} />}
+							onClick={onRemoveEntitlements}
+							disabled={isSubmitting || !hasEntitlements}
+						>
+							{translate('nikki.authorize.role.entitlements.remove')}
+						</Button>
+					)}
 				</>
 			}
 		/>

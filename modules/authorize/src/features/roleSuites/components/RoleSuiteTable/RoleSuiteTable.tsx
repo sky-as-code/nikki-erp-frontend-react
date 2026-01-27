@@ -19,8 +19,8 @@ export interface RoleSuiteTableProps extends AutoTableProps {
 	users?: User[];
 	groups?: IdentityGroup[];
 	onViewDetail: (roleSuiteId: string) => void;
-	onEdit: (roleSuiteId: string) => void;
-	onDelete: (roleSuiteId: string) => void;
+	onEdit?: (roleSuiteId: string) => void;
+	onDelete?: (roleSuiteId: string) => void;
 }
 
 export const RoleSuiteTable: React.FC<RoleSuiteTableProps> = ({

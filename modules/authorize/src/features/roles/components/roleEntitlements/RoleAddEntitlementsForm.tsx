@@ -26,6 +26,7 @@ interface RoleAddEntitlementsFormProps {
 	onConfirm: () => void;
 	onCancel: () => void;
 	isSubmitting: boolean;
+	showConfirm?: boolean;
 }
 
 export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = ({
@@ -42,6 +43,7 @@ export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = (
 	onConfirm,
 	onCancel,
 	isSubmitting,
+	showConfirm = true,
 }) => {
 	return (
 		<Paper p='lg'>
@@ -52,6 +54,7 @@ export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = (
 				onCancel={onCancel}
 				isSubmitting={isSubmitting}
 				actionVariant='add'
+				showConfirm={showConfirm}
 			/>
 
 			<Stack gap='md'>

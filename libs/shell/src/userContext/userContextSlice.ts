@@ -1,8 +1,8 @@
 import { ActionReducerMapBuilder, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 
-import { UserContext, userContextService } from './userContextService';
-import { EntitlementAssignment, Organization, User } from './userContextService';
+import { PermissionsSnapshot, UserContext, userContextService } from './userContextService';
+import { Organization, User } from './userContextService';
 
 
 export const SLICE_NAME = 'shellUserContext';
@@ -10,7 +10,7 @@ export const SLICE_NAME = 'shellUserContext';
 export type UserContextState = {
 	user: User | null;
 	orgs: Organization[];
-	permissions: EntitlementAssignment[];
+	permissions: PermissionsSnapshot;
 	isLoading: boolean;
 	error: string | null;
 };
@@ -20,7 +20,7 @@ const initialState: UserContextState = {
 	error: null,
 	user: null,
 	orgs: [],
-	permissions: [],
+	permissions: {},
 };
 
 export const fetchUserContextAction = createAsyncThunk<

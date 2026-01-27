@@ -12,6 +12,7 @@ interface DetailActionsProps {
 	onCancel: () => void;
 	onApprove: () => void;
 	onReject: () => void;
+	canRespond: boolean;
 }
 
 export const DetailActions: React.FC<DetailActionsProps> = ({
@@ -20,13 +21,14 @@ export const DetailActions: React.FC<DetailActionsProps> = ({
 	onCancel,
 	onApprove,
 	onReject,
+	canRespond,
 }) => {
 	const { t: translate } = useTranslation();
 	const isPending = grantRequest.status === 'pending';
 
 	return (
 		<Group justify='space-between' wrap='nowrap'>
-			{isPending && (
+			{isPending && canRespond && (
 				<Group gap='sm'>
 					<Button
 						leftSection={<IconCheck size={16} />}

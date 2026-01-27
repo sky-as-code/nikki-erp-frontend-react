@@ -23,6 +23,14 @@
 				"themeMode": "Theme Mode",
 				"switchAccount": "Switch Account",
 				"signOut": "Sign Out"
+			},
+			"unauthorized": {
+				"title": "Access Denied",
+				"message": "You do not have permission to access this page.",
+				"message_with_module": "You do not have permission to access the \"{{module}}\" module.",
+				"hint": "Please contact your administrator to request access permissions.",
+				"go_home": "Go Home",
+				"go_back": "Go Back"
 			}
 		},
 		"general": {
@@ -79,7 +87,8 @@
 				"no_changes": "No changes",
 				"invalid_change": "Invalid change",
 				"delete_confirm": "Are you sure you want to delete? This action cannot be undone.",
-				"delete_confirm_name": "Are you sure you want to delete {{name}}? This action cannot be undone."
+				"delete_confirm_name": "Are you sure you want to delete {{name}}? This action cannot be undone.",
+				"access_denied": "You do not have permission to access this page"
 			},
 			"errors": {
 				"required": "This field is required",

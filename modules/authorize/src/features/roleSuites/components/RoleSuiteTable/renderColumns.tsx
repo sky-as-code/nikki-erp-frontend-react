@@ -99,31 +99,35 @@ export function renderOwnerRefColumn(
 
 export function renderActionsColumn(
 	row: Record<string, unknown>,
-	onEdit: (roleSuiteId: string) => void,
-	onDelete: (roleSuiteId: string) => void,
+	onEdit: ((roleSuiteId: string) => void) | undefined,
+	onDelete: ((roleSuiteId: string) => void) | undefined,
 	translate: (key: string) => string,
 ) {
 	const roleSuiteId = row.id as string;
 	return (
 		<Group gap='xs' justify='flex-end'>
-			<Tooltip label={translate('nikki.general.actions.edit')}>
-				<ActionIcon
-					variant='subtle'
-					color='gray'
-					onClick={() => onEdit(roleSuiteId)}
-				>
-					<IconEdit size={16} />
-				</ActionIcon>
-			</Tooltip>
-			<Tooltip label={translate('nikki.general.actions.delete')}>
-				<ActionIcon
-					variant='subtle'
-					color='red'
-					onClick={() => onDelete(roleSuiteId)}
-				>
-					<IconTrash size={16} />
-				</ActionIcon>
-			</Tooltip>
+			{onEdit && (
+				<Tooltip label={translate('nikki.general.actions.edit')}>
+					<ActionIcon
+						variant='subtle'
+						color='gray'
+						onClick={() => onEdit(roleSuiteId)}
+					>
+						<IconEdit size={16} />
+					</ActionIcon>
+				</Tooltip>
+			)}
+			{onDelete && (
+				<Tooltip label={translate('nikki.general.actions.delete')}>
+					<ActionIcon
+						variant='subtle'
+						color='red'
+						onClick={() => onDelete(roleSuiteId)}
+					>
+						<IconTrash size={16} />
+					</ActionIcon>
+				</Tooltip>
+			)}
 		</Group>
 	);
 }

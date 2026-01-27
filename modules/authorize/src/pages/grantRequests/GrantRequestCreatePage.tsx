@@ -22,6 +22,7 @@ import {
 	selectUserList,
 } from '@/appState';
 import { GrantRequestFormFields, grantRequestSchema, useGrantRequestCreate } from '@/features/grantRequests';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function GrantRequestCreatePageBody(): React.ReactNode {
@@ -33,6 +34,7 @@ function GrantRequestCreatePageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const schema = grantRequestSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const permissions = useAuthorizePermissions();
 
 	const roles = useMicroAppSelector(selectRoleList);
 	const roleSuites = useMicroAppSelector(selectRoleSuiteList);
@@ -71,9 +73,20 @@ function GrantRequestCreatePageBody(): React.ReactNode {
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
-							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
+							<form
+								onSubmit={formHandleSubmit((data) => {
+									if (!permissions.grantRequest.canCreate) return;
+									handleSubmit(data);
+								})}
+								noValidate
+							>
 								<Stack gap='xs'>
-									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
+									<FormActions
+										isSubmitting={isSubmitting}
+										onCancel={handleCancel}
+										isCreate
+										showSubmit={permissions.grantRequest.canCreate}
+									/>
 									<GrantRequestFormFields
 										isCreate
 										roles={roles}
