@@ -30,6 +30,7 @@ import {
 	roleSuiteSchema,
 	useRoleSuiteDetail,
 } from '@/features/roleSuites';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function RoleSuiteDetailForm({
@@ -41,6 +42,7 @@ function RoleSuiteDetailForm({
 	orgs,
 	users,
 	groups,
+	canUpdate,
 }: {
 	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
 	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
@@ -50,10 +52,12 @@ function RoleSuiteDetailForm({
 	orgs: Org[];
 	users: User[];
 	groups: Group[];
+	canUpdate: boolean;
 }) {
 	const schema = roleSuiteSchema as ModelSchema;
 
 	const handleFormSubmit = (data: unknown) => {
+		if (!canUpdate) return;
 		formDataRef.current = data;
 		handlers.setIsConfirmDialogOpen(true);
 	};
@@ -74,6 +78,7 @@ function RoleSuiteDetailForm({
 									isSubmitting={handlers.isSubmitting}
 									onCancel={handlers.handleCancel}
 									isCreate={false}
+									showSubmit={canUpdate}
 								/>
 								<RoleSuiteFormFields isCreate={false} orgs={orgs} users={users} groups={groups} />
 								<RoleSuiteChangesSummary
@@ -103,17 +108,22 @@ function RoleSuiteConfirmModal({
 	roleSuite,
 	handlers,
 	formDataRef,
+	canUpdate,
 }: {
 	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
 	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
 	formDataRef: React.MutableRefObject<unknown>;
+	canUpdate: boolean;
 }) {
 	const { t: translate } = useTranslation();
 
 	const handleConfirmUpdate = () => {
+		if (!canUpdate) return;
 		if (formDataRef.current) handlers.handleSubmit(formDataRef.current);
 		handlers.setIsConfirmDialogOpen(false);
 	};
+
+	if (!canUpdate) return null;
 
 	return (
 		<ConfirmModal
@@ -137,6 +147,7 @@ function RoleSuiteDetailFormContent({
 	orgs,
 	users,
 	groups,
+	canUpdate,
 }: {
 	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
 	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
@@ -146,6 +157,7 @@ function RoleSuiteDetailFormContent({
 	orgs: Org[];
 	users: User[];
 	groups: Group[];
+	canUpdate: boolean;
 }) {
 	return (
 		<>
@@ -158,11 +170,13 @@ function RoleSuiteDetailFormContent({
 				orgs={orgs}
 				users={users}
 				groups={groups}
+				canUpdate={canUpdate}
 			/>
 			<RoleSuiteConfirmModal
 				roleSuite={roleSuite}
 				handlers={handlers}
 				formDataRef={formDataRef}
+				canUpdate={canUpdate}
 			/>
 		</>
 	);
@@ -177,6 +191,7 @@ function RoleSuiteDetailPageBody(): React.ReactNode {
 	const orgs = useMicroAppSelector(selectOrgList);
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
+	const permissions = useAuthorizePermissions();
 
 	React.useEffect(() => {
 		if (orgs.length === 0) {
@@ -220,6 +235,7 @@ function RoleSuiteDetailPageBody(): React.ReactNode {
 				orgs={orgs}
 				users={users}
 				groups={groups}
+				canUpdate={permissions.roleSuite.canUpdate}
 			/>
 		</Stack>
 	);

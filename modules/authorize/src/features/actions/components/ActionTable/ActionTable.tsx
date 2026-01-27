@@ -14,8 +14,8 @@ import type { Resource } from '@/features/resources';
 
 export interface ActionTableProps extends AutoTableProps {
 	onViewDetail: (actionId: string) => void;
-	onEdit: (actionId: string) => void;
-	onDelete: (actionId: string) => void;
+	onEdit?: (actionId: string) => void;
+	onDelete?: (actionId: string) => void;
 }
 
 
@@ -46,31 +46,35 @@ function renderResourceColumn(
 
 function renderActionsColumn(
 	row: Record<string, unknown>,
-	onEdit: (actionId: string) => void,
-	onDelete: (actionId: string) => void,
+	onEdit: ((actionId: string) => void) | undefined,
+	onDelete: ((actionId: string) => void) | undefined,
 	translate: (key: string) => string,
 ) {
 	const actionId = row.id as string;
 	return (
 		<Group gap='xs' justify='flex-end'>
-			<Tooltip label={translate('nikki.general.actions.edit')}>
-				<ActionIcon
-					variant='subtle'
-					color='gray'
-					onClick={() => onEdit(actionId)}
-				>
-					<IconEdit size={16} />
-				</ActionIcon>
-			</Tooltip>
-			<Tooltip label={translate('nikki.general.actions.delete')}>
-				<ActionIcon
-					variant='subtle'
-					color='red'
-					onClick={() => onDelete(actionId)}
-				>
-					<IconTrash size={16} />
-				</ActionIcon>
-			</Tooltip>
+			{onEdit && (
+				<Tooltip label={translate('nikki.general.actions.edit')}>
+					<ActionIcon
+						variant='subtle'
+						color='gray'
+						onClick={() => onEdit(actionId)}
+					>
+						<IconEdit size={16} />
+					</ActionIcon>
+				</Tooltip>
+			)}
+			{onDelete && (
+				<Tooltip label={translate('nikki.general.actions.delete')}>
+					<ActionIcon
+						variant='subtle'
+						color='red'
+						onClick={() => onDelete(actionId)}
+					>
+						<IconTrash size={16} />
+					</ActionIcon>
+				</Tooltip>
+			)}
 		</Group>
 	);
 }

@@ -15,6 +15,7 @@ import {
 	selectUserList,
 } from '@/appState';
 import { RoleTable, roleSchema, useRoleDelete } from '@/features/roles';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function RoleListPageBody(): React.ReactNode {
@@ -25,6 +26,7 @@ function RoleListPageBody(): React.ReactNode {
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
 	const deleteHandler = useRoleDelete(roles, dispatch);
+	const permissions = useAuthorizePermissions();
 
 	const columns = ['name', 'description', 'ownerType', 'ownerRef', 'isRequestable', 'isRequiredAttachment', 'isRequiredComment', 'entitlementsCount', 'orgDisplayName', 'actions'];
 	const schema = roleSchema as ModelSchema;
@@ -60,7 +62,7 @@ function RoleListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.role.title' />
 				<Actions
-					onCreate={handleCreate}
+					onCreate={permissions.role.canCreate ? handleCreate : undefined}
 					onRefresh={handleRefresh}
 				/>
 				<Paper className='p-4'>
@@ -72,8 +74,8 @@ function RoleListPageBody(): React.ReactNode {
 						users={users}
 						groups={groups}
 						onViewDetail={handleViewDetail}
-						onEdit={handleEdit}
-						onDelete={deleteHandler.handleDeleteRequest}
+						onEdit={permissions.role.canUpdate ? handleEdit : undefined}
+						onDelete={permissions.role.canDelete ? deleteHandler.handleDeleteRequest : undefined}
 					/>
 				</Paper>
 			</Stack>

@@ -17,8 +17,8 @@ export interface EntitlementTableProps extends AutoTableProps {
 	resourcesData: Resource[];
 	actionsData: Action[];
 	onViewDetail: (entitlementId: string) => void;
-	onEdit: (entitlementId: string) => void;
-	onDelete: (entitlementId: string) => void;
+	onEdit?: (entitlementId: string) => void;
+	onDelete?: (entitlementId: string) => void;
 }
 
 export const EntitlementTable: React.FC<EntitlementTableProps> = ({

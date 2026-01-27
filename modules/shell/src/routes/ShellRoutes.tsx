@@ -10,6 +10,7 @@ import { PublicLayout } from '../layouts/PublicLayout';
 import { ModuleHomePage } from '../pages/ModuleHomePage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { SignInPage } from '../pages/SignInPage';
+import { UnauthorizedPage } from '../pages/UnauthorizedPage';
 
 
 type ShellRoutesProps = {
@@ -22,6 +23,7 @@ export function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 			<Route element={<PublicLayout />}>
 				<Route path='signin' element={<SignInPage />} />
 				<Route path='notfound' element={<NotFoundPage />} />
+				<Route path='unauthorized' element={<UnauthorizedPage />} />
 			</Route>
 
 

@@ -71,31 +71,35 @@ export function renderActionIdColumn(
 
 export function renderActionsColumn(
 	row: Record<string, unknown>,
-	onEdit: (entitlementId: string) => void,
-	onDelete: (entitlementId: string) => void,
+	onEdit: ((entitlementId: string) => void) | undefined,
+	onDelete: ((entitlementId: string) => void) | undefined,
 	translate: (key: string) => string,
 ) {
 	const entitlementId = row.id as string;
 	return (
 		<Group gap='xs' justify='flex-end'>
-			<Tooltip label={translate('nikki.general.actions.edit')}>
-				<ActionIcon
-					variant='subtle'
-					color='gray'
-					onClick={() => onEdit(entitlementId)}
-				>
-					<IconEdit size={16} />
-				</ActionIcon>
-			</Tooltip>
-			<Tooltip label={translate('nikki.general.actions.delete')}>
-				<ActionIcon
-					variant='subtle'
-					color='red'
-					onClick={() => onDelete(entitlementId)}
-				>
-					<IconTrash size={16} />
-				</ActionIcon>
-			</Tooltip>
+			{onEdit && (
+				<Tooltip label={translate('nikki.general.actions.edit')}>
+					<ActionIcon
+						variant='subtle'
+						color='gray'
+						onClick={() => onEdit(entitlementId)}
+					>
+						<IconEdit size={16} />
+					</ActionIcon>
+				</Tooltip>
+			)}
+			{onDelete && (
+				<Tooltip label={translate('nikki.general.actions.delete')}>
+					<ActionIcon
+						variant='subtle'
+						color='red'
+						onClick={() => onDelete(entitlementId)}
+					>
+						<IconTrash size={16} />
+					</ActionIcon>
+				</Tooltip>
+			)}
 		</Group>
 	);
 }

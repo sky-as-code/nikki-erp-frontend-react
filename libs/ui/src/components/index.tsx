@@ -9,3 +9,6 @@ export * from './NotFound';
 export * from './SearchableSelect';
 export * from './Table';
 export * from './tableHeader';
+export * from './NotFound';
+export * from './Unauthorized';
+export * from './PermissionGuard';

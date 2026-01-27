@@ -18,6 +18,7 @@ import {
 	selectUserList,
 } from '@/appState';
 import { RoleFormFields, roleSchema, useRoleCreate } from '@/features/roles';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function RoleCreatePageBody(): React.ReactNode {
@@ -32,6 +33,7 @@ function RoleCreatePageBody(): React.ReactNode {
 	const orgs = useMicroAppSelector(selectOrgList);
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
+	const permissions = useAuthorizePermissions();
 
 	React.useEffect(() => {
 		if (orgs.length === 0) {
@@ -58,9 +60,20 @@ function RoleCreatePageBody(): React.ReactNode {
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
-							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
+							<form
+								onSubmit={formHandleSubmit((data) => {
+									if (!permissions.role.canCreate) return;
+									handleSubmit(data);
+								})}
+								noValidate
+							>
 								<Stack gap='xs'>
-									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
+									<FormActions
+										isSubmitting={isSubmitting}
+										onCancel={handleCancel}
+										isCreate
+										showSubmit={permissions.role.canCreate}
+									/>
 									<RoleFormFields isCreate orgs={orgs} users={users} groups={groups} />
 								</Stack>
 							</form>

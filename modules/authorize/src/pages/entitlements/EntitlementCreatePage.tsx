@@ -10,6 +10,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { EntitlementFormFields, entitlementSchema, useEntitlementCreate } from '@/features/entitlements';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function EntitlementCreatePageBody(): React.ReactNode {
@@ -22,6 +23,7 @@ function EntitlementCreatePageBody(): React.ReactNode {
 		resources,
 		actions,
 	} = useEntitlementCreate();
+	const permissions = useAuthorizePermissions();
 
 	return (
 		<Stack gap='md'>
@@ -36,9 +38,20 @@ function EntitlementCreatePageBody(): React.ReactNode {
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit, form }) => (
-							<form onSubmit={formHandleSubmit((data) => handleSubmit(data, form))} noValidate>
+							<form
+								onSubmit={formHandleSubmit((data) => {
+									if (!permissions.entitlement.canCreate) return;
+									handleSubmit(data, form);
+								})}
+								noValidate
+							>
 								<Stack gap='xs'>
-									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
+									<FormActions
+										isSubmitting={isSubmitting}
+										onCancel={handleCancel}
+										isCreate
+										showSubmit={permissions.entitlement.canCreate}
+									/>
 									<EntitlementFormFields
 										isCreate
 										resources={resources}

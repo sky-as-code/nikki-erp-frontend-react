@@ -33,6 +33,14 @@
             "sessionRestoring": {
                 "title": "Đang khôi phục phiên làm việc",
                 "description": "Vui lòng đợi trong giây lát. Hệ thống đang khôi phục phiên làm việc của bạn..."
+			},
+            "unauthorized": {
+                "title": "Không có quyền truy cập",
+                "message": "Bạn không có quyền truy cập vào trang này.",
+                "message_with_module": "Bạn không có quyền truy cập vào module \"{{module}}\".",
+                "hint": "Vui lòng liên hệ quản trị viên để được cấp quyền truy cập.",
+                "go_home": "Về trang chủ",
+                "go_back": "Quay lại"
             }
         },
         "general": {
@@ -108,7 +116,8 @@
 				"no_changes": "Không có thay đổi",
 				"invalid_change": "Thay đổi không hợp lệ",
 				"delete_confirm": "Xoá phần tử",
-				"delete_confirm_name": "Bạn có chắc chắn muốn xóa {{name}}? Hành động này không thể hoàn tác."
+				"delete_confirm_name": "Bạn có chắc chắn muốn xóa {{name}}? Hành động này không thể hoàn tác.",
+				"access_denied": "Bạn không có quyền truy cập vào trang này"
 			},
 			"errors": {
 				"required": "Trường này là bắt buộc",
