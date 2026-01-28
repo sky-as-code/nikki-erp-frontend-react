@@ -5,10 +5,10 @@ import React from 'react';
 import { Outlet } from 'react-router';
 
 
-import { ContentContainer } from '@/components/ContentContainer';
-import { SessionRestoring } from '@/components/SessionRestoring';
-
 import { Header } from './Header';
+
+import { SessionRestoring } from '@/components/Loading';
+import { ScrollableContent } from '@/components/ScrollableContent';
 
 
 export function PrivateLayout(): React.ReactNode {
@@ -18,11 +18,11 @@ export function PrivateLayout(): React.ReactNode {
 		<SessionRestoring/>
 		: (
 			<AuthorizedGuard>
-				<Stack gap={0} h='100vh' miw={320}>
+				<Stack gap={0} h='100vh' miw={320} bg='var(--nikki-color-linear-page-background)'>
 					<Header />
-					<ContentContainer>
+					<ScrollableContent>
 						<Outlet/>
-					</ContentContainer>
+					</ScrollableContent>
 				</Stack>
 			</AuthorizedGuard>
 		);

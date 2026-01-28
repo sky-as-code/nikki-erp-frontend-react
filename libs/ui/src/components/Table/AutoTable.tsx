@@ -25,7 +25,7 @@ export type AutoTableProps = {
 	columnAsLinkHref?: (rowData: any) => string;
 	columnAsId?: string;
 	columnRenderers?: Record<string, (row: Record<string, unknown>) => React.ReactNode>;
-	headerRenderers?: Record<string, (row: Record<string, unknown>) => React.ReactNode>;
+	headerRenderers?: Record<string, (columnName: string, schema: ModelSchema) => React.ReactNode>;
 	data: Record<string, unknown>[];
 	isLoading?: boolean;
 	schema: ModelSchema;
@@ -57,7 +57,7 @@ export const AutoTable: React.FC<AutoTableProps> = (props) => {
 				<Table.Tr>
 					{validColumns.map((col) => {
 						if (props.headerRenderers?.[col]) {
-							return <Table.Th key={col}>{props.headerRenderers[col]({ col })}</Table.Th>;
+							return <Table.Th key={col}>{props.headerRenderers[col](col, props.schema)}</Table.Th>;
 						}
 						return (
 							<Table.Th key={col}>{translate(getColumnLabel(props.schema, col))}</Table.Th>

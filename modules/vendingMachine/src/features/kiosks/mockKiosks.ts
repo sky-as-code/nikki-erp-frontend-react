@@ -1,4 +1,4 @@
-import { ConnectionStatus, Kiosk, KioskMode, KioskStatus } from './types';
+import { ConnectionStatus, Kiosk, KioskMode, KioskStatus, MachineType } from './types';
 
 // Mock data for kiosks
 const mockKiosksData: Kiosk[] = [
@@ -14,6 +14,7 @@ const mockKiosksData: Kiosk[] = [
 		isActive: true,
 		status: KioskStatus.ACTIVATED,
 		mode: KioskMode.SELLING,
+		machineType: MachineType.DROP_PRODUCT,
 		connectionStatus: ConnectionStatus.FAST,
 		connectionHistory: [
 			{ status: ConnectionStatus.FAST, reportedAt: new Date(Date.now() - 5 * 60000).toISOString() },
@@ -38,6 +39,7 @@ const mockKiosksData: Kiosk[] = [
 		isActive: true,
 		status: KioskStatus.ACTIVATED,
 		mode: KioskMode.SELLING,
+		machineType: MachineType.ELEVATOR,
 		connectionStatus: ConnectionStatus.SLOW,
 		connectionHistory: [
 			{ status: ConnectionStatus.SLOW, reportedAt: new Date(Date.now() - 10 * 60000).toISOString() },
@@ -62,6 +64,7 @@ const mockKiosksData: Kiosk[] = [
 		isActive: false,
 		status: KioskStatus.DISABLED,
 		mode: KioskMode.PENDING,
+		machineType: MachineType.DROP_PRODUCT,
 		connectionStatus: ConnectionStatus.DISCONNECTED,
 		connectionHistory: [
 			{ status: ConnectionStatus.DISCONNECTED, reportedAt: new Date(Date.now() - 2 * 3600000).toISOString() },
@@ -86,6 +89,7 @@ const mockKiosksData: Kiosk[] = [
 		isActive: true,
 		status: KioskStatus.ACTIVATED,
 		mode: KioskMode.ADSONLY,
+		machineType: MachineType.DROP_PRODUCT,
 		connectionStatus: ConnectionStatus.FAST,
 		connectionHistory: [
 			{ status: ConnectionStatus.FAST, reportedAt: new Date(Date.now() - 3 * 60000).toISOString() },
@@ -109,6 +113,7 @@ const mockKiosksData: Kiosk[] = [
 		isActive: true,
 		status: KioskStatus.ACTIVATED,
 		mode: KioskMode.SELLING,
+		machineType: MachineType.DROP_PRODUCT,
 		connectionStatus: ConnectionStatus.FAST,
 		connectionHistory: [
 			{ status: ConnectionStatus.FAST, reportedAt: new Date(Date.now() - 1 * 60000).toISOString() },
@@ -131,6 +136,7 @@ const mockKiosksData: Kiosk[] = [
 		isActive: false,
 		status: KioskStatus.DELETED,
 		mode: KioskMode.PENDING,
+		machineType: MachineType.ELEVATOR,
 		connectionStatus: ConnectionStatus.DISCONNECTED,
 		connectionHistory: [],
 		powerConsumption: 0,
@@ -150,6 +156,7 @@ const mockKiosksData: Kiosk[] = [
 		isActive: true,
 		status: KioskStatus.ACTIVATED,
 		mode: KioskMode.SELLING,
+		machineType: MachineType.ELEVATOR,
 		connectionStatus: ConnectionStatus.SLOW,
 		connectionHistory: [
 			{ status: ConnectionStatus.SLOW, reportedAt: new Date(Date.now() - 8 * 60000).toISOString() },
@@ -173,6 +180,7 @@ const mockKiosksData: Kiosk[] = [
 		isActive: false,
 		status: KioskStatus.DISABLED,
 		mode: KioskMode.ADSONLY,
+		machineType: MachineType.DROP_PRODUCT,
 		connectionStatus: ConnectionStatus.DISCONNECTED,
 		connectionHistory: [
 			{ status: ConnectionStatus.DISCONNECTED, reportedAt: new Date(Date.now() - 1 * 3600000).toISOString() },
@@ -195,6 +203,7 @@ const mockKiosksData: Kiosk[] = [
 		isActive: true,
 		status: KioskStatus.ACTIVATED,
 		mode: KioskMode.SELLING,
+		machineType: MachineType.DROP_PRODUCT,
 		connectionStatus: ConnectionStatus.FAST,
 		connectionHistory: [
 			{ status: ConnectionStatus.FAST, reportedAt: new Date(Date.now() - 1 * 60000).toISOString() },

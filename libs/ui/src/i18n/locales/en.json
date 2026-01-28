@@ -684,13 +684,99 @@
 				"overview": {
 					"title": "Vending Machine Overview",
 					"statistics": "Statistics",
+					"kiosk_count": "Kiosk Count",
 					"total_kiosks": "Total Kiosks",
 					"active_kiosks": "Active Kiosks",
 					"inactive_kiosks": "Inactive Kiosks",
 					"avg_temperature": "Average Temperature",
 					"avg_humidity": "Average Humidity",
 					"total_power": "Total Power Consumption",
-					"kiosk_distribution": "Kiosk Distribution"
+					"kiosk_distribution": "Kiosk Distribution",
+					"connection": {
+						"status": "Connection Status",
+						"fast": "Fast",
+						"slow": "Slow",
+						"disconnected": "Disconnected"
+					},
+					"operation": {
+						"status": "Operation Status",
+						"selling": "Selling",
+						"adsOnly": "Ads Only",
+						"pending": "Pending"
+					},
+					"machineType": {
+						"distribution": "Machine Type Distribution",
+						"dropProduct": "Drop Product",
+						"elevator": "Elevator"
+					},
+					"errorAlerts": {
+						"title": "Error Alerts",
+						"pending": "Pending",
+						"inProgress": "In Progress",
+						"resolved": "Resolved",
+						"kioskCode": "Kiosk Code",
+						"kioskName": "Kiosk Name",
+						"severity": "Severity",
+						"description": "Description",
+						"status": "Status",
+						"noErrors": "No errors",
+						"viewDetails": "View Details"
+					},
+					"error": {
+						"status": {
+							"pending": "Pending",
+							"inProgress": "In Progress",
+							"resolved": "Resolved"
+						}
+					},
+					"lowStock": {
+						"title": "Low Stock Alerts",
+						"kioskOutOfStock": "Kiosk Needs Restock",
+						"activeAlerts": "Active Alerts",
+						"kioskCode": "Kiosk Code",
+						"kioskName": "Kiosk Name",
+						"stockRatio": "Stock Ratio",
+						"items": "Items",
+						"status": "Status",
+						"urgent": "Urgent",
+						"noAlerts": "No low stock alerts",
+						"viewDetails": "View Details"
+					},
+					"operationParams": {
+						"title": "Operation Parameters",
+						"temperature": "Temperature",
+						"humidity": "Humidity",
+						"powerConsumption": "Power Consumption",
+						"totalPowerConsumption": "Total Power Consumption",
+						"avgTemperature": "Average Temperature",
+						"avgHumidity": "Average Humidity",
+						"temperatureHumidity": "Temperature / Humidity",
+						"power": "Power (kW)"
+					},
+					"support": {
+						"title": "Customer Support Requests",
+						"pending": "Pending",
+						"inProgress": "In Progress",
+						"resolved": "Resolved",
+						"kioskCode": "Kiosk Code",
+						"kioskName": "Kiosk Name",
+						"customer": "Customer",
+						"description": "Description",
+						"status": "Status",
+						"noRequests": "No support requests",
+						"viewDetails": "View Details",
+						"statusLabels": {
+							"pending": "Pending",
+							"in_progress": "In Progress",
+							"resolved": "Resolved"
+						}
+					},
+					"customerVisit": {
+						"title": "Customer Visits to Vending Machines",
+						"visits": "Visits",
+						"count": "Count",
+						"date": "Date"
+					}
 				},
 				"kiosk": {
 					"title": "Kiosks",

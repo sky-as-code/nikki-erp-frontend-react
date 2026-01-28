@@ -46,7 +46,7 @@ export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
 
 	return (
 		<Stack
-			gap={'sm'} bg={'var(--mantine-color-white)'}
+			gap={'sm'} bg='light-dark(var(--mantine-color-white), var(--mantine-color-dark-6))'
 			{...styleProps}
 			bdrs={styleProps?.bdrs || 'md'}
 			p={styleProps?.p || 'md'}

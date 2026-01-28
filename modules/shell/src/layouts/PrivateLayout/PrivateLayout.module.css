@@ -1,7 +1,7 @@
 .headerRow {
-	color: lightdark(var(--mantine-color-white), var(--mantine-color-dark));
 	gap: var(--mantine-spacing-md);
-	box-shadow: 2px 2px 5px 0px #40404033;
+	box-shadow: 2px 2px 5px 0px light-dark(rgba(0, 0, 0, 0.12), var(--mantine-color-dark-2));
+	margin-bottom: 2px
 }
 
 .goHomeButton {

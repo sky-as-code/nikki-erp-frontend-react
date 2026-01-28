@@ -1220,6 +1220,9 @@ importers:
       maplibre-gl:
         specifier: ~5.16.0
         version: 5.16.0
+      react-chartjs-2:
+        specifier: ~5.3.1
+        version: 5.3.1(chart.js@4.5.1)(react@19.2.0)
       react-hook-form:
         specifier: ~7.65.0
         version: 7.65.0(react@19.2.0)
@@ -4615,6 +4618,12 @@ packages:
   raw-body@3.0.1:
     resolution: {integrity: sha512-9G8cA+tuMS75+6G/TzW8OtLzmBDMo8p1JRxN5AZ+LAp8uxGA8V8GZm4GQ4/N5QNQEnLmg6SS7wyuSmbKepiKqA==}
     engines: {node: '>= 0.10'}
+
+  react-chartjs-2@5.3.1:
+    resolution: {integrity: sha512-h5IPXKg9EXpjoBzUfyWJvllMjG2mQ4EiuHQFhms/AjUm0XSZHhyRy2xVmLXHKrtcdrPO4mnGqRtYoD0vp95A0A==}
+    peerDependencies:
+      chart.js: ^4.1.1
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   react-docgen-typescript@2.4.0:
     resolution: {integrity: sha512-ZtAp5XTO5HRzQctjPU0ybY0RRCQO19X/8fxn3w7y2VVTUbGHDKULPTL4ky3vB05euSgG5NpALhEhDPvQ56wvXg==}
@@ -9211,6 +9220,11 @@ snapshots:
       http-errors: 2.0.0
       iconv-lite: 0.7.0
       unpipe: 1.0.0
+
+  react-chartjs-2@5.3.1(chart.js@4.5.1)(react@19.2.0):
+    dependencies:
+      chart.js: 4.5.1
+      react: 19.2.0
 
   react-docgen-typescript@2.4.0(typescript@5.9.3):
     dependencies:

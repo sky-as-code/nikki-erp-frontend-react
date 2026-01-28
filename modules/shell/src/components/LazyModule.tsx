@@ -3,6 +3,8 @@ import { useFindMyModule } from '@nikkierp/shell/userContext';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 import { Navigate, useParams } from 'react-router';
 
+import { AppLoading } from './Loading';
+
 
 export function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): React.ReactNode {
 	const { moduleSlug } = useParams();
@@ -13,8 +15,11 @@ export function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): Re
 	if (!foundModule || !foundApp) {
 		return <Navigate to='/notfound' replace />;
 	}
-
 	return (
-		<LazyMicroApp slug={foundApp.slug} basePath={foundApp.basePath} />
+		<LazyMicroApp
+			slug={foundApp.slug}
+			basePath={foundApp.basePath}
+			fallback={<AppLoading />}
+		/>
 	);
 }

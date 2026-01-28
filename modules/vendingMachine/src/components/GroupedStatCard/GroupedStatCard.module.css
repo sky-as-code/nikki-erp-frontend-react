@@ -1,0 +1,17 @@
+.card {
+	cursor: default;
+	height: 100%;
+	background-color: var(--mantine-color-body);
+	backdrop-filter: blur(10px);
+	transition: transform 0.2s ease-in-out;
+	opacity: 0.95;
+}
+
+.cardLink {
+	cursor: pointer;
+}
+
+.card:hover {
+	transform: translateY(-4px);
+	opacity: 1;
+}

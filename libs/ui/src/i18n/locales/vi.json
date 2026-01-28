@@ -728,13 +728,99 @@
 			"overview": {
 				"title": "Tổng quan - Máy bán hàng tự động",
 				"statistics": "Thống kê",
+				"kiosk_count": "Số lượng Kiosk",
 				"total_kiosks": "Tổng số Kiosk",
 				"active_kiosks": "Kiosk đang hoạt động",
 				"inactive_kiosks": "Kiosk không hoạt động",
 				"avg_temperature": "Nhiệt độ trung bình",
 				"avg_humidity": "Độ ẩm trung bình",
 				"total_power": "Tổng tiêu thụ điện",
-				"kiosk_distribution": "Phân bổ Kiosk"
+				"kiosk_distribution": "Phân bổ Kiosk",
+				"connection": {
+					"status": "Trạng thái kết nối",
+					"fast": "Nhanh",
+					"slow": "Chậm",
+					"disconnected": "Mất kết nối"
+				},
+				"operation": {
+					"status": "Trạng thái hoạt động",
+					"selling": "Đang bán",
+					"adsOnly": "Chỉ quảng cáo",
+					"pending": "Đang chờ"
+				},
+				"machineType": {
+					"distribution": "Phân bổ loại máy",
+					"dropProduct": "Rớt hàng",
+					"elevator": "Thang nâng"
+				},
+				"errorAlerts": {
+					"title": "Cảnh báo lỗi",
+					"pending": "Đang chờ",
+					"inProgress": "Đang xử lý",
+					"resolved": "Đã xử lý",
+					"kioskCode": "Mã Kiosk",
+					"kioskName": "Tên Kiosk",
+					"severity": "Mức độ",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"noErrors": "Không có lỗi nào",
+					"viewDetails": "Xem chi tiết"
+				},
+				"error": {
+					"status": {
+						"pending": "Đang chờ",
+						"inProgress": "Đang xử lý",
+						"resolved": "Đã xử lý"
+					}
+				},
+				"lowStock": {
+					"title": "Cảnh báo hết hàng",
+					"kioskOutOfStock": "Kiosk cần nhập hàng",
+					"activeAlerts": "Cảnh báo chưa xử lý",
+					"kioskCode": "Mã Kiosk",
+					"kioskName": "Tên Kiosk",
+					"stockRatio": "Tỉ trọng hàng tồn",
+					"items": "Sản phẩm",
+					"status": "Trạng thái",
+					"urgent": "Khẩn cấp",
+					"noAlerts": "Không có cảnh báo hết hàng nào",
+					"viewDetails": "Xem chi tiết"
+				},
+				"operationParams": {
+					"title": "Thông số hoạt động",
+					"temperature": "Nhiệt độ",
+					"humidity": "Độ ẩm",
+					"powerConsumption": "Điện năng tiêu thụ",
+					"totalPowerConsumption": "Tổng điện năng tiêu thụ",
+					"avgTemperature": "Nhiệt độ trung bình",
+					"avgHumidity": "Độ ẩm trung bình",
+					"temperatureHumidity": "Nhiệt độ / Độ ẩm",
+					"power": "Điện năng (kW)"
+				},
+				"support": {
+					"title": "Yêu cầu hỗ trợ",
+					"pending": "Đang chờ",
+					"inProgress": "Đang xử lý",
+					"resolved": "Đã xử lý",
+					"kioskCode": "Mã Kiosk",
+					"kioskName": "Tên Kiosk",
+					"customer": "Khách hàng",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"noRequests": "Không có yêu cầu hỗ trợ nào",
+					"viewDetails": "Xem chi tiết",
+					"statusLabels": {
+						"pending": "Đang chờ",
+						"in_progress": "Đang xử lý",
+						"resolved": "Đã xử lý"
+					}
+				},
+				"customerVisit": {
+					"title": "Số lượng khách ghé thăm máy bán hàng",
+					"visits": "Lượt ghé thăm",
+					"count": "Số lượng",
+					"date": "Ngày"
+				}
 			},
 			"kiosk": {
 				"title": "Quản lý Kiosk",

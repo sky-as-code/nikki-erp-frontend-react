@@ -79,7 +79,8 @@ function renderActionsColumn(
 }
 
 function renderActionsHeader(
-	_: Record<string, unknown>,
+	_columnName: string,
+	_schema: unknown,
 	translate: (key: string) => string,
 ) {
 	return <Text fw={600} fz='sm' ta={'end'}>{translate('nikki.general.actions.title')}</Text>;
@@ -121,7 +122,7 @@ export const AdTable: React.FC<AdTableProps> = ({
 					actions: (row) => renderActionsColumn(row, onViewDetail, onEdit, onDelete, translate),
 				}}
 				headerRenderers={{
-					actions: (row) => renderActionsHeader(row, translate),
+					actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
 				}}
 				columnAsLink='code'
 				columnAsLinkHref={(row) => {

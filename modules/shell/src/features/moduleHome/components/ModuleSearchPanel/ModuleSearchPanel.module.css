@@ -8,13 +8,14 @@
 }
 
 .searchInput {
-	border: solid 1px var(--mantine-color-white);
-	color: var(--mantine-color-gray-7);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	border: solid 1px light-dark(var(--mantine-color-white), var(--mantine-color-dark-2));
+	color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-2));
+	background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-4));
+	box-shadow: 0 1px 2px light-dark(rgba(0, 0, 0, 0.1), rgba(128, 128, 128, 0.3));
 	transition: box-shadow 0.2s ease;
 	font-size: var(--mantine-font-size-h6);
 }
 
 .searchInput:focus-within {
-	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1), inset 0 3px 6px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 3px 6px light-dark(rgba(0, 0, 0, 0.1), rgba(128, 128, 128, 0.3)), inset 0 3px 6px light-dark(rgba(0, 0, 0, 0.1), rgba(128, 128, 128, 0.3));
 }
