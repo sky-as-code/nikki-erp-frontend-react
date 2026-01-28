@@ -21,6 +21,7 @@ import { ShellEnvVars } from '../types';
 export type ShellProvidersProps = React.PropsWithChildren & {
 	microApps: MicroAppMetadata[];
 	envVars: Record<string, unknown>;
+	fallback?: React.ReactNode;
 };
 
 export function ShellProviders(props: ShellProvidersProps) {

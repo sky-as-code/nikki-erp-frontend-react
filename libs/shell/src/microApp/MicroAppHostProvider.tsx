@@ -31,7 +31,7 @@ export function MicroAppHostProvider({ children, microApps }: MicroAppHostProvid
 	);
 }
 
-export type LazyMicroAppProps = Pick<InternalLazyMicroAppProps, 'slug' | 'basePath'>;
+export type LazyMicroAppProps = Pick<InternalLazyMicroAppProps, 'slug' | 'basePath' | 'fallback'>;
 
 export function LazyMicroApp(props: LazyMicroAppProps): React.ReactNode {
 	return <InternalLazyMicroApp {...props} />;
@@ -47,9 +47,10 @@ type InternalLazyMicroAppProps = {
 	slug: string;
 	basePath?: string;
 	widgetName?: string;
+	fallback?: React.ReactNode;
 };
 
-function InternalLazyMicroApp({ slug, basePath, widgetName }: InternalLazyMicroAppProps): React.ReactNode {
+function InternalLazyMicroApp({ slug, basePath, widgetName, fallback }: InternalLazyMicroAppProps): React.ReactNode {
 	const [microAppPack, setMicroAppPack] = useState<MicroAppPack | null>(null);
 	const [error, setError] = useState<Error | null>(null);
 
@@ -61,6 +62,7 @@ function InternalLazyMicroApp({ slug, basePath, widgetName }: InternalLazyMicroA
 		domType: domType!, // domType is guaranteed to be not null by the time useSetupMicroApp's useEffect runs.
 	});
 
+	//* TODO: Handle error properly
 	if (error) {
 		return (
 			<div style={{ padding: '20px', color: 'red' }}>
@@ -74,7 +76,7 @@ function InternalLazyMicroApp({ slug, basePath, widgetName }: InternalLazyMicroA
 		);
 	}
 
-	if (!microAppPack) return <div>Loading...</div>;
+	if (!microAppPack) return fallback ? fallback : <div>Loading...</div>;
 
 	let children: React.ReactNode = null;
 	if (ref.current && domType === MicroAppDomType.SHARED) {

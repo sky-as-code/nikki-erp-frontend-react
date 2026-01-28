@@ -5,19 +5,21 @@ import { Outlet } from 'react-router';
 
 import classes from './PublicLayout.module.css';
 
-import { ContentContainer } from '@/components/ContentContainer';
 import { LangSwitchDropdown } from '@/components/LangSwitch';
+import { ScrollableContent } from '@/components/ScrollableContent';
 import { ThemeSwitchDropdown } from '@/components/ThemeSwitch';
+
+
 
 
 
 export function PublicLayout(): React.ReactNode {
 	return (
-		<Stack gap={0} h='100vh'>
+		<Stack gap={0} h='100vh' bg='var(--nikki-color-linear-page-background)'>
 			<Header />
-			<ContentContainer>
+			<ScrollableContent>
 				<Outlet />
-			</ContentContainer>
+			</ScrollableContent>
 			<Footer />
 		</Stack>
 	);

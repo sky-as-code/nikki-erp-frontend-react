@@ -1,15 +1,15 @@
-import { IconBrightnessFilled, IconLogout2, IconSettings, IconUser, IconUsers } from '@tabler/icons-react';
+import { IconBrightnessFilled, IconLanguage, IconLogout2, IconSettings, IconUser, IconUsers } from '@tabler/icons-react';
 import React from 'react';
 
 
-export type MenuItemType = 'profile' | 'accountSettings' | 'themeMode' | 'divider' | 'switchAccount' | 'signOut';
+export type MenuItemType = 'profile' | 'accountSettings' | 'themeMode' | 'language' | 'divider' | 'switchAccount' | 'signOut';
 
 export interface ProfileMenuItem {
 	id: string;
 	type: MenuItemType;
 	icon?: React.ReactNode;
 	translationKey: string;
-	action?: 'themeMode' | 'signOut' | 'none';
+	action?: 'themeMode' | 'language' | 'signOut' | 'none';
 }
 
 export const PROFILE_MENU_CONFIG: ProfileMenuItem[] = [
@@ -33,6 +33,13 @@ export const PROFILE_MENU_CONFIG: ProfileMenuItem[] = [
 		icon: React.createElement(IconBrightnessFilled, { size: 20 }),
 		translationKey: 'nikki.shell.profileMenu.themeMode',
 		action: 'themeMode',
+	},
+	{
+		id: 'language',
+		type: 'language',
+		icon: React.createElement(IconLanguage, { size: 20 }),
+		translationKey: 'nikki.shell.profileMenu.language',
+		action: 'language',
 	},
 	{
 		id: 'divider1',

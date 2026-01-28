@@ -1,6 +1,6 @@
 import { Paper, Stack, Title } from '@mantine/core';
 import { ConfirmModal } from '@nikkierp/ui/components';
-import { useConfirmModal } from '@nikkierp/ui/hooks';
+import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,9 +23,7 @@ export const AdsPage: React.FC = () => {
 
 	const { ad: selectedAd, isLoading: isLoadingDetail } = useAdDetail(selectedAdId);
 
-	React.useEffect(() => {
-		document.title = translate('nikki.vendingMachine.menu.ads');
-	}, [translate]);
+
 
 	// Filter and search ads
 	const filteredAds = useMemo(() => {
@@ -85,6 +83,8 @@ export const AdsPage: React.FC = () => {
 		{ value: 'inactive', label: translate('nikki.general.status.inactive') },
 		{ value: 'expired', label: translate('nikki.vendingMachine.ads.status.expired') },
 	];
+
+	useDocumentTitle('nikki.vendingMachine.menu.ads');
 
 	return (
 		<>

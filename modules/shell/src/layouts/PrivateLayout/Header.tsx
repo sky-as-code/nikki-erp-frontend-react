@@ -11,13 +11,14 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 
+import classes from './PrivateLayout.module.css';
+
 import { MenuBar, MenuBarDrawer } from '@/components/MenuBar';
 import { ModuleSwitchDropdown } from '@/components/ModuleSwitch';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { OrgSwitchDropdown } from '@/components/OrgSwitch';
 import { ProfileMenuDrawer, ProfileMenuDropdown } from '@/components/ProfileMenu';
 
-import classes from './PrivateLayout.module.css';
 
 
 export const Header: React.FC = () => {

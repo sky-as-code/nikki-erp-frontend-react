@@ -1,6 +1,6 @@
 import { Paper, Stack, Title } from '@mantine/core';
 import { ConfirmModal } from '@nikkierp/ui/components';
-import { useConfirmModal } from '@nikkierp/ui/hooks';
+import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,10 +37,6 @@ export const KioskListPage: React.FC = () => {
 	const [drawerOpened, setDrawerOpened] = useState(false);
 
 	const { kiosk: selectedKiosk, isLoading: isLoadingDetail } = useKioskDetail(selectedKioskId);
-
-	React.useEffect(() => {
-		document.title = translate('nikki.vendingMachine.kiosk.title');
-	}, [translate]);
 
 	// Filter and search kiosks
 	const filteredKiosks = useMemo(() => {
@@ -100,6 +96,8 @@ export const KioskListPage: React.FC = () => {
 		// TODO: Navigate to create page
 		console.log('Create kiosk');
 	};
+
+	useDocumentTitle('nikki.vendingMachine.kiosk.title');
 
 	return (
 		<>
