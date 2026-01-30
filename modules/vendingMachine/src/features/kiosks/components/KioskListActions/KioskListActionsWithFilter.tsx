@@ -1,13 +1,14 @@
 import { Button, Group, SegmentedControl, Center } from '@mantine/core';
 import { IconPlus, IconRefresh, IconList, IconLayoutGrid, IconMapPin } from '@tabler/icons-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { FilterDropdown, SearchInputWithTags, useFilterState } from '@/components/FilterDropdown';
 
 import { kioskFilterConfig } from '../../config/filterConfig';
 
 import type { ViewMode } from './KioskListActions';
 
-import { FilterDropdown, SearchInputWithTags, useFilterState } from '@/components/FilterDropdown';
 
 
 export interface KioskListActionsWithFilterProps {
@@ -30,6 +31,7 @@ export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProp
 	const { state, updateState, resetState, searchGraph } = useFilterState({
 		onSearchGraphChange,
 	});
+	const [filterDropdownOpened, setFilterDropdownOpened] = useState(false);
 
 	const viewModeSegments = [
 		{
@@ -151,7 +153,7 @@ export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProp
 						{translate('nikki.general.actions.clear_filters')}
 					</Button>
 				)}
-				<Group gap='xs' align='flex-end'>
+				<Group gap='xs' align='flex-end' wrap='nowrap'>
 					<SearchInputWithTags
 						tags={tags}
 						onTagRemove={(tag) => tag.onRemove()}
@@ -182,6 +184,8 @@ export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProp
 						}}
 						placeholder={translate('nikki.vendingMachine.kiosk.search.placeholder')}
 						searchFields={kioskFilterConfig.search}
+						onFilterDropdownToggle={setFilterDropdownOpened}
+						filterDropdownOpened={filterDropdownOpened}
 						style={{ minWidth: 300 }}
 					/>
 					<FilterDropdown
@@ -189,8 +193,12 @@ export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProp
 						state={state}
 						onStateChange={updateState}
 						onSearchGraphChange={onSearchGraphChange}
+						opened={filterDropdownOpened}
+						onOpenChange={setFilterDropdownOpened}
+						onClearFilters={resetState}
 					/>
 				</Group>
+
 				<SegmentedControl
 					data={viewModeSegments}
 					value={viewMode}

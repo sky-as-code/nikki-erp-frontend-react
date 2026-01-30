@@ -1,6 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import {
 	ActionIcon,
+	Badge,
 	Box,
 	Button,
 	Divider,
@@ -14,7 +15,7 @@ import {
 	SegmentedControl,
 	Center,
 } from '@mantine/core';
-import { IconChevronDown, IconFilter, IconList, IconSearch, IconSortAscending, IconStar, IconLayoutGrid, IconList as IconListMode } from '@tabler/icons-react';
+import { IconChevronDown, IconFilter, IconList, IconSearch, IconSortAscending, IconStar, IconLayoutGrid, IconList as IconListMode, IconX } from '@tabler/icons-react';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -37,6 +38,7 @@ export interface FilterDropdownProps {
 	onOpenChange?: (opened: boolean) => void;
 	viewMode?: FilterViewMode;
 	onViewModeChange?: (mode: FilterViewMode) => void;
+	onClearFilters?: () => void; // Callback để clear tất cả filters
 }
 
 
@@ -47,6 +49,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
 	onSearchGraphChange,
 	opened: controlledOpened,
 	onOpenChange,
+	onClearFilters,
 }) => {
 	const { t: translate } = useTranslation();
 	const [internalOpened, setInternalOpened] = useState(false);
@@ -141,6 +144,143 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
 		}
 	};
 
+	const handleClearFilters = () => {
+		if (onClearFilters) {
+			onClearFilters();
+		}
+		else {
+			updateState({
+				search: [],
+				filter: [],
+				groupBy: [],
+				sort: [],
+			});
+		}
+	};
+
+	// Generate tags from filter state
+	const tags: FilterTag[] = useMemo(() => {
+		const result: FilterTag[] = [];
+
+		// Add search tags
+		state.search.forEach((search) => {
+			const searchConfig = config.search?.find((s) => s.key === search.key);
+			result.push({
+				type: 'search',
+				key: search.key,
+				label: searchConfig?.label || search.key,
+				value: search.value,
+				onRemove: () => {
+					handleSearchChange(search.key, '');
+				},
+			});
+		});
+
+		// Add filter tags
+		state.filter.forEach((filter) => {
+			const filterConfig = config.filter?.find((f) => f.key === filter.key);
+			result.push({
+				type: 'filter',
+				key: filter.key,
+				label: filterConfig?.label || filter.key,
+				value: filter.values.map(String),
+				onRemove: () => {
+					handleFilterChange(filter.key, []);
+				},
+			});
+		});
+
+		// Add groupBy tags - format as "groupBy1 > groupBy2 > ..."
+		if (state.groupBy.length > 0) {
+			const groupByLabels = state.groupBy.map((key) => {
+				const groupByConfig = config.groupBy?.find((g) => g.key === key);
+				return groupByConfig?.label || key;
+			});
+			result.push({
+				type: 'groupBy',
+				key: 'groupBy',
+				label: translate('nikki.general.groupBy.title'),
+				value: groupByLabels.join(' > '),
+				onRemove: () => {
+					updateState({ groupBy: [] });
+				},
+			});
+		}
+
+		// Add sort tags
+		state.sort.forEach((sort) => {
+			const sortConfig = config.sort?.find((s) => s.key === sort.field);
+			result.push({
+				type: 'filter', // Use filter type for sort tags
+				key: sort.field,
+				label: sortConfig?.label || sort.field,
+				value: `${translate(`nikki.general.sort.${sort.direction}`)}`,
+				onRemove: () => {
+					handleRemoveSort(sort.field);
+				},
+			});
+		});
+
+		return result;
+	}, [state.search, state.filter, state.groupBy, state.sort, config, translate]);
+
+	const renderTagsSection = () => {
+		if (tags.length === 0) return null;
+
+		return (
+			<Box>
+				<Group justify='space-between' mb='xs' align='center'>
+					<Text size='sm' fw={500}>
+						{translate('nikki.general.filter.active_filters') || 'Active Filters'}
+					</Text>
+					<Button
+						variant='subtle'
+						size='xs'
+						color='red'
+						onClick={(e) => {
+							e.stopPropagation();
+							handleClearFilters();
+						}}
+					>
+						{translate('nikki.general.actions.clear_filters')}
+					</Button>
+				</Group>
+				<Box
+					style={{
+						maxHeight: 120,
+						overflowY: 'auto',
+						overflowX: 'hidden',
+					}}
+				>
+					<Group gap='xs' wrap='wrap'>
+						{tags.map((tag, index) => (
+							<Badge
+								key={`${tag.type}-${tag.key}-${index}`}
+								size='sm'
+								variant='light'
+								color='blue'
+								rightSection={
+									<IconX
+										size={12}
+										style={{ cursor: 'pointer', marginLeft: 4 }}
+										onClick={(e) => {
+											e.stopPropagation();
+											tag.onRemove();
+										}}
+									/>
+								}
+								style={{
+									cursor: 'default',
+								}}
+							>
+								{tag.label}: {Array.isArray(tag.value) ? tag.value.join(' or ') : tag.value}
+							</Badge>
+						))}
+					</Group>
+				</Box>
+			</Box>
+		);
+	};
 
 	const renderFilterSection = () => {
 		if (!config.filter || config.filter.length === 0) return null;
@@ -379,33 +519,31 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
 	};
 
 
-	console.count('🚀 ~ Filter Dropdown Rendered');
-
-
-
 	return (
 		<Menu
 			opened={opened}
 			onChange={setOpened}
-			position='bottom-start'
-			width={800}
+			position='bottom-end'
+			width={500}
 			shadow='md'
-			closeOnClickOutside={true}
 			closeOnItemClick={false}
+			trapFocus={false}
 		>
 			<Menu.Target>
 				<ActionIcon
-					variant={opened ? 'filled' : 'subtle'}
+					variant={'outline'}
 					color={opened ? 'blue' : 'gray'}
 					size='lg'
 				>
-					<IconChevronDown size={16} style={{ transform: opened ? 'rotate(180deg)' : 'none' }} />
+					<IconChevronDown size={16} />
 				</ActionIcon>
 			</Menu.Target>
 
 			<Menu.Dropdown>
 				<Box p='md' style={{ maxHeight: '70vh', overflowY: 'auto' }}>
 					<Stack gap='md'>
+						{renderTagsSection()}
+						{tags.length > 0 && <Divider />}
 						{renderFilterSection()}
 						{config.filter && config.filter.length > 0 && <Divider />}
 						{renderGroupBySection()}
