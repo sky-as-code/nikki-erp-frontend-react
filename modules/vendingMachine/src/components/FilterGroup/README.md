@@ -43,9 +43,9 @@ Ví dụ:
 ### 1. Tạo Filter Config
 
 ```typescript
-import { FilterDropdownConfig } from '@/components/FilterDropdown';
+import { FilterGroupConfig } from '@/components/FilterDropdown';
 
-const myFilterConfig: FilterDropdownConfig = {
+const myFilterConfig: FilterGroupConfig = {
   search: [
     {
       key: 'code',
@@ -91,13 +91,13 @@ const myFilterConfig: FilterDropdownConfig = {
 };
 ```
 
-### 2. Sử dụng với useFilterState hook
+### 2. Sử dụng với useFilterOperations hook
 
 ```typescript
-import { FilterDropdown, SearchInputWithTags, useFilterState } from '@/components/FilterDropdown';
+import { FilterDropdown, SearchInputWithTags, useFilterOperations } from '@/components/FilterDropdown';
 
 function MyComponent() {
-  const { state, updateState, resetState, searchGraph } = useFilterState({
+  const { state, updateState, resetState, searchGraph, tags } = useFilterOperations({
     onSearchGraphChange: (graph) => {
       // Gửi graph xuống backend
       console.log('SearchGraph:', graph);

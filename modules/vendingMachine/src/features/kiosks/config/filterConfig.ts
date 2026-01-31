@@ -1,9 +1,10 @@
+import { FilterGroupConfig } from '@/components/FilterGroup';
+
 import { ConnectionStatus, KioskMode, KioskStatus } from '../types';
 
-import { FilterDropdownConfig } from '@/components/FilterDropdown';
 
 
-export const kioskFilterConfig: FilterDropdownConfig = {
+export const kioskFilterConfig: FilterGroupConfig = {
 	search: [
 		{
 			key: 'code',

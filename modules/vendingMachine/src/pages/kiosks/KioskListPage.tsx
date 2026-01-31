@@ -108,21 +108,6 @@ export const KioskListPage: React.FC = () => {
 		<>
 			<Stack gap='md'>
 				<Title order={5} mt='md'>{translate('nikki.vendingMachine.kiosk.title')}</Title>
-				{/* <KioskListActions
-					viewMode={viewMode}
-					onViewModeChange={setViewMode}
-					onCreate={handleCreate}
-					onRefresh={handleRefresh}
-					searchValue={searchValue}
-					onSearchChange={setSearchValue}
-					statusFilter={statusFilter}
-					onStatusFilterChange={setStatusFilter}
-					connectionFilter={connectionFilter}
-					onConnectionFilterChange={setConnectionFilter}
-					modeFilter={modeFilter}
-					onModeFilterChange={setModeFilter}
-				/> */}
-
 				<KioskListActionsWithFilter
 					viewMode={viewMode}
 					onViewModeChange={setViewMode}

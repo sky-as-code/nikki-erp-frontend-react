@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * SearchGraph types for backend API
  */
@@ -31,7 +33,6 @@ export interface SearchGraph {
  */
 export type FilterType = 'search' | 'filter' | 'groupBy' | 'sort' | 'favorites';
 
-import React from 'react';
 
 export interface FilterOption {
 	value: string;
@@ -73,7 +74,7 @@ export interface FavoritesConfig {
 	savedFilters?: Array<{ name: string; graph: SearchGraph }>;
 }
 
-export interface FilterDropdownConfig {
+export interface FilterGroupConfig {
 	search?: SearchConfig[];
 	filter?: FilterConfig[];
 	groupBy?: GroupByConfig[];
@@ -104,7 +105,7 @@ export interface FilterState {
 }
 
 export interface FilterTag {
-	type: 'search' | 'filter' | 'groupBy';
+	type: 'search' | 'filter' | 'groupBy' | 'sort';
 	key: string;
 	label: string;
 	value: string | string[];

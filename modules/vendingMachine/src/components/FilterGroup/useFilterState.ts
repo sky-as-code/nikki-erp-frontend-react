@@ -9,6 +9,10 @@ export interface UseFilterStateOptions {
 	onSearchGraphChange?: (graph: SearchGraph) => void;
 }
 
+/**
+ * Hook để quản lý filter state và search graph ở bên ngoài component
+ * Hook này quản lý state và chuyển đổi sang search graph để gửi lên backend
+ */
 export function useFilterState(options: UseFilterStateOptions = {}) {
 	const { initialState, onSearchGraphChange } = options;
 
