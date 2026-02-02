@@ -42,7 +42,7 @@ const initialState: HierarchyState = {
 
 export const listHierarchies = createAsyncThunk<
 	SearchHierarchyLevelResponse,
-	string,
+	string | undefined,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchHierarchies`,

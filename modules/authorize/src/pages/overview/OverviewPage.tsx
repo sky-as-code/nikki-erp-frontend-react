@@ -1,4 +1,7 @@
 import { Alert, Grid, Stack, Title } from '@mantine/core';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import {
 	IconKey,
@@ -34,6 +37,9 @@ import { QuickLinks, StatCard } from '@/features/overviews';
 function OverviewPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrg = useActiveOrgWithDetails();
+	const orgId = orgSlug === GLOBAL_CONTEXT_SLUG ? null : activeOrg?.id;
 
 	const resources = useMicroAppSelector(selectResourceList);
 	const actions = useMicroAppSelector(selectActionList);
@@ -46,12 +52,12 @@ function OverviewPageBody(): React.ReactNode {
 
 	React.useEffect(() => {
 		dispatch(resourceActions.listResources());
-		dispatch(actionActions.listActions(undefined));
+		dispatch(actionActions.listActions());
 		dispatch(entitlementActions.listEntitlements());
-		dispatch(roleActions.listRoles(undefined));
-		dispatch(roleSuiteActions.listRoleSuites(undefined));
+		dispatch(roleActions.listRoles({ orgId }));
+		dispatch(roleSuiteActions.listRoleSuites({ orgId }));
 		dispatch(grantRequestActions.listGrantRequests());
-	}, [dispatch]);
+	}, [dispatch, orgId]);
 
 	return (
 		<Stack gap='md'>

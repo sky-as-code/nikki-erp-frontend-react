@@ -14,9 +14,9 @@ import {
 
 
 export const groupService = {
-	async listGroups(orgId: string): Promise<SearchGroupsResponse> {
+	async listGroups(orgId?: string): Promise<SearchGroupsResponse> {
 		const graph = JSON.stringify({
-			if: ['org.id', '*', orgId],
+			if: orgId ? ['org.id', '*', orgId] : undefined,
 			order: [['created_at', 'desc']],
 		});
 

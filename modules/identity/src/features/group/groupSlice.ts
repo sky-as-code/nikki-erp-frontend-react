@@ -39,7 +39,7 @@ const initialState: GroupState = {
 
 export const listGroups = createAsyncThunk<
 	SearchGroupsResponse,
-	string,
+	string | undefined,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchGroups`,

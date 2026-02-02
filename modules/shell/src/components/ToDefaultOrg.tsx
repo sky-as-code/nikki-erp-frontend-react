@@ -1,15 +1,21 @@
 import { Center, Stack, Text } from '@mantine/core';
-import { useFirstOrgSlug } from '@nikkierp/shell/userContext';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useFirstOrgSlug, useHasDomainAccess } from '@nikkierp/shell/userContext';
 import { IconHomeCancel } from '@tabler/icons-react';
 import { Navigate } from 'react-router';
 
 
 export function ToDefaultOrg(): React.ReactNode {
 	const { slug: firstOrgSlug } = useFirstOrgSlug();
+	const hasDomainAccess = useHasDomainAccess();
 
-	return firstOrgSlug ?
-		<Navigate to={`/${firstOrgSlug}`} replace /> :
-		<NoOrg />;
+	if (firstOrgSlug) {
+		return <Navigate to={`/${firstOrgSlug}`} replace />;
+	}
+	if (hasDomainAccess) {
+		return <Navigate to={`/${GLOBAL_CONTEXT_SLUG}`} replace />;
+	}
+	return <NoOrg />;
 }
 
 function NoOrg(): React.ReactNode {

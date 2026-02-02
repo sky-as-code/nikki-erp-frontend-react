@@ -14,9 +14,9 @@ import {
 
 
 export const hierarchyService = {
-	async listHierarchies(orgId: string): Promise<SearchHierarchyLevelResponse> {
+	async listHierarchies(orgId?: string): Promise<SearchHierarchyLevelResponse> {
 		const graph = JSON.stringify({
-			if: ['org.id', '*', orgId],
+			if: orgId ? ['org.id', '*', orgId] : undefined,
 			order: [['created_at', 'desc']],
 		});
 		const response = await request.get<SearchHierarchyLevelResponse>('identity/hierarchy', {

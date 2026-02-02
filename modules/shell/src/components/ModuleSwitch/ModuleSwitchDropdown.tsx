@@ -1,10 +1,10 @@
 import { useIsAuthenticated } from '@nikkierp/shell/auth';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
 import { useMyModules } from '@nikkierp/shell/userContext';
 import { navigateToAction, useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
 import { useMemo } from 'react';
 import { useDispatch } from 'react-redux';
-
 
 
 export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'> & {
@@ -25,6 +25,10 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 	}, [modules]);
 
 	const handleModuleChange = (newModSlug: string) => {
+		if (orgSlug === GLOBAL_CONTEXT_SLUG) {
+			dispatch(navigateToAction(`/${GLOBAL_CONTEXT_SLUG}/${newModSlug}`));
+			return;
+		}
 		dispatch(navigateToAction(`/${orgSlug}/${newModSlug}`));
 	};
 

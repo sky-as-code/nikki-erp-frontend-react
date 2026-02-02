@@ -4,6 +4,7 @@ import {
 	deleteRoleSuite as deleteRoleSuiteApi,
 	getRoleSuite as getRoleSuiteApi,
 	listRoleSuites as listRoleSuitesApi,
+	ListQuery,
 	updateRoleSuite as updateRoleSuiteApi,
 } from '../../services/authzService';
 
@@ -53,13 +54,23 @@ function mapDtoToRoleSuite(dto: RoleSuite): RoleSuite {
 
 export const roleSuiteService = {
 	async listRoleSuites(
-		params?: {
-			graph?: Record<string, unknown>;
-			page?: number;
-			size?: number;
-		},
+		listQuery?: ListQuery,
+		orgId?: string | null,
 	): Promise<RoleSuite[]> {
-		const result = await listRoleSuitesApi(params);
+		const graph: Record<string, unknown> = {
+			...listQuery?.graph,
+			order: [['id', 'asc']],
+		};
+		if (orgId !== undefined) {
+			graph.if = orgId === null
+				? ['org_id', 'not_set', 'null']
+				: ['org_id', '=', orgId];
+		}
+		const result = await listRoleSuitesApi({
+			...listQuery,
+			graph,
+		});
+
 		return result.items.map(mapDtoToRoleSuite);
 	},
 

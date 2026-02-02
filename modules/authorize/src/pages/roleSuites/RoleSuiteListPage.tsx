@@ -1,4 +1,7 @@
 import { Paper, Stack } from '@mantine/core';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { ConfirmModal, Headers, Actions } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
@@ -11,6 +14,7 @@ import {
 	identityActions,
 	roleSuiteActions,
 	selectGroupList,
+	selectOrgList,
 	selectRoleSuiteState,
 	selectUserList,
 } from '@/appState';
@@ -24,8 +28,12 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const { roleSuites, isLoadingList } = useMicroAppSelector(selectRoleSuiteState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrg = useActiveOrgWithDetails();
+	const globalSlug = GLOBAL_CONTEXT_SLUG;
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
+	const orgs = useMicroAppSelector(selectOrgList);
 	const deleteHandler = useRoleSuiteDelete(roleSuites, dispatch);
 	const permissions = useAuthorizePermissions();
 
@@ -43,14 +51,18 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	const schema = roleSuiteSchema as ModelSchema;
 
 	React.useEffect(() => {
-		dispatch(roleSuiteActions.listRoleSuites());
+		const orgId = orgSlug === globalSlug ? null : activeOrg?.id;
+		dispatch(roleSuiteActions.listRoleSuites({ orgId }));
 		if (users.length === 0) {
 			dispatch(identityActions.listUsers());
 		}
 		if (groups.length === 0) {
 			dispatch(identityActions.listGroups());
 		}
-	}, [dispatch, users.length, groups.length]);
+		if (orgs.length === 0) {
+			dispatch(identityActions.listOrgs());
+		}
+	}, [dispatch, users.length, groups.length, orgs.length, orgSlug, activeOrg?.id]);
 
 	const handleViewDetail = React.useCallback((roleSuiteId: string) => {
 		navigate(roleSuiteId);
@@ -65,8 +77,9 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	}, [navigate]);
 
 	const handleRefresh = React.useCallback(() => {
-		dispatch(roleSuiteActions.listRoleSuites());
-	}, [dispatch]);
+		const orgId = orgSlug === globalSlug ? null : activeOrg?.id;
+		dispatch(roleSuiteActions.listRoleSuites({ orgId }));
+	}, [dispatch, orgSlug, activeOrg?.id, globalSlug]);
 
 	return (
 		<>
@@ -84,6 +97,7 @@ function RoleSuiteListPageBody(): React.ReactNode {
 						schema={schema}
 						users={users}
 						groups={groups}
+						orgs={orgs}
 						onViewDetail={handleViewDetail}
 						onEdit={permissions.roleSuite.canUpdate ? handleEdit : undefined}
 						onDelete={permissions.roleSuite.canDelete ? deleteHandler.handleDeleteRequest : undefined}

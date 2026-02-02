@@ -1,3 +1,5 @@
+import { useMyModules } from '@nikkierp/shell/userContext';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { debounce } from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -5,8 +7,13 @@ import { mockModules as mockModuleListByCategory } from '../components/mockModul
 import { FilterState, ModuleViewMode } from '../components/ModuleHomePage';
 
 
-
 export function useQueryModule() {
+	const { orgSlug } = useActiveOrgModule();
+	const availableModules = useMyModules(orgSlug ?? '');
+	const availableModuleSlugs = useMemo(
+		() => new Set(availableModules.map((module) => module.slug)),
+		[availableModules],
+	);
 	const [viewMode, setViewMode] = useState<ModuleViewMode>('list');
 	const {
 		searchQuery,
@@ -22,10 +29,13 @@ export function useQueryModule() {
 		groupBy: null,
 	});
 
-	const filteredModules = useMemo(
-		() => filterModules(mockModuleListByCategory, searchQuery, filters),
-		[searchQuery, filters],
-	);
+	const filteredModules = useMemo(() => {
+		const modulesByContext = filterModulesBySlugs(
+			mockModuleListByCategory,
+			availableModuleSlugs,
+		);
+		return filterModules(modulesByContext, searchQuery, filters);
+	}, [searchQuery, filters, availableModuleSlugs]);
 
 	return {
 		// View mode
@@ -92,6 +102,15 @@ function filterModules(
 	result = sortModulesInCategories(result, filters.sortBy);
 
 	return result;
+}
+
+function filterModulesBySlugs(categories: any[], allowedSlugs: Set<string>): any[] {
+	return categories
+		.map((category) => ({
+			...category,
+			modules: category.modules.filter((module: any) => allowedSlugs.has(module.slug)),
+		}))
+		.filter((category) => category.modules.length > 0);
 }
 
 function filterCategoriesWithModules(categories: any[]): any[] {

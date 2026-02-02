@@ -65,9 +65,14 @@ export function renderBooleanColumn(
 	);
 }
 
-export function renderOrgNameColumn(row: Record<string, unknown>) {
+export function renderOrgNameColumn(
+	row: Record<string, unknown>,
+	orgMap?: Map<string, string>,
+) {
 	const org = row.org as { name?: string; displayName?: string } | undefined;
-	const orgName = org?.name || org?.displayName || row.orgDisplayName as string | undefined;
+	const fromRow = org?.name || org?.displayName || (row.orgDisplayName as string | undefined);
+	const fromMap = orgMap && (row.orgId as string) ? orgMap.get(row.orgId as string) : undefined;
+	const orgName = fromRow || fromMap;
 	return <Text>{orgName || '-'}</Text>;
 }
 

@@ -4,6 +4,7 @@ import {
 	createRole as createRoleApi,
 	deleteRole as deleteRoleApi,
 	getRole as getRoleApi,
+	ListQuery,
 	listRoles as listRolesApi,
 	removeEntitlementsFromRole as removeEntitlementsFromRoleApi,
 	updateRole as updateRoleApi,
@@ -19,13 +20,22 @@ function configFields(dto: Role): Role {
 
 export const roleService = {
 	async listRoles(
-		params?: {
-			graph?: Record<string, unknown>;
-			page?: number;
-			size?: number;
-		},
+		listQuery?: ListQuery,
+		orgId?: string | null,
 	): Promise<Role[]> {
-		const result = await listRolesApi(params);
+		const graph: Record<string, unknown> = {
+			...listQuery?.graph,
+			order: [['id', 'asc']],
+		};
+		if (orgId !== undefined) {
+			graph.if = orgId === null
+				? ['org_id', 'not_set', 'null']
+				: ['org_id', '=', orgId];
+		}
+		const result = await listRolesApi({
+			...listQuery,
+			graph,
+		});
 		return result.items.map(configFields);
 	},
 

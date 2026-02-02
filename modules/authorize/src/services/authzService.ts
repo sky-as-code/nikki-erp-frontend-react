@@ -148,30 +148,16 @@ export async function deleteEntitlement(id: string): Promise<void> {
 export async function listRoles(
 	params?: ListQuery,
 ): Promise<ListResponse<Role>> {
-	const options: Options = {};
-	// if (params) {
-	// 	(options as any).searchParams = params;
-	// }
-
-	const defaultParams: ListQuery = {
-		graph: {
-			order: [['id', 'asc']],
-		},
-	};
-
-	const finalParams = {
-		...defaultParams,
+	const searchParams = {
 		...params,
+		graph: JSON.stringify({
+			...params?.graph,
+		}),
 	};
 
-	const { graph, ...rest } = finalParams;
-
-	(options as any).searchParams = {
-		...rest,
-		graph: graph ? JSON.stringify(graph) : undefined,
-	};
-
-	return get<ListResponse<Role>>('authorize/roles', options);
+	return get<ListResponse<Role>>('authorize/roles', {
+		searchParams: searchParams,
+	});
 }
 
 
@@ -238,15 +224,16 @@ export async function removeEntitlementsFromRole(
 export async function listRoleSuites(
 	params?: ListQuery,
 ): Promise<ListResponse<RoleSuite>> {
-	const options: Options = {};
-	if (params) {
-		const { graph, ...rest } = params;
-		(options as any).searchParams = {
-			...rest,
-			graph: graph ? JSON.stringify(graph) : undefined,
-		};
-	}
-	return get<ListResponse<RoleSuite>>('authorize/role-suites', options);
+	const searchParams = {
+		...params,
+		graph: JSON.stringify({
+			...params?.graph,
+		}),
+	};
+
+	return get<ListResponse<RoleSuite>>('authorize/role-suites', {
+		searchParams: searchParams,
+	});
 }
 
 export async function getRoleSuite(id: string): Promise<RoleSuite> {

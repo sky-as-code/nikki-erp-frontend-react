@@ -5,6 +5,7 @@ import {
 import { roleService } from './roleService';
 import { Role } from './types';
 import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActionState';
+import { ListQuery } from '../../services/authzService';
 import { entitlementService } from '../entitlements/entitlementService';
 import { Entitlement } from '../entitlements/types';
 
@@ -67,13 +68,13 @@ async function hydrateEntitlements(
 
 export const listRoles = createAsyncThunk<
 	Role[],
-	{ graph?: Record<string, unknown>; page?: number; size?: number } | void,
+	{listQuery?: ListQuery, orgId?: string | null},
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/list`,
-	async (params, { rejectWithValue }) => {
+	async ({listQuery, orgId}, { rejectWithValue }) => {
 		try {
-			const result = await roleService.listRoles(params || undefined);
+			const result = await roleService.listRoles(listQuery, orgId);
 			return result;
 		}
 		catch (error) {

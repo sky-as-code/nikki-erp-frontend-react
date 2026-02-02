@@ -29,7 +29,7 @@ const initialState: UserState = {
 
 export const listUsers = createAsyncThunk<
 	SearchUserResponse,
-	string,
+	string | undefined,
 	{ rejectValue: string; state: any }
 >(
 	`${SLICE_NAME}/fetchUsers`,

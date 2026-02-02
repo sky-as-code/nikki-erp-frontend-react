@@ -11,13 +11,14 @@ import {
 	renderActionsColumn,
 } from './renderColumns';
 
-import type { Group as IdentityGroup } from '@/features/identities';
+import type { Group as IdentityGroup, Org } from '@/features/identities';
 import type { User } from '@/features/identities';
 
 
 export interface RoleSuiteTableProps extends AutoTableProps {
 	users?: User[];
 	groups?: IdentityGroup[];
+	orgs?: Org[];
 	onViewDetail: (roleSuiteId: string) => void;
 	onEdit?: (roleSuiteId: string) => void;
 	onDelete?: (roleSuiteId: string) => void;
@@ -30,6 +31,7 @@ export const RoleSuiteTable: React.FC<RoleSuiteTableProps> = ({
 	schema,
 	users = [],
 	groups = [],
+	orgs = [],
 	onViewDetail,
 	onEdit,
 	onDelete,
@@ -52,6 +54,14 @@ export const RoleSuiteTable: React.FC<RoleSuiteTableProps> = ({
 		return map;
 	}, [groups]);
 
+	const orgMap = React.useMemo(() => {
+		const map = new Map<string, string>();
+		orgs.forEach((o) => {
+			map.set(o.id, o.displayName);
+		});
+		return map;
+	}, [orgs]);
+
 	return (
 		<AutoTable
 			columns={columns}
@@ -65,7 +75,7 @@ export const RoleSuiteTable: React.FC<RoleSuiteTableProps> = ({
 				isRequestable: (row) => renderBooleanColumn(row, 'isRequestable', translate),
 				isRequiredAttachment: (row) => renderBooleanColumn(row, 'isRequiredAttachment', translate),
 				isRequiredComment: (row) => renderBooleanColumn(row, 'isRequiredComment', translate),
-				orgDisplayName: (row) => renderOrgNameColumn(row),
+				orgDisplayName: (row) => renderOrgNameColumn(row, orgMap),
 				actions: (row) => renderActionsColumn(row, onEdit, onDelete, translate),
 			}}
 		/>

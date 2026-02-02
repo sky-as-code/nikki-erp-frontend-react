@@ -1,4 +1,7 @@
 import { Paper, Stack } from '@mantine/core';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { ConfirmModal, Headers, Actions } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
@@ -23,6 +26,10 @@ function RoleListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const { roles, isLoadingList } = useMicroAppSelector(selectRoleState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrg = useActiveOrgWithDetails();
+	const globalSlug = GLOBAL_CONTEXT_SLUG;
+
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
 	const deleteHandler = useRoleDelete(roles, dispatch);
@@ -32,14 +39,15 @@ function RoleListPageBody(): React.ReactNode {
 	const schema = roleSchema as ModelSchema;
 
 	React.useEffect(() => {
-		dispatch(roleActions.listRoles());
+		const orgId = orgSlug === globalSlug ? null : activeOrg?.id;
+		dispatch(roleActions.listRoles({ orgId }));
 		if (users.length === 0) {
 			dispatch(identityActions.listUsers());
 		}
 		if (groups.length === 0) {
 			dispatch(identityActions.listGroups());
 		}
-	}, [dispatch, users.length, groups.length]);
+	}, [dispatch, users.length, groups.length, orgSlug, activeOrg?.id]);
 
 	const handleViewDetail = React.useCallback((roleId: string) => {
 		navigate(roleId);
@@ -54,8 +62,9 @@ function RoleListPageBody(): React.ReactNode {
 	}, [navigate]);
 
 	const handleRefresh = React.useCallback(() => {
-		dispatch(roleActions.listRoles());
-	}, [dispatch]);
+		const orgId = orgSlug === globalSlug ? null : activeOrg?.id;
+		dispatch(roleActions.listRoles({ orgId }));
+	}, [dispatch, orgSlug, activeOrg?.id, globalSlug]);
 
 	return (
 		<>

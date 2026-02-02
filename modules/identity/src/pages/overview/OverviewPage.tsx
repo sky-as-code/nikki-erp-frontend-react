@@ -117,9 +117,9 @@ export const OverviewPageBody: React.FC = () => {
 
 	React.useEffect(() => {
 		dispatch(organizationActions.listOrganizations());
-		dispatch(userActions.listUsers(activeOrg!.id));
-		dispatch(groupActions.listGroups(activeOrg!.id));
-		dispatch(hierarchyActions.listHierarchies(activeOrg!.id));
+		dispatch(userActions.listUsers(activeOrg?.id));
+		dispatch(groupActions.listGroups(activeOrg?.id));
+		dispatch(hierarchyActions.listHierarchies(activeOrg?.id));
 	}, [dispatch, activeOrg?.id]);
 
 	return (

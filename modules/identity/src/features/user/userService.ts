@@ -12,9 +12,9 @@ import {
 
 
 export const userService = {
-	async listUsers(orgId: string): Promise<SearchUserResponse> {
+	async listUsers(orgId?: string): Promise<SearchUserResponse> {
 		const graph = JSON.stringify({
-			if: ['orgs.id', '*', orgId],
+			if: orgId ? ['orgs.id', '*', orgId] : undefined,
 			order: [['created_at', 'desc']],
 		});
 		const response = await request.get<SearchUserResponse>('identity/users', {
