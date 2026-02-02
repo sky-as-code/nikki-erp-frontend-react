@@ -1,7 +1,9 @@
+/* eslint-disable max-lines-per-function */
 
 import {
 	ActionIcon,
 	Box,
+	Button,
 	Divider,
 	Menu,
 	Stack,
@@ -55,7 +57,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
 
 	const handleSaveFavorite = useCallback(() => {
 		if (config.favorites?.onSave) {
-			const graph = filterStateToSearchGraph(state);
+			const graph = filterStateToSearchGraph(state, config);
 			const name = prompt('Nhập tên cho bộ lọc:');
 			if (name) {
 				config.favorites.onSave(name, graph);
@@ -71,18 +73,20 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
 			position='bottom-end'
 			width={500}
 			shadow='md'
-			// closeOnClickOutside={false}
 			closeOnItemClick={false}
 			trapFocus={false}
 		>
 			<Menu.Target>
-				<ActionIcon
-					variant={'outline'}
-					color={opened ? 'blue' : 'gray'}
-					size='lg'
+				<Button
+					variant={'subtle'}
+					color='var(--mantine-color-gray-6)'
+					size='sm'
+					radius={'sm'}
+					bg={'var(--mantine-color-gray-1)'}
+					px={'xs'}
 				>
-					<IconChevronDown size={16} />
-				</ActionIcon>
+					<IconChevronDown size={20} />
+				</Button>
 			</Menu.Target>
 
 			<Menu.Dropdown>
@@ -90,12 +94,18 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
 					<Stack gap='md'>
 						<TagsSection tags={tags} onClearAll={resetState} />
 						{tags.length > 0 && <Divider />}
-						<FilterSection
-							filterConfigs={config.filter || []}
-							state={state}
-							onFilterChange={handleFilterChange}
-						/>
-						{config.filter && config.filter.length > 0 && <Divider />}
+						{
+							config.filter && (
+								<>
+									<FilterSection
+										filterConfig={config.filter}
+										state={state}
+										onFilterChange={handleFilterChange}
+									/>
+									<Divider />
+								</>
+							)
+						}
 						<GroupBySection
 							groupByConfigs={config.groupBy || []}
 							selectedKeys={state.groupBy}

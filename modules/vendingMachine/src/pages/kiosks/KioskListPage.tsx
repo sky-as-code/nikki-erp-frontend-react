@@ -9,7 +9,6 @@ import {
 	KioskDetailDrawer,
 	KioskGridView,
 	KioskMapView,
-	KioskListActions,
 	KioskTable,
 	kioskSchema,
 	type Kiosk,
@@ -99,7 +98,7 @@ export const KioskListPage: React.FC = () => {
 	};
 
 	const handleSearchGraphChange = (graph: any) => {
-		console.log('graph', graph);
+		console.debug('🚀 ~ handleSearchGraphChange ~ graph:', graph);
 	};
 
 	useDocumentTitle('nikki.vendingMachine.kiosk.title');

@@ -1,10 +1,10 @@
 /* eslint-disable max-lines-per-function */
 import { Badge, Group, Combobox, useCombobox, Flex, Input, Button } from '@mantine/core';
-import { IconSearch, IconX } from '@tabler/icons-react';
+import { IconBinaryTree, IconFilter, IconSortAscending, IconSearch, IconX } from '@tabler/icons-react';
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { FilterGroupConfig, FilterState } from './types';
+import { FilterGroupConfig, FilterState, FilterTag } from './types';
 import { useFilterOperations } from './useFilterOperations';
 
 
@@ -92,6 +92,13 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
 		}
 	}, [searchQuery, isFocused, searchFields.length]);
 
+	const TagIconMapping: Record<FilterTag['type'], React.ReactNode> = {
+		search: <IconSearch size={12} />,
+		filter: <IconFilter size={12} />,
+		sort: <IconSortAscending size={12} />,
+		groupBy: <IconBinaryTree size={12} />,
+	};
+
 
 	const renderTags = () => {
 		return (tags.length > 0 && (
@@ -102,16 +109,21 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
 					minHeight: 24,
 					overflowX: 'auto',
 				}}
+				h={'100%'}
 				maw={500}
 			>
 				{tags.map((tag, index) => (
 					<Badge
 						key={`${tag.type}-${tag.key}-${index}`}
-						size='sm'
+						size='lg'
 						variant='light'
 						color='blue'
 						w='max-content'
 						maw={200}
+						leftSection={TagIconMapping[tag.type]}
+						style={{textTransform: 'initial'}}
+						fz={'sm'}
+						fw={'normal'}
 						rightSection={
 							<IconX
 								size={12}
@@ -122,11 +134,8 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
 								}}
 							/>
 						}
-						style={{
-							cursor: 'default',
-						}}
 					>
-						{tag.label}: {Array.isArray(tag.value) ? tag.value.join(' or ') : tag.value}
+						{tag.value}
 					</Badge>
 				))}
 			</Group>
@@ -145,6 +154,7 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
 			}}
 			direction='column'
 			gap='xs'
+			h={'100%'}
 		>
 			<Combobox
 				store={combobox}
@@ -156,9 +166,10 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
 						display={'flex'}
 						bg={'white'}
 						px={'xs'}
+						bdrs={'sm'}
 						style={{alignItems: 'center', gap: 6 }}
 					>
-						<IconSearch size={16} />
+						<IconSearch size={16} color='var(--mantine-color-gray-6)' />
 						{renderTags()}
 						<Input flex={1} ref={inputRef}
 							placeholder={placeholder || translate('nikki.general.search.placeholder')}
@@ -175,6 +186,8 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
 							onFocus={() => setIsFocused(true)}
 							autoFocus
 							variant='unstyled'
+							size='sm'
+							radius={'sm'}
 						/>
 						{searchQuery &&
 							<Button

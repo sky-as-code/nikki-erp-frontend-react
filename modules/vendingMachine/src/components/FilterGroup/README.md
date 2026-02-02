@@ -70,7 +70,7 @@ const myFilterConfig: FilterGroupConfig = {
     { key: 'status', label: 'Trạng thái' },
   ],
   sort: [
-    { key: 'createdAt', label: 'Ngày tạo', defaultDirection: 'desc' },
+    { key: 'createdAt', label: 'Ngày tạo' },
   ],
   favorites: {
     onSave: (name, graph) => {

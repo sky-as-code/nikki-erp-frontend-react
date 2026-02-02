@@ -1,26 +1,26 @@
-/* eslint-disable max-lines-per-function */
-import { Box, Button, Group, MultiSelect, Select, Stack, Text } from '@mantine/core';
+import { Box, Button, Group, Stack, Text } from '@mantine/core';
 import { IconFilter } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { FilterConfig, FilterState } from './types';
+import { ConditionTreeView } from './ConditionTreeView';
+import { FilterConditionNode, FilterConfig, FilterState } from './types';
 
 
 export interface FilterSectionProps {
-	filterConfigs: FilterConfig[];
+	filterConfig: FilterConfig | FilterConditionNode;
 	state: FilterState;
-	onFilterChange: (key: string, values: (string | number | boolean)[]) => void;
+	onFilterChange: (nodeId: string, value: any) => void;
 }
 
 export const FilterSection: React.FC<FilterSectionProps> = ({
-	filterConfigs,
+	filterConfig,
 	state,
 	onFilterChange,
 }) => {
 	const { t: translate } = useTranslation();
 
-	if (!filterConfigs || filterConfigs.length === 0) return null;
+	if (!filterConfig) return null;
 
 	return (
 		<Box>
@@ -31,74 +31,11 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
 				</Text>
 			</Group>
 			<Stack gap='xs'>
-				{filterConfigs.map((filterConfig) => {
-					const filterValue = state.filter.find((f) => f.key === filterConfig.key);
-					const selectedValues = filterValue?.values.map(String) || [];
-
-					if (filterConfig.type === 'select' && filterConfig.options) {
-						return (
-							<Box
-								key={filterConfig.key}
-								onMouseDown={(e) => e.stopPropagation()}
-							>
-								<Select
-									label={filterConfig.label}
-									placeholder={filterConfig.label}
-									data={filterConfig.options}
-									value={selectedValues[0] || null}
-									onChange={(value) => {
-										onFilterChange(
-											filterConfig.key,
-											value ? [value] : [],
-										);
-									}}
-									size='sm'
-									clearable
-								/>
-							</Box>
-						);
-					}
-
-					if (filterConfig.type === 'multiselect' && filterConfig.options) {
-						return (
-							<Box
-								key={filterConfig.key}
-								onMouseDown={(e) => e.stopPropagation()}
-							>
-								<MultiSelect
-									label={filterConfig.label}
-									placeholder={filterConfig.label}
-									data={filterConfig.options}
-									value={selectedValues}
-									onChange={(values) => {
-										onFilterChange(
-											filterConfig.key,
-											values?.map(String) || [],
-										);
-									}}
-									size='sm'
-									clearable
-								/>
-							</Box>
-						);
-					}
-
-					// Custom component or other types
-					if (filterConfig.customComponent) {
-						const CustomComponent = filterConfig.customComponent;
-						return (
-							<CustomComponent
-								key={filterConfig.key}
-								value={filterValue?.values}
-								onChange={(values: (string | number | boolean)[]) => {
-									onFilterChange(filterConfig.key, values);
-								}}
-							/>
-						);
-					}
-
-					return null;
-				})}
+				<ConditionTreeView
+					filterConfig={filterConfig}
+					filterState={state.filter}
+					onFilterChange={onFilterChange}
+				/>
 				<Button
 					variant='subtle'
 					size='xs'

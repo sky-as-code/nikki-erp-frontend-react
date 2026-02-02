@@ -4,13 +4,14 @@ import React from 'react';
  * SearchGraph types for backend API
  */
 export type SearchOperator = '^' | '$' | '=' | '!=' | '>' | '<' | '>=' | '<=' | '~' | '!~';
+export type FilterOperator = '^' | '$' | '=' | '!=' | '>' | '<' | '>=' | '<=' | '~' | '!~' | 'in' | 'not_in' | 'is_set' | 'is_not_set';
 
 export interface SearchCondition {
 	if: [string, SearchOperator, string | number | boolean];
 }
 
 export interface SearchNode {
-	if?: [string, SearchOperator, string | number | boolean];
+	if?: [string, FilterOperator, string | number | boolean | string[] | number[] | boolean[]];
 	and?: SearchNode[];
 	or?: SearchNode[];
 }
@@ -20,11 +21,13 @@ export interface SearchOrder {
 	direction: 'asc' | 'desc';
 }
 
+export type SearchOrderGraph = [string, 'asc' | 'desc'];
+
 export interface SearchGraph {
 	if?: SearchCondition['if'];
 	and?: SearchNode[];
 	or?: SearchNode[];
-	order?: SearchOrder[];
+	order?: SearchOrderGraph[];
 	groupBy?: string[];
 }
 
@@ -35,7 +38,7 @@ export type FilterType = 'search' | 'filter' | 'groupBy' | 'sort' | 'favorites';
 
 
 export interface FilterOption {
-	value: string;
+	value: string | number | boolean;
 	label: string;
 	icon?: React.ReactNode;
 }
@@ -47,15 +50,59 @@ export interface SearchConfig {
 	operator?: SearchOperator;
 }
 
-export interface FilterConfig {
-	key: string;
-	label: string;
-	type: 'select' | 'multiselect' | 'date' | 'daterange' | 'boolean' | 'number' | 'custom';
-	options?: FilterOption[];
-	operator?: SearchOperator;
-	customComponent?: React.ComponentType<any>;
+/**
+ * Condition structure: [operator, value]
+ * - If operator is '$and' or '$or', value is an array of FilterConditionNode
+ * - If operator is '=', '!=', '~', etc., value is a value or array of values
+ */
+export type FilterCondition =
+	| ['$and' | '$or', FilterConditionNode[]]
+	| [FilterOperator, any];
+
+/**
+ * Component types for filter nodes
+ */
+export interface FilterComponent {
+	type: 'range_number' | 'range_date' | 'range_time' | 'range_datetime';
+	min?: number;
+	max?: number;
+	step?: number;
+	placeholder?: string;
 }
 
+/**
+ * Range configuration for range type filters
+ */
+export interface RangeConfig {
+	min?: number;
+	max?: number;
+	step?: number;
+	defaultMin?: number;
+	defaultMax?: number;
+}
+
+/**
+ * Node trong nested condition structure, bao gồm key và condition
+ */
+export interface FilterConditionNode {
+	key: string;
+	label?: string; // Label đại diện cho key
+	condition: FilterCondition;
+	nodeId?: string; // ID được tạo theo path trong cây filter (key + index)
+	component?: FilterComponent; // Loại component được sử dụng
+}
+
+export interface FilterConfig {
+	key: string;
+	label?: string;
+	condition: FilterCondition;
+	nodeId?: string; // ID được tạo theo path trong cây filter (key + index)
+	component?: FilterComponent; // Loại component được sử dụng
+}
+
+
+
+// GroupByConfig
 export interface GroupByConfig {
 	key: string;
 	label: string;
@@ -64,8 +111,9 @@ export interface GroupByConfig {
 export interface SortConfig {
 	key: string;
 	label: string;
-	defaultDirection?: 'asc' | 'desc';
 }
+
+export type SortDirection = 'asc' | 'desc';
 
 export interface FavoritesConfig {
 	onSave?: (name: string, graph: SearchGraph) => void;
@@ -76,7 +124,7 @@ export interface FavoritesConfig {
 
 export interface FilterGroupConfig {
 	search?: SearchConfig[];
-	filter?: FilterConfig[];
+	filter?: FilterConfig | FilterConditionNode;
 	groupBy?: GroupByConfig[];
 	sort?: SortConfig[];
 	favorites?: FavoritesConfig;
@@ -93,8 +141,9 @@ export interface SearchValue {
 
 export interface FilterValue {
 	key: string;
-	values: (string | number | boolean)[];
-	operator?: SearchOperator;
+	label?: string;
+	nodeId?: string; // ID được tạo theo path trong cây filter (key + index)
+	value: any;
 }
 
 export interface FilterState {

@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Group, Text } from '@mantine/core';
-import { IconX } from '@tabler/icons-react';
+import { IconBinaryTree, IconFilter, IconSearch, IconSortAscending, IconX } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -15,6 +15,13 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ tags, onClearAll }) =>
 	const { t: translate } = useTranslation();
 
 	if (tags.length === 0) return null;
+
+	const TagIconMapping: Record<FilterTag['type'], React.ReactNode> = {
+		search: <IconSearch size={12} />,
+		filter: <IconFilter size={12} />,
+		sort: <IconSortAscending size={12} />,
+		groupBy: <IconBinaryTree size={12} />,
+	};
 
 	return (
 		<Box>
@@ -45,24 +52,27 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ tags, onClearAll }) =>
 					{tags.map((tag, index) => (
 						<Badge
 							key={`${tag.type}-${tag.key}-${index}`}
-							size='sm'
+							size='lg'
 							variant='light'
 							color='blue'
+							w='max-content'
+							maw={200}
+							leftSection={TagIconMapping[tag.type]}
+							style={{textTransform: 'initial'}}
+							fz={'sm'}
+							fw={'normal'}
 							rightSection={
 								<IconX
 									size={12}
 									style={{ cursor: 'pointer', marginLeft: 4 }}
 									onClick={(e) => {
 										e.stopPropagation();
-										tag.onRemove();
+										tag?.onRemove();
 									}}
 								/>
 							}
-							style={{
-								cursor: 'default',
-							}}
 						>
-							{tag.label}: {Array.isArray(tag.value) ? tag.value.join(' or ') : tag.value}
+							{tag.value}
 						</Badge>
 					))}
 				</Group>
@@ -70,3 +80,5 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ tags, onClearAll }) =>
 		</Box>
 	);
 };
+
+

@@ -14,7 +14,7 @@ import {
 export interface UseFilterOperationsOptions {
 	state: FilterState;
 	updateState: (updates: Partial<FilterState>) => void;
-	config?: FilterGroupConfig;
+	config: FilterGroupConfig;
 }
 
 /**
@@ -31,8 +31,8 @@ export function useFilterOperations(options: UseFilterOperationsOptions) {
 		updateState(newState);
 	}, [state, config, updateState]);
 
-	const handleFilterChange = useCallback((key: string, values: (string | number | boolean)[]) => {
-		const newState = updateFilterInState(state, key, values, config);
+	const handleFilterChange = useCallback((nodeId: string, value: any) => {
+		const newState = updateFilterInState(state, nodeId, value, config);
 		updateState(newState);
 	}, [state, config, updateState]);
 
@@ -66,7 +66,9 @@ export function useFilterOperations(options: UseFilterOperationsOptions) {
 			config,
 			translate,
 			onSearchRemove: (key: string) => handleSearchChange(key, ''),
-			onFilterRemove: (key: string) => handleFilterChange(key, []),
+			onFilterRemove: (nodeId: string) => {
+				handleFilterChange(nodeId, null);
+			},
 			onSortRemove: () => updateState({ sort: [] }),
 			onGroupByRemove: () => updateState({ groupBy: [] }),
 		});

@@ -1,14 +1,13 @@
 import { Button, Group, SegmentedControl, Center } from '@mantine/core';
 import { IconPlus, IconRefresh, IconList, IconLayoutGrid, IconMapPin } from '@tabler/icons-react';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { FilterGroup, useFilterState } from '@/components/FilterGroup';
+import { FilterGroup, SearchGraph, useFilterState } from '@/components/FilterGroup';
 
-import { kioskFilterConfig } from '../../config/filterConfig';
+import { kioskFilterConfig } from './filterConfig';
 
 import type { ViewMode } from './KioskListActions';
-
 
 
 export interface KioskListActionsWithFilterProps {
@@ -16,10 +15,10 @@ export interface KioskListActionsWithFilterProps {
 	onViewModeChange: (mode: ViewMode) => void;
 	onCreate: () => void;
 	onRefresh: () => void;
-	onSearchGraphChange?: (graph: any) => void;
+	onSearchGraphChange?: (graph: SearchGraph) => void;
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProps> = ({
 	viewMode,
 	onViewModeChange,
@@ -29,9 +28,51 @@ export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProp
 }) => {
 	const { t: translate } = useTranslation();
 	const { state, updateState, resetState } = useFilterState({
+		config: kioskFilterConfig,
 		onSearchGraphChange,
 	});
 
+	return (
+		<Group justify='space-between' align='center' wrap='wrap'>
+			<Group gap='md' wrap='wrap'>
+				<Button
+					leftSection={<IconPlus size={16} />}
+					onClick={onCreate}
+				>
+					{translate('nikki.general.actions.create')}
+				</Button>
+				<Button
+					variant='outline'
+					leftSection={<IconRefresh size={16} />}
+					onClick={onRefresh}
+				>
+					{translate('nikki.general.actions.refresh')}
+				</Button>
+			</Group>
+
+			<Group gap='md' wrap='wrap' align='flex-end'>
+				<FilterGroup
+					config={kioskFilterConfig}
+					state={state}
+					updateState={updateState}
+					resetState={resetState}
+					placeholder={translate('nikki.vendingMachine.kiosk.search.placeholder')}
+				/>
+
+				<KioskSegmentedControl
+					viewMode={viewMode}
+					onViewModeChange={onViewModeChange}
+				/>
+			</Group>
+		</Group>
+	);
+};
+
+
+const KioskSegmentedControl: React.FC<{
+	viewMode: ViewMode;
+	onViewModeChange: (mode: ViewMode) => void;
+}> = ({ viewMode, onViewModeChange }) => {
 	const viewModeSegments = [
 		{
 			value: 'list',
@@ -59,58 +100,12 @@ export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProp
 		},
 	];
 
-	const hasActiveFilters = useMemo(() => {
-		return (
-			state.search.length > 0 ||
-			state.filter.length > 0 ||
-			state.groupBy.length > 0 ||
-			state.sort.length > 0
-		);
-	}, [state]);
-
 	return (
-		<Group justify='space-between' align='center' wrap='wrap'>
-			<Group gap='md' wrap='wrap'>
-				<Button
-					leftSection={<IconPlus size={16} />}
-					onClick={onCreate}
-				>
-					{translate('nikki.general.actions.create')}
-				</Button>
-				<Button
-					variant='outline'
-					leftSection={<IconRefresh size={16} />}
-					onClick={onRefresh}
-				>
-					{translate('nikki.general.actions.refresh')}
-				</Button>
-			</Group>
-
-			<Group gap='md' wrap='wrap' align='flex-end'>
-				{hasActiveFilters && (
-					<Button
-						variant='light'
-						color='gray'
-						onClick={resetState}
-					>
-						{translate('nikki.general.actions.clear_filters')}
-					</Button>
-				)}
-				<FilterGroup
-					config={kioskFilterConfig}
-					state={state}
-					updateState={updateState}
-					resetState={resetState}
-					placeholder={translate('nikki.vendingMachine.kiosk.search.placeholder')}
-				/>
-
-				<SegmentedControl
-					data={viewModeSegments}
-					value={viewMode}
-					onChange={(value) => onViewModeChange(value as ViewMode)}
-					size='md'
-				/>
-			</Group>
-		</Group>
+		<SegmentedControl
+			data={viewModeSegments}
+			value={viewMode}
+			onChange={(value) => onViewModeChange(value as ViewMode)}
+			size='md'
+		/>
 	);
 };

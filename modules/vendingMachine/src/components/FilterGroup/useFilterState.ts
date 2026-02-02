@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { FilterState, SearchGraph } from './types';
+import { FilterGroupConfig, FilterState, SearchGraph } from './types';
 import { filterStateToSearchGraph } from './utils';
 
 
 export interface UseFilterStateOptions {
+	config: FilterGroupConfig;
 	initialState?: Partial<FilterState>;
 	onSearchGraphChange?: (graph: SearchGraph) => void;
 }
@@ -13,8 +14,8 @@ export interface UseFilterStateOptions {
  * Hook để quản lý filter state và search graph ở bên ngoài component
  * Hook này quản lý state và chuyển đổi sang search graph để gửi lên backend
  */
-export function useFilterState(options: UseFilterStateOptions = {}) {
-	const { initialState, onSearchGraphChange } = options;
+export function useFilterState(options: UseFilterStateOptions) {
+	const { config, initialState, onSearchGraphChange } = options;
 
 	const [state, setState] = useState<FilterState>({
 		search: [],
@@ -25,7 +26,7 @@ export function useFilterState(options: UseFilterStateOptions = {}) {
 	});
 
 	const searchGraph = useMemo(() => {
-		return filterStateToSearchGraph(state);
+		return filterStateToSearchGraph(state, config);
 	}, [state]);
 
 	useEffect(() => {
