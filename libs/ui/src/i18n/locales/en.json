@@ -70,6 +70,25 @@
 				"all": "All",
 				"status": "Filter by Status"
 			},
+			"filter": {
+				"title": "Filters",
+				"active_filters": "Active Filters",
+				"add_custom": "Add Custom Filter"
+			},
+			"groupBy": {
+				"title": "Group By",
+				"placeholder": "Select fields to group",
+				"add_custom": "Add Custom Group"
+			},
+			"sort": {
+				"title": "Sort",
+				"asc": "Ascending",
+				"desc": "Descending"
+			},
+			"favorites": {
+				"title": "Favorites",
+				"save_current": "Save Current Filter"
+			},
 			"status": {
 				"active": "Active",
 				"inactive": "Inactive"

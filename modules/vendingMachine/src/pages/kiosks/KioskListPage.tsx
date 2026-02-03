@@ -9,7 +9,6 @@ import {
 	KioskDetailDrawer,
 	KioskGridView,
 	KioskMapView,
-	KioskListActions,
 	KioskTable,
 	kioskSchema,
 	type Kiosk,
@@ -17,6 +16,7 @@ import {
 	useKioskDelete,
 	useKioskDetail,
 	useKioskList,
+	KioskListActionsWithFilter,
 } from '@/features/kiosks';
 import { ConnectionStatus, KioskMode, KioskStatus } from '@/features/kiosks/types';
 
@@ -97,25 +97,22 @@ export const KioskListPage: React.FC = () => {
 		console.log('Create kiosk');
 	};
 
+	const handleSearchGraphChange = (graph: any) => {
+		console.debug('🚀 ~ handleSearchGraphChange ~ graph:', graph);
+	};
+
 	useDocumentTitle('nikki.vendingMachine.kiosk.title');
 
 	return (
 		<>
 			<Stack gap='md'>
 				<Title order={5} mt='md'>{translate('nikki.vendingMachine.kiosk.title')}</Title>
-				<KioskListActions
+				<KioskListActionsWithFilter
 					viewMode={viewMode}
 					onViewModeChange={setViewMode}
 					onCreate={handleCreate}
 					onRefresh={handleRefresh}
-					searchValue={searchValue}
-					onSearchChange={setSearchValue}
-					statusFilter={statusFilter}
-					onStatusFilterChange={setStatusFilter}
-					connectionFilter={connectionFilter}
-					onConnectionFilterChange={setConnectionFilter}
-					modeFilter={modeFilter}
-					onModeFilterChange={setModeFilter}
+					onSearchGraphChange={handleSearchGraphChange}
 				/>
 				<Paper className='p-4'>
 					{viewMode === 'list' ? (

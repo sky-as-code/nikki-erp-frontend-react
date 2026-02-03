@@ -70,6 +70,25 @@
 				"all": "Tất cả",
 				"status": "Lọc theo trạng thái"
 			},
+			"filter": {
+				"title": "Bộ lọc",
+				"active_filters": "Bộ lọc đang hoạt động",
+				"add_custom": "Thêm bộ lọc tùy chỉnh"
+			},
+			"groupBy": {
+				"title": "Nhóm theo",
+				"placeholder": "Chọn các trường để nhóm",
+				"add_custom": "Thêm nhóm tùy chỉnh"
+			},
+			"sort": {
+				"title": "Sắp xếp",
+				"asc": "Tăng dần",
+				"desc": "Giảm dần"
+			},
+			"favorites": {
+				"title": "Yêu thích",
+				"save_current": "Lưu bộ lọc hiện tại"
+			},
 			"status": {
 				"active": "Hoạt động",
 				"inactive": "Không hoạt động"
