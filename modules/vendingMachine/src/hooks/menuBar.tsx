@@ -10,29 +10,46 @@ export function useMenuBarItems(): MenuBarItem[] {
 			link: '/overview',
 		},
 		{
-			label: translate('nikki.vendingMachine.menu.kiosks'),
+			label: translate('nikki.vendingMachine.menu.kiosk'),
 			items: [
 				{
-					label: translate('nikki.vendingMachine.menu.kiosks'),
+					label: translate('nikki.vendingMachine.menu.kiosk_management'),
 					link: '/kiosks',
-				},
-				{
-					label: translate('nikki.vendingMachine.menu.ads'),
-					link: '/ads',
-				},
-				{
-					label: translate('nikki.vendingMachine.menu.events'),
-					link: '/events',
-				},
-				{
-					label: translate('nikki.vendingMachine.menu.kiosk_settings'),
-					link: '/kiosk-settings',
 				},
 				{
 					label: translate('nikki.vendingMachine.menu.kiosk_template'),
 					link: '/kiosk-template',
 				},
+				{
+					label: translate('nikki.vendingMachine.menu.kiosk_devices'),
+					link: '/kiosk-devices',
+				},
+				{
+					label: translate('nikki.vendingMachine.menu.kiosk_settings'),
+					link: '/kiosk-settings',
+				},
 			],
+		},
+		{
+			label: translate('nikki.vendingMachine.menu.appearance'),
+			items: [
+				{
+					label: translate('nikki.vendingMachine.menu.presentation'),
+					link: '/ads',
+				},
+				{
+					label: translate('nikki.vendingMachine.menu.themes'),
+					link: '/themes',
+				},
+				{
+					label: translate('nikki.vendingMachine.menu.events'),
+					link: '/events',
+				},
+			],
+		},
+		{
+			label: translate('nikki.vendingMachine.menu.payment'),
+			link: '/payment',
 		},
 		{
 			label: translate('nikki.vendingMachine.menu.reports'),
@@ -43,7 +60,11 @@ export function useMenuBarItems(): MenuBarItem[] {
 				},
 				{
 					label: translate('nikki.vendingMachine.menu.inventory'),
-					link: '/reports/inventory-warning',
+					link: '/reports/inventory',
+				},
+				{
+					label: translate('nikki.vendingMachine.menu.error_analytics'),
+					link: '/reports/error-analytics',
 				},
 			],
 		},

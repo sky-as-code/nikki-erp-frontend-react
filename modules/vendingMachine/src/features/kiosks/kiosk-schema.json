@@ -76,6 +76,10 @@
 			"type": "boolean",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.isActive' }"
 		},
+		"warnings": {
+			"type": "array",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.warnings' }"
+		},
 		"createdAt": {
 			"type": "date",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.createdAt' }",

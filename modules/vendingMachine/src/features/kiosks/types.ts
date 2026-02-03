@@ -110,6 +110,14 @@ export interface SupportRequest {
 	resolvedAt?: string;
 }
 
+export interface KioskWarning {
+	id: string;
+	type: string;
+	message: string;
+	severity: 'low' | 'medium' | 'high' | 'critical';
+	createdAt: string;
+}
+
 export interface Kiosk {
 	id: string;
 	code: string;
@@ -122,6 +130,7 @@ export interface Kiosk {
 	connectionStatus: ConnectionStatus;
 	machineType?: MachineType;
 	connectionHistory?: ConnectionHistory[];
+	warnings?: KioskWarning[];
 	temperature?: number;
 	humidity?: number;
 	powerConsumption?: number;

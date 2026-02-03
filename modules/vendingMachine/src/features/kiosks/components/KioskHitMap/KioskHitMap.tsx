@@ -9,8 +9,7 @@ import {
 	useMapZoom,
 	createMarkersOnMap,
 } from './hooks';
-
-import { useKioskList } from '@/features/kiosks/hooks';
+import { Kiosk } from '../../types';
 
 
 
@@ -20,10 +19,9 @@ export const getMapStyle = (colorScheme: MantineColorScheme): string => {
 		: 'https://api.maptiler.com/maps/positron/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL';
 };
 
-export function KioskHitMap(): React.ReactElement {
+export function KioskHitMap({ kiosks }: { kiosks: Kiosk[] }): React.ReactElement {
 	const mapContainerRef = useRef<HTMLDivElement | null>(null);
 	const { colorScheme } = useMantineColorScheme();
-	const { kiosks = [] } = useKioskList();
 
 	const mapRef = useMapInitialization({
 		mapContainerRef,

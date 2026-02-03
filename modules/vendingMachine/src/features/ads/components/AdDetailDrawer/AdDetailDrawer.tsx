@@ -1,9 +1,13 @@
-import { Badge, Divider, Drawer, Group, Stack, Text, Title } from '@mantine/core';
+import { Badge, Box, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
 import { IconAd } from '@tabler/icons-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Ad } from '../../types';
+import { Ad, AdMedia, GalleryMedia } from '../../types';
+import { AdPreviewHorizontal } from '../AdPreviewHorizontal';
+import { AdPreviewVertical } from '../AdPreviewVertical';
+import { MediaGalleryModal } from '../MediaGalleryModal';
+import { MediaList } from '../MediaList';
 
 
 export interface AdDetailDrawerProps {
@@ -21,6 +25,15 @@ export const AdDetailDrawer: React.FC<AdDetailDrawerProps> = ({
 	isLoading = false,
 }) => {
 	const { t: translate } = useTranslation();
+	const [galleryModalOpened, setGalleryModalOpened] = useState(false);
+	const [adMedia, setAdMedia] = useState<AdMedia[]>(ad?.media || []);
+
+	// Update adMedia when ad changes
+	React.useEffect(() => {
+		if (ad) {
+			setAdMedia(ad.media || []);
+		}
+	}, [ad]);
 
 	if (isLoading || !ad) {
 		return (
@@ -28,8 +41,8 @@ export const AdDetailDrawer: React.FC<AdDetailDrawerProps> = ({
 				opened={opened}
 				onClose={onClose}
 				position='right'
-				size='md'
-				title={<Title order={4}>{translate('nikki.vendingMachine.ads.detail.title')}</Title>}
+				size='xl'
+				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.ads.detail.title')}</Text>}
 			>
 				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
 			</Drawer>
@@ -46,16 +59,38 @@ export const AdDetailDrawer: React.FC<AdDetailDrawerProps> = ({
 		return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
 	};
 
+	const handleAddMedia = () => {
+		setGalleryModalOpened(true);
+	};
+
+	const handleSelectMedia = (selectedMedia: GalleryMedia[]) => {
+		const newMedia: AdMedia[] = selectedMedia.map((item, index) => ({
+			id: item.id,
+			code: item.code,
+			name: item.name,
+			type: item.type,
+			url: item.url,
+			thumbnailUrl: item.thumbnailUrl,
+			duration: item.duration,
+			order: adMedia.length + index + 1,
+		}));
+		setAdMedia([...adMedia, ...newMedia]);
+	};
+
+	const handleRemoveMedia = (mediaId: string) => {
+		setAdMedia(adMedia.filter((m) => m.id !== mediaId).map((m, index) => ({ ...m, order: index + 1 })));
+	};
+
 	return (
 		<Drawer
 			opened={opened}
 			onClose={onClose}
 			position='right'
-			size='md'
+			size='xl'
 			title={
 				<Group gap='xs'>
 					<IconAd size={20} />
-					<Title order={4}>{ad.name}</Title>
+					<Text fw={600} size='lg'>{ad.name}</Text>
 				</Group>
 			}
 			overlayProps={{ opacity: 0.5, blur: 4 }}
@@ -124,7 +159,56 @@ export const AdDetailDrawer: React.FC<AdDetailDrawerProps> = ({
 					</Text>
 					<Text size='sm'>{new Date(ad.createdAt).toLocaleString()}</Text>
 				</div>
+
+				<Divider />
+
+				{/* Media List Section */}
+				<div>
+					<MediaList
+						media={adMedia}
+						onAddMedia={handleAddMedia}
+						onRemoveMedia={handleRemoveMedia}
+					/>
+				</div>
+
+				<Divider />
+
+				{/* Preview Section */}
+				<div>
+					<Text size='sm' c='dimmed' mb='md' fw={500}>
+						{translate('nikki.vendingMachine.ads.preview.title')}
+					</Text>
+					<Stack gap='lg'>
+						{/* Vertical Preview (9:16) - Full screen ad for idle/waiting screen */}
+						<Stack bg='var(--nikki-color-white)' p={16} justify='center' align='center'>
+							<Text size='xs' c='dimmed' mb='xs'>
+								{translate('nikki.vendingMachine.ads.preview.vertical')}
+							</Text>
+							<AdPreviewVertical ad={ad} />
+						</Stack>
+
+						{/* Horizontal Preview - Ad in footer area */}
+
+						<Stack bg='var(--nikki-color-white)' p={16} justify='center' align='center'>
+							<Text size='xs' c='dimmed'>
+								{translate('nikki.vendingMachine.ads.preview.horizontal')}
+							</Text>
+							<AdPreviewHorizontal ad={ad} />
+						</Stack>
+
+						<Divider />
+						<Box h={100}></Box>
+					</Stack>
+				</div>
 			</Stack>
+
+			{/* Media Gallery Modal */}
+			<MediaGalleryModal
+				opened={galleryModalOpened}
+				onClose={() => setGalleryModalOpened(false)}
+				onSelectMedia={handleSelectMedia}
+				selectedMediaIds={adMedia.map((m) => m.id)}
+			/>
 		</Drawer>
 	);
 };

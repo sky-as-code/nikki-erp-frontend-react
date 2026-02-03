@@ -8,9 +8,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 
+import { ThemeSwitchModal } from '../ThemeSwitch';
+
 import { MenuBar } from '@/components/MenuBar';
 
-import { ThemeSwitchModal } from '../ThemeSwitch';
 
 
 export const MenuBarDrawer: React.FC = () => {

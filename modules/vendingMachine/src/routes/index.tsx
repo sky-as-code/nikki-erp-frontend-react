@@ -2,13 +2,18 @@ import { AppRoute } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { Navigate } from 'react-router';
 
+
 import { VendingMachineLayout } from '../layouts';
 import { AdsPage } from '../pages/ads/AdsPage';
 import { EventsPage } from '../pages/events/EventsPage';
+import { KioskDevicePage } from '../pages/kioskDevices/KioskDevicePage';
 import { KioskListPage } from '../pages/kiosks/KioskListPage';
 import { KioskSettingsPage } from '../pages/kioskSettings/KioskSettingsPage';
 import { KioskTemplatePage } from '../pages/kioskTemplate/KioskTemplatePage';
 import { OverviewPage } from '../pages/overview/OverviewPage';
+import { PaymentPage } from '../pages/payment/PaymentPage';
+import { ThemesPage } from '../pages/themes/ThemesPage';
+
 
 
 export const AppRouteElements: React.ReactNode = (
@@ -20,6 +25,9 @@ export const AppRouteElements: React.ReactNode = (
 		<AppRoute path='events' element={<EventsPage />} />
 		<AppRoute path='kiosk-settings' element={<KioskSettingsPage />} />
 		<AppRoute path='kiosk-template' element={<KioskTemplatePage />} />
+		<AppRoute path='kiosk-devices' element={<KioskDevicePage />} />
+		<AppRoute path='payment' element={<PaymentPage />} />
+		<AppRoute path='themes' element={<ThemesPage />} />
 	</AppRoute>
 );
 

@@ -1,19 +1,33 @@
-import { Button, Group, Select, Stack, Text, TextInput } from '@mantine/core';
-import { IconPlus, IconRefresh, IconSearch, IconX } from '@tabler/icons-react';
-import React from 'react';
+/* eslint-disable max-lines-per-function */
+import { Button, Group, MultiSelect, TextInput, SegmentedControl, Center } from '@mantine/core';
+import { IconPlus, IconRefresh, IconSearch, IconList, IconLayoutGrid } from '@tabler/icons-react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { FilterOffButton } from '../FilterOffButton';
+
+
+export type ViewMode = 'list' | 'grid';
+
+export interface FilterConfig {
+	value: string[];
+	onChange: Dispatch<SetStateAction<string[]>>;
+	options: Array<{ value: string; label: string }>;
+	placeholder?: string;
+	maxValues?: number;
+	clearable?: boolean;
+	minWidth?: number;
+}
 
 export interface ListActionsProps {
 	onCreate: () => void;
 	onRefresh: () => void;
 	searchValue: string;
 	onSearchChange: (value: string) => void;
-	statusFilter?: string | 'all';
-	onStatusFilterChange?: (status: string | 'all') => void;
-	statusOptions?: Array<{ value: string; label: string }>;
+	filters?: FilterConfig[];
 	searchPlaceholder?: string;
-	filterPlaceholder?: string;
+	viewMode?: ViewMode;
+	onViewModeChange?: (mode: ViewMode) => void;
 }
 
 export const ListActions: React.FC<ListActionsProps> = ({
@@ -21,22 +35,42 @@ export const ListActions: React.FC<ListActionsProps> = ({
 	onRefresh,
 	searchValue,
 	onSearchChange,
-	statusFilter,
-	onStatusFilterChange,
-	statusOptions,
+	filters = [],
 	searchPlaceholder,
-	filterPlaceholder,
+	viewMode,
+	onViewModeChange,
 }) => {
 	const { t: translate } = useTranslation();
 
-	const hasActiveFilters = (statusFilter !== undefined && statusFilter !== 'all') || searchValue.trim() !== '';
+	const hasActiveFilters =
+		searchValue.trim() !== '' ||
+		filters.some((filter) => filter.value && filter.value.length > 0);
 
 	const handleClearFilters = () => {
 		onSearchChange('');
-		if (onStatusFilterChange) {
-			onStatusFilterChange('all');
-		}
+		filters.forEach((filter) => {
+			filter.onChange([]);
+		});
 	};
+
+	const viewModeSegments = [
+		{
+			value: 'list',
+			label: (
+				<Center h={20}>
+					<IconList size={16} />
+				</Center>
+			),
+		},
+		{
+			value: 'grid',
+			label: (
+				<Center h={20}>
+					<IconLayoutGrid size={16} />
+				</Center>
+			),
+		},
+	];
 
 	return (
 		<Group justify='space-between' align='center' wrap='wrap'>
@@ -58,41 +92,34 @@ export const ListActions: React.FC<ListActionsProps> = ({
 
 			<Group gap='md' wrap='wrap' align='flex-end'>
 				{hasActiveFilters && (
-					<Button
-						variant='light'
-						color='gray'
-						leftSection={<IconX size={16} />}
-						onClick={handleClearFilters}
-					>
-						{translate('nikki.general.actions.clear_filters')}
-					</Button>
+					<FilterOffButton onClick={handleClearFilters} />
 				)}
-				<Stack gap={4}>
-					<Text size='xs' fw={400} c='dimmed'>
-						{searchPlaceholder || translate('nikki.general.search.placeholder')}
-					</Text>
-					<TextInput
-						placeholder={searchPlaceholder || translate('nikki.general.search.placeholder')}
-						leftSection={<IconSearch size={16} />}
-						value={searchValue}
-						onChange={(e) => onSearchChange(e.currentTarget.value)}
-						style={{ minWidth: 250 }}
+				<TextInput
+					placeholder={searchPlaceholder || translate('nikki.general.search.placeholder')}
+					leftSection={<IconSearch size={16} />}
+					value={searchValue}
+					onChange={(e) => onSearchChange(e.currentTarget.value)}
+					style={{ minWidth: 250 }}
+				/>
+				{filters.map((filter, index) => (
+					<MultiSelect
+						key={index}
+						placeholder={filter.placeholder || translate('nikki.general.filters.status')}
+						data={filter.options}
+						value={filter.value}
+						onChange={(value) => filter.onChange(value)}
+						style={{ minWidth: filter.minWidth || 150 }}
+						maxValues={filter.maxValues ?? 2}
+						clearable={filter.clearable !== false}
 					/>
-				</Stack>
-				{statusFilter !== undefined && onStatusFilterChange && statusOptions && (
-					<Stack gap={4}>
-						<Text size='xs' fw={400} c='dimmed'>
-							{filterPlaceholder || translate('nikki.general.filters.status')}
-						</Text>
-						<Select
-							placeholder={filterPlaceholder || translate('nikki.general.filters.status')}
-							data={statusOptions}
-							value={statusFilter}
-							onChange={(value) => onStatusFilterChange((value || 'all') as string | 'all')}
-							style={{ minWidth: 150 }}
-							clearable={false}
-						/>
-					</Stack>
+				))}
+				{viewMode !== undefined && onViewModeChange && (
+					<SegmentedControl
+						data={viewModeSegments}
+						value={viewMode}
+						onChange={(value) => onViewModeChange(value as ViewMode)}
+						size='md'
+					/>
 				)}
 			</Group>
 		</Group>

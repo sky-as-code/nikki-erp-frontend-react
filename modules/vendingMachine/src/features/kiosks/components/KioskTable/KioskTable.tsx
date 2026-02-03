@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Box, Group, Stack, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Badge, Box, Button, Group, Popover, Stack, Text, Tooltip } from '@mantine/core';
 import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
 import {
 	IconEdit,
@@ -7,11 +7,13 @@ import {
 	IconTrash,
 	IconWifi,
 	IconWifiOff,
+	IconAlertTriangle,
 } from '@tabler/icons-react';
+import { TFunction } from 'i18next';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ConnectionHistory, ConnectionStatus, KioskMode, KioskStatus } from '../../types';
+import { ConnectionHistory, ConnectionStatus, Kiosk, KioskMode, KioskStatus, KioskWarning } from '../../types';
 
 
 export interface KioskTableProps extends AutoTableProps {
@@ -23,20 +25,96 @@ export interface KioskTableProps extends AutoTableProps {
 function renderCodeColumn(
 	row: Record<string, unknown>,
 ) {
-	return <Text fw={500}>{String(row.code || '')}</Text>;
+	return <Text c='light-dark(var(--mantine-color-gray-8), var(--mantine-color-dark))' fw={500}>{String(row.code || '')}</Text>;
 }
+
+function renderNameColumn(
+	row: Record<string, unknown>,
+) {
+	return <Text c='light-dark(var(--mantine-color-gray-8), var(--mantine-color-dark))' fw={500}>{String(row.name || '')}</Text>;
+}
+
+interface AddressColumnProps {
+	row: Record<string, unknown>;
+	translate?: (key: string) => string;
+}
+
+const AddressColumn: React.FC<AddressColumnProps> = ({ row, translate }) => {
+	const kiosk = row as unknown as Kiosk;
+	const address = kiosk.address || '';
+
+
+	const handleOpenGoogleMaps = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		let googleMapsUrl = '';
+
+		// Prefer coordinates if available (more accurate)
+		if (kiosk.coordinates?.latitude && kiosk.coordinates?.longitude) {
+			googleMapsUrl = `https://www.google.com/maps?q=${kiosk.coordinates.latitude},${kiosk.coordinates.longitude}`;
+		}
+		else if (address) {
+			// Fallback to address search
+			googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+		}
+
+		if (googleMapsUrl) {
+			window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
+		}
+	};
+
+
+
+	const popoverContent = (
+		<Stack gap='xs' style={{ maxWidth: 300 }}>
+			<Text size='sm' fw={500}>
+				{address || translate?.('nikki.general.no_address') || 'No address'}
+			</Text>
+			<Button
+				size='xs'
+				variant='light'
+				leftSection={<IconMapPin size={14} />}
+				onClick={(e) => handleOpenGoogleMaps(e)}
+			>
+				{translate?.('nikki.general.actions.view_on_map') || 'View on map'}
+			</Button>
+		</Stack>
+	);
+
+	return (
+		<Popover
+			width={300}
+			position='top-start'
+			withArrow
+			shadow='md'
+			transitionProps={{
+				transition: 'fade-up',
+				duration: 150,
+				timingFunction: 'ease-in-out',
+			}}
+		>
+			<Popover.Target>
+				<Button
+					size='xs'
+					variant='transparent'
+					leftSection={<IconMapPin size={14} />}
+				>
+					<Text size='sm' c='dimmed' lineClamp={1} style={{ maxWidth: 200 }}>
+						{address}
+					</Text>
+				</Button>
+			</Popover.Target>
+			<Popover.Dropdown>
+				{popoverContent}
+			</Popover.Dropdown>
+		</Popover>
+	);
+};
 
 function renderAddressColumn(
 	row: Record<string, unknown>,
+	translate?: (key: string) => string,
 ) {
-	return (
-		<Group gap='xs'>
-			<IconMapPin size={14} />
-			<Text size='sm' c='dimmed' lineClamp={1} style={{ maxWidth: 200 }}>
-				{String(row.address || '')}
-			</Text>
-		</Group>
-	);
+	return <AddressColumn row={row} translate={translate} />;
 }
 
 function renderStatusColumn(
@@ -142,6 +220,82 @@ function renderConnectionStatusColumn(
 	);
 }
 
+
+
+function renderWarningsColumn(
+	row: Record<string, unknown>,
+	translate: TFunction,
+) {
+	const warnings = (row.warnings as KioskWarning[]) || [];
+	if (!warnings || warnings.length === 0) return '--';
+
+	const warningCount = warnings.length;
+	const severityColors = {
+		low: 'yellow',
+		medium: 'orange',
+		high: 'red',
+		critical: 'red',
+	};
+
+	const highestSeverity = warnings.reduce((highest, warning) => {
+		const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
+		return severityOrder[warning.severity] > severityOrder[highest.severity] ? warning : highest;
+	}, warnings[0]);
+
+	const tooltipContent = (
+		<Stack gap='xs' style={{ maxWidth: 300 }}>
+			<Text size='sm' fw={500}>
+				{translate('nikki.vendingMachine.kiosk.warnings.title')} ({warningCount})
+			</Text>
+			{warnings.slice(0, 5).map((warning) => (
+				<Group key={warning.id} gap='xs' align='flex-start'>
+					<IconAlertTriangle size={16} color={`var(--mantine-color-${severityColors[warning.severity]}-6)`} />
+					<Stack gap={2}>
+						<Text size='xs' fw={500}>{warning.type}</Text>
+						<Text size='xs' c='dimmed'>{warning.message}</Text>
+					</Stack>
+				</Group>
+			))}
+			{warnings.length > 5 && (
+				<Text size='xs' c='dimmed' ta='center'>
+					{translate('nikki.vendingMachine.kiosk.warnings.more', { count: warnings.length - 5 })}
+				</Text>
+			)}
+		</Stack>
+	);
+
+	return (
+		<Stack align='start' justify='center'>
+			<Tooltip label={tooltipContent} withArrow position='top' multiline>
+				<Box
+					pos='relative'
+					style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+					onClick={(e) => e.stopPropagation()}
+				>
+					<IconAlertTriangle
+						size={22}
+						color={`var(--mantine-color-${severityColors[highestSeverity.severity]}-6)`}
+					/>
+					<Badge
+						color={severityColors[highestSeverity.severity]}
+						size='xs'
+						variant='filled'
+						pos='absolute'
+						top={-6}
+						right={-8}
+						h={14}
+						w={14}
+						p={0}
+						fz={10}
+					>
+						{warningCount}
+					</Badge>
+				</Box>
+			</Tooltip>
+		</Stack>
+	);
+}
+
 function renderActionsColumn(
 	row: Record<string, unknown>,
 	onView?: (kioskId: string) => void,
@@ -220,10 +374,12 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 				isLoading={isLoading}
 				columnRenderers={{
 					code: renderCodeColumn,
-					address: renderAddressColumn,
+					name: renderNameColumn,
+					address: (row) => renderAddressColumn(row, translate),
 					status: (row) => renderStatusColumn(row, translate),
 					mode: (row) => renderModeColumn(row, translate),
 					connectionStatus: (row) => renderConnectionStatusColumn(row, translate),
+					warnings: (row) => renderWarningsColumn(row, translate),
 					actions: (row) => renderActionsColumn(row, onViewDetail, onEdit, onDelete, translate),
 				}}
 				headerRenderers={{

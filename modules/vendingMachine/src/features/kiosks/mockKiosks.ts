@@ -1,4 +1,4 @@
-import { ConnectionStatus, Kiosk, KioskMode, KioskStatus, MachineType } from './types';
+import { ConnectionStatus, Kiosk, KioskMode, KioskStatus, MachineType, KioskWarning } from './types';
 
 // Mock data for kiosks
 const mockKiosksData: Kiosk[] = [
@@ -24,6 +24,15 @@ const mockKiosksData: Kiosk[] = [
 		temperature: 24.5,
 		humidity: 55.2,
 		powerConsumption: 285.3,
+		warnings: [
+			{
+				id: 'w1',
+				type: 'Temperature Warning',
+				message: 'Temperature slightly above normal range',
+				severity: 'low',
+				createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+			},
+		] as KioskWarning[],
 		createdAt: '2024-01-15T08:00:00Z',
 		etag: 'etag-001',
 	},
@@ -74,6 +83,22 @@ const mockKiosksData: Kiosk[] = [
 		temperature: 28.3,
 		humidity: 68.9,
 		powerConsumption: 0,
+		warnings: [
+			{
+				id: 'w4',
+				type: 'Critical Error',
+				message: 'Device disconnected',
+				severity: 'critical',
+				createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+			},
+			{
+				id: 'w5',
+				type: 'Temperature Alert',
+				message: 'Temperature exceeds safe limits',
+				severity: 'high',
+				createdAt: new Date(Date.now() - 3 * 3600000).toISOString(),
+			},
+		] as KioskWarning[],
 		createdAt: '2024-02-01T10:15:00Z',
 		etag: 'etag-003',
 	},

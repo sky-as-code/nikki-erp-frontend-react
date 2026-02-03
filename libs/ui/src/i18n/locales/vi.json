@@ -66,7 +66,9 @@
 				"select_all": "Chọn tất cả",
 				"deselect_all": "Bỏ chọn tất cả",
 				"clear_filters": "Xóa bộ lọc",
-				"title": "Thao tác"
+				"title": "Thao tác",
+				"view_on_map": "Xem trên bản đồ",
+				"add": "Thêm"
 			},
 			"boolean": {
 				"yes": "Có",
@@ -752,16 +754,27 @@
 			}
 		},
 		"vendingMachine": {
+			"title": "Vending Machine",
 			"menu": {
 				"overview": "Tổng quan",
-				"kiosks": "Kiosk",
-				"ads": "Quảng cáo",
+				"kiosk": "Kiosk",
+				"kiosk_management": "Quản lý Kiosk",
+				"kiosk_warnings": "Cảnh báo",
+				"kiosk_devices": "Thiết bị",
+				"presentation": "Trình chiếu",
+				"ads": "Trình chiếu",
 				"events": "Sự kiện",
-				"kiosk_settings": "Cài đặt Kiosk",
+				"appearance": "Giao diện",
+				"themes": "Chủ đề",
+				"device": "Thiết bị",
+				"kiosk_settings": "Cài đặt",
 				"kiosk_template": "Mẫu Kiosk",
+				"payment": "Thanh toán",
 				"reports": "Báo cáo",
 				"revenue": "Doanh thu",
-				"inventory": "Hàng tồn"
+				"inventory": "Hàng tồn",
+				"error_analytics": "Phân tích lỗi",
+				"customer_support": "Hỗ trợ khách hàng"
 			},
 			"overview": {
 				"title": "Tổng quan - Máy bán hàng tự động",
@@ -874,6 +887,7 @@
 					"connectionStatus": "Kết nối",
 					"status": "Trạng thái",
 					"mode": "Chế độ",
+					"warnings": "Cảnh báo",
 					"actions": "Thao tác",
 					"createdAt": "Ngày tạo",
 					"deletedAt": "Ngày xóa"
@@ -909,6 +923,10 @@
 					"connection": "Lọc theo kết nối",
 					"mode": "Lọc theo chế độ"
 				},
+				"warnings": {
+					"title": "Cảnh báo",
+					"more": "{{count}} cảnh báo khác"
+				},
 				"messages": {
 					"no_kiosks": "Không tìm thấy kiosk nào",
 					"create_success": "Kiosk \"{{name}}\" đã được tạo thành công",
@@ -938,6 +956,48 @@
 				},
 				"filter": {
 					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_ads": "Không tìm thấy quảng cáo nào"
+				},
+				"preview": {
+					"title": "Xem trước",
+					"vertical": "Quảng cáo màn hình dọc (9:16) - Màn hình chờ",
+					"horizontal": "Quảng cáo màn hình ngang - Hiển thị ở footer"
+				},
+				"media": {
+					"title": "Danh sách Media",
+					"add": "Thêm Media",
+					"empty": "Chưa có media nào. Nhấn 'Thêm Media' để thêm.",
+					"fields": {
+						"preview": "Xem trước",
+						"code": "Mã",
+						"name": "Tên",
+						"type": "Loại",
+						"duration": "Thời lượng",
+						"size": "Kích thước"
+					},
+					"type": {
+						"image": "Ảnh",
+						"video": "Video"
+					},
+					"gallery": {
+						"title": "Thư viện Media",
+						"tab": "Thư viện",
+						"folders": "Thư mục",
+						"all": "Tất cả",
+						"items": "mục",
+						"gridView": "Xem dạng lưới",
+						"listView": "Xem dạng danh sách",
+						"selected": "Đã chọn",
+						"selectedCount": "mục đã chọn",
+						"selectedMedia": "Media đã chọn"
+					},
+					"upload": {
+						"tab": "Tải lên",
+						"description": "Chọn file từ máy tính của bạn để tải lên",
+						"button": "Chọn file"
+					}
 				}
 			},
 			"events": {
@@ -962,6 +1022,9 @@
 				},
 				"filter": {
 					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_events": "Không tìm thấy sự kiện nào"
 				}
 			},
 			"kioskSettings": {
@@ -983,9 +1046,13 @@
 				},
 				"filter": {
 					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_settings": "Không tìm thấy cài đặt nào"
 				}
 			},
 			"kioskTemplate": {
+				"title": "Mẫu Kiosk",
 				"detail": {
 					"title": "Chi tiết Mẫu Kiosk"
 				},
@@ -1002,6 +1069,138 @@
 				},
 				"filter": {
 					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_templates": "Không tìm thấy mẫu nào"
+				}
+			},
+			"payment": {
+				"title": "Phương thức thanh toán",
+				"detail": {
+					"title": "Chi tiết Phương thức thanh toán"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã",
+					"name": "Tên",
+					"image": "Ảnh",
+					"status": "Trạng thái",
+					"description": "Mô tả",
+					"minTransactionValue": "Giá trị giao dịch thấp nhất",
+					"maxTransactionValue": "Giá trị giao dịch cao nhất",
+					"transactionRange": "Khoảng giá trị giao dịch",
+					"customFields": "Trường tùy chỉnh",
+					"customFieldKey": "Khóa",
+					"customFieldValue": "Giá trị",
+					"customFieldType": "Loại",
+					"createdAt": "Ngày tạo"
+				},
+				"customFieldTypes": {
+					"string": "Chuỗi",
+					"number": "Số",
+					"password": "Mật khẩu",
+					"email": "Email",
+					"url": "URL",
+					"date": "Ngày tháng"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_payments": "Không tìm thấy phương thức thanh toán nào",
+					"no_custom_fields": "Không có trường tùy chỉnh"
+				}
+			},
+			"themes": {
+				"detail": {
+					"title": "Chi tiết Chủ đề"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã chủ đề",
+					"name": "Tên chủ đề",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"primaryColor": "Màu chủ đạo",
+					"productCardStyle": "Kiểu thẻ sản phẩm",
+					"appBackground": "Nền ứng dụng",
+					"fontStyle": "Kiểu phông chữ",
+					"mascotImage": "Ảnh linh vật",
+					"createdAt": "Ngày tạo"
+				},
+				"productCardStyle": {
+					"default": "Mặc định",
+					"rounded": "Bo tròn",
+					"minimal": "Tối giản",
+					"elegant": "Thanh lịch",
+					"modern": "Hiện đại"
+				},
+				"appBackground": {
+					"none": "Không có",
+					"snow": "Tuyết rơi",
+					"fireworks": "Pháo hoa",
+					"particles": "Hạt",
+					"gradient": "Gradient",
+					"custom": "Tùy chỉnh"
+				},
+				"fontStyle": {
+					"default": "Mặc định",
+					"roboto": "Roboto",
+					"inter": "Inter",
+					"poppins": "Poppins",
+					"montserrat": "Montserrat",
+					"custom": "Tùy chỉnh"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_themes": "Không tìm thấy chủ đề nào"
+				},
+				"preview": {
+					"title": "Xem trước"
+				}
+			},
+			"device": {
+				"title": "Thiết bị",
+				"detail": {
+					"title": "Chi tiết Thiết bị"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã thiết bị",
+					"name": "Tên",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"deviceType": "Loại thiết bị",
+					"specifications": "Thông số",
+					"specKey": "Khóa",
+					"specValue": "Giá trị",
+					"createdAt": "Ngày tạo"
+				},
+				"deviceType": {
+					"motor": "Động cơ đẩy hàng",
+					"pos": "POS",
+					"screen": "Màn hình",
+					"cpu": "CPU",
+					"router": "Router WiFi"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái",
+					"deviceType": "Lọc theo loại thiết bị"
+				},
+				"messages": {
+					"no_devices": "Không tìm thấy thiết bị nào",
+					"no_specifications": "Không có thông số"
 				}
 			}
 		}

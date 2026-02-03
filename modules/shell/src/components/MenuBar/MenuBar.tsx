@@ -16,7 +16,7 @@ import classes from './MenuBar.module.css';
 import { VerticalMenuBar } from './VerticalMenuBar';
 
 
-const MAX_VISIBLE_HORIZONTAL_ITEMS = 4;
+const MAX_VISIBLE_HORIZONTAL_ITEMS = 5;
 
 export type MenuBarMode = 'horizontal' | 'vertical';
 

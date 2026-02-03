@@ -1,4 +1,4 @@
-import { Badge, Divider, Drawer, Group, Stack, Text, Title } from '@mantine/core';
+import { Badge, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
 import { IconSettings } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,8 +28,8 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 				opened={opened}
 				onClose={onClose}
 				position='right'
-				size='md'
-				title={<Title order={4}>{translate('nikki.vendingMachine.kioskSettings.detail.title')}</Title>}
+				size='lg'
+				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.kioskSettings.detail.title')}</Text>}
 			>
 				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
 			</Drawer>
@@ -50,11 +50,11 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 			opened={opened}
 			onClose={onClose}
 			position='right'
-			size='md'
+			size='lg'
 			title={
 				<Group gap='xs'>
 					<IconSettings size={20} />
-					<Title order={4}>{setting.name}</Title>
+					<Text fw={600} size='lg'>{setting.name}</Text>
 				</Group>
 			}
 			overlayProps={{ opacity: 0.5, blur: 4 }}

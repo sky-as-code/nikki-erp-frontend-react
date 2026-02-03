@@ -1,4 +1,4 @@
-import { Badge, Divider, Drawer, Group, Stack, Text, Title } from '@mantine/core';
+import { Badge, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
 import { IconCalendarEvent } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,8 +28,8 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 				opened={opened}
 				onClose={onClose}
 				position='right'
-				size='md'
-				title={<Title order={4}>{translate('nikki.vendingMachine.events.detail.title')}</Title>}
+				size='lg'
+				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.events.detail.title')}</Text>}
 			>
 				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
 			</Drawer>
@@ -51,11 +51,11 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 			opened={opened}
 			onClose={onClose}
 			position='right'
-			size='md'
+			size='lg'
 			title={
 				<Group gap='xs'>
 					<IconCalendarEvent size={20} />
-					<Title order={4}>{event.name}</Title>
+					<Text fw={600} size='lg'>{event.name}</Text>
 				</Group>
 			}
 			overlayProps={{ opacity: 0.5, blur: 4 }}

@@ -64,7 +64,9 @@
 				"select_all": "Select All",
 				"deselect_all": "Deselect All",
 				"clear_filters": "Clear Filters",
-				"title": "Actions"
+				"title": "Actions",
+				"view_on_map": "View on map",
+				"add": "Add"
 			},
 			"boolean": {
 				"yes": "Yes",
@@ -711,16 +713,27 @@
 			}
 		},
 		"vendingMachine": {
+				"title": "Vending Machine",
 				"menu": {
 					"overview": "Overview",
-					"kiosks": "Kiosks",
-					"ads": "Ads",
+					"kiosk": "Kiosk",
+					"kiosk_management": "Kiosk Management",
+					"kiosk_warnings": "Kiosk Warnings",
+					"kiosk_devices": "Kiosk Devices",
+					"presentation": "Presentation",
+					"ads": "Presentation",
+					"device": "Devices",
 					"events": "Events",
+					"appearance": "Appearance",
+					"themes": "Themes",
 					"kiosk_settings": "Kiosk Settings",
-					"kiosk_template": "Kiosk Template",
-					"reports": "Reports",
+				"kiosk_template": "Kiosk Template",
+				"payment": "Payment",
+				"reports": "Reports",
 					"revenue": "Revenue",
-					"inventory": "Inventory"
+					"inventory": "Inventory",
+					"error_analytics": "Error Analytics",
+					"customer_support": "Customer Support"
 				},
 				"overview": {
 					"title": "Vending Machine Overview",
@@ -833,6 +846,7 @@
 						"connectionStatus": "Connection Status",
 						"status": "Status",
 						"mode": "Mode",
+						"warnings": "Warnings",
 						"actions": "Actions",
 						"createdAt": "Created At",
 						"deletedAt": "Deleted At"
@@ -868,6 +882,10 @@
 						"connection": "Filter by Connection",
 						"mode": "Filter by Mode"
 					},
+					"warnings": {
+						"title": "Warnings",
+						"more": "{{count}} more warning(s)"
+					},
 					"messages": {
 						"no_kiosks": "No kiosks found",
 						"create_success": "Kiosk \"{{name}}\" has been created successfully",
@@ -897,8 +915,50 @@
 					},
 					"filter": {
 						"status": "Filter by Status"
-					}
+					},
+				"messages": {
+					"no_ads": "No ads found"
 				},
+				"preview": {
+					"title": "Preview",
+					"vertical": "Vertical Ad (9:16) - Idle/Waiting Screen",
+					"horizontal": "Horizontal Ad - Displayed in Footer"
+				},
+				"media": {
+					"title": "Media List",
+					"add": "Add Media",
+					"empty": "No media items yet. Click 'Add Media' to add.",
+					"fields": {
+						"preview": "Preview",
+						"code": "Code",
+						"name": "Name",
+						"type": "Type",
+						"duration": "Duration",
+						"size": "Size"
+					},
+					"type": {
+						"image": "Image",
+						"video": "Video"
+					},
+					"gallery": {
+						"title": "Media Gallery",
+						"tab": "Gallery",
+						"folders": "Folders",
+						"all": "All",
+						"items": "items",
+						"gridView": "Grid View",
+						"listView": "List View",
+						"selected": "Selected",
+						"selectedCount": "items selected",
+						"selectedMedia": "Selected Media"
+					},
+					"upload": {
+						"tab": "Upload",
+						"description": "Select files from your computer to upload",
+						"button": "Choose Files"
+					}
+				}
+			},
 				"events": {
 					"detail": {
 						"title": "Event Details"
@@ -921,6 +981,9 @@
 					},
 					"filter": {
 						"status": "Filter by Status"
+					},
+					"messages": {
+						"no_events": "No events found"
 					}
 				},
 				"kioskSettings": {
@@ -942,9 +1005,13 @@
 					},
 					"filter": {
 						"status": "Filter by Status"
+					},
+					"messages": {
+						"no_settings": "No settings found"
 					}
 				},
 				"kioskTemplate": {
+					"title": "Kiosk Templates",
 					"detail": {
 						"title": "Kiosk Template Details"
 					},
@@ -961,6 +1028,138 @@
 					},
 					"filter": {
 						"status": "Filter by Status"
+					},
+					"messages": {
+						"no_templates": "No templates found"
+					}
+				},
+				"payment": {
+					"title": "Payment Methods",
+					"detail": {
+						"title": "Payment Method Details"
+					},
+					"fields": {
+						"id": "ID",
+						"code": "Code",
+						"name": "Name",
+						"image": "Image",
+						"status": "Status",
+						"description": "Description",
+						"minTransactionValue": "Min Transaction Value",
+						"maxTransactionValue": "Max Transaction Value",
+						"transactionRange": "Transaction Range",
+						"customFields": "Custom Fields",
+						"customFieldKey": "Key",
+						"customFieldValue": "Value",
+						"customFieldType": "Type",
+						"createdAt": "Created At"
+					},
+					"customFieldTypes": {
+						"string": "String",
+						"number": "Number",
+						"password": "Password",
+						"email": "Email",
+						"url": "URL",
+						"date": "Date"
+					},
+					"search": {
+						"placeholder": "Search by code or name..."
+					},
+					"filter": {
+						"status": "Filter by Status"
+					},
+				"messages": {
+					"no_payments": "No payment methods found",
+					"no_custom_fields": "No custom fields"
+				}
+			},
+			"themes": {
+				"detail": {
+					"title": "Theme Details"
+				},
+				"fields": {
+					"id": "ID",
+					"code": "Code",
+					"name": "Name",
+					"description": "Description",
+					"status": "Status",
+					"primaryColor": "Primary Color",
+					"productCardStyle": "Product Card Style",
+					"appBackground": "App Background",
+					"fontStyle": "Font Style",
+					"mascotImage": "Mascot Image",
+					"createdAt": "Created At"
+				},
+				"productCardStyle": {
+					"default": "Default",
+					"rounded": "Rounded",
+					"minimal": "Minimal",
+					"elegant": "Elegant",
+					"modern": "Modern"
+				},
+				"appBackground": {
+					"none": "None",
+					"snow": "Snow",
+					"fireworks": "Fireworks",
+					"particles": "Particles",
+					"gradient": "Gradient",
+					"custom": "Custom"
+				},
+				"fontStyle": {
+					"default": "Default",
+					"roboto": "Roboto",
+					"inter": "Inter",
+					"poppins": "Poppins",
+					"montserrat": "Montserrat",
+					"custom": "Custom"
+				},
+				"search": {
+					"placeholder": "Search by code or name..."
+				},
+				"filter": {
+					"status": "Filter by Status"
+				},
+				"messages": {
+					"no_themes": "No themes found"
+				},
+				"preview": {
+					"title": "Preview"
+				}
+			},
+				"device": {
+					"title": "Devices",
+					"detail": {
+						"title": "Device Details"
+					},
+					"fields": {
+						"id": "ID",
+						"code": "Code",
+						"name": "Name",
+						"description": "Description",
+						"status": "Status",
+						"deviceType": "Device Type",
+						"specifications": "Specifications",
+						"specKey": "Key",
+						"specValue": "Value",
+						"createdAt": "Created At"
+					},
+					"deviceType": {
+						"motor": "Motor (Product Pusher)",
+						"pos": "POS",
+						"screen": "Screen",
+						"cpu": "CPU",
+						"router": "WiFi Router"
+					},
+					"search": {
+						"placeholder": "Search by code or name..."
+					},
+					"filter": {
+						"status": "Filter by Status",
+						"deviceType": "Filter by Device Type"
+					},
+					"messages": {
+						"no_devices": "No devices found",
+						"no_specifications": "No specifications"
 					}
 				}
 		}

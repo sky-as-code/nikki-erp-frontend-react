@@ -1,10 +1,10 @@
-import { Paper, Stack, Title } from '@mantine/core';
 import { ConfirmModal } from '@nikkierp/ui/components';
 import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { PageContainer } from '@/components/PageContainer';
 import {
 	KioskDetailDrawer,
 	KioskGridView,
@@ -24,7 +24,7 @@ import { ConnectionStatus, KioskMode, KioskStatus } from '@/features/kiosks/type
 // eslint-disable-next-line max-lines-per-function
 export const KioskListPage: React.FC = () => {
 	const { t: translate } = useTranslation();
-	const { kiosks, isLoadingList, handleRefresh } = useKioskList();
+	const { kiosks = [], isLoadingList, handleRefresh } = useKioskList();
 	const { isOpen, item, configOpenModal, handleCloseModal } = useConfirmModal<Kiosk>();
 	const confirmDelete = useKioskDelete(handleRefresh);
 
@@ -97,64 +97,64 @@ export const KioskListPage: React.FC = () => {
 		console.log('Create kiosk');
 	};
 
-	const handleSearchGraphChange = (graph: any) => {
+	const handleSearchGraphChange = useCallback((graph: any) => {
 		console.debug('🚀 ~ handleSearchGraphChange ~ graph:', graph);
-	};
+	}, []);
 
 	useDocumentTitle('nikki.vendingMachine.kiosk.title');
 
+	const breadcrumbs = useMemo(() => [
+		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
+		{ title: translate('nikki.vendingMachine.kiosk.title'), href: '#' },
+	], []);
+
 	return (
 		<>
-			<Stack gap='md'>
-				<Title order={5} mt='md'>{translate('nikki.vendingMachine.kiosk.title')}</Title>
-				<KioskListActionsWithFilter
-					viewMode={viewMode}
-					onViewModeChange={setViewMode}
-					onCreate={handleCreate}
-					onRefresh={handleRefresh}
-					onSearchGraphChange={handleSearchGraphChange}
-				/>
-				<Paper className='p-4'>
-					{viewMode === 'list' ? (
-						<KioskTable
-							columns={['code', 'name', 'connectionStatus', 'address', 'status', 'mode', 'actions']}
-							data={filteredKiosks}
-							schema={kioskSchema as ModelSchema}
-							isLoading={isLoadingList}
-							onViewDetail={handleViewDetail}
-							onDelete={handleOpenDeleteModal}
-						/>
-					) : viewMode === 'grid' ? (
-						<KioskGridView
-							kiosks={filteredKiosks}
-							isLoading={isLoadingList}
-							onViewDetail={handleViewDetail}
-							onDelete={handleOpenDeleteModal}
-						/>
-					) : (
-						<KioskMapView
-							kiosks={filteredKiosks}
-							isLoading={isLoadingList}
-							onViewDetail={handleViewDetail}
-						/>
-					)}
-				</Paper>
-
-				<ConfirmModal
-					opened={isOpen}
-					onClose={handleCloseModal}
-					onConfirm={handleDeleteConfirm}
-					title={translate('nikki.general.messages.delete_confirm')}
-					message={
-						item
-							? translate('nikki.general.messages.delete_confirm_name', { name: item.name })
-							: translate('nikki.general.messages.delete_confirm')
-					}
-					confirmLabel={translate('nikki.general.actions.delete')}
-					confirmColor='red'
-				/>
-			</Stack>
-
+			<PageContainer
+				breadcrumbs={breadcrumbs}
+				actionBar={
+					<KioskListActionsWithFilter
+						viewMode={viewMode}
+						onViewModeChange={setViewMode}
+						onCreate={handleCreate}
+						onRefresh={handleRefresh}
+						onSearchGraphChange={handleSearchGraphChange}
+					/>
+				}
+			>
+				{viewMode === 'list' ? (
+					<KioskTable
+						columns={['code', 'name', 'connectionStatus', 'address', 'status', 'mode', 'warnings', 'actions']}
+						data={filteredKiosks}
+						schema={kioskSchema as ModelSchema}
+						isLoading={isLoadingList}
+						onViewDetail={handleViewDetail}
+						onDelete={handleOpenDeleteModal}
+					/>
+				) : viewMode === 'grid' ? (
+					<KioskGridView
+						kiosks={filteredKiosks}
+						isLoading={isLoadingList}
+						onViewDetail={handleViewDetail}
+						onDelete={handleOpenDeleteModal}
+					/>
+				) : (
+					<KioskMapView kiosks={kiosks} />
+				)}
+			</PageContainer>
+			<ConfirmModal
+				opened={isOpen}
+				onClose={handleCloseModal}
+				onConfirm={handleDeleteConfirm}
+				title={translate('nikki.general.messages.delete_confirm')}
+				message={
+					item
+						? translate('nikki.general.messages.delete_confirm_name', { name: item.name })
+						: translate('nikki.general.messages.delete_confirm')
+				}
+				confirmLabel={translate('nikki.general.actions.delete')}
+				confirmColor='red'
+			/>
 			<KioskDetailDrawer
 				opened={drawerOpened}
 				onClose={handleCloseDrawer}
