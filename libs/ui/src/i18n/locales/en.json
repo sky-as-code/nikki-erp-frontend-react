@@ -971,7 +971,17 @@
 						"status": "Status",
 						"startDate": "Start Date",
 						"endDate": "End Date",
-						"createdAt": "Created At"
+						"createdAt": "Created At",
+						"kiosks": "Kiosk List",
+						"products": "Product List",
+						"theme": "Theme",
+						"themeAndSlideshow": "Theme and Slideshow",
+						"slideshowPlaylists": "Slideshow Playlists",
+						"productImage": "Image",
+						"productCode": "Product Code",
+						"productName": "Product Name",
+						"originalPrice": "Original Price",
+						"eventPrice": "Event Price"
 					},
 					"status": {
 						"completed": "Completed"
@@ -982,8 +992,63 @@
 					"filter": {
 						"status": "Filter by Status"
 					},
+					"productSearch": {
+						"placeholder": "Search products by code or name..."
+					},
+					"availableProducts": {
+						"title": "Available Products"
+					},
+					"theme": {
+						"placeholder": "Select theme...",
+						"noResults": "No themes found"
+					},
+					"playlist": {
+						"idleScreen": "Idle Screen",
+						"shoppingScreen": "Shopping Screen",
+						"mediaType": "Type",
+						"thumbnail": "Thumbnail",
+						"duration": "Duration",
+						"selectAds": "Select Ads"
+					},
+					"selectAds": {
+						"title": "Select Ads for Playlist",
+						"searchPlaceholder": "Search ads...",
+						"selectedCount": "Selected {{count}} ads",
+						"noAds": "No ads found",
+						"media": "media"
+					},
+					"selectKiosks": {
+						"title": "Select Kiosks for Event",
+						"searchPlaceholder": "Search kiosks...",
+						"selectedCount": "Selected {{count}} kiosks",
+						"noKiosks": "No kiosks found",
+						"addKiosks": "Add Kiosks"
+					},
+					"selectProducts": {
+						"title": "Select Products for Event",
+						"searchPlaceholder": "Search products...",
+						"selectedProducts": "Selected Products",
+						"availableProducts": "Available Products",
+						"noProducts": "No products found",
+						"addProducts": "Add Products",
+						"editProduct": "Edit Product",
+						"imageUrl": "Image URL",
+						"badgeImageUrl": "Badge Image URL"
+					},
+					"selectTheme": {
+						"title": "Select Theme for Event",
+						"searchPlaceholder": "Search themes...",
+						"noThemes": "No themes found",
+						"selectTheme": "Select Theme"
+					},
 					"messages": {
-						"no_events": "No events found"
+						"no_events": "No events found",
+						"no_kiosks": "No kiosks assigned to this event",
+						"no_products": "No products in this event",
+						"no_theme": "No theme selected",
+						"no_idle_playlist": "No playlist for idle screen",
+						"no_shopping_playlist": "No playlist for shopping screen",
+						"no_media_in_playlist": "No media in playlist"
 					}
 				},
 				"kioskSettings": {

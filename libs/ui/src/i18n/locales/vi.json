@@ -1012,7 +1012,17 @@
 					"status": "Trạng thái",
 					"startDate": "Ngày bắt đầu",
 					"endDate": "Ngày kết thúc",
-					"createdAt": "Ngày tạo"
+					"createdAt": "Ngày tạo",
+					"kiosks": "Danh sách Kiosk",
+					"products": "Danh sách Sản phẩm",
+					"theme": "Chủ đề",
+					"themeAndSlideshow": "Chủ đề và Trình chiếu",
+					"slideshowPlaylists": "Danh sách Trình chiếu",
+					"productImage": "Hình ảnh",
+					"productCode": "Mã sản phẩm",
+					"productName": "Tên sản phẩm",
+					"originalPrice": "Giá gốc",
+					"eventPrice": "Giá sự kiện"
 				},
 				"status": {
 					"completed": "Đã hoàn thành"
@@ -1023,8 +1033,63 @@
 				"filter": {
 					"status": "Lọc theo trạng thái"
 				},
+				"productSearch": {
+					"placeholder": "Tìm kiếm sản phẩm theo mã hoặc tên..."
+				},
+				"availableProducts": {
+					"title": "Sản phẩm có thể thêm"
+				},
+				"theme": {
+					"placeholder": "Chọn chủ đề...",
+					"noResults": "Không tìm thấy chủ đề nào"
+				},
+				"playlist": {
+					"idleScreen": "Màn hình chờ",
+					"shoppingScreen": "Màn hình mua hàng",
+					"mediaType": "Loại",
+					"thumbnail": "Hình thu nhỏ",
+					"duration": "Thời lượng",
+					"selectAds": "Chọn quảng cáo"
+				},
+				"selectAds": {
+					"title": "Chọn quảng cáo cho playlist",
+					"searchPlaceholder": "Tìm kiếm quảng cáo...",
+					"selectedCount": "Đã chọn {{count}} quảng cáo",
+					"noAds": "Không tìm thấy quảng cáo nào",
+					"media": "media"
+				},
+				"selectKiosks": {
+					"title": "Chọn Kiosk cho sự kiện",
+					"searchPlaceholder": "Tìm kiếm kiosk...",
+					"selectedCount": "Đã chọn {{count}} kiosk",
+					"noKiosks": "Không tìm thấy kiosk nào",
+					"addKiosks": "Thêm Kiosk"
+				},
+				"selectProducts": {
+					"title": "Chọn Sản phẩm cho sự kiện",
+					"searchPlaceholder": "Tìm kiếm sản phẩm...",
+					"selectedProducts": "Sản phẩm đã chọn",
+					"availableProducts": "Sản phẩm có sẵn",
+					"noProducts": "Không tìm thấy sản phẩm nào",
+					"addProducts": "Thêm Sản phẩm",
+					"editProduct": "Chỉnh sửa sản phẩm",
+					"imageUrl": "URL hình ảnh",
+					"badgeImageUrl": "URL hình ảnh badge"
+				},
+				"selectTheme": {
+					"title": "Chọn Chủ đề cho sự kiện",
+					"searchPlaceholder": "Tìm kiếm chủ đề...",
+					"noThemes": "Không tìm thấy chủ đề nào",
+					"selectTheme": "Chọn Chủ đề"
+				},
 				"messages": {
-					"no_events": "Không tìm thấy sự kiện nào"
+					"no_events": "Không tìm thấy sự kiện nào",
+					"no_kiosks": "Chưa có kiosk nào được gán cho sự kiện này",
+					"no_products": "Chưa có sản phẩm nào trong sự kiện này",
+					"no_theme": "Chưa chọn chủ đề",
+					"no_idle_playlist": "Chưa có playlist cho màn hình chờ",
+					"no_shopping_playlist": "Chưa có playlist cho màn hình mua hàng",
+					"no_media_in_playlist": "Chưa có media nào trong playlist"
 				}
 			},
 			"kioskSettings": {
