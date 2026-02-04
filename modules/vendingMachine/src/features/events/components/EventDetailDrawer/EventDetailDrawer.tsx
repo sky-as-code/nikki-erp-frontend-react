@@ -54,7 +54,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 				opened={opened}
 				onClose={onClose}
 				position='right'
-				size='lg'
+				size='xl'
 				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.events.detail.title')}</Text>}
 			>
 				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>

@@ -66,7 +66,8 @@
 				"clear_filters": "Clear Filters",
 				"title": "Actions",
 				"view_on_map": "View on map",
-				"add": "Add"
+				"add": "Add",
+				"today": "Today"
 			},
 			"boolean": {
 				"yes": "Yes",
@@ -1051,6 +1052,14 @@
 						"no_idle_playlist": "No playlist for idle screen",
 						"no_shopping_playlist": "No playlist for shopping screen",
 						"no_media_in_playlist": "No media in playlist"
+					},
+					"calendar": {
+						"view": {
+							"month": "Month",
+							"week": "Week",
+							"day": "Day",
+							"list": "List"
+						}
 					}
 				},
 				"kioskSettings": {

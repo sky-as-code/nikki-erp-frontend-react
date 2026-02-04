@@ -4,7 +4,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ActionBar, type ViewMode, type FilterConfig } from '@/components';
+import { ActionBar, type ViewMode, ActionBarFilterConfig } from '@/components';
 import { PageContainer } from '@/components/PageContainer';
 import { AdDetailDrawer, AdGridView, AdTable, adSchema, useAdDetail, useAdList } from '@/features/ads';
 import { Ad } from '@/features/ads/types';
@@ -84,7 +84,7 @@ export const AdsPage: React.FC = () => {
 		{ value: 'expired', label: translate('nikki.vendingMachine.ads.status.expired') },
 	];
 
-	const filters: FilterConfig[] = useMemo(() => [
+	const filters: ActionBarFilterConfig[] = useMemo(() => [
 		{
 			value: statusFilter,
 			onChange: setStatusFilter,
@@ -114,6 +114,7 @@ export const AdsPage: React.FC = () => {
 						searchPlaceholder={translate('nikki.vendingMachine.ads.search.placeholder')}
 						viewMode={viewMode}
 						onViewModeChange={setViewMode}
+						viewModeSegments={['list', 'grid']}
 					/>
 				}
 			>

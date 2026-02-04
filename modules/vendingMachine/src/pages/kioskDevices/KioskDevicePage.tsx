@@ -4,7 +4,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ActionBar, type ViewMode, type FilterConfig } from '@/components';
+import { ActionBar, type ViewMode, ActionBarFilterConfig } from '@/components';
 import { PageContainer } from '@/components/PageContainer';
 import {
 	KioskDeviceDetailDrawer,
@@ -30,7 +30,8 @@ export const KioskDevicePage: React.FC = () => {
 	const [selectedKioskDeviceId, setSelectedKioskDeviceId] = useState<string | undefined>();
 	const [drawerOpened, setDrawerOpened] = useState(false);
 
-	const { kioskDevice: selectedKioskDevice, isLoading: isLoadingDetail } = useKioskDeviceDetail(selectedKioskDeviceId);
+	const { kioskDevice: selectedKioskDevice, isLoading: isLoadingDetail } =
+		useKioskDeviceDetail(selectedKioskDeviceId);
 
 
 	// Filter and search kiosk devices
@@ -103,7 +104,7 @@ export const KioskDevicePage: React.FC = () => {
 		{ value: 'router', label: translate('nikki.vendingMachine.device.deviceType.router') },
 	];
 
-	const filters: FilterConfig[] = useMemo(() => [
+	const filters: ActionBarFilterConfig[] = useMemo(() => [
 		{
 			value: statusFilter,
 			onChange: setStatusFilter,
@@ -139,6 +140,7 @@ export const KioskDevicePage: React.FC = () => {
 						searchPlaceholder={translate('nikki.vendingMachine.device.search.placeholder')}
 						viewMode={viewMode}
 						onViewModeChange={setViewMode}
+						viewModeSegments={['list', 'grid']}
 					/>
 				}
 			>

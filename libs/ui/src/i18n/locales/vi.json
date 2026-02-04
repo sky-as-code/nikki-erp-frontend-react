@@ -68,7 +68,8 @@
 				"clear_filters": "Xóa bộ lọc",
 				"title": "Thao tác",
 				"view_on_map": "Xem trên bản đồ",
-				"add": "Thêm"
+				"add": "Thêm",
+				"today": "Hôm nay"
 			},
 			"boolean": {
 				"yes": "Có",
@@ -1092,6 +1093,14 @@
 					"no_idle_playlist": "Chưa có playlist cho màn hình chờ",
 					"no_shopping_playlist": "Chưa có playlist cho màn hình mua hàng",
 					"no_media_in_playlist": "Chưa có media nào trong playlist"
+				},
+				"calendar": {
+					"view": {
+						"month": "Tháng",
+						"week": "Tuần",
+						"day": "Ngày",
+						"list": "Danh sách"
+					}
 				}
 			},
 			"kioskSettings": {

@@ -1,15 +1,15 @@
 /* eslint-disable max-lines-per-function */
 import { Button, Group, MultiSelect, TextInput, SegmentedControl, Center } from '@mantine/core';
-import { IconPlus, IconRefresh, IconSearch, IconList, IconLayoutGrid } from '@tabler/icons-react';
-import React, { Dispatch, SetStateAction } from 'react';
+import { IconPlus, IconRefresh, IconSearch, IconList, IconLayoutGrid, IconColumns, IconTimeline, IconCalendar, IconMapPin } from '@tabler/icons-react';
+import React, { Dispatch, SetStateAction, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FilterOffButton } from '../FilterOffButton';
 
 
-export type ViewMode = 'list' | 'grid';
+export type ViewMode = 'list' | 'grid' | 'kanban' | 'gantt' | 'calendar' | 'map';
 
-export interface FilterConfig {
+export interface ActionBarFilterConfig {
 	value: string[];
 	onChange: Dispatch<SetStateAction<string[]>>;
 	options: Array<{ value: string; label: string }>;
@@ -24,10 +24,11 @@ export interface ActionBarProps {
 	onRefresh: () => void;
 	searchValue: string;
 	onSearchChange: (value: string) => void;
-	filters?: FilterConfig[];
+	filters?: ActionBarFilterConfig[];
 	searchPlaceholder?: string;
 	viewMode?: ViewMode;
 	onViewModeChange?: (mode: ViewMode) => void;
+	viewModeSegments?: ViewMode[];
 }
 
 export const ActionBar: React.FC<ActionBarProps> = ({
@@ -39,6 +40,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
 	searchPlaceholder,
 	viewMode,
 	onViewModeChange,
+	viewModeSegments = ['list'],
 }) => {
 	const { t: translate } = useTranslation();
 
@@ -53,7 +55,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
 		});
 	};
 
-	const viewModeSegments = [
+	const defaultViewModeSegments = [
 		{
 			value: 'list',
 			label: (
@@ -70,7 +72,43 @@ export const ActionBar: React.FC<ActionBarProps> = ({
 				</Center>
 			),
 		},
+		{
+			value: 'kanban',
+			label: (
+				<Center h={20}>
+					<IconColumns size={16} />
+				</Center>
+			),
+		},
+		{
+			value: 'gantt',
+			label: (
+				<Center h={20}>
+					<IconTimeline size={16} />
+				</Center>
+			),
+		},
+		{
+			value: 'map',
+			label: (
+				<Center h={20}>
+					<IconMapPin size={16} />
+				</Center>
+			),
+		},
+		{
+			value: 'calendar',
+			label: (
+				<Center h={20}>
+					<IconCalendar size={16} />
+				</Center>
+			),
+		},
 	];
+
+	const filteredViewModeSegments = useMemo(() => {
+		return defaultViewModeSegments.filter((segment) => viewModeSegments.includes(segment.value as ViewMode));
+	}, [viewMode]);
 
 	return (
 		<Group justify='space-between' align='center' wrap='wrap'>
@@ -113,9 +151,9 @@ export const ActionBar: React.FC<ActionBarProps> = ({
 						clearable={filter.clearable !== false}
 					/>
 				))}
-				{viewMode !== undefined && onViewModeChange && (
+				{filteredViewModeSegments.length > 1 && onViewModeChange && (
 					<SegmentedControl
-						data={viewModeSegments}
+						data={filteredViewModeSegments}
 						value={viewMode}
 						onChange={(value) => onViewModeChange(value as ViewMode)}
 						size='md'

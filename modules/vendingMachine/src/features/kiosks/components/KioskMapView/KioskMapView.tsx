@@ -13,7 +13,7 @@ export interface KioskMapViewProps {
 
 export const KioskMapView: React.FC<KioskMapViewProps> = ({ kiosks }) => {
 	return (
-		<Box pos='relative' h='max-content' mih={{ base: 400, md: 600, lg: 800 }}>
+		<Box pos='relative' h='max-content' mih={{ base: 400, md: 600, lg: 700 }}>
 			<Box
 				pos='absolute' top={0} left={0} right={0} bottom={0}
 				bg='light-dark(var(--nikki-color-white), var(--mantine-color-dark-6))'

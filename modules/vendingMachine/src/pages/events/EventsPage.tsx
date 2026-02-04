@@ -4,9 +4,9 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ActionBar, type ViewMode, type FilterConfig } from '@/components';
+import { ActionBar, type ViewMode, ActionBarFilterConfig } from '@/components';
 import { PageContainer } from '@/components/PageContainer';
-import { EventDetailDrawer, EventGridView, EventTable, eventSchema, useEventDetail, useEventList } from '@/features/events';
+import { EventDetailDrawer, EventGridView, EventTable, EventKanbanView, EventGanttView, EventCalendarView, eventSchema, useEventDetail, useEventList } from '@/features/events';
 import { Event } from '@/features/events/types';
 
 
@@ -84,7 +84,7 @@ export const EventsPage: React.FC = () => {
 		{ value: 'completed', label: translate('nikki.vendingMachine.events.status.completed') },
 	];
 
-	const filters: FilterConfig[] = useMemo(() => [
+	const filters: ActionBarFilterConfig[] = useMemo(() => [
 		{
 			value: statusFilter,
 			onChange: setStatusFilter,
@@ -112,6 +112,7 @@ export const EventsPage: React.FC = () => {
 						searchPlaceholder={translate('nikki.vendingMachine.events.search.placeholder')}
 						viewMode={viewMode}
 						onViewModeChange={setViewMode}
+						viewModeSegments={['list', 'grid', 'kanban', 'gantt', 'calendar']}
 					/>
 				}
 			>
@@ -124,8 +125,29 @@ export const EventsPage: React.FC = () => {
 						onViewDetail={handleViewDetail}
 						onDelete={handleOpenDeleteModal}
 					/>
-				) : (
+				) : viewMode === 'grid' ? (
 					<EventGridView
+						events={filteredEvents}
+						isLoading={isLoadingList}
+						onViewDetail={handleViewDetail}
+						onDelete={handleOpenDeleteModal}
+					/>
+				) : viewMode === 'kanban' ? (
+					<EventKanbanView
+						events={filteredEvents}
+						isLoading={isLoadingList}
+						onViewDetail={handleViewDetail}
+						onDelete={handleOpenDeleteModal}
+					/>
+				) : viewMode === 'gantt' ? (
+					<EventGanttView
+						events={filteredEvents}
+						isLoading={isLoadingList}
+						onViewDetail={handleViewDetail}
+						onDelete={handleOpenDeleteModal}
+					/>
+				) : (
+					<EventCalendarView
 						events={filteredEvents}
 						isLoading={isLoadingList}
 						onViewDetail={handleViewDetail}

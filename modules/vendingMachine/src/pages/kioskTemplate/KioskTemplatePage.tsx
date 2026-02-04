@@ -4,7 +4,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ActionBar, type ViewMode, type FilterConfig } from '@/components';
+import { ActionBar, type ViewMode, ActionBarFilterConfig } from '@/components';
 import { PageContainer } from '@/components/PageContainer';
 import {
 	KioskTemplateDetailDrawer,
@@ -89,7 +89,7 @@ export const KioskTemplatePage: React.FC = () => {
 		{ value: 'inactive', label: translate('nikki.general.status.inactive') },
 	];
 
-	const filters: FilterConfig[] = useMemo(() => [
+	const filters: ActionBarFilterConfig[] = useMemo(() => [
 		{
 			value: statusFilter,
 			onChange: setStatusFilter,
@@ -119,6 +119,7 @@ export const KioskTemplatePage: React.FC = () => {
 						searchPlaceholder={translate('nikki.vendingMachine.kioskTemplate.search.placeholder')}
 						viewMode={viewMode}
 						onViewModeChange={setViewMode}
+						viewModeSegments={['list', 'grid']}
 					/>
 				}
 			>
