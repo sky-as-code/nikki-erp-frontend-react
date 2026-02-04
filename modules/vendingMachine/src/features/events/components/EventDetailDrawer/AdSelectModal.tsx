@@ -1,5 +1,6 @@
+/* eslint-disable max-lines-per-function */
 import { Badge, Button, Card, Group, Modal, ScrollArea, SimpleGrid, Stack, Text, TextInput } from '@mantine/core';
-import { IconPhoto, IconSearch, IconVideo } from '@tabler/icons-react';
+import { IconSearch, IconVideo } from '@tabler/icons-react';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -18,7 +19,6 @@ export const AdSelectModal: React.FC<AdSelectModalProps> = ({
 	opened,
 	onClose,
 	onSelectAds,
-	selectedAdIds = [],
 }) => {
 	const { t: translate } = useTranslation();
 	const [ads, setAds] = useState<Ad[]>([]);
@@ -38,18 +38,12 @@ export const AdSelectModal: React.FC<AdSelectModalProps> = ({
 			(ad) =>
 				ad.code.toLowerCase().includes(query) ||
 				ad.name.toLowerCase().includes(query) ||
-				ad.description?.toLowerCase().includes(query)
+				ad.description?.toLowerCase().includes(query),
 		);
 	}, [ads, searchQuery]);
 
 	const handleToggleAd = (ad: Ad) => {
-		setSelectedAds((prev) => {
-			const exists = prev.find((a) => a.id === ad.id);
-			if (exists) {
-				return prev.filter((a) => a.id !== ad.id);
-			}
-			return [...prev, ad];
-		});
+		setSelectedAds([ad]);
 	};
 
 	const handleConfirm = () => {

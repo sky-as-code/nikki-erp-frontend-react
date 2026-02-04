@@ -977,6 +977,8 @@
 						"theme": "Theme",
 						"themeAndSlideshow": "Theme and Slideshow",
 						"slideshowPlaylists": "Slideshow Playlists",
+						"idlePlaylist": "Idle Playlist",
+						"shoppingPlaylist": "Shopping Playlist",
 						"productImage": "Image",
 						"productCode": "Product Code",
 						"productName": "Product Name",

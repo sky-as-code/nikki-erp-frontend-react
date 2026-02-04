@@ -1,5 +1,5 @@
-import { Badge, Button, Group, Stack, Table, Text } from '@mantine/core';
-import { IconDeviceDesktop, IconMapPin, IconPlus } from '@tabler/icons-react';
+import { ActionIcon, Badge, Button, Group, Stack, Table, Text } from '@mantine/core';
+import { IconDeviceDesktop, IconMapPin, IconPlus, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,9 +9,10 @@ import { Kiosk, KioskMode, KioskStatus } from '../../../kiosks/types';
 export interface EventKioskListProps {
 	kiosks: Kiosk[];
 	onAddKiosks?: () => void;
+	onRemoveKiosk?: (kioskId: string) => void;
 }
 
-export const EventKioskList: React.FC<EventKioskListProps> = ({ kiosks, onAddKiosks }) => {
+export const EventKioskList: React.FC<EventKioskListProps> = ({ kiosks, onAddKiosks, onRemoveKiosk }) => {
 	const { t: translate } = useTranslation();
 
 	const getStatusBadge = (status: KioskStatus) => {
@@ -60,6 +61,7 @@ export const EventKioskList: React.FC<EventKioskListProps> = ({ kiosks, onAddKio
 					<Table.Th>{translate('nikki.vendingMachine.kiosk.fields.address')}</Table.Th>
 					<Table.Th>{translate('nikki.vendingMachine.kiosk.fields.status')}</Table.Th>
 					<Table.Th>{translate('nikki.vendingMachine.kiosk.fields.mode')}</Table.Th>
+					{onRemoveKiosk && <Table.Th style={{ width: 50 }}></Table.Th>}
 				</Table.Tr>
 			</Table.Thead>
 			<Table.Tbody>
@@ -84,6 +86,17 @@ export const EventKioskList: React.FC<EventKioskListProps> = ({ kiosks, onAddKio
 						</Table.Td>
 						<Table.Td>{getStatusBadge(kiosk.status)}</Table.Td>
 						<Table.Td>{getModeBadge(kiosk.mode)}</Table.Td>
+						{onRemoveKiosk && (
+							<Table.Td>
+								<ActionIcon
+									variant='subtle'
+									color='red'
+									onClick={() => onRemoveKiosk(kiosk.id)}
+								>
+									<IconTrash size={16} />
+								</ActionIcon>
+							</Table.Td>
+						)}
 					</Table.Tr>
 				))}
 			</Table.Tbody>

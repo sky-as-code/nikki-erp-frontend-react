@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { Badge, Box, Button, Card, Group, Modal, ScrollArea, SimpleGrid, Stack, Text, TextInput } from '@mantine/core';
 import { IconPalette, IconSearch } from '@tabler/icons-react';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -18,10 +19,10 @@ export const ThemeSelectModal: React.FC<ThemeSelectModalProps> = ({
 	opened,
 	onClose,
 	onSelectTheme,
-	selectedThemeId,
 }) => {
 	const { t: translate } = useTranslation();
 	const [themes, setThemes] = useState<Theme[]>([]);
+	const [selectedTheme, setSelectedTheme] = useState<Theme | undefined>();
 	const [searchQuery, setSearchQuery] = useState('');
 
 	useEffect(() => {
@@ -37,17 +38,25 @@ export const ThemeSelectModal: React.FC<ThemeSelectModalProps> = ({
 			(theme) =>
 				theme.name.toLowerCase().includes(query) ||
 				theme.code.toLowerCase().includes(query) ||
-				theme.description?.toLowerCase().includes(query)
+				theme.description?.toLowerCase().includes(query),
 		);
 	}, [themes, searchQuery]);
 
 	const handleSelectTheme = (theme: Theme) => {
-		onSelectTheme(theme);
+		setSelectedTheme(theme);
+	};
+
+	const handleConfirm = () => {
+		if (selectedTheme) {
+			onSelectTheme(selectedTheme);
+		}
+		setSelectedTheme(undefined);
 		setSearchQuery('');
 		onClose();
 	};
 
 	const handleCancel = () => {
+		setSelectedTheme(undefined);
 		setSearchQuery('');
 		onClose();
 	};
@@ -77,7 +86,7 @@ export const ThemeSelectModal: React.FC<ThemeSelectModalProps> = ({
 					) : (
 						<SimpleGrid cols={2} spacing='md'>
 							{filteredThemes.map((theme) => {
-								const isSelected = selectedThemeId === theme.id;
+								const isSelected = selectedTheme?.id === theme.id;
 								return (
 									<Card
 										key={theme.id}
@@ -130,6 +139,9 @@ export const ThemeSelectModal: React.FC<ThemeSelectModalProps> = ({
 				<Group justify='flex-end' gap='xs'>
 					<Button variant='subtle' onClick={handleCancel}>
 						{translate('nikki.general.actions.cancel')}
+					</Button>
+					<Button onClick={handleConfirm} disabled={!selectedTheme}>
+						{translate('nikki.general.actions.confirm')}
 					</Button>
 				</Group>
 			</Stack>

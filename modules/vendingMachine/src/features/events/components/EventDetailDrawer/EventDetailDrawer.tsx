@@ -11,7 +11,7 @@ import { ProductSelectModal } from './ProductSelectModal';
 import { Ad } from '../../../ads/types';
 import { Kiosk } from '../../../kiosks/types';
 import { Theme } from '../../../themes/types';
-import { Event, EventProduct, SlideshowPlaylist } from '../../types';
+import { Event, EventProduct } from '../../types';
 
 
 export interface EventDetailDrawerProps {
@@ -32,7 +32,8 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 	const [eventProducts, setEventProducts] = useState<EventProduct[]>(event?.products || []);
 	const [eventKiosks, setEventKiosks] = useState<Kiosk[]>(event?.kiosks || []);
 	const [eventTheme, setEventTheme] = useState<Theme | undefined>(event?.theme);
-	const [slideshowPlaylists, setSlideshowPlaylists] = useState<SlideshowPlaylist[]>(event?.slideshowPlaylists || []);
+	const [idlePlaylist, setIdlePlaylist] = useState<Ad | undefined>(event?.idlePlaylist);
+	const [shoppingPlaylist, setShoppingPlaylist] = useState<Ad | undefined>(event?.shoppingPlaylist);
 	const [kioskSelectModalOpened, setKioskSelectModalOpened] = useState(false);
 	const [productSelectModalOpened, setProductSelectModalOpened] = useState(false);
 
@@ -42,7 +43,8 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 			setEventProducts(event.products || []);
 			setEventKiosks(event.kiosks || []);
 			setEventTheme(event.theme);
-			setSlideshowPlaylists(event.slideshowPlaylists || []);
+			setIdlePlaylist(event.idlePlaylist);
+			setShoppingPlaylist(event.shoppingPlaylist);
 		}
 	}, [event]);
 
@@ -82,6 +84,10 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 		setEventProducts(eventProducts.filter((p) => p.id !== productId));
 	};
 
+	const handleRemoveKiosk = (kioskId: string) => {
+		setEventKiosks(eventKiosks.filter((k) => k.id !== kioskId));
+	};
+
 	const handleThemeChange = (theme: Theme) => {
 		setEventTheme(theme);
 	};
@@ -90,61 +96,21 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 		setEventTheme(undefined);
 	};
 
-	const handlePlaylistChange = (type: 'idle' | 'shopping', ads: Ad[]) => {
-		// Convert ads to playlist media format
-		let orderCounter = 1;
-		const media = ads.flatMap((ad) =>
-			ad.media.map((adMedia) => {
-				const order = adMedia.order || orderCounter++;
-				return {
-					id: `${ad.id}-${adMedia.id}-${order}`,
-					mediaId: adMedia.id,
-					url: adMedia.url,
-					thumbnailUrl: adMedia.thumbnailUrl,
-					type: adMedia.type,
-					duration: adMedia.duration,
-					order,
-				};
-			}),
-		);
 
-		setSlideshowPlaylists((prev) => {
-			const existing = prev.find((p) => p.type === type);
-			if (existing) {
-				// Update existing playlist
-				return prev.map((p) =>
-					p.type === type
-						? { ...p, media }
-						: p,
-				);
-			}
-			// Create new playlist
-			return [
-				...prev,
-				{
-					id: `${type}-${Date.now()}`,
-					type,
-					media,
-				},
-			];
-		});
+	const handleIdlePlaylistChange = (ad: Ad) => {
+		setIdlePlaylist(ad);
 	};
 
-	const handlePlaylistMediaRemove = (type: 'idle' | 'shopping', mediaId: string) => {
-		setSlideshowPlaylists((prev) =>
-			prev.map((playlist) =>
-				playlist.type === type
-					? {
-						...playlist,
-						media: playlist.media.filter((m) => m.id !== mediaId),
-					}
-					: playlist,
-			),
-		);
+	const handleShoppingPlaylistChange = (ad: Ad) => {
+		setShoppingPlaylist(ad);
 	};
 
-	const handlePlaylistRemove = (type: 'idle' | 'shopping') => {
-		setSlideshowPlaylists((prev) => prev.filter((playlist) => playlist.type !== type));
+	const handleIdlePlaylistRemove = () => {
+		setIdlePlaylist(undefined);
+	};
+
+	const handleShoppingPlaylistRemove = () => {
+		setShoppingPlaylist(undefined);
 	};
 
 	return (
@@ -235,6 +201,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 					<EventKioskList
 						kiosks={eventKiosks}
 						onAddKiosks={() => setKioskSelectModalOpened(true)}
+						onRemoveKiosk={handleRemoveKiosk}
 					/>
 				</div>
 
@@ -254,18 +221,17 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 				{/* Theme and Slideshow Configuration */}
 				<Divider />
 				<div>
-					<Text size='sm' c='dimmed' mb='md' fw={500}>
-						{translate('nikki.vendingMachine.events.fields.themeAndSlideshow')}
-					</Text>
 					<EventThemeConfig
 						theme={eventTheme}
 						themeId={event.themeId}
-						slideshowPlaylists={slideshowPlaylists}
+						idlePlaylist={idlePlaylist}
+						shoppingPlaylist={shoppingPlaylist}
+						onIdlePlaylistChange={handleIdlePlaylistChange}
+						onShoppingPlaylistChange={handleShoppingPlaylistChange}
+						onIdlePlaylistRemove={handleIdlePlaylistRemove}
+						onShoppingPlaylistRemove={handleShoppingPlaylistRemove}
 						onThemeChange={handleThemeChange}
 						onThemeRemove={handleThemeRemove}
-						onPlaylistChange={handlePlaylistChange}
-						onPlaylistMediaRemove={handlePlaylistMediaRemove}
-						onPlaylistRemove={handlePlaylistRemove}
 					/>
 				</div>
 			</Stack>

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { ActionIcon, Badge, Box, Card, Group, Stack, Text } from '@mantine/core';
 import { IconPalette, IconTrash } from '@tabler/icons-react';
 import React from 'react';
@@ -92,7 +93,8 @@ export const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({ theme, onRem
 						{translate('nikki.vendingMachine.themes.fields.productCardStyle')}:
 					</Text>
 					<Badge size='xs' variant='light'>
-						{productCardStyleOptions.find((opt) => opt.value === theme.productCardStyle)?.label || theme.productCardStyle}
+						{productCardStyleOptions.find(
+							(opt) => opt.value === theme.productCardStyle)?.label || theme.productCardStyle}
 					</Badge>
 				</Group>
 
@@ -101,7 +103,8 @@ export const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({ theme, onRem
 						{translate('nikki.vendingMachine.themes.fields.appBackground')}:
 					</Text>
 					<Badge size='xs' variant='light'>
-						{appBackgroundOptions.find((opt) => opt.value === theme.appBackground)?.label || theme.appBackground}
+						{appBackgroundOptions.find(
+							(opt) => opt.value === theme.appBackground)?.label || theme.appBackground}
 					</Badge>
 				</Group>
 

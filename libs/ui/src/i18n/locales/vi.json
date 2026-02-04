@@ -1018,6 +1018,8 @@
 					"theme": "Chủ đề",
 					"themeAndSlideshow": "Chủ đề và Trình chiếu",
 					"slideshowPlaylists": "Danh sách Trình chiếu",
+					"idlePlaylist": "Trình chiếu màn hình chờ",
+					"shoppingPlaylist": "Trình chiếu màn hình mua hàng",
 					"productImage": "Hình ảnh",
 					"productCode": "Mã sản phẩm",
 					"productName": "Tên sản phẩm",
@@ -1052,7 +1054,7 @@
 					"selectAds": "Chọn quảng cáo"
 				},
 				"selectAds": {
-					"title": "Chọn quảng cáo cho playlist",
+					"title": "Chọn danh sách phát trình chiếu",
 					"searchPlaceholder": "Tìm kiếm quảng cáo...",
 					"selectedCount": "Đã chọn {{count}} quảng cáo",
 					"noAds": "Không tìm thấy quảng cáo nào",
