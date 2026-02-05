@@ -1,7 +1,8 @@
-import { Badge, Box, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconAd } from '@tabler/icons-react';
+import { Badge, Box, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
+import { IconAd, IconExternalLink } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
 import { Ad, AdMedia, GalleryMedia } from '../../types';
 import { AdPreviewHorizontal } from '../AdPreviewHorizontal';
@@ -25,6 +26,7 @@ export const AdDetailDrawer: React.FC<AdDetailDrawerProps> = ({
 	isLoading = false,
 }) => {
 	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
 	const [galleryModalOpened, setGalleryModalOpened] = useState(false);
 	const [adMedia, setAdMedia] = useState<AdMedia[]>(ad?.media || []);
 
@@ -88,9 +90,22 @@ export const AdDetailDrawer: React.FC<AdDetailDrawerProps> = ({
 			position='right'
 			size='xl'
 			title={
-				<Group gap='xs'>
-					<IconAd size={20} />
-					<Text fw={600} size='lg'>{ad.name}</Text>
+				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
+					<Group gap='xs'>
+						<IconAd size={20} />
+						<Text fw={600} size='lg'>{ad.name}</Text>
+					</Group>
+					<Button
+						size='xs'
+						variant='light'
+						leftSection={<IconExternalLink size={16} />}
+						onClick={() => {
+							navigate(`../ads/${ad.id}`);
+							onClose();
+						}}
+					>
+						{translate('nikki.general.actions.viewDetails')}
+					</Button>
 				</Group>
 			}
 			overlayProps={{ opacity: 0.5, blur: 4 }}

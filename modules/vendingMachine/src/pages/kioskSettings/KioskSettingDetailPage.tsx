@@ -1,41 +1,19 @@
-import { Badge, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconSettings, IconExternalLink } from '@tabler/icons-react';
+/* eslint-disable max-lines-per-function */
+import { Badge, Divider, Group, Stack, Text } from '@mantine/core';
+import { IconSettings } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useParams } from 'react-router';
 
-import { KioskSetting } from '../../types';
+import { DetailActionBar } from '@/components/ActionBar';
+import { PageContainer } from '@/components/PageContainer';
+import { useKioskSettingDetail } from '@/features/kioskSettings';
 
 
-export interface KioskSettingDetailDrawerProps {
-	opened: boolean;
-	onClose: () => void;
-	setting: KioskSetting | undefined;
-	isLoading?: boolean;
-}
-
-// eslint-disable-next-line max-lines-per-function
-export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> = ({
-	opened,
-	onClose,
-	setting,
-	isLoading = false,
-}) => {
+export const KioskSettingDetailPage: React.FC = () => {
 	const { t: translate } = useTranslation();
-	const navigate = useNavigate();
-	if (isLoading || !setting) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='lg'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.kioskSettings.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
+	const { id } = useParams<{ id: string }>();
+	const { setting, isLoading } = useKioskSettingDetail(id);
 
 	const getStatusBadge = (status: string) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -46,34 +24,38 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 		return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
 	};
 
+	const breadcrumbs = [
+		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
+		{ title: translate('nikki.vendingMachine.menu.kiosk_settings'), href: '../kiosk-settings' },
+		{ title: setting?.name || translate('nikki.vendingMachine.kioskSettings.detail.title'), href: '#' },
+	];
+
+	if (isLoading || !setting) {
+		return (
+			<PageContainer
+				breadcrumbs={breadcrumbs}
+				actionBar={<div />}
+			>
+				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
+			</PageContainer>
+		);
+	}
+
 	return (
-		<Drawer
-			opened={opened}
-			onClose={onClose}
-			position='right'
-			size='lg'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconSettings size={20} />
-						<Text fw={600} size='lg'>{setting.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../kiosk-settings/${setting.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			actionBar={<DetailActionBar
+				onSave={() => {}}
+				onGoBack={() => {}}
+				onDelete={() => {}}
+			/>}
 		>
 			<Stack gap='md'>
+				<Group gap='xs' mb='md'>
+					<IconSettings size={20} />
+					<Text fw={600} size='lg'>{setting.name}</Text>
+				</Group>
+
 				<div>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kioskSettings.fields.code')}
@@ -138,7 +120,6 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 					<Text size='sm'>{new Date(setting.createdAt).toLocaleString()}</Text>
 				</div>
 			</Stack>
-		</Drawer>
+		</PageContainer>
 	);
 };
-

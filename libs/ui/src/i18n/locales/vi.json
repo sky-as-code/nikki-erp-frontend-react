@@ -69,7 +69,8 @@
 				"title": "Thao tác",
 				"view_on_map": "Xem trên bản đồ",
 				"add": "Thêm",
-				"today": "Hôm nay"
+				"today": "Hôm nay",
+				"viewDetails": "Xem chi tiết"
 			},
 			"boolean": {
 				"yes": "Có",
@@ -938,12 +939,13 @@
 				}
 			},
 			"ads": {
+				"title": "Trình chiếu",
 				"detail": {
-					"title": "Chi tiết Quảng cáo"
+					"title": "Chi tiết Trình chiếu"
 				},
 				"fields": {
 					"id": "Mã định danh",
-					"code": "Mã quảng cáo",
+					"code": "Mã trình chiếu",
 					"name": "Tên",
 					"description": "Mô tả",
 					"status": "Trạng thái",

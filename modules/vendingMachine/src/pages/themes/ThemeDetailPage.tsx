@@ -1,42 +1,19 @@
-import { Badge, Box, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconPalette, IconExternalLink } from '@tabler/icons-react';
+import { Badge, Box, Divider, Group, Stack, Text } from '@mantine/core';
+import { IconPalette } from '@tabler/icons-react';
 import React from 'react';
+import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
 
-import { Theme } from '../../types';
-import { ThemePreview } from '../ThemePreview';
+import { DetailActionBar } from '@/components/ActionBar';
+import { PageContainer } from '@/components/PageContainer';
+import { useThemeDetail } from '@/features/themes';
+import { ThemePreview } from '@/features/themes/components/ThemePreview';
 
 
-export interface ThemeDetailDrawerProps {
-	opened: boolean;
-	onClose: () => void;
-	theme: Theme | undefined;
-	isLoading?: boolean;
-}
-
-// eslint-disable-next-line max-lines-per-function
-export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
-	opened,
-	onClose,
-	theme,
-	isLoading = false,
-}) => {
+export const ThemeDetailPage: React.FC = () => {
 	const { t: translate } = useTranslation();
-	const navigate = useNavigate();
-	if (isLoading || !theme) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='xl'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.themes.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
+	const { id } = useParams<{ id: string }>();
+	const { theme, isLoading } = useThemeDetail(id);
 
 	const getStatusBadge = (status: string) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -73,34 +50,38 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 		{ value: 'custom', label: translate('nikki.vendingMachine.themes.fontStyle.custom') },
 	];
 
+	const breadcrumbs = [
+		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
+		{ title: translate('nikki.vendingMachine.menu.themes'), href: '../themes' },
+		{ title: theme?.name || translate('nikki.vendingMachine.themes.detail.title'), href: '#' },
+	];
+
+	if (isLoading || !theme) {
+		return (
+			<PageContainer
+				breadcrumbs={breadcrumbs}
+				actionBar={<div />}
+			>
+				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
+			</PageContainer>
+		);
+	}
+
 	return (
-		<Drawer
-			opened={opened}
-			onClose={onClose}
-			position='right'
-			size='xl'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconPalette size={20} />
-						<Text fw={600} size='lg'>{theme.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../themes/${theme.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			actionBar={<DetailActionBar
+				onSave={() => {}}
+				onGoBack={() => {}}
+				onDelete={() => {}}
+			/>}
 		>
 			<Stack gap='md'>
+				<Group gap='xs' mb='md'>
+					<IconPalette size={20} />
+					<Text fw={600} size='lg'>{theme.name}</Text>
+				</Group>
+
 				{/* Basic Info */}
 				<div>
 					<Text size='sm' c='dimmed' mb='xs'>
@@ -248,6 +229,6 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 				<Divider />
 				<Box h={100}></Box>
 			</Stack>
-		</Drawer>
+		</PageContainer>
 	);
 };

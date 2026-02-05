@@ -1,35 +1,27 @@
 /* eslint-disable max-lines-per-function */
 import {
-	Badge, Box, Button, Divider, Drawer, FileButton, Group, Select, Stack, Table, Tabs, Text, Textarea, TextInput,
+	Badge, Box, Button, Divider, FileButton, Group, Select, Stack, Table, Tabs, Text, Textarea, TextInput,
 } from '@mantine/core';
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
-import { IconDeviceGamepad, IconExternalLink, IconPlus, IconTrash, IconUpload } from '@tabler/icons-react';
+import { IconDeviceGamepad, IconPlus, IconTrash, IconUpload } from '@tabler/icons-react';
 import React, { useState } from 'react';
+import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
 
+import { DetailActionBar } from '@/components/ActionBar';
+import { PageContainer } from '@/components/PageContainer';
 import { VendingMachineDispatch, gameActions } from '@/appState';
+import { useGameDetail } from '@/features/games/hooks';
+import { Game, GameStatus, GameVersion } from '@/features/games/types';
+import { GamePreview } from '@/features/games/components/GamePreview';
 
-import { Game, GameStatus, GameVersion } from '../../types';
-import { GamePreview } from '../GamePreview';
 
-
-export interface GameDetailDrawerProps {
-	opened: boolean;
-	onClose: () => void;
-	game: Game | undefined;
-	isLoading?: boolean;
-}
-
-export const GameDetailDrawer: React.FC<GameDetailDrawerProps> = ({
-	opened,
-	onClose,
-	game,
-	isLoading = false,
-}) => {
+export const GameDetailPage: React.FC = () => {
 	const { t: translate } = useTranslation();
+	const { id } = useParams<{ id: string }>();
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
-	const navigate = useNavigate();
+	const { game, isLoading } = useGameDetail(id);
+
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedGame, setEditedGame] = useState<Partial<Game>>({});
 	const [selectedVersion, setSelectedVersion] = useState<GameVersion | undefined>(undefined);
@@ -124,47 +116,37 @@ export const GameDetailDrawer: React.FC<GameDetailDrawerProps> = ({
 		reader.readAsText(file);
 	};
 
+	const breadcrumbs = [
+		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
+		{ title: translate('nikki.vendingMachine.menu.miniGame'), href: '../mini-game' },
+		{ title: game?.name || translate('nikki.vendingMachine.games.detail.title'), href: '#' },
+	];
+
 	if (isLoading || !game) {
 		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='xl'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.games.detail.title')}</Text>}
+			<PageContainer
+				breadcrumbs={breadcrumbs}
+				actionBar={<div />}
 			>
 				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
+			</PageContainer>
 		);
 	}
 
 	return (
-		<Drawer
-			opened={opened}
-			onClose={onClose}
-			position='right'
-			size='xl'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconDeviceGamepad size={26} stroke={1.5} />
-						<Text fw={600} size='lg'>{game.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../mini-game/${game.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			actionBar={<DetailActionBar
+				onSave={() => {}}
+				onGoBack={() => {}}
+				onDelete={() => {}}
+			/>}
 		>
+			<Group gap='xs' mb='md'>
+				<IconDeviceGamepad size={26} stroke={1.5} />
+				<Text fw={600} size='lg'>{game.name}</Text>
+			</Group>
+
 			<Tabs defaultValue='info'>
 				<Tabs.List>
 					<Tabs.Tab value='info'>{translate('nikki.vendingMachine.games.tabs.info')}</Tabs.Tab>
@@ -458,6 +440,6 @@ export const GameDetailDrawer: React.FC<GameDetailDrawerProps> = ({
 					</Stack>
 				</Tabs.Panel>
 			</Tabs>
-		</Drawer>
+		</PageContainer>
 	);
 };

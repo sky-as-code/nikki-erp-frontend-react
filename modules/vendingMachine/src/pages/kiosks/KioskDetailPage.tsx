@@ -1,42 +1,20 @@
-import { Badge, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconMapPin, IconDeviceDesktop, IconExternalLink } from '@tabler/icons-react';
+/* eslint-disable max-lines-per-function */
+import { Badge, Divider, Group, Stack, Text } from '@mantine/core';
+import { IconDeviceDesktop, IconMapPin } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useParams } from 'react-router';
 
-import { Kiosk, KioskMode, KioskStatus } from '../../types';
+import { DetailActionBar } from '@/components/ActionBar';
+import { PageContainer } from '@/components/PageContainer';
+import { useKioskDetail } from '@/features/kiosks';
+import { KioskMode, KioskStatus } from '@/features/kiosks/types';
 
 
-export interface KioskDetailDrawerProps {
-	opened: boolean;
-	onClose: () => void;
-	kiosk: Kiosk | undefined;
-	isLoading?: boolean;
-}
-
-// eslint-disable-next-line max-lines-per-function
-export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
-	opened,
-	onClose,
-	kiosk,
-	isLoading = false,
-}) => {
+export const KioskDetailPage: React.FC = () => {
 	const { t: translate } = useTranslation();
-	const navigate = useNavigate();
-
-	if (isLoading || !kiosk) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='lg'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.kiosk.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
+	const { id } = useParams<{ id: string }>();
+	const { kiosk, isLoading } = useKioskDetail(id);
 
 	const getStatusBadge = (status: KioskStatus) => {
 		const statusMap = {
@@ -58,34 +36,38 @@ export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
 		return <Badge color={modeInfo.color}>{modeInfo.label}</Badge>;
 	};
 
+	const breadcrumbs = [
+		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
+		{ title: translate('nikki.vendingMachine.kiosk.title'), href: '../kiosks' },
+		{ title: kiosk?.name || translate('nikki.vendingMachine.kiosk.detail.title'), href: '#' },
+	];
+
+	if (isLoading || !kiosk) {
+		return (
+			<PageContainer
+				breadcrumbs={breadcrumbs}
+				actionBar={<div />}
+			>
+				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
+			</PageContainer>
+		);
+	}
+
 	return (
-		<Drawer
-			opened={opened}
-			onClose={onClose}
-			position='right'
-			size='lg'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconDeviceDesktop size={20} />
-						<Text fw={600} size='lg'>{kiosk.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../kiosks/${kiosk.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			actionBar={<DetailActionBar
+				onSave={() => {}}
+				onGoBack={() => {}}
+				onDelete={() => {}}
+			/>}
 		>
 			<Stack gap='md'>
+				<Group gap='xs' mb='md'>
+					<IconDeviceDesktop size={20} />
+					<Text fw={600} size='lg'>{kiosk.name}</Text>
+				</Group>
+
 				<div>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.code')}
@@ -177,7 +159,6 @@ export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
 					</>
 				)}
 			</Stack>
-		</Drawer>
+		</PageContainer>
 	);
 };
-

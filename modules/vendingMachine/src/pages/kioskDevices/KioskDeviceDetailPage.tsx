@@ -1,28 +1,20 @@
-import { Badge, Button, Divider, Drawer, Group, Stack, Table, Text, TextInput } from '@mantine/core';
-import { IconDeviceDesktop, IconExternalLink, IconPlus, IconTrash } from '@tabler/icons-react';
+/* eslint-disable max-lines-per-function */
+import { Badge, Button, Divider, Group, Stack, Table, Text, TextInput } from '@mantine/core';
+import { IconDeviceDesktop, IconPlus, IconTrash } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useParams } from 'react-router';
 
-import { KioskDevice, KioskDeviceSpecification } from '../../types';
+import { DetailActionBar } from '@/components/ActionBar';
+import { PageContainer } from '@/components/PageContainer';
+import { useKioskDeviceDetail } from '@/features/kioskDevices';
+import { KioskDeviceSpecification } from '@/features/kioskDevices/types';
 
 
-export interface KioskDeviceDetailDrawerProps {
-	opened: boolean;
-	onClose: () => void;
-	kioskDevice: KioskDevice | undefined;
-	isLoading?: boolean;
-}
-
-// eslint-disable-next-line max-lines-per-function
-export const KioskDeviceDetailDrawer: React.FC<KioskDeviceDetailDrawerProps> = ({
-	opened,
-	onClose,
-	kioskDevice,
-	isLoading = false,
-}) => {
+export const KioskDeviceDetailPage: React.FC = () => {
 	const { t: translate } = useTranslation();
-	const navigate = useNavigate();
+	const { id } = useParams<{ id: string }>();
+	const { kioskDevice, isLoading } = useKioskDeviceDetail(id);
 	const [specifications, setSpecifications] = useState<KioskDeviceSpecification[]>(kioskDevice?.specifications || []);
 	const [newSpecKey, setNewSpecKey] = useState('');
 	const [newSpecValue, setNewSpecValue] = useState('');
@@ -32,20 +24,6 @@ export const KioskDeviceDetailDrawer: React.FC<KioskDeviceDetailDrawerProps> = (
 			setSpecifications(kioskDevice.specifications || []);
 		}
 	}, [kioskDevice]);
-
-	if (isLoading || !kioskDevice) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='lg'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.device.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
 
 	const getStatusBadge = (status: string) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -80,34 +58,38 @@ export const KioskDeviceDetailDrawer: React.FC<KioskDeviceDetailDrawerProps> = (
 		setSpecifications(specifications.filter((_, i) => i !== index));
 	};
 
+	const breadcrumbs = [
+		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
+		{ title: translate('nikki.vendingMachine.menu.device'), href: '../kiosk-devices' },
+		{ title: kioskDevice?.name || translate('nikki.vendingMachine.device.detail.title'), href: '#' },
+	];
+
+	if (isLoading || !kioskDevice) {
+		return (
+			<PageContainer
+				breadcrumbs={breadcrumbs}
+				actionBar={<div />}
+			>
+				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
+			</PageContainer>
+		);
+	}
+
 	return (
-		<Drawer
-			opened={opened}
-			onClose={onClose}
-			position='right'
-			size='lg'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconDeviceDesktop size={20} />
-						<Text fw={600} size='lg'>{kioskDevice.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../kiosk-devices/${kioskDevice.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			actionBar={<DetailActionBar
+				onSave={() => {}}
+				onGoBack={() => {}}
+				onDelete={() => {}}
+			/>}
 		>
 			<Stack gap='md'>
+				<Group gap='xs' mb='md'>
+					<IconDeviceDesktop size={20} />
+					<Text fw={600} size='lg'>{kioskDevice.name}</Text>
+				</Group>
+
 				<div>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.device.fields.code')}
@@ -226,6 +208,6 @@ export const KioskDeviceDetailDrawer: React.FC<KioskDeviceDetailDrawerProps> = (
 					<Text size='sm'>{new Date(kioskDevice.createdAt).toLocaleString()}</Text>
 				</div>
 			</Stack>
-		</Drawer>
+		</PageContainer>
 	);
 };

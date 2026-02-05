@@ -14,7 +14,7 @@ export function BreadCrumbs({ items }: BreadCrumbsProps) {
 	const breadcrumbs = useMemo(() => items.map((item, index) => {
 		return (
 			<Button key={index} variant='transparent' size='xs' p={0}
-				onClick={() => navigate(item.href)}
+				onClick={() => item.href !== '#' && navigate(item.href)}
 			>
 				<Text key={index} component='span' c='blue' fz='md' fw={500}>
 					{item.title}

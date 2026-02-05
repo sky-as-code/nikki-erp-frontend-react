@@ -97,7 +97,7 @@ export const AdsPage: React.FC = () => {
 
 	const breadcrumbs = useMemo(() => [
 		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
-		{ title: translate('nikki.vendingMachine.menu.ads'), href: '#' },
+		{ title: translate('nikki.vendingMachine.ads.title'), href: '#' },
 	], [translate]);
 
 	return (

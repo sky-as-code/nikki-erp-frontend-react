@@ -1,7 +1,8 @@
-import { Badge, Box, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconCalendarEvent } from '@tabler/icons-react';
+import { Badge, Box, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
+import { IconCalendarEvent, IconExternalLink } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
 import { EventGameConfig } from './EventGameConfig';
 import { EventKioskList } from './EventKioskList';
@@ -31,6 +32,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 	isLoading = false,
 }) => {
 	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
 	const [eventProducts, setEventProducts] = useState<EventProduct[]>(event?.products || []);
 	const [eventKiosks, setEventKiosks] = useState<Kiosk[]>(event?.kiosks || []);
 	const [eventTheme, setEventTheme] = useState<Theme | undefined>(event?.theme);
@@ -131,9 +133,22 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 			position='right'
 			size='xl'
 			title={
-				<Group gap='xs'>
-					<IconCalendarEvent size={20} />
-					<Text fw={600} size='lg'>{event.name}</Text>
+				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
+					<Group gap='xs'>
+						<IconCalendarEvent size={20} />
+						<Text fw={600} size='lg'>{event.name}</Text>
+					</Group>
+					<Button
+						size='xs'
+						variant='light'
+						leftSection={<IconExternalLink size={16} />}
+						onClick={() => {
+							navigate(`../events/${event.id}`);
+							onClose();
+						}}
+					>
+						{translate('nikki.general.actions.viewDetails')}
+					</Button>
 				</Group>
 			}
 			overlayProps={{ opacity: 0.5, blur: 4 }}

@@ -67,7 +67,8 @@
 				"title": "Actions",
 				"view_on_map": "View on map",
 				"add": "Add",
-				"today": "Today"
+				"today": "Today",
+				"viewDetails": "View Details"
 			},
 			"boolean": {
 				"yes": "Yes",
@@ -897,6 +898,7 @@
 					}
 				},
 				"ads": {
+					"title": "Presentations",
 					"detail": {
 						"title": "Ad Details"
 					},
