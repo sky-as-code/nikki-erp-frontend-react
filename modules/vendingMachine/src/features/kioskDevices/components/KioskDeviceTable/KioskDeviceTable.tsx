@@ -2,6 +2,7 @@ import { ActionIcon, Badge, Box, Group, Text, Tooltip } from '@mantine/core';
 import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
 import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
 import React from 'react';
+import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 
 
@@ -14,6 +15,35 @@ export interface KioskDeviceTableProps extends AutoTableProps {
 
 function renderCodeColumn(row: Record<string, unknown>) {
 	return <Text fw={500}>{String(row.code || '')}</Text>;
+}
+
+const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
+	const navigate = useNavigate();
+	const kioskDeviceId = row.id as string;
+	const name = String(row.name || '');
+
+	const handleClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (kioskDeviceId) {
+			navigate(`../kiosk-devices/${kioskDeviceId}`);
+		}
+	};
+
+	return (
+		<Text
+			c='light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2))'
+			fw={500}
+			style={{ cursor: 'pointer' }}
+			onClick={handleClick}
+			td='underline'
+		>
+			{name}
+		</Text>
+	);
+};
+
+function renderNameColumn(row: Record<string, unknown>) {
+	return <NameColumn row={row} />;
 }
 
 function renderDescriptionColumn(row: Record<string, unknown>) {
@@ -135,6 +165,7 @@ export const KioskDeviceTable: React.FC<KioskDeviceTableProps> = ({
 				isLoading={isLoading}
 				columnRenderers={{
 					code: renderCodeColumn,
+					name: renderNameColumn,
 					description: renderDescriptionColumn,
 					status: (row) => renderStatusColumn(row, translate),
 					deviceType: (row) => renderDeviceTypeColumn(row, translate),

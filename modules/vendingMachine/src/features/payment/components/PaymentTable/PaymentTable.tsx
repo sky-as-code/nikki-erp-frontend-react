@@ -2,6 +2,7 @@ import { ActionIcon, Badge, Box, Group, Image, Text, Tooltip } from '@mantine/co
 import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
 import { IconCreditCard, IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
 import React from 'react';
+import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 
 
@@ -16,7 +17,18 @@ function renderCodeColumn(row: Record<string, unknown>) {
 	return <Text fw={500}>{String(row.code || '')}</Text>;
 }
 
-function renderNameColumn(row: Record<string, unknown>) {
+const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
+	const navigate = useNavigate();
+	const paymentId = row.id as string;
+	const name = String(row.name || '');
+
+	const handleClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (paymentId) {
+			navigate(`../payment/${paymentId}`);
+		}
+	};
+
 	return (
 		<Group gap='xs' align='center' justify='flex-start'>
 			{row.image ? (
@@ -34,9 +46,20 @@ function renderNameColumn(row: Record<string, unknown>) {
 				: (
 					<IconCreditCard size={26} stroke={1.5} />
 				)}
-			<Text>{String(row.name || '')}</Text>
+			<Text
+				c='light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2))'
+				style={{ cursor: 'pointer' }}
+				onClick={handleClick}
+				td='underline'
+			>
+				{name}
+			</Text>
 		</Group>
 	);
+};
+
+function renderNameColumn(row: Record<string, unknown>) {
+	return <NameColumn row={row} />;
 }
 
 function renderDescriptionColumn(row: Record<string, unknown>) {

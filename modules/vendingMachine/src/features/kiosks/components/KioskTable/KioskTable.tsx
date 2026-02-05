@@ -12,6 +12,7 @@ import {
 import { TFunction } from 'i18next';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
 import { ConnectionHistory, ConnectionStatus, Kiosk, KioskMode, KioskStatus, KioskWarning } from '../../types';
 
@@ -28,10 +29,35 @@ function renderCodeColumn(
 	return <Text c='light-dark(var(--mantine-color-gray-8), var(--mantine-color-dark))' fw={500}>{String(row.code || '')}</Text>;
 }
 
+const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
+	const navigate = useNavigate();
+	const kioskId = row.id as string;
+	const name = String(row.name || '');
+
+	const handleClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (kioskId) {
+			navigate(`../kiosks/${kioskId}`);
+		}
+	};
+
+	return (
+		<Text
+			c='light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2))'
+			fw={500}
+			style={{ cursor: 'pointer' }}
+			onClick={handleClick}
+			td='underline'
+		>
+			{name}
+		</Text>
+	);
+};
+
 function renderNameColumn(
 	row: Record<string, unknown>,
 ) {
-	return <Text c='light-dark(var(--mantine-color-gray-8), var(--mantine-color-dark))' fw={500}>{String(row.name || '')}</Text>;
+	return <NameColumn row={row} />;
 }
 
 interface AddressColumnProps {
