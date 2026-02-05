@@ -20,11 +20,11 @@ import { PaymentMethod } from '@/features/payment/types';
 import { Theme } from '@/features/themes/types';
 
 
-interface BasicInfoTabProps {
+interface KioskBasicInfoProps {
 	kiosk: Kiosk;
 }
 
-export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ kiosk }) => {
+export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 	const { t: translate } = useTranslation();
 	const { payments } = usePaymentList();
 	const { templates } = useKioskTemplateList();

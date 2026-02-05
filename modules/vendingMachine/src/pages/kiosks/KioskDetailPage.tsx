@@ -7,9 +7,10 @@ import { useParams } from 'react-router';
 import { DetailActionBar } from '@/components/ActionBar';
 import { PageContainer } from '@/components/PageContainer';
 import { useKioskDetail } from '@/features/kiosks';
-import { ActivityLogTab } from '@/features/kiosks/components/KioskDetail/ActivityLogTab';
-import { BasicInfoTab } from '@/features/kiosks/components/KioskDetail/BasicInfoTab';
-import { ProductsTab } from '@/features/kiosks/components/KioskDetail/ProductsTab';
+import { KioskActivity } from '@/features/kiosks/components/KioskDetail/KioskActivity';
+import { KioskBasicInfo } from '@/features/kiosks/components/KioskDetail/KioskBasicInfo';
+import { ProductGridView } from '@/features/kiosks/components/KioskDetail/ProductGridView';
+import { ProductListView } from '@/features/kiosks/components/KioskDetail/ProductListView';
 
 
 export const KioskDetailPage: React.FC = () => {
@@ -48,8 +49,11 @@ export const KioskDetailPage: React.FC = () => {
 					<Tabs.Tab value='basic'>
 						{translate('nikki.vendingMachine.kiosk.tabs.basicInfo')}
 					</Tabs.Tab>
-					<Tabs.Tab value='products'>
-						{translate('nikki.vendingMachine.kiosk.tabs.products')}
+					<Tabs.Tab value='products-list'>
+						{translate('nikki.vendingMachine.kiosk.tabs.productsList')}
+					</Tabs.Tab>
+					<Tabs.Tab value='products-grid'>
+						{translate('nikki.vendingMachine.kiosk.tabs.productsGrid')}
 					</Tabs.Tab>
 					<Tabs.Tab value='activity'>
 						{translate('nikki.vendingMachine.kiosk.tabs.activity')}
@@ -57,15 +61,19 @@ export const KioskDetailPage: React.FC = () => {
 				</Tabs.List>
 
 				<Tabs.Panel value='basic' pt='md'>
-					<BasicInfoTab kiosk={kiosk} />
+					<KioskBasicInfo kiosk={kiosk} />
 				</Tabs.Panel>
 
-				<Tabs.Panel value='products' pt='md'>
-					<ProductsTab kioskId={kiosk.id} />
+				<Tabs.Panel value='products-list' pt='md'>
+					<ProductListView kioskId={kiosk.id} />
+				</Tabs.Panel>
+
+				<Tabs.Panel value='products-grid' pt='md'>
+					<ProductGridView kioskId={kiosk.id} />
 				</Tabs.Panel>
 
 				<Tabs.Panel value='activity' pt='md'>
-					<ActivityLogTab />
+					<KioskActivity />
 				</Tabs.Panel>
 			</Tabs>
 		</PageContainer>

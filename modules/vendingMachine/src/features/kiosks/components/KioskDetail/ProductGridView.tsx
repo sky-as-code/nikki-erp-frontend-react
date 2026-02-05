@@ -323,7 +323,7 @@ export const ProductGridView: React.FC<ProductGridViewProps> = ({ kioskId: _kios
 											{hasProduct ? (
 												<Stack gap='xs' align='center'>
 													<Avatar src={cell?.productImage} alt={cell?.productName} size='md' />
-													<Text size='xs' fw={500} ta='center' lineClamp={2}>
+													<Text size='xs' fw={500} ta='center' lineClamp={1}>
 														{cell?.productName}
 													</Text>
 													<Text size='xs' c='dimmed' ta='center'>

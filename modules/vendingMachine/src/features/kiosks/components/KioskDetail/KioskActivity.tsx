@@ -19,7 +19,7 @@ import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 
-interface ActivityLog {
+interface KioskActivityLog {
 	id: string;
 	timestamp: string;
 	type: 'warning' | 'statusDetail' | 'error' | 'info';
@@ -27,7 +27,7 @@ interface ActivityLog {
 }
 
 // Mock data based on user's sample
-const mockLogs: ActivityLog[] = [
+const mockLogs: KioskActivityLog[] = [
 	{
 		id: '1',
 		timestamp: '2026-02-05T10:14:00',
@@ -69,13 +69,13 @@ const mockLogs: ActivityLog[] = [
 	},
 ];
 
-export const ActivityLogTab: React.FC = () => {
+export const KioskActivity: React.FC = () => {
 	const { t: translate } = useTranslation();
 	const [searchQuery, setSearchQuery] = useState('');
 	const [selectedType, setSelectedType] = useState<string | null>(null);
 	const [startDate, setStartDate] = useState<Date | null>(null);
 	const [endDate, setEndDate] = useState<Date | null>(null);
-	const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null);
+	const [selectedLog, setSelectedLog] = useState<KioskActivityLog | null>(null);
 	const [detailModalOpened, setDetailModalOpened] = useState(false);
 
 	const filteredLogs = useMemo(() => {
@@ -157,7 +157,7 @@ export const ActivityLogTab: React.FC = () => {
 		return content;
 	};
 
-	const handleViewDetail = (log: ActivityLog) => {
+	const handleViewDetail = (log: KioskActivityLog) => {
 		setSelectedLog(log);
 		setDetailModalOpened(true);
 	};

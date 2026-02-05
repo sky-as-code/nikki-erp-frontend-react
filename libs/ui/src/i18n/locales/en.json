@@ -855,6 +855,12 @@
 						"createdAt": "Created At",
 						"deletedAt": "Deleted At"
 					},
+					"tabs": {
+						"basicInfo": "Basic Information",
+						"productsList": "Products",
+						"productsGrid": "Restock Products",
+						"activity": "Activity"
+					},
 					"status": {
 						"activated": "Activated",
 						"disabled": "Disabled",

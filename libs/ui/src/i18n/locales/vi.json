@@ -902,7 +902,9 @@
 				"tabs": {
 					"basicInfo": "Thông tin cơ bản",
 					"products": "Sản phẩm",
-					"activity": "Hoạt động kiosk"
+					"productsList": "Sản phẩm",
+					"productsGrid": "Nhập hàng",
+					"activity": "Hoạt động"
 				},
 				"products": {
 					"view": {
