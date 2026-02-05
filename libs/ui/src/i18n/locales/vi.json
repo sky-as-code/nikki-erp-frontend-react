@@ -1019,6 +1019,7 @@
 					"kiosks": "Danh sách Kiosk",
 					"products": "Danh sách Sản phẩm",
 					"theme": "Chủ đề",
+					"game": "Trò chơi",
 					"themeAndSlideshow": "Chủ đề và Trình chiếu",
 					"slideshowPlaylists": "Danh sách Trình chiếu",
 					"idlePlaylist": "Trình chiếu màn hình chờ",
@@ -1087,11 +1088,18 @@
 					"noThemes": "Không tìm thấy chủ đề nào",
 					"selectTheme": "Chọn Chủ đề"
 				},
+				"selectGame": {
+					"title": "Chọn Trò chơi cho sự kiện",
+					"searchPlaceholder": "Tìm kiếm trò chơi...",
+					"noGames": "Không tìm thấy trò chơi nào",
+					"selectGame": "Chọn Trò chơi"
+				},
 				"messages": {
 					"no_events": "Không tìm thấy sự kiện nào",
 					"no_kiosks": "Chưa có kiosk nào được gán cho sự kiện này",
 					"no_products": "Chưa có sản phẩm nào trong sự kiện này",
 					"no_theme": "Chưa chọn chủ đề",
+					"no_game": "Chưa chọn trò chơi",
 					"no_idle_playlist": "Chưa có playlist cho màn hình chờ",
 					"no_shopping_playlist": "Chưa có playlist cho màn hình mua hàng",
 					"no_media_in_playlist": "Chưa có media nào trong playlist"

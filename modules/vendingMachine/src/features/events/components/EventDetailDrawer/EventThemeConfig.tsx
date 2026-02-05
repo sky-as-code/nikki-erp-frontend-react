@@ -187,8 +187,6 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 				onClose={() => setAdSelectModalOpened(false)}
 				onSelectAds={handleSelectAds}
 			/>
-
-			<Box h={50}></Box>
 		</Stack>
 	);
 };

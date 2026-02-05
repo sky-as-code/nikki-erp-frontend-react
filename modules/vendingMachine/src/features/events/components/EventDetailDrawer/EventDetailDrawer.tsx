@@ -1,14 +1,16 @@
-import { Badge, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
+import { Badge, Box, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
 import { IconCalendarEvent } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { EventGameConfig } from './EventGameConfig';
 import { EventKioskList } from './EventKioskList';
 import { EventProductList } from './EventProductList';
 import { EventThemeConfig } from './EventThemeConfig';
 import { KioskSelectModal } from './KioskSelectModal';
 import { ProductSelectModal } from './ProductSelectModal';
 import { Ad } from '../../../ads/types';
+import { Game } from '../../../games/types';
 import { Kiosk } from '../../../kiosks/types';
 import { Theme } from '../../../themes/types';
 import { Event, EventProduct } from '../../types';
@@ -32,17 +34,19 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 	const [eventProducts, setEventProducts] = useState<EventProduct[]>(event?.products || []);
 	const [eventKiosks, setEventKiosks] = useState<Kiosk[]>(event?.kiosks || []);
 	const [eventTheme, setEventTheme] = useState<Theme | undefined>(event?.theme);
+	const [eventGame, setEventGame] = useState<Game | undefined>(event?.game);
 	const [idlePlaylist, setIdlePlaylist] = useState<Ad | undefined>(event?.idlePlaylist);
 	const [shoppingPlaylist, setShoppingPlaylist] = useState<Ad | undefined>(event?.shoppingPlaylist);
 	const [kioskSelectModalOpened, setKioskSelectModalOpened] = useState(false);
 	const [productSelectModalOpened, setProductSelectModalOpened] = useState(false);
 
-	// Update products, kiosks, theme, and playlists when event changes
+	// Update products, kiosks, theme, game, and playlists when event changes
 	useEffect(() => {
 		if (event) {
 			setEventProducts(event.products || []);
 			setEventKiosks(event.kiosks || []);
 			setEventTheme(event.theme);
+			setEventGame(event.game);
 			setIdlePlaylist(event.idlePlaylist);
 			setShoppingPlaylist(event.shoppingPlaylist);
 		}
@@ -96,6 +100,13 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 		setEventTheme(undefined);
 	};
 
+	const handleGameChange = (game: Game) => {
+		setEventGame(game);
+	};
+
+	const handleGameRemove = () => {
+		setEventGame(undefined);
+	};
 
 	const handleIdlePlaylistChange = (ad: Ad) => {
 		setIdlePlaylist(ad);
@@ -234,6 +245,18 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 						onThemeRemove={handleThemeRemove}
 					/>
 				</div>
+
+				{/* Game Configuration */}
+				<div>
+					<EventGameConfig
+						game={eventGame}
+						gameId={event.gameId}
+						onGameChange={handleGameChange}
+						onGameRemove={handleGameRemove}
+					/>
+				</div>
+
+				<Box h={50}></Box>
 			</Stack>
 
 			{/* Modals */}

@@ -978,6 +978,7 @@
 						"kiosks": "Kiosk List",
 						"products": "Product List",
 						"theme": "Theme",
+						"game": "Game",
 						"themeAndSlideshow": "Theme and Slideshow",
 						"slideshowPlaylists": "Slideshow Playlists",
 						"idlePlaylist": "Idle Playlist",
@@ -1046,11 +1047,18 @@
 						"noThemes": "No themes found",
 						"selectTheme": "Select Theme"
 					},
+					"selectGame": {
+						"title": "Select Game for Event",
+						"searchPlaceholder": "Search games...",
+						"noGames": "No games found",
+						"selectGame": "Select Game"
+					},
 					"messages": {
 						"no_events": "No events found",
 						"no_kiosks": "No kiosks assigned to this event",
 						"no_products": "No products in this event",
 						"no_theme": "No theme selected",
+						"no_game": "No game selected",
 						"no_idle_playlist": "No playlist for idle screen",
 						"no_shopping_playlist": "No playlist for shopping screen",
 						"no_media_in_playlist": "No media in playlist"
