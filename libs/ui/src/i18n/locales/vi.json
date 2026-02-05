@@ -768,12 +768,14 @@
 				"appearance": "Giao diện",
 				"themes": "Chủ đề",
 				"device": "Thiết bị",
+				"miniGame": "Trò chơi",
 				"kiosk_settings": "Cài đặt",
 				"kiosk_template": "Mẫu Kiosk",
 				"payment": "Thanh toán",
 				"reports": "Báo cáo",
-				"revenue": "Doanh thu",
-				"inventory": "Hàng tồn",
+				"revenue_report": "Doanh thu",
+				"inventory_report": "Hàng tồn",
+				"operations_report": "Vận hành",
 				"error_analytics": "Phân tích lỗi",
 				"customer_support": "Hỗ trợ khách hàng"
 			},
@@ -1188,6 +1190,58 @@
 				"messages": {
 					"no_payments": "Không tìm thấy phương thức thanh toán nào",
 					"no_custom_fields": "Không có trường tùy chỉnh"
+				}
+			},
+			"games": {
+				"title": "Quản lý Trò chơi",
+				"detail": {
+					"title": "Chi tiết Trò chơi",
+					"info": "Thông tin",
+					"versions": "Phiên bản",
+					"preview": "Chơi thử"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã game",
+					"name": "Tên game",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"versions": "Số phiên bản",
+					"latestVersion": "Phiên bản mới nhất",
+					"versionCode": "Mã phiên bản",
+					"versionDescription": "Mô tả phiên bản",
+					"source": "Source code",
+					"source_placeholder": "Nhập HTML/JS source code của game...",
+					"uploadDate": "Ngày tải lên",
+					"minAppVersion": "Phiên bản app tối thiểu",
+					"createdAt": "Ngày tạo",
+					"latest": "Mới nhất",
+					"selectVersion": "Chọn phiên bản"
+				},
+				"tabs": {
+					"info": "Thông tin",
+					"versions": "Phiên bản",
+					"preview": "Chơi thử"
+				},
+				"actions": {
+					"play": "Chơi thử",
+					"add_version": "Thêm phiên bản",
+					"upload_source": "Tải lên source",
+					"reload": "Tải lại"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên game..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_games": "Không tìm thấy game nào",
+					"no_version": "Không có phiên bản nào",
+					"no_versions": "Không có phiên bản",
+					"source_loaded": "Source đã được tải",
+					"preview_hint": "Nhấn để chơi thử game",
+					"delete_version_confirm": "Bạn có chắc muốn xóa phiên bản này?"
 				}
 			},
 			"themes": {

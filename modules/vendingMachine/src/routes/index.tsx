@@ -6,6 +6,7 @@ import { Navigate } from 'react-router';
 import { VendingMachineLayout } from '../layouts';
 import { AdsPage } from '../pages/ads/AdsPage';
 import { EventsPage } from '../pages/events/EventsPage';
+import { GamesPage } from '../pages/games/GamesPage';
 import { KioskDevicePage } from '../pages/kioskDevices/KioskDevicePage';
 import { KioskListPage } from '../pages/kiosks/KioskListPage';
 import { KioskSettingsPage } from '../pages/kioskSettings/KioskSettingsPage';
@@ -28,6 +29,7 @@ export const AppRouteElements: React.ReactNode = (
 		<AppRoute path='kiosk-devices' element={<KioskDevicePage />} />
 		<AppRoute path='payment' element={<PaymentPage />} />
 		<AppRoute path='themes' element={<ThemesPage />} />
+		<AppRoute path='mini-game' element={<GamesPage />} />
 	</AppRoute>
 );
 

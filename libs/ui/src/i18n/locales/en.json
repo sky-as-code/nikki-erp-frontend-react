@@ -727,12 +727,14 @@
 					"events": "Events",
 					"appearance": "Appearance",
 					"themes": "Themes",
+					"miniGame": "Mini Game",
 					"kiosk_settings": "Kiosk Settings",
 				"kiosk_template": "Kiosk Template",
 				"payment": "Payment",
 				"reports": "Reports",
-					"revenue": "Revenue",
-					"inventory": "Inventory",
+					"revenue_report": "Revenue",
+					"inventory_report": "Inventory",
+					"operations_report": "Operations",
 					"error_analytics": "Error Analytics",
 					"customer_support": "Customer Support"
 				},
@@ -1147,6 +1149,58 @@
 				"messages": {
 					"no_payments": "No payment methods found",
 					"no_custom_fields": "No custom fields"
+				}
+			},
+			"games": {
+				"title": "Game Management",
+				"detail": {
+					"title": "Game Details",
+					"info": "Information",
+					"versions": "Versions",
+					"preview": "Preview"
+				},
+				"fields": {
+					"id": "ID",
+					"code": "Game Code",
+					"name": "Game Name",
+					"description": "Description",
+					"status": "Status",
+					"versions": "Version Count",
+					"latestVersion": "Latest Version",
+					"versionCode": "Version Code",
+					"versionDescription": "Version Description",
+					"source": "Source Code",
+					"source_placeholder": "Enter HTML/JS source code of the game...",
+					"uploadDate": "Upload Date",
+					"minAppVersion": "Minimum App Version",
+					"createdAt": "Created At",
+					"latest": "Latest",
+					"selectVersion": "Select Version"
+				},
+				"tabs": {
+					"info": "Information",
+					"versions": "Versions",
+					"preview": "Preview"
+				},
+				"actions": {
+					"play": "Play",
+					"add_version": "Add Version",
+					"upload_source": "Upload Source",
+					"reload": "Reload"
+				},
+				"search": {
+					"placeholder": "Search by game code or name..."
+				},
+				"filter": {
+					"status": "Filter by Status"
+				},
+				"messages": {
+					"no_games": "No games found",
+					"no_version": "No version available",
+					"no_versions": "No versions",
+					"source_loaded": "Source loaded",
+					"preview_hint": "Click to play the game",
+					"delete_version_confirm": "Are you sure you want to delete this version?"
 				}
 			},
 			"themes": {

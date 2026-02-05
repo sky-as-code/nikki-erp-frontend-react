@@ -2,6 +2,7 @@ import { combineReducers, Dispatch, ThunkDispatch, UnknownAction } from '@reduxj
 
 import { adReducer } from './ad';
 import { eventReducer } from './event';
+import { gameReducer } from './game';
 import { kioskReducer } from './kiosk';
 import { kioskDeviceReducer } from './kioskDevice';
 import { kioskSettingReducer } from './kioskSetting';
@@ -19,6 +20,7 @@ export const reducer = combineReducers({
 	...kioskDeviceReducer,
 	...paymentReducer,
 	...themeReducer,
+	...gameReducer,
 });
 
 export * from './kiosk';
@@ -29,6 +31,7 @@ export * from './kioskTemplate';
 export * from './kioskDevice';
 export * from './payment';
 export * from './theme';
+export * from './game';
 
 export type VendingMachineDispatch = ThunkDispatch<
 	ReturnType<typeof reducer>,

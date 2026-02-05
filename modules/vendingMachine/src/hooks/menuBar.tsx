@@ -42,6 +42,10 @@ export function useMenuBarItems(): MenuBarItem[] {
 					link: '/themes',
 				},
 				{
+					label: translate('nikki.vendingMachine.menu.miniGame'),
+					link: '/mini-game',
+				},
+				{
 					label: translate('nikki.vendingMachine.menu.events'),
 					link: '/events',
 				},
@@ -55,16 +59,12 @@ export function useMenuBarItems(): MenuBarItem[] {
 			label: translate('nikki.vendingMachine.menu.reports'),
 			items: [
 				{
-					label: translate('nikki.vendingMachine.menu.revenue'),
+					label: translate('nikki.vendingMachine.menu.revenue_report'),
 					link: '/reports/revenue',
 				},
 				{
-					label: translate('nikki.vendingMachine.menu.inventory'),
-					link: '/reports/inventory',
-				},
-				{
-					label: translate('nikki.vendingMachine.menu.error_analytics'),
-					link: '/reports/error-analytics',
+					label: translate('nikki.vendingMachine.menu.operations_report'),
+					link: '/reports/operations',
 				},
 			],
 		},
