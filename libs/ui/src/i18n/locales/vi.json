@@ -1144,13 +1144,49 @@
 				"detail": {
 					"title": "Chi tiết Mẫu Kiosk"
 				},
+				"sections": {
+					"basicInfo": "Thông tin cơ bản",
+					"configuration": "Cấu hình",
+					"contentMedia": "Nội dung & Media",
+					"trayConfiguration": "Cấu hình khay",
+					"metadata": "Thông tin khác"
+				},
 				"fields": {
 					"id": "Mã định danh",
 					"code": "Mã mẫu",
 					"name": "Tên",
 					"description": "Mô tả",
 					"status": "Trạng thái",
+					"operatingMode": "Chế độ hoạt động",
+					"kioskType": "Loại kiosk",
+					"interfaceMode": "Chế độ giao diện",
+					"slideshow": "Trình chiếu",
+					"numberOfTrays": "Số khay",
+					"trayConfigurations": "Cấu hình khay",
+					"trayRow": "Hàng",
+					"trayDevice": "Loại khay",
+					"deviceSpecifications": "Thông số thiết bị",
 					"createdAt": "Ngày tạo"
+				},
+				"operatingMode": {
+					"pending": "Chờ xử lý",
+					"selling": "Bán hàng",
+					"adsOnly": "Chỉ quảng cáo"
+				},
+				"kioskType": {
+					"withoutElevator": "Không có thang máy",
+					"elevatorWithConveyor": "Thang máy có băng chuyền",
+					"elevatorWithoutConveyor": "Thang máy không có băng chuyền"
+				},
+				"interfaceMode": {
+					"normal": "Bình thường",
+					"focus": "Tập trung"
+				},
+				"selectDevice": {
+					"title": "Chọn loại khay",
+					"searchPlaceholder": "Tìm kiếm theo mã hoặc tên thiết bị...",
+					"noDevices": "Không tìm thấy thiết bị nào",
+					"selectDevice": "Chọn loại khay"
 				},
 				"search": {
 					"placeholder": "Tìm kiếm theo mã hoặc tên..."
@@ -1159,7 +1195,13 @@
 					"status": "Lọc theo trạng thái"
 				},
 				"messages": {
-					"no_templates": "Không tìm thấy mẫu nào"
+					"no_templates": "Không tìm thấy mẫu nào",
+					"no_slideshow": "Chưa có trình chiếu",
+					"no_trays": "Chưa có khay nào. Nhấn nút 'Thêm hàng' để thêm khay."
+				},
+				"actions": {
+					"addTray": "Thêm hàng",
+					"selectDeviceForSelected": "Chọn loại khay cho {{count}} hàng đã chọn"
 				}
 			},
 			"payment": {

@@ -1103,13 +1103,49 @@
 					"detail": {
 						"title": "Kiosk Template Details"
 					},
+					"sections": {
+						"basicInfo": "Basic Information",
+						"configuration": "Configuration",
+						"contentMedia": "Content & Media",
+						"trayConfiguration": "Tray Configuration",
+						"metadata": "Metadata"
+					},
 					"fields": {
 						"id": "ID",
 						"code": "Code",
 						"name": "Name",
 						"description": "Description",
 						"status": "Status",
+						"operatingMode": "Operating Mode",
+						"kioskType": "Kiosk Type",
+						"interfaceMode": "Interface Mode",
+						"slideshow": "Slideshow",
+						"numberOfTrays": "Number of Trays",
+						"trayConfigurations": "Tray Configurations",
+						"trayRow": "Row",
+						"trayDevice": "Tray Device",
+						"deviceSpecifications": "Device Specifications",
 						"createdAt": "Created At"
+					},
+					"operatingMode": {
+						"pending": "Pending",
+						"selling": "Selling",
+						"adsOnly": "Ads Only"
+					},
+					"kioskType": {
+						"withoutElevator": "Without Elevator",
+						"elevatorWithConveyor": "Elevator With Conveyor",
+						"elevatorWithoutConveyor": "Elevator Without Conveyor"
+					},
+					"interfaceMode": {
+						"normal": "Normal",
+						"focus": "Focus"
+					},
+					"selectDevice": {
+						"title": "Select Tray Device",
+						"searchPlaceholder": "Search by device code or name...",
+						"noDevices": "No devices found",
+						"selectDevice": "Select Device"
 					},
 					"search": {
 						"placeholder": "Search by code or name..."
@@ -1118,7 +1154,13 @@
 						"status": "Filter by Status"
 					},
 					"messages": {
-						"no_templates": "No templates found"
+						"no_templates": "No templates found",
+						"no_slideshow": "No slideshow",
+						"no_trays": "No trays yet. Click 'Add Row' button to add a tray."
+					},
+					"actions": {
+						"addTray": "Add Row",
+						"selectDeviceForSelected": "Select device for {{count}} selected rows"
 					}
 				},
 				"payment": {

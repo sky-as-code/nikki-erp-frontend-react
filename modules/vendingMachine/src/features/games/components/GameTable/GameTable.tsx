@@ -2,8 +2,8 @@ import { ActionIcon, Badge, Box, Group, Text, Tooltip } from '@mantine/core';
 import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
 import { IconDeviceGamepad, IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
 import React from 'react';
-import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
 
 
