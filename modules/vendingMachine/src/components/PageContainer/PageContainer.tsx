@@ -12,7 +12,7 @@ interface PageContainerProps {
 
 export const PageContainer: React.FC<PageContainerProps> = ({ breadcrumbs, actionBar, children }) => {
 	return (
-		<Stack gap='md' mt='sm'>
+		<Stack gap='md' mt='xs'>
 			{breadcrumbs && breadcrumbs.length > 0 && <BreadCrumbs items={breadcrumbs} />}
 			{actionBar && <Box>{actionBar}</Box>}
 			<Paper p={'md'} bg='light-dark(rgb(255 255 255 / 70%), var(--mantine-color-dark-6))'>

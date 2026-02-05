@@ -887,14 +887,65 @@
 					"name": "Tên",
 					"address": "Địa chỉ",
 					"coordinates": "Tọa độ",
+					"latitude": "Vĩ độ",
+					"longitude": "Kinh độ",
 					"isActive": "Trạng thái hoạt động",
 					"connectionStatus": "Kết nối",
 					"status": "Trạng thái",
 					"mode": "Chế độ",
+					"paymentMethods": "Phương thức thanh toán",
 					"warnings": "Cảnh báo",
 					"actions": "Thao tác",
 					"createdAt": "Ngày tạo",
 					"deletedAt": "Ngày xóa"
+				},
+				"tabs": {
+					"basicInfo": "Thông tin cơ bản",
+					"products": "Sản phẩm",
+					"activity": "Hoạt động kiosk"
+				},
+				"products": {
+					"view": {
+						"list": "Danh sách",
+						"grid": "Lưới"
+					},
+					"fields": {
+						"image": "Hình ảnh",
+						"code": "Mã SP",
+						"name": "Tên sản phẩm",
+						"price": "Giá bán",
+						"quantity": "Số lượng",
+						"positions": "Vị trí"
+					},
+					"actions": {
+						"discardChanges": "Loại bỏ thay đổi",
+						"loadAll": "Nạp tất cả",
+						"viewOnly": "Chỉ Xem"
+					},
+					"empty": "Trống"
+				},
+				"activity": {
+					"searchPlaceholder": "Tìm kiếm theo nội dung...",
+					"filter": {
+						"type": "Lọc theo loại",
+						"startDate": "Từ ngày",
+						"endDate": "Đến ngày"
+					},
+					"fields": {
+						"time": "Thời gian",
+						"type": "Loại",
+						"content": "Nội dung"
+					},
+					"type": {
+						"warning": "Cảnh báo",
+						"statusDetail": "Chi tiết trạng thái",
+						"error": "Lỗi",
+						"info": "Thông tin"
+					},
+					"detail": {
+						"title": "Chi tiết hoạt động"
+					},
+					"noLogs": "Không có log nào"
 				},
 				"status": {
 					"activated": "Đã kích hoạt",
@@ -1157,6 +1208,7 @@
 					"name": "Tên",
 					"description": "Mô tả",
 					"status": "Trạng thái",
+					"template": "Mẫu kiosk",
 					"operatingMode": "Chế độ hoạt động",
 					"kioskType": "Loại kiosk",
 					"interfaceMode": "Chế độ giao diện",
