@@ -1,11 +1,13 @@
 import { Anchor, Button, Group, Stack } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
-import { useAuthState, useSignInProgress, continueSignInAction } from '@nikkierp/shell/auth';
+import { useAuthState, useSignInProgress, continueSignInAction, actions } from '@nikkierp/shell/auth';
 import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
+import { useUIState } from 'node_modules/@nikkierp/shell/src/contexts/UIProviders';
 import React, { useRef } from 'react';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - JSON import
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
 import passwordSchema from './password-schema.json';
@@ -21,13 +23,22 @@ type PasswordStepFormContentProps = BaseFormContentProps & {
 export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps): React.ReactNode {
 	const formRef = useRef<HTMLFormElement>(null);
 	const dispatch = useDispatch<AppDispatch>();
-	const { isLoading } = useAuthState();
+	const { isLoading, errorContinueSignIn } = useAuthState();
 	const signInProgress = useSignInProgress();
+	const { notification } = useUIState();
+	const {t} = useTranslation();
+
+	React.useEffect(() => {
+		if (errorContinueSignIn) {
+			notification.showError(t('login.messages.passwordIncorrect'), 'Error');
+			dispatch(actions.resetErrorsContinueSignIn());
+		}
+	}, [errorContinueSignIn]);
 
 	const handleSubmit = async (data: { password: string }) => {
 		// This would be passed as a prop in a real implementation
-		console.log('SignIn attempt:', data);
-		dispatch(continueSignInAction({ password: data.password }));
+		dispatch(continueSignInAction({ passwords: {password :data.password},
+			username: signInProgress?.email, attemptId: signInProgress?.attemptId }));
 	};
 
 	return (

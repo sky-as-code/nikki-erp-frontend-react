@@ -4,8 +4,6 @@
 		"email": {
 			"type": "email",
 			"label": "{ \"$ref\": 'nikki.identity.user.fields.email' }",
-			"description": "{ \"$ref\": 'nikki.identity.user.fields.email_description' }",
-			"placeholder": "{ \"$ref\": 'nikki.identity.user.fields.email_placeholder' }",
 			"required": {
 				"create": true
 			},

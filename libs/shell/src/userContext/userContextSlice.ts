@@ -1,16 +1,17 @@
 import { ActionReducerMapBuilder, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 
-import { UserContext, userContextService } from './userContextService';
-import { EntitlementAssignment, Organization, User } from './userContextService';
+import { PermissionsSnapshot, UserContext, userContextService } from './userContextService';
+import { Organization, User, Hierarchy } from './userContextService';
 
 
 export const SLICE_NAME = 'shellUserContext';
 
 export type UserContextState = {
 	user: User | null;
+	hierarchies: Hierarchy[];
 	orgs: Organization[];
-	permissions: EntitlementAssignment[];
+	permissions: PermissionsSnapshot;
 	isLoading: boolean;
 	error: string | null;
 };
@@ -19,8 +20,9 @@ const initialState: UserContextState = {
 	isLoading: false,
 	error: null,
 	user: null,
+	hierarchies: [],
 	orgs: [],
-	permissions: [],
+	permissions: {},
 };
 
 export const fetchUserContextAction = createAsyncThunk<
@@ -32,6 +34,7 @@ export const fetchUserContextAction = createAsyncThunk<
 	async (_, { rejectWithValue }) => {
 		try {
 			const context = await userContextService.fetch();
+			console.log('Fetched user context in thunk:', context);
 			return context;
 		}
 		catch (error) {
@@ -66,6 +69,7 @@ function addFetchProfileReducers(builder: ActionReducerMapBuilder<UserContextSta
 			state.user = action.payload.user;
 			state.orgs = action.payload.orgs;
 			state.permissions = action.payload.permissions;
+			state.hierarchies = action.payload.hierarchies ?? [];
 		})
 		.addCase(fetchUserContextAction.rejected, (state, action) => {
 			state.isLoading = false;

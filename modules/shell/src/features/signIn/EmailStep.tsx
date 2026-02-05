@@ -1,12 +1,13 @@
 import { Anchor, Button, Group, Loader, Stack, Text } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
-import { startSignInAction, useAuthState, useSignInProgress } from '@nikkierp/shell/auth';
+import { startSignInAction, useAuthState, useSignInProgress, actions } from '@nikkierp/shell/auth';
 import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
-import { IconLoader2 } from '@tabler/icons-react';
+import { useUIState } from 'node_modules/@nikkierp/shell/src/contexts/UIProviders';
 import React from 'react';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - JSON import
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
 import emailSchema from './email-schema.json';
@@ -18,7 +19,9 @@ const emailSchemaTyped = emailSchema as ModelSchema;
 export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	const formRef = React.useRef<HTMLFormElement>(null);
 	const dispatch = useDispatch<AppDispatch>();
-	const { isLoading } = useAuthState();
+	const { isLoading, errorStartSignIn} = useAuthState();
+	const { notification } = useUIState();
+	const {t} = useTranslation();
 	const signInProgress = useSignInProgress();
 
 	React.useEffect(() => {
@@ -26,6 +29,13 @@ export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 			onNext();
 		}
 	}, [isLoading, signInProgress?.nextStep]);
+
+	React.useEffect(() => {
+		if (errorStartSignIn) {
+			notification.showError(t('login.messages.accountNotExist'), '');
+			dispatch(actions.resetErrorsStartSignIn());
+		}
+	}, [errorStartSignIn]);
 
 	const handleNext = async (data: { email: string }) => {
 		dispatch(startSignInAction({ email: data.email }));

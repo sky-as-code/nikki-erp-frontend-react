@@ -1,6 +1,9 @@
 
 import kyLib from 'ky';
 
+import { AuthService } from '../../../shell/src/auth';
+
+
 import type { KyInstance, Input, Options, KyRequest } from 'ky';
 
 
@@ -11,19 +14,56 @@ let api: KyInstance | null = null;
 
 export type RequestMakerOts = {
 	baseUrl: string,
-	auth: {
+	auth?: {
 		tokenType?: string,
-		getToken: () => string | null,
+		authService: AuthService,
+		onRefreshFailed?: () => void,
 	},
 };
+
+let isRetried = false;
+
+function interceptorResponse(opts: RequestMakerOts) {
+	const { tokenType = 'Bearer', onRefreshFailed, authService} = opts.auth || {};
+
+	return async (request: KyRequest, options: Options, response: Response) => {
+		if (!opts.auth || response.status !== 401 || isRetried ) {
+			isRetried = false;
+			return response;
+		}
+
+		// if (!authService) {
+		// 	throw new Error('AuthService is required for token refresh');
+		// }
+
+		try {
+			const restored = await authService!.restoreAuthSession();
+			isRetried = true;
+			if (!restored) {
+				throw new Error('Refresh token unavailable');
+			}
+
+			const token = authService!.getAccessToken();
+			if (!token) {
+				throw new Error('Access token unavailable after refresh');
+			}
+
+			request.headers.set('Authorization', `${tokenType} ${token}`);
+			return api!(request, options);
+		}
+		catch {
+			isRetried = false;
+			onRefreshFailed?.();
+			return response;
+		}
+	};
+}
 
 export function initRequestMaker(opts: RequestMakerOts) {
 	if (api) return;
 
-	const {
-		tokenType = 'Bearer',
-		getToken,
-	} = opts.auth || {};
+	const { tokenType = 'Bearer', authService } = opts.auth || {};
+
 	api = kyLib.create({
 		prefixUrl: opts.baseUrl,
 		headers: {
@@ -34,12 +74,13 @@ export function initRequestMaker(opts: RequestMakerOts) {
 		hooks: {
 			beforeRequest: [
 				(request: KyRequest) => {
-					if (opts.auth) {
-						const token = getToken!();
+					if (authService) {
+						const token = authService.getAccessToken();
 						request.headers.set('Authorization', `${tokenType} ${token}`);
 					}
 				},
 			],
+			afterResponse: [interceptorResponse(opts)],
 		},
 	});
 }

@@ -71,7 +71,9 @@ export class AuthService {
 
 	public async restoreAuthSession(): Promise<boolean> {
 		const refreshToken = this.#refreshTokenStorage.getToken();
-		if (refreshToken && !refreshToken.isExpired) {
+		const expiresAtMs = new Date(refreshToken!.expiresAt).getTime();
+
+		if (refreshToken && expiresAtMs > Date.now()) {
 			await this.refreshSession(refreshToken.token);
 			return true;
 		}

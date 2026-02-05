@@ -1,22 +1,35 @@
+import * as request from '@nikkierp/common/request';
 import { delay, randomString } from '@nikkierp/common/utils';
 
-import { AuthenticatedCallback, AuthenticatedSession, ISignInStrategy, SignInResult, TokenObj } from '../types';
+import { AuthenticatedCallback, AuthenticatedSession, ISignInStrategy, SignInResult } from '../types';
 
 
 export type SignInAttempt = {
 	attemptId: string;
-	attemptExpiredAt: number;
+	expiredAt: number;
 	nextStep: string,
+	email:string,
+};
+
+export type SignInAttemptRequest = {
+	subjectType: string;
+	username: string;
 };
 
 export type SignInContinueParams = {
 	attemptId: string;
+	username: string;
 	passwords: Record<string, unknown>;
 };
 
 export type SignInContinueResult = SignInResult & {
 	nextStep?: string;
 };
+
+export type RefreshTokenParams = {
+	refreshToken: string;
+};
+
 /**
  * This strategy invokes NikkiERP Authenticate Module.
  */
@@ -25,36 +38,26 @@ export class NikkiAuthenticateStrategy implements ISignInStrategy {
 		return 'Bearer';
 	}
 
-	public async startSignIn(_?: UnknownRecord): Promise<SignInAttempt> {
-		await delay(1_000);
-		return {
-			attemptId: randomString(10),
-			attemptExpiredAt: Date.now() + 1000 * 60 * 5,
-			nextStep: 'password',
-		};
+	public async startSignIn(data: SignInAttemptRequest): Promise<SignInAttempt> {
+		const response = await request.post<SignInAttempt>('authn/login/start', { json: data,
+			headers: { 'Authorization': '' },
+		});
+		response.nextStep = 'password';
+		response.email = data.username;
+		return response;
 	}
 
 	public async continueSignIn(params?: SignInContinueParams): Promise<SignInContinueResult> {
-		await delay(1_000);
+		const response = await request.post<SignInContinueResult>('authn/login', { json: params });
 		return {
-			done: true,
-			data: {
-				accessToken: randomString(10),
-				accessTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
-				refreshToken: randomString(10),
-				refreshTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
-			},
+			done: response.done,
+			data: response.data,
 		};
 	}
 
 	public async refreshSession(refreshToken: string): Promise<AuthenticatedSession> {
-		await delay(500);
-		return {
-			accessToken: randomString(10),
-			accessTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
-			refreshToken: randomString(10),
-			refreshTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
-		};
+		const response = await request.post<AuthenticatedSession>('authn/refresh', { json: { refreshToken } });
+		return response;
 	}
 
 	public onAuthenticated(callback: AuthenticatedCallback): void {
