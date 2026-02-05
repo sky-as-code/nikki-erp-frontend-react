@@ -1,5 +1,6 @@
-import angryBirdsGameSourceV1_0_0 from './angrybird-v1_0_0.html?raw';
-import angryBirdsGameSourceV1_1_0 from './angrybird-v1_1_0.html?raw';
+import angryBirdsGameSourceV1_0_0 from './resources/angrybird-v1_0_0.html?raw';
+import angryBirdsGameSourceV1_1_0 from './resources/angrybird-v1_1_0.html?raw';
+import snakeGameSourceV1_0_0 from './resources/snake-v1_0_0.html?raw';
 import { Game, GameVersion } from './types';
 
 
@@ -41,7 +42,7 @@ const mockGamesData: Game[] = [
 			{
 				code: 'v1.0.0',
 				description: 'Phiên bản cơ bản của trò chơi rắn',
-				source: '<!DOCTYPE html><html><head><title>Snake Game</title></head><body><h1>Snake Game - Coming Soon</h1></body></html>',
+				source: snakeGameSourceV1_0_0,
 				uploadDate: '2024-01-20T09:00:00Z',
 			},
 		],
