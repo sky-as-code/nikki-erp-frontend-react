@@ -1,10 +1,18 @@
 import * as request from '@nikkierp/common/request';
+import { u } from 'node_modules/react-router/dist/development/index-react-server-client-BIz4AUNd.mjs';
 
 
 export type User = {
 	id: string;
 	email: string;
 	displayName: string;
+};
+
+export type Hierarchy = {
+	id: string;
+	name: string
+	parentId?: string;
+	orgId: string;
 };
 
 export type Module = {
@@ -20,85 +28,102 @@ export type Organization = {
 	modules: Module[];
 };
 
-export type EntitlementAssignment = {
-	entitlement: string;
-	scopeType: string;
+export type PermissionScopeType = 'domain' | 'org' | 'hierarchy' | 'private';
+
+export type PermissionScopeEntry = {
+	scopeType: PermissionScopeType;
 	scopeRef: string;
+	actions: string[];
 };
+
+export type PermissionsSnapshot = Record<string, PermissionScopeEntry[]>;
 
 export type UserContext = {
 	user: User;
 	orgs: Organization[];
-	permissions: EntitlementAssignment[];
+	permissions: PermissionsSnapshot;
+	hierarchies: Hierarchy[];
 };
 
-export type GetUserByIdResponse = {
+// Temporary hardcode user_id
+export const HARDCODED_USER_ID_FOR_CONTEXT = '01JWNXT3EY7FG47VDJTEPTDC98';
+
+type HierarchyApiItem = {
 	id: string;
-	email: string;
-	displayName: string;
-	orgs: {
-		id: string;
-		displayName: string;
-		slug: string;
-	}[];
+	Name: string;
+	ParentId?: string;
+	OrgId: string;
+	etag?: string;
+	createdAt?: string;
 };
 
-/* eslint-disable max-lines-per-function */
+type OrgApiItem = {
+	id: string;
+	displayName: string;
+	slug: string;
+	status?: string;
+	address?: string | null;
+	legalName?: string | null;
+	phoneNumber?: string | null;
+	etag?: string;
+	createdAt?: string;
+};
+
+type UserContextApiUser = {
+	id: string;
+	displayName: string;
+	email: string;
+	avatarUrl?: string | null;
+	etag?: string;
+	createdAt?: string;
+	hierarchy?: HierarchyApiItem[];
+	orgs?: OrgApiItem[];
+};
+
+type UserContextApiResponse = {
+	user: UserContextApiUser;
+	permissions: PermissionsSnapshot;
+};
+
+function mapApiContextToUserContext(data: UserContextApiResponse): UserContext {
+	const { user: apiUser, permissions } = data;
+	const hierarchies: Hierarchy[] = (apiUser.hierarchy ?? []).map((h) => ({
+		id: h.id,
+		name: h.Name,
+		parentId: h.ParentId,
+		orgId: h.OrgId,
+	}));
+	const orgs: Organization[] = (apiUser.orgs ?? []).map((org) => ({
+		id: org.id,
+		name: org.displayName,
+		slug: org.slug,
+		modules: DEFAULT_MODULES,
+	}));
+	return {
+		user: {
+			id: apiUser.id,
+			email: apiUser.email,
+			displayName: apiUser.displayName,
+		},
+		orgs,
+		permissions: permissions ?? {},
+		hierarchies,
+	};
+}
+
 export class UserContextService {
-	public async fetch(userId: string): Promise<UserContext> {
+	public async fetch(): Promise<UserContext> {
 		try {
-			const response = await request.get<GetUserByIdResponse>(`identity/users/${userId}`, {
-				searchParams: {
-					withOrg: 'true',
-				},
-			});
-
-			const defaultModules: Module[] = [
-				{
-					id: '1',
-					name: 'Essential',
-					slug: 'essential',
-				},
-				{
-					id: '2',
-					name: 'Identity',
-					slug: 'identity',
-				},
-				{
-					id: '3',
-					name: 'Authorize',
-					slug: 'authorize',
-				}
-			];
-
-			const orgs: Organization[] = response.orgs.map(org => ({
-				id: org.id,
-				name: org.displayName,
-				slug: org.slug,
-				modules: defaultModules,
-			}));
-
-			return {
-				user: {
-					id: response.id,
-					email: response.email,
-					displayName: response.displayName,
-				},
-				orgs,
-				permissions: [],
-			};
+			const data = await request.get<UserContextApiResponse>(
+				`identity/users/context`,
+			);
+			const context = mapApiContextToUserContext(data);
+			console.log('Fetched user context:', context);
+			return context;
 		}
 		catch (error) {
-			console.error('Failed to fetch user context:', error);
-			return {
-				user: {
-					id: '1',
-					email: 'test@test.com',
-					displayName: 'Test User',
-				},
-				orgs: [],
-				permissions: [],
-			};
+			console.error('Error fetching user context:', error);
+			throw error;
 		}
 	}
 }
@@ -106,7 +131,7 @@ export class UserContextService {
 export const userContextService = new UserContextService();
 
 
-const defaultModules: Module[] = [
+export const DEFAULT_MODULES: Module[] = [
 	{
 		id: '1',
 		name: 'Essential',

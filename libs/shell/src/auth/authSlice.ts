@@ -2,7 +2,6 @@ import { createAsyncThunk, createSlice, ActionReducerMapBuilder } from '@reduxjs
 import { use } from 'react';
 
 import { authService } from './authService';
-import { getUserIdFromToken } from './tokenStorage';
 import { SignInResult } from './types';
 import { fetchUserContextAction } from '../userContext/userContextSlice';
 
@@ -11,6 +10,8 @@ export const SLICE_NAME = 'shellAuth';
 
 export type AuthState = {
 	error: string | null;
+	errorStartSignIn: string | null;
+	errorContinueSignIn: string | null;
 	isSignInSuccess: boolean;
 	isLoading: boolean;
 	sessionExpiresAt: number | null;
@@ -19,6 +20,8 @@ export type AuthState = {
 
 const initialState: AuthState = {
 	error: null,
+	errorStartSignIn: null,
+	errorContinueSignIn: null,
 	isSignInSuccess: false,
 	isLoading: false,
 	sessionExpiresAt: null,
@@ -55,8 +58,8 @@ export const continueSignInAction = createAsyncThunk<
 		try {
 			const result = await authService().continueSignIn(params);
 			if (result.done && result.data?.accessToken) {
-				const userId = getUserIdFromToken(result.data.accessToken);
-				queueMicrotask(() => dispatch(fetchUserContextAction(userId)));
+				// const userId = getUserIdFromToken(result.data.accessToken);
+				queueMicrotask(() => dispatch(fetchUserContextAction()));
 			}
 			return result;
 		}
@@ -97,8 +100,8 @@ export const restoreAuthSessionAction = createAsyncThunk<
 			if (isSuccess) {
 				const accessToken = authService().getAccessToken();
 				if (accessToken) {
-					const userId = getUserIdFromToken(accessToken);
-					queueMicrotask(() => dispatch(fetchUserContextAction(userId)));
+					// const userId = getUserIdFromToken(accessToken);
+					queueMicrotask(() => dispatch(fetchUserContextAction()));
 				}
 			}
 			return isSuccess;
@@ -114,6 +117,12 @@ const authSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
 	reducers: {
+		resetErrorsStartSignIn: (state) => {
+			state.errorStartSignIn = null;
+		},
+		resetErrorsContinueSignIn: (state) => {
+			state.errorContinueSignIn = null;
+		},
 	},
 	extraReducers: (builder) => {
 		addStartSignInReducers(builder);
@@ -128,15 +137,17 @@ function addStartSignInReducers(builder: ActionReducerMapBuilder<AuthState>): vo
 		.addCase(startSignInAction.pending, (state) => {
 			state.isLoading = true;
 			state.error = null;
+			state.errorStartSignIn = null;
 		})
 		.addCase(startSignInAction.fulfilled, (state, action) => {
 			state.isLoading = false;
+			state.errorStartSignIn = null;
 			state.signInProgress = Object.assign({}, state.signInProgress, action.payload);
 		})
 		.addCase(startSignInAction.rejected, (state, action) => {
 			state.isLoading = false;
 			state.signInProgress = null;
-			state.error = action.payload!;
+			state.errorStartSignIn = action.payload!;
 		});
 }
 
@@ -145,10 +156,12 @@ function addContSignInReducers(builder: ActionReducerMapBuilder<AuthState>): voi
 		.addCase(continueSignInAction.pending, (state) => {
 			state.isLoading = true;
 			state.error = null;
+			state.errorContinueSignIn = null;
 		})
 		.addCase(continueSignInAction.fulfilled, (state, action) => {
 			state.isLoading = false;
 			state.error = null;
+			state.errorContinueSignIn = null;
 			if (action.payload.done) {
 				state.signInProgress = null;
 				state.isSignInSuccess = true;
@@ -159,7 +172,7 @@ function addContSignInReducers(builder: ActionReducerMapBuilder<AuthState>): voi
 		})
 		.addCase(continueSignInAction.rejected, (state, action) => {
 			state.isLoading = false;
-			state.error = action.payload!;
+			state.errorContinueSignIn = action.payload!;
 		});
 }
 
@@ -201,11 +214,17 @@ function addRestoreAuthSessionReducers(builder: ActionReducerMapBuilder<AuthStat
 		})
 		.addCase(restoreAuthSessionAction.rejected, (state, action) => {
 			state.isLoading = false;
+			state.isSignInSuccess = false;
+			state.sessionExpiresAt = 0;
 			state.error = action.payload!;
 		});
 }
 
 // export const {
 // } = authSlice.actions;
+
+export const actions = {
+	...authSlice.actions,
+};
 
 export const { reducer } = authSlice;

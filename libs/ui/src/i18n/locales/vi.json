@@ -11,7 +11,9 @@
             "loginFail": "Đăng nhập thất bại!",
             "usernameRequired": "Tên đăng nhập là bắt buộc",
             "passwordRequired": "Mật khẩu là bắt buộc",
-            "usernameOrPasswordIncorrect": "Tên đăng nhập hoặc mật khẩu không chính xác"
+            "usernameOrPasswordIncorrect": "Tên đăng nhập hoặc mật khẩu không chính xác",
+			"accountNotExist": "Tài khoản không tồn tại",
+			"passwordIncorrect": "Mật khẩu không chính xác"
         }
     },
     "nikki": {
