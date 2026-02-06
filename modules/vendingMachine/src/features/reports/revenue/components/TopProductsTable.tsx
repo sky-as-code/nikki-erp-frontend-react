@@ -1,5 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import { Avatar, Badge, Card, Checkbox, Group, Pagination, ScrollArea, Stack, Table, Text, TextInput, Title } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { IconSearch } from '@tabler/icons-react';
 import React, { useState } from 'react';
 
@@ -21,7 +22,8 @@ export function TopProductsTable({ products }: TopProductsTableProps): React.Rea
 	const [searchQuery, setSearchQuery] = useState('');
 	const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 	const [currentPage, setCurrentPage] = useState(1);
-	const itemsPerPage = 10;
+	const isMobile = useMediaQuery('(max-width: 768px)');
+	const itemsPerPage = isMobile ? 6 : 10;
 
 	const filteredProducts = products.filter((product) =>
 		product.name.toLowerCase().includes(searchQuery.toLowerCase()),

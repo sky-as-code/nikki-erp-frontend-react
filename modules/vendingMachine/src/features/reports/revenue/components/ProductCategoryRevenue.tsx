@@ -32,16 +32,16 @@ export function ProductCategoryRevenue({ totalRevenue, items }: ProductCategoryR
 
 		// Sort by revenue descending
 		const sortedItems = [...items].sort((a, b) => b.revenue - a.revenue);
-		
+
 		// Take top MAX_DISPLAY_ITEMS - 1 (to leave room for "Other")
 		const topItems = sortedItems.slice(0, MAX_DISPLAY_ITEMS - 1);
-		
+
 		// Group remaining items into "Other"
 		const otherItems = sortedItems.slice(MAX_DISPLAY_ITEMS - 1);
 		const otherRevenue = otherItems.reduce((sum, item) => sum + item.revenue, 0);
 		const totalRevenueValue = items.reduce((sum, item) => sum + item.revenue, 0);
 		const otherPercentage = totalRevenueValue > 0 ? (otherRevenue / totalRevenueValue) * 100 : 0;
-		
+
 		// Calculate average change for "Other" category
 		const otherChange = otherItems.length > 0
 			? otherItems.reduce((sum, item) => sum + item.change, 0) / otherItems.length

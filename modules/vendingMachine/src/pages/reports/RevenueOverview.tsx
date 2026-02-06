@@ -169,7 +169,7 @@ function RevenueOverviewContent(): React.ReactElement {
 	return (
 		<Stack gap='md'>
 			<Grid>
-				<Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+				<Grid.Col span={{ base: 12, md: 12, lg: 4 }}>
 					<WelcomeCard
 						date={getFormattedDate()}
 						greeting='Good morning, Captain!'
