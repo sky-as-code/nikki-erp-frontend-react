@@ -21,6 +21,7 @@ import { KioskTemplatePage } from '../pages/kioskTemplate/KioskTemplatePage';
 import { OverviewPage } from '../pages/overview/OverviewPage';
 import { PaymentDetailPage } from '../pages/payment/PaymentDetailPage';
 import { PaymentPage } from '../pages/payment/PaymentPage';
+import { RevenueOverview } from '../pages/reports/RevenueOverview';
 import { ThemeDetailPage } from '../pages/themes/ThemeDetailPage';
 import { ThemesPage } from '../pages/themes/ThemesPage';
 
@@ -48,6 +49,7 @@ export const AppRouteElements: React.ReactNode = (
 		<AppRoute path='themes/:id' element={<ThemeDetailPage />} />
 		<AppRoute path='mini-game' element={<GamesPage />} />
 		<AppRoute path='mini-game/:id' element={<GameDetailPage />} />
+		<AppRoute path='reports/revenue' element={<RevenueOverview />} />
 	</AppRoute>
 );
 
