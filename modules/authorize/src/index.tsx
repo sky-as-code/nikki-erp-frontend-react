@@ -53,7 +53,7 @@ function Main(props: MicroAppProps) {
 				>
 					<AppRoutes>
 						<AppRoute index element={<Navigate to='overview' replace />} />
-						<AppRoute path='overview' element={<PermissionGuard resource={RESOURCES.AUTHZ_RESOURCE} action={ACTIONS.VIEW}><OverviewPage /></PermissionGuard>} />
+						<AppRoute path='overview' element={<OverviewPage />} />
 						{/* Resource routes */}
 						<AppRoute path='resources' element={<PermissionGuard resource={RESOURCES.AUTHZ_RESOURCE} action={ACTIONS.VIEW}><ResourceListPage /></PermissionGuard>} />
 						<AppRoute path='resources/create' element={<PermissionGuard resource={RESOURCES.AUTHZ_RESOURCE} action={ACTIONS.CREATE}><ResourceCreatePage /></PermissionGuard>} />

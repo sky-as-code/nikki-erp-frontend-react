@@ -13,6 +13,7 @@ import { ListUser } from '../../components/User';
 import { GroupDetailForm } from '../../features/group/components';
 import { useGroupDetailHandlers, useGroupUserManagement } from '../../features/group/hooks/useGroupDetail';
 import { User } from '../../features/user/types';
+import { useIdentityPermissions } from '../../hooks';
 import groupSchema from '../../schemas/group-schema.json';
 
 
@@ -22,6 +23,7 @@ export const GroupDetailPageBody: React.FC = () => {
 	const users = useMicroAppSelector(selectUserList);
 	const schema = groupSchema as ModelSchema;
 	const { t } = useTranslation();
+	const permissions = useIdentityPermissions();
 
 	const { isLoadingDetail, handleUpdate, handleDelete } = useGroupDetailHandlers();
 	const { isLoadingManageUsers,
@@ -50,6 +52,8 @@ export const GroupDetailPageBody: React.FC = () => {
 				isLoading={isLoadingDetail}
 				onSubmit={handleUpdate}
 				onDelete={handleDelete}
+				canUpdate={permissions.group.canUpdate}
+				canDelete={permissions.group.canDelete}
 			/>
 			<ListUser
 				users={usersByGroup}
@@ -57,6 +61,7 @@ export const GroupDetailPageBody: React.FC = () => {
 				isLoading={isLoadingManageUsers}
 				onAddUsers={handleAddUsers}
 				onRemoveUsers={handleRemoveUsers}
+				canManage={permissions.group.canUpdate}
 			/>
 		</Stack>
 	);

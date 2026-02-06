@@ -3,6 +3,7 @@ import { LazyMicroApp } from '@nikkierp/shell/microApp';
 import {
 	useCanAccessModuleForContext,
 	useFindMyModule,
+	useFindMyOrg,
 	useMyModulesForContext,
 } from '@nikkierp/shell/userContext';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
@@ -18,11 +19,16 @@ export function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): Re
 	const resolvedOrgSlug = orgSlug ?? activeOrgSlug ?? null;
 	const isGlobalContext = resolvedOrgSlug === GLOBAL_CONTEXT_SLUG;
 	const contextModules = useMyModulesForContext(resolvedOrgSlug);
+	const orgModule = useFindMyModule(resolvedOrgSlug ?? '', moduleSlug!);
+	const activeOrg = useFindMyOrg(resolvedOrgSlug ?? '');
+	const orgContextScope = activeOrg?.id
+		? { scopeType: 'org' as const, scopeRef: activeOrg.id }
+		: undefined;
 	const foundModule = isGlobalContext
 		? contextModules.find((mod) => mod.slug === moduleSlug) ?? null
-		: useFindMyModule(resolvedOrgSlug ?? '', moduleSlug!);
+		: orgModule;
 	const foundApp = microApps.find(app => app.basePath === moduleSlug);
-	const canAccess = useCanAccessModuleForContext(moduleSlug!, resolvedOrgSlug);
+	const canAccess = useCanAccessModuleForContext(moduleSlug!, resolvedOrgSlug, orgContextScope);
 
 	if (!foundModule || !foundApp) {
 		return <Navigate to='/notfound' replace />;

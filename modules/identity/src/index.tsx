@@ -1,13 +1,15 @@
-import { MenuBarItem, useSetMenuBarItems } from '@nikkierp/ui/appState/layoutSlice';
+import { ACTIONS, RESOURCES } from '@nikkierp/shell/userContext';
+import { useSetMenuBarItems } from '@nikkierp/ui/appState/layoutSlice';
+import { PermissionGuard } from '@nikkierp/ui/components';
 import { initMicroAppStateContext, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, MicroAppRouter,
 } from '@nikkierp/ui/microApp';
-import React from 'react';
 import { Navigate } from 'react-router';
 
 import { reducer } from './appState';
+import { useMenuBarItems, useOrgScopeRef } from './hooks';
 import { GroupCreatePage } from './pages/group/GroupCreatePage';
 import { GroupDetailPage } from './pages/group/GroupDetailPage';
 import { GroupListPage } from './pages/group/GroupListPage';
@@ -23,68 +25,40 @@ import { UserDetailPage } from './pages/user/UserDetailPage';
 import { UserListPage } from './pages/user/UserListPage';
 
 
-const menuBarItems: MenuBarItem[] = [
-	{
-		label: 'Overview',
-		link: `/overview`,
-	},
-	{
-		label: 'Users',
-		items: [
-			{
-				label: 'Users',
-				link: `/users`,
-			},
-			{
-				label: 'Groups',
-				link: `/groups`,
-			},
-		],
-	},
-	{
-		label: 'Organizations',
-		items: [
-			{
-				label: 'Organizations',
-				link: `/organizations`,
-			},
-			{
-				label: 'Hierarchy Levels',
-				link: `/hierarchy-levels`,
-			},
-		],
-	},
-	// {
-	// 	label: 'Settings',
-	// 	link: `/settings`,
-	// },
-];
-
 function Main(props: MicroAppProps) {
+	const orgScopeRef = useOrgScopeRef();
+	const orgContextScope = orgScopeRef ? { scopeType: 'org' as const, scopeRef: orgScopeRef } : undefined;
 	const dispatch = useMicroAppDispatch();
+	const menuBarItems = useMenuBarItems(orgContextScope);
 	useSetMenuBarItems(menuBarItems, dispatch);
 
 	return (
 		<MicroAppProvider {...props}>
-			<MicroAppRouter domType={props.domType} basePath={props.routing.basePath}
+			<MicroAppRouter
+				domType={props.domType}
+				basePath={props.routing.basePath}
 				widgetName={props.widgetName}
 				widgetProps={props.widgetProps}
 			>
 				<AppRoutes>
 					<AppRoute index element={<Navigate to='overview' replace />} />
 					<AppRoute path='overview' element={<OverviewPage />} />
-					<AppRoute path='users' element={<UserListPage />} />
-					<AppRoute path='users/create' element={<UserCreatePage />} />
-					<AppRoute path='users/:userId' element={<UserDetailPage />} />
-					<AppRoute path='groups' element={<GroupListPage />} />
-					<AppRoute path='groups/create' element={<GroupCreatePage />} />
-					<AppRoute path='groups/:groupId' element={<GroupDetailPage />} />
-					<AppRoute path='organizations' element={<OrganizationListPage />} />
-					<AppRoute path='organizations/:slug' element={<OrganizationDetailPage />} />
-					<AppRoute path='organizations/create' element={<OrganizationCreatePage />} />
-					<AppRoute path='hierarchy-levels' element={<HierarchyListPage />} />
-					<AppRoute path='hierarchy-levels/create' element={<HierarchyCreatePage />} />
-					<AppRoute path='hierarchy-levels/:hierarchyId' element={<HierarchyDetailPage />} />
+					{/* Users routes */}
+					<AppRoute path='users' element={<PermissionGuard resource={RESOURCES.IDENTITY_USER} action={ACTIONS.VIEW} contextScope={orgContextScope}><UserListPage /></PermissionGuard>} />
+					<AppRoute path='users/create' element={<PermissionGuard resource={RESOURCES.IDENTITY_USER} action={ACTIONS.CREATE} contextScope={orgContextScope}><UserCreatePage /></PermissionGuard>} />
+					<AppRoute path='users/:userId' element={<PermissionGuard resource={RESOURCES.IDENTITY_USER} action={ACTIONS.VIEW} contextScope={orgContextScope}><UserDetailPage /></PermissionGuard>} />
+					{/* Groups routes */}
+					<AppRoute path='groups' element={<PermissionGuard resource={RESOURCES.IDENTITY_GROUP} action={ACTIONS.VIEW} contextScope={orgContextScope}><GroupListPage /></PermissionGuard>} />
+					<AppRoute path='groups/create' element={<PermissionGuard resource={RESOURCES.IDENTITY_GROUP} action={ACTIONS.CREATE} contextScope={orgContextScope}><GroupCreatePage /></PermissionGuard>} />
+					<AppRoute path='groups/:groupId' element={<PermissionGuard resource={RESOURCES.IDENTITY_GROUP} action={ACTIONS.VIEW} contextScope={orgContextScope}><GroupDetailPage /></PermissionGuard>} />
+					{/* Organizations routes */}
+					<AppRoute path='organizations' element={<PermissionGuard resource={RESOURCES.IDENTITY_ORGANIZATION} action={ACTIONS.VIEW}><OrganizationListPage /></PermissionGuard>} />
+					<AppRoute path='organizations/:slug' element={<PermissionGuard resource={RESOURCES.IDENTITY_ORGANIZATION} action={ACTIONS.VIEW}><OrganizationDetailPage /></PermissionGuard>} />
+					<AppRoute path='organizations/create' element={<PermissionGuard resource={RESOURCES.IDENTITY_ORGANIZATION} action={ACTIONS.CREATE}><OrganizationCreatePage /></PermissionGuard>} />
+					{/* Hierarchy levels routes */}
+					<AppRoute path='hierarchy-levels' element={<PermissionGuard resource={RESOURCES.IDENTITY_HIERARCHY_LEVEL} action={ACTIONS.VIEW} contextScope={orgContextScope}><HierarchyListPage /></PermissionGuard>} />
+					<AppRoute path='hierarchy-levels/create' element={<PermissionGuard resource={RESOURCES.IDENTITY_HIERARCHY_LEVEL} action={ACTIONS.CREATE} contextScope={orgContextScope}><HierarchyCreatePage /></PermissionGuard>} />
+					<AppRoute path='hierarchy-levels/:hierarchyId' element={<PermissionGuard resource={RESOURCES.IDENTITY_HIERARCHY_LEVEL} action={ACTIONS.VIEW} contextScope={orgContextScope}><HierarchyDetailPage /></PermissionGuard>} />
 				</AppRoutes>
 				{/* <WidgetRoutes>
 						<WidgetRoute name='org-home' Component={OrgHomePage} />

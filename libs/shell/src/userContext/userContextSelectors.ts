@@ -78,7 +78,11 @@ export const useCanAccessModule = (moduleSlug: string) => {
 	);
 };
 
-export const useCanAccessModuleForContext = (moduleSlug: string, orgSlug?: string | null) => {
+export const useCanAccessModuleForContext = (
+	moduleSlug: string,
+	orgSlug?: string | null,
+	contextScope?: { scopeType: PermissionScopeType; scopeRef: string },
+) => {
 	const permissions = useSelector(selectPermissions);
 	if (hasFullAccess(permissions)) return true;
 
@@ -91,12 +95,12 @@ export const useCanAccessModuleForContext = (moduleSlug: string, orgSlug?: strin
 		const domainResources = collectResourcesByScopeType(permissions, 'domain');
 		const domainModuleResources = moduleResources.filter((resource) => domainResources.includes(resource));
 		return domainModuleResources.some((resource) =>
-			actionsToCheck.some((action) => hasPermission(permissions, resource, action)),
+			actionsToCheck.some((action) => hasPermission(permissions, resource, action, contextScope)),
 		);
 	}
 
 	return moduleResources.some((resource) =>
-		actionsToCheck.some((action) => hasPermission(permissions, resource, action)),
+		actionsToCheck.some((action) => hasPermission(permissions, resource, action, contextScope)),
 	);
 };
 
@@ -108,10 +112,11 @@ export const useActiveOrgWithDetails = () => {
 export const useHasAnyPermission = (
 	resource: string,
 	actions: string[] = [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
+	contextScope?: { scopeType: PermissionScopeType; scopeRef: string },
 ) => {
 	const permissions = useSelector(selectPermissions);
 	if (hasFullAccess(permissions)) return true;
-	return actions.some((action) => hasPermission(permissions, resource, action));
+	return actions.some((action) => hasPermission(permissions, resource, action, contextScope));
 };
 
 const hasDomainPermissionEntry = (permissions: UserContextState['permissions']) => {
@@ -180,6 +185,7 @@ export const useMyModulesForContext = (orgSlug?: string | null) => {
 type ResourcePermissionConfig = {
 	resource: string;
 	customActions?: Record<string, string>;
+	contextScope?: { scopeType: PermissionScopeType; scopeRef: string };
 };
 
 type ResourcePermissions<T extends Record<string, ResourcePermissionConfig>> = {
@@ -199,16 +205,16 @@ type ResourcePermissions<T extends Record<string, ResourcePermissionConfig>> = {
  *
  * @example
  * ```tsx
- * // Basic usage
+ * Basic usage
  * const permissions = useResourcePermissions({
  *   resource: { resource: RESOURCES.AUTHZ_RESOURCE },
  * });
- * // permissions.resource.canView, canCreate, canUpdate, canDelete
+ * permissions.resource.canView, canCreate, canUpdate, canDelete
  * ```
  *
  * @example
  * ```tsx
- * // const permissions = useResourcePermissions({
+ * const permissions = useResourcePermissions({
  *   role: {
  *     resource: RESOURCES.AUTHZ_ROLE,
  *     customActions: {
@@ -217,7 +223,7 @@ type ResourcePermissions<T extends Record<string, ResourcePermissionConfig>> = {
  *     },
  *   },
  * });
- * // permissions.role.canView, canCreate, canUpdate, canDelete, canAddEntitlement, canRemoveEntitlement
+ * permissions.role.canView, canCreate, canUpdate, canDelete, canAddEntitlement, canRemoveEntitlement
  * ```
  */
 export function useResourcePermissions<T extends Record<string, ResourcePermissionConfig>>(
@@ -225,16 +231,16 @@ export function useResourcePermissions<T extends Record<string, ResourcePermissi
 ): ResourcePermissions<T> {
 	const result = {} as ResourcePermissions<T>;
 
-	for (const [key, { resource, customActions = {} }] of Object.entries(config)) {
+	for (const [key, { resource, customActions = {}, contextScope }] of Object.entries(config)) {
 		const permissionChecks: Record<string, boolean> = {
-			canView: useHasPermission(resource, ACTIONS.VIEW),
-			canCreate: useHasPermission(resource, ACTIONS.CREATE),
-			canUpdate: useHasPermission(resource, ACTIONS.UPDATE),
-			canDelete: useHasPermission(resource, ACTIONS.DELETE),
+			canView: useHasPermission(resource, ACTIONS.VIEW, contextScope),
+			canCreate: useHasPermission(resource, ACTIONS.CREATE, contextScope),
+			canUpdate: useHasPermission(resource, ACTIONS.UPDATE, contextScope),
+			canDelete: useHasPermission(resource, ACTIONS.DELETE, contextScope),
 		};
 
 		for (const [actionName, actionConstant] of Object.entries(customActions)) {
-			permissionChecks[actionName] = useHasPermission(resource, actionConstant);
+			permissionChecks[actionName] = useHasPermission(resource, actionConstant, contextScope);
 		}
 
 		result[key as keyof T] = permissionChecks as ResourcePermissions<T>[keyof T];

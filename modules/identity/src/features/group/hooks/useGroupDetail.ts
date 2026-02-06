@@ -1,6 +1,5 @@
 
 import { useUIState } from '@nikkierp/shell/contexts';
-import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +7,7 @@ import { useNavigate, useParams } from 'react-router';
 
 import { IdentityDispatch, groupActions, userActions } from '../../../appState';
 import { selectManageGroupUsers, selectUpdateGroup, selectDeleteGroup, selectGroupDetail } from '../../../appState/group';
+import { useOrgScopeRef } from '../../../hooks';
 
 // eslint-disable-next-line max-lines-per-function
 export function useGroupDetailHandlers() {
@@ -20,7 +20,7 @@ export function useGroupDetailHandlers() {
 	const navigate = useNavigate();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
-	const activeOrg = useActiveOrgWithDetails();
+	const orgScopeRef = useOrgScopeRef();
 	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
 
 	React.useEffect(() => {
@@ -59,24 +59,27 @@ export function useGroupDetailHandlers() {
 		if (groupDetail?.data.id) {
 			const dataWithTag = { ...data, etag: groupDetail.data.etag };
 			dispatch(groupActions.updateGroup({
-				id: groupDetail.data.id,
-				...dataWithTag,
+				data: {
+					id: groupDetail.data.id,
+					...dataWithTag,
+				},
+				scopeRef: orgScopeRef,
 			}));
 		}
 	};
 
 	const handleDelete = () => {
 		if (groupDetail?.data.id) {
-			dispatch(groupActions.deleteGroup(groupDetail.data.id));
+			dispatch(groupActions.deleteGroup({ id: groupDetail.data.id, scopeRef: orgScopeRef }));
 		}
 	};
 
 	React.useEffect(() => {
 		if (groupId) {
-			dispatch(groupActions.getGroup(groupId));
-			dispatch(userActions.listUsers(activeOrg!.id));
+			dispatch(groupActions.getGroup({ id: groupId, scopeRef: orgScopeRef }));
+			dispatch(userActions.listUsers({ scopeRef: orgScopeRef }));
 		}
-	}, [groupId, dispatch, activeOrg]);
+	}, [groupId, dispatch, orgScopeRef]);
 
 	return {
 		isLoadingDetail,
@@ -86,9 +89,11 @@ export function useGroupDetailHandlers() {
 }
 
 
+// eslint-disable-next-line max-lines-per-function
 export function useGroupUserManagement() {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const activeOrg = useActiveOrgWithDetails();
+	// Both Group and User are org-scoped
+	const orgScopeRef = useOrgScopeRef();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
 	const groupDetail = useMicroAppSelector(selectGroupDetail);
@@ -101,7 +106,7 @@ export function useGroupUserManagement() {
 				t('nikki.identity.group.messages.manageUsersSuccess'), '',
 			);
 			dispatch(groupActions.resetManageUsers());
-			dispatch(userActions.listUsers(activeOrg!.id));
+			dispatch(userActions.listUsers({ scopeRef: orgScopeRef }));
 		}
 		if (manageUsersCommand.status === 'error') {
 			notification.showError(
@@ -109,15 +114,18 @@ export function useGroupUserManagement() {
 			);
 			dispatch(groupActions.resetManageUsers());
 		}
-	}, [manageUsersCommand.status, manageUsersCommand.error, dispatch, notification, t]);
+	}, [manageUsersCommand.status, manageUsersCommand.error, dispatch, notification, t, orgScopeRef]);
 
 	const handleAddUsers = (userIds: string[]) => {
 		if ((userIds).length === 0 || !groupDetail?.data.id) return;
 
 		dispatch(groupActions.manageGroupUsers({
-			id: groupDetail.data.id,
-			add: userIds,
-			etag: groupDetail.data.etag,
+			data: {
+				id: groupDetail.data.id,
+				add: userIds,
+				etag: groupDetail.data.etag,
+			},
+			scopeRef: orgScopeRef,
 		}));
 	};
 
@@ -125,9 +133,12 @@ export function useGroupUserManagement() {
 		if ((userIds).length === 0 || !groupDetail?.data.id) return;
 
 		dispatch(groupActions.manageGroupUsers({
-			id: groupDetail.data.id,
-			remove: userIds,
-			etag: groupDetail.data.etag,
+			data: {
+				id: groupDetail.data.id,
+				remove: userIds,
+				etag: groupDetail.data.etag,
+			},
+			scopeRef: orgScopeRef,
 		}));
 	};
 

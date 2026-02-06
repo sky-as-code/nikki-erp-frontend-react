@@ -9,13 +9,10 @@ import {
 	renderActionsColumn,
 } from './renderColumns';
 
-import type { Action } from '@/features/actions';
-import type { Resource } from '@/features/resources';
+import { Entitlement } from '@/features/entitlements/types';
 
 
 export interface EntitlementTableProps extends AutoTableProps {
-	resourcesData: Resource[];
-	actionsData: Action[];
 	onViewDetail: (entitlementId: string) => void;
 	onEdit?: (entitlementId: string) => void;
 	onDelete?: (entitlementId: string) => void;
@@ -24,8 +21,6 @@ export interface EntitlementTableProps extends AutoTableProps {
 export const EntitlementTable: React.FC<EntitlementTableProps> = ({
 	columns,
 	data,
-	resourcesData,
-	actionsData,
 	isLoading,
 	schema,
 	onViewDetail,
@@ -34,21 +29,6 @@ export const EntitlementTable: React.FC<EntitlementTableProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 
-	const resourceMap = React.useMemo(() => {
-		const map = new Map<string, string>();
-		resourcesData?.forEach((r) => {
-			map.set(r.id, r.name);
-		});
-		return map;
-	}, [resourcesData]);
-
-	const actionMap = React.useMemo(() => {
-		const map = new Map<string, string>();
-		actionsData.forEach((a) => {
-			map.set(a.id, a.name);
-		});
-		return map;
-	}, [actionsData]);
 
 	return (
 		<AutoTable
@@ -58,8 +38,8 @@ export const EntitlementTable: React.FC<EntitlementTableProps> = ({
 			isLoading={isLoading}
 			columnRenderers={{
 				name: (row) => renderNameColumn(row, onViewDetail),
-				resourceId: (row) => renderResourceIdColumn(row, resourceMap, translate),
-				actionId: (row) => renderActionIdColumn(row, actionMap, translate),
+				resourceId: (row) => renderResourceIdColumn(row as unknown as Entitlement, translate),
+				actionId: (row) => renderActionIdColumn(row as unknown as Entitlement, translate),
 				actions: (row) => renderActionsColumn(row, onEdit, onDelete, translate),
 			}}
 		/>

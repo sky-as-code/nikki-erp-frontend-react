@@ -39,13 +39,13 @@ const initialState: GroupState = {
 
 export const listGroups = createAsyncThunk<
 	SearchGroupsResponse,
-	string | undefined,
+	{ scopeRef?: string } | undefined,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchGroups`,
-	async (orgId, { rejectWithValue }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			const result = await groupService.listGroups(orgId);
+			const result = await groupService.listGroups(params?.scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -57,13 +57,13 @@ export const listGroups = createAsyncThunk<
 
 export const getGroup = createAsyncThunk<
 	Group,
-	string,
+	{ id: string; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchGroup`,
-	async (id, { rejectWithValue }) => {
+	async ({ id, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await groupService.getGroup(id);
+			const result = await groupService.getGroup(id, scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -75,13 +75,13 @@ export const getGroup = createAsyncThunk<
 
 export const createGroup = createAsyncThunk<
 	CreateGroupResponse,
-	CreateGroupRequest,
+	{ data: CreateGroupRequest; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createGroup`,
-	async (data, { rejectWithValue }) => {
+	async ({ data, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await groupService.createGroup(data);
+			const result = await groupService.createGroup(data, scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -93,13 +93,13 @@ export const createGroup = createAsyncThunk<
 
 export const updateGroup = createAsyncThunk<
 	UpdateGroupResponse,
-	UpdateGroupRequest,
+	{ data: UpdateGroupRequest; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateGroup`,
-	async (data, { rejectWithValue }) => {
+	async ({ data, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await groupService.updateGroup(data);
+			const result = await groupService.updateGroup(data, scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -111,13 +111,13 @@ export const updateGroup = createAsyncThunk<
 
 export const deleteGroup = createAsyncThunk<
 	void,
-	string,
+	{ id: string; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/deleteGroup`,
-	async (id, { rejectWithValue }) => {
+	async ({ id, scopeRef }, { rejectWithValue }) => {
 		try {
-			await groupService.deleteGroup(id);
+			await groupService.deleteGroup(id, scopeRef);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete group';
@@ -128,13 +128,13 @@ export const deleteGroup = createAsyncThunk<
 
 export const manageGroupUsers = createAsyncThunk<
 	ManageGroupUsersResponse,
-	ManageGroupUsersRequest,
+	{ data: ManageGroupUsersRequest; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/manageGroupUsers`,
-	async (data, { rejectWithValue }) => {
+	async ({ data, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await groupService.manageGroupUsers(data);
+			const result = await groupService.manageGroupUsers(data, scopeRef);
 			return result;
 		}
 		catch (error) {

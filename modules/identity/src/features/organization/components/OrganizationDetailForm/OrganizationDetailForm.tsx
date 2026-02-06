@@ -92,6 +92,8 @@ interface OrganizationDetailFormProps {
 	isLoading: boolean;
 	onSubmit: (data: any) => void;
 	onDelete: () => void;
+	canUpdate?: boolean;
+	canDelete?: boolean;
 }
 
 export function OrganizationDetailForm({
@@ -100,6 +102,8 @@ export function OrganizationDetailForm({
 	isLoading,
 	onSubmit,
 	onDelete,
+	canUpdate = true,
+	canDelete = true,
 }: OrganizationDetailFormProps): React.ReactElement {
 	const { t } = useTranslation();
 	const [showSaveConfirm, setShowSaveConfirm] = React.useState(false);
@@ -107,13 +111,14 @@ export function OrganizationDetailForm({
 	console.log('organizationDetail', organizationDetail);
 
 	const handleFormSubmit = (data: any) => {
+		if (!canUpdate) return;
 		setPendingData(data);
 		setShowSaveConfirm(true);
 	};
 
 	const handleConfirmSave = () => {
 		setShowSaveConfirm(false);
-		if (pendingData) {
+		if (pendingData && canUpdate) {
 			onSubmit(pendingData);
 			setPendingData(null);
 		}
@@ -132,9 +137,10 @@ export function OrganizationDetailForm({
 							<form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
 								<Stack gap='xl'>
 									<ListActionDetailPage
-										onDelete={onDelete}
+										onDelete={canDelete ? onDelete : undefined}
 										isLoading={isLoading}
-										disableSave={!form.formState.isDirty}
+										disableSave={!form.formState.isDirty || !canUpdate}
+										disableDelete={!canDelete}
 										titleDelete={t('nikki.identity.organization.actions.confirmDelete')}
 										titleConfirmDelete={t('nikki.identity.organization.actions.delete')}
 										messageConfirmDelete={t('nikki.identity.organization.messages.confirmDeleteMessage')}

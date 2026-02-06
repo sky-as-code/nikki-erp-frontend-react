@@ -9,6 +9,7 @@ import { Link } from 'react-router';
 import { selectUserDetail } from '../../appState/user';
 import { UserDetailForm } from '../../features/user/components';
 import { useUserDetailHandlers } from '../../features/user/hooks/useUserDetail';
+import { useIdentityPermissions } from '../../hooks';
 import userSchema from '../../schemas/user-schema.json';
 
 
@@ -16,6 +17,7 @@ export const UserDetailPageBody: React.FC = () => {
 	const userDetail = useMicroAppSelector(selectUserDetail);
 	const schema = userSchema as ModelSchema;
 	const { t } = useTranslation();
+	const permissions = useIdentityPermissions();
 
 	const {isLoadingDetail, handleUpdate, handleDelete } = useUserDetailHandlers();
 
@@ -34,6 +36,8 @@ export const UserDetailPageBody: React.FC = () => {
 				isLoading={isLoadingDetail}
 				onSubmit={handleUpdate}
 				onDelete={handleDelete}
+				canUpdate={permissions.user.canUpdate}
+				canDelete={permissions.user.canDelete}
 			/>
 		</Stack>
 	);

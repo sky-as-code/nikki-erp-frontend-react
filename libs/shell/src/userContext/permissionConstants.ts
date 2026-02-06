@@ -10,6 +10,7 @@ export const RESOURCES = {
 	IDENTITY_USER: 'IdentityUser',
 	IDENTITY_GROUP: 'IdentityGroup',
 	IDENTITY_ORGANIZATION: 'IdentityOrganization',
+	IDENTITY_HIERARCHY_LEVEL: 'IdentityHierarchyLevel',
 	INVENTORY_PRODUCT: 'InventoryProduct',
 } as const;
 
@@ -35,5 +36,6 @@ export const RESOURCE_TO_MODULE: Record<string, string> = {
 	[RESOURCES.IDENTITY_USER]: 'identity',
 	[RESOURCES.IDENTITY_GROUP]: 'identity',
 	[RESOURCES.IDENTITY_ORGANIZATION]: 'identity',
+	[RESOURCES.IDENTITY_HIERARCHY_LEVEL]: 'identity',
 	[RESOURCES.INVENTORY_PRODUCT]: 'inventory',
 };

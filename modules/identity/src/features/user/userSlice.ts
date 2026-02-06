@@ -29,13 +29,13 @@ const initialState: UserState = {
 
 export const listUsers = createAsyncThunk<
 	SearchUserResponse,
-	string | undefined,
+	{ scopeRef?: string } | undefined,
 	{ rejectValue: string; state: any }
 >(
 	`${SLICE_NAME}/fetchUsers`,
-	async (orgId, { rejectWithValue }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			const result = await userService.listUsers(orgId);
+			const result = await userService.listUsers(params?.scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -47,13 +47,13 @@ export const listUsers = createAsyncThunk<
 
 export const getUser = createAsyncThunk<
 	User,
-	string,
+	{ id: string; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchUser`,
-	async (id, { rejectWithValue }) => {
+	async ({ id, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await userService.getUser(id);
+			const result = await userService.getUser(id, scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -65,13 +65,13 @@ export const getUser = createAsyncThunk<
 
 export const createUser = createAsyncThunk<
 	CreateUserResponse,
-	CreateUserRequest,
+	{ data: CreateUserRequest; scopeRef?: string },
 	{ rejectValue: string; state: any }
 >(
 	`${SLICE_NAME}/createUser`,
-	async (data, { rejectWithValue }) => {
+	async ({ data, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await userService.createUser(data);
+			const result = await userService.createUser(data, scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -83,13 +83,13 @@ export const createUser = createAsyncThunk<
 
 export const updateUser = createAsyncThunk<
 	UpdateUserResponse,
-	UpdateUserRequest,
+	{ data: UpdateUserRequest; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateUser`,
-	async (data, { rejectWithValue }) => {
+	async ({ data, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await userService.updateUser(data);
+			const result = await userService.updateUser(data, scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -101,13 +101,13 @@ export const updateUser = createAsyncThunk<
 
 export const deleteUser = createAsyncThunk<
 	void,
-	string,
+	{ id: string; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/deleteUser`,
-	async (id, { rejectWithValue }) => {
+	async ({ id, scopeRef }, { rejectWithValue }) => {
 		try {
-			await userService.deleteUser(id);
+			await userService.deleteUser(id, scopeRef);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';

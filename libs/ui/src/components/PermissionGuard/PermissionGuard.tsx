@@ -4,6 +4,7 @@ import { useLocation } from 'react-router';
 import { Unauthorized } from '@nikkierp/ui/components';
 
 import { ACTIONS, RESOURCES, useHasPermission } from '../../../../shell/src/userContext';
+import { PermissionScopeType } from '../../../../shell/src/userContext/userContextService';
 
 
 export type RoutePermission = {
@@ -17,6 +18,7 @@ interface PermissionGuardProps {
 	children: React.ReactNode;
 	resource?: string;
 	action?: string;
+	contextScope?: { scopeType: PermissionScopeType ; scopeRef: string };
 	fallback?: React.ReactNode;
 	getRoutePermission?: GetRoutePermissionFn;
 }
@@ -25,6 +27,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 	children,
 	resource,
 	action,
+	contextScope,
 	fallback,
 	getRoutePermission,
 }) => {
@@ -37,11 +40,12 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 			return getRoutePermission(location.pathname);
 		}
 		return null;
-	}, [location.pathname, resource, action, getRoutePermission]);
+	}, [location, resource, action, contextScope]);
 
 	const hasAccess = useHasPermission(
 		routePermission?.resource ?? RESOURCES.WILDCARD,
 		routePermission?.action ?? ACTIONS.VIEW,
+		contextScope,
 	);
 
 	if (!hasAccess) {

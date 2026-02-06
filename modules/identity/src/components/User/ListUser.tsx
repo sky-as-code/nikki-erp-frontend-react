@@ -105,6 +105,7 @@ export interface ListUserProps {
 	onRemoveUsers: (userIds: string[]) => any;
 	title?: string;
 	emptyMessage?: string;
+	canManage?: boolean;
 }
 
 
@@ -116,6 +117,7 @@ export const ListUser: React.FC<ListUserProps> = ({
 	onRemoveUsers,
 	title,
 	emptyMessage,
+	canManage = true,
 }) => {
 	const { t } = useTranslation();
 	const [opened, { open, close }] = useDisclosure(false);
@@ -152,6 +154,7 @@ export const ListUser: React.FC<ListUserProps> = ({
 						isRemoving={isRemoving}
 						hasAvailable={usersNotInGroup.length > 0}
 						title={title}
+						canManage={canManage}
 					/>
 
 					{users.length === 0 ? (
@@ -179,6 +182,7 @@ export const ListUser: React.FC<ListUserProps> = ({
 				onSelectedChange={setSelectedAddUserIds}
 				onSubmit={handleAddUsersSubmit}
 				isAdding={isAdding}
+				disableSubmit={!canManage}
 			/>
 		</>
 	);

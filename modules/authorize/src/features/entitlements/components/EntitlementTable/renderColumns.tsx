@@ -3,6 +3,7 @@ import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 
 import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '@/features/entitlements/helpers/entitlementFormValidation';
+import { Entitlement } from '@/features/entitlements/types';
 
 
 export function renderNameColumn(
@@ -24,11 +25,10 @@ export function renderNameColumn(
 }
 
 export function renderResourceIdColumn(
-	row: Record<string, unknown>,
-	resourceMap: Map<string, string>,
+	row: Entitlement,
 	translate: (key: string) => string,
 ) {
-	const resourceId = row.resourceId as string | undefined;
+	const resourceId = row.resource?.id as string | undefined;
 
 	if (!resourceId || resourceId === ALL_RESOURCES_VALUE) {
 		return (
@@ -38,7 +38,7 @@ export function renderResourceIdColumn(
 		);
 	}
 
-	const resourceName = resourceMap.get(resourceId) || resourceId;
+	const resourceName = row.resource?.name as string || resourceId;
 	return (
 		<Badge color='indigo' variant='light' size='lg' tt='none'>
 			{resourceName}
@@ -47,11 +47,10 @@ export function renderResourceIdColumn(
 }
 
 export function renderActionIdColumn(
-	row: Record<string, unknown>,
-	actionMap: Map<string, string>,
+	row: Entitlement,
 	translate: (key: string) => string,
 ) {
-	const actionId = row.actionId as string | undefined;
+	const actionId = row.action?.id as string | undefined;
 
 	if (!actionId || actionId === ALL_ACTIONS_VALUE) {
 		return (
@@ -61,7 +60,7 @@ export function renderActionIdColumn(
 		);
 	}
 
-	const actionName = actionMap.get(actionId) || actionId;
+	const actionName = row.action?.name as string || actionId;
 	return (
 		<Badge color='teal' variant='light' size='lg' tt='none'>
 			{actionName}

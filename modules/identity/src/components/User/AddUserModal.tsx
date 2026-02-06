@@ -11,6 +11,7 @@ interface AddUserModalProps {
 	onSelectedChange: (ids: string[]) => void;
 	onSubmit: () => void;
 	isAdding: boolean;
+	disableSubmit?: boolean;
 }
 
 export function AddUserModal({
@@ -21,6 +22,7 @@ export function AddUserModal({
 	onSelectedChange,
 	onSubmit,
 	isAdding,
+	disableSubmit = false,
 }: AddUserModalProps) {
 	const { t } = useTranslation();
 
@@ -45,7 +47,7 @@ export function AddUserModal({
 					<Button variant='subtle' onClick={onClose} disabled={isAdding}>
 						{t('nikki.identity.group.actions.cancel')}
 					</Button>
-					<Button onClick={onSubmit} loading={isAdding} disabled={selectedIds.length === 0}>
+					<Button onClick={onSubmit} loading={isAdding} disabled={disableSubmit || selectedIds.length === 0}>
 						{t('nikki.identity.group.actions.add')} ({selectedIds.length})
 					</Button>
 				</Group>

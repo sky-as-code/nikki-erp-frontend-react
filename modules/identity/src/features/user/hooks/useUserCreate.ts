@@ -1,5 +1,4 @@
 import { useUIState } from '@nikkierp/shell/contexts';
-import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,16 +6,17 @@ import { useNavigate } from 'react-router';
 
 import { IdentityDispatch, userActions } from '../../../appState';
 import { selectCreateUser } from '../../../appState/user';
+import { useOrgScopeRef } from '../../../hooks';
 
 
 export function useUserCreateHandlers() {
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 	const navigate = useNavigate();
 	const { notification } = useUIState();
-	const activeOrg = useActiveOrgWithDetails();
 	const { t } = useTranslation();
 	const createCommand = useMicroAppSelector(selectCreateUser);
 	const isLoading = createCommand.status === 'pending';
+	const orgScopeRef = useOrgScopeRef();
 
 	React.useEffect(() => {
 		if (createCommand.status === 'success') {
@@ -37,10 +37,13 @@ export function useUserCreateHandlers() {
 	}, [createCommand.status, dispatch, navigate, notification, t]);
 
 	const handleCreate = (data: any) => {
-		if (activeOrg) {
+		if (orgScopeRef) {
 			dispatch(userActions.createUser({
-				...data,
-				orgId: activeOrg.id,
+				data: {
+					...data,
+					orgId: orgScopeRef,
+				},
+				scopeRef: orgScopeRef,
 			}));
 		}
 	};

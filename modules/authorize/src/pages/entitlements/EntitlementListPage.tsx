@@ -12,7 +12,7 @@ import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 function EntitlementListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
-	const { entitlements, isLoadingList, resources, actions } = useEntitlementList.data();
+	const { entitlements, isLoadingList } = useEntitlementList.data();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useEntitlementDelete(entitlements, dispatch);
 	const { handleViewDetail, handleEdit, handleCreate, handleRefresh } = useEntitlementList.handlers();
@@ -33,8 +33,6 @@ function EntitlementListPageBody(): React.ReactNode {
 					<EntitlementTable
 						columns={columns}
 						data={entitlements}
-						resourcesData={resources}
-						actionsData={actions}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}

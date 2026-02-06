@@ -118,7 +118,6 @@ export class UserContextService {
 				`identity/users/context`,
 			);
 			const context = mapApiContextToUserContext(data);
-			console.log('Fetched user context:', context);
 			return context;
 		}
 		catch (error) {

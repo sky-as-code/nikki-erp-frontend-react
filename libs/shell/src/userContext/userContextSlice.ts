@@ -1,6 +1,5 @@
 import { ActionReducerMapBuilder, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-
 import { PermissionsSnapshot, UserContext, userContextService } from './userContextService';
 import { Organization, User, Hierarchy } from './userContextService';
 
@@ -34,7 +33,6 @@ export const fetchUserContextAction = createAsyncThunk<
 	async (_, { rejectWithValue }) => {
 		try {
 			const context = await userContextService.fetch();
-			console.log('Fetched user context in thunk:', context);
 			return context;
 		}
 		catch (error) {

@@ -7,9 +7,10 @@ import { useNavigate } from 'react-router';
 
 
 interface ListActionDetailPageProps {
-	onDelete: () => void;
+	onDelete?: () => void;
 	isLoading: boolean;
 	disableSave?: boolean;
+	disableDelete?: boolean;
 	titleDelete: string;
 	titleConfirmDelete: string;
 	messageConfirmDelete: string;
@@ -19,6 +20,7 @@ export function ListActionDetailPage({
 	onDelete,
 	isLoading,
 	disableSave = false,
+	disableDelete = false,
 	titleDelete,
 	titleConfirmDelete,
 	messageConfirmDelete,
@@ -32,12 +34,13 @@ export function ListActionDetailPage({
 	};
 
 	const handleDeleteClick = () => {
+		if (!onDelete) return;
 		setShowDeleteConfirm(true);
 	};
 
 	const handleConfirmDelete = () => {
 		setShowDeleteConfirm(false);
-		onDelete();
+		onDelete?.();
 	};
 
 	return (
@@ -61,16 +64,19 @@ export function ListActionDetailPage({
 				>
 					{t('nikki.identity.group.actions.save')}
 				</Button>
-				<Button
-					leftSection={<IconTrash size={16} />}
-					size='sm'
-					variant='outline'
-					color='red'
-					onClick={handleDeleteClick}
-					loading={isLoading}
-				>
-					{t('nikki.identity.group.actions.delete')}
-				</Button>
+				{onDelete && (
+					<Button
+						leftSection={<IconTrash size={16} />}
+						size='sm'
+						variant='outline'
+						color='red'
+						onClick={handleDeleteClick}
+						loading={isLoading}
+						disabled={disableDelete || isLoading}
+					>
+						{t('nikki.identity.group.actions.delete')}
+					</Button>
+				)}
 			</MantineGroup>
 
 			<ConfirmModal

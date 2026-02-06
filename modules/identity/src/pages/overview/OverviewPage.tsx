@@ -22,6 +22,7 @@ import { selectGroupList } from '../../appState/group';
 import { selectHierarchyList } from '../../appState/hierarchy';
 import { selectOrganizationList } from '../../appState/organization';
 import { selectUserList } from '../../appState/user';
+import { useIdentityPermissions, useOrgScopeRef } from '../../hooks';
 
 
 interface StatCardProps {
@@ -113,14 +114,31 @@ export const OverviewPageBody: React.FC = () => {
 	const organizations = useMicroAppSelector(selectOrganizationList);
 	const { t } = useTranslation();
 	const activeOrg = useActiveOrgWithDetails();
+	const orgScopeRef = useOrgScopeRef();
+	const permissions = useIdentityPermissions();
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 
 	React.useEffect(() => {
-		dispatch(organizationActions.listOrganizations());
-		dispatch(userActions.listUsers(activeOrg?.id));
-		dispatch(groupActions.listGroups(activeOrg?.id));
-		dispatch(hierarchyActions.listHierarchies(activeOrg?.id));
-	}, [dispatch, activeOrg?.id]);
+		if (permissions.organization.canView) {
+			dispatch(organizationActions.listOrganizations());
+		}
+		if (permissions.user.canView) {
+			dispatch(userActions.listUsers({ scopeRef: orgScopeRef }));
+		}
+		if (permissions.group.canView) {
+			dispatch(groupActions.listGroups({ scopeRef: orgScopeRef }));
+		}
+		if (permissions.hierarchy.canView) {
+			dispatch(hierarchyActions.listHierarchies({ scopeRef: orgScopeRef }));
+		}
+	}, [
+		activeOrg?.id,
+		orgScopeRef,
+		permissions.organization.canView,
+		permissions.user.canView,
+		permissions.group.canView,
+		permissions.hierarchy.canView,
+	]);
 
 	return (
 		<Container size='xl' p='md'>
@@ -135,84 +153,100 @@ export const OverviewPageBody: React.FC = () => {
 
 				{/* Statistics Cards */}
 				<Grid>
-					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-						<StatCard
-							title={t('nikki.identity.overview.stats.users')}
-							value={users?.data.length}
-							icon={<IconUsers size={24} />}
-							color='blue'
-							link='../users'
-						/>
-					</Grid.Col>
-					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-						<StatCard
-							title={t('nikki.identity.overview.stats.groups')}
-							value={groups?.data.length}
-							icon={<IconShield size={24} />}
-							color='green'
-							link='../groups'
-						/>
-					</Grid.Col>
-					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-						<StatCard
-							title={t('nikki.identity.overview.stats.hierarchyLevels')}
-							value={hierarchies?.data.length}
-							icon={<IconHierarchy size={24} />}
-							color='violet'
-							link='../hierarchy-levels'
-						/>
-					</Grid.Col>
-					<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-						<StatCard
-							title={t('nikki.identity.overview.stats.organizations')}
-							value={organizations?.data.length}
-							icon={<IconBuilding size={24} />}
-							color='orange'
-							link='../organizations'
-						/>
-					</Grid.Col>
+					{permissions.user.canView && (
+						<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+							<StatCard
+								title={t('nikki.identity.overview.stats.users')}
+								value={users?.data?.length ?? 0}
+								icon={<IconUsers size={24} />}
+								color='blue'
+								link='../users'
+							/>
+						</Grid.Col>
+					)}
+					{permissions.group.canView && (
+						<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+							<StatCard
+								title={t('nikki.identity.overview.stats.groups')}
+								value={groups?.data?.length ?? 0}
+								icon={<IconShield size={24} />}
+								color='green'
+								link='../groups'
+							/>
+						</Grid.Col>
+					)}
+					{permissions.hierarchy.canView && (
+						<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+							<StatCard
+								title={t('nikki.identity.overview.stats.hierarchyLevels')}
+								value={hierarchies?.data?.length ?? 0}
+								icon={<IconHierarchy size={24} />}
+								color='violet'
+								link='../hierarchy-levels'
+							/>
+						</Grid.Col>
+					)}
+					{permissions.organization.canView && (
+						<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+							<StatCard
+								title={t('nikki.identity.overview.stats.organizations')}
+								value={organizations?.data?.length ?? 0}
+								icon={<IconBuilding size={24} />}
+								color='orange'
+								link='../organizations'
+							/>
+						</Grid.Col>
+					)}
 				</Grid>
 
 				{/* Quick Links */}
 				<Stack gap='md'>
 					<Title order={3}>{t('nikki.identity.overview.quickLinks.title')}</Title>
 					<Grid>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<QuickLinkCard
-								title={t('nikki.identity.overview.quickLinks.manageUsers.title')}
-								description={t('nikki.identity.overview.quickLinks.manageUsers.description')}
-								icon={<IconUsers size={20} />}
-								color='blue'
-								link='../users'
-							/>
-						</Grid.Col>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<QuickLinkCard
-								title={t('nikki.identity.overview.quickLinks.manageGroups.title')}
-								description={t('nikki.identity.overview.quickLinks.manageGroups.description')}
-								icon={<IconShield size={20} />}
-								color='green'
-								link='../groups'
-							/>
-						</Grid.Col>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<QuickLinkCard
-								title={t('nikki.identity.overview.quickLinks.hierarchyLevels.title')}
-								description={t('nikki.identity.overview.quickLinks.hierarchyLevels.description')}
-								icon={<IconHierarchy size={20} />}
-								color='violet'
-								link='../hierarchy-levels'
-							/>
-						</Grid.Col>
-						<Grid.Col span={{ base: 12, sm: 6 }}>
-							<QuickLinkCard
-								title={t('nikki.identity.overview.quickLinks.organizations.title')}
-								description={t('nikki.identity.overview.quickLinks.organizations.description')}
-								icon={<IconBuilding size={20} />}
-								color='orange'
-								link='../organizations'
-							/>
-						</Grid.Col>
+						{permissions.user.canView && (
+							<Grid.Col span={{ base: 12, sm: 6 }}>
+								<QuickLinkCard
+									title={t('nikki.identity.overview.quickLinks.manageUsers.title')}
+									description={t('nikki.identity.overview.quickLinks.manageUsers.description')}
+									icon={<IconUsers size={20} />}
+									color='blue'
+									link='../users'
+								/>
+							</Grid.Col>
+						)}
+						{permissions.group.canView && (
+							<Grid.Col span={{ base: 12, sm: 6 }}>
+								<QuickLinkCard
+									title={t('nikki.identity.overview.quickLinks.manageGroups.title')}
+									description={t('nikki.identity.overview.quickLinks.manageGroups.description')}
+									icon={<IconShield size={20} />}
+									color='green'
+									link='../groups'
+								/>
+							</Grid.Col>
+						)}
+						{permissions.hierarchy.canView && (
+							<Grid.Col span={{ base: 12, sm: 6 }}>
+								<QuickLinkCard
+									title={t('nikki.identity.overview.quickLinks.hierarchyLevels.title')}
+									description={t('nikki.identity.overview.quickLinks.hierarchyLevels.description')}
+									icon={<IconHierarchy size={20} />}
+									color='violet'
+									link='../hierarchy-levels'
+								/>
+							</Grid.Col>
+						)}
+						{permissions.organization.canView && (
+							<Grid.Col span={{ base: 12, sm: 6 }}>
+								<QuickLinkCard
+									title={t('nikki.identity.overview.quickLinks.organizations.title')}
+									description={t('nikki.identity.overview.quickLinks.organizations.description')}
+									icon={<IconBuilding size={20} />}
+									color='orange'
+									link='../organizations'
+								/>
+							</Grid.Col>
+						)}
 					</Grid>
 				</Stack>
 			</Stack>

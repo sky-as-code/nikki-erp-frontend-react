@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router';
 
 import { IdentityDispatch, userActions } from '../../../appState';
 import { selectDeleteUser, selectUpdateUser, selectUserDetail } from '../../../appState/user';
+import { useOrgScopeRef } from '../../../hooks';
 
 // eslint-disable-next-line max-lines-per-function
 export function useUserDetailHandlers() {
@@ -15,6 +16,7 @@ export function useUserDetailHandlers() {
 	const { notification } = useUIState();
 	const { t } = useTranslation();
 	const userDetail = useMicroAppSelector(selectUserDetail);
+	const scopeRef = useOrgScopeRef();
 
 	const updateCommand = useMicroAppSelector(selectUpdateUser);
 	const deleteCommand = useMicroAppSelector(selectDeleteUser);
@@ -57,21 +59,24 @@ export function useUserDetailHandlers() {
 	const handleUpdate = (data: any) => {
 		if (userDetail?.data.id) {
 			const dataWithTag = { ...data, etag: userDetail.data.etag };
-			dispatch(userActions.updateUser({ id: userDetail.data.id, ...dataWithTag }));
+			dispatch(userActions.updateUser({
+				data: { id: userDetail.data.id, ...dataWithTag },
+				scopeRef,
+			}));
 		}
 	};
 
 	const handleDelete = () => {
 		if (userDetail?.data.id) {
-			dispatch(userActions.deleteUser(userDetail.data.id));
+			dispatch(userActions.deleteUser({ id: userDetail.data.id, scopeRef }));
 		}
 	};
 
 	React.useEffect(() => {
 		if (!userId) return;
 
-		dispatch(userActions.getUser(userId));
-	}, [userId, dispatch]);
+		dispatch(userActions.getUser({ id: userId, scopeRef }));
+	}, [userId, dispatch, scopeRef]);
 
 	return {
 		isLoadingDetail,
