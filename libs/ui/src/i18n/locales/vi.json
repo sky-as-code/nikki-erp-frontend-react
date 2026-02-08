@@ -774,11 +774,14 @@
 				"kiosk_template": "Mẫu Kiosk",
 				"payment": "Thanh toán",
 				"reports": "Báo cáo",
-				"revenue_report": "Doanh thu",
+				"revenue_overview": "Tổng quan doanh thu",
+				"revenue_by_kiosk": "Doanh thu theo Kiosk",
+				"revenue_by_product": "Doanh thu theo Sản phẩm",
+				"revenue_by_payment_method": "Phương thức thanh toán",
+				"refunds_report": "Hoàn tiền",
+				"orders_report": "Đơn hàng",
 				"inventory_report": "Hàng tồn",
-				"operations_report": "Vận hành",
-				"error_analytics": "Phân tích lỗi",
-				"customer_support": "Hỗ trợ khách hàng"
+				"operations_report": "Vận hành"
 			},
 			"overview": {
 				"title": "Tổng quan - Máy bán hàng tự động",
@@ -1437,6 +1440,14 @@
 				"messages": {
 					"no_devices": "Không tìm thấy thiết bị nào",
 					"no_specifications": "Không có thông số"
+				}
+			},
+			"reports": {
+				"revenue": {
+					"title": "Doanh thu",
+					"overview": "Tổng quan doanh thu",
+					"generated": "Doanh thu tạo ra",
+					"orders": "Số đơn hàng"
 				}
 			}
 		}

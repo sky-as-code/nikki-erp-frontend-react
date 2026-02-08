@@ -1,79 +1,88 @@
-import { Card, Checkbox, Group, Select, Stack, Text, Title } from '@mantine/core';
+/* eslint-disable max-lines-per-function */
+import { Card, Group, Radio, Stack, Text, Title } from '@mantine/core';
 import {
 	CategoryScale,
 	Chart as ChartJS,
-	Legend,
 	LinearScale,
-	LineElement,
-	PointElement,
+	BarElement,
 	Tooltip,
+	Legend,
 } from 'chart.js';
 import React, { useState } from 'react';
-import { Line } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 
-ChartJS.register(
-	CategoryScale,
-	LinearScale,
-	PointElement,
-	LineElement,
-	Tooltip,
-	Legend,
-);
 
-interface RevenueDataPoint {
-	date: string;
-	lastYear: number;
-	thisYear: number;
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+
+interface QuarterData {
+	quarter: string; // e.g., "2023 Q1"
+	revenue: number; // Revenue in thousands
+	orders: number; // Number of orders
 }
 
 interface RevenueChartProps {
-	data: RevenueDataPoint[];
+	data: QuarterData[];
 }
 
 export function RevenueChart({ data }: RevenueChartProps): React.ReactElement {
-	const [showLastYear, setShowLastYear] = useState(true);
-	const [showThisYear, setShowThisYear] = useState(true);
+	const [activeTab, setActiveTab] = useState<string | null>('revenue');
 
 	const chartData = {
-		labels: data.map((d) => {
-			const date = new Date(d.date);
-			return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-		}),
+		labels: data.map((d) => d.quarter),
 		datasets: [
 			{
-				label: 'Last year',
-				data: showLastYear ? data.map((d) => d.lastYear) : [],
-				borderColor: 'rgba(156, 163, 175, 0.8)',
-				backgroundColor: 'rgba(156, 163, 175, 0.1)',
-				tension: 0.4,
-				borderWidth: 2,
-			},
-			{
-				label: 'This year +6.19%',
-				data: showThisYear ? data.map((d) => d.thisYear) : [],
-				borderColor: 'rgba(59, 130, 246, 0.8)',
-				backgroundColor: 'rgba(59, 130, 246, 0.1)',
-				tension: 0.4,
-				borderWidth: 2,
+				label: activeTab === 'revenue' ? 'Doanh thu' : 'Số đơn hàng',
+				data: activeTab === 'revenue' ? data.map((d) => d.revenue) : data.map((d) => d.orders),
+				backgroundColor: activeTab === 'revenue' ? 'rgba(59, 130, 246, 0.8)' : 'rgba(14, 165, 233, 0.6)',
+				borderColor: activeTab === 'revenue' ? 'rgba(59, 130, 246, 1)' : 'rgba(14, 165, 233, 1)',
+				borderWidth: 1,
+				borderRadius: 4,
+				maxBarThickness: 30,
 			},
 		],
 	};
 
-	const options = {
+	const chartOptions = {
 		responsive: true,
 		maintainAspectRatio: false,
-		interaction: {
-			mode: 'index' as const,
-			intersect: false,
-		},
 		plugins: {
 			legend: {
-				display: false,
+				display: true,
+				position: 'top' as const,
+				labels: {
+					usePointStyle: true,
+					padding: 15,
+					boxWidth: 12,
+					boxHeight: 12,
+				},
+			},
+			tooltip: {
+				callbacks: {
+					label: (context: any) => {
+						const value = context.parsed.y;
+						if (activeTab === 'revenue') {
+							return `Doanh thu: ${new Intl.NumberFormat('vi-VN').format(value)}k`;
+						}
+						return `Số đơn hàng: ${new Intl.NumberFormat('vi-VN').format(value)}`;
+					},
+				},
 			},
 		},
 		scales: {
 			y: {
 				beginAtZero: true,
+				title: {
+					display: true,
+					text: activeTab === 'revenue' ? 'Doanh thu (k)' : 'Số đơn hàng',
+				},
+				ticks: {
+					callback: (value: any) => {
+						if (activeTab === 'revenue') {
+							return `${value}k`;
+						}
+						return value.toString();
+					},
+				},
 				grid: {
 					color: 'rgba(255, 255, 255, 0.1)',
 				},
@@ -89,39 +98,24 @@ export function RevenueChart({ data }: RevenueChartProps): React.ReactElement {
 	return (
 		<Card shadow='sm' padding='md' radius='md' withBorder h='100%'>
 			<Stack gap='md'>
-				<Group justify='space-between' align='flex-start'>
+				<Group justify='space-between' align='center'>
 					<Stack gap={4}>
 						<Title order={4} fw={600}>
-							Revenue Generated
+							Revenue Overview
 						</Title>
 						<Text size='xs' c='dimmed'>
-							Amount of revenue in this month comparing to last year
+							Overview of revenue and orders
 						</Text>
 					</Stack>
-					<Select
-						placeholder='Last month'
-						data={['Last month', 'Last week', 'Last year']}
-						defaultValue='Last month'
-						size='xs'
-						w={120}
-					/>
+					<Radio.Group value={activeTab} onChange={setActiveTab}>
+						<Group gap='md'>
+							<Radio value='revenue' label='Doanh thu' size='xs' />
+							<Radio value='orders' label='Số đơn hàng' size='xs' />
+						</Group>
+					</Radio.Group>
 				</Group>
-				<Group gap='md'>
-					<Checkbox
-						label='Last year'
-						checked={showLastYear}
-						onChange={(e) => setShowLastYear(e.currentTarget.checked)}
-						size='xs'
-					/>
-					<Checkbox
-						label='This year +6.19%'
-						checked={showThisYear}
-						onChange={(e) => setShowThisYear(e.currentTarget.checked)}
-						size='xs'
-					/>
-				</Group>
-				<div style={{ height: '300px', position: 'relative' }}>
-					<Line data={chartData} options={options} />
+				<div style={{ height: '330px', position: 'relative' }}>
+					<Bar data={chartData} options={chartOptions} />
 				</div>
 			</Stack>
 		</Card>

@@ -1,5 +1,5 @@
 /* eslint-disable max-lines-per-function */
-import { Card, Group, Stack, Text, Title } from '@mantine/core';
+import { Card, Group, Radio, Stack, Title } from '@mantine/core';
 import {
 	CategoryScale,
 	Chart as ChartJS,
@@ -8,7 +8,7 @@ import {
 	Tooltip,
 	Legend,
 } from 'chart.js';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 
 
@@ -27,9 +27,16 @@ interface TopRevenueByKioskProps {
 }
 
 export function TopRevenueByKiosk({ data, maxDisplay = 5 }: TopRevenueByKioskProps): React.ReactElement {
-	// Sort by revenue descending and take top items
+	const [activeTab, setActiveTab] = useState<string | null>('revenue');
+
+	// Sort by revenue or orders descending based on active tab
 	const sortedData = useMemo(() => {
-		const sorted = [...data].sort((a, b) => b.revenue - a.revenue);
+		const sorted = [...data].sort((a, b) => {
+			if (activeTab === 'revenue') {
+				return b.revenue - a.revenue;
+			}
+			return b.orders - a.orders;
+		});
 		const topItems = sorted.slice(0, maxDisplay);
 
 		// If there are more items, group the rest as "Khác"
@@ -50,16 +57,10 @@ export function TopRevenueByKiosk({ data, maxDisplay = 5 }: TopRevenueByKioskPro
 		}
 
 		return topItems;
-	}, [data, maxDisplay]);
-
-	// Normalize orders to revenue scale for visualization
-	// We'll show orders as a separate bar but scale it proportionally
-	const maxRevenue = Math.max(...sortedData.map((d) => d.revenue), 1);
-	const maxOrders = Math.max(...sortedData.map((d) => d.orders), 1);
-	const ordersScaleFactor = maxRevenue / maxOrders;
+	}, [data, maxDisplay, activeTab]);
 
 	// Truncate kiosk names if too long
-	const truncateName = (name: string, maxLength: number = 15): string => {
+	const truncateName = (name: string, maxLength: number = 25): string => {
 		if (name.length <= maxLength) return name;
 		return name.substring(0, maxLength - 3) + '...';
 	};
@@ -68,19 +69,12 @@ export function TopRevenueByKiosk({ data, maxDisplay = 5 }: TopRevenueByKioskPro
 		labels: sortedData.map((d) => truncateName(d.kioskName)),
 		datasets: [
 			{
-				label: 'Doanh thu',
-				data: sortedData.map((d) => d.revenue),
-				backgroundColor: 'rgba(59, 130, 246, 0.8)',
-				borderColor: 'rgba(59, 130, 246, 1)',
-				borderWidth: 1,
-				borderRadius: 4,
-				maxBarThickness: 10,
-			},
-			{
-				label: 'Số đơn hàng',
-				data: sortedData.map((d) => d.orders * ordersScaleFactor),
-				backgroundColor: 'rgba(14, 165, 233, 0.6)',
-				borderColor: 'rgba(14, 165, 233, 1)',
+				label: activeTab === 'revenue' ? 'Doanh thu' : 'Số đơn hàng',
+				data: activeTab === 'revenue'
+					? sortedData.map((d) => d.revenue)
+					: sortedData.map((d) => d.orders),
+				backgroundColor: activeTab === 'revenue' ? 'rgba(59, 130, 246, 0.8)' : 'rgba(14, 165, 233, 0.6)',
+				borderColor: activeTab === 'revenue' ? 'rgba(59, 130, 246, 1)' : 'rgba(14, 165, 233, 1)',
 				borderWidth: 1,
 				borderRadius: 4,
 				maxBarThickness: 10,
@@ -109,15 +103,11 @@ export function TopRevenueByKiosk({ data, maxDisplay = 5 }: TopRevenueByKioskPro
 						return sortedData[index].kioskName;
 					},
 					label: (context: any) => {
-						const datasetLabel = context.dataset.label || '';
-						if (datasetLabel === 'Doanh thu') {
-							const value = context.parsed.x;
-							return `${datasetLabel}: ${new Intl.NumberFormat('vi-VN').format(value)}`;
+						const value = context.parsed.x;
+						if (activeTab === 'revenue') {
+							return `Doanh thu: ${new Intl.NumberFormat('vi-VN').format(value)}`;
 						}
-						// For orders, convert back from scaled value
-						const scaledValue = context.parsed.x;
-						const actualOrders = Math.round(scaledValue / ordersScaleFactor);
-						return `${datasetLabel}: ${new Intl.NumberFormat('vi-VN').format(actualOrders)}`;
+						return `Số đơn hàng: ${new Intl.NumberFormat('vi-VN').format(value)}`;
 					},
 				},
 			},
@@ -127,15 +117,17 @@ export function TopRevenueByKiosk({ data, maxDisplay = 5 }: TopRevenueByKioskPro
 				beginAtZero: true,
 				title: {
 					display: true,
-					text: 'Doanh thu',
+					text: activeTab === 'revenue' ? 'Doanh thu' : 'Số đơn hàng',
 				},
 				ticks: {
 					callback: (value: any) => {
-						if (value >= 1000000) {
-							return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}M`;
-						}
-						if (value >= 1000) {
-							return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 0)}K`;
+						if (activeTab === 'revenue') {
+							if (value >= 1000000) {
+								return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}M`;
+							}
+							if (value >= 1000) {
+								return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 0)}K`;
+							}
 						}
 						return value.toString();
 					},
@@ -155,13 +147,18 @@ export function TopRevenueByKiosk({ data, maxDisplay = 5 }: TopRevenueByKioskPro
 	return (
 		<Card shadow='sm' padding='md' radius='md' withBorder h='100%'>
 			<Stack gap='md'>
-				<Group justify='space-between' align='flex-start'>
+				<Group justify='space-between' align='center'>
 					<Title order={4} fw={600}>
 						Top doanh thu theo điểm bán
 					</Title>
-					<Text size='sm' c='blue' style={{ cursor: 'pointer' }}>
-						Xem thêm &gt;
-					</Text>
+					<Group gap='md'>
+						<Radio.Group value={activeTab} onChange={setActiveTab}>
+							<Group gap='md'>
+								<Radio value='revenue' label='Doanh thu' size='xs' />
+								<Radio value='orders' label='Số đơn hàng' size='xs' />
+							</Group>
+						</Radio.Group>
+					</Group>
 				</Group>
 				<div style={{ height: '350px', position: 'relative' }}>
 					<Bar data={chartData} options={chartOptions} />

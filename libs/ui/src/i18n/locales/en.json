@@ -730,14 +730,16 @@
 					"themes": "Themes",
 					"miniGame": "Mini Game",
 					"kiosk_settings": "Kiosk Settings",
-				"kiosk_template": "Kiosk Template",
-				"payment": "Payment",
-				"reports": "Reports",
-					"revenue_report": "Revenue",
-					"inventory_report": "Inventory",
-					"operations_report": "Operations",
-					"error_analytics": "Error Analytics",
-					"customer_support": "Customer Support"
+					"revenue_overview": "Revenue Overview",
+					"revenue_by_kiosk": "Revenue by Kiosk",
+					"revenue_by_product": "Revenue by Product",
+					"revenue_by_payment_method": "Revenue by Payment Method",
+					"refunds_report": "Refunds Report",
+					"orders_report": "Orders Report",
+					"inventory_report": "Inventory Report",
+					"operations_report": "Operations Report",
+					"kiosk_template": "Kiosk Template",
+					"payment": "Payment"
 				},
 				"overview": {
 					"title": "Vending Machine Overview",
@@ -1348,6 +1350,56 @@
 					"messages": {
 						"no_devices": "No devices found",
 						"no_specifications": "No specifications"
+					}
+				},
+				"reports": {
+					"revenue": {
+						"title": "Revenue",
+						"overview": "Revenue Overview",
+						"generated": "Revenue Generated",
+						"orders": "Orders"
+					},
+					"revenue_by_kiosk": {
+						"title": "Revenue by Kiosk",
+						"overview": "Revenue by Kiosk Overview",
+						"generated": "Revenue by Kiosk Generated",
+						"orders": "Orders by Kiosk"
+					},
+					"revenue_by_product": {
+						"title": "Revenue by Product",
+						"overview": "Revenue by Product Overview",
+						"generated": "Revenue by Product Generated",
+						"orders": "Orders by Product"
+					},
+					"revenue_by_payment_method": {
+						"title": "Revenue by Payment Method",
+						"overview": "Revenue by Payment Method Overview",
+						"generated": "Revenue by Payment Method Generated",
+						"orders": "Orders by Payment Method"
+					},
+					"refunds": {
+						"title": "Refunds",
+						"overview": "Refunds Overview",
+						"generated": "Refunds Generated",
+						"orders": "Orders by Refunds"
+					},
+					"orders": {
+						"title": "Orders",
+						"overview": "Orders Overview",
+						"generated": "Orders Generated",
+						"orders": "Orders by Orders"
+					},
+					"inventory": {
+						"title": "Inventory",
+						"overview": "Inventory Overview",
+						"generated": "Inventory Generated",
+						"orders": "Orders by Inventory"
+					},
+					"operations": {
+						"title": "Operations",
+						"overview": "Operations Overview",
+						"generated": "Operations Generated",
+						"orders": "Orders by Operations"
 					}
 				}
 		}

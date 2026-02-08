@@ -1,113 +1,83 @@
 /* eslint-disable max-lines-per-function */
-import { Card, Stack, Text, Title } from '@mantine/core';
+import { Card, Checkbox, Group, Select, Stack, Text, Title } from '@mantine/core';
 import {
 	CategoryScale,
 	Chart as ChartJS,
+	Legend,
 	LinearScale,
-	BarElement,
+	LineElement,
+	PointElement,
+	Tooltip,
+} from 'chart.js';
+import React, { useState } from 'react';
+import { Line } from 'react-chartjs-2';
+
+
+ChartJS.register(
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
 	Tooltip,
 	Legend,
-} from 'chart.js';
-import React from 'react';
-import { Bar } from 'react-chartjs-2';
+);
 
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
-
-interface QuarterData {
-	quarter: string; // e.g., "2023 Q1"
-	revenue: number; // Revenue in thousands
-	orders: number; // Number of orders
+interface RevenueDataPoint {
+	date: string;
+	lastYear: number;
+	thisYear: number;
 }
 
 interface RevenueGeneratedChartProps {
-	data: QuarterData[];
+	data: RevenueDataPoint[];
 }
 
 export function RevenueGeneratedChart({ data }: RevenueGeneratedChartProps): React.ReactElement {
+	const [showLastYear, setShowLastYear] = useState(true);
+	const [showThisYear, setShowThisYear] = useState(true);
+
 	const chartData = {
-		labels: data.map((d) => d.quarter),
+		labels: data.map((d) => {
+			const date = new Date(d.date);
+			return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+		}),
 		datasets: [
 			{
-				label: 'Doanh thu',
-				data: data.map((d) => d.revenue),
-				backgroundColor: 'rgba(59, 130, 246, 0.8)', // blue
-				borderColor: 'rgba(59, 130, 246, 1)',
-				borderWidth: 1,
-				borderRadius: 4,
-				maxBarThickness: 20,
-				yAxisID: 'y',
+				label: 'Last year',
+				data: showLastYear ? data.map((d) => d.lastYear) : [],
+				borderColor: 'rgba(156, 163, 175, 0.8)',
+				backgroundColor: 'rgba(156, 163, 175, 0.1)',
+				tension: 0.4,
+				borderWidth: 2,
 			},
 			{
-				label: 'Số đơn hàng',
-				data: data.map((d) => d.orders),
-				backgroundColor: 'rgba(14, 165, 233, 0.6)', // light blue
-				borderColor: 'rgba(14, 165, 233, 1)',
-				borderWidth: 1,
-				borderRadius: 4,
-				maxBarThickness: 20,
-				yAxisID: 'y1',
+				label: 'This year +6.19%',
+				data: showThisYear ? data.map((d) => d.thisYear) : [],
+				borderColor: 'rgba(59, 130, 246, 0.8)',
+				backgroundColor: 'rgba(59, 130, 246, 0.1)',
+				tension: 0.4,
+				borderWidth: 2,
 			},
 		],
 	};
 
-	const chartOptions = {
+	const options = {
 		responsive: true,
 		maintainAspectRatio: false,
+		interaction: {
+			mode: 'index' as const,
+			intersect: false,
+		},
 		plugins: {
 			legend: {
-				display: true,
-				position: 'top' as const,
-				labels: {
-					usePointStyle: true,
-					padding: 15,
-					boxWidth: 12,
-					boxHeight: 12,
-				},
-			},
-			tooltip: {
-				callbacks: {
-					label: (context: any) => {
-						const datasetLabel = context.dataset.label || '';
-						const value = context.parsed.y;
-						if (datasetLabel === 'Doanh thu') {
-							return `${datasetLabel}: ${new Intl.NumberFormat('vi-VN').format(value)}k`;
-						}
-						return `${datasetLabel}: ${new Intl.NumberFormat('vi-VN').format(value)}`;
-					},
-				},
+				display: false,
 			},
 		},
 		scales: {
 			y: {
 				beginAtZero: true,
-				title: {
-					display: true,
-					text: 'Doanh thu (k)',
-				},
-				ticks: {
-					callback: (value: any) => {
-						return `${value}k`;
-					},
-				},
 				grid: {
 					color: 'rgba(255, 255, 255, 0.1)',
-				},
-			},
-			y1: {
-				type: 'linear' as const,
-				position: 'right' as const,
-				title: {
-					display: true,
-					text: 'Số đơn hàng',
-				},
-				ticks: {
-					callback: (value: any) => {
-						return value.toString();
-					},
-				},
-				grid: {
-					display: false,
 				},
 			},
 			x: {
@@ -121,16 +91,39 @@ export function RevenueGeneratedChart({ data }: RevenueGeneratedChartProps): Rea
 	return (
 		<Card shadow='sm' padding='md' radius='md' withBorder h='100%'>
 			<Stack gap='md'>
-				<Stack gap={4}>
-					<Title order={4} fw={600}>
-						Revenue Overview
-					</Title>
-					<Text size='xs' c='dimmed'>
-						Overview of revenue and orders
-					</Text>
-				</Stack>
-				<div style={{ height: '330px', position: 'relative' }}>
-					<Bar data={chartData} options={chartOptions} />
+				<Group justify='space-between' align='flex-start'>
+					<Stack gap={4}>
+						<Title order={4} fw={600}>
+							Revenue Generated
+						</Title>
+						<Text size='xs' c='dimmed'>
+							Amount of revenue in this month comparing to last year
+						</Text>
+					</Stack>
+					<Select
+						placeholder='Last month'
+						data={['Last month', 'Last week', 'Last year']}
+						defaultValue='Last month'
+						size='xs'
+						w={120}
+					/>
+				</Group>
+				<Group gap='md'>
+					<Checkbox
+						label='Last year'
+						checked={showLastYear}
+						onChange={(e) => setShowLastYear(e.currentTarget.checked)}
+						size='xs'
+					/>
+					<Checkbox
+						label='This year +6.19%'
+						checked={showThisYear}
+						onChange={(e) => setShowThisYear(e.currentTarget.checked)}
+						size='xs'
+					/>
+				</Group>
+				<div style={{ height: '300px', position: 'relative' }}>
+					<Line data={chartData} options={options} />
 				</div>
 			</Stack>
 		</Card>

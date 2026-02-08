@@ -3,8 +3,6 @@ import { Grid, Stack } from '@mantine/core';
 import { useDocumentTitle } from '@nikkierp/ui/hooks';
 import React from 'react';
 
-import { PageContainer } from '@/components/PageContainer';
-
 import {
 	PaymentMethodRevenue,
 	ProductCategoryRevenue,
@@ -17,6 +15,9 @@ import {
 	TopRevenueByKiosk,
 	WelcomeCard,
 } from '../../features/reports/revenue/components';
+
+import { PageContainer } from '@/components/PageContainer';
+
 
 // Mock data - in a real app, this would come from API calls
 const mockRevenueData = [
@@ -174,14 +175,14 @@ function RevenueOverviewContent(): React.ReactElement {
 						date={getFormattedDate()}
 						greeting='Good morning, Captain!'
 						visitors={2110}
-						earnings='$8.2M'
+						earnings='8.2Tr VND'
 						orders={1124}
 						ordersToday={16}
 						topOrders={topOrders}
 					/>
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, md: 12, lg: 8 }}>
-					<RevenueGeneratedChart data={mockQuarterlyRevenue} />
+					<RevenueChart data={mockQuarterlyRevenue} />
 				</Grid.Col>
 			</Grid>
 
@@ -198,7 +199,7 @@ function RevenueOverviewContent(): React.ReactElement {
 			{/* Revenue Chart and Product Category Revenue */}
 			<Grid>
 				<Grid.Col span={{ base: 12, lg: 8 }}>
-					<RevenueChart data={mockRevenueData} />
+					<RevenueGeneratedChart data={mockRevenueData} />
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, lg: 4 }}>
 					<ProductCategoryRevenue

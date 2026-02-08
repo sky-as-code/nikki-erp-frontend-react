@@ -1,6 +1,8 @@
-import { Avatar, Button, Card, Group, ScrollArea, Stack, Text, Title } from '@mantine/core';
-import React from 'react';
+/* eslint-disable max-lines-per-function */
+import { Avatar, Button, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { IconCurrencyDollar, IconShoppingCart, IconUsers } from '@tabler/icons-react';
+import React from 'react';
+
 
 interface Order {
 	id: string;
@@ -25,8 +27,6 @@ export function WelcomeCard({
 	visitors,
 	earnings,
 	orders,
-	ordersToday,
-	topOrders,
 }: WelcomeCardProps): React.ReactElement {
 	return (
 		<Card shadow='sm' padding='md' radius='md' withBorder>
@@ -47,22 +47,25 @@ export function WelcomeCard({
 						Updates from yesterday.
 					</Text>
 					<Group gap='lg'>
-						<Group gap='xs'>
-							<IconUsers size={20} />
-							<Text size='sm'>{visitors.toLocaleString()} Visitors</Text>
+						<Group gap={'xs'} align='center'>
+							<IconCurrencyDollar size={22} />
+							<Text size='lg' c='yellow' fw={600}>{earnings}</Text>
+							<Text size='sm'>Earnings</Text>
 						</Group>
-						<Group gap='xs'>
-							<IconCurrencyDollar size={20} />
-							<Text size='sm'>{earnings} Earnings</Text>
-						</Group>
-						<Group gap='xs'>
+						<Group gap='xs' align='center'>
 							<IconShoppingCart size={20} />
-							<Text size='sm'>{orders.toLocaleString()} Orders</Text>
+							<Text size='lg' c='dimmed' fw={600}>{orders.toLocaleString()}</Text>
+							<Text size='sm'>Orders</Text>
+						</Group>
+						<Group gap='xs' align='center'>
+							<IconUsers size={20} />
+							<Text size='lg' c='dimmed' fw={600}>{visitors.toLocaleString()}</Text>
+							<Text size='sm'>Visitors</Text>
 						</Group>
 					</Group>
 				</Stack>
 
-				<Stack gap='xs'>
+				{/* <Stack gap='xs'>
 					<Text size='sm' fw={500}>
 						You have {ordersToday} orders today.
 					</Text>
@@ -87,10 +90,91 @@ export function WelcomeCard({
 							))}
 						</Stack>
 					</ScrollArea>
-				</Stack>
+				</Stack> */}
 
+				<Stack gap='xs'>
+					<Card padding='xs' withBorder radius='sm'>
+						<Group justify='space-between' align='center'>
+							<Avatar size='sm' radius='sm' color='blue' />
+							<Stack gap={3} flex={1}>
+								<Group gap={0} justify='space-between'>
+									<Text size='sm' fw={500}>
+										Average Revenue
+									</Text>
+									<Text size='sm' c='yellow' fw={600}>
+										8.2Tr VND
+									</Text>
+								</Group>
+								<Group gap={0} justify='space-between' flex={1}>
+									<Text size='sm' fw={500}>
+										Average revenue per order
+									</Text>
+									<Text size='sm' c='yellow' fw={600}>
+										20,000 VND
+									</Text>
+								</Group>
+							</Stack>
+						</Group>
+					</Card>
+
+					<Card padding='xs' withBorder radius='sm'>
+						<Group justify='space-between' align='center'>
+							<Avatar size='sm' radius='sm' color='blue' />
+							<Stack gap={3} flex={1}>
+								<Group gap={0} justify='space-between' flex={1}>
+									<Text size='sm' fw={500}>
+										Items Sold
+									</Text>
+									<Text size='sm' c='dimmed' fw={600}>
+										100 items
+									</Text>
+								</Group>
+								<Group gap={0} justify='space-between' flex={1}>
+									<Text size='sm' fw={500}>
+										Items Errored
+									</Text>
+									<Text size='sm' c='dimmed' fw={600}>
+										0 items
+									</Text>
+								</Group>
+								<Group gap={0} justify='space-between' flex={1}>
+									<Text size='sm' fw={500}>
+										Error rate (%)
+									</Text>
+									<Text size='sm' c='dimmed' fw={600}>
+										0%
+									</Text>
+								</Group>
+							</Stack>
+						</Group>
+					</Card>
+
+					<Card padding='xs' withBorder radius='sm'>
+						<Group justify='space-between' align='center'>
+							<Avatar size='sm' radius='sm' color='blue' />
+							<Stack gap={3} flex={1}>
+								<Group gap={0} justify='space-between' flex={1}>
+									<Text size='sm' fw={500}>
+										Refunded Orders
+									</Text>
+									<Text size='sm' c='dimmed' fw={600}>
+										0 orders
+									</Text>
+								</Group>
+								<Group gap={0} justify='space-between' flex={1}>
+									<Text size='sm' fw={500}>
+										Refund rate (%)
+									</Text>
+									<Text size='sm' c='dimmed' fw={600}>
+										0%
+									</Text>
+								</Group>
+							</Stack>
+						</Group>
+					</Card>
+				</Stack>
 				<Button variant='subtle' size='xs' fullWidth>
-					All orders &gt;
+					View all reports &gt;
 				</Button>
 			</Stack>
 		</Card>
