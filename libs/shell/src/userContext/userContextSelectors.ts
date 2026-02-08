@@ -149,11 +149,17 @@ const collectResourcesByScopeType = (
 		.map(([resource]) => resource);
 };
 
-const collectResourcesWithAnyScope = (permissions: UserContextState['permissions']) => {
+const collectResourcesByNonDomainScope = (permissions: UserContextState['permissions']) => {
 	return Object.entries(permissions)
-		.filter(([, entries]) => entries.length > 0)
+		.filter(([, entries]) => entries.some((entry) => entry.scopeType !== 'domain'))
 		.map(([resource]) => resource);
 };
+
+// const collectResourcesWithAnyScope = (permissions: UserContextState['permissions']) => {
+// 	return Object.entries(permissions)
+// 		.filter(([, entries]) => entries.length > 0)
+// 		.map(([resource]) => resource);
+// };
 
 export const useMyModulesForContext = (orgSlug?: string | null) => {
 	const permissions = useSelector(selectPermissions);
@@ -178,7 +184,8 @@ export const useMyModulesForContext = (orgSlug?: string | null) => {
 		return orgModules;
 	}
 
-	const resources = collectResourcesWithAnyScope(permissions);
+	// For org context, only include resources that are not domain-scoped
+	const resources = collectResourcesByNonDomainScope(permissions);
 	return collectModulesForResources(resources, orgModules);
 };
 

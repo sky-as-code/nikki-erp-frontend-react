@@ -1,10 +1,10 @@
-import { ACTIONS, RESOURCES, useHasAnyPermission } from '@nikkierp/shell/userContext';
+import { ACTIONS, RESOURCES, useHasAnyPermission, PermissionScopeType } from '@nikkierp/shell/userContext';
 import { MenuBarItem } from '@nikkierp/ui/appState/layoutSlice';
-import { PermissionScopeType } from 'node_modules/@nikkierp/shell/src/userContext/userContextService';
 
 
+type ContextScope = { scopeType: PermissionScopeType; scopeRef: string };
 
-export function useMenuBarItems(contextScope?: { scopeType: PermissionScopeType; scopeRef: string }): MenuBarItem[] {
+export function useMenuBarItems(contextScope?: ContextScope): MenuBarItem[] {
 	const hasUserAccess = useHasAnyPermission(
 		RESOURCES.IDENTITY_USER,
 		[ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],

@@ -13,7 +13,7 @@ function scopeMatches(
 	scopeType: PermissionScopeType,
 	scopeRef: string,
 ): boolean {
-	if (entry.scopeType === 'domain') return true;
+	if (entry.scopeType === 'domain') return scopeType === 'domain';
 	if (entry.scopeType === scopeType) {
 		return entry.scopeRef === scopeRef;
 	}

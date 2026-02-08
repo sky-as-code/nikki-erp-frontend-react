@@ -21,8 +21,8 @@ export function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): Re
 	const contextModules = useMyModulesForContext(resolvedOrgSlug);
 	const orgModule = useFindMyModule(resolvedOrgSlug ?? '', moduleSlug!);
 	const activeOrg = useFindMyOrg(resolvedOrgSlug ?? '');
-	const orgContextScope = activeOrg?.id
-		? { scopeType: 'org' as const, scopeRef: activeOrg.id }
+	const orgContextScope = resolvedOrgSlug && resolvedOrgSlug !== GLOBAL_CONTEXT_SLUG
+		? { scopeType: 'org' as const, scopeRef: activeOrg?.id ?? '' }
 		: undefined;
 	const foundModule = isGlobalContext
 		? contextModules.find((mod) => mod.slug === moduleSlug) ?? null
