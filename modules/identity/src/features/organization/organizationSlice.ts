@@ -25,7 +25,7 @@ export type OrganizationState = {
 	delete: ReduxActionState<DeleteOrganizationResponse>;
 };
 
-const initialState: OrganizationState = {
+export const initialState: OrganizationState = {
 	detail: baseReduxActionState,
 	list: { ...baseReduxActionState, data: [] },
 	create: baseReduxActionState,

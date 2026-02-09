@@ -30,18 +30,23 @@ export function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): Re
 	const foundApp = microApps.find(app => app.basePath === moduleSlug);
 	const canAccess = useCanAccessModuleForContext(moduleSlug!, resolvedOrgSlug, orgContextScope);
 
-	if (!foundModule || !foundApp) {
+	if (!foundApp) {
 		return <Navigate to='/notfound' replace />;
 	}
 
-	if (!canAccess) {
-		return <Navigate to='/unauthorized' replace />;
-	}
+
+	// if (!foundModule || !foundApp) {
+	// 	return <Navigate to='/notfound' replace />;
+	// }
+
+	// if (!canAccess) {
+	// 	return <Navigate to='/unauthorized' replace />;
+	// }
 
 	return (
 		<LazyMicroApp
-			slug={foundApp.slug}
-			basePath={foundApp.basePath}
+			slug={foundApp?.slug ?? ''}
+			basePath={foundApp?.basePath ?? ''}
 			fallback={<AppLoading />}
 		/>
 	);

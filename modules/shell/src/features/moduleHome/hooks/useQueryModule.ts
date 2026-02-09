@@ -30,11 +30,12 @@ export function useQueryModule() {
 	});
 
 	const filteredModules = useMemo(() => {
-		const modulesByContext = filterModulesBySlugs(
-			mockModuleListByCategory,
-			availableModuleSlugs,
-		);
-		return filterModules(modulesByContext, searchQuery, filters);
+		// const modulesByContext = filterModulesBySlugs(
+		// 	mockModuleListByCategory,
+		// 	availableModuleSlugs,
+		// );
+		// return filterModules(modulesByContext, searchQuery, filters);
+		return filterModules(mockModuleListByCategory, searchQuery, filters);
 	}, [searchQuery, filters, availableModuleSlugs]);
 
 	return {

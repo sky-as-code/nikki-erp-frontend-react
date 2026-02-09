@@ -184,9 +184,12 @@ export const useMyModulesForContext = (orgSlug?: string | null) => {
 		return orgModules;
 	}
 
+	// ? COMMENTED FOR TESTING ONLY
 	// For org context, only include resources that are not domain-scoped
-	const resources = collectResourcesByNonDomainScope(permissions);
-	return collectModulesForResources(resources, orgModules);
+	// const resources = collectResourcesByNonDomainScope(permissions);
+	// return collectModulesForResources(resources, orgModules);
+
+	return orgModules;
 };
 
 type ResourcePermissionConfig = {

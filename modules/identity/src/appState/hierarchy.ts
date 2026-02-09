@@ -11,6 +11,7 @@ import {
 	manageHierarchyUsers,
 	HierarchyState,
 } from '../features/hierarchy/hierarchySlice';
+import { initialState as initialHierarchyState } from '../features/hierarchy/hierarchySlice';
 
 
 const STATE_KEY = 'hierarchy';
@@ -29,7 +30,8 @@ export const hierarchyActions = {
 	...actions,
 };
 
-export const selectHierarchyState = (state: { [STATE_KEY]: HierarchyState }) => state[STATE_KEY];
+export const selectHierarchyState =
+	(state: { [STATE_KEY]?: HierarchyState }) => state?.[STATE_KEY] ?? initialHierarchyState;
 
 export const selectHierarchyList = createSelector(
 	selectHierarchyState,
