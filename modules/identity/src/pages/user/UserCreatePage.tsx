@@ -6,12 +6,14 @@ import { useTranslation } from 'react-i18next';
 
 import { UserCreateForm } from '../../features/user/components';
 import { useUserCreateHandlers } from '../../features/user/hooks/useUserCreate';
+import { useIdentityPermissions } from '../../hooks';
 import userSchema from '../../schemas/user-schema.json';
 
 
 export const UserCreatePageBody: React.FC = () => {
 	const schema = userSchema as ModelSchema;
 	const { t } = useTranslation();
+	const permissions = useIdentityPermissions();
 
 	const { isLoading, handleCreate } = useUserCreateHandlers();
 
@@ -22,6 +24,7 @@ export const UserCreatePageBody: React.FC = () => {
 				schema={schema}
 				isLoading={isLoading}
 				onSubmit={handleCreate}
+				canCreate={permissions.user.canCreate}
 			/>
 		</Stack>
 	);

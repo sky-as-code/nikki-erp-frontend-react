@@ -9,6 +9,7 @@ import {
 	updateResource,
 	deleteResource,
 	ResourceState,
+	initialState,
 } from '@/features/resources/resourceSlice';
 
 
@@ -27,7 +28,7 @@ export const resourceActions = {
 	...actions,
 };
 
-export const selectResourceState = (state: { [STATE_KEY]: ResourceState }) => state[STATE_KEY];
+export const selectResourceState = (state: { [STATE_KEY]: ResourceState }) => state[STATE_KEY] ?? initialState;
 
 export const selectResourceList = createSelector(
 	selectResourceState,

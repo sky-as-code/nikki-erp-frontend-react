@@ -28,10 +28,11 @@ interface HierarchyCreateFormProps {
 	hierarchies: HierarchyLevel[];
 	isCreating: boolean;
 	onSubmit: (data: any) => void;
+	canCreate?: boolean;
 }
 
 export function HierarchyCreateForm({
-	schema, hierarchies, isCreating, onSubmit,
+	schema, hierarchies, isCreating, onSubmit, canCreate = true,
 }: HierarchyCreateFormProps): React.ReactElement {
 	const { t } = useTranslation();
 
@@ -81,6 +82,7 @@ export function HierarchyCreateForm({
 
 								<ListActionCreatePage
 									isLoading={isCreating}
+									disableCreate={!canCreate}
 								/>
 							</Stack>
 						</form>

@@ -6,9 +6,12 @@ import { useNavigate } from 'react-router';
 
 interface ListActionCreatePageProps {
 	isLoading: boolean;
+	disableCreate?: boolean;
 }
 
-export function ListActionCreatePage({ isLoading }: ListActionCreatePageProps): React.ReactElement {
+export function ListActionCreatePage(
+	{ isLoading, disableCreate = false }: ListActionCreatePageProps,
+): React.ReactElement {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 
@@ -32,7 +35,7 @@ export function ListActionCreatePage({ isLoading }: ListActionCreatePageProps): 
 				leftSection={<IconCheck size={18} />}
 				size='md'
 				loading={isLoading}
-				disabled={isLoading}
+				disabled={isLoading || disableCreate}
 				variant='filled'
 			>
 				{t('nikki.identity.user.actions.create')}

@@ -1,3 +1,5 @@
+import { Action } from './types';
+
 import {
 	listActions as listActionsApi,
 	getAction as getActionApi,
@@ -7,8 +9,6 @@ import {
 	type AuthzActionDto,
 } from '@/services/authzService';
 
-import { Action } from './types';
-
 
 function mapDtoToAction(dto: AuthzActionDto): Action {
 	return {
@@ -16,6 +16,7 @@ function mapDtoToAction(dto: AuthzActionDto): Action {
 		name: dto.name,
 		description: dto.description,
 		resourceId: dto.resourceId,
+		resource: dto.resource,
 		createdAt: dto.createdAt,
 		createdBy: dto.createdBy,
 		entitlementsCount: dto.entitlementsCount || 0,
@@ -29,6 +30,7 @@ function mapActionToDto(action: Partial<Action>): Partial<AuthzActionDto> {
 		name: action.name,
 		description: action.description,
 		resourceId: action.resourceId,
+		resource: action.resource,
 		createdAt: action.createdAt,
 		etag: action.etag,
 		createdBy: action.createdBy,

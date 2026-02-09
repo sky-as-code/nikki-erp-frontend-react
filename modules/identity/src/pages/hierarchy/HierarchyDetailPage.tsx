@@ -11,6 +11,7 @@ import { selectUserList } from '../../appState/user';
 import { ListUser } from '../../components/User';
 import { HierarchyDetailForm } from '../../features/hierarchy/components';
 import { useHierarchyDetailHandlers, useHierarchyUserManagement } from '../../features/hierarchy/hooks';
+import { useIdentityPermissions } from '../../hooks';
 import hierarchySchema from '../../schemas/hierarchy-schema.json';
 
 
@@ -20,6 +21,7 @@ export const HierarchyDetailPageBody: React.FC = () => {
 	const users = useMicroAppSelector(selectUserList);
 	const schema = hierarchySchema as ModelSchema;
 	const { t } = useTranslation();
+	const permissions = useIdentityPermissions();
 
 	const { isLoadingDetail,
 		handleUpdate,
@@ -50,6 +52,8 @@ export const HierarchyDetailPageBody: React.FC = () => {
 				isLoading={isLoadingDetail}
 				onSubmit={handleUpdate}
 				onDelete={handleDelete}
+				canUpdate={permissions.hierarchy.canUpdate}
+				canDelete={permissions.hierarchy.canDelete}
 			/>
 			<ListUser
 				users={usersByHierarchy}
@@ -59,6 +63,7 @@ export const HierarchyDetailPageBody: React.FC = () => {
 				onRemoveUsers={handleRemoveUsers}
 				title={t('nikki.identity.hierarchy.title')}
 				emptyMessage={t('nikki.identity.hierarchy.messages.noHierarchies')}
+				canManage={permissions.hierarchy.canUpdate}
 			/>
 		</Stack>
 	);

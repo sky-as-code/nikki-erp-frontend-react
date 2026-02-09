@@ -111,6 +111,8 @@ interface UserDetailFormProps {
 	isLoading: boolean;
 	onSubmit: (data: any) => void;
 	onDelete: () => void;
+	canUpdate?: boolean;
+	canDelete?: boolean;
 }
 
 export function UserDetailForm({
@@ -119,6 +121,8 @@ export function UserDetailForm({
 	isLoading,
 	onSubmit,
 	onDelete,
+	canUpdate = true,
+	canDelete = true,
 }: UserDetailFormProps): React.ReactElement {
 	const { t } = useTranslation();
 	const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
@@ -130,13 +134,14 @@ export function UserDetailForm({
 	};
 
 	const handleFormSubmit = (data: any) => {
+		if (!canUpdate) return;
 		setPendingData(data);
 		setShowSaveConfirm(true);
 	};
 
 	const handleConfirmSave = () => {
 		setShowSaveConfirm(false);
-		if (pendingData) {
+		if (pendingData && canUpdate) {
 			onSubmit(pendingData);
 			setPendingData(null);
 		}
@@ -158,9 +163,10 @@ export function UserDetailForm({
 							>
 								<Stack gap='xl'>
 									<ListActionDetailPage
-										onDelete={onDelete}
+										onDelete={canDelete ? onDelete : undefined}
 										isLoading={isLoading}
-										disableSave={!form.formState.isDirty}
+										disableSave={!form.formState.isDirty || !canUpdate}
+										disableDelete={!canDelete}
 										titleDelete={t('nikki.identity.user.actions.confirmDelete')}
 										titleConfirmDelete={t('nikki.identity.user.actions.delete')}
 										messageConfirmDelete={t('nikki.identity.user.messages.confirmDeleteMessage')}

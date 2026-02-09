@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { selectCreateOrganization } from '../../appState/organization';
 import { OrganizationCreateForm } from '../../features/organization/components';
 import { useOrganizationCreateHandlers } from '../../features/organization/hooks';
+import { useIdentityPermissions } from '../../hooks';
 import organizationSchema from '../../schemas/organization-schema.json';
 
 
@@ -16,6 +17,7 @@ export const OrganizationCreatePageBody: React.FC = () => {
 	const schema = organizationSchema as ModelSchema;
 	const { t } = useTranslation();
 	const isLoading = create.status === 'pending';
+	const permissions = useIdentityPermissions();
 
 	const { onSubmit } = useOrganizationCreateHandlers();
 
@@ -26,6 +28,7 @@ export const OrganizationCreatePageBody: React.FC = () => {
 				schema={schema}
 				isCreatingOrganization={isLoading}
 				onSubmit={onSubmit}
+				canCreate={permissions.organization.canCreate}
 			/>
 		</Stack>
 	);

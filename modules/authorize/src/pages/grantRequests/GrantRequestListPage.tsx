@@ -12,6 +12,7 @@ import {
 	selectGrantRequestState,
 } from '@/appState';
 import { GrantRequestTable, grantRequestSchema, useGrantRequestDelete } from '@/features/grantRequests';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function GrantRequestListPageBody(): React.ReactNode {
@@ -20,6 +21,7 @@ function GrantRequestListPageBody(): React.ReactNode {
 	const { grantRequests, isLoadingList } = useMicroAppSelector(selectGrantRequestState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useGrantRequestDelete(grantRequests, dispatch);
+	const permissions = useAuthorizePermissions();
 
 	const columns = [
 		'requestor',
@@ -52,7 +54,7 @@ function GrantRequestListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.grant_request.title' />
 				<Actions
-					onCreate={handleCreate}
+					onCreate={permissions.grantRequest.canCreate ? handleCreate : undefined}
 					onRefresh={handleRefresh}
 					showImport={false}
 				/>
@@ -63,7 +65,7 @@ function GrantRequestListPageBody(): React.ReactNode {
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}
-						onDelete={deleteHandler.handleDeleteRequest}
+						onDelete={permissions.grantRequest.canDelete ? deleteHandler.handleDeleteRequest : undefined}
 					/>
 				</Paper>
 			</Stack>

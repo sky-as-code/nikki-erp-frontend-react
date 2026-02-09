@@ -15,7 +15,7 @@ import type { GrantRequest } from '@/features/grantRequests';
 
 export interface GrantRequestTableProps extends AutoTableProps {
 	onViewDetail: (requestId: string) => void;
-	onDelete: (requestId: string) => void;
+	onDelete?: (requestId: string) => void;
 }
 
 const statusColors: Record<GrantRequest['status'], string> = {
@@ -65,7 +65,7 @@ function renderOrgDisplayNameColumn(row: Record<string, unknown>) {
 function renderActionsColumn(
 	row: Record<string, unknown>,
 	onViewDetail: (requestId: string) => void,
-	onDelete: (requestId: string) => void,
+	onDelete: ((requestId: string) => void) | undefined,
 	translate: (key: string) => string,
 ) {
 	const requestId = row.id as string;
@@ -80,15 +80,17 @@ function renderActionsColumn(
 					<IconEye size={16} />
 				</ActionIcon>
 			</Tooltip>
-			<Tooltip label={translate('nikki.general.actions.delete')}>
-				<ActionIcon
-					variant='subtle'
-					color='red'
-					onClick={() => onDelete(requestId)}
-				>
-					<IconTrash size={16} />
-				</ActionIcon>
-			</Tooltip>
+			{onDelete && (
+				<Tooltip label={translate('nikki.general.actions.delete')}>
+					<ActionIcon
+						variant='subtle'
+						color='red'
+						onClick={() => onDelete(requestId)}
+					>
+						<IconTrash size={16} />
+					</ActionIcon>
+				</Tooltip>
+			)}
 		</Group>
 	);
 }

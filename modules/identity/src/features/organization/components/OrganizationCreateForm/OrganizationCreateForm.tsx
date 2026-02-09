@@ -24,12 +24,14 @@ interface OrganizationCreateFormProps {
 	schema: OrganizationSchema;
 	isCreatingOrganization: boolean;
 	onSubmit: (data: any) => void;
+	canCreate?: boolean;
 }
 
 export function OrganizationCreateForm({
 	schema,
 	isCreatingOrganization,
-	onSubmit }: OrganizationCreateFormProps): React.ReactElement {
+	onSubmit,
+	canCreate = true }: OrganizationCreateFormProps): React.ReactElement {
 	return (
 		<Paper withBorder p='xl'>
 			<FormStyleProvider layout='onecol'>
@@ -49,6 +51,7 @@ export function OrganizationCreateForm({
 								</Stack>
 								<ListActionCreatePage
 									isLoading={isCreatingOrganization}
+									disableCreate={!canCreate}
 								/>
 							</Stack>
 						</form>

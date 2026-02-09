@@ -9,6 +9,7 @@ import { selectUserList } from '../../appState/user';
 import { ListActionListPage } from '../../components/ListActionBar';
 import { UserTable } from '../../features/user/components';
 import { useUserListHandlers } from '../../features/user/hooks/useUserList';
+import { useIdentityPermissions } from '../../hooks';
 import userSchema from '../../schemas/user-schema.json';
 
 
@@ -18,6 +19,7 @@ export function UserListPageBody(): React.ReactElement {
 	const columns = ['avatar', 'email', 'displayName', 'status', 'groups', 'createdAt', 'updatedAt'];
 	const { t } = useTranslation();
 	const isLoading = listUser.status === 'pending';
+	const permissions = useIdentityPermissions();
 
 	const { handleCreate, handleRefresh } = useUserListHandlers();
 
@@ -36,7 +38,7 @@ export function UserListPageBody(): React.ReactElement {
 				/>
 			</Group>
 			<ListActionListPage
-				onCreate={handleCreate}
+				onCreate={permissions.user.canCreate ? handleCreate : undefined}
 				onRefresh={handleRefresh}
 			/>
 			<UserTable

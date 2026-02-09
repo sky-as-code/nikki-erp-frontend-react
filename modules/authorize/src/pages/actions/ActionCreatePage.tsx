@@ -10,8 +10,9 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AuthorizeDispatch, resourceActions, selectResourceState } from '@/appState';
+import { AuthorizeDispatch, resourceActions, selectResourceList } from '@/appState';
 import { ActionFormFields, actionSchema, useActionCreate } from '@/features/actions';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function ActionCreatePageBody(): React.ReactNode {
@@ -23,13 +24,15 @@ function ActionCreatePageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const schema = actionSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const { resources } = useMicroAppSelector(selectResourceState);
+	const resourceListState = useMicroAppSelector(selectResourceList);
+	const resources = resourceListState.data ?? [];
+	const permissions = useAuthorizePermissions();
 
 	React.useEffect(() => {
-		if (resources.length === 0) {
+		if (resourceListState.status === 'idle' || (resourceListState.status === 'success' && resources.length === 0)) {
 			dispatch(resourceActions.listResources());
 		}
-	}, [dispatch, resources.length]);
+	}, [resourceListState, resources]);
 
 	return (
 		<Stack gap='md'>
@@ -44,9 +47,20 @@ function ActionCreatePageBody(): React.ReactNode {
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
-							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
+							<form
+								onSubmit={formHandleSubmit((data) => {
+									if (!permissions.action.canCreate) return;
+									handleSubmit(data);
+								})}
+								noValidate
+							>
 								<Stack gap='xs'>
-									<FormActions isSubmitting={isSubmitting} onCancel={handleCancel} isCreate />
+									<FormActions
+										isSubmitting={isSubmitting}
+										onCancel={handleCancel}
+										isCreate
+										showSubmit={permissions.action.canCreate}
+									/>
 									<ActionFormFields
 										isCreate
 										resources={resources}

@@ -81,23 +81,26 @@ interface HierarchyDetailFormProps {
 	isLoading: boolean;
 	onSubmit: (data: any) => void;
 	onDelete: () => void;
+	canUpdate?: boolean;
+	canDelete?: boolean;
 }
 
 export function HierarchyDetailForm({
-	schema, hierarchyDetail, isLoading, onSubmit, onDelete,
+	schema, hierarchyDetail, isLoading, onSubmit, onDelete, canUpdate = true, canDelete = true,
 }: HierarchyDetailFormProps): React.ReactElement {
 	const { t } = useTranslation();
 	const [showSaveConfirm, setShowSaveConfirm] = React.useState(false);
 	const [pendingData, setPendingData] = React.useState<any>(null);
 
 	const handleFormSubmit = (data: any) => {
+		if (!canUpdate) return;
 		setPendingData(data);
 		setShowSaveConfirm(true);
 	};
 
 	const handleConfirmSave = () => {
 		setShowSaveConfirm(false);
-		if (pendingData) {
+		if (pendingData && canUpdate) {
 			onSubmit(pendingData);
 			setPendingData(null);
 		}
@@ -117,9 +120,10 @@ export function HierarchyDetailForm({
 							<form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
 								<Stack gap='md'>
 									<ListActionDetailPage
-										onDelete={onDelete}
+										onDelete={canDelete ? onDelete : undefined}
 										isLoading={isLoading}
-										disableSave={!form.formState.isDirty}
+										disableSave={!form.formState.isDirty || !canUpdate}
+										disableDelete={!canDelete}
 										titleDelete={t('nikki.identity.hierarchy.actions.confirmDelete')}
 										titleConfirmDelete={t('nikki.identity.hierarchy.actions.delete')}
 										messageConfirmDelete={t('nikki.identity.hierarchy.messages.confirmDeleteMessage')}

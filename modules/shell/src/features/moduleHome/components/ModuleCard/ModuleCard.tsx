@@ -8,17 +8,20 @@ import {
 	Flex,
 	Divider,
 } from '@mantine/core';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { IconDots, IconStarFilled, IconAugmentedReality } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { FC, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import classes from './ModuleCard.module.css';
 
 
 export const ModuleCard: FC<{ module: any }> = ({ module }) => {
 	const navigate = useNavigate();
-	const { orgSlug } = useParams();
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrgSlug = orgSlug ?? GLOBAL_CONTEXT_SLUG;
 	const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
 	return (
@@ -26,7 +29,7 @@ export const ModuleCard: FC<{ module: any }> = ({ module }) => {
 			className={clsx(classes.moduleCard, isActionMenuOpen && classes.moduleCardHover)}
 			pos='relative' justify='start' align='center' gap={0} w={'100%'}
 			onClick={() => {
-				navigate(`/${orgSlug}/${module.slug}`);
+				navigate(`/${activeOrgSlug}/${module.slug}`);
 			}}
 		>
 			<ModuleCardContent
@@ -82,7 +85,8 @@ type ModuleCardMenuProps = {
 	setIsActionMenuOpen: (value: boolean) => void
 };
 const ModuleCardMenu: FC<ModuleCardMenuProps> = ({ module, isActionMenuOpen, setIsActionMenuOpen }) => {
-	const { orgSlug } = useParams();
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrgSlug = orgSlug ?? GLOBAL_CONTEXT_SLUG;
 
 	return (
 		<Menu
@@ -111,7 +115,7 @@ const ModuleCardMenu: FC<ModuleCardMenuProps> = ({ module, isActionMenuOpen, set
 				<Menu.Item>Unfavorite</Menu.Item>
 				<Menu.Item>Disable</Menu.Item>
 				<Divider />
-				<Menu.Item component='a' href={`/${orgSlug}/${module?.slug}`} target='_blank'>Open in new tab</Menu.Item>
+				<Menu.Item component='a' href={`/${activeOrgSlug}/${module?.slug}`} target='_blank'>Open in new tab</Menu.Item>
 			</Menu.Dropdown>
 		</Menu>
 	);

@@ -5,6 +5,7 @@ import {
 import { roleService } from './roleService';
 import { Role } from './types';
 import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActionState';
+import { ListQuery } from '../../services/authzService';
 import { entitlementService } from '../entitlements/entitlementService';
 import { Entitlement } from '../entitlements/types';
 
@@ -27,7 +28,7 @@ export type RoleState = {
 	removeEntitlements: ReduxActionState<void>;
 };
 
-const initialState: RoleState = {
+export const initialState: RoleState = {
 	roles: [],
 	roleDetail: undefined,
 
@@ -67,13 +68,13 @@ async function hydrateEntitlements(
 
 export const listRoles = createAsyncThunk<
 	Role[],
-	{ graph?: Record<string, unknown>; page?: number; size?: number } | void,
+	{listQuery?: ListQuery, orgId?: string | null},
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/list`,
-	async (params, { rejectWithValue }) => {
+	async ({listQuery, orgId}, { rejectWithValue }) => {
 		try {
-			const result = await roleService.listRoles(params || undefined);
+			const result = await roleService.listRoles(listQuery, orgId);
 			return result;
 		}
 		catch (error) {
@@ -108,7 +109,7 @@ export const getRole = createAsyncThunk<
 
 export const createRole = createAsyncThunk<
 	Role,
-	Omit<Role, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'entitlementsCount' | 'assignmentsCount' | 'suitesCount' | 'ownerName'>,
+	Role,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/create`,
@@ -126,13 +127,13 @@ export const createRole = createAsyncThunk<
 
 export const updateRole = createAsyncThunk<
 	Role,
-	{ id: string; etag: string; name?: string; description?: string | null },
+	{ id: string; etag: string; role: Role },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/update`,
-	async ({ id, etag, name, description }, { rejectWithValue }) => {
+	async ({ id, etag, role }, { rejectWithValue }) => {
 		try {
-			const result = await roleService.updateRole(id, etag, { name, description });
+			const result = await roleService.updateRole(id, etag, role);
 			return result;
 		}
 		catch (error) {

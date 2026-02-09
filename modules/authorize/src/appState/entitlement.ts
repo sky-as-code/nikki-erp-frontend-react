@@ -9,6 +9,7 @@ import {
 	updateEntitlement,
 	deleteEntitlement,
 	EntitlementState,
+	initialState,
 } from '@/features/entitlements/entitlementSlice';
 
 
@@ -27,7 +28,7 @@ export const entitlementActions = {
 	...actions,
 };
 
-export const selectEntitlementState = (state: { [STATE_KEY]: EntitlementState }) => state[STATE_KEY];
+export const selectEntitlementState = (state: { [STATE_KEY]: EntitlementState }) => state[STATE_KEY] ?? initialState;
 
 export const selectEntitlementList = createSelector(
 	selectEntitlementState,

@@ -9,6 +9,7 @@ import {
 	createRoleSuite,
 	updateRoleSuite,
 	deleteRoleSuite,
+	initialState
 } from '@/features/roleSuites/roleSuiteSlice';
 
 
@@ -27,7 +28,7 @@ export const roleSuiteActions = {
 	...actions,
 };
 
-export const selectRoleSuiteState = (state: { [STATE_KEY]: RoleSuiteState }) => state[STATE_KEY];
+export const selectRoleSuiteState = (state: { [STATE_KEY]: RoleSuiteState }) => state[STATE_KEY] ?? initialState;
 
 export const selectRoleSuiteList = createSelector(
 	selectRoleSuiteState,

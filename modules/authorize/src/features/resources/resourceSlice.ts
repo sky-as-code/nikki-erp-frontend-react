@@ -20,7 +20,7 @@ export type ResourceState = {
 	delete: ReduxActionState<void>;
 };
 
-const initialState: ResourceState = {
+export const initialState: ResourceState = {
 	detail: baseReduxActionState,
 	list: { ...baseReduxActionState, data: [] },
 	create: baseReduxActionState,

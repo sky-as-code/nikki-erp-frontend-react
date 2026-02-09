@@ -72,7 +72,7 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.authorize.resource.fields.resource_ref' }",
 			"required": {
-				"create": true,
+				"create": false,
 				"update": false
 			}
 		},

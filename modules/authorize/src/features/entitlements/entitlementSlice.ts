@@ -23,7 +23,7 @@ export type EntitlementState = {
 	delete: ReduxActionState<void>;
 };
 
-const initialState: EntitlementState = {
+export const initialState: EntitlementState = {
 	entitlements: [],
 	entitlementDetail: undefined,
 
@@ -75,7 +75,7 @@ export const getEntitlement = createAsyncThunk<
 
 export const createEntitlement = createAsyncThunk<
 	Entitlement,
-	Omit<Entitlement, 'id' | 'createdAt' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
+	Entitlement,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createEntitlement`,
@@ -93,13 +93,13 @@ export const createEntitlement = createAsyncThunk<
 
 export const updateEntitlement = createAsyncThunk<
 	Entitlement,
-	{ id: string; etag: string; name?: string; description?: string | null },
+	{ id: string; etag: string; entitlement: Entitlement },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateEntitlement`,
-	async ({ id, etag, name, description }, { rejectWithValue }) => {
+	async ({ id, etag, entitlement }, { rejectWithValue }) => {
 		try {
-			const result = await entitlementService.updateEntitlement(id, etag, { name, description });
+			const result = await entitlementService.updateEntitlement(id, etag, entitlement);
 			return result;
 		}
 		catch (error) {

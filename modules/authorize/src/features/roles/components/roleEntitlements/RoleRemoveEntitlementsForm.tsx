@@ -24,6 +24,7 @@ interface RoleRemoveEntitlementsFormProps {
 	onConfirm: () => void;
 	onCancel: () => void;
 	isSubmitting: boolean;
+	showConfirm?: boolean;
 }
 
 /**
@@ -43,6 +44,7 @@ export const RoleRemoveEntitlementsForm: React.FC<RoleRemoveEntitlementsFormProp
 	onConfirm,
 	onCancel,
 	isSubmitting,
+	showConfirm = true,
 }) => {
 	const { t: translate } = useTranslation();
 
@@ -58,6 +60,7 @@ export const RoleRemoveEntitlementsForm: React.FC<RoleRemoveEntitlementsFormProp
 				onCancel={onCancel}
 				isSubmitting={isSubmitting}
 				actionVariant='remove'
+				showConfirm={showConfirm}
 			/>
 
 			<Stack gap='md'>

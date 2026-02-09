@@ -42,13 +42,13 @@ const initialState: HierarchyState = {
 
 export const listHierarchies = createAsyncThunk<
 	SearchHierarchyLevelResponse,
-	string,
+	{ scopeRef?: string } | undefined,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchHierarchies`,
-	async (orgId, { rejectWithValue }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			const result = await hierarchyService.listHierarchies(orgId);
+			const result = await hierarchyService.listHierarchies(params?.scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -60,13 +60,13 @@ export const listHierarchies = createAsyncThunk<
 
 export const getHierarchy = createAsyncThunk<
 	HierarchyLevel,
-	string,
+	{ id: string; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchHierarchy`,
-	async (id, { rejectWithValue }) => {
+	async ({ id, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await hierarchyService.getHierarchy(id);
+			const result = await hierarchyService.getHierarchy(id, scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -78,13 +78,13 @@ export const getHierarchy = createAsyncThunk<
 
 export const createHierarchy = createAsyncThunk<
 	CreateHierarchyLevelResponse,
-	CreateHierarchyLevelRequest,
+	{ data: CreateHierarchyLevelRequest; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createHierarchy`,
-	async (data, { rejectWithValue }) => {
+	async ({ data, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await hierarchyService.createHierarchy(data);
+			const result = await hierarchyService.createHierarchy(data, scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -97,13 +97,13 @@ export const createHierarchy = createAsyncThunk<
 
 export const updateHierarchy = createAsyncThunk<
 	UpdateHierarchyLevelResponse,
-	UpdateHierarchyLevelRequest,
+	{ data: UpdateHierarchyLevelRequest; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateHierarchy`,
-	async (data, { rejectWithValue }) => {
+	async ({ data, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await hierarchyService.updateHierarchy(data);
+			const result = await hierarchyService.updateHierarchy(data, scopeRef);
 			return result;
 		}
 		catch (error) {
@@ -115,13 +115,13 @@ export const updateHierarchy = createAsyncThunk<
 
 export const deleteHierarchy = createAsyncThunk<
 	void,
-	string,
+	{ id: string; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/deleteHierarchy`,
-	async (id, { rejectWithValue }) => {
+	async ({ id, scopeRef }, { rejectWithValue }) => {
 		try {
-			await hierarchyService.deleteHierarchy(id);
+			await hierarchyService.deleteHierarchy(id, scopeRef);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete hierarchy';
@@ -132,13 +132,13 @@ export const deleteHierarchy = createAsyncThunk<
 
 export const manageHierarchyUsers = createAsyncThunk<
 	ManageHierarchyLevelUsersResponse,
-	ManageHierarchyLevelUsersRequest,
+	{ data: ManageHierarchyLevelUsersRequest; scopeRef?: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/manageHierarchyUsers`,
-	async (data, { rejectWithValue }) => {
+	async ({ data, scopeRef }, { rejectWithValue }) => {
 		try {
-			const result = await hierarchyService.manageHierarchyUsers(data);
+			const result = await hierarchyService.manageHierarchyUsers(data, scopeRef);
 			return result;
 		}
 		catch (error) {

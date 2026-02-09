@@ -6,12 +6,14 @@ import { useTranslation } from 'react-i18next';
 
 import { GroupCreateForm } from '../../features/group/components';
 import { useGroupCreateHandlers } from '../../features/group/hooks/useGroupCreate';
+import { useIdentityPermissions } from '../../hooks';
 import groupSchema from '../../schemas/group-schema.json';
 
 
 export const GroupCreatePageBody: React.FC = () => {
 	const schema = groupSchema as ModelSchema;
 	const { t } = useTranslation();
+	const permissions = useIdentityPermissions();
 
 	const { isLoading, onSubmit } = useGroupCreateHandlers();
 
@@ -22,6 +24,7 @@ export const GroupCreatePageBody: React.FC = () => {
 				schema={schema}
 				isLoading={isLoading}
 				onSubmit={onSubmit}
+				canCreate={permissions.group.canCreate}
 			/>
 		</Stack>
 	);

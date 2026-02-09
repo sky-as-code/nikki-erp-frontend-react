@@ -9,6 +9,7 @@ import {
 	useRoleRemoveEntitlementsData,
 	useRoleRemoveEntitlements,
 } from '@/features/roles';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function RoleRemoveEntitlementsPageBody(): React.ReactNode {
@@ -16,6 +17,7 @@ function RoleRemoveEntitlementsPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const location = useLocation();
 	const handlers = useRoleRemoveEntitlements(role);
+	const permissions = useAuthorizePermissions();
 
 	// Build breadcrumbs for 3 layers: Roles > Role Detail > Remove Entitlements
 	const breadcrumbItems = React.useMemo(() => {
@@ -61,6 +63,7 @@ function RoleRemoveEntitlementsPageBody(): React.ReactNode {
 				onConfirm={handlers.handleConfirm}
 				onCancel={handlers.handleCancel}
 				isSubmitting={handlers.isSubmitting}
+				showConfirm={permissions.role.canRemoveEntitlement}
 			/>
 		</Stack>
 	);

@@ -12,36 +12,53 @@ import {
 
 
 export const userService = {
-	async listUsers(orgId: string): Promise<SearchUserResponse> {
-		const graph = JSON.stringify({
-			if: ['orgs.id', '*', orgId],
-			order: [['created_at', 'desc']],
-		});
+	async listUsers(scopeRef?: string): Promise<SearchUserResponse> {
+		const searchParams: Record<string, string> = {
+			withGroups: 'true',
+			withHierarchy: 'true',
+		};
+		if (scopeRef) searchParams.scopeRef = scopeRef;
 		const response = await request.get<SearchUserResponse>('identity/users', {
-			searchParams: { graph, withGroups: 'true', withHierarchy: 'true' },
+			searchParams,
 		});
 		return response;
 	},
 
-	async getUser(id: string): Promise<User> {
+	async getUser(id: string, scopeRef?: string): Promise<User> {
+		const searchParams: Record<string, string> = {
+			withGroup: 'true',
+			withHierarchy: 'true',
+		};
+		if (scopeRef) searchParams.scopeRef = scopeRef;
 		const response = await request.get<User>(`identity/users/${id}`, {
-			searchParams: { withGroup: 'true', withHierarchy: 'true' },
+			searchParams,
 		});
 		return response;
 	},
 
-	async createUser(data: CreateUserRequest): Promise<CreateUserResponse> {
-		const response = await request.post<CreateUserResponse>('identity/users', { json: data });
+	async createUser(data: CreateUserRequest, scopeRef?: string): Promise<CreateUserResponse> {
+		const searchParams = scopeRef ? { scopeRef } : undefined;
+		const response = await request.post<CreateUserResponse>('identity/users', {
+			searchParams,
+			json: data,
+		});
 		return response;
 	},
 
-	async updateUser(data: UpdateUserRequest): Promise<UpdateUserResponse> {
-		const response = await request.put<UpdateUserResponse>(`identity/users/${data.id}`, { json: data });
+	async updateUser(data: UpdateUserRequest, scopeRef?: string): Promise<UpdateUserResponse> {
+		const searchParams = scopeRef ? { scopeRef } : undefined;
+		const response = await request.put<UpdateUserResponse>(`identity/users/${data.id}`, {
+			searchParams,
+			json: data,
+		});
 		return response;
 	},
 
-	async deleteUser(id: string): Promise<DeleteUserResponse> {
-		const response = await request.del<DeleteUserResponse>(`identity/users/${id}`);
+	async deleteUser(id: string, scopeRef?: string): Promise<DeleteUserResponse> {
+		const searchParams = scopeRef ? { scopeRef } : undefined;
+		const response = await request.del<DeleteUserResponse>(`identity/users/${id}`, {
+			searchParams,
+		});
 		return response;
 	},
 };

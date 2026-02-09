@@ -10,6 +10,7 @@ export interface FormActionsProps {
 	isCreate: boolean;
 	children?: React.ReactNode;
 	additionalActions?: React.ReactNode;
+	showSubmit?: boolean;
 }
 
 export const FormActions: React.FC<FormActionsProps> = ({
@@ -18,14 +19,17 @@ export const FormActions: React.FC<FormActionsProps> = ({
 	isCreate,
 	children,
 	additionalActions,
+	showSubmit = true,
 }) => {
 	const { t: translate } = useTranslation();
 
 	return (
 		<Group>
-			<Button type='submit' leftSection={<IconCheck size={16} />} loading={isSubmitting}>
-				{isCreate ? translate('nikki.general.actions.create') : translate('nikki.general.actions.update')}
-			</Button>
+			{showSubmit && (
+				<Button type='submit' leftSection={<IconCheck size={16} />} loading={isSubmitting}>
+					{isCreate ? translate('nikki.general.actions.create') : translate('nikki.general.actions.update')}
+				</Button>
+			)}
 			{additionalActions}
 			{children}
 			<Button type='button' variant='outline' onClick={onCancel} disabled={isSubmitting}>

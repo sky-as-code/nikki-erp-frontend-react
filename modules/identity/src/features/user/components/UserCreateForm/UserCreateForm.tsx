@@ -25,6 +25,7 @@ interface UserCreateFormProps {
 	isLoading: boolean;
 	schema: UserSchema;
 	onSubmit: (data: any) => void;
+	canCreate?: boolean;
 }
 
 function validateAndGetPasswords(form: UseFormReturn<any>): { password: string; confirmPassword: string } | null {
@@ -61,7 +62,9 @@ function validateAndGetPasswords(form: UseFormReturn<any>): { password: string; 
 	return { password, confirmPassword };
 }
 
-export function UserCreateForm({ schema, isLoading, onSubmit }: UserCreateFormProps): React.ReactElement {
+export function UserCreateForm(
+	{ schema, isLoading, onSubmit, canCreate = true }: UserCreateFormProps,
+): React.ReactElement {
 
 	return (
 		<FormStyleProvider layout='onecol'>
@@ -92,6 +95,7 @@ export function UserCreateForm({ schema, isLoading, onSubmit }: UserCreateFormPr
 
 								<ListActionCreatePage
 									isLoading={isLoading}
+									disableCreate={!canCreate}
 								/>
 							</Stack>
 						</Paper>

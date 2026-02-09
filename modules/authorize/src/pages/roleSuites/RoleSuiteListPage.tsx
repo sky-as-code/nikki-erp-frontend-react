@@ -1,4 +1,7 @@
 import { Paper, Stack } from '@mantine/core';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { ConfirmModal, Headers, Actions } from '@nikkierp/ui/components';
 import { useMicroAppSelector, useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
@@ -8,18 +11,31 @@ import { useNavigate } from 'react-router';
 
 import {
 	AuthorizeDispatch,
+	identityActions,
 	roleSuiteActions,
+	selectGroupList,
+	selectOrgList,
 	selectRoleSuiteState,
+	selectUserList,
 } from '@/appState';
 import { RoleSuiteTable, roleSuiteSchema, useRoleSuiteDelete } from '@/features/roleSuites';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
+// eslint-disable-next-line max-lines-per-function
 function RoleSuiteListPageBody(): React.ReactNode {
 	const navigate = useNavigate();
 	const { t: translate } = useTranslation();
 	const { roleSuites, isLoadingList } = useMicroAppSelector(selectRoleSuiteState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrg = useActiveOrgWithDetails();
+	const globalSlug = GLOBAL_CONTEXT_SLUG;
+	const users = useMicroAppSelector(selectUserList);
+	const groups = useMicroAppSelector(selectGroupList);
+	const orgs = useMicroAppSelector(selectOrgList);
 	const deleteHandler = useRoleSuiteDelete(roleSuites, dispatch);
+	const permissions = useAuthorizePermissions();
 
 	const columns = [
 		'name',
@@ -27,14 +43,26 @@ function RoleSuiteListPageBody(): React.ReactNode {
 		'ownerType',
 		'ownerRef',
 		'isRequestable',
+		'isRequiredAttachment',
+		'isRequiredComment',
 		'orgDisplayName',
 		'actions',
 	];
 	const schema = roleSuiteSchema as ModelSchema;
 
 	React.useEffect(() => {
-		dispatch(roleSuiteActions.listRoleSuites());
-	}, [dispatch]);
+		const orgId = orgSlug === globalSlug ? null : activeOrg?.id;
+		dispatch(roleSuiteActions.listRoleSuites({ orgId }));
+		if (users.length === 0) {
+			dispatch(identityActions.listUsers());
+		}
+		if (groups.length === 0) {
+			dispatch(identityActions.listGroups());
+		}
+		if (orgs.length === 0) {
+			dispatch(identityActions.listOrgs());
+		}
+	}, [dispatch, users.length, groups.length, orgs.length, orgSlug, activeOrg?.id]);
 
 	const handleViewDetail = React.useCallback((roleSuiteId: string) => {
 		navigate(roleSuiteId);
@@ -49,15 +77,16 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	}, [navigate]);
 
 	const handleRefresh = React.useCallback(() => {
-		dispatch(roleSuiteActions.listRoleSuites());
-	}, [dispatch]);
+		const orgId = orgSlug === globalSlug ? null : activeOrg?.id;
+		dispatch(roleSuiteActions.listRoleSuites({ orgId }));
+	}, [dispatch, orgSlug, activeOrg?.id, globalSlug]);
 
 	return (
 		<>
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.role_suite.title' />
 				<Actions
-					onCreate={handleCreate}
+					onCreate={permissions.roleSuite.canCreate ? handleCreate : undefined}
 					onRefresh={handleRefresh}
 				/>
 				<Paper className='p-4'>
@@ -66,9 +95,12 @@ function RoleSuiteListPageBody(): React.ReactNode {
 						data={roleSuites}
 						isLoading={isLoadingList}
 						schema={schema}
+						users={users}
+						groups={groups}
+						orgs={orgs}
 						onViewDetail={handleViewDetail}
-						onEdit={handleEdit}
-						onDelete={deleteHandler.handleDeleteRequest}
+						onEdit={permissions.roleSuite.canUpdate ? handleEdit : undefined}
+						onDelete={permissions.roleSuite.canDelete ? deleteHandler.handleDeleteRequest : undefined}
 					/>
 				</Paper>
 			</Stack>
@@ -83,6 +115,7 @@ function RoleSuiteListPageBody(): React.ReactNode {
 						? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.roleSuiteToDelete.name })
 						: translate('nikki.general.messages.delete_confirm')
 				}
+				cancelLabel={translate('nikki.general.actions.cancel')}
 				confirmLabel={translate('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>

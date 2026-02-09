@@ -1,6 +1,7 @@
 import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
+import { ListQuery } from 'node_modules/@nikkierp/common/src/types/common';
 
 import { roleSuiteService } from './roleSuiteService';
 import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActionState';
@@ -24,7 +25,7 @@ export type RoleSuiteState = {
 	delete: ReduxActionState<void>;
 };
 
-const initialState: RoleSuiteState = {
+export const initialState: RoleSuiteState = {
 	roleSuites: [],
 	roleSuiteDetail: undefined,
 
@@ -40,13 +41,13 @@ const initialState: RoleSuiteState = {
 
 export const listRoleSuites = createAsyncThunk<
 	RoleSuite[],
-	{ graph?: Record<string, unknown>; page?: number; size?: number } | void,
+	{listQuery?: ListQuery, orgId?: string | null},
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listRoleSuites`,
-	async (params, { rejectWithValue }) => {
+	async ({listQuery, orgId}, { rejectWithValue }) => {
 		try {
-			const result = await roleSuiteService.listRoleSuites(params || undefined);
+			const result = await roleSuiteService.listRoleSuites(listQuery, orgId);
 			return result;
 		}
 		catch (error) {
@@ -76,7 +77,7 @@ export const getRoleSuite = createAsyncThunk<
 
 export const createRoleSuite = createAsyncThunk<
 	RoleSuite,
-	Omit<RoleSuite, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'rolesCount' | 'ownerName'>,
+	RoleSuite,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/create`,

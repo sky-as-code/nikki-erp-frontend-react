@@ -9,6 +9,7 @@ import {
 	useRoleAddEntitlementsData,
 	useRoleAddEntitlements,
 } from '@/features/roles';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function RoleAddEntitlementsPageBody(): React.ReactNode {
@@ -16,6 +17,7 @@ function RoleAddEntitlementsPageBody(): React.ReactNode {
 	const handlers = useRoleAddEntitlements(role, entitlements);
 	const { t: translate } = useTranslation();
 	const location = useLocation();
+	const permissions = useAuthorizePermissions();
 
 	if (isLoading) return <LoadingState messageKey='nikki.authorize.role.messages.loading' />;
 	if (!role) return <NotFound messageKey='nikki.authorize.role.messages.not_found' onGoBack={handlers.handleGoBack} />;
@@ -62,6 +64,7 @@ function RoleAddEntitlementsPageBody(): React.ReactNode {
 				onConfirm={handlers.handleConfirm}
 				onCancel={handlers.handleGoBack}
 				isSubmitting={handlers.isSubmitting}
+				showConfirm={permissions.role.canAddEntitlement}
 			/>
 		</Stack>
 	);

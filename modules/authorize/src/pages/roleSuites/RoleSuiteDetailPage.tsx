@@ -14,10 +14,14 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { Group, Org, User } from '@/features/identities';
+
 import {
 	AuthorizeDispatch,
 	identityActions,
+	selectGroupList,
 	selectOrgList,
+	selectUserList,
 } from '@/appState';
 import {
 	RolesSelector,
@@ -26,8 +30,7 @@ import {
 	roleSuiteSchema,
 	useRoleSuiteDetail,
 } from '@/features/roleSuites';
-
-import type { Org } from '@/features/identities';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function RoleSuiteDetailForm({
@@ -37,6 +40,9 @@ function RoleSuiteDetailForm({
 	roles,
 	formDataRef,
 	orgs,
+	users,
+	groups,
+	canUpdate,
 }: {
 	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
 	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
@@ -44,10 +50,14 @@ function RoleSuiteDetailForm({
 	roles: ReturnType<typeof useRoleSuiteDetail.detail>['roles'];
 	formDataRef: React.MutableRefObject<unknown>;
 	orgs: Org[];
+	users: User[];
+	groups: Group[];
+	canUpdate: boolean;
 }) {
 	const schema = roleSuiteSchema as ModelSchema;
 
 	const handleFormSubmit = (data: unknown) => {
+		if (!canUpdate) return;
 		formDataRef.current = data;
 		handlers.setIsConfirmDialogOpen(true);
 	};
@@ -68,8 +78,9 @@ function RoleSuiteDetailForm({
 									isSubmitting={handlers.isSubmitting}
 									onCancel={handlers.handleCancel}
 									isCreate={false}
+									showSubmit={canUpdate}
 								/>
-								<RoleSuiteFormFields isCreate={false} orgs={orgs} />
+								<RoleSuiteFormFields isCreate={false} orgs={orgs} users={users} groups={groups} />
 								<RoleSuiteChangesSummary
 									originalRoleIds={handlers.originalRoleIds}
 									selectedRoleIds={handlers.selectedRoleIds}
@@ -97,17 +108,22 @@ function RoleSuiteConfirmModal({
 	roleSuite,
 	handlers,
 	formDataRef,
+	canUpdate,
 }: {
 	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
 	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
 	formDataRef: React.MutableRefObject<unknown>;
+	canUpdate: boolean;
 }) {
 	const { t: translate } = useTranslation();
 
 	const handleConfirmUpdate = () => {
+		if (!canUpdate) return;
 		if (formDataRef.current) handlers.handleSubmit(formDataRef.current);
 		handlers.setIsConfirmDialogOpen(false);
 	};
+
+	if (!canUpdate) return null;
 
 	return (
 		<ConfirmModal
@@ -129,6 +145,9 @@ function RoleSuiteDetailFormContent({
 	roles,
 	formDataRef,
 	orgs,
+	users,
+	groups,
+	canUpdate,
 }: {
 	roleSuite: NonNullable<ReturnType<typeof useRoleSuiteDetail.detail>['roleSuite']>;
 	handlers: ReturnType<typeof useRoleSuiteDetail.handlers>;
@@ -136,6 +155,9 @@ function RoleSuiteDetailFormContent({
 	roles: ReturnType<typeof useRoleSuiteDetail.detail>['roles'];
 	formDataRef: React.MutableRefObject<unknown>;
 	orgs: Org[];
+	users: User[];
+	groups: Group[];
+	canUpdate: boolean;
 }) {
 	return (
 		<>
@@ -146,11 +168,15 @@ function RoleSuiteDetailFormContent({
 				roles={roles}
 				formDataRef={formDataRef}
 				orgs={orgs}
+				users={users}
+				groups={groups}
+				canUpdate={canUpdate}
 			/>
 			<RoleSuiteConfirmModal
 				roleSuite={roleSuite}
 				handlers={handlers}
 				formDataRef={formDataRef}
+				canUpdate={canUpdate}
 			/>
 		</>
 	);
@@ -163,12 +189,21 @@ function RoleSuiteDetailPageBody(): React.ReactNode {
 	const formDataRef = React.useRef<unknown>(null);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const orgs = useMicroAppSelector(selectOrgList);
+	const users = useMicroAppSelector(selectUserList);
+	const groups = useMicroAppSelector(selectGroupList);
+	const permissions = useAuthorizePermissions();
 
 	React.useEffect(() => {
 		if (orgs.length === 0) {
 			dispatch(identityActions.listOrgs());
 		}
-	}, [dispatch, orgs.length]);
+		if (users.length === 0) {
+			dispatch(identityActions.listUsers());
+		}
+		if (groups.length === 0) {
+			dispatch(identityActions.listGroups());
+		}
+	}, [dispatch, orgs.length, users.length, groups.length]);
 
 	if (isLoading) {
 		return <LoadingState messageKey='nikki.authorize.role_suite.messages.loading' />;
@@ -198,6 +233,9 @@ function RoleSuiteDetailPageBody(): React.ReactNode {
 				roles={roles}
 				formDataRef={formDataRef}
 				orgs={orgs}
+				users={users}
+				groups={groups}
+				canUpdate={permissions.roleSuite.canUpdate}
 			/>
 		</Stack>
 	);

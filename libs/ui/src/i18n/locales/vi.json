@@ -33,6 +33,14 @@
             "sessionRestoring": {
                 "title": "Đang khôi phục phiên làm việc",
                 "description": "Vui lòng đợi trong giây lát. Hệ thống đang khôi phục phiên làm việc của bạn..."
+			},
+            "unauthorized": {
+                "title": "Không có quyền truy cập",
+                "message": "Bạn không có quyền truy cập vào trang này.",
+                "message_with_module": "Bạn không có quyền truy cập vào module \"{{module}}\".",
+                "hint": "Vui lòng liên hệ quản trị viên để được cấp quyền truy cập.",
+                "go_home": "Về trang chủ",
+                "go_back": "Quay lại"
             }
         },
         "general": {
@@ -59,6 +67,10 @@
 				"deselect_all": "Bỏ chọn tất cả",
 				"clear_filters": "Xóa bộ lọc",
 				"title": "Thao tác"
+			},
+			"boolean": {
+				"yes": "Có",
+				"no": "Không"
 			},
 			"view": {
 				"title": "Chế độ xem",
@@ -103,8 +115,9 @@
 				"no_data": "Không có dữ liệu",
 				"no_changes": "Không có thay đổi",
 				"invalid_change": "Thay đổi không hợp lệ",
-				"delete_confirm": "Bạn có chắc chắn muốn xóa? Hành động này không thể hoàn tác.",
-				"delete_confirm_name": "Bạn có chắc chắn muốn xóa {{name}}? Hành động này không thể hoàn tác."
+				"delete_confirm": "Xoá phần tử",
+				"delete_confirm_name": "Bạn có chắc chắn muốn xóa {{name}}? Hành động này không thể hoàn tác.",
+				"access_denied": "Bạn không có quyền truy cập vào trang này"
 			},
 			"errors": {
 				"required": "Trường này là bắt buộc",
@@ -439,7 +452,7 @@
 					"is_requestable": "Có thể yêu cầu",
 					"is_required_attachment": "Yêu cầu tập tin đính kèm",
 					"is_required_comment": "Yêu cầu giải thích",
-					"org_id": "Mã tổ chức",
+					"org_id": "Tổ chức",
 					"org_display_name": "Tên Tổ chức",
 					"org_all": "Toàn cục (*)",
 					"entitlements_count": "Số lượng quyền",
@@ -451,8 +464,10 @@
 				"placeholders": {
 					"name": "Nhập tên vai trò",
 					"description": "Mô tả vai trò này cấp những gì",
-						"org_id": "Chọn phạm vi tổ chức"
-					},
+					"org_id": "Chọn phạm vi tổ chức",
+					"select_owner_type_first": "Chọn loại đối tượng sở hữu trước",
+					"no_owners_available": "Không có đối tượng sở hữu nào khả dụng"
+				},
 				"entitlements": {
 					"add": "Thêm Quyền",
 					"remove": "Xóa Quyền",
@@ -490,7 +505,7 @@
 					"is_requestable": "Có thể yêu cầu",
 					"is_required_attachment": "Bắt buộc đính kèm",
 					"is_required_comment": "Bắt buộc bình luận",
-					"org_id": "Mã Tổ chức",
+					"org_id": "Tổ chức",
 					"org_display_name": "Tên Tổ chức",
 					"org": "Tổ chức",
 					"org_all": "Toàn cục (*)",
@@ -500,6 +515,8 @@
 				},
 				"placeholders": {
 					"name": "Nhập tên bộ vai trò",
+					"select_owner_type_first": "Chọn loại chủ sở hữu trước",
+					"no_owners_available": "Không có chủ sở hữu nào khả dụng",
 					"description": "Mô tả bộ vai trò này cấp những gì",
 					"org_id": "Chọn phạm vi tổ chức"
 				},
@@ -675,7 +692,7 @@
 						"description": "Xác định phạm vi cao nhất có thể truy cập",
 						"domain": "Miền (toàn bộ tenant)",
 						"org": "Tổ chức",
-						"hierarchy": "Cấp phân cấp",
+						"hierarchy": "Phòng ban",
 						"private": "Cá nhân"
 					},
 					"scope_ref": "Tham chiếu phạm vi",
@@ -686,7 +703,7 @@
 				"placeholders": {
 					"name": "Nhập tên tài nguyên",
 					"description": "Mô tả cách sử dụng tài nguyên",
-					"scope_ref": "Nhập tham chiếu phạm vi (org, hierarchy ...)"
+					"scope_ref": "Nhập tham chiếu phạm vi (Tổ chứ, Phòng ban ...)"
 				},
 				"errors": {
 					"resource_ref_required": "Tham chiếu tài nguyên là bắt buộc",

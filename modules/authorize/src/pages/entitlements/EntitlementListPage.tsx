@@ -7,14 +7,16 @@ import { useTranslation } from 'react-i18next';
 
 import { AuthorizeDispatch } from '@/appState';
 import { EntitlementTable, entitlementSchema, useEntitlementDelete, useEntitlementList } from '@/features/entitlements';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function EntitlementListPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
-	const { entitlements, isLoadingList, resources, actions } = useEntitlementList.data();
+	const { entitlements, isLoadingList } = useEntitlementList.data();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useEntitlementDelete(entitlements, dispatch);
 	const { handleViewDetail, handleEdit, handleCreate, handleRefresh } = useEntitlementList.handlers();
+	const permissions = useAuthorizePermissions();
 
 	const columns = ['name', 'description', 'actionId', 'resourceId', 'actions'];
 	const schema = entitlementSchema as ModelSchema;
@@ -24,20 +26,18 @@ function EntitlementListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.entitlement.title' />
 				<Actions
-					onCreate={handleCreate}
+					onCreate={permissions.entitlement.canCreate ? handleCreate : undefined}
 					onRefresh={handleRefresh}
 				/>
 				<Paper className='p-4'>
 					<EntitlementTable
 						columns={columns}
 						data={entitlements}
-						resourcesData={resources}
-						actionsData={actions}
 						isLoading={isLoadingList}
 						schema={schema}
 						onViewDetail={handleViewDetail}
-						onEdit={handleEdit}
-						onDelete={deleteHandler.handleDeleteRequest}
+						onEdit={permissions.entitlement.canUpdate ? handleEdit : undefined}
+						onDelete={permissions.entitlement.canDelete ? deleteHandler.handleDeleteRequest : undefined}
 					/>
 				</Paper>
 			</Stack>
@@ -52,6 +52,7 @@ function EntitlementListPageBody(): React.ReactNode {
 						? translate('nikki.general.messages.delete_confirm_name', { name: deleteHandler.entitlementToDelete.name })
 						: translate('nikki.general.messages.delete_confirm')
 				}
+				cancelLabel={translate('nikki.general.actions.cancel')}
 				confirmLabel={translate('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>

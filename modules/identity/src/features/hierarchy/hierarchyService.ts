@@ -14,41 +14,60 @@ import {
 
 
 export const hierarchyService = {
-	async listHierarchies(orgId: string): Promise<SearchHierarchyLevelResponse> {
-		const graph = JSON.stringify({
-			if: ['org.id', '*', orgId],
-			order: [['created_at', 'desc']],
-		});
+	async listHierarchies(scopeRef?: string): Promise<SearchHierarchyLevelResponse> {
+		const searchParams: Record<string, string> = { withParent: 'true' };
+		if (scopeRef) searchParams.scopeRef = scopeRef;
 		const response = await request.get<SearchHierarchyLevelResponse>('identity/hierarchy', {
-			searchParams: { withParent: 'true', graph },
+			searchParams,
 		});
 		return response;
 	},
 
-	async createHierarchy(data: CreateHierarchyLevelRequest): Promise<CreateHierarchyLevelResponse> {
-		const response = await request.post<CreateHierarchyLevelResponse>('identity/hierarchy', { json: data });
+	async createHierarchy(data: CreateHierarchyLevelRequest, scopeRef?: string): Promise<CreateHierarchyLevelResponse> {
+		const searchParams = scopeRef ? { scopeRef } : undefined;
+		const response = await request.post<CreateHierarchyLevelResponse>('identity/hierarchy', {
+			searchParams,
+			json: data,
+		});
 		return response;
 	},
 
-	async updateHierarchy(data: UpdateHierarchyLevelRequest): Promise<UpdateHierarchyLevelResponse> {
-		const response = await request.put<UpdateHierarchyLevelResponse>(`identity/hierarchy/${data.id}`, { json: data });
+	async updateHierarchy(data: UpdateHierarchyLevelRequest, scopeRef?: string): Promise<UpdateHierarchyLevelResponse> {
+		const searchParams = scopeRef ? { scopeRef } : undefined;
+		const response = await request.put<UpdateHierarchyLevelResponse>(`identity/hierarchy/${data.id}`, {
+			searchParams,
+			json: data,
+		});
 		return response;
 	},
 
-	async deleteHierarchy(id: string): Promise<DeleteHierarchyLevelResponse> {
-		const response = await request.del<DeleteHierarchyLevelResponse>(`identity/hierarchy/${id}`);
+	async deleteHierarchy(id: string, scopeRef?: string): Promise<DeleteHierarchyLevelResponse> {
+		const searchParams = scopeRef ? { scopeRef } : undefined;
+		const response = await request.del<DeleteHierarchyLevelResponse>(`identity/hierarchy/${id}`, {
+			searchParams,
+		});
 		return response;
 	},
 
-	async getHierarchy(id: string): Promise<HierarchyLevel> {
-		const response = await request.get<HierarchyLevel>(`identity/hierarchy/${id}`);
+	async getHierarchy(id: string, scopeRef?: string): Promise<HierarchyLevel> {
+		const searchParams = scopeRef ? { scopeRef } : undefined;
+		const response = await request.get<HierarchyLevel>(`identity/hierarchy/${id}`, {
+			searchParams,
+		});
 		return response;
 	},
 
-	async manageHierarchyUsers(data: ManageHierarchyLevelUsersRequest): Promise<ManageHierarchyLevelUsersResponse> {
+	async manageHierarchyUsers(
+		data: ManageHierarchyLevelUsersRequest,
+		scopeRef?: string,
+	): Promise<ManageHierarchyLevelUsersResponse> {
+		const searchParams = scopeRef ? { scopeRef } : undefined;
 		const response = await request.post<ManageHierarchyLevelUsersResponse>(
 			`identity/hierarchy/${data.id}/manage-users`,
-			{ json: data },
+			{
+				searchParams,
+				json: data,
+			},
 		);
 		return response;
 	},

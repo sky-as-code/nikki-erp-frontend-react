@@ -11,8 +11,8 @@ import {
 	respondGrantRequest,
 	cancelGrantRequest,
 	deleteGrantRequest,
+	initialState,
 } from '@/features/grantRequests/grantRequestSlice';
-
 
 
 const STATE_KEY = 'grantRequest';
@@ -31,7 +31,7 @@ export const grantRequestActions = {
 	...actions,
 };
 
-export const selectGrantRequestState = (state: { [STATE_KEY]: GrantRequestState }) => state[STATE_KEY];
+export const selectGrantRequestState = (state: { [STATE_KEY]: GrantRequestState }) => state[STATE_KEY] ?? initialState;
 
 export const selectGrantRequestList = createSelector(
 	selectGrantRequestState,

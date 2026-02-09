@@ -13,6 +13,7 @@ interface ListUserHeaderProps {
 	isRemoving: boolean;
 	hasAvailable: boolean;
 	title?: string;
+	canManage?: boolean;
 }
 
 export function ListUserHeader({
@@ -24,6 +25,7 @@ export function ListUserHeader({
 	isRemoving,
 	hasAvailable,
 	title,
+	canManage = true,
 }: ListUserHeaderProps) {
 	const { t } = useTranslation();
 
@@ -41,7 +43,7 @@ export function ListUserHeader({
 				)}
 			</Group>
 			<Group gap='sm'>
-				{selectedCount > 0 && (
+				{selectedCount > 0 && canManage && (
 					<Button
 						leftSection={<IconTrash size={16} />}
 						size='sm'
@@ -49,7 +51,7 @@ export function ListUserHeader({
 						variant='light'
 						onClick={onRemove}
 						loading={isRemoving}
-						disabled={isLoading}
+						disabled={isLoading || !canManage}
 					>
 						{t('nikki.identity.group.actions.removeSelected')} ({selectedCount})
 					</Button>
@@ -58,7 +60,7 @@ export function ListUserHeader({
 					leftSection={<IconPlus size={16} />}
 					size='sm'
 					onClick={onAdd}
-					disabled={isLoading || !hasAvailable}
+					disabled={isLoading || !hasAvailable || !canManage}
 				>
 					{t('nikki.identity.group.actions.addUsers')}
 				</Button>

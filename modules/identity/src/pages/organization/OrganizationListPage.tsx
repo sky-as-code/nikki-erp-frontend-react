@@ -9,6 +9,7 @@ import { selectOrganizationList } from '../../appState/organization';
 import { ListActionListPage } from '../../components/ListActionBar';
 import { OrganizationTable } from '../../features/organization/components';
 import { useOrganizationListHandlers } from '../../features/organization/hooks';
+import { useIdentityPermissions } from '../../hooks';
 import organizationSchema from '../../schemas/organization-schema.json';
 
 
@@ -19,6 +20,7 @@ export function OrganizationListPageBody(): React.ReactElement {
 	const { t } = useTranslation();
 
 	const isLoading = listOrganization.status === 'pending';
+	const permissions = useIdentityPermissions();
 	const { handleCreate, handleRefresh } = useOrganizationListHandlers();
 
 	return (
@@ -35,7 +37,7 @@ export function OrganizationListPageBody(): React.ReactElement {
 				/>
 			</Group>
 			<ListActionListPage
-				onCreate={handleCreate}
+				onCreate={permissions.organization.canCreate ? handleCreate : undefined}
 				onRefresh={handleRefresh}
 			/>
 			<OrganizationTable

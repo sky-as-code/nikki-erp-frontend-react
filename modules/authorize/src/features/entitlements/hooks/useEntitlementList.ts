@@ -4,32 +4,20 @@ import { useNavigate } from 'react-router';
 
 import {
 	AuthorizeDispatch,
-	actionActions,
 	entitlementActions,
-	resourceActions,
-	selectActionState,
 	selectEntitlementState,
-	selectResourceState,
 } from '@/appState';
 
 
 function useEntitlementListData() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { entitlements, isLoadingList } = useMicroAppSelector(selectEntitlementState);
-	const { resources } = useMicroAppSelector(selectResourceState);
-	const { actions } = useMicroAppSelector(selectActionState);
 
 	React.useEffect(() => {
 		dispatch(entitlementActions.listEntitlements());
-		if (resources?.length === 0) {
-			dispatch(resourceActions.listResources());
-		}
-		if (actions?.length === 0) {
-			dispatch(actionActions.listActions(undefined));
-		}
-	}, [dispatch, resources?.length, actions?.length]);
+	}, []);
 
-	return { entitlements, isLoadingList, resources, actions };
+	return { entitlements, isLoadingList };
 }
 
 function useEntitlementListHandlers() {

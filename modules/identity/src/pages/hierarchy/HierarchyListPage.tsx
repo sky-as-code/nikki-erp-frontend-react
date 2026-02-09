@@ -10,6 +10,7 @@ import { selectUserList } from '../../appState/user';
 import { ListActionListPage } from '../../components/ListActionBar';
 import { HierarchyTable, HierarchyOrgChart } from '../../features/hierarchy/components';
 import { useHierarchyListHandlers } from '../../features/hierarchy/hooks';
+import { useIdentityPermissions } from '../../hooks';
 import hierarchySchema from '../../schemas/hierarchy-schema.json';
 
 
@@ -21,6 +22,7 @@ export function HierarchyListPageBody(): React.ReactNode {
 	const [view, setView] = React.useState<'table' | 'orgChart'>('table');
 	const { t } = useTranslation();
 	const isLoading = listHierarchy.status === 'pending' || listUser.status === 'pending';
+	const permissions = useIdentityPermissions();
 
 	const { handleCreate, handleRefresh } = useHierarchyListHandlers();
 
@@ -39,7 +41,7 @@ export function HierarchyListPageBody(): React.ReactNode {
 			</Group>
 			<Group justify='space-between'>
 				<ListActionListPage
-					onCreate={handleCreate}
+					onCreate={permissions.hierarchy.canCreate ? handleCreate : undefined}
 					onRefresh={handleRefresh}
 				/>
 				<SegmentedControl

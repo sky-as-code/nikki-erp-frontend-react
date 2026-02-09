@@ -7,11 +7,14 @@ import {
 	NotFound,
 } from '@nikkierp/ui/components';
 import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { AuthorizeDispatch, resourceActions, selectResourceList } from '@/appState';
 import { ActionFormFields, actionSchema, useActionDetail } from '@/features/actions';
+import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function ActionDetailPageBody(): React.ReactNode {
@@ -19,6 +22,16 @@ function ActionDetailPageBody(): React.ReactNode {
 	const { isSubmitting, handleCancel, handleSubmit } = useActionDetail.handlers(action);
 	const { t: translate } = useTranslation();
 	const schema = actionSchema as ModelSchema;
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const resourceListState = useMicroAppSelector(selectResourceList);
+	const resources = resourceListState.data ?? [];
+	const permissions = useAuthorizePermissions();
+
+	React.useEffect(() => {
+		if (resourceListState.status === 'idle' || (resourceListState.status === 'success' && resources.length === 0)) {
+			dispatch(resourceActions.listResources());
+		}
+	}, [resourceListState, resources]);
 
 	if (isLoading) {
 		return <LoadingState messageKey='nikki.authorize.action.messages.loading' />;
@@ -52,14 +65,21 @@ function ActionDetailPageBody(): React.ReactNode {
 						modelLoading={isSubmitting}
 					>
 						{({ handleSubmit: formHandleSubmit }) => (
-							<form onSubmit={formHandleSubmit((data) => handleSubmit(data))} noValidate>
+							<form
+								onSubmit={formHandleSubmit((data) => {
+									if (!permissions.action.canUpdate) return;
+									handleSubmit(data);
+								})}
+								noValidate
+							>
 								<Stack gap='xs'>
 									<FormActions
 										isSubmitting={isSubmitting}
 										onCancel={handleCancel}
 										isCreate={false}
+										showSubmit={permissions.action.canUpdate}
 									/>
-									<ActionFormFields isCreate={false} />
+									<ActionFormFields isCreate={false} resources={resources} />
 								</Stack>
 							</form>
 						)}

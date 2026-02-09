@@ -1,30 +1,26 @@
-import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
 import { IdentityDispatch, userActions } from '../../../appState';
+import { useOrgScopeRef } from '../../../hooks';
 
 
 export function useUserListHandlers() {
 	const navigate = useNavigate();
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const activeOrg = useActiveOrgWithDetails();
+	const scopeRef = useOrgScopeRef();
 
 	const handleCreate = () => {
 		navigate('create');
 	};
 
 	const handleRefresh = () => {
-		if (activeOrg?.id) {
-			dispatch(userActions.listUsers(activeOrg.id));
-		}
+		dispatch(userActions.listUsers({ scopeRef }));
 	};
 	React.useEffect(() => {
-		if (activeOrg?.id) {
-			dispatch(userActions.listUsers(activeOrg.id));
-		}
-	}, [dispatch, activeOrg]);
+		dispatch(userActions.listUsers({ scopeRef }));
+	}, [dispatch, scopeRef]);
 
 	return {
 		handleCreate,

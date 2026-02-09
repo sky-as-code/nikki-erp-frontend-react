@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 
 interface ListActionListPageProps {
-	onCreate: () => void;
+	onCreate?: () => void;
 	onRefresh: () => void;
 }
 
@@ -18,6 +18,7 @@ export function ListActionListPage({ onCreate, onRefresh }: ListActionListPagePr
 				size='compact-md'
 				leftSection={<IconPlus size={16} />}
 				onClick={onCreate}
+				disabled={!onCreate}
 			>
 				{t('nikki.identity.user.actions.create')}
 			</Button>

@@ -25,9 +25,12 @@ interface GroupCreateFormProps {
 	schema: GroupSchema;
 	isLoading: boolean;
 	onSubmit: (data: any) => void;
+	canCreate?: boolean;
 }
 
-export function GroupCreateForm({ schema, isLoading, onSubmit }: GroupCreateFormProps): React.ReactElement {
+export function GroupCreateForm(
+	{ schema, isLoading, onSubmit, canCreate = true }: GroupCreateFormProps,
+): React.ReactElement {
 	return (
 		<Paper className='p-4' >
 			<FormStyleProvider layout='onecol'>
@@ -45,6 +48,7 @@ export function GroupCreateForm({ schema, isLoading, onSubmit }: GroupCreateForm
 
 								<ListActionCreatePage
 									isLoading={isLoading}
+									disableCreate={!canCreate}
 								/>
 							</Stack>
 						</form>

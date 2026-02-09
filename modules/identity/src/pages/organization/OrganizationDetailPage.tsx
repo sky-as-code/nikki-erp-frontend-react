@@ -9,6 +9,7 @@ import { Link } from 'react-router';
 import { selectOrganizationDetail } from '../../appState/organization';
 import { OrganizationDetailForm } from '../../features/organization/components';
 import { useOrganizationDetailHandlers } from '../../features/organization/hooks';
+import { useIdentityPermissions } from '../../hooks';
 import organizationSchema from '../../schemas/organization-schema.json';
 
 
@@ -16,6 +17,7 @@ export const OrganizationDetailPageBody: React.FC = () => {
 	const organizationDetail = useMicroAppSelector(selectOrganizationDetail);
 	const schema = organizationSchema as ModelSchema;
 	const { t } = useTranslation();
+	const permissions = useIdentityPermissions();
 
 	const { isLoadingDetail, handleUpdate, handleDelete } = useOrganizationDetailHandlers();
 
@@ -34,6 +36,8 @@ export const OrganizationDetailPageBody: React.FC = () => {
 				isLoading={isLoadingDetail}
 				onSubmit={handleUpdate}
 				onDelete={handleDelete}
+				canUpdate={permissions.organization.canUpdate}
+				canDelete={permissions.organization.canDelete}
 			/>
 		</Stack>
 	);

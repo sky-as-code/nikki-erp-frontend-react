@@ -9,6 +9,7 @@ import { selectGroupList } from '../../appState/group';
 import { ListActionListPage } from '../../components/ListActionBar';
 import { GroupTable } from '../../features/group/components';
 import { useGroupListHandlers } from '../../features/group/hooks/useGroupList';
+import { useIdentityPermissions } from '../../hooks';
 import groupSchema from '../../schemas/group-schema.json';
 
 
@@ -18,6 +19,7 @@ export function GroupListPageBody(): React.ReactNode {
 	const { t } = useTranslation();
 	const listGroup = useMicroAppSelector(selectGroupList);
 	const isLoadingList = listGroup.status === 'pending';
+	const permissions = useIdentityPermissions();
 
 	const { handleCreate, handleRefresh } = useGroupListHandlers();
 	return (
@@ -34,7 +36,7 @@ export function GroupListPageBody(): React.ReactNode {
 				/>
 			</Group>
 			<ListActionListPage
-				onCreate={handleCreate}
+				onCreate={permissions.group.canCreate ? handleCreate : undefined}
 				onRefresh={handleRefresh}
 			/>
 			<GroupTable
