@@ -51,6 +51,12 @@ const microApps: MicroAppMetadata[] = [
 		bundleUrl: () => import('@nikkierp/microapp-drive'),
 		htmlTag: 'nikkiapp-drive',
 	},
+	{
+		slug: 'nikkierp.inventory',
+		basePath: 'inventory',
+		bundleUrl: () => import('@nikkierp/microapp-inventory'),
+		htmlTag: 'nikkiapp-inventory',
+	},
 
 	...remoteApps,
 ];

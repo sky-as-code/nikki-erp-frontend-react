@@ -1,0 +1,1 @@
+export { VariantCreateForm } from './VariantCreateForm';

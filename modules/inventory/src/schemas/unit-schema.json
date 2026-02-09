@@ -1,0 +1,61 @@
+{
+	"name": "unit",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "ID",
+			"hidden": true,
+			"constraints": [{ "type": "length", "max": 36 }]
+		},
+		"orgId": {
+			"type": "string",
+			"label": "Organization",
+			"hidden": true
+		},
+		"name": {
+			"type": "string",
+			"label": "Unit Name",
+			"required": { "create": true, "update": false },
+			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
+		},
+		"symbol": {
+			"type": "string",
+			"label": "Symbol",
+			"required": { "create": true, "update": false },
+			"constraints": [{ "type": "length", "min": 1, "max": 50 }]
+		},
+		"categoryId": {
+			"type": "string",
+			"label": "Unit Category",
+			"required": { "create": false, "update": false }
+		},
+		"baseUnit": {
+			"type": "string",
+			"label": "Base Unit"
+		},
+		"multiplier": {
+			"type": "integer",
+			"label": "Multiplier",
+			"constraints": [{ "type": "value_range", "min": 0 }]
+		},
+		"status": {
+			"type": "string",
+			"label": "Status"
+		},
+		"etag": {
+			"type": "string",
+			"label": "ETag",
+			"hidden": true
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "Created At",
+			"hidden": true
+		},
+		"updatedAt": {
+			"type": "date",
+			"label": "Updated At",
+			"hidden": true
+		}
+	}
+}

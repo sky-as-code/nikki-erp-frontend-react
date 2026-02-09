@@ -1,0 +1,50 @@
+{
+	"name": "unit-category",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "ID",
+			"hidden": true,
+			"constraints": [{ "type": "length", "max": 36 }]
+		},
+		"orgId": {
+			"type": "string",
+			"label": "Organization",
+			"hidden": true,
+			"required": { "create": true, "update": false }
+		},
+		"name": {
+			"type": "string",
+			"label": "Category Name",
+			"required": { "create": true, "update": false },
+			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
+		},
+		"description": {
+			"type": "string",
+			"label": "Description"
+		},
+		"status": {
+			"type": "string",
+			"label": "Status"
+		},
+		"thumbnailURL": {
+			"type": "string",
+			"label": "Thumbnail URL"
+		},
+		"etag": {
+			"type": "string",
+			"label": "ETag",
+			"hidden": true
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "Created At",
+			"hidden": true
+		},
+		"updatedAt": {
+			"type": "date",
+			"label": "Updated At",
+			"hidden": true
+		}
+	}
+}

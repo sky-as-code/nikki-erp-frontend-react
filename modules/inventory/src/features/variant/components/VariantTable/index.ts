@@ -1,0 +1,1 @@
+export { VariantTable } from './VariantTable';

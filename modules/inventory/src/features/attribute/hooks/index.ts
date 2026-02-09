@@ -1,0 +1,1 @@
+export { useAttributeListHandlers } from './useAttributeList';

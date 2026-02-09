@@ -1,0 +1,53 @@
+import type { AttributeValue } from '../attributeValue/types';
+import type {
+	CreateResponse,
+	DeleteResponse,
+	SearchResponse,
+	UpdateResponse,
+} from '@nikkierp/common';
+
+
+export type VariantStatus = 'active' | 'inactive';
+export type VariantLangText = string | Record<string, string>;
+
+export type Variant = {
+	id: string;
+	productId: string;
+	name: VariantLangText;
+	sku: string;
+	barcode?: string;
+	proposedPrice: number;
+	imageUrl?: string;
+	status: VariantStatus;
+	attributeValues: AttributeValue[];
+	attributes?: Record<string, unknown>;
+	createdAt: string;
+	updatedAt: string;
+	etag: string;
+};
+
+export type CreateVariantRequest = {
+	productId: string;
+	name: VariantLangText;
+	sku?: string;
+	barcode?: string;
+	proposedPrice?: number;
+	imageUrl?: string;
+	status?: VariantStatus;
+	attributes?: Record<string, unknown>;
+};
+
+export type UpdateVariantRequest = {
+	id: string;
+	etag: string;
+	sku?: string;
+	barcode?: string;
+	proposedPrice?: number;
+	status?: VariantStatus;
+	attributes?: Record<string, unknown>;
+};
+
+export type SearchVariantsResponse = SearchResponse<Variant>;
+export type CreateVariantResponse = CreateResponse;
+export type UpdateVariantResponse = UpdateResponse;
+export type DeleteVariantResponse = DeleteResponse;

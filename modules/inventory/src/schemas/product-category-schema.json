@@ -1,0 +1,38 @@
+{
+	"name": "product-category",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "ID",
+			"hidden": true,
+			"constraints": [{ "type": "length", "max": 36 }]
+		},
+		"orgId": {
+			"type": "string",
+			"label": "Organization",
+			"required": { "create": true, "update": false },
+			"hidden": true
+		},
+		"name": {
+			"type": "string",
+			"label": "Category Name",
+			"required": { "create": true, "update": false },
+			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
+		},
+		"etag": {
+			"type": "string",
+			"label": "ETag",
+			"hidden": true
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "Created At",
+			"hidden": true
+		},
+		"updatedAt": {
+			"type": "date",
+			"label": "Updated At",
+			"hidden": true
+		}
+	}
+}
