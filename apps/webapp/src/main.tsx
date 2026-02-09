@@ -57,6 +57,14 @@ const microApps: MicroAppMetadata[] = [
 		bundleUrl: () => import('@nikkierp/microapp-inventory'),
 		htmlTag: 'nikkiapp-inventory',
 	},
+	{
+		slug: 'nikkierp.inventory',
+		basePath: 'inventory',
+		// Uncomment when mounting as ShadowDOM
+		// bundleUrl: () => import(inventoryBundleUrl),
+		bundleUrl: () => import('@nikkierp/microapp-inventory'),
+		htmlTag: 'nikkiapp-inventory',
+	}
 
 	...remoteApps,
 ];
