@@ -1,23 +1,23 @@
 import { Badge, Box, Divider, Group, Stack, Text } from '@mantine/core';
 import { IconCalendarEvent } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router';
 
 import { DetailActionBar } from '@/components/ActionBar';
 import { PageContainer } from '@/components/PageContainer';
+import { Ad } from '@/features/ads/types';
+import { useEventDetail } from '@/features/events';
 import { EventGameConfig } from '@/features/events/components/EventDetailDrawer/EventGameConfig';
 import { EventKioskList } from '@/features/events/components/EventDetailDrawer/EventKioskList';
 import { EventProductList } from '@/features/events/components/EventDetailDrawer/EventProductList';
 import { EventThemeConfig } from '@/features/events/components/EventDetailDrawer/EventThemeConfig';
 import { KioskSelectModal } from '@/features/events/components/EventDetailDrawer/KioskSelectModal';
 import { ProductSelectModal } from '@/features/events/components/EventDetailDrawer/ProductSelectModal';
-import { useEventDetail } from '@/features/events';
-import { Ad } from '@/features/ads/types';
+import { Event, EventProduct } from '@/features/events/types';
 import { Game } from '@/features/games/types';
 import { Kiosk } from '@/features/kiosks/types';
 import { Theme } from '@/features/themes/types';
-import { Event, EventProduct } from '@/features/events/types';
 
 
 export const EventDetailPage: React.FC = () => {

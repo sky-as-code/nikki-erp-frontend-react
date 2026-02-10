@@ -39,6 +39,7 @@ export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProp
 				<Button
 					leftSection={<IconPlus size={16} />}
 					onClick={onCreate}
+					size='sm'
 				>
 					{translate('nikki.general.actions.create')}
 				</Button>
@@ -46,6 +47,7 @@ export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProp
 					variant='outline'
 					leftSection={<IconRefresh size={16} />}
 					onClick={onRefresh}
+					size='sm'
 				>
 					{translate('nikki.general.actions.refresh')}
 				</Button>

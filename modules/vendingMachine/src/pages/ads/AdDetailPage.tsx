@@ -3,7 +3,7 @@ import { Badge, Box, Divider, Group, Stack, Text } from '@mantine/core';
 import { IconAd } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { DetailActionBar } from '@/components/ActionBar';
 import { PageContainer } from '@/components/PageContainer';
@@ -21,6 +21,7 @@ export const AdDetailPage: React.FC = () => {
 	const { ad, isLoading } = useAdDetail(id);
 	const [galleryModalOpened, setGalleryModalOpened] = useState(false);
 	const [adMedia, setAdMedia] = useState<AdMedia[]>(ad?.media || []);
+	const navigate = useNavigate();
 
 	// Update adMedia when ad changes
 	React.useEffect(() => {
@@ -78,13 +79,17 @@ export const AdDetailPage: React.FC = () => {
 		);
 	}
 
+
+
 	return (
 		<>
 			<PageContainer
 				breadcrumbs={breadcrumbs}
 				actionBar={<DetailActionBar
 					onSave={() => {}}
-					onGoBack={() => {}}
+					onGoBack={() => {
+						navigate(-1);
+					}}
 					onDelete={() => {}}
 				/>}
 			>
