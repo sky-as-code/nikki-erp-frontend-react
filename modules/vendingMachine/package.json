@@ -11,6 +11,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "~6.1.20",
+    "@fullcalendar/interaction": "~6.1.20",
+    "@fullcalendar/list": "~6.1.20",
+    "@fullcalendar/react": "~6.1.20",
+    "@fullcalendar/timegrid": "~6.1.20",
     "@hookform/resolvers": "~5.2.2",
     "@mantine/core": "~8.3.5",
     "@mantine/dates": "~8.3.5",
@@ -26,6 +31,7 @@
     "chart.js": "~4.5.1",
     "clsx": "~2.1.1",
     "dayjs": "~1.11.18",
+    "gantt-task-react": "~0.3.9",
     "i18next": "~25.6.0",
     "ky": "~1.13.0",
     "lodash": "~4.17.21",

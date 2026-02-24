@@ -9,7 +9,7 @@ import {
 	Text,
 	useCombobox,
 } from '@mantine/core';
-import { IconChevronDownRight } from '@tabler/icons-react';
+import { IconChevronDown } from '@tabler/icons-react';
 import { FC, JSX, useEffect, useState } from 'react';
 
 
@@ -144,7 +144,7 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 		<Combobox.Target>
 			<TriggerComponent
 				px={'xs'}
-				rightSection={<IconChevronDownRight size={16}/>}
+				rightSection={<IconChevronDown size={16}/>}
 				onClick={() => combobox.toggleDropdown()}
 			>
 				{value

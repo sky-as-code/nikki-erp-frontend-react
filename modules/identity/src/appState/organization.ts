@@ -1,6 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 
 import { reducer, actions, listOrganizations, getOrganization, createOrganization, updateOrganization, deleteOrganization, OrganizationState } from '../features/organization/organizationSlice';
+import { initialState as initialOrganizationState } from '../features/organization/organizationSlice';
 
 
 const STATE_KEY = 'organization';
@@ -18,7 +19,8 @@ export const organizationActions = {
 	...actions,
 };
 
-export const selectOrganizationState = (state: { [STATE_KEY]: OrganizationState }) => state[STATE_KEY];
+export const selectOrganizationState =
+	(state: { [STATE_KEY]?: OrganizationState }) => state?.[STATE_KEY] ?? initialOrganizationState;
 
 export const selectOrganizationList = createSelector(
 	selectOrganizationState,

@@ -48,7 +48,7 @@ export function OverviewPage(): React.ReactNode {
 					p={3} bdrs={'sm'}
 					display={{ base: 'none', lg: 'block' }}
 				>
-					<KioskHitMap />
+					<KioskHitMap kiosks={kiosks} />
 				</Box>
 				<OverviewStats
 					totalKiosks={totalKiosks}
@@ -65,18 +65,18 @@ export function OverviewPage(): React.ReactNode {
 
 			<OperationParametersChart parameters={mockOperationParameters} />
 
-			<KioskErrorAlert errors={mockKioskErrors} detailLink='../kiosks/errors'/>
+			<KioskErrorAlert errors={mockKioskErrors} detailLink='../reports/error-analytics'/>
 
-			<KioskLowStockAlert alerts={mockLowStockAlerts} detailLink='../kiosks/low-stock' />
+			<KioskLowStockAlert alerts={mockLowStockAlerts} detailLink='../reports/inventory' />
 
-			<CustomerSupportRequest requests={mockSupportRequests} detailLink='../kiosks/support-requests' />
+			<CustomerSupportRequest requests={mockSupportRequests} detailLink='../customer-support' />
 
 			<Box
 				display={{ base: 'block', lg: 'none' }}
 				h='400px' w='100%' p={'xs'} bdrs={'md'}
 				bg='light-dark(var(--nikki-color-white), var(--mantine-color-dark-6))'
 			>
-				<KioskHitMap />
+				<KioskHitMap kiosks={kiosks} />
 			</Box>
 
 			<Center h='100px' bg='light-dark(var(--nikki-color-white), var(--mantine-color-dark-6))' mb='md'/>

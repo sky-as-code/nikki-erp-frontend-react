@@ -31,7 +31,7 @@ export type HierarchyState = {
 	manageUsers: ReduxActionState<ManageHierarchyLevelUsersResponse>;
 };
 
-const initialState: HierarchyState = {
+export const initialState: HierarchyState = {
 	detail: baseReduxActionState,
 	list: { ...baseReduxActionState, data: [] },
 	create: baseReduxActionState,

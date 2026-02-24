@@ -66,7 +66,11 @@
 				"select_all": "Chọn tất cả",
 				"deselect_all": "Bỏ chọn tất cả",
 				"clear_filters": "Xóa bộ lọc",
-				"title": "Thao tác"
+				"title": "Thao tác",
+				"view_on_map": "Xem trên bản đồ",
+				"add": "Thêm",
+				"today": "Hôm nay",
+				"viewDetails": "Xem chi tiết"
 			},
 			"boolean": {
 				"yes": "Có",
@@ -752,16 +756,32 @@
 			}
 		},
 		"vendingMachine": {
+			"title": "Vending Machine",
 			"menu": {
 				"overview": "Tổng quan",
-				"kiosks": "Kiosk",
-				"ads": "Quảng cáo",
+				"kiosk": "Kiosk",
+				"kiosk_management": "Quản lý Kiosk",
+				"kiosk_warnings": "Cảnh báo",
+				"kiosk_devices": "Thiết bị",
+				"presentation": "Trình chiếu",
+				"ads": "Trình chiếu",
 				"events": "Sự kiện",
-				"kiosk_settings": "Cài đặt Kiosk",
+				"appearance": "Giao diện",
+				"themes": "Chủ đề",
+				"device": "Thiết bị",
+				"miniGame": "Trò chơi",
+				"kiosk_settings": "Cài đặt",
 				"kiosk_template": "Mẫu Kiosk",
+				"payment": "Thanh toán",
 				"reports": "Báo cáo",
-				"revenue": "Doanh thu",
-				"inventory": "Hàng tồn"
+				"revenue_overview": "Tổng quan doanh thu",
+				"revenue_by_kiosk": "Doanh thu theo Kiosk",
+				"revenue_by_product": "Doanh thu theo Sản phẩm",
+				"revenue_by_payment_method": "Phương thức thanh toán",
+				"refunds_report": "Hoàn tiền",
+				"orders_report": "Đơn hàng",
+				"inventory_report": "Hàng tồn",
+				"operations_report": "Vận hành"
 			},
 			"overview": {
 				"title": "Tổng quan - Máy bán hàng tự động",
@@ -870,13 +890,67 @@
 					"name": "Tên",
 					"address": "Địa chỉ",
 					"coordinates": "Tọa độ",
+					"latitude": "Vĩ độ",
+					"longitude": "Kinh độ",
 					"isActive": "Trạng thái hoạt động",
 					"connectionStatus": "Kết nối",
 					"status": "Trạng thái",
 					"mode": "Chế độ",
+					"paymentMethods": "Phương thức thanh toán",
+					"warnings": "Cảnh báo",
 					"actions": "Thao tác",
 					"createdAt": "Ngày tạo",
 					"deletedAt": "Ngày xóa"
+				},
+				"tabs": {
+					"basicInfo": "Thông tin cơ bản",
+					"products": "Sản phẩm",
+					"productsList": "Sản phẩm",
+					"productsGrid": "Nhập hàng",
+					"activity": "Hoạt động"
+				},
+				"products": {
+					"view": {
+						"list": "Danh sách",
+						"grid": "Lưới"
+					},
+					"fields": {
+						"image": "Hình ảnh",
+						"code": "Mã SP",
+						"name": "Tên sản phẩm",
+						"price": "Giá bán",
+						"quantity": "Số lượng",
+						"positions": "Vị trí"
+					},
+					"actions": {
+						"discardChanges": "Loại bỏ thay đổi",
+						"loadAll": "Nạp tất cả",
+						"viewOnly": "Chỉ Xem"
+					},
+					"empty": "Trống"
+				},
+				"activity": {
+					"searchPlaceholder": "Tìm kiếm theo nội dung...",
+					"filter": {
+						"type": "Lọc theo loại",
+						"startDate": "Từ ngày",
+						"endDate": "Đến ngày"
+					},
+					"fields": {
+						"time": "Thời gian",
+						"type": "Loại",
+						"content": "Nội dung"
+					},
+					"type": {
+						"warning": "Cảnh báo",
+						"statusDetail": "Chi tiết trạng thái",
+						"error": "Lỗi",
+						"info": "Thông tin"
+					},
+					"detail": {
+						"title": "Chi tiết hoạt động"
+					},
+					"noLogs": "Không có log nào"
 				},
 				"status": {
 					"activated": "Đã kích hoạt",
@@ -909,6 +983,10 @@
 					"connection": "Lọc theo kết nối",
 					"mode": "Lọc theo chế độ"
 				},
+				"warnings": {
+					"title": "Cảnh báo",
+					"more": "{{count}} cảnh báo khác"
+				},
 				"messages": {
 					"no_kiosks": "Không tìm thấy kiosk nào",
 					"create_success": "Kiosk \"{{name}}\" đã được tạo thành công",
@@ -917,12 +995,13 @@
 				}
 			},
 			"ads": {
+				"title": "Trình chiếu",
 				"detail": {
-					"title": "Chi tiết Quảng cáo"
+					"title": "Chi tiết Trình chiếu"
 				},
 				"fields": {
 					"id": "Mã định danh",
-					"code": "Mã quảng cáo",
+					"code": "Mã trình chiếu",
 					"name": "Tên",
 					"description": "Mô tả",
 					"status": "Trạng thái",
@@ -938,6 +1017,48 @@
 				},
 				"filter": {
 					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_ads": "Không tìm thấy quảng cáo nào"
+				},
+				"preview": {
+					"title": "Xem trước",
+					"vertical": "Quảng cáo màn hình dọc (9:16) - Màn hình chờ",
+					"horizontal": "Quảng cáo màn hình ngang - Hiển thị ở footer"
+				},
+				"media": {
+					"title": "Danh sách Media",
+					"add": "Thêm Media",
+					"empty": "Chưa có media nào. Nhấn 'Thêm Media' để thêm.",
+					"fields": {
+						"preview": "Xem trước",
+						"code": "Mã",
+						"name": "Tên",
+						"type": "Loại",
+						"duration": "Thời lượng",
+						"size": "Kích thước"
+					},
+					"type": {
+						"image": "Ảnh",
+						"video": "Video"
+					},
+					"gallery": {
+						"title": "Thư viện Media",
+						"tab": "Thư viện",
+						"folders": "Thư mục",
+						"all": "Tất cả",
+						"items": "mục",
+						"gridView": "Xem dạng lưới",
+						"listView": "Xem dạng danh sách",
+						"selected": "Đã chọn",
+						"selectedCount": "mục đã chọn",
+						"selectedMedia": "Media đã chọn"
+					},
+					"upload": {
+						"tab": "Tải lên",
+						"description": "Chọn file từ máy tính của bạn để tải lên",
+						"button": "Chọn file"
+					}
 				}
 			},
 			"events": {
@@ -952,7 +1073,20 @@
 					"status": "Trạng thái",
 					"startDate": "Ngày bắt đầu",
 					"endDate": "Ngày kết thúc",
-					"createdAt": "Ngày tạo"
+					"createdAt": "Ngày tạo",
+					"kiosks": "Danh sách Kiosk",
+					"products": "Danh sách Sản phẩm",
+					"theme": "Chủ đề",
+					"game": "Trò chơi",
+					"themeAndSlideshow": "Chủ đề và Trình chiếu",
+					"slideshowPlaylists": "Danh sách Trình chiếu",
+					"idlePlaylist": "Trình chiếu màn hình chờ",
+					"shoppingPlaylist": "Trình chiếu màn hình mua hàng",
+					"productImage": "Hình ảnh",
+					"productCode": "Mã sản phẩm",
+					"productName": "Tên sản phẩm",
+					"originalPrice": "Giá gốc",
+					"eventPrice": "Giá sự kiện"
 				},
 				"status": {
 					"completed": "Đã hoàn thành"
@@ -962,6 +1096,79 @@
 				},
 				"filter": {
 					"status": "Lọc theo trạng thái"
+				},
+				"productSearch": {
+					"placeholder": "Tìm kiếm sản phẩm theo mã hoặc tên..."
+				},
+				"availableProducts": {
+					"title": "Sản phẩm có thể thêm"
+				},
+				"theme": {
+					"placeholder": "Chọn chủ đề...",
+					"noResults": "Không tìm thấy chủ đề nào"
+				},
+				"playlist": {
+					"idleScreen": "Màn hình chờ",
+					"shoppingScreen": "Màn hình mua hàng",
+					"mediaType": "Loại",
+					"thumbnail": "Hình thu nhỏ",
+					"duration": "Thời lượng",
+					"selectAds": "Chọn quảng cáo"
+				},
+				"selectAds": {
+					"title": "Chọn danh sách phát trình chiếu",
+					"searchPlaceholder": "Tìm kiếm quảng cáo...",
+					"selectedCount": "Đã chọn {{count}} quảng cáo",
+					"noAds": "Không tìm thấy quảng cáo nào",
+					"media": "media"
+				},
+				"selectKiosks": {
+					"title": "Chọn Kiosk cho sự kiện",
+					"searchPlaceholder": "Tìm kiếm kiosk...",
+					"selectedCount": "Đã chọn {{count}} kiosk",
+					"noKiosks": "Không tìm thấy kiosk nào",
+					"addKiosks": "Thêm Kiosk"
+				},
+				"selectProducts": {
+					"title": "Chọn Sản phẩm cho sự kiện",
+					"searchPlaceholder": "Tìm kiếm sản phẩm...",
+					"selectedProducts": "Sản phẩm đã chọn",
+					"availableProducts": "Sản phẩm có sẵn",
+					"noProducts": "Không tìm thấy sản phẩm nào",
+					"addProducts": "Thêm Sản phẩm",
+					"editProduct": "Chỉnh sửa sản phẩm",
+					"imageUrl": "URL hình ảnh",
+					"badgeImageUrl": "URL hình ảnh badge"
+				},
+				"selectTheme": {
+					"title": "Chọn Chủ đề cho sự kiện",
+					"searchPlaceholder": "Tìm kiếm chủ đề...",
+					"noThemes": "Không tìm thấy chủ đề nào",
+					"selectTheme": "Chọn Chủ đề"
+				},
+				"selectGame": {
+					"title": "Chọn Trò chơi cho sự kiện",
+					"searchPlaceholder": "Tìm kiếm trò chơi...",
+					"noGames": "Không tìm thấy trò chơi nào",
+					"selectGame": "Chọn Trò chơi"
+				},
+				"messages": {
+					"no_events": "Không tìm thấy sự kiện nào",
+					"no_kiosks": "Chưa có kiosk nào được gán cho sự kiện này",
+					"no_products": "Chưa có sản phẩm nào trong sự kiện này",
+					"no_theme": "Chưa chọn chủ đề",
+					"no_game": "Chưa chọn trò chơi",
+					"no_idle_playlist": "Chưa có playlist cho màn hình chờ",
+					"no_shopping_playlist": "Chưa có playlist cho màn hình mua hàng",
+					"no_media_in_playlist": "Chưa có media nào trong playlist"
+				},
+				"calendar": {
+					"view": {
+						"month": "Tháng",
+						"week": "Tuần",
+						"day": "Ngày",
+						"list": "Danh sách"
+					}
 				}
 			},
 			"kioskSettings": {
@@ -983,11 +1190,22 @@
 				},
 				"filter": {
 					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_settings": "Không tìm thấy cài đặt nào"
 				}
 			},
 			"kioskTemplate": {
+				"title": "Mẫu Kiosk",
 				"detail": {
 					"title": "Chi tiết Mẫu Kiosk"
+				},
+				"sections": {
+					"basicInfo": "Thông tin cơ bản",
+					"configuration": "Cấu hình",
+					"contentMedia": "Nội dung & Media",
+					"trayConfiguration": "Cấu hình khay",
+					"metadata": "Thông tin khác"
 				},
 				"fields": {
 					"id": "Mã định danh",
@@ -995,13 +1213,241 @@
 					"name": "Tên",
 					"description": "Mô tả",
 					"status": "Trạng thái",
+					"template": "Mẫu kiosk",
+					"operatingMode": "Chế độ hoạt động",
+					"kioskType": "Loại kiosk",
+					"interfaceMode": "Chế độ giao diện",
+					"slideshow": "Trình chiếu",
+					"numberOfTrays": "Số khay",
+					"trayConfigurations": "Cấu hình khay",
+					"trayRow": "Hàng",
+					"trayDevice": "Loại khay",
+					"deviceSpecifications": "Thông số thiết bị",
 					"createdAt": "Ngày tạo"
+				},
+				"operatingMode": {
+					"pending": "Chờ xử lý",
+					"selling": "Bán hàng",
+					"adsOnly": "Chỉ quảng cáo"
+				},
+				"kioskType": {
+					"withoutElevator": "Không có thang máy",
+					"elevatorWithConveyor": "Thang máy có băng chuyền",
+					"elevatorWithoutConveyor": "Thang máy không có băng chuyền"
+				},
+				"interfaceMode": {
+					"normal": "Bình thường",
+					"focus": "Tập trung"
+				},
+				"selectDevice": {
+					"title": "Chọn loại khay",
+					"searchPlaceholder": "Tìm kiếm theo mã hoặc tên thiết bị...",
+					"noDevices": "Không tìm thấy thiết bị nào",
+					"selectDevice": "Chọn loại khay"
 				},
 				"search": {
 					"placeholder": "Tìm kiếm theo mã hoặc tên..."
 				},
 				"filter": {
 					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_templates": "Không tìm thấy mẫu nào",
+					"no_slideshow": "Chưa có trình chiếu",
+					"no_trays": "Chưa có khay nào. Nhấn nút 'Thêm hàng' để thêm khay."
+				},
+				"actions": {
+					"addTray": "Thêm hàng",
+					"selectDeviceForSelected": "Chọn loại khay cho {{count}} hàng đã chọn"
+				}
+			},
+			"payment": {
+				"title": "Phương thức thanh toán",
+				"detail": {
+					"title": "Chi tiết Phương thức thanh toán"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã",
+					"name": "Tên",
+					"image": "Ảnh",
+					"status": "Trạng thái",
+					"description": "Mô tả",
+					"minTransactionValue": "Giá trị giao dịch thấp nhất",
+					"maxTransactionValue": "Giá trị giao dịch cao nhất",
+					"transactionRange": "Khoảng giá trị giao dịch",
+					"customFields": "Trường tùy chỉnh",
+					"customFieldKey": "Khóa",
+					"customFieldValue": "Giá trị",
+					"customFieldType": "Loại",
+					"createdAt": "Ngày tạo"
+				},
+				"customFieldTypes": {
+					"string": "Chuỗi",
+					"number": "Số",
+					"password": "Mật khẩu",
+					"email": "Email",
+					"url": "URL",
+					"date": "Ngày tháng"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_payments": "Không tìm thấy phương thức thanh toán nào",
+					"no_custom_fields": "Không có trường tùy chỉnh"
+				}
+			},
+			"games": {
+				"title": "Quản lý Trò chơi",
+				"detail": {
+					"title": "Chi tiết Trò chơi",
+					"info": "Thông tin",
+					"versions": "Phiên bản",
+					"preview": "Chơi thử"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã game",
+					"name": "Tên game",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"versions": "Số phiên bản",
+					"latestVersion": "Phiên bản mới nhất",
+					"versionCode": "Mã phiên bản",
+					"versionDescription": "Mô tả phiên bản",
+					"source": "Source code",
+					"source_placeholder": "Nhập HTML/JS source code của game...",
+					"uploadDate": "Ngày tải lên",
+					"minAppVersion": "Phiên bản app tối thiểu",
+					"createdAt": "Ngày tạo",
+					"latest": "Mới nhất",
+					"selectVersion": "Chọn phiên bản"
+				},
+				"tabs": {
+					"info": "Thông tin",
+					"versions": "Phiên bản",
+					"preview": "Chơi thử"
+				},
+				"actions": {
+					"play": "Chơi thử",
+					"add_version": "Thêm phiên bản",
+					"upload_source": "Tải lên source",
+					"reload": "Tải lại"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên game..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_games": "Không tìm thấy game nào",
+					"no_version": "Không có phiên bản nào",
+					"no_versions": "Không có phiên bản",
+					"source_loaded": "Source đã được tải",
+					"preview_hint": "Nhấn để chơi thử game",
+					"delete_version_confirm": "Bạn có chắc muốn xóa phiên bản này?"
+				}
+			},
+			"themes": {
+				"detail": {
+					"title": "Chi tiết Chủ đề"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã chủ đề",
+					"name": "Tên chủ đề",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"primaryColor": "Màu chủ đạo",
+					"productCardStyle": "Kiểu thẻ sản phẩm",
+					"appBackground": "Nền ứng dụng",
+					"fontStyle": "Kiểu phông chữ",
+					"mascotImage": "Ảnh linh vật",
+					"createdAt": "Ngày tạo"
+				},
+				"productCardStyle": {
+					"default": "Mặc định",
+					"rounded": "Bo tròn",
+					"minimal": "Tối giản",
+					"elegant": "Thanh lịch",
+					"modern": "Hiện đại"
+				},
+				"appBackground": {
+					"none": "Không có",
+					"snow": "Tuyết rơi",
+					"fireworks": "Pháo hoa",
+					"particles": "Hạt",
+					"gradient": "Gradient",
+					"custom": "Tùy chỉnh"
+				},
+				"fontStyle": {
+					"default": "Mặc định",
+					"roboto": "Roboto",
+					"inter": "Inter",
+					"poppins": "Poppins",
+					"montserrat": "Montserrat",
+					"custom": "Tùy chỉnh"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_themes": "Không tìm thấy chủ đề nào"
+				},
+				"preview": {
+					"title": "Xem trước"
+				}
+			},
+			"device": {
+				"title": "Thiết bị",
+				"detail": {
+					"title": "Chi tiết Thiết bị"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã thiết bị",
+					"name": "Tên",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"deviceType": "Loại thiết bị",
+					"specifications": "Thông số",
+					"specKey": "Khóa",
+					"specValue": "Giá trị",
+					"createdAt": "Ngày tạo"
+				},
+				"deviceType": {
+					"motor": "Động cơ đẩy hàng",
+					"pos": "POS",
+					"screen": "Màn hình",
+					"cpu": "CPU",
+					"router": "Router WiFi"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái",
+					"deviceType": "Lọc theo loại thiết bị"
+				},
+				"messages": {
+					"no_devices": "Không tìm thấy thiết bị nào",
+					"no_specifications": "Không có thông số"
+				}
+			},
+			"reports": {
+				"revenue": {
+					"title": "Doanh thu",
+					"overview": "Tổng quan doanh thu",
+					"generated": "Doanh thu tạo ra",
+					"orders": "Số đơn hàng"
 				}
 			}
 		}

@@ -1,0 +1,71 @@
+{
+	"name": "kioskDevice",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.device.fields.id' }",
+			"hidden": true
+		},
+		"code": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.device.fields.code' }"
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.device.fields.name' }"
+		},
+		"status": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.device.fields.status' }",
+			"enum": [
+				{
+					"value": "active",
+					"label": "{ \"$ref\": 'nikki.general.status.active' }"
+				},
+				{
+					"value": "inactive",
+					"label": "{ \"$ref\": 'nikki.general.status.inactive' }"
+				}
+			]
+		},
+		"deviceType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.device.fields.deviceType' }",
+			"enum": [
+				{
+					"value": "motor",
+					"label": "{ \"$ref\": 'nikki.vendingMachine.device.deviceType.motor' }"
+				},
+				{
+					"value": "pos",
+					"label": "{ \"$ref\": 'nikki.vendingMachine.device.deviceType.pos' }"
+				},
+				{
+					"value": "screen",
+					"label": "{ \"$ref\": 'nikki.vendingMachine.device.deviceType.screen' }"
+				},
+				{
+					"value": "cpu",
+					"label": "{ \"$ref\": 'nikki.vendingMachine.device.deviceType.cpu' }"
+				},
+				{
+					"value": "router",
+					"label": "{ \"$ref\": 'nikki.vendingMachine.device.deviceType.router' }"
+				}
+			]
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.device.fields.description' }"
+		},
+		"specifications": {
+			"type": "array",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.device.fields.specifications' }"
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.device.fields.createdAt' }",
+			"hidden": true
+		}
+	}
+}

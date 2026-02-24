@@ -3,11 +3,12 @@ import { IconPlus, IconRefresh, IconList, IconLayoutGrid, IconMapPin } from '@ta
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { FilterGroup, SearchGraph, useFilterState } from '@/components/FilterGroup';
 
 import { kioskFilterConfig } from './filterConfig';
 
 import type { ViewMode } from './KioskListActions';
+
+import { FilterGroup, SearchGraph, useFilterState } from '@/components/FilterGroup';
 
 
 export interface KioskListActionsWithFilterProps {
@@ -38,6 +39,7 @@ export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProp
 				<Button
 					leftSection={<IconPlus size={16} />}
 					onClick={onCreate}
+					size='sm'
 				>
 					{translate('nikki.general.actions.create')}
 				</Button>
@@ -45,6 +47,7 @@ export const KioskListActionsWithFilter: React.FC<KioskListActionsWithFilterProp
 					variant='outline'
 					leftSection={<IconRefresh size={16} />}
 					onClick={onRefresh}
+					size='sm'
 				>
 					{translate('nikki.general.actions.refresh')}
 				</Button>

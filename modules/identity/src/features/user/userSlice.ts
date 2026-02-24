@@ -18,7 +18,7 @@ export type UserState = {
 	delete: ReduxActionState<DeleteUserResponse>;
 };
 
-const initialState: UserState = {
+export const initialState: UserState = {
 	detail: baseReduxActionState,
 	list: { ...baseReduxActionState, data: [] },
 

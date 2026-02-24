@@ -28,7 +28,7 @@ export type GroupState = {
 	manageUsers: ReduxActionState<ManageGroupUsersResponse>
 };
 
-const initialState: GroupState = {
+export const initialState: GroupState = {
 	detail: baseReduxActionState,
 	list: { ...baseReduxActionState, data: [] },
 	create: baseReduxActionState,

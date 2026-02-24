@@ -1,6 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 
 import { reducer, actions, listGroups, getGroup, createGroup, updateGroup, deleteGroup, manageGroupUsers, GroupState } from '../features/group/groupSlice';
+import { initialState as initialGroupState } from '../features/group/groupSlice';
 
 
 const STATE_KEY = 'group';
@@ -19,7 +20,7 @@ export const groupActions = {
 	...actions,
 };
 
-export const selectGroupState = (state: { [STATE_KEY]: GroupState }) => state[STATE_KEY];
+export const selectGroupState = (state: { [STATE_KEY]?: GroupState }) => state?.[STATE_KEY] ?? initialGroupState;
 
 export const selectGroupList = createSelector(
 	selectGroupState,

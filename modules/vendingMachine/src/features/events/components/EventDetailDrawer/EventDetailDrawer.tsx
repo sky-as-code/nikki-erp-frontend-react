@@ -1,9 +1,20 @@
-import { Badge, Divider, Drawer, Group, Stack, Text, Title } from '@mantine/core';
-import { IconCalendarEvent } from '@tabler/icons-react';
-import React from 'react';
+import { Badge, Box, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
+import { IconCalendarEvent, IconExternalLink } from '@tabler/icons-react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
-import { Event } from '../../types';
+import { EventGameConfig } from './EventGameConfig';
+import { EventKioskList } from './EventKioskList';
+import { EventProductList } from './EventProductList';
+import { EventThemeConfig } from './EventThemeConfig';
+import { KioskSelectModal } from './KioskSelectModal';
+import { ProductSelectModal } from './ProductSelectModal';
+import { Ad } from '../../../ads/types';
+import { Game } from '../../../games/types';
+import { Kiosk } from '../../../kiosks/types';
+import { Theme } from '../../../themes/types';
+import { Event, EventProduct } from '../../types';
 
 
 export interface EventDetailDrawerProps {
@@ -21,6 +32,27 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 	isLoading = false,
 }) => {
 	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
+	const [eventProducts, setEventProducts] = useState<EventProduct[]>(event?.products || []);
+	const [eventKiosks, setEventKiosks] = useState<Kiosk[]>(event?.kiosks || []);
+	const [eventTheme, setEventTheme] = useState<Theme | undefined>(event?.theme);
+	const [eventGame, setEventGame] = useState<Game | undefined>(event?.game);
+	const [idlePlaylist, setIdlePlaylist] = useState<Ad | undefined>(event?.idlePlaylist);
+	const [shoppingPlaylist, setShoppingPlaylist] = useState<Ad | undefined>(event?.shoppingPlaylist);
+	const [kioskSelectModalOpened, setKioskSelectModalOpened] = useState(false);
+	const [productSelectModalOpened, setProductSelectModalOpened] = useState(false);
+
+	// Update products, kiosks, theme, game, and playlists when event changes
+	useEffect(() => {
+		if (event) {
+			setEventProducts(event.products || []);
+			setEventKiosks(event.kiosks || []);
+			setEventTheme(event.theme);
+			setEventGame(event.game);
+			setIdlePlaylist(event.idlePlaylist);
+			setShoppingPlaylist(event.shoppingPlaylist);
+		}
+	}, [event]);
 
 	if (isLoading || !event) {
 		return (
@@ -28,8 +60,8 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 				opened={opened}
 				onClose={onClose}
 				position='right'
-				size='md'
-				title={<Title order={4}>{translate('nikki.vendingMachine.events.detail.title')}</Title>}
+				size='xl'
+				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.events.detail.title')}</Text>}
 			>
 				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
 			</Drawer>
@@ -46,16 +78,77 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 		return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
 	};
 
+	const handleAddKiosks = (kiosks: Kiosk[]) => {
+		setEventKiosks([...eventKiosks, ...kiosks]);
+	};
+
+	const handleAddProducts = (products: EventProduct[]) => {
+		setEventProducts([...eventProducts, ...products]);
+	};
+
+	const handleRemoveProduct = (productId: string) => {
+		setEventProducts(eventProducts.filter((p) => p.id !== productId));
+	};
+
+	const handleRemoveKiosk = (kioskId: string) => {
+		setEventKiosks(eventKiosks.filter((k) => k.id !== kioskId));
+	};
+
+	const handleThemeChange = (theme: Theme) => {
+		setEventTheme(theme);
+	};
+
+	const handleThemeRemove = () => {
+		setEventTheme(undefined);
+	};
+
+	const handleGameChange = (game: Game) => {
+		setEventGame(game);
+	};
+
+	const handleGameRemove = () => {
+		setEventGame(undefined);
+	};
+
+	const handleIdlePlaylistChange = (ad: Ad) => {
+		setIdlePlaylist(ad);
+	};
+
+	const handleShoppingPlaylistChange = (ad: Ad) => {
+		setShoppingPlaylist(ad);
+	};
+
+	const handleIdlePlaylistRemove = () => {
+		setIdlePlaylist(undefined);
+	};
+
+	const handleShoppingPlaylistRemove = () => {
+		setShoppingPlaylist(undefined);
+	};
+
 	return (
 		<Drawer
 			opened={opened}
 			onClose={onClose}
 			position='right'
-			size='md'
+			size='xl'
 			title={
-				<Group gap='xs'>
-					<IconCalendarEvent size={20} />
-					<Title order={4}>{event.name}</Title>
+				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
+					<Group gap='xs'>
+						<IconCalendarEvent size={20} />
+						<Text fw={600} size='lg'>{event.name}</Text>
+					</Group>
+					<Button
+						size='xs'
+						variant='light'
+						leftSection={<IconExternalLink size={16} />}
+						onClick={() => {
+							navigate(`../events/${event.id}`);
+							onClose();
+						}}
+					>
+						{translate('nikki.general.actions.viewDetails')}
+					</Button>
 				</Group>
 			}
 			overlayProps={{ opacity: 0.5, blur: 4 }}
@@ -124,7 +217,77 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 					</Text>
 					<Text size='sm'>{new Date(event.createdAt).toLocaleString()}</Text>
 				</div>
+
+				{/* Kiosks Section */}
+				<Divider />
+				<div>
+					<Text size='sm' c='dimmed' mb='md' fw={500}>
+						{translate('nikki.vendingMachine.events.fields.kiosks')}
+					</Text>
+					<EventKioskList
+						kiosks={eventKiosks}
+						onAddKiosks={() => setKioskSelectModalOpened(true)}
+						onRemoveKiosk={handleRemoveKiosk}
+					/>
+				</div>
+
+				{/* Products Section */}
+				<Divider />
+				<div>
+					<Text size='sm' c='dimmed' mb='md' fw={500}>
+						{translate('nikki.vendingMachine.events.fields.products')}
+					</Text>
+					<EventProductList
+						products={eventProducts}
+						onAddProducts={() => setProductSelectModalOpened(true)}
+						onRemoveProduct={handleRemoveProduct}
+					/>
+				</div>
+
+				{/* Theme and Slideshow Configuration */}
+				<Divider />
+				<div>
+					<EventThemeConfig
+						theme={eventTheme}
+						themeId={event.themeId}
+						idlePlaylist={idlePlaylist}
+						shoppingPlaylist={shoppingPlaylist}
+						onIdlePlaylistChange={handleIdlePlaylistChange}
+						onShoppingPlaylistChange={handleShoppingPlaylistChange}
+						onIdlePlaylistRemove={handleIdlePlaylistRemove}
+						onShoppingPlaylistRemove={handleShoppingPlaylistRemove}
+						onThemeChange={handleThemeChange}
+						onThemeRemove={handleThemeRemove}
+					/>
+				</div>
+
+				{/* Game Configuration */}
+				<div>
+					<EventGameConfig
+						game={eventGame}
+						gameId={event.gameId}
+						onGameChange={handleGameChange}
+						onGameRemove={handleGameRemove}
+					/>
+				</div>
+
+				<Box h={50}></Box>
 			</Stack>
+
+			{/* Modals */}
+			<KioskSelectModal
+				opened={kioskSelectModalOpened}
+				onClose={() => setKioskSelectModalOpened(false)}
+				onSelectKiosks={handleAddKiosks}
+				selectedKioskIds={eventKiosks.map((k) => k.id)}
+			/>
+
+			<ProductSelectModal
+				opened={productSelectModalOpened}
+				onClose={() => setProductSelectModalOpened(false)}
+				onSelectProducts={handleAddProducts}
+				selectedProductIds={eventProducts.map((p) => p.id)}
+			/>
 		</Drawer>
 	);
 };

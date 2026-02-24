@@ -1,7 +1,8 @@
-import { Badge, Divider, Drawer, Group, Stack, Text, Title } from '@mantine/core';
-import { IconSettings } from '@tabler/icons-react';
+import { Badge, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
+import { IconSettings, IconExternalLink } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
 import { KioskSetting } from '../../types';
 
@@ -21,15 +22,15 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 	isLoading = false,
 }) => {
 	const { t: translate } = useTranslation();
-
+	const navigate = useNavigate();
 	if (isLoading || !setting) {
 		return (
 			<Drawer
 				opened={opened}
 				onClose={onClose}
 				position='right'
-				size='md'
-				title={<Title order={4}>{translate('nikki.vendingMachine.kioskSettings.detail.title')}</Title>}
+				size='lg'
+				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.kioskSettings.detail.title')}</Text>}
 			>
 				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
 			</Drawer>
@@ -50,11 +51,24 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 			opened={opened}
 			onClose={onClose}
 			position='right'
-			size='md'
+			size='lg'
 			title={
-				<Group gap='xs'>
-					<IconSettings size={20} />
-					<Title order={4}>{setting.name}</Title>
+				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
+					<Group gap='xs'>
+						<IconSettings size={20} />
+						<Text fw={600} size='lg'>{setting.name}</Text>
+					</Group>
+					<Button
+						size='xs'
+						variant='light'
+						leftSection={<IconExternalLink size={16} />}
+						onClick={() => {
+							navigate(`../kiosk-settings/${setting.id}`);
+							onClose();
+						}}
+					>
+						{translate('nikki.general.actions.viewDetails')}
+					</Button>
 				</Group>
 			}
 			overlayProps={{ opacity: 0.5, blur: 4 }}

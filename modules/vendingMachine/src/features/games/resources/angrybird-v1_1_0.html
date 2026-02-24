@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border: 2px solid #8B4513;
+    background-color: #87CEEB;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+body {
+    margin: 0;
+    padding: 10px;
+    background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+    font-family: 'Arial', sans-serif;
+}
+button {
+    background: linear-gradient(to bottom, #FF6B6B, #FF4757);
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+}
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+}
+button:active {
+    transform: translateY(0);
+}
+p {
+    color: #333;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+}
+</style>
+</head>
+<body>
+<script>
+
+var myGamePiece;
+var myObstacles = [];
+var myScore;
+var backgroundImg;
+var birdImg;
+var obstacleTopImg;
+var obstacleBottomImg;
+var imagesLoaded = 0;
+var totalImages = 4;
+var gameStarted = false;
+
+// Create images programmatically
+function createBackgroundImage() {
+    var canvas = document.createElement('canvas');
+    canvas.width = 480;
+    canvas.height = 270;
+    var ctx = canvas.getContext('2d');
+    
+    // Sky gradient
+    var gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#87CEEB');
+    gradient.addColorStop(0.7, '#E0F6FF');
+    gradient.addColorStop(1, '#B0E0E6');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Clouds
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    drawCloud(ctx, 100, 50, 60);
+    drawCloud(ctx, 250, 80, 50);
+    drawCloud(ctx, 400, 40, 55);
+    drawCloud(ctx, 50, 120, 45);
+    drawCloud(ctx, 350, 150, 50);
+    
+    return canvas;
+}
+
+function drawCloud(ctx, x, y, size) {
+    ctx.beginPath();
+    ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.6, y, size * 0.6, 0, Math.PI * 2);
+    ctx.arc(x + size * 1.2, y, size * 0.5, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.3, y - size * 0.3, size * 0.4, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.9, y - size * 0.3, size * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function createBirdImage() {
+    var canvas = document.createElement('canvas');
+    canvas.width = 40;
+    canvas.height = 40;
+    var ctx = canvas.getContext('2d');
+    
+    // Bird body (red circle)
+    ctx.fillStyle = '#FF4444';
+    ctx.beginPath();
+    ctx.arc(20, 20, 15, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Bird eye (white)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(15, 15, 6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Bird eye (black)
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(15, 15, 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Bird beak (yellow triangle)
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.moveTo(25, 20);
+    ctx.lineTo(35, 18);
+    ctx.lineTo(35, 22);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Bird wing (darker red) - using arc instead of ellipse for compatibility
+    ctx.fillStyle = '#CC0000';
+    ctx.save();
+    ctx.translate(18, 25);
+    ctx.rotate(-0.3);
+    ctx.scale(1, 0.625); // 5/8 = 0.625 to make it elliptical
+    ctx.beginPath();
+    ctx.arc(0, 0, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    return canvas;
+}
+
+function createObstacleImage(isTop) {
+    var canvas = document.createElement('canvas');
+    canvas.width = 50;
+    canvas.height = 270;
+    var ctx = canvas.getContext('2d');
+    
+    // Wood texture base
+    var gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+    gradient.addColorStop(0, '#8B4513');
+    gradient.addColorStop(0.5, '#A0522D');
+    gradient.addColorStop(1, '#8B4513');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Wood grain lines
+    ctx.strokeStyle = '#654321';
+    ctx.lineWidth = 2;
+    for (var i = 0; i < canvas.height; i += 15) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(canvas.width, i);
+        ctx.stroke();
+    }
+    
+    // Vertical lines for texture
+    ctx.strokeStyle = '#5D4037';
+    ctx.lineWidth = 1;
+    for (var j = 5; j < canvas.width; j += 10) {
+        ctx.beginPath();
+        ctx.moveTo(j, 0);
+        ctx.lineTo(j, canvas.height);
+        ctx.stroke();
+    }
+    
+    // Top cap (if top obstacle)
+    if (isTop) {
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(0, 0, canvas.width, 15);
+        // Cap highlight
+        ctx.fillStyle = '#A0522D';
+        ctx.fillRect(2, 2, canvas.width - 4, 5);
+    }
+    
+    // Bottom cap (if bottom obstacle)
+    if (!isTop) {
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(0, canvas.height - 15, canvas.width, 15);
+        // Cap highlight
+        ctx.fillStyle = '#A0522D';
+        ctx.fillRect(2, canvas.height - 7, canvas.width - 4, 5);
+    }
+    
+    return canvas;
+}
+
+function loadImages() {
+    try {
+        backgroundImg = createBackgroundImage();
+        birdImg = createBirdImage();
+        obstacleTopImg = createObstacleImage(true);
+        obstacleBottomImg = createObstacleImage(false);
+        imagesLoaded = totalImages;
+        
+        // Start game after images are loaded
+        if (!gameStarted) {
+            startGame();
+        }
+    } catch (error) {
+        console.error('Error loading images:', error);
+        // Fallback: start game anyway
+        if (!gameStarted) {
+            startGame();
+        }
+    }
+}
+
+function startGame() {
+    if (gameStarted) {
+        return;
+    }
+    
+    if (imagesLoaded < totalImages) {
+        setTimeout(startGame, 50);
+        return;
+    }
+    
+    gameStarted = true;
+    
+    myGamePiece = new component(40, 40, "red", 10, 120);
+    myGamePiece.gravity = 0.05;
+    myGamePiece.image = birdImg;
+    myScore = new component("30px", "Consolas", "black", 280, 40, "text");
+    myGameArea.start();
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 480;
+        this.canvas.height = 270;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        this.interval = setInterval(updateGameArea, 20);
+        },
+    clear : function() {
+        // Draw background
+        if (backgroundImg) {
+            this.context.drawImage(backgroundImg, 0, 0);
+        } else {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+    }
+}
+
+function component(width, height, color, x, y, type) {
+    this.type = type;
+    this.score = 0;
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;
+    this.gravity = 0;
+    this.gravitySpeed = 0;
+    this.image = null;
+    this.isTopObstacle = false;
+    this.update = function() {
+        ctx = myGameArea.context;
+        if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } else if (this.image) {
+            // Draw image
+            if (this.type == "obstacle") {
+                // For obstacles, scale the image to match height
+                var scaleY = this.height / this.image.height;
+                var scaledWidth = this.image.width * scaleY;
+                ctx.drawImage(this.image, this.x, this.y, scaledWidth, this.height);
+            } else {
+                // For bird, draw at original size
+                ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+            }
+        } else {
+            // Fallback to rectangle
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    }
+    this.newPos = function() {
+        this.gravitySpeed += this.gravity;
+        this.x += this.speedX;
+        this.y += this.speedY + this.gravitySpeed;
+        this.hitBottom();
+    }
+    this.hitBottom = function() {
+        var rockbottom = myGameArea.canvas.height - this.height;
+        if (this.y > rockbottom) {
+            this.y = rockbottom;
+            this.gravitySpeed = 0;
+        }
+    }
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            crash = false;
+        }
+        return crash;
+    }
+}
+
+function updateGameArea() {
+    var x, height, gap, minHeight, maxHeight, minGap, maxGap, i;
+    for (i = 0; i < myObstacles.length; i += 1) {
+        if (myGamePiece.crashWith(myObstacles[i])) {
+            return;
+        } 
+    }
+    myGameArea.clear();
+    myGameArea.frameNo += 1;
+    if (myGameArea.frameNo == 1 || everyinterval(150)) {
+        x = myGameArea.canvas.width;
+        minHeight = 20;
+        maxHeight = 200;
+        height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+        minGap = 50;
+        maxGap = 200;
+        gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        
+        var topObstacle = new component(50, height, "green", x, 0);
+        topObstacle.type = "obstacle";
+        topObstacle.image = obstacleTopImg;
+        topObstacle.isTopObstacle = true;
+        myObstacles.push(topObstacle);
+        
+        var bottomHeight = myGameArea.canvas.height - height - gap;
+        var bottomObstacle = new component(50, bottomHeight, "green", x, height + gap);
+        bottomObstacle.type = "obstacle";
+        bottomObstacle.image = obstacleBottomImg;
+        bottomObstacle.isTopObstacle = false;
+        myObstacles.push(bottomObstacle);
+    }
+    for (i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].x += -1;
+        myObstacles[i].update();
+    }
+    myScore.text="SCORE: " + myGameArea.frameNo;
+    myScore.update();
+    myGamePiece.newPos();
+    myGamePiece.update();
+}
+
+function everyinterval(n) {
+    if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
+    return false;
+}
+
+function accelerate(n) {
+    if (myGamePiece) {
+        myGamePiece.gravity = n;
+    }
+}
+
+// Expose accelerate to global scope for button
+window.accelerate = accelerate;
+
+// Load images when DOM is ready
+(function init() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadImages);
+    } else {
+        // If already loaded, wait a bit for iframe to be ready
+        setTimeout(loadImages, 100);
+    }
+})();
+</script>
+<br>
+<button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
+</body>
+</html>

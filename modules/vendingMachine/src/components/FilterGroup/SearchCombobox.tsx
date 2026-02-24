@@ -184,7 +184,6 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
 							onKeyDown={handleKeyDown}
 							onBlur={handleBlur}
 							onFocus={() => setIsFocused(true)}
-							autoFocus
 							variant='unstyled'
 							size='sm'
 							radius={'sm'}

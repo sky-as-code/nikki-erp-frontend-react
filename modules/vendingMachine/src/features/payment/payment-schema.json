@@ -1,0 +1,57 @@
+{
+	"name": "payment",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.id' }",
+			"hidden": true
+		},
+		"code": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.code' }"
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.name' }"
+		},
+		"image": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.image' }"
+		},
+		"status": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.status' }",
+			"enum": [
+				{
+					"value": "active",
+					"label": "{ \"$ref\": 'nikki.general.status.active' }"
+				},
+				{
+					"value": "inactive",
+					"label": "{ \"$ref\": 'nikki.general.status.inactive' }"
+				}
+			]
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.description' }"
+		},
+		"minTransactionValue": {
+			"type": "number",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.minTransactionValue' }"
+		},
+		"maxTransactionValue": {
+			"type": "number",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.maxTransactionValue' }"
+		},
+		"transactionRange": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.transactionRange' }"
+		},
+		"createdAt": {
+			"type": "date",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.createdAt' }",
+			"hidden": true
+		}
+	}
+}

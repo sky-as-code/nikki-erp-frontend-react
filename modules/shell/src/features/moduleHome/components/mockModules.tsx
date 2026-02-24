@@ -1,3 +1,11 @@
+import authorizeIcon from '@nikkierp/ui/assets/images/modules/authorize.png';
+import essentialIcon from '@nikkierp/ui/assets/images/modules/essential.png';
+import identityIcon from '@nikkierp/ui/assets/images/modules/identity.png';
+import inventoryIcon from '@nikkierp/ui/assets/images/modules/inventory.png';
+import salesIcon from '@nikkierp/ui/assets/images/modules/sales.png';
+import vendingMachineIcon from '@nikkierp/ui/assets/images/modules/vending-machine.png';
+
+
 export const mockModules = [
 	{
 		key: 'favouritesAndRecentlyUsed',
@@ -7,7 +15,7 @@ export const mockModules = [
 				name: 'Essential',
 				slug: 'essential',
 				category: 'Essential',
-				icon: 'https://static.vecteezy.com/system/resources/previews/056/850/688/non_2x/discord-app-icon-with-transparent-background-free-png.png',
+				icon: essentialIcon,
 				isDisabled: false,
 				isOrphaned: false,
 				isFavourite: true,
@@ -17,7 +25,7 @@ export const mockModules = [
 				name: 'Identity',
 				slug: 'identity',
 				category: 'Identity',
-				icon: 'https://static.vecteezy.com/system/resources/previews/056/850/688/non_2x/discord-app-icon-with-transparent-background-free-png.png',
+				icon: identityIcon,
 				isDisabled: false,
 				isOrphaned: false,
 				isFavourite: false,
@@ -27,7 +35,7 @@ export const mockModules = [
 				name: 'Authorize',
 				slug: 'authorize',
 				category: 'Authorize',
-				icon: 'https://static.vecteezy.com/system/resources/previews/056/850/688/non_2x/discord-app-icon-with-transparent-background-free-png.png',
+				icon: authorizeIcon,
 				isDisabled: false,
 				isOrphaned: false,
 				isFavourite: true,
@@ -37,7 +45,7 @@ export const mockModules = [
 				name: 'Vending Machine',
 				slug: 'vending-machine',
 				category: 'Vending Machine',
-				icon: 'https://static.vecteezy.com/system/resources/previews/056/850/688/non_2x/discord-app-icon-with-transparent-background-free-png.png',
+				icon: vendingMachineIcon,
 				isDisabled: false,
 				isOrphaned: false,
 				isFavourite: false,
@@ -47,7 +55,7 @@ export const mockModules = [
 				name: 'Inventory',
 				slug: 'inventory',
 				category: 'Inventory',
-				icon: 'icon-inventory',
+				icon: inventoryIcon,
 				isDisabled: false,
 				isOrphaned: false,
 				isFavourite: false,
@@ -57,7 +65,7 @@ export const mockModules = [
 				name: 'Sales',
 				slug: 'sales',
 				category: 'Sales',
-				icon: 'icon-sales',
+				icon: salesIcon,
 				isDisabled: false,
 				isOrphaned: false,
 				isFavourite: false,

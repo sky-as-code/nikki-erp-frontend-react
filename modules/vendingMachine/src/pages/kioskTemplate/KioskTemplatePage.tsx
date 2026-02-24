@@ -1,13 +1,14 @@
-import { Paper, Stack, Title } from '@mantine/core';
 import { ConfirmModal } from '@nikkierp/ui/components';
 import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ListActions } from '@/components';
+import { ActionBar, type ViewMode, ActionBarFilterConfig } from '@/components';
+import { PageContainer } from '@/components/PageContainer';
 import {
 	KioskTemplateDetailDrawer,
+	KioskTemplateGridView,
 	KioskTemplateTable,
 	kioskTemplateSchema,
 	useKioskTemplateDetail,
@@ -22,8 +23,9 @@ export const KioskTemplatePage: React.FC = () => {
 	const { templates, isLoadingList, handleRefresh } = useKioskTemplateList();
 	const { isOpen, item, configOpenModal, handleCloseModal } = useConfirmModal<KioskTemplate>();
 
+	const [viewMode, setViewMode] = useState<ViewMode>('list');
 	const [searchValue, setSearchValue] = useState('');
-	const [statusFilter, setStatusFilter] = useState<string | 'all'>('all');
+	const [statusFilter, setStatusFilter] = useState<string[]>([]);
 	const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>();
 	const [drawerOpened, setDrawerOpened] = useState(false);
 
@@ -35,8 +37,8 @@ export const KioskTemplatePage: React.FC = () => {
 		let filtered = templates || [];
 
 		// Filter by status
-		if (statusFilter !== 'all') {
-			filtered = filtered.filter((template: KioskTemplate) => template.status === statusFilter);
+		if (statusFilter.length > 0) {
+			filtered = filtered.filter((template: KioskTemplate) => statusFilter.includes(template.status));
 		}
 
 		// Search by code or name
@@ -83,29 +85,45 @@ export const KioskTemplatePage: React.FC = () => {
 	};
 
 	const statusOptions = [
-		{ value: 'all', label: translate('nikki.general.filters.all') },
 		{ value: 'active', label: translate('nikki.general.status.active') },
 		{ value: 'inactive', label: translate('nikki.general.status.inactive') },
 	];
 
+	const filters: ActionBarFilterConfig[] = useMemo(() => [
+		{
+			value: statusFilter,
+			onChange: setStatusFilter,
+			options: statusOptions,
+			placeholder: translate('nikki.vendingMachine.kioskTemplate.filter.status'),
+		},
+	], [statusFilter, statusOptions, translate]);
+
 	useDocumentTitle('nikki.vendingMachine.menu.kiosk_template');
+
+	const breadcrumbs = useMemo(() => [
+		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
+		{ title: translate('nikki.vendingMachine.kioskTemplate.title'), href: '#' },
+	], []);
 
 	return (
 		<>
-			<Stack gap='md'>
-				<Title order={5} mt='md'>{translate('nikki.vendingMachine.menu.kiosk_template')}</Title>
-				<ListActions
-					onCreate={handleCreate}
-					onRefresh={handleRefresh}
-					searchValue={searchValue}
-					onSearchChange={setSearchValue}
-					statusFilter={statusFilter}
-					onStatusFilterChange={setStatusFilter}
-					statusOptions={statusOptions}
-					searchPlaceholder={translate('nikki.vendingMachine.kioskTemplate.search.placeholder')}
-					filterPlaceholder={translate('nikki.vendingMachine.kioskTemplate.filter.status')}
-				/>
-				<Paper className='p-4'>
+			<PageContainer
+				breadcrumbs={breadcrumbs}
+				actionBar={
+					<ActionBar
+						onCreate={handleCreate}
+						onRefresh={handleRefresh}
+						searchValue={searchValue}
+						onSearchChange={setSearchValue}
+						filters={filters}
+						searchPlaceholder={translate('nikki.vendingMachine.kioskTemplate.search.placeholder')}
+						viewMode={viewMode}
+						onViewModeChange={setViewMode}
+						viewModeSegments={['list', 'grid']}
+					/>
+				}
+			>
+				{viewMode === 'list' ? (
 					<KioskTemplateTable
 						columns={['code', 'name', 'description', 'status', 'actions']}
 						data={filteredTemplates as unknown as Record<string, unknown>[]}
@@ -114,22 +132,29 @@ export const KioskTemplatePage: React.FC = () => {
 						onViewDetail={handleViewDetail}
 						onDelete={handleOpenDeleteModal}
 					/>
-				</Paper>
+				) : (
+					<KioskTemplateGridView
+						templates={filteredTemplates}
+						isLoading={isLoadingList}
+						onViewDetail={handleViewDetail}
+						onDelete={handleOpenDeleteModal}
+					/>
+				)}
+			</PageContainer>
 
-				<ConfirmModal
-					opened={isOpen}
-					onClose={handleCloseModal}
-					onConfirm={handleDeleteConfirm}
-					title={translate('nikki.general.messages.delete_confirm')}
-					message={
-						item
-							? translate('nikki.general.messages.delete_confirm_name', { name: item.name })
-							: translate('nikki.general.messages.delete_confirm')
-					}
-					confirmLabel={translate('nikki.general.actions.delete')}
-					confirmColor='red'
-				/>
-			</Stack>
+			<ConfirmModal
+				opened={isOpen}
+				onClose={handleCloseModal}
+				onConfirm={handleDeleteConfirm}
+				title={translate('nikki.general.messages.delete_confirm')}
+				message={
+					item
+						? translate('nikki.general.messages.delete_confirm_name', { name: item.name })
+						: translate('nikki.general.messages.delete_confirm')
+				}
+				confirmLabel={translate('nikki.general.actions.delete')}
+				confirmColor='red'
+			/>
 
 			<KioskTemplateDetailDrawer
 				opened={drawerOpened}

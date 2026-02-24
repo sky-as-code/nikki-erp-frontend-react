@@ -1,7 +1,8 @@
-import { Badge, Divider, Drawer, Group, Stack, Text, Title } from '@mantine/core';
-import { IconMapPin, IconDeviceDesktop } from '@tabler/icons-react';
+import { Badge, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
+import { IconMapPin, IconDeviceDesktop, IconExternalLink } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
 import { Kiosk, KioskMode, KioskStatus } from '../../types';
 
@@ -21,6 +22,7 @@ export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
 	isLoading = false,
 }) => {
 	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
 
 	if (isLoading || !kiosk) {
 		return (
@@ -28,8 +30,8 @@ export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
 				opened={opened}
 				onClose={onClose}
 				position='right'
-				size='md'
-				title={<Title order={4}>{translate('nikki.vendingMachine.kiosk.detail.title')}</Title>}
+				size='lg'
+				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.kiosk.detail.title')}</Text>}
 			>
 				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
 			</Drawer>
@@ -61,11 +63,24 @@ export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
 			opened={opened}
 			onClose={onClose}
 			position='right'
-			size='md'
+			size='lg'
 			title={
-				<Group gap='xs'>
-					<IconDeviceDesktop size={20} />
-					<Title order={4}>{kiosk.name}</Title>
+				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
+					<Group gap='xs'>
+						<IconDeviceDesktop size={20} />
+						<Text fw={600} size='lg'>{kiosk.name}</Text>
+					</Group>
+					<Button
+						size='xs'
+						variant='light'
+						leftSection={<IconExternalLink size={16} />}
+						onClick={() => {
+							navigate(`../kiosks/${kiosk.id}`);
+							onClose();
+						}}
+					>
+						{translate('nikki.general.actions.viewDetails')}
+					</Button>
 				</Group>
 			}
 			overlayProps={{ opacity: 0.5, blur: 4 }}
