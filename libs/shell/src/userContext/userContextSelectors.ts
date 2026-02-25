@@ -149,11 +149,11 @@ const collectResourcesByScopeType = (
 		.map(([resource]) => resource);
 };
 
-const collectResourcesByNonDomainScope = (permissions: UserContextState['permissions']) => {
-	return Object.entries(permissions)
-		.filter(([, entries]) => entries.some((entry) => entry.scopeType !== 'domain'))
-		.map(([resource]) => resource);
-};
+// const collectResourcesByNonDomainScope = (permissions: UserContextState['permissions']) => {
+// 	return Object.entries(permissions)
+// 		.filter(([, entries]) => entries.some((entry) => entry.scopeType !== 'domain'))
+// 		.map(([resource]) => resource);
+// };
 
 // const collectResourcesWithAnyScope = (permissions: UserContextState['permissions']) => {
 // 	return Object.entries(permissions)

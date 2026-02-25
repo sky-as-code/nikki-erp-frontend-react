@@ -2,9 +2,10 @@ import React from 'react';
 import { Control, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '@/features/entitlements/helpers/entitlementFormValidation';
-
 import type { Action } from '@/features/actions';
+import type { Resource } from '@/features/resources';
+
+import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '@/features/entitlements/helpers/entitlementFormValidation';
 
 
 function resetActionId(control: Control<any>): void {
@@ -16,7 +17,7 @@ function resetActionId(control: Control<any>): void {
 function shouldResetActionId(
 	selectedResourceId: string | undefined,
 	currentActionId: string | undefined,
-	actions?: Action[],
+	availableActions: Action[],
 ): boolean {
 	if (selectedResourceId === undefined) {
 		return currentActionId !== undefined;
@@ -26,9 +27,8 @@ function shouldResetActionId(
 		return currentActionId !== undefined;
 	}
 
-	if (currentActionId && currentActionId !== ALL_ACTIONS_VALUE && actions) {
-		const currentAction = actions.find((a) => a.id === currentActionId);
-		return currentAction ? currentAction.resourceId !== selectedResourceId : false;
+	if (currentActionId && currentActionId !== ALL_ACTIONS_VALUE) {
+		return !availableActions.some((a) => a.id === currentActionId);
 	}
 
 	return false;
@@ -38,27 +38,29 @@ function useActionResetEffect(
 	selectedResourceId: string | undefined,
 	currentActionId: string | undefined,
 	control: Control<any> | undefined,
-	actions?: Action[],
+	availableActions: Action[],
 ): void {
 	React.useEffect(() => {
 		if (!control) return;
 
-		if (shouldResetActionId(selectedResourceId, currentActionId, actions)) {
+		if (shouldResetActionId(selectedResourceId, currentActionId, availableActions)) {
 			resetActionId(control);
 		}
-	}, [selectedResourceId, currentActionId, control, actions]);
+	}, [selectedResourceId, currentActionId, control, availableActions]);
 }
 
 function useAvailableActions(
-	actions: Action[] | undefined,
+	resources: Resource[] | undefined,
 	selectedResourceId: string | undefined,
 ): Action[] {
-	return React.useMemo(
-		() => (actions && selectedResourceId && selectedResourceId !== ALL_RESOURCES_VALUE
-			? actions.filter((a) => a.resourceId === selectedResourceId)
-			: []),
-		[actions, selectedResourceId],
-	);
+	return React.useMemo(() => {
+		if (!resources || !selectedResourceId || selectedResourceId === ALL_RESOURCES_VALUE) {
+			return [];
+		}
+
+		const selectedResource = resources.find((resource) => resource.id === selectedResourceId);
+		return selectedResource?.actions ?? [];
+	}, [resources, selectedResourceId]);
 }
 
 function useActionSelectPlaceholder(
@@ -78,7 +80,7 @@ function useActionSelectPlaceholder(
 	}, [selectedResourceId, hasActions, translate]);
 }
 
-export function useActionSelectLogic(actions?: Action[], control?: Control<any>) {
+export function useActionSelectLogic(resources?: Resource[], control?: Control<any>) {
 	const selectedResourceId = useWatch({
 		control,
 		name: 'resourceId',
@@ -89,9 +91,8 @@ export function useActionSelectLogic(actions?: Action[], control?: Control<any>)
 		name: 'actionId',
 	}) as string | undefined;
 
-	useActionResetEffect(selectedResourceId, currentActionId, control, actions);
-
-	const availableActions = useAvailableActions(actions, selectedResourceId);
+	const availableActions = useAvailableActions(resources, selectedResourceId);
+	useActionResetEffect(selectedResourceId, currentActionId, control, availableActions);
 	const isAllResources = selectedResourceId === ALL_RESOURCES_VALUE;
 	const hasActions = availableActions.length > 0;
 	const placeholder = useActionSelectPlaceholder(selectedResourceId, hasActions);

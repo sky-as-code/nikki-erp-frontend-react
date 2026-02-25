@@ -11,7 +11,7 @@ import {
 	deleteRole,
 	addEntitlementsToRole,
 	removeEntitlementsFromRole,
-	initialState
+	initialState,
 } from '@/features/roles/roleSlice';
 
 

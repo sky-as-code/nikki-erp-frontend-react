@@ -75,13 +75,13 @@ export const getAction = createAsyncThunk<
 
 export const createAction = createAsyncThunk<
 	Action,
-	Omit<Action, 'id' | 'createdAt' | 'etag' | 'resources' | 'entitlementsCount'>,
+	Action,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createAction`,
-	async (action, { rejectWithValue }) => {
+	async (data, { rejectWithValue }) => {
 		try {
-			const result = await actionService.createAction(action);
+			const result = await actionService.createAction(data);
 			return result;
 		}
 		catch (error) {
@@ -93,13 +93,13 @@ export const createAction = createAsyncThunk<
 
 export const updateAction = createAsyncThunk<
 	Action,
-	{ actionId: string; etag: string; description?: string },
+	{ actionId: string; data: Action },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateAction`,
-	async ({ actionId, etag, description }, { rejectWithValue }) => {
+	async ({ actionId, data }, { rejectWithValue }) => {
 		try {
-			const result = await actionService.updateAction(actionId, { etag, description });
+			const result = await actionService.updateAction(actionId, data);
 			return result;
 		}
 		catch (error) {

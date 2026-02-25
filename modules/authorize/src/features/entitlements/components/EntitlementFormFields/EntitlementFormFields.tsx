@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 
 import { useActionSelectLogic } from '../../hooks/useActionSelectLogic';
 
-import type { Action } from '@/features/actions';
 import type { Resource } from '@/features/resources';
 
 import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '@/features/entitlements/helpers/entitlementFormValidation';
@@ -13,17 +12,19 @@ import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '@/features/entitlements/
 interface EntitlementFormFieldsProps {
 	isCreate: boolean;
 	resources?: Resource[];
-	actions?: Action[];
 }
 
 export const EntitlementFormFields: React.FC<EntitlementFormFieldsProps> = ({
 	isCreate,
 	resources,
-	actions,
 }) => {
 	const { t: translate } = useTranslation();
 	const { control } = useFormField();
-	const actionLogic = useActionSelectLogic(actions, control);
+	const actionLogic = useActionSelectLogic(resources, control);
+	const allActions = React.useMemo(
+		() => (resources ?? []).flatMap((resource) => resource.actions ?? []),
+		[resources],
+	);
 
 	return (
 		<>
@@ -72,7 +73,7 @@ export const EntitlementFormFields: React.FC<EntitlementFormFieldsProps> = ({
 					/>
 					<EntityDisplayField
 						fieldName='actionId'
-						entities={actions}
+						entities={allActions}
 						getEntityId={(a) => a.id}
 						getEntityName={(a) => a.name}
 						fallbackLabelKey='nikki.authorize.entitlement.fields.action_all'

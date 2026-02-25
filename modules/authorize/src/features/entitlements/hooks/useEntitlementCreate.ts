@@ -11,10 +11,8 @@ import type { Resource } from '@/features/resources';
 
 import {
 	AuthorizeDispatch,
-	actionActions,
 	entitlementActions,
 	resourceActions,
-	selectActionState,
 	selectResourceList,
 	selectCreateEntitlement,
 } from '@/appState';
@@ -26,23 +24,22 @@ import {
 
 type FormType = Parameters<typeof validateEntitlementForm>[2];
 
+function extractActionsFromResources(resources: Resource[]): Action[] {
+	return resources.flatMap((resource) => resource.actions ?? []);
+}
+
 function useEntitlementCreateData() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const resourceListState = useMicroAppSelector(selectResourceList);
-	const actionState = useMicroAppSelector(selectActionState);
 	const resources = resourceListState.data ?? [];
-	const actions = actionState.actions ?? [];
 
 	React.useEffect(() => {
 		if (resourceListState.status === 'idle' || (resourceListState.status === 'success' && resources.length === 0)) {
 			dispatch(resourceActions.listResources());
 		}
-		if (!actionState.list.isLoading && actions.length === 0) {
-			dispatch(actionActions.listActions(undefined));
-		}
-	}, [resourceListState.status, resources.length, actionState.list.isLoading, actions.length]);
+	}, [resourceListState.status, resources.length]);
 
-	return { resources, actions };
+	return { resources };
 }
 
 function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) {
@@ -69,11 +66,10 @@ function useSubmitHandler(
 		formData.createdBy = '01JWNNJGS70Y07MBEV3AQ0M526';
 
 		dispatch(entitlementActions.createEntitlement(
-			formData as Omit<Entitlement, 'id' | 'createdAt' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
+			formData as Entitlement,
 		));
 	}, [dispatch, notification, translate, resources, actions]);
 }
-
 
 export function useEntitlementCreate() {
 	const navigate = useNavigate();
@@ -81,7 +77,8 @@ export function useEntitlementCreate() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
-	const { resources, actions } = useEntitlementCreateData();
+	const { resources } = useEntitlementCreateData();
+	const actions = React.useMemo(() => extractActionsFromResources(resources), [resources]);
 
 	const createCommand = useMicroAppSelector(selectCreateEntitlement);
 
@@ -116,6 +113,6 @@ export function useEntitlementCreate() {
 		}
 	}, [createCommand, location.pathname]);
 
-	return { isSubmitting, handleCancel, handleSubmit, resources, actions };
+	return { isSubmitting, handleCancel, handleSubmit, resources };
 }
 
