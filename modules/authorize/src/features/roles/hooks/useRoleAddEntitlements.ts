@@ -70,7 +70,7 @@ export function useRoleAddEntitlementsData() {
 	}, [dispatch, roleId, role]);
 
 	React.useEffect(() => {
-		if (roles.length === 0) dispatch(roleActions.listRoles());
+		if (roles.length === 0) dispatch(roleActions.listRoles({}));
 	}, [dispatch, roles.length]);
 
 	React.useEffect(() => {

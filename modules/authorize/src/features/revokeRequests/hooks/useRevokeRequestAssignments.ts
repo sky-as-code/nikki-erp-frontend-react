@@ -39,13 +39,13 @@ export function useRolesByReceiver(receiverId: string | null, receiverType: Rece
 	React.useEffect(() => {
 		if (receiverId && receiverType) {
 			setIsLoading(true);
-			const graph = buildRolesByReceiverQuery(receiverId);
-			dispatch(roleActions.listRoles({ listQuery: graph }))
+			const graph = buildRolesByReceiverQuery(receiverId, receiverType);
+			dispatch(roleActions.listRoles({ listQuery: { graph } }))
 				.unwrap()
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
 		}
-	}, [receiverId, receiverType]);
+	}, [dispatch, receiverId, receiverType]);
 
 	return { roles, isLoading };
 }
@@ -58,13 +58,13 @@ export function useRoleSuitesByReceiver(receiverId: string | null, receiverType:
 	React.useEffect(() => {
 		if (receiverId && receiverType) {
 			setIsLoading(true);
-			const graph = buildRoleSuitesByReceiverQuery(receiverId);
-			dispatch(roleSuiteActions.listRoleSuites({ listQuery: graph }))
+			const graph = buildRoleSuitesByReceiverQuery(receiverId, receiverType);
+			dispatch(roleSuiteActions.listRoleSuites({ listQuery: { graph } }))
 				.unwrap()
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
 		}
-	}, [receiverId, receiverType]);
+	}, [dispatch, receiverId, receiverType]);
 
 	return { roleSuites, isLoading };
 }
@@ -85,7 +85,7 @@ export function useUsersByTarget(targetId: string | null, targetType: TargetType
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
 		}
-	}, [targetId, targetType]);
+	}, [dispatch, targetId, targetType]);
 
 	return { users, isLoading };
 }
@@ -106,7 +106,7 @@ export function useGroupsByTarget(targetId: string | null, targetType: TargetTyp
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
 		}
-	}, [targetId, targetType]);
+	}, [dispatch, targetId, targetType]);
 
 	return { groups, isLoading };
 }
