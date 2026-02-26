@@ -40,12 +40,12 @@ export function useRolesByReceiver(receiverId: string | null, receiverType: Rece
 		if (receiverId && receiverType) {
 			setIsLoading(true);
 			const graph = buildRolesByReceiverQuery(receiverId);
-			dispatch(roleActions.listRoles({ graph }))
+			dispatch(roleActions.listRoles({ listQuery: graph }))
 				.unwrap()
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
 		}
-	}, [dispatch, receiverId, receiverType]);
+	}, [receiverId, receiverType]);
 
 	return { roles, isLoading };
 }
@@ -59,12 +59,12 @@ export function useRoleSuitesByReceiver(receiverId: string | null, receiverType:
 		if (receiverId && receiverType) {
 			setIsLoading(true);
 			const graph = buildRoleSuitesByReceiverQuery(receiverId);
-			dispatch(roleSuiteActions.listRoleSuites({ graph }))
+			dispatch(roleSuiteActions.listRoleSuites({ listQuery: graph }))
 				.unwrap()
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
 		}
-	}, [dispatch, receiverId, receiverType]);
+	}, [receiverId, receiverType]);
 
 	return { roleSuites, isLoading };
 }
@@ -77,15 +77,15 @@ export function useUsersByTarget(targetId: string | null, targetType: TargetType
 	React.useEffect(() => {
 		if (targetId && targetType) {
 			setIsLoading(true);
-			const query = targetType === TargetType.ROLE
+			const graph = targetType === TargetType.ROLE
 				? buildUsersByRoleQuery(targetId)
 				: buildUsersByRoleSuiteQuery(targetId);
-			dispatch(identityActions.listUsers({ query }))
+			dispatch(identityActions.listUsers({ graph: graph }))
 				.unwrap()
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
 		}
-	}, [dispatch, targetId, targetType]);
+	}, [targetId, targetType]);
 
 	return { users, isLoading };
 }
@@ -98,16 +98,15 @@ export function useGroupsByTarget(targetId: string | null, targetType: TargetTyp
 	React.useEffect(() => {
 		if (targetId && targetType) {
 			setIsLoading(true);
-			const query = targetType === TargetType.ROLE
+			const graph = targetType === TargetType.ROLE
 				? buildGroupsByRoleQuery(targetId)
 				: buildGroupsByRoleSuiteQuery(targetId);
-			dispatch(identityActions.listGroups({ query }))
+			dispatch(identityActions.listGroups({ graph: graph }))
 				.unwrap()
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
 		}
-	}, [dispatch, targetId, targetType]);
+	}, [targetId, targetType]);
 
 	return { groups, isLoading };
 }
-

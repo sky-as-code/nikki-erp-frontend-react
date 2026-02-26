@@ -14,11 +14,11 @@ export function useRevokeRequestList() {
 
 	React.useEffect(() => {
 		dispatch(revokeRequestActions.listRevokeRequests());
-	}, [dispatch]);
+	}, []);
 
 	const handleRefresh = React.useCallback(() => {
 		dispatch(revokeRequestActions.listRevokeRequests());
-	}, [dispatch]);
+	}, []);
 
 	return {
 		revokeRequests,
@@ -26,4 +26,3 @@ export function useRevokeRequestList() {
 		handleRefresh,
 	};
 }
-

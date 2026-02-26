@@ -40,7 +40,7 @@ export type ListResponse<T> = {
 export type ListQuery = {
 	page?: number;
 	size?: number;
-	query?: Record<string, unknown>;
+	graph?: Record<string, unknown>;
 	withGroups?: boolean;
 	withOrgs?: boolean;
 	withHierarchies?: boolean;
@@ -51,10 +51,10 @@ export type ListQuery = {
 export async function listUsers(params?: ListQuery): Promise<ListResponse<IdentityUserDto>> {
 	const options: Options = {};
 	if (params) {
-		const { query, ...rest } = params;
+		const { graph, ...rest } = params;
 		(options as any).searchParams = {
 			...rest,
-			query: query ? JSON.stringify(query) : undefined,
+			graph: graph ? JSON.stringify(graph) : undefined,
 		};
 	}
 	return get<ListResponse<IdentityUserDto>>('identity/users', options);
@@ -101,10 +101,10 @@ export async function deleteUser(id: string, params?: { transferredManagerId?: s
 export async function listGroups(params?: ListQuery): Promise<ListResponse<IdentityGroupDto>> {
 	const options: Options = {};
 	if (params) {
-		const { query, ...rest } = params;
+		const { graph, ...rest } = params;
 		(options as any).searchParams = {
 			...rest,
-			query: query ? JSON.stringify(query) : undefined,
+			graph: graph ? JSON.stringify(graph) : undefined,
 		};
 	}
 	return get<ListResponse<IdentityGroupDto>>('identity/groups', options);
@@ -159,10 +159,10 @@ export type IdentityOrgDto = {
 export async function listOrgs(params?: ListQuery): Promise<ListResponse<IdentityOrgDto>> {
 	const options: Options = {};
 	if (params) {
-		const { query, ...rest } = params;
+		const { graph, ...rest } = params;
 		(options as any).searchParams = {
 			...rest,
-			query: query ? JSON.stringify(query) : undefined,
+			graph: graph ? JSON.stringify(graph) : undefined,
 		};
 	}
 	return get<ListResponse<IdentityOrgDto>>('identity/organizations', options);

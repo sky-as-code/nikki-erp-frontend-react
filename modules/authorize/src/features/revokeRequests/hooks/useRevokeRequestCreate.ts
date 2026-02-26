@@ -1,5 +1,5 @@
-import { AuthorizeDispatch, revokeRequestActions, selectCreateRevokeRequest } from '@/appState';
 import { useUIState } from '@nikkierp/shell/contexts';
+import { useUserContext } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,16 +7,15 @@ import { useNavigate, useLocation, resolvePath } from 'react-router';
 
 import type { CreateRevokeRequestInput } from '@/features/revokeRequests/revokeRequestService';
 
+import { AuthorizeDispatch, revokeRequestActions, selectCreateRevokeRequest } from '@/appState';
 import { handleGoBack } from '@/utils';
 
 
-
-
-function prepareCreateData(data: any): CreateRevokeRequestInput {
+function prepareCreateData(data: any, userId: string): CreateRevokeRequestInput {
 	return {
 		attachmentUrl: data.attachmentUrl || undefined,
 		comment: data.comment || undefined,
-		requestorId: '01JWNMZ36QHC7CQQ748H9NQ6J6', // Mock user ID - TODO: get from user context
+		requestorId: userId,
 		receiverType: data.receiverType as CreateRevokeRequestInput['receiverType'],
 		receiverId: data.receiverId,
 		targetType: data.targetType as CreateRevokeRequestInput['targetType'],
@@ -26,14 +25,16 @@ function prepareCreateData(data: any): CreateRevokeRequestInput {
 
 function useSubmitHandler(
 	dispatch: AuthorizeDispatch,
+	userId: string,
 ) {
 	return React.useCallback((data: any) => {
-		const requestData = prepareCreateData(data);
+		const requestData = prepareCreateData(data, userId);
 		dispatch(revokeRequestActions.createRevokeRequest(requestData));
-	}, [dispatch]);
+	}, [userId]);
 }
 
 export function useRevokeRequestCreateHandlers() {
+	const userContext = useUserContext();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
@@ -61,7 +62,7 @@ export function useRevokeRequestCreateHandlers() {
 	}, [create.status, create.error, notification, translate, dispatch, navigate, location]);
 
 	const handleCancel = handleGoBack(navigate, location);
-	const handleSubmit = useSubmitHandler(dispatch);
+	const handleSubmit = useSubmitHandler(dispatch, userContext.user!.id);
 
 	return { isSubmitting, handleCancel, handleSubmit };
 }

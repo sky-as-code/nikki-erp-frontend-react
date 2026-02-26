@@ -1,5 +1,6 @@
 import { cleanFormData } from '@nikkierp/common/utils';
 import { useUIState } from '@nikkierp/shell/contexts';
+import { useUserContext } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -45,7 +46,7 @@ function useEntitlementCreateData() {
 function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) {
 	return React.useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
-	}, [navigate, location]);
+	}, [location]);
 }
 
 function useSubmitHandler(
@@ -54,6 +55,7 @@ function useSubmitHandler(
 	dispatch: AuthorizeDispatch,
 	notification: ReturnType<typeof useUIState>['notification'],
 	translate: ReturnType<typeof useTranslation>['t'],
+	userId: string,
 ) {
 	return React.useCallback((data: unknown, form: FormType) => {
 		const formData = cleanFormData(data as Partial<Entitlement>);
@@ -63,15 +65,16 @@ function useSubmitHandler(
 		}
 
 		formData.actionExpr = buildActionExpr(formData, resources, actions);
-		formData.createdBy = '01JWNNJGS70Y07MBEV3AQ0M526';
+		formData.createdBy = userId;
 
 		dispatch(entitlementActions.createEntitlement(
 			formData as Entitlement,
 		));
-	}, [dispatch, notification, translate, resources, actions]);
+	}, [notification, translate, resources, actions]);
 }
 
 export function useEntitlementCreate() {
+	const userContext = useUserContext();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
@@ -89,6 +92,7 @@ export function useEntitlementCreate() {
 		dispatch,
 		notification,
 		translate,
+		userContext.user!.id,
 	);
 
 	const isSubmitting = createCommand.status === 'pending';
@@ -111,7 +115,7 @@ export function useEntitlementCreate() {
 			);
 			dispatch(entitlementActions.resetCreateEntitlement());
 		}
-	}, [createCommand, location.pathname]);
+	}, [createCommand, location]);
 
 	return { isSubmitting, handleCancel, handleSubmit, resources };
 }

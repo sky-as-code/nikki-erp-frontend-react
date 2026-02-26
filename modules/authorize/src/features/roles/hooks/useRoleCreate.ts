@@ -1,20 +1,17 @@
-import { AuthorizeDispatch, roleActions, selectCreateRole } from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
 import { useUIState } from '@nikkierp/shell/contexts';
+import { useUserContext } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
+import { AuthorizeDispatch, roleActions, selectCreateRole } from '@/appState';
 import { Role } from '@/features/roles/types';
 
 
-
-type CreateRoleInput = Omit<Role, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'entitlementsCount' | 'assignmentsCount' | 'suitesCount' | 'ownerName'>;
-
-
-
 export function useRoleCreate() {
+	const userContext = useUserContext();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
@@ -26,13 +23,13 @@ export function useRoleCreate() {
 
 	const handleCancel = React.useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
-	}, [navigate, location]);
+	}, []);
 
 	const handleSubmit = React.useCallback((data: unknown) => {
 		const formData = cleanFormData(data as Partial<Role>);
-		formData.createdBy = '01JWNNJGS70Y07MBEV3AQ0M526';
-		dispatch(roleActions.createRole(formData as CreateRoleInput));
-	}, [dispatch]);
+		formData.createdBy = userContext.user!.id;
+		dispatch(roleActions.createRole(formData as Role));
+	}, []);
 
 	React.useEffect(() => {
 		if (create.status === 'success') {
@@ -47,7 +44,7 @@ export function useRoleCreate() {
 			notification.showError(errorMsg, translate('nikki.general.messages.error'));
 			dispatch(roleActions.resetCreateRole());
 		}
-	}, [create.status, create.data, create.error, notification, translate, dispatch, handleCancel]);
+	}, [create, notification, translate]);
 
 	return { isSubmitting, handleCancel, handleSubmit };
 }

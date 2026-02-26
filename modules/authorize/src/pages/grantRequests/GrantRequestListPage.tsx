@@ -18,7 +18,7 @@ import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 function GrantRequestListPageBody(): React.ReactNode {
 	const navigate = useNavigate();
 	const { t: translate } = useTranslation();
-	const { grantRequests, isLoadingList } = useMicroAppSelector(selectGrantRequestState);
+	const { grantRequests, list } = useMicroAppSelector(selectGrantRequestState);
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const deleteHandler = useGrantRequestDelete(grantRequests, dispatch);
 	const permissions = useAuthorizePermissions();
@@ -62,7 +62,7 @@ function GrantRequestListPageBody(): React.ReactNode {
 					<GrantRequestTable
 						columns={columns}
 						data={grantRequests}
-						isLoading={isLoadingList}
+						isLoading={list.isLoading}
 						schema={schema}
 						onViewDetail={handleViewDetail}
 						onDelete={permissions.grantRequest.canDelete ? deleteHandler.handleDeleteRequest : undefined}

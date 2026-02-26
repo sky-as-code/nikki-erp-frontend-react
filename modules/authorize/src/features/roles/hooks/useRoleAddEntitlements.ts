@@ -1,3 +1,11 @@
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
+
+import type { Entitlement } from '@/features/entitlements/types';
+
 import {
 	AuthorizeDispatch,
 	entitlementActions,
@@ -8,17 +16,7 @@ import {
 	selectResourceState,
 	selectRoleState,
 } from '@/appState';
-import { useUIState } from '@nikkierp/shell/contexts';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
-
-import type { Entitlement } from '@/features/entitlements/types';
-
 import { Role } from '@/features/roles';
-
-
 
 
 // ============ Helper Functions ============
@@ -79,8 +77,6 @@ export function useRoleAddEntitlementsData() {
 		dispatch(entitlementActions.listEntitlements());
 		dispatch(resourceActions.listResources());
 	}, [dispatch]);
-
-	console.log('role', role);
 
 	return { role, entitlements, resources, isLoading: list.isLoading };
 }

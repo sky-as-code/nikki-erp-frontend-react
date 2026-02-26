@@ -1,45 +1,23 @@
-import { AuthorizeDispatch, roleActions, roleSuiteActions, selectCreateRoleSuite, selectRoleState } from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
 import { useUIState } from '@nikkierp/shell/contexts';
+import { useUserContext } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-
-
 import type { Role } from '@/features/roles';
 import type { RoleSuite } from '@/features/roleSuites';
 
+import { AuthorizeDispatch, roleActions, roleSuiteActions, selectCreateRoleSuite, selectRoleState } from '@/appState';
 
-type CreateRoleSuiteInput = Omit<RoleSuite, 'id' | 'createdAt' | 'updatedAt' | 'etag' | 'rolesCount' | 'ownerName'>;
-
-/**
- * Validates that selected roles comply with cross-org constraints:
- * - Suite org = null → roles must have org = null
- * - Suite org = specific → roles can have org = null OR same org
- */
-function validateRoleOrgConstraints(
-	selectedRoleIds: string[],
-	roles: Role[],
-	suiteOrgId?: string,
-): string | undefined {
-	return selectedRoleIds.find((id) => {
-		const role = roles.find((r: Role) => r.id === id);
-		if (!role) return false;
-		// Domain suite: role must be domain
-		if (!suiteOrgId) return !!role.orgId;
-		// Org suite: role can be domain OR same org
-		return role.orgId !== undefined && role.orgId !== suiteOrgId;
-	});
-}
 
 function useRolesLoader(dispatch: AuthorizeDispatch, roles: Role[]) {
 	React.useEffect(() => {
 		if (roles.length === 0) {
-			dispatch(roleActions.listRoles());
+			dispatch(roleActions.listRoles({}));
 		}
-	}, [dispatch, roles.length]);
+	}, [roles.length]);
 }
 
 /**
@@ -60,7 +38,7 @@ function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: Re
 	return React.useCallback(() => {
 		const parent = resolvePath('..', location.pathname).pathname;
 		navigate(parent);
-	}, [navigate, location]);
+	}, [location]);
 }
 
 function useCreateState() {
@@ -78,13 +56,14 @@ export function useRoleSuiteCreate() {
 	const { roles } = useMicroAppSelector(selectRoleState);
 	const create = useMicroAppSelector(selectCreateRoleSuite);
 	const { selectedRoleIds, setSelectedRoleIds } = useCreateState();
+	const userContext = useUserContext();
 
 	const isSubmitting = create.status === 'pending';
 
 	useRolesLoader(dispatch, roles);
 	const handleCancel = useCancelHandler(navigate, location);
 	const availableRolesByOrg = useAvailableRolesByOrg(roles);
-	const handleSubmit = useCreateSubmitHandler(dispatch, selectedRoleIds, roles);
+	const handleSubmit = useCreateSubmitHandler(dispatch, selectedRoleIds, roles, userContext.user!.id);
 
 	React.useEffect(() => {
 		if (create.status === 'success') {
@@ -99,7 +78,7 @@ export function useRoleSuiteCreate() {
 			notification.showError(errorMsg, translate('nikki.general.messages.error'));
 			dispatch(roleSuiteActions.resetCreateRoleSuite());
 		}
-	}, [create.status, create.data, create.error, notification, translate, dispatch, handleCancel]);
+	}, [create, notification, translate]);
 
 	return {
 		isSubmitting, handleCancel, handleSubmit, selectedRoleIds, setSelectedRoleIds, availableRolesByOrg, roles,
@@ -110,13 +89,14 @@ function useCreateSubmitHandler(
 	dispatch: AuthorizeDispatch,
 	selectedRoleIds: string[],
 	roles: Role[],
+	userId: string,
 ) {
 	return React.useCallback((data: unknown) => {
 		const formData = cleanFormData(data as Partial<RoleSuite>);
-		formData.createdBy = '01JWNNJGS70Y07MBEV3AQ0M526';
+		formData.createdBy = userId;
 		formData.roleIds = selectedRoleIds;
 
-		dispatch(roleSuiteActions.createRoleSuite(formData as CreateRoleSuiteInput));
-	}, [dispatch, selectedRoleIds]);
+		dispatch(roleSuiteActions.createRoleSuite(formData as RoleSuite));
+	}, [selectedRoleIds, userId]);
 }
 
