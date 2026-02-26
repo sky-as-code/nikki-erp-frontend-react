@@ -5,16 +5,22 @@
 }
 
 .goHomeButton {
-	animation: scaleInRotateY 0.3s ease-out;
+	transition: transform 0.2s ease-out;
 }
 
-@keyframes scaleInRotateY {
+.goHomeButton:active {
+	transform: scale(0.9);
+}
+
+.goHomeButtonClick {
+	animation: clickPulse 0.5s ease-out;
+}
+
+@keyframes clickPulse {
 	from {
-		transform: rotateY(-90deg) scale(0.8);
-		opacity: 0;
+		transform: rotateY(0deg);
 	}
 	to {
-		transform: rotateY(0deg) scale(1);
-		opacity: 1;
+		transform: rotateY(180deg);
 	}
 }

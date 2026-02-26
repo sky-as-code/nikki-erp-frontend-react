@@ -144,11 +144,11 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 		<Combobox.Target>
 			<TriggerComponent
 				px={'xs'}
-				rightSection={<IconChevronDown size={16}/>}
+				rightSection={<IconChevronDown size={14}/>}
 				onClick={() => combobox.toggleDropdown()}
 			>
 				{value
-					? <Text ta={'left'} fz={'md'} fw={'bolder'} miw={50}>{value}</Text>
+					? <Text ta={'left'} fz={'h5'} fw={'bolder'} miw={20}>{value}</Text>
 					: <Input.Placeholder>
 						{props.unselectedPlaceholder ?? 'No item selected'}
 					</Input.Placeholder>}

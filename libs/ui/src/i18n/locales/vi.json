@@ -793,24 +793,28 @@
 				"kiosk_warnings": "Cảnh báo",
 				"kiosk_devices": "Thiết bị",
 				"presentation": "Trình chiếu",
-				"ads": "Trình chiếu",
+				"gallery": "Thư viện",
+				"playlists": "Danh sách phát",
 				"events": "Sự kiện",
 				"appearance": "Giao diện",
 				"themes": "Chủ đề",
 				"device": "Thiết bị",
 				"miniGame": "Trò chơi",
-				"kiosk_settings": "Cài đặt",
-				"kiosk_template": "Mẫu Kiosk",
+				"kiosk_models": "Dòng máy",
+				"kiosk_settings": "Cài đặt Kiosk",
+				"settings": "Cài đặt",
 				"payment": "Thanh toán",
 				"reports": "Báo cáo",
+				"business_report": "Báo cáo kinh doanh",
+				"revenue_report": "Báo cáo doanh thu",
+				"business_overview": "Tổng quan kinh doanh",
+				"pnl_report": "Báo cáo kết quả kinh doanh",
+				"operations_report": "Báo cáo vận hành",
+				"operations_overview": "Tổng quan vận hành",
 				"revenue_overview": "Tổng quan doanh thu",
-				"revenue_by_kiosk": "Doanh thu theo Kiosk",
-				"revenue_by_product": "Doanh thu theo Sản phẩm",
-				"revenue_by_payment_method": "Phương thức thanh toán",
-				"refunds_report": "Hoàn tiền",
-				"orders_report": "Đơn hàng",
-				"inventory_report": "Hàng tồn",
-				"operations_report": "Vận hành"
+				"refunds_report": "Báo cáo hoàn tiền",
+				"orders_report": "Báo cáo đơn hàng",
+				"inventory_report": "Báo cáo hàng tồn"
 			},
 			"overview": {
 				"title": "Tổng quan - Máy bán hàng tự động",
@@ -1200,9 +1204,67 @@
 					}
 				}
 			},
-			"kioskSettings": {
+			"settingTemplates": {
 				"detail": {
-					"title": "Chi tiết Cài đặt Kiosk"
+					"title": "Chi tiết Mẫu cài đặt"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã mẫu",
+					"name": "Tên",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"createdAt": "Ngày tạo",
+					"kiosks": "Danh sách Kiosk",
+					"products": "Danh sách Sản phẩm",
+					"theme": "Chủ đề",
+					"game": "Trò chơi"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_templates": "Không tìm thấy mẫu cài đặt nào"
+				}
+			},
+			"kioskSettings": {
+				"title": "Cài đặt Kiosk",
+				"detail": {
+					"title": "Chi tiết cài đặt Kiosk"
+				},
+				"sections": {
+					"basicInfo": "Thông tin cơ bản"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã cài đặt",
+					"name": "Tên",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"brand": "Thương hiệu",
+					"createdAt": "Ngày tạo",
+					"kiosks": "Danh sách Kiosk",
+					"products": "Danh sách Sản phẩm",
+					"theme": "Chủ đề trình chiếu",
+					"game": "Trò chơi"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_settings": "Không tìm thấy cài đặt kiosk nào"
+				}
+			},
+			"settings": {
+				"title": "Cài đặt",
+				"detail": {
+					"title": "Chi tiết cài đặt"
 				},
 				"fields": {
 					"id": "Mã định danh",
@@ -1224,10 +1286,10 @@
 					"no_settings": "Không tìm thấy cài đặt nào"
 				}
 			},
-			"kioskTemplate": {
-				"title": "Mẫu Kiosk",
+			"kioskModels": {
+				"title": "Dòng máy",
 				"detail": {
-					"title": "Chi tiết Mẫu Kiosk"
+					"title": "Chi tiết dòng máy"
 				},
 				"sections": {
 					"basicInfo": "Thông tin cơ bản",
@@ -1238,11 +1300,11 @@
 				},
 				"fields": {
 					"id": "Mã định danh",
-					"code": "Mã mẫu",
+					"code": "Mã dòng",
 					"name": "Tên",
+					"model": "Dòng máy",
 					"description": "Mô tả",
 					"status": "Trạng thái",
-					"template": "Mẫu kiosk",
 					"operatingMode": "Chế độ hoạt động",
 					"kioskType": "Loại kiosk",
 					"interfaceMode": "Chế độ giao diện",
@@ -1281,7 +1343,7 @@
 					"status": "Lọc theo trạng thái"
 				},
 				"messages": {
-					"no_templates": "Không tìm thấy mẫu nào",
+					"no_models": "Không tìm thấy mô hình nào",
 					"no_slideshow": "Chưa có trình chiếu",
 					"no_trays": "Chưa có khay nào. Nhấn nút 'Thêm hàng' để thêm khay."
 				},

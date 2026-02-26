@@ -726,12 +726,23 @@
 					"kiosk_devices": "Kiosk Devices",
 					"presentation": "Presentation",
 					"ads": "Presentation",
+					"gallery": "Gallery",
+					"playlists": "Playlists",
 					"device": "Devices",
 					"events": "Events",
+					"reports": "Reports",
 					"appearance": "Appearance",
 					"themes": "Themes",
 					"miniGame": "Mini Game",
+					"kiosk_models": "Kiosk Models",
 					"kiosk_settings": "Kiosk Settings",
+					"settings": "Settings",
+					"business_report": "Business Report",
+					"revenue_report": "Revenue Report",
+					"business_overview": "Business Overview",
+					"pnl_report": "Profit & Loss Report",
+					"operations_report": "Operations Report",
+					"operations_overview": "Operations Overview",
 					"revenue_overview": "Revenue Overview",
 					"revenue_by_kiosk": "Revenue by Kiosk",
 					"revenue_by_product": "Revenue by Product",
@@ -739,8 +750,6 @@
 					"refunds_report": "Refunds Report",
 					"orders_report": "Orders Report",
 					"inventory_report": "Inventory Report",
-					"operations_report": "Operations Report",
-					"kiosk_template": "Kiosk Template",
 					"payment": "Payment"
 				},
 				"overview": {
@@ -1084,9 +1093,67 @@
 						}
 					}
 				},
+				"settingTemplates": {
+					"detail": {
+						"title": "Setting Template Details"
+					},
+					"fields": {
+						"id": "ID",
+						"code": "Code",
+						"name": "Name",
+						"description": "Description",
+						"status": "Status",
+						"createdAt": "Created At",
+						"kiosks": "Kiosk List",
+						"products": "Product List",
+						"theme": "Theme",
+						"game": "Game"
+					},
+					"search": {
+						"placeholder": "Search by code or name..."
+					},
+					"filter": {
+						"status": "Filter by Status"
+					},
+					"messages": {
+						"no_templates": "No setting templates found"
+					}
+				},
 				"kioskSettings": {
+					"title": "Kiosk Settings",
 					"detail": {
 						"title": "Kiosk Setting Details"
+					},
+					"sections": {
+						"basicInfo": "Basic Information"
+					},
+					"fields": {
+						"id": "ID",
+						"code": "Code",
+						"name": "Name",
+						"description": "Description",
+						"status": "Status",
+						"brand": "Brand",
+						"createdAt": "Created At",
+						"kiosks": "Kiosk List",
+						"products": "Product List",
+						"theme": "Theme",
+						"game": "Game"
+					},
+					"search": {
+						"placeholder": "Search by code or name..."
+					},
+					"filter": {
+						"status": "Filter by Status"
+					},
+					"messages": {
+						"no_settings": "No kiosk settings found"
+					}
+				},
+				"settings": {
+					"title": "Settings",
+					"detail": {
+						"title": "Setting Detail"
 					},
 					"fields": {
 						"id": "ID",
@@ -1108,10 +1175,10 @@
 						"no_settings": "No settings found"
 					}
 				},
-				"kioskTemplate": {
-					"title": "Kiosk Templates",
+				"kioskModels": {
+					"title": "Kiosk Models",
 					"detail": {
-						"title": "Kiosk Template Details"
+						"title": "Kiosk Model Details"
 					},
 					"sections": {
 						"basicInfo": "Basic Information",
@@ -1124,6 +1191,7 @@
 						"id": "ID",
 						"code": "Code",
 						"name": "Name",
+						"model": "Kiosk Model",
 						"description": "Description",
 						"status": "Status",
 						"operatingMode": "Operating Mode",
@@ -1164,7 +1232,7 @@
 						"status": "Filter by Status"
 					},
 					"messages": {
-						"no_templates": "No templates found",
+						"no_models": "No models found",
 						"no_slideshow": "No slideshow",
 						"no_trays": "No trays yet. Click 'Add Row' button to add a tray."
 					},

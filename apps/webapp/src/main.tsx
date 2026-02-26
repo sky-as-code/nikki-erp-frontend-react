@@ -40,7 +40,7 @@ const microApps: MicroAppMetadata[] = [
 		basePath: 'vending-machine',
 		// Uncomment when mounting as ShadowDOM
 		// bundleUrl: () => import(vendingMachineBundleUrl),
-		bundleUrl: () => import('@nikkierp/microapp-vendingMachine'),
+		bundleUrl: () => import('@nikkierp/microapp-vdmc'),
 		htmlTag: 'nikkiapp-vending-machine',
 	},
 

@@ -1,11 +1,12 @@
 import {
 	Box,
 	Button,
+	Divider,
 	Flex, Group,
 	useMantineColorScheme, useMantineTheme,
 } from '@mantine/core';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
-import { IconCaretLeftFilled } from '@tabler/icons-react';
+import { IconCategoryFilled } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router';
@@ -39,12 +40,15 @@ export const Header: React.FC = () => {
 				component='header' align='center' justify='space-between'
 				display={{ base: 'none', md: 'flex' }} gap={0} h='100%'
 			>
-				<Flex gap={0} h='100%' align='center'>
-					{!isRootPath && <GoHomeButton />}
-					<Flex gap={'xs'} align='center' justify='flex-start'>
+				<Flex gap={'xs'} h='100%' align='center' justify='center'>
+					<GoHomeButton />
+					<Flex gap={'xs'} align='center' justify='center' h='100%'>
 						<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
-						{!isRootPath && <ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />}
-						<MenuBar />
+						{!isRootPath && <>
+							<ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />
+							<Divider orientation='vertical' h={'100%'}/>
+							<MenuBar />
+						</>}
 					</Flex>
 				</Flex>
 
@@ -78,8 +82,14 @@ const HeaderMobile: React.FC = () => {
 const GoHomeButton: React.FC = () => {
 	const navigate = useNavigate();
 	const { orgSlug } = useActiveOrgModule();
+	const [isAnimating, setIsAnimating] = React.useState(false);
 
 	const handleClick = () => {
+		setIsAnimating(true);
+	};
+
+	const handleAnimationEnd = () => {
+		setIsAnimating(false);
 		if (orgSlug) {
 			navigate(`/${orgSlug}`);
 		}
@@ -90,12 +100,13 @@ const GoHomeButton: React.FC = () => {
 
 	return (
 		<Button
-			p={0} mb={2}
+			p={0}
 			variant='transparent'
 			onClick={handleClick}
-			className={classes.goHomeButton}
+			onAnimationEnd={handleAnimationEnd}
+			className={clsx(classes.goHomeButton, isAnimating && classes.goHomeButtonClick)}
 		>
-			<IconCaretLeftFilled size={24}/>
+			<IconCategoryFilled size={26} color={'var(--mantine-color-blue-6)'}/>
 		</Button>
 	);
 };
