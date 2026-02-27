@@ -3,8 +3,14 @@ import { createSelector } from '@reduxjs/toolkit';
 import { useSelector } from 'react-redux';
 
 import { GLOBAL_CONTEXT_SLUG } from '../constants';
-import { ACTIONS, ACTIONS_FOR_SYSTEM_CONTEXT, RESOURCE_TO_MODULE, SYSTEM_CONTEXT_RESOURCES } from './permissionConstants';
-import { hasFullAccess, hasPermission } from './permissionUtils';
+import {
+	ACTIONS,
+	ACTIONS_FOR_SYSTEM_CONTEXT,
+	MODULE_ACCESS_POLICY,
+	RESOURCE_TO_MODULE,
+	SYSTEM_CONTEXT_RESOURCES,
+} from './permissionConstants';
+import { hasFullAccess, hasPermission, hasPermissionAnyScope } from './permissionUtils';
 import { DEFAULT_MODULES, Module, Organization, PermissionScopeType } from './userContextService';
 import { UserContextState } from './userContextSlice';
 
@@ -71,7 +77,15 @@ export const useCanAccessModule = (moduleSlug: string) => {
 	const moduleResources = Object.entries(RESOURCE_TO_MODULE)
 		.filter(([, slug]) => slug === moduleSlug)
 		.map(([resource]) => resource);
+	if (moduleResources.length === 0) return true;
 	const actionsToCheck = [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE];
+	const moduleAccessMode = MODULE_ACCESS_POLICY[moduleSlug] ?? 'strict_context';
+
+	if (moduleAccessMode === 'any_scope') {
+		return moduleResources.some((resource) =>
+			actionsToCheck.some((action) => hasPermissionAnyScope(permissions, resource, action)),
+		);
+	}
 
 	return moduleResources.some((resource) =>
 		actionsToCheck.some((action) => hasPermission(permissions, resource, action)),
@@ -89,7 +103,9 @@ export const useCanAccessModuleForContext = (
 	const moduleResources = Object.entries(RESOURCE_TO_MODULE)
 		.filter(([, slug]) => slug === moduleSlug)
 		.map(([resource]) => resource);
+	if (moduleResources.length === 0) return true;
 	const actionsToCheck = [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE];
+	const moduleAccessMode = MODULE_ACCESS_POLICY[moduleSlug] ?? 'strict_context';
 
 	if (orgSlug === GLOBAL_CONTEXT_SLUG) {
 		const globalContextResources = collectSystemContextResources(permissions);
@@ -97,6 +113,12 @@ export const useCanAccessModuleForContext = (
 			moduleResources.filter((resource) => globalContextResources.includes(resource));
 		return globalContextModuleResources.some((resource) =>
 			actionsToCheck.some((action) => hasPermission(permissions, resource, action, contextScope)),
+		);
+	}
+
+	if (moduleAccessMode === 'any_scope') {
+		return moduleResources.some((resource) =>
+			actionsToCheck.some((action) => hasPermissionAnyScope(permissions, resource, action)),
 		);
 	}
 

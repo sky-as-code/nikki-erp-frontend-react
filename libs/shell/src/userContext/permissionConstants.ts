@@ -45,7 +45,6 @@ export const SYSTEM_CONTEXT_RESOURCES: string[] = [
 	RESOURCES.AUTHZ_ACTION,
 	RESOURCES.AUTHZ_ENTITLEMENT,
 	RESOURCES.IDENTITY_ORGANIZATION,
-	RESOURCES.IDENTITY_HIERARCHY_LEVEL,
 ];
 
 export const ACTIONS_FOR_SYSTEM_CONTEXT = [
@@ -54,3 +53,10 @@ export const ACTIONS_FOR_SYSTEM_CONTEXT = [
 	ACTIONS.UPDATE,
 	ACTIONS.DELETE,
 ];
+
+export type ModuleAccessMode = 'strict_context' | 'any_scope';
+
+export const MODULE_ACCESS_POLICY: Record<string, ModuleAccessMode> = {
+	authorize: 'any_scope',
+	identity: 'strict_context',
+};
