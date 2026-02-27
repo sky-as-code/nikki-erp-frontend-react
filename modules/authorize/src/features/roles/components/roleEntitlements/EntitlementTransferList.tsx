@@ -2,13 +2,13 @@ import { Group } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ScopeType } from '@/features/resources';
-
 import { AvailableEntitlementsList } from './AvailableEntitlementsList';
 import { SelectedEntitlementsList } from './SelectedEntitlementsList';
 
 import type { Entitlement } from '@/features/entitlements';
 import type { Resource } from '@/features/resources';
+
+import { ScopeType } from '@/features/resources';
 
 
 export interface EntitlementTransferListProps {
@@ -28,7 +28,7 @@ export interface EntitlementTransferListProps {
 function useRequiresScopeRef(resources: Resource[]) {
 	return React.useCallback((entitlement: Entitlement): boolean => {
 		if (!entitlement.resourceId) return true;
-		const resource = resources.find((r) => r.id === entitlement.resourceId);
+		const resource = (resources ?? []).find((r) => r.id === entitlement.resourceId);
 
 		if (!resource) return true;
 

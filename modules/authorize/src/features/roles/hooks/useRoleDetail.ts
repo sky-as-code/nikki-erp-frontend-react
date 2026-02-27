@@ -1,9 +1,3 @@
-import {
-	AuthorizeDispatch,
-	roleActions,
-	selectRoleState,
-	selectUpdateRole,
-} from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
@@ -13,9 +7,17 @@ import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
 import type { TFunction } from 'i18next';
 
+import {
+	AuthorizeDispatch,
+	identityActions,
+	roleActions,
+	selectGroupList,
+	selectOrgList,
+	selectRoleState,
+	selectUserList,
+	selectUpdateRole,
+} from '@/appState';
 import { Role } from '@/features/roles/types';
-
-
 
 
 type NotificationType = ReturnType<typeof useUIState>['notification'];
@@ -54,9 +56,12 @@ function buildUpdatePayload(role: Role, validation: ValidationResult) {
 	const descChanged = validation.newDescription !== (role.description ?? null);
 	return {
 		id: role.id,
-		etag: role.etag || '',
-		name: validation.newName !== role.name ? validation.newName : undefined,
-		description: descChanged ? (validation.newDescription ?? undefined) : undefined,
+		etag: role.etag,
+		role: {
+			...role,
+			name: validation.newName !== role.name ? validation.newName : undefined,
+			description: descChanged ? (validation.newDescription ?? undefined) : undefined,
+		},
 	};
 }
 
@@ -78,10 +83,31 @@ function useRoleDataFetching(roleId: string | undefined) {
 	}, [dispatch, roleId]);
 
 	React.useEffect(() => {
-		if (roles.length === 0) dispatch(roleActions.listRoles());
+		if (roles.length === 0) dispatch(roleActions.listRoles({}));
 	}, [dispatch, roles.length]);
 
 	return { isLoadingList: list.isLoading, isLoadingDetail: list.isLoading };
+}
+
+function useRoleDetailLookups() {
+	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
+	const orgs = useMicroAppSelector(selectOrgList);
+	const users = useMicroAppSelector(selectUserList);
+	const groups = useMicroAppSelector(selectGroupList);
+
+	React.useEffect(() => {
+		if (orgs.length === 0) {
+			dispatch(identityActions.listOrgs());
+		}
+		if (users.length === 0) {
+			dispatch(identityActions.listUsers());
+		}
+		if (groups.length === 0) {
+			dispatch(identityActions.listGroups());
+		}
+	}, [dispatch, orgs.length, users.length, groups.length]);
+
+	return { orgs, users, groups };
 }
 
 export function useRoleDetailData() {
@@ -121,7 +147,8 @@ export function useRoleDetail(role: Role | undefined) {
 
 		if (!validation.isValid) return;
 
-		dispatch(roleActions.updateRole(buildUpdatePayload(role, validation)));
+		const payload = buildUpdatePayload(role, validation);
+		dispatch(roleActions.updateRole({ id: role.id, etag: role.etag || '', role: payload.role as Role }));
 	}, [dispatch, notification, role, translate]);
 
 	React.useEffect(() => {
@@ -138,4 +165,23 @@ export function useRoleDetail(role: Role | undefined) {
 	}, [update.status, update.error, role, notification, translate, dispatch, navigateBack]);
 
 	return { isSubmitting, handleGoBack: navigateBack, handleSubmit };
+}
+
+export function useRoleDetailPage() {
+	const navigate = useNavigate();
+	const { role, isLoading } = useRoleDetailData();
+	const handlers = useRoleDetail(role);
+	const lookups = useRoleDetailLookups();
+
+	const handleAddEntitlements = React.useCallback(() => navigate('add-entitlements'), [navigate]);
+	const handleRemoveEntitlements = React.useCallback(() => navigate('remove-entitlements'), [navigate]);
+
+	return {
+		role,
+		isLoading,
+		...handlers,
+		...lookups,
+		handleAddEntitlements,
+		handleRemoveEntitlements,
+	};
 }
