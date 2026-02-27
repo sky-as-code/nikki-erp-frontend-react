@@ -7,8 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { GrantRequest } from '@/features/grantRequests/types';
 
 
-
-
 export function useGrantRequestDelete(
 	grantRequests: GrantRequest[],
 	dispatch: AuthorizeDispatch,

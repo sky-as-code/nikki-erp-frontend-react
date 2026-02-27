@@ -17,6 +17,7 @@ interface RoleSuiteFormFieldsProps {
 	users?: User[];
 	groups?: Group[];
 	onOrgIdChange?: (orgId: string | undefined) => void;
+	showOrgFieldOnCreate?: boolean;
 }
 
 function BaseFields({ isCreate, users, groups }: { isCreate: boolean; users?: User[]; groups?: Group[] }) {
@@ -151,10 +152,13 @@ export const RoleSuiteFormFields: React.FC<RoleSuiteFormFieldsProps> = ({
 	users,
 	groups,
 	onOrgIdChange,
+	showOrgFieldOnCreate = true,
 }) => (
 	<>
 		<BaseFields isCreate={isCreate} users={users} groups={groups} />
 		<BooleanFields isCreate={isCreate} />
-		<OrgIdField isCreate={isCreate} orgs={orgs} onOrgIdChange={onOrgIdChange} />
+		{(!isCreate || showOrgFieldOnCreate) && (
+			<OrgIdField isCreate={isCreate} orgs={orgs} onOrgIdChange={onOrgIdChange} />
+		)}
 	</>
 );

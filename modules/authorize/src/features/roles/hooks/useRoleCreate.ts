@@ -10,7 +10,7 @@ import { AuthorizeDispatch, roleActions, selectCreateRole } from '@/appState';
 import { Role } from '@/features/roles/types';
 
 
-export function useRoleCreate() {
+export function useRoleCreate(forcedOrgId?: string) {
 	const userContext = useUserContext();
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -23,13 +23,16 @@ export function useRoleCreate() {
 
 	const handleCancel = React.useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
-	}, []);
+	}, [navigate, location.pathname]);
 
 	const handleSubmit = React.useCallback((data: unknown) => {
 		const formData = cleanFormData(data as Partial<Role>);
 		formData.createdBy = userContext.user!.id;
+		if (forcedOrgId) {
+			formData.orgId = forcedOrgId;
+		}
 		dispatch(roleActions.createRole(formData as Role));
-	}, []);
+	}, [dispatch, userContext.user, forcedOrgId]);
 
 	React.useEffect(() => {
 		if (create.status === 'success') {
@@ -44,7 +47,7 @@ export function useRoleCreate() {
 			notification.showError(errorMsg, translate('nikki.general.messages.error'));
 			dispatch(roleActions.resetCreateRole());
 		}
-	}, [create, notification, translate]);
+	}, [create, notification, translate, dispatch, handleCancel]);
 
 	return { isSubmitting, handleCancel, handleSubmit };
 }

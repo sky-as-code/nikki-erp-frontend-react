@@ -21,6 +21,7 @@ import { RoleTable, roleSchema, useRoleDelete } from '@/features/roles';
 import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
+// eslint-disable-next-line max-lines-per-function
 function RoleListPageBody(): React.ReactNode {
 	const navigate = useNavigate();
 	const { t: translate } = useTranslation();
@@ -29,6 +30,8 @@ function RoleListPageBody(): React.ReactNode {
 	const { orgSlug } = useActiveOrgModule();
 	const activeOrg = useActiveOrgWithDetails();
 	const globalSlug = GLOBAL_CONTEXT_SLUG;
+	const isGlobalContext = orgSlug === globalSlug;
+	const currentOrgId = activeOrg?.id;
 
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
@@ -39,15 +42,19 @@ function RoleListPageBody(): React.ReactNode {
 	const schema = roleSchema as ModelSchema;
 
 	React.useEffect(() => {
-		const orgId = orgSlug === globalSlug ? null : activeOrg?.id;
-		dispatch(roleActions.listRoles({ orgId }));
+		if (isGlobalContext) {
+			dispatch(roleActions.listRoles({}));
+		}
+		else {
+			dispatch(roleActions.listRoles({ orgId: currentOrgId, includeDomainInOrg: true }));
+		}
 		if (users.length === 0) {
 			dispatch(identityActions.listUsers());
 		}
 		if (groups.length === 0) {
 			dispatch(identityActions.listGroups());
 		}
-	}, [dispatch, users.length, groups.length, orgSlug, activeOrg?.id]);
+	}, [dispatch, users.length, groups.length, isGlobalContext, currentOrgId]);
 
 	const handleViewDetail = React.useCallback((roleId: string) => {
 		navigate(roleId);
@@ -62,9 +69,20 @@ function RoleListPageBody(): React.ReactNode {
 	}, [navigate]);
 
 	const handleRefresh = React.useCallback(() => {
-		const orgId = orgSlug === globalSlug ? null : activeOrg?.id;
-		dispatch(roleActions.listRoles({ orgId }));
-	}, [dispatch, orgSlug, activeOrg?.id, globalSlug]);
+		if (isGlobalContext) {
+			dispatch(roleActions.listRoles({}));
+		}
+		else {
+			dispatch(roleActions.listRoles({ orgId: currentOrgId, includeDomainInOrg: true }));
+		}
+	}, [dispatch, isGlobalContext, currentOrgId]);
+
+	const canMutateRowInContext = React.useCallback((row: Record<string, unknown>) => {
+		if (isGlobalContext) return true;
+		const rowOrg = row.org as { id?: string } | undefined;
+		const rowOrgId = (row.orgId as string | undefined) ?? rowOrg?.id;
+		return Boolean(currentOrgId) && rowOrgId === currentOrgId;
+	}, [isGlobalContext, currentOrgId]);
 
 	return (
 		<>
@@ -85,6 +103,8 @@ function RoleListPageBody(): React.ReactNode {
 						onViewDetail={handleViewDetail}
 						onEdit={permissions.role.canUpdate ? handleEdit : undefined}
 						onDelete={permissions.role.canDelete ? deleteHandler.handleDeleteRequest : undefined}
+						canEditRow={canMutateRowInContext}
+						canDeleteRow={canMutateRowInContext}
 					/>
 				</Paper>
 			</Stack>

@@ -14,6 +14,7 @@ interface RoleFormFieldsProps {
 	orgs?: Org[];
 	users?: User[];
 	groups?: Group[];
+	showOrgFieldOnCreate?: boolean;
 }
 
 // eslint-disable-next-line max-lines-per-function
@@ -22,6 +23,7 @@ export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({
 	orgs = [],
 	users = [],
 	groups = [],
+	showOrgFieldOnCreate = true,
 }) => {
 	const { t: translate } = useTranslation();
 	const { control } = useFormField();
@@ -51,7 +53,7 @@ export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({
 			value: '',
 			label: translate('nikki.authorize.role.fields.org_all'),
 		},
-	], []);
+	], [translate]);
 
 	return (
 		<>
@@ -108,7 +110,7 @@ export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({
 					disabled: !isCreate,
 				}}
 			/>
-			{isCreate ? (
+			{isCreate && showOrgFieldOnCreate ? (
 				<EntitySelectField
 					fieldName='orgId'
 					entities={orgs}
@@ -116,7 +118,7 @@ export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({
 					getEntityName={(o) => o.displayName}
 					prependOptions={globalOption}
 				/>
-			) : (
+			) : !isCreate ? (
 				<EntityDisplayField
 					fieldName='orgId'
 					entities={orgs}
@@ -124,7 +126,7 @@ export const RoleFormFields: React.FC<RoleFormFieldsProps> = ({
 					getEntityName={(o) => o.displayName}
 					fallbackLabelKey='nikki.authorize.role.fields.org_all'
 				/>
-			)}
+			) : null}
 		</>
 	);
 };

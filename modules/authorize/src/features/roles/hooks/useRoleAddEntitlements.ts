@@ -99,10 +99,14 @@ export function useRoleAddEntitlements(role: Role | undefined, entitlements: Ent
 	const { handleConfirm, isSubmitting } = useConfirmHandler(role, selectedEntitlements, handleGoBack);
 
 	const handlers = useTransferHandlers(availableEntitlements, setSelectedEntitlements);
+	const handleScopeRefChange = React.useCallback((entitlementId: string, scopeRef: string) => {
+		setSelectedEntitlements((prev) =>
+			prev.map((ent) => (ent.id === entitlementId ? { ...ent, scopeRef } : ent)));
+	}, []);
 
 	return {
 		selectedEntitlements, availableEntitlements, isSubmitting, searchQuery, setSearchQuery,
-		handleGoBack, handleConfirm, ...handlers,
+		handleGoBack, handleConfirm, handleScopeRefChange, ...handlers,
 	};
 }
 

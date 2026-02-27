@@ -56,15 +56,25 @@ export const roleSuiteService = {
 	async listRoleSuites(
 		listQuery?: ListQuery,
 		orgId?: string | null,
+		includeDomainInOrg?: boolean,
 	): Promise<RoleSuite[]> {
 		const graph: Record<string, unknown> = {
 			...listQuery?.graph,
 			order: [['id', 'asc']],
 		};
 		if (orgId !== undefined) {
-			graph.if = orgId === null
-				? ['org_id', 'not_set', 'null']
-				: ['org_id', '=', orgId];
+			if (orgId === null) {
+				graph.if = ['org_id', 'not_set', 'null'];
+			}
+			else if (includeDomainInOrg) {
+				graph.or = [
+					{ if: ['org_id', '=', orgId] },
+					{ if: ['org_id', 'not_set', 'null'] },
+				];
+			}
+			else {
+				graph.if = ['org_id', '=', orgId];
+			}
 		}
 		const result = await listRoleSuitesApi({
 			...listQuery,

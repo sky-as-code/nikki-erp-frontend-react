@@ -12,12 +12,21 @@ import type { RoleSuite } from '@/features/roleSuites';
 import { AuthorizeDispatch, roleActions, roleSuiteActions, selectCreateRoleSuite, selectRoleState } from '@/appState';
 
 
-function useRolesLoader(dispatch: AuthorizeDispatch, roles: Role[]) {
+function useRolesLoader(
+	dispatch: AuthorizeDispatch,
+	roles: Role[],
+	contextOrgId?: string,
+) {
 	React.useEffect(() => {
 		if (roles.length === 0) {
-			dispatch(roleActions.listRoles({}));
+			if (contextOrgId) {
+				dispatch(roleActions.listRoles({ orgId: contextOrgId, includeDomainInOrg: true }));
+			}
+			else {
+				dispatch(roleActions.listRoles({}));
+			}
 		}
-	}, [roles.length]);
+	}, [dispatch, roles.length, contextOrgId]);
 }
 
 /**
@@ -38,7 +47,7 @@ function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: Re
 	return React.useCallback(() => {
 		const parent = resolvePath('..', location.pathname).pathname;
 		navigate(parent);
-	}, [location]);
+	}, [navigate, location.pathname]);
 }
 
 function useCreateState() {
@@ -47,7 +56,7 @@ function useCreateState() {
 }
 
 
-export function useRoleSuiteCreate() {
+export function useRoleSuiteCreate(forcedOrgId?: string, contextOrgId?: string) {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
@@ -60,10 +69,10 @@ export function useRoleSuiteCreate() {
 
 	const isSubmitting = create.status === 'pending';
 
-	useRolesLoader(dispatch, roles);
+	useRolesLoader(dispatch, roles, contextOrgId);
 	const handleCancel = useCancelHandler(navigate, location);
 	const availableRolesByOrg = useAvailableRolesByOrg(roles);
-	const handleSubmit = useCreateSubmitHandler(dispatch, selectedRoleIds, roles, userContext.user!.id);
+	const handleSubmit = useCreateSubmitHandler(dispatch, selectedRoleIds, userContext.user!.id, forcedOrgId);
 
 	React.useEffect(() => {
 		if (create.status === 'success') {
@@ -78,7 +87,7 @@ export function useRoleSuiteCreate() {
 			notification.showError(errorMsg, translate('nikki.general.messages.error'));
 			dispatch(roleSuiteActions.resetCreateRoleSuite());
 		}
-	}, [create, notification, translate]);
+	}, [create, notification, translate, dispatch, handleCancel]);
 
 	return {
 		isSubmitting, handleCancel, handleSubmit, selectedRoleIds, setSelectedRoleIds, availableRolesByOrg, roles,
@@ -88,15 +97,18 @@ export function useRoleSuiteCreate() {
 function useCreateSubmitHandler(
 	dispatch: AuthorizeDispatch,
 	selectedRoleIds: string[],
-	roles: Role[],
 	userId: string,
+	forcedOrgId?: string,
 ) {
 	return React.useCallback((data: unknown) => {
 		const formData = cleanFormData(data as Partial<RoleSuite>);
 		formData.createdBy = userId;
 		formData.roleIds = selectedRoleIds;
+		if (forcedOrgId) {
+			formData.orgId = forcedOrgId;
+		}
 
 		dispatch(roleSuiteActions.createRoleSuite(formData as RoleSuite));
-	}, [selectedRoleIds, userId]);
+	}, [dispatch, selectedRoleIds, userId, forcedOrgId]);
 }
 

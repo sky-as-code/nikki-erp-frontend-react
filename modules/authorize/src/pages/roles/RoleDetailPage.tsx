@@ -3,6 +3,7 @@ import {
 	BreadcrumbsHeader,
 	FormFieldProvider,
 	FormStyleProvider,
+	NotFound,
 } from '@nikkierp/ui/components';
 import { FormContainer } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
@@ -29,6 +30,7 @@ function RoleDetailPageBody(): React.ReactNode {
 		orgs,
 		users,
 		groups,
+		canMutateRole,
 		handleAddEntitlements,
 		handleRemoveEntitlements,
 	} = useRoleDetailPage();
@@ -36,7 +38,15 @@ function RoleDetailPageBody(): React.ReactNode {
 	const schema = roleSchema as ModelSchema;
 	const permissions = useAuthorizePermissions();
 
-	if (!role) return null;
+	if (!role) {
+		return (
+			<NotFound
+				messageKey='nikki.authorize.role.messages.not_found'
+				onGoBack={handleGoBack}
+				showBackButton={false}
+			/>
+		);
+	}
 
 	return (
 		<Stack gap='md'>
@@ -72,9 +82,9 @@ function RoleDetailPageBody(): React.ReactNode {
 										onAddEntitlements={handleAddEntitlements}
 										onRemoveEntitlements={handleRemoveEntitlements}
 										onCancel={handleGoBack}
-										canUpdate={permissions.role.canUpdate}
-										canAddEntitlement={permissions.role.canAddEntitlement}
-										canRemoveEntitlement={permissions.role.canRemoveEntitlement}
+										canUpdate={permissions.role.canUpdate && canMutateRole}
+										canAddEntitlement={permissions.role.canAddEntitlement && canMutateRole}
+										canRemoveEntitlement={permissions.role.canRemoveEntitlement && canMutateRole}
 									/>
 									<RoleFormFields isCreate={false} orgs={orgs} users={users} groups={groups} />
 									<AssignedEntitlementsList
