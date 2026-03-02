@@ -1,59 +1,79 @@
+
 import { ACTIONS, RESOURCES, useHasAnyPermission, PermissionScopeType } from '@nikkierp/shell/userContext';
 import { MenuBarItem } from '@nikkierp/ui/appState/layoutSlice';
+import { useTranslation } from 'react-i18next';
 
 
 type ContextScope = { scopeType: PermissionScopeType; scopeRef: string };
 
+function filterMenuByPermissions(
+	configs: MenuBarItem[],
+	contextScope?: ContextScope,
+): MenuBarItem[] {
+	const result: MenuBarItem[] = [];
+
+	for (const config of configs) {
+		const hasAccess = useHasAnyPermission(config.resource!, config.actions, contextScope);
+
+		if (hasAccess) {
+			const item: MenuBarItem = {
+				label: config.label,
+				link: config.link,
+			};
+
+			if (config.items && config.items.length > 0) {
+				const MenuBarItems = filterMenuByPermissions(config.items, contextScope);
+				if (MenuBarItems.length > 0) {
+					item.items = MenuBarItems;
+				}
+			}
+
+			result.push(item);
+		}
+	}
+
+	return result;
+}
+
+
 export function useMenuBarItems(contextScope?: ContextScope): MenuBarItem[] {
-	const hasUserAccess = useHasAnyPermission(
-		RESOURCES.IDENTITY_USER,
-		[ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
-		contextScope,
-	);
-	const hasGroupAccess = useHasAnyPermission(
-		RESOURCES.IDENTITY_GROUP,
-		[ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
-		contextScope,
-	);
-	const hasOrgAccess = useHasAnyPermission(
-		RESOURCES.IDENTITY_ORGANIZATION,
-		[ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
-		contextScope,
-	);
-	const hasHierarchyAccess = useHasAnyPermission(
-		RESOURCES.IDENTITY_HIERARCHY_LEVEL,
-		[ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
-		contextScope,
-	);
+	const { t: translate } = useTranslation();
+
+	const menuBarConfig: MenuBarItem[] = [
+		{
+			label: translate('nikki.identity.menu.users'),
+			link: '/users',
+			resource: RESOURCES.IDENTITY_USER,
+			actions: [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
+		},
+		{
+			label: translate('nikki.identity.menu.groups'),
+			link: '/groups',
+			resource: RESOURCES.IDENTITY_GROUP,
+			actions: [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
+		},
+		{
+			label: translate('nikki.identity.menu.organizations'),
+			link: '/organizations',
+			resource: RESOURCES.IDENTITY_ORGANIZATION,
+			actions: [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
+		},
+		{
+			label: translate('nikki.identity.menu.hierarchyLevels'),
+			link: '/hierarchy-levels',
+			resource: RESOURCES.IDENTITY_HIERARCHY_LEVEL,
+			actions: [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
+		},
+	];
 
 	const items: MenuBarItem[] = [];
 
 	items.push({
-		label: 'Overview',
+		label: translate('nikki.identity.menu.overview'),
 		link: '/overview',
 	});
 
-	const usersItems: MenuBarItem[] = [];
-	if (hasUserAccess) {
-		usersItems.push({ label: 'Users', link: '/users' });
-	}
-	if (hasGroupAccess) {
-		usersItems.push({ label: 'Groups', link: '/groups' });
-	}
-	if (usersItems.length > 0) {
-		items.push({ label: 'Users', items: usersItems });
-	}
-
-	const orgItems: MenuBarItem[] = [];
-	if (hasOrgAccess) {
-		orgItems.push({ label: 'Organizations', link: '/organizations' });
-	}
-	if (hasHierarchyAccess) {
-		orgItems.push({ label: 'Hierarchy Levels', link: '/hierarchy-levels' });
-	}
-	if (orgItems.length > 0) {
-		items.push({ label: 'Organizations', items: orgItems });
-	}
+	items.push(...filterMenuByPermissions(menuBarConfig, contextScope));
 
 	return items;
 }

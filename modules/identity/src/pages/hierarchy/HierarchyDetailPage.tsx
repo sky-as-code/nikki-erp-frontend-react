@@ -1,10 +1,10 @@
 import { Breadcrumbs, Stack, Typography } from '@mantine/core';
-import { withWindowTitle } from '@nikkierp/ui/components';
+import { NotFound, withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 
 import { selectHierarchyDetail } from '../../appState/hierarchy';
 import { selectUserList } from '../../appState/user';
@@ -22,7 +22,7 @@ export const HierarchyDetailPageBody: React.FC = () => {
 	const schema = hierarchySchema as ModelSchema;
 	const { t } = useTranslation();
 	const permissions = useIdentityPermissions();
-
+	const navigate = useNavigate();
 	const { isLoadingDetail,
 		handleUpdate,
 		handleDelete } = useHierarchyDetailHandlers();
@@ -36,6 +36,19 @@ export const HierarchyDetailPageBody: React.FC = () => {
 			user.hierarchy?.id === hierarchyId,
 		);
 	}, [users, hierarchyId]);
+
+	const handleGoBack = () => {
+		navigate('..', { relative: 'path' });
+	};
+
+	if (!hierarchyDetail || !hierarchyDetail?.data ) {
+		return (
+			<NotFound
+				onGoBack={handleGoBack}
+				messageKey='nikki.identity.hierarchy.messages.notFoundMessage'
+			/>
+		);
+	}
 
 	return (
 		<Stack gap='md'>

@@ -132,6 +132,13 @@
 			}
 		},
         "identity": {
+			"menu": {
+				"overview": "Tổng quan",
+				"users": "Người dùng",
+				"groups": "Nhóm",
+				"hierarchyLevels": "Cấp bậc chức vụ",
+				"organizations": "Tổ chức"
+			},
             "overview": {
                 "title": "Tổng quan về Quản lý Nhân sự",
                 "description": "Quản lý người dùng, nhóm, chức vụ và tổ chức của bạn",
@@ -164,6 +171,7 @@
             "user": {
                 "title": "Quản lý người dùng",
                 "searchPlaceholder": "Tìm kiếm người dùng...",
+				"selectOrganizationPlaceholder": "Chọn tổ chức...",
                 "fields": {
                     "id": "ID",
                     "email": "Email",
@@ -187,8 +195,10 @@
                     "search": "Tìm kiếm",
                     "cancel": "Hủy",
                     "delete": "Xóa",
+					"confirm": "Xác nhận",
                     "confirmUpdate": "Xác nhận cập nhật",
-                    "confirmDelete": "Xác nhận xóa"
+                    "confirmDelete": "Xác nhận xóa",
+					"selectOrganization": "Chọn tổ chức"
                 },
                 "status": {
                     "active": "Hoạt động",
@@ -204,7 +214,9 @@
                     "deleteError": "Xóa người dùng thất bại",
                     "noUsers": "Không tìm thấy người dùng nào",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin người dùng này không?",
-                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa người dùng này không?"
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa người dùng này không?",
+					"noGroups": "Không có nhóm nào",
+					"notFoundMessage": "Người dùng bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
 				},
 				"errors": {
 					"password_required": "Mật khẩu là bắt buộc",
@@ -256,7 +268,9 @@
                     "manageUsersSuccess": "Cập nhật thành viên trong nhóm thành công",
                     "manageUsersError": "Cập nhật thành viên trong nhóm thất bại",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin nhóm này không?",
-                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa nhóm này không?"
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa nhóm này không?",
+					"confirmRemoveUserMessage": "Bạn có chắc chắn muốn xóa người dùng khỏi nhóm không?",
+					"notFoundMessage": "Nhóm bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
                 }
             },
             "hierarchy": {
@@ -295,7 +309,8 @@
                     "manageUsersError": "Cập nhật thành viên trong chức vụ thất bại",
                     "noHierarchies": "Không tìm thấy chức vụ nào",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin chức vụ này không?",
-                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa chức vụ này không?"
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa chức vụ này không?",
+					"notFoundMessage": "Chức vụ bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
                 }
             },
             "organization": {
@@ -322,7 +337,10 @@
                     "delete": "Xóa",
                     "back": "Quay lại",
                     "confirmUpdate": "Xác nhận cập nhật tổ chức",
-                    "confirmDelete": "Xác nhận xóa tổ chức"
+                    "confirmDelete": "Xác nhận xóa tổ chức",
+					"confirmRemoveUser": "Xác nhận xóa người dùng khỏi tổ chức",
+					"addUsers": "Thêm thành viên",
+					"removeUsers": "Xóa thành viên"
                 },
                 "status": {
                     "active": "Hoạt động",
@@ -338,7 +356,11 @@
                     "noOrganizations": "Không tìm thấy tổ chức nào",
                     "phoneNumberInvalid": "Số điện thoại không hợp lệ",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin tổ chức này không?",
-                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa tổ chức này không?"
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa tổ chức này không?",
+					"confirmDeleteUserMessage": "Bạn có chắc chắn muốn xóa người dùng khỏi tổ chức không?",
+					"manageUsersSuccess": "Cập nhật thành viên trong tổ chức thành công",
+					"manageUsersError": "Cập nhật thành viên trong tổ chức thất bại",
+					"notFoundMessage": "Tổ chức bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
                 }
             }
         },

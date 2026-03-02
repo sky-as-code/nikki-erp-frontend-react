@@ -1,5 +1,5 @@
 import { Button, Group } from '@mantine/core';
-import { IconPlus, IconRefresh, IconUpload } from '@tabler/icons-react';
+import { IconPlus, IconRefresh, IconUpload, IconUserMinus, IconUserPlus } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,9 +7,13 @@ import { useTranslation } from 'react-i18next';
 interface ListActionListPageProps {
 	onCreate?: () => void;
 	onRefresh: () => void;
+	onAddUser?: () => void;
+	onRemoveUser?: () => void;
 }
 
-export function ListActionListPage({ onCreate, onRefresh }: ListActionListPageProps): React.ReactElement {
+export function ListActionListPage({
+	onCreate, onRefresh, onAddUser, onRemoveUser,
+}: ListActionListPageProps): React.ReactElement {
 	const { t } = useTranslation();
 
 	return (
@@ -22,6 +26,16 @@ export function ListActionListPage({ onCreate, onRefresh }: ListActionListPagePr
 			>
 				{t('nikki.identity.user.actions.create')}
 			</Button>
+			{onAddUser && (
+				<Button
+					size='compact-md'
+					variant='outline'
+					leftSection={<IconUserPlus size={16} />}
+					onClick={onAddUser}
+				>
+					{t('nikki.identity.organization.actions.addUsers')}
+				</Button>
+			)}
 			<Button
 				size='compact-md'
 				variant='outline'

@@ -1,10 +1,10 @@
 import { Breadcrumbs, Stack, Typography } from '@mantine/core';
-import { withWindowTitle } from '@nikkierp/ui/components';
+import { NotFound, withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { selectOrganizationDetail } from '../../appState/organization';
 import { OrganizationDetailForm } from '../../features/organization/components';
@@ -18,8 +18,23 @@ export const OrganizationDetailPageBody: React.FC = () => {
 	const schema = organizationSchema as ModelSchema;
 	const { t } = useTranslation();
 	const permissions = useIdentityPermissions();
+	const navigate = useNavigate();
 
 	const { isLoadingDetail, handleUpdate, handleDelete } = useOrganizationDetailHandlers();
+
+	const handleGoBack = () => {
+		navigate('..', { relative: 'path' });
+	};
+
+	if (!organizationDetail || !organizationDetail?.data ) {
+		return (
+			<NotFound
+				onGoBack={handleGoBack}
+				messageKey='nikki.identity.organization.messages.notFoundMessage'
+			/>
+		);
+	}
+
 
 	return (
 		<Stack gap='md'>

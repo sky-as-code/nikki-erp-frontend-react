@@ -1,4 +1,4 @@
-import { Button, Group, Modal, MultiSelect, Stack } from '@mantine/core';
+import { Button, Group, Modal, MultiSelect, Select, Stack } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,23 +6,31 @@ import { useTranslation } from 'react-i18next';
 interface AddUserModalProps {
 	opened: boolean;
 	onClose: () => void;
-	selectOptions: Array<{ value: string; label: string }>;
-	selectedIds: string[];
 	onSelectedChange: (ids: string[]) => void;
 	onSubmit: () => void;
+	onOrgChange?: (orgId: string | null) => void;
+	selectOptions: Array<{ value: string; label: string }>;
+	selectedIds: string[];
+	selectedOrgId?: string | null;
 	isAdding: boolean;
-	disableSubmit?: boolean;
+	submitLabel?: string;
+	showOrgSelector?: boolean;
+	organizationOptions?: Array<{ value: string; label: string }>;
 }
 
 export function AddUserModal({
 	opened,
 	onClose,
-	selectOptions,
-	selectedIds,
 	onSelectedChange,
 	onSubmit,
+	onOrgChange,
+	selectOptions,
+	selectedIds,
+	selectedOrgId = null,
 	isAdding,
-	disableSubmit = false,
+	submitLabel,
+	showOrgSelector = false,
+	organizationOptions = [],
 }: AddUserModalProps) {
 	const { t } = useTranslation();
 
@@ -33,6 +41,18 @@ export function AddUserModal({
 			title={t('nikki.identity.group.actions.addUsers')}
 		>
 			<Stack gap='md'>
+				{showOrgSelector && (
+					<Select
+						label={t('nikki.identity.user.actions.selectOrganization')}
+						placeholder={t('nikki.identity.user.selectOrganizationPlaceholder')}
+						data={organizationOptions}
+						value={selectedOrgId}
+						onChange={onOrgChange}
+						searchable
+						clearable
+						required
+					/>
+				)}
 				<MultiSelect
 					label={t('nikki.identity.group.actions.selectUsers')}
 					placeholder={t('nikki.identity.group.actions.selectUsersPlaceholder')}
@@ -42,13 +62,18 @@ export function AddUserModal({
 					searchable
 					clearable
 					maxDropdownHeight={300}
+					disabled={showOrgSelector && !selectedOrgId}
 				/>
 				<Group justify='flex-end' gap='sm'>
 					<Button variant='subtle' onClick={onClose} disabled={isAdding}>
 						{t('nikki.identity.group.actions.cancel')}
 					</Button>
-					<Button onClick={onSubmit} loading={isAdding} disabled={disableSubmit || selectedIds.length === 0}>
-						{t('nikki.identity.group.actions.add')} ({selectedIds.length})
+					<Button
+						onClick={onSubmit}
+						loading={isAdding}
+						disabled={selectedIds.length === 0 || (showOrgSelector && !selectedOrgId)}
+					>
+						{submitLabel || t('nikki.identity.group.actions.add')} ({selectedIds.length})
 					</Button>
 				</Group>
 			</Stack>

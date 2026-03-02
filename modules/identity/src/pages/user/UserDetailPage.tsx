@@ -1,10 +1,10 @@
 import { Breadcrumbs, Stack, Typography } from '@mantine/core';
-import { withWindowTitle } from '@nikkierp/ui/components';
+import { NotFound, withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { selectUserDetail } from '../../appState/user';
 import { UserDetailForm } from '../../features/user/components';
@@ -18,8 +18,21 @@ export const UserDetailPageBody: React.FC = () => {
 	const schema = userSchema as ModelSchema;
 	const { t } = useTranslation();
 	const permissions = useIdentityPermissions();
+	const navigate = useNavigate();
 
 	const {isLoadingDetail, handleUpdate, handleDelete } = useUserDetailHandlers();
+	const handleGoBack = () => {
+		navigate('..', { relative: 'path' });
+	};
+
+	if (!userDetail || !userDetail?.data ) {
+		return (
+			<NotFound
+				onGoBack={handleGoBack}
+				messageKey='nikki.identity.user.messages.notFoundMessage'
+			/>
+		);
+	}
 
 	return (
 		<Stack gap='md'>

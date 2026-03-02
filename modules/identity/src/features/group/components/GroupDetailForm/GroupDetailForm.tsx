@@ -134,7 +134,6 @@ export function GroupDetailForm({ schema, groupDetail, isLoading,
 				onConfirm={handleConfirmSave}
 				title={t('nikki.identity.group.actions.confirmUpdate')}
 				message={t('nikki.identity.group.messages.confirmUpdateMessage')}
-				confirmLabel={t('nikki.identity.group.actions.save')}
 			/>
 		</>
 	);

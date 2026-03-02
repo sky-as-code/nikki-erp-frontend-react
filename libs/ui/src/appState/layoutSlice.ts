@@ -14,6 +14,8 @@ export type LayoutState = {
 export type MenuBarItem = {
 	label: string;
 	link?: string;
+	resource?: string;
+	actions?: string[];
 	items?: MenuBarItem[];
 };
 

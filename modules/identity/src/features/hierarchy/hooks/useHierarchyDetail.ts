@@ -79,7 +79,7 @@ export function useHierarchyDetailHandlers() {
 		if (!hierarchyId) return;
 
 		dispatch(hierarchyActions.getHierarchy({ id: hierarchyId, scopeRef: orgScopeRef }));
-		dispatch(userActions.listUsers({ scopeRef: hierarchyId }));
+		dispatch(userActions.listUsers({ scopeRef: orgScopeRef }));
 	}, [hierarchyId, orgScopeRef, dispatch]);
 
 	return {

@@ -1,5 +1,5 @@
-import { ACTIONS, RESOURCES } from '@nikkierp/shell/userContext';
 import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { ACTIONS, RESOURCES } from '@nikkierp/shell/userContext';
 import { useSetMenuBarItems } from '@nikkierp/ui/appState/layoutSlice';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { PermissionGuard } from '@nikkierp/ui/components';

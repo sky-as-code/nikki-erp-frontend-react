@@ -108,7 +108,6 @@ export function OrganizationDetailForm({
 	const { t } = useTranslation();
 	const [showSaveConfirm, setShowSaveConfirm] = React.useState(false);
 	const [pendingData, setPendingData] = React.useState<any>(null);
-	console.log('organizationDetail', organizationDetail);
 
 	const handleFormSubmit = (data: any) => {
 		if (!canUpdate) return;
@@ -161,7 +160,6 @@ export function OrganizationDetailForm({
 				onConfirm={handleConfirmSave}
 				title={t('nikki.identity.organization.actions.confirmUpdate')}
 				message={t('nikki.identity.organization.messages.confirmUpdateMessage')}
-				confirmLabel={t('nikki.identity.organization.actions.save')}
 			/>
 		</>
 	);

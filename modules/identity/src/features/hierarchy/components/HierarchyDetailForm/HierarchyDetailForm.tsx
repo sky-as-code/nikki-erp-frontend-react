@@ -145,7 +145,6 @@ export function HierarchyDetailForm({
 				onConfirm={handleConfirmSave}
 				title={t('nikki.identity.hierarchy.actions.confirmUpdate')}
 				message={t('nikki.identity.hierarchy.messages.confirmUpdateMessage')}
-				confirmLabel={t('nikki.identity.hierarchy.actions.save')}
 			/>
 		</>
 	);

@@ -13,6 +13,7 @@ export const SLICE_NAME = 'identity.user';
 export type UserState = {
 	detail :ReduxActionState<User>;
 	list: ReduxActionState<User[]>;
+	listAll: ReduxActionState<User[]>;
 	create: ReduxActionState<CreateUserResponse>;
 	update: ReduxActionState<UpdateUserResponse>;
 	delete: ReduxActionState<DeleteUserResponse>;
@@ -21,10 +22,10 @@ export type UserState = {
 export const initialState: UserState = {
 	detail: baseReduxActionState,
 	list: { ...baseReduxActionState, data: [] },
-
 	create: baseReduxActionState,
 	update: baseReduxActionState,
 	delete: baseReduxActionState,
+	listAll: baseReduxActionState,
 };
 
 export const listUsers = createAsyncThunk<
@@ -40,6 +41,24 @@ export const listUsers = createAsyncThunk<
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to list users';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
+export const listAllUsers = createAsyncThunk<
+	SearchUserResponse,
+	undefined,
+	{ rejectValue: string; state: any }
+>(
+	`${SLICE_NAME}/fetchAllUsers`,
+	async (_, { rejectWithValue }) => {
+		try {
+			const result = await userService.listUsers();
+			return result;
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to list all users';
 			return rejectWithValue(errorMessage);
 		}
 	},
@@ -132,6 +151,9 @@ const userSlice = createSlice({
 		resetDeleteUser: (state) => {
 			state.delete = baseReduxActionState;
 		},
+		resetListAllUsers: (state) => {
+			state.listAll = baseReduxActionState;
+		},
 	},
 	extraReducers: (builder) => {
 		listUsersReducers(builder);
@@ -139,6 +161,7 @@ const userSlice = createSlice({
 		createUserReducers(builder);
 		updateUserReducers(builder);
 		deleteUserReducers(builder);
+		listAllUsersReducers(builder);
 	},
 });
 
@@ -237,6 +260,25 @@ function deleteUserReducers(builder: ActionReducerMapBuilder<UserState>) {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete user';
 			state.delete.data = undefined;
+		});
+}
+
+function listAllUsersReducers(builder: ActionReducerMapBuilder<UserState>) {
+	builder
+		.addCase(listAllUsers.pending, (state) => {
+			state.listAll.status = 'pending';
+			state.listAll.error = null;
+			state.listAll.data = [];
+		})
+		.addCase(listAllUsers.fulfilled, (state, action) => {
+			state.listAll.status = 'success';
+			state.listAll.data = action.payload.items;
+			state.listAll.error = null;
+		})
+		.addCase(listAllUsers.rejected, (state, action) => {
+			state.listAll.status = 'error';
+			state.listAll.data = [];
+			state.listAll.error = action.payload || 'Failed to list all users';
 		});
 }
 

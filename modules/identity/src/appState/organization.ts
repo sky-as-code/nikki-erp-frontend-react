@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { reducer, actions, listOrganizations, getOrganization, createOrganization, updateOrganization, deleteOrganization, OrganizationState } from '../features/organization/organizationSlice';
+import { reducer, actions, listOrganizations, getOrganization, createOrganization, updateOrganization, deleteOrganization, manageOrganizationUsers, OrganizationState } from '../features/organization/organizationSlice';
 import { initialState as initialOrganizationState } from '../features/organization/organizationSlice';
 
 
@@ -16,6 +16,7 @@ export const organizationActions = {
 	createOrganization,
 	updateOrganization,
 	deleteOrganization,
+	manageOrganizationUsers,
 	...actions,
 };
 
@@ -45,4 +46,9 @@ export const selectUpdateOrganization = createSelector(
 export const selectDeleteOrganization = createSelector(
 	selectOrganizationState,
 	(state) => state.delete,
+);
+
+export const selectManageOrganizationUsers = createSelector(
+	selectOrganizationState,
+	(state) => state.manageUsers,
 );
