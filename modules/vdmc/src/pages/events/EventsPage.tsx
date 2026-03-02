@@ -4,7 +4,8 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ActionBar, type ViewMode, ActionBarFilterConfig } from '@/components';
+import { IconPlus, IconRefresh } from '@tabler/icons-react';
+import { ControlPanel, type ViewMode, ControlPanelFilterConfig } from '@/components';
 import { PageContainer } from '@/components/PageContainer';
 import { EventDetailDrawer, EventGridView, EventTable, EventKanbanView, EventGanttView, EventCalendarView, eventSchema, useEventDetail, useEventList } from '@/features/events';
 import { Event } from '@/features/events/types';
@@ -84,7 +85,7 @@ export const EventsPage: React.FC = () => {
 		{ value: 'completed', label: translate('nikki.vendingMachine.events.status.completed') },
 	];
 
-	const filters: ActionBarFilterConfig[] = useMemo(() => [
+	const filters: ControlPanelFilterConfig[] = useMemo(() => [
 		{
 			value: statusFilter,
 			onChange: setStatusFilter,
@@ -103,16 +104,14 @@ export const EventsPage: React.FC = () => {
 			<PageContainer
 				breadcrumbs={breadcrumbs}
 				actionBar={
-					<ActionBar
-						onCreate={handleCreate}
-						onRefresh={handleRefresh}
-						searchValue={searchValue}
-						onSearchChange={setSearchValue}
+					<ControlPanel
+						actions={[
+							{ label: translate('nikki.general.actions.create'), leftSection: <IconPlus size={16} />, onClick: handleCreate },
+							{ label: translate('nikki.general.actions.refresh'), leftSection: <IconRefresh size={16} />, onClick: handleRefresh, variant: 'outline' },
+						]}
+						search={{ value: searchValue, onChange: setSearchValue, placeholder: translate('nikki.vendingMachine.events.search.placeholder') }}
 						filters={filters}
-						searchPlaceholder={translate('nikki.vendingMachine.events.search.placeholder')}
-						viewMode={viewMode}
-						onViewModeChange={setViewMode}
-						viewModeSegments={['list', 'grid', 'kanban', 'gantt', 'calendar']}
+						viewMode={{ value: viewMode, onChange: setViewMode, segments: ['list', 'grid', 'kanban', 'gantt', 'calendar'] }}
 					/>
 				}
 			>

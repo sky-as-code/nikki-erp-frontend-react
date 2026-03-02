@@ -1,10 +1,9 @@
 import { baseReduxActionState, ReduxActionState } from '@nikkierp/ui/appState';
-import {
-	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
-} from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { kioskSettingService } from './kioskSettingService';
 import { KioskSetting } from './types';
+
 
 export const SLICE_NAME = 'vendingMachine.kioskSetting';
 
@@ -127,6 +126,7 @@ const kioskSettingSlice = createSlice({
 			state.delete = baseReduxActionState;
 		},
 	},
+	// eslint-disable-next-line max-lines-per-function
 	extraReducers: (builder) => {
 		builder
 			.addCase(listKioskSettings.pending, (state) => {

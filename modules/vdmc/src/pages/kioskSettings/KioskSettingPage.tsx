@@ -1,10 +1,11 @@
 import { ConfirmModal } from '@nikkierp/ui/components';
 import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
+import { IconPlus, IconRefresh } from '@tabler/icons-react';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ActionBar, type ViewMode, ActionBarFilterConfig } from '@/components';
+import { type ViewMode, ControlPanel, ControlPanelFilterConfig } from '@/components';
 import { PageContainer } from '@/components/PageContainer';
 import {
 	KioskSettingDetailDrawer,
@@ -17,6 +18,7 @@ import {
 import { KioskSetting } from '@/features/kioskSettings/types';
 
 
+// eslint-disable-next-line max-lines-per-function
 export const KioskSettingPage: React.FC = () => {
 	const { t: translate } = useTranslation();
 	const { settings, isLoadingList, handleRefresh } = useKioskSettingList();
@@ -66,19 +68,7 @@ export const KioskSettingPage: React.FC = () => {
 		handleCloseModal();
 	};
 
-	const statusOptions = [
-		{ value: 'active', label: translate('nikki.general.status.active') },
-		{ value: 'inactive', label: translate('nikki.general.status.inactive') },
-	];
 
-	const filters: ActionBarFilterConfig[] = useMemo(() => [
-		{
-			value: statusFilter,
-			onChange: setStatusFilter,
-			options: statusOptions,
-			placeholder: translate('nikki.vendingMachine.kioskSettings.filter.status'),
-		},
-	], [statusFilter, statusOptions, translate]);
 
 	useDocumentTitle('nikki.vendingMachine.menu.kiosk_settings');
 
@@ -91,19 +81,17 @@ export const KioskSettingPage: React.FC = () => {
 		<>
 			<PageContainer
 				breadcrumbs={breadcrumbs}
-				actionBar={
-					<ActionBar
-						onCreate={() => {}}
-						onRefresh={handleRefresh}
-						searchValue={searchValue}
-						onSearchChange={setSearchValue}
-						filters={filters}
-						searchPlaceholder={translate('nikki.vendingMachine.kioskSettings.search.placeholder')}
+				sections={[
+					<KioskSettingsControlPanel
 						viewMode={viewMode}
-						onViewModeChange={setViewMode}
-						viewModeSegments={['list', 'grid']}
-					/>
-				}
+						setViewMode={setViewMode}
+						searchValue={searchValue}
+						setSearchValue={setSearchValue}
+						statusFilter={statusFilter}
+						setStatusFilter={setStatusFilter}
+						handleRefresh={handleRefresh}
+					/>,
+				]}
 			>
 				{viewMode === 'list' ? (
 					<KioskSettingTable
@@ -145,5 +133,65 @@ export const KioskSettingPage: React.FC = () => {
 				isLoading={isLoadingDetail}
 			/>
 		</>
+	);
+};
+
+
+const KioskSettingsControlPanel: React.FC<{
+	viewMode: ViewMode;
+	setViewMode: (viewMode: ViewMode) => void;
+	searchValue: string;
+	setSearchValue: (searchValue: string) => void;
+	statusFilter: string[];
+	setStatusFilter: (statusFilter: string[]) => void;
+	handleRefresh: () => void;
+}> = ({ viewMode, setViewMode, searchValue, setSearchValue, statusFilter, setStatusFilter, handleRefresh }) => {
+
+	const { t: translate } = useTranslation();
+
+	const statusOptions = [
+		{ value: 'active', label: translate('nikki.general.status.active') },
+		{ value: 'inactive', label: translate('nikki.general.status.inactive') },
+	];
+
+	const filters: ControlPanelFilterConfig[] = useMemo(() => [
+		{
+			value: statusFilter,
+			onChange: setStatusFilter,
+			options: statusOptions,
+			placeholder: translate('nikki.vendingMachine.kioskSettings.filter.status'),
+		},
+	], [statusFilter, statusOptions, translate]);
+
+
+	return (
+		<ControlPanel
+			actions={[
+				{
+					label: translate('nikki.general.actions.create'),
+					leftSection: <IconPlus size={16} />,
+					onClick: () => console.log('create new kiosk setting'),
+				},
+				{
+					label: translate('nikki.general.actions.refresh'),
+					leftSection: <IconRefresh size={16} />,
+					onClick: handleRefresh,
+					variant: 'outline',
+				},
+			]}
+			viewMode={{
+				value: viewMode,
+				onChange: setViewMode,
+				segments: ['list', 'grid'],
+			}}
+			filters={filters}
+			search={
+				{
+					value: searchValue,
+					onChange: setSearchValue,
+					placeholder: translate('nikki.vendingMachine.kioskSettings.search.placeholder'),
+				}
+			}
+		/>
 	);
 };

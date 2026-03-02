@@ -12,6 +12,7 @@ import {
 	initialKioskSettingState,
 } from '@/features/kioskSettings/kioskSettingSlice';
 
+
 const STATE_KEY = 'kioskSetting';
 
 export const kioskSettingReducer = { [STATE_KEY]: reducer };

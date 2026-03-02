@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router';
 
-import { DetailActionBar } from '@/components/ActionBar';
+import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import { useKioskDetail } from '@/features/kiosks';
 import { KioskActivity } from '@/features/kiosks/components/KioskDetail/KioskActivity';
@@ -38,7 +38,7 @@ export const KioskDetailPage: React.FC = () => {
 	return (
 		<PageContainer
 			breadcrumbs={breadcrumbs}
-			actionBar={<DetailActionBar
+			actionBar={<DetailControlPanel
 				onSave={() => {}}
 				onGoBack={() => {}}
 				onDelete={() => {}}

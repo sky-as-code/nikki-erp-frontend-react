@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 
-import { DetailActionBar } from '@/components/ActionBar';
+import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import { VendingMachineDispatch, gameActions } from '@/appState';
 import { useGameDetail } from '@/features/games/hooks';
@@ -136,7 +136,7 @@ export const GameDetailPage: React.FC = () => {
 	return (
 		<PageContainer
 			breadcrumbs={breadcrumbs}
-			actionBar={<DetailActionBar
+			actionBar={<DetailControlPanel
 				onSave={() => {}}
 				onGoBack={() => {}}
 				onDelete={() => {}}

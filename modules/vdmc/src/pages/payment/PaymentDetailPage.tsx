@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 
-import { DetailActionBar } from '@/components/ActionBar';
+import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import { usePaymentDetail } from '@/features/payment';
 import { CustomFieldValueType, PaymentMethodCustomField } from '@/features/payment/types';
@@ -95,7 +95,7 @@ export const PaymentDetailPage: React.FC = () => {
 	return (
 		<PageContainer
 			breadcrumbs={breadcrumbs}
-			actionBar={<DetailActionBar
+			actionBar={<DetailControlPanel
 				onSave={() => {}}
 				onGoBack={() => {}}
 				onDelete={() => {}}

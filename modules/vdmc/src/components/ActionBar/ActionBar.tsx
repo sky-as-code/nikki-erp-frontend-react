@@ -116,6 +116,8 @@ export const ActionBar: React.FC<ActionBarProps> = ({
 				<Button
 					leftSection={<IconPlus size={16} />}
 					onClick={onCreate}
+					fz='sm'
+					fw={500}
 					size='sm'
 				>
 					{translate('nikki.general.actions.create')}
@@ -124,6 +126,8 @@ export const ActionBar: React.FC<ActionBarProps> = ({
 					variant='outline'
 					leftSection={<IconRefresh size={16} />}
 					onClick={onRefresh}
+					fz='sm'
+					fw={500}
 					size='sm'
 				>
 					{translate('nikki.general.actions.refresh')}

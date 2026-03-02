@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
-import { DetailActionBar } from '@/components/ActionBar';
+import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import { Ad } from '@/features/ads/types';
 import { useEventDetail } from '@/features/events';
@@ -126,7 +126,7 @@ export const EventDetailPage: React.FC = () => {
 		<>
 			<PageContainer
 				breadcrumbs={breadcrumbs}
-				actionBar={<DetailActionBar
+				actionBar={<DetailControlPanel
 					onSave={() => {}}
 					onGoBack={() => {}}
 					onDelete={() => {}}

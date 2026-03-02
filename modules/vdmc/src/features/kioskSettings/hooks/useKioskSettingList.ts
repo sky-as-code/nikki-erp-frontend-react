@@ -3,6 +3,7 @@ import React from 'react';
 
 import { VendingMachineDispatch, kioskSettingActions, selectKioskSettingList } from '@/appState';
 
+
 export function useKioskSettingList() {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const list = useMicroAppSelector(selectKioskSettingList);

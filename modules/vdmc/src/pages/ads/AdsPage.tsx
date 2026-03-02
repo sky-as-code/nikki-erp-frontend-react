@@ -4,7 +4,8 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ActionBar, type ViewMode, ActionBarFilterConfig } from '@/components';
+import { IconPlus, IconRefresh } from '@tabler/icons-react';
+import { ControlPanel, type ViewMode, ControlPanelFilterConfig } from '@/components';
 import { PageContainer } from '@/components/PageContainer';
 import { AdDetailDrawer, AdGridView, AdTable, adSchema, useAdDetail, useAdList } from '@/features/ads';
 import { Ad } from '@/features/ads/types';
@@ -84,7 +85,7 @@ export const AdsPage: React.FC = () => {
 		{ value: 'expired', label: translate('nikki.vendingMachine.ads.status.expired') },
 	];
 
-	const filters: ActionBarFilterConfig[] = useMemo(() => [
+	const filters: ControlPanelFilterConfig[] = useMemo(() => [
 		{
 			value: statusFilter,
 			onChange: setStatusFilter,
@@ -105,16 +106,14 @@ export const AdsPage: React.FC = () => {
 			<PageContainer
 				breadcrumbs={breadcrumbs}
 				actionBar={
-					<ActionBar
-						onCreate={handleCreate}
-						onRefresh={handleRefresh}
-						searchValue={searchValue}
-						onSearchChange={setSearchValue}
+					<ControlPanel
+						actions={[
+							{ label: translate('nikki.general.actions.create'), leftSection: <IconPlus size={16} />, onClick: handleCreate },
+							{ label: translate('nikki.general.actions.refresh'), leftSection: <IconRefresh size={16} />, onClick: handleRefresh, variant: 'outline' },
+						]}
+						search={{ value: searchValue, onChange: setSearchValue, placeholder: translate('nikki.vendingMachine.ads.search.placeholder') }}
 						filters={filters}
-						searchPlaceholder={translate('nikki.vendingMachine.ads.search.placeholder')}
-						viewMode={viewMode}
-						onViewModeChange={setViewMode}
-						viewModeSegments={['list', 'grid']}
+						viewMode={{ value: viewMode, onChange: setViewMode, segments: ['list', 'grid'] }}
 					/>
 				}
 			>

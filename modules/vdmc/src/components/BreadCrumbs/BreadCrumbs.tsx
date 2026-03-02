@@ -1,4 +1,4 @@
-import { Breadcrumbs, Button, Text } from '@mantine/core';
+import { Breadcrumbs, Button } from '@mantine/core';
 import { IconChevronRight } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
@@ -13,17 +13,15 @@ export function BreadCrumbs({ items }: BreadCrumbsProps) {
 
 	const breadcrumbs = useMemo(() => items.map((item, index) => {
 		return (
-			<Button key={index} variant='transparent' size='xs' p={0}
+			<Button key={index} variant='transparent' size='compact-xs' p={0} fz='md' fw={500}
 				onClick={() => item.href !== '#' && navigate(item.href)}
 			>
-				<Text key={index} component='span' c='blue' fz='md' fw={500}>
-					{item.title}
-				</Text>
+				{item.title}
 			</Button>
 		);
 	}), [items]);
 
 	return (
-		<Breadcrumbs separator={<IconChevronRight size={16} />} fw='bolder'>{breadcrumbs}</Breadcrumbs>
+		<Breadcrumbs separator={<IconChevronRight size={16} />}>{breadcrumbs}</Breadcrumbs>
 	);
 }

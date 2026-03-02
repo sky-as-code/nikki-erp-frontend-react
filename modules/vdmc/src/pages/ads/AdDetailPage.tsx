@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
-import { DetailActionBar } from '@/components/ActionBar';
+import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import { useAdDetail } from '@/features/ads';
 import { AdPreviewHorizontal } from '@/features/ads/components/AdPreviewHorizontal';
@@ -85,7 +85,7 @@ export const AdDetailPage: React.FC = () => {
 		<>
 			<PageContainer
 				breadcrumbs={breadcrumbs}
-				actionBar={<DetailActionBar
+				actionBar={<DetailControlPanel
 					onSave={() => {}}
 					onGoBack={() => {
 						navigate(-1);

@@ -7,17 +7,23 @@ import { BreadCrumbs } from '@/components/BreadCrumbs';
 interface PageContainerProps {
 	breadcrumbs?: { title: string; href: string }[];
 	actionBar?: React.ReactNode;
+	sections?: React.ReactNode[];
 	children: React.ReactNode;
 }
 
-export const PageContainer: React.FC<PageContainerProps> = ({ breadcrumbs, actionBar, children }) => {
+export const PageContainer: React.FC<PageContainerProps> = ({ breadcrumbs, actionBar, sections, children }) => {
 	return (
-		<Stack gap='xs' mt='xs'>
+		<Stack gap={'xs'} mt={'xs'}>
 			{breadcrumbs && breadcrumbs.length > 0 && <BreadCrumbs items={breadcrumbs} />}
+
 			{actionBar && <Box>{actionBar}</Box>}
-			<Paper p={'md'} bg='light-dark(rgb(255 255 255 / 70%), var(--mantine-color-dark-6))'>
+
+			{sections?.length && sections.map((section, index) => (
+				<Box key={index}>{section}</Box>
+			))}
+			{children && <Paper p={'md'} bg='light-dark(rgb(255 255 255 / 70%), var(--mantine-color-dark-6))'>
 				{children}
-			</Paper>
+			</Paper>}
 			<Space h={{ base: 'lg', md: 'xl' }}  />
 		</Stack>
 	);

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router';
 
-import { DetailActionBar } from '@/components/ActionBar';
+import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import { Ad } from '@/features/ads/types';
 import { EventGameConfig } from '@/features/events/components/EventDetailDrawer/EventGameConfig';
@@ -120,7 +120,7 @@ export const KioskSettingDetailPage: React.FC = () => {
 		<>
 			<PageContainer
 				breadcrumbs={breadcrumbs}
-				actionBar={<DetailActionBar onSave={() => {}} onGoBack={() => {}} onDelete={() => {}} />}
+				actionBar={<DetailControlPanel onSave={() => {}} onGoBack={() => {}} onDelete={() => {}} />}
 			>
 				<Stack gap='md'>
 					<Group gap='xs' mb='md'>
