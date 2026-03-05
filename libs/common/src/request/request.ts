@@ -1,9 +1,6 @@
 
 import kyLib from 'ky';
 
-import { AuthService } from '../../../shell/src/auth';
-
-
 import type { KyInstance, Input, Options, KyRequest } from 'ky';
 
 
@@ -16,34 +13,31 @@ export type RequestMakerOts = {
 	baseUrl: string,
 	auth?: {
 		tokenType?: string,
-		authService: AuthService,
-		onRefreshFailed?: () => void,
+		getAccessToken: () => string | null,
+		restoreAuthSession: () => Promise<boolean>,
+		clearAuthSession: () => void,
 	},
 };
 
 let isRetried = false;
 
 function interceptorResponse(opts: RequestMakerOts) {
-	const { tokenType = 'Bearer', onRefreshFailed, authService} = opts.auth || {};
+	const { tokenType = 'Bearer', getAccessToken, restoreAuthSession, clearAuthSession} = opts.auth || {};
 
 	return async (request: KyRequest, options: Options, response: Response) => {
-		if (!opts.auth || response.status !== 401 || isRetried ) {
+		if (!getAccessToken || !restoreAuthSession || response.status !== 401 || isRetried ) {
 			isRetried = false;
 			return response;
 		}
 
-		// if (!authService) {
-		// 	throw new Error('AuthService is required for token refresh');
-		// }
-
 		try {
-			const restored = await authService!.restoreAuthSession();
+			const restored = await restoreAuthSession();
 			isRetried = true;
 			if (!restored) {
 				throw new Error('Refresh token unavailable');
 			}
 
-			const token = authService!.getAccessToken();
+			const token = getAccessToken();
 			if (!token) {
 				throw new Error('Access token unavailable after refresh');
 			}
@@ -53,7 +47,7 @@ function interceptorResponse(opts: RequestMakerOts) {
 		}
 		catch {
 			isRetried = false;
-			onRefreshFailed?.();
+			clearAuthSession?.();
 			return response;
 		}
 	};
@@ -62,7 +56,7 @@ function interceptorResponse(opts: RequestMakerOts) {
 export function initRequestMaker(opts: RequestMakerOts) {
 	if (api) return;
 
-	const { tokenType = 'Bearer', authService } = opts.auth || {};
+	const { tokenType = 'Bearer', getAccessToken } = opts.auth || {};
 
 	api = kyLib.create({
 		prefixUrl: opts.baseUrl,
@@ -74,8 +68,8 @@ export function initRequestMaker(opts: RequestMakerOts) {
 		hooks: {
 			beforeRequest: [
 				(request: KyRequest) => {
-					if (authService) {
-						const token = authService.getAccessToken();
+					if (getAccessToken) {
+						const token = getAccessToken();
 						request.headers.set('Authorization', `${tokenType} ${token}`);
 					}
 				},

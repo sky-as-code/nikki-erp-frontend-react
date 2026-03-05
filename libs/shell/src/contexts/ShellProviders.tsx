@@ -38,12 +38,9 @@ export function ShellProviders(props: ShellProvidersProps) {
 	initRequestMaker({
 		baseUrl: envVars.BASE_API_URL,
 		auth: {
-			authService: authService,
-			onRefreshFailed: () => {
-				accessTokenStorage.clear();
-				refreshTokenStorage.clear();
-				window.location.assign('/signin');
-			},
+			getAccessToken: authService.getAccessToken.bind(authService),
+			restoreAuthSession: authService.restoreAuthSession.bind(authService),
+			clearAuthSession: authService.clearAuthSession.bind(authService),
 		},
 	});
 

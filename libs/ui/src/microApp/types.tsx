@@ -134,4 +134,6 @@ export type MicroAppRoutingOptions = {
 export type MicroAppApiOptions = {
 	defaultBaseUrl: string,
 	getAccessToken: () => string | null,
+	restoreAuthSession: () => Promise<boolean>,
+	clearAuthSession: () => void,
 };
