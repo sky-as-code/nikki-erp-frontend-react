@@ -1,10 +1,10 @@
 import { Breadcrumbs, Stack, Typography } from '@mantine/core';
-import { withWindowTitle } from '@nikkierp/ui/components';
+import { NotFound, withWindowTitle, LoadingState } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 
 import { selectHierarchyDetail } from '../../appState/hierarchy';
 import { selectUserList } from '../../appState/user';
@@ -22,7 +22,7 @@ export const HierarchyDetailPageBody: React.FC = () => {
 	const schema = hierarchySchema as ModelSchema;
 	const { t } = useTranslation();
 	const permissions = useIdentityPermissions();
-
+	const navigate = useNavigate();
 	const { isLoadingDetail,
 		handleUpdate,
 		handleDelete } = useHierarchyDetailHandlers();
@@ -37,6 +37,23 @@ export const HierarchyDetailPageBody: React.FC = () => {
 		);
 	}, [users, hierarchyId]);
 
+	const handleGoBack = () => {
+		navigate('..', { relative: 'path' });
+	};
+
+	if (isLoadingDetail === 'error' || isLoadingDetail === 'idle') {
+		return (
+			<NotFound
+				onGoBack={handleGoBack}
+				messageKey='nikki.identity.hierarchy.messages.notFoundMessage'
+			/>
+		);
+	}
+
+	if (isLoadingDetail != 'success') {
+		return <LoadingState messageKey='nikki.authorize.entitlement.messages.loading' />;
+	}
+
 	return (
 		<Stack gap='md'>
 			<Breadcrumbs>
@@ -49,7 +66,6 @@ export const HierarchyDetailPageBody: React.FC = () => {
 			<HierarchyDetailForm
 				schema={schema}
 				hierarchyDetail={hierarchyDetail?.data}
-				isLoading={isLoadingDetail}
 				onSubmit={handleUpdate}
 				onDelete={handleDelete}
 				canUpdate={permissions.hierarchy.canUpdate}

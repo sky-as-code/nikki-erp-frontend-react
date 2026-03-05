@@ -16,6 +16,7 @@ export const userService = {
 		const searchParams: Record<string, string> = {
 			withGroups: 'true',
 			withHierarchy: 'true',
+			withOrgs: 'true',
 		};
 		if (scopeRef) searchParams.scopeRef = scopeRef;
 		const response = await request.get<SearchUserResponse>('identity/users', {
@@ -28,6 +29,7 @@ export const userService = {
 		const searchParams: Record<string, string> = {
 			withGroup: 'true',
 			withHierarchy: 'true',
+			withOrg: 'true',
 		};
 		if (scopeRef) searchParams.scopeRef = scopeRef;
 		const response = await request.get<User>(`identity/users/${id}`, {

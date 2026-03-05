@@ -1,10 +1,10 @@
 import { Breadcrumbs, Stack, Typography } from '@mantine/core';
-import { withWindowTitle } from '@nikkierp/ui/components';
+import { NotFound, withWindowTitle, LoadingState } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { data, Link, useParams } from 'react-router';
+import { data, Link, useNavigate, useParams } from 'react-router';
 
 
 import { selectGroupDetail } from '../../appState/group';
@@ -24,7 +24,7 @@ export const GroupDetailPageBody: React.FC = () => {
 	const schema = groupSchema as ModelSchema;
 	const { t } = useTranslation();
 	const permissions = useIdentityPermissions();
-
+	const navigate = useNavigate();
 	const { isLoadingDetail, handleUpdate, handleDelete } = useGroupDetailHandlers();
 	const { isLoadingManageUsers,
 		handleAddUsers,
@@ -36,6 +36,23 @@ export const GroupDetailPageBody: React.FC = () => {
 			user.groups?.some(group => group.id === groupId),
 		);
 	}, [users, groupId]);
+
+	const handleGoBack = () => {
+		navigate('..', { relative: 'path' });
+	};
+
+	if (isLoadingDetail === 'error' || isLoadingDetail === 'idle') {
+		return (
+			<NotFound
+				onGoBack={handleGoBack}
+				messageKey='nikki.identity.group.messages.notFoundMessage'
+			/>
+		);
+	}
+
+	if (isLoadingDetail != 'success') {
+		return <LoadingState messageKey='nikki.authorize.entitlement.messages.loading' />;
+	}
 
 	return (
 		<Stack gap='md'>
@@ -49,7 +66,6 @@ export const GroupDetailPageBody: React.FC = () => {
 			<GroupDetailForm
 				schema={schema}
 				groupDetail={groupDetail?.data}
-				isLoading={isLoadingDetail}
 				onSubmit={handleUpdate}
 				onDelete={handleDelete}
 				canUpdate={permissions.group.canUpdate}

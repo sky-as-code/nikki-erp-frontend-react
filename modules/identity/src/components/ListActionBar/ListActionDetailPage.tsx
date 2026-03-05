@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router';
 
 interface ListActionDetailPageProps {
 	onDelete?: () => void;
-	isLoading: boolean;
 	disableSave?: boolean;
 	disableDelete?: boolean;
 	titleDelete: string;
@@ -18,7 +17,6 @@ interface ListActionDetailPageProps {
 
 export function ListActionDetailPage({
 	onDelete,
-	isLoading,
 	disableSave = false,
 	disableDelete = false,
 	titleDelete,
@@ -59,8 +57,7 @@ export function ListActionDetailPage({
 					size='sm'
 					variant='filled'
 					type='submit'
-					loading={isLoading}
-					disabled={disableSave || isLoading}
+					disabled={disableSave}
 				>
 					{t('nikki.identity.group.actions.save')}
 				</Button>
@@ -71,8 +68,7 @@ export function ListActionDetailPage({
 						variant='outline'
 						color='red'
 						onClick={handleDeleteClick}
-						loading={isLoading}
-						disabled={disableDelete || isLoading}
+						disabled={disableDelete}
 					>
 						{t('nikki.identity.group.actions.delete')}
 					</Button>

@@ -9,7 +9,7 @@ import { userReducer } from './user';
 export { userActions, selectUserState, selectUserList as selectUsers } from './user';
 export { groupActions, selectGroupState, selectGroupList as selectGroups } from './group';
 export { hierarchyActions, selectHierarchyState, selectHierarchyList as selectHierarchies } from './hierarchy';
-export { organizationActions, selectOrganizationState, selectOrganizationList as selectOrganizations } from './organization';
+export { organizationActions, selectOrganizationState, selectOrganizationList as selectOrganizations, selectOrganizationDetail, selectManageOrganizationUsers } from './organization';
 
 export const reducer = combineReducers({
 	...userReducer,

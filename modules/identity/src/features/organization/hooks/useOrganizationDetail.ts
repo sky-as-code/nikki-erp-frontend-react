@@ -18,7 +18,7 @@ export function useOrganizationDetailHandlers() {
 
 	const updateCommand = useMicroAppSelector(selectUpdateOrganization);
 	const deleteCommand = useMicroAppSelector(selectDeleteOrganization);
-	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
+	const isLoadingDetail = organizationDetail?.status ;
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {

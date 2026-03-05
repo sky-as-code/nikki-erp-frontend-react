@@ -19,12 +19,10 @@ import { ListActionDetailPage } from '../../../../components/ListActionBar';
 
 interface OrganizationFieldsProps {
 	organizationDetail: any;
-	isLoading: boolean;
 }
 
 function OrganizationFields({
 	organizationDetail,
-	isLoading,
 }: OrganizationFieldsProps) {
 	const { t } = useTranslation();
 
@@ -41,11 +39,11 @@ function OrganizationFields({
 					readOnly
 				/>
 			</div>
-			<AutoField name='displayName' inputProps={{ disabled: isLoading }} />
-			<AutoField name='legalName' inputProps={{ disabled: isLoading }} />
-			<AutoField name='phoneNumber' inputProps={{ disabled: isLoading }} />
-			<AutoField name='address' inputProps={{ disabled: isLoading }} />
-			<AutoField name='status' inputProps={{ disabled: isLoading }} />
+			<AutoField name='displayName' />
+			<AutoField name='legalName' />
+			<AutoField name='phoneNumber' />
+			<AutoField name='address' />
+			<AutoField name='status' />
 			<div>
 				<Text size='sm' fw={500} mb='xs'>
 					{t('nikki.identity.organization.fields.createdAt')}
@@ -89,7 +87,6 @@ type OrganizationSchema = {
 interface OrganizationDetailFormProps {
 	schema: OrganizationSchema;
 	organizationDetail: any;
-	isLoading: boolean;
 	onSubmit: (data: any) => void;
 	onDelete: () => void;
 	canUpdate?: boolean;
@@ -99,7 +96,6 @@ interface OrganizationDetailFormProps {
 export function OrganizationDetailForm({
 	schema,
 	organizationDetail,
-	isLoading,
 	onSubmit,
 	onDelete,
 	canUpdate = true,
@@ -108,7 +104,6 @@ export function OrganizationDetailForm({
 	const { t } = useTranslation();
 	const [showSaveConfirm, setShowSaveConfirm] = React.useState(false);
 	const [pendingData, setPendingData] = React.useState<any>(null);
-	console.log('organizationDetail', organizationDetail);
 
 	const handleFormSubmit = (data: any) => {
 		if (!canUpdate) return;
@@ -138,7 +133,6 @@ export function OrganizationDetailForm({
 								<Stack gap='xl'>
 									<ListActionDetailPage
 										onDelete={canDelete ? onDelete : undefined}
-										isLoading={isLoading}
 										disableSave={!form.formState.isDirty || !canUpdate}
 										disableDelete={!canDelete}
 										titleDelete={t('nikki.identity.organization.actions.confirmDelete')}
@@ -147,7 +141,6 @@ export function OrganizationDetailForm({
 									/>
 									<OrganizationFields
 										organizationDetail={organizationDetail}
-										isLoading={isLoading}
 									/>
 								</Stack>
 							</form>
@@ -161,7 +154,6 @@ export function OrganizationDetailForm({
 				onConfirm={handleConfirmSave}
 				title={t('nikki.identity.organization.actions.confirmUpdate')}
 				message={t('nikki.identity.organization.messages.confirmUpdateMessage')}
-				confirmLabel={t('nikki.identity.organization.actions.save')}
 			/>
 		</>
 	);

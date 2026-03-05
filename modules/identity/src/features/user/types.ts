@@ -24,6 +24,10 @@ export type User = {
 		id: string;
 		name: string;
 	};
+	orgs?: Array<{
+		id: string;
+		name: string;
+	}>;
 };
 
 export type CreateUserRequest = {

@@ -20,7 +20,7 @@ export function useUserDetailHandlers() {
 
 	const updateCommand = useMicroAppSelector(selectUpdateUser);
 	const deleteCommand = useMicroAppSelector(selectDeleteUser);
-	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
+	const isLoadingDetail = userDetail?.status;
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {
@@ -45,6 +45,7 @@ export function useUserDetailHandlers() {
 				t('nikki.identity.user.messages.deleteSuccess'), '',
 			);
 			dispatch(userActions.resetDeleteUser());
+			dispatch(userActions.getUser({ id: userId || '', scopeRef }));
 			navigate('..', { relative: 'path' });
 		}
 

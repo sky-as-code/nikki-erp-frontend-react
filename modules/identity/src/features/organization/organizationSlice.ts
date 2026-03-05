@@ -11,6 +11,8 @@ import {
 	UpdateOrganizationRequest,
 	UpdateOrganizationResponse,
 	DeleteOrganizationResponse,
+	ManageOrganizationUsersRequest,
+	ManageOrganizationUsersResponse,
 } from './types';
 import { CreateOrganizationRequest } from './types';
 
@@ -23,6 +25,7 @@ export type OrganizationState = {
 	create: ReduxActionState<CreateOrganizationResponse>;
 	update: ReduxActionState<UpdateOrganizationResponse>;
 	delete: ReduxActionState<DeleteOrganizationResponse>;
+	manageUsers: ReduxActionState<ManageOrganizationUsersResponse>;
 };
 
 export const initialState: OrganizationState = {
@@ -31,6 +34,7 @@ export const initialState: OrganizationState = {
 	create: baseReduxActionState,
 	update: baseReduxActionState,
 	delete: baseReduxActionState,
+	manageUsers: baseReduxActionState,
 };
 
 export const listOrganizations = createAsyncThunk<
@@ -122,6 +126,24 @@ export const deleteOrganization = createAsyncThunk<
 	},
 );
 
+export const manageOrganizationUsers = createAsyncThunk<
+	ManageOrganizationUsersResponse,
+	ManageOrganizationUsersRequest,
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/manageOrganizationUsers`,
+	async (data, { rejectWithValue }) => {
+		try {
+			const result = await organizationService.manageOrganizationUsers(data);
+			return result;
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to manage organization users';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
 const organizationSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
@@ -138,6 +160,9 @@ const organizationSlice = createSlice({
 		resetDeleteOrganization: (state) => {
 			state.delete = baseReduxActionState;
 		},
+		resetManageOrganizationUsers: (state) => {
+			state.manageUsers = baseReduxActionState;
+		},
 	},
 	extraReducers: (builder) => {
 		listOrganizationsReducers(builder);
@@ -145,6 +170,7 @@ const organizationSlice = createSlice({
 		createOrganizationReducers(builder);
 		updateOrganizationReducers(builder);
 		deleteOrganizationReducers(builder);
+		manageOrganizationUsersReducers(builder);
 	},
 });
 
@@ -243,6 +269,28 @@ function deleteOrganizationReducers(builder: ActionReducerMapBuilder<Organizatio
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete organization';
 			state.delete.data = undefined;
+		});
+}
+
+function manageOrganizationUsersReducers(builder: ActionReducerMapBuilder<OrganizationState>) {
+	builder
+		.addCase(manageOrganizationUsers.pending, (state) => {
+			state.manageUsers.status = 'pending';
+			state.manageUsers.error = null;
+			state.manageUsers.data = undefined;
+		})
+		.addCase(manageOrganizationUsers.fulfilled, (state, action) => {
+			state.manageUsers.status = 'success';
+			if (state.detail.data) {
+				state.detail.data.etag = action.payload.etag;
+				state.detail.data.updatedAt = action.payload.updatedAt;
+			}
+			state.manageUsers.error = null;
+		})
+		.addCase(manageOrganizationUsers.rejected, (state, action) => {
+			state.manageUsers.status = 'error';
+			state.manageUsers.error = action.payload || 'Failed to manage organization users';
+			state.manageUsers.data = undefined;
 		});
 }
 
