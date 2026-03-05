@@ -27,13 +27,12 @@ import { useManageOrganizationRemoveUsers } from '../../hooks/useManageOrganizat
 
 interface UserFieldsProps {
 	userDetail: any;
-	isLoading: boolean;
 }
 
 // eslint-disable-next-line max-lines-per-function
-function UserFields({ userDetail, isLoading }: UserFieldsProps) {
+function UserFields({ userDetail }: UserFieldsProps) {
 	const { t } = useTranslation();
-	const { userOrganizations, isLoading: isLoadingRemove, onRemoveOrganization } = useManageOrganizationRemoveUsers();
+	const { userOrganizations, onRemoveOrganization } = useManageOrganizationRemoveUsers();
 	const [organizationToRemove, setOrganizationToRemove] = React.useState<
 		{ id: string; name: string; etag: string } | null
 	>(null);
@@ -62,8 +61,8 @@ function UserFields({ userDetail, isLoading }: UserFieldsProps) {
 					readOnly
 				/>
 			</div>
-			<AutoField name='displayName' inputProps={{ disabled: isLoading }} />
-			<AutoField name='status' inputProps={{ disabled: isLoading }} />
+			<AutoField name='displayName' />
+			<AutoField name='status'/>
 			<div>
 				<Text size='sm' fw={500} mb='xs'>
 					{t('nikki.identity.user.fields.hierarchy')}
@@ -158,8 +157,6 @@ function UserFields({ userDetail, isLoading }: UserFieldsProps) {
 												color='red'
 												variant='light'
 												onClick={() => handleRemoveClick(org.id, org.displayName, org.etag || '')}
-												loading={isLoadingRemove}
-												disabled={isLoading || isLoadingRemove}
 												size='compact-sm'
 												children={<IconTrash size={20} />}
 											/>
@@ -202,7 +199,6 @@ type UserSchema = {
 interface UserDetailFormProps {
 	schema: UserSchema;
 	userDetail: any;
-	isLoading: boolean;
 	onSubmit: (data: any) => void;
 	onDelete: () => void;
 	canUpdate?: boolean;
@@ -212,7 +208,6 @@ interface UserDetailFormProps {
 export function UserDetailForm({
 	schema,
 	userDetail,
-	isLoading,
 	onSubmit,
 	onDelete,
 	canUpdate = true,
@@ -258,7 +253,6 @@ export function UserDetailForm({
 								<Stack gap='xl'>
 									<ListActionDetailPage
 										onDelete={canDelete ? onDelete : undefined}
-										isLoading={isLoading}
 										disableSave={!form.formState.isDirty || !canUpdate}
 										disableDelete={!canDelete}
 										titleDelete={t('nikki.identity.user.actions.confirmDelete')}
@@ -269,12 +263,10 @@ export function UserDetailForm({
 										avatarUrl={userDetail?.avatarUrl}
 										displayName={userDetail?.displayName || userDetail?.email || 'User'}
 										onAvatarChange={handleAvatarChange}
-										disabled={isLoading}
 										size={120}
 									/>
 									<UserFields
 										userDetail={userDetail}
-										isLoading={isLoading}
 									/>
 								</Stack>
 							</form>

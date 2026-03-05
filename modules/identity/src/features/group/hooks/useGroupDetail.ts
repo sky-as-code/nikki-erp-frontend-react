@@ -21,7 +21,7 @@ export function useGroupDetailHandlers() {
 	const { notification } = useUIState();
 	const { t } = useTranslation();
 	const orgScopeRef = useOrgScopeRef();
-	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
+	const isLoadingDetail = groupDetail?.status;
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {

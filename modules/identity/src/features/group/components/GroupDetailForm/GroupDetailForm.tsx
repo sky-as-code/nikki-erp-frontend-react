@@ -14,16 +14,15 @@ import { ListActionDetailPage } from '../../../../components/ListActionBar';
 
 interface GroupFieldsProps {
 	groupDetail: any;
-	isLoading: boolean;
 }
 
-function GroupFields({ groupDetail, isLoading }: GroupFieldsProps) {
+function GroupFields({ groupDetail }: GroupFieldsProps) {
 	const { t } = useTranslation();
 
 	return (
 		<Stack gap='md'>
-			<AutoField name='name' autoFocused inputProps={{ size: 'lg', disabled: isLoading }} />
-			<AutoField name='description' inputProps={{ disabled: isLoading }} />
+			<AutoField name='name' autoFocused inputProps={{ size: 'lg' }} />
+			<AutoField name='description' />
 			<div>
 				<Text size='sm' fw={500} mb='xs'>
 					{t('nikki.identity.group.fields.createdAt')}
@@ -67,14 +66,13 @@ type GroupSchema = {
 interface GroupDetailFormProps {
 	schema: GroupSchema;
 	groupDetail: any;
-	isLoading: boolean;
 	onSubmit: (data: any) => void;
 	onDelete: () => void;
 	canUpdate?: boolean;
 	canDelete?: boolean;
 }
 
-export function GroupDetailForm({ schema, groupDetail, isLoading,
+export function GroupDetailForm({ schema, groupDetail,
 	onSubmit, onDelete, canUpdate = true, canDelete = true }: GroupDetailFormProps): React.ReactElement {
 	const { t } = useTranslation();
 	const [showSaveConfirm, setShowSaveConfirm] = React.useState(false);
@@ -102,14 +100,12 @@ export function GroupDetailForm({ schema, groupDetail, isLoading,
 						formVariant='update'
 						modelSchema={schema}
 						modelValue={groupDetail}
-						modelLoading={isLoading}
 					>
 						{({ handleSubmit, form }) => (
 							<form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
 								<Stack gap='md'>
 									<ListActionDetailPage
 										onDelete={canDelete ? onDelete : undefined}
-										isLoading={isLoading}
 										disableSave={!form.formState.isDirty || !canUpdate}
 										disableDelete={!canDelete}
 										titleDelete={t('nikki.identity.group.actions.confirmDelete')}
@@ -119,7 +115,6 @@ export function GroupDetailForm({ schema, groupDetail, isLoading,
 
 									<GroupFields
 										groupDetail={groupDetail}
-										isLoading={isLoading}
 									/>
 								</Stack>
 							</form>

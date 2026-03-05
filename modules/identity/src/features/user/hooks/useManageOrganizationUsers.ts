@@ -141,7 +141,7 @@ export function useManageOrganizationRemoveUsers() {
 			);
 			dispatch(organizationActions.resetManageOrganizationUsers());
 			if (userId) {
-				dispatch(userActions.getUser({ id: userId }));
+				dispatch(userActions.getUser({ id: userId, scopeRef }));
 			}
 		}
 		if (manageUsersCommand.status === 'error') {

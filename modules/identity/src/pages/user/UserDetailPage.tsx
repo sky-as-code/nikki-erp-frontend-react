@@ -1,5 +1,5 @@
 import { Breadcrumbs, Stack, Typography } from '@mantine/core';
-import { NotFound, withWindowTitle } from '@nikkierp/ui/components';
+import { NotFound, withWindowTitle, LoadingState } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -25,13 +25,17 @@ export const UserDetailPageBody: React.FC = () => {
 		navigate('..', { relative: 'path' });
 	};
 
-	if (!userDetail || !userDetail?.data ) {
+	if (isLoadingDetail === 'error' || isLoadingDetail === 'idle') {
 		return (
 			<NotFound
 				onGoBack={handleGoBack}
 				messageKey='nikki.identity.user.messages.notFoundMessage'
 			/>
 		);
+	}
+
+	if (isLoadingDetail != 'success') {
+		return <LoadingState messageKey='nikki.authorize.entitlement.messages.loading' />;
 	}
 
 	return (
@@ -46,7 +50,6 @@ export const UserDetailPageBody: React.FC = () => {
 			<UserDetailForm
 				schema={schema}
 				userDetail={userDetail?.data}
-				isLoading={isLoadingDetail}
 				onSubmit={handleUpdate}
 				onDelete={handleDelete}
 				canUpdate={permissions.user.canUpdate}

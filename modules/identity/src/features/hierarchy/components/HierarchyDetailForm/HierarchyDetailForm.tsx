@@ -19,10 +19,9 @@ import { ListActionDetailPage } from '../../../../components/ListActionBar';
 
 interface HierarchyFieldsProps {
 	hierarchyDetail: any;
-	isLoading: boolean;
 }
 
-function HierarchyFields({ hierarchyDetail, isLoading }: HierarchyFieldsProps) {
+function HierarchyFields({ hierarchyDetail }: HierarchyFieldsProps) {
 	const { t } = useTranslation();
 
 	return (
@@ -32,7 +31,6 @@ function HierarchyFields({ hierarchyDetail, isLoading }: HierarchyFieldsProps) {
 				autoFocused
 				inputProps={{
 					size: 'lg',
-					disabled: isLoading,
 				}}
 			/>
 			<div>
@@ -78,7 +76,6 @@ type HierarchySchema = {
 interface HierarchyDetailFormProps {
 	schema: HierarchySchema;
 	hierarchyDetail: any;
-	isLoading: boolean;
 	onSubmit: (data: any) => void;
 	onDelete: () => void;
 	canUpdate?: boolean;
@@ -86,7 +83,7 @@ interface HierarchyDetailFormProps {
 }
 
 export function HierarchyDetailForm({
-	schema, hierarchyDetail, isLoading, onSubmit, onDelete, canUpdate = true, canDelete = true,
+	schema, hierarchyDetail, onSubmit, onDelete, canUpdate = true, canDelete = true,
 }: HierarchyDetailFormProps): React.ReactElement {
 	const { t } = useTranslation();
 	const [showSaveConfirm, setShowSaveConfirm] = React.useState(false);
@@ -114,14 +111,12 @@ export function HierarchyDetailForm({
 						formVariant='update'
 						modelSchema={schema}
 						modelValue={hierarchyDetail}
-						modelLoading={isLoading}
 					>
 						{({ handleSubmit, form }) => (
 							<form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
 								<Stack gap='md'>
 									<ListActionDetailPage
 										onDelete={canDelete ? onDelete : undefined}
-										isLoading={isLoading}
 										disableSave={!form.formState.isDirty || !canUpdate}
 										disableDelete={!canDelete}
 										titleDelete={t('nikki.identity.hierarchy.actions.confirmDelete')}
@@ -130,7 +125,6 @@ export function HierarchyDetailForm({
 									/>
 									<HierarchyFields
 										hierarchyDetail={hierarchyDetail}
-										isLoading={isLoading}
 									/>
 								</Stack>
 							</form>

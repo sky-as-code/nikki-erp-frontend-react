@@ -20,7 +20,7 @@ export function useHierarchyDetailHandlers() {
 
 	const updateCommand = useMicroAppSelector(selectUpdateHierarchy);
 	const deleteCommand = useMicroAppSelector(selectDeleteHierarchy);
-	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
+	const isLoadingDetail = hierarchyDetail?.status ;
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {
