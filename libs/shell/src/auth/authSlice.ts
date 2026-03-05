@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice, ActionReducerMapBuilder } from '@reduxjs/toolkit';
-import { use } from 'react';
 
 import { authService } from './authService';
 import { SignInResult } from './types';
@@ -8,10 +7,17 @@ import { fetchUserContextAction } from '../userContext/userContextSlice';
 
 export const SLICE_NAME = 'shellAuth';
 
+
+export type ErrorResponse = {
+	code?: string;
+	message?: string;
+	details?: Record<string, string>;
+};
+
 export type AuthState = {
 	error: string | null;
-	errorStartSignIn: string | null;
-	errorContinueSignIn: string | null;
+	errorStartSignIn: ErrorResponse | string | null;
+	errorContinueSignIn: ErrorResponse | string | null;
 	isSignInSuccess: boolean;
 	isLoading: boolean;
 	sessionExpiresAt: number | null;
@@ -41,9 +47,10 @@ export const startSignInAction = createAsyncThunk<
 			);
 			return result;
 		}
-		catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'Start sign-in attempt failed';
-			return rejectWithValue(errorMessage);
+		catch (error: any) {
+			const rejectValue = error instanceof Error ? error.message || 'Start sign-in attempt failed'
+				: typeof error === 'object' ? error : 'Start sign-in attempt failed';
+			return rejectWithValue(rejectValue);
 		}
 	},
 );
@@ -58,14 +65,14 @@ export const continueSignInAction = createAsyncThunk<
 		try {
 			const result = await authService().continueSignIn(params);
 			if (result.done && result.data?.accessToken) {
-				// const userId = getUserIdFromToken(result.data.accessToken);
 				queueMicrotask(() => dispatch(fetchUserContextAction()));
 			}
 			return result;
 		}
-		catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'Sign-in failed';
-			return rejectWithValue(errorMessage);
+		catch (error: any) {
+			const rejectValue = error instanceof Error ? error.message || 'Start sign-in attempt failed'
+				: typeof error === 'object' ? error : 'Start sign-in attempt failed';
+			return rejectWithValue(rejectValue);
 		}
 	},
 );
@@ -100,7 +107,6 @@ export const restoreAuthSessionAction = createAsyncThunk<
 			if (isSuccess) {
 				const accessToken = authService().getAccessToken();
 				if (accessToken) {
-					// const userId = getUserIdFromToken(accessToken);
 					queueMicrotask(() => dispatch(fetchUserContextAction()));
 				}
 			}
@@ -220,8 +226,6 @@ function addRestoreAuthSessionReducers(builder: ActionReducerMapBuilder<AuthStat
 		});
 }
 
-// export const {
-// } = authSlice.actions;
 
 export const actions = {
 	...authSlice.actions,

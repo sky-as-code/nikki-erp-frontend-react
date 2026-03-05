@@ -1,12 +1,11 @@
-import { Anchor, Button, Group, Loader, Stack, Text } from '@mantine/core';
+import { Anchor, Button, Group, Stack } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
 import { startSignInAction, useAuthState, useSignInProgress, actions } from '@nikkierp/shell/auth';
 import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
+import { IconMail } from '@tabler/icons-react';
 import { useUIState } from 'node_modules/@nikkierp/shell/src/contexts/UIProviders';
 import React from 'react';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - JSON import
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
@@ -21,7 +20,6 @@ export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	const dispatch = useDispatch<AppDispatch>();
 	const { isLoading, errorStartSignIn} = useAuthState();
 	const { notification } = useUIState();
-	const {t} = useTranslation();
 	const signInProgress = useSignInProgress();
 
 	React.useEffect(() => {
@@ -32,7 +30,12 @@ export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 
 	React.useEffect(() => {
 		if (errorStartSignIn) {
-			notification.showError(t('login.messages.accountNotExist'), '');
+			if (typeof errorStartSignIn === 'string') {
+				notification.showError(errorStartSignIn, 'Error');
+			}
+			else {
+				notification.showError(errorStartSignIn?.message || Object.values(errorStartSignIn?.details || {})[0] || 'Start sign-in attempt failed', 'Error');
+			}
 			dispatch(actions.resetErrorsStartSignIn());
 		}
 	}, [errorStartSignIn]);
@@ -55,6 +58,8 @@ export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 }
 
 function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
+	const {t} = useTranslation();
+
 	return (
 		<Stack gap='md'>
 			<AutoField
@@ -62,6 +67,7 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 				ref={props.ref}
 				inputProps={{
 					disabled: !props.isActive || props.isLoading,
+					leftSection: <IconMail size={20} />,
 				}}
 			/>
 
@@ -73,7 +79,7 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 							size='md'
 							className='text-blue-600 hover:text-blue-800 transition-colors'
 						>
-							Forgot Email?
+							{t('signIn.forgotEmail')}?
 						</Anchor>
 					</Group>
 
@@ -83,20 +89,8 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 						loading={props.isLoading}
 						disabled={props.isLoading}
 					>
-						Next
+						{t('signIn.nextStep')}
 					</Button>
-
-					<div className='text-center pt-4 border-t border-gray-200'>
-						<Text size='md' c='dimmed'>
-							Don't have an account?{' '}
-							<Anchor
-								href='#'
-								className='text-blue-600 hover:text-blue-800 font-medium'
-							>
-								Sign up here
-							</Anchor>
-						</Text>
-					</div>
 				</>
 			)}
 		</Stack>

@@ -1,5 +1,5 @@
 
-import kyLib from 'ky';
+import kyLib, { HTTPError } from 'ky';
 
 import type { KyInstance, Input, Options, KyRequest } from 'ky';
 
@@ -21,7 +21,7 @@ export type RequestMakerOts = {
 
 let isRetried = false;
 
-function interceptorResponse(opts: RequestMakerOts) {
+function refreshTokenInterceptor(opts: RequestMakerOts) {
 	const { tokenType = 'Bearer', getToken, restoreSession, clearSession} = opts.auth || {};
 
 	return async (request: KyRequest, options: Options, response: Response) => {
@@ -74,7 +74,7 @@ export function initRequestMaker(opts: RequestMakerOts) {
 					}
 				},
 			],
-			afterResponse: [interceptorResponse(opts)],
+			afterResponse: [refreshTokenInterceptor(opts)],
 		},
 	});
 }
@@ -124,7 +124,23 @@ async function send<T>(method: keyof KyInstance, url: Input, options?: Options):
 		return data;
 	}
 	catch (error) {
-		console.log(error);
-		throw new Error('Failed to send request to server');
+		if (error instanceof HTTPError) {
+			const response = error.response;
+			let data: any = null;
+
+			try {
+				data = await response.json();
+			}
+			catch {
+				data = await response.text();
+			}
+
+			if (typeof data === 'string') {
+				throw new Error(data);
+			}
+			throw data;
+		}
+
+		throw new Error(error instanceof Error ? error.message : 'Failed to send request to server');
 	}
 }

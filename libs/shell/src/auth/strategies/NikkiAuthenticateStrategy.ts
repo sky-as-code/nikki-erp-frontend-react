@@ -1,5 +1,5 @@
 import * as request from '@nikkierp/common/request';
-import { delay, randomString } from '@nikkierp/common/utils';
+import { randomString } from '@nikkierp/common/utils';
 
 import { AuthenticatedCallback, AuthenticatedSession, ISignInStrategy, SignInResult } from '../types';
 

@@ -1,11 +1,18 @@
 {
-    "login": {
-        "login": "Đăng nhập",
+    "signIn": {
+        "signIn": "Đăng nhập",
+		"title": "Chào mừng trở lại",
+		"description": "Đăng nhập vào tài khoản của bạn để tiếp tục",
+		"email": "Email",
+		"enterEmail": "Nhập email",
         "username": "Tên đăng nhập",
         "enterUserName": "Nhập tên đăng nhập",
         "password": "Mật khẩu",
         "enterPassword": "Nhập mật khẩu",
         "forgotPassword": "Quên mật khẩu",
+		"forgotEmail": "Quên email",
+		"nextStep": "Tiếp theo",
+		"back": "Quay lại",
         "messages": {
             "loginSuccess": "Đăng nhập thành công!",
             "loginFail": "Đăng nhập thất bại!",

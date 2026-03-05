@@ -38,9 +38,9 @@ export function ShellProviders(props: ShellProvidersProps) {
 	initRequestMaker({
 		baseUrl: envVars.BASE_API_URL,
 		auth: {
-			getAccessToken: authService.getAccessToken.bind(authService),
-			restoreAuthSession: authService.restoreAuthSession.bind(authService),
-			clearAuthSession: authService.clearAuthSession.bind(authService),
+			getToken: authService.getAccessToken.bind(authService),
+			restoreSession: authService.restoreAuthSession.bind(authService),
+			clearSession: authService.clearAuthSession.bind(authService),
 		},
 	});
 

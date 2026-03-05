@@ -283,7 +283,7 @@ export function TextInputField({ name, type, autoFocused, inputProps, htmlProps,
 				defaultValue={defaultValue}
 				error={fieldData.error}
 				disabled={modelLoading}
-				placeholder={fieldData.placeholder}
+				placeholder={translate(fieldData.placeholder ?? '')}
 				withAria={false}
 				{...htmlProps}
 				{...defaultInputProps}
