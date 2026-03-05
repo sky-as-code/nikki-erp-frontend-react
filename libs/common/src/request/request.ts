@@ -13,31 +13,31 @@ export type RequestMakerOts = {
 	baseUrl: string,
 	auth?: {
 		tokenType?: string,
-		getAccessToken: () => string | null,
-		restoreAuthSession: () => Promise<boolean>,
-		clearAuthSession: () => void,
+		getToken: () => string | null,
+		restoreSession: () => Promise<boolean>,
+		clearSession: () => void,
 	},
 };
 
 let isRetried = false;
 
 function interceptorResponse(opts: RequestMakerOts) {
-	const { tokenType = 'Bearer', getAccessToken, restoreAuthSession, clearAuthSession} = opts.auth || {};
+	const { tokenType = 'Bearer', getToken, restoreSession, clearSession} = opts.auth || {};
 
 	return async (request: KyRequest, options: Options, response: Response) => {
-		if (!getAccessToken || !restoreAuthSession || response.status !== 401 || isRetried ) {
+		if (!getToken || !restoreSession || response.status !== 401 || isRetried ) {
 			isRetried = false;
 			return response;
 		}
 
 		try {
-			const restored = await restoreAuthSession();
+			const restored = await restoreSession();
 			isRetried = true;
 			if (!restored) {
 				throw new Error('Refresh token unavailable');
 			}
 
-			const token = getAccessToken();
+			const token = getToken();
 			if (!token) {
 				throw new Error('Access token unavailable after refresh');
 			}
@@ -47,7 +47,7 @@ function interceptorResponse(opts: RequestMakerOts) {
 		}
 		catch {
 			isRetried = false;
-			clearAuthSession?.();
+			clearSession?.();
 			return response;
 		}
 	};
@@ -56,7 +56,7 @@ function interceptorResponse(opts: RequestMakerOts) {
 export function initRequestMaker(opts: RequestMakerOts) {
 	if (api) return;
 
-	const { tokenType = 'Bearer', getAccessToken } = opts.auth || {};
+	const { tokenType = 'Bearer', getToken } = opts.auth || {};
 
 	api = kyLib.create({
 		prefixUrl: opts.baseUrl,
@@ -68,8 +68,8 @@ export function initRequestMaker(opts: RequestMakerOts) {
 		hooks: {
 			beforeRequest: [
 				(request: KyRequest) => {
-					if (getAccessToken) {
-						const token = getAccessToken();
+					if (getToken) {
+						const token = getToken();
 						request.headers.set('Authorization', `${tokenType} ${token}`);
 					}
 				},
