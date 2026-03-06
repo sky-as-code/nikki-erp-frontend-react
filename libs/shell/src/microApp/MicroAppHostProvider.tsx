@@ -183,8 +183,11 @@ function useRoutingOpts(basePath?: string): MicroAppRoutingOptions {
 function useApiOptions(): MicroAppApiOptions {
 	const envVars = useShellEnvVars();
 	const authSvc = authService();
+
 	return {
 		defaultBaseUrl: envVars.BASE_API_URL,
-		getAccessToken: authSvc.getAccessToken.bind(authSvc),
+		getToken: authSvc.getAccessToken.bind(authSvc),
+		restoreSession: authSvc.restoreAuthSession.bind(authSvc),
+		clearSession: authSvc.clearAuthSession.bind(authSvc),
 	};
 }

@@ -1,5 +1,4 @@
 import * as request from '@nikkierp/common/request';
-import { u } from 'node_modules/react-router/dist/development/index-react-server-client-BIz4AUNd.mjs';
 
 
 export type User = {

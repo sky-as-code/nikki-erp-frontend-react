@@ -1,11 +1,18 @@
 {
-	"login": {
-		"login": "Log In",
+	"signIn": {
+		"signIn": "Log In",
+		"title": "Welcome Back",
+		"description": "Sign in to your account to continue",
+		"email": "Email",
+		"enterEmail": "Enter your email",
 		"username": "Username",
 		"enterUsername": "Enter your username",
 		"password": "Password",
 		"enterPassword": "Enter your password",
 		"forgotPassword": "Forgot Password",
+		"forgotEmail": "Forgot Email",
+		"nextStep": "Next",
+		"back": "Back",
 		"messages": {
 			"loginSuccess": "Login successfully!",
 			"loginFail": "Login fail!",
@@ -506,11 +513,6 @@
 					"messages": {
 						"create_success": "Grant request created successfully"
 					}
-				},
-				"placeholders": {
-					"name": "Enter role suite name",
-					"description": "Describe what this role suite grants",
-					"org_id": "Select organization scope"
 				},
 				"messages": {
 					"loading": "Loading role suite...",

@@ -58,6 +58,13 @@ export class AuthService {
 		return result;
 	}
 
+
+	public clearAuthSession(): void {
+		this.#accessTokenStorage.clear();
+		this.#refreshTokenStorage.clear();
+		window.location.reload();
+	}
+
 	public signOut(): void {
 		request.post('logout');
 		this.#accessTokenStorage.clear();
