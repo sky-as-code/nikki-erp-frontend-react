@@ -870,6 +870,7 @@
 					},
 					"tabs": {
 						"basicInfo": "Basic Information",
+						"kioskSetting": "Kiosk Setting",
 						"productsList": "Products",
 						"productsGrid": "Restock Products",
 						"activity": "Activity"

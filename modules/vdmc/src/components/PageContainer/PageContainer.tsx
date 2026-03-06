@@ -13,7 +13,7 @@ interface PageContainerProps {
 
 export const PageContainer: React.FC<PageContainerProps> = ({ breadcrumbs, actionBar, sections, children }) => {
 	return (
-		<Stack gap={'xs'} mt={'xs'}>
+		<Stack gap={'sm'} mt={'xs'} p={'sm'} bg='light-dark(rgb(255 255 255 / 80%), var(--mantine-color-dark-6))' bdrs={'xs'}>
 			{breadcrumbs && breadcrumbs.length > 0 && <BreadCrumbs items={breadcrumbs} />}
 
 			{actionBar && <Box>{actionBar}</Box>}
@@ -21,7 +21,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({ breadcrumbs, actio
 			{sections?.length && sections.map((section, index) => (
 				<Box key={index}>{section}</Box>
 			))}
-			{children && <Paper p={'md'} bg='light-dark(rgb(255 255 255 / 70%), var(--mantine-color-dark-6))'>
+			{children && <Paper p={'md'}>
 				{children}
 			</Paper>}
 			<Space h={{ base: 'lg', md: 'xl' }}  />

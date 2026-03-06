@@ -937,6 +937,7 @@
 				},
 				"tabs": {
 					"basicInfo": "Thông tin cơ bản",
+					"kioskSetting": "Cài đặt Kiosk",
 					"products": "Sản phẩm",
 					"productsList": "Sản phẩm",
 					"productsGrid": "Nhập hàng",

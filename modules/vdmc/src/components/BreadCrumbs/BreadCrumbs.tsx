@@ -1,5 +1,4 @@
 import { Breadcrumbs, Button } from '@mantine/core';
-import { IconChevronRight } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -22,6 +21,6 @@ export function BreadCrumbs({ items }: BreadCrumbsProps) {
 	}), [items]);
 
 	return (
-		<Breadcrumbs separator={<IconChevronRight size={16} />}>{breadcrumbs}</Breadcrumbs>
+		<Breadcrumbs>{breadcrumbs}</Breadcrumbs>
 	);
 }

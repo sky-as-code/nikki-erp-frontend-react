@@ -32,6 +32,7 @@ interface ProductPosition {
 
 interface ProductGridViewProps {
 	kioskId: string;
+	isEditing?: boolean;
 }
 
 // Mock data - replace with actual API call
@@ -69,9 +70,13 @@ const generateMockGridData = (): Record<string, ProductPosition> => {
 	return data;
 };
 
-export const ProductGridView: React.FC<ProductGridViewProps> = ({ kioskId: _kioskId }) => {
+export const ProductGridView: React.FC<ProductGridViewProps> = ({
+	kioskId: _kioskId,
+	isEditing: externalIsEditing,
+}) => {
 	const { t: translate } = useTranslation();
-	const [isEditing, setIsEditing] = useState(false);
+	const [internalIsEditing, setInternalIsEditing] = useState(false);
+	const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
 	const [gridData, setGridData] = useState<Record<string, ProductPosition>>(generateMockGridData());
 	const [copiedCell, setCopiedCell] = useState<ProductPosition | null>(null);
 
@@ -170,7 +175,9 @@ export const ProductGridView: React.FC<ProductGridViewProps> = ({ kioskId: _kios
 
 	const handleDiscardChanges = () => {
 		setGridData(generateMockGridData());
-		setIsEditing(false);
+		if (externalIsEditing === undefined) {
+			setInternalIsEditing(false);
+		}
 	};
 
 	const handleLoadAll = () => {
@@ -190,14 +197,18 @@ export const ProductGridView: React.FC<ProductGridViewProps> = ({ kioskId: _kios
 							<Button size='xs' variant='outline' onClick={handleLoadAll}>
 								{translate('nikki.vendingMachine.kiosk.products.actions.loadAll')}
 							</Button>
-							<Button size='xs' variant='outline' onClick={() => setIsEditing(false)}>
-								{translate('nikki.vendingMachine.kiosk.products.actions.viewOnly')}
-							</Button>
+							{externalIsEditing === undefined && (
+								<Button size='xs' variant='outline' onClick={() => setInternalIsEditing(false)}>
+									{translate('nikki.vendingMachine.kiosk.products.actions.viewOnly')}
+								</Button>
+							)}
 						</>
 					) : (
-						<Button size='xs' onClick={() => setIsEditing(true)}>
-							{translate('nikki.general.actions.edit')}
-						</Button>
+						externalIsEditing === undefined && (
+							<Button size='xs' onClick={() => setInternalIsEditing(true)}>
+								{translate('nikki.general.actions.edit')}
+							</Button>
+						)
 					)}
 				</Group>
 			</Group>
@@ -206,7 +217,7 @@ export const ProductGridView: React.FC<ProductGridViewProps> = ({ kioskId: _kios
 				style={{
 					position: 'relative',
 					overflow: 'auto',
-					maxHeight: '70vh',
+					maxHeight: 'max-content',
 					border: '1px solid var(--mantine-color-gray-3)',
 					borderRadius: 'var(--mantine-radius-md)',
 				}}

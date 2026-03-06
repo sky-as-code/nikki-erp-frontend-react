@@ -1,35 +1,25 @@
 /* eslint-disable max-lines-per-function */
-import { Box, Button, Card, Divider, Group, MultiSelect, Select, Stack, Text, TextInput } from '@mantine/core';
-import { IconDeviceDesktop, IconDeviceGamepad2, IconMapPin, IconPalette, IconPhoto, IconPlus } from '@tabler/icons-react';
+import { Box, Divider, Group, MultiSelect, Select, Stack, Text, TextInput } from '@mantine/core';
+import { IconMapPin } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Ad } from '@/features/ads/types';
-import { AdCard } from '@/features/events/components/EventDetailDrawer/AdCard';
-import { AdSelectModal } from '@/features/events/components/EventDetailDrawer/AdSelectModal';
-import { GamePreviewCard } from '@/features/events/components/EventDetailDrawer/GamePreviewCard';
-import { GameSelectModal } from '@/features/events/components/EventDetailDrawer/GameSelectModal';
-import { ThemePreviewCard } from '@/features/events/components/EventDetailDrawer/ThemePreviewCard';
-import { ThemeSelectModal } from '@/features/events/components/EventDetailDrawer/ThemeSelectModal';
-import { Game } from '@/features/games/types';
-import { Kiosk, KioskMode, KioskStatus } from '@/features/kiosks/types';
 import { useKioskModelList } from '@/features/kioskModels';
-import { OperatingMode, KioskType, InterfaceMode, KioskModel } from '@/features/kioskModels/types';
+import { KioskModel } from '@/features/kioskModels/types';
+import { Kiosk, KioskMode, KioskStatus } from '@/features/kiosks/types';
 import { usePaymentList } from '@/features/payment';
 import { PaymentMethod } from '@/features/payment/types';
-import { Theme } from '@/features/themes/types';
 
 
 interface KioskBasicInfoProps {
 	kiosk: Kiosk;
+	isEditing: boolean;
 }
 
-export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
+export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk, isEditing }) => {
 	const { t: translate } = useTranslation();
 	const { payments } = usePaymentList();
 	const { models } = useKioskModelList();
-
-	const [isEditing, setIsEditing] = useState(false);
 	const [editedName, setEditedName] = useState(kiosk.name);
 	const [editedAddress, setEditedAddress] = useState(kiosk.address);
 	const [editedLatitude, setEditedLatitude] = useState(kiosk.coordinates.latitude.toString());
@@ -38,61 +28,7 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 	const [editedStatus, setEditedStatus] = useState<KioskStatus>(kiosk.status);
 	const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 	const [selectedPaymentMethodIds, setSelectedPaymentMethodIds] = useState<string[]>([]);
-	const [selectedOperatingMode, setSelectedOperatingMode] = useState<OperatingMode | undefined>(undefined);
-	const [selectedKioskType, setSelectedKioskType] = useState<KioskType | undefined>(undefined);
-	const [selectedInterfaceMode, setSelectedInterfaceMode] = useState<InterfaceMode | undefined>(undefined);
-	const [selectedSlideshow, setSelectedSlideshow] = useState<Ad | undefined>(undefined);
-	const [selectedTheme, setSelectedTheme] = useState<Theme | undefined>(undefined);
-	const [selectedGame, setSelectedGame] = useState<Game | undefined>(undefined);
 
-	const [adSelectModalOpened, setAdSelectModalOpened] = useState(false);
-	const [themeSelectModalOpened, setThemeSelectModalOpened] = useState(false);
-	const [gameSelectModalOpened, setGameSelectModalOpened] = useState(false);
-
-
-	const handleSave = () => {
-		// TODO: Implement save logic
-		setIsEditing(false);
-	};
-
-	const handleCancel = () => {
-		setEditedName(kiosk.name);
-		setEditedAddress(kiosk.address);
-		setEditedLatitude(kiosk.coordinates.latitude.toString());
-		setEditedLongitude(kiosk.coordinates.longitude.toString());
-		setEditedMode(kiosk.mode);
-		setEditedStatus(kiosk.status);
-		setIsEditing(false);
-	};
-
-	const handleSelectAds = (ads: Ad[]) => {
-		if (ads.length > 0) {
-			setSelectedSlideshow(ads[0]);
-		}
-		setAdSelectModalOpened(false);
-	};
-
-	const handleSelectTheme = (theme: Theme) => {
-		setSelectedTheme(theme);
-		setThemeSelectModalOpened(false);
-	};
-
-	const handleSelectGame = (game: Game) => {
-		setSelectedGame(game);
-		setGameSelectModalOpened(false);
-	};
-
-	const handleRemoveSlideshow = () => {
-		setSelectedSlideshow(undefined);
-	};
-
-	const handleRemoveTheme = () => {
-		setSelectedTheme(undefined);
-	};
-
-	const handleRemoveGame = () => {
-		setSelectedGame(undefined);
-	};
 
 	const paymentOptions = payments?.map((p: PaymentMethod) => ({ value: p.id, label: p.name })) || [];
 	const modelOptions = models?.map((m: KioskModel) => ({ value: m.id, label: m.name })) || [];
@@ -115,35 +51,6 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 		return modeMap[mode] || mode;
 	};
 
-	const getOperatingModeLabel = (mode: OperatingMode | undefined) => {
-		if (!mode) return '-';
-		const modeMap = {
-			pending: translate('nikki.vendingMachine.kioskModels.operatingMode.pending'),
-			selling: translate('nikki.vendingMachine.kioskModels.operatingMode.selling'),
-			adsOnly: translate('nikki.vendingMachine.kioskModels.operatingMode.adsOnly'),
-		};
-		return modeMap[mode] || mode;
-	};
-
-	const getKioskTypeLabel = (type: KioskType | undefined) => {
-		if (!type) return '-';
-		const typeMap = {
-			withoutElevator: translate('nikki.vendingMachine.kioskModels.kioskType.withoutElevator'),
-			elevatorWithConveyor: translate('nikki.vendingMachine.kioskModels.kioskType.elevatorWithConveyor'),
-			elevatorWithoutConveyor: translate('nikki.vendingMachine.kioskModels.kioskType.elevatorWithoutConveyor'),
-		};
-		return typeMap[type] || type;
-	};
-
-	const getInterfaceModeLabel = (mode: InterfaceMode | undefined) => {
-		if (!mode) return '-';
-		const modeMap = {
-			normal: translate('nikki.vendingMachine.kioskModels.interfaceMode.normal'),
-			focus: translate('nikki.vendingMachine.kioskModels.interfaceMode.focus'),
-		};
-		return modeMap[mode] || mode;
-	};
-
 	const getModelName = (modelId: string | null) => {
 		if (!modelId) return '-';
 		const model = models?.find((m: KioskModel) => m.id === modelId);
@@ -159,39 +66,9 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 	};
 
 	return (
-		<Stack gap='md'>
-			<Group justify='space-between' mb='md'>
-				<Group gap='xs'>
-					<IconDeviceDesktop size={20} />
-					<Text fw={600} size='lg'>{kiosk.name}</Text>
-				</Group>
-				{!isEditing ? (
-					<Button size='xs' onClick={() => setIsEditing(true)}>
-						{translate('nikki.general.actions.edit')}
-					</Button>
-				) : (
-					<Group gap='xs'>
-						<Button size='xs' onClick={handleSave}>
-							{translate('nikki.general.actions.save')}
-						</Button>
-						<Button size='xs' variant='subtle' onClick={handleCancel}>
-							{translate('nikki.general.actions.cancel')}
-						</Button>
-					</Group>
-				)}
-			</Group>
-
+		<Stack gap='xs'>
 			<div>
-				<Text size='sm' c='dimmed' mb='xs'>
-					{translate('nikki.vendingMachine.kiosk.fields.code')}
-				</Text>
-				<Text size='sm' fw={500}>{kiosk.code}</Text>
-			</div>
-
-			<Divider />
-
-			<div>
-				<Text size='sm' c='dimmed' mb='xs'>
+				<Text size='sm' c='dimmed' mb={3}>
 					{translate('nikki.vendingMachine.kiosk.fields.name')}
 				</Text>
 				{isEditing ? (
@@ -206,10 +83,8 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				)}
 			</div>
 
-			<Divider />
-
 			<div>
-				<Text size='sm' c='dimmed' mb='xs'>
+				<Text size='sm' c='dimmed' mb={3}>
 					{translate('nikki.vendingMachine.kiosk.fields.address')}
 				</Text>
 				{isEditing ? (
@@ -227,10 +102,8 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				)}
 			</div>
 
-			<Divider />
-
 			<div>
-				<Text size='sm' c='dimmed' mb='xs'>
+				<Text size='sm' c='dimmed' mb={3}>
 					{translate('nikki.vendingMachine.kiosk.fields.coordinates')}
 				</Text>
 				{isEditing ? (
@@ -262,10 +135,8 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				)}
 			</div>
 
-			<Divider />
-
 			<div>
-				<Text size='sm' c='dimmed' mb='xs'>
+				<Text size='sm' c='dimmed' mb={3}>
 					{translate('nikki.vendingMachine.kiosk.fields.status')}
 				</Text>
 				{isEditing ? (
@@ -285,10 +156,8 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				)}
 			</div>
 
-			<Divider />
-
 			<div>
-				<Text size='sm' c='dimmed' mb='xs'>
+				<Text size='sm' c='dimmed' mb={3}>
 					{translate('nikki.vendingMachine.kiosk.fields.mode')}
 				</Text>
 				{isEditing ? (
@@ -308,10 +177,8 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				)}
 			</div>
 
-			<Divider />
-
 			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
+				<Text size='sm' c='dimmed' mb={3} fw={500}>
 					{translate('nikki.vendingMachine.kioskModels.fields.model')}
 				</Text>
 				{isEditing ? (
@@ -329,10 +196,8 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				)}
 			</div>
 
-			<Divider />
-
 			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
+				<Text size='sm' c='dimmed' mb={3} fw={500}>
 					{translate('nikki.vendingMachine.kiosk.fields.paymentMethods')}
 				</Text>
 				{isEditing ? (
@@ -350,192 +215,10 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				)}
 			</div>
 
-			<Divider />
+			<Divider my={3} />
 
 			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.kioskModels.fields.operatingMode')}
-				</Text>
-				{isEditing ? (
-					<Select
-						value={selectedOperatingMode || null}
-						onChange={(value) => setSelectedOperatingMode(value as OperatingMode | undefined)}
-						placeholder={translate('nikki.vendingMachine.kioskModels.fields.operatingMode')}
-						data={[
-							{ value: 'pending', label: translate('nikki.vendingMachine.kioskModels.operatingMode.pending') },
-							{ value: 'selling', label: translate('nikki.vendingMachine.kioskModels.operatingMode.selling') },
-							{ value: 'adsOnly', label: translate('nikki.vendingMachine.kioskModels.operatingMode.adsOnly') },
-						]}
-						clearable
-					/>
-				) : (
-					<Box p='xs' style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
-						<Text size='sm'>{getOperatingModeLabel(selectedOperatingMode)}</Text>
-					</Box>
-				)}
-			</div>
-
-			<Divider />
-
-			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.kioskModels.fields.kioskType')}
-				</Text>
-				{isEditing ? (
-					<Select
-						value={selectedKioskType || null}
-						onChange={(value) => setSelectedKioskType(value as KioskType | undefined)}
-						placeholder={translate('nikki.vendingMachine.kioskModels.fields.kioskType')}
-						data={[
-							{ value: 'withoutElevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.withoutElevator') },
-							{ value: 'elevatorWithConveyor', label: translate('nikki.vendingMachine.kioskModels.kioskType.elevatorWithConveyor') },
-							{ value: 'elevatorWithoutConveyor', label: translate('nikki.vendingMachine.kioskModels.kioskType.elevatorWithoutConveyor') },
-						]}
-						clearable
-					/>
-				) : (
-					<Box p='xs' style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
-						<Text size='sm'>{getKioskTypeLabel(selectedKioskType)}</Text>
-					</Box>
-				)}
-			</div>
-
-			<Divider />
-
-			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.kioskModels.fields.interfaceMode')}
-				</Text>
-				{isEditing ? (
-					<Select
-						value={selectedInterfaceMode || null}
-						onChange={(value) => setSelectedInterfaceMode(value as InterfaceMode | undefined)}
-						placeholder={translate('nikki.vendingMachine.kioskModels.fields.interfaceMode')}
-						data={[
-							{ value: 'normal', label: translate('nikki.vendingMachine.kioskModels.interfaceMode.normal') },
-							{ value: 'focus', label: translate('nikki.vendingMachine.kioskModels.interfaceMode.focus') },
-						]}
-						clearable
-					/>
-				) : (
-					<Box p='xs' style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
-						<Text size='sm'>{getInterfaceModeLabel(selectedInterfaceMode)}</Text>
-					</Box>
-				)}
-			</div>
-
-			<Divider />
-
-			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.kioskModels.fields.slideshow')}
-				</Text>
-				{selectedSlideshow ? (
-					<AdCard ad={selectedSlideshow} onRemove={isEditing ? handleRemoveSlideshow : undefined} />
-				) : (
-					<Card withBorder p='sm' radius='md'>
-						<Group gap='xs' justify='space-between'>
-							<Box>
-								<Group gap='xs' mb='sm'>
-									<IconPhoto size={20} />
-									<Text size='sm' fw={500}>
-										{translate('nikki.vendingMachine.kioskModels.fields.slideshow')}
-									</Text>
-								</Group>
-								<Text size='sm' c='dimmed'>
-									{translate('nikki.vendingMachine.kioskModels.messages.no_slideshow')}
-								</Text>
-							</Box>
-							{isEditing && (
-								<Button
-									size='xs'
-									leftSection={<IconPlus size={14} />}
-									onClick={() => setAdSelectModalOpened(true)}
-								>
-									{translate('nikki.vendingMachine.events.playlist.selectAds')}
-								</Button>
-							)}
-						</Group>
-					</Card>
-				)}
-			</div>
-
-			<Divider />
-
-			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.events.fields.theme')}
-				</Text>
-				{selectedTheme ? (
-					<ThemePreviewCard theme={selectedTheme} onRemove={isEditing ? handleRemoveTheme : undefined} />
-				) : (
-					<Card withBorder p='sm' radius='md'>
-						<Group gap='xs' justify='space-between'>
-							<Box>
-								<Group gap='xs' mb='sm'>
-									<IconPalette size={20} />
-									<Text size='sm' fw={500}>
-										{translate('nikki.vendingMachine.events.fields.theme')}
-									</Text>
-								</Group>
-								<Text size='sm' c='dimmed'>
-									{translate('nikki.vendingMachine.events.messages.no_theme')}
-								</Text>
-							</Box>
-							{isEditing && (
-								<Button
-									size='xs'
-									leftSection={<IconPlus size={14} />}
-									onClick={() => setThemeSelectModalOpened(true)}
-								>
-									{translate('nikki.vendingMachine.events.selectTheme.selectTheme')}
-								</Button>
-							)}
-						</Group>
-					</Card>
-				)}
-			</div>
-
-			<Divider />
-
-			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.events.fields.game')}
-				</Text>
-				{selectedGame ? (
-					<GamePreviewCard game={selectedGame} onRemove={isEditing ? handleRemoveGame : undefined} />
-				) : (
-					<Card withBorder p='sm' radius='md'>
-						<Group gap='xs' justify='space-between'>
-							<Box>
-								<Group gap='xs' mb='sm'>
-									<IconDeviceGamepad2 size={20} />
-									<Text size='sm' fw={500}>
-										{translate('nikki.vendingMachine.events.fields.game')}
-									</Text>
-								</Group>
-								<Text size='sm' c='dimmed'>
-									{translate('nikki.vendingMachine.events.messages.no_game')}
-								</Text>
-							</Box>
-							{isEditing && (
-								<Button
-									size='xs'
-									leftSection={<IconPlus size={14} />}
-									onClick={() => setGameSelectModalOpened(true)}
-								>
-									{translate('nikki.vendingMachine.events.selectGame.selectGame')}
-								</Button>
-							)}
-						</Group>
-					</Card>
-				)}
-			</div>
-
-			<Divider />
-
-			<div>
-				<Text size='sm' c='dimmed' mb='xs'>
+				<Text size='sm' c='dimmed' mb={3}>
 					{translate('nikki.vendingMachine.kiosk.fields.createdAt')}
 				</Text>
 				<Text size='sm'>{new Date(kiosk.createdAt).toLocaleString()}</Text>
@@ -545,32 +228,13 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				<>
 					<Divider />
 					<div>
-						<Text size='sm' c='dimmed' mb='xs'>
+						<Text size='sm' c='dimmed' mb={3}>
 							{translate('nikki.vendingMachine.kiosk.fields.deletedAt')}
 						</Text>
 						<Text size='sm'>{new Date(kiosk.deletedAt).toLocaleString()}</Text>
 					</div>
 				</>
 			)}
-
-			{/* Modals */}
-			<AdSelectModal
-				opened={adSelectModalOpened}
-				onClose={() => setAdSelectModalOpened(false)}
-				onSelectAds={handleSelectAds}
-			/>
-
-			<ThemeSelectModal
-				opened={themeSelectModalOpened}
-				onClose={() => setThemeSelectModalOpened(false)}
-				onSelectTheme={handleSelectTheme}
-			/>
-
-			<GameSelectModal
-				opened={gameSelectModalOpened}
-				onClose={() => setGameSelectModalOpened(false)}
-				onSelectGame={handleSelectGame}
-			/>
 		</Stack>
 	);
 };
