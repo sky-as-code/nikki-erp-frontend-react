@@ -2,11 +2,12 @@ import { ActionIcon, Box, Group, ScrollArea, Stack, Text, Title } from '@mantine
 import { IconArrowRight } from '@tabler/icons-react';
 import React from 'react';
 
-import { createEntitlementKey } from '@/utils';
-
 import { EntitlementCard } from './EntitlementCard';
 
 import type { Entitlement } from '@/features/entitlements';
+import type { Resource } from '@/features/resources';
+
+import { createEntitlementKey } from '@/utils';
 
 
 export interface AvailableEntitlementsListProps {
@@ -15,6 +16,7 @@ export interface AvailableEntitlementsListProps {
 	translate: (key: string) => string;
 	title?: string;
 	emptyText?: string;
+	resources: Resource[];
 }
 
 export const AvailableEntitlementsList: React.FC<AvailableEntitlementsListProps> = ({
@@ -23,6 +25,7 @@ export const AvailableEntitlementsList: React.FC<AvailableEntitlementsListProps>
 	translate,
 	title,
 	emptyText,
+	resources,
 }) => {
 	return (
 		<Box style={{ flex: 1 }}>
@@ -41,6 +44,7 @@ export const AvailableEntitlementsList: React.FC<AvailableEntitlementsListProps>
 								<Box style={{ flex: 1 }}>
 									<EntitlementCard
 										entitlement={entitlement}
+										resources={resources}
 									/>
 								</Box>
 								<ActionIcon

@@ -1,15 +1,15 @@
-import { Paper, Stack, Title } from '@mantine/core';
+import { Paper, Stack, TextInput, Textarea, Title } from '@mantine/core';
 import { AutoField } from '@nikkierp/ui/components/form';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ReceiverSelectField } from '@/features/revokeRequests/components/ReceiverSelectField/ReceiverSelectField';
-import { TargetSelectField } from '@/features/revokeRequests/components/TargetSelectField/TargetSelectField';
-
 import type { Group } from '@/features/identities';
 import type { User } from '@/features/identities';
-import type { RoleSuite } from '@/features/roleSuites';
 import type { Role } from '@/features/roles';
+import type { RoleSuite } from '@/features/roleSuites';
+
+import { ReceiverSelectField } from '@/features/revokeRequests/components/ReceiverSelectField/ReceiverSelectField';
+import { TargetSelectField } from '@/features/revokeRequests/components/TargetSelectField/TargetSelectField';
 
 
 interface TargetFieldsProps {
@@ -56,10 +56,23 @@ const ReceiverFields: React.FC<ReceiverFieldsProps> = ({ users, groups }) => {
 
 interface CommonFieldsProps {
 	isCreate?: boolean;
+	comment?: string;
+	attachmentUrl?: string;
+	onCommentChange?: (value: string) => void;
+	onAttachmentUrlChange?: (value: string) => void;
 }
 
-const CommonFields: React.FC<CommonFieldsProps> = ({ isCreate = false }) => {
+const CommonFields: React.FC<CommonFieldsProps> = ({
+	isCreate = false,
+	comment,
+	attachmentUrl,
+	onCommentChange,
+	onAttachmentUrlChange,
+}) => {
 	const { t: translate } = useTranslation();
+	const useControlledCreateFields = isCreate
+		&& onCommentChange !== undefined
+		&& onAttachmentUrlChange !== undefined;
 
 	return (
 		<Paper p='md' withBorder>
@@ -73,14 +86,32 @@ const CommonFields: React.FC<CommonFieldsProps> = ({ isCreate = false }) => {
 						htmlProps={{ readOnly: true }}
 					/>
 				)}
-				<AutoField
-					name='comment'
-					htmlProps={!isCreate ? { readOnly: true } : undefined}
-				/>
-				<AutoField
-					name='attachmentUrl'
-					htmlProps={!isCreate ? { readOnly: true } : undefined}
-				/>
+				{useControlledCreateFields ? (
+					<>
+						<Textarea
+							label={translate('nikki.authorize.revoke_request.fields.comment')}
+							value={comment ?? ''}
+							onChange={(event) => onCommentChange(event.currentTarget.value)}
+							minRows={3}
+						/>
+						<TextInput
+							label={translate('nikki.authorize.revoke_request.fields.attachment')}
+							value={attachmentUrl ?? ''}
+							onChange={(event) => onAttachmentUrlChange(event.currentTarget.value)}
+						/>
+					</>
+				) : (
+					<>
+						<AutoField
+							name='comment'
+							htmlProps={!isCreate ? { readOnly: true } : undefined}
+						/>
+						<AutoField
+							name='attachmentUrl'
+							htmlProps={!isCreate ? { readOnly: true } : undefined}
+						/>
+					</>
+				)}
 			</Stack>
 		</Paper>
 	);
@@ -92,6 +123,11 @@ interface RevokeRequestFormFieldsProps {
 	users?: User[];
 	groups?: Group[];
 	isCreate?: boolean;
+	showTargetReceiver?: boolean;
+	comment?: string;
+	attachmentUrl?: string;
+	onCommentChange?: (value: string) => void;
+	onAttachmentUrlChange?: (value: string) => void;
 }
 
 export const RevokeRequestFormFields: React.FC<RevokeRequestFormFieldsProps> = ({
@@ -100,17 +136,22 @@ export const RevokeRequestFormFields: React.FC<RevokeRequestFormFieldsProps> = (
 	users,
 	groups,
 	isCreate = false,
+	showTargetReceiver = true,
+	comment,
+	attachmentUrl,
+	onCommentChange,
+	onAttachmentUrlChange,
 }) => {
 	const { t: translate } = useTranslation();
 
 	return (
 		<Stack gap='md'>
-			{isCreate ? (
+			{isCreate && showTargetReceiver ? (
 				<>
 					<TargetFields roles={roles} roleSuites={roleSuites} />
 					<ReceiverFields users={users} groups={groups} />
 				</>
-			) : (
+			) : !isCreate ? (
 				<>
 					<Paper p='md' withBorder>
 						<Title order={5} mb='md'>
@@ -143,8 +184,14 @@ export const RevokeRequestFormFields: React.FC<RevokeRequestFormFieldsProps> = (
 						</Stack>
 					</Paper>
 				</>
-			)}
-			<CommonFields isCreate={isCreate} />
+			) : null}
+			<CommonFields
+				isCreate={isCreate}
+				comment={comment}
+				attachmentUrl={attachmentUrl}
+				onCommentChange={onCommentChange}
+				onAttachmentUrlChange={onAttachmentUrlChange}
+			/>
 		</Stack>
 	);
 };

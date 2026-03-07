@@ -1,3 +1,17 @@
+import { cleanFormData } from '@nikkierp/common/utils';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
+
+import type { Role } from '@/features/roles';
+import type { RoleSuite } from '@/features/roleSuites';
+import type { TFunction } from 'i18next';
+
 import {
 	AuthorizeDispatch,
 	roleActions,
@@ -6,18 +20,6 @@ import {
 	selectRoleSuiteState,
 	selectUpdateRoleSuite,
 } from '@/appState';
-import { cleanFormData } from '@nikkierp/common/utils';
-import { useUIState } from '@nikkierp/shell/contexts';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
-
-
-
-import type { Role } from '@/features/roles';
-import type { RoleSuite } from '@/features/roleSuites';
-import type { TFunction } from 'i18next';
 
 
 type NotificationType = ReturnType<typeof useUIState>['notification'];
@@ -117,12 +119,21 @@ function useRoleSuitesListLoader(dispatch: AuthorizeDispatch, roleSuites: RoleSu
 	}, [dispatch, roleSuites.length]);
 }
 
-function useRolesListLoader(dispatch: AuthorizeDispatch, roles: Role[]) {
+function useRolesListLoader(
+	dispatch: AuthorizeDispatch,
+	roles: Role[],
+	contextOrgId?: string,
+) {
 	React.useEffect(() => {
 		if (roles.length === 0) {
-			dispatch(roleActions.listRoles());
+			if (contextOrgId) {
+				dispatch(roleActions.listRoles({ orgId: contextOrgId, includeDomainInOrg: true }));
+			}
+			else {
+				dispatch(roleActions.listRoles({}));
+			}
 		}
-	}, [dispatch, roles.length]);
+	}, [dispatch, roles.length, contextOrgId]);
 }
 
 /**
@@ -142,6 +153,10 @@ function useAvailableRoles(roles: Role[], roleSuite: RoleSuite | undefined) {
 
 function useRoleSuiteDetailData() {
 	const { roleSuiteId } = useParams<{ roleSuiteId: string }>();
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrg = useActiveOrgWithDetails();
+	const isGlobalContext = orgSlug === GLOBAL_CONTEXT_SLUG;
+	const currentOrgId = activeOrg?.id;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const {
 		roleSuites,
@@ -161,12 +176,18 @@ function useRoleSuiteDetailData() {
 
 	useRoleSuiteLoader(dispatch, roleSuiteId, roleSuite);
 	useRoleSuitesListLoader(dispatch, roleSuites);
-	useRolesListLoader(dispatch, roles);
+	useRolesListLoader(dispatch, roles, !isGlobalContext ? currentOrgId : undefined);
 
 	const availableRoles = useAvailableRoles(roles, roleSuite);
 
 	return {
-		roleSuite,
+		roleSuite: React.useMemo(() => {
+			if (!roleSuite) return roleSuite;
+			if (isGlobalContext) return roleSuite;
+			if (!roleSuite.orgId) return roleSuite;
+			if (currentOrgId && roleSuite.orgId === currentOrgId) return roleSuite;
+			return undefined;
+		}, [roleSuite, isGlobalContext, currentOrgId]),
 		availableRoles,
 		roles,
 		isLoading: list.isLoading,

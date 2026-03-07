@@ -37,6 +37,16 @@ export function hasPermission(
 	);
 }
 
+export function hasPermissionAnyScope(
+	permissions: PermissionsSnapshot,
+	resource: string,
+	action: string,
+): boolean {
+	const entries = permissions[RESOURCES.WILDCARD] ?? permissions[resource] ?? [];
+	if (!entries.length) return false;
+	return entries.some((entry) => actionsInclude(entry.actions, action));
+}
+
 export function hasFullAccess(permissions: PermissionsSnapshot): boolean {
 	return hasPermission(permissions, RESOURCES.WILDCARD, ACTIONS.WILDCARD);
 }

@@ -22,7 +22,7 @@ export const ACTIONS = {
 	DELETE: 'Delete',
 	ADD_ENTITLEMENT: 'AddEntitlement',
 	REMOVE_ENTITLEMENT: 'RemoveEntitlement',
-	RESPOND_GRANT_REQUEST: 'RespondGrantRequest',
+	RESPOND: 'Respond',
 } as const;
 
 export const RESOURCE_TO_MODULE: Record<string, string> = {
@@ -38,4 +38,25 @@ export const RESOURCE_TO_MODULE: Record<string, string> = {
 	[RESOURCES.IDENTITY_ORGANIZATION]: 'identity',
 	[RESOURCES.IDENTITY_HIERARCHY_LEVEL]: 'identity',
 	[RESOURCES.INVENTORY_PRODUCT]: 'inventory',
+};
+
+export const SYSTEM_CONTEXT_RESOURCES: string[] = [
+	RESOURCES.AUTHZ_RESOURCE,
+	RESOURCES.AUTHZ_ACTION,
+	RESOURCES.AUTHZ_ENTITLEMENT,
+	RESOURCES.IDENTITY_ORGANIZATION,
+];
+
+export const ACTIONS_FOR_SYSTEM_CONTEXT = [
+	ACTIONS.VIEW,
+	ACTIONS.CREATE,
+	ACTIONS.UPDATE,
+	ACTIONS.DELETE,
+];
+
+export type ModuleAccessMode = 'strict_context' | 'any_scope';
+
+export const MODULE_ACCESS_POLICY: Record<string, ModuleAccessMode> = {
+	authorize: 'any_scope',
+	identity: 'strict_context',
 };

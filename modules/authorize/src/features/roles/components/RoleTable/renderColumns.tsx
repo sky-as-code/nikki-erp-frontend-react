@@ -66,8 +66,8 @@ export function renderBooleanColumn(
 }
 
 export function renderOrgNameColumn(row: Record<string, unknown>) {
-	const org = row.org as { name?: string } | undefined;
-	const orgName = org?.name || row.orgDisplayName as string | undefined;
+	const org = row.org as { displayName?: string } | undefined;
+	const orgName = org?.displayName || row.orgDisplayName as string | undefined;
 	return <Text>{orgName || '-'}</Text>;
 }
 
@@ -108,6 +108,8 @@ export function renderActionsColumn(
 	onEdit: ((roleId: string) => void) | undefined,
 	onDelete: ((roleId: string) => void) | undefined,
 	translate: (key: string) => string,
+	canEdit: boolean = true,
+	canDelete: boolean = true,
 ) {
 	const roleId = row.id as string;
 	return (
@@ -117,6 +119,7 @@ export function renderActionsColumn(
 					<ActionIcon
 						variant='subtle'
 						color='gray'
+						disabled={!canEdit}
 						onClick={() => onEdit(roleId)}
 					>
 						<IconEdit size={16} />
@@ -128,6 +131,7 @@ export function renderActionsColumn(
 					<ActionIcon
 						variant='subtle'
 						color='red'
+						disabled={!canDelete}
 						onClick={() => onDelete(roleId)}
 					>
 						<IconTrash size={16} />

@@ -1,5 +1,6 @@
 import { cleanFormData } from '@nikkierp/common/utils';
 import { useUIState } from '@nikkierp/shell/contexts';
+import { useUserContext } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,10 +12,8 @@ import type { Resource } from '@/features/resources';
 
 import {
 	AuthorizeDispatch,
-	actionActions,
 	entitlementActions,
 	resourceActions,
-	selectActionState,
 	selectResourceList,
 	selectCreateEntitlement,
 } from '@/appState';
@@ -26,29 +25,28 @@ import {
 
 type FormType = Parameters<typeof validateEntitlementForm>[2];
 
+function extractActionsFromResources(resources: Resource[]): Action[] {
+	return resources.flatMap((resource) => resource.actions ?? []);
+}
+
 function useEntitlementCreateData() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const resourceListState = useMicroAppSelector(selectResourceList);
-	const actionState = useMicroAppSelector(selectActionState);
 	const resources = resourceListState.data ?? [];
-	const actions = actionState.actions ?? [];
 
 	React.useEffect(() => {
 		if (resourceListState.status === 'idle' || (resourceListState.status === 'success' && resources.length === 0)) {
 			dispatch(resourceActions.listResources());
 		}
-		if (!actionState.list.isLoading && actions.length === 0) {
-			dispatch(actionActions.listActions(undefined));
-		}
-	}, [resourceListState.status, resources.length, actionState.list.isLoading, actions.length]);
+	}, [resourceListState.status, resources.length]);
 
-	return { resources, actions };
+	return { resources };
 }
 
 function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) {
 	return React.useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
-	}, [navigate, location]);
+	}, [location]);
 }
 
 function useSubmitHandler(
@@ -57,6 +55,7 @@ function useSubmitHandler(
 	dispatch: AuthorizeDispatch,
 	notification: ReturnType<typeof useUIState>['notification'],
 	translate: ReturnType<typeof useTranslation>['t'],
+	userId: string,
 ) {
 	return React.useCallback((data: unknown, form: FormType) => {
 		const formData = cleanFormData(data as Partial<Entitlement>);
@@ -66,22 +65,23 @@ function useSubmitHandler(
 		}
 
 		formData.actionExpr = buildActionExpr(formData, resources, actions);
-		formData.createdBy = '01JWNNJGS70Y07MBEV3AQ0M526';
+		formData.createdBy = userId;
 
 		dispatch(entitlementActions.createEntitlement(
-			formData as Omit<Entitlement, 'id' | 'createdAt' | 'etag' | 'assignmentsCount' | 'rolesCount'>,
+			formData as Entitlement,
 		));
-	}, [dispatch, notification, translate, resources, actions]);
+	}, [notification, translate, resources, actions]);
 }
 
-
 export function useEntitlementCreate() {
+	const userContext = useUserContext();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
-	const { resources, actions } = useEntitlementCreateData();
+	const { resources } = useEntitlementCreateData();
+	const actions = React.useMemo(() => extractActionsFromResources(resources), [resources]);
 
 	const createCommand = useMicroAppSelector(selectCreateEntitlement);
 
@@ -92,6 +92,7 @@ export function useEntitlementCreate() {
 		dispatch,
 		notification,
 		translate,
+		userContext.user!.id,
 	);
 
 	const isSubmitting = createCommand.status === 'pending';
@@ -114,8 +115,8 @@ export function useEntitlementCreate() {
 			);
 			dispatch(entitlementActions.resetCreateEntitlement());
 		}
-	}, [createCommand, location.pathname]);
+	}, [createCommand, location]);
 
-	return { isSubmitting, handleCancel, handleSubmit, resources, actions };
+	return { isSubmitting, handleCancel, handleSubmit, resources };
 }
 

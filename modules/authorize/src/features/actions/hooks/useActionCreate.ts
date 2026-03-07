@@ -1,14 +1,14 @@
-import { AuthorizeDispatch, actionActions, selectCreateAction } from '@/appState';
 import { cleanFormData } from '@nikkierp/common/utils';
 import { useUIState } from '@nikkierp/shell/contexts';
+import { useUserContext } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-
-
 import type { Action } from '@/features/actions';
+
+import { AuthorizeDispatch, actionActions, selectCreateAction } from '@/appState';
 
 
 function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) {
@@ -19,19 +19,17 @@ function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: Re
 
 function useSubmitHandler(
 	dispatch: AuthorizeDispatch,
+	userId: string,
 ) {
-	return React.useCallback((data: unknown) => {
-		// Thay doi lai as type
-		const formData = cleanFormData(data as Partial<Action>);
-		formData.createdBy = '01JWNNJGS70Y07MBEV3AQ0M526';
-
-		dispatch(actionActions.createAction(
-			formData as Omit<Action, 'id' | 'createdAt' | 'etag' | 'resources' | 'entitlementsCount'>,
-		));
+	return React.useCallback((data: Action) => {
+		const formData = cleanFormData(data) as Action;
+		formData.createdBy = userId;
+		dispatch(actionActions.createAction(formData));
 	}, [dispatch]);
 }
 
 export function useActionCreate() {
+	const userContext = useUserContext();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
@@ -41,7 +39,7 @@ export function useActionCreate() {
 	const createCommand = useMicroAppSelector(selectCreateAction);
 
 	const handleCancel = useCancelHandler(navigate, location);
-	const handleSubmit = useSubmitHandler(dispatch);
+	const handleSubmit = useSubmitHandler(dispatch, userContext.user!.id);
 
 	const isSubmitting = createCommand.status === 'pending';
 

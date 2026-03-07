@@ -31,6 +31,8 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	const { orgSlug } = useActiveOrgModule();
 	const activeOrg = useActiveOrgWithDetails();
 	const globalSlug = GLOBAL_CONTEXT_SLUG;
+	const isGlobalContext = orgSlug === globalSlug;
+	const currentOrgId = activeOrg?.id;
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
 	const orgs = useMicroAppSelector(selectOrgList);
@@ -51,8 +53,12 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	const schema = roleSuiteSchema as ModelSchema;
 
 	React.useEffect(() => {
-		const orgId = orgSlug === globalSlug ? null : activeOrg?.id;
-		dispatch(roleSuiteActions.listRoleSuites({ orgId }));
+		if (isGlobalContext) {
+			dispatch(roleSuiteActions.listRoleSuites({}));
+		}
+		else {
+			dispatch(roleSuiteActions.listRoleSuites({ orgId: currentOrgId, includeDomainInOrg: true }));
+		}
 		if (users.length === 0) {
 			dispatch(identityActions.listUsers());
 		}
@@ -62,7 +68,7 @@ function RoleSuiteListPageBody(): React.ReactNode {
 		if (orgs.length === 0) {
 			dispatch(identityActions.listOrgs());
 		}
-	}, [dispatch, users.length, groups.length, orgs.length, orgSlug, activeOrg?.id]);
+	}, [dispatch, users.length, groups.length, orgs.length, isGlobalContext, currentOrgId]);
 
 	const handleViewDetail = React.useCallback((roleSuiteId: string) => {
 		navigate(roleSuiteId);
@@ -77,9 +83,19 @@ function RoleSuiteListPageBody(): React.ReactNode {
 	}, [navigate]);
 
 	const handleRefresh = React.useCallback(() => {
-		const orgId = orgSlug === globalSlug ? null : activeOrg?.id;
-		dispatch(roleSuiteActions.listRoleSuites({ orgId }));
-	}, [dispatch, orgSlug, activeOrg?.id, globalSlug]);
+		if (isGlobalContext) {
+			dispatch(roleSuiteActions.listRoleSuites({}));
+		}
+		else {
+			dispatch(roleSuiteActions.listRoleSuites({ orgId: currentOrgId, includeDomainInOrg: true }));
+		}
+	}, [dispatch, isGlobalContext, currentOrgId]);
+
+	const canMutateRowInContext = React.useCallback((row: Record<string, unknown>) => {
+		if (isGlobalContext) return true;
+		const rowOrgId = row.orgId as string | undefined;
+		return Boolean(currentOrgId) && rowOrgId === currentOrgId;
+	}, [isGlobalContext, currentOrgId]);
 
 	return (
 		<>
@@ -101,6 +117,8 @@ function RoleSuiteListPageBody(): React.ReactNode {
 						onViewDetail={handleViewDetail}
 						onEdit={permissions.roleSuite.canUpdate ? handleEdit : undefined}
 						onDelete={permissions.roleSuite.canDelete ? deleteHandler.handleDeleteRequest : undefined}
+						canEditRow={canMutateRowInContext}
+						canDeleteRow={canMutateRowInContext}
 					/>
 				</Paper>
 			</Stack>

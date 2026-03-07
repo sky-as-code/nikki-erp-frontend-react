@@ -35,7 +35,7 @@ export const initialState: IdentityState = {
 
 export const listUsers = createAsyncThunk<
 	User[],
-	{ query?: Record<string, unknown>; page?: number; size?: number } | void,
+	{ graph?: Record<string, unknown>; page?: number; size?: number } | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listUsers`,
@@ -52,7 +52,7 @@ export const listUsers = createAsyncThunk<
 
 export const listGroups = createAsyncThunk<
 	Group[],
-	{ query?: Record<string, unknown>; page?: number; size?: number } | void,
+	{ graph?: Record<string, unknown>; page?: number; size?: number } | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listGroups`,

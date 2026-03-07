@@ -68,13 +68,13 @@ async function hydrateEntitlements(
 
 export const listRoles = createAsyncThunk<
 	Role[],
-	{listQuery?: ListQuery, orgId?: string | null},
+	{ listQuery?: ListQuery; orgId?: string | null; includeDomainInOrg?: boolean },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/list`,
-	async ({listQuery, orgId}, { rejectWithValue }) => {
+	async ({ listQuery, orgId, includeDomainInOrg }, { rejectWithValue }) => {
 		try {
-			const result = await roleService.listRoles(listQuery, orgId);
+			const result = await roleService.listRoles(listQuery, orgId, includeDomainInOrg);
 			return result;
 		}
 		catch (error) {

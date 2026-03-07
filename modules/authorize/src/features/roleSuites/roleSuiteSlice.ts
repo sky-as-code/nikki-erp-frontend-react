@@ -41,13 +41,13 @@ export const initialState: RoleSuiteState = {
 
 export const listRoleSuites = createAsyncThunk<
 	RoleSuite[],
-	{listQuery?: ListQuery, orgId?: string | null},
+	{ listQuery?: ListQuery; orgId?: string | null; includeDomainInOrg?: boolean },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listRoleSuites`,
-	async ({listQuery, orgId}, { rejectWithValue }) => {
+	async ({ listQuery, orgId, includeDomainInOrg }, { rejectWithValue }) => {
 		try {
-			const result = await roleSuiteService.listRoleSuites(listQuery, orgId);
+			const result = await roleSuiteService.listRoleSuites(listQuery, orgId, includeDomainInOrg);
 			return result;
 		}
 		catch (error) {

@@ -1,4 +1,7 @@
 import { Stack } from '@mantine/core';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgWithDetails, useMyOrgs } from '@nikkierp/shell/userContext';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import {
 	BreadcrumbsHeader,
 	FormFieldProvider,
@@ -14,7 +17,6 @@ import {
 	AuthorizeDispatch,
 	identityActions,
 	selectGroupList,
-	selectOrgList,
 	selectUserList,
 } from '@/appState';
 import {
@@ -29,6 +31,17 @@ import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 // eslint-disable-next-line max-lines-per-function
 function RoleSuiteCreatePageBody(): React.ReactNode {
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrg = useActiveOrgWithDetails();
+	const assignedOrgs = useMyOrgs();
+	const isGlobalContext = orgSlug === GLOBAL_CONTEXT_SLUG;
+	const currentOrgId = activeOrg?.id;
+	const mappedAssignedOrgs = React.useMemo(() => assignedOrgs.map((org) => ({
+		id: org.id,
+		displayName: org.name,
+		slug: org.slug,
+		status: 'active' as const,
+	})), [assignedOrgs]);
 	const {
 		isSubmitting,
 		handleCancel,
@@ -37,31 +50,27 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 		setSelectedRoleIds,
 		availableRolesByOrg,
 		roles,
-	} = useRoleSuiteCreate();
+	} = useRoleSuiteCreate(!isGlobalContext ? currentOrgId : undefined, !isGlobalContext ? currentOrgId : undefined);
 	const { t: translate } = useTranslation();
 	const schema = roleSuiteSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const orgs = useMicroAppSelector(selectOrgList);
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
-	const [currentOrgId, setCurrentOrgId] = React.useState<string | undefined>(undefined);
-	const availableRoles = availableRolesByOrg(currentOrgId);
+	const [selectedCreateOrgId, setSelectedCreateOrgId] = React.useState<string | undefined>(undefined);
+	const availableRoles = availableRolesByOrg(isGlobalContext ? selectedCreateOrgId : activeOrg?.id);
 	const permissions = useAuthorizePermissions();
 
 	React.useEffect(() => {
-		if (orgs.length === 0) {
-			dispatch(identityActions.listOrgs());
-		}
 		if (users.length === 0) {
 			dispatch(identityActions.listUsers());
 		}
 		if (groups.length === 0) {
 			dispatch(identityActions.listGroups());
 		}
-	}, [orgs.length, users.length, groups.length]);
+	}, [dispatch, users.length, groups.length]);
 
 	const handleOrgIdChange = React.useCallback((newOrgId: string | undefined) => {
-		setCurrentOrgId(newOrgId);
+		setSelectedCreateOrgId(newOrgId);
 		const newAvailableRoles = availableRolesByOrg(newOrgId);
 		const availableRoleIds = new Set(newAvailableRoles.map((r) => r.id));
 		setSelectedRoleIds((prev) => prev.filter((id) => availableRoleIds.has(id)));
@@ -96,10 +105,11 @@ function RoleSuiteCreatePageBody(): React.ReactNode {
 									/>
 									<RoleSuiteFormFields
 										isCreate
-										orgs={orgs}
+										orgs={mappedAssignedOrgs}
 										users={users}
 										groups={groups}
-										onOrgIdChange={handleOrgIdChange}
+										onOrgIdChange={isGlobalContext ? handleOrgIdChange : undefined}
+										showOrgFieldOnCreate={isGlobalContext}
 									/>
 									<RoleSuiteChangesSummary
 										originalRoleIds={[]}

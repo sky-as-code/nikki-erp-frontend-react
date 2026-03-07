@@ -87,11 +87,10 @@ export async function createAction(
 
 export async function updateAction(
 	actionId: string,
-	etag: string,
 	data: Action,
 ): Promise<Action> {
 	return put<Action>(`authorize/actions/${actionId}`, {
-		json: { ...data, etag },
+		json: { ...data },
 	});
 }
 

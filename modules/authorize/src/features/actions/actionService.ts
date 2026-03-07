@@ -6,11 +6,10 @@ import {
 	createAction as createActionApi,
 	updateAction as updateActionApi,
 	deleteAction as deleteActionApi,
-	type AuthzActionDto,
 } from '@/services/authzService';
 
 
-function mapDtoToAction(dto: AuthzActionDto): Action {
+function mapDtoToAction(dto: Action): Action {
 	return {
 		id: dto.id,
 		name: dto.name,
@@ -21,20 +20,6 @@ function mapDtoToAction(dto: AuthzActionDto): Action {
 		createdBy: dto.createdBy,
 		entitlementsCount: dto.entitlementsCount || 0,
 		etag: dto.etag,
-	};
-}
-
-function mapActionToDto(action: Partial<Action>): Partial<AuthzActionDto> {
-	return {
-		id: action.id,
-		name: action.name,
-		description: action.description,
-		resourceId: action.resourceId,
-		resource: action.resource,
-		createdAt: action.createdAt,
-		etag: action.etag,
-		createdBy: action.createdBy,
-		entitlementsCount: action.entitlementsCount || 0,
 	};
 }
 
@@ -50,15 +35,15 @@ export const actionService = {
 	},
 
 	async createAction(
-		action: Omit<Action, 'id' | 'createdAt' | 'etag' | 'resources' | 'entitlementsCount'>,
+		data: Action,
 	): Promise<Action> {
-		const dto = await createActionApi(mapActionToDto(action) as Omit<AuthzActionDto, 'id' | 'createdAt' | 'etag' | 'createdBy' | 'entitlementsCount'>);
+		const dto = await createActionApi(data);
 		return mapDtoToAction(dto);
 	},
 
 	async updateAction(
 		actionId: string,
-		data: {etag: string, description?: string},
+		data: Action,
 	): Promise<Action> {
 		const dto = await updateActionApi(actionId, data);
 		return mapDtoToAction(dto);

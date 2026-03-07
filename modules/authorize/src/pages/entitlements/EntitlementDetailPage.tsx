@@ -16,7 +16,7 @@ import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function EntitlementDetailPageBody(): React.ReactNode {
-	const { entitlement, isLoading, resources, actions } = useEntitlementDetail.detail();
+	const { entitlement, isLoading, resources } = useEntitlementDetail.detail();
 	const { isSubmitting, handleCancel, handleSubmit } = useEntitlementDetail.handlers(entitlement);
 	const { t: translate } = useTranslation();
 	const schema = entitlementSchema as ModelSchema;
@@ -71,7 +71,6 @@ function EntitlementDetailPageBody(): React.ReactNode {
 									<EntitlementFormFields
 										isCreate={false}
 										resources={resources}
-										actions={actions}
 									/>
 								</Stack>
 							</form>

@@ -39,8 +39,8 @@ export function useRolesByReceiver(receiverId: string | null, receiverType: Rece
 	React.useEffect(() => {
 		if (receiverId && receiverType) {
 			setIsLoading(true);
-			const graph = buildRolesByReceiverQuery(receiverId);
-			dispatch(roleActions.listRoles({ graph }))
+			const graph = buildRolesByReceiverQuery(receiverId, receiverType);
+			dispatch(roleActions.listRoles({ listQuery: { graph } }))
 				.unwrap()
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
@@ -58,8 +58,8 @@ export function useRoleSuitesByReceiver(receiverId: string | null, receiverType:
 	React.useEffect(() => {
 		if (receiverId && receiverType) {
 			setIsLoading(true);
-			const graph = buildRoleSuitesByReceiverQuery(receiverId);
-			dispatch(roleSuiteActions.listRoleSuites({ graph }))
+			const graph = buildRoleSuitesByReceiverQuery(receiverId, receiverType);
+			dispatch(roleSuiteActions.listRoleSuites({ listQuery: { graph } }))
 				.unwrap()
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
@@ -77,10 +77,10 @@ export function useUsersByTarget(targetId: string | null, targetType: TargetType
 	React.useEffect(() => {
 		if (targetId && targetType) {
 			setIsLoading(true);
-			const query = targetType === TargetType.ROLE
+			const graph = targetType === TargetType.ROLE
 				? buildUsersByRoleQuery(targetId)
 				: buildUsersByRoleSuiteQuery(targetId);
-			dispatch(identityActions.listUsers({ query }))
+			dispatch(identityActions.listUsers({ graph: graph }))
 				.unwrap()
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
@@ -98,10 +98,10 @@ export function useGroupsByTarget(targetId: string | null, targetType: TargetTyp
 	React.useEffect(() => {
 		if (targetId && targetType) {
 			setIsLoading(true);
-			const query = targetType === TargetType.ROLE
+			const graph = targetType === TargetType.ROLE
 				? buildGroupsByRoleQuery(targetId)
 				: buildGroupsByRoleSuiteQuery(targetId);
-			dispatch(identityActions.listGroups({ query }))
+			dispatch(identityActions.listGroups({ graph: graph }))
 				.unwrap()
 				.then(() => setIsLoading(false))
 				.catch(() => setIsLoading(false));
@@ -110,4 +110,3 @@ export function useGroupsByTarget(targetId: string | null, targetType: TargetTyp
 
 	return { groups, isLoading };
 }
-

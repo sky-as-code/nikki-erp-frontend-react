@@ -1,9 +1,8 @@
-import { Paper, Stack, Title } from '@mantine/core';
+import { Paper, Select, Stack, Title } from '@mantine/core';
 import { AutoField, EntityDisplayField, EntitySelectField } from '@nikkierp/ui/components/form';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useReceiverSelectLogic, useTargetSelectLogic } from '@/features/grantRequests/hooks';
 
 import type { Group } from '@/features/identities';
 import type { User } from '@/features/identities';
@@ -11,16 +10,38 @@ import type { Org } from '@/features/identities';
 import type { Role } from '@/features/roles';
 import type { RoleSuite } from '@/features/roleSuites';
 
+import { useReceiverSelectLogic, useTargetSelectLogic } from '@/features/grantRequests/hooks';
+
 
 interface TargetFieldsProps {
 	isCreate: boolean;
 	roles?: Role[];
 	roleSuites?: RoleSuite[];
+	orgs?: Org[];
+	selectedOrgId?: string | null;
+	onOrgIdChange?: (orgId: string | null | undefined) => void;
 }
 
-function TargetFields({ isCreate, roles, roleSuites }: TargetFieldsProps) {
+function TargetFields({
+	isCreate,
+	roles,
+	roleSuites,
+	orgs = [],
+	selectedOrgId,
+	onOrgIdChange,
+}: TargetFieldsProps) {
 	const { t: translate } = useTranslation();
-	const { availableTargets, shouldDisable, placeholder } = useTargetSelectLogic(roles, roleSuites);
+	const { availableTargets, shouldDisable, placeholder } = useTargetSelectLogic(roles, roleSuites, selectedOrgId);
+	const targetFilterOptions = React.useMemo(() => [
+		{
+			value: '',
+			label: translate('nikki.authorize.grant_request.fields.org_all'),
+		},
+		...orgs.map((org) => ({
+			value: org.id,
+			label: org.displayName,
+		})),
+	], [orgs]);
 
 	return (
 		<Paper p='md' withBorder>
@@ -28,6 +49,22 @@ function TargetFields({ isCreate, roles, roleSuites }: TargetFieldsProps) {
 				{translate('nikki.authorize.grant_request.fields.target')}
 			</Title>
 			<Stack gap='xs'>
+				{isCreate && (
+					<Select
+						label={translate('nikki.authorize.grant_request.fields.org')}
+						data={targetFilterOptions}
+						placeholder='Select target scope'
+						value={selectedOrgId === undefined ? null : (selectedOrgId ?? '')}
+						onChange={(value) => {
+							if (value === null) {
+								onOrgIdChange?.(undefined);
+								return;
+							}
+							onOrgIdChange?.(value === '' ? null : value);
+						}}
+						clearable
+					/>
+				)}
 				<AutoField
 					name='targetType'
 					htmlProps={!isCreate ? { readOnly: true } : undefined}
@@ -56,11 +93,31 @@ interface ReceiverFieldsProps {
 	isCreate: boolean;
 	users?: User[];
 	groups?: Group[];
+	orgs?: Org[];
+	selectedOrgId?: string | null;
+	onOrgIdChange?: (orgId: string | null | undefined) => void;
 }
 
-function ReceiverFields({ isCreate, users, groups }: ReceiverFieldsProps) {
+function ReceiverFields({
+	isCreate,
+	users,
+	groups,
+	orgs = [],
+	selectedOrgId,
+	onOrgIdChange,
+}: ReceiverFieldsProps) {
 	const { t: translate } = useTranslation();
-	const { availableReceivers, shouldDisable, placeholder } = useReceiverSelectLogic(users, groups);
+	const { availableReceivers, shouldDisable, placeholder } = useReceiverSelectLogic(users, groups, selectedOrgId);
+	const receiverFilterOptions = React.useMemo(() => [
+		{
+			value: '',
+			label: translate('nikki.authorize.grant_request.fields.org_all'),
+		},
+		...orgs.map((org) => ({
+			value: org.id,
+			label: org.displayName,
+		})),
+	], [orgs, translate]);
 
 	return (
 		<Paper p='md' withBorder>
@@ -68,6 +125,22 @@ function ReceiverFields({ isCreate, users, groups }: ReceiverFieldsProps) {
 				{translate('nikki.authorize.grant_request.fields.receiver')}
 			</Title>
 			<Stack gap='xs'>
+				{isCreate && (
+					<Select
+						label={translate('nikki.authorize.grant_request.fields.org')}
+						data={receiverFilterOptions}
+						placeholder='Select receiver scope'
+						value={selectedOrgId === undefined ? null : (selectedOrgId ?? '')}
+						onChange={(value) => {
+							if (value === null) {
+								onOrgIdChange?.(undefined);
+								return;
+							}
+							onOrgIdChange?.(value === '' ? null : value);
+						}}
+						clearable
+					/>
+				)}
 				<AutoField
 					name='receiverType'
 					htmlProps={!isCreate ? { readOnly: true } : undefined}
@@ -100,13 +173,6 @@ interface CommonFieldsProps {
 function CommonFields({ isCreate, orgs = [] }: CommonFieldsProps) {
 	const { t: translate } = useTranslation();
 
-	const globalOption = React.useMemo(() => [
-		{
-			value: '',
-			label: translate('nikki.authorize.grant_request.fields.org_all'),
-		},
-	], [translate]);
-
 	return (
 		<Paper p='md' withBorder>
 			<Title order={5} mb='md'>
@@ -128,13 +194,14 @@ function CommonFields({ isCreate, orgs = [] }: CommonFieldsProps) {
 					htmlProps={!isCreate ? { readOnly: true } : undefined}
 				/>
 				{isCreate ? (
-					<EntitySelectField
-						fieldName='orgId'
-						entities={orgs}
-						getEntityId={(o) => o.id}
-						getEntityName={(o) => o.displayName}
-						prependOptions={globalOption}
-					/>
+					// <EntitySelectField
+					// 	fieldName='orgId'
+					// 	entities={orgs}
+					// 	getEntityId={(o) => o.id}
+					// 	getEntityName={(o) => o.displayName}
+					// 	prependOptions={globalOption}
+					// />
+					<></>
 				) : (
 					<EntityDisplayField
 						fieldName='orgId'
@@ -159,6 +226,10 @@ interface GrantRequestFormFieldsProps {
 	users?: User[];
 	groups?: Group[];
 	orgs?: Org[];
+	selectedOrgId?: string | null;
+	onOrgIdChange?: (orgId: string | null | undefined) => void;
+	selectedReceiverOrgId?: string | null;
+	onReceiverOrgIdChange?: (orgId: string | null | undefined) => void;
 }
 
 export const GrantRequestFormFields: React.FC<GrantRequestFormFieldsProps> = ({
@@ -168,10 +239,30 @@ export const GrantRequestFormFields: React.FC<GrantRequestFormFieldsProps> = ({
 	users,
 	groups,
 	orgs,
-}) => (
-	<Stack gap='md'>
-		<TargetFields isCreate={isCreate} roles={roles} roleSuites={roleSuites} />
-		<ReceiverFields isCreate={isCreate} users={users} groups={groups} />
-		<CommonFields isCreate={isCreate} orgs={orgs} />
-	</Stack>
-);
+	selectedOrgId,
+	onOrgIdChange,
+	selectedReceiverOrgId,
+	onReceiverOrgIdChange,
+}) =>  {
+	return (
+		<Stack gap='md'>
+			<TargetFields
+				isCreate={isCreate}
+				roles={roles}
+				roleSuites={roleSuites}
+				orgs={orgs}
+				selectedOrgId={selectedOrgId}
+				onOrgIdChange={onOrgIdChange}
+			/>
+			<ReceiverFields
+				isCreate={isCreate}
+				users={users}
+				groups={groups}
+				orgs={orgs}
+				selectedOrgId={selectedReceiverOrgId}
+				onOrgIdChange={onReceiverOrgIdChange}
+			/>
+			<CommonFields isCreate={isCreate} orgs={orgs} />
+		</Stack>
+	);
+};

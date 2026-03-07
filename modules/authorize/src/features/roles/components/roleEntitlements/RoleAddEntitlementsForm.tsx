@@ -9,6 +9,7 @@ import { SearchSection } from './SearchSection';
 import type { Entitlement } from '@/features/entitlements';
 import type { Resource } from '@/features/resources';
 import type { Role } from '@/features/roles';
+import type { Hierarchy, Organization } from '@nikkierp/shell/userContext';
 
 
 
@@ -27,6 +28,10 @@ interface RoleAddEntitlementsFormProps {
 	onCancel: () => void;
 	isSubmitting: boolean;
 	showConfirm?: boolean;
+	isGlobalContext: boolean;
+	currentOrgId?: string;
+	assignedOrgs: Organization[];
+	hierarchies: Hierarchy[];
 }
 
 export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = ({
@@ -44,6 +49,10 @@ export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = (
 	onCancel,
 	isSubmitting,
 	showConfirm = true,
+	isGlobalContext,
+	currentOrgId,
+	assignedOrgs,
+	hierarchies,
 }) => {
 	return (
 		<Paper p='lg'>
@@ -75,6 +84,10 @@ export const RoleAddEntitlementsForm: React.FC<RoleAddEntitlementsFormProps> = (
 					resources={resources}
 					onScopeRefChange={onScopeRefChange}
 					variant='add'
+					isGlobalContext={isGlobalContext}
+					currentOrgId={currentOrgId}
+					assignedOrgs={assignedOrgs}
+					hierarchies={hierarchies}
 				/>
 			</Stack>
 		</Paper>
