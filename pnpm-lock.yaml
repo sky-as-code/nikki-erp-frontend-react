@@ -138,9 +138,9 @@ importers:
       '@nikkierp/microapp-identity':
         specifier: workspace:*
         version: link:../../modules/identity
-      '@nikkierp/microapp-vendingMachine':
+      '@nikkierp/microapp-vdmc':
         specifier: workspace:*
-        version: link:../../modules/vendingMachine
+        version: link:../../modules/vdmc
       '@nikkierp/nikkiportal-shell':
         specifier: workspace:*
         version: link:../../modules/shell
@@ -1164,7 +1164,7 @@ importers:
         specifier: ~4.0.2
         version: 4.0.2(@types/node@24.9.1)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.6))(lightningcss@1.30.2)(sugarss@5.0.1(postcss@8.5.6))(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1)
 
-  modules/vendingMachine:
+  modules/vdmc:
     dependencies:
       '@fullcalendar/daygrid':
         specifier: ~6.1.20
