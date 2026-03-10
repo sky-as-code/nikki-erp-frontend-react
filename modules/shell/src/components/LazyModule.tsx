@@ -19,10 +19,12 @@ export function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): Re
 	const { orgSlug: activeOrgSlug } = useActiveOrgModule();
 	const { isLoading, user } = useUserContext();
 	const resolvedOrgSlug = orgSlug ?? activeOrgSlug ?? null;
+
 	const isGlobalContext = resolvedOrgSlug === GLOBAL_CONTEXT_SLUG;
 	const contextModules = useMyModulesForContext(resolvedOrgSlug);
 	const orgModule = useFindMyModule(resolvedOrgSlug ?? '', moduleSlug!);
 	const activeOrg = useFindMyOrg(resolvedOrgSlug ?? '');
+
 	const orgContextScope = resolvedOrgSlug && resolvedOrgSlug !== GLOBAL_CONTEXT_SLUG
 		? { scopeType: 'org' as const, scopeRef: activeOrg?.id ?? '' }
 		: undefined;
@@ -32,7 +34,8 @@ export function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): Re
 	const foundApp = microApps.find(app => app.basePath === moduleSlug);
 	const canAccess = useCanAccessModuleForContext(moduleSlug!, resolvedOrgSlug, orgContextScope);
 
-	if (isLoading || !user) {
+	const isLoadingApp = isLoading || !user || !resolvedOrgSlug;
+	if (isLoadingApp) {
 		return <AppLoading />;
 	}
 
