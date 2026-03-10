@@ -78,6 +78,9 @@ export function initRequestMaker(opts: RequestMakerOts) {
 						const token = authService.getAccessToken();
 						request.headers.set('Authorization', `${tokenType} ${token}`);
 					}
+					if (request.body instanceof FormData && !request.headers.get('Content-Type')) {
+						request.headers.set('Content-Type', 'multipart/form-data');
+					}
 				},
 			],
 			afterResponse: [interceptorResponse(opts)],

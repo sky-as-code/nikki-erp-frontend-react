@@ -88,6 +88,7 @@
 	"exports": {
 		"./appState": "./src/appState/store.ts",
 		"./auth": "./src/auth/index.ts",
+		"./config": "./src/config/index.ts",
 		"./auth/strategies": "./src/auth/strategies/index.ts",
 		"./constants": "./src/constants/index.ts",
 		"./contexts": "./src/contexts/index.tsx",

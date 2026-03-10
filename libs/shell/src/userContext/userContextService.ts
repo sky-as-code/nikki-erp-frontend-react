@@ -151,4 +151,9 @@ export const DEFAULT_MODULES: Module[] = [
 		name: 'Vending Machine',
 		slug: 'vending-machine',
 	},
+	{
+		id: '5',
+		name: 'Drive',
+		slug: 'drive',
+	},
 ];

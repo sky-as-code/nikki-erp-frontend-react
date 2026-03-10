@@ -52,6 +52,16 @@ export const mockModules = [
 				lastUsed: '2025-01-01',
 			},
 			{
+				name: 'Drive',
+				slug: 'drive',
+				category: 'Drive',
+				icon: 'icon-drive',
+				isDisabled: false,
+				isOrphaned: false,
+				isFavourite: false,
+				lastUsed: '2025-01-01',
+			},
+			{
 				name: 'Inventory',
 				slug: 'inventory',
 				category: 'Inventory',
