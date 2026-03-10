@@ -20,7 +20,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({ breadcrumbs, actio
 
 			{sections?.map((section, index) => <Box key={index}>{section}</Box>)}
 
-			{children && <Paper p={'md'}> {children} </Paper>}
+			{children && <Paper p={'sm'}> {children} </Paper>}
 
 			<Space h={{ base: 'lg', md: 'xl' }}  />
 		</Stack>

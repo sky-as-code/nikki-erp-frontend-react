@@ -1,5 +1,5 @@
 /* eslint-disable max-lines-per-function */
-import { Box, Button, Center, Flex, Image, NumberInput, SimpleGrid, Stack, Switch, Text } from '@mantine/core';
+import { Box, Button, Center, Flex, Image, NumberInput, Stack, Switch, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import blankPicture from '@nikkierp/ui/assets/images/blank-picture.png';
 import {
@@ -226,7 +226,7 @@ const CellStockComponent: FC<CellStockProps> = (props) => {
 		<Stack
 			component='div'
 			pos='relative'
-			miw={120} h={200}
+			miw={160} w={'100%'} h={200}
 			bdrs={'xs'} gap={2} p={6}
 			justify='center' align='center'
 			bd='1px solid rgba(0, 0, 0, 0.1)'
@@ -363,7 +363,6 @@ const CellStock = reactMemo(CellStockComponent, (prevProps: CellStockProps, next
 	);
 });
 
-CellStock.displayName = 'CellStock';
 
 export const StockGridView: FC<StockGridViewProps> = (
 	props: StockGridViewProps) => {
@@ -873,20 +872,20 @@ export const StockGridView: FC<StockGridViewProps> = (
 	const BASE_COLS = new Array(10).fill('_');
 
 	return (
-		<div>
-			<div style={{ height: 'calc(100vh - 200px)', minHeight: 500, overflow: 'auto' }}>
-				<Flex pos='sticky' top={0} h={30} miw='100%'
-					w='fit-content' gap='xs' align='center' mb='xs' style={{ zIndex: 10 }}>
+		<Box h='calc(100vh - 200px)' mih={500} style={{ overflow: 'auto' }}>
+			<Box w='100%'>
+				<Flex pos='sticky' top={0} h={30}
+					miw='100%' w='fit-content' gap='xs' align='center' mb='xs' style={{ zIndex: 10 }}>
 					<Box pos='sticky' left={0} w={30} miw={30} h='100%' bg='gray.1'/>
 					<Flex
 						justify='center' align='center'
-						gap={'xs'}
-						w='100%'
+						gap={'xs'} w='100%'
 					>
 						{BASE_COLS.map((_, index) => (
 							<Center
 								key={index}
-								flex={1} w='100%' miw={120} h={30} fz='sm' bd='1px solid rgba(0, 0, 0, 0.1)' p={5} ta='center' bg='white'
+								flex={1} w='100%' miw={160} h={30} fz='sm' bd='1px solid rgba(0, 0, 0, 0.1)'
+								p={5} ta='center' bg='white'
 							>
 								{index + 1}
 							</Center>
@@ -894,12 +893,10 @@ export const StockGridView: FC<StockGridViewProps> = (
 					</Flex>
 				</Flex>
 				<Flex
-					justify='center' align='start'
-					gap={'xs'}
-					miw='100%'
-					w='max-content'
+					justify='center' align='start' gap={'xs'}
+					miw='100%' w='fit-content'
 				>
-					<Stack pos='sticky' left={0} w={30} h='100%' gap='xs' style={{ zIndex: 10 }}>
+					<Stack pos='sticky' left={0} w={30} miw={30} h='100%' gap='xs' style={{ zIndex: 10 }}>
 						{rowData.map((rowItem, index) => (
 							<Center key={index} w={30} h={200} bg='gray.1'>
 								{rowItem?.row}
@@ -909,7 +906,7 @@ export const StockGridView: FC<StockGridViewProps> = (
 					{rowData.length > 0 && (
 						<Stack w='100%' h='100%' gap='xs'>
 							{rowData.map((rowItem, index) => (
-								<SimpleGrid key={index} cols={10} spacing='xs' w={'100%'}>
+								<Flex key={index} w='100%' gap='xs'>
 									{BASE_COLS.map((_, colIndex) => (
 										<CellStock
 											key={colIndex}
@@ -930,14 +927,12 @@ export const StockGridView: FC<StockGridViewProps> = (
 											openModalEditStockInKiosk={openModalEditStockInKiosk}
 										/>
 									))}
-								</SimpleGrid>
+								</Flex>
 							))}
 						</Stack>
 					)}
 				</Flex>
-			</div>
-		</div>
+			</Box>
+		</Box>
 	);
 };
-
-StockGridView.displayName = 'StockGridView';
