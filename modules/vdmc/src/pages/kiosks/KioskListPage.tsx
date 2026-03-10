@@ -17,7 +17,6 @@ import {
 	useKioskDelete,
 	useKioskDetail,
 	useKioskList,
-	KioskListActionsWithFilter,
 } from '@/features/kiosks';
 import { ConnectionStatus, KioskMode, KioskStatus } from '@/features/kiosks/types';
 

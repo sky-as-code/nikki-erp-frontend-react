@@ -3,7 +3,9 @@ import { Outlet } from 'react-router';
 
 
 export const VendingMachineLayout: React.FC = () => {
-	return <Container fluid px={{ base: 'xs', xs: 'sm' }}>
-		<Outlet />
-	</Container>;
+	return (
+		<Container fluid px={{ base: 'xs', xs: 'sm' }}>
+			<Outlet />
+		</Container>
+	);
 };

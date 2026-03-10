@@ -1,99 +1,443 @@
-import { Box, Stack, Tabs } from '@mantine/core';
-import React, { useState } from 'react';
+import { LoadingState } from '@nikkierp/ui/components';
+import { IconArrowLeft, IconDeviceFloppy, IconEdit, IconFileDownloadFilled, IconTrash, IconX } from '@tabler/icons-react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
+import { resolvePath, useNavigate, useParams } from 'react-router';
 
-import { DetailControlPanel } from '@/components';
-import { PageContainer } from '@/components/PageContainer';
-import { useKioskDetail } from '@/features/kiosks';
+import { ControlPanel } from '@/components';
+import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
+import { DetailLayout, DetailLayoutProps } from '@/components/DetailLayout';
+import { PageContainer, PageContainerProps } from '@/components/PageContainer';
+import { Kiosk, useKioskDetail } from '@/features/kiosks';
 import { KioskActivity } from '@/features/kiosks/components/KioskDetail/KioskActivity';
 import { KioskBasicInfo } from '@/features/kiosks/components/KioskDetail/KioskBasicInfo';
-import { KioskDetailHeader } from '@/features/kiosks/components/KioskDetail/KioskDetailHeader';
 import { KioskSetting } from '@/features/kiosks/components/KioskDetail/KioskSetting';
-import { ProductGridView } from '@/features/kiosks/components/KioskDetail/ProductGridView';
 import { ProductListView } from '@/features/kiosks/components/KioskDetail/ProductListView';
+import { StockGridView } from '@/features/kiosks/components/KioskDetail/StockGridView';
 
 
 export const KioskDetailPage: React.FC = () => {
-	const { t: translate } = useTranslation();
+	const [activeTab, setActiveTab] = useState<TabId>('basicInfo');
 	const { id } = useParams<{ id: string }>();
 	const { kiosk, isLoading } = useKioskDetail(id);
-	const [isEditing, setIsEditing] = useState(false);
+	const { tabs, getTabActions } = useKioskDetailTabs({ kiosk, activeTab });
+	const breadcrumbs = useKioskDetailBreadcrumbs({ kiosk });
 
-	const breadcrumbs = [
-		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
-		{ title: translate('nikki.vendingMachine.kiosk.title'), href: '../kiosks' },
-		{ title: kiosk?.name || translate('nikki.vendingMachine.kiosk.detail.title'), href: '#' },
-	];
+	const handleTabChange = useCallback((value: string) => {
+		setActiveTab(value as TabId);
+	}, []);
 
 	if (isLoading || !kiosk) {
-		return (
-			<PageContainer
-				breadcrumbs={breadcrumbs}
-				sections={
-					[
-						<DetailControlPanel onSave={() => {}} onGoBack={() => {}} onDelete={() => {}} />,
-					]
-				}
-			>
-				<div>{translate('nikki.general.messages.loading')}</div>
-			</PageContainer>
-		);
+		return <KioskDetailPageLoading breadcrumbs={breadcrumbs} />;
 	}
 
 	return (
 		<PageContainer
 			breadcrumbs={breadcrumbs}
-			sections={[
-				<DetailControlPanel onSave={() => {}} onGoBack={() => {}} onDelete={() => {}} />,
-			]}
+			sections={[ <ControlPanel actions={getTabActions(activeTab)} /> ]}
 		>
-			<DetailInfoContainer
-				header={ <KioskDetailHeader kiosk={kiosk} isEditing={isEditing} setIsEditing={setIsEditing} />}
-				sections={[
-					{ title: translate('nikki.vendingMachine.kiosk.tabs.basicInfo'), content: <KioskBasicInfo kiosk={kiosk} isEditing={isEditing} /> },
-					{ title: translate('nikki.vendingMachine.kiosk.tabs.kioskSetting'), content: <KioskSetting kiosk={kiosk} isEditing={isEditing} /> },
-					{ title: translate('nikki.vendingMachine.kiosk.tabs.productsList'), content: <ProductListView kioskId={kiosk.id} /> },
-					{ title: translate('nikki.vendingMachine.kiosk.tabs.productsGrid'), content: <ProductGridView kioskId={kiosk.id} isEditing={isEditing} /> },
-					{ title: translate('nikki.vendingMachine.kiosk.tabs.activity'), content: <KioskActivity /> },
-				]}
+			<DetailLayout
+				header={{
+					title: kiosk.name,
+					subtitle: kiosk.code,
+				}}
+				tabs={tabs}
+				activeTab={activeTab}
+				onTabChange={handleTabChange}
 			/>
 		</PageContainer>
 	);
 };
 
 
+const KioskDetailPageLoading: React.FC<{ breadcrumbs: PageContainerProps['breadcrumbs'] }> = ({ breadcrumbs }) => {
+	const { t: translate } = useTranslation();
 
-type DetailInfoContainerProps = {
-	header: React.ReactNode;
-	sections: {
-		title: string;
-		content: React.ReactNode;
-	}[];
-};
-const DetailInfoContainer: React.FC<DetailInfoContainerProps> = ({ header, sections }) => {
 	return (
-		<Stack gap='sm'>
-			{header}
-			<Box>
-				{sections.length > 0 &&
-				(<Tabs defaultValue='0'>
-					<Tabs.List>
-						{sections.map((section, index) => (
-							<Tabs.Tab value={index.toString()}>
-								{section.title}
-							</Tabs.Tab>
-						))}
-					</Tabs.List>
-
-					{sections.map((section, index) => (
-						<Tabs.Panel value={index.toString()} py='md'>
-							{section.content}
-						</Tabs.Panel>
-					))}
-				</Tabs>)
-				}
-			</Box>
-		</Stack>
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			sections={[
+				<ControlPanel
+					actions={[
+						{
+							label: translate('nikki.general.actions.back'),
+							leftSection: <IconArrowLeft size={16} />,
+							variant: 'outline',
+						},
+					]}
+				/>,
+			]}>
+			<LoadingState messageKey='nikki.general.messages.loading' />
+		</PageContainer>
 	);
+};
+
+
+
+// Type cho tab hook return
+type TabHookReturn = {
+	actions: ControlPanelProps['actions'];
+	handlers: Record<string, (...args: any[]) => void>;
+	state: Record<string, any>;
+	getComponentProps?: () => Record<string, any>;
+};
+
+/**
+ * Hook quản lý BasicInfo tab
+ * Quản lý state isEditing riêng và trả về actions, handlers, state
+ */
+const useBasicInfoTab = (_kiosk?: Kiosk): TabHookReturn => {
+	const { t: translate } = useTranslation();
+	const [isEditing, setIsEditing] = useState(false);
+
+	const handleEdit = useCallback(() => setIsEditing(true), []);
+	const handleSave = useCallback(() => {
+		// TODO: Implement save logic
+		setIsEditing(false);
+	}, []);
+	const handleCancel = useCallback(() => setIsEditing(false), []);
+	const handleDelete = useCallback(() => {
+		// TODO: Implement delete logic
+	}, []);
+
+	const actions = useMemo<ControlPanelProps['actions']>(() => {
+		return [
+			...(!isEditing ? [{
+				label: translate('nikki.general.actions.edit'),
+				leftSection: <IconEdit size={16} />,
+				onClick: handleEdit,
+				variant: 'filled' as const,
+			}] : [{
+				label: translate('nikki.general.actions.save'),
+				leftSection: <IconDeviceFloppy size={16} />,
+				onClick: handleSave,
+				variant: 'filled' as const,
+			}, {
+				label: translate('nikki.general.actions.cancel'),
+				leftSection: <IconX size={16} />,
+				onClick: handleCancel,
+				variant: 'outline' as const,
+			}]),
+			{
+				label: translate('nikki.general.actions.delete'),
+				leftSection: <IconTrash size={16} />,
+				onClick: handleDelete,
+				variant: 'outline' as const,
+				color: 'red' as const,
+			},
+		];
+	}, [isEditing, handleEdit, handleSave, handleCancel, handleDelete, translate]);
+
+	return {
+		actions,
+		handlers: {
+			handleEdit,
+			handleSave,
+			handleCancel,
+			handleDelete,
+		},
+		state: {
+			isEditing,
+		},
+		getComponentProps: () => ({
+			isEditing,
+		}),
+	};
+};
+
+/**
+ * Hook quản lý KioskSetting tab
+ */
+const useKioskSettingTab = (_kiosk?: Kiosk): TabHookReturn => {
+	const { t: translate } = useTranslation();
+	const [isEditing, setIsEditing] = useState(false);
+
+	const handleEdit = useCallback(() => setIsEditing(true), []);
+	const handleSave = useCallback(() => {
+		// TODO: Implement save logic
+		setIsEditing(false);
+	}, []);
+	const handleCancel = useCallback(() => setIsEditing(false), []);
+
+	const actions = useMemo<ControlPanelProps['actions']>(() => {
+		return [
+			...(!isEditing ? [{
+				label: translate('nikki.general.actions.edit'),
+				leftSection: <IconEdit size={16} />,
+				onClick: handleEdit,
+				variant: 'filled' as const,
+			}] : [{
+				label: translate('nikki.general.actions.save'),
+				leftSection: <IconDeviceFloppy size={16} />,
+				onClick: handleSave,
+				variant: 'filled' as const,
+			}, {
+				label: translate('nikki.general.actions.cancel'),
+				leftSection: <IconX size={16} />,
+				onClick: handleCancel,
+				variant: 'outline' as const,
+			}]),
+		];
+	}, [isEditing, handleEdit, handleSave, handleCancel, translate]);
+
+	return {
+		actions,
+		handlers: {
+			setIsEditing,
+			handleSave,
+			handleCancel,
+			handleEdit,
+		},
+		state: {
+			isEditing,
+		},
+		getComponentProps: () => ({
+			isEditing,
+		}),
+	};
+};
+
+/**
+ * Hook quản lý ProductsList tab
+ */
+const useProductsListTab = (_kiosk?: Kiosk): TabHookReturn => {
+	return {
+		actions: [],
+		handlers: {},
+		state: {},
+		getComponentProps: () => ({}),
+	};
+};
+
+/**
+ * Hook quản lý ProductsGrid tab
+ */
+const useProductsGridTab = (_kiosk?: Kiosk): TabHookReturn => {
+	const { t: translate } = useTranslation();
+	const [isEditing, setIsEditing] = useState(false);
+
+	const handleEdit = useCallback(() => setIsEditing(true), []);
+	const handleSave = useCallback(() => {
+		// TODO: Implement save logic
+		setIsEditing(false);
+	}, []);
+	const handleCancel = useCallback(() => setIsEditing(false), []);
+
+	const actions = useMemo<ControlPanelProps['actions']>(() => {
+		return [
+			...(!isEditing ? [{
+				label: translate('nikki.general.actions.edit'),
+				leftSection: <IconEdit size={16} />,
+				onClick: handleEdit,
+				variant: 'filled' as const,
+			}] :
+				[
+					{
+						label: translate('nikki.vendingMachine.kiosk.products.actions.loadAll'),
+						leftSection: <IconFileDownloadFilled size={16} />,
+						onClick: handleSave,
+						variant: 'filled' as const,
+					},
+					{
+						label: translate('nikki.general.actions.save'),
+						leftSection: <IconDeviceFloppy size={16} />,
+						onClick: handleSave,
+						variant: 'filled' as const,
+					},
+					{
+						label: translate('nikki.general.actions.cancel'),
+						leftSection: <IconX size={16} />,
+						onClick: handleCancel,
+						variant: 'outline' as const,
+					},
+				]),
+		];
+	}, [isEditing, handleEdit, handleSave, handleCancel, translate]);
+
+	return {
+		actions,
+		handlers: {
+			setIsEditing,
+		},
+		state: {
+			isEditing,
+		},
+		getComponentProps: () => ({
+			isEditing,
+		}),
+	};
+};
+
+/**
+ * Hook quản lý Activity tab
+ */
+const useActivityTab = (_kiosk?: Kiosk): TabHookReturn => {
+	return {
+		actions: [],
+		handlers: {},
+		state: {},
+		getComponentProps: () => ({}),
+	};
+};
+
+
+
+
+// Memoized components that don't depend on isEditing to prevent unnecessary re-renders
+const MemoizedProductListView = React.memo(ProductListView);
+const MemoizedKioskActivity = React.memo(KioskActivity);
+
+type TabId = 'basicInfo' | 'kioskSetting' | 'productsList' | 'productsGrid' | 'activity';
+
+type UseKioskDetailTabsProps = {
+	kiosk?: Kiosk;
+	activeTab: TabId;
+};
+
+type UseKioskDetailTabsReturn = {
+	tabs: DetailLayoutProps['tabs'];
+	getTabActions: (tabId: TabId) => ControlPanelProps['actions'];
+	getTabHandlers: (tabId: TabId) => Record<string, (...args: any[]) => void>;
+	getTabState: (tabId: TabId) => Record<string, any>;
+};
+
+// Helper function để tạo component cho từng tab với props từ hook
+const createTabComponent = (
+	tabId: TabId,
+	componentProps: Record<string, any>,
+): React.ReactNode => {
+	// const componentProps = tabHook.getComponentProps?.() ?? {};
+
+	switch (tabId) {
+		case 'basicInfo': {
+			// const { isEditing } = componentProps as { isEditing: boolean };
+			return <KioskBasicInfo key='basicInfo' kiosk={componentProps?.kiosk} isEditing={componentProps?.isEditing} {...componentProps} />;
+		}
+		case 'kioskSetting': {
+			// const { isEditing } = componentProps as { isEditing: boolean };
+			return <KioskSetting key='kioskSetting' kiosk={componentProps?.kiosk} isEditing={componentProps?.isEditing} {...componentProps} />;
+		}
+		case 'productsList':
+			return <MemoizedProductListView key='productsList' kioskId={componentProps?.kiosk?.id} {...componentProps} />;
+		case 'productsGrid': {
+			// const { isEditing } = componentProps as { isEditing: boolean };
+			return <StockGridView key='stockGrid' kioskId={componentProps?.kiosk?.id} isEditing={componentProps?.isEditing} />;
+		}
+		case 'activity':
+			return <MemoizedKioskActivity key='activity' {...componentProps} />;
+		default:
+			return null;
+	}
+};
+
+
+/**
+ * Hook quản lý các tab của kiosk detail
+ * - Mỗi tab có hook riêng quản lý actions, handlers và state
+ * - Components chỉ được tạo khi tab đó là current tab (lazy loading)
+ * - Mỗi tab hook trả về state riêng được truyền vào component
+ */
+const useKioskDetailTabs = ({
+	kiosk,
+	activeTab,
+}: UseKioskDetailTabsProps): UseKioskDetailTabsReturn => {
+	const { t: translate } = useTranslation();
+
+	// Gọi các hook riêng cho từng tab
+	// Mỗi hook quản lý state riêng của tab đó
+	const basicInfoTab = useBasicInfoTab(kiosk);
+	const kioskSettingTab = useKioskSettingTab(kiosk);
+	const productsListTab = useProductsListTab(kiosk);
+	const productsGridTab = useProductsGridTab(kiosk);
+	const activityTab = useActivityTab(kiosk);
+
+	// Map các tab hooks theo tabId
+	const tabHooks = useMemo<Record<TabId, TabHookReturn>>(() => {
+		return {
+			basicInfo: basicInfoTab,
+			kioskSetting: kioskSettingTab,
+			productsList: productsListTab,
+			productsGrid: productsGridTab,
+			activity: activityTab,
+		};
+	}, [basicInfoTab, kioskSettingTab, productsListTab, productsGridTab, activityTab]);
+
+	// Định nghĩa các tab với lazy loading components
+	const tabs = useMemo<DetailLayoutProps['tabs']>(() => {
+		if (!kiosk) return [];
+
+		const tabConfigs: Array<{ id: TabId; title: string }> = [
+			{ id: 'basicInfo', title: translate('nikki.vendingMachine.kiosk.tabs.basicInfo') },
+			{ id: 'kioskSetting', title: translate('nikki.vendingMachine.kiosk.tabs.kioskSetting') },
+			{ id: 'productsList', title: translate('nikki.vendingMachine.kiosk.tabs.productsList') },
+			{ id: 'productsGrid', title: translate('nikki.vendingMachine.kiosk.tabs.productsGrid') },
+			{ id: 'activity', title: translate('nikki.vendingMachine.kiosk.tabs.activity') },
+		];
+
+		return tabConfigs.map((config) => {
+			const tabHook = tabHooks[config.id];
+			const componentProps = tabHook.getComponentProps?.() ?? {};
+			return {
+				id: config.id,
+				title: config.title,
+				content: () => {
+					// Chỉ tạo component khi tab này là active tab (lazy loading)
+					if(config.id !== activeTab) {
+						return null;
+					}
+					// Tạo component với props từ hook của tab đó
+					return createTabComponent(config.id, {kiosk, ...componentProps});
+				},
+			};
+		});
+	}, [kiosk, activeTab, translate, tabHooks]);
+
+	// Lấy actions cho tab hiện tại
+	const navigate = useNavigate();
+	const handleGoBack = useCallback(() => {
+		const prePath = resolvePath('..', location.pathname).pathname;
+		navigate(prePath);
+	}, [navigate]);
+
+	const getTabActions = useCallback((tabId: TabId): ControlPanelProps['actions'] => {
+		const commonActions = [
+			{
+				label: translate('nikki.general.actions.back'),
+				onClick: handleGoBack,
+				leftSection: <IconArrowLeft size={16} />,
+				variant: 'outline',
+			},
+		];
+
+		const tabActions = tabHooks[tabId]?.actions ?? [];
+
+		return [...commonActions, ...tabActions];
+	}, [tabHooks]);
+
+	// Lấy handlers cho tab hiện tại
+	const getTabHandlers = useCallback((tabId: TabId): Record<string, (...args: any[]) => void> => {
+		return tabHooks[tabId]?.handlers ?? {};
+	}, [tabHooks]);
+
+	// Lấy state cho tab hiện tại
+	const getTabState = useCallback((tabId: TabId): Record<string, any> => {
+		return tabHooks[tabId]?.state ?? {};
+	}, [tabHooks]);
+
+	return {
+		tabs,
+		getTabActions,
+		getTabHandlers,
+		getTabState,
+	};
+};
+
+const useKioskDetailBreadcrumbs = ({ kiosk }: { kiosk?: Kiosk }): PageContainerProps['breadcrumbs'] => {
+	const { t: translate } = useTranslation();
+
+	return useMemo(() => [
+		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
+		{ title: translate('nikki.vendingMachine.kiosk.title'), href: '../kiosks' },
+		{ title: kiosk?.name || translate('nikki.vendingMachine.kiosk.detail.title'), href: '#' },
+	], [kiosk?.name, translate]);
 };
