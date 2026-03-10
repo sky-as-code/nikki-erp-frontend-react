@@ -2,9 +2,6 @@ packages:
   - apps/*
   - libs/*
   - modules/*
-  - "!apps/shell.bk"
-  - "!apps/shell.vite"
-  - "!modules/shell.vite"
   - "!apps/ext_*"
 
 savePrefix: "~"
