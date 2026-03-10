@@ -1025,7 +1025,11 @@
 					"no_kiosks": "Không tìm thấy kiosk nào",
 					"create_success": "Kiosk \"{{name}}\" đã được tạo thành công",
 					"update_success": "Kiosk \"{{name}}\" đã được cập nhật thành công",
-					"delete_success": "Kiosk đã được xóa thành công"
+					"delete_success": "Kiosk đã được xóa thành công",
+					"not_found": {
+						"title": "Không tìm thấy Kiosk",
+						"message": "Kiosk bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
+					}
 				}
 			},
 			"ads": {

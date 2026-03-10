@@ -1,7 +1,6 @@
-import { IconArrowLeft, IconDeviceFloppy, IconEdit, IconFileDownloadFilled, IconTrash, IconX } from '@tabler/icons-react';
+import { IconDeviceFloppy, IconEdit, IconFileDownloadFilled, IconTrash, IconX } from '@tabler/icons-react';
 import React, { useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { resolvePath, useNavigate } from 'react-router';
 
 import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { DetailLayoutProps } from '@/components/DetailLayout';
@@ -330,25 +329,9 @@ export const useKioskDetailTabs = ({
 	}, [kiosk, activeTab, translate, tabHooks]);
 
 	// Lấy actions cho tab hiện tại
-	const navigate = useNavigate();
-	const handleGoBack = useCallback(() => {
-		const prePath = resolvePath('..', location.pathname).pathname;
-		navigate(prePath);
-	}, [navigate]);
-
 	const getTabActions = useCallback((tabId: TabId): ControlPanelProps['actions'] => {
-		const commonActions = [
-			{
-				label: translate('nikki.general.actions.back'),
-				onClick: handleGoBack,
-				leftSection: <IconArrowLeft size={16} />,
-				variant: 'outline',
-			},
-		];
-
 		const tabActions = tabHooks[tabId]?.actions ?? [];
-
-		return [...commonActions, ...tabActions];
+		return tabActions;
 	}, [tabHooks]);
 
 	// Lấy handlers cho tab hiện tại
