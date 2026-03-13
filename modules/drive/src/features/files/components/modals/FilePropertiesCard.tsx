@@ -1,15 +1,14 @@
-import { Card, Group, Modal, Stack, Text, Badge, Divider, Skeleton } from '@mantine/core';
-import { IconFile, IconFolder } from '@tabler/icons-react';
+import { Card, Group, Stack, Text, Badge, Divider, Skeleton, ActionIcon } from '@mantine/core';
+import { IconCopy, IconFile, IconFolder } from '@tabler/icons-react';
 import React from 'react';
 
-import { useDbDateTime } from '@/hooks';
+import { useDbDateTime, useDriveStreamUrl } from '@/hooks';
 
-import { getDriveFileStatusBadge, DriveFileVisibility, type DriveFile } from '../types';
+import { DriveFile, DriveFileVisibility, getDriveFileStatusBadge } from '../../types';
+
 
 
 type FilePropertiesCardProps = {
-	opened: boolean;
-	onClose: () => void;
 	file?: DriveFile | null;
 };
 
@@ -25,7 +24,7 @@ function formatVisibility(visibility: DriveFileVisibility): string {
 	const labels: Record<DriveFileVisibility, string> = {
 		[DriveFileVisibility.PUBLIC]: 'Public',
 		[DriveFileVisibility.OWNER]: 'Owner',
-		[DriveFileVisibility.PRIVATE]: 'Private',
+		[DriveFileVisibility.SHARED]: 'Private',
 	};
 	return labels[visibility] ?? visibility;
 }
@@ -56,7 +55,7 @@ function FilePropertiesCardSkeleton(): React.ReactNode {
 	);
 }
 
-export function FilePropertiesCard({ opened, onClose, file }: FilePropertiesCardProps): React.ReactNode {
+export function FilePropertiesCard({ file }: FilePropertiesCardProps): React.ReactNode {
 	const { formatDateTime, formatRelative } = useDbDateTime();
 
 	const content = !file ? (
@@ -65,11 +64,7 @@ export function FilePropertiesCard({ opened, onClose, file }: FilePropertiesCard
 		<FilePropertiesCardContent file={file} formatDateTime={formatDateTime} formatRelative={formatRelative} />
 	);
 
-	return (
-		<Modal opened={opened} onClose={onClose} title='Properties' centered size='sm'>
-			{content}
-		</Modal>
-	);
+	return content;
 }
 
 type FilePropertiesCardContentProps = {
@@ -78,10 +73,12 @@ type FilePropertiesCardContentProps = {
 	formatRelative: (d: Date | string) => string;
 };
 
+// eslint-disable-next-line max-lines-per-function
 function FilePropertiesCardContent(
 	{ file, formatDateTime, formatRelative }: FilePropertiesCardContentProps,
 ): React.ReactNode {
 	const isFolder = file.isFolder;
+	const buildStreamUrl = useDriveStreamUrl();
 
 	return (
 		<Card>
@@ -95,6 +92,26 @@ function FilePropertiesCardContent(
 						<Text size='xs' c='dimmed'>
 							{file.id}
 						</Text>
+						{
+							!isFolder && (
+								<ActionIcon
+									onClick={
+										() => {
+											navigator.clipboard.writeText(buildStreamUrl(file.id, false));
+										}
+									}
+									variant='transparent'
+									title='Copy stream URL'
+									color='gray'
+									styles={{
+										root: {
+											cursor: 'pointer',
+										},
+									}}
+								>
+									<IconCopy size={16} />
+								</ActionIcon>)
+						}
 					</Stack>
 				</Group>
 				<Badge radius='sm' variant='light'>
@@ -107,7 +124,7 @@ function FilePropertiesCardContent(
 			<Stack gap='xs'>
 				<Group justify='space-between'>
 					<Text size='xs' c='dimmed'>Type</Text>
-					<Text size='xs'>{file.MINE || (isFolder ? '—' : 'Unknown')}</Text>
+					<Text size='xs'>{file.mime || (isFolder ? '—' : 'Unknown')}</Text>
 				</Group>
 
 				<Group justify='space-between'>

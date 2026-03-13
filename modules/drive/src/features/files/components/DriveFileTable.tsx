@@ -141,7 +141,7 @@ function formatVisibility(visibility: DriveFileVisibility): string {
 	const labels: Record<DriveFileVisibility, string> = {
 		[DriveFileVisibility.PUBLIC]: 'Public',
 		[DriveFileVisibility.OWNER]: 'Owner',
-		[DriveFileVisibility.PRIVATE]: 'Private',
+		[DriveFileVisibility.SHARED]: 'Private',
 	};
 	return labels[visibility] ?? visibility;
 }

@@ -7,9 +7,9 @@ import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { driveFileActions, selectCreateDriveFile } from '@/appState/file';
+import { DriveFileVisibility } from '../../types';
 
-import { DriveFileVisibility } from '../types';
+import { driveFileActions, selectCreateDriveFile } from '@/appState/file';
 
 
 const createFileSchema = z.object({
@@ -96,40 +96,38 @@ export function CreateFileModal({ opened, onClose, parentId, onSuccess }: Create
 	});
 
 	return (
-		<Modal opened={opened} onClose={onClose} title='Create new' centered size='sm'>
-			<form onSubmit={onSubmit}>
-				<Stack gap='md'>
-					<Controller name='name' control={control} render={({ field }) => (
-						<TextInput {...field} label='Name'
-							placeholder={isFolder ? 'Enter folder name' : 'Enter name (optional, uses file name)'}
-							error={errors.name?.message} required={isFolder} />
-					)} />
-					<Controller name='visibility' control={control} render={({ field }) => (
-						<Select
-							label='Visibility'
-							value={field.value}
-							onChange={field.onChange}
-							data={[
-								{ value: DriveFileVisibility.PUBLIC, label: 'Public' },
-								{ value: DriveFileVisibility.OWNER, label: 'Owner' },
-								{ value: DriveFileVisibility.PRIVATE, label: 'Private' },
-							]}
-						/>
-					)} />
-					<Controller name='isFolder' control={control} render={({ field }) => (
-						<SegmentedControl value={field.value ? 'folder' : 'file'}
-							onChange={(v) => field.onChange(v === 'folder')}
-							data={[{ label: 'Folder', value: 'folder' }, { label: 'File', value: 'file' }]} />
-					)} />
-					{!isFolder && <FileSelectDropzone selectedFile={selectedFile} onSelect={setSelectedFile} />}
-					{!isFolder && !selectedFile && <Text size='sm' c='red'>Vui lòng chọn file</Text>}
-					<Group justify='flex-end' mt='md'>
-						<Button variant='subtle' onClick={onClose}>Cancel</Button>
-						<Button type='submit' loading={createState.status === 'pending'}
-							disabled={isFolder ? false : !selectedFile}>Create</Button>
-					</Group>
-				</Stack>
-			</form>
-		</Modal>
+		<form onSubmit={onSubmit}>
+			<Stack gap='md' w={'350px'}>
+				<Controller name='name' control={control} render={({ field }) => (
+					<TextInput {...field} label='Name'
+						placeholder={isFolder ? 'Enter folder name' : 'Enter name (optional, uses file name)'}
+						error={errors.name?.message} required={isFolder} />
+				)} />
+				<Controller name='visibility' control={control} render={({ field }) => (
+					<Select
+						label='Visibility'
+						value={field.value}
+						onChange={field.onChange}
+						data={[
+							{ value: DriveFileVisibility.PUBLIC, label: 'Public' },
+							{ value: DriveFileVisibility.OWNER, label: 'Owner' },
+							{ value: DriveFileVisibility.SHARED, label: 'Private' },
+						]}
+					/>
+				)} />
+				<Controller name='isFolder' control={control} render={({ field }) => (
+					<SegmentedControl value={field.value ? 'folder' : 'file'}
+						onChange={(v) => field.onChange(v === 'folder')}
+						data={[{ label: 'Folder', value: 'folder' }, { label: 'File', value: 'file' }]} />
+				)} />
+				{!isFolder && <FileSelectDropzone selectedFile={selectedFile} onSelect={setSelectedFile} />}
+				{!isFolder && !selectedFile && <Text size='sm' c='red'>Vui lòng chọn file</Text>}
+				<Group justify='flex-end' mt='md'>
+					<Button variant='subtle' onClick={onClose}>Cancel</Button>
+					<Button type='submit' loading={createState.status === 'pending'}
+						disabled={isFolder ? false : !selectedFile}>Create</Button>
+				</Group>
+			</Stack>
+		</form>
 	);
 }

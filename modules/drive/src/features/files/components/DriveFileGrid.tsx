@@ -1,21 +1,27 @@
 import { Box, Card, SimpleGrid, Skeleton, Stack, Text } from '@mantine/core';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { IconFile, IconFolder, IconPlus } from '@tabler/icons-react';
-import React from 'react';
+import React, { Fragment } from 'react';
 import { useNavigate } from 'react-router';
 
-import { driveFileActions, selectDriveFileList, selectGetDriveFileByParent } from '@/appState/file';
 
-import { useMinimumLoading } from '../hooks';
+import { useDriveFileActions, useMinimumLoading } from '../hooks';
 import { FileActionMenu } from './FileActionMenu';
+import { DriveFileStatus, type DriveFile } from '../types';
 
-import type { DriveFile } from '../types';
+import {
+	driveFileActions,
+	selectCurrentFolder,
+	selectDriveFileList,
+	selectGetDriveFileByParent,
+} from '@/appState/file';
 
 
 const MIN_LOADING_MS = 300;
 
 export function DriveFileGrid(): React.ReactNode {
 	const files = useMicroAppSelector(selectDriveFileList);
+	const currentFolder = useMicroAppSelector(selectCurrentFolder);
 	const { status } = useMicroAppSelector(selectGetDriveFileByParent);
 	const isShowingLoading = useMinimumLoading(status === 'pending', MIN_LOADING_MS);
 
@@ -41,7 +47,9 @@ export function DriveFileGrid(): React.ReactNode {
 				cols={{ base: 1, sm: 2, md: 3, lg: 4 }}
 				spacing='md'
 			>
-				<AddFileCard />
+				<Fragment>
+					{currentFolder?.status !== DriveFileStatus.IN_TRASH && <AddFileCard />}
+				</Fragment>
 				{files.map((file: DriveFile) => (
 					<FileCard key={file.id} file={file} />
 				))}
@@ -78,6 +86,18 @@ function SkeletonFileCard(): React.ReactNode {
 function AddFileCard(): React.ReactNode {
 	const dispatch = useMicroAppDispatch();
 
+	const create = () => {
+		(dispatch as (action: unknown) => void)(
+			driveFileActions.setDriveFileModal({
+				openedModal: true,
+				title: 'Create',
+				type: {
+					type: 'create',
+				},
+			}),
+		);
+	};
+
 	return (
 		<Card
 			withBorder
@@ -85,7 +105,7 @@ function AddFileCard(): React.ReactNode {
 			radius='md'
 			p='md'
 			bg='var(--mantine-color-gray-0)'
-			onClick={() => dispatch(driveFileActions.setOpenCreateFileModal(true))}
+			onClick={() => create()}
 			style={{
 				cursor: 'pointer',
 				display: 'flex',
@@ -108,19 +128,15 @@ function AddFileCard(): React.ReactNode {
 function FileCard({ file }: { file: DriveFile }): React.ReactNode {
 	const isFolder = file.isFolder;
 	const Icon = isFolder ? IconFolder : IconFile;
-	const navigate = useNavigate();
 	const sizeLabel = file.size > 0 ? formatSize(file.size) : '—';
-	const dispatch = useMicroAppDispatch();
+	const {openProperties, openFolder} = useDriveFileActions(file);
 
 	const handleClick = () => {
 		if (file.isFolder) {
-			navigate(`../folder/${file.id}`);
+			openFolder();
 		}
 		else {
-			dispatch(driveFileActions.setOpenPropertiesCard(true));
-			(dispatch as (action: unknown) => void)(
-				driveFileActions.getDriveFileById(file.id),
-			);
+			openProperties();
 		}
 	};
 
@@ -128,17 +144,17 @@ function FileCard({ file }: { file: DriveFile }): React.ReactNode {
 		<Card
 			withBorder
 			shadow='xs'
-			radius='md'
+			radius='lg'
 			p='md'
-			bg='var(--mantine-color-gray-0)'
+			bg='white'
 			onClick={handleClick}
 			mih={140}
 			style={{
 				cursor: 'pointer',
 				display: 'flex',
 				flexDirection: 'column',
+				boxShadow: '1px var(--mantine-color-gray-4)',
 			}}
-			bd={`3px solid var(--mantine-color-gray-4)`}
 			h='100%'
 		>
 			<Stack gap='xs' style={{ flex: 1 }}>
@@ -148,7 +164,7 @@ function FileCard({ file }: { file: DriveFile }): React.ReactNode {
 					right={4}
 					onClick={(e) => e.stopPropagation()}
 				>
-					<FileActionMenu file={file}/>
+					<FileActionMenu file={file} />
 				</Box>
 				<Icon
 					size={32}
