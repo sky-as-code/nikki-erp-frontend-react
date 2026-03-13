@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { reducer, actions, listUsers, getUser, createUser, updateUser, deleteUser, UserState } from '../features/user/userSlice';
+import { reducer, actions, listUsers, getUser, createUser, updateUser, deleteUser, UserState, listAllUsers } from '../features/user/userSlice';
 import { initialState as initialUserState } from '../features/user/userSlice';
 
 
@@ -12,6 +12,7 @@ export const userReducer = {
 
 export const userActions = {
 	listUsers,
+	listAllUsers,
 	getUser,
 	createUser,
 	updateUser,
@@ -45,4 +46,9 @@ export const selectUpdateUser = createSelector(
 export const selectDeleteUser = createSelector(
 	selectUserState,
 	(state) => state.delete,
+);
+
+export const selectListAllUsers = createSelector(
+	selectUserState,
+	(state) => state.listAll,
 );

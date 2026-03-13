@@ -1,13 +1,3 @@
-import {
-	AuthorizeDispatch,
-	entitlementActions,
-	resourceActions,
-	roleActions,
-	selectAddEntitlementsRole,
-	selectEntitlementState,
-	selectResourceState,
-	selectRoleState,
-} from '@/appState';
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
@@ -16,9 +6,17 @@ import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
 import type { Entitlement } from '@/features/entitlements/types';
 
+import {
+	AuthorizeDispatch,
+	entitlementActions,
+	resourceActions,
+	roleActions,
+	selectAddEntitlementsRole,
+	selectEntitlementState,
+	selectResourceList,
+	selectRoleState,
+} from '@/appState';
 import { Role } from '@/features/roles';
-
-
 
 
 // ============ Helper Functions ============
@@ -63,24 +61,25 @@ export function useRoleAddEntitlementsData() {
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const { roles, list, roleDetail } = useMicroAppSelector(selectRoleState);
 	const { entitlements } = useMicroAppSelector(selectEntitlementState);
-	const { resources } = useMicroAppSelector(selectResourceState);
+	const resourceListState = useMicroAppSelector(selectResourceList);
+	const resources = resourceListState.data ?? [];
 
 	const role = React.useMemo(() => findRoleById(roleId, roles, roleDetail), [roleId, roles, roleDetail]);
 
 	React.useEffect(() => {
 		if (roleId && !role) dispatch(roleActions.getRole(roleId));
-	}, [dispatch, roleId, role]);
+	}, [roleId, role]);
 
 	React.useEffect(() => {
-		if (roles.length === 0) dispatch(roleActions.listRoles());
-	}, [dispatch, roles.length]);
+		if (roles.length === 0) dispatch(roleActions.listRoles({}));
+	}, [roles.length]);
 
 	React.useEffect(() => {
 		dispatch(entitlementActions.listEntitlements());
-		dispatch(resourceActions.listResources());
-	}, [dispatch]);
-
-	console.log('role', role);
+		if (resourceListState.status === 'idle' || (resourceListState.status === 'success' && resources.length === 0)) {
+			dispatch(resourceActions.listResources());
+		}
+	}, [resourceListState.status, resources.length]);
 
 	return { role, entitlements, resources, isLoading: list.isLoading };
 }
@@ -97,14 +96,17 @@ export function useRoleAddEntitlements(role: Role | undefined, entitlements: Ent
 	);
 
 	const { handleGoBack } = useRoleAddEntitlementsActions(role, selectedEntitlements);
-
 	const { handleConfirm, isSubmitting } = useConfirmHandler(role, selectedEntitlements, handleGoBack);
 
 	const handlers = useTransferHandlers(availableEntitlements, setSelectedEntitlements);
+	const handleScopeRefChange = React.useCallback((entitlementId: string, scopeRef: string) => {
+		setSelectedEntitlements((prev) =>
+			prev.map((ent) => (ent.id === entitlementId ? { ...ent, scopeRef } : ent)));
+	}, []);
 
 	return {
 		selectedEntitlements, availableEntitlements, isSubmitting, searchQuery, setSearchQuery,
-		handleGoBack, handleConfirm, ...handlers,
+		handleGoBack, handleConfirm, handleScopeRefChange, ...handlers,
 	};
 }
 
@@ -134,7 +136,7 @@ function useRoleAddEntitlementsActions(
 
 	const handleGoBack = React.useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
-	}, [navigate, location]);
+	}, [location]);
 
 	return { handleGoBack };
 }
@@ -156,7 +158,7 @@ function useConfirmHandler(
 		dispatch(roleActions.addEntitlementsToRole({
 			roleId: role.id, etag: role.etag || '', entitlementInputs: inputs,
 		}));
-	}, [dispatch, role, selectedEntitlements]);
+	}, [role, selectedEntitlements]);
 
 	React.useEffect(() => {
 		if (add.status === 'success') {
@@ -171,7 +173,7 @@ function useConfirmHandler(
 			notification.showError(errorMsg, translate('nikki.general.messages.error'));
 			dispatch(roleActions.resetAddEntitlementsRole());
 		}
-	}, [add.status, add.error, role, notification, translate, dispatch, handleGoBack]);
+	}, [add, role]);
 
 	return { handleConfirm, isSubmitting: add.status === 'pending' };
 }

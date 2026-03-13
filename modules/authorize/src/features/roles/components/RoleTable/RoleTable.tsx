@@ -21,6 +21,8 @@ export interface RoleTableProps extends AutoTableProps {
 	onViewDetail: (roleId: string) => void;
 	onEdit?: (roleId: string) => void;
 	onDelete?: (roleId: string) => void;
+	canEditRow?: (row: Record<string, unknown>) => boolean;
+	canDeleteRow?: (row: Record<string, unknown>) => boolean;
 }
 
 export const RoleTable: React.FC<RoleTableProps> = ({
@@ -33,6 +35,8 @@ export const RoleTable: React.FC<RoleTableProps> = ({
 	onViewDetail,
 	onEdit,
 	onDelete,
+	canEditRow,
+	canDeleteRow,
 }) => {
 	const { t: translate } = useTranslation();
 
@@ -66,7 +70,14 @@ export const RoleTable: React.FC<RoleTableProps> = ({
 				isRequiredAttachment: (row) => renderBooleanColumn(row, 'isRequiredAttachment', translate),
 				isRequiredComment: (row) => renderBooleanColumn(row, 'isRequiredComment', translate),
 				orgDisplayName: (row) => renderOrgNameColumn(row),
-				actions: (row) => renderActionsColumn(row, onEdit, onDelete, translate),
+				actions: (row) => renderActionsColumn(
+					row,
+					onEdit,
+					onDelete,
+					translate,
+					canEditRow?.(row) ?? true,
+					canDeleteRow?.(row) ?? true,
+				),
 			}}
 		/>
 	);

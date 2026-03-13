@@ -3,6 +3,10 @@ import {
 	Stack,
 	Text,
 	TextInput,
+	Card,
+	Group,
+	Grid,
+	Button,
 } from '@mantine/core';
 import { ConfirmModal } from '@nikkierp/ui/components';
 import {
@@ -11,21 +15,38 @@ import {
 	AutoField,
 } from '@nikkierp/ui/components/form';
 import { FieldConstraint, FieldDefinition } from '@nikkierp/ui/model';
+import { IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { AvatarProfile } from './AvatarProfile';
 import { ListBadge } from '../../../../components/Badge';
 import { ListActionDetailPage } from '../../../../components/ListActionBar';
+import { useManageOrganizationRemoveUsers } from '../../hooks/useManageOrganizationUsers';
 
 
 interface UserFieldsProps {
 	userDetail: any;
-	isLoading: boolean;
 }
 
-function UserFields({ userDetail, isLoading }: UserFieldsProps) {
+// eslint-disable-next-line max-lines-per-function
+function UserFields({ userDetail }: UserFieldsProps) {
 	const { t } = useTranslation();
+	const { userOrganizations, onRemoveOrganization } = useManageOrganizationRemoveUsers();
+	const [organizationToRemove, setOrganizationToRemove] = React.useState<
+		{ id: string; name: string; etag: string } | null
+	>(null);
+
+	const handleRemoveClick = (orgId: string, displayName: string, etag: string) => {
+		setOrganizationToRemove({ id: orgId, name: displayName, etag });
+	};
+
+	const handleConfirmRemove = () => {
+		if (organizationToRemove) {
+			onRemoveOrganization(organizationToRemove.id, organizationToRemove.etag);
+			setOrganizationToRemove(null);
+		}
+	};
 
 	return (
 		<Stack gap='md'>
@@ -40,8 +61,8 @@ function UserFields({ userDetail, isLoading }: UserFieldsProps) {
 					readOnly
 				/>
 			</div>
-			<AutoField name='displayName' inputProps={{ disabled: isLoading }} />
-			<AutoField name='status' inputProps={{ disabled: isLoading }} />
+			<AutoField name='displayName' />
+			<AutoField name='status'/>
 			<div>
 				<Text size='sm' fw={500} mb='xs'>
 					{t('nikki.identity.user.fields.hierarchy')}
@@ -87,14 +108,84 @@ function UserFields({ userDetail, isLoading }: UserFieldsProps) {
 				<Text size='sm' fw={500} mb='xs'>
 					{t('nikki.identity.user.fields.groups')}
 				</Text>
-				<ListBadge
-					items={userDetail?.groups}
-					emptyText=''
-					color='blue'
-					variant='light'
-					size='lg'
-				/>
+				{userDetail && userDetail.groups && userDetail.groups.length > 0 ? (
+					<ListBadge
+						items={userDetail?.groups}
+						emptyText=''
+						color='blue'
+						variant='light'
+						size='lg'
+					/>
+				) : (
+					<Card withBorder padding='md' radius='md' bg='gray.0'>
+						<Stack gap='sm' align='center'>
+							<Text size='sm' c='dimmed' fw={500}>
+								{t('nikki.identity.user.messages.noGroups') || 'Không có nhóm nào'}
+							</Text>
+						</Stack>
+					</Card>
+				)}
 			</div>
+			<div>
+				<Text size='sm' fw={500} mb='xs'>
+					{t('nikki.identity.overview.stats.organizations')}
+				</Text>
+				<Stack gap='md'>
+					{userOrganizations && userOrganizations.length > 0 ? (
+						<Grid gutter='md'>
+							{userOrganizations.map((org) => (
+								<Grid.Col key={org.id} span={{ base: 12, sm: 3, md: 2 }}>
+									<Card
+										withBorder
+										padding='xs'
+										radius='md'
+										onMouseEnter={(e) => {
+											e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+											e.currentTarget.style.transform = 'translateY(-2px)';
+										}}
+										onMouseLeave={(e) => {
+											e.currentTarget.style.boxShadow = 'none';
+											e.currentTarget.style.transform = 'translateY(0)';
+										}}
+									>
+										<Group justify='space-between' gap='xs'>
+											<Text fw={600} size='sm'>
+												{org.displayName}
+											</Text>
+
+											<Button
+												color='red'
+												variant='light'
+												onClick={() => handleRemoveClick(org.id, org.displayName, org.etag || '')}
+												size='compact-sm'
+												children={<IconTrash size={20} />}
+											/>
+										</Group>
+									</Card>
+								</Grid.Col>
+							))}
+						</Grid>
+					) : (
+						<Card withBorder padding='md' radius='md' bg='gray.0'>
+							<Stack gap='sm' align='center'>
+								<Text size='sm' c='dimmed' fw={500}>
+									{t('nikki.identity.organization.messages.noOrganizations') || 'Không có tổ chức nào'}
+								</Text>
+							</Stack>
+						</Card>
+					)}
+				</Stack>
+			</div>
+
+			<ConfirmModal
+				opened={organizationToRemove !== null}
+				onClose={() => setOrganizationToRemove(null)}
+				onConfirm={handleConfirmRemove}
+				title={t('nikki.identity.organization.actions.confirmRemoveUser')}
+				message={t('nikki.identity.organization.messages.confirmDeleteUserMessage', {
+					organization: organizationToRemove?.name,
+				}) || `Bạn có chắc chắn muốn xóa người dùng khỏi ${organizationToRemove?.name}?`}
+			/>
 		</Stack>
 	);
 }
@@ -108,7 +199,6 @@ type UserSchema = {
 interface UserDetailFormProps {
 	schema: UserSchema;
 	userDetail: any;
-	isLoading: boolean;
 	onSubmit: (data: any) => void;
 	onDelete: () => void;
 	canUpdate?: boolean;
@@ -118,7 +208,6 @@ interface UserDetailFormProps {
 export function UserDetailForm({
 	schema,
 	userDetail,
-	isLoading,
 	onSubmit,
 	onDelete,
 	canUpdate = true,
@@ -164,7 +253,6 @@ export function UserDetailForm({
 								<Stack gap='xl'>
 									<ListActionDetailPage
 										onDelete={canDelete ? onDelete : undefined}
-										isLoading={isLoading}
 										disableSave={!form.formState.isDirty || !canUpdate}
 										disableDelete={!canDelete}
 										titleDelete={t('nikki.identity.user.actions.confirmDelete')}
@@ -175,12 +263,10 @@ export function UserDetailForm({
 										avatarUrl={userDetail?.avatarUrl}
 										displayName={userDetail?.displayName || userDetail?.email || 'User'}
 										onAvatarChange={handleAvatarChange}
-										disabled={isLoading}
 										size={120}
 									/>
 									<UserFields
 										userDetail={userDetail}
-										isLoading={isLoading}
 									/>
 								</Stack>
 							</form>

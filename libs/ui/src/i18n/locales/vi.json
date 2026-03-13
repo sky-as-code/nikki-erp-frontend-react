@@ -1,11 +1,18 @@
 {
-    "login": {
-        "login": "Đăng nhập",
+    "signIn": {
+        "signIn": "Đăng nhập",
+		"title": "Chào mừng trở lại",
+		"description": "Đăng nhập vào tài khoản của bạn để tiếp tục",
+		"email": "Email",
+		"enterEmail": "Nhập email",
         "username": "Tên đăng nhập",
         "enterUserName": "Nhập tên đăng nhập",
         "password": "Mật khẩu",
         "enterPassword": "Nhập mật khẩu",
         "forgotPassword": "Quên mật khẩu",
+		"forgotEmail": "Quên email",
+		"nextStep": "Tiếp theo",
+		"back": "Quay lại",
         "messages": {
             "loginSuccess": "Đăng nhập thành công!",
             "loginFail": "Đăng nhập thất bại!",
@@ -132,6 +139,13 @@
 			}
 		},
         "identity": {
+			"menu": {
+				"overview": "Tổng quan",
+				"users": "Người dùng",
+				"groups": "Nhóm",
+				"hierarchyLevels": "Cấp bậc chức vụ",
+				"organizations": "Tổ chức"
+			},
             "overview": {
                 "title": "Tổng quan về Quản lý Nhân sự",
                 "description": "Quản lý người dùng, nhóm, chức vụ và tổ chức của bạn",
@@ -164,6 +178,7 @@
             "user": {
                 "title": "Quản lý người dùng",
                 "searchPlaceholder": "Tìm kiếm người dùng...",
+				"selectOrganizationPlaceholder": "Chọn tổ chức...",
                 "fields": {
                     "id": "ID",
                     "email": "Email",
@@ -187,8 +202,10 @@
                     "search": "Tìm kiếm",
                     "cancel": "Hủy",
                     "delete": "Xóa",
+					"confirm": "Xác nhận",
                     "confirmUpdate": "Xác nhận cập nhật",
-                    "confirmDelete": "Xác nhận xóa"
+                    "confirmDelete": "Xác nhận xóa",
+					"selectOrganization": "Chọn tổ chức"
                 },
                 "status": {
                     "active": "Hoạt động",
@@ -204,7 +221,9 @@
                     "deleteError": "Xóa người dùng thất bại",
                     "noUsers": "Không tìm thấy người dùng nào",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin người dùng này không?",
-                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa người dùng này không?"
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa người dùng này không?",
+					"noGroups": "Không có nhóm nào",
+					"notFoundMessage": "Người dùng bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
 				},
 				"errors": {
 					"password_required": "Mật khẩu là bắt buộc",
@@ -256,7 +275,9 @@
                     "manageUsersSuccess": "Cập nhật thành viên trong nhóm thành công",
                     "manageUsersError": "Cập nhật thành viên trong nhóm thất bại",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin nhóm này không?",
-                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa nhóm này không?"
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa nhóm này không?",
+					"confirmRemoveUserMessage": "Bạn có chắc chắn muốn xóa người dùng khỏi nhóm không?",
+					"notFoundMessage": "Nhóm bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
                 }
             },
             "hierarchy": {
@@ -295,7 +316,8 @@
                     "manageUsersError": "Cập nhật thành viên trong chức vụ thất bại",
                     "noHierarchies": "Không tìm thấy chức vụ nào",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin chức vụ này không?",
-                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa chức vụ này không?"
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa chức vụ này không?",
+					"notFoundMessage": "Chức vụ bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
                 }
             },
             "organization": {
@@ -322,7 +344,10 @@
                     "delete": "Xóa",
                     "back": "Quay lại",
                     "confirmUpdate": "Xác nhận cập nhật tổ chức",
-                    "confirmDelete": "Xác nhận xóa tổ chức"
+                    "confirmDelete": "Xác nhận xóa tổ chức",
+					"confirmRemoveUser": "Xác nhận xóa người dùng khỏi tổ chức",
+					"addUsers": "Thêm thành viên",
+					"removeUsers": "Xóa thành viên"
                 },
                 "status": {
                     "active": "Hoạt động",
@@ -338,7 +363,11 @@
                     "noOrganizations": "Không tìm thấy tổ chức nào",
                     "phoneNumberInvalid": "Số điện thoại không hợp lệ",
                     "confirmUpdateMessage": "Bạn có chắc chắn muốn cập nhật thông tin tổ chức này không?",
-                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa tổ chức này không?"
+                    "confirmDeleteMessage": "Bạn có chắc chắn muốn xóa tổ chức này không?",
+					"confirmDeleteUserMessage": "Bạn có chắc chắn muốn xóa người dùng khỏi tổ chức không?",
+					"manageUsersSuccess": "Cập nhật thành viên trong tổ chức thành công",
+					"manageUsersError": "Cập nhật thành viên trong tổ chức thất bại",
+					"notFoundMessage": "Tổ chức bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
                 }
             }
         },
@@ -764,24 +793,28 @@
 				"kiosk_warnings": "Cảnh báo",
 				"kiosk_devices": "Thiết bị",
 				"presentation": "Trình chiếu",
-				"ads": "Trình chiếu",
+				"gallery": "Thư viện",
+				"playlists": "Danh sách phát",
 				"events": "Sự kiện",
 				"appearance": "Giao diện",
 				"themes": "Chủ đề",
 				"device": "Thiết bị",
 				"miniGame": "Trò chơi",
-				"kiosk_settings": "Cài đặt",
-				"kiosk_template": "Mẫu Kiosk",
+				"kiosk_models": "Dòng máy",
+				"kiosk_settings": "Cài đặt Kiosk",
+				"settings": "Cài đặt",
 				"payment": "Thanh toán",
 				"reports": "Báo cáo",
+				"business_report": "Báo cáo kinh doanh",
+				"revenue_report": "Báo cáo doanh thu",
+				"business_overview": "Tổng quan kinh doanh",
+				"pnl_report": "Báo cáo kết quả kinh doanh",
+				"operations_report": "Báo cáo vận hành",
+				"operations_overview": "Tổng quan vận hành",
 				"revenue_overview": "Tổng quan doanh thu",
-				"revenue_by_kiosk": "Doanh thu theo Kiosk",
-				"revenue_by_product": "Doanh thu theo Sản phẩm",
-				"revenue_by_payment_method": "Phương thức thanh toán",
-				"refunds_report": "Hoàn tiền",
-				"orders_report": "Đơn hàng",
-				"inventory_report": "Hàng tồn",
-				"operations_report": "Vận hành"
+				"refunds_report": "Báo cáo hoàn tiền",
+				"orders_report": "Báo cáo đơn hàng",
+				"inventory_report": "Báo cáo hàng tồn"
 			},
 			"overview": {
 				"title": "Tổng quan - Máy bán hàng tự động",
@@ -904,6 +937,7 @@
 				},
 				"tabs": {
 					"basicInfo": "Thông tin cơ bản",
+					"kioskSetting": "Cài đặt Kiosk",
 					"products": "Sản phẩm",
 					"productsList": "Sản phẩm",
 					"productsGrid": "Nhập hàng",
@@ -991,7 +1025,11 @@
 					"no_kiosks": "Không tìm thấy kiosk nào",
 					"create_success": "Kiosk \"{{name}}\" đã được tạo thành công",
 					"update_success": "Kiosk \"{{name}}\" đã được cập nhật thành công",
-					"delete_success": "Kiosk đã được xóa thành công"
+					"delete_success": "Kiosk đã được xóa thành công",
+					"not_found": {
+						"title": "Không tìm thấy Kiosk",
+						"message": "Kiosk bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
+					}
 				}
 			},
 			"ads": {
@@ -1171,9 +1209,67 @@
 					}
 				}
 			},
-			"kioskSettings": {
+			"settingTemplates": {
 				"detail": {
-					"title": "Chi tiết Cài đặt Kiosk"
+					"title": "Chi tiết Mẫu cài đặt"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã mẫu",
+					"name": "Tên",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"createdAt": "Ngày tạo",
+					"kiosks": "Danh sách Kiosk",
+					"products": "Danh sách Sản phẩm",
+					"theme": "Chủ đề",
+					"game": "Trò chơi"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_templates": "Không tìm thấy mẫu cài đặt nào"
+				}
+			},
+			"kioskSettings": {
+				"title": "Cài đặt Kiosk",
+				"detail": {
+					"title": "Chi tiết cài đặt Kiosk"
+				},
+				"sections": {
+					"basicInfo": "Thông tin cơ bản"
+				},
+				"fields": {
+					"id": "Mã định danh",
+					"code": "Mã cài đặt",
+					"name": "Tên",
+					"description": "Mô tả",
+					"status": "Trạng thái",
+					"brand": "Thương hiệu",
+					"createdAt": "Ngày tạo",
+					"kiosks": "Danh sách Kiosk",
+					"products": "Danh sách Sản phẩm",
+					"theme": "Chủ đề trình chiếu",
+					"game": "Trò chơi"
+				},
+				"search": {
+					"placeholder": "Tìm kiếm theo mã hoặc tên..."
+				},
+				"filter": {
+					"status": "Lọc theo trạng thái"
+				},
+				"messages": {
+					"no_settings": "Không tìm thấy cài đặt kiosk nào"
+				}
+			},
+			"settings": {
+				"title": "Cài đặt",
+				"detail": {
+					"title": "Chi tiết cài đặt"
 				},
 				"fields": {
 					"id": "Mã định danh",
@@ -1195,10 +1291,10 @@
 					"no_settings": "Không tìm thấy cài đặt nào"
 				}
 			},
-			"kioskTemplate": {
-				"title": "Mẫu Kiosk",
+			"kioskModels": {
+				"title": "Dòng máy",
 				"detail": {
-					"title": "Chi tiết Mẫu Kiosk"
+					"title": "Chi tiết dòng máy"
 				},
 				"sections": {
 					"basicInfo": "Thông tin cơ bản",
@@ -1209,11 +1305,11 @@
 				},
 				"fields": {
 					"id": "Mã định danh",
-					"code": "Mã mẫu",
+					"code": "Mã dòng",
 					"name": "Tên",
+					"model": "Dòng máy",
 					"description": "Mô tả",
 					"status": "Trạng thái",
-					"template": "Mẫu kiosk",
 					"operatingMode": "Chế độ hoạt động",
 					"kioskType": "Loại kiosk",
 					"interfaceMode": "Chế độ giao diện",
@@ -1252,7 +1348,7 @@
 					"status": "Lọc theo trạng thái"
 				},
 				"messages": {
-					"no_templates": "Không tìm thấy mẫu nào",
+					"no_models": "Không tìm thấy mô hình nào",
 					"no_slideshow": "Chưa có trình chiếu",
 					"no_trays": "Chưa có khay nào. Nhấn nút 'Thêm hàng' để thêm khay."
 				},

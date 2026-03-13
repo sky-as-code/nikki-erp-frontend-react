@@ -70,7 +70,7 @@ export const getGrantRequest = createAsyncThunk<GrantRequest | undefined, string
 
 export const createGrantRequest = createAsyncThunk<
 	GrantRequest,
-	Partial<GrantRequest>,
+	GrantRequest,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/create`,

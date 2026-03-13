@@ -1,20 +1,26 @@
 .headerRow {
 	gap: var(--mantine-spacing-md);
-	box-shadow: 2px 2px 5px 0px light-dark(rgba(0, 0, 0, 0.12), var(--mantine-color-dark-2));
-	margin-bottom: 2px
+	box-shadow: 1px 1px 3px 0px light-dark(rgba(0, 0, 0, 0.12), var(--mantine-color-dark-2));
+	border-bottom: 1px solid light-dark(rgba(0, 0, 0, 0.12), var(--mantine-color-dark-2));
 }
 
 .goHomeButton {
-	animation: scaleInRotateY 0.3s ease-out;
+	transition: transform 0.2s ease-out;
 }
 
-@keyframes scaleInRotateY {
+.goHomeButton:active {
+	transform: scale(0.9);
+}
+
+.goHomeButtonClick {
+	animation: clickPulse 0.5s ease-out;
+}
+
+@keyframes clickPulse {
 	from {
-		transform: rotateY(-90deg) scale(0.8);
-		opacity: 0;
+		transform: rotateY(0deg);
 	}
 	to {
-		transform: rotateY(0deg) scale(1);
-		opacity: 1;
+		transform: rotateY(180deg);
 	}
 }

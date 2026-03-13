@@ -5,22 +5,10 @@ import {
 	FormStyleProvider,
 } from '@nikkierp/ui/components';
 import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import {
-	AuthorizeDispatch,
-	identityActions,
-	roleActions,
-	roleSuiteActions,
-	selectGroupList,
-	selectOrgList,
-	selectRoleList,
-	selectRoleSuiteList,
-	selectUserList,
-} from '@/appState';
 import { GrantRequestFormFields, grantRequestSchema, useGrantRequestCreate } from '@/features/grantRequests';
 import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
@@ -30,35 +18,19 @@ function GrantRequestCreatePageBody(): React.ReactNode {
 		isSubmitting,
 		handleCancel,
 		handleSubmit,
+		roles,
+		roleSuites,
+		orgs,
+		filteredUsers,
+		filteredGroups,
+		selectedOrgId,
+		setSelectedOrgId,
+		selectedReceiverOrgId,
+		setSelectedReceiverOrgId,
 	} = useGrantRequestCreate();
 	const { t: translate } = useTranslation();
 	const schema = grantRequestSchema as ModelSchema;
-	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
 	const permissions = useAuthorizePermissions();
-
-	const roles = useMicroAppSelector(selectRoleList);
-	const roleSuites = useMicroAppSelector(selectRoleSuiteList);
-	const users = useMicroAppSelector(selectUserList);
-	const groups = useMicroAppSelector(selectGroupList);
-	const orgs = useMicroAppSelector(selectOrgList);
-
-	React.useEffect(() => {
-		if (roles.length === 0) {
-			dispatch(roleActions.listRoles());
-		}
-		if (roleSuites.length === 0) {
-			dispatch(roleSuiteActions.listRoleSuites());
-		}
-		if (users.length === 0) {
-			dispatch(identityActions.listUsers());
-		}
-		if (groups.length === 0) {
-			dispatch(identityActions.listGroups());
-		}
-		if (orgs.length === 0) {
-			dispatch(identityActions.listOrgs());
-		}
-	}, [dispatch, roles.length, roleSuites.length, users.length, groups.length, orgs.length]);
 
 	return (
 		<Stack gap='md'>
@@ -91,9 +63,13 @@ function GrantRequestCreatePageBody(): React.ReactNode {
 										isCreate
 										roles={roles}
 										roleSuites={roleSuites}
-										users={users}
-										groups={groups}
+										users={filteredUsers}
+										groups={filteredGroups}
 										orgs={orgs}
+										selectedOrgId={selectedOrgId}
+										onOrgIdChange={setSelectedOrgId}
+										selectedReceiverOrgId={selectedReceiverOrgId}
+										onReceiverOrgIdChange={setSelectedReceiverOrgId}
 									/>
 								</Stack>
 							</form>

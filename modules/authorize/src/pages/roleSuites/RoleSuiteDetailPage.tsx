@@ -1,4 +1,7 @@
 import { Stack } from '@mantine/core';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import {
 	BreadcrumbsHeader,
 	ConfirmModal,
@@ -192,6 +195,16 @@ function RoleSuiteDetailPageBody(): React.ReactNode {
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
 	const permissions = useAuthorizePermissions();
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrg = useActiveOrgWithDetails();
+	const isGlobalContext = orgSlug === GLOBAL_CONTEXT_SLUG;
+	const currentOrgId = activeOrg?.id;
+	const canMutateRoleSuite = Boolean(
+		roleSuite && (
+			isGlobalContext
+			|| (currentOrgId && roleSuite.orgId === currentOrgId)
+		),
+	);
 
 	React.useEffect(() => {
 		if (orgs.length === 0) {
@@ -235,7 +248,7 @@ function RoleSuiteDetailPageBody(): React.ReactNode {
 				orgs={orgs}
 				users={users}
 				groups={groups}
-				canUpdate={permissions.roleSuite.canUpdate}
+				canUpdate={permissions.roleSuite.canUpdate && canMutateRoleSuite}
 			/>
 		</Stack>
 	);

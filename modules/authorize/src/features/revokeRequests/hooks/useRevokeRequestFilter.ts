@@ -2,21 +2,20 @@ import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 
 import {
-	selectGroupList,
-	selectUserList,
-} from '@/appState';
-import { ReceiverType, TargetType } from '@/features/grantRequests/types';
-
-import {
 	useRoleSuitesByReceiver,
 	useRolesByReceiver,
 	type AssignmentItem,
 } from './useRevokeRequestAssignments';
 
-
 import type { Group, User } from '@/features/identities';
 import type { Role } from '@/features/roles';
 import type { RoleSuite } from '@/features/roleSuites';
+
+import {
+	selectGroupList,
+	selectUserList,
+} from '@/appState';
+import { ReceiverType, TargetType } from '@/features/grantRequests/types';
 
 
 function getAssignmentId(a: AssignmentItem): string {
@@ -68,12 +67,12 @@ function fillReceiverName(a: AssignmentItem, users: User[], groups: Group[]): st
 	return groups.find((g) => g.id === a.receiverId)?.name || a.receiverId;
 }
 
-function fillTargetName(a: AssignmentItem, roles: Role[], suites: RoleSuite[]): string {
-	if (a.targetType === TargetType.ROLE) {
-		return roles.find((r) => r.id === a.targetId)?.name || a.targetId;
-	}
-	return suites.find((s) => s.id === a.targetId)?.name || a.targetId;
-}
+// function fillTargetName(a: AssignmentItem, roles: Role[], suites: RoleSuite[]): string {
+// 	if (a.targetType === TargetType.ROLE) {
+// 		return roles.find((r) => r.id === a.targetId)?.name || a.targetId;
+// 	}
+// 	return suites.find((s) => s.id === a.targetId)?.name || a.targetId;
+// }
 
 function decorateAssignmentNames(
 	assignments: AssignmentItem[],

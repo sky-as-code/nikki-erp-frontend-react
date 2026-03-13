@@ -1,4 +1,7 @@
 import { Stack } from '@mantine/core';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgWithDetails, useMyOrgs, useUserContext } from '@nikkierp/shell/userContext';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { BreadcrumbsHeader, NotFound, LoadingState } from '@nikkierp/ui/components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +21,18 @@ function RoleAddEntitlementsPageBody(): React.ReactNode {
 	const { t: translate } = useTranslation();
 	const location = useLocation();
 	const permissions = useAuthorizePermissions();
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrg = useActiveOrgWithDetails();
+	const { hierarchies } = useUserContext();
+	const assignedOrgs = useMyOrgs();
+	const isGlobalContext = orgSlug === GLOBAL_CONTEXT_SLUG;
+	const currentOrgId = activeOrg?.id;
+	const canMutateRole = Boolean(
+		role && (
+			isGlobalContext
+			|| (currentOrgId && role.orgId === currentOrgId)
+		),
+	);
 
 	if (isLoading) return <LoadingState messageKey='nikki.authorize.role.messages.loading' />;
 	if (!role) return <NotFound messageKey='nikki.authorize.role.messages.not_found' onGoBack={handlers.handleGoBack} />;
@@ -57,14 +72,18 @@ function RoleAddEntitlementsPageBody(): React.ReactNode {
 				onMoveToSelected={handlers.handleMoveToSelected}
 				onMoveToAvailable={handlers.handleMoveToAvailable}
 				resources={resources}
-				onScopeRefChange={() => {}}
+				onScopeRefChange={handlers.handleScopeRefChange}
 				searchQuery={handlers.searchQuery}
 				onSearchQueryChange={handlers.setSearchQuery}
 				onSearch={() => {}}
 				onConfirm={handlers.handleConfirm}
 				onCancel={handlers.handleGoBack}
 				isSubmitting={handlers.isSubmitting}
-				showConfirm={permissions.role.canAddEntitlement}
+				showConfirm={permissions.role.canAddEntitlement && canMutateRole}
+				isGlobalContext={isGlobalContext}
+				currentOrgId={currentOrgId}
+				assignedOrgs={assignedOrgs}
+				hierarchies={hierarchies}
 			/>
 		</Stack>
 	);

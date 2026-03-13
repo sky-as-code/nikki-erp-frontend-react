@@ -20,7 +20,7 @@ export function useHierarchyDetailHandlers() {
 
 	const updateCommand = useMicroAppSelector(selectUpdateHierarchy);
 	const deleteCommand = useMicroAppSelector(selectDeleteHierarchy);
-	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
+	const isLoadingDetail = hierarchyDetail?.status ;
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {
@@ -79,7 +79,7 @@ export function useHierarchyDetailHandlers() {
 		if (!hierarchyId) return;
 
 		dispatch(hierarchyActions.getHierarchy({ id: hierarchyId, scopeRef: orgScopeRef }));
-		dispatch(userActions.listUsers({ scopeRef: hierarchyId }));
+		dispatch(userActions.listUsers({ scopeRef: orgScopeRef }));
 	}, [hierarchyId, orgScopeRef, dispatch]);
 
 	return {

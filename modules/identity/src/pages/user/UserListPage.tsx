@@ -7,7 +7,9 @@ import { useTranslation } from 'react-i18next';
 
 import { selectUserList } from '../../appState/user';
 import { ListActionListPage } from '../../components/ListActionBar';
+import { AddUserModal } from '../../components/User';
 import { UserTable } from '../../features/user/components';
+import { useManageOrganizationAddUsers } from '../../features/user/hooks/useManageOrganizationUsers';
 import { useUserListHandlers } from '../../features/user/hooks/useUserList';
 import { useIdentityPermissions } from '../../hooks';
 import userSchema from '../../schemas/user-schema.json';
@@ -22,7 +24,20 @@ export function UserListPageBody(): React.ReactElement {
 	const permissions = useIdentityPermissions();
 
 	const { handleCreate, handleRefresh } = useUserListHandlers();
-
+	const {
+		opened,
+		selectedUserIds,
+		addOptions,
+		isLoading: isAdding,
+		showOrgSelector,
+		selectedOrgId,
+		organizationOptions,
+		onOpen,
+		onClose,
+		onSelectedChange,
+		onOrgChange,
+		onSubmit,
+	} = useManageOrganizationAddUsers();
 
 	return (
 		<Stack gap='md'>
@@ -40,12 +55,27 @@ export function UserListPageBody(): React.ReactElement {
 			<ListActionListPage
 				onCreate={permissions.user.canCreate ? handleCreate : undefined}
 				onRefresh={handleRefresh}
+				onAddUser={onOpen}
 			/>
 			<UserTable
 				columns={columns}
 				users={listUser?.data}
 				isLoading={isLoading}
 				schema={schema}
+			/>
+			<AddUserModal
+				opened={opened}
+				onClose={onClose}
+				onSubmit={onSubmit}
+				onSelectedChange={onSelectedChange}
+				onOrgChange={onOrgChange}
+				organizationOptions={organizationOptions}
+				selectedOrgId={selectedOrgId}
+				selectOptions={addOptions}
+				selectedIds={selectedUserIds}
+				showOrgSelector={showOrgSelector}
+				submitLabel={t('nikki.identity.organization.actions.addUsers')}
+				isAdding={isAdding}
 			/>
 		</Stack>
 	);

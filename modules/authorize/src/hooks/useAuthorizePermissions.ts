@@ -17,7 +17,7 @@ export function useAuthorizePermissions() {
 		grantRequest: {
 			resource: RESOURCES.AUTHZ_GRANT_REQUEST,
 			customActions: {
-				canRespond: ACTIONS.RESPOND_GRANT_REQUEST,
+				canRespond: ACTIONS.RESPOND,
 			},
 		},
 		revokeRequest: { resource: RESOURCES.AUTHZ_REVOKE_REQUEST },

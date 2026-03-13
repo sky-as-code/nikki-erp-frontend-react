@@ -2,6 +2,7 @@ import { Card, Container, Stack, Text, Title } from '@mantine/core';
 import { useIsAuthenticated } from '@nikkierp/shell/auth';
 import { navigateReturnToAction } from '@nikkierp/ui/appState/routingSlice';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router';
 
@@ -24,7 +25,7 @@ export function SignInPage(): React.ReactNode {
 	const [currentStepIndex, setCurrentStepIndex] = React.useState(0);
 	const isAuthenticated = useIsAuthenticated();
 	const dispatch = useDispatch();
-	// const navigate = useNavigate();
+
 	const [searchParams] = useSearchParams();
 	const returnTo = searchParams.get('returnTo');
 
@@ -68,6 +69,8 @@ type SignInCardProps = {
 };
 
 function SignInCard(props: SignInCardProps): React.ReactNode {
+	const {t} = useTranslation();
+
 	return (
 		<Card
 			shadow='xl'
@@ -76,13 +79,12 @@ function SignInCard(props: SignInCardProps): React.ReactNode {
 			className='bg-white/80 backdrop-blur-sm border-0'
 		>
 			<Stack gap='lg'>
-				{/* Header */}
 				<div className='text-center'>
 					<Title order={1} className='text-3xl font-bold text-gray-800 mb-2'>
-						Welcome Back
+						{t('signIn.title')}
 					</Title>
 					<Text c='dimmed' size='lg'>
-						Sign in to your account to continue
+						{t('signIn.description')}
 					</Text>
 				</div>
 

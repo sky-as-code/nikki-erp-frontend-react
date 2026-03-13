@@ -1,4 +1,7 @@
 import { Stack } from '@mantine/core';
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgWithDetails, useMyOrgs } from '@nikkierp/shell/userContext';
+import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import {
 	BreadcrumbsHeader,
 	FormFieldProvider,
@@ -14,7 +17,6 @@ import {
 	AuthorizeDispatch,
 	identityActions,
 	selectGroupList,
-	selectOrgList,
 	selectUserList,
 } from '@/appState';
 import { RoleFormFields, roleSchema, useRoleCreate } from '@/features/roles';
@@ -22,30 +24,37 @@ import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
 
 
 function RoleCreatePageBody(): React.ReactNode {
+	const { orgSlug } = useActiveOrgModule();
+	const activeOrg = useActiveOrgWithDetails();
+	const assignedOrgs = useMyOrgs();
+	const isGlobalContext = orgSlug === GLOBAL_CONTEXT_SLUG;
+	const currentOrgId = activeOrg?.id;
+	const mappedAssignedOrgs = React.useMemo(() => assignedOrgs.map((org) => ({
+		id: org.id,
+		displayName: org.name,
+		slug: org.slug,
+		status: 'active' as const,
+	})), [assignedOrgs]);
 	const {
 		isSubmitting,
 		handleCancel,
 		handleSubmit,
-	} = useRoleCreate();
+	} = useRoleCreate(!isGlobalContext ? currentOrgId : undefined);
 	const { t: translate } = useTranslation();
 	const schema = roleSchema as ModelSchema;
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	const orgs = useMicroAppSelector(selectOrgList);
 	const users = useMicroAppSelector(selectUserList);
 	const groups = useMicroAppSelector(selectGroupList);
 	const permissions = useAuthorizePermissions();
 
 	React.useEffect(() => {
-		if (orgs.length === 0) {
-			dispatch(identityActions.listOrgs());
-		}
 		if (users.length === 0) {
 			dispatch(identityActions.listUsers());
 		}
 		if (groups.length === 0) {
 			dispatch(identityActions.listGroups());
 		}
-	}, [dispatch, orgs.length, users.length, groups.length]);
+	}, [dispatch, users.length, groups.length]);
 
 	return (
 		<Stack gap='md'>
@@ -74,7 +83,13 @@ function RoleCreatePageBody(): React.ReactNode {
 										isCreate
 										showSubmit={permissions.role.canCreate}
 									/>
-									<RoleFormFields isCreate orgs={orgs} users={users} groups={groups} />
+									<RoleFormFields
+										isCreate
+										orgs={mappedAssignedOrgs}
+										users={users}
+										groups={groups}
+										showOrgFieldOnCreate={isGlobalContext}
+									/>
 								</Stack>
 							</form>
 						)}

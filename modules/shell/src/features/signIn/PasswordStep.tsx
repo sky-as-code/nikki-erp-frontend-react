@@ -3,10 +3,9 @@ import { AppDispatch } from '@nikkierp/shell/appState';
 import { useAuthState, useSignInProgress, continueSignInAction, actions } from '@nikkierp/shell/auth';
 import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { ModelSchema } from '@nikkierp/ui/model';
+import { IconLock } from '@tabler/icons-react';
 import { useUIState } from 'node_modules/@nikkierp/shell/src/contexts/UIProviders';
 import React, { useRef } from 'react';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - JSON import
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
@@ -26,11 +25,15 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 	const { isLoading, errorContinueSignIn } = useAuthState();
 	const signInProgress = useSignInProgress();
 	const { notification } = useUIState();
-	const {t} = useTranslation();
 
 	React.useEffect(() => {
 		if (errorContinueSignIn) {
-			notification.showError(t('login.messages.passwordIncorrect'), 'Error');
+			if (typeof errorContinueSignIn === 'string') {
+				notification.showError(errorContinueSignIn, 'Error');
+			}
+			else {
+				notification.showError(errorContinueSignIn?.message || Object.values(errorContinueSignIn?.details || {})[0] || 'Start sign-in attempt failed', 'Error');
+			}
 			dispatch(actions.resetErrorsContinueSignIn());
 		}
 	}, [errorContinueSignIn]);
@@ -58,6 +61,8 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 }
 
 function PasswordStepFormContent(props: PasswordStepFormContentProps): React.ReactNode {
+	const {t} = useTranslation();
+
 	return (
 		<Stack gap='md'>
 			<AutoField
@@ -65,6 +70,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 				ref={props.ref}
 				inputProps={{
 					disabled: !props.isActive || props.isLoading,
+					leftSection: <IconLock size={20} />,
 				}}
 			/>
 
@@ -76,7 +82,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							size='sm'
 							className='text-blue-600 hover:text-blue-800 transition-colors'
 						>
-							Forgot password?
+							{t('signIn.forgotPassword')}?
 						</Anchor>
 					</Group>
 
@@ -87,7 +93,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							onClick={props.onBack}
 							disabled={props.isLoading}
 						>
-							Back
+							{t('signIn.back')}
 						</Button>
 						<Button
 							type='submit' fullWidth size='lg'
@@ -95,7 +101,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							loading={props.isLoading}
 							disabled={props.isLoading}
 						>
-							Sign In
+							{t('signIn.signIn')}
 						</Button>
 					</Group>
 				</>

@@ -4,6 +4,8 @@ import { IconArrowLeft } from '@tabler/icons-react';
 import { EntitlementCard } from './EntitlementCard';
 
 import type { Entitlement } from '@/features/entitlements';
+import type { Resource } from '@/features/resources';
+import type { Hierarchy, Organization } from '@nikkierp/shell/userContext';
 
 import { createEntitlementKey } from '@/utils';
 
@@ -17,6 +19,11 @@ export interface SelectedEntitlementsListProps {
 	title?: string;
 	emptyText?: string;
 	readonlyScopeRef?: boolean;
+	resources: Resource[];
+	isGlobalContext?: boolean;
+	currentOrgId?: string;
+	assignedOrgs?: Organization[];
+	hierarchies?: Hierarchy[];
 }
 
 export const SelectedEntitlementsList: React.FC<SelectedEntitlementsListProps> = ({
@@ -28,6 +35,11 @@ export const SelectedEntitlementsList: React.FC<SelectedEntitlementsListProps> =
 	title,
 	emptyText,
 	readonlyScopeRef = false,
+	resources,
+	isGlobalContext = false,
+	currentOrgId,
+	assignedOrgs = [],
+	hierarchies = [],
 }) => {
 	return (
 		<Box style={{ flex: 1 }}>
@@ -58,6 +70,11 @@ export const SelectedEntitlementsList: React.FC<SelectedEntitlementsListProps> =
 										onScopeRefChange={onScopeRefChange}
 										requiresScopeRef={requiresScopeRef(entitlement)}
 										readonlyScopeRef={readonlyScopeRef}
+										resources={resources}
+										isGlobalContext={isGlobalContext}
+										currentOrgId={currentOrgId}
+										assignedOrgs={assignedOrgs}
+										hierarchies={hierarchies}
 									/>
 								</Box>
 							</Group>

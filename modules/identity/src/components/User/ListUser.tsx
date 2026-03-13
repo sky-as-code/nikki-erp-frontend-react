@@ -1,5 +1,6 @@
 import { Paper, Stack, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { ConfirmModal } from '@nikkierp/ui/components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,9 +10,7 @@ import { AvailableUser, UserInGroup } from './types';
 import { UserTableView } from './UserTableView';
 
 
-function useListUserLogic(
-	users: UserInGroup[],
-	availableUsers: AvailableUser[],
+function useListUserLogic( users: UserInGroup[], availableUsers: AvailableUser[],
 	onAddUsers: (userIds: string[]) => Promise<void>,
 	onRemoveUsers: (userIds: string[]) => Promise<void>,
 ) {
@@ -52,7 +51,6 @@ function useListUserLogic(
 
 	const handleAddUsers = React.useCallback(async () => {
 		if (selectedAddUserIds.length === 0) return;
-
 		setIsAdding(true);
 		try {
 			await onAddUsers(selectedAddUserIds);
@@ -66,9 +64,12 @@ function useListUserLogic(
 		}
 	}, [selectedAddUserIds, onAddUsers]);
 
-	const handleRemoveSelectedUsers = React.useCallback(async () => {
-		if (selectedRemoveUserIds.length === 0) return;
+	const handleRemoveSelectedUsers = React.useCallback(() => {
+		return selectedRemoveUserIds.length > 0;
+	}, [selectedRemoveUserIds]);
 
+	const handleConfirmRemove = React.useCallback(async () => {
+		if (selectedRemoveUserIds.length === 0) return;
 		setIsRemoving(true);
 		try {
 			await onRemoveUsers(selectedRemoveUserIds);
@@ -94,6 +95,7 @@ function useListUserLogic(
 		handleToggleAll,
 		handleAddUsers,
 		handleRemoveSelectedUsers,
+		handleConfirmRemove,
 	};
 }
 
@@ -121,6 +123,7 @@ export const ListUser: React.FC<ListUserProps> = ({
 }) => {
 	const { t } = useTranslation();
 	const [opened, { open, close }] = useDisclosure(false);
+	const [confirmOpened, { open: openConfirm, close: closeConfirm }] = useDisclosure(false);
 
 	const {
 		selectedAddUserIds,
@@ -134,11 +137,23 @@ export const ListUser: React.FC<ListUserProps> = ({
 		handleToggleAll,
 		handleAddUsers,
 		handleRemoveSelectedUsers,
+		handleConfirmRemove,
 	} = useListUserLogic(users, availableUsers, onAddUsers, onRemoveUsers);
 
 	const handleAddUsersSubmit = async () => {
 		await handleAddUsers();
 		close();
+	};
+
+	const handleRemoveClick = () => {
+		if (handleRemoveSelectedUsers()) {
+			openConfirm();
+		}
+	};
+
+	const handleConfirmRemoveUsers = async () => {
+		await handleConfirmRemove();
+		closeConfirm();
 	};
 
 	return (
@@ -148,7 +163,7 @@ export const ListUser: React.FC<ListUserProps> = ({
 					<ListUserHeader
 						userCount={users.length}
 						selectedCount={selectedRemoveUserIds.length}
-						onRemove={handleRemoveSelectedUsers}
+						onRemove={handleRemoveClick}
 						onAdd={open}
 						isLoading={isLoading}
 						isRemoving={isRemoving}
@@ -174,7 +189,7 @@ export const ListUser: React.FC<ListUserProps> = ({
 				</Stack>
 			</Paper>
 
-			<AddUserModal
+			{canManage && <AddUserModal
 				opened={opened}
 				onClose={close}
 				selectOptions={selectOptions}
@@ -182,7 +197,17 @@ export const ListUser: React.FC<ListUserProps> = ({
 				onSelectedChange={setSelectedAddUserIds}
 				onSubmit={handleAddUsersSubmit}
 				isAdding={isAdding}
-				disableSubmit={!canManage}
+			/>}
+
+			<ConfirmModal
+				opened={confirmOpened}
+				onClose={closeConfirm}
+				onConfirm={handleConfirmRemoveUsers}
+				title={t('nikki.identity.user.actions.confirmDelete')}
+				message={t('nikki.identity.user.messages.confirmDeleteMessage', { count: selectedRemoveUserIds.length })}
+				confirmLabel={t('nikki.identity.user.actions.delete')}
+				cancelLabel={t('nikki.identity.user.actions.cancel')}
+				confirmColor='red'
 			/>
 		</>
 	);

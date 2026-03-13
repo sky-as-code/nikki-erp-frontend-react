@@ -1,5 +1,4 @@
 import * as request from '@nikkierp/common/request';
-import { u } from 'node_modules/react-router/dist/development/index-react-server-client-BIz4AUNd.mjs';
 
 
 export type User = {
@@ -153,6 +152,22 @@ export const DEFAULT_MODULES: Module[] = [
 	},
 	{
 		id: '5',
+		name: 'Inventory',
+		slug: 'inventory',
+	},
+	{
+		id: '6',
+		name: 'Sales',
+		slug: 'sales',
+	},
+	{
+		id: '7',
+		name: 'Purchase',
+		slug: 'purchase',
+	},
+
+	{
+		id: '8',
 		name: 'Drive',
 		slug: 'drive',
 	},

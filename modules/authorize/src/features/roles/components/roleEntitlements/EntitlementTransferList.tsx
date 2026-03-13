@@ -2,13 +2,14 @@ import { Group } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ScopeType } from '@/features/resources';
-
 import { AvailableEntitlementsList } from './AvailableEntitlementsList';
 import { SelectedEntitlementsList } from './SelectedEntitlementsList';
 
 import type { Entitlement } from '@/features/entitlements';
 import type { Resource } from '@/features/resources';
+import type { Hierarchy, Organization } from '@nikkierp/shell/userContext';
+
+import { ScopeType } from '@/features/resources';
 
 
 export interface EntitlementTransferListProps {
@@ -23,12 +24,16 @@ export interface EntitlementTransferListProps {
 	emptyAvailableText?: string;
 	emptySelectedText?: string;
 	variant?: 'add' | 'remove';
+	isGlobalContext?: boolean;
+	currentOrgId?: string;
+	assignedOrgs?: Organization[];
+	hierarchies?: Hierarchy[];
 }
 
 function useRequiresScopeRef(resources: Resource[]) {
 	return React.useCallback((entitlement: Entitlement): boolean => {
 		if (!entitlement.resourceId) return true;
-		const resource = resources.find((r) => r.id === entitlement.resourceId);
+		const resource = (resources ?? []).find((r) => r.id === entitlement.resourceId);
 
 		if (!resource) return true;
 
@@ -50,6 +55,10 @@ export const EntitlementTransferList: React.FC<EntitlementTransferListProps> = (
 	emptyAvailableText,
 	emptySelectedText,
 	variant = 'add',
+	isGlobalContext = false,
+	currentOrgId,
+	assignedOrgs = [],
+	hierarchies = [],
 }) => {
 	const { t: translate } = useTranslation();
 	const requiresScopeRef = useRequiresScopeRef(resources);
@@ -79,16 +88,22 @@ export const EntitlementTransferList: React.FC<EntitlementTransferListProps> = (
 				translate={translate}
 				title={availableTitle ?? defaults.availableTitle}
 				emptyText={emptyAvailableText ?? defaults.emptyAvailableText}
+				resources={resources}
 			/>
 			<SelectedEntitlementsList
 				entitlements={selectedEntitlements}
 				onMoveToAvailable={onMoveToAvailable}
 				onScopeRefChange={onScopeRefChange}
 				requiresScopeRef={requiresScopeRef}
+				resources={resources}
 				translate={translate}
 				title={selectedTitle ?? defaults.selectedTitle}
 				emptyText={emptySelectedText ?? defaults.emptySelectedText}
 				readonlyScopeRef={variant === 'remove'}
+				isGlobalContext={isGlobalContext}
+				currentOrgId={currentOrgId}
+				assignedOrgs={assignedOrgs}
+				hierarchies={hierarchies}
 			/>
 		</Group>
 	);

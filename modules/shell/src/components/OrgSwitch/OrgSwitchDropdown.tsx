@@ -1,6 +1,6 @@
 import { useIsAuthenticated } from '@nikkierp/shell/auth';
 import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
-import { useHasDomainAccess, useMyOrgs } from '@nikkierp/shell/userContext';
+import { useHasGlobalContextAccess, useMyOrgs } from '@nikkierp/shell/userContext';
 import { navigateToAction, useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
 import React, { useMemo } from 'react';
@@ -16,12 +16,12 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 	const isAuthenticated = useIsAuthenticated();
 	const { orgSlug } = useActiveOrgModule();
 	const orgs = useMyOrgs();
-	const hasDomainAccess = useHasDomainAccess();
+	const hasGlobalContextAccess = useHasGlobalContextAccess();
 
 	const items = useMemo(() => {
 		if (!isAuthenticated) return [];
 		const options: SearchableSelectItem[] = [];
-		if (hasDomainAccess) {
+		if (hasGlobalContextAccess) {
 			options.push({
 				value: GLOBAL_CONTEXT_SLUG,
 				label: 'Global',
@@ -32,7 +32,7 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 			label: org.name,
 		})));
 		return options;
-	}, [orgs, isAuthenticated, hasDomainAccess]);
+	}, [orgs, isAuthenticated, hasGlobalContextAccess]);
 
 	const handleOrgChange = (newOrgSlug: string) => {
 		if (newOrgSlug === GLOBAL_CONTEXT_SLUG) {

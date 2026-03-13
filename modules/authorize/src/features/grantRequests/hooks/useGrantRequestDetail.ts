@@ -1,3 +1,10 @@
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useUserContext } from '@nikkierp/shell/userContext';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router';
+import { resolvePath } from 'react-router';
+
 import {
 	AuthorizeDispatch,
 	grantRequestActions,
@@ -5,14 +12,7 @@ import {
 	selectRespondGrantRequest,
 	selectCancelGrantRequest,
 } from '@/appState';
-import { useUIState } from '@nikkierp/shell/contexts';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useNavigate, useParams } from 'react-router';
-import { resolvePath } from 'react-router';
-
 import { GrantRequest } from '@/features/grantRequests';
-
 
 
 function useGrantRequestDetailData() {
@@ -32,15 +32,18 @@ function useGrantRequestDetailData() {
 		if (!item && grantRequestId) {
 			dispatch(grantRequestActions.getGrantRequest(grantRequestId));
 		}
-	}, [dispatch, item, grantRequestId]);
+	}, [item, grantRequestId]);
 
 	return { grantRequest: item, isLoading: list.isLoading };
 }
 
-function useBackHandler(navigate: ReturnType<typeof useNavigate>) {
+function useBackHandler(
+	navigate: ReturnType<typeof useNavigate>,
+	location: ReturnType<typeof useLocation>,
+) {
 	return React.useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
-	}, [navigate]);
+	}, [navigate, location.pathname]);
 }
 
 function useApproveHandler(
@@ -56,7 +59,7 @@ function useApproveHandler(
 			etag: grantRequest.etag,
 			responderId,
 		}));
-	}, [dispatch, grantRequest, responderId]);
+	}, [grantRequest, responderId]);
 }
 
 function useRejectHandler(
@@ -72,7 +75,7 @@ function useRejectHandler(
 			etag: grantRequest.etag,
 			responderId,
 		}));
-	}, [dispatch, grantRequest, responderId]);
+	}, [grantRequest, responderId]);
 }
 
 function useCancelRequestHandler(
@@ -82,21 +85,22 @@ function useCancelRequestHandler(
 	return React.useCallback(() => {
 		if (!grantRequestId) return;
 		dispatch(grantRequestActions.cancelGrantRequest({ id: grantRequestId }));
-	}, [dispatch, grantRequestId]);
+	}, [grantRequestId]);
 }
 
 
 function useGrantRequestDetailHandlers(grantRequest?: GrantRequest) {
+	const userContext = useUserContext();
 	const navigate = useNavigate();
+	const location = useLocation();
 	const { notification } = useUIState();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
-	//Mock data userId
-	const responderId = '01JWNMZ36QHC7CQQ748H9NQ6J6';
+	const responderId = userContext.user!.id;
 
 	const respondCommand = useMicroAppSelector(selectRespondGrantRequest);
 	const cancelCommand = useMicroAppSelector(selectCancelGrantRequest);
 
-	const handleBack = useBackHandler(navigate);
+	const handleBack = useBackHandler(navigate, location);
 	const handleApprove = useApproveHandler(grantRequest, dispatch, responderId);
 	const handleReject = useRejectHandler(grantRequest, dispatch, responderId);
 	const handleCancelRequest = useCancelRequestHandler(grantRequest?.id, dispatch);
@@ -106,9 +110,10 @@ function useGrantRequestDetailHandlers(grantRequest?: GrantRequest) {
 	React.useEffect(() => {
 		if (respondCommand.status === 'success') {
 			notification.showInfo('Request responded successfully', 'Success');
+			const listPath = resolvePath('..', location.pathname).pathname;
 			dispatch(grantRequestActions.resetRespondGrantRequest());
 			dispatch(grantRequestActions.listGrantRequests());
-			navigate(resolvePath('..', location.pathname).pathname);
+			navigate(listPath);
 		}
 
 		if (respondCommand.status === 'error') {
@@ -118,7 +123,7 @@ function useGrantRequestDetailHandlers(grantRequest?: GrantRequest) {
 			);
 			dispatch(grantRequestActions.resetRespondGrantRequest());
 		}
-	}, [respondCommand.status, respondCommand.error, notification, dispatch, navigate]);
+	}, [respondCommand]);
 
 	React.useEffect(() => {
 		if (cancelCommand.status === 'success') {
@@ -136,7 +141,7 @@ function useGrantRequestDetailHandlers(grantRequest?: GrantRequest) {
 			);
 			dispatch(grantRequestActions.resetCancelGrantRequest());
 		}
-	}, [cancelCommand.status, cancelCommand.error, grantRequest?.id, notification, dispatch]);
+	}, [cancelCommand, grantRequest?.id]);
 
 	return { handleBack, handleApprove, handleReject, handleCancelRequest, isSubmitting };
 }

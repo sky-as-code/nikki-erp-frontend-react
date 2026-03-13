@@ -1,4 +1,4 @@
-import { Paper, Stack } from '@mantine/core';
+import { Paper } from '@mantine/core';
 import { AutoTable } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
@@ -15,7 +15,7 @@ interface HierarchyTableProps {
 
 export function HierarchyTable({ columns, hierarchies, isLoading, schema }: HierarchyTableProps): React.ReactElement {
 	return (
-		<Stack gap='md'>
+		<Paper className='p-4'>
 			<AutoTable
 				columns={columns}
 				columnAsLink='name'
@@ -23,6 +23,6 @@ export function HierarchyTable({ columns, hierarchies, isLoading, schema }: Hier
 				schema={schema}
 				isLoading={isLoading}
 			/>
-		</Stack>
+		</Paper>
 	);
 }

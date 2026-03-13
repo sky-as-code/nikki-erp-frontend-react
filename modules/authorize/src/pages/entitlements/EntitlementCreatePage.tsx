@@ -21,7 +21,6 @@ function EntitlementCreatePageBody(): React.ReactNode {
 		handleCancel,
 		handleSubmit,
 		resources,
-		actions,
 	} = useEntitlementCreate();
 	const permissions = useAuthorizePermissions();
 
@@ -55,7 +54,6 @@ function EntitlementCreatePageBody(): React.ReactNode {
 									<EntitlementFormFields
 										isCreate
 										resources={resources}
-										actions={actions}
 									/>
 								</Stack>
 							</form>

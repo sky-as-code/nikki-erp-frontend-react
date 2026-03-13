@@ -5,6 +5,7 @@ import {
 	useFindMyModule,
 	useFindMyOrg,
 	useMyModulesForContext,
+	useUserContext,
 } from '@nikkierp/shell/userContext';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
@@ -16,11 +17,14 @@ import { AppLoading } from './Loading';
 export function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): React.ReactNode {
 	const { moduleSlug, orgSlug } = useParams();
 	const { orgSlug: activeOrgSlug } = useActiveOrgModule();
+	const { isLoading, user } = useUserContext();
 	const resolvedOrgSlug = orgSlug ?? activeOrgSlug ?? null;
+
 	const isGlobalContext = resolvedOrgSlug === GLOBAL_CONTEXT_SLUG;
 	const contextModules = useMyModulesForContext(resolvedOrgSlug);
 	const orgModule = useFindMyModule(resolvedOrgSlug ?? '', moduleSlug!);
 	const activeOrg = useFindMyOrg(resolvedOrgSlug ?? '');
+
 	const orgContextScope = resolvedOrgSlug && resolvedOrgSlug !== GLOBAL_CONTEXT_SLUG
 		? { scopeType: 'org' as const, scopeRef: activeOrg?.id ?? '' }
 		: undefined;
@@ -30,23 +34,23 @@ export function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): Re
 	const foundApp = microApps.find(app => app.basePath === moduleSlug);
 	const canAccess = useCanAccessModuleForContext(moduleSlug!, resolvedOrgSlug, orgContextScope);
 
-	if (!foundApp) {
+	const isLoadingApp = isLoading || !user || !resolvedOrgSlug;
+	if (isLoadingApp) {
+		return <AppLoading />;
+	}
+
+	if (!foundModule || !foundApp) {
 		return <Navigate to='/notfound' replace />;
 	}
 
-
-	// if (!foundModule || !foundApp) {
-	// 	return <Navigate to='/notfound' replace />;
-	// }
-
-	// if (!canAccess) {
-	// 	return <Navigate to='/unauthorized' replace />;
-	// }
+	if (!canAccess) {
+		return <Navigate to='/unauthorized' replace />;
+	}
 
 	return (
 		<LazyMicroApp
-			slug={foundApp?.slug ?? ''}
-			basePath={foundApp?.basePath ?? ''}
+			slug={foundApp.slug}
+			basePath={foundApp.basePath}
 			fallback={<AppLoading />}
 		/>
 	);

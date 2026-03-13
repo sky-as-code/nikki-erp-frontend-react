@@ -3,8 +3,14 @@ import { createSelector } from '@reduxjs/toolkit';
 import { useSelector } from 'react-redux';
 
 import { GLOBAL_CONTEXT_SLUG } from '../constants';
-import { ACTIONS, RESOURCE_TO_MODULE } from './permissionConstants';
-import { hasFullAccess, hasPermission } from './permissionUtils';
+import {
+	ACTIONS,
+	ACTIONS_FOR_SYSTEM_CONTEXT,
+	MODULE_ACCESS_POLICY,
+	RESOURCE_TO_MODULE,
+	SYSTEM_CONTEXT_RESOURCES,
+} from './permissionConstants';
+import { hasFullAccess, hasPermission, hasPermissionAnyScope } from './permissionUtils';
 import { DEFAULT_MODULES, Module, Organization, PermissionScopeType } from './userContextService';
 import { UserContextState } from './userContextSlice';
 
@@ -71,7 +77,15 @@ export const useCanAccessModule = (moduleSlug: string) => {
 	const moduleResources = Object.entries(RESOURCE_TO_MODULE)
 		.filter(([, slug]) => slug === moduleSlug)
 		.map(([resource]) => resource);
+	if (moduleResources.length === 0) return true;
 	const actionsToCheck = [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE];
+	const moduleAccessMode = MODULE_ACCESS_POLICY[moduleSlug] ?? 'strict_context';
+
+	if (moduleAccessMode === 'any_scope') {
+		return moduleResources.some((resource) =>
+			actionsToCheck.some((action) => hasPermissionAnyScope(permissions, resource, action)),
+		);
+	}
 
 	return moduleResources.some((resource) =>
 		actionsToCheck.some((action) => hasPermission(permissions, resource, action)),
@@ -89,13 +103,22 @@ export const useCanAccessModuleForContext = (
 	const moduleResources = Object.entries(RESOURCE_TO_MODULE)
 		.filter(([, slug]) => slug === moduleSlug)
 		.map(([resource]) => resource);
+	if (moduleResources.length === 0) return true;
 	const actionsToCheck = [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE];
+	const moduleAccessMode = MODULE_ACCESS_POLICY[moduleSlug] ?? 'strict_context';
 
 	if (orgSlug === GLOBAL_CONTEXT_SLUG) {
-		const domainResources = collectResourcesByScopeType(permissions, 'domain');
-		const domainModuleResources = moduleResources.filter((resource) => domainResources.includes(resource));
-		return domainModuleResources.some((resource) =>
+		const globalContextResources = collectSystemContextResources(permissions);
+		const globalContextModuleResources =
+			moduleResources.filter((resource) => globalContextResources.includes(resource));
+		return globalContextModuleResources.some((resource) =>
 			actionsToCheck.some((action) => hasPermission(permissions, resource, action, contextScope)),
+		);
+	}
+
+	if (moduleAccessMode === 'any_scope') {
+		return moduleResources.some((resource) =>
+			actionsToCheck.some((action) => hasPermissionAnyScope(permissions, resource, action)),
 		);
 	}
 
@@ -119,17 +142,31 @@ export const useHasAnyPermission = (
 	return actions.some((action) => hasPermission(permissions, resource, action, contextScope));
 };
 
-const hasDomainPermissionEntry = (permissions: UserContextState['permissions']) => {
-	return Object.values(permissions).some((entries) =>
-		entries.some((entry) => entry.scopeType === 'domain'),
-	);
+
+function hasSystemContextPermissionForResource(
+	permissions: UserContextState['permissions'],
+	resource: string,
+): boolean {
+	return ACTIONS_FOR_SYSTEM_CONTEXT.some((action) => hasPermission(
+		permissions,
+		resource,
+		action,
+		{ scopeType: 'domain', scopeRef: '' },
+	));
+}
+
+const collectSystemContextResources = (permissions: UserContextState['permissions']) => {
+	return SYSTEM_CONTEXT_RESOURCES.filter((resource) => hasSystemContextPermissionForResource(permissions, resource));
 };
 
-export const useHasDomainAccess = () => {
+export const useHasGlobalContextAccess = () => {
 	const permissions = useSelector(selectPermissions);
 	if (hasFullAccess(permissions)) return true;
-	return hasDomainPermissionEntry(permissions);
+	return collectSystemContextResources(permissions).length > 0;
 };
+
+// Backward-compatible alias. Prefer useHasGlobalContextAccess.
+export const useHasDomainAccess = useHasGlobalContextAccess;
 
 const collectModulesForResources = (resources: string[], modulesCatalog: Module[]) => {
 	const moduleSlugs = new Set(
@@ -140,27 +177,6 @@ const collectModulesForResources = (resources: string[], modulesCatalog: Module[
 	return modulesCatalog.filter((mod) => moduleSlugs.has(mod.slug));
 };
 
-const collectResourcesByScopeType = (
-	permissions: UserContextState['permissions'],
-	scopeType: PermissionScopeType,
-) => {
-	return Object.entries(permissions)
-		.filter(([, entries]) => entries.some((entry) => entry.scopeType === scopeType))
-		.map(([resource]) => resource);
-};
-
-const collectResourcesByNonDomainScope = (permissions: UserContextState['permissions']) => {
-	return Object.entries(permissions)
-		.filter(([, entries]) => entries.some((entry) => entry.scopeType !== 'domain'))
-		.map(([resource]) => resource);
-};
-
-// const collectResourcesWithAnyScope = (permissions: UserContextState['permissions']) => {
-// 	return Object.entries(permissions)
-// 		.filter(([, entries]) => entries.length > 0)
-// 		.map(([resource]) => resource);
-// };
-
 export const useMyModulesForContext = (orgSlug?: string | null) => {
 	const permissions = useSelector(selectPermissions);
 	const orgs = useSelector(selectMyOrgs);
@@ -170,7 +186,7 @@ export const useMyModulesForContext = (orgSlug?: string | null) => {
 			return DEFAULT_MODULES;
 		}
 
-		const resources = collectResourcesByScopeType(permissions, 'domain');
+		const resources = collectSystemContextResources(permissions);
 		const modulesCatalog = orgs.length > 0
 			? Array.from(new Map(orgs.flatMap(org => org.modules).map(mod => [mod.slug, mod])).values())
 			: DEFAULT_MODULES;

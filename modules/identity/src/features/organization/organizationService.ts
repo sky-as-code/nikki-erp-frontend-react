@@ -8,6 +8,8 @@ import {
 	UpdateOrganizationRequest,
 	UpdateOrganizationResponse,
 	DeleteOrganizationResponse,
+	ManageOrganizationUsersRequest,
+	ManageOrganizationUsersResponse,
 } from './types';
 
 
@@ -39,6 +41,11 @@ export const organizationService = {
 
 	async deleteOrganization(slug: string): Promise<DeleteOrganizationResponse> {
 		const response = await request.del<DeleteOrganizationResponse>(`identity/organizations/${slug}`);
+		return response;
+	},
+
+	async manageOrganizationUsers( data: ManageOrganizationUsersRequest ): Promise<ManageOrganizationUsersResponse> {
+		const response = await request.post<ManageOrganizationUsersResponse>(`identity/organizations/${data.id}/manage-users`, { json: data });
 		return response;
 	},
 };

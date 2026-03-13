@@ -31,7 +31,9 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = (props) => {
 	initRequestMaker({
 		baseUrl: props.config?.apiBaseUrl ?? props.api.defaultBaseUrl,
 		auth: {
-			getToken: props.api.getAccessToken,
+			getToken: props.api.getToken,
+			restoreSession: props.api.restoreSession,
+			clearSession: props.api.clearSession,
 		},
 	});
 	return (

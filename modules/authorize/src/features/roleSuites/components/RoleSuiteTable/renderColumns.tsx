@@ -69,8 +69,8 @@ export function renderOrgNameColumn(
 	row: Record<string, unknown>,
 	orgMap?: Map<string, string>,
 ) {
-	const org = row.org as { name?: string; displayName?: string } | undefined;
-	const fromRow = org?.name || org?.displayName || (row.orgDisplayName as string | undefined);
+	const org = row.org as { displayName?: string } | undefined;
+	const fromRow = org?.displayName || (row.orgDisplayName as string | undefined);
 	const fromMap = orgMap && (row.orgId as string) ? orgMap.get(row.orgId as string) : undefined;
 	const orgName = fromRow || fromMap;
 	return <Text>{orgName || '-'}</Text>;
@@ -107,6 +107,8 @@ export function renderActionsColumn(
 	onEdit: ((roleSuiteId: string) => void) | undefined,
 	onDelete: ((roleSuiteId: string) => void) | undefined,
 	translate: (key: string) => string,
+	canEdit: boolean = true,
+	canDelete: boolean = true,
 ) {
 	const roleSuiteId = row.id as string;
 	return (
@@ -116,6 +118,7 @@ export function renderActionsColumn(
 					<ActionIcon
 						variant='subtle'
 						color='gray'
+						disabled={!canEdit}
 						onClick={() => onEdit(roleSuiteId)}
 					>
 						<IconEdit size={16} />
@@ -127,6 +130,7 @@ export function renderActionsColumn(
 					<ActionIcon
 						variant='subtle'
 						color='red'
+						disabled={!canDelete}
 						onClick={() => onDelete(roleSuiteId)}
 					>
 						<IconTrash size={16} />

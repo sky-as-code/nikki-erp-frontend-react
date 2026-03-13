@@ -8,7 +8,6 @@ import { resolvePath } from 'react-router';
 import { RevokeRequest } from '@/features/revokeRequests/types';
 
 
-
 function useRevokeRequestDetailData() {
 	const { revokeRequestId } = useParams<{ revokeRequestId: string }>();
 	const dispatch: AuthorizeDispatch = useMicroAppDispatch();
