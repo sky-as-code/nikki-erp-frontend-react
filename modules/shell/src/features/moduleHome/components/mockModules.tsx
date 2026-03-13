@@ -1,4 +1,5 @@
 import authorizeIcon from '@nikkierp/ui/assets/images/modules/authorize.png';
+import fileDriveIcon from '@nikkierp/ui/assets/images/modules/drive.png';
 import essentialIcon from '@nikkierp/ui/assets/images/modules/essential.png';
 import identityIcon from '@nikkierp/ui/assets/images/modules/identity.png';
 import inventoryIcon from '@nikkierp/ui/assets/images/modules/inventory.png';
@@ -55,7 +56,7 @@ export const mockModules = [
 				name: 'Drive',
 				slug: 'drive',
 				category: 'Drive',
-				icon: 'icon-drive',
+				icon: fileDriveIcon,
 				isDisabled: false,
 				isOrphaned: false,
 				isFavourite: false,
@@ -101,7 +102,7 @@ export const mockModules = [
 				name: 'File Drive',
 				slug: 'file-drive',
 				category: 'File Drive',
-				icon: 'icon-file-drive',
+				icon: fileDriveIcon,
 				isDisabled: true,
 				isFavourite: false,
 				lastUsed: '2025-01-01',

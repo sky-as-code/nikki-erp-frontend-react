@@ -14,6 +14,8 @@ import {
 	searchDriveFile,
 	DriveFileState,
 	initialState,
+	getDriveFileAncestors,
+	restoreDriveFileFromTrash,
 } from '@/features/files/fileSlice';
 
 
@@ -33,6 +35,8 @@ export const driveFileActions = {
 	getCurrentFolderById,
 	getDriveFileByParentForTree,
 	searchDriveFile,
+	getDriveFileAncestors,
+	restoreDriveFileFromTrash,
 	...actions,
 };
 
@@ -109,7 +113,22 @@ export const selectSearchDriveFile = createSelector(
 	(state) => state.search,
 );
 
+export const selectRestoreDriveFileFromTrash = createSelector(
+	selectDriveFileState,
+	(state) => state.restoreFromTrash,
+);
+
 export const selectDriveFileUIState = createSelector(
 	selectDriveFileState,
 	(state) => state.ui,
+);
+
+export const selectDriveFileModalUIState = createSelector(
+	selectDriveFileState,
+	(state) => state.ui.driveFileModal,
+);
+
+export const selectDriveFileAncestors = createSelector(
+	selectDriveFileState,
+	(state) => state.ancestors,
 );

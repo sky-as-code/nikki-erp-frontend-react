@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Group, Modal, Select, Stack, TextInput } from '@mantine/core';
+import { Button, Group, Select, Stack, TextInput } from '@mantine/core';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React, { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -7,8 +7,9 @@ import { z } from 'zod';
 
 import { driveFileActions, selectUpdateMetadataDriveFile } from '@/appState/file';
 
-import { useRefreshCurrentFolder } from '../hooks/useRefreshCurrentFolder';
-import { DriveFileVisibility, type DriveFile, type UpdateDriveFileMetadataRequest } from '../types';
+import { useRefreshCurrentFolder } from '../../hooks';
+import { DriveFile, DriveFileVisibility, UpdateDriveFileMetadataRequest } from '../../types';
+
 
 
 const updateFileSchema = z.object({
@@ -21,7 +22,7 @@ type UpdateFileFormData = z.infer<typeof updateFileSchema>;
 type UpdateFileMetadataModalProps = {
 	opened: boolean;
 	onClose: () => void;
-	file: DriveFile;
+	file?: DriveFile;
 };
 
 // eslint-disable-next-line max-lines-per-function
@@ -35,8 +36,8 @@ export function UpdateFileMetadataModal(
 	const form = useForm<UpdateFileFormData>({
 		resolver: zodResolver(updateFileSchema),
 		defaultValues: {
-			name: file.name,
-			visibility: file.visibility,
+			name: file?.name ?? '',
+			visibility: file?.visibility ?? DriveFileVisibility.OWNER,
 		},
 		mode: 'onChange',
 	});
@@ -44,7 +45,7 @@ export function UpdateFileMetadataModal(
 	const { control, handleSubmit, reset, formState: { errors } } = form;
 
 	useEffect(() => {
-		if (opened) {
+		if (opened && file) {
 			reset({
 				name: file.name,
 				visibility: file.visibility,
@@ -53,6 +54,8 @@ export function UpdateFileMetadataModal(
 	}, [opened, reset, file]);
 
 	const onSubmit = handleSubmit(async (data) => {
+		if (!file) return;
+
 		const req: UpdateDriveFileMetadataRequest = {
 			etag: file.etag,
 			name: data.name.trim(),
@@ -68,9 +71,7 @@ export function UpdateFileMetadataModal(
 
 		if (result?.type?.endsWith('/fulfilled')) {
 			refresh({
-				parentId: file.parentDriveFileRef ?? '',
-				page: 0,
-				size: 20,
+				parentId: file.parentDriveFileRef ?? undefined,
 				includeTree: true,
 				treePageSize: 50,
 			});
@@ -81,49 +82,47 @@ export function UpdateFileMetadataModal(
 	const isPending = updateState.status === 'pending';
 
 	return (
-		<Modal opened={opened} onClose={onClose} title='Update metadata' centered size='sm'>
-			<form onSubmit={onSubmit}>
-				<Stack gap='md'>
-					<Controller
-						name='name'
-						control={control}
-						render={({ field }) => (
-							<TextInput
-								{...field}
-								label='Name'
-								placeholder='Enter file or folder name'
-								error={errors.name?.message}
-								required
-							/>
-						)}
-					/>
-					<Controller
-						name='visibility'
-						control={control}
-						render={({ field }) => (
-							<Select
-								label='Visibility'
-								value={field.value}
-								onChange={field.onChange}
-								data={[
-									{ value: DriveFileVisibility.PUBLIC, label: 'Public' },
-									{ value: DriveFileVisibility.OWNER, label: 'Owner' },
-									{ value: DriveFileVisibility.PRIVATE, label: 'Private' },
-								]}
-							/>
-						)}
-					/>
-					<Group justify='flex-end' mt='md'>
-						<Button variant='subtle' onClick={onClose}>
-							Cancel
-						</Button>
-						<Button type='submit' loading={isPending}>
-							Update
-						</Button>
-					</Group>
-				</Stack>
-			</form>
-		</Modal>
+		<form onSubmit={onSubmit}>
+			<Stack gap='md' w={'350px'}>
+				<Controller
+					name='name'
+					control={control}
+					render={({ field }) => (
+						<TextInput
+							{...field}
+							label='Name'
+							placeholder='Enter file or folder name'
+							error={errors.name?.message}
+							required
+						/>
+					)}
+				/>
+				<Controller
+					name='visibility'
+					control={control}
+					render={({ field }) => (
+						<Select
+							label='Visibility'
+							value={field.value}
+							onChange={field.onChange}
+							data={[
+								{ value: DriveFileVisibility.PUBLIC, label: 'Public' },
+								{ value: DriveFileVisibility.OWNER, label: 'Owner' },
+								{ value: DriveFileVisibility.SHARED, label: 'Shared' },
+							]}
+						/>
+					)}
+				/>
+				<Group justify='flex-end' mt='md'>
+					<Button variant='subtle' onClick={onClose}>
+						Cancel
+					</Button>
+					<Button type='submit' loading={isPending}>
+						Update
+					</Button>
+				</Group>
+			</Stack>
+		</form>
 	);
 }
 

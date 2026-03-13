@@ -16,6 +16,9 @@ import {
 	SearchDriveFileByParentResponse,
 	UpdateDriveFileMetadataRequest,
 	UpdateDriveFileMetadataResponse,
+	DriveFileStatus,
+	GetDriveFileAncestorsResponse,
+	RestoreDriveFileFromTrashResponse,
 } from './types';
 
 
@@ -25,8 +28,35 @@ export const SLICE_NAME = 'drive.file';
 export type TreeExpandedState = Record<string, boolean>;
 
 export type DriveFileUIState = {
+	driveFileModal: DriveFileModalUIState;
 	openPropertiesCard: boolean;
 	openCreateFileModal: boolean;
+	openUpdateMetadataModal: boolean;
+};
+
+export type DriveFileModalUIState = {
+	openedModal: boolean;
+	type: ModalType;
+	title: string;
+};
+
+export type ModalType =
+| { type: 'properties' }
+| { type: 'create' }
+| { type: 'update' }
+| { type: 'file-selector';
+	afterSelectFn: (selectedId: string[] | string) => void;
+	mode?: 'file' | 'folder';
+	multiple?: boolean;
+	action?: string;
+}
+| { type: 'delete-confirm'; fileId: string; fileName: string; parentDriveFileRef?: string };
+
+export type CurrentListContext = {
+	parentId: string;
+	page: number;
+	size: number;
+	graph?: Record<string, unknown>;
 };
 
 export type DriveFileState = {
@@ -37,16 +67,21 @@ export type DriveFileState = {
 	/** Danh sách file root cho sidebar FileTree */
 	treeRootItems: DriveFile[];
 	/** Thông tin pagination cho từng parent trong FileTree */
-	treePaging: Record<string, {
-		page: number;
-		size: number;
-		total: number;
-		loaded: number;
-	}>;
+	treePaging: Record<
+		string,
+		{
+			page: number;
+			size: number;
+			total: number;
+			loaded: number;
+		}
+	>;
 	/** Trạng thái expand của FileTree, persist để sống qua remount khi navigate */
 	treeExpandedState: TreeExpandedState;
 	fileDetail?: DriveFile;
+	ancestors?: DriveFile[];
 	ui: DriveFileUIState;
+	currentListContext?: CurrentListContext;
 
 	create: ReduxActionState<CreateDriveFileResponse>;
 	updateMetadata: ReduxActionState<UpdateDriveFileMetadataResponse>;
@@ -56,6 +91,8 @@ export type DriveFileState = {
 	getByParent: ReduxActionState<GetDriveFileByParentResponse>;
 	getByParentForTree: ReduxActionState<GetDriveFileByParentResponse>;
 	search: ReduxActionState<SearchDriveFileByParentResponse>;
+	getAncestors: ReduxActionState<GetDriveFileAncestorsResponse>;
+	restoreFromTrash: ReduxActionState<RestoreDriveFileFromTrashResponse>;
 };
 
 export const initialState: DriveFileState = {
@@ -65,10 +102,18 @@ export const initialState: DriveFileState = {
 	treePaging: {},
 	treeExpandedState: {},
 	fileDetail: undefined,
-
+	ancestors: [],
 	ui: {
+		driveFileModal: {
+			openedModal: false,
+			type: {
+				type: 'properties',
+			},
+			title: '',
+		},
 		openPropertiesCard: false,
 		openCreateFileModal: false,
+		openUpdateMetadataModal: false,
 	},
 
 	create: baseReduxActionState,
@@ -78,7 +123,10 @@ export const initialState: DriveFileState = {
 	getById: baseReduxActionState,
 	getByParent: baseReduxActionState,
 	getByParentForTree: baseReduxActionState,
+	getAncestors: baseReduxActionState,
+	restoreFromTrash: baseReduxActionState,
 	search: baseReduxActionState,
+	currentListContext: undefined,
 };
 
 interface thunkConfig {
@@ -155,39 +203,35 @@ export const getDriveFileById = createAsyncThunk<
 	GetDriveFileResponse,
 	string,
 	thunkConfig
->(
-	`${SLICE_NAME}/getDriveFileById`,
-	async (fileId, { rejectWithValue }) => {
-		try {
-			const result = await fileService.getDriveFileById(fileId);
-			return result;
-		}
-		catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : 'Failed to get file by id';
-			return rejectWithValue(errorMessage);
-		}
-	},
-);
+>(`${SLICE_NAME}/getDriveFileById`, async (fileId, { rejectWithValue }) => {
+	try {
+		const result = await fileService.getDriveFileById(fileId);
+		return result;
+	}
+	catch (error) {
+		const errorMessage =
+			error instanceof Error ? error.message : 'Failed to get file by id';
+		return rejectWithValue(errorMessage);
+	}
+});
 
 export const getCurrentFolderById = createAsyncThunk<
 	GetDriveFileResponse,
 	string,
 	thunkConfig
->(
-	`${SLICE_NAME}/getCurrentFolderById`,
-	async (fileId, { rejectWithValue }) => {
-		try {
-			const result = await fileService.getDriveFileById(fileId);
-			return result;
-		}
-		catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : 'Failed to get current folder by id';
-			return rejectWithValue(errorMessage);
-		}
-	},
-);
+>(`${SLICE_NAME}/getCurrentFolderById`, async (fileId, { rejectWithValue }) => {
+	try {
+		const result = await fileService.getDriveFileById(fileId);
+		return result;
+	}
+	catch (error) {
+		const errorMessage =
+			error instanceof Error
+				? error.message
+				: 'Failed to get current folder by id';
+		return rejectWithValue(errorMessage);
+	}
+});
 
 const getDriveFileByParentPayload = async (
 	parentId: string,
@@ -254,13 +298,14 @@ export const getDriveFileByParentForTree = createAsyncThunk<
 	`${SLICE_NAME}/getDriveFileByParentForTree`,
 	async ({ parentId, req }, { rejectWithValue }) => {
 		try {
-			// Luôn filter chỉ lấy folder cho FileTree bằng graph.isFolder = true
+			// Luôn filter chỉ lấy ACTIVE folder cho FileTree
 			const baseReq: GetDriveFileByParentRequest = { ...(req ?? {}) };
 			const existingGraph = (baseReq.graph ?? {}) as Record<string, unknown>;
 
 			const graphObject: Record<string, unknown> = {
 				...existingGraph,
 				isFolder: true,
+				if: ['status', '=', DriveFileStatus.ACTIVE],
 			};
 
 			const treeReq: GetDriveFileByParentRequest = {
@@ -282,21 +327,50 @@ export const searchDriveFile = createAsyncThunk<
 	SearchDriveFileByParentResponse,
 	{ req: GetDriveFileByParentRequest },
 	thunkConfig
->(
-	`${SLICE_NAME}/searchDriveFile`,
-	async ({ req }, { rejectWithValue }) => {
-		try {
-			const listReq = withDefaultListGraph(req);
-			const result = await fileService.searchDriveFile(listReq);
-			return result;
-		}
-		catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : 'Failed to search file';
-			return rejectWithValue(errorMessage);
-		}
-	},
-);
+>(`${SLICE_NAME}/searchDriveFile`, async ({ req }, { rejectWithValue }) => {
+	try {
+		const listReq = withDefaultListGraph(req);
+		const result = await fileService.searchDriveFile(listReq);
+		return result;
+	}
+	catch (error) {
+		const errorMessage =
+			error instanceof Error ? error.message : 'Failed to search file';
+		return rejectWithValue(errorMessage);
+	}
+});
+
+export const getDriveFileAncestors = createAsyncThunk<
+	GetDriveFileAncestorsResponse,
+	string,
+	thunkConfig
+>(`${SLICE_NAME}/getDriveFileAncestors`, async (fileId, { rejectWithValue }) => {
+	try {
+		const result = await fileService.getDriveFileAncestors(fileId);
+		return result;
+	}
+	catch (error) {
+		const errorMessage =
+			error instanceof Error ? error.message : 'Failed to get file ancestors';
+		return rejectWithValue(errorMessage);
+	}
+});
+
+export const restoreDriveFileFromTrash = createAsyncThunk<
+	RestoreDriveFileFromTrashResponse,
+	{ fileId: string; parentDriveFileRef: string },
+	thunkConfig
+>(`${SLICE_NAME}/restoreDriveFileFromTrash`, async ({ fileId, parentDriveFileRef }, { rejectWithValue }) => {
+	try {
+		const result = await fileService.restoreDriveFileFromTrash(fileId, parentDriveFileRef);
+		return result;
+	}
+	catch (error) {
+		const errorMessage =
+			error instanceof Error ? error.message : 'Failed to restore file from trash';
+		return rejectWithValue(errorMessage);
+	}
+});
 
 const driveFileSlice = createSlice({
 	name: SLICE_NAME,
@@ -310,6 +384,9 @@ const driveFileSlice = createSlice({
 		},
 		resetCurrentFolder: (state) => {
 			state.currentFolder = undefined;
+		},
+		resetDriveFileAncestors: (state) => {
+			state.ancestors = [];
 		},
 		resetFileDetail: (state) => {
 			state.fileDetail = undefined;
@@ -350,6 +427,18 @@ const driveFileSlice = createSlice({
 		resetOpenCreateFileModal: (state) => {
 			state.ui.openCreateFileModal = false;
 		},
+		setOpenUpdateMetadataModal: (state, action: PayloadAction<boolean>) => {
+			state.ui.openUpdateMetadataModal = action.payload;
+		},
+		resetOpenUpdateMetadataModal: (state) => {
+			state.ui.openUpdateMetadataModal = false;
+		},
+		setDriveFileModal: (state, action: PayloadAction<DriveFileModalUIState>) => {
+			state.ui.driveFileModal = action.payload;
+		},
+		resetDriveFileModal: (state) => {
+			state.ui.driveFileModal.openedModal = false;
+		},
 	},
 	extraReducers: (builder) => {
 		createDriveFileReducers(builder);
@@ -361,6 +450,8 @@ const driveFileSlice = createSlice({
 		getDriveFileByParentReducers(builder);
 		getDriveFileByParentForTreeReducers(builder);
 		searchDriveFileReducers(builder);
+		getDriveFileAncestorsReducers(builder);
+		restoreDriveFileFromTrashReducers(builder);
 	},
 });
 
@@ -500,7 +591,9 @@ function mergeChildren(
 		return { ...normalized, children: preservedChildren };
 	});
 
-	const remainingExisting = existing.filter((item) => !incomingIds.has(item.id));
+	const remainingExisting = existing.filter(
+		(item) => !incomingIds.has(item.id),
+	);
 
 	return [...remainingExisting, ...updatedIncoming];
 }
@@ -544,6 +637,16 @@ function getDriveFileByParentReducers(
 			state.getByParent.status = 'success';
 			state.getByParent.data = action.payload;
 			state.files = action.payload.items ?? [];
+
+			const parentId = action.meta.arg.parentId;
+			const req = action.meta.arg.req;
+
+			state.currentListContext = {
+				parentId,
+				page: req?.page ?? 0,
+				size: req?.size ?? (action.payload.items?.length ?? 20),
+				graph: (req?.graph ?? {}) as Record<string, unknown>,
+			};
 		})
 		.addCase(getDriveFileByParent.rejected, (state, action) => {
 			state.getByParent.status = 'error';
@@ -566,14 +669,17 @@ function getDriveFileByParentForTreeReducers(
 
 			const parentId = action.meta.arg.parentId;
 			const pageFromReq = action.meta.arg.req?.page ?? 0;
-			const sizeFromReq = action.meta.arg.req?.size ?? (action.payload.items?.length ?? 0);
-			const totalFromRes = action.payload.total ?? (action.payload.items?.length ?? 0);
+			const sizeFromReq =
+				action.meta.arg.req?.size ?? action.payload.items?.length ?? 0;
+			const totalFromRes =
+				action.payload.total ?? action.payload.items?.length ?? 0;
 			const currentPaging = state.treePaging[parentId];
 			const loadedCount = action.payload.items?.length ?? 0;
 
-			const loaded = currentPaging && pageFromReq > currentPaging.page
-				? currentPaging.loaded + loadedCount
-				: loadedCount;
+			const loaded =
+				currentPaging && pageFromReq > currentPaging.page
+					? currentPaging.loaded + loadedCount
+					: loadedCount;
 
 			state.treePaging[parentId] = {
 				page: pageFromReq,
@@ -582,9 +688,9 @@ function getDriveFileByParentForTreeReducers(
 				loaded,
 			};
 
-			const sortedItems = (action.payload.items ?? []).slice().sort((a, b) =>
-				a.name.localeCompare(b.name),
-			);
+			const sortedItems = (action.payload.items ?? [])
+				.slice()
+				.sort((a, b) => a.name.localeCompare(b.name));
 
 			state.treeRootItems = updateTreeChildrenAt(
 				state.treeRootItems,
@@ -615,6 +721,44 @@ function searchDriveFileReducers(
 		.addCase(searchDriveFile.rejected, (state, action) => {
 			state.search.status = 'error';
 			state.search.error = action.payload || 'Failed to search file';
+		});
+}
+
+function getDriveFileAncestorsReducers(
+	builder: ActionReducerMapBuilder<DriveFileState>,
+) {
+	builder
+		.addCase(getDriveFileAncestors.pending, (state) => {
+			state.getAncestors.status = 'pending';
+			state.getAncestors.error = null;
+		})
+		.addCase(getDriveFileAncestors.fulfilled, (state, action) => {
+			state.getAncestors.status = 'success';
+			state.getAncestors.data = action.payload;
+			state.ancestors = action.payload;
+		})
+		.addCase(getDriveFileAncestors.rejected, (state) => {
+			state.getAncestors.status = 'error';
+			state.getAncestors.error = 'Failed to get file ancestors';
+			state.ancestors = undefined;
+		});
+}
+
+function restoreDriveFileFromTrashReducers(
+	builder: ActionReducerMapBuilder<DriveFileState>,
+) {
+	builder
+		.addCase(restoreDriveFileFromTrash.pending, (state) => {
+			state.restoreFromTrash.status = 'pending';
+			state.restoreFromTrash.error = null;
+		})
+		.addCase(restoreDriveFileFromTrash.fulfilled, (state, action) => {
+			state.restoreFromTrash.status = 'success';
+			state.restoreFromTrash.data = action.payload;
+		})
+		.addCase(restoreDriveFileFromTrash.rejected, (state, action) => {
+			state.restoreFromTrash.status = 'error';
+			state.restoreFromTrash.error = action.payload || 'Failed to restore file from trash';
 		});
 }
 

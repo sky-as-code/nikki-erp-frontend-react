@@ -8,10 +8,12 @@ import {
 import { Navigate } from 'react-router';
 
 import { reducer } from './appState';
+import { registerDriveFileSelectorWebComponent } from './features/files/components/FileSelectorWebComponent';
 import { useMenuBarItems } from './hooks';
 import { DriveLayout } from './layouts';
 import { FolderPage } from './pages/folder/FolderPage';
 import { OverviewPage } from './pages/overview/OverviewPage';
+import { TrashPage } from './pages/trash/TrashPage';
 
 
 function Main(props: MicroAppProps) {
@@ -29,10 +31,15 @@ function Main(props: MicroAppProps) {
 					widgetProps={props.widgetProps}
 				>
 					<AppRoutes>
-						<AppRoute element={<DriveLayout />}>
-							<AppRoute index element={<Navigate to='overview' replace />} />
+						<AppRoute>
+							<AppRoute index element={<Navigate to='management/my-files' replace />} />
 							<AppRoute path='overview' element={<OverviewPage />} />
-							<AppRoute path='folder/:driveFileId' element={<FolderPage />} />
+							<AppRoute path='management' element={<DriveLayout />}>
+								<AppRoute index element={<Navigate to='my-files' replace />} />
+								<AppRoute path='my-files' element={<FolderPage />} />
+								<AppRoute path='trash' element={<TrashPage />} />
+								<AppRoute path='folder/:driveFileId' element={<FolderPage />} />
+							</AppRoute>
 						</AppRoute>
 					</AppRoutes>
 					<WidgetRoutes />
@@ -49,6 +56,8 @@ const bundle: MicroAppBundle = {
 			htmlTag,
 			domType,
 		});
+
+		registerDriveFileSelectorWebComponent();
 
 		const result = registerReducer(reducer);
 		initMicroAppStateContext(result);
