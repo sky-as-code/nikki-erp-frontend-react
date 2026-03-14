@@ -165,4 +165,10 @@ export const DEFAULT_MODULES: Module[] = [
 		name: 'Purchase',
 		slug: 'purchase',
 	},
+
+	{
+		id: '8',
+		name: 'Drive',
+		slug: 'drive',
+	},
 ];
