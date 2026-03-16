@@ -1,24 +1,34 @@
-import { Anchor, Box, Breadcrumbs, Center, Flex, Group, Pagination, SegmentedControl, Text, Title } from '@mantine/core';
+import { Anchor, Box, Breadcrumbs, Center, Flex, Group, Pagination, Paper, SegmentedControl, Text } from '@mantine/core';
 import { IconLayoutGridFilled, IconList } from '@tabler/icons-react';
-import React, { Fragment, useState } from 'react';
+import React, { Fragment } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
-import { DriveFileGrid, DriveFileTable } from '@/features/files/components';
 import { DriveFile, DriveFileStatus } from '@/features/files/types';
 
-import { DriveFileModal } from './DriveFileModal';
+import { DriveFileGrid, DriveFileTable } from './file-list';
+import { DriveFileModal } from './modals';
 import { useCurrentFileSortedAncestors } from '../hooks/useCurrentFileAncestor';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
+
+
+
+export type DriveFallbackTitleKey = 'nikki.drive.myFiles' | 'nikki.drive.trash';
 
 interface FolderHeaderProps {
 	currentFolder?: DriveFile;
 	viewMode: 'grid' | 'list';
 	setViewMode: (mode: 'grid' | 'list') => void;
+	fallbackTitleKey?: DriveFallbackTitleKey;
 	fallbackTitle?: string;
 	showTrashWarning?: boolean;
 }
 
-function BreadcrumbDriveFile({ currentFileAncestors }: { currentFileAncestors: DriveFile[] }): React.ReactNode {
+function BreadcrumbDriveFile({
+	currentFileAncestors,
+	t,
+}: { currentFileAncestors: DriveFile[]; t: (key: string) => string }): React.ReactNode {
 	if (currentFileAncestors.length === 0) {
 		return null;
 	}
@@ -28,13 +38,14 @@ function BreadcrumbDriveFile({ currentFileAncestors }: { currentFileAncestors: D
 		rootAncestor.status === DriveFileStatus.IN_TRASH ||
 		rootAncestor.status === DriveFileStatus.PARENT_IN_TRASH;
 
+	const rootLabel = isInTrash ? t('nikki.drive.trash') : t('nikki.drive.myFiles');
 	const rootItem = (
 		<Anchor
 			component={Link}
 			key={isInTrash ? 'root-trash' : 'root-my-files'}
 			to={isInTrash ? '../trash' : '../my-files'}
 		>
-			{isInTrash ? 'Trash' : 'My files'}
+			{rootLabel}
 		</Anchor>
 	);
 
@@ -65,8 +76,17 @@ function BreadcrumbDriveFile({ currentFileAncestors }: { currentFileAncestors: D
 	return <Breadcrumbs>{[rootItem, ...ancestorItems]}</Breadcrumbs>;
 }
 
-function FolderHeader({ currentFolder, viewMode, setViewMode, fallbackTitle = 'My files', showTrashWarning }: FolderHeaderProps): React.ReactNode {
-	const title = currentFolder ? currentFolder.name : fallbackTitle;
+function FolderHeader({
+	currentFolder,
+	viewMode,
+	setViewMode,
+	fallbackTitleKey,
+	fallbackTitle,
+	showTrashWarning,
+	t,
+}: FolderHeaderProps & { t: (key: string) => string }): React.ReactNode {
+	const resolvedFallback = fallbackTitleKey ? t(fallbackTitleKey) : (fallbackTitle ?? t('nikki.drive.myFiles'));
+	const title = currentFolder ? currentFolder.name : resolvedFallback;
 	const currentFileAncestors = useCurrentFileSortedAncestors();
 
 	return (
@@ -77,9 +97,12 @@ function FolderHeader({ currentFolder, viewMode, setViewMode, fallbackTitle = 'M
 		>
 			<Group gap='sm' align='center'>
 				{currentFileAncestors.length > 0 ? (
-					<BreadcrumbDriveFile currentFileAncestors={currentFileAncestors} />
+					<BreadcrumbDriveFile currentFileAncestors={currentFileAncestors} t={t} />
 				) : (
-					<Title order={1}>{title}</Title>
+					<Text
+						size='xl'
+						fw='bold'
+					>{title}</Text>
 				)}
 			</Group>
 			<Group>
@@ -88,9 +111,9 @@ function FolderHeader({ currentFolder, viewMode, setViewMode, fallbackTitle = 'M
 						<Text
 							size='sm'
 							c='red'
-						>
-							*The files in trash will be <b>deleted after 30 days</b>.
-						</Text>
+							component='span'
+							dangerouslySetInnerHTML={{ __html: t('nikki.drive.trashWarning') }}
+						/>
 					)
 				}
 				<SegmentedControl
@@ -129,9 +152,12 @@ type DriveFileViewProps = {
 	totalItems: number;
 	page: number;
 	onPageChange: (page: number) => void;
+	/** Prefer this so the header translates inside the view and updates on language change. */
+	fallbackTitleKey?: DriveFallbackTitleKey;
 	fallbackTitle?: string;
 	initialViewMode?: DriveFileUIViewMode;
 	showTrashWarning?: boolean;
+	showCreateButton?: boolean;
 };
 
 export function DriveFileView({
@@ -139,72 +165,76 @@ export function DriveFileView({
 	totalItems,
 	page,
 	onPageChange,
-	fallbackTitle = 'My files',
+	fallbackTitleKey,
+	fallbackTitle,
 	initialViewMode = 'grid',
 	showTrashWarning,
+	showCreateButton = true,
 }: DriveFileViewProps): React.ReactNode {
+	const { t } = useTranslation();
 	const totalPages = totalItems > 0 ? Math.ceil(totalItems / PAGE_SIZE) : 0;
 	const VIEW_MODE_KEY = 'drive_viewMode';
 
-	const [viewMode, setViewModeState] = useState<DriveFileUIViewMode>(() => {
-		const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(VIEW_MODE_KEY) : null;
-		return stored === 'grid' || stored === 'list' ? (stored as DriveFileUIViewMode) : initialViewMode;
-	});
-
-	const setViewMode = (mode: DriveFileUIViewMode) => {
-		setViewModeState(mode);
-		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem(VIEW_MODE_KEY, mode);
-		}
-	};
+	const [viewMode, setViewMode] = useLocalStorage<DriveFileUIViewMode>(
+		VIEW_MODE_KEY,
+		initialViewMode,
+		{
+			parse: (s) => (s === 'grid' || s === 'list' ? s : initialViewMode),
+			serialize: (v) => v,
+		},
+	);
 
 	return (
-		<Flex
-			direction='column'
-			h={'100%'}
-			bg={'gray.0'}
-			bdrs={'lg'}
-			p={'lg'}
-			gap='md'
-			style={{
-				boxSizing: 'border-box',
-				overflowY: 'hidden',
-				border: '1px solid var(--mantine-color-gray-3)',
-				boxShadow: '0 8px 24px rgba(15, 23, 42, 0.18)',
-			}}
-		>
-			<FolderHeader
-				currentFolder={currentFolder}
-				viewMode={viewMode}
-				setViewMode={setViewMode}
-				fallbackTitle={fallbackTitle}
-				showTrashWarning={showTrashWarning}
-			/>
-			<FilesView viewMode={viewMode} />
-			<Fragment>
-				{totalPages > 1 && (
-					<Pagination
-						mt='md'
-						value={page}
-						total={totalPages}
-						onChange={onPageChange}
-						size='sm'
-					/>
-				)}
-			</Fragment>
-			<DriveFileModal/>
-		</Flex>
+		<Paper h='100%' flex={1} mih={0}>
+			<Flex
+				direction='column'
+				mah='100%'
+				bdrs='sm'
+				p='lg'
+				gap='md'
+				style={{ boxShadow: '0 8px 24px rgba(15, 23, 42, 0.18)', boxSizing: 'border-box', overflow: 'hidden' }}
+			>
+				<FolderHeader
+					currentFolder={currentFolder}
+					viewMode={viewMode}
+					setViewMode={setViewMode}
+					fallbackTitleKey={fallbackTitleKey}
+					fallbackTitle={fallbackTitle}
+					showTrashWarning={showTrashWarning}
+					t={t}
+				/>
+				<FilesView
+					viewMode={viewMode}
+					showCreate={showCreateButton}
+				/>
+				<Fragment>
+					{totalPages > 1 && (
+						<Pagination
+							mt='md'
+							value={page}
+							total={totalPages}
+							onChange={onPageChange}
+							size='sm'
+						/>
+					)}
+				</Fragment>
+				<DriveFileModal />
+			</Flex>
+		</Paper>
 	);
 }
 
 type FilesViewProps = {
 	viewMode: 'grid' | 'list';
+	showCreate?: boolean;
 };
 
-function FilesView({ viewMode }: FilesViewProps): React.ReactNode {
+function FilesView({ viewMode, showCreate = true }: FilesViewProps): React.ReactNode {
 	return (
-		<Box style={{ flex: 1, minWidth: 0, overflowY: 'hidden' }}>
-			{viewMode === 'grid' ? <DriveFileGrid /> : <DriveFileTable />}
+		<Box flex={1} miw={0} style={{ overflow: 'auto' }}>
+			{viewMode === 'grid'
+				? <DriveFileGrid showCreate={showCreate} />
+				: <DriveFileTable showCreate={showCreate} />}
 		</Box>
 	);
 }

@@ -3,35 +3,39 @@ import { IconArrowBackUp, IconArrowBackUpDouble, IconDotsVertical, IconFileShred
 import { IconDownload } from '@tabler/icons-react';
 import { IconTrash } from '@tabler/icons-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
-import { useDriveFileActions, type DriveFileActions } from '../hooks';
-import { DriveFileStatus, type DriveFile } from '../types';
+import { useDriveFileActions, type DriveFileActions } from '../../hooks';
+import { DriveFileStatus, type DriveFile } from '../../types';
 
 
-const DEFAULT_ACTIONS = [
+const DEFAULT_ACTIONS: Array<React.FC<any>> = [
 	PropertiesItem,
-	EditMetadataItem,
 	DeleteItem,
 ];
 
-const FOLDER_ACTIONS = [
+const FOLDER_ACTIONS: Array<React.FC<any>> = [
 	OpenFolderItem,
 ];
 
-const FILE_ACTIONS = [
+const FILE_ACTIONS: Array<React.FC<any>> = [];
+
+const FILE_ACTIVE_ACTIONS: Array<React.FC<any>> = [
 	DownloadItem,
 ];
 
-const ACTIVE_STATUS_ACTIONS = [
+
+const ACTIVE_STATUS_ACTIONS: Array<React.FC<any>> = [
+	EditMetadataItem,
 	MoveToTrashItem,
 ];
 
-const TRASHED_STATUS_ACTIONS = [
+const TRASHED_STATUS_ACTIONS: Array<React.FC<any>> = [
 	Restore,
 	RestoreTo,
 ];
 
-const PARENT_IN_TRASH_STATUS_ACTIONS = [
+const PARENT_IN_TRASH_STATUS_ACTIONS: Array<React.FC<any>> = [
 	RestoreTo,
 ];
 
@@ -48,11 +52,15 @@ const actionOrder = new Map<React.FC<any>, number>([
 
 const getActions = (file: DriveFile): React.FC<any>[] => {
 	const actions: React.FC<any>[] = [...DEFAULT_ACTIONS];
-	if (file.isFolder){
+	if (file.isFolder) {
 		actions.push(...FOLDER_ACTIONS);
 	}
 	else {
 		actions.push(...FILE_ACTIONS);
+
+		if (file.status === DriveFileStatus.ACTIVE) {
+			actions.push(...FILE_ACTIVE_ACTIONS);
+		}
 	}
 
 	switch (file.status) {
@@ -71,6 +79,7 @@ const getActions = (file: DriveFile): React.FC<any>[] => {
 };
 
 export function FileActionMenu({ file }: { file: DriveFile }): React.ReactNode {
+	const { t } = useTranslation();
 	const actions: DriveFileActions = useDriveFileActions(file);
 	const menuActions = {
 		...actions,
@@ -94,7 +103,7 @@ export function FileActionMenu({ file }: { file: DriveFile }): React.ReactNode {
 							},
 						},
 					}}
-					aria-label='File actions'
+					aria-label={t('nikki.drive.actions.fileActions')}
 				>
 					<IconDotsVertical size={16} />
 				</ActionIcon>
@@ -109,88 +118,96 @@ export function FileActionMenu({ file }: { file: DriveFile }): React.ReactNode {
 }
 
 function PropertiesItem({ openProperties }: { openProperties: () => void }): React.ReactNode {
+	const { t } = useTranslation();
 	return (
 		<Menu.Item color='blue' onClick={openProperties}>
 			<Group align='center' gap='xs'>
 				<IconInfoCircle size={16} />
-				<Text>Properties</Text>
+				<Text>{t('nikki.drive.actions.info')}</Text>
 			</Group>
 		</Menu.Item>
 	);
 }
 
 function MoveToTrashItem({ moveToTrash }: { moveToTrash: () => void }): React.ReactNode {
+	const { t } = useTranslation();
 	return (
 		<Menu.Item color='red' onClick={moveToTrash}>
 			<Group align='center' gap='xs'>
 				<IconTrash size={16} />
-				<Text>Move to trash</Text>
+				<Text>{t('nikki.drive.actions.moveToTrash')}</Text>
 			</Group>
 		</Menu.Item>
 	);
 }
 
 function OpenFolderItem({ openFolder }: { openFolder: () => void }): React.ReactNode {
+	const { t } = useTranslation();
 	return (
 		<Menu.Item onClick={openFolder}>
 			<Group align='center' gap='xs'>
 				<IconFolder size={16} />
-				<Text>Open</Text>
+				<Text>{t('nikki.drive.actions.open')}</Text>
 			</Group>
 		</Menu.Item>
 	);
 }
 
 function DownloadItem({ download }: { download: () => void }): React.ReactNode {
+	const { t } = useTranslation();
 	return (
 		<Menu.Item onClick={download}>
 			<Group align='center' gap='xs'>
 				<IconDownload size={16} />
-				<Text>Download</Text>
+				<Text>{t('nikki.drive.actions.download')}</Text>
 			</Group>
 		</Menu.Item>
 	);
 }
 
 function EditMetadataItem({ editMetadata }: { editMetadata: () => void }): React.ReactNode {
+	const { t } = useTranslation();
 	return (
 		<Menu.Item onClick={editMetadata}>
 			<Group align='center' gap='xs'>
 				<IconPencil size={16} />
-				<Text>Edit metadata</Text>
+				<Text>{t('nikki.drive.actions.editMetadata')}</Text>
 			</Group>
 		</Menu.Item>
 	);
 }
 
 function Restore({ restoreFromTrash }: { restoreFromTrash: () => void }): React.ReactNode {
+	const { t } = useTranslation();
 	return (
 		<Menu.Item color='green' onClick={() => restoreFromTrash()}>
 			<Group align='center' gap='xs'>
 				<IconArrowBackUp size={16} />
-				<Text>Restore</Text>
+				<Text>{t('nikki.drive.actions.restore')}</Text>
 			</Group>
 		</Menu.Item>
 	);
 }
 
-function RestoreTo({restoreTo}: {restoreTo: () => void}):React.ReactNode {
+function RestoreTo({ restoreTo }: { restoreTo: () => void }): React.ReactNode {
+	const { t } = useTranslation();
 	return (
 		<Menu.Item color='green' onClick={() => restoreTo()}>
 			<Group align='center' gap='xs'>
 				<IconArrowBackUpDouble size={16} />
-				<Text>Restore to</Text>
+				<Text>{t('nikki.drive.actions.restoreTo')}</Text>
 			</Group>
 		</Menu.Item>
 	);
 }
 
 function DeleteItem({ confirmDelete }: { confirmDelete: () => void }): React.ReactNode {
+	const { t } = useTranslation();
 	return (
 		<Menu.Item color='red' onClick={confirmDelete}>
 			<Group align='center' gap='xs'>
 				<IconFileShredder size={16} />
-				<Text>Delete</Text>
+				<Text>{t('nikki.drive.actions.delete')}</Text>
 			</Group>
 		</Menu.Item>
 	);

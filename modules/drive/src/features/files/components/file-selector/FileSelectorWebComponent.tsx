@@ -10,14 +10,6 @@ export type DriveFilesSelectedDetail = {
 	fileIds: string[];
 };
 
-/**
- * Đăng ký custom element để module khác dùng FileSelector qua web component.
- * Gọi trong drive bundle init().
- *
- * Usage từ module khác (sau khi đã load drive bundle):
- *   <drive-file-selector parent-id="" multiple="true"></drive-file-selector>
- *   element.addEventListener('drive-files-selected', (e) => { e.detail.fileIds })
- */
 export function registerDriveFileSelectorWebComponent(htmlTag: string = DRIVE_FILE_SELECTOR_TAG): void {
 	if (typeof customElements === 'undefined' || customElements.get(htmlTag)) {
 		return;

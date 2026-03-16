@@ -42,7 +42,7 @@ export type DriveFileModalUIState = {
 
 export type ModalType =
 | { type: 'properties' }
-| { type: 'create' }
+| { type: 'create'; defaultIsFolder?: boolean }
 | { type: 'update' }
 | { type: 'file-selector';
 	afterSelectFn: (selectedId: string[] | string) => void;
@@ -50,7 +50,8 @@ export type ModalType =
 	multiple?: boolean;
 	action?: string;
 }
-| { type: 'delete-confirm'; fileId: string; fileName: string; parentDriveFileRef?: string };
+| { type: 'delete-confirm'; fileId: string; fileName: string; parentDriveFileRef?: string }
+| {type: 'preview'};
 
 export type CurrentListContext = {
 	parentId: string;

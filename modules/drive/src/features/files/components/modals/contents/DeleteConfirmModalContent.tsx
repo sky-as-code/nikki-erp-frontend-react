@@ -1,10 +1,13 @@
 import { Button, Group, Text } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { useRefreshCurrentFolder } from '../../../hooks';
 
 import { driveFileActions } from '@/appState/file';
 
-import { useRefreshCurrentFolder } from '../../hooks';
 
 type DeleteConfirmModalProps = {
 	fileId: string;
@@ -13,12 +16,13 @@ type DeleteConfirmModalProps = {
 	onClose: () => void;
 };
 
-export function DeleteConfirmModal({
+export function DeleteConfirmModalContent({
 	fileId,
 	fileName,
 	parentDriveFileRef,
 	onClose,
 }: DeleteConfirmModalProps): React.ReactNode {
+	const { t } = useTranslation();
 	const dispatch = useMicroAppDispatch();
 	const { refresh } = useRefreshCurrentFolder();
 	const [loading, setLoading] = useState(false);
@@ -36,7 +40,19 @@ export function DeleteConfirmModal({
 					includeTree: true,
 					treePageSize: 50,
 				});
+				notifications.show({
+					title: t('nikki.drive.toast.deleteSuccess'),
+					message: fileName,
+					color: 'green',
+				});
 				onClose();
+			}
+			else {
+				notifications.show({
+					title: t('nikki.drive.toast.deleteError'),
+					message: fileName,
+					color: 'red',
+				});
 			}
 		}
 		finally {
@@ -47,14 +63,14 @@ export function DeleteConfirmModal({
 	return (
 		<>
 			<Text size='sm' c='dimmed'>
-				Are you sure you want to permanently delete &quot;{fileName}&quot;? This action cannot be undone.
+				{t('nikki.drive.deleteConfirm.message', { name: fileName })}
 			</Text>
 			<Group justify='flex-end' mt='md' gap='xs'>
 				<Button variant='subtle' onClick={onClose} disabled={loading}>
-					Cancel
+					{t('nikki.drive.modals.cancel')}
 				</Button>
 				<Button color='red' onClick={handleConfirm} loading={loading}>
-					Delete
+					{t('nikki.drive.deleteConfirm.delete')}
 				</Button>
 			</Group>
 		</>

@@ -13,17 +13,12 @@ export function useMenuBarItems(): MenuBarItem[] {
 				link: '/overview',
 			},
 			{
-				label: translate('nikki.drive.menu.management', 'Management'),
-				items: [
-					{
-						label: translate('nikki.drive.menu.my-files', 'My Files'),
-						link: '/management/my-files',
-					},
-					{
-						label: translate('nikki.drive.menu.trash', 'Trash'),
-						link: '/management/trash',
-					},
-				],
+				label: translate('nikki.drive.menu.my-files', 'My Files'),
+				link: '/management/my-files',
+			},
+			{
+				label: translate('nikki.drive.menu.trash', 'Trash'),
+				link: '/management/trash',
 			},
 		],
 		[translate],

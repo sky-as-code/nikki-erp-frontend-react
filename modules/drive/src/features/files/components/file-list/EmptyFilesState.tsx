@@ -19,4 +19,3 @@ export function EmptyFilesState(): React.ReactNode {
 		</Center>
 	);
 }
-

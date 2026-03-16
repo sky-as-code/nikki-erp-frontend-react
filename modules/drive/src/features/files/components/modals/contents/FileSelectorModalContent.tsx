@@ -1,7 +1,8 @@
 import { Button, Flex } from '@mantine/core';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import { FileSelector } from '../FileSelector';
+import { FileSelector } from '../../file-selector';
 
 
 type FileSelectorModalProps = {
@@ -12,7 +13,8 @@ type FileSelectorModalProps = {
 	action?: string;
 };
 
-export function FileSelectorModal({ onClose, afterSelectFn, action, mode = 'folder', multiple = false }: FileSelectorModalProps) {
+export function FileSelectorModalContent({ onClose, afterSelectFn, action, mode = 'folder', multiple = false }: FileSelectorModalProps) {
+	const { t } = useTranslation();
 	const [selectedId, setSelectedId] = useState<string[] | string>('');
 
 	return (
@@ -24,7 +26,7 @@ export function FileSelectorModal({ onClose, afterSelectFn, action, mode = 'fold
 			/>
 			<Flex justify='flex-end' gap='xs'>
 				<Button variant='subtle' onClick={onClose}>
-					Cancel
+					{t('nikki.drive.modals.cancel')}
 				</Button>
 				<Button
 					onClick={() => {
@@ -33,7 +35,7 @@ export function FileSelectorModal({ onClose, afterSelectFn, action, mode = 'fold
 					}}
 					disabled={Array.isArray(selectedId) && selectedId.length === 0}
 				>
-					{action || 'Select'}
+					{action ?? t('nikki.drive.modals.select')}
 				</Button>
 			</Flex>
 		</Flex>

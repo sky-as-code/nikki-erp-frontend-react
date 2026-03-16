@@ -50,6 +50,141 @@
                 "go_back": "Quay lại"
             }
         },
+        "drive": {
+            "menu": {
+                "overview": "Tổng quan",
+                "management": "Quản lý",
+                "my-files": "Tệp của tôi",
+                "trash": "Thùng rác"
+            },
+						"pageTitle": {
+							"overview": "Tổng quan - Drive - Nikki",
+							"trash": "Thùng rác - Drive - Nikki",
+							"myFiles": "Tệp của tôi - Drive - Nikki",
+							"starredFiles": "Yêu thích - Drive - Nikki",
+							"sharedWithMe": "Được chia sẻ với tôi - Drive - Nikki"
+						},
+            "myFiles": "Tệp của tôi",
+            "trash": "Thùng rác",
+            "sharedWithMe": "Được chia sẻ với tôi",
+            "starred": "Đã gắn dấu sao",
+            "loadMoreFolders": "Tải thêm thư mục",
+            "openFolder": "Mở thư mục",
+            "collapse": "Thu gọn",
+            "expand": "Mở rộng",
+            "collapseMyFilesTree": "Thu gọn cây Tệp của tôi",
+            "expandMyFilesTree": "Mở rộng cây Tệp của tôi",
+            "trashWarning": "*Các tệp trong thùng rác sẽ bị <b>xóa vĩnh viễn sau 30 ngày</b>.",
+            "actions": {
+                "fileActions": "Thao tác với tệp",
+                "info": "Thông tin",
+                "properties": "Thuộc tính",
+                "moveToTrash": "Chuyển vào thùng rác",
+                "open": "Mở",
+                "download": "Tải xuống",
+                "editMetadata": "Chỉnh sửa thông tin",
+                "restore": "Khôi phục",
+                "restoreTo": "Khôi phục về",
+                "delete": "Xóa"
+            },
+            "modals": {
+                "info": "Thông tin",
+                "create": "Tạo",
+                "update": "Cập nhật",
+                "deleteConfirm": "Xóa tệp",
+                "restoreTo": "Khôi phục về",
+                "select": "Chọn",
+                "cancel": "Hủy",
+								"preview": "Xem trước"
+            },
+            "propertiesCard": {
+                "type": "Loại",
+                "size": "Kích thước",
+                "visibility": "Quyền xem",
+                "status": "Trạng thái",
+                "owner": "Chủ sở hữu",
+                "createdAt": "Ngày tạo",
+                "updatedAt": "Ngày cập nhật",
+                "folder": "Thư mục",
+                "file": "Tệp",
+                "copyStreamUrl": "Sao chép URL stream",
+                "unknown": "Không xác định",
+                "visibilityPublic": "Công khai",
+                "visibilityOwner": "Chủ sở hữu",
+                "visibilityPrivate": "Riêng tư"
+            },
+            "table": {
+                "type": "Loại",
+                "actions": "Thao tác"
+            },
+            "createFile": {
+                "name": "Tên",
+                "namePlaceholderFolder": "Nhập tên thư mục",
+                "namePlaceholderFile": "Nhập tên (tùy chọn, dùng tên tệp)",
+                "visibility": "Quyền xem",
+                "folder": "Thư mục",
+                "file": "Tệp",
+                "dropzoneText": "Kéo thả file hoặc click để chọn",
+                "dropzoneHint": "Chọn 1 file, tối đa 50MB",
+                "pleaseSelectFile": "Vui lòng chọn file",
+                "create": "Tạo",
+                "nameTooLong": "Tên quá dài",
+                "nameRequired": "Tên là bắt buộc",
+                "createFile": "Tải tệp lên",
+                "createFolder": "Thêm thư mục"
+            },
+            "updateFile": {
+                "name": "Tên",
+                "namePlaceholder": "Nhập tên tệp hoặc thư mục",
+                "visibility": "Quyền xem",
+                "visibilityShared": "Chia sẻ",
+                "update": "Cập nhật",
+                "nameTooLong": "Tên quá dài",
+                "nameRequired": "Tên là bắt buộc"
+            },
+            "deleteConfirm": {
+                "message": "Bạn có chắc muốn xóa vĩnh viễn \"{{name}}\"? Hành động này không thể hoàn tác.",
+                "delete": "Xóa"
+            },
+            "noItems": "Không có mục nào",
+            "common": {
+              "notImplementedYet": "chưa được triển khai."
+            },
+            "errors": {
+              "failedToLoadFiles": "Tải danh sách tệp thất bại"
+            },
+            "fields": {
+                "id": "ID",
+                "etag": "ETag",
+                "ownerRef": "Chủ sở hữu",
+                "parentDriveFileRef": "Thư mục cha",
+                "name": "Tên",
+                "mime": "Loại MIME",
+                "isFolder": "Thư mục",
+                "size": "Kích thước",
+                "visibility": "Quyền xem",
+                "status": "Trạng thái",
+                "children": "Con",
+                "deletedAt": "Xóa lúc",
+                "createdAt": "Ngày tạo",
+                "updatedAt": "Ngày cập nhật",
+                "statusActive": "Đang dùng",
+                "statusInTrash": "Trong thùng rác",
+                "statusParentInTrash": "Thư mục cha trong thùng rác"
+            },
+            "toast": {
+                "createSuccess": "Tạo thành công",
+                "createError": "Tạo thất bại",
+                "updateSuccess": "Cập nhật thành công",
+                "updateError": "Cập nhật thất bại",
+                "deleteSuccess": "Đã xóa",
+                "deleteError": "Xóa thất bại",
+                "moveToTrashSuccess": "Đã chuyển vào thùng rác",
+                "moveToTrashError": "Chuyển vào thùng rác thất bại",
+                "restoreSuccess": "Khôi phục thành công",
+                "restoreError": "Khôi phục thất bại"
+            }
+        },
         "general": {
 			"fields": {
 				"id": "Mã định danh"
