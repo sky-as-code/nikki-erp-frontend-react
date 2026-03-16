@@ -6,6 +6,9 @@ import { DRIVE_TABS } from '@/constants/driveTabs';
 export type DriveTreeTranslate = (key: string) => string;
 
 
+export type DriveTreeTranslate = (key: string) => string;
+
+
 type DriveFileApi = DriveFile & { is_folder?: boolean };
 
 type TreePagingState = Record<string, {

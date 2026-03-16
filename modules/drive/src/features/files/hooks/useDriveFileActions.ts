@@ -10,9 +10,11 @@ import { useOrgModulePath } from '@/hooks/useRootPath';
 
 import { useRefreshCurrentFolder } from './useRefreshCurrentFolder';
 
-
 import type { DriveFile } from '../types';
 
+import { driveFileActions } from '@/appState/file';
+import { useDriveStreamUrl } from '@/hooks/useDriveStreamUrl';
+import { useOrgModulePath } from '@/hooks/useRootPath';
 
 
 export type DriveFileActions = {
@@ -199,13 +201,26 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 		const result = await (
 			dispatch as (action: unknown) => Promise<{ type?: string }>
 		)(driveFileActions.restoreDriveFileFromTrash({
-			fileId: file.id, parentDriveFileRef: desFileRef ?? file.parentDriveFileRef ?? null }));
+			fileId: file.id, parentDriveFileRef: desFileRef ?? file.parentDriveFileRef ?? null
+		}));
 
 		if (result?.type?.endsWith('/fulfilled')) {
 			refresh({
 				parentId: file.parentDriveFileRef ?? undefined,
 				includeTree: true,
 				treePageSize: 50,
+			});
+			notifications.show({
+				title: t('nikki.drive.toast.restoreSuccess'),
+				message: file.name,
+				color: 'green',
+			});
+		}
+		else {
+			notifications.show({
+				title: t('nikki.drive.toast.restoreError'),
+				message: file.name,
+				color: 'red',
 			});
 		}
 	};
@@ -214,7 +229,7 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 		(dispatch as (action: unknown) => void)(
 			driveFileActions.setDriveFileModal({
 				openedModal: true,
-				title: 'Restore To',
+				title: t('nikki.drive.modals.restoreTo'),
 				type: {
 					type: 'file-selector',
 					afterSelectFn: (fileId: string[] | string) => {
@@ -222,7 +237,7 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 					},
 					mode: 'folder',
 					multiple: false,
-					action: 'Restore',
+					action: t('nikki.drive.actions.restore'),
 				},
 			}),
 		);
@@ -236,7 +251,7 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 		(dispatch as (action: unknown) => void)(
 			driveFileActions.setDriveFileModal({
 				openedModal: true,
-				title: 'Update',
+				title: t('nikki.drive.modals.update'),
 				type: {
 					type: 'update',
 				},
@@ -248,7 +263,7 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 		(dispatch as (action: unknown) => void)(
 			driveFileActions.setDriveFileModal({
 				openedModal: true,
-				title: 'Create',
+				title: t('nikki.drive.modals.create'),
 				type: {
 					type: 'create',
 				},
@@ -260,7 +275,7 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 		(dispatch as (action: unknown) => void)(
 			driveFileActions.setDriveFileModal({
 				openedModal: true,
-				title: 'Delete file',
+				title: t('nikki.drive.modals.deleteConfirm'),
 				type: {
 					type: 'delete-confirm',
 					fileId: file.id,
@@ -268,6 +283,21 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 					parentDriveFileRef: file.parentDriveFileRef ?? undefined,
 				},
 			}),
+		);
+	};
+
+	const previewFile = () => {
+		(dispatch as (action: unknown) => void)(
+			driveFileActions.setDriveFileModal({
+				openedModal: true,
+				title: t('nikki.drive.modals.preview'),
+				type: {
+					type: 'preview',
+				},
+			}),
+		);
+		(dispatch as (action: unknown) => void)(
+			driveFileActions.getDriveFileById(file.id),
 		);
 	};
 

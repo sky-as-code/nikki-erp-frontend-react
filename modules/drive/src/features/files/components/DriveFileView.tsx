@@ -24,6 +24,7 @@ export function DriveFileView({
 	viewMode,
 	showCreateButton = true,
 }: DriveFileViewProps): React.ReactNode {
+	const { t } = useTranslation();
 	const totalPages = totalItems > 0 ? Math.ceil(totalItems / PAGE_SIZE) : 0;
 
 	return (
