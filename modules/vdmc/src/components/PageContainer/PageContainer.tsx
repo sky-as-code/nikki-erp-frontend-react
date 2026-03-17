@@ -1,4 +1,5 @@
 import { Box, Center, Loader, Paper, Space, Stack, Text } from '@mantine/core';
+import { IconAlertCircle } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,10 +12,11 @@ export type PageContainerProps = {
 	sections?: React.ReactNode[];
 	children?: React.ReactNode;
 	isLoading?: boolean;
+	isEmpty?: boolean;
+	emptyContent?: React.ReactNode;
 	isNotFound?: boolean;
-	notFoundComponent?: React.ReactNode;
+	notFoundContent?: React.ReactNode;
 };
-
 
 const PageLoading: React.FC = () => {
 	const { t: translate } = useTranslation();
@@ -28,6 +30,38 @@ const PageLoading: React.FC = () => {
 	);
 };
 
+const EmptyContent: React.FC<{ message?: string }> = ({ message }) => {
+	const { t: translate } = useTranslation();
+
+	return (
+		<Center
+			h='100%'
+			w='100%'
+			p='xl'
+			bg='gray.0'
+		>
+			<Stack align='center' gap='md'>
+				<IconAlertCircle size={52} color='red' />
+				<Text c='dimmed'>{message || translate('nikki.general.messages.no_data')}</Text>
+			</Stack>
+		</Center>
+	);
+};
+
+const NotFound: React.FC = () => {
+	const { t: translate } = useTranslation();
+	return (
+		<EmptyContent message={translate('nikki.general.messages.not_found')} />
+	);
+};
+
+const NoData: React.FC = () => {
+	const { t: translate } = useTranslation();
+	return (
+		<EmptyContent message={translate('nikki.general.messages.no_data')} />
+	);
+};
+
 export const PageContainer: React.FC<PageContainerProps> = ({
 	breadcrumbs = [],
 	actionBar,
@@ -35,24 +69,27 @@ export const PageContainer: React.FC<PageContainerProps> = ({
 	children,
 	isLoading = false,
 	isNotFound = false,
-	notFoundComponent,
+	notFoundContent,
+	isEmpty = false,
+	emptyContent,
 }) => {
+
 	return (
 		<Stack gap={'sm'} mt={'xs'} p={'sm'} bg='light-dark(rgb(255 255 255 / 80%), var(--mantine-color-dark-6))' bdrs={'xs'}>
+			{breadcrumbs.length > 0 && <BreadCrumbs items={breadcrumbs} />}
+			{actionBar && <Box>{actionBar}</Box>}
+			{sections.map((section, index) => <Box key={index}>{section}</Box>)}
 			{isLoading
 				? <PageLoading />
 				: (
-					<>
-						{breadcrumbs.length > 0 && <BreadCrumbs items={breadcrumbs} />}
-						{actionBar && <Box>{actionBar}</Box>}
-						{sections.map((section, index) => <Box key={index}>{section}</Box>)}
-						<Paper p={'sm'}>
-							{isNotFound && notFoundComponent
-								? notFoundComponent
+					<Paper p={'sm'}>
+						{isNotFound
+							? notFoundContent || <NotFound />
+							: isEmpty
+								? emptyContent || <NoData />
 								: children
-							}
-						</Paper>
-					</>
+						}
+					</Paper>
 				)}
 			<Space h={{ base: 'lg', md: 'xl' }}  />
 		</Stack>

@@ -10,15 +10,15 @@ import { KioskModel } from '../../types';
 export interface KioskModelGridViewProps {
 	models: KioskModel[];
 	isLoading?: boolean;
-	onViewDetail: (modelId: string) => void;
-	onEdit?: (modelId: string) => void;
-	onDelete?: (modelId: string) => void;
+	onPreviewView: (kioskModel: KioskModel) => void;
+	onEdit?: (kioskModel: KioskModel) => void;
+	onDelete?: (kioskModel: KioskModel) => void;
 }
 
 export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 	models,
 	isLoading = false,
-	onViewDetail,
+	onPreviewView,
 	onEdit,
 	onDelete,
 }) => {
@@ -56,7 +56,7 @@ export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 					style={{
 						cursor: 'pointer',
 					}}
-					onClick={() => onViewDetail(model.id)}
+					onClick={() => onPreviewView(model)}
 				>
 					<Stack gap='sm'>
 						<Group justify='space-between' align='flex-start'>
@@ -70,14 +70,14 @@ export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 							<Group gap='xs' onClick={(e) => e.stopPropagation()}>
 								{onEdit && (
 									<Tooltip label={translate('nikki.general.actions.edit')}>
-										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(model.id)}>
+										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(model)}>
 											<IconEdit size={14} />
 										</ActionIcon>
 									</Tooltip>
 								)}
 								{onDelete && (
 									<Tooltip label={translate('nikki.general.actions.delete')}>
-										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(model.id)}>
+										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(model)}>
 											<IconTrash size={14} />
 										</ActionIcon>
 									</Tooltip>

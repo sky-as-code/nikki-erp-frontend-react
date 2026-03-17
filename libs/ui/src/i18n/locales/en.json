@@ -1185,6 +1185,10 @@
 					"detail": {
 						"title": "Kiosk Model Details"
 					},
+					"tabs": {
+						"basicInfo": "Basic Information",
+						"modelSettings": "Settings"
+					},
 					"sections": {
 						"basicInfo": "Basic Information",
 						"configuration": "Configuration",
@@ -1206,9 +1210,14 @@
 						"numberOfTrays": "Number of Trays",
 						"trayConfigurations": "Tray Configurations",
 						"trayRow": "Row",
-						"trayDevice": "Tray Device",
-						"deviceSpecifications": "Device Specifications",
+						"shelfType": "Shelf Type",
 						"createdAt": "Created At"
+					},
+					"shelfType": {
+						"spring": "Spring",
+						"conveyor": "Conveyor",
+						"hangingConveyor": "Hanging Conveyor",
+						"pushTape": "Push Tape"
 					},
 					"operatingMode": {
 						"pending": "Pending",
@@ -1224,12 +1233,6 @@
 						"normal": "Normal",
 						"focus": "Focus"
 					},
-					"selectDevice": {
-						"title": "Select Tray Device",
-						"searchPlaceholder": "Search by device code or name...",
-						"noDevices": "No devices found",
-						"selectDevice": "Select Device"
-					},
 					"search": {
 						"placeholder": "Search by code or name..."
 					},
@@ -1238,12 +1241,16 @@
 					},
 					"messages": {
 						"no_models": "No models found",
+						"not_found": {
+							"title": "Kiosk Model Not Found",
+							"message": "The kiosk model you are looking for does not exist or has been removed."
+						},
+						"delete_confirm": "Are you sure you want to delete model <strong>{{name}}</strong>? This action cannot be undone.",
 						"no_slideshow": "No slideshow",
 						"no_trays": "No trays yet. Click 'Add Row' button to add a tray."
 					},
 					"actions": {
-						"addTray": "Add Row",
-						"selectDeviceForSelected": "Select device for {{count}} selected rows"
+						"addTray": "Add Row"
 					}
 				},
 				"payment": {

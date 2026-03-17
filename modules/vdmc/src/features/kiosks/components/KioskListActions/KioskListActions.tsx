@@ -3,14 +3,16 @@ import { IconPlus, IconRefresh, IconList, IconLayoutGrid, IconMapPin, IconSearch
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { ViewMode } from '@/components/ControlPanel';
+
 import { ConnectionStatus, KioskMode, KioskStatus } from '../../types';
 
 
-export type ViewMode = 'list' | 'grid' | 'map';
+export type KioskListViewMode = Extract<ViewMode, 'list' | 'grid' | 'map'>;
 
 export interface KioskListActionsProps {
-	viewMode: ViewMode;
-	onViewModeChange: (mode: ViewMode) => void;
+	viewMode: KioskListViewMode;
+	onViewModeChange: (mode: KioskListViewMode) => void;
 	onCreate: () => void;
 	onRefresh: () => void;
 	searchValue: string;
@@ -180,7 +182,7 @@ export const KioskListActions: React.FC<KioskListActionsProps> = ({
 				<SegmentedControl
 					data={viewModeSegments}
 					value={viewMode}
-					onChange={(value) => onViewModeChange(value as ViewMode)}
+					onChange={(value) => onViewModeChange(value as KioskListViewMode)}
 					size='md'
 				/>
 			</Group>

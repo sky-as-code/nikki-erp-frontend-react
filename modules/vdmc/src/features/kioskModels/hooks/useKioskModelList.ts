@@ -18,7 +18,7 @@ export function useKioskModelList() {
 
 	return {
 		models: list.data,
-		isLoadingList: list.status === 'pending' || list.status === 'idle',
+		isLoadingList: list.status === 'idle' || list.status === 'pending',
 		handleRefresh,
 	};
 }

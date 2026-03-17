@@ -1296,6 +1296,10 @@
 				"detail": {
 					"title": "Chi tiết dòng máy"
 				},
+				"tabs": {
+					"basicInfo": "Thông tin cơ bản",
+					"modelSettings": "Cài đặt"
+				},
 				"sections": {
 					"basicInfo": "Thông tin cơ bản",
 					"configuration": "Cấu hình",
@@ -1317,9 +1321,14 @@
 					"numberOfTrays": "Số khay",
 					"trayConfigurations": "Cấu hình khay",
 					"trayRow": "Hàng",
-					"trayDevice": "Loại khay",
-					"deviceSpecifications": "Thông số thiết bị",
+					"shelfType": "Loại khay",
 					"createdAt": "Ngày tạo"
+				},
+				"shelfType": {
+					"spring": "Lò xo",
+					"conveyor": "Băng chuyền",
+					"hangingConveyor": "Băng chuyền treo",
+					"pushTape": "Băng đẩy"
 				},
 				"operatingMode": {
 					"pending": "Chờ xử lý",
@@ -1335,12 +1344,6 @@
 					"normal": "Bình thường",
 					"focus": "Tập trung"
 				},
-				"selectDevice": {
-					"title": "Chọn loại khay",
-					"searchPlaceholder": "Tìm kiếm theo mã hoặc tên thiết bị...",
-					"noDevices": "Không tìm thấy thiết bị nào",
-					"selectDevice": "Chọn loại khay"
-				},
 				"search": {
 					"placeholder": "Tìm kiếm theo mã hoặc tên..."
 				},
@@ -1349,12 +1352,16 @@
 				},
 				"messages": {
 					"no_models": "Không tìm thấy mô hình nào",
+					"not_found": {
+						"title": "Không tìm thấy dòng máy",
+						"message": "Dòng máy bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
+					},
+					"delete_confirm": "Bạn có chắc chắn muốn xóa dòng máy <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
 					"no_slideshow": "Chưa có trình chiếu",
 					"no_trays": "Chưa có khay nào. Nhấn nút 'Thêm hàng' để thêm khay."
 				},
 				"actions": {
-					"addTray": "Thêm hàng",
-					"selectDeviceForSelected": "Chọn loại khay cho {{count}} hàng đã chọn"
+					"addTray": "Thêm hàng"
 				}
 			},
 			"payment": {
