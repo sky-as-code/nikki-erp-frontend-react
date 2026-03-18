@@ -204,6 +204,7 @@ export const DriveSearchBar: React.FC = () => {
 
 	const showLoading = useMinimumLoading(loading, 300);
 
+	// Debounced search
 	useEffect(() => {
 		if (!query.trim()) {
 			setResults([]);

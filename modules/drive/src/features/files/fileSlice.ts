@@ -198,8 +198,7 @@ export const moveDriveFileToTrash = createAsyncThunk<void, string, thunkConfig>(
 	async (fileId, { rejectWithValue }) => {
 		try {
 			await fileService.moveDriveFileToTrash(fileId);
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to move file to trash';
 			return rejectWithValue(errorMessage);
@@ -231,8 +230,7 @@ export const getCurrentFolderById = createAsyncThunk<
 	try {
 		const result = await fileService.getDriveFileById(fileId);
 		return result;
-	}
-	catch (error) {
+	} catch (error) {
 		const errorMessage =
 			error instanceof Error
 				? error.message
@@ -294,8 +292,7 @@ export const getDriveFileByParent = createAsyncThunk<
 		try {
 			const listReq = withDefaultListGraph(req);
 			return await getDriveFileByParentPayload(parentId, listReq);
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to get file by parent';
 			return rejectWithValue(errorMessage);
@@ -327,8 +324,7 @@ export const getDriveFileByParentForTree = createAsyncThunk<
 			};
 
 			return await getDriveFileByParentPayload(parentId, treeReq);
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to get file by parent';
 			return rejectWithValue(errorMessage);
@@ -345,8 +341,7 @@ export const searchDriveFile = createAsyncThunk<
 		const listReq = withDefaultListGraph(req);
 		const result = await fileService.searchDriveFile(listReq);
 		return result;
-	}
-	catch (error) {
+	} catch (error) {
 		const errorMessage =
 			error instanceof Error ? error.message : 'Failed to search file';
 		return rejectWithValue(errorMessage);
