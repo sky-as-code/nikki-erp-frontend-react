@@ -97,21 +97,29 @@
                 "cancel": "Hủy",
 								"preview": "Xem trước"
             },
+						"enum":{
+							"visibility": {
+								"public": "Công khai",
+								"owner": "Cá nhân",
+								"shared": "Được chia sẻ"
+							},
+							"status": {
+								"active": "Hoạt động",
+								"inTrash": "Rác",
+								"parentInTrash": "Thư mục cha rác"
+							}
+						},
             "propertiesCard": {
                 "type": "Loại",
-                "size": "Kích thước",
-                "visibility": "Quyền xem",
                 "status": "Trạng thái",
-                "owner": "Chủ sở hữu",
+								"visibility": "Khả năng quan sát",
+								"owner": "Chủ sở hữu",
                 "createdAt": "Ngày tạo",
                 "updatedAt": "Ngày cập nhật",
                 "folder": "Thư mục",
                 "file": "Tệp",
                 "copyStreamUrl": "Sao chép URL stream",
-                "unknown": "Không xác định",
-                "visibilityPublic": "Công khai",
-                "visibilityOwner": "Chủ sở hữu",
-                "visibilityPrivate": "Riêng tư"
+                "unknown": "Không xác định"
             },
             "table": {
                 "type": "Loại",
@@ -153,6 +161,9 @@
                 "delete": "Xóa"
             },
             "noItems": "Không có mục nào",
+			"preview": {
+				"notSupported": "Không hỗ trợ xem trước"
+			},
             "common": {
               "notImplementedYet": "chưa được triển khai."
             },
@@ -208,6 +219,7 @@
 				"delete": "Xóa",
 				"edit": "Chỉnh sửa",
 				"view": "Xem",
+				"close": "Đóng",
 				"cancel": "Hủy",
 				"search": "Tìm kiếm",
 				"refresh": "Làm mới",
@@ -215,8 +227,10 @@
 				"save": "Lưu",
 				"confirm": "Xác nhận",
 				"remove": "Loại bỏ",
+				"deselect": "Bỏ chọn",
 				"approve": "Phê duyệt",
 				"reject": "Từ chối",
+				"select": "Chọn",
 				"select_all": "Chọn tất cả",
 				"deselect_all": "Bỏ chọn tất cả",
 				"clear_filters": "Xóa bộ lọc",
@@ -227,6 +241,7 @@
 				"viewDetails": "Xem chi tiết",
 				"apply": "Áp dụng"
 			},
+			"selected": "Đã chọn",
 			"boolean": {
 				"yes": "Có",
 				"no": "Không"
@@ -256,7 +271,8 @@
 			"sort": {
 				"title": "Sắp xếp",
 				"asc": "Tăng dần",
-				"desc": "Giảm dần"
+				"desc": "Giảm dần",
+				"toggleDirection": "Đổi chiều sắp xếp"
 			},
 			"favorites": {
 				"title": "Yêu thích",

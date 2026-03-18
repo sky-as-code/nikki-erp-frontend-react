@@ -1,5 +1,6 @@
 import type { DriveFile } from '../types';
 import type { TreeNodeData } from '@mantine/core';
+import { DRIVE_TABS } from '@/constants/driveTabs';
 
 
 export type DriveTreeTranslate = (key: string) => string;
@@ -59,9 +60,9 @@ function getStaticTreeNodes(t?: DriveTreeTranslate): TreeNodeData[] {
 	const starred = t ? t('nikki.drive.starred') : 'Starred';
 	const trash = t ? t('nikki.drive.trash') : 'Trash';
 	return [
-		{ label: shared, value: 'shared-with-me', nodeProps: { type: 'folder' } },
-		{ label: starred, value: 'starred', nodeProps: { type: 'folder' } },
-		{ label: trash, value: 'trash', nodeProps: { type: 'folder' } },
+		{ label: shared, value: DRIVE_TABS.SHARED_WITH_ME, nodeProps: { type: 'folder' } },
+		{ label: starred, value: DRIVE_TABS.STARRED, nodeProps: { type: 'folder' } },
+		{ label: trash, value: DRIVE_TABS.TRASH, nodeProps: { type: 'folder' } },
 	];
 }
 
@@ -98,7 +99,7 @@ export function treeRootItemsToTreeData(
 
 	const myFilesNode: TreeNodeData = {
 		label: myFilesLabel,
-		value: 'my-files',
+		value: DRIVE_TABS.MY_FILES,
 		nodeProps: { type: 'folder' },
 		children: myFilesChildren,
 	};

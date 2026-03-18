@@ -95,21 +95,30 @@
 				"cancel": "Cancel",
 				"preview": "Preview"
 			},
+			"enum":{
+				"visibility": {
+					"public": "Public",
+					"owner": "Owner",
+					"shared": "Shared"
+				},
+				"status": {
+					"active": "Active",
+					"inTrash": "In trash",
+					"parentInTrash": "Parent in trash"
+				}
+			},
 			"propertiesCard": {
 				"type": "Type",
+				"status": "Status",
 				"size": "Size",
 				"visibility": "Visibility",
-				"status": "Status",
 				"owner": "Owner",
 				"createdAt": "Created at",
 				"updatedAt": "Updated at",
 				"folder": "Folder",
 				"file": "File",
 				"copyStreamUrl": "Copy stream URL",
-				"unknown": "Unknown",
-				"visibilityPublic": "Public",
-				"visibilityOwner": "Owner",
-				"visibilityPrivate": "Private"
+				"unknown": "Unknown"
 			},
 			"table": {
 				"type": "Type",
@@ -151,6 +160,9 @@
 				"delete": "Delete"
 			},
 			"noItems": "No items",
+			"preview": {
+				"notSupported": "Preview is not supported"
+			},
 			"common": {
 				"notImplementedYet": "is not implemented yet."
 			},
@@ -206,6 +218,7 @@
 				"delete": "Delete",
 				"edit": "Edit",
 				"view": "View",
+				"close": "Close",
 				"cancel": "Cancel",
 				"search": "Search",
 				"refresh": "Refresh",
@@ -213,8 +226,10 @@
 				"save": "Save",
 				"confirm": "Confirm",
 				"remove": "Remove",
+				"deselect": "Deselect",
 				"approve": "Approve",
 				"reject": "Reject",
+				"select": "Select",
 				"select_all": "Select All",
 				"deselect_all": "Deselect All",
 				"clear_filters": "Clear Filters",
@@ -225,6 +240,7 @@
 				"viewDetails": "View Details",
 				"apply": "Apply"	
 			},
+			"selected": "Selected",
 			"boolean": {
 				"yes": "Yes",
 				"no": "No"
@@ -254,7 +270,8 @@
 			"sort": {
 				"title": "Sort",
 				"asc": "Ascending",
-				"desc": "Descending"
+				"desc": "Descending",
+				"toggleDirection": "Toggle sort direction"
 			},
 			"favorites": {
 				"title": "Favorites",

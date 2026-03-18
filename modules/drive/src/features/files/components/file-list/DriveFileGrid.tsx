@@ -5,6 +5,7 @@ import React, { Fragment } from 'react';
 
 import { useDriveFileActions, useMinimumLoading } from '../../hooks';
 import { DriveFileStatus, type DriveFile } from '../../types';
+import { formatSize } from '../../utils';
 import { FileActionMenu } from '../file-actions';
 import { AddFileCard } from './AddFileCard';
 import { EmptyFilesState } from '../..';
@@ -97,7 +98,7 @@ function SkeletonFileCard(): React.ReactNode {
 function FileCard({ file }: { file: DriveFile }): React.ReactNode {
 	const isFolder = file.isFolder;
 	const Icon = isFolder ? IconFolder : IconFile;
-	const sizeLabel = file.size > 0 ? formatSize(file.size) : '—';
+	const sizeLabel = formatSize(file.size);
 	const { previewFile, openFolder } = useDriveFileActions(file);
 
 	const handleClick = () => {
@@ -143,10 +144,4 @@ function FileCard({ file }: { file: DriveFile }): React.ReactNode {
 			</Stack>
 		</Card>
 	);
-}
-
-function formatSize(bytes: number): string {
-	if (bytes < 1024) return `${bytes} B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

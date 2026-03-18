@@ -1,9 +1,10 @@
 import { Card, Divider, Stack, Text } from '@mantine/core';
-import { IconPlus } from '@tabler/icons-react';
+import { IconFilePlus, IconFolderPlus } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useOpenCreateFileModal } from '../../hooks/useOpenCreateFileModal';
+
 
 export function AddFileCard(): React.ReactNode {
 	const openCreate = useOpenCreateFileModal();
@@ -26,7 +27,7 @@ export function AddFileCard(): React.ReactNode {
 					style={{ cursor: 'pointer' }}
 					onClick={() => openCreate(true)}
 				>
-					<IconPlus size={20} />
+					<IconFolderPlus size={20} />
 					<Text size='xs' c='dimmed'>
 						{t('nikki.drive.createFile.createFolder')}
 					</Text>
@@ -39,7 +40,7 @@ export function AddFileCard(): React.ReactNode {
 					style={{ cursor: 'pointer' }}
 					onClick={() => openCreate(false)}
 				>
-					<IconPlus size={20} />
+					<IconFilePlus size={20} />
 					<Text size='xs' c='dimmed'>
 						{t('nikki.drive.createFile.createFile')}
 					</Text>

@@ -4,13 +4,13 @@ import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { useRefreshCurrentFolder } from './useRefreshCurrentFolder';
-
-import type { DriveFile } from '../types';
-
 import { driveFileActions } from '@/appState/file';
 import { useDriveStreamUrl } from '@/hooks/useDriveStreamUrl';
 import { useOrgModulePath } from '@/hooks/useRootPath';
+
+import { useRefreshCurrentFolder } from './useRefreshCurrentFolder';
+
+import type { DriveFile } from '../types';
 
 
 export type DriveFileActions = {
@@ -87,10 +87,13 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 	};
 
 	const restoreFromTrash = async (desFileRef?: string) => {
+		const normalizedDest = desFileRef === '' ? null : desFileRef;
+		const normalizedCurrentParent = file.parentDriveFileRef === '' ? null : file.parentDriveFileRef;
 		const result = await (
 			dispatch as (action: unknown) => Promise<{ type?: string }>
 		)(driveFileActions.restoreDriveFileFromTrash({
-			fileId: file.id, parentDriveFileRef: desFileRef ?? file.parentDriveFileRef ?? null
+			fileId: file.id,
+			parentDriveFileRef: normalizedDest ?? normalizedCurrentParent ?? null,
 		}));
 
 		if (result?.type?.endsWith('/fulfilled')) {

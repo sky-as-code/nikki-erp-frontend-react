@@ -1,5 +1,6 @@
 import type { DriveFile } from '@/features/files/types';
 import type { TreeNodeData } from '@mantine/core';
+import { DRIVE_TABS } from '@/constants/driveTabs';
 
 
 type DriveFileApi = DriveFile & { is_folder?: boolean };
@@ -23,9 +24,9 @@ export function driveFileToTreeNode(file: DriveFile): TreeNodeData {
 }
 
 const STATIC_TREE_NODES: TreeNodeData[] = [
-	{ label: 'Shared with me', value: 'shared-with-me', nodeProps: { type: 'folder' } },
-	{ label: 'Starred', value: 'starred', nodeProps: { type: 'folder' } },
-	{ label: 'Trash', value: 'trash', nodeProps: { type: 'folder' } },
+	{ label: 'Shared with me', value: DRIVE_TABS.SHARED_WITH_ME, nodeProps: { type: 'folder' } },
+	{ label: 'Starred', value: DRIVE_TABS.STARRED, nodeProps: { type: 'folder' } },
+	{ label: 'Trash', value: DRIVE_TABS.TRASH, nodeProps: { type: 'folder' } },
 ];
 
 /** Convert treeRootItems (DriveFile[]) thành data cho Mantine Tree. Chỉ hiển thị folder. */
@@ -35,7 +36,7 @@ export function treeRootItemsToTreeData(treeRootItems: DriveFile[]): TreeNodeDat
 		.map(driveFileToTreeNode);
 	const myFilesNode: TreeNodeData = {
 		label: 'My files',
-		value: 'my-files',
+		value: DRIVE_TABS.MY_FILES,
 		nodeProps: { type: 'folder' },
 		children: myFilesChildren,
 	};

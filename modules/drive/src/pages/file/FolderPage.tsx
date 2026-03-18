@@ -58,6 +58,7 @@ function FolderPageLayout({
 						onChange={setFilters}
 						onApply={onApplyFilters}
 						enabledFields={['visibility', 'type']}
+						applyOnChange={true}
 					/>
 				</Box>
 				<Box h='100%' flex={1} mih={0}>

@@ -10,12 +10,12 @@ import {
 	selectTreePaging,
 	selectTreeRootItems,
 } from '@/appState/file';
+import { DRIVE_TABS } from '@/constants/driveTabs';
+import { useOrgModulePath } from '@/hooks/useRootPath';
 
 import { useMinimumLoading } from './useMinimumLoading';
 import { useTreeNode } from './useTreeNode';
 import { treeRootItemsToTreeData } from '../utils';
-import { useFirstOrgSlug } from '@nikkierp/shell/userContext';
-import { useOrgModulePath } from '@/hooks/useRootPath';
 
 
 function useDriveSidebarTreeData() {
@@ -24,7 +24,7 @@ function useDriveSidebarTreeData() {
 	const treePaging = useMicroAppSelector(selectTreePaging);
 	const myFilesTreeData = useMemo(() => {
 		const treeData = treeRootItemsToTreeData(treeRootItems, treePaging, t);
-		const myFilesNode = treeData.find((node) => node.value === 'my-files');
+		const myFilesNode = treeData.find((node) => node.value === DRIVE_TABS.MY_FILES);
 		return myFilesNode?.children ?? [];
 	}, [treeRootItems, treePaging, t]);
 	return { myFilesTreeData, t };
@@ -39,7 +39,7 @@ function useTreeLoadState(
 	const isShowingLoading = useMinimumLoading(isLoading, 300);
 
 	const handleLoad = useCallback((value: string) => {
-		const parentId = value === 'my-files' ? '' : value;
+		const parentId = value === DRIVE_TABS.MY_FILES ? '' : value;
 		setLoadingNodeId(value);
 		load(parentId, 0, 20);
 	}, [load]);
@@ -83,8 +83,14 @@ export function useDriveSidebarTree(onClick?: (value: string) => void) {
 
 	const handleNodeClick = useCallback((value: string) => {
 		onClick?.(value);
-		if (value === 'my-files') navigate(`${path}/management/my-files`);
-		else if (value !== 'shared-with-me' && value !== 'starred' && value !== 'trash') {
+		if (value === DRIVE_TABS.MY_FILES) {
+			navigate(`${path}/management/${DRIVE_TABS.MY_FILES}`);
+		}
+		else if (
+			value !== DRIVE_TABS.SHARED_WITH_ME
+			&& value !== DRIVE_TABS.STARRED
+			&& value !== DRIVE_TABS.TRASH
+		) {
 			navigate(`${path}/management/folder/${value}`);
 		}
 	}, [navigate, onClick]);

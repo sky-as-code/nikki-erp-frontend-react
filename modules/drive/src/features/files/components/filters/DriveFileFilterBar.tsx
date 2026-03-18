@@ -1,9 +1,10 @@
-import { ActionIcon, Button, Checkbox, Group, MultiSelect, Select, Stack, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Button, Checkbox, Group, MultiSelect, MultiSelectProps, Select, Stack, Text, Tooltip } from '@mantine/core';
 import { IconArrowDown, IconArrowUp } from '@tabler/icons-react';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { DriveFileStatus, DriveFileVisibility } from '../../types';
+import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../badges';
 
 
 export type DriveFileSortField = 'name' | 'createdAt';
@@ -27,6 +28,7 @@ export type DriveFileFilterBarProps = {
 	onChange: (next: DriveFileFilterState) => void;
 	onApply: () => void;
 	enabledFields?: DriveFileFilterField[];
+	applyOnChange?: boolean;
 };
 
 type DriveFileFilterControlsProps = {
@@ -59,10 +61,15 @@ function DriveFileFilterStatus({ value, onChange }: DriveFileFilterControlsProps
 		});
 	};
 
+	const renderStatusOption: MultiSelectProps['renderOption'] = (option) => {
+		return <DriveFileStatusBadge e={option.option.value as DriveFileStatus} />;
+	};
+
 	return (
 		<MultiSelect
 			data={statusData}
 			value={value.statuses}
+			renderOption={renderStatusOption}
 			onChange={handleStatusChange}
 			placeholder={t('nikki.general.filters.status') ?? ''}
 			clearable
@@ -93,15 +100,15 @@ function DriveFileFilterVisibility({
 	const visibilityData = [
 		{
 			value: DriveFileVisibility.PUBLIC,
-			label: t('nikki.drive.propertiesCard.visibilityPublic'),
+			label: t('nikki.drive.enum.visibility.public'),
 		},
 		{
 			value: DriveFileVisibility.OWNER,
-			label: t('nikki.drive.propertiesCard.visibilityOwner'),
+			label: t('nikki.drive.enum.visibility.owner'),
 		},
 		{
 			value: DriveFileVisibility.SHARED,
-			label: t('nikki.drive.propertiesCard.visibilityPrivate'),
+			label: t('nikki.drive.enum.visibility.shared'),
 		},
 	];
 
@@ -112,11 +119,16 @@ function DriveFileFilterVisibility({
 		});
 	};
 
+	const renderVisibilityOption: MultiSelectProps['renderOption'] = (option) => {
+		return <DriveFileVisibilityBadge e={option.option.value as DriveFileVisibility} />;
+	};
+
 	return (
 		<MultiSelect
 			data={visibilityData}
 			value={value.visibilities}
 			onChange={handleVisibilityChange}
+			renderOption={renderVisibilityOption}
 			placeholder={t('nikki.drive.fields.visibility') ?? ''}
 			clearable
 			maw={220}
@@ -247,7 +259,7 @@ function DriveFileSortControls({ value, onChange }: DriveFileFilterControlsProps
 					<ActionIcon
 						size='md'
 						variant='subtle'
-						aria-label='Toggle sort direction'
+						aria-label={t('nikki.general.sort.toggleDirection')}
 						onClick={toggleSortDirection}
 					>
 						{value.sortDirection === 'asc'
@@ -274,8 +286,24 @@ export function DriveFileFilterBar({
 	onChange,
 	onApply,
 	enabledFields,
+	applyOnChange = false,
 }: DriveFileFilterBarProps): React.ReactNode {
 	const { t } = useTranslation();
+	const didInitApplyRef = useRef(false);
+	const onApplyRef = useRef(onApply);
+
+	useEffect(() => {
+		onApplyRef.current = onApply;
+	}, [onApply]);
+
+	useEffect(() => {
+		if (!applyOnChange) return;
+		if (!didInitApplyRef.current) {
+			didInitApplyRef.current = true;
+			return;
+		}
+		onApplyRef.current();
+	}, [applyOnChange, value]);
 
 	return (
 		<Group gap='xl' align='end' w='100%'>
@@ -285,10 +313,12 @@ export function DriveFileFilterBar({
 				enabledFields={enabledFields}
 			/>
 			<DriveFileSortControls value={value} onChange={onChange} />
-			<Button
-				size='sm'
-				onClick={onApply}
-			>{t('nikki.general.actions.apply')}</Button>
+			{!applyOnChange && (
+				<Button
+					size='sm'
+					onClick={onApply}
+				>{t('nikki.general.actions.apply')}</Button>
+			)}
 		</Group>
 	);
 }

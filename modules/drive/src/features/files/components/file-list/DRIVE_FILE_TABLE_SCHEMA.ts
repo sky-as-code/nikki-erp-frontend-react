@@ -7,20 +7,21 @@ import type { ModelSchema } from '@nikkierp/ui/model';
  */
 const baseSchema = driveFileSchemaJson as ModelSchema;
 
-export const DRIVE_FILE_TABLE_SCHEMA: ModelSchema = {
-	...baseSchema,
-	fields: {
-		...baseSchema.fields,
-		type: {
-			type: 'string',
-			label: "{ \"$ref\": 'nikki.drive.table.type' }",
-		},
-		actions: {
-			type: 'string',
-			label: "{ \"$ref\": 'nikki.drive.table.actions' }",
-		},
-	},
-};
+export const DRIVE_FILE_TABLE_SCHEMA: ModelSchema = baseSchema;
+// export const DRIVE_FILE_TABLE_SCHEMA: ModelSchema = {
+// 	...baseSchema,
+// 	fields: {
+// 		...baseSchema.fields,
+// 		type: {
+// 			type: 'string',
+// 			label: "{ \"$ref\": 'nikki.drive.table.type' }",
+// 		},
+// 		actions: {
+// 			type: 'string',
+// 			label: "{ \"$ref\": 'nikki.drive.table.actions' }",
+// 		},
+// 	},
+// };
 
 export const DRIVE_FILE_TABLE_COLUMNS = [
 	'name',
@@ -31,3 +32,5 @@ export const DRIVE_FILE_TABLE_COLUMNS = [
 	'createdAt',
 	'actions',
 ] as const;
+
+export type DriveFileTableColumn = typeof DRIVE_FILE_TABLE_COLUMNS[keyof typeof DRIVE_FILE_TABLE_COLUMNS];

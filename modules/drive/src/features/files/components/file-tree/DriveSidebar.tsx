@@ -1,9 +1,8 @@
+/* eslint-disable max-lines-per-function */
 import { Box, Button, Collapse, Divider, Flex, Paper, Stack, Tooltip } from '@mantine/core';
 import {
 	IconChevronDown,
 	IconChevronRight,
-	IconCircleChevronLeftFilled,
-	IconCircleChevronRightFilled,
 	IconFolderFilled,
 	IconLayoutSidebar,
 	IconShare,
@@ -13,6 +12,8 @@ import {
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+
+import { DRIVE_TABS } from '@/constants/driveTabs';
 
 import { DriveFileTree } from './DriveFileTree';
 import { useDriveSidebarActiveRoutes } from '../../hooks/useDriveSidebarActiveRoutes';
@@ -105,7 +106,7 @@ function MyFilesSection({
 				<SidebarNavButton
 					show={show}
 					label={t('nikki.drive.myFiles')}
-					to='my-files'
+					to={DRIVE_TABS.MY_FILES}
 					active={isMyFilesActive}
 					leftSection={<IconFolderFilled size={16} />}
 					variant='default'
@@ -167,68 +168,27 @@ function SidebarNavLinks({
 			<SidebarNavButton
 				show={show}
 				label={t('nikki.drive.sharedWithMe')}
-				to='shared-with-me'
+				to={DRIVE_TABS.SHARED_WITH_ME}
 				active={isSharedActive}
 				leftSection={<IconShare size={16} />}
 			/>
 			<SidebarNavButton
 				show={show}
 				label={t('nikki.drive.starred')}
-				to='starred'
+				to={DRIVE_TABS.STARRED}
 				active={isStarredActive}
 				leftSection={<IconStarFilled size={16} />}
 			/>
 			<SidebarNavButton
 				show={show}
 				label={t('nikki.drive.trash')}
-				to='trash'
+				to={DRIVE_TABS.TRASH}
 				active={isTrashActive}
 				leftSection={<IconTrash size={16} />}
 				variant='subtle'
 				buttonColor='red'
 			/>
 		</>
-	);
-}
-
-type SidebarToggleButtonProps = {
-	show: boolean;
-	hovered: boolean;
-	onToggle: () => void;
-	onHoverChange: (hovered: boolean) => void;
-};
-
-function SidebarToggleButton({
-	show,
-	hovered,
-	onToggle,
-	onHoverChange,
-}: SidebarToggleButtonProps): ReactNode {
-	return (
-		<Button
-			w='fit-content'
-			size='xs'
-			p={0}
-			h='fit-content'
-			variant='transparent'
-			pos='absolute'
-			top='24px'
-			right='-18px'
-			bdrs='999px'
-			opacity={hovered ? 1 : 0.35}
-			style={{
-				transform: 'translateY(-50%)',
-				transition: 'opacity 120ms ease-in-out, box-shadow 120ms ease-in-out',
-				boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)',
-			}}
-			onMouseEnter={() => onHoverChange(true)}
-			onMouseLeave={() => onHoverChange(false)}
-			onClick={onToggle}
-		>
-			{show
-				? <IconCircleChevronLeftFilled color='var(--mantine-color-gray-6)' size={32} />
-				: <IconCircleChevronRightFilled color='var(--mantine-color-gray-6)' size={32} />}
-		</Button>
 	);
 }
 
@@ -243,12 +203,10 @@ export function DriveSidebar({ onClick }: DriveSidebarProps) {
 		},
 	);
 	const [show, setShow] = useState(expanded);
-	const [hovered, setHovered] = useState(false);
 	const [myFilesOpen, setMyFilesOpen] = useState(true);
 
 	const sidebarTree = useDriveSidebarTree(onClick);
-	const {
-		tree,
+	const { tree,
 		loadingNodeId,
 		myFilesTreeData,
 		handleLoad,
@@ -268,8 +226,8 @@ export function DriveSidebar({ onClick }: DriveSidebarProps) {
 	}, [myFilesOpen, myFilesTreeData.length, isShowingLoading, load]);
 
 	useEffect(() => {
-		setShow(expanded || hovered);
-	}, [hovered, expanded]);
+		setShow(expanded);
+	}, [expanded]);
 
 	return (
 		<Paper h='100%' w='fit-content'>
@@ -283,15 +241,13 @@ export function DriveSidebar({ onClick }: DriveSidebarProps) {
 				w={show ? '350px' : '55px'}
 				p={show ? 'lg' : 'xs'}
 				style={{ boxShadow: '0 8px 24px rgba(15, 23, 42, 0.18)', transition: 'all 0.5s ease-in-out' }}
-				// onMouseEnter={() => setHovered(true)}
-				// onMouseLeave={() => setHovered(false)}
 			>
 				<Button
 					w={'fit-content'}
 					variant={expanded ? 'light' : 'subtle'}
 					color={!expanded ? 'dark' : 'blue'}
 					px={'xs'}
-					onClick={() => { setExpanded(pre => !pre); setHovered(false); }}
+					onClick={() => { setExpanded(pre => !pre); }}
 				>
 					<IconLayoutSidebar size={16} />
 				</Button>

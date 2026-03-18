@@ -74,6 +74,7 @@ function TrashPageBody(): React.ReactNode {
 						onChange={setFilters}
 						onApply={handleApplyFilters}
 						enabledFields={['visibility', 'type']}
+						applyOnChange={true}
 					/>
 				</Box>
 				<Box h='100%' flex={1} mih={0}>

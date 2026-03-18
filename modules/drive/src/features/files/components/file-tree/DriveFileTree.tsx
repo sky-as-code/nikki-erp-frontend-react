@@ -1,6 +1,5 @@
 import { ActionIcon, Box, Flex, Group, Loader, RenderTreeNodePayload, Text, Tree, useTree } from '@mantine/core';
-import { IconChevronDown, IconChevronRight, IconFile, IconFolder, IconFolderFilled, IconShare, IconStarFilled, IconTrash } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
+import { IconChevronDown, IconChevronRight, IconFile, IconFolder, IconFolderOpen } from '@tabler/icons-react';
 
 import type { MouseEvent } from 'react';
 
@@ -8,24 +7,13 @@ import type { MouseEvent } from 'react';
 interface FileIconProps {
 	isFolder: boolean;
 	expanded: boolean;
-	value: string;
 }
 
-function FileIcon({ value, isFolder }: FileIconProps) {
-	if (value === 'my-files') {
-		return <IconFolderFilled color='var(--mantine-color-yellow-9)' size={18} stroke={2.5} />;
-	}
-	if (value === 'shared-with-me') {
-		return <IconShare color='var(--mantine-color-yellow-9)' size={18} stroke={2.5} />;
-	}
-	if (value === 'starred') {
-		return <IconStarFilled color='var(--mantine-color-yellow-9)' size={18} stroke={2.5} />;
-	}
-	if (value === 'trash') {
-		return <IconTrash color='var(--mantine-color-yellow-9)' size={18} stroke={2.5} />;
-	}
-
+function FileIcon({ isFolder, expanded }: FileIconProps) {
 	if (isFolder) {
+		if (expanded) {
+			return <IconFolderOpen color='var(--mantine-color-yellow-9)' size={18} stroke={2.5} />;
+		}
 		return <IconFolder color='var(--mantine-color-yellow-9)' size={18} stroke={2.5} />;
 	}
 	return <IconFile color='var(--mantine-color-yellow-9)' size={18} stroke={2.5} />;
@@ -37,6 +25,16 @@ interface LoadMoreLeafProps {
 	isLoading?: boolean;
 	onLoadMore?: (parentId: string, nodeValue: string) => void;
 }
+
+type LeafProps = RenderTreeNodePayload & {
+	onNodeClick?: (value: string) => void;
+	tree: ReturnType<typeof useTree>;
+	onLoad?: (value: string) => void;
+	isLoading?: boolean;
+	onLoadMore?: (parentId: string, nodeValue: string) => void;
+	currentFolderId?: string;
+	t?: (key: string) => string;
+};
 
 function LoadMoreLeaf({
 	node,
@@ -69,6 +67,62 @@ function LoadMoreLeaf({
 	);
 }
 
+function FileNodeLeaf({
+	node,
+	expanded,
+	elementProps,
+	isLoading,
+	onNodeClick,
+	onToggle,
+	currentFolderId,
+	collapseLabel,
+	expandLabel,
+}: {
+	node: RenderTreeNodePayload['node'];
+	expanded: boolean;
+	elementProps: RenderTreeNodePayload['elementProps'];
+	isLoading?: boolean;
+	onNodeClick?: (value: string) => void;
+	onToggle: (e: MouseEvent) => void;
+	currentFolderId?: string;
+	collapseLabel: string;
+	expandLabel: string;
+}) {
+	const isFolder = node.nodeProps?.type === 'folder';
+	const background =
+		currentFolderId === node.value
+			? 'var(--mantine-color-default-hover)'
+			: 'transparent';
+	const chevron = isLoading
+		? <Loader size={14} />
+		: expanded
+			? <IconChevronDown size={14} title={collapseLabel} />
+			: <IconChevronRight size={14} title={expandLabel} />;
+
+	return (
+		<Group {...elementProps} onClick={() => onNodeClick?.(node.value)} mb='xs'>
+			<Box w='100%' bdrs='sm' bg={background}>
+				<Flex
+					direction='row'
+					gap='xs'
+					align='center'
+					justify='flex-start'
+					w='100%'
+					style={{ cursor: 'pointer' }}
+				>
+					<FileIcon isFolder={isFolder} expanded={expanded} />
+					<Text size='sm' fw={500}>
+						{node.label}
+					</Text>
+					<ActionIcon variant='transparent' onClick={onToggle}>
+						{chevron}
+					</ActionIcon>
+				</Flex>
+			</Box>
+		</Group>
+	);
+}
+
 function Leaf({
 	node,
 	expanded,
@@ -80,19 +134,9 @@ function Leaf({
 	isLoading,
 	onLoadMore,
 	t,
-}: RenderTreeNodePayload & {
-	onNodeClick?: (value: string) => void;
-	tree: ReturnType<typeof useTree>;
-	onLoad?: (value: string) => void;
-	isLoading?: boolean;
-	onLoadMore?: (parentId: string, nodeValue: string) => void;
-	currentFolderId?: string;
-	t?: (key: string) => string;
-}) {
+}: LeafProps) {
 	const type = node.nodeProps?.type;
-	const isFolder = type === 'folder';
 	const isLoadMore = type === 'load-more';
-	const openFolderLabel = t ? t('nikki.drive.openFolder') : 'Open folder';
 	const collapseLabel = t ? t('nikki.drive.collapse') : 'Collapse';
 	const expandLabel = t ? t('nikki.drive.expand') : 'Expand';
 
@@ -102,18 +146,6 @@ function Leaf({
 			onLoad?.(node.value);
 		}
 		tree.toggleExpanded(node.value);
-	};
-
-	const handleClick = (_: MouseEvent) => {
-		onNodeClick?.(node.value);
-	};
-
-	const buildHref = (value: string): string => {
-		if (value === 'my-files') return 'my-files';
-		if (value === 'shared-with-me') return 'shared-with-me';
-		if (value === 'starred') return 'starred';
-		if (value === 'trash') return 'trash';
-		return `folder/${value}`;
 	};
 
 	if (isLoadMore) {
@@ -128,45 +160,17 @@ function Leaf({
 	}
 
 	return (
-		<Group {...elementProps} onClick={handleClick} mb='xs'>
-			<Box
-				w='100%'
-				bdrs='sm'
-				bg={currentFolderId === node.value ? 'var(--mantine-color-default-hover)' : 'transparent'}
-			>
-				<Flex
-					direction='row'
-					gap='xs'
-					align='center'
-					justify='flex-start'
-					w='100%'
-					style={{ cursor: 'pointer' }}
-					title={openFolderLabel}
-				>
-					<FileIcon value={node.value} isFolder={isFolder} expanded={expanded} />
-					<Text
-						size='sm'
-						fw={500}
-						component={Link}
-						to={buildHref(node.value)}
-						onClick={(e) => {
-							e.preventDefault();
-							handleClick(e as unknown as MouseEvent);
-						}}
-					>
-						{node.label}
-					</Text>
-					<ActionIcon variant='transparent' onClick={handleToggle}>
-						{
-							isLoading ? <Loader size={14} /> :
-								expanded
-									? <IconChevronDown size={14} title={collapseLabel} />
-									: <IconChevronRight size={14} title={expandLabel} />
-						}
-					</ActionIcon>
-				</Flex>
-			</Box>
-		</Group>
+		<FileNodeLeaf
+			node={node}
+			expanded={expanded}
+			elementProps={elementProps}
+			isLoading={isLoading}
+			onNodeClick={onNodeClick}
+			onToggle={handleToggle}
+			currentFolderId={currentFolderId}
+			collapseLabel={collapseLabel}
+			expandLabel={expandLabel}
+		/>
 	);
 }
 

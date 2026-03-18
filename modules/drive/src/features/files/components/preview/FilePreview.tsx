@@ -1,7 +1,9 @@
 import { Box, Text } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 
 
 export function FilePreview({ streamUrl, mime, name }: { streamUrl: string; mime: string; name: string; }) {
+	const { t } = useTranslation();
 	const renderPreview = () => {
 		if (mime.startsWith('image/')) {
 			return <img src={streamUrl} alt={name} style={{ width: '100%' }} />;
@@ -29,6 +31,6 @@ export function FilePreview({ streamUrl, mime, name }: { streamUrl: string; mime
 	const preview = renderPreview();
 
 	return <Box miw={'600px'}>
-		{preview ?? <Text>Không hỗ trợ xem trước</Text>}
+		{preview ?? <Text>{t('nikki.drive.preview.notSupported')}</Text>}
 	</Box>;
 }

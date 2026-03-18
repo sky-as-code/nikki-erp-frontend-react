@@ -8,28 +8,22 @@ import type { DriveFile } from '../types';
 
 export type FileSelectorMode = 'file' | 'folder';
 
-type TabKey = 'my-files' | 'shared-with-me';
-
 export type UseFileSelectorListParams = {
 	parentId: string;
-	activeTab: TabKey;
 	mode: FileSelectorMode;
-	multiple: boolean;
-	onSelect: (ids: string[] | string) => void;
+	enabled?: boolean;
 };
 
 export function useFileSelectorList({
 	parentId,
-	activeTab,
 	mode,
-	multiple,
-	onSelect,
+	enabled = true,
 }: UseFileSelectorListParams) {
 	const { t } = useTranslation();
 	const [currentParentId, setCurrentParentId] = useState<string>(parentId);
 	const [items, setItems] = useState<DriveFile[]>([]);
 	const [ancestors, setAncestors] = useState<DriveFile[]>([]);
-	const [loading, setLoading] = useState<boolean>(true);
+	const [loading, setLoading] = useState<boolean>(enabled);
 	const [error, setError] = useState<string | null>(null);
 
 	const isFolderMode = mode === 'folder';
@@ -72,21 +66,15 @@ export function useFileSelectorList({
 	}, []);
 
 	useEffect(() => {
-		if (activeTab !== 'my-files') return;
+		if (!enabled) return;
 		setCurrentParentId(parentId);
-	}, [activeTab, parentId]);
+	}, [enabled, parentId]);
 
 	useEffect(() => {
-		if (activeTab !== 'my-files') return;
+		if (!enabled) return;
 		void loadList(currentParentId);
 		void loadAncestors(currentParentId);
-	}, [activeTab, currentParentId, loadList, loadAncestors]);
-
-	useEffect(() => {
-		if (!isFolderMode) return;
-		if (activeTab !== 'my-files') return;
-		onSelect(currentParentId);
-	}, [isFolderMode, activeTab, currentParentId, onSelect]);
+	}, [enabled, currentParentId, loadList, loadAncestors]);
 
 	const visibleItems = useMemo(() => {
 		if (isFolderMode) {
@@ -97,30 +85,13 @@ export function useFileSelectorList({
 
 	const handleOpenFolder = useCallback((folder: DriveFile) => {
 		if (!folder.isFolder) return;
-		if (isFolderMode) {
-			onSelect(folder.id);
-		}
 		setCurrentParentId(folder.id);
-	}, [isFolderMode, onSelect]);
-
-	const handleSelectFile = useCallback((file: DriveFile) => {
-		if (file.isFolder) {
-			handleOpenFolder(file);
-			return;
-		}
-		if (multiple && !isFolderMode) {
-			onSelect([file.id]);
-		}
-		else {
-			onSelect(file.id);
-		}
-	}, [multiple, isFolderMode, onSelect, handleOpenFolder]);
+	}, []);
 
 	const breadcrumbItems = useMemo(() => {
-		if (activeTab !== 'my-files') return [];
 		const base = [{ id: '', name: t('nikki.drive.myFiles') }];
 		return [...base, ...ancestors];
-	}, [activeTab, ancestors, t]);
+	}, [ancestors, t]);
 
 	return {
 		visibleItems,
@@ -130,7 +101,6 @@ export function useFileSelectorList({
 		currentParentId,
 		setCurrentParentId,
 		handleOpenFolder,
-		handleSelectFile,
 		isFolderMode,
 	};
 }

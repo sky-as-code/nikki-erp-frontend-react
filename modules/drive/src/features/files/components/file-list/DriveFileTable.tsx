@@ -1,7 +1,7 @@
 import { Badge, Box, Button, Flex } from '@mantine/core';
 import { AutoTable } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { IconPlus } from '@tabler/icons-react';
+import { IconFilePlus, IconFolderPlus } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -17,27 +17,14 @@ import { useDriveFileActions, useMinimumLoading, useOpenCreateFileModal } from '
 import {
 	DriveFile,
 	DriveFileStatus,
-	getDriveFileStatusBadge,
 	DriveFileVisibility,
 } from '../../types';
+import { formatSize } from '../../utils';
+import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../badges';
 import { FileActionMenu } from '../file-actions';
-
-import type { DriveFileStatus as DriveFileStatusType } from '../../types';
-
 
 
 const MIN_LOADING_MS = 300;
-
-function StatusBadge({ status }: { status: DriveFileStatusType }): React.ReactNode {
-	const { label, color } = getDriveFileStatusBadge(status);
-	return <Badge size='sm' color={color} variant='light'>{label}</Badge>;
-}
-
-function formatSize(bytes: number): string {
-	if (bytes < 1024) return `${bytes} B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 function NameCell({ file }: { file: DriveFile }): React.ReactNode {
 	const { openFolder, previewFile } = useDriveFileActions(file);
@@ -49,6 +36,32 @@ function NameCell({ file }: { file: DriveFile }): React.ReactNode {
 	);
 }
 
+function useTableRenderers(): Record<string, (row: Record<string, unknown>) => React.ReactNode> {
+	const { t } = useTranslation();
+	const { formatDateTime } = useDbDateTime();
+	return {
+		name: (row) => <NameCell file={row as unknown as DriveFile} />,
+		type: (row) => (row as unknown as DriveFile).isFolder
+			? t('nikki.drive.propertiesCard.folder')
+			: t('nikki.drive.propertiesCard.file'),
+		size: (row) => {
+			const f = row as unknown as DriveFile;
+			return f.isFolder ? '—' : formatSize(f.size);
+		},
+		visibility: (row) => {
+			const v = (row as unknown as DriveFile).visibility as DriveFileVisibility;
+			return <DriveFileVisibilityBadge e={v} />;
+		},
+		status: (row) => <DriveFileStatusBadge e={(row as unknown as DriveFile).status as DriveFileStatus} />,
+		createdAt: (row) => formatDateTime((row as unknown as DriveFile).createdAt),
+		actions: (row) => (
+			<Box component='span' onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+				<FileActionMenu file={row as unknown as DriveFile} />
+			</Box>
+		),
+	};
+};
+
 export type DriveFileTableProps = {
 	showCreate?: boolean;
 };
@@ -58,7 +71,6 @@ export function DriveFileTable({ showCreate = true }: DriveFileTableProps): Reac
 	const currentFolder = useMicroAppSelector(selectCurrentFolder);
 	const { status } = useMicroAppSelector(selectGetDriveFileByParent);
 	const isShowingLoading = useMinimumLoading(status === 'pending', MIN_LOADING_MS);
-	const { formatDateTime } = useDbDateTime();
 	const openCreate = useOpenCreateFileModal();
 	const { t } = useTranslation();
 
@@ -68,24 +80,11 @@ export function DriveFileTable({ showCreate = true }: DriveFileTableProps): Reac
 		return (
 			<Box mah='100%' h={'100%'} pos={'relative'} style={{ overflow: 'auto' }}>
 				{showAdd && (
-					<Flex mb='sm' gap='xs'>
-						<Button
-							leftSection={<IconPlus size={16} />}
-							variant='light'
-							size='sm'
-							onClick={() => openCreate(false)}
-						>
-							{t('nikki.drive.createFile.createFile')}
-						</Button>
-						<Button
-							leftSection={<IconPlus size={16} />}
-							variant='light'
-							size='sm'
-							onClick={() => openCreate(true)}
-						>
-							{t('nikki.drive.createFile.createFolder')}
-						</Button>
-					</Flex>
+					<AddFileButtons
+						openCreateFile={() => openCreate(false)}
+						openCreateFolder={() => openCreate(true)}
+						t={t}
+					/>
 				)}
 				<EmptyFilesState />
 			</Box>
@@ -97,24 +96,11 @@ export function DriveFileTable({ showCreate = true }: DriveFileTableProps): Reac
 	return (
 		<Box mah='100%' style={{ overflow: 'auto' }}>
 			{showAdd && (
-				<Flex mb='sm' gap='xs'>
-					<Button
-						leftSection={<IconPlus size={16} />}
-						variant='light'
-						size='sm'
-						onClick={() => openCreate(false)}
-					>
-						{t('nikki.drive.createFile.createFile')}
-					</Button>
-					<Button
-						leftSection={<IconPlus size={16} />}
-						variant='light'
-						size='sm'
-						onClick={() => openCreate(true)}
-					>
-						{t('nikki.drive.createFile.createFolder')}
-					</Button>
-				</Flex>
+				<AddFileButtons
+					openCreateFile={() => openCreate(false)}
+					openCreateFolder={() => openCreate(true)}
+					t={t}
+				/>
 			)}
 			<AutoTable
 				columns={[...DRIVE_FILE_TABLE_COLUMNS]}
@@ -123,32 +109,39 @@ export function DriveFileTable({ showCreate = true }: DriveFileTableProps): Reac
 				isLoading={isShowingLoading}
 				columnAsId='id'
 				columnRenderers={{
-					name: (row) => <NameCell file={row as unknown as DriveFile} />,
-					type: (row) => (row as unknown as DriveFile).isFolder
-						? t('nikki.drive.propertiesCard.folder')
-						: t('nikki.drive.propertiesCard.file'),
-					size: (row) => {
-						const f = row as unknown as DriveFile;
-						return f.isFolder ? '—' : formatSize(f.size);
-					},
-					visibility: (row) => {
-						const v = (row as unknown as DriveFile).visibility;
-						const labels: Record<DriveFileVisibility, string> = {
-							[DriveFileVisibility.PUBLIC]: t('nikki.drive.propertiesCard.visibilityPublic'),
-							[DriveFileVisibility.OWNER]: t('nikki.drive.propertiesCard.visibilityOwner'),
-							[DriveFileVisibility.SHARED]: t('nikki.drive.propertiesCard.visibilityPrivate'),
-						};
-						return labels[v] ?? v;
-					},
-					status: (row) => <StatusBadge status={(row as unknown as DriveFile).status} />,
-					createdAt: (row) => formatDateTime((row as unknown as DriveFile).createdAt),
-					actions: (row) => (
-						<Box component='span' onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-							<FileActionMenu file={row as unknown as DriveFile} />
-						</Box>
-					),
+					...useTableRenderers(),
 				}}
 			/>
 		</Box>
+	);
+}
+
+type AddFileButtonsProps = {
+	openCreateFile: () => void;
+	openCreateFolder: () => void;
+	t: any;
+};
+
+function AddFileButtons({ openCreateFile: createFileFn, openCreateFolder: createFolderFn, t,
+}: AddFileButtonsProps): React.ReactNode {
+	return (
+		<Flex mb='sm' gap='xs'>
+			<Button
+				leftSection={<IconFilePlus size={16} />}
+				variant='light'
+				size='sm'
+				onClick={createFileFn}
+			>
+				{t('nikki.drive.createFile.createFile')}
+			</Button>
+			<Button
+				leftSection={<IconFolderPlus size={16} />}
+				variant='light'
+				size='sm'
+				onClick={createFolderFn}
+			>
+				{t('nikki.drive.createFile.createFolder')}
+			</Button>
+		</Flex>
 	);
 }

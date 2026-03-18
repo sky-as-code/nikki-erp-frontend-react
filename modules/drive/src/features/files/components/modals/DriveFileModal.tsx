@@ -77,21 +77,7 @@ function DriveFileActionModalContent({ uiState, handleCloseModal }: {
 }) {
 	const fileDetail = useMicroAppSelector(selectDriveFileDetail) as DriveFile | undefined;
 
-	if (!fileDetail) {
-		return <Loader/>;
-	}
-
 	switch (uiState.type.type) {
-		case 'properties':
-			return <FilePropertiesModalContent file={fileDetail} />;
-
-		case 'update':
-			return <UpdateFileMetadataModal
-				file={fileDetail}
-				opened={uiState.openedModal}
-				onClose={() => { handleCloseModal(); }}
-			/>;
-
 		case 'file-selector':
 			return <FileSelectorModalContent
 				onClose={() => { handleCloseModal(); }}
@@ -110,6 +96,22 @@ function DriveFileActionModalContent({ uiState, handleCloseModal }: {
 					onClose={() => { handleCloseModal(); }}
 				/>
 			);
+
+		case 'properties':
+		case 'update':
+		case 'preview':
+			if (!fileDetail) {
+				return <Loader/>;
+			}
+
+			return <FilePropertiesModalContent file={fileDetail} />;
+
+		case 'update':
+			return <UpdateFileMetadataModal
+				file={fileDetail}
+				opened={uiState.openedModal}
+				onClose={() => { handleCloseModal(); }}
+			/>;
 
 		case 'preview':
 			return (

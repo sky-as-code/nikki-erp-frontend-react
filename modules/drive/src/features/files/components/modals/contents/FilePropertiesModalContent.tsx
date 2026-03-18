@@ -3,10 +3,11 @@ import { IconCopy, IconFile, IconFolder } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { DriveFile, DriveFileVisibility, getDriveFileStatusBadge } from '../../../types';
-import { formatSize } from '../../../utils';
+import { DriveFile, DriveFileVisibility } from '../../../types';
+import { formatSize } from '../../../utils/fortmat';
 
 import { useDbDateTime, useDriveStreamUrl } from '@/hooks';
+import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../../badges';
 
 
 type FilePropertiesCardProps = {
@@ -77,7 +78,8 @@ type FilePropertiesCardContentProps = {
 };
 
 function FileIdentity({ file, buildStreamUrl }: {
-	file: DriveFile; buildStreamUrl: ReturnType<typeof useDriveStreamUrl> }) {
+	file: DriveFile; buildStreamUrl: ReturnType<typeof useDriveStreamUrl>
+}) {
 	const { t } = useTranslation();
 	const isFolder = file.isFolder;
 	return (
@@ -115,7 +117,7 @@ function FileIdentity({ file, buildStreamUrl }: {
 	);
 }
 
-function FileMetaList({ file, formatDateTime, formatRelative, formatVisibility }: FilePropertiesCardContentProps) {
+function FileMetaList({ file, formatDateTime, formatRelative }: FilePropertiesCardContentProps) {
 	const { t } = useTranslation();
 	const isFolder = file.isFolder;
 	return (
@@ -130,17 +132,11 @@ function FileMetaList({ file, formatDateTime, formatRelative, formatVisibility }
 			</Group>
 			<Group justify='space-between'>
 				<Text size='xs' c='dimmed'>{t('nikki.drive.propertiesCard.visibility')}</Text>
-				<Text size='xs'>{formatVisibility(file.visibility)}</Text>
+				<DriveFileVisibilityBadge size='sm' variant='light' e={file.visibility} />
 			</Group>
 			<Group justify='space-between'>
 				<Text size='xs' c='dimmed'>{t('nikki.drive.propertiesCard.status')}</Text>
-				<Badge
-					size='sm'
-					color={getDriveFileStatusBadge(file.status).color}
-					variant='light'
-				>
-					{getDriveFileStatusBadge(file.status).label}
-				</Badge>
+				<DriveFileStatusBadge size='sm' variant='light' e={file.status} />
 			</Group>
 			{file.ownerRef && (
 				<Group justify='space-between'>

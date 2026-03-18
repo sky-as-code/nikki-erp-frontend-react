@@ -1,14 +1,15 @@
 /* eslint-disable max-lines-per-function */
-import { Badge, Box, Button, Card, Flex, Group, Stack, Text, TextInput } from '@mantine/core';
+import { Badge, Box, Button, Card, Flex, Group, Loader, Stack, Text, TextInput } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
-import React, { useEffect, useRef, useState } from 'react';
+import { debounce } from 'lodash';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import { FileActionMenu } from '@/features/files/components';
 import { DriveFileFilterBar, type DriveFileFilterState } from '@/features/files/components/filters/DriveFileFilterBar';
 import { fileService } from '@/features/files/fileService';
-import { useDriveFileActions } from '@/features/files/hooks';
+import { useDriveFileActions, useMinimumLoading } from '@/features/files/hooks';
 import { useOrgModulePath } from '@/hooks/useRootPath';
 
 import type { DriveFile } from '@/features/files/types';
@@ -19,6 +20,7 @@ type DriveSearchResultsPaneProps = {
 	results: DriveFile[];
 	total: number;
 	loading: boolean;
+	showLoading: boolean;
 	error: string | null;
 	filters: DriveFileFilterState;
 	onFiltersChange: (next: DriveFileFilterState) => void;
@@ -69,127 +71,18 @@ function buildGraph(queryText: string, currentFilters: DriveFileFilterState): Re
 	};
 }
 
-type DriveSearchBarState = {
-	query: string;
-	setQuery: (value: string) => void;
-	results: DriveFile[];
-	total: number;
-	loading: boolean;
-	error: string | null;
-	isFocused: boolean;
-	setIsFocused: (value: boolean) => void;
-	isHoveringPane: boolean;
-	setIsHoveringPane: (value: boolean) => void;
-	filters: DriveFileFilterState;
-	setFilters: (next: DriveFileFilterState) => void;
-};
-
-function useDriveSearchBarState(): DriveSearchBarState & {
-	searchInputRef: React.RefObject<HTMLInputElement | null>;
-} {
-	const searchInputRef = useRef<HTMLInputElement | null>(null);
-	const [query, setQuery] = useState('');
-	const [results, setResults] = useState<DriveFile[]>([]);
-	const [total, setTotal] = useState(0);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [isFocused, setIsFocused] = useState(false);
-	const [isHoveringPane, setIsHoveringPane] = useState(false);
-	const [filters, setFilters] = useState<DriveFileFilterState>({
-		statuses: [],
-		visibilities: [],
-		isFolderValues: [],
-		sortField: 'name',
-		sortDirection: 'asc',
-		folderFirst: true,
-	});
-
-	// Debounced search
-	useEffect(() => {
-		if (!query.trim()) {
-			setResults([]);
-			setTotal(0);
-			setError(null);
-			return;
-		}
-
-		let cancelled = false;
-		const timeout = setTimeout(async () => {
-			setLoading(true);
-			setError(null);
-			try {
-				const graph = buildGraph(query, filters);
-				const res = await fileService.searchDriveFile({
-					page: 0,
-					size: 5,
-					graph,
-				});
-				if (!cancelled) {
-					const items = res.items ?? [];
-					setResults(items);
-					setTotal(res.total ?? items.length);
-				}
-			}
-			catch (e) {
-				if (!cancelled) {
-					setError(e instanceof Error ? e.message : 'Failed to search files');
-					setResults([]);
-					setTotal(0);
-				}
-			}
-			finally {
-				if (!cancelled) setLoading(false);
-			}
-		}, 300);
-
-		return () => {
-			cancelled = true;
-			clearTimeout(timeout);
-		};
-	}, [query, filters]);
-
-	// Ctrl+K hotkey
-	useEffect(() => {
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-				event.preventDefault();
-				searchInputRef.current?.focus();
-			}
-		};
-
-		window.addEventListener('keydown', handleKeyDown);
-		return () => {
-			window.removeEventListener('keydown', handleKeyDown);
-		};
-	}, []);
-
-	return {
-		searchInputRef,
-		query,
-		setQuery,
-		results,
-		total,
-		loading,
-		error,
-		isFocused,
-		setIsFocused,
-		isHoveringPane,
-		setIsHoveringPane,
-		filters,
-		setFilters,
-	};
-}
-
 function DriveSearchResultsPane({
 	query,
 	results,
 	total,
 	loading,
+	showLoading,
 	error,
 	filters,
 	onFiltersChange,
 	isOpen,
 	setIsHoveringPane,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	searchInputRef,
 	onViewAll,
 }: DriveSearchResultsPaneProps): React.ReactNode {
@@ -223,28 +116,41 @@ function DriveSearchResultsPane({
 					onChange={onFiltersChange}
 					// search bar áp dụng filter ngay khi thay đổi, không cần nút Apply riêng
 					onApply={() => { }}
+					applyOnChange={true}
 				/>
-				{!loading && error && (
-					<Text size='sm' c='red'>
-						{error}
-					</Text>
-				)}
-				{!loading && !error && results.length === 0 && query.trim() && (
-					<Text
-						size='sm'
-						fw={500}
-						c='dimmed'
-						ta='center'
+				{showLoading ? (
+					<Flex
+						align='center'
+						justify='center'
+						py='sm'
 					>
-						{t('nikki.drive.search.noResults')}
-					</Text>
-				)}
-				{!error && results.length > 0 && (
-					<Stack gap='xs'>
-						{results.map((file) => (
-							<SearchResultItem key={file.id} file={file} />
-						))}
-					</Stack>
+						<Loader size='sm' />
+					</Flex>
+				) : (
+					<>
+						{!error && results.length > 0 && (
+							<Stack gap='xs'>
+								{results.map((file) => (
+									<SearchResultItem key={file.id} file={file} />
+								))}
+							</Stack>
+						)}
+						{!error && results.length === 0 && query.trim() && (
+							<Text
+								size='sm'
+								fw={500}
+								c='dimmed'
+								ta='center'
+							>
+								{t('nikki.drive.search.noResults')}
+							</Text>
+						)}
+						{!loading && error && (
+							<Text size='sm' c='red'>
+								{error}
+							</Text>
+						)}
+					</>
 				)}
 				{/* khu vực nút "View all" luôn giữ chỗ để tránh giật layout */}
 				<Group justify='flex-end' pt='xs' mih={28}>
@@ -269,6 +175,7 @@ export const DriveSearchBar: React.FC = () => {
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const navigate = useNavigate();
 	const rootPath = useOrgModulePath();
+	const [inputValue, setInputValue] = useState('');
 	const [query, setQuery] = useState('');
 	const [results, setResults] = useState<DriveFile[]>([]);
 	const [total, setTotal] = useState(0);
@@ -285,18 +192,31 @@ export const DriveSearchBar: React.FC = () => {
 		folderFirst: true,
 	});
 
+	const debouncedSetQuery = useMemo(
+		() =>
+			debounce((value: string) => {
+				setQuery(value);
+			}, 300),
+		[],
+	);
+
+	useEffect(() => () => debouncedSetQuery.cancel(), [debouncedSetQuery]);
+
+	const showLoading = useMinimumLoading(loading, 300);
+
 	useEffect(() => {
 		if (!query.trim()) {
 			setResults([]);
 			setTotal(0);
 			setError(null);
+			setLoading(false);
 			return;
 		}
 
 		let cancelled = false;
-		const timeout = setTimeout(async () => {
-			setLoading(true);
-			setError(null);
+		setLoading(true);
+		setError(null);
+		(async () => {
 			try {
 				const graph = buildGraph(query, filters);
 				const res = await fileService.searchDriveFile({
@@ -320,11 +240,10 @@ export const DriveSearchBar: React.FC = () => {
 			finally {
 				if (!cancelled) setLoading(false);
 			}
-		}, 300);
+		})();
 
 		return () => {
 			cancelled = true;
-			clearTimeout(timeout);
 		};
 	}, [query, filters]);
 
@@ -342,11 +261,41 @@ export const DriveSearchBar: React.FC = () => {
 		};
 	}, []);
 
+	const appendFilterParams = (params: URLSearchParams, currentFilters: DriveFileFilterState) => {
+		if (currentFilters.statuses.length > 0) {
+			params.set('status', currentFilters.statuses.join(','));
+		}
+		if (currentFilters.visibilities.length > 0) {
+			params.set('visibility', currentFilters.visibilities.join(','));
+		}
+		if (currentFilters.isFolderValues.length > 0) {
+			params.set('type', currentFilters.isFolderValues.join(','));
+		}
+		if (currentFilters.sortField) {
+			params.set('sortField', currentFilters.sortField);
+		}
+		if (currentFilters.sortDirection) {
+			params.set('sortDirection', currentFilters.sortDirection);
+		}
+		if (currentFilters.folderFirst !== undefined) {
+			params.set('folderFirst', currentFilters.folderFirst ? '1' : '0');
+		}
+	};
+
 	// Đóng pane khi click ra ngoài (không phải input hoặc pane)
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			const target = event.target as Node;
 			if (!containerRef.current) return;
+			// Nếu click nằm trong dropdown combobox (render qua portal) thì không đóng pane
+			const el = target as HTMLElement;
+			if (
+				el.closest('[data-combobox-dropdown]') ||
+				el.closest('[data-mantine-combobox-dropdown]') ||
+				el.closest('[role="listbox"]')
+			) {
+				return;
+			}
 			if (!containerRef.current.contains(target)) {
 				setIsFocused(false);
 				setIsHoveringPane(false);
@@ -385,8 +334,12 @@ export const DriveSearchBar: React.FC = () => {
 					style={{ overflow: 'hidden' }}
 					placeholder='Search files and folders... (Ctrl + K)'
 					leftSection={<IconSearch size={16} />}
-					value={query}
-					onChange={(e) => setQuery(e.currentTarget.value)}
+					value={inputValue}
+					onChange={(e) => {
+						const value = e.currentTarget.value;
+						setInputValue(value);
+						debouncedSetQuery(value);
+					}}
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') {
 							const trimmed = query.trim();
@@ -394,6 +347,7 @@ export const DriveSearchBar: React.FC = () => {
 							if (!trimmed || total === 0 || total <= 5) return;
 							const params = new URLSearchParams();
 							params.set('q', trimmed);
+							appendFilterParams(params, filters);
 							navigate(`${rootPath}/management/search-result?${params.toString()}`);
 						}
 					}}
@@ -411,6 +365,7 @@ export const DriveSearchBar: React.FC = () => {
 				results={results}
 				total={total}
 				loading={loading}
+				showLoading={showLoading}
 				error={error}
 				filters={filters}
 				onFiltersChange={setFilters}
@@ -424,6 +379,7 @@ export const DriveSearchBar: React.FC = () => {
 					if (!query.trim()) return;
 					const params = new URLSearchParams();
 					params.set('q', query.trim());
+					appendFilterParams(params, filters);
 					navigate(`${rootPath}/management/search-result?${params.toString()}`);
 				}}
 			/>
@@ -492,5 +448,3 @@ function SearchResultItem({ file }: { file: DriveFile }): React.ReactNode {
 		</Box>
 	);
 }
-
-

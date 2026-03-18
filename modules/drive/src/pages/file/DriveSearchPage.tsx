@@ -1,6 +1,6 @@
 import { Box, Paper, Stack, Text } from '@mantine/core';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -12,8 +12,124 @@ import { DriveFileFilterBar } from '@/features/files/components/filters/DriveFil
 import { useDriveFileFilters } from '@/features/files/hooks/useDriveFileFilters';
 import { useLocalStorage } from '@/features/files/hooks/useLocalStorage';
 
+import type { DriveFileFilterState } from '@/features/files/components/filters/DriveFileFilterBar';
+
 
 const PAGE_SIZE = 20;
+
+function useDriveSearchPageViewMode() {
+	const VIEW_MODE_KEY = 'drive_viewMode';
+	return useLocalStorage<DriveFileUIViewMode>(VIEW_MODE_KEY, 'grid', {
+		parse: (s) => (s === 'grid' || s === 'list' ? s : 'grid'),
+		serialize: (v) => v,
+	});
+}
+
+function useSearchPageFiltersFromUrl({
+	searchParams,
+	filters,
+	setFilters,
+	enabled,
+	onApplied,
+}: {
+	searchParams: URLSearchParams;
+	filters: DriveFileFilterState;
+	setFilters: (next: DriveFileFilterState) => void;
+	enabled: boolean;
+	onApplied: () => void;
+}) {
+	useEffect(() => {
+		if (!enabled) return;
+
+		const parseListParam = (value: string | null) =>
+			(value ?? '')
+				.split(',')
+				.map((item) => item.trim())
+				.filter((item) => item.length > 0);
+
+		const statusParam = searchParams.get('status');
+		const visibilityParam = searchParams.get('visibility');
+		const typeParam = searchParams.get('type');
+		const sortFieldParam = searchParams.get('sortField');
+		const sortDirParam = searchParams.get('sortDirection');
+		const folderFirstParam = searchParams.get('folderFirst');
+
+		const nextFilters: DriveFileFilterState = {
+			...filters,
+			statuses: parseListParam(statusParam) as DriveFileFilterState['statuses'],
+			visibilities: parseListParam(visibilityParam) as DriveFileFilterState['visibilities'],
+			isFolderValues: parseListParam(typeParam),
+			sortField: sortFieldParam === 'createdAt' ? 'createdAt' : filters.sortField,
+			sortDirection: sortDirParam === 'desc' || sortDirParam === 'asc'
+				? sortDirParam
+				: filters.sortDirection,
+			folderFirst: folderFirstParam === '0'
+				? false
+				: folderFirstParam === '1'
+					? true
+					: filters.folderFirst,
+		};
+
+		setFilters(nextFilters);
+		onApplied();
+	}, [enabled, searchParams]);
+}
+
+function useDriveSearchPageInit({
+	dispatch,
+	navigate,
+	q,
+	applyRef,
+	onAfterResetRef,
+}: {
+	dispatch: ReturnType<typeof useMicroAppDispatch>;
+	navigate: ReturnType<typeof useNavigate>;
+	q: string;
+	applyRef: React.RefObject<() => void>;
+	onAfterResetRef: React.RefObject<() => void>;
+}) {
+	useEffect(() => {
+		onAfterResetRef.current?.();
+		(dispatch as (args: unknown) => void)(driveFileActions.resetCurrentFolder());
+		(dispatch as (args: unknown) => void)(driveFileActions.resetDriveFileAncestors());
+		(dispatch as (args: unknown) => void)(driveFileActions.resetSearchFile());
+
+		const trimmed = q.trim();
+		if (!trimmed) {
+			navigate('../my-files', { replace: true });
+			return;
+		}
+
+		applyRef.current?.();
+	}, [applyRef, dispatch, navigate, onAfterResetRef, q]);
+}
+
+function useDriveSearchPagePagination({
+	dispatch,
+	q,
+	page,
+	lastGraph,
+}: {
+	dispatch: ReturnType<typeof useMicroAppDispatch>;
+	q: string;
+	page: number;
+	lastGraph: Record<string, unknown> | null;
+}) {
+	useEffect(() => {
+		if (!q.trim() || !lastGraph) return;
+		if (page === 1) return;
+
+		(dispatch as (action: unknown) => void)(
+			driveFileActions.searchDriveFile({
+				req: {
+					page: page - 1,
+					size: PAGE_SIZE,
+					graph: lastGraph,
+				},
+			}),
+		);
+	}, [dispatch, lastGraph, page, q]);
+}
 
 type DriveSearchPageLayoutProps = {
 	viewMode: DriveFileUIViewMode;
@@ -57,6 +173,7 @@ function DriveSearchPageLayout({
 						onChange={setFilters}
 						onApply={onApplyFilters}
 						enabledFields={['status', 'visibility', 'type']}
+						applyOnChange={true}
 					/>
 				</Box>
 				<Box h='100%' flex={1} mih={0}>
@@ -97,18 +214,11 @@ function DriveSearchPageBody(): React.ReactNode {
 	const navigate = useNavigate();
 	const [page, setPage] = useState(1);
 	const [lastGraph, setLastGraph] = useState<Record<string, unknown> | null>(null);
+	const [initialFiltersApplied, setInitialFiltersApplied] = useState(false);
 
 	const q = searchParams.get('q') ?? '';
 
-	const VIEW_MODE_KEY = 'drive_viewMode';
-	const [viewMode, setViewMode] = useLocalStorage<DriveFileUIViewMode>(
-		VIEW_MODE_KEY,
-		'grid',
-		{
-			parse: (s) => (s === 'grid' || s === 'list' ? s : 'grid'),
-			serialize: (v) => v,
-		},
-	);
+	const [viewMode, setViewMode] = useDriveSearchPageViewMode();
 
 	const { filters, setFilters, handleApplyFilters } = useDriveFileFilters({
 		pageSize: PAGE_SIZE,
@@ -133,46 +243,33 @@ function DriveSearchPageBody(): React.ReactNode {
 		},
 	});
 
-	useEffect(() => {
-		setPage(1);
-		(dispatch as (args: unknown) => void)(
-			driveFileActions.resetCurrentFolder(),
-		);
-		(dispatch as (args: unknown) => void)(
-			driveFileActions.resetDriveFileAncestors(),
-		);
-		(dispatch as (args: unknown) => void)(
-			driveFileActions.resetSearchFile(),
-		);
+	const onAfterResetRef = useRef<() => void>(() => { });
+	const applyRef = useRef<() => void>(() => { });
+	const onAfterReset = useCallback(() => setPage(1), []);
 
-		const trimmed = q.trim();
-		if (!trimmed) {
-			// Không có query: điều hướng về My files
-			navigate('../my-files', { replace: true });
-			return;
-		}
+	onAfterResetRef.current = onAfterReset;
+	applyRef.current = handleApplyFilters;
 
-		handleApplyFilters();
-	}, [dispatch, navigate, q]);
-
-	useEffect(() => {
-		if (!q.trim() || !lastGraph) {
-			return;
-		}
-		if (page === 1) {
-			return;
-		}
-
-		(dispatch as (action: unknown) => void)(
-			driveFileActions.searchDriveFile({
-				req: {
-					page: page - 1,
-					size: PAGE_SIZE,
-					graph: lastGraph,
-				},
-			}),
-		);
-	}, [dispatch, page, q, lastGraph]);
+	useSearchPageFiltersFromUrl({
+		searchParams,
+		filters,
+		setFilters,
+		enabled: !initialFiltersApplied,
+		onApplied: () => setInitialFiltersApplied(true),
+	});
+	useDriveSearchPageInit({
+		dispatch,
+		navigate,
+		q,
+		applyRef,
+		onAfterResetRef,
+	});
+	useDriveSearchPagePagination({
+		dispatch,
+		q,
+		page,
+		lastGraph,
+	});
 
 	const totalItems = searchState.data?.total ?? 0;
 
@@ -204,4 +301,3 @@ export const DriveSearchPage = () => {
 
 	return <DriveSearchPageBody />;
 };
-
