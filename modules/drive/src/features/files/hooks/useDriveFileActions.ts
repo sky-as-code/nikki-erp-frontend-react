@@ -16,6 +16,10 @@ import { driveFileActions } from '@/appState/file';
 import { useDriveStreamUrl } from '@/hooks/useDriveStreamUrl';
 import { useOrgModulePath } from '@/hooks/useRootPath';
 
+import { useRefreshCurrentFolder } from './useRefreshCurrentFolder';
+
+import type { DriveFile } from '../types';
+
 
 export type DriveFileActions = {
 	openFolder: () => void;
@@ -201,7 +205,8 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 		const result = await (
 			dispatch as (action: unknown) => Promise<{ type?: string }>
 		)(driveFileActions.restoreDriveFileFromTrash({
-			fileId: file.id, parentDriveFileRef: desFileRef ?? file.parentDriveFileRef ?? null
+			fileId: file.id,
+			parentDriveFileRef: normalizedDest ?? normalizedCurrentParent ?? null,
 		}));
 
 		if (result?.type?.endsWith('/fulfilled')) {
