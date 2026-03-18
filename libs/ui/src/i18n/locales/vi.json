@@ -117,6 +117,12 @@
                 "type": "Loại",
                 "actions": "Thao tác"
             },
+            "view": {
+                "folderEmpty": "Thư mục trống"
+            },
+						"sort": {
+							"folderFirst": "Hiển thị thư mục trên cùng"
+						},
             "createFile": {
                 "name": "Tên",
                 "namePlaceholderFolder": "Nhập tên thư mục",
@@ -172,6 +178,12 @@
                 "statusInTrash": "Trong thùng rác",
                 "statusParentInTrash": "Thư mục cha trong thùng rác"
             },
+            "search": {
+              "noResults": "Không tìm thấy kết quả nào",
+              "emptyPrompt": "Nhập từ khóa phía trên để tìm kiếm tệp và thư mục",
+              "viewAll": "Xem tất cả",
+              "viewAllWithCount": "Xem tất cả ({{count}})"
+            },
             "toast": {
                 "createSuccess": "Tạo thành công",
                 "createError": "Tạo thất bại",
@@ -212,7 +224,8 @@
 				"view_on_map": "Xem trên bản đồ",
 				"add": "Thêm",
 				"today": "Hôm nay",
-				"viewDetails": "Xem chi tiết"
+				"viewDetails": "Xem chi tiết",
+				"apply": "Áp dụng"
 			},
 			"boolean": {
 				"yes": "Có",

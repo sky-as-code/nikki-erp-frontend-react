@@ -3,17 +3,17 @@ import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { IconFile, IconFolder } from '@tabler/icons-react';
 import React, { Fragment } from 'react';
 
+import { useDriveFileActions, useMinimumLoading } from '../../hooks';
+import { DriveFileStatus, type DriveFile } from '../../types';
+import { FileActionMenu } from '../file-actions';
+import { AddFileCard } from './AddFileCard';
+import { EmptyFilesState } from '../..';
+
 import {
 	selectCurrentFolder,
 	selectDriveFileList,
 	selectGetDriveFileByParent,
 } from '@/appState/file';
-
-import { useDriveFileActions, useMinimumLoading } from '../../hooks';
-import { DriveFileStatus, type DriveFile } from '../../types';
-import { FileActionMenu } from '../file-actions';
-import { AddFileCard } from './AddFileCard';
-
 
 
 const MIN_LOADING_MS = 300;
@@ -30,7 +30,7 @@ export function DriveFileGrid({ showCreate = true }: DriveFileGridProps): React.
 
 	if (isShowingLoading && files.length === 0) {
 		return (
-			<Box mah={'100%'} w='100%'>
+			<Box mah={'100%'} h={'100%'} w='100%'>
 				<SimpleGrid
 					cols={{ base: 1, sm: 2, md: 3, lg: 4 }}
 					spacing='md'
@@ -42,6 +42,18 @@ export function DriveFileGrid({ showCreate = true }: DriveFileGridProps): React.
 				</SimpleGrid>
 			</Box>
 		);
+	}
+
+	if (!isShowingLoading && files.length === 0) {
+		return <Box pos={'relative'} mah={'100%'} h={'100%'} w='100%'>
+			<SimpleGrid
+				cols={{ base: 1, sm: 2, md: 3, lg: 4 }}
+				spacing='md'
+			>
+				{showCreate && <AddFileCard />}
+			</SimpleGrid>
+			<EmptyFilesState />
+		</Box>;
 	}
 
 	return (
@@ -86,7 +98,7 @@ function FileCard({ file }: { file: DriveFile }): React.ReactNode {
 	const isFolder = file.isFolder;
 	const Icon = isFolder ? IconFolder : IconFile;
 	const sizeLabel = file.size > 0 ? formatSize(file.size) : '—';
-	const {previewFile, openFolder} = useDriveFileActions(file);
+	const { previewFile, openFolder } = useDriveFileActions(file);
 
 	const handleClick = () => {
 		if (file.isFolder) {

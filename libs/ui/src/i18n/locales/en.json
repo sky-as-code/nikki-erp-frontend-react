@@ -115,6 +115,12 @@
 				"type": "Type",
 				"actions": "Actions"
 			},
+			"sort": {
+				"folderFirst": "Show folders first"
+			},
+			"view": {
+				"folderEmpty": "The folder is empty"
+			},
 			"createFile": {
 				"name": "Name",
 				"namePlaceholderFolder": "Enter folder name",
@@ -128,7 +134,6 @@
 				"create": "Create",
 				"nameTooLong": "Name too long",
 				"nameRequired": "Name is required",
-				"formHeight": "400px",
 				"createFile": "Upload file",
 				"createFolder": "Add folder"
 			},
@@ -171,6 +176,12 @@
 				"statusInTrash": "In trash",
 				"statusParentInTrash": "Parent in trash"
 			},
+			"search": {
+				"noResults": "No results found",
+				"emptyPrompt": "Type a keyword above to search files and folders",
+				"viewAll": "View all",
+				"viewAllWithCount": "View all ({{count}})"
+			},
 			"toast": {
 				"createSuccess": "Created successfully",
 				"createError": "Failed to create",
@@ -211,7 +222,8 @@
 				"view_on_map": "View on map",
 				"add": "Add",
 				"today": "Today",
-				"viewDetails": "View Details"
+				"viewDetails": "View Details",
+				"apply": "Apply"	
 			},
 			"boolean": {
 				"yes": "Yes",

@@ -1,21 +1,110 @@
-import { Box, Button, Card, Flex, Group, Stack, Text, TextInput } from '@mantine/core';
+/* eslint-disable max-lines-per-function */
+import { Badge, Box, Button, Card, Flex, Group, Stack, Text, TextInput } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router';
 
 import { FileActionMenu } from '@/features/files/components';
+import { DriveFileFilterBar, type DriveFileFilterState } from '@/features/files/components/filters/DriveFileFilterBar';
 import { fileService } from '@/features/files/fileService';
 import { useDriveFileActions } from '@/features/files/hooks';
+import { useOrgModulePath } from '@/hooks/useRootPath';
+
 import type { DriveFile } from '@/features/files/types';
 
 
-export const DriveSearchBar: React.FC = () => {
-	const searchInputRef = useRef<HTMLInputElement>(null);
+type DriveSearchResultsPaneProps = {
+	query: string;
+	results: DriveFile[];
+	total: number;
+	loading: boolean;
+	error: string | null;
+	filters: DriveFileFilterState;
+	onFiltersChange: (next: DriveFileFilterState) => void;
+	isOpen: boolean;
+	isHoveringPane: boolean;
+	setIsHoveringPane: (value: boolean) => void;
+	searchInputRef: React.RefObject<HTMLInputElement | null>;
+	onViewAll: () => void;
+};
+
+function buildGraph(queryText: string, currentFilters: DriveFileFilterState): Record<string, unknown> {
+	const and: any[] = [
+		{ if: ['status', '!=', 'in-trash'] },
+		{ if: ['name', '*', queryText.trim()] },
+	];
+
+	if (currentFilters.statuses.length > 0) {
+		and.push({
+			if: ['status', 'in', currentFilters.statuses],
+		});
+	}
+
+	if (currentFilters.visibilities.length > 0) {
+		and.push({
+			if: ['visibility', 'in', currentFilters.visibilities],
+		});
+	}
+
+	if (currentFilters.isFolderValues.length === 1) {
+		const wantFolder = currentFilters.isFolderValues[0] === 'folder';
+		and.push({
+			if: ['is_folder', '=', wantFolder],
+		});
+	}
+
+	const order: any[] = [];
+
+	if (currentFilters.folderFirst) {
+		order.push(['is_folder', 'desc']);
+	}
+
+	const field = currentFilters.sortField === 'name' ? 'name' : 'created_at';
+	order.push([field, currentFilters.sortDirection]);
+
+	return {
+		and,
+		order,
+	};
+}
+
+type DriveSearchBarState = {
+	query: string;
+	setQuery: (value: string) => void;
+	results: DriveFile[];
+	total: number;
+	loading: boolean;
+	error: string | null;
+	isFocused: boolean;
+	setIsFocused: (value: boolean) => void;
+	isHoveringPane: boolean;
+	setIsHoveringPane: (value: boolean) => void;
+	filters: DriveFileFilterState;
+	setFilters: (next: DriveFileFilterState) => void;
+};
+
+function useDriveSearchBarState(): DriveSearchBarState & {
+	searchInputRef: React.RefObject<HTMLInputElement | null>;
+} {
+	const searchInputRef = useRef<HTMLInputElement | null>(null);
 	const [query, setQuery] = useState('');
 	const [results, setResults] = useState<DriveFile[]>([]);
 	const [total, setTotal] = useState(0);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [isFocused, setIsFocused] = useState(false);
+	const [isHoveringPane, setIsHoveringPane] = useState(false);
+	const [filters, setFilters] = useState<DriveFileFilterState>({
+		statuses: [],
+		visibilities: [],
+		isFolderValues: [],
+		sortField: 'name',
+		sortDirection: 'asc',
+		folderFirst: true,
+	});
 
+	// Debounced search
 	useEffect(() => {
 		if (!query.trim()) {
 			setResults([]);
@@ -29,12 +118,7 @@ export const DriveSearchBar: React.FC = () => {
 			setLoading(true);
 			setError(null);
 			try {
-				const graph = {
-					and: [
-						{ if: ['status', '!=', 'in-trash'] },
-						{ if: ['name', '*', query.trim()] },
-					],
-				};
+				const graph = buildGraph(query, filters);
 				const res = await fileService.searchDriveFile({
 					page: 0,
 					size: 5,
@@ -62,7 +146,187 @@ export const DriveSearchBar: React.FC = () => {
 			cancelled = true;
 			clearTimeout(timeout);
 		};
-	}, [query]);
+	}, [query, filters]);
+
+	// Ctrl+K hotkey
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+				event.preventDefault();
+				searchInputRef.current?.focus();
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+		};
+	}, []);
+
+	return {
+		searchInputRef,
+		query,
+		setQuery,
+		results,
+		total,
+		loading,
+		error,
+		isFocused,
+		setIsFocused,
+		isHoveringPane,
+		setIsHoveringPane,
+		filters,
+		setFilters,
+	};
+}
+
+function DriveSearchResultsPane({
+	query,
+	results,
+	total,
+	loading,
+	error,
+	filters,
+	onFiltersChange,
+	isOpen,
+	setIsHoveringPane,
+	searchInputRef,
+	onViewAll,
+}: DriveSearchResultsPaneProps): React.ReactNode {
+	const { t } = useTranslation();
+	if (!isOpen) {
+		return null;
+	}
+
+	return (
+		<Card
+			p='xs'
+			pos='absolute'
+			mt='xs'
+			w='100%'
+			shadow='xl'
+			withBorder
+			style={{
+				zIndex: 20,
+				// shadow đều các hướng, mềm hơn (giảm 1/2 so với trước)
+				boxShadow:
+					'0 9px 20px rgba(15, 23, 42, 0.28), 0 -3px 9px rgba(15, 23, 42, 0.14), 6px 0 12px rgba(15, 23, 42, 0.18), -6px 0 12px rgba(15, 23, 42, 0.18)',
+			}}
+			onMouseEnter={() => setIsHoveringPane(true)}
+			onMouseLeave={() => {
+				setIsHoveringPane(false);
+			}}
+		>
+			<Stack gap='xs'>
+				<DriveFileFilterBar
+					value={filters}
+					onChange={onFiltersChange}
+					// search bar áp dụng filter ngay khi thay đổi, không cần nút Apply riêng
+					onApply={() => { }}
+				/>
+				{!loading && error && (
+					<Text size='sm' c='red'>
+						{error}
+					</Text>
+				)}
+				{!loading && !error && results.length === 0 && query.trim() && (
+					<Text
+						size='sm'
+						fw={500}
+						c='dimmed'
+						ta='center'
+					>
+						{t('nikki.drive.search.noResults')}
+					</Text>
+				)}
+				{!error && results.length > 0 && (
+					<Stack gap='xs'>
+						{results.map((file) => (
+							<SearchResultItem key={file.id} file={file} />
+						))}
+					</Stack>
+				)}
+				{/* khu vực nút "View all" luôn giữ chỗ để tránh giật layout */}
+				<Group justify='flex-end' pt='xs' mih={28}>
+					<Button
+						size='xs'
+						variant='filled'
+						disabled={loading || !query.trim() || total === 0 || total <= 5}
+						onClick={onViewAll}
+					>
+						{query.trim()
+							? t('nikki.drive.search.viewAllWithCount', { count: total })
+							: t('nikki.drive.search.viewAll')}
+					</Button>
+				</Group>
+			</Stack>
+		</Card>
+	);
+}
+
+export const DriveSearchBar: React.FC = () => {
+	const searchInputRef = useRef<HTMLInputElement>(null);
+	const containerRef = useRef<HTMLDivElement | null>(null);
+	const navigate = useNavigate();
+	const rootPath = useOrgModulePath();
+	const [query, setQuery] = useState('');
+	const [results, setResults] = useState<DriveFile[]>([]);
+	const [total, setTotal] = useState(0);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [isFocused, setIsFocused] = useState(false);
+	const [isHoveringPane, setIsHoveringPane] = useState(false);
+	const [filters, setFilters] = useState<DriveFileFilterState>({
+		statuses: [],
+		visibilities: [],
+		isFolderValues: [],
+		sortField: 'name',
+		sortDirection: 'asc',
+		folderFirst: true,
+	});
+
+	useEffect(() => {
+		if (!query.trim()) {
+			setResults([]);
+			setTotal(0);
+			setError(null);
+			return;
+		}
+
+		let cancelled = false;
+		const timeout = setTimeout(async () => {
+			setLoading(true);
+			setError(null);
+			try {
+				const graph = buildGraph(query, filters);
+				const res = await fileService.searchDriveFile({
+					page: 0,
+					size: 5,
+					graph,
+				});
+				if (!cancelled) {
+					const items = res.items ?? [];
+					setResults(items);
+					setTotal(res.total ?? items.length);
+				}
+			}
+			catch (e) {
+				if (!cancelled) {
+					setError(e instanceof Error ? e.message : 'Failed to search files');
+					setResults([]);
+					setTotal(0);
+				}
+			}
+			finally {
+				if (!cancelled) setLoading(false);
+			}
+		}, 300);
+
+		return () => {
+			cancelled = true;
+			clearTimeout(timeout);
+		};
+	}, [query, filters]);
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -78,65 +342,91 @@ export const DriveSearchBar: React.FC = () => {
 		};
 	}, []);
 
+	// Đóng pane khi click ra ngoài (không phải input hoặc pane)
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			const target = event.target as Node;
+			if (!containerRef.current) return;
+			if (!containerRef.current.contains(target)) {
+				setIsFocused(false);
+				setIsHoveringPane(false);
+			}
+		};
+
+		window.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			window.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
+
 	return (
-		<Box pos='relative' h='fit-content' bdrs={'md'}>
-			<Card p='0px'>
+		<Box
+			ref={containerRef}
+			pos='relative'
+			h='fit-content'
+			w={'100%'}
+			bdrs={'md'}
+		>
+			<Card
+				p='0px'
+				withBorder
+				style={{
+					boxShadow: isFocused
+						? '0 9px 20px rgba(15, 23, 42, 0.28), 0 -3px 9px rgba(15, 23, 42, 0.14), 6px 0 12px rgba(15, 23, 42, 0.18), -6px 0 12px rgba(15, 23, 42, 0.18)'
+						: 'none',
+				}}
+			>
 				<TextInput
 					ref={searchInputRef}
 					size='md'
 					w='100%'
 					variant='unstyled'
 					bd='1px solid var(--mantine-color-gray-3)'
-					style={{ boxShadow: '0 8px 24px rgba(15, 23, 42, 0.18)', overflow: 'hidden' }}
+					style={{ overflow: 'hidden' }}
 					placeholder='Search files and folders... (Ctrl + K)'
 					leftSection={<IconSearch size={16} />}
 					value={query}
 					onChange={(e) => setQuery(e.currentTarget.value)}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') {
+							const trimmed = query.trim();
+							// chỉ navigate khi có query và có nhiều hơn page size kết quả
+							if (!trimmed || total === 0 || total <= 5) return;
+							const params = new URLSearchParams();
+							params.set('q', trimmed);
+							navigate(`${rootPath}/management/search-result?${params.toString()}`);
+						}
+					}}
+					onFocus={() => setIsFocused(true)}
+					onBlur={() => {
+						// chỉ đóng pane nếu không hover trong pane
+						if (!isHoveringPane) {
+							setIsFocused(false);
+						}
+					}}
 				/>
 			</Card>
-			{(loading || error || query.trim()) && (
-				<Card
-					p='xs'
-					pos='absolute'
-					mt='xs'
-					w='100%'
-					shadow='lg'
-					withBorder
-					style={{ zIndex: 20 }}
-				>
-					<Stack gap='xs'>
-						{loading && (
-							<Text size='sm' c='dimmed'>
-								Searching...
-							</Text>
-						)}
-						{!loading && error && (
-							<Text size='sm' c='red'>
-								{error}
-							</Text>
-						)}
-						{!loading && !error && results.length === 0 && query.trim() && (
-							<Text size='sm' c='dimmed'>
-								No results
-							</Text>
-						)}
-						{!loading && !error && results.length > 0 && (
-							<Stack gap='xs'>
-								{results.map((file) => (
-									<SearchResultItem key={file.id} file={file} />
-								))}
-							</Stack>
-						)}
-						{!loading && !error && query.trim() && (
-							<Group justify='flex-end' pt='xs'>
-								<Button size='xs' variant='filled'>
-									View all ({total})
-								</Button>
-							</Group>
-						)}
-					</Stack>
-				</Card>
-			)}
+			<DriveSearchResultsPane
+				query={query}
+				results={results}
+				total={total}
+				loading={loading}
+				error={error}
+				filters={filters}
+				onFiltersChange={setFilters}
+				// luôn mở pane khi ô search focus hoặc đang hover pane,
+				// kể cả khi chưa nhập query (hiển thị chỉ phần filter + trạng thái)
+				isOpen={isFocused || isHoveringPane}
+				isHoveringPane={isHoveringPane}
+				setIsHoveringPane={setIsHoveringPane}
+				searchInputRef={searchInputRef}
+				onViewAll={() => {
+					if (!query.trim()) return;
+					const params = new URLSearchParams();
+					params.set('q', query.trim());
+					navigate(`${rootPath}/management/search-result?${params.toString()}`);
+				}}
+			/>
 		</Box>
 	);
 };
@@ -154,28 +444,52 @@ function SearchResultItem({ file }: { file: DriveFile }): React.ReactNode {
 	};
 
 	return (
-		<Flex
-			align='center'
-			justify='space-between'
-			gap='xs'
+		<Box
+			onClick={handleClick}
+			p='xs'
+			bdrs='sm'
+			style={{
+				cursor: 'pointer',
+				transition: 'background-color 120ms ease-in-out',
+			}}
+			// sử dụng token mặc định để hợp theme light/dark
+			onMouseEnter={(e) => {
+				(e.currentTarget as HTMLElement).style.backgroundColor = 'var(--mantine-color-default-hover)';
+			}}
+			onMouseLeave={(e) => {
+				(e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+			}}
 		>
-			<Box
-				onClick={handleClick}
-				style={{ cursor: 'pointer' }}
+			<Flex
+				align='center'
+				justify='space-between'
+				gap='xs'
 			>
-				<Text size='sm' fw={500} lineClamp={1}>
-					{file.name}
-				</Text>
-				<Text size='xs' c='dimmed' lineClamp={1}>
-					{file.isFolder ? 'Folder' : 'File'} · {file.id}
-				</Text>
-			</Box>
-			<Box
-				onClick={(e) => e.stopPropagation()}
-			>
-				<FileActionMenu file={file} />
-			</Box>
-		</Flex>
+				<Box maw='75%'>
+					<Text size='sm' fw={500} lineClamp={1}>
+						{file.name}
+					</Text>
+					<Group gap={6}>
+						<Badge
+							size='xs'
+							variant='light'
+							color={file.isFolder ? 'blue' : 'gray'}
+							radius='sm'
+						>
+							{file.isFolder ? 'Folder' : 'File'}
+						</Badge>
+						<Text size='xs' c='dimmed' lineClamp={1}>
+							{file.id}
+						</Text>
+					</Group>
+				</Box>
+				<Box
+					onClick={(e) => e.stopPropagation()}
+				>
+					<FileActionMenu file={file} />
+				</Box>
+			</Flex>
+		</Box>
 	);
 }
 

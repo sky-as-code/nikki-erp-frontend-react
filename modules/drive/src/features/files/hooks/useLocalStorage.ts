@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 
+
 function getStored<T>(key: string, parse: (s: string) => T, fallback: T): T {
 	try {
 		if (typeof localStorage === 'undefined') return fallback;

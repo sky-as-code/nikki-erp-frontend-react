@@ -1,19 +1,31 @@
 import { Center, Stack, Text } from '@mantine/core';
-import { IconFileSadFilled } from '@tabler/icons-react';
-import React from 'react';
+import { IconFolderOpen } from '@tabler/icons-react';
+import { useTranslation } from 'react-i18next';
 
 
 export function EmptyFilesState(): React.ReactNode {
+	const {t} = useTranslation();
+
 	return (
-		<Center h='100%' w='100%'>
+		<Center
+			h='100%'
+			w='100%'
+			pos={'absolute'}
+			top={0}
+			left={0}
+			opacity={0.3}
+			style={{
+				pointerEvents: 'none',
+			}}
+		>
 			<Stack gap='xs' align='center'>
-				<IconFileSadFilled
+				<IconFolderOpen
 					size={96}
 					stroke={2.5}
 					color='var(--mantine-color-gray-6)'
 				/>
 				<Text size='lg' c='dimmed' fw={500}>
-					No files
+					{t('nikki.drive.view.folderEmpty')}
 				</Text>
 			</Stack>
 		</Center>

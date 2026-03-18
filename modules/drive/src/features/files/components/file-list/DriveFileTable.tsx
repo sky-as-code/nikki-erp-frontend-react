@@ -66,7 +66,7 @@ export function DriveFileTable({ showCreate = true }: DriveFileTableProps): Reac
 
 	if (files.length === 0 && !isShowingLoading) {
 		return (
-			<Box mah='100%' style={{ overflow: 'auto' }}>
+			<Box mah='100%' h={'100%'} pos={'relative'} style={{ overflow: 'auto' }}>
 				{showAdd && (
 					<Flex mb='sm' gap='xs'>
 						<Button
