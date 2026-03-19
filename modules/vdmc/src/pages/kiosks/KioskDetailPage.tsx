@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
 import { ControlPanel } from '@/components';
+import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { DetailLayout } from '@/components/DetailLayout';
 import { KioskNotFound } from '@/components/KioskNotFound';
 import { PageContainer } from '@/components/PageContainer';
@@ -13,27 +14,27 @@ import { TabId, useKioskDetailBreadcrumbs, useKioskDetailTabs } from '@/features
 
 
 export const KioskDetailPage: React.FC = () => {
-	const [activeTab, setActiveTab] = useState<TabId>('basicInfo');
+	const navigate = useNavigate();
 	const { id } = useParams<{ id: string }>();
+	const { t: translate } = useTranslation();
+
+	const [activeTab, setActiveTab] = useState<TabId>('basicInfo');
 	const { kiosk, isLoading } = useKioskDetail(id);
 	const { tabs, getTabActions } = useKioskDetailTabs({ kiosk, activeTab });
 	const breadcrumbs = useKioskDetailBreadcrumbs({ kiosk });
-
-	const navigate = useNavigate();
-	const { t: translate } = useTranslation();
 
 	const handleTabChange = useCallback((value: string) => {
 		setActiveTab(value as TabId);
 	}, []);
 
-	const tabActions = getTabActions(activeTab) ?? [];
-	const backAction = {
+	const actions: ControlPanelProps['actions'] = [{
 		label: translate('nikki.general.actions.back'),
 		onClick: () => navigate('../kiosks'),
 		leftSection: <IconArrowLeft size={16} />,
 		variant: 'outline',
-	};
-	const actions = kiosk ? [backAction, ...tabActions] : [backAction];
+	}];
+	const tabActions = getTabActions(activeTab) ?? [];
+	if (kiosk) actions.push(...tabActions);
 
 	return (
 		<PageContainer
@@ -41,7 +42,7 @@ export const KioskDetailPage: React.FC = () => {
 			sections={[ <ControlPanel actions={actions} /> ]}
 			isLoading={isLoading}
 			isNotFound={!kiosk && !isLoading}
-			notFoundComponent={<KioskNotFound />}
+			notFoundContent={<KioskNotFound />}
 		>
 			<DetailLayout
 				header={{

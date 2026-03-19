@@ -18,9 +18,9 @@ import { ConnectionHistory, ConnectionStatus, Kiosk, KioskMode, KioskStatus, Kio
 
 
 export interface KioskTableProps extends AutoTableProps {
-	onViewDetail: (kioskId: string) => void;
-	onEdit?: (kioskId: string) => void;
-	onDelete?: (kioskId: string) => void;
+	onPreview: (kiosk: Kiosk) => void;
+	onEdit?: (kiosk: Kiosk) => void;
+	onDelete?: (kiosk: Kiosk) => void;
 }
 
 function renderCodeColumn(
@@ -324,12 +324,12 @@ function renderWarningsColumn(
 
 function renderActionsColumn(
 	row: Record<string, unknown>,
-	onView?: (kioskId: string) => void,
-	onEdit?: (kioskId: string) => void,
-	onDelete?: (kioskId: string) => void,
+	onView?: (kiosk: Kiosk) => void,
+	onEdit?: (kiosk: Kiosk) => void,
+	onDelete?: (kiosk: Kiosk) => void,
 	translate?: (key: string) => string,
 ) {
-	const kioskId = row.id as string;
+	const kiosk = row as unknown as Kiosk;
 	if (!translate) return null;
 
 	return (
@@ -337,21 +337,21 @@ function renderActionsColumn(
 			<Group gap='xs' justify='flex-end' onClick={(e) => e.stopPropagation()}>
 				{onView && (
 					<Tooltip label={translate('nikki.general.actions.view')}>
-						<ActionIcon variant='subtle' color='blue' onClick={() => onView(kioskId)}>
+						<ActionIcon variant='subtle' color='blue' onClick={() => onView(kiosk)}>
 							<IconEye size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
 				{onEdit && (
 					<Tooltip label={translate('nikki.general.actions.edit')}>
-						<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(kioskId)}>
+						<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(kiosk)}>
 							<IconEdit size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
 				{onDelete && (
 					<Tooltip label={translate('nikki.general.actions.delete')}>
-						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(kioskId)}>
+						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(kiosk)}>
 							<IconTrash size={16} />
 						</ActionIcon>
 					</Tooltip>
@@ -374,7 +374,7 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 	data,
 	schema,
 	isLoading,
-	onViewDetail,
+	onPreview,
 	onEdit,
 	onDelete,
 }) => {
@@ -406,15 +406,14 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 					mode: (row) => renderModeColumn(row, translate),
 					connectionStatus: (row) => renderConnectionStatusColumn(row, translate),
 					warnings: (row) => renderWarningsColumn(row, translate),
-					actions: (row) => renderActionsColumn(row, onViewDetail, onEdit, onDelete, translate),
+					actions: (row) => renderActionsColumn(row, onPreview, onEdit, onDelete, translate),
 				}}
 				headerRenderers={{
 					actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
 				}}
 				columnAsLink='code'
 				columnAsLinkHref={(row) => {
-					const kioskId = row.id as string;
-					onViewDetail(kioskId);
+					onPreview(row as unknown as Kiosk);
 					return '#';
 				}}
 			/>

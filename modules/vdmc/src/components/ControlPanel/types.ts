@@ -1,4 +1,13 @@
-export type ViewMode = 'list' | 'grid' | 'kanban' | 'gantt' | 'calendar' | 'map';
+export const VIEW_MODE_SEGMENTS = {
+	list: 'list',
+	grid: 'grid',
+	kanban: 'kanban',
+	gantt: 'gantt',
+	calendar: 'calendar',
+	map: 'map',
+} as const;
+
+export type ViewMode = (typeof VIEW_MODE_SEGMENTS)[keyof typeof VIEW_MODE_SEGMENTS];
 
 export interface ControlPanelFilterConfig {
 	value: string[];

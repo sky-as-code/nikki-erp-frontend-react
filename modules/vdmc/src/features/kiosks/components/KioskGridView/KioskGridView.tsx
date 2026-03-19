@@ -10,15 +10,15 @@ import { Kiosk, KioskMode, KioskStatus, KioskWarning, ConnectionStatus } from '.
 export interface KioskGridViewProps {
 	kiosks: Kiosk[];
 	isLoading?: boolean;
-	onViewDetail: (kioskId: string) => void;
-	onEdit?: (kioskId: string) => void;
-	onDelete?: (kioskId: string) => void;
+	onPreview: (kiosk: Kiosk) => void;
+	onEdit?: (kiosk: Kiosk) => void;
+	onDelete?: (kiosk: Kiosk) => void;
 }
 
 export const KioskGridView: React.FC<KioskGridViewProps> = ({
 	kiosks,
 	isLoading = false,
-	onViewDetail,
+	onPreview,
 	onEdit,
 	onDelete,
 }) => {
@@ -184,7 +184,7 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 							borderWidth: warningSeverity ? 2 : undefined,
 							boxShadow: warningStyle?.boxShadow,
 						}}
-						onClick={() => onViewDetail(kiosk.id)}
+						onClick={() => onPreview(kiosk)}
 					>
 						<Stack gap='sm'>
 							<Group justify='space-between' align='flex-start'>
@@ -198,14 +198,14 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 								<Group gap='xs' onClick={(e) => e.stopPropagation()}>
 									{onEdit && (
 										<Tooltip label={translate('nikki.general.actions.edit')}>
-											<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(kiosk.id)}>
+											<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(kiosk)}>
 												<IconEdit size={14} />
 											</ActionIcon>
 										</Tooltip>
 									)}
 									{onDelete && (
 										<Tooltip label={translate('nikki.general.actions.delete')}>
-											<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(kiosk.id)}>
+											<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(kiosk)}>
 												<IconTrash size={14} />
 											</ActionIcon>
 										</Tooltip>

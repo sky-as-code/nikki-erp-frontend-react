@@ -2,15 +2,17 @@ import { ActionIcon, Badge, Box, Group, Text, Tooltip } from '@mantine/core';
 import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
 import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
 import React from 'react';
-import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
+
+import { KioskModel } from '../../types';
 
 
 
 export interface KioskModelTableProps extends AutoTableProps {
-	onViewDetail: (modelId: string) => void;
-	onEdit?: (modelId: string) => void;
-	onDelete?: (modelId: string) => void;
+	onPreviewView: (kioskModel: KioskModel) => void;
+	onEdit?: (kioskModel: KioskModel) => void;
+	onDelete?: (kioskModel: KioskModel) => void;
 }
 
 function renderCodeColumn(row: Record<string, unknown>) {
@@ -64,13 +66,12 @@ function renderStatusColumn(
 }
 
 function renderActionsColumn(
-	row: Record<string, unknown>,
-	onView?: (modelId: string) => void,
-	onEdit?: (modelId: string) => void,
-	onDelete?: (modelId: string) => void,
+	row: KioskModel,
+	onView?: (kioskModel: KioskModel) => void,
+	onEdit?: (kioskModel: KioskModel) => void,
+	onDelete?: (kioskModel: KioskModel) => void,
 	translate?: (key: string) => string,
 ) {
-	const modelId = row.id as string;
 	if (!translate) return null;
 
 	return (
@@ -78,21 +79,21 @@ function renderActionsColumn(
 			<Group gap='xs' justify='flex-end' onClick={(e) => e.stopPropagation()}>
 				{onView && (
 					<Tooltip label={translate('nikki.general.actions.view')}>
-						<ActionIcon variant='subtle' color='blue' onClick={() => onView(modelId)}>
+						<ActionIcon variant='subtle' color='blue' onClick={() => onView(row)}>
 							<IconEye size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
 				{onEdit && (
 					<Tooltip label={translate('nikki.general.actions.edit')}>
-						<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(modelId)}>
+						<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(row)}>
 							<IconEdit size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
 				{onDelete && (
 					<Tooltip label={translate('nikki.general.actions.delete')}>
-						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(modelId)}>
+						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(row)}>
 							<IconTrash size={16} />
 						</ActionIcon>
 					</Tooltip>
@@ -115,7 +116,7 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 	data,
 	schema,
 	isLoading,
-	onViewDetail,
+	onPreviewView,
 	onEdit,
 	onDelete,
 }) => {
@@ -142,15 +143,16 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 					name: renderNameColumn,
 					description: renderDescriptionColumn,
 					status: (row) => renderStatusColumn(row, translate),
-					actions: (row) => renderActionsColumn(row, onViewDetail, onEdit, onDelete, translate),
+					actions: (row) =>
+						renderActionsColumn(row as unknown as KioskModel, onPreviewView, onEdit, onDelete, translate),
 				}}
 				headerRenderers={{
 					actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
 				}}
 				columnAsLink='code'
 				columnAsLinkHref={(row) => {
-					const modelId = row.id as string;
-					onViewDetail(modelId);
+					// const modelId = row.id as string;
+					onPreviewView(row);
 					return '#';
 				}}
 			/>

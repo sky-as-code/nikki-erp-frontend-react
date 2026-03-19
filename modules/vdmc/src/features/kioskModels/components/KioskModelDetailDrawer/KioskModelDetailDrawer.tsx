@@ -6,24 +6,25 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { TrayConfiguration } from './TrayConfiguration';
-import { KioskModel, KioskType, TrayConfiguration as TrayConfigurationType } from '../../types';
+import { useKioskModelDetail } from '../../hooks/useKioskModelDetail';
+import { KioskType, TrayConfiguration as TrayConfigurationType } from '../../types';
 
 
 export interface KioskModelDetailDrawerProps {
 	opened: boolean;
 	onClose: () => void;
-	model: KioskModel | undefined;
-	isLoading?: boolean;
+	modelId: string;
 }
 
 export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 	opened,
 	onClose,
-	model,
-	isLoading = false,
+	modelId,
 }) => {
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
+	const { model, isLoading } = useKioskModelDetail(modelId);
+
 	const [selectedKioskType, setSelectedKioskType] = useState<KioskType | undefined>(model?.kioskType);
 	const [numberOfTrays, setNumberOfTrays] = useState<number>(model?.numberOfTrays || 0);
 	const [trayConfigurations, setTrayConfigurations] =
@@ -43,7 +44,7 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 				opened={opened}
 				onClose={onClose}
 				position='right'
-				size='lg'
+				size='xl'
 				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.kioskModels.detail.title')}</Text>}
 			>
 				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>

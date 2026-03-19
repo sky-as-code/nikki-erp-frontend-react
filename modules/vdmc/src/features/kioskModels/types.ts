@@ -1,13 +1,22 @@
-import { KioskDevice } from '../kioskDevices/types';
+import { ViewMode } from '@/components';
 
-export type OperatingMode = 'pending' | 'selling' | 'adsOnly';
+
+export type KioskModelViewMode = Extract<ViewMode, 'list' | 'grid'>;
+
 export type KioskType = 'withoutElevator' | 'elevatorWithConveyor' | 'elevatorWithoutConveyor';
 export type InterfaceMode = 'normal' | 'focus';
 
+export const KIOSK_SHELF_TYPES = {
+	spring: 'spring',
+	conveyor: 'conveyor',
+	hangingConveyor: 'hangingConveyor',
+	pushTape: 'pushTape',
+} as const;
+export type KioskShelfType = (typeof KIOSK_SHELF_TYPES)[keyof typeof KIOSK_SHELF_TYPES];
+
 export interface TrayConfiguration {
 	row: string; // A, B, C, D, etc.
-	device?: KioskDevice; // Device with type 'motor'
-	deviceId?: string;
+	shelfType?: KioskShelfType;
 }
 
 export interface KioskModel {
