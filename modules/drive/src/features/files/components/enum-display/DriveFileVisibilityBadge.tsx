@@ -1,23 +1,17 @@
 import { Badge, BadgeProps } from '@mantine/core';
-import { useTranslation } from 'react-i18next';
 
 import { EnumBagdeProps } from './EnumBadge';
+import { useDriveFileVisibilityValue } from '../../hooks';
 import { DriveFileVisibility } from '../../types';
 
 
 export function DriveFileVisibilityBadge({ e, variant, size }: EnumBagdeProps<DriveFileVisibility>) {
-	const { t } = useTranslation();
+	const value = useDriveFileVisibilityValue();
 
 	const color: Record<DriveFileVisibility, BadgeProps['color']> = {
 		'owner': 'gray',
 		'public': 'blue',
 		'shared': 'yellow',
-	};
-
-	const value: Record<DriveFileVisibility, string> = {
-		'owner': t('nikki.drive.enum.visibility.owner'),
-		'public': t('nikki.drive.enum.visibility.public'),
-		'shared': t('nikki.drive.enum.visibility.shared'),
 	};
 
 	return (
@@ -26,7 +20,7 @@ export function DriveFileVisibilityBadge({ e, variant, size }: EnumBagdeProps<Dr
 			color={color[e]}
 			size={size}
 		>
-			{value[e]}
+			{value(e)}
 		</Badge>
 	);
 }

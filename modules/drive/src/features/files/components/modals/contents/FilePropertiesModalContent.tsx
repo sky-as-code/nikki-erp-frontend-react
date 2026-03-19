@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next';
 
 import { DriveFile, DriveFileVisibility } from '../../../types';
 import { formatSize } from '../../../utils/fortmat';
+import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../../enum-display';
 
+import { useDriveFileTypeValue } from '@/features/files/hooks';
 import { useDbDateTime, useDriveStreamUrl } from '@/hooks';
-import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../../badges';
 
 
 type FilePropertiesCardProps = {
@@ -119,12 +120,13 @@ function FileIdentity({ file, buildStreamUrl }: {
 
 function FileMetaList({ file, formatDateTime, formatRelative }: FilePropertiesCardContentProps) {
 	const { t } = useTranslation();
+	const driveFileTypeValue = useDriveFileTypeValue();
 	const isFolder = file.isFolder;
 	return (
 		<Stack gap='xs'>
 			<Group justify='space-between'>
 				<Text size='xs' c='dimmed'>{t('nikki.drive.propertiesCard.type')}</Text>
-				<Text size='xs'>{file.mime || (isFolder ? '—' : t('nikki.drive.propertiesCard.unknown'))}</Text>
+				<Text size='xs'>{driveFileTypeValue(file.type)}</Text>
 			</Group>
 			<Group justify='space-between'>
 				<Text size='xs' c='dimmed'>{t('nikki.drive.propertiesCard.size')}</Text>

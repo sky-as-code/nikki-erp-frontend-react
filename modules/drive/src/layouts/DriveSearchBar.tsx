@@ -82,8 +82,6 @@ function DriveSearchResultsPane({
 	onFiltersChange,
 	isOpen,
 	setIsHoveringPane,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	searchInputRef,
 	onViewAll,
 }: DriveSearchResultsPaneProps): React.ReactNode {
 	const { t } = useTranslation();
@@ -157,7 +155,7 @@ function DriveSearchResultsPane({
 					<Button
 						size='xs'
 						variant='filled'
-						disabled={loading || !query.trim() || total === 0 || total <= 5}
+						disabled={loading || !query.trim() || total < 1}
 						onClick={onViewAll}
 					>
 						{query.trim()
@@ -288,7 +286,6 @@ export const DriveSearchBar: React.FC = () => {
 		const handleClickOutside = (event: MouseEvent) => {
 			const target = event.target as Node;
 			if (!containerRef.current) return;
-			// Nếu click nằm trong dropdown combobox (render qua portal) thì không đóng pane
 			const el = target as HTMLElement;
 			if (
 				el.closest('[data-combobox-dropdown]') ||
@@ -344,8 +341,8 @@ export const DriveSearchBar: React.FC = () => {
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') {
 							const trimmed = query.trim();
-							// chỉ navigate khi có query và có nhiều hơn page size kết quả
-							if (!trimmed || total === 0 || total <= 5) return;
+							// chỉ navigate khi có query và có nhiều hơn 1 kết quả
+							if (!trimmed || total < 1) return;
 							const params = new URLSearchParams();
 							params.set('q', trimmed);
 							appendFilterParams(params, filters);

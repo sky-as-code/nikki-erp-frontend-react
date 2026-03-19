@@ -1,7 +1,6 @@
 import { Loader, Modal } from '@mantine/core';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 
-import { DriveFileModalUIState } from '../../fileSlice';
 import {
 	PreviewFileModalContent,
 	FilePropertiesModalContent,
@@ -10,6 +9,7 @@ import {
 	DeleteConfirmModalContent,
 	CreateFileModalContent,
 } from './contents';
+import { DriveFileModalUIState } from '../../fileSlice';
 import { useRefreshCurrentFolder } from '../../hooks';
 import { DriveFile } from '../../types';
 
@@ -98,15 +98,16 @@ function DriveFileActionModalContent({ uiState, handleCloseModal }: {
 			);
 
 		case 'properties':
-		case 'update':
-		case 'preview':
 			if (!fileDetail) {
-				return <Loader/>;
+				return <Loader />;
 			}
 
 			return <FilePropertiesModalContent file={fileDetail} />;
 
 		case 'update':
+			if (!fileDetail) {
+				return <Loader />;
+			}
 			return <UpdateFileMetadataModal
 				file={fileDetail}
 				opened={uiState.openedModal}
@@ -114,6 +115,9 @@ function DriveFileActionModalContent({ uiState, handleCloseModal }: {
 			/>;
 
 		case 'preview':
+			if (!fileDetail) {
+				return <Loader />;
+			}
 			return (
 				<PreviewFileModalContent
 					file={fileDetail}

@@ -105,6 +105,20 @@
 					"active": "Active",
 					"inTrash": "In trash",
 					"parentInTrash": "Parent in trash"
+				},
+				"type": {
+					"folder": "Folder",
+					"image": "Image",
+					"video": "Video",
+					"audio": "Audio",
+					"document": "Document",
+					"spreadsheet": "Spreadsheet",
+					"presentation": "Presentation",
+					"pdf": "PDF",
+					"text": "Text",
+					"code": "Code",
+					"archive": "Archive",
+					"other": "Other"
 				}
 			},
 			"propertiesCard": {

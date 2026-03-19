@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { DriveFileStatus, DriveFileVisibility } from '../../types';
-import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../badges';
+import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../enum-display';
 
 
 export type DriveFileSortField = 'name' | 'createdAt';
@@ -103,12 +103,12 @@ function DriveFileFilterVisibility({
 			label: t('nikki.drive.enum.visibility.public'),
 		},
 		{
-			value: DriveFileVisibility.OWNER,
-			label: t('nikki.drive.enum.visibility.owner'),
-		},
-		{
 			value: DriveFileVisibility.SHARED,
 			label: t('nikki.drive.enum.visibility.shared'),
+		},
+		{
+			value: DriveFileVisibility.OWNER,
+			label: t('nikki.drive.enum.visibility.owner'),
 		},
 	];
 
@@ -120,7 +120,7 @@ function DriveFileFilterVisibility({
 	};
 
 	const renderVisibilityOption: MultiSelectProps['renderOption'] = (option) => {
-		return <DriveFileVisibilityBadge e={option.option.value as DriveFileVisibility} />;
+		return <DriveFileVisibilityBadge variant='light' e={option.option.value as DriveFileVisibility} />;
 	};
 
 	return (

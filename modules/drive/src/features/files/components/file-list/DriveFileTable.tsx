@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Flex } from '@mantine/core';
+import { Box, Button, Flex } from '@mantine/core';
 import { AutoTable } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { IconFilePlus, IconFolderPlus } from '@tabler/icons-react';
@@ -20,8 +20,10 @@ import {
 	DriveFileVisibility,
 } from '../../types';
 import { formatSize } from '../../utils';
-import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../badges';
+import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../enum-display';
+import { DriveFileTypeDisplay } from '../enum-display/DriveFileTypeDisplay';
 import { FileActionMenu } from '../file-actions';
+
 
 
 const MIN_LOADING_MS = 300;
@@ -37,22 +39,19 @@ function NameCell({ file }: { file: DriveFile }): React.ReactNode {
 }
 
 function useTableRenderers(): Record<string, (row: Record<string, unknown>) => React.ReactNode> {
-	const { t } = useTranslation();
 	const { formatDateTime } = useDbDateTime();
 	return {
 		name: (row) => <NameCell file={row as unknown as DriveFile} />,
-		type: (row) => (row as unknown as DriveFile).isFolder
-			? t('nikki.drive.propertiesCard.folder')
-			: t('nikki.drive.propertiesCard.file'),
+		type: (row) => <DriveFileTypeDisplay e={(row as unknown as DriveFile).type} />,
 		size: (row) => {
 			const f = row as unknown as DriveFile;
 			return f.isFolder ? '—' : formatSize(f.size);
 		},
 		visibility: (row) => {
 			const v = (row as unknown as DriveFile).visibility as DriveFileVisibility;
-			return <DriveFileVisibilityBadge e={v} />;
+			return <DriveFileVisibilityBadge variant='light' e={v} />;
 		},
-		status: (row) => <DriveFileStatusBadge e={(row as unknown as DriveFile).status as DriveFileStatus} />,
+		status: (row) => <DriveFileStatusBadge variant='light' e={(row as unknown as DriveFile).status as DriveFileStatus} />,
 		createdAt: (row) => formatDateTime((row as unknown as DriveFile).createdAt),
 		actions: (row) => (
 			<Box component='span' onClick={(e: React.MouseEvent) => e.stopPropagation()}>
@@ -73,6 +72,7 @@ export function DriveFileTable({ showCreate = true }: DriveFileTableProps): Reac
 	const isShowingLoading = useMinimumLoading(status === 'pending', MIN_LOADING_MS);
 	const openCreate = useOpenCreateFileModal();
 	const { t } = useTranslation();
+	const tableRenderers = useTableRenderers();
 
 	const showAdd = showCreate && currentFolder?.status !== DriveFileStatus.IN_TRASH;
 
@@ -109,7 +109,7 @@ export function DriveFileTable({ showCreate = true }: DriveFileTableProps): Reac
 				isLoading={isShowingLoading}
 				columnAsId='id'
 				columnRenderers={{
-					...useTableRenderers(),
+					...tableRenderers,
 				}}
 			/>
 		</Box>

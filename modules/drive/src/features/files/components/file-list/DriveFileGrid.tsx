@@ -1,20 +1,21 @@
 import { Box, Card, SimpleGrid, Skeleton, Stack, Text } from '@mantine/core';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { IconFile, IconFolder } from '@tabler/icons-react';
 import React, { Fragment } from 'react';
-
-import { useDriveFileActions, useMinimumLoading } from '../../hooks';
-import { DriveFileStatus, type DriveFile } from '../../types';
-import { formatSize } from '../../utils';
-import { FileActionMenu } from '../file-actions';
-import { AddFileCard } from './AddFileCard';
-import { EmptyFilesState } from '../..';
 
 import {
 	selectCurrentFolder,
 	selectDriveFileList,
 	selectGetDriveFileByParent,
 } from '@/appState/file';
+import { useDriveStreamUrl } from '@/hooks/useDriveStreamUrl';
+
+import { EmptyFilesState } from '../..';
+import { FileActionMenu } from '../file-actions';
+import { AddFileCard } from './AddFileCard';
+import { DriveFileIcon } from './DriveFileIcon';
+import { useDriveFileActions, useMinimumLoading } from '../../hooks';
+import { DriveFileStatus, type DriveFile } from '../../types';
+import { formatSize } from '../../utils';
 
 
 const MIN_LOADING_MS = 300;
@@ -96,10 +97,10 @@ function SkeletonFileCard(): React.ReactNode {
 }
 
 function FileCard({ file }: { file: DriveFile }): React.ReactNode {
-	const isFolder = file.isFolder;
-	const Icon = isFolder ? IconFolder : IconFile;
 	const sizeLabel = formatSize(file.size);
 	const { previewFile, openFolder } = useDriveFileActions(file);
+	const buildStreamUrl = useDriveStreamUrl();
+	const imageUrl = file.type === 'image' ? buildStreamUrl(file.id, false) : undefined;
 
 	const handleClick = () => {
 		if (file.isFolder) {
@@ -130,10 +131,10 @@ function FileCard({ file }: { file: DriveFile }): React.ReactNode {
 				>
 					<FileActionMenu file={file} />
 				</Box>
-				<Icon
+				<DriveFileIcon
+					type={file.type}
+					url={imageUrl}
 					size={32}
-					stroke={2}
-					color={isFolder ? 'var(--mantine-color-yellow-7)' : 'var(--mantine-color-blue-7)'}
 				/>
 				<Text size='md' fw={'semibold'} lineClamp={2}>
 					{file.name}

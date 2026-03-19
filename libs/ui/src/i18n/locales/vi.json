@@ -107,6 +107,20 @@
 								"active": "Hoạt động",
 								"inTrash": "Rác",
 								"parentInTrash": "Thư mục cha rác"
+							},
+							"type": {
+								"folder": "Thư mục",
+								"image": "Hình ảnh",
+								"video": "Video",
+								"audio": "Âm thanh",
+								"document": "Tài liệu",
+								"spreadsheet": "Bảng tính",
+								"presentation": "Trình chiếu",
+								"pdf": "PDF",
+								"text": "Văn bản",
+								"code": "Code",
+								"archive": "Nén",
+								"other": "Khác"
 							}
 						},
             "propertiesCard": {
