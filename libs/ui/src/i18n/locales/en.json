@@ -48,6 +48,165 @@
 				"go_back": "Go Back"
 			}
 		},
+		"drive": {
+			"menu": {
+				"overview": "Overview",
+				"management": "Management",
+				"my-files": "My Files",
+				"trash": "Trash"
+			},
+			"pageTitle": {
+				"overview": "Overview - Drive - Nikki",
+				"trash": "Trash - Drive - Nikki",
+				"myFiles": "My files - Drive - Nikki",
+				"starredFiles": "Starred - Drive - Nikki",
+				"sharedWithMe": "Shared with me - Drive - Nikki"
+			},
+			"myFiles": "My files",
+			"trash": "Trash",
+			"sharedWithMe": "Shared with me",
+			"starred": "Starred",
+			"loadMoreFolders": "Load more folders",
+			"openFolder": "Open folder",
+			"collapse": "Collapse",
+			"expand": "Expand",
+			"collapseMyFilesTree": "Collapse My files tree",
+			"expandMyFilesTree": "Expand My files tree",
+			"trashWarning": "*The files in trash will be <b>deleted after 30 days</b>.",
+			"actions": {
+				"fileActions": "File actions",
+				"info": "Info",
+				"properties": "Properties",
+				"moveToTrash": "Move to trash",
+				"open": "Open",
+				"download": "Download",
+				"editMetadata": "Edit metadata",
+				"restore": "Restore",
+				"restoreTo": "Restore to",
+				"delete": "Delete"
+			},
+			"modals": {
+				"info": "Info",
+				"create": "Create",
+				"update": "Update",
+				"deleteConfirm": "Delete file",
+				"restoreTo": "Restore To",
+				"select": "Select",
+				"cancel": "Cancel",
+				"preview": "Preview"
+			},
+			"enum":{
+				"visibility": {
+					"public": "Public",
+					"owner": "Owner",
+					"shared": "Shared"
+				},
+				"status": {
+					"active": "Active",
+					"inTrash": "In trash",
+					"parentInTrash": "Parent in trash"
+				}
+			},
+			"propertiesCard": {
+				"type": "Type",
+				"status": "Status",
+				"size": "Size",
+				"visibility": "Visibility",
+				"owner": "Owner",
+				"createdAt": "Created at",
+				"updatedAt": "Updated at",
+				"folder": "Folder",
+				"file": "File",
+				"copyStreamUrl": "Copy stream URL",
+				"unknown": "Unknown"
+			},
+			"table": {
+				"type": "Type",
+				"actions": "Actions"
+			},
+			"sort": {
+				"folderFirst": "Show folders first"
+			},
+			"view": {
+				"folderEmpty": "The folder is empty"
+			},
+			"createFile": {
+				"name": "Name",
+				"namePlaceholderFolder": "Enter folder name",
+				"namePlaceholderFile": "Enter name (optional, uses file name)",
+				"visibility": "Visibility",
+				"folder": "Folder",
+				"file": "File",
+				"dropzoneText": "Drag and drop file or click to select",
+				"dropzoneHint": "Select 1 file, max 50MB",
+				"pleaseSelectFile": "Please select a file",
+				"create": "Create",
+				"nameTooLong": "Name too long",
+				"nameRequired": "Name is required",
+				"createFile": "Upload file",
+				"createFolder": "Add folder"
+			},
+			"updateFile": {
+				"name": "Name",
+				"namePlaceholder": "Enter file or folder name",
+				"visibility": "Visibility",
+				"visibilityShared": "Shared",
+				"update": "Update",
+				"nameTooLong": "Name too long",
+				"nameRequired": "Name is required"
+			},
+			"deleteConfirm": {
+				"message": "Are you sure you want to permanently delete \"{{name}}\"? This action cannot be undone.",
+				"delete": "Delete"
+			},
+			"noItems": "No items",
+			"preview": {
+				"notSupported": "Preview is not supported"
+			},
+			"common": {
+				"notImplementedYet": "is not implemented yet."
+			},
+			"errors": {
+				"failedToLoadFiles": "Failed to load files"
+			},
+			"fields": {
+				"id": "ID",
+				"etag": "ETag",
+				"ownerRef": "Owner",
+				"parentDriveFileRef": "Parent",
+				"name": "Name",
+				"mime": "MIME type",
+				"isFolder": "Folder",
+				"size": "Size",
+				"visibility": "Visibility",
+				"status": "Status",
+				"children": "Children",
+				"deletedAt": "Deleted at",
+				"createdAt": "Created at",
+				"updatedAt": "Updated at",
+				"statusActive": "Active",
+				"statusInTrash": "In trash",
+				"statusParentInTrash": "Parent in trash"
+			},
+			"search": {
+				"noResults": "No results found",
+				"emptyPrompt": "Type a keyword above to search files and folders",
+				"viewAll": "View all",
+				"viewAllWithCount": "View all ({{count}})"
+			},
+			"toast": {
+				"createSuccess": "Created successfully",
+				"createError": "Failed to create",
+				"updateSuccess": "Updated successfully",
+				"updateError": "Failed to update",
+				"deleteSuccess": "Deleted successfully",
+				"deleteError": "Failed to delete",
+				"moveToTrashSuccess": "Moved to trash",
+				"moveToTrashError": "Failed to move to trash",
+				"restoreSuccess": "Restored successfully",
+				"restoreError": "Failed to restore"
+			}
+		},
 		"general": {
 			"fields": {
 				"id": "ID"
@@ -59,6 +218,7 @@
 				"delete": "Delete",
 				"edit": "Edit",
 				"view": "View",
+				"close": "Close",
 				"cancel": "Cancel",
 				"search": "Search",
 				"refresh": "Refresh",
@@ -66,8 +226,10 @@
 				"save": "Save",
 				"confirm": "Confirm",
 				"remove": "Remove",
+				"deselect": "Deselect",
 				"approve": "Approve",
 				"reject": "Reject",
+				"select": "Select",
 				"select_all": "Select All",
 				"deselect_all": "Deselect All",
 				"clear_filters": "Clear Filters",
@@ -75,8 +237,10 @@
 				"view_on_map": "View on map",
 				"add": "Add",
 				"today": "Today",
-				"viewDetails": "View Details"
+				"viewDetails": "View Details",
+				"apply": "Apply"	
 			},
+			"selected": "Selected",
 			"boolean": {
 				"yes": "Yes",
 				"no": "No"
@@ -106,7 +270,8 @@
 			"sort": {
 				"title": "Sort",
 				"asc": "Ascending",
-				"desc": "Descending"
+				"desc": "Descending",
+				"toggleDirection": "Toggle sort direction"
 			},
 			"favorites": {
 				"title": "Favorites",

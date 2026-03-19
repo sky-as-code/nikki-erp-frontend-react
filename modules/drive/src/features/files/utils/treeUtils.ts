@@ -1,5 +1,9 @@
 import type { DriveFile } from '../types';
 import type { TreeNodeData } from '@mantine/core';
+import { DRIVE_TABS } from '@/constants/driveTabs';
+
+
+export type DriveTreeTranslate = (key: string) => string;
 
 
 type DriveFileApi = DriveFile & { is_folder?: boolean };
@@ -18,10 +22,11 @@ function isFolder(item: DriveFileApi): boolean {
 export function driveFileToTreeNode(
 	file: DriveFile,
 	paging?: TreePagingState,
+	t?: DriveTreeTranslate,
 ): TreeNodeData {
 	const baseChildren = (file.children ?? [])
 		.filter((c) => isFolder(c as DriveFileApi))
-		.map((child) => driveFileToTreeNode(child, paging));
+		.map((child) => driveFileToTreeNode(child, paging, t));
 
 	const parentPaging = paging?.[file.id];
 	const hasMore = !!parentPaging
@@ -29,11 +34,12 @@ export function driveFileToTreeNode(
 		&& parentPaging.loaded !== undefined
 		&& parentPaging.loaded < parentPaging.total;
 
+	const loadMoreLabel = t ? t('nikki.drive.loadMoreFolders') : 'Load more folders';
 	const folderChildren: TreeNodeData[] = hasMore
 		? [
 			...baseChildren,
 			{
-				label: 'Load more folders',
+				label: loadMoreLabel,
 				value: `${file.id}::load-more`,
 				nodeProps: { type: 'load-more', parentId: file.id },
 				children: [],
@@ -49,20 +55,29 @@ export function driveFileToTreeNode(
 	};
 }
 
-const STATIC_TREE_NODES: TreeNodeData[] = [
-	{ label: 'Shared with me', value: 'shared-with-me', nodeProps: { type: 'folder' } },
-	{ label: 'Starred', value: 'starred', nodeProps: { type: 'folder' } },
-	{ label: 'Trash', value: 'trash', nodeProps: { type: 'folder' } },
-];
+function getStaticTreeNodes(t?: DriveTreeTranslate): TreeNodeData[] {
+	const shared = t ? t('nikki.drive.sharedWithMe') : 'Shared with me';
+	const starred = t ? t('nikki.drive.starred') : 'Starred';
+	const trash = t ? t('nikki.drive.trash') : 'Trash';
+	return [
+		{ label: shared, value: DRIVE_TABS.SHARED_WITH_ME, nodeProps: { type: 'folder' } },
+		{ label: starred, value: DRIVE_TABS.STARRED, nodeProps: { type: 'folder' } },
+		{ label: trash, value: DRIVE_TABS.TRASH, nodeProps: { type: 'folder' } },
+	];
+}
 
 /** Convert treeRootItems (DriveFile[]) thành data cho Mantine Tree. Chỉ hiển thị folder. */
 export function treeRootItemsToTreeData(
 	treeRootItems: DriveFile[],
 	paging?: TreePagingState,
+	t?: DriveTreeTranslate,
 ): TreeNodeData[] {
+	const loadMoreLabel = t ? t('nikki.drive.loadMoreFolders') : 'Load more folders';
+	const myFilesLabel = t ? t('nikki.drive.myFiles') : 'My files';
+
 	const baseChildren = treeRootItems
 		.filter((f) => isFolder(f as DriveFileApi))
-		.map((file) => driveFileToTreeNode(file, paging));
+		.map((file) => driveFileToTreeNode(file, paging, t));
 
 	const rootPaging = paging?.[''];
 	const hasMoreAtRoot = !!rootPaging
@@ -74,7 +89,7 @@ export function treeRootItemsToTreeData(
 		? [
 			...baseChildren,
 			{
-				label: 'Load more folders',
+				label: loadMoreLabel,
 				value: 'root::load-more',
 				nodeProps: { type: 'load-more', parentId: '' },
 				children: [],
@@ -83,10 +98,10 @@ export function treeRootItemsToTreeData(
 		: baseChildren;
 
 	const myFilesNode: TreeNodeData = {
-		label: 'My files',
-		value: 'my-files',
+		label: myFilesLabel,
+		value: DRIVE_TABS.MY_FILES,
 		nodeProps: { type: 'folder' },
 		children: myFilesChildren,
 	};
-	return [myFilesNode, ...STATIC_TREE_NODES];
+	return [myFilesNode, ...getStaticTreeNodes(t)];
 }

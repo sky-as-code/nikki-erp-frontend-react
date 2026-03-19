@@ -23,37 +23,22 @@ interface DriveFile {
 	updatedAt: Date;
 }
 
-export enum DriveFileVisibility {
-	PUBLIC = 'public',
-	OWNER = 'owner',
-	SHARED = 'shared',
-}
+export const DriveFileVisibility = {
+	PUBLIC: 'public',
+	OWNER: 'owner',
+	SHARED: 'shared',
+} as const;
 
-export enum DriveFileStatus {
-	ACTIVE = 'active',
-	IN_TRASH = 'in-trash',
-	PARENT_IN_TRASH = 'parent-in-trash',
-}
+export type DriveFileVisibility =
+	typeof DriveFileVisibility[keyof typeof DriveFileVisibility];
 
-export function formatDriveFileVisibility(
-	visibility: DriveFileVisibility,
-): string {
-	const labels: Record<DriveFileVisibility, string> = {
-		[DriveFileVisibility.PUBLIC]: 'Public',
-		[DriveFileVisibility.OWNER]: 'Owner',
-		[DriveFileVisibility.SHARED]: 'Private',
-	};
-	return labels[visibility] ?? visibility;
-}
+export const DriveFileStatus = {
+	ACTIVE: 'active',
+	IN_TRASH: 'in-trash',
+	PARENT_IN_TRASH: 'parent-in-trash',
+} as const;
 
-export function formatDriveFileStatus(status: DriveFileStatus): string {
-	const labels: Record<DriveFileStatus, string> = {
-		[DriveFileStatus.ACTIVE]: 'Active',
-		[DriveFileStatus.IN_TRASH]: 'In trash',
-		[DriveFileStatus.PARENT_IN_TRASH]: 'Parent in trash',
-	};
-	return labels[status] ?? status;
-}
+export type DriveFileStatus = typeof DriveFileStatus[keyof typeof DriveFileStatus];
 
 export type DriveFileStatusBadge = { label: string; color: string };
 

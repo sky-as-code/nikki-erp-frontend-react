@@ -8,12 +8,16 @@ import {
 import { Navigate } from 'react-router';
 
 import { reducer } from './appState';
-import { registerDriveFileSelectorWebComponent } from './features/files/components/FileSelectorWebComponent';
+import { registerDriveFileSelectorWebComponent } from './features/files/components';
 import { useMenuBarItems } from './hooks';
 import { DriveLayout } from './layouts';
-import { FolderPage } from './pages/folder/FolderPage';
+import { FolderPage } from './pages/file/FolderPage';
+import { SharedWithMePage } from './pages/file/SharedFilePage';
+import { StarredFilePage } from './pages/file/StaredFilePage';
+import { TrashPage } from './pages/file/TrashPage';
+import { DriveSearchPage } from './pages/file/DriveSearchPage';
 import { OverviewPage } from './pages/overview/OverviewPage';
-import { TrashPage } from './pages/trash/TrashPage';
+import { DRIVE_TABS } from './constants/driveTabs';
 
 
 function Main(props: MicroAppProps) {
@@ -32,12 +36,15 @@ function Main(props: MicroAppProps) {
 				>
 					<AppRoutes>
 						<AppRoute>
-							<AppRoute index element={<Navigate to='management/my-files' replace />} />
+							<AppRoute index element={<Navigate to={`management/${DRIVE_TABS.MY_FILES}`} replace />} />
 							<AppRoute path='overview' element={<OverviewPage />} />
 							<AppRoute path='management' element={<DriveLayout />}>
-								<AppRoute index element={<Navigate to='my-files' replace />} />
-								<AppRoute path='my-files' element={<FolderPage />} />
-								<AppRoute path='trash' element={<TrashPage />} />
+								<AppRoute index element={<Navigate to={DRIVE_TABS.MY_FILES} replace />} />
+								<AppRoute path={DRIVE_TABS.MY_FILES} element={<FolderPage />} />
+								<AppRoute path={DRIVE_TABS.TRASH} element={<TrashPage />} />
+								<AppRoute path='search-result' element={<DriveSearchPage />} />
+								<AppRoute path={DRIVE_TABS.SHARED_WITH_ME} element={<SharedWithMePage />} />
+								<AppRoute path={DRIVE_TABS.STARRED} element={<StarredFilePage />} />
 								<AppRoute path='folder/:driveFileId' element={<FolderPage />} />
 							</AppRoute>
 						</AppRoute>

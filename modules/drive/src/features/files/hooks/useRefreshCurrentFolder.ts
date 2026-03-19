@@ -32,17 +32,30 @@ export function useRefreshCurrentFolder() {
 					if: ['status', '!=', DriveFileStatus.IN_TRASH],
 				};
 
-			// Refetch danh sách file cho main content
-			(dispatch as (action: unknown) => void)(
-				driveFileActions.getDriveFileByParent({
-					parentId: normalizedParentId,
-					req: {
-						page,
-						size,
-						graph,
-					},
-				}),
-			);
+			// Refetch danh sách file cho main content (tuỳ context: byParent vs search/trash)
+			if (ctx?.source === 'search') {
+				(dispatch as (action: unknown) => void)(
+					driveFileActions.searchDriveFile({
+						req: {
+							page,
+							size,
+							graph,
+						},
+					}),
+				);
+			}
+			else {
+				(dispatch as (action: unknown) => void)(
+					driveFileActions.getDriveFileByParent({
+						parentId: normalizedParentId,
+						req: {
+							page,
+							size,
+							graph,
+						},
+					}),
+				);
+			}
 
 			// Tuỳ chọn: refetch thêm cho FileTree nếu cần
 			if (includeTree) {

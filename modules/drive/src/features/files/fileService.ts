@@ -64,10 +64,12 @@ export const fileService = {
 	},
 
 	async restoreDriveFileFromTrash(fileId: string,
-		parentDriveFileRef: string): Promise<RestoreDriveFileFromTrashResponse> {
+		parentDriveFileRef: string | null): Promise<RestoreDriveFileFromTrashResponse> {
+		// backend expect nil khi restore về root -> không gửi field hoặc gửi null
+		const body = parentDriveFileRef ? { parentFileRef: parentDriveFileRef } : {};
 		return put<RestoreDriveFileFromTrashResponse>(`${baseEndpointWithId(fileId)}/restore`, {
 			json: {
-				'parentFileRef':parentDriveFileRef,
+				...body,
 			},
 		});
 	},
