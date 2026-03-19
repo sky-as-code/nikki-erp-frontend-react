@@ -2,7 +2,7 @@ import { Stack } from '@mantine/core';
 import { AutoField, FormActions, FormModal } from '@nikkierp/ui/components';
 import React from 'react';
 
-import variantSchema from '../../../../schemas/variant-schema.json';
+import variantSchema from '../../../schemas/variant-schema.json';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
 

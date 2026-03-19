@@ -22,6 +22,7 @@ import type {
 export const SLICE_NAME = 'inventory.unitCategory';
 
 export type UnitCategoryState = {
+	detail: ReduxActionState<UnitCategory>;
 	list: ReduxActionState<UnitCategory[]>;
 	create: ReduxActionState<CreateUnitCategoryResponse>;
 	update: ReduxActionState<UpdateUnitCategoryResponse>;
@@ -29,6 +30,7 @@ export type UnitCategoryState = {
 };
 
 const initialState: UnitCategoryState = {
+	detail: baseReduxActionState,
 	list: { ...baseReduxActionState, data: [] },
 	create: baseReduxActionState,
 	update: baseReduxActionState,
@@ -51,50 +53,73 @@ export const listUnitCategories = createAsyncThunk<
 	},
 );
 
+export const getUnitCategory = createAsyncThunk<
+	UnitCategory,
+	{ orgId: string; id: string },
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/detail`,
+	async ({ orgId, id }, { rejectWithValue }) => {
+		try {
+			const result = await unitCategoryService.getUnitCategory(orgId, id);
+			return result;
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to get unit category';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
 export const createUnitCategory = createAsyncThunk<
 	CreateUnitCategoryResponse,
-	CreateUnitCategoryRequest,
+	{ orgId: string; data: CreateUnitCategoryRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/create`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, data }, { rejectWithValue }) => {
 		try {
-			return await unitCategoryService.createUnitCategory(data);
+			const result = await unitCategoryService.createUnitCategory(orgId, data);
+			return result;
 		}
 		catch (error) {
-			return rejectWithValue(error instanceof Error ? error.message : 'Failed to create unit category');
+			const errorMessage = error instanceof Error ? error.message : 'Failed to create unit category';
+			return rejectWithValue(errorMessage);
 		}
 	},
 );
 
 export const updateUnitCategory = createAsyncThunk<
 	UpdateUnitCategoryResponse,
-	UpdateUnitCategoryRequest,
+	{ orgId: string; data: UpdateUnitCategoryRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/update`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, data }, { rejectWithValue }) => {
 		try {
-			return await unitCategoryService.updateUnitCategory(data);
+			const result = await unitCategoryService.updateUnitCategory(orgId, data);
+			return result;
 		}
 		catch (error) {
-			return rejectWithValue(error instanceof Error ? error.message : 'Failed to update unit category');
+			const errorMessage = error instanceof Error ? error.message : 'Failed to update unit category';
+			return rejectWithValue(errorMessage);
 		}
 	},
 );
 
 export const deleteUnitCategory = createAsyncThunk<
 	void,
-	string,
+	{ orgId: string; id: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/delete`,
-	async (id, { rejectWithValue }) => {
+	async ({ orgId, id }, { rejectWithValue }) => {
 		try {
-			await unitCategoryService.deleteUnitCategory(id);
+			await unitCategoryService.deleteUnitCategory(orgId, id);
 		}
 		catch (error) {
-			return rejectWithValue(error instanceof Error ? error.message : 'Failed to delete unit category');
+			const errorMessage = error instanceof Error ? error.message : 'Failed to delete unit category';
+			return rejectWithValue(errorMessage);
 		}
 	},
 );
@@ -105,6 +130,9 @@ const unitCategorySlice = createSlice({
 	reducers: {
 		setUnitCategories: (state, action: PayloadAction<UnitCategory[]>) => {
 			state.list.data = action.payload;
+		},
+		resetDetailUnitCategory: (state) => {
+			state.detail = baseReduxActionState;
 		},
 		resetCreateUnitCategory: (state) => {
 			state.create = baseReduxActionState;
@@ -118,6 +146,7 @@ const unitCategorySlice = createSlice({
 	},
 	extraReducers: (builder) => {
 		listUnitCategoriesReducers(builder);
+		getUnitCategoryReducers(builder);
 		createUnitCategoryReducers(builder);
 		updateUnitCategoryReducers(builder);
 		deleteUnitCategoryReducers(builder);
@@ -140,6 +169,25 @@ function listUnitCategoriesReducers(builder: ActionReducerMapBuilder<UnitCategor
 			state.list.status = 'error';
 			state.list.data = [];
 			state.list.error = action.payload || 'Failed to list unit categories';
+		});
+}
+
+function getUnitCategoryReducers(builder: ActionReducerMapBuilder<UnitCategoryState>) {
+	builder
+		.addCase(getUnitCategory.pending, (state) => {
+			state.detail.status = 'pending';
+			state.detail.error = null;
+			state.detail.data = undefined;
+		})
+		.addCase(getUnitCategory.fulfilled, (state, action) => {
+			state.detail.status = 'success';
+			state.detail.data = action.payload;
+			state.detail.error = null;
+		})
+		.addCase(getUnitCategory.rejected, (state, action) => {
+			state.detail.status = 'error';
+			state.detail.data = undefined;
+			state.detail.error = action.payload || 'Failed to get unit category';
 		});
 }
 
@@ -171,7 +219,16 @@ function updateUnitCategoryReducers(builder: ActionReducerMapBuilder<UnitCategor
 		})
 		.addCase(updateUnitCategory.fulfilled, (state, action) => {
 			state.update.status = 'success';
-			state.update.data = action.payload;
+			if (state.detail.data) {
+				state.detail.data.etag = action.payload.etag;
+				const updatedAt = action.payload.updatedAt;
+				if (updatedAt instanceof Date) {
+					state.detail.data.updatedAt = updatedAt.toString();
+				}
+				else if (typeof updatedAt === 'string') {
+					state.detail.data.updatedAt = updatedAt;
+				}
+			}
 			state.update.error = null;
 		})
 		.addCase(updateUnitCategory.rejected, (state, action) => {

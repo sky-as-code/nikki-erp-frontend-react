@@ -263,14 +263,14 @@ export function useVariantListHandlers(options: UseVariantListHandlersOptions = 
 
 	const refreshVariants = React.useCallback(() => {
 		if (isAllScope) {
-			dispatch(variantActions.listAllVariants());
+			dispatch(variantActions.listAllVariants(orgId));
 			return;
 		}
 
 		if (productId) {
-			dispatch(variantActions.listVariants(productId));
+			dispatch(variantActions.listVariants({ orgId, productId }));
 		}
-	}, [dispatch, isAllScope, productId]);
+	}, [dispatch, isAllScope, productId, orgId]);
 
 	const refreshProducts = React.useCallback(() => {
 		if (isAllScope) {

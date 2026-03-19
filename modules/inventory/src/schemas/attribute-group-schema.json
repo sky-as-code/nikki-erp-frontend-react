@@ -27,7 +27,7 @@
 		},
 		"etag": {
 			"type": "string",
-			"label": "ETag",
+			"label": "Etag",
 			"hidden": true
 		},
 		"createdAt": {

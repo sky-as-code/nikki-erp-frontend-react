@@ -49,10 +49,10 @@
 		},
 		"unitId": {
 			"type": "string",
-			"label": "Unit of Measure",
+			"label": "Unit",
 			"required": { "create": false, "update": false }
 		},
-		"thumbnailUrl": {
+		"thumbnailURL": {
 			"type": "string",
 			"label": "Thumbnail URL"
 		},
@@ -78,7 +78,7 @@
 		},
 		"etag": {
 			"type": "string",
-			"label": "ETag",
+			"label": "Etag",
 			"hidden": true
 		},
 		"createdAt": {

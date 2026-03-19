@@ -107,15 +107,18 @@ export function useProductCategoryListHandlers() {
 			return;
 		}
 		await dispatch(productCategoryActions.updateProductCategory({
-			id,
-			etag,
-			name,
+			orgId,
+			data: {
+				id,
+				etag,
+				name,
+			},
 		})).unwrap();
 		dispatch(productCategoryActions.listProductCategories(orgId));
 	}, [dispatch, orgId]);
 
 	const handleDelete = React.useCallback(async (id: string) => {
-		await dispatch(productCategoryActions.deleteProductCategory(id)).unwrap();
+		await dispatch(productCategoryActions.deleteProductCategory({ orgId, id })).unwrap();
 		dispatch(productCategoryActions.listProductCategories(orgId));
 	}, [dispatch, orgId]);
 

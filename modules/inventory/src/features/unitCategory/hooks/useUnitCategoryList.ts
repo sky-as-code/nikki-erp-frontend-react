@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router';
 import { unitCategoryActions } from '../../../appState';
 
 import type { InventoryDispatch } from '../../../appState';
-import type { UnitCategory } from '../types';
 
 
 export const PAGE_SIZE_OPTIONS = [
@@ -19,7 +18,7 @@ export const PAGE_SIZE_OPTIONS = [
 const normalizeText = (value?: string | null) => (value ?? '').toLowerCase();
 
 function filterCategories(
-	categories: UnitCategory[],
+	categories: unknown[],
 	searchValue: string,
 ) {
 	const keyword = searchValue.trim().toLowerCase();
@@ -27,7 +26,7 @@ function filterCategories(
 		return categories;
 	}
 
-	return categories.filter((category) => {
+	return categories.filter((category: any) => {
 		return normalizeText(category.name).includes(keyword);
 	});
 }
@@ -65,11 +64,6 @@ function usePagination<T>(items: T[]) {
 	};
 }
 
-
-export type UnitCategoryFormPayload = {
-	name: string;
-};
-
 export function useUnitCategoryListHandlers() {
 	const navigate = useNavigate();
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
@@ -84,46 +78,17 @@ export function useUnitCategoryListHandlers() {
 		dispatch(unitCategoryActions.listUnitCategories(orgId));
 	}, [dispatch, orgId]);
 
-	const handleCreate = React.useCallback(async (payload: UnitCategoryFormPayload) => {
-		await dispatch(unitCategoryActions.createUnitCategory({
-			name: payload.name,
-		})).unwrap();
-		dispatch(unitCategoryActions.listUnitCategories(orgId));
-	}, [dispatch, orgId]);
-
-	const handleUpdate = React.useCallback(async (
-		id: string,
-		etag: string,
-		payload: UnitCategoryFormPayload,
-	) => {
-		await dispatch(unitCategoryActions.updateUnitCategory({
-			id,
-			etag,
-			name: payload.name,
-		})).unwrap();
-		dispatch(unitCategoryActions.listUnitCategories(orgId));
-	}, [dispatch, orgId]);
-
-	const handleDelete = React.useCallback(async (id: string) => {
-		await dispatch(unitCategoryActions.deleteUnitCategory(id)).unwrap();
-		dispatch(unitCategoryActions.listUnitCategories(orgId));
-	}, [dispatch, orgId]);
-
 	React.useEffect(() => {
 		handleRefresh();
 	}, [handleRefresh]);
 
 	return {
-		orgId,
 		handleOpenCreatePage,
 		handleRefresh,
-		handleCreate,
-		handleUpdate,
-		handleDelete,
 	};
 }
 
-export function useUnitCategoryListView(categories: UnitCategory[]) {
+export function useUnitCategoryListView(categories: unknown[]) {
 	const [searchValue, setSearchValue] = React.useState('');
 
 	const filteredCategories = React.useMemo(() => {

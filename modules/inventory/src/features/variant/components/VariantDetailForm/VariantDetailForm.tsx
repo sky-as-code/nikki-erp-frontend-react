@@ -35,7 +35,7 @@ function VariantFields({ variantDetail, isLoading }: VariantFieldsProps) {
 				<TextInput
 					value={
 						variantDetail?.createdAt
-							? new Date(variantDetail.createdAt as string).toLocaleString()
+							? new Date(variantDetail.createdAt as number).toLocaleString()
 							: ''
 					}
 					size='md'
@@ -50,7 +50,7 @@ function VariantFields({ variantDetail, isLoading }: VariantFieldsProps) {
 				<TextInput
 					value={
 						variantDetail?.updatedAt
-							? new Date(variantDetail.updatedAt as string).toLocaleString()
+							? new Date(variantDetail.updatedAt as number).toLocaleString()
 							: ''
 					}
 					size='md'

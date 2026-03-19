@@ -2,21 +2,23 @@ import { useUIState } from '@nikkierp/shell/contexts';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { unitActions, productActions } from '../../../appState';
 import { selectCreateProduct } from '../../../appState/product';
 import { selectUnitList } from '../../../appState/unit';
-import { toLocalizedText } from '../../localizedText';
+import { StringToJson } from '../../../utils/serializer';
 
 import type { InventoryDispatch } from '../../../appState';
-import type { ProductCreateSubmitPayload } from '../components/ProductCreateForm/ProductCreateForm';
+import type { ProductCreateSubmitPayload } from '../components/ProductCreateForm';
 
 
 export function useProductCreateHandlers() {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
 	const navigate = useNavigate();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 	const activeOrg = useActiveOrgWithDetails();
 	const orgId = activeOrg?.id ?? 'org-1';
 
@@ -27,41 +29,45 @@ export function useProductCreateHandlers() {
 	const units = unitList.data ?? [];
 
 	React.useEffect(() => {
-		dispatch(unitActions.listUnits());
-	}, [dispatch]);
+		dispatch(unitActions.listUnits(orgId));
+	}, [dispatch, orgId]);
 
-	const handleCreate = React.useCallback(async (data: ProductCreateSubmitPayload) => {
-		const normalizedName = typeof data.name === 'string'
-			? toLocalizedText(data.name)
-			: data.name;
-		const normalizedDescription = typeof data.description === 'string'
-			? toLocalizedText(data.description)
-			: data.description;
-		if (!normalizedName) {
-			return;
-		}
-
-		try {
-			const createdProduct = await dispatch(productActions.createProduct({
-				...data,
-				name: normalizedName,
-				description: normalizedDescription,
-				orgId,
-			})).unwrap();
-
-			notification.showInfo(`Created product ${createdProduct.id}`, '');
+	React.useEffect(() => {
+		if (createCommand.status === 'success') {
+			notification.showInfo('Product created successfully', '');
 			dispatch(productActions.resetCreateProduct());
 			dispatch(productActions.listProducts({ orgId }));
 			navigate('..', { relative: 'path' });
 		}
-		catch (error) {
+
+		if (createCommand.status === 'error') {
 			notification.showError(
-				error instanceof Error ? error.message : 'Failed to create product',
+				createCommand.error instanceof Error ? createCommand.error.message : 'Failed to create product',
 				'',
 			);
 			dispatch(productActions.resetCreateProduct());
 		}
-	}, [dispatch, navigate, notification, orgId]);
+	}, [createCommand.status, dispatch, navigate, notification, orgId]);
+
+	const handleCreate = (data: ProductCreateSubmitPayload) => {
+		const normalizedName = typeof data.name === 'string'
+			? StringToJson(data.name)
+			: data.name;
+		const normalizedDescription = typeof data.description === 'string'
+			? StringToJson(data.description)
+			: data.description;
+
+		if (!normalizedName) {
+			return;
+		}
+
+		dispatch(productActions.createProduct({
+			...data,
+			name: normalizedName,
+			description: normalizedDescription,
+			orgId,
+		}));
+	};
 
 	return {
 		isLoading,

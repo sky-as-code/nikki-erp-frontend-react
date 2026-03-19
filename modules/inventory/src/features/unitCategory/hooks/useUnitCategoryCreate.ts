@@ -11,11 +11,11 @@ import type { InventoryDispatch } from '../../../appState';
 
 
 export type UnitCategoryCreateFormValues = {
-	name: string;
+	name: Record<string, string>;
 };
 
 export const UNIT_CATEGORY_DEFAULT_VALUES: UnitCategoryCreateFormValues = {
-	name: '',
+	name: { en: '', vi: '' },
 };
 
 export function useUnitCategoryCreateHandlers() {
@@ -26,16 +26,19 @@ export function useUnitCategoryCreateHandlers() {
 	const orgId = activeOrg?.id ?? 'org-1';
 	const createCommand = useMicroAppSelector(selectCreateUnitCategory);
 
-	const isLoading = createCommand.status === 'pending';
+	const isSubmitting = createCommand.status === 'pending';
 
 	const handleGoBack = React.useCallback(() => {
 		navigate('..', { relative: 'path' });
 	}, [navigate]);
 
-	const handleCreate = React.useCallback(async (values: UnitCategoryCreateFormValues) => {
+	const handleCreate = React.useCallback(async (values: Record<string, unknown>) => {
 		try {
 			await dispatch(unitCategoryActions.createUnitCategory({
-				name: values.name,
+				orgId,
+				data: {
+					name: values.name as Record<string, string>,
+				},
 			})).unwrap();
 			notification.showInfo('Category created successfully', '');
 			dispatch(unitCategoryActions.resetCreateUnitCategory());
@@ -52,7 +55,7 @@ export function useUnitCategoryCreateHandlers() {
 	}, [dispatch, handleGoBack, notification, orgId]);
 
 	return {
-		isLoading,
+		isSubmitting,
 		onSubmit: handleCreate,
 		handleGoBack,
 	};

@@ -9,6 +9,7 @@ import {
 	selectDeleteUnit,
 	selectUnitDetail,
 	selectUpdateUnit,
+	selectUnitList,
 } from '../../../appState/unit';
 import { selectUnitCategoryList } from '../../../appState/unitCategory';
 
@@ -18,22 +19,28 @@ import type { UnitCategory } from '../../unitCategory/types';
 
 
 export type UnitDetailFormValues = {
-	name: string;
-	symbol: string;
-	categoryId: string;
+	name: Record<string, string>;
+	symbol?: string;
+	categoryId?: string;
+	baseUnit?: string;
+	multiplier?: number;
 };
 
 const EMPTY_FORM_VALUES: UnitDetailFormValues = {
-	name: '',
+	name: { en: '', vi: '' },
 	symbol: '',
 	categoryId: '',
+	baseUnit: '',
+	multiplier: undefined,
 };
 
 function toFormValues(unit: Unit): UnitDetailFormValues {
 	return {
 		name: unit.name,
-		symbol: unit.symbol,
-		categoryId: unit.categoryId,
+		symbol: unit.symbol || '',
+		categoryId: unit.categoryId || '',
+		baseUnit: unit.baseUnit || '',
+		multiplier: unit.multiplier,
 	};
 }
 
@@ -45,6 +52,7 @@ export function useUnitDetail({ unitId }: UseUnitDetailOptions = {}) {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
 	const unitDetail = useMicroAppSelector(selectUnitDetail);
 	const listUnitCategory = useMicroAppSelector(selectUnitCategoryList);
+	const listUnits = useMicroAppSelector(selectUnitList);
 	const updateCommand = useMicroAppSelector(selectUpdateUnit);
 	const deleteCommand = useMicroAppSelector(selectDeleteUnit);
 	const activeOrg = useActiveOrgWithDetails();
@@ -52,15 +60,17 @@ export function useUnitDetail({ unitId }: UseUnitDetailOptions = {}) {
 
 	const navigate = useNavigate();
 	const { notification } = useUIState();
-	const unit = (unitDetail.data ?? null) as Unit | null;
+	const unit = unitDetail.data;
 	const unitCategories = (listUnitCategory.data ?? []) as UnitCategory[];
+	const units = (listUnits.data ?? []) as Unit[];
 
 	const loadData = React.useCallback(() => {
 		if (!unitId) {
 			return;
 		}
 
-		dispatch(unitActions.getUnit(unitId));
+		dispatch(unitActions.getUnit({ orgId, id: unitId }));
+		dispatch(unitActions.listUnits(orgId));
 		dispatch(unitCategoryActions.listUnitCategories(orgId));
 	}, [dispatch, orgId, unitId]);
 
@@ -79,15 +89,20 @@ export function useUnitDetail({ unitId }: UseUnitDetailOptions = {}) {
 
 		try {
 			await dispatch(unitActions.updateUnit({
-				id: unitId,
-				etag: unit.etag,
-				name: values.name,
-				symbol: values.symbol,
-				categoryId: values.categoryId,
+				orgId,
+				data: {
+					id: unitId,
+					etag: unit.etag,
+					name: values.name,
+					symbol: values.symbol,
+					categoryId: values.categoryId,
+					baseUnit: values.baseUnit ? (values.baseUnit as string) : undefined,
+					multiplier: values.multiplier ? (values.multiplier as number) : undefined,
+				},
 			})).unwrap();
 			notification.showInfo('Unit updated successfully', '');
 			dispatch(unitActions.resetUpdateUnit());
-			loadData();
+			handleGoBack();
 		}
 		catch (error) {
 			notification.showError(
@@ -96,7 +111,7 @@ export function useUnitDetail({ unitId }: UseUnitDetailOptions = {}) {
 			);
 			dispatch(unitActions.resetUpdateUnit());
 		}
-	}, [dispatch, loadData, notification, unit, unitId]);
+	}, [dispatch, handleGoBack, notification, unit, unitId, orgId]);
 
 	const handleDelete = React.useCallback(async () => {
 		if (!unitId) {
@@ -104,7 +119,7 @@ export function useUnitDetail({ unitId }: UseUnitDetailOptions = {}) {
 		}
 
 		try {
-			await dispatch(unitActions.deleteUnit(unitId)).unwrap();
+			await dispatch(unitActions.deleteUnit({ orgId, id: unitId })).unwrap();
 			notification.showInfo('Unit deleted successfully', '');
 			dispatch(unitActions.resetDeleteUnit());
 			handleGoBack();
@@ -116,9 +131,9 @@ export function useUnitDetail({ unitId }: UseUnitDetailOptions = {}) {
 			);
 			dispatch(unitActions.resetDeleteUnit());
 		}
-	}, [dispatch, handleGoBack, notification, unitId]);
+	}, [dispatch, handleGoBack, notification, unitId, orgId]);
 
-	const isLoading = unitDetail.status === 'pending' || listUnitCategory.status === 'pending';
+	const isLoading = unitDetail.status === 'pending' || listUnitCategory.status === 'pending' || listUnits.status === 'pending';
 	const isSubmitting = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
 
 	const categoryOptions = React.useMemo(() => {
@@ -138,6 +153,7 @@ export function useUnitDetail({ unitId }: UseUnitDetailOptions = {}) {
 		isSubmitting,
 		unit,
 		categoryOptions,
+		units,
 		modelValue,
 		handleGoBack,
 		onSave: handleSave,

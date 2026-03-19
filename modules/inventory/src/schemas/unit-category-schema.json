@@ -19,32 +19,20 @@
 			"required": { "create": true, "update": false },
 			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
 		},
-		"description": {
-			"type": "string",
-			"label": "Description"
-		},
-		"status": {
-			"type": "string",
-			"label": "Status"
-		},
-		"thumbnailURL": {
-			"type": "string",
-			"label": "Thumbnail URL"
-		},
 		"etag": {
 			"type": "string",
-			"label": "ETag",
+			"label": "Etag",
 			"hidden": true
 		},
 		"createdAt": {
 			"type": "date",
 			"label": "Created At",
-			"hidden": true
+			"hidden": false
 		},
 		"updatedAt": {
 			"type": "date",
 			"label": "Updated At",
-			"hidden": true
+			"hidden": false
 		}
 	}
 }

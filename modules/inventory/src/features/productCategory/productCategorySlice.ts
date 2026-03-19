@@ -53,15 +53,33 @@ export const listProductCategories = createAsyncThunk<
 	},
 );
 
+export const getProductCategory = createAsyncThunk<
+	ProductCategory,
+	{ orgId: string; id: string },
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/detail`,
+	async ({ orgId, id }, { rejectWithValue }) => {
+		try {
+			const result = await productCategoryService.getProductCategory(orgId, id);
+			return result;
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to get category';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
 export const createProductCategory = createAsyncThunk<
 	CreateProductCategoryResponse,
-	CreateProductCategoryRequest,
+	{ orgId: string; data: CreateProductCategoryRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/create`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, data }, { rejectWithValue }) => {
 		try {
-			const result = await productCategoryService.createProductCategory(data);
+			const result = await productCategoryService.createProductCategory(orgId, data);
 			return result;
 		}
 		catch (error) {
@@ -73,13 +91,13 @@ export const createProductCategory = createAsyncThunk<
 
 export const updateProductCategory = createAsyncThunk<
 	UpdateProductCategoryResponse,
-	UpdateProductCategoryRequest,
+	{ orgId: string; data: UpdateProductCategoryRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/update`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, data }, { rejectWithValue }) => {
 		try {
-			const result = await productCategoryService.updateProductCategory(data);
+			const result = await productCategoryService.updateProductCategory(orgId, data);
 			return result;
 		}
 		catch (error) {
@@ -91,13 +109,13 @@ export const updateProductCategory = createAsyncThunk<
 
 export const deleteProductCategory = createAsyncThunk<
 	void,
-	string,
+	{ orgId: string; id: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/delete`,
-	async (id, { rejectWithValue }) => {
+	async ({ orgId, id }, { rejectWithValue }) => {
 		try {
-			await productCategoryService.deleteProductCategory(id);
+			await productCategoryService.deleteProductCategory(orgId, id);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete category';

@@ -5,59 +5,39 @@ import type {
 	UpdateResponse,
 } from '@nikkierp/common';
 
-
 export type Unit = {
 	id: string;
-	name: string;
-	symbol: string;
-	categoryId: string;
-	orgId?: string;
+	orgId: string;
+	name: Record<string, string>;
+	symbol?: string;
+	categoryId?: string;
 	baseUnit?: string;
 	multiplier?: number;
 	status?: string;
-	createdAt: string;
-	updatedAt: string;
+	createdAt: number;
+	updatedAt?: number;
 	etag: string;
-
-	// Legacy fields for compatibility with existing UI code paths.
-	code?: string;
-	category?: string;
-	conversionRatio?: number;
-	baseUnitId?: string;
 };
 
 export type CreateUnitRequest = {
-	name: string;
-	symbol: string;
+	orgId: string;
+	name: Record<string, string>;
+	symbol?: string;
 	categoryId?: string;
-	orgId?: string;
 	baseUnit?: string;
 	multiplier?: number;
 	status?: string;
-
-	// Legacy fields for compatibility with existing create forms.
-	code?: string;
-	category?: string;
-	conversionRatio?: number;
-	baseUnitId?: string;
 };
 
 export type UpdateUnitRequest = {
 	id: string;
 	etag: string;
-	name?: string;
+	name?: Record<string, string>;
 	symbol?: string;
 	categoryId?: string;
-	orgId?: string;
 	baseUnit?: string;
 	multiplier?: number;
 	status?: string;
-
-	// Legacy fields for compatibility with existing update forms.
-	code?: string;
-	category?: string;
-	conversionRatio?: number;
-	baseUnitId?: string;
 };
 
 export type SearchUnitsResponse = SearchResponse<Unit>;

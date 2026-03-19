@@ -64,7 +64,7 @@ const microApps: MicroAppMetadata[] = [
 		// bundleUrl: () => import(inventoryBundleUrl),
 		bundleUrl: () => import('@nikkierp/microapp-inventory'),
 		htmlTag: 'nikkiapp-inventory',
-	}
+	},
 
 	...remoteApps,
 ];

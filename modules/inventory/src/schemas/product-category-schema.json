@@ -21,13 +21,12 @@
 		},
 		"etag": {
 			"type": "string",
-			"label": "ETag",
+			"label": "Etag",
 			"hidden": true
 		},
 		"createdAt": {
 			"type": "date",
-			"label": "Created At",
-			"hidden": true
+			"label": "Created At"
 		},
 		"updatedAt": {
 			"type": "date",

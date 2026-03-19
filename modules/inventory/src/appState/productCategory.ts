@@ -4,6 +4,7 @@ import {
 	actions,
 	createProductCategory,
 	deleteProductCategory,
+	getProductCategory,
 	listProductCategories,
 	reducer,
 	updateProductCategory,
@@ -19,6 +20,7 @@ export const productCategoryReducer = {
 
 export const productCategoryActions = {
 	listProductCategories,
+	getProductCategory,
 	createProductCategory,
 	updateProductCategory,
 	deleteProductCategory,

@@ -15,8 +15,8 @@ import type { Variant } from '../../types';
 
 
 const VARIANT_SCHEMA = variantSchema as ModelSchema;
-const BASE_COLUMNS = ['name', 'sku', 'attributeValues', 'proposedPrice', 'status'];
-const PRODUCT_SCOPE_COLUMNS = ['name', 'sku', 'productId', 'attributeValues', 'proposedPrice', 'status'];
+const BASE_COLUMNS = ['sku', 'name', 'attributeValues', 'proposedPrice', 'status'];
+const PRODUCT_SCOPE_COLUMNS = ['sku', 'name', 'Product', 'barcode', 'proposedPrice', 'status'];
 
 
 interface VariantTableProps {
@@ -27,6 +27,10 @@ interface VariantTableProps {
 }
 
 const variantCombinationLabel = (variant: Variant) => {
+	if (!variant.attributeValues || variant.attributeValues.length === 0) {
+		return '';
+	}
+
 	const getValueLabel = (v: typeof variant.attributeValues[0]) => {
 		const valueText = localizedTextToString(v.valueText);
 		if (valueText) {
@@ -70,10 +74,6 @@ export function VariantTable({
 				columns={columns}
 				data={variants as unknown as Record<string, unknown>[]}
 				columnRenderers={{
-					name: (row) => {
-						const variant = row as Variant;
-						return localizedTextToString(variant.name) || variant.id;
-					},
 					sku: (row) => {
 						const variant = row as Variant;
 						const detailLink = getVariantDetailLink?.(variant) ?? `./${variant.id}`;
@@ -83,7 +83,11 @@ export function VariantTable({
 							</Text>
 						);
 					},
-					productId: (row) => {
+					name: (row) => {
+						const variant = row as Variant;
+						return localizedTextToString(variant.name) || variant.id;
+					},
+					product: (row) => {
 						const variant = row as Variant;
 						return productNameById?.[variant.productId] ?? variant.productId;
 					},
@@ -98,10 +102,10 @@ export function VariantTable({
 						);
 					},
 				}}
-				headerRenderers={{
-					productId: () => <>Product</>,
-					attributeValues: () => <>Attribute Combination</>,
-				}}
+				// headerRenderers={{
+				// 	productId: () => <>Product</>,
+				// 	attributeValues: () => <>Attribute Combination</>,
+				// }}
 			/>
 		</Paper>
 	);

@@ -11,9 +11,9 @@ import {
 import { AutoTable, withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
-
-import { selectProductCategoryList } from '../../appState/productCategory';
+import { selectProductCategoryList } from '../../appState';
 import { ActionBar } from '../../components/ActionBar/ActionBar';
+import { JsonToString } from '../../utils/serializer';
 import {
 	PAGE_SIZE_OPTIONS,
 	useProductCategoryListHandlers,
@@ -21,13 +21,17 @@ import {
 } from '../../features/productCategory/hooks';
 import productCategorySchema from '../../schemas/product-category-schema.json';
 
-import type { ProductCategory } from '../../features/productCategory/types';
 import type { ModelSchema } from '@nikkierp/ui/model';
+import type { ProductCategory } from '../../features/productCategory/types';
 
 
 const CATEGORY_SCHEMA = productCategorySchema as ModelSchema;
 
 const COLUMNS = ['name', 'createdAt'];
+
+const COLUMN_RENDERERS = {
+	name: (row: Record<string, unknown>) => JsonToString(row.name),
+};
 
 export const ProductCategoryListPageBody: React.FC = () => {
 	const listProductCategory = useMicroAppSelector(selectProductCategoryList);
@@ -70,6 +74,7 @@ export const ProductCategoryListPageBody: React.FC = () => {
 					data={pagedCategories as unknown as Record<string, unknown>[]}
 					isLoading={isLoading}
 					columnAsLink='name'
+					columnRenderers={COLUMN_RENDERERS}
 				/>
 			</Paper>
 

@@ -3,7 +3,6 @@ export {
 	useUnitCategoryListHandlers,
 	useUnitCategoryListView,
 } from './useUnitCategoryList';
-export type { UnitCategoryFormPayload } from './useUnitCategoryList';
 export {
 	UNIT_CATEGORY_DEFAULT_VALUES,
 	useUnitCategoryCreateHandlers,

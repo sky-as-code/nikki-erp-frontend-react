@@ -14,22 +14,24 @@ import {
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import productSchema from '../../../../schemas/product-schema.json';
+import productSchema from '../../../schemas/product-schema.json';
+import { StringToJson, JsonToString } from '../../../utils/serializer';
 
-import type { Unit } from '../../../unit/types';
-import type { CreateProductRequest } from '../../types';
+import type { Unit } from '../../unit/types';
+import type { CreateProductRequest } from '../types';
 import type { ModelSchema } from '@nikkierp/ui/model';
 
 
-export type ProductCreateSubmitPayload = CreateProductRequest;
+export type ProductCreateSubmitPayload = Omit<CreateProductRequest, 'orgId'>;
 
 type ProductFormValues = {
 	name: string;
 	sku: string;
 	barCode: string;
 	description: string;
-	unitId: string;
-	status: 'active' | 'inactive';
+	unitId?: string;
+	status?: 'active' | 'inactive';
+	thumbnailURL: string;
 	proposedPrice?: number;
 };
 
@@ -46,8 +48,9 @@ const PRODUCT_DEFAULT_VALUES: ProductFormValues = {
 	sku: '',
 	barCode: '',
 	description: '',
-	unitId: '',
+	unitId: undefined,
 	status: 'active',
+	thumbnailURL: '',
 	proposedPrice: undefined,
 };
 
@@ -71,14 +74,16 @@ function ProductCreateFormContent({
 
 	const submitForm = React.useCallback((rawValues: any) => {
 		const values = rawValues as ProductFormValues;
+		
 		onSubmit({
-			name: values.name,
+			name: StringToJson(values.name),
 			sku: values.sku,
-			barCode: values.barCode || undefined,
-			description: values.description || undefined,
+			barCode: values.barCode,
+			description: StringToJson(values.description),
 			unitId: values.unitId,
 			status: values.status,
-			orgId: 'org-1',
+			thumbnailURL: values.thumbnailURL,
+			proposedPrice: values.proposedPrice,
 		});
 	}, [onSubmit]);
 
@@ -92,6 +97,8 @@ function ProductCreateFormContent({
 							<AutoField name='sku' inputProps={{ disabled: isLoading }} />
 							<AutoField name='barCode' inputProps={{ disabled: isLoading }} />
 							<AutoField name='description' inputProps={{ disabled: isLoading }} />
+							<AutoField name='thumbnailURL' inputProps={{ disabled: isLoading }} />
+							<AutoField name='proposedPrice' inputProps={{ disabled: isLoading }} />
 							<AutoField name='status' inputProps={{ disabled: isLoading }} />
 						</Stack>
 					</FormContainer>
@@ -102,7 +109,7 @@ function ProductCreateFormContent({
 								fieldName='unitId'
 								entities={units}
 								getEntityId={(unit) => unit.id}
-								getEntityName={(unit) => `${unit.name} (${unit.symbol ?? unit.code ?? ''})`}
+								getEntityName={(unit) => `${JsonToString(unit.name)} (${unit.symbol ?? ''})`}
 								placeholder='Select unit'
 								shouldDisable={isLoading}
 							/>

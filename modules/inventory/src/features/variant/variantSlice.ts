@@ -36,13 +36,13 @@ const initialState: VariantState = {
 
 export const listVariants = createAsyncThunk<
 	SearchVariantsResponse,
-	string,
+	{ orgId: string; productId: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchVariants`,
-	async (productId, { rejectWithValue }) => {
+	async ({ orgId, productId }, { rejectWithValue }) => {
 		try {
-			const result = await variantService.listVariants(productId);
+			const result = await variantService.listVariants(orgId, productId);
 			return result;
 		}
 		catch (error) {
@@ -54,13 +54,13 @@ export const listVariants = createAsyncThunk<
 
 export const getVariant = createAsyncThunk<
 	Variant,
-	{ variantId: string; productId: string },
+	{ orgId: string; variantId: string; productId: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchVariant`,
-	async ({ variantId, productId }, { rejectWithValue }) => {
+	async ({ orgId, variantId, productId }, { rejectWithValue }) => {
 		try {
-			const result = await variantService.getVariant(variantId, productId);
+			const result = await variantService.getVariant(orgId, variantId, productId);
 			return result;
 		}
 		catch (error) {
@@ -72,13 +72,13 @@ export const getVariant = createAsyncThunk<
 
 export const createVariant = createAsyncThunk<
 	CreateVariantResponse,
-	CreateVariantRequest,
+	{ orgId: string; data: CreateVariantRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createVariant`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, data }, { rejectWithValue }) => {
 		try {
-			const result = await variantService.createVariant(data);
+			const result = await variantService.createVariant(orgId, data);
 			return result;
 		}
 		catch (error) {
@@ -90,13 +90,13 @@ export const createVariant = createAsyncThunk<
 
 export const updateVariant = createAsyncThunk<
 	UpdateVariantResponse,
-	{ productId: string; data: UpdateVariantRequest },
+	{ orgId: string; productId: string; data: UpdateVariantRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateVariant`,
-	async ({ productId, data }, { rejectWithValue }) => {
+	async ({ orgId, productId, data }, { rejectWithValue }) => {
 		try {
-			const result = await variantService.updateVariant(productId, data);
+			const result = await variantService.updateVariant(orgId, productId, data);
 			return result;
 		}
 		catch (error) {
@@ -108,13 +108,13 @@ export const updateVariant = createAsyncThunk<
 
 export const deleteVariant = createAsyncThunk<
 	void,
-	{ productId: string; variantId: string },
+	{ orgId: string; productId: string; variantId: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/deleteVariant`,
-	async ({ productId, variantId }, { rejectWithValue }) => {
+	async ({ orgId, productId, variantId }, { rejectWithValue }) => {
 		try {
-			await variantService.deleteVariant(productId, variantId);
+			await variantService.deleteVariant(orgId, productId, variantId);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete variant';
@@ -125,13 +125,13 @@ export const deleteVariant = createAsyncThunk<
 
 export const listAllVariants = createAsyncThunk<
 	SearchVariantsResponse,
-	void,
+	string,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchAllVariants`,
-	async (_, { rejectWithValue }) => {
+	async (orgId, { rejectWithValue }) => {
 		try {
-			const result = await variantService.listAllVariants();
+			const result = await variantService.listAllVariants(orgId);
 			return result;
 		}
 		catch (error) {

@@ -9,6 +9,7 @@ export interface ImageGalleryProps {
 	onSelect: (index: number) => void;
 	altBase?: string;
 	emptyText?: string;
+	fillHeight?: boolean;
 }
 
 export const ImageGallery: React.FC<ImageGalleryProps> = ({
@@ -18,29 +19,59 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 	onSelect,
 	altBase = 'Image',
 	emptyText = 'No image available',
+	fillHeight = false,
 }) => {
 	const activeImage = images[selectedIndex] ?? '';
 
 	return (
-		<Stack gap='sm'>
+		<Stack
+			gap='sm'
+			style={fillHeight ? { height: '100%' } : undefined}
+		>
 			<Text fw={600}>{title}</Text>
-			<AspectRatio ratio={16 / 10}>
-				{activeImage ? (
-					<Image src={activeImage} alt={altBase} radius='md' fit='cover' />
-				) : (
-					<Box
-						style={{
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center',
-							background: 'var(--mantine-color-gray-1)',
-							borderRadius: 'var(--mantine-radius-md)',
-						}}
-					>
-						<Text c='dimmed'>{emptyText}</Text>
-					</Box>
-				)}
-			</AspectRatio>
+			{fillHeight ? (
+				<Box
+					style={{
+						flex: 1,
+						minHeight: 320,
+					}}
+				>
+					{activeImage ? (
+						<Image src={activeImage} alt={altBase} radius='md' fit='cover' h='100%' />
+					) : (
+						<Box
+							style={{
+								height: '100%',
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								background: 'var(--mantine-color-gray-1)',
+								borderRadius: 'var(--mantine-radius-md)',
+							}}
+						>
+							<Text c='dimmed'>{emptyText}</Text>
+						</Box>
+					)}
+				</Box>
+			) : (
+				<AspectRatio ratio={16 / 10}>
+					{activeImage ? (
+						<Image src={activeImage} alt={altBase} radius='md' fit='cover' />
+					) : (
+						<Box
+							style={{
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								background: 'var(--mantine-color-gray-1)',
+								borderRadius: 'var(--mantine-radius-md)',
+							}}
+						>
+							<Text c='dimmed'>{emptyText}</Text>
+						</Box>
+					)}
+				</AspectRatio>
+			)}
 
 			{images.length > 1 && (
 				<Group wrap='wrap' gap='xs'>

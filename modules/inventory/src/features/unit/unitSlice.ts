@@ -39,13 +39,13 @@ const initialState: UnitState = {
 
 export const listUnits = createAsyncThunk<
 	SearchUnitsResponse,
-	void,
+	string,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/list`,
-	async (_, { rejectWithValue }) => {
+	async (orgId, { rejectWithValue }) => {
 		try {
-			const result = await unitService.listUnits();
+			const result = await unitService.listUnits(orgId);
 			return result;
 		}
 		catch (error) {
@@ -57,13 +57,13 @@ export const listUnits = createAsyncThunk<
 
 export const getUnit = createAsyncThunk<
 	Unit,
-	string,
+	{ orgId: string; id: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/detail`,
-	async (id, { rejectWithValue }) => {
+	async ({ orgId, id }, { rejectWithValue }) => {
 		try {
-			const result = await unitService.getUnit(id);
+			const result = await unitService.getUnit(orgId, id);
 			return result;
 		}
 		catch (error) {
@@ -75,13 +75,13 @@ export const getUnit = createAsyncThunk<
 
 export const createUnit = createAsyncThunk<
 	CreateUnitResponse,
-	CreateUnitRequest,
+	{ orgId: string; data: CreateUnitRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/create`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, data }, { rejectWithValue }) => {
 		try {
-			const result = await unitService.createUnit(data);
+			const result = await unitService.createUnit(orgId, data);
 			return result;
 		}
 		catch (error) {
@@ -93,13 +93,13 @@ export const createUnit = createAsyncThunk<
 
 export const updateUnit = createAsyncThunk<
 	UpdateUnitResponse,
-	UpdateUnitRequest,
+	{ orgId: string; data: UpdateUnitRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/update`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, data }, { rejectWithValue }) => {
 		try {
-			const result = await unitService.updateUnit(data);
+			const result = await unitService.updateUnit(orgId, data);
 			return result;
 		}
 		catch (error) {
@@ -111,13 +111,13 @@ export const updateUnit = createAsyncThunk<
 
 export const deleteUnit = createAsyncThunk<
 	void,
-	string,
+	{ orgId: string; id: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/delete`,
-	async (id, { rejectWithValue }) => {
+	async ({ orgId, id }, { rejectWithValue }) => {
 		try {
-			await unitService.deleteUnit(id);
+			await unitService.deleteUnit(orgId, id);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete unit';
@@ -220,9 +220,13 @@ function updateUnitReducers(builder: ActionReducerMapBuilder<UnitState>) {
 			state.update.status = 'success';
 			if (state.detail.data) {
 				state.detail.data.etag = action.payload.etag;
-				state.detail.data.updatedAt =
-					(action.payload.updatedAt as Date)?.toISOString?.()
-					?? state.detail.data.updatedAt;
+				const updatedAt = action.payload.updatedAt;
+				if (updatedAt instanceof Date) {
+					state.detail.data.updatedAt = updatedAt.getTime();
+				}
+				else if (typeof updatedAt === 'number') {
+					state.detail.data.updatedAt = updatedAt;
+				}
 			}
 			state.update.error = null;
 		})

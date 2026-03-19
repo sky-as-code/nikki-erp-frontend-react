@@ -6,19 +6,15 @@ import type {
 	UpdateResponse,
 } from '@nikkierp/common';
 
-
-export type VariantStatus = 'active' | 'inactive';
-export type VariantLangText = string | Record<string, string>;
-
 export type Variant = {
 	id: string;
 	productId: string;
-	name: VariantLangText;
+	name: Record<string, string>;
 	sku: string;
 	barcode?: string;
 	proposedPrice: number;
 	imageUrl?: string;
-	status: VariantStatus;
+	status: string;
 	attributeValues: AttributeValue[];
 	attributes?: Record<string, unknown>;
 	createdAt: string;
@@ -28,12 +24,12 @@ export type Variant = {
 
 export type CreateVariantRequest = {
 	productId: string;
-	name: VariantLangText;
+	name: Record<string, string>;
 	sku?: string;
 	barcode?: string;
 	proposedPrice?: number;
 	imageUrl?: string;
-	status?: VariantStatus;
+	status?: string;
 	attributes?: Record<string, unknown>;
 };
 
@@ -43,7 +39,7 @@ export type UpdateVariantRequest = {
 	sku?: string;
 	barcode?: string;
 	proposedPrice?: number;
-	status?: VariantStatus;
+	status?: string;
 	attributes?: Record<string, unknown>;
 };
 

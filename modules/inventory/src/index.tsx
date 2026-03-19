@@ -76,8 +76,8 @@ function Main(props: MicroAppProps) {
 				widgetProps={props.widgetProps}
 			>
 				<AppRoutes>
-					<AppRoute index element={<Navigate to='overview' replace />} />
-					<AppRoute path='overview' element={<OverviewPage />} />
+					{/* <AppRoute index element={<Navigate to='overview' replace />} />
+					<AppRoute path='overview' element={<OverviewPage />} /> */}
 
 					<AppRoute path='units' element={<UnitListPage />} />
 					<AppRoute path='units/create' element={<UnitCreatePage />} />
@@ -92,12 +92,12 @@ function Main(props: MicroAppProps) {
 					<AppRoute path='product-categories' element={<ProductCategoryListPage />} />
 					<AppRoute path='product-categories/create' element={<ProductCategoryCreatePage />} />
 					<AppRoute path='product-categories/:categoryId' element={<ProductCategoryDetailPage />} />
-					<AppRoute path='products/category/:categoryId' element={<ProductListPage />} />
+					<AppRoute path='products/category/:categoryId' element={<ProductListPage />} /> 
 
 					<AppRoute path='products/:productId/variants' element={<VariantListPage />} />
 					<AppRoute path='products/:productId/variants/create' element={<VariantCreatePage />} />
 					<AppRoute path='products/:productId/variants/:variantId' element={<VariantDetailPage />} />
-					<AppRoute path='product-variants' element={<VariantListPage />} />
+					<AppRoute path='product-variants' element={<VariantListPage />} /> 
 				</AppRoutes>
 			</MicroAppRouter>
 		</MicroAppProvider>

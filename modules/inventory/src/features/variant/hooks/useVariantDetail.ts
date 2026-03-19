@@ -1,4 +1,5 @@
 import { useUIState } from '@nikkierp/shell/contexts';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +18,8 @@ import type { InventoryDispatch } from '../../../appState';
 export function useVariantDetailHandlers() {
 	const { productId, variantId } = useParams();
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
+	const activeOrg = useActiveOrgWithDetails();
+	const orgId = activeOrg?.id ?? 'org-1';
 	const variantDetail = useMicroAppSelector(selectVariantDetail);
 	const updateCommand = useMicroAppSelector(selectUpdateVariant);
 	const deleteCommand = useMicroAppSelector(selectDeleteVariant);
@@ -62,6 +65,7 @@ export function useVariantDetailHandlers() {
 		if (variantDetail?.data?.id && productId) {
 			const dataWithTag = { ...data, etag: variantDetail.data.etag };
 			dispatch(variantActions.updateVariant({
+				orgId,
 				productId,
 				data: {
 					id: variantDetail.data.id,
@@ -73,15 +77,15 @@ export function useVariantDetailHandlers() {
 
 	const handleDelete = () => {
 		if (variantDetail?.data?.id && productId) {
-			dispatch(variantActions.deleteVariant({ productId, variantId: variantDetail.data.id }));
+			dispatch(variantActions.deleteVariant({ orgId, productId, variantId: variantDetail.data.id }));
 		}
 	};
 
 	React.useEffect(() => {
 		if (variantId && productId) {
-			dispatch(variantActions.getVariant({ variantId, productId }));
+			dispatch(variantActions.getVariant({ orgId, variantId, productId }));
 		}
-	}, [variantId, productId, dispatch]);
+	}, [variantId, productId, orgId, dispatch]);
 
 	return {
 		isLoadingDetail,

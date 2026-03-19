@@ -74,9 +74,12 @@ export function useProductCategoryDetail({ categoryId }: UseProductCategoryDetai
 
 		try {
 			await dispatch(productCategoryActions.updateProductCategory({
-				id: categoryId,
-				etag: category.etag,
-				name,
+				orgId,
+				data: {
+					id: categoryId,
+					etag: category.etag,
+					name,
+				},
 			})).unwrap();
 			notification.showInfo('Category updated successfully', '');
 			dispatch(productCategoryActions.resetUpdateProductCategory());
@@ -97,7 +100,7 @@ export function useProductCategoryDetail({ categoryId }: UseProductCategoryDetai
 		}
 
 		try {
-			await dispatch(productCategoryActions.deleteProductCategory(categoryId)).unwrap();
+			await dispatch(productCategoryActions.deleteProductCategory({ orgId, id: categoryId })).unwrap();
 			notification.showInfo('Category deleted successfully', '');
 			dispatch(productCategoryActions.resetDeleteProductCategory());
 			handleGoBack();

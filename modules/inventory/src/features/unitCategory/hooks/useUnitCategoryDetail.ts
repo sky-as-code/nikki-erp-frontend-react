@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router';
 import { unitCategoryActions } from '../../../appState';
 import {
 	selectDeleteUnitCategory,
-	selectUnitCategoryList,
+	selectUnitCategoryDetail,
 	selectUpdateUnitCategory,
 } from '../../../appState/unitCategory';
 
@@ -16,11 +16,11 @@ import type { UnitCategory } from '../types';
 
 
 export type UnitCategoryDetailFormValues = {
-	name: string;
+	name: Record<string, string>;
 };
 
 const EMPTY_FORM_VALUES: UnitCategoryDetailFormValues = {
-	name: '',
+	name: { en: '', vi: '' },
 };
 
 function toFormValues(category: UnitCategory): UnitCategoryDetailFormValues {
@@ -35,7 +35,7 @@ interface UseUnitCategoryDetailOptions {
 
 export function useUnitCategoryDetail({ categoryId }: UseUnitCategoryDetailOptions = {}) {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
-	const listUnitCategory = useMicroAppSelector(selectUnitCategoryList);
+	const categoryDetail = useMicroAppSelector(selectUnitCategoryDetail);
 	const updateCommand = useMicroAppSelector(selectUpdateUnitCategory);
 	const deleteCommand = useMicroAppSelector(selectDeleteUnitCategory);
 
@@ -44,14 +44,15 @@ export function useUnitCategoryDetail({ categoryId }: UseUnitCategoryDetailOptio
 	const activeOrg = useActiveOrgWithDetails();
 	const orgId = activeOrg?.id ?? 'org-1';
 
-	const categories = (listUnitCategory.data ?? []) as UnitCategory[];
-	const category = React.useMemo(() => {
-		return categories.find((item) => item.id === categoryId) ?? null;
-	}, [categories, categoryId]);
+	const category = categoryDetail.data;
 
 	const loadData = React.useCallback(() => {
-		dispatch(unitCategoryActions.listUnitCategories(orgId));
-	}, [dispatch, orgId]);
+		if (!categoryId) {
+			return;
+		}
+
+		dispatch(unitCategoryActions.getUnitCategory({ orgId, id: categoryId }));
+	}, [categoryId, dispatch, orgId]);
 
 	React.useEffect(() => {
 		loadData();
@@ -68,9 +69,12 @@ export function useUnitCategoryDetail({ categoryId }: UseUnitCategoryDetailOptio
 
 		try {
 			await dispatch(unitCategoryActions.updateUnitCategory({
-				id: categoryId,
-				etag: category.etag,
-				name: values.name,
+				orgId,
+				data: {
+					id: categoryId,
+					etag: category.etag,
+					name: values.name,
+				},
 			})).unwrap();
 			notification.showInfo('Category updated successfully', '');
 			dispatch(unitCategoryActions.resetUpdateUnitCategory());
@@ -83,7 +87,7 @@ export function useUnitCategoryDetail({ categoryId }: UseUnitCategoryDetailOptio
 			);
 			dispatch(unitCategoryActions.resetUpdateUnitCategory());
 		}
-	}, [category, categoryId, dispatch, loadData, notification]);
+	}, [category, categoryId, dispatch, loadData, notification, orgId]);
 
 	const handleDelete = React.useCallback(async () => {
 		if (!categoryId) {
@@ -91,7 +95,10 @@ export function useUnitCategoryDetail({ categoryId }: UseUnitCategoryDetailOptio
 		}
 
 		try {
-			await dispatch(unitCategoryActions.deleteUnitCategory(categoryId)).unwrap();
+			await dispatch(unitCategoryActions.deleteUnitCategory({
+				orgId,
+				id: categoryId,
+			})).unwrap();
 			notification.showInfo('Category deleted successfully', '');
 			dispatch(unitCategoryActions.resetDeleteUnitCategory());
 			handleGoBack();
@@ -103,24 +110,13 @@ export function useUnitCategoryDetail({ categoryId }: UseUnitCategoryDetailOptio
 			);
 			dispatch(unitCategoryActions.resetDeleteUnitCategory());
 		}
-	}, [categoryId, dispatch, handleGoBack, notification]);
+	}, [categoryId, dispatch, handleGoBack, notification, orgId]);
 
-	const isLoading = listUnitCategory.status === 'pending';
-	const isSubmitting = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
-
-	const modelValue = React.useMemo(() => {
-		if (!category) {
-			return EMPTY_FORM_VALUES;
-		}
-
-		return toFormValues(category);
-	}, [category]);
+	const isLoading = categoryDetail.status === 'pending';
 
 	return {
 		isLoading,
-		isSubmitting,
 		category,
-		modelValue,
 		handleGoBack,
 		onSave: handleSave,
 		onDelete: handleDelete,

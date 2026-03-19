@@ -4,12 +4,13 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 
 import { productActions } from '../../../appState/product';
-import { localizedTextToString } from '../../localizedText';
+import { JsonToString } from '../../../utils/serializer';
 
 import type { InventoryDispatch } from '../../../appState';
 import type { ActionBarFilterConfig } from '../../../components/ActionBar/ActionBar';
 import type { Product } from '../types';
 
+type NormalizedProduct = Omit<Product, 'name'> & { name: string };
 
 const STATUS_OPTIONS = [
 	{ value: 'active', label: 'Active' },
@@ -24,12 +25,12 @@ export const PAGE_SIZE_OPTIONS = [
 ];
 
 const normalizeName = (name: Product['name']) => {
-	return localizedTextToString(name);
+	return JsonToString(name);
 };
 
 const normalizeBarcode = (product: Product) => product.barCode ?? '';
 
-function normalizeProduct(product: Product) {
+function normalizeProduct(product: Product): NormalizedProduct {
 	return {
 		...product,
 		name: normalizeName(product.name),
@@ -37,16 +38,16 @@ function normalizeProduct(product: Product) {
 	};
 }
 
-function filterProducts(products: Product[], searchValue: string, statusFilters: string[]) {
+function filterProducts(products: NormalizedProduct[], searchValue: string, statusFilters: string[]) {
 	const keyword = searchValue.trim().toLowerCase();
 
 	return products.filter((product) => {
 		const matchSearch = keyword.length === 0
-			|| normalizeName(product.name).toLowerCase().includes(keyword)
+			|| product.name.toLowerCase().includes(keyword)
 			|| (product.sku ?? '').toLowerCase().includes(keyword)
-			|| normalizeBarcode(product).toLowerCase().includes(keyword);
+			|| (product.barCode ?? '').toLowerCase().includes(keyword);
 		const matchStatus = statusFilters.length === 0
-			|| statusFilters.includes(product.status);
+			|| statusFilters.includes(product.status!);
 
 		return matchSearch && matchStatus;
 	});
@@ -89,28 +90,20 @@ function buildActionBarFilters(statusFilters: string[], onChange: (value: string
 }
 
 
-export function useProductListHandlers(categoryId?: string) {
+export function useProductListHandlers() {
 	const navigate = useNavigate();
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
 	const activeOrg = useActiveOrgWithDetails();
+
+	const orgId = activeOrg?.id ?? 'org-1';
 
 	const handleCreate = React.useCallback(() => {
 		navigate('create');
 	}, [navigate]);
 
-	const orgId = activeOrg?.id ?? 'org-1';
-
 	const handleRefresh = React.useCallback(() => {
-		dispatch(productActions.listProducts({ orgId, categoryId }));
-	}, [dispatch, orgId, categoryId]);
-
-	const handleClearCategoryFilter = React.useCallback(() => {
-		navigate('/products');
-	}, [navigate]);
-
-	const handleViewDetail = React.useCallback((productId: string) => {
-		navigate(`./${productId}`);
-	}, [navigate]);
+		dispatch(productActions.listProducts({ orgId }));
+	}, [dispatch, orgId]);
 
 	React.useEffect(() => {
 		handleRefresh();
@@ -119,8 +112,6 @@ export function useProductListHandlers(categoryId?: string) {
 	return {
 		handleCreate,
 		handleRefresh,
-		handleClearCategoryFilter,
-		handleViewDetail,
 	};
 }
 

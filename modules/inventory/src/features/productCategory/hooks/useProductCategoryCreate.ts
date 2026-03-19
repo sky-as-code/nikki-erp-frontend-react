@@ -41,7 +41,10 @@ export function useProductCategoryCreateHandlers() {
 		try {
 			await dispatch(productCategoryActions.createProductCategory({
 				orgId,
-				name,
+				data: {
+					orgId,
+					name,
+				},
 			})).unwrap();
 			notification.showInfo('Category created successfully', '');
 			dispatch(productCategoryActions.resetCreateProductCategory());

@@ -12,21 +12,13 @@ import {
 	Title,
 	UnstyledButton,
 } from '@mantine/core';
-import { ConfirmModal } from '@nikkierp/ui/components';
-import {
-	FormStyleProvider,
-	FormFieldProvider,
-} from '@nikkierp/ui/components/form';
-import React, { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
-import { DetailActionBar } from '../../../../components/ActionBar/DetailActionBar';
 
-import type { Attribute } from '../../../../features/attribute/types';
-import type { AttributeValue } from '../../../../features/attributeValue/types';
-import type { Variant } from '../../../../features/variant/types';
-import type { FieldConstraint, FieldDefinition } from '@nikkierp/ui/model';
+import type { Attribute } from '../../attribute/types';
+import type { AttributeValue } from '../../attributeValue/types';
+import type { Variant } from '../../variant/types';
 
 
 interface ImageGalleryProps {

@@ -3,52 +3,47 @@ import type {
 	DeleteResponse,
 	SearchResponse,
 	UpdateResponse,
-} from '@nikkierp/common';
-
-
-export type ProductStatus = 'active' | 'inactive';
-export type ProductLangText = string | Record<string, string>;
-
+} from '@nikkierp/common'
 
 export type Product = {
 	id: string;
 	orgId: string;
-	name: ProductLangText;
-	description?: ProductLangText;
+	name: Record<string, string>;
+	description?: Record<string, string>;
 	sku?: string;
 	barCode?: string;
 	unitId?: string;
-	status: ProductStatus;
-	thumbnailUrl?: string;
+	status?: string;
+	thumbnailURL?: string;
 	proposedPrice?: number;
 	defaultVariantId?: string;
 	attributeIds?: string[];
 	productCategoryIds?: string[];
-	createdAt: string;
-	updatedAt: string;
+	createdAt: number;
+	updatedAt: number;
 	etag: string;
 };
 
 export type CreateProductRequest = {
 	orgId: string;
-	name: ProductLangText;
-	description?: ProductLangText;
+	name: Record<string, string>;
+	description?: Record<string, string>;
 	sku?: string;
 	barCode?: string;
 	unitId?: string;
-	status?: ProductStatus;
-	thumbnailUrl?: string;
+	status?: string;
+	thumbnailURL?: string;
 	proposedPrice?: number;
 };
 
 export type UpdateProductRequest = {
 	id: string;
 	etag: string;
-	name?: ProductLangText;
-	description?: ProductLangText;
+	name?: Record<string, string>;
+	description?: Record<string, string>;
 	unitId?: string;
-	status?: ProductStatus;
-	thumbnailUrl?: string;
+	status?: string;
+	thumbnailURL?: string;
 	defaultVariantId?: string;
 };
 

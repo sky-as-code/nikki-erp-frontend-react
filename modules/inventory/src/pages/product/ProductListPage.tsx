@@ -1,118 +1,78 @@
-import {
-	Badge,
-	Group,
-	Pagination,
-	Select,
-	Stack,
-	Text,
-	Title,
-} from '@mantine/core';
+import { Breadcrumbs, Group, Stack, Typography } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
-import { useMicroAppSelector } from '@nikkierp/ui/microApp';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
-import { useParams } from 'react-router';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 
 import { selectProductList } from '../../appState/product';
+import { selectUnitList } from '../../appState/unit';
+import { selectVariantList, variantActions } from '../../appState/variant';
 import { ActionBar } from '../../components/ActionBar/ActionBar';
 import { ProductTable } from '../../features/product/components';
-import { PAGE_SIZE_OPTIONS, useProductListHandlers, useProductListView } from '../../features/product/hooks';
+import { useProductListHandlers } from '../../features/product/hooks';
+import { useUnitListHandlers } from '../../features/unit/hooks';
 import productSchema from '../../schemas/product-schema.json';
 
+import type { InventoryDispatch } from '../../appState';
 import type { Product } from '../../features/product/types';
-import type { ModelSchema } from '@nikkierp/ui/model';
-
 
 const COLUMNS = [
 	'name',
 	'description',
 	'sku',
+	'proposedPrice',
+	'unitId',
 	'status',
 	'createdAt',
 ];
 
-export function ProductListPageBody(): React.ReactNode {
-	const schema = productSchema as ModelSchema;
-	const { categoryId } = useParams<{ categoryId?: string }>();
+export function ProductListPageBody(): React.ReactElement {
+	const dispatch = useMicroAppDispatch() as InventoryDispatch;
+	const activeOrg = useActiveOrgWithDetails();
+	const orgId = activeOrg?.id ?? 'org-1';
+
 	const listProduct = useMicroAppSelector(selectProductList);
+	const listUnits = useMicroAppSelector(selectUnitList);
+	const listVariants = useMicroAppSelector(selectVariantList);
 	const {
 		handleCreate,
 		handleRefresh,
-		handleClearCategoryFilter,
-		handleViewDetail,
-	} = useProductListHandlers(categoryId);
+	} = useProductListHandlers();
+	useUnitListHandlers();
 
-	const isLoadingList = listProduct.status === 'pending';
+	React.useEffect(() => {
+		dispatch(variantActions.listAllVariants(orgId));
+	}, [dispatch, orgId]);
 
+	const isLoading = listProduct.status === 'pending';
 	const products = (listProduct.data ?? []) as Product[];
-	const {
-		searchValue,
-		setSearchValue,
-		filters,
-		page,
-		setPage,
-		pageSize,
-		totalPages,
-		handlePageSizeChange,
-		tableRows,
-		pagedCount,
-		filteredCount,
-	} = useProductListView(products);
+	const units = listUnits.data ?? [];
+	const variants = listVariants.data ?? [];
 
 	return (
 		<Stack gap='md'>
-			<Group justify='space-between' align='center'>
-				<Group align='center'>
-					<Title order={2}>Product Management</Title>
-					{categoryId && (
-						<Badge
-							size='lg'
-							color='blue'
-							variant='light'
-							style={{ cursor: 'pointer' }}
-							onClick={handleClearCategoryFilter}
-						>
-							Category: {categoryId} ✕
-						</Badge>
-					)}
-				</Group>
+			<Group>
+				<Breadcrumbs style={{ minWidth: '30%' }}>
+					<Typography>
+						<h4>Product Management</h4>
+					</Typography>
+				</Breadcrumbs>
 			</Group>
 			<ActionBar
 				onCreate={handleCreate}
 				onRefresh={handleRefresh}
-				searchValue={searchValue}
-				onSearchChange={setSearchValue}
-				searchPlaceholder='Search by name, SKU, barcode'
-				filters={filters}
+				searchValue=''
+				onSearchChange={() => {}}
 			/>
-
-			{isLoadingList && <Text c='dimmed'>Loading products...</Text>}
-
 			<ProductTable
 				columns={COLUMNS}
-				data={tableRows}
-				schema={schema}
-				isLoading={isLoadingList}
-				onViewDetail={handleViewDetail}
+				products={products}
+				isLoading={isLoading}
+				schema={productSchema as ModelSchema}
+				units={units}
+				variants={variants}
 			/>
-
-			<Group justify='space-between'>
-				<Text size='sm' c='dimmed'>
-					Showing {pagedCount} of {filteredCount} product(s)
-				</Text>
-				<Group>
-					<Select
-						w={120}
-						data={PAGE_SIZE_OPTIONS}
-						value={String(pageSize)}
-						onChange={handlePageSizeChange}
-					/>
-					<Pagination
-						total={totalPages}
-						value={page}
-						onChange={setPage}
-					/>
-				</Group>
-			</Group>
 		</Stack>
 	);
 }

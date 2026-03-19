@@ -23,6 +23,7 @@ export { productActions, selectProductState, selectProductList as selectProducts
 export {
 	productCategoryActions,
 	selectProductCategoryState,
+	selectProductCategoryList,
 	selectProductCategoryList as selectProductCategories,
 } from './productCategory';
 export {

@@ -36,13 +36,13 @@ const initialState: AttributeState = {
 
 export const listAttributes = createAsyncThunk<
 	SearchAttributesResponse,
-	string,
+	{ orgId: string; productId: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchAttributes`,
-	async (productId, { rejectWithValue }) => {
+	async ({ orgId, productId }, { rejectWithValue }) => {
 		try {
-			const result = await attributeService.listAttributes(productId);
+			const result = await attributeService.listAttributes(orgId, productId);
 			return result;
 		}
 		catch (error) {
@@ -54,13 +54,13 @@ export const listAttributes = createAsyncThunk<
 
 export const getAttribute = createAsyncThunk<
 	Attribute,
-	{ attributeId: string; productId: string },
+	{ orgId: string; attributeId: string; productId: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchAttribute`,
-	async ({ attributeId, productId }, { rejectWithValue }) => {
+	async ({ orgId, attributeId, productId }, { rejectWithValue }) => {
 		try {
-			const result = await attributeService.getAttribute(attributeId, productId);
+			const result = await attributeService.getAttribute(orgId, productId, attributeId);
 			return result;
 		}
 		catch (error) {
@@ -72,13 +72,13 @@ export const getAttribute = createAsyncThunk<
 
 export const createAttribute = createAsyncThunk<
 	CreateAttributeResponse,
-	CreateAttributeRequest,
+	{ orgId: string; data: CreateAttributeRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createAttribute`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, data }, { rejectWithValue }) => {
 		try {
-			const result = await attributeService.createAttribute(data);
+			const result = await attributeService.createAttribute(orgId, data);
 			return result;
 		}
 		catch (error) {
@@ -90,13 +90,13 @@ export const createAttribute = createAsyncThunk<
 
 export const updateAttribute = createAsyncThunk<
 	UpdateAttributeResponse,
-	{ productId: string; data: UpdateAttributeRequest },
+	{ orgId: string; productId: string; data: UpdateAttributeRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateAttribute`,
-	async ({ productId, data }, { rejectWithValue }) => {
+	async ({ orgId, productId, data }, { rejectWithValue }) => {
 		try {
-			const result = await attributeService.updateAttribute(productId, data);
+			const result = await attributeService.updateAttribute(orgId, productId, data);
 			return result;
 		}
 		catch (error) {
@@ -108,13 +108,13 @@ export const updateAttribute = createAsyncThunk<
 
 export const deleteAttribute = createAsyncThunk<
 	void,
-	{ productId: string; attributeId: string },
+	{ orgId: string; productId: string; attributeId: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/deleteAttribute`,
-	async ({ productId, attributeId }, { rejectWithValue }) => {
+	async ({ orgId, productId, attributeId }, { rejectWithValue }) => {
 		try {
-			await attributeService.deleteAttribute(productId, attributeId);
+			await attributeService.deleteAttribute(orgId, productId, attributeId);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete attribute';

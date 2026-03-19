@@ -4,6 +4,7 @@ import {
 	actions,
 	createUnitCategory,
 	deleteUnitCategory,
+	getUnitCategory,
 	listUnitCategories,
 	reducer,
 	updateUnitCategory,
@@ -19,6 +20,7 @@ export const unitCategoryReducer = {
 
 export const unitCategoryActions = {
 	listUnitCategories,
+	getUnitCategory,
 	createUnitCategory,
 	updateUnitCategory,
 	deleteUnitCategory,
@@ -26,6 +28,11 @@ export const unitCategoryActions = {
 };
 
 export const selectUnitCategoryState = (state: { [STATE_KEY]: UnitCategoryState }) => state[STATE_KEY];
+
+export const selectUnitCategoryDetail = createSelector(
+	selectUnitCategoryState,
+	(state) => state.detail,
+);
 
 export const selectUnitCategoryList = createSelector(
 	selectUnitCategoryState,

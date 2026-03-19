@@ -10,18 +10,13 @@ import { selectUnitCategoryList } from '../../../appState/unitCategory';
 
 import type { InventoryDispatch } from '../../../appState';
 import type { UnitCategory } from '../../unitCategory/types';
+import { StringToJson } from '../../../utils/serializer';
 
 
 export type UnitFormValues = {
-	name: string;
-	symbol: string;
-	categoryId: string;
-};
-
-export const UNIT_DEFAULT_VALUES: UnitFormValues = {
-	name: '',
-	symbol: '',
-	categoryId: '',
+	name: Record<string, string>;
+	symbol?: string;
+	categoryId?: string;
 };
 
 export function useUnitCreateHandlers() {
@@ -37,34 +32,43 @@ export function useUnitCreateHandlers() {
 	const isSubmitting = createCommand.status === 'pending';
 
 	React.useEffect(() => {
-		dispatch(unitActions.listUnits());
+		dispatch(unitActions.listUnits(orgId));
 		dispatch(unitCategoryActions.listUnitCategories(orgId));
 	}, [dispatch, orgId]);
 
-	const handleGoBack = React.useCallback(() => {
-		navigate('..', { relative: 'path' });
-	}, [navigate]);
-
-	const handleCreate = React.useCallback(async (values: UnitFormValues) => {
-		try {
-			await dispatch(unitActions.createUnit({
-				name: values.name,
-				symbol: values.symbol,
-				categoryId: values.categoryId,
-			})).unwrap();
+	React.useEffect(() => {
+		if (createCommand.status === 'success') {
 			notification.showInfo('Unit created successfully', '');
 			dispatch(unitActions.resetCreateUnit());
-			dispatch(unitActions.listUnits());
-			handleGoBack();
+			dispatch(unitActions.listUnits(orgId));
+			navigate('..', { relative: 'path' });
 		}
-		catch (error) {
+
+		if (createCommand.status === 'error') {
 			notification.showError(
-				error instanceof Error ? error.message : 'Failed to create unit',
+				createCommand.error instanceof Error ? createCommand.error.message : 'Failed to create unit',
 				'',
 			);
 			dispatch(unitActions.resetCreateUnit());
 		}
-	}, [dispatch, handleGoBack, notification]);
+	}, [createCommand.status, dispatch, navigate, notification, orgId]);
+
+	const handleCreate = (dataValue: any) => {
+		dataValue.name = StringToJson(dataValue.name);
+		dispatch(unitActions.createUnit({
+			orgId,
+			data: {
+				orgId,
+				name: StringToJson(dataValue.name),
+				symbol: dataValue.symbol ? (dataValue.symbol as string) : undefined,
+				categoryId: dataValue.categoryId ? (dataValue.categoryId as string) : undefined,
+			},
+		}));
+	};
+
+	const handleGoBack = React.useCallback(() => {
+		navigate('..', { relative: 'path' });
+	}, [navigate]);
 
 	return {
 		unitCategories,

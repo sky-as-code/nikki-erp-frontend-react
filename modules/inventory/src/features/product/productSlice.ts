@@ -54,13 +54,13 @@ export const listProducts = createAsyncThunk<
 
 export const getProduct = createAsyncThunk<
 	Product,
-	string,
+	{ orgId: string; id: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchProduct`,
-	async (id, { rejectWithValue }) => {
+	async ({ orgId, id }, { rejectWithValue }) => {
 		try {
-			const result = await productService.getProduct(id);
+			const result = await productService.getProduct(orgId, id);
 			return result;
 		}
 		catch (error) {
@@ -90,13 +90,13 @@ export const createProduct = createAsyncThunk<
 
 export const updateProduct = createAsyncThunk<
 	UpdateProductResponse,
-	UpdateProductRequest,
+	{ orgId: string; data: UpdateProductRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateProduct`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, data }, { rejectWithValue }) => {
 		try {
-			const result = await productService.updateProduct(data);
+			const result = await productService.updateProduct(orgId, data);
 			return result;
 		}
 		catch (error) {
@@ -108,13 +108,13 @@ export const updateProduct = createAsyncThunk<
 
 export const deleteProduct = createAsyncThunk<
 	void,
-	string,
+	{ orgId: string; id: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/deleteProduct`,
-	async (id, { rejectWithValue }) => {
+	async ({ orgId, id }, { rejectWithValue }) => {
 		try {
-			await productService.deleteProduct(id);
+			await productService.deleteProduct(orgId, id);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete product';
@@ -217,9 +217,9 @@ function updateProductReducers(builder: ActionReducerMapBuilder<ProductState>) {
 			state.update.status = 'success';
 			if (state.detail.data) {
 				state.detail.data.etag = action.payload.etag;
-				state.detail.data.updatedAt =
-					(action.payload.updatedAt as Date)?.toISOString?.()
-					?? state.detail.data.updatedAt;
+				state.detail.data.updatedAt = action.payload.updatedAt instanceof Date
+					? action.payload.updatedAt.getTime()
+					: action.payload.updatedAt;
 			}
 			state.update.error = null;
 		})

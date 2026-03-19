@@ -1,4 +1,5 @@
 import { useUIState } from '@nikkierp/shell/contexts';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +30,8 @@ export function useVariantCreateHandlers({
 	const navigate = useNavigate();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
+	const activeOrg = useActiveOrgWithDetails();
+	const orgId = activeOrg?.id ?? 'org-1';
 
 	const createCommand = useMicroAppSelector(selectCreateVariant);
 	const isLoading = createCommand.status === 'pending';
@@ -48,12 +51,15 @@ export function useVariantCreateHandlers({
 		try {
 			const proposedPrice = values.proposedPrice ?? 0;
 			const result = await dispatch(variantActions.createVariant({
-				productId,
-				name: normalizedName,
-				sku: values.sku,
-				barcode: values.barcode,
-				proposedPrice,
-				status: values.status,
+				orgId,
+				data: {
+					productId,
+					name: normalizedName,
+					sku: values.sku,
+					barcode: values.barcode,
+					proposedPrice,
+					status: values.status,
+				},
 			})).unwrap();
 
 			notification.showInfo(
@@ -61,7 +67,7 @@ export function useVariantCreateHandlers({
 				'',
 			);
 			dispatch(variantActions.resetCreateVariant());
-			dispatch(variantActions.listVariants(productId));
+			dispatch(variantActions.listVariants({ orgId, productId }));
 
 			if (onSuccess) {
 				await onSuccess();
@@ -77,7 +83,7 @@ export function useVariantCreateHandlers({
 			);
 			dispatch(variantActions.resetCreateVariant());
 		}
-	}, [dispatch, navigate, notification, onSuccess, productId, t]);
+	}, [dispatch, navigate, notification, onSuccess, productId, orgId, t]);
 
 	return {
 		isLoading,
