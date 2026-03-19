@@ -1,4 +1,5 @@
 export * from './KioskDetailDrawer';
+export * from './KioskFormFields';
 export * from './KioskGridView';
 export * from './KioskListActions';
 export * from './KioskMapView';

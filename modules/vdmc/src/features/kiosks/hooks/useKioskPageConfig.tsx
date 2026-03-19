@@ -38,7 +38,7 @@ export const useKioskPageConfig = ({
 	const [viewMode, setViewMode] = useState<KioskListViewMode>('list');
 
 	const handleCreate = () => {
-		navigate('/kiosks/create');
+		navigate('../kiosks/create');
 	};
 
 	const breadcrumbs = useMemo(() => {

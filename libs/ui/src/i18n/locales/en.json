@@ -1016,6 +1016,7 @@
 				},
 				"kiosk": {
 					"title": "Kiosks",
+					"title_create": "Create New Kiosk",
 					"detail": {
 						"title": "Kiosk Details"
 					},
@@ -1347,6 +1348,7 @@
 				},
 				"kioskModels": {
 					"title": "Kiosk Models",
+					"title_create": "Create New Kiosk Model",
 					"detail": {
 						"title": "Kiosk Model Details"
 					},
@@ -1406,6 +1408,7 @@
 					},
 					"messages": {
 						"no_models": "No models found",
+						"create_success": "Kiosk model \"{{name}}\" has been created successfully",
 						"not_found": {
 							"title": "Kiosk Model Not Found",
 							"message": "The kiosk model you are looking for does not exist or has been removed."
