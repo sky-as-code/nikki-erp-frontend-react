@@ -1,4 +1,4 @@
-import { mockAds } from '../ads/mockAds';
+import { mockSlideshows } from '../slideshow/mockSlideshows';
 import { mockGames } from '../games/mockGames';
 import { mockKiosks } from '../kiosks/mockKiosks';
 import { mockThemes } from '../themes/mockThemes';
@@ -78,11 +78,11 @@ export const mockKioskSettings = {
 		const base = mockKioskSettingsData.find((s) => s.id === id);
 		if (!base) return undefined;
 
-		const [kiosks, themes, games, ads] = await Promise.all([
+		const [kiosks, themes, games, slideshows] = await Promise.all([
 			mockKiosks.listKiosks(),
 			mockThemes.listThemes(),
 			mockGames.listGames(),
-			mockAds.listAds(),
+			mockSlideshows.listSlideshows(),
 		]);
 
 		// Enrich with mock data based on setting id
@@ -94,8 +94,8 @@ export const mockKioskSettings = {
 			themeId: id === '1' ? themes[0]?.id : id === '3' ? themes[2]?.id : id === '4' ? themes[3]?.id : undefined,
 			game: id === '4' ? games[0] : id === '3' ? games[1] : undefined,
 			gameId: id === '4' ? games[0]?.id : id === '3' ? games[1]?.id : undefined,
-			idlePlaylist: id === '1' ? ads[0] : id === '2' ? ads[1] : undefined,
-			shoppingPlaylist: id === '1' ? ads[1] : id === '3' ? ads[0] : undefined,
+			idlePlaylist: id === '1' ? slideshows[0] : id === '2' ? slideshows[1] : undefined,
+			shoppingPlaylist: id === '1' ? slideshows[1] : id === '3' ? slideshows[0] : undefined,
 		};
 		return enriched;
 	},

@@ -18,19 +18,19 @@ export function OperationStatusChart({ kiosks, h = '100%' }: OperationStatusChar
 	const { t: translate } = useTranslation();
 
 	const sellingCount = kiosks.filter((k) => k.mode === KioskMode.SELLING).length;
-	const adsOnlyCount = kiosks.filter((k) => k.mode === KioskMode.ADSONLY).length;
+	const slideshowOnlyCount = kiosks.filter((k) => k.mode === KioskMode.SLIDESHOWONLY).length;
 	const pendingCount = kiosks.filter((k) => k.mode === KioskMode.PENDING).length;
 
 	const data = {
 		labels: [
 			translate('nikki.vendingMachine.overview.operation.selling'),
-			translate('nikki.vendingMachine.overview.operation.adsOnly'),
+			translate('nikki.vendingMachine.overview.operation.slideshowOnly'),
 			translate('nikki.vendingMachine.overview.operation.pending'),
 		],
 		datasets: [
 			{
 				label: translate('nikki.vendingMachine.overview.operation.status'),
-				data: [sellingCount, adsOnlyCount, pendingCount],
+				data: [sellingCount, slideshowOnlyCount, pendingCount],
 				backgroundColor: [
 					'rgba(59, 130, 246, 0.8)', // blue
 					'rgba(168, 85, 247, 0.8)', // purple

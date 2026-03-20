@@ -10,7 +10,7 @@ import { EventProductList } from './EventProductList';
 import { EventThemeConfig } from './EventThemeConfig';
 import { KioskSelectModal } from './KioskSelectModal';
 import { ProductSelectModal } from './ProductSelectModal';
-import { Ad } from '../../../ads/types';
+import { Slideshow } from '../../../slideshow/types';
 import { Game } from '../../../games/types';
 import { Kiosk } from '../../../kiosks/types';
 import { Theme } from '../../../themes/types';
@@ -37,8 +37,8 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 	const [eventKiosks, setEventKiosks] = useState<Kiosk[]>(event?.kiosks || []);
 	const [eventTheme, setEventTheme] = useState<Theme | undefined>(event?.theme);
 	const [eventGame, setEventGame] = useState<Game | undefined>(event?.game);
-	const [idlePlaylist, setIdlePlaylist] = useState<Ad | undefined>(event?.idlePlaylist);
-	const [shoppingPlaylist, setShoppingPlaylist] = useState<Ad | undefined>(event?.shoppingPlaylist);
+	const [idlePlaylist, setIdlePlaylist] = useState<Slideshow | undefined>(event?.idlePlaylist);
+	const [shoppingPlaylist, setShoppingPlaylist] = useState<Slideshow | undefined>(event?.shoppingPlaylist);
 	const [kioskSelectModalOpened, setKioskSelectModalOpened] = useState(false);
 	const [productSelectModalOpened, setProductSelectModalOpened] = useState(false);
 
@@ -110,12 +110,12 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 		setEventGame(undefined);
 	};
 
-	const handleIdlePlaylistChange = (ad: Ad) => {
-		setIdlePlaylist(ad);
+	const handleIdlePlaylistChange = (slideshow: Slideshow) => {
+		setIdlePlaylist(slideshow);
 	};
 
-	const handleShoppingPlaylistChange = (ad: Ad) => {
-		setShoppingPlaylist(ad);
+	const handleShoppingPlaylistChange = (slideshow: Slideshow) => {
+		setShoppingPlaylist(slideshow);
 	};
 
 	const handleIdlePlaylistRemove = () => {

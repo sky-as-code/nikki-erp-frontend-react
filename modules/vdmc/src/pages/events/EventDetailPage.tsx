@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router';
 
 import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
-import { Ad } from '@/features/ads/types';
+import { Slideshow } from '@/features/slideshow/types';
 import { useEventDetail } from '@/features/events';
 import { EventGameConfig } from '@/features/events/components/EventDetailDrawer/EventGameConfig';
 import { EventKioskList } from '@/features/events/components/EventDetailDrawer/EventKioskList';
@@ -89,12 +89,12 @@ export const EventDetailPage: React.FC = () => {
 		setEventGame(undefined);
 	};
 
-	const handleIdlePlaylistChange = (ad: Ad) => {
-		setIdlePlaylist(ad);
+	const handleIdlePlaylistChange = (slideshow: Slideshow) => {
+		setIdlePlaylist(slideshow);
 	};
 
-	const handleShoppingPlaylistChange = (ad: Ad) => {
-		setShoppingPlaylist(ad);
+	const handleShoppingPlaylistChange = (slideshow: Slideshow) => {
+		setShoppingPlaylist(slideshow);
 	};
 
 	const handleIdlePlaylistRemove = () => {

@@ -1,4 +1,4 @@
-import { Ad } from '../ads/types';
+import { Slideshow } from '../slideshow/types';
 import { Game } from '../games/types';
 import { Kiosk } from '../kiosks/types';
 import { Theme } from '../themes/types';
@@ -29,8 +29,8 @@ export interface Event {
 	theme?: Theme; // Theme object
 	gameId?: string; // Game được sử dụng
 	game?: Game; // Game object
-	idlePlaylist?: Ad; // Playlist trình chiếu (màn hình chờ)
-	shoppingPlaylist?: Ad; // Playlist trình chiếu (màn hình mua hàng)
+	idlePlaylist?: Slideshow; // Playlist trình chiếu (màn hình chờ)
+	shoppingPlaylist?: Slideshow; // Playlist trình chiếu (màn hình mua hàng)
 	createdAt: string;
 	etag: string;
 }

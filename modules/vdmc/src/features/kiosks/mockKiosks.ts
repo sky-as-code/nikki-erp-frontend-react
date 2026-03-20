@@ -113,7 +113,7 @@ const mockKiosksData: Kiosk[] = [
 		},
 		isActive: true,
 		status: KioskStatus.ACTIVATED,
-		mode: KioskMode.ADSONLY,
+		mode: KioskMode.SLIDESHOWONLY,
 		machineType: MachineType.DROP_PRODUCT,
 		connectionStatus: ConnectionStatus.FAST,
 		connectionHistory: [
@@ -204,7 +204,7 @@ const mockKiosksData: Kiosk[] = [
 		},
 		isActive: false,
 		status: KioskStatus.DISABLED,
-		mode: KioskMode.ADSONLY,
+		mode: KioskMode.SLIDESHOWONLY,
 		machineType: MachineType.DROP_PRODUCT,
 		connectionStatus: ConnectionStatus.DISCONNECTED,
 		connectionHistory: [

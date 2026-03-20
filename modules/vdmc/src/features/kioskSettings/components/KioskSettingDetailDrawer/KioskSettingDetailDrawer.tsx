@@ -10,7 +10,7 @@ import { EventProductList } from '@/features/events/components/EventDetailDrawer
 import { EventThemeConfig } from '@/features/events/components/EventDetailDrawer/EventThemeConfig';
 import { KioskSelectModal } from '@/features/events/components/EventDetailDrawer/KioskSelectModal';
 import { ProductSelectModal } from '@/features/events/components/EventDetailDrawer/ProductSelectModal';
-import { Ad } from '@/features/ads/types';
+import { Slideshow } from '@/features/slideshow/types';
 import { EventProduct } from '@/features/events/types';
 import { Game } from '@/features/games/types';
 import { Kiosk } from '@/features/kiosks/types';
@@ -36,8 +36,8 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 	const [settingProducts, setSettingProducts] = useState<EventProduct[]>(setting?.products || []);
 	const [settingTheme, setSettingTheme] = useState<Theme | undefined>(setting?.theme);
 	const [settingGame, setSettingGame] = useState<Game | undefined>(setting?.game);
-	const [idlePlaylist, setIdlePlaylist] = useState<Ad | undefined>(setting?.idlePlaylist);
-	const [shoppingPlaylist, setShoppingPlaylist] = useState<Ad | undefined>(setting?.shoppingPlaylist);
+	const [idlePlaylist, setIdlePlaylist] = useState<Slideshow | undefined>(setting?.idlePlaylist);
+	const [shoppingPlaylist, setShoppingPlaylist] = useState<Slideshow | undefined>(setting?.shoppingPlaylist);
 	const [kioskSelectModalOpened, setKioskSelectModalOpened] = useState(false);
 	const [productSelectModalOpened, setProductSelectModalOpened] = useState(false);
 
@@ -107,12 +107,12 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 		setSettingGame(undefined);
 	};
 
-	const handleIdlePlaylistChange = (ad: Ad) => {
-		setIdlePlaylist(ad);
+	const handleIdlePlaylistChange = (slideshow: Slideshow) => {
+		setIdlePlaylist(slideshow);
 	};
 
-	const handleShoppingPlaylistChange = (ad: Ad) => {
-		setShoppingPlaylist(ad);
+	const handleShoppingPlaylistChange = (slideshow: Slideshow) => {
+		setShoppingPlaylist(slideshow);
 	};
 
 	const handleIdlePlaylistRemove = () => {

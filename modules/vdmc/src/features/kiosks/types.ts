@@ -5,9 +5,11 @@ export enum KioskStatus {
 }
 
 export enum KioskMode {
-	PENDING = 'pending',
-	SELLING = 'selling',
-	ADSONLY = 'adsOnly',
+	PENDING = 'pending', //* screen locked in maintenance page
+	WAITING = 'waiting', //* screen locked in waiting page
+	SELLING = 'selling', //* selling mode
+
+	SLIDESHOWONLY = 'slideshowOnly', //* todo: remove this
 }
 
 export enum ConnectionStatus {

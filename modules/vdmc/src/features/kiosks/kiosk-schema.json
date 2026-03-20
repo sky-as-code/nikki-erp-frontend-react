@@ -67,8 +67,8 @@
 					"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.selling' }"
 				},
 				{
-					"value": "adsOnly",
-					"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.adsOnly' }"
+			"value": "slideshowOnly",
+				"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.slideshowOnly' }"
 				}
 			]
 		},

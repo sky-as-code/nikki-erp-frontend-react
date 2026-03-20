@@ -6,7 +6,7 @@ import { useParams } from 'react-router';
 
 import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
-import { Ad } from '@/features/ads/types';
+import { Slideshow } from '@/features/slideshow/types';
 import { EventGameConfig } from '@/features/events/components/EventDetailDrawer/EventGameConfig';
 import { EventKioskList } from '@/features/events/components/EventDetailDrawer/EventKioskList';
 import { EventProductList } from '@/features/events/components/EventDetailDrawer/EventProductList';
@@ -29,8 +29,8 @@ export const KioskSettingDetailPage: React.FC = () => {
 	const [settingProducts, setSettingProducts] = useState<EventProduct[]>(setting?.products || []);
 	const [settingTheme, setSettingTheme] = useState<Theme | undefined>(setting?.theme);
 	const [settingGame, setSettingGame] = useState<Game | undefined>(setting?.game);
-	const [idlePlaylist, setIdlePlaylist] = useState<Ad | undefined>(setting?.idlePlaylist);
-	const [shoppingPlaylist, setShoppingPlaylist] = useState<Ad | undefined>(setting?.shoppingPlaylist);
+	const [idlePlaylist, setIdlePlaylist] = useState<Slideshow | undefined>(setting?.idlePlaylist);
+	const [shoppingPlaylist, setShoppingPlaylist] = useState<Slideshow | undefined>(setting?.shoppingPlaylist);
 	const [kioskSelectModalOpened, setKioskSelectModalOpened] = useState(false);
 	const [productSelectModalOpened, setProductSelectModalOpened] = useState(false);
 
@@ -86,12 +86,12 @@ export const KioskSettingDetailPage: React.FC = () => {
 		setSettingGame(undefined);
 	};
 
-	const handleIdlePlaylistChange = (ad: Ad) => {
-		setIdlePlaylist(ad);
+	const handleIdlePlaylistChange = (slideshow: Slideshow) => {
+		setIdlePlaylist(slideshow);
 	};
 
-	const handleShoppingPlaylistChange = (ad: Ad) => {
-		setShoppingPlaylist(ad);
+	const handleShoppingPlaylistChange = (slideshow: Slideshow) => {
+		setShoppingPlaylist(slideshow);
 	};
 
 	const handleIdlePlaylistRemove = () => {
