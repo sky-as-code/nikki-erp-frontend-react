@@ -13,10 +13,10 @@ import { Kiosk } from '../../types';
 
 
 
-export const getMapStyle = (colorScheme: MantineColorScheme): string => {
+export const getMapStyle = (colorScheme: MantineColorScheme, maplibreGlApiKey: string = 'get_your_own_OpIi9ZULNHzrESv6T2vL'): string => {
 	return colorScheme === 'dark'
-		? 'https://api.maptiler.com/maps/streets-v2-dark/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL'
-		: 'https://api.maptiler.com/maps/positron/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL';
+		? `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${maplibreGlApiKey}`
+		: `https://api.maptiler.com/maps/positron/style.json?key=${maplibreGlApiKey}`;
 };
 
 export function KioskHitMap({ kiosks }: { kiosks: Kiosk[] }): React.ReactElement {

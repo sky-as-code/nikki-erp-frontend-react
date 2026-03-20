@@ -1,7 +1,10 @@
+/* eslint-disable max-lines-per-function */
 import { Box, MantineColorScheme, useMantineColorScheme } from '@mantine/core';
-import React, { useEffect, useRef, useMemo } from 'react';
+import { useShellEnvVars } from '@nikkierp/shell/config';
 import maplibregl from 'maplibre-gl';
+import React, { useEffect, useRef, useMemo } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
+
 
 interface RegionRevenue {
 	country: string;
@@ -13,10 +16,10 @@ interface RevenueHitMapProps {
 	data: RegionRevenue[];
 }
 
-const getMapStyle = (colorScheme: MantineColorScheme): string => {
+const getMapStyle = (colorScheme: MantineColorScheme, maplibreGlApiKey: string = 'get_your_own_OpIi9ZULNHzrESv6T2vL'): string => {
 	return colorScheme === 'dark'
-		? 'https://api.maptiler.com/maps/streets-v2-dark/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL'
-		: 'https://api.maptiler.com/maps/positron/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL';
+		? `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${maplibreGlApiKey}`
+		: `https://api.maptiler.com/maps/positron/style.json?key=${maplibreGlApiKey}`;
 };
 
 // Country center coordinates for major countries
@@ -40,6 +43,9 @@ export function RevenueHitMap({ data }: RevenueHitMapProps): React.ReactElement 
 	const { colorScheme } = useMantineColorScheme();
 	const mapRef = useRef<maplibregl.Map | null>(null);
 	const markersRef = useRef<maplibregl.Marker[]>([]);
+	const envVars = useShellEnvVars();
+	const maplibreGlApiKey = envVars.MAPLIBRE_GL_API_KEY || 'get_your_own_OpIi9ZULNHzrESv6T2vL';
+	console.debug('🚀 ~ RevenueHitMap ~ maplibreGlApiKey:', maplibreGlApiKey);
 
 	// Calculate max revenue for normalization
 	const maxRevenue = useMemo(() => {
@@ -50,7 +56,7 @@ export function RevenueHitMap({ data }: RevenueHitMapProps): React.ReactElement 
 	useEffect(() => {
 		if (!mapContainerRef.current) return;
 
-		const mapStyle = getMapStyle(colorScheme);
+		const mapStyle = getMapStyle(colorScheme, maplibreGlApiKey);
 		const map = new maplibregl.Map({
 			container: mapContainerRef.current,
 			style: mapStyle,
@@ -141,7 +147,8 @@ export function RevenueHitMap({ data }: RevenueHitMapProps): React.ReactElement 
 
 		if (map.loaded()) {
 			createMarkersWhenReady();
-		} else {
+		}
+		else {
 			map.once('load', createMarkersWhenReady);
 		}
 
@@ -154,7 +161,7 @@ export function RevenueHitMap({ data }: RevenueHitMapProps): React.ReactElement 
 	// Update map style when color scheme changes
 	useEffect(() => {
 		if (!mapRef.current) return;
-		const mapStyle = getMapStyle(colorScheme);
+		const mapStyle = getMapStyle(colorScheme, maplibreGlApiKey);
 		mapRef.current.setStyle(mapStyle);
 	}, [colorScheme]);
 

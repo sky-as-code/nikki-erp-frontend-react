@@ -1,4 +1,5 @@
 import { MantineColorScheme } from '@mantine/core';
+import { useShellEnvVars } from '@nikkierp/shell/config';
 import maplibregl from 'maplibre-gl';
 import { useEffect } from 'react';
 
@@ -67,7 +68,7 @@ const updateMapThemeColors = (map: maplibregl.Map, colorScheme: MantineColorSche
 interface UseMapThemeProps {
 	mapRef: React.RefObject<maplibregl.Map | null>;
 	colorScheme: MantineColorScheme;
-	getMapStyle: (colorScheme: MantineColorScheme) => string;
+	getMapStyle: (colorScheme: MantineColorScheme, maplibreGlApiKey?: string) => string;
 	onThemeUpdated?: (map: maplibregl.Map) => void;
 }
 
@@ -77,6 +78,10 @@ export function useMapTheme({
 	getMapStyle,
 	onThemeUpdated,
 }: UseMapThemeProps) {
+	const envVars = useShellEnvVars();
+	const maplibreGlApiKey = envVars.MAPLIBRE_GL_API_KEY || 'get_your_own_OpIi9ZULNHzrESv6T2vL';
+	console.debug('🚀 ~ useMapTheme ~ maplibreGlApiKey:', maplibreGlApiKey);
+
 	useEffect(() => {
 		if (!mapRef.current) return;
 
@@ -91,7 +96,7 @@ export function useMapTheme({
 		}
 
 		const updateTheme = () => {
-			const newMapStyle = getMapStyle(colorScheme);
+			const newMapStyle = getMapStyle(colorScheme, maplibreGlApiKey);
 			const center = map.getCenter();
 			const zoom = map.getZoom();
 

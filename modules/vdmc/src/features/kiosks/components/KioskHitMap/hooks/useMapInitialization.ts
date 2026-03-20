@@ -1,18 +1,20 @@
 import { MantineColorScheme } from '@mantine/core';
+import { useShellEnvVars } from '@nikkierp/shell/config';
 import maplibregl from 'maplibre-gl';
 import { useEffect, useRef, useMemo } from 'react';
 
+
+import { Kiosk } from '@/features/kiosks/types';
 
 import { useMapAttribution } from './useMapAttribution';
 import { useMapBounds } from './useMapBounds';
 import { calculateCenter, calculateZoom, filterKiosksWithCoordinates } from '../helper';
 
-import { Kiosk } from '@/features/kiosks/types';
 
 
 interface UseMapInitializationProps {
 	mapContainerRef: React.RefObject<HTMLDivElement | null>;
-	getMapStyle: (colorScheme: MantineColorScheme) => string;
+	getMapStyle: (colorScheme: MantineColorScheme, maplibreGlApiKey?: string) => string;
 	colorScheme: MantineColorScheme;
 	kiosks?: Kiosk[];
 }
@@ -27,6 +29,9 @@ export function useMapInitialization({
 	kiosks = [],
 }: UseMapInitializationProps) {
 	const mapRef = useRef<maplibregl.Map | null>(null);
+	const envVars = useShellEnvVars();
+	const maplibreGlApiKey = envVars.MAPLIBRE_GL_API_KEY || 'get_your_own_OpIi9ZULNHzrESv6T2vL';
+	console.debug('🚀 ~ useMapInitialization ~ maplibreGlApiKey:', maplibreGlApiKey);
 
 	// Filter kiosks with valid coordinates
 	const kiosksWithCoordinates = useMemo(() => {
@@ -37,7 +42,7 @@ export function useMapInitialization({
 	useEffect(() => {
 		if (!mapContainerRef.current) return;
 
-		const mapStyle = getMapStyle(colorScheme);
+		const mapStyle = getMapStyle(colorScheme, maplibreGlApiKey);
 		const center = calculateCenter(kiosksWithCoordinates);
 		const zoom = calculateZoom(kiosksWithCoordinates);
 

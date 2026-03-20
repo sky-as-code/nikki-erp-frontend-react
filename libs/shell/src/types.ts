@@ -4,4 +4,9 @@ export type ShellEnvVars = {
 	 * If a Micro-app doesn't define their own BASE_API_URL, they will reuse this one.
 	 */
 	BASE_API_URL: string;
+
+	/**
+	 * API key for Maplibre GL.
+	 */
+	MAPLIBRE_GL_API_KEY?: string;
 };
