@@ -1,4 +1,4 @@
-import { Ad } from '../ads/types';
+import { Slideshow } from '../slideshow/types';
 import { EventProduct } from '../events/types';
 import { Game } from '../games/types';
 import { Kiosk } from '../kiosks/types';
@@ -18,8 +18,8 @@ export interface KioskSetting {
 	theme?: Theme;
 	gameId?: string;
 	game?: Game;
-	idlePlaylist?: Ad;
-	shoppingPlaylist?: Ad;
+	idlePlaylist?: Slideshow;
+	shoppingPlaylist?: Slideshow;
 	createdAt: string;
 	etag: string;
 }

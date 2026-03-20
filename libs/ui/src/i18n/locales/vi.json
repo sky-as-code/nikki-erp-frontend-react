@@ -1000,7 +1000,7 @@
 				"operation": {
 					"status": "Trạng thái hoạt động",
 					"selling": "Đang bán",
-					"adsOnly": "Chỉ quảng cáo",
+					"slideshowOnly": "Chỉ trình chiếu",
 					"pending": "Đang chờ"
 				},
 				"machineType": {
@@ -1171,7 +1171,7 @@
 				"mode": {
 					"pending": "Đang chờ",
 					"selling": "Đang bán",
-					"adsOnly": "Chỉ quảng cáo"
+					"slideshowOnly": "Chỉ trình chiếu"
 				},
 				"search": {
 					"placeholder": "Tìm kiếm theo mã hoặc tên..."
@@ -1196,73 +1196,73 @@
 					}
 				}
 			},
-			"ads": {
-				"title": "Trình chiếu",
-				"detail": {
-					"title": "Chi tiết Trình chiếu"
-				},
-				"fields": {
-					"id": "Mã định danh",
-					"code": "Mã trình chiếu",
-					"name": "Tên",
-					"description": "Mô tả",
-					"status": "Trạng thái",
-					"startDate": "Ngày bắt đầu",
-					"endDate": "Ngày kết thúc",
-					"createdAt": "Ngày tạo"
-				},
-				"status": {
-					"expired": "Đã hết hạn"
-				},
-				"search": {
-					"placeholder": "Tìm kiếm theo mã hoặc tên..."
-				},
-				"filter": {
-					"status": "Lọc theo trạng thái"
-				},
-				"messages": {
-					"no_ads": "Không tìm thấy quảng cáo nào"
-				},
-				"preview": {
-					"title": "Xem trước",
-					"vertical": "Quảng cáo màn hình dọc (9:16) - Màn hình chờ",
-					"horizontal": "Quảng cáo màn hình ngang - Hiển thị ở footer"
-				},
-				"media": {
-					"title": "Danh sách Media",
-					"add": "Thêm Media",
-					"empty": "Chưa có media nào. Nhấn 'Thêm Media' để thêm.",
-					"fields": {
-						"preview": "Xem trước",
-						"code": "Mã",
-						"name": "Tên",
-						"type": "Loại",
-						"duration": "Thời lượng",
-						"size": "Kích thước"
-					},
-					"type": {
-						"image": "Ảnh",
-						"video": "Video"
-					},
-					"gallery": {
-						"title": "Thư viện Media",
-						"tab": "Thư viện",
-						"folders": "Thư mục",
-						"all": "Tất cả",
-						"items": "mục",
-						"gridView": "Xem dạng lưới",
-						"listView": "Xem dạng danh sách",
-						"selected": "Đã chọn",
-						"selectedCount": "mục đã chọn",
-						"selectedMedia": "Media đã chọn"
-					},
-					"upload": {
-						"tab": "Tải lên",
-						"description": "Chọn file từ máy tính của bạn để tải lên",
-						"button": "Chọn file"
-					}
-				}
+		"slideshow": {
+			"title": "Trình chiếu",
+			"detail": {
+				"title": "Chi tiết Trình chiếu"
 			},
+			"fields": {
+				"id": "Mã định danh",
+				"code": "Mã trình chiếu",
+				"name": "Tên",
+				"description": "Mô tả",
+				"status": "Trạng thái",
+				"startDate": "Ngày bắt đầu",
+				"endDate": "Ngày kết thúc",
+				"createdAt": "Ngày tạo"
+			},
+			"status": {
+				"expired": "Đã hết hạn"
+			},
+			"search": {
+				"placeholder": "Tìm kiếm theo mã hoặc tên..."
+			},
+			"filter": {
+				"status": "Lọc theo trạng thái"
+			},
+			"messages": {
+				"no_slideshows": "Không tìm thấy trình chiếu nào"
+			},
+			"preview": {
+				"title": "Xem trước",
+				"vertical": "Trình chiếu màn hình dọc (9:16) - Màn hình chờ",
+				"horizontal": "Trình chiếu màn hình ngang - Hiển thị ở footer"
+			},
+			"media": {
+				"title": "Danh sách Media",
+				"add": "Thêm Media",
+				"empty": "Chưa có media nào. Nhấn 'Thêm Media' để thêm.",
+				"fields": {
+					"preview": "Xem trước",
+					"code": "Mã",
+					"name": "Tên",
+					"type": "Loại",
+					"duration": "Thời lượng",
+					"size": "Kích thước"
+				},
+				"type": {
+					"image": "Ảnh",
+					"video": "Video"
+				},
+				"gallery": {
+					"title": "Thư viện Media",
+					"tab": "Thư viện",
+					"folders": "Thư mục",
+					"all": "Tất cả",
+					"items": "mục",
+					"gridView": "Xem dạng lưới",
+					"listView": "Xem dạng danh sách",
+					"selected": "Đã chọn",
+					"selectedCount": "mục đã chọn",
+					"selectedMedia": "Media đã chọn"
+				},
+				"upload": {
+					"tab": "Tải lên",
+					"description": "Chọn file từ máy tính của bạn để tải lên",
+					"button": "Chọn file"
+				}
+			}
+		},
 			"events": {
 				"detail": {
 					"title": "Chi tiết Sự kiện"
@@ -1315,15 +1315,15 @@
 					"mediaType": "Loại",
 					"thumbnail": "Hình thu nhỏ",
 					"duration": "Thời lượng",
-					"selectAds": "Chọn quảng cáo"
-				},
-				"selectAds": {
-					"title": "Chọn danh sách phát trình chiếu",
-					"searchPlaceholder": "Tìm kiếm quảng cáo...",
-					"selectedCount": "Đã chọn {{count}} quảng cáo",
-					"noAds": "Không tìm thấy quảng cáo nào",
-					"media": "media"
-				},
+				"selectSlideshows": "Chọn trình chiếu"
+			},
+			"selectSlideshows": {
+				"title": "Chọn danh sách phát trình chiếu",
+				"searchPlaceholder": "Tìm kiếm trình chiếu...",
+				"selectedCount": "Đã chọn {{count}} trình chiếu",
+				"noSlideshows": "Không tìm thấy trình chiếu nào",
+				"media": "media"
+			},
 				"selectKiosks": {
 					"title": "Chọn Kiosk cho sự kiện",
 					"searchPlaceholder": "Tìm kiếm kiosk...",
@@ -1497,7 +1497,7 @@
 				"operatingMode": {
 					"pending": "Chờ xử lý",
 					"selling": "Bán hàng",
-					"adsOnly": "Chỉ quảng cáo"
+					"slideshowOnly": "Chỉ trình chiếu"
 				},
 				"kioskType": {
 					"withoutElevator": "Không có thang máy",

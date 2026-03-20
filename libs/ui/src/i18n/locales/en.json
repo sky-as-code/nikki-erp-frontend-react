@@ -890,7 +890,7 @@
 					"kiosk_warnings": "Kiosk Warnings",
 					"kiosk_devices": "Kiosk Devices",
 					"presentation": "Presentation",
-					"ads": "Presentation",
+					"slideshow": "Presentation",
 					"gallery": "Gallery",
 					"playlists": "Playlists",
 					"device": "Devices",
@@ -937,7 +937,7 @@
 					"operation": {
 						"status": "Operation Status",
 						"selling": "Selling",
-						"adsOnly": "Ads Only",
+						"slideshowOnly": "Slideshow Only",
 						"pending": "Pending"
 					},
 					"machineType": {
@@ -1061,7 +1061,7 @@
 					"mode": {
 						"pending": "Pending",
 						"selling": "Selling",
-						"adsOnly": "Ads Only"
+						"slideshowOnly": "Slideshow Only"
 					},
 					"search": {
 						"placeholder": "Search by code or name..."
@@ -1086,73 +1086,73 @@
 						}
 					}
 				},
-				"ads": {
-					"title": "Presentations",
-					"detail": {
-						"title": "Ad Details"
-					},
-					"fields": {
-						"id": "ID",
-						"code": "Code",
-						"name": "Name",
-						"description": "Description",
-						"status": "Status",
-						"startDate": "Start Date",
-						"endDate": "End Date",
-						"createdAt": "Created At"
-					},
-					"status": {
-						"expired": "Expired"
-					},
-					"search": {
-						"placeholder": "Search by code or name..."
-					},
-					"filter": {
-						"status": "Filter by Status"
-					},
-				"messages": {
-					"no_ads": "No ads found"
+			"slideshow": {
+				"title": "Presentations",
+				"detail": {
+					"title": "Slideshow Details"
 				},
-				"preview": {
-					"title": "Preview",
-					"vertical": "Vertical Ad (9:16) - Idle/Waiting Screen",
-					"horizontal": "Horizontal Ad - Displayed in Footer"
+				"fields": {
+					"id": "ID",
+					"code": "Code",
+					"name": "Name",
+					"description": "Description",
+					"status": "Status",
+					"startDate": "Start Date",
+					"endDate": "End Date",
+					"createdAt": "Created At"
 				},
-				"media": {
-					"title": "Media List",
-					"add": "Add Media",
-					"empty": "No media items yet. Click 'Add Media' to add.",
-					"fields": {
-						"preview": "Preview",
-						"code": "Code",
-						"name": "Name",
-						"type": "Type",
-						"duration": "Duration",
-						"size": "Size"
-					},
-					"type": {
-						"image": "Image",
-						"video": "Video"
-					},
-					"gallery": {
-						"title": "Media Gallery",
-						"tab": "Gallery",
-						"folders": "Folders",
-						"all": "All",
-						"items": "items",
-						"gridView": "Grid View",
-						"listView": "List View",
-						"selected": "Selected",
-						"selectedCount": "items selected",
-						"selectedMedia": "Selected Media"
-					},
-					"upload": {
-						"tab": "Upload",
-						"description": "Select files from your computer to upload",
-						"button": "Choose Files"
-					}
-				}
+				"status": {
+					"expired": "Expired"
+				},
+				"search": {
+					"placeholder": "Search by code or name..."
+				},
+				"filter": {
+					"status": "Filter by Status"
+				},
+			"messages": {
+				"no_slideshows": "No slideshows found"
 			},
+			"preview": {
+				"title": "Preview",
+				"vertical": "Vertical Slideshow (9:16) - Idle/Waiting Screen",
+				"horizontal": "Horizontal Slideshow - Displayed in Footer"
+			},
+			"media": {
+				"title": "Media List",
+				"add": "Add Media",
+				"empty": "No media items yet. Click 'Add Media' to add.",
+				"fields": {
+					"preview": "Preview",
+					"code": "Code",
+					"name": "Name",
+					"type": "Type",
+					"duration": "Duration",
+					"size": "Size"
+				},
+				"type": {
+					"image": "Image",
+					"video": "Video"
+				},
+				"gallery": {
+					"title": "Media Gallery",
+					"tab": "Gallery",
+					"folders": "Folders",
+					"all": "All",
+					"items": "items",
+					"gridView": "Grid View",
+					"listView": "List View",
+					"selected": "Selected",
+					"selectedCount": "items selected",
+					"selectedMedia": "Selected Media"
+				},
+				"upload": {
+					"tab": "Upload",
+					"description": "Select files from your computer to upload",
+					"button": "Choose Files"
+				}
+			}
+		},
 				"events": {
 					"detail": {
 						"title": "Event Details"
@@ -1205,15 +1205,15 @@
 						"mediaType": "Type",
 						"thumbnail": "Thumbnail",
 						"duration": "Duration",
-						"selectAds": "Select Ads"
-					},
-					"selectAds": {
-						"title": "Select Ads for Playlist",
-						"searchPlaceholder": "Search ads...",
-						"selectedCount": "Selected {{count}} ads",
-						"noAds": "No ads found",
-						"media": "media"
-					},
+					"selectSlideshows": "Select Slideshows"
+				},
+				"selectSlideshows": {
+					"title": "Select Slideshows for Playlist",
+					"searchPlaceholder": "Search slideshows...",
+					"selectedCount": "Selected {{count}} slideshows",
+					"noSlideshows": "No slideshows found",
+					"media": "media"
+				},
 					"selectKiosks": {
 						"title": "Select Kiosks for Event",
 						"searchPlaceholder": "Search kiosks...",
@@ -1387,7 +1387,7 @@
 					"operatingMode": {
 						"pending": "Pending",
 						"selling": "Selling",
-						"adsOnly": "Ads Only"
+						"slideshowOnly": "Slideshow Only"
 					},
 					"kioskType": {
 						"withoutElevator": "Without Elevator",

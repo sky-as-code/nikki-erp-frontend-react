@@ -72,7 +72,7 @@ export const useKioskFilter = (kiosks: Kiosk[]) => {
 			options: [
 				{ value: KioskMode.PENDING, label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 				{ value: KioskMode.SELLING, label: translate('nikki.vendingMachine.kiosk.mode.selling') },
-				{ value: KioskMode.ADSONLY, label: translate('nikki.vendingMachine.kiosk.mode.adsOnly') },
+				{ value: KioskMode.SLIDESHOWONLY, label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 			],
 		},
 	], [statusFilter, connectionFilter, modeFilter, translate]);

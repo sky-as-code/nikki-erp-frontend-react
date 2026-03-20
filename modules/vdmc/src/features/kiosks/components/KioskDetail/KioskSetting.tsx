@@ -4,9 +4,9 @@ import { IconDeviceGamepad2, IconPalette, IconPhoto, IconPlus } from '@tabler/ic
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Ad } from '@/features/ads/types';
-import { AdCard } from '@/features/events/components/EventDetailDrawer/AdCard';
-import { AdSelectModal } from '@/features/events/components/EventDetailDrawer/AdSelectModal';
+import { Slideshow } from '@/features/slideshow/types';
+import { SlideshowCard } from '@/features/events/components/EventDetailDrawer/SlideshowCard';
+import { SlideshowSelectModal } from '@/features/events/components/EventDetailDrawer/SlideshowSelectModal';
 import { GamePreviewCard } from '@/features/events/components/EventDetailDrawer/GamePreviewCard';
 import { GameSelectModal } from '@/features/events/components/EventDetailDrawer/GameSelectModal';
 import { ThemePreviewCard } from '@/features/events/components/EventDetailDrawer/ThemePreviewCard';
@@ -25,32 +25,32 @@ interface KioskSettingProps {
 export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, isEditing }) => {
 	const { t: translate } = useTranslation();
 	const [selectedInterfaceMode, setSelectedInterfaceMode] = useState<InterfaceMode | undefined>(undefined);
-	const [idlePlaylist, setIdlePlaylist] = useState<Ad | undefined>(undefined);
-	const [shoppingPlaylist, setShoppingPlaylist] = useState<Ad | undefined>(undefined);
+	const [idlePlaylist, setIdlePlaylist] = useState<Slideshow | undefined>(undefined);
+	const [shoppingPlaylist, setShoppingPlaylist] = useState<Slideshow | undefined>(undefined);
 	const [selectedTheme, setSelectedTheme] = useState<Theme | undefined>(undefined);
 	const [selectedGame, setSelectedGame] = useState<Game | undefined>(undefined);
 
-	const [adSelectModalOpened, setAdSelectModalOpened] = useState(false);
+	const [slideshowSelectModalOpened, setSlideshowSelectModalOpened] = useState(false);
 	const [playlistType, setPlaylistType] = useState<'idle' | 'shopping'>('idle');
 	const [themeSelectModalOpened, setThemeSelectModalOpened] = useState(false);
 	const [gameSelectModalOpened, setGameSelectModalOpened] = useState(false);
 
 
-	const handleOpenAdSelect = (type: 'idle' | 'shopping') => {
+	const handleOpenSlideshowSelect = (type: 'idle' | 'shopping') => {
 		setPlaylistType(type);
-		setAdSelectModalOpened(true);
+		setSlideshowSelectModalOpened(true);
 	};
 
-	const handleSelectAds = (ads: Ad[]) => {
-		if (ads.length > 0) {
+	const handleSelectSlideshows = (slideshows: Slideshow[]) => {
+		if (slideshows.length > 0) {
 			if (playlistType === 'idle') {
-				setIdlePlaylist(ads[0]);
+				setIdlePlaylist(slideshows[0]);
 			}
 			else {
-				setShoppingPlaylist(ads[0]);
+				setShoppingPlaylist(slideshows[0]);
 			}
 		}
-		setAdSelectModalOpened(false);
+		setSlideshowSelectModalOpened(false);
 	};
 
 	const handleSelectTheme = (theme: Theme) => {
@@ -118,7 +118,7 @@ export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, isEdi
 					{translate('nikki.vendingMachine.events.fields.idlePlaylist')}
 				</Text>
 				{idlePlaylist ? (
-					<AdCard ad={idlePlaylist} onRemove={isEditing ? handleRemoveIdlePlaylist : undefined} />
+					<SlideshowCard slideshow={idlePlaylist} onRemove={isEditing ? handleRemoveIdlePlaylist : undefined} />
 				) : (
 					<Card withBorder p='sm' radius='md'>
 						<Group gap='xs' justify='space-between'>
@@ -137,9 +137,9 @@ export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, isEdi
 								<Button
 									size='xs'
 									leftSection={<IconPlus size={14} />}
-									onClick={() => handleOpenAdSelect('idle')}
+									onClick={() => handleOpenSlideshowSelect('idle')}
 								>
-									{translate('nikki.vendingMachine.events.playlist.selectAds')}
+									{translate('nikki.vendingMachine.events.playlist.selectSlideshows')}
 								</Button>
 							)}
 						</Group>
@@ -153,7 +153,7 @@ export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, isEdi
 					{translate('nikki.vendingMachine.events.fields.shoppingPlaylist')}
 				</Text>
 				{shoppingPlaylist ? (
-					<AdCard ad={shoppingPlaylist} onRemove={isEditing ? handleRemoveShoppingPlaylist : undefined} />
+					<SlideshowCard slideshow={shoppingPlaylist} onRemove={isEditing ? handleRemoveShoppingPlaylist : undefined} />
 				) : (
 					<Card withBorder p='sm' radius='md'>
 						<Group gap='xs' justify='space-between'>
@@ -172,9 +172,9 @@ export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, isEdi
 								<Button
 									size='xs'
 									leftSection={<IconPlus size={14} />}
-									onClick={() => handleOpenAdSelect('shopping')}
+									onClick={() => handleOpenSlideshowSelect('shopping')}
 								>
-									{translate('nikki.vendingMachine.events.playlist.selectAds')}
+									{translate('nikki.vendingMachine.events.playlist.selectSlideshows')}
 								</Button>
 							)}
 						</Group>
@@ -251,10 +251,10 @@ export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, isEdi
 			</div>
 
 			{/* Modals */}
-			<AdSelectModal
-				opened={adSelectModalOpened}
-				onClose={() => setAdSelectModalOpened(false)}
-				onSelectAds={handleSelectAds}
+			<SlideshowSelectModal
+				opened={slideshowSelectModalOpened}
+				onClose={() => setSlideshowSelectModalOpened(false)}
+				onSelectSlideshows={handleSelectSlideshows}
 			/>
 
 			<ThemeSelectModal

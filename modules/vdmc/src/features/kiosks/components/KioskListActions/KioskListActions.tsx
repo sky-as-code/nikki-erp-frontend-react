@@ -87,7 +87,7 @@ export const KioskListActions: React.FC<KioskListActionsProps> = ({
 		{ value: 'all', label: translate('nikki.general.filters.all') },
 		{ value: KioskMode.PENDING, label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 		{ value: KioskMode.SELLING, label: translate('nikki.vendingMachine.kiosk.mode.selling') },
-		{ value: KioskMode.ADSONLY, label: translate('nikki.vendingMachine.kiosk.mode.adsOnly') },
+		{ value: KioskMode.SLIDESHOWONLY, label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 	];
 
 	const hasActiveFilters = statusFilter !== 'all' || connectionFilter !== 'all' || modeFilter !== 'all' || searchValue.trim() !== '';

@@ -110,7 +110,7 @@ export const kioskFilterConfig: FilterGroupConfig = {
 						{
 							key: 'mode',
 							label: 'Chế độ',
-							condition: ['=', KioskMode.ADSONLY],
+							condition: ['=', KioskMode.SLIDESHOWONLY],
 						},
 					]],
 				},

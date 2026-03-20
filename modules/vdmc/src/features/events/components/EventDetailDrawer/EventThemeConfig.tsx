@@ -4,23 +4,23 @@ import { IconPalette, IconPhoto, IconPlus } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AdCard } from './AdCard';
-import { AdSelectModal } from './AdSelectModal';
+import { SlideshowCard } from './SlideshowCard';
+import { SlideshowSelectModal } from './SlideshowSelectModal';
 import { ThemePreviewCard } from './ThemePreviewCard';
 import { ThemeSelectModal } from './ThemeSelectModal';
-import { Ad } from '../../../ads/types';
+import { Slideshow } from '../../../slideshow/types';
 import { Theme } from '../../../themes/types';
 
 
 export interface EventThemeConfigProps {
 	theme?: Theme;
 	themeId?: string;
-	idlePlaylist?: Ad;
-	shoppingPlaylist?: Ad;
+	idlePlaylist?: Slideshow;
+	shoppingPlaylist?: Slideshow;
 	onThemeChange?: (theme: Theme) => void;
 	onThemeRemove?: () => void;
-	onIdlePlaylistChange?: (ad: Ad) => void;
-	onShoppingPlaylistChange?: (ad: Ad) => void;
+	onIdlePlaylistChange?: (slideshow: Slideshow) => void;
+	onShoppingPlaylistChange?: (slideshow: Slideshow) => void;
 	onIdlePlaylistRemove?: () => void;
 	onShoppingPlaylistRemove?: () => void;
 }
@@ -39,20 +39,20 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 	const [themeSelectModalOpened, setThemeSelectModalOpened] = useState(false);
-	const [adSelectModalOpened, setAdSelectModalOpened] = useState(false);
+	const [slideshowSelectModalOpened, setSlideshowSelectModalOpened] = useState(false);
 	const [playlistType, setPlaylistType] = useState<'idle' | 'shopping'>('idle');
 
-	const handleOpenAdSelect = (type: 'idle' | 'shopping') => {
+	const handleOpenSlideshowSelect = (type: 'idle' | 'shopping') => {
 		setPlaylistType(type);
-		setAdSelectModalOpened(true);
+		setSlideshowSelectModalOpened(true);
 	};
 
-	const handleSelectAds = (ads: Ad[]) => {
+	const handleSelectSlideshows = (slideshows: Slideshow[]) => {
 		if (playlistType === 'idle' && onIdlePlaylistChange) {
-			onIdlePlaylistChange(ads[0]);
+			onIdlePlaylistChange(slideshows[0]);
 		}
 		else if (playlistType === 'shopping' && onShoppingPlaylistChange) {
-			onShoppingPlaylistChange(ads[0]);
+			onShoppingPlaylistChange(slideshows[0]);
 		}
 	};
 
@@ -108,7 +108,7 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 					{translate('nikki.vendingMachine.events.fields.idlePlaylist')}
 				</Text>
 				{idlePlaylist ? (
-					<AdCard ad={idlePlaylist} onRemove={onIdlePlaylistRemove} />
+					<SlideshowCard slideshow={idlePlaylist} onRemove={onIdlePlaylistRemove} />
 				) : (
 					<Card withBorder p='sm' radius='md'>
 						<Group gap='xs' justify='space-between'>
@@ -128,9 +128,9 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 								<Button
 									size='xs'
 									leftSection={<IconPlus size={14} />}
-									onClick={() => handleOpenAdSelect('idle')}
+									onClick={() => handleOpenSlideshowSelect('idle')}
 								>
-									{translate('nikki.vendingMachine.events.playlist.selectAds')}
+									{translate('nikki.vendingMachine.events.playlist.selectSlideshows')}
 								</Button>
 							)}
 						</Group>
@@ -143,7 +143,7 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 					{translate('nikki.vendingMachine.events.fields.shoppingPlaylist')}
 				</Text>
 				{shoppingPlaylist ? (
-					<AdCard ad={shoppingPlaylist} onRemove={onShoppingPlaylistRemove} />
+					<SlideshowCard slideshow={shoppingPlaylist} onRemove={onShoppingPlaylistRemove} />
 				) : (
 					<Card withBorder p='sm' radius='md'>
 						<Group gap='xs' justify='space-between'>
@@ -163,9 +163,9 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 								<Button
 									size='xs'
 									leftSection={<IconPlus size={14} />}
-									onClick={() => handleOpenAdSelect('shopping')}
+									onClick={() => handleOpenSlideshowSelect('shopping')}
 								>
-									{translate('nikki.vendingMachine.events.playlist.selectAds')}
+									{translate('nikki.vendingMachine.events.playlist.selectSlideshows')}
 								</Button>
 							)}
 						</Group>
@@ -181,12 +181,12 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 				selectedThemeId={themeId || theme?.id}
 			/>
 
-			{/* Ad Select Modal */}
-			<AdSelectModal
-				opened={adSelectModalOpened}
-				onClose={() => setAdSelectModalOpened(false)}
-				onSelectAds={handleSelectAds}
-			/>
+		{/* Slideshow Select Modal */}
+		<SlideshowSelectModal
+			opened={slideshowSelectModalOpened}
+			onClose={() => setSlideshowSelectModalOpened(false)}
+			onSelectSlideshows={handleSelectSlideshows}
+		/>
 		</Stack>
 	);
 };

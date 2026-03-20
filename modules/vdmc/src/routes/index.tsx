@@ -3,8 +3,8 @@ import React, { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router';
 
 import { VendingMachineLayout } from '../layouts';
-import { AdDetailPage } from '../pages/ads/AdDetailPage';
-import { AdsPage } from '../pages/ads/AdsPage';
+import { SlideshowDetailPage } from '../pages/slideshow/SlideshowDetailPage';
+import { SlideshowsPage } from '../pages/slideshow/SlideshowsPage';
 import { EventDetailPage } from '../pages/events/EventDetailPage';
 import { EventsPage } from '../pages/events/EventsPage';
 import { GameDetailPage } from '../pages/games/GameDetailPage';
@@ -47,8 +47,8 @@ export const AppRouteElements: React.ReactNode = (
 		<AppRoute path='settings/:id' element={<SettingDetailPage />} />
 
 		<AppRoute path='presentation/gallery' element={<></>} />
-		<AppRoute path='presentation/playlists' element={<AdsPage />} />
-		<AppRoute path='presentation/playlists/:id' element={<AdDetailPage />} />
+		<AppRoute path='presentation/playlists' element={<SlideshowsPage />} />
+		<AppRoute path='presentation/playlists/:id' element={<SlideshowDetailPage />} />
 		<AppRoute path='themes' element={<ThemesPage />} />
 		<AppRoute path='themes/:id' element={<ThemeDetailPage />} />
 		<AppRoute path='mini-game' element={<GamesPage />} />

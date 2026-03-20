@@ -46,7 +46,7 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk, isEditing
 		const modeMap = {
 			[KioskMode.PENDING]: translate('nikki.vendingMachine.kiosk.mode.pending'),
 			[KioskMode.SELLING]: translate('nikki.vendingMachine.kiosk.mode.selling'),
-			[KioskMode.ADSONLY]: translate('nikki.vendingMachine.kiosk.mode.adsOnly'),
+			[KioskMode.SLIDESHOWONLY]: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly'),
 		};
 		return modeMap[mode] || mode;
 	};
@@ -167,7 +167,7 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk, isEditing
 						data={[
 							{ value: KioskMode.PENDING, label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 							{ value: KioskMode.SELLING, label: translate('nikki.vendingMachine.kiosk.mode.selling') },
-							{ value: KioskMode.ADSONLY, label: translate('nikki.vendingMachine.kiosk.mode.adsOnly') },
+							{ value: KioskMode.SLIDESHOWONLY, label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 						]}
 					/>
 				) : (

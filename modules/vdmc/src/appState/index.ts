@@ -1,6 +1,5 @@
 import { combineReducers, Dispatch, ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
 
-import { adReducer } from './ad';
 import { eventReducer } from './event';
 import { gameReducer } from './game';
 import { kioskReducer } from './kiosk';
@@ -9,12 +8,13 @@ import { kioskModelReducer } from './kioskModel';
 import { kioskSettingReducer } from './kioskSetting';
 import { paymentReducer } from './payment';
 import { settingReducer } from './setting';
+import { slideshowReducer } from './slideshow';
 import { themeReducer } from './theme';
 
 
 export const reducer = combineReducers({
 	...kioskReducer,
-	...adReducer,
+	...slideshowReducer,
 	...eventReducer,
 	...settingReducer,
 	...kioskModelReducer,
@@ -26,7 +26,7 @@ export const reducer = combineReducers({
 });
 
 export * from './kiosk';
-export * from './ad';
+export * from './slideshow';
 export * from './event';
 export * from './setting';
 export * from './kioskModel';
