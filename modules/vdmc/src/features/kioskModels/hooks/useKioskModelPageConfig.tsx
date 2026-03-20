@@ -37,7 +37,7 @@ export const useKioskModelPageConfig = ({
 	const [viewMode, setViewMode] = useState<KioskModelViewMode>('list');
 
 	const handleCreate = () => {
-		navigate('/kiosk-models/create');
+		navigate('create');
 	};
 
 	const breadcrumbs = useMemo(() => {

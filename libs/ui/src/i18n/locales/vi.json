@@ -1079,6 +1079,7 @@
 			},
 			"kiosk": {
 				"title": "Quản lý Kiosk",
+				"title_create": "Tạo Kiosk mới",
 				"detail": {
 					"title": "Chi tiết Kiosk"
 				},
@@ -1457,6 +1458,7 @@
 			},
 			"kioskModels": {
 				"title": "Dòng máy",
+				"title_create": "Tạo dòng máy mới",
 				"detail": {
 					"title": "Chi tiết dòng máy"
 				},
@@ -1516,6 +1518,7 @@
 				},
 				"messages": {
 					"no_models": "Không tìm thấy mô hình nào",
+					"create_success": "Dòng máy \"{{name}}\" đã được tạo thành công",
 					"not_found": {
 						"title": "Không tìm thấy dòng máy",
 						"message": "Dòng máy bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."

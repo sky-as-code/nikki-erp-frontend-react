@@ -1,0 +1,34 @@
+{
+	"name": "kioskModel",
+	"fields": {
+		"code": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.code' }"
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.name' }"
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.description' }"
+		},
+		"status": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.status' }",
+			"enum": [
+				{ "value": "active", "label": "{ \"$ref\": 'nikki.general.status.active' }" },
+				{ "value": "inactive", "label": "{ \"$ref\": 'nikki.general.status.inactive' }" }
+			]
+		},
+		"kioskType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.kioskType' }",
+			"enum": [
+				{ "value": "withoutElevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.withoutElevator' }" },
+				{ "value": "elevatorWithConveyor", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.elevatorWithConveyor' }" },
+				{ "value": "elevatorWithoutConveyor", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.elevatorWithoutConveyor' }" }
+			]
+		}
+	}
+}

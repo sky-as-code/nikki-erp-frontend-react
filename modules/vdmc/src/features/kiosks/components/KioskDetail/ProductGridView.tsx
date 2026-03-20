@@ -97,7 +97,6 @@ const GridCellComponent: React.FC<GridCellProps> = ({
 	copiedCell,
 	emptyText,
 }) => {
-	console.debug('🚀 ~ GridCellComponent ~ params:', params);
 	const [cell, setCell] = useState<ProductPosition | null>(params.data || null);
 	const isEditing = params.isEditing;
 	const hasProduct = cell?.productId;

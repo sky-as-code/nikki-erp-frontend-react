@@ -11,8 +11,10 @@ import { GameDetailPage } from '../pages/games/GameDetailPage';
 import { GamesPage } from '../pages/games/GamesPage';
 import { KioskDeviceDetailPage } from '../pages/kioskDevices/KioskDeviceDetailPage';
 import { KioskDevicePage } from '../pages/kioskDevices/KioskDevicePage';
+import { KioskModelCreatePage } from '../pages/kioskModels/KioskModelCreatePage';
 import { KioskModelDetailPage } from '../pages/kioskModels/KioskModelDetailPage';
 import { KioskModelPage } from '../pages/kioskModels/KioskModelPage';
+import { KioskCreatePage } from '../pages/kiosks/KioskCreatePage';
 import { KioskDetailPage } from '../pages/kiosks/KioskDetailPage';
 import { KioskListPage } from '../pages/kiosks/KioskListPage';
 import { KioskSettingDetailPage } from '../pages/kioskSettings/KioskSettingDetailPage';
@@ -36,8 +38,10 @@ export const AppRouteElements: React.ReactNode = (
 		<AppRoute path='overview' element={<Suspense fallback={<OverviewPageSkeleton />}><OverviewPage /></Suspense>} />
 
 		<AppRoute path='kiosks' element={<KioskListPage />} />
+		<AppRoute path='kiosks/create' element={<KioskCreatePage />} />
 		<AppRoute path='kiosks/:id' element={<KioskDetailPage />} />
 		<AppRoute path='kiosk-model' element={<KioskModelPage />} />
+		<AppRoute path='kiosk-model/create' element={<KioskModelCreatePage />} />
 		<AppRoute path='kiosk-model/:id' element={<KioskModelDetailPage />} />
 		<AppRoute path='kiosk-settings' element={<KioskSettingPage />} />
 		<AppRoute path='kiosk-settings/:id' element={<KioskSettingDetailPage />} />

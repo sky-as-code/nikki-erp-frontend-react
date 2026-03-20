@@ -1,6 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import { Card, Group, Select, Stack, Text, Title } from '@mantine/core';
 import { MantineColorScheme, useMantineColorScheme } from '@mantine/core';
+import { useShellEnvVars } from '@nikkierp/shell/config';
 import { BarElement, CategoryScale, Chart as ChartJS, LinearScale, Tooltip } from 'chart.js';
 import maplibregl from 'maplibre-gl';
 import React, { useEffect, useRef, useMemo } from 'react';
@@ -20,10 +21,10 @@ interface RevenueByRegionProps {
 	data: RegionRevenue[];
 }
 
-const getMapStyle = (colorScheme: MantineColorScheme): string => {
+const getMapStyle = (colorScheme: MantineColorScheme, maplibreGlApiKey: string = 'get_your_own_OpIi9ZULNHzrESv6T2vL'): string => {
 	return colorScheme === 'dark'
-		? 'https://api.maptiler.com/maps/streets-v2-dark/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL'
-		: 'https://api.maptiler.com/maps/positron/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL';
+		? `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${maplibreGlApiKey}`
+		: `https://api.maptiler.com/maps/positron/style.json?key=${maplibreGlApiKey}`;
 };
 
 // Country center coordinates for major countries
@@ -47,6 +48,8 @@ export function RevenueByRegion({ data }: RevenueByRegionProps): React.ReactElem
 	const { colorScheme } = useMantineColorScheme();
 	const mapRef = useRef<maplibregl.Map | null>(null);
 	const markersRef = useRef<maplibregl.Marker[]>([]);
+	const envVars = useShellEnvVars();
+	const maplibreGlApiKey = envVars.MAPLIBRE_GL_API_KEY || 'get_your_own_OpIi9ZULNHzrESv6T2vL';
 
 	// Sort data by revenue descending for bar chart
 	const sortedData = useMemo(() => {
@@ -62,7 +65,7 @@ export function RevenueByRegion({ data }: RevenueByRegionProps): React.ReactElem
 	useEffect(() => {
 		if (!mapContainerRef.current) return;
 
-		const mapStyle = getMapStyle(colorScheme);
+		const mapStyle = getMapStyle(colorScheme, maplibreGlApiKey);
 		const map = new maplibregl.Map({
 			container: mapContainerRef.current,
 			style: mapStyle,
@@ -156,7 +159,7 @@ export function RevenueByRegion({ data }: RevenueByRegionProps): React.ReactElem
 	// Update map style when color scheme changes
 	useEffect(() => {
 		if (!mapRef.current) return;
-		const mapStyle = getMapStyle(colorScheme);
+		const mapStyle = getMapStyle(colorScheme, maplibreGlApiKey);
 		mapRef.current.setStyle(mapStyle);
 	}, [colorScheme]);
 
