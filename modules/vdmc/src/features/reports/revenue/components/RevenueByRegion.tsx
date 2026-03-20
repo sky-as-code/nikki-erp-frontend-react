@@ -50,7 +50,6 @@ export function RevenueByRegion({ data }: RevenueByRegionProps): React.ReactElem
 	const markersRef = useRef<maplibregl.Marker[]>([]);
 	const envVars = useShellEnvVars();
 	const maplibreGlApiKey = envVars.MAPLIBRE_GL_API_KEY || 'get_your_own_OpIi9ZULNHzrESv6T2vL';
-	console.debug('🚀 ~ RevenueByRegion ~ maplibreGlApiKey:', maplibreGlApiKey);
 
 	// Sort data by revenue descending for bar chart
 	const sortedData = useMemo(() => {

@@ -80,7 +80,6 @@ export function useMapTheme({
 }: UseMapThemeProps) {
 	const envVars = useShellEnvVars();
 	const maplibreGlApiKey = envVars.MAPLIBRE_GL_API_KEY || 'get_your_own_OpIi9ZULNHzrESv6T2vL';
-	console.debug('🚀 ~ useMapTheme ~ maplibreGlApiKey:', maplibreGlApiKey);
 
 	useEffect(() => {
 		if (!mapRef.current) return;

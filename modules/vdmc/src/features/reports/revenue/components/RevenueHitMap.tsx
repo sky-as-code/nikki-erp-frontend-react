@@ -45,7 +45,6 @@ export function RevenueHitMap({ data }: RevenueHitMapProps): React.ReactElement 
 	const markersRef = useRef<maplibregl.Marker[]>([]);
 	const envVars = useShellEnvVars();
 	const maplibreGlApiKey = envVars.MAPLIBRE_GL_API_KEY || 'get_your_own_OpIi9ZULNHzrESv6T2vL';
-	console.debug('🚀 ~ RevenueHitMap ~ maplibreGlApiKey:', maplibreGlApiKey);
 
 	// Calculate max revenue for normalization
 	const maxRevenue = useMemo(() => {

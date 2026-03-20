@@ -31,7 +31,6 @@ export function useMapInitialization({
 	const mapRef = useRef<maplibregl.Map | null>(null);
 	const envVars = useShellEnvVars();
 	const maplibreGlApiKey = envVars.MAPLIBRE_GL_API_KEY || 'get_your_own_OpIi9ZULNHzrESv6T2vL';
-	console.debug('🚀 ~ useMapInitialization ~ maplibreGlApiKey:', maplibreGlApiKey);
 
 	// Filter kiosks with valid coordinates
 	const kiosksWithCoordinates = useMemo(() => {
