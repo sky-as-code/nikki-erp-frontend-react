@@ -18,6 +18,7 @@ import { TrashPage } from './pages/file/TrashPage';
 import { DriveSearchPage } from './pages/file/DriveSearchPage';
 import { OverviewPage } from './pages/overview/OverviewPage';
 import { DRIVE_TABS } from './constants/driveTabs';
+import './styles/index.css';
 
 
 function Main(props: MicroAppProps) {

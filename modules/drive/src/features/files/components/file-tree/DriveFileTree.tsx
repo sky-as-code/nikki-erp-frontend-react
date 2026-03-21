@@ -49,19 +49,21 @@ function LoadMoreLeaf({
 	};
 
 	return (
-		<Group {...elementProps} onClick={handleLoadMoreClick} mb='xs'>
+		<Group {...elementProps} onClick={handleLoadMoreClick} mb={4}>
 			<Flex
 				direction='row'
 				gap='xs'
 				align='center'
 				justify='flex-start'
 				w='100%'
-				style={{ cursor: 'pointer' }}
+				px='sm'
+				py={6}
+				style={{ cursor: 'pointer', borderRadius: 8 }}
 				title={node.label as string}
 			>
 				{isLoading
 					? <Loader size={14} />
-					: <Text size='sm' c='blue'>{node.label}</Text>}
+					: <Text size='sm' c='blue' fw={500}>{node.label}</Text>}
 			</Flex>
 		</Group>
 	);
@@ -91,7 +93,7 @@ function FileNodeLeaf({
 	const isFolder = node.nodeProps?.type === 'folder';
 	const background =
 		currentFolderId === node.value
-			? 'var(--mantine-color-default-hover)'
+			? 'var(--mantine-color-blue-light)'
 			: 'transparent';
 	const chevron = isLoading
 		? <Loader size={14} />
@@ -100,23 +102,33 @@ function FileNodeLeaf({
 			: <IconChevronRight size={14} title={expandLabel} />;
 
 	return (
-		<Group {...elementProps} onClick={() => onNodeClick?.(node.value)} mb='xs'>
-			<Box w='100%' bdrs='sm' bg={background}>
-				<Flex
-					direction='row'
-					gap='xs'
-					align='center'
-					justify='flex-start'
-					w='100%'
-					style={{ cursor: 'pointer' }}
-				>
-					<FileIcon isFolder={isFolder} expanded={expanded} />
-					<Text size='sm' fw={500}>
-						{node.label}
-					</Text>
-					<ActionIcon variant='transparent' onClick={onToggle}>
-						{chevron}
-					</ActionIcon>
+		<Group {...elementProps} onClick={() => onNodeClick?.(node.value)} mb={4}>
+			<Box
+				w='100%'
+				bdrs='sm'
+				bg={background}
+				px='sm'
+				py={6}
+				style={{ cursor: 'pointer' }}
+			>
+				<Flex direction='row' align='center' justify='space-between' w='100%' gap='xs'>
+					<Group gap='xs' wrap='nowrap' style={{ minWidth: 0 }}>
+						<FileIcon isFolder={isFolder} expanded={expanded} />
+						<Text size='sm' fw={500} truncate title={node.label as string}>
+							{node.label}
+						</Text>
+					</Group>
+					{isFolder ? (
+						<ActionIcon
+							variant='subtle'
+							size='sm'
+							onClick={onToggle}
+						>
+							{chevron}
+						</ActionIcon>
+					) : (
+						<Box w={26} />
+					)}
 				</Flex>
 			</Box>
 		</Group>

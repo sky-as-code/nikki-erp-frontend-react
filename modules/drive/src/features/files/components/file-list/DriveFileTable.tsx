@@ -5,9 +5,6 @@ import { IconFilePlus, IconFolderPlus } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { selectCurrentFolder, selectDriveFileList, selectGetDriveFileByParent } from '@/appState/file';
-import { useDbDateTime } from '@/hooks';
-
 import {
 	DRIVE_FILE_TABLE_COLUMNS,
 	DRIVE_FILE_TABLE_SCHEMA,
@@ -21,8 +18,11 @@ import {
 } from '../../types';
 import { formatSize } from '../../utils';
 import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../enum-display';
-import { DriveFileTypeDisplay } from '../enum-display/DriveFileTypeDisplay';
+import { DriveFileTypeDisplay } from '../enum-display';
 import { FileActionMenu } from '../file-actions';
+
+import { selectCurrentFolder, selectDriveFileList, selectGetDriveFileByParent } from '@/appState/file';
+import { useDbDateTime } from '@/hooks';
 
 
 

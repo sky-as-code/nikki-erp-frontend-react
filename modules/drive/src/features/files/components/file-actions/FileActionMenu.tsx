@@ -1,5 +1,5 @@
 import { ActionIcon, Group, Menu, Text } from '@mantine/core';
-import { IconArrowBackUp, IconArrowBackUpDouble, IconDotsVertical, IconFileShredder, IconFolder, IconInfoCircle, IconPencil } from '@tabler/icons-react';
+import { IconArrowBackUp, IconArrowBackUpDouble, IconDotsVertical, IconFileShredder, IconFolder, IconInfoCircle, IconPencil, IconShare } from '@tabler/icons-react';
 import { IconDownload } from '@tabler/icons-react';
 import { IconTrash } from '@tabler/icons-react';
 import React from 'react';
@@ -28,6 +28,7 @@ const FILE_ACTIVE_ACTIONS: Array<React.FC<any>> = [
 const ACTIVE_STATUS_ACTIONS: Array<React.FC<any>> = [
 	EditMetadataItem,
 	MoveToTrashItem,
+	ShareItem,
 ];
 
 const TRASHED_STATUS_ACTIONS: Array<React.FC<any>> = [
@@ -41,13 +42,14 @@ const PARENT_IN_TRASH_STATUS_ACTIONS: Array<React.FC<any>> = [
 
 const actionOrder = new Map<React.FC<any>, number>([
 	[PropertiesItem, 0],
-	[EditMetadataItem, 1],
-	[DownloadItem, 2],
-	[OpenFolderItem, 3],
-	[MoveToTrashItem, 4],
-	[Restore, 5],
-	[RestoreTo, 6],
-	[DeleteItem, 7],
+	[ShareItem, 1],
+	[EditMetadataItem, 2],
+	[DownloadItem, 3],
+	[OpenFolderItem, 4],
+	[MoveToTrashItem, 5],
+	[Restore, 6],
+	[RestoreTo, 7],
+	[DeleteItem, 8],
 ]);
 
 const getActions = (file: DriveFile): React.FC<any>[] => {
@@ -148,6 +150,18 @@ function OpenFolderItem({ openFolder }: { openFolder: () => void }): React.React
 			<Group align='center' gap='xs'>
 				<IconFolder size={16} />
 				<Text>{t('nikki.drive.actions.open')}</Text>
+			</Group>
+		</Menu.Item>
+	);
+}
+
+function ShareItem({ share }: { share: () => void }): React.ReactNode {
+	const { t } = useTranslation();
+	return (
+		<Menu.Item onClick={share}>
+			<Group align='center' gap='xs'>
+				<IconShare size={16} />
+				<Text>{t('nikki.drive.actions.share')}</Text>
 			</Group>
 		</Menu.Item>
 	);

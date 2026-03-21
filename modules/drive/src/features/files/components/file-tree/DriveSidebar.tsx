@@ -129,7 +129,7 @@ function MyFilesSection({
 			{show && (
 				<Box miw={0} w='310px' style={{ overflowY: 'auto', overflowX: 'hidden' }}>
 					<Collapse in={myFilesOpen}>
-						<Box miw={0} w='100%' pl='xl'>
+						<Box miw={0} w='100%' pl='md'>
 							<DriveFileTree
 								tree={tree}
 								data={myFilesTreeData}

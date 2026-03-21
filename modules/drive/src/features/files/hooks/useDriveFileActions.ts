@@ -24,6 +24,7 @@ import type { DriveFile } from '../types';
 export type DriveFileActions = {
 	openFolder: () => void;
 	openProperties: () => void;
+	share: () => void;
 	editMetadata: () => void;
 	create: () => void;
 	download: () => void;
@@ -66,6 +67,21 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 		if (file.isFolder) return;
 		const url = buildStreamUrl(file.id, true);
 		window.open(url, '_blank');
+	};
+
+	const share = () => {
+		(dispatch as (action: unknown) => void)(
+			driveFileActions.setDriveFileModal({
+				openedModal: true,
+				title: t('nikki.drive.actions.share'),
+				type: {
+					type: 'share',
+				},
+			}),
+		);
+		(dispatch as (action: unknown) => void)(
+			driveFileActions.getDriveFileById(file.id),
+		);
 	};
 
 	const moveToTrash = async () => {
@@ -309,6 +325,7 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 	return {
 		openFolder,
 		openProperties,
+		share,
 		download,
 		moveToTrash,
 		restoreFromTrash,
