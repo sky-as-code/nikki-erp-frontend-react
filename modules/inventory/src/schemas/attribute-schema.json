@@ -1,0 +1,104 @@
+{
+	"name": "attribute",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "ID",
+			"hidden": true,
+			"constraints": [{ "type": "length", "max": 36 }]
+		},
+		"productId": {
+			"type": "string",
+			"label": "Product ID",
+			"required": { "create": true, "update": false },
+			"hidden": true
+		},
+		"displayName": {
+			"type": "string",
+			"label": "Display Name",
+			"required": { "create": true, "update": false },
+			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
+		},
+		"codeName": {
+			"type": "string",
+			"label": "Code Name",
+			"required": { "create": true, "update": false },
+			"constraints": [{ "type": "length", "min": 1, "max": 100 }]
+		},
+		"dataType": {
+			"type": "enum",
+			"label": "Data Type",
+			"required": { "create": true, "update": false },
+			"constraints": [{ "type": "required" }],
+			"enum": [
+				{ "value": "string", "label": "String" },
+				{ "value": "number", "label": "Number" },
+				{ "value": "bool", "label": "Boolean" }
+			]
+		},
+		"isEnum": {
+			"type": "boolean",
+			"label": "Is Enum",
+			"required": { "create": false, "update": false }
+		},
+		"isRequired": {
+			"type": "boolean",
+			"label": "Is Required",
+			"required": { "create": true, "update": false }
+		},
+		"sortIndex": {
+			"type": "integer",
+			"label": "Sort Index",
+			"required": { "create": false, "update": false },
+			"constraints": [{ "type": "value_range", "min": 0 }]
+		},
+		"groupId": {
+			"type": "string",
+			"label": "Group ID",
+			"hidden": true
+		},
+		"enumValue": {
+			"type": "array",
+			"label": "Enum Value",
+			"hidden": true
+		},
+		"enumValueSort": {
+			"type": "boolean",
+			"label": "Enum Value Sort",
+			"hidden": true
+		},
+		"valuesCount": {
+			"type": "integer",
+			"label": "Values Count"
+		},
+		"variantsCount": {
+			"type": "integer",
+			"label": "Variants Count"
+		},
+		"attributeValues": {
+			"type": "array",
+			"label": "Attribute Values",
+			"hidden": true
+		},
+		"variants": {
+			"type": "array",
+			"label": "Variants",
+			"hidden": true
+		},
+		"etag": {
+			"type": "string",
+			"label": "Etag",
+			"hidden": true
+		},
+		"createdAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "Created At"
+		},
+		"updatedAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "Updated At"
+		}
+	}
+}

@@ -1,0 +1,95 @@
+{
+	"name": "product",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "ID",
+			"hidden": true,
+			"constraints": [{ "type": "length", "max": 36 }]
+		},
+		"orgId": {
+			"type": "string",
+			"label": "Organization",
+			"required": { "create": true, "update": false },
+			"hidden": true
+		},
+		"name": {
+			"type": "string",
+			"label": "Name",
+			"required": { "create": true, "update": false },
+			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
+		},
+		"description": {
+			"type": "string",
+			"label": "Description",
+			"constraints": [{ "type": "length", "max": 2000 }]
+		},
+		"sku": {
+			"type": "string",
+			"label": "SKU",
+			"constraints": [{ "type": "length", "max": 100 }]
+		},
+		"barCode": {
+			"type": "string",
+			"label": "Bar Code",
+			"constraints": [{ "type": "length", "max": 100 }]
+		},
+		"status": {
+			"type": "enum",
+			"label": "Status",
+			"required": { "create": false, "update": false },
+			"constraints": [
+				{ "type": "length", "max": 50 },
+				{ "type": "required" }
+			],
+			"enum": [
+				{ "value": "active", "label": "Active" },
+				{ "value": "inactive", "label": "Inactive" }
+			]
+		},
+		"unitId": {
+			"type": "string",
+			"label": "Unit",
+			"required": { "create": false, "update": false }
+		},
+		"thumbnailURL": {
+			"type": "string",
+			"label": "Thumbnail URL"
+		},
+		"defaultVariantId": {
+			"type": "string",
+			"label": "Default Variant ID",
+			"hidden": true
+		},
+		"proposedPrice": {
+			"type": "integer",
+			"label": "Proposed Price",
+			"constraints": [{ "type": "value_range", "min": 0 }]
+		},
+		"variants": {
+			"type": "array",
+			"label": "Variants",
+			"hidden": true
+		},
+		"attributes": {
+			"type": "array",
+			"label": "Attributes",
+			"hidden": true
+		},
+		"etag": {
+			"type": "string",
+			"label": "Etag",
+			"hidden": true
+		},
+		"createdAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "Created At"
+		},
+		"updatedAt": {
+			"type": "date",
+			"format": "date-time",
+			"label": "Updated At"
+		}
+	}
+}

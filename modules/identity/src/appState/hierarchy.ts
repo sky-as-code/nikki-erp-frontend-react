@@ -10,6 +10,7 @@ import {
 	deleteHierarchy,
 	manageHierarchyUsers,
 	HierarchyState,
+	initialState,
 } from '../features/hierarchy/hierarchySlice';
 import { initialState as initialHierarchyState } from '../features/hierarchy/hierarchySlice';
 
