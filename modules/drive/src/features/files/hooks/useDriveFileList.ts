@@ -6,7 +6,7 @@ import { driveFileActions, selectCurrentFolder, selectGetDriveFileByParent, sele
 import { DriveFileStatus } from '../types';
 
 
-export type DriveFileListMode = 'folder' | 'trash';
+export type DriveFileListMode = 'folder' | 'trash' | 'shared';
 
 export type UseDriveFileListParams = {
 	mode: DriveFileListMode;
@@ -49,6 +49,19 @@ export function useDriveFileList({ mode, parentId = '', pageSize = 20 }: UseDriv
 						size: pageSize,
 						graph: {
 							if: ['status', '=', DriveFileStatus.IN_TRASH],
+						},
+					},
+				}),
+			);
+		}
+		else if (mode === 'shared') {
+			(dispatch as (action: unknown) => void)(
+				driveFileActions.searchDriveFileShared({
+					req: {
+						page: page - 1,
+						size: pageSize,
+						graph: {
+							if: ['status', '!=', DriveFileStatus.IN_TRASH],
 						},
 					},
 				}),

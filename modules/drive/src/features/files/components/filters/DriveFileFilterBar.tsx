@@ -3,8 +3,8 @@ import { IconArrowDown, IconArrowUp } from '@tabler/icons-react';
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { DriveFileStatus, DriveFileVisibility } from '../../types';
-import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../enum-display';
+import { DriveFileStatus, DriveFileType, DriveFileVisibility } from '../../types';
+import { DriveFileStatusBadge, DriveFileTypeDisplay, DriveFileVisibilityBadge } from '../enum-display';
 
 
 export type DriveFileSortField = 'name' | 'createdAt';
@@ -14,8 +14,7 @@ export type DriveFileSortDirection = 'asc' | 'desc';
 export type DriveFileFilterState = {
 	statuses: DriveFileStatus[];
 	visibilities: DriveFileVisibility[];
-	/** ['folder'], ['file'], ['folder','file'] hoặc [] (tất cả) */
-	isFolderValues: string[];
+	types: DriveFileType[];
 	sortField: DriveFileSortField;
 	sortDirection: DriveFileSortDirection;
 	folderFirst: boolean;
@@ -62,7 +61,7 @@ function DriveFileFilterStatus({ value, onChange }: DriveFileFilterControlsProps
 	};
 
 	const renderStatusOption: MultiSelectProps['renderOption'] = (option) => {
-		return <DriveFileStatusBadge e={option.option.value as DriveFileStatus} />;
+		return <DriveFileStatusBadge variant='light' e={option.option.value as DriveFileStatus} />;
 	};
 
 	return (
@@ -75,18 +74,7 @@ function DriveFileFilterStatus({ value, onChange }: DriveFileFilterControlsProps
 			clearable
 			maw={220}
 			size='sm'
-			styles={{
-				pillsList: {
-					maxWidth: 220,
-					overflowX: 'auto',
-					flexWrap: 'nowrap',
-					scrollbarWidth: 'none',
-					msOverflowStyle: 'none',
-					'&::-webkit-scrollbar': {
-						display: 'none',
-					},
-				},
-			}}
+			color='red'
 		/>
 	);
 }
@@ -133,18 +121,6 @@ function DriveFileFilterVisibility({
 			clearable
 			maw={220}
 			size='sm'
-			styles={{
-				pillsList: {
-					maxWidth: 220,
-					overflowX: 'auto',
-					flexWrap: 'nowrap',
-					scrollbarWidth: 'none',
-					msOverflowStyle: 'none',
-					'&::-webkit-scrollbar': {
-						display: 'none',
-					},
-				},
-			}}
 		/>
 	);
 }
@@ -158,34 +134,29 @@ function DriveFileFilterType({
 	const handleIsFolderChange = (next: string[]) => {
 		onChange({
 			...value,
-			isFolderValues: next,
+			types: next as DriveFileType[],
 		});
+	};
+
+	const typeData = Object.values(DriveFileType).map((type) => ({
+		value: type,
+		label: type,
+	}));
+
+	const renderTypeOption: MultiSelectProps['renderOption'] = (option) => {
+		return <DriveFileTypeDisplay e={option.option.value as DriveFileType} />;
 	};
 
 	return (
 		<MultiSelect
 			size='sm'
-			data={[
-				{ value: 'folder', label: t('nikki.drive.propertiesCard.folder') },
-				{ value: 'file', label: t('nikki.drive.propertiesCard.file') },
-			]}
-			value={value.isFolderValues}
+			data={typeData}
+			value={value.types}
 			onChange={handleIsFolderChange}
-			placeholder={t('nikki.drive.fields.isFolder') ?? ''}
+			renderOption={renderTypeOption}
+			placeholder={t('nikki.drive.propertiesCard.type') ?? ''}
 			clearable
 			maw={220}
-			styles={{
-				pillsList: {
-					maxWidth: 220,
-					overflowX: 'auto',
-					flexWrap: 'nowrap',
-					scrollbarWidth: 'none',
-					msOverflowStyle: 'none',
-					'&::-webkit-scrollbar': {
-						display: 'none',
-					},
-				},
-			}}
 		/>
 	);
 }

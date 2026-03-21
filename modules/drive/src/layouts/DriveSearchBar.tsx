@@ -39,13 +39,13 @@ function buildGraph(queryText: string, currentFilters: DriveFileFilterState): Re
 
 	if (currentFilters.statuses.length > 0) {
 		and.push({
-			if: ['status', 'in', currentFilters.statuses],
+			if: ['status', 'in', ...currentFilters.statuses],
 		});
 	}
 
 	if (currentFilters.visibilities.length > 0) {
 		and.push({
-			if: ['visibility', 'in', currentFilters.visibilities],
+			if: ['visibility', 'in', ...currentFilters.visibilities],
 		});
 	}
 

@@ -42,6 +42,7 @@ export type DriveFileModalUIState = {
 
 export type ModalType =
 	| { type: 'properties' }
+	| { type: 'share' }
 	| { type: 'create'; defaultIsFolder?: boolean }
 	| { type: 'update' }
 	| {
@@ -60,7 +61,7 @@ export type ModalType =
 	| { type: 'preview' };
 
 export type CurrentListContext = {
-	source?: 'byParent' | 'search';
+	source?: 'byParent' | 'search' | 'shared';
 	parentId: string;
 	page: number;
 	size: number;
@@ -151,8 +152,7 @@ export const createDriveFile = createAsyncThunk<
 		try {
 			const result = await fileService.createFile(payload);
 			return result;
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to create file';
 			return rejectWithValue(errorMessage);
@@ -170,8 +170,7 @@ export const updateMetadataDriveFile = createAsyncThunk<
 		try {
 			const result = await fileService.updateFileMetadata(fileId, req);
 			return result;
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to update file';
 			return rejectWithValue(errorMessage);
@@ -184,8 +183,7 @@ export const deleteDriveFile = createAsyncThunk<void, string, thunkConfig>(
 	async (fileId, { rejectWithValue }) => {
 		try {
 			await fileService.deleteDriveFile(fileId);
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to delete file';
 			return rejectWithValue(errorMessage);
@@ -198,8 +196,7 @@ export const moveDriveFileToTrash = createAsyncThunk<void, string, thunkConfig>(
 	async (fileId, { rejectWithValue }) => {
 		try {
 			await fileService.moveDriveFileToTrash(fileId);
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to move file to trash';
 			return rejectWithValue(errorMessage);
@@ -215,8 +212,7 @@ export const getDriveFileById = createAsyncThunk<
 	try {
 		const result = await fileService.getDriveFileById(fileId);
 		return result;
-	}
-	catch (error) {
+	} catch (error) {
 		const errorMessage =
 			error instanceof Error ? error.message : 'Failed to get file by id';
 		return rejectWithValue(errorMessage);
@@ -231,8 +227,7 @@ export const getCurrentFolderById = createAsyncThunk<
 	try {
 		const result = await fileService.getDriveFileById(fileId);
 		return result;
-	}
-	catch (error) {
+	} catch (error) {
 		const errorMessage =
 			error instanceof Error
 				? error.message
@@ -294,8 +289,7 @@ export const getDriveFileByParent = createAsyncThunk<
 		try {
 			const listReq = withDefaultListGraph(req);
 			return await getDriveFileByParentPayload(parentId, listReq);
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to get file by parent';
 			return rejectWithValue(errorMessage);
@@ -327,8 +321,7 @@ export const getDriveFileByParentForTree = createAsyncThunk<
 			};
 
 			return await getDriveFileByParentPayload(parentId, treeReq);
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to get file by parent';
 			return rejectWithValue(errorMessage);
@@ -345,10 +338,27 @@ export const searchDriveFile = createAsyncThunk<
 		const listReq = withDefaultListGraph(req);
 		const result = await fileService.searchDriveFile(listReq);
 		return result;
-	}
-	catch (error) {
+	} catch (error) {
 		const errorMessage =
 			error instanceof Error ? error.message : 'Failed to search file';
+		return rejectWithValue(errorMessage);
+	}
+});
+
+export const searchDriveFileShared = createAsyncThunk<
+	SearchDriveFileByParentResponse,
+	{ req: GetDriveFileByParentRequest },
+	thunkConfig
+>(`${SLICE_NAME}/searchDriveFileShared`, async ({ req }, { rejectWithValue }) => {
+	try {
+		const listReq = withDefaultListGraph(req);
+		const result = await fileService.searchDriveFileShared(listReq);
+		return result;
+	} catch (error) {
+		const errorMessage =
+			error instanceof Error
+				? error.message
+				: 'Failed to search shared files';
 		return rejectWithValue(errorMessage);
 	}
 });
@@ -363,8 +373,7 @@ export const getDriveFileAncestors = createAsyncThunk<
 		try {
 			const result = await fileService.getDriveFileAncestors(fileId);
 			return result;
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to get file ancestors';
 			return rejectWithValue(errorMessage);
@@ -385,8 +394,7 @@ export const restoreDriveFileFromTrash = createAsyncThunk<
 				parentDriveFileRef,
 			);
 			return result;
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage =
 				error instanceof Error
 					? error.message
@@ -477,6 +485,7 @@ const driveFileSlice = createSlice({
 		getDriveFileByParentReducers(builder);
 		getDriveFileByParentForTreeReducers(builder);
 		searchDriveFileReducers(builder);
+		searchDriveFileSharedReducers(builder);
 		getDriveFileAncestorsReducers(builder);
 		restoreDriveFileFromTrashReducers(builder);
 	},
@@ -590,19 +599,22 @@ function getCurrentFolderByIdReducers(
 const MIME_TO_DRIVE_FILE_TYPE: Record<string, DriveFileType> = {
 	// Document
 	'application/msword': DriveFileType.DOCUMENT,
-	'application/vnd.openxmlformats-officedocument.wordprocessingml.document': DriveFileType.DOCUMENT,
+	'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+		DriveFileType.DOCUMENT,
 	'application/vnd.google-apps.document': DriveFileType.DOCUMENT,
 	'application/vnd.oasis.opendocument.text': DriveFileType.DOCUMENT,
 
 	// Spreadsheet
 	'application/vnd.ms-excel': DriveFileType.SPREADSHEET,
-	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': DriveFileType.SPREADSHEET,
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+		DriveFileType.SPREADSHEET,
 	'application/vnd.google-apps.spreadsheet': DriveFileType.SPREADSHEET,
 	'application/vnd.oasis.opendocument.spreadsheet': DriveFileType.SPREADSHEET,
 
 	// Presentation
 	'application/vnd.ms-powerpoint': DriveFileType.PRESENTATION,
-	'application/vnd.openxmlformats-officedocument.presentationml.presentation': DriveFileType.PRESENTATION,
+	'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+		DriveFileType.PRESENTATION,
 	'application/vnd.google-apps.presentation': DriveFileType.PRESENTATION,
 	'application/vnd.oasis.opendocument.presentation': DriveFileType.PRESENTATION,
 
@@ -627,7 +639,97 @@ const MIME_TO_DRIVE_FILE_TYPE: Record<string, DriveFileType> = {
 	'application/x-xz': DriveFileType.ARCHIVE,
 };
 
-const CODE_TEXT_SUBTYPES = new Set(['javascript', 'typescript', 'x-python', 'x-java', 'x-c', 'x-c++', 'x-go', 'x-rust', 'x-php', 'html', 'css', 'xml', 'x-sh', 'x-shellscript']);
+export const DRIVE_FILE_TYPE_TO_MIME: Record<DriveFileType, string[]> = {
+	[DriveFileType.FOLDER]: ['inode/directory'],
+	[DriveFileType.IMAGE]: [
+		'image/jpeg',
+		'image/png',
+		'image/gif',
+		'image/webp',
+		'image/bmp',
+		'image/svg+xml',
+		'image/tiff',
+		'image/heic',
+		'image/heif',
+	],
+	[DriveFileType.VIDEO]: [
+		'video/mp4',
+		'video/webm',
+		'video/ogg',
+		'video/quicktime',
+		'video/x-msvideo',
+		'video/x-matroska',
+		'video/mpeg',
+		'video/3gpp',
+		'video/3gpp2',
+	],
+	[DriveFileType.AUDIO]: [
+		'audio/mpeg',
+		'audio/wav',
+		'audio/ogg',
+		'audio/aac',
+		'audio/flac',
+		'audio/webm',
+		'audio/mp4',
+		'audio/x-m4a',
+		'audio/opus',
+	],
+	[DriveFileType.DOCUMENT]: [
+		'application/msword',
+		'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+		'application/vnd.google-apps.document',
+		'application/vnd.oasis.opendocument.text',
+	],
+	[DriveFileType.SPREADSHEET]: [
+		'application/vnd.ms-excel',
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+		'application/vnd.google-apps.spreadsheet',
+		'application/vnd.oasis.opendocument.spreadsheet',
+	],
+	[DriveFileType.PRESENTATION]: [
+		'application/vnd.ms-powerpoint',
+		'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+		'application/vnd.google-apps.presentation',
+		'application/vnd.oasis.opendocument.presentation',
+	],
+	[DriveFileType.PDF]: ['application/pdf'],
+	[DriveFileType.TEXT]: ['text/plain'],
+	[DriveFileType.CODE]: [
+		'application/json',
+		'application/javascript',
+		'application/typescript',
+		'application/xml',
+		'application/x-sh',
+		'application/wasm',
+	],
+	[DriveFileType.ARCHIVE]: [
+		'application/zip',
+		'application/x-rar-compressed',
+		'application/x-7z-compressed',
+		'application/x-tar',
+		'application/gzip',
+		'application/x-bzip2',
+		'application/x-xz',
+	],
+	[DriveFileType.OTHER]: ['application/octet-stream'],
+};
+
+const CODE_TEXT_SUBTYPES = new Set([
+	'javascript',
+	'typescript',
+	'x-python',
+	'x-java',
+	'x-c',
+	'x-c++',
+	'x-go',
+	'x-rust',
+	'x-php',
+	'html',
+	'css',
+	'xml',
+	'x-sh',
+	'x-shellscript',
+]);
 
 function mimeToDriveFileType(mime: string): DriveFileType {
 	if (mime.startsWith('image/')) return DriveFileType.IMAGE;
@@ -636,15 +738,15 @@ function mimeToDriveFileType(mime: string): DriveFileType {
 
 	if (mime.startsWith('text/')) {
 		const subtype = mime.split('/')[1];
-		return CODE_TEXT_SUBTYPES.has(subtype) ? DriveFileType.CODE : DriveFileType.TEXT;
+		return CODE_TEXT_SUBTYPES.has(subtype)
+			? DriveFileType.CODE
+			: DriveFileType.TEXT;
 	}
 
 	return MIME_TO_DRIVE_FILE_TYPE[mime] ?? DriveFileType.OTHER;
 }
 
-function normalizeDriveFile(
-	item: DriveFile,
-): DriveFile {
+function normalizeDriveFile(item: DriveFile): DriveFile {
 	let type: DriveFileType = DriveFileType.FOLDER;
 	if (!item.isFolder) {
 		type = mimeToDriveFileType(item.mime);
@@ -722,7 +824,9 @@ function getDriveFileByParentReducers(
 		.addCase(getDriveFileByParent.fulfilled, (state, action) => {
 			state.getByParent.status = 'success';
 			state.getByParent.data = action.payload;
-			state.files = (action.payload.items ?? []).map((item) => normalizeDriveFile(item as DriveFile));
+			state.files = (action.payload.items ?? []).map((item) =>
+				normalizeDriveFile(item as DriveFile),
+			);
 
 			const parentId = action.meta.arg.parentId;
 			const req = action.meta.arg.req;
@@ -803,7 +907,9 @@ function searchDriveFileReducers(
 		.addCase(searchDriveFile.fulfilled, (state, action) => {
 			state.search.status = 'success';
 			state.search.data = action.payload;
-			state.files = (action.payload.items ?? []).map((item) => normalizeDriveFile(item as DriveFile));
+			state.files = (action.payload.items ?? []).map((item) =>
+				normalizeDriveFile(item as DriveFile),
+			);
 
 			const req = action.meta.arg.req;
 			state.currentListContext = {
@@ -820,6 +926,36 @@ function searchDriveFileReducers(
 		});
 }
 
+function searchDriveFileSharedReducers(
+	builder: ActionReducerMapBuilder<DriveFileState>,
+) {
+	builder
+		.addCase(searchDriveFileShared.pending, (state) => {
+			state.search.status = 'pending';
+			state.search.error = null;
+		})
+		.addCase(searchDriveFileShared.fulfilled, (state, action) => {
+			state.search.status = 'success';
+			state.search.data = action.payload;
+			state.files = (action.payload.items ?? []).map((item) =>
+				normalizeDriveFile(item as DriveFile),
+			);
+
+			const req = action.meta.arg.req;
+			state.currentListContext = {
+				source: 'shared',
+				parentId: '',
+				page: req?.page ?? 0,
+				size: req?.size ?? action.payload.items?.length ?? 20,
+				graph: (req?.graph ?? {}) as Record<string, unknown>,
+			};
+		})
+		.addCase(searchDriveFileShared.rejected, (state, action) => {
+			state.search.status = 'error';
+			state.search.error = action.payload || 'Failed to search shared files';
+		});
+}
+
 function getDriveFileAncestorsReducers(
 	builder: ActionReducerMapBuilder<DriveFileState>,
 ) {
@@ -831,7 +967,9 @@ function getDriveFileAncestorsReducers(
 		.addCase(getDriveFileAncestors.fulfilled, (state, action) => {
 			state.getAncestors.status = 'success';
 			state.getAncestors.data = action.payload;
-			state.ancestors = action.payload.map((item) => normalizeDriveFile(item as DriveFile));
+			state.ancestors = action.payload.map((item) =>
+				normalizeDriveFile(item as DriveFile),
+			);
 		})
 		.addCase(getDriveFileAncestors.rejected, (state) => {
 			state.getAncestors.status = 'error';

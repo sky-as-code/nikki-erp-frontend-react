@@ -3,12 +3,12 @@ import { IconCopy, IconFile, IconFolder } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useDbDateTime, useDriveStreamUrl } from '@/hooks';
+
 import { DriveFile, DriveFileVisibility } from '../../../types';
 import { formatSize } from '../../../utils/fortmat';
 import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../../enum-display';
-
-import { useDriveFileTypeValue } from '@/features/files/hooks';
-import { useDbDateTime, useDriveStreamUrl } from '@/hooks';
+import { DriveFileTypeDisplay } from '../../enum-display';
 
 
 type FilePropertiesCardProps = {
@@ -120,13 +120,16 @@ function FileIdentity({ file, buildStreamUrl }: {
 
 function FileMetaList({ file, formatDateTime, formatRelative }: FilePropertiesCardContentProps) {
 	const { t } = useTranslation();
-	const driveFileTypeValue = useDriveFileTypeValue();
 	const isFolder = file.isFolder;
 	return (
 		<Stack gap='xs'>
 			<Group justify='space-between'>
 				<Text size='xs' c='dimmed'>{t('nikki.drive.propertiesCard.type')}</Text>
-				<Text size='xs'>{driveFileTypeValue(file.type)}</Text>
+				<DriveFileTypeDisplay e={file.type} />
+			</Group>
+			<Group justify='space-between'>
+				<Text size='xs' c='dimmed'>{t('nikki.drive.propertiesCard.mimeType')}</Text>
+				<Text size='xs'>{file.isFolder ? '—' : file.mime}</Text>
 			</Group>
 			<Group justify='space-between'>
 				<Text size='xs' c='dimmed'>{t('nikki.drive.propertiesCard.size')}</Text>

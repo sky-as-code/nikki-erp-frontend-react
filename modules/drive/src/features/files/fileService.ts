@@ -143,4 +143,24 @@ export const fileService = {
 		return get<GetDriveFileByParentResponse>(baseEndpoint, options);
 	},
 
+	/** Fetch list files that are shared with current user */
+	async searchDriveFileShared(params?: GetDriveFileByParentRequest): Promise<GetDriveFileByParentResponse> {
+		const options: Options = {};
+		if (params) {
+			const searchParams: any = {
+				...params,
+			};
+
+			if (params.graph) {
+				searchParams.graph = JSON.stringify({
+					...(params.graph as Record<string, unknown>),
+				});
+			}
+
+			options.searchParams = searchParams;
+		}
+
+		return get<GetDriveFileByParentResponse>(`${baseEndpoint}/shared`, options);
+	},
+
 };

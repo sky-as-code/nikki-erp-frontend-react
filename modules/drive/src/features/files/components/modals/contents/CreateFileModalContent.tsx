@@ -1,18 +1,19 @@
 import { Button, Collapse, Group, rem, Stack, Text } from '@mantine/core';
-import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { Dropzone } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
+import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { IconFileUpload, IconUpload, IconX } from '@tabler/icons-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { driveFileActions, selectCreateDriveFile } from '@/appState/file';
+
 import driveFileSchemaJson from '../../../file-schema.json';
 import { DriveFileVisibility } from '../../../types';
 
-import { driveFileActions, selectCreateDriveFile } from '@/appState/file';
-
 import type { ModelSchema } from '@nikkierp/ui/model';
+
 
 const baseSchema = driveFileSchemaJson as ModelSchema;
 
@@ -164,7 +165,8 @@ export function CreateFileModalContent({
 
 type CreateFileFormInnerProps = {
 	form: ReturnType<typeof import('react-hook-form').useForm>;
-	handleSubmit: (onValid: (data: Record<string, unknown>) => void | Promise<void>) => (e?: React.BaseSyntheticEvent) => Promise<void>;
+	handleSubmit: (onValid: (data: Record<string, unknown>) =>
+		void | Promise<void>) => (e?: React.BaseSyntheticEvent) => Promise<void>;
 	onSubmit: (data: Record<string, unknown>) => Promise<void>;
 	selectedFile: File | null;
 	setSelectedFile: (f: File | null) => void;

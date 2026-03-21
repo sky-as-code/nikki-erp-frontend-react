@@ -52,18 +52,18 @@
 				{ "type": "required", "message": "{ \"$ref\": 'nikki.drive.createFile.visibility' }" }
 			],
 			"enum": [
-				{ "value": "public", "label": "{ \"$ref\": 'nikki.drive.propertiesCard.visibilityPublic' }" },
-				{ "value": "owner", "label": "{ \"$ref\": 'nikki.drive.propertiesCard.visibilityOwner' }" },
-				{ "value": "shared", "label": "{ \"$ref\": 'nikki.drive.propertiesCard.visibilityPrivate' }" }
+				{ "value": "public", "label": "{ \"$ref\": 'nikki.drive.enum.visibility.public' }" },
+				{ "value": "owner", "label": "{ \"$ref\": 'nikki.drive.enum.visibility.owner' }" },
+				{ "value": "shared", "label": "{ \"$ref\": 'nikki.drive.enum.visibility.shared' }" }
 			]
 		},
 		"status": {
 			"type": "enum",
 			"label": "{ \"$ref\": 'nikki.drive.fields.status' }",
 			"enum": [
-				{ "value": "active", "label": "{ \"$ref\": 'nikki.drive.fields.statusActive' }" },
-				{ "value": "in-trash", "label": "{ \"$ref\": 'nikki.drive.fields.statusInTrash' }" },
-				{ "value": "parent-in-trash", "label": "{ \"$ref\": 'nikki.drive.fields.statusParentInTrash' }" }
+				{ "value": "active", "label": "{ \"$ref\": 'nikki.drive.enum.status.active' }" },
+				{ "value": "in-trash", "label": "{ \"$ref\": 'nikki.drive.enum.status.inTrash' }" },
+				{ "value": "parent-in-trash", "label": "{ \"$ref\": 'nikki.drive.enum.status.parentInTrash' }" }
 			]
 		},
 		"children": {
