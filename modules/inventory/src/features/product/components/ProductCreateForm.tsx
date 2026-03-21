@@ -67,7 +67,6 @@ type ProductCreateFormContentProps = {
 function ProductCreateFormContent({
 	isLoading,
 	onSubmit,
-	handleGoBack,
 	units,
 	handleSubmit,
 }: ProductCreateFormContentProps): React.ReactElement {
@@ -88,10 +87,10 @@ function ProductCreateFormContent({
 	}, [onSubmit]);
 
 	return (
-		<Paper p='md' withBorder>
+		<Paper>
 			<form onSubmit={handleSubmit(submitForm)} noValidate>
 				<Stack gap='lg'>
-					<FormContainer title='Basic Information'>
+					<FormContainer>
 						<Stack gap='sm'>
 							<AutoField name='name' autoFocused inputProps={{ disabled: isLoading }} />
 							<AutoField name='sku' inputProps={{ disabled: isLoading }} />
@@ -100,11 +99,6 @@ function ProductCreateFormContent({
 							<AutoField name='thumbnailURL' inputProps={{ disabled: isLoading }} />
 							<AutoField name='proposedPrice' inputProps={{ disabled: isLoading }} />
 							<AutoField name='status' inputProps={{ disabled: isLoading }} />
-						</Stack>
-					</FormContainer>
-
-					<FormContainer title='Unit Selection'>
-						<Stack gap='sm'>
 							<EntitySelectField
 								fieldName='unitId'
 								entities={units}
@@ -115,14 +109,6 @@ function ProductCreateFormContent({
 							/>
 						</Stack>
 					</FormContainer>
-
-					<Group justify='flex-end'>
-						<FormActions
-							isSubmitting={isLoading}
-							onCancel={handleGoBack}
-							isCreate
-						/>
-					</Group>
 				</Stack>
 			</form>
 		</Paper>

@@ -9,7 +9,16 @@ import { unitCategoryReducer } from './unitCategory';
 import { variantReducer } from './variant';
 
 
-export { attributeActions, selectAttributeState, selectAttributeList as selectAttributes } from './attribute';
+export {
+	attributeActions,
+	selectAttributeState,
+	selectAttributeList,
+	selectAttributeList as selectAttributes,
+	selectAttributeDetail,
+	selectCreateAttribute,
+	selectUpdateAttribute,
+	selectDeleteAttribute,
+} from './attribute';
 export {
 	attributeValueActions,
 	selectAttributeValueState,

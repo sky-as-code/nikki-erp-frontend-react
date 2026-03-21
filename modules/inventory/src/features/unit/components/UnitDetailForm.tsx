@@ -30,8 +30,6 @@ interface UnitDetailFormProps {
 	isLoading: boolean;
 	isSubmitting: boolean;
 	onSave: (values: UnitDetailFormValues) => void | Promise<void>;
-	onDelete: () => void;
-	onGoBack: () => void;
 }
 
 export function UnitDetailForm({
@@ -41,8 +39,6 @@ export function UnitDetailForm({
 	unit,
 	isSubmitting,
 	onSave,
-	onDelete,
-	onGoBack,
 }: UnitDetailFormProps): React.ReactElement {
 	const { t } = useTranslation();
 	const modelValue = {
@@ -60,11 +56,6 @@ export function UnitDetailForm({
 			>
 				{({ handleSubmit }) => (
 					<form onSubmit={handleSubmit(onSave)} noValidate>
-						<DetailActionBar
-							onSave={() => onSave}
-							onGoBack={onGoBack}
-							onDelete={() => void onDelete()}
-						/>
 						<Stack gap='md'>
 							<AutoField name='name' inputProps={{ disabled: isSubmitting }} />
 							<AutoField name='symbol' inputProps={{ disabled: isSubmitting }} />

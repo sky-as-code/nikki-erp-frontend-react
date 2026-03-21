@@ -10,39 +10,67 @@ import type {
 	UpdateAttributeValueResponse,
 } from './types';
 
+
 export const attributeValueService = {
-	async listAttributeValues(attributeId?: string): Promise<SearchAttributeValuesResponse> {
+	async listAttributeValues(
+		orgId: string,
+		productId: string,
+		attributeId: string,
+		searchParams?: Record<string, string | number | boolean | undefined>,
+	): Promise<SearchAttributeValuesResponse> {
 		const response = await request.get<SearchAttributeValuesResponse>(
-			'inventory/attribute-values',
-			{ searchParams: attributeId ? { attributeId } : {} }
+			`${orgId}/inventory/products/${productId}/attributes/${attributeId}/values`,
+			{ searchParams },
 		);
 		return response;
 	},
 
-	async getAttributeValue(id: string): Promise<AttributeValue> {
-		const response = await request.get<AttributeValue>(`inventory/attribute-values/${id}`);
+	async getAttributeValue(
+		orgId: string,
+		productId: string,
+		attributeId: string,
+		id: string,
+	): Promise<AttributeValue> {
+		const response = await request.get<AttributeValue>(
+			`${orgId}/inventory/products/${productId}/attributes/${attributeId}/values/${id}`,
+		);
 		return response;
 	},
 
-	async createAttributeValue(data: CreateAttributeValueRequest): Promise<CreateAttributeValueResponse> {
+	async createAttributeValue(
+		orgId: string,
+		productId: string,
+		attributeId: string,
+		data: CreateAttributeValueRequest,
+	): Promise<CreateAttributeValueResponse> {
 		const response = await request.post<CreateAttributeValueResponse>(
-			'inventory/attribute-values',
-			{ json: data }
+			`${orgId}/inventory/products/${productId}/attributes/${attributeId}/values`,
+			{ json: data },
 		);
 		return response;
 	},
 
-	async updateAttributeValue(data: UpdateAttributeValueRequest): Promise<UpdateAttributeValueResponse> {
+	async updateAttributeValue(
+		orgId: string,
+		productId: string,
+		attributeId: string,
+		data: UpdateAttributeValueRequest,
+	): Promise<UpdateAttributeValueResponse> {
 		const response = await request.put<UpdateAttributeValueResponse>(
-			`inventory/attribute-values/${data.id}`,
-			{ json: data }
+			`${orgId}/inventory/products/${productId}/attributes/${attributeId}/values/${data.id}`,
+			{ json: data },
 		);
 		return response;
 	},
 
-	async deleteAttributeValue(id: string): Promise<DeleteAttributeValueResponse> {
+	async deleteAttributeValue(
+		orgId: string,
+		productId: string,
+		attributeId: string,
+		id: string,
+	): Promise<DeleteAttributeValueResponse> {
 		const response = await request.del<DeleteAttributeValueResponse>(
-			`inventory/attribute-values/${id}`
+			`${orgId}/inventory/products/${productId}/attributes/${attributeId}/values/${id}`,
 		);
 		return response;
 	},

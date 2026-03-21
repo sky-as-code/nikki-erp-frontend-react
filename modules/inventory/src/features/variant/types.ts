@@ -1,10 +1,14 @@
-import type { AttributeValue } from '../attributeValue/types';
 import type {
 	CreateResponse,
 	DeleteResponse,
 	SearchResponse,
 	UpdateResponse,
 } from '@nikkierp/common';
+
+export type VariantAttribute = {
+	codeName: string;
+	value: unknown;
+};
 
 export type Variant = {
 	id: string;
@@ -13,10 +17,9 @@ export type Variant = {
 	sku: string;
 	barcode?: string;
 	proposedPrice: number;
-	imageUrl?: string;
+	imageURL?: string;
 	status: string;
-	attributeValues: AttributeValue[];
-	attributes?: Record<string, unknown>;
+	attributes?: VariantAttribute[];
 	createdAt: string;
 	updatedAt: string;
 	etag: string;
@@ -28,7 +31,7 @@ export type CreateVariantRequest = {
 	sku?: string;
 	barcode?: string;
 	proposedPrice?: number;
-	imageUrl?: string;
+	imageURL?: string;
 	status?: string;
 	attributes?: Record<string, unknown>;
 };
@@ -39,6 +42,7 @@ export type UpdateVariantRequest = {
 	sku?: string;
 	barcode?: string;
 	proposedPrice?: number;
+	imageURL?: string;
 	status?: string;
 	attributes?: Record<string, unknown>;
 };

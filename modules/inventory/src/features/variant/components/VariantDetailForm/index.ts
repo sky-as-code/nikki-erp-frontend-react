@@ -1,1 +1,0 @@
-export { VariantDetailForm } from './VariantDetailForm';

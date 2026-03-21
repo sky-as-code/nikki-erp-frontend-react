@@ -39,13 +39,17 @@ const initialState: AttributeValueState = {
 
 export const listAttributeValues = createAsyncThunk<
 	SearchAttributeValuesResponse,
-	string | undefined,
+	{ orgId: string; productId: string; attributeId: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchAttributeValues`,
-	async (attributeId, { rejectWithValue }) => {
+	async ({ orgId, productId, attributeId }, { rejectWithValue }) => {
 		try {
-			const result = await attributeValueService.listAttributeValues(attributeId);
+			const result = await attributeValueService.listAttributeValues(
+				orgId,
+				productId,
+				attributeId,
+			);
 			return result;
 		}
 		catch (error) {
@@ -57,13 +61,18 @@ export const listAttributeValues = createAsyncThunk<
 
 export const getAttributeValue = createAsyncThunk<
 	AttributeValue,
-	string,
+	{ orgId: string; productId: string; attributeId: string; id: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/fetchAttributeValue`,
-	async (id, { rejectWithValue }) => {
+	async ({ orgId, productId, attributeId, id }, { rejectWithValue }) => {
 		try {
-			const result = await attributeValueService.getAttributeValue(id);
+			const result = await attributeValueService.getAttributeValue(
+				orgId,
+				productId,
+				attributeId,
+				id,
+			);
 			return result;
 		}
 		catch (error) {
@@ -75,13 +84,18 @@ export const getAttributeValue = createAsyncThunk<
 
 export const createAttributeValue = createAsyncThunk<
 	CreateAttributeValueResponse,
-	CreateAttributeValueRequest,
+	{ orgId: string; productId: string; attributeId: string; data: CreateAttributeValueRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createAttributeValue`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, productId, attributeId, data }, { rejectWithValue }) => {
 		try {
-			const result = await attributeValueService.createAttributeValue(data);
+			const result = await attributeValueService.createAttributeValue(
+				orgId,
+				productId,
+				attributeId,
+				data,
+			);
 			return result;
 		}
 		catch (error) {
@@ -93,13 +107,18 @@ export const createAttributeValue = createAsyncThunk<
 
 export const updateAttributeValue = createAsyncThunk<
 	UpdateAttributeValueResponse,
-	UpdateAttributeValueRequest,
+	{ orgId: string; productId: string; attributeId: string; data: UpdateAttributeValueRequest },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateAttributeValue`,
-	async (data, { rejectWithValue }) => {
+	async ({ orgId, productId, attributeId, data }, { rejectWithValue }) => {
 		try {
-			const result = await attributeValueService.updateAttributeValue(data);
+			const result = await attributeValueService.updateAttributeValue(
+				orgId,
+				productId,
+				attributeId,
+				data,
+			);
 			return result;
 		}
 		catch (error) {
@@ -111,13 +130,13 @@ export const updateAttributeValue = createAsyncThunk<
 
 export const deleteAttributeValue = createAsyncThunk<
 	void,
-	string,
+	{ orgId: string; productId: string; attributeId: string; id: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/deleteAttributeValue`,
-	async (id, { rejectWithValue }) => {
+	async ({ orgId, productId, attributeId, id }, { rejectWithValue }) => {
 		try {
-			await attributeValueService.deleteAttributeValue(id);
+			await attributeValueService.deleteAttributeValue(orgId, productId, attributeId, id);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete attribute value';

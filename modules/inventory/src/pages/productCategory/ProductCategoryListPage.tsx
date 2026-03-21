@@ -2,7 +2,6 @@
 import {
 	Group,
 	Pagination,
-	Paper,
 	Select,
 	Stack,
 	Text,
@@ -12,7 +11,8 @@ import { AutoTable, withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { selectProductCategoryList } from '../../appState';
-import { ActionBar } from '../../components/ActionBar/ActionBar';
+import { ControlPanel } from '../../components/ControlPanel';
+import { PageContainer } from '../../components/PageContainer';
 import { JsonToString } from '../../utils/serializer';
 import {
 	PAGE_SIZE_OPTIONS,
@@ -29,10 +29,6 @@ const CATEGORY_SCHEMA = productCategorySchema as ModelSchema;
 
 const COLUMNS = ['name', 'createdAt'];
 
-const COLUMN_RENDERERS = {
-	name: (row: Record<string, unknown>) => JsonToString(row.name),
-};
-
 export const ProductCategoryListPageBody: React.FC = () => {
 	const listProductCategory = useMicroAppSelector(selectProductCategoryList);
 	const {
@@ -42,61 +38,51 @@ export const ProductCategoryListPageBody: React.FC = () => {
 
 	const categories = (listProductCategory.data ?? []) as ProductCategory[];
 	const isLoading = listProductCategory.status === 'pending';
+	const breadcrumbs = [
+		{ title: 'Inventory', href: '../overview' },
+		{ title: 'Product Categories', href: '#' },
+	];
 
 	const {
 		searchValue,
 		setSearchValue,
-		page,
-		setPage,
-		pageSize,
-		totalPages,
-		handlePageSizeChange,
 		pagedCategories,
-		filteredCount,
-		pagedCount,
 	} = useProductCategoryListView(categories);
 
-	return (
-		<Stack gap='md'>
-			<Title order={2}>Product Categories</Title>
-			<ActionBar
-				onCreate={handleOpenCreatePage}
-				onRefresh={handleRefresh}
-				searchValue={searchValue}
-				onSearchChange={setSearchValue}
-				searchPlaceholder='Search by category name'
-			/>
+	const tableData = React.useMemo(() => {
+		return pagedCategories.map((category) => ({
+			...category,
+			name: JsonToString(category.name),
+		}));
+	}, [pagedCategories]);
 
-			<Paper p='md' withBorder>
+	return (
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			sections={[
+				<ControlPanel
+					actions={[
+						{ label: 'Create', onClick: handleOpenCreatePage },
+						{ label: 'Refresh', onClick: handleRefresh, variant: 'outline' },
+					]}
+					search={{
+						value: searchValue,
+						onChange: setSearchValue,
+						placeholder: 'Search by category name',
+					}}
+				/>,
+			]}
+		>
+			<Stack gap='md'>
 				<AutoTable
 					schema={CATEGORY_SCHEMA}
 					columns={COLUMNS}
-					data={pagedCategories as unknown as Record<string, unknown>[]}
+					data={tableData as unknown as Record<string, unknown>[]}
 					isLoading={isLoading}
 					columnAsLink='name'
-					columnRenderers={COLUMN_RENDERERS}
 				/>
-			</Paper>
-
-			<Group justify='space-between'>
-				<Text size='sm' c='dimmed'>
-					Showing {pagedCount} of {filteredCount} categor{filteredCount === 1 ? 'y' : 'ies'}
-				</Text>
-				<Group>
-					<Select
-						w={120}
-						data={PAGE_SIZE_OPTIONS}
-						value={String(pageSize)}
-						onChange={handlePageSizeChange}
-					/>
-					<Pagination
-						total={totalPages}
-						value={page}
-						onChange={setPage}
-					/>
-				</Group>
-			</Group>
-		</Stack>
+			</Stack>
+		</PageContainer>
 	);
 };
 

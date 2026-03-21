@@ -1,10 +1,13 @@
 import {
+	Group,
 	Stack,
+	Text,
 	Title,
 } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import React from 'react';
 
+import { ControlPanelAction } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
 import {
 	useUnitCategoryCreateHandlers,
@@ -20,18 +23,29 @@ export const UnitCategoryCreatePageBody: React.FC = () => {
 		onSubmit,
 		handleGoBack,
 	} = useUnitCategoryCreateHandlers();
+	const breadcrumbs = [
+		{ title: 'Inventory', href: '../overview' },
+		{ title: 'Unit Categories', href: '../unit-categories' },
+		{ title: 'Create Unit Category', href: '#' },
+	];
 
 	return (
-		<PageContainer>
-			<Stack gap='md'>
-				<Title order={2}>Create Unit Category</Title>
-				<UnitCategoryCreateForm
-					schema={categorySchema as ModelSchema}
-					isSubmitting={isSubmitting}
-					onSubmit={onSubmit}
-					onCancel={handleGoBack}
-				/>
-			</Stack>
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			sections={[
+				<ControlPanelAction
+					actions={[
+						{ label: 'Create', type: 'submit'},
+						{ label: 'Cancel', variant: 'outline', onClick: handleGoBack },
+					]}
+				/>,
+			]}
+		>
+			<UnitCategoryCreateForm
+				schema={categorySchema as ModelSchema}
+				isSubmitting={isSubmitting}
+				onSubmit={onSubmit}
+			/>
 		</PageContainer>
 	);
 };

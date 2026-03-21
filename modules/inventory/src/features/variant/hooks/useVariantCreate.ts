@@ -13,7 +13,16 @@ import type { InventoryDispatch } from '../../../appState';
 import type { CreateVariantRequest } from '../types';
 
 
-type VariantCreateInput = Pick<CreateVariantRequest, 'name' | 'sku' | 'barcode' | 'proposedPrice' | 'status'>;
+type VariantCreateInput = Pick<CreateVariantRequest, 'name' | 'sku' | 'barcode' | 'proposedPrice' | 'status' | 'imageURL'>;
+
+function toOptionalTrimmedString(value: unknown): string | undefined {
+	if (typeof value !== 'string') {
+		return undefined;
+	}
+
+	const trimmed = value.trim();
+	return trimmed.length > 0 ? trimmed : undefined;
+}
 
 interface UseVariantCreateHandlersOptions {
 	productId?: string;
@@ -45,7 +54,10 @@ export function useVariantCreateHandlers({
 		const normalizedName = typeof values.name === 'string'
 			? toLocalizedText(values.name)
 			: values.name;
-		if (!normalizedName) {
+		const name = normalizedName && typeof normalizedName === 'object'
+			? normalizedName
+			: undefined;
+		if (!name) {
 			return;
 		}
 		try {
@@ -54,11 +66,12 @@ export function useVariantCreateHandlers({
 				orgId,
 				data: {
 					productId,
-					name: normalizedName,
-					sku: values.sku,
-					barcode: values.barcode,
+					name,
+					sku: toOptionalTrimmedString(values.sku),
+					barcode: toOptionalTrimmedString(values.barcode),
 					proposedPrice,
-					status: values.status,
+					imageURL: toOptionalTrimmedString(values.imageURL),
+					status: toOptionalTrimmedString(values.status),
 				},
 			})).unwrap();
 

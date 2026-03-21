@@ -15,7 +15,7 @@
 		},
 		"name": {
 			"type": "string",
-			"label": "Category Name",
+			"label": "Name",
 			"required": { "create": true, "update": false },
 			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
 		},

@@ -3,6 +3,7 @@ import {
 	Group,
 	Paper,
 	Stack,
+	Text,
 	Title,
 } from '@mantine/core';
 import {
@@ -20,8 +21,10 @@ import {
 	useProductCategoryCreateHandlers,
 } from '../../features/productCategory/hooks';
 import categorySchema from '../../schemas/product-category-schema.json';
+import { ControlPanelAction } from '../../components/ControlPanel';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
+import { useNavigate } from 'react-router';
 
 
 const CATEGORY_SCHEMA = categorySchema as ModelSchema;
@@ -32,37 +35,42 @@ export const ProductCategoryCreatePageBody: React.FC = () => {
 		onSubmit,
 		handleGoBack,
 	} = useProductCategoryCreateHandlers();
+	const navigate = useNavigate();
 
 	return (
-		<PageContainer>
-			<Stack gap='md'>
-				<Title order={2}>Create Product Category</Title>
-				<FormStyleProvider layout='onecol'>
-					<FormFieldProvider
-						formVariant='create'
-						modelSchema={CATEGORY_SCHEMA}
-						modelLoading={isLoading}
-						modelValue={PRODUCT_CATEGORY_DEFAULT_VALUES}
-					>
-						{({ handleSubmit }) => (
-							<Paper p='md' withBorder>
-								<form onSubmit={handleSubmit(onSubmit)} noValidate>
-									<Stack gap='md'>
-										<AutoField name='name' autoFocused inputProps={{ disabled: isLoading }} />
-										<Group justify='flex-end' mt='md'>
-											<FormActions
-												isSubmitting={isLoading}
-												onCancel={handleGoBack}
-												isCreate
-											/>
-										</Group>
-									</Stack>
-								</form>
-							</Paper>
-						)}
-					</FormFieldProvider>
-				</FormStyleProvider>
-			</Stack>
+		<PageContainer
+			breadcrumbs={[
+				{ title: 'Inventory', href: '../overview' },
+				{ title: 'Product Categories', href: '../product-categories' },
+				{ title: 'Create Product Category', href: '#' },
+			]}
+			sections={[
+				<ControlPanelAction
+					actions={[
+						{ label: 'Create', type: 'submit'},
+						{ label: 'Cancel', variant: 'outline', onClick: () => navigate(-1) },
+					]}
+				/>,
+			]}
+		>
+			<FormStyleProvider layout='onecol'>
+				<FormFieldProvider
+					formVariant='create'
+					modelSchema={CATEGORY_SCHEMA}
+					modelLoading={isLoading}
+					modelValue={PRODUCT_CATEGORY_DEFAULT_VALUES}
+				>
+					{({ handleSubmit }) => (
+						<Paper p='md' withBorder>
+							<form onSubmit={handleSubmit(onSubmit)} noValidate>
+								<Stack gap='md'>
+									<AutoField name='name' autoFocused inputProps={{ disabled: isLoading }} />
+								</Stack>
+							</form>
+						</Paper>
+					)}
+				</FormFieldProvider>
+			</FormStyleProvider>
 		</PageContainer>
 	);
 };

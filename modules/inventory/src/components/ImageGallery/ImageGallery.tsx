@@ -1,4 +1,4 @@
-import { AspectRatio, Box, Group, Image, Stack, Text, UnstyledButton } from '@mantine/core';
+import { AspectRatio, Box, Group, Stack, Text, UnstyledButton } from '@mantine/core';
 import React from 'react';
 
 
@@ -22,6 +22,18 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 	fillHeight = false,
 }) => {
 	const activeImage = images[selectedIndex] ?? '';
+	const mainImageFrameStyle: React.CSSProperties = {
+		width: '100%',
+		height: '100%',
+		overflow: 'hidden',
+		borderRadius: 'var(--mantine-radius-md)',
+	};
+	const coverImageStyle: React.CSSProperties = {
+		width: '100%',
+		height: '100%',
+		objectFit: 'cover',
+		display: 'block',
+	};
 
 	return (
 		<Stack
@@ -32,15 +44,19 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 			{fillHeight ? (
 				<Box
 					style={{
-						flex: 1,
-						minHeight: 320,
+						width: '100%',
+						minHeight: 600,
+						height: 'clamp(320px, 44vh, 520px)',
 					}}
 				>
 					{activeImage ? (
-						<Image src={activeImage} alt={altBase} radius='md' fit='cover' h='100%' />
+						<Box style={mainImageFrameStyle}>
+							<img src={activeImage} alt={altBase} style={coverImageStyle} />
+						</Box>
 					) : (
 						<Box
 							style={{
+								width: '100%',
 								height: '100%',
 								display: 'flex',
 								alignItems: 'center',
@@ -56,10 +72,14 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 			) : (
 				<AspectRatio ratio={16 / 10}>
 					{activeImage ? (
-						<Image src={activeImage} alt={altBase} radius='md' fit='cover' />
+						<Box style={mainImageFrameStyle}>
+							<img src={activeImage} alt={altBase} style={coverImageStyle} />
+						</Box>
 					) : (
 						<Box
 							style={{
+								width: '100%',
+								height: '100%',
 								display: 'flex',
 								alignItems: 'center',
 								justifyContent: 'center',
@@ -95,13 +115,11 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 										: 'none',
 								}}
 							>
-								<Image
-									src={image}
-									alt={`${altBase} thumbnail ${index + 1}`}
-									w='100%'
-									h='100%'
-									fit='cover'
-								/>
+									<img
+										src={image}
+										alt={`${altBase} thumbnail ${index + 1}`}
+										style={coverImageStyle}
+									/>
 							</Box>
 						</UnstyledButton>
 					))}

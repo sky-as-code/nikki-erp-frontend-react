@@ -1,6 +1,5 @@
 import {
 	Alert,
-	Badge,
 	Group,
 	Pagination,
 	Select,
@@ -11,11 +10,11 @@ import {
 import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
-import { useParams } from 'react-router';
 
 import { selectProductList } from '../../appState/product';
 import { selectVariantList } from '../../appState/variant';
-import { ActionBar } from '../../components/ActionBar/ActionBar';
+import { ControlPanel } from '../../components/ControlPanel';
+import { PageContainer } from '../../components/PageContainer';
 import { VariantTable } from '../../features/variant/components';
 import { PAGE_SIZE_OPTIONS, useVariantListHandlers, useVariantListView } from '../../features/variant/hooks';
 
@@ -23,13 +22,10 @@ import type { Product } from '../../features/product/types';
 import type { Variant } from '../../features/variant/types';
 
 export function VariantListPageBody(): React.ReactNode {
-	const { productId } = useParams();
-	const isAllScope = !productId;
-
 	const listVariant = useMicroAppSelector(selectVariantList);
 	const listProduct = useMicroAppSelector(selectProductList);
 	const { handleCreate, handleRefresh } = useVariantListHandlers({
-		scope: isAllScope ? 'all' : 'product',
+		scope: 'all',
 	});
 
 	const variants = (listVariant.data ?? []) as Variant[];
@@ -38,85 +34,58 @@ export function VariantListPageBody(): React.ReactNode {
 	const listError = listVariant.status === 'error'
 		? String(listVariant.error ?? 'Failed to load variants')
 		: null;
+	const breadcrumbs = [
+		{ title: 'Inventory', href: '../overview' },
+		{ title: 'Variants', href: '#' },
+	];
 
 	const {
 		searchValue,
 		setSearchValue,
 		filters,
-		page,
-		setPage,
-		pageSize,
-		totalPages,
-		handlePageSizeChange,
 		pagedVariants,
-		pagedCount,
-		filteredCount,
 		productNameById,
 		emptyMessage,
 	} = useVariantListView({
 		variants,
 		products,
-		isAllScope,
+		isAllScope: true,
 	});
 
 	return (
-		<Stack gap='md'>
-			<Group justify='space-between' align='flex-end' wrap='wrap'>
-				<Stack gap={2}>
-					<Title order={2}>{isAllScope ? 'All Variants' : 'Product Variants'}</Title>
-					<Text c='dimmed' size='sm'>
-						{isAllScope
-							? 'Manage and monitor variants across all products'
-							: 'Manage variants for the selected product'}
-					</Text>
-				</Stack>
-				<Badge variant='light' color={isAllScope ? 'indigo' : 'blue'} size='lg'>
-					{isAllScope ? 'Scope: All products' : 'Scope: Current product'}
-				</Badge>
-			</Group>
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			sections={[
+				<ControlPanel
+					actions={[
+						{ label: 'Create', onClick: handleCreate },
+						{ label: 'Refresh', onClick: handleRefresh, variant: 'outline' },
+					]}
+					search={{
+						value: searchValue,
+						onChange: setSearchValue,
+						placeholder: 'Search by name, SKU, barcode, product',
+					}}
+					filters={filters}
+				/>,
+			]}
+		>
+			<Stack gap='md'>
+				{listError && (
+					<Alert color='red' variant='light'>
+						{listError}
+					</Alert>
+				)}
 
-			<ActionBar
-				onCreate={handleCreate}
-				onRefresh={handleRefresh}
-				searchValue={searchValue}
-				onSearchChange={setSearchValue}
-				searchPlaceholder={isAllScope ? 'Search by name, SKU, barcode, product' : 'Search by name, SKU, barcode'}
-				filters={filters}
-			/>
-			
-			<VariantTable
-				variants={pagedVariants}
-				productNameById={isAllScope ? productNameById : undefined}
-				getVariantDetailLink={
-					isAllScope
-						? (variant) => `../products/${variant.productId}/variants/${variant.id}`
-						: undefined
-				}
-				emptyMessage={isLoadingList ? 'Loading variants...' : emptyMessage}
-			/>
+				<VariantTable
+					variants={pagedVariants}
+					productNameById={productNameById}
+					getVariantDetailLink={(variant) => `../products/${variant.productId}/variants/${variant.id}`}
+					emptyMessage={isLoadingList ? 'Loading variants...' : emptyMessage}
+				/>
 
-			<Group justify='space-between' wrap='wrap'>
-				<Text size='sm' c='dimmed'>
-					{isLoadingList
-						? 'Loading variants...'
-						: `Showing ${pagedCount} of ${filteredCount} variant(s)`
-					}
-				</Text>
-				<Group>
-					<Select
-						w={120}
-						data={PAGE_SIZE_OPTIONS}
-						value={String(pageSize)}
-						onChange={handlePageSizeChange}
-					/>
-					<Pagination
-						total={totalPages}
-						value={page}
-						onChange={setPage}
-					/>
-				</Group>
-			</Group>
-		</Stack>
+			</Stack>
+		</PageContainer>
 	);
 }
 

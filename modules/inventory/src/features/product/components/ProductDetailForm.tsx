@@ -12,12 +12,17 @@ import {
 	Title,
 	UnstyledButton,
 } from '@mantine/core';
+import {
+	AutoField,
+	EntitySelectField,
+} from '@nikkierp/ui/components/form';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router';
-
+import { JsonToString } from '../../../utils/serializer';
 
 import type { Attribute } from '../../attribute/types';
 import type { AttributeValue } from '../../attributeValue/types';
+import type { Unit } from '../../unit/types';
 import type { Variant } from '../../variant/types';
 
 
@@ -86,16 +91,139 @@ function getAttributeValueLabel(value: AttributeValue): string {
 	return value.valueRef || '';
 }
 
+function getAttributeValueCandidates(value: AttributeValue): Array<string | number | boolean> {
+	const candidates: Array<string | number | boolean> = [value.id];
+
+	if (typeof value.valueText === 'string') {
+		candidates.push(value.valueText);
+	}
+	else if (value.valueText && typeof value.valueText === 'object') {
+		candidates.push(...Object.values(value.valueText).filter(
+			(item): item is string => typeof item === 'string' && item.length > 0,
+		));
+	}
+
+	if (typeof value.valueNumber === 'number') {
+		candidates.push(value.valueNumber, String(value.valueNumber));
+	}
+
+	if (typeof value.valueBool === 'boolean') {
+		candidates.push(
+			value.valueBool,
+			value.valueBool ? 'true' : 'false',
+			value.valueBool ? 'Yes' : 'No',
+		);
+	}
+
+	if (typeof value.valueRef === 'string') {
+		candidates.push(value.valueRef);
+	}
+
+	return Array.from(new Set(candidates));
+}
+
+function getVariantAttributeCandidates(value: unknown): Array<string | number | boolean> {
+	if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+		return [value];
+	}
+
+	if (!value || typeof value !== 'object') {
+		return [];
+	}
+
+	const record = value as Record<string, unknown>;
+	const candidates: Array<string | number | boolean> = [];
+
+	if (typeof record.value === 'string'
+		|| typeof record.value === 'number'
+		|| typeof record.value === 'boolean') {
+		candidates.push(record.value);
+	}
+
+	if (typeof record.valueText === 'string') {
+		candidates.push(record.valueText);
+	}
+	else if (record.valueText && typeof record.valueText === 'object') {
+		candidates.push(...Object.values(record.valueText as Record<string, unknown>).filter(
+			(item): item is string | number | boolean => (
+				typeof item === 'string'
+				|| typeof item === 'number'
+				|| typeof item === 'boolean'
+			),
+		));
+	}
+
+	if (typeof record.valueNumber === 'number') {
+		candidates.push(record.valueNumber, String(record.valueNumber));
+	}
+
+	if (typeof record.valueBool === 'boolean') {
+		candidates.push(
+			record.valueBool,
+			record.valueBool ? 'true' : 'false',
+			record.valueBool ? 'Yes' : 'No',
+		);
+	}
+
+	if (typeof record.valueRef === 'string') {
+		candidates.push(record.valueRef);
+	}
+
+	if (typeof record.id === 'string') {
+		candidates.push(record.id);
+	}
+
+	return Array.from(new Set(candidates));
+}
+
+function getVariantAttributeValue(attributes: unknown, codeName: string): unknown {
+	if (!attributes) {
+		return undefined;
+	}
+
+	if (Array.isArray(attributes)) {
+		const variantAttribute = attributes.find((item) => (
+			typeof item === 'object'
+			&& item !== null
+			&& (item as Record<string, unknown>).codeName === codeName
+		)) as Record<string, unknown> | undefined;
+
+		return variantAttribute?.value;
+	}
+
+	if (typeof attributes !== 'object') {
+		return undefined;
+	}
+
+	return (attributes as Record<string, unknown>)[codeName];
+}
+
+function getAttributeById(attributes: Attribute[]): Record<string, Attribute> {
+	return attributes.reduce<Record<string, Attribute>>((acc, attribute) => {
+		acc[attribute.id] = attribute;
+		return acc;
+	}, {});
+}
+
 function variantMatchesSelection(
 	variant: Variant,
 	selectedAttributes: Record<string, string>,
+	attributesById: Record<string, Attribute>,
+	attributeValuesByAttributeId: Record<string, AttributeValue[]>,
 ): boolean {
-	if (!variant.attributeValues || variant.attributeValues.length === 0) return false;
-	return Object.entries(selectedAttributes).every(([attributeId, valueId]) => (
-		variant.attributeValues?.some(
-			(value) => value.attributeId === attributeId && value.id === valueId,
-		)
-	));
+	return Object.entries(selectedAttributes).every(([attributeId, valueId]) => {
+		const attribute = attributesById[attributeId];
+		if (!attribute) return false;
+
+		const selectedValue = attributeValuesByAttributeId[attributeId]?.find(
+			(value) => value.id === valueId,
+		);
+		if (!selectedValue) return false;
+
+		const variantAttributeValue = getVariantAttributeValue(variant.attributes, attribute.codeName);
+		const variantCandidates = new Set(getVariantAttributeCandidates(variantAttributeValue));
+		return getAttributeValueCandidates(selectedValue).some((candidate) => variantCandidates.has(candidate));
+	});
 }
 
 export function useVariantResolution(
@@ -103,7 +231,11 @@ export function useVariantResolution(
 	variants: Variant[],
 	productData: any,
 	requiredAttributeIds: string[],
+	attributes: Attribute[] = [],
+	attributeValuesByAttributeId: Record<string, AttributeValue[]> = {} as Record<string, AttributeValue[]>,
 ) {
+	const attributesById = useMemo(() => getAttributeById(attributes), [attributes]);
+
 	const isSelectionComplete = useMemo(() => (
 		requiredAttributeIds.length === 0
 			|| requiredAttributeIds.every((id) => Boolean(selectedAttributes[id]))
@@ -113,9 +245,14 @@ export function useVariantResolution(
 		if (!isSelectionComplete) return null;
 
 		return variants.find((variant: Variant) => (
-			variantMatchesSelection(variant, selectedAttributes)
+			variantMatchesSelection(
+				variant,
+				selectedAttributes,
+				attributesById,
+				attributeValuesByAttributeId,
+			)
 		));
-	}, [isSelectionComplete, selectedAttributes, variants]);
+	}, [attributeValuesByAttributeId, attributesById, isSelectionComplete, selectedAttributes, variants]);
 
 	const currentPrice = selectedVariant?.proposedPrice || productData?.proposedPrice || 0;
 
@@ -204,11 +341,20 @@ export function ProductDetailContent({
 export function useAttributeValidation(
 	selectedAttributes: Record<string, string>,
 	variants: Variant[],
+	attributes: Attribute[] = [],
+	attributeValuesByAttributeId: Record<string, AttributeValue[]> = {} as Record<string, AttributeValue[]>,
 ) {
+	const attributesById = useMemo(() => getAttributeById(attributes), [attributes]);
+
 	const isAttributeValueValid = (attributeId: string, valueId: string) => {
 		const testSelection = { ...selectedAttributes, [attributeId]: valueId };
 		return variants.some((variant: Variant) => (
-			variantMatchesSelection(variant, testSelection)
+			variantMatchesSelection(
+				variant,
+				testSelection,
+				attributesById,
+				attributeValuesByAttributeId,
+			)
 		));
 	};
 
@@ -341,6 +487,18 @@ function AttributeSelector({
 	);
 
 	const hasSelections = Object.keys(selectedAttributes).length > 0;
+	const requiredAttributes = sortedAttributes.filter((attr) => attr.isRequired);
+	const missingRequiredAttributes = requiredAttributes.filter((attr) => !selectedAttributes[attr.id]);
+
+	const getAttributeLabel = (attr: Attribute): string => {
+		if (typeof attr.displayName === 'string') return attr.displayName || attr.codeName || attr.id;
+		return (attr.displayName as Record<string, string>)?.en || attr.codeName || attr.id;
+	};
+
+	const missingRequiredLabel = missingRequiredAttributes
+		.map((attr) => getAttributeLabel(attr))
+		.filter(Boolean)
+		.join(', ');
 
 	const handleEditAttributes = () => {
 		if (productId) {
@@ -373,20 +531,32 @@ function AttributeSelector({
 				</Group>
 			</Group>
 
+			{requiredAttributes.length > 0 && hasSelections && missingRequiredAttributes.length > 0 && (
+				<Text size='xs' c='dimmed'>
+					Select {missingRequiredLabel} to find the matching Variant.
+				</Text>
+			)}
+
+			{requiredAttributes.length > 0 && missingRequiredAttributes.length === 0 && (
+				<Text size='xs' c='dimmed'>
+					All required options selected. System will match the correct Variant.
+				</Text>
+			)}
+
 			{sortedAttributes.map((attr: Attribute) => {
-				const displayName = typeof attr.displayName === 'string'
-					? attr.displayName
-					: (attr.displayName as Record<string, string>)?.en;
+				const attributeLabel = getAttributeLabel(attr);
 				const values = attributeValuesByAttributeId[attr.id] || [];
+				const isColorAttr = attr.displayType === 'color' || attr.codeName === 'color';
 
 				return (
 					<Stack key={attr.id} gap='xs'>
 						<Text size='sm' fw={500}>
-							{attr.codeName === 'color' && 'Available in '}
-							{displayName}
+							{isColorAttr && 'Available in '}
+							{attributeLabel}
+							{attr.isRequired ? ' *' : ''}
 						</Text>
 
-						{attr.codeName === 'color' && values.length > 0 && (
+						{isColorAttr && values.length > 0 && (
 							<ColorSwatches
 								values={values}
 								attributeId={attr.id}
@@ -396,8 +566,7 @@ function AttributeSelector({
 							/>
 						)}
 
-						{(attr.codeName === 'coverMaterial' || attr.codeName === 'frameMaterial')
-							&& values.length > 0 && (
+						{!isColorAttr && values.length > 0 && (
 							<MaterialButtons
 								values={values}
 								attributeId={attr.id}
@@ -405,6 +574,12 @@ function AttributeSelector({
 								handleAttributeSelect={handleAttributeSelect}
 								isAttributeValueValid={isAttributeValueValid}
 							/>
+						)}
+
+						{values.length === 0 && (
+							<Text size='xs' c='dimmed'>
+								No options available.
+							</Text>
 						)}
 					</Stack>
 				);
@@ -488,6 +663,21 @@ function ProductInfoPanel({
 	isAttributeValueValid,
 	onResetAttributes,
 }: ProductInfoPanelProps) {
+	const requiredAttributes = attributes.filter((attr) => attr.isRequired);
+	const missingRequiredAttributes = requiredAttributes.filter((attr) => !selectedAttributes[attr.id]);
+	const hasSelections = Object.keys(selectedAttributes).length > 0;
+	const isSelectionComplete = requiredAttributes.length === 0 || missingRequiredAttributes.length === 0;
+
+	const getAttributeLabel = (attr: Attribute): string => {
+		if (typeof attr.displayName === 'string') return attr.displayName || attr.codeName || attr.id;
+		return (attr.displayName as Record<string, string>)?.en || attr.codeName || attr.id;
+	};
+
+	const missingRequiredLabel = missingRequiredAttributes
+		.map((attr) => getAttributeLabel(attr))
+		.filter(Boolean)
+		.join(', ');
+
 	return (
 		<Stack gap='md'>
 			<Title order={1} size='h2'>{productName}</Title>
@@ -511,6 +701,25 @@ function ProductInfoPanel({
 				isAttributeValueValid={isAttributeValueValid}
 				onResetAttributes={onResetAttributes}
 			/>
+
+			{hasSelections && !isSelectionComplete && (
+				<Text size='sm' c='dimmed'>
+					Select more options ({missingRequiredLabel}) to find the matching Variant.
+				</Text>
+			)}
+
+			{hasSelections && isSelectionComplete && !selectedVariant && (
+				<Text size='sm' c='red'>
+					No matching Variant found for the selected AttributeValue combination.
+				</Text>
+			)}
+
+			{hasSelections && isSelectionComplete && selectedVariant && (
+				<Text size='sm' c='dimmed'>
+					Matched Variant: {selectedVariant.sku}
+				</Text>
+			)}
+
 			<Divider />
 
 			<PurchasePanel
@@ -519,5 +728,56 @@ function ProductInfoPanel({
 				setQuantity={setQuantity}
 			/>
 		</Stack>
+	);
+}
+
+// Admin Product Detail Content - for admin product management page
+interface AdminProductDetailContentProps {
+	productName: string;
+	units: Unit[];
+	isSubmitting: boolean;
+	productImages: string[];
+	selectedImageIndex: number;
+	onSelectImage: (index: number) => void;
+}
+
+export function AdminProductDetailContent({
+	productName,
+	units,
+	isSubmitting,
+	productImages,
+	selectedImageIndex,
+	onSelectImage,
+}: AdminProductDetailContentProps) {
+	return (
+		<Grid gutter='xl' align='stretch'>
+			<Grid.Col span={{ base: 12, md: 5 }} style={{ display: 'flex' }}>
+				<Stack style={{ flex: 1 }}>
+					<ImageGallery
+						currentImages={productImages}
+						selectedImageIndex={selectedImageIndex}
+						setSelectedImageIndex={onSelectImage}
+						productName={productName}
+					/>
+				</Stack>
+			</Grid.Col>
+
+			<Grid.Col span={{ base: 12, md: 7 }}>
+				<Stack gap='md'>
+					<AutoField name='name' inputProps={{ disabled: isSubmitting }} />
+					<AutoField name='description' inputProps={{ disabled: isSubmitting }} />
+					<EntitySelectField
+						fieldName='unitId'
+						entities={units}
+						getEntityId={(unit) => unit.id}
+						getEntityName={(unit) => `${JsonToString(unit.name)} (${unit.symbol ?? ''})`}
+						shouldDisable={isSubmitting}
+						selectProps={{ clearable: true }}
+					/>
+					<AutoField name='status' inputProps={{ disabled: isSubmitting }} />
+					<AutoField name='thumbnailURL' inputProps={{ disabled: isSubmitting }} />
+				</Stack>
+			</Grid.Col>
+		</Grid>
 	);
 }

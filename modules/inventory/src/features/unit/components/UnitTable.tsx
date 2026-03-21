@@ -1,10 +1,12 @@
-import { Paper } from '@mantine/core';
+import { Badge, Group, Paper, Stack, Text } from '@mantine/core';
 import { AutoTable } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 
 import { JsonToString } from '../../../utils/serializer';
 import type { Unit } from '../types';
+
+const CONVERSION_COLUMN = 'Base Unit / Multiplier';
 
 interface UnitTableProps {
 	units: Unit[];
@@ -35,22 +37,58 @@ export function UnitTable({
 		const renderers: Record<string, (row: Record<string, unknown>) => React.ReactNode> = {};
 
 		if (unitMap) {
-			renderers.baseUnit = (row: Record<string, unknown>) => {
+			renderers[CONVERSION_COLUMN] = (row: Record<string, unknown>) => {
 				const baseUnitId = row.baseUnit as string | null | undefined;
 				if (!baseUnitId) {
-					return '-';
+					return <Text size='sm' c='dimmed'>No base unit set</Text>;
 				}
+
 				const baseUnit = unitMap.get(baseUnitId);
-				if (!baseUnit) return baseUnitId;
-				return JsonToString(baseUnit.name);
+				const baseUnitName = baseUnit ? JsonToString(baseUnit.name) : baseUnitId;
+				const unitName = String(row.name || row.id || '-');
+				const multiplier = row.multiplier as number | null | undefined;
+				const multiplierText = typeof multiplier === 'number' ? String(multiplier) : '-';
+
+				return (
+					<Stack gap={2}>
+						<Group gap='xs' wrap='wrap'>
+							<Badge variant='light' color='gray' size='md'>
+								Base Unit: {baseUnitName}
+							</Badge>
+							<Badge variant='light' color='blue' size='md'>
+								Multiplier: {multiplierText}
+							</Badge>
+						</Group>
+						<Text size='md' c='dimmed'>
+							1 {baseUnitName} = {multiplierText} {unitName}
+						</Text>
+					</Stack>
+				);
 			};
+			renderers.status = (row: Record<string, unknown>) => {
+				const status = String(row.status || '-');
+				const color = status === 'active'
+					? 'green'
+					: status === 'inactive'
+						? 'red'
+						: 'gray';
+
+				return (
+					<Badge variant='light' color={color}>
+						{status}
+					</Badge>
+				);
+			};
+			renderers.createdAt = (row: Record<string, unknown>) => {
+				const createdAt = row.createdAt as string;
+				return new Date(createdAt).toLocaleString();
+			}
 		}
 
 		return renderers;
 	}, [unitMap]);
 
 	return (
-		<Paper p="md" withBorder>
 			<AutoTable
 				schema={schema}
 				columns={columns}
@@ -59,6 +97,5 @@ export function UnitTable({
 				columnAsLink="name"
 				columnRenderers={columnRenderers}
 			/>
-		</Paper>
 	);
 }

@@ -13,12 +13,13 @@ import { DetailView, LoadingState, NotFound, withWindowTitle } from '@nikkierp/u
 import React from 'react';
 import { useParams } from 'react-router';
 
-import { DetailActionBar } from '../../components/ActionBar/DetailActionBar';
+import { DetailControlPanel } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
 import { useProductCategoryDetail } from '../../features/productCategory/hooks';
 import categorySchema from '../../schemas/product-category-schema.json';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
+import { JsonToString } from '../../utils/serializer';
 
 
 const CATEGORY_SCHEMA = categorySchema as ModelSchema;
@@ -43,6 +44,12 @@ export const ProductCategoryDetailPageBody: React.FC = () => {
 		return <NotFound onGoBack={handleGoBack} messageKey='nikki.inventory.messages.productNotFound' />;
 	}
 
+	const breadcrumbs = [
+		{ title: 'Inventory', href: '../overview' },
+		{ title: 'Product Categories', href: '../product-categories' },
+		{ title: category?.name ? JsonToString(category.name) : 'Product Category Details', href: '#' },
+	];
+
 	return (
 		<FormStyleProvider layout='onecol'>
 			<FormFieldProvider
@@ -53,16 +60,16 @@ export const ProductCategoryDetailPageBody: React.FC = () => {
 			>
 				{({ handleSubmit }) => (
 					<PageContainer
-						actionBar={
-							<DetailActionBar
+						breadcrumbs={breadcrumbs}
+						sections={[
+							<DetailControlPanel
 								onSave={() => void handleSubmit(onSave)()}
 								onGoBack={handleGoBack}
 								onDelete={() => void onDelete()}
-							/>
-						}
+							/>,
+						]}
 					>
 						<Stack gap='md'>
-							<Title order={2}>Product Category Details</Title>
 							<Paper p='md' withBorder>
 								<form onSubmit={handleSubmit(onSave)} noValidate>
 									<Stack gap='md'>

@@ -7,16 +7,14 @@ import { AutoTable } from '@nikkierp/ui/components';
 import React from 'react';
 import { Link } from 'react-router';
 
-import { localizedTextToString } from '../../../localizedText';
-import variantSchema from '../../../../schemas/variant-schema.json';
+import { localizedTextToString } from '../../localizedText';
+import variantSchema from '../../../schemas/variant-schema.json';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
-import type { Variant } from '../../types';
+import type { Variant } from '../types';
 
 
-const VARIANT_SCHEMA = variantSchema as ModelSchema;
-const BASE_COLUMNS = ['sku', 'name', 'attributeValues', 'proposedPrice', 'status'];
-const PRODUCT_SCOPE_COLUMNS = ['sku', 'name', 'Product', 'barcode', 'proposedPrice', 'status'];
+const PRODUCT_SCOPE_COLUMNS = ['sku', 'name', 'product', 'barcode', 'proposedPrice', 'status'];
 
 
 interface VariantTableProps {
@@ -26,29 +24,29 @@ interface VariantTableProps {
 	emptyMessage?: string;
 }
 
-const variantCombinationLabel = (variant: Variant) => {
-	if (!variant.attributeValues || variant.attributeValues.length === 0) {
-		return '';
-	}
+// const variantCombinationLabel = (variant: Variant) => {
+// 	if (!variant.attributes || variant.attributes.length === 0) {
+// 		return '';
+// 	}
 
-	const getValueLabel = (v: typeof variant.attributeValues[0]) => {
-		const valueText = localizedTextToString(v.valueText);
-		if (valueText) {
-			return valueText;
-		}
+// 	const getValueLabel = (v: typeof variant.attributes[0]) => {
+// 		const valueText = localizedTextToString(v as string);
+// 		if (valueText) {
+// 			return valueText;
+// 		}
 
-		if (v.valueNumber != null) {
-			return String(v.valueNumber);
-		}
+// 		if (v.valueNumber != null) {
+// 			return String(v.valueNumber);
+// 		}
 
-		if (v.valueBool != null) {
-			return v.valueBool ? 'true' : 'false';
-		}
+// 		if (v.valueBool != null) {
+// 			return v.valueBool ? 'true' : 'false';
+// 		}
 
-		return v.valueRef ?? '';
-	};
-	return variant.attributeValues.map(getValueLabel).join(' / ');
-};
+// 		return v.valueRef ?? '';
+// 	};
+// 	return variant.attributes.map(getValueLabel).join(' / ');
+// };
 
 export function VariantTable({
 	variants,
@@ -56,8 +54,7 @@ export function VariantTable({
 	getVariantDetailLink,
 	emptyMessage = 'No variants found',
 }: VariantTableProps): React.ReactElement {
-	const showProductColumn = Boolean(productNameById);
-	const columns = showProductColumn ? PRODUCT_SCOPE_COLUMNS : BASE_COLUMNS;
+	const columns = PRODUCT_SCOPE_COLUMNS ;
 
 	if (variants.length === 0) {
 		return (
@@ -68,11 +65,12 @@ export function VariantTable({
 	}
 
 	return (
-		<Paper p='md' withBorder>
+		<Paper p='md'>
 			<AutoTable
-				schema={VARIANT_SCHEMA}
+				schema={variantSchema as ModelSchema}
 				columns={columns}
 				data={variants as unknown as Record<string, unknown>[]}
+				columnAsLink='sku'
 				columnRenderers={{
 					sku: (row) => {
 						const variant = row as Variant;
@@ -91,10 +89,6 @@ export function VariantTable({
 						const variant = row as Variant;
 						return productNameById?.[variant.productId] ?? variant.productId;
 					},
-					attributeValues: (row) => {
-						const variant = row as Variant;
-						return variantCombinationLabel(variant);
-					},
 					status: (row) => {
 						const variant = row as Variant;
 						return (
@@ -102,10 +96,6 @@ export function VariantTable({
 						);
 					},
 				}}
-				// headerRenderers={{
-				// 	productId: () => <>Product</>,
-				// 	attributeValues: () => <>Attribute Combination</>,
-				// }}
 			/>
 		</Paper>
 	);

@@ -38,7 +38,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
 	notFoundComponent,
 }) => {
 	return (
-		<Stack gap={'sm'} mt={'xs'} p={'sm'} bg='light-dark(rgb(255 255 255 / 80%), var(--mantine-color-dark-6))' bdrs={'xs'} >
+		<Stack gap={'sm'} mt={'xs'} p={'sm'} bg='light-dark(rgb(255 255 255 / 80%), var(--mantine-color-dark-6))' bdrs={'xs'}>
 			{isLoading
 				? <PageLoading />
 				: (

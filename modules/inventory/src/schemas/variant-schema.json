@@ -23,15 +23,15 @@
 			"label": "Barcode",
 			"constraints": [{ "type": "length", "max": 100 }]
 		},
+		"imageURL": {
+			"type": "string",
+			"label": "Image URL"
+		},
 		"proposedPrice": {
 			"type": "integer",
 			"label": "Proposed Price",
 			"required": { "create": false, "update": false },
 			"constraints": [{ "type": "value_range", "min": 0 }]
-		},
-		"imageUrl": {
-			"type": "string",
-			"label": "Image URL"
 		},
 		"status": {
 			"type": "enum",
@@ -48,9 +48,9 @@
 			"label": "Attributes",
 			"hidden": true
 		},
-		"productId": {
+		"product": {
 			"type": "string",
-			"label": "Product ID",
+			"label": "Product",
 			"hidden": true
 		},
 		"etag": {

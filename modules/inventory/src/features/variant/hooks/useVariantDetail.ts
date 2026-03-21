@@ -12,7 +12,17 @@ import {
 	selectDeleteVariant,
 } from '../../../appState/variant';
 
-import type { InventoryDispatch } from '../../../appState';
+import { productActions, type InventoryDispatch } from '../../../appState';
+
+
+function toOptionalTrimmedString(value: unknown): string | undefined {
+	if (typeof value !== 'string') {
+		return undefined;
+	}
+
+	const trimmed = value.trim();
+	return trimmed.length > 0 ? trimmed : undefined;
+}
 
 
 export function useVariantDetailHandlers() {
@@ -27,7 +37,7 @@ export function useVariantDetailHandlers() {
 	const navigate = useNavigate();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
-	const isLoadingDetail = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
+	const isLoadingDetail = variantDetail.status === 'pending' || updateCommand.status === 'pending' || deleteCommand.status === 'pending';
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {
@@ -63,14 +73,19 @@ export function useVariantDetailHandlers() {
 
 	const handleUpdate = (data: Record<string, unknown>) => {
 		if (variantDetail?.data?.id && productId) {
-			const dataWithTag = { ...data, etag: variantDetail.data.etag };
+			const dataWithTag = {
+				id: variantDetail.data.id,
+				etag: variantDetail.data.etag,
+				sku: toOptionalTrimmedString(data.sku),
+				barcode: toOptionalTrimmedString(data.barcode),
+				imageURL: toOptionalTrimmedString(data.imageURL),
+				status: toOptionalTrimmedString(data.status),
+				proposedPrice: typeof data.proposedPrice === 'number' ? data.proposedPrice : undefined,
+			};
 			dispatch(variantActions.updateVariant({
 				orgId,
 				productId,
-				data: {
-					id: variantDetail.data.id,
-					...dataWithTag,
-				} as any,
+				data: dataWithTag as any,
 			}));
 		}
 	};
@@ -84,6 +99,7 @@ export function useVariantDetailHandlers() {
 	React.useEffect(() => {
 		if (variantId && productId) {
 			dispatch(variantActions.getVariant({ orgId, variantId, productId }));
+			dispatch(productActions.getProduct({ orgId, id :productId }));
 		}
 	}, [variantId, productId, orgId, dispatch]);
 

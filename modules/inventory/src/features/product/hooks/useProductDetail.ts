@@ -112,6 +112,56 @@ export function useProductDetailHandlers() {
 		}));
 	}, [dispatch, orgId, product?.id, product?.etag]);
 
+	const handleDeleteAttribute = React.useCallback(async (attributeId: string) => {
+		if (!productId) {
+			return;
+		}
+
+		try {
+			await dispatch(attributeActions.deleteAttribute({
+				orgId,
+				productId,
+				attributeId,
+			})).unwrap();
+
+			notification.showInfo('Attribute deleted successfully', '');
+			dispatch(attributeActions.resetDeleteAttribute());
+			dispatch(attributeActions.listAttributes({ orgId, productId }));
+		}
+		catch (error) {
+			notification.showError(
+				error instanceof Error ? error.message : 'Failed to delete attribute',
+				'',
+			);
+			dispatch(attributeActions.resetDeleteAttribute());
+		}
+	}, [dispatch, notification, orgId, productId]);
+
+	const handleDeleteVariant = React.useCallback(async (variantId: string) => {
+		if (!productId) {
+			return;
+		}
+
+		try {
+			await dispatch(variantActions.deleteVariant({
+				orgId,
+				productId,
+				variantId,
+			})).unwrap();
+
+			notification.showInfo('Variant deleted successfully', '');
+			dispatch(variantActions.resetDeleteVariant());
+			dispatch(variantActions.listVariants({ orgId, productId }));
+		}
+		catch (error) {
+			notification.showError(
+				error instanceof Error ? error.message : 'Failed to delete variant',
+				'',
+			);
+			dispatch(variantActions.resetDeleteVariant());
+		}
+	}, [dispatch, notification, orgId, productId]);
+
 	React.useEffect(() => {
 		if (!productId) return;
 
@@ -130,5 +180,7 @@ export function useProductDetailHandlers() {
 		unitName,
 		handleDeleteProduct,
 		handleUpdateProduct,
+		handleDeleteAttribute,
+		handleDeleteVariant,
 	};
 }

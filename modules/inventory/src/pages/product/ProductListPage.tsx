@@ -1,4 +1,4 @@
-import { Breadcrumbs, Group, Stack, Typography } from '@mantine/core';
+import { Pagination, Select, Stack, Text } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
@@ -8,9 +8,10 @@ import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { selectProductList } from '../../appState/product';
 import { selectUnitList } from '../../appState/unit';
 import { selectVariantList, variantActions } from '../../appState/variant';
-import { ActionBar } from '../../components/ActionBar/ActionBar';
+import { ControlPanel, type ControlPanelFilterConfig } from '../../components/ControlPanel';
+import { PageContainer } from '../../components/PageContainer';
 import { ProductTable } from '../../features/product/components';
-import { useProductListHandlers } from '../../features/product/hooks';
+import { PAGE_SIZE_OPTIONS, useProductListHandlers, useProductListView } from '../../features/product/hooks';
 import { useUnitListHandlers } from '../../features/unit/hooks';
 import productSchema from '../../schemas/product-schema.json';
 
@@ -30,7 +31,7 @@ const COLUMNS = [
 export function ProductListPageBody(): React.ReactElement {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
 	const activeOrg = useActiveOrgWithDetails();
-	const orgId = activeOrg?.id ?? 'org-1';
+	const orgId = activeOrg?.id;
 
 	const listProduct = useMicroAppSelector(selectProductList);
 	const listUnits = useMicroAppSelector(selectUnitList);
@@ -41,39 +42,58 @@ export function ProductListPageBody(): React.ReactElement {
 	} = useProductListHandlers();
 	useUnitListHandlers();
 
-	React.useEffect(() => {
-		dispatch(variantActions.listAllVariants(orgId));
-	}, [dispatch, orgId]);
-
-	const isLoading = listProduct.status === 'pending';
 	const products = (listProduct.data ?? []) as Product[];
 	const units = listUnits.data ?? [];
 	const variants = listVariants.data ?? [];
 
+	const {
+		searchValue,
+		setSearchValue,
+		filters,
+		tableRows,
+	} = useProductListView(products);
+
+	React.useEffect(() => {
+		if (orgId) {
+			dispatch(variantActions.listAllVariants(orgId));
+		}
+	}, [dispatch, orgId]);
+
+	const isLoading = listProduct.status === 'pending';
+	const breadcrumbs = [
+		{ title: 'Inventory', href: '../overview' },
+		{ title: 'Products', href: '#' },
+	];
+
 	return (
-		<Stack gap='md'>
-			<Group>
-				<Breadcrumbs style={{ minWidth: '30%' }}>
-					<Typography>
-						<h4>Product Management</h4>
-					</Typography>
-				</Breadcrumbs>
-			</Group>
-			<ActionBar
-				onCreate={handleCreate}
-				onRefresh={handleRefresh}
-				searchValue=''
-				onSearchChange={() => {}}
-			/>
-			<ProductTable
-				columns={COLUMNS}
-				products={products}
-				isLoading={isLoading}
-				schema={productSchema as ModelSchema}
-				units={units}
-				variants={variants}
-			/>
-		</Stack>
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			sections={[
+				<ControlPanel
+					actions={[
+						{ label: 'Create', onClick: handleCreate },
+						{ label: 'Refresh', onClick: handleRefresh, variant: 'outline' },
+					]}
+					search={{
+						value: searchValue,
+						onChange: setSearchValue,
+						placeholder: 'Search by name, SKU, barcode',
+					}}
+					filters={filters as ControlPanelFilterConfig[]}
+				/>,
+				]}
+		>
+			<Stack gap='md'>
+				<ProductTable
+					columns={COLUMNS}
+					products={tableRows as unknown as Product[]}
+					isLoading={isLoading}
+					schema={productSchema as ModelSchema}
+					units={units}
+					variants={variants}
+				/>
+			</Stack>
+		</PageContainer>
 	);
 }
 

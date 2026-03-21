@@ -17,14 +17,12 @@ interface UnitCategoryCreateFormProps {
 	schema: ModelSchema;
 	isSubmitting: boolean;
 	onSubmit: (data: Record<string, unknown>) => void;
-	onCancel: () => void;
 }
 
 export function UnitCategoryCreateForm({
 	schema,
 	isSubmitting,
 	onSubmit,
-	onCancel,
 }: UnitCategoryCreateFormProps): React.ReactElement {
 	return (
 		<FormStyleProvider layout='onecol'>
@@ -42,13 +40,7 @@ export function UnitCategoryCreateForm({
 									autoFocused
 									inputProps={{ disabled: isSubmitting }}
 								/>
-								<Group justify='flex-end' mt='md'>
-									<FormActions
-										isSubmitting={isSubmitting}
-										onCancel={onCancel}
-										isCreate
-									/>
-								</Group>
+								
 							</Stack>
 						</form>
 					</Paper>

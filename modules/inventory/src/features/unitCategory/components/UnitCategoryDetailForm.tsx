@@ -26,8 +26,6 @@ interface UnitCategoryDetailFormProps {
 	category: UnitCategory | undefined;
 	isLoading: boolean;
 	onSave: (values: UnitCategoryDetailFormValues) => void | Promise<void>;
-	onDelete: () => void;
-	onGoBack: () => void;
 }
 
 export function UnitCategoryDetailForm({
@@ -35,8 +33,6 @@ export function UnitCategoryDetailForm({
 	category,
 	isLoading,
 	onSave,
-	onDelete,
-	onGoBack,
 }: UnitCategoryDetailFormProps): React.ReactElement {
 	const { t } = useTranslation();
 	const modelCategory = {
@@ -54,11 +50,6 @@ export function UnitCategoryDetailForm({
 			>
 				{({ handleSubmit }) => (
 					<form onSubmit={handleSubmit(onSave)} noValidate>
-						<DetailActionBar
-							onSave={() => void handleSubmit(onSave)()}
-							onGoBack={onGoBack}
-							onDelete={() => void onDelete()}
-						/>
 						<Stack gap='md'>
 							<Title order={2}>Unit Category Details</Title>
 							<AutoField name='name' inputProps={{ disabled: isLoading }} />

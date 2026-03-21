@@ -22,7 +22,6 @@ interface UnitCreateFormProps {
 	unitCategories: UnitCategory[];
 	isSubmitting: boolean;
 	onSubmit: (data: Record<string, unknown>) => void;
-	onCancel: () => void;
 }
 
 export function UnitCreateForm({
@@ -30,7 +29,6 @@ export function UnitCreateForm({
 	unitCategories,
 	isSubmitting,
 	onSubmit,
-	onCancel,
 }: UnitCreateFormProps): React.ReactElement {
 	return (
 		<FormStyleProvider layout='onecol'>
@@ -61,13 +59,6 @@ export function UnitCreateForm({
 									shouldDisable={isSubmitting}
 									selectProps={{ clearable: false }}
 								/>
-								<Group justify='flex-end' mt='md'>
-									<FormActions
-										isSubmitting={isSubmitting}
-										onCancel={onCancel}
-										isCreate
-									/>
-								</Group>
 							</Stack>
 						</form>
 					</Paper>

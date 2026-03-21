@@ -59,16 +59,16 @@ export function ProductTable({
 	const getProposedPrice = React.useCallback((product: Product) => {
 		const defaultVariant = getDefaultVariant(product.defaultVariantId);
 		const price = defaultVariant?.proposedPrice ?? product.proposedPrice;
-		return price ? `$${price}` : '-';
+		return price;
 	}, [getDefaultVariant]);
 
 	return (
-		<Paper p='md' withBorder>
 			<AutoTable
 				columns={columns}
 				data={products}
 				schema={schema}
 				isLoading={isLoading}
+				columnAsLink='name'
 				columnRenderers={{
 					name: (row) => {
 						const productId = row.id as string;
@@ -130,9 +130,5 @@ export function ProductTable({
 
 				}}
 			/>
-			{!isLoading && products.length === 0 && (
-				<Text c='dimmed' ta='center' py='sm'>No products found</Text>
-			)}
-		</Paper>
 	);
 }

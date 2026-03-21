@@ -3,15 +3,14 @@ import { withWindowTitle } from '@nikkierp/ui/components';
 import React from 'react';
 import { useParams } from 'react-router';
 
+import { DetailControlPanel } from '../../components/ControlPanel';
 import { useUnitCategoryDetail } from '../../features/unitCategory/hooks';
 import { UnitCategoryDetailForm } from '../../features/unitCategory/components';
 import categorySchema from '../../schemas/unit-category-schema.json';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
 import { PageContainer } from '../../components/PageContainer';
-
-
-const CATEGORY_SCHEMA = categorySchema as ModelSchema;
+import { JsonToString } from '../../utils/serializer';
 
 export const UnitCategoryDetailPageBody: React.FC = () => {
 	const { categoryId } = useParams<{ categoryId?: string }>();
@@ -23,15 +22,28 @@ export const UnitCategoryDetailPageBody: React.FC = () => {
 		onDelete,
 	} = useUnitCategoryDetail({ categoryId });
 
+	const breadcrumbs = [
+		{ title: 'Inventory', href: '../overview' },
+		{ title: 'Unit Categories', href: '../unit-categories' },
+		{ title: category?.name ? JsonToString(category.name) : 'Unit Category Details', href: '#' },
+	];
+
 	return (
-		<PageContainer>
+		<PageContainer
+			breadcrumbs={breadcrumbs}
+			sections={[
+				<DetailControlPanel
+					onSave={() => onSave}
+					onGoBack={handleGoBack}
+					onDelete={() => void onDelete()}
+				/>,
+			]}
+		>
 			<UnitCategoryDetailForm
-				schema={CATEGORY_SCHEMA}
+				schema={categorySchema as ModelSchema}
 				category={category}
 				isLoading={isLoading}
 				onSave={onSave}
-				onDelete={onDelete}
-				onGoBack={handleGoBack}
 			/>
 		</PageContainer>
 	);
