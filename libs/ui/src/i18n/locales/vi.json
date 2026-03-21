@@ -85,7 +85,8 @@
                 "editMetadata": "Chỉnh sửa thông tin",
                 "restore": "Khôi phục",
                 "restoreTo": "Khôi phục về",
-                "delete": "Xóa"
+                "delete": "Xóa",
+								"share": "Chia sẻ"
             },
             "modals": {
                 "info": "Thông tin",
@@ -121,10 +122,16 @@
 								"code": "Code",
 								"archive": "Nén",
 								"other": "Khác"
+							},
+							"permission": {
+								"view": "Xem",
+								"edit": "Chỉnh sửa",
+								"editWithTrash": "Quản lý"
 							}
 						},
             "propertiesCard": {
                 "type": "Loại",
+								"mimeType": "MIME",
                 "status": "Trạng thái",
 								"visibility": "Khả năng quan sát",
 								"owner": "Chủ sở hữu",
@@ -144,6 +151,10 @@
             },
 						"sort": {
 							"folderFirst": "Hiển thị thư mục trên cùng"
+						},
+						"share": {
+							"searchUserPlaceholder": "Tìm người dùng để chia sẻ",
+							"noUsersFound": "Không tìm thấy người dùng"
 						},
             "createFile": {
                 "name": "Tên",

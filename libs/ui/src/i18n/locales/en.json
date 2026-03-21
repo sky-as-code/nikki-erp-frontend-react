@@ -83,7 +83,8 @@
 				"editMetadata": "Edit metadata",
 				"restore": "Restore",
 				"restoreTo": "Restore to",
-				"delete": "Delete"
+				"delete": "Delete",
+				"share": "Share"
 			},
 			"modals": {
 				"info": "Info",
@@ -119,10 +120,16 @@
 					"code": "Code",
 					"archive": "Archive",
 					"other": "Other"
+				},
+				"permission": {
+					"view": "View",
+					"edit": "Edit",
+					"editWithTrash": "Manage"
 				}
 			},
 			"propertiesCard": {
 				"type": "Type",
+				"mimeType": "MIME",
 				"status": "Status",
 				"size": "Size",
 				"visibility": "Visibility",
@@ -140,6 +147,10 @@
 			},
 			"sort": {
 				"folderFirst": "Show folders first"
+			},
+			"share": {
+				"searchUserPlaceholder": "Search users to share",
+				"noUsersFound": "No users found"
 			},
 			"view": {
 				"folderEmpty": "The folder is empty"
