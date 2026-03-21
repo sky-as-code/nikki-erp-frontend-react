@@ -152,7 +152,8 @@ export const createDriveFile = createAsyncThunk<
 		try {
 			const result = await fileService.createFile(payload);
 			return result;
-		} catch (error) {
+		}
+		catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to create file';
 			return rejectWithValue(errorMessage);
@@ -170,7 +171,8 @@ export const updateMetadataDriveFile = createAsyncThunk<
 		try {
 			const result = await fileService.updateFileMetadata(fileId, req);
 			return result;
-		} catch (error) {
+		}
+		catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to update file';
 			return rejectWithValue(errorMessage);
@@ -183,7 +185,8 @@ export const deleteDriveFile = createAsyncThunk<void, string, thunkConfig>(
 	async (fileId, { rejectWithValue }) => {
 		try {
 			await fileService.deleteDriveFile(fileId);
-		} catch (error) {
+		}
+		catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to delete file';
 			return rejectWithValue(errorMessage);
@@ -196,7 +199,8 @@ export const moveDriveFileToTrash = createAsyncThunk<void, string, thunkConfig>(
 	async (fileId, { rejectWithValue }) => {
 		try {
 			await fileService.moveDriveFileToTrash(fileId);
-		} catch (error) {
+		}
+		catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to move file to trash';
 			return rejectWithValue(errorMessage);
@@ -212,7 +216,8 @@ export const getDriveFileById = createAsyncThunk<
 	try {
 		const result = await fileService.getDriveFileById(fileId);
 		return result;
-	} catch (error) {
+	}
+	catch (error) {
 		const errorMessage =
 			error instanceof Error ? error.message : 'Failed to get file by id';
 		return rejectWithValue(errorMessage);
@@ -227,7 +232,8 @@ export const getCurrentFolderById = createAsyncThunk<
 	try {
 		const result = await fileService.getDriveFileById(fileId);
 		return result;
-	} catch (error) {
+	}
+	catch (error) {
 		const errorMessage =
 			error instanceof Error
 				? error.message
@@ -289,7 +295,8 @@ export const getDriveFileByParent = createAsyncThunk<
 		try {
 			const listReq = withDefaultListGraph(req);
 			return await getDriveFileByParentPayload(parentId, listReq);
-		} catch (error) {
+		}
+		catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to get file by parent';
 			return rejectWithValue(errorMessage);
@@ -321,7 +328,8 @@ export const getDriveFileByParentForTree = createAsyncThunk<
 			};
 
 			return await getDriveFileByParentPayload(parentId, treeReq);
-		} catch (error) {
+		}
+		catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to get file by parent';
 			return rejectWithValue(errorMessage);
@@ -338,7 +346,8 @@ export const searchDriveFile = createAsyncThunk<
 		const listReq = withDefaultListGraph(req);
 		const result = await fileService.searchDriveFile(listReq);
 		return result;
-	} catch (error) {
+	}
+	catch (error) {
 		const errorMessage =
 			error instanceof Error ? error.message : 'Failed to search file';
 		return rejectWithValue(errorMessage);
@@ -354,7 +363,8 @@ export const searchDriveFileShared = createAsyncThunk<
 		const listReq = withDefaultListGraph(req);
 		const result = await fileService.searchDriveFileShared(listReq);
 		return result;
-	} catch (error) {
+	}
+	catch (error) {
 		const errorMessage =
 			error instanceof Error
 				? error.message
@@ -373,7 +383,8 @@ export const getDriveFileAncestors = createAsyncThunk<
 		try {
 			const result = await fileService.getDriveFileAncestors(fileId);
 			return result;
-		} catch (error) {
+		}
+		catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Failed to get file ancestors';
 			return rejectWithValue(errorMessage);
@@ -394,7 +405,8 @@ export const restoreDriveFileFromTrash = createAsyncThunk<
 				parentDriveFileRef,
 			);
 			return result;
-		} catch (error) {
+		}
+		catch (error) {
 			const errorMessage =
 				error instanceof Error
 					? error.message

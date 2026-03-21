@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import React from 'react';
 
 import { DRIVE_FILE_TYPE_TO_MIME } from '../fileSlice';

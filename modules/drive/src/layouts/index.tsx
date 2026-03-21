@@ -5,10 +5,6 @@ import { DriveSearchBar } from './DriveSearchBar';
 
 import { DriveSidebar } from '@/features/files';
 
-import { DriveSearchBar } from './DriveSearchBar';
-
-import { DriveSidebar } from '@/features/files';
-
 
 export const DriveLayout: React.FC = () => {
 	return (

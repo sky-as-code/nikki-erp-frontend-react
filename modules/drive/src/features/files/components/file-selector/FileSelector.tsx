@@ -6,10 +6,10 @@ import { useTranslation } from 'react-i18next';
 
 import { useFileSelectorList } from '../../hooks/useFileSelectorList';
 
-import type { DriveFile } from '../../types';
+import type { DriveFile, FileSelectorMode } from '../../types';
 
 
-export type FileSelectorMode = 'file' | 'folder';
+export type { FileSelectorMode };
 
 export type FileSelectorProps = {
 	/** Parent folder id (empty = root/my-files). */

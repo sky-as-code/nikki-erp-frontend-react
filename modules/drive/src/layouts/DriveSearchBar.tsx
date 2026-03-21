@@ -6,13 +6,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import { DriveFile, DriveFileType } from '@/features/files';
 import { FileActionMenu } from '@/features/files/components';
 import { DriveFileFilterBar, type DriveFileFilterState } from '@/features/files/components/filters/DriveFileFilterBar';
 import { fileService } from '@/features/files/fileService';
+import { DRIVE_FILE_TYPE_TO_MIME } from '@/features/files/fileSlice';
 import { useDriveFileActions, useMinimumLoading } from '@/features/files/hooks';
 import { useOrgModulePath } from '@/hooks/useRootPath';
-
-import type { DriveFile } from '@/features/files/types';
 
 
 type DriveSearchResultsPaneProps = {
@@ -49,11 +49,30 @@ function buildGraph(queryText: string, currentFilters: DriveFileFilterState): Re
 		});
 	}
 
-	if (currentFilters.isFolderValues.length === 1) {
-		const wantFolder = currentFilters.isFolderValues[0] === 'folder';
-		and.push({
-			if: ['is_folder', '=', wantFolder],
-		});
+	if (currentFilters.types.length > 0) {
+		const typeOrConditions: any[] = [];
+		const hasFolderType = currentFilters.types.includes(DriveFileType.FOLDER);
+		if (hasFolderType) {
+			typeOrConditions.push({ if: ['is_folder', '=', true] });
+		}
+
+		const nonFolderTypes = currentFilters.types.filter((type) => type !== DriveFileType.FOLDER);
+		const mimes = Array.from(new Set(nonFolderTypes.flatMap((type) => DRIVE_FILE_TYPE_TO_MIME[type] ?? [])));
+		if (mimes.length > 0) {
+			typeOrConditions.push({
+				and: [
+					{ if: ['is_folder', '=', false] },
+					{ if: ['mime', 'in', ...mimes] },
+				],
+			});
+		}
+
+		if (typeOrConditions.length === 1) {
+			and.push(typeOrConditions[0]);
+		}
+		if (typeOrConditions.length > 1) {
+			and.push({ or: typeOrConditions });
+		}
 	}
 
 	const order: any[] = [];
@@ -184,7 +203,7 @@ export const DriveSearchBar: React.FC = () => {
 	const [filters, setFilters] = useState<DriveFileFilterState>({
 		statuses: [],
 		visibilities: [],
-		isFolderValues: [],
+		types: [],
 		sortField: 'name',
 		sortDirection: 'asc',
 		folderFirst: true,
@@ -267,8 +286,8 @@ export const DriveSearchBar: React.FC = () => {
 		if (currentFilters.visibilities.length > 0) {
 			params.set('visibility', currentFilters.visibilities.join(','));
 		}
-		if (currentFilters.isFolderValues.length > 0) {
-			params.set('type', currentFilters.isFolderValues.join(','));
+		if (currentFilters.types.length > 0) {
+			params.set('type', currentFilters.types.join(','));
 		}
 		if (currentFilters.sortField) {
 			params.set('sortField', currentFilters.sortField);

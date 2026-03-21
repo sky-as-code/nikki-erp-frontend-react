@@ -1,9 +1,11 @@
 import { Button, Group, Stack } from '@mantine/core';
-import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { notifications } from '@mantine/notifications';
+import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import type { ModelSchema } from '@nikkierp/ui/model';
 
 import driveFileSchemaJson from '../../../file-schema.json';
 import { useRefreshCurrentFolder } from '../../../hooks';
@@ -11,7 +13,6 @@ import { DriveFile, UpdateDriveFileMetadataRequest } from '../../../types';
 
 import { driveFileActions, selectUpdateMetadataDriveFile } from '@/appState/file';
 
-import type { ModelSchema } from '@nikkierp/ui/model';
 
 const driveFileSchema = driveFileSchemaJson as ModelSchema;
 
@@ -22,7 +23,7 @@ type UpdateFileMetadataModalProps = {
 };
 
 export function UpdateFileMetadataModal(
-	{ opened, onClose, file }: UpdateFileMetadataModalProps,
+	{ opened: _opened, onClose, file }: UpdateFileMetadataModalProps,
 ): React.ReactNode {
 	const { t } = useTranslation();
 	const dispatch = useMicroAppDispatch();
@@ -82,21 +83,21 @@ export function UpdateFileMetadataModal(
 				modelValue={modelValue}
 			>
 				{({ handleSubmit }) => (
-				<form onSubmit={handleSubmit(onSubmit)} noValidate autoComplete='off'>
-					<Stack gap='md' w='350px'>
-						<AutoField name='name' />
-						<AutoField name='visibility' />
-						<Group justify='flex-end' mt='md'>
-							<Button variant='subtle' onClick={onClose}>
-								{t('nikki.drive.modals.cancel')}
-							</Button>
-							<Button type='submit' loading={isPending}>
-								{t('nikki.drive.updateFile.update')}
-							</Button>
-						</Group>
-					</Stack>
-				</form>
-			)}
+					<form onSubmit={handleSubmit(onSubmit)} noValidate autoComplete='off'>
+						<Stack gap='md' w='350px'>
+							<AutoField name='name' />
+							<AutoField name='visibility' />
+							<Group justify='flex-end' mt='md'>
+								<Button variant='subtle' onClick={onClose}>
+									{t('nikki.drive.modals.cancel')}
+								</Button>
+								<Button type='submit' loading={isPending}>
+									{t('nikki.drive.updateFile.update')}
+								</Button>
+							</Group>
+						</Stack>
+					</form>
+				)}
 			</FormFieldProvider>
 		</FormStyleProvider>
 	);

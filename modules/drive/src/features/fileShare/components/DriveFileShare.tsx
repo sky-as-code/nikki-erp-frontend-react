@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { Avatar, Alert, Box, Button, Group, Loader, Paper, Select, Stack, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';

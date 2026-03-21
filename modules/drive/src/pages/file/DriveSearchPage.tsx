@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { driveFileActions, selectSearchDriveFile } from '@/appState/file';
-import { DriveFileStatus } from '@/features/files';
+import { DriveFileStatus, DriveFileType } from '@/features/files';
 import { DriveFileTitle } from '@/features/files/components/DriveFileTitle';
 import { DriveFileView, type DriveFileUIViewMode } from '@/features/files/components/DriveFileView';
 import { DriveFileFilterBar } from '@/features/files/components/filters/DriveFileFilterBar';
@@ -47,6 +47,12 @@ function useSearchPageFiltersFromUrl({
 				.map((item) => item.trim())
 				.filter((item) => item.length > 0);
 
+		const validDriveFileTypes = new Set<string>(Object.values(DriveFileType));
+		const parseTypesParam = (value: string | null): DriveFileType[] =>
+			parseListParam(value).filter((item): item is DriveFileType =>
+				validDriveFileTypes.has(item),
+			);
+
 		const statusParam = searchParams.get('status');
 		const visibilityParam = searchParams.get('visibility');
 		const typeParam = searchParams.get('type');
@@ -58,7 +64,7 @@ function useSearchPageFiltersFromUrl({
 			...filters,
 			statuses: parseListParam(statusParam) as DriveFileFilterState['statuses'],
 			visibilities: parseListParam(visibilityParam) as DriveFileFilterState['visibilities'],
-			isFolderValues: parseListParam(typeParam),
+			types: parseTypesParam(typeParam),
 			sortField: sortFieldParam === 'createdAt' ? 'createdAt' : filters.sortField,
 			sortDirection: sortDirParam === 'desc' || sortDirParam === 'asc'
 				? sortDirParam

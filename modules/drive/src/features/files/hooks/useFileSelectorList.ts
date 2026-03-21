@@ -1,12 +1,12 @@
+/* eslint-disable max-lines-per-function */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { fileService } from '../fileService';
 import { DriveFileStatus } from '../types';
 
-import type { DriveFile } from '../types';
+import type { DriveFile, FileSelectorMode } from '../types';
 
-export type FileSelectorMode = 'file' | 'folder';
 
 export type UseFileSelectorListParams = {
 	parentId: string;

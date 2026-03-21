@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { useEffect, useState } from 'react';
 

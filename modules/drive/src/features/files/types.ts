@@ -110,4 +110,7 @@ export type GetDriveFileByParentResponse = ListResponse<DriveFile>;
 export type SearchDriveFileByParentRequest = ListQuery;
 export type SearchDriveFileByParentResponse = ListResponse<DriveFile>;
 
+/** File selector widget: pick files or folders only */
+export type FileSelectorMode = 'file' | 'folder';
+
 export type { DriveFile };
