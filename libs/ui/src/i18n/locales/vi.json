@@ -126,7 +126,7 @@
 							"permission": {
 								"view": "Xem",
 								"edit": "Chỉnh sửa",
-								"editWithTrash": "Quản lý"
+								"editWithTrash": "Toàn quyền"
 							}
 						},
             "propertiesCard": {

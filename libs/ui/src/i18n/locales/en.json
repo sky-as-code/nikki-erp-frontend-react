@@ -124,7 +124,7 @@
 				"permission": {
 					"view": "View",
 					"edit": "Edit",
-					"editWithTrash": "Manage"
+					"editWithTrash": "All"
 				}
 			},
 			"propertiesCard": {
