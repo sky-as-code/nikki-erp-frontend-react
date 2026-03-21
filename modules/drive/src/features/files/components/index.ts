@@ -1,13 +1,13 @@
-export { DriveFileTable, DriveFileGrid, EmptyFilesState } from './file-list';
-export { FileActionMenu } from './file-actions';
+export { DriveFileTable, DriveFileGrid, EmptyFilesState } from './FileList';
+export { FileActionMenu } from './FileActions';
 export {
 	DriveSidebar,
 	FileTree,
 	type DriveSidebarProps,
 	type FileTreeProps,
-} from './file-tree';
-export { DriveFileModal } from './modals';
-export { FilePreview } from './preview';
+} from './FileTree';
+export { DriveFileModal } from './Modals';
+export { FilePreview } from './Preview';
 export {
 	FileSelector,
 	registerDriveFileSelectorWebComponent,
@@ -15,5 +15,5 @@ export {
 	type FileSelectorMode,
 	type FileSelectorProps,
 	type DriveFilesSelectedDetail,
-} from './file-selector';
+} from './FileSelector';
 export { DriveFileView } from './DriveFileView';

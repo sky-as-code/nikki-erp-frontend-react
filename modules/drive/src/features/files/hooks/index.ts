@@ -8,3 +8,6 @@ export * from './useDriveSidebarActiveRoutes';
 export * from './useOpenCreateFileModal';
 export * from './useFileSelectorList';
 export * from './useDriveFileList';
+export * from './enums/useDriveFileStatusValue';
+export * from './enums/useDriveFileVisibilityValue';
+export * from './enums/useDriveFileTypeValue';

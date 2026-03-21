@@ -4,7 +4,6 @@ import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { driveFileActions } from '@/appState/file';
 import { useDriveStreamUrl } from '@/hooks/useDriveStreamUrl';
 import { useOrgModulePath } from '@/hooks/useRootPath';
 
@@ -12,10 +11,13 @@ import { useRefreshCurrentFolder } from './useRefreshCurrentFolder';
 
 import type { DriveFile } from '../types';
 
+import { driveFileActions } from '@/appState/file';
+
 
 export type DriveFileActions = {
 	openFolder: () => void;
 	openProperties: () => void;
+	share: () => void;
 	editMetadata: () => void;
 	create: () => void;
 	download: () => void;
@@ -58,6 +60,21 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 		if (file.isFolder) return;
 		const url = buildStreamUrl(file.id, true);
 		window.open(url, '_blank');
+	};
+
+	const share = () => {
+		(dispatch as (action: unknown) => void)(
+			driveFileActions.setDriveFileModal({
+				openedModal: true,
+				title: t('nikki.drive.actions.share'),
+				type: {
+					type: 'share',
+				},
+			}),
+		);
+		(dispatch as (action: unknown) => void)(
+			driveFileActions.getDriveFileById(file.id),
+		);
 	};
 
 	const moveToTrash = async () => {
@@ -196,6 +213,7 @@ export function useDriveFileActions(file: DriveFile): DriveFileActions {
 	return {
 		openFolder,
 		openProperties,
+		share,
 		download,
 		moveToTrash,
 		restoreFromTrash,

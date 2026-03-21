@@ -13,6 +13,7 @@ interface DriveFile {
 	parentDriveFileRef: string;
 	name: string;
 	mime: string;
+	type: DriveFileType;
 	isFolder: boolean;
 	size: number;
 	visibility: DriveFileVisibility;
@@ -39,6 +40,23 @@ export const DriveFileStatus = {
 } as const;
 
 export type DriveFileStatus = typeof DriveFileStatus[keyof typeof DriveFileStatus];
+
+export const DriveFileType = {
+	FOLDER: 'folder',
+	IMAGE: 'image',
+	VIDEO: 'video',
+	AUDIO: 'audio',
+	DOCUMENT: 'document',
+	SPREADSHEET: 'spreadsheet',
+	PRESENTATION: 'presentation',
+	PDF: 'pdf',
+	TEXT: 'text',
+	CODE: 'code',
+	ARCHIVE: 'archive',
+	OTHER: 'other',
+} as const;
+
+export type DriveFileType = typeof DriveFileType[keyof typeof DriveFileType];
 
 export type DriveFileStatusBadge = { label: string; color: string };
 
@@ -91,5 +109,8 @@ export type GetDriveFileByParentResponse = ListResponse<DriveFile>;
 
 export type SearchDriveFileByParentRequest = ListQuery;
 export type SearchDriveFileByParentResponse = ListResponse<DriveFile>;
+
+/** File selector widget: pick files or folders only */
+export type FileSelectorMode = 'file' | 'folder';
 
 export type { DriveFile };

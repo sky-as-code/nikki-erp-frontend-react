@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { useMemo } from 'react';
 
 /** Chuỗi thời gian từ DB (ISO 8601), ví dụ: "2026-03-08T17:59:19.289899Z" */

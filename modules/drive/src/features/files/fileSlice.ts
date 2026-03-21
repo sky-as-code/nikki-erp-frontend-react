@@ -19,12 +19,12 @@ import {
 	DriveFileStatus,
 	GetDriveFileAncestorsResponse,
 	RestoreDriveFileFromTrashResponse,
+	DriveFileType,
 } from './types';
 
 
 export const SLICE_NAME = 'drive.file';
 
-/** Trạng thái expand của từng node trong FileTree (value -> expanded). Dùng để khôi phục khi remount. */
 export type TreeExpandedState = Record<string, boolean>;
 
 export type DriveFileUIState = {
@@ -42,6 +42,7 @@ export type DriveFileModalUIState = {
 
 export type ModalType =
 	| { type: 'properties' }
+	| { type: 'share' }
 	| { type: 'create'; defaultIsFolder?: boolean }
 	| { type: 'update' }
 	| {
@@ -60,7 +61,7 @@ export type ModalType =
 	| { type: 'preview' };
 
 export type CurrentListContext = {
-	source?: 'byParent' | 'search';
+	source?: 'byParent' | 'search' | 'shared';
 	parentId: string;
 	page: number;
 	size: number;
@@ -353,6 +354,25 @@ export const searchDriveFile = createAsyncThunk<
 	}
 });
 
+export const searchDriveFileShared = createAsyncThunk<
+	SearchDriveFileByParentResponse,
+	{ req: GetDriveFileByParentRequest },
+	thunkConfig
+>(`${SLICE_NAME}/searchDriveFileShared`, async ({ req }, { rejectWithValue }) => {
+	try {
+		const listReq = withDefaultListGraph(req);
+		const result = await fileService.searchDriveFileShared(listReq);
+		return result;
+	}
+	catch (error) {
+		const errorMessage =
+			error instanceof Error
+				? error.message
+				: 'Failed to search shared files';
+		return rejectWithValue(errorMessage);
+	}
+});
+
 export const getDriveFileAncestors = createAsyncThunk<
 	GetDriveFileAncestorsResponse,
 	string,
@@ -477,6 +497,7 @@ const driveFileSlice = createSlice({
 		getDriveFileByParentReducers(builder);
 		getDriveFileByParentForTreeReducers(builder);
 		searchDriveFileReducers(builder);
+		searchDriveFileSharedReducers(builder);
 		getDriveFileAncestorsReducers(builder);
 		restoreDriveFileFromTrashReducers(builder);
 	},
@@ -564,7 +585,7 @@ function getDriveFileByIdReducers(
 		.addCase(getDriveFileById.fulfilled, (state, action) => {
 			state.getById.status = 'success';
 			state.getById.data = action.payload;
-			state.fileDetail = action.payload;
+			state.fileDetail = normalizeDriveFile(action.payload as DriveFile);
 		})
 		.addCase(getDriveFileById.rejected, (state, action) => {
 			state.getById.status = 'error';
@@ -580,20 +601,172 @@ function getCurrentFolderByIdReducers(
 			// giữ nguyên currentFolder khi đang loading
 		})
 		.addCase(getCurrentFolderById.fulfilled, (state, action) => {
-			state.currentFolder = action.payload;
+			state.currentFolder = normalizeDriveFile(action.payload as DriveFile);
 		})
 		.addCase(getCurrentFolderById.rejected, (state) => {
 			state.currentFolder = undefined;
 		});
 }
 
-/** API có thể trả is_folder (snake_case), chuẩn hóa sang isFolder. */
-function normalizeDriveFile(
-	item: DriveFile & { is_folder?: boolean },
-): DriveFile {
+const MIME_TO_DRIVE_FILE_TYPE: Record<string, DriveFileType> = {
+	// Document
+	'application/msword': DriveFileType.DOCUMENT,
+	'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+		DriveFileType.DOCUMENT,
+	'application/vnd.google-apps.document': DriveFileType.DOCUMENT,
+	'application/vnd.oasis.opendocument.text': DriveFileType.DOCUMENT,
+
+	// Spreadsheet
+	'application/vnd.ms-excel': DriveFileType.SPREADSHEET,
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+		DriveFileType.SPREADSHEET,
+	'application/vnd.google-apps.spreadsheet': DriveFileType.SPREADSHEET,
+	'application/vnd.oasis.opendocument.spreadsheet': DriveFileType.SPREADSHEET,
+
+	// Presentation
+	'application/vnd.ms-powerpoint': DriveFileType.PRESENTATION,
+	'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+		DriveFileType.PRESENTATION,
+	'application/vnd.google-apps.presentation': DriveFileType.PRESENTATION,
+	'application/vnd.oasis.opendocument.presentation': DriveFileType.PRESENTATION,
+
+	// PDF
+	'application/pdf': DriveFileType.PDF,
+
+	// Code
+	'application/json': DriveFileType.CODE,
+	'application/javascript': DriveFileType.CODE,
+	'application/typescript': DriveFileType.CODE,
+	'application/xml': DriveFileType.CODE,
+	'application/x-sh': DriveFileType.CODE,
+	'application/wasm': DriveFileType.CODE,
+
+	// Archive
+	'application/zip': DriveFileType.ARCHIVE,
+	'application/x-rar-compressed': DriveFileType.ARCHIVE,
+	'application/x-7z-compressed': DriveFileType.ARCHIVE,
+	'application/x-tar': DriveFileType.ARCHIVE,
+	'application/gzip': DriveFileType.ARCHIVE,
+	'application/x-bzip2': DriveFileType.ARCHIVE,
+	'application/x-xz': DriveFileType.ARCHIVE,
+};
+
+export const DRIVE_FILE_TYPE_TO_MIME: Record<DriveFileType, string[]> = {
+	[DriveFileType.FOLDER]: ['inode/directory'],
+	[DriveFileType.IMAGE]: [
+		'image/jpeg',
+		'image/png',
+		'image/gif',
+		'image/webp',
+		'image/bmp',
+		'image/svg+xml',
+		'image/tiff',
+		'image/heic',
+		'image/heif',
+	],
+	[DriveFileType.VIDEO]: [
+		'video/mp4',
+		'video/webm',
+		'video/ogg',
+		'video/quicktime',
+		'video/x-msvideo',
+		'video/x-matroska',
+		'video/mpeg',
+		'video/3gpp',
+		'video/3gpp2',
+	],
+	[DriveFileType.AUDIO]: [
+		'audio/mpeg',
+		'audio/wav',
+		'audio/ogg',
+		'audio/aac',
+		'audio/flac',
+		'audio/webm',
+		'audio/mp4',
+		'audio/x-m4a',
+		'audio/opus',
+	],
+	[DriveFileType.DOCUMENT]: [
+		'application/msword',
+		'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+		'application/vnd.google-apps.document',
+		'application/vnd.oasis.opendocument.text',
+	],
+	[DriveFileType.SPREADSHEET]: [
+		'application/vnd.ms-excel',
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+		'application/vnd.google-apps.spreadsheet',
+		'application/vnd.oasis.opendocument.spreadsheet',
+	],
+	[DriveFileType.PRESENTATION]: [
+		'application/vnd.ms-powerpoint',
+		'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+		'application/vnd.google-apps.presentation',
+		'application/vnd.oasis.opendocument.presentation',
+	],
+	[DriveFileType.PDF]: ['application/pdf'],
+	[DriveFileType.TEXT]: ['text/plain'],
+	[DriveFileType.CODE]: [
+		'application/json',
+		'application/javascript',
+		'application/typescript',
+		'application/xml',
+		'application/x-sh',
+		'application/wasm',
+	],
+	[DriveFileType.ARCHIVE]: [
+		'application/zip',
+		'application/x-rar-compressed',
+		'application/x-7z-compressed',
+		'application/x-tar',
+		'application/gzip',
+		'application/x-bzip2',
+		'application/x-xz',
+	],
+	[DriveFileType.OTHER]: ['application/octet-stream'],
+};
+
+const CODE_TEXT_SUBTYPES = new Set([
+	'javascript',
+	'typescript',
+	'x-python',
+	'x-java',
+	'x-c',
+	'x-c++',
+	'x-go',
+	'x-rust',
+	'x-php',
+	'html',
+	'css',
+	'xml',
+	'x-sh',
+	'x-shellscript',
+]);
+
+function mimeToDriveFileType(mime: string): DriveFileType {
+	if (mime.startsWith('image/')) return DriveFileType.IMAGE;
+	if (mime.startsWith('video/')) return DriveFileType.VIDEO;
+	if (mime.startsWith('audio/')) return DriveFileType.AUDIO;
+
+	if (mime.startsWith('text/')) {
+		const subtype = mime.split('/')[1];
+		return CODE_TEXT_SUBTYPES.has(subtype)
+			? DriveFileType.CODE
+			: DriveFileType.TEXT;
+	}
+
+	return MIME_TO_DRIVE_FILE_TYPE[mime] ?? DriveFileType.OTHER;
+}
+
+function normalizeDriveFile(item: DriveFile): DriveFile {
+	let type: DriveFileType = DriveFileType.FOLDER;
+	if (!item.isFolder) {
+		type = mimeToDriveFileType(item.mime);
+	}
+
 	return {
 		...item,
-		isFolder: item.isFolder ?? item.is_folder ?? false,
+		type: type,
 		children: (item.children ?? []).map((c) =>
 			normalizeDriveFile(c as DriveFile & { is_folder?: boolean }),
 		),
@@ -663,7 +836,9 @@ function getDriveFileByParentReducers(
 		.addCase(getDriveFileByParent.fulfilled, (state, action) => {
 			state.getByParent.status = 'success';
 			state.getByParent.data = action.payload;
-			state.files = action.payload.items ?? [];
+			state.files = (action.payload.items ?? []).map((item) =>
+				normalizeDriveFile(item as DriveFile),
+			);
 
 			const parentId = action.meta.arg.parentId;
 			const req = action.meta.arg.req;
@@ -744,7 +919,9 @@ function searchDriveFileReducers(
 		.addCase(searchDriveFile.fulfilled, (state, action) => {
 			state.search.status = 'success';
 			state.search.data = action.payload;
-			state.files = action.payload.items ?? [];
+			state.files = (action.payload.items ?? []).map((item) =>
+				normalizeDriveFile(item as DriveFile),
+			);
 
 			const req = action.meta.arg.req;
 			state.currentListContext = {
@@ -761,6 +938,36 @@ function searchDriveFileReducers(
 		});
 }
 
+function searchDriveFileSharedReducers(
+	builder: ActionReducerMapBuilder<DriveFileState>,
+) {
+	builder
+		.addCase(searchDriveFileShared.pending, (state) => {
+			state.search.status = 'pending';
+			state.search.error = null;
+		})
+		.addCase(searchDriveFileShared.fulfilled, (state, action) => {
+			state.search.status = 'success';
+			state.search.data = action.payload;
+			state.files = (action.payload.items ?? []).map((item) =>
+				normalizeDriveFile(item as DriveFile),
+			);
+
+			const req = action.meta.arg.req;
+			state.currentListContext = {
+				source: 'shared',
+				parentId: '',
+				page: req?.page ?? 0,
+				size: req?.size ?? action.payload.items?.length ?? 20,
+				graph: (req?.graph ?? {}) as Record<string, unknown>,
+			};
+		})
+		.addCase(searchDriveFileShared.rejected, (state, action) => {
+			state.search.status = 'error';
+			state.search.error = action.payload || 'Failed to search shared files';
+		});
+}
+
 function getDriveFileAncestorsReducers(
 	builder: ActionReducerMapBuilder<DriveFileState>,
 ) {
@@ -772,7 +979,9 @@ function getDriveFileAncestorsReducers(
 		.addCase(getDriveFileAncestors.fulfilled, (state, action) => {
 			state.getAncestors.status = 'success';
 			state.getAncestors.data = action.payload;
-			state.ancestors = action.payload;
+			state.ancestors = action.payload.map((item) =>
+				normalizeDriveFile(item as DriveFile),
+			);
 		})
 		.addCase(getDriveFileAncestors.rejected, (state) => {
 			state.getAncestors.status = 'error';

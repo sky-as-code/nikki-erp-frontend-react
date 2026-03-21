@@ -1,6 +1,10 @@
+/* eslint-disable max-lines-per-function */
 import React from 'react';
 
-import type { DriveFileFilterState } from '../components/filters/DriveFileFilterBar';
+import { DRIVE_FILE_TYPE_TO_MIME } from '../fileSlice';
+import { DriveFileType } from '../types';
+
+import type { DriveFileFilterState } from '../components/Filters/DriveFileFilterBar';
 
 
 export type UseDriveFileFiltersOptions = {
@@ -23,7 +27,7 @@ export function useDriveFileFilters({
 	const [filters, setFilters] = React.useState<DriveFileFilterState>({
 		statuses: [],
 		visibilities: [],
-		isFolderValues: [],
+		types: [],
 		sortField: 'name',
 		sortDirection: 'asc',
 		folderFirst: true,
@@ -38,16 +42,37 @@ export function useDriveFileFilters({
 		];
 
 		if (filters.statuses.length > 0) {
-			and.push({ if: ['status', 'in', filters.statuses] });
+			and.push({ if: ['status', 'in', ...filters.statuses] });
 		}
 
 		if (filters.visibilities.length > 0) {
-			and.push({ if: ['visibility', 'in', filters.visibilities] });
+			and.push({ if: ['visibility', 'in', ...filters.visibilities] });
 		}
 
-		if (filters.isFolderValues.length === 1) {
-			const wantFolder = filters.isFolderValues[0] === 'folder';
-			and.push({ if: ['is_folder', '=', wantFolder] });
+		if (filters.types.length > 0) {
+			const typeOrConditions: any[] = [];
+			const hasFolderType = filters.types.includes(DriveFileType.FOLDER);
+			if (hasFolderType) {
+				typeOrConditions.push({ if: ['is_folder', '=', true] });
+			}
+
+			const nonFolderTypes = filters.types.filter((type) => type !== DriveFileType.FOLDER);
+			const mimes = Array.from(new Set(nonFolderTypes.flatMap((type) => DRIVE_FILE_TYPE_TO_MIME[type] ?? [])));
+			if (mimes.length > 0) {
+				typeOrConditions.push({
+					and: [
+						{ if: ['is_folder', '=', false] },
+						{ if: ['mime', 'in', ...mimes] },
+					],
+				});
+			}
+
+			if (typeOrConditions.length === 1) {
+				and.push(typeOrConditions[0]);
+			}
+			if (typeOrConditions.length > 1) {
+				and.push({ or: typeOrConditions });
+			}
 		}
 
 		const order: any[] = [];
