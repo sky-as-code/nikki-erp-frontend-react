@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { DriveFileStatus, DriveFileType, DriveFileVisibility } from '../../types';
-import { DriveFileStatusBadge, DriveFileTypeDisplay, DriveFileVisibilityBadge } from '../enum-display';
+import { DriveFileStatusBadge, DriveFileTypeDisplay, DriveFileVisibilityBadge } from '../EnumDisplay';
 
 
 export type DriveFileSortField = 'name' | 'createdAt';

@@ -4,7 +4,7 @@ import React from 'react';
 
 import { useDriveFileActions } from '../../../hooks';
 import { DriveFile } from '../../../types';
-import { FilePreview } from '../../preview';
+import { FilePreview } from '../../Preview';
 
 import { useDriveStreamUrl } from '@/hooks';
 

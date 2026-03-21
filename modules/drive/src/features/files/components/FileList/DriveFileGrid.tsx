@@ -10,7 +10,7 @@ import {
 import { useDriveStreamUrl } from '@/hooks/useDriveStreamUrl';
 
 import { EmptyFilesState } from '../..';
-import { FileActionMenu } from '../file-actions';
+import { FileActionMenu } from '../FileActions';
 import { AddFileCard } from './AddFileCard';
 import { DriveFileIcon } from './DriveFileIcon';
 import { useDriveFileActions, useMinimumLoading } from '../../hooks';

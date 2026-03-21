@@ -4,7 +4,7 @@ import React from 'react';
 import { DRIVE_FILE_TYPE_TO_MIME } from '../fileSlice';
 import { DriveFileType } from '../types';
 
-import type { DriveFileFilterState } from '../components/filters/DriveFileFilterBar';
+import type { DriveFileFilterState } from '../components/Filters/DriveFileFilterBar';
 
 
 export type UseDriveFileFiltersOptions = {

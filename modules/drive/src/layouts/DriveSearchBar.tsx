@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router';
 
 import { DriveFile, DriveFileType } from '@/features/files';
 import { FileActionMenu } from '@/features/files/components';
-import { DriveFileFilterBar, type DriveFileFilterState } from '@/features/files/components/filters/DriveFileFilterBar';
+import { DriveFileFilterBar, type DriveFileFilterState } from '@/features/files/components/Filters/DriveFileFilterBar';
 import { fileService } from '@/features/files/fileService';
 import { DRIVE_FILE_TYPE_TO_MIME } from '@/features/files/fileSlice';
 import { useDriveFileActions, useMinimumLoading } from '@/features/files/hooks';

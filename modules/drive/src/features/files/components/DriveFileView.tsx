@@ -1,8 +1,8 @@
 import { Box, Flex, Pagination } from '@mantine/core';
 import React, { Fragment } from 'react';
 
-import { DriveFileGrid, DriveFileTable } from './file-list';
-import { DriveFileModal } from './modals';
+import { DriveFileGrid, DriveFileTable } from './FileList';
+import { DriveFileModal } from './Modals';
 
 
 const PAGE_SIZE = 20;

@@ -8,7 +8,7 @@ import { driveFileActions } from '@/appState/file';
 import { DriveFileStatus } from '@/features/files';
 import { DriveFileTitle } from '@/features/files/components/DriveFileTitle';
 import { DriveFileView, type DriveFileUIViewMode } from '@/features/files/components/DriveFileView';
-import { DriveFileFilterBar } from '@/features/files/components/filters/DriveFileFilterBar';
+import { DriveFileFilterBar } from '@/features/files/components/Filters/DriveFileFilterBar';
 import { useDriveFileList } from '@/features/files/hooks';
 import { useDriveFileFilters } from '@/features/files/hooks/useDriveFileFilters';
 import { useLocalStorage } from '@/features/files/hooks/useLocalStorage';

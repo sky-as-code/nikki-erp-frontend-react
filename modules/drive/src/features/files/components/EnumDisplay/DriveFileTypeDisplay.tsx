@@ -2,7 +2,7 @@ import { Group, Text } from '@mantine/core';
 
 import { useDriveFileTypeValue } from '../../hooks';
 import { DriveFileType } from '../../types';
-import { DriveFileIcon } from '../file-list/DriveFileIcon';
+import { DriveFileIcon } from '../FileList/DriveFileIcon';
 
 
 export function DriveFileTypeDisplay({ e }: { e: DriveFileType }): React.ReactNode {

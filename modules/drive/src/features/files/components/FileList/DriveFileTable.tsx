@@ -17,9 +17,9 @@ import {
 	DriveFileVisibility,
 } from '../../types';
 import { formatSize } from '../../utils';
-import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../enum-display';
-import { DriveFileTypeDisplay } from '../enum-display';
-import { FileActionMenu } from '../file-actions';
+import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../EnumDisplay';
+import { DriveFileTypeDisplay } from '../EnumDisplay';
+import { FileActionMenu } from '../FileActions';
 
 import { selectCurrentFolder, selectDriveFileList, selectGetDriveFileByParent } from '@/appState/file';
 import { useDbDateTime } from '@/hooks';

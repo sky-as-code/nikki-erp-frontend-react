@@ -7,8 +7,8 @@ import { useDbDateTime, useDriveStreamUrl } from '@/hooks';
 
 import { DriveFile, DriveFileVisibility } from '../../../types';
 import { formatSize } from '../../../utils/fortmat';
-import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../../enum-display';
-import { DriveFileTypeDisplay } from '../../enum-display';
+import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../../EnumDisplay';
+import { DriveFileTypeDisplay } from '../../EnumDisplay';
 
 
 type FilePropertiesCardProps = {

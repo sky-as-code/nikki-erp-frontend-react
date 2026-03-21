@@ -16,7 +16,7 @@ import {
 	DeleteConfirmModalContent,
 	CreateFileModalContent,
 	DriveFileShareModalContent,
-} from './contents';
+} from './Contents';
 import { DriveFileModalUIState } from '../../fileSlice';
 import { useRefreshCurrentFolder } from '../../hooks';
 import { DriveFile } from '../../types';

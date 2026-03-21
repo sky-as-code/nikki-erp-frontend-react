@@ -2,7 +2,7 @@ import { Button, Flex } from '@mantine/core';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { FileSelector } from '../../file-selector';
+import { FileSelector } from '../../FileSelector';
 
 
 type FileSelectorModalProps = {

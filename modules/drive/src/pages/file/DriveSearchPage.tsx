@@ -8,11 +8,11 @@ import { driveFileActions, selectSearchDriveFile } from '@/appState/file';
 import { DriveFileStatus, DriveFileType } from '@/features/files';
 import { DriveFileTitle } from '@/features/files/components/DriveFileTitle';
 import { DriveFileView, type DriveFileUIViewMode } from '@/features/files/components/DriveFileView';
-import { DriveFileFilterBar } from '@/features/files/components/filters/DriveFileFilterBar';
+import { DriveFileFilterBar } from '@/features/files/components/Filters/DriveFileFilterBar';
 import { useDriveFileFilters } from '@/features/files/hooks/useDriveFileFilters';
 import { useLocalStorage } from '@/features/files/hooks/useLocalStorage';
 
-import type { DriveFileFilterState } from '@/features/files/components/filters/DriveFileFilterBar';
+import type { DriveFileFilterState } from '@/features/files/components/Filters/DriveFileFilterBar';
 
 
 const PAGE_SIZE = 20;
