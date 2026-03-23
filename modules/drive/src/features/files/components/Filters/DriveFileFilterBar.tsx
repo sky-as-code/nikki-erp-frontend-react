@@ -1,6 +1,6 @@
 import { ActionIcon, Button, Checkbox, Group, MultiSelect, MultiSelectProps, Select, Stack, Text, Tooltip } from '@mantine/core';
 import { IconArrowDown, IconArrowUp } from '@tabler/icons-react';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { DriveFileStatus, DriveFileType, DriveFileVisibility } from '../../types';
@@ -36,6 +36,10 @@ type DriveFileFilterControlsProps = {
 	enabledFields?: DriveFileFilterField[];
 };
 
+const usePortalTarget = () => {
+	return useMemo(() => (document.querySelector('nikkiapp-drive') as HTMLElement) ?? (document.body as HTMLElement), []);
+};
+
 function DriveFileFilterStatus({ value, onChange }: DriveFileFilterControlsProps): React.ReactNode {
 	const { t } = useTranslation();
 	const statusData = [
@@ -64,8 +68,16 @@ function DriveFileFilterStatus({ value, onChange }: DriveFileFilterControlsProps
 		return <DriveFileStatusBadge variant='light' e={option.option.value as DriveFileStatus} />;
 	};
 
+	const portalTarget = usePortalTarget();
+
 	return (
 		<MultiSelect
+			comboboxProps={{
+				withinPortal: true,
+				portalProps: {
+					target: portalTarget,
+				},
+			}}
 			data={statusData}
 			value={value.statuses}
 			renderOption={renderStatusOption}
@@ -111,8 +123,16 @@ function DriveFileFilterVisibility({
 		return <DriveFileVisibilityBadge variant='light' e={option.option.value as DriveFileVisibility} />;
 	};
 
+	const portalTarget = usePortalTarget();
+
 	return (
 		<MultiSelect
+			comboboxProps={{
+				withinPortal: true,
+				portalProps: {
+					target: portalTarget,
+				},
+			}}
 			data={visibilityData}
 			value={value.visibilities}
 			onChange={handleVisibilityChange}
@@ -147,8 +167,16 @@ function DriveFileFilterType({
 		return <DriveFileTypeDisplay e={option.option.value as DriveFileType} />;
 	};
 
+	const portalTarget = usePortalTarget();
+
 	return (
 		<MultiSelect
+			comboboxProps={{
+				withinPortal: true,
+				portalProps: {
+					target: portalTarget,
+				},
+			}}
 			size='sm'
 			data={typeData}
 			value={value.types}

@@ -1,9 +1,10 @@
 /* target bằng attribute thôi, không dùng class */
-[data-combobox-option][data-combobox-selected] {
+nikkiapp-drive [data-combobox-option][data-combobox-selected] {
   background-color: #f0f0f0 !important;
 }
 
-.mantine-MultiSelect-pillsList {
+
+nikkiapp-drive .mantine-MultiSelect-pillsList {
   max-width: 220px;
   overflow-x: auto;
   flex-wrap: nowrap;
@@ -11,6 +12,6 @@
   -ms-overflow-style: none;
 }
 
-.mantine-MultiSelect-pillsList::-webkit-scrollbar {
+nikkiapp-drive .mantine-MultiSelect-pillsList::-webkit-scrollbar {
   display: none;
 }
