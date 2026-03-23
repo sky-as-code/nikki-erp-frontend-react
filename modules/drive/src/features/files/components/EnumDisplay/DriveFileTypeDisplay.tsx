@@ -10,7 +10,7 @@ export function DriveFileTypeDisplay({ e }: { e: DriveFileType }): React.ReactNo
 	return (
 		<Group gap={6} wrap='nowrap'>
 			<DriveFileIcon type={e} size={16} />
-			<Text size='sm'>{value(e)}</Text>
+			<Text c='black' size='sm'>{value(e)}</Text>
 		</Group>
 	);
 }
