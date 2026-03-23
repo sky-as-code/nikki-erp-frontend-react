@@ -13,6 +13,9 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { DriveFileShare } from '@/features/fileShare/type';
+import type { IdentityUser } from '@/features/identities/types';
+
 import { selectDriveFileShareList } from '@/appState/fileShare';
 import {
 	identityActions,
@@ -20,8 +23,6 @@ import {
 	selectIdentityUsers,
 } from '@/appState/identity';
 
-import type { DriveFileShare } from '@/features/fileShare/type';
-import type { IdentityUser } from '@/features/identities/types';
 
 
 export type ShareUserMultiSelectProps = {

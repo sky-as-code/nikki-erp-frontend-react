@@ -49,6 +49,7 @@ export function LazyModule({ microApps }: { microApps: MicroAppMetadata[] }): Re
 
 	return (
 		<LazyMicroApp
+			key={foundApp.slug}
 			slug={foundApp.slug}
 			basePath={foundApp.basePath}
 			fallback={<AppLoading />}
