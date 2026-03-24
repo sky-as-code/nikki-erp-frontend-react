@@ -38,16 +38,12 @@ const microApps: MicroAppMetadata[] = [
 	{
 		slug: 'nikkierp.vendingMachine',
 		basePath: 'vending-machine',
-		// Uncomment when mounting as ShadowDOM
-		// bundleUrl: () => import(vendingMachineBundleUrl),
-		bundleUrl: () => import('@nikkierp/microapp-vdmc'),
+		bundleUrl: () => import('@nikkierp/microapp-vending-machine'),
 		htmlTag: 'nikkiapp-vending-machine',
 	},
 	{
 		slug: 'nikkierp.drive',
 		basePath: 'drive',
-		// Uncomment when mounting as ShadowDOM
-		// bundleUrl: () => import(vendingMachineBundleUrl),
 		bundleUrl: () => import('@nikkierp/microapp-drive'),
 		htmlTag: 'nikkiapp-drive',
 	},
@@ -57,15 +53,6 @@ const microApps: MicroAppMetadata[] = [
 		bundleUrl: () => import('@nikkierp/microapp-inventory'),
 		htmlTag: 'nikkiapp-inventory',
 	},
-	{
-		slug: 'nikkierp.inventory',
-		basePath: 'inventory',
-		// Uncomment when mounting as ShadowDOM
-		// bundleUrl: () => import(inventoryBundleUrl),
-		bundleUrl: () => import('@nikkierp/microapp-inventory'),
-		htmlTag: 'nikkiapp-inventory',
-	},
-
 	...remoteApps,
 ];
 
