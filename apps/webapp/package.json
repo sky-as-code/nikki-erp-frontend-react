@@ -31,7 +31,7 @@
 		"@nikkierp/microapp-essential": "workspace:*",
 		"@nikkierp/microapp-identity": "workspace:*",
 		"@nikkierp/microapp-drive": "workspace:*",
-		"@nikkierp/microapp-vdmc": "workspace:*",
+		"@nikkierp/microapp-vending-machine": "workspace:*",
 		"@nikkierp/microapp-inventory": "workspace:*",
 		"@nikkierp/nikkiportal-shell": "workspace:*",
 		"@nikkierp/ui": "workspace:*",
