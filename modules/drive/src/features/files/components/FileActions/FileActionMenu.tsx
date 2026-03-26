@@ -7,6 +7,10 @@ import { useTranslation } from 'react-i18next';
 
 import { useDriveFileActions, type DriveFileActions } from '../../hooks';
 import { DriveFileStatus, type DriveFile } from '../../types';
+import {
+	canPerformMenuActionFromGuide,
+	type FileMenuActionKey,
+} from '../../utils/driveFilePermissionMenuActions';
 
 
 const DEFAULT_ACTIONS: Array<React.FC<any>> = [
@@ -80,13 +84,51 @@ const getActions = (file: DriveFile): React.FC<any>[] => {
 	return actions.sort((a, b) => (actionOrder.get(a) ?? 0) - (actionOrder.get(b) ?? 0));
 };
 
+function menuComponentToActionKey(Component: React.FC<any>): FileMenuActionKey | null {
+	switch (Component) {
+		case PropertiesItem:
+			return 'info';
+		case DeleteItem:
+			return 'deletePermanently';
+		case OpenFolderItem:
+			return 'openFolder';
+		case DownloadItem:
+			return 'download';
+		case EditMetadataItem:
+			return 'editMetadata';
+		case ShareItem:
+			return 'share';
+		case MoveToTrashItem:
+			return 'moveToTrash';
+		case Restore:
+			return 'restore';
+		case RestoreTo:
+			return 'restoreTo';
+		default:
+			return null;
+	}
+}
+
+function filterActionsByResolvedPermission(
+	file: DriveFile,
+	components: Array<React.FC<any>>,
+): Array<React.FC<any>> {
+	if (file.resolvedPermission === undefined) return components;
+	return components.filter((C) => {
+		const key = menuComponentToActionKey(C);
+		if (key === null) return true;
+		const allowed = canPerformMenuActionFromGuide(file.resolvedPermission, key);
+		return allowed !== false;
+	});
+}
+
 export function FileActionMenu({ file }: { file: DriveFile }): React.ReactNode {
 	const { t } = useTranslation();
 	const actions: DriveFileActions = useDriveFileActions(file);
 	const menuActions = {
 		...actions,
 	};
-	const actionsComponents = getActions(file);
+	const actionsComponents = filterActionsByResolvedPermission(file, getActions(file));
 
 	return (
 		<Menu withinPortal position='bottom-end' shadow='sm'>
