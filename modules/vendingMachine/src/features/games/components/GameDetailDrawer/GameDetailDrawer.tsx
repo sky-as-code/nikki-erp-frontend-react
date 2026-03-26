@@ -155,7 +155,7 @@ export const GameDetailDrawer: React.FC<GameDetailDrawerProps> = ({
 						variant='light'
 						leftSection={<IconExternalLink size={16} />}
 						onClick={() => {
-							navigate(`../mini-game/${game.id}`);
+							navigate(`../games/${game.id}`);
 							onClose();
 						}}
 					>

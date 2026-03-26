@@ -1,3 +1,5 @@
+import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { PermissionScope, useActiveOrgDetail } from '@nikkierp/shell/userContext';
 import { useSetMenuBarItems } from '@nikkierp/ui/appState';
 import {
 	AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
@@ -7,10 +9,18 @@ import {
 
 import { reducer } from './appState';
 import { useMenuBarItems } from './hooks';
-import { AppRouteElements, WidgetRouteElements } from './routes';
+import { appRoutes, renderAppRoutes, widgetRoutes, renderWidgetRoutes } from './routes';
+
+
+const useOrgContextScope = () : PermissionScope | undefined => {
+	const activeOrg = useActiveOrgDetail();
+	const isGlobalContext = activeOrg?.slug === GLOBAL_CONTEXT_SLUG;
+	return isGlobalContext ? undefined : { scopeType: 'org', scopeRef: activeOrg?.id ?? '' };
+};
 
 
 function Main(props: MicroAppProps) {
+	const orgContextScope = useOrgContextScope();
 	const dispatch = useMicroAppDispatch();
 	const menuBar = useMenuBarItems();
 
@@ -25,10 +35,10 @@ function Main(props: MicroAppProps) {
 				widgetProps={props.widgetProps}
 			>
 				<AppRoutes>
-					{AppRouteElements}
+					{renderAppRoutes(appRoutes, orgContextScope)}
 				</AppRoutes>
 				<WidgetRoutes>
-					{WidgetRouteElements}
+					{renderWidgetRoutes(widgetRoutes, orgContextScope)}
 				</WidgetRoutes>
 			</MicroAppRouter>
 		</MicroAppProvider>

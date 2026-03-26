@@ -29,6 +29,11 @@ export type Organization = {
 
 export type PermissionScopeType = 'domain' | 'org' | 'hierarchy' | 'private';
 
+export type PermissionScope = {
+	scopeType: PermissionScopeType;
+	scopeRef: string;
+};
+
 export type PermissionScopeEntry = {
 	scopeType: PermissionScopeType;
 	scopeRef: string;

@@ -28,7 +28,7 @@ export const KioskModelDetailPage: React.FC = () => {
 
 	const actions: ControlPanelProps['actions'] = [{
 		label: translate('nikki.general.actions.back'),
-		onClick: () => navigate('../kiosk-model'),
+		onClick: () => navigate('../kiosk-models'),
 		leftSection: <IconArrowLeft size={16} />,
 		variant: 'outline',
 	}];

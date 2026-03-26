@@ -25,7 +25,7 @@ const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		if (gameId) {
-			navigate(`../mini-game/${gameId}`);
+			navigate(`../games/${gameId}`);
 		}
 	};
 
