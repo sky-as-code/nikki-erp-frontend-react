@@ -1,2 +1,2 @@
-export * from './DriveFileSharePermissionBadge';
+export * from './DriveFileSharePermissionDisplay';
 
