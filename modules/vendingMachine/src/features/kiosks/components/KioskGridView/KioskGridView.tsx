@@ -38,6 +38,7 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 		const modeMap = {
 			[KioskMode.PENDING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 			[KioskMode.SELLING]: { color: 'blue', label: translate('nikki.vendingMachine.kiosk.mode.selling') },
+			[KioskMode.WAITING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.waiting') },
 			[KioskMode.SLIDESHOWONLY]: { color: 'purple', label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 		};
 		const modeInfo = modeMap[mode];

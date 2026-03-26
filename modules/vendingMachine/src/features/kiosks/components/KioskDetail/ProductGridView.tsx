@@ -16,6 +16,8 @@ import { IconClipboard, IconCopy, IconEdit, IconTrash } from '@tabler/icons-reac
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Kiosk } from '../../types';
+
 
 interface ProductPosition {
 	row: string;
@@ -30,8 +32,10 @@ interface ProductPosition {
 }
 
 interface ProductGridViewProps {
-	kioskId: string;
-	isEditing?: boolean;
+	kiosk: Kiosk;
+	tabState: {
+		isEditing: boolean;
+	};
 }
 
 // Mock data - replace with actual API call
@@ -257,8 +261,10 @@ const GridCell = React.memo(GridCellComponent, (prevProps: GridCellProps, nextPr
 GridCell.displayName = 'GridCell';
 
 export const ProductGridView: React.FC<ProductGridViewProps> = ({
-	kioskId: _kioskId,
-	isEditing: externalIsEditing,
+	kiosk: _Kiosk,
+	tabState: {
+		isEditing: externalIsEditing,
+	},
 }) => {
 	const { t: translate } = useTranslation();
 	const [internalIsEditing, setInternalIsEditing] = useState(false);

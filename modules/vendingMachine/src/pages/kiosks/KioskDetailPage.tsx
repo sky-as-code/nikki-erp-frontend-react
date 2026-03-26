@@ -1,6 +1,6 @@
 
 import { IconArrowLeft } from '@tabler/icons-react';
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
@@ -20,12 +20,8 @@ export const KioskDetailPage: React.FC = () => {
 
 	const [activeTab, setActiveTab] = useState<TabId>('basicInfo');
 	const { kiosk, isLoading } = useKioskDetail(id);
-	const { tabs, getTabActions } = useKioskDetailTabs({ kiosk, activeTab });
+	const { tabs, actions: tabActions } = useKioskDetailTabs({ kiosk, activeTab });
 	const breadcrumbs = useKioskDetailBreadcrumbs({ kiosk });
-
-	const handleTabChange = useCallback((value: string) => {
-		setActiveTab(value as TabId);
-	}, []);
 
 	const actions: ControlPanelProps['actions'] = [{
 		label: translate('nikki.general.actions.back'),
@@ -33,11 +29,11 @@ export const KioskDetailPage: React.FC = () => {
 		leftSection: <IconArrowLeft size={16} />,
 		variant: 'outline',
 	}];
-	const tabActions = getTabActions(activeTab) ?? [];
-	if (kiosk) actions.push(...tabActions);
+	if (kiosk) actions.push(...(tabActions ?? []));
 
 	return (
 		<PageContainer
+			documentTitle={kiosk?.name ?? translate('nikki.vendingMachine.kiosk.detail.title')}
 			breadcrumbs={breadcrumbs}
 			sections={[ <ControlPanel actions={actions} /> ]}
 			isLoading={isLoading}
@@ -51,7 +47,7 @@ export const KioskDetailPage: React.FC = () => {
 				}}
 				tabs={tabs}
 				activeTab={activeTab}
-				onTabChange={handleTabChange}
+				onTabChange={(value) => setActiveTab(value as TabId)}
 			/>
 		</PageContainer>
 	);

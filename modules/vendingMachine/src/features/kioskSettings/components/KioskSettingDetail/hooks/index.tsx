@@ -146,7 +146,7 @@ const useSettingsTab = ({ setting, onSaveSettings }: UseSettingsTabArgs): TabHoo
 	return {
 		actions,
 		handlers: { handleEdit, handleSave, handleCancel },
-		state: { isEditing },
+		state: { isEditing, setting },
 		getComponentProps: () => ({
 			isEditing,
 			settingTheme: draftTheme,

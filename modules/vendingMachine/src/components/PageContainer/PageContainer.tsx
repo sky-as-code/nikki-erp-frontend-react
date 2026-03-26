@@ -1,4 +1,5 @@
 import { Box, Center, Loader, Paper, Space, Stack, Text } from '@mantine/core';
+import { useDocumentTitle } from '@nikkierp/ui/hooks';
 import { IconAlertCircle } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +8,7 @@ import { BreadCrumbs } from '@/components/BreadCrumbs';
 
 
 export type PageContainerProps = {
+	documentTitle?: string;
 	breadcrumbs?: { title: string; href: string }[];
 	actionBar?: React.ReactNode;
 	sections?: React.ReactNode[];
@@ -63,6 +65,7 @@ const NoData: React.FC = () => {
 };
 
 export const PageContainer: React.FC<PageContainerProps> = ({
+	documentTitle,
 	breadcrumbs = [],
 	actionBar,
 	sections = [],
@@ -73,7 +76,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
 	isEmpty = false,
 	emptyContent,
 }) => {
-
+	useDocumentTitle(documentTitle ?? '');
 	return (
 		<Stack gap={'sm'} mt={'xs'} p={'sm'} bg='light-dark(rgb(255 255 255 / 80%), var(--mantine-color-dark-6))' bdrs={'xs'}>
 			{breadcrumbs.length > 0 && <BreadCrumbs items={breadcrumbs} />}

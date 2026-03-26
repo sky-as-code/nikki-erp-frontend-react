@@ -11,12 +11,16 @@ import { usePaymentList } from '@/features/payment';
 import { PaymentMethod } from '@/features/payment/types';
 
 
-interface KioskBasicInfoProps {
+export interface KioskBasicInfoProps {
 	kiosk: Kiosk;
-	isEditing: boolean;
+	tabState: {
+		isEditing: boolean;
+	};
 }
 
-export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk, isEditing }) => {
+export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk, tabState }) => {
+	const { isEditing } = tabState;
+
 	const { t: translate } = useTranslation();
 	const { payments } = usePaymentList();
 	const { models } = useKioskModelList();
@@ -46,9 +50,10 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk, isEditing
 		const modeMap = {
 			[KioskMode.PENDING]: translate('nikki.vendingMachine.kiosk.mode.pending'),
 			[KioskMode.SELLING]: translate('nikki.vendingMachine.kiosk.mode.selling'),
+			[KioskMode.WAITING]: translate('nikki.vendingMachine.kiosk.mode.waiting'),
 			[KioskMode.SLIDESHOWONLY]: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly'),
 		};
-		return modeMap[mode] || mode;
+		return modeMap[mode as keyof typeof modeMap] || mode;
 	};
 
 	const getModelName = (modelId: string | null) => {

@@ -1,7 +1,8 @@
-/* eslint-disable max-lines-per-function */
-import { Avatar, Badge, Group, ScrollArea, Stack, Table, Text } from '@mantine/core';
+import { Avatar, Badge, ScrollArea, Table, Text } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { Kiosk } from '../../types';
 
 
 interface ProductPosition {
@@ -22,7 +23,7 @@ interface Product {
 }
 
 interface ProductListViewProps {
-	kioskId: string;
+	kiosk: Kiosk;
 }
 
 // Mock data - replace with actual API call
@@ -59,7 +60,7 @@ const mockProducts: Product[] = [
 	},
 ];
 
-export const ProductListView: React.FC<ProductListViewProps> = ({ kioskId }) => {
+export const ProductListView: React.FC<ProductListViewProps> = ({ kiosk: _kiosk }) => {
 	const { t: translate } = useTranslation();
 
 	const formatPositions = (positions: ProductPosition[]): string => {

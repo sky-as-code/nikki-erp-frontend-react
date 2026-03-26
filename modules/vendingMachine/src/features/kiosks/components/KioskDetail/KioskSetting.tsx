@@ -19,10 +19,14 @@ import { Theme } from '@/features/themes/types';
 
 interface KioskSettingProps {
 	kiosk: Kiosk;
-	isEditing: boolean;
+	tabState: {
+		isEditing: boolean;
+	};
 }
 
-export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, isEditing }) => {
+export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, tabState }) => {
+	const { isEditing } = tabState;
+
 	const { t: translate } = useTranslation();
 	const [selectedInterfaceMode, setSelectedInterfaceMode] = useState<InterfaceMode | undefined>(undefined);
 	const [idlePlaylist, setIdlePlaylist] = useState<Slideshow | undefined>(undefined);

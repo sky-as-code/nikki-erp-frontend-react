@@ -1,6 +1,6 @@
 import { Badge, Button, Group, Modal, ScrollArea, Stack, Table, Text, TextInput } from '@mantine/core';
 import { IconDeviceDesktop, IconMapPin, IconSearch } from '@tabler/icons-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { mockKiosks } from '../../../kiosks/mockKiosks';
@@ -14,6 +14,7 @@ export interface KioskSelectModalProps {
 	selectedKioskIds?: string[];
 }
 
+// eslint-disable-next-line max-lines-per-function
 export const KioskSelectModal: React.FC<KioskSelectModalProps> = ({
 	opened,
 	onClose,
@@ -44,7 +45,7 @@ export const KioskSelectModal: React.FC<KioskSelectModalProps> = ({
 			(kiosk) =>
 				kiosk.code.toLowerCase().includes(query) ||
 				kiosk.name.toLowerCase().includes(query) ||
-				kiosk.address.toLowerCase().includes(query)
+				kiosk.address.toLowerCase().includes(query),
 		);
 	}, [availableKiosks, searchQuery]);
 
@@ -62,6 +63,7 @@ export const KioskSelectModal: React.FC<KioskSelectModalProps> = ({
 		const modeMap = {
 			[KioskMode.PENDING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 			[KioskMode.SELLING]: { color: 'blue', label: translate('nikki.vendingMachine.kiosk.mode.selling') },
+			[KioskMode.WAITING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.waiting') },
 			[KioskMode.SLIDESHOWONLY]: { color: 'purple', label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 		};
 		const modeInfo = modeMap[mode];
