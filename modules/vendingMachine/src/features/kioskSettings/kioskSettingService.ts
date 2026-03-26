@@ -1,6 +1,7 @@
 import { mockKioskSettings } from './mockKioskSettings';
 import { KioskSetting } from './types';
 
+
 function configFields(dto: KioskSetting): KioskSetting {
 	return { ...dto };
 }

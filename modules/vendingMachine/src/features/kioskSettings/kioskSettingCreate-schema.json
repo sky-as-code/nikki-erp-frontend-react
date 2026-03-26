@@ -1,11 +1,6 @@
 {
-	"name": "kioskSetting",
+	"name": "kioskSettingCreate",
 	"fields": {
-		"id": {
-			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.id' }",
-			"hidden": true
-		},
 		"code": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.code' }"
@@ -22,20 +17,13 @@
 			"type": "enum",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.status' }",
 			"enum": [
-				{
-					"value": "active",
-					"label": "{ \"$ref\": 'nikki.general.status.active' }"
-				},
-				{
-					"value": "inactive",
-					"label": "{ \"$ref\": 'nikki.general.status.inactive' }"
-				}
+				{ "value": "active", "label": "{ \"$ref\": 'nikki.general.status.active' }" },
+				{ "value": "inactive", "label": "{ \"$ref\": 'nikki.general.status.inactive' }" }
 			]
 		},
-		"createdAt": {
-			"type": "date",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.createdAt' }",
-			"hidden": true
+		"brand": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.brand' }"
 		}
 	}
 }

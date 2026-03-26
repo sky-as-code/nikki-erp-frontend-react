@@ -5,13 +5,15 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 
+import { KioskSetting } from '../../types';
+
 export interface KioskSettingTableProps extends AutoTableProps {
-	onViewDetail: (settingId: string) => void;
-	onEdit?: (settingId: string) => void;
-	onDelete?: (settingId: string) => void;
+	onPreview: (setting: KioskSetting) => void;
+	onEdit?: (setting: KioskSetting) => void;
+	onDelete?: (setting: KioskSetting) => void;
 }
 
-const NameColumn: React.FC<{ row: Record<string, unknown>; onView: (id: string) => void }> = ({ row, onView }) => {
+const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
 	const navigate = useNavigate();
 	const id = row.id as string;
 	const name = String(row.name || '');
@@ -41,7 +43,7 @@ export const KioskSettingTable: React.FC<KioskSettingTableProps> = ({
 	data,
 	schema,
 	isLoading,
-	onViewDetail,
+	onPreview,
 	onEdit,
 	onDelete,
 }) => {
@@ -71,27 +73,27 @@ export const KioskSettingTable: React.FC<KioskSettingTableProps> = ({
 						return <Badge color={info.color} size='sm'>{info.label}</Badge>;
 					},
 					actions: (row) => {
-						const id = row.id as string;
+						const setting = row as unknown as KioskSetting;
 						return (
 							<Box style={{ minWidth: 120 }}>
 								<Group gap='xs' justify='flex-end' onClick={(e) => e.stopPropagation()}>
-									{onViewDetail && (
+									{onPreview && (
 										<Tooltip label={translate('nikki.general.actions.view')}>
-											<ActionIcon variant='subtle' color='blue' onClick={() => onViewDetail(id)}>
+											<ActionIcon variant='subtle' color='blue' onClick={() => onPreview(setting)}>
 												<IconEye size={16} />
 											</ActionIcon>
 										</Tooltip>
 									)}
 									{onEdit && (
 										<Tooltip label={translate('nikki.general.actions.edit')}>
-											<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(id)}>
+											<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(setting)}>
 												<IconEdit size={16} />
 											</ActionIcon>
 										</Tooltip>
 									)}
 									{onDelete && (
 										<Tooltip label={translate('nikki.general.actions.delete')}>
-											<ActionIcon variant='subtle' color='red' onClick={() => onDelete(id)}>
+											<ActionIcon variant='subtle' color='red' onClick={() => onDelete(setting)}>
 												<IconTrash size={16} />
 											</ActionIcon>
 										</Tooltip>
@@ -106,7 +108,7 @@ export const KioskSettingTable: React.FC<KioskSettingTableProps> = ({
 				}}
 				columnAsLink='code'
 				columnAsLinkHref={(row) => {
-					onViewDetail(row.id as string);
+					onPreview(row as unknown as KioskSetting);
 					return '#';
 				}}
 			/>

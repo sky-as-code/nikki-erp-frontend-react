@@ -4,16 +4,16 @@ import { IconDeviceGamepad2, IconPalette, IconPhoto, IconPlus } from '@tabler/ic
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Slideshow } from '@/features/slideshow/types';
-import { SlideshowCard } from '@/features/events/components/EventDetailDrawer/SlideshowCard';
-import { SlideshowSelectModal } from '@/features/events/components/EventDetailDrawer/SlideshowSelectModal';
 import { GamePreviewCard } from '@/features/events/components/EventDetailDrawer/GamePreviewCard';
 import { GameSelectModal } from '@/features/events/components/EventDetailDrawer/GameSelectModal';
+import { SlideshowCard } from '@/features/events/components/EventDetailDrawer/SlideshowCard';
+import { SlideshowSelectModal } from '@/features/events/components/EventDetailDrawer/SlideshowSelectModal';
 import { ThemePreviewCard } from '@/features/events/components/EventDetailDrawer/ThemePreviewCard';
 import { ThemeSelectModal } from '@/features/events/components/EventDetailDrawer/ThemeSelectModal';
 import { Game } from '@/features/games/types';
 import { InterfaceMode } from '@/features/kioskModels/types';
 import { Kiosk } from '@/features/kiosks/types';
+import { Slideshow } from '@/features/slideshow/types';
 import { Theme } from '@/features/themes/types';
 
 
@@ -118,7 +118,10 @@ export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, isEdi
 					{translate('nikki.vendingMachine.events.fields.idlePlaylist')}
 				</Text>
 				{idlePlaylist ? (
-					<SlideshowCard slideshow={idlePlaylist} onRemove={isEditing ? handleRemoveIdlePlaylist : undefined} />
+					<SlideshowCard
+						slideshow={idlePlaylist}
+						onRemove={isEditing ? handleRemoveIdlePlaylist : undefined}
+					/>
 				) : (
 					<Card withBorder p='sm' radius='md'>
 						<Group gap='xs' justify='space-between'>
@@ -153,7 +156,10 @@ export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, isEdi
 					{translate('nikki.vendingMachine.events.fields.shoppingPlaylist')}
 				</Text>
 				{shoppingPlaylist ? (
-					<SlideshowCard slideshow={shoppingPlaylist} onRemove={isEditing ? handleRemoveShoppingPlaylist : undefined} />
+					<SlideshowCard
+						slideshow={shoppingPlaylist}
+						onRemove={isEditing ? handleRemoveShoppingPlaylist : undefined}
+					/>
 				) : (
 					<Card withBorder p='sm' radius='md'>
 						<Group gap='xs' justify='space-between'>

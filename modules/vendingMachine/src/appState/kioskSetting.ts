@@ -38,3 +38,13 @@ export const selectKioskSettingDetail = createSelector(
 	selectKioskSettingState,
 	(s) => s.detail,
 );
+
+export const selectCreateKioskSetting = createSelector(
+	selectKioskSettingState,
+	(s) => s.create,
+);
+
+export const selectDeleteKioskSetting = createSelector(
+	selectKioskSettingState,
+	(s) => s.delete,
+);

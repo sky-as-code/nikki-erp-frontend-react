@@ -34,6 +34,10 @@
 		"inventory_report": "Inventory Report",
 		"payment": "Payment"
 	},
+	"assignedKioskList": {
+		"addKiosks": "Add kiosks",
+		"empty": "No kiosks assigned"
+	},
 	"overview": {
 		"title": "Vending Machine Overview",
 		"statistics": "Statistics",
@@ -410,11 +414,17 @@
 	},
 	"kioskSettings": {
 		"title": "Kiosk Settings",
+		"title_create": "Create Kiosk Setting",
 		"detail": {
 			"title": "Kiosk Setting Details"
 		},
 		"sections": {
 			"basicInfo": "Basic Information"
+		},
+		"tabs": {
+			"basicInfo": "Basic Information",
+			"settings": "Settings",
+			"kiosks": "Kiosks"
 		},
 		"fields": {
 			"id": "ID",
@@ -436,7 +446,8 @@
 			"status": "Filter by Status"
 		},
 		"messages": {
-			"no_settings": "No kiosk settings found"
+			"no_settings": "No kiosk settings found",
+			"create_success": "Kiosk setting \"{{name}}\" has been created successfully"
 		}
 	},
 	"settings": {

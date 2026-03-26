@@ -8,15 +8,15 @@ import { KioskSetting } from '../../types';
 export interface KioskSettingGridViewProps {
 	settings: KioskSetting[];
 	isLoading?: boolean;
-	onViewDetail: (settingId: string) => void;
-	onEdit?: (settingId: string) => void;
-	onDelete?: (settingId: string) => void;
+	onPreview: (setting: KioskSetting) => void;
+	onEdit?: (setting: KioskSetting) => void;
+	onDelete?: (setting: KioskSetting) => void;
 }
 
 export const KioskSettingGridView: React.FC<KioskSettingGridViewProps> = ({
 	settings,
 	isLoading = false,
-	onViewDetail,
+	onPreview,
 	onEdit,
 	onDelete,
 }) => {
@@ -49,7 +49,7 @@ export const KioskSettingGridView: React.FC<KioskSettingGridViewProps> = ({
 					radius='md'
 					withBorder
 					style={{ cursor: 'pointer' }}
-					onClick={() => onViewDetail(setting.id)}
+					onClick={() => onPreview(setting)}
 				>
 					<Stack gap='sm'>
 						<Group justify='space-between' align='flex-start'>
@@ -63,14 +63,14 @@ export const KioskSettingGridView: React.FC<KioskSettingGridViewProps> = ({
 							<Group gap='xs' onClick={(e) => e.stopPropagation()}>
 								{onEdit && (
 									<Tooltip label={translate('nikki.general.actions.edit')}>
-										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(setting.id)}>
+										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(setting)}>
 											<IconEdit size={14} />
 										</ActionIcon>
 									</Tooltip>
 								)}
 								{onDelete && (
 									<Tooltip label={translate('nikki.general.actions.delete')}>
-										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(setting.id)}>
+										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(setting)}>
 											<IconTrash size={14} />
 										</ActionIcon>
 									</Tooltip>

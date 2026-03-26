@@ -313,6 +313,7 @@ export const useKioskDetailTabs = ({
 		return tabConfigs.map((config) => {
 			const tabHook = tabHooks[config.id];
 			const componentProps = tabHook.getComponentProps?.() ?? {};
+
 			return {
 				id: config.id,
 				title: config.title,

@@ -1,197 +1,169 @@
 import { ConfirmModal } from '@nikkierp/ui/components';
-import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
+import { useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
-import { IconPlus, IconRefresh } from '@tabler/icons-react';
-import React, { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useMemo } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 
-import { type ViewMode, ControlPanel, ControlPanelFilterConfig } from '@/components';
+import { ControlPanel } from '@/components';
+import { ControlPanelProps, ViewMode } from '@/components/ControlPanel/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import {
 	KioskSettingDetailDrawer,
 	KioskSettingGridView,
 	KioskSettingTable,
 	kioskSettingSchema,
-	useKioskSettingDetail,
+	useKioskSettingDelete,
+	useKioskSettingFilter,
 	useKioskSettingList,
+	useKioskSettingPageConfig,
+	useKioskSettingPreview,
+	KioskSettingListViewMode,
 } from '@/features/kioskSettings';
 import { KioskSetting } from '@/features/kioskSettings/types';
 
 
-// eslint-disable-next-line max-lines-per-function
 export const KioskSettingPage: React.FC = () => {
 	const { t: translate } = useTranslation();
-	const { settings, isLoadingList, handleRefresh } = useKioskSettingList();
-	const { isOpen, item, configOpenModal, handleCloseModal } = useConfirmModal<KioskSetting>();
+	const { settings = [], isLoadingList, handleRefresh } = useKioskSettingList();
 
-	const [viewMode, setViewMode] = useState<ViewMode>('list');
-	const [searchValue, setSearchValue] = useState('');
-	const [statusFilter, setStatusFilter] = useState<string[]>([]);
-	const [selectedSettingId, setSelectedSettingId] = useState<string | undefined>();
-	const [drawerOpened, setDrawerOpened] = useState(false);
+	const { filteredSettings, filters, searchValue, setSearchValue } = useKioskSettingFilter(settings);
 
-	const { setting: selectedSetting, isLoading: isLoadingDetail } = useKioskSettingDetail(selectedSettingId);
+	const { isOpenPreview, handlePreview, handleClosePreview, selectedSetting, isLoadingPreview } = useKioskSettingPreview();
 
-	const filteredSettings = useMemo(() => {
-		let filtered = settings || [];
-		if (statusFilter.length > 0) {
-			filtered = filtered.filter((s: KioskSetting) => statusFilter.includes(s.status));
-		}
-		if (searchValue.trim()) {
-			const searchLower = searchValue.toLowerCase().trim();
-			filtered = filtered.filter(
-				(s: KioskSetting) =>
-					s.code.toLowerCase().includes(searchLower) ||
-					s.name.toLowerCase().includes(searchLower),
-			) as KioskSetting[];
-		}
-		return filtered;
-	}, [settings, statusFilter, searchValue]);
+	const {
+		isOpenDeleteModal,
+		handleOpenDeleteModal,
+		handleCloseDeleteModal,
+		settingToDelete,
+		handleDelete: handleDeleteSetting,
+	} = useKioskSettingDelete(handleRefresh);
 
-	const handleViewDetail = (id: string) => {
-		setSelectedSettingId(id);
-		setDrawerOpened(true);
-	};
+	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskSettingPageConfig({ handleRefresh });
 
-	const handleCloseDrawer = () => {
-		setDrawerOpened(false);
-		setSelectedSettingId(undefined);
-	};
-
-	const handleOpenDeleteModal = (id: string) => {
-		const s = settings?.find((x: KioskSetting) => x.id === id);
-		if (s) configOpenModal(s);
-	};
-
-	const handleDeleteConfirm = () => {
-		if (item) console.log('Delete setting:', item.id);
-		handleCloseModal();
-	};
-
-
-
-	useDocumentTitle('nikki.vendingMachine.menu.kiosk_settings');
-
-	const breadcrumbs = useMemo(() => [
-		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
-		{ title: translate('nikki.vendingMachine.kioskSettings.title'), href: '#' },
-	], [translate]);
+	useDocumentTitle('nikki.vendingMachine.kioskSettings.title');
 
 	return (
 		<>
 			<PageContainer
 				breadcrumbs={breadcrumbs}
 				sections={[
-					<KioskSettingsControlPanel
-						viewMode={viewMode}
-						setViewMode={setViewMode}
+					<KioskSettingListControlPanel
+						key='kiosk-setting-list-control-panel'
+						actions={actions}
 						searchValue={searchValue}
 						setSearchValue={setSearchValue}
-						statusFilter={statusFilter}
-						setStatusFilter={setStatusFilter}
-						handleRefresh={handleRefresh}
+						filters={filters}
+						viewMode={viewMode}
+						setViewMode={setViewMode}
 					/>,
 				]}
+				isLoading={isLoadingList}
+				isEmpty={!filteredSettings?.length && !isLoadingList}
 			>
-				{viewMode === 'list' ? (
-					<KioskSettingTable
-						columns={['code', 'name', 'description', 'status', 'actions']}
-						data={filteredSettings as unknown as Record<string, unknown>[]}
-						schema={kioskSettingSchema as ModelSchema}
-						isLoading={isLoadingList}
-						onViewDetail={handleViewDetail}
-						onDelete={handleOpenDeleteModal}
-					/>
-				) : (
-					<KioskSettingGridView
-						settings={filteredSettings}
-						isLoading={isLoadingList}
-						onViewDetail={handleViewDetail}
-						onDelete={handleOpenDeleteModal}
-					/>
-				)}
+				<KioskSettingListPageContent
+					settings={filteredSettings}
+					isLoading={isLoadingList}
+					viewMode={viewMode}
+					handlePreview={handlePreview}
+					handleDelete={handleOpenDeleteModal}
+				/>
 			</PageContainer>
 
 			<ConfirmModal
-				opened={isOpen}
-				onClose={handleCloseModal}
-				onConfirm={handleDeleteConfirm}
 				title={translate('nikki.general.messages.delete_confirm')}
+				opened={!!settingToDelete && isOpenDeleteModal}
+				onClose={handleCloseDeleteModal}
+				onConfirm={() => handleDeleteSetting(settingToDelete?.id || '')}
 				message={
-					item
-						? translate('nikki.general.messages.delete_confirm_name', { name: item.name })
-						: translate('nikki.general.messages.delete_confirm')
+					<Trans
+						i18nKey='nikki.general.messages.delete_confirm_name'
+						values={{ name: settingToDelete?.name || '' }}
+					/>
 				}
 				confirmLabel={translate('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>
 
 			<KioskSettingDetailDrawer
-				opened={drawerOpened}
-				onClose={handleCloseDrawer}
+				opened={isOpenPreview}
+				onClose={handleClosePreview}
 				setting={selectedSetting}
-				isLoading={isLoadingDetail}
+				isLoading={isLoadingPreview}
 			/>
 		</>
 	);
 };
 
 
-const KioskSettingsControlPanel: React.FC<{
-	viewMode: ViewMode;
-	setViewMode: (viewMode: ViewMode) => void;
+interface KioskSettingListControlPanelProps {
+	actions: ControlPanelProps['actions'];
 	searchValue: string;
-	setSearchValue: (searchValue: string) => void;
-	statusFilter: string[];
-	setStatusFilter: (statusFilter: string[]) => void;
-	handleRefresh: () => void;
-}> = ({ viewMode, setViewMode, searchValue, setSearchValue, statusFilter, setStatusFilter, handleRefresh }) => {
+	setSearchValue: (value: string) => void;
+	filters: ControlPanelProps['filters'];
+	viewMode: KioskSettingListViewMode;
+	setViewMode: (value: KioskSettingListViewMode) => void;
+}
 
-	const { t: translate } = useTranslation();
-
-	const statusOptions = [
-		{ value: 'active', label: translate('nikki.general.status.active') },
-		{ value: 'inactive', label: translate('nikki.general.status.inactive') },
-	];
-
-	const filters: ControlPanelFilterConfig[] = useMemo(() => [
-		{
-			value: statusFilter,
-			onChange: setStatusFilter,
-			options: statusOptions,
-			placeholder: translate('nikki.vendingMachine.kioskSettings.filter.status'),
-		},
-	], [statusFilter, statusOptions, translate]);
-
-
-	return (
-		<ControlPanel
-			actions={[
-				{
-					label: translate('nikki.general.actions.create'),
-					leftSection: <IconPlus size={16} />,
-					onClick: () => console.log('create new kiosk setting'),
-				},
-				{
-					label: translate('nikki.general.actions.refresh'),
-					leftSection: <IconRefresh size={16} />,
-					onClick: handleRefresh,
-					variant: 'outline',
-				},
-			]}
-			viewMode={{
-				value: viewMode,
-				onChange: setViewMode,
-				segments: ['list', 'grid'],
-			}}
-			filters={filters}
-			search={
-				{
+const KioskSettingListControlPanel: React.FC<KioskSettingListControlPanelProps> =
+	({ actions, searchValue, setSearchValue, filters, viewMode, setViewMode }) => {
+		const { t: translate } = useTranslation();
+		return (
+			<ControlPanel
+				key='control-panel'
+				actions={actions}
+				search={{
 					value: searchValue,
 					onChange: setSearchValue,
 					placeholder: translate('nikki.vendingMachine.kioskSettings.search.placeholder'),
-				}
-			}
-		/>
-	);
-};
+				}}
+				filters={filters}
+				viewMode={{
+					value: viewMode,
+					onChange: (mode: ViewMode) => setViewMode(mode as KioskSettingListViewMode),
+					segments: ['list', 'grid'],
+				}}
+			/>
+		);
+	};
+
+
+interface KioskSettingListPageContentProps {
+	settings: KioskSetting[];
+	isLoading: boolean;
+	viewMode: KioskSettingListViewMode;
+	handlePreview: (setting: KioskSetting) => void;
+	handleDelete: (setting: KioskSetting) => void;
+}
+
+const KioskSettingListPageContent: React.FC<KioskSettingListPageContentProps> =
+	({ settings, isLoading, viewMode, handlePreview, handleDelete }) => {
+		const kioskSettingListView = useMemo(() => (
+			<KioskSettingTable
+				columns={['code', 'name', 'description', 'status', 'actions']}
+				data={settings as unknown as Record<string, unknown>[]}
+				schema={kioskSettingSchema as ModelSchema}
+				isLoading={isLoading}
+				onPreview={handlePreview}
+				onDelete={handleDelete}
+			/>
+		), [settings, handlePreview, handleDelete, isLoading]);
+
+		const kioskSettingGridView = useMemo(() => (
+			<KioskSettingGridView
+				settings={settings}
+				isLoading={isLoading}
+				onPreview={handlePreview}
+				onDelete={handleDelete}
+			/>
+		), [settings, handlePreview, handleDelete, isLoading]);
+
+		const pageContent = useMemo(() => {
+			const views: Partial<Record<ViewMode, React.ReactNode>> = {
+				list: kioskSettingListView,
+				grid: kioskSettingGridView,
+			};
+			return views[viewMode] ?? kioskSettingListView;
+		}, [viewMode, kioskSettingListView, kioskSettingGridView]);
+
+		return pageContent;
+	};

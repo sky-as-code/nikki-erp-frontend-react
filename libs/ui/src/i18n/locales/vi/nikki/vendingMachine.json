@@ -30,6 +30,10 @@
 		"orders_report": "Báo cáo đơn hàng",
 		"inventory_report": "Báo cáo hàng tồn"
 	},
+	"assignedKioskList": {
+		"addKiosks": "Thêm kiosk",
+		"empty": "Chưa gán kiosk nào"
+	},
 	"overview": {
 		"title": "Tổng quan - Máy bán hàng tự động",
 		"statistics": "Thống kê",
@@ -453,11 +457,17 @@
 	},
 	"kioskSettings": {
 		"title": "Cài đặt Kiosk",
+		"title_create": "Tạo cài đặt Kiosk",
 		"detail": {
 			"title": "Chi tiết cài đặt Kiosk"
 		},
 		"sections": {
 			"basicInfo": "Thông tin cơ bản"
+		},
+		"tabs": {
+			"basicInfo": "Thông tin cơ bản",
+			"settings": "Cài đặt",
+			"kiosks": "Kiosks"
 		},
 		"fields": {
 			"id": "Mã định danh",
@@ -479,7 +489,8 @@
 			"status": "Lọc theo trạng thái"
 		},
 		"messages": {
-			"no_settings": "Không tìm thấy cài đặt kiosk nào"
+			"no_settings": "Không tìm thấy cài đặt kiosk nào",
+			"create_success": "Đã tạo cài đặt kiosk \"{{name}}\" thành công"
 		}
 	},
 	"settings": {
