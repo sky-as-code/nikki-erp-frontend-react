@@ -5,20 +5,12 @@ import { useNavigate, useParams } from 'react-router';
 
 import { attributeActions } from '../../../appState';
 import type { InventoryDispatch } from '../../../appState';
-import { localizedTextToString } from '../../localizedText';
 
 import type { Attribute } from '../types';
-
-
-export const PAGE_SIZE_OPTIONS = [
-	{ value: '10', label: '10 / page' },
-	{ value: '20', label: '20 / page' },
-	{ value: '50', label: '50 / page' },
-	{ value: '100', label: '100 / page' },
-];
+import { JsonToString } from '../../../utils/serializer';
 
 const normalizeAttributeName = (name: Attribute['displayName']) => {
-	return localizedTextToString(name);
+	return JsonToString(name);
 };
 
 function filterAttributes(attributes: Attribute[], searchValue: string) {

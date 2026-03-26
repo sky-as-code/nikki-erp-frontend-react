@@ -33,19 +33,3 @@ export function toLocalizedText(
 
 	return undefined;
 }
-
-export function localizedTextToString(value: LocalizedText): string {
-	if (typeof value === 'string') {
-		return value;
-	}
-
-	if (value && typeof value === 'object') {
-		const normalized = normalizeLocalizedRecord(value);
-		if (!normalized) {
-			return '';
-		}
-		return normalized.en ?? Object.values(normalized)[0] ?? '';
-	}
-
-	return '';
-}

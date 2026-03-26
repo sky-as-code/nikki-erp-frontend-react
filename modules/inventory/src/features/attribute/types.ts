@@ -5,83 +5,53 @@ import type {
 	UpdateResponse,
 } from '@nikkierp/common';
 
-
-export type AttributeDisplayType = 'dropdown' | 'color' | 'button';
-export type AttributeLangText = string | Record<string, string>;
-export type AttributeDataType = 'text' | 'string' | 'number' | 'bool';
-export type EnumValueItem = Record<string, unknown>;
-
 export type Attribute = {
 	id: string;
-	productId?: string;
-	attributeGroupId?: string;
+	productId: string;
 	codeName: string;
-	displayName: AttributeLangText;
-	dataType: AttributeDataType | string;
-	isEnum: boolean;
-	enumValue?: EnumValueItem[];
+	displayName: Record<string, string>; 
+	dataType: string;
+	isRequired?: boolean;
+	isEnum?: boolean;
+	enumValue?: Record<string, unknown>[];
 	enumValueSort?: boolean;
-	isRequired: boolean;
-	sortIndex: number;
-	createdAt: string;
-	updatedAt: string;
-	etag: string;
-
-	// Compatibility fields for existing UI components.
-	name?: string;
-	code?: string;
-	displayType?: AttributeDisplayType;
-	valueCount?: number;
+	sortIndex?: number;
+	groupId?: string;
 	valuesCount?: number;
 	variantsCount?: number;
-	groupId?: string;
-	enumTextValue?: EnumValueItem[];
-	enumNumberValue?: number[];
+	createdAt: number; 
+	updatedAt?: number;
+	etag: string;
+
 	attributeValues?: unknown[];
 	variants?: unknown[];
 };
 
 export type CreateAttributeRequest = {
-	productId?: string;
-	attributeGroupId?: string;
-	codeName?: string;
-	displayName?: AttributeLangText;
-	dataType?: AttributeDataType | string;
+	productId: string;
+	codeName: string; 
+	displayName: Record<string, string>; 
+	dataType: string; 
+	isRequired: boolean;
 	isEnum?: boolean;
-	enumValue?: EnumValueItem[];
+	enumValue?: Record<string, unknown>[];
 	enumValueSort?: boolean;
-	isRequired?: boolean;
 	sortIndex?: number;
-
-	// Compatibility fields for existing create forms.
-	name?: string;
-	code?: string;
-	displayType?: AttributeDisplayType;
-	enumTextValue?: EnumValueItem[];
-	enumNumberValue?: number[];
 	groupId?: string;
 };
 
 export type UpdateAttributeRequest = {
 	id: string;
+	productId: string;
 	etag: string;
-	productId?: string;
-	attributeGroupId?: string;
 	codeName?: string;
-	displayName?: AttributeLangText;
+	displayName?: Record<string, string>;
 	sortIndex?: number;
-	dataType?: AttributeDataType | string;
+	dataType?: string;
 	isRequired?: boolean;
 	isEnum?: boolean;
-	enumValue?: EnumValueItem[];
+	enumValue?: Record<string, unknown>[];
 	enumValueSort?: boolean;
-
-	// Compatibility fields for existing update forms.
-	name?: string;
-	code?: string;
-	displayType?: AttributeDisplayType;
-	enumTextValue?: EnumValueItem[];
-	enumNumberValue?: number[];
 	groupId?: string;
 };
 

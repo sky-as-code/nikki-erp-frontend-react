@@ -59,8 +59,7 @@
 		},
 		"enumValue": {
 			"type": "array",
-			"label": "Enum Value",
-			"hidden": true
+			"label": "Enum Value"
 		},
 		"enumValueSort": {
 			"type": "boolean",

@@ -1,3 +1,3 @@
 export { ProductCreateForm } from './ProductCreateForm';
-export { ProductDetailContent } from './ProductDetailForm';
+export { ProductDetailForm } from './ProductDetailForm';
 export { ProductTable } from './ProductTable';

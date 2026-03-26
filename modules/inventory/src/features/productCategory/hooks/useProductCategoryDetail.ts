@@ -10,10 +10,11 @@ import {
 	selectProductCategoryList,
 	selectUpdateProductCategory,
 } from '../../../appState/productCategory';
-import { localizedTextToString, toLocalizedText } from '../../localizedText';
+import { toLocalizedText } from '../../localizedText';
 
 import type { InventoryDispatch } from '../../../appState';
 import type { ProductCategory } from '../types';
+import { JsonToString } from '../../../utils/serializer';
 
 
 export type ProductCategoryDetailFormValues = {
@@ -26,7 +27,7 @@ const EMPTY_FORM_VALUES: ProductCategoryDetailFormValues = {
 
 function toFormValues(category: ProductCategory): ProductCategoryDetailFormValues {
 	return {
-		name: localizedTextToString(category.name),
+		name: JsonToString(category.name),
 	};
 }
 
@@ -58,11 +59,35 @@ export function useProductCategoryDetail({ categoryId }: UseProductCategoryDetai
 		loadData();
 	}, [loadData]);
 
+	React.useEffect(() => {
+		if (updateCommand.status === 'success') {
+			notification.showInfo('Category updated successfully', '');
+			dispatch(productCategoryActions.resetUpdateProductCategory());
+			loadData();
+		}
+		if (updateCommand.status === 'error') {
+			notification.showError('Failed to update category', '');
+			dispatch(productCategoryActions.resetUpdateProductCategory());
+		}
+	}, [updateCommand.status, dispatch, loadData, notification]);
+
+	React.useEffect(() => {
+		if (deleteCommand.status === 'success') {
+			notification.showInfo('Category deleted successfully', '');
+			dispatch(productCategoryActions.resetDeleteProductCategory());
+			navigate('..', { relative: 'path' });
+		}
+		if (deleteCommand.status === 'error') {
+			notification.showError('Failed to delete category', '');
+			dispatch(productCategoryActions.resetDeleteProductCategory());
+		}
+	}, [deleteCommand.status, dispatch, navigate, notification]);
+
 	const handleGoBack = React.useCallback(() => {
 		navigate('..', { relative: 'path' });
 	}, [navigate]);
 
-	const handleSave = React.useCallback(async (values: ProductCategoryDetailFormValues) => {
+	const handleSave = React.useCallback((values: ProductCategoryDetailFormValues) => {
 		if (!categoryId || !category) {
 			return;
 		}
@@ -72,47 +97,23 @@ export function useProductCategoryDetail({ categoryId }: UseProductCategoryDetai
 			return;
 		}
 
-		try {
-			await dispatch(productCategoryActions.updateProductCategory({
-				orgId,
-				data: {
-					id: categoryId,
-					etag: category.etag,
-					name,
-				},
-			})).unwrap();
-			notification.showInfo('Category updated successfully', '');
-			dispatch(productCategoryActions.resetUpdateProductCategory());
-			loadData();
-		}
-		catch (error) {
-			notification.showError(
-				error instanceof Error ? error.message : 'Failed to update category',
-				'',
-			);
-			dispatch(productCategoryActions.resetUpdateProductCategory());
-		}
-	}, [category, categoryId, dispatch, loadData, notification]);
+		dispatch(productCategoryActions.updateProductCategory({
+			orgId,
+			data: {
+				id: categoryId,
+				etag: category.etag,
+				name,
+			},
+		}));
+	}, [category, categoryId, dispatch, orgId]);
 
-	const handleDelete = React.useCallback(async () => {
+	const handleDelete = React.useCallback(() => {
 		if (!categoryId) {
 			return;
 		}
 
-		try {
-			await dispatch(productCategoryActions.deleteProductCategory({ orgId, id: categoryId })).unwrap();
-			notification.showInfo('Category deleted successfully', '');
-			dispatch(productCategoryActions.resetDeleteProductCategory());
-			handleGoBack();
-		}
-		catch (error) {
-			notification.showError(
-				error instanceof Error ? error.message : 'Failed to delete category',
-				'',
-			);
-			dispatch(productCategoryActions.resetDeleteProductCategory());
-		}
-	}, [categoryId, dispatch, handleGoBack, notification]);
+		dispatch(productCategoryActions.deleteProductCategory({ orgId, id: categoryId }));
+	}, [categoryId, dispatch, orgId]);
 
 	const isLoading = listProductCategory.status === 'pending';
 	const isSubmitting = updateCommand.status === 'pending' || deleteCommand.status === 'pending';

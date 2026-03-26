@@ -16,11 +16,12 @@ import {
 import {
 	selectVariantList,
 } from '../../../appState/variant';
-import {selectUnitList, unitActions,
-} from '../../../appState/unit';
+import { selectUnitList, unitActions } from '../../../appState/unit';
+import { listAttributeValues } from '../../attributeValue/attributeValueSlice';
 
 import type { InventoryDispatch } from '../../../appState';
 import type { Attribute } from '../../attribute/types';
+import type { AttributeValue } from '../../attributeValue/types';
 import type { Variant } from '../../variant/types';
 import type { UpdateProductRequest } from '../types';
 
@@ -38,16 +39,20 @@ export function useProductDetailHandlers() {
 
 	const updateCommand = useMicroAppSelector(selectUpdateProduct);
 	const deleteCommand = useMicroAppSelector(selectDeleteProduct);
-	
+
 	const attributeList = useMicroAppSelector(selectAttributeList);
 	const variantList = useMicroAppSelector(selectVariantList);
-	const unitList = useMicroAppSelector(selectUnitList)
+	const unitList = useMicroAppSelector(selectUnitList);
 
 	const isLoadingDetail = productDetail.status === 'pending';
 
 	const attributes = (attributeList.data ?? []) as Attribute[];
 	const variants = (variantList.data ?? []) as Variant[];
 	const units: any[] = unitList.data ?? [];
+
+	// Attribute values state
+	const [attributeValuesByAttributeId, setAttributeValuesByAttributeId] = React.useState<Record<string, AttributeValue[]>>({});
+	const [attributeValuesLoading, setAttributeValuesLoading] = React.useState(false);
 
 	const unitName = React.useMemo(() => {
 		if (!product || units.length === 0) {
@@ -92,6 +97,44 @@ export function useProductDetailHandlers() {
 			dispatch(productActions.resetDeleteProduct());
 		}
 	}, [deleteCommand.status, dispatch, navigate, notification]);
+
+	// Load attribute values for each attribute
+	React.useEffect(() => {
+		if (!orgId || !productId || attributes.length === 0) {
+			setAttributeValuesByAttributeId({});
+			setAttributeValuesLoading(false);
+			return;
+		}
+
+		const loadAttributeValues = async () => {
+			const valuesByAttrId: Record<string, AttributeValue[]> = {};
+			setAttributeValuesLoading(true);
+
+			await Promise.all(
+				attributes.map(async (attr) => {
+					try {
+						const result = await dispatch(
+							listAttributeValues({
+								orgId,
+								productId,
+								attributeId: attr.id,
+							}) as any,
+						).unwrap();
+						valuesByAttrId[attr.id] = result.items;
+					}
+					catch (error) {
+						console.error(`Failed to load values for attribute ${attr.id}:`, error);
+						valuesByAttrId[attr.id] = [];
+					}
+				}),
+			);
+
+			setAttributeValuesByAttributeId(valuesByAttrId);
+			setAttributeValuesLoading(false);
+		};
+
+		void loadAttributeValues();
+	}, [orgId, productId, attributes, dispatch]);
 
 	const handleDeleteProduct = React.useCallback(async () => {
 		if (!productId) {
@@ -162,6 +205,10 @@ export function useProductDetailHandlers() {
 		}
 	}, [dispatch, notification, orgId, productId]);
 
+	const handleGoBack = React.useCallback(() => {
+		navigate('..', { relative: 'path' });
+	}, [navigate]);
+
 	React.useEffect(() => {
 		if (!productId) return;
 
@@ -178,9 +225,12 @@ export function useProductDetailHandlers() {
 		variants,
 		units,
 		unitName,
+		attributeValuesByAttributeId,
+		attributeValuesLoading,
 		handleDeleteProduct,
 		handleUpdateProduct,
 		handleDeleteAttribute,
 		handleDeleteVariant,
+		handleGoBack,
 	};
 }

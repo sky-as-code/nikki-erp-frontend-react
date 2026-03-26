@@ -217,9 +217,12 @@ function updateAttributeReducers(builder: ActionReducerMapBuilder<AttributeState
 			state.update.status = 'success';
 			if (state.detail.data) {
 				state.detail.data.etag = action.payload.etag;
-				state.detail.data.updatedAt =
-					(action.payload.updatedAt as Date)?.toISOString?.()
-					?? state.detail.data.updatedAt;
+				if (action.payload.updatedAt) {
+					const timestamp = typeof action.payload.updatedAt === 'number'
+						? action.payload.updatedAt
+						: new Date(action.payload.updatedAt).getTime();
+					state.detail.data.updatedAt = timestamp;
+				}
 			}
 			state.update.error = null;
 		})

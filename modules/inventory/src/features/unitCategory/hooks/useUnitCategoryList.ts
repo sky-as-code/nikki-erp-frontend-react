@@ -7,14 +7,6 @@ import { unitCategoryActions } from '../../../appState';
 
 import type { InventoryDispatch } from '../../../appState';
 
-
-export const PAGE_SIZE_OPTIONS = [
-	{ value: '5', label: '5 / page' },
-	{ value: '10', label: '10 / page' },
-	{ value: '20', label: '20 / page' },
-	{ value: '50', label: '50 / page' },
-];
-
 const normalizeText = (value?: string | null) => (value ?? '').toLowerCase();
 
 function filterCategories(

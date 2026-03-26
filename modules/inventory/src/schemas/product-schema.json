@@ -17,16 +17,17 @@
 			"type": "string",
 			"label": "Name",
 			"required": { "create": true, "update": false },
-			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
+			"constraints": [{ "type": "length", "min": 1, "max": 20 }]
 		},
 		"description": {
 			"type": "string",
 			"label": "Description",
-			"constraints": [{ "type": "length", "max": 2000 }]
+			"constraints": [{ "type": "length", "max": 50 }]
 		},
 		"sku": {
 			"type": "string",
 			"label": "SKU",
+			"required": { "create": true, "update": false },
 			"constraints": [{ "type": "length", "max": 100 }]
 		},
 		"barCode": {
@@ -38,10 +39,6 @@
 			"type": "enum",
 			"label": "Status",
 			"required": { "create": false, "update": false },
-			"constraints": [
-				{ "type": "length", "max": 50 },
-				{ "type": "required" }
-			],
 			"enum": [
 				{ "value": "active", "label": "Active" },
 				{ "value": "inactive", "label": "Inactive" }
@@ -64,7 +61,8 @@
 		"proposedPrice": {
 			"type": "integer",
 			"label": "Proposed Price",
-			"constraints": [{ "type": "value_range", "min": 0 }]
+			"required": { "create": true, "update": false },
+			"constraints": [{ "type": "value_range" }]
 		},
 		"variants": {
 			"type": "array",

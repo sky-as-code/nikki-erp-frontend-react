@@ -1,180 +1,46 @@
+/* eslint-disable max-lines-per-function */
 import {
-	Box,
+	Badge,
+	Avatar,
+	ActionIcon,
 	Button,
 	Divider,
 	Grid,
 	Group,
-	Image,
-	NumberInput,
 	Paper,
 	Stack,
+	Tabs,
 	Text,
-	Title,
-	UnstyledButton,
 } from '@mantine/core';
 import {
+	AutoTable,
+	ConfirmModal,
+} from '@nikkierp/ui/components';
+import {
+	FormFieldProvider,
+	FormStyleProvider,
 	AutoField,
-	EntitySelectField,
 } from '@nikkierp/ui/components/form';
-import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import { JsonToString } from '../../../utils/serializer';
+import { IconTrash } from '@tabler/icons-react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
+import { ImageGallery } from '../../../components/ImageGallery';
+import { JsonToString } from '../../../utils/serializer';
+import attributeSchema from '../../../schemas/attribute-schema.json';
+import variantSchema from '../../../schemas/variant-schema.json';
+
+import type { ModelSchema } from '@nikkierp/ui/model';
+import type { Product } from '../types';
 import type { Attribute } from '../../attribute/types';
 import type { AttributeValue } from '../../attributeValue/types';
-import type { Unit } from '../../unit/types';
 import type { Variant } from '../../variant/types';
+import { useNavigate } from 'react-router';
 
-
-interface ImageGalleryProps {
-	currentImages: string[];
-	selectedImageIndex: number;
-	setSelectedImageIndex: (idx: number) => void;
-	productName: string;
-}
-
-function ImageGallery({
-	currentImages,
-	selectedImageIndex,
-	setSelectedImageIndex,
-	productName,
-}: ImageGalleryProps) {
-	return (
-		<Stack gap='md'>
-			<Box pos='relative'>
-				<Image
-					src={currentImages[selectedImageIndex] || currentImages[0]}
-					alt={productName}
-					h={500}
-					fit='cover'
-					radius='md'
-				/>
-			</Box>
-
-			{currentImages.length > 1 && (
-				<Group gap='xs' justify='center'>
-					{currentImages.map((img: string, idx: number) => (
-						<UnstyledButton
-							key={idx}
-							onClick={() => setSelectedImageIndex(idx)}
-							style={{
-								border: selectedImageIndex === idx
-									? '2px solid #228be6'
-									: '1px solid #dee2e6',
-								borderRadius: '4px',
-								overflow: 'hidden',
-							}}
-						>
-							<Image
-								src={img}
-								alt={`${productName} ${idx + 1}`}
-								w={80}
-								h={80}
-								fit='cover'
-							/>
-						</UnstyledButton>
-					))}
-				</Group>
-			)}
-		</Stack>
-	);
-}
-
-function getAttributeValueLabel(value: AttributeValue): string {
-	if (typeof value.valueText === 'string') return value.valueText;
-	if (value.valueText && typeof value.valueText === 'object') {
-		const localized = value.valueText as Record<string, string>;
-		return localized.en || Object.values(localized)[0] || '';
-	}
-	if (typeof value.valueNumber === 'number') return String(value.valueNumber);
-	if (typeof value.valueBool === 'boolean') return value.valueBool ? 'Yes' : 'No';
-	return value.valueRef || '';
-}
-
-function getAttributeValueCandidates(value: AttributeValue): Array<string | number | boolean> {
-	const candidates: Array<string | number | boolean> = [value.id];
-
-	if (typeof value.valueText === 'string') {
-		candidates.push(value.valueText);
-	}
-	else if (value.valueText && typeof value.valueText === 'object') {
-		candidates.push(...Object.values(value.valueText).filter(
-			(item): item is string => typeof item === 'string' && item.length > 0,
-		));
-	}
-
-	if (typeof value.valueNumber === 'number') {
-		candidates.push(value.valueNumber, String(value.valueNumber));
-	}
-
-	if (typeof value.valueBool === 'boolean') {
-		candidates.push(
-			value.valueBool,
-			value.valueBool ? 'true' : 'false',
-			value.valueBool ? 'Yes' : 'No',
-		);
-	}
-
-	if (typeof value.valueRef === 'string') {
-		candidates.push(value.valueRef);
-	}
-
-	return Array.from(new Set(candidates));
-}
-
-function getVariantAttributeCandidates(value: unknown): Array<string | number | boolean> {
-	if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-		return [value];
-	}
-
-	if (!value || typeof value !== 'object') {
-		return [];
-	}
-
-	const record = value as Record<string, unknown>;
-	const candidates: Array<string | number | boolean> = [];
-
-	if (typeof record.value === 'string'
-		|| typeof record.value === 'number'
-		|| typeof record.value === 'boolean') {
-		candidates.push(record.value);
-	}
-
-	if (typeof record.valueText === 'string') {
-		candidates.push(record.valueText);
-	}
-	else if (record.valueText && typeof record.valueText === 'object') {
-		candidates.push(...Object.values(record.valueText as Record<string, unknown>).filter(
-			(item): item is string | number | boolean => (
-				typeof item === 'string'
-				|| typeof item === 'number'
-				|| typeof item === 'boolean'
-			),
-		));
-	}
-
-	if (typeof record.valueNumber === 'number') {
-		candidates.push(record.valueNumber, String(record.valueNumber));
-	}
-
-	if (typeof record.valueBool === 'boolean') {
-		candidates.push(
-			record.valueBool,
-			record.valueBool ? 'true' : 'false',
-			record.valueBool ? 'Yes' : 'No',
-		);
-	}
-
-	if (typeof record.valueRef === 'string') {
-		candidates.push(record.valueRef);
-	}
-
-	if (typeof record.id === 'string') {
-		candidates.push(record.id);
-	}
-
-	return Array.from(new Set(candidates));
-}
+const ATTRIBUTE_SCHEMA = attributeSchema as ModelSchema;
+const VARIANT_SCHEMA = variantSchema as ModelSchema;
+const ATTRIBUTE_COLUMNS = ['codeName', 'displayName', 'dataType', 'isRequired', 'sortIndex'];
+const VARIANT_COLUMNS = ['sku', 'name', 'barcode', 'proposedPrice', 'status'];
 
 function getVariantAttributeValue(attributes: unknown, codeName: string): unknown {
 	if (!attributes) {
@@ -198,586 +64,609 @@ function getVariantAttributeValue(attributes: unknown, codeName: string): unknow
 	return (attributes as Record<string, unknown>)[codeName];
 }
 
-function getAttributeById(attributes: Attribute[]): Record<string, Attribute> {
-	return attributes.reduce<Record<string, Attribute>>((acc, attribute) => {
-		acc[attribute.id] = attribute;
-		return acc;
-	}, {});
-}
-
-function variantMatchesSelection(
-	variant: Variant,
-	selectedAttributes: Record<string, string>,
-	attributesById: Record<string, Attribute>,
-	attributeValuesByAttributeId: Record<string, AttributeValue[]>,
-): boolean {
-	return Object.entries(selectedAttributes).every(([attributeId, valueId]) => {
-		const attribute = attributesById[attributeId];
-		if (!attribute) return false;
-
-		const selectedValue = attributeValuesByAttributeId[attributeId]?.find(
-			(value) => value.id === valueId,
-		);
-		if (!selectedValue) return false;
-
-		const variantAttributeValue = getVariantAttributeValue(variant.attributes, attribute.codeName);
-		const variantCandidates = new Set(getVariantAttributeCandidates(variantAttributeValue));
-		return getAttributeValueCandidates(selectedValue).some((candidate) => variantCandidates.has(candidate));
-	});
-}
-
-export function useVariantResolution(
-	selectedAttributes: Record<string, string>,
-	variants: Variant[],
-	productData: any,
-	requiredAttributeIds: string[],
-	attributes: Attribute[] = [],
-	attributeValuesByAttributeId: Record<string, AttributeValue[]> = {} as Record<string, AttributeValue[]>,
-) {
-	const attributesById = useMemo(() => getAttributeById(attributes), [attributes]);
-
-	const isSelectionComplete = useMemo(() => (
-		requiredAttributeIds.length === 0
-			|| requiredAttributeIds.every((id) => Boolean(selectedAttributes[id]))
-	), [requiredAttributeIds, selectedAttributes]);
-
-	const selectedVariant = useMemo(() => {
-		if (!isSelectionComplete) return null;
-
-		return variants.find((variant: Variant) => (
-			variantMatchesSelection(
-				variant,
-				selectedAttributes,
-				attributesById,
-				attributeValuesByAttributeId,
-			)
-		));
-	}, [attributeValuesByAttributeId, attributesById, isSelectionComplete, selectedAttributes, variants]);
-
-	const currentPrice = selectedVariant?.proposedPrice || productData?.proposedPrice || 0;
-
-	return {
-		selectedVariant,
-		currentPrice,
-	};
-}
-
-interface ProductDetailContentProps {
-	productName: string;
-	productDescription?: string;
-	productImages: string[];
-	selectedImageIndex: number;
-	setSelectedImageIndex: (idx: number) => void;
-	productData: any;
-	attributes: Attribute[];
-	attributeValuesByAttributeId: Record<string, AttributeValue[]>;
-	selectedAttributes: Record<string, string>;
-	currentPrice: number;
-	selectedVariant: Variant | null | undefined;
-	quantity: number;
-	setQuantity: (val: number) => void;
-	handleAttributeSelect: (attributeId: string, valueId: string) => void;
-	isAttributeValueValid: (attributeId: string, valueId: string) => boolean;
-	onResetAttributes: () => void;
-	header?: React.ReactNode;
-}
-
-export function ProductDetailContent({
-	productName,
-	productImages,
-	selectedImageIndex,
-	setSelectedImageIndex,
-	productData,
-	productDescription,
-	attributes,
-	attributeValuesByAttributeId,
-	selectedAttributes,
-	currentPrice,
-	selectedVariant,
-	quantity,
-	setQuantity,
-	handleAttributeSelect,
-	isAttributeValueValid,
-	onResetAttributes,
-	header,
-}: ProductDetailContentProps) {
-	return (
-		<Paper p='md' shadow='xs'>
-			<Stack gap='lg'>
-				{header}
-				<Grid gutter='xl'>
-					<Grid.Col span={{ base: 12, md: 6 }}>
-						<ImageGallery
-							currentImages={productImages}
-							selectedImageIndex={selectedImageIndex}
-							setSelectedImageIndex={setSelectedImageIndex}
-							productName={productName}
-						/>
-					</Grid.Col>
-
-					<Grid.Col span={{ base: 12, md: 6 }}>
-						<ProductInfoPanel
-							productData={productData}
-							productName={productName}
-							productDescription={productDescription}
-							attributes={attributes}
-							attributeValuesByAttributeId={attributeValuesByAttributeId}
-							selectedAttributes={selectedAttributes}
-							currentPrice={currentPrice}
-							selectedVariant={selectedVariant}
-							quantity={quantity}
-							setQuantity={setQuantity}
-							handleAttributeSelect={handleAttributeSelect}
-							isAttributeValueValid={isAttributeValueValid}
-							onResetAttributes={onResetAttributes}
-						/>
-					</Grid.Col>
-				</Grid>
-			</Stack>
-		</Paper>
-	);
-}
-
-export function useAttributeValidation(
-	selectedAttributes: Record<string, string>,
-	variants: Variant[],
-	attributes: Attribute[] = [],
-	attributeValuesByAttributeId: Record<string, AttributeValue[]> = {} as Record<string, AttributeValue[]>,
-) {
-	const attributesById = useMemo(() => getAttributeById(attributes), [attributes]);
-
-	const isAttributeValueValid = (attributeId: string, valueId: string) => {
-		const testSelection = { ...selectedAttributes, [attributeId]: valueId };
-		return variants.some((variant: Variant) => (
-			variantMatchesSelection(
-				variant,
-				testSelection,
-				attributesById,
-				attributeValuesByAttributeId,
-			)
-		));
-	};
-
-	return { isAttributeValueValid };
-}
-
-
-interface ProductInfoPanelProps {
-	productData: any;
-	productName: string;
-	productDescription?: string;
-	attributes: Attribute[];
-	attributeValuesByAttributeId: Record<string, AttributeValue[]>;
-	selectedAttributes: Record<string, string>;
-	currentPrice: number;
-	selectedVariant: Variant | null | undefined;
-	quantity: number;
-	setQuantity: (val: number) => void;
-	handleAttributeSelect: (attributeId: string, valueId: string) => void;
-	isAttributeValueValid: (attributeId: string, valueId: string) => boolean;
-	onResetAttributes: () => void;
-}
-
-interface AttributeSelectorProps {
-	productId?: string;
-	attributes: Attribute[];
-	attributeValuesByAttributeId: Record<string, AttributeValue[]>;
-	selectedAttributes: Record<string, string>;
-	handleAttributeSelect: (attributeId: string, valueId: string) => void;
-	isAttributeValueValid: (attributeId: string, valueId: string) => boolean;
-	onResetAttributes: () => void;
-}
-
-interface ColorSwatchesProps {
-	values: AttributeValue[];
-	attributeId: string;
-	selectedAttributes: Record<string, string>;
-	handleAttributeSelect: (attributeId: string, valueId: string) => void;
-	isAttributeValueValid: (attributeId: string, valueId: string) => boolean;
-}
-
-function ColorSwatches({
-	values,
-	attributeId,
-	selectedAttributes,
-	handleAttributeSelect,
-	isAttributeValueValid,
-}: ColorSwatchesProps) {
-	return (
-		<Group gap='xs'>
-			{values.map((value) => {
-				const isSelected = selectedAttributes[attributeId] === value.id;
-				const isValid = isAttributeValueValid(attributeId, value.id);
-				const colorHex = value.valueRef || '#dee2e6';
-
-				return (
-					<UnstyledButton
-						key={value.id}
-						onClick={() => handleAttributeSelect(attributeId, value.id)}
-						disabled={!isValid}
-						style={{
-							width: 50,
-							height: 50,
-							borderRadius: '50%',
-							backgroundColor: colorHex,
-							border: isSelected ? '3px solid #228be6' : '2px solid #dee2e6',
-							opacity: isValid ? 1 : 0.3,
-							cursor: isValid ? 'pointer' : 'not-allowed',
-							boxShadow: isSelected
-								? '0 0 0 3px rgba(34, 139, 230, 0.2)'
-								: 'none',
-						}}
-						title={getAttributeValueLabel(value)}
-					/>
-				);
-			})}
-		</Group>
-	);
-}
-
-interface MaterialButtonsProps {
-	values: AttributeValue[];
-	attributeId: string;
-	selectedAttributes: Record<string, string>;
-	handleAttributeSelect: (attributeId: string, valueId: string) => void;
-	isAttributeValueValid: (attributeId: string, valueId: string) => boolean;
-}
-
-function MaterialButtons({
-	values,
-	attributeId,
-	selectedAttributes,
-	handleAttributeSelect,
-	isAttributeValueValid,
-}: MaterialButtonsProps) {
-	return (
-		<Group gap='xs'>
-			{values.map((value) => {
-				const isSelected = selectedAttributes[attributeId] === value.id;
-				const isValid = isAttributeValueValid(attributeId, value.id);
-
-				return (
-					<Button
-						key={value.id}
-						onClick={() => handleAttributeSelect(attributeId, value.id)}
-						variant={isSelected ? 'filled' : 'light'}
-						disabled={!isValid}
-						size='md'
-					>
-						{getAttributeValueLabel(value)}
-					</Button>
-				);
-			})}
-		</Group>
-	);
-}
-
-function AttributeSelector({
-	productId,
-	attributes,
-	attributeValuesByAttributeId,
-	selectedAttributes,
-	handleAttributeSelect,
-	isAttributeValueValid,
-	onResetAttributes,
-}: AttributeSelectorProps) {
-	const navigate = useNavigate();
-	const sortedAttributes = [...attributes].sort(
-		(a: Attribute, b: Attribute) => (a.sortIndex || 0) - (b.sortIndex || 0),
-	);
-
-	const hasSelections = Object.keys(selectedAttributes).length > 0;
-	const requiredAttributes = sortedAttributes.filter((attr) => attr.isRequired);
-	const missingRequiredAttributes = requiredAttributes.filter((attr) => !selectedAttributes[attr.id]);
-
-	const getAttributeLabel = (attr: Attribute): string => {
-		if (typeof attr.displayName === 'string') return attr.displayName || attr.codeName || attr.id;
-		return (attr.displayName as Record<string, string>)?.en || attr.codeName || attr.id;
-	};
-
-	const missingRequiredLabel = missingRequiredAttributes
-		.map((attr) => getAttributeLabel(attr))
-		.filter(Boolean)
-		.join(', ');
-
-	const handleEditAttributes = () => {
-		if (productId) {
-			navigate(`../${productId}/attributes`, { relative: 'path' });
-		}
-	};
-
-	const handleEditVariants = () => {
-		if (productId) {
-			navigate(`../${productId}/variants`, { relative: 'path' });
-		}
-	};
-
-	return (
-		<Stack gap='md'>
-			<Group justify='space-between' align='center'>
-				<Text size='sm' fw={500}>Select Options</Text>
-				<Group gap='xs'>
-					{hasSelections && (
-						<Button variant='subtle' size='xs' onClick={onResetAttributes} c='dimmed'>
-							Reset
-						</Button>
-					)}
-					<Button variant='subtle' size='xs' onClick={handleEditAttributes}>
-						Edit Attributes
-					</Button>
-					<Button variant='subtle' size='xs' onClick={handleEditVariants}>
-						Edit Variants
-					</Button>
-				</Group>
-			</Group>
-
-			{requiredAttributes.length > 0 && hasSelections && missingRequiredAttributes.length > 0 && (
-				<Text size='xs' c='dimmed'>
-					Select {missingRequiredLabel} to find the matching Variant.
-				</Text>
-			)}
-
-			{requiredAttributes.length > 0 && missingRequiredAttributes.length === 0 && (
-				<Text size='xs' c='dimmed'>
-					All required options selected. System will match the correct Variant.
-				</Text>
-			)}
-
-			{sortedAttributes.map((attr: Attribute) => {
-				const attributeLabel = getAttributeLabel(attr);
-				const values = attributeValuesByAttributeId[attr.id] || [];
-				const isColorAttr = attr.displayType === 'color' || attr.codeName === 'color';
-
-				return (
-					<Stack key={attr.id} gap='xs'>
-						<Text size='sm' fw={500}>
-							{isColorAttr && 'Available in '}
-							{attributeLabel}
-							{attr.isRequired ? ' *' : ''}
-						</Text>
-
-						{isColorAttr && values.length > 0 && (
-							<ColorSwatches
-								values={values}
-								attributeId={attr.id}
-								selectedAttributes={selectedAttributes}
-								handleAttributeSelect={handleAttributeSelect}
-								isAttributeValueValid={isAttributeValueValid}
-							/>
-						)}
-
-						{!isColorAttr && values.length > 0 && (
-							<MaterialButtons
-								values={values}
-								attributeId={attr.id}
-								selectedAttributes={selectedAttributes}
-								handleAttributeSelect={handleAttributeSelect}
-								isAttributeValueValid={isAttributeValueValid}
-							/>
-						)}
-
-						{values.length === 0 && (
-							<Text size='xs' c='dimmed'>
-								No options available.
-							</Text>
-						)}
-					</Stack>
-				);
-			})}
-		</Stack>
-	);
-}
-
-interface PriceDisplayProps {
-	currentPrice: number;
-}
-
-function PriceDisplay({ currentPrice }: PriceDisplayProps) {
-	return (
-		<Stack gap='xs'>
-			<Group gap='md' align='baseline'>
-				<Title order={2} c='blue'>
-					${(currentPrice / 1000).toFixed(3)}
-				</Title>
-			</Group>
-		</Stack>
-	);
-}
-
-interface PurchasePanelProps {
-	selectedVariant: Variant | null | undefined;
-	quantity: number;
-	setQuantity: (val: number) => void;
-}
-
-function PurchasePanel({ selectedVariant, quantity, setQuantity }: PurchasePanelProps) {
-	return (
-		<>
-			<Stack gap='md'>
-				<Group gap='md'>
-					<Box style={{ width: 120 }}>
-						<NumberInput
-							value={quantity}
-							onChange={(val) => setQuantity(Number(val) || 1)}
-							min={1}
-							max={99}
-							disabled={!selectedVariant}
-							size='md'
-						/>
-					</Box>
-				</Group>
-			</Stack>
-
-			<Button
-				size='lg'
-				fullWidth
-				disabled={!selectedVariant}
-			>
-				Add to Cart
-			</Button>
-
-			{selectedVariant && (
-				<Stack gap='xs'>
-					<Text size='sm' c='dimmed'>SKU: {selectedVariant.sku}</Text>
-					{selectedVariant.barcode && (
-						<Text size='sm' c='dimmed'>Barcode: {selectedVariant.barcode}</Text>
-					)}
-				</Stack>
-			)}
-		</>
-	);
-}
-
-function ProductInfoPanel({
-	productData,
-	productName,
-	productDescription,
-	attributes,
-	attributeValuesByAttributeId,
-	selectedAttributes,
-	currentPrice,
-	selectedVariant,
-	quantity,
-	setQuantity,
-	handleAttributeSelect,
-	isAttributeValueValid,
-	onResetAttributes,
-}: ProductInfoPanelProps) {
-	const requiredAttributes = attributes.filter((attr) => attr.isRequired);
-	const missingRequiredAttributes = requiredAttributes.filter((attr) => !selectedAttributes[attr.id]);
-	const hasSelections = Object.keys(selectedAttributes).length > 0;
-	const isSelectionComplete = requiredAttributes.length === 0 || missingRequiredAttributes.length === 0;
-
-	const getAttributeLabel = (attr: Attribute): string => {
-		if (typeof attr.displayName === 'string') return attr.displayName || attr.codeName || attr.id;
-		return (attr.displayName as Record<string, string>)?.en || attr.codeName || attr.id;
-	};
-
-	const missingRequiredLabel = missingRequiredAttributes
-		.map((attr) => getAttributeLabel(attr))
-		.filter(Boolean)
-		.join(', ');
-
-	return (
-		<Stack gap='md'>
-			<Title order={1} size='h2'>{productName}</Title>
-
-			{productDescription && (
-				<Text size='sm' c='dimmed'>{productDescription}</Text>
-			)}
-
-			<Divider />
-
-			<PriceDisplay currentPrice={currentPrice} />
-
-			<Divider />
-
-			<AttributeSelector
-				productId={productData?.id}
-				attributes={attributes}
-				attributeValuesByAttributeId={attributeValuesByAttributeId}
-				selectedAttributes={selectedAttributes}
-				handleAttributeSelect={handleAttributeSelect}
-				isAttributeValueValid={isAttributeValueValid}
-				onResetAttributes={onResetAttributes}
-			/>
-
-			{hasSelections && !isSelectionComplete && (
-				<Text size='sm' c='dimmed'>
-					Select more options ({missingRequiredLabel}) to find the matching Variant.
-				</Text>
-			)}
-
-			{hasSelections && isSelectionComplete && !selectedVariant && (
-				<Text size='sm' c='red'>
-					No matching Variant found for the selected AttributeValue combination.
-				</Text>
-			)}
-
-			{hasSelections && isSelectionComplete && selectedVariant && (
-				<Text size='sm' c='dimmed'>
-					Matched Variant: {selectedVariant.sku}
-				</Text>
-			)}
-
-			<Divider />
-
-			<PurchasePanel
-				selectedVariant={selectedVariant}
-				quantity={quantity}
-				setQuantity={setQuantity}
-			/>
-		</Stack>
-	);
-}
-
-// Admin Product Detail Content - for admin product management page
-interface AdminProductDetailContentProps {
-	productName: string;
-	units: Unit[];
-	isSubmitting: boolean;
+interface ProductDetailFormProps {
+	schema: ModelSchema;
+	productDetail: Product | undefined;
+	isLoading: boolean;
+	isEditing: boolean;
 	productImages: string[];
 	selectedImageIndex: number;
 	onSelectImage: (index: number) => void;
+	onSubmit: (data: Record<string, unknown>) => void | Promise<void>;
+	attributes: Attribute[];
+	variants: Variant[];
+	attributeValuesByAttributeId: Record<string, AttributeValue[]>;
+	attributeValuesLoading: boolean;
+	onDeleteAttribute: (attributeId: string) => void | Promise<void>;
+	onDeleteVariant: (variantId: string) => void | Promise<void>;
 }
 
-export function AdminProductDetailContent({
-	productName,
-	units,
-	isSubmitting,
+export const ProductDetailForm = ({
+	schema,
+	productDetail,
+	isLoading,
+	isEditing,
 	productImages,
 	selectedImageIndex,
 	onSelectImage,
-}: AdminProductDetailContentProps) {
-	return (
-		<Grid gutter='xl' align='stretch'>
-			<Grid.Col span={{ base: 12, md: 5 }} style={{ display: 'flex' }}>
-				<Stack style={{ flex: 1 }}>
-					<ImageGallery
-						currentImages={productImages}
-						selectedImageIndex={selectedImageIndex}
-						setSelectedImageIndex={onSelectImage}
-						productName={productName}
-					/>
-				</Stack>
-			</Grid.Col>
+	onSubmit,
+	attributes,
+	variants,
+	attributeValuesByAttributeId,
+	attributeValuesLoading,
+	onDeleteAttribute,
+	onDeleteVariant,
+}: ProductDetailFormProps): React.ReactElement => {
+	const { t } = useTranslation();
+	const navigate = useNavigate();
 
-			<Grid.Col span={{ base: 12, md: 7 }}>
-				<Stack gap='md'>
-					<AutoField name='name' inputProps={{ disabled: isSubmitting }} />
-					<AutoField name='description' inputProps={{ disabled: isSubmitting }} />
-					<EntitySelectField
-						fieldName='unitId'
-						entities={units}
-						getEntityId={(unit) => unit.id}
-						getEntityName={(unit) => `${JsonToString(unit.name)} (${unit.symbol ?? ''})`}
-						shouldDisable={isSubmitting}
-						selectProps={{ clearable: true }}
-					/>
-					<AutoField name='status' inputProps={{ disabled: isSubmitting }} />
-					<AutoField name='thumbnailURL' inputProps={{ disabled: isSubmitting }} />
-				</Stack>
-			</Grid.Col>
-		</Grid>
+	const [activeTab, setActiveTab] = React.useState<string | null>('product-info');
+	const [selectedAttributes, setSelectedAttributes] = React.useState<Record<string, string>>({});
+	const [deleteTarget, setDeleteTarget] = React.useState<{
+		kind: 'attribute' | 'variant';
+		id: string;
+		label: string;
+	} | null>(null);
+
+	const sortedAttributes = React.useMemo(
+		() => [...attributes].sort((a, b) => (a.sortIndex || 0) - (b.sortIndex || 0)),
+		[attributes],
 	);
-}
+
+	// Helper function to get attribute value label
+	const getAttributeValueLabel = React.useCallback((value: AttributeValue): string => {
+		const localizedText = JsonToString(value.valueText);
+		if (localizedText) {
+			return localizedText;
+		}
+
+		if (typeof value.valueNumber === 'number') {
+			return String(value.valueNumber);
+		}
+
+		if (typeof value.valueBool === 'boolean') {
+			return value.valueBool ? 'Yes' : 'No';
+		}
+
+		return value.valueRef ?? value.id;
+	}, []);
+
+	// Helper to get candidates from AttributeValue
+	const getAttributeValueCandidates = React.useCallback((value: AttributeValue): Array<string | number | boolean> => {
+		const candidates: Array<string | number | boolean> = [value.id];
+
+		if (typeof value.valueText === 'string') {
+			candidates.push(value.valueText);
+		}
+		else if (value.valueText && typeof value.valueText === 'object') {
+			candidates.push(...Object.values(value.valueText).filter(
+				(item): item is string => typeof item === 'string' && item.length > 0,
+			));
+		}
+
+		if (typeof value.valueNumber === 'number') {
+			candidates.push(value.valueNumber, String(value.valueNumber));
+		}
+
+		if (typeof value.valueBool === 'boolean') {
+			candidates.push(value.valueBool, value.valueBool ? 'true' : 'false');
+		}
+
+		if (typeof value.valueRef === 'string') {
+			candidates.push(value.valueRef);
+		}
+
+		return Array.from(new Set(candidates));
+	}, []);
+
+	// Helper to get candidates from variant attribute value
+	const getVariantAttributeCandidates = React.useCallback((value: unknown): Array<string | number | boolean> => {
+		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+			return [value];
+		}
+
+		if (!value || typeof value !== 'object') {
+			return [];
+		}
+
+		const record = value as Record<string, unknown>;
+		const candidates: Array<string | number | boolean> = [];
+
+		if (typeof record.value === 'string' || typeof record.value === 'number' || typeof record.value === 'boolean') {
+			candidates.push(record.value);
+		}
+
+		if (typeof record.valueText === 'string') {
+			candidates.push(record.valueText);
+		}
+		else if (record.valueText && typeof record.valueText === 'object') {
+			candidates.push(...Object.values(record.valueText as Record<string, unknown>).filter(
+				(item): item is string | number | boolean => (
+					typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean'
+				),
+			));
+		}
+
+		if (typeof record.valueNumber === 'number') {
+			candidates.push(record.valueNumber);
+		}
+
+		if (typeof record.valueBool === 'boolean') {
+			candidates.push(record.valueBool);
+		}
+
+		if (typeof record.valueRef === 'string') {
+			candidates.push(record.valueRef);
+		}
+
+		if (typeof record.id === 'string') {
+			candidates.push(record.id);
+		}
+
+		return Array.from(new Set(candidates));
+	}, []);
+
+	const selectedVariantFromAttributes = React.useMemo(() => {
+		if (Object.keys(selectedAttributes).length === 0) return null;
+
+		const requiredAttributes = sortedAttributes.filter((attr) => attr.isRequired);
+		const allRequiredSelected = requiredAttributes.every((attr) => Boolean(selectedAttributes[attr.id]));
+
+		if (!allRequiredSelected) return null;
+
+		return variants.find((variant: Variant) => {
+			return Object.entries(selectedAttributes).every(([attributeId, valueId]) => {
+				const attribute = attributes.find((attr) => attr.id === attributeId);
+				if (!attribute) return false;
+
+				const selectedValue = attributeValuesByAttributeId[attributeId]?.find((v) => v.id === valueId);
+				if (!selectedValue) return false;
+
+				const variantAttributeValue = getVariantAttributeValue(variant.attributes, attribute.codeName);
+				const variantCandidates = new Set(getVariantAttributeCandidates(variantAttributeValue));
+				return getAttributeValueCandidates(selectedValue).some((candidate) => variantCandidates.has(candidate));
+			});
+		});
+	}, [selectedAttributes, variants, sortedAttributes, attributes, attributeValuesByAttributeId, getAttributeValueCandidates, getVariantAttributeCandidates]);
+
+	const defaultVariant = variants.find((variant) => variant.id === productDetail?.defaultVariantId) || null;
+	const selectedVariant = selectedVariantFromAttributes || defaultVariant;
+
+	React.useEffect(() => {
+		setSelectedAttributes({});
+	}, [productDetail]);
+
+	const selectedVariantImageIndex = React.useMemo(() => {
+		if (!selectedVariant?.imageURL) {
+			return -1;
+		}
+
+		return productImages.findIndex((image) => image === selectedVariant.imageURL);
+	}, [productImages, selectedVariant]);
+
+	React.useEffect(() => {
+		if (selectedVariantFromAttributes && selectedVariantImageIndex >= 0 && selectedVariantImageIndex !== selectedImageIndex) {
+			onSelectImage(selectedVariantImageIndex);
+		}
+	}, [selectedImageIndex, selectedVariantFromAttributes, selectedVariantImageIndex, onSelectImage]);
+
+	// Handle attribute selection
+	const handleAttributeSelect = React.useCallback((attributeId: string, valueId: string | null) => {
+		setSelectedAttributes((prev) => {
+			if (!valueId) {
+				const newState = { ...prev };
+				delete newState[attributeId];
+				return newState;
+			}
+			return { ...prev, [attributeId]: valueId };
+		});
+	}, []);
+
+	// Reset all selections
+	const handleResetAttributes = React.useCallback(() => {
+		setSelectedAttributes({});
+	}, []);
+
+	const handleOpenAttributeDelete = React.useCallback((attribute: Attribute) => {
+		setDeleteTarget({
+			kind: 'attribute',
+			id: attribute.id,
+			label: JsonToString(attribute.displayName) || attribute.codeName || attribute.id,
+		});
+	}, []);
+
+	const handleOpenVariantDelete = React.useCallback((variant: Variant) => {
+		setDeleteTarget({
+			kind: 'variant',
+			id: variant.id,
+			label: variant.sku || JsonToString(variant.name) || variant.id,
+		});
+	}, []);
+
+	const handleConfirmDelete = React.useCallback(async () => {
+		if (!deleteTarget) {
+			return;
+		}
+
+		const target = deleteTarget;
+		setDeleteTarget(null);
+
+		if (target.kind === 'attribute') {
+			await onDeleteAttribute(target.id);
+			return;
+		}
+
+		await onDeleteVariant(target.id);
+	}, [deleteTarget, onDeleteAttribute, onDeleteVariant]);
+
+	const productName = productDetail ? JsonToString(productDetail.name) : 'Product Detail';
+	const isFormReadOnly = isLoading || !productDetail || !isEditing;
+
+	const getStatusLabel = (status: string | undefined) => {
+		const statusMap: Record<string, { color: string; label: string }> = {
+			active: { color: 'green', label: t('nikki.general.status.active') },
+			inactive: { color: 'gray', label: t('nikki.general.status.inactive') },
+		};
+		const statusInfo = statusMap[status || ''] || { color: 'gray', label: status || '-' };
+		return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
+	};
+
+	const modelValue ={
+		...productDetail,
+		name: JsonToString(productDetail?.name) || '',
+		description: JsonToString(productDetail?.description) || '',
+	};
+
+	return (
+		<>
+			<FormStyleProvider layout='onecol'>
+				<FormFieldProvider
+					formVariant='update'
+					modelSchema={schema}
+					modelValue={modelValue}
+					modelLoading={isLoading}
+				>
+					{({ handleSubmit }) => {
+						return (
+							<form id='' onSubmit={handleSubmit(onSubmit)} noValidate>
+								<Stack gap='md'>
+									{/* Header */}
+									<Group gap='md' align='center' wrap='nowrap'>
+										<Avatar size={52} radius='md' src={productImages[0]}>
+											{productName.charAt(0).toUpperCase()}
+										</Avatar>
+										<Stack gap={4}>
+											<Group gap='xs' align='center'>
+												<Text size='xl' fw={700} style={{ lineHeight: 1.3 }}>{productName}</Text>
+												{getStatusLabel(productDetail?.status)}
+											</Group>
+										</Stack>
+									</Group>
+
+									<Divider />
+
+									{/* Tabs */}
+									<Tabs value={activeTab} onChange={setActiveTab}>
+										<Tabs.List>
+											<Tabs.Tab value='product-info'>Product Info</Tabs.Tab>
+											<Tabs.Tab value='attributes'>Attributes</Tabs.Tab>
+											<Tabs.Tab value='variants'>Variants</Tabs.Tab>
+										</Tabs.List>
+
+										{/* Product Info Tab */}
+										<Tabs.Panel value='product-info' pt='md'>
+											<Paper p='md' withBorder>
+												<Grid gutter='xl'>
+													{/* Left Column - Image Gallery */}
+													<Grid.Col span={{ base: 12, md: 5 }}>
+														<Stack gap='md' h='100%'>
+															{productImages.length > 0 ? (
+																<ImageGallery
+																	images={productImages}
+																	selectedIndex={selectedImageIndex}
+																	onSelect={onSelectImage}
+																	altBase={productName}
+																	fillHeight
+																/>
+															) : (
+																<Paper p='xl' withBorder bg='gray.0' style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+																	<Text c='dimmed' ta='center'>
+																		No images available.
+																		<br />
+																		Add variants with images to see them here.
+																	</Text>
+																</Paper>
+															)}
+														</Stack>
+													</Grid.Col>
+
+													{/* Right Column - Product Form */}
+													<Grid.Col span={{ base: 12, md: 7 }}>
+														<Stack gap='lg'>
+															<Paper p='md' withBorder>
+																<Stack gap='md'>
+																	{/* Basic Information Section */}
+																	{isEditing ? (
+																		<Stack gap='md'>
+																			<AutoField name='name' htmlProps={{ readOnly: isFormReadOnly }} />
+																			<AutoField name='status' htmlProps={{ readOnly: isFormReadOnly }} />
+																			<AutoField name='description' htmlProps={{ readOnly: isFormReadOnly }} />
+																			<AutoField name='thumbnailURL' htmlProps={{ readOnly: isFormReadOnly }} />
+																		</Stack>
+																	) : (
+																		<div>
+																			<Grid gutter='md'>
+																				{/* Row 1: Name */}
+																				<Grid.Col span={{ base: 12, sm: 6 }}>
+																					<Text size='md' c='dimmed'>Name</Text>
+																					<Text size='md' fw={500}>{productName}</Text>
+																				</Grid.Col>
+
+																				{/* Row 1: Status */}
+																				<Grid.Col span={{ base: 12, sm: 6 }}>
+																					<Text size='md' c='dimmed'>Status</Text>
+																					{getStatusLabel(productDetail?.status)}
+																				</Grid.Col>
+
+																				{/* Row 2: Description (full width) */}
+																				<Grid.Col span={12}>
+																					<Text size='md' c='dimmed'>Description</Text>
+																					<Text size='md' fw={500}>
+																						{JsonToString(productDetail?.description) || '-'}
+																					</Text>
+																				</Grid.Col>
+
+																				<Grid.Col span={{ base: 12, sm: 12 }}>
+																					<Text size='md' c='dimmed'>Thumbnail</Text>
+																					<Text size='md' fw={500}>{productDetail?.thumbnailURL || '-'}</Text>
+																				</Grid.Col>
+
+																				{/* Row 3: SKU - Barcode - Unit */}
+																				<Grid.Col span={{ base: 6, sm: 4 }}>
+																					<Text size='md' c='dimmed'>SKU</Text>
+																					<Text size='md' fw={500}>{selectedVariant?.sku || '-'}</Text>
+																				</Grid.Col>
+
+																				<Grid.Col span={{ base: 6, sm: 4 }}>
+																					<Text size='md' c='dimmed'>Barcode</Text>
+																					<Text size='md' fw={500}>{selectedVariant?.barcode || '-'}</Text>
+																				</Grid.Col>
+
+																				<Grid.Col span={{ base: 6, sm: 4 }}>
+																					<Text size='md' c='dimmed'>Unit</Text>
+																					<Text size='md' fw={500}>{productDetail?.unitId || '-'}</Text>
+																				</Grid.Col>
+
+																				{/* Row 4: Price */}
+																				<Grid.Col span={{ base: 6, sm: 4 }}>
+																					<Text size='md' c='dimmed'>Proposed Price</Text>
+																					<Text size='md' fw={500}>{selectedVariant?.proposedPrice}</Text>
+																				</Grid.Col>
+																			</Grid>
+																		</div>
+																	)}
+
+																	{/* Attribute Selection Section */}
+																	{sortedAttributes.length > 0 && (
+																		<>
+																			<Divider />
+																			<div>
+																				<Group justify='space-between' align='center'>
+																					{Object.keys(selectedAttributes).length > 0 && (
+																						<Button
+																							variant='subtle'
+																							size='md'
+																							onClick={handleResetAttributes}
+																						>
+																							Reset
+																						</Button>
+																					)}
+																				</Group>
+
+																				{/* Attribute Selection Grid */}
+																				<Grid gutter='md' p='md'>
+																					{sortedAttributes.map((attr) => {
+																						const displayName = typeof attr.displayName === 'string'
+																							? attr.displayName
+																							: (attr.displayName as Record<string, string>)?.en;
+																						const attributeLabel = displayName || attr.codeName || attr.id;
+																						const values = attributeValuesByAttributeId[attr.id] || [];
+
+																						return (
+																							<Grid.Col key={attr.id} span={{ base: 12, sm: 6 }}>
+																								<Stack gap='xs'>
+																									<Group justify='space-between'>
+																										<Text size='md' fw={500}>{attributeLabel}</Text>
+																									</Group>
+
+																									{attributeValuesLoading ? (
+																										<Text size='sm' c='dimmed'>Loading attribute values...</Text>
+																									) : values.length === 0 ? (
+																										<Text size='sm' c='dimmed'>No attribute values available.</Text>
+																									) : (
+																										<Group gap='xs' wrap='wrap'>
+																											{values.map((value) => {
+																												const isSelected = selectedAttributes[attr.id] === value.id;
+																												return (
+																													<Badge
+																														key={value.id}
+																														onClick={() => handleAttributeSelect(attr.id, isSelected ? null : value.id)}
+																														variant={isSelected ? 'filled' : 'light'}
+																														color={isSelected ? 'blue' : 'gray'}
+																														style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+																														size='md'
+																														p='xs'
+																													>
+																														{getAttributeValueLabel(value)}
+																													</Badge>
+																												);
+																											})}
+																										</Group>
+																									)}
+																								</Stack>
+																							</Grid.Col>
+																						);
+																					})}
+																				</Grid>
+
+																				<Divider />
+
+																				<Stack gap='xs' p='md'>
+																					<Grid gutter='md'>
+																						<Grid.Col span={{ base: 6, sm: 4 }}>
+																							<Text size='md' c='dimmed'>Created At</Text>
+																							<Text size='md'>{productDetail?.createdAt ? new Date(productDetail.createdAt).toLocaleString() : '--'}</Text>
+																						</Grid.Col>
+																						<Grid.Col span={{ base: 6, sm: 4 }}>
+																							<Text size='md' c='dimmed'>Updated At</Text>
+																							<Text size='md'>{productDetail?.updatedAt ? new Date(productDetail.updatedAt).toLocaleString() : '--'}</Text>
+																						</Grid.Col>
+																					</Grid>
+																				</Stack>
+
+																				
+																			</div>
+																		</>
+																	)}
+																</Stack>
+															</Paper>
+														</Stack>
+													</Grid.Col>
+												</Grid>
+											</Paper>
+										</Tabs.Panel>
+
+										{/* Attributes Tab */}
+										<Tabs.Panel value='attributes' pt='md'>
+											<Stack gap='md'>
+												<Group justify='flex-end'>
+													<Button
+														size='md'
+														variant='light'
+														onClick={() => {
+															navigate('attributes/create', { relative: 'path' });
+														}}
+													>
+														Create Attribute
+													</Button>
+												</Group>
+
+												{sortedAttributes.length === 0 ? (
+													<Paper p='xl' withBorder>
+														<Text c='dimmed' ta='center'>
+															No attributes found. Click "Create Attribute" to add attributes to this product.
+														</Text>
+													</Paper>
+												) : (
+													<Paper p='md' withBorder>
+														<AutoTable
+															schema={ATTRIBUTE_SCHEMA}
+															data={sortedAttributes as unknown as Record<string, unknown>[]}
+															columns={[...ATTRIBUTE_COLUMNS, 'actions']}
+															columnAsLink='codeName'
+															columnAsLinkHref={(row) => `./attributes/${String((row as Attribute).id)}`}
+															columnRenderers={{
+																displayName: (row) => JsonToString((row as Attribute).displayName) || (row as Attribute).id,
+																actions: (row) => (
+																	<ActionIcon
+																		aria-label='Delete attribute'
+																		color='red'
+																		variant='light'
+																		onClick={() => handleOpenAttributeDelete(row as Attribute)}
+																	>
+																		<IconTrash size={16} />
+																	</ActionIcon>
+																),
+															}}
+															headerRenderers={{
+																actions: () => 'Action',
+															}}
+														/>
+													</Paper>
+												)}
+											</Stack>
+										</Tabs.Panel>
+
+										{/* Variants Tab */}
+										<Tabs.Panel value='variants' pt='md'>
+											<Stack gap='md'>
+												<Group justify='flex-end'>
+													<Group gap='xs'>
+														<Button
+															size='md'
+															variant='light'
+															onClick={() => {
+																navigate('variants/create', { relative: 'path' });
+															}}
+														>
+															Create Variant
+														</Button>
+													</Group>
+												</Group>
+
+												{variants.length === 0 ? (
+													<Paper p='xl' withBorder>
+														<Text c='dimmed' ta='center'>
+															No variants found. Click "Create Variant" to add a variant to this product.
+														</Text>
+													</Paper>
+												) : (
+													<Paper p='md' withBorder>
+														<AutoTable
+															schema={VARIANT_SCHEMA}
+															columns={[...VARIANT_COLUMNS, 'actions']}
+															data={variants as unknown as Record<string, unknown>[]}
+															columnAsLink='sku'
+															columnAsLinkHref={(row) => `./variants/${String((row as Variant).id)}`}
+															columnRenderers={{
+																name: (row) => JsonToString((row as Variant).name) || (row as Variant).id,
+																proposedPrice: (row) => `${(((row as Variant).proposedPrice))}`,
+																status: (row) => {
+																	const variant = row as Variant;
+																	return (
+																		<Badge color={variant.status === 'active' ? 'green' : 'red'}>
+																			{variant.status}
+																		</Badge>
+																	);
+																},
+																actions: (row) => (
+																	<ActionIcon
+																		aria-label='Delete variant'
+																		color='red'
+																		variant='light'
+																		onClick={() => handleOpenVariantDelete(row as Variant)}
+																	>
+																		<IconTrash size={16} />
+																	</ActionIcon>
+																),
+															}}
+															headerRenderers={{
+																actions: () => 'Action',
+															}}
+														/>
+													</Paper>
+												)}
+											</Stack>
+										</Tabs.Panel>
+									</Tabs>
+								</Stack>
+							</form>
+						);
+					}}
+				</FormFieldProvider>
+			</FormStyleProvider>
+
+			<ConfirmModal
+				opened={deleteTarget !== null}
+				onClose={() => setDeleteTarget(null)}
+				onConfirm={() => void handleConfirmDelete()}
+				title={deleteTarget?.kind === 'attribute' ? 'Delete attribute' : 'Delete variant'}
+				message={deleteTarget ? `Delete ${deleteTarget.kind} "${deleteTarget.label}"?` : undefined}
+				confirmLabel='Delete'
+				confirmColor='red'
+			/>
+		</>
+	);
+};
+
+ProductDetailForm.displayName = 'ProductDetailForm';

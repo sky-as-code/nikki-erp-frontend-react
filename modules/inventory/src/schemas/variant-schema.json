@@ -7,6 +7,11 @@
 			"hidden": true,
 			"constraints": [{ "type": "length", "max": 36 }]
 		},
+		"productId": {
+			"type": "string",
+			"label": "Product",
+			"required": { "create": true, "update": false }
+		},
 		"name": {
 			"type": "string",
 			"label": "Name",

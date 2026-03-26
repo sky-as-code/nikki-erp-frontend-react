@@ -1,60 +1,49 @@
 /* eslint-disable max-lines-per-function */
 import {
-	Group,
-	Pagination,
-	Select,
 	Stack,
-	Text,
-	Title,
 } from '@mantine/core';
 import { AutoTable, withWindowTitle } from '@nikkierp/ui/components';
-import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
-import { selectProductCategoryList } from '../../appState';
 import { ControlPanel } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
 import { JsonToString } from '../../utils/serializer';
 import {
-	PAGE_SIZE_OPTIONS,
 	useProductCategoryListHandlers,
-	useProductCategoryListView,
+	useSearchProductCategories,
 } from '../../features/productCategory/hooks';
 import productCategorySchema from '../../schemas/product-category-schema.json';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
-import type { ProductCategory } from '../../features/productCategory/types';
-
 
 const CATEGORY_SCHEMA = productCategorySchema as ModelSchema;
 
 const COLUMNS = ['name', 'createdAt'];
 
 export const ProductCategoryListPageBody: React.FC = () => {
-	const listProductCategory = useMicroAppSelector(selectProductCategoryList);
 	const {
+		categories,
+		isLoading,
 		handleOpenCreatePage,
 		handleRefresh,
 	} = useProductCategoryListHandlers();
 
-	const categories = (listProductCategory.data ?? []) as ProductCategory[];
-	const isLoading = listProductCategory.status === 'pending';
+	const {
+		searchValue,
+		setSearchValue,
+		searchCategories,
+	} = useSearchProductCategories({ categories });
+
 	const breadcrumbs = [
 		{ title: 'Inventory', href: '../overview' },
 		{ title: 'Product Categories', href: '#' },
 	];
 
-	const {
-		searchValue,
-		setSearchValue,
-		pagedCategories,
-	} = useProductCategoryListView(categories);
-
 	const tableData = React.useMemo(() => {
-		return pagedCategories.map((category) => ({
+		return searchCategories.map((category) => ({
 			...category,
 			name: JsonToString(category.name),
 		}));
-	}, [pagedCategories]);
+	}, [searchCategories]);
 
 	return (
 		<PageContainer

@@ -24,7 +24,7 @@ export const ProductCreatePageBody: React.FC = () => {
 			sections={[
 				<ControlPanelAction
 					actions={[
-						{ label: 'Create', type: 'submit'},
+						{ label: 'Create', type: 'submit', form: 'product-create-form' },
 						{ label: 'Cancel', variant: 'outline', onClick: () => navigate(-1) },
 					]}
 				/>,

@@ -1,68 +1,46 @@
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
-import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
 import { productCategoryActions } from '../../../appState';
-import { localizedTextToString, toLocalizedText } from '../../localizedText';
+import {
+	selectCreateProductCategory,
+	selectUpdateProductCategory,
+	selectDeleteProductCategory,
+	selectProductCategoryList,
+} from '../../../appState/productCategory';
+import { toLocalizedText } from '../../localizedText';
 
 import type { InventoryDispatch } from '../../../appState';
 import type { ProductCategory } from '../types';
+import { JsonToString } from '../../../utils/serializer';
 
-
-export const PAGE_SIZE_OPTIONS = [
-	{ value: '5', label: '5 / page' },
-	{ value: '10', label: '10 / page' },
-	{ value: '20', label: '20 / page' },
-	{ value: '50', label: '50 / page' },
-];
-
-const normalizeText = (value?: ProductCategory['name']) => localizedTextToString(value).toLowerCase();
-
-function filterCategories(
-	categories: ProductCategory[],
-	searchValue: string,
-) {
-	const keyword = searchValue.trim().toLowerCase();
-	if (!keyword) {
-		return categories;
-	}
-
-	return categories.filter((category) => {
-		return normalizeText(category.name).includes(keyword);
-	});
+interface UseSearchProductCategoriesOptions {
+	categories: ProductCategory[];
 }
 
-function usePagination<T>(items: T[]) {
-	const [page, setPage] = React.useState(1);
-	const [pageSize, setPageSize] = React.useState(10);
+export function useSearchProductCategories({
+	categories,
+}: UseSearchProductCategoriesOptions) {
+	const [searchValue, setSearchValue] = React.useState('');
 
-	const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+	const searchCategories = React.useMemo(() => {
+		const keyword = searchValue.trim().toLowerCase();
 
-	React.useEffect(() => {
-		if (page > totalPages) {
-			setPage(totalPages);
+		if (keyword.length === 0) {
+			return categories;
 		}
-	}, [page, totalPages]);
 
-	const pageStart = (page - 1) * pageSize;
-	const pagedItems = React.useMemo(() => {
-		return items.slice(pageStart, pageStart + pageSize);
-	}, [items, pageSize, pageStart]);
-
-	const handlePageSizeChange = React.useCallback((value: string | null) => {
-		const parsed = Number(value ?? 10);
-		setPageSize(parsed);
-		setPage(1);
-	}, []);
+		return categories.filter((category) => {
+			return JsonToString(category.name).toLowerCase().includes(keyword);
+		});
+	}, [searchValue, categories]);
 
 	return {
-		page,
-		setPage,
-		pageSize,
-		totalPages,
-		pagedItems,
-		handlePageSizeChange,
+		searchValue,
+		setSearchValue,
+		searchCategories,
 	};
 }
 
@@ -75,29 +53,63 @@ export function useProductCategoryListHandlers() {
 	const navigate = useNavigate();
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
 	const activeOrg = useActiveOrgWithDetails();
+	const listProductCategory = useMicroAppSelector(selectProductCategoryList);
 	const orgId = activeOrg?.id ?? 'org-1';
+
+	const createCommand = useMicroAppSelector(selectCreateProductCategory);
+	const updateCommand = useMicroAppSelector(selectUpdateProductCategory);
+	const deleteCommand = useMicroAppSelector(selectDeleteProductCategory);
+
+	const isLoading = listProductCategory.status === 'pending';
+
+	const refreshList = React.useCallback(() => {
+		dispatch(productCategoryActions.listProductCategories(orgId));
+	}, [dispatch, orgId]);
+
+	React.useEffect(() => {
+		if (createCommand.status === 'success') {
+			refreshList();
+			dispatch(productCategoryActions.resetCreateProductCategory());
+		}
+	}, [createCommand.status, dispatch, refreshList]);
+
+	React.useEffect(() => {
+		if (updateCommand.status === 'success') {
+			refreshList();
+			dispatch(productCategoryActions.resetUpdateProductCategory());
+		}
+	}, [updateCommand.status, dispatch, refreshList]);
+
+	React.useEffect(() => {
+		if (deleteCommand.status === 'success') {
+			refreshList();
+			dispatch(productCategoryActions.resetDeleteProductCategory());
+		}
+	}, [deleteCommand.status, dispatch, refreshList]);
 
 	const handleOpenCreatePage = React.useCallback(() => {
 		navigate('create');
 	}, [navigate]);
 
 	const handleRefresh = React.useCallback(() => {
-		dispatch(productCategoryActions.listProductCategories(orgId));
-	}, [dispatch, orgId]);
+		refreshList();
+	}, [refreshList]);
 
-	const handleCreate = React.useCallback(async (payload: ProductCategoryFormPayload) => {
+	const handleCreate = React.useCallback((payload: ProductCategoryFormPayload) => {
 		const name = toLocalizedText(payload.name);
 		if (!name) {
 			return;
 		}
-		await dispatch(productCategoryActions.createProductCategory({
+		dispatch(productCategoryActions.createProductCategory({
 			orgId,
-			name,
-		})).unwrap();
-		dispatch(productCategoryActions.listProductCategories(orgId));
+			data: {
+				orgId,
+				name,
+			},
+		}));
 	}, [dispatch, orgId]);
 
-	const handleUpdate = React.useCallback(async (
+	const handleUpdate = React.useCallback((
 		id: string,
 		etag: string,
 		payload: ProductCategoryFormPayload,
@@ -106,62 +118,35 @@ export function useProductCategoryListHandlers() {
 		if (!name) {
 			return;
 		}
-		await dispatch(productCategoryActions.updateProductCategory({
+		dispatch(productCategoryActions.updateProductCategory({
 			orgId,
 			data: {
 				id,
 				etag,
 				name,
 			},
-		})).unwrap();
-		dispatch(productCategoryActions.listProductCategories(orgId));
+		}));
 	}, [dispatch, orgId]);
 
-	const handleDelete = React.useCallback(async (id: string) => {
-		await dispatch(productCategoryActions.deleteProductCategory({ orgId, id })).unwrap();
-		dispatch(productCategoryActions.listProductCategories(orgId));
+	const handleDelete = React.useCallback((id: string) => {
+		dispatch(productCategoryActions.deleteProductCategory({
+			orgId,
+			id,
+		}));
 	}, [dispatch, orgId]);
 
 	React.useEffect(() => {
-		handleRefresh();
-	}, [handleRefresh]);
+		refreshList();
+	}, [refreshList]);
 
 	return {
+		categories: (listProductCategory.data ?? []) as ProductCategory[],
+		isLoading,
 		orgId,
 		handleOpenCreatePage,
 		handleRefresh,
 		handleCreate,
 		handleUpdate,
 		handleDelete,
-	};
-}
-
-export function useProductCategoryListView(categories: ProductCategory[]) {
-	const [searchValue, setSearchValue] = React.useState('');
-
-	const filteredCategories = React.useMemo(() => {
-		return filterCategories(categories, searchValue);
-	}, [categories, searchValue]);
-
-	const {
-		page,
-		setPage,
-		pageSize,
-		totalPages,
-		pagedItems,
-		handlePageSizeChange,
-	} = usePagination(filteredCategories);
-
-	return {
-		searchValue,
-		setSearchValue,
-		page,
-		setPage,
-		pageSize,
-		totalPages,
-		handlePageSizeChange,
-		pagedCategories: pagedItems,
-		filteredCount: filteredCategories.length,
-		pagedCount: pagedItems.length,
 	};
 }

@@ -20,10 +20,10 @@ import type { ModelSchema } from '@nikkierp/ui/model';
 const COLUMNS = ['name', 'symbol', 'Base Unit / Multiplier', 'status', 'createdAt'];
 
 export const UnitListPageBody: React.FC = () => {
-	const listUnit = useMicroAppSelector(selectUnitList);
 	const {
 		handleCreate,
 		handleRefresh,
+		listUnit,
 	} = useUnitListHandlers();
 
 	const breadcrumbs = [

@@ -15,6 +15,8 @@ import { JsonToString } from '../../../utils/serializer';
 import type { Product } from '../types';
 import type { Unit } from '../../unit/types';
 import type { Variant } from '../../variant/types';
+import { useMicroAppSelector } from 'node_modules/@nikkierp/ui/src/microApp/MicroAppStateProvider';
+import { selectUnitList } from '../../../appState';
 
 
 interface ProductTableProps {
@@ -22,7 +24,6 @@ interface ProductTableProps {
 	products: Product[];
 	isLoading: boolean;
 	schema: ModelSchema;
-	units: Unit[];
 	variants: Variant[];
 }
 
@@ -31,10 +32,11 @@ export function ProductTable({
 	products,
 	isLoading,
 	schema,
-	units,
 	variants,
 }: ProductTableProps): React.ReactElement {
 	const navigate = useNavigate();
+	const listUnits = useMicroAppSelector(selectUnitList);
+	const units = (listUnits.data ?? []) as Unit[];
 
 	const handleViewDetail = React.useCallback((productId: string) => {
 		navigate(`./${productId}`);
@@ -43,7 +45,7 @@ export function ProductTable({
 	const getUnitName = React.useCallback((unitId?: string) => {
 		if (!unitId) return '-';
 		const unit = units.find(u => u.id === unitId);
-		return unit ? JsonToString(unit.name) : unitId;
+		return JsonToString(unit?.name);
 	}, [units]);
 
 	const getDefaultVariant = React.useCallback((defaultVariantId?: string) => {
@@ -127,7 +129,11 @@ export function ProductTable({
 							{getUnitName(row.unitId as string | undefined)}
 						</Text>
 					),
-
+					createdAt: (row) => (
+						<Text size='sm'>
+							{new Date(row.createdAt as string).toLocaleDateString()}
+						</Text>
+					),
 				}}
 			/>
 	);

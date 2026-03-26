@@ -104,6 +104,7 @@ function Main(props: MicroAppProps) {
 							<AppRoute path='products/:productId/attributes/:attributeId' element={<AttributeDetailPage />} />
 
 							<AppRoute path='products/:productId/variants' element={<VariantListPage />} />
+							<AppRoute path='product-variants/create' element={<VariantCreatePage />} />
 							<AppRoute path='products/:productId/variants/create' element={<VariantCreatePage />} />
 							<AppRoute path='products/:productId/variants/:variantId' element={<VariantDetailPage />} />
 							<AppRoute path='product-variants' element={<VariantListPage />} /> 

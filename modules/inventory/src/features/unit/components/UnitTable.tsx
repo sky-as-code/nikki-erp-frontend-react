@@ -81,7 +81,11 @@ export function UnitTable({
 			};
 			renderers.createdAt = (row: Record<string, unknown>) => {
 				const createdAt = row.createdAt as string;
-				return new Date(createdAt).toLocaleString();
+				return (
+					<Text size='sm' > 
+						{new Date(createdAt).toLocaleDateString()}
+					</Text>
+				);
 			}
 		}
 

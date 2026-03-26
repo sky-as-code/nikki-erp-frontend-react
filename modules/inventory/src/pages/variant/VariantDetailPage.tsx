@@ -1,32 +1,48 @@
-import { Text } from '@mantine/core';
+import { IconArrowLeft, IconDeviceFloppy, IconEdit, IconTrash, IconX } from '@tabler/icons-react';
 import { withWindowTitle } from '@nikkierp/ui/components';
-import { useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React, { useRef } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
 
-import { DetailActionBar } from '../../components/ActionBar/DetailActionBar';
-import { DetailControlPanel } from '../../components/ControlPanel';
+import { ControlPanel } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
-import { selectVariantDetail } from '../../appState/variant';
 import { VariantDetailForm } from '../../features/variant/components/VariantDetailForm';
 import { useVariantDetailHandlers } from '../../features/variant/hooks/useVariantDetail';
 import variantSchema from '../../schemas/variant-schema.json';
 import { JsonToString } from '../../utils/serializer';
 
+import type { VariantDetailFormHandle } from '../../features/variant/components/VariantDetailForm';
 import type { ModelSchema } from '@nikkierp/ui/model';
-import { selectProductDetail } from '../../appState/product';
 
 
 export const VariantDetailPageBody: React.FC = () => {
-	const { t } = useTranslation();
-	const navigate = useNavigate();
-	const variantDetail = useMicroAppSelector(selectVariantDetail);
-	const productDetail = useMicroAppSelector(selectProductDetail);
-	const { isLoadingDetail, handleUpdate, handleDelete } = useVariantDetailHandlers();
-
-	const formRef = useRef<{ submit: () => void; triggerDelete: () => void } | null>(null);
+	const { t: translate } = useTranslation();
+	const [isEditing, setIsEditing] = React.useState(false);
+	const formRef = React.useRef<VariantDetailFormHandle | null>(null);
+	const { 
+		isLoadingDetail, 
+		handleUpdate, 
+		handleDelete, 
+		handleGoBack, 
+		productDetail, 
+		variantDetail 
+	} = useVariantDetailHandlers();
 	const variant = variantDetail?.data;
+
+	const handleEdit = React.useCallback(() => {
+		setIsEditing(true);
+	}, []);
+
+	const handleCancelEdit = React.useCallback(() => {
+		setIsEditing(false);
+	}, []);
+
+	const handleSave = React.useCallback(() => {
+		formRef.current?.submit();
+	}, []);
+
+	const handleDeleteClick = React.useCallback(() => {
+		formRef.current?.triggerDelete();
+	}, []);
 
 	const breadcrumbs = [
 		{ title: 'Inventory', href: '..' },
@@ -36,57 +52,54 @@ export const VariantDetailPageBody: React.FC = () => {
 		{ title: variant?.name ? JsonToString(variant.name) : 'Variant', href: '#' },
 	];
 
-	const handleSave = () => {
-		formRef.current?.submit();
-	};
-
-	const handleGoBack = () => {
-		navigate(-1);
-	};
-
-	const handleDeleteClick = () => {
-		formRef.current?.triggerDelete();
-	};
-
-	if (isLoadingDetail && !variant) {
-		return (
-			<PageContainer
-				breadcrumbs={breadcrumbs}
-				actionBar={<div />}
-				isLoading
-			/>
-		);
-	}
-
-	if (!variant) {
-		return (
-			<PageContainer
-				breadcrumbs={breadcrumbs}
-				actionBar={<div />}
-			>
-				<Text c='dimmed'>{t('nikki.general.messages.notFound')}</Text>
-			</PageContainer>
-		);
-	}
-
 	return (
 		<PageContainer
 			breadcrumbs={breadcrumbs}
+			isLoading={isLoadingDetail}
 			sections={[
-				<DetailActionBar
-					onSave={handleSave}
-					onGoBack={handleGoBack}
-					onDelete={handleDeleteClick}
+				<ControlPanel
+					actions={[
+						{
+							label: translate('nikki.general.actions.back'),
+							leftSection: <IconArrowLeft size={16} />,
+							onClick: handleGoBack,
+							variant: 'outline',
+						},
+						...(!isEditing ? [{
+							label: translate('nikki.general.actions.edit'),
+							leftSection: <IconEdit size={16} />,
+							onClick: handleEdit,
+							variant: 'filled' as const,
+						}] : [{
+							label: translate('nikki.general.actions.save'),
+							leftSection: <IconDeviceFloppy size={16} />,
+							onClick: handleSave,
+							variant: 'filled' as const,
+						}, {
+							label: translate('nikki.general.actions.cancel'),
+							leftSection: <IconX size={16} />,
+							onClick: handleCancelEdit,
+							variant: 'outline' as const,
+						}]),
+						{
+							label: translate('nikki.general.actions.delete'),
+							leftSection: <IconTrash size={16} />,
+							onClick: handleDeleteClick,
+							variant: 'outline',
+							color: 'red',
+						},
+					]}
 				/>,
 			]}
 		>
 			<VariantDetailForm
+				ref={formRef}
 				schema={variantSchema as ModelSchema}
 				variantDetail={variant}
 				isLoading={isLoadingDetail}
+				isEditing={isEditing}
 				onSubmit={handleUpdate}
 				onDelete={handleDelete}
-				formRef={formRef}
 			/>
 		</PageContainer>
 	);
