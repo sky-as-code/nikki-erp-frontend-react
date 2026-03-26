@@ -1,8 +1,9 @@
 import React from 'react';
 
+import type { DriveFile } from '@/features/files/types';
+
 import { DriveFileShareManager } from '@/features/fileShare';
 
-import type { DriveFile } from '@/features/files/types';
 
 
 

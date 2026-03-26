@@ -13,7 +13,6 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-import { DRIVE_TABS } from '@/constants/driveTabs';
 
 import { DriveFileTree } from './DriveFileTree';
 import { useDriveSidebarActiveRoutes } from '../../hooks/useDriveSidebarActiveRoutes';
@@ -21,6 +20,8 @@ import { useDriveSidebarTree } from '../../hooks/useDriveSidebarTree';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 import type { ReactNode } from 'react';
+
+import { DRIVE_TABS } from '@/constants/driveTabs';
 
 
 export interface DriveSidebarProps {
