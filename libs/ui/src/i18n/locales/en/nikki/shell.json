@@ -1,0 +1,48 @@
+{
+	"title": "Nikki ERP",
+	"menuBar": {
+		"allApps": "All Applications"
+	},
+	"profileMenu": {
+		"profile": "Profile",
+		"accountSettings": "Account Settings",
+		"themeMode": "Theme Mode",
+		"language": "Language",
+		"switchAccount": "Switch Account",
+		"signOut": "Sign Out"
+	},
+	"sessionRestoring": {
+		"title": "Restoring your session",
+		"description": "Please wait a moment. The system is restoring your session..."
+	},
+	"unauthorized": {
+		"title": "Access Denied",
+		"message": "You do not have permission to access this page.",
+		"message_with_module": "You do not have permission to access the \"{{module}}\" module.",
+		"hint": "Please contact your administrator to request access permissions.",
+		"go_home": "Go Home",
+		"go_back": "Go Back"
+	},
+	"signIn": {
+		"signIn": "Log In",
+		"title": "Welcome Back",
+		"description": "Sign in to your account to continue",
+		"email": "Email",
+		"enterEmail": "Enter your email",
+		"username": "Username",
+		"enterUsername": "Enter your username",
+		"password": "Password",
+		"enterPassword": "Enter your password",
+		"forgotPassword": "Forgot Password",
+		"forgotEmail": "Forgot Email",
+		"nextStep": "Next",
+		"back": "Back",
+		"messages": {
+			"loginSuccess": "Login successfully!",
+			"loginFail": "Login fail!",
+			"usernameRequired": "Username is required",
+			"passwordRequired": "Password is required",
+			"usernameOrPasswordIncorrect": "Username or password is incorrect"
+		}
+	}
+}

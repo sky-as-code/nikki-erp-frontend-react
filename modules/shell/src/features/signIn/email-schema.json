@@ -4,7 +4,7 @@
 		"email": {
 			"type": "email",
 			"label": "{ \"$ref\": 'nikki.identity.user.fields.email' }",
-			"placeholder": "{ \"$ref\": 'signIn.enterEmail' }",
+			"placeholder": "{ \"$ref\": 'nikki.shell.signIn.enterEmail' }",
 			"required": {
 				"create": true
 			},

@@ -81,10 +81,10 @@ function SignInCard(props: SignInCardProps): React.ReactNode {
 			<Stack gap='lg'>
 				<div className='text-center'>
 					<Title order={1} className='text-3xl font-bold text-gray-800 mb-2'>
-						{t('signIn.title')}
+						{t('nikki.shell.signIn.title')}
 					</Title>
 					<Text c='dimmed' size='lg'>
-						{t('signIn.description')}
+						{t('nikki.shell.signIn.description')}
 					</Text>
 				</div>
 

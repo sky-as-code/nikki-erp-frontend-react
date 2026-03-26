@@ -70,7 +70,7 @@ export const KioskListPage: React.FC = () => {
 				opened={!!kioskToDelete && isOpenDeleteModal}
 				onClose={handleCloseDeleteModal}
 				onConfirm={() => handleDeleteKiosk(kioskToDelete?.id || '')}
-				message={<Trans i18nKey='nikki.vendingMachine.kiosks.messages.delete_confirm'
+				message={<Trans i18nKey='nikki.vendingMachine.kiosk.messages.delete_confirm'
 					values={{ name: kioskToDelete?.name || '' }}
 					components={{ strong: <strong /> }}
 				/>}
