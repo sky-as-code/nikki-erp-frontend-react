@@ -14,6 +14,13 @@ export interface ShareUser {
 	avatarUrl?: string;
 }
 
+/** Khớp `DriveFileShareFileDto` từ BE (metadata file gắn với share). */
+export interface DriveFileShareFileDto {
+	id: string;
+	name: string;
+	isFolder: boolean;
+}
+
 interface DriveFileShare {
 	id: string;
 	etag: string;
@@ -23,12 +30,18 @@ interface DriveFileShare {
 	createdAt: Date;
 	updatedAt: Date;
 	user?: ShareUser;
+	file?: DriveFileShareFileDto;
 }
 
 export const DriveFileSharePermission = {
 	VIEW: 'view',
 	EDIT: 'edit',
 	EDIT_TRASH: 'edit-trash',
+	INHERITED_VIEW: 'inherited-view',
+	INHERITED_EDIT: 'inherited-edit',
+	INHERITED_EDIT_TRASH: 'inherited-edit-trash',
+	ANCESTOR_OWNER: 'ancestor-owner',
+	OWNER: 'owner',
 } as const;
 
 export type DriveFileSharePermission = typeof DriveFileSharePermission[keyof typeof DriveFileSharePermission];
@@ -51,6 +64,13 @@ export type GetDriveFileShareResponse = DriveFileShare;
 
 export type SearchDriveFileShareRequest = ListQuery;
 export type SearchDriveFileShareResponse = ListResponse<DriveFileShare>;
+
+export type GetDriveFileShareAncestorsResponse = DriveFileShare[];
+
+export type ResolvedDriveFileShareRequest = ListQuery;
+export type ResolvedDriveFileShareResponse = ListResponse<DriveFileShare>;
+
+export type GetDriveFileSharesByUserResponse = DriveFileShare[];
 
 export type ListShareUsersRequest = Pick<ListQuery, 'page' | 'size' | 'graph'> & {
 	q?: string;

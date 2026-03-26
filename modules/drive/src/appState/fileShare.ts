@@ -2,16 +2,29 @@ import { createSelector } from '@reduxjs/toolkit';
 
 import {
 	DriveFileShareState,
+	createFileShare,
+	createFileShareBulk,
+	deleteFileShare,
+	getFileShare,
+	getFileShareAncestors,
+	getFileSharesByUser,
+	getResolvedFileShares,
 	initialState,
 	reducer,
-	searchFileShares,
-	getFileShare,
-	updateFileShare,
+	resetAncestors,
+	resetCreate,
+	resetCreateBulk,
+	resetDeleteShare,
 	resetGetById,
+	resetResolved,
 	resetSelectedShare,
 	resetShareSearch,
+	resetSharesByUser,
 	resetUpdate,
+	searchFileShares,
+	updateFileShare,
 } from '@/features/fileShare/fileShareSlice';
+
 
 const STATE_KEY = 'fileShare';
 
@@ -23,10 +36,22 @@ export const driveFileShareActions = {
 	searchFileShares,
 	getFileShare,
 	updateFileShare,
+	createFileShare,
+	createFileShareBulk,
+	deleteFileShare,
+	getFileShareAncestors,
+	getResolvedFileShares,
+	getFileSharesByUser,
 	resetSelectedShare,
 	resetShareSearch,
 	resetUpdate,
 	resetGetById,
+	resetCreate,
+	resetCreateBulk,
+	resetDeleteShare,
+	resetAncestors,
+	resetResolved,
+	resetSharesByUser,
 };
 
 export const selectDriveFileShareState = (state: {
@@ -59,3 +84,32 @@ export const selectDriveFileShareUpdateState = createSelector(
 	(state) => state.update,
 );
 
+export const selectDriveFileShareCreateState = createSelector(
+	selectDriveFileShareState,
+	(state) => state.create,
+);
+
+export const selectDriveFileShareCreateBulkState = createSelector(
+	selectDriveFileShareState,
+	(state) => state.createBulk,
+);
+
+export const selectDriveFileShareDeleteState = createSelector(
+	selectDriveFileShareState,
+	(state) => state.deleteShare,
+);
+
+export const selectDriveFileShareAncestorsState = createSelector(
+	selectDriveFileShareState,
+	(state) => state.ancestors,
+);
+
+export const selectDriveFileShareResolvedState = createSelector(
+	selectDriveFileShareState,
+	(state) => state.resolved,
+);
+
+export const selectDriveFileShareSharesByUserState = createSelector(
+	selectDriveFileShareState,
+	(state) => state.sharesByUser,
+);

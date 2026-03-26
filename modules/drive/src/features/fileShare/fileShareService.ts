@@ -1,12 +1,16 @@
 import { del, get, post, Options, put } from '@nikkierp/common/request';
 
 import {
+	ResolvedDriveFileShareRequest,
+	ResolvedDriveFileShareResponse,
 	CreateDriveFileShareBulkRequest,
 	CreateDriveFileShareBulkResponse,
 	CreateDriveFileShareRequest,
 	CreateDriveFileShareResponse,
 	DeleteDriveFileShareResponse,
+	GetDriveFileShareAncestorsResponse,
 	GetDriveFileShareResponse,
+	GetDriveFileSharesByUserResponse,
 	SearchDriveFileShareRequest,
 	SearchDriveFileShareResponse,
 	UpdateDriveFileShareRequest,
@@ -64,5 +68,34 @@ export const fileShareService = {
 			options.searchParams = searchParams;
 		}
 		return get<SearchDriveFileShareResponse>(buildBaseEndpoint(fileId), options);
+	},
+
+	async getFileShareAncestors(fileId: string): Promise<GetDriveFileShareAncestorsResponse> {
+		return get<GetDriveFileShareAncestorsResponse>(`${buildBaseEndpoint(fileId)}/ancestors`);
+	},
+
+	async getResolvedFileShares(
+		fileId: string,
+		params?: ResolvedDriveFileShareRequest,
+	): Promise<ResolvedDriveFileShareResponse> {
+		const options: Options = {};
+		if (params) {
+			const searchParams: any = {
+				...params,
+			};
+
+			if (params.graph) {
+				searchParams.graph = JSON.stringify({
+					...(params.graph as Record<string, unknown>),
+				});
+			}
+
+			options.searchParams = searchParams;
+		}
+		return get<ResolvedDriveFileShareResponse>(`${buildBaseEndpoint(fileId)}/resolved`, options);
+	},
+
+	async getFileSharesByUser(fileId: string, userId: string): Promise<GetDriveFileSharesByUserResponse> {
+		return get<GetDriveFileSharesByUserResponse>(`${buildBaseEndpoint(fileId)}/users/${userId}`);
 	},
 };
