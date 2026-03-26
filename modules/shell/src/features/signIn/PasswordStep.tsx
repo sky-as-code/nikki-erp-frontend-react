@@ -82,7 +82,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							size='sm'
 							className='text-blue-600 hover:text-blue-800 transition-colors'
 						>
-							{t('signIn.forgotPassword')}?
+							{t('nikki.shell.signIn.forgotPassword')}?
 						</Anchor>
 					</Group>
 
@@ -93,7 +93,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							onClick={props.onBack}
 							disabled={props.isLoading}
 						>
-							{t('signIn.back')}
+							{t('nikki.shell.signIn.back')}
 						</Button>
 						<Button
 							type='submit' fullWidth size='lg'
@@ -101,7 +101,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							loading={props.isLoading}
 							disabled={props.isLoading}
 						>
-							{t('signIn.signIn')}
+							{t('nikki.shell.signIn.signIn')}
 						</Button>
 					</Group>
 				</>

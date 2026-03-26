@@ -1,0 +1,95 @@
+{
+	"fields": {
+		"id": "ID"
+	},
+	"actions": {
+		"back": "Back",
+		"create": "Create",
+		"update": "Update",
+		"delete": "Delete",
+		"edit": "Edit",
+		"view": "View",
+		"close": "Close",
+		"cancel": "Cancel",
+		"search": "Search",
+		"refresh": "Refresh",
+		"import": "Import",
+		"save": "Save",
+		"confirm": "Confirm",
+		"remove": "Remove",
+		"deselect": "Deselect",
+		"approve": "Approve",
+		"reject": "Reject",
+		"select": "Select",
+		"select_all": "Select All",
+		"deselect_all": "Deselect All",
+		"clear_filters": "Clear Filters",
+		"title": "Actions",
+		"view_on_map": "View on map",
+		"add": "Add",
+		"today": "Today",
+		"viewDetails": "View Details",
+		"apply": "Apply"
+	},
+	"selected": "Selected",
+	"boolean": {
+		"yes": "Yes",
+		"no": "No"
+	},
+	"view": {
+		"title": "View Mode",
+		"list": "List",
+		"grid": "Grid"
+	},
+	"search": {
+		"placeholder": "Search..."
+	},
+	"filters": {
+		"all": "All",
+		"status": "Filter by Status"
+	},
+	"filter": {
+		"title": "Filters",
+		"active_filters": "Active Filters",
+		"add_custom": "Add Custom Filter"
+	},
+	"groupBy": {
+		"title": "Group By",
+		"placeholder": "Select fields to group",
+		"add_custom": "Add Custom Group"
+	},
+	"sort": {
+		"title": "Sort",
+		"asc": "Ascending",
+		"desc": "Descending",
+		"toggleDirection": "Toggle sort direction"
+	},
+	"favorites": {
+		"title": "Favorites",
+		"save_current": "Save Current Filter"
+	},
+	"status": {
+		"active": "Active",
+		"inactive": "Inactive"
+	},
+	"messages": {
+		"success": "Success",
+		"error": "Error",
+		"loading": "Loading...",
+		"not_found": "Not found",
+		"no_data": "No data",
+		"no_changes": "No changes",
+		"invalid_change": "Invalid change",
+		"delete_confirm": "Are you sure you want to delete? This action cannot be undone.",
+		"delete_confirm_name": "Are you sure you want to delete {{name}}? This action cannot be undone.",
+		"access_denied": "You do not have permission to access this page"
+	},
+	"errors": {
+		"required": "This field is required",
+		"length": "Value length is invalid",
+		"update_failed": "Failed to update",
+		"create_failed": "Failed to create",
+		"delete_failed": "Failed to delete",
+		"grant_request_create_failed": "Failed to create grant request"
+	}
+}

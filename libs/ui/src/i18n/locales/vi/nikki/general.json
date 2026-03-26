@@ -1,0 +1,94 @@
+{
+	"fields": {
+		"id": "Mã định danh"
+	},
+	"actions": {
+		"back": "Quay lại",
+		"create": "Tạo",
+		"update": "Cập nhật",
+		"delete": "Xóa",
+		"edit": "Chỉnh sửa",
+		"view": "Xem",
+		"close": "Đóng",
+		"cancel": "Hủy",
+		"search": "Tìm kiếm",
+		"refresh": "Làm mới",
+		"import": "Nhập",
+		"save": "Lưu",
+		"confirm": "Xác nhận",
+		"remove": "Loại bỏ",
+		"deselect": "Bỏ chọn",
+		"approve": "Phê duyệt",
+		"reject": "Từ chối",
+		"select": "Chọn",
+		"select_all": "Chọn tất cả",
+		"deselect_all": "Bỏ chọn tất cả",
+		"clear_filters": "Xóa bộ lọc",
+		"title": "Thao tác",
+		"view_on_map": "Xem trên bản đồ",
+		"add": "Thêm",
+		"today": "Hôm nay",
+		"viewDetails": "Xem chi tiết",
+		"apply": "Áp dụng"
+	},
+	"selected": "Đã chọn",
+	"boolean": {
+		"yes": "Có",
+		"no": "Không"
+	},
+	"view": {
+		"title": "Chế độ xem",
+		"list": "Danh sách",
+		"grid": "Lưới"
+	},
+	"search": {
+		"placeholder": "Tìm kiếm..."
+	},
+	"filters": {
+		"all": "Tất cả",
+		"status": "Lọc theo trạng thái"
+	},
+	"filter": {
+		"title": "Bộ lọc",
+		"active_filters": "Bộ lọc đang hoạt động",
+		"add_custom": "Thêm bộ lọc tùy chỉnh"
+	},
+	"groupBy": {
+		"title": "Nhóm theo",
+		"placeholder": "Chọn các trường để nhóm",
+		"add_custom": "Thêm nhóm tùy chỉnh"
+	},
+	"sort": {
+		"title": "Sắp xếp",
+		"asc": "Tăng dần",
+		"desc": "Giảm dần",
+		"toggleDirection": "Đổi chiều sắp xếp"
+	},
+	"favorites": {
+		"title": "Yêu thích",
+		"save_current": "Lưu bộ lọc hiện tại"
+	},
+	"status": {
+		"active": "Hoạt động",
+		"inactive": "Không hoạt động"
+	},
+	"messages": {
+		"success": "Thành công",
+		"error": "Lỗi",
+		"loading": "Đang tải...",
+		"not_found": "Không tìm thấy",
+		"no_data": "Không có dữ liệu",
+		"no_changes": "Không có thay đổi",
+		"invalid_change": "Thay đổi không hợp lệ",
+		"delete_confirm": "Xoá phần tử",
+		"delete_confirm_name": "Bạn có chắc chắn muốn xóa {{name}}? Hành động này không thể hoàn tác.",
+		"access_denied": "Bạn không có quyền truy cập vào trang này"
+	},
+	"errors": {
+		"required": "Trường này là bắt buộc",
+		"length": "Độ dài giá trị không hợp lệ",
+		"update_failed": "Cập nhật thất bại",
+		"create_failed": "Tạo thất bại",
+		"delete_failed": "Xóa thất bại"
+	}
+}

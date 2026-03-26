@@ -79,7 +79,7 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 							size='md'
 							className='text-blue-600 hover:text-blue-800 transition-colors'
 						>
-							{t('signIn.forgotEmail')}?
+							{t('nikki.shell.signIn.forgotEmail')}?
 						</Anchor>
 					</Group>
 
@@ -89,7 +89,7 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 						loading={props.isLoading}
 						disabled={props.isLoading}
 					>
-						{t('signIn.nextStep')}
+						{t('nikki.shell.signIn.nextStep')}
 					</Button>
 				</>
 			)}

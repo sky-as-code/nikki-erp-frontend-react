@@ -1,0 +1,773 @@
+{
+	"title": "Vending Machine",
+	"menu": {
+		"overview": "Overview",
+		"kiosk": "Kiosk",
+		"kiosk_management": "Kiosk Management",
+		"kiosk_warnings": "Kiosk Warnings",
+		"kiosk_devices": "Kiosk Devices",
+		"presentation": "Presentation",
+		"slideshow": "Presentation",
+		"gallery": "Gallery",
+		"playlists": "Playlists",
+		"device": "Devices",
+		"events": "Events",
+		"reports": "Reports",
+		"appearance": "Appearance",
+		"themes": "Themes",
+		"miniGame": "Mini Game",
+		"kiosk_models": "Kiosk Models",
+		"kiosk_settings": "Kiosk Settings",
+		"settings": "Settings",
+		"business_report": "Business Report",
+		"revenue_report": "Revenue Report",
+		"business_overview": "Business Overview",
+		"pnl_report": "Profit & Loss Report",
+		"operations_report": "Operations Report",
+		"operations_overview": "Operations Overview",
+		"revenue_overview": "Revenue Overview",
+		"revenue_by_kiosk": "Revenue by Kiosk",
+		"revenue_by_product": "Revenue by Product",
+		"revenue_by_payment_method": "Revenue by Payment Method",
+		"refunds_report": "Refunds Report",
+		"orders_report": "Orders Report",
+		"inventory_report": "Inventory Report",
+		"payment": "Payment"
+	},
+	"overview": {
+		"title": "Vending Machine Overview",
+		"statistics": "Statistics",
+		"kiosk_count": "Kiosk Count",
+		"total_kiosks": "Total Kiosks",
+		"active_kiosks": "Active Kiosks",
+		"inactive_kiosks": "Inactive Kiosks",
+		"avg_temperature": "Average Temperature",
+		"avg_humidity": "Average Humidity",
+		"total_power": "Total Power Consumption",
+		"kiosk_distribution": "Kiosk Distribution",
+		"connection": {
+			"status": "Connection Status",
+			"fast": "Fast",
+			"slow": "Slow",
+			"disconnected": "Disconnected"
+		},
+		"operation": {
+			"status": "Operation Status",
+			"selling": "Selling",
+			"slideshowOnly": "Slideshow Only",
+			"pending": "Pending"
+		},
+		"machineType": {
+			"distribution": "Machine Type Distribution",
+			"dropProduct": "Drop Product",
+			"elevator": "Elevator"
+		},
+		"errorAlerts": {
+			"title": "Error Alerts",
+			"pending": "Pending",
+			"inProgress": "In Progress",
+			"resolved": "Resolved",
+			"kioskCode": "Kiosk Code",
+			"kioskName": "Kiosk Name",
+			"severity": "Severity",
+			"description": "Description",
+			"status": "Status",
+			"noErrors": "No errors",
+			"viewDetails": "View Details"
+		},
+		"error": {
+			"status": {
+				"pending": "Pending",
+				"inProgress": "In Progress",
+				"resolved": "Resolved"
+			}
+		},
+		"lowStock": {
+			"title": "Low Stock Alerts",
+			"kioskOutOfStock": "Kiosk Needs Restock",
+			"activeAlerts": "Active Alerts",
+			"kioskCode": "Kiosk Code",
+			"kioskName": "Kiosk Name",
+			"stockRatio": "Stock Ratio",
+			"items": "Items",
+			"status": "Status",
+			"urgent": "Urgent",
+			"noAlerts": "No low stock alerts",
+			"viewDetails": "View Details"
+		},
+		"operationParams": {
+			"title": "Operation Parameters",
+			"temperature": "Temperature",
+			"humidity": "Humidity",
+			"powerConsumption": "Power Consumption",
+			"totalPowerConsumption": "Total Power Consumption",
+			"avgTemperature": "Average Temperature",
+			"avgHumidity": "Average Humidity",
+			"temperatureHumidity": "Temperature / Humidity",
+			"power": "Power (kW)"
+		},
+		"support": {
+			"title": "Customer Support Requests",
+			"pending": "Pending",
+			"inProgress": "In Progress",
+			"resolved": "Resolved",
+			"kioskCode": "Kiosk Code",
+			"kioskName": "Kiosk Name",
+			"customer": "Customer",
+			"description": "Description",
+			"status": "Status",
+			"noRequests": "No support requests",
+			"viewDetails": "View Details",
+			"statusLabels": {
+				"pending": "Pending",
+				"in_progress": "In Progress",
+				"resolved": "Resolved"
+			}
+		},
+		"customerVisit": {
+			"title": "Customer Visits to Vending Machines",
+			"visits": "Visits",
+			"count": "Count",
+			"date": "Date"
+		}
+	},
+	"kiosk": {
+		"title": "Kiosks",
+		"title_create": "Create New Kiosk",
+		"detail": {
+			"title": "Kiosk Details"
+		},
+		"fields": {
+			"code": "Code",
+			"name": "Name",
+			"address": "Address",
+			"coordinates": "Coordinates",
+			"isActive": "Active Status",
+			"connectionStatus": "Connection Status",
+			"status": "Status",
+			"mode": "Mode",
+			"warnings": "Warnings",
+			"actions": "Actions",
+			"createdAt": "Created At",
+			"deletedAt": "Deleted At"
+		},
+		"tabs": {
+			"basicInfo": "Basic Information",
+			"kioskSetting": "Kiosk Setting",
+			"productsList": "Products",
+			"productsGrid": "Restock Products",
+			"activity": "Activity"
+		},
+		"status": {
+			"activated": "Activated",
+			"disabled": "Disabled",
+			"deleted": "Deleted"
+		},
+		"connectionStatus": {
+			"fast": "Fast",
+			"slow": "Slow",
+			"disconnected": "Disconnected"
+		},
+		"connectionHistory": {
+			"title": "Recent Connection History",
+			"no_history": "No connection history",
+			"just_now": "Just now",
+			"minutes_ago": "{{count}} minutes ago",
+			"hours_ago": "{{count}} hours ago",
+			"days_ago": "{{count}} days ago"
+		},
+		"mode": {
+			"pending": "Pending",
+			"selling": "Selling",
+			"slideshowOnly": "Slideshow Only"
+		},
+		"search": {
+			"placeholder": "Search by code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status",
+			"connection": "Filter by Connection",
+			"mode": "Filter by Mode"
+		},
+		"warnings": {
+			"title": "Warnings",
+			"more": "{{count}} more warning(s)"
+		},
+		"messages": {
+			"no_kiosks": "No kiosks found",
+			"create_success": "Kiosk \"{{name}}\" has been created successfully",
+			"update_success": "Kiosk \"{{name}}\" has been updated successfully",
+			"delete_success": "Kiosk has been deleted successfully",
+			"delete_confirm": "Are you sure you want to delete the kiosk \"{{name}}\"?",
+			"not_found": {
+				"title": "Kiosk Not Found",
+				"message": "The kiosk you are looking for does not exist or has been removed."
+			}
+		}
+	},
+	"slideshow": {
+		"title": "Presentations",
+		"detail": {
+			"title": "Slideshow Details"
+		},
+		"fields": {
+			"id": "ID",
+			"code": "Code",
+			"name": "Name",
+			"description": "Description",
+			"status": "Status",
+			"startDate": "Start Date",
+			"endDate": "End Date",
+			"createdAt": "Created At"
+		},
+		"status": {
+			"expired": "Expired"
+		},
+		"search": {
+			"placeholder": "Search by code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status"
+		},
+		"messages": {
+			"no_slideshows": "No slideshows found"
+		},
+		"preview": {
+			"title": "Preview",
+			"vertical": "Vertical Slideshow (9:16) - Idle/Waiting Screen",
+			"horizontal": "Horizontal Slideshow - Displayed in Footer"
+		},
+		"media": {
+			"title": "Media List",
+			"add": "Add Media",
+			"empty": "No media items yet. Click 'Add Media' to add.",
+			"fields": {
+				"preview": "Preview",
+				"code": "Code",
+				"name": "Name",
+				"type": "Type",
+				"duration": "Duration",
+				"size": "Size"
+			},
+			"type": {
+				"image": "Image",
+				"video": "Video"
+			},
+			"gallery": {
+				"title": "Media Gallery",
+				"tab": "Gallery",
+				"folders": "Folders",
+				"all": "All",
+				"items": "items",
+				"gridView": "Grid View",
+				"listView": "List View",
+				"selected": "Selected",
+				"selectedCount": "items selected",
+				"selectedMedia": "Selected Media"
+			},
+			"upload": {
+				"tab": "Upload",
+				"description": "Select files from your computer to upload",
+				"button": "Choose Files"
+			}
+		}
+	},
+	"events": {
+		"detail": {
+			"title": "Event Details"
+		},
+		"fields": {
+			"id": "ID",
+			"code": "Code",
+			"name": "Name",
+			"description": "Description",
+			"status": "Status",
+			"startDate": "Start Date",
+			"endDate": "End Date",
+			"createdAt": "Created At",
+			"kiosks": "Kiosk List",
+			"products": "Product List",
+			"theme": "Theme",
+			"game": "Game",
+			"themeAndSlideshow": "Theme and Slideshow",
+			"slideshowPlaylists": "Slideshow Playlists",
+			"idlePlaylist": "Idle Playlist",
+			"shoppingPlaylist": "Shopping Playlist",
+			"productImage": "Image",
+			"productCode": "Product Code",
+			"productName": "Product Name",
+			"originalPrice": "Original Price",
+			"eventPrice": "Event Price"
+		},
+		"status": {
+			"completed": "Completed"
+		},
+		"search": {
+			"placeholder": "Search by code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status"
+		},
+		"productSearch": {
+			"placeholder": "Search products by code or name..."
+		},
+		"availableProducts": {
+			"title": "Available Products"
+		},
+		"theme": {
+			"placeholder": "Select theme...",
+			"noResults": "No themes found"
+		},
+		"playlist": {
+			"idleScreen": "Idle Screen",
+			"shoppingScreen": "Shopping Screen",
+			"mediaType": "Type",
+			"thumbnail": "Thumbnail",
+			"duration": "Duration",
+			"selectSlideshows": "Select Slideshows"
+		},
+		"selectSlideshows": {
+			"title": "Select Slideshows for Playlist",
+			"searchPlaceholder": "Search slideshows...",
+			"selectedCount": "Selected {{count}} slideshows",
+			"noSlideshows": "No slideshows found",
+			"media": "media"
+		},
+		"selectKiosks": {
+			"title": "Select Kiosks for Event",
+			"searchPlaceholder": "Search kiosks...",
+			"selectedCount": "Selected {{count}} kiosks",
+			"noKiosks": "No kiosks found",
+			"addKiosks": "Add Kiosks"
+		},
+		"selectProducts": {
+			"title": "Select Products for Event",
+			"searchPlaceholder": "Search products...",
+			"selectedProducts": "Selected Products",
+			"availableProducts": "Available Products",
+			"noProducts": "No products found",
+			"addProducts": "Add Products",
+			"editProduct": "Edit Product",
+			"imageUrl": "Image URL",
+			"badgeImageUrl": "Badge Image URL"
+		},
+		"selectTheme": {
+			"title": "Select Theme for Event",
+			"searchPlaceholder": "Search themes...",
+			"noThemes": "No themes found",
+			"selectTheme": "Select Theme"
+		},
+		"selectGame": {
+			"title": "Select Game for Event",
+			"searchPlaceholder": "Search games...",
+			"noGames": "No games found",
+			"selectGame": "Select Game"
+		},
+		"messages": {
+			"no_events": "No events found",
+			"no_kiosks": "No kiosks assigned to this event",
+			"no_products": "No products in this event",
+			"no_theme": "No theme selected",
+			"no_game": "No game selected",
+			"no_idle_playlist": "No playlist for idle screen",
+			"no_shopping_playlist": "No playlist for shopping screen",
+			"no_media_in_playlist": "No media in playlist"
+		},
+		"calendar": {
+			"view": {
+				"month": "Month",
+				"week": "Week",
+				"day": "Day",
+				"list": "List"
+			}
+		}
+	},
+	"settingTemplates": {
+		"detail": {
+			"title": "Setting Template Details"
+		},
+		"fields": {
+			"id": "ID",
+			"code": "Code",
+			"name": "Name",
+			"description": "Description",
+			"status": "Status",
+			"createdAt": "Created At",
+			"kiosks": "Kiosk List",
+			"products": "Product List",
+			"theme": "Theme",
+			"game": "Game"
+		},
+		"search": {
+			"placeholder": "Search by code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status"
+		},
+		"messages": {
+			"no_templates": "No setting templates found"
+		}
+	},
+	"kioskSettings": {
+		"title": "Kiosk Settings",
+		"detail": {
+			"title": "Kiosk Setting Details"
+		},
+		"sections": {
+			"basicInfo": "Basic Information"
+		},
+		"fields": {
+			"id": "ID",
+			"code": "Code",
+			"name": "Name",
+			"description": "Description",
+			"status": "Status",
+			"brand": "Brand",
+			"createdAt": "Created At",
+			"kiosks": "Kiosk List",
+			"products": "Product List",
+			"theme": "Theme",
+			"game": "Game"
+		},
+		"search": {
+			"placeholder": "Search by code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status"
+		},
+		"messages": {
+			"no_settings": "No kiosk settings found"
+		}
+	},
+	"settings": {
+		"title": "Settings",
+		"detail": {
+			"title": "Setting Detail"
+		},
+		"fields": {
+			"id": "ID",
+			"code": "Code",
+			"name": "Name",
+			"description": "Description",
+			"category": "Category",
+			"value": "Value",
+			"status": "Status",
+			"createdAt": "Created At"
+		},
+		"search": {
+			"placeholder": "Search by code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status"
+		},
+		"messages": {
+			"no_settings": "No settings found"
+		}
+	},
+	"kioskModels": {
+		"title": "Kiosk Models",
+		"title_create": "Create New Kiosk Model",
+		"detail": {
+			"title": "Kiosk Model Details"
+		},
+		"tabs": {
+			"basicInfo": "Basic Information",
+			"modelSettings": "Settings"
+		},
+		"sections": {
+			"basicInfo": "Basic Information",
+			"configuration": "Configuration",
+			"contentMedia": "Content & Media",
+			"trayConfiguration": "Tray Configuration",
+			"metadata": "Metadata"
+		},
+		"fields": {
+			"id": "ID",
+			"code": "Code",
+			"name": "Name",
+			"model": "Kiosk Model",
+			"description": "Description",
+			"status": "Status",
+			"operatingMode": "Operating Mode",
+			"kioskType": "Kiosk Type",
+			"interfaceMode": "Interface Mode",
+			"slideshow": "Slideshow",
+			"numberOfTrays": "Number of Trays",
+			"trayConfigurations": "Tray Configurations",
+			"trayRow": "Row",
+			"shelfType": "Shelf Type",
+			"createdAt": "Created At"
+		},
+		"shelfType": {
+			"spring": "Spring",
+			"conveyor": "Conveyor",
+			"hangingConveyor": "Hanging Conveyor",
+			"pushTape": "Push Tape"
+		},
+		"operatingMode": {
+			"pending": "Pending",
+			"selling": "Selling",
+			"slideshowOnly": "Slideshow Only"
+		},
+		"kioskType": {
+			"withoutElevator": "Without Elevator",
+			"elevatorWithConveyor": "Elevator With Conveyor",
+			"elevatorWithoutConveyor": "Elevator Without Conveyor"
+		},
+		"interfaceMode": {
+			"normal": "Normal",
+			"focus": "Focus"
+		},
+		"search": {
+			"placeholder": "Search by code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status"
+		},
+		"messages": {
+			"no_models": "No models found",
+			"create_success": "Kiosk model \"{{name}}\" has been created successfully",
+			"not_found": {
+				"title": "Kiosk Model Not Found",
+				"message": "The kiosk model you are looking for does not exist or has been removed."
+			},
+			"delete_confirm": "Are you sure you want to delete model <strong>{{name}}</strong>? This action cannot be undone.",
+			"no_slideshow": "No slideshow",
+			"no_trays": "No trays yet. Click 'Add Row' button to add a tray."
+		},
+		"actions": {
+			"addTray": "Add Row"
+		}
+	},
+	"payment": {
+		"title": "Payment Methods",
+		"detail": {
+			"title": "Payment Method Details"
+		},
+		"fields": {
+			"id": "ID",
+			"code": "Code",
+			"name": "Name",
+			"image": "Image",
+			"status": "Status",
+			"description": "Description",
+			"minTransactionValue": "Min Transaction Value",
+			"maxTransactionValue": "Max Transaction Value",
+			"transactionRange": "Transaction Range",
+			"customFields": "Custom Fields",
+			"customFieldKey": "Key",
+			"customFieldValue": "Value",
+			"customFieldType": "Type",
+			"createdAt": "Created At"
+		},
+		"customFieldTypes": {
+			"string": "String",
+			"number": "Number",
+			"password": "Password",
+			"email": "Email",
+			"url": "URL",
+			"date": "Date"
+		},
+		"search": {
+			"placeholder": "Search by code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status"
+		},
+		"messages": {
+			"no_payments": "No payment methods found",
+			"no_custom_fields": "No custom fields"
+		}
+	},
+	"games": {
+		"title": "Game Management",
+		"detail": {
+			"title": "Game Details",
+			"info": "Information",
+			"versions": "Versions",
+			"preview": "Preview"
+		},
+		"fields": {
+			"id": "ID",
+			"code": "Game Code",
+			"name": "Game Name",
+			"description": "Description",
+			"status": "Status",
+			"versions": "Version Count",
+			"latestVersion": "Latest Version",
+			"versionCode": "Version Code",
+			"versionDescription": "Version Description",
+			"source": "Source Code",
+			"source_placeholder": "Enter HTML/JS source code of the game...",
+			"uploadDate": "Upload Date",
+			"minAppVersion": "Minimum App Version",
+			"createdAt": "Created At",
+			"latest": "Latest",
+			"selectVersion": "Select Version"
+		},
+		"tabs": {
+			"info": "Information",
+			"versions": "Versions",
+			"preview": "Preview"
+		},
+		"actions": {
+			"play": "Play",
+			"add_version": "Add Version",
+			"upload_source": "Upload Source",
+			"reload": "Reload"
+		},
+		"search": {
+			"placeholder": "Search by game code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status"
+		},
+		"messages": {
+			"no_games": "No games found",
+			"no_version": "No version available",
+			"no_versions": "No versions",
+			"source_loaded": "Source loaded",
+			"preview_hint": "Click to play the game",
+			"delete_version_confirm": "Are you sure you want to delete this version?"
+		}
+	},
+	"themes": {
+		"detail": {
+			"title": "Theme Details"
+		},
+		"fields": {
+			"id": "ID",
+			"code": "Code",
+			"name": "Name",
+			"description": "Description",
+			"status": "Status",
+			"primaryColor": "Primary Color",
+			"productCardStyle": "Product Card Style",
+			"appBackground": "App Background",
+			"fontStyle": "Font Style",
+			"mascotImage": "Mascot Image",
+			"createdAt": "Created At"
+		},
+		"productCardStyle": {
+			"default": "Default",
+			"rounded": "Rounded",
+			"minimal": "Minimal",
+			"elegant": "Elegant",
+			"modern": "Modern"
+		},
+		"appBackground": {
+			"none": "None",
+			"snow": "Snow",
+			"fireworks": "Fireworks",
+			"particles": "Particles",
+			"gradient": "Gradient",
+			"custom": "Custom"
+		},
+		"fontStyle": {
+			"default": "Default",
+			"roboto": "Roboto",
+			"inter": "Inter",
+			"poppins": "Poppins",
+			"montserrat": "Montserrat",
+			"custom": "Custom"
+		},
+		"search": {
+			"placeholder": "Search by code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status"
+		},
+		"messages": {
+			"no_themes": "No themes found"
+		},
+		"preview": {
+			"title": "Preview"
+		}
+	},
+	"device": {
+		"title": "Devices",
+		"detail": {
+			"title": "Device Details"
+		},
+		"fields": {
+			"id": "ID",
+			"code": "Code",
+			"name": "Name",
+			"description": "Description",
+			"status": "Status",
+			"deviceType": "Device Type",
+			"specifications": "Specifications",
+			"specKey": "Key",
+			"specValue": "Value",
+			"createdAt": "Created At"
+		},
+		"deviceType": {
+			"motor": "Motor (Product Pusher)",
+			"pos": "POS",
+			"screen": "Screen",
+			"cpu": "CPU",
+			"router": "WiFi Router"
+		},
+		"search": {
+			"placeholder": "Search by code or name..."
+		},
+		"filter": {
+			"status": "Filter by Status",
+			"deviceType": "Filter by Device Type"
+		},
+		"messages": {
+			"no_devices": "No devices found",
+			"no_specifications": "No specifications"
+		}
+	},
+	"reports": {
+		"revenue": {
+			"title": "Revenue",
+			"overview": "Revenue Overview",
+			"generated": "Revenue Generated",
+			"orders": "Orders"
+		},
+		"revenue_by_kiosk": {
+			"title": "Revenue by Kiosk",
+			"overview": "Revenue by Kiosk Overview",
+			"generated": "Revenue by Kiosk Generated",
+			"orders": "Orders by Kiosk"
+		},
+		"revenue_by_product": {
+			"title": "Revenue by Product",
+			"overview": "Revenue by Product Overview",
+			"generated": "Revenue by Product Generated",
+			"orders": "Orders by Product"
+		},
+		"revenue_by_payment_method": {
+			"title": "Revenue by Payment Method",
+			"overview": "Revenue by Payment Method Overview",
+			"generated": "Revenue by Payment Method Generated",
+			"orders": "Orders by Payment Method"
+		},
+		"refunds": {
+			"title": "Refunds",
+			"overview": "Refunds Overview",
+			"generated": "Refunds Generated",
+			"orders": "Orders by Refunds"
+		},
+		"orders": {
+			"title": "Orders",
+			"overview": "Orders Overview",
+			"generated": "Orders Generated",
+			"orders": "Orders by Orders"
+		},
+		"inventory": {
+			"title": "Inventory",
+			"overview": "Inventory Overview",
+			"generated": "Inventory Generated",
+			"orders": "Orders by Inventory"
+		},
+		"operations": {
+			"title": "Operations",
+			"overview": "Operations Overview",
+			"generated": "Operations Generated",
+			"orders": "Orders by Operations"
+		}
+	}
+}

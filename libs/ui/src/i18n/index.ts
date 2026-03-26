@@ -2,18 +2,20 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 
-import en from './locales/en.json';
-import vi from './locales/vi.json';
+import en from './locales/en';
+import vi from './locales/vi';
 
+
+const resources = {
+	vi: { common: vi },
+	en: { common: en },
+};
 
 i18n
 	// .use(i18nextHttpBackend)
 	.use(initReactI18next)
 	.init({
-		resources: {
-			vi: { common: vi },
-			en: { common: en },
-		},
+		resources,
 		lng: 'vi',
 		fallbackLng: 'en',
 		debug: false,

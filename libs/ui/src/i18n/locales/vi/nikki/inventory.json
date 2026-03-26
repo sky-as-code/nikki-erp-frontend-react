@@ -1,0 +1,126 @@
+{
+	"menu": {
+		"overview": "Tổng quan",
+		"products": "Sản phẩm",
+		"attributes": "Thuộc tính",
+		"variants": "Biến thể"
+	},
+	"overview": {
+		"title": "Tổng quan Kho",
+		"description": "Quản lý sản phẩm, thuộc tính và biến thể. Tương tự Odoo Inventory.",
+		"quickLinks": {
+			"title": "Liên kết nhanh",
+			"products": {
+				"title": "Sản phẩm",
+				"description": "Xem và quản lý danh mục sản phẩm"
+			},
+			"variantsNote": "Biến thể và thuộc tính được quản lý từ trang chi tiết từng sản phẩm.",
+			"variantsNoteShort": "Vào chi tiết sản phẩm để quản lý biến thể và thuộc tính."
+		}
+	},
+	"actions": {
+		"create": "Tạo",
+		"refresh": "Làm mới",
+		"import": "Nhập",
+		"cancel": "Hủy",
+		"back": "Quay lại",
+		"save": "Lưu",
+		"delete": "Xóa"
+	},
+	"product": {
+		"title": "Sản phẩm",
+		"searchPlaceholder": "Tìm sản phẩm...",
+		"fields": {
+			"id": "ID",
+			"name": "Tên",
+			"description": "Mô tả",
+			"sku": "Mã SKU",
+			"status": "Trạng thái",
+			"proposedPrice": "Giá",
+			"etag": "ETag",
+			"createdAt": "Ngày tạo",
+			"updatedAt": "Ngày cập nhật"
+		},
+		"actions": {
+			"createNew": "Tạo sản phẩm",
+			"confirmDelete": "Xác nhận xóa",
+			"confirmUpdate": "Xác nhận cập nhật",
+			"delete": "Xóa",
+			"save": "Lưu"
+		},
+		"messages": {
+			"createSuccess": "Tạo sản phẩm thành công",
+			"updateSuccess": "Cập nhật sản phẩm thành công",
+			"deleteSuccess": "Xóa sản phẩm thành công",
+			"createError": "Tạo sản phẩm thất bại",
+			"updateError": "Cập nhật sản phẩm thất bại",
+			"deleteError": "Xóa sản phẩm thất bại",
+			"confirmDeleteMessage": "Bạn có chắc muốn xóa sản phẩm này?",
+			"confirmUpdateMessage": "Bạn có chắc muốn lưu thay đổi?"
+		}
+	},
+	"attribute": {
+		"title": "Thuộc tính",
+		"searchPlaceholder": "Tìm thuộc tính...",
+		"fields": {
+			"id": "ID",
+			"codeName": "Mã",
+			"displayName": "Tên hiển thị",
+			"dataType": "Kiểu dữ liệu",
+			"sortIndex": "Thứ tự",
+			"isRequired": "Bắt buộc",
+			"isEnum": "Giá trị định sẵn",
+			"etag": "ETag",
+			"createdAt": "Ngày tạo",
+			"updatedAt": "Ngày cập nhật"
+		},
+		"actions": {
+			"createNew": "Tạo thuộc tính",
+			"confirmDelete": "Xác nhận xóa",
+			"confirmUpdate": "Xác nhận cập nhật",
+			"delete": "Xóa",
+			"save": "Lưu"
+		},
+		"messages": {
+			"createSuccess": "Tạo thuộc tính thành công",
+			"updateSuccess": "Cập nhật thuộc tính thành công",
+			"deleteSuccess": "Xóa thuộc tính thành công",
+			"createError": "Tạo thuộc tính thất bại",
+			"updateError": "Cập nhật thuộc tính thất bại",
+			"deleteError": "Xóa thuộc tính thất bại",
+			"confirmDeleteMessage": "Bạn có chắc muốn xóa thuộc tính này?",
+			"confirmUpdateMessage": "Bạn có chắc muốn lưu thay đổi?"
+		}
+	},
+	"variant": {
+		"title": "Biến thể",
+		"searchPlaceholder": "Tìm biến thể...",
+		"fields": {
+			"id": "ID",
+			"sku": "Mã SKU",
+			"barcode": "Mã vạch",
+			"status": "Trạng thái",
+			"proposedPrice": "Giá",
+			"etag": "ETag",
+			"createdAt": "Ngày tạo",
+			"updatedAt": "Ngày cập nhật"
+		},
+		"actions": {
+			"createNew": "Tạo biến thể",
+			"confirmDelete": "Xác nhận xóa",
+			"confirmUpdate": "Xác nhận cập nhật",
+			"delete": "Xóa",
+			"save": "Lưu"
+		},
+		"messages": {
+			"createSuccess": "Tạo biến thể thành công",
+			"updateSuccess": "Cập nhật biến thể thành công",
+			"deleteSuccess": "Xóa biến thể thành công",
+			"createError": "Tạo biến thể thất bại",
+			"updateError": "Cập nhật biến thể thất bại",
+			"deleteError": "Xóa biến thể thất bại",
+			"confirmDeleteMessage": "Bạn có chắc muốn xóa biến thể này?",
+			"confirmUpdateMessage": "Bạn có chắc muốn lưu thay đổi?"
+		}
+	}
+}

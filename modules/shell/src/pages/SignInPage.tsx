@@ -4,7 +4,7 @@ import * as signIn from '../features/signIn/SignInPage';
 
 
 export const SignInPage = () => {
-	useDocumentTitle('nikki.shell.signIn.title', 'Sign In');
+	useDocumentTitle('nikki.shell.signIn.signIn', 'Sign In');
 	return (
 		<signIn.SignInPage />
 	);
