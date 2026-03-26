@@ -29,14 +29,14 @@ export const KioskModelCreatePage: React.FC = () => {
 
 	const breadcrumbs = useMemo(() => [
 		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
-		{ title: translate('nikki.vendingMachine.kioskModels.title'), href: '../kiosk-model' },
+		{ title: translate('nikki.vendingMachine.kioskModels.title'), href: '../kiosk-models' },
 		{ title: translate('nikki.vendingMachine.kioskModels.title_create'), href: '#' },
 	], [translate]);
 
 	const actions = useMemo<ControlPanelProps['actions']>(() => [
 		{
 			label: translate('nikki.general.actions.back'),
-			onClick: () => navigate('../kiosk-model'),
+			onClick: () => navigate('../kiosk-models'),
 			leftSection: <IconArrowLeft size={16} />,
 			variant: 'outline' as const,
 		},

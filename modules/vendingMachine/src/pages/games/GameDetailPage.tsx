@@ -5,15 +5,15 @@ import {
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { IconDeviceGamepad, IconPlus, IconTrash, IconUpload } from '@tabler/icons-react';
 import React, { useState } from 'react';
-import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router';
 
+import { VendingMachineDispatch, gameActions } from '@/appState';
 import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
-import { VendingMachineDispatch, gameActions } from '@/appState';
+import { GamePreview } from '@/features/games/components/GamePreview';
 import { useGameDetail } from '@/features/games/hooks';
 import { Game, GameStatus, GameVersion } from '@/features/games/types';
-import { GamePreview } from '@/features/games/components/GamePreview';
 
 
 export const GameDetailPage: React.FC = () => {
@@ -39,7 +39,9 @@ export const GameDetailPage: React.FC = () => {
 				status: game.status,
 				minAppVersion: game.minAppVersion,
 			});
-			setSelectedVersion(game.versions.find((v) => v.code === game.latestVersion) || game.versions[0]);
+			setSelectedVersion(game.versions.find(
+				(v: GameVersion) => v.code === game.latestVersion)
+			|| game.versions[0]);
 		}
 	}, [game]);
 
@@ -118,7 +120,7 @@ export const GameDetailPage: React.FC = () => {
 
 	const breadcrumbs = [
 		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
-		{ title: translate('nikki.vendingMachine.menu.miniGame'), href: '../mini-game' },
+		{ title: translate('nikki.vendingMachine.menu.miniGame'), href: '../games' },
 		{ title: game?.name || translate('nikki.vendingMachine.games.detail.title'), href: '#' },
 	];
 
@@ -369,7 +371,7 @@ export const GameDetailPage: React.FC = () => {
 									</Table.Tr>
 								</Table.Thead>
 								<Table.Tbody>
-									{game.versions.map((version) => (
+									{game.versions.map((version: GameVersion) => (
 										<Table.Tr key={version.code}>
 											<Table.Td>
 												<Group gap='xs'>
@@ -425,12 +427,12 @@ export const GameDetailPage: React.FC = () => {
 									label={translate('nikki.vendingMachine.games.fields.selectVersion')}
 									value={selectedVersion?.code || game.versions[0]?.code}
 									onChange={(value) => {
-										const version = game.versions.find((v) => v.code === value);
+										const version = game.versions.find((v: GameVersion) => v.code === value);
 										if (version) {
 											setSelectedVersion(version);
 										}
 									}}
-									data={game.versions.map((v) => ({ value: v.code, label: v.code }))}
+									data={game.versions.map((v: GameVersion) => ({ value: v.code, label: v.code }))}
 								/>
 								<GamePreview game={game} version={selectedVersion || game.versions[0]} />
 							</>

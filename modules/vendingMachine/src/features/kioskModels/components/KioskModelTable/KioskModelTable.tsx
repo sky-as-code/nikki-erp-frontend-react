@@ -27,7 +27,7 @@ const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		if (modelId) {
-			navigate(`../kiosk-model/${modelId}`);
+			navigate(`../kiosk-models/${modelId}`);
 		}
 	};
 

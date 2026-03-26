@@ -24,7 +24,7 @@ export function useMenuBarItems(): MenuBarItem[] {
 				},
 				{
 					label: translate('nikki.vendingMachine.menu.kiosk_models'),
-					link: '/kiosk-model',
+					link: '/kiosk-models',
 				},
 				{
 					label: translate('nikki.vendingMachine.menu.kiosk_devices'),
@@ -41,15 +41,15 @@ export function useMenuBarItems(): MenuBarItem[] {
 			items: [
 				{
 					label: translate('nikki.vendingMachine.menu.presentation'),
-					link: '/presentation/playlists',
+					link: '/slideshows/playlists',
 					items: [
 						{
 							label: translate('nikki.vendingMachine.menu.playlists'),
-							link: '/presentation/playlists',
+							link: '/slideshows/playlists',
 						},
 						{
 							label: translate('nikki.vendingMachine.menu.gallery'),
-							link: '/presentation/gallery',
+							link: '/slideshows/gallery',
 						},
 					],
 				},
@@ -59,7 +59,7 @@ export function useMenuBarItems(): MenuBarItem[] {
 				},
 				{
 					label: translate('nikki.vendingMachine.menu.miniGame'),
-					link: '/mini-game',
+					link: '/games',
 				},
 				{
 					label: translate('nikki.vendingMachine.menu.events'),

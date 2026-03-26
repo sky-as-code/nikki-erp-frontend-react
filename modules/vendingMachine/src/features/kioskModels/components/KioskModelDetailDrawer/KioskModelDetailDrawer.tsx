@@ -79,7 +79,7 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 						variant='light'
 						leftSection={<IconExternalLink size={16} />}
 						onClick={() => {
-							navigate(`../kiosk-model/${model.id}`);
+							navigate(`../kiosk-models/${model.id}`);
 							onClose();
 						}}
 					>

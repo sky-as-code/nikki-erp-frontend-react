@@ -132,6 +132,11 @@ export const useActiveOrgWithDetails = () => {
 	return useFindMyOrg(orgSlug ?? '');
 };
 
+export const useActiveOrgDetail = () => {
+	const { orgSlug } = useActiveOrgModule();
+	return useFindMyOrg(orgSlug ?? '');
+};
+
 export const useHasAnyPermission = (
 	resource: string,
 	actions: string[] = [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
