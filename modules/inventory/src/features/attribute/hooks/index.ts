@@ -1,5 +1,4 @@
 export {
-	PAGE_SIZE_OPTIONS,
 	useAttributeListHandlers,
 	useAttributeListView,
 } from './useAttributeList';

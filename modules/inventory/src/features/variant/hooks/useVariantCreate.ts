@@ -7,100 +7,69 @@ import { useNavigate, useParams } from 'react-router';
 
 import { variantActions } from '../../../appState';
 import { selectCreateVariant } from '../../../appState/variant';
-import { toLocalizedText } from '../../localizedText';
-
 import type { InventoryDispatch } from '../../../appState';
-import type { CreateVariantRequest } from '../types';
+import { productActions, selectProductList } from '../../../appState/product';
+import { Product } from '../../product';
 
-
-type VariantCreateInput = Pick<CreateVariantRequest, 'name' | 'sku' | 'barcode' | 'proposedPrice' | 'status' | 'imageURL'>;
-
-function toOptionalTrimmedString(value: unknown): string | undefined {
-	if (typeof value !== 'string') {
-		return undefined;
-	}
-
-	const trimmed = value.trim();
-	return trimmed.length > 0 ? trimmed : undefined;
-}
-
-interface UseVariantCreateHandlersOptions {
-	productId?: string;
-	onSuccess?: () => void | Promise<void>;
-}
-
-export function useVariantCreateHandlers({
-	productId: productIdProp,
-	onSuccess,
-}: UseVariantCreateHandlersOptions = {}) {
+export function useVariantCreateHandlers(onSuccess?: () => void) {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
-	const { productId: productIdParam } = useParams();
-	const productId = productIdProp ?? productIdParam;
 	const navigate = useNavigate();
+
+	const { productId } = useParams();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
+
 	const activeOrg = useActiveOrgWithDetails();
-	const orgId = activeOrg?.id ?? 'org-1';
+	const orgId = activeOrg?.id ?? '';
+	const listProduct = useMicroAppSelector(selectProductList)
 
 	const createCommand = useMicroAppSelector(selectCreateVariant);
 	const isLoading = createCommand.status === 'pending';
 
-	const handleCreateVariant = React.useCallback(async (data: Record<string, unknown>) => {
-		if (!productId) {
-			return;
-		}
-
-		const values = data as VariantCreateInput;
-		const normalizedName = typeof values.name === 'string'
-			? toLocalizedText(values.name)
-			: values.name;
-		const name = normalizedName && typeof normalizedName === 'object'
-			? normalizedName
-			: undefined;
-		if (!name) {
-			return;
-		}
-		try {
-			const proposedPrice = values.proposedPrice ?? 0;
-			const result = await dispatch(variantActions.createVariant({
-				orgId,
-				data: {
-					productId,
-					name,
-					sku: toOptionalTrimmedString(values.sku),
-					barcode: toOptionalTrimmedString(values.barcode),
-					proposedPrice,
-					imageURL: toOptionalTrimmedString(values.imageURL),
-					status: toOptionalTrimmedString(values.status),
-				},
-			})).unwrap();
-
+	React.useEffect(() => {
+		if (createCommand.status === 'success') {
 			notification.showInfo(
-				t('nikki.inventory.variant.messages.createSuccess', { name: result.id }),
+				t('nikki.inventory.variant.messages.createSuccess'),
 				'',
 			);
 			dispatch(variantActions.resetCreateVariant());
-			dispatch(variantActions.listVariants({ orgId, productId }));
 
 			if (onSuccess) {
-				await onSuccess();
-			}
-			else {
+				onSuccess();
+			} else {
 				navigate('..', { relative: 'path' });
 			}
 		}
-		catch (error) {
+		if (createCommand.status === 'error') {
 			notification.showError(
-				error instanceof Error ? error.message : t('nikki.inventory.variant.messages.createError'),
+				t('nikki.inventory.variant.messages.createError'),
 				'',
 			);
 			dispatch(variantActions.resetCreateVariant());
 		}
-	}, [dispatch, navigate, notification, onSuccess, productId, orgId, t]);
+	}, [createCommand.status, dispatch, navigate, notification, t, onSuccess]);
+
+	const handleCreate = (data: any) => {
+
+		dispatch(variantActions.createVariant({
+			orgId,
+			data
+		}));
+	};
+
+	React.useEffect(() => {
+		dispatch(productActions.listProducts({ orgId }));
+	}, [dispatch, orgId]);
+
+	const handleCancel = React.useCallback(() => {
+		navigate('..', { relative: 'path' });
+	}, [navigate]);
 
 	return {
 		isLoading,
-		onSubmit: handleCreateVariant,
-		handleCreateVariant,
+		productId,
+		products: (listProduct.data ?? []) as Product[],
+		handleCreate,
+		handleCancel,
 	};
 }

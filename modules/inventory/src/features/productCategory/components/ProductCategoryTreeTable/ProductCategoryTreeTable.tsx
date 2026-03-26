@@ -18,9 +18,8 @@ import {
 } from '@tabler/icons-react';
 import React from 'react';
 
-import { localizedTextToString } from '../../../localizedText';
-
 import type { ProductCategory } from '../../types';
+import { JsonToString } from '../../../../utils/serializer';
 
 
 export type ProductCategoryTreeRow = {
@@ -86,7 +85,7 @@ export function ProductCategoryTreeTable({
 											) : (
 												<Box w={28} />
 											)}
-											<Text fw={600}>{localizedTextToString(row.category.name)}</Text>
+											<Text fw={600}>{JsonToString(row.category.name)}</Text>
 										</Box>
 									</Box>
 								</Table.Td>

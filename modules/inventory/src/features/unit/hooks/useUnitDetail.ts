@@ -2,7 +2,7 @@ import { useUIState } from '@nikkierp/shell/contexts';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { unitActions, unitCategoryActions } from '../../../appState';
 import {
@@ -44,109 +44,85 @@ function toFormValues(unit: Unit): UnitDetailFormValues {
 	};
 }
 
-interface UseUnitDetailOptions {
-	unitId?: string;
-}
-
-export function useUnitDetail({ unitId }: UseUnitDetailOptions = {}) {
+export function useUnitDetail() {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
-	const unitDetail = useMicroAppSelector(selectUnitDetail);
+	const navigate = useNavigate();
+	const { notification } = useUIState();
+	const { unitId } = useParams();
+	const activeOrg = useActiveOrgWithDetails();
+	const orgId = activeOrg?.id ?? 'org-1';
+
 	const listUnitCategory = useMicroAppSelector(selectUnitCategoryList);
 	const listUnits = useMicroAppSelector(selectUnitList);
 	const updateCommand = useMicroAppSelector(selectUpdateUnit);
 	const deleteCommand = useMicroAppSelector(selectDeleteUnit);
-	const activeOrg = useActiveOrgWithDetails();
-	const orgId = activeOrg?.id ?? 'org-1';
 
-	const navigate = useNavigate();
-	const { notification } = useUIState();
-	const unit = unitDetail.data;
 	const unitCategories = (listUnitCategory.data ?? []) as UnitCategory[];
 	const units = (listUnits.data ?? []) as Unit[];
+	const unit = units.find((u) => u.id === unitId);
 
-	const loadData = React.useCallback(() => {
-		if (!unitId) {
-			return;
-		}
-
-		dispatch(unitActions.getUnit({ orgId, id: unitId }));
+	React.useEffect(() => {
 		dispatch(unitActions.listUnits(orgId));
 		dispatch(unitCategoryActions.listUnitCategories(orgId));
 	}, [dispatch, orgId, unitId]);
 
 	React.useEffect(() => {
-		loadData();
-	}, [loadData]);
-
-	const handleGoBack = React.useCallback(() => {
-		navigate('..', { relative: 'path' });
-	}, [navigate]);
-
-	const handleSave = React.useCallback(async (values: UnitDetailFormValues) => {
-		if (!unitId || !unit) {
-			return;
-		}
-
-		try {
-			await dispatch(unitActions.updateUnit({
-				orgId,
-				data: {
-					id: unitId,
-					etag: unit.etag,
-					name: values.name,
-					symbol: values.symbol,
-					categoryId: values.categoryId,
-					baseUnit: values.baseUnit ? (values.baseUnit as string) : undefined,
-					multiplier: values.multiplier ? (values.multiplier as number) : undefined,
-				},
-			})).unwrap();
+		if (updateCommand.status === 'success') {
 			notification.showInfo('Unit updated successfully', '');
 			dispatch(unitActions.resetUpdateUnit());
-			handleGoBack();
+			navigate('..', { relative: 'path' });
 		}
-		catch (error) {
+
+		if (updateCommand.status === 'error') {
 			notification.showError(
-				error instanceof Error ? error.message : 'Failed to update unit',
+				updateCommand.error instanceof Error ? updateCommand.error.message : 'Failed to update unit',
 				'',
 			);
 			dispatch(unitActions.resetUpdateUnit());
 		}
-	}, [dispatch, handleGoBack, notification, unit, unitId, orgId]);
+	}, [updateCommand.status, dispatch, navigate, notification]);
 
-	const handleDelete = React.useCallback(async () => {
-		if (!unitId) {
-			return;
-		}
-
-		try {
-			await dispatch(unitActions.deleteUnit({ orgId, id: unitId })).unwrap();
+	React.useEffect(() => {
+		if (deleteCommand.status === 'success') {
 			notification.showInfo('Unit deleted successfully', '');
 			dispatch(unitActions.resetDeleteUnit());
-			handleGoBack();
+			navigate('..', { relative: 'path' });
 		}
-		catch (error) {
+
+		if (deleteCommand.status === 'error') {
 			notification.showError(
-				error instanceof Error ? error.message : 'Failed to delete unit',
+				deleteCommand.error instanceof Error ? deleteCommand.error.message : 'Failed to delete unit',
 				'',
 			);
 			dispatch(unitActions.resetDeleteUnit());
 		}
-	}, [dispatch, handleGoBack, notification, unitId, orgId]);
+	}, [deleteCommand.status, dispatch, navigate, notification]);
 
-	const isLoading = unitDetail.status === 'pending' || listUnitCategory.status === 'pending' || listUnits.status === 'pending';
+	const handleGoBack = () => {
+		navigate('..', { relative: 'path' });
+	};
+
+	const handleSave = (data : any) => {
+		dispatch(unitActions.updateUnit({
+			orgId,
+			data: {
+				id: unitId,
+				etag: unit?.etag,
+				...data,
+			},
+		}));
+	};
+
+	const handleDelete = () => {
+		dispatch(unitActions.deleteUnit({ orgId, id: unitId || '' }));
+	};
+
+	const isLoading
+		= listUnitCategory.status === 'pending'
+		|| listUnits.status === 'pending';
 	const isSubmitting = updateCommand.status === 'pending' || deleteCommand.status === 'pending';
 
-	const categoryOptions = React.useMemo(() => {
-		return unitCategories;
-	}, [unitCategories]);
-
-	const modelValue = React.useMemo(() => {
-		if (!unit) {
-			return EMPTY_FORM_VALUES;
-		}
-
-		return toFormValues(unit);
-	}, [unit]);
+	const categoryOptions = unitCategories;
 
 	return {
 		isLoading,
@@ -154,7 +130,6 @@ export function useUnitDetail({ unitId }: UseUnitDetailOptions = {}) {
 		unit,
 		categoryOptions,
 		units,
-		modelValue,
 		handleGoBack,
 		onSave: handleSave,
 		onDelete: handleDelete,

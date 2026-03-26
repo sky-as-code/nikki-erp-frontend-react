@@ -17,7 +17,6 @@ import React from 'react';
 
 import { PageContainer } from '../../components/PageContainer';
 import {
-	PRODUCT_CATEGORY_DEFAULT_VALUES,
 	useProductCategoryCreateHandlers,
 } from '../../features/productCategory/hooks';
 import categorySchema from '../../schemas/product-category-schema.json';
@@ -58,7 +57,6 @@ export const ProductCategoryCreatePageBody: React.FC = () => {
 					formVariant='create'
 					modelSchema={CATEGORY_SCHEMA}
 					modelLoading={isLoading}
-					modelValue={PRODUCT_CATEGORY_DEFAULT_VALUES}
 				>
 					{({ handleSubmit }) => (
 						<Paper p='md' withBorder>

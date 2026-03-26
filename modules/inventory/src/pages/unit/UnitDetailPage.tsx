@@ -13,7 +13,6 @@ import type { ModelSchema } from '@nikkierp/ui/model';
 import { JsonToString } from '../../utils/serializer';
 
 export const UnitDetailPageBody: React.FC = () => {
-	const { unitId } = useParams<{ unitId?: string }>();
 	const {
 		isLoading,
 		isSubmitting,
@@ -23,7 +22,7 @@ export const UnitDetailPageBody: React.FC = () => {
 		handleGoBack,
 		onSave,
 		onDelete,
-	} = useUnitDetail({ unitId });
+	} = useUnitDetail();
 
 	const breadcrumbs = [
 		{ title: 'Inventory', href: '../overview' },

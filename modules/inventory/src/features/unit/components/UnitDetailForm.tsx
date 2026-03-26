@@ -1,9 +1,7 @@
 import {
-	Paper,
 	Stack,
 	Text,
 	TextInput,
-	Title,
 } from '@mantine/core';
 import {
 	AutoField,
@@ -18,7 +16,6 @@ import { JsonToString } from '../../../utils/serializer';
 import type { Unit } from '../types';
 import type { UnitDetailFormValues } from '../hooks/useUnitDetail';
 import type { UnitCategory } from '../../unitCategory/types';
-import { DetailActionBar } from '../../../components/ActionBar/DetailActionBar';
 import { useTranslation } from 'react-i18next';
 
 

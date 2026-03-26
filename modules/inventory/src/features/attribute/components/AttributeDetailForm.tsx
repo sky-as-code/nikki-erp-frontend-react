@@ -7,12 +7,15 @@ import {
 } from '@nikkierp/ui/components/form';
 import React from 'react';
 
-import type { FieldConstraint, FieldDefinition, ModelSchema } from '@nikkierp/ui/model';
+import attributeSchema from '../../../schemas/attribute-schema.json';
 import { JsonToString } from '../../../utils/serializer';
+
+import type { ModelSchema } from '@nikkierp/ui/model';
+import type { Attribute } from '../types';
 
 
 interface AttributeFieldsProps {
-	attributeDetail: Record<string, unknown> | undefined;
+	attributeDetail: Attribute | undefined;
 	isLoading: boolean;
 }
 
@@ -28,7 +31,7 @@ function AttributeFields({ attributeDetail, isLoading }: AttributeFieldsProps) {
 			<div>
 				<Text size='sm' fw={500} mb='xs'>Created At</Text>
 				<TextInput
-					value={attributeDetail?.createdAt ? new Date(String(attributeDetail.createdAt)).toLocaleString() : ''}
+					value={attributeDetail?.createdAt ? new Date(attributeDetail.createdAt).toLocaleString() : ''}
 					size='md'
 					variant='filled'
 					readOnly
@@ -37,7 +40,7 @@ function AttributeFields({ attributeDetail, isLoading }: AttributeFieldsProps) {
 			<div>
 				<Text size='sm' fw={500} mb='xs'>Updated At</Text>
 				<TextInput
-					value={attributeDetail?.updatedAt ? new Date(String(attributeDetail.updatedAt)).toLocaleString() : ''}
+					value={attributeDetail?.updatedAt ? new Date(attributeDetail.updatedAt).toLocaleString() : ''}
 					size='md'
 					variant='filled'
 					readOnly
@@ -47,22 +50,16 @@ function AttributeFields({ attributeDetail, isLoading }: AttributeFieldsProps) {
 	);
 }
 
-type AttributeSchema = {
-	name: string;
-	fields: Record<string, FieldDefinition>;
-	constraints?: FieldConstraint[];
-};
-
 interface AttributeDetailFormProps {
-	schema: ModelSchema | AttributeSchema;
-	attributeDetail: Record<string, unknown> | undefined;
+	attributeDetail: Attribute | undefined;
 	isLoading: boolean;
 	onSubmit: (data: Record<string, unknown>) => void | Promise<void>;
 	onDelete: () => void | Promise<void>;
 }
 
+const ATTRIBUTE_UPDATE_SCHEMA = attributeSchema as ModelSchema;
+
 export function AttributeDetailForm({
-	schema,
 	attributeDetail,
 	isLoading,
 	onSubmit,
@@ -90,10 +87,10 @@ export function AttributeDetailForm({
 		void onDelete();
 	};
 
-	const modelValue = {
+	const modelValue = attributeDetail ? {
 		...attributeDetail,
-		displayName: JsonToString(attributeDetail?.displayName),
-	};
+		displayName: JsonToString(attributeDetail.displayName),
+	} : undefined;
 
 	return (
 		<>
@@ -101,7 +98,7 @@ export function AttributeDetailForm({
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider
 						formVariant='update'
-						modelSchema={schema}
+						modelSchema={ATTRIBUTE_UPDATE_SCHEMA}
 						modelValue={modelValue}
 						modelLoading={isLoading}
 					>

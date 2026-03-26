@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 import { productActions } from '../../../appState/product';
 import { JsonToString } from '../../../utils/serializer';
 
-import type { InventoryDispatch } from '../../../appState';
+import { unitActions, variantActions, type InventoryDispatch } from '../../../appState';
 import type { ActionBarFilterConfig } from '../../../components/ActionBar/ActionBar';
 import type { Product } from '../types';
 
@@ -15,13 +15,6 @@ type NormalizedProduct = Omit<Product, 'name'> & { name: string };
 const STATUS_OPTIONS = [
 	{ value: 'active', label: 'Active' },
 	{ value: 'inactive', label: 'Inactive' },
-];
-
-export const PAGE_SIZE_OPTIONS = [
-	{ value: '5', label: '5 / page' },
-	{ value: '10', label: '10 / page' },
-	{ value: '20', label: '20 / page' },
-	{ value: '50', label: '50 / page' },
 ];
 
 const normalizeName = (name: Product['name']) => {
@@ -103,6 +96,8 @@ export function useProductListHandlers() {
 
 	const handleRefresh = React.useCallback(() => {
 		dispatch(productActions.listProducts({ orgId }));
+		dispatch(variantActions.listAllVariants(orgId));
+		dispatch(unitActions.listUnits(orgId));
 	}, [dispatch, orgId]);
 
 	React.useEffect(() => {

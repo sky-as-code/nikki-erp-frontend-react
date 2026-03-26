@@ -54,6 +54,7 @@ export function useUnitCreateHandlers() {
 	}, [createCommand.status, dispatch, navigate, notification, orgId]);
 
 	const handleCreate = (dataValue: any) => {
+		console.log('Creating unit with data:', dataValue);
 		dataValue.name = StringToJson(dataValue.name);
 		dispatch(unitActions.createUnit({
 			orgId,

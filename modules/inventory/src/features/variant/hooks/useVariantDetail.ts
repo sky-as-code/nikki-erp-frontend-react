@@ -13,6 +13,7 @@ import {
 } from '../../../appState/variant';
 
 import { productActions, type InventoryDispatch } from '../../../appState';
+import { selectProductDetail } from '../../../appState/product';
 
 
 function toOptionalTrimmedString(value: unknown): string | undefined {
@@ -31,6 +32,7 @@ export function useVariantDetailHandlers() {
 	const activeOrg = useActiveOrgWithDetails();
 	const orgId = activeOrg?.id ?? 'org-1';
 	const variantDetail = useMicroAppSelector(selectVariantDetail);
+	const productDetail = useMicroAppSelector(selectProductDetail);
 	const updateCommand = useMicroAppSelector(selectUpdateVariant);
 	const deleteCommand = useMicroAppSelector(selectDeleteVariant);
 
@@ -96,6 +98,10 @@ export function useVariantDetailHandlers() {
 		}
 	};
 
+	const handleGoBack = () => {
+		navigate("..", { relative: 'path' });
+	}
+
 	React.useEffect(() => {
 		if (variantId && productId) {
 			dispatch(variantActions.getVariant({ orgId, variantId, productId }));
@@ -107,5 +113,8 @@ export function useVariantDetailHandlers() {
 		isLoadingDetail,
 		handleUpdate,
 		handleDelete,
+		handleGoBack,
+		productDetail,
+		variantDetail,
 	};
 }

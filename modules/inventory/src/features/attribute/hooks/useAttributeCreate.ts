@@ -11,12 +11,6 @@ import { toLocalizedText } from '../../localizedText';
 import type { InventoryDispatch } from '../../../appState';
 import type { CreateAttributeRequest } from '../types';
 
-
-type AttributeCreateInput = Pick<
-CreateAttributeRequest,
-'codeName' | 'dataType' | 'displayName' | 'isEnum' | 'isRequired' | 'sortIndex'
->;
-
 interface UseAttributeCreateHandlersOptions {
 	productId?: string;
 	onSuccess?: () => void | Promise<void>;
@@ -64,11 +58,11 @@ export function useAttributeCreateHandlers({
 			return;
 		}
 
-		const values = data as AttributeCreateInput;
-		const displayName = toLocalizedText(values.displayName);
-		const codeName = toOptionalString(values.codeName);
+		const displayName = toLocalizedText(data.displayName as string | Record<string, string> | null | undefined);
+		const codeName = toOptionalString(data.codeName);
+		const dataType = toOptionalString(data.dataType);
 
-		if (!displayName || !codeName) {
+		if (!displayName || !codeName || !dataType) {
 			return;
 		}
 
@@ -79,11 +73,11 @@ export function useAttributeCreateHandlers({
 					productId,
 					displayName,
 					codeName,
-					dataType: toOptionalString(values.dataType),
-					isEnum: Boolean(values.isEnum),
-					isRequired: Boolean(values.isRequired),
-					sortIndex: toOptionalNumber(values.sortIndex),
-				},
+					dataType,
+					isRequired: Boolean(data.isRequired),
+					isEnum: Boolean(data.isEnum),
+					sortIndex: toOptionalNumber(data.sortIndex),
+				} as CreateAttributeRequest,
 			})).unwrap();
 
 			notification.showInfo(`Attribute ${result.id} created successfully`, '');

@@ -1,11 +1,9 @@
 export {
-	PAGE_SIZE_OPTIONS,
 	useProductCategoryListHandlers,
-	useProductCategoryListView,
+	useSearchProductCategories,
 } from './useProductCategoryList';
 export type { ProductCategoryFormPayload } from './useProductCategoryList';
 export {
-	PRODUCT_CATEGORY_DEFAULT_VALUES,
 	useProductCategoryCreateHandlers,
 } from './useProductCategoryCreate';
 export { useProductCategoryDetail } from './useProductCategoryDetail';

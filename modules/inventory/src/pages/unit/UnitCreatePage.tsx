@@ -1,9 +1,3 @@
-import {
-	Group,
-	Stack,
-	Text,
-	Title,
-} from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import React from 'react';
 
@@ -36,7 +30,7 @@ export const UnitCreatePageBody: React.FC = () => {
 			sections={[
 				<ControlPanelAction
 					actions={[
-						{ label: 'Create', type: 'submit'},
+						{ label: 'Create', type: 'submit' as const, form: 'unit-create-form'},
 						{ label: 'Cancel', variant: 'outline', onClick: handleGoBack },						
 					]}
 				/>,

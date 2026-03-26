@@ -1,17 +1,11 @@
 import {
 	Badge,
 	Box,
-	Card,
-	Divider,
 	Grid,
 	Group,
 	Image,
-	Paper,
-	SimpleGrid,
 	Stack,
 	Text,
-	ThemeIcon,
-	rgba,
 } from '@mantine/core';
 import { ConfirmModal } from '@nikkierp/ui/components';
 import {
@@ -21,9 +15,6 @@ import {
 } from '@nikkierp/ui/components/form';
 import {
 	IconBox,
-	IconCalendar,
-	IconPhoto,
-	IconTags,
 } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -130,23 +121,34 @@ interface VariantDetailFormProps {
 	schema: ModelSchema | VariantSchema;
 	variantDetail: Variant | undefined;
 	isLoading: boolean;
+	isEditing: boolean;
 	onSubmit: (data: Record<string, unknown>) => void | Promise<void>;
 	onDelete: () => void | Promise<void>;
-	formRef?: React.MutableRefObject<{ submit: () => void; triggerDelete: () => void } | null>;
 }
 
-export function VariantDetailForm({
+export interface VariantDetailFormHandle {
+	submit: () => void;
+	triggerDelete: () => void;
+}
+
+export const VariantDetailForm = React.forwardRef<VariantDetailFormHandle, VariantDetailFormProps>(({ 
 	schema,
 	variantDetail,
 	isLoading,
+	isEditing,
 	onSubmit,
 	onDelete,
-	formRef,
-}: VariantDetailFormProps): React.ReactElement {
+}, ref): React.ReactElement => {
 	const { t } = useTranslation();
 	const [showSaveConfirm, setShowSaveConfirm] = React.useState(false);
 	const [pendingData, setPendingData] = React.useState<Record<string, unknown> | null>(null);
 	const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+	const formRef = React.useRef<HTMLFormElement | null>(null);
+
+	React.useImperativeHandle(ref, () => ({
+		submit: () => formRef.current?.requestSubmit(),
+		triggerDelete: () => setShowDeleteConfirm(true),
+	}), []);
 
 	const handleFormSubmit = (data: Record<string, unknown>) => {
 		setPendingData(data);
@@ -154,15 +156,10 @@ export function VariantDetailForm({
 	};
 
 	const handleConfirmSave = () => {
-		setShowSaveConfirm(false);
 		if (pendingData) {
 			void onSubmit(pendingData);
 			setPendingData(null);
 		}
-	};
-
-	const handleDeleteClick = () => {
-		setShowDeleteConfirm(true);
 	};
 
 	const handleConfirmDelete = () => {
@@ -171,9 +168,8 @@ export function VariantDetailForm({
 	};
 
 	const variantName = variantDetail ? (JsonToString(variantDetail.name) || variantDetail.id || '-') : '-';
-	const statusColor = variantDetail?.status === 'active' ? 'green' : 'gray';
 	const attributes = variantDetail ? getVariantAttributes(variantDetail.attributes) : [];
-	const isFormDisabled = isLoading || !variantDetail;
+	const isFormReadOnly = isLoading || !variantDetail || !isEditing;
 
 	const getStatusLabel = (status: string | undefined) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -194,15 +190,8 @@ export function VariantDetailForm({
 					modelLoading={isLoading}
 				>
 					{({ handleSubmit }) => {
-						if (formRef) {
-							formRef.current = {
-								submit: () => void handleSubmit(handleFormSubmit)(),
-								triggerDelete: handleDeleteClick,
-							};
-						}
-
 						return (
-							<form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
+							<form ref={formRef} onSubmit={handleSubmit(handleFormSubmit)} noValidate>
 								<Stack gap='md'>
 									{/* Header */}
 									<Group gap='xs' mb='md'>
@@ -218,13 +207,13 @@ export function VariantDetailForm({
 										{getStatusLabel(variantDetail?.status)}
 									</div>
 
-									<AutoField name='sku' inputProps={{ disabled: isFormDisabled }} />
-									<AutoField name='barcode' inputProps={{ disabled: isFormDisabled }} />
-									<AutoField name='proposedPrice' inputProps={{ disabled: isFormDisabled }} />
+									<AutoField name='sku' htmlProps={{ readOnly: isFormReadOnly }} />
+									<AutoField name='barcode' htmlProps={{ readOnly: isFormReadOnly }} />
+									<AutoField name='proposedPrice' htmlProps={{ readOnly: isFormReadOnly }} />
 
 									{/* Image URL */}
 									<div>
-										<AutoField name='imageURL' inputProps={{ disabled: isFormDisabled }} />
+										<AutoField name='imageURL' htmlProps={{ readOnly: isFormReadOnly }} />
 										{variantDetail?.imageURL && (
 											<Image
 												src={variantDetail.imageURL}
@@ -306,4 +295,6 @@ export function VariantDetailForm({
 			/>
 		</>
 	);
-}
+});
+
+VariantDetailForm.displayName = 'VariantDetailForm';

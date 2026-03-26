@@ -15,10 +15,6 @@ export type ProductCategoryCreateFormValues = {
 	name: string;
 };
 
-export const PRODUCT_CATEGORY_DEFAULT_VALUES: ProductCategoryCreateFormValues = {
-	name: '',
-};
-
 export function useProductCategoryCreateHandlers() {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
 	const navigate = useNavigate();
@@ -29,36 +25,36 @@ export function useProductCategoryCreateHandlers() {
 
 	const isLoading = createCommand.status === 'pending';
 
+	React.useEffect(() => {
+		if (createCommand.status === 'success') {
+			notification.showInfo('Category created successfully', '');
+			dispatch(productCategoryActions.resetCreateProductCategory());
+			dispatch(productCategoryActions.listProductCategories(orgId));
+			navigate('..', { relative: 'path' });
+		}
+		if (createCommand.status === 'error') {
+			notification.showError('Failed to create category', '');
+			dispatch(productCategoryActions.resetCreateProductCategory());
+		}
+	}, [createCommand.status, dispatch, navigate, notification, orgId]);
+
 	const handleGoBack = React.useCallback(() => {
 		navigate('..', { relative: 'path' });
 	}, [navigate]);
 
-	const handleCreate = React.useCallback(async (values: ProductCategoryCreateFormValues) => {
+	const handleCreate = React.useCallback((values: ProductCategoryCreateFormValues) => {
 		const name = toLocalizedText(values.name);
 		if (!name) {
 			return;
 		}
-		try {
-			await dispatch(productCategoryActions.createProductCategory({
+		dispatch(productCategoryActions.createProductCategory({
+			orgId,
+			data: {
 				orgId,
-				data: {
-					orgId,
-					name,
-				},
-			})).unwrap();
-			notification.showInfo('Category created successfully', '');
-			dispatch(productCategoryActions.resetCreateProductCategory());
-			dispatch(productCategoryActions.listProductCategories(orgId));
-			handleGoBack();
-		}
-		catch (error) {
-			notification.showError(
-				error instanceof Error ? error.message : 'Failed to create category',
-				'',
-			);
-			dispatch(productCategoryActions.resetCreateProductCategory());
-		}
-	}, [dispatch, handleGoBack, notification, orgId]);
+				name,
+			},
+		}));
+	}, [dispatch, orgId]);
 
 	return {
 		isLoading,

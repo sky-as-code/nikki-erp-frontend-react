@@ -9,17 +9,13 @@ import { DetailControlPanel } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
 import { AttributeDetailForm } from '../../features/attribute/components';
 import { useAttributeDetailHandlers } from '../../features/attribute/hooks';
-import attributeSchema from '../../schemas/attribute-schema.json';
-
-import type { ModelSchema } from '@nikkierp/ui/model';
 import { JsonToString } from '../../utils/serializer';
 import { selectProductDetail } from '../../appState/product';
 
 
 export const AttributeDetailPageBody: React.FC = () => {
 	const attributeDetail = useMicroAppSelector(selectAttributeDetail);
-	const productDetail = useMicroAppSelector(selectProductDetail)
-	const schema = attributeSchema as ModelSchema;
+	const productDetail = useMicroAppSelector(selectProductDetail);
 	const navigate = useNavigate();
 
 	const { isLoadingDetail, handleUpdate, handleDelete } = useAttributeDetailHandlers();
@@ -48,8 +44,7 @@ export const AttributeDetailPageBody: React.FC = () => {
 		>
 			<Stack gap='md'>
 				<AttributeDetailForm
-					schema={schema}
-					attributeDetail={attributeData as Record<string, unknown>}
+					attributeDetail={attributeData}
 					isLoading={isLoadingDetail}
 					onSubmit={handleUpdate}
 					onDelete={handleDelete}

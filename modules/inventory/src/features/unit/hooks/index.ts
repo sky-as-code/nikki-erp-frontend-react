@@ -1,5 +1,4 @@
 export {
-	PAGE_SIZE_OPTIONS,
 	useUnitListHandlers,
 } from './useUnitList';
 export {

@@ -7,7 +7,7 @@ import type {
 
 export type VariantAttribute = {
 	codeName: string;
-	value: unknown;
+	value: string | number;
 };
 
 export type Variant = {
@@ -20,6 +20,10 @@ export type Variant = {
 	imageURL?: string;
 	status: string;
 	attributes?: VariantAttribute[];
+	product?: {
+		id: string;
+		name: Record<string, string>;
+	};
 	createdAt: string;
 	updatedAt: string;
 	etag: string;

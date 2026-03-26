@@ -6,11 +6,11 @@ import {
 import { AutoTable } from '@nikkierp/ui/components';
 import React from 'react';
 
-import { localizedTextToString } from '../../localizedText';
 import attributeSchema from '../../../schemas/attribute-schema.json';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
 import type { Attribute } from '../types';
+import { JsonToString } from '../../../utils/serializer';
 
 
 const ATTRIBUTE_COLUMNS = [
@@ -54,7 +54,7 @@ export function AttributeTable({
 				columnRenderers={{
 					displayName: (row) => {
 						const attribute = row as Attribute;
-						return localizedTextToString(attribute.displayName) || attribute.id;
+						return JsonToString(attribute.displayName) || attribute.id;
 					},
 					dataType: (row) => {
 						const attribute = row as Attribute;

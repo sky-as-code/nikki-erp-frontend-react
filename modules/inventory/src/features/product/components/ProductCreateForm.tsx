@@ -24,17 +24,6 @@ import type { ModelSchema } from '@nikkierp/ui/model';
 
 export type ProductCreateSubmitPayload = Omit<CreateProductRequest, 'orgId'>;
 
-type ProductFormValues = {
-	name: string;
-	sku: string;
-	barCode: string;
-	description: string;
-	unitId?: string;
-	status?: 'active' | 'inactive';
-	thumbnailURL: string;
-	proposedPrice?: number;
-};
-
 interface ProductCreateFormProps {
 	isLoading: boolean;
 	units: Unit[];
@@ -43,20 +32,9 @@ interface ProductCreateFormProps {
 
 const PRODUCT_CREATE_SCHEMA = productSchema as ModelSchema;
 
-const PRODUCT_DEFAULT_VALUES: ProductFormValues = {
-	name: '',
-	sku: '',
-	barCode: '',
-	description: '',
-	unitId: undefined,
-	status: 'active',
-	thumbnailURL: '',
-	proposedPrice: undefined,
-};
-
 type ProductCreateFormContentProps = {
 	isLoading: boolean;
-	onSubmit: (data: ProductCreateSubmitPayload) => void;
+	onSubmit: (data: any) => void;
 	handleGoBack: () => void;
 	units: Unit[];
 	handleSubmit: (
@@ -70,34 +48,18 @@ function ProductCreateFormContent({
 	units,
 	handleSubmit,
 }: ProductCreateFormContentProps): React.ReactElement {
-
-	const submitForm = React.useCallback((rawValues: any) => {
-		const values = rawValues as ProductFormValues;
-		
-		onSubmit({
-			name: StringToJson(values.name),
-			sku: values.sku,
-			barCode: values.barCode,
-			description: StringToJson(values.description),
-			unitId: values.unitId,
-			status: values.status,
-			thumbnailURL: values.thumbnailURL,
-			proposedPrice: values.proposedPrice,
-		});
-	}, [onSubmit]);
-
 	return (
 		<Paper>
-			<form onSubmit={handleSubmit(submitForm)} noValidate>
+			<form id='product-create-form' onSubmit={handleSubmit(onSubmit)}>
 				<Stack gap='lg'>
 					<FormContainer>
 						<Stack gap='sm'>
 							<AutoField name='name' autoFocused inputProps={{ disabled: isLoading }} />
 							<AutoField name='sku' inputProps={{ disabled: isLoading }} />
-							<AutoField name='barCode' inputProps={{ disabled: isLoading }} />
-							<AutoField name='description' inputProps={{ disabled: isLoading }} />
-							<AutoField name='thumbnailURL' inputProps={{ disabled: isLoading }} />
 							<AutoField name='proposedPrice' inputProps={{ disabled: isLoading }} />
+							<AutoField name='description' inputProps={{ disabled: isLoading }} />
+							<AutoField name='barCode' inputProps={{ disabled: isLoading }} />
+							<AutoField name='thumbnailURL' inputProps={{ disabled: isLoading }} />
 							<AutoField name='status' inputProps={{ disabled: isLoading }} />
 							<EntitySelectField
 								fieldName='unitId'
@@ -128,15 +90,14 @@ export function ProductCreateForm({ isLoading, units, onSubmit }: ProductCreateF
 				formVariant='create'
 				modelSchema={PRODUCT_CREATE_SCHEMA}
 				modelLoading={isLoading}
-				modelValue={PRODUCT_DEFAULT_VALUES}
 			>
-				{({ handleSubmit }) => (
+				{({ handleSubmit: formHandleSubmit }) => (
 					<ProductCreateFormContent
 						isLoading={isLoading}
 						onSubmit={onSubmit}
 						handleGoBack={handleGoBack}
 						units={units}
-						handleSubmit={handleSubmit}
+						handleSubmit={formHandleSubmit}
 					/>
 				)}
 			</FormFieldProvider>

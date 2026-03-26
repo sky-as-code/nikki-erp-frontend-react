@@ -1,9 +1,6 @@
-import { Group, Stack, Text, Title } from '@mantine/core';
+import { Stack } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
-
 import { ControlPanelAction } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
 import { VariantCreateForm } from '../../features/variant/components';
@@ -11,37 +8,54 @@ import { useVariantCreateHandlers } from '../../features/variant/hooks/useVarian
 import variantSchema from '../../schemas/variant-schema.json';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
+import { JsonToString } from '../../utils/serializer';
 
 
 export const VariantCreatePageBody: React.FC = () => {
-	const schema = variantSchema as ModelSchema;
-	const { t } = useTranslation();
-	const navigate = useNavigate();
+	const { 
+		isLoading, 
+		handleCancel, 
+		handleCreate, 
+		products, 
+		productId 
+	} = useVariantCreateHandlers();
 
-	const { isLoading, onSubmit } = useVariantCreateHandlers();
-	const breadcrumbs = [
-		{ title: t('nikki.inventory.product.title'), href: '../products' },
-		{ title: t('nikki.inventory.variant.title'), href: '../variants' },
-		{ title: t('nikki.inventory.variant.actions.createNew'), href: '#' },
-	];
+	const breadcrumbs = productId
+		? [
+				{ title: 'Inventory', href: '../' },
+				{ title: 'Products', href: '../products' },
+				{ title: JsonToString(products.find(p => p.id === productId)?.name), href: `../products/${productId}` },
+				{ title: 'Variants', href: '#' },
+				{ title: 'Create Variant', href: '#' },
+		  ]
+		: [
+				{ title: 'Inventory', href: '../' },
+				{ title: 'Variants', href: '..' },
+				{ title: 'Create Variant', href: '#' },
+		  ];
 
 	return (
 		<PageContainer
 			breadcrumbs={breadcrumbs}
+			isLoading={isLoading}
 			sections={[
 				<ControlPanelAction
 					actions={[
-						{ label: 'Create', type: 'submit'},
-						{ label: 'Cancel', variant: 'outline', onClick: () => navigate(-1) },
+						{ label: 'Create', type: 'submit' as const, form: 'variant-create-form' as const },
+						{ label: 'Cancel', variant: 'outline', onClick: handleCancel },
 					]}
 				/>,
 			]}
 		>
-			<VariantCreateForm
-				schema={schema}
-				isLoading={isLoading}
-				onSubmit={onSubmit}
-			/>
+			<Stack gap='md'>
+				<VariantCreateForm
+					schema={variantSchema as ModelSchema}
+					isLoading={isLoading}
+					productId={productId}
+					products={products}
+					onSubmit={handleCreate}
+				/>
+			</Stack>
 		</PageContainer>
 	);
 };

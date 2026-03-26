@@ -49,22 +49,11 @@ export function useProductCreateHandlers() {
 		}
 	}, [createCommand.status, dispatch, navigate, notification, orgId]);
 
-	const handleCreate = (data: ProductCreateSubmitPayload) => {
-		const normalizedName = typeof data.name === 'string'
-			? StringToJson(data.name)
-			: data.name;
-		const normalizedDescription = typeof data.description === 'string'
-			? StringToJson(data.description)
-			: data.description;
-
-		if (!normalizedName) {
-			return;
-		}
-
+	const handleCreate = (data: any) => {
 		dispatch(productActions.createProduct({
 			...data,
-			name: normalizedName,
-			description: normalizedDescription,
+			name: StringToJson(data.name),
+			description: StringToJson(data.description),
 			orgId,
 		}));
 	};

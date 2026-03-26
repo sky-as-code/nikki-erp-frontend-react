@@ -2,8 +2,6 @@ import * as request from '@nikkierp/common/request';
 
 import type {
 	Attribute,
-	AttributeDisplayType,
-	AttributeLangText,
 	CreateAttributeRequest,
 	CreateAttributeResponse,
 	DeleteAttributeResponse,
@@ -11,45 +9,6 @@ import type {
 	UpdateAttributeRequest,
 	UpdateAttributeResponse,
 } from './types';
-
-
-const toDisplayNameText = (value: AttributeLangText | undefined): string => {
-	if (typeof value === 'string') {
-		return value;
-	}
-
-	if (!value) {
-		return '';
-	}
-
-	return value.en ?? Object.values(value)[0] ?? '';
-};
-
-const toCodeName = (value: string): string => {
-	return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-};
-
-const mapDisplayTypeToDataType = (displayType?: AttributeDisplayType): string => {
-	switch (displayType) {
-		case 'button':
-		case 'color':
-		case 'dropdown':
-		default:
-			return 'text';
-	}
-};
-
-const mapDataTypeToDisplayType = (dataType?: string): AttributeDisplayType => {
-	switch (dataType) {
-		case 'number':
-			return 'dropdown';
-		case 'bool':
-			return 'button';
-		case 'text':
-		default:
-			return 'dropdown';
-	}
-};
 
 export const attributeService = {
 	async listAttributes(orgId: string, productId: string): Promise<SearchAttributesResponse> {

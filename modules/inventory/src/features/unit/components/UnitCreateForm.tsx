@@ -39,7 +39,7 @@ export function UnitCreateForm({
 			>
 				{({ handleSubmit }) => (
 					<Paper p='md' withBorder>
-						<form onSubmit={handleSubmit(onSubmit)} noValidate>
+						<form id='unit-create-form' onSubmit={handleSubmit(onSubmit)} noValidate>
 							<Stack gap='md'>
 								<AutoField
 									name='name'
