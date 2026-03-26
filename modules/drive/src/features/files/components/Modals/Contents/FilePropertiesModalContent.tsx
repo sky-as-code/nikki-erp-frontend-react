@@ -3,12 +3,14 @@ import { IconCopy, IconFile, IconFolder } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useDbDateTime, useDriveStreamUrl } from '@/hooks';
 
 import { DriveFile, DriveFileVisibility } from '../../../types';
 import { formatSize } from '../../../utils/fortmat';
 import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../../EnumDisplay';
 import { DriveFileTypeDisplay } from '../../EnumDisplay';
+
+import { DriveUserDisplay } from '@/components';
+import { useDbDateTime, useDriveStreamUrl } from '@/hooks';
 
 
 type FilePropertiesCardProps = {
@@ -143,10 +145,20 @@ function FileMetaList({ file, formatDateTime, formatRelative }: FilePropertiesCa
 				<Text size='xs' c='dimmed'>{t('nikki.drive.propertiesCard.status')}</Text>
 				<DriveFileStatusBadge size='sm' variant='light' e={file.status} />
 			</Group>
-			{file.ownerRef && (
-				<Group justify='space-between'>
+			{(file.owner || file.ownerRef) && (
+				<Group justify='space-between' align='flex-start' wrap='nowrap'>
 					<Text size='xs' c='dimmed'>{t('nikki.drive.propertiesCard.owner')}</Text>
-					<Text size='xs'>{file.ownerRef}</Text>
+					{file.owner ? (
+						<DriveUserDisplay
+							displayName={file.owner.displayName}
+							email={file.owner.email}
+							avatarUrl={file.owner.avatarUrl ?? null}
+							avatarSize={28}
+							nameSize='xs'
+						/>
+					) : (
+						<Text size='xs'>{file.ownerRef}</Text>
+					)}
 				</Group>
 			)}
 			<Group justify='space-between'>
