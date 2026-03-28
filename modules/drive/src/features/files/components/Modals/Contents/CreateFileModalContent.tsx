@@ -7,12 +7,13 @@ import { IconFileUpload, IconUpload, IconX } from '@tabler/icons-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { driveFileActions, selectCreateDriveFile } from '@/appState/file';
 
 import driveFileSchemaJson from '../../../file-schema.json';
 import { DriveFileVisibility } from '../../../types';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
+
+import { driveFileActions, selectCreateDriveFile } from '@/appState/file';
 
 
 const baseSchema = driveFileSchemaJson as ModelSchema;

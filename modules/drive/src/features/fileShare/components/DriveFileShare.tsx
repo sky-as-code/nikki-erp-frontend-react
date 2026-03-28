@@ -1,147 +1,109 @@
 /* eslint-disable max-lines-per-function */
-import { Avatar, Alert, Box, Button, Group, Loader, Paper, Select, Stack, Text } from '@mantine/core';
+import {
+	Accordion,
+	ActionIcon,
+	Box,
+	Button,
+	Group,
+	Stack,
+	Text,
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import { useMicroAppDispatch, useMicroAppSelector, useRootSelector } from '@nikkierp/ui/microApp';
+import { IconInfoCircle } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import {
-	driveFileShareActions,
-	selectDriveFileShareList,
-	selectDriveFileShareSearchState,
-} from '@/appState/fileShare';
-import {
-	DriveFileSharePermission,
-	DriveFileSharePermissionBadge,
-	fileShareService,
-} from '@/features/fileShare';
-import { useDriveFileSharePermissionValue } from '@/features/fileShare/hooks/enum/useDriveFileSharePermissionValue';
-
+import { DriveFileShareAccessDetailModal } from './DriveFileShareAccessDetailModal';
+import { DriveFileShareAccessItem } from './DriveFileShareAccessItem';
+import { DriveFileShareInheritedSection } from './DriveFileShareInheritedSection';
+import { DriveFileShareResolvedSection } from './DriveFileShareResolvedSection';
+import { DriveFileShareViewerSection } from './DriveFileShareViewerSection';
+import { SharePermissionHelpModal } from './permissionHelp';
+import { PermissionSelector } from './PermissionSelector';
+import { shareAccessAccordionStyles } from './shareAccessAccordionStyles';
 import { ShareUserMultiSelect } from './ShareUserMultiSelect';
 
 import type { DriveFile } from '@/features/files/types';
-import type {
-	DriveFileShare,
-	DriveFileSharePermission as DriveFileSharePermissionType,
-} from '@/features/fileShare/type';
+import type { DriveFileShare, DriveFileSharePermission as DriveFileSharePermissionType } from '@/features/fileShare/type';
 import type { IdentityUser } from '@/features/identities/types';
+
+import { driveFileActions } from '@/appState/file';
+import {
+	driveFileShareActions,
+	selectDriveFileShareAncestorsState,
+	selectDriveFileShareResolvedState,
+} from '@/appState/fileShare';
+import { DriveFileSharePermission } from '@/features/fileShare';
+import {
+	canManageShareInDetail,
+} from '@/features/fileShare/driveFileShareAccessDetailUtils';
+import { createOwnerFileShareStub } from '@/features/fileShare/driveFileShareUserUtils';
+import { useDriveFileSharesByUser } from '@/features/fileShare/hooks/useDriveFileSharesByUser';
+import { useHandleChangeDriveFileSharePermission } from '@/features/fileShare/hooks/useHandleChangeDriveFileSharePermission';
+import { useSharePermissionOptions } from '@/features/fileShare/hooks/useSharePermissionOptions';
 
 
 export type DriveFileShareManagerProps = {
 	file: DriveFile;
 };
 
-type RawDriveFileShare = DriveFileShare & {
-	user_ref?: string;
-	userId?: string;
-	user_id?: string;
-};
-
-function resolveUserRef(share: DriveFileShare): string {
-	const rawShare = share as RawDriveFileShare;
-	return share.userRef ?? rawShare.user_ref ?? rawShare.userId ?? rawShare.user_id ?? '';
-}
-
-function getUserInitials(user?: { displayName?: string; email?: string }): string {
-	const source = user?.displayName?.trim() || user?.email?.trim() || '';
-	if (!source) return '?';
-	return source
-		.split(/\s+/)
-		.slice(0, 2)
-		.map((part) => part[0]?.toUpperCase() ?? '')
-		.join('');
-}
-
-function useSharePermissionOptions() {
-	const permissionLabel = useDriveFileSharePermissionValue();
-	return React.useMemo(() => {
-		return [
-			{ value: DriveFileSharePermission.VIEW, label: permissionLabel(DriveFileSharePermission.VIEW) },
-			{ value: DriveFileSharePermission.EDIT, label: permissionLabel(DriveFileSharePermission.EDIT) },
-			{ value: DriveFileSharePermission.EDIT_TRASH, label: permissionLabel(DriveFileSharePermission.EDIT_TRASH) },
-		];
-	}, [permissionLabel]);
-}
-
-type PermissionSelectorProps = {
-	value: DriveFileSharePermissionType;
-	options: Array<{ value: DriveFileSharePermissionType; label: string }>;
-	onChange: (nextPermission: DriveFileSharePermissionType) => void;
-	w?: number;
-};
-
-function PermissionSelector({
-	value,
-	options,
-	onChange,
-	w,
-}: PermissionSelectorProps): React.ReactNode {
-	return (
-		<Select
-			data={options}
-			value={value}
-			w={w}
-			onChange={(nextValue) => {
-				if (!nextValue) return;
-				onChange(nextValue as DriveFileSharePermissionType);
-			}}
-			renderOption={({ option }) => (
-				<DriveFileSharePermissionBadge
-					e={option.value as DriveFileSharePermissionType}
-					size='xs'
-					variant='light'
-				/>
-			)}
-		/>
-	);
-}
-
-function useHandleChangePermission(fileId: string) {
-	const { t } = useTranslation();
-	const dispatch = useMicroAppDispatch();
-	return React.useCallback(async (
-		share: DriveFileShare,
-		nextPermission: string | null,
-	) => {
-		if (!nextPermission || nextPermission === share.permission) return;
-		const result = await (dispatch as (action: unknown) => Promise<{ type?: string }>)(
-			driveFileShareActions.updateFileShare({
-				fileId: fileId,
-				shareId: share.id,
-				req: { etag: share.etag, permission: nextPermission as DriveFileSharePermissionType },
-			}),
-		);
-		if (!result?.type?.endsWith('/fulfilled')) {
-			notifications.show({
-				title: t('nikki.general.messages.error'),
-				message: t('nikki.general.errors.update_failed'),
-				color: 'red',
-			});
-		}
-	}, [dispatch, fileId, t]);
-}
-
 export function DriveFileShareManager({ file }: DriveFileShareManagerProps): React.ReactNode {
 	const { t } = useTranslation();
 	const dispatch = useMicroAppDispatch();
 	const permissionOptions = useSharePermissionOptions();
-	const handleChangePermission = useHandleChangePermission(file.id);
-	const shares = useMicroAppSelector(selectDriveFileShareList) as DriveFileShare[];
-	const searchState = useMicroAppSelector(selectDriveFileShareSearchState);
+	const handleChangePermission = useHandleChangeDriveFileSharePermission(file.id);
+	const ancestorsState = useMicroAppSelector(selectDriveFileShareAncestorsState);
+	const ancestorShares = ancestorsState.data ?? [];
+	const resolvedState = useMicroAppSelector(selectDriveFileShareResolvedState);
+	const resolvedShareItems = resolvedState.data?.items ?? [];
 	const [selectedUsers, setSelectedUsers] = React.useState<IdentityUser[]>([]);
 	const [bulkPermission, setBulkPermission] = React.useState<DriveFileSharePermissionType>(
 		DriveFileSharePermission.VIEW,
 	);
 	const [isSharing, setIsSharing] = React.useState(false);
+	const [permissionHelpOpened, setPermissionHelpOpened] = React.useState(false);
+	const [accessDetailAnchor, setAccessDetailAnchor] = React.useState<DriveFileShare | null>(null);
+
+	const ownerShareStub = React.useMemo(() => createOwnerFileShareStub(file), [file]);
+
+	const shellUser = useRootSelector(
+		(s: { shellUserContext?: { user?: { id: string; displayName: string; email: string; avatarUrl?: string } } }) =>
+			s.shellUserContext?.user,
+	);
+	const currentUserId = shellUser?.id;
+	const isFileOwner = Boolean(currentUserId && file.ownerRef && file.ownerRef === currentUserId);
+
+	const viewerShares = useDriveFileSharesByUser({
+		fileId: file.id,
+		userId: currentUserId,
+		enabled: Boolean(currentUserId) && !isFileOwner,
+	});
+
+	const viewerAppliedPermission = viewerShares.appliedShare?.permission ?? null;
+
+	const canManageShareInDetailModal = React.useMemo(
+		() => canManageShareInDetail({
+			file,
+			currentUserId,
+			viewerAppliedPermission,
+		}),
+		[file, currentUserId, viewerAppliedPermission],
+	);
+
+	const closeAllModals = React.useCallback(() => {
+		setAccessDetailAnchor(null);
+		(dispatch as (action: unknown) => void)(driveFileActions.resetDriveFileModal());
+	}, [dispatch]);
 
 	React.useEffect(() => {
 		(dispatch as (action: unknown) => void)(
-			driveFileShareActions.searchFileShares({
+			driveFileShareActions.getFileShareAncestors({ fileId: file.id }),
+		);
+		(dispatch as (action: unknown) => void)(
+			driveFileShareActions.getResolvedFileShares({
 				fileId: file.id,
-				req: {
-					page: 0,
-					size: 50,
-				},
+				params: { page: 0, size: 50 },
 			}),
 		);
 	}, [dispatch, file.id]);
@@ -152,19 +114,35 @@ export function DriveFileShareManager({ file }: DriveFileShareManagerProps): Rea
 
 		setIsSharing(true);
 		try {
-			await fileShareService.createFileShareBulk(file.id, {
-				driveFileRef: file.id,
-				userRefs: selectedUsers.map((u) => u.id),
-				permission: bulkPermission,
-			});
+			const result = await (dispatch as (action: unknown) => Promise<{ type?: string }>)(
+				driveFileShareActions.createFileShareBulk({
+					fileId: file.id,
+					req: {
+						driveFileRef: file.id,
+						userRefs: selectedUsers.map((u) => u.id),
+						permission: bulkPermission,
+					},
+				}),
+			);
+			if (!result?.type?.endsWith('/fulfilled')) {
+				notifications.show({
+					title: t('nikki.general.messages.error'),
+					message: t('nikki.general.errors.update_failed'),
+					color: 'red',
+				});
+				return;
+			}
 
 			setSelectedUsers([]);
 			(dispatch as (action: unknown) => void)(
-				driveFileShareActions.searchFileShares({
+				driveFileShareActions.getResolvedFileShares({
 					fileId: file.id,
-					req: { page: 0, size: 50 },
+					params: { page: 0, size: 50 },
 				}),
 			);
+			if (currentUserId && file.ownerRef !== currentUserId) {
+				void viewerShares.refetch();
+			}
 		}
 		catch (error) {
 			notifications.show({
@@ -176,89 +154,172 @@ export function DriveFileShareManager({ file }: DriveFileShareManagerProps): Rea
 		finally {
 			setIsSharing(false);
 		}
-	}, [bulkPermission, dispatch, file.id, isSharing, selectedUsers, t]);
+	}, [
+		bulkPermission,
+		currentUserId,
+		dispatch,
+		file.id,
+		file.ownerRef,
+		isSharing,
+		selectedUsers,
+		t,
+		viewerShares.refetch,
+	]);
+
+	const viewerBlockVisible = !isFileOwner && Boolean(currentUserId);
+
+	const showAccessList =
+		Boolean(ownerShareStub)
+		|| viewerBlockVisible
+		|| ancestorShares.length > 0
+		|| ancestorsState.status === 'pending'
+		|| ancestorsState.status === 'error'
+		|| resolvedShareItems.length > 0
+		|| resolvedState.status === 'pending'
+		|| resolvedState.status === 'error';
+
+	const showAccessListEmpty =
+		!ownerShareStub
+		&& !viewerBlockVisible
+		&& ancestorsState.status !== 'pending'
+		&& ancestorsState.status !== 'error'
+		&& ancestorShares.length === 0
+		&& resolvedState.status !== 'pending'
+		&& resolvedState.status !== 'error'
+		&& resolvedShareItems.length === 0;
 
 	return (
-		<Stack gap='md' h={420} w='650px'>
-			<Box>
-				<Stack gap='xs'>
-					<Text size='sm' fw={600}>Chia sẻ file</Text>
-					<Group align='flex-start' gap='sm'>
-						<div style={{ flex: 1, minWidth: 260 }}>
-							<ShareUserMultiSelect
-								selectedUsers={selectedUsers}
-								setSelectedUsers={setSelectedUsers}
+		<Stack gap='md' h={630} w='650px'>
+			{isFileOwner ? (
+				<Box>
+					<Stack gap='xs'>
+						<Group justify='space-between' align='center' wrap='nowrap'>
+							<Text size='sm' fw={600}>{t('nikki.drive.share.panelTitle')}</Text>
+							<ActionIcon
+								variant='subtle'
+								color='gray'
+								size='lg'
+								aria-label={t('nikki.drive.share.permissionHelpAria')}
+								onClick={() => setPermissionHelpOpened(true)}
+							>
+								<IconInfoCircle size={20} />
+							</ActionIcon>
+						</Group>
+						<Group align='flex-start' gap='sm'>
+							<div style={{ flex: 1, minWidth: 260 }}>
+								<ShareUserMultiSelect
+									selectedUsers={selectedUsers}
+									setSelectedUsers={setSelectedUsers}
+								/>
+							</div>
+							<PermissionSelector
+								options={permissionOptions}
+								value={bulkPermission}
+								onChange={setBulkPermission}
+								w={190}
 							/>
-						</div>
-						<PermissionSelector
-							options={permissionOptions}
-							value={bulkPermission}
-							onChange={setBulkPermission}
-							w={190}
+						</Group>
+						<Group justify='flex-end'>
+							<Button
+								loading={isSharing}
+								disabled={selectedUsers.length === 0}
+								onClick={() => void handleShareBulk()}
+							>
+								Share
+							</Button>
+						</Group>
+					</Stack>
+				</Box>
+			) : null}
+			{showAccessListEmpty ? (
+				<Text size='sm' c='dimmed'>{t('nikki.drive.share.accessListEmpty')}</Text>
+			) : null}
+			{showAccessList ? (
+				<Stack gap='xs' flex={1} style={{ minWidth: 0, overflow: 'hidden' }}>
+					<Text size='sm' fw={600}>{t('nikki.drive.share.accessListTitle')}</Text>
+					<Stack
+						gap='xs'
+						flex={1}
+						style={{
+							minWidth: 0,
+							overflowX: 'hidden',
+							overflowY: 'auto',
+							scrollbarGutter: 'stable',
+						}}
+					>
+						{ownerShareStub ? (
+							<Accordion
+								defaultValue='owner-section'
+								variant='default'
+								radius={0}
+								styles={shareAccessAccordionStyles}
+							>
+								<Accordion.Item value='owner-section'>
+									<Accordion.Control>
+										<Text size='xs' fw={400} c='dimmed'>
+											{t('nikki.drive.share.ownerSectionTitle')}
+										</Text>
+									</Accordion.Control>
+									<Accordion.Panel>
+										<Stack gap='xs'>
+											<DriveFileShareAccessItem
+												key={ownerShareStub.id}
+												share={ownerShareStub}
+												readOnly
+												allowOpenDetail={false}
+											/>
+										</Stack>
+									</Accordion.Panel>
+								</Accordion.Item>
+							</Accordion>
+						) : null}
+						{!isFileOwner && currentUserId ? (
+							<DriveFileShareViewerSection
+								viewerShares={viewerShares}
+								shellUser={shellUser}
+								detailReadOnly={!canManageShareInDetailModal}
+								onOpenShareDetail={(share) => setAccessDetailAnchor(share)}
+							/>
+						) : null}
+						<DriveFileShareInheritedSection
+							file={file}
+							currentUserId={currentUserId}
+							viewerAppliedPermission={viewerAppliedPermission}
+							ancestorsState={ancestorsState}
+							ancestorShares={ancestorShares}
+							detailReadOnly={!canManageShareInDetailModal}
+							onOpenShareDetail={(share) => setAccessDetailAnchor(share)}
 						/>
-					</Group>
-					<Group justify='flex-end'>
-						<Button
-							loading={isSharing}
-							disabled={selectedUsers.length === 0}
-							onClick={() => void handleShareBulk()}
-						>
-							Share
-						</Button>
-					</Group>
-				</Stack>
-			</Box>
-			{searchState.status === 'pending' ? <Loader size='sm' /> : null}
-			{searchState.status === 'error' ? (
-				<Alert color='red' variant='light'>
-					{searchState.error ?? 'Failed to load shares'}
-				</Alert>
-			) : null}
-			{searchState.status !== 'pending' && shares.length === 0 ? (
-				<Text size='sm' c='dimmed'>No shares</Text>
-			) : null}
-			{shares.length > 0 ? (
-				<Stack gap='xs' flex={1}>
-					<Text size='sm' fw={600}>Danh sách người dùng được chia sẻ</Text>
-					<Stack gap='xs' flex={1} style={{ overflowY: 'auto' }}>
-						{shares.map((share) => (
-							<Paper key={share.id} withBorder radius='md' p='sm' mih={52}>
-								<Group justify='space-between' wrap='nowrap'>
-									<Group gap={10} wrap='nowrap'>
-										<Avatar
-											src={share.user?.avatarUrl ?? null}
-											size={32}
-											radius='xl'
-										>
-											{getUserInitials({
-												displayName: share.user?.displayName,
-												email: share.user?.email,
-											})}
-										</Avatar>
-										<div>
-											<Text size='sm' fw={500}>
-												{share.user?.displayName ?? resolveUserRef(share) ?? '-'}
-											</Text>
-											<Text size='xs' c='dimmed'>
-												{share.user?.email ?? ''}
-											</Text>
-										</div>
-									</Group>
-									<PermissionSelector
-										value={share.permission}
-										options={permissionOptions}
-										onChange={(value) => {
-											void handleChangePermission(share, value);
-										}}
-										w={130}
-									/>
-								</Group>
-							</Paper>
-						))}
+						<DriveFileShareResolvedSection
+							file={file}
+							currentUserId={currentUserId}
+							viewerAppliedPermission={viewerAppliedPermission}
+							resolvedState={resolvedState}
+							detailReadOnly={!canManageShareInDetailModal}
+							onOpenShareDetail={(share) => setAccessDetailAnchor(share)}
+						/>
 					</Stack>
 				</Stack>
 			) : null}
+			<DriveFileShareAccessDetailModal
+				fileId={file.id}
+				opened={accessDetailAnchor !== null}
+				anchorShare={accessDetailAnchor}
+				canManageShare={canManageShareInDetailModal}
+				onClose={() => setAccessDetailAnchor(null)}
+				permissionOptions={permissionOptions}
+				onPermissionChange={handleChangePermission}
+				onNavigateAway={closeAllModals}
+				onAccessUpdated={(userId) => {
+					if (currentUserId && userId === currentUserId) {
+						void viewerShares.refetch();
+					}
+				}}
+			/>
+			<SharePermissionHelpModal
+				opened={permissionHelpOpened}
+				onClose={() => setPermissionHelpOpened(false)}
+			/>
 		</Stack>
 	);
 }
-

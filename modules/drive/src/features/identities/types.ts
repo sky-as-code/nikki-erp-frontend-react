@@ -1,5 +1,6 @@
 import type { IdentityUserDto } from '@/services/identService';
 
+
 export type IdentityUser = {
 	id: string;
 	displayName: string;

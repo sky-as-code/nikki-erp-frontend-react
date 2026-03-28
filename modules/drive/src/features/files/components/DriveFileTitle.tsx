@@ -4,10 +4,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
-import { DriveFile, DriveFileStatus } from '@/features/files/types';
 
 import { useCurrentFileSortedAncestors } from '../hooks/useCurrentFileAncestor';
+import { FileActionMenu } from './FileActions/FileActionMenu';
+
 import type { DriveFileUIViewMode } from './DriveFileView';
+
+import { DriveFile, DriveFileStatus } from '@/features/files/types';
 
 
 export type DriveFallbackTitleKey = 'nikki.drive.myFiles' | 'nikki.drive.trash';
@@ -106,6 +109,7 @@ export function DriveFileTitle({
 						{title}
 					</Text>
 				)}
+				{currentFolder ? <FileActionMenu file={currentFolder} /> : null}
 				{showTrashWarning && (
 					<Text
 						size='sm'

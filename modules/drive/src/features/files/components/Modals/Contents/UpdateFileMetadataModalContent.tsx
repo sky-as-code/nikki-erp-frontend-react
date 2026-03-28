@@ -5,11 +5,12 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { ModelSchema } from '@nikkierp/ui/model';
 
 import driveFileSchemaJson from '../../../file-schema.json';
 import { useRefreshCurrentFolder } from '../../../hooks';
 import { DriveFile, UpdateDriveFileMetadataRequest } from '../../../types';
+
+import type { ModelSchema } from '@nikkierp/ui/model';
 
 import { driveFileActions, selectUpdateMetadataDriveFile } from '@/appState/file';
 

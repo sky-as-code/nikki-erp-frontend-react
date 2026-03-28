@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import type { DriveFileFilterState } from '@/features/files/components/Filters/DriveFileFilterBar';
+
 import { driveFileActions, selectSearchDriveFile } from '@/appState/file';
 import { DriveFileStatus, DriveFileType } from '@/features/files';
 import { DriveFileTitle } from '@/features/files/components/DriveFileTitle';
@@ -12,7 +14,6 @@ import { DriveFileFilterBar } from '@/features/files/components/Filters/DriveFil
 import { useDriveFileFilters } from '@/features/files/hooks/useDriveFileFilters';
 import { useLocalStorage } from '@/features/files/hooks/useLocalStorage';
 
-import type { DriveFileFilterState } from '@/features/files/components/Filters/DriveFileFilterBar';
 
 
 const PAGE_SIZE = 20;

@@ -4,12 +4,23 @@ import {
 	UpdateResponse,
 } from '@nikkierp/common';
 
+import { DriveFileSharePermission, type ShareUser } from '@/features/fileShare/type';
+
+
+export const DriveFilePermission = {
+	NONE: 'none',
+	...DriveFileSharePermission,
+} as const;
+
+export type DriveFilePermission =
+	typeof DriveFilePermission[keyof typeof DriveFilePermission];
 
 interface DriveFile {
 	id: string;
 	etag: string;
 
 	ownerRef: string;
+	owner?: ShareUser;
 	parentDriveFileRef: string;
 	name: string;
 	mime: string;
@@ -18,6 +29,7 @@ interface DriveFile {
 	size: number;
 	visibility: DriveFileVisibility;
 	status: DriveFileStatus;
+	resolvedPermission?: DriveFilePermission;
 	children: Array<DriveFile>;
 	deletedAt?: Date;
 	createdAt: Date;
@@ -84,7 +96,7 @@ export type ListQuery = {
 
 export type CreateDriveFileRequest = Omit<
 	DriveFile,
-	'id' | 'etag' | 'children' | 'deletedAt'
+	'id' | 'etag' | 'children' | 'deletedAt' | 'owner' | 'resolvedPermission'
 >;
 export type CreateDriveFileResponse = CreateResponse;
 

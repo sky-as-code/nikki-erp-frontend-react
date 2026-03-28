@@ -1,12 +1,6 @@
 import { Loader, Modal } from '@mantine/core';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 
-import {
-	driveFileActions,
-	selectCurrentFolder,
-	selectDriveFileDetail,
-	selectDriveFileModalUIState,
-} from '@/appState/file';
 
 import {
 	PreviewFileModalContent,
@@ -20,6 +14,13 @@ import {
 import { DriveFileModalUIState } from '../../fileSlice';
 import { useRefreshCurrentFolder } from '../../hooks';
 import { DriveFile } from '../../types';
+
+import {
+	driveFileActions,
+	selectCurrentFolder,
+	selectDriveFileDetail,
+	selectDriveFileModalUIState,
+} from '@/appState/file';
 
 
 export function DriveFileModal() {

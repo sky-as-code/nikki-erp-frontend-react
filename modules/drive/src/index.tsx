@@ -8,16 +8,16 @@ import {
 import { Navigate } from 'react-router';
 
 import { reducer } from './appState';
+import { DRIVE_TABS } from './constants/driveTabs';
 import { registerDriveFileSelectorWebComponent } from './features/files/components';
 import { useMenuBarItems } from './hooks';
 import { DriveLayout } from './layouts';
+import { DriveSearchPage } from './pages/file/DriveSearchPage';
 import { FolderPage } from './pages/file/FolderPage';
 import { SharedWithMePage } from './pages/file/SharedFilePage';
 import { StarredFilePage } from './pages/file/StaredFilePage';
 import { TrashPage } from './pages/file/TrashPage';
-import { DriveSearchPage } from './pages/file/DriveSearchPage';
 import { OverviewPage } from './pages/overview/OverviewPage';
-import { DRIVE_TABS } from './constants/driveTabs';
 import './styles/index.css';
 
 

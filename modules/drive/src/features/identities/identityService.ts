@@ -1,8 +1,10 @@
-import { listUsers as listUsersApi } from '@/services/identService';
 
 import { mapDtoToIdentityUser } from './types';
 
 import type { IdentityUser } from './types';
+
+import { listUsers as listUsersApi } from '@/services/identService';
+
 
 type ListUsersParams = {
 	graph?: Record<string, unknown>;
