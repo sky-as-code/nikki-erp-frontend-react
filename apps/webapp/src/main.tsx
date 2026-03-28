@@ -35,24 +35,24 @@ const microApps: MicroAppMetadata[] = [
 		bundleUrl: () => import('@nikkierp/microapp-authorize'),
 		htmlTag: 'nikkiapp-authorize',
 	},
-	// {
-	// 	slug: 'nikkierp.vendingMachine',
-	// 	basePath: 'vending-machine',
-	// 	bundleUrl: () => import('@nikkierp/microapp-vending-machine'),
-	// 	htmlTag: 'nikkiapp-vending-machine',
-	// },
+	{
+		slug: 'nikkierp.vendingMachine',
+		basePath: 'vending-machine',
+		bundleUrl: () => import('@nikkierp/microapp-vending-machine'),
+		htmlTag: 'nikkiapp-vending-machine',
+	},
 	{
 		slug: 'nikkierp.drive',
 		basePath: 'drive',
 		bundleUrl: () => import('@nikkierp/microapp-drive'),
 		htmlTag: 'nikkiapp-drive',
 	},
-	// {
-	// 	slug: 'nikkierp.inventory',
-	// 	basePath: 'inventory',
-	// 	bundleUrl: () => import('@nikkierp/microapp-inventory'),
-	// 	htmlTag: 'nikkiapp-inventory',
-	// },
+	{
+		slug: 'nikkierp.inventory',
+		basePath: 'inventory',
+		bundleUrl: () => import('@nikkierp/microapp-inventory'),
+		htmlTag: 'nikkiapp-inventory',
+	},
 	...remoteApps,
 ];
 
