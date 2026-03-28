@@ -21,7 +21,7 @@ import {
 	driveFileShareActions,
 } from '@/appState/fileShare';
 import { DriveUserDisplay } from '@/components';
-import { DriveFileSharePermissionDisplay, fileShareService } from '@/features/fileShare';
+import { DriveFileSharePermissionDisplay } from '@/features/fileShare';
 import { isDirectPermission } from '@/features/fileShare/driveFileShareAccessDetailUtils';
 import { resolveUserRef } from '@/features/fileShare/driveFileShareUserUtils';
 import { useDriveFileSharesByUser } from '@/features/fileShare/hooks/useDriveFileSharesByUser';
@@ -57,11 +57,20 @@ function useShareMutations(fileId: string, refresh: () => Promise<void>) {
 		userRef: string, permission: DriveFileSharePermissionType,
 	) => {
 		try {
-			await fileShareService.createFileShare(fileId, { driveFileRef: fileId, userRef, permission });
+			const result = await (dispatch as (action: unknown) => Promise<{ type?: string }>)(
+				driveFileShareActions.createFileShare({
+					fileId,
+					req: { driveFileRef: fileId, userRef, permission },
+				}),
+			);
+			if (!result?.type?.endsWith('/fulfilled')) {
+				showError();
+				return;
+			}
 			await refresh();
 		}
 		catch { showError(); }
-	}, [fileId, refresh, showError]);
+	}, [dispatch, fileId, refresh, showError]);
 
 	const handleRevoke = React.useCallback(async (share: DriveFileShare) => {
 		try {

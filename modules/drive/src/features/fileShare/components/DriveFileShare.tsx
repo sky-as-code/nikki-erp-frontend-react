@@ -34,7 +34,7 @@ import {
 	selectDriveFileShareAncestorsState,
 	selectDriveFileShareResolvedState,
 } from '@/appState/fileShare';
-import { DriveFileSharePermission, fileShareService } from '@/features/fileShare';
+import { DriveFileSharePermission } from '@/features/fileShare';
 import {
 	canManageShareInDetail,
 } from '@/features/fileShare/driveFileShareAccessDetailUtils';
@@ -114,11 +114,24 @@ export function DriveFileShareManager({ file }: DriveFileShareManagerProps): Rea
 
 		setIsSharing(true);
 		try {
-			await fileShareService.createFileShareBulk(file.id, {
-				driveFileRef: file.id,
-				userRefs: selectedUsers.map((u) => u.id),
-				permission: bulkPermission,
-			});
+			const result = await (dispatch as (action: unknown) => Promise<{ type?: string }>)(
+				driveFileShareActions.createFileShareBulk({
+					fileId: file.id,
+					req: {
+						driveFileRef: file.id,
+						userRefs: selectedUsers.map((u) => u.id),
+						permission: bulkPermission,
+					},
+				}),
+			);
+			if (!result?.type?.endsWith('/fulfilled')) {
+				notifications.show({
+					title: t('nikki.general.messages.error'),
+					message: t('nikki.general.errors.update_failed'),
+					color: 'red',
+				});
+				return;
+			}
 
 			setSelectedUsers([]);
 			(dispatch as (action: unknown) => void)(
