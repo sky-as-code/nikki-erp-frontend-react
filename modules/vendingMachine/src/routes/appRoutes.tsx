@@ -14,6 +14,7 @@ import { KioskModelPage } from '@/pages/kioskModels/KioskModelPage';
 import { KioskCreatePage } from '@/pages/kiosks/KioskCreatePage';
 import { KioskDetailPage } from '@/pages/kiosks/KioskDetailPage';
 import { KioskListPage } from '@/pages/kiosks/KioskListPage';
+import { KioskSettingCreatePage } from '@/pages/kioskSettings/KioskSettingCreatePage';
 import { KioskSettingDetailPage } from '@/pages/kioskSettings/KioskSettingDetailPage';
 import { KioskSettingPage } from '@/pages/kioskSettings/KioskSettingPage';
 import OverviewPage from '@/pages/overview/OverviewPage';
@@ -91,6 +92,11 @@ export const appRoutes: AppRouteConfig[] = [{
 			key: 'kiosk-settings',
 			path: 'kiosk-settings',
 			element: <KioskSettingPage />,
+		},
+		{
+			key: 'kiosk-settings-create',
+			path: 'kiosk-settings/create',
+			element: <KioskSettingCreatePage />,
 		},
 		{
 			key: 'kiosk-settings-detail',

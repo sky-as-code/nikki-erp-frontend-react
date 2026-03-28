@@ -2,11 +2,10 @@ import { mockSlideshows } from '../slideshow/mockSlideshows';
 import { mockGames } from '../games/mockGames';
 import { mockKiosks } from '../kiosks/mockKiosks';
 import { mockThemes } from '../themes/mockThemes';
-import { mockProducts } from '../events/mockProducts';
 import { KioskSetting } from './types';
 
 /** Mock data cho các nhóm cài đặt hoạt động kiosk (kiosk, trình chiếu, chủ đề, trò chơi, brand...) */
-const mockKioskSettingsData: Omit<KioskSetting, 'kiosks' | 'products' | 'theme' | 'game' | 'idlePlaylist' | 'shoppingPlaylist'>[] = [
+const mockKioskSettingsData: Omit<KioskSetting, 'kiosks' | 'theme' | 'game' | 'idlePlaylist' | 'shoppingPlaylist'>[] = [
 	{
 		id: '1',
 		code: 'CFG-SELLING',
@@ -70,7 +69,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export const mockKioskSettings = {
 	async listKioskSettings(): Promise<KioskSetting[]> {
 		await delay(500);
-		return mockKioskSettingsData.map((s) => ({ ...s, kiosks: [], products: [] }));
+		return mockKioskSettingsData.map((s) => ({ ...s, kiosks: [] }));
 	},
 
 	async getKioskSetting(id: string): Promise<KioskSetting | undefined> {
@@ -89,7 +88,6 @@ export const mockKioskSettings = {
 		const enriched: KioskSetting = {
 			...base,
 			kiosks: id === '1' ? [kiosks[0], kiosks[1]] : id === '3' ? [kiosks[0], kiosks[2], kiosks[3]] : [],
-			products: id === '1' ? [mockProducts[0], mockProducts[1]] : id === '4' ? [mockProducts[0], mockProducts[1], mockProducts[2]] : [],
 			theme: id === '1' ? themes[0] : id === '3' ? themes[2] : id === '4' ? themes[3] : undefined,
 			themeId: id === '1' ? themes[0]?.id : id === '3' ? themes[2]?.id : id === '4' ? themes[3]?.id : undefined,
 			game: id === '4' ? games[0] : id === '3' ? games[1] : undefined,

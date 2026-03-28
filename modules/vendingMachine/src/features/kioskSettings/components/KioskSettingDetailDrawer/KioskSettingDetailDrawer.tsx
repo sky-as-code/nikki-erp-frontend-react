@@ -1,21 +1,22 @@
+/* eslint-disable max-lines-per-function */
 import { Badge, Box, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
 import { IconExternalLink, IconSettings2 } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { EventGameConfig } from '@/features/events/components/EventDetailDrawer/EventGameConfig';
-import { EventKioskList } from '@/features/events/components/EventDetailDrawer/EventKioskList';
-import { EventProductList } from '@/features/events/components/EventDetailDrawer/EventProductList';
-import { EventThemeConfig } from '@/features/events/components/EventDetailDrawer/EventThemeConfig';
+import { AssignedKioskList } from '@/components/AssignedKioskList';
+import { GameConfig } from '@/components/GameConfig';
+import { SlideShowConfig } from '@/components/SlideShowConfig';
+import { ThemeConfig } from '@/components/ThemeConfig';
 import { KioskSelectModal } from '@/features/events/components/EventDetailDrawer/KioskSelectModal';
-import { ProductSelectModal } from '@/features/events/components/EventDetailDrawer/ProductSelectModal';
-import { Slideshow } from '@/features/slideshow/types';
-import { EventProduct } from '@/features/events/types';
 import { Game } from '@/features/games/types';
 import { Kiosk } from '@/features/kiosks/types';
+import { Slideshow } from '@/features/slideshow/types';
 import { Theme } from '@/features/themes/types';
+
 import { KioskSetting } from '../../types';
+
 
 export interface KioskSettingDetailDrawerProps {
 	opened: boolean;
@@ -33,18 +34,15 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
 	const [settingKiosks, setSettingKiosks] = useState<Kiosk[]>(setting?.kiosks || []);
-	const [settingProducts, setSettingProducts] = useState<EventProduct[]>(setting?.products || []);
 	const [settingTheme, setSettingTheme] = useState<Theme | undefined>(setting?.theme);
 	const [settingGame, setSettingGame] = useState<Game | undefined>(setting?.game);
 	const [idlePlaylist, setIdlePlaylist] = useState<Slideshow | undefined>(setting?.idlePlaylist);
 	const [shoppingPlaylist, setShoppingPlaylist] = useState<Slideshow | undefined>(setting?.shoppingPlaylist);
 	const [kioskSelectModalOpened, setKioskSelectModalOpened] = useState(false);
-	const [productSelectModalOpened, setProductSelectModalOpened] = useState(false);
 
 	useEffect(() => {
 		if (setting) {
 			setSettingKiosks(setting.kiosks || []);
-			setSettingProducts(setting.products || []);
 			setSettingTheme(setting.theme);
 			setSettingGame(setting.game);
 			setIdlePlaylist(setting.idlePlaylist);
@@ -77,14 +75,6 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 
 	const handleAddKiosks = (kiosks: Kiosk[]) => {
 		setSettingKiosks([...settingKiosks, ...kiosks]);
-	};
-
-	const handleAddProducts = (products: EventProduct[]) => {
-		setSettingProducts([...settingProducts, ...products]);
-	};
-
-	const handleRemoveProduct = (productId: string) => {
-		setSettingProducts(settingProducts.filter((p) => p.id !== productId));
 	};
 
 	const handleRemoveKiosk = (kioskId: string) => {
@@ -203,50 +193,45 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 					<Text size='sm' c='dimmed' mb='md' fw={500}>
 						{translate('nikki.vendingMachine.kioskSettings.fields.kiosks')}
 					</Text>
-					<EventKioskList
+					<AssignedKioskList
 						kiosks={settingKiosks}
 						onAddKiosks={() => setKioskSelectModalOpened(true)}
 						onRemoveKiosk={handleRemoveKiosk}
 					/>
 				</div>
 
-				{/* Products Section */}
-				<Divider />
-				<div>
-					<Text size='sm' c='dimmed' mb='md' fw={500}>
-						{translate('nikki.vendingMachine.kioskSettings.fields.products')}
-					</Text>
-					<EventProductList
-						products={settingProducts}
-						onAddProducts={() => setProductSelectModalOpened(true)}
-						onRemoveProduct={handleRemoveProduct}
-					/>
-				</div>
-
 				{/* Theme and Slideshow Configuration */}
 				<Divider />
 				<div>
-					<EventThemeConfig
-						theme={settingTheme}
-						themeId={setting.themeId}
-						idlePlaylist={idlePlaylist}
-						shoppingPlaylist={shoppingPlaylist}
-						onIdlePlaylistChange={handleIdlePlaylistChange}
-						onShoppingPlaylistChange={handleShoppingPlaylistChange}
-						onIdlePlaylistRemove={handleIdlePlaylistRemove}
-						onShoppingPlaylistRemove={handleShoppingPlaylistRemove}
-						onThemeChange={handleThemeChange}
-						onThemeRemove={handleThemeRemove}
-					/>
+					<Stack gap='md'>
+						<ThemeConfig
+							theme={settingTheme}
+							themeId={setting.themeId}
+							onChange={handleThemeChange}
+							onRemove={handleThemeRemove}
+						/>
+						<SlideShowConfig
+							variant='idle'
+							slideshow={idlePlaylist}
+							onChange={handleIdlePlaylistChange}
+							onRemove={handleIdlePlaylistRemove}
+						/>
+						<SlideShowConfig
+							variant='shopping'
+							slideshow={shoppingPlaylist}
+							onChange={handleShoppingPlaylistChange}
+							onRemove={handleShoppingPlaylistRemove}
+						/>
+					</Stack>
 				</div>
 
 				{/* Game Configuration */}
 				<div>
-					<EventGameConfig
+					<GameConfig
 						game={settingGame}
 						gameId={setting.gameId}
-						onGameChange={handleGameChange}
-						onGameRemove={handleGameRemove}
+						onChange={handleGameChange}
+						onRemove={handleGameRemove}
 					/>
 				</div>
 
@@ -259,13 +244,6 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 				onClose={() => setKioskSelectModalOpened(false)}
 				onSelectKiosks={handleAddKiosks}
 				selectedKioskIds={settingKiosks.map((k) => k.id)}
-			/>
-
-			<ProductSelectModal
-				opened={productSelectModalOpened}
-				onClose={() => setProductSelectModalOpened(false)}
-				onSelectProducts={handleAddProducts}
-				selectedProductIds={settingProducts.map((p) => p.id)}
 			/>
 		</Drawer>
 	);

@@ -1,5 +1,4 @@
 import { Slideshow } from '../slideshow/types';
-import { EventProduct } from '../events/types';
 import { Game } from '../games/types';
 import { Kiosk } from '../kiosks/types';
 import { Theme } from '../themes/types';
@@ -13,7 +12,6 @@ export interface KioskSetting {
 	status: 'active' | 'inactive';
 	brand?: string;
 	kiosks?: Kiosk[];
-	products?: EventProduct[];
 	themeId?: string;
 	theme?: Theme;
 	gameId?: string;

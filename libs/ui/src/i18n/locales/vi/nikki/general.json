@@ -82,7 +82,9 @@
 		"invalid_change": "Thay đổi không hợp lệ",
 		"delete_confirm": "Xoá phần tử",
 		"delete_confirm_name": "Bạn có chắc chắn muốn xóa {{name}}? Hành động này không thể hoàn tác.",
-		"access_denied": "Bạn không có quyền truy cập vào trang này"
+		"access_denied": "Bạn không có quyền truy cập vào trang này",
+		"delete_success": "Xóa thành công",
+		"delete_failed": "Xóa thất bại"
 	},
 	"errors": {
 		"required": "Trường này là bắt buộc",

@@ -82,7 +82,9 @@
 		"invalid_change": "Invalid change",
 		"delete_confirm": "Are you sure you want to delete? This action cannot be undone.",
 		"delete_confirm_name": "Are you sure you want to delete {{name}}? This action cannot be undone.",
-		"access_denied": "You do not have permission to access this page"
+		"access_denied": "You do not have permission to access this page",
+		"delete_success": "Delete successful",
+		"delete_failed": "Delete failed"
 	},
 	"errors": {
 		"required": "This field is required",

@@ -21,7 +21,7 @@ export const DomainLogoButton: React.FC<{ isRootPath: boolean }> = ({ isRootPath
 			<Flex align='center' justify='center' gap={0} style={{ minWidth: 'auto', position: 'relative' }}>
 				<IconChevronLeft
 					size={26}
-					className={clsx(classes.iconHome, isRootPath && classes.iconHidden)}
+					className={clsx(classes.iconHome, {[classes.iconHidden]: isRootPath})}
 					style={{ flexShrink: 0, transition: 'opacity 0.2s ease, transform 0.2s ease' }}
 				/>
 				<IconBrandBlackberry

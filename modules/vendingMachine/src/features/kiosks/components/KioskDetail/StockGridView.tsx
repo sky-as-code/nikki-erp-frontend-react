@@ -8,6 +8,8 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState, FC, memo as reactMemo } from 'react';
 
+import { Kiosk } from '../../types';
+
 
 // Types
 type TypeCellItem = {
@@ -81,11 +83,8 @@ type StockModel = {
 };
 
 interface StockGridViewProps {
-	kioskId: string;
+	kiosk: Kiosk;
 	isEditing?: boolean;
-	rowNumber?: number;
-	stockGrid?: RetailKioskStockItem[];
-	shelves?: InternalShelfItem[];
 }
 
 // Mock function to get image URL - replace with actual implementation
@@ -364,15 +363,19 @@ const CellStock = reactMemo(CellStockComponent, (prevProps: CellStockProps, next
 });
 
 
-export const StockGridView: FC<StockGridViewProps> = (
-	props: StockGridViewProps) => {
-	const { kioskId, isEditing: externalIsEditing, rowNumber = 10, stockGrid: externalStockGrid, shelves } = props;
+export const StockGridView: FC<StockGridViewProps> = (props: StockGridViewProps) => {
+	const { kiosk, isEditing: externalIsEditing } = props;
+	const rowNumber = 10;
+	const shelves: InternalShelfItem[] = [];
+	const externalStockGrid: RetailKioskStockItem[] = [];
+
+
 	const [internalIsEditing, setInternalIsEditing] = useState(false);
 	const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
 	const readOnly = !isEditing;
 
 	const internalStockGridNew = useRef<RetailKioskStockItem[]>([]);
-	const internalKioskShelves = useRef<InternalShelfItem[]>(shelves || []);
+	const internalKioskShelves = useRef<InternalShelfItem[]>(shelves);
 	const cellClipboard = useRef<CellClipboard | null>(null);
 	const refSelectedStockModel = useRef<StockModel[]>([]);
 
@@ -486,7 +489,7 @@ export const StockGridView: FC<StockGridViewProps> = (
 
 		// auto save stock grid
 		callUpdateStockGrid({
-			id: kioskId,
+			id: kiosk.id,
 			stockGrid: currentStockGrid,
 		});
 	};
@@ -499,7 +502,7 @@ export const StockGridView: FC<StockGridViewProps> = (
 
 		// auto save stock grid
 		callUpdateStockGrid({
-			id: kioskId,
+			id: kiosk.id,
 			stockGrid: currentStockGrid,
 		});
 
@@ -513,7 +516,7 @@ export const StockGridView: FC<StockGridViewProps> = (
 	};
 
 	const handleReset = async () => {
-		const res = await callGetKioskDetail({ id: kioskId });
+		const res = await callGetKioskDetail({ id: kiosk.id });
 		const kioskInfo = res?.data?.getEquipmentDetailsById;
 		if (!kioskInfo) {
 			notifications.show({

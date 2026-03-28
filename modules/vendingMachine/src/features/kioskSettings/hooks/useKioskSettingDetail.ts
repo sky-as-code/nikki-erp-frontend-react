@@ -3,6 +3,7 @@ import React from 'react';
 
 import { VendingMachineDispatch, kioskSettingActions, selectKioskSettingDetail } from '@/appState';
 
+
 export function useKioskSettingDetail(settingId?: string) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const detail = useMicroAppSelector(selectKioskSettingDetail);
@@ -15,6 +16,6 @@ export function useKioskSettingDetail(settingId?: string) {
 
 	return {
 		setting: detail.data,
-		isLoading: detail.status === 'pending' || detail.status === 'idle',
+		isLoading: Boolean(settingId) && (detail.status === 'pending' || detail.status === 'idle'),
 	};
 }
