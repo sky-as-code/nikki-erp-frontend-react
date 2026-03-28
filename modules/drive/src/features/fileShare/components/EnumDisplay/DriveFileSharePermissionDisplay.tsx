@@ -11,7 +11,7 @@ import {
 } from '@tabler/icons-react';
 import React from 'react';
 
-import { useDriveFileSharePermissionValue } from '../../hooks/enum/useDriveFileSharePermissionValue';
+import { useDriveFileSharePermissionStrings } from '../../hooks/enum/useDriveFileSharePermissionStrings';
 import { DriveFileSharePermission } from '../../type';
 
 
@@ -87,8 +87,8 @@ export function DriveFileSharePermissionDisplay({
 	labelSuffix,
 	textProps,
 }: DriveFileSharePermissionDisplayProps): React.ReactNode {
-	const value = useDriveFileSharePermissionValue();
-	const label = value(e);
+	const { label: labelFor } = useDriveFileSharePermissionStrings();
+	const label = labelFor(e);
 
 	return (
 		<Group gap={6} wrap='nowrap'>

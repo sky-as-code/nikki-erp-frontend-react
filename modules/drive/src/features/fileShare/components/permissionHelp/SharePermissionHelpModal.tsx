@@ -4,24 +4,17 @@ import { useTranslation } from 'react-i18next';
 
 import { SharePermissionSummaryTable } from './SharePermissionSummaryTable';
 
-
-import type { DriveFileSharePermission as DriveFileSharePermissionType } from '@/features/fileShare/type';
-
 import {
 	DriveFileSharePermission,
 	DriveFileSharePermissionDisplay,
 } from '@/features/fileShare';
-import { useDriveFileSharePermissionDescription } from '@/features/fileShare/hooks/enum/useDriveFileSharePermissionDescription';
+import { useDriveFileSharePermissionStrings } from '@/features/fileShare/hooks/enum/useDriveFileSharePermissionStrings';
 import { SHARE_PERMISSION_INFO_ORDER } from '@/features/fileShare/sharePermissionConstants';
+import { INHERITED_PERMISSIONS } from '../../driveFileShareAccessDetailUtils';
 
 
-function showsParentFolderPermissionSuffix(permission: DriveFileSharePermissionType): boolean {
-	return (
-		permission === DriveFileSharePermission.INHERITED_VIEW
-		|| permission === DriveFileSharePermission.INHERITED_EDIT
-		|| permission === DriveFileSharePermission.INHERITED_EDIT_TRASH
-		|| permission === DriveFileSharePermission.ANCESTOR_OWNER
-	);
+function showsParentFolderPermissionSuffix(permission: DriveFileSharePermission): boolean {
+	return Object.values(INHERITED_PERMISSIONS).includes(permission);
 }
 
 export type SharePermissionHelpModalProps = {
@@ -31,7 +24,7 @@ export type SharePermissionHelpModalProps = {
 
 export function SharePermissionHelpModal({ opened, onClose }: SharePermissionHelpModalProps): React.ReactNode {
 	const { t } = useTranslation();
-	const permissionDescription = useDriveFileSharePermissionDescription();
+	const { description: permissionDescription } = useDriveFileSharePermissionStrings();
 
 	return (
 		<Modal

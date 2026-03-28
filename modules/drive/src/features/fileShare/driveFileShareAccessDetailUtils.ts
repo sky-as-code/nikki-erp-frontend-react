@@ -67,22 +67,12 @@ export function getAssignableOptions(
 	);
 }
 
-export function mapDirectToInheritedPermission(
-	permission: DriveFileSharePermissionType,
-): DriveFileSharePermissionType | null {
-	switch (permission) {
-		case DriveFileSharePermission.VIEW:
-			return DriveFileSharePermission.INHERITED_VIEW;
-		case DriveFileSharePermission.EDIT:
-			return DriveFileSharePermission.INHERITED_EDIT;
-		case DriveFileSharePermission.EDIT_TRASH:
-			return DriveFileSharePermission.INHERITED_EDIT_TRASH;
-		case DriveFileSharePermission.OWNER:
-			return DriveFileSharePermission.ANCESTOR_OWNER;
-		default:
-			return null;
-	}
-}
+export const INHERITED_PERMISSIONS: Partial<Record<DriveFileSharePermission, DriveFileSharePermission>> = {
+	[DriveFileSharePermission.VIEW]: DriveFileSharePermission.INHERITED_VIEW,
+	[DriveFileSharePermission.EDIT]: DriveFileSharePermission.INHERITED_EDIT,
+	[DriveFileSharePermission.EDIT_TRASH]: DriveFileSharePermission.INHERITED_EDIT_TRASH,
+	[DriveFileSharePermission.OWNER]: DriveFileSharePermission.ANCESTOR_OWNER,
+};
 
 export function orderSharesForAccessDetail(
 	items: DriveFileShare[],

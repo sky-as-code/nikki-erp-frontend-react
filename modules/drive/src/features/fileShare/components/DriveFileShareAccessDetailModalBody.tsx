@@ -16,7 +16,7 @@ import type {
 import { DriveFileSharePermissionDisplay } from '@/features/fileShare';
 import {
 	getAssignableOptions,
-	mapDirectToInheritedPermission,
+	INHERITED_PERMISSIONS,
 } from '@/features/fileShare/driveFileShareAccessDetailUtils';
 import { resolveUserRef } from '@/features/fileShare/driveFileShareUserUtils';
 import { PERMISSION_RANK } from '@/features/fileShare/sharePermissionConstants';
@@ -28,7 +28,7 @@ export function AncestorShareRow({ row, basePath, onNavigate }: {
 	basePath: string;
 	onNavigate?: () => void;
 }): React.ReactNode {
-	const inherited = mapDirectToInheritedPermission(row.permission);
+	const inherited = INHERITED_PERMISSIONS[row.permission];
 	const targetId = row.file?.id ?? row.driveFileRef;
 	const href = targetId ? `${basePath}/management/folder/${targetId}` : undefined;
 	return (
