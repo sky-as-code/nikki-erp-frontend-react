@@ -3,7 +3,7 @@ import { IconArrowDown, IconCheck, IconFile, IconFolder } from '@tabler/icons-re
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { DriveFileSharePermissionLeadingIcon } from '../EnumDisplay/DriveFileSharePermissionDisplay';
+import { PERMISSION_ICON } from '../EnumDisplay/DriveFileSharePermissionDisplay';
 
 import {
 	PERMISSION_SUMMARY_ROWS,
@@ -73,7 +73,7 @@ export function SharePermissionSummaryTable(): React.ReactNode {
 						{SHARE_PERMISSION_INFO_ORDER.map((perm) => (
 							<Table.Th key={perm} ta='center' style={{ verticalAlign: 'middle' }}>
 								<Group justify='center' wrap='nowrap'>
-									<DriveFileSharePermissionLeadingIcon size={18} permission={perm} />
+									{PERMISSION_ICON[perm]}
 								</Group>
 							</Table.Th>
 						))}
