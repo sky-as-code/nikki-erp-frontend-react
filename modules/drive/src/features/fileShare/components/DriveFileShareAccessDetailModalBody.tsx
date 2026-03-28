@@ -18,6 +18,7 @@ import {
 	getAssignableOptions,
 	mapDirectToInheritedPermission,
 } from '@/features/fileShare/driveFileShareAccessDetailUtils';
+import { resolveUserRef } from '@/features/fileShare/driveFileShareUserUtils';
 import { PERMISSION_RANK } from '@/features/fileShare/sharePermissionConstants';
 import { useOrgModulePath } from '@/hooks/useRootPath';
 
@@ -80,12 +81,14 @@ function getMaxInheritedAncestor(
 }
 
 function PermissionEditForm({
-	currentRow, availableOptions, isDirectPermission,
+	currentRow, availableOptions, isDirectPermission, subjectUserRef,
 	onUpdatePermission, onCreatePermission, onRevokePermission, inheritedAncestorRow,
 }: {
 	currentRow: DriveFileShare;
 	availableOptions: Array<{ value: DriveFileSharePermissionType; label: string }>;
 	isDirectPermission: boolean;
+	/** User đang xem trong modal (từ anchor); dùng khi bản ghi API thiếu `userRef` nhưng vẫn có `user.id`. */
+	subjectUserRef: string;
 	onUpdatePermission: (share: DriveFileShare, next: DriveFileSharePermissionType) => void;
 	onCreatePermission: (userRef: string, permission: DriveFileSharePermissionType) => void;
 	onRevokePermission: (share: DriveFileShare) => void;
@@ -106,7 +109,10 @@ function PermissionEditForm({
 
 	const handleSubmit = () => {
 		if (isDirectPermission) onUpdatePermission(currentRow, selectedPermission);
-		else onCreatePermission(currentRow.userRef, selectedPermission);
+		else {
+			const userRef = resolveUserRef(currentRow) || subjectUserRef;
+			onCreatePermission(userRef, selectedPermission);
+		}
 	};
 
 	return (
@@ -140,9 +146,12 @@ function PermissionEditForm({
 
 export type DriveFileShareAccessDetailModalBodyProps = {
 	fileId: string;
+	/** User của modal (anchor); fallback khi tạo share trực tiếp mà `currentRow` không có `userRef`. */
+	subjectUserRef: string;
 	currentRow: DriveFileShare;
 	restRows: DriveFileShare[];
 	isDirectPermission: boolean;
+	canManageShare: boolean;
 	permissionOptions: Array<{ value: DriveFileSharePermissionType; label: string }>;
 	onUpdatePermission: (share: DriveFileShare, next: DriveFileSharePermissionType) => void;
 	onCreatePermission: (userRef: string, permission: DriveFileSharePermissionType) => void;
@@ -151,7 +160,8 @@ export type DriveFileShareAccessDetailModalBodyProps = {
 };
 
 export function DriveFileShareAccessDetailModalBody({
-	currentRow, restRows, isDirectPermission, permissionOptions,
+	subjectUserRef,
+	currentRow, restRows, isDirectPermission, canManageShare, permissionOptions,
 	onUpdatePermission, onCreatePermission, onRevokePermission, onClose,
 }: DriveFileShareAccessDetailModalBodyProps): React.ReactNode {
 	const { t } = useTranslation();
@@ -165,16 +175,21 @@ export function DriveFileShareAccessDetailModalBody({
 
 	return (
 		<Stack gap='sm'>
-			<Divider label={t('nikki.drive.share.accessDetailCurrentFilePermission')} labelPosition='left' />
-			<PermissionEditForm
-				currentRow={currentRow}
-				availableOptions={availableOptions}
-				isDirectPermission={isDirectPermission}
-				onUpdatePermission={onUpdatePermission}
-				onCreatePermission={onCreatePermission}
-				onRevokePermission={onRevokePermission}
-				inheritedAncestorRow={maxInheritedResult?.row ?? null}
-			/>
+			{canManageShare ? (
+				<>
+					<Divider label={t('nikki.drive.share.accessDetailCurrentFilePermission')} labelPosition='left' />
+					<PermissionEditForm
+						currentRow={currentRow}
+						availableOptions={availableOptions}
+						isDirectPermission={isDirectPermission}
+						subjectUserRef={subjectUserRef}
+						onUpdatePermission={onUpdatePermission}
+						onCreatePermission={onCreatePermission}
+						onRevokePermission={onRevokePermission}
+						inheritedAncestorRow={maxInheritedResult?.row ?? null}
+					/>
+				</>
+			) : null}
 			{restRows.length > 0 ? (
 				<>
 					<Divider label={t('nikki.drive.share.accessDetailAncestorChain')} labelPosition='left' />

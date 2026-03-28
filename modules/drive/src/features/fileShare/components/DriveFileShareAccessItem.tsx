@@ -1,5 +1,5 @@
 import { ActionIcon, Box, Group, Paper, Tooltip } from '@mantine/core';
-import { IconEdit } from '@tabler/icons-react';
+import { IconEdit, IconListDetails } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -12,21 +12,29 @@ import { DriveFileSharePermission, type DriveFileShare } from '@/features/fileSh
 
 export type DriveFileShareAccessItemProps = {
 	share: DriveFileShare;
+	/** @deprecated Không còn dùng trong logic nút; giữ cho call site cũ. */
 	readOnly?: boolean;
+	/** `false`: ẩn nút chi tiết. Quyền `OWNER` trên dòng vẫn luôn ẩn nút. */
+	allowOpenDetail?: boolean;
+	/** `true`: chỉ xem chi tiết trong modal (icon + tooltip “xem”). */
+	detailReadOnly?: boolean;
 	onOpenDetail?: () => void;
 };
 
 export function DriveFileShareAccessItem({
 	share,
-	readOnly = false,
+	allowOpenDetail = true,
+	detailReadOnly = false,
 	onOpenDetail,
 }: DriveFileShareAccessItemProps): React.ReactNode {
 	const { t } = useTranslation();
-	/** Owner gốc không có nút; ancestor-owner (kế thừa từ folder cha) vẫn mở modal dù row “read-only”. */
+	const detailLabel = detailReadOnly
+		? t('nikki.drive.share.accessDetailViewButton')
+		: t('nikki.drive.share.accessDetailButton');
 	const showDetailButton =
 		Boolean(onOpenDetail)
-		&& share.permission !== DriveFileSharePermission.OWNER
-		&& (!readOnly || share.permission === DriveFileSharePermission.ANCESTOR_OWNER);
+		&& allowOpenDetail !== false
+		&& share.permission !== DriveFileSharePermission.OWNER;
 
 	return (
 		<Paper withBorder radius='md' p='sm' mih={52}>
@@ -45,15 +53,15 @@ export function DriveFileShareAccessItem({
 						textProps={{ size: 'xs', style: { lineHeight: 1.25 } }}
 					/>
 					{showDetailButton ? (
-						<Tooltip label={t('nikki.drive.share.accessDetailButton')} position='left' withArrow>
+						<Tooltip label={detailLabel} position='left' withArrow>
 							<ActionIcon
 								variant='subtle'
 								color='gray'
 								size='md'
-								aria-label={t('nikki.drive.share.accessDetailButton')}
+								aria-label={detailLabel}
 								onClick={onOpenDetail}
 							>
-								<IconEdit size={18} />
+								{detailReadOnly ? <IconListDetails size={18} /> : <IconEdit size={18} />}
 							</ActionIcon>
 						</Tooltip>
 					) : null}

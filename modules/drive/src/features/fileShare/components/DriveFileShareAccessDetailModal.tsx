@@ -6,7 +6,7 @@ import {
 	Text,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,12 +19,12 @@ import type {
 
 import {
 	driveFileShareActions,
-	selectDriveFileShareSharesByUserState,
 } from '@/appState/fileShare';
 import { DriveUserDisplay } from '@/components';
 import { DriveFileSharePermissionDisplay, fileShareService } from '@/features/fileShare';
-import { isDirectPermission, orderSharesForAccessDetail } from '@/features/fileShare/driveFileShareAccessDetailUtils';
+import { isDirectPermission } from '@/features/fileShare/driveFileShareAccessDetailUtils';
 import { resolveUserRef } from '@/features/fileShare/driveFileShareUserUtils';
+import { useDriveFileSharesByUser } from '@/features/fileShare/hooks/useDriveFileSharesByUser';
 
 
 function SharesByUserStatusFeedback({ status, error, t }: {
@@ -32,7 +32,7 @@ function SharesByUserStatusFeedback({ status, error, t }: {
 	error?: string | null;
 	t: (key: string) => string;
 }): React.ReactNode {
-	if (status === 'pending') {
+	if (status === 'pending' || status === 'idle') {
 		return <Group justify='center' py='md'><Loader size='sm' /></Group>;
 	}
 	if (status === 'error') {
@@ -41,20 +41,7 @@ function SharesByUserStatusFeedback({ status, error, t }: {
 	return null;
 }
 
-function useRefreshAfterUpdate(fileId: string, userId: string) {
-	const dispatch = useMicroAppDispatch();
-	return React.useCallback(() => {
-		if (!userId) return;
-		(dispatch as (action: unknown) => void)(
-			driveFileShareActions.getFileSharesByUser({ fileId, userId }),
-		);
-		(dispatch as (action: unknown) => void)(
-			driveFileShareActions.getResolvedFileShares({ fileId, params: { page: 0, size: 50 } }),
-		);
-	}, [dispatch, fileId, userId]);
-}
-
-function useShareMutations(fileId: string, refresh: () => void) {
+function useShareMutations(fileId: string, refresh: () => Promise<void>) {
 	const { t } = useTranslation();
 	const dispatch = useMicroAppDispatch();
 
@@ -71,7 +58,7 @@ function useShareMutations(fileId: string, refresh: () => void) {
 	) => {
 		try {
 			await fileShareService.createFileShare(fileId, { driveFileRef: fileId, userRef, permission });
-			refresh();
+			await refresh();
 		}
 		catch { showError(); }
 	}, [fileId, refresh, showError]);
@@ -81,7 +68,7 @@ function useShareMutations(fileId: string, refresh: () => void) {
 			await (dispatch as (action: unknown) => Promise<{ type?: string }>)(
 				driveFileShareActions.deleteFileShare({ fileId, shareId: share.id }),
 			);
-			refresh();
+			await refresh();
 		}
 		catch { showError(); }
 	}, [dispatch, fileId, refresh, showError]);
@@ -93,6 +80,8 @@ export type DriveFileShareAccessDetailModalProps = {
 	fileId: string;
 	opened: boolean;
 	anchorShare: DriveFileShare | null;
+	/** Chỉ chủ file hoặc chủ folder cha (ANCESTOR_OWNER) mới được cập nhật / thu hồi trong form. */
+	canManageShare: boolean;
 	onClose: () => void;
 	permissionOptions: Array<{ value: DriveFileSharePermissionType; label: string }>;
 	onPermissionChange: (
@@ -100,37 +89,45 @@ export type DriveFileShareAccessDetailModalProps = {
 		nextPermission: DriveFileSharePermissionType,
 	) => Promise<boolean>;
 	onNavigateAway?: () => void;
+	/** Gọi sau khi refetch chi tiết user + resolved; truyền `userId` của user đang xem trong modal. */
+	onAccessUpdated?: (userId: string) => void;
 };
 
 export function DriveFileShareAccessDetailModal({
-	fileId, opened, anchorShare, onClose, permissionOptions, onPermissionChange, onNavigateAway,
+	fileId, opened, anchorShare, canManageShare, onClose, permissionOptions, onPermissionChange, onNavigateAway,
+	onAccessUpdated,
 }: DriveFileShareAccessDetailModalProps): React.ReactNode {
 	const { t } = useTranslation();
 	const dispatch = useMicroAppDispatch();
-	const sharesByUserState = useMicroAppSelector(selectDriveFileShareSharesByUserState);
-	const rawItems = sharesByUserState.data ?? [];
-	const orderedItems = React.useMemo(
-		() => orderSharesForAccessDetail(rawItems, fileId), [fileId, rawItems],
-	);
-	const currentRow = orderedItems[0] ?? null;
-	const restRows = orderedItems.slice(1);
-	const isDirect = currentRow ? isDirectPermission(currentRow.permission) : false;
 	const userId = anchorShare ? resolveUserRef(anchorShare) : '';
-	const refresh = useRefreshAfterUpdate(fileId, userId);
+
+	const {
+		status: sharesStatus,
+		error: sharesError,
+		appliedShare: currentRow,
+		inheritedChainShares: restRows,
+		refetch: refetchSharesByUser,
+	} = useDriveFileSharesByUser({
+		fileId,
+		userId,
+		enabled: opened && Boolean(userId),
+	});
+
+	const isDirect = currentRow ? isDirectPermission(currentRow.permission) : false;
+
+	const refresh = React.useCallback(async () => {
+		await refetchSharesByUser();
+		(dispatch as (action: unknown) => void)(
+			driveFileShareActions.getResolvedFileShares({ fileId, params: { page: 0, size: 50 } }),
+		);
+		if (userId) onAccessUpdated?.(userId);
+	}, [dispatch, fileId, onAccessUpdated, refetchSharesByUser, userId]);
+
 	const { handleCreate, handleRevoke } = useShareMutations(fileId, refresh);
-
-	React.useEffect(() => {
-		if (!opened || !userId) return;
-		(dispatch as (action: unknown) => void)(driveFileShareActions.getFileSharesByUser({ fileId, userId }));
-	}, [dispatch, fileId, opened, userId]);
-
-	React.useEffect(() => {
-		if (!opened) (dispatch as (action: unknown) => void)(driveFileShareActions.resetSharesByUser());
-	}, [dispatch, opened]);
 
 	const handleUpdate = async (row: DriveFileShare, next: DriveFileSharePermissionType) => {
 		const ok = await onPermissionChange(row, next);
-		if (ok) refresh();
+		if (ok) await refresh();
 	};
 
 	if (!anchorShare) return null;
@@ -147,16 +144,18 @@ export function DriveFileShareAccessDetailModal({
 					/>
 					{currentRow ? <DriveFileSharePermissionDisplay e={currentRow.permission} /> : null}
 				</Group>
-				<SharesByUserStatusFeedback status={sharesByUserState.status} error={sharesByUserState.error} t={t} />
-				{sharesByUserState.status === 'success' && !currentRow ? (
+				<SharesByUserStatusFeedback status={sharesStatus} error={sharesError} t={t} />
+				{sharesStatus === 'success' && !currentRow ? (
 					<Text size='sm' c='dimmed'>{t('nikki.drive.share.accessDetailUserSharesEmpty')}</Text>
 				) : null}
-				{sharesByUserState.status === 'success' && currentRow ? (
+				{sharesStatus === 'success' && currentRow ? (
 					<DriveFileShareAccessDetailModalBody
 						fileId={fileId}
+						subjectUserRef={userId}
 						currentRow={currentRow}
 						restRows={restRows}
 						isDirectPermission={isDirect}
+						canManageShare={canManageShare}
 						permissionOptions={permissionOptions}
 						onUpdatePermission={handleUpdate}
 						onCreatePermission={handleCreate}

@@ -27,7 +27,14 @@ export type RawDriveFileShare = DriveFileShare & {
 
 export function resolveUserRef(share: DriveFileShare): string {
 	const rawShare = share as RawDriveFileShare;
-	return share.userRef ?? rawShare.user_ref ?? rawShare.userId ?? rawShare.user_id ?? '';
+	return (
+		share.userRef
+		?? rawShare.user_ref
+		?? rawShare.userId
+		?? rawShare.user_id
+		?? share.user?.id
+		?? ''
+	);
 }
 
 export function getUserInitials(user?: { displayName?: string; email?: string }): string {

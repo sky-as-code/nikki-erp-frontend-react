@@ -15,7 +15,7 @@ import { useDriveFileSharePermissionValue } from '../../hooks/enum/useDriveFileS
 import { DriveFileSharePermission } from '../../type';
 
 
-const ICON_SIZE_DEFAULT = 18;
+const TABLER_ICON_SIZE = 18;
 
 const PERMISSION_ICON_COLOR: Record<DriveFileSharePermission, string> = {
 	[DriveFileSharePermission.VIEW]: 'var(--mantine-color-cyan-9)',
@@ -26,6 +26,16 @@ const PERMISSION_ICON_COLOR: Record<DriveFileSharePermission, string> = {
 	[DriveFileSharePermission.INHERITED_EDIT_TRASH]: 'var(--mantine-color-orange-5)',
 	[DriveFileSharePermission.OWNER]: 'var(--mantine-color-teal-9',
 	[DriveFileSharePermission.ANCESTOR_OWNER]: 'var(--mantine-color-teal-5)',
+};
+
+const PERMISSION_ICON: Record<DriveFileSharePermission, React.ReactNode> = {
+	[DriveFileSharePermission.VIEW]: (
+		<IconEye
+			color='var(--mantine-color-cyan-9)'
+			stroke={2.5}
+			size={TABLER_ICON_SIZE}
+		/>
+	),
 };
 
 export function DriveFileSharePermissionLeadingIcon({

@@ -3,45 +3,36 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { DriveFileShareAccessItem } from './DriveFileShareAccessItem';
+import { shareAccessAccordionStyles } from './shareAccessAccordionStyles';
 
-import type { DriveFileShare, ResolvedDriveFileShareResponse } from '@/features/fileShare/type';
+import type { DriveFile } from '@/features/files/types';
+import type {
+	DriveFileShare,
+	DriveFileSharePermission as DriveFileSharePermissionType,
+	ResolvedDriveFileShareResponse,
+} from '@/features/fileShare/type';
 import type { ReduxActionState } from '@nikkierp/ui/appState';
+
+import { canOpenShareDetailRow } from '@/features/fileShare/driveFileShareAccessDetailUtils';
 
 
 const RESOLVED_ACCORDION_ITEM = 'resolved-shares';
 
-const accordionChromeStyles = {
-	item: {
-		border: 'none',
-		backgroundColor: 'transparent',
-	},
-	control: {
-		padding: 0,
-		minHeight: 'unset',
-	},
-	label: {
-		padding: 0,
-	},
-	chevron: {
-		marginLeft: 'var(--mantine-spacing-xs)',
-		width: '1rem',
-		height: '1rem',
-	},
-	panel: {
-		padding: 0,
-	},
-	content: {
-		padding: 0,
-	},
-} as const;
-
 export type DriveFileShareResolvedSectionProps = {
+	file: DriveFile;
+	currentUserId: string | undefined;
+	viewerAppliedPermission: DriveFileSharePermissionType | null | undefined;
 	resolvedState: ReduxActionState<ResolvedDriveFileShareResponse>;
+	detailReadOnly?: boolean;
 	onOpenShareDetail: (share: DriveFileShare) => void;
 };
 
 export function DriveFileShareResolvedSection({
+	file,
+	currentUserId,
+	viewerAppliedPermission,
 	resolvedState,
+	detailReadOnly = false,
 	onOpenShareDetail,
 }: DriveFileShareResolvedSectionProps): React.ReactNode {
 	const { t } = useTranslation();
@@ -60,7 +51,7 @@ export function DriveFileShareResolvedSection({
 			defaultValue={RESOLVED_ACCORDION_ITEM}
 			variant='default'
 			radius={0}
-			styles={accordionChromeStyles}
+			styles={shareAccessAccordionStyles}
 		>
 			<Accordion.Item value={RESOLVED_ACCORDION_ITEM}>
 				<Accordion.Control>
@@ -80,13 +71,26 @@ export function DriveFileShareResolvedSection({
 								<Loader size='sm' />
 							</Group>
 						) : (
-							items.map((share: DriveFileShare) => (
-								<DriveFileShareAccessItem
-									key={share.id}
-									share={share}
-									onOpenDetail={() => onOpenShareDetail(share)}
-								/>
-							))
+							items.map((share: DriveFileShare) => {
+								const allowOpenDetail = canOpenShareDetailRow({
+									file,
+									share,
+									currentUserId,
+									layer: 'resolved',
+									viewerAppliedPermission,
+								});
+								return (
+									<DriveFileShareAccessItem
+										key={share.id}
+										share={share}
+										detailReadOnly={detailReadOnly}
+										allowOpenDetail={allowOpenDetail}
+										onOpenDetail={
+											allowOpenDetail ? () => onOpenShareDetail(share) : undefined
+										}
+									/>
+								);
+							})
 						)}
 					</Stack>
 				</Accordion.Panel>

@@ -3,21 +3,33 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { DriveFileShareAccessItem } from './DriveFileShareAccessItem';
+import { shareAccessAccordionStyles } from './shareAccessAccordionStyles';
 
+import type { DriveFile } from '@/features/files/types';
+import type { DriveFileShare, DriveFileSharePermission as DriveFileSharePermissionType, GetDriveFileShareAncestorsResponse } from '@/features/fileShare/type';
 import type { ReduxActionState } from '@nikkierp/ui/appState';
 
-import { DriveFileSharePermission, type DriveFileShare, type GetDriveFileShareAncestorsResponse } from '@/features/fileShare/type';
+import { canOpenShareDetailRow } from '@/features/fileShare/driveFileShareAccessDetailUtils';
 
 
 export type DriveFileShareInheritedSectionProps = {
+	file: DriveFile;
+	currentUserId: string | undefined;
+	viewerAppliedPermission: DriveFileSharePermissionType | null | undefined;
 	ancestorsState: ReduxActionState<GetDriveFileShareAncestorsResponse>;
 	ancestorShares: DriveFileShare[];
+	/** `true` khi modal chi tiết chỉ xem (icon mắt + tooltip). */
+	detailReadOnly?: boolean;
 	onOpenShareDetail?: (share: DriveFileShare) => void;
 };
 
 export function DriveFileShareInheritedSection({
+	file,
+	currentUserId,
+	viewerAppliedPermission,
 	ancestorsState,
 	ancestorShares,
+	detailReadOnly = false,
 	onOpenShareDetail,
 }: DriveFileShareInheritedSectionProps): React.ReactNode {
 	const { t } = useTranslation();
@@ -34,30 +46,7 @@ export function DriveFileShareInheritedSection({
 		<Accordion
 			variant='default'
 			radius={0}
-			styles={{
-				item: {
-					border: 'none',
-					backgroundColor: 'transparent',
-				},
-				control: {
-					padding: 0,
-					minHeight: 'unset',
-				},
-				label: {
-					padding: 0,
-				},
-				chevron: {
-					marginLeft: 'var(--mantine-spacing-xs)',
-					width: '1rem',
-					height: '1rem',
-				},
-				panel: {
-					padding: 0,
-				},
-				content: {
-					padding: 0,
-				},
-			}}
+			styles={shareAccessAccordionStyles}
 		>
 			<Accordion.Item value='inherited-owners'>
 				<Accordion.Control>
@@ -77,19 +66,29 @@ export function DriveFileShareInheritedSection({
 								<Loader size='sm' />
 							</Group>
 						) : (
-							ancestorShares.map((share: DriveFileShare) => (
-								<DriveFileShareAccessItem
-									key={share.id}
-									share={share}
-									readOnly
-									onOpenDetail={
-										share.permission === DriveFileSharePermission.ANCESTOR_OWNER
-										&& onOpenShareDetail
-											? () => onOpenShareDetail(share)
-											: undefined
-									}
-								/>
-							))
+							ancestorShares.map((share: DriveFileShare) => {
+								const allowOpenDetail = canOpenShareDetailRow({
+									file,
+									share,
+									currentUserId,
+									layer: 'inherited',
+									viewerAppliedPermission,
+								});
+								return (
+									<DriveFileShareAccessItem
+										key={share.id}
+										share={share}
+										readOnly
+										detailReadOnly={detailReadOnly}
+										allowOpenDetail={allowOpenDetail}
+										onOpenDetail={
+											allowOpenDetail && onOpenShareDetail
+												? () => onOpenShareDetail(share)
+												: undefined
+										}
+									/>
+								);
+							})
 						)}
 					</Stack>
 				</Accordion.Panel>
