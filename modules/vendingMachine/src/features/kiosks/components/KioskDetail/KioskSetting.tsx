@@ -1,114 +1,66 @@
-/* eslint-disable max-lines-per-function */
 import { Stack } from '@mantine/core';
 import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React from 'react';
 import { Controller, UseFormReturn } from 'react-hook-form';
 
-import { Game } from '@/features/games/types';
-import { kioskToSettingFormValues, pickEntityById, type KioskSettingFormData } from '@/features/kiosks/kioskSettingForm';
+import { type KioskSettingFormData } from '@/features/kiosks/kioskSettingForm';
 import { Kiosk } from '@/features/kiosks/types';
-import { Slideshow } from '@/features/slideshow/types';
-import { Theme } from '@/features/themes/types';
 
 import { GameSelect } from './GameSelect';
+import { KioskSettingPickerValues, useKioskSettingTab, useKioskSettingTabForm } from './hooks/useKioskSettingTab';
 import { InterfaceModeSelect } from './InterfaceModeSelect';
 import { SlideshowSelect } from './SlideshowSelect';
 import { ThemeSelect } from './ThemeSelect';
 
-import type { KioskSettingTabState } from './hooks/types';
-
 
 interface KioskSettingProps {
 	kiosk: Kiosk;
-	tabState: KioskSettingTabState;
 }
 
-type PickerDraft = {
-	waitingSlideshow?: Slideshow;
-	shoppingSlideshow?: Slideshow;
-	theme?: Theme;
-	game?: Game;
-};
-
-type KioskSettingInnerProps = {
-	isEditing: boolean;
-	formId: string;
-	onFormSubmit: (data: KioskSettingFormData) => void | Promise<void>;
-	reset: UseFormReturn<KioskSettingFormData>['reset'];
-	form: UseFormReturn<KioskSettingFormData>;
-	modelValue: KioskSettingFormData;
-	registerResetForm: (fn: () => void) => void;
+type KioskSettingFieldsProps = {
 	kiosk: Kiosk;
+	isEditing: boolean;
+	setIsEditing: (v: boolean) => void;
+	isSubmitting: boolean;
+	setIsSubmitting: (v: boolean) => void;
+	onFormSubmit: (data: KioskSettingFormData) => void | Promise<void>;
+	form: UseFormReturn<KioskSettingFormData>;
+	formValues: KioskSettingFormData;
+	initialKioskSettings: KioskSettingPickerValues;
 };
 
-const KioskSettingInner: React.FC<KioskSettingInnerProps> = ({
-	isEditing,
-	formId,
-	onFormSubmit,
-	reset,
+const KioskSettingFields: React.FC<KioskSettingFieldsProps> = ({
 	form,
-	modelValue,
-	registerResetForm,
-	kiosk,
+	formValues,
+	initialKioskSettings,
+	isEditing,
+	setIsEditing,
+	isSubmitting,
+	setIsSubmitting,
+	onFormSubmit,
 }) => {
-	const [pickerDraft, setPickerDraft] = useState<PickerDraft>({});
-	const draftSnapshotRef = useRef<PickerDraft>({});
-	const wasEditingRef = useRef(false);
-
-	const waitingPlaylistId = form.watch('waitingPlaylistId');
-	const shoppingPlaylistId = form.watch('shoppingPlaylistId');
-	const themeId = form.watch('themeId');
-	const gameId = form.watch('gameId');
-
-	const waitingSlideshowValue = useMemo(
-		() => pickEntityById(waitingPlaylistId, kiosk.waitingPlaylist, pickerDraft.waitingSlideshow),
-		[waitingPlaylistId, kiosk.waitingPlaylist, pickerDraft.waitingSlideshow],
-	);
-
-	const shoppingSlideshowValue = useMemo(
-		() => pickEntityById(shoppingPlaylistId, kiosk.shoppingPlaylist, pickerDraft.shoppingSlideshow),
-		[shoppingPlaylistId, kiosk.shoppingPlaylist, pickerDraft.shoppingSlideshow],
-	);
-
-	const themeValue = useMemo(
-		() => pickEntityById(themeId, kiosk.theme, pickerDraft.theme),
-		[themeId, kiosk.theme, pickerDraft.theme],
-	);
-
-	const gameValue = useMemo(
-		() => pickEntityById(gameId, kiosk.game, pickerDraft.game),
-		[gameId, kiosk.game, pickerDraft.game],
-	);
-
-	useEffect(() => {
-		if (isEditing && !wasEditingRef.current) {
-			draftSnapshotRef.current = { ...pickerDraft };
-		}
-		wasEditingRef.current = isEditing;
-	}, [isEditing, pickerDraft]);
-
-	const applyPickerDraft = useCallback((draft: PickerDraft) => {
-		setPickerDraft(draft);
-	}, []);
-
-	useEffect(() => {
-		registerResetForm(() => {
-			reset(modelValue);
-			applyPickerDraft({ ...draftSnapshotRef.current });
-		});
-	}, [registerResetForm, reset, modelValue, applyPickerDraft]);
+	const {
+		waitingPlaylist,
+		shoppingPlaylist,
+		theme,
+		game,
+		handleWaitingChange,
+		handleShoppingChange,
+		handleThemeChange,
+		handleGameChange,
+	} = useKioskSettingTabForm({
+		isEditing,
+		setIsEditing,
+		isSubmitting,
+		setIsSubmitting,
+		onFormSubmit,
+		form,
+		formValues,
+		initialKioskSettings,
+	});
 
 	return (
 		<Stack gap='md'>
-			{isEditing && (
-				<form
-					id={formId}
-					onSubmit={form.handleSubmit(onFormSubmit)}
-					noValidate
-					style={{ display: 'contents' }}
-				/>
-			)}
-
 			<Controller
 				control={form.control}
 				name='interfaceMode'
@@ -123,59 +75,43 @@ const KioskSettingInner: React.FC<KioskSettingInnerProps> = ({
 
 			<SlideshowSelect
 				type='waiting'
-				value={waitingSlideshowValue}
-				onChange={(next) => {
-					form.setValue('waitingPlaylistId', next?.id);
-					setPickerDraft((d) => ({ ...d, waitingSlideshow: next }));
-				}}
+				value={waitingPlaylist}
+				onChange={handleWaitingChange}
 				isEditing={isEditing}
 			/>
 
 			<SlideshowSelect
 				type='shopping'
-				value={shoppingSlideshowValue}
-				onChange={(next) => {
-					form.setValue('shoppingPlaylistId', next?.id);
-					setPickerDraft((d) => ({ ...d, shoppingSlideshow: next }));
-				}}
+				value={shoppingPlaylist}
+				onChange={handleShoppingChange}
 				isEditing={isEditing}
 			/>
 
 			<ThemeSelect
-				value={themeValue}
-				onChange={(next) => {
-					form.setValue('themeId', next?.id);
-					setPickerDraft((d) => ({ ...d, theme: next }));
-				}}
+				value={theme}
+				onChange={handleThemeChange}
 				isEditing={isEditing}
 			/>
 
 			<GameSelect
-				value={gameValue}
-				onChange={(next) => {
-					form.setValue('gameId', next?.id);
-					setPickerDraft((d) => ({ ...d, game: next }));
-				}}
+				value={game}
+				onChange={handleGameChange}
 				isEditing={isEditing}
 			/>
 		</Stack>
 	);
 };
 
-export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk, tabState }) => {
+export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk }) => {
 	const {
 		isEditing,
-		formId,
-		modelSchema,
+		setIsEditing,
 		isSubmitting,
+		setIsSubmitting,
 		onFormSubmit,
-		registerResetForm,
-	} = tabState;
-
-	const modelValue = useMemo(
-		() => kioskToSettingFormValues(kiosk),
-		[kiosk.id, kiosk.etag],
-	);
+		modelSchema,
+		formValues,
+	} = useKioskSettingTab(kiosk);
 
 	return (
 		<FormStyleProvider layout='onecol'>
@@ -183,19 +119,25 @@ export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk, tabState }) =
 				key={`${kiosk.id}-${kiosk.etag}-kiosk-setting`}
 				formVariant='update'
 				modelSchema={modelSchema}
-				modelValue={modelValue}
+				modelValue={formValues}
 				modelLoading={isEditing && isSubmitting}
 			>
-				{({ reset, form }) => (
-					<KioskSettingInner
-						isEditing={isEditing}
-						formId={formId}
-						onFormSubmit={(data) => onFormSubmit(data as KioskSettingFormData)}
-						reset={reset}
-						form={form}
-						modelValue={modelValue}
-						registerResetForm={registerResetForm}
+				{({ form }) => (
+					<KioskSettingFields
 						kiosk={kiosk}
+						isEditing={isEditing}
+						setIsEditing={setIsEditing}
+						isSubmitting={isSubmitting}
+						setIsSubmitting={setIsSubmitting}
+						onFormSubmit={onFormSubmit}
+						form={form}
+						formValues={formValues}
+						initialKioskSettings={{
+							waitingPlaylist: kiosk.waitingPlaylist,
+							shoppingPlaylist: kiosk.shoppingPlaylist,
+							theme: kiosk.theme,
+							game: kiosk.game,
+						}}
 					/>
 				)}
 			</FormFieldProvider>

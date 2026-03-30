@@ -1,15 +1,30 @@
 export type {
-	BasicInfoTabState,
-	KioskSettingTabState,
 	TabId,
 	UseKioskDetailPageConfigProps,
 	UseKioskDetailPageConfigReturn,
 	TabHookReturn,
 } from './types';
-export { useActivityTab } from './useActivityTab';
+export {
+	KioskDetailTabControlProvider,
+	useKioskDetailTabControl,
+	useRegisterKioskDetailTab,
+} from './KioskDetailTabControlContext';
+export type { KioskDetailTabControlEntry } from './KioskDetailTabControlContext';
 export { useBasicInfoTab } from './useBasicInfoTab';
 export { useKioskDetailBreadcrumbs } from './useKioskDetailBreadcrumbs';
 export { useKioskDetailPageConfig } from './useKioskDetailPageConfig';
-export { useKioskSettingTab } from './useKioskSettingTab';
-export { useProductsGridTab } from './useProductsGridTab';
-export { useProductsListTab } from './useProductsListTab';
+export {
+	buildKioskSettingActions,
+	useKioskSettingTab,
+	useKioskSettingTabForm,
+} from './useKioskSettingTab';
+export type {
+	UseKioskSettingTabFormArgs,
+	UseKioskSettingTabFormReturn,
+	UseKioskSettingTabReturn,
+} from './useKioskSettingTab';
+export {
+	buildProductsGridActions,
+	useProductsGridTab,
+} from './useProductsGridTab';
+export type { UseProductsGridTabArgs, UseProductsGridTabReturn } from './useProductsGridTab';

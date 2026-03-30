@@ -7,9 +7,53 @@ import { ControlPanel } from '@/components';
 import { DetailLayout } from '@/components/DetailLayout';
 import { KioskNotFound } from '@/components/KioskNotFound';
 import { PageContainer } from '@/components/PageContainer';
-import { useKioskDelete, useKioskDetail } from '@/features/kiosks';
-import { TabId, useKioskDetailPageConfig } from '@/features/kiosks/components/KioskDetail/hooks';
+import { Kiosk, useKioskDelete, useKioskDetail } from '@/features/kiosks';
+import { KioskDetailTabControlProvider, TabId, useKioskDetailPageConfig } from '@/features/kiosks/components/KioskDetail/hooks';
 
+
+type KioskDetailPageContentProps = {
+	kiosk?: Kiosk;
+	isLoading: boolean;
+	activeTab: TabId;
+	setActiveTab: (tab: TabId) => void;
+	onOpenDeleteKiosk: (kiosk: Kiosk) => void;
+};
+
+const KioskDetailPageContent: React.FC<KioskDetailPageContentProps> = ({
+	kiosk,
+	isLoading,
+	activeTab,
+	setActiveTab,
+	onOpenDeleteKiosk,
+}) => {
+	const { t: translate } = useTranslation();
+	const { breadcrumbs, actions, tabs } = useKioskDetailPageConfig({
+		kiosk,
+		activeTab,
+		onOpenDeleteKiosk,
+	});
+
+	return (
+		<PageContainer
+			documentTitle={kiosk?.name ?? translate('nikki.vendingMachine.kiosk.detail.title')}
+			breadcrumbs={breadcrumbs}
+			sections={[ <ControlPanel actions={actions} /> ]}
+			isLoading={isLoading}
+			isNotFound={!kiosk && !isLoading}
+			notFoundContent={<KioskNotFound />}
+		>
+			<DetailLayout
+				header={{
+					title: kiosk?.name || '',
+					subtitle: kiosk?.code || '',
+				}}
+				tabs={tabs}
+				activeTab={activeTab}
+				onTabChange={(value) => setActiveTab(value as TabId)}
+			/>
+		</PageContainer>
+	);
+};
 
 export const KioskDetailPage: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
@@ -25,32 +69,18 @@ export const KioskDetailPage: React.FC = () => {
 	} = useKioskDelete();
 
 	const { kiosk, isLoading } = useKioskDetail(id);
-	const { breadcrumbs, actions, tabs } = useKioskDetailPageConfig({
-		kiosk,
-		activeTab,
-		onOpenDeleteKiosk: handleOpenDeleteModal,
-	});
 
 	return (
 		<>
-			<PageContainer
-				documentTitle={kiosk?.name ?? translate('nikki.vendingMachine.kiosk.detail.title')}
-				breadcrumbs={breadcrumbs}
-				sections={[ <ControlPanel actions={actions} /> ]}
-				isLoading={isLoading}
-				isNotFound={!kiosk && !isLoading}
-				notFoundContent={<KioskNotFound />}
-			>
-				<DetailLayout
-					header={{
-						title: kiosk?.name || '',
-						subtitle: kiosk?.code || '',
-					}}
-					tabs={tabs}
+			<KioskDetailTabControlProvider>
+				<KioskDetailPageContent
+					kiosk={kiosk}
+					isLoading={isLoading}
 					activeTab={activeTab}
-					onTabChange={(value) => setActiveTab(value as TabId)}
+					setActiveTab={setActiveTab}
+					onOpenDeleteKiosk={handleOpenDeleteModal}
 				/>
-			</PageContainer>
+			</KioskDetailTabControlProvider>
 
 			<ConfirmModal
 				title={translate('nikki.general.messages.delete_confirm')}

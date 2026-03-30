@@ -17,6 +17,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Kiosk } from '../../types';
+import { useProductsGridTab } from './hooks/useProductsGridTab';
 
 
 interface ProductPosition {
@@ -33,9 +34,6 @@ interface ProductPosition {
 
 interface ProductGridViewProps {
 	kiosk: Kiosk;
-	tabState: {
-		isEditing: boolean;
-	};
 }
 
 // Mock data - replace with actual API call
@@ -262,15 +260,20 @@ GridCell.displayName = 'GridCell';
 
 export const ProductGridView: React.FC<ProductGridViewProps> = ({
 	kiosk: _Kiosk,
-	tabState: {
-		isEditing: externalIsEditing,
-	},
 }) => {
 	const { t: translate } = useTranslation();
-	const [internalIsEditing, setInternalIsEditing] = useState(false);
-	const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
 	const [gridData, setGridData] = useState<Record<string, ProductPosition>>(generateMockGridData());
 	const [copiedCell, setCopiedCell] = useState<ProductPosition | null>(null);
+
+	const onResetGrid = useCallback(() => setGridData(generateMockGridData()), []);
+
+	const {
+		isEditing,
+		handleEdit,
+		handleCancel,
+		handleDiscardChanges,
+		handleLoadAll,
+	} = useProductsGridTab({ translate, onResetGrid });
 
 	const rows = useMemo(() => {
 		return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').slice(0, 7); // A-J for demo
@@ -367,21 +370,6 @@ export const ProductGridView: React.FC<ProductGridViewProps> = ({
 		});
 	}, []);
 
-	const handleDiscardChanges = () => {
-		setGridData(generateMockGridData());
-		if (externalIsEditing === undefined) {
-			setInternalIsEditing(false);
-		}
-	};
-
-	const handleLoadAll = () => {
-		// TODO: Implement load all from API
-	};
-
-	const handleEnableEdit = () => {
-		setInternalIsEditing(true);
-	};
-
 	return (
 		<Stack gap='sm'>
 			<Group justify='space-between'>
@@ -395,18 +383,14 @@ export const ProductGridView: React.FC<ProductGridViewProps> = ({
 							<Button size='xs' variant='outline' onClick={handleLoadAll}>
 								{translate('nikki.vendingMachine.kiosk.products.actions.loadAll')}
 							</Button>
-							{externalIsEditing === undefined && (
-								<Button size='xs' variant='outline' onClick={() => setInternalIsEditing(false)}>
-									{translate('nikki.vendingMachine.kiosk.products.actions.viewOnly')}
-								</Button>
-							)}
+							<Button size='xs' variant='outline' onClick={handleCancel}>
+								{translate('nikki.vendingMachine.kiosk.products.actions.viewOnly')}
+							</Button>
 						</>
 					) : (
-						externalIsEditing === undefined && (
-							<Button size='xs' onClick={handleEnableEdit}>
-								{translate('nikki.general.actions.edit')}
-							</Button>
-						)
+						<Button size='xs' onClick={handleEdit}>
+							{translate('nikki.general.actions.edit')}
+						</Button>
 					)}
 				</Group>
 			</Group>

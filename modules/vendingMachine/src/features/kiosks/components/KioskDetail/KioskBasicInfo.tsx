@@ -1,30 +1,54 @@
 import { Box, Divider, Stack, Text } from '@mantine/core';
 import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { kioskToCreateFormValues } from '@/features/kiosks/hooks/useKioskCreate';
 import { Kiosk } from '@/features/kiosks/types';
 
 import { KioskFormFields } from '../KioskFormFields/KioskFormFields';
-
-import type { BasicInfoTabState } from './hooks/types';
+import { useBasicInfoTab } from './hooks/useBasicInfoTab';
 
 
 export interface KioskBasicInfoProps {
 	kiosk: Kiosk;
-	tabState: BasicInfoTabState;
+	/** Mở modal xóa kiosk (nút Delete trên control panel). */
+	onOpenDeleteKiosk?: (kiosk: Kiosk) => void;
 }
 
-export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk, tabState }) => {
-	const { isEditing, formId, modelSchema, isSubmitting, onFormSubmit } = tabState;
-
+const KioskBasicInfoAuditDates: React.FC<{ kiosk: Kiosk }> = ({ kiosk }) => {
 	const { t: translate } = useTranslation();
+	return (
+		<>
+			<Divider my={3} />
 
-	const formModelValue = useMemo(
-		() => kioskToCreateFormValues(kiosk),
-		[kiosk.id, kiosk.etag],
+			<Box>
+				<Text size='sm' c='dimmed' mb={3}>
+					{translate('nikki.vendingMachine.kiosk.fields.createdAt')}
+				</Text>
+				<Text size='sm'>{new Date(kiosk.createdAt).toLocaleString()}</Text>
+			</Box>
+
+			{kiosk.deletedAt && (
+				<Box>
+					<Text size='sm' c='dimmed' mb='xs'>
+						{translate('nikki.vendingMachine.kiosk.fields.deletedAt')}
+					</Text>
+					<Text size='sm'>{new Date(kiosk.deletedAt).toLocaleString()}</Text>
+				</Box>
+			)}
+		</>
 	);
+};
+
+export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk, onOpenDeleteKiosk }) => {
+	const {
+		formId,
+		isEditing,
+		isSubmitting,
+		modelSchema,
+		modelValue,
+		onFormSubmit,
+	} = useBasicInfoTab({ kiosk, onOpenDeleteKiosk });
 
 	return (
 		<Stack gap='xs'>
@@ -33,7 +57,7 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk, tabState 
 					key={`${kiosk.id}-${kiosk.etag}-basic-info`}
 					formVariant='update'
 					modelSchema={modelSchema}
-					modelValue={formModelValue}
+					modelValue={modelValue}
 					modelLoading={isEditing && isSubmitting}
 				>
 					{({ handleSubmit }) => (
@@ -52,23 +76,7 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk, tabState 
 				</FormFieldProvider>
 			</FormStyleProvider>
 
-			<Divider my={3} />
-
-			<Box>
-				<Text size='sm' c='dimmed' mb={3}>
-					{translate('nikki.vendingMachine.kiosk.fields.createdAt')}
-				</Text>
-				<Text size='sm'>{new Date(kiosk.createdAt).toLocaleString()}</Text>
-			</Box>
-
-			{kiosk.deletedAt && (
-				<Box>
-					<Text size='sm' c='dimmed' mb='xs'>
-						{translate('nikki.vendingMachine.kiosk.fields.deletedAt')}
-					</Text>
-					<Text size='sm'>{new Date(kiosk.deletedAt).toLocaleString()}</Text>
-				</Box>
-			)}
+			<KioskBasicInfoAuditDates kiosk={kiosk} />
 		</Stack>
 	);
 };
