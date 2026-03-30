@@ -48,9 +48,8 @@ export const AssignedKioskList: React.FC<AssignedKioskListProps> = ({
 	const getModeBadge = (mode: KioskMode) => {
 		const modeMap: Partial<Record<KioskMode, { color: string; label: string }>> = {
 			[KioskMode.PENDING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
-			[KioskMode.WAITING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 			[KioskMode.SELLING]: { color: 'blue', label: translate('nikki.vendingMachine.kiosk.mode.selling') },
-			[KioskMode.SLIDESHOWONLY]: { color: 'purple', label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
+			[KioskMode.SLIDESHOW_ONLY]: { color: 'purple', label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 		};
 		const modeInfo = modeMap[mode] ?? { color: 'gray', label: String(mode) };
 		return <Badge color={modeInfo.color} size='sm' variant='light'>{modeInfo.label}</Badge>;

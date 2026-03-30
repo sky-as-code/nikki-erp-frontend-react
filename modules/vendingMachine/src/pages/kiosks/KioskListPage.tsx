@@ -1,10 +1,9 @@
 import { ConfirmModal } from '@nikkierp/ui/components';
-import { useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { ControlPanel } from '@/components';
+import { ControlPanel, ControlPanelActionItem } from '@/components';
 import { ControlPanelProps, ViewMode } from '@/components/ControlPanel/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import {
@@ -25,22 +24,21 @@ import {
 
 export const KioskListPage: React.FC = () => {
 	const { t: translate } = useTranslation();
-	const { kiosks = [], isLoadingList, handleRefresh } = useKioskList();
+
+	const { kiosks = [], isLoadingList } = useKioskList();
 
 	const { filteredKiosks, filters, searchValue, setSearchValue } = useKioskFilter(kiosks);
 
 	const { isOpenPreview, handlePreview, handleClosePreview, selectedKiosk, isLoadingPreview } = useKioskPreview();
-
 	const { isOpenDeleteModal, handleOpenDeleteModal, handleCloseDeleteModal,
-		kioskToDelete, handleDelete: handleDeleteKiosk } = useKioskDelete(handleRefresh);
+		kioskToDelete, handleDelete: handleDeleteKiosk } = useKioskDelete();
 
-	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskPageConfig({ handleRefresh });
-
-	useDocumentTitle('nikki.vendingMachine.kiosk.title');
+	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskPageConfig();
 
 	return (
 		<>
 			<PageContainer
+				documentTitle={translate('nikki.vendingMachine.kiosk.title')}
 				breadcrumbs={breadcrumbs}
 				sections={[
 					<KioskListControlPanel
@@ -90,12 +88,13 @@ export const KioskListPage: React.FC = () => {
 
 
 interface KioskListControlPanelProps {
-	actions: ControlPanelProps['actions'];
+	actions: ControlPanelActionItem[];
+	viewMode: KioskListViewMode;
+	setViewMode: (value: KioskListViewMode) => void;
+	//
 	searchValue: string;
 	setSearchValue: (value: string) => void;
 	filters: ControlPanelProps['filters'];
-	viewMode: KioskListViewMode;
-	setViewMode: (value: KioskListViewMode) => void;
 }
 const KioskListControlPanel: React.FC<KioskListControlPanelProps> =
 	({ actions, searchValue, setSearchValue, filters, viewMode, setViewMode }) => {
@@ -118,7 +117,6 @@ const KioskListControlPanel: React.FC<KioskListControlPanelProps> =
 			/>
 		);
 	};
-
 
 
 interface KioskListPageContentProps {
@@ -152,7 +150,7 @@ const KioskListPageContent: React.FC<KioskListPageContentProps> =
 
 		const kioskMapView = useMemo(() => (
 			<KioskMapView kiosks={kiosks} />
-		), [kiosks]);
+		), [kiosks, isLoading]);
 
 		const pageContent = useMemo(() => {
 			const views: Partial<Record<ViewMode, React.ReactNode>> = {

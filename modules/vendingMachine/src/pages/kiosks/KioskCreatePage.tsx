@@ -75,7 +75,7 @@ export const KioskCreatePage: React.FC = () => {
 								noValidate
 								style={{ display: 'contents' }}
 							/>
-							<KioskFormFields key='kiosk-form-fields' isCreate />
+							<KioskFormFields key='kiosk-form-fields' mode='create' />
 						</>
 					)}
 				</FormFieldProvider>

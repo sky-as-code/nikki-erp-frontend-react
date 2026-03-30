@@ -1,283 +1,204 @@
 /* eslint-disable max-lines-per-function */
-import { Box, Button, Card, Group, Select, Stack, Text } from '@mantine/core';
-import { IconDeviceGamepad2, IconPalette, IconPhoto, IconPlus } from '@tabler/icons-react';
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Stack } from '@mantine/core';
+import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Controller, UseFormReturn } from 'react-hook-form';
 
-import { GamePreviewCard } from '@/features/events/components/EventDetailDrawer/GamePreviewCard';
-import { GameSelectModal } from '@/features/events/components/EventDetailDrawer/GameSelectModal';
-import { SlideshowCard } from '@/features/events/components/EventDetailDrawer/SlideshowCard';
-import { SlideshowSelectModal } from '@/features/events/components/EventDetailDrawer/SlideshowSelectModal';
-import { ThemePreviewCard } from '@/features/events/components/EventDetailDrawer/ThemePreviewCard';
-import { ThemeSelectModal } from '@/features/events/components/EventDetailDrawer/ThemeSelectModal';
 import { Game } from '@/features/games/types';
-import { InterfaceMode } from '@/features/kioskModels/types';
+import { kioskToSettingFormValues, pickEntityById, type KioskSettingFormData } from '@/features/kiosks/kioskSettingForm';
 import { Kiosk } from '@/features/kiosks/types';
 import { Slideshow } from '@/features/slideshow/types';
 import { Theme } from '@/features/themes/types';
 
+import { GameSelect } from './GameSelect';
+import { InterfaceModeSelect } from './InterfaceModeSelect';
+import { SlideshowSelect } from './SlideshowSelect';
+import { ThemeSelect } from './ThemeSelect';
+
+import type { KioskSettingTabState } from './hooks/types';
+
 
 interface KioskSettingProps {
 	kiosk: Kiosk;
-	tabState: {
-		isEditing: boolean;
-	};
+	tabState: KioskSettingTabState;
 }
 
-export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk: _kiosk, tabState }) => {
-	const { isEditing } = tabState;
+type PickerDraft = {
+	waitingSlideshow?: Slideshow;
+	shoppingSlideshow?: Slideshow;
+	theme?: Theme;
+	game?: Game;
+};
 
-	const { t: translate } = useTranslation();
-	const [selectedInterfaceMode, setSelectedInterfaceMode] = useState<InterfaceMode | undefined>(undefined);
-	const [idlePlaylist, setIdlePlaylist] = useState<Slideshow | undefined>(undefined);
-	const [shoppingPlaylist, setShoppingPlaylist] = useState<Slideshow | undefined>(undefined);
-	const [selectedTheme, setSelectedTheme] = useState<Theme | undefined>(undefined);
-	const [selectedGame, setSelectedGame] = useState<Game | undefined>(undefined);
+type KioskSettingInnerProps = {
+	isEditing: boolean;
+	formId: string;
+	onFormSubmit: (data: KioskSettingFormData) => void | Promise<void>;
+	reset: UseFormReturn<KioskSettingFormData>['reset'];
+	form: UseFormReturn<KioskSettingFormData>;
+	modelValue: KioskSettingFormData;
+	registerResetForm: (fn: () => void) => void;
+	kiosk: Kiosk;
+};
 
-	const [slideshowSelectModalOpened, setSlideshowSelectModalOpened] = useState(false);
-	const [playlistType, setPlaylistType] = useState<'idle' | 'shopping'>('idle');
-	const [themeSelectModalOpened, setThemeSelectModalOpened] = useState(false);
-	const [gameSelectModalOpened, setGameSelectModalOpened] = useState(false);
+const KioskSettingInner: React.FC<KioskSettingInnerProps> = ({
+	isEditing,
+	formId,
+	onFormSubmit,
+	reset,
+	form,
+	modelValue,
+	registerResetForm,
+	kiosk,
+}) => {
+	const [pickerDraft, setPickerDraft] = useState<PickerDraft>({});
+	const draftSnapshotRef = useRef<PickerDraft>({});
+	const wasEditingRef = useRef(false);
 
+	const waitingPlaylistId = form.watch('waitingPlaylistId');
+	const shoppingPlaylistId = form.watch('shoppingPlaylistId');
+	const themeId = form.watch('themeId');
+	const gameId = form.watch('gameId');
 
-	const handleOpenSlideshowSelect = (type: 'idle' | 'shopping') => {
-		setPlaylistType(type);
-		setSlideshowSelectModalOpened(true);
-	};
+	const waitingSlideshowValue = useMemo(
+		() => pickEntityById(waitingPlaylistId, kiosk.waitingPlaylist, pickerDraft.waitingSlideshow),
+		[waitingPlaylistId, kiosk.waitingPlaylist, pickerDraft.waitingSlideshow],
+	);
 
-	const handleSelectSlideshows = (slideshows: Slideshow[]) => {
-		if (slideshows.length > 0) {
-			if (playlistType === 'idle') {
-				setIdlePlaylist(slideshows[0]);
-			}
-			else {
-				setShoppingPlaylist(slideshows[0]);
-			}
+	const shoppingSlideshowValue = useMemo(
+		() => pickEntityById(shoppingPlaylistId, kiosk.shoppingPlaylist, pickerDraft.shoppingSlideshow),
+		[shoppingPlaylistId, kiosk.shoppingPlaylist, pickerDraft.shoppingSlideshow],
+	);
+
+	const themeValue = useMemo(
+		() => pickEntityById(themeId, kiosk.theme, pickerDraft.theme),
+		[themeId, kiosk.theme, pickerDraft.theme],
+	);
+
+	const gameValue = useMemo(
+		() => pickEntityById(gameId, kiosk.game, pickerDraft.game),
+		[gameId, kiosk.game, pickerDraft.game],
+	);
+
+	useEffect(() => {
+		if (isEditing && !wasEditingRef.current) {
+			draftSnapshotRef.current = { ...pickerDraft };
 		}
-		setSlideshowSelectModalOpened(false);
-	};
+		wasEditingRef.current = isEditing;
+	}, [isEditing, pickerDraft]);
 
-	const handleSelectTheme = (theme: Theme) => {
-		setSelectedTheme(theme);
-		setThemeSelectModalOpened(false);
-	};
+	const applyPickerDraft = useCallback((draft: PickerDraft) => {
+		setPickerDraft(draft);
+	}, []);
 
-	const handleSelectGame = (game: Game) => {
-		setSelectedGame(game);
-		setGameSelectModalOpened(false);
-	};
-
-	const handleRemoveIdlePlaylist = () => {
-		setIdlePlaylist(undefined);
-	};
-
-	const handleRemoveShoppingPlaylist = () => {
-		setShoppingPlaylist(undefined);
-	};
-
-	const handleRemoveTheme = () => {
-		setSelectedTheme(undefined);
-	};
-
-	const handleRemoveGame = () => {
-		setSelectedGame(undefined);
-	};
-
-	const getInterfaceModeLabel = (mode: InterfaceMode | undefined) => {
-		if (!mode) return '-';
-		const modeMap = {
-			normal: translate('nikki.vendingMachine.kioskModels.interfaceMode.normal'),
-			focus: translate('nikki.vendingMachine.kioskModels.interfaceMode.focus'),
-		};
-		return modeMap[mode] || mode;
-	};
+	useEffect(() => {
+		registerResetForm(() => {
+			reset(modelValue);
+			applyPickerDraft({ ...draftSnapshotRef.current });
+		});
+	}, [registerResetForm, reset, modelValue, applyPickerDraft]);
 
 	return (
 		<Stack gap='md'>
-			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.kioskModels.fields.interfaceMode')}
-				</Text>
-				{isEditing ? (
-					<Select
-						value={selectedInterfaceMode || null}
-						onChange={(value) => setSelectedInterfaceMode(value as InterfaceMode | undefined)}
-						placeholder={translate('nikki.vendingMachine.kioskModels.fields.interfaceMode')}
-						data={[
-							{ value: 'normal', label: translate('nikki.vendingMachine.kioskModels.interfaceMode.normal') },
-							{ value: 'focus', label: translate('nikki.vendingMachine.kioskModels.interfaceMode.focus') },
-						]}
-						clearable
+			{isEditing && (
+				<form
+					id={formId}
+					onSubmit={form.handleSubmit(onFormSubmit)}
+					noValidate
+					style={{ display: 'contents' }}
+				/>
+			)}
+
+			<Controller
+				control={form.control}
+				name='interfaceMode'
+				render={({ field }) => (
+					<InterfaceModeSelect
+						value={field.value}
+						onChange={field.onChange}
+						isEditing={isEditing}
 					/>
-				) : (
-					<Box p='xs' style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
-						<Text size='sm'>{getInterfaceModeLabel(selectedInterfaceMode)}</Text>
-					</Box>
 				)}
-			</div>
-
-			{/* Idle Playlist (Màn hình chờ) */}
-			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.events.fields.idlePlaylist')}
-				</Text>
-				{idlePlaylist ? (
-					<SlideshowCard
-						slideshow={idlePlaylist}
-						onRemove={isEditing ? handleRemoveIdlePlaylist : undefined}
-					/>
-				) : (
-					<Card withBorder p='sm' radius='md'>
-						<Group gap='xs' justify='space-between'>
-							<Box>
-								<Group gap='xs' mb='sm'>
-									<IconPhoto size={20} />
-									<Text size='sm' fw={500}>
-										{translate('nikki.vendingMachine.events.playlist.idleScreen')}
-									</Text>
-								</Group>
-								<Text size='sm' c='dimmed'>
-									{translate('nikki.vendingMachine.events.messages.no_idle_playlist')}
-								</Text>
-							</Box>
-							{isEditing && (
-								<Button
-									size='xs'
-									leftSection={<IconPlus size={14} />}
-									onClick={() => handleOpenSlideshowSelect('idle')}
-								>
-									{translate('nikki.vendingMachine.events.playlist.selectSlideshows')}
-								</Button>
-							)}
-						</Group>
-					</Card>
-				)}
-			</div>
-
-			{/* Shopping Playlist (Màn hình mua hàng) */}
-			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.events.fields.shoppingPlaylist')}
-				</Text>
-				{shoppingPlaylist ? (
-					<SlideshowCard
-						slideshow={shoppingPlaylist}
-						onRemove={isEditing ? handleRemoveShoppingPlaylist : undefined}
-					/>
-				) : (
-					<Card withBorder p='sm' radius='md'>
-						<Group gap='xs' justify='space-between'>
-							<Box>
-								<Group gap='xs' mb='sm'>
-									<IconPhoto size={20} />
-									<Text size='sm' fw={500}>
-										{translate('nikki.vendingMachine.events.playlist.shoppingScreen')}
-									</Text>
-								</Group>
-								<Text size='sm' c='dimmed'>
-									{translate('nikki.vendingMachine.events.messages.no_shopping_playlist')}
-								</Text>
-							</Box>
-							{isEditing && (
-								<Button
-									size='xs'
-									leftSection={<IconPlus size={14} />}
-									onClick={() => handleOpenSlideshowSelect('shopping')}
-								>
-									{translate('nikki.vendingMachine.events.playlist.selectSlideshows')}
-								</Button>
-							)}
-						</Group>
-					</Card>
-				)}
-			</div>
-
-			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.events.fields.theme')}
-				</Text>
-				{selectedTheme ? (
-					<ThemePreviewCard theme={selectedTheme} onRemove={isEditing ? handleRemoveTheme : undefined} />
-				) : (
-					<Card withBorder p='sm' radius='md'>
-						<Group gap='xs' justify='space-between'>
-							<Box>
-								<Group gap='xs' mb='sm'>
-									<IconPalette size={20} />
-									<Text size='sm' fw={500}>
-										{translate('nikki.vendingMachine.events.fields.theme')}
-									</Text>
-								</Group>
-								<Text size='sm' c='dimmed'>
-									{translate('nikki.vendingMachine.events.messages.no_theme')}
-								</Text>
-							</Box>
-							{isEditing && (
-								<Button
-									size='xs'
-									leftSection={<IconPlus size={14} />}
-									onClick={() => setThemeSelectModalOpened(true)}
-								>
-									{translate('nikki.vendingMachine.events.selectTheme.selectTheme')}
-								</Button>
-							)}
-						</Group>
-					</Card>
-				)}
-			</div>
-
-			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.events.fields.game')}
-				</Text>
-				{selectedGame ? (
-					<GamePreviewCard game={selectedGame} onRemove={isEditing ? handleRemoveGame : undefined} />
-				) : (
-					<Card withBorder p='sm' radius='md'>
-						<Group gap='xs' justify='space-between'>
-							<Box>
-								<Group gap='xs' mb='sm'>
-									<IconDeviceGamepad2 size={20} />
-									<Text size='sm' fw={500}>
-										{translate('nikki.vendingMachine.events.fields.game')}
-									</Text>
-								</Group>
-								<Text size='sm' c='dimmed'>
-									{translate('nikki.vendingMachine.events.messages.no_game')}
-								</Text>
-							</Box>
-							{isEditing && (
-								<Button
-									size='xs'
-									leftSection={<IconPlus size={14} />}
-									onClick={() => setGameSelectModalOpened(true)}
-								>
-									{translate('nikki.vendingMachine.events.selectGame.selectGame')}
-								</Button>
-							)}
-						</Group>
-					</Card>
-				)}
-			</div>
-
-			{/* Modals */}
-			<SlideshowSelectModal
-				opened={slideshowSelectModalOpened}
-				onClose={() => setSlideshowSelectModalOpened(false)}
-				onSelectSlideshows={handleSelectSlideshows}
 			/>
 
-			<ThemeSelectModal
-				opened={themeSelectModalOpened}
-				onClose={() => setThemeSelectModalOpened(false)}
-				onSelectTheme={handleSelectTheme}
+			<SlideshowSelect
+				type='waiting'
+				value={waitingSlideshowValue}
+				onChange={(next) => {
+					form.setValue('waitingPlaylistId', next?.id);
+					setPickerDraft((d) => ({ ...d, waitingSlideshow: next }));
+				}}
+				isEditing={isEditing}
 			/>
 
-			<GameSelectModal
-				opened={gameSelectModalOpened}
-				onClose={() => setGameSelectModalOpened(false)}
-				onSelectGame={handleSelectGame}
+			<SlideshowSelect
+				type='shopping'
+				value={shoppingSlideshowValue}
+				onChange={(next) => {
+					form.setValue('shoppingPlaylistId', next?.id);
+					setPickerDraft((d) => ({ ...d, shoppingSlideshow: next }));
+				}}
+				isEditing={isEditing}
+			/>
+
+			<ThemeSelect
+				value={themeValue}
+				onChange={(next) => {
+					form.setValue('themeId', next?.id);
+					setPickerDraft((d) => ({ ...d, theme: next }));
+				}}
+				isEditing={isEditing}
+			/>
+
+			<GameSelect
+				value={gameValue}
+				onChange={(next) => {
+					form.setValue('gameId', next?.id);
+					setPickerDraft((d) => ({ ...d, game: next }));
+				}}
+				isEditing={isEditing}
 			/>
 		</Stack>
+	);
+};
+
+export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk, tabState }) => {
+	const {
+		isEditing,
+		formId,
+		modelSchema,
+		isSubmitting,
+		onFormSubmit,
+		registerResetForm,
+	} = tabState;
+
+	const modelValue = useMemo(
+		() => kioskToSettingFormValues(kiosk),
+		[kiosk.id, kiosk.etag],
+	);
+
+	return (
+		<FormStyleProvider layout='onecol'>
+			<FormFieldProvider
+				key={`${kiosk.id}-${kiosk.etag}-kiosk-setting`}
+				formVariant='update'
+				modelSchema={modelSchema}
+				modelValue={modelValue}
+				modelLoading={isEditing && isSubmitting}
+			>
+				{({ reset, form }) => (
+					<KioskSettingInner
+						isEditing={isEditing}
+						formId={formId}
+						onFormSubmit={(data) => onFormSubmit(data as KioskSettingFormData)}
+						reset={reset}
+						form={form}
+						modelValue={modelValue}
+						registerResetForm={registerResetForm}
+						kiosk={kiosk}
+					/>
+				)}
+			</FormFieldProvider>
+		</FormStyleProvider>
 	);
 };

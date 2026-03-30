@@ -17,11 +17,13 @@ function useSubmitHandler(
 	translate: ReturnType<typeof useTranslation>['t'],
 	navigate: ReturnType<typeof useNavigate>,
 	location: ReturnType<typeof useLocation>,
+	onUpdateSuccess?: () => void,
 ) {
 	const updateKiosk = useMicroAppSelector(selectUpdateKiosk);
 
 	React.useEffect(() => {
 		if (updateKiosk.status === 'success') {
+			onUpdateSuccess?.();
 			notification.showInfo(
 				translate('nikki.vendingMachine.kiosk.messages.update_success', { name: updateKiosk.data?.name }),
 				translate('nikki.general.messages.success'),
@@ -47,7 +49,7 @@ function useSubmitHandler(
 	};
 }
 
-export function useKioskEdit(kiosk: Kiosk | undefined) {
+export function useKioskEdit(kiosk: Kiosk | undefined, options?: { onUpdateSuccess?: () => void }) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
@@ -61,6 +63,7 @@ export function useKioskEdit(kiosk: Kiosk | undefined) {
 		translate,
 		navigate,
 		location,
+		options?.onUpdateSuccess,
 	);
 
 	return {

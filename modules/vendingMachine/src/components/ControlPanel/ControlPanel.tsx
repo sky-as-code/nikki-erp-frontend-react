@@ -1,7 +1,7 @@
 import { Group } from '@mantine/core';
 import React from 'react';
 
-import { ControlPanelAction, ControlPanelActionProps } from './ControlPanelAction';
+import { ControlPanelAction, type ControlPanelActionItem } from './ControlPanelAction';
 import { ControlPanelFilter } from './ControlPanelFilter';
 import { ControlPanelViewMode, ControlPanelViewModeProps } from './ControlPanelViewMode';
 
@@ -11,8 +11,9 @@ import type { ControlPanelFilterConfig } from './types';
 export type { ViewMode, ControlPanelFilterConfig } from './types';
 
 export interface ControlPanelProps {
-	actions?: ControlPanelActionProps['actions'];
+	actions?: ControlPanelActionItem[];
 	viewMode?: ControlPanelViewModeProps;
+	//
 	filters?: ControlPanelFilterConfig[];
 	search?: {
 		value?: string;

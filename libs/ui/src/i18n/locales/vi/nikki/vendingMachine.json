@@ -246,6 +246,7 @@
 			"update_success": "Kiosk \"{{name}}\" đã được cập nhật thành công",
 			"delete_success": "Kiosk đã được xóa thành công",
 			"delete_confirm": "Bạn có chắc chắn muốn xóa Kiosk \"{{name}}\"?",
+			"invalid_coordinates": "Vĩ độ hoặc kinh độ không hợp lệ. Vui lòng nhập số đúng.",
 			"not_found": {
 				"title": "Không tìm thấy Kiosk",
 				"message": "Kiosk bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
@@ -277,7 +278,8 @@
 			"status": "Lọc theo trạng thái"
 		},
 		"messages": {
-			"no_slideshows": "Không tìm thấy trình chiếu nào"
+			"no_slideshows": "Không tìm thấy trình chiếu nào",
+			"no_playlists_found": "Không tìm thấy danh sách trình chiếu nào"
 		},
 		"preview": {
 			"title": "Xem trước",

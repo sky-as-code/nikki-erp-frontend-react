@@ -1,7 +1,9 @@
+import { IconArrowLeft } from '@tabler/icons-react';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
-import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
+import { ControlPanelActionItem, ControlPanelProps } from '@/components/ControlPanel';
 
 import { useActivityTab } from './useActivityTab';
 import { useBasicInfoTab } from './useBasicInfoTab';
@@ -13,8 +15,10 @@ import { KioskBasicInfo } from '../KioskBasicInfo';
 import { KioskSetting } from '../KioskSetting';
 import { ProductGridView } from '../ProductGridView';
 import { ProductListView } from '../ProductListView';
+import { useKioskDetailBreadcrumbs } from './useKioskDetailBreadcrumbs';
 
-import type { TabHookReturn, TabId, UseKioskDetailTabsProps, UseKioskDetailTabsReturn } from './types';
+import type { TabHookReturn, TabId, UseKioskDetailPageConfigProps, UseKioskDetailPageConfigReturn } from './types';
+
 
 
 type DetailTabConfig = {
@@ -23,13 +27,17 @@ type DetailTabConfig = {
 	content: () => React.ReactNode;
 };
 
-export const useKioskDetailTabs = ({
+export const useKioskDetailPageConfig = ({
 	kiosk,
 	activeTab,
-}: UseKioskDetailTabsProps): UseKioskDetailTabsReturn => {
+	onOpenDeleteKiosk,
+}: UseKioskDetailPageConfigProps): UseKioskDetailPageConfigReturn => {
 	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
 
-	const basicInfoTab = useBasicInfoTab(kiosk);
+	const breadcrumbs = useKioskDetailBreadcrumbs({ kiosk });
+
+	const basicInfoTab = useBasicInfoTab(kiosk, onOpenDeleteKiosk);
 	const kioskSettingTab = useKioskSettingTab(kiosk);
 	const productsListTab = useProductsListTab(kiosk);
 	const productsGridTab = useProductsGridTab(kiosk);
@@ -74,10 +82,19 @@ export const useKioskDetailTabs = ({
 	] : [];
 
 
+	const commonActions = useMemo<ControlPanelActionItem[]>(() => {
+		return [{
+			label: translate('nikki.general.actions.back'),
+			onClick: () => navigate('../kiosks'),
+			leftSection: <IconArrowLeft size={16} />,
+			variant: 'outline',
+		}];
+	}, [translate, navigate]);
+
 	const getTabActions = useCallback((tabId: TabId): ControlPanelProps['actions'] => {
 		const tabActions = tabHooks[tabId]?.actions ?? [];
-		return tabActions;
-	}, [tabHooks]);
+		return kiosk ? [...commonActions, ...tabActions] : tabActions;
+	}, [tabHooks, kiosk, commonActions]);
 
 	const getTabHandlers = useCallback((tabId: TabId): Record<string, (...args: any[]) => void> => {
 		return tabHooks[tabId]?.handlers ?? {};
@@ -88,7 +105,8 @@ export const useKioskDetailTabs = ({
 	}, [tabHooks]);
 
 	return {
-		tabs,
+		breadcrumbs: breadcrumbs ?? [],
+		tabs: tabs ?? [],
 		tabState: getTabState(activeTab) ?? {},
 		actions: getTabActions(activeTab) ?? [],
 		handlers: getTabHandlers(activeTab) ?? {},

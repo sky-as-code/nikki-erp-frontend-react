@@ -2,7 +2,7 @@ import { IconDeviceFloppy, IconEdit, IconFileDownloadFilled, IconX } from '@tabl
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
+import { ControlPanelProps } from '@/components/ControlPanel';
 import { Kiosk } from '@/features/kiosks';
 
 import type { TabHookReturn } from './types';

@@ -18,7 +18,7 @@ export function OperationStatusChart({ kiosks, h = '100%' }: OperationStatusChar
 	const { t: translate } = useTranslation();
 
 	const sellingCount = kiosks.filter((k) => k.mode === KioskMode.SELLING).length;
-	const slideshowOnlyCount = kiosks.filter((k) => k.mode === KioskMode.SLIDESHOWONLY).length;
+	const slideshowOnlyCount = kiosks.filter((k) => k.mode === KioskMode.SLIDESHOW_ONLY).length;
 	const pendingCount = kiosks.filter((k) => k.mode === KioskMode.PENDING).length;
 
 	const data = {

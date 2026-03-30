@@ -12,6 +12,7 @@ export interface DetailControlPanelProps {
 	onDelete?: () => void;
 }
 
+//! @deprecated Use ControlPanel.sections with ControlPanelAction instead
 export const DetailControlPanel: React.FC<DetailControlPanelProps> = ({
 	onSave,
 	onGoBack,
