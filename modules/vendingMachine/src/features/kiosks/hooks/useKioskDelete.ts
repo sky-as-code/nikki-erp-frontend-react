@@ -3,9 +3,10 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appState';
+
 import { type Kiosk } from '../types';
 
-import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appState';
 
 
 
@@ -18,19 +19,20 @@ export const useKioskDelete = () => {
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
 
-	const handleOpenDeleteModal = (kiosk: Kiosk) => {
+	const openDeleteModal = React.useCallback((kiosk: Kiosk) => {
 		setKioskToDelete(kiosk);
 		setIsOpenDeleteModal(true);
-	};
+	}, []);
 
-	const handleCloseDeleteModal = () => {
+	const closeDeleteModal = React.useCallback(() => {
 		setIsOpenDeleteModal(false);
 		setKioskToDelete(null);
-	};
+	}, []);
 
-	const handleDelete = React.useCallback((kioskId: string) => {
-		dispatch(kioskActions.deleteKiosk({ id: kioskId }));
-	}, [dispatch]);
+	const handleDelete = React.useCallback(() => {
+		if (!kioskToDelete) return;
+		dispatch(kioskActions.deleteKiosk({ id: kioskToDelete?.id || '' }));
+	}, [dispatch, kioskToDelete]);
 
 	useEffect(() => {
 		if (deleteState.status === 'success') {
@@ -55,8 +57,8 @@ export const useKioskDelete = () => {
 
 	return {
 		handleDelete,
-		handleOpenDeleteModal,
-		handleCloseDeleteModal,
+		openDeleteModal,
+		closeDeleteModal,
 		isOpenDeleteModal,
 		kioskToDelete,
 	};

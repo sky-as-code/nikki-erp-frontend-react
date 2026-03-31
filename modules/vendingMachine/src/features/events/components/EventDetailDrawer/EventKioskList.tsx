@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AssignedKioskList, AssignedKioskListProps } from '@/components/AssignedKioskList';
+import { AssignedKioskList, AssignedKioskListProps } from '@/components/AssignKiosks';
 
 
 /** Wrapper cho màn chi tiết sự kiện — dùng copy i18n của events. */

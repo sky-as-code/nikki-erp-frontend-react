@@ -30,8 +30,8 @@ export const KioskListPage: React.FC = () => {
 	const { filteredKiosks, filters, searchValue, setSearchValue } = useKioskFilter(kiosks);
 
 	const { isOpenPreview, handlePreview, handleClosePreview, selectedKiosk, isLoadingPreview } = useKioskPreview();
-	const { isOpenDeleteModal, handleOpenDeleteModal, handleCloseDeleteModal,
-		kioskToDelete, handleDelete: handleDeleteKiosk } = useKioskDelete();
+
+	const { isOpenDeleteModal, openDeleteModal, closeDeleteModal, kioskToDelete, handleDelete } = useKioskDelete();
 
 	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskPageConfig();
 
@@ -59,15 +59,15 @@ export const KioskListPage: React.FC = () => {
 					isLoading={isLoadingList}
 					viewMode={viewMode}
 					handlePreview={handlePreview}
-					handleDelete={handleOpenDeleteModal}
+					handleDelete={openDeleteModal}
 				/>
 			</PageContainer>
 
 			<ConfirmModal
 				title={translate('nikki.general.messages.delete_confirm')}
 				opened={!!kioskToDelete && isOpenDeleteModal}
-				onClose={handleCloseDeleteModal}
-				onConfirm={() => handleDeleteKiosk(kioskToDelete?.id || '')}
+				onClose={closeDeleteModal}
+				onConfirm={handleDelete}
 				message={<Trans i18nKey='nikki.vendingMachine.kiosk.messages.delete_confirm'
 					values={{ name: kioskToDelete?.name || '' }}
 					components={{ strong: <strong /> }}

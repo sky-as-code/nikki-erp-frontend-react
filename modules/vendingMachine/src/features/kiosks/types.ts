@@ -1,8 +1,10 @@
-import type { InterfaceMode } from '../kioskModels/types';
-import type { Game } from '../games/types';
 import { Slideshow } from '../slideshow/types';
+
+import type { Game } from '../games/types';
 import type { Theme } from '../themes/types';
 
+
+export type UIMode = 'normal' | 'focus';
 
 export enum KioskStatus {
 	DISABLED = 'disabled',
@@ -151,7 +153,7 @@ export interface Kiosk {
 	/** Optional: enabled payment methods */
 	paymentMethodIds?: string[];
 
-	interfaceMode?: InterfaceMode;
+	uiMode?: UIMode;
 	waitingPlaylist?: Slideshow;
 	shoppingPlaylist?: Slideshow;
 	theme?: Theme;

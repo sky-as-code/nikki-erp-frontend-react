@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { GameConfig } from '@/components/GameConfig';
+import { GameSelect } from '@/components/GameSelect';
 
 import { Game } from '../../../games/types';
 
@@ -14,14 +14,19 @@ export interface EventGameConfigProps {
 
 export const EventGameConfig: React.FC<EventGameConfigProps> = ({
 	game,
-	gameId,
 	onGameChange,
 	onGameRemove,
 }) => (
-	<GameConfig
-		game={game}
-		gameId={gameId}
-		onChange={onGameChange}
-		onRemove={onGameRemove}
+	<GameSelect
+		value={game}
+		onChange={(v) => {
+			if (v) {
+				onGameChange?.(v);
+			}
+			else {
+				onGameRemove?.();
+			}
+		}}
+		isEditing={Boolean(onGameChange)}
 	/>
 );

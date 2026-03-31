@@ -3,40 +3,37 @@ import { IconDeviceGamepad2, IconPlus } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { GamePreviewCard } from '@/features/events/components/EventDetailDrawer/GamePreviewCard';
-import { GameSelectModal } from '@/features/events/components/EventDetailDrawer/GameSelectModal';
-import { Game } from '@/features/games/types';
+import { GamePreviewCard } from './GamePreviewCard';
+import { GameSelectModal } from './GameSelectModal';
+
+import type { Game } from '@/features/games/types';
 
 
-export interface GameConfigProps {
-	game?: Game;
-	gameId?: string;
-	onChange?: (game: Game) => void;
+export interface GameSelectProps {
+	isEditing: boolean;
+	value: Game | undefined;
+	onChange: (value: Game | undefined) => void;
 	onRemove?: () => void;
 }
 
-export const GameConfig: React.FC<GameConfigProps> = ({
-	game,
-	gameId,
+export const GameSelect: React.FC<GameSelectProps> = ({
+	value,
 	onChange,
 	onRemove,
+	isEditing,
 }) => {
 	const { t: translate } = useTranslation();
-	const [gameSelectModalOpened, setGameSelectModalOpened] = useState(false);
-
-	const handleSelectGame = (selectedGame: Game) => {
-		onChange?.(selectedGame);
-	};
+	const [modalOpened, setModalOpened] = useState(false);
 
 	return (
 		<div>
-			<Text size='sm' c='dimmed' mb='xs' fw={500}>
+			<Text size='sm' c='dimmed' mb={3} fw={500}>
 				{translate('nikki.vendingMachine.events.fields.game')}
 			</Text>
-			{game ? (
+			{value ? (
 				<GamePreviewCard
-					game={game}
-					onRemove={onRemove}
+					game={value}
+					onRemove={isEditing && onRemove ? onRemove : undefined}
 				/>
 			) : (
 				<Card withBorder p='sm' radius='md'>
@@ -48,16 +45,15 @@ export const GameConfig: React.FC<GameConfigProps> = ({
 									{translate('nikki.vendingMachine.events.fields.game')}
 								</Text>
 							</Group>
-
 							<Text size='sm' c='dimmed'>
 								{translate('nikki.vendingMachine.events.messages.no_game')}
 							</Text>
 						</Box>
-						{onChange && (
+						{isEditing && (
 							<Button
 								size='xs'
 								leftSection={<IconPlus size={14} />}
-								onClick={() => setGameSelectModalOpened(true)}
+								onClick={() => setModalOpened(true)}
 							>
 								{translate('nikki.vendingMachine.events.selectGame.selectGame')}
 							</Button>
@@ -67,10 +63,12 @@ export const GameConfig: React.FC<GameConfigProps> = ({
 			)}
 
 			<GameSelectModal
-				opened={gameSelectModalOpened}
-				onClose={() => setGameSelectModalOpened(false)}
-				onSelectGame={handleSelectGame}
-				selectedGameId={gameId || game?.id}
+				opened={modalOpened}
+				onClose={() => setModalOpened(false)}
+				onSelectGame={(game) => {
+					onChange(game);
+					setModalOpened(false);
+				}}
 			/>
 		</div>
 	);

@@ -1,10 +1,9 @@
 import { IconDeviceFloppy, IconEdit, IconFileDownloadFilled, IconX } from '@tabler/icons-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ControlPanelProps } from '@/components/ControlPanel';
-
-import { useRegisterKioskDetailTab } from './KioskDetailTabControlContext';
+import { useRegisterKioskDetailTab } from '@/features/kiosks/components/KioskDetail/kioskDetailTabControl';
 
 
 export function buildProductsGridActions(
@@ -45,12 +44,13 @@ export function buildProductsGridActions(
 }
 
 export type UseProductsGridTabArgs = {
-	translate: ReturnType<typeof useTranslation>['t'];
 	onResetGrid: () => void;
 };
 
 export type UseProductsGridTabReturn = {
 	isEditing: boolean;
+	/** `true` khi React đang render lại grid ở background sau khi toggle edit mode. */
+	isPending: boolean;
 	handleEdit: () => void;
 	handleSave: () => void;
 	handleCancel: () => void;
@@ -58,26 +58,28 @@ export type UseProductsGridTabReturn = {
 	handleLoadAll: () => void;
 };
 
-export function useProductsGridTab({ translate, onResetGrid }: UseProductsGridTabArgs): UseProductsGridTabReturn {
+export function useProductsGridTab({ onResetGrid }: UseProductsGridTabArgs): UseProductsGridTabReturn {
 	const [isEditing, setIsEditing] = useState(false);
+	const [isPending, startTransition] = useTransition();
+	const { t: translate } = useTranslation();
 
 	const handleEdit = useCallback(() => {
-		setIsEditing(true);
-	}, []);
+		startTransition(() => setIsEditing(true));
+	}, [startTransition]);
 
 	const handleSave = useCallback(() => {
 		// TODO: Implement save logic
-		setIsEditing(false);
-	}, []);
+		startTransition(() => setIsEditing(false));
+	}, [startTransition]);
 
 	const handleCancel = useCallback(() => {
-		setIsEditing(false);
-	}, []);
+		startTransition(() => setIsEditing(false));
+	}, [startTransition]);
 
 	const handleDiscardChanges = useCallback(() => {
 		onResetGrid();
-		setIsEditing(false);
-	}, [onResetGrid]);
+		startTransition(() => setIsEditing(false));
+	}, [onResetGrid, startTransition]);
 
 	const handleLoadAll = useCallback(() => {
 		// TODO: Implement load all from API
@@ -92,6 +94,7 @@ export function useProductsGridTab({ translate, onResetGrid }: UseProductsGridTa
 
 	return {
 		isEditing,
+		isPending,
 		handleEdit,
 		handleSave,
 		handleCancel,

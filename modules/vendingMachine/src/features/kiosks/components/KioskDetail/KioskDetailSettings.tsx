@@ -3,17 +3,17 @@ import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import React from 'react';
 import { Controller, UseFormReturn } from 'react-hook-form';
 
-import { type KioskSettingFormData } from '@/features/kiosks/kioskSettingForm';
-import { Kiosk } from '@/features/kiosks/types';
+import { GameSelect } from '@/components/GameSelect';
+import { SlideshowSelect } from '@/components/SlideshowSelect';
+import { ThemeSelect } from '@/components/ThemeSelect';
+import { Kiosk, UIMode } from '@/features/kiosks/types';
 
-import { GameSelect } from './GameSelect';
+import { UIModeSelect } from '../UIModeSelect';
+import { type KioskSettingFormData } from './hooks/useKioskSettingTab';
 import { KioskSettingPickerValues, useKioskSettingTab, useKioskSettingTabForm } from './hooks/useKioskSettingTab';
-import { InterfaceModeSelect } from './InterfaceModeSelect';
-import { SlideshowSelect } from './SlideshowSelect';
-import { ThemeSelect } from './ThemeSelect';
 
 
-interface KioskSettingProps {
+interface KioskDetailSettingsProps {
 	kiosk: Kiosk;
 }
 
@@ -63,11 +63,11 @@ const KioskSettingFields: React.FC<KioskSettingFieldsProps> = ({
 		<Stack gap='md'>
 			<Controller
 				control={form.control}
-				name='interfaceMode'
+				name='uiMode'
 				render={({ field }) => (
-					<InterfaceModeSelect
-						value={field.value}
-						onChange={field.onChange}
+					<UIModeSelect
+						value={field.value as UIMode}
+						onChange={(value) => field.onChange(value as UIMode)}
 						isEditing={isEditing}
 					/>
 				)}
@@ -102,7 +102,7 @@ const KioskSettingFields: React.FC<KioskSettingFieldsProps> = ({
 	);
 };
 
-export const KioskSetting: React.FC<KioskSettingProps> = ({ kiosk }) => {
+export const KioskDetailSettings: React.FC<KioskDetailSettingsProps> = ({ kiosk }) => {
 	const {
 		isEditing,
 		setIsEditing,

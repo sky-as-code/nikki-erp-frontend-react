@@ -2,16 +2,16 @@ import { Box, Select, Text } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { InterfaceMode } from '@/features/kioskModels/types';
+import type { UIMode } from '../../types';
 
 
-export interface InterfaceModeSelectProps {
-	value: InterfaceMode | undefined;
-	onChange: (value: InterfaceMode | undefined) => void;
+export interface UIModeSelectProps {
+	value: UIMode | undefined;
+	onChange: (value: UIMode | undefined) => void;
 	isEditing: boolean;
 }
 
-export const InterfaceModeSelect: React.FC<InterfaceModeSelectProps> = ({
+export const UIModeSelect: React.FC<UIModeSelectProps> = ({
 	value,
 	onChange,
 	isEditing,
@@ -25,7 +25,7 @@ export const InterfaceModeSelect: React.FC<InterfaceModeSelectProps> = ({
 			</Text>
 			<Select
 				value={value ?? null}
-				onChange={(v) => onChange(v === null ? undefined : (v as InterfaceMode))}
+				onChange={(v) => onChange(v === null ? undefined : (v as UIMode))}
 				placeholder={translate('nikki.vendingMachine.kioskModels.fields.interfaceMode')}
 				data={[
 					{ value: 'normal', label: translate('nikki.vendingMachine.kioskModels.interfaceMode.normal') },

@@ -1,39 +1,31 @@
 import { IconArrowLeft } from '@tabler/icons-react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { ControlPanelActionItem, ControlPanelProps } from '@/components/ControlPanel';
+import { ControlPanelActionItem } from '@/components/ControlPanel';
+import { useKioskDetailTabControl } from '@/features/kiosks/components/KioskDetail/kioskDetailTabControl';
+import { Kiosk } from '@/features/kiosks/types';
 
-import { useKioskDetailTabControl } from './KioskDetailTabControlContext';
 import { KioskActivity } from '../KioskActivity';
 import { KioskBasicInfo } from '../KioskBasicInfo';
-import { KioskSetting } from '../KioskSetting';
+import { KioskDetailSettings } from '../KioskDetailSettings';
 import { ProductGridView } from '../ProductGridView';
 import { ProductListView } from '../ProductListView';
 import { useKioskDetailBreadcrumbs } from './useKioskDetailBreadcrumbs';
 
-import type { TabId, UseKioskDetailPageConfigProps, UseKioskDetailPageConfigReturn } from './types';
+import type { KioskDetailTabId, UseKioskDetailPageConfigProps, UseKioskDetailPageConfigReturn } from './types';
 
 
 
 type DetailTabConfig = {
-	id: TabId;
+	id: KioskDetailTabId;
 	title: string;
 	content: () => React.ReactNode;
 };
 
-export const useKioskDetailPageConfig = ({
-	kiosk,
-	activeTab,
-	onOpenDeleteKiosk,
-}: UseKioskDetailPageConfigProps): UseKioskDetailPageConfigReturn => {
-	const { t: translate } = useTranslation();
-	const navigate = useNavigate();
-	const { registry } = useKioskDetailTabControl();
-
-	const breadcrumbs = useKioskDetailBreadcrumbs({ kiosk });
-
+const useKioskDetailTabs = ({kiosk}: {kiosk?: Kiosk}): Array<DetailTabConfig> => {
+	const {t: translate} = useTranslation();
 	const tabs = useMemo<Array<DetailTabConfig>>(() => {
 		if (!kiosk) {
 			return [];
@@ -42,18 +34,12 @@ export const useKioskDetailPageConfig = ({
 			{
 				id: 'basicInfo',
 				title: translate('nikki.vendingMachine.kiosk.tabs.basicInfo'),
-				content: () => (
-					<KioskBasicInfo
-						key={'basicInfo'}
-						kiosk={kiosk}
-						onOpenDeleteKiosk={onOpenDeleteKiosk}
-					/>
-				),
+				content: () => <KioskBasicInfo key={'basicInfo'} kiosk={kiosk} />,
 			},
 			{
 				id: 'kioskSetting',
 				title: translate('nikki.vendingMachine.kiosk.tabs.kioskSetting'),
-				content: () => <KioskSetting key={'kioskSetting'} kiosk={kiosk} />,
+				content: () => <KioskDetailSettings key={'kioskSetting'} kiosk={kiosk} />,
 			},
 			{
 				id: 'productsList',
@@ -71,26 +57,45 @@ export const useKioskDetailPageConfig = ({
 				content: () => <KioskActivity key={'activity'} />,
 			},
 		];
-	}, [kiosk, translate, onOpenDeleteKiosk]);
+	}, [kiosk]);
 
+	return tabs;
+};
 
-	const commonActions = useMemo<ControlPanelActionItem[]>(() => {
-		return [{
+const useTabActions = ({activeTab}: {activeTab: KioskDetailTabId}): ControlPanelActionItem[] => {
+	const navigate = useNavigate();
+	const { t: translate } = useTranslation();
+	const { registry } = useKioskDetailTabControl();
+
+	const actions = useMemo<ControlPanelActionItem[]>(() => {
+		const baseActions = [{
 			label: translate('nikki.general.actions.back'),
 			onClick: () => navigate('../kiosks'),
 			leftSection: <IconArrowLeft size={16} />,
 			variant: 'outline',
 		}];
-	}, [translate, navigate]);
+		const tabActions = registry[activeTab]?.actions ?? [];
 
-	const getTabActions = useCallback((tabId: TabId): ControlPanelProps['actions'] => {
-		return [...(commonActions ?? []), ...(registry[tabId]?.actions ?? [])];
-	}, [registry]);
+		return [...baseActions, ...tabActions];
+	}, [translate, navigate, registry, activeTab]);
 
-	return {
-		breadcrumbs: breadcrumbs ?? [],
-		actions: getTabActions(activeTab) ?? [],
-		tabs: tabs ?? [],
-	};
+	return actions;
 };
 
+
+export const useKioskDetailPageConfig = ({kiosk}: UseKioskDetailPageConfigProps): UseKioskDetailPageConfigReturn => {
+	const [activeTab, setActiveTab] = useState<KioskDetailTabId>('basicInfo');
+	const onTabChange = useCallback((tab: string) => setActiveTab(tab as KioskDetailTabId), []);
+
+	const breadcrumbs = useKioskDetailBreadcrumbs({ kiosk });
+	const tabs = useKioskDetailTabs({ kiosk });
+	const actions = useTabActions({ activeTab });
+
+	return useMemo(() => ({
+		breadcrumbs,
+		actions,
+		tabs,
+		activeTab,
+		onTabChange,
+	}), [breadcrumbs, actions, tabs, activeTab, onTabChange]);
+};

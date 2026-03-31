@@ -4,16 +4,17 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ControlPanelProps } from '@/components/ControlPanel';
+import { useRegisterKioskDetailTab } from '@/features/kiosks/components/KioskDetail/kioskDetailTabControl';
 import {
 	formDataToKioskUpdatePayload,
 	KioskCreateFormData,
 	kioskToCreateFormValues,
 } from '@/features/kiosks/hooks/useKioskCreate';
+import { useKioskDelete } from '@/features/kiosks/hooks/useKioskDelete';
 import { useKioskEdit } from '@/features/kiosks/hooks/useKioskEdit';
 import kioskCreateSchema from '@/features/kiosks/kioskCreate-schema.json';
 import { Kiosk } from '@/features/kiosks/types';
 
-import { useRegisterKioskDetailTab } from './KioskDetailTabControlContext';
 
 
 export const BASIC_INFO_FORM_ID = 'kiosk-basic-info-form';
@@ -23,7 +24,7 @@ function buildBasicInfoActions(
 	isSubmitting: boolean,
 	translate: ReturnType<typeof useTranslation>['t'],
 	handleEdit: () => void,
-	handleSaveClick: () => void,
+	handleSave: () => void,
 	handleCancel: () => void,
 	handleDelete: () => void,
 ): ControlPanelProps['actions'] {
@@ -37,7 +38,7 @@ function buildBasicInfoActions(
 		}] : [{
 			label: translate('nikki.general.actions.save'),
 			leftSection: <IconDeviceFloppy size={16} />,
-			onClick: handleSaveClick,
+			onClick: handleSave,
 			type: 'button' as const,
 			variant: 'filled' as const,
 			disabled: isSubmitting,
@@ -74,9 +75,13 @@ export type UseBasicInfoTabReturn = {
 	modelSchema: ModelSchema;
 	modelValue: ReturnType<typeof kioskToCreateFormValues>;
 	onFormSubmit: (data: KioskCreateFormData) => void;
+	openDeleteModal: () => void;
+	closeDeleteModal: () => void;
+	confirmDelete: () => void;
+	isOpenDeleteModal: boolean;
 };
 
-export function useBasicInfoTab({ kiosk, onOpenDeleteKiosk }: UseBasicInfoTabArgs): UseBasicInfoTabReturn {
+export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTabReturn {
 	const { t: translate } = useTranslation();
 	const [isEditing, setIsEditing] = useState(false);
 
@@ -90,38 +95,36 @@ export function useBasicInfoTab({ kiosk, onOpenDeleteKiosk }: UseBasicInfoTabArg
 		handleSubmit(formDataToKioskUpdatePayload(data));
 	}, [handleSubmit]);
 
-	const handleSaveClick = useCallback(() => {
+	const onSaveClick = useCallback(() => {
 		const el = document.getElementById(BASIC_INFO_FORM_ID);
 		if (el instanceof HTMLFormElement) {
 			el.requestSubmit();
 		}
 	}, []);
 
-	const handleEdit = useCallback(() => {
+	const onEditClick = useCallback(() => {
 		setIsEditing(true);
 	}, []);
 
-	const handleCancel = useCallback(() => {
+	const onCancelClick = useCallback(() => {
 		setIsEditing(false);
 	}, []);
 
-	const handleDelete = useCallback(() => {
-		if (onOpenDeleteKiosk) {
-			onOpenDeleteKiosk(kiosk);
-		}
-	}, [kiosk, onOpenDeleteKiosk]);
+	const { isOpenDeleteModal, openDeleteModal, closeDeleteModal, handleDelete } = useKioskDelete();
+
+	const onDeleteClick = useCallback(() => openDeleteModal(kiosk), [kiosk, openDeleteModal]);
 
 	const actions = useMemo(
 		() => buildBasicInfoActions(
 			isEditing,
 			isSubmitting,
 			translate,
-			handleEdit,
-			handleSaveClick,
-			handleCancel,
-			handleDelete,
+			onEditClick,
+			onSaveClick,
+			onCancelClick,
+			onDeleteClick,
 		),
-		[isEditing, isSubmitting, translate, handleEdit, handleSaveClick, handleCancel, handleDelete],
+		[isEditing, isSubmitting, translate, onEditClick, onSaveClick, onCancelClick, onDeleteClick],
 	);
 
 	useRegisterKioskDetailTab('basicInfo', actions);
@@ -138,5 +141,9 @@ export function useBasicInfoTab({ kiosk, onOpenDeleteKiosk }: UseBasicInfoTabArg
 		modelSchema,
 		modelValue,
 		onFormSubmit,
+		openDeleteModal: () => openDeleteModal(kiosk),
+		closeDeleteModal,
+		confirmDelete: handleDelete,
+		isOpenDeleteModal,
 	};
 }

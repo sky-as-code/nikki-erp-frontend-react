@@ -67,6 +67,7 @@ const DetailLayoutTabs: React.FC<{
 }> = ({ tabs, activeTab, onTabChange }) => {
 	const [internalActiveTab, setInternalActiveTab] = React.useState<string>('0');
 	const currentActiveTab = activeTab ?? internalActiveTab;
+
 	const handleTabChange = (value: string | null) => {
 		const newValue = value ?? '0';
 		if (onTabChange) {

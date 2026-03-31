@@ -1,9 +1,6 @@
 import { ModelSchema } from '@nikkierp/ui/model';
 import { IconDeviceFloppy, IconEdit, IconX } from '@tabler/icons-react';
 import {
-	type Dispatch,
-	type MutableRefObject,
-	type SetStateAction,
 	useCallback,
 	useEffect,
 	useMemo,
@@ -15,13 +12,34 @@ import { useTranslation } from 'react-i18next';
 
 import { ControlPanelProps } from '@/components/ControlPanel';
 import { Game } from '@/features/games/types';
+import { useRegisterKioskDetailTab } from '@/features/kiosks/components/KioskDetail/kioskDetailTabControl';
 import kioskSettingSchema from '@/features/kiosks/kioskSetting-schema.json';
-import { kioskToSettingFormValues, pickEntityById, type KioskSettingFormData } from '@/features/kiosks/kioskSettingForm';
 import { Kiosk } from '@/features/kiosks/types';
 import { Slideshow } from '@/features/slideshow/types';
 import { Theme } from '@/features/themes/types';
 
-import { useRegisterKioskDetailTab } from './KioskDetailTabControlContext';
+import type { UIMode } from '../../../types';
+
+
+
+export interface KioskSettingFormData {
+	uiMode?: UIMode;
+	waitingPlaylistId?: string;
+	shoppingPlaylistId?: string;
+	themeId?: string;
+	gameId?: string;
+}
+
+/** Map từ `Kiosk` → defaultValues / reset cho FormFieldProvider. */
+export function kioskToSettingFormValues(kiosk: Kiosk): KioskSettingFormData {
+	return {
+		uiMode: kiosk.uiMode,
+		waitingPlaylistId: kiosk.waitingPlaylist?.id,
+		shoppingPlaylistId: kiosk.shoppingPlaylist?.id,
+		themeId: kiosk.theme?.id,
+		gameId: kiosk.game?.id,
+	};
+}
 
 
 export type KioskSettingPickerValues = {
@@ -216,5 +234,6 @@ export function useKioskSettingTabForm({
 		},
 		handleGameChange: (next: Game | undefined) => {
 			setKioskSettings((prev) => ({ ...prev, game: next }));
-		}};
+		},
+	};
 }

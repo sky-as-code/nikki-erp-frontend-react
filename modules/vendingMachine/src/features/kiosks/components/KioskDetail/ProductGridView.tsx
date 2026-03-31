@@ -1,488 +1,944 @@
 /* eslint-disable max-lines-per-function */
+import { Box, Button, Center, Flex, Image, NumberInput, Stack, Switch, Text } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import blankPicture from '@nikkierp/ui/assets/images/blank-picture.png';
 import {
-	ActionIcon,
-	Avatar,
-	Badge,
-	Box,
-	Button,
-	Center,
-	Group,
-	NumberInput,
-	Stack,
-	Switch,
-	Text,
-} from '@mantine/core';
-import { IconClipboard, IconCopy, IconEdit, IconTrash } from '@tabler/icons-react';
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+	IconCircleCheck, IconDeviceTabletExclamation,
+	IconEdit, IconPlus, IconTrash, IconClipboard, IconCopy,
+} from '@tabler/icons-react';
+import { useCallback, useEffect, useRef, useState, FC, memo as reactMemo, useMemo } from 'react';
 
+import { useProductsGridTab } from './hooks';
+import { MOCK_PRODUCTS } from './mockProducts';
 import { Kiosk } from '../../types';
-import { useProductsGridTab } from './hooks/useProductsGridTab';
 
 
-interface ProductPosition {
+
+// Types
+type TypeCellItem = {
+	idStockModel: string;
+	name: string;
+	code: string;
+	imageUrl: string;
 	row: string;
-	col: number;
-	productId?: string;
-	productCode?: string;
-	productName?: string;
-	productImage?: string;
+	col: string;
+	status: string;
 	quantity: number;
 	maxQuantity: number;
-	enabled: boolean;
-}
+};
 
-interface ProductGridViewProps {
+type RowItem = {
+	[key: string]: TypeCellItem | string;
+	row: string;
+};
+
+type InternalShelfItem = {
+	idShelf: string;
+	row: string;
+	type: string;
+	slotNumber: number;
+};
+
+type CellClipboard = {
+	idStockModel: string;
+	warningQuantity?: number;
+	basePrice: number;
+	sellingPrice: number;
+	stockModel: {
+		_id: string;
+		name: string;
+		code: string;
+		imageUrl: string;
+	};
+	newPosition: {
+		quantity: number;
+		maximumQuantity: number;
+		status: string;
+	};
+};
+
+type RetailKioskStockItem = {
+	_id: string;
+	imageUrl: string;
+	code: string;
+	name: {
+		vn: string;
+		eng: string;
+	};
+	warningQuantity?: number;
+	basePrice: number;
+	sellingPrice: number;
+	positions: {
+		row: string;
+		col: string;
+		quantity: number;
+		maximumQuantity: number;
+		status: string;
+	}[];
+	idStockSetting?: string;
+};
+
+type StockModel = {
+	_id: string;
+	name: string;
+	code: string;
+	image?: string;
+};
+
+interface StockGridViewProps {
 	kiosk: Kiosk;
 }
 
-// Mock data - replace with actual API call
-const generateMockGridData = (): Record<string, ProductPosition> => {
-	const rows = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-	const cols = Array.from({ length: 10 }, (_, i) => i + 1);
-	const data: Record<string, ProductPosition> = {};
+// Mock function to get image URL - replace with actual implementation
+const getUrlImage = (image: string): string => {
+	return image.startsWith('http') ? image : '';
+};
 
-	// Sample products
-	const products = [
-		{ id: '1', code: 'ttc-revive', name: 'Revive', image: 'https://via.placeholder.com/50' },
-		{ id: '2', code: 'ttc-xim-coconut-water', name: 'Nước dừa Xim Thạch', image: 'https://via.placeholder.com/50' },
-		{ id: '3', code: 'ttc-dakai-water', name: 'Nước Khoáng kiềm thiên nhiên', image: 'https://via.placeholder.com/50' },
-	];
+const generateMockStockGrid = (rowNumber: number = 10): RetailKioskStockItem[] => {
+	const rows = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').slice(0, rowNumber);
+	const cols = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
+	const products: RetailKioskStockItem[] = [];
 
 	rows.forEach((row, rowIdx) => {
 		cols.forEach((col) => {
-			const key = `${row}:${col}`;
-			const productIdx = (rowIdx * cols.length + col - 1) % products.length;
-			const product = products[productIdx];
-			data[key] = {
+			const cellIndex = rowIdx * cols.length + parseInt(col, 10) - 1;
+			const productIdx = cellIndex % MOCK_PRODUCTS.length;
+			const product = MOCK_PRODUCTS[productIdx];
+			const maxQty = 5;
+			const quantity = (cellIndex % maxQty) + 1;
+
+			let existingProduct = products.find((p) => p._id === product.id);
+			if (!existingProduct) {
+				existingProduct = {
+					_id: product.id,
+					code: product.code,
+					name: { vn: product.name, eng: product.name },
+					imageUrl: product.image || '',
+					basePrice: 10_000,
+					sellingPrice: 15_000,
+					positions: [],
+				};
+				products.push(existingProduct);
+			}
+
+			existingProduct.positions.push({
 				row,
 				col,
-				productId: product.id,
-				productCode: product.code,
-				productName: product.name,
-				productImage: product.image,
-				quantity: Math.floor(Math.random() * 5) + 1,
-				maxQuantity: 5,
-				enabled: true,
-			};
+				quantity,
+				maximumQuantity: maxQty,
+				status: 'Enable',
+			});
 		});
 	});
 
-	return data;
+	return products;
 };
 
-interface GridCellProps {
-	params: {
-		data?: ProductPosition | null;
-		row: string;
-		col: number;
-		isEditing: boolean;
-	};
-	onCopy: (row: string, col: number) => void;
-	onPaste: (row: string, col: number) => void;
-	onDelete: (row: string, col: number) => void;
-	onQuantityChange: (row: string, col: number, value: number | string) => void;
-	onMaxQuantityChange: (row: string, col: number, value: number | string) => void;
-	onToggleEnabled: (row: string, col: number) => void;
-	copiedCell: ProductPosition | null;
-	emptyText: string;
-}
 
-const GridCellComponent: React.FC<GridCellProps> = ({
-	params,
-	onCopy,
-	onPaste,
-	onDelete,
-	onQuantityChange,
-	onMaxQuantityChange,
-	onToggleEnabled,
-	copiedCell,
-	emptyText,
-}) => {
-	const [cell, setCell] = useState<ProductPosition | null>(params.data || null);
-	const isEditing = params.isEditing;
-	const hasProduct = cell?.productId;
+type CellStockProps = {
+	params: {
+		data?: TypeCellItem | null;
+		row: string;
+		col: string;
+		isReadOnly: boolean;
+	};
+	openModalAddStockToKiosk: (row: string, col: string) => void;
+	handleCopyCell: (cell: TypeCellItem) => void;
+	handlePasteCell: (row: string, col: string) => void;
+	removeStock: (row: string, col: string) => void;
+	handleEditCell: (cell: TypeCellItem) => void;
+	openModalEditStockInKiosk: (row: string, col: string) => void;
+};
+
+const CellStockComponent: FC<CellStockProps> = (props) => {
+	const {
+		params,
+		openModalAddStockToKiosk,
+		handleCopyCell,
+		handlePasteCell,
+		removeStock,
+		handleEditCell,
+		openModalEditStockInKiosk,
+	} = props;
+
+	const currentRow: string = params.row;
+	const currentCol: string = params.col;
+	const isShowBtn = !params.isReadOnly;
+
+	const [cell, setCell] = useState<TypeCellItem | null>(params.data || null);
+	const isHasQuantity = cell?.quantity || cell?.quantity === 0;
+	const isHasMaxQuantity = cell?.maxQuantity || cell?.maxQuantity === 0;
+
+	const quantityStr =
+		isHasQuantity || isHasMaxQuantity
+			? `${isHasQuantity ? cell.quantity : '_'}/${isHasMaxQuantity ? cell.maxQuantity : '_'}`
+			: '';
+
+	const btnAssign = (
+		<Button
+			size='xs'
+			variant='light'
+			onClick={() => openModalAddStockToKiosk(currentRow, currentCol)}
+		>
+			<IconPlus size={19} />
+		</Button>
+	);
+	const btnCopy = (
+		<Button
+			size='xs'
+			variant='light'
+			onClick={() => cell && handleCopyCell(cell)}
+		>
+			<IconCopy size={19} />
+		</Button>
+	);
+	const btnPaste = (
+		<Button
+			size='xs'
+			variant='light'
+			onClick={() => handlePasteCell(currentRow, currentCol)}
+		>
+			<IconClipboard size={19} />
+		</Button>
+	);
 
 	useEffect(() => {
 		setCell(params.data || null);
 	}, [params.data]);
 
 	return (
-		<Box
-			style={{
-				width: 200,
-				minHeight: 180,
-				padding: '8px',
-				borderRight: '1px solid var(--mantine-color-gray-3)',
-				backgroundColor: cell?.enabled === false ? 'var(--mantine-color-gray-1)' : undefined,
-			}}
+		<Stack
+			component='div'
+			pos='relative'
+			miw={160} w={'100%'} h={200}
+			bdrs={'xs'} gap={2} p={6}
+			justify='center' align='center'
+			bd='1px solid rgba(0, 0, 0, 0.1)'
 		>
-			{isEditing && (
-				<Group gap='xs' mb='xs' justify='space-between'>
-					<Group gap='xs'>
-						<ActionIcon
-							size='xs'
-							variant='subtle'
-							onClick={() => onCopy(params.row, params.col)}
-						>
-							<IconCopy size={14} />
-						</ActionIcon>
-						<ActionIcon
-							size='xs'
-							variant='subtle'
-							onClick={() => onPaste(params.row, params.col)}
-							disabled={!copiedCell}
-						>
-							<IconClipboard size={14} />
-						</ActionIcon>
-					</Group>
-					<Group gap='xs'>
-						<ActionIcon
-							size='xs'
-							variant='subtle'
-							color='red'
-							onClick={() => onDelete(params.row, params.col)}
-							disabled={!hasProduct}
-						>
-							<IconTrash size={14} />
-						</ActionIcon>
-						<Switch
-							size='xs'
-							checked={cell?.enabled ?? true}
-							onChange={() => onToggleEnabled(params.row, params.col)}
-						/>
-						<ActionIcon size='xs' variant='subtle' color='blue'>
-							<IconEdit size={14} />
-						</ActionIcon>
-					</Group>
-				</Group>
-			)}
-
-			{hasProduct ? (
-				<Stack gap='xs' align='center'>
-					<Avatar src={cell?.productImage} alt={cell?.productName} size='md' />
-					<Text size='xs' fw={500} ta='center' lineClamp={1}>
-						{cell?.productName}
-					</Text>
-					<Text size='xs' c='dimmed' ta='center'>
-						(code: {cell?.productCode})
-					</Text>
-					{isEditing ? (
-						<Group gap='xs' align='center'>
-							<NumberInput
-								size='xs'
-								value={cell?.quantity || 0}
-								onChange={(value) => {
-									const newValue = typeof value === 'string' ? parseInt(value) || 0 : value;
-									setCell({ ...cell!, quantity: newValue });
-									onQuantityChange(params.row, params.col, newValue);
-								}}
-								min={0}
-								max={cell?.maxQuantity || 5}
-								style={{ width: 60 }}
-							/>
-							<Text size='xs'>/</Text>
-							<NumberInput
-								size='xs'
-								value={cell?.maxQuantity || 5}
-								onChange={(value) => {
-									const newValue = typeof value === 'string' ? parseInt(value) || 5 : value;
-									setCell({ ...cell!, maxQuantity: newValue });
-									onMaxQuantityChange(params.row, params.col, newValue);
-								}}
-								min={1}
-								style={{ width: 60 }}
-							/>
-						</Group>
-					) : (
-						<Badge color='green' size='sm'>
-							{cell?.quantity || 0}/{cell?.maxQuantity || 5}
-						</Badge>
-					)}
-				</Stack>
-				// <Box>
-				// 	<Text size='xs' c='dimmed' ta='center'>
-				// 		{cell?.productName}
-				// 	</Text>
-				// 	<Text size='xs' c='dimmed' ta='center'>
-				// 		{cell?.productCode}
-				// 	</Text>
-				// </Box>
+			{!cell ? (
+				isShowBtn
+					? <Stack justify='center' align='center' gap={5} w='100%'>
+						{btnAssign}
+						{btnPaste}
+					</Stack>
+					: <Stack justify='center' align='center' gap={5} w='100%'>
+						<Center w={80} h={80} bdrs='xs' bg='gray.1'>
+							<IconDeviceTabletExclamation stroke={1.5} size={52} color='var(--mantine-color-gray-5)'/>
+						</Center>
+						<Text size='xs' ta='center' c='dimmed' lineClamp={1}>No stock</Text>
+					</Stack>
 			) : (
-				<Stack gap='xs' align='center' justify='center' style={{ minHeight: 120 }}>
-					{isEditing && (
-						<>
-							<ActionIcon
-								size='xs'
-								variant='subtle'
-								onClick={() => onCopy(params.row, params.col)}
-							>
-								<IconCopy size={14} />
-							</ActionIcon>
-							<ActionIcon
-								size='xs'
-								variant='subtle'
-								onClick={() => onPaste(params.row, params.col)}
-								disabled={!copiedCell}
-							>
-								<IconClipboard size={14} />
-							</ActionIcon>
-						</>
-					)}
-					<Text size='xs' c='dimmed' ta='center'>
-						{emptyText}
+				<>
+					<Flex justify='space-between' gap={3}>
+						<Box w={80} h={80} bdrs='xs' bg='gray.1'>
+							<Image
+								alt='stock'
+								w='100%' h='100%' p={3}
+								fit='contain'
+								onError={(e: any) => {
+									e.target.src = blankPicture;
+								}}
+								loading='lazy'
+								src={cell?.imageUrl ? cell.imageUrl : blankPicture}
+							/>
+						</Box>
+						{isShowBtn && (
+							<Stack w={60} gap={5} justify='center' align='center' bg='gray.1'>
+								{btnCopy}
+								{btnPaste}
+							</Stack>
+						)}
+					</Flex>
+
+					<Text size='sm' ta='center' lineClamp={1}>
+						{cell?.name}
 					</Text>
-				</Stack>
+					<Text size='xs' ta='center' c='dimmed' lineClamp={1}>
+						(code: {cell?.code || '---'})
+					</Text>
+
+					{isShowBtn ? (
+						<>
+							<Flex gap={2}>
+								<NumberInput
+									size='xs' fz={'sm'} fw={500}
+									min={0} max={cell?.maxQuantity || 5}
+									value={cell?.quantity || 0}
+									onBlur={(_e) => {
+										if (!cell?.quantity && cell?.quantity !== 0) {
+											setCell({
+												...cell,
+												quantity: 0,
+											});
+											handleEditCell({ ...cell, quantity: 0 });
+										}
+										if (cell && cell.quantity > cell.maxQuantity) {
+											setCell({
+												...cell,
+												quantity: cell.maxQuantity || 0,
+											});
+											handleEditCell({ ...cell, quantity: cell.maxQuantity || 0 });
+										}
+									}}
+									onChange={(e: any) => {
+										const value = e.target?.value;
+										setCell({ ...cell, quantity: value });
+										if (value && value <= cell.maxQuantity && value >= 0) {
+											handleEditCell({
+												...cell,
+												quantity: Number(value) || 0,
+											});
+										}
+									}}
+								/>
+								<Center bd='1px solid rgba(0, 0, 0, 0.1)' w={60} fz={'sm'} fw={500}>
+									{cell?.maxQuantity}
+								</Center>
+							</Flex>
+
+							<Flex w='100%' gap={5} justify='space-around' align='center' bg='gray.1'>
+								<Button
+									size='xs'
+									variant='subtle'
+									color='red'
+									onClick={() => removeStock(params.row, params.col)}
+								>
+									<IconTrash size={19} />
+								</Button>
+								<Switch
+									size='xs'
+									checked={cell.status === 'Enable'}
+									onChange={(event) => {
+										const isChecked = event.currentTarget.checked;
+										setCell({
+											...cell,
+											status: isChecked ? 'Enable' : 'Disable',
+										});
+										handleEditCell({
+											...cell,
+											status: isChecked ? 'Enable' : 'Disable',
+										});
+									}}
+								/>
+								<Button
+									size='xs'
+									variant='subtle'
+									onClick={() => openModalEditStockInKiosk(params.row, params.col)}
+								>
+									<IconEdit size={19} />
+								</Button>
+							</Flex>
+						</>
+					) : (
+						<Flex justify='center' align='center' gap={5}>
+							<IconCircleCheck
+								size={19}
+								color={cell.status === 'Enable' ? 'limegreen' : 'red'}
+							/>
+							<span>{quantityStr}</span>
+						</Flex>
+					)}
+				</>
 			)}
-		</Box>
+		</Stack>
 	);
 };
 
-const GridCell = React.memo(GridCellComponent, (prevProps: GridCellProps, nextProps: GridCellProps) => {
+const CellStock = reactMemo(CellStockComponent, (prevProps: CellStockProps, nextProps: CellStockProps) => {
 	// Only re-render if relevant props changed
 	return (
 		prevProps.params.row === nextProps.params.row &&
 		prevProps.params.col === nextProps.params.col &&
-		prevProps.params.isEditing === nextProps.params.isEditing &&
-		prevProps.params.data?.productId === nextProps.params.data?.productId &&
+		prevProps.params.isReadOnly === nextProps.params.isReadOnly &&
+		prevProps.params.data?.idStockModel === nextProps.params.data?.idStockModel &&
+		prevProps.params.data?.name === nextProps.params.data?.name &&
+		prevProps.params.data?.code === nextProps.params.data?.code &&
+		prevProps.params.data?.imageUrl === nextProps.params.data?.imageUrl &&
+		prevProps.params.data?.status === nextProps.params.data?.status &&
 		prevProps.params.data?.quantity === nextProps.params.data?.quantity &&
-		prevProps.params.data?.maxQuantity === nextProps.params.data?.maxQuantity &&
-		prevProps.params.data?.enabled === nextProps.params.data?.enabled &&
-		prevProps.params.data?.productName === nextProps.params.data?.productName &&
-		prevProps.params.data?.productCode === nextProps.params.data?.productCode &&
-		prevProps.params.data?.productImage === nextProps.params.data?.productImage &&
-		prevProps.copiedCell === nextProps.copiedCell &&
-		prevProps.emptyText === nextProps.emptyText
+		prevProps.params.data?.maxQuantity === nextProps.params.data?.maxQuantity
 	);
 });
 
-GridCell.displayName = 'GridCell';
 
-export const ProductGridView: React.FC<ProductGridViewProps> = ({
-	kiosk: _Kiosk,
-}) => {
-	const { t: translate } = useTranslation();
-	const [gridData, setGridData] = useState<Record<string, ProductPosition>>(generateMockGridData());
-	const [copiedCell, setCopiedCell] = useState<ProductPosition | null>(null);
+export const ProductGridView: FC<StockGridViewProps> = (props: StockGridViewProps) => {
+	const { kiosk } = props;
+	const rowNumber = 10;
+	const shelves: InternalShelfItem[] = [];
 
-	const onResetGrid = useCallback(() => setGridData(generateMockGridData()), []);
-
-	const {
-		isEditing,
-		handleEdit,
-		handleCancel,
-		handleDiscardChanges,
-		handleLoadAll,
-	} = useProductsGridTab({ translate, onResetGrid });
-
-	const rows = useMemo(() => {
-		return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').slice(0, 7); // A-J for demo
-	}, []);
-
-	const cols = useMemo(() => {
-		return Array.from({ length: 10 }, (_, i) => i + 1);
-	}, []);
-
-	const emptyText = useMemo(() => translate('nikki.vendingMachine.kiosk.products.empty'), [translate]);
-
-	const handleCopy = useCallback((row: string, col: number) => {
-		const cell = gridData[`${row}:${col}`];
-		if (cell) {
-			setCopiedCell(cell);
+	const handleReset = async () => {
+		const res = await callGetKioskDetail({ id: kiosk.id });
+		const kioskInfo = res?.data?.getEquipmentDetailsById;
+		if (!kioskInfo) {
+			notifications.show({
+				title: 'Error',
+				message: 'Get kiosk detail failed',
+				color: 'red',
+			});
+			return;
 		}
-	}, [gridData]);
 
-	const handlePaste = useCallback((row: string, col: number) => {
-		if (copiedCell) {
-			const key = `${row}:${col}`;
-			setGridData((prev) => ({
-				...prev,
-				[key]: {
-					...copiedCell,
-					row,
-					col,
+		internalStockGridNew.current = kioskInfo.stockGrid || [];
+		const newRowData = computeRowDataFromStockGrid(
+			internalStockGridNew.current,
+			rowNumber,
+		);
+		setRowData(newRowData);
+		setInternalIsEditing(false);
+	};
+
+	const { isEditing: externalIsEditing, isPending } = useProductsGridTab({ onResetGrid: handleReset});
+	const [internalIsEditing, setInternalIsEditing] = useState(false);
+	const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
+	const readOnly = !isEditing;
+
+	const internalStockGridNew = useRef<RetailKioskStockItem[]>([]);
+	const internalKioskShelves = useRef<InternalShelfItem[]>(shelves);
+	const cellClipboard = useRef<CellClipboard | null>(null);
+	const refSelectedStockModel = useRef<StockModel[]>([]);
+
+	const [rowData, setRowData] = useState<RowItem[]>([]);
+
+	// Mock API calls - replace with actual GraphQL queries
+	const getDropdownStockModel = (_variables: { limit: number; keyword: string; idsDefault: string[] }) => {
+		// Mock implementation
+		setTimeout(() => {
+			refSelectedStockModel.current = [];
+			const newRowData = computeRowDataFromStockGrid(
+				internalStockGridNew.current,
+				rowNumber,
+			);
+			setRowData(newRowData);
+		}, 100);
+	};
+
+	const callGetKioskDetail = async (_variables: { id: string }) => {
+		// Mock implementation
+		return {
+			data: {
+				getEquipmentDetailsById: {
+					_id: _variables.id,
+					stockGrid: generateMockStockGrid(rowNumber),
+					rowNumber,
 				},
-			}));
+			},
+		};
+	};
+
+	const callUpdateStockGrid = (_variables: { id: string; stockGrid: RetailKioskStockItem[] }) => {
+		// Mock implementation
+		setTimeout(() => {
+			notifications.show({
+				title: 'Success',
+				message: 'Update successfully',
+				color: 'green',
+			});
+			setInternalIsEditing(false);
+		}, 500);
+	};
+
+	const openModalAddStockToKiosk = useCallback((row: string, col: string) => {
+		// Mock implementation - replace with actual modal
+		notifications.show({
+			title: 'Info',
+			message: `Add stock to ${row}${col}`,
+			color: 'blue',
+		});
+	}, []);
+
+	const openModalEditStockInKiosk = useCallback((row: string, col: string) => {
+		// Mock implementation - replace with actual modal
+		notifications.show({
+			title: 'Info',
+			message: `Edit stock at ${row}${col}`,
+			color: 'blue',
+		});
+	}, []);
+
+	const removeStock = useCallback((removeAtRow: string, removeAtCol: string) => {
+		let currentStockGrid: RetailKioskStockItem[] = JSON.parse(
+			JSON.stringify(internalStockGridNew.current),
+		);
+		const stockAtCurrentPosition = currentStockGrid.find((stock) =>
+			stock.positions.some(
+				(position) => position.row == removeAtRow && position.col == removeAtCol,
+			),
+		);
+		if (!stockAtCurrentPosition) return;
+
+		// remove position from stock
+		stockAtCurrentPosition.positions = stockAtCurrentPosition.positions.filter(
+			(position) => position.row != removeAtRow || position.col != removeAtCol,
+		);
+		// remove stock if no position left
+		if (!stockAtCurrentPosition.positions.length) {
+			currentStockGrid = currentStockGrid.filter(
+				(stock) => stock.positions.length > 0,
+			);
 		}
-	}, [copiedCell]);
 
-	const handleDelete = useCallback((row: string, col: number) => {
-		const key = `${row}:${col}`;
-		setGridData((prev) => {
-			const cell = prev[key];
-			if (!cell) return prev;
-			return {
-				...prev,
-				[key]: {
-					...cell,
-					productId: undefined,
-					productCode: undefined,
-					productName: undefined,
-					productImage: undefined,
-					quantity: 0,
-				},
-			};
+		// update ref and form field
+		internalStockGridNew.current = currentStockGrid;
+		const newRowData = computeRowDataFromStockGrid(
+			internalStockGridNew.current,
+			rowNumber,
+		);
+		setRowData(newRowData);
+		// enable save button
+		setInternalIsEditing(true);
+	}, [rowNumber]);
+
+	const handleRefillAll = () => {
+		const currentStockGrid: RetailKioskStockItem[] = JSON.parse(
+			JSON.stringify(internalStockGridNew.current),
+		);
+		currentStockGrid.forEach((stock) => {
+			stock.positions.forEach((position) => {
+				position.quantity = position.maximumQuantity;
+			});
+		});
+
+		internalStockGridNew.current = currentStockGrid;
+		const newRowData = computeRowDataFromStockGrid(
+			internalStockGridNew.current,
+			rowNumber,
+		);
+		setRowData(newRowData);
+
+		// auto save stock grid
+		callUpdateStockGrid({
+			id: kiosk.id,
+			stockGrid: currentStockGrid,
+		});
+	};
+
+	const handleSave = () => {
+		if (!isEditing) return;
+		const currentStockGrid: RetailKioskStockItem[] = JSON.parse(
+			JSON.stringify(internalStockGridNew.current),
+		);
+
+		// auto save stock grid
+		callUpdateStockGrid({
+			id: kiosk.id,
+			stockGrid: currentStockGrid,
+		});
+
+		// search stock model
+		const stockIds = internalStockGridNew.current.map((stock: any) => stock._id);
+		getDropdownStockModel({
+			limit: 1000,
+			keyword: 'randomkeywordnotfound',
+			idsDefault: stockIds,
+		});
+	};
+
+
+
+	const handleCopyCell = useCallback((cell: TypeCellItem) => {
+		const { idStockModel, name, code, imageUrl, status, quantity, maxQuantity } = cell;
+
+		const stockExisted = internalStockGridNew.current.find(
+			(stock) => stock._id === idStockModel,
+		);
+
+		if (!stockExisted) return;
+
+		const cellClone: CellClipboard = {
+			idStockModel,
+			warningQuantity: stockExisted.warningQuantity,
+			basePrice: stockExisted.basePrice,
+			sellingPrice: stockExisted.sellingPrice,
+			stockModel: {
+				_id: idStockModel,
+				name,
+				code,
+				imageUrl,
+			},
+			newPosition: {
+				quantity,
+				maximumQuantity: maxQuantity,
+				status,
+			},
+		};
+		cellClipboard.current = cellClone;
+		notifications.show({
+			title: 'Success',
+			message: 'Cell copied',
+			color: 'green',
 		});
 	}, []);
 
-	const handleQuantityChange = useCallback((row: string, col: number, value: number | string) => {
-		const key = `${row}:${col}`;
-		setGridData((prev) => {
-			const cell = prev[key];
-			if (!cell) return prev;
-			return {
-				...prev,
-				[key]: {
-					...cell,
-					quantity: typeof value === 'string' ? parseInt(value) || 0 : value,
-				},
-			};
-		});
-	}, []);
+	const handlePasteCell = useCallback((row: string, col: string) => {
+		if (!cellClipboard.current) {
+			notifications.show({
+				title: 'Error',
+				message: 'No cell copied',
+				color: 'red',
+			});
+			return;
+		}
+		const {
+			idStockModel,
+			stockModel,
+			newPosition,
+			basePrice,
+			sellingPrice,
+			warningQuantity,
+		} = cellClipboard.current;
 
-	const handleMaxQuantityChange = useCallback((row: string, col: number, value: number | string) => {
-		const key = `${row}:${col}`;
-		setGridData((prev) => {
-			const cell = prev[key];
-			if (!cell) return prev;
-			return {
-				...prev,
-				[key]: {
-					...cell,
-					maxQuantity: typeof value === 'string' ? parseInt(value) || 0 : value,
-				},
-			};
-		});
-	}, []);
+		let currentStockGrid: RetailKioskStockItem[] = JSON.parse(
+			JSON.stringify(internalStockGridNew.current),
+		);
 
-	const handleToggleEnabled = useCallback((row: string, col: number) => {
-		const key = `${row}:${col}`;
-		setGridData((prev) => {
-			const cell = prev[key];
-			if (!cell) return prev;
-			return {
-				...prev,
-				[key]: {
-					...cell,
-					enabled: !cell.enabled,
-				},
-			};
+		const stockAtCurrentPosition = currentStockGrid.find((stock) =>
+			stock.positions.some((position) => position.row == row && position.col == col),
+		);
+			// if current place has diff stock, remove old stock
+		if (stockAtCurrentPosition?._id && stockAtCurrentPosition?._id != idStockModel) {
+			// remove position from stock
+			stockAtCurrentPosition.positions = stockAtCurrentPosition.positions.filter(
+				(position) => position.row != row || position.col != col,
+			);
+			// remove stock if no position left
+			if (!stockAtCurrentPosition.positions.length) {
+				currentStockGrid = currentStockGrid.filter(
+					(stock) => stock.positions.length > 0,
+				);
+			}
+			// update ref and form field
+			internalStockGridNew.current = currentStockGrid;
+		}
+
+		// compute new list position
+		const stockExisted = internalStockGridNew.current.find(
+			(stock) => stock._id === idStockModel,
+		);
+		let newPositionList: RetailKioskStockItem['positions'] = JSON.parse(
+			JSON.stringify(stockExisted?.positions || []),
+		);
+		newPositionList = newPositionList.filter(
+			(position) => position.row != row || position.col != col,
+		);
+		newPositionList.push({
+			row,
+			col,
+			quantity: newPosition.quantity,
+			maximumQuantity: newPosition.maximumQuantity,
+			status: newPosition.status,
 		});
-	}, []);
+		handleEditStock({
+			idStockModel,
+			warningQuantity,
+			basePrice,
+			sellingPrice,
+			row,
+			col,
+			stockModel,
+			positions: newPositionList as any[],
+		});
+	}, [rowNumber]);
+
+	const _handleAddStock = (newStockData: {
+		idStockModel: string;
+		warningQuantity?: number;
+		basePrice: number;
+		sellingPrice: number;
+		row: string;
+		col: string;
+		stockModel: {
+			_id: string;
+			code: string;
+			name: string;
+			imageUrl: string;
+		};
+		positions: {
+			col: string;
+			row: string;
+			quantity: number;
+			maximumQuantity: number;
+			status: string;
+		}[];
+		idStockSetting?: string;
+	}) => {
+		const currentStockGrid: RetailKioskStockItem[] = JSON.parse(
+			JSON.stringify(internalStockGridNew.current),
+		);
+		const stockExisted = currentStockGrid.find(
+			(stock) => stock._id === newStockData.idStockModel,
+		);
+		const newStock: RetailKioskStockItem = {
+			_id: newStockData.idStockModel,
+			imageUrl: newStockData.stockModel.imageUrl,
+			code: newStockData.stockModel?.code || '',
+			name: {
+				vn: newStockData.stockModel.name,
+				eng: newStockData.stockModel.name,
+			},
+			warningQuantity: newStockData.warningQuantity,
+			basePrice: newStockData.basePrice,
+			sellingPrice: newStockData.sellingPrice,
+			positions: newStockData.positions,
+			idStockSetting: newStockData.idStockSetting,
+		};
+			// if not found, push new stock
+		if (!stockExisted) {
+			currentStockGrid.push(newStock);
+		}
+		else {
+			// if found, replace some content in stockFound
+			Object.assign(stockExisted, newStock);
+		}
+		// update ref and form field
+		internalStockGridNew.current = currentStockGrid;
+
+		// search stock model
+		const stockIds = internalStockGridNew.current.map((stock: any) => stock._id);
+		getDropdownStockModel({
+			limit: 1000,
+			keyword: 'randomkeywordnotfound',
+			idsDefault: stockIds,
+		});
+		setInternalIsEditing(true);
+	};
+
+	const handleEditCell = useCallback((cell: TypeCellItem) => {
+		const { row, col, idStockModel, quantity, status, maxQuantity } = cell;
+
+		// compute new list position
+		const stockExisted = internalStockGridNew.current.find(
+			(stock) => stock._id === idStockModel,
+		);
+		const stockPositions: RetailKioskStockItem['positions'] = JSON.parse(
+			JSON.stringify(stockExisted?.positions || []),
+		);
+		stockPositions.forEach((position) => {
+			if (position.row == row && position.col == col) {
+				position.status = status;
+				position.quantity = Number(quantity) || 0;
+				position.maximumQuantity = Number(maxQuantity) || 3;
+			}
+		});
+		if (stockExisted) {
+			handleEditStock({
+				idStockModel,
+				warningQuantity: stockExisted.warningQuantity ?? undefined,
+				basePrice: stockExisted.basePrice ?? 0,
+				sellingPrice: stockExisted.sellingPrice ?? 0,
+				row,
+				col,
+				stockModel: {
+					_id: idStockModel,
+					name: stockExisted.name?.vn ?? '',
+					code: stockExisted.code ?? '',
+					imageUrl: stockExisted.imageUrl ?? '',
+				},
+				positions: stockPositions as any[],
+			});
+		}
+	}, [rowNumber]);
+
+	const handleEditStock = useCallback((newStockData: {
+		idStockModel: string;
+		warningQuantity?: number;
+		basePrice: number;
+		sellingPrice: number;
+		row: string;
+		col: string;
+		stockModel: {
+			_id: string;
+			name: string;
+			code: string;
+			imageUrl: string;
+		};
+		positions: {
+			col: string;
+			row: string;
+			quantity: number;
+			maximumQuantity: number;
+			status: string;
+		}[];
+		idStockSetting?: string;
+	}) => {
+		const currentStockGrid: RetailKioskStockItem[] = JSON.parse(
+			JSON.stringify(internalStockGridNew.current),
+		);
+		const stockExisted = currentStockGrid.find(
+			(stock) => stock._id === newStockData.idStockModel,
+		);
+		const newStock: RetailKioskStockItem = {
+			_id: newStockData.idStockModel,
+			imageUrl: newStockData.stockModel.imageUrl,
+			code: newStockData.stockModel?.code || '',
+			name: {
+				vn: newStockData.stockModel.name,
+				eng: newStockData.stockModel.name,
+			},
+			warningQuantity: newStockData.warningQuantity,
+			basePrice: newStockData.basePrice,
+			sellingPrice: newStockData.sellingPrice,
+			positions: newStockData.positions,
+			idStockSetting: newStockData.idStockSetting,
+		};
+			// if not found, push new stock
+		if (!stockExisted) {
+			currentStockGrid.push(newStock);
+		}
+		else {
+			// if found, replace some content in stockFound
+			Object.assign(stockExisted, newStock);
+		}
+		// update ref and form field
+		internalStockGridNew.current = currentStockGrid;
+
+		// set rowData
+		const newRowData = computeRowDataFromStockGrid(
+			currentStockGrid,
+			rowNumber,
+		);
+		setRowData(newRowData);
+		setInternalIsEditing(true);
+	}, [rowNumber]);
+
+	const computeRowDataFromStockGrid = (
+		stockGridInput: RetailKioskStockItem[],
+		rowNum: number = 10,
+	) => {
+		const baseRowData: RowItem[] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+			.split('')
+			.slice(0, rowNum)
+			.map((rowKey) => ({ row: rowKey }));
+
+		// base on rowNumber, remove row from baseRowData
+		if (!stockGridInput || !stockGridInput.length) return baseRowData;
+
+		// setup rowData
+		stockGridInput.forEach((stock) => {
+			const stockModelFound: StockModel | undefined = (refSelectedStockModel.current || []).find(
+				(stockModel: any) => stockModel._id === stock._id,
+			);
+
+			stock.positions.forEach((position) => {
+				const needUpdateRow = baseRowData.find((row) => row.row == position.row);
+				if (!needUpdateRow) return;
+				needUpdateRow[position.col] = {
+					idStockModel: stock._id,
+					name: stockModelFound?.name || stock.name.vn,
+					code: stockModelFound?.code || stock?.code || '',
+					imageUrl: stockModelFound?.image
+						? getUrlImage(stockModelFound?.image)
+						: stock.imageUrl,
+					row: position.row,
+					col: position.col,
+					status: position.status,
+					quantity: Number(position.quantity),
+					maxQuantity: Number(position.maximumQuantity),
+				};
+			});
+		});
+		return baseRowData;
+	};
+
+	useEffect(() => {
+		// `[]` là truthy — trước đây luôn gán ref = [] nên grid trống (toàn bộ ô null).
+		// Khi có API thật, thay bằng: kiosk.stockGrid?.length ? kiosk.stockGrid : generateMockStockGrid(...)
+		internalStockGridNew.current = generateMockStockGrid(rowNumber);
+
+		const initialRowData = computeRowDataFromStockGrid(
+			internalStockGridNew.current,
+			rowNumber,
+		);
+		setRowData(initialRowData);
+
+		const stockIds = internalStockGridNew.current.map((stock: { _id: string }) => stock._id);
+		if (stockIds.length > 0) {
+			getDropdownStockModel({
+				limit: 1000,
+				keyword: 'randomkeywordnotfound',
+				idsDefault: stockIds,
+			});
+		}
+	}, [kiosk.id, rowNumber]);
+
+	useEffect(() => {
+		if (shelves) {
+			internalKioskShelves.current = shelves;
+		}
+	}, [shelves]);
+
+
+
+
+	const BASE_COLS = useMemo(() => new Array(10).fill('_'), []);
 
 	return (
-		<Stack gap='sm'>
-			<Group justify='space-between'>
-				<div></div>
-				<Group gap='xs'>
-					{isEditing ? (
-						<>
-							<Button size='xs' variant='outline' onClick={handleDiscardChanges}>
-								{translate('nikki.vendingMachine.kiosk.products.actions.discardChanges')}
-							</Button>
-							<Button size='xs' variant='outline' onClick={handleLoadAll}>
-								{translate('nikki.vendingMachine.kiosk.products.actions.loadAll')}
-							</Button>
-							<Button size='xs' variant='outline' onClick={handleCancel}>
-								{translate('nikki.vendingMachine.kiosk.products.actions.viewOnly')}
-							</Button>
-						</>
-					) : (
-						<Button size='xs' onClick={handleEdit}>
-							{translate('nikki.general.actions.edit')}
-						</Button>
-					)}
-				</Group>
-			</Group>
-
-			<Box
-				style={{
-					position: 'relative',
-					overflow: 'auto',
-					maxHeight: 'max-content',
-					border: '1px solid var(--mantine-color-gray-3)',
-					borderRadius: 'var(--mantine-radius-md)',
-				}}
-			>
-				<Box style={{ position: 'relative' }}>
-
-					<Box
-						style={{
-							position: 'sticky',
-							top: 0,
-							zIndex: 10,
-							backgroundColor: 'var(--mantine-color-white)',
-							borderBottom: '2px solid var(--mantine-color-gray-4)',
-						}}
+		<Box h='calc(100vh - 200px)' mih={500} pos='relative' style={{ overflow: 'auto' }}>
+			{isPending && (
+				<Box
+					pos='absolute' top={0} left={0} right={0} bottom={0}
+					bg='rgba(255,255,255,0.5)' style={{ zIndex: 20, pointerEvents: 'none' }}
+				/>
+			)}
+			<Box w='100%'>
+				<Flex pos='sticky' top={0} h={30}
+					miw='100%' w='fit-content' gap='xs' align='center' mb='xs' style={{ zIndex: 10 }}>
+					<Box pos='sticky' left={0} w={30} miw={30} h='100%' bg='gray.1'/>
+					<Flex
+						justify='center' align='center'
+						gap={'xs'} w='100%'
 					>
-						<Group gap={0} style={{ paddingLeft: 60 }} wrap='nowrap'>
-							{cols.map((col) => (
-								<Box
-									key={col}
-									style={{
-										width: 200,
-										padding: '8px',
-										textAlign: 'center',
-										borderRight: '1px solid var(--mantine-color-gray-3)',
-										fontWeight: 600,
-									}}
-								>
-									{col}
-								</Box>
-							))}
-						</Group>
-					</Box>
-
-					{/* Grid Content */}
-					{rows.map((row) => (
-						<Group key={row} gap={0} style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }} wrap='nowrap'>
-
+						{BASE_COLS.map((_, index) => (
 							<Center
-								style={{
-									position: 'sticky',
-									left: 0,
-									zIndex: 9,
-									width: 60,
-									padding: '8px',
-									textAlign: 'center',
-									backgroundColor: 'var(--mantine-color-white)',
-									borderRight: '2px solid var(--mantine-color-gray-4)',
-									fontWeight: 600,
-									height: '100%',
-									minHeight: 180,
-								}}
+								key={index}
+								flex={1} w='100%' miw={160} h={30} fz='sm' bd='1px solid rgba(0, 0, 0, 0.1)'
+								p={5} ta='center' bg='white'
 							>
-								{row}
+								{index + 1}
 							</Center>
-
-
-							{cols.map((col) => {
-								const cell = gridData[`${row}:${col}`];
-
-								return (
-									<GridCell
-										key={`${row}:${col}`}
-										params={{
-											data: cell,
-											row,
-											col,
-											isEditing,
-										}}
-										onCopy={handleCopy}
-										onPaste={handlePaste}
-										onDelete={handleDelete}
-										onQuantityChange={handleQuantityChange}
-										onMaxQuantityChange={handleMaxQuantityChange}
-										onToggleEnabled={handleToggleEnabled}
-										copiedCell={copiedCell}
-										emptyText={emptyText}
-									/>
-								);
-							})}
-						</Group>
-					))}
-				</Box>
+						))}
+					</Flex>
+				</Flex>
+				<Flex
+					justify='center' align='start' gap={'xs'}
+					miw='100%' w='fit-content'
+				>
+					<Stack pos='sticky' left={0} w={30} miw={30} h='100%' gap='xs' style={{ zIndex: 10 }}>
+						{rowData.map((rowItem, index) => (
+							<Center key={index} w={30} h={200} bg='gray.1'>
+								{rowItem?.row}
+							</Center>
+						))}
+					</Stack>
+					{rowData.length > 0 && (
+						<Stack w='100%' h='100%' gap='xs'>
+							{rowData.map((rowItem, index) => (
+								<Flex key={index} w='100%' gap='xs'>
+									{BASE_COLS.map((_, colIndex) => (
+										<CellStock
+											key={colIndex}
+											params={{
+												data:
+														typeof rowItem[colIndex + 1] === 'object'
+															? (rowItem[colIndex + 1] as TypeCellItem)
+															: null,
+												row: String(rowItem.row),
+												col: String(colIndex + 1),
+												isReadOnly: readOnly,
+											}}
+											openModalAddStockToKiosk={openModalAddStockToKiosk}
+											handleCopyCell={handleCopyCell}
+											handlePasteCell={handlePasteCell}
+											removeStock={removeStock}
+											handleEditCell={handleEditCell}
+											openModalEditStockInKiosk={openModalEditStockInKiosk}
+										/>
+									))}
+								</Flex>
+							))}
+						</Stack>
+					)}
+				</Flex>
 			</Box>
-		</Stack>
+		</Box>
 	);
 };

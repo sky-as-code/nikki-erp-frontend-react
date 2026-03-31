@@ -1,15 +1,8 @@
 export type {
-	TabId,
+	KioskDetailTabId,
 	UseKioskDetailPageConfigProps,
 	UseKioskDetailPageConfigReturn,
-	TabHookReturn,
 } from './types';
-export {
-	KioskDetailTabControlProvider,
-	useKioskDetailTabControl,
-	useRegisterKioskDetailTab,
-} from './KioskDetailTabControlContext';
-export type { KioskDetailTabControlEntry } from './KioskDetailTabControlContext';
 export { useBasicInfoTab } from './useBasicInfoTab';
 export { useKioskDetailBreadcrumbs } from './useKioskDetailBreadcrumbs';
 export { useKioskDetailPageConfig } from './useKioskDetailPageConfig';

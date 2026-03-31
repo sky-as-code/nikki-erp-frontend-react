@@ -566,9 +566,8 @@
 			"slideshowOnly": "Chỉ trình chiếu"
 		},
 		"kioskType": {
-			"withoutElevator": "Không có thang máy",
-			"elevatorWithConveyor": "Thang máy có băng chuyền",
-			"elevatorWithoutConveyor": "Thang máy không có băng chuyền"
+			"elevator": "Thang nâng",
+			"nonElevator": "Rớt hàng"
 		},
 		"interfaceMode": {
 			"normal": "Bình thường",

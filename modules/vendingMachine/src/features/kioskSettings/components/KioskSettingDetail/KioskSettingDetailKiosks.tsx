@@ -2,7 +2,7 @@ import { Stack, Text } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AssignedKioskList } from '@/components/AssignedKioskList';
+import { AssignedKioskList } from '@/components/AssignKiosks';
 import { KioskSelectModal } from '@/features/events/components/EventDetailDrawer/KioskSelectModal';
 import { Kiosk } from '@/features/kiosks/types';
 

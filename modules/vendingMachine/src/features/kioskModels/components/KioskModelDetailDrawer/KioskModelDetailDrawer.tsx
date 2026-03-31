@@ -139,9 +139,8 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 						onChange={(value) => setSelectedKioskType(value as KioskType | undefined)}
 						placeholder={translate('nikki.vendingMachine.kioskModels.fields.kioskType')}
 						data={[
-							{ value: 'withoutElevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.withoutElevator') },
-							{ value: 'elevatorWithConveyor', label: translate('nikki.vendingMachine.kioskModels.kioskType.elevatorWithConveyor') },
-							{ value: 'elevatorWithoutConveyor', label: translate('nikki.vendingMachine.kioskModels.kioskType.elevatorWithoutConveyor') },
+							{ value: 'nonElevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.nonElevator') },
+							{ value: 'elevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.elevator') },
 						]}
 						clearable
 					/>

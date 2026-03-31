@@ -523,9 +523,8 @@
 			"slideshowOnly": "Slideshow Only"
 		},
 		"kioskType": {
-			"withoutElevator": "Without Elevator",
-			"elevatorWithConveyor": "Elevator With Conveyor",
-			"elevatorWithoutConveyor": "Elevator Without Conveyor"
+			"elevator": "Elevator",
+			"nonElevator": "Non Elevator"
 		},
 		"interfaceMode": {
 			"normal": "Normal",

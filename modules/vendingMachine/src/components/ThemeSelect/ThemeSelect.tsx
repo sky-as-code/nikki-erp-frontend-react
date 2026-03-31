@@ -3,40 +3,37 @@ import { IconPalette, IconPlus } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ThemePreviewCard } from '@/features/events/components/EventDetailDrawer/ThemePreviewCard';
-import { ThemeSelectModal } from '@/features/events/components/EventDetailDrawer/ThemeSelectModal';
-import { Theme } from '@/features/themes/types';
+import { ThemePreviewCard } from './ThemePreviewCard';
+import { ThemeSelectModal } from './ThemeSelectModal';
+
+import type { Theme } from '@/features/themes/types';
 
 
-export interface ThemeConfigProps {
-	theme?: Theme;
-	themeId?: string;
-	onChange?: (theme: Theme) => void;
+export interface ThemeSelectProps {
+	isEditing: boolean;
+	value: Theme | undefined;
+	onChange: (value: Theme | undefined) => void;
 	onRemove?: () => void;
 }
 
-export const ThemeConfig: React.FC<ThemeConfigProps> = ({
-	theme,
-	themeId,
+export const ThemeSelect: React.FC<ThemeSelectProps> = ({
+	isEditing,
+	value,
 	onChange,
 	onRemove,
 }) => {
 	const { t: translate } = useTranslation();
-	const [themeSelectModalOpened, setThemeSelectModalOpened] = useState(false);
-
-	const handleSelectTheme = (selectedTheme: Theme) => {
-		onChange?.(selectedTheme);
-	};
+	const [modalOpened, setModalOpened] = useState(false);
 
 	return (
 		<div>
-			<Text size='sm' c='dimmed' mb='xs' fw={500}>
+			<Text size='sm' c='dimmed' mb={3} fw={500}>
 				{translate('nikki.vendingMachine.events.fields.theme')}
 			</Text>
-			{theme ? (
+			{value ? (
 				<ThemePreviewCard
-					theme={theme}
-					onRemove={onRemove}
+					theme={value}
+					onRemove={isEditing && onRemove ? onRemove : undefined}
 				/>
 			) : (
 				<Card withBorder p='sm' radius='md'>
@@ -48,16 +45,15 @@ export const ThemeConfig: React.FC<ThemeConfigProps> = ({
 									{translate('nikki.vendingMachine.events.fields.theme')}
 								</Text>
 							</Group>
-
 							<Text size='sm' c='dimmed'>
 								{translate('nikki.vendingMachine.events.messages.no_theme')}
 							</Text>
 						</Box>
-						{onChange && (
+						{isEditing && (
 							<Button
 								size='xs'
 								leftSection={<IconPlus size={14} />}
-								onClick={() => setThemeSelectModalOpened(true)}
+								onClick={() => setModalOpened(true)}
 							>
 								{translate('nikki.vendingMachine.events.selectTheme.selectTheme')}
 							</Button>
@@ -67,10 +63,12 @@ export const ThemeConfig: React.FC<ThemeConfigProps> = ({
 			)}
 
 			<ThemeSelectModal
-				opened={themeSelectModalOpened}
-				onClose={() => setThemeSelectModalOpened(false)}
-				onSelectTheme={handleSelectTheme}
-				selectedThemeId={themeId || theme?.id}
+				opened={modalOpened}
+				onClose={() => setModalOpened(false)}
+				onSelectTheme={(theme) => {
+					onChange(theme);
+					setModalOpened(false);
+				}}
 			/>
 		</div>
 	);

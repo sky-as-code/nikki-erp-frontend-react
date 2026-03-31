@@ -1,9 +1,9 @@
 import { Stack } from '@mantine/core';
 import React from 'react';
 
-import { GameConfig } from '@/components/GameConfig';
-import { SlideShowConfig } from '@/components/SlideShowConfig';
-import { ThemeConfig } from '@/components/ThemeConfig';
+import { GameSelect } from '@/components/GameSelect';
+import { SlideshowSelect } from '@/components/SlideshowSelect';
+import { ThemeSelect } from '@/components/ThemeSelect';
 import { Game } from '@/features/games/types';
 import { Slideshow } from '@/features/slideshow/types';
 import { Theme } from '@/features/themes/types';
@@ -31,7 +31,6 @@ export type KioskSettingDetailSettingsProps = {
 };
 
 export const KioskSettingDetailSettings: React.FC<KioskSettingDetailSettingsProps> = ({
-	setting,
 	isEditing = true,
 	settingTheme,
 	settingGame,
@@ -50,29 +49,55 @@ export const KioskSettingDetailSettings: React.FC<KioskSettingDetailSettingsProp
 		gap='lg'
 		style={isEditing ? undefined : { pointerEvents: 'none', opacity: 0.72 }}
 	>
-		<ThemeConfig
-			theme={settingTheme}
-			themeId={setting.themeId}
-			onChange={onThemeChange}
-			onRemove={onThemeRemove}
+		<ThemeSelect
+			value={settingTheme}
+			onChange={(v) => {
+				if (v) {
+					onThemeChange(v);
+				}
+				else {
+					onThemeRemove();
+				}
+			}}
+			isEditing={isEditing}
 		/>
-		<SlideShowConfig
-			variant='idle'
-			slideshow={idlePlaylist}
-			onChange={onIdlePlaylistChange}
-			onRemove={onIdlePlaylistRemove}
+		<SlideshowSelect
+			type='waiting'
+			value={idlePlaylist}
+			onChange={(v) => {
+				if (v) {
+					onIdlePlaylistChange(v);
+				}
+				else {
+					onIdlePlaylistRemove();
+				}
+			}}
+			isEditing={isEditing}
 		/>
-		<SlideShowConfig
-			variant='shopping'
-			slideshow={shoppingPlaylist}
-			onChange={onShoppingPlaylistChange}
-			onRemove={onShoppingPlaylistRemove}
+		<SlideshowSelect
+			type='shopping'
+			value={shoppingPlaylist}
+			onChange={(v) => {
+				if (v) {
+					onShoppingPlaylistChange(v);
+				}
+				else {
+					onShoppingPlaylistRemove();
+				}
+			}}
+			isEditing={isEditing}
 		/>
-		<GameConfig
-			game={settingGame}
-			gameId={setting.gameId}
-			onChange={onGameChange}
-			onRemove={onGameRemove}
+		<GameSelect
+			value={settingGame}
+			onChange={(v) => {
+				if (v) {
+					onGameChange(v);
+				}
+				else {
+					onGameRemove();
+				}
+			}}
+			isEditing={isEditing}
 		/>
 	</Stack>
 );

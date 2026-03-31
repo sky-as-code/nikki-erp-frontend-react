@@ -6,10 +6,10 @@ import { useNavigate, useParams } from 'react-router';
 import { ControlPanel } from '@/components';
 import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { DetailLayout } from '@/components/DetailLayout';
-import { KioskModelNotFound } from '@/components/KioskModelNotFound';
 import { PageContainer } from '@/components/PageContainer';
 import { useKioskModelDetail } from '@/features/kioskModels';
 import { TabId, useKioskModelDetailBreadcrumbs, useKioskModelDetailTabs } from '@/features/kioskModels/components/KioskModelDetail/hooks';
+import { KioskModelNotFound } from '@/features/kioskModels/components/KioskModelNotFound';
 
 
 export const KioskModelDetailPage: React.FC = () => {

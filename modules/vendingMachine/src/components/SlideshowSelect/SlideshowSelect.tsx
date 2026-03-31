@@ -3,25 +3,26 @@ import { IconPhoto, IconPlus } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { SlideshowCard } from '@/features/events/components/EventDetailDrawer/SlideshowCard';
-import { SlideshowSelectModal } from '@/features/events/components/EventDetailDrawer/SlideshowSelectModal';
+import { SlideshowCard } from './SlideshowCard';
+import { SlideshowSelectModal } from './SlideshowSelectModal';
 
 import type { Slideshow } from '@/features/slideshow/types';
 
 
 export interface SlideshowSelectProps {
+	isEditing: boolean;
 	type: 'waiting' | 'shopping';
-	/** Controlled: slideshow hiển thị (đồng bộ với form id + kiosk + draft ở parent). */
 	value: Slideshow | undefined;
 	onChange: (value: Slideshow | undefined) => void;
-	isEditing: boolean;
+	onRemove?: () => void;
 }
 
 export const SlideshowSelect: React.FC<SlideshowSelectProps> = ({
+	isEditing,
 	type,
 	value,
 	onChange,
-	isEditing,
+	onRemove,
 }) => {
 	const { t: translate } = useTranslation();
 	const [slideshowSelectModalOpened, setSlideshowSelectModalOpened] = useState(false);
@@ -31,10 +32,6 @@ export const SlideshowSelect: React.FC<SlideshowSelectProps> = ({
 			onChange(slideshows[0]);
 		}
 		setSlideshowSelectModalOpened(false);
-	};
-
-	const handleRemove = () => {
-		onChange(undefined);
 	};
 
 	return (
@@ -48,7 +45,7 @@ export const SlideshowSelect: React.FC<SlideshowSelectProps> = ({
 			{value ? (
 				<SlideshowCard
 					slideshow={value}
-					onRemove={isEditing ? handleRemove : undefined}
+					onRemove={isEditing && onRemove ? onRemove : undefined}
 				/>
 			) : (
 				<Card withBorder p='sm' radius='md'>
