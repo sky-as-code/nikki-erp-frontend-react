@@ -28,7 +28,8 @@ export const KioskSettingPage: React.FC = () => {
 
 	const { filteredSettings, filters, searchValue, setSearchValue } = useKioskSettingFilter(settings);
 
-	const { isOpenPreview, handlePreview, handleClosePreview, selectedSetting, isLoadingPreview } = useKioskSettingPreview();
+	const { isOpenPreview, handlePreview,
+		handleClosePreview, selectedSetting, isLoadingPreview } = useKioskSettingPreview();
 
 	const {
 		isOpenDeleteModal,

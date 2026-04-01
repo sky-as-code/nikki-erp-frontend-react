@@ -35,12 +35,10 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 	<Stack gap='md'>
 		<ThemeSelect
 			value={theme}
+			onRemove={onThemeRemove}
 			onChange={(v) => {
 				if (v) {
 					onThemeChange?.(v);
-				}
-				else {
-					onThemeRemove?.();
 				}
 			}}
 			isEditing={Boolean(onThemeChange)}
@@ -48,12 +46,10 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 		<SlideshowSelect
 			type='waiting'
 			value={idlePlaylist}
+			onRemove={onIdlePlaylistRemove}
 			onChange={(v) => {
 				if (v) {
 					onIdlePlaylistChange?.(v);
-				}
-				else {
-					onIdlePlaylistRemove();
 				}
 			}}
 			isEditing={Boolean(onIdlePlaylistChange)}

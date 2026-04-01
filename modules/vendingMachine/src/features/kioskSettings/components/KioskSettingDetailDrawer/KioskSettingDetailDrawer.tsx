@@ -210,21 +210,17 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 								if (v) {
 									handleThemeChange(v);
 								}
-								else {
-									handleThemeRemove();
-								}
 							}}
+							onRemove={handleThemeRemove}
 							isEditing
 						/>
 						<SlideshowSelect
 							type='waiting'
 							value={idlePlaylist}
+							onRemove={handleIdlePlaylistRemove}
 							onChange={(v) => {
 								if (v) {
 									handleIdlePlaylistChange(v);
-								}
-								else {
-									handleIdlePlaylistRemove();
 								}
 							}}
 							isEditing
@@ -232,12 +228,10 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 						<SlideshowSelect
 							type='shopping'
 							value={shoppingPlaylist}
+							onRemove={handleShoppingPlaylistRemove}
 							onChange={(v) => {
 								if (v) {
 									handleShoppingPlaylistChange(v);
-								}
-								else {
-									handleShoppingPlaylistRemove();
 								}
 							}}
 							isEditing
@@ -249,12 +243,10 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 				<div>
 					<GameSelect
 						value={settingGame}
+						onRemove={handleGameRemove}
 						onChange={(v) => {
 							if (v) {
 								handleGameChange(v);
-							}
-							else {
-								handleGameRemove();
 							}
 						}}
 						isEditing

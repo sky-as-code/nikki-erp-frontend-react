@@ -449,7 +449,8 @@
 		},
 		"messages": {
 			"no_settings": "No kiosk settings found",
-			"create_success": "Kiosk setting \"{{name}}\" has been created successfully"
+			"create_success": "Kiosk setting \"{{name}}\" has been created successfully",
+			"update_success": "Kiosk setting \"{{name}}\" has been updated successfully"
 		}
 	},
 	"settings": {

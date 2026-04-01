@@ -492,7 +492,8 @@
 		},
 		"messages": {
 			"no_settings": "Không tìm thấy cài đặt kiosk nào",
-			"create_success": "Đã tạo cài đặt kiosk \"{{name}}\" thành công"
+			"create_success": "Đã tạo cài đặt kiosk \"{{name}}\" thành công",
+			"update_success": "Đã cập nhật cài đặt kiosk \"{{name}}\" thành công"
 		}
 	},
 	"settings": {

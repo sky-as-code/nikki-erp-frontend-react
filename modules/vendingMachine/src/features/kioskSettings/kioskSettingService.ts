@@ -1,4 +1,4 @@
-import { mockKioskSettings } from './mockKioskSettings';
+import { mockKioskSettings } from './mocks';
 import { KioskSetting } from './types';
 
 

@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { KioskSettingListViewMode } from '../components/kioskSettingListTypes';
+import { KioskSettingListViewMode } from '../types';
 
 
 export type BreadcrumbItem = { title: string; href: string };

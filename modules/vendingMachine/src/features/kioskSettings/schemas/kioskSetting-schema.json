@@ -32,6 +32,10 @@
 				}
 			]
 		},
+		"brand": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.brand' }"
+		},
 		"createdAt": {
 			"type": "date",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskSettings.fields.createdAt' }",

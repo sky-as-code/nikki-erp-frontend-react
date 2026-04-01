@@ -4,7 +4,7 @@ import { notifications } from '@mantine/notifications';
 import blankPicture from '@nikkierp/ui/assets/images/blank-picture.png';
 import {
 	IconCircleCheck, IconDeviceTabletExclamation,
-	IconEdit, IconPlus, IconTrash, IconClipboard, IconCopy,
+	IconEdit, IconPlus, IconTrash, IconClipboardCheck, IconCopy,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState, FC, memo as reactMemo, useMemo } from 'react';
 
@@ -198,7 +198,7 @@ const CellStockComponent: FC<CellStockProps> = (props) => {
 			variant='light'
 			onClick={() => handlePasteCell(currentRow, currentCol)}
 		>
-			<IconClipboard size={19} />
+			<IconClipboardCheck size={19} />
 		</Button>
 	);
 

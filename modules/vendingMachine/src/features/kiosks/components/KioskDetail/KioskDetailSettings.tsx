@@ -77,6 +77,7 @@ const KioskSettingFields: React.FC<KioskSettingFieldsProps> = ({
 				type='waiting'
 				value={waitingPlaylist}
 				onChange={handleWaitingChange}
+				onRemove={() => handleWaitingChange(undefined)}
 				isEditing={isEditing}
 			/>
 
@@ -84,18 +85,21 @@ const KioskSettingFields: React.FC<KioskSettingFieldsProps> = ({
 				type='shopping'
 				value={shoppingPlaylist}
 				onChange={handleShoppingChange}
+				onRemove={() => handleShoppingChange(undefined)}
 				isEditing={isEditing}
 			/>
 
 			<ThemeSelect
 				value={theme}
 				onChange={handleThemeChange}
+				onRemove={() => handleThemeChange(undefined)}
 				isEditing={isEditing}
 			/>
 
 			<GameSelect
 				value={game}
 				onChange={handleGameChange}
+				onRemove={() => handleGameChange(undefined)}
 				isEditing={isEditing}
 			/>
 		</Stack>
