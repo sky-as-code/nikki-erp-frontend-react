@@ -12,8 +12,9 @@ import {
 } from '@/features/kiosks/hooks/useKioskCreate';
 import { useKioskDelete } from '@/features/kiosks/hooks/useKioskDelete';
 import { useKioskEdit } from '@/features/kiosks/hooks/useKioskEdit';
-import kioskCreateSchema from '@/features/kiosks/kioskCreate-schema.json';
 import { Kiosk } from '@/features/kiosks/types';
+
+import { kioskCreateSchema } from '@/features/kiosks/schemas';
 
 
 

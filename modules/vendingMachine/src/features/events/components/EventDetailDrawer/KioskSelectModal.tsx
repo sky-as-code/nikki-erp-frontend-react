@@ -3,8 +3,8 @@ import { IconDeviceDesktop, IconMapPin, IconSearch } from '@tabler/icons-react';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { mockKiosks } from '../../../kiosks/mockKiosks';
-import { Kiosk, KioskMode, KioskStatus } from '../../../kiosks/types';
+import { Kiosk, KioskMode, KioskStatus } from '@/features/kiosks/types';
+import { mockKiosks } from '@/features/kiosks/mocks';
 
 
 export interface KioskSelectModalProps {

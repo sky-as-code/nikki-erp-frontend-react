@@ -5,3 +5,4 @@ export * from './SlideshowSelect';
 export * from './ThemeSelect';
 export * from './GroupedStatCard';
 export * from './FilterGroup';
+export * from './UIModeSelect';

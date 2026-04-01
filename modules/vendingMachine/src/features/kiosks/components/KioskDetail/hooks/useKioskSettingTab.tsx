@@ -13,12 +13,13 @@ import { useTranslation } from 'react-i18next';
 import { ControlPanelProps } from '@/components/ControlPanel';
 import { Game } from '@/features/games/types';
 import { useRegisterKioskDetailTab } from '@/features/kiosks/components/KioskDetail/kioskDetailTabControl';
-import kioskSettingSchema from '@/features/kiosks/kioskSetting-schema.json';
 import { Kiosk } from '@/features/kiosks/types';
 import { Slideshow } from '@/features/slideshow/types';
 import { Theme } from '@/features/themes/types';
 
 import type { UIMode } from '../../../types';
+
+import {kioskSettingSchema} from '@/features/kiosks/schemas';
 
 
 

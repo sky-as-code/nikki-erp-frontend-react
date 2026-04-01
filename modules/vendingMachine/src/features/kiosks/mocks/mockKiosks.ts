@@ -1,4 +1,4 @@
-import { ConnectionStatus, Kiosk, KioskMode, KioskStatus, MachineType, KioskWarning } from './types';
+import { ConnectionStatus, Kiosk, KioskMode, KioskStatus, MachineType, KioskWarning } from '@/features/kiosks/types';
 
 // Mock data for kiosks
 const mockKiosksData: Kiosk[] = [

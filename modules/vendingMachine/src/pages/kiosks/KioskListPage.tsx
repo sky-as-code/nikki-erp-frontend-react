@@ -36,7 +36,7 @@ export const KioskListPage: React.FC = () => {
 	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskPageConfig();
 
 	return (
-		<>
+		<React.Fragment key='kiosk-list-page'>
 			<PageContainer
 				documentTitle={translate('nikki.vendingMachine.kiosk.title')}
 				breadcrumbs={breadcrumbs}
@@ -82,7 +82,7 @@ export const KioskListPage: React.FC = () => {
 				kiosk={selectedKiosk}
 				isLoading={isLoadingPreview}
 			/>
-		</>
+		</React.Fragment>
 	);
 };
 

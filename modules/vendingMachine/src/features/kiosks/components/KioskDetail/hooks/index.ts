@@ -15,6 +15,8 @@ export type {
 	UseKioskSettingTabFormArgs,
 	UseKioskSettingTabFormReturn,
 	UseKioskSettingTabReturn,
+	KioskSettingFormData,
+	KioskSettingPickerValues,
 } from './useKioskSettingTab';
 export {
 	buildProductsGridActions,

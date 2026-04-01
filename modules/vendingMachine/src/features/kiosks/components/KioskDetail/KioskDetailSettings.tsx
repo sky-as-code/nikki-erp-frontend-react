@@ -6,11 +6,11 @@ import { Controller, UseFormReturn } from 'react-hook-form';
 import { GameSelect } from '@/components/GameSelect';
 import { SlideshowSelect } from '@/components/SlideshowSelect';
 import { ThemeSelect } from '@/components/ThemeSelect';
+import { UIModeSelect } from '@/components/UIModeSelect';
 import { Kiosk, UIMode } from '@/features/kiosks/types';
 
-import { UIModeSelect } from '../UIModeSelect';
+import { KioskSettingPickerValues, useKioskSettingTab, useKioskSettingTabForm } from './hooks';
 import { type KioskSettingFormData } from './hooks/useKioskSettingTab';
-import { KioskSettingPickerValues, useKioskSettingTab, useKioskSettingTabForm } from './hooks/useKioskSettingTab';
 
 
 interface KioskDetailSettingsProps {

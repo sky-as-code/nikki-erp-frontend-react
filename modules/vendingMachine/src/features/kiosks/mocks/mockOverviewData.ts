@@ -6,7 +6,7 @@ import {
 	MachineType,
 	OperationParameter,
 	SupportRequest,
-} from './types';
+} from '@/features/kiosks/types';
 
 // Mock errors data
 export const mockKioskErrors = [

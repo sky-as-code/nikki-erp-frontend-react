@@ -2,7 +2,7 @@ import { Box, Select, Text } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { UIMode } from '../../types';
+import type { UIMode } from '@/features/kiosks/types';
 
 
 export interface UIModeSelectProps {

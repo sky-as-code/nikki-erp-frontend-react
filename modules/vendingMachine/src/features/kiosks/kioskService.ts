@@ -1,4 +1,5 @@
-import { mockKiosks } from './mockKiosks';
+import { mockKiosks } from '@/features/kiosks/mocks';
+
 import { Kiosk } from './types';
 
 

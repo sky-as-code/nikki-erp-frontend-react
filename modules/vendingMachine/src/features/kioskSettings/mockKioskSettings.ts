@@ -1,8 +1,9 @@
-import { mockSlideshows } from '../slideshow/mockSlideshows';
-import { mockGames } from '../games/mockGames';
-import { mockKiosks } from '../kiosks/mockKiosks';
-import { mockThemes } from '../themes/mockThemes';
+import { mockKiosks } from '@/features/kiosks/mocks';
+
 import { KioskSetting } from './types';
+import { mockGames } from '../games/mockGames';
+import { mockSlideshows } from '../slideshow/mockSlideshows';
+import { mockThemes } from '../themes/mockThemes';
 
 /** Mock data cho các nhóm cài đặt hoạt động kiosk (kiosk, trình chiếu, chủ đề, trò chơi, brand...) */
 const mockKioskSettingsData: Omit<KioskSetting, 'kiosks' | 'theme' | 'game' | 'idlePlaylist' | 'shoppingPlaylist'>[] = [

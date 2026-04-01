@@ -4,38 +4,42 @@ import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { useTranslation } from 'react-i18next';
 
-import { MachineType, type Kiosk } from '../../../../features/kiosks/types';
+import { KioskMode, type Kiosk } from '@/features/kiosks/types';
 
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-interface MachineTypeChartProps {
+interface OperationStatusChartProps {
 	kiosks: Kiosk[];
 	h: MantineStyleProps['h'];
 }
 
-export function MachineTypeChart({ kiosks, h = '100%' }: MachineTypeChartProps): React.ReactElement {
+export function OperationStatusChart({ kiosks, h = '100%' }: OperationStatusChartProps): React.ReactElement {
 	const { t: translate } = useTranslation();
 
-	const dropProductCount = kiosks.filter((k) => k.machineType === MachineType.DROP_PRODUCT).length;
-	const elevatorCount = kiosks.filter((k) => k.machineType === MachineType.ELEVATOR).length;
+	const sellingCount = kiosks.filter((k) => k.mode === KioskMode.SELLING).length;
+	const slideshowOnlyCount = kiosks.filter((k) => k.mode === KioskMode.SLIDESHOW_ONLY).length;
+	const pendingCount = kiosks.filter((k) => k.mode === KioskMode.PENDING).length;
 
 	const data = {
 		labels: [
-			translate('nikki.vendingMachine.overview.machineType.dropProduct'),
-			translate('nikki.vendingMachine.overview.machineType.elevator'),
+			translate('nikki.vendingMachine.overview.operation.selling'),
+			translate('nikki.vendingMachine.overview.operation.slideshowOnly'),
+			translate('nikki.vendingMachine.overview.operation.pending'),
 		],
 		datasets: [
 			{
-				label: translate('nikki.vendingMachine.overview.machineType.distribution'),
-				data: [dropProductCount, elevatorCount],
+				label: translate('nikki.vendingMachine.overview.operation.status'),
+				data: [sellingCount, slideshowOnlyCount, pendingCount],
 				backgroundColor: [
-					'rgba(34, 197, 94, 0.8)', // green
 					'rgba(59, 130, 246, 0.8)', // blue
+					'rgba(168, 85, 247, 0.8)', // purple
+					'rgba(156, 163, 175, 0.8)', // gray
 				],
 				borderColor: [
-					'rgba(34, 197, 94, 1)',
 					'rgba(59, 130, 246, 1)',
+					'rgba(168, 85, 247, 1)',
+					'rgba(156, 163, 175, 1)',
 				],
 				borderWidth: 1,
 				spacing: 0,
@@ -55,7 +59,7 @@ export function MachineTypeChart({ kiosks, h = '100%' }: MachineTypeChartProps):
 					boxWidth: 10,
 					boxHeight: 10,
 					usePointStyle: true,
-					pointStyle: 'rect',
+					pointStyle: 'circle',
 					pointRadius: 5,
 					pointHoverRadius: 7,
 				},
@@ -78,7 +82,7 @@ export function MachineTypeChart({ kiosks, h = '100%' }: MachineTypeChartProps):
 	return (
 		<Card shadow='sm' padding='sm' radius='md' withBorder h={h}>
 			<Title order={4} mb='xs' fz='sm'>
-				{translate('nikki.vendingMachine.overview.machineType.distribution')}
+				{translate('nikki.vendingMachine.overview.operation.status')}
 			</Title>
 			<Box h={h} pos='relative'>
 				<Doughnut data={data} options={options} />

@@ -13,7 +13,7 @@ import React from 'react';
 import { Line } from 'react-chartjs-2';
 import { useTranslation } from 'react-i18next';
 
-import { type CustomerUsage } from '../../../../features/kiosks/types';
+import { type CustomerUsage } from '@/features/kiosks/types';
 
 
 ChartJS.register(
