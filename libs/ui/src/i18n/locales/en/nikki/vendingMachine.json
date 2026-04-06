@@ -510,6 +510,7 @@
 			"id": "ID",
 			"code": "Code",
 			"name": "Name",
+			"referenceCode": "Code",
 			"model": "Kiosk Model",
 			"description": "Description",
 			"status": "Status",

@@ -6,10 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
 import { VendingMachineDispatch, kioskModelActions, selectUpdateKioskModel } from '@/appState';
-import { KioskModel } from '@/features/kioskModels/types';
+
+import type { KioskModel, UpdateKioskModelBody } from '@/features/kioskModels/types';
 
 
-type UpdatePayload = { id: string; etag: string; updates: Partial<Omit<KioskModel, 'id' | 'createdAt' | 'etag'>> };
+type UpdatePayload = { id: string; body: UpdateKioskModelBody };
 
 function useSubmitHandler(
 	dispatch: VendingMachineDispatch,
@@ -18,6 +19,7 @@ function useSubmitHandler(
 	navigate: ReturnType<typeof useNavigate>,
 	location: ReturnType<typeof useLocation>,
 	onUpdateSuccess?: () => void,
+	modelId?: string,
 ) {
 	const updateState = useMicroAppSelector(selectUpdateKioskModel);
 
@@ -25,11 +27,14 @@ function useSubmitHandler(
 		if (updateState.status === 'success') {
 			onUpdateSuccess?.();
 			notification.showInfo(
-				translate('nikki.vendingMachine.kioskModels.messages.update_success', { name: updateState.data?.name }),
+				translate('nikki.vendingMachine.kioskModels.messages.update_success'),
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(kioskModelActions.resetUpdateKioskModel());
-			dispatch(kioskModelActions.listKioskModels());
+			// dispatch(kioskModelActions.listKioskModels());
+			if (modelId) {
+				// dispatch(kioskModelActions.getKioskModel(modelId));
+			}
 		}
 		else if (updateState.status === 'error') {
 			notification.showError(
@@ -62,12 +67,16 @@ export function useKioskModelEdit(model: KioskModel | undefined, options?: { onU
 		navigate,
 		location,
 		options?.onUpdateSuccess,
+		model?.id,
 	);
 
 	const submit = useCallback(
 		(updates: Partial<Omit<KioskModel, 'id' | 'createdAt' | 'etag'>>) => {
 			if (model) {
-				handleSubmit({ id: model.id, etag: model.etag, updates });
+				handleSubmit({
+					id: model.id,
+					body: { id: model.id, etag: model.etag, ...updates },
+				});
 			}
 		},
 		[model?.id, model?.etag, handleSubmit],

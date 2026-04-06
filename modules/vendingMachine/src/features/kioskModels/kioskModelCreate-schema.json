@@ -1,9 +1,9 @@
 {
 	"name": "kioskModel",
 	"fields": {
-		"code": {
+		"referenceCode": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.code' }"
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.referenceCode' }"
 		},
 		"name": {
 			"type": "string",
@@ -26,7 +26,7 @@
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.kioskType' }",
 			"enum": [
 				{ "value": "elevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.elevator' }" },
-				{ "value": "nonElevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.nonElevator' }" }
+				{ "value": "non-elevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.nonElevator' }" }
 			]
 		}
 	}

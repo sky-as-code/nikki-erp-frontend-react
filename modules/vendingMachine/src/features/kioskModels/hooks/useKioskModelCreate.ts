@@ -5,12 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
 import { VendingMachineDispatch, kioskModelActions, selectCreateKioskModel } from '@/appState';
-import { KioskModel } from '@/features/kioskModels/types';
+
+import type { KioskModel, CreateKioskModelBody } from '@/features/kioskModels/types';
 
 
 export interface KioskModelCreateFormData {
 	name: string;
-	code?: string;
+	referenceCode?: string;
 	description?: string;
 	status: KioskModel['status'];
 	kioskType?: KioskModel['kioskType'];
@@ -19,7 +20,7 @@ export interface KioskModelCreateFormData {
 export function kioskModelToCreateFormValues(model: KioskModel): KioskModelCreateFormData {
 	return {
 		name: model.name,
-		code: model.code,
+		referenceCode: model.referenceCode,
 		description: model.description,
 		status: model.status,
 		kioskType: model.kioskType,
@@ -37,10 +38,10 @@ export function formDataToKioskModelUpdatePayload(
 	};
 }
 
-function buildKioskModelCreatePayload(data: KioskModelCreateFormData): Omit<KioskModel, 'id' | 'createdAt' | 'etag'> {
+function buildKioskModelCreatePayload(data: KioskModelCreateFormData): CreateKioskModelBody {
 	return {
 		name: data.name,
-		code: data.code || `KIOSK-MODEL-${Date.now()}`,
+		referenceCode: data.referenceCode,
 		description: data.description,
 		status: data.status,
 		kioskType: data.kioskType,
@@ -70,7 +71,7 @@ export function useKioskModelCreate() {
 	React.useEffect(() => {
 		if (createKioskModel.status === 'success') {
 			notification.showInfo(
-				translate('nikki.vendingMachine.kioskModels.messages.create_success', { name: createKioskModel.data?.name }),
+				translate('nikki.vendingMachine.kioskModels.messages.create_success'),
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(kioskModelActions.resetCreateKioskModel());

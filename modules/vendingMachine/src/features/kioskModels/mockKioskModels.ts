@@ -1,91 +1,97 @@
 import { KioskModel } from './types';
 
-/** Mock data cho các dòng máy kiosk (Kiosk Model) */
+
 const mockKioskModelsData: KioskModel[] = [
 	{
 		id: '1',
-		code: 'WATER-MINI',
+		referenceCode: 'WATER-MINI',
 		name: 'Máy bán nước mini',
 		description: 'Dòng máy bán nước mini, kích thước nhỏ gọn, phù hợp cho văn phòng, góc hành lang',
 		status: 'active',
 		kioskType: 'elevator',
-		numberOfTrays: 3,
-		trayConfigurations: [
-			{ row: 'A', shelfType: 'spring' },
-			{ row: 'B', shelfType: 'spring' },
-			{ row: 'C', shelfType: 'conveyor' },
-		],
+		shelvesNumber: 3,
+		shelvesConfig: {
+			trays: [
+				{ row: 'A', shelfType: 'spring' },
+				{ row: 'B', shelfType: 'spring' },
+				{ row: 'C', shelfType: 'conveyor' },
+			],
+		},
 		createdAt: '2024-01-01T08:00:00Z',
 		etag: 'etag-mdl-001',
 	},
 	{
 		id: '2',
-		code: 'LIPSTICK-ELEVATOR',
+		referenceCode: 'LIPSTICK-ELEVATOR',
 		name: 'Máy bán son có thang nâng',
 		description: 'Dòng máy bán mỹ phẩm (son, phấn) với hệ thống thang nâng, phù hợp sản phẩm nhỏ gọn',
 		status: 'active',
 		kioskType: 'elevator',
-		numberOfTrays: 4,
-		trayConfigurations: [
-			{ row: 'A', shelfType: 'pushTape' },
-			{ row: 'B', shelfType: 'pushTape' },
-			{ row: 'C', shelfType: 'hangingConveyor' },
-			{ row: 'D', shelfType: 'spring' },
-		],
+		shelvesNumber: 4,
+		shelvesConfig: {
+			trays: [
+				{ row: 'A', shelfType: 'pushTape' },
+				{ row: 'B', shelfType: 'pushTape' },
+				{ row: 'C', shelfType: 'hangingConveyor' },
+				{ row: 'D', shelfType: 'spring' },
+			],
+		},
 		createdAt: '2024-01-10T09:30:00Z',
 		etag: 'etag-mdl-002',
 	},
 	{
 		id: '3',
-		code: 'WATER-BASIC',
+		referenceCode: 'WATER-BASIC',
 		name: 'Máy bán nước cơ bản',
 		description: 'Dòng máy bán nước cơ bản, không thang nâng, phù hợp chai/lon kích thước chuẩn',
 		status: 'active',
-		kioskType: 'nonElevator',
+		kioskType: 'non-elevator',
 		createdAt: '2024-01-20T10:15:00Z',
 		etag: 'etag-mdl-003',
 	},
 	{
 		id: '4',
-		code: 'WATER-ELEVATOR',
+		referenceCode: 'WATER-ELEVATOR',
 		name: 'Máy bán nước có thang nâng',
 		description: 'Dòng máy bán nước với thang nâng và băng chuyền, vận chuyển hàng tự động',
 		status: 'active',
 		kioskType: 'elevator',
-		numberOfTrays: 5,
-		trayConfigurations: [
-			{ row: 'A', shelfType: 'conveyor' },
-			{ row: 'B', shelfType: 'conveyor' },
-			{ row: 'C', shelfType: 'hangingConveyor' },
-			{ row: 'D', shelfType: 'spring' },
-			{ row: 'E', shelfType: 'pushTape' },
-		],
+		shelvesNumber: 5,
+		shelvesConfig: {
+			trays: [
+				{ row: 'A', shelfType: 'conveyor' },
+				{ row: 'B', shelfType: 'conveyor' },
+				{ row: 'C', shelfType: 'hangingConveyor' },
+				{ row: 'D', shelfType: 'spring' },
+				{ row: 'E', shelfType: 'pushTape' },
+			],
+		},
 		createdAt: '2024-02-01T14:20:00Z',
 		etag: 'etag-mdl-004',
 	},
 	{
 		id: '5',
-		code: 'SNACK-BASIC',
+		referenceCode: 'SNACK-BASIC',
 		name: 'Máy bán snack cơ bản',
 		description: 'Dòng máy bán snack, bánh kẹo, kích thước trung bình',
 		status: 'active',
-		kioskType: 'nonElevator',
+		kioskType: 'non-elevator',
 		createdAt: '2024-02-10T11:45:00Z',
 		etag: 'etag-mdl-005',
 	},
 	{
 		id: '6',
-		code: 'COMBO-BASIC',
+		referenceCode: 'COMBO-BASIC',
 		name: 'Máy bán nước + snack combo',
 		description: 'Dòng máy kết hợp bán nước và snack, phù hợp khu vực công cộng',
 		status: 'active',
-		kioskType: 'nonElevator',
+		kioskType: 'non-elevator',
 		createdAt: '2024-02-20T13:30:00Z',
 		etag: 'etag-mdl-006',
 	},
 	{
 		id: '7',
-		code: 'COSMETIC-ELEVATOR',
+		referenceCode: 'COSMETIC-ELEVATOR',
 		name: 'Máy bán mỹ phẩm có thang nâng',
 		description: 'Dòng máy chuyên mỹ phẩm với thang nâng, nhiều khay hàng',
 		status: 'active',
@@ -95,7 +101,7 @@ const mockKioskModelsData: KioskModel[] = [
 	},
 	{
 		id: '8',
-		code: 'WATER-PREMIUM',
+		referenceCode: 'WATER-PREMIUM',
 		name: 'Máy bán nước cao cấp',
 		description: 'Dòng máy bán nước cao cấp, màn hình lớn, quảng cáo tích hợp',
 		status: 'inactive',
@@ -132,7 +138,7 @@ export const mockKioskModels = {
 
 	async updateKioskModel(
 		id: string,
-		etag: string,
+		_etag: string,
 		updates: Partial<Omit<KioskModel, 'id' | 'createdAt' | 'etag'>>,
 	): Promise<KioskModel> {
 		await delay(500);

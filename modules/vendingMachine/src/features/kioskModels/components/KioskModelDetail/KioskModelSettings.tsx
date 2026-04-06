@@ -17,11 +17,17 @@ export interface KioskModelSettingsProps {
 	model: KioskModel;
 }
 
+function shelvesConfigToTrayConfigurations(config?: Record<string, any>): TrayConfigurationType[] {
+	if (!config) return [];
+	if (Array.isArray(config.trays)) return config.trays;
+	return [];
+}
+
 const getKioskTypeLabel = (type: KioskType | undefined, translate: (key: string) => string) => {
 	if (!type) return '-';
 	const labelMap: Record<KioskType, string> = {
-		elevator: translate('nikki.vendingMachine.kioskModels.kioskType.elevator'),
-		nonElevator: translate('nikki.vendingMachine.kioskModels.kioskType.nonElevator'),
+		'elevator': translate('nikki.vendingMachine.kioskModels.kioskType.elevator'),
+		'non-elevator': translate('nikki.vendingMachine.kioskModels.kioskType.nonElevator'),
 	};
 	return labelMap[type] || type;
 };
@@ -31,15 +37,15 @@ export const KioskModelSettings: React.FC<KioskModelSettingsProps> = ({ model })
 	const { isEditing } = useModelSettingsTab({ model });
 
 	const [selectedKioskType, setSelectedKioskType] = useState<KioskType | undefined>(model?.kioskType);
-	const [numberOfTrays, setNumberOfTrays] = useState<number>(model?.numberOfTrays || 0);
+	const [shelvesNumber, setShelvesNumber] = useState<number>(model?.shelvesNumber || 0);
 	const [trayConfigurations, setTrayConfigurations] =
-		useState<TrayConfigurationType[]>(model?.trayConfigurations || []);
+		useState<TrayConfigurationType[]>(shelvesConfigToTrayConfigurations(model?.shelvesConfig));
 
 	useEffect(() => {
 		if (model) {
 			setSelectedKioskType(model.kioskType);
-			setNumberOfTrays(model.numberOfTrays || 0);
-			setTrayConfigurations(model.trayConfigurations || []);
+			setShelvesNumber(model.shelvesNumber || 0);
+			setTrayConfigurations(shelvesConfigToTrayConfigurations(model.shelvesConfig));
 		}
 	}, [model]);
 
@@ -55,7 +61,7 @@ export const KioskModelSettings: React.FC<KioskModelSettingsProps> = ({ model })
 						onChange={(value) => setSelectedKioskType(value as KioskType | undefined)}
 						placeholder={translate('nikki.vendingMachine.kioskModels.fields.kioskType')}
 						data={[
-							{ value: 'nonElevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.nonElevator') },
+							{ value: 'non-elevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.nonElevator') },
 							{ value: 'elevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.elevator') },
 						]}
 						clearable
@@ -69,14 +75,14 @@ export const KioskModelSettings: React.FC<KioskModelSettingsProps> = ({ model })
 
 			{isEditing ? (
 				<TrayConfiguration
-					numberOfTrays={numberOfTrays}
+					numberOfTrays={shelvesNumber}
 					trayConfigurations={trayConfigurations}
-					onNumberOfTraysChange={setNumberOfTrays}
+					onNumberOfTraysChange={setShelvesNumber}
 					onTrayConfigurationsChange={setTrayConfigurations}
 				/>
 			) : (
 				<TrayConfigurationReadOnly
-					numberOfTrays={numberOfTrays}
+					shelvesNumber={shelvesNumber}
 					trayConfigurations={trayConfigurations}
 					translate={translate}
 				/>
@@ -97,30 +103,30 @@ const getShelfTypeLabel = (shelfType: KioskShelfType | undefined, translate: (ke
 };
 
 const TrayConfigurationReadOnly: React.FC<{
-	numberOfTrays: number;
+	shelvesNumber: number;
 	trayConfigurations: TrayConfigurationType[];
 	translate: (key: string) => string;
-}> = ({ numberOfTrays, trayConfigurations, translate }) => {
+}> = ({ shelvesNumber, trayConfigurations, translate }) => {
 	const rows = React.useMemo(() => {
 		const rowLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-		return Array.from({ length: numberOfTrays }, (_, i) => rowLetters[i] || String(i + 1));
-	}, [numberOfTrays]);
+		return Array.from({ length: shelvesNumber }, (_, i) => rowLetters[i] || String(i + 1));
+	}, [shelvesNumber]);
 
 	return (
 		<Stack gap='md'>
 			<div>
 				<Text size='sm' c='dimmed' mb='xs' fw={500}>
-					{translate('nikki.vendingMachine.kioskModels.fields.numberOfTrays')}
+					{translate('nikki.vendingMachine.kioskModels.fields.shelvesNumber')}
 				</Text>
 				<Box p='xs' style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
-					<Text size='sm'>{numberOfTrays || '-'}</Text>
+					<Text size='sm'>{shelvesNumber || '-'}</Text>
 				</Box>
 			</div>
 
-			{numberOfTrays > 0 && (
+			{shelvesNumber > 0 && (
 				<div>
 					<Text size='sm' c='dimmed' mb='xs' fw={500}>
-						{translate('nikki.vendingMachine.kioskModels.fields.trayConfigurations')}
+						{translate('nikki.vendingMachine.kioskModels.fields.shelvesConfig')}
 					</Text>
 					<Table withTableBorder withColumnBorders>
 						<Table.Thead>

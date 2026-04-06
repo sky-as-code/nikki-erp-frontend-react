@@ -15,8 +15,8 @@ export interface KioskModelTableProps extends AutoTableProps {
 	onDelete?: (kioskModel: KioskModel) => void;
 }
 
-function renderCodeColumn(row: Record<string, unknown>) {
-	return <Text fw={500}>{String(row.code || '')}</Text>;
+function renderReferenceCodeColumn(row: Record<string, unknown>) {
+	return <Text fw={500}>{String(row.referenceCode || '')}</Text>;
 }
 
 const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
@@ -60,6 +60,7 @@ function renderStatusColumn(
 	const statusMap: Record<string, { color: string; label: string }> = {
 		active: { color: 'green', label: translate('nikki.general.status.active') },
 		inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
+		deleted: { color: 'red', label: translate('nikki.general.status.deleted') },
 	};
 	const statusInfo = statusMap[status] || { color: 'gray', label: status };
 	return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
@@ -139,7 +140,7 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 				schema={schema}
 				isLoading={isLoading}
 				columnRenderers={{
-					code: renderCodeColumn,
+					referenceCode: renderReferenceCodeColumn,
 					name: renderNameColumn,
 					description: renderDescriptionColumn,
 					status: (row) => renderStatusColumn(row, translate),
@@ -149,9 +150,8 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 				headerRenderers={{
 					actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
 				}}
-				columnAsLink='code'
+				columnAsLink='referenceCode'
 				columnAsLinkHref={(row) => {
-					// const modelId = row.id as string;
 					onPreviewView(row);
 					return '#';
 				}}
@@ -159,4 +159,3 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 		</div>
 	);
 };
-

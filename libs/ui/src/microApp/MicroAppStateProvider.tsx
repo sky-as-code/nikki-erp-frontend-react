@@ -23,7 +23,10 @@ let appStateContextValue: RegisterReducersResult;
 let appStateContext: React.Context<RegisterReducersResult>;
 
 export function initMicroAppStateContext(registerResult: RegisterReducersResult) {
-	appStateContext = createContext<MicroAppStateContextType>(registerResult);
+	if (!appStateContext) {
+		appStateContext = createContext<MicroAppStateContextType>(registerResult);
+	}
+	// appStateContext = createContext<MicroAppStateContextType>(registerResult);
 	appStateContextValue = registerResult;
 }
 

@@ -41,7 +41,7 @@ const KioskModelDetailPageContent: React.FC = () => {
 			<DetailLayout
 				header={{
 					title: model?.name || '',
-					subtitle: model?.code || '',
+					subtitle: model?.referenceCode || '',
 					avatar: <IconBox size={46} />,
 				}}
 				tabs={tabs}

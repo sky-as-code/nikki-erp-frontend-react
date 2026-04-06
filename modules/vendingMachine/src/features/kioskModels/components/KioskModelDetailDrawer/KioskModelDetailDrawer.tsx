@@ -16,6 +16,12 @@ export interface KioskModelDetailDrawerProps {
 	modelId: string;
 }
 
+function shelvesConfigToTrayConfigurations(config?: Record<string, any>): TrayConfigurationType[] {
+	if (!config) return [];
+	if (Array.isArray(config.trays)) return config.trays;
+	return [];
+}
+
 export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 	opened,
 	onClose,
@@ -26,15 +32,15 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 	const { model, isLoading } = useKioskModelDetail(modelId);
 
 	const [selectedKioskType, setSelectedKioskType] = useState<KioskType | undefined>(model?.kioskType);
-	const [numberOfTrays, setNumberOfTrays] = useState<number>(model?.numberOfTrays || 0);
+	const [shelvesNumber, setShelvesNumber] = useState<number>(model?.shelvesNumber || 0);
 	const [trayConfigurations, setTrayConfigurations] =
-		useState<TrayConfigurationType[]>(model?.trayConfigurations || []);
+		useState<TrayConfigurationType[]>(shelvesConfigToTrayConfigurations(model?.shelvesConfig));
 
 	React.useEffect(() => {
 		if (model) {
 			setSelectedKioskType(model.kioskType);
-			setNumberOfTrays(model.numberOfTrays || 0);
-			setTrayConfigurations(model.trayConfigurations || []);
+			setShelvesNumber(model.shelvesNumber || 0);
+			setTrayConfigurations(shelvesConfigToTrayConfigurations(model.shelvesConfig));
 		}
 	}, [model]);
 
@@ -56,6 +62,7 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 		const statusMap: Record<string, { color: string; label: string }> = {
 			active: { color: 'green', label: translate('nikki.general.status.active') },
 			inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
+			deleted: { color: 'red', label: translate('nikki.general.status.deleted') },
 		};
 		const statusInfo = statusMap[status] || { color: 'gray', label: status };
 		return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
@@ -92,9 +99,9 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 			<Stack gap='md'>
 				<div>
 					<Text size='sm' c='dimmed' mb='xs'>
-						{translate('nikki.vendingMachine.kioskModels.fields.code')}
+						{translate('nikki.vendingMachine.kioskModels.fields.referenceCode')}
 					</Text>
-					<Text size='sm' fw={500}>{model.code}</Text>
+					<Text size='sm' fw={500}>{model.referenceCode}</Text>
 				</div>
 
 				<Divider />
@@ -129,7 +136,6 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 
 				<Divider />
 
-				{/* Kiosk Type */}
 				<div>
 					<Text size='sm' c='dimmed' mb='xs' fw={500}>
 						{translate('nikki.vendingMachine.kioskModels.fields.kioskType')}
@@ -139,7 +145,7 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 						onChange={(value) => setSelectedKioskType(value as KioskType | undefined)}
 						placeholder={translate('nikki.vendingMachine.kioskModels.fields.kioskType')}
 						data={[
-							{ value: 'nonElevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.nonElevator') },
+							{ value: 'non-elevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.nonElevator') },
 							{ value: 'elevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.elevator') },
 						]}
 						clearable
@@ -148,12 +154,11 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 
 				<Divider />
 
-				{/* Tray Configuration */}
 				<div>
 					<TrayConfiguration
-						numberOfTrays={numberOfTrays}
+						numberOfTrays={shelvesNumber}
 						trayConfigurations={trayConfigurations}
-						onNumberOfTraysChange={setNumberOfTrays}
+						onNumberOfTraysChange={setShelvesNumber}
 						onTrayConfigurationsChange={setTrayConfigurations}
 					/>
 				</div>
@@ -172,4 +177,3 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 		</Drawer>
 	);
 };
-

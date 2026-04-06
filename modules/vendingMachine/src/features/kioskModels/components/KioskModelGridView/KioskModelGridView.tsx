@@ -4,7 +4,7 @@ import { IconBox, IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { KioskModel } from '../../types';
+import { KioskModel, KioskModelStatus } from '../../types';
 
 
 export interface KioskModelGridViewProps {
@@ -24,12 +24,13 @@ export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 
-	const getStatusBadge = (status: 'active' | 'inactive') => {
-		const statusMap = {
+	const getStatusBadge = (status: KioskModelStatus) => {
+		const statusMap: Record<string, { color: string; label: string }> = {
 			active: { color: 'green', label: translate('nikki.general.status.active') },
 			inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
+			deleted: { color: 'red', label: translate('nikki.general.status.deleted') },
 		};
-		const statusInfo = statusMap[status];
+		const statusInfo = statusMap[status] || { color: 'gray', label: status };
 		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
 	};
 
@@ -63,7 +64,7 @@ export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 							<Group gap='xs'>
 								<IconBox size={20} />
 								<Stack gap={0}>
-									<Text fw={600} size='sm'>{model.code}</Text>
+									<Text fw={600} size='sm'>{model.referenceCode}</Text>
 									<Text size='xs' c='dimmed'>{model.name}</Text>
 								</Stack>
 							</Group>

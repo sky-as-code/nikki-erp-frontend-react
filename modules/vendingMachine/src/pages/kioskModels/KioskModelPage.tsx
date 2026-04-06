@@ -125,7 +125,7 @@ const KioskModelPageContent: React.FC<KioskModelPageContentProps> = ({
 }) => {
 	const kioskModelListView = useMemo(() => (
 		<KioskModelTable
-			columns={['code', 'name', 'description', 'status', 'actions']}
+			columns={['referenceCode', 'name', 'description', 'status', 'actions']}
 			data={kioskModels as unknown as Record<string, unknown>[]}
 			schema={kioskModelSchema as ModelSchema}
 			onPreviewView={handlePreviewView}
@@ -167,7 +167,7 @@ const useKioskModelFilter = (models: KioskModel[]) => {
 			const searchLower = searchValue.toLowerCase().trim();
 			filtered = filtered.filter(
 				(m: KioskModel) =>
-					m.code.toLowerCase().includes(searchLower) ||
+					(m.referenceCode || '').toLowerCase().includes(searchLower) ||
 					m.name.toLowerCase().includes(searchLower),
 			) as KioskModel[];
 		}

@@ -4,7 +4,15 @@ import {
 } from '@reduxjs/toolkit';
 
 import { kioskModelService } from './kioskModelService';
-import { KioskModel } from './types';
+
+import type {
+	KioskModel,
+	CreateKioskModelBody,
+	UpdateKioskModelBody,
+	RestCreateResponse,
+	RestUpdateResponse,
+	RestDeleteResponse,
+} from './types';
 
 
 export const SLICE_NAME = 'vendingMachine.kioskModel';
@@ -12,9 +20,9 @@ export const SLICE_NAME = 'vendingMachine.kioskModel';
 export type KioskModelState = {
 	detail: ReduxActionState<KioskModel>;
 	list: ReduxActionState<KioskModel[]>;
-	create: ReduxActionState<KioskModel>;
-	update: ReduxActionState<KioskModel>;
-	delete: ReduxActionState<void>;
+	create: ReduxActionState<RestCreateResponse>;
+	update: ReduxActionState<RestUpdateResponse>;
+	delete: ReduxActionState<RestDeleteResponse>;
 };
 
 export const initialKioskModelState: KioskModelState = {
@@ -34,8 +42,24 @@ export const listKioskModels = createAsyncThunk<
 	`${SLICE_NAME}/listKioskModels`,
 	async (_, { rejectWithValue }) => {
 		try {
-			const result = await kioskModelService.listKioskModels();
-			return result;
+			const result = await kioskModelService.searchKioskModels({
+				columns: [
+					'createdAt',
+					'etag',
+					'modelId',
+					'referenceCode',
+					'name',
+					'description',
+					'shelvesNumber',
+					'status',
+					'kioskType',
+					'shelvesConfig',
+				],
+				page: 0,
+				size: 5,
+				graph: '{}',
+			});
+			return result.items;
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to list kiosk models';
@@ -45,14 +69,25 @@ export const listKioskModels = createAsyncThunk<
 );
 
 export const getKioskModel = createAsyncThunk<
-	KioskModel | undefined,
+	KioskModel,
 	string,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/getKioskModel`,
 	async (id, { rejectWithValue }) => {
 		try {
-			const result = await kioskModelService.getKioskModel(id);
+			const result = await kioskModelService.getKioskModel(id, [
+				'createdAt',
+				'etag',
+				'modelId',
+				'referenceCode',
+				'name',
+				'description',
+				'shelvesNumber',
+				'status',
+				'kioskType',
+				'shelvesConfig',
+			]);
 			return result;
 		}
 		catch (error) {
@@ -60,18 +95,25 @@ export const getKioskModel = createAsyncThunk<
 			return rejectWithValue(errorMessage);
 		}
 	},
+	// {
+	// 	condition: (_, { getState }) => {
+	// 		const state = getState() as any;
+	// 		return !state['nikkierp.vendingMachine']?.kioskModel?.detail?.status
+	// 		|| state['nikkierp.vendingMachine']?.kioskModel?.detail?.status === 'idle';
+	// 	},
+	// },
+
 );
 
 export const createKioskModel = createAsyncThunk<
-	KioskModel,
-	Omit<KioskModel, 'id' | 'createdAt' | 'etag'>,
+	RestCreateResponse,
+	CreateKioskModelBody,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createKioskModel`,
-	async (model, { rejectWithValue }) => {
+	async (body, { rejectWithValue }) => {
 		try {
-			const result = await kioskModelService.createKioskModel(model);
-			return result;
+			return await kioskModelService.createKioskModel(body);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to create kiosk model';
@@ -81,15 +123,14 @@ export const createKioskModel = createAsyncThunk<
 );
 
 export const updateKioskModel = createAsyncThunk<
-	KioskModel,
-	{ id: string; etag: string; updates: Partial<Omit<KioskModel, 'id' | 'createdAt' | 'etag'>> },
+	RestUpdateResponse,
+	{ id: string; body: UpdateKioskModelBody },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateKioskModel`,
-	async ({ id, etag, updates }, { rejectWithValue }) => {
+	async ({ id, body }, { rejectWithValue }) => {
 		try {
-			const result = await kioskModelService.updateKioskModel(id, etag, updates);
-			return result;
+			return await kioskModelService.updateKioskModel(id, body);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to update kiosk model';
@@ -99,15 +140,14 @@ export const updateKioskModel = createAsyncThunk<
 );
 
 export const deleteKioskModel = createAsyncThunk<
-	void,
+	RestDeleteResponse,
 	{ id: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/deleteKioskModel`,
 	async ({ id }, { rejectWithValue }) => {
 		try {
-			await kioskModelService.deleteKioskModel(id);
-			return undefined;
+			return await kioskModelService.deleteKioskModel(id);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete kiosk model';
@@ -203,13 +243,6 @@ function updateKioskModelReducers(builder: ActionReducerMapBuilder<KioskModelSta
 		.addCase(updateKioskModel.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((m) => m.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
 		})
 		.addCase(updateKioskModel.rejected, (state, action) => {
 			state.update.status = 'error';
@@ -225,6 +258,7 @@ function deleteKioskModelReducers(builder: ActionReducerMapBuilder<KioskModelSta
 		})
 		.addCase(deleteKioskModel.fulfilled, (state, action) => {
 			state.delete.status = 'success';
+			state.delete.data = action.payload;
 			if (state.list.data) {
 				state.list.data = state.list.data.filter((m) => m.id !== action.meta.arg.id);
 			}
