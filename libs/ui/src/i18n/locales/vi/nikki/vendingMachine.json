@@ -501,6 +501,9 @@
 		"detail": {
 			"title": "Chi tiết cài đặt"
 		},
+		"tabs": {
+			"basicInfo": "Thông tin cơ bản"
+		},
 		"fields": {
 			"id": "Mã định danh",
 			"code": "Mã cài đặt",
@@ -518,7 +521,15 @@
 			"status": "Lọc theo trạng thái"
 		},
 		"messages": {
-			"no_settings": "Không tìm thấy cài đặt nào"
+			"no_settings": "Không tìm thấy cài đặt nào",
+			"create_success": "Cài đặt \"{{name}}\" đã được tạo thành công",
+			"update_success": "Cài đặt \"{{name}}\" đã được cập nhật thành công",
+			"delete_success": "Cài đặt đã được xóa thành công",
+			"delete_confirm": "Bạn có chắc chắn muốn xóa cài đặt <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
+			"not_found": {
+				"title": "Không tìm thấy cài đặt",
+				"message": "Cài đặt bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
+			}
 		}
 	},
 	"kioskModels": {
@@ -583,6 +594,8 @@
 		"messages": {
 			"no_models": "Không tìm thấy mô hình nào",
 			"create_success": "Dòng máy \"{{name}}\" đã được tạo thành công",
+			"update_success": "Dòng máy \"{{name}}\" đã được cập nhật thành công",
+			"delete_success": "Dòng máy đã được xóa thành công",
 			"not_found": {
 				"title": "Không tìm thấy dòng máy",
 				"message": "Dòng máy bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
@@ -745,6 +758,10 @@
 		"detail": {
 			"title": "Chi tiết Thiết bị"
 		},
+		"tabs": {
+			"basicInfo": "Thông tin cơ bản",
+			"specifications": "Thông số kỹ thuật"
+		},
 		"fields": {
 			"id": "Mã định danh",
 			"code": "Mã thiết bị",
@@ -773,7 +790,15 @@
 		},
 		"messages": {
 			"no_devices": "Không tìm thấy thiết bị nào",
-			"no_specifications": "Không có thông số"
+			"no_specifications": "Không có thông số",
+			"create_success": "Thiết bị \"{{name}}\" đã được tạo thành công",
+			"update_success": "Thiết bị \"{{name}}\" đã được cập nhật thành công",
+			"delete_success": "Thiết bị đã được xóa thành công",
+			"delete_confirm": "Bạn có chắc chắn muốn xóa thiết bị <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
+			"not_found": {
+				"title": "Không tìm thấy thiết bị",
+				"message": "Thiết bị bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
+			}
 		}
 	},
 	"reports": {

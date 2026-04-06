@@ -17,15 +17,15 @@ export const useKioskModelDelete = () => {
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
 
-	const handleOpenDeleteModal = (kioskModel: KioskModel) => {
+	const handleOpenDeleteModal = React.useCallback((kioskModel: KioskModel) => {
 		setModelToDelete(kioskModel);
 		setIsOpenDeleteModal(true);
-	};
+	}, []);
 
-	const handleCloseDeleteModal = () => {
+	const handleCloseDeleteModal = React.useCallback(() => {
 		setIsOpenDeleteModal(false);
 		setModelToDelete(null);
-	};
+	}, []);
 
 	const handleDelete = React.useCallback((modelId: string) => {
 		dispatch(kioskModelActions.deleteKioskModel({ id: modelId }));

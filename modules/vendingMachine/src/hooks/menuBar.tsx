@@ -41,11 +41,11 @@ export function useMenuBarItems(): MenuBarItem[] {
 			items: [
 				{
 					label: translate('nikki.vendingMachine.menu.presentation'),
-					link: '/slideshows/playlists',
+					link: '/slideshow/playlists',
 					items: [
 						{
 							label: translate('nikki.vendingMachine.menu.playlists'),
-							link: '/slideshows/playlists',
+							link: '/slideshow/playlists',
 						},
 						{
 							label: translate('nikki.vendingMachine.menu.gallery'),

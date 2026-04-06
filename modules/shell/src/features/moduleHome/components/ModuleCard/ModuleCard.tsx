@@ -21,7 +21,6 @@ import classes from './ModuleCard.module.css';
 export const ModuleCard: FC<{ module: any }> = ({ module }) => {
 	const navigate = useNavigate();
 	const { orgSlug } = useActiveOrgModule();
-	const activeOrgSlug = orgSlug ?? GLOBAL_CONTEXT_SLUG;
 	const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
 	return (
@@ -29,7 +28,9 @@ export const ModuleCard: FC<{ module: any }> = ({ module }) => {
 			className={clsx(classes.moduleCard, isActionMenuOpen && classes.moduleCardHover)}
 			pos='relative' justify='start' align='center' gap={0} w={'100%'}
 			onClick={() => {
-				navigate(`/${activeOrgSlug}/${module.slug}`);
+				if (orgSlug) {
+					navigate(`/${orgSlug}/${module.slug}`);
+				}
 			}}
 		>
 			<ModuleCardContent

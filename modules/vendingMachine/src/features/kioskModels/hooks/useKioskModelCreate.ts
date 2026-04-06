@@ -16,6 +16,27 @@ export interface KioskModelCreateFormData {
 	kioskType?: KioskModel['kioskType'];
 }
 
+export function kioskModelToCreateFormValues(model: KioskModel): KioskModelCreateFormData {
+	return {
+		name: model.name,
+		code: model.code,
+		description: model.description,
+		status: model.status,
+		kioskType: model.kioskType,
+	};
+}
+
+export function formDataToKioskModelUpdatePayload(
+	data: KioskModelCreateFormData,
+): Partial<Omit<KioskModel, 'id' | 'createdAt' | 'etag'>> {
+	return {
+		name: data.name,
+		description: data.description,
+		status: data.status,
+		kioskType: data.kioskType,
+	};
+}
+
 function buildKioskModelCreatePayload(data: KioskModelCreateFormData): Omit<KioskModel, 'id' | 'createdAt' | 'etag'> {
 	return {
 		name: data.name,
