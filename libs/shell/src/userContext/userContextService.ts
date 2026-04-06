@@ -190,8 +190,8 @@ const FAKE_USER_CONTEXT: UserContext =  {
 	},
 	orgs: [{
 		id: '1',
-		name: 'CoreMart',
-		slug: 'fake-org',
+		name: 'Core Mart',
+		slug: 'coremart',
 		modules: DEFAULT_MODULES,
 	}],
 	permissions: {
