@@ -246,6 +246,7 @@
 			"update_success": "Kiosk \"{{name}}\" đã được cập nhật thành công",
 			"delete_success": "Kiosk đã được xóa thành công",
 			"delete_confirm": "Bạn có chắc chắn muốn xóa Kiosk \"{{name}}\"?",
+			"invalid_coordinates": "Vĩ độ hoặc kinh độ không hợp lệ. Vui lòng nhập số đúng.",
 			"not_found": {
 				"title": "Không tìm thấy Kiosk",
 				"message": "Kiosk bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
@@ -277,7 +278,8 @@
 			"status": "Lọc theo trạng thái"
 		},
 		"messages": {
-			"no_slideshows": "Không tìm thấy trình chiếu nào"
+			"no_slideshows": "Không tìm thấy trình chiếu nào",
+			"no_playlists_found": "Không tìm thấy danh sách trình chiếu nào"
 		},
 		"preview": {
 			"title": "Xem trước",
@@ -490,13 +492,17 @@
 		},
 		"messages": {
 			"no_settings": "Không tìm thấy cài đặt kiosk nào",
-			"create_success": "Đã tạo cài đặt kiosk \"{{name}}\" thành công"
+			"create_success": "Đã tạo cài đặt kiosk \"{{name}}\" thành công",
+			"update_success": "Đã cập nhật cài đặt kiosk \"{{name}}\" thành công"
 		}
 	},
 	"settings": {
 		"title": "Cài đặt",
 		"detail": {
 			"title": "Chi tiết cài đặt"
+		},
+		"tabs": {
+			"basicInfo": "Thông tin cơ bản"
 		},
 		"fields": {
 			"id": "Mã định danh",
@@ -515,7 +521,15 @@
 			"status": "Lọc theo trạng thái"
 		},
 		"messages": {
-			"no_settings": "Không tìm thấy cài đặt nào"
+			"no_settings": "Không tìm thấy cài đặt nào",
+			"create_success": "Cài đặt \"{{name}}\" đã được tạo thành công",
+			"update_success": "Cài đặt \"{{name}}\" đã được cập nhật thành công",
+			"delete_success": "Cài đặt đã được xóa thành công",
+			"delete_confirm": "Bạn có chắc chắn muốn xóa cài đặt <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
+			"not_found": {
+				"title": "Không tìm thấy cài đặt",
+				"message": "Cài đặt bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
+			}
 		}
 	},
 	"kioskModels": {
@@ -564,9 +578,8 @@
 			"slideshowOnly": "Chỉ trình chiếu"
 		},
 		"kioskType": {
-			"withoutElevator": "Không có thang máy",
-			"elevatorWithConveyor": "Thang máy có băng chuyền",
-			"elevatorWithoutConveyor": "Thang máy không có băng chuyền"
+			"elevator": "Thang nâng",
+			"nonElevator": "Rớt hàng"
 		},
 		"interfaceMode": {
 			"normal": "Bình thường",
@@ -581,6 +594,8 @@
 		"messages": {
 			"no_models": "Không tìm thấy mô hình nào",
 			"create_success": "Dòng máy \"{{name}}\" đã được tạo thành công",
+			"update_success": "Dòng máy \"{{name}}\" đã được cập nhật thành công",
+			"delete_success": "Dòng máy đã được xóa thành công",
 			"not_found": {
 				"title": "Không tìm thấy dòng máy",
 				"message": "Dòng máy bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
@@ -743,6 +758,10 @@
 		"detail": {
 			"title": "Chi tiết Thiết bị"
 		},
+		"tabs": {
+			"basicInfo": "Thông tin cơ bản",
+			"specifications": "Thông số kỹ thuật"
+		},
 		"fields": {
 			"id": "Mã định danh",
 			"code": "Mã thiết bị",
@@ -771,7 +790,15 @@
 		},
 		"messages": {
 			"no_devices": "Không tìm thấy thiết bị nào",
-			"no_specifications": "Không có thông số"
+			"no_specifications": "Không có thông số",
+			"create_success": "Thiết bị \"{{name}}\" đã được tạo thành công",
+			"update_success": "Thiết bị \"{{name}}\" đã được cập nhật thành công",
+			"delete_success": "Thiết bị đã được xóa thành công",
+			"delete_confirm": "Bạn có chắc chắn muốn xóa thiết bị <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
+			"not_found": {
+				"title": "Không tìm thấy thiết bị",
+				"message": "Thiết bị bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
+			}
 		}
 	},
 	"reports": {

@@ -3,8 +3,7 @@ import { ViewMode } from '@/components';
 
 export type KioskModelViewMode = Extract<ViewMode, 'list' | 'grid'>;
 
-export type KioskType = 'withoutElevator' | 'elevatorWithConveyor' | 'elevatorWithoutConveyor';
-export type InterfaceMode = 'normal' | 'focus';
+export type KioskType = 'elevator' | 'nonElevator';
 
 export const KIOSK_SHELF_TYPES = {
 	spring: 'spring',

@@ -1,6 +1,6 @@
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appState';
@@ -8,7 +8,9 @@ import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appSt
 import { type Kiosk } from '../types';
 
 
-export const useKioskDelete = (onRefresh?: () => void) => {
+
+
+export const useKioskDelete = () => {
 	const [isOpenDeleteModal, setIsOpenDeleteModal] = React.useState(false);
 	const [kioskToDelete, setKioskToDelete] = React.useState<Kiosk | null>(null);
 
@@ -17,32 +19,33 @@ export const useKioskDelete = (onRefresh?: () => void) => {
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
 
-	const handleOpenDeleteModal = (kiosk: Kiosk) => {
+	const openDeleteModal = React.useCallback((kiosk: Kiosk) => {
 		setKioskToDelete(kiosk);
 		setIsOpenDeleteModal(true);
-	};
+	}, []);
 
-	const handleCloseDeleteModal = () => {
+	const closeDeleteModal = React.useCallback(() => {
 		setIsOpenDeleteModal(false);
 		setKioskToDelete(null);
-	};
+	}, []);
 
-	const handleDelete = React.useCallback((kioskId: string) => {
-		dispatch(kioskActions.deleteKiosk({ id: kioskId }));
-	}, [dispatch]);
+	const handleDelete = React.useCallback(() => {
+		if (!kioskToDelete) return;
+		dispatch(kioskActions.deleteKiosk({ id: kioskToDelete?.id || '' }));
+	}, [dispatch, kioskToDelete]);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (deleteState.status === 'success') {
 			notification.showInfo(
 				translate('nikki.vendingMachine.kiosk.messages.delete_success'),
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(kioskActions.resetDeleteKiosk());
-			onRefresh?.();
+			dispatch(kioskActions.listKiosks());
 		}
-	}, [deleteState, dispatch, notification, translate, onRefresh]);
+	}, [deleteState, dispatch, notification, translate]);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (deleteState.status === 'error') {
 			notification.showError(
 				deleteState.error ?? translate('nikki.general.errors.delete_failed'),
@@ -54,8 +57,8 @@ export const useKioskDelete = (onRefresh?: () => void) => {
 
 	return {
 		handleDelete,
-		handleOpenDeleteModal,
-		handleCloseDeleteModal,
+		openDeleteModal,
+		closeDeleteModal,
 		isOpenDeleteModal,
 		kioskToDelete,
 	};

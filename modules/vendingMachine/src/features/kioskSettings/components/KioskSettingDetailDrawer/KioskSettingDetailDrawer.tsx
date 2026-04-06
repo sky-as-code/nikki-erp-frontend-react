@@ -5,11 +5,11 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { AssignedKioskList } from '@/components/AssignedKioskList';
-import { GameConfig } from '@/components/GameConfig';
-import { SlideShowConfig } from '@/components/SlideShowConfig';
-import { ThemeConfig } from '@/components/ThemeConfig';
-import { KioskSelectModal } from '@/features/events/components/EventDetailDrawer/KioskSelectModal';
+import { AssignedKioskList } from '@/components/AssignKiosks';
+import { KioskSelectModal } from '@/components/AssignKiosks/KioskSelectModal';
+import { GameSelect } from '@/components/GameSelect';
+import { SlideshowSelect } from '@/components/SlideshowSelect';
+import { ThemeSelect } from '@/components/ThemeSelect';
 import { Game } from '@/features/games/types';
 import { Kiosk } from '@/features/kiosks/types';
 import { Slideshow } from '@/features/slideshow/types';
@@ -204,34 +204,52 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 				<Divider />
 				<div>
 					<Stack gap='md'>
-						<ThemeConfig
-							theme={settingTheme}
-							themeId={setting.themeId}
-							onChange={handleThemeChange}
+						<ThemeSelect
+							value={settingTheme}
+							onChange={(v) => {
+								if (v) {
+									handleThemeChange(v);
+								}
+							}}
 							onRemove={handleThemeRemove}
+							isEditing
 						/>
-						<SlideShowConfig
-							variant='idle'
-							slideshow={idlePlaylist}
-							onChange={handleIdlePlaylistChange}
+						<SlideshowSelect
+							type='waiting'
+							value={idlePlaylist}
 							onRemove={handleIdlePlaylistRemove}
+							onChange={(v) => {
+								if (v) {
+									handleIdlePlaylistChange(v);
+								}
+							}}
+							isEditing
 						/>
-						<SlideShowConfig
-							variant='shopping'
-							slideshow={shoppingPlaylist}
-							onChange={handleShoppingPlaylistChange}
+						<SlideshowSelect
+							type='shopping'
+							value={shoppingPlaylist}
 							onRemove={handleShoppingPlaylistRemove}
+							onChange={(v) => {
+								if (v) {
+									handleShoppingPlaylistChange(v);
+								}
+							}}
+							isEditing
 						/>
 					</Stack>
 				</div>
 
 				{/* Game Configuration */}
 				<div>
-					<GameConfig
-						game={settingGame}
-						gameId={setting.gameId}
-						onChange={handleGameChange}
+					<GameSelect
+						value={settingGame}
 						onRemove={handleGameRemove}
+						onChange={(v) => {
+							if (v) {
+								handleGameChange(v);
+							}
+						}}
+						isEditing
 					/>
 				</div>
 

@@ -40,7 +40,7 @@ export const ProductSelectModal: React.FC<ProductSelectModalProps> = ({
 		return availableProducts.filter(
 			(p) =>
 				p.code.toLowerCase().includes(query) ||
-				p.name.toLowerCase().includes(query)
+				p.name.toLowerCase().includes(query),
 		);
 	}, [availableProducts, searchQuery]);
 
@@ -67,7 +67,7 @@ export const ProductSelectModal: React.FC<ProductSelectModalProps> = ({
 	const handleSaveEdit = () => {
 		if (editingProduct) {
 			setSelectedProducts(selectedProducts.map((p) =>
-				p.id === editingProduct.id ? editingProduct : p
+				p.id === editingProduct.id ? editingProduct : p,
 			));
 			setEditingProduct(null);
 		}

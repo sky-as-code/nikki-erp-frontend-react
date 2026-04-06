@@ -86,7 +86,7 @@ export const SlideshowSelectModal: React.FC<SlideshowSelectModalProps> = ({
 				<ScrollArea h={400}>
 					{filteredSlideshows.length === 0 ? (
 						<Text size='sm' c='dimmed' ta='center' py='md'>
-							{translate('nikki.vendingMachine.events.selectSlideshows.noAds')}
+							{translate('nikki.vendingMachine.slideshow.messages.no_playlists_found')}
 						</Text>
 					) : (
 						<SimpleGrid cols={2} spacing='md'>

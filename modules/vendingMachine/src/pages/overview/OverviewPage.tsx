@@ -7,27 +7,24 @@ import { useDocumentTitle } from '@nikkierp/ui/hooks';
 import React from 'react';
 
 import {
-	CustomerSupportRequest,
-	KioskErrorAlert,
-	KioskLowStockAlert,
-	OperationParametersChart,
-	OverviewStats,
-} from '../../features/kiosks/components';
-import { KioskHitMap } from '../../features/kiosks/components/KioskHitMap';
-import { useKioskList } from '../../features/kiosks/hooks';
-import {
 	mockCustomerUsage,
 	mockKioskErrors,
 	mockLowStockAlerts,
 	mockOperationParameters,
 	mockSupportRequests,
-} from '../../features/kiosks/mockOverviewData';
+} from '@/features/kiosks/mocks';
+import { CustomerSupportRequest, OperationParametersChart, OverviewStats } from '@/features/reports/operations/components';
+
+import {
+	KioskErrorAlert,
+	KioskLowStockAlert,
+} from '../../features/kiosks/components';
+import { KioskHitMap } from '../../features/kiosks/components/KioskHitMap';
+import { useKioskList } from '../../features/kiosks/hooks';
 import {
 	KioskStatus,
 	type Kiosk,
 } from '../../features/kiosks/types';
-
-
 
 
 export default function OverviewPage(): React.ReactNode {

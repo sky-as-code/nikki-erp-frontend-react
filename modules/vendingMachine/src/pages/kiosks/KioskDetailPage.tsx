@@ -1,35 +1,31 @@
-
-import { IconArrowLeft } from '@tabler/icons-react';
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 
 import { ControlPanel } from '@/components';
-import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { DetailLayout } from '@/components/DetailLayout';
-import { KioskNotFound } from '@/components/KioskNotFound';
 import { PageContainer } from '@/components/PageContainer';
 import { useKioskDetail } from '@/features/kiosks';
-import { TabId, useKioskDetailBreadcrumbs, useKioskDetailTabs } from '@/features/kiosks/components/KioskDetail/hooks';
+import { KioskDetailTabId, useKioskDetailPageConfig,
+	KioskDetailTabControlProvider, KioskNotFound,
+} from '@/features/kiosks/components/KioskDetail';
+
 
 
 export const KioskDetailPage: React.FC = () => {
-	const navigate = useNavigate();
+	return (
+		<KioskDetailTabControlProvider>
+			<KioskDetailPageContent />
+		</KioskDetailTabControlProvider>
+	);
+};
+
+
+const KioskDetailPageContent: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
 	const { t: translate } = useTranslation();
-
-	const [activeTab, setActiveTab] = useState<TabId>('basicInfo');
 	const { kiosk, isLoading } = useKioskDetail(id);
-	const { tabs, actions: tabActions } = useKioskDetailTabs({ kiosk, activeTab });
-	const breadcrumbs = useKioskDetailBreadcrumbs({ kiosk });
-
-	const actions: ControlPanelProps['actions'] = [{
-		label: translate('nikki.general.actions.back'),
-		onClick: () => navigate('../kiosks'),
-		leftSection: <IconArrowLeft size={16} />,
-		variant: 'outline',
-	}];
-	if (kiosk) actions.push(...(tabActions ?? []));
+	const { breadcrumbs, actions, tabs, activeTab, onTabChange } = useKioskDetailPageConfig({ kiosk });
 
 	return (
 		<PageContainer
@@ -47,7 +43,7 @@ export const KioskDetailPage: React.FC = () => {
 				}}
 				tabs={tabs}
 				activeTab={activeTab}
-				onTabChange={(value) => setActiveTab(value as TabId)}
+				onTabChange={(value) => onTabChange(value as KioskDetailTabId)}
 			/>
 		</PageContainer>
 	);

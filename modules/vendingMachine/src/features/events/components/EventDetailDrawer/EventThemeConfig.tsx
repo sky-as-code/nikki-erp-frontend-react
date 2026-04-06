@@ -1,8 +1,8 @@
 import { Stack } from '@mantine/core';
 import React from 'react';
 
-import { SlideShowConfig } from '@/components/SlideShowConfig';
-import { ThemeConfig } from '@/components/ThemeConfig';
+import { SlideshowSelect } from '@/components/SlideshowSelect';
+import { ThemeSelect } from '@/components/ThemeSelect';
 
 import { Slideshow } from '../../../slideshow/types';
 import { Theme } from '../../../themes/types';
@@ -23,7 +23,6 @@ export interface EventThemeConfigProps {
 
 export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 	theme,
-	themeId,
 	idlePlaylist,
 	shoppingPlaylist,
 	onThemeChange,
@@ -34,23 +33,39 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 	onShoppingPlaylistRemove = () => {},
 }) => (
 	<Stack gap='md'>
-		<ThemeConfig
-			theme={theme}
-			themeId={themeId}
-			onChange={onThemeChange}
+		<ThemeSelect
+			value={theme}
 			onRemove={onThemeRemove}
+			onChange={(v) => {
+				if (v) {
+					onThemeChange?.(v);
+				}
+			}}
+			isEditing={Boolean(onThemeChange)}
 		/>
-		<SlideShowConfig
-			variant='idle'
-			slideshow={idlePlaylist}
-			onChange={onIdlePlaylistChange}
+		<SlideshowSelect
+			type='waiting'
+			value={idlePlaylist}
 			onRemove={onIdlePlaylistRemove}
+			onChange={(v) => {
+				if (v) {
+					onIdlePlaylistChange?.(v);
+				}
+			}}
+			isEditing={Boolean(onIdlePlaylistChange)}
 		/>
-		<SlideShowConfig
-			variant='shopping'
-			slideshow={shoppingPlaylist}
-			onChange={onShoppingPlaylistChange}
-			onRemove={onShoppingPlaylistRemove}
+		<SlideshowSelect
+			type='shopping'
+			value={shoppingPlaylist}
+			onChange={(v) => {
+				if (v) {
+					onShoppingPlaylistChange?.(v);
+				}
+				else {
+					onShoppingPlaylistRemove();
+				}
+			}}
+			isEditing={Boolean(onShoppingPlaylistChange)}
 		/>
 	</Stack>
 );

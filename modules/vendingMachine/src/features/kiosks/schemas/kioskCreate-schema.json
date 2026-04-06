@@ -1,0 +1,51 @@
+{
+	"name": "kiosk",
+	"fields": {
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.name' }"
+		},
+		"code": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.code' }"
+		},
+		"address": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.address' }"
+		},
+		"latitude": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.latitude' }"
+		},
+		"longitude": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.longitude' }"
+		},
+		"status": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.status' }",
+			"enum": [
+				{ "value": "activated", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.activated' }" },
+				{ "value": "disabled", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.disabled' }" },
+				{ "value": "deleted", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.deleted' }" }
+			]
+		},
+		"mode": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.mode' }",
+			"enum": [
+				{ "value": "pending", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.pending' }" },
+				{ "value": "selling", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.selling' }" },
+				{ "value": "slideshowOnly", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.slideshowOnly' }" }
+			]
+		},
+		"modelId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.model' }"
+		},
+		"paymentMethodIds": {
+			"type": "array",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.paymentMethods' }"
+		}
+	}
+}

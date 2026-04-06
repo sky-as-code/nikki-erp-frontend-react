@@ -1,3 +1,11 @@
+import { Slideshow } from '../slideshow/types';
+
+import type { Game } from '../games/types';
+import type { Theme } from '../themes/types';
+
+
+export type UIMode = 'normal' | 'focus';
+
 export enum KioskStatus {
 	DISABLED = 'disabled',
 	ACTIVATED = 'activated',
@@ -6,10 +14,8 @@ export enum KioskStatus {
 
 export enum KioskMode {
 	PENDING = 'pending', //* screen locked in maintenance page
-	WAITING = 'waiting', //* screen locked in waiting page
 	SELLING = 'selling', //* selling mode
-
-	SLIDESHOWONLY = 'slideshowOnly', //* todo: remove this
+	SLIDESHOW_ONLY = 'slideshowOnly', //* slideshow only mode
 }
 
 export enum ConnectionStatus {
@@ -142,4 +148,29 @@ export interface Kiosk {
 	createdAt: string;
 	deletedAt?: string;
 	etag: string;
+	/** Optional: kiosk model assignment (create/update payloads) */
+	modelId?: string;
+	/** Optional: enabled payment methods */
+	paymentMethodIds?: string[];
+
+	uiMode?: UIMode;
+	waitingPlaylist?: Slideshow;
+	shoppingPlaylist?: Slideshow;
+	theme?: Theme;
+	game?: Game;
+}
+
+
+export enum KioskActivityLogType {
+	WARNING = 'warning',
+	STATUS_DETAIL = 'statusDetail',
+	ERROR = 'error',
+	INFO = 'info',
+}
+
+export interface KioskActivityLog {
+	id: string;
+	timestamp: string;
+	type: 'warning' | 'statusDetail' | 'error' | 'info';
+	content: string;
 }

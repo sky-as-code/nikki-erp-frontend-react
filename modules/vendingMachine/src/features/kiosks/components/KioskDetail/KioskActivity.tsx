@@ -18,13 +18,9 @@ import { IconSearch } from '@tabler/icons-react';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { KioskActivityLog } from '../../types';
 
-interface KioskActivityLog {
-	id: string;
-	timestamp: string;
-	type: 'warning' | 'statusDetail' | 'error' | 'info';
-	content: string;
-}
+
 
 // Mock data based on user's sample
 const mockLogs: KioskActivityLog[] = [

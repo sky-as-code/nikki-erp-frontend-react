@@ -10,25 +10,26 @@ import {
 	type TrayConfiguration as TrayConfigurationType,
 } from '../../types';
 import { TrayConfiguration } from '../KioskModelDetailDrawer/TrayConfiguration';
+import { useModelSettingsTab } from './hooks/useModelSettingsTab';
 
 
 export interface KioskModelSettingsProps {
 	model: KioskModel;
-	isEditing?: boolean;
 }
 
 const getKioskTypeLabel = (type: KioskType | undefined, translate: (key: string) => string) => {
 	if (!type) return '-';
 	const labelMap: Record<KioskType, string> = {
-		withoutElevator: translate('nikki.vendingMachine.kioskModels.kioskType.withoutElevator'),
-		elevatorWithConveyor: translate('nikki.vendingMachine.kioskModels.kioskType.elevatorWithConveyor'),
-		elevatorWithoutConveyor: translate('nikki.vendingMachine.kioskModels.kioskType.elevatorWithoutConveyor'),
+		elevator: translate('nikki.vendingMachine.kioskModels.kioskType.elevator'),
+		nonElevator: translate('nikki.vendingMachine.kioskModels.kioskType.nonElevator'),
 	};
 	return labelMap[type] || type;
 };
 
-export const KioskModelSettings: React.FC<KioskModelSettingsProps> = ({ model, isEditing = false }) => {
+export const KioskModelSettings: React.FC<KioskModelSettingsProps> = ({ model }) => {
 	const { t: translate } = useTranslation();
+	const { isEditing } = useModelSettingsTab({ model });
+
 	const [selectedKioskType, setSelectedKioskType] = useState<KioskType | undefined>(model?.kioskType);
 	const [numberOfTrays, setNumberOfTrays] = useState<number>(model?.numberOfTrays || 0);
 	const [trayConfigurations, setTrayConfigurations] =
@@ -54,9 +55,8 @@ export const KioskModelSettings: React.FC<KioskModelSettingsProps> = ({ model, i
 						onChange={(value) => setSelectedKioskType(value as KioskType | undefined)}
 						placeholder={translate('nikki.vendingMachine.kioskModels.fields.kioskType')}
 						data={[
-							{ value: 'withoutElevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.withoutElevator') },
-							{ value: 'elevatorWithConveyor', label: translate('nikki.vendingMachine.kioskModels.kioskType.elevatorWithConveyor') },
-							{ value: 'elevatorWithoutConveyor', label: translate('nikki.vendingMachine.kioskModels.kioskType.elevatorWithoutConveyor') },
+							{ value: 'nonElevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.nonElevator') },
+							{ value: 'elevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.elevator') },
 						]}
 						clearable
 					/>

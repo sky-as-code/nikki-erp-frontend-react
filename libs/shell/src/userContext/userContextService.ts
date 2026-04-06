@@ -118,11 +118,13 @@ function mapApiContextToUserContext(data: UserContextApiResponse): UserContext {
 export class UserContextService {
 	public async fetch(): Promise<UserContext> {
 		try {
-			const data = await request.get<UserContextApiResponse>(
-				`identity/users/context`,
-			);
-			const context = mapApiContextToUserContext(data);
-			return context;
+			// const data = await request.get<UserContextApiResponse>(
+			// 	`identity/users/context`,
+			// );
+			// const context = mapApiContextToUserContext(data);
+			// return context;
+
+			return FAKE_USER_CONTEXT;
 		}
 		catch (error) {
 			console.error('Error fetching user context:', error);
@@ -177,3 +179,29 @@ export const DEFAULT_MODULES: Module[] = [
 		slug: 'drive',
 	},
 ];
+
+
+
+const FAKE_USER_CONTEXT: UserContext =  {
+	user: {
+		id: '1',
+		email: 'test@test.com',
+		displayName: 'Test User',
+	},
+	orgs: [{
+		id: '1',
+		name: 'Core Mart',
+		slug: 'coremart',
+		modules: DEFAULT_MODULES,
+	}],
+	permissions: {
+		'*': [
+			{
+				scopeType: 'org',
+				scopeRef: 'CoreMart',
+				actions: ['*'],
+			},
+		],
+	},
+	hierarchies: [],
+};

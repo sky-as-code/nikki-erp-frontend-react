@@ -1,3 +1,6 @@
+import { camelToSnakeCase, camelToUpperSnakeCase, snakeToCamelCase } from './string';
+
+
 export const hasNullValue = (obj: Record<string, any>): boolean => {
 	return Object.values(obj).some((value) => value === null);
 };
@@ -21,3 +24,28 @@ export function cleanFormData<T extends object>(data: T): Cleaned<T> {
 
 	return copy;
 }
+
+export const convertKeys = ( obj: any, transform: (key: string) => string): any => {
+	if (Array.isArray(obj)) {
+		return obj.map((item) => convertKeys(item, transform));
+	}
+
+	if (obj !== null && typeof obj === 'object') {
+		return Object.entries(obj).reduce((acc, [key, value]) => {
+			const newKey = transform(key);
+			acc[newKey] = convertKeys(value, transform);
+			return acc;
+		}, {} as Record<string, any>);
+	}
+
+	return obj;
+};
+
+export const camelToSnakeObject = (obj: any) =>
+	convertKeys(obj, camelToSnakeCase);
+
+export const camelToUpperSnakeObject = (obj: any) =>
+	convertKeys(obj, camelToUpperSnakeCase);
+
+export const snakeToCamelObject = (obj: any) =>
+	convertKeys(obj, snakeToCamelCase);

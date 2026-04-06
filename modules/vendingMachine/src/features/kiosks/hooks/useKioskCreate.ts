@@ -20,6 +20,36 @@ export interface KioskCreateFormData {
 	paymentMethodIds?: string[];
 }
 
+export function kioskToCreateFormValues(k: Kiosk): KioskCreateFormData {
+	return {
+		name: k.name,
+		code: k.code,
+		address: k.address,
+		latitude: k.coordinates.latitude.toString(),
+		longitude: k.coordinates.longitude.toString(),
+		status: k.status,
+		mode: k.mode,
+		modelId: k.modelId,
+		paymentMethodIds: k.paymentMethodIds ?? [],
+	};
+}
+
+export function formDataToKioskUpdatePayload(
+	data: KioskCreateFormData,
+): Partial<Omit<Kiosk, 'id' | 'createdAt' | 'etag'>> {
+	const lat = typeof data.latitude === 'string' ? Number.parseFloat(data.latitude) : Number(data.latitude);
+	const lng = typeof data.longitude === 'string' ? Number.parseFloat(data.longitude) : Number(data.longitude);
+	return {
+		name: data.name,
+		address: data.address,
+		coordinates: { latitude: lat, longitude: lng },
+		mode: data.mode,
+		status: data.status,
+		...(data.modelId ? { modelId: data.modelId } : { modelId: undefined }),
+		paymentMethodIds: data.paymentMethodIds ?? [],
+	};
+}
+
 function buildKioskCreatePayload(data: KioskCreateFormData): Omit<Kiosk, 'id' | 'createdAt' | 'etag'> {
 	const lat = Number(data.latitude) || 0;
 	const lng = Number(data.longitude) || 0;

@@ -203,6 +203,7 @@
 			"update_success": "Kiosk \"{{name}}\" has been updated successfully",
 			"delete_success": "Kiosk has been deleted successfully",
 			"delete_confirm": "Are you sure you want to delete the kiosk \"{{name}}\"?",
+			"invalid_coordinates": "Invalid latitude or longitude. Please enter valid numbers.",
 			"not_found": {
 				"title": "Kiosk Not Found",
 				"message": "The kiosk you are looking for does not exist or has been removed."
@@ -234,7 +235,8 @@
 			"status": "Filter by Status"
 		},
 		"messages": {
-			"no_slideshows": "No slideshows found"
+			"no_slideshows": "No slideshows found",
+			"no_playlists_found": "No playlists found"
 		},
 		"preview": {
 			"title": "Preview",
@@ -447,13 +449,17 @@
 		},
 		"messages": {
 			"no_settings": "No kiosk settings found",
-			"create_success": "Kiosk setting \"{{name}}\" has been created successfully"
+			"create_success": "Kiosk setting \"{{name}}\" has been created successfully",
+			"update_success": "Kiosk setting \"{{name}}\" has been updated successfully"
 		}
 	},
 	"settings": {
 		"title": "Settings",
 		"detail": {
 			"title": "Setting Detail"
+		},
+		"tabs": {
+			"basicInfo": "Basic Information"
 		},
 		"fields": {
 			"id": "ID",
@@ -472,7 +478,15 @@
 			"status": "Filter by Status"
 		},
 		"messages": {
-			"no_settings": "No settings found"
+			"no_settings": "No settings found",
+			"create_success": "Setting \"{{name}}\" has been created successfully",
+			"update_success": "Setting \"{{name}}\" has been updated successfully",
+			"delete_success": "Setting has been deleted successfully",
+			"delete_confirm": "Are you sure you want to delete setting <strong>{{name}}</strong>? This action cannot be undone.",
+			"not_found": {
+				"title": "Setting Not Found",
+				"message": "The setting you are looking for does not exist or has been removed."
+			}
 		}
 	},
 	"kioskModels": {
@@ -521,9 +535,8 @@
 			"slideshowOnly": "Slideshow Only"
 		},
 		"kioskType": {
-			"withoutElevator": "Without Elevator",
-			"elevatorWithConveyor": "Elevator With Conveyor",
-			"elevatorWithoutConveyor": "Elevator Without Conveyor"
+			"elevator": "Elevator",
+			"nonElevator": "Non Elevator"
 		},
 		"interfaceMode": {
 			"normal": "Normal",
@@ -538,6 +551,8 @@
 		"messages": {
 			"no_models": "No models found",
 			"create_success": "Kiosk model \"{{name}}\" has been created successfully",
+			"update_success": "Kiosk model \"{{name}}\" has been updated successfully",
+			"delete_success": "Kiosk model has been deleted successfully",
 			"not_found": {
 				"title": "Kiosk Model Not Found",
 				"message": "The kiosk model you are looking for does not exist or has been removed."
@@ -700,6 +715,10 @@
 		"detail": {
 			"title": "Device Details"
 		},
+		"tabs": {
+			"basicInfo": "Basic Information",
+			"specifications": "Specifications"
+		},
 		"fields": {
 			"id": "ID",
 			"code": "Code",
@@ -728,7 +747,15 @@
 		},
 		"messages": {
 			"no_devices": "No devices found",
-			"no_specifications": "No specifications"
+			"no_specifications": "No specifications",
+			"create_success": "Device \"{{name}}\" has been created successfully",
+			"update_success": "Device \"{{name}}\" has been updated successfully",
+			"delete_success": "Device has been deleted successfully",
+			"delete_confirm": "Are you sure you want to delete device <strong>{{name}}</strong>? This action cannot be undone.",
+			"not_found": {
+				"title": "Device Not Found",
+				"message": "The device you are looking for does not exist or has been removed."
+			}
 		}
 	},
 	"reports": {

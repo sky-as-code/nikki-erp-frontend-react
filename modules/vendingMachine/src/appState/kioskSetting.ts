@@ -44,6 +44,11 @@ export const selectCreateKioskSetting = createSelector(
 	(s) => s.create,
 );
 
+export const selectUpdateKioskSetting = createSelector(
+	selectKioskSettingState,
+	(s) => s.update,
+);
+
 export const selectDeleteKioskSetting = createSelector(
 	selectKioskSettingState,
 	(s) => s.delete,

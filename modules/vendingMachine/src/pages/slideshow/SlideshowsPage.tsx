@@ -1,10 +1,10 @@
 import { ConfirmModal } from '@nikkierp/ui/components';
 import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
+import { IconPlus, IconRefresh } from '@tabler/icons-react';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { IconPlus, IconRefresh } from '@tabler/icons-react';
 import { ControlPanel, type ViewMode, ControlPanelFilterConfig } from '@/components';
 import { PageContainer } from '@/components/PageContainer';
 import { SlideshowDetailDrawer, SlideshowGridView, SlideshowTable, slideshowSchema, useSlideshowDetail, useSlideshowList } from '@/features/slideshow';

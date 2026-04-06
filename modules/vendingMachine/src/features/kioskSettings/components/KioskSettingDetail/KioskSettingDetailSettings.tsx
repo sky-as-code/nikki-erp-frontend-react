@@ -1,78 +1,68 @@
 import { Stack } from '@mantine/core';
 import React from 'react';
 
-import { GameConfig } from '@/components/GameConfig';
-import { SlideShowConfig } from '@/components/SlideShowConfig';
-import { ThemeConfig } from '@/components/ThemeConfig';
-import { Game } from '@/features/games/types';
-import { Slideshow } from '@/features/slideshow/types';
-import { Theme } from '@/features/themes/types';
+import { GameSelect } from '@/components/GameSelect';
+import { SlideshowSelect } from '@/components/SlideshowSelect';
+import { ThemeSelect } from '@/components/ThemeSelect';
 
 import { KioskSetting } from '../../types';
+import { useKioskSettingSettingsTab } from './hooks/useKioskSettingSettingsTab';
 
 
 export type KioskSettingDetailSettingsProps = {
-	/** Bản gốc từ server (themeId, gameId, …). Draft theme/game/slideshow do tab hook quản lý. */
 	setting: KioskSetting;
-	/** Khi tắt, cấu hình chỉ xem (không tương tác). */
-	isEditing?: boolean;
-	settingTheme: Theme | undefined;
-	settingGame: Game | undefined;
-	idlePlaylist: Slideshow | undefined;
-	shoppingPlaylist: Slideshow | undefined;
-	onThemeChange: (theme: Theme) => void;
-	onThemeRemove: () => void;
-	onGameChange: (game: Game) => void;
-	onGameRemove: () => void;
-	onIdlePlaylistChange: (slideshow: Slideshow) => void;
-	onShoppingPlaylistChange: (slideshow: Slideshow) => void;
-	onIdlePlaylistRemove: () => void;
-	onShoppingPlaylistRemove: () => void;
 };
 
 export const KioskSettingDetailSettings: React.FC<KioskSettingDetailSettingsProps> = ({
 	setting,
-	isEditing = true,
-	settingTheme,
-	settingGame,
-	idlePlaylist,
-	shoppingPlaylist,
-	onThemeChange,
-	onThemeRemove,
-	onGameChange,
-	onGameRemove,
-	onIdlePlaylistChange,
-	onShoppingPlaylistChange,
-	onIdlePlaylistRemove,
-	onShoppingPlaylistRemove,
-}) => (
-	<Stack
-		gap='lg'
-		style={isEditing ? undefined : { pointerEvents: 'none', opacity: 0.72 }}
-	>
-		<ThemeConfig
-			theme={settingTheme}
-			themeId={setting.themeId}
-			onChange={onThemeChange}
-			onRemove={onThemeRemove}
-		/>
-		<SlideShowConfig
-			variant='idle'
-			slideshow={idlePlaylist}
-			onChange={onIdlePlaylistChange}
-			onRemove={onIdlePlaylistRemove}
-		/>
-		<SlideShowConfig
-			variant='shopping'
-			slideshow={shoppingPlaylist}
-			onChange={onShoppingPlaylistChange}
-			onRemove={onShoppingPlaylistRemove}
-		/>
-		<GameConfig
-			game={settingGame}
-			gameId={setting.gameId}
-			onChange={onGameChange}
-			onRemove={onGameRemove}
-		/>
-	</Stack>
-);
+}) => {
+	const {
+		isEditing,
+		settingTheme,
+		settingGame,
+		idlePlaylist,
+		shoppingPlaylist,
+		onThemeChange,
+		onThemeRemove,
+		onGameChange,
+		onGameRemove,
+		onIdlePlaylistChange,
+		onShoppingPlaylistChange,
+		onIdlePlaylistRemove,
+		onShoppingPlaylistRemove,
+	} = useKioskSettingSettingsTab({ setting });
+
+	return (
+		<Stack
+			gap='lg'
+			// style={isEditing ? undefined : { pointerEvents: 'none', opacity: 0.72 }}
+		>
+			<ThemeSelect
+				value={settingTheme}
+				onChange={onThemeChange}
+				onRemove={onThemeRemove}
+				isEditing={isEditing}
+			/>
+			<SlideshowSelect
+				type='waiting'
+				value={idlePlaylist}
+				onChange={onIdlePlaylistChange}
+				onRemove={onIdlePlaylistRemove}
+				isEditing={isEditing}
+			/>
+			<SlideshowSelect
+				type='shopping'
+				value={shoppingPlaylist}
+				onRemove={onShoppingPlaylistRemove}
+				onChange={onShoppingPlaylistChange}
+				isEditing={isEditing}
+			/>
+			<GameSelect
+				value={settingGame}
+				onChange={onGameChange}
+				onRemove={onGameRemove}
+				isEditing={isEditing}
+			/>
+		</Stack>
+	);
+};

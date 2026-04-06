@@ -11,6 +11,7 @@ export interface ControlPanelViewModeProps {
 	segments: ViewMode[];
 }
 
+
 const defaultSegments = [
 	{
 		value: 'list',

@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { PageContainerProps } from '@/components/PageContainer';
+import { BreadcrumbItem } from '@/components/BreadCrumbs';
 import { Kiosk } from '@/features/kiosks';
 
 
-export const useKioskDetailBreadcrumbs = ({ kiosk }: { kiosk?: Kiosk }): PageContainerProps['breadcrumbs'] => {
+export const useKioskDetailBreadcrumbs = ({ kiosk }: { kiosk?: Kiosk }): BreadcrumbItem[] => {
 	const { t: translate } = useTranslation();
 
 	return useMemo(() => [

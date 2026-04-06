@@ -1,27 +1,20 @@
+
+import { BreadcrumbItem } from '@/components/BreadCrumbs';
 import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { DetailLayoutProps } from '@/components/DetailLayout';
 import { Kiosk } from '@/features/kiosks';
 
 
-export type TabHookReturn<TabState extends Record<string, any> = Record<string, any>> = {
-	state: TabState;
-	actions: ControlPanelProps['actions'];
-	handlers: Record<string, (...args: any[]) => void>;
-};
+export type KioskDetailTabId = 'basicInfo' | 'kioskSetting' | 'productsList' | 'productsGrid' | 'activity';
 
-export type TabId = 'basicInfo' | 'kioskSetting' | 'productsList' | 'productsGrid' | 'activity';
-
-export type UseKioskDetailTabsProps = {
+export type UseKioskDetailPageConfigProps = {
 	kiosk?: Kiosk;
-	activeTab: TabId;
 };
 
-export type UseKioskDetailTabsReturn = {
-	tabs: DetailLayoutProps['tabs'];
-	tabState: Record<string, any>;
+export type UseKioskDetailPageConfigReturn = {
+	breadcrumbs: BreadcrumbItem[];
 	actions: ControlPanelProps['actions'];
-	handlers: Record<string, (...args: any[]) => void>;
-	getTabActions: (tabId: TabId) => ControlPanelProps['actions'];
-	getTabHandlers: (tabId: TabId) => Record<string, (...args: any[]) => void>;
-	getTabState: (tabId: TabId) => Record<string, any>;
+	tabs: DetailLayoutProps['tabs'];
+	activeTab: KioskDetailTabId;
+	onTabChange: (tab: KioskDetailTabId) => void;
 };

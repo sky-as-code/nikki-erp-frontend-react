@@ -25,9 +25,8 @@
 			"type": "enum",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.kioskType' }",
 			"enum": [
-				{ "value": "withoutElevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.withoutElevator' }" },
-				{ "value": "elevatorWithConveyor", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.elevatorWithConveyor' }" },
-				{ "value": "elevatorWithoutConveyor", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.elevatorWithoutConveyor' }" }
+				{ "value": "elevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.elevator' }" },
+				{ "value": "nonElevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.nonElevator' }" }
 			]
 		}
 	}

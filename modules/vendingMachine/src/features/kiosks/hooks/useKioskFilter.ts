@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
 
 import { ControlPanelFilterConfig } from '@/components';
 
@@ -7,6 +8,8 @@ import { type Kiosk } from '../types';
 import { ConnectionStatus, KioskMode } from '../types';
 
 
+
+// eslint-disable-next-line max-lines-per-function
 export const useKioskFilter = (kiosks: Kiosk[]) => {
 	const { t: translate } = useTranslation();
 	const [searchValue, setSearchValue] = useState('');
@@ -72,7 +75,7 @@ export const useKioskFilter = (kiosks: Kiosk[]) => {
 			options: [
 				{ value: KioskMode.PENDING, label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 				{ value: KioskMode.SELLING, label: translate('nikki.vendingMachine.kiosk.mode.selling') },
-				{ value: KioskMode.SLIDESHOWONLY, label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
+				{ value: KioskMode.SLIDESHOW_ONLY, label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 			],
 		},
 	], [statusFilter, connectionFilter, modeFilter, translate]);

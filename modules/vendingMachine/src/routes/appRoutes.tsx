@@ -129,13 +129,13 @@ export const appRoutes: AppRouteConfig[] = [{
 			element: <></>,
 		},
 		{
-			key: 'slideshows',
-			path: 'slideshows',
+			key: 'slideshow',
+			path: 'slideshow/playlists',
 			element: <SlideshowsPage />,
 		},
 		{
-			key: 'slideshows-detail',
-			path: 'slideshows/:id',
+			key: 'slideshow-detail',
+			path: 'slideshow/:id',
 			element: <SlideshowDetailPage />,
 		},
 		{

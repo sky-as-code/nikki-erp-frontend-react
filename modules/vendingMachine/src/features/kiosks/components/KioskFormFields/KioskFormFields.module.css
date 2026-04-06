@@ -1,0 +1,10 @@
+/* Gỡ mt="md" mặc định của BaseFieldWrapper (Grid) cho field đầu form */
+.kioskFormField > * {
+	margin-top: 0 !important;
+}
+
+/* Màu label field name (Input.Label → <label>); đổi biến --mantine-color-* theo theme */
+.kioskFormField label {
+	color: var(--mantine-color-gray-6);
+	font-size: var(--mantine-font-size-sm);
+}

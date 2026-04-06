@@ -3,10 +3,10 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
 
-interface BreadCrumbsProps {
-	items: { title: string; href: string }[];
+export type BreadcrumbItem = { title: string; href: string };
+export interface BreadCrumbsProps {
+	items: BreadcrumbItem[];
 }
-
 export function BreadCrumbs({ items }: BreadCrumbsProps) {
 	const navigate = useNavigate();
 
