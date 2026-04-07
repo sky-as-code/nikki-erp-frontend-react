@@ -25,7 +25,10 @@ import {
 export const KioskListPage: React.FC = () => {
 	const { t: translate } = useTranslation();
 
-	const { kiosks = [], isLoadingList } = useKioskList();
+	const {
+		kiosks = [], isInitialLoading, isFetching, handleRefresh,
+		page, pageSize, totalPages, handlePageChange, handlePageSizeChange,
+	} = useKioskList();
 
 	const { filteredKiosks, filters, searchValue, setSearchValue } = useKioskFilter(kiosks);
 
@@ -33,7 +36,7 @@ export const KioskListPage: React.FC = () => {
 
 	const { isOpenDeleteModal, openDeleteModal, closeDeleteModal, kioskToDelete, handleDelete } = useKioskDelete();
 
-	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskPageConfig();
+	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskPageConfig({ handleRefresh });
 
 	return (
 		<React.Fragment key='kiosk-list-page'>
@@ -51,15 +54,20 @@ export const KioskListPage: React.FC = () => {
 						setViewMode={setViewMode}
 					/>,
 				]}
-				isLoading={isLoadingList}
-				isEmpty={!filteredKiosks?.length && !isLoadingList}
+				isLoading={isInitialLoading}
+				isEmpty={!filteredKiosks?.length && !isInitialLoading && !isFetching}
 			>
 				<KioskListPageContent
 					kiosks={filteredKiosks}
-					isLoading={isLoadingList}
 					viewMode={viewMode}
 					handlePreview={handlePreview}
 					handleDelete={openDeleteModal}
+					isFetching={isFetching}
+					page={page}
+					pageSize={pageSize}
+					totalPages={totalPages}
+					onPageChange={handlePageChange}
+					onPageSizeChange={handlePageSizeChange}
 				/>
 			</PageContainer>
 
@@ -119,47 +127,63 @@ const KioskListControlPanel: React.FC<KioskListControlPanelProps> =
 	};
 
 
+const KIOSK_COLUMNS = ['code', 'name', 'connectionStatus', 'address', 'status', 'mode', 'warnings', 'actions'];
+
 interface KioskListPageContentProps {
 	kiosks: Kiosk[];
-	isLoading: boolean;
 	viewMode: KioskListViewMode;
 	handlePreview: (kiosk: Kiosk) => void;
 	handleDelete: (kiosk: Kiosk) => void;
+	isFetching: boolean;
+	page: number;
+	pageSize: number;
+	totalPages: number;
+	onPageChange: (page: number) => void;
+	onPageSizeChange: (value: string | null) => void;
 }
-const KioskListPageContent: React.FC<KioskListPageContentProps> =
-	({ kiosks, isLoading, viewMode, handlePreview, handleDelete }) => {
-		const kioskListView = useMemo(() => (
-			<KioskTable
-				columns={['code', 'name', 'connectionStatus', 'address', 'status', 'mode', 'warnings', 'actions']}
-				data={kiosks as unknown as Record<string, unknown>[]}
-				schema={kioskSchema as ModelSchema}
-				isLoading={isLoading}
-				onPreview={handlePreview}
-				onDelete={handleDelete}
-			/>
-		), [kiosks, handlePreview, handleDelete, isLoading]);
+const KioskListPageContent: React.FC<KioskListPageContentProps> = ({
+	kiosks, viewMode, handlePreview, handleDelete,
+	isFetching, page, pageSize, totalPages, onPageChange, onPageSizeChange,
+}) => {
+	const kioskListView = useMemo(() => (
+		<KioskTable
+			columns={KIOSK_COLUMNS}
+			data={kiosks as unknown as Record<string, unknown>[]}
+			schema={kioskSchema as ModelSchema}
+			onPreview={handlePreview}
+			onDelete={handleDelete}
+			isFetching={isFetching}
+			page={page}
+			pageSize={pageSize}
+			totalPages={totalPages}
+			onPageChange={onPageChange}
+			onPageSizeChange={onPageSizeChange}
+		/>
+	), [
+		kiosks, handlePreview, handleDelete, isFetching,
+		page, pageSize, totalPages, onPageChange, onPageSizeChange,
+	]);
 
-		const kioskGridView = useMemo(() => (
-			<KioskGridView
-				kiosks={kiosks}
-				isLoading={isLoading}
-				onPreview={handlePreview}
-				onDelete={handleDelete}
-			/>
-		), [kiosks, handlePreview, handleDelete, isLoading]);
+	const kioskGridView = useMemo(() => (
+		<KioskGridView
+			kiosks={kiosks}
+			onPreview={handlePreview}
+			onDelete={handleDelete}
+		/>
+	), [kiosks, handlePreview, handleDelete]);
 
-		const kioskMapView = useMemo(() => (
-			<KioskMapView kiosks={kiosks} />
-		), [kiosks, isLoading]);
+	const kioskMapView = useMemo(() => (
+		<KioskMapView kiosks={kiosks} />
+	), [kiosks]);
 
-		const pageContent = useMemo(() => {
-			const views: Partial<Record<ViewMode, React.ReactNode>> = {
-				list: kioskListView,
-				grid: kioskGridView,
-				map: kioskMapView,
-			};
-			return views[viewMode] ?? kioskListView;
-		}, [viewMode, kioskListView, kioskGridView, kioskMapView]);
+	const pageContent = useMemo(() => {
+		const views: Partial<Record<ViewMode, React.ReactNode>> = {
+			list: kioskListView,
+			grid: kioskGridView,
+			map: kioskMapView,
+		};
+		return views[viewMode] ?? kioskListView;
+	}, [viewMode, kioskListView, kioskGridView, kioskMapView]);
 
-		return pageContent;
-	};
+	return pageContent;
+};

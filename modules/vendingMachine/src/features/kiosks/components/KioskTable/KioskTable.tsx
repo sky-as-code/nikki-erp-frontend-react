@@ -1,5 +1,5 @@
 import { ActionIcon, Badge, Box, Button, Group, Popover, Stack, Text, Tooltip } from '@mantine/core';
-import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
+import { AutoTable, AutoTableProps, TablePagination } from '@nikkierp/ui/components';
 import {
 	IconEdit,
 	IconEye,
@@ -21,6 +21,13 @@ export interface KioskTableProps extends AutoTableProps {
 	onPreview: (kiosk: Kiosk) => void;
 	onEdit?: (kiosk: Kiosk) => void;
 	onDelete?: (kiosk: Kiosk) => void;
+	isFetching?: boolean;
+	page?: number;
+	totalPages?: number;
+	onPageChange?: (page: number) => void;
+	pageSize?: number;
+	pageSizeOptions?: { value: string; label: string }[];
+	onPageSizeChange?: (value: string | null) => void;
 }
 
 function renderCodeColumn(
@@ -377,27 +384,33 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 	onPreview,
 	onEdit,
 	onDelete,
+	isFetching,
+	page,
+	totalPages,
+	onPageChange,
+	pageSize,
+	pageSizeOptions,
+	onPageSizeChange,
 }) => {
 	const { t: translate } = useTranslation();
 
 	return (
-		<div style={{ position: 'relative' }}>
-			<style>
-				{`
-					table th:has(+ th:last-child),
-					table th:last-child,
-					table td:has(+ td:last-child),
-					table td:last-child {
-						min-width: 120px;
-						width: 120px;
-					}
-				`}
-			</style>
+		<Box pos='relative' mih={200}>
 			<AutoTable
 				columns={columns}
+				columnSizes={{
+					code: { flex: 1, minWidth: 120 },
+					name: { flex: 2, minWidth: 180 },
+					connectionStatus: { width: 120 },
+					address: { flex: 2, minWidth: 200 },
+					status: { flex: 1, minWidth: 120 },
+					mode: { flex: 1, minWidth: 120 },
+					warnings: { width: 120 },
+					actions: { flex: 1, minWidth: 120 },
+				}}
 				data={data}
 				schema={schema}
-				isLoading={isLoading}
+				isLoading={isLoading && !isFetching}
 				columnRenderers={{
 					code: renderCodeColumn,
 					name: renderNameColumn,
@@ -417,7 +430,15 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 					return '#';
 				}}
 			/>
-		</div>
+			<TablePagination
+				page={page}
+				totalPages={totalPages}
+				onPageChange={onPageChange}
+				pageSize={pageSize}
+				pageSizeOptions={pageSizeOptions}
+				onPageSizeChange={onPageSizeChange}
+			/>
+		</Box>
 	);
 };
 

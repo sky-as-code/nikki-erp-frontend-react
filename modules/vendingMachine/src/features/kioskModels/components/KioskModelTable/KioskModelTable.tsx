@@ -1,5 +1,5 @@
 import { ActionIcon, Badge, Box, Group, Text, Tooltip } from '@mantine/core';
-import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
+import { AutoTable, AutoTableProps, TablePagination } from '@nikkierp/ui/components';
 import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,11 +8,17 @@ import { useNavigate } from 'react-router';
 import { KioskModel } from '../../types';
 
 
-
 export interface KioskModelTableProps extends AutoTableProps {
 	onPreviewView: (kioskModel: KioskModel) => void;
 	onEdit?: (kioskModel: KioskModel) => void;
 	onDelete?: (kioskModel: KioskModel) => void;
+	isFetching?: boolean;
+	page?: number;
+	totalPages?: number;
+	onPageChange?: (page: number) => void;
+	pageSize?: number;
+	pageSizeOptions?: { value: string; label: string }[];
+	onPageSizeChange?: (value: string | null) => void;
 }
 
 function renderReferenceCodeColumn(row: Record<string, unknown>) {
@@ -120,25 +126,30 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 	onPreviewView,
 	onEdit,
 	onDelete,
+	isFetching,
+	page,
+	totalPages,
+	onPageChange,
+	pageSize,
+	pageSizeOptions,
+	onPageSizeChange,
 }) => {
 	const { t: translate } = useTranslation();
 
 	return (
-		<div style={{ position: 'relative' }}>
-			<style>
-				{`
-					table th:last-child,
-					table td:last-child {
-						min-width: 120px;
-						width: 120px;
-					}
-				`}
-			</style>
+		<Box pos='relative' mih={200}>
 			<AutoTable
-				columns={columns}
 				data={data}
 				schema={schema}
-				isLoading={isLoading}
+				isLoading={isLoading && !isFetching}
+				columns={columns}
+				columnSizes={{
+					referenceCode: { flex: 1, minWidth: 160 },
+					name: { flex: 2, minWidth: 200 },
+					description: { flex: 2, minWidth: 300 },
+					status: { flex: 1, minWidth: 100 },
+					actions: { flex: 1, minWidth: 120 },
+				}}
 				columnRenderers={{
 					referenceCode: renderReferenceCodeColumn,
 					name: renderNameColumn,
@@ -156,6 +167,14 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 					return '#';
 				}}
 			/>
-		</div>
+			<TablePagination
+				totalPages={totalPages}
+				page={page}
+				onPageChange={onPageChange}
+				pageSize={pageSize}
+				pageSizeOptions={pageSizeOptions}
+				onPageSizeChange={onPageSizeChange}
+			/>
+		</Box>
 	);
 };

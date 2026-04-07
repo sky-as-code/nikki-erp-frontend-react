@@ -3,10 +3,11 @@ import { ConfirmModal, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { KioskModel } from '@/features/kioskModels/types';
 
 import { KioskModelFormFields } from '../KioskModelFormFields/KioskModelFormFields';
 import { useBasicInfoTab } from './hooks/useBasicInfoTab';
+
+import { KioskModel } from '@/features/kioskModels/types';
 
 
 export interface KioskModelBasicInfoProps {

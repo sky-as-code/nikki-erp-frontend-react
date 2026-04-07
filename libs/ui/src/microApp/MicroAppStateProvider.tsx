@@ -26,7 +26,6 @@ export function initMicroAppStateContext(registerResult: RegisterReducersResult)
 	if (!appStateContext) {
 		appStateContext = createContext<MicroAppStateContextType>(registerResult);
 	}
-	// appStateContext = createContext<MicroAppStateContextType>(registerResult);
 	appStateContextValue = registerResult;
 }
 

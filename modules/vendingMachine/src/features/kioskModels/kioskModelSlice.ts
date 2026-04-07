@@ -12,14 +12,24 @@ import type {
 	RestCreateResponse,
 	RestUpdateResponse,
 	RestDeleteResponse,
+	PagedSearchResponse,
 } from './types';
 
 
 export const SLICE_NAME = 'vendingMachine.kioskModel';
 
+export const DEFAULT_PAGE_SIZE = 10;
+
+export type ListPagination = {
+	total: number;
+	page: number;
+	size: number;
+};
+
 export type KioskModelState = {
 	detail: ReduxActionState<KioskModel>;
 	list: ReduxActionState<KioskModel[]>;
+	listPagination: ListPagination;
 	create: ReduxActionState<RestCreateResponse>;
 	update: ReduxActionState<RestUpdateResponse>;
 	delete: ReduxActionState<RestDeleteResponse>;
@@ -28,21 +38,27 @@ export type KioskModelState = {
 export const initialKioskModelState: KioskModelState = {
 	detail: baseReduxActionState,
 	list: { ...baseReduxActionState, data: [] },
+	listPagination: { total: 0, page: 0, size: DEFAULT_PAGE_SIZE },
 	create: baseReduxActionState,
 	update: baseReduxActionState,
 	delete: baseReduxActionState,
 };
 
 
+export type ListKioskModelsParams = {
+	page?: number;
+	size?: number;
+};
+
 export const listKioskModels = createAsyncThunk<
-	KioskModel[],
-	void,
+	PagedSearchResponse<KioskModel>,
+	ListKioskModelsParams | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listKioskModels`,
-	async (_, { rejectWithValue }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			const result = await kioskModelService.searchKioskModels({
+			return await kioskModelService.searchKioskModels({
 				columns: [
 					'createdAt',
 					'etag',
@@ -55,11 +71,10 @@ export const listKioskModels = createAsyncThunk<
 					'kioskType',
 					'shelvesConfig',
 				],
-				page: 0,
-				size: 5,
+				page: params?.page ?? 0,
+				size: params?.size ?? DEFAULT_PAGE_SIZE,
 				graph: '{}',
 			});
-			return result.items;
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to list kiosk models';
@@ -190,8 +205,13 @@ function listKioskModelsReducers(builder: ActionReducerMapBuilder<KioskModelStat
 		})
 		.addCase(listKioskModels.fulfilled, (state, action) => {
 			state.list.status = 'success';
-			state.list.data = action.payload;
+			state.list.data = action.payload.items;
 			state.list.error = null;
+			state.listPagination = {
+				total: action.payload.total,
+				page: action.payload.page,
+				size: action.payload.size,
+			};
 		})
 		.addCase(listKioskModels.rejected, (state, action) => {
 			state.list.status = 'error';

@@ -519,6 +519,8 @@
 			"interfaceMode": "Interface Mode",
 			"slideshow": "Slideshow",
 			"numberOfTrays": "Number of Trays",
+			"shelvesNumber": "Number of Shelves",
+			"shelvesConfig": "Shelves Configuration",
 			"trayConfigurations": "Tray Configurations",
 			"trayRow": "Row",
 			"shelfType": "Shelf Type",

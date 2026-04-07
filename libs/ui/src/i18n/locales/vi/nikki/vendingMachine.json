@@ -562,6 +562,8 @@
 			"interfaceMode": "Chế độ giao diện",
 			"slideshow": "Trình chiếu",
 			"numberOfTrays": "Số khay",
+			"shelvesNumber": "Số khay",
+			"shelvesConfig": "Cấu hình khay",
 			"trayConfigurations": "Cấu hình khay",
 			"trayRow": "Hàng",
 			"shelfType": "Loại khay",

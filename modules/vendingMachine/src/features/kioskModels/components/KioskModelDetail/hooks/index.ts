@@ -1,6 +1,5 @@
 export type {
 	KioskModelDetailTabId,
-	UseKioskModelDetailPageConfigProps,
 	UseKioskModelDetailPageConfigReturn,
 } from './types';
 export { useBasicInfoTab, BASIC_INFO_FORM_ID } from './useBasicInfoTab';

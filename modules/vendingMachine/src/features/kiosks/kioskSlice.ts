@@ -3,16 +3,21 @@ import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
 
-import { kioskService } from './kioskService';
+import { kioskService, ListKiosksParams, PagedKioskResult } from './kioskService';
 import { Kiosk } from './types';
 
 
 
 export const SLICE_NAME = 'vendingMachine.kiosk';
 
+export const DEFAULT_PAGE_SIZE = 10;
+
+export type ListPagination = { total: number; page: number; size: number };
+
 export type KioskState = {
 	detail: ReduxActionState<Kiosk>;
 	list: ReduxActionState<Kiosk[]>;
+	listPagination: ListPagination;
 	create: ReduxActionState<Kiosk>;
 	update: ReduxActionState<Kiosk>;
 	delete: ReduxActionState<void>;
@@ -21,6 +26,7 @@ export type KioskState = {
 export const initialKioskState: KioskState = {
 	detail: baseReduxActionState,
 	list: { ...baseReduxActionState, data: [] },
+	listPagination: { total: 0, page: 0, size: DEFAULT_PAGE_SIZE },
 	create: baseReduxActionState,
 	update: baseReduxActionState,
 	delete: baseReduxActionState,
@@ -28,15 +34,17 @@ export const initialKioskState: KioskState = {
 
 
 export const listKiosks = createAsyncThunk<
-	Kiosk[],
-	void,
+	PagedKioskResult,
+	ListKiosksParams | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listKiosks`,
-	async (_, { rejectWithValue }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			const result = await kioskService.listKiosks();
-			return result;
+			return await kioskService.listKiosks({
+				page: params?.page ?? 0,
+				size: params?.size ?? DEFAULT_PAGE_SIZE,
+			});
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to list kiosks';
@@ -151,8 +159,13 @@ function listKiosksReducers(builder: ActionReducerMapBuilder<KioskState>) {
 		})
 		.addCase(listKiosks.fulfilled, (state, action) => {
 			state.list.status = 'success';
-			state.list.data = action.payload;
+			state.list.data = action.payload.items;
 			state.list.error = null;
+			state.listPagination = {
+				total: action.payload.total,
+				page: action.payload.page,
+				size: action.payload.size,
+			};
 		})
 		.addCase(listKiosks.rejected, (state, action) => {
 			state.list.status = 'error';

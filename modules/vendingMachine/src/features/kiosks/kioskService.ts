@@ -3,6 +3,9 @@ import { mockKiosks } from '@/features/kiosks/mocks';
 import { Kiosk } from './types';
 
 
+export type ListKiosksParams = { page?: number; size?: number };
+export type PagedKioskResult = { items: Kiosk[]; total: number; page: number; size: number };
+
 function configFields(dto: Kiosk): Kiosk {
 	return {
 		...dto,
@@ -10,9 +13,9 @@ function configFields(dto: Kiosk): Kiosk {
 }
 
 export const kioskService = {
-	async listKiosks(): Promise<Kiosk[]> {
-		const result = await mockKiosks.listKiosks();
-		return result.map(configFields);
+	async listKiosks(params?: ListKiosksParams): Promise<PagedKioskResult> {
+		const result = await mockKiosks.listKiosks(params?.page, params?.size);
+		return { ...result, items: result.items.map(configFields) };
 	},
 
 	async getKiosk(id: string): Promise<Kiosk | undefined> {

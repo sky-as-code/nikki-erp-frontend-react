@@ -10,7 +10,12 @@ import {
 	deleteKioskModel,
 	KioskModelState,
 	initialKioskModelState,
+	DEFAULT_PAGE_SIZE,
 } from '@/features/kioskModels/kioskModelSlice';
+
+
+export type { ListKioskModelsParams, ListPagination } from '@/features/kioskModels/kioskModelSlice';
+export { DEFAULT_PAGE_SIZE };
 
 
 const STATE_KEY = 'kioskModel';
@@ -54,4 +59,9 @@ export const selectUpdateKioskModel = createSelector(
 export const selectDeleteKioskModel = createSelector(
 	selectKioskModelState,
 	(state) => state.delete,
+);
+
+export const selectKioskModelListPagination = createSelector(
+	selectKioskModelState,
+	(state) => state.listPagination,
 );

@@ -23,7 +23,10 @@ import { KioskModel, KioskModelViewMode } from '@/features/kioskModels/types';
 
 export const KioskModelPage: React.FC = () => {
 	const { t: translate } = useTranslation();
-	const { models, isLoadingList, handleRefresh } = useKioskModelList();
+	const {
+		models, isInitialLoading, isFetching, handleRefresh,
+		page, pageSize, totalPages, handlePageChange, handlePageSizeChange,
+	} = useKioskModelList();
 	const { filteredModels, filters, searchValue, setSearchValue } = useKioskModelFilter(models);
 	const { isOpenDetailModal, handleCloseDetailModal, selectedModelId, handlePreviewView } = useKioskModelPreview();
 	const { isOpenDeleteModal, handleOpenDeleteModal, handleCloseDeleteModal,
@@ -46,14 +49,20 @@ export const KioskModelPage: React.FC = () => {
 						setViewMode={setViewMode}
 					/>,
 				]}
-				isLoading={isLoadingList}
-				isEmpty={!filteredModels?.length && !isLoadingList}
+				isLoading={isInitialLoading}
+				isEmpty={!filteredModels?.length && !isInitialLoading && !isFetching}
 			>
 				<KioskModelPageContent
 					kioskModels={filteredModels}
 					handlePreviewView={handlePreviewView}
 					handleDelete={handleOpenDeleteModal}
 					viewMode={viewMode}
+					isFetching={isFetching}
+					page={page}
+					pageSize={pageSize}
+					totalPages={totalPages}
+					onPageChange={handlePageChange}
+					onPageSizeChange={handlePageSizeChange}
 				/>
 			</PageContainer>
 
@@ -119,9 +128,16 @@ type KioskModelPageContentProps = {
 	handlePreviewView: (model: KioskModel) => void;
 	handleDelete: (model: KioskModel) => void;
 	viewMode: KioskModelViewMode;
+	isFetching: boolean;
+	page: number;
+	pageSize: number;
+	totalPages: number;
+	onPageChange: (page: number) => void;
+	onPageSizeChange: (value: string | null) => void;
 };
 const KioskModelPageContent: React.FC<KioskModelPageContentProps> = ({
 	kioskModels, handlePreviewView, handleDelete, viewMode,
+	isFetching, page, pageSize, totalPages, onPageChange, onPageSizeChange,
 }) => {
 	const kioskModelListView = useMemo(() => (
 		<KioskModelTable
@@ -130,8 +146,17 @@ const KioskModelPageContent: React.FC<KioskModelPageContentProps> = ({
 			schema={kioskModelSchema as ModelSchema}
 			onPreviewView={handlePreviewView}
 			onDelete={handleDelete}
+			isFetching={isFetching}
+			page={page}
+			pageSize={pageSize}
+			totalPages={totalPages}
+			onPageChange={onPageChange}
+			onPageSizeChange={onPageSizeChange}
 		/>
-	), [kioskModels, handlePreviewView, handleDelete]);
+	), [
+		kioskModels, handlePreviewView, handleDelete, isFetching,
+		page, pageSize, totalPages, onPageChange, onPageSizeChange,
+	]);
 
 	const kioskModelGridView = useMemo(() => (
 		<KioskModelGridView

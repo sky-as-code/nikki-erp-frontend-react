@@ -245,10 +245,14 @@ const mockKiosksData: Kiosk[] = [
 // Simulate API delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+type PagedResult<T> = { items: T[]; total: number; page: number; size: number };
+
 export const mockKiosks = {
-	async listKiosks(): Promise<Kiosk[]> {
+	async listKiosks(page = 0, size = 10): Promise<PagedResult<Kiosk>> {
 		await delay(500);
-		return [...mockKiosksData];
+		const start = page * size;
+		const items = mockKiosksData.slice(start, start + size);
+		return { items, total: mockKiosksData.length, page, size };
 	},
 
 	async getKiosk(id: string): Promise<Kiosk | undefined> {

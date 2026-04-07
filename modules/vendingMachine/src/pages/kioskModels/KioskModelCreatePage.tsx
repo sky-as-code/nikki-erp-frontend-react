@@ -1,3 +1,4 @@
+import { Stack } from '@mantine/core';
 import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import { IconArrowLeft, IconDeviceFloppy, IconX } from '@tabler/icons-react';
@@ -62,21 +63,23 @@ export const KioskModelCreatePage: React.FC = () => {
 			breadcrumbs={breadcrumbs}
 			sections={[<ControlPanel key='control-panel' actions={actions} />]}
 		>
-			<FormStyleProvider layout='onecol'>
-				<FormFieldProvider formVariant='create' modelSchema={schema} modelValue={defaultFormValues} modelLoading={isSubmitting}>
-					{({ handleSubmit: formHandleSubmit }) => (
-						<>
-							<form
-								id={FORM_ID}
-								onSubmit={formHandleSubmit((data) => handleSubmit(data))}
-								noValidate
-								style={{ display: 'contents' }}
-							/>
-							<KioskModelFormFields key='kiosk-model-form-fields' mode='create' />
-						</>
-					)}
-				</FormFieldProvider>
-			</FormStyleProvider>
+			<Stack gap='xs'>
+				<FormStyleProvider layout='onecol'>
+					<FormFieldProvider formVariant='create' modelSchema={schema} modelValue={defaultFormValues} modelLoading={isSubmitting}>
+						{({ handleSubmit: formHandleSubmit }) => (
+							<>
+								<form
+									id={FORM_ID}
+									onSubmit={formHandleSubmit((data) => handleSubmit(data))}
+									noValidate
+									style={{ display: 'contents' }}
+								/>
+								<KioskModelFormFields key='kiosk-model-form-fields' mode='create' />
+							</>
+						)}
+					</FormFieldProvider>
+				</FormStyleProvider>
+			</Stack>
 		</PageContainer>
 	);
 };

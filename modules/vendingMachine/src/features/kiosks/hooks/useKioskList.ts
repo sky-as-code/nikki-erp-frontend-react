@@ -1,22 +1,68 @@
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { useEffect } from 'react';
+import React from 'react';
 
-import { VendingMachineDispatch, kioskActions, selectKioskList } from '@/appState';
+import {
+	VendingMachineDispatch,
+	kioskActions,
+	selectKioskList,
+	selectKioskListPagination,
+	KIOSK_DEFAULT_PAGE_SIZE,
+} from '@/appState';
 
 
 export function useKioskList() {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const list = useMicroAppSelector(selectKioskList);
+	const pagination = useMicroAppSelector(selectKioskListPagination);
 
-	useEffect(() => {
+	const [page, setPage] = React.useState(1);
+	const [pageSize, setPageSize] = React.useState(KIOSK_DEFAULT_PAGE_SIZE);
+
+	const fetchList = React.useCallback((targetPage: number, size: number) => {
+		dispatch(kioskActions.listKiosks({
+			page: targetPage - 1,
+			size,
+		}));
+	}, [dispatch]);
+
+	React.useEffect(() => {
 		if (list.status === 'idle') {
-			dispatch(kioskActions.listKiosks());
+			fetchList(page, pageSize);
 		}
-	}, [dispatch, list]);
+	}, [dispatch, list.status, fetchList, page, pageSize]);
+
+	const handlePageChange = React.useCallback((newPage: number) => {
+		setPage(newPage);
+		fetchList(newPage, pageSize);
+	}, [fetchList, pageSize]);
+
+	const handlePageSizeChange = React.useCallback((value: string | null) => {
+		const newSize = Number(value ?? KIOSK_DEFAULT_PAGE_SIZE);
+		setPageSize(newSize);
+		setPage(1);
+		fetchList(1, newSize);
+	}, [fetchList]);
+
+	const handleRefresh = React.useCallback(() => {
+		fetchList(page, pageSize);
+	}, [fetchList, page, pageSize]);
+
+	const totalPages = Math.max(1, Math.ceil(pagination.total / (pagination.size || pageSize)));
+
+	const hasData = Array.isArray(list.data) && list.data.length > 0;
+	const isInitialLoading = !hasData && (list.status === 'idle' || list.status === 'pending');
+	const isFetching = list.status === 'pending';
 
 	return {
 		kiosks: list.data,
-		isLoadingList: list.status === 'pending' || list.status === 'idle',
+		isInitialLoading,
+		isFetching,
+		handleRefresh,
+		page,
+		pageSize,
+		totalPages,
+		totalItems: pagination.total,
+		handlePageChange,
+		handlePageSizeChange,
 	};
 }
-
