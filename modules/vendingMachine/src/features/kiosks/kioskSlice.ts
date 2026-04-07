@@ -3,7 +3,9 @@ import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
 
-import { kioskService, ListKiosksParams, PagedKioskResult } from './kioskService';
+import { SearchGraph } from '@/components/FilterGroup';
+
+import { kioskService, PagedKioskResult } from './kioskService';
 import { Kiosk } from './types';
 
 
@@ -33,6 +35,12 @@ export const initialKioskState: KioskState = {
 };
 
 
+export type ListKiosksParams = {
+	page?: number;
+	size?: number;
+	graph?: SearchGraph;
+};
+
 export const listKiosks = createAsyncThunk<
 	PagedKioskResult,
 	ListKiosksParams | void,
@@ -44,6 +52,7 @@ export const listKiosks = createAsyncThunk<
 			return await kioskService.listKiosks({
 				page: params?.page ?? 0,
 				size: params?.size ?? DEFAULT_PAGE_SIZE,
+				graph: JSON.stringify(params?.graph ?? {}),
 			});
 		}
 		catch (error) {

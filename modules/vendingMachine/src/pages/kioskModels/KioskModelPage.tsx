@@ -1,10 +1,9 @@
 import { ConfirmModal } from '@nikkierp/ui/components';
-import { useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { ControlPanel, ControlPanelFilterConfig, ViewMode } from '@/components';
+import { ControlPanel, ViewMode } from '@/components';
 import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import {
@@ -20,40 +19,44 @@ import {
 import { KioskModel, KioskModelViewMode } from '@/features/kioskModels/types';
 
 
-
 export const KioskModelPage: React.FC = () => {
 	const { t: translate } = useTranslation();
 	const {
-		models, isInitialLoading, isFetching, handleRefresh,
+		filters, models, isInitialLoading, isFetching, handleRefresh,
 		page, pageSize, totalPages, handlePageChange, handlePageSizeChange,
 	} = useKioskModelList();
-	const { filteredModels, filters, searchValue, setSearchValue } = useKioskModelFilter(models);
-	const { isOpenDetailModal, handleCloseDetailModal, selectedModelId, handlePreviewView } = useKioskModelPreview();
-	const { isOpenDeleteModal, handleOpenDeleteModal, handleCloseDeleteModal,
-		modelToDelete, handleDelete: handleDeleteKioskModel } = useKioskModelDelete();
+
+	const {
+		isOpenDetailModal, handleCloseDetailModal,
+		selectedModelId, handlePreviewView,
+	} = useKioskModelPreview();
+
+	const {
+		isOpenDeleteModal,
+		handleOpenDeleteModal, handleCloseDeleteModal,
+		modelToDelete, handleDelete: handleDeleteKioskModel,
+	} = useKioskModelDelete();
 
 	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskModelPageConfig({ handleRefresh });
-	useDocumentTitle('nikki.vendingMachine.kioskModels.title');
 
 	return (
 		<>
 			<PageContainer
+				documentTitle={translate('nikki.vendingMachine.kioskModels.title')}
 				breadcrumbs={breadcrumbs}
 				sections={[
 					<KioskModelListControlPanel
 						actions={actions}
-						searchValue={searchValue}
-						setSearchValue={setSearchValue}
 						filters={filters}
 						viewMode={viewMode}
 						setViewMode={setViewMode}
 					/>,
 				]}
 				isLoading={isInitialLoading}
-				isEmpty={!filteredModels?.length && !isInitialLoading && !isFetching}
+				isEmpty={!models?.length && !isInitialLoading && !isFetching}
 			>
 				<KioskModelPageContent
-					kioskModels={filteredModels}
+					kioskModels={models}
 					handlePreviewView={handlePreviewView}
 					handleDelete={handleOpenDeleteModal}
 					viewMode={viewMode}
@@ -93,8 +96,6 @@ export const KioskModelPage: React.FC = () => {
 
 interface KioskModelListControlPanelProps {
 	actions: ControlPanelProps['actions'];
-	searchValue: string;
-	setSearchValue: (value: string) => void;
 	filters: ControlPanelProps['filters'];
 	viewMode: KioskModelViewMode;
 	setViewMode: (value: KioskModelViewMode) => void;
@@ -102,17 +103,11 @@ interface KioskModelListControlPanelProps {
 
 
 const KioskModelListControlPanel: React.FC<KioskModelListControlPanelProps> = ({
-	actions, searchValue, setSearchValue, filters, viewMode, setViewMode,
+	actions, filters, viewMode, setViewMode,
 }) => {
-	const { t: translate } = useTranslation();
 	return (
 		<ControlPanel
 			actions={actions}
-			search={{
-				value: searchValue,
-				onChange: setSearchValue,
-				placeholder: translate('nikki.vendingMachine.kioskModels.search.placeholder'),
-			}}
 			filters={filters}
 			viewMode={{
 				value: viewMode,
@@ -175,49 +170,4 @@ const KioskModelPageContent: React.FC<KioskModelPageContentProps> = ({
 	}, [viewMode, kioskModelListView, kioskModelGridView]);
 
 	return pageContent;
-};
-
-const useKioskModelFilter = (models: KioskModel[]) => {
-	const { t: translate } = useTranslation();
-	const [searchValue, setSearchValue] = useState('');
-	const [statusFilter, setStatusFilter] = useState<string[]>([]);
-	const filteredModels = useMemo(() => {
-		let filtered = models || [];
-
-		if (statusFilter.length > 0) {
-			filtered = filtered.filter((m: KioskModel) => statusFilter.includes(m.status));
-		}
-
-		if (searchValue.trim()) {
-			const searchLower = searchValue.toLowerCase().trim();
-			filtered = filtered.filter(
-				(m: KioskModel) =>
-					(m.referenceCode || '').toLowerCase().includes(searchLower) ||
-					m.name.toLowerCase().includes(searchLower),
-			) as KioskModel[];
-		}
-
-		return filtered;
-	}, [models, statusFilter, searchValue]);
-
-	const filters: ControlPanelFilterConfig[] = useMemo(() => [
-		{
-			value: statusFilter,
-			onChange: setStatusFilter,
-			options: [
-				{ value: 'active', label: translate('nikki.general.status.active') },
-				{ value: 'inactive', label: translate('nikki.general.status.inactive') },
-			],
-			placeholder: translate('nikki.vendingMachine.kioskModels.filter.status'),
-		},
-	], [statusFilter, translate]);
-
-	return {
-		filteredModels,
-		filters,
-		searchValue,
-		setSearchValue,
-		statusFilter,
-		setStatusFilter,
-	};
 };

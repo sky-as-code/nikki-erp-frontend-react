@@ -3,13 +3,12 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { ControlPanel, ControlPanelActionItem } from '@/components';
-import { ControlPanelProps, ViewMode } from '@/components/ControlPanel/ControlPanel';
+import { ControlPanel, ViewMode } from '@/components';
+import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import {
 	KioskDetailDrawer,
 	useKioskDelete,
-	useKioskFilter,
 	useKioskList,
 	useKioskPageConfig,
 	useKioskPreview,
@@ -26,16 +25,12 @@ export const KioskListPage: React.FC = () => {
 	const { t: translate } = useTranslation();
 
 	const {
-		kiosks = [], isInitialLoading, isFetching, handleRefresh,
+		kiosks, filters, isInitialLoading, isFetching, handleRefresh,
 		page, pageSize, totalPages, handlePageChange, handlePageSizeChange,
 	} = useKioskList();
 
-	const { filteredKiosks, filters, searchValue, setSearchValue } = useKioskFilter(kiosks);
-
 	const { isOpenPreview, handlePreview, handleClosePreview, selectedKiosk, isLoadingPreview } = useKioskPreview();
-
 	const { isOpenDeleteModal, openDeleteModal, closeDeleteModal, kioskToDelete, handleDelete } = useKioskDelete();
-
 	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskPageConfig({ handleRefresh });
 
 	return (
@@ -47,18 +42,16 @@ export const KioskListPage: React.FC = () => {
 					<KioskListControlPanel
 						key='kiosk-list-control-panel'
 						actions={actions}
-						searchValue={searchValue}
-						setSearchValue={setSearchValue}
 						filters={filters}
 						viewMode={viewMode}
 						setViewMode={setViewMode}
 					/>,
 				]}
 				isLoading={isInitialLoading}
-				isEmpty={!filteredKiosks?.length && !isInitialLoading && !isFetching}
+				isEmpty={!kiosks?.length && !isInitialLoading && !isFetching}
 			>
 				<KioskListPageContent
-					kiosks={filteredKiosks}
+					kiosks={kiosks}
 					viewMode={viewMode}
 					handlePreview={handlePreview}
 					handleDelete={openDeleteModal}
@@ -96,35 +89,27 @@ export const KioskListPage: React.FC = () => {
 
 
 interface KioskListControlPanelProps {
-	actions: ControlPanelActionItem[];
+	actions: ControlPanelProps['actions'];
+	filters: ControlPanelProps['filters'];
 	viewMode: KioskListViewMode;
 	setViewMode: (value: KioskListViewMode) => void;
-	//
-	searchValue: string;
-	setSearchValue: (value: string) => void;
-	filters: ControlPanelProps['filters'];
 }
-const KioskListControlPanel: React.FC<KioskListControlPanelProps> =
-	({ actions, searchValue, setSearchValue, filters, viewMode, setViewMode }) => {
-		const { t: translate } = useTranslation();
-		return (
-			<ControlPanel
-				key='control-panel'
-				actions={actions}
-				search={{
-					value: searchValue,
-					onChange: setSearchValue,
-					placeholder: translate('nikki.vendingMachine.kiosk.search.placeholder'),
-				}}
-				filters={filters}
-				viewMode={{
-					value: viewMode,
-					onChange: (mode: ViewMode) => setViewMode(mode as KioskListViewMode),
-					segments: ['list', 'grid', 'map'],
-				}}
-			/>
-		);
-	};
+
+const KioskListControlPanel: React.FC<KioskListControlPanelProps> = ({
+	actions, filters, viewMode, setViewMode,
+}) => {
+	return (
+		<ControlPanel
+			actions={actions}
+			filters={filters}
+			viewMode={{
+				value: viewMode,
+				onChange: (mode: ViewMode) => setViewMode(mode as KioskListViewMode),
+				segments: ['list', 'grid', 'map'],
+			}}
+		/>
+	);
+};
 
 
 const KIOSK_COLUMNS = ['code', 'name', 'connectionStatus', 'address', 'status', 'mode', 'warnings', 'actions'];

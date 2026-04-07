@@ -3,6 +3,8 @@ import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
 
+import { SearchGraph } from '@/components/FilterGroup';
+
 import { kioskModelService } from './kioskModelService';
 
 import type {
@@ -48,6 +50,7 @@ export const initialKioskModelState: KioskModelState = {
 export type ListKioskModelsParams = {
 	page?: number;
 	size?: number;
+	graph?: SearchGraph;
 };
 
 export const listKioskModels = createAsyncThunk<
@@ -73,7 +76,7 @@ export const listKioskModels = createAsyncThunk<
 				],
 				page: params?.page ?? 0,
 				size: params?.size ?? DEFAULT_PAGE_SIZE,
-				graph: '{}',
+				graph: JSON.stringify(params?.graph ?? {}),
 			});
 		}
 		catch (error) {

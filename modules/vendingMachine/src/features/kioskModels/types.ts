@@ -3,7 +3,11 @@ import { ViewMode } from '@/components';
 
 export type KioskModelViewMode = Extract<ViewMode, 'list' | 'grid'>;
 
-export type KioskModelStatus = 'active' | 'inactive' | 'deleted';
+export enum KioskModelStatus {
+	ACTIVE = 'active',
+	INACTIVE = 'inactive',
+	DELETED = 'deleted',
+}
 
 export type KioskType = 'elevator' | 'non-elevator';
 

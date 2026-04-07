@@ -4,25 +4,27 @@ import { ConnectionStatus, KioskMode, KioskStatus } from '../../types';
 
 
 
+
+
 export const kioskFilterConfig: FilterGroupConfig = {
 	search: [
 		{
 			key: 'code',
 			label: 'Mã kiosk',
 			placeholder: 'Tìm kiếm theo mã...',
-			operator: '~',
+			operator: '*',
 		},
 		{
 			key: 'name',
 			label: 'Tên kiosk',
 			placeholder: 'Tìm kiếm theo tên...',
-			operator: '~',
+			operator: '*',
 		},
 		{
 			key: 'address',
 			label: 'Địa chỉ',
 			placeholder: 'Tìm kiếm theo địa chỉ...',
-			operator: '~',
+			operator: '*',
 		},
 	],
 	filter: {

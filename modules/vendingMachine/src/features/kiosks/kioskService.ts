@@ -3,7 +3,7 @@ import { mockKiosks } from '@/features/kiosks/mocks';
 import { Kiosk } from './types';
 
 
-export type ListKiosksParams = { page?: number; size?: number };
+export type ListKiosksParams = { page?: number; size?: number; graph?: string };
 export type PagedKioskResult = { items: Kiosk[]; total: number; page: number; size: number };
 
 function configFields(dto: Kiosk): Kiosk {
