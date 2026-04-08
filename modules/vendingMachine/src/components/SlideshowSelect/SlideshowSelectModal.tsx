@@ -135,11 +135,11 @@ export const SlideshowSelectModal: React.FC<SlideshowSelectModalProps> = ({
 												{slideshow.description || slideshow.code}
 											</Text>
 											<Group gap='xs'>
-												<Badge size='sm' variant='light' color={slideshow.status === 'active' ? 'green' : 'gray'}>
+												<Badge size='sm' variant='filled' color={slideshow.status === 'active' ? 'green' : 'gray'}>
 													{slideshow.status}
 												</Badge>
 												{hasMedia && (
-													<Badge size='sm' variant='light'>
+													<Badge size='sm' variant='filled'>
 														{slideshow.media.length} {translate('nikki.vendingMachine.events.selectSlideshows.media')}
 													</Badge>
 												)}

@@ -24,23 +24,27 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 
-	const getStatusBadge = (status: KioskStatus) => {
-		const statusMap = {
-			[KioskStatus.ACTIVATED]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-			[KioskStatus.DISABLED]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
+	const getStatusBadge = (status?: KioskStatus | null) => {
+		if (!status) return null;
+		const statusMap: Partial<Record<KioskStatus, { color: string; label: string }>> = {
+			[KioskStatus.ACTIVE]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
+			[KioskStatus.INACTIVE]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
 			[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
 		};
 		const statusInfo = statusMap[status];
+		if (!statusInfo) return null;
 		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
 	};
 
-	const getModeBadge = (mode: KioskMode) => {
-		const modeMap = {
+	const getModeBadge = (mode?: KioskMode | null) => {
+		if (!mode) return null;
+		const modeMap: Partial<Record<KioskMode, { color: string; label: string }>> = {
 			[KioskMode.PENDING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 			[KioskMode.SELLING]: { color: 'blue', label: translate('nikki.vendingMachine.kiosk.mode.selling') },
 			[KioskMode.SLIDESHOW_ONLY]: { color: 'purple', label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 		};
 		const modeInfo = modeMap[mode];
+		if (!modeInfo) return null;
 		return <Badge color={modeInfo.color} size='sm' variant='light'>{modeInfo.label}</Badge>;
 	};
 
@@ -122,7 +126,8 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 
 	const getWarningSeverity = (kiosk: Kiosk): 'low' | 'medium' | 'high' | 'critical' | null => {
 		const hasWarnings = kiosk.warnings && kiosk.warnings.length > 0;
-		const isDisconnected = kiosk.isActive && kiosk.connectionStatus === ConnectionStatus.DISCONNECTED;
+		const isDisconnected = kiosk.status === KioskStatus.ACTIVE
+			&& kiosk.connectionStatus === ConnectionStatus.DISCONNECTED;
 
 		if (!hasWarnings && !isDisconnected) return null;
 
@@ -216,18 +221,13 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 							<Group gap='xs'>
 								<IconMapPin size={14} />
 								<Text size='xs' c='dimmed' lineClamp={2} style={{ flex: 1 }}>
-									{kiosk.address}
+									{kiosk.locationAddress || translate('nikki.general.no_address')}
 								</Text>
 							</Group>
 
 							<Group gap='xs' wrap='nowrap'>
 								{getStatusBadge(kiosk.status)}
 								{getModeBadge(kiosk.mode)}
-								<Badge color={kiosk.isActive ? 'green' : 'red'} size='sm'>
-									{kiosk.isActive
-										? translate('nikki.general.status.active')
-										: translate('nikki.general.status.inactive')}
-								</Badge>
 								{getWarningIcon(kiosk.warnings)}
 							</Group>
 

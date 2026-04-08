@@ -115,7 +115,7 @@ export const GameSelectModal: React.FC<GameSelectModalProps> = ({
 												</Text>
 											)}
 											<Group gap='xs'>
-												<Badge size='sm' variant='light' color={game.status === 'active' ? 'green' : 'gray'}>
+												<Badge size='sm' variant='filled' color={game.status === 'active' ? 'green' : 'gray'}>
 													{game.status}
 												</Badge>
 												<Text size='xs' c='dimmed'>

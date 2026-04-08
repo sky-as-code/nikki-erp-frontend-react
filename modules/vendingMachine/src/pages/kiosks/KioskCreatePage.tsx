@@ -10,14 +10,15 @@ import { ControlPanel } from '@/components';
 import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import { KioskFormFields, kioskCreateSchema, useKioskCreate } from '@/features/kiosks';
-import { KioskMode, KioskStatus } from '@/features/kiosks/types';
+import { KioskInterfaceMode, KioskMode, KioskStatus } from '@/features/kiosks/types';
 
 
 const FORM_ID = 'kiosk-create-form';
 
 const defaultFormValues = {
-	status: KioskStatus.ACTIVATED,
+	status: KioskStatus.ACTIVE,
 	mode: KioskMode.PENDING,
+	interfaceMode: KioskInterfaceMode.NORMAL,
 	paymentMethodIds: [] as string[],
 };
 

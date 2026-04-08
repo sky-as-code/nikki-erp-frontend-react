@@ -31,8 +31,8 @@ export default function OverviewPage(): React.ReactNode {
 	const { kiosks = [] } = useKioskList();
 
 	const totalKiosks = kiosks.length;
-	const activeKiosks = kiosks.filter((k: Kiosk) => k.status === KioskStatus.ACTIVATED && k.isActive).length;
-	const inactiveKiosks = kiosks.filter((k: Kiosk) => !(k.status === KioskStatus.ACTIVATED && k.isActive)).length;
+	const activeKiosks = kiosks.filter((k: Kiosk) => k.status === KioskStatus.ACTIVE).length;
+	const inactiveKiosks = kiosks.filter((k: Kiosk) => k.status !== KioskStatus.ACTIVE).length;
 
 	useDocumentTitle('nikki.vendingMachine.overview.title');
 

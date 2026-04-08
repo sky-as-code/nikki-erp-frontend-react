@@ -53,7 +53,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ tags, onClearAll }) =>
 						<Badge
 							key={`${tag.type}-${tag.key}-${index}`}
 							size='lg'
-							variant='light'
+							variant='filled'
 							color='blue'
 							w='max-content'
 							maw={200}

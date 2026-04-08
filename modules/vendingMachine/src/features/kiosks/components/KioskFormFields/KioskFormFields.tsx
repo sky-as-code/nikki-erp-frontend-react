@@ -78,7 +78,7 @@ export const KioskFormFields: React.FC<KioskFormFieldsProps> = ({ mode }) => {
 			</Box>
 			<Box className={classes.kioskFormField}>
 				<EntitySelectField
-					fieldName='modelId'
+					fieldName='modelRef'
 					entities={models ?? []}
 					getEntityId={(m: KioskModel) => m.id}
 					getEntityName={(m: KioskModel) => m.name}

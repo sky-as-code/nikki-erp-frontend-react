@@ -93,8 +93,8 @@ export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTab
 	const modelSchema = kioskCreateSchema as ModelSchema;
 
 	const onFormSubmit = useCallback((data: KioskCreateFormData) => {
-		handleSubmit(formDataToKioskUpdatePayload(data));
-	}, [handleSubmit]);
+		handleSubmit(formDataToKioskUpdatePayload(data, kiosk));
+	}, [handleSubmit, kiosk]);
 
 	const onSaveClick = useCallback(() => {
 		const el = document.getElementById(BASIC_INFO_FORM_ID);
@@ -132,7 +132,7 @@ export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTab
 
 	const modelValue = useMemo(
 		() => kioskToCreateFormValues(kiosk),
-		[kiosk.id, kiosk.etag],
+		[kiosk],
 	);
 
 	return {

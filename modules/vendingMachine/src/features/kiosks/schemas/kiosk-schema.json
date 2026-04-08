@@ -32,7 +32,7 @@
 				}
 			]
 		},
-		"address": {
+		"locationAddress": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.address' }"
 		},
@@ -41,11 +41,11 @@
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.status' }",
 			"enum": [
 				{
-					"value": "activated",
+					"value": "active",
 					"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.activated' }"
 				},
 				{
-					"value": "disabled",
+					"value": "inactive",
 					"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.disabled' }"
 				},
 				{
@@ -67,14 +67,10 @@
 					"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.selling' }"
 				},
 				{
-			"value": "slideshowOnly",
-				"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.slideshowOnly' }"
+					"value": "slideshow-only",
+					"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.slideshowOnly' }"
 				}
 			]
-		},
-		"isActive": {
-			"type": "boolean",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.isActive' }"
 		},
 		"warnings": {
 			"type": "array",
@@ -87,4 +83,3 @@
 		}
 	}
 }
-

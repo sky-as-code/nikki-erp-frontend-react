@@ -70,7 +70,8 @@
 	},
 	"status": {
 		"active": "Active",
-		"inactive": "Inactive"
+		"inactive": "Inactive",
+		"deleted": "Deleted"
 	},
 	"messages": {
 		"success": "Success",

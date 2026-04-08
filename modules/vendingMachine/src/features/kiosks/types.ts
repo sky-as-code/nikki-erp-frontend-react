@@ -6,16 +6,24 @@ import type { Theme } from '../themes/types';
 
 export type UIMode = 'normal' | 'focus';
 
+/** API: KioskStatus (openapi / domain) */
 export enum KioskStatus {
-	DISABLED = 'disabled',
-	ACTIVATED = 'activated',
+	ACTIVE = 'active',
+	INACTIVE = 'inactive',
 	DELETED = 'deleted',
 }
 
+/** API: KioskMode */
 export enum KioskMode {
-	PENDING = 'pending', //* screen locked in maintenance page
-	SELLING = 'selling', //* selling mode
-	SLIDESHOW_ONLY = 'slideshowOnly', //* slideshow only mode
+	PENDING = 'pending',
+	SELLING = 'selling',
+	SLIDESHOW_ONLY = 'slideshow-only',
+}
+
+/** API: KioskInterfaceMode */
+export enum KioskInterfaceMode {
+	NORMAL = 'normal',
+	FOCUS = 'focus',
 }
 
 export enum ConnectionStatus {
@@ -48,13 +56,8 @@ export enum ErrorStatus {
 }
 
 export interface ConnectionHistory {
-	status: ConnectionStatus;
-	reportedAt: string;
-}
-
-export interface KioskCoordinates {
-	latitude: number;
-	longitude: number;
+	connection: ConnectionStatus;
+	createdAt: string;
 }
 
 export interface KioskError {
@@ -75,7 +78,7 @@ export interface LowStockAlert {
 	kioskId: string;
 	kioskCode: string;
 	kioskName: string;
-	stockRatio: number; // 0-1, percentage of stock remaining
+	stockRatio: number;
 	requestedAt: string;
 	restockedAt?: string;
 	items: Array<{
@@ -126,18 +129,37 @@ export interface KioskWarning {
 	createdAt: string;
 }
 
+/**
+ * Kiosk entity (KioskDto + optional UI-only fields from mocks / desktop telemetry).
+ */
 export interface Kiosk {
 	id: string;
+	createdAt: string;
+	etag: string;
 	code: string;
 	name: string;
-	address: string;
-	coordinates: KioskCoordinates;
-	isActive: boolean;
-	status: KioskStatus;
-	mode: KioskMode;
-	connectionStatus: ConnectionStatus;
-	machineType?: MachineType;
-	connectionHistory?: ConnectionHistory[];
+	modelRef?: string | null;
+	settingRef?: string | null;
+	status?: KioskStatus | null;
+	mode?: KioskMode | null;
+	locationAddress?: string | null;
+	latitude?: number | null;
+	longitude?: number | null;
+	interfaceMode?: KioskInterfaceMode | null;
+	shoppingScreenPlaylistRef?: string | null;
+	waitingScreenPlaylistRef?: string | null;
+	themeRef?: string | null;
+	gameRef?: string | null;
+	updatedAt?: string | null;
+	connection?: Record<string, unknown> | null;
+
+	/** Optional: resolved relations when using graph/columns */
+	theme?: Theme;
+	game?: Game;
+	waitingPlaylist?: Slideshow;
+	shoppingPlaylist?: Slideshow;
+
+	/** UI / telemetry (not on KioskDto) */
 	warnings?: KioskWarning[];
 	temperature?: number;
 	humidity?: number;
@@ -145,21 +167,68 @@ export interface Kiosk {
 	cpu?: number;
 	redis?: number;
 	memory?: number;
-	createdAt: string;
-	deletedAt?: string;
-	etag: string;
-	/** Optional: kiosk model assignment (create/update payloads) */
-	modelId?: string;
-	/** Optional: enabled payment methods */
-	paymentMethodIds?: string[];
-
-	uiMode?: UIMode;
-	waitingPlaylist?: Slideshow;
-	shoppingPlaylist?: Slideshow;
-	theme?: Theme;
-	game?: Game;
+	machineType?: MachineType;
 }
 
+export type CreateKioskBody = {
+	code: string;
+	name: string;
+	modelRef: string;
+	settingRef?: string | null;
+	status?: KioskStatus;
+	mode?: KioskMode;
+	locationAddress?: string | null;
+	latitude?: number | null;
+	longitude?: number | null;
+	interfaceMode?: KioskInterfaceMode;
+	shoppingScreenPlaylistRef?: string | null;
+	waitingScreenPlaylistRef?: string | null;
+	themeRef?: string | null;
+	gameRef?: string | null;
+};
+
+export type UpdateKioskBody = {
+	id: string;
+	etag: string;
+	code?: string | null;
+	name?: string | null;
+	modelRef?: string | null;
+	settingRef?: string | null;
+	status?: KioskStatus;
+	mode?: KioskMode;
+	locationAddress?: string | null;
+	latitude?: number | null;
+	longitude?: number | null;
+	interfaceMode?: KioskInterfaceMode;
+	shoppingScreenPlaylistRef?: string | null;
+	waitingScreenPlaylistRef?: string | null;
+	themeRef?: string | null;
+	gameRef?: string | null;
+};
+
+export type RestCreateResponse = {
+	id: string;
+	createdAt: number;
+	etag: string;
+};
+
+export type RestUpdateResponse = {
+	id: string;
+	updatedAt: number;
+	etag: string;
+};
+
+export type RestDeleteResponse = {
+	id: string;
+	deletedAt: number;
+};
+
+export type PagedSearchResponse<T> = {
+	items: T[];
+	total: number;
+	page: number;
+	size: number;
+};
 
 export enum KioskActivityLogType {
 	WARNING = 'warning',

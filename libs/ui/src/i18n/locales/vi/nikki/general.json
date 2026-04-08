@@ -70,7 +70,8 @@
 	},
 	"status": {
 		"active": "Hoạt động",
-		"inactive": "Không hoạt động"
+		"inactive": "Không hoạt động",
+		"deleted": "Đã xóa"
 	},
 	"messages": {
 		"success": "Thành công",

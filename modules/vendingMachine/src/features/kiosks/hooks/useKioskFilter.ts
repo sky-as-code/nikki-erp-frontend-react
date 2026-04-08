@@ -3,87 +3,86 @@ import { useTranslation } from 'react-i18next';
 
 
 import { ControlPanelFilterConfig } from '@/components';
+import { buildSimpleSearchGraph } from '@/components/ControlPanel/buildSimpleSearchGraph';
 
-import { type Kiosk } from '../types';
-import { ConnectionStatus, KioskMode } from '../types';
+import { KioskMode, KioskStatus } from '../types';
 
 
 
 // eslint-disable-next-line max-lines-per-function
-export const useKioskFilter = (kiosks: Kiosk[]) => {
+export function useKioskFilter() {
 	const { t: translate } = useTranslation();
 	const [searchValue, setSearchValue] = useState('');
 	const [statusFilter, setStatusFilter] = useState<string[]>([]);
-	const [connectionFilter, setConnectionFilter] = useState<ConnectionStatus[]>([]);
-	const [modeFilter, setModeFilter] = useState<KioskMode[]>([]);
-
-	const filteredKiosks = useMemo(() => {
-		let filtered = kiosks || [];
-
-		if (statusFilter.length > 0) {
-			filtered = filtered.filter((k: Kiosk) => {
-				const isActive = statusFilter.includes('active');
-				const isInactive = statusFilter.includes('inactive');
-				if (isActive && isInactive) return true;
-				if (isActive) return k.isActive;
-				if (isInactive) return !k.isActive;
-				return true;
-			});
-		}
-
-		if (connectionFilter.length > 0) {
-			filtered = filtered.filter((k: Kiosk) => connectionFilter.includes(k.connectionStatus));
-		}
-
-		if (modeFilter.length > 0) {
-			filtered = filtered.filter((k: Kiosk) => modeFilter.includes(k.mode));
-		}
-
-		if (searchValue.trim()) {
-			const searchLower = searchValue.toLowerCase().trim();
-			filtered = filtered.filter(
-				(k: Kiosk) =>
-					k.code.toLowerCase().includes(searchLower) ||
-					k.name.toLowerCase().includes(searchLower),
-			) as Kiosk[];
-		}
-
-		return filtered;
-	}, [kiosks, statusFilter, connectionFilter, modeFilter, searchValue]);
+	// const [connectionFilter, setConnectionFilter] = useState<string[]>([]);
+	const [modeFilter, setModeFilter] = useState<string[]>([]);
 
 	const filters: ControlPanelFilterConfig[] = useMemo(() => [
 		{
+			key: 'search',
+			searchFields: ['code', 'name'],
+			type: 'search' as const,
+			value: searchValue,
+			onChange: setSearchValue,
+			placeholder: translate('nikki.vendingMachine.kiosk.search.placeholder'),
+		},
+		{
+			key: 'status',
+			type: 'multiSelect' as const,
 			value: statusFilter,
 			onChange: setStatusFilter,
 			options: [
-				{ value: 'active', label: translate('nikki.general.status.active') },
-				{ value: 'inactive', label: translate('nikki.general.status.inactive') },
+				{ value: KioskStatus.ACTIVE, label: translate('nikki.general.status.active') },
+				{ value: KioskStatus.INACTIVE, label: translate('nikki.general.status.inactive') },
+				{ value: KioskStatus.DELETED, label: translate('nikki.general.status.deleted') },
 			],
+			placeholder: translate('nikki.vendingMachine.kiosk.filter.status'),
 		},
+		// {
+		// 	key: 'connection',
+		// 	type: 'multiSelect' as const,
+		// 	value: connectionFilter,
+		// 	onChange: (value: string[]) => setConnectionFilter(value),
+		// 	options: [
+		// 		{ value: ConnectionStatus.FAST, label: translate('nikki.vendingMachine.kiosk.connectionStatus.fast') },
+		// 		{ value: ConnectionStatus.SLOW, label: translate('nikki.vendingMachine.kiosk.connectionStatus.slow') },
+		// 		{ value: ConnectionStatus.DISCONNECTED, label: translate('nikki.vendingMachine.kiosk.connectionStatus.disconnected') },
+		// 	],
+		// 	placeholder: translate('nikki.vendingMachine.kiosk.filter.connection'),
+		// },
 		{
-			value: connectionFilter,
-			onChange: (value: string[]) => setConnectionFilter(value as ConnectionStatus[]),
-			options: [
-				{ value: 'fast', label: translate('nikki.vendingMachine.kiosk.connectionStatus.fast') },
-				{ value: 'slow', label: translate('nikki.vendingMachine.kiosk.connectionStatus.slow') },
-				{ value: 'disconnected', label: translate('nikki.vendingMachine.kiosk.connectionStatus.disconnected') },
-			],
-		},
-		{
+			key: 'mode',
+			type: 'multiSelect' as const,
 			value: modeFilter,
-			onChange: (value: string[]) => setModeFilter(value as KioskMode[]),
+			onChange: (value: string[]) => setModeFilter(value),
 			options: [
 				{ value: KioskMode.PENDING, label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 				{ value: KioskMode.SELLING, label: translate('nikki.vendingMachine.kiosk.mode.selling') },
 				{ value: KioskMode.SLIDESHOW_ONLY, label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 			],
+			placeholder: translate('nikki.vendingMachine.kiosk.filter.mode'),
 		},
-	], [statusFilter, connectionFilter, modeFilter, translate]);
+	], [searchValue, statusFilter, modeFilter, translate]);
 
-	return {
-		filteredKiosks,
-		filters,
-		searchValue,
-		setSearchValue,
-	};
+	const graph = useMemo(
+		() => buildSimpleSearchGraph(
+			filters.map(filter => {
+				if (filter.type === 'search') {
+					return {
+						key: filter.key,
+						searchFields: filter.searchFields,
+						type: filter.type,
+						value: filter.value,
+					};
+				}
+				return {
+					key: filter.key,
+					type: filter.type,
+					value: filter.value,
+				};
+			}),
+		), [filters],
+	);
+
+	return { filters, graph };
 };

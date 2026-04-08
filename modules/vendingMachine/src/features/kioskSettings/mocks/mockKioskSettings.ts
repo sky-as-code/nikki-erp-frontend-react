@@ -88,7 +88,7 @@ export const mockKioskSettings = {
 		// Enrich with mock data based on setting id
 		const enriched: KioskSetting = {
 			...base,
-			kiosks: id === '1' ? [kiosks[0], kiosks[1]] : id === '3' ? [kiosks[0], kiosks[2], kiosks[3]] : [],
+			kiosks: id === '1' ? [kiosks.items[0], kiosks.items[1]] : id === '3' ? [kiosks.items[0], kiosks.items[2], kiosks.items[3]] : [],
 			theme: id === '1' ? themes[0] : id === '3' ? themes[2] : id === '4' ? themes[3] : undefined,
 			themeId: id === '1' ? themes[0]?.id : id === '3' ? themes[2]?.id : id === '4' ? themes[3]?.id : undefined,
 			game: id === '4' ? games[0] : id === '3' ? games[1] : undefined,

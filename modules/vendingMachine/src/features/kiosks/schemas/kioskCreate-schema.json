@@ -25,8 +25,8 @@
 			"type": "enum",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.status' }",
 			"enum": [
-				{ "value": "activated", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.activated' }" },
-				{ "value": "disabled", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.disabled' }" },
+				{ "value": "active", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.activated' }" },
+				{ "value": "inactive", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.disabled' }" },
 				{ "value": "deleted", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.deleted' }" }
 			]
 		},
@@ -36,12 +36,20 @@
 			"enum": [
 				{ "value": "pending", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.pending' }" },
 				{ "value": "selling", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.selling' }" },
-				{ "value": "slideshowOnly", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.slideshowOnly' }" }
+				{ "value": "slideshow-only", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.mode.slideshowOnly' }" }
 			]
 		},
-		"modelId": {
+		"modelRef": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.model' }"
+		},
+		"interfaceMode": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.uiMode' }",
+			"enum": [
+				{ "value": "normal", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.uiMode.normal' }" },
+				{ "value": "focus", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.uiMode.focus' }" }
+			]
 		},
 		"paymentMethodIds": {
 			"type": "array",

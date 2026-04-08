@@ -4,6 +4,8 @@ import { useRef, useEffect, useMemo } from 'react';
 
 import { Kiosk, KioskStatus, ConnectionStatus } from '@/features/kiosks/types';
 
+import { getConnectionHistory } from '../../KioskTable';
+
 
 const clearMarkers = (markersRef: React.RefObject<maplibregl.Marker[]>) => {
 	markersRef.current.forEach(marker => marker.remove());
@@ -59,7 +61,8 @@ const getConnectionStatusText = (connectionStatus?: ConnectionStatus): string =>
 const createPopupContent = (kiosk: Kiosk, isActive: boolean): string => {
 	const name = kiosk.name || kiosk.code || '';
 	const statusText = isActive ? 'Đang hoạt động' : 'Không hoạt động';
-	const connectionStatusText = getConnectionStatusText(kiosk.connectionStatus);
+	const connectionHistory = getConnectionHistory(kiosk as unknown as Record<string, unknown>);
+	const connectionStatusText = getConnectionStatusText(connectionHistory?.[0]?.connection);
 	const temperature = kiosk.temperature;
 	const humidity = kiosk.humidity;
 	const powerConsumption = kiosk.powerConsumption;
@@ -83,7 +86,7 @@ const createPopupContent = (kiosk: Kiosk, isActive: boolean): string => {
 			<span>Mã: ${kiosk.code}</span><br/>
 			<span>Trạng thái: ${statusText}</span><br/>
 			<span>Kết nối: ${connectionStatusText}</span><br/>
-			<span>Địa chỉ: ${kiosk.address || 'N/A'}</span>
+			<span>Địa chỉ: ${kiosk.locationAddress || 'N/A'}</span>
 			${environmentalInfo}
 		</div>
 	`;
@@ -93,11 +96,12 @@ const createMarker = (
 	map: maplibregl.Map,
 	kiosk: Kiosk,
 ): maplibregl.Marker => {
-	const lat = kiosk.coordinates!.latitude;
-	const lng = kiosk.coordinates!.longitude;
-	const isActive = kiosk.status === KioskStatus.ACTIVATED && kiosk.isActive;
+	const lat = kiosk.latitude ?? 0;
+	const lng = kiosk.longitude ?? 0;
+	const isActive = kiosk.status === KioskStatus.ACTIVE;
 
-	const el = createMarkerElement(isActive, kiosk.connectionStatus);
+	const connectionHistory = getConnectionHistory(kiosk as unknown as Record<string, unknown>);
+	const el = createMarkerElement(isActive, connectionHistory?.[0]?.connection);
 	const popupContent = createPopupContent(kiosk, isActive);
 
 	const popup = new maplibregl.Popup({ offset: 25 }).setHTML(popupContent);
@@ -121,7 +125,7 @@ const createMarkers = (
 	clearMarkers(markersRef);
 
 	kiosks.forEach((kiosk) => {
-		if (!kiosk.coordinates?.latitude || !kiosk.coordinates?.longitude) return;
+		if (!kiosk.latitude || !kiosk.longitude) return;
 
 		const marker = createMarker(map, kiosk);
 		markersRef.current.push(marker);
@@ -140,7 +144,7 @@ export function useMapMarkers({ mapRef, kiosks = [], colorScheme }: UseMapMarker
 	// Filter kiosks that have valid coordinates
 	const kiosksWithCoordinates = useMemo(() => {
 		return kiosks.filter(
-			(kiosk) => kiosk.coordinates?.latitude && kiosk.coordinates?.longitude,
+			(kiosk) => kiosk.latitude && kiosk.longitude,
 		);
 	}, [kiosks]);
 

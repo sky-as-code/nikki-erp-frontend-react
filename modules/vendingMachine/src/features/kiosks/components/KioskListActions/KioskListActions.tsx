@@ -71,8 +71,8 @@ export const KioskListActions: React.FC<KioskListActionsProps> = ({
 
 	const statusOptions = [
 		{ value: 'all', label: translate('nikki.general.filters.all') },
-		{ value: KioskStatus.ACTIVATED, label: translate('nikki.vendingMachine.kiosk.status.activated') },
-		{ value: KioskStatus.DISABLED, label: translate('nikki.vendingMachine.kiosk.status.disabled') },
+		{ value: KioskStatus.ACTIVE, label: translate('nikki.vendingMachine.kiosk.status.activated') },
+		{ value: KioskStatus.INACTIVE, label: translate('nikki.vendingMachine.kiosk.status.disabled') },
 		{ value: KioskStatus.DELETED, label: translate('nikki.vendingMachine.kiosk.status.deleted') },
 	];
 

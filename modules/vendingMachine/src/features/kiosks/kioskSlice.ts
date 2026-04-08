@@ -5,9 +5,17 @@ import {
 
 import { SearchGraph } from '@/components/FilterGroup';
 
-import { kioskService, PagedKioskResult } from './kioskService';
-import { Kiosk } from './types';
+import { kioskService } from './kioskService';
 
+import type {
+	Kiosk,
+	CreateKioskBody,
+	UpdateKioskBody,
+	RestCreateResponse,
+	RestUpdateResponse,
+	RestDeleteResponse,
+	PagedSearchResponse,
+} from './types';
 
 
 export const SLICE_NAME = 'vendingMachine.kiosk';
@@ -20,9 +28,9 @@ export type KioskState = {
 	detail: ReduxActionState<Kiosk>;
 	list: ReduxActionState<Kiosk[]>;
 	listPagination: ListPagination;
-	create: ReduxActionState<Kiosk>;
-	update: ReduxActionState<Kiosk>;
-	delete: ReduxActionState<void>;
+	create: ReduxActionState<RestCreateResponse>;
+	update: ReduxActionState<RestUpdateResponse>;
+	delete: ReduxActionState<RestDeleteResponse>;
 };
 
 export const initialKioskState: KioskState = {
@@ -42,14 +50,14 @@ export type ListKiosksParams = {
 };
 
 export const listKiosks = createAsyncThunk<
-	PagedKioskResult,
+	PagedSearchResponse<Kiosk>,
 	ListKiosksParams | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listKiosks`,
 	async (params, { rejectWithValue }) => {
 		try {
-			return await kioskService.listKiosks({
+			return await kioskService.searchKiosks({
 				page: params?.page ?? 0,
 				size: params?.size ?? DEFAULT_PAGE_SIZE,
 				graph: JSON.stringify(params?.graph ?? {}),
@@ -63,15 +71,14 @@ export const listKiosks = createAsyncThunk<
 );
 
 export const getKiosk = createAsyncThunk<
-	Kiosk | undefined,
+	Kiosk,
 	string,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/getKiosk`,
 	async (id, { rejectWithValue }) => {
 		try {
-			const result = await kioskService.getKiosk(id);
-			return result;
+			return await kioskService.getKiosk(id);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to get kiosk';
@@ -81,15 +88,14 @@ export const getKiosk = createAsyncThunk<
 );
 
 export const createKiosk = createAsyncThunk<
-	Kiosk,
-	Omit<Kiosk, 'id' | 'createdAt' | 'etag'>,
+	RestCreateResponse,
+	CreateKioskBody,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createKiosk`,
-	async (kiosk, { rejectWithValue }) => {
+	async (body, { rejectWithValue }) => {
 		try {
-			const result = await kioskService.createKiosk(kiosk);
-			return result;
+			return await kioskService.createKiosk(body);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to create kiosk';
@@ -99,15 +105,14 @@ export const createKiosk = createAsyncThunk<
 );
 
 export const updateKiosk = createAsyncThunk<
-	Kiosk,
-	{ id: string; etag: string; updates: Partial<Omit<Kiosk, 'id' | 'createdAt' | 'etag'>> },
+	RestUpdateResponse,
+	{ id: string; body: UpdateKioskBody },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateKiosk`,
-	async ({ id, etag, updates }, { rejectWithValue }) => {
+	async ({ id, body }, { rejectWithValue }) => {
 		try {
-			const result = await kioskService.updateKiosk(id, etag, updates);
-			return result;
+			return await kioskService.updateKiosk(id, body);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to update kiosk';
@@ -117,15 +122,14 @@ export const updateKiosk = createAsyncThunk<
 );
 
 export const deleteKiosk = createAsyncThunk<
-	void,
-	{ id: string; },
+	RestDeleteResponse,
+	{ id: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/deleteKiosk`,
 	async ({ id }, { rejectWithValue }) => {
 		try {
-			await kioskService.deleteKiosk(id);
-			return undefined;
+			return await kioskService.deleteKiosk(id);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to delete kiosk';
@@ -203,7 +207,7 @@ function getKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 
 function createKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 	builder
-		.addCase(createKiosk.pending, (state, _action) => {
+		.addCase(createKiosk.pending, (state) => {
 			state.create.status = 'pending';
 			state.create.error = null;
 		})
@@ -219,18 +223,25 @@ function createKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 
 function updateKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 	builder
-		.addCase(updateKiosk.pending, (state, _action) => {
+		.addCase(updateKiosk.pending, (state) => {
 			state.update.status = 'pending';
 			state.update.error = null;
 		})
 		.addCase(updateKiosk.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
-			state.detail.data = action.payload;
+			if (state.detail.data?.id === action.payload.id && state.detail.data) {
+				state.detail.data = { ...state.detail.data, etag: action.payload.etag };
+			}
 			if (state.list.data) {
 				const listIndex = state.list.data.findIndex((k) => k.id === action.payload.id);
 				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
+					const row = state.list.data[listIndex];
+					state.list.data[listIndex] = {
+						...row,
+						etag: action.payload.etag,
+						updatedAt: String(action.payload.updatedAt),
+					};
 				}
 			}
 		})
@@ -242,12 +253,13 @@ function updateKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 
 function deleteKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 	builder
-		.addCase(deleteKiosk.pending, (state, _action) => {
+		.addCase(deleteKiosk.pending, (state) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
 		})
 		.addCase(deleteKiosk.fulfilled, (state, action) => {
 			state.delete.status = 'success';
+			state.delete.data = action.payload;
 			if (state.list.data) {
 				state.list.data = state.list.data.filter((k) => k.id !== action.meta.arg.id);
 			}
@@ -267,4 +279,3 @@ export const actions = {
 };
 
 export const { reducer } = kioskSlice;
-

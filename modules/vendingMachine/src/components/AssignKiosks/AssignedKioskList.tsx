@@ -35,17 +35,20 @@ export const AssignedKioskList: React.FC<AssignedKioskListProps> = ({
 	const { t: translate } = useTranslation();
 	const keys = { ...DEFAULT_I18N, ...translationKeys };
 
-	const getStatusBadge = (status: KioskStatus) => {
-		const statusMap = {
-			[KioskStatus.ACTIVATED]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-			[KioskStatus.DISABLED]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
+	const getStatusBadge = (status: KioskStatus | null | undefined) => {
+		if (status == null) return <Badge color='gray' size='sm'>—</Badge>;
+		const statusMap: Partial<Record<KioskStatus, { color: string; label: string }>> = {
+			[KioskStatus.ACTIVE]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
+			[KioskStatus.INACTIVE]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
 			[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
 		};
 		const statusInfo = statusMap[status];
+		if (!statusInfo) return <Badge color='gray' size='sm'>—</Badge>;
 		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
 	};
 
-	const getModeBadge = (mode: KioskMode) => {
+	const getModeBadge = (mode: KioskMode | null | undefined) => {
+		if (mode == null) return <Badge color='gray' size='sm'>—</Badge>;
 		const modeMap: Partial<Record<KioskMode, { color: string; label: string }>> = {
 			[KioskMode.PENDING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 			[KioskMode.SELLING]: { color: 'blue', label: translate('nikki.vendingMachine.kiosk.mode.selling') },
@@ -100,7 +103,7 @@ export const AssignedKioskList: React.FC<AssignedKioskListProps> = ({
 									<Group gap='xs'>
 										<IconMapPin size={14} />
 										<Text size='sm' lineClamp={1} style={{ maxWidth: 200 }}>
-											{kiosk.address}
+											{kiosk.locationAddress ?? '—'}
 										</Text>
 									</Group>
 								</Table.Td>

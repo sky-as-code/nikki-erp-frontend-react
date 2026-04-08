@@ -77,12 +77,16 @@ export const KioskListPage: React.FC = () => {
 				confirmColor='red'
 			/>
 
-			<KioskDetailDrawer
-				opened={isOpenPreview}
-				onClose={handleClosePreview}
-				kiosk={selectedKiosk}
-				isLoading={isLoadingPreview}
-			/>
+			{
+				selectedKiosk && (
+					<KioskDetailDrawer
+						opened={isOpenPreview}
+						onClose={handleClosePreview}
+						kiosk={selectedKiosk}
+						isLoading={isLoadingPreview}
+					/>
+				)
+			}
 		</React.Fragment>
 	);
 };
@@ -112,7 +116,7 @@ const KioskListControlPanel: React.FC<KioskListControlPanelProps> = ({
 };
 
 
-const KIOSK_COLUMNS = ['code', 'name', 'connectionStatus', 'address', 'status', 'mode', 'warnings', 'actions'];
+const KIOSK_COLUMNS = ['code', 'name', 'connectionStatus', 'locationAddress', 'status', 'mode', 'warnings', 'actions'];
 
 interface KioskListPageContentProps {
 	kiosks: Kiosk[];

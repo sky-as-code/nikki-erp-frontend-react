@@ -10,9 +10,9 @@ import { EventProductList } from './EventProductList';
 import { EventThemeConfig } from './EventThemeConfig';
 import { KioskSelectModal } from './KioskSelectModal';
 import { ProductSelectModal } from './ProductSelectModal';
-import { Slideshow } from '../../../slideshow/types';
 import { Game } from '../../../games/types';
 import { Kiosk } from '../../../kiosks/types';
+import { Slideshow } from '../../../slideshow/types';
 import { Theme } from '../../../themes/types';
 import { Event, EventProduct } from '../../types';
 
@@ -140,7 +140,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 					</Group>
 					<Button
 						size='xs'
-						variant='light'
+						variant='filled'
 						leftSection={<IconExternalLink size={16} />}
 						onClick={() => {
 							navigate(`../events/${event.id}`);

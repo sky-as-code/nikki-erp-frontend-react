@@ -1,4 +1,5 @@
 import { ActionIcon, Badge, Box, Button, Group, Popover, Stack, Text, Tooltip } from '@mantine/core';
+import { snakeToCamelObject } from '@nikkierp/common/utils';
 import { AutoTable, AutoTableProps, TablePagination } from '@nikkierp/ui/components';
 import {
 	IconEdit,
@@ -74,19 +75,16 @@ interface AddressColumnProps {
 
 const AddressColumn: React.FC<AddressColumnProps> = ({ row, translate }) => {
 	const kiosk = row as unknown as Kiosk;
-	const address = kiosk.address || '';
-
+	const address = kiosk.locationAddress || '';
 
 	const handleOpenGoogleMaps = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		let googleMapsUrl = '';
 
-		// Prefer coordinates if available (more accurate)
-		if (kiosk.coordinates?.latitude && kiosk.coordinates?.longitude) {
-			googleMapsUrl = `https://www.google.com/maps?q=${kiosk.coordinates.latitude},${kiosk.coordinates.longitude}`;
+		if (kiosk.latitude != null && kiosk.longitude != null) {
+			googleMapsUrl = `https://www.google.com/maps?q=${kiosk.latitude},${kiosk.longitude}`;
 		}
 		else if (address) {
-			// Fallback to address search
 			googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 		}
 
@@ -94,8 +92,6 @@ const AddressColumn: React.FC<AddressColumnProps> = ({ row, translate }) => {
 			window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
 		}
 	};
-
-
 
 	const popoverContent = (
 		<Stack gap='xs' style={{ maxWidth: 300 }}>
@@ -155,12 +151,13 @@ function renderStatusColumn(
 	translate: (key: string) => string,
 ) {
 	const status = row.status as KioskStatus;
-	const statusMap = {
-		[KioskStatus.ACTIVATED]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-		[KioskStatus.DISABLED]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
+	const statusMap: Partial<Record<KioskStatus, { color: string; label: string }>> = {
+		[KioskStatus.ACTIVE]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
+		[KioskStatus.INACTIVE]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
 		[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
 	};
-	const statusInfo = statusMap[status];
+	const statusInfo = status ? statusMap[status] : undefined;
+	if (!statusInfo) return <Text size='sm'>--</Text>;
 	return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
 }
 
@@ -169,13 +166,14 @@ function renderModeColumn(
 	translate: (key: string) => string,
 ) {
 	const mode = row.mode as KioskMode;
-	const modeMap = {
+	const modeMap: Partial<Record<KioskMode, { color: string; label: string }>> = {
 		[KioskMode.PENDING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 		[KioskMode.SELLING]: { color: 'blue', label: translate('nikki.vendingMachine.kiosk.mode.selling') },
 		[KioskMode.SLIDESHOW_ONLY]: { color: 'purple', label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 	};
-	const modeInfo = modeMap[mode];
-	return <Badge color={modeInfo.color} size='sm' variant='light'>{modeInfo.label}</Badge>;
+	const modeInfo = mode ? modeMap[mode] : undefined;
+	if (!modeInfo) return <Text size='sm'>--</Text>;
+	return <Badge color={modeInfo.color} size='sm' variant='filled'>{modeInfo.label}</Badge>;
 }
 
 function formatConnectionTime(
@@ -195,12 +193,23 @@ function formatConnectionTime(
 	return translate('nikki.vendingMachine.kiosk.connectionHistory.days_ago', { count: diffDays });
 }
 
+export function getConnectionHistory(row: Record<string, unknown>): ConnectionHistory[] {
+	try {
+		const rawLogs = JSON.parse(row.connection as string)?.items ?? [];
+		return snakeToCamelObject(rawLogs) as ConnectionHistory[];
+	}
+	catch {
+		return [];
+	}
+}
+
 function renderConnectionStatusColumn(
 	row: Record<string, unknown>,
 	translate: (key: string) => string,
 ) {
-	const connectionStatus = row.connectionStatus as ConnectionStatus;
-	const connectionHistory = (row.connectionHistory as ConnectionHistory[]) || [];
+	const connectionHistory = getConnectionHistory(row);
+	const connectionStatus = connectionHistory.length > 0
+		? connectionHistory[0].connection : ConnectionStatus.DISCONNECTED;
 
 	const statusMap = {
 		[ConnectionStatus.FAST]: {
@@ -228,13 +237,14 @@ function renderConnectionStatusColumn(
 				{translate('nikki.vendingMachine.kiosk.connectionHistory.title')}
 			</Text>
 			{connectionHistory.slice(0, 5).map((history, index) => {
-				const historyStatus = statusMap[history.status];
+				const historyStatus = statusMap?.[history.connection];
+				if (!historyStatus) return null;
 				return (
 					<Group key={index} gap='xs' align='center'>
 						{historyStatus.icon}
 						<Text size='xs'>{historyStatus.label}</Text>
 						<Text size='xs' c='dimmed' ml='auto'>
-							{formatConnectionTime(history.reportedAt, translate)}
+							{formatConnectionTime(history?.createdAt ?? '', translate)}
 						</Text>
 					</Group>
 				);
@@ -414,7 +424,7 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 				columnRenderers={{
 					code: renderCodeColumn,
 					name: renderNameColumn,
-					address: (row) => renderAddressColumn(row, translate),
+					locationAddress: (row) => renderAddressColumn(row, translate),
 					status: (row) => renderStatusColumn(row, translate),
 					mode: (row) => renderModeColumn(row, translate),
 					connectionStatus: (row) => renderConnectionStatusColumn(row, translate),

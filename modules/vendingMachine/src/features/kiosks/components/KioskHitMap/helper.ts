@@ -12,7 +12,7 @@ export const DEFAULT_MAP_ZOOM = 11;
  */
 export function filterKiosksWithCoordinates(kiosks: Kiosk[]): Kiosk[] {
 	return kiosks.filter(
-		(kiosk) => kiosk.coordinates?.latitude && kiosk.coordinates?.longitude,
+		(kiosk) => kiosk.latitude && kiosk.longitude,
 	);
 }
 
@@ -24,8 +24,8 @@ export function calculateCenter(kiosks: Kiosk[]): [number, number] {
 		return DEFAULT_MAP_CENTER;
 	}
 
-	const lngs = kiosks.map(k => k.coordinates.longitude);
-	const lats = kiosks.map(k => k.coordinates.latitude);
+	const lngs = kiosks.map(k => k.longitude).filter(lng => lng !== null && lng !== undefined);
+	const lats = kiosks.map(k => k.latitude).filter(lat => lat !== null && lat !== undefined);
 
 	const minLng = Math.min(...lngs);
 	const maxLng = Math.max(...lngs);
@@ -46,8 +46,8 @@ export function calculateZoom(kiosks: Kiosk[]): number {
 		return DEFAULT_MAP_ZOOM;
 	}
 
-	const lngs = kiosks.map(k => k.coordinates.longitude);
-	const lats = kiosks.map(k => k.coordinates.latitude);
+	const lngs = kiosks.map(k => k.longitude).filter(lng => lng !== null && lng !== undefined);
+	const lats = kiosks.map(k => k.latitude).filter(lat => lat !== null && lat !== undefined);
 
 	const minLng = Math.min(...lngs);
 	const maxLng = Math.max(...lngs);
@@ -77,8 +77,8 @@ export function createBoundsFromKiosks(kiosks: Kiosk[]): maplibregl.LngLatBounds
 		return null;
 	}
 
-	const lngs = kiosks.map(k => k.coordinates.longitude);
-	const lats = kiosks.map(k => k.coordinates.latitude);
+	const lngs = kiosks.map(k => k.longitude).filter(lng => lng !== null && lng !== undefined);
+	const lats = kiosks.map(k => k.latitude).filter(lat => lat !== null && lat !== undefined);
 
 	return new maplibregl.LngLatBounds(
 		[Math.min(...lngs), Math.min(...lats)],

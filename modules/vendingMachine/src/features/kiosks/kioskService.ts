@@ -1,44 +1,55 @@
-import { mockKiosks } from '@/features/kiosks/mocks';
+import * as request from '@nikkierp/common/request';
+import { snakeToCamelObject, camelToSnakeObject, buildColumnsQuery } from '@nikkierp/common/utils';
 
-import { Kiosk } from './types';
+import type {
+	Kiosk,
+	CreateKioskBody,
+	UpdateKioskBody,
+	RestCreateResponse,
+	RestUpdateResponse,
+	RestDeleteResponse,
+	PagedSearchResponse,
+} from './types';
 
 
-export type ListKiosksParams = { page?: number; size?: number; graph?: string };
-export type PagedKioskResult = { items: Kiosk[]; total: number; page: number; size: number };
-
-function configFields(dto: Kiosk): Kiosk {
-	return {
-		...dto,
-	};
-}
+const BASE_PATH = 'vending-machines/kiosks';
 
 export const kioskService = {
-	async listKiosks(params?: ListKiosksParams): Promise<PagedKioskResult> {
-		const result = await mockKiosks.listKiosks(params?.page, params?.size);
-		return { ...result, items: result.items.map(configFields) };
+	async searchKiosks(
+		params?: { page?: number; size?: number; graph?: string; columns?: Array<keyof Kiosk> },
+	): Promise<PagedSearchResponse<Kiosk>> {
+		const { columns, ...restParams } = params || {};
+		const result = await request.get<any>(BASE_PATH, {
+			searchParams: [
+				...Object.entries(restParams),
+				...buildColumnsQuery<Kiosk>(columns || []),
+			],
+		});
+		return snakeToCamelObject(result) as PagedSearchResponse<Kiosk>;
 	},
 
-	async getKiosk(id: string): Promise<Kiosk | undefined> {
-		const result = await mockKiosks.getKiosk(id);
-		return result ? configFields(result) : undefined;
+	async getKiosk(id: string, columns?: Array<keyof Kiosk>): Promise<Kiosk> {
+		const columnsQuery = buildColumnsQuery<Kiosk>(columns || []);
+		const result = await request.get<any>(`${BASE_PATH}/${id}`, {
+			searchParams: [...columnsQuery],
+		});
+		return snakeToCamelObject(result) as Kiosk;
 	},
 
-	async createKiosk(kiosk: Omit<Kiosk, 'id' | 'createdAt' | 'etag'>): Promise<Kiosk> {
-		const result = await mockKiosks.createKiosk(kiosk);
-		return configFields(result);
+	async createKiosk(body: CreateKioskBody): Promise<RestCreateResponse> {
+		const snakeBody = camelToSnakeObject(body);
+		const result = await request.post<any>(BASE_PATH, { json: snakeBody });
+		return snakeToCamelObject(result) as RestCreateResponse;
 	},
 
-	async updateKiosk(
-		id: string,
-		etag: string,
-		updates: Partial<Omit<Kiosk, 'id' | 'createdAt' | 'etag'>>,
-	): Promise<Kiosk> {
-		const result = await mockKiosks.updateKiosk(id, etag, updates);
-		return configFields(result);
+	async updateKiosk(id: string, body: UpdateKioskBody): Promise<RestUpdateResponse> {
+		const snakeBody = camelToSnakeObject(body);
+		const result = await request.put<any>(`${BASE_PATH}/${id}`, { json: snakeBody });
+		return snakeToCamelObject(result) as RestUpdateResponse;
 	},
 
-	async deleteKiosk(id: string): Promise<void> {
-		await mockKiosks.deleteKiosk(id);
+	async deleteKiosk(id: string): Promise<RestDeleteResponse> {
+		const result = await request.del<any>(`${BASE_PATH}/${id}`);
+		return snakeToCamelObject(result) as RestDeleteResponse;
 	},
 };
-

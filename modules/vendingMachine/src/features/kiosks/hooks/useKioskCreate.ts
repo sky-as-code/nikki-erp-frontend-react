@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
 import { VendingMachineDispatch, kioskActions, selectCreateKiosk } from '@/appState';
-import { Kiosk, ConnectionStatus } from '@/features/kiosks';
+import { KioskInterfaceMode, KioskMode, KioskStatus } from '@/features/kiosks/types';
+
+import type { CreateKioskBody, Kiosk } from '@/features/kiosks/types';
 
 
 export interface KioskCreateFormData {
@@ -14,9 +16,10 @@ export interface KioskCreateFormData {
 	address: string;
 	latitude?: string | number;
 	longitude?: string | number;
-	status: Kiosk['status'];
-	mode: Kiosk['mode'];
-	modelId?: string;
+	status: KioskStatus;
+	mode: KioskMode;
+	modelRef?: string;
+	interfaceMode?: KioskInterfaceMode;
 	paymentMethodIds?: string[];
 }
 
@@ -24,44 +27,51 @@ export function kioskToCreateFormValues(k: Kiosk): KioskCreateFormData {
 	return {
 		name: k.name,
 		code: k.code,
-		address: k.address,
-		latitude: k.coordinates.latitude.toString(),
-		longitude: k.coordinates.longitude.toString(),
-		status: k.status,
-		mode: k.mode,
-		modelId: k.modelId,
-		paymentMethodIds: k.paymentMethodIds ?? [],
+		address: k.locationAddress ?? '',
+		latitude: k.latitude != null ? String(k.latitude) : '',
+		longitude: k.longitude != null ? String(k.longitude) : '',
+		status: (k.status ?? KioskStatus.ACTIVE) as KioskStatus,
+		mode: (k.mode ?? KioskMode.PENDING) as KioskMode,
+		modelRef: k.modelRef ?? '',
+		interfaceMode: k.interfaceMode ?? KioskInterfaceMode.NORMAL,
+		paymentMethodIds: [],
 	};
 }
 
 export function formDataToKioskUpdatePayload(
 	data: KioskCreateFormData,
-): Partial<Omit<Kiosk, 'id' | 'createdAt' | 'etag'>> {
+	kiosk: Kiosk,
+): import('@/features/kiosks/types').UpdateKioskBody {
 	const lat = typeof data.latitude === 'string' ? Number.parseFloat(data.latitude) : Number(data.latitude);
 	const lng = typeof data.longitude === 'string' ? Number.parseFloat(data.longitude) : Number(data.longitude);
 	return {
+		id: kiosk.id,
+		etag: kiosk.etag,
+		code: data.code,
 		name: data.name,
-		address: data.address,
-		coordinates: { latitude: lat, longitude: lng },
-		mode: data.mode,
+		modelRef: data.modelRef,
 		status: data.status,
-		...(data.modelId ? { modelId: data.modelId } : { modelId: undefined }),
-		paymentMethodIds: data.paymentMethodIds ?? [],
+		mode: data.mode,
+		locationAddress: data.address,
+		latitude: Number.isFinite(lat) ? lat : null,
+		longitude: Number.isFinite(lng) ? lng : null,
+		interfaceMode: data.interfaceMode,
 	};
 }
 
-function buildKioskCreatePayload(data: KioskCreateFormData): Omit<Kiosk, 'id' | 'createdAt' | 'etag'> {
-	const lat = Number(data.latitude) || 0;
-	const lng = Number(data.longitude) || 0;
+function buildKioskCreatePayload(data: KioskCreateFormData): CreateKioskBody {
+	const lat = typeof data.latitude === 'string' ? Number.parseFloat(data.latitude) : Number(data.latitude);
+	const lng = typeof data.longitude === 'string' ? Number.parseFloat(data.longitude) : Number(data.longitude);
 	return {
-		name: data.name,
 		code: data.code || `KIOSK-${Date.now()}`,
-		address: data.address,
-		coordinates: { latitude: lat, longitude: lng },
-		isActive: true,
+		name: data.name,
+		modelRef: data.modelRef || '',
 		status: data.status,
 		mode: data.mode,
-		connectionStatus: ConnectionStatus.DISCONNECTED,
+		locationAddress: data.address,
+		latitude: Number.isFinite(lat) ? lat : 0,
+		longitude: Number.isFinite(lng) ? lng : 0,
+		interfaceMode: data.interfaceMode ?? KioskInterfaceMode.NORMAL,
 	};
 }
 
@@ -88,7 +98,7 @@ export function useKioskCreate() {
 	React.useEffect(() => {
 		if (createKiosk.status === 'success') {
 			notification.showInfo(
-				translate('nikki.vendingMachine.kiosk.messages.create_success', { name: createKiosk.data?.name }),
+				translate('nikki.vendingMachine.kiosk.messages.create_success', { name: '' }),
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(kioskActions.resetCreateKiosk());
@@ -110,4 +120,3 @@ export function useKioskCreate() {
 
 	return { isSubmitting, handleSubmit, handleCancel };
 }
-
