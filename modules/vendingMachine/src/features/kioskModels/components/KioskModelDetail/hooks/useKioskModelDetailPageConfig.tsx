@@ -4,15 +4,16 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 
+import { ControlPanelActionItem } from '@/components/ControlPanel';
+import { useKioskModelDetailTabControl } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
+import { KioskModel } from '@/features/kioskModels/types';
+
 import { KioskModelBasicInfo } from '../KioskModelBasicInfo';
 import { KioskModelSettings } from '../KioskModelSettings';
 import { useKioskModelDetailBreadcrumbs } from './useKioskModelDetailBreadcrumbs';
 
 import type { KioskModelDetailTabId, UseKioskModelDetailPageConfigReturn } from './types';
 
-import { ControlPanelActionItem } from '@/components/ControlPanel';
-import { useKioskModelDetailTabControl } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
-import { KioskModel } from '@/features/kioskModels/types';
 
 
 type DetailTabConfig = {

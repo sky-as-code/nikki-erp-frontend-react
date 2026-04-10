@@ -1,5 +1,6 @@
 import { Group, MultiSelect, Select, TextInput } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
+import { debounce } from 'lodash';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,23 +20,66 @@ export interface ControlPanelFilterProps {
 	};
 }
 
+const SEARCH_DEBOUNCE_MS = 300;
+
 function isSearchFilter(filter: ControlPanelFilterConfig): filter is ControlPanelSearchFilter {
 	return filter.type === 'search';
 }
 
-const SearchFilterItem: React.FC<{ filter: ControlPanelSearchFilter }> = ({ filter }) => {
+type DebouncedSearchTextInputProps = {
+	value: string;
+	onChange: (value: string) => void;
+	placeholder?: string;
+	minWidth?: number;
+};
+
+const DebouncedSearchTextInput: React.FC<DebouncedSearchTextInputProps> = ({
+	value,
+	onChange,
+	placeholder,
+	minWidth = 250,
+}) => {
 	const { t: translate } = useTranslation();
+	const [localValue, setLocalValue] = React.useState(value);
+	const onChangeRef = React.useRef(onChange);
+	onChangeRef.current = onChange;
+
+	const debouncedNotify = React.useMemo(
+		() => debounce((v: string) => onChangeRef.current(v), SEARCH_DEBOUNCE_MS),
+		[],
+	);
+
+	React.useEffect(() => () => debouncedNotify.cancel(), [debouncedNotify]);
+
+	React.useEffect(() => {
+		debouncedNotify.cancel();
+		setLocalValue(value);
+	}, [value, debouncedNotify]);
+
 	return (
 		<TextInput
-			placeholder={filter.placeholder || translate('nikki.general.search.placeholder')}
+			placeholder={placeholder || translate('nikki.general.search.placeholder')}
 			leftSection={<IconSearch size={16} />}
-			value={filter.value}
-			onChange={(e) => filter.onChange(e.currentTarget.value)}
-			style={{ minWidth: filter.minWidth || 250 }}
+			value={localValue}
+			onChange={(e) => {
+				const next = e.currentTarget.value;
+				setLocalValue(next);
+				debouncedNotify(next);
+			}}
+			style={{ minWidth }}
 			fz='sm' fw={500} size='sm'
 		/>
 	);
 };
+
+const SearchFilterItem: React.FC<{ filter: ControlPanelSearchFilter }> = ({ filter }) => (
+	<DebouncedSearchTextInput
+		value={filter.value}
+		onChange={filter.onChange}
+		placeholder={filter.placeholder}
+		minWidth={filter.minWidth || 250}
+	/>
+);
 
 const SelectFilterItem: React.FC<{ filter: ControlPanelOptionFilter }> = ({ filter }) => {
 	const { t: translate } = useTranslation();
@@ -98,8 +142,6 @@ export const ControlPanelFilter: React.FC<ControlPanelFilterProps> = ({
 	filters = [],
 	search,
 }) => {
-	const { t: translate } = useTranslation();
-
 	const hasActive =
 		(search?.value?.trim() ?? '') !== '' || hasActiveValues(filters);
 
@@ -110,13 +152,10 @@ export const ControlPanelFilter: React.FC<ControlPanelFilterProps> = ({
 			)}
 
 			{search && (
-				<TextInput
-					placeholder={search.placeholder || translate('nikki.general.search.placeholder')}
-					leftSection={<IconSearch size={16} />}
-					value={search.value}
-					onChange={(e) => search.onChange?.(e.currentTarget.value)}
-					style={{ minWidth: 250 }}
-					fz='sm' fw={500} size='sm'
+				<DebouncedSearchTextInput
+					value={search.value ?? ''}
+					onChange={(v) => search.onChange?.(v)}
+					placeholder={search.placeholder}
 				/>
 			)}
 

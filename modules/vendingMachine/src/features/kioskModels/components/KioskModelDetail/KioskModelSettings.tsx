@@ -1,5 +1,5 @@
 import { Box, Select, Stack, Table, Text } from '@mantine/core';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -17,12 +17,6 @@ export interface KioskModelSettingsProps {
 	model: KioskModel;
 }
 
-function shelvesConfigToTrayConfigurations(config?: Record<string, any>): TrayConfigurationType[] {
-	if (!config) return [];
-	if (Array.isArray(config.trays)) return config.trays;
-	return [];
-}
-
 const getKioskTypeLabel = (type: KioskType | undefined, translate: (key: string) => string) => {
 	if (!type) return '-';
 	const labelMap: Record<KioskType, string> = {
@@ -34,25 +28,20 @@ const getKioskTypeLabel = (type: KioskType | undefined, translate: (key: string)
 
 export const KioskModelSettings: React.FC<KioskModelSettingsProps> = ({ model }) => {
 	const { t: translate } = useTranslation();
-	const { isEditing } = useModelSettingsTab({ model });
-
-	const [selectedKioskType, setSelectedKioskType] = useState<KioskType | undefined>(model?.kioskType);
-	const [shelvesNumber, setShelvesNumber] = useState<number>(model?.shelvesNumber || 0);
-	const [trayConfigurations, setTrayConfigurations] =
-		useState<TrayConfigurationType[]>(shelvesConfigToTrayConfigurations(model?.shelvesConfig));
-
-	useEffect(() => {
-		if (model) {
-			setSelectedKioskType(model.kioskType);
-			setShelvesNumber(model.shelvesNumber || 0);
-			setTrayConfigurations(shelvesConfigToTrayConfigurations(model.shelvesConfig));
-		}
-	}, [model]);
+	const {
+		isEditing,
+		selectedKioskType,
+		setSelectedKioskType,
+		shelvesNumber,
+		setShelvesNumber,
+		trayConfigurations,
+		setTrayConfigurations,
+	} = useModelSettingsTab({ model });
 
 	return (
 		<Stack gap='lg'>
 			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
+				<Text size='sm' c='dimmed' mb={2} fw={500}>
 					{translate('nikki.vendingMachine.kioskModels.fields.kioskType')}
 				</Text>
 				{isEditing ? (
@@ -115,7 +104,7 @@ const TrayConfigurationReadOnly: React.FC<{
 	return (
 		<Stack gap='md'>
 			<div>
-				<Text size='sm' c='dimmed' mb='xs' fw={500}>
+				<Text size='sm' c='dimmed' mb={2} fw={500}>
 					{translate('nikki.vendingMachine.kioskModels.fields.shelvesNumber')}
 				</Text>
 				<Box p='xs' style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
@@ -125,7 +114,7 @@ const TrayConfigurationReadOnly: React.FC<{
 
 			{shelvesNumber > 0 && (
 				<div>
-					<Text size='sm' c='dimmed' mb='xs' fw={500}>
+					<Text size='sm' c='dimmed' mb={2} fw={500}>
 						{translate('nikki.vendingMachine.kioskModels.fields.shelvesConfig')}
 					</Text>
 					<Table withTableBorder withColumnBorders>

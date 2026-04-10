@@ -56,7 +56,7 @@ export enum ErrorStatus {
 }
 
 export interface ConnectionHistory {
-	connection: ConnectionStatus;
+	status: ConnectionStatus;
 	createdAt: string;
 }
 
@@ -151,7 +151,7 @@ export interface Kiosk {
 	themeRef?: string | null;
 	gameRef?: string | null;
 	updatedAt?: string | null;
-	connection?: Record<string, unknown> | null;
+	connections?: ConnectionHistory[] | null;
 
 	/** Optional: resolved relations when using graph/columns */
 	theme?: Theme;

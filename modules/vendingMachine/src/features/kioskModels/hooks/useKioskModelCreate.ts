@@ -6,25 +6,17 @@ import { resolvePath, useLocation, useNavigate } from 'react-router';
 
 import { VendingMachineDispatch, kioskModelActions, selectCreateKioskModel } from '@/appState';
 
-import type { KioskModel, CreateKioskModelBody } from '@/features/kioskModels/types';
+import type { KioskModel } from '@/features/kioskModels/types';
 
 
 export interface KioskModelCreateFormData {
 	name: string;
+	modelId?: string;
 	referenceCode?: string;
+	shelvesNumber?: number;
 	description?: string;
 	status: KioskModel['status'];
 	kioskType?: KioskModel['kioskType'];
-}
-
-export function kioskModelToCreateFormValues(model: KioskModel): KioskModelCreateFormData {
-	return {
-		name: model.name,
-		referenceCode: model.referenceCode,
-		description: model.description,
-		status: model.status,
-		kioskType: model.kioskType,
-	};
 }
 
 export function formDataToKioskModelUpdatePayload(
@@ -32,16 +24,6 @@ export function formDataToKioskModelUpdatePayload(
 ): Partial<Omit<KioskModel, 'id' | 'createdAt' | 'etag'>> {
 	return {
 		name: data.name,
-		description: data.description,
-		status: data.status,
-		kioskType: data.kioskType,
-	};
-}
-
-function buildKioskModelCreatePayload(data: KioskModelCreateFormData): CreateKioskModelBody {
-	return {
-		name: data.name,
-		referenceCode: data.referenceCode,
 		description: data.description,
 		status: data.status,
 		kioskType: data.kioskType,
@@ -56,20 +38,26 @@ export function useKioskModelCreate() {
 	const { t: translate } = useTranslation();
 
 	const createKioskModel = useMicroAppSelector(selectCreateKioskModel);
+	const createRequestIdRef = React.useRef<string | null>(null);
 
 	const handleCancel = useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate, location.pathname]);
 
 	const handleSubmit = useCallback((data: KioskModelCreateFormData) => {
-		const payload = buildKioskModelCreatePayload(data);
-		dispatch(kioskModelActions.createKioskModel(payload));
+		const action = dispatch(kioskModelActions.createKioskModel(data));
+		createRequestIdRef.current = action.requestId;
 	}, [dispatch]);
 
 	const isSubmitting = createKioskModel.status === 'pending';
 
 	React.useEffect(() => {
+		const requestId = createKioskModel.requestId;
+		const matchesDispatch = requestId != null && requestId === createRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (createKioskModel.status === 'success') {
+			createRequestIdRef.current = null;
 			notification.showInfo(
 				translate('nikki.vendingMachine.kioskModels.messages.create_success'),
 				translate('nikki.general.messages.success'),
@@ -83,6 +71,7 @@ export function useKioskModelCreate() {
 		}
 
 		if (createKioskModel.status === 'error') {
+			createRequestIdRef.current = null;
 			notification.showError(
 				createKioskModel.error ?? translate('nikki.general.errors.create_failed'),
 				translate('nikki.general.messages.error'),

@@ -552,7 +552,8 @@
 		"fields": {
 			"id": "Mã định danh",
 			"code": "Mã dòng",
-			"referenceCode": "Mã dòng",
+			"modelId": "Mã dòng",
+			"referenceCode": "Mã tham chiếu",
 			"name": "Tên",
 			"model": "Dòng máy",
 			"description": "Mô tả",
@@ -596,8 +597,8 @@
 		},
 		"messages": {
 			"no_models": "Không tìm thấy mô hình nào",
-			"create_success": "Dòng máy \"{{name}}\" đã được tạo thành công",
-			"update_success": "Dòng máy \"{{name}}\" đã được cập nhật thành công",
+			"create_success": "Dòng máy đã được tạo thành công",
+			"update_success": "Dòng máy đã được cập nhật thành công",
 			"delete_success": "Dòng máy đã được xóa thành công",
 			"not_found": {
 				"title": "Không tìm thấy dòng máy",

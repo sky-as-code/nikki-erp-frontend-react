@@ -354,6 +354,7 @@ export type NumberInputFieldProps = BaseInputProps<NumberInputProps>;
 export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref }: NumberInputFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
+	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -367,10 +368,10 @@ export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={fieldData.label}
-			description={fieldData.description}
+			label={translate(fieldData.label)}
+			description={fieldData.description ? translate(fieldData.description) : undefined}
 			isRequired={fieldData.isRequired}
-			error={fieldData.error}
+			error={fieldData.error ? translate(fieldData.error) : undefined}
 		>
 			<Controller
 				name={name}
@@ -381,7 +382,7 @@ export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref
 					return (
 						<NumberInput
 							id={inputId}
-							error={fieldData.error}
+							error={fieldData.error ? translate(fieldData.error) : undefined}
 							value={typeof value === 'number' ? value : undefined}
 							onChange={(val) => field.onChange(typeof val === 'number' ? val : undefined)}
 							onBlur={field.onBlur}
@@ -391,7 +392,7 @@ export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref
 								ref.current = e;
 							}}
 							disabled={modelLoading}
-							placeholder={fieldData.placeholder}
+							placeholder={fieldData.placeholder ? translate(fieldData.placeholder) : undefined}
 							{...htmlProps}
 							{...(defaultInputProps as NumberInputProps)}
 						/>

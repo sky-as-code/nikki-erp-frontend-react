@@ -163,10 +163,13 @@ function listThemesReducers(builder: ActionReducerMapBuilder<ThemeState>) {
 
 function getThemeReducers(builder: ActionReducerMapBuilder<ThemeState>) {
 	builder
-		.addCase(getTheme.pending, (state) => {
+		.addCase(getTheme.pending, (state, action) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			const requestedId = action.meta.arg;
+			if (state.detail.data?.id !== requestedId) {
+				state.detail.data = undefined;
+			}
 		})
 		.addCase(getTheme.fulfilled, (state, action) => {
 			state.detail.status = 'success';

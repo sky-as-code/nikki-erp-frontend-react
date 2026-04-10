@@ -94,5 +94,13 @@
 		"create_failed": "Failed to create",
 		"delete_failed": "Failed to delete",
 		"grant_request_create_failed": "Failed to create grant request"
+	},
+	"pagination": {
+		"items_found": "{{count}} items found",
+		"page": "Page",
+		"of": "of",
+		"next": "Next",
+		"previous": "Previous",
+		"page_size": "{{count}} / page"
 	}
 }

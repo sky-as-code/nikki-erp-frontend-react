@@ -189,10 +189,13 @@ function listKiosksReducers(builder: ActionReducerMapBuilder<KioskState>) {
 
 function getKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 	builder
-		.addCase(getKiosk.pending, (state) => {
+		.addCase(getKiosk.pending, (state, action) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			const requestedId = action.meta.arg;
+			if (state.detail.data?.id !== requestedId) {
+				state.detail.data = undefined;
+			}
 		})
 		.addCase(getKiosk.fulfilled, (state, action) => {
 			state.detail.status = 'success';
@@ -207,29 +210,34 @@ function getKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 
 function createKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 	builder
-		.addCase(createKiosk.pending, (state) => {
+		.addCase(createKiosk.pending, (state, action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createKiosk.fulfilled, (state, action) => {
 			state.create.status = 'success';
 			state.create.data = action.payload;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createKiosk.rejected, (state, action) => {
 			state.create.status = 'error';
 			state.create.error = action.payload || 'Failed to create kiosk';
+			state.create.requestId = action.meta.requestId;
 		});
 }
 
 function updateKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 	builder
-		.addCase(updateKiosk.pending, (state) => {
+		.addCase(updateKiosk.pending, (state, action) => {
 			state.update.status = 'pending';
 			state.update.error = null;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateKiosk.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
+			state.update.requestId = action.meta.requestId;
 			if (state.detail.data?.id === action.payload.id && state.detail.data) {
 				state.detail.data = { ...state.detail.data, etag: action.payload.etag };
 			}
@@ -248,28 +256,32 @@ function updateKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 		.addCase(updateKiosk.rejected, (state, action) => {
 			state.update.status = 'error';
 			state.update.error = action.payload || 'Failed to update kiosk';
+			state.update.requestId = action.meta.requestId;
 		});
 }
 
 function deleteKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 	builder
-		.addCase(deleteKiosk.pending, (state) => {
+		.addCase(deleteKiosk.pending, (state, action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteKiosk.fulfilled, (state, action) => {
 			state.delete.status = 'success';
 			state.delete.data = action.payload;
-			if (state.list.data) {
-				state.list.data = state.list.data.filter((k) => k.id !== action.meta.arg.id);
-			}
-			if (state.detail.data?.id === action.meta.arg.id) {
-				state.detail.data = undefined;
-			}
+			state.delete.requestId = action.meta.requestId;
+			// if (state.list.data) {
+			// 	state.list.data = state.list.data.filter((k) => k.id !== action.meta.arg.id);
+			// }
+			// if (state.detail.data?.id === action.meta.arg.id) {
+			// 	state.detail.data = undefined;
+			// }
 		})
 		.addCase(deleteKiosk.rejected, (state, action) => {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete kiosk';
+			state.delete.requestId = action.meta.requestId;
 		});
 }
 

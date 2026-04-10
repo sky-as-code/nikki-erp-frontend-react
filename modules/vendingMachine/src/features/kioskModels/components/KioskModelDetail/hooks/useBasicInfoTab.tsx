@@ -2,12 +2,12 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import { IconDeviceFloppy, IconEdit, IconTrash, IconX } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
 import { ControlPanelProps } from '@/components/ControlPanel';
 import { useRegisterKioskModelDetailTab } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
 import {
 	KioskModelCreateFormData,
-	kioskModelToCreateFormValues,
 	formDataToKioskModelUpdatePayload,
 } from '@/features/kioskModels/hooks/useKioskModelCreate';
 import { useKioskModelDelete } from '@/features/kioskModels/hooks/useKioskModelDelete';
@@ -71,7 +71,6 @@ export type UseBasicInfoTabReturn = {
 	isEditing: boolean;
 	isSubmitting: boolean;
 	modelSchema: ModelSchema;
-	modelValue: ReturnType<typeof kioskModelToCreateFormValues>;
 	onFormSubmit: (data: KioskModelCreateFormData) => void;
 	closeDeleteModal: () => void;
 	confirmDelete: () => void;
@@ -80,6 +79,7 @@ export type UseBasicInfoTabReturn = {
 
 export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTabReturn {
 	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
 	const [isEditing, setIsEditing] = useState(false);
 
 	const onUpdateSuccess = useCallback(() => setIsEditing(false), []);
@@ -103,10 +103,8 @@ export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTab
 
 	const {
 		handleDelete: dispatchDelete,
-		handleOpenDeleteModal,
-		handleCloseDeleteModal,
-		isOpenDeleteModal,
-	} = useKioskModelDelete();
+		handleOpenDeleteModal, handleCloseDeleteModal, isOpenDeleteModal,
+	} = useKioskModelDelete({ onDeleteSuccess: () => navigate('../kiosk-models') });
 
 	const onDeleteClick = useCallback(
 		() => handleOpenDeleteModal(model),
@@ -133,17 +131,11 @@ export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTab
 
 	useRegisterKioskModelDetailTab('basicInfo', actions);
 
-	const modelValue = useMemo(
-		() => kioskModelToCreateFormValues(model),
-		[model.id, model.etag],
-	);
-
 	return {
 		formId: BASIC_INFO_FORM_ID,
 		isEditing,
 		isSubmitting,
 		modelSchema,
-		modelValue,
 		onFormSubmit,
 		closeDeleteModal: handleCloseDeleteModal,
 		confirmDelete,

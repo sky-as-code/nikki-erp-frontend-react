@@ -8,8 +8,7 @@ import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appSt
 import { type Kiosk } from '../types';
 
 
-
-
+// eslint-disable-next-line max-lines-per-function
 export const useKioskDelete = () => {
 	const [isOpenDeleteModal, setIsOpenDeleteModal] = React.useState(false);
 	const [kioskToDelete, setKioskToDelete] = React.useState<Kiosk | null>(null);
@@ -18,6 +17,7 @@ export const useKioskDelete = () => {
 	const deleteState = useMicroAppSelector(selectDeleteKiosk);
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
+	const deleteRequestIdRef = React.useRef<string | null>(null);
 
 	const openDeleteModal = React.useCallback((kiosk: Kiosk) => {
 		setKioskToDelete(kiosk);
@@ -31,11 +31,17 @@ export const useKioskDelete = () => {
 
 	const handleDelete = React.useCallback(() => {
 		if (!kioskToDelete) return;
-		dispatch(kioskActions.deleteKiosk({ id: kioskToDelete?.id || '' }));
+		const action = dispatch(kioskActions.deleteKiosk({ id: kioskToDelete?.id || '' }));
+		deleteRequestIdRef.current = action.requestId;
 	}, [dispatch, kioskToDelete]);
 
 	useEffect(() => {
+		const requestId = deleteState.requestId;
+		const matchesDispatch = requestId != null && requestId === deleteRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (deleteState.status === 'success') {
+			deleteRequestIdRef.current = null;
 			notification.showInfo(
 				translate('nikki.vendingMachine.kiosk.messages.delete_success'),
 				translate('nikki.general.messages.success'),
@@ -43,10 +49,8 @@ export const useKioskDelete = () => {
 			dispatch(kioskActions.resetDeleteKiosk());
 			dispatch(kioskActions.listKiosks());
 		}
-	}, [deleteState, dispatch, notification, translate]);
-
-	useEffect(() => {
 		if (deleteState.status === 'error') {
+			deleteRequestIdRef.current = null;
 			notification.showError(
 				deleteState.error ?? translate('nikki.general.errors.delete_failed'),
 				translate('nikki.general.messages.error'),
@@ -54,6 +58,8 @@ export const useKioskDelete = () => {
 			dispatch(kioskActions.resetDeleteKiosk());
 		}
 	}, [deleteState, dispatch, notification, translate]);
+
+
 
 	return {
 		handleDelete,

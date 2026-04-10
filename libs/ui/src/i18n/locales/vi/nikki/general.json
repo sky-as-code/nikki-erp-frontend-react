@@ -93,5 +93,13 @@
 		"update_failed": "Cập nhật thất bại",
 		"create_failed": "Tạo thất bại",
 		"delete_failed": "Xóa thất bại"
+	},
+	"pagination": {
+		"items_found": "Tổng {{count}}",
+		"page": "Trang",
+		"of": "của",
+		"next": "Tiếp",
+		"previous": "Trước",
+		"page_size": "{{count}} / trang"
 	}
 }

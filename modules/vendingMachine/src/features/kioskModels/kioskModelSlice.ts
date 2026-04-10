@@ -113,14 +113,6 @@ export const getKioskModel = createAsyncThunk<
 			return rejectWithValue(errorMessage);
 		}
 	},
-	// {
-	// 	condition: (_, { getState }) => {
-	// 		const state = getState() as any;
-	// 		return !state['nikkierp.vendingMachine']?.kioskModel?.detail?.status
-	// 		|| state['nikkierp.vendingMachine']?.kioskModel?.detail?.status === 'idle';
-	// 	},
-	// },
-
 );
 
 export const createKioskModel = createAsyncThunk<
@@ -225,10 +217,13 @@ function listKioskModelsReducers(builder: ActionReducerMapBuilder<KioskModelStat
 
 function getKioskModelReducers(builder: ActionReducerMapBuilder<KioskModelState>) {
 	builder
-		.addCase(getKioskModel.pending, (state) => {
+		.addCase(getKioskModel.pending, (state, action) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			const requestedId = action.meta.arg;
+			if (state.detail.data?.id !== requestedId) {
+				state.detail.data = undefined;
+			}
 		})
 		.addCase(getKioskModel.fulfilled, (state, action) => {
 			state.detail.status = 'success';
@@ -243,55 +238,64 @@ function getKioskModelReducers(builder: ActionReducerMapBuilder<KioskModelState>
 
 function createKioskModelReducers(builder: ActionReducerMapBuilder<KioskModelState>) {
 	builder
-		.addCase(createKioskModel.pending, (state) => {
+		.addCase(createKioskModel.pending, (state, action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createKioskModel.fulfilled, (state, action) => {
 			state.create.status = 'success';
 			state.create.data = action.payload;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createKioskModel.rejected, (state, action) => {
 			state.create.status = 'error';
 			state.create.error = action.payload || 'Failed to create kiosk model';
+			state.create.requestId = action.meta.requestId;
 		});
 }
 
 function updateKioskModelReducers(builder: ActionReducerMapBuilder<KioskModelState>) {
 	builder
-		.addCase(updateKioskModel.pending, (state) => {
+		.addCase(updateKioskModel.pending, (state, action) => {
 			state.update.status = 'pending';
 			state.update.error = null;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateKioskModel.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateKioskModel.rejected, (state, action) => {
 			state.update.status = 'error';
 			state.update.error = action.payload || 'Failed to update kiosk model';
+			state.update.requestId = action.meta.requestId;
 		});
 }
 
 function deleteKioskModelReducers(builder: ActionReducerMapBuilder<KioskModelState>) {
 	builder
-		.addCase(deleteKioskModel.pending, (state) => {
+		.addCase(deleteKioskModel.pending, (state, action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteKioskModel.fulfilled, (state, action) => {
 			state.delete.status = 'success';
 			state.delete.data = action.payload;
-			if (state.list.data) {
-				state.list.data = state.list.data.filter((m) => m.id !== action.meta.arg.id);
-			}
-			if (state.detail.data?.id === action.meta.arg.id) {
-				state.detail.data = undefined;
-			}
+			state.delete.requestId = action.meta.requestId;
+			// if (state.list.data) {
+			// 	state.list.data = state.list.data.filter((m) => m.id !== action.meta.arg.id);
+			// }
+			// if (state.detail.data?.id === action.meta.arg.id) {
+			// 	state.detail.data = undefined;
+			// }
 		})
 		.addCase(deleteKioskModel.rejected, (state, action) => {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete kiosk model';
+			state.delete.requestId = action.meta.requestId;
 		});
 }
 

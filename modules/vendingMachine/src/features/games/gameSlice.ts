@@ -211,10 +211,13 @@ function listGamesReducers(builder: ActionReducerMapBuilder<GameState>) {
 
 function getGameReducers(builder: ActionReducerMapBuilder<GameState>) {
 	builder
-		.addCase(getGame.pending, (state) => {
+		.addCase(getGame.pending, (state, action) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			const requestedId = action.meta.arg;
+			if (state.detail.data?.id !== requestedId) {
+				state.detail.data = undefined;
+			}
 		})
 		.addCase(getGame.fulfilled, (state, action) => {
 			state.detail.status = 'success';

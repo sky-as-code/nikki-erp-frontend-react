@@ -1,5 +1,4 @@
 import { useUIState } from '@nikkierp/shell/contexts';
-import { useSubmit } from '@nikkierp/ui/hooks';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,9 +21,15 @@ function useSubmitHandler(
 	kioskId?: string,
 ) {
 	const updateKiosk = useMicroAppSelector(selectUpdateKiosk);
+	const updateRequestIdRef = React.useRef<string | null>(null);
 
 	React.useEffect(() => {
+		const requestId = updateKiosk.requestId;
+		const matchesDispatch = requestId != null && requestId === updateRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (updateKiosk.status === 'success') {
+			updateRequestIdRef.current = null;
 			onUpdateSuccess?.();
 			notification.showInfo(
 				translate('nikki.vendingMachine.kiosk.messages.update_success', { name: '' }),
@@ -37,6 +42,7 @@ function useSubmitHandler(
 			}
 		}
 		else if (updateKiosk.status === 'error') {
+			updateRequestIdRef.current = null;
 			notification.showError(
 				updateKiosk.error ?? translate('nikki.general.errors.update_failed'),
 				translate('nikki.general.messages.error'),
@@ -47,9 +53,10 @@ function useSubmitHandler(
 
 	return {
 		isSubmitting: updateKiosk.status === 'pending',
-		handleSubmit: useSubmit<UpdatePayload>({
-			submitAction: kioskActions.updateKiosk,
-		}),
+		handleSubmit: (payload: UpdatePayload) => {
+			const action = dispatch(kioskActions.updateKiosk(payload));
+			updateRequestIdRef.current = action.requestId;
+		},
 	};
 }
 

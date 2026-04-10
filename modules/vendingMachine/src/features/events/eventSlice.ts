@@ -163,10 +163,13 @@ function listEventsReducers(builder: ActionReducerMapBuilder<EventState>) {
 
 function getEventReducers(builder: ActionReducerMapBuilder<EventState>) {
 	builder
-		.addCase(getEvent.pending, (state) => {
+		.addCase(getEvent.pending, (state, action) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			const requestedId = action.meta.arg;
+			if (state.detail.data?.id !== requestedId) {
+				state.detail.data = undefined;
+			}
 		})
 		.addCase(getEvent.fulfilled, (state, action) => {
 			state.detail.status = 'success';

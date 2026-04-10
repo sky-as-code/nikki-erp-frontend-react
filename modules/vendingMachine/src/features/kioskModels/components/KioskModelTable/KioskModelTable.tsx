@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Box, Group, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Badge, Box, Divider, Group, Text, Tooltip } from '@mantine/core';
 import { AutoTable, AutoTableProps, TablePagination } from '@nikkierp/ui/components';
 import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
 import React from 'react';
@@ -9,6 +9,7 @@ import { KioskModel } from '../../types';
 
 
 export interface KioskModelTableProps extends AutoTableProps {
+	totalItems?: number;
 	onPreviewView: (kioskModel: KioskModel) => void;
 	onEdit?: (kioskModel: KioskModel) => void;
 	onDelete?: (kioskModel: KioskModel) => void;
@@ -23,6 +24,10 @@ export interface KioskModelTableProps extends AutoTableProps {
 
 function renderReferenceCodeColumn(row: Record<string, unknown>) {
 	return <Text fw={500}>{String(row.referenceCode || '')}</Text>;
+}
+
+function renderModelIdColumn(row: Record<string, unknown>) {
+	return <Text fw={500}>{String(row.modelId || '')}</Text>;
 }
 
 const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
@@ -129,6 +134,7 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 	isFetching,
 	page,
 	totalPages,
+	totalItems,
 	onPageChange,
 	pageSize,
 	pageSizeOptions,
@@ -138,36 +144,42 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 
 	return (
 		<Box pos='relative' mih={200}>
-			<AutoTable
-				data={data}
-				schema={schema}
-				isLoading={isLoading && !isFetching}
-				columns={columns}
-				columnSizes={{
-					referenceCode: { flex: 1, minWidth: 160 },
-					name: { flex: 2, minWidth: 200 },
-					description: { flex: 2, minWidth: 300 },
-					status: { flex: 1, minWidth: 100 },
-					actions: { flex: 1, minWidth: 120 },
-				}}
-				columnRenderers={{
-					referenceCode: renderReferenceCodeColumn,
-					name: renderNameColumn,
-					description: renderDescriptionColumn,
-					status: (row) => renderStatusColumn(row, translate),
-					actions: (row) =>
-						renderActionsColumn(row as unknown as KioskModel, onPreviewView, onEdit, onDelete, translate),
-				}}
-				headerRenderers={{
-					actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
-				}}
-				columnAsLink='referenceCode'
-				columnAsLinkHref={(row) => {
-					onPreviewView(row);
-					return '#';
-				}}
-			/>
+			<Box mih={200}>
+				<AutoTable
+					data={data}
+					schema={schema}
+					isLoading={isLoading && !isFetching}
+					columns={columns}
+					columnSizes={{
+						modelId: { flex: 1, minWidth: 160 },
+						referenceCode: { flex: 1, minWidth: 160 },
+						name: { flex: 2, minWidth: 200 },
+						description: { flex: 2, minWidth: 300 },
+						status: { flex: 1, minWidth: 100 },
+						actions: { flex: 1, minWidth: 120 },
+					}}
+					columnRenderers={{
+						modelId: renderModelIdColumn,
+						referenceCode: renderReferenceCodeColumn,
+						name: renderNameColumn,
+						description: renderDescriptionColumn,
+						status: (row) => renderStatusColumn(row, translate),
+						actions: (row) =>
+							renderActionsColumn(row as unknown as KioskModel,
+								onPreviewView,
+								onEdit,
+								onDelete,
+								translate,
+							),
+					}}
+					headerRenderers={{
+						actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
+					}}
+				/>
+			</Box>
+			<Divider my='xs' />
 			<TablePagination
+				totalItems={totalItems}
 				totalPages={totalPages}
 				page={page}
 				onPageChange={onPageChange}

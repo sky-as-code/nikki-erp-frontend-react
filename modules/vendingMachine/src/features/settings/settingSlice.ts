@@ -6,6 +6,7 @@ import {
 import { settingService } from './settingService';
 import { Setting } from './types';
 
+
 export const SLICE_NAME = 'vendingMachine.setting';
 
 export type SettingState = {
@@ -160,10 +161,13 @@ function listSettingsReducers(builder: ActionReducerMapBuilder<SettingState>) {
 
 function getSettingReducers(builder: ActionReducerMapBuilder<SettingState>) {
 	builder
-		.addCase(getSetting.pending, (state) => {
+		.addCase(getSetting.pending, (state, action) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			const requestedId = action.meta.arg;
+			if (state.detail.data?.id !== requestedId) {
+				state.detail.data = undefined;
+			}
 		})
 		.addCase(getSetting.fulfilled, (state, action) => {
 			state.detail.status = 'success';
@@ -178,29 +182,34 @@ function getSettingReducers(builder: ActionReducerMapBuilder<SettingState>) {
 
 function createSettingReducers(builder: ActionReducerMapBuilder<SettingState>) {
 	builder
-		.addCase(createSetting.pending, (state) => {
+		.addCase(createSetting.pending, (state, action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createSetting.fulfilled, (state, action) => {
 			state.create.status = 'success';
 			state.create.data = action.payload;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createSetting.rejected, (state, action) => {
 			state.create.status = 'error';
 			state.create.error = action.payload || 'Failed to create setting';
+			state.create.requestId = action.meta.requestId;
 		});
 }
 
 function updateSettingReducers(builder: ActionReducerMapBuilder<SettingState>) {
 	builder
-		.addCase(updateSetting.pending, (state) => {
+		.addCase(updateSetting.pending, (state, action) => {
 			state.update.status = 'pending';
 			state.update.error = null;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateSetting.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
+			state.update.requestId = action.meta.requestId;
 			state.detail.data = action.payload;
 			if (state.list.data) {
 				const listIndex = state.list.data.findIndex((s) => s.id === action.payload.id);
@@ -212,27 +221,31 @@ function updateSettingReducers(builder: ActionReducerMapBuilder<SettingState>) {
 		.addCase(updateSetting.rejected, (state, action) => {
 			state.update.status = 'error';
 			state.update.error = action.payload || 'Failed to update setting';
+			state.update.requestId = action.meta.requestId;
 		});
 }
 
 function deleteSettingReducers(builder: ActionReducerMapBuilder<SettingState>) {
 	builder
-		.addCase(deleteSetting.pending, (state) => {
+		.addCase(deleteSetting.pending, (state, action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteSetting.fulfilled, (state, action) => {
 			state.delete.status = 'success';
-			if (state.list.data) {
-				state.list.data = state.list.data.filter((s) => s.id !== action.meta.arg.id);
-			}
-			if (state.detail.data?.id === action.meta.arg.id) {
-				state.detail.data = undefined;
-			}
+			state.delete.requestId = action.meta.requestId;
+			// if (state.list.data) {
+			// 	state.list.data = state.list.data.filter((s) => s.id !== action.meta.arg.id);
+			// }
+			// if (state.detail.data?.id === action.meta.arg.id) {
+			// 	state.detail.data = undefined;
+			// }
 		})
 		.addCase(deleteSetting.rejected, (state, action) => {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete setting';
+			state.delete.requestId = action.meta.requestId;
 		});
 }
 

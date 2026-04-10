@@ -163,10 +163,13 @@ function listPaymentsReducers(builder: ActionReducerMapBuilder<PaymentState>) {
 
 function getPaymentReducers(builder: ActionReducerMapBuilder<PaymentState>) {
 	builder
-		.addCase(getPayment.pending, (state) => {
+		.addCase(getPayment.pending, (state, action) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			const requestedId = action.meta.arg;
+			if (state.detail.data?.id !== requestedId) {
+				state.detail.data = undefined;
+			}
 		})
 		.addCase(getPayment.fulfilled, (state, action) => {
 			state.detail.status = 'success';

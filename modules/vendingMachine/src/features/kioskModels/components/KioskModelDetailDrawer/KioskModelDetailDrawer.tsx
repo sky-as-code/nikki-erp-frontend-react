@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router';
 
 import { TrayConfiguration } from './TrayConfiguration';
 import { useKioskModelDetail } from '../../hooks/useKioskModelDetail';
+import { shelvesConfigToTrayConfigurations } from '../../shelvesConfig';
 import { KioskType, TrayConfiguration as TrayConfigurationType } from '../../types';
 
 
@@ -14,12 +15,6 @@ export interface KioskModelDetailDrawerProps {
 	opened: boolean;
 	onClose: () => void;
 	modelId: string;
-}
-
-function shelvesConfigToTrayConfigurations(config?: Record<string, any>): TrayConfigurationType[] {
-	if (!config) return [];
-	if (Array.isArray(config.trays)) return config.trays;
-	return [];
 }
 
 export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({

@@ -1,4 +1,4 @@
-import { KioskModel } from './types';
+import { KioskModel, KioskModelStatus } from './types';
 
 
 const mockKioskModelsData: KioskModel[] = [
@@ -7,14 +7,14 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'WATER-MINI',
 		name: 'Máy bán nước mini',
 		description: 'Dòng máy bán nước mini, kích thước nhỏ gọn, phù hợp cho văn phòng, góc hành lang',
-		status: 'active',
+		status: KioskModelStatus.ACTIVE,
 		kioskType: 'elevator',
 		shelvesNumber: 3,
 		shelvesConfig: {
-			trays: [
-				{ row: 'A', shelfType: 'spring' },
-				{ row: 'B', shelfType: 'spring' },
-				{ row: 'C', shelfType: 'conveyor' },
+			config: [
+				{ row: 'A', type: 'spring' },
+				{ row: 'B', type: 'spring' },
+				{ row: 'C', type: 'conveyor' },
 			],
 		},
 		createdAt: '2024-01-01T08:00:00Z',
@@ -25,15 +25,15 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'LIPSTICK-ELEVATOR',
 		name: 'Máy bán son có thang nâng',
 		description: 'Dòng máy bán mỹ phẩm (son, phấn) với hệ thống thang nâng, phù hợp sản phẩm nhỏ gọn',
-		status: 'active',
+		status: KioskModelStatus.ACTIVE,
 		kioskType: 'elevator',
 		shelvesNumber: 4,
 		shelvesConfig: {
-			trays: [
-				{ row: 'A', shelfType: 'pushTape' },
-				{ row: 'B', shelfType: 'pushTape' },
-				{ row: 'C', shelfType: 'hangingConveyor' },
-				{ row: 'D', shelfType: 'spring' },
+			config: [
+				{ row: 'A', type: 'pushTape' },
+				{ row: 'B', type: 'pushTape' },
+				{ row: 'C', type: 'hangingConveyor' },
+				{ row: 'D', type: 'spring' },
 			],
 		},
 		createdAt: '2024-01-10T09:30:00Z',
@@ -44,7 +44,7 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'WATER-BASIC',
 		name: 'Máy bán nước cơ bản',
 		description: 'Dòng máy bán nước cơ bản, không thang nâng, phù hợp chai/lon kích thước chuẩn',
-		status: 'active',
+		status: KioskModelStatus.ACTIVE,
 		kioskType: 'non-elevator',
 		createdAt: '2024-01-20T10:15:00Z',
 		etag: 'etag-mdl-003',
@@ -54,16 +54,16 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'WATER-ELEVATOR',
 		name: 'Máy bán nước có thang nâng',
 		description: 'Dòng máy bán nước với thang nâng và băng chuyền, vận chuyển hàng tự động',
-		status: 'active',
+		status: KioskModelStatus.ACTIVE,
 		kioskType: 'elevator',
 		shelvesNumber: 5,
 		shelvesConfig: {
-			trays: [
-				{ row: 'A', shelfType: 'conveyor' },
-				{ row: 'B', shelfType: 'conveyor' },
-				{ row: 'C', shelfType: 'hangingConveyor' },
-				{ row: 'D', shelfType: 'spring' },
-				{ row: 'E', shelfType: 'pushTape' },
+			config: [
+				{ row: 'A', type: 'conveyor' },
+				{ row: 'B', type: 'conveyor' },
+				{ row: 'C', type: 'hangingConveyor' },
+				{ row: 'D', type: 'spring' },
+				{ row: 'E', type: 'pushTape' },
 			],
 		},
 		createdAt: '2024-02-01T14:20:00Z',
@@ -74,7 +74,7 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'SNACK-BASIC',
 		name: 'Máy bán snack cơ bản',
 		description: 'Dòng máy bán snack, bánh kẹo, kích thước trung bình',
-		status: 'active',
+		status: KioskModelStatus.ACTIVE,
 		kioskType: 'non-elevator',
 		createdAt: '2024-02-10T11:45:00Z',
 		etag: 'etag-mdl-005',
@@ -84,7 +84,7 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'COMBO-BASIC',
 		name: 'Máy bán nước + snack combo',
 		description: 'Dòng máy kết hợp bán nước và snack, phù hợp khu vực công cộng',
-		status: 'active',
+		status: KioskModelStatus.ACTIVE,
 		kioskType: 'non-elevator',
 		createdAt: '2024-02-20T13:30:00Z',
 		etag: 'etag-mdl-006',
@@ -94,7 +94,7 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'COSMETIC-ELEVATOR',
 		name: 'Máy bán mỹ phẩm có thang nâng',
 		description: 'Dòng máy chuyên mỹ phẩm với thang nâng, nhiều khay hàng',
-		status: 'active',
+		status: KioskModelStatus.ACTIVE,
 		kioskType: 'elevator',
 		createdAt: '2024-03-01T15:00:00Z',
 		etag: 'etag-mdl-007',
@@ -104,7 +104,7 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'WATER-PREMIUM',
 		name: 'Máy bán nước cao cấp',
 		description: 'Dòng máy bán nước cao cấp, màn hình lớn, quảng cáo tích hợp',
-		status: 'inactive',
+		status: KioskModelStatus.INACTIVE,
 		kioskType: 'elevator',
 		createdAt: '2024-03-10T16:20:00Z',
 		etag: 'etag-mdl-008',

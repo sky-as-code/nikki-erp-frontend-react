@@ -4,10 +4,11 @@ import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 
+import { KioskModel } from '@/features/kioskModels/types';
+
 import { KioskModelFormFields } from '../KioskModelFormFields/KioskModelFormFields';
 import { useBasicInfoTab } from './hooks/useBasicInfoTab';
 
-import { KioskModel } from '@/features/kioskModels/types';
 
 
 export interface KioskModelBasicInfoProps {
@@ -33,7 +34,7 @@ export const KioskModelBasicInfo: React.FC<KioskModelBasicInfoProps> = ({ model 
 	const { t } = useTranslation();
 
 	const {
-		formId, isEditing, isSubmitting, modelSchema, modelValue, onFormSubmit,
+		formId, isEditing, isSubmitting, modelSchema, onFormSubmit,
 		closeDeleteModal, confirmDelete, isOpenDeleteModal,
 	} = useBasicInfoTab({ model });
 
@@ -45,7 +46,7 @@ export const KioskModelBasicInfo: React.FC<KioskModelBasicInfoProps> = ({ model 
 						key={`${model.id}-${model.etag}-basic-info`}
 						formVariant='update'
 						modelSchema={modelSchema}
-						modelValue={modelValue}
+						modelValue={model}
 						modelLoading={isEditing && isSubmitting}
 					>
 						{({ handleSubmit }) => (
@@ -53,8 +54,8 @@ export const KioskModelBasicInfo: React.FC<KioskModelBasicInfoProps> = ({ model 
 								{isEditing && (
 									<form
 										id={formId}
-										onSubmit={handleSubmit(onFormSubmit)}
 										noValidate
+										onSubmit={handleSubmit(onFormSubmit)}
 										style={{ display: 'contents' }}
 									/>
 								)}

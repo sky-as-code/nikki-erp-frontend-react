@@ -59,6 +59,7 @@ export function useSettingCreate() {
 	const { t: translate } = useTranslation();
 
 	const createSetting = useMicroAppSelector(selectCreateSetting);
+	const createRequestIdRef = React.useRef<string | null>(null);
 
 	const handleCancel = useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
@@ -66,13 +67,19 @@ export function useSettingCreate() {
 
 	const handleSubmit = useCallback((data: SettingCreateFormData) => {
 		const payload = buildSettingCreatePayload(data);
-		dispatch(settingActions.createSetting(payload));
+		const action = dispatch(settingActions.createSetting(payload));
+		createRequestIdRef.current = action.requestId;
 	}, [dispatch]);
 
 	const isSubmitting = createSetting.status === 'pending';
 
 	React.useEffect(() => {
+		const requestId = createSetting.requestId;
+		const matchesDispatch = requestId != null && requestId === createRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (createSetting.status === 'success') {
+			createRequestIdRef.current = null;
 			notification.showInfo(
 				translate('nikki.vendingMachine.settings.messages.create_success', { name: createSetting.data?.name }),
 				translate('nikki.general.messages.success'),
@@ -86,6 +93,7 @@ export function useSettingCreate() {
 		}
 
 		if (createSetting.status === 'error') {
+			createRequestIdRef.current = null;
 			notification.showError(
 				createSetting.error ?? translate('nikki.general.errors.create_failed'),
 				translate('nikki.general.messages.error'),

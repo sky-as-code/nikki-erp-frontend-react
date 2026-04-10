@@ -1,5 +1,4 @@
 import { ActionIcon, Badge, Box, Button, Group, Popover, Stack, Text, Tooltip } from '@mantine/core';
-import { snakeToCamelObject } from '@nikkierp/common/utils';
 import { AutoTable, AutoTableProps, TablePagination } from '@nikkierp/ui/components';
 import {
 	IconEdit,
@@ -193,23 +192,13 @@ function formatConnectionTime(
 	return translate('nikki.vendingMachine.kiosk.connectionHistory.days_ago', { count: diffDays });
 }
 
-export function getConnectionHistory(row: Record<string, unknown>): ConnectionHistory[] {
-	try {
-		const rawLogs = JSON.parse(row.connection as string)?.items ?? [];
-		return snakeToCamelObject(rawLogs) as ConnectionHistory[];
-	}
-	catch {
-		return [];
-	}
-}
-
 function renderConnectionStatusColumn(
-	row: Record<string, unknown>,
+	row: Record<string, any>,
 	translate: (key: string) => string,
 ) {
-	const connectionHistory = getConnectionHistory(row);
+	const connectionHistory = (row?.connections as ConnectionHistory[]) || [];
 	const connectionStatus = connectionHistory.length > 0
-		? connectionHistory[0].connection : ConnectionStatus.DISCONNECTED;
+		? connectionHistory[0].status : ConnectionStatus.DISCONNECTED;
 
 	const statusMap = {
 		[ConnectionStatus.FAST]: {
@@ -237,7 +226,7 @@ function renderConnectionStatusColumn(
 				{translate('nikki.vendingMachine.kiosk.connectionHistory.title')}
 			</Text>
 			{connectionHistory.slice(0, 5).map((history, index) => {
-				const historyStatus = statusMap?.[history.connection];
+				const historyStatus = statusMap?.[history.status];
 				if (!historyStatus) return null;
 				return (
 					<Group key={index} gap='xs' align='center'>

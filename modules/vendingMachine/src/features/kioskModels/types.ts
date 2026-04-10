@@ -9,7 +9,11 @@ export enum KioskModelStatus {
 	DELETED = 'deleted',
 }
 
-export type KioskType = 'elevator' | 'non-elevator';
+export const KIOSK_TYPES = {
+	ELEVATOR: 'elevator',
+	NON_ELEVATOR: 'non-elevator',
+} as const;
+export type KioskType = (typeof KIOSK_TYPES)[keyof typeof KIOSK_TYPES];
 
 export const KIOSK_SHELF_TYPES = {
 	spring: 'spring',
@@ -24,6 +28,11 @@ export interface TrayConfiguration {
 	shelfType?: KioskShelfType;
 }
 
+/** API JSON: shelves_config.config[] uses `type` (not shelf_type). */
+export interface ShelvesConfigWire {
+	config: Array<{ row: string; type: string }>;
+}
+
 export interface KioskModel {
 	id: string;
 	createdAt: string;
@@ -35,7 +44,7 @@ export interface KioskModel {
 	shelvesNumber?: number;
 	status: KioskModelStatus;
 	kioskType?: KioskType;
-	shelvesConfig?: Record<string, any>;
+	shelvesConfig?: ShelvesConfigWire | Record<string, unknown>;
 	updatedAt?: string;
 }
 
@@ -47,7 +56,7 @@ export type CreateKioskModelBody = {
 	shelvesNumber?: number;
 	status?: KioskModelStatus;
 	kioskType?: KioskType;
-	shelvesConfig?: Record<string, any>;
+	shelvesConfig?: ShelvesConfigWire | Record<string, unknown>;
 };
 
 export type UpdateKioskModelBody = {
@@ -60,7 +69,7 @@ export type UpdateKioskModelBody = {
 	shelvesNumber?: number;
 	status?: KioskModelStatus;
 	kioskType?: KioskType;
-	shelvesConfig?: Record<string, any>;
+	shelvesConfig?: ShelvesConfigWire | Record<string, unknown>;
 };
 
 export type RestCreateResponse = {

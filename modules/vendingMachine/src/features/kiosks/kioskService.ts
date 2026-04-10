@@ -12,7 +12,7 @@ import type {
 } from './types';
 
 
-const BASE_PATH = 'vending-machines/kiosks';
+const BASE_PATH = 'vending-machine/kiosks';
 
 export const kioskService = {
 	async searchKiosks(

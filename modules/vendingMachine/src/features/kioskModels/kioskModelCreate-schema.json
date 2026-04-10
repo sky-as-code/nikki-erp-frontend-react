@@ -1,6 +1,10 @@
 {
 	"name": "kioskModel",
 	"fields": {
+		"modelId": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.modelId' }"
+		},
 		"referenceCode": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.referenceCode' }"
@@ -28,6 +32,10 @@
 				{ "value": "elevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.elevator' }" },
 				{ "value": "non-elevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.nonElevator' }" }
 			]
+		},
+		"shelvesNumber": {
+			"type": "integer",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.shelvesNumber' }"
 		}
 	}
 }
