@@ -32,7 +32,6 @@ const KioskModelBasicInfoAuditDates: React.FC<{ model: KioskModel }> = ({ model 
 
 export const KioskModelBasicInfo: React.FC<KioskModelBasicInfoProps> = ({ model }) => {
 	const { t } = useTranslation();
-
 	const {
 		formId, isEditing, isSubmitting, modelSchema, onFormSubmit,
 		closeDeleteModal, confirmDelete, isOpenDeleteModal,

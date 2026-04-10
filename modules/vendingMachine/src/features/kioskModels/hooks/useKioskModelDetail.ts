@@ -3,8 +3,10 @@ import React from 'react';
 
 import { VendingMachineDispatch, kioskModelActions, selectKioskModelDetail } from '@/appState';
 
+import { KioskModel } from '../types';
 
-export function useKioskModelDetail(modelId?: string) {
+
+export function useKioskModelDetail(modelId?: string): { model: KioskModel | undefined; isLoading: boolean } {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const detail = useMicroAppSelector(selectKioskModelDetail);
 

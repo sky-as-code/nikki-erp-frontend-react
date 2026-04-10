@@ -1,10 +1,12 @@
 import {
-	Badge, Box, Button, Divider, Drawer, Group, Image, Select, Stack, Table, Text, TextInput,
+	Badge, Box, Button, Divider, Group, Image, Select, Stack, Table, Text, TextInput,
 } from '@mantine/core';
-import { IconCreditCard, IconExternalLink, IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconCreditCard, IconPlus, IconTrash } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+
+import { PreviewDrawer } from '@/components/PreviewDrawer';
 
 import { CustomFieldValueType, PaymentMethod, PaymentMethodCustomField } from '../../types';
 
@@ -35,20 +37,6 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 			setCustomFields(payment.customFields || []);
 		}
 	}, [payment]);
-
-	if (isLoading || !payment) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='lg'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.payment.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
 
 	const getStatusBadge = (status: string) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -99,51 +87,43 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 	];
 
 	return (
-		<Drawer
+		<PreviewDrawer
 			opened={opened}
 			onClose={onClose}
-			position='right'
-			size='lg'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						{payment.image ? (
-							<Box w={64} h={64}>
-								<Image
-									src={payment.image as string}
-									alt={String(payment.name || '')}
-									width={64}
-									height={64}
-									radius='sm'
-									style={{ objectFit: 'contain' }}
-								/>
-							</Box>
-						) : (
-							<IconCreditCard size={26} stroke={1.5} />
-						)}
-						<Text fw={600} size='lg'>{payment.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../payment/${payment.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+			header={{
+				title: payment?.name,
+				subtitle: payment?.code,
+				avatar: payment?.image ? (
+					<Box w={48} h={48}>
+						<Image
+							src={payment.image as string}
+							alt={String(payment.name || '')}
+							width={48}
+							height={48}
+							radius='sm'
+							style={{ objectFit: 'contain' }}
+						/>
+					</Box>
+				) : (
+					<IconCreditCard size={26} stroke={1.5} />
+				),
+			}}
+			onViewDetails={() => {
+				if (payment?.id) {
+					navigate(`../payment/${payment.id}`);
+				}
+				onClose();
+			}}
+			isLoading={isLoading}
+			isNotFound={!payment && !isLoading}
+			drawerProps={{ size: 'lg', opened, onClose }}
 		>
 			<Stack gap='md'>
 				<div>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.payment.fields.code')}
 					</Text>
-					<Text size='sm' fw={500}>{payment.code}</Text>
+					<Text size='sm' fw={500}>{payment?.code}</Text>
 				</div>
 
 				<Divider />
@@ -152,10 +132,10 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.payment.fields.name')}
 					</Text>
-					<Text size='sm'>{payment.name}</Text>
+					<Text size='sm'>{payment?.name}</Text>
 				</div>
 
-				{payment.image && (
+				{payment?.image && (
 					<>
 						<Divider />
 						<div>
@@ -182,10 +162,10 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.payment.fields.status')}
 					</Text>
-					{getStatusBadge(payment.status)}
+					{payment?.status ? getStatusBadge(payment.status) : null}
 				</div>
 
-				{payment.description && (
+				{payment?.description && (
 					<>
 						<Divider />
 						<div>
@@ -193,7 +173,7 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 								{translate('nikki.vendingMachine.payment.fields.description')}
 							</Text>
 							<div
-								dangerouslySetInnerHTML={{ __html: payment.description }}
+								dangerouslySetInnerHTML={{ __html: payment?.description || '' }}
 								style={{
 									fontSize: '0.875rem',
 									lineHeight: 1.6,
@@ -203,7 +183,7 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 					</>
 				)}
 
-				{(payment.minTransactionValue !== undefined || payment.maxTransactionValue !== undefined) && (
+				{(payment?.minTransactionValue !== undefined || payment?.maxTransactionValue !== undefined) && (
 					<>
 						<Divider />
 						<div>
@@ -211,9 +191,9 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 								{translate('nikki.vendingMachine.payment.fields.transactionRange')}
 							</Text>
 							<Text size='sm'>
-								{payment.minTransactionValue !== undefined
+								{payment?.minTransactionValue !== undefined
 									? formatCurrency(payment.minTransactionValue)
-									: '0'} - {payment.maxTransactionValue !== undefined
+									: '0'} - {payment?.maxTransactionValue !== undefined
 									? formatCurrency(payment.maxTransactionValue)
 									: '∞'}
 							</Text>
@@ -307,9 +287,9 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.payment.fields.createdAt')}
 					</Text>
-					<Text size='sm'>{new Date(payment.createdAt).toLocaleString()}</Text>
+					<Text size='sm'>{payment?.createdAt ? new Date(payment.createdAt).toLocaleString() : '—'}</Text>
 				</div>
 			</Stack>
-		</Drawer>
+		</PreviewDrawer>
 	);
 };

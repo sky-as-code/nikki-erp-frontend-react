@@ -1,4 +1,4 @@
-import type { KioskShelfType, ShelvesConfigWire, TrayConfiguration } from './types';
+import type { KioskShelfType, ShelvesConfigRow, ShelvesConfigWire } from '@/features/kioskModels/types';
 
 
 function normalizeShelfType(raw: unknown): KioskShelfType | undefined {
@@ -6,10 +6,10 @@ function normalizeShelfType(raw: unknown): KioskShelfType | undefined {
 	return String(raw) as KioskShelfType;
 }
 
-/** Parse API / stored shelves_config into tray rows for the UI. Supports legacy `trays`. */
-export function shelvesConfigToTrayConfigurations(
+/** Đọc JSON shelves_config (hoặc legacy `trays`) thành danh sách dòng cho UI. */
+export function parseShelvesConfigRows(
 	config?: ShelvesConfigWire | Record<string, unknown> | null,
-): TrayConfiguration[] {
+): ShelvesConfigRow[] {
 	if (!config) return [];
 	const c = config as { config?: unknown; trays?: unknown };
 	const arr = Array.isArray(c.config)
@@ -25,11 +25,11 @@ export function shelvesConfigToTrayConfigurations(
 		.filter((x) => x.row.length > 0);
 }
 
-/** Build shelves_config for API: `{ config: [{ row, type }] }`. */
-export function trayConfigurationsToShelvesConfig(trays: TrayConfiguration[]): ShelvesConfigWire {
+/** Chuẩn bị payload `shelves_config` cho API: `{ config: [{ row, type }] }`. */
+export function buildShelvesConfigWire(rows: ShelvesConfigRow[]): ShelvesConfigWire {
 	return {
-		config: trays
-			.filter((t) => t.row && t.shelfType)
-			.map((t) => ({ row: t.row, type: t.shelfType as string })),
+		config: rows
+			.filter((r) => r.row && r.shelfType)
+			.map((r) => ({ row: r.row, type: r.shelfType as string })),
 	};
 }

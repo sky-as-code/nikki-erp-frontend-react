@@ -50,12 +50,14 @@ function useSubmitHandler(
 		}
 	}, [updateState, dispatch, notification, translate, navigate, location]);
 
+	const handleSubmit = useCallback((payload: UpdatePayload) => {
+		const action = dispatch(kioskModelActions.updateKioskModel(payload));
+		updateRequestIdRef.current = action.requestId;
+	}, [dispatch]);
+
 	return {
 		isSubmitting: updateState.status === 'pending',
-		handleSubmit: (payload: UpdatePayload) => {
-			const action = dispatch(kioskModelActions.updateKioskModel(payload));
-			updateRequestIdRef.current = action.requestId;
-		},
+		handleSubmit,
 	};
 }
 

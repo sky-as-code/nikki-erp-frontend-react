@@ -1,8 +1,10 @@
-import { Badge, Box, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconCalendarEvent, IconExternalLink } from '@tabler/icons-react';
+import { Badge, Box, Divider, Stack, Text } from '@mantine/core';
+import { IconCalendarEvent } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+
+import { PreviewDrawer } from '@/components/PreviewDrawer';
 
 import { EventGameConfig } from './EventGameConfig';
 import { EventKioskList } from './EventKioskList';
@@ -53,20 +55,6 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 			setShoppingPlaylist(event.shoppingPlaylist);
 		}
 	}, [event]);
-
-	if (isLoading || !event) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='xl'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.events.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
 
 	const getStatusBadge = (status: string) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -127,38 +115,30 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 	};
 
 	return (
-		<Drawer
+		<PreviewDrawer
 			opened={opened}
 			onClose={onClose}
-			position='right'
-			size='xl'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconCalendarEvent size={20} />
-						<Text fw={600} size='lg'>{event.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='filled'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../events/${event.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+			header={{
+				title: event?.name,
+				subtitle: event?.code,
+				avatar: <IconCalendarEvent size={20} />,
+			}}
+			onViewDetails={() => {
+				if (event?.id) {
+					navigate(`../events/${event.id}`);
+				}
+				onClose();
+			}}
+			isLoading={isLoading}
+			isNotFound={!event && !isLoading}
+			drawerProps={{ size: 'xl', opened, onClose }}
 		>
 			<Stack gap='md'>
 				<div>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.events.fields.code')}
 					</Text>
-					<Text size='sm' fw={500}>{event.code}</Text>
+					<Text size='sm' fw={500}>{event?.code}</Text>
 				</div>
 
 				<Divider />
@@ -167,10 +147,10 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.events.fields.name')}
 					</Text>
-					<Text size='sm'>{event.name}</Text>
+					<Text size='sm'>{event?.name}</Text>
 				</div>
 
-				{event.description && (
+				{event?.description && (
 					<>
 						<Divider />
 						<div>
@@ -188,7 +168,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.events.fields.status')}
 					</Text>
-					{getStatusBadge(event.status)}
+					{event?.status ? getStatusBadge(event.status) : null}
 				</div>
 
 				<Divider />
@@ -197,7 +177,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.events.fields.startDate')}
 					</Text>
-					<Text size='sm'>{new Date(event.startDate).toLocaleString()}</Text>
+					<Text size='sm'>{event?.startDate ? new Date(event.startDate).toLocaleString() : '—'}</Text>
 				</div>
 
 				<Divider />
@@ -206,7 +186,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.events.fields.endDate')}
 					</Text>
-					<Text size='sm'>{new Date(event.endDate).toLocaleString()}</Text>
+					<Text size='sm'>{event?.endDate ? new Date(event.endDate).toLocaleString() : '—'}</Text>
 				</div>
 
 				<Divider />
@@ -215,7 +195,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.events.fields.createdAt')}
 					</Text>
-					<Text size='sm'>{new Date(event.createdAt).toLocaleString()}</Text>
+					<Text size='sm'>{event?.createdAt ? new Date(event.createdAt).toLocaleString() : '—'}</Text>
 				</div>
 
 				{/* Kiosks Section */}
@@ -249,7 +229,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 				<div>
 					<EventThemeConfig
 						theme={eventTheme}
-						themeId={event.themeId}
+						themeId={event?.themeId}
 						idlePlaylist={idlePlaylist}
 						shoppingPlaylist={shoppingPlaylist}
 						onIdlePlaylistChange={handleIdlePlaylistChange}
@@ -265,7 +245,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 				<div>
 					<EventGameConfig
 						game={eventGame}
-						gameId={event.gameId}
+						gameId={event?.gameId}
 						onGameChange={handleGameChange}
 						onGameRemove={handleGameRemove}
 					/>
@@ -288,7 +268,7 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
 				onSelectProducts={handleAddProducts}
 				selectedProductIds={eventProducts.map((p) => p.id)}
 			/>
-		</Drawer>
+		</PreviewDrawer>
 	);
 };
 

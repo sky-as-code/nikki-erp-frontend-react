@@ -1,15 +1,12 @@
 import { IconDeviceFloppy, IconEdit, IconX } from '@tabler/icons-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ControlPanelProps } from '@/components/ControlPanel';
 import { useRegisterKioskModelDetailTab } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
+import { buildShelvesConfigWire, parseShelvesConfigRows } from '@/features/kioskModels/components/ShelvesConfig';
 import { useKioskModelEdit } from '@/features/kioskModels/hooks/useKioskModelEdit';
-import {
-	shelvesConfigToTrayConfigurations,
-	trayConfigurationsToShelvesConfig,
-} from '@/features/kioskModels/shelvesConfig';
-import { KioskModel, KioskType, TrayConfiguration } from '@/features/kioskModels/types';
+import { KioskModel, KioskType, ShelvesConfigRow } from '@/features/kioskModels/types';
 
 
 export type UseModelSettingsTabArgs = {
@@ -23,8 +20,8 @@ export type UseModelSettingsTabReturn = {
 	setSelectedKioskType: (v: KioskType | undefined) => void;
 	shelvesNumber: number;
 	setShelvesNumber: (n: number) => void;
-	trayConfigurations: TrayConfiguration[];
-	setTrayConfigurations: (c: TrayConfiguration[]) => void;
+	shelvesConfigRows: ShelvesConfigRow[];
+	setShelvesConfigRows: (rows: ShelvesConfigRow[]) => void;
 };
 
 export function useModelSettingsTab({ model }: UseModelSettingsTabArgs): UseModelSettingsTabReturn {
@@ -32,19 +29,15 @@ export function useModelSettingsTab({ model }: UseModelSettingsTabArgs): UseMode
 	const [isEditing, setIsEditing] = useState(false);
 	const [selectedKioskType, setSelectedKioskType] = useState<KioskType | undefined>(model.kioskType);
 	const [shelvesNumber, setShelvesNumber] = useState(model.shelvesNumber || 0);
-	const [trayConfigurations, setTrayConfigurations] = useState<TrayConfiguration[]>(
-		() => shelvesConfigToTrayConfigurations(model.shelvesConfig),
+	const [shelvesConfigRows, setShelvesConfigRows] = useState<ShelvesConfigRow[]>(
+		() => parseShelvesConfigRows(model.shelvesConfig),
 	);
 
 	const syncFromModel = useCallback(() => {
 		setSelectedKioskType(model.kioskType);
 		setShelvesNumber(model.shelvesNumber || 0);
-		setTrayConfigurations(shelvesConfigToTrayConfigurations(model.shelvesConfig));
+		setShelvesConfigRows(parseShelvesConfigRows(model.shelvesConfig));
 	}, [model.kioskType, model.shelvesNumber, model.shelvesConfig]);
-
-	useEffect(() => {
-		if (!isEditing) syncFromModel();
-	}, [model.id, model.etag, isEditing, syncFromModel]);
 
 	const onUpdateSuccess = useCallback(() => setIsEditing(false), []);
 	const { isSubmitting, handleSubmit } = useKioskModelEdit(model, { onUpdateSuccess });
@@ -55,9 +48,9 @@ export function useModelSettingsTab({ model }: UseModelSettingsTabArgs): UseMode
 		handleSubmit({
 			kioskType: selectedKioskType,
 			shelvesNumber,
-			shelvesConfig: trayConfigurationsToShelvesConfig(trayConfigurations),
+			shelvesConfig: buildShelvesConfigWire(shelvesConfigRows),
 		});
-	}, [handleSubmit, selectedKioskType, shelvesNumber, trayConfigurations]);
+	}, [handleSubmit, selectedKioskType, shelvesNumber, shelvesConfigRows]);
 
 	const handleCancel = useCallback(() => {
 		syncFromModel();
@@ -100,7 +93,7 @@ export function useModelSettingsTab({ model }: UseModelSettingsTabArgs): UseMode
 		setSelectedKioskType,
 		shelvesNumber,
 		setShelvesNumber,
-		trayConfigurations,
-		setTrayConfigurations,
+		shelvesConfigRows,
+		setShelvesConfigRows,
 	};
 }

@@ -1,8 +1,10 @@
-import { Badge, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconMapPin, IconDeviceDesktop, IconExternalLink } from '@tabler/icons-react';
+import { Badge, Box, Divider, Group, Stack, Text } from '@mantine/core';
+import { IconMapPin, IconDeviceDesktop } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+
+import { PreviewDrawer } from '@/components/PreviewDrawer';
 
 import { Kiosk, KioskMode, KioskStatus } from '../../types';
 
@@ -23,20 +25,6 @@ export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
-
-	if (isLoading || !kiosk) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='lg'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.kiosk.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
 
 	const getStatusBadge = (status?: KioskStatus | null) => {
 		if (!status) return null;
@@ -63,103 +51,95 @@ export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
 	};
 
 	return (
-		<Drawer
+		<PreviewDrawer
 			opened={opened}
 			onClose={onClose}
-			position='right'
-			size='lg'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconDeviceDesktop size={20} />
-						<Text fw={600} size='lg'>{kiosk.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../kiosks/${kiosk.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+			header={{
+				title: kiosk?.name,
+				subtitle: kiosk?.code,
+				avatar: <IconDeviceDesktop size={20} />,
+			}}
+			onViewDetails={() => {
+				if (kiosk?.id) {
+					navigate(`../kiosks/${kiosk.id}`);
+				}
+				onClose();
+			}}
+			isLoading={isLoading}
+			isNotFound={!kiosk && !isLoading}
+			drawerProps={{ size: 'lg', opened, onClose }}
 		>
 			<Stack gap='md'>
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.code')}
 					</Text>
-					<Text size='sm' fw={500}>{kiosk.code}</Text>
-				</div>
+					<Text size='sm' fw={500}>{kiosk?.code}</Text>
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.name')}
 					</Text>
-					<Text size='sm'>{kiosk.name}</Text>
-				</div>
+					<Text size='sm'>{kiosk?.name}</Text>
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.address')}
 					</Text>
 					<Group gap='xs'>
 						<IconMapPin size={16} />
-						<Text size='sm'>{kiosk.locationAddress}</Text>
+						<Text size='sm'>{kiosk?.locationAddress}</Text>
 					</Group>
-				</div>
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.coordinates')}
 					</Text>
 					<Text size='sm'>
-						{kiosk.latitude != null && kiosk.longitude != null
+						{kiosk?.latitude != null && kiosk?.longitude != null
 							? `${kiosk.latitude}, ${kiosk.longitude}`
 							: '—'}
 					</Text>
-				</div>
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.status')}
 					</Text>
-					{getStatusBadge(kiosk.status)}
-				</div>
+					{getStatusBadge(kiosk?.status)}
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.mode')}
 					</Text>
-					{getModeBadge(kiosk.mode)}
-				</div>
+					{getModeBadge(kiosk?.mode)}
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.createdAt')}
 					</Text>
-					<Text size='sm'>{new Date(kiosk.createdAt).toLocaleString()}</Text>
-				</div>
+					<Text size='sm'>{kiosk?.createdAt ? new Date(kiosk.createdAt).toLocaleString() : '—'}</Text>
+				</Box>
 
 			</Stack>
-		</Drawer>
+		</PreviewDrawer>
 	);
 };
 

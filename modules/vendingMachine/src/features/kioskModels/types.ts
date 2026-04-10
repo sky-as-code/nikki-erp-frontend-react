@@ -23,7 +23,8 @@ export const KIOSK_SHELF_TYPES = {
 } as const;
 export type KioskShelfType = (typeof KIOSK_SHELF_TYPES)[keyof typeof KIOSK_SHELF_TYPES];
 
-export interface TrayConfiguration {
+/** Một dòng trong cấu hình kệ (UI); API dùng `type` trong `shelves_config.config`. */
+export interface ShelvesConfigRow {
 	row: string;
 	shelfType?: KioskShelfType;
 }

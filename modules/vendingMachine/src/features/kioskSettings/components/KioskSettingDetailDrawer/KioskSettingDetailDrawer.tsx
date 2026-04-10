@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
-import { Badge, Box, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconExternalLink, IconSettings2 } from '@tabler/icons-react';
+import { Badge, Box, Divider, Stack, Text } from '@mantine/core';
+import { IconSettings2 } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router';
 import { AssignedKioskList } from '@/components/AssignKiosks';
 import { KioskSelectModal } from '@/components/AssignKiosks/KioskSelectModal';
 import { GameSelect } from '@/components/GameSelect';
+import { PreviewDrawer } from '@/components/PreviewDrawer';
 import { SlideshowSelect } from '@/components/SlideshowSelect';
 import { ThemeSelect } from '@/components/ThemeSelect';
 import { Game } from '@/features/games/types';
@@ -49,20 +50,6 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 			setShoppingPlaylist(setting.shoppingPlaylist);
 		}
 	}, [setting]);
-
-	if (isLoading || !setting) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='xl'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.kioskSettings.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
 
 	const getStatusBadge = (status: string) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -114,82 +101,74 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 	};
 
 	return (
-		<Drawer
+		<PreviewDrawer
 			opened={opened}
 			onClose={onClose}
-			position='right'
-			size='xl'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconSettings2 size={20} />
-						<Text fw={600} size='lg'>{setting.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../kiosk-settings/${setting.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+			header={{
+				title: setting?.name,
+				subtitle: setting?.code,
+				avatar: <IconSettings2 size={20} />,
+			}}
+			onViewDetails={() => {
+				if (setting?.id) {
+					navigate(`../kiosk-settings/${setting.id}`);
+				}
+				onClose();
+			}}
+			isLoading={isLoading}
+			isNotFound={!setting && !isLoading}
+			drawerProps={{ size: 'xl', opened, onClose }}
 		>
 			<Stack gap='md'>
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>{translate('nikki.vendingMachine.kioskSettings.fields.code')}</Text>
-					<Text size='sm' fw={500}>{setting.code}</Text>
-				</div>
+					<Text size='sm' fw={500}>{setting?.code}</Text>
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>{translate('nikki.vendingMachine.kioskSettings.fields.name')}</Text>
-					<Text size='sm'>{setting.name}</Text>
-				</div>
+					<Text size='sm'>{setting?.name}</Text>
+				</Box>
 
-				{setting.description && (
+				{setting?.description && (
 					<>
 						<Divider />
-						<div>
+						<Box>
 							<Text size='sm' c='dimmed' mb='xs'>{translate('nikki.vendingMachine.kioskSettings.fields.description')}</Text>
 							<Text size='sm'>{setting.description}</Text>
-						</div>
+						</Box>
 					</>
 				)}
 
-				{setting.brand && (
+				{setting?.brand && (
 					<>
 						<Divider />
-						<div>
+						<Box>
 							<Text size='sm' c='dimmed' mb='xs'>{translate('nikki.vendingMachine.kioskSettings.fields.brand')}</Text>
 							<Text size='sm'>{setting.brand}</Text>
-						</div>
+						</Box>
 					</>
 				)}
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>{translate('nikki.vendingMachine.kioskSettings.fields.status')}</Text>
-					{getStatusBadge(setting.status)}
-				</div>
+					{setting?.status ? getStatusBadge(setting.status) : null}
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>{translate('nikki.vendingMachine.kioskSettings.fields.createdAt')}</Text>
-					<Text size='sm'>{new Date(setting.createdAt).toLocaleString()}</Text>
-				</div>
+					<Text size='sm'>{setting?.createdAt ? new Date(setting.createdAt).toLocaleString() : '—'}</Text>
+				</Box>
 
 				{/* Kiosks Section */}
 				<Divider />
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='md' fw={500}>
 						{translate('nikki.vendingMachine.kioskSettings.fields.kiosks')}
 					</Text>
@@ -198,11 +177,11 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 						onAddKiosks={() => setKioskSelectModalOpened(true)}
 						onRemoveKiosk={handleRemoveKiosk}
 					/>
-				</div>
+				</Box>
 
 				{/* Theme and Slideshow Configuration */}
 				<Divider />
-				<div>
+				<Box>
 					<Stack gap='md'>
 						<ThemeSelect
 							value={settingTheme}
@@ -237,10 +216,10 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 							isEditing
 						/>
 					</Stack>
-				</div>
+				</Box>
 
 				{/* Game Configuration */}
-				<div>
+				<Box>
 					<GameSelect
 						value={settingGame}
 						onRemove={handleGameRemove}
@@ -251,7 +230,7 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 						}}
 						isEditing
 					/>
-				</div>
+				</Box>
 
 				<Box h={50}></Box>
 			</Stack>
@@ -263,6 +242,6 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 				onSelectKiosks={handleAddKiosks}
 				selectedKioskIds={settingKiosks.map((k) => k.id)}
 			/>
-		</Drawer>
+		</PreviewDrawer>
 	);
 };

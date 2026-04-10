@@ -1,14 +1,16 @@
-import { Badge, Box, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconPresentation, IconExternalLink } from '@tabler/icons-react';
+import { Badge, Box, Divider, Stack, Text } from '@mantine/core';
+import { IconPresentation } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import { PreviewDrawer } from '@/components/PreviewDrawer';
+
 import { Slideshow, SlideshowMedia, GalleryMedia } from '../../types';
-import { SlideshowPreviewHorizontal } from '../SlideshowPreviewHorizontal';
-import { SlideshowPreviewVertical } from '../SlideshowPreviewVertical';
 import { MediaGalleryModal } from '../MediaGalleryModal';
 import { MediaList } from '../MediaList';
+import { SlideshowPreviewHorizontal } from '../SlideshowPreviewHorizontal';
+import { SlideshowPreviewVertical } from '../SlideshowPreviewVertical';
 
 
 export interface SlideshowDetailDrawerProps {
@@ -35,20 +37,6 @@ export const SlideshowDetailDrawer: React.FC<SlideshowDetailDrawerProps> = ({
 			setSlideshowMedia(slideshow.media || []);
 		}
 	}, [slideshow]);
-
-	if (isLoading || !slideshow) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='xl'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.slideshow.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
 
 	const getStatusBadge = (status: string) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -79,42 +67,39 @@ export const SlideshowDetailDrawer: React.FC<SlideshowDetailDrawerProps> = ({
 	};
 
 	const handleRemoveMedia = (mediaId: string) => {
-		setSlideshowMedia(slideshowMedia.filter((m) => m.id !== mediaId).map((m, index) => ({ ...m, order: index + 1 })));
+		setSlideshowMedia(slideshowMedia.filter(
+			(m) => m.id !== mediaId,
+		).map((m, index) => ({
+			...m,
+			order: index + 1,
+		})));
 	};
 
 	return (
-		<Drawer
+		<PreviewDrawer
 			opened={opened}
 			onClose={onClose}
-			position='right'
-			size='xl'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconPresentation size={20} />
-						<Text fw={600} size='lg'>{slideshow.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../slideshow/${slideshow.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+			header={{
+				title: slideshow?.name,
+				subtitle: slideshow?.code,
+				avatar: <IconPresentation size={20} />,
+			}}
+			onViewDetails={() => {
+				if (slideshow?.id) {
+					navigate(`../slideshow/${slideshow.id}`);
+				}
+				onClose();
+			}}
+			isLoading={isLoading}
+			isNotFound={!slideshow && !isLoading}
+			drawerProps={{ size: 'xl', opened, onClose }}
 		>
 			<Stack gap='md'>
 				<div>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.slideshow.fields.code')}
 					</Text>
-					<Text size='sm' fw={500}>{slideshow.code}</Text>
+					<Text size='sm' fw={500}>{slideshow?.code}</Text>
 				</div>
 
 				<Divider />
@@ -123,10 +108,10 @@ export const SlideshowDetailDrawer: React.FC<SlideshowDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.slideshow.fields.name')}
 					</Text>
-					<Text size='sm'>{slideshow.name}</Text>
+					<Text size='sm'>{slideshow?.name}</Text>
 				</div>
 
-				{slideshow.description && (
+				{slideshow?.description && (
 					<>
 						<Divider />
 						<div>
@@ -144,7 +129,7 @@ export const SlideshowDetailDrawer: React.FC<SlideshowDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.slideshow.fields.status')}
 					</Text>
-					{getStatusBadge(slideshow.status)}
+					{slideshow?.status ? getStatusBadge(slideshow.status) : null}
 				</div>
 
 				<Divider />
@@ -153,7 +138,7 @@ export const SlideshowDetailDrawer: React.FC<SlideshowDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.slideshow.fields.startDate')}
 					</Text>
-					<Text size='sm'>{new Date(slideshow.startDate).toLocaleString()}</Text>
+					<Text size='sm'>{slideshow?.startDate ? new Date(slideshow.startDate).toLocaleString() : '—'}</Text>
 				</div>
 
 				<Divider />
@@ -162,7 +147,7 @@ export const SlideshowDetailDrawer: React.FC<SlideshowDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.slideshow.fields.endDate')}
 					</Text>
-					<Text size='sm'>{new Date(slideshow.endDate).toLocaleString()}</Text>
+					<Text size='sm'>{slideshow?.endDate ? new Date(slideshow.endDate).toLocaleString() : '—'}</Text>
 				</div>
 
 				<Divider />
@@ -171,7 +156,7 @@ export const SlideshowDetailDrawer: React.FC<SlideshowDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.slideshow.fields.createdAt')}
 					</Text>
-					<Text size='sm'>{new Date(slideshow.createdAt).toLocaleString()}</Text>
+					<Text size='sm'>{slideshow?.createdAt ? new Date(slideshow.createdAt).toLocaleString() : '—'}</Text>
 				</div>
 
 				<Divider />
@@ -198,7 +183,7 @@ export const SlideshowDetailDrawer: React.FC<SlideshowDetailDrawerProps> = ({
 							<Text size='xs' c='dimmed' mb='xs'>
 								{translate('nikki.vendingMachine.slideshow.preview.vertical')}
 							</Text>
-							<SlideshowPreviewVertical slideshow={slideshow} />
+							{slideshow ? <SlideshowPreviewVertical slideshow={slideshow} /> : null}
 						</Stack>
 
 						{/* Horizontal Preview - Slideshow in footer area */}
@@ -207,7 +192,7 @@ export const SlideshowDetailDrawer: React.FC<SlideshowDetailDrawerProps> = ({
 							<Text size='xs' c='dimmed'>
 								{translate('nikki.vendingMachine.slideshow.preview.horizontal')}
 							</Text>
-							<SlideshowPreviewHorizontal slideshow={slideshow} />
+							{slideshow ? <SlideshowPreviewHorizontal slideshow={slideshow} /> : null}
 						</Stack>
 
 						<Divider />
@@ -223,6 +208,6 @@ export const SlideshowDetailDrawer: React.FC<SlideshowDetailDrawerProps> = ({
 				onSelectMedia={handleSelectMedia}
 				selectedMediaIds={slideshowMedia.map((m) => m.id)}
 			/>
-		</Drawer>
+		</PreviewDrawer>
 	);
 };
