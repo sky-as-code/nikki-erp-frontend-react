@@ -145,6 +145,9 @@
 			"code": "Code",
 			"name": "Name",
 			"address": "Address",
+			"locationAddress": "Location Address",
+			"latitude": "Latitude",
+			"longitude": "Longitude",
 			"coordinates": "Coordinates",
 			"isActive": "Active Status",
 			"connectionStatus": "Connection Status",
@@ -199,8 +202,8 @@
 		},
 		"messages": {
 			"no_kiosks": "No kiosks found",
-			"create_success": "Kiosk \"{{name}}\" has been created successfully",
-			"update_success": "Kiosk \"{{name}}\" has been updated successfully",
+			"create_success": "Kiosk has been created successfully",
+			"update_success": "Kiosk has been updated successfully",
 			"delete_success": "Kiosk has been deleted successfully",
 			"delete_confirm": "Are you sure you want to delete the kiosk \"{{name}}\"?",
 			"invalid_coordinates": "Invalid latitude or longitude. Please enter valid numbers.",
@@ -449,8 +452,8 @@
 		},
 		"messages": {
 			"no_settings": "No kiosk settings found",
-			"create_success": "Kiosk setting \"{{name}}\" has been created successfully",
-			"update_success": "Kiosk setting \"{{name}}\" has been updated successfully"
+			"create_success": "Kiosk setting has been created successfully",
+			"update_success": "Kiosk setting has been updated successfully"
 		}
 	},
 	"settings": {
@@ -479,8 +482,8 @@
 		},
 		"messages": {
 			"no_settings": "No settings found",
-			"create_success": "Setting \"{{name}}\" has been created successfully",
-			"update_success": "Setting \"{{name}}\" has been updated successfully",
+			"create_success": "Setting has been created successfully",
+			"update_success": "Setting has been updated successfully",
 			"delete_success": "Setting has been deleted successfully",
 			"delete_confirm": "Are you sure you want to delete setting <strong>{{name}}</strong>? This action cannot be undone.",
 			"not_found": {
@@ -554,8 +557,8 @@
 		},
 		"messages": {
 			"no_models": "No models found",
-			"create_success": "Kiosk model \"{{name}}\" has been created successfully",
-			"update_success": "Kiosk model \"{{name}}\" has been updated successfully",
+			"create_success": "Kiosk model has been created successfully",
+			"update_success": "Kiosk model has been updated successfully",
 			"delete_success": "Kiosk model has been deleted successfully",
 			"not_found": {
 				"title": "Kiosk Model Not Found",
@@ -752,8 +755,8 @@
 		"messages": {
 			"no_devices": "No devices found",
 			"no_specifications": "No specifications",
-			"create_success": "Device \"{{name}}\" has been created successfully",
-			"update_success": "Device \"{{name}}\" has been updated successfully",
+			"create_success": "Device has been created successfully",
+			"update_success": "Device has been updated successfully",
 			"delete_success": "Device has been deleted successfully",
 			"delete_confirm": "Are you sure you want to delete device <strong>{{name}}</strong>? This action cannot be undone.",
 			"not_found": {

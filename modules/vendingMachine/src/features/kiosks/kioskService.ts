@@ -1,10 +1,10 @@
 import * as request from '@nikkierp/common/request';
-import { snakeToCamelObject, camelToSnakeObject, buildColumnsQuery } from '@nikkierp/common/utils';
+import { snakeToCamelObject, camelToSnakeObject, buildColumnsQuery, cleanEmptyString } from '@nikkierp/common/utils';
+
+import { KioskCreatePayload, KioskUpdatePayload } from './hooks';
 
 import type {
 	Kiosk,
-	CreateKioskBody,
-	UpdateKioskBody,
 	RestCreateResponse,
 	RestUpdateResponse,
 	RestDeleteResponse,
@@ -36,14 +36,18 @@ export const kioskService = {
 		return snakeToCamelObject(result) as Kiosk;
 	},
 
-	async createKiosk(body: CreateKioskBody): Promise<RestCreateResponse> {
-		const snakeBody = camelToSnakeObject(body);
+	async createKiosk(body: KioskCreatePayload): Promise<RestCreateResponse> {
+		const cleanedBody = cleanEmptyString(body);
+		const snakeBody = camelToSnakeObject(cleanedBody);
+
 		const result = await request.post<any>(BASE_PATH, { json: snakeBody });
 		return snakeToCamelObject(result) as RestCreateResponse;
 	},
 
-	async updateKiosk(id: string, body: UpdateKioskBody): Promise<RestUpdateResponse> {
-		const snakeBody = camelToSnakeObject(body);
+	async updateKiosk({ id, body }: KioskUpdatePayload): Promise<RestUpdateResponse> {
+		const cleanedBody = cleanEmptyString(body);
+		const snakeBody = camelToSnakeObject(cleanedBody);
+
 		const result = await request.put<any>(`${BASE_PATH}/${id}`, { json: snakeBody });
 		return snakeToCamelObject(result) as RestUpdateResponse;
 	},

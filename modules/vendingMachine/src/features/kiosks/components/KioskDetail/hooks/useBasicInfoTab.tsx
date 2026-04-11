@@ -1,22 +1,33 @@
+import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import { IconDeviceFloppy, IconEdit, IconTrash, IconX } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { kioskActions, VendingMachineDispatch } from '@/appState';
 import { ControlPanelProps } from '@/components/ControlPanel';
 import { useRegisterKioskDetailTab } from '@/features/kiosks/components/KioskDetail/kioskDetailTabControl';
-import {
-	formDataToKioskUpdatePayload,
-	KioskCreateFormData,
-	kioskToCreateFormValues,
-} from '@/features/kiosks/hooks/useKioskCreate';
 import { useKioskDelete } from '@/features/kiosks/hooks/useKioskDelete';
-import { useKioskEdit } from '@/features/kiosks/hooks/useKioskEdit';
+import { KioskUpdateFormData, useKioskEdit } from '@/features/kiosks/hooks/useKioskEdit';
+import { kioskCreateSchema } from '@/features/kiosks/schemas';
 import { Kiosk } from '@/features/kiosks/types';
 
-import { kioskCreateSchema } from '@/features/kiosks/schemas';
 
-
+export type KioskBasicInfoFormData = Pick<
+	KioskUpdateFormData,
+	| 'id'
+	| 'etag'
+	| 'code'
+	| 'name'
+	| 'status'
+	| 'mode'
+	| 'uiMode'
+	| 'locationAddress'
+	| 'latitude'
+	| 'longitude'
+	| 'modelRef'
+	| 'paymentRefs'
+>;
 
 export const BASIC_INFO_FORM_ID = 'kiosk-basic-info-form';
 
@@ -74,8 +85,8 @@ export type UseBasicInfoTabReturn = {
 	isEditing: boolean;
 	isSubmitting: boolean;
 	modelSchema: ModelSchema;
-	modelValue: ReturnType<typeof kioskToCreateFormValues>;
-	onFormSubmit: (data: KioskCreateFormData) => void;
+	formValues: KioskBasicInfoFormData;
+	onFormSubmit: (data: KioskBasicInfoFormData) => void;
 	openDeleteModal: () => void;
 	closeDeleteModal: () => void;
 	confirmDelete: () => void;
@@ -85,15 +96,21 @@ export type UseBasicInfoTabReturn = {
 export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTabReturn {
 	const { t: translate } = useTranslation();
 	const [isEditing, setIsEditing] = useState(false);
+	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 
-	const { isSubmitting, handleSubmit } = useKioskEdit(kiosk, {
-		onUpdateSuccess: () => setIsEditing(false),
+	const { isSubmitting, handleSubmit } = useKioskEdit({
+		onUpdateSuccess: () => {
+			setIsEditing(false);
+			if (kiosk.id) {
+				dispatch(kioskActions.getKiosk(kiosk.id));
+			}
+		},
 	});
 
 	const modelSchema = kioskCreateSchema as ModelSchema;
 
-	const onFormSubmit = useCallback((data: KioskCreateFormData) => {
-		handleSubmit(formDataToKioskUpdatePayload(data, kiosk));
+	const onFormSubmit = useCallback((data: KioskBasicInfoFormData) => {
+		handleSubmit(data);
 	}, [handleSubmit, kiosk]);
 
 	const onSaveClick = useCallback(() => {
@@ -130,17 +147,12 @@ export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTab
 
 	useRegisterKioskDetailTab('basicInfo', actions);
 
-	const modelValue = useMemo(
-		() => kioskToCreateFormValues(kiosk),
-		[kiosk],
-	);
-
 	return {
 		formId: BASIC_INFO_FORM_ID,
 		isEditing,
 		isSubmitting,
 		modelSchema,
-		modelValue,
+		formValues: kiosk,
 		onFormSubmit,
 		openDeleteModal: () => openDeleteModal(kiosk),
 		closeDeleteModal,

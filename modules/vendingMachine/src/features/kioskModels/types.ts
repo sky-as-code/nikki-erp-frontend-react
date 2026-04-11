@@ -49,30 +49,6 @@ export interface KioskModel {
 	updatedAt?: string;
 }
 
-export type CreateKioskModelBody = {
-	modelId?: string;
-	referenceCode?: string;
-	name: string;
-	description?: string;
-	shelvesNumber?: number;
-	status?: KioskModelStatus;
-	kioskType?: KioskType;
-	shelvesConfig?: ShelvesConfigWire | Record<string, unknown>;
-};
-
-export type UpdateKioskModelBody = {
-	id: string;
-	etag: string;
-	modelId?: string;
-	referenceCode?: string;
-	name?: string;
-	description?: string;
-	shelvesNumber?: number;
-	status?: KioskModelStatus;
-	kioskType?: KioskType;
-	shelvesConfig?: ShelvesConfigWire | Record<string, unknown>;
-};
-
 export type RestCreateResponse = {
 	id: string;
 	createdAt: number;

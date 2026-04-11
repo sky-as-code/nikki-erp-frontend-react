@@ -26,7 +26,7 @@ export const KioskListPage: React.FC = () => {
 
 	const {
 		kiosks, filters, isInitialLoading, isFetching, handleRefresh,
-		page, pageSize, totalPages, handlePageChange, handlePageSizeChange,
+		totalItems, page, pageSize, totalPages, handlePageChange, handlePageSizeChange,
 	} = useKioskList();
 
 	const { isOpenPreview, handlePreview, handleClosePreview, selectedKiosk, isLoadingPreview } = useKioskPreview();
@@ -59,6 +59,7 @@ export const KioskListPage: React.FC = () => {
 					page={page}
 					pageSize={pageSize}
 					totalPages={totalPages}
+					totalItems={totalItems}
 					onPageChange={handlePageChange}
 					onPageSizeChange={handlePageSizeChange}
 				/>
@@ -127,12 +128,13 @@ interface KioskListPageContentProps {
 	page: number;
 	pageSize: number;
 	totalPages: number;
+	totalItems: number;
 	onPageChange: (page: number) => void;
 	onPageSizeChange: (value: string | null) => void;
 }
 const KioskListPageContent: React.FC<KioskListPageContentProps> = ({
 	kiosks, viewMode, handlePreview, handleDelete,
-	isFetching, page, pageSize, totalPages, onPageChange, onPageSizeChange,
+	isFetching, page, pageSize, totalPages, totalItems, onPageChange, onPageSizeChange,
 }) => {
 	const kioskListView = useMemo(() => (
 		<KioskTable
@@ -142,6 +144,7 @@ const KioskListPageContent: React.FC<KioskListPageContentProps> = ({
 			onPreview={handlePreview}
 			onDelete={handleDelete}
 			isFetching={isFetching}
+			totalItems={totalItems}
 			page={page}
 			pageSize={pageSize}
 			totalPages={totalPages}

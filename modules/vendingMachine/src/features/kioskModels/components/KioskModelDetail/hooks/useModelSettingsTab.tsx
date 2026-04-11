@@ -1,7 +1,9 @@
+import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { IconDeviceFloppy, IconEdit, IconX } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { kioskModelActions, VendingMachineDispatch } from '@/appState';
 import { ControlPanelProps } from '@/components/ControlPanel';
 import { useRegisterKioskModelDetailTab } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
 import { buildShelvesConfigWire, parseShelvesConfigRows } from '@/features/kioskModels/components/ShelvesConfig';
@@ -26,6 +28,7 @@ export type UseModelSettingsTabReturn = {
 
 export function useModelSettingsTab({ model }: UseModelSettingsTabArgs): UseModelSettingsTabReturn {
 	const { t: translate } = useTranslation();
+	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const [isEditing, setIsEditing] = useState(false);
 	const [selectedKioskType, setSelectedKioskType] = useState<KioskType | undefined>(model.kioskType);
 	const [shelvesNumber, setShelvesNumber] = useState(model.shelvesNumber || 0);
@@ -39,13 +42,20 @@ export function useModelSettingsTab({ model }: UseModelSettingsTabArgs): UseMode
 		setShelvesConfigRows(parseShelvesConfigRows(model.shelvesConfig));
 	}, [model.kioskType, model.shelvesNumber, model.shelvesConfig]);
 
-	const onUpdateSuccess = useCallback(() => setIsEditing(false), []);
-	const { isSubmitting, handleSubmit } = useKioskModelEdit(model, { onUpdateSuccess });
+	const onUpdateSuccess = useCallback(() => {
+		setIsEditing(false);
+		if (model.id) {
+			dispatch(kioskModelActions.getKioskModel(model.id));
+		}
+	}, [model.id, dispatch]);
+	const { isSubmitting, handleSubmit } = useKioskModelEdit({ onUpdateSuccess });
 
 	const handleEdit = useCallback(() => setIsEditing(true), []);
 
 	const handleSave = useCallback(() => {
 		handleSubmit({
+			id: model.id,
+			etag: model.etag,
 			kioskType: selectedKioskType,
 			shelvesNumber,
 			shelvesConfig: buildShelvesConfigWire(shelvesConfigRows),

@@ -9,11 +9,8 @@ export { useKioskDetailPageConfig } from './useKioskDetailPageConfig';
 export {
 	buildKioskSettingActions,
 	useKioskSettingTab,
-	useKioskSettingTabForm,
 } from './useKioskSettingTab';
 export type {
-	UseKioskSettingTabFormArgs,
-	UseKioskSettingTabFormReturn,
 	UseKioskSettingTabReturn,
 	KioskSettingFormData,
 	KioskSettingPickerValues,

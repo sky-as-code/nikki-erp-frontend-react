@@ -4,76 +4,33 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
+import { KioskMode, KioskStatus, UIMode } from '../types';
+
 import { VendingMachineDispatch, kioskActions, selectCreateKiosk } from '@/appState';
-import { KioskInterfaceMode, KioskMode, KioskStatus } from '@/features/kiosks/types';
-
-import type { CreateKioskBody, Kiosk } from '@/features/kiosks/types';
 
 
-export interface KioskCreateFormData {
+export type KioskCreateFormData = {
+	code: string;
 	name: string;
-	code?: string;
-	address: string;
-	latitude?: string | number;
-	longitude?: string | number;
 	status: KioskStatus;
 	mode: KioskMode;
-	modelRef?: string;
-	interfaceMode?: KioskInterfaceMode;
-	paymentMethodIds?: string[];
-}
+	uiMode: UIMode;
+	locationAddress?: string | null;
+	latitude?: string | null;
+	longitude?: string | null;
+	// ref
+	modelRef: string | null;
+	settingRef?: string | null;
+	paymentRefs?: string[] | null;
+	eventRefs?: string[] | null;
+	themeRef?: string | null;
+	gameRef?: string | null;
+	shoppingScreenPlaylistRef?: string | null;
+	waitingScreenPlaylistRef?: string | null;
+};
 
-export function kioskToCreateFormValues(k: Kiosk): KioskCreateFormData {
-	return {
-		name: k.name,
-		code: k.code,
-		address: k.locationAddress ?? '',
-		latitude: k.latitude != null ? String(k.latitude) : '',
-		longitude: k.longitude != null ? String(k.longitude) : '',
-		status: (k.status ?? KioskStatus.ACTIVE) as KioskStatus,
-		mode: (k.mode ?? KioskMode.PENDING) as KioskMode,
-		modelRef: k.modelRef ?? '',
-		interfaceMode: k.interfaceMode ?? KioskInterfaceMode.NORMAL,
-		paymentMethodIds: [],
-	};
-}
+export type KioskCreatePayload = KioskCreateFormData;
 
-export function formDataToKioskUpdatePayload(
-	data: KioskCreateFormData,
-	kiosk: Kiosk,
-): import('@/features/kiosks/types').UpdateKioskBody {
-	const lat = typeof data.latitude === 'string' ? Number.parseFloat(data.latitude) : Number(data.latitude);
-	const lng = typeof data.longitude === 'string' ? Number.parseFloat(data.longitude) : Number(data.longitude);
-	return {
-		id: kiosk.id,
-		etag: kiosk.etag,
-		code: data.code,
-		name: data.name,
-		modelRef: data.modelRef,
-		status: data.status,
-		mode: data.mode,
-		locationAddress: data.address,
-		latitude: Number.isFinite(lat) ? lat : null,
-		longitude: Number.isFinite(lng) ? lng : null,
-		interfaceMode: data.interfaceMode,
-	};
-}
-
-function buildKioskCreatePayload(data: KioskCreateFormData): CreateKioskBody {
-	const lat = typeof data.latitude === 'string' ? Number.parseFloat(data.latitude) : Number(data.latitude);
-	const lng = typeof data.longitude === 'string' ? Number.parseFloat(data.longitude) : Number(data.longitude);
-	return {
-		code: data.code || `KIOSK-${Date.now()}`,
-		name: data.name,
-		modelRef: data.modelRef || '',
-		status: data.status,
-		mode: data.mode,
-		locationAddress: data.address,
-		latitude: Number.isFinite(lat) ? lat : 0,
-		longitude: Number.isFinite(lng) ? lng : 0,
-		interfaceMode: data.interfaceMode ?? KioskInterfaceMode.NORMAL,
-	};
-}
 
 export function useKioskCreate() {
 	const navigate = useNavigate();
@@ -89,9 +46,8 @@ export function useKioskCreate() {
 		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate, location.pathname]);
 
-	const handleSubmit = useCallback((data: KioskCreateFormData) => {
-		const payload = buildKioskCreatePayload(data);
-		const action = dispatch(kioskActions.createKiosk(payload));
+	const handleSubmit = useCallback((data: KioskCreatePayload) => {
+		const action = dispatch(kioskActions.createKiosk(data));
 		createRequestIdRef.current = action.requestId;
 	}, [dispatch]);
 
@@ -105,11 +61,12 @@ export function useKioskCreate() {
 		if (createKiosk.status === 'success') {
 			createRequestIdRef.current = null;
 			notification.showInfo(
-				translate('nikki.vendingMachine.kiosk.messages.create_success', { name: '' }),
+				translate('nikki.vendingMachine.kiosk.messages.create_success'),
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(kioskActions.resetCreateKiosk());
 			dispatch(kioskActions.listKiosks());
+
 			const createdId = createKiosk.data?.id;
 			if (createdId) {
 				navigate(resolvePath(`../${createdId}`, location.pathname).pathname);

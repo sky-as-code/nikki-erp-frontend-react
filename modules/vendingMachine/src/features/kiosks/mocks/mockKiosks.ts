@@ -1,11 +1,4 @@
-import {
-	ConnectionStatus,
-	Kiosk,
-	KioskMode,
-	KioskStatus,
-	MachineType,
-	KioskWarning,
-} from '@/features/kiosks/types';
+import { ConnectionStatus, Kiosk, KioskMode, KioskStatus } from '@/features/kiosks/types';
 
 
 const mockKiosksData: Kiosk[] = [
@@ -14,31 +7,17 @@ const mockKiosksData: Kiosk[] = [
 		code: 'KIOSK-001',
 		name: 'Kiosk Trung Tâm Thành Phố',
 		locationAddress: '123 Đường Nguyễn Huệ, Quận 1, TP.HCM',
-		latitude: 10.7769,
-		longitude: 106.7009,
+		latitude: '10.7769',
+		longitude: '106.7009',
 		status: KioskStatus.ACTIVE,
 		mode: KioskMode.SELLING,
-		machineType: MachineType.DROP_PRODUCT,
-		connection: {
-			items: [
-				{
-					connection: ConnectionStatus.FAST,
-					createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
-				},
-			],
-		},
-		temperature: 24.5,
-		humidity: 55.2,
-		powerConsumption: 285.3,
-		warnings: [
+		uiMode: 'normal',
+		connections: [
 			{
-				id: 'w1',
-				type: 'Temperature Warning',
-				message: 'Temperature slightly above normal range',
-				severity: 'low',
-				createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+				status: ConnectionStatus.FAST,
+				createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
 			},
-		] as KioskWarning[],
+		],
 		createdAt: '2024-01-15T08:00:00Z',
 		etag: 'etag-001',
 		modelRef: '01hz',
@@ -48,19 +27,17 @@ const mockKiosksData: Kiosk[] = [
 		code: 'KIOSK-002',
 		name: 'Kiosk Sân Bay Tân Sơn Nhất',
 		locationAddress: 'Sân bay Tân Sơn Nhất, Quận Tân Bình, TP.HCM',
-		latitude: 10.8188,
-		longitude: 106.6520,
+		latitude: '10.8188',
+		longitude: '106.6520',
 		status: KioskStatus.ACTIVE,
 		mode: KioskMode.SELLING,
-		machineType: MachineType.ELEVATOR,
-		connection: {
-			items: [
-				{
-					connection: ConnectionStatus.SLOW,
-					createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
-				},
-			],
-		},
+		uiMode: 'normal',
+		connections: [
+			{
+				status: ConnectionStatus.SLOW,
+				createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
+			},
+		],
 		createdAt: '2024-01-20T09:30:00Z',
 		etag: 'etag-002',
 		modelRef: '01hz',
@@ -70,19 +47,17 @@ const mockKiosksData: Kiosk[] = [
 		code: 'KIOSK-003',
 		name: 'Kiosk Bến Thành',
 		locationAddress: 'Chợ Bến Thành, Quận 1, TP.HCM',
-		latitude: 10.7720,
-		longitude: 106.6983,
+		latitude: '10.7720',
+		longitude: '106.6983',
 		status: KioskStatus.INACTIVE,
 		mode: KioskMode.PENDING,
-		machineType: MachineType.DROP_PRODUCT,
-		connection: {
-			items: [
-				{
-					connection: ConnectionStatus.DISCONNECTED,
-					createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
-				},
-			],
-		},
+		uiMode: 'normal',
+		connections: [
+			{
+				status: ConnectionStatus.DISCONNECTED,
+				createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
+			},
+		],
 		createdAt: '2024-02-01T10:15:00Z',
 		etag: 'etag-003',
 		modelRef: '01hz',

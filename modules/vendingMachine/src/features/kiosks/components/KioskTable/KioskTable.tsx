@@ -22,6 +22,7 @@ export interface KioskTableProps extends AutoTableProps {
 	onEdit?: (kiosk: Kiosk) => void;
 	onDelete?: (kiosk: Kiosk) => void;
 	isFetching?: boolean;
+	totalItems?: number;
 	page?: number;
 	totalPages?: number;
 	onPageChange?: (page: number) => void;
@@ -51,10 +52,9 @@ const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
 	return (
 		<Text
 			c='light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2))'
-			fw={500}
+			fw={500} td='underline'
 			style={{ cursor: 'pointer' }}
 			onClick={handleClick}
-			td='underline'
 		>
 			{name}
 		</Text>
@@ -310,15 +310,9 @@ function renderWarningsColumn(
 					/>
 					<Badge
 						color={severityColors[highestSeverity.severity]}
-						size='xs'
-						variant='filled'
-						pos='absolute'
-						top={-6}
-						right={-8}
-						h={14}
-						w={14}
-						p={0}
-						fz={10}
+						size='xs' variant='filled'
+						pos='absolute' top={-6} right={-8}
+						h={14} w={14} p={0} fz={10}
 					>
 						{warningCount}
 					</Badge>
@@ -376,60 +370,55 @@ function renderActionsHeader(
 }
 
 export const KioskTable: React.FC<KioskTableProps> = ({
-	columns,
 	data,
 	schema,
-	isLoading,
-	onPreview,
-	onEdit,
-	onDelete,
-	isFetching,
-	page,
-	totalPages,
-	onPageChange,
-	pageSize,
-	pageSizeOptions,
-	onPageSizeChange,
+	columns,
+	isLoading, isFetching,
+	onPreview, onEdit, onDelete,
+	totalItems, totalPages, page, onPageChange,
+	pageSize, pageSizeOptions, onPageSizeChange,
 }) => {
 	const { t: translate } = useTranslation();
+
+	const colSizes: React.ComponentProps<typeof AutoTable>['columnSizes'] = {
+		code: { flex: 1, minWidth: 120 },
+		name: { flex: 2, minWidth: 180 },
+		connectionStatus: { width: 120 },
+		address: { flex: 2, minWidth: 200 },
+		status: { flex: 1, minWidth: 120 },
+		mode: { flex: 1, minWidth: 120 },
+		warnings: { width: 120 },
+		actions: { flex: 1, minWidth: 120 },
+	};
+
+	const colRenderers: React.ComponentProps<typeof AutoTable>['columnRenderers'] = {
+		code: renderCodeColumn,
+		name: renderNameColumn,
+		locationAddress: (row) => renderAddressColumn(row, translate),
+		status: (row) => renderStatusColumn(row, translate),
+		mode: (row) => renderModeColumn(row, translate),
+		connectionStatus: (row) => renderConnectionStatusColumn(row, translate),
+		warnings: (row) => renderWarningsColumn(row, translate),
+		actions: (row) => renderActionsColumn(row, onPreview, onEdit, onDelete, translate),
+	};
+
+	const headerRenderers: React.ComponentProps<typeof AutoTable>['headerRenderers'] = {
+		actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
+	};
 
 	return (
 		<Box pos='relative' mih={200}>
 			<AutoTable
 				columns={columns}
-				columnSizes={{
-					code: { flex: 1, minWidth: 120 },
-					name: { flex: 2, minWidth: 180 },
-					connectionStatus: { width: 120 },
-					address: { flex: 2, minWidth: 200 },
-					status: { flex: 1, minWidth: 120 },
-					mode: { flex: 1, minWidth: 120 },
-					warnings: { width: 120 },
-					actions: { flex: 1, minWidth: 120 },
-				}}
+				columnSizes={colSizes}
 				data={data}
 				schema={schema}
 				isLoading={isLoading && !isFetching}
-				columnRenderers={{
-					code: renderCodeColumn,
-					name: renderNameColumn,
-					locationAddress: (row) => renderAddressColumn(row, translate),
-					status: (row) => renderStatusColumn(row, translate),
-					mode: (row) => renderModeColumn(row, translate),
-					connectionStatus: (row) => renderConnectionStatusColumn(row, translate),
-					warnings: (row) => renderWarningsColumn(row, translate),
-					actions: (row) => renderActionsColumn(row, onPreview, onEdit, onDelete, translate),
-				}}
-				headerRenderers={{
-					actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
-				}}
-				columnAsLink='code'
-				columnAsLinkHref={(row) => {
-					onPreview(row as unknown as Kiosk);
-					return '#';
-				}}
+				columnRenderers={colRenderers}
+				headerRenderers={headerRenderers}
 			/>
 			<TablePagination
+				totalItems={totalItems}
 				page={page}
 				totalPages={totalPages}
 				onPageChange={onPageChange}

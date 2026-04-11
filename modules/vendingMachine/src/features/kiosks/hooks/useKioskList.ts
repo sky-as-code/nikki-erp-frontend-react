@@ -1,6 +1,8 @@
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 
+import { useKioskFilter } from './useKioskFilter';
+
 import {
 	VendingMachineDispatch,
 	kioskActions,
@@ -11,7 +13,6 @@ import {
 } from '@/appState';
 import { SearchGraph } from '@/components/FilterGroup';
 
-import { useKioskFilter } from './useKioskFilter';
 
 
 export function useKioskList() {

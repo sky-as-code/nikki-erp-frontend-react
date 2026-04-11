@@ -3,19 +3,19 @@ import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
 
-import { SearchGraph } from '@/components/FilterGroup';
 
+import { KioskCreatePayload, KioskUpdatePayload } from './hooks';
 import { kioskService } from './kioskService';
 
 import type {
 	Kiosk,
-	CreateKioskBody,
-	UpdateKioskBody,
 	RestCreateResponse,
 	RestUpdateResponse,
 	RestDeleteResponse,
 	PagedSearchResponse,
 } from './types';
+
+import { SearchGraph } from '@/components/FilterGroup';
 
 
 export const SLICE_NAME = 'vendingMachine.kiosk';
@@ -89,7 +89,7 @@ export const getKiosk = createAsyncThunk<
 
 export const createKiosk = createAsyncThunk<
 	RestCreateResponse,
-	CreateKioskBody,
+	KioskCreatePayload,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createKiosk`,
@@ -106,13 +106,13 @@ export const createKiosk = createAsyncThunk<
 
 export const updateKiosk = createAsyncThunk<
 	RestUpdateResponse,
-	{ id: string; body: UpdateKioskBody },
+	KioskUpdatePayload,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateKiosk`,
 	async ({ id, body }, { rejectWithValue }) => {
 		try {
-			return await kioskService.updateKiosk(id, body);
+			return await kioskService.updateKiosk({ id, body });
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to update kiosk';
@@ -271,12 +271,6 @@ function deleteKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 			state.delete.status = 'success';
 			state.delete.data = action.payload;
 			state.delete.requestId = action.meta.requestId;
-			// if (state.list.data) {
-			// 	state.list.data = state.list.data.filter((k) => k.id !== action.meta.arg.id);
-			// }
-			// if (state.detail.data?.id === action.meta.arg.id) {
-			// 	state.detail.data = undefined;
-			// }
 		})
 		.addCase(deleteKiosk.rejected, (state, action) => {
 			state.delete.status = 'error';

@@ -12,7 +12,7 @@ import type { Slideshow } from '@/features/slideshow/types';
 export interface SlideshowSelectProps {
 	isEditing: boolean;
 	type: 'waiting' | 'shopping';
-	value: Slideshow | undefined;
+	value: Slideshow | null | undefined;
 	onChange: (value: Slideshow | undefined) => void;
 	onRemove?: () => void;
 }

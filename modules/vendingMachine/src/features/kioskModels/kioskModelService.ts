@@ -1,10 +1,11 @@
 import * as request from '@nikkierp/common/request';
-import { snakeToCamelObject, camelToSnakeObject, buildColumnsQuery } from '@nikkierp/common/utils';
+import { snakeToCamelObject, camelToSnakeObject, buildColumnsQuery, cleanEmptyString } from '@nikkierp/common/utils';
+
+import { KioskModelCreatePayload } from './hooks/useKioskModelCreate';
+import { KioskModelUpdatePayload } from './hooks/useKioskModelEdit';
 
 import type {
 	KioskModel,
-	CreateKioskModelBody,
-	UpdateKioskModelBody,
 	RestCreateResponse,
 	RestUpdateResponse,
 	RestDeleteResponse,
@@ -40,14 +41,18 @@ export const kioskModelService = {
 		return snakeToCamelObject(result) as KioskModel;
 	},
 
-	async createKioskModel(body: CreateKioskModelBody): Promise<RestCreateResponse> {
-		const snakeBody = camelToSnakeObject(body);
+	async createKioskModel(body: KioskModelCreatePayload): Promise<RestCreateResponse> {
+		const cleanedBody = cleanEmptyString(body);
+		const snakeBody = camelToSnakeObject(cleanedBody);
+
 		const result = await request.post<any>(BASE_PATH, { json: snakeBody });
 		return snakeToCamelObject(result) as RestCreateResponse;
 	},
 
-	async updateKioskModel(id: string, body: UpdateKioskModelBody): Promise<RestUpdateResponse> {
-		const snakeBody = camelToSnakeObject(body);
+	async updateKioskModel({ id, body }: KioskModelUpdatePayload): Promise<RestUpdateResponse> {
+		const cleanedBody = cleanEmptyString(body);
+		const snakeBody = camelToSnakeObject(cleanedBody);
+
 		const result = await request.put<any>(`${BASE_PATH}/${id}`, { json: snakeBody });
 		return snakeToCamelObject(result) as RestUpdateResponse;
 	},

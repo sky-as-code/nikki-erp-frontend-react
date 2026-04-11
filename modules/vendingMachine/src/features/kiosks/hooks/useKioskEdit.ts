@@ -4,12 +4,32 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
+import type { Kiosk } from '@/features/kiosks/types';
+
 import { VendingMachineDispatch, kioskActions, selectUpdateKiosk } from '@/appState';
 
-import type { Kiosk, UpdateKioskBody } from '@/features/kiosks/types';
 
+export type KioskUpdateFormData = {id: string; etag: string;} & Pick<
+	Partial<Kiosk>,
+	| 'code'
+	| 'name'
+	| 'status'
+	| 'mode'
+	| 'uiMode'
+	| 'locationAddress'
+	| 'latitude'
+	| 'longitude'
+	| 'modelRef'
+	| 'settingRef'
+	| 'paymentRefs'
+	| 'eventRefs'
+	| 'themeRef'
+	| 'gameRef'
+	| 'shoppingScreenPlaylistRef'
+	| 'waitingScreenPlaylistRef'
+>;
 
-type UpdatePayload = { id: string; body: UpdateKioskBody };
+export type KioskUpdatePayload = { id: string; body: KioskUpdateFormData };
 
 function useSubmitHandler(
 	dispatch: VendingMachineDispatch,
@@ -18,7 +38,6 @@ function useSubmitHandler(
 	navigate: ReturnType<typeof useNavigate>,
 	location: ReturnType<typeof useLocation>,
 	onUpdateSuccess?: () => void,
-	kioskId?: string,
 ) {
 	const updateKiosk = useMicroAppSelector(selectUpdateKiosk);
 	const updateRequestIdRef = React.useRef<string | null>(null);
@@ -30,37 +49,37 @@ function useSubmitHandler(
 
 		if (updateKiosk.status === 'success') {
 			updateRequestIdRef.current = null;
+			dispatch(kioskActions.resetUpdateKiosk());
 			onUpdateSuccess?.();
+
 			notification.showInfo(
-				translate('nikki.vendingMachine.kiosk.messages.update_success', { name: '' }),
+				translate('nikki.vendingMachine.kiosk.messages.update_success'),
 				translate('nikki.general.messages.success'),
 			);
-			dispatch(kioskActions.resetUpdateKiosk());
-			dispatch(kioskActions.listKiosks());
-			if (kioskId) {
-				dispatch(kioskActions.getKiosk(kioskId));
-			}
 		}
 		else if (updateKiosk.status === 'error') {
 			updateRequestIdRef.current = null;
+			dispatch(kioskActions.resetUpdateKiosk());
+
 			notification.showError(
 				updateKiosk.error ?? translate('nikki.general.errors.update_failed'),
 				translate('nikki.general.messages.error'),
 			);
-			dispatch(kioskActions.resetUpdateKiosk());
 		}
-	}, [updateKiosk, dispatch, notification, translate, navigate, location, onUpdateSuccess, kioskId]);
+	}, [updateKiosk, dispatch, notification, translate, navigate, location, onUpdateSuccess]);
+
+	const handleSubmit = useCallback((payload: KioskUpdatePayload) => {
+		const action = dispatch(kioskActions.updateKiosk(payload));
+		updateRequestIdRef.current = action.requestId;
+	}, [dispatch]);
 
 	return {
 		isSubmitting: updateKiosk.status === 'pending',
-		handleSubmit: (payload: UpdatePayload) => {
-			const action = dispatch(kioskActions.updateKiosk(payload));
-			updateRequestIdRef.current = action.requestId;
-		},
+		handleSubmit,
 	};
 }
 
-export function useKioskEdit(kiosk: Kiosk | undefined, options?: { onUpdateSuccess?: () => void }) {
+export function useKioskEdit({ onUpdateSuccess }: { onUpdateSuccess?: () => void }) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
@@ -73,17 +92,16 @@ export function useKioskEdit(kiosk: Kiosk | undefined, options?: { onUpdateSucce
 		translate,
 		navigate,
 		location,
-		options?.onUpdateSuccess,
-		kiosk?.id,
+		onUpdateSuccess,
 	);
 
 	const submit = useCallback(
-		(body: UpdateKioskBody) => {
-			if (kiosk) {
-				handleSubmit({ id: kiosk.id, body });
+		(body: KioskUpdateFormData) => {
+			if (body.id) {
+				handleSubmit({ id: body.id, body});
 			}
 		},
-		[kiosk?.id, kiosk, handleSubmit],
+		[handleSubmit],
 	);
 
 	return { isSubmitting, handleSubmit: submit };

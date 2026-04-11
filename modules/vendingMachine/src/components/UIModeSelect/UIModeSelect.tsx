@@ -6,7 +6,7 @@ import type { UIMode } from '@/features/kiosks/types';
 
 
 export interface UIModeSelectProps {
-	value: UIMode | undefined;
+	value: UIMode | null | undefined;
 	onChange: (value: UIMode | undefined) => void;
 	isEditing: boolean;
 }

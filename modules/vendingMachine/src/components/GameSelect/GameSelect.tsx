@@ -11,7 +11,7 @@ import type { Game } from '@/features/games/types';
 
 export interface GameSelectProps {
 	isEditing: boolean;
-	value: Game | undefined;
+	value: Game | null | undefined;
 	onChange: (value: Game | undefined) => void;
 	onRemove?: () => void;
 }

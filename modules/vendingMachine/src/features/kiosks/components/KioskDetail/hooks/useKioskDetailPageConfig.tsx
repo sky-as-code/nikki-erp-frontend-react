@@ -3,9 +3,6 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { ControlPanelActionItem } from '@/components/ControlPanel';
-import { useKioskDetailTabControl } from '@/features/kiosks/components/KioskDetail/kioskDetailTabControl';
-import { Kiosk } from '@/features/kiosks/types';
 
 import { KioskActivity } from '../KioskActivity';
 import { KioskBasicInfo } from '../KioskBasicInfo';
@@ -15,6 +12,10 @@ import { ProductListView } from '../ProductListView';
 import { useKioskDetailBreadcrumbs } from './useKioskDetailBreadcrumbs';
 
 import type { KioskDetailTabId, UseKioskDetailPageConfigProps, UseKioskDetailPageConfigReturn } from './types';
+
+import { ControlPanelActionItem } from '@/components/ControlPanel';
+import { useKioskDetailTabControl } from '@/features/kiosks/components/KioskDetail';
+import { Kiosk } from '@/features/kiosks/types';
 
 
 

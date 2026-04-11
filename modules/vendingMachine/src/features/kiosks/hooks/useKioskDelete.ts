@@ -3,9 +3,10 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { type Kiosk } from '../types';
+
 import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appState';
 
-import { type Kiosk } from '../types';
 
 
 // eslint-disable-next-line max-lines-per-function

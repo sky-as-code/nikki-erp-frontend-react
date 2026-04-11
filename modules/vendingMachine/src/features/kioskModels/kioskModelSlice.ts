@@ -3,19 +3,20 @@ import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
 
-import { SearchGraph } from '@/components/FilterGroup';
 
+import { KioskModelCreatePayload } from './hooks/useKioskModelCreate';
+import { KioskModelUpdatePayload } from './hooks/useKioskModelEdit';
 import { kioskModelService } from './kioskModelService';
 
 import type {
 	KioskModel,
-	CreateKioskModelBody,
-	UpdateKioskModelBody,
 	RestCreateResponse,
 	RestUpdateResponse,
 	RestDeleteResponse,
 	PagedSearchResponse,
 } from './types';
+
+import { SearchGraph } from '@/components/FilterGroup';
 
 
 export const SLICE_NAME = 'vendingMachine.kioskModel';
@@ -117,7 +118,7 @@ export const getKioskModel = createAsyncThunk<
 
 export const createKioskModel = createAsyncThunk<
 	RestCreateResponse,
-	CreateKioskModelBody,
+	KioskModelCreatePayload,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/createKioskModel`,
@@ -134,13 +135,13 @@ export const createKioskModel = createAsyncThunk<
 
 export const updateKioskModel = createAsyncThunk<
 	RestUpdateResponse,
-	{ id: string; body: UpdateKioskModelBody },
+	KioskModelUpdatePayload,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateKioskModel`,
 	async ({ id, body }, { rejectWithValue }) => {
 		try {
-			return await kioskModelService.updateKioskModel(id, body);
+			return await kioskModelService.updateKioskModel({ id, body });
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to update kiosk model';
@@ -285,12 +286,6 @@ function deleteKioskModelReducers(builder: ActionReducerMapBuilder<KioskModelSta
 			state.delete.status = 'success';
 			state.delete.data = action.payload;
 			state.delete.requestId = action.meta.requestId;
-			// if (state.list.data) {
-			// 	state.list.data = state.list.data.filter((m) => m.id !== action.meta.arg.id);
-			// }
-			// if (state.detail.data?.id === action.meta.arg.id) {
-			// 	state.detail.data = undefined;
-			// }
 		})
 		.addCase(deleteKioskModel.rejected, (state, action) => {
 			state.delete.status = 'error';

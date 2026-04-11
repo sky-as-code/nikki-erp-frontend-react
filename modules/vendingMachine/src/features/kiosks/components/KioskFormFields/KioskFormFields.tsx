@@ -12,12 +12,13 @@ import React from 'react';
 import { Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import classes from './KioskFormFields.module.css';
+
 import { useKioskModelList } from '@/features/kioskModels';
 import { KioskModel } from '@/features/kioskModels/types';
 import { usePaymentList } from '@/features/payment';
 import { PaymentMethod } from '@/features/payment/types';
 
-import classes from './KioskFormFields.module.css';
 
 
 export type KioskFormFieldsMode = 'view' | 'create' | 'edit';
@@ -57,7 +58,7 @@ export const KioskFormFields: React.FC<KioskFormFieldsProps> = ({ mode }) => {
 						leftSection: <IconMapPin color='black' size={18} style={{ marginBottom: 2 }} />,
 					}}
 					htmlProps={readonlyInput}
-					name='address'
+					name='locationAddress'
 				/>
 			</Box>
 
@@ -101,7 +102,7 @@ interface PaymentMethodsFieldProps {
 function PaymentMethodsField({ data, disabled }: PaymentMethodsFieldProps) {
 	const inputId = useId();
 	const { control } = useFormField();
-	const fieldData = useFieldData('paymentMethodIds');
+	const fieldData = useFieldData('paymentRefs');
 	const { t: translate } = useTranslation();
 
 	if (!fieldData) {
@@ -117,7 +118,7 @@ function PaymentMethodsField({ data, disabled }: PaymentMethodsFieldProps) {
 			error={translate(fieldData.error ?? '')}
 		>
 			<Controller
-				name='paymentMethodIds'
+				name='paymentRefs'
 				control={control}
 				defaultValue={[]}
 				render={({ field }) => (

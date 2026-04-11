@@ -1,17 +1,57 @@
 {
 	"name": "kiosk",
 	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.orgId' }"
+		},
+		"etag": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.etag' }"
+		},
 		"name": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.name' }"
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.name' }",
+			"required": {
+				"create": true,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				},
+				{
+					"type": "length",
+					"min": 1,
+					"max": 128,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
 		},
 		"code": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.code' }"
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.code' }",
+			"required": {
+				"create": true,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				},
+				{
+					"type": "length",
+					"min": 1,
+					"max": 128,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
 		},
-		"address": {
+		"locationAddress": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.address' }"
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.locationAddress' }"
 		},
 		"latitude": {
 			"type": "string",
@@ -41,9 +81,19 @@
 		},
 		"modelRef": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.model' }"
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.model' }",
+			"required": {
+				"create": true,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				}
+			]
 		},
-		"interfaceMode": {
+		"uiMode": {
 			"type": "enum",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.uiMode' }",
 			"enum": [
@@ -51,7 +101,7 @@
 				{ "value": "focus", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.uiMode.focus' }" }
 			]
 		},
-		"paymentMethodIds": {
+		"paymentRefs": {
 			"type": "array",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.paymentMethods' }"
 		}

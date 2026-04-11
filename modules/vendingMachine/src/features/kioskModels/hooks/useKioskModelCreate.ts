@@ -4,31 +4,24 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { VendingMachineDispatch, kioskModelActions, selectCreateKioskModel } from '@/appState';
-
 import type { KioskModel } from '@/features/kioskModels/types';
 
+import { VendingMachineDispatch, kioskModelActions, selectCreateKioskModel } from '@/appState';
 
-export interface KioskModelCreateFormData {
-	name: string;
-	modelId?: string;
-	referenceCode?: string;
-	shelvesNumber?: number;
-	description?: string;
-	status: KioskModel['status'];
-	kioskType?: KioskModel['kioskType'];
-}
 
-export function formDataToKioskModelUpdatePayload(
-	data: KioskModelCreateFormData,
-): Partial<Omit<KioskModel, 'id' | 'createdAt' | 'etag'>> {
-	return {
-		name: data.name,
-		description: data.description,
-		status: data.status,
-		kioskType: data.kioskType,
-	};
-}
+
+export type KioskModelCreateFormData = Pick<
+	KioskModel,
+	| 'name'
+	| 'modelId'
+	| 'referenceCode'
+	| 'shelvesNumber'
+	| 'description'
+	| 'status'
+	| 'kioskType'
+>;
+
+export type KioskModelCreatePayload = KioskModelCreateFormData;
 
 export function useKioskModelCreate() {
 	const navigate = useNavigate();
@@ -44,7 +37,7 @@ export function useKioskModelCreate() {
 		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate, location.pathname]);
 
-	const handleSubmit = useCallback((data: KioskModelCreateFormData) => {
+	const handleSubmit = useCallback((data: KioskModelCreatePayload) => {
 		const action = dispatch(kioskModelActions.createKioskModel(data));
 		createRequestIdRef.current = action.requestId;
 	}, [dispatch]);

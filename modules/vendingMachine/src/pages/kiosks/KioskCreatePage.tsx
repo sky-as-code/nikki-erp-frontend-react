@@ -7,10 +7,11 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { ControlPanel } from '@/components';
+import { BreadcrumbItem } from '@/components/BreadCrumbs';
 import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import { KioskFormFields, kioskCreateSchema, useKioskCreate } from '@/features/kiosks';
-import { KioskInterfaceMode, KioskMode, KioskStatus } from '@/features/kiosks/types';
+import { KioskMode, KioskStatus, UIMode } from '@/features/kiosks/types';
 
 
 const FORM_ID = 'kiosk-create-form';
@@ -18,19 +19,24 @@ const FORM_ID = 'kiosk-create-form';
 const defaultFormValues = {
 	status: KioskStatus.ACTIVE,
 	mode: KioskMode.PENDING,
-	interfaceMode: KioskInterfaceMode.NORMAL,
-	paymentMethodIds: [] as string[],
+	uiMode: UIMode.NORMAL,
+	paymentRefs: [] as string[],
 };
 
-export const KioskCreatePage: React.FC = () => {
-	const navigate = useNavigate();
-	const { t: translate } = useTranslation();
-	const schema = kioskCreateSchema as ModelSchema;
-	const { isSubmitting, handleCancel, handleSubmit } = useKioskCreate();
+interface UseKioskCreatePageConfigProps {
+	handleCancel: () => void;
+	isSubmitting: boolean;
+}
 
-	React.useEffect(() => {
-		document.title = translate('nikki.vendingMachine.kiosk.title_create');
-	}, [translate]);
+interface UseKioskCreatePageConfigReturn {
+	breadcrumbs: BreadcrumbItem[];
+	actions: ControlPanelProps['actions'];
+}
+
+function useKioskCreatePageConfig({ handleCancel, isSubmitting }:
+UseKioskCreatePageConfigProps): UseKioskCreatePageConfigReturn {
+	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
 
 	const breadcrumbs = useMemo(() => [
 		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
@@ -62,8 +68,19 @@ export const KioskCreatePage: React.FC = () => {
 		},
 	], [translate, navigate, handleCancel, isSubmitting]);
 
+	return { breadcrumbs, actions };
+}
+
+export const KioskCreatePage: React.FC = () => {
+	const { t: translate } = useTranslation();
+	const schema = kioskCreateSchema as ModelSchema;
+
+	const { isSubmitting, handleCancel, handleSubmit } = useKioskCreate();
+	const { breadcrumbs, actions } = useKioskCreatePageConfig({ handleCancel, isSubmitting });
+
 	return (
 		<PageContainer
+			documentTitle={translate('nikki.vendingMachine.kiosk.title_create')}
 			breadcrumbs={breadcrumbs}
 			sections={[<ControlPanel key='control-panel' actions={actions} />]}
 		>
@@ -71,15 +88,14 @@ export const KioskCreatePage: React.FC = () => {
 				<FormStyleProvider layout='onecol'>
 					<FormFieldProvider formVariant='create' modelSchema={schema} modelValue={defaultFormValues} modelLoading={isSubmitting}>
 						{({ handleSubmit: formHandleSubmit }) => (
-							<>
-								<form
-									id={FORM_ID}
-									onSubmit={formHandleSubmit((data) => handleSubmit(data))}
-									noValidate
-									style={{ display: 'contents' }}
-								/>
+							<form
+								id={FORM_ID}
+								onSubmit={formHandleSubmit((data) => handleSubmit(data))}
+								noValidate
+								style={{ display: 'contents' }}
+							>
 								<KioskFormFields key='kiosk-form-fields' mode='create' />
-							</>
+							</form>
 						)}
 					</FormFieldProvider>
 				</FormStyleProvider>

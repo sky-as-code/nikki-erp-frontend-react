@@ -30,7 +30,7 @@ function useSubmitHandler(
 			updateRequestIdRef.current = null;
 			onUpdateSuccess?.();
 			notification.showInfo(
-				translate('nikki.vendingMachine.settings.messages.update_success', { name: updateState.data?.name }),
+				translate('nikki.vendingMachine.settings.messages.update_success'),
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(settingActions.resetUpdateSetting());

@@ -14,6 +14,7 @@ import {
 	ListKiosksParams,
 } from '@/features/kiosks/kioskSlice';
 
+
 export { DEFAULT_PAGE_SIZE as KIOSK_DEFAULT_PAGE_SIZE };
 export type { ListKiosksParams };
 

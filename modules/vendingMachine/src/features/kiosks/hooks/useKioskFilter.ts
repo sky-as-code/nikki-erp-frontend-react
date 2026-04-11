@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 
+import { KioskMode, KioskStatus } from '../types';
+
 import { ControlPanelFilterConfig } from '@/components';
 import { buildSimpleSearchGraph } from '@/components/ControlPanel/buildSimpleSearchGraph';
 
-import { KioskMode, KioskStatus } from '../types';
 
 
 

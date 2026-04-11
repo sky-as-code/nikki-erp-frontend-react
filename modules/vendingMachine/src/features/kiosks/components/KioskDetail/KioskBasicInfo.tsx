@@ -3,10 +3,11 @@ import { ConfirmModal, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { Kiosk } from '@/features/kiosks/types';
 
 import { KioskFormFields } from '../KioskFormFields/KioskFormFields';
 import { useBasicInfoTab } from './hooks/useBasicInfoTab';
+
+import { Kiosk } from '@/features/kiosks/types';
 
 
 export interface KioskBasicInfoProps {
@@ -31,9 +32,8 @@ const KioskBasicInfoAuditDates: React.FC<{ kiosk: Kiosk }> = ({ kiosk }) => {
 export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 	const { t } = useTranslation();
 
-	const { formId, isEditing, isSubmitting, modelSchema, modelValue, onFormSubmit,
+	const { formId, isEditing, isSubmitting, modelSchema, formValues, onFormSubmit,
 		closeDeleteModal, confirmDelete, isOpenDeleteModal } = useBasicInfoTab({ kiosk });
-
 
 	return (
 		<React.Fragment>
@@ -43,20 +43,19 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 						key={`${kiosk.id}-${kiosk.etag}-basic-info`}
 						formVariant='update'
 						modelSchema={modelSchema}
-						modelValue={modelValue}
+						modelValue={formValues}
 						modelLoading={isEditing && isSubmitting}
 					>
 						{({ handleSubmit }) => (
 							<>
-								{isEditing && (
-									<form
-										id={formId}
-										onSubmit={handleSubmit(onFormSubmit)}
-										noValidate
-										style={{ display: 'contents' }}
-									/>
-								)}
-								<KioskFormFields mode={isEditing ? 'edit' : 'view'} />
+								<form
+									id={formId}
+									onSubmit={isEditing ? handleSubmit(onFormSubmit) : undefined}
+									noValidate
+									style={{ display: 'contents' }}
+								>
+									<KioskFormFields mode={isEditing ? 'edit' : 'view'} />
+								</form>
 							</>
 						)}
 					</FormFieldProvider>

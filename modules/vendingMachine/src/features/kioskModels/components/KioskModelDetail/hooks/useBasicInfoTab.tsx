@@ -1,17 +1,15 @@
+import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import { IconDeviceFloppy, IconEdit, IconTrash, IconX } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import { kioskModelActions, VendingMachineDispatch } from '@/appState';
 import { ControlPanelProps } from '@/components/ControlPanel';
 import { useRegisterKioskModelDetailTab } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
-import {
-	KioskModelCreateFormData,
-	formDataToKioskModelUpdatePayload,
-} from '@/features/kioskModels/hooks/useKioskModelCreate';
 import { useKioskModelDelete } from '@/features/kioskModels/hooks/useKioskModelDelete';
-import { useKioskModelEdit } from '@/features/kioskModels/hooks/useKioskModelEdit';
+import { KioskModelUpdateFormData, useKioskModelEdit } from '@/features/kioskModels/hooks/useKioskModelEdit';
 import kioskModelCreateSchema from '@/features/kioskModels/kioskModelCreate-schema.json';
 import { KioskModel } from '@/features/kioskModels/types';
 
@@ -71,7 +69,7 @@ export type UseBasicInfoTabReturn = {
 	isEditing: boolean;
 	isSubmitting: boolean;
 	modelSchema: ModelSchema;
-	onFormSubmit: (data: KioskModelCreateFormData) => void;
+	onFormSubmit: (data: KioskModelUpdateFormData) => void;
 	closeDeleteModal: () => void;
 	confirmDelete: () => void;
 	isOpenDeleteModal: boolean;
@@ -81,14 +79,20 @@ export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTab
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
 	const [isEditing, setIsEditing] = useState(false);
+	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 
-	const onUpdateSuccess = useCallback(() => setIsEditing(false), []);
-	const { isSubmitting, handleSubmit } = useKioskModelEdit(model, { onUpdateSuccess });
+	const onUpdateSuccess = useCallback(() => {
+		setIsEditing(false);
+		if (model.id) {
+			dispatch(kioskModelActions.getKioskModel(model.id));
+		}
+	}, [model.id, dispatch]);
+	const { isSubmitting, handleSubmit } = useKioskModelEdit({ onUpdateSuccess });
 
 	const modelSchema = kioskModelCreateSchema as ModelSchema;
 
-	const onFormSubmit = useCallback((data: KioskModelCreateFormData) => {
-		handleSubmit(formDataToKioskModelUpdatePayload(data));
+	const onFormSubmit = useCallback((data: KioskModelUpdateFormData) => {
+		handleSubmit(data);
 	}, [handleSubmit]);
 
 	const onSaveClick = useCallback(() => {

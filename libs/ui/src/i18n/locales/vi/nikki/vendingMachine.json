@@ -142,6 +142,7 @@
 			"name": "Tên",
 			"address": "Địa chỉ",
 			"coordinates": "Tọa độ",
+			"locationAddress": "Địa chỉ",
 			"latitude": "Vĩ độ",
 			"longitude": "Kinh độ",
 			"isActive": "Trạng thái hoạt động",
@@ -242,8 +243,8 @@
 		},
 		"messages": {
 			"no_kiosks": "Không tìm thấy kiosk nào",
-			"create_success": "Kiosk \"{{name}}\" đã được tạo thành công",
-			"update_success": "Kiosk \"{{name}}\" đã được cập nhật thành công",
+			"create_success": "Kiosk đã được tạo thành công",
+			"update_success": "Kiosk đã được cập nhật thành công",
 			"delete_success": "Kiosk đã được xóa thành công",
 			"delete_confirm": "Bạn có chắc chắn muốn xóa Kiosk \"{{name}}\"?",
 			"invalid_coordinates": "Vĩ độ hoặc kinh độ không hợp lệ. Vui lòng nhập số đúng.",
@@ -492,8 +493,8 @@
 		},
 		"messages": {
 			"no_settings": "Không tìm thấy cài đặt kiosk nào",
-			"create_success": "Đã tạo cài đặt kiosk \"{{name}}\" thành công",
-			"update_success": "Đã cập nhật cài đặt kiosk \"{{name}}\" thành công"
+			"create_success": "Đã tạo cài đặt thành công",
+			"update_success": "Cài đặt đã được cập nhật thành công"
 		}
 	},
 	"settings": {
@@ -522,8 +523,8 @@
 		},
 		"messages": {
 			"no_settings": "Không tìm thấy cài đặt nào",
-			"create_success": "Cài đặt \"{{name}}\" đã được tạo thành công",
-			"update_success": "Cài đặt \"{{name}}\" đã được cập nhật thành công",
+			"create_success": "Cài đặt đã được tạo thành công",
+			"update_success": "Cài đặt đã được cập nhật thành công",
 			"delete_success": "Cài đặt đã được xóa thành công",
 			"delete_confirm": "Bạn có chắc chắn muốn xóa cài đặt <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
 			"not_found": {
@@ -795,8 +796,8 @@
 		"messages": {
 			"no_devices": "Không tìm thấy thiết bị nào",
 			"no_specifications": "Không có thông số",
-			"create_success": "Thiết bị \"{{name}}\" đã được tạo thành công",
-			"update_success": "Thiết bị \"{{name}}\" đã được cập nhật thành công",
+			"create_success": "Thiết bị đã được tạo thành công",
+			"update_success": "Thiết bị đã được cập nhật thành công",
 			"delete_success": "Thiết bị đã được xóa thành công",
 			"delete_confirm": "Bạn có chắc chắn muốn xóa thiết bị <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
 			"not_found": {

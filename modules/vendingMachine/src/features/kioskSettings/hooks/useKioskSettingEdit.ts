@@ -4,9 +4,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
+import { KioskSetting } from '../types';
+
 import { VendingMachineDispatch, kioskSettingActions, selectUpdateKioskSetting } from '@/appState';
 
-import { KioskSetting } from '../types';
 
 
 export type KioskSettingBasicInfoFormData = {
@@ -61,7 +62,7 @@ function useSubmitHandler(
 			updateRequestIdRef.current = null;
 			onUpdateSuccess?.();
 			notification.showInfo(
-				translate('nikki.vendingMachine.kioskSettings.messages.update_success', { name: updateKioskSetting.data?.name }),
+				translate('nikki.vendingMachine.kioskSettings.messages.update_success'),
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(kioskSettingActions.resetUpdateKioskSetting());

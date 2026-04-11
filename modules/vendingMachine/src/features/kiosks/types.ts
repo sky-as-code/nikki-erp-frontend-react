@@ -1,10 +1,15 @@
+import { KioskModel } from '../kioskModels/types';
+import { KioskSetting } from '../kioskSettings';
 import { Slideshow } from '../slideshow/types';
 
 import type { Game } from '../games/types';
 import type { Theme } from '../themes/types';
 
 
-export type UIMode = 'normal' | 'focus';
+export enum UIMode {
+	NORMAL = 'normal',
+	FOCUS = 'focus',
+}
 
 /** API: KioskStatus (openapi / domain) */
 export enum KioskStatus {
@@ -20,7 +25,8 @@ export enum KioskMode {
 	SLIDESHOW_ONLY = 'slideshow-only',
 }
 
-/** API: KioskInterfaceMode */
+/** API: KioskInterfaceMode (deprecated) */
+/** @deprecated use UIMode instead */
 export enum KioskInterfaceMode {
 	NORMAL = 'normal',
 	FOCUS = 'focus',
@@ -134,30 +140,47 @@ export interface KioskWarning {
  */
 export interface Kiosk {
 	id: string;
-	createdAt: string;
 	etag: string;
 	code: string;
 	name: string;
-	modelRef?: string | null;
-	settingRef?: string | null;
+	isArchived?: boolean | null;
 	status?: KioskStatus | null;
 	mode?: KioskMode | null;
+	uiMode?: UIMode | null;
 	locationAddress?: string | null;
-	latitude?: number | null;
-	longitude?: number | null;
-	interfaceMode?: KioskInterfaceMode | null;
-	shoppingScreenPlaylistRef?: string | null;
-	waitingScreenPlaylistRef?: string | null;
-	themeRef?: string | null;
-	gameRef?: string | null;
-	updatedAt?: string | null;
+	latitude?: string | null;
+	longitude?: string | null;
+	lastPing?: string | null;
 	connections?: ConnectionHistory[] | null;
 
-	/** Optional: resolved relations when using graph/columns */
+	// ref
+	modelRef?: string | null;
+	model?: KioskModel | null;
+
+	settingRef?: string | null;
+	setting?: KioskSetting;
+
+	paymentRefs?: string[] | null;
+	payments?: any[];
+
+	eventRefs?: string[] | null;
+	events?: any[];
+
+	themeRef?: string | null;
 	theme?: Theme;
+
+	gameRef?: string | null;
 	game?: Game;
-	waitingPlaylist?: Slideshow;
-	shoppingPlaylist?: Slideshow;
+
+	shoppingScreenPlaylistRef?: string | null;
+	shoppingScreenPlaylist?: Slideshow | null;
+	waitingScreenPlaylistRef?: string | null;
+	waitingScreenPlaylist?: Slideshow | null;
+
+	// base fields
+	scopeType?: string | null;
+	createdAt: string;
+	updatedAt?: string | null;
 
 	/** UI / telemetry (not on KioskDto) */
 	warnings?: KioskWarning[];
@@ -167,44 +190,7 @@ export interface Kiosk {
 	cpu?: number;
 	redis?: number;
 	memory?: number;
-	machineType?: MachineType;
 }
-
-export type CreateKioskBody = {
-	code: string;
-	name: string;
-	modelRef: string;
-	settingRef?: string | null;
-	status?: KioskStatus;
-	mode?: KioskMode;
-	locationAddress?: string | null;
-	latitude?: number | null;
-	longitude?: number | null;
-	interfaceMode?: KioskInterfaceMode;
-	shoppingScreenPlaylistRef?: string | null;
-	waitingScreenPlaylistRef?: string | null;
-	themeRef?: string | null;
-	gameRef?: string | null;
-};
-
-export type UpdateKioskBody = {
-	id: string;
-	etag: string;
-	code?: string | null;
-	name?: string | null;
-	modelRef?: string | null;
-	settingRef?: string | null;
-	status?: KioskStatus;
-	mode?: KioskMode;
-	locationAddress?: string | null;
-	latitude?: number | null;
-	longitude?: number | null;
-	interfaceMode?: KioskInterfaceMode;
-	shoppingScreenPlaylistRef?: string | null;
-	waitingScreenPlaylistRef?: string | null;
-	themeRef?: string | null;
-	gameRef?: string | null;
-};
 
 export type RestCreateResponse = {
 	id: string;

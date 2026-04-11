@@ -1,6 +1,7 @@
+import type { KioskDetailTabId } from './hooks/types';
+
 import { createDetailTabControl } from '@/components/DetailLayout';
 
-import type { KioskDetailTabId } from './hooks/types';
 
 
 export const {
