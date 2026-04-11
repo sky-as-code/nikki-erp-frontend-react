@@ -3,6 +3,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import { IconDeviceFloppy, IconEdit, IconTrash, IconX } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
 import { kioskActions, VendingMachineDispatch } from '@/appState';
 import { ControlPanelProps } from '@/components/ControlPanel';
@@ -97,6 +98,7 @@ export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTab
 	const { t: translate } = useTranslation();
 	const [isEditing, setIsEditing] = useState(false);
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
+	const navigate = useNavigate();
 
 	const { isSubmitting, handleSubmit } = useKioskEdit({
 		onUpdateSuccess: () => {
@@ -128,7 +130,11 @@ export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTab
 		setIsEditing(false);
 	}, []);
 
-	const { isOpenDeleteModal, openDeleteModal, closeDeleteModal, handleDelete } = useKioskDelete();
+	const onDeleteSuccess = useCallback(() => {
+		navigate('../kiosks');
+	}, [navigate]);
+
+	const { isOpenDeleteModal, openDeleteModal, closeDeleteModal, handleDelete } = useKioskDelete({ onDeleteSuccess });
 
 	const onDeleteClick = useCallback(() => openDeleteModal(kiosk), [kiosk, openDeleteModal]);
 

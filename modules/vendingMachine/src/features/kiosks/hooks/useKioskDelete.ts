@@ -10,7 +10,7 @@ import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appSt
 
 
 // eslint-disable-next-line max-lines-per-function
-export const useKioskDelete = () => {
+export const useKioskDelete = ({onDeleteSuccess}: {onDeleteSuccess?: () => void}) => {
 	const [isOpenDeleteModal, setIsOpenDeleteModal] = React.useState(false);
 	const [kioskToDelete, setKioskToDelete] = React.useState<Kiosk | null>(null);
 
@@ -48,7 +48,8 @@ export const useKioskDelete = () => {
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(kioskActions.resetDeleteKiosk());
-			dispatch(kioskActions.listKiosks());
+			closeDeleteModal();
+			onDeleteSuccess?.();
 		}
 		if (deleteState.status === 'error') {
 			deleteRequestIdRef.current = null;

@@ -30,7 +30,8 @@ export const KioskListPage: React.FC = () => {
 	} = useKioskList();
 
 	const { isOpenPreview, handlePreview, handleClosePreview, selectedKiosk, isLoadingPreview } = useKioskPreview();
-	const { isOpenDeleteModal, openDeleteModal, closeDeleteModal, kioskToDelete, handleDelete } = useKioskDelete();
+	const { isOpenDeleteModal, openDeleteModal, closeDeleteModal,
+		kioskToDelete, handleDelete } = useKioskDelete({ onDeleteSuccess: handleRefresh });
 	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskPageConfig({ handleRefresh });
 
 	return (
