@@ -9,7 +9,8 @@ import { useNavigate } from 'react-router';
 import { ControlPanel } from '@/components';
 import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
-import { KIOSK_TYPES, KioskModelFormFields, kioskModelCreateSchema, useKioskModelCreate } from '@/features/kioskModels';
+import { KIOSK_TYPES, KioskModelFormFields, useKioskModelCreate } from '@/features/kioskModels';
+import { kioskModelCreateSchema } from '@/features/kioskModels/schemas';
 
 
 const FORM_ID = 'kiosk-model-create-form';

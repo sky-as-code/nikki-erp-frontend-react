@@ -9,22 +9,25 @@ import { PageContainer } from '@/components/PageContainer';
 import {
 	KioskModelDetailDrawer,
 	KioskModelGridView,
-	kioskModelSchema,
 	KioskModelTable,
 	useKioskModelDelete,
+	useKioskModelFilter,
 	useKioskModelList,
 	useKioskModelPageConfig,
 	useKioskModelPreview,
 } from '@/features/kioskModels';
+import { kioskModelSchema } from '@/features/kioskModels/schemas';
 import { KioskModel, KioskModelViewMode } from '@/features/kioskModels/types';
 
 
 export const KioskModelPage: React.FC = () => {
 	const { t: translate } = useTranslation();
+
+	const {filters, graph} = useKioskModelFilter();
 	const {
-		filters, models, isInitialLoading, isFetching, handleRefresh,
+		models, isInitialLoading, isFetching, handleRefresh,
 		page, pageSize, totalPages, totalItems, handlePageChange, handlePageSizeChange,
-	} = useKioskModelList();
+	} = useKioskModelList(graph);
 
 	const {
 		isOpenDetailModal, handleCloseDetailModal,

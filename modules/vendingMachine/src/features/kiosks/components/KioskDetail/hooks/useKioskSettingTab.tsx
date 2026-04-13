@@ -1,12 +1,6 @@
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { IconDeviceFloppy, IconEdit, IconX } from '@tabler/icons-react';
-import {
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { VendingMachineDispatch } from '@/appState';
@@ -100,6 +94,7 @@ export function buildKioskSettingActions(
 }
 
 export type UseKioskSettingTabReturn = {
+	isSubmitting: boolean;
 	isEditing: boolean;
 	setIsEditing: (v: boolean) => void;
 	waitingScreenPlaylist: Slideshow | null | undefined;
@@ -114,51 +109,13 @@ export type UseKioskSettingTabReturn = {
 	handleUIModeChange: (next: UIMode | undefined) => void;
 };
 
-function useKioskSettingPickerState(kiosk: Kiosk, isEditing: boolean) {
-	const kioskPickerSnapshot = useMemo(() => pickerFromKiosk(kiosk), [
-		kiosk.id,
-		kiosk.etag,
-		kiosk.uiMode,
-		kiosk.waitingScreenPlaylist,
-		kiosk.shoppingScreenPlaylist,
-		kiosk.theme,
-		kiosk.game,
-	]);
-
-	const [kioskSettings, setKioskSettings] = useState<KioskSettingPickerValues>(() =>
-		pickerFromKiosk(kiosk),
-	);
-
-	useEffect(() => {
-		if (!isEditing) {
-			setKioskSettings(kioskPickerSnapshot);
-		}
-	}, [kioskPickerSnapshot, isEditing]);
-
-	const initialValues = useRef<KioskSettingPickerValues>({});
-	const wasEditingRef = useRef(false);
-
-	useEffect(() => {
-		if (isEditing && !wasEditingRef.current) {
-			initialValues.current = { ...kioskSettings };
-		}
-		wasEditingRef.current = isEditing;
-	}, [isEditing, kioskSettings]);
-
-	return { kioskSettings, setKioskSettings, initialValues };
-}
-
-
 
 export function useKioskSettingTab(kiosk: Kiosk): UseKioskSettingTabReturn {
 	const { t: translate } = useTranslation();
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 
 	const [isEditing, setIsEditing] = useState(false);
-	const { kioskSettings, setKioskSettings, initialValues } = useKioskSettingPickerState(
-		kiosk,
-		isEditing,
-	);
+	const [kioskSettings, setKioskSettings] = useState<KioskSettingPickerValues>(pickerFromKiosk(kiosk));
 
 	const { isSubmitting, handleSubmit } = useKioskEdit({
 		onUpdateSuccess: () => {
@@ -178,9 +135,9 @@ export function useKioskSettingTab(kiosk: Kiosk): UseKioskSettingTabReturn {
 	}, [handleSubmit, kiosk, kioskSettings]);
 
 	const handleCancel = useCallback(() => {
-		setKioskSettings({ ...initialValues.current });
+		setKioskSettings(pickerFromKiosk(kiosk));
 		setIsEditing(false);
-	}, []);
+	}, [kiosk, setKioskSettings]);
 
 	const actions = useMemo(
 		() => buildKioskSettingActions(
@@ -217,13 +174,14 @@ export function useKioskSettingTab(kiosk: Kiosk): UseKioskSettingTabReturn {
 	}, []);
 
 	return {
+		isSubmitting,
 		isEditing,
 		setIsEditing,
-		waitingScreenPlaylist: kioskSettings.waitingScreenPlaylist,
-		shoppingScreenPlaylist: kioskSettings.shoppingScreenPlaylist,
-		theme: kioskSettings.theme,
-		game: kioskSettings.game,
-		uiMode: kioskSettings.uiMode,
+		waitingScreenPlaylist: kioskSettings?.waitingScreenPlaylist,
+		shoppingScreenPlaylist: kioskSettings?.shoppingScreenPlaylist,
+		theme: kioskSettings?.theme,
+		game: kioskSettings?.game,
+		uiMode: kioskSettings?.uiMode,
 		handleWaitingChange,
 		handleShoppingChange,
 		handleThemeChange,

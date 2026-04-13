@@ -97,6 +97,7 @@ export type UseBasicInfoTabReturn = {
 export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTabReturn {
 	const { t: translate } = useTranslation();
 	const [isEditing, setIsEditing] = useState(false);
+	const [formResetNonce, setFormResetNonce] = useState(0);
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const navigate = useNavigate();
 
@@ -127,6 +128,7 @@ export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTab
 	}, []);
 
 	const onCancelClick = useCallback(() => {
+		setFormResetNonce((n) => n + 1);
 		setIsEditing(false);
 	}, []);
 
@@ -151,6 +153,13 @@ export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTab
 		[isEditing, isSubmitting, translate, onEditClick, onSaveClick, onCancelClick, onDeleteClick],
 	);
 
+	const formValues = useMemo(() => {
+		return {
+			...kiosk,
+			paymentRefs: kiosk.payments?.map((payment) => payment.id),
+		};
+	}, [kiosk, formResetNonce]);
+
 	useRegisterKioskDetailTab('basicInfo', actions);
 
 	return {
@@ -158,7 +167,7 @@ export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTab
 		isEditing,
 		isSubmitting,
 		modelSchema,
-		formValues: kiosk,
+		formValues,
 		onFormSubmit,
 		openDeleteModal: () => openDeleteModal(kiosk),
 		closeDeleteModal,

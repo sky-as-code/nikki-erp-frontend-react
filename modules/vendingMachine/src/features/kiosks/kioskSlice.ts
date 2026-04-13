@@ -4,6 +4,9 @@ import {
 } from '@reduxjs/toolkit';
 
 
+import { ListPagination } from '@/appState';
+import { SearchGraph } from '@/components/FilterGroup';
+
 import { KioskCreatePayload, KioskUpdatePayload } from './hooks';
 import { kioskService } from './kioskService';
 
@@ -15,14 +18,12 @@ import type {
 	PagedSearchResponse,
 } from './types';
 
-import { SearchGraph } from '@/components/FilterGroup';
 
 
 export const SLICE_NAME = 'vendingMachine.kiosk';
 
 export const DEFAULT_PAGE_SIZE = 10;
 
-export type ListPagination = { total: number; page: number; size: number };
 
 export type KioskState = {
 	detail: ReduxActionState<Kiosk>;
@@ -58,6 +59,38 @@ export const listKiosks = createAsyncThunk<
 	async (params, { rejectWithValue }) => {
 		try {
 			return await kioskService.searchKiosks({
+				columns: [
+					'id',
+					'etag',
+					'code',
+					'name',
+					'isArchived',
+					'status',
+					'mode',
+					'uiMode',
+					'locationAddress',
+					'latitude',
+					'longitude',
+					'lastPing',
+					'connections',
+					// 'modelRef',
+					// 'model',
+					// 'settingRef',
+					// 'setting',
+					// 'payments',
+					// 'events',
+					// 'themeRef',
+					// 'theme',
+					// 'gameRef',
+					// 'game',
+					// 'shoppingScreenPlaylistRef',
+					// 'shoppingScreenPlaylist',
+					// 'waitingScreenPlaylistRef',
+					// 'waitingScreenPlaylist',
+					// 'scopeType',
+					'createdAt',
+					'updatedAt',
+				],
 				page: params?.page ?? 0,
 				size: params?.size ?? DEFAULT_PAGE_SIZE,
 				graph: JSON.stringify(params?.graph ?? {}),
@@ -78,7 +111,38 @@ export const getKiosk = createAsyncThunk<
 	`${SLICE_NAME}/getKiosk`,
 	async (id, { rejectWithValue }) => {
 		try {
-			return await kioskService.getKiosk(id);
+			return await kioskService.getKiosk(id, [
+				'id',
+				'etag',
+				'code',
+				'name',
+				'isArchived',
+				'status',
+				'mode',
+				'uiMode',
+				'locationAddress',
+				'latitude',
+				'longitude',
+				'lastPing',
+				'connections',
+				'modelRef',
+				'model',
+				'settingRef',
+				'setting',
+				'payments',
+				'events',
+				'themeRef',
+				'theme',
+				'gameRef',
+				'game',
+				'shoppingScreenPlaylistRef',
+				'shoppingScreenPlaylist',
+				'waitingScreenPlaylistRef',
+				'waitingScreenPlaylist',
+				'scopeType',
+				'createdAt',
+				'updatedAt',
+			]);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to get kiosk';
@@ -238,20 +302,20 @@ function updateKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 			state.update.status = 'success';
 			state.update.data = action.payload;
 			state.update.requestId = action.meta.requestId;
-			if (state.detail.data?.id === action.payload.id && state.detail.data) {
-				state.detail.data = { ...state.detail.data, etag: action.payload.etag };
-			}
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((k) => k.id === action.payload.id);
-				if (listIndex >= 0) {
-					const row = state.list.data[listIndex];
-					state.list.data[listIndex] = {
-						...row,
-						etag: action.payload.etag,
-						updatedAt: String(action.payload.updatedAt),
-					};
-				}
-			}
+			// if (state.detail.data?.id === action.payload.id && state.detail.data) {
+			// 	state.detail.data = { ...state.detail.data, etag: action.payload.etag };
+			// }
+			// if (state.list.data) {
+			// 	const listIndex = state.list.data.findIndex((k) => k.id === action.payload.id);
+			// 	if (listIndex >= 0) {
+			// 		const row = state.list.data[listIndex];
+			// 		state.list.data[listIndex] = {
+			// 			...row,
+			// 			etag: action.payload.etag,
+			// 			updatedAt: String(action.payload.updatedAt),
+			// 		};
+			// 	}
+			// }
 		})
 		.addCase(updateKiosk.rejected, (state, action) => {
 			state.update.status = 'error';

@@ -1,5 +1,9 @@
+import * as request from '@nikkierp/common/request';
+import { buildColumnsQuery, snakeToCamelObject } from '@nikkierp/common/utils';
+
 import { mockPayments } from './mockPayments';
 import { PaymentMethod } from './types';
+import { PagedSearchResponse } from '../kiosks/types';
 
 
 function configFields(dto: PaymentMethod): PaymentMethod {
@@ -8,10 +12,23 @@ function configFields(dto: PaymentMethod): PaymentMethod {
 	};
 }
 
+const BASE_PATH = 'vending-machine/payments';
+
 export const paymentService = {
-	async listPayments(): Promise<PaymentMethod[]> {
-		const result = await mockPayments.listPayments();
-		return result.map(configFields);
+	async listPayments(params?: {
+		page?: number;
+		size?: number;
+		graph?: string;
+		columns?: Array<keyof PaymentMethod>;
+	}): Promise<PagedSearchResponse<PaymentMethod>> {
+		const { columns, ...restParams } = params || {};
+		const result = await request.get<any>(BASE_PATH, {
+			searchParams: [
+				...Object.entries(restParams),
+				...buildColumnsQuery<PaymentMethod>(columns || []),
+			],
+		});
+		return snakeToCamelObject(result) as PagedSearchResponse<PaymentMethod>;
 	},
 
 	async getPayment(id: string): Promise<PaymentMethod | undefined> {

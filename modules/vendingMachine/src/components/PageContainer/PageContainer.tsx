@@ -85,7 +85,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
 			{isLoading
 				? <PageLoading />
 				: (
-					<Paper p={'sm'}>
+					<Paper px={'sm'} py={'md'}>
 						{isNotFound
 							? notFoundContent || <NotFound />
 							: isEmpty
@@ -94,7 +94,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
 						}
 					</Paper>
 				)}
-			<Space h={{ base: 'lg', md: 'xl' }}  />
+			<Space h={{ base: 'md', md: 'lg' }}  />
 		</Stack>
 	);
 };

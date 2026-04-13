@@ -10,7 +10,7 @@ import { ControlPanelProps } from '@/components/ControlPanel';
 import { useRegisterKioskModelDetailTab } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
 import { useKioskModelDelete } from '@/features/kioskModels/hooks/useKioskModelDelete';
 import { KioskModelUpdateFormData, useKioskModelEdit } from '@/features/kioskModels/hooks/useKioskModelEdit';
-import kioskModelCreateSchema from '@/features/kioskModels/kioskModelCreate-schema.json';
+import { kioskModelCreateSchema } from '@/features/kioskModels/schemas';
 import { KioskModel } from '@/features/kioskModels/types';
 
 

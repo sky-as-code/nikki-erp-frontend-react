@@ -4,10 +4,11 @@ import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 
+import { Kiosk } from '@/features/kiosks/types';
+
 import { KioskFormFields } from '../KioskFormFields/KioskFormFields';
 import { useBasicInfoTab } from './hooks/useBasicInfoTab';
 
-import { Kiosk } from '@/features/kiosks/types';
 
 
 export interface KioskBasicInfoProps {
@@ -54,7 +55,7 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 									noValidate
 									style={{ display: 'contents' }}
 								>
-									<KioskFormFields mode={isEditing ? 'edit' : 'view'} />
+									<KioskFormFields mode={isEditing ? 'edit' : 'view'} kiosk={kiosk} isSubmitting={isSubmitting} />
 								</form>
 							</>
 						)}

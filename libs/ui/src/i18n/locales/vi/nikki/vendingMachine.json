@@ -246,7 +246,7 @@
 			"create_success": "Kiosk đã được tạo thành công",
 			"update_success": "Kiosk đã được cập nhật thành công",
 			"delete_success": "Kiosk đã được xóa thành công",
-			"delete_confirm": "Bạn có chắc chắn muốn xóa Kiosk \"{{name}}\"?",
+			"delete_confirm": "Bạn có chắc chắn muốn xóa Kiosk <strong>{{name}}</strong>? Hành động này sẽ <strong>không thể hoàn tác</strong>.",
 			"invalid_coordinates": "Vĩ độ hoặc kinh độ không hợp lệ. Vui lòng nhập số đúng.",
 			"not_found": {
 				"title": "Không tìm thấy Kiosk",

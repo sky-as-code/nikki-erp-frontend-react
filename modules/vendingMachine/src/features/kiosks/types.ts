@@ -153,29 +153,25 @@ export interface Kiosk {
 	lastPing?: string | null;
 	connections?: ConnectionHistory[] | null;
 
-	// ref
+	// ref (Những field không phải array mới có ref)
 	modelRef?: string | null;
 	model?: KioskModel | null;
-
 	settingRef?: string | null;
 	setting?: KioskSetting;
-
-	paymentRefs?: string[] | null;
-	payments?: any[];
-
-	eventRefs?: string[] | null;
-	events?: any[];
-
 	themeRef?: string | null;
 	theme?: Theme;
-
 	gameRef?: string | null;
 	game?: Game;
-
 	shoppingScreenPlaylistRef?: string | null;
 	shoppingScreenPlaylist?: Slideshow | null;
 	waitingScreenPlaylistRef?: string | null;
 	waitingScreenPlaylist?: Slideshow | null;
+
+	// refs chỉ sử dụng cho create, update; query không có columns refs
+	paymentRefs?: string[] | null;
+	payments?: any[];
+	eventRefs?: string[] | null;
+	events?: any[];
 
 	// base fields
 	scopeType?: string | null;

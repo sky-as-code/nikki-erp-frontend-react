@@ -42,17 +42,10 @@ export const startSignInAction = createAsyncThunk<
 	`${SLICE_NAME}/startSignIn`,
 	async ({ email }, { rejectWithValue }) => {
 		try {
-			// const result = await authService().startSignIn(
-			// 	{ subjectType: 'user', username: email },
-			// );
-			// return result;
-			return {
-				email,
-				nextStep: 'password',
-				attemptId: '123',
-				expiredAt: Date.now() + 1000 * 60 * 60 * 24,
-				sessionExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
-			};
+			const result = await authService().startSignIn(
+				{ subjectType: 'user', username: email },
+			);
+			return result;
 		}
 		catch (error: any) {
 			const rejectValue = error instanceof Error ? error.message || 'Start sign-in attempt failed'
@@ -70,11 +63,7 @@ export const continueSignInAction = createAsyncThunk<
 	`${SLICE_NAME}/continueSignIn`,
 	async (params, { rejectWithValue, dispatch }) => {
 		try {
-			// const result = await authService().continueSignIn(params);
-			const result = { done: true,
-				data: { accessToken: 'FakeAccessToken', accessTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24 },
-				sessionExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
-			};
+			const result = await authService().continueSignIn(params);
 
 			if (result.done && result.data?.accessToken) {
 				queueMicrotask(() => dispatch(fetchUserContextAction()));

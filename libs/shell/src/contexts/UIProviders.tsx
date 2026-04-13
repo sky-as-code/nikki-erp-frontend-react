@@ -14,8 +14,8 @@ export const UIProviders: React.FC<UIProvidersProps> = ({ children }) => {
 		<DirectionProvider>
 			<MantineProvider theme={{} as any} defaultColorScheme='light'>
 				<Notifications
-					position='top-center'
-					autoClose={10_000}
+					position='bottom-right'
+					autoClose={3_000}
 					limit={5}
 				/>
 				<ModalsProvider>

@@ -5,6 +5,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Kiosk, KioskMode, KioskStatus, KioskWarning, ConnectionStatus } from '../../types';
+import { renderConnectionStatusColumn } from '../KioskTable/KioskTable';
 
 
 export interface KioskGridViewProps {
@@ -127,7 +128,7 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 	const getWarningSeverity = (kiosk: Kiosk): 'low' | 'medium' | 'high' | 'critical' | null => {
 		const hasWarnings = kiosk.warnings && kiosk.warnings.length > 0;
 		const isDisconnected = kiosk.status === KioskStatus.ACTIVE
-			&& kiosk.connectionStatus === ConnectionStatus.DISCONNECTED;
+			&& kiosk.connections?.some((connection) => connection.status === ConnectionStatus.DISCONNECTED);
 
 		if (!hasWarnings && !isDisconnected) return null;
 
@@ -221,7 +222,7 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 							<Group gap='xs'>
 								<IconMapPin size={14} />
 								<Text size='xs' c='dimmed' lineClamp={2} style={{ flex: 1 }}>
-									{kiosk.locationAddress || translate('nikki.general.no_address')}
+									{kiosk.locationAddress || translate('nikki.general.messages.no_address')}
 								</Text>
 							</Group>
 
@@ -229,6 +230,7 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 								{getStatusBadge(kiosk.status)}
 								{getModeBadge(kiosk.mode)}
 								{getWarningIcon(kiosk.warnings)}
+								{renderConnectionStatusColumn(kiosk, translate)}
 							</Group>
 
 							<Text size='xs' c='dimmed'>

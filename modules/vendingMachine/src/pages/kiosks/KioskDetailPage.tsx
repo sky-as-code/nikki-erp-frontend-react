@@ -20,7 +20,6 @@ export const KioskDetailPage: React.FC = () => {
 	);
 };
 
-
 const KioskDetailPageContent: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
 	const { t: translate } = useTranslation();
@@ -32,8 +31,8 @@ const KioskDetailPageContent: React.FC = () => {
 			documentTitle={kiosk?.name ?? translate('nikki.vendingMachine.kiosk.detail.title')}
 			breadcrumbs={breadcrumbs}
 			sections={[ <ControlPanel actions={actions} /> ]}
-			isLoading={isLoading}
-			isNotFound={!kiosk && !isLoading}
+			isLoading={isLoading && !kiosk}
+			isNotFound={!isLoading && !kiosk}
 			notFoundContent={<KioskNotFound />}
 		>
 			<DetailLayout

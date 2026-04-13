@@ -95,8 +95,8 @@ const createMarker = (
 	map: maplibregl.Map,
 	kiosk: Kiosk,
 ): maplibregl.Marker => {
-	const lat = kiosk.latitude ?? 0;
-	const lng = kiosk.longitude ?? 0;
+	const lat = Number(kiosk.latitude) || 0;
+	const lng = Number(kiosk.longitude) || 0;
 	const isActive = kiosk.status === KioskStatus.ACTIVE;
 
 	const connectionHistory = (kiosk?.connections as ConnectionHistory[]) || [];

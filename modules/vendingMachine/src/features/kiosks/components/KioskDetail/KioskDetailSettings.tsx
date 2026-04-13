@@ -1,13 +1,14 @@
 import { Stack } from '@mantine/core';
 import React from 'react';
 
-import { useKioskSettingTab } from './hooks';
 
 import { GameSelect } from '@/components/GameSelect';
 import { SlideshowSelect } from '@/components/SlideshowSelect';
 import { ThemeSelect } from '@/components/ThemeSelect';
 import { UIModeSelect } from '@/components/UIModeSelect';
 import { Kiosk } from '@/features/kiosks/types';
+
+import { useKioskSettingTab } from './hooks';
 
 
 interface KioskDetailSettingsProps {
@@ -17,6 +18,7 @@ interface KioskDetailSettingsProps {
 export const KioskDetailSettings: React.FC<KioskDetailSettingsProps> = ({ kiosk }) => {
 	const {
 		isEditing,
+		isSubmitting,
 		waitingScreenPlaylist,
 		shoppingScreenPlaylist,
 		theme,
@@ -35,6 +37,7 @@ export const KioskDetailSettings: React.FC<KioskDetailSettingsProps> = ({ kiosk 
 				value={uiMode}
 				onChange={handleUIModeChange}
 				isEditing={isEditing}
+				disabled={isSubmitting ?? false}
 			/>
 
 			<SlideshowSelect

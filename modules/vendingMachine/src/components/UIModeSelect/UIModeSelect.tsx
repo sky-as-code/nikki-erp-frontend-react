@@ -9,12 +9,14 @@ export interface UIModeSelectProps {
 	value: UIMode | null | undefined;
 	onChange: (value: UIMode | undefined) => void;
 	isEditing: boolean;
+	disabled: boolean;
 }
 
 export const UIModeSelect: React.FC<UIModeSelectProps> = ({
 	value,
 	onChange,
 	isEditing,
+	disabled,
 }) => {
 	const { t: translate } = useTranslation();
 
@@ -33,6 +35,7 @@ export const UIModeSelect: React.FC<UIModeSelectProps> = ({
 				]}
 				clearable
 				readOnly={!isEditing}
+				disabled={disabled}
 			/>
 		</Box>
 	);

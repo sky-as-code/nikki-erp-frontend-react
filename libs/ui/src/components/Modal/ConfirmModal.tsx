@@ -40,11 +40,11 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 			<Stack gap='md'>
 				<Text>{message}</Text>
 				<Group justify='flex-end'>
-					<Button variant='outline' onClick={onClose}>
-						{cancelLabel || t('nikki.identity.user.actions.cancel')}
+					<Button variant='outline' onClick={onClose} color='gray'>
+						{cancelLabel || t('nikki.general.actions.cancel')}
 					</Button>
 					<Button color={confirmColor} onClick={onConfirm}>
-						{confirmLabel || t('nikki.identity.user.actions.confirm')}
+						{confirmLabel || t('nikki.general.actions.confirm')}
 					</Button>
 				</Group>
 			</Stack>

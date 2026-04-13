@@ -80,9 +80,10 @@
 		"not_found": "Không tìm thấy",
 		"no_data": "Không có dữ liệu",
 		"no_changes": "Không có thay đổi",
+		"no_address": "Không có địa chỉ",
 		"invalid_change": "Thay đổi không hợp lệ",
-		"delete_confirm": "Xoá phần tử",
-		"delete_confirm_name": "Bạn có chắc chắn muốn xóa {{name}}? Hành động này không thể hoàn tác.",
+		"delete_confirm": "Xác nhận xóa phần tử",
+		"delete_confirm_name": "Bạn có chắc chắn muốn xóa <strong>{{name}}</strong>? Hành động này sẽ <strong>không thể hoàn tác</strong>.",
 		"access_denied": "Bạn không có quyền truy cập vào trang này",
 		"delete_success": "Xóa thành công",
 		"delete_failed": "Xóa thất bại"

@@ -3,8 +3,12 @@ import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
 
+import { ListPagination } from '@/appState';
+import { SearchGraph } from '@/components';
+
 import { paymentService } from './paymentService';
 import { PaymentMethod } from './types';
+import { PagedSearchResponse } from '../kiosks';
 
 
 
@@ -13,30 +17,43 @@ export const SLICE_NAME = 'vendingMachine.payment';
 export type PaymentState = {
 	detail: ReduxActionState<PaymentMethod>;
 	list: ReduxActionState<PaymentMethod[]>;
+	listPagination: ListPagination;
 	create: ReduxActionState<PaymentMethod>;
 	update: ReduxActionState<PaymentMethod>;
 	delete: ReduxActionState<void>;
 };
 
+export const DEFAULT_PAGE_SIZE = 10;
+
 export const initialPaymentState: PaymentState = {
 	detail: baseReduxActionState,
 	list: { ...baseReduxActionState, data: [] },
+	listPagination: { total: 0, page: 0, size: DEFAULT_PAGE_SIZE },
 	create: baseReduxActionState,
 	update: baseReduxActionState,
 	delete: baseReduxActionState,
 };
 
 
+export type ListPaymentsParams = {
+	page?: number;
+	size?: number;
+	graph?: SearchGraph;
+};
+
 export const listPayments = createAsyncThunk<
-	PaymentMethod[],
-	void,
+	PagedSearchResponse<PaymentMethod>,
+	ListPaymentsParams | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listPayments`,
-	async (_, { rejectWithValue }) => {
+	async (params, { rejectWithValue }) => {
 		try {
-			const result = await paymentService.listPayments();
-			return result;
+			return await paymentService.listPayments({
+				page: params?.page ?? 0,
+				size: params?.size ?? DEFAULT_PAGE_SIZE,
+				graph: JSON.stringify(params?.graph ?? {}),
+			});
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to list payments';
@@ -151,8 +168,13 @@ function listPaymentsReducers(builder: ActionReducerMapBuilder<PaymentState>) {
 		})
 		.addCase(listPayments.fulfilled, (state, action) => {
 			state.list.status = 'success';
-			state.list.data = action.payload;
+			state.list.data = action.payload.items;
 			state.list.error = null;
+			state.listPagination = {
+				total: action.payload.total,
+				page: action.payload.page,
+				size: action.payload.size,
+			};
 		})
 		.addCase(listPayments.rejected, (state, action) => {
 			state.list.status = 'error';

@@ -15,14 +15,13 @@ import { ControlPanelFilterConfig } from '@/components/ControlPanel/types';
 import { SearchGraph } from '@/components/FilterGroup';
 
 
-export function useKioskModelList() {
+export function useKioskModelList(graph?: SearchGraph) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const list = useMicroAppSelector(selectKioskModelList);
 	const pagination = useMicroAppSelector(selectKioskModelListPagination);
 
 	const [page, setPage] = React.useState(1);
 	const [pageSize, setPageSize] = React.useState(DEFAULT_PAGE_SIZE);
-	const { filters, graph } = useKioskModelFilter();
 
 	const fetchList = React.useCallback((targetPage: number, size: number, searchGraph?: SearchGraph) => {
 		const params: ListKioskModelsParams = {
@@ -70,13 +69,11 @@ export function useKioskModelList() {
 		totalItems: pagination.total,
 		handlePageChange,
 		handlePageSizeChange,
-		filters,
-		graph,
 	};
 }
 
 
-const useKioskModelFilter = () => {
+export const useKioskModelFilter = () => {
 	const { t: translate } = useTranslation();
 	const [searchValue, setSearchValue] = useState('');
 	const [statusFilter, setStatusFilter] = useState<string[]>([]);

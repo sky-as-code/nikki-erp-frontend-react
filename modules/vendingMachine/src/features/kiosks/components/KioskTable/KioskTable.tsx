@@ -95,7 +95,7 @@ const AddressColumn: React.FC<AddressColumnProps> = ({ row, translate }) => {
 	const popoverContent = (
 		<Stack gap='xs' style={{ maxWidth: 300 }}>
 			<Text size='sm' fw={500}>
-				{address || translate?.('nikki.general.no_address') || 'No address'}
+				{address || translate?.('nikki.general.messages.no_address') || 'No address'}
 			</Text>
 			<Button
 				size='xs'
@@ -131,9 +131,7 @@ const AddressColumn: React.FC<AddressColumnProps> = ({ row, translate }) => {
 					</Text>
 				</Button>
 			</Popover.Target>
-			<Popover.Dropdown>
-				{popoverContent}
-			</Popover.Dropdown>
+			{address && <Popover.Dropdown>{popoverContent}</Popover.Dropdown>}
 		</Popover>
 	);
 };
@@ -192,7 +190,7 @@ function formatConnectionTime(
 	return translate('nikki.vendingMachine.kiosk.connectionHistory.days_ago', { count: diffDays });
 }
 
-function renderConnectionStatusColumn(
+export function renderConnectionStatusColumn(
 	row: Record<string, any>,
 	translate: (key: string) => string,
 ) {
