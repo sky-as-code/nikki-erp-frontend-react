@@ -92,8 +92,8 @@ export const SlideshowSelectModal: React.FC<SlideshowSelectModalProps> = ({
 						<SimpleGrid cols={2} spacing='md'>
 							{filteredSlideshows.map((slideshow) => {
 								const isSelected = selectedSlideshows.some((a) => a.id === slideshow.id);
-								const hasMedia = slideshow.media && slideshow.media.length > 0;
-								const firstMedia = hasMedia ? slideshow.media[0] : null;
+								const hasMedia = slideshow?.media?.length > 0;
+								const firstMedia = hasMedia ? slideshow?.media?.[0] : null;
 
 								return (
 									<Card
@@ -111,14 +111,14 @@ export const SlideshowSelectModal: React.FC<SlideshowSelectModalProps> = ({
 										<Stack gap='xs'>
 											{firstMedia && (
 												<Card withBorder p={0} radius='sm' style={{ overflow: 'hidden' }}>
-													{firstMedia.type === 'video' ? (
+													{firstMedia?.type === 'video' ? (
 														<Group justify='center' p='md' bg='gray.1'>
 															<IconVideo size={40} color='var(--mantine-color-gray-6)' />
 														</Group>
 													) : (
 														<img
-															src={firstMedia.thumbnailUrl || firstMedia.url}
-															alt={firstMedia.name}
+															src={firstMedia?.thumbnailUrl || firstMedia?.url}
+															alt={firstMedia?.name || firstMedia?.code || 'Ad thumbnail'}
 															style={{
 																width: '100%',
 																height: 120,
@@ -140,7 +140,7 @@ export const SlideshowSelectModal: React.FC<SlideshowSelectModalProps> = ({
 												</Badge>
 												{hasMedia && (
 													<Badge size='sm' variant='filled'>
-														{slideshow.media.length} {translate('nikki.vendingMachine.events.selectSlideshows.media')}
+														{slideshow?.media?.length} {translate('nikki.vendingMachine.events.selectSlideshows.media')}
 													</Badge>
 												)}
 											</Group>

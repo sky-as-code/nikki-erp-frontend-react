@@ -16,7 +16,14 @@ interface SimpleOptionFilter {
 	value: string[];
 }
 
-export type SimpleFilter = SimpleSearchFilter | SimpleOptionFilter;
+interface SimpleDateFilter {
+	key: string;
+	type: 'date';
+	value: [Date | null, Date | null];
+}
+
+export type SimpleFilter = SimpleSearchFilter | SimpleOptionFilter | SimpleDateFilter;
+
 
 /**
  * Convert a unified filter list to SearchGraph for backend API.
@@ -37,6 +44,15 @@ export function buildSimpleSearchGraph(filters: SimpleFilter[]): SearchGraph {
 				if: [camelToSnakeCase(sf), '*' as const, trimmed],
 			}));
 			andNodes.push(searchNodes.length === 1 ? searchNodes[0] : { or: searchNodes });
+		}
+		else if (filter.type === 'date') {
+			const [startDate, endDate] = filter.value;
+			if (startDate) {
+				andNodes.push({ if: [camelToSnakeCase(filter.key), '>=', startDate.toISOString()] });
+			}
+			if (endDate) {
+				andNodes.push({ if: [camelToSnakeCase(filter.key), '<=', endDate.toISOString()] });
+			}
 		}
 		else {
 			if (filter.value.length === 0) continue;

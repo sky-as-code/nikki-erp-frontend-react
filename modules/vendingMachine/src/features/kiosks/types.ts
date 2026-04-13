@@ -225,3 +225,13 @@ export interface KioskActivityLog {
 	type: 'warning' | 'statusDetail' | 'error' | 'info';
 	content: string;
 }
+
+
+export type KioskLog = {
+	id: string;
+	createdAt: string;
+	eventType: string;
+	kioskRef: string;
+	message?: string;
+	payload?: string | Record<string, any>;
+};

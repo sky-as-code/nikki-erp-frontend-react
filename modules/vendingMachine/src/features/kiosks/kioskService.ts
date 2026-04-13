@@ -9,6 +9,7 @@ import type {
 	RestUpdateResponse,
 	RestDeleteResponse,
 	PagedSearchResponse,
+	KioskLog,
 } from './types';
 
 
@@ -55,5 +56,15 @@ export const kioskService = {
 	async deleteKiosk(id: string): Promise<RestDeleteResponse> {
 		const result = await request.del<any>(`${BASE_PATH}/${id}`);
 		return snakeToCamelObject(result) as RestDeleteResponse;
+	},
+
+	async searchKioskLogs(
+		params?: { page?: number; size?: number; graph?: string },
+	): Promise<PagedSearchResponse<KioskLog>> {
+		const { ...restParams } = params || {};
+		const result = await request.get<any>('vending-machine/kiosk-logs', {
+			searchParams: [...Object.entries(restParams)],
+		});
+		return snakeToCamelObject(result) as PagedSearchResponse<KioskLog>;
 	},
 };

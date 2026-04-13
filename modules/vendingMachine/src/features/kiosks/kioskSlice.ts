@@ -16,6 +16,7 @@ import type {
 	RestUpdateResponse,
 	RestDeleteResponse,
 	PagedSearchResponse,
+	KioskLog,
 } from './types';
 
 
@@ -32,6 +33,8 @@ export type KioskState = {
 	create: ReduxActionState<RestCreateResponse>;
 	update: ReduxActionState<RestUpdateResponse>;
 	delete: ReduxActionState<RestDeleteResponse>;
+	kioskLogs: ReduxActionState<KioskLog[]>;
+	kioskLogsPagination: ListPagination;
 };
 
 export const initialKioskState: KioskState = {
@@ -41,10 +44,12 @@ export const initialKioskState: KioskState = {
 	create: baseReduxActionState,
 	update: baseReduxActionState,
 	delete: baseReduxActionState,
+	kioskLogs: { ...baseReduxActionState, data: [] },
+	kioskLogsPagination: { total: 0, page: 0, size: DEFAULT_PAGE_SIZE },
 };
 
 
-export type ListKiosksParams = {
+export type ListParams = {
 	page?: number;
 	size?: number;
 	graph?: SearchGraph;
@@ -52,7 +57,7 @@ export type ListKiosksParams = {
 
 export const listKiosks = createAsyncThunk<
 	PagedSearchResponse<Kiosk>,
-	ListKiosksParams | void,
+	ListParams | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listKiosks`,
@@ -225,6 +230,7 @@ const kioskSlice = createSlice({
 		createKioskReducers(builder);
 		updateKioskReducers(builder);
 		deleteKioskReducers(builder);
+		searchKioskLogsReducers(builder);
 	},
 });
 
@@ -343,6 +349,49 @@ function deleteKioskReducers(builder: ActionReducerMapBuilder<KioskState>) {
 		});
 }
 
+export const searchKioskLogs = createAsyncThunk<
+	PagedSearchResponse<KioskLog>,
+	ListParams | void,
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/searchKioskLogs`,
+	async (params, { rejectWithValue }) => {
+		try {
+			return await kioskService.searchKioskLogs({
+				page: params?.page ?? 0,
+				size: params?.size ?? DEFAULT_PAGE_SIZE,
+				graph: JSON.stringify(params?.graph ?? {}),
+			});
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to search kiosk logs';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
+function searchKioskLogsReducers(builder: ActionReducerMapBuilder<KioskState>) {
+	builder
+		.addCase(searchKioskLogs.pending, (state) => {
+			state.kioskLogs.status = 'pending';
+			state.kioskLogs.error = null;
+		})
+		.addCase(searchKioskLogs.fulfilled, (state, action) => {
+			state.kioskLogs.status = 'success';
+			state.kioskLogs.data = action.payload.items;
+			state.kioskLogs.error = null;
+			state.kioskLogsPagination = {
+				total: action.payload.total,
+				page: action.payload.page,
+				size: action.payload.size,
+			};
+		})
+		.addCase(searchKioskLogs.rejected, (state, action) => {
+			state.kioskLogs.status = 'error';
+			state.kioskLogs.error = action.payload || 'Failed to search kiosk logs';
+			state.kioskLogs.data = [];
+		});
+}
 
 export const actions = {
 	...kioskSlice.actions,

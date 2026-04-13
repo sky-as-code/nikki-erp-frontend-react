@@ -11,12 +11,13 @@ import {
 	KioskState,
 	initialKioskState,
 	DEFAULT_PAGE_SIZE,
-	ListKiosksParams,
+	ListParams,
+	searchKioskLogs,
 } from '@/features/kiosks/kioskSlice';
 
 
 export { DEFAULT_PAGE_SIZE as KIOSK_DEFAULT_PAGE_SIZE };
-export type { ListKiosksParams };
+export type { ListParams };
 
 
 const STATE_KEY = 'kiosk';
@@ -31,6 +32,7 @@ export const kioskActions = {
 	createKiosk,
 	updateKiosk,
 	deleteKiosk,
+	searchKioskLogs,
 	...actions,
 };
 
@@ -66,3 +68,12 @@ export const selectKioskListPagination = createSelector(
 	(state) => state.listPagination,
 );
 
+export const selectKioskLogs = createSelector(
+	selectKioskState,
+	(state) => state.kioskLogs,
+);
+
+export const selectKioskLogsPagination = createSelector(
+	selectKioskState,
+	(state) => state.kioskLogsPagination,
+);

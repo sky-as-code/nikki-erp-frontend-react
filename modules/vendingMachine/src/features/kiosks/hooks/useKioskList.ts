@@ -1,7 +1,6 @@
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 
-import { useKioskFilter } from './useKioskFilter';
 
 import {
 	VendingMachineDispatch,
@@ -9,9 +8,11 @@ import {
 	selectKioskList,
 	selectKioskListPagination,
 	KIOSK_DEFAULT_PAGE_SIZE,
-	ListKiosksParams,
+	ListParams,
 } from '@/appState';
 import { SearchGraph } from '@/components/FilterGroup';
+
+import { useKioskFilter } from './useKioskFilter';
 
 
 
@@ -25,7 +26,7 @@ export function useKioskList() {
 	const { filters, graph } = useKioskFilter();
 
 	const fetchList = React.useCallback((targetPage: number, size: number, searchGraph?: SearchGraph) => {
-		const params: ListKiosksParams = {
+		const params: ListParams = {
 			page: targetPage - 1,
 			size,
 			graph: searchGraph,
