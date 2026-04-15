@@ -1,22 +1,18 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-
-import { KioskMode, KioskStatus } from '../types';
-
 import { ControlPanelFilterConfig } from '@/components';
-import { buildSimpleSearchGraph } from '@/components/ControlPanel/buildSimpleSearchGraph';
+import { buildSimpleSearchGraph } from '@/helpers';
+import { ArchivedStatus } from '@/types';
+
+import { KioskMode } from '../types';
 
 
-
-
-// eslint-disable-next-line max-lines-per-function
 export function useKioskFilter() {
 	const { t: translate } = useTranslation();
 	const [searchValue, setSearchValue] = useState('');
-	const [statusFilter, setStatusFilter] = useState<string[]>([]);
-	// const [connectionFilter, setConnectionFilter] = useState<string[]>([]);
-	const [modeFilter, setModeFilter] = useState<string[]>([]);
+	const [statusFilter, setStatusFilter] = useState<ArchivedStatus[]>([ArchivedStatus.ACTIVE]);
+	const [modeFilter, setModeFilter] = useState<KioskMode[]>([]);
 
 	const filters: ControlPanelFilterConfig[] = useMemo(() => [
 		{
@@ -28,16 +24,16 @@ export function useKioskFilter() {
 			placeholder: translate('nikki.vendingMachine.kiosk.search.placeholder'),
 		},
 		{
-			key: 'status',
+			key: 'isArchived',
 			type: 'multiSelect' as const,
 			value: statusFilter,
 			onChange: setStatusFilter,
 			options: [
-				{ value: KioskStatus.ACTIVE, label: translate('nikki.general.status.active') },
-				{ value: KioskStatus.INACTIVE, label: translate('nikki.general.status.inactive') },
-				{ value: KioskStatus.DELETED, label: translate('nikki.general.status.deleted') },
+				{ value: ArchivedStatus.ACTIVE, label: translate('nikki.general.status.active') },
+				{ value: ArchivedStatus.ARCHIVED, label: translate('nikki.general.status.archived') },
 			],
 			placeholder: translate('nikki.vendingMachine.kiosk.filter.status'),
+			getGraphValue: (value: ArchivedStatus[]) => value.map((v) => v === ArchivedStatus.ARCHIVED),
 		},
 		// {
 		// 	key: 'connection',
@@ -55,7 +51,7 @@ export function useKioskFilter() {
 			key: 'mode',
 			type: 'multiSelect' as const,
 			value: modeFilter,
-			onChange: (value: string[]) => setModeFilter(value),
+			onChange: setModeFilter,
 			options: [
 				{ value: KioskMode.PENDING, label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 				{ value: KioskMode.SELLING, label: translate('nikki.vendingMachine.kiosk.mode.selling') },
@@ -65,25 +61,7 @@ export function useKioskFilter() {
 		},
 	], [searchValue, statusFilter, modeFilter, translate]);
 
-	const graph = useMemo(
-		() => buildSimpleSearchGraph(
-			filters.map(filter => {
-				if (filter.type === 'search') {
-					return {
-						key: filter.key,
-						searchFields: filter.searchFields,
-						type: filter.type,
-						value: filter.value,
-					};
-				}
-				return {
-					key: filter.key,
-					type: filter.type,
-					value: filter.value,
-				};
-			}),
-		), [filters],
-	);
+	const graph = useMemo( () => buildSimpleSearchGraph(filters), [filters]);
 
 	return { filters, graph };
-};
+}

@@ -184,11 +184,6 @@ const kioskSettingSlice = createSlice({
 				state.update.status = 'success';
 				state.update.data = action.payload;
 				state.update.requestId = action.meta.requestId;
-				state.detail.data = action.payload;
-				if (state.list.data) {
-					const idx = state.list.data.findIndex((s) => s.id === action.payload.id);
-					if (idx >= 0) state.list.data[idx] = action.payload;
-				}
 			})
 			.addCase(updateKioskSetting.rejected, (state, action) => {
 				state.update.status = 'error';
@@ -203,12 +198,6 @@ const kioskSettingSlice = createSlice({
 			.addCase(deleteKioskSetting.fulfilled, (state, action) => {
 				state.delete.status = 'success';
 				state.delete.requestId = action.meta.requestId;
-				// if (state.list.data) {
-				// 	state.list.data = state.list.data.filter((s) => s.id !== action.meta.arg.id);
-				// }
-				// if (state.detail.data?.id === action.meta.arg.id) {
-				// 	state.detail.data = undefined;
-				// }
 			})
 			.addCase(deleteKioskSetting.rejected, (state, action) => {
 				state.delete.status = 'error';

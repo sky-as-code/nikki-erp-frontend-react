@@ -1,23 +1,17 @@
-export type PaymentMethodStatus = 'active' | 'inactive';
-
 export type CustomFieldValueType = 'string' | 'number' | 'password' | 'email' | 'url' | 'date';
 
-export interface PaymentMethodCustomField {
-	key: string;
-	value: string;
-	valueType: CustomFieldValueType;
+export interface PaymentMethodConfig {
+	[key: string]: string | number | boolean | null | undefined;
 }
 
 export interface PaymentMethod {
 	id: string;
-	code: string;
 	name: string;
+	method: string;
 	image?: string;
-	status: PaymentMethodStatus;
-	description?: string; // HTML string
-	minTransactionValue?: number;
-	maxTransactionValue?: number;
-	customFields: PaymentMethodCustomField[];
+	isArchived: boolean;
+	config?: PaymentMethodConfig;
 	createdAt: string;
+	updatedAt: string;
 	etag: string;
 }

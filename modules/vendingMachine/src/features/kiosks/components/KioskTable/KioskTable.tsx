@@ -8,19 +8,25 @@ import {
 	IconWifi,
 	IconWifiOff,
 	IconAlertTriangle,
+	IconArchiveOff,
+	IconArchive,
 } from '@tabler/icons-react';
 import { TFunction } from 'i18next';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { ConnectionHistory, ConnectionStatus, Kiosk, KioskMode, KioskStatus, KioskWarning } from '../../types';
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+
+import { ConnectionHistory, ConnectionStatus, Kiosk, KioskMode, KioskWarning } from '../../types';
 
 
 export interface KioskTableProps extends AutoTableProps {
 	onPreview: (kiosk: Kiosk) => void;
 	onEdit?: (kiosk: Kiosk) => void;
 	onDelete?: (kiosk: Kiosk) => void;
+	onArchive?: (kiosk: Kiosk) => void;
+	onRestore?: (kiosk: Kiosk) => void;
 	isFetching?: boolean;
 	totalItems?: number;
 	page?: number;
@@ -143,19 +149,9 @@ function renderAddressColumn(
 	return <AddressColumn row={row} translate={translate} />;
 }
 
-function renderStatusColumn(
-	row: Record<string, unknown>,
-	translate: (key: string) => string,
-) {
-	const status = row.status as KioskStatus;
-	const statusMap: Partial<Record<KioskStatus, { color: string; label: string }>> = {
-		[KioskStatus.ACTIVE]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-		[KioskStatus.INACTIVE]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
-		[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
-	};
-	const statusInfo = status ? statusMap[status] : undefined;
-	if (!statusInfo) return <Text size='sm'>--</Text>;
-	return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
+function renderArchivedColumn(row: Record<string, unknown>) {
+	const isArchived = Boolean(row.isArchived);
+	return <ArchivedStatusBadge isArchived={isArchived} />;
 }
 
 function renderModeColumn(
@@ -322,13 +318,17 @@ function renderWarningsColumn(
 
 function renderActionsColumn(
 	row: Record<string, unknown>,
-	onView?: (kiosk: Kiosk) => void,
-	onEdit?: (kiosk: Kiosk) => void,
-	onDelete?: (kiosk: Kiosk) => void,
-	translate?: (key: string) => string,
+	handlers: {
+		onView?: (kiosk: Kiosk) => void;
+		onEdit?: (kiosk: Kiosk) => void;
+		onDelete?: (kiosk: Kiosk) => void;
+		onArchive?: (kiosk: Kiosk) => void;
+		onRestore?: (kiosk: Kiosk) => void;
+	},
+	translate: (key: string) => string,
 ) {
 	const kiosk = row as unknown as Kiosk;
-	if (!translate) return null;
+	const { onView, onEdit, onDelete, onArchive, onRestore } = handlers;
 
 	return (
 		<Box style={{ minWidth: 120 }}>
@@ -354,6 +354,20 @@ function renderActionsColumn(
 						</ActionIcon>
 					</Tooltip>
 				)}
+				{!kiosk.isArchived && onArchive && (
+					<Tooltip label={translate('nikki.general.actions.archive')}>
+						<ActionIcon variant='subtle' color='orange' onClick={() => onArchive(kiosk)}>
+							<IconArchive size={16} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+				{kiosk.isArchived && onRestore && (
+					<Tooltip label={translate('nikki.general.actions.restore')}>
+						<ActionIcon variant='subtle' color='blue' onClick={() => onRestore(kiosk)}>
+							<IconArchiveOff size={16} />
+						</ActionIcon>
+					</Tooltip>
+				)}
 			</Group>
 		</Box>
 	);
@@ -372,7 +386,7 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 	schema,
 	columns,
 	isLoading, isFetching,
-	onPreview, onEdit, onDelete,
+	onPreview, onEdit, onArchive, onRestore, onDelete,
 	totalItems, totalPages, page, onPageChange,
 	pageSize, pageSizeOptions, onPageSizeChange,
 }) => {
@@ -383,7 +397,7 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 		name: { flex: 2, minWidth: 180 },
 		connectionStatus: { width: 120 },
 		address: { flex: 2, minWidth: 200 },
-		status: { flex: 1, minWidth: 120 },
+		isArchived: { flex: 1, minWidth: 120 },
 		mode: { flex: 1, minWidth: 120 },
 		warnings: { width: 120 },
 		actions: { flex: 1, minWidth: 120 },
@@ -393,11 +407,14 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 		code: renderCodeColumn,
 		name: renderNameColumn,
 		locationAddress: (row) => renderAddressColumn(row, translate),
-		status: (row) => renderStatusColumn(row, translate),
+		isArchived: (row) => renderArchivedColumn(row),
 		mode: (row) => renderModeColumn(row, translate),
 		connectionStatus: (row) => renderConnectionStatusColumn(row, translate),
 		warnings: (row) => renderWarningsColumn(row, translate),
-		actions: (row) => renderActionsColumn(row, onPreview, onEdit, onDelete, translate),
+		actions: (row) => renderActionsColumn(row,
+			{ onView: onPreview, onEdit, onArchive, onRestore, onDelete },
+			translate,
+		),
 	};
 
 	const headerRenderers: React.ComponentProps<typeof AutoTable>['headerRenderers'] = {

@@ -32,14 +32,14 @@ export function KioskCountCard({
 			value: activeKiosks,
 			icon: <IconDeviceDesktop size={16} />,
 			color: 'green',
-			link: '../kiosks?status=active',
+			link: '../kiosks?isArchived=false',
 		},
 		{
 			label: translate('nikki.vendingMachine.overview.inactive_kiosks'),
 			value: inactiveKiosks,
 			icon: <IconDeviceDesktopOff size={16} />,
 			color: 'red',
-			link: '../kiosks?status=inactive',
+			link: '../kiosks?isArchived=true',
 		},
 	];
 

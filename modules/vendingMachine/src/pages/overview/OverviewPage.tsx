@@ -21,18 +21,16 @@ import {
 } from '../../features/kiosks/components';
 import { KioskHitMap } from '../../features/kiosks/components/KioskHitMap';
 import { useKioskList } from '../../features/kiosks/hooks';
-import {
-	KioskStatus,
-	type Kiosk,
-} from '../../features/kiosks/types';
+
+import type { Kiosk } from '../../features/kiosks/types';
 
 
 export default function OverviewPage(): React.ReactNode {
 	const { kiosks = [] } = useKioskList();
 
 	const totalKiosks = kiosks.length;
-	const activeKiosks = kiosks.filter((k: Kiosk) => k.status === KioskStatus.ACTIVE).length;
-	const inactiveKiosks = kiosks.filter((k: Kiosk) => k.status !== KioskStatus.ACTIVE).length;
+	const activeKiosks = kiosks.filter((k: Kiosk) => !k.isArchived).length;
+	const inactiveKiosks = kiosks.filter((k: Kiosk) => Boolean(k.isArchived)).length;
 
 	useDocumentTitle('nikki.vendingMachine.overview.title');
 

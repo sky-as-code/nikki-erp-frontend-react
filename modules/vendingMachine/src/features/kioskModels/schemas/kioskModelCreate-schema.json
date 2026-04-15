@@ -9,29 +9,9 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.etag' }"
 		},
-		"modelId": {
-			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.modelId' }",
-			"required": {
-				"create": true,
-				"update": true
-			},
-			"constraints": [
-				{
-					"type": "required",
-					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
-				},
-				{
-					"type": "length",
-					"min": 1,
-					"max": 128,
-					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
-				}
-			]
-		},
 		"referenceCode": {
 			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.referenceCode' }",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.modelId' }",
 			"required": {
 				"create": true,
 				"update": true
@@ -73,15 +53,7 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.description' }"
 		},
-		"status": {
-			"type": "enum",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.status' }",
-			"enum": [
-				{ "value": "active", "label": "{ \"$ref\": 'nikki.general.status.active' }" },
-				{ "value": "inactive", "label": "{ \"$ref\": 'nikki.general.status.inactive' }" }
-			]
-		},
-		"kioskType": {
+		"goodsCollectorType": {
 			"type": "enum",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.kioskType' }",
 			"enum": [

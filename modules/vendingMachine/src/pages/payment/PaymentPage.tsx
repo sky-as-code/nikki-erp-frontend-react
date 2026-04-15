@@ -1,130 +1,126 @@
 import { ConfirmModal } from '@nikkierp/ui/components';
-import { useConfirmModal, useDocumentTitle } from '@nikkierp/ui/hooks';
 import { ModelSchema } from '@nikkierp/ui/model';
-import React, { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-
 import { IconPlus, IconRefresh } from '@tabler/icons-react';
-import { ControlPanel, type ViewMode, ControlPanelFilterConfig } from '@/components';
+import React, { useMemo, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
+
+import { ControlPanel, type ViewMode, ControlPanelFilterConfig, ControlPanelActionItem } from '@/components';
 import { PageContainer } from '@/components/PageContainer';
 import {
 	PaymentDetailDrawer,
 	PaymentGridView,
 	PaymentTable,
 	paymentSchema,
+	usePaymentArchived,
 	usePaymentDetail,
 	usePaymentList,
 } from '@/features/payment';
 import { PaymentMethod } from '@/features/payment/types';
+import { buildSimpleSearchGraph } from '@/helpers';
+import { ArchivedStatus } from '@/types';
 
 
-// eslint-disable-next-line max-lines-per-function
-export const PaymentPage: React.FC = () => {
+function usePaymentFilter() {
 	const { t: translate } = useTranslation();
-	const { payments, isLoadingList, handleRefresh } = usePaymentList();
-	const { isOpen, item, configOpenModal, handleCloseModal } = useConfirmModal<PaymentMethod>();
-
-	const [viewMode, setViewMode] = useState<ViewMode>('list');
 	const [searchValue, setSearchValue] = useState('');
-	const [statusFilter, setStatusFilter] = useState<string[]>([]);
-	const [selectedPaymentId, setSelectedPaymentId] = useState<string | undefined>();
-	const [drawerOpened, setDrawerOpened] = useState(false);
+	const [statusFilter, setStatusFilter] = useState<ArchivedStatus[]>([ArchivedStatus.ACTIVE]);
+	const filters: ControlPanelFilterConfig[] = useMemo(() => [
+		{
+			key: 'search',
+			type: 'search',
+			value: searchValue,
+			onChange: setSearchValue,
+			searchFields: ['name', 'method'],
+			placeholder: translate('nikki.vendingMachine.payment.search.placeholder'),
+		},
+		{
+			key: 'isArchived',
+			type: 'multiSelect' as const,
+			value: statusFilter,
+			onChange: setStatusFilter,
+			options: [
+				{ value: ArchivedStatus.ACTIVE, label: translate('nikki.general.status.active') },
+				{ value: ArchivedStatus.ARCHIVED, label: translate('nikki.general.status.archived') },
+			],
+			placeholder: translate('nikki.vendingMachine.payment.filter.status'),
+			getGraphValue: (value: ArchivedStatus[]) => value.map((v) => v === ArchivedStatus.ARCHIVED),
+		},
+	], [statusFilter, searchValue, translate]);
 
-	const { payment: selectedPayment, isLoading: isLoadingDetail } = usePaymentDetail(selectedPaymentId);
+	const graph = useMemo(() => buildSimpleSearchGraph(filters), [filters]);
 
+	return { filters, graph };
+}
 
-	// Filter and search payments
-	const filteredPayments = useMemo(() => {
-		let filtered = payments || [];
-
-		// Filter by status
-		if (statusFilter.length > 0) {
-			filtered = filtered.filter((payment: PaymentMethod) => statusFilter.includes(payment.status));
-		}
-
-		// Search by code or name
-		if (searchValue.trim()) {
-			const searchLower = searchValue.toLowerCase().trim();
-			filtered = filtered.filter(
-				(payment: PaymentMethod) =>
-					payment.code.toLowerCase().includes(searchLower) ||
-					payment.name.toLowerCase().includes(searchLower),
-			) as PaymentMethod[];
-		}
-
-		return filtered;
-	}, [payments, statusFilter, searchValue]);
-
-	const handleViewDetail = (paymentId: string) => {
-		setSelectedPaymentId(paymentId);
-		setDrawerOpened(true);
-	};
-
-	const handleCloseDrawer = () => {
-		setDrawerOpened(false);
-		setSelectedPaymentId(undefined);
-	};
-
-	const handleOpenDeleteModal = (paymentId: string) => {
-		const payment = payments.find((p: PaymentMethod) => p.id === paymentId);
-		if (payment) {
-			configOpenModal(payment);
-		}
-	};
-
-	const handleDeleteConfirm = () => {
-		if (item) {
-			// TODO: Implement delete
-			console.log('Delete payment:', item.id);
-		}
-		handleCloseModal();
-	};
+function usePaymentListPageConfig({ handleRefresh }: { handleRefresh: () => void }) {
+	const { t: translate } = useTranslation();
+	const [viewMode, setViewMode] = useState<ViewMode>('list');
 
 	const handleCreate = () => {
 		// TODO: Navigate to create page
 		console.log('Create payment');
 	};
 
-	const statusOptions = [
-		{ value: 'active', label: translate('nikki.general.status.active') },
-		{ value: 'inactive', label: translate('nikki.general.status.inactive') },
-	];
-
-	const filters: ControlPanelFilterConfig[] = useMemo(() => [
-		{
-			value: statusFilter,
-			onChange: setStatusFilter,
-			options: statusOptions,
-			placeholder: translate('nikki.vendingMachine.payment.filter.status'),
-		},
-	], [statusFilter, statusOptions, translate]);
-
-	useDocumentTitle('nikki.vendingMachine.menu.payment');
+	const actions: ControlPanelActionItem[] = useMemo(() => [
+		{ label: translate('nikki.general.actions.create'), leftSection: <IconPlus size={16} />, onClick: handleCreate },
+		{ label: translate('nikki.general.actions.refresh'), leftSection: <IconRefresh size={16} />, onClick: handleRefresh, variant: 'outline' },
+	], [handleCreate, translate]);
 
 	const breadcrumbs = useMemo(() => [
 		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
 		{ title: translate('nikki.vendingMachine.payment.title'), href: '#' },
 	], []);
 
-	// Prepare table data with transaction range column
-	const tableData = useMemo(() => {
-		return filteredPayments.map((payment: PaymentMethod) => ({
-			...payment,
-			transactionRange: `${payment.minTransactionValue || 0} - ${payment.maxTransactionValue || '∞'}`,
-		}));
-	}, [filteredPayments]);
+	return { breadcrumbs, actions, viewMode, setViewMode };
+}
+
+const usePaymentPreview = () => {
+	const [isOpenPreview, setIsOpenPreview] = useState(false);
+	const [selectedPaymentId, setSelectedPaymentId] = useState<string | undefined>();
+
+	const { payment: selectedPayment, isLoading } = usePaymentDetail(selectedPaymentId);
+
+	const handlePreview = (payment: PaymentMethod) => {
+		setSelectedPaymentId(payment.id);
+		setIsOpenPreview(true);
+	};
+
+	const handleClosePreview = () => {
+		setIsOpenPreview(false);
+		setSelectedPaymentId(undefined);
+	};
+
+	return {
+		isOpenPreview,
+		handlePreview,
+		handleClosePreview,
+		selectedPaymentId,
+		selectedPayment,
+		isLoadingPreview: isLoading,
+	};
+};
+
+
+export const PaymentPage: React.FC = () => {
+	const { t: translate } = useTranslation();
+	const { filters, graph } = usePaymentFilter();
+	const { payments, isLoadingList, handleRefresh } = usePaymentList(graph);
+	const { isOpenPreview, handleClosePreview, selectedPayment, isLoadingPreview, handlePreview } = usePaymentPreview();
+
+	const { isOpenArchiveModal, pendingArchive, handleConfirmArchive,
+		handleOpenArchiveModal, handleOpenRestoreModal, handleCloseModal,
+	} = usePaymentArchived({ onArchiveSuccess: handleRefresh });
+
+	const { breadcrumbs, actions, viewMode, setViewMode } = usePaymentListPageConfig({handleRefresh});
 
 	return (
 		<>
 			<PageContainer
+				documentTitle={translate('nikki.vendingMachine.menu.payment')}
 				breadcrumbs={breadcrumbs}
 				actionBar={
 					<ControlPanel
-						actions={[
-							{ label: translate('nikki.general.actions.create'), leftSection: <IconPlus size={16} />, onClick: handleCreate },
-							{ label: translate('nikki.general.actions.refresh'), leftSection: <IconRefresh size={16} />, onClick: handleRefresh, variant: 'outline' },
-						]}
-						search={{ value: searchValue, onChange: setSearchValue, placeholder: translate('nikki.vendingMachine.payment.search.placeholder') }}
+						actions={actions}
 						filters={filters}
 						viewMode={{ value: viewMode, onChange: setViewMode, segments: ['list', 'grid'] }}
 					/>
@@ -132,42 +128,52 @@ export const PaymentPage: React.FC = () => {
 			>
 				{viewMode === 'list' ? (
 					<PaymentTable
-						columns={['code', 'name', 'description', 'status', 'transactionRange', 'actions']}
-						data={tableData as unknown as Record<string, unknown>[]}
+						columns={['method', 'name', 'isArchived', 'config', 'createdAt', 'actions']}
+						data={payments}
 						schema={paymentSchema as ModelSchema}
 						isLoading={isLoadingList}
-						onViewDetail={handleViewDetail}
-						onDelete={handleOpenDeleteModal}
+						onViewDetail={handlePreview}
+						onArchive={handleOpenArchiveModal}
+						onRestore={handleOpenRestoreModal}
 					/>
 				) : (
 					<PaymentGridView
-						payments={filteredPayments}
+						payments={payments}
 						isLoading={isLoadingList}
-						onViewDetail={handleViewDetail}
-						onDelete={handleOpenDeleteModal}
+						onViewDetail={handlePreview}
+						onArchive={handleOpenArchiveModal}
+						onRestore={handleOpenRestoreModal}
 					/>
 				)}
 			</PageContainer>
 
 			<ConfirmModal
-				opened={isOpen}
+				opened={!!pendingArchive && isOpenArchiveModal}
 				onClose={handleCloseModal}
-				onConfirm={handleDeleteConfirm}
-				title={translate('nikki.general.messages.delete_confirm')}
+				onConfirm={handleConfirmArchive}
+				title={pendingArchive?.targetArchived
+					? translate('nikki.vendingMachine.payment.messages.archive_modal_title')
+					: translate('nikki.vendingMachine.payment.messages.restore_modal_title')}
 				message={
-					item
-						? translate('nikki.general.messages.delete_confirm_name', { name: item.name })
-						: translate('nikki.general.messages.delete_confirm')
+					<Trans
+						i18nKey={pendingArchive?.targetArchived
+							? 'nikki.vendingMachine.payment.messages.archive_confirm'
+							: 'nikki.vendingMachine.payment.messages.restore_confirm'}
+						values={{ name: pendingArchive?.payment?.name || '' }}
+						components={{ strong: <strong /> }}
+					/>
 				}
-				confirmLabel={translate('nikki.general.actions.delete')}
-				confirmColor='red'
+				confirmLabel={pendingArchive?.targetArchived
+					? translate('nikki.general.actions.archive')
+					: translate('nikki.general.actions.restore')}
+				confirmColor={pendingArchive?.targetArchived ? 'orange' : 'blue'}
 			/>
 
 			<PaymentDetailDrawer
-				opened={drawerOpened}
-				onClose={handleCloseDrawer}
+				opened={isOpenPreview}
+				onClose={handleClosePreview}
 				payment={selectedPayment}
-				isLoading={isLoadingDetail}
+				isLoading={isLoadingPreview}
 			/>
 		</>
 	);

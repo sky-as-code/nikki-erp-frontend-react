@@ -212,13 +212,6 @@ function updateKioskDeviceReducers(builder: ActionReducerMapBuilder<KioskDeviceS
 			state.update.status = 'success';
 			state.update.data = action.payload;
 			state.update.requestId = action.meta.requestId;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((d) => d.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
 		})
 		.addCase(updateKioskDevice.rejected, (state, action) => {
 			state.update.status = 'error';
@@ -237,12 +230,6 @@ function deleteKioskDeviceReducers(builder: ActionReducerMapBuilder<KioskDeviceS
 		.addCase(deleteKioskDevice.fulfilled, (state, action) => {
 			state.delete.status = 'success';
 			state.delete.requestId = action.meta.requestId;
-			// if (state.list.data) {
-			// 	state.list.data = state.list.data.filter((d) => d.id !== action.meta.arg.id);
-			// }
-			// if (state.detail.data?.id === action.meta.arg.id) {
-			// 	state.detail.data = undefined;
-			// }
 		})
 		.addCase(deleteKioskDevice.rejected, (state, action) => {
 			state.delete.status = 'error';

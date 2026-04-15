@@ -7,6 +7,7 @@
 		"create": "Tạo",
 		"update": "Cập nhật",
 		"delete": "Xóa",
+		"archive": "Lưu trữ",
 		"edit": "Chỉnh sửa",
 		"view": "Xem",
 		"close": "Đóng",
@@ -29,7 +30,8 @@
 		"add": "Thêm",
 		"today": "Hôm nay",
 		"viewDetails": "Xem chi tiết",
-		"apply": "Áp dụng"
+		"apply": "Áp dụng",
+		"restore": "Khôi phục"
 	},
 	"selected": "Đã chọn",
 	"boolean": {
@@ -71,7 +73,8 @@
 	"status": {
 		"active": "Hoạt động",
 		"inactive": "Không hoạt động",
-		"deleted": "Đã xóa"
+		"deleted": "Đã xóa",
+		"archived": "Tạm ngưng"
 	},
 	"messages": {
 		"success": "Thành công",

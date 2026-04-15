@@ -1,4 +1,5 @@
 export * from './useKioskCreate';
+export * from './useKioskArchive';
 export * from './useKioskDetail';
 export * from './useKioskDelete';
 export * from './useKioskEdit';

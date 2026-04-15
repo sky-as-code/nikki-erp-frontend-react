@@ -4,21 +4,19 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import type { KioskModel } from '@/features/kioskModels/types';
-
 import { VendingMachineDispatch, kioskModelActions, selectCreateKioskModel } from '@/appState';
+
+import type { KioskModel } from '@/features/kioskModels/types';
 
 
 
 export type KioskModelCreateFormData = Pick<
 	KioskModel,
 	| 'name'
-	| 'modelId'
+	| 'description'
 	| 'referenceCode'
 	| 'shelvesNumber'
-	| 'description'
-	| 'status'
-	| 'kioskType'
+	| 'goodsCollectorType'
 >;
 
 export type KioskModelCreatePayload = KioskModelCreateFormData;

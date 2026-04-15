@@ -5,7 +5,6 @@ export type KioskModelViewMode = Extract<ViewMode, 'list' | 'grid'>;
 
 export enum KioskModelStatus {
 	ACTIVE = 'active',
-	INACTIVE = 'inactive',
 	DELETED = 'deleted',
 }
 
@@ -38,37 +37,12 @@ export interface KioskModel {
 	id: string;
 	createdAt: string;
 	etag: string;
-	modelId?: string;
 	referenceCode?: string;
 	name: string;
 	description?: string;
 	shelvesNumber?: number;
-	status: KioskModelStatus;
-	kioskType?: KioskType;
+	isArchived?: boolean;
+	goodsCollectorType?: KioskType;
 	shelvesConfig?: ShelvesConfigWire | Record<string, unknown>;
 	updatedAt?: string;
 }
-
-export type RestCreateResponse = {
-	id: string;
-	createdAt: number;
-	etag: string;
-};
-
-export type RestUpdateResponse = {
-	id: string;
-	updatedAt: number;
-	etag: string;
-};
-
-export type RestDeleteResponse = {
-	id: string;
-	deletedAt: number;
-};
-
-export type PagedSearchResponse<T> = {
-	items: T[];
-	total: number;
-	page: number;
-	size: number;
-};

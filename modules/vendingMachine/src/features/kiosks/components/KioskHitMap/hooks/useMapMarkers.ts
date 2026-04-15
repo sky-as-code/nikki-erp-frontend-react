@@ -2,7 +2,7 @@ import { MantineColorScheme } from '@mantine/core';
 import maplibregl from 'maplibre-gl';
 import { useRef, useEffect, useMemo } from 'react';
 
-import { Kiosk, KioskStatus, ConnectionStatus, ConnectionHistory } from '@/features/kiosks/types';
+import { Kiosk, ConnectionStatus, ConnectionHistory } from '@/features/kiosks/types';
 
 
 const clearMarkers = (markersRef: React.RefObject<maplibregl.Marker[]>) => {
@@ -56,9 +56,9 @@ const getConnectionStatusText = (connectionStatus?: ConnectionStatus): string =>
 	}
 };
 
-const createPopupContent = (kiosk: Kiosk, isActive: boolean): string => {
+const createPopupContent = (kiosk: Kiosk, isOperational: boolean): string => {
 	const name = kiosk.name || kiosk.code || '';
-	const statusText = isActive ? 'Đang hoạt động' : 'Không hoạt động';
+	const statusText = isOperational ? 'Đang hoạt động' : 'Tạm ngưng';
 
 	const connectionHistory = (kiosk?.connections as ConnectionHistory[]) || [];
 	const connectionStatusText = getConnectionStatusText(connectionHistory?.[0]?.status);
@@ -97,11 +97,11 @@ const createMarker = (
 ): maplibregl.Marker => {
 	const lat = Number(kiosk.latitude) || 0;
 	const lng = Number(kiosk.longitude) || 0;
-	const isActive = kiosk.status === KioskStatus.ACTIVE;
+	const isOperational = !kiosk.isArchived;
 
 	const connectionHistory = (kiosk?.connections as ConnectionHistory[]) || [];
-	const el = createMarkerElement(isActive, connectionHistory?.[0]?.status);
-	const popupContent = createPopupContent(kiosk, isActive);
+	const el = createMarkerElement(isOperational, connectionHistory?.[0]?.status);
+	const popupContent = createPopupContent(kiosk, isOperational);
 
 	const popup = new maplibregl.Popup({ offset: 25 }).setHTML(popupContent);
 

@@ -11,13 +11,12 @@ import { BreadcrumbItem } from '@/components/BreadCrumbs';
 import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import { KioskFormFields, kioskCreateSchema, useKioskCreate } from '@/features/kiosks';
-import { KioskMode, KioskStatus, UIMode } from '@/features/kiosks/types';
+import { KioskMode, UIMode } from '@/features/kiosks/types';
 
 
 const FORM_ID = 'kiosk-create-form';
 
 const defaultFormValues = {
-	status: KioskStatus.ACTIVE,
 	mode: KioskMode.PENDING,
 	uiMode: UIMode.NORMAL,
 	paymentRefs: [] as string[],

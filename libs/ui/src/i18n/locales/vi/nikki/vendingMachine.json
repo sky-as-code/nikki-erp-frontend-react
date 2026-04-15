@@ -40,7 +40,7 @@
 		"kiosk_count": "Số lượng Kiosk",
 		"total_kiosks": "Tổng số Kiosk",
 		"active_kiosks": "Kiosk đang hoạt động",
-		"inactive_kiosks": "Kiosk không hoạt động",
+		"inactive_kiosks": "Kiosk đã lưu trữ",
 		"avg_temperature": "Nhiệt độ trung bình",
 		"avg_humidity": "Độ ẩm trung bình",
 		"total_power": "Tổng tiêu thụ điện",
@@ -148,6 +148,7 @@
 			"isActive": "Trạng thái hoạt động",
 			"connectionStatus": "Kết nối",
 			"status": "Trạng thái",
+			"archived": "Lưu trữ",
 			"mode": "Chế độ",
 			"paymentMethods": "Phương thức thanh toán",
 			"warnings": "Cảnh báo",
@@ -245,9 +246,15 @@
 			"no_kiosks": "Không tìm thấy kiosk nào",
 			"create_success": "Kiosk đã được tạo thành công",
 			"update_success": "Kiosk đã được cập nhật thành công",
+			"archive_success": "Đã lưu trữ kiosk thành công",
+			"restore_success": "Đã khôi phục kiosk thành công",
 			"delete_success": "Kiosk đã được xóa thành công",
 			"delete_confirm": "Bạn có chắc chắn muốn xóa Kiosk <strong>{{name}}</strong>? Hành động này sẽ <strong>không thể hoàn tác</strong>.",
 			"invalid_coordinates": "Vĩ độ hoặc kinh độ không hợp lệ. Vui lòng nhập số đúng.",
+			"archive_modal_title": "Xác nhận lưu trữ",
+			"restore_modal_title": "Xác nhận khôi phục",
+			"archive_confirm": "Bạn có chắc chắn muốn lưu trữ Kiosk <strong>{{name}}</strong>?",
+			"restore_confirm": "Bạn có chắc chắn muốn khôi phục Kiosk <strong>{{name}}</strong>?",
 			"not_found": {
 				"title": "Không tìm thấy Kiosk",
 				"message": "Kiosk bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
@@ -606,6 +613,12 @@
 				"message": "Dòng máy bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
 			},
 			"delete_confirm": "Bạn có chắc chắn muốn xóa dòng máy <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
+			"archive_modal_title": "Xác nhận lưu trữ",
+			"restore_modal_title": "Xác nhận khôi phục",
+			"archive_confirm": "Lưu trữ dòng máy <strong>{{name}}</strong>? Bạn có thể khôi phục sau.",
+			"restore_confirm": "Khôi phục dòng máy <strong>{{name}}</strong>?",
+			"archive_success": "Đã lưu trữ dòng máy thành công",
+			"restore_success": "Đã khôi phục dòng máy thành công",
 			"no_slideshow": "Chưa có trình chiếu",
 			"no_trays": "Chưa có khay nào. Nhấn nút 'Thêm hàng' để thêm khay."
 		},
@@ -650,7 +663,13 @@
 		},
 		"messages": {
 			"no_payments": "Không tìm thấy phương thức thanh toán nào",
-			"no_custom_fields": "Không có trường tùy chỉnh"
+			"no_custom_fields": "Không có trường tùy chỉnh",
+			"archive_success": "Đã lưu trữ phương thức thanh toán thành công",
+			"restore_success": "Đã khôi phục phương thức thanh toán thành công",
+			"archive_modal_title": "Xác nhận lưu trữ phương thức thanh toán",
+			"restore_modal_title": "Xác nhận khôi phục phương thức thanh toán",
+			"archive_confirm": "Bạn có chắc chắn muốn lưu trữ phương thức thanh toán <strong>{{name}}</strong>?",
+			"restore_confirm": "Bạn có chắc chắn muốn khôi phục phương thức thanh toán <strong>{{name}}</strong>?"
 		}
 	},
 	"games": {

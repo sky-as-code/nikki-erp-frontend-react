@@ -7,26 +7,23 @@ import {
 	kioskActions,
 	selectKioskList,
 	selectKioskListPagination,
-	KIOSK_DEFAULT_PAGE_SIZE,
-	ListParams,
 } from '@/appState';
-import { SearchGraph } from '@/components/FilterGroup';
+import { SearchGraph, SearchParams } from '@/types';
 
-import { useKioskFilter } from './useKioskFilter';
+import { Kiosk } from '../types';
 
 
 
-export function useKioskList() {
+export function useKioskList({graph}: {graph?: SearchGraph}) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const list = useMicroAppSelector(selectKioskList);
 	const pagination = useMicroAppSelector(selectKioskListPagination);
 
 	const [page, setPage] = React.useState(1);
-	const [pageSize, setPageSize] = React.useState(KIOSK_DEFAULT_PAGE_SIZE);
-	const { filters, graph } = useKioskFilter();
+	const [pageSize, setPageSize] = React.useState(pagination.size ?? 10);
 
 	const fetchList = React.useCallback((targetPage: number, size: number, searchGraph?: SearchGraph) => {
-		const params: ListParams = {
+		const params: SearchParams<Kiosk> = {
 			page: targetPage - 1,
 			size,
 			graph: searchGraph,
@@ -44,7 +41,7 @@ export function useKioskList() {
 	}, [fetchList, pageSize, graph]);
 
 	const handlePageSizeChange = React.useCallback((value: string | null) => {
-		const newSize = Number(value ?? KIOSK_DEFAULT_PAGE_SIZE);
+		const newSize = Number(value ?? pagination.size ?? 10);
 		setPageSize(newSize);
 		setPage(1);
 		fetchList(1, newSize, graph);
@@ -71,7 +68,6 @@ export function useKioskList() {
 		totalItems: pagination.total,
 		handlePageChange,
 		handlePageSizeChange,
-		filters,
 	};
 }
 

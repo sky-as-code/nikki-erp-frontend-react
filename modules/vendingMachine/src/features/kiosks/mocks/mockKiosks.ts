@@ -1,4 +1,4 @@
-import { ConnectionStatus, Kiosk, KioskMode, KioskStatus } from '@/features/kiosks/types';
+import { ConnectionStatus, Kiosk, KioskMode, KioskStatus, UIMode } from '@/features/kiosks/types';
 
 
 const mockKiosksData: Kiosk[] = [
@@ -10,8 +10,9 @@ const mockKiosksData: Kiosk[] = [
 		latitude: '10.7769',
 		longitude: '106.7009',
 		status: KioskStatus.ACTIVE,
+		isArchived: false,
 		mode: KioskMode.SELLING,
-		uiMode: 'normal',
+		uiMode: UIMode.NORMAL,
 		connections: [
 			{
 				status: ConnectionStatus.FAST,
@@ -30,8 +31,9 @@ const mockKiosksData: Kiosk[] = [
 		latitude: '10.8188',
 		longitude: '106.6520',
 		status: KioskStatus.ACTIVE,
+		isArchived: false,
 		mode: KioskMode.SELLING,
-		uiMode: 'normal',
+		uiMode: UIMode.NORMAL,
 		connections: [
 			{
 				status: ConnectionStatus.SLOW,
@@ -50,8 +52,9 @@ const mockKiosksData: Kiosk[] = [
 		latitude: '10.7720',
 		longitude: '106.6983',
 		status: KioskStatus.INACTIVE,
+		isArchived: true,
 		mode: KioskMode.PENDING,
-		uiMode: 'normal',
+		uiMode: UIMode.NORMAL,
 		connections: [
 			{
 				status: ConnectionStatus.DISCONNECTED,

@@ -36,23 +36,9 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.address' }"
 		},
-		"status": {
-			"type": "enum",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.status' }",
-			"enum": [
-				{
-					"value": "active",
-					"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.activated' }"
-				},
-				{
-					"value": "inactive",
-					"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.disabled' }"
-				},
-				{
-					"value": "deleted",
-					"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.deleted' }"
-				}
-			]
+		"isArchived": {
+			"type": "boolean",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.archived' }"
 		},
 		"mode": {
 			"type": "enum",

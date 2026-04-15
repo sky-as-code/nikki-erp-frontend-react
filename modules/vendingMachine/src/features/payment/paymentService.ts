@@ -1,9 +1,12 @@
 import * as request from '@nikkierp/common/request';
-import { buildColumnsQuery, snakeToCamelObject } from '@nikkierp/common/utils';
+import { camelToSnakeObject, snakeToCamelObject } from '@nikkierp/common/utils';
 
-import { mockPayments } from './mockPayments';
+import { buildSearchParams } from '@/helpers';
+import { PagedSearchResponse, RestArchiveResponse, SearchParams } from '@/types';
+
+import { mockPayments } from './mocks';
 import { PaymentMethod } from './types';
-import { PagedSearchResponse } from '../kiosks/types';
+
 
 
 function configFields(dto: PaymentMethod): PaymentMethod {
@@ -15,18 +18,9 @@ function configFields(dto: PaymentMethod): PaymentMethod {
 const BASE_PATH = 'vending-machine/payments';
 
 export const paymentService = {
-	async listPayments(params?: {
-		page?: number;
-		size?: number;
-		graph?: string;
-		columns?: Array<keyof PaymentMethod>;
-	}): Promise<PagedSearchResponse<PaymentMethod>> {
-		const { columns, ...restParams } = params || {};
+	async listPayments(params?: SearchParams<PaymentMethod>): Promise<PagedSearchResponse<PaymentMethod>> {
 		const result = await request.get<any>(BASE_PATH, {
-			searchParams: [
-				...Object.entries(restParams),
-				...buildColumnsQuery<PaymentMethod>(columns || []),
-			],
+			searchParams: buildSearchParams<PaymentMethod>(params),
 		});
 		return snakeToCamelObject(result) as PagedSearchResponse<PaymentMethod>;
 	},
@@ -52,5 +46,14 @@ export const paymentService = {
 
 	async deletePayment(id: string): Promise<void> {
 		await mockPayments.deletePayment(id);
+	},
+
+	async setArchivedPayment(
+		id: string,
+		body: { etag: string; isArchived: boolean },
+	): Promise<RestArchiveResponse> {
+		const snakeBody = camelToSnakeObject(body);
+		const result = await request.post<any>(`${BASE_PATH}/${id}/archived`, { json: snakeBody });
+		return snakeToCamelObject(result) as RestArchiveResponse;
 	},
 };

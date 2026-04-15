@@ -18,8 +18,8 @@ export type UseModelSettingsTabArgs = {
 export type UseModelSettingsTabReturn = {
 	isEditing: boolean;
 	isSubmitting: boolean;
-	selectedKioskType: KioskType | undefined;
-	setSelectedKioskType: (v: KioskType | undefined) => void;
+	selectedGoodsCollectorType: KioskType | undefined;
+	setSelectedGoodsCollectorType: (v: KioskType | undefined) => void;
 	shelvesNumber: number;
 	setShelvesNumber: (n: number) => void;
 	shelvesConfigRows: ShelvesConfigRow[];
@@ -30,17 +30,19 @@ export function useModelSettingsTab({ model }: UseModelSettingsTabArgs): UseMode
 	const { t: translate } = useTranslation();
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const [isEditing, setIsEditing] = useState(false);
-	const [selectedKioskType, setSelectedKioskType] = useState<KioskType | undefined>(model.kioskType);
+	const [selectedGoodsCollectorType, setSelectedGoodsCollectorType] =
+		useState<KioskType | undefined>(model.goodsCollectorType);
+
 	const [shelvesNumber, setShelvesNumber] = useState(model.shelvesNumber || 0);
 	const [shelvesConfigRows, setShelvesConfigRows] = useState<ShelvesConfigRow[]>(
 		() => parseShelvesConfigRows(model.shelvesConfig),
 	);
 
 	const syncFromModel = useCallback(() => {
-		setSelectedKioskType(model.kioskType);
+		setSelectedGoodsCollectorType(model.goodsCollectorType);
 		setShelvesNumber(model.shelvesNumber || 0);
 		setShelvesConfigRows(parseShelvesConfigRows(model.shelvesConfig));
-	}, [model.kioskType, model.shelvesNumber, model.shelvesConfig]);
+	}, [model.goodsCollectorType, model.shelvesNumber, model.shelvesConfig]);
 
 	const onUpdateSuccess = useCallback(() => {
 		setIsEditing(false);
@@ -56,11 +58,11 @@ export function useModelSettingsTab({ model }: UseModelSettingsTabArgs): UseMode
 		handleSubmit({
 			id: model.id,
 			etag: model.etag,
-			kioskType: selectedKioskType,
+			goodsCollectorType: selectedGoodsCollectorType,
 			shelvesNumber,
 			shelvesConfig: buildShelvesConfigWire(shelvesConfigRows),
 		});
-	}, [handleSubmit, selectedKioskType, shelvesNumber, shelvesConfigRows]);
+	}, [handleSubmit, selectedGoodsCollectorType, shelvesNumber, shelvesConfigRows]);
 
 	const handleCancel = useCallback(() => {
 		syncFromModel();
@@ -99,8 +101,8 @@ export function useModelSettingsTab({ model }: UseModelSettingsTabArgs): UseMode
 	return {
 		isEditing,
 		isSubmitting,
-		selectedKioskType,
-		setSelectedKioskType,
+		selectedGoodsCollectorType,
+		setSelectedGoodsCollectorType,
 		shelvesNumber,
 		setShelvesNumber,
 		shelvesConfigRows,

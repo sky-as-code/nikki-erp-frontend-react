@@ -5,11 +5,12 @@ import { useTranslation } from 'react-i18next';
 
 
 
+import { FilterGroup, SearchGraph, useFilterState } from '@/components/FilterGroup';
+
 import { kioskFilterConfig } from './filterConfig';
 
 import type { ViewMode } from '@/components/ControlPanel';
 
-import { FilterGroup, SearchGraph, useFilterState } from '@/components/FilterGroup';
 
 
 

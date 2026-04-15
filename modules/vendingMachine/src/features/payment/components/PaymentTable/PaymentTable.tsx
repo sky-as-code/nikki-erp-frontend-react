@@ -1,20 +1,25 @@
-import { ActionIcon, Badge, Box, Group, Image, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Box, Group, Image, Text, Tooltip } from '@mantine/core';
 import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
-import { IconCreditCard, IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
+import { IconArchive, IconArchiveOff, IconCreditCard, IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
 import React from 'react';
-import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+
+import { PaymentMethod } from '../../types';
 
 
 export interface PaymentTableProps extends AutoTableProps {
-	onViewDetail: (paymentId: string) => void;
-	onEdit?: (paymentId: string) => void;
-	onDelete?: (paymentId: string) => void;
+	onViewDetail: (payment: PaymentMethod) => void;
+	onEdit?: (payment: PaymentMethod) => void;
+	onDelete?: (payment: PaymentMethod) => void;
+	onArchive?: (payment: PaymentMethod) => void;
+	onRestore?: (payment: PaymentMethod) => void;
 }
 
-function renderCodeColumn(row: Record<string, unknown>) {
-	return <Text fw={500}>{String(row.code || '')}</Text>;
+function renderMethodColumn(row: Record<string, unknown>) {
+	return <Text fw={500}>{String(row.method || '')}</Text>;
 }
 
 const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
@@ -62,24 +67,9 @@ function renderNameColumn(row: Record<string, unknown>) {
 	return <NameColumn row={row} />;
 }
 
-function renderDescriptionColumn(row: Record<string, unknown>) {
-	const description = String(row.description || '');
-	// Strip HTML tags for table display
-	const plainText = description.replace(/<[^>]*>/g, '').substring(0, 100);
-	return <span style={{ maxWidth: 300, display: 'block' }}>{plainText || '-'}</span>;
-}
 
-function renderStatusColumn(
-	row: Record<string, unknown>,
-	translate: (key: string) => string,
-) {
-	const status = row.status as string;
-	const statusMap: Record<string, { color: string; label: string }> = {
-		active: { color: 'green', label: translate('nikki.general.status.active') },
-		inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-	};
-	const statusInfo = statusMap[status] || { color: 'gray', label: status };
-	return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
+function renderArchivedColumn(row: Record<string, unknown>) {
+	return <ArchivedStatusBadge isArchived={Boolean(row.isArchived)} />;
 }
 
 function renderTransactionRangeColumn(row: Record<string, unknown>) {
@@ -100,35 +90,53 @@ function renderTransactionRangeColumn(row: Record<string, unknown>) {
 
 function renderActionsColumn(
 	row: Record<string, unknown>,
-	onView?: (paymentId: string) => void,
-	onEdit?: (paymentId: string) => void,
-	onDelete?: (paymentId: string) => void,
-	translate?: (key: string) => string,
+	handlers: {
+		onView?: (payment: PaymentMethod) => void,
+		onEdit?: (payment: PaymentMethod) => void,
+		onDelete?: (payment: PaymentMethod) => void,
+		onArchive?: (payment: PaymentMethod) => void,
+		onRestore?: (payment: PaymentMethod) => void,
+	},
+	translate: (key: string) => string,
 ) {
-	const paymentId = row.id as string;
-	if (!translate) return null;
+	const payment = row as unknown as PaymentMethod;
+	const { onView, onEdit, onDelete, onArchive, onRestore } = handlers;
 
 	return (
 		<Box style={{ minWidth: 120 }}>
 			<Group gap='xs' justify='flex-end' onClick={(e) => e.stopPropagation()}>
 				{onView && (
 					<Tooltip label={translate('nikki.general.actions.view')}>
-						<ActionIcon variant='subtle' color='blue' onClick={() => onView(paymentId)}>
+						<ActionIcon variant='subtle' color='blue' onClick={() => onView(payment)}>
 							<IconEye size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
 				{onEdit && (
 					<Tooltip label={translate('nikki.general.actions.edit')}>
-						<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(paymentId)}>
+						<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(payment)}>
 							<IconEdit size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
 				{onDelete && (
 					<Tooltip label={translate('nikki.general.actions.delete')}>
-						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(paymentId)}>
+						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(payment)}>
 							<IconTrash size={16} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+				{!row.isArchived && onArchive && (
+					<Tooltip label={translate('nikki.general.actions.archive')}>
+						<ActionIcon variant='subtle' color='orange' onClick={() => onArchive(payment)}>
+							<IconArchive size={16} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+				{!!row.isArchived && onRestore && (
+					<Tooltip label={translate('nikki.general.actions.restore')}>
+						<ActionIcon variant='subtle' color='blue' onClick={() => onRestore(payment)}>
+							<IconArchiveOff size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
@@ -151,6 +159,8 @@ export const PaymentTable: React.FC<PaymentTableProps> = ({
 	schema,
 	isLoading,
 	onViewDetail,
+	onArchive,
+	onRestore,
 	onEdit,
 	onDelete,
 }) => {
@@ -173,21 +183,17 @@ export const PaymentTable: React.FC<PaymentTableProps> = ({
 				schema={schema}
 				isLoading={isLoading}
 				columnRenderers={{
-					code: renderCodeColumn,
+					method: renderMethodColumn,
 					name: renderNameColumn,
-					description: renderDescriptionColumn,
-					status: (row) => renderStatusColumn(row, translate),
+					isArchived: (row) => renderArchivedColumn(row),
 					transactionRange: renderTransactionRangeColumn,
-					actions: (row) => renderActionsColumn(row, onViewDetail, onEdit, onDelete, translate),
+					actions: (row) => renderActionsColumn(row,
+						{ onView: onViewDetail, onEdit, onDelete, onArchive, onRestore },
+						translate,
+					),
 				}}
 				headerRenderers={{
 					actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
-				}}
-				columnAsLink='code'
-				columnAsLinkHref={(row) => {
-					const paymentId = row.id as string;
-					onViewDetail(paymentId);
-					return '#';
 				}}
 			/>
 		</div>

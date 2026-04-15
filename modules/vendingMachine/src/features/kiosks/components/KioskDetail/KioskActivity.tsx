@@ -22,10 +22,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { kioskActions, selectKioskLogs, selectKioskLogsPagination, VendingMachineDispatch } from '@/appState';
-import { buildSimpleSearchGraph, SimpleFilter } from '@/components/ControlPanel/buildSimpleSearchGraph';
-import { SearchGraph } from '@/components/FilterGroup';
+import { buildSimpleSearchGraph, SimpleFilter } from '@/helpers';
 
 import { KioskLog } from '../../types';
+
+import { SearchGraph } from '@/types';
 
 
 const kioskActivityLogSchema: ModelSchema = {
@@ -87,7 +88,7 @@ export const KioskActivity: React.FC = () => {
 				key: 'search',
 				type: 'search',
 				value: searchQuery,
-				searchFields: ['message', 'eventType'],
+				searchFields: ['message', 'eventType', 'payload'],
 			});
 		}
 		if (selectedType) {
@@ -313,11 +314,11 @@ export const KioskActivity: React.FC = () => {
 								}}
 							>
 								<Textarea
-									value={formatJsonContent(selectedLog.payload ? JSON.stringify(selectedLog.payload, null, 2) : '')}
+									value={formatJsonContent(selectedLog.payload ?? '')}
 									readOnly
 									styles={{
 										input: {
-											fontFamily: isJsonString(selectedLog.payload ? JSON.stringify(selectedLog.payload, null, 2) : '') ? 'monospace' : 'inherit',
+											fontFamily: isJsonString(selectedLog.payload ?? '') ? 'monospace' : 'inherit',
 											fontSize: '12px',
 											minHeight: 400,
 										},

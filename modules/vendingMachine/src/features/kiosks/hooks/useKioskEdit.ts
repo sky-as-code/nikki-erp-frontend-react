@@ -14,7 +14,7 @@ export type KioskUpdateFormData = {id: string; etag: string;} & Pick<
 	Partial<Kiosk>,
 	| 'code'
 	| 'name'
-	| 'status'
+	| 'isArchived'
 	| 'mode'
 	| 'uiMode'
 	| 'locationAddress'

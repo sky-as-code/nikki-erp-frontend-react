@@ -76,7 +76,6 @@ export const SlideshowCard: React.FC<SlideshowCardProps> = ({slideshow, onRemove
 						</Badge>
 					)}
 				</Group>
-
 			</Stack>
 		</Card>
 	);

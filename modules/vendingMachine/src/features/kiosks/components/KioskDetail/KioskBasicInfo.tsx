@@ -24,7 +24,7 @@ const KioskBasicInfoAuditDates: React.FC<{ kiosk: Kiosk }> = ({ kiosk }) => {
 				<Text size='sm' c='dimmed' mb={3}>
 					{translate('nikki.vendingMachine.kiosk.fields.createdAt')}
 				</Text>
-				<Text size='sm'>{new Date(kiosk.createdAt).toLocaleString()}</Text>
+				<Text size='sm'>{kiosk.createdAt ? new Date(kiosk.createdAt).toLocaleString() : '—'	}</Text>
 			</Box>
 		</React.Fragment>
 	);

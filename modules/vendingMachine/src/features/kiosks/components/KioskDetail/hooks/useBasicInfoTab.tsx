@@ -20,7 +20,7 @@ export type KioskBasicInfoFormData = Pick<
 	| 'etag'
 	| 'code'
 	| 'name'
-	| 'status'
+	| 'isArchived'
 	| 'mode'
 	| 'uiMode'
 	| 'locationAddress'

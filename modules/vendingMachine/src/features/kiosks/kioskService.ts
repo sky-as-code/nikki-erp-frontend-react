@@ -1,38 +1,34 @@
 import * as request from '@nikkierp/common/request';
 import { snakeToCamelObject, camelToSnakeObject, buildColumnsQuery, cleanEmptyString } from '@nikkierp/common/utils';
 
+import { buildSearchParams } from '@/helpers';
+
 import { KioskCreatePayload, KioskUpdatePayload } from './hooks';
+import { Kiosk, KioskLog } from './types';
 
 import type {
-	Kiosk,
 	RestCreateResponse,
 	RestUpdateResponse,
 	RestDeleteResponse,
+	RestArchiveResponse,
 	PagedSearchResponse,
-	KioskLog,
-} from './types';
+	SearchParams,
+} from '@/types';
 
 
 const BASE_PATH = 'vending-machine/kiosks';
 
 export const kioskService = {
-	async searchKiosks(
-		params?: { page?: number; size?: number; graph?: string; columns?: Array<keyof Kiosk> },
-	): Promise<PagedSearchResponse<Kiosk>> {
-		const { columns, ...restParams } = params || {};
+	async searchKiosks(params?: SearchParams<Kiosk>): Promise<PagedSearchResponse<Kiosk>> {
 		const result = await request.get<any>(BASE_PATH, {
-			searchParams: [
-				...Object.entries(restParams),
-				...buildColumnsQuery<Kiosk>(columns || []),
-			],
+			searchParams: buildSearchParams<Kiosk>(params),
 		});
 		return snakeToCamelObject(result) as PagedSearchResponse<Kiosk>;
 	},
 
 	async getKiosk(id: string, columns?: Array<keyof Kiosk>): Promise<Kiosk> {
-		const columnsQuery = buildColumnsQuery<Kiosk>(columns || []);
 		const result = await request.get<any>(`${BASE_PATH}/${id}`, {
-			searchParams: [...columnsQuery],
+			searchParams: buildColumnsQuery<Kiosk>(columns || []),
 		});
 		return snakeToCamelObject(result) as Kiosk;
 	},
@@ -58,12 +54,15 @@ export const kioskService = {
 		return snakeToCamelObject(result) as RestDeleteResponse;
 	},
 
-	async searchKioskLogs(
-		params?: { page?: number; size?: number; graph?: string },
-	): Promise<PagedSearchResponse<KioskLog>> {
-		const { ...restParams } = params || {};
+	async setArchivedKiosk(id: string, body: { etag: string; isArchived: boolean }): Promise<RestArchiveResponse> {
+		const snakeBody = camelToSnakeObject(body);
+		const result = await request.post<any>(`${BASE_PATH}/${id}/archived`, { json: snakeBody });
+		return snakeToCamelObject(result) as RestArchiveResponse;
+	},
+
+	async searchKioskLogs(params?: SearchParams<KioskLog>): Promise<PagedSearchResponse<KioskLog>> {
 		const result = await request.get<any>('vending-machine/kiosk-logs', {
-			searchParams: [...Object.entries(restParams)],
+			searchParams: buildSearchParams<KioskLog>(params),
 		});
 		return snakeToCamelObject(result) as PagedSearchResponse<KioskLog>;
 	},

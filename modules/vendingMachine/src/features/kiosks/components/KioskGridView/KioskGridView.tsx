@@ -1,10 +1,12 @@
 /* eslint-disable max-lines-per-function */
 import { ActionIcon, Badge, Card, Group, SimpleGrid, Stack, Text, Tooltip, Box } from '@mantine/core';
-import { IconEdit, IconTrash, IconMapPin, IconDeviceDesktop, IconAlertTriangle } from '@tabler/icons-react';
+import { IconEdit, IconTrash, IconMapPin, IconDeviceDesktop, IconAlertTriangle, IconArchive, IconArchiveOff } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Kiosk, KioskMode, KioskStatus, KioskWarning, ConnectionStatus } from '../../types';
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+
+import { Kiosk, KioskMode, KioskWarning, ConnectionStatus } from '../../types';
 import { renderConnectionStatusColumn } from '../KioskTable/KioskTable';
 
 
@@ -14,6 +16,8 @@ export interface KioskGridViewProps {
 	onPreview: (kiosk: Kiosk) => void;
 	onEdit?: (kiosk: Kiosk) => void;
 	onDelete?: (kiosk: Kiosk) => void;
+	onArchive?: (kiosk: Kiosk) => void;
+	onRestore?: (kiosk: Kiosk) => void;
 }
 
 export const KioskGridView: React.FC<KioskGridViewProps> = ({
@@ -22,20 +26,10 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 	onPreview,
 	onEdit,
 	onDelete,
+	onArchive,
+	onRestore,
 }) => {
 	const { t: translate } = useTranslation();
-
-	const getStatusBadge = (status?: KioskStatus | null) => {
-		if (!status) return null;
-		const statusMap: Partial<Record<KioskStatus, { color: string; label: string }>> = {
-			[KioskStatus.ACTIVE]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-			[KioskStatus.INACTIVE]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
-			[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
-		};
-		const statusInfo = statusMap[status];
-		if (!statusInfo) return null;
-		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-	};
 
 	const getModeBadge = (mode?: KioskMode | null) => {
 		if (!mode) return null;
@@ -127,7 +121,7 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 
 	const getWarningSeverity = (kiosk: Kiosk): 'low' | 'medium' | 'high' | 'critical' | null => {
 		const hasWarnings = kiosk.warnings && kiosk.warnings.length > 0;
-		const isDisconnected = kiosk.status === KioskStatus.ACTIVE
+		const isDisconnected = !kiosk.isArchived
 			&& kiosk.connections?.some((connection) => connection.status === ConnectionStatus.DISCONNECTED);
 
 		if (!hasWarnings && !isDisconnected) return null;
@@ -216,6 +210,20 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 											</ActionIcon>
 										</Tooltip>
 									)}
+									{!kiosk.isArchived && onArchive && (
+										<Tooltip label={translate('nikki.general.actions.archive')}>
+											<ActionIcon variant='subtle' color='orange' size='sm' onClick={() => onArchive(kiosk)}>
+												<IconArchive size={14} />
+											</ActionIcon>
+										</Tooltip>
+									)}
+									{kiosk.isArchived && onRestore && (
+										<Tooltip label={translate('nikki.general.actions.restore')}>
+											<ActionIcon variant='subtle' color='blue' size='sm' onClick={() => onRestore(kiosk)}>
+												<IconArchiveOff size={14} />
+											</ActionIcon>
+										</Tooltip>
+									)}
 								</Group>
 							</Group>
 
@@ -227,7 +235,7 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 							</Group>
 
 							<Group gap='xs' wrap='nowrap'>
-								{getStatusBadge(kiosk.status)}
+								<ArchivedStatusBadge isArchived={Boolean(kiosk.isArchived)} />
 								{getModeBadge(kiosk.mode)}
 								{getWarningIcon(kiosk.warnings)}
 								{renderConnectionStatusColumn(kiosk, translate)}

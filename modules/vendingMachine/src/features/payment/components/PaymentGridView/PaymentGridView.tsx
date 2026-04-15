@@ -1,8 +1,10 @@
 /* eslint-disable max-lines-per-function */
-import { ActionIcon, Badge, Box, Card, Group, Image, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
-import { IconCreditCard, IconEdit, IconTrash } from '@tabler/icons-react';
+import { ActionIcon, Box, Card, Group, Image, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
+import { IconArchive, IconArchiveOff, IconCreditCard, IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
 
 import { PaymentMethod } from '../../types';
 
@@ -10,9 +12,11 @@ import { PaymentMethod } from '../../types';
 export interface PaymentGridViewProps {
 	payments: PaymentMethod[];
 	isLoading?: boolean;
-	onViewDetail: (paymentId: string) => void;
-	onEdit?: (paymentId: string) => void;
-	onDelete?: (paymentId: string) => void;
+	onViewDetail: (payment: PaymentMethod) => void;
+	onEdit?: (payment: PaymentMethod) => void;
+	onDelete?: (payment: PaymentMethod) => void;
+	onArchive?: (payment: PaymentMethod) => void;
+	onRestore?: (payment: PaymentMethod) => void;
 }
 
 export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
@@ -21,25 +25,10 @@ export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 	onViewDetail,
 	onEdit,
 	onDelete,
+	onArchive,
+	onRestore,
 }) => {
 	const { t: translate } = useTranslation();
-
-	const getStatusBadge = (status: 'active' | 'inactive') => {
-		const statusMap = {
-			active: { color: 'green', label: translate('nikki.general.status.active') },
-			inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-		};
-		const statusInfo = statusMap[status];
-		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-	};
-
-	const formatCurrency = (value: number) => {
-		return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-	};
-
-	const stripHtml = (html: string) => {
-		return html.replace(/<[^>]*>/g, '').substring(0, 100);
-	};
 
 	if (isLoading) {
 		return <Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>;
@@ -64,7 +53,7 @@ export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 					style={{
 						cursor: 'pointer',
 					}}
-					onClick={() => onViewDetail(payment.id)}
+					onClick={() => onViewDetail(payment)}
 				>
 					<Stack gap='sm'>
 						<Group justify='space-between' align='flex-start'>
@@ -84,39 +73,47 @@ export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 									<IconCreditCard size={36} stroke={1.5} />
 								)}
 								<Stack gap={0}>
-									<Text fw={600} size='sm'>{payment.code}</Text>
+									<Text fw={600} size='sm'>{payment.method}</Text>
 									<Text size='xs' c='dimmed'>{payment.name}</Text>
 								</Stack>
 							</Group>
 							<Group gap='xs' onClick={(e) => e.stopPropagation()}>
 								{onEdit && (
 									<Tooltip label={translate('nikki.general.actions.edit')}>
-										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(payment.id)}>
+										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(payment)}>
 											<IconEdit size={14} />
 										</ActionIcon>
 									</Tooltip>
 								)}
 								{onDelete && (
 									<Tooltip label={translate('nikki.general.actions.delete')}>
-										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(payment.id)}>
+										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(payment)}>
 											<IconTrash size={14} />
+										</ActionIcon>
+									</Tooltip>
+								)}
+								{!payment.isArchived && onArchive && (
+									<Tooltip label={translate('nikki.general.actions.archive')}>
+										<ActionIcon variant='subtle' color='orange' size='sm' onClick={() => onArchive(payment)}>
+											<IconArchive size={14} />
+										</ActionIcon>
+									</Tooltip>
+								)}
+								{payment.isArchived && onRestore && (
+									<Tooltip label={translate('nikki.general.actions.restore')}>
+										<ActionIcon variant='subtle' color='blue' size='sm' onClick={() => onRestore(payment)}>
+											<IconArchiveOff size={14} />
 										</ActionIcon>
 									</Tooltip>
 								)}
 							</Group>
 						</Group>
 
-						{payment.description && (
-							<Text size='xs' c='dimmed' lineClamp={3}>
-								{stripHtml(payment.description)}
-							</Text>
-						)}
-
 						<Group gap='xs' wrap='nowrap'>
-							{getStatusBadge(payment.status)}
+							<ArchivedStatusBadge isArchived={payment.isArchived} />
 						</Group>
 
-						{(payment.minTransactionValue !== undefined || payment.maxTransactionValue !== undefined) && (
+						{/* {(payment.minTransactionValue !== undefined || payment.maxTransactionValue !== undefined) && (
 							<Text size='xs' c='dimmed'>
 								{payment.minTransactionValue !== undefined
 									? formatCurrency(payment.minTransactionValue)
@@ -130,7 +127,7 @@ export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 							<Text size='xs' c='dimmed'>
 								{translate('nikki.vendingMachine.payment.fields.customFields')}: {payment.customFields.length}
 							</Text>
-						)}
+						)} */}
 
 						<Text size='xs' c='dimmed'>
 							{translate('nikki.vendingMachine.payment.fields.createdAt')}: {new Date(payment.createdAt).toLocaleDateString()}

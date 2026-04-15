@@ -5,8 +5,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { kioskModelActions, selectDeleteKioskModel, VendingMachineDispatch } from '@/appState';
+import { RestDeleteResponse } from '@/types';
 
-import { KioskModel, RestDeleteResponse } from '../types';
+import { KioskModel } from '../types';
 
 
 

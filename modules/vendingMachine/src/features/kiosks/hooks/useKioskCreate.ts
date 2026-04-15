@@ -4,15 +4,15 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { KioskMode, KioskStatus, UIMode } from '../types';
-
 import { VendingMachineDispatch, kioskActions, selectCreateKiosk } from '@/appState';
+
+import { KioskMode, UIMode } from '../types';
+
 
 
 export type KioskCreateFormData = {
 	code: string;
 	name: string;
-	status: KioskStatus;
 	mode: KioskMode;
 	uiMode: UIMode;
 	locationAddress?: string | null;

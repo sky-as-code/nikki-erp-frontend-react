@@ -1,40 +1,34 @@
+/* eslint-disable max-lines-per-function */
 import {
-	Badge, Box, Button, Divider, Group, Image, Select, Stack, Table, Text, TextInput,
+	Badge,
+	Box, Button, Divider, Group, Image, Select, Stack, Table, Text, TextInput,
 } from '@mantine/core';
 import { IconCreditCard, IconPlus, IconTrash } from '@tabler/icons-react';
 import React, { useState } from 'react';
-import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router';
 
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
 import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
 import { usePaymentDetail } from '@/features/payment';
-import { CustomFieldValueType, PaymentMethodCustomField } from '@/features/payment/types';
+import { CustomFieldValueType } from '@/features/payment/types';
 
 
 export const PaymentDetailPage: React.FC = () => {
 	const { t: translate } = useTranslation();
 	const { id } = useParams<{ id: string }>();
 	const { payment, isLoading } = usePaymentDetail(id);
-	const [customFields, setCustomFields] = useState<PaymentMethodCustomField[]>(payment?.customFields || []);
+	const [customFields, setCustomFields] = useState<any[]>([]);
 	const [newFieldKey, setNewFieldKey] = useState('');
 	const [newFieldValue, setNewFieldValue] = useState('');
 	const [newFieldType, setNewFieldType] = useState<CustomFieldValueType>('string');
 
 	React.useEffect(() => {
 		if (payment) {
-			setCustomFields(payment.customFields || []);
+			// setCustomFields(payment.customFields || []);
 		}
 	}, [payment]);
-
-	const getStatusBadge = (status: string) => {
-		const statusMap: Record<string, { color: string; label: string }> = {
-			active: { color: 'green', label: translate('nikki.general.status.active') },
-			inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-		};
-		const statusInfo = statusMap[status] || { color: 'gray', label: status };
-		return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
-	};
 
 	const formatCurrency = (value: number) => {
 		return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
@@ -57,7 +51,7 @@ export const PaymentDetailPage: React.FC = () => {
 		setCustomFields(customFields.filter((_, i) => i !== index));
 	};
 
-	const renderCustomFieldValue = (field: PaymentMethodCustomField) => {
+	const renderCustomFieldValue = (field: any) => {
 		switch (field.valueType) {
 			case 'password':
 				return '••••••••';
@@ -163,7 +157,7 @@ export const PaymentDetailPage: React.FC = () => {
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.payment.fields.status')}
 					</Text>
-					{getStatusBadge(payment.status)}
+					<ArchivedStatusBadge isArchived={payment.isArchived} />
 				</div>
 
 				{payment.description && (

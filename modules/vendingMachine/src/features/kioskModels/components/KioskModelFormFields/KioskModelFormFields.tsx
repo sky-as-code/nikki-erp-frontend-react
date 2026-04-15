@@ -39,7 +39,7 @@ export const KioskModelFormFields: React.FC<KioskModelFormFieldsProps> = ({ mode
 
 			{mode === 'create' && (
 				<Box className={classes.formField}>
-					<AutoField name='kioskType' />
+					<AutoField name='goodsCollectorType' />
 				</Box>
 			)}
 			{mode === 'create' && (

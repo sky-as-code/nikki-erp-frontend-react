@@ -9,16 +9,15 @@ import { useNavigate } from 'react-router';
 import { ControlPanel } from '@/components';
 import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
-import { KIOSK_TYPES, KioskModelFormFields, useKioskModelCreate } from '@/features/kioskModels';
+import { KIOSK_TYPES, KioskModelCreateFormData, KioskModelFormFields, useKioskModelCreate } from '@/features/kioskModels';
 import { kioskModelCreateSchema } from '@/features/kioskModels/schemas';
 
 
 const FORM_ID = 'kiosk-model-create-form';
 
-const defaultFormValues = {
-	status: 'active' as const,
+const defaultFormValues: Partial<KioskModelCreateFormData> = {
 	shelvesNumber: 6,
-	kioskType: KIOSK_TYPES.NON_ELEVATOR,
+	goodsCollectorType: KIOSK_TYPES.NON_ELEVATOR,
 };
 
 export const KioskModelCreatePage: React.FC = () => {

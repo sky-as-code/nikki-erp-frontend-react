@@ -3,12 +3,11 @@ import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
 
-import { ListPagination } from '@/appState';
-import { SearchGraph } from '@/components';
+import { PagedSearchResponse, Pagination, RestArchiveResponse, SearchParams } from '@/types';
 
 import { paymentService } from './paymentService';
 import { PaymentMethod } from './types';
-import { PagedSearchResponse } from '../kiosks';
+
 
 
 
@@ -17,10 +16,11 @@ export const SLICE_NAME = 'vendingMachine.payment';
 export type PaymentState = {
 	detail: ReduxActionState<PaymentMethod>;
 	list: ReduxActionState<PaymentMethod[]>;
-	listPagination: ListPagination;
+	listPagination: Pagination;
 	create: ReduxActionState<PaymentMethod>;
 	update: ReduxActionState<PaymentMethod>;
 	delete: ReduxActionState<void>;
+	archive: ReduxActionState<RestArchiveResponse>;
 };
 
 export const DEFAULT_PAGE_SIZE = 10;
@@ -32,28 +32,19 @@ export const initialPaymentState: PaymentState = {
 	create: baseReduxActionState,
 	update: baseReduxActionState,
 	delete: baseReduxActionState,
+	archive: baseReduxActionState,
 };
 
-
-export type ListPaymentsParams = {
-	page?: number;
-	size?: number;
-	graph?: SearchGraph;
-};
 
 export const listPayments = createAsyncThunk<
 	PagedSearchResponse<PaymentMethod>,
-	ListPaymentsParams | void,
+	SearchParams<PaymentMethod> | undefined,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listPayments`,
 	async (params, { rejectWithValue }) => {
 		try {
-			return await paymentService.listPayments({
-				page: params?.page ?? 0,
-				size: params?.size ?? DEFAULT_PAGE_SIZE,
-				graph: JSON.stringify(params?.graph ?? {}),
-			});
+			return await paymentService.listPayments(params);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to list payments';
@@ -134,6 +125,23 @@ export const deletePayment = createAsyncThunk<
 	},
 );
 
+export const setArchivedPayment = createAsyncThunk<
+	RestArchiveResponse,
+	{ id: string; etag: string; isArchived: boolean },
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/setArchivedPayment`,
+	async ({ id, etag, isArchived }, { rejectWithValue }) => {
+		try {
+			return await paymentService.setArchivedPayment(id, { etag, isArchived });
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to set archived payment';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
 const paymentSlice = createSlice({
 	name: SLICE_NAME,
 	initialState: initialPaymentState,
@@ -150,6 +158,9 @@ const paymentSlice = createSlice({
 		resetDeletePayment: (state) => {
 			state.delete = baseReduxActionState;
 		},
+		resetSetArchivedPayment: (state) => {
+			state.archive = baseReduxActionState;
+		},
 	},
 	extraReducers: (builder) => {
 		listPaymentsReducers(builder);
@@ -157,6 +168,7 @@ const paymentSlice = createSlice({
 		createPaymentReducers(builder);
 		updatePaymentReducers(builder);
 		deletePaymentReducers(builder);
+		setArchivedPaymentReducers(builder);
 	},
 });
 
@@ -229,13 +241,6 @@ function updatePaymentReducers(builder: ActionReducerMapBuilder<PaymentState>) {
 		.addCase(updatePayment.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((p) => p.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
 		})
 		.addCase(updatePayment.rejected, (state, action) => {
 			state.update.status = 'error';
@@ -245,22 +250,38 @@ function updatePaymentReducers(builder: ActionReducerMapBuilder<PaymentState>) {
 
 function deletePaymentReducers(builder: ActionReducerMapBuilder<PaymentState>) {
 	builder
-		.addCase(deletePayment.pending, (state, _action) => {
+		.addCase(deletePayment.pending, (state, action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deletePayment.fulfilled, (state, action) => {
 			state.delete.status = 'success';
-			if (state.list.data) {
-				state.list.data = state.list.data.filter((p) => p.id !== action.meta.arg.id);
-			}
-			if (state.detail.data?.id === action.meta.arg.id) {
-				state.detail.data = undefined;
-			}
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deletePayment.rejected, (state, action) => {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete payment';
+			state.delete.requestId = action.meta.requestId;
+		});
+}
+
+function setArchivedPaymentReducers(builder: ActionReducerMapBuilder<PaymentState>) {
+	builder
+		.addCase(setArchivedPayment.pending, (state, action) => {
+			state.archive.status = 'pending';
+			state.archive.error = null;
+			state.archive.requestId = action.meta.requestId;
+		})
+		.addCase(setArchivedPayment.fulfilled, (state, action) => {
+			state.archive.status = 'success';
+			state.archive.data = action.payload;
+			state.archive.requestId = action.meta.requestId;
+		})
+		.addCase(setArchivedPayment.rejected, (state, action) => {
+			state.archive.status = 'error';
+			state.archive.error = action.payload || 'Failed to set archived payment';
+			state.archive.requestId = action.meta.requestId;
 		});
 }
 

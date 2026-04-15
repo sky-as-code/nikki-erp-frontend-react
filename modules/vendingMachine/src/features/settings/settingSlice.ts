@@ -210,13 +210,6 @@ function updateSettingReducers(builder: ActionReducerMapBuilder<SettingState>) {
 			state.update.status = 'success';
 			state.update.data = action.payload;
 			state.update.requestId = action.meta.requestId;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((s) => s.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
 		})
 		.addCase(updateSetting.rejected, (state, action) => {
 			state.update.status = 'error';

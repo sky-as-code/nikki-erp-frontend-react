@@ -7,35 +7,32 @@ import {
 import { KioskModelCreatePayload } from './hooks/useKioskModelCreate';
 import { KioskModelUpdatePayload } from './hooks/useKioskModelEdit';
 import { kioskModelService } from './kioskModelService';
+import { KioskModel } from './types';
 
 import type {
-	KioskModel,
 	RestCreateResponse,
 	RestUpdateResponse,
 	RestDeleteResponse,
 	PagedSearchResponse,
-} from './types';
-
-import { SearchGraph } from '@/components/FilterGroup';
+	SearchParams,
+	Pagination,
+	RestArchiveResponse,
+} from '@/types';
 
 
 export const SLICE_NAME = 'vendingMachine.kioskModel';
 
 export const DEFAULT_PAGE_SIZE = 10;
 
-export type ListPagination = {
-	total: number;
-	page: number;
-	size: number;
-};
 
 export type KioskModelState = {
 	detail: ReduxActionState<KioskModel>;
 	list: ReduxActionState<KioskModel[]>;
-	listPagination: ListPagination;
+	listPagination: Pagination;
 	create: ReduxActionState<RestCreateResponse>;
 	update: ReduxActionState<RestUpdateResponse>;
 	delete: ReduxActionState<RestDeleteResponse>;
+	archive: ReduxActionState<RestArchiveResponse>;
 };
 
 export const initialKioskModelState: KioskModelState = {
@@ -45,40 +42,19 @@ export const initialKioskModelState: KioskModelState = {
 	create: baseReduxActionState,
 	update: baseReduxActionState,
 	delete: baseReduxActionState,
+	archive: baseReduxActionState,
 };
 
-
-export type ListKioskModelsParams = {
-	page?: number;
-	size?: number;
-	graph?: SearchGraph;
-};
 
 export const listKioskModels = createAsyncThunk<
 	PagedSearchResponse<KioskModel>,
-	ListKioskModelsParams | void,
+	SearchParams<KioskModel> | undefined,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listKioskModels`,
 	async (params, { rejectWithValue }) => {
 		try {
-			return await kioskModelService.searchKioskModels({
-				columns: [
-					'createdAt',
-					'etag',
-					'modelId',
-					'referenceCode',
-					'name',
-					'description',
-					'shelvesNumber',
-					'status',
-					'kioskType',
-					'shelvesConfig',
-				],
-				page: params?.page ?? 0,
-				size: params?.size ?? DEFAULT_PAGE_SIZE,
-				graph: JSON.stringify(params?.graph ?? {}),
-			});
+			return await kioskModelService.searchKioskModels({...(params || {})});
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to list kiosk models';
@@ -95,19 +71,7 @@ export const getKioskModel = createAsyncThunk<
 	`${SLICE_NAME}/getKioskModel`,
 	async (id, { rejectWithValue }) => {
 		try {
-			const result = await kioskModelService.getKioskModel(id, [
-				'createdAt',
-				'etag',
-				'modelId',
-				'referenceCode',
-				'name',
-				'description',
-				'shelvesNumber',
-				'status',
-				'kioskType',
-				'shelvesConfig',
-			]);
-			return result;
+			return await kioskModelService.getKioskModel(id);
 		}
 		catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Failed to get kiosk model';
@@ -167,6 +131,24 @@ export const deleteKioskModel = createAsyncThunk<
 	},
 );
 
+
+export const setArchivedKioskModel = createAsyncThunk<
+	RestArchiveResponse,
+	{ id: string, etag: string, isArchived: boolean },
+	{ rejectValue: string }
+>(
+	`${SLICE_NAME}/setArchivedKioskModel`,
+	async ({ id, etag, isArchived }, { rejectWithValue }) => {
+		try {
+			return await kioskModelService.setArchivedKioskModel(id, { etag, isArchived });
+		}
+		catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Failed to set archived kiosk model';
+			return rejectWithValue(errorMessage);
+		}
+	},
+);
+
 const kioskModelSlice = createSlice({
 	name: SLICE_NAME,
 	initialState: initialKioskModelState,
@@ -183,6 +165,9 @@ const kioskModelSlice = createSlice({
 		resetDeleteKioskModel: (state) => {
 			state.delete = baseReduxActionState;
 		},
+		resetSetArchivedKioskModel: (state) => {
+			state.archive = baseReduxActionState;
+		},
 	},
 	extraReducers: (builder) => {
 		listKioskModelsReducers(builder);
@@ -190,6 +175,7 @@ const kioskModelSlice = createSlice({
 		createKioskModelReducers(builder);
 		updateKioskModelReducers(builder);
 		deleteKioskModelReducers(builder);
+		setArchivedKioskModelReducers(builder);
 	},
 });
 
@@ -294,6 +280,24 @@ function deleteKioskModelReducers(builder: ActionReducerMapBuilder<KioskModelSta
 		});
 }
 
+function setArchivedKioskModelReducers(builder: ActionReducerMapBuilder<KioskModelState>) {
+	builder
+		.addCase(setArchivedKioskModel.pending, (state, action) => {
+			state.archive.status = 'pending';
+			state.archive.error = null;
+			state.archive.requestId = action.meta.requestId;
+		})
+		.addCase(setArchivedKioskModel.fulfilled, (state, action) => {
+			state.archive.status = 'success';
+			state.archive.data = action.payload;
+			state.archive.requestId = action.meta.requestId;
+		})
+		.addCase(setArchivedKioskModel.rejected, (state, action) => {
+			state.archive.status = 'error';
+			state.archive.error = action.payload || 'Failed to set archived kiosk model';
+			state.archive.requestId = action.meta.requestId;
+		});
+}
 
 export const actions = {
 	...kioskModelSlice.actions,

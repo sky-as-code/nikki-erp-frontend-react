@@ -1,42 +1,36 @@
 import * as request from '@nikkierp/common/request';
 import { snakeToCamelObject, camelToSnakeObject, buildColumnsQuery, cleanEmptyString } from '@nikkierp/common/utils';
 
+import { KioskModel } from '@/features/kioskModels/types';
+import { buildSearchParams } from '@/helpers';
+
 import { KioskModelCreatePayload } from './hooks/useKioskModelCreate';
 import { KioskModelUpdatePayload } from './hooks/useKioskModelEdit';
 
 import type {
-	KioskModel,
 	RestCreateResponse,
 	RestUpdateResponse,
 	RestDeleteResponse,
 	PagedSearchResponse,
-} from './types';
+	SearchParams,
+	RestArchiveResponse,
+} from '@/types';
 
 
 const BASE_PATH = 'vending-machine/kiosk-models';
 
 
 export const kioskModelService = {
-	async searchKioskModels(
-		params?: { page?: number; size?: number; graph?: string; columns?: Array<keyof KioskModel> },
-	): Promise<PagedSearchResponse<KioskModel>> {
-		const {columns, ...restParams} = params || {};
+	async searchKioskModels(params?: SearchParams<KioskModel>): Promise<PagedSearchResponse<KioskModel>> {
 		const result = await request.get<any>(BASE_PATH, {
-			searchParams: [
-				...Object.entries(restParams || []),
-				...buildColumnsQuery<KioskModel>(columns || []),
-			],
+			searchParams: buildSearchParams<KioskModel>(params),
 		});
-		const converted = snakeToCamelObject(result) as PagedSearchResponse<KioskModel>;
-		return converted;
+		return snakeToCamelObject(result) as PagedSearchResponse<KioskModel>;
 	},
 
 	async getKioskModel(id: string, columns?: Array<keyof KioskModel>): Promise<KioskModel> {
-		const columnsQuery = buildColumnsQuery<KioskModel>(columns || []);
 		const result = await request.get<any>(`${BASE_PATH}/${id}`, {
-			searchParams: [
-				...columnsQuery,
-			],
+			searchParams: buildColumnsQuery<KioskModel>(columns || []),
 		});
 		return snakeToCamelObject(result) as KioskModel;
 	},
@@ -55,6 +49,12 @@ export const kioskModelService = {
 
 		const result = await request.put<any>(`${BASE_PATH}/${id}`, { json: snakeBody });
 		return snakeToCamelObject(result) as RestUpdateResponse;
+	},
+
+	async setArchivedKioskModel(id: string, body: { etag: string, isArchived: boolean }): Promise<RestArchiveResponse> {
+		const snakeBody = camelToSnakeObject(body);
+		const result = await request.post<any>(`${BASE_PATH}/${id}/archived`, { json: snakeBody });
+		return snakeToCamelObject(result) as RestArchiveResponse;
 	},
 
 	async deleteKioskModel(id: string): Promise<RestDeleteResponse> {

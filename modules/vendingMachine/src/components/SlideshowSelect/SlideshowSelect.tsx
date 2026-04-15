@@ -1,12 +1,15 @@
+
+
 import { Box, Button, Card, Group, Text } from '@mantine/core';
 import { IconPhoto, IconPlus } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { type Slideshow } from '@/features/slideshow/types';
+
 import { SlideshowCard } from './SlideshowCard';
 import { SlideshowSelectModal } from './SlideshowSelectModal';
 
-import type { Slideshow } from '@/features/slideshow/types';
 
 
 export interface SlideshowSelectProps {
@@ -25,6 +28,7 @@ export const SlideshowSelect: React.FC<SlideshowSelectProps> = ({
 	onRemove,
 }) => {
 	const { t: translate } = useTranslation();
+
 	const [slideshowSelectModalOpened, setSlideshowSelectModalOpened] = useState(false);
 
 	const handleSelectSlideshows = (slideshows: Slideshow[]) => {
@@ -45,7 +49,7 @@ export const SlideshowSelect: React.FC<SlideshowSelectProps> = ({
 			{value ? (
 				<SlideshowCard
 					slideshow={value}
-					onRemove={isEditing && onRemove ? onRemove : undefined}
+					onRemove={onRemove}
 				/>
 			) : (
 				<Card withBorder p='sm' radius='md'>

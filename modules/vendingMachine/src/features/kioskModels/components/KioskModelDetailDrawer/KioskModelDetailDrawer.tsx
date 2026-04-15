@@ -1,10 +1,10 @@
-import { Badge, Box, Divider, Space, Stack, Text } from '@mantine/core';
+import { Box, Divider, Space, Stack, Text } from '@mantine/core';
 import { IconBox } from '@tabler/icons-react';
-import { TFunction } from 'i18next';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
 import { PreviewDrawer } from '@/components/PreviewDrawer';
 
 import { useKioskModelDetail } from '../../hooks/useKioskModelDetail';
@@ -32,7 +32,7 @@ export const KioskModelDetailDrawer: React.FC<KioskModelDetailDrawerProps> = ({
 			onClose={onClose}
 			header={{
 				title: model?.name,
-				subtitle: model?.modelId,
+				subtitle: model?.referenceCode || '—',
 				avatar: <IconBox size={20} />,
 			}}
 			onViewDetails={() => {
@@ -85,14 +85,14 @@ const KioskModelDrawerContent: React.FC<{ model: KioskModel | undefined }> = ({ 
 				<Text size='sm' c='dimmed' mb={'xs'}>
 					{translate('nikki.vendingMachine.kioskModels.fields.status')}
 				</Text>
-				{getStatusBadge(model.status, translate)}
+				<ArchivedStatusBadge isArchived={Boolean(model.isArchived)} />
 			</Box>
 			<Divider />
 			<Box>
 				<Text size='sm' c='dimmed' mb={'xs'}>
 					{translate('nikki.vendingMachine.kioskModels.fields.kioskType')}
 				</Text>
-				<Text size='sm'>{model.kioskType}</Text>
+				<Text size='sm'>{model.goodsCollectorType}</Text>
 			</Box>
 			<Divider />
 			<ShelvesConfig
@@ -110,15 +110,4 @@ const KioskModelDrawerContent: React.FC<{ model: KioskModel | undefined }> = ({ 
 			<Space h='md' />
 		</Stack>
 	);
-};
-
-
-const getStatusBadge = (status: string, translate: TFunction) => {
-	const statusMap: Record<string, { color: string; label: string }> = {
-		active: { color: 'green', label: translate('nikki.general.status.active') },
-		inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-		deleted: { color: 'red', label: translate('nikki.general.status.deleted') },
-	};
-	const statusInfo = statusMap[status] || { color: 'gray', label: status };
-	return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
 };

@@ -8,16 +8,11 @@ import {
 	createKiosk,
 	updateKiosk,
 	deleteKiosk,
+	setArchivedKiosk,
 	KioskState,
 	initialKioskState,
-	DEFAULT_PAGE_SIZE,
-	ListParams,
 	searchKioskLogs,
 } from '@/features/kiosks/kioskSlice';
-
-
-export { DEFAULT_PAGE_SIZE as KIOSK_DEFAULT_PAGE_SIZE };
-export type { ListParams };
 
 
 const STATE_KEY = 'kiosk';
@@ -32,6 +27,7 @@ export const kioskActions = {
 	createKiosk,
 	updateKiosk,
 	deleteKiosk,
+	setArchivedKiosk,
 	searchKioskLogs,
 	...actions,
 };
@@ -61,6 +57,11 @@ export const selectUpdateKiosk = createSelector(
 export const selectDeleteKiosk = createSelector(
 	selectKioskState,
 	(state) => state.delete,
+);
+
+export const selectSetArchivedKiosk = createSelector(
+	selectKioskState,
+	(state) => state.archive,
 );
 
 export const selectKioskListPagination = createSelector(

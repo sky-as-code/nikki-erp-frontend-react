@@ -1,5 +1,3 @@
-/* eslint-disable max-lines-per-function */
-
 
 import { Box, Combobox, Flex, MultiSelect, TextInput, useCombobox } from '@mantine/core';
 import { useId } from '@mantine/hooks';
@@ -14,11 +12,11 @@ import React, { useMemo, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { buildSimpleSearchGraph } from '@/components';
 import { useKioskModelList } from '@/features/kioskModels';
 import { KioskModel } from '@/features/kioskModels/types';
 import { usePaymentList } from '@/features/payment';
 import { PaymentMethod } from '@/features/payment/types';
+import { buildSimpleSearchGraph } from '@/helpers';
 
 import classes from './KioskFormFields.module.css';
 import { Kiosk } from '../../types';
@@ -68,9 +66,6 @@ export const KioskFormFields: React.FC<KioskFormFieldsProps> = ({ mode, kiosk, i
 			</Flex>
 
 			<Box className={classes.kioskFormField}>
-				<AutoField name='status' htmlProps={readonlyInput}/>
-			</Box>
-			<Box className={classes.kioskFormField}>
 				<AutoField name='mode' htmlProps={readonlyInput}/>
 			</Box>
 			<Box className={classes.kioskFormField}>
@@ -90,6 +85,24 @@ export const KioskFormFields: React.FC<KioskFormFieldsProps> = ({ mode, kiosk, i
 const findItem = (items: any[], targetId: string) => {
 	return items.find((item) => item.id === targetId) ?? null;
 };
+
+function useSearchableKioskModelSelect({ searchValue }:{ searchValue: string }) {
+	const graph = useMemo(() => buildSimpleSearchGraph([
+		{
+			key: 'search',
+			type: 'search',
+			value: searchValue,
+			searchFields: ['name', 'modelId', 'referenceCode'],
+		},
+		{
+			key: 'isArchived',
+			type: 'multiSelect',
+			value: [false],
+		},
+	]), [searchValue]);
+	return useKioskModelList(graph);
+}
+
 function SearchableKioskModelSelect({ readOnly, disabled, defaultValue }:
 { readOnly: boolean, disabled: boolean, defaultValue?: KioskModel | null }) {
 	const inputId = useId();
@@ -100,16 +113,7 @@ function SearchableKioskModelSelect({ readOnly, disabled, defaultValue }:
 	const [searchValue, setSearchValue] = useState('');
 	const [currentItem, setCurrentItem] = useState<KioskModel | null>(defaultValue ?? null);
 
-	const graph = useMemo(() => buildSimpleSearchGraph([
-		{
-			key: 'search',
-			type: 'search',
-			value: searchValue,
-			searchFields: ['name', 'modelId', 'referenceCode'],
-		},
-	]), [searchValue, disabled]);
-
-	const { models } = useKioskModelList(graph);
+	const { models } = useSearchableKioskModelSelect({ searchValue });
 
 	if (!fieldData) {
 		return null;
@@ -194,6 +198,11 @@ function PaymentMethodsField({ readOnly, disabled }: { readOnly: boolean, disabl
 			type: 'search',
 			value: searchValue,
 			searchFields: ['name', 'method'],
+		},
+		{
+			key: 'isArchived',
+			type: 'multiSelect',
+			value: [false],
 		},
 	]), [searchValue, disabled]);
 

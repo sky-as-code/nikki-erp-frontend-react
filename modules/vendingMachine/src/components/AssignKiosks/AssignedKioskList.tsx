@@ -4,7 +4,8 @@ import { IconDeviceDesktop, IconMapPin, IconPlus, IconTrash } from '@tabler/icon
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Kiosk, KioskMode, KioskStatus } from '@/features/kiosks/types';
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { Kiosk, KioskMode } from '@/features/kiosks/types';
 
 
 const DEFAULT_I18N = {
@@ -34,18 +35,6 @@ export const AssignedKioskList: React.FC<AssignedKioskListProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 	const keys = { ...DEFAULT_I18N, ...translationKeys };
-
-	const getStatusBadge = (status: KioskStatus | null | undefined) => {
-		if (status == null) return <Badge color='gray' size='sm'>—</Badge>;
-		const statusMap: Partial<Record<KioskStatus, { color: string; label: string }>> = {
-			[KioskStatus.ACTIVE]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-			[KioskStatus.INACTIVE]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
-			[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
-		};
-		const statusInfo = statusMap[status];
-		if (!statusInfo) return <Badge color='gray' size='sm'>—</Badge>;
-		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-	};
 
 	const getModeBadge = (mode: KioskMode | null | undefined) => {
 		if (mode == null) return <Badge color='gray' size='sm'>—</Badge>;
@@ -107,7 +96,7 @@ export const AssignedKioskList: React.FC<AssignedKioskListProps> = ({
 										</Text>
 									</Group>
 								</Table.Td>
-								<Table.Td>{getStatusBadge(kiosk.status)}</Table.Td>
+								<Table.Td><ArchivedStatusBadge isArchived={Boolean(kiosk.isArchived)} /></Table.Td>
 								<Table.Td>{getModeBadge(kiosk.mode)}</Table.Td>
 								{onRemoveKiosk && (
 									<Table.Td>

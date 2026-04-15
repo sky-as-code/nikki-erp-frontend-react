@@ -1,3 +1,4 @@
+
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,12 +8,13 @@ import {
 	kioskModelActions,
 	selectKioskModelList,
 	selectKioskModelListPagination,
-	DEFAULT_PAGE_SIZE,
-	ListKioskModelsParams,
 } from '@/appState';
-import { buildSimpleSearchGraph } from '@/components/ControlPanel/buildSimpleSearchGraph';
 import { ControlPanelFilterConfig } from '@/components/ControlPanel/types';
-import { SearchGraph } from '@/components/FilterGroup';
+import { buildSimpleSearchGraph } from '@/helpers';
+import { ArchivedStatus, SearchGraph, SearchParams } from '@/types';
+
+import { KioskModel } from '../types';
+
 
 
 export function useKioskModelList(graph?: SearchGraph) {
@@ -21,10 +23,10 @@ export function useKioskModelList(graph?: SearchGraph) {
 	const pagination = useMicroAppSelector(selectKioskModelListPagination);
 
 	const [page, setPage] = React.useState(1);
-	const [pageSize, setPageSize] = React.useState(DEFAULT_PAGE_SIZE);
+	const [pageSize, setPageSize] = React.useState(pagination.size ?? 10);
 
 	const fetchList = React.useCallback((targetPage: number, size: number, searchGraph?: SearchGraph) => {
-		const params: ListKioskModelsParams = {
+		const params: SearchParams<KioskModel> = {
 			page: targetPage - 1,
 			size,
 			graph: searchGraph,
@@ -42,7 +44,7 @@ export function useKioskModelList(graph?: SearchGraph) {
 	}, [fetchList, pageSize, graph]);
 
 	const handlePageSizeChange = React.useCallback((value: string | null) => {
-		const newSize = Number(value ?? DEFAULT_PAGE_SIZE);
+		const newSize = Number(value ?? pagination.size ?? 10);
 		setPageSize(newSize);
 		setPage(1);
 		fetchList(1, newSize, graph);
@@ -76,7 +78,7 @@ export function useKioskModelList(graph?: SearchGraph) {
 export const useKioskModelFilter = () => {
 	const { t: translate } = useTranslation();
 	const [searchValue, setSearchValue] = useState('');
-	const [statusFilter, setStatusFilter] = useState<string[]>([]);
+	const [statusFilter, setStatusFilter] = useState<string[]>([ArchivedStatus.ACTIVE]);
 
 	const filters: ControlPanelFilterConfig[] = useMemo(() => [
 		{
@@ -88,37 +90,20 @@ export const useKioskModelFilter = () => {
 			placeholder: translate('nikki.vendingMachine.kioskModels.search.placeholder'),
 		},
 		{
-			key: 'status',
+			key: 'isArchived',
 			type: 'multiSelect' as const,
 			value: statusFilter,
 			onChange: setStatusFilter,
 			options: [
-				{ value: 'active', label: translate('nikki.general.status.active') },
-				{ value: 'inactive', label: translate('nikki.general.status.inactive') },
+				{ value: ArchivedStatus.ACTIVE, label: translate('nikki.general.status.active') },
+				{ value: ArchivedStatus.ARCHIVED, label: translate('nikki.general.status.archived') },
 			],
 			placeholder: translate('nikki.vendingMachine.kioskModels.filter.status'),
+			getGraphValue: (value: ArchivedStatus[]) => value.map((value) => value === ArchivedStatus.ARCHIVED),
 		},
 	], [searchValue, statusFilter, translate]);
 
-	const graph = useMemo(
-		() => buildSimpleSearchGraph(
-			filters.map(filter => {
-				if (filter.type === 'search') {
-					return {
-						key: filter.key,
-						searchFields: filter.searchFields,
-						type: filter.type,
-						value: filter.value,
-					};
-				}
-				return {
-					key: filter.key,
-					type: filter.type,
-					value: filter.value,
-				};
-			}),
-		), [filters],
-	);
+	const graph = useMemo(() => buildSimpleSearchGraph(filters), [filters]);
 
 	return { filters, graph };
 };

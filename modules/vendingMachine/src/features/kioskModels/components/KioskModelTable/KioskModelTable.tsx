@@ -1,18 +1,21 @@
-import { ActionIcon, Badge, Box, Divider, Group, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Box, Divider, Group, Text, Tooltip } from '@mantine/core';
 import { AutoTable, AutoTableProps, TablePagination } from '@nikkierp/ui/components';
-import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
+import { IconArchive, IconEdit, IconEye, IconArchiveOff } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
 
 import { KioskModel } from '../../types';
 
 
 export interface KioskModelTableProps extends AutoTableProps {
 	totalItems?: number;
-	onPreviewView: (kioskModel: KioskModel) => void;
+	onPreview: (kioskModel: KioskModel) => void;
 	onEdit?: (kioskModel: KioskModel) => void;
-	onDelete?: (kioskModel: KioskModel) => void;
+	onArchive?: (kioskModel: KioskModel) => void;
+	onRestore?: (kioskModel: KioskModel) => void;
 	isFetching?: boolean;
 	page?: number;
 	totalPages?: number;
@@ -23,11 +26,10 @@ export interface KioskModelTableProps extends AutoTableProps {
 }
 
 function renderReferenceCodeColumn(row: Record<string, unknown>) {
+	if (row.isArchived) {
+		return <Text c='var(--mantine-color-gray-7)' fw={500} td='none'>{String(row.referenceCode || '')}</Text>;
+	}
 	return <Text fw={500}>{String(row.referenceCode || '')}</Text>;
-}
-
-function renderModelIdColumn(row: Record<string, unknown>) {
-	return <Text fw={500}>{String(row.modelId || '')}</Text>;
 }
 
 const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
@@ -37,14 +39,18 @@ const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
 
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		if (modelId) {
+		if (!row.isArchived && modelId) {
 			navigate(`../kiosk-models/${modelId}`);
 		}
 	};
 
+	if (row.isArchived) {
+		return <Text c='var(--mantine-color-gray-7)' fw={500} td='none'>{name}</Text>;
+	}
+
 	return (
 		<Text
-			c='light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2))'
+			c={'light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2))'}
 			fw={500}
 			style={{ cursor: 'pointer' }}
 			onClick={handleClick}
@@ -60,31 +66,43 @@ function renderNameColumn(row: Record<string, unknown>) {
 }
 
 function renderDescriptionColumn(row: Record<string, unknown>) {
-	return <span style={{ maxWidth: 300, display: 'block' }}>{String(row.description || '-')}</span>;
+	if (row.isArchived) {
+		return <Text c='var(--mantine-color-gray-7)' fw={500} td='none'>{String(row.description || '-')}</Text>;
+	}
+	return <Text fw={500} td='none'>{String(row.description || '-')}</Text>;
 }
 
 function renderStatusColumn(
 	row: Record<string, unknown>,
-	translate: (key: string) => string,
 ) {
-	const status = row.status as string;
-	const statusMap: Record<string, { color: string; label: string }> = {
-		active: { color: 'green', label: translate('nikki.general.status.active') },
-		inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-		deleted: { color: 'red', label: translate('nikki.general.status.deleted') },
-	};
-	const statusInfo = statusMap[status] || { color: 'gray', label: status };
-	return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
+	return <ArchivedStatusBadge isArchived={(row.isArchived as boolean) ?? false} />;
 }
 
 function renderActionsColumn(
 	row: KioskModel,
 	onView?: (kioskModel: KioskModel) => void,
 	onEdit?: (kioskModel: KioskModel) => void,
-	onDelete?: (kioskModel: KioskModel) => void,
+	onArchive?: (kioskModel: KioskModel) => void,
+	onRestore?: (kioskModel: KioskModel) => void,
 	translate?: (key: string) => string,
 ) {
 	if (!translate) return null;
+
+	if (row.isArchived) {
+		return (
+			<Box style={{ minWidth: 120 }}>
+				<Group gap='xs' justify='flex-end' onClick={(e) => e.stopPropagation()}>
+					{onRestore && (
+						<Tooltip label={translate('nikki.general.actions.restore')}>
+							<ActionIcon variant='subtle' color='blue' onClick={() => onRestore(row)}>
+								<IconArchiveOff size={16} />
+							</ActionIcon>
+						</Tooltip>
+					)}
+				</Group>
+			</Box>
+		);
+	}
 
 	return (
 		<Box style={{ minWidth: 120 }}>
@@ -103,10 +121,10 @@ function renderActionsColumn(
 						</ActionIcon>
 					</Tooltip>
 				)}
-				{onDelete && (
-					<Tooltip label={translate('nikki.general.actions.delete')}>
-						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(row)}>
-							<IconTrash size={16} />
+				{onArchive && (
+					<Tooltip label={translate('nikki.general.actions.archive')}>
+						<ActionIcon variant='subtle' color='orange' onClick={() => onArchive(row)}>
+							<IconArchive size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
@@ -128,9 +146,10 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 	data,
 	schema,
 	isLoading,
-	onPreviewView,
+	onPreview,
 	onEdit,
-	onDelete,
+	onArchive,
+	onRestore,
 	isFetching,
 	page,
 	totalPages,
@@ -151,7 +170,6 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 					isLoading={isLoading && !isFetching}
 					columns={columns}
 					columnSizes={{
-						modelId: { flex: 1, minWidth: 160 },
 						referenceCode: { flex: 1, minWidth: 160 },
 						name: { flex: 2, minWidth: 200 },
 						description: { flex: 2, minWidth: 300 },
@@ -159,16 +177,16 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 						actions: { flex: 1, minWidth: 120 },
 					}}
 					columnRenderers={{
-						modelId: renderModelIdColumn,
 						referenceCode: renderReferenceCodeColumn,
 						name: renderNameColumn,
 						description: renderDescriptionColumn,
-						status: (row) => renderStatusColumn(row, translate),
+						status: renderStatusColumn,
 						actions: (row) =>
 							renderActionsColumn(row as unknown as KioskModel,
-								onPreviewView,
+								onPreview,
 								onEdit,
-								onDelete,
+								onArchive,
+								onRestore,
 								translate,
 							),
 					}}

@@ -6,7 +6,7 @@
 			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.id' }",
 			"hidden": true
 		},
-		"code": {
+		"method": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.code' }"
 		},
@@ -18,23 +18,9 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.image' }"
 		},
-		"status": {
-			"type": "enum",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.status' }",
-			"enum": [
-				{
-					"value": "active",
-					"label": "{ \"$ref\": 'nikki.general.status.active' }"
-				},
-				{
-					"value": "inactive",
-					"label": "{ \"$ref\": 'nikki.general.status.inactive' }"
-				}
-			]
-		},
-		"description": {
-			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.description' }"
+		"isArchived": {
+			"type": "boolean",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.payment.fields.status' }"
 		},
 		"minTransactionValue": {
 			"type": "number",

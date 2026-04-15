@@ -3,8 +3,9 @@ import { IconDeviceDesktop, IconMapPin, IconSearch } from '@tabler/icons-react';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
 import { useKioskList } from '@/features/kiosks/hooks';
-import { Kiosk, KioskMode, KioskStatus } from '@/features/kiosks/types';
+import { Kiosk, KioskMode } from '@/features/kiosks/types';
 
 
 export interface KioskSelectModalProps {
@@ -49,16 +50,6 @@ export const KioskSelectModal: React.FC<KioskSelectModalProps> = ({
 				kiosk.locationAddress?.toLowerCase().includes(query),
 		);
 	}, [availableKiosks, searchQuery]);
-
-	const getStatusBadge = (status?: KioskStatus | null) => {
-		const statusMap = {
-			[KioskStatus.ACTIVE]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-			[KioskStatus.INACTIVE]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
-			[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
-		};
-		const statusInfo = statusMap[status ?? KioskStatus.INACTIVE];
-		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-	};
 
 	const getModeBadge = (mode?: KioskMode | null) => {
 		const modeMap = {
@@ -171,7 +162,9 @@ export const KioskSelectModal: React.FC<KioskSelectModalProps> = ({
 													</Text>
 												</Group>
 											</Table.Td>
-											<Table.Td>{getStatusBadge(kiosk.status)}</Table.Td>
+											<Table.Td>
+												<ArchivedStatusBadge isArchived={Boolean(kiosk.isArchived)} />
+											</Table.Td>
 											<Table.Td>{getModeBadge(kiosk.mode)}</Table.Td>
 										</Table.Tr>
 									);

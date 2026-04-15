@@ -188,30 +188,6 @@ export interface Kiosk {
 	memory?: number;
 }
 
-export type RestCreateResponse = {
-	id: string;
-	createdAt: number;
-	etag: string;
-};
-
-export type RestUpdateResponse = {
-	id: string;
-	updatedAt: number;
-	etag: string;
-};
-
-export type RestDeleteResponse = {
-	id: string;
-	deletedAt: number;
-};
-
-export type PagedSearchResponse<T> = {
-	items: T[];
-	total: number;
-	page: number;
-	size: number;
-};
-
 export enum KioskActivityLogType {
 	WARNING = 'warning',
 	STATUS_DETAIL = 'statusDetail',
@@ -233,5 +209,5 @@ export type KioskLog = {
 	eventType: string;
 	kioskRef: string;
 	message?: string;
-	payload?: string | Record<string, any>;
+	payload?: string;
 };

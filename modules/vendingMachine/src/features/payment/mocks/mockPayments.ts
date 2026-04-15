@@ -3,16 +3,19 @@ import mposIcon from '@nikkierp/ui/assets/icons/mpos.png';
 import vietqrIcon from '@nikkierp/ui/assets/icons/vietqr.png';
 import zalopayIcon from '@nikkierp/ui/assets/icons/zalopay.png';
 
-import { PaymentMethod } from './types';
+import { PaymentMethod } from '../types';
 
-// Mock data for payment methods
-const mockPaymentsData: PaymentMethod[] = [
+import type { RestArchiveResponse } from '@/types';
+
+
+// Mock data for payment methods (extends DTO with legacy mock fields)
+const mockPaymentsData = [
 	{
 		id: '1',
-		code: 'VIETQR',
+		method: 'VIETQR',
 		name: 'VietQR',
 		image: vietqrIcon,
-		status: 'active',
+		isArchived: false,
 		description: '<p>Thanh toán qua <strong>VietQR</strong></p>',
 		minTransactionValue: 0,
 		maxTransactionValue: 10000000,
@@ -26,10 +29,10 @@ const mockPaymentsData: PaymentMethod[] = [
 	},
 	{
 		id: '2',
-		code: 'MPOS',
+		method: 'MPOS',
 		name: 'mpos',
 		image: mposIcon,
-		status: 'active',
+		isArchived: false,
 		description: '<p>Thanh toán qua <strong>mpos</strong></p><ul><li>Hỗ trợ thẻ ATM</li><li>Hỗ trợ ví điện tử</li></ul>',
 		minTransactionValue: 10000,
 		maxTransactionValue: 50000000,
@@ -43,10 +46,10 @@ const mockPaymentsData: PaymentMethod[] = [
 	},
 	{
 		id: '3',
-		code: 'MOMO',
+		method: 'MOMO',
 		name: 'MoMo',
 		image: momoIcon,
-		status: 'active',
+		isArchived: false,
 		description: '<p>Thanh toán qua <strong>Ví MoMo</strong></p>',
 		minTransactionValue: 10000,
 		maxTransactionValue: 20000000,
@@ -60,10 +63,10 @@ const mockPaymentsData: PaymentMethod[] = [
 	},
 	{
 		id: '4',
-		code: 'ZALOPAY',
+		method: 'ZALOPAY',
 		name: 'ZaloPay',
 		image: zalopayIcon,
-		status: 'active',
+		isArchived: false,
 		description: '<p>Thanh toán qua <strong>ZaloPay</strong></p>',
 		minTransactionValue: 10000,
 		maxTransactionValue: 30000000,
@@ -77,10 +80,10 @@ const mockPaymentsData: PaymentMethod[] = [
 	},
 	{
 		id: '5',
-		code: 'BANK_TRANSFER',
+		method: 'BANK_TRANSFER',
 		name: 'Chuyển khoản ngân hàng',
 		image: '',
-		status: 'inactive',
+		isArchived: true,
 		description: '<p>Thanh toán qua <strong>chuyển khoản ngân hàng</strong></p>',
 		minTransactionValue: 50000,
 		maxTransactionValue: 100000000,
@@ -91,7 +94,7 @@ const mockPaymentsData: PaymentMethod[] = [
 		createdAt: '2024-02-10T11:45:00Z',
 		etag: 'etag-payment-005',
 	},
-];
+] as any[];
 
 // Simulate API delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -145,5 +148,27 @@ export const mockPayments = {
 			throw new Error('Payment method not found');
 		}
 		mockPaymentsData.splice(index, 1);
+	},
+
+	async setArchivedPayment(
+		id: string,
+		body: { etag: string; isArchived: boolean },
+	): Promise<RestArchiveResponse> {
+		await delay(400);
+		const index = mockPaymentsData.findIndex((p) => p.id === id);
+		if (index === -1) {
+			throw new Error('Payment method not found');
+		}
+		const nextEtag = `etag-payment-${Date.now()}`;
+		mockPaymentsData[index] = {
+			...mockPaymentsData[index],
+			isArchived: body.isArchived,
+			etag: nextEtag,
+		};
+		return {
+			affectedCount: 1,
+			affectedAt: new Date().toISOString(),
+			etag: nextEtag,
+		};
 	},
 };

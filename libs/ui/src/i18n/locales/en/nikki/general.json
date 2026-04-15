@@ -7,6 +7,7 @@
 		"create": "Create",
 		"update": "Update",
 		"delete": "Delete",
+		"archive": "Archive",
 		"edit": "Edit",
 		"view": "View",
 		"close": "Close",
@@ -29,7 +30,8 @@
 		"add": "Add",
 		"today": "Today",
 		"viewDetails": "View Details",
-		"apply": "Apply"
+		"apply": "Apply",
+		"restore": "Restore"
 	},
 	"selected": "Selected",
 	"boolean": {
@@ -71,7 +73,8 @@
 	"status": {
 		"active": "Active",
 		"inactive": "Inactive",
-		"deleted": "Deleted"
+		"deleted": "Deleted",
+		"archived": "Archived"
 	},
 	"messages": {
 		"success": "Success",

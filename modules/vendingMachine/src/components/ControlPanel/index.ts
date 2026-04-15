@@ -11,4 +11,3 @@ export type {
 	ControlPanelSearchFilter,
 	ControlPanelOptionFilter,
 } from './types';
-export * from './buildSimpleSearchGraph';

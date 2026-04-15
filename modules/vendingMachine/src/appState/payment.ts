@@ -8,6 +8,7 @@ import {
 	createPayment,
 	updatePayment,
 	deletePayment,
+	setArchivedPayment,
 	PaymentState,
 	initialPaymentState,
 } from '@/features/payment/paymentSlice';
@@ -25,6 +26,7 @@ export const paymentActions = {
 	createPayment,
 	updatePayment,
 	deletePayment,
+	setArchivedPayment,
 	...actions,
 };
 
@@ -54,4 +56,9 @@ export const selectUpdatePayment = createSelector(
 export const selectDeletePayment = createSelector(
 	selectPaymentState,
 	(state) => state.delete,
+);
+
+export const selectSetArchivedPayment = createSelector(
+	selectPaymentState,
+	(state) => state.archive,
 );

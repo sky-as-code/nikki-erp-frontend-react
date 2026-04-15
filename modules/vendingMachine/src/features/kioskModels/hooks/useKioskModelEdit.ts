@@ -4,21 +4,20 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
+import { VendingMachineDispatch, kioskModelActions, selectUpdateKioskModel } from '@/appState';
+
 import type { KioskModel } from '@/features/kioskModels/types';
 
-import { VendingMachineDispatch, kioskModelActions, selectUpdateKioskModel } from '@/appState';
 
 
 export type KioskModelUpdateFormData = {id: string; etag: string;} & Pick<
 	Partial<KioskModel>,
-	| 'modelId'
 	| 'referenceCode'
 	| 'name'
 	| 'description'
 	| 'shelvesNumber'
 	| 'shelvesConfig'
-	| 'status'
-	| 'kioskType'
+	| 'goodsCollectorType'
 >;
 
 export type KioskModelUpdatePayload = { id: string; body: KioskModelUpdateFormData };

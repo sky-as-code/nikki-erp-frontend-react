@@ -1,6 +1,4 @@
 import { FilterGroupConfig } from '@/components/FilterGroup';
-import { KioskModelStatus } from '@/features/kioskModels/types';
-
 
 
 export const filterConfig: FilterGroupConfig = {
@@ -24,35 +22,35 @@ export const filterConfig: FilterGroupConfig = {
 			operator: '*',
 		},
 	],
-	filter: {
-		key: 'filter',
-		label: 'Filter',
-		condition: [
-			'$and', [
-				{
-					key: 'status',
-					label: 'Trạng thái',
-					condition: ['$or', [
-						{
-							key: 'status',
-							label: 'Trạng thái',
-							condition: ['=', KioskModelStatus.ACTIVE],
-						},
-						{
-							key: 'status',
-							label: 'Trạng thái',
-							condition: ['=', KioskModelStatus.INACTIVE],
-						},
-						{
-							key: 'status',
-							label: 'Trạng thái',
-							condition: ['=', KioskModelStatus.DELETED],
-						},
-					]],
-				},
-			],
-		],
-	},
+	// filter: {
+	// 	key: 'filter',
+	// 	label: 'Filter',
+	// 	condition: [
+	// 		'$and', [
+	// 			{
+	// 				key: 'status',
+	// 				label: 'Trạng thái',
+	// 				condition: ['$or', [
+	// 					{
+	// 						key: 'status',
+	// 						label: 'Trạng thái',
+	// 						condition: ['=', KioskModelStatus.ACTIVE],
+	// 					},
+	// 					{
+	// 						key: 'status',
+	// 						label: 'Trạng thái',
+	// 						condition: ['=', KioskModelStatus.INACTIVE],
+	// 					},
+	// 					{
+	// 						key: 'status',
+	// 						label: 'Trạng thái',
+	// 						condition: ['=', KioskModelStatus.DELETED],
+	// 					},
+	// 				]],
+	// 			},
+	// 		],
+	// 	],
+	// },
 	groupBy: [
 		{
 			key: 'status',

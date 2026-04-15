@@ -207,13 +207,6 @@ function updateEventReducers(builder: ActionReducerMapBuilder<EventState>) {
 		.addCase(updateEvent.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((e) => e.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
 		})
 		.addCase(updateEvent.rejected, (state, action) => {
 			state.update.status = 'error';

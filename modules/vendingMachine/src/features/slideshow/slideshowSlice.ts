@@ -207,13 +207,6 @@ function updateSlideshowReducers(builder: ActionReducerMapBuilder<SlideshowState
 		.addCase(updateSlideshow.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((a) => a.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
 		})
 		.addCase(updateSlideshow.rejected, (state, action) => {
 			state.update.status = 'error';

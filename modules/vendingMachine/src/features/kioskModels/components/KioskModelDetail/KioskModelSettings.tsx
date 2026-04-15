@@ -24,7 +24,7 @@ const getKioskTypeLabel = (type: KioskType | undefined, translate: (key: string)
 export const KioskModelSettings: React.FC<KioskModelSettingsProps> = ({ model }) => {
 	const { t: translate } = useTranslation();
 	const {
-		isEditing, selectedKioskType, setSelectedKioskType,
+		isEditing, selectedGoodsCollectorType, setSelectedGoodsCollectorType,
 		shelvesNumber, setShelvesNumber, shelvesConfigRows, setShelvesConfigRows,
 	} = useModelSettingsTab({ model });
 
@@ -36,8 +36,8 @@ export const KioskModelSettings: React.FC<KioskModelSettingsProps> = ({ model })
 				</Text>
 				{isEditing ? (
 					<Select
-						value={selectedKioskType || null}
-						onChange={(value) => setSelectedKioskType(value as KioskType | undefined)}
+						value={selectedGoodsCollectorType || null}
+						onChange={(value) => setSelectedGoodsCollectorType(value as KioskType | undefined)}
 						placeholder={translate('nikki.vendingMachine.kioskModels.fields.kioskType')}
 						data={[
 							{ value: 'non-elevator', label: translate('nikki.vendingMachine.kioskModels.kioskType.nonElevator') },
@@ -47,7 +47,7 @@ export const KioskModelSettings: React.FC<KioskModelSettingsProps> = ({ model })
 					/>
 				) : (
 					<Box p='xs' style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
-						<Text size='sm'>{getKioskTypeLabel(selectedKioskType, translate)}</Text>
+						<Text size='sm'>{getKioskTypeLabel(selectedGoodsCollectorType, translate)}</Text>
 					</Box>
 				)}
 			</Box>

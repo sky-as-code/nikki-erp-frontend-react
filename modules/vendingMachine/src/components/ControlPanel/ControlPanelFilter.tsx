@@ -1,7 +1,7 @@
 import { Group, MultiSelect, Select, TextInput } from '@mantine/core';
-import { IconSearch } from '@tabler/icons-react';
+import { IconSearch, IconX } from '@tabler/icons-react';
 import { debounce } from 'lodash';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FilterOffButton } from '../FilterOffButton';
@@ -31,6 +31,7 @@ type DebouncedSearchTextInputProps = {
 	onChange: (value: string) => void;
 	placeholder?: string;
 	minWidth?: number;
+	clearable?: boolean;
 };
 
 const DebouncedSearchTextInput: React.FC<DebouncedSearchTextInputProps> = ({
@@ -38,6 +39,7 @@ const DebouncedSearchTextInput: React.FC<DebouncedSearchTextInputProps> = ({
 	onChange,
 	placeholder,
 	minWidth = 250,
+	clearable = true,
 }) => {
 	const { t: translate } = useTranslation();
 	const [localValue, setLocalValue] = React.useState(value);
@@ -67,6 +69,7 @@ const DebouncedSearchTextInput: React.FC<DebouncedSearchTextInputProps> = ({
 				debouncedNotify(next);
 			}}
 			style={{ minWidth }}
+			rightSection={clearable && localValue ? <IconX size={16} onClick={() => onChange('')} /> : <></>}
 			fz='sm' fw={500} size='sm'
 		/>
 	);
@@ -78,6 +81,7 @@ const SearchFilterItem: React.FC<{ filter: ControlPanelSearchFilter }> = ({ filt
 		onChange={filter.onChange}
 		placeholder={filter.placeholder}
 		minWidth={filter.minWidth || 250}
+		clearable={filter.clearable !== false}
 	/>
 );
 
@@ -106,7 +110,7 @@ const MultiSelectFilterItem: React.FC<{ filter: ControlPanelOptionFilter }> = ({
 			value={filter.value}
 			onChange={(value) => filter.onChange(value)}
 			style={{ minWidth: filter.minWidth || 150 }}
-			maxValues={filter.maxValues ?? 2}
+			maxValues={filter.maxValues ?? 5}
 			clearable={filter.clearable !== false}
 			miw={filter.minWidth || 250}
 			fz='sm' fw={500} size='sm'
@@ -122,8 +126,8 @@ const filterComponentMap: Record<string, React.FC<{ filter: any }>> = {
 
 function hasActiveValues(filters: ControlPanelFilterConfig[]): boolean {
 	return filters.some((f) => {
-		if (isSearchFilter(f)) return f.value.trim() !== '';
-		return f.value.length > 0;
+		if (isSearchFilter(f)) return f.value?.trim() !== '';
+		return f.value?.length > 0;
 	});
 }
 
@@ -142,8 +146,7 @@ export const ControlPanelFilter: React.FC<ControlPanelFilterProps> = ({
 	filters = [],
 	search,
 }) => {
-	const hasActive =
-		(search?.value?.trim() ?? '') !== '' || hasActiveValues(filters);
+	const hasActive = useMemo(() => hasActiveValues(filters), [filters]);
 
 	return (
 		<Group gap='md' wrap='wrap' align='flex-end'>

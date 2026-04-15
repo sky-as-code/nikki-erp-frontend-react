@@ -4,9 +4,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
 import { PreviewDrawer } from '@/components/PreviewDrawer';
 
-import { Kiosk, KioskMode, KioskStatus } from '../../types';
+import { Kiosk, KioskMode } from '../../types';
 
 
 export interface KioskDetailDrawerProps {
@@ -25,18 +26,6 @@ export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
-
-	const getStatusBadge = (status?: KioskStatus | null) => {
-		if (!status) return null;
-		const statusMap: Partial<Record<KioskStatus, { color: string; label: string }>> = {
-			[KioskStatus.ACTIVE]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-			[KioskStatus.INACTIVE]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
-			[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
-		};
-		const statusInfo = statusMap[status];
-		if (!statusInfo) return null;
-		return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
-	};
 
 	const getModeBadge = (mode?: KioskMode | null) => {
 		if (!mode) return null;
@@ -117,7 +106,7 @@ export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.status')}
 					</Text>
-					{getStatusBadge(kiosk?.status)}
+					{kiosk ? <ArchivedStatusBadge isArchived={Boolean(kiosk.isArchived)} /> : null}
 				</Box>
 
 				<Divider />

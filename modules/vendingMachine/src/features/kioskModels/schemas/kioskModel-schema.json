@@ -6,10 +6,6 @@
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.id' }",
 			"hidden": true
 		},
-		"modelId": {
-			"type": "string",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.modelId' }"
-		},
 		"referenceCode": {
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.referenceCode' }"

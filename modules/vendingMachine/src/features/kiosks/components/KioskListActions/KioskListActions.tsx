@@ -4,8 +4,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ViewMode } from '@/components/ControlPanel';
+import { ArchivedStatus } from '@/types';
 
-import { ConnectionStatus, KioskMode, KioskStatus } from '../../types';
+import { ConnectionStatus, KioskMode } from '../../types';
 
 
 export type KioskListViewMode = Extract<ViewMode, 'list' | 'grid' | 'map'>;
@@ -17,8 +18,8 @@ export interface KioskListActionsProps {
 	onRefresh: () => void;
 	searchValue: string;
 	onSearchChange: (value: string) => void;
-	statusFilter: KioskStatus | 'all';
-	onStatusFilterChange: (status: KioskStatus | 'all') => void;
+	statusFilter: ArchivedStatus | 'all';
+	onStatusFilterChange: (status: ArchivedStatus | 'all') => void;
 	connectionFilter: ConnectionStatus | 'all';
 	onConnectionFilterChange: (connection: ConnectionStatus | 'all') => void;
 	modeFilter: KioskMode | 'all';
@@ -71,9 +72,8 @@ export const KioskListActions: React.FC<KioskListActionsProps> = ({
 
 	const statusOptions = [
 		{ value: 'all', label: translate('nikki.general.filters.all') },
-		{ value: KioskStatus.ACTIVE, label: translate('nikki.vendingMachine.kiosk.status.activated') },
-		{ value: KioskStatus.INACTIVE, label: translate('nikki.vendingMachine.kiosk.status.disabled') },
-		{ value: KioskStatus.DELETED, label: translate('nikki.vendingMachine.kiosk.status.deleted') },
+		{ value: ArchivedStatus.ACTIVE, label: translate('nikki.general.status.active') },
+		{ value: ArchivedStatus.ARCHIVED, label: translate('nikki.general.status.archived') },
 	];
 
 	const connectionOptions = [
@@ -148,7 +148,7 @@ export const KioskListActions: React.FC<KioskListActionsProps> = ({
 						placeholder={translate('nikki.vendingMachine.kiosk.filter.status')}
 						data={statusOptions}
 						value={statusFilter}
-						onChange={(value) => onStatusFilterChange((value || 'all') as KioskStatus | 'all')}
+						onChange={(value) => onStatusFilterChange((value || 'all') as ArchivedStatus | 'all')}
 						style={{ minWidth: 150 }}
 						clearable={false}
 					/>

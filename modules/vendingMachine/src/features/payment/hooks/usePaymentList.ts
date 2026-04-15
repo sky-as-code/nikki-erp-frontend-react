@@ -2,18 +2,18 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import React from 'react';
 
 import { VendingMachineDispatch, paymentActions, selectPaymentList } from '@/appState';
-import { SearchGraph } from '@/components';
+import { SearchGraph } from '@/types';
 
 
 export function usePaymentList(graph?: SearchGraph) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
-	const list = useMicroAppSelector(selectPaymentList);
+	const payments = useMicroAppSelector(selectPaymentList);
 
 	React.useEffect(() => {
-		if (list.status === 'idle') {
-			dispatch(paymentActions.listPayments({ graph }));
+		if (payments.status === 'idle') {
+			dispatch(paymentActions.listPayments());
 		}
-	}, [dispatch, list]);
+	}, [dispatch, payments]);
 
 	React.useEffect(() => {
 		if (graph) {
@@ -25,8 +25,8 @@ export function usePaymentList(graph?: SearchGraph) {
 	const handleRefresh = () => dispatch(paymentActions.listPayments());
 
 	return {
-		payments: list.data,
-		isLoadingList: list.status === 'pending' || list.status === 'idle',
+		payments: payments.data ?? [],
+		isLoadingList: payments.status === 'pending' || payments.status === 'idle',
 		handleRefresh,
 	};
 }

@@ -1,4 +1,4 @@
-import { KioskModel, KioskModelStatus } from './types';
+import { KioskModel } from './types';
 
 
 const mockKioskModelsData: KioskModel[] = [
@@ -7,8 +7,8 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'WATER-MINI',
 		name: 'Máy bán nước mini',
 		description: 'Dòng máy bán nước mini, kích thước nhỏ gọn, phù hợp cho văn phòng, góc hành lang',
-		status: KioskModelStatus.ACTIVE,
-		kioskType: 'elevator',
+		isArchived: false,
+		goodsCollectorType: 'elevator',
 		shelvesNumber: 3,
 		shelvesConfig: {
 			config: [
@@ -25,8 +25,8 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'LIPSTICK-ELEVATOR',
 		name: 'Máy bán son có thang nâng',
 		description: 'Dòng máy bán mỹ phẩm (son, phấn) với hệ thống thang nâng, phù hợp sản phẩm nhỏ gọn',
-		status: KioskModelStatus.ACTIVE,
-		kioskType: 'elevator',
+		isArchived: false,
+		goodsCollectorType: 'elevator',
 		shelvesNumber: 4,
 		shelvesConfig: {
 			config: [
@@ -44,8 +44,8 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'WATER-BASIC',
 		name: 'Máy bán nước cơ bản',
 		description: 'Dòng máy bán nước cơ bản, không thang nâng, phù hợp chai/lon kích thước chuẩn',
-		status: KioskModelStatus.ACTIVE,
-		kioskType: 'non-elevator',
+		isArchived: false,
+		goodsCollectorType: 'non-elevator',
 		createdAt: '2024-01-20T10:15:00Z',
 		etag: 'etag-mdl-003',
 	},
@@ -54,8 +54,8 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'WATER-ELEVATOR',
 		name: 'Máy bán nước có thang nâng',
 		description: 'Dòng máy bán nước với thang nâng và băng chuyền, vận chuyển hàng tự động',
-		status: KioskModelStatus.ACTIVE,
-		kioskType: 'elevator',
+		isArchived: false,
+		goodsCollectorType: 'elevator',
 		shelvesNumber: 5,
 		shelvesConfig: {
 			config: [
@@ -74,8 +74,8 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'SNACK-BASIC',
 		name: 'Máy bán snack cơ bản',
 		description: 'Dòng máy bán snack, bánh kẹo, kích thước trung bình',
-		status: KioskModelStatus.ACTIVE,
-		kioskType: 'non-elevator',
+		isArchived: false,
+		goodsCollectorType: 'non-elevator',
 		createdAt: '2024-02-10T11:45:00Z',
 		etag: 'etag-mdl-005',
 	},
@@ -84,8 +84,8 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'COMBO-BASIC',
 		name: 'Máy bán nước + snack combo',
 		description: 'Dòng máy kết hợp bán nước và snack, phù hợp khu vực công cộng',
-		status: KioskModelStatus.ACTIVE,
-		kioskType: 'non-elevator',
+		isArchived: false,
+		goodsCollectorType: 'non-elevator',
 		createdAt: '2024-02-20T13:30:00Z',
 		etag: 'etag-mdl-006',
 	},
@@ -94,8 +94,8 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'COSMETIC-ELEVATOR',
 		name: 'Máy bán mỹ phẩm có thang nâng',
 		description: 'Dòng máy chuyên mỹ phẩm với thang nâng, nhiều khay hàng',
-		status: KioskModelStatus.ACTIVE,
-		kioskType: 'elevator',
+		isArchived: false,
+		goodsCollectorType: 'elevator',
 		createdAt: '2024-03-01T15:00:00Z',
 		etag: 'etag-mdl-007',
 	},
@@ -104,8 +104,8 @@ const mockKioskModelsData: KioskModel[] = [
 		referenceCode: 'WATER-PREMIUM',
 		name: 'Máy bán nước cao cấp',
 		description: 'Dòng máy bán nước cao cấp, màn hình lớn, quảng cáo tích hợp',
-		status: KioskModelStatus.INACTIVE,
-		kioskType: 'elevator',
+		isArchived: false,
+		goodsCollectorType: 'elevator',
 		createdAt: '2024-03-10T16:20:00Z',
 		etag: 'etag-mdl-008',
 	},

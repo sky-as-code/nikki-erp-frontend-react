@@ -61,15 +61,6 @@
 			"type": "string",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.longitude' }"
 		},
-		"status": {
-			"type": "enum",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.status' }",
-			"enum": [
-				{ "value": "active", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.activated' }" },
-				{ "value": "inactive", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.disabled' }" },
-				{ "value": "deleted", "label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.status.deleted' }" }
-			]
-		},
 		"mode": {
 			"type": "enum",
 			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.mode' }",

@@ -29,7 +29,6 @@ export interface UseKioskModelPageConfigReturn {
 
 export const useKioskModelPageConfig = ({
 	handleRefresh,
-	backendActions = [],
 	breadcrumbsConfig,
 }: UseKioskModelPageConfigOptions): UseKioskModelPageConfigReturn => {
 	const navigate = useNavigate();
@@ -50,15 +49,10 @@ export const useKioskModelPageConfig = ({
 		];
 	}, [breadcrumbsConfig, translate]);
 
-	const defaultActions = useMemo(() => [
+	const actions: PageAction[] = useMemo(() => [
 		{ label: translate('nikki.general.actions.create'), leftSection: <IconPlus size={16} />, onClick: handleCreate },
 		{ label: translate('nikki.general.actions.refresh'), leftSection: <IconRefresh size={16} />, onClick: handleRefresh, variant: 'outline' as const },
 	], [handleCreate, handleRefresh, translate]);
-
-	const actions = useMemo(() => {
-		const mergedActions = [...defaultActions, ...backendActions];
-		return mergedActions.filter((action): action is NonNullable<PageAction> => action !== null);
-	}, [defaultActions, backendActions]);
 
 	return {
 		breadcrumbs,

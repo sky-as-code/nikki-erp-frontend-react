@@ -6,9 +6,10 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
 import { PreviewDrawer } from '@/components/PreviewDrawer';
 
-import { CustomFieldValueType, PaymentMethod, PaymentMethodCustomField } from '../../types';
+import { CustomFieldValueType, PaymentMethod, PaymentMethodConfig } from '../../types';
 
 
 export interface PaymentDetailDrawerProps {
@@ -27,29 +28,16 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
-	const [customFields, setCustomFields] = useState<PaymentMethodCustomField[]>(payment?.customFields || []);
+	const [customFields, setCustomFields] = useState<PaymentMethodConfig[]>([]);
 	const [newFieldKey, setNewFieldKey] = useState('');
 	const [newFieldValue, setNewFieldValue] = useState('');
 	const [newFieldType, setNewFieldType] = useState<CustomFieldValueType>('string');
 
 	React.useEffect(() => {
 		if (payment) {
-			setCustomFields(payment.customFields || []);
+			// setCustomFields(payment.config || {});
 		}
 	}, [payment]);
-
-	const getStatusBadge = (status: string) => {
-		const statusMap: Record<string, { color: string; label: string }> = {
-			active: { color: 'green', label: translate('nikki.general.status.active') },
-			inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-		};
-		const statusInfo = statusMap[status] || { color: 'gray', label: status };
-		return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
-	};
-
-	const formatCurrency = (value: number) => {
-		return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-	};
 
 	const handleAddCustomField = () => {
 		if (newFieldKey.trim() && newFieldValue.trim()) {
@@ -68,7 +56,7 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 		setCustomFields(customFields.filter((_, i) => i !== index));
 	};
 
-	const renderCustomFieldValue = (field: PaymentMethodCustomField) => {
+	const renderCustomFieldValue = (field: any) => {
 		switch (field.valueType) {
 			case 'password':
 				return '••••••••';
@@ -92,7 +80,7 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 			onClose={onClose}
 			header={{
 				title: payment?.name,
-				subtitle: payment?.code,
+				subtitle: payment?.method,
 				avatar: payment?.image ? (
 					<Box w={48} h={48}>
 						<Image
@@ -123,7 +111,7 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.payment.fields.code')}
 					</Text>
-					<Text size='sm' fw={500}>{payment?.code}</Text>
+					<Text size='sm' fw={500}>{payment?.method}</Text>
 				</div>
 
 				<Divider />
@@ -162,28 +150,11 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.payment.fields.status')}
 					</Text>
-					{payment?.status ? getStatusBadge(payment.status) : null}
+					{payment ? <ArchivedStatusBadge isArchived={payment.isArchived} /> : null}
 				</div>
 
-				{payment?.description && (
-					<>
-						<Divider />
-						<div>
-							<Text size='sm' c='dimmed' mb='xs'>
-								{translate('nikki.vendingMachine.payment.fields.description')}
-							</Text>
-							<div
-								dangerouslySetInnerHTML={{ __html: payment?.description || '' }}
-								style={{
-									fontSize: '0.875rem',
-									lineHeight: 1.6,
-								}}
-							/>
-						</div>
-					</>
-				)}
 
-				{(payment?.minTransactionValue !== undefined || payment?.maxTransactionValue !== undefined) && (
+				{/* {(payment?.minTransactionValue !== undefined || payment?.maxTransactionValue !== undefined) && (
 					<>
 						<Divider />
 						<div>
@@ -199,7 +170,7 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 							</Text>
 						</div>
 					</>
-				)}
+				)} */}
 
 				<Divider />
 
