@@ -54,7 +54,7 @@ export const listPayments = createAsyncThunk<
 );
 
 export const getPayment = createAsyncThunk<
-	PaymentMethod | undefined,
+	PaymentMethod,
 	string,
 	{ rejectValue: string }
 >(
@@ -218,33 +218,39 @@ function getPaymentReducers(builder: ActionReducerMapBuilder<PaymentState>) {
 
 function createPaymentReducers(builder: ActionReducerMapBuilder<PaymentState>) {
 	builder
-		.addCase(createPayment.pending, (state, _action) => {
+		.addCase(createPayment.pending, (state, action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createPayment.fulfilled, (state, action) => {
 			state.create.status = 'success';
 			state.create.data = action.payload;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createPayment.rejected, (state, action) => {
 			state.create.status = 'error';
 			state.create.error = action.payload || 'Failed to create payment';
+			state.create.requestId = action.meta.requestId;
 		});
 }
 
 function updatePaymentReducers(builder: ActionReducerMapBuilder<PaymentState>) {
 	builder
-		.addCase(updatePayment.pending, (state, _action) => {
+		.addCase(updatePayment.pending, (state, action) => {
 			state.update.status = 'pending';
 			state.update.error = null;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updatePayment.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updatePayment.rejected, (state, action) => {
 			state.update.status = 'error';
 			state.update.error = action.payload || 'Failed to update payment';
+			state.update.requestId = action.meta.requestId;
 		});
 }
 

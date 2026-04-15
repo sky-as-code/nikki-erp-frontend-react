@@ -14,7 +14,7 @@ import { Kiosk } from '../types';
 
 
 
-export function useKioskList({graph}: {graph?: SearchGraph}) {
+export function useKioskList({ graph }: { graph?: SearchGraph } = {}) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const list = useMicroAppSelector(selectKioskList);
 	const pagination = useMicroAppSelector(selectKioskListPagination);

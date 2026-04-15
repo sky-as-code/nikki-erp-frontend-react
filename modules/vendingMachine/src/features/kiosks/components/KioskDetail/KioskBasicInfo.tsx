@@ -33,8 +33,11 @@ const KioskBasicInfoAuditDates: React.FC<{ kiosk: Kiosk }> = ({ kiosk }) => {
 export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 	const { t } = useTranslation();
 
-	const { formId, isEditing, isSubmitting, modelSchema, formValues, onFormSubmit,
-		closeDeleteModal, confirmDelete, isOpenDeleteModal } = useBasicInfoTab({ kiosk });
+	const {
+		formId, isEditing, isSubmitting, modelSchema, formValues, onFormSubmit,
+		closeDeleteModal, confirmDelete, isOpenDeleteModal,
+		isOpenArchiveModal, pendingArchive, handleConfirmArchive, handleCloseArchiveModal,
+	} = useBasicInfoTab({ kiosk });
 
 	return (
 		<React.Fragment>
@@ -76,6 +79,28 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				/>}
 				confirmLabel={t('nikki.general.actions.delete')}
 				confirmColor='red'
+			/>
+
+			<ConfirmModal
+				opened={isOpenArchiveModal}
+				onClose={handleCloseArchiveModal}
+				onConfirm={handleConfirmArchive}
+				title={pendingArchive?.targetArchived
+					? t('nikki.vendingMachine.kiosk.messages.archive_modal_title')
+					: t('nikki.vendingMachine.kiosk.messages.restore_modal_title')}
+				message={
+					<Trans
+						i18nKey={pendingArchive?.targetArchived
+							? 'nikki.vendingMachine.kiosk.messages.archive_confirm'
+							: 'nikki.vendingMachine.kiosk.messages.restore_confirm'}
+						values={{ name: pendingArchive?.kiosk?.name || '' }}
+						components={{ strong: <strong /> }}
+					/>
+				}
+				confirmLabel={pendingArchive?.targetArchived
+					? t('nikki.general.actions.archive')
+					: t('nikki.general.actions.restore')}
+				confirmColor={pendingArchive?.targetArchived ? 'orange' : 'blue'}
 			/>
 
 		</React.Fragment>

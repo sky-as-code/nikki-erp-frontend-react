@@ -203,13 +203,6 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 											</ActionIcon>
 										</Tooltip>
 									)}
-									{onDelete && (
-										<Tooltip label={translate('nikki.general.actions.delete')}>
-											<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(kiosk)}>
-												<IconTrash size={14} />
-											</ActionIcon>
-										</Tooltip>
-									)}
 									{!kiosk.isArchived && onArchive && (
 										<Tooltip label={translate('nikki.general.actions.archive')}>
 											<ActionIcon variant='subtle' color='orange' size='sm' onClick={() => onArchive(kiosk)}>
@@ -221,6 +214,13 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 										<Tooltip label={translate('nikki.general.actions.restore')}>
 											<ActionIcon variant='subtle' color='blue' size='sm' onClick={() => onRestore(kiosk)}>
 												<IconArchiveOff size={14} />
+											</ActionIcon>
+										</Tooltip>
+									)}
+									{onDelete && (
+										<Tooltip label={translate('nikki.general.actions.delete')}>
+											<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(kiosk)}>
+												<IconTrash size={14} />
 											</ActionIcon>
 										</Tooltip>
 									)}

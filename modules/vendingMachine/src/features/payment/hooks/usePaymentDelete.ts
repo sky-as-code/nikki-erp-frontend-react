@@ -10,7 +10,7 @@ import { PaymentMethod } from '../types';
 
 
 
-export interface UsePaymentMethodDeleteProps {
+export interface UsePaymentDeleteProps {
 	onDeleteSuccess?: () => void;
 	onDeleteError?: () => void;
 }
@@ -33,7 +33,7 @@ function useDeleteOutcomeSync(
 		if (deleteState.status === 'success') {
 			dispatchedRequestIdRef.current = null;
 			notification.showInfo(
-				translate('nikki.general.messages.delete_success'),
+				translate('nikki.vendingMachine.payment.messages.delete_success'),
 				translate('nikki.general.messages.success'),
 			);
 			handleCloseDeleteModal();
@@ -54,10 +54,10 @@ function useDeleteOutcomeSync(
 	}, [deleteState, dispatch, notification, translate, handleCloseDeleteModal, onDeleteSuccess, onDeleteError]);
 }
 
-export const usePaymentMethodDelete = ({
+export const usePaymentDelete = ({
 	onDeleteSuccess = () => {},
 	onDeleteError = () => {},
-}: UsePaymentMethodDeleteProps = {
+}: UsePaymentDeleteProps = {
 	onDeleteSuccess: () => {},
 	onDeleteError: () => {},
 }) => {
@@ -105,3 +105,6 @@ export const usePaymentMethodDelete = ({
 		paymentToDelete,
 	};
 };
+
+/** @deprecated Use usePaymentDelete */
+export const usePaymentMethodDelete = usePaymentDelete;

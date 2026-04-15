@@ -628,6 +628,7 @@
 	},
 	"payment": {
 		"title": "Phương thức thanh toán",
+		"title_create": "Tạo phương thức thanh toán",
 		"detail": {
 			"title": "Chi tiết Phương thức thanh toán"
 		},
@@ -664,6 +665,14 @@
 		"messages": {
 			"no_payments": "Không tìm thấy phương thức thanh toán nào",
 			"no_custom_fields": "Không có trường tùy chỉnh",
+			"create_success": "Đã tạo phương thức thanh toán thành công",
+			"update_success": "Đã cập nhật phương thức thanh toán thành công",
+			"delete_success": "Đã xóa phương thức thanh toán thành công",
+			"delete_confirm": "Xóa phương thức thanh toán <strong>{{name}}</strong>?",
+			"not_found": {
+				"title": "Không tìm thấy phương thức thanh toán",
+				"message": "Phương thức có thể đã bị xóa hoặc liên kết không hợp lệ."
+			},
 			"archive_success": "Đã lưu trữ phương thức thanh toán thành công",
 			"restore_success": "Đã khôi phục phương thức thanh toán thành công",
 			"archive_modal_title": "Xác nhận lưu trữ phương thức thanh toán",

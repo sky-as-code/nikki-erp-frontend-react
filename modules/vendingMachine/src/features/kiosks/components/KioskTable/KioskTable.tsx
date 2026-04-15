@@ -246,8 +246,6 @@ export function renderConnectionStatusColumn(
 	);
 }
 
-
-
 function renderWarningsColumn(
 	row: Record<string, unknown>,
 	translate: TFunction,
@@ -347,13 +345,6 @@ function renderActionsColumn(
 						</ActionIcon>
 					</Tooltip>
 				)}
-				{onDelete && (
-					<Tooltip label={translate('nikki.general.actions.delete')}>
-						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(kiosk)}>
-							<IconTrash size={16} />
-						</ActionIcon>
-					</Tooltip>
-				)}
 				{!kiosk.isArchived && onArchive && (
 					<Tooltip label={translate('nikki.general.actions.archive')}>
 						<ActionIcon variant='subtle' color='orange' onClick={() => onArchive(kiosk)}>
@@ -365,6 +356,13 @@ function renderActionsColumn(
 					<Tooltip label={translate('nikki.general.actions.restore')}>
 						<ActionIcon variant='subtle' color='blue' onClick={() => onRestore(kiosk)}>
 							<IconArchiveOff size={16} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+				{onDelete && (
+					<Tooltip label={translate('nikki.general.actions.delete')}>
+						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(kiosk)}>
+							<IconTrash size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
@@ -385,7 +383,7 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 	data,
 	schema,
 	columns,
-	isLoading, isFetching,
+	isLoading,
 	onPreview, onEdit, onArchive, onRestore, onDelete,
 	totalItems, totalPages, page, onPageChange,
 	pageSize, pageSizeOptions, onPageSizeChange,
@@ -428,7 +426,7 @@ export const KioskTable: React.FC<KioskTableProps> = ({
 				columnSizes={colSizes}
 				data={data}
 				schema={schema}
-				isLoading={isLoading && !isFetching}
+				isLoading={isLoading}
 				columnRenderers={colRenderers}
 				headerRenderers={headerRenderers}
 			/>

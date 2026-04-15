@@ -82,10 +82,11 @@ export const useKioskModelDelete = ({
 		setModelToDelete(null);
 	}, []);
 
-	const handleDelete = React.useCallback((modelId: string) => {
-		const pendingAction = dispatch(kioskModelActions.deleteKioskModel({ id: modelId }));
+	const handleDelete = React.useCallback(() => {
+		if (!modelToDelete) return;
+		const pendingAction = dispatch(kioskModelActions.deleteKioskModel({ id: modelToDelete.id }));
 		dispatchedDeleteRequestIdRef.current = pendingAction.requestId;
-	}, [dispatch]);
+	}, [dispatch, modelToDelete]);
 
 	useDeleteOutcomeSync(
 		deleteState,

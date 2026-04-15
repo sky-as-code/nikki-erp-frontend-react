@@ -1,6 +1,14 @@
+/* eslint-disable max-lines-per-function */
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
-import { IconDeviceFloppy, IconEdit, IconTrash, IconX } from '@tabler/icons-react';
+import {
+	IconArchive,
+	IconDeviceFloppy,
+	IconEdit,
+	IconRestore,
+	IconTrash,
+	IconX,
+} from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -8,6 +16,7 @@ import { useNavigate } from 'react-router';
 import { kioskModelActions, VendingMachineDispatch } from '@/appState';
 import { ControlPanelProps } from '@/components/ControlPanel';
 import { useRegisterKioskModelDetailTab } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
+import { useKioskModelArchive } from '@/features/kioskModels/hooks/useKioskModelArchive';
 import { useKioskModelDelete } from '@/features/kioskModels/hooks/useKioskModelDelete';
 import { KioskModelUpdateFormData, useKioskModelEdit } from '@/features/kioskModels/hooks/useKioskModelEdit';
 import { kioskModelCreateSchema } from '@/features/kioskModels/schemas';
@@ -19,20 +28,24 @@ export const BASIC_INFO_FORM_ID = 'kiosk-model-basic-info-form';
 function buildBasicInfoActions(
 	isEditing: boolean,
 	isSubmitting: boolean,
+	model: KioskModel,
 	translate: ReturnType<typeof useTranslation>['t'],
 	handleEdit: () => void,
 	handleSave: () => void,
 	handleCancel: () => void,
+	onArchive: () => void,
+	onRestore: () => void,
 	handleDelete: () => void,
 ): ControlPanelProps['actions'] {
-	return [
-		...(!isEditing ? [{
+	const primary = !isEditing
+		? [{
 			label: translate('nikki.general.actions.edit'),
 			leftSection: <IconEdit size={16} />,
 			onClick: handleEdit,
 			type: 'button' as const,
 			variant: 'filled' as const,
-		}] : [{
+		}]
+		: [{
 			label: translate('nikki.general.actions.save'),
 			leftSection: <IconDeviceFloppy size={16} />,
 			onClick: handleSave,
@@ -47,7 +60,30 @@ function buildBasicInfoActions(
 			type: 'button' as const,
 			variant: 'outline' as const,
 			disabled: isSubmitting,
-		}]),
+		}];
+
+	const archiveAction = model.isArchived
+		? {
+			label: translate('nikki.general.actions.restore'),
+			leftSection: <IconRestore size={16} />,
+			onClick: onRestore,
+			type: 'button' as const,
+			variant: 'outline' as const,
+			disabled: isSubmitting || isEditing,
+		}
+		: {
+			label: translate('nikki.general.actions.archive'),
+			leftSection: <IconArchive size={16} />,
+			onClick: onArchive,
+			type: 'button' as const,
+			variant: 'outline' as const,
+			disabled: isSubmitting || isEditing,
+			color: 'orange' as const,
+		};
+
+	return [
+		...primary,
+		archiveAction,
 		{
 			label: translate('nikki.general.actions.delete'),
 			leftSection: <IconTrash size={16} />,
@@ -55,7 +91,7 @@ function buildBasicInfoActions(
 			type: 'button' as const,
 			variant: 'outline' as const,
 			color: 'red' as const,
-			disabled: isSubmitting,
+			disabled: isSubmitting || isEditing,
 		},
 	];
 }
@@ -73,6 +109,10 @@ export type UseBasicInfoTabReturn = {
 	closeDeleteModal: () => void;
 	confirmDelete: () => void;
 	isOpenDeleteModal: boolean;
+	isOpenArchiveModal: boolean;
+	pendingArchive: { model: KioskModel; targetArchived: boolean } | null;
+	handleConfirmArchive: () => void;
+	handleCloseArchiveModal: () => void;
 };
 
 export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTabReturn {
@@ -87,7 +127,23 @@ export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTab
 			dispatch(kioskModelActions.getKioskModel(model.id));
 		}
 	}, [model.id, dispatch]);
+
+	const onArchiveSuccess = useCallback(() => {
+		if (model.id) {
+			dispatch(kioskModelActions.getKioskModel(model.id));
+		}
+	}, [model.id, dispatch]);
+
 	const { isSubmitting, handleSubmit } = useKioskModelEdit({ onUpdateSuccess });
+
+	const {
+		handleConfirmArchive,
+		handleOpenArchiveModal,
+		handleOpenRestoreModal,
+		handleCloseModal: handleCloseArchiveModal,
+		isOpenArchiveModal,
+		pendingArchive,
+	} = useKioskModelArchive({ onArchiveSuccess });
 
 	const modelSchema = kioskModelCreateSchema as ModelSchema;
 
@@ -106,7 +162,7 @@ export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTab
 	const onCancelClick = useCallback(() => setIsEditing(false), []);
 
 	const {
-		handleDelete: dispatchDelete,
+		handleDelete: handleDeleteKioskModel,
 		handleOpenDeleteModal, handleCloseDeleteModal, isOpenDeleteModal,
 	} = useKioskModelDelete({ onDeleteSuccess: () => navigate('../kiosk-models') });
 
@@ -115,22 +171,36 @@ export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTab
 		[model, handleOpenDeleteModal],
 	);
 
+	const onArchiveClick = useCallback(() => {
+		handleOpenArchiveModal(model);
+	}, [model, handleOpenArchiveModal]);
+
+	const onRestoreClick = useCallback(() => {
+		handleOpenRestoreModal(model);
+	}, [model, handleOpenRestoreModal]);
+
 	const confirmDelete = useCallback(() => {
-		dispatchDelete(model.id);
+		handleDeleteKioskModel();
 		handleCloseDeleteModal();
-	}, [dispatchDelete, model.id, handleCloseDeleteModal]);
+	}, [handleDeleteKioskModel, handleCloseDeleteModal]);
 
 	const actions = useMemo(
 		() => buildBasicInfoActions(
 			isEditing,
 			isSubmitting,
+			model,
 			translate,
 			onEditClick,
 			onSaveClick,
 			onCancelClick,
+			onArchiveClick,
+			onRestoreClick,
 			onDeleteClick,
 		),
-		[isEditing, isSubmitting, translate, onEditClick, onSaveClick, onCancelClick, onDeleteClick],
+		[
+			isEditing, isSubmitting, model, translate,
+			onEditClick, onSaveClick, onCancelClick, onArchiveClick, onRestoreClick, onDeleteClick,
+		],
 	);
 
 	useRegisterKioskModelDetailTab('basicInfo', actions);
@@ -144,5 +214,9 @@ export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTab
 		closeDeleteModal: handleCloseDeleteModal,
 		confirmDelete,
 		isOpenDeleteModal,
+		isOpenArchiveModal,
+		pendingArchive,
+		handleConfirmArchive,
+		handleCloseArchiveModal,
 	};
 }

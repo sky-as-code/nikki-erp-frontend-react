@@ -21,12 +21,16 @@ export function usePaymentList(graph?: SearchGraph) {
 		}
 	}, [graph]);
 
+	const handleRefresh = () => dispatch(paymentActions.listPayments({ graph }));
 
-	const handleRefresh = () => dispatch(paymentActions.listPayments());
+	const hasData = Array.isArray(payments.data) && payments.data.length > 0;
+	const isInitialLoading = !hasData && (payments.status === 'idle' || payments.status === 'pending');
+	const isFetching = payments.status === 'pending';
 
 	return {
 		payments: payments.data ?? [],
-		isLoadingList: payments.status === 'pending' || payments.status === 'idle',
+		isInitialLoading,
+		isFetching,
 		handleRefresh,
 	};
 }

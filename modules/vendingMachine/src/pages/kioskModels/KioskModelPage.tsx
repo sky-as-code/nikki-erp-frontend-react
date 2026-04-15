@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { ConfirmModal } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo } from 'react';
@@ -11,6 +12,7 @@ import {
 	KioskModelGridView,
 	KioskModelTable,
 	useKioskModelArchive,
+	useKioskModelDelete,
 	useKioskModelFilter,
 	useKioskModelList,
 	useKioskModelPageConfig,
@@ -40,6 +42,14 @@ export const KioskModelPage: React.FC = () => {
 		handleConfirmArchive,
 	} = useKioskModelArchive({ onArchiveSuccess: handleRefresh });
 
+	const {
+		handleDelete: handleDeleteKioskModel,
+		handleOpenDeleteModal,
+		handleCloseDeleteModal,
+		isOpenDeleteModal,
+		modelToDelete,
+	} = useKioskModelDelete({ onDeleteSuccess: handleRefresh });
+
 	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskModelPageConfig({ handleRefresh });
 
 	return (
@@ -56,14 +66,16 @@ export const KioskModelPage: React.FC = () => {
 					/>,
 				]}
 				isLoading={isInitialLoading}
+				isEmpty={!models?.length && !isInitialLoading && !isFetching}
 			>
 				<KioskModelPageContent
 					kioskModels={models}
 					handlePreview={handlePreview}
 					handleArchive={handleOpenArchiveModal}
 					handleRestore={handleOpenRestoreModal}
+					handleDelete={handleOpenDeleteModal}
 					viewMode={viewMode}
-					isFetching={isFetching}
+					isLoading={isInitialLoading}
 					page={page}
 					pageSize={pageSize}
 					totalPages={totalPages}
@@ -93,6 +105,22 @@ export const KioskModelPage: React.FC = () => {
 					? translate('nikki.general.actions.archive')
 					: translate('nikki.general.actions.restore')}
 				confirmColor={pendingArchive?.targetArchived ? 'orange' : 'blue'}
+			/>
+
+			<ConfirmModal
+				title={translate('nikki.general.messages.delete_confirm')}
+				opened={!!modelToDelete && isOpenDeleteModal}
+				onClose={handleCloseDeleteModal}
+				onConfirm={handleDeleteKioskModel}
+				message={
+					<Trans
+						i18nKey='nikki.vendingMachine.kioskModels.messages.delete_confirm'
+						values={{ name: modelToDelete?.name || '' }}
+						components={{ strong: <strong /> }}
+					/>
+				}
+				confirmLabel={translate('nikki.general.actions.delete')}
+				confirmColor='red'
 			/>
 
 			<KioskModelDetailDrawer
@@ -134,8 +162,9 @@ type KioskModelPageContentProps = {
 	handlePreview: (model: KioskModel) => void;
 	handleArchive: (model: KioskModel) => void;
 	handleRestore: (model: KioskModel) => void;
+	handleDelete: (model: KioskModel) => void;
 	viewMode: KioskModelViewMode;
-	isFetching: boolean;
+	isLoading: boolean;
 	page: number;
 	pageSize: number;
 	totalPages: number;
@@ -144,8 +173,8 @@ type KioskModelPageContentProps = {
 	onPageSizeChange: (value: string | null) => void;
 };
 const KioskModelPageContent: React.FC<KioskModelPageContentProps> = ({
-	kioskModels, handlePreview, handleArchive, handleRestore, viewMode,
-	isFetching, page, pageSize, totalPages, totalItems, onPageChange, onPageSizeChange,
+	kioskModels, handlePreview, handleArchive, handleRestore, handleDelete, viewMode,
+	isLoading, page, pageSize, totalPages, totalItems, onPageChange, onPageSizeChange,
 }) => {
 	const kioskModelListView = useMemo(() => (
 		<KioskModelTable
@@ -155,7 +184,8 @@ const KioskModelPageContent: React.FC<KioskModelPageContentProps> = ({
 			onPreview={handlePreview}
 			onArchive={handleArchive}
 			onRestore={handleRestore}
-			isFetching={isFetching}
+			onDelete={handleDelete}
+			isLoading={isLoading}
 			page={page}
 			pageSize={pageSize}
 			totalPages={totalPages}
@@ -164,7 +194,7 @@ const KioskModelPageContent: React.FC<KioskModelPageContentProps> = ({
 			onPageSizeChange={onPageSizeChange}
 		/>
 	), [
-		kioskModels, handlePreview, handleArchive, handleRestore, isFetching,
+		kioskModels, handlePreview, handleArchive, handleRestore, handleDelete, isLoading,
 		page, pageSize, totalPages, totalItems, onPageChange, onPageSizeChange,
 	]);
 
@@ -174,8 +204,9 @@ const KioskModelPageContent: React.FC<KioskModelPageContentProps> = ({
 			onPreview={handlePreview}
 			onArchive={handleArchive}
 			onRestore={handleRestore}
+			onDelete={handleDelete}
 		/>
-	), [kioskModels, handlePreview, handleArchive, handleRestore]);
+	), [kioskModels, handlePreview, handleArchive, handleRestore, handleDelete]);
 
 	const pageContent = useMemo(() => {
 		const views: Partial<Record<ViewMode, React.ReactNode>> = {

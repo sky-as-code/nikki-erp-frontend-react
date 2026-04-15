@@ -119,13 +119,6 @@ function renderActionsColumn(
 						</ActionIcon>
 					</Tooltip>
 				)}
-				{onDelete && (
-					<Tooltip label={translate('nikki.general.actions.delete')}>
-						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(payment)}>
-							<IconTrash size={16} />
-						</ActionIcon>
-					</Tooltip>
-				)}
 				{!row.isArchived && onArchive && (
 					<Tooltip label={translate('nikki.general.actions.archive')}>
 						<ActionIcon variant='subtle' color='orange' onClick={() => onArchive(payment)}>
@@ -137,6 +130,13 @@ function renderActionsColumn(
 					<Tooltip label={translate('nikki.general.actions.restore')}>
 						<ActionIcon variant='subtle' color='blue' onClick={() => onRestore(payment)}>
 							<IconArchiveOff size={16} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+				{onDelete && (
+					<Tooltip label={translate('nikki.general.actions.delete')}>
+						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(payment)}>
+							<IconTrash size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}

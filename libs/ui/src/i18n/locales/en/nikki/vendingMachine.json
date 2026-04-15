@@ -587,6 +587,7 @@
 	},
 	"payment": {
 		"title": "Payment Methods",
+		"title_create": "Create payment method",
 		"detail": {
 			"title": "Payment Method Details"
 		},
@@ -623,6 +624,14 @@
 		"messages": {
 			"no_payments": "No payment methods found",
 			"no_custom_fields": "No custom fields",
+			"create_success": "Payment method created successfully",
+			"update_success": "Payment method updated successfully",
+			"delete_success": "Payment method deleted successfully",
+			"delete_confirm": "Delete payment method <strong>{{name}}</strong>?",
+			"not_found": {
+				"title": "Payment method not found",
+				"message": "This payment method may have been removed or the link is invalid."
+			},
 			"archive_success": "Payment method has been archived successfully",
 			"restore_success": "Payment method has been restored successfully",
 			"archive_modal_title": "Archive confirmation",

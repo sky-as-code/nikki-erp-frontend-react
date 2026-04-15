@@ -1,8 +1,10 @@
+/* eslint-disable max-lines-per-function */
 import { ConfirmModal } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import { IconPlus, IconRefresh } from '@tabler/icons-react';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
 import { ControlPanel, type ViewMode, ControlPanelFilterConfig, ControlPanelActionItem } from '@/components';
 import { PageContainer } from '@/components/PageContainer';
@@ -12,6 +14,7 @@ import {
 	PaymentTable,
 	paymentSchema,
 	usePaymentArchived,
+	usePaymentDelete,
 	usePaymentDetail,
 	usePaymentList,
 } from '@/features/payment';
@@ -54,17 +57,17 @@ function usePaymentFilter() {
 
 function usePaymentListPageConfig({ handleRefresh }: { handleRefresh: () => void }) {
 	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
 	const [viewMode, setViewMode] = useState<ViewMode>('list');
 
-	const handleCreate = () => {
-		// TODO: Navigate to create page
-		console.log('Create payment');
-	};
+	const handleCreate = useCallback(() => {
+		navigate('create');
+	}, [navigate]);
 
 	const actions: ControlPanelActionItem[] = useMemo(() => [
 		{ label: translate('nikki.general.actions.create'), leftSection: <IconPlus size={16} />, onClick: handleCreate },
 		{ label: translate('nikki.general.actions.refresh'), leftSection: <IconRefresh size={16} />, onClick: handleRefresh, variant: 'outline' },
-	], [handleCreate, translate]);
+	], [handleCreate, translate, handleRefresh]);
 
 	const breadcrumbs = useMemo(() => [
 		{ title: translate('nikki.vendingMachine.title'), href: '../overview' },
@@ -104,14 +107,22 @@ const usePaymentPreview = () => {
 export const PaymentPage: React.FC = () => {
 	const { t: translate } = useTranslation();
 	const { filters, graph } = usePaymentFilter();
-	const { payments, isLoadingList, handleRefresh } = usePaymentList(graph);
+	const { payments, isInitialLoading, isFetching, handleRefresh } = usePaymentList(graph);
 	const { isOpenPreview, handleClosePreview, selectedPayment, isLoadingPreview, handlePreview } = usePaymentPreview();
 
 	const { isOpenArchiveModal, pendingArchive, handleConfirmArchive,
 		handleOpenArchiveModal, handleOpenRestoreModal, handleCloseModal,
 	} = usePaymentArchived({ onArchiveSuccess: handleRefresh });
 
-	const { breadcrumbs, actions, viewMode, setViewMode } = usePaymentListPageConfig({handleRefresh});
+	const {
+		handleDelete,
+		handleOpenDeleteModal,
+		handleCloseDeleteModal,
+		isOpenDeleteModal,
+		paymentToDelete,
+	} = usePaymentDelete({ onDeleteSuccess: handleRefresh });
+
+	const { breadcrumbs, actions, viewMode, setViewMode } = usePaymentListPageConfig({ handleRefresh });
 
 	return (
 		<>
@@ -125,22 +136,26 @@ export const PaymentPage: React.FC = () => {
 						viewMode={{ value: viewMode, onChange: setViewMode, segments: ['list', 'grid'] }}
 					/>
 				}
+				isLoading={isInitialLoading}
+				isEmpty={!payments?.length && !isInitialLoading && !isFetching}
 			>
 				{viewMode === 'list' ? (
 					<PaymentTable
 						columns={['method', 'name', 'isArchived', 'config', 'createdAt', 'actions']}
 						data={payments}
 						schema={paymentSchema as ModelSchema}
-						isLoading={isLoadingList}
+						isLoading={isInitialLoading}
 						onViewDetail={handlePreview}
+						onDelete={handleOpenDeleteModal}
 						onArchive={handleOpenArchiveModal}
 						onRestore={handleOpenRestoreModal}
 					/>
 				) : (
 					<PaymentGridView
 						payments={payments}
-						isLoading={isLoadingList}
+						isLoading={isInitialLoading}
 						onViewDetail={handlePreview}
+						onDelete={handleOpenDeleteModal}
 						onArchive={handleOpenArchiveModal}
 						onRestore={handleOpenRestoreModal}
 					/>
@@ -167,6 +182,22 @@ export const PaymentPage: React.FC = () => {
 					? translate('nikki.general.actions.archive')
 					: translate('nikki.general.actions.restore')}
 				confirmColor={pendingArchive?.targetArchived ? 'orange' : 'blue'}
+			/>
+
+			<ConfirmModal
+				title={translate('nikki.general.messages.delete_confirm')}
+				opened={!!paymentToDelete && isOpenDeleteModal}
+				onClose={handleCloseDeleteModal}
+				onConfirm={() => handleDelete(paymentToDelete?.id || '')}
+				message={
+					<Trans
+						i18nKey='nikki.vendingMachine.payment.messages.delete_confirm'
+						values={{ name: paymentToDelete?.name || '' }}
+						components={{ strong: <strong /> }}
+					/>
+				}
+				confirmLabel={translate('nikki.general.actions.delete')}
+				confirmColor='red'
 			/>
 
 			<PaymentDetailDrawer

@@ -35,6 +35,7 @@ export const KioskModelBasicInfo: React.FC<KioskModelBasicInfoProps> = ({ model 
 	const {
 		formId, isEditing, isSubmitting, modelSchema, onFormSubmit,
 		closeDeleteModal, confirmDelete, isOpenDeleteModal,
+		isOpenArchiveModal, pendingArchive, handleConfirmArchive, handleCloseArchiveModal,
 	} = useBasicInfoTab({ model });
 
 	return (
@@ -78,6 +79,28 @@ export const KioskModelBasicInfo: React.FC<KioskModelBasicInfoProps> = ({ model 
 				/>}
 				confirmLabel={t('nikki.general.actions.delete')}
 				confirmColor='red'
+			/>
+
+			<ConfirmModal
+				opened={isOpenArchiveModal}
+				onClose={handleCloseArchiveModal}
+				onConfirm={handleConfirmArchive}
+				title={pendingArchive?.targetArchived
+					? t('nikki.vendingMachine.kioskModels.messages.archive_modal_title')
+					: t('nikki.vendingMachine.kioskModels.messages.restore_modal_title')}
+				message={
+					<Trans
+						i18nKey={pendingArchive?.targetArchived
+							? 'nikki.vendingMachine.kioskModels.messages.archive_confirm'
+							: 'nikki.vendingMachine.kioskModels.messages.restore_confirm'}
+						values={{ name: pendingArchive?.model?.name || '' }}
+						components={{ strong: <strong /> }}
+					/>
+				}
+				confirmLabel={pendingArchive?.targetArchived
+					? t('nikki.general.actions.archive')
+					: t('nikki.general.actions.restore')}
+				confirmColor={pendingArchive?.targetArchived ? 'orange' : 'blue'}
 			/>
 		</React.Fragment>
 	);

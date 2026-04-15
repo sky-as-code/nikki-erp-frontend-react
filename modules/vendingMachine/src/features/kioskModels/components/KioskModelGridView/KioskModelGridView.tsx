@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import { ActionIcon, Card, Group, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
-import { IconArchive, IconArchiveOff, IconBox, IconEdit } from '@tabler/icons-react';
+import { IconArchive, IconArchiveOff, IconBox, IconEdit, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -16,6 +16,7 @@ export interface KioskModelGridViewProps {
 	onEdit?: (kioskModel: KioskModel) => void;
 	onArchive?: (kioskModel: KioskModel) => void;
 	onRestore?: (kioskModel: KioskModel) => void;
+	onDelete?: (kioskModel: KioskModel) => void;
 }
 
 export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
@@ -25,6 +26,7 @@ export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 	onEdit,
 	onArchive,
 	onRestore,
+	onDelete,
 }) => {
 	const { t: translate } = useTranslation();
 
@@ -65,31 +67,33 @@ export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 								</Stack>
 							</Group>
 							<Group gap='xs' onClick={(e) => e.stopPropagation()}>
-								{model.isArchived ? (
-									onRestore && (
-										<Tooltip label={translate('nikki.general.actions.restore')}>
-											<ActionIcon variant='subtle' color='blue' size='sm' onClick={() => onRestore(model)}>
-												<IconArchiveOff size={14} />
-											</ActionIcon>
-										</Tooltip>
-									)
-								) : (
-									<>
-										{onEdit && (
-											<Tooltip label={translate('nikki.general.actions.edit')}>
-												<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(model)}>
-													<IconEdit size={14} />
-												</ActionIcon>
-											</Tooltip>
-										)}
-										{onArchive && (
-											<Tooltip label={translate('nikki.general.actions.archive')}>
-												<ActionIcon variant='subtle' color='orange' size='sm' onClick={() => onArchive(model)}>
-													<IconArchive size={14} />
-												</ActionIcon>
-											</Tooltip>
-										)}
-									</>
+								{onEdit && (
+									<Tooltip label={translate('nikki.general.actions.edit')}>
+										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(model)}>
+											<IconEdit size={14} />
+										</ActionIcon>
+									</Tooltip>
+								)}
+								{!model.isArchived && onArchive && (
+									<Tooltip label={translate('nikki.general.actions.archive')}>
+										<ActionIcon variant='subtle' color='orange' size='sm' onClick={() => onArchive(model)}>
+											<IconArchive size={14} />
+										</ActionIcon>
+									</Tooltip>
+								)}
+								{model.isArchived && onRestore && (
+									<Tooltip label={translate('nikki.general.actions.restore')}>
+										<ActionIcon variant='subtle' color='blue' size='sm' onClick={() => onRestore(model)}>
+											<IconArchiveOff size={14} />
+										</ActionIcon>
+									</Tooltip>
+								)}
+								{onDelete && (
+									<Tooltip label={translate('nikki.general.actions.delete')}>
+										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(model)}>
+											<IconTrash size={14} />
+										</ActionIcon>
+									</Tooltip>
 								)}
 							</Group>
 						</Group>

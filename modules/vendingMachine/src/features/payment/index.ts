@@ -6,3 +6,4 @@ export * from './paymentService';
 export * from './components/PaymentTable';
 export * from './components/PaymentDetailDrawer';
 export * from './components/PaymentGridView';
+export * from './components/PaymentDetail';

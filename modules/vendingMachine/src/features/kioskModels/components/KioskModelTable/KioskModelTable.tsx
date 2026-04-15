@@ -1,6 +1,6 @@
 import { ActionIcon, Box, Divider, Group, Text, Tooltip } from '@mantine/core';
 import { AutoTable, AutoTableProps, TablePagination } from '@nikkierp/ui/components';
-import { IconArchive, IconEdit, IconEye, IconArchiveOff } from '@tabler/icons-react';
+import { IconArchive, IconArchiveOff, IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -16,6 +16,7 @@ export interface KioskModelTableProps extends AutoTableProps {
 	onEdit?: (kioskModel: KioskModel) => void;
 	onArchive?: (kioskModel: KioskModel) => void;
 	onRestore?: (kioskModel: KioskModel) => void;
+	onDelete?: (kioskModel: KioskModel) => void;
 	isFetching?: boolean;
 	page?: number;
 	totalPages?: number;
@@ -39,22 +40,20 @@ const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
 
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		if (!row.isArchived && modelId) {
+		if (modelId) {
 			navigate(`../kiosk-models/${modelId}`);
 		}
 	};
 
-	if (row.isArchived) {
-		return <Text c='var(--mantine-color-gray-7)' fw={500} td='none'>{name}</Text>;
-	}
-
 	return (
 		<Text
-			c={'light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2))'}
-			fw={500}
-			style={{ cursor: 'pointer' }}
+			c={row.isArchived
+				? 'var(--mantine-color-gray-7)'
+				: 'light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2))'
+			}
+			fw={500} style={{ cursor: 'pointer' }}
 			onClick={handleClick}
-			td='underline'
+			td={'underline'}
 		>
 			{name}
 		</Text>
@@ -84,28 +83,13 @@ function renderActionsColumn(
 	onEdit?: (kioskModel: KioskModel) => void,
 	onArchive?: (kioskModel: KioskModel) => void,
 	onRestore?: (kioskModel: KioskModel) => void,
+	onDelete?: (kioskModel: KioskModel) => void,
 	translate?: (key: string) => string,
 ) {
 	if (!translate) return null;
 
-	if (row.isArchived) {
-		return (
-			<Box style={{ minWidth: 120 }}>
-				<Group gap='xs' justify='flex-end' onClick={(e) => e.stopPropagation()}>
-					{onRestore && (
-						<Tooltip label={translate('nikki.general.actions.restore')}>
-							<ActionIcon variant='subtle' color='blue' onClick={() => onRestore(row)}>
-								<IconArchiveOff size={16} />
-							</ActionIcon>
-						</Tooltip>
-					)}
-				</Group>
-			</Box>
-		);
-	}
-
 	return (
-		<Box style={{ minWidth: 120 }}>
+		<Box style={{ minWidth: 150 }}>
 			<Group gap='xs' justify='flex-end' onClick={(e) => e.stopPropagation()}>
 				{onView && (
 					<Tooltip label={translate('nikki.general.actions.view')}>
@@ -121,10 +105,24 @@ function renderActionsColumn(
 						</ActionIcon>
 					</Tooltip>
 				)}
-				{onArchive && (
+				{!row.isArchived && onArchive && (
 					<Tooltip label={translate('nikki.general.actions.archive')}>
 						<ActionIcon variant='subtle' color='orange' onClick={() => onArchive(row)}>
 							<IconArchive size={16} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+				{row.isArchived && onRestore && (
+					<Tooltip label={translate('nikki.general.actions.restore')}>
+						<ActionIcon variant='subtle' color='blue' onClick={() => onRestore(row)}>
+							<IconArchiveOff size={16} />
+						</ActionIcon>
+					</Tooltip>
+				)}
+				{onDelete && (
+					<Tooltip label={translate('nikki.general.actions.delete')}>
+						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(row)}>
+							<IconTrash size={16} />
 						</ActionIcon>
 					</Tooltip>
 				)}
@@ -150,7 +148,7 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 	onEdit,
 	onArchive,
 	onRestore,
-	isFetching,
+	onDelete,
 	page,
 	totalPages,
 	totalItems,
@@ -167,7 +165,7 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 				<AutoTable
 					data={data}
 					schema={schema}
-					isLoading={isLoading && !isFetching}
+					isLoading={isLoading}
 					columns={columns}
 					columnSizes={{
 						referenceCode: { flex: 1, minWidth: 160 },
@@ -187,6 +185,7 @@ export const KioskModelTable: React.FC<KioskModelTableProps> = ({
 								onEdit,
 								onArchive,
 								onRestore,
+								onDelete,
 								translate,
 							),
 					}}

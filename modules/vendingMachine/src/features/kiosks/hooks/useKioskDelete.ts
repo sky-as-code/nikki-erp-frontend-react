@@ -3,9 +3,10 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appState';
+
 import { type Kiosk } from '../types';
 
-import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appState';
 
 
 
@@ -32,7 +33,7 @@ export const useKioskDelete = ({onDeleteSuccess}: {onDeleteSuccess?: () => void}
 
 	const handleDelete = React.useCallback(() => {
 		if (!kioskToDelete) return;
-		const action = dispatch(kioskActions.deleteKiosk({ id: kioskToDelete?.id || '' }));
+		const action = dispatch(kioskActions.deleteKiosk({ id: kioskToDelete.id }));
 		deleteRequestIdRef.current = action.requestId;
 	}, [dispatch, kioskToDelete]);
 

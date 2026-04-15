@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { ConfirmModal } from '@nikkierp/ui/components';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React, { useMemo } from 'react';
@@ -10,6 +11,7 @@ import {
 	KioskDetailDrawer, useKioskList, useKioskPageConfig,
 	useKioskPreview, KioskListViewMode, kioskSchema, KioskTable,
 	KioskGridView, KioskMapView, Kiosk, useKioskArchive,
+	useKioskDelete,
 } from '@/features/kiosks';
 import { useKioskFilter } from '@/features/kiosks/hooks/useKioskFilter';
 
@@ -29,6 +31,11 @@ export const KioskListPage: React.FC = () => {
 		isOpenArchiveModal, handleOpenArchiveModal, handleOpenRestoreModal,
 		handleCloseModal: handleCloseArchiveModal, pendingArchive, handleConfirmArchive,
 	} = useKioskArchive({ onArchiveSuccess: handleRefresh });
+
+	const {
+		isOpenDeleteModal, openDeleteModal, kioskToDelete,
+		closeDeleteModal: handleCloseDeleteModal, handleDelete: handleDeleteKiosk,
+	} = useKioskDelete({ onDeleteSuccess: handleRefresh });
 
 	const { breadcrumbs, actions, viewMode, setViewMode } = useKioskPageConfig({ handleRefresh });
 
@@ -55,7 +62,8 @@ export const KioskListPage: React.FC = () => {
 					handlePreview={handlePreview}
 					handleArchive={handleOpenArchiveModal}
 					handleRestore={handleOpenRestoreModal}
-					isFetching={isFetching}
+					handleDelete={openDeleteModal}
+					isLoading={isInitialLoading}
 					page={page}
 					pageSize={pageSize}
 					totalPages={totalPages}
@@ -84,6 +92,23 @@ export const KioskListPage: React.FC = () => {
 					: translate('nikki.general.actions.restore')}
 				confirmColor={pendingArchive?.targetArchived ? 'orange' : 'blue'}
 			/>
+
+			<ConfirmModal
+				title={translate('nikki.general.messages.delete_confirm')}
+				opened={!!kioskToDelete && isOpenDeleteModal}
+				onClose={handleCloseDeleteModal}
+				onConfirm={() => handleDeleteKiosk()}
+				message={
+					<Trans
+						i18nKey='nikki.vendingMachine.kioskModels.messages.delete_confirm'
+						values={{ name: kioskToDelete?.name || '' }}
+						components={{ strong: <strong /> }}
+					/>
+				}
+				confirmLabel={translate('nikki.general.actions.delete')}
+				confirmColor='red'
+			/>
+
 
 			{
 				selectedKiosk && (
@@ -133,7 +158,7 @@ interface KioskListPageContentProps {
 	handleDelete?: (kiosk: Kiosk) => void;
 	handleArchive?: (kiosk: Kiosk) => void;
 	handleRestore?: (kiosk: Kiosk) => void;
-	isFetching: boolean;
+	isLoading: boolean;
 	page: number;
 	pageSize: number;
 	totalPages: number;
@@ -142,8 +167,8 @@ interface KioskListPageContentProps {
 	onPageSizeChange: (value: string | null) => void;
 }
 const KioskListPageContent: React.FC<KioskListPageContentProps> = ({
-	kiosks, viewMode, handlePreview, handleArchive, handleRestore,
-	isFetching, page, pageSize, totalPages, totalItems, onPageChange, onPageSizeChange,
+	kiosks, viewMode, handlePreview, handleArchive, handleRestore, handleDelete,
+	isLoading, page, pageSize, totalPages, totalItems, onPageChange, onPageSizeChange,
 }) => {
 	const kioskListView = useMemo(() => (
 		<KioskTable
@@ -153,7 +178,8 @@ const KioskListPageContent: React.FC<KioskListPageContentProps> = ({
 			onPreview={handlePreview}
 			onArchive={handleArchive}
 			onRestore={handleRestore}
-			isFetching={isFetching}
+			onDelete={handleDelete}
+			isLoading={isLoading}
 			totalItems={totalItems}
 			page={page}
 			pageSize={pageSize}
@@ -162,7 +188,7 @@ const KioskListPageContent: React.FC<KioskListPageContentProps> = ({
 			onPageSizeChange={onPageSizeChange}
 		/>
 	), [
-		kiosks, handlePreview, handleArchive, handleRestore, isFetching,
+		kiosks, handlePreview, handleArchive, handleRestore, handleDelete, isLoading,
 		page, pageSize, totalPages, onPageChange, onPageSizeChange,
 	]);
 
@@ -172,8 +198,9 @@ const KioskListPageContent: React.FC<KioskListPageContentProps> = ({
 			onPreview={handlePreview}
 			onArchive={handleArchive}
 			onRestore={handleRestore}
+			onDelete={handleDelete}
 		/>
-	), [kiosks, handlePreview, handleArchive, handleRestore]);
+	), [kiosks, handlePreview, handleArchive, handleRestore, handleDelete]);
 
 	const kioskMapView = useMemo(() => (
 		<KioskMapView kiosks={kiosks} />

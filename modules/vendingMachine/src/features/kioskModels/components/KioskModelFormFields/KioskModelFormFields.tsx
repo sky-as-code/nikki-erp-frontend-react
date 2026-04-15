@@ -22,10 +22,6 @@ export const KioskModelFormFields: React.FC<KioskModelFormFieldsProps> = ({ mode
 			</Box>
 
 			<Box className={classes.formField}>
-				<AutoField name='modelId' htmlProps={mode !== 'create' ? { readOnly: true } : {}} />
-			</Box>
-
-			<Box className={classes.formField}>
 				<AutoField name='referenceCode' htmlProps={mode !== 'create' ? { readOnly: true } : {}} />
 			</Box>
 

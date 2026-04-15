@@ -85,13 +85,6 @@ export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 										</ActionIcon>
 									</Tooltip>
 								)}
-								{onDelete && (
-									<Tooltip label={translate('nikki.general.actions.delete')}>
-										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(payment)}>
-											<IconTrash size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
 								{!payment.isArchived && onArchive && (
 									<Tooltip label={translate('nikki.general.actions.archive')}>
 										<ActionIcon variant='subtle' color='orange' size='sm' onClick={() => onArchive(payment)}>
@@ -106,28 +99,19 @@ export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 										</ActionIcon>
 									</Tooltip>
 								)}
+								{onDelete && (
+									<Tooltip label={translate('nikki.general.actions.delete')}>
+										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(payment)}>
+											<IconTrash size={14} />
+										</ActionIcon>
+									</Tooltip>
+								)}
 							</Group>
 						</Group>
 
 						<Group gap='xs' wrap='nowrap'>
 							<ArchivedStatusBadge isArchived={payment.isArchived} />
 						</Group>
-
-						{/* {(payment.minTransactionValue !== undefined || payment.maxTransactionValue !== undefined) && (
-							<Text size='xs' c='dimmed'>
-								{payment.minTransactionValue !== undefined
-									? formatCurrency(payment.minTransactionValue)
-									: '0'} - {payment.maxTransactionValue !== undefined
-									? formatCurrency(payment.maxTransactionValue)
-									: '∞'}
-							</Text>
-						)}
-
-						{payment.customFields.length > 0 && (
-							<Text size='xs' c='dimmed'>
-								{translate('nikki.vendingMachine.payment.fields.customFields')}: {payment.customFields.length}
-							</Text>
-						)} */}
 
 						<Text size='xs' c='dimmed'>
 							{translate('nikki.vendingMachine.payment.fields.createdAt')}: {new Date(payment.createdAt).toLocaleDateString()}
