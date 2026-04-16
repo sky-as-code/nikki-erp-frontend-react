@@ -1,34 +1,31 @@
-/* eslint-disable max-lines-per-function */
-import { ActionIcon, Box, Card, Group, Image, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
-import { IconArchive, IconArchiveOff, IconCreditCard, IconEdit, IconTrash } from '@tabler/icons-react';
+import { Box, Card, Group, Image, SimpleGrid, Stack, Text } from '@mantine/core';
+import { TablePaginationProps } from '@nikkierp/ui/components';
+import { IconCreditCard } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
-
 import { PaymentMethod } from '../../types';
+import { getPaymentTableActions, PaymentTableActions } from '../PaymentTable';
+
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { TableAction } from '@/components/Table';
+
 
 
 export interface PaymentGridViewProps {
 	payments: PaymentMethod[];
 	isLoading?: boolean;
-	onViewDetail: (payment: PaymentMethod) => void;
-	onEdit?: (payment: PaymentMethod) => void;
-	onDelete?: (payment: PaymentMethod) => void;
-	onArchive?: (payment: PaymentMethod) => void;
-	onRestore?: (payment: PaymentMethod) => void;
+	actions?: PaymentTableActions;
+	pagination?: TablePaginationProps;
 }
 
 export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 	payments,
 	isLoading = false,
-	onViewDetail,
-	onEdit,
-	onDelete,
-	onArchive,
-	onRestore,
+	actions = {},
 }) => {
 	const { t: translate } = useTranslation();
+	const { view: onViewDetail, ...cardActions } = actions;
 
 	if (isLoading) {
 		return <Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>;
@@ -50,10 +47,8 @@ export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 					padding='lg'
 					radius='md'
 					withBorder
-					style={{
-						cursor: 'pointer',
-					}}
-					onClick={() => onViewDetail(payment)}
+					style={{ cursor: 'pointer' }}
+					onClick={() => onViewDetail?.(payment)}
 				>
 					<Stack gap='sm'>
 						<Group justify='space-between' align='flex-start'>
@@ -77,36 +72,10 @@ export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 									<Text size='xs' c='dimmed'>{payment.name}</Text>
 								</Stack>
 							</Group>
-							<Group gap='xs' onClick={(e) => e.stopPropagation()}>
-								{onEdit && (
-									<Tooltip label={translate('nikki.general.actions.edit')}>
-										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(payment)}>
-											<IconEdit size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-								{!payment.isArchived && onArchive && (
-									<Tooltip label={translate('nikki.general.actions.archive')}>
-										<ActionIcon variant='subtle' color='orange' size='sm' onClick={() => onArchive(payment)}>
-											<IconArchive size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-								{payment.isArchived && onRestore && (
-									<Tooltip label={translate('nikki.general.actions.restore')}>
-										<ActionIcon variant='subtle' color='blue' size='sm' onClick={() => onRestore(payment)}>
-											<IconArchiveOff size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-								{onDelete && (
-									<Tooltip label={translate('nikki.general.actions.delete')}>
-										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(payment)}>
-											<IconTrash size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-							</Group>
+							<TableAction
+								actions={getPaymentTableActions(payment, cardActions, translate)}
+								overflowMenuLabel={translate('nikki.general.actions.title')}
+							/>
 						</Group>
 
 						<Group gap='xs' wrap='nowrap'>

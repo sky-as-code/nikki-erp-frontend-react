@@ -1,34 +1,31 @@
-/* eslint-disable max-lines-per-function */
-import { ActionIcon, Card, Group, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
-import { IconArchive, IconArchiveOff, IconBox, IconEdit, IconTrash } from '@tabler/icons-react';
+import { Card, Group, SimpleGrid, Stack, Text } from '@mantine/core';
+import { TablePaginationProps } from '@nikkierp/ui/components';
+import { IconBox } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { TableAction } from '@/components/Table';
 
 import { KioskModel } from '../../types';
+import { getKioskModelTableActions, KioskModelTableActions } from '../KioskModelTable';
+
 
 
 export interface KioskModelGridViewProps {
 	models: KioskModel[];
 	isLoading?: boolean;
-	onPreview: (kioskModel: KioskModel) => void;
-	onEdit?: (kioskModel: KioskModel) => void;
-	onArchive?: (kioskModel: KioskModel) => void;
-	onRestore?: (kioskModel: KioskModel) => void;
-	onDelete?: (kioskModel: KioskModel) => void;
+	actions?: KioskModelTableActions;
+	pagination?: TablePaginationProps;
 }
 
 export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 	models,
 	isLoading = false,
-	onPreview,
-	onEdit,
-	onArchive,
-	onRestore,
-	onDelete,
+	actions = {},
 }) => {
 	const { t: translate } = useTranslation();
+	const { view: onPreview, ...cardActions } = actions;
 
 	if (isLoading) {
 		return <Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>;
@@ -54,7 +51,7 @@ export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 						cursor: model.isArchived ? 'default' : 'pointer',
 					}}
 					onClick={() => {
-						if (!model.isArchived) onPreview(model);
+						if (!model.isArchived) onPreview?.(model);
 					}}
 				>
 					<Stack gap='sm'>
@@ -66,36 +63,10 @@ export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 									<Text size='xs' c='dimmed'>{model.name}</Text>
 								</Stack>
 							</Group>
-							<Group gap='xs' onClick={(e) => e.stopPropagation()}>
-								{onEdit && (
-									<Tooltip label={translate('nikki.general.actions.edit')}>
-										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(model)}>
-											<IconEdit size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-								{!model.isArchived && onArchive && (
-									<Tooltip label={translate('nikki.general.actions.archive')}>
-										<ActionIcon variant='subtle' color='orange' size='sm' onClick={() => onArchive(model)}>
-											<IconArchive size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-								{model.isArchived && onRestore && (
-									<Tooltip label={translate('nikki.general.actions.restore')}>
-										<ActionIcon variant='subtle' color='blue' size='sm' onClick={() => onRestore(model)}>
-											<IconArchiveOff size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-								{onDelete && (
-									<Tooltip label={translate('nikki.general.actions.delete')}>
-										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(model)}>
-											<IconTrash size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-							</Group>
+							<TableAction
+								actions={getKioskModelTableActions(model, cardActions, translate)}
+								overflowMenuLabel={translate('nikki.general.actions.title')}
+							/>
 						</Group>
 
 						{model.description && (

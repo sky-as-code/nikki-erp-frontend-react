@@ -1,13 +1,14 @@
 import { Box, Divider, Stack, Text } from '@mantine/core';
-import { ConfirmModal, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import React from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
-
+import { ArchiveKioskModal, DeleteKioskModal  } from '@/features/kiosks';
 import { Kiosk } from '@/features/kiosks/types';
 
 import { KioskFormFields } from '../KioskFormFields/KioskFormFields';
 import { useBasicInfoTab } from './hooks/useBasicInfoTab';
+
 
 
 
@@ -31,8 +32,6 @@ const KioskBasicInfoAuditDates: React.FC<{ kiosk: Kiosk }> = ({ kiosk }) => {
 };
 
 export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
-	const { t } = useTranslation();
-
 	const {
 		formId, isEditing, isSubmitting, modelSchema, formValues, onFormSubmit,
 		closeDeleteModal, confirmDelete, isOpenDeleteModal,
@@ -68,39 +67,19 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				<KioskBasicInfoAuditDates kiosk={kiosk} />
 			</Stack>
 
-			<ConfirmModal
-				title={t('nikki.general.messages.delete_confirm')}
+			<DeleteKioskModal
 				opened={isOpenDeleteModal}
 				onClose={closeDeleteModal}
 				onConfirm={confirmDelete}
-				message={<Trans i18nKey='nikki.vendingMachine.kiosk.messages.delete_confirm'
-					values={{ name: kiosk?.name || '' }}
-					components={{ strong: <strong /> }}
-				/>}
-				confirmLabel={t('nikki.general.actions.delete')}
-				confirmColor='red'
+				name={kiosk.name || ''}
 			/>
 
-			<ConfirmModal
+			<ArchiveKioskModal
 				opened={isOpenArchiveModal}
 				onClose={handleCloseArchiveModal}
 				onConfirm={handleConfirmArchive}
-				title={pendingArchive?.targetArchived
-					? t('nikki.vendingMachine.kiosk.messages.archive_modal_title')
-					: t('nikki.vendingMachine.kiosk.messages.restore_modal_title')}
-				message={
-					<Trans
-						i18nKey={pendingArchive?.targetArchived
-							? 'nikki.vendingMachine.kiosk.messages.archive_confirm'
-							: 'nikki.vendingMachine.kiosk.messages.restore_confirm'}
-						values={{ name: pendingArchive?.kiosk?.name || '' }}
-						components={{ strong: <strong /> }}
-					/>
-				}
-				confirmLabel={pendingArchive?.targetArchived
-					? t('nikki.general.actions.archive')
-					: t('nikki.general.actions.restore')}
-				confirmColor={pendingArchive?.targetArchived ? 'orange' : 'blue'}
+				type={pendingArchive?.targetArchived ? 'archive' : 'restore'}
+				name={pendingArchive?.kiosk?.name ?? ''}
 			/>
 
 		</React.Fragment>

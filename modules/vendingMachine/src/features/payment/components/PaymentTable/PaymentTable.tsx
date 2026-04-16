@@ -1,148 +1,86 @@
-import { ActionIcon, Box, Group, Image, Text, Tooltip } from '@mantine/core';
+import { Box, Group, Image, Text } from '@mantine/core';
 import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
-import { IconArchive, IconArchiveOff, IconCreditCard, IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
+import {
+	IconArchive,
+	IconCreditCard,
+	IconEdit,
+	IconEye,
+	IconRestore,
+	IconTrash,
+} from '@tabler/icons-react';
+import { TFunction } from 'i18next';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
 
 import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { NameCell, TableAction, TextCell, type TableActionItem } from '@/components/Table';
 
 import { PaymentMethod } from '../../types';
 
 
-export interface PaymentTableProps extends AutoTableProps {
-	onViewDetail: (payment: PaymentMethod) => void;
-	onEdit?: (payment: PaymentMethod) => void;
-	onDelete?: (payment: PaymentMethod) => void;
-	onArchive?: (payment: PaymentMethod) => void;
-	onRestore?: (payment: PaymentMethod) => void;
-}
+const PAYMENT_TABLE_ACTIONS = {
+	VIEW: 'view',
+	EDIT: 'edit',
+	ARCHIVE: 'archive',
+	RESTORE: 'restore',
+	DELETE: 'delete',
+} as const;
+type PaymentTableActionType = (typeof PAYMENT_TABLE_ACTIONS)[keyof typeof PAYMENT_TABLE_ACTIONS];
 
-function renderMethodColumn(row: Record<string, unknown>) {
-	return <Text fw={500}>{String(row.method || '')}</Text>;
-}
-
-const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
-	const navigate = useNavigate();
-	const paymentId = row.id as string;
-	const name = String(row.name || '');
-
-	const handleClick = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		if (paymentId) {
-			navigate(`../payment/${paymentId}`);
-		}
-	};
-
-	return (
-		<Group gap='xs' align='center' justify='flex-start'>
-			{row.image ? (
-				<Box w={32} h={32}>
-					<Image
-						src={row.image as string}
-						alt={String(row.name || '')}
-						width={32}
-						height={32}
-						radius='sm'
-						style={{ objectFit: 'contain' }}
-					/>
-				</Box>
-			)
-				: (
-					<IconCreditCard size={26} stroke={1.5} />
-				)}
-			<Text
-				c='light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2))'
-				style={{ cursor: 'pointer' }}
-				onClick={handleClick}
-				td='underline'
-			>
-				{name}
-			</Text>
-		</Group>
-	);
+export type PaymentTableActions = {
+	[key in PaymentTableActionType]?: (payment: PaymentMethod, ...args: unknown[]) => void;
 };
 
-function renderNameColumn(row: Record<string, unknown>) {
-	return <NameColumn row={row} />;
-}
+export function getPaymentTableActions(
+	payment: PaymentMethod,
+	actions: PaymentTableActions,
+	translate: TFunction,
+): TableActionItem[] {
+	if (Object.keys(actions).length === 0) return [];
 
-
-function renderArchivedColumn(row: Record<string, unknown>) {
-	return <ArchivedStatusBadge isArchived={Boolean(row.isArchived)} />;
-}
-
-function renderTransactionRangeColumn(row: Record<string, unknown>) {
-	const min = row.minTransactionValue as number | undefined;
-	const max = row.maxTransactionValue as number | undefined;
-	if (min === undefined && max === undefined) {
-		return <Text c='dimmed'>-</Text>;
-	}
-	const formatCurrency = (value: number) => {
-		return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-	};
-	return (
-		<Text size='sm'>
-			{min !== undefined ? formatCurrency(min) : '0'} - {max !== undefined ? formatCurrency(max) : '∞'}
-		</Text>
-	);
-}
-
-function renderActionsColumn(
-	row: Record<string, unknown>,
-	handlers: {
-		onView?: (payment: PaymentMethod) => void,
-		onEdit?: (payment: PaymentMethod) => void,
-		onDelete?: (payment: PaymentMethod) => void,
-		onArchive?: (payment: PaymentMethod) => void,
-		onRestore?: (payment: PaymentMethod) => void,
-	},
-	translate: (key: string) => string,
-) {
-	const payment = row as unknown as PaymentMethod;
-	const { onView, onEdit, onDelete, onArchive, onRestore } = handlers;
-
-	return (
-		<Box style={{ minWidth: 120 }}>
-			<Group gap='xs' justify='flex-end' onClick={(e) => e.stopPropagation()}>
-				{onView && (
-					<Tooltip label={translate('nikki.general.actions.view')}>
-						<ActionIcon variant='subtle' color='blue' onClick={() => onView(payment)}>
-							<IconEye size={16} />
-						</ActionIcon>
-					</Tooltip>
-				)}
-				{onEdit && (
-					<Tooltip label={translate('nikki.general.actions.edit')}>
-						<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(payment)}>
-							<IconEdit size={16} />
-						</ActionIcon>
-					</Tooltip>
-				)}
-				{!row.isArchived && onArchive && (
-					<Tooltip label={translate('nikki.general.actions.archive')}>
-						<ActionIcon variant='subtle' color='orange' onClick={() => onArchive(payment)}>
-							<IconArchive size={16} />
-						</ActionIcon>
-					</Tooltip>
-				)}
-				{!!row.isArchived && onRestore && (
-					<Tooltip label={translate('nikki.general.actions.restore')}>
-						<ActionIcon variant='subtle' color='blue' onClick={() => onRestore(payment)}>
-							<IconArchiveOff size={16} />
-						</ActionIcon>
-					</Tooltip>
-				)}
-				{onDelete && (
-					<Tooltip label={translate('nikki.general.actions.delete')}>
-						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(payment)}>
-							<IconTrash size={16} />
-						</ActionIcon>
-					</Tooltip>
-				)}
-			</Group>
-		</Box>
-	);
+	const defaultActions: (TableActionItem & { active?: boolean })[] = [
+		{
+			key: PAYMENT_TABLE_ACTIONS.VIEW,
+			label: translate('nikki.general.actions.view'),
+			icon: <IconEye size={16} />,
+			onClick: () => actions[PAYMENT_TABLE_ACTIONS.VIEW]?.(payment),
+			color: 'blue',
+			active: !!actions[PAYMENT_TABLE_ACTIONS.VIEW],
+		},
+		{
+			key: PAYMENT_TABLE_ACTIONS.EDIT,
+			label: translate('nikki.general.actions.edit'),
+			icon: <IconEdit size={16} />,
+			onClick: () => actions[PAYMENT_TABLE_ACTIONS.EDIT]?.(payment),
+			color: 'gray',
+			active: !!actions[PAYMENT_TABLE_ACTIONS.EDIT],
+		},
+		{
+			key: PAYMENT_TABLE_ACTIONS.ARCHIVE,
+			label: translate('nikki.general.actions.archive'),
+			icon: <IconArchive size={16} />,
+			onClick: () => actions[PAYMENT_TABLE_ACTIONS.ARCHIVE]?.(payment),
+			color: 'orange',
+			active: !payment.isArchived && !!actions[PAYMENT_TABLE_ACTIONS.ARCHIVE],
+		},
+		{
+			key: PAYMENT_TABLE_ACTIONS.RESTORE,
+			label: translate('nikki.general.actions.restore'),
+			icon: <IconRestore size={16} />,
+			onClick: () => actions[PAYMENT_TABLE_ACTIONS.RESTORE]?.(payment),
+			color: 'blue',
+			active: !!payment.isArchived && !!actions[PAYMENT_TABLE_ACTIONS.RESTORE],
+		},
+		{
+			key: PAYMENT_TABLE_ACTIONS.DELETE,
+			label: translate('nikki.general.actions.delete'),
+			icon: <IconTrash size={16} />,
+			onClick: () => actions[PAYMENT_TABLE_ACTIONS.DELETE]?.(payment),
+			color: 'red',
+			active: !!actions[PAYMENT_TABLE_ACTIONS.DELETE],
+		},
+	];
+	return defaultActions.filter((action) => action.active);
 }
 
 function renderActionsHeader(
@@ -150,7 +88,26 @@ function renderActionsHeader(
 	_schema: unknown,
 	translate: (key: string) => string,
 ) {
-	return <Text fw={600} fz='sm' ta={'end'}>{translate('nikki.general.actions.title')}</Text>;
+	return <Text fw={600} fz='sm' ta='end'>{translate('nikki.general.actions.title')}</Text>;
+}
+
+function formatTransactionRangeCell(row: Record<string, unknown>) {
+	const min = row.minTransactionValue as number | undefined;
+	const max = row.maxTransactionValue as number | undefined;
+	if (min === undefined && max === undefined) {
+		return <Text c='dimmed'>-</Text>;
+	}
+	const formatCurrency = (value: number) =>
+		new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+	return (
+		<Text size='sm'>
+			{min !== undefined ? formatCurrency(min) : '0'} - {max !== undefined ? formatCurrency(max) : '∞'}
+		</Text>
+	);
+}
+
+export interface PaymentTableProps extends AutoTableProps {
+	actions: PaymentTableActions;
 }
 
 export const PaymentTable: React.FC<PaymentTableProps> = ({
@@ -158,44 +115,77 @@ export const PaymentTable: React.FC<PaymentTableProps> = ({
 	data,
 	schema,
 	isLoading,
-	onViewDetail,
-	onArchive,
-	onRestore,
-	onEdit,
-	onDelete,
+	actions,
 }) => {
 	const { t: translate } = useTranslation();
 
+	const colSizes: React.ComponentProps<typeof AutoTable>['columnSizes'] = {
+		method: { flex: 1, minWidth: 120 },
+		name: { flex: 2, minWidth: 200 },
+		isArchived: { flex: 1, minWidth: 100 },
+		transactionRange: { flex: 1, minWidth: 140 },
+		createdAt: { flex: 1, minWidth: 120 },
+		actions: { width: 120 },
+	};
+
+	const colRenderers: React.ComponentProps<typeof AutoTable>['columnRenderers'] = {
+		method: (row) => <TextCell content={String(row.method || '')} />,
+		name: (row) => (
+			<Group gap='xs' align='center' justify='flex-start'>
+				{row.image ? (
+					<Box w={32} h={32}>
+						<Image
+							src={row.image as string}
+							alt={String(row.name || '')}
+							width={32}
+							height={32}
+							radius='sm'
+							style={{ objectFit: 'contain' }}
+						/>
+					</Box>
+				) : (
+					<IconCreditCard size={26} stroke={1.5} />
+				)}
+				<NameCell
+					content={row.name as string}
+					link={row.id ? `../payment/${row.id}` : undefined}
+				/>
+			</Group>
+		),
+		isArchived: (row) => <ArchivedStatusBadge isArchived={!!row.isArchived} />,
+		transactionRange: (row) => formatTransactionRangeCell(row),
+		createdAt: (row) => (
+			<TextCell
+				content={
+					row.createdAt
+						? new Date(String(row.createdAt)).toLocaleDateString()
+						: '-'
+				}
+			/>
+		),
+		actions: (row) => (
+			<TableAction
+				actions={getPaymentTableActions(row as unknown as PaymentMethod, actions, translate)}
+				overflowMenuLabel={translate('nikki.general.actions.title')}
+			/>
+		),
+	};
+
+	const headerRenderers: React.ComponentProps<typeof AutoTable>['headerRenderers'] = {
+		actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
+	};
+
 	return (
-		<div style={{ position: 'relative' }}>
-			<style>
-				{`
-					table th:last-child,
-					table td:last-child {
-						min-width: 120px;
-						width: 120px;
-					}
-				`}
-			</style>
+		<Box pos='relative' mih={200}>
 			<AutoTable
 				columns={columns}
+				columnSizes={colSizes}
 				data={data}
 				schema={schema}
 				isLoading={isLoading}
-				columnRenderers={{
-					method: renderMethodColumn,
-					name: renderNameColumn,
-					isArchived: (row) => renderArchivedColumn(row),
-					transactionRange: renderTransactionRangeColumn,
-					actions: (row) => renderActionsColumn(row,
-						{ onView: onViewDetail, onEdit, onDelete, onArchive, onRestore },
-						translate,
-					),
-				}}
-				headerRenderers={{
-					actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
-				}}
+				columnRenderers={colRenderers}
+				headerRenderers={headerRenderers}
 			/>
-		</div>
+		</Box>
 	);
 };

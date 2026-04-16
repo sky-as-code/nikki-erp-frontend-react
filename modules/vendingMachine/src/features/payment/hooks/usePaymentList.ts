@@ -7,30 +7,36 @@ import { SearchGraph } from '@/types';
 
 export function usePaymentList(graph?: SearchGraph) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
-	const payments = useMicroAppSelector(selectPaymentList);
+	const list = useMicroAppSelector(selectPaymentList);
 
 	React.useEffect(() => {
-		if (payments.status === 'idle') {
+		if (list.status === 'idle') {
 			dispatch(paymentActions.listPayments());
 		}
-	}, [dispatch, payments]);
+	}, [dispatch, list.status]);
 
 	React.useEffect(() => {
 		if (graph) {
 			dispatch(paymentActions.listPayments({ graph }));
 		}
-	}, [graph]);
+	}, [dispatch, graph]);
 
-	const handleRefresh = () => dispatch(paymentActions.listPayments({ graph }));
+	const handleRefresh = React.useCallback(() => {
+		dispatch(paymentActions.listPayments({ graph }));
+	}, [dispatch, graph]);
 
-	const hasData = Array.isArray(payments.data) && payments.data.length > 0;
-	const isInitialLoading = !hasData && (payments.status === 'idle' || payments.status === 'pending');
-	const isFetching = payments.status === 'pending';
+	const payments = list.data ?? [];
+	const status = list.status;
+	const isLoading = !payments.length && (status === 'pending' || status === 'idle');
+	const isEmpty = !payments.length && status !== 'idle' && status !== 'pending';
 
 	return {
-		payments: payments.data ?? [],
-		isInitialLoading,
-		isFetching,
+		payments,
+		status,
+		isLoading,
+		isEmpty,
 		handleRefresh,
+		/** Used by payment pickers (e.g. kiosk form) while the list request is in-flight or not yet loaded */
+		isLoadingList: isLoading,
 	};
 }

@@ -12,8 +12,8 @@ import { Kiosk } from '../types';
 
 
 export interface UseKioskArchiveProps {
-	onArchiveSuccess?: () => void;
-	onArchiveError?: () => void;
+	onSuccess?: () => void;
+	onError?: () => void;
 }
 
 type PendingArchive = { kiosk: Kiosk; targetArchived: boolean };
@@ -68,12 +68,9 @@ function useArchiveOutcomeSync(
 }
 
 export const useKioskArchive = ({
-	onArchiveSuccess = () => {},
-	onArchiveError = () => {},
-}: UseKioskArchiveProps = {
-	onArchiveSuccess: () => {},
-	onArchiveError: () => {},
-}) => {
+	onSuccess = () => {},
+	onError = () => {},
+}: UseKioskArchiveProps = {}) => {
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
 
@@ -121,8 +118,8 @@ export const useKioskArchive = ({
 		notification,
 		translate,
 		handleCloseModal,
-		onArchiveSuccess,
-		onArchiveError,
+		onSuccess,
+		onError,
 	);
 
 	const isOpenArchiveModal = pendingArchive != null;

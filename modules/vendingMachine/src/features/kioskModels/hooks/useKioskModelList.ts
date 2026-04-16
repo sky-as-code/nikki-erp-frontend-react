@@ -3,6 +3,7 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+
 import {
 	VendingMachineDispatch,
 	kioskModelActions,
@@ -16,14 +17,44 @@ import { ArchivedStatus, SearchGraph, SearchParams } from '@/types';
 import { KioskModel } from '../types';
 
 
+function useKioskModelListPagination(
+	fetchList: (page: number, size: number, graph?: SearchGraph) => void,
+	graph?: SearchGraph,
+) {
+	const listPagination = useMicroAppSelector(selectKioskModelListPagination);
+	const [page, setPage] = React.useState(1);
+	const [pageSize, setPageSize] = React.useState(listPagination.size ?? 10);
+
+	const handlePageChange = React.useCallback((newPage: number) => {
+		setPage(newPage);
+		fetchList(newPage, pageSize, graph);
+	}, [fetchList, pageSize, graph]);
+
+	const handlePageSizeChange = React.useCallback((value: string | null) => {
+		const newSize = Number(value ?? listPagination.size ?? 10);
+		setPageSize(newSize);
+		setPage(1);
+		fetchList(1, newSize, graph);
+	}, [fetchList, graph, listPagination.size]);
+
+	const totalPages = Math.max(1, Math.ceil(listPagination.total / (listPagination.size || pageSize)));
+
+	return useMemo(
+		() => ({
+			page,
+			pageSize,
+			totalPages,
+			totalItems: listPagination.total,
+			onPageChange: handlePageChange,
+			onPageSizeChange: handlePageSizeChange,
+		}),
+		[page, pageSize, totalPages, listPagination.total, handlePageChange, handlePageSizeChange],
+	);
+}
 
 export function useKioskModelList(graph?: SearchGraph) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const list = useMicroAppSelector(selectKioskModelList);
-	const pagination = useMicroAppSelector(selectKioskModelListPagination);
-
-	const [page, setPage] = React.useState(1);
-	const [pageSize, setPageSize] = React.useState(pagination.size ?? 10);
 
 	const fetchList = React.useCallback((targetPage: number, size: number, searchGraph?: SearchGraph) => {
 		const params: SearchParams<KioskModel> = {
@@ -34,43 +65,29 @@ export function useKioskModelList(graph?: SearchGraph) {
 		dispatch(kioskModelActions.listKioskModels(params));
 	}, [dispatch]);
 
+	const pagination = useKioskModelListPagination(fetchList, graph);
+	const { page, pageSize } = pagination;
+
 	React.useEffect(() => {
 		fetchList(page, pageSize, graph);
 	}, [fetchList, page, pageSize, graph]);
-
-	const handlePageChange = React.useCallback((newPage: number) => {
-		setPage(newPage);
-		fetchList(newPage, pageSize, graph);
-	}, [fetchList, pageSize, graph]);
-
-	const handlePageSizeChange = React.useCallback((value: string | null) => {
-		const newSize = Number(value ?? pagination.size ?? 10);
-		setPageSize(newSize);
-		setPage(1);
-		fetchList(1, newSize, graph);
-	}, [fetchList, graph]);
 
 	const handleRefresh = React.useCallback(() => {
 		fetchList(page, pageSize, graph);
 	}, [fetchList, page, pageSize, graph]);
 
-	const totalPages = Math.max(1, Math.ceil(pagination.total / (pagination.size || pageSize)));
-
-	const hasData = Array.isArray(list.data) && list.data.length > 0;
-	const isInitialLoading = !hasData && (list.status === 'idle' || list.status === 'pending');
-	const isFetching = list.status === 'pending';
+	const models = list.data ?? [];
+	const status = list.status;
+	const isLoading = !models?.length && (status === 'pending' || status === 'idle');
+	const isEmpty = !models?.length && status !== 'idle' && status !== 'pending';
 
 	return {
-		models: list.data,
-		isInitialLoading,
-		isFetching,
+		models,
+		status,
+		isLoading,
+		isEmpty,
 		handleRefresh,
-		page,
-		pageSize,
-		totalPages,
-		totalItems: pagination.total,
-		handlePageChange,
-		handlePageSizeChange,
+		pagination,
 	};
 }
 

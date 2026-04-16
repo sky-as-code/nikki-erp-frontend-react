@@ -163,7 +163,7 @@ export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTab
 		handleCloseModal: handleCloseArchiveModal,
 		isOpenArchiveModal,
 		pendingArchive,
-	} = useKioskArchive({ onArchiveSuccess });
+	} = useKioskArchive({ onSuccess: onArchiveSuccess });
 
 	const modelSchema = kioskCreateSchema as ModelSchema;
 
@@ -191,7 +191,12 @@ export function useBasicInfoTab({ kiosk }: UseBasicInfoTabArgs): UseBasicInfoTab
 		navigate('../kiosks');
 	}, [navigate]);
 
-	const { isOpenDeleteModal, openDeleteModal, closeDeleteModal, handleDelete } = useKioskDelete({ onDeleteSuccess });
+	const {
+		isOpenDeleteModal,
+		openDeleteModal,
+		closeDeleteModal,
+		handleDelete,
+	} = useKioskDelete({ onSuccess: onDeleteSuccess });
 
 	const onDeleteClick = useCallback(() => openDeleteModal(kiosk), [kiosk, openDeleteModal]);
 

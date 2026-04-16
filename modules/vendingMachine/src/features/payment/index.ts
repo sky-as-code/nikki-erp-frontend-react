@@ -1,4 +1,5 @@
 export * from './hooks';
+export * from './contexts/PaymentListPageProvider';
 export * from './types';
 export * from './schemas';
 export * from './mocks';

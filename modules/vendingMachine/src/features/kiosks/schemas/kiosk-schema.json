@@ -38,7 +38,7 @@
 		},
 		"isArchived": {
 			"type": "boolean",
-			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.archived' }"
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kiosk.fields.status' }"
 		},
 		"mode": {
 			"type": "enum",

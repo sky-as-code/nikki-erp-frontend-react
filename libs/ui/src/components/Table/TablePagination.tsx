@@ -1,9 +1,7 @@
-import { Button, Group, Text, Select, Box } from '@mantine/core';
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { Group, Text, Select, Box, UnstyledButton } from '@mantine/core';
+import { IconChevronLeft, IconChevronRight, IconProps } from '@tabler/icons-react';
 import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import classes from './TablePagination.module.css';
 
 
 export type PageSizeOption = { value: string; label: string };
@@ -22,45 +20,31 @@ const DEFAULT_PAGE_SIZE = '10';
 const DEFAULT_TOTAL_PAGES = 1;
 
 
-const BackButton = ({ page, isDisabled, onPageChange }: {
+const PaginationButton = ({ page, type, icon, disabled, onPageChange }: {
 	page: number;
-	isDisabled: boolean;
-	onPageChange: (page: number) => void;
+	type: 'back' | 'forward';
+	icon?: React.ComponentType<IconProps>;
+	disabled?: boolean;
+	onPageChange?: (page: number) => void;
 }) => {
+	const nextPage = type === 'back' ? page - 1 : page + 1;
+	const handleClick = () => {
+		if (disabled || !onPageChange) return;
+		onPageChange(nextPage);
+	};
+
+	const IconComponent = icon || (type === 'back' ? IconChevronLeft : IconChevronRight);
+
 	return (
-		<Button
-			size='compact-sm' p={0} variant='transparent'
-			onClick={() => onPageChange(page - 1)}
-			disabled={isDisabled}
-			className={classes.paginationButton}
-		>
-			<IconChevronLeft
-				color={ isDisabled ? 'var(--mantine-color-gray-4)' : 'var(--mantine-color-gray-7)'}
-				size={24} stroke={1.5}
+		<UnstyledButton w={26} h={26} onClick={handleClick}>
+			<IconComponent
+				color={ disabled ? 'var(--mantine-color-gray-4)' : 'var(--mantine-color-gray-7)'}
+				size={26} stroke={1.5}
 			/>
-		</Button>
+		</UnstyledButton>
 	);
 };
 
-const ForwardButton = ({ page, isDisabled, onPageChange }: {
-	page: number;
-	isDisabled: boolean;
-	onPageChange: (page: number) => void;
-}) => {
-	return (
-		<Button
-			size='compact-sm' p={0} variant='transparent'
-			onClick={() => onPageChange(page + 1)}
-			disabled={isDisabled}
-			className={classes.paginationButton}
-		>
-			<IconChevronRight
-				color={ isDisabled ? 'var(--mantine-color-gray-4)' : 'var(--mantine-color-gray-7)'}
-				size={24} stroke={1.5}
-			/>
-		</Button>
-	);
-};
 
 const PageInput = ({ totalPages, value, onPageChange }: {
 	value: string | number | undefined;
@@ -130,18 +114,23 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
 		</Box>
 		<Group gap={'sm'}>
 			<Group gap={2} align='center'>
-				<BackButton page={page} isDisabled={page === 1} onPageChange={handlePageChange} />
+				<PaginationButton
+					type='back' disabled={page === 1}
+					page={page} onPageChange={handlePageChange}
+				/>
 				<PageInput totalPages={totalPages} value={pageInputValue} onPageChange={handlePageChange} />
-				<ForwardButton page={page} isDisabled={page === totalPages} onPageChange={handlePageChange} />
+				<PaginationButton
+					type='forward' disabled={page === totalPages}
+					page={page} onPageChange={handlePageChange}
+				/>
 			</Group>
 
 			<Select
-				w={100}
-				size='xs'
+				w={100} size='xs'
+				allowDeselect={false}
 				data={pageSizeOptions || defaultPageSizeOptions}
 				value={String(pageSize)}
 				onChange={onPageSizeChange}
-				allowDeselect={false}
 			/>
 		</Group>
 	</Group>;

@@ -1,5 +1,6 @@
-import { Badge } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+
+import { StatusBadge } from '../StatusBadge';
 
 
 
@@ -10,5 +11,5 @@ export const ArchivedStatusBadge: React.FC<{ isArchived: boolean }> = ({ isArchi
 		? { color: 'orange', label: translate('nikki.general.status.archived') }
 		: { color: 'green', label: translate('nikki.general.status.active') };
 
-	return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
+	return <StatusBadge color={statusInfo.color}>{statusInfo.label}</StatusBadge>;
 };

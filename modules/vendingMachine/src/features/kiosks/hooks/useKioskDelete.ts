@@ -8,10 +8,8 @@ import { VendingMachineDispatch, kioskActions, selectDeleteKiosk } from '@/appSt
 import { type Kiosk } from '../types';
 
 
-
-
 // eslint-disable-next-line max-lines-per-function
-export const useKioskDelete = ({onDeleteSuccess}: {onDeleteSuccess?: () => void}) => {
+export const useKioskDelete = ({onSuccess = () => {}}: {onSuccess: () => void}) => {
 	const [isOpenDeleteModal, setIsOpenDeleteModal] = React.useState(false);
 	const [kioskToDelete, setKioskToDelete] = React.useState<Kiosk | null>(null);
 
@@ -50,7 +48,7 @@ export const useKioskDelete = ({onDeleteSuccess}: {onDeleteSuccess?: () => void}
 			);
 			dispatch(kioskActions.resetDeleteKiosk());
 			closeDeleteModal();
-			onDeleteSuccess?.();
+			onSuccess?.();
 		}
 		if (deleteState.status === 'error') {
 			deleteRequestIdRef.current = null;
