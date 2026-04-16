@@ -1,3 +1,6 @@
+import { SimpleFilter } from '@/helpers';
+
+
 export const VIEW_MODE_SEGMENTS = {
 	list: 'list',
 	grid: 'grid',
@@ -9,12 +12,30 @@ export const VIEW_MODE_SEGMENTS = {
 
 export type ViewMode = (typeof VIEW_MODE_SEGMENTS)[keyof typeof VIEW_MODE_SEGMENTS];
 
-export interface ControlPanelFilterConfig {
-	value: string[];
-	onChange: (value: string[]) => void;
-	options: Array<{ value: string; label: string }>;
+export type ControlPanelBaseFilter = {
+	key: string;
+	type: string;
+	value: any;
+	onChange: (value: any) => void;
+	getGraphValue?: (value: any) => SimpleFilter['value'];
+	//
 	placeholder?: string;
+	minWidth?: number;
+};
+
+export interface ControlPanelSearchFilter extends ControlPanelBaseFilter {
+	type: 'search';
+	searchFields: string[];
+	clearable?: boolean;
+}
+
+export interface ControlPanelOptionFilter extends ControlPanelBaseFilter {
+	type: 'select' | 'multiSelect';
+	options: Array<{ value: string; label: string }>;
 	maxValues?: number;
 	clearable?: boolean;
-	minWidth?: number;
 }
+export type ControlPanelFilterConfig =
+	| ControlPanelSearchFilter
+	| ControlPanelOptionFilter;
+

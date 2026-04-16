@@ -18,8 +18,9 @@ import { KioskSettingCreatePage } from '@/pages/kioskSettings/KioskSettingCreate
 import { KioskSettingDetailPage } from '@/pages/kioskSettings/KioskSettingDetailPage';
 import { KioskSettingPage } from '@/pages/kioskSettings/KioskSettingPage';
 import OverviewPage from '@/pages/overview/OverviewPage';
+import { PaymentCreatePage } from '@/pages/payment/PaymentCreatePage';
 import { PaymentDetailPage } from '@/pages/payment/PaymentDetailPage';
-import { PaymentPage } from '@/pages/payment/PaymentPage';
+import { PaymentListPage } from '@/pages/payment/PaymentListPage';
 import { RevenueOverview } from '@/pages/reports/RevenueOverview';
 import { SettingDetailPage } from '@/pages/settings/SettingDetailPage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
@@ -171,7 +172,12 @@ export const appRoutes: AppRouteConfig[] = [{
 		{
 			key: 'payment',
 			path: 'payment',
-			element: <PaymentPage />,
+			element: <PaymentListPage />,
+		},
+		{
+			key: 'payment-create',
+			path: 'payment/create',
+			element: <PaymentCreatePage />,
 		},
 		{
 			key: 'payment-detail',

@@ -8,6 +8,7 @@ import {
 	createKioskModel,
 	updateKioskModel,
 	deleteKioskModel,
+	setArchivedKioskModel,
 	KioskModelState,
 	initialKioskModelState,
 } from '@/features/kioskModels/kioskModelSlice';
@@ -25,6 +26,7 @@ export const kioskModelActions = {
 	createKioskModel,
 	updateKioskModel,
 	deleteKioskModel,
+	setArchivedKioskModel,
 	...actions,
 };
 
@@ -54,4 +56,14 @@ export const selectUpdateKioskModel = createSelector(
 export const selectDeleteKioskModel = createSelector(
 	selectKioskModelState,
 	(state) => state.delete,
+);
+
+export const selectSetArchivedKioskModel = createSelector(
+	selectKioskModelState,
+	(state) => state.archive,
+);
+
+export const selectKioskModelListPagination = createSelector(
+	selectKioskModelState,
+	(state) => state.listPagination,
 );

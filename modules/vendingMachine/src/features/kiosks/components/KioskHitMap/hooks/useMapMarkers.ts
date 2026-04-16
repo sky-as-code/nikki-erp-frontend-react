@@ -2,7 +2,7 @@ import { MantineColorScheme } from '@mantine/core';
 import maplibregl from 'maplibre-gl';
 import { useRef, useEffect, useMemo } from 'react';
 
-import { Kiosk, KioskStatus, ConnectionStatus } from '@/features/kiosks/types';
+import { Kiosk, ConnectionStatus, ConnectionHistory } from '@/features/kiosks/types';
 
 
 const clearMarkers = (markersRef: React.RefObject<maplibregl.Marker[]>) => {
@@ -56,10 +56,12 @@ const getConnectionStatusText = (connectionStatus?: ConnectionStatus): string =>
 	}
 };
 
-const createPopupContent = (kiosk: Kiosk, isActive: boolean): string => {
+const createPopupContent = (kiosk: Kiosk, isOperational: boolean): string => {
 	const name = kiosk.name || kiosk.code || '';
-	const statusText = isActive ? 'Đang hoạt động' : 'Không hoạt động';
-	const connectionStatusText = getConnectionStatusText(kiosk.connectionStatus);
+	const statusText = isOperational ? 'Đang hoạt động' : 'Tạm ngưng';
+
+	const connectionHistory = (kiosk?.connections as ConnectionHistory[]) || [];
+	const connectionStatusText = getConnectionStatusText(connectionHistory?.[0]?.status);
 	const temperature = kiosk.temperature;
 	const humidity = kiosk.humidity;
 	const powerConsumption = kiosk.powerConsumption;
@@ -83,7 +85,7 @@ const createPopupContent = (kiosk: Kiosk, isActive: boolean): string => {
 			<span>Mã: ${kiosk.code}</span><br/>
 			<span>Trạng thái: ${statusText}</span><br/>
 			<span>Kết nối: ${connectionStatusText}</span><br/>
-			<span>Địa chỉ: ${kiosk.address || 'N/A'}</span>
+			<span>Địa chỉ: ${kiosk.locationAddress || 'N/A'}</span>
 			${environmentalInfo}
 		</div>
 	`;
@@ -93,12 +95,13 @@ const createMarker = (
 	map: maplibregl.Map,
 	kiosk: Kiosk,
 ): maplibregl.Marker => {
-	const lat = kiosk.coordinates!.latitude;
-	const lng = kiosk.coordinates!.longitude;
-	const isActive = kiosk.status === KioskStatus.ACTIVATED && kiosk.isActive;
+	const lat = Number(kiosk.latitude) || 0;
+	const lng = Number(kiosk.longitude) || 0;
+	const isOperational = !kiosk.isArchived;
 
-	const el = createMarkerElement(isActive, kiosk.connectionStatus);
-	const popupContent = createPopupContent(kiosk, isActive);
+	const connectionHistory = (kiosk?.connections as ConnectionHistory[]) || [];
+	const el = createMarkerElement(isOperational, connectionHistory?.[0]?.status);
+	const popupContent = createPopupContent(kiosk, isOperational);
 
 	const popup = new maplibregl.Popup({ offset: 25 }).setHTML(popupContent);
 
@@ -121,7 +124,7 @@ const createMarkers = (
 	clearMarkers(markersRef);
 
 	kiosks.forEach((kiosk) => {
-		if (!kiosk.coordinates?.latitude || !kiosk.coordinates?.longitude) return;
+		if (!kiosk.latitude || !kiosk.longitude) return;
 
 		const marker = createMarker(map, kiosk);
 		markersRef.current.push(marker);
@@ -140,7 +143,7 @@ export function useMapMarkers({ mapRef, kiosks = [], colorScheme }: UseMapMarker
 	// Filter kiosks that have valid coordinates
 	const kiosksWithCoordinates = useMemo(() => {
 		return kiosks.filter(
-			(kiosk) => kiosk.coordinates?.latitude && kiosk.coordinates?.longitude,
+			(kiosk) => kiosk.latitude && kiosk.longitude,
 		);
 	}, [kiosks]);
 

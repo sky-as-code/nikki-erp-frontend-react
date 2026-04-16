@@ -37,16 +37,6 @@ export function formDataToKioskDeviceUpdatePayload(
 	};
 }
 
-function buildKioskDeviceCreatePayload(data: KioskDeviceCreateFormData): Omit<KioskDevice, 'id' | 'createdAt' | 'etag'> {
-	return {
-		name: data.name,
-		code: data.code || `KIOSK-DEVICE-${Date.now()}`,
-		description: data.description,
-		status: data.status,
-		deviceType: data.deviceType,
-		specifications: [],
-	};
-}
 
 export function useKioskDeviceCreate() {
 	const navigate = useNavigate();
@@ -56,20 +46,26 @@ export function useKioskDeviceCreate() {
 	const { t: translate } = useTranslation();
 
 	const createKioskDevice = useMicroAppSelector(selectCreateKioskDevice);
+	const createRequestIdRef = React.useRef<string | null>(null);
 
 	const handleCancel = useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate, location.pathname]);
 
 	const handleSubmit = useCallback((data: KioskDeviceCreateFormData) => {
-		const payload = buildKioskDeviceCreatePayload(data);
-		dispatch(kioskDeviceActions.createKioskDevice(payload));
+		const action = dispatch(kioskDeviceActions.createKioskDevice(data as Omit<KioskDevice, 'id' | 'createdAt' | 'etag'>));
+		createRequestIdRef.current = action.requestId;
 	}, [dispatch]);
 
 	const isSubmitting = createKioskDevice.status === 'pending';
 
 	React.useEffect(() => {
+		const requestId = createKioskDevice.requestId;
+		const matchesDispatch = requestId != null && requestId === createRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (createKioskDevice.status === 'success') {
+			createRequestIdRef.current = null;
 			notification.showInfo(
 				translate('nikki.vendingMachine.device.messages.create_success', { name: createKioskDevice.data?.name }),
 				translate('nikki.general.messages.success'),
@@ -83,6 +79,7 @@ export function useKioskDeviceCreate() {
 		}
 
 		if (createKioskDevice.status === 'error') {
+			createRequestIdRef.current = null;
 			notification.showError(
 				createKioskDevice.error ?? translate('nikki.general.errors.create_failed'),
 				translate('nikki.general.messages.error'),

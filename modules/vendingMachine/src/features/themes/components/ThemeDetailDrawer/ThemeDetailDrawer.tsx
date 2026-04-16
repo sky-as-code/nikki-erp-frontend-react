@@ -1,8 +1,10 @@
-import { Badge, Box, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconPalette, IconExternalLink } from '@tabler/icons-react';
+import { Badge, Box, Divider, Group, Stack, Text } from '@mantine/core';
+import { IconPalette } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+
+import { PreviewDrawer } from '@/components/PreviewDrawer';
 
 import { Theme } from '../../types';
 import { ThemePreview } from '../ThemePreview';
@@ -24,19 +26,6 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
-	if (isLoading || !theme) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='xl'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.themes.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
 
 	const getStatusBadge = (status: string) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -74,31 +63,23 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 	];
 
 	return (
-		<Drawer
+		<PreviewDrawer
 			opened={opened}
 			onClose={onClose}
-			position='right'
-			size='xl'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconPalette size={20} />
-						<Text fw={600} size='lg'>{theme.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../themes/${theme.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+			header={{
+				title: theme?.name,
+				subtitle: theme?.code,
+				avatar: <IconPalette size={20} />,
+			}}
+			onViewDetails={() => {
+				if (theme?.id) {
+					navigate(`../themes/${theme.id}`);
+				}
+				onClose();
+			}}
+			isLoading={isLoading}
+			isNotFound={!theme && !isLoading}
+			drawerProps={{ size: 'xl', opened, onClose }}
 		>
 			<Stack gap='md'>
 				{/* Basic Info */}
@@ -106,7 +87,7 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.themes.fields.code')}
 					</Text>
-					<Text size='sm' fw={500}>{theme.code}</Text>
+					<Text size='sm' fw={500}>{theme?.code}</Text>
 				</div>
 
 				<Divider />
@@ -115,10 +96,10 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.themes.fields.name')}
 					</Text>
-					<Text size='sm'>{theme.name}</Text>
+					<Text size='sm'>{theme?.name}</Text>
 				</div>
 
-				{theme.description && (
+				{theme?.description && (
 					<>
 						<Divider />
 						<div>
@@ -136,7 +117,7 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.themes.fields.status')}
 					</Text>
-					{getStatusBadge(theme.status)}
+					{theme?.status ? getStatusBadge(theme.status) : null}
 				</div>
 
 				<Divider />
@@ -152,11 +133,11 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 								width: 40,
 								height: 40,
 								borderRadius: 8,
-								backgroundColor: theme.primaryColor,
+								backgroundColor: theme?.primaryColor,
 								border: '2px solid #ddd',
 							}}
 						/>
-						<Text size='sm'>{theme.primaryColor}</Text>
+						<Text size='sm'>{theme?.primaryColor}</Text>
 					</Group>
 				</div>
 
@@ -168,7 +149,7 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 					</Text>
 					<Text size='sm'>
 						{productCardStyleOptions.find(
-							(opt) => opt.value === theme.productCardStyle)?.label || theme.productCardStyle}
+							(opt) => opt.value === theme?.productCardStyle)?.label || theme?.productCardStyle}
 					</Text>
 				</div>
 
@@ -180,7 +161,7 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 					</Text>
 					<Text size='sm'>
 						{appBackgroundOptions.find(
-							(opt) => opt.value === theme.appBackground)?.label || theme.appBackground}
+							(opt) => opt.value === theme?.appBackground)?.label || theme?.appBackground}
 					</Text>
 				</div>
 
@@ -191,11 +172,11 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 						{translate('nikki.vendingMachine.themes.fields.fontStyle')}
 					</Text>
 					<Text size='sm'>
-						{fontStyleOptions.find((opt) => opt.value === theme.fontStyle)?.label || theme.fontStyle}
+						{fontStyleOptions.find((opt) => opt.value === theme?.fontStyle)?.label || theme?.fontStyle}
 					</Text>
 				</div>
 
-				{theme.mascotImage && (
+				{theme?.mascotImage && (
 					<>
 						<Divider />
 						<div>
@@ -213,7 +194,7 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 								}}
 							>
 								<img
-									src={theme.mascotImage}
+									src={theme?.mascotImage}
 									alt='Mascot'
 									style={{
 										width: '100%',
@@ -232,7 +213,7 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.themes.fields.createdAt')}
 					</Text>
-					<Text size='sm'>{new Date(theme.createdAt).toLocaleString()}</Text>
+					<Text size='sm'>{theme?.createdAt ? new Date(theme.createdAt).toLocaleString() : '—'}</Text>
 				</div>
 
 				<Divider />
@@ -242,12 +223,12 @@ export const ThemeDetailDrawer: React.FC<ThemeDetailDrawerProps> = ({
 					<Text size='xs' c='dimmed'>
 						{translate('nikki.vendingMachine.themes.preview.title')}
 					</Text>
-					<ThemePreview theme={theme} />
+					{theme ? <ThemePreview theme={theme} /> : null}
 				</Stack>
 
 				<Divider />
 				<Box h={100}></Box>
 			</Stack>
-		</Drawer>
+		</PreviewDrawer>
 	);
 };

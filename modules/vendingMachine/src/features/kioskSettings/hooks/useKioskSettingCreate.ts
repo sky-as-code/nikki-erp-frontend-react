@@ -38,6 +38,7 @@ export function useKioskSettingCreate() {
 	const { t: translate } = useTranslation();
 
 	const createState = useMicroAppSelector(selectCreateKioskSetting);
+	const createRequestIdRef = React.useRef<string | null>(null);
 
 	const handleCancel = useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
@@ -45,13 +46,19 @@ export function useKioskSettingCreate() {
 
 	const handleSubmit = useCallback((data: unknown) => {
 		const payload = buildKioskSettingCreatePayload(data as KioskSettingCreateFormData);
-		dispatch(kioskSettingActions.createKioskSetting(payload));
+		const action = dispatch(kioskSettingActions.createKioskSetting(payload));
+		createRequestIdRef.current = action.requestId;
 	}, [dispatch]);
 
 	const isSubmitting = createState.status === 'pending';
 
 	React.useEffect(() => {
+		const requestId = createState.requestId;
+		const matchesDispatch = requestId != null && requestId === createRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (createState.status === 'success') {
+			createRequestIdRef.current = null;
 			notification.showInfo(
 				translate('nikki.vendingMachine.kioskSettings.messages.create_success', { name: createState.data?.name }),
 				translate('nikki.general.messages.success'),
@@ -65,6 +72,7 @@ export function useKioskSettingCreate() {
 		}
 
 		if (createState.status === 'error') {
+			createRequestIdRef.current = null;
 			notification.showError(
 				createState.error ?? translate('nikki.general.errors.create_failed'),
 				translate('nikki.general.messages.error'),

@@ -114,7 +114,7 @@ export const ThemeSelectModal: React.FC<ThemeSelectModalProps> = ({
 												</Text>
 											)}
 											<Group gap='xs'>
-												<Badge size='sm' variant='light' color={theme.status === 'active' ? 'green' : 'gray'}>
+												<Badge size='sm' variant='filled' color={theme.status === 'active' ? 'green' : 'gray'}>
 													{theme.status}
 												</Badge>
 												<Box

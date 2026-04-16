@@ -7,6 +7,7 @@
 		"create": "Tạo",
 		"update": "Cập nhật",
 		"delete": "Xóa",
+		"archive": "Lưu trữ",
 		"edit": "Chỉnh sửa",
 		"view": "Xem",
 		"close": "Đóng",
@@ -29,7 +30,8 @@
 		"add": "Thêm",
 		"today": "Hôm nay",
 		"viewDetails": "Xem chi tiết",
-		"apply": "Áp dụng"
+		"apply": "Áp dụng",
+		"restore": "Khôi phục"
 	},
 	"selected": "Đã chọn",
 	"boolean": {
@@ -70,7 +72,9 @@
 	},
 	"status": {
 		"active": "Hoạt động",
-		"inactive": "Không hoạt động"
+		"inactive": "Không hoạt động",
+		"deleted": "Đã xóa",
+		"archived": "Tạm ngưng"
 	},
 	"messages": {
 		"success": "Thành công",
@@ -79,9 +83,10 @@
 		"not_found": "Không tìm thấy",
 		"no_data": "Không có dữ liệu",
 		"no_changes": "Không có thay đổi",
+		"no_address": "Không có địa chỉ",
 		"invalid_change": "Thay đổi không hợp lệ",
-		"delete_confirm": "Xoá phần tử",
-		"delete_confirm_name": "Bạn có chắc chắn muốn xóa {{name}}? Hành động này không thể hoàn tác.",
+		"delete_confirm": "Xác nhận xóa phần tử",
+		"delete_confirm_name": "Bạn có chắc chắn muốn xóa <strong>{{name}}</strong>? Hành động này sẽ <strong>không thể hoàn tác</strong>.",
 		"access_denied": "Bạn không có quyền truy cập vào trang này",
 		"delete_success": "Xóa thành công",
 		"delete_failed": "Xóa thất bại"
@@ -92,5 +97,19 @@
 		"update_failed": "Cập nhật thất bại",
 		"create_failed": "Tạo thất bại",
 		"delete_failed": "Xóa thất bại"
+	},
+	"pagination": {
+		"items_found": "Tổng {{count}}",
+		"page": "Trang",
+		"of": "của",
+		"next": "Tiếp",
+		"previous": "Trước",
+		"page_size": "{{count}} / trang"
+	},
+	"time": {
+		"just_now": "Vừa xong",
+		"minutes_ago": "{{count}} phút trước",
+		"hours_ago": "{{count}} giờ trước",
+		"days_ago": "{{count}} ngày trước"
 	}
 }

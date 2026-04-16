@@ -7,7 +7,7 @@ export const useKioskModelPreview = () => {
 	const [isOpenDetailModal, setIsOpenDetailModal] = useState(false);
 	const [selectedModelId, setSelectedModelId] = useState<string | undefined>();
 
-	const handlePreviewView = (kioskModel: KioskModel) => {
+	const handlePreview = (kioskModel: KioskModel) => {
 		setSelectedModelId(kioskModel.id);
 		setIsOpenDetailModal(true);
 	};
@@ -19,7 +19,7 @@ export const useKioskModelPreview = () => {
 
 	return {
 		isOpenDetailModal,
-		handlePreviewView,
+		handlePreview,
 		handleCloseDetailModal,
 		selectedModelId,
 	};

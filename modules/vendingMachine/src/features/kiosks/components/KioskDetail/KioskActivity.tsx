@@ -8,105 +8,119 @@ import {
 	Select,
 	Space,
 	Stack,
-	Table,
 	Text,
 	TextInput,
 	Textarea,
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import { DateTimePicker } from '@mantine/dates';
+import { AutoTable } from '@nikkierp/ui/components';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import { ModelSchema } from '@nikkierp/ui/model';
 import { IconSearch } from '@tabler/icons-react';
-import React, { useMemo, useState } from 'react';
+import dayjs from 'dayjs';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { KioskActivityLog } from '../../types';
+import { kioskActions, selectKioskLogs, selectKioskLogsPagination, VendingMachineDispatch } from '@/appState';
+import { buildSimpleSearchGraph, SimpleFilter } from '@/helpers';
+
+import { KioskLog } from '../../types';
+
+import { SearchGraph } from '@/types';
 
 
+const kioskActivityLogSchema: ModelSchema = {
+	name: 'kioskActivityLog',
+	fields: {
+		id: { type: 'string', label: '', hidden: true },
+		createdAt: { type: 'string', label: 'nikki.vendingMachine.kiosk.activity.fields.time' },
+		eventType: { type: 'string', label: 'nikki.vendingMachine.kiosk.activity.fields.type' },
+		payload: { type: 'string', label: 'nikki.vendingMachine.kiosk.activity.fields.content' },
+		actions: { type: 'string', label: 'nikki.general.actions.title' },
+	},
+};
 
-// Mock data based on user's sample
-const mockLogs: KioskActivityLog[] = [
-	{
-		id: '1',
-		timestamp: '2026-02-05T10:14:00',
-		type: 'warning',
-		content: 'REDIS :: REDIS_PING_TIMEOUT_5000ms',
-	},
-	{
-		id: '2',
-		timestamp: '2026-02-05T07:53:00',
-		type: 'warning',
-		content: 'OUTPUT_DOOR :: Cửa bị mở trong tiến trình mua hàng',
-	},
-	{
-		id: '3',
-		timestamp: '2026-02-04T17:25:00',
-		type: 'warning',
-		content: 'OUTPUT_DOOR :: Cửa bị mở trong tiến trình mua hàng',
-	},
-	{
-		id: '4',
-		timestamp: '2026-01-16T14:35:00',
-		type: 'warning',
-		content: JSON.stringify({
-			code: 'FAILED',
-			message: 'NO SUCCESSFUL ITEM',
-			data: {
-				sessionState: {
-					currentState: 'IN_PROGESS',
-					currentJob: 'RETURN_HOME',
-				},
-			},
-		}, null, 2),
-	},
-	{
-		id: '5',
-		timestamp: '2026-01-15T12:41:00',
-		type: 'warning',
-		content: 'RED_WARNING :: Số lượng sản phẩm tồn trên máng đạt tối đa',
-	},
-];
+
+const useKioskActivity = ({page, size, graph}: {page: number, size: number, graph: SearchGraph}) => {
+	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
+	const kioskLogs = useMicroAppSelector(selectKioskLogs);
+	const kioskLogsPagination = useMicroAppSelector(selectKioskLogsPagination);
+
+	useEffect(() => {
+		dispatch(kioskActions.searchKioskLogs({
+			page,
+			size,
+			graph,
+		}));
+	}, [dispatch, page, size, graph]);
+
+	return { kioskLogs, kioskLogsPagination };
+};
 
 export const KioskActivity: React.FC = () => {
 	const { t: translate } = useTranslation();
+	const [selectedLog, setSelectedLog] = useState<KioskLog | null>(null);
+	const [detailModalOpened, setDetailModalOpened] = useState(false);
+
+	const presets = useMemo(() => [
+		{ value: dayjs().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss'), label: 'Yesterday' },
+		{ value: dayjs().format('YYYY-MM-DD HH:mm:ss'), label: 'Today' },
+		{ value: dayjs().add(1, 'day').format('YYYY-MM-DD HH:mm:ss'), label: 'Tomorrow' },
+		{ value: dayjs().add(1, 'month').format('YYYY-MM-DD HH:mm:ss'), label: 'Next month' },
+		{ value: dayjs().add(1, 'year').format('YYYY-MM-DD HH:mm:ss'), label: 'Next year' },
+		{
+			value: dayjs().subtract(1, 'month').format('YYYY-MM-DD HH:mm:ss'),
+			label: 'Last month',
+		},
+		{ value: dayjs().subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss'), label: 'Last year' },
+	], []);
+
+
 	const [searchQuery, setSearchQuery] = useState('');
 	const [selectedType, setSelectedType] = useState<string | null>(null);
 	const [startDate, setStartDate] = useState<Date | null>(null);
 	const [endDate, setEndDate] = useState<Date | null>(null);
-	const [selectedLog, setSelectedLog] = useState<KioskActivityLog | null>(null);
-	const [detailModalOpened, setDetailModalOpened] = useState(false);
 
-	const filteredLogs = useMemo(() => {
-		let filtered = [...mockLogs];
-
-		// Filter by type
-		if (selectedType) {
-			filtered = filtered.filter(log => log.type === selectedType);
+	const graph = useMemo(() => {
+		const filters: SimpleFilter[] = [];
+		if (searchQuery) {
+			filters.push({
+				key: 'search',
+				type: 'search',
+				value: searchQuery,
+				searchFields: ['message', 'eventType', 'payload'],
+			});
 		}
-
-		// Filter by date range
+		if (selectedType) {
+			filters.push({
+				key: 'eventType',
+				type: 'select',
+				value: [selectedType],
+			});
+		}
 		if (startDate) {
-			filtered = filtered.filter(log => {
-				const logDate = new Date(log.timestamp);
-				return logDate >= startDate;
+			filters.push({
+				key: 'createdAt',
+				type: 'date',
+				value: [startDate, null],
 			});
 		}
 		if (endDate) {
-			filtered = filtered.filter(log => {
-				const logDate = new Date(log.timestamp);
-				logDate.setHours(23, 59, 59, 999);
-				return logDate <= endDate;
+			filters.push({
+				key: 'createdAt',
+				type: 'date',
+				value: [null, endDate],
 			});
 		}
 
-		// Filter by search query
-		if (searchQuery.trim()) {
-			const query = searchQuery.toLowerCase();
-			filtered = filtered.filter(log =>
-				log.content.toLowerCase().includes(query),
-			);
-		}
+		return buildSimpleSearchGraph(filters);
+	}, [selectedType, startDate, endDate, searchQuery]);
 
-		return filtered;
-	}, [mockLogs, selectedType, startDate, endDate, searchQuery]);
+	const { kioskLogs, kioskLogsPagination: _kioskLogsPagination } = useKioskActivity({
+		page: 0,
+		size: 10,
+		graph,
+	});
 
 	const getTypeBadge = (type: string) => {
 		const typeMap: Record<string, { color: string; label: string }> = {
@@ -153,14 +167,45 @@ export const KioskActivity: React.FC = () => {
 		return content;
 	};
 
-	const handleViewDetail = (log: KioskActivityLog) => {
+	const handleViewDetail = useCallback((log: KioskLog) => {
 		setSelectedLog(log);
 		setDetailModalOpened(true);
-	};
+	}, []);
+
+	const activityTableData = useMemo(
+		() => kioskLogs.data.map((log: KioskLog) => ({
+			...log,
+			actions: '',
+		})) as Record<string, unknown>[],
+		[kioskLogs.data],
+	);
+
+	const activityColumnRenderers = useMemo(
+		() => ({
+			createdAt: (row: Record<string, unknown>) => (
+				<Text size='sm'>{formatTimestamp(String(row.createdAt))}</Text>
+			),
+			eventType: (row: Record<string, unknown>) => getTypeBadge(String(row.eventType)),
+			payload: (row: Record<string, unknown>) => (
+				<Text size='sm' lineClamp={2}>
+					{row.payload != null ? JSON.stringify(row.payload, null, 2) : ''}
+				</Text>
+			),
+			actions: (row: Record<string, unknown>) => (
+				<Button
+					size='xs'
+					variant='subtle'
+					onClick={() => handleViewDetail(row as unknown as KioskLog)}
+				>
+					{translate('nikki.general.actions.view')}
+				</Button>
+			),
+		}),
+		[translate, handleViewDetail],
+	);
 
 	return (
 		<Stack gap='md'>
-			{/* Filters */}
 			<Group gap='md' align='flex-end'>
 				<TextInput
 					placeholder={translate('nikki.vendingMachine.kiosk.activity.searchPlaceholder')}
@@ -181,66 +226,44 @@ export const KioskActivity: React.FC = () => {
 					]}
 					clearable
 				/>
-				<DatePickerInput
+				<DateTimePicker
+					w={200}
 					placeholder={translate('nikki.vendingMachine.kiosk.activity.filter.startDate')}
 					value={startDate}
 					onChange={(value) => setStartDate(value ? new Date(value) : null)}
 					clearable
+					presets={presets}
 				/>
-				<DatePickerInput
+				<DateTimePicker
+					w={200}
 					placeholder={translate('nikki.vendingMachine.kiosk.activity.filter.endDate')}
 					value={endDate}
 					onChange={(value) => setEndDate(value ? new Date(value) : null)}
 					clearable
+					presets={presets}
 				/>
 			</Group>
 
-			{/* Table */}
 			<ScrollArea>
-				<Table>
-					<Table.Thead>
-						<Table.Tr>
-							<Table.Th>{translate('nikki.vendingMachine.kiosk.activity.fields.time')}</Table.Th>
-							<Table.Th>{translate('nikki.vendingMachine.kiosk.activity.fields.type')}</Table.Th>
-							<Table.Th>{translate('nikki.vendingMachine.kiosk.activity.fields.content')}</Table.Th>
-							<Table.Th>{translate('nikki.general.actions.title')}</Table.Th>
-						</Table.Tr>
-					</Table.Thead>
-					<Table.Tbody>
-						{filteredLogs.length === 0 ? (
-							<Table.Tr>
-								<Table.Td colSpan={4} style={{ textAlign: 'center' }}>
-									<Text c='dimmed'>{translate('nikki.vendingMachine.kiosk.activity.noLogs')}</Text>
-								</Table.Td>
-							</Table.Tr>
-						) : (
-							filteredLogs.map((log) => (
-								<Table.Tr key={log.id}>
-									<Table.Td>
-										<Text size='sm'>{formatTimestamp(log.timestamp)}</Text>
-									</Table.Td>
-									<Table.Td>
-										{getTypeBadge(log.type)}
-									</Table.Td>
-									<Table.Td>
-										<Text size='sm' lineClamp={2}>
-											{log.content}
-										</Text>
-									</Table.Td>
-									<Table.Td>
-										<Button
-											size='xs'
-											variant='subtle'
-											onClick={() => handleViewDetail(log)}
-										>
-											{translate('nikki.general.actions.view')}
-										</Button>
-									</Table.Td>
-								</Table.Tr>
-							))
-						)}
-					</Table.Tbody>
-				</Table>
+				{kioskLogs.data.length === 0 && kioskLogs.status !== 'pending' ? (
+					<Text c='dimmed' ta='center' py='md'>
+						{translate('nikki.vendingMachine.kiosk.activity.noLogs')}
+					</Text>
+				) : (
+					<AutoTable
+						columnSizes={{
+							createdAt: { width: 250 },
+							eventType: { width: 250 },
+							payload: { flex: 1, minWidth: 300 },
+							actions: { width: 160 },
+						}}
+						columns={['createdAt', 'eventType', 'payload', 'actions']}
+						data={activityTableData}
+						schema={kioskActivityLogSchema}
+						columnRenderers={activityColumnRenderers}
+						isLoading={kioskLogs.status === 'pending'}
+					/>
+				)}
 			</ScrollArea>
 
 			{/* Detail Modal */}
@@ -259,13 +282,13 @@ export const KioskActivity: React.FC = () => {
 							<Text size='sm' c='dimmed' mb='xs'>
 								{translate('nikki.vendingMachine.kiosk.activity.fields.time')}
 							</Text>
-							<Text size='sm' fw={500}>{formatTimestamp(selectedLog.timestamp)}</Text>
+							<Text size='sm' fw={500}>{formatTimestamp(selectedLog.createdAt)}</Text>
 						</div>
 						<div>
 							<Text size='sm' c='dimmed' mb='xs'>
 								{translate('nikki.vendingMachine.kiosk.activity.fields.type')}
 							</Text>
-							{getTypeBadge(selectedLog.type)}
+							{getTypeBadge(selectedLog.eventType)}
 						</div>
 						<div>
 							<Text size='sm' c='dimmed' mb='xs'>
@@ -291,11 +314,11 @@ export const KioskActivity: React.FC = () => {
 								}}
 							>
 								<Textarea
-									value={formatJsonContent(selectedLog.content)}
+									value={formatJsonContent(selectedLog.payload ?? '')}
 									readOnly
 									styles={{
 										input: {
-											fontFamily: isJsonString(selectedLog.content) ? 'monospace' : 'inherit',
+											fontFamily: isJsonString(selectedLog.payload ?? '') ? 'monospace' : 'inherit',
 											fontSize: '12px',
 											minHeight: 400,
 										},

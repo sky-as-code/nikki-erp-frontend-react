@@ -1,13 +1,13 @@
 import { useUIState } from '@nikkierp/shell/contexts';
-import { useSubmit } from '@nikkierp/ui/hooks';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
+import { KioskSetting } from '../types';
+
 import { VendingMachineDispatch, kioskSettingActions, selectUpdateKioskSetting } from '@/appState';
 
-import { KioskSetting } from '../types';
 
 
 export type KioskSettingBasicInfoFormData = {
@@ -51,17 +51,24 @@ function useSubmitHandler(
 	onUpdateSuccess?: () => void,
 ) {
 	const updateKioskSetting = useMicroAppSelector(selectUpdateKioskSetting);
+	const updateRequestIdRef = React.useRef<string | null>(null);
 
 	React.useEffect(() => {
+		const requestId = updateKioskSetting.requestId;
+		const matchesDispatch = requestId != null && requestId === updateRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (updateKioskSetting.status === 'success') {
+			updateRequestIdRef.current = null;
 			onUpdateSuccess?.();
 			notification.showInfo(
-				translate('nikki.vendingMachine.kioskSettings.messages.update_success', { name: updateKioskSetting.data?.name }),
+				translate('nikki.vendingMachine.kioskSettings.messages.update_success'),
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(kioskSettingActions.resetUpdateKioskSetting());
 		}
 		else if (updateKioskSetting.status === 'error') {
+			updateRequestIdRef.current = null;
 			notification.showError(
 				updateKioskSetting.error ?? translate('nikki.general.errors.update_failed'),
 				translate('nikki.general.messages.error'),
@@ -72,9 +79,10 @@ function useSubmitHandler(
 
 	return {
 		isSubmitting: updateKioskSetting.status === 'pending',
-		handleSubmit: useSubmit<{ id: string; etag: string; updates: Partial<Omit<KioskSetting, 'id' | 'createdAt' | 'etag'>> }>({
-			submitAction: kioskSettingActions.updateKioskSetting,
-		}),
+		handleSubmit: (payload: { id: string; etag: string; updates: Partial<Omit<KioskSetting, 'id' | 'createdAt' | 'etag'>> }) => {
+			const action = dispatch(kioskSettingActions.updateKioskSetting(payload));
+			updateRequestIdRef.current = action.requestId;
+		},
 	};
 }
 

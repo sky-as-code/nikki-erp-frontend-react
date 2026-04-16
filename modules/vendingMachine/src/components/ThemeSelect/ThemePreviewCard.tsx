@@ -49,7 +49,7 @@ export const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({ theme, onRem
 						<IconPalette size={24} />
 						<Stack gap={2}>
 							<Text size='sm' fw={600}>{theme.name}</Text>
-							<Badge size='sm' variant='light'>{theme.code}</Badge>
+							<Badge size='sm' variant='filled'>{theme.code}</Badge>
 						</Stack>
 					</Group>
 					{onRemove && (
@@ -71,7 +71,7 @@ export const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({ theme, onRem
 				)}
 
 				<Group gap='xs' wrap='wrap'>
-					<Badge size='sm' variant='light' color={theme.status === 'active' ? 'green' : 'gray'}>
+					<Badge size='sm' variant='filled' color={theme.status === 'active' ? 'green' : 'gray'}>
 						{theme.status}
 					</Badge>
 					<Group gap={4}>
@@ -92,7 +92,7 @@ export const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({ theme, onRem
 					<Text size='xs' c='dimmed'>
 						{translate('nikki.vendingMachine.themes.fields.productCardStyle')}:
 					</Text>
-					<Badge size='xs' variant='light'>
+					<Badge size='xs' variant='filled'>
 						{productCardStyleOptions.find(
 							(opt) => opt.value === theme.productCardStyle)?.label || theme.productCardStyle}
 					</Badge>
@@ -102,7 +102,7 @@ export const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({ theme, onRem
 					<Text size='xs' c='dimmed'>
 						{translate('nikki.vendingMachine.themes.fields.appBackground')}:
 					</Text>
-					<Badge size='xs' variant='light'>
+					<Badge size='xs' variant='filled'>
 						{appBackgroundOptions.find(
 							(opt) => opt.value === theme.appBackground)?.label || theme.appBackground}
 					</Badge>
@@ -112,7 +112,7 @@ export const ThemePreviewCard: React.FC<ThemePreviewCardProps> = ({ theme, onRem
 					<Text size='xs' c='dimmed'>
 						{translate('nikki.vendingMachine.themes.fields.fontStyle')}:
 					</Text>
-					<Badge size='xs' variant='light'>
+					<Badge size='xs' variant='filled'>
 						{fontStyleOptions.find((opt) => opt.value === theme.fontStyle)?.label || theme.fontStyle}
 					</Badge>
 				</Group>

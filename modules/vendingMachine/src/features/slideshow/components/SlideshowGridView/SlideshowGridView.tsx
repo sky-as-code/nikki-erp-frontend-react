@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { ActionIcon, Badge, Card, Group, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
 import { IconEdit, IconTrash, IconPhoto } from '@tabler/icons-react';
 import React from 'react';
@@ -94,15 +95,6 @@ export const SlideshowGridView: React.FC<SlideshowGridViewProps> = ({
 						<Group gap='xs' wrap='nowrap'>
 							{getStatusBadge(slideshow.status)}
 						</Group>
-
-						<Stack gap={4}>
-							<Text size='xs' c='dimmed'>
-								{translate('nikki.vendingMachine.slideshow.fields.startDate')}: {new Date(slideshow.startDate).toLocaleDateString()}
-							</Text>
-							<Text size='xs' c='dimmed'>
-								{translate('nikki.vendingMachine.slideshow.fields.endDate')}: {new Date(slideshow.endDate).toLocaleDateString()}
-							</Text>
-						</Stack>
 
 						<Text size='xs' c='dimmed'>
 							{translate('nikki.vendingMachine.slideshow.fields.createdAt')}: {new Date(slideshow.createdAt).toLocaleDateString()}

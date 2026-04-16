@@ -4,7 +4,8 @@ import { IconDeviceDesktop, IconMapPin, IconPlus, IconTrash } from '@tabler/icon
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Kiosk, KioskMode, KioskStatus } from '@/features/kiosks/types';
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { Kiosk, KioskMode } from '@/features/kiosks/types';
 
 
 const DEFAULT_I18N = {
@@ -35,17 +36,8 @@ export const AssignedKioskList: React.FC<AssignedKioskListProps> = ({
 	const { t: translate } = useTranslation();
 	const keys = { ...DEFAULT_I18N, ...translationKeys };
 
-	const getStatusBadge = (status: KioskStatus) => {
-		const statusMap = {
-			[KioskStatus.ACTIVATED]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-			[KioskStatus.DISABLED]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
-			[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
-		};
-		const statusInfo = statusMap[status];
-		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-	};
-
-	const getModeBadge = (mode: KioskMode) => {
+	const getModeBadge = (mode: KioskMode | null | undefined) => {
+		if (mode == null) return <Badge color='gray' size='sm'>—</Badge>;
 		const modeMap: Partial<Record<KioskMode, { color: string; label: string }>> = {
 			[KioskMode.PENDING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 			[KioskMode.SELLING]: { color: 'blue', label: translate('nikki.vendingMachine.kiosk.mode.selling') },
@@ -100,11 +92,11 @@ export const AssignedKioskList: React.FC<AssignedKioskListProps> = ({
 									<Group gap='xs'>
 										<IconMapPin size={14} />
 										<Text size='sm' lineClamp={1} style={{ maxWidth: 200 }}>
-											{kiosk.address}
+											{kiosk.locationAddress ?? '—'}
 										</Text>
 									</Group>
 								</Table.Td>
-								<Table.Td>{getStatusBadge(kiosk.status)}</Table.Td>
+								<Table.Td><ArchivedStatusBadge isArchived={Boolean(kiosk.isArchived)} /></Table.Td>
 								<Table.Td>{getModeBadge(kiosk.mode)}</Table.Td>
 								{onRemoveKiosk && (
 									<Table.Td>

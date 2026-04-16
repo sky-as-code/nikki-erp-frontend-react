@@ -22,7 +22,7 @@ export const GamePreviewCard: React.FC<GamePreviewCardProps> = ({ game, onRemove
 						<IconDeviceGamepad2 size={24} />
 						<Stack gap={2}>
 							<Text size='sm' fw={600}>{game.name}</Text>
-							<Badge size='sm' variant='light'>{game.code}</Badge>
+							<Badge size='sm' variant='filled'>{game.code}</Badge>
 						</Stack>
 					</Group>
 					{onRemove && (
@@ -44,7 +44,7 @@ export const GamePreviewCard: React.FC<GamePreviewCardProps> = ({ game, onRemove
 				)}
 
 				<Group gap='xs' wrap='wrap'>
-					<Badge size='sm' variant='light' color={game.status === 'active' ? 'green' : 'gray'}>
+					<Badge size='sm' variant='filled' color={game.status === 'active' ? 'green' : 'gray'}>
 						{game.status}
 					</Badge>
 					<Text size='xs' c='dimmed'>

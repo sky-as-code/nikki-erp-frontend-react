@@ -1,37 +1,31 @@
-/* eslint-disable max-lines-per-function */
-import { ActionIcon, Badge, Card, Group, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
-import { IconBox, IconEdit, IconTrash } from '@tabler/icons-react';
+import { Card, Group, SimpleGrid, Stack, Text } from '@mantine/core';
+import { TablePaginationProps } from '@nikkierp/ui/components';
+import { IconBox } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { TableAction } from '@/components/Table';
+
 import { KioskModel } from '../../types';
+import { getKioskModelTableActions, KioskModelTableActions } from '../KioskModelTable';
+
 
 
 export interface KioskModelGridViewProps {
 	models: KioskModel[];
 	isLoading?: boolean;
-	onPreviewView: (kioskModel: KioskModel) => void;
-	onEdit?: (kioskModel: KioskModel) => void;
-	onDelete?: (kioskModel: KioskModel) => void;
+	actions?: KioskModelTableActions;
+	pagination?: TablePaginationProps;
 }
 
 export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 	models,
 	isLoading = false,
-	onPreviewView,
-	onEdit,
-	onDelete,
+	actions = {},
 }) => {
 	const { t: translate } = useTranslation();
-
-	const getStatusBadge = (status: 'active' | 'inactive') => {
-		const statusMap = {
-			active: { color: 'green', label: translate('nikki.general.status.active') },
-			inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-		};
-		const statusInfo = statusMap[status];
-		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-	};
+	const { view: onPreview, ...cardActions } = actions;
 
 	if (isLoading) {
 		return <Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>;
@@ -54,35 +48,25 @@ export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 					radius='md'
 					withBorder
 					style={{
-						cursor: 'pointer',
+						cursor: model.isArchived ? 'default' : 'pointer',
 					}}
-					onClick={() => onPreviewView(model)}
+					onClick={() => {
+						if (!model.isArchived) onPreview?.(model);
+					}}
 				>
 					<Stack gap='sm'>
 						<Group justify='space-between' align='flex-start'>
 							<Group gap='xs'>
 								<IconBox size={20} />
 								<Stack gap={0}>
-									<Text fw={600} size='sm'>{model.code}</Text>
+									<Text fw={600} size='sm'>{model.referenceCode}</Text>
 									<Text size='xs' c='dimmed'>{model.name}</Text>
 								</Stack>
 							</Group>
-							<Group gap='xs' onClick={(e) => e.stopPropagation()}>
-								{onEdit && (
-									<Tooltip label={translate('nikki.general.actions.edit')}>
-										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(model)}>
-											<IconEdit size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-								{onDelete && (
-									<Tooltip label={translate('nikki.general.actions.delete')}>
-										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(model)}>
-											<IconTrash size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-							</Group>
+							<TableAction
+								actions={getKioskModelTableActions(model, cardActions, translate)}
+								overflowMenuLabel={translate('nikki.general.actions.title')}
+							/>
 						</Group>
 
 						{model.description && (
@@ -92,7 +76,7 @@ export const KioskModelGridView: React.FC<KioskModelGridViewProps> = ({
 						)}
 
 						<Group gap='xs' wrap='nowrap'>
-							{getStatusBadge(model.status)}
+							<ArchivedStatusBadge isArchived={model.isArchived ?? false} />
 						</Group>
 
 						<Text size='xs' c='dimmed'>

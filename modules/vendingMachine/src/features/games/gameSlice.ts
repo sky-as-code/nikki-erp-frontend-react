@@ -211,10 +211,13 @@ function listGamesReducers(builder: ActionReducerMapBuilder<GameState>) {
 
 function getGameReducers(builder: ActionReducerMapBuilder<GameState>) {
 	builder
-		.addCase(getGame.pending, (state) => {
+		.addCase(getGame.pending, (state, action) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			const requestedId = action.meta.arg;
+			if (state.detail.data?.id !== requestedId) {
+				state.detail.data = undefined;
+			}
 		})
 		.addCase(getGame.fulfilled, (state, action) => {
 			state.detail.status = 'success';
@@ -255,13 +258,6 @@ function updateGameReducers(builder: ActionReducerMapBuilder<GameState>) {
 		.addCase(updateGame.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((g) => g.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
 		})
 		.addCase(updateGame.rejected, (state, action) => {
 			state.update.status = 'error';
@@ -299,13 +295,6 @@ function addGameVersionReducers(builder: ActionReducerMapBuilder<GameState>) {
 		.addCase(addGameVersion.fulfilled, (state, action) => {
 			state.addVersion.status = 'success';
 			state.addVersion.data = action.payload;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((g) => g.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
 		})
 		.addCase(addGameVersion.rejected, (state, action) => {
 			state.addVersion.status = 'error';
@@ -322,13 +311,6 @@ function deleteGameVersionReducers(builder: ActionReducerMapBuilder<GameState>) 
 		.addCase(deleteGameVersion.fulfilled, (state, action) => {
 			state.deleteVersion.status = 'success';
 			state.deleteVersion.data = action.payload;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((g) => g.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
 		})
 		.addCase(deleteGameVersion.rejected, (state, action) => {
 			state.deleteVersion.status = 'error';

@@ -4,6 +4,7 @@ export interface ReduxActionState<T =  any> {
 	status: ReduxActionStatus;
 	error: string | null;
 	data?: T;
+	requestId?: string | null;
 }
 
 export const baseReduxActionState : ReduxActionState = {

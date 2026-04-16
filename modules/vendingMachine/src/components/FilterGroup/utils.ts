@@ -70,15 +70,15 @@ function convertSimpleOperatorToSearchNode(
 		}];
 	}
 
-	// Handle 'is_not_set' operator
-	if (operator === 'is_not_set') {
+	// Handle 'not_set' operator
+	if (operator === 'not_set') {
 		return [{
 			if: [key, '=' as const, ''],
 		}];
 	}
 
 	// For other operators, create simple SearchNode with 'if' property
-	const validSearchOperators = ['^', '$', '=', '!=', '>', '<', '>=', '<=', '~', '!~'];
+	const validSearchOperators = ['^', '!^', '$', '!$', '=', '!=', '>', '<', '>=', '<=', '*', '!*'];
 	if (validSearchOperators.includes(operator)) {
 		return [{
 			if: [key, operator as any, value],
@@ -184,7 +184,7 @@ export function filterStateToSearchGraph(
 
 	// Convert search values to SearchNodes
 	const searchNodes: SearchNode[] = state.search.map((search) => ({
-		if: [search.key, search.operator || '~', search.value],
+		if: [search.key, search.operator || '*', search.value],
 	}));
 
 	// Convert filter values to SearchNodes
@@ -265,7 +265,7 @@ export function updateSearchInState(
 			newSearch.push({
 				key: fieldKey,
 				value,
-				operator: searchConfig?.operator || '~',
+				operator: searchConfig?.operator || '*',
 			});
 		}
 	}

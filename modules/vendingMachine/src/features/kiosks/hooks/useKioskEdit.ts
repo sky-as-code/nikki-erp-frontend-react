@@ -1,17 +1,38 @@
 import { useUIState } from '@nikkierp/shell/contexts';
-import { useSubmit } from '@nikkierp/ui/hooks';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
-
 import { VendingMachineDispatch, kioskActions, selectUpdateKiosk } from '@/appState';
-import { Kiosk } from '@/features/kiosks';
 
+import type { Kiosk } from '@/features/kiosks/types';
+
+
+
+export type KioskUpdateFormData = {id: string; etag: string;} & Pick<
+	Partial<Kiosk>,
+	| 'code'
+	| 'name'
+	| 'isArchived'
+	| 'mode'
+	| 'uiMode'
+	| 'locationAddress'
+	| 'latitude'
+	| 'longitude'
+	| 'modelRef'
+	| 'settingRef'
+	| 'paymentRefs'
+	| 'eventRefs'
+	| 'themeRef'
+	| 'gameRef'
+	| 'shoppingScreenPlaylistRef'
+	| 'waitingScreenPlaylistRef'
+>;
+
+export type KioskUpdatePayload = { id: string; body: KioskUpdateFormData };
 
 function useSubmitHandler(
-	kiosk: Kiosk | undefined,
 	dispatch: VendingMachineDispatch,
 	notification: ReturnType<typeof useUIState>['notification'],
 	translate: ReturnType<typeof useTranslation>['t'],
@@ -20,36 +41,46 @@ function useSubmitHandler(
 	onUpdateSuccess?: () => void,
 ) {
 	const updateKiosk = useMicroAppSelector(selectUpdateKiosk);
+	const updateRequestIdRef = React.useRef<string | null>(null);
 
 	React.useEffect(() => {
+		const requestId = updateKiosk.requestId;
+		const matchesDispatch = requestId != null && requestId === updateRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (updateKiosk.status === 'success') {
+			updateRequestIdRef.current = null;
+			dispatch(kioskActions.resetUpdateKiosk());
 			onUpdateSuccess?.();
+
 			notification.showInfo(
-				translate('nikki.vendingMachine.kiosk.messages.update_success', { name: updateKiosk.data?.name }),
+				translate('nikki.vendingMachine.kiosk.messages.update_success'),
 				translate('nikki.general.messages.success'),
 			);
-			dispatch(kioskActions.resetUpdateKiosk());
-			dispatch(kioskActions.listKiosks());
-			// navigate(-1);
 		}
 		else if (updateKiosk.status === 'error') {
+			updateRequestIdRef.current = null;
+			dispatch(kioskActions.resetUpdateKiosk());
+
 			notification.showError(
 				updateKiosk.error ?? translate('nikki.general.errors.update_failed'),
 				translate('nikki.general.messages.error'),
 			);
-			dispatch(kioskActions.resetUpdateKiosk());
 		}
-	}, [updateKiosk, dispatch, notification, translate, navigate, location]);
+	}, [updateKiosk, dispatch, notification, translate, navigate, location, onUpdateSuccess]);
+
+	const handleSubmit = useCallback((payload: KioskUpdatePayload) => {
+		const action = dispatch(kioskActions.updateKiosk(payload));
+		updateRequestIdRef.current = action.requestId;
+	}, [dispatch]);
 
 	return {
 		isSubmitting: updateKiosk.status === 'pending',
-		handleSubmit: useSubmit<{ id: string; etag: string; updates: Partial<Omit<Kiosk, 'id' | 'createdAt' | 'etag'>> }>({
-			submitAction: kioskActions.updateKiosk,
-		}),
+		handleSubmit,
 	};
 }
 
-export function useKioskEdit(kiosk: Kiosk | undefined, options?: { onUpdateSuccess?: () => void }) {
+export function useKioskEdit({ onUpdateSuccess }: { onUpdateSuccess?: () => void }) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
@@ -57,22 +88,22 @@ export function useKioskEdit(kiosk: Kiosk | undefined, options?: { onUpdateSucce
 	const location = useLocation();
 
 	const { isSubmitting, handleSubmit } = useSubmitHandler(
-		kiosk,
 		dispatch,
 		notification,
 		translate,
 		navigate,
 		location,
-		options?.onUpdateSuccess,
+		onUpdateSuccess,
 	);
 
-	return {
-		isSubmitting,
-		handleSubmit: (updates: Partial<Omit<Kiosk, 'id' | 'createdAt' | 'etag'>>) => {
-			if (kiosk) {
-				handleSubmit({ id: kiosk.id, etag: kiosk.etag, updates });
+	const submit = useCallback(
+		(body: KioskUpdateFormData) => {
+			if (body.id) {
+				handleSubmit({ id: body.id, body});
 			}
 		},
-	};
-}
+		[handleSubmit],
+	);
 
+	return { isSubmitting, handleSubmit: submit };
+}

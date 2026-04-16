@@ -16,6 +16,7 @@ export const useKioskDeviceDelete = () => {
 	const deleteState = useMicroAppSelector(selectDeleteKioskDevice);
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
+	const deleteRequestIdRef = React.useRef<string | null>(null);
 
 	const handleOpenDeleteModal = React.useCallback((kioskDevice: KioskDevice) => {
 		setDeviceToDelete(kioskDevice);
@@ -28,26 +29,31 @@ export const useKioskDeviceDelete = () => {
 	}, []);
 
 	const handleDelete = React.useCallback((deviceId: string) => {
-		dispatch(kioskDeviceActions.deleteKioskDevice({ id: deviceId }));
+		const action = dispatch(kioskDeviceActions.deleteKioskDevice({ id: deviceId }));
+		deleteRequestIdRef.current = action.requestId;
 	}, [dispatch]);
 
 	React.useEffect(() => {
+		const requestId = deleteState.requestId;
+		const matchesDispatch = requestId != null && requestId === deleteRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (deleteState.status === 'success') {
+			deleteRequestIdRef.current = null;
 			notification.showInfo(
 				translate('nikki.vendingMachine.device.messages.delete_success'),
 				translate('nikki.general.messages.success'),
 			);
 		}
-	}, [deleteState, notification, translate]);
-
-	React.useEffect(() => {
 		if (deleteState.status === 'error') {
+			deleteRequestIdRef.current = null;
 			notification.showError(
 				deleteState.error ?? translate('nikki.general.errors.delete_failed'),
 				translate('nikki.general.messages.error'),
 			);
 		}
 	}, [deleteState, notification, translate]);
+
 
 	return {
 		handleDelete,

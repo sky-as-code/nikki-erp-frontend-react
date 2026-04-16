@@ -5,65 +5,32 @@ import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
 import { VendingMachineDispatch, kioskActions, selectCreateKiosk } from '@/appState';
-import { Kiosk, ConnectionStatus } from '@/features/kiosks';
+
+import { KioskMode, UIMode } from '../types';
 
 
-export interface KioskCreateFormData {
+
+export type KioskCreateFormData = {
+	code: string;
 	name: string;
-	code?: string;
-	address: string;
-	latitude?: string | number;
-	longitude?: string | number;
-	status: Kiosk['status'];
-	mode: Kiosk['mode'];
-	modelId?: string;
-	paymentMethodIds?: string[];
-}
+	mode: KioskMode;
+	uiMode: UIMode;
+	locationAddress?: string | null;
+	latitude?: string | null;
+	longitude?: string | null;
+	// ref
+	modelRef: string | null;
+	settingRef?: string | null;
+	paymentRefs?: string[] | null;
+	eventRefs?: string[] | null;
+	themeRef?: string | null;
+	gameRef?: string | null;
+	shoppingScreenPlaylistRef?: string | null;
+	waitingScreenPlaylistRef?: string | null;
+};
 
-export function kioskToCreateFormValues(k: Kiosk): KioskCreateFormData {
-	return {
-		name: k.name,
-		code: k.code,
-		address: k.address,
-		latitude: k.coordinates.latitude.toString(),
-		longitude: k.coordinates.longitude.toString(),
-		status: k.status,
-		mode: k.mode,
-		modelId: k.modelId,
-		paymentMethodIds: k.paymentMethodIds ?? [],
-	};
-}
+export type KioskCreatePayload = KioskCreateFormData;
 
-export function formDataToKioskUpdatePayload(
-	data: KioskCreateFormData,
-): Partial<Omit<Kiosk, 'id' | 'createdAt' | 'etag'>> {
-	const lat = typeof data.latitude === 'string' ? Number.parseFloat(data.latitude) : Number(data.latitude);
-	const lng = typeof data.longitude === 'string' ? Number.parseFloat(data.longitude) : Number(data.longitude);
-	return {
-		name: data.name,
-		address: data.address,
-		coordinates: { latitude: lat, longitude: lng },
-		mode: data.mode,
-		status: data.status,
-		...(data.modelId ? { modelId: data.modelId } : { modelId: undefined }),
-		paymentMethodIds: data.paymentMethodIds ?? [],
-	};
-}
-
-function buildKioskCreatePayload(data: KioskCreateFormData): Omit<Kiosk, 'id' | 'createdAt' | 'etag'> {
-	const lat = Number(data.latitude) || 0;
-	const lng = Number(data.longitude) || 0;
-	return {
-		name: data.name,
-		code: data.code || `KIOSK-${Date.now()}`,
-		address: data.address,
-		coordinates: { latitude: lat, longitude: lng },
-		isActive: true,
-		status: data.status,
-		mode: data.mode,
-		connectionStatus: ConnectionStatus.DISCONNECTED,
-	};
-}
 
 export function useKioskCreate() {
 	const navigate = useNavigate();
@@ -73,26 +40,33 @@ export function useKioskCreate() {
 	const { t: translate } = useTranslation();
 
 	const createKiosk = useMicroAppSelector(selectCreateKiosk);
+	const createRequestIdRef = React.useRef<string | null>(null);
 
 	const handleCancel = useCallback(() => {
 		navigate(resolvePath('..', location.pathname).pathname);
 	}, [navigate, location.pathname]);
 
-	const handleSubmit = useCallback((data: KioskCreateFormData) => {
-		const payload = buildKioskCreatePayload(data);
-		dispatch(kioskActions.createKiosk(payload));
+	const handleSubmit = useCallback((data: KioskCreatePayload) => {
+		const action = dispatch(kioskActions.createKiosk(data));
+		createRequestIdRef.current = action.requestId;
 	}, [dispatch]);
 
 	const isSubmitting = createKiosk.status === 'pending';
 
 	React.useEffect(() => {
+		const requestId = createKiosk.requestId;
+		const matchesDispatch = requestId != null && requestId === createRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (createKiosk.status === 'success') {
+			createRequestIdRef.current = null;
 			notification.showInfo(
-				translate('nikki.vendingMachine.kiosk.messages.create_success', { name: createKiosk.data?.name }),
+				translate('nikki.vendingMachine.kiosk.messages.create_success'),
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(kioskActions.resetCreateKiosk());
 			dispatch(kioskActions.listKiosks());
+
 			const createdId = createKiosk.data?.id;
 			if (createdId) {
 				navigate(resolvePath(`../${createdId}`, location.pathname).pathname);
@@ -100,6 +74,7 @@ export function useKioskCreate() {
 		}
 
 		if (createKiosk.status === 'error') {
+			createRequestIdRef.current = null;
 			notification.showError(
 				createKiosk.error ?? translate('nikki.general.errors.create_failed'),
 				translate('nikki.general.messages.error'),
@@ -110,4 +85,3 @@ export function useKioskCreate() {
 
 	return { isSubmitting, handleSubmit, handleCancel };
 }
-

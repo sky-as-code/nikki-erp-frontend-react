@@ -1,10 +1,29 @@
 import React from 'react';
 
+
+// const (
+// 	Equals        Operator = "="
+// 	NotEquals     Operator = "!="
+// 	GreaterThan   Operator = ">"
+// 	GreaterEqual  Operator = ">="
+// 	LessThan      Operator = "<"
+// 	LessEqual     Operator = "<="
+// 	Contains      Operator = "*"
+// 	NotContains   Operator = "!*"
+// 	StartsWith    Operator = "^"
+// 	NotStartsWith Operator = "!^"
+// 	EndsWith      Operator = "$"
+// 	NotEndsWith   Operator = "!$"
+// 	In            Operator = "in"
+// 	NotIn         Operator = "not_in"
+// 	IsSet         Operator = "is_set"
+// 	IsNotSet      Operator = "not_set"
+// )
 /**
  * SearchGraph types for backend API
  */
-export type SearchOperator = '^' | '$' | '=' | '!=' | '>' | '<' | '>=' | '<=' | '~' | '!~';
-export type FilterOperator = '^' | '$' | '=' | '!=' | '>' | '<' | '>=' | '<=' | '~' | '!~' | 'in' | 'not_in' | 'is_set' | 'is_not_set';
+export type SearchOperator = '^' | '!^' | '$' | '!$' | '=' | '!=' | '>' | '<' | '>=' | '<=' | '*' | '!*';
+export type FilterOperator = SearchOperator | 'in' | 'not_in' | 'is_set' | 'not_set';
 
 export interface SearchCondition {
 	if: [string, SearchOperator, string | number | boolean];
@@ -53,7 +72,7 @@ export interface SearchConfig {
 /**
  * Condition structure: [operator, value]
  * - If operator is '$and' or '$or', value is an array of FilterConditionNode
- * - If operator is '=', '!=', '~', etc., value is a value or array of values
+ * - If operator is '=', '!=', '*', etc., value is a value or array of values
  */
 export type FilterCondition =
 	| ['$and' | '$or', FilterConditionNode[]]

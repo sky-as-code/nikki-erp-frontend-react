@@ -40,7 +40,7 @@
 		"kiosk_count": "Số lượng Kiosk",
 		"total_kiosks": "Tổng số Kiosk",
 		"active_kiosks": "Kiosk đang hoạt động",
-		"inactive_kiosks": "Kiosk không hoạt động",
+		"inactive_kiosks": "Kiosk đã lưu trữ",
 		"avg_temperature": "Nhiệt độ trung bình",
 		"avg_humidity": "Độ ẩm trung bình",
 		"total_power": "Tổng tiêu thụ điện",
@@ -142,11 +142,13 @@
 			"name": "Tên",
 			"address": "Địa chỉ",
 			"coordinates": "Tọa độ",
+			"locationAddress": "Địa chỉ",
 			"latitude": "Vĩ độ",
 			"longitude": "Kinh độ",
 			"isActive": "Trạng thái hoạt động",
 			"connectionStatus": "Kết nối",
 			"status": "Trạng thái",
+			"archived": "Lưu trữ",
 			"mode": "Chế độ",
 			"paymentMethods": "Phương thức thanh toán",
 			"warnings": "Cảnh báo",
@@ -242,11 +244,17 @@
 		},
 		"messages": {
 			"no_kiosks": "Không tìm thấy kiosk nào",
-			"create_success": "Kiosk \"{{name}}\" đã được tạo thành công",
-			"update_success": "Kiosk \"{{name}}\" đã được cập nhật thành công",
+			"create_success": "Kiosk đã được tạo thành công",
+			"update_success": "Kiosk đã được cập nhật thành công",
+			"archive_success": "Đã lưu trữ kiosk thành công",
+			"restore_success": "Đã khôi phục kiosk thành công",
 			"delete_success": "Kiosk đã được xóa thành công",
-			"delete_confirm": "Bạn có chắc chắn muốn xóa Kiosk \"{{name}}\"?",
+			"delete_confirm": "Bạn có chắc chắn muốn xóa Kiosk <strong>{{name}}</strong>? Hành động này sẽ <strong>không thể hoàn tác</strong>.",
 			"invalid_coordinates": "Vĩ độ hoặc kinh độ không hợp lệ. Vui lòng nhập số đúng.",
+			"archive_modal_title": "Xác nhận lưu trữ",
+			"restore_modal_title": "Xác nhận khôi phục",
+			"archive_confirm": "Bạn có chắc chắn muốn lưu trữ Kiosk <strong>{{name}}</strong>?",
+			"restore_confirm": "Bạn có chắc chắn muốn khôi phục Kiosk <strong>{{name}}</strong>?",
 			"not_found": {
 				"title": "Không tìm thấy Kiosk",
 				"message": "Kiosk bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
@@ -492,8 +500,8 @@
 		},
 		"messages": {
 			"no_settings": "Không tìm thấy cài đặt kiosk nào",
-			"create_success": "Đã tạo cài đặt kiosk \"{{name}}\" thành công",
-			"update_success": "Đã cập nhật cài đặt kiosk \"{{name}}\" thành công"
+			"create_success": "Đã tạo cài đặt thành công",
+			"update_success": "Cài đặt đã được cập nhật thành công"
 		}
 	},
 	"settings": {
@@ -522,8 +530,8 @@
 		},
 		"messages": {
 			"no_settings": "Không tìm thấy cài đặt nào",
-			"create_success": "Cài đặt \"{{name}}\" đã được tạo thành công",
-			"update_success": "Cài đặt \"{{name}}\" đã được cập nhật thành công",
+			"create_success": "Cài đặt đã được tạo thành công",
+			"update_success": "Cài đặt đã được cập nhật thành công",
 			"delete_success": "Cài đặt đã được xóa thành công",
 			"delete_confirm": "Bạn có chắc chắn muốn xóa cài đặt <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
 			"not_found": {
@@ -552,6 +560,8 @@
 		"fields": {
 			"id": "Mã định danh",
 			"code": "Mã dòng",
+			"modelId": "Mã dòng",
+			"referenceCode": "Mã tham chiếu",
 			"name": "Tên",
 			"model": "Dòng máy",
 			"description": "Mô tả",
@@ -561,6 +571,8 @@
 			"interfaceMode": "Chế độ giao diện",
 			"slideshow": "Trình chiếu",
 			"numberOfTrays": "Số khay",
+			"shelvesNumber": "Số khay",
+			"shelvesConfig": "Cấu hình khay",
 			"trayConfigurations": "Cấu hình khay",
 			"trayRow": "Hàng",
 			"shelfType": "Loại khay",
@@ -593,14 +605,20 @@
 		},
 		"messages": {
 			"no_models": "Không tìm thấy mô hình nào",
-			"create_success": "Dòng máy \"{{name}}\" đã được tạo thành công",
-			"update_success": "Dòng máy \"{{name}}\" đã được cập nhật thành công",
+			"create_success": "Dòng máy đã được tạo thành công",
+			"update_success": "Dòng máy đã được cập nhật thành công",
 			"delete_success": "Dòng máy đã được xóa thành công",
 			"not_found": {
 				"title": "Không tìm thấy dòng máy",
 				"message": "Dòng máy bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
 			},
 			"delete_confirm": "Bạn có chắc chắn muốn xóa dòng máy <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
+			"archive_modal_title": "Xác nhận lưu trữ",
+			"restore_modal_title": "Xác nhận khôi phục",
+			"archive_confirm": "Lưu trữ dòng máy <strong>{{name}}</strong>? Bạn có thể khôi phục sau.",
+			"restore_confirm": "Khôi phục dòng máy <strong>{{name}}</strong>?",
+			"archive_success": "Đã lưu trữ dòng máy thành công",
+			"restore_success": "Đã khôi phục dòng máy thành công",
 			"no_slideshow": "Chưa có trình chiếu",
 			"no_trays": "Chưa có khay nào. Nhấn nút 'Thêm hàng' để thêm khay."
 		},
@@ -610,6 +628,7 @@
 	},
 	"payment": {
 		"title": "Phương thức thanh toán",
+		"title_create": "Tạo phương thức thanh toán",
 		"detail": {
 			"title": "Chi tiết Phương thức thanh toán"
 		},
@@ -645,7 +664,21 @@
 		},
 		"messages": {
 			"no_payments": "Không tìm thấy phương thức thanh toán nào",
-			"no_custom_fields": "Không có trường tùy chỉnh"
+			"no_custom_fields": "Không có trường tùy chỉnh",
+			"create_success": "Đã tạo phương thức thanh toán thành công",
+			"update_success": "Đã cập nhật phương thức thanh toán thành công",
+			"delete_success": "Đã xóa phương thức thanh toán thành công",
+			"delete_confirm": "Xóa phương thức thanh toán <strong>{{name}}</strong>?",
+			"not_found": {
+				"title": "Không tìm thấy phương thức thanh toán",
+				"message": "Phương thức có thể đã bị xóa hoặc liên kết không hợp lệ."
+			},
+			"archive_success": "Đã lưu trữ phương thức thanh toán thành công",
+			"restore_success": "Đã khôi phục phương thức thanh toán thành công",
+			"archive_modal_title": "Xác nhận lưu trữ phương thức thanh toán",
+			"restore_modal_title": "Xác nhận khôi phục phương thức thanh toán",
+			"archive_confirm": "Bạn có chắc chắn muốn lưu trữ phương thức thanh toán <strong>{{name}}</strong>?",
+			"restore_confirm": "Bạn có chắc chắn muốn khôi phục phương thức thanh toán <strong>{{name}}</strong>?"
 		}
 	},
 	"games": {
@@ -791,8 +824,8 @@
 		"messages": {
 			"no_devices": "Không tìm thấy thiết bị nào",
 			"no_specifications": "Không có thông số",
-			"create_success": "Thiết bị \"{{name}}\" đã được tạo thành công",
-			"update_success": "Thiết bị \"{{name}}\" đã được cập nhật thành công",
+			"create_success": "Thiết bị đã được tạo thành công",
+			"update_success": "Thiết bị đã được cập nhật thành công",
 			"delete_success": "Thiết bị đã được xóa thành công",
 			"delete_confirm": "Bạn có chắc chắn muốn xóa thiết bị <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
 			"not_found": {

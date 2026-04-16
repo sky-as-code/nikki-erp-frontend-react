@@ -1,12 +1,15 @@
 import { Box, Divider, Stack, Text } from '@mantine/core';
-import { ConfirmModal, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import React from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
+import { ArchiveKioskModal, DeleteKioskModal  } from '@/features/kiosks';
 import { Kiosk } from '@/features/kiosks/types';
 
 import { KioskFormFields } from '../KioskFormFields/KioskFormFields';
 import { useBasicInfoTab } from './hooks/useBasicInfoTab';
+
+
 
 
 export interface KioskBasicInfoProps {
@@ -22,26 +25,18 @@ const KioskBasicInfoAuditDates: React.FC<{ kiosk: Kiosk }> = ({ kiosk }) => {
 				<Text size='sm' c='dimmed' mb={3}>
 					{translate('nikki.vendingMachine.kiosk.fields.createdAt')}
 				</Text>
-				<Text size='sm'>{new Date(kiosk.createdAt).toLocaleString()}</Text>
+				<Text size='sm'>{kiosk.createdAt ? new Date(kiosk.createdAt).toLocaleString() : '—'	}</Text>
 			</Box>
-			{kiosk.deletedAt && (
-				<Box>
-					<Text size='sm' c='dimmed' mb='xs'>
-						{translate('nikki.vendingMachine.kiosk.fields.deletedAt')}
-					</Text>
-					<Text size='sm'>{new Date(kiosk.deletedAt).toLocaleString()}</Text>
-				</Box>
-			)}
 		</React.Fragment>
 	);
 };
 
 export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
-	const { t } = useTranslation();
-
-	const { formId, isEditing, isSubmitting, modelSchema, modelValue, onFormSubmit,
-		closeDeleteModal, confirmDelete, isOpenDeleteModal } = useBasicInfoTab({ kiosk });
-
+	const {
+		formId, isEditing, isSubmitting, modelSchema, formValues, onFormSubmit,
+		closeDeleteModal, confirmDelete, isOpenDeleteModal,
+		isOpenArchiveModal, pendingArchive, handleConfirmArchive, handleCloseArchiveModal,
+	} = useBasicInfoTab({ kiosk });
 
 	return (
 		<React.Fragment>
@@ -51,20 +46,19 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 						key={`${kiosk.id}-${kiosk.etag}-basic-info`}
 						formVariant='update'
 						modelSchema={modelSchema}
-						modelValue={modelValue}
+						modelValue={formValues}
 						modelLoading={isEditing && isSubmitting}
 					>
 						{({ handleSubmit }) => (
 							<>
-								{isEditing && (
-									<form
-										id={formId}
-										onSubmit={handleSubmit(onFormSubmit)}
-										noValidate
-										style={{ display: 'contents' }}
-									/>
-								)}
-								<KioskFormFields mode={isEditing ? 'edit' : 'view'} />
+								<form
+									id={formId}
+									onSubmit={isEditing ? handleSubmit(onFormSubmit) : undefined}
+									noValidate
+									style={{ display: 'contents' }}
+								>
+									<KioskFormFields mode={isEditing ? 'edit' : 'view'} kiosk={kiosk} isSubmitting={isSubmitting} />
+								</form>
 							</>
 						)}
 					</FormFieldProvider>
@@ -73,17 +67,19 @@ export const KioskBasicInfo: React.FC<KioskBasicInfoProps> = ({ kiosk }) => {
 				<KioskBasicInfoAuditDates kiosk={kiosk} />
 			</Stack>
 
-			<ConfirmModal
-				title={t('nikki.general.messages.delete_confirm')}
+			<DeleteKioskModal
 				opened={isOpenDeleteModal}
 				onClose={closeDeleteModal}
 				onConfirm={confirmDelete}
-				message={<Trans i18nKey='nikki.vendingMachine.kiosk.messages.delete_confirm'
-					values={{ name: kiosk?.name || '' }}
-					components={{ strong: <strong /> }}
-				/>}
-				confirmLabel={t('nikki.general.actions.delete')}
-				confirmColor='red'
+				name={kiosk.name || ''}
+			/>
+
+			<ArchiveKioskModal
+				opened={isOpenArchiveModal}
+				onClose={handleCloseArchiveModal}
+				onConfirm={handleConfirmArchive}
+				type={pendingArchive?.targetArchived ? 'archive' : 'restore'}
+				name={pendingArchive?.kiosk?.name ?? ''}
 			/>
 
 		</React.Fragment>

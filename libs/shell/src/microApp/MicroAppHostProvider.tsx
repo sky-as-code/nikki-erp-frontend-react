@@ -23,7 +23,7 @@ export type MicroAppHostProviderProps = React.PropsWithChildren & {
 };
 
 export function MicroAppHostProvider({ children, microApps }: MicroAppHostProviderProps): React.ReactNode {
-	const manager = new MicroAppManager(microApps);
+	const [manager] = useState(() => new MicroAppManager(microApps));
 	return (
 		<MicroAppHostContext.Provider value={manager} >
 			{children}

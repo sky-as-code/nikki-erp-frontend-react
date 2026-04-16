@@ -163,10 +163,13 @@ function listKioskDevicesReducers(builder: ActionReducerMapBuilder<KioskDeviceSt
 
 function getKioskDeviceReducers(builder: ActionReducerMapBuilder<KioskDeviceState>) {
 	builder
-		.addCase(getKioskDevice.pending, (state) => {
+		.addCase(getKioskDevice.pending, (state, action) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			const requestedId = action.meta.arg;
+			if (state.detail.data?.id !== requestedId) {
+				state.detail.data = undefined;
+			}
 		})
 		.addCase(getKioskDevice.fulfilled, (state, action) => {
 			state.detail.status = 'success';
@@ -181,61 +184,57 @@ function getKioskDeviceReducers(builder: ActionReducerMapBuilder<KioskDeviceStat
 
 function createKioskDeviceReducers(builder: ActionReducerMapBuilder<KioskDeviceState>) {
 	builder
-		.addCase(createKioskDevice.pending, (state, _action) => {
+		.addCase(createKioskDevice.pending, (state, action) => {
 			state.create.status = 'pending';
 			state.create.error = null;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createKioskDevice.fulfilled, (state, action) => {
 			state.create.status = 'success';
 			state.create.data = action.payload;
+			state.create.requestId = action.meta.requestId;
 		})
 		.addCase(createKioskDevice.rejected, (state, action) => {
 			state.create.status = 'error';
 			state.create.error = action.payload || 'Failed to create kiosk device';
+			state.create.requestId = action.meta.requestId;
 		});
 }
 
 function updateKioskDeviceReducers(builder: ActionReducerMapBuilder<KioskDeviceState>) {
 	builder
-		.addCase(updateKioskDevice.pending, (state, _action) => {
+		.addCase(updateKioskDevice.pending, (state, action) => {
 			state.update.status = 'pending';
 			state.update.error = null;
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateKioskDevice.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((d) => d.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
+			state.update.requestId = action.meta.requestId;
 		})
 		.addCase(updateKioskDevice.rejected, (state, action) => {
 			state.update.status = 'error';
 			state.update.error = action.payload || 'Failed to update kiosk device';
+			state.update.requestId = action.meta.requestId;
 		});
 }
 
 function deleteKioskDeviceReducers(builder: ActionReducerMapBuilder<KioskDeviceState>) {
 	builder
-		.addCase(deleteKioskDevice.pending, (state, _action) => {
+		.addCase(deleteKioskDevice.pending, (state, action) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteKioskDevice.fulfilled, (state, action) => {
 			state.delete.status = 'success';
-			if (state.list.data) {
-				state.list.data = state.list.data.filter((d) => d.id !== action.meta.arg.id);
-			}
-			if (state.detail.data?.id === action.meta.arg.id) {
-				state.detail.data = undefined;
-			}
+			state.delete.requestId = action.meta.requestId;
 		})
 		.addCase(deleteKioskDevice.rejected, (state, action) => {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete kiosk device';
+			state.delete.requestId = action.meta.requestId;
 		});
 }
 

@@ -1,12 +1,15 @@
 import {
-	Badge, Box, Button, Divider, Drawer, Group, Image, Select, Stack, Table, Text, TextInput,
+	Badge, Box, Button, Divider, Group, Image, Select, Stack, Table, Text, TextInput,
 } from '@mantine/core';
-import { IconCreditCard, IconExternalLink, IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconCreditCard, IconPlus, IconTrash } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { CustomFieldValueType, PaymentMethod, PaymentMethodCustomField } from '../../types';
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { PreviewDrawer } from '@/components/PreviewDrawer';
+
+import { CustomFieldValueType, PaymentMethod, PaymentMethodConfigValue } from '../../types';
 
 
 export interface PaymentDetailDrawerProps {
@@ -25,43 +28,12 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 }) => {
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
-	const [customFields, setCustomFields] = useState<PaymentMethodCustomField[]>(payment?.customFields || []);
+	const [customFields, setCustomFields] =
+		useState<PaymentMethodConfigValue[]>(Object.values(payment?.config || {}) || []);
+
 	const [newFieldKey, setNewFieldKey] = useState('');
 	const [newFieldValue, setNewFieldValue] = useState('');
 	const [newFieldType, setNewFieldType] = useState<CustomFieldValueType>('string');
-
-	React.useEffect(() => {
-		if (payment) {
-			setCustomFields(payment.customFields || []);
-		}
-	}, [payment]);
-
-	if (isLoading || !payment) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='lg'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.payment.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
-
-	const getStatusBadge = (status: string) => {
-		const statusMap: Record<string, { color: string; label: string }> = {
-			active: { color: 'green', label: translate('nikki.general.status.active') },
-			inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-		};
-		const statusInfo = statusMap[status] || { color: 'gray', label: status };
-		return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
-	};
-
-	const formatCurrency = (value: number) => {
-		return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-	};
 
 	const handleAddCustomField = () => {
 		if (newFieldKey.trim() && newFieldValue.trim()) {
@@ -80,7 +52,7 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 		setCustomFields(customFields.filter((_, i) => i !== index));
 	};
 
-	const renderCustomFieldValue = (field: PaymentMethodCustomField) => {
+	const renderCustomFieldValue = (field: any) => {
 		switch (field.valueType) {
 			case 'password':
 				return '••••••••';
@@ -99,67 +71,59 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 	];
 
 	return (
-		<Drawer
+		<PreviewDrawer
 			opened={opened}
 			onClose={onClose}
-			position='right'
-			size='lg'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						{payment.image ? (
-							<Box w={64} h={64}>
-								<Image
-									src={payment.image as string}
-									alt={String(payment.name || '')}
-									width={64}
-									height={64}
-									radius='sm'
-									style={{ objectFit: 'contain' }}
-								/>
-							</Box>
-						) : (
-							<IconCreditCard size={26} stroke={1.5} />
-						)}
-						<Text fw={600} size='lg'>{payment.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../payment/${payment.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+			header={{
+				title: payment?.name,
+				subtitle: payment?.method,
+				avatar: payment?.image ? (
+					<Box w={48} h={48}>
+						<Image
+							src={payment.image as string}
+							alt={String(payment.name || '')}
+							width={48}
+							height={48}
+							radius='sm'
+							style={{ objectFit: 'contain' }}
+						/>
+					</Box>
+				) : (
+					<IconCreditCard size={26} stroke={1.5} />
+				),
+			}}
+			onViewDetails={() => {
+				if (payment?.id) {
+					navigate(`../payment/${payment.id}`);
+				}
+				onClose();
+			}}
+			isLoading={isLoading}
+			isNotFound={!payment && !isLoading}
+			drawerProps={{ size: 'lg', opened, onClose }}
 		>
 			<Stack gap='md'>
-				<div>
-					<Text size='sm' c='dimmed' mb='xs'>
+				<Box>
+					<Text size='sm' c='dimmed' mb={3} fw={500}>
 						{translate('nikki.vendingMachine.payment.fields.code')}
 					</Text>
-					<Text size='sm' fw={500}>{payment.code}</Text>
-				</div>
+					<Text size='sm' fw={500}>{payment?.method}</Text>
+				</Box>
 
 				<Divider />
 
-				<div>
-					<Text size='sm' c='dimmed' mb='xs'>
+				<Box>
+					<Text size='sm' c='dimmed' mb={3} fw={500}>
 						{translate('nikki.vendingMachine.payment.fields.name')}
 					</Text>
-					<Text size='sm'>{payment.name}</Text>
-				</div>
+					<Text size='sm'>{payment?.name}</Text>
+				</Box>
 
-				{payment.image && (
+				{payment?.image && (
 					<>
 						<Divider />
 						<div>
-							<Text size='sm' c='dimmed' mb='xs'>
+							<Text size='sm' c='dimmed' mb={3} fw={500}>
 								{translate('nikki.vendingMachine.payment.fields.image')}
 							</Text>
 							<Box w={64} h={64}>
@@ -178,56 +142,20 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 
 				<Divider />
 
-				<div>
-					<Text size='sm' c='dimmed' mb='xs'>
+				<Box>
+					<Text size='sm' c='dimmed' mb={3} fw={500}>
 						{translate('nikki.vendingMachine.payment.fields.status')}
 					</Text>
-					{getStatusBadge(payment.status)}
-				</div>
-
-				{payment.description && (
-					<>
-						<Divider />
-						<div>
-							<Text size='sm' c='dimmed' mb='xs'>
-								{translate('nikki.vendingMachine.payment.fields.description')}
-							</Text>
-							<div
-								dangerouslySetInnerHTML={{ __html: payment.description }}
-								style={{
-									fontSize: '0.875rem',
-									lineHeight: 1.6,
-								}}
-							/>
-						</div>
-					</>
-				)}
-
-				{(payment.minTransactionValue !== undefined || payment.maxTransactionValue !== undefined) && (
-					<>
-						<Divider />
-						<div>
-							<Text size='sm' c='dimmed' mb='xs'>
-								{translate('nikki.vendingMachine.payment.fields.transactionRange')}
-							</Text>
-							<Text size='sm'>
-								{payment.minTransactionValue !== undefined
-									? formatCurrency(payment.minTransactionValue)
-									: '0'} - {payment.maxTransactionValue !== undefined
-									? formatCurrency(payment.maxTransactionValue)
-									: '∞'}
-							</Text>
-						</div>
-					</>
-				)}
+					{payment ? <ArchivedStatusBadge isArchived={payment.isArchived} /> : null}
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs' fw={500}>
 						{translate('nikki.vendingMachine.payment.fields.customFields')}
 					</Text>
-					{customFields.length > 0 ? (
+					{customFields.length > 0 && (
 						<Table striped highlightOnHover>
 							<Table.Thead>
 								<Table.Tr>
@@ -262,8 +190,6 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 								))}
 							</Table.Tbody>
 						</Table>
-					) : (
-						<Text size='sm' c='dimmed'>{translate('nikki.vendingMachine.payment.messages.no_custom_fields')}</Text>
 					)}
 
 					<Stack gap='xs' mt='md'>
@@ -299,17 +225,17 @@ export const PaymentDetailDrawer: React.FC<PaymentDetailDrawerProps> = ({
 							</Button>
 						</Group>
 					</Stack>
-				</div>
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.payment.fields.createdAt')}
 					</Text>
-					<Text size='sm'>{new Date(payment.createdAt).toLocaleString()}</Text>
-				</div>
+					<Text size='sm'>{payment?.createdAt ? new Date(payment.createdAt).toLocaleString() : '—'}</Text>
+				</Box>
 			</Stack>
-		</Drawer>
+		</PreviewDrawer>
 	);
 };

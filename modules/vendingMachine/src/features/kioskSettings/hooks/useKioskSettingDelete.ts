@@ -8,6 +8,7 @@ import { VendingMachineDispatch, kioskSettingActions, selectDeleteKioskSetting }
 import { type KioskSetting } from '../types';
 
 
+// eslint-disable-next-line max-lines-per-function
 export const useKioskSettingDelete = (onRefresh?: () => void) => {
 	const [isOpenDeleteModal, setIsOpenDeleteModal] = React.useState(false);
 	const [settingToDelete, setSettingToDelete] = React.useState<KioskSetting | null>(null);
@@ -16,23 +17,29 @@ export const useKioskSettingDelete = (onRefresh?: () => void) => {
 	const deleteState = useMicroAppSelector(selectDeleteKioskSetting);
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
+	const deleteRequestIdRef = React.useRef<string | null>(null);
 
 	const handleOpenDeleteModal = (setting: KioskSetting) => {
 		setSettingToDelete(setting);
 		setIsOpenDeleteModal(true);
 	};
-
 	const handleCloseDeleteModal = React.useCallback(() => {
 		setIsOpenDeleteModal(false);
 		setSettingToDelete(null);
 	}, []);
 
 	const handleDelete = React.useCallback((settingId: string) => {
-		dispatch(kioskSettingActions.deleteKioskSetting({ id: settingId }));
+		const action = dispatch(kioskSettingActions.deleteKioskSetting({ id: settingId }));
+		deleteRequestIdRef.current = action.requestId;
 	}, [dispatch]);
 
 	React.useEffect(() => {
+		const requestId = deleteState.requestId;
+		const matchesDispatch = requestId != null && requestId === deleteRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (deleteState.status === 'success') {
+			deleteRequestIdRef.current = null;
 			notification.showInfo(
 				translate('nikki.general.messages.delete_success'),
 				translate('nikki.general.messages.success'),
@@ -41,17 +48,15 @@ export const useKioskSettingDelete = (onRefresh?: () => void) => {
 			handleCloseDeleteModal();
 			onRefresh?.();
 		}
-	}, [deleteState, dispatch, notification, translate, onRefresh, handleCloseDeleteModal]);
-
-	React.useEffect(() => {
 		if (deleteState.status === 'error') {
+			deleteRequestIdRef.current = null;
 			notification.showError(
 				deleteState.error ?? translate('nikki.general.errors.delete_failed'),
 				translate('nikki.general.messages.error'),
 			);
 			dispatch(kioskSettingActions.resetDeleteKioskSetting());
 		}
-	}, [deleteState, dispatch, notification, translate]);
+	}, [deleteState, dispatch, notification, translate, onRefresh, handleCloseDeleteModal]);
 
 	return {
 		handleDelete,

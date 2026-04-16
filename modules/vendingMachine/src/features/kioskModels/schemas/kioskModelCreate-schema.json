@@ -1,0 +1,69 @@
+{
+	"name": "kioskModel",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.id' }"
+		},
+		"etag": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.etag' }"
+		},
+		"referenceCode": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.modelId' }",
+			"required": {
+				"create": true,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				},
+				{
+					"type": "length",
+					"min": 1,
+					"max": 128,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.name' }",
+			"required": {
+				"create": true,
+				"update": true
+			},
+			"constraints": [
+				{
+					"type": "required",
+					"message": "{ \"$ref\": 'nikki.general.errors.required' }"
+				},
+				{
+					"type": "length",
+					"min": 1,
+					"max": 128,
+					"message": "{ \"$ref\": 'nikki.general.errors.length' }"
+				}
+			]
+		},
+		"description": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.description' }"
+		},
+		"goodsCollectorType": {
+			"type": "enum",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.kioskType' }",
+			"enum": [
+				{ "value": "elevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.elevator' }" },
+				{ "value": "non-elevator", "label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.kioskType.nonElevator' }" }
+			]
+		},
+		"shelvesNumber": {
+			"type": "integer",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.kioskModels.fields.shelvesNumber' }"
+		}
+	}
+}

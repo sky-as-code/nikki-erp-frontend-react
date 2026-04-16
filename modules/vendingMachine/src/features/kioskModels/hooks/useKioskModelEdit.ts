@@ -1,15 +1,26 @@
 import { useUIState } from '@nikkierp/shell/contexts';
-import { useSubmit } from '@nikkierp/ui/hooks';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
 import { VendingMachineDispatch, kioskModelActions, selectUpdateKioskModel } from '@/appState';
-import { KioskModel } from '@/features/kioskModels/types';
+
+import type { KioskModel } from '@/features/kioskModels/types';
 
 
-type UpdatePayload = { id: string; etag: string; updates: Partial<Omit<KioskModel, 'id' | 'createdAt' | 'etag'>> };
+
+export type KioskModelUpdateFormData = {id: string; etag: string;} & Pick<
+	Partial<KioskModel>,
+	| 'referenceCode'
+	| 'name'
+	| 'description'
+	| 'shelvesNumber'
+	| 'shelvesConfig'
+	| 'goodsCollectorType'
+>;
+
+export type KioskModelUpdatePayload = { id: string; body: KioskModelUpdateFormData };
 
 function useSubmitHandler(
 	dispatch: VendingMachineDispatch,
@@ -20,35 +31,44 @@ function useSubmitHandler(
 	onUpdateSuccess?: () => void,
 ) {
 	const updateState = useMicroAppSelector(selectUpdateKioskModel);
+	const updateRequestIdRef = React.useRef<string | null>(null);
 
 	React.useEffect(() => {
+		const requestId = updateState.requestId;
+		const matchesDispatch = requestId != null && requestId === updateRequestIdRef.current;
+		if (!matchesDispatch) return;
+
 		if (updateState.status === 'success') {
+			updateRequestIdRef.current = null;
 			onUpdateSuccess?.();
 			notification.showInfo(
-				translate('nikki.vendingMachine.kioskModels.messages.update_success', { name: updateState.data?.name }),
+				translate('nikki.vendingMachine.kioskModels.messages.update_success'),
 				translate('nikki.general.messages.success'),
 			);
 			dispatch(kioskModelActions.resetUpdateKioskModel());
-			dispatch(kioskModelActions.listKioskModels());
 		}
 		else if (updateState.status === 'error') {
+			updateRequestIdRef.current = null;
 			notification.showError(
 				updateState.error ?? translate('nikki.general.errors.update_failed'),
 				translate('nikki.general.messages.error'),
 			);
 			dispatch(kioskModelActions.resetUpdateKioskModel());
 		}
-	}, [updateState, dispatch, notification, translate, navigate, location]);
+	}, [updateState, dispatch, notification, translate, navigate, location, onUpdateSuccess]);
+
+	const handleSubmit = useCallback((payload: KioskModelUpdatePayload) => {
+		const action = dispatch(kioskModelActions.updateKioskModel(payload));
+		updateRequestIdRef.current = action.requestId;
+	}, [dispatch]);
 
 	return {
 		isSubmitting: updateState.status === 'pending',
-		handleSubmit: useSubmit<UpdatePayload>({
-			submitAction: kioskModelActions.updateKioskModel,
-		}),
+		handleSubmit,
 	};
 }
 
-export function useKioskModelEdit(model: KioskModel | undefined, options?: { onUpdateSuccess?: () => void }) {
+export function useKioskModelEdit({ onUpdateSuccess }: { onUpdateSuccess?: () => void }) {
 	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const { notification } = useUIState();
 	const { t: translate } = useTranslation();
@@ -61,16 +81,16 @@ export function useKioskModelEdit(model: KioskModel | undefined, options?: { onU
 		translate,
 		navigate,
 		location,
-		options?.onUpdateSuccess,
+		onUpdateSuccess,
 	);
 
 	const submit = useCallback(
-		(updates: Partial<Omit<KioskModel, 'id' | 'createdAt' | 'etag'>>) => {
-			if (model) {
-				handleSubmit({ id: model.id, etag: model.etag, updates });
+		(modelData: KioskModelUpdateFormData) => {
+			if (modelData.id) {
+				handleSubmit({ id: modelData.id, body: modelData });
 			}
 		},
-		[model?.id, model?.etag, handleSubmit],
+		[handleSubmit],
 	);
 
 	return { isSubmitting, handleSubmit: submit };

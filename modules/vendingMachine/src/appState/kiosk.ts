@@ -8,8 +8,10 @@ import {
 	createKiosk,
 	updateKiosk,
 	deleteKiosk,
+	setArchivedKiosk,
 	KioskState,
 	initialKioskState,
+	searchKioskLogs,
 } from '@/features/kiosks/kioskSlice';
 
 
@@ -25,6 +27,8 @@ export const kioskActions = {
 	createKiosk,
 	updateKiosk,
 	deleteKiosk,
+	setArchivedKiosk,
+	searchKioskLogs,
 	...actions,
 };
 
@@ -55,3 +59,22 @@ export const selectDeleteKiosk = createSelector(
 	(state) => state.delete,
 );
 
+export const selectSetArchivedKiosk = createSelector(
+	selectKioskState,
+	(state) => state.archive,
+);
+
+export const selectKioskListPagination = createSelector(
+	selectKioskState,
+	(state) => state.listPagination,
+);
+
+export const selectKioskLogs = createSelector(
+	selectKioskState,
+	(state) => state.kioskLogs,
+);
+
+export const selectKioskLogsPagination = createSelector(
+	selectKioskState,
+	(state) => state.kioskLogsPagination,
+);

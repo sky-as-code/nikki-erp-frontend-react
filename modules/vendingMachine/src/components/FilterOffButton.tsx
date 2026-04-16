@@ -1,16 +1,18 @@
 import { Button } from '@mantine/core';
-import { IconFilterOff } from '@tabler/icons-react';
+import { IconFilterX } from '@tabler/icons-react';
 
 
 export const FilterOffButton = ({ onClick }: { onClick: () => void }) => {
 	return (
 		<Button
-			variant='light'
+			variant='subtle'
 			color='gray'
 			size='sm'
+			px='md'
+			bd='solid 1px var(--mantine-color-gray-4)'
 			onClick={onClick}
 		>
-			<IconFilterOff size={20} />
+			<IconFilterX size={20} />
 		</Button>
 	);
 };

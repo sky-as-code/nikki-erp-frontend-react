@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+
 import { ControlPanelActionItem } from '@/components/ControlPanel';
 import { useKioskModelDetailTabControl } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
 import { KioskModel } from '@/features/kioskModels/types';
@@ -11,7 +12,8 @@ import { KioskModelBasicInfo } from '../KioskModelBasicInfo';
 import { KioskModelSettings } from '../KioskModelSettings';
 import { useKioskModelDetailBreadcrumbs } from './useKioskModelDetailBreadcrumbs';
 
-import type { KioskModelDetailTabId, UseKioskModelDetailPageConfigProps, UseKioskModelDetailPageConfigReturn } from './types';
+import type { KioskModelDetailTabId, UseKioskModelDetailPageConfigReturn } from './types';
+
 
 
 type DetailTabConfig = {
@@ -62,7 +64,9 @@ const useTabActions = ({ activeTab }: { activeTab: KioskModelDetailTabId }): Con
 };
 
 
-export const useKioskModelDetailPageConfig = ({ model }: UseKioskModelDetailPageConfigProps): UseKioskModelDetailPageConfigReturn => {
+export const useKioskModelDetailPageConfig = (
+	{ model }: { model?: KioskModel },
+): UseKioskModelDetailPageConfigReturn => {
 	const [activeTab, setActiveTab] = useState<KioskModelDetailTabId>('basicInfo');
 	const onTabChange = useCallback((tab: string) => setActiveTab(tab as KioskModelDetailTabId), []);
 

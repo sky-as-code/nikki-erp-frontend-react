@@ -3,8 +3,9 @@ import { IconDeviceDesktop, IconMapPin, IconSearch } from '@tabler/icons-react';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Kiosk, KioskMode, KioskStatus } from '@/features/kiosks/types';
-import { mockKiosks } from '@/features/kiosks/mocks';
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { useKioskList } from '@/features/kiosks/hooks';
+import { Kiosk, KioskMode } from '@/features/kiosks/types';
 
 
 export interface KioskSelectModalProps {
@@ -25,10 +26,11 @@ export const KioskSelectModal: React.FC<KioskSelectModalProps> = ({
 	const [kiosks, setKiosks] = useState<Kiosk[]>([]);
 	const [selectedKiosks, setSelectedKiosks] = useState<Kiosk[]>([]);
 	const [searchQuery, setSearchQuery] = useState('');
+	const { kiosks: searchedKiosks } = useKioskList();
 
 	React.useEffect(() => {
 		if (opened) {
-			mockKiosks.listKiosks().then(setKiosks);
+			setKiosks(searchedKiosks ?? []);
 		}
 	}, [opened]);
 
@@ -45,28 +47,18 @@ export const KioskSelectModal: React.FC<KioskSelectModalProps> = ({
 			(kiosk) =>
 				kiosk.code.toLowerCase().includes(query) ||
 				kiosk.name.toLowerCase().includes(query) ||
-				kiosk.address.toLowerCase().includes(query),
+				kiosk.locationAddress?.toLowerCase().includes(query),
 		);
 	}, [availableKiosks, searchQuery]);
 
-	const getStatusBadge = (status: KioskStatus) => {
-		const statusMap = {
-			[KioskStatus.ACTIVATED]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-			[KioskStatus.DISABLED]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
-			[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
-		};
-		const statusInfo = statusMap[status];
-		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-	};
-
-	const getModeBadge = (mode: KioskMode) => {
+	const getModeBadge = (mode?: KioskMode | null) => {
 		const modeMap = {
 			[KioskMode.PENDING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 			[KioskMode.SELLING]: { color: 'blue', label: translate('nikki.vendingMachine.kiosk.mode.selling') },
 			[KioskMode.SLIDESHOW_ONLY]: { color: 'purple', label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 		};
-		const modeInfo = modeMap[mode];
-		return <Badge color={modeInfo.color} size='sm' variant='light'>{modeInfo.label}</Badge>;
+		const modeInfo = modeMap[mode ?? KioskMode.PENDING];
+		return <Badge color={modeInfo.color} size='sm' variant='filled'>{modeInfo.label}</Badge>;
 	};
 
 	const handleToggleKiosk = (kiosk: Kiosk) => {
@@ -166,11 +158,13 @@ export const KioskSelectModal: React.FC<KioskSelectModalProps> = ({
 												<Group gap='xs'>
 													<IconMapPin size={14} />
 													<Text size='sm' lineClamp={1} style={{ maxWidth: 200 }}>
-														{kiosk.address}
+														{kiosk.locationAddress}
 													</Text>
 												</Group>
 											</Table.Td>
-											<Table.Td>{getStatusBadge(kiosk.status)}</Table.Td>
+											<Table.Td>
+												<ArchivedStatusBadge isArchived={Boolean(kiosk.isArchived)} />
+											</Table.Td>
 											<Table.Td>{getModeBadge(kiosk.mode)}</Table.Td>
 										</Table.Tr>
 									);

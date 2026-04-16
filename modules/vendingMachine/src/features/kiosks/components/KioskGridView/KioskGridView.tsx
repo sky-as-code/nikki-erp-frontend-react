@@ -1,128 +1,35 @@
 /* eslint-disable max-lines-per-function */
-import { ActionIcon, Badge, Card, Group, SimpleGrid, Stack, Text, Tooltip, Box } from '@mantine/core';
-import { IconEdit, IconTrash, IconMapPin, IconDeviceDesktop, IconAlertTriangle } from '@tabler/icons-react';
+import { Card, Group, SimpleGrid, Stack, Text } from '@mantine/core';
+import { TablePaginationProps } from '@nikkierp/ui/components';
+import { IconMapPin, IconDeviceDesktop } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Kiosk, KioskMode, KioskStatus, KioskWarning, ConnectionStatus } from '../../types';
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { KioskConnectionStatus } from '@/components/KioskConnectionStatus';
+import { KioskModeStatusBadge } from '@/components/KioskModeStatusBadge';
+import { KioskWarning } from '@/components/KioskWarning';
+import { TableAction } from '@/components/Table';
+
+import { Kiosk, ConnectionStatus } from '../../types';
+import { getKioskTableActions, KioskTableActions } from '../KioskTable';
 
 
 export interface KioskGridViewProps {
 	kiosks: Kiosk[];
 	isLoading?: boolean;
-	onPreview: (kiosk: Kiosk) => void;
-	onEdit?: (kiosk: Kiosk) => void;
-	onDelete?: (kiosk: Kiosk) => void;
+	actions?: KioskTableActions;
+	pagination?: TablePaginationProps;
 }
 
-export const KioskGridView: React.FC<KioskGridViewProps> = ({
-	kiosks,
-	isLoading = false,
-	onPreview,
-	onEdit,
-	onDelete,
-}) => {
+export const KioskGridView: React.FC<KioskGridViewProps> = ({ kiosks, isLoading = false, actions = {}}) => {
 	const { t: translate } = useTranslation();
-
-	const getStatusBadge = (status: KioskStatus) => {
-		const statusMap = {
-			[KioskStatus.ACTIVATED]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-			[KioskStatus.DISABLED]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
-			[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
-		};
-		const statusInfo = statusMap[status];
-		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-	};
-
-	const getModeBadge = (mode: KioskMode) => {
-		const modeMap = {
-			[KioskMode.PENDING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
-			[KioskMode.SELLING]: { color: 'blue', label: translate('nikki.vendingMachine.kiosk.mode.selling') },
-			[KioskMode.SLIDESHOW_ONLY]: { color: 'purple', label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
-		};
-		const modeInfo = modeMap[mode];
-		return <Badge color={modeInfo.color} size='sm' variant='light'>{modeInfo.label}</Badge>;
-	};
-
-	if (isLoading) {
-		return <Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>;
-	}
-
-	if (kiosks.length === 0) {
-		return <Text c='dimmed'>{translate('nikki.vendingMachine.kiosk.messages.no_kiosks')}</Text>;
-	}
-
-	const getWarningIcon = (warnings: KioskWarning[] | undefined) => {
-		if (!warnings || warnings.length === 0) return null;
-
-		const warningCount = warnings.length;
-		const severityColors = {
-			low: 'yellow',
-			medium: 'orange',
-			high: 'red',
-			critical: 'red',
-		};
-
-		const highestSeverity = warnings.reduce((highest, warning) => {
-			const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
-			return severityOrder[warning.severity] > severityOrder[highest.severity] ? warning : highest;
-		}, warnings[0]);
-
-		const tooltipContent = (
-			<Stack gap='xs' style={{ maxWidth: 300 }}>
-				<Text size='sm' fw={500}>
-					{translate('nikki.vendingMachine.kiosk.warnings.title')} ({warningCount})
-				</Text>
-				{warnings.slice(0, 5).map((warning) => (
-					<Group key={warning.id} gap='xs' align='flex-start'>
-						<IconAlertTriangle size={16} color={`var(--mantine-color-${severityColors[warning.severity]}-6)`} />
-						<Stack gap={2}>
-							<Text size='xs' fw={500}>{warning.type}</Text>
-							<Text size='xs' c='dimmed'>{warning.message}</Text>
-						</Stack>
-					</Group>
-				))}
-				{warnings.length > 5 && (
-					<Text size='xs' c='dimmed' ta='center'>
-						{translate('nikki.vendingMachine.kiosk.warnings.more', { count: warnings.length - 5 })}
-					</Text>
-				)}
-			</Stack>
-		);
-
-		return (
-			<Tooltip label={tooltipContent} withArrow position='top' multiline>
-				<Box
-					pos='relative'
-					style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-					onClick={(e) => e.stopPropagation()}
-				>
-					<IconAlertTriangle
-						size={22}
-						color={`var(--mantine-color-${severityColors[highestSeverity.severity]}-6)`}
-					/>
-					<Badge
-						color={severityColors[highestSeverity.severity]}
-						size='xs'
-						variant='filled'
-						pos='absolute'
-						top={-6}
-						right={-10}
-						h={16}
-						w={16}
-						p={0}
-						fz={10}
-					>
-						{warningCount}
-					</Badge>
-				</Box>
-			</Tooltip>
-		);
-	};
+	const { view: onPreview, ...cardActions } = actions;
 
 	const getWarningSeverity = (kiosk: Kiosk): 'low' | 'medium' | 'high' | 'critical' | null => {
 		const hasWarnings = kiosk.warnings && kiosk.warnings.length > 0;
-		const isDisconnected = kiosk.isActive && kiosk.connectionStatus === ConnectionStatus.DISCONNECTED;
+		const isDisconnected = !kiosk.isArchived
+			&& kiosk.connections?.some((connection) => connection.status === ConnectionStatus.DISCONNECTED);
 
 		if (!hasWarnings && !isDisconnected) return null;
 
@@ -163,6 +70,14 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 		return severityStyles[severity];
 	};
 
+	if (isLoading) {
+		return <Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>;
+	}
+
+	if (kiosks.length === 0) {
+		return <Text c='dimmed'>{translate('nikki.vendingMachine.kiosk.messages.no_kiosks')}</Text>;
+	}
+
 	return (
 		<SimpleGrid
 			cols={{ base: 1, sm: 2, md: 3, lg: 4 }}
@@ -184,7 +99,7 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 							borderWidth: warningSeverity ? 2 : undefined,
 							boxShadow: warningStyle?.boxShadow,
 						}}
-						onClick={() => onPreview(kiosk)}
+						onClick={() => onPreview?.(kiosk)}
 					>
 						<Stack gap='sm'>
 							<Group justify='space-between' align='flex-start'>
@@ -195,40 +110,24 @@ export const KioskGridView: React.FC<KioskGridViewProps> = ({
 										<Text size='xs' c='dimmed'>{kiosk.name}</Text>
 									</Stack>
 								</Group>
-								<Group gap='xs' onClick={(e) => e.stopPropagation()}>
-									{onEdit && (
-										<Tooltip label={translate('nikki.general.actions.edit')}>
-											<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(kiosk)}>
-												<IconEdit size={14} />
-											</ActionIcon>
-										</Tooltip>
-									)}
-									{onDelete && (
-										<Tooltip label={translate('nikki.general.actions.delete')}>
-											<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(kiosk)}>
-												<IconTrash size={14} />
-											</ActionIcon>
-										</Tooltip>
-									)}
-								</Group>
+								<TableAction
+									actions={getKioskTableActions( kiosk, cardActions ?? {}, translate)}
+									overflowMenuLabel={translate('nikki.general.actions.title')}
+								/>
 							</Group>
 
 							<Group gap='xs'>
 								<IconMapPin size={14} />
 								<Text size='xs' c='dimmed' lineClamp={2} style={{ flex: 1 }}>
-									{kiosk.address}
+									{kiosk.locationAddress || translate('nikki.general.messages.no_address')}
 								</Text>
 							</Group>
 
 							<Group gap='xs' wrap='nowrap'>
-								{getStatusBadge(kiosk.status)}
-								{getModeBadge(kiosk.mode)}
-								<Badge color={kiosk.isActive ? 'green' : 'red'} size='sm'>
-									{kiosk.isActive
-										? translate('nikki.general.status.active')
-										: translate('nikki.general.status.inactive')}
-								</Badge>
-								{getWarningIcon(kiosk.warnings)}
+								<ArchivedStatusBadge isArchived={!!kiosk.isArchived} />
+								<KioskModeStatusBadge mode={kiosk.mode} />
+								<KioskWarning warnings={kiosk.warnings ?? []} />
+								<KioskConnectionStatus connections={kiosk.connections} />
 							</Group>
 
 							<Text size='xs' c='dimmed'>

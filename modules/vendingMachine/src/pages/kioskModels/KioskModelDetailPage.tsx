@@ -34,14 +34,14 @@ const KioskModelDetailPageContent: React.FC = () => {
 			documentTitle={model?.name ?? translate('nikki.vendingMachine.kioskModels.detail.title')}
 			breadcrumbs={breadcrumbs}
 			sections={[<ControlPanel actions={actions} />]}
-			isLoading={isLoading}
+			isLoading={isLoading && !model}
 			isNotFound={!model && !isLoading}
 			notFoundContent={<KioskModelNotFound />}
 		>
 			<DetailLayout
 				header={{
 					title: model?.name || '',
-					subtitle: model?.code || '',
+					subtitle: model?.referenceCode || '',
 					avatar: <IconBox size={46} />,
 				}}
 				tabs={tabs}

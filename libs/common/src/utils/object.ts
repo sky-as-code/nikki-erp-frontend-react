@@ -49,3 +49,20 @@ export const camelToUpperSnakeObject = (obj: any) =>
 
 export const snakeToCamelObject = (obj: any) =>
 	convertKeys(obj, snakeToCamelCase);
+
+
+export type CleanedEmptyString<T> = {
+	[K in keyof T]: T[K] | null
+};
+export function cleanEmptyString<T extends object>(data: T): CleanedEmptyString<T> {
+	const copy = { ...data } as CleanedEmptyString<T>;
+
+	(Object.entries(data) as [keyof T, T[keyof T]][])
+		.forEach(([key, value]) => {
+			if (value === '') {
+				copy[key] = null;
+			}
+		});
+
+	return copy;
+}

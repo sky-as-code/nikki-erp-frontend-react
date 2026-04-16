@@ -1,106 +1,86 @@
-import { ActionIcon, Badge, Box, Group, Text, Tooltip } from '@mantine/core';
-import { AutoTable, AutoTableProps } from '@nikkierp/ui/components';
-import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
+import { Box, Text } from '@mantine/core';
+import { AutoTable, AutoTableProps, TablePagination, TablePaginationProps } from '@nikkierp/ui/components';
+import {
+	IconArchive,
+	IconEdit,
+	IconEye,
+	IconRestore,
+	IconTrash,
+} from '@tabler/icons-react';
+import { TFunction } from 'i18next';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { NameCell, TableAction, type TableActionItem } from '@/components/Table';
 
 import { KioskModel } from '../../types';
 
 
 
-export interface KioskModelTableProps extends AutoTableProps {
-	onPreviewView: (kioskModel: KioskModel) => void;
-	onEdit?: (kioskModel: KioskModel) => void;
-	onDelete?: (kioskModel: KioskModel) => void;
-}
+const KIOSK_MODEL_ACTIONS = {
+	VIEW: 'view',
+	EDIT: 'edit',
+	ARCHIVE: 'archive',
+	RESTORE: 'restore',
+	DELETE: 'delete',
+} as const;
+type KioskModelActionType = (typeof KIOSK_MODEL_ACTIONS)[keyof typeof KIOSK_MODEL_ACTIONS];
 
-function renderCodeColumn(row: Record<string, unknown>) {
-	return <Text fw={500}>{String(row.code || '')}</Text>;
-}
-
-const NameColumn: React.FC<{ row: Record<string, unknown> }> = ({ row }) => {
-	const navigate = useNavigate();
-	const modelId = row.id as string;
-	const name = String(row.name || '');
-
-	const handleClick = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		if (modelId) {
-			navigate(`../kiosk-models/${modelId}`);
-		}
-	};
-
-	return (
-		<Text
-			c='light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2))'
-			fw={500}
-			style={{ cursor: 'pointer' }}
-			onClick={handleClick}
-			td='underline'
-		>
-			{name}
-		</Text>
-	);
+export type KioskModelTableActions = {
+	[key in KioskModelActionType]?: (kioskModel: KioskModel, ...args: unknown[]) => void;
 };
 
-function renderNameColumn(row: Record<string, unknown>) {
-	return <NameColumn row={row} />;
-}
+export function getKioskModelTableActions(
+	model: KioskModel,
+	actions: KioskModelTableActions,
+	translate: TFunction,
+): TableActionItem[] {
+	if (Object.keys(actions).length === 0) return [];
 
-function renderDescriptionColumn(row: Record<string, unknown>) {
-	return <span style={{ maxWidth: 300, display: 'block' }}>{String(row.description || '-')}</span>;
-}
-
-function renderStatusColumn(
-	row: Record<string, unknown>,
-	translate: (key: string) => string,
-) {
-	const status = row.status as string;
-	const statusMap: Record<string, { color: string; label: string }> = {
-		active: { color: 'green', label: translate('nikki.general.status.active') },
-		inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-	};
-	const statusInfo = statusMap[status] || { color: 'gray', label: status };
-	return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-}
-
-function renderActionsColumn(
-	row: KioskModel,
-	onView?: (kioskModel: KioskModel) => void,
-	onEdit?: (kioskModel: KioskModel) => void,
-	onDelete?: (kioskModel: KioskModel) => void,
-	translate?: (key: string) => string,
-) {
-	if (!translate) return null;
-
-	return (
-		<Box style={{ minWidth: 120 }}>
-			<Group gap='xs' justify='flex-end' onClick={(e) => e.stopPropagation()}>
-				{onView && (
-					<Tooltip label={translate('nikki.general.actions.view')}>
-						<ActionIcon variant='subtle' color='blue' onClick={() => onView(row)}>
-							<IconEye size={16} />
-						</ActionIcon>
-					</Tooltip>
-				)}
-				{onEdit && (
-					<Tooltip label={translate('nikki.general.actions.edit')}>
-						<ActionIcon variant='subtle' color='gray' onClick={() => onEdit(row)}>
-							<IconEdit size={16} />
-						</ActionIcon>
-					</Tooltip>
-				)}
-				{onDelete && (
-					<Tooltip label={translate('nikki.general.actions.delete')}>
-						<ActionIcon variant='subtle' color='red' onClick={() => onDelete(row)}>
-							<IconTrash size={16} />
-						</ActionIcon>
-					</Tooltip>
-				)}
-			</Group>
-		</Box>
-	);
+	const defaultActions: (TableActionItem & { active?: boolean })[] = [
+		{
+			key: KIOSK_MODEL_ACTIONS.VIEW,
+			label: translate('nikki.general.actions.view'),
+			icon: <IconEye size={16} />,
+			onClick: () => actions[KIOSK_MODEL_ACTIONS.VIEW]?.(model),
+			color: 'blue',
+			active: !!actions[KIOSK_MODEL_ACTIONS.VIEW],
+		},
+		{
+			key: KIOSK_MODEL_ACTIONS.EDIT,
+			label: translate('nikki.general.actions.edit'),
+			icon: <IconEdit size={16} />,
+			onClick: () => actions[KIOSK_MODEL_ACTIONS.EDIT]?.(model),
+			color: 'gray',
+			active: !!actions[KIOSK_MODEL_ACTIONS.EDIT],
+		},
+		{
+			key: KIOSK_MODEL_ACTIONS.ARCHIVE,
+			label: translate('nikki.general.actions.archive'),
+			icon: <IconArchive size={16} />,
+			onClick: () => actions[KIOSK_MODEL_ACTIONS.ARCHIVE]?.(model),
+			color: 'orange',
+			active: !model.isArchived && !!actions[KIOSK_MODEL_ACTIONS.ARCHIVE],
+		},
+		{
+			key: KIOSK_MODEL_ACTIONS.RESTORE,
+			label: translate('nikki.general.actions.restore'),
+			icon: <IconRestore size={16} />,
+			onClick: () => actions[KIOSK_MODEL_ACTIONS.RESTORE]?.(model),
+			color: 'blue',
+			active: !!model.isArchived && !!actions[KIOSK_MODEL_ACTIONS.RESTORE],
+		},
+		{
+			key: KIOSK_MODEL_ACTIONS.DELETE,
+			label: translate('nikki.general.actions.delete'),
+			icon: <IconTrash size={16} />,
+			onClick: () => actions[KIOSK_MODEL_ACTIONS.DELETE]?.(model),
+			color: 'red',
+			active: !!actions[KIOSK_MODEL_ACTIONS.DELETE],
+		},
+	];
+	return defaultActions.filter((action) => action.active);
 }
 
 function renderActionsHeader(
@@ -108,55 +88,78 @@ function renderActionsHeader(
 	_schema: unknown,
 	translate: (key: string) => string,
 ) {
-	return <Text fw={600} fz='sm' ta={'end'}>{translate('nikki.general.actions.title')}</Text>;
+	return <Text fw={600} fz='sm' ta='end'>{translate('nikki.general.actions.title')}</Text>;
+}
+
+export interface KioskModelTableProps extends AutoTableProps {
+	actions: KioskModelTableActions;
+	pagination: TablePaginationProps;
 }
 
 export const KioskModelTable: React.FC<KioskModelTableProps> = ({
-	columns,
 	data,
 	schema,
+	columns,
 	isLoading,
-	onPreviewView,
-	onEdit,
-	onDelete,
+	actions,
+	pagination,
 }) => {
 	const { t: translate } = useTranslation();
 
+	const colSizes: React.ComponentProps<typeof AutoTable>['columnSizes'] = {
+		referenceCode: { flex: 1, minWidth: 160 },
+		name: { flex: 2, minWidth: 200 },
+		description: { flex: 2, minWidth: 300 },
+		status: { flex: 1, minWidth: 100 },
+		actions: { width: 120 },
+	};
+
+	const colRenderers: React.ComponentProps<typeof AutoTable>['columnRenderers'] = {
+		referenceCode: (row) => {
+			const archived = !!row.isArchived;
+			const code = String(row.referenceCode || '');
+			return archived
+				? <Text c='var(--mantine-color-gray-7)' fw={500} td='none'>{code}</Text>
+				: <Text fw={500}>{code}</Text>;
+		},
+		name: (row) => (
+			<NameCell
+				content={row.name as string}
+				link={row.id ? `../kiosk-models/${row.id}` : undefined}
+			/>
+		),
+		description: (row) => {
+			const archived = !!row.isArchived;
+			const text = String(row.description || '-');
+			return archived
+				? <Text c='var(--mantine-color-gray-7)' fw={500} td='none'>{text}</Text>
+				: <Text fw={500} td='none'>{text}</Text>;
+		},
+		status: (row) => <ArchivedStatusBadge isArchived={!!row.isArchived} />,
+		actions: (row) => (
+			<TableAction
+				actions={getKioskModelTableActions(row as unknown as KioskModel, actions, translate)}
+				overflowMenuLabel={translate('nikki.general.actions.title')}
+			/>
+		),
+	};
+
+	const headerRenderers: React.ComponentProps<typeof AutoTable>['headerRenderers'] = {
+		actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
+	};
+
 	return (
-		<div style={{ position: 'relative' }}>
-			<style>
-				{`
-					table th:last-child,
-					table td:last-child {
-						min-width: 120px;
-						width: 120px;
-					}
-				`}
-			</style>
+		<Box pos='relative' mih={200}>
 			<AutoTable
 				columns={columns}
+				columnSizes={colSizes}
 				data={data}
 				schema={schema}
 				isLoading={isLoading}
-				columnRenderers={{
-					code: renderCodeColumn,
-					name: renderNameColumn,
-					description: renderDescriptionColumn,
-					status: (row) => renderStatusColumn(row, translate),
-					actions: (row) =>
-						renderActionsColumn(row as unknown as KioskModel, onPreviewView, onEdit, onDelete, translate),
-				}}
-				headerRenderers={{
-					actions: (columnName, schema) => renderActionsHeader(columnName, schema, translate),
-				}}
-				columnAsLink='code'
-				columnAsLinkHref={(row) => {
-					// const modelId = row.id as string;
-					onPreviewView(row);
-					return '#';
-				}}
+				columnRenderers={colRenderers}
+				headerRenderers={headerRenderers}
 			/>
-		</div>
+			<TablePagination {...pagination} />
+		</Box>
 	);
 };
-

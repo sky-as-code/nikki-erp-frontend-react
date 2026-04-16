@@ -1,10 +1,14 @@
+import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { IconDeviceFloppy, IconEdit, IconX } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { kioskModelActions, VendingMachineDispatch } from '@/appState';
 import { ControlPanelProps } from '@/components/ControlPanel';
 import { useRegisterKioskModelDetailTab } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
-import { KioskModel } from '@/features/kioskModels/types';
+import { buildShelvesConfigWire, parseShelvesConfigRows } from '@/features/kioskModels/components/ShelvesConfig';
+import { useKioskModelEdit } from '@/features/kioskModels/hooks/useKioskModelEdit';
+import { KioskModel, KioskType, ShelvesConfigRow } from '@/features/kioskModels/types';
 
 
 export type UseModelSettingsTabArgs = {
@@ -13,42 +17,95 @@ export type UseModelSettingsTabArgs = {
 
 export type UseModelSettingsTabReturn = {
 	isEditing: boolean;
+	isSubmitting: boolean;
+	selectedGoodsCollectorType: KioskType | undefined;
+	setSelectedGoodsCollectorType: (v: KioskType | undefined) => void;
+	shelvesNumber: number;
+	setShelvesNumber: (n: number) => void;
+	shelvesConfigRows: ShelvesConfigRow[];
+	setShelvesConfigRows: (rows: ShelvesConfigRow[]) => void;
 };
 
 export function useModelSettingsTab({ model }: UseModelSettingsTabArgs): UseModelSettingsTabReturn {
 	const { t: translate } = useTranslation();
+	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 	const [isEditing, setIsEditing] = useState(false);
+	const [selectedGoodsCollectorType, setSelectedGoodsCollectorType] =
+		useState<KioskType | undefined>(model.goodsCollectorType);
+
+	const [shelvesNumber, setShelvesNumber] = useState(model.shelvesNumber || 0);
+	const [shelvesConfigRows, setShelvesConfigRows] = useState<ShelvesConfigRow[]>(
+		() => parseShelvesConfigRows(model.shelvesConfig),
+	);
+
+	const syncFromModel = useCallback(() => {
+		setSelectedGoodsCollectorType(model.goodsCollectorType);
+		setShelvesNumber(model.shelvesNumber || 0);
+		setShelvesConfigRows(parseShelvesConfigRows(model.shelvesConfig));
+	}, [model.goodsCollectorType, model.shelvesNumber, model.shelvesConfig]);
+
+	const onUpdateSuccess = useCallback(() => {
+		setIsEditing(false);
+		if (model.id) {
+			dispatch(kioskModelActions.getKioskModel(model.id));
+		}
+	}, [model.id, dispatch]);
+	const { isSubmitting, handleSubmit } = useKioskModelEdit({ onUpdateSuccess });
 
 	const handleEdit = useCallback(() => setIsEditing(true), []);
+
 	const handleSave = useCallback(() => {
-		// TODO: Implement save logic for model settings
+		handleSubmit({
+			id: model.id,
+			etag: model.etag,
+			goodsCollectorType: selectedGoodsCollectorType,
+			shelvesNumber,
+			shelvesConfig: buildShelvesConfigWire(shelvesConfigRows),
+		});
+	}, [handleSubmit, selectedGoodsCollectorType, shelvesNumber, shelvesConfigRows]);
+
+	const handleCancel = useCallback(() => {
+		syncFromModel();
 		setIsEditing(false);
-	}, []);
-	const handleCancel = useCallback(() => setIsEditing(false), []);
+	}, [syncFromModel]);
 
 	const actions = useMemo<ControlPanelProps['actions']>(() => [
-		...(!isEditing ? [{
-			label: translate('nikki.general.actions.edit'),
-			leftSection: <IconEdit size={16} />,
-			onClick: handleEdit,
-			type: 'button' as const,
-			variant: 'filled' as const,
-		}] : [{
-			label: translate('nikki.general.actions.save'),
-			leftSection: <IconDeviceFloppy size={16} />,
-			onClick: handleSave,
-			type: 'button' as const,
-			variant: 'filled' as const,
-		}, {
-			label: translate('nikki.general.actions.cancel'),
-			leftSection: <IconX size={16} />,
-			onClick: handleCancel,
-			type: 'button' as const,
-			variant: 'outline' as const,
-		}]),
-	], [isEditing, handleEdit, handleSave, handleCancel, translate]);
+		...(!isEditing
+			? [{
+				label: translate('nikki.general.actions.edit'),
+				leftSection: <IconEdit size={16} />,
+				onClick: handleEdit,
+				type: 'button' as const,
+				variant: 'filled' as const,
+			}]
+			: [{
+				label: translate('nikki.general.actions.save'),
+				leftSection: <IconDeviceFloppy size={16} />,
+				onClick: handleSave,
+				type: 'button' as const,
+				variant: 'filled' as const,
+				disabled: isSubmitting,
+				loading: isSubmitting,
+			}, {
+				label: translate('nikki.general.actions.cancel'),
+				leftSection: <IconX size={16} />,
+				onClick: handleCancel,
+				type: 'button' as const,
+				variant: 'outline' as const,
+				disabled: isSubmitting,
+			}]),
+	], [isEditing, isSubmitting, translate, handleEdit, handleSave, handleCancel]);
 
 	useRegisterKioskModelDetailTab('modelSettings', actions);
 
-	return { isEditing };
+	return {
+		isEditing,
+		isSubmitting,
+		selectedGoodsCollectorType,
+		setSelectedGoodsCollectorType,
+		shelvesNumber,
+		setShelvesNumber,
+		shelvesConfigRows,
+		setShelvesConfigRows,
+	};
 }

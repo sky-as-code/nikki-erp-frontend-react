@@ -1,45 +1,31 @@
-/* eslint-disable max-lines-per-function */
-import { ActionIcon, Badge, Box, Card, Group, Image, SimpleGrid, Stack, Text, Tooltip } from '@mantine/core';
-import { IconCreditCard, IconEdit, IconTrash } from '@tabler/icons-react';
+import { Box, Card, Group, Image, SimpleGrid, Stack, Text } from '@mantine/core';
+import { TablePaginationProps } from '@nikkierp/ui/components';
+import { IconCreditCard } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { PaymentMethod } from '../../types';
+import { getPaymentTableActions, PaymentTableActions } from '../PaymentTable';
+
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { TableAction } from '@/components/Table';
+
 
 
 export interface PaymentGridViewProps {
 	payments: PaymentMethod[];
 	isLoading?: boolean;
-	onViewDetail: (paymentId: string) => void;
-	onEdit?: (paymentId: string) => void;
-	onDelete?: (paymentId: string) => void;
+	actions?: PaymentTableActions;
+	pagination?: TablePaginationProps;
 }
 
 export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 	payments,
 	isLoading = false,
-	onViewDetail,
-	onEdit,
-	onDelete,
+	actions = {},
 }) => {
 	const { t: translate } = useTranslation();
-
-	const getStatusBadge = (status: 'active' | 'inactive') => {
-		const statusMap = {
-			active: { color: 'green', label: translate('nikki.general.status.active') },
-			inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-		};
-		const statusInfo = statusMap[status];
-		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-	};
-
-	const formatCurrency = (value: number) => {
-		return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-	};
-
-	const stripHtml = (html: string) => {
-		return html.replace(/<[^>]*>/g, '').substring(0, 100);
-	};
+	const { view: onViewDetail, ...cardActions } = actions;
 
 	if (isLoading) {
 		return <Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>;
@@ -61,10 +47,8 @@ export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 					padding='lg'
 					radius='md'
 					withBorder
-					style={{
-						cursor: 'pointer',
-					}}
-					onClick={() => onViewDetail(payment.id)}
+					style={{ cursor: 'pointer' }}
+					onClick={() => onViewDetail?.(payment)}
 				>
 					<Stack gap='sm'>
 						<Group justify='space-between' align='flex-start'>
@@ -84,53 +68,19 @@ export const PaymentGridView: React.FC<PaymentGridViewProps> = ({
 									<IconCreditCard size={36} stroke={1.5} />
 								)}
 								<Stack gap={0}>
-									<Text fw={600} size='sm'>{payment.code}</Text>
+									<Text fw={600} size='sm'>{payment.method}</Text>
 									<Text size='xs' c='dimmed'>{payment.name}</Text>
 								</Stack>
 							</Group>
-							<Group gap='xs' onClick={(e) => e.stopPropagation()}>
-								{onEdit && (
-									<Tooltip label={translate('nikki.general.actions.edit')}>
-										<ActionIcon variant='subtle' color='gray' size='sm' onClick={() => onEdit(payment.id)}>
-											<IconEdit size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-								{onDelete && (
-									<Tooltip label={translate('nikki.general.actions.delete')}>
-										<ActionIcon variant='subtle' color='red' size='sm' onClick={() => onDelete(payment.id)}>
-											<IconTrash size={14} />
-										</ActionIcon>
-									</Tooltip>
-								)}
-							</Group>
+							<TableAction
+								actions={getPaymentTableActions(payment, cardActions, translate)}
+								overflowMenuLabel={translate('nikki.general.actions.title')}
+							/>
 						</Group>
-
-						{payment.description && (
-							<Text size='xs' c='dimmed' lineClamp={3}>
-								{stripHtml(payment.description)}
-							</Text>
-						)}
 
 						<Group gap='xs' wrap='nowrap'>
-							{getStatusBadge(payment.status)}
+							<ArchivedStatusBadge isArchived={payment.isArchived} />
 						</Group>
-
-						{(payment.minTransactionValue !== undefined || payment.maxTransactionValue !== undefined) && (
-							<Text size='xs' c='dimmed'>
-								{payment.minTransactionValue !== undefined
-									? formatCurrency(payment.minTransactionValue)
-									: '0'} - {payment.maxTransactionValue !== undefined
-									? formatCurrency(payment.maxTransactionValue)
-									: '∞'}
-							</Text>
-						)}
-
-						{payment.customFields.length > 0 && (
-							<Text size='xs' c='dimmed'>
-								{translate('nikki.vendingMachine.payment.fields.customFields')}: {payment.customFields.length}
-							</Text>
-						)}
 
 						<Text size='xs' c='dimmed'>
 							{translate('nikki.vendingMachine.payment.fields.createdAt')}: {new Date(payment.createdAt).toLocaleDateString()}

@@ -1,21 +1,35 @@
+import { KioskModel } from '../kioskModels/types';
+import { KioskSetting } from '../kioskSettings';
 import { Slideshow } from '../slideshow/types';
 
 import type { Game } from '../games/types';
 import type { Theme } from '../themes/types';
 
 
-export type UIMode = 'normal' | 'focus';
+export enum UIMode {
+	NORMAL = 'normal',
+	FOCUS = 'focus',
+}
 
+/** API: KioskStatus (openapi / domain) */
 export enum KioskStatus {
-	DISABLED = 'disabled',
-	ACTIVATED = 'activated',
+	ACTIVE = 'active',
+	INACTIVE = 'inactive',
 	DELETED = 'deleted',
 }
 
+/** API: KioskMode */
 export enum KioskMode {
-	PENDING = 'pending', //* screen locked in maintenance page
-	SELLING = 'selling', //* selling mode
-	SLIDESHOW_ONLY = 'slideshowOnly', //* slideshow only mode
+	PENDING = 'pending',
+	SELLING = 'selling',
+	SLIDESHOW_ONLY = 'slideshow-only',
+}
+
+/** API: KioskInterfaceMode (deprecated) */
+/** @deprecated use UIMode instead */
+export enum KioskInterfaceMode {
+	NORMAL = 'normal',
+	FOCUS = 'focus',
 }
 
 export enum ConnectionStatus {
@@ -49,12 +63,7 @@ export enum ErrorStatus {
 
 export interface ConnectionHistory {
 	status: ConnectionStatus;
-	reportedAt: string;
-}
-
-export interface KioskCoordinates {
-	latitude: number;
-	longitude: number;
+	createdAt: string;
 }
 
 export interface KioskError {
@@ -75,7 +84,7 @@ export interface LowStockAlert {
 	kioskId: string;
 	kioskCode: string;
 	kioskName: string;
-	stockRatio: number; // 0-1, percentage of stock remaining
+	stockRatio: number;
 	requestedAt: string;
 	restockedAt?: string;
 	items: Array<{
@@ -126,18 +135,50 @@ export interface KioskWarning {
 	createdAt: string;
 }
 
+/**
+ * Kiosk entity (KioskDto + optional UI-only fields from mocks / desktop telemetry).
+ */
 export interface Kiosk {
 	id: string;
+	etag: string;
 	code: string;
 	name: string;
-	address: string;
-	coordinates: KioskCoordinates;
-	isActive: boolean;
-	status: KioskStatus;
-	mode: KioskMode;
-	connectionStatus: ConnectionStatus;
-	machineType?: MachineType;
-	connectionHistory?: ConnectionHistory[];
+	isArchived?: boolean | null;
+	status?: KioskStatus | null;
+	mode?: KioskMode | null;
+	uiMode?: UIMode | null;
+	locationAddress?: string | null;
+	latitude?: string | null;
+	longitude?: string | null;
+	lastPing?: string | null;
+	connections?: ConnectionHistory[] | null;
+
+	// ref (Những field không phải array mới có ref)
+	modelRef?: string | null;
+	model?: KioskModel | null;
+	settingRef?: string | null;
+	setting?: KioskSetting;
+	themeRef?: string | null;
+	theme?: Theme;
+	gameRef?: string | null;
+	game?: Game;
+	shoppingScreenPlaylistRef?: string | null;
+	shoppingScreenPlaylist?: Slideshow | null;
+	waitingScreenPlaylistRef?: string | null;
+	waitingScreenPlaylist?: Slideshow | null;
+
+	// refs chỉ sử dụng cho create, update; query không có columns refs
+	paymentRefs?: string[] | null;
+	payments?: any[];
+	eventRefs?: string[] | null;
+	events?: any[];
+
+	// base fields
+	scopeType?: string | null;
+	createdAt: string;
+	updatedAt?: string | null;
+
+	/** UI / telemetry (not on KioskDto) */
 	warnings?: KioskWarning[];
 	temperature?: number;
 	humidity?: number;
@@ -145,21 +186,7 @@ export interface Kiosk {
 	cpu?: number;
 	redis?: number;
 	memory?: number;
-	createdAt: string;
-	deletedAt?: string;
-	etag: string;
-	/** Optional: kiosk model assignment (create/update payloads) */
-	modelId?: string;
-	/** Optional: enabled payment methods */
-	paymentMethodIds?: string[];
-
-	uiMode?: UIMode;
-	waitingPlaylist?: Slideshow;
-	shoppingPlaylist?: Slideshow;
-	theme?: Theme;
-	game?: Game;
 }
-
 
 export enum KioskActivityLogType {
 	WARNING = 'warning',
@@ -174,3 +201,13 @@ export interface KioskActivityLog {
 	type: 'warning' | 'statusDetail' | 'error' | 'info';
 	content: string;
 }
+
+
+export type KioskLog = {
+	id: string;
+	createdAt: string;
+	eventType: string;
+	kioskRef: string;
+	message?: string;
+	payload?: string;
+};

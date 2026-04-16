@@ -1,18 +1,25 @@
+/* eslint-disable max-lines-per-function */
+import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
-import { IconDeviceFloppy, IconEdit, IconTrash, IconX } from '@tabler/icons-react';
+import {
+	IconArchive,
+	IconDeviceFloppy,
+	IconEdit,
+	IconRestore,
+	IconTrash,
+	IconX,
+} from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
+import { kioskModelActions, VendingMachineDispatch } from '@/appState';
 import { ControlPanelProps } from '@/components/ControlPanel';
 import { useRegisterKioskModelDetailTab } from '@/features/kioskModels/components/KioskModelDetail/kioskModelDetailTabControl';
-import {
-	KioskModelCreateFormData,
-	kioskModelToCreateFormValues,
-	formDataToKioskModelUpdatePayload,
-} from '@/features/kioskModels/hooks/useKioskModelCreate';
+import { useKioskModelArchive } from '@/features/kioskModels/hooks/useKioskModelArchive';
 import { useKioskModelDelete } from '@/features/kioskModels/hooks/useKioskModelDelete';
-import { useKioskModelEdit } from '@/features/kioskModels/hooks/useKioskModelEdit';
-import kioskModelCreateSchema from '@/features/kioskModels/kioskModelCreate-schema.json';
+import { KioskModelUpdateFormData, useKioskModelEdit } from '@/features/kioskModels/hooks/useKioskModelEdit';
+import { kioskModelCreateSchema } from '@/features/kioskModels/schemas';
 import { KioskModel } from '@/features/kioskModels/types';
 
 
@@ -21,20 +28,24 @@ export const BASIC_INFO_FORM_ID = 'kiosk-model-basic-info-form';
 function buildBasicInfoActions(
 	isEditing: boolean,
 	isSubmitting: boolean,
+	model: KioskModel,
 	translate: ReturnType<typeof useTranslation>['t'],
 	handleEdit: () => void,
 	handleSave: () => void,
 	handleCancel: () => void,
+	onArchive: () => void,
+	onRestore: () => void,
 	handleDelete: () => void,
 ): ControlPanelProps['actions'] {
-	return [
-		...(!isEditing ? [{
+	const primary = !isEditing
+		? [{
 			label: translate('nikki.general.actions.edit'),
 			leftSection: <IconEdit size={16} />,
 			onClick: handleEdit,
 			type: 'button' as const,
 			variant: 'filled' as const,
-		}] : [{
+		}]
+		: [{
 			label: translate('nikki.general.actions.save'),
 			leftSection: <IconDeviceFloppy size={16} />,
 			onClick: handleSave,
@@ -49,7 +60,30 @@ function buildBasicInfoActions(
 			type: 'button' as const,
 			variant: 'outline' as const,
 			disabled: isSubmitting,
-		}]),
+		}];
+
+	const archiveAction = model.isArchived
+		? {
+			label: translate('nikki.general.actions.restore'),
+			leftSection: <IconRestore size={16} />,
+			onClick: onRestore,
+			type: 'button' as const,
+			variant: 'outline' as const,
+			disabled: isSubmitting || isEditing,
+		}
+		: {
+			label: translate('nikki.general.actions.archive'),
+			leftSection: <IconArchive size={16} />,
+			onClick: onArchive,
+			type: 'button' as const,
+			variant: 'outline' as const,
+			disabled: isSubmitting || isEditing,
+			color: 'orange' as const,
+		};
+
+	return [
+		...primary,
+		archiveAction,
 		{
 			label: translate('nikki.general.actions.delete'),
 			leftSection: <IconTrash size={16} />,
@@ -57,7 +91,7 @@ function buildBasicInfoActions(
 			type: 'button' as const,
 			variant: 'outline' as const,
 			color: 'red' as const,
-			disabled: isSubmitting,
+			disabled: isSubmitting || isEditing,
 		},
 	];
 }
@@ -71,24 +105,50 @@ export type UseBasicInfoTabReturn = {
 	isEditing: boolean;
 	isSubmitting: boolean;
 	modelSchema: ModelSchema;
-	modelValue: ReturnType<typeof kioskModelToCreateFormValues>;
-	onFormSubmit: (data: KioskModelCreateFormData) => void;
+	onFormSubmit: (data: KioskModelUpdateFormData) => void;
 	closeDeleteModal: () => void;
 	confirmDelete: () => void;
 	isOpenDeleteModal: boolean;
+	isOpenArchiveModal: boolean;
+	pendingArchive: { model: KioskModel; targetArchived: boolean } | null;
+	handleConfirmArchive: () => void;
+	handleCloseArchiveModal: () => void;
 };
 
 export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTabReturn {
 	const { t: translate } = useTranslation();
+	const navigate = useNavigate();
 	const [isEditing, setIsEditing] = useState(false);
+	const dispatch: VendingMachineDispatch = useMicroAppDispatch();
 
-	const onUpdateSuccess = useCallback(() => setIsEditing(false), []);
-	const { isSubmitting, handleSubmit } = useKioskModelEdit(model, { onUpdateSuccess });
+	const onUpdateSuccess = useCallback(() => {
+		setIsEditing(false);
+		if (model.id) {
+			dispatch(kioskModelActions.getKioskModel(model.id));
+		}
+	}, [model.id, dispatch]);
+
+	const onArchiveSuccess = useCallback(() => {
+		if (model.id) {
+			dispatch(kioskModelActions.getKioskModel(model.id));
+		}
+	}, [model.id, dispatch]);
+
+	const { isSubmitting, handleSubmit } = useKioskModelEdit({ onUpdateSuccess });
+
+	const {
+		handleConfirmArchive,
+		handleOpenArchiveModal,
+		handleOpenRestoreModal,
+		handleCloseModal: handleCloseArchiveModal,
+		isOpenArchiveModal,
+		pendingArchive,
+	} = useKioskModelArchive({ onArchiveSuccess });
 
 	const modelSchema = kioskModelCreateSchema as ModelSchema;
 
-	const onFormSubmit = useCallback((data: KioskModelCreateFormData) => {
-		handleSubmit(formDataToKioskModelUpdatePayload(data));
+	const onFormSubmit = useCallback((data: KioskModelUpdateFormData) => {
+		handleSubmit(data);
 	}, [handleSubmit]);
 
 	const onSaveClick = useCallback(() => {
@@ -102,51 +162,61 @@ export function useBasicInfoTab({ model }: UseBasicInfoTabArgs): UseBasicInfoTab
 	const onCancelClick = useCallback(() => setIsEditing(false), []);
 
 	const {
-		handleDelete: dispatchDelete,
-		handleOpenDeleteModal,
-		handleCloseDeleteModal,
-		isOpenDeleteModal,
-	} = useKioskModelDelete();
+		handleDelete: handleDeleteKioskModel,
+		handleOpenDeleteModal, handleCloseDeleteModal, isOpenDeleteModal,
+	} = useKioskModelDelete({ onDeleteSuccess: () => navigate('../kiosk-models') });
 
 	const onDeleteClick = useCallback(
 		() => handleOpenDeleteModal(model),
 		[model, handleOpenDeleteModal],
 	);
 
+	const onArchiveClick = useCallback(() => {
+		handleOpenArchiveModal(model);
+	}, [model, handleOpenArchiveModal]);
+
+	const onRestoreClick = useCallback(() => {
+		handleOpenRestoreModal(model);
+	}, [model, handleOpenRestoreModal]);
+
 	const confirmDelete = useCallback(() => {
-		dispatchDelete(model.id);
+		handleDeleteKioskModel();
 		handleCloseDeleteModal();
-	}, [dispatchDelete, model.id, handleCloseDeleteModal]);
+	}, [handleDeleteKioskModel, handleCloseDeleteModal]);
 
 	const actions = useMemo(
 		() => buildBasicInfoActions(
 			isEditing,
 			isSubmitting,
+			model,
 			translate,
 			onEditClick,
 			onSaveClick,
 			onCancelClick,
+			onArchiveClick,
+			onRestoreClick,
 			onDeleteClick,
 		),
-		[isEditing, isSubmitting, translate, onEditClick, onSaveClick, onCancelClick, onDeleteClick],
+		[
+			isEditing, isSubmitting, model, translate,
+			onEditClick, onSaveClick, onCancelClick, onArchiveClick, onRestoreClick, onDeleteClick,
+		],
 	);
 
 	useRegisterKioskModelDetailTab('basicInfo', actions);
-
-	const modelValue = useMemo(
-		() => kioskModelToCreateFormValues(model),
-		[model.id, model.etag],
-	);
 
 	return {
 		formId: BASIC_INFO_FORM_ID,
 		isEditing,
 		isSubmitting,
 		modelSchema,
-		modelValue,
 		onFormSubmit,
 		closeDeleteModal: handleCloseDeleteModal,
 		confirmDelete,
 		isOpenDeleteModal,
+		isOpenArchiveModal,
+		pendingArchive,
+		handleConfirmArchive,
+		handleCloseArchiveModal,
 	};
 }

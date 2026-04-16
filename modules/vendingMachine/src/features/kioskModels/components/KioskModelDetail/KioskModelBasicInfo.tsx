@@ -1,8 +1,9 @@
 import { Box, Divider, Stack, Text } from '@mantine/core';
-import { ConfirmModal, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
+import { FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components';
 import React from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
+import { ArchiveKioskModelModal, DeleteKioskModelModal } from '@/features/kioskModels';
 import { KioskModel } from '@/features/kioskModels/types';
 
 import { KioskModelFormFields } from '../KioskModelFormFields/KioskModelFormFields';
@@ -29,11 +30,10 @@ const KioskModelBasicInfoAuditDates: React.FC<{ model: KioskModel }> = ({ model 
 };
 
 export const KioskModelBasicInfo: React.FC<KioskModelBasicInfoProps> = ({ model }) => {
-	const { t } = useTranslation();
-
 	const {
-		formId, isEditing, isSubmitting, modelSchema, modelValue, onFormSubmit,
+		formId, isEditing, isSubmitting, modelSchema, onFormSubmit,
 		closeDeleteModal, confirmDelete, isOpenDeleteModal,
+		isOpenArchiveModal, pendingArchive, handleConfirmArchive, handleCloseArchiveModal,
 	} = useBasicInfoTab({ model });
 
 	return (
@@ -44,7 +44,7 @@ export const KioskModelBasicInfo: React.FC<KioskModelBasicInfoProps> = ({ model 
 						key={`${model.id}-${model.etag}-basic-info`}
 						formVariant='update'
 						modelSchema={modelSchema}
-						modelValue={modelValue}
+						modelValue={model}
 						modelLoading={isEditing && isSubmitting}
 					>
 						{({ handleSubmit }) => (
@@ -52,8 +52,8 @@ export const KioskModelBasicInfo: React.FC<KioskModelBasicInfoProps> = ({ model 
 								{isEditing && (
 									<form
 										id={formId}
-										onSubmit={handleSubmit(onFormSubmit)}
 										noValidate
+										onSubmit={handleSubmit(onFormSubmit)}
 										style={{ display: 'contents' }}
 									/>
 								)}
@@ -66,17 +66,19 @@ export const KioskModelBasicInfo: React.FC<KioskModelBasicInfoProps> = ({ model 
 				<KioskModelBasicInfoAuditDates model={model} />
 			</Stack>
 
-			<ConfirmModal
-				title={t('nikki.general.messages.delete_confirm')}
+			<DeleteKioskModelModal
 				opened={isOpenDeleteModal}
 				onClose={closeDeleteModal}
 				onConfirm={confirmDelete}
-				message={<Trans i18nKey='nikki.vendingMachine.kioskModels.messages.delete_confirm'
-					values={{ name: model?.name || '' }}
-					components={{ strong: <strong /> }}
-				/>}
-				confirmLabel={t('nikki.general.actions.delete')}
-				confirmColor='red'
+				name={model.name ?? ''}
+			/>
+
+			<ArchiveKioskModelModal
+				opened={isOpenArchiveModal}
+				onClose={handleCloseArchiveModal}
+				onConfirm={handleConfirmArchive}
+				type={pendingArchive?.targetArchived ? 'archive' : 'restore'}
+				name={pendingArchive?.model?.name ?? ''}
 			/>
 		</React.Fragment>
 	);

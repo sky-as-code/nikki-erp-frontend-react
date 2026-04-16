@@ -5,10 +5,11 @@ import React from 'react';
 import { Outlet } from 'react-router';
 
 
-import { Header } from './Header';
 
 import { SessionRestoring } from '@/components/Loading';
 import { ScrollableContent } from '@/components/ScrollableContent';
+
+import { Header } from './Header';
 
 
 export function PrivateLayout(): React.ReactNode {

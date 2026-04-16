@@ -1,3 +1,4 @@
+export * from './KioskConfirmModals';
 export * from './KioskDetailDrawer';
 export * from './KioskFormFields';
 export * from './KioskGridView';

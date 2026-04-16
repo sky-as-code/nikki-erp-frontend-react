@@ -1,3 +1,49 @@
+export enum MediaPlayListStatus {
+	ACTIVE = 'active',
+	INACTIVE = 'inactive',
+	DELETED = 'deleted',
+}
+
+export enum MediaStatus {
+	ACTIVE = 'active',
+	INACTIVE = 'inactive',
+	DELETED = 'deleted',
+}
+
+export enum MediaType {
+	IMAGE = 'image',
+	VIDEO = 'video',
+}
+export interface MediaPlaylist {
+	id: string;
+	title: string;
+	description?: string;
+	status: MediaPlayListStatus;
+	mediaItems: MediaPlaylistItem[];
+	createdAt: string;
+}
+
+export interface MediaPlaylistItem {
+	id: string;
+	mediaId: string;
+	media: Media;
+	playOrder: number;
+	duration: number;
+}
+
+export interface Media {
+	id: string;
+	name: string;
+	status: MediaStatus;
+	type: MediaType;
+	url: string;
+	thumbnailUrl?: string;
+}
+
+
+
+
+// TODO: Remove this after migration
 export interface Slideshow {
 	id: string;
 	code: string;

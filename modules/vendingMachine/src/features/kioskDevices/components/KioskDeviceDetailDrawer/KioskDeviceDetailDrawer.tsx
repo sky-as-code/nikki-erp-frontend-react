@@ -1,8 +1,10 @@
-import { Badge, Button, Divider, Drawer, Group, Stack, Table, Text, TextInput } from '@mantine/core';
-import { IconDeviceDesktop, IconExternalLink, IconPlus, IconTrash } from '@tabler/icons-react';
+import { Badge, Button, Divider, Group, Stack, Table, Text, TextInput } from '@mantine/core';
+import { IconDeviceDesktop, IconPlus, IconTrash } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+
+import { PreviewDrawer } from '@/components/PreviewDrawer';
 
 import { KioskDevice, KioskDeviceSpecification } from '../../types';
 
@@ -32,20 +34,6 @@ export const KioskDeviceDetailDrawer: React.FC<KioskDeviceDetailDrawerProps> = (
 			setSpecifications(kioskDevice.specifications || []);
 		}
 	}, [kioskDevice]);
-
-	if (isLoading || !kioskDevice) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='lg'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.device.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
 
 	const getStatusBadge = (status: string) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -81,38 +69,30 @@ export const KioskDeviceDetailDrawer: React.FC<KioskDeviceDetailDrawerProps> = (
 	};
 
 	return (
-		<Drawer
+		<PreviewDrawer
 			opened={opened}
 			onClose={onClose}
-			position='right'
-			size='lg'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconDeviceDesktop size={20} />
-						<Text fw={600} size='lg'>{kioskDevice.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../kiosk-devices/${kioskDevice.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+			header={{
+				title: kioskDevice?.name,
+				subtitle: kioskDevice?.code,
+				avatar: <IconDeviceDesktop size={20} />,
+			}}
+			onViewDetails={() => {
+				if (kioskDevice?.id) {
+					navigate(`../kiosk-devices/${kioskDevice.id}`);
+				}
+				onClose();
+			}}
+			isLoading={isLoading}
+			isNotFound={!kioskDevice && !isLoading}
+			drawerProps={{ size: 'lg', opened, onClose }}
 		>
 			<Stack gap='md'>
 				<div>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.device.fields.code')}
 					</Text>
-					<Text size='sm' fw={500}>{kioskDevice.code}</Text>
+					<Text size='sm' fw={500}>{kioskDevice?.code}</Text>
 				</div>
 
 				<Divider />
@@ -121,10 +101,10 @@ export const KioskDeviceDetailDrawer: React.FC<KioskDeviceDetailDrawerProps> = (
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.device.fields.name')}
 					</Text>
-					<Text size='sm'>{kioskDevice.name}</Text>
+					<Text size='sm'>{kioskDevice?.name}</Text>
 				</div>
 
-				{kioskDevice.description && (
+				{kioskDevice?.description && (
 					<>
 						<Divider />
 						<div>
@@ -142,7 +122,7 @@ export const KioskDeviceDetailDrawer: React.FC<KioskDeviceDetailDrawerProps> = (
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.device.fields.status')}
 					</Text>
-					{getStatusBadge(kioskDevice.status)}
+					{kioskDevice?.status ? getStatusBadge(kioskDevice.status) : null}
 				</div>
 
 				<Divider />
@@ -151,7 +131,7 @@ export const KioskDeviceDetailDrawer: React.FC<KioskDeviceDetailDrawerProps> = (
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.device.fields.deviceType')}
 					</Text>
-					{getDeviceTypeBadge(kioskDevice.deviceType)}
+					{kioskDevice?.deviceType ? getDeviceTypeBadge(kioskDevice.deviceType) : null}
 				</div>
 
 				<Divider />
@@ -223,9 +203,9 @@ export const KioskDeviceDetailDrawer: React.FC<KioskDeviceDetailDrawerProps> = (
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.device.fields.createdAt')}
 					</Text>
-					<Text size='sm'>{new Date(kioskDevice.createdAt).toLocaleString()}</Text>
+					<Text size='sm'>{kioskDevice?.createdAt ? new Date(kioskDevice.createdAt).toLocaleString() : '—'}</Text>
 				</div>
 			</Stack>
-		</Drawer>
+		</PreviewDrawer>
 	);
 };

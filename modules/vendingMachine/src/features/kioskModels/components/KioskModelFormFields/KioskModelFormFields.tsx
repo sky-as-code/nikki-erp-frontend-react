@@ -22,7 +22,7 @@ export const KioskModelFormFields: React.FC<KioskModelFormFieldsProps> = ({ mode
 			</Box>
 
 			<Box className={classes.formField}>
-				<AutoField name='code' htmlProps={mode !== 'create' ? { readOnly: true } : {}} />
+				<AutoField name='referenceCode' htmlProps={mode !== 'create' ? { readOnly: true } : {}} />
 			</Box>
 
 			<Box className={classes.formField}>
@@ -33,9 +33,16 @@ export const KioskModelFormFields: React.FC<KioskModelFormFieldsProps> = ({ mode
 				<AutoField name='status' htmlProps={readonlyInput} />
 			</Box>
 
-			<Box className={classes.formField}>
-				<AutoField name='kioskType' htmlProps={readonlyInput} />
-			</Box>
+			{mode === 'create' && (
+				<Box className={classes.formField}>
+					<AutoField name='goodsCollectorType' />
+				</Box>
+			)}
+			{mode === 'create' && (
+				<Box className={classes.formField}>
+					<AutoField name='shelvesNumber' />
+				</Box>
+			)}
 		</>
 	);
 };

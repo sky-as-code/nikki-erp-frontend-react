@@ -44,7 +44,7 @@
 		"kiosk_count": "Kiosk Count",
 		"total_kiosks": "Total Kiosks",
 		"active_kiosks": "Active Kiosks",
-		"inactive_kiosks": "Inactive Kiosks",
+		"inactive_kiosks": "Archived Kiosks",
 		"avg_temperature": "Average Temperature",
 		"avg_humidity": "Average Humidity",
 		"total_power": "Total Power Consumption",
@@ -145,10 +145,14 @@
 			"code": "Code",
 			"name": "Name",
 			"address": "Address",
+			"locationAddress": "Location Address",
+			"latitude": "Latitude",
+			"longitude": "Longitude",
 			"coordinates": "Coordinates",
 			"isActive": "Active Status",
 			"connectionStatus": "Connection Status",
 			"status": "Status",
+			"archived": "Archived",
 			"mode": "Mode",
 			"warnings": "Warnings",
 			"actions": "Actions",
@@ -199,11 +203,17 @@
 		},
 		"messages": {
 			"no_kiosks": "No kiosks found",
-			"create_success": "Kiosk \"{{name}}\" has been created successfully",
-			"update_success": "Kiosk \"{{name}}\" has been updated successfully",
+			"create_success": "Kiosk has been created successfully",
+			"update_success": "Kiosk has been updated successfully",
+			"archive_success": "Kiosk has been archived successfully",
+			"restore_success": "Kiosk has been restored successfully",
 			"delete_success": "Kiosk has been deleted successfully",
-			"delete_confirm": "Are you sure you want to delete the kiosk \"{{name}}\"?",
+			"delete_confirm": "Are you sure you want to delete the kiosk <strong>{{name}}</strong>? This action <strong>cannot be undone</strong>.",
 			"invalid_coordinates": "Invalid latitude or longitude. Please enter valid numbers.",
+			"archive_modal_title": "Archive Kiosk",
+			"restore_modal_title": "Restore Kiosk",
+			"archive_confirm": "Are you sure you want to archive the kiosk <strong>{{name}}</strong>?",
+			"restore_confirm": "Are you sure you want to restore the kiosk <strong>{{name}}</strong>?",
 			"not_found": {
 				"title": "Kiosk Not Found",
 				"message": "The kiosk you are looking for does not exist or has been removed."
@@ -449,8 +459,8 @@
 		},
 		"messages": {
 			"no_settings": "No kiosk settings found",
-			"create_success": "Kiosk setting \"{{name}}\" has been created successfully",
-			"update_success": "Kiosk setting \"{{name}}\" has been updated successfully"
+			"create_success": "Kiosk setting has been created successfully",
+			"update_success": "Kiosk setting has been updated successfully"
 		}
 	},
 	"settings": {
@@ -479,8 +489,8 @@
 		},
 		"messages": {
 			"no_settings": "No settings found",
-			"create_success": "Setting \"{{name}}\" has been created successfully",
-			"update_success": "Setting \"{{name}}\" has been updated successfully",
+			"create_success": "Setting has been created successfully",
+			"update_success": "Setting has been updated successfully",
 			"delete_success": "Setting has been deleted successfully",
 			"delete_confirm": "Are you sure you want to delete setting <strong>{{name}}</strong>? This action cannot be undone.",
 			"not_found": {
@@ -510,6 +520,8 @@
 			"id": "ID",
 			"code": "Code",
 			"name": "Name",
+			"modelId": "Model ID",
+			"referenceCode": "Reference Code",
 			"model": "Kiosk Model",
 			"description": "Description",
 			"status": "Status",
@@ -518,6 +530,8 @@
 			"interfaceMode": "Interface Mode",
 			"slideshow": "Slideshow",
 			"numberOfTrays": "Number of Trays",
+			"shelvesNumber": "Number of Shelves",
+			"shelvesConfig": "Shelves Configuration",
 			"trayConfigurations": "Tray Configurations",
 			"trayRow": "Row",
 			"shelfType": "Shelf Type",
@@ -550,14 +564,20 @@
 		},
 		"messages": {
 			"no_models": "No models found",
-			"create_success": "Kiosk model \"{{name}}\" has been created successfully",
-			"update_success": "Kiosk model \"{{name}}\" has been updated successfully",
+			"create_success": "Kiosk model has been created successfully",
+			"update_success": "Kiosk model has been updated successfully",
 			"delete_success": "Kiosk model has been deleted successfully",
 			"not_found": {
 				"title": "Kiosk Model Not Found",
 				"message": "The kiosk model you are looking for does not exist or has been removed."
 			},
 			"delete_confirm": "Are you sure you want to delete model <strong>{{name}}</strong>? This action cannot be undone.",
+			"archive_modal_title": "Archive confirmation",
+			"restore_modal_title": "Restore confirmation",
+			"archive_confirm": "Archive model <strong>{{name}}</strong>? You can restore it later.",
+			"restore_confirm": "Restore model <strong>{{name}}</strong>?",
+			"archive_success": "Kiosk model has been archived successfully",
+			"restore_success": "Kiosk model has been restored successfully",
 			"no_slideshow": "No slideshow",
 			"no_trays": "No trays yet. Click 'Add Row' button to add a tray."
 		},
@@ -567,6 +587,7 @@
 	},
 	"payment": {
 		"title": "Payment Methods",
+		"title_create": "Create payment method",
 		"detail": {
 			"title": "Payment Method Details"
 		},
@@ -602,7 +623,21 @@
 		},
 		"messages": {
 			"no_payments": "No payment methods found",
-			"no_custom_fields": "No custom fields"
+			"no_custom_fields": "No custom fields",
+			"create_success": "Payment method created successfully",
+			"update_success": "Payment method updated successfully",
+			"delete_success": "Payment method deleted successfully",
+			"delete_confirm": "Delete payment method <strong>{{name}}</strong>?",
+			"not_found": {
+				"title": "Payment method not found",
+				"message": "This payment method may have been removed or the link is invalid."
+			},
+			"archive_success": "Payment method has been archived successfully",
+			"restore_success": "Payment method has been restored successfully",
+			"archive_modal_title": "Archive confirmation",
+			"restore_modal_title": "Restore confirmation",
+			"archive_confirm": "Archive payment method <strong>{{name}}</strong>?",
+			"restore_confirm": "Restore payment method <strong>{{name}}</strong>?"
 		}
 	},
 	"games": {
@@ -748,8 +783,8 @@
 		"messages": {
 			"no_devices": "No devices found",
 			"no_specifications": "No specifications",
-			"create_success": "Device \"{{name}}\" has been created successfully",
-			"update_success": "Device \"{{name}}\" has been updated successfully",
+			"create_success": "Device has been created successfully",
+			"update_success": "Device has been updated successfully",
 			"delete_success": "Device has been deleted successfully",
 			"delete_confirm": "Are you sure you want to delete device <strong>{{name}}</strong>? This action cannot be undone.",
 			"not_found": {

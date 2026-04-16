@@ -11,7 +11,7 @@ import type { Theme } from '@/features/themes/types';
 
 export interface ThemeSelectProps {
 	isEditing: boolean;
-	value: Theme | undefined;
+	value: Theme | null | undefined;
 	onChange: (value: Theme | undefined) => void;
 	onRemove?: () => void;
 }

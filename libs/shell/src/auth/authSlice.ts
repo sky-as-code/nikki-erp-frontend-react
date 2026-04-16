@@ -64,6 +64,7 @@ export const continueSignInAction = createAsyncThunk<
 	async (params, { rejectWithValue, dispatch }) => {
 		try {
 			const result = await authService().continueSignIn(params);
+
 			if (result.done && result.data?.accessToken) {
 				queueMicrotask(() => dispatch(fetchUserContextAction()));
 			}

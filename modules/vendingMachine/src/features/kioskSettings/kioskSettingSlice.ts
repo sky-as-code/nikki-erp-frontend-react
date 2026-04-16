@@ -143,10 +143,13 @@ const kioskSettingSlice = createSlice({
 				state.list.error = action.payload || 'Failed to list kiosk settings';
 				state.list.data = [];
 			})
-			.addCase(getKioskSetting.pending, (state) => {
+			.addCase(getKioskSetting.pending, (state, action) => {
 				state.detail.status = 'pending';
 				state.detail.error = null;
-				state.detail.data = undefined;
+				const requestedId = action.meta.arg;
+				if (state.detail.data?.id !== requestedId) {
+					state.detail.data = undefined;
+				}
 			})
 			.addCase(getKioskSetting.fulfilled, (state, action) => {
 				state.detail.status = 'success';
@@ -157,51 +160,49 @@ const kioskSettingSlice = createSlice({
 				state.detail.error = action.payload || 'Failed to get kiosk setting';
 				state.detail.data = undefined;
 			})
-			.addCase(createKioskSetting.pending, (state) => {
+			.addCase(createKioskSetting.pending, (state, action) => {
 				state.create.status = 'pending';
 				state.create.error = null;
+				state.create.requestId = action.meta.requestId;
 			})
 			.addCase(createKioskSetting.fulfilled, (state, action) => {
 				state.create.status = 'success';
 				state.create.data = action.payload;
+				state.create.requestId = action.meta.requestId;
 			})
 			.addCase(createKioskSetting.rejected, (state, action) => {
 				state.create.status = 'error';
 				state.create.error = action.payload || 'Failed to create kiosk setting';
+				state.create.requestId = action.meta.requestId;
 			})
-			.addCase(updateKioskSetting.pending, (state) => {
+			.addCase(updateKioskSetting.pending, (state, action) => {
 				state.update.status = 'pending';
 				state.update.error = null;
+				state.update.requestId = action.meta.requestId;
 			})
 			.addCase(updateKioskSetting.fulfilled, (state, action) => {
 				state.update.status = 'success';
 				state.update.data = action.payload;
-				state.detail.data = action.payload;
-				if (state.list.data) {
-					const idx = state.list.data.findIndex((s) => s.id === action.payload.id);
-					if (idx >= 0) state.list.data[idx] = action.payload;
-				}
+				state.update.requestId = action.meta.requestId;
 			})
 			.addCase(updateKioskSetting.rejected, (state, action) => {
 				state.update.status = 'error';
 				state.update.error = action.payload || 'Failed to update kiosk setting';
+				state.update.requestId = action.meta.requestId;
 			})
-			.addCase(deleteKioskSetting.pending, (state) => {
+			.addCase(deleteKioskSetting.pending, (state, action) => {
 				state.delete.status = 'pending';
 				state.delete.error = null;
+				state.delete.requestId = action.meta.requestId;
 			})
 			.addCase(deleteKioskSetting.fulfilled, (state, action) => {
 				state.delete.status = 'success';
-				if (state.list.data) {
-					state.list.data = state.list.data.filter((s) => s.id !== action.meta.arg.id);
-				}
-				if (state.detail.data?.id === action.meta.arg.id) {
-					state.detail.data = undefined;
-				}
+				state.delete.requestId = action.meta.requestId;
 			})
 			.addCase(deleteKioskSetting.rejected, (state, action) => {
 				state.delete.status = 'error';
 				state.delete.error = action.payload || 'Failed to delete kiosk setting';
+				state.delete.requestId = action.meta.requestId;
 			});
 	},
 });

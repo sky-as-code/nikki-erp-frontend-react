@@ -39,25 +39,46 @@ export class NikkiAuthenticateStrategy implements ISignInStrategy {
 	}
 
 	public async startSignIn(data: SignInAttemptRequest): Promise<SignInAttempt> {
-		const response = await request.post<SignInAttempt>('authn/login/start', { json: data,
-			headers: { 'Authorization': '' },
+		// const response = await request.post<SignInAttempt>('authn/login/start', { json: data,
+		// 	headers: { 'Authorization': '' },
+		// });
+		// response.nextStep = 'password';
+		// response.email = data.username;
+		// return response;
+		return Promise.resolve({
+			attemptId: '123',
+			expiredAt: Date.now() + 1000 * 60 * 60 * 24,
+			nextStep: 'password',
+			email: data.username,
 		});
-		response.nextStep = 'password';
-		response.email = data.username;
-		return response;
 	}
 
 	public async continueSignIn(params?: SignInContinueParams): Promise<SignInContinueResult> {
-		const response = await request.post<SignInContinueResult>('authn/login', { json: params });
-		return {
-			done: response.done,
-			data: response.data,
-		};
+		// const response = await request.post<SignInContinueResult>('authn/login', { json: params });
+		// return {
+		// 	done: response.done,
+		// 	data: response.data,
+		// };
+		return Promise.resolve({
+			done: true,
+			data: {
+				accessToken: 'FakeAccessToken',
+				accessTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
+				refreshToken: 'FakeRefreshToken',
+				refreshTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
+			},
+		});
 	}
 
 	public async refreshSession(refreshToken: string): Promise<AuthenticatedSession> {
-		const response = await request.post<AuthenticatedSession>('authn/refresh', { json: { refreshToken } });
-		return response;
+		// const response = await request.post<AuthenticatedSession>('authn/refresh', { json: { refreshToken } });
+		// return response;
+		return Promise.resolve({
+			accessToken: 'FakeAccessToken',
+			accessTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
+			refreshToken,
+			refreshTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
+		});
 	}
 
 	public onAuthenticated(callback: AuthenticatedCallback): void {

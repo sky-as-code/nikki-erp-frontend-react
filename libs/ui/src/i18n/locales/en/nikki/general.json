@@ -7,6 +7,7 @@
 		"create": "Create",
 		"update": "Update",
 		"delete": "Delete",
+		"archive": "Archive",
 		"edit": "Edit",
 		"view": "View",
 		"close": "Close",
@@ -29,7 +30,8 @@
 		"add": "Add",
 		"today": "Today",
 		"viewDetails": "View Details",
-		"apply": "Apply"
+		"apply": "Apply",
+		"restore": "Restore"
 	},
 	"selected": "Selected",
 	"boolean": {
@@ -70,7 +72,9 @@
 	},
 	"status": {
 		"active": "Active",
-		"inactive": "Inactive"
+		"inactive": "Inactive",
+		"deleted": "Deleted",
+		"archived": "Archived"
 	},
 	"messages": {
 		"success": "Success",
@@ -79,9 +83,10 @@
 		"not_found": "Not found",
 		"no_data": "No data",
 		"no_changes": "No changes",
+		"no_address": "No address",
 		"invalid_change": "Invalid change",
-		"delete_confirm": "Are you sure you want to delete? This action cannot be undone.",
-		"delete_confirm_name": "Are you sure you want to delete {{name}}? This action cannot be undone.",
+		"delete_confirm": "Delete confirmation",
+		"delete_confirm_name": "Are you sure you want to delete <strong>{{name}}</strong>? This action <strong>cannot be undone</strong>.",
 		"access_denied": "You do not have permission to access this page",
 		"delete_success": "Delete successful",
 		"delete_failed": "Delete failed"
@@ -93,5 +98,19 @@
 		"create_failed": "Failed to create",
 		"delete_failed": "Failed to delete",
 		"grant_request_create_failed": "Failed to create grant request"
+	},
+	"pagination": {
+		"items_found": "{{count}} items found",
+		"page": "Page",
+		"of": "of",
+		"next": "Next",
+		"previous": "Previous",
+		"page_size": "{{count}} / page"
+	},
+	"time": {
+		"just_now": "Just now",
+		"minutes_ago": "{{count}} minutes ago",
+		"hours_ago": "{{count}} hours ago",
+		"days_ago": "{{count}} days ago"
 	}
 }

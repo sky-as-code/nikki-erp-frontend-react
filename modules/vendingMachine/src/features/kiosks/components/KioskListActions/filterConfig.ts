@@ -4,25 +4,27 @@ import { ConnectionStatus, KioskMode, KioskStatus } from '../../types';
 
 
 
+
+
 export const kioskFilterConfig: FilterGroupConfig = {
 	search: [
 		{
 			key: 'code',
 			label: 'Mã kiosk',
 			placeholder: 'Tìm kiếm theo mã...',
-			operator: '~',
+			operator: '*',
 		},
 		{
 			key: 'name',
 			label: 'Tên kiosk',
 			placeholder: 'Tìm kiếm theo tên...',
-			operator: '~',
+			operator: '*',
 		},
 		{
 			key: 'address',
 			label: 'Địa chỉ',
 			placeholder: 'Tìm kiếm theo địa chỉ...',
-			operator: '~',
+			operator: '*',
 		},
 	],
 	filter: {
@@ -37,7 +39,7 @@ export const kioskFilterConfig: FilterGroupConfig = {
 						{
 							key: 'status',
 							label: 'Trạng thái',
-							condition: ['in', [KioskStatus.ACTIVATED, KioskStatus.DISABLED, KioskStatus.DELETED]],
+							condition: ['in', [KioskStatus.ACTIVE, KioskStatus.INACTIVE, KioskStatus.DELETED]],
 						},
 						{
 							key: 'status',
@@ -115,18 +117,18 @@ export const kioskFilterConfig: FilterGroupConfig = {
 					]],
 				},
 				{
-					key: 'isActive',
+					key: 'status',
 					label: 'Hoạt động',
 					condition: ['$or', [
 						{
-							key: 'isActive',
-							label: 'Hoạt động',
-							condition: ['=', 'true'],
+							key: 'status',
+							label: 'Đang hoạt động',
+							condition: ['=', KioskStatus.ACTIVE],
 						},
 						{
-							key: 'isActive',
-							label: 'Hoạt động',
-							condition: ['=', 'false'],
+							key: 'status',
+							label: 'Tạm dừng',
+							condition: ['=', KioskStatus.INACTIVE],
 						},
 					]],
 				},

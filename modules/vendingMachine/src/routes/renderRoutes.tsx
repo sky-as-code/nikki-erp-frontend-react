@@ -15,13 +15,11 @@ export function renderAppRoutes(routes: AppRouteConfig[], contextScope?: Permiss
 		const hasPermission = resource && action ? useHasPermission(resource, action, contextScope) : true;
 		if (!hasPermission) return <AppRoute key={key} path={path ?? ''} element={<Unauthorized />} />;
 
-		return (
-			<>{index ?
-				<AppRoute key={key} index element={element} /> :
-				<AppRoute key={key} path={path ?? ''} element={element ?? <></>}>
-					{children && renderAppRoutes(children)}
-				</AppRoute>
-			}</>
+		return ( index ?
+			<AppRoute key={key} index element={element} /> :
+			<AppRoute key={key} path={path ?? ''} element={element ?? <></>}>
+				{children && renderAppRoutes(children)}
+			</AppRoute>
 		);
 	});
 }

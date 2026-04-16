@@ -1,10 +1,13 @@
-import { Badge, Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { IconMapPin, IconDeviceDesktop, IconExternalLink } from '@tabler/icons-react';
+import { Badge, Box, Divider, Group, Stack, Text } from '@mantine/core';
+import { IconMapPin, IconDeviceDesktop } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { Kiosk, KioskMode, KioskStatus } from '../../types';
+import { ArchivedStatusBadge } from '@/components/ArchivedStatusBadge';
+import { PreviewDrawer } from '@/components/PreviewDrawer';
+
+import { Kiosk, KioskMode } from '../../types';
 
 
 export interface KioskDetailDrawerProps {
@@ -24,160 +27,108 @@ export const KioskDetailDrawer: React.FC<KioskDetailDrawerProps> = ({
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
 
-	if (isLoading || !kiosk) {
-		return (
-			<Drawer
-				opened={opened}
-				onClose={onClose}
-				position='right'
-				size='lg'
-				title={<Text fw={600} size='lg'>{translate('nikki.vendingMachine.kiosk.detail.title')}</Text>}
-			>
-				<Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>
-			</Drawer>
-		);
-	}
-
-	const getStatusBadge = (status: KioskStatus) => {
-		const statusMap = {
-			[KioskStatus.ACTIVATED]: { color: 'green', label: translate('nikki.vendingMachine.kiosk.status.activated') },
-			[KioskStatus.DISABLED]: { color: 'gray', label: translate('nikki.vendingMachine.kiosk.status.disabled') },
-			[KioskStatus.DELETED]: { color: 'red', label: translate('nikki.vendingMachine.kiosk.status.deleted') },
-		};
-		const statusInfo = statusMap[status];
-		return <Badge color={statusInfo.color}>{statusInfo.label}</Badge>;
-	};
-
-	const getModeBadge = (mode: KioskMode) => {
-		const modeMap = {
+	const getModeBadge = (mode?: KioskMode | null) => {
+		if (!mode) return null;
+		const modeMap: Partial<Record<KioskMode, { color: string; label: string }>> = {
 			[KioskMode.PENDING]: { color: 'yellow', label: translate('nikki.vendingMachine.kiosk.mode.pending') },
 			[KioskMode.SELLING]: { color: 'blue', label: translate('nikki.vendingMachine.kiosk.mode.selling') },
 			[KioskMode.SLIDESHOW_ONLY]: { color: 'purple', label: translate('nikki.vendingMachine.kiosk.mode.slideshowOnly') },
 		};
 		const modeInfo = modeMap[mode];
+		if (!modeInfo) return null;
 		return <Badge color={modeInfo.color}>{modeInfo.label}</Badge>;
 	};
 
 	return (
-		<Drawer
+		<PreviewDrawer
 			opened={opened}
 			onClose={onClose}
-			position='right'
-			size='lg'
-			title={
-				<Group gap='lg' justify='space-between' style={{ flex: 1 }} wrap='wrap'>
-					<Group gap='xs'>
-						<IconDeviceDesktop size={20} />
-						<Text fw={600} size='lg'>{kiosk.name}</Text>
-					</Group>
-					<Button
-						size='xs'
-						variant='light'
-						leftSection={<IconExternalLink size={16} />}
-						onClick={() => {
-							navigate(`../kiosks/${kiosk.id}`);
-							onClose();
-						}}
-					>
-						{translate('nikki.general.actions.viewDetails')}
-					</Button>
-				</Group>
-			}
-			overlayProps={{ opacity: 0.5, blur: 4 }}
+			header={{
+				title: kiosk?.name,
+				subtitle: kiosk?.code,
+				avatar: <IconDeviceDesktop size={20} />,
+			}}
+			onViewDetails={() => {
+				if (kiosk?.id) {
+					navigate(`../kiosks/${kiosk.id}`);
+				}
+				onClose();
+			}}
+			isLoading={isLoading}
+			isNotFound={!kiosk && !isLoading}
+			drawerProps={{ size: 'lg', opened, onClose }}
 		>
 			<Stack gap='md'>
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.code')}
 					</Text>
-					<Text size='sm' fw={500}>{kiosk.code}</Text>
-				</div>
+					<Text size='sm' fw={500}>{kiosk?.code}</Text>
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.name')}
 					</Text>
-					<Text size='sm'>{kiosk.name}</Text>
-				</div>
+					<Text size='sm'>{kiosk?.name}</Text>
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.address')}
 					</Text>
 					<Group gap='xs'>
 						<IconMapPin size={16} />
-						<Text size='sm'>{kiosk.address}</Text>
+						<Text size='sm'>{kiosk?.locationAddress}</Text>
 					</Group>
-				</div>
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.coordinates')}
 					</Text>
 					<Text size='sm'>
-						{kiosk.coordinates.latitude.toFixed(6)}, {kiosk.coordinates.longitude.toFixed(6)}
+						{kiosk?.latitude != null && kiosk?.longitude != null
+							? `${kiosk.latitude}, ${kiosk.longitude}`
+							: '—'}
 					</Text>
-				</div>
+				</Box>
 
 				<Divider />
 
-				<div>
-					<Text size='sm' c='dimmed' mb='xs'>
-						{translate('nikki.vendingMachine.kiosk.fields.isActive')}
-					</Text>
-					<Badge color={kiosk.isActive ? 'green' : 'red'}>
-						{kiosk.isActive
-							? translate('nikki.general.status.active')
-							: translate('nikki.general.status.inactive')}
-					</Badge>
-				</div>
-
-				<Divider />
-
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.status')}
 					</Text>
-					{getStatusBadge(kiosk.status)}
-				</div>
+					{kiosk ? <ArchivedStatusBadge isArchived={Boolean(kiosk.isArchived)} /> : null}
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.mode')}
 					</Text>
-					{getModeBadge(kiosk.mode)}
-				</div>
+					{getModeBadge(kiosk?.mode)}
+				</Box>
 
 				<Divider />
 
-				<div>
+				<Box>
 					<Text size='sm' c='dimmed' mb='xs'>
 						{translate('nikki.vendingMachine.kiosk.fields.createdAt')}
 					</Text>
-					<Text size='sm'>{new Date(kiosk.createdAt).toLocaleString()}</Text>
-				</div>
+					<Text size='sm'>{kiosk?.createdAt ? new Date(kiosk.createdAt).toLocaleString() : '—'}</Text>
+				</Box>
 
-				{kiosk.deletedAt && (
-					<>
-						<Divider />
-						<div>
-							<Text size='sm' c='dimmed' mb='xs'>
-								{translate('nikki.vendingMachine.kiosk.fields.deletedAt')}
-							</Text>
-							<Text size='sm'>{new Date(kiosk.deletedAt).toLocaleString()}</Text>
-						</div>
-					</>
-				)}
 			</Stack>
-		</Drawer>
+		</PreviewDrawer>
 	);
 };
 

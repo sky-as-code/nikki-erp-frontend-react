@@ -163,10 +163,13 @@ function listEventsReducers(builder: ActionReducerMapBuilder<EventState>) {
 
 function getEventReducers(builder: ActionReducerMapBuilder<EventState>) {
 	builder
-		.addCase(getEvent.pending, (state) => {
+		.addCase(getEvent.pending, (state, action) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			const requestedId = action.meta.arg;
+			if (state.detail.data?.id !== requestedId) {
+				state.detail.data = undefined;
+			}
 		})
 		.addCase(getEvent.fulfilled, (state, action) => {
 			state.detail.status = 'success';
@@ -204,13 +207,6 @@ function updateEventReducers(builder: ActionReducerMapBuilder<EventState>) {
 		.addCase(updateEvent.fulfilled, (state, action) => {
 			state.update.status = 'success';
 			state.update.data = action.payload;
-			state.detail.data = action.payload;
-			if (state.list.data) {
-				const listIndex = state.list.data.findIndex((e) => e.id === action.payload.id);
-				if (listIndex >= 0) {
-					state.list.data[listIndex] = action.payload;
-				}
-			}
 		})
 		.addCase(updateEvent.rejected, (state, action) => {
 			state.update.status = 'error';
