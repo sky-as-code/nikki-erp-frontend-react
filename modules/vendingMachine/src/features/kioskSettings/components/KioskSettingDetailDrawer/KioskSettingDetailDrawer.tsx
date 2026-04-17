@@ -9,11 +9,11 @@ import { AssignedKioskList } from '@/components/AssignKiosks';
 import { KioskSelectModal } from '@/components/AssignKiosks/KioskSelectModal';
 import { GameSelect } from '@/components/GameSelect';
 import { PreviewDrawer } from '@/components/PreviewDrawer';
-import { SlideshowSelect } from '@/components/SlideshowSelect';
+import { MediaPlaylistSelect } from '@/components/MediaPlaylistSelect';
 import { ThemeSelect } from '@/components/ThemeSelect';
 import { Game } from '@/features/games/types';
 import { Kiosk } from '@/features/kiosks/types';
-import { Slideshow } from '@/features/slideshow/types';
+import { Slideshow } from '@/features/mediaPlaylist/types';
 import { Theme } from '@/features/themes/types';
 
 import { KioskSetting } from '../../types';
@@ -193,7 +193,7 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 							onRemove={handleThemeRemove}
 							isEditing
 						/>
-						<SlideshowSelect
+						<MediaPlaylistSelect
 							type='waiting'
 							value={idlePlaylist}
 							onRemove={handleIdlePlaylistRemove}
@@ -204,7 +204,7 @@ export const KioskSettingDetailDrawer: React.FC<KioskSettingDetailDrawerProps> =
 							}}
 							isEditing
 						/>
-						<SlideshowSelect
+						<MediaPlaylistSelect
 							type='shopping'
 							value={shoppingPlaylist}
 							onRemove={handleShoppingPlaylistRemove}

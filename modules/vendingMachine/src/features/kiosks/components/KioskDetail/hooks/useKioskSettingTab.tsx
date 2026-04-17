@@ -10,7 +10,7 @@ import { Game } from '@/features/games/types';
 import { useRegisterKioskDetailTab } from '@/features/kiosks/components/KioskDetail/kioskDetailTabControl';
 import { KioskUpdateFormData, useKioskEdit } from '@/features/kiosks/hooks';
 import { Kiosk, UIMode } from '@/features/kiosks/types';
-import { Slideshow } from '@/features/slideshow/types';
+import { Slideshow } from '@/features/mediaPlaylist/types';
 import { Theme } from '@/features/themes/types';
 
 

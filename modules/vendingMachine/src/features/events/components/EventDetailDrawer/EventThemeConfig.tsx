@@ -1,10 +1,10 @@
 import { Stack } from '@mantine/core';
 import React from 'react';
 
-import { SlideshowSelect } from '@/components/SlideshowSelect';
+import { MediaPlaylistSelect } from '@/components/MediaPlaylistSelect';
 import { ThemeSelect } from '@/components/ThemeSelect';
 
-import { Slideshow } from '../../../slideshow/types';
+import { Slideshow } from '../../../mediaPlaylist/types';
 import { Theme } from '../../../themes/types';
 
 
@@ -43,7 +43,7 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 			}}
 			isEditing={Boolean(onThemeChange)}
 		/>
-		<SlideshowSelect
+		<MediaPlaylistSelect
 			type='waiting'
 			value={idlePlaylist}
 			onRemove={onIdlePlaylistRemove}
@@ -54,7 +54,7 @@ export const EventThemeConfig: React.FC<EventThemeConfigProps> = ({
 			}}
 			isEditing={Boolean(onIdlePlaylistChange)}
 		/>
-		<SlideshowSelect
+		<MediaPlaylistSelect
 			type='shopping'
 			value={shoppingPlaylist}
 			onChange={(v) => {

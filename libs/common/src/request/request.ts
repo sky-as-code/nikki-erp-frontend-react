@@ -8,6 +8,9 @@ export type { Input, Options } from 'ky';
 
 let api: KyInstance | null = null;
 
+/** Set in `initRequestMaker` — use for absolute asset/stream URLs (e.g. kiosk media stream). */
+let requestBaseUrl: string | null = null;
+
 
 export type RequestMakerOts = {
 	baseUrl: string,
@@ -58,6 +61,8 @@ export function initRequestMaker(opts: RequestMakerOts) {
 
 	const { tokenType = 'Bearer', getToken } = opts.auth || {};
 
+	requestBaseUrl = opts.baseUrl.replace(/\/$/, '');
+
 	api = kyLib.create({
 		prefixUrl: opts.baseUrl,
 		headers: {
@@ -84,6 +89,11 @@ export function initRequestMaker(opts: RequestMakerOts) {
 
 export function ky(): KyInstance | null {
 	return api;
+}
+
+/** API base URL (e.g. `…/v1`) after `initRequestMaker`, or `null` if not initialized. */
+export function getRequestBaseUrl(): string | null {
+	return requestBaseUrl;
 }
 
 export async function get<T>(url: Input, options?: Options): Promise<T> {

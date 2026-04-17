@@ -2,7 +2,7 @@ import { Stack } from '@mantine/core';
 import React from 'react';
 
 import { GameSelect } from '@/components/GameSelect';
-import { SlideshowSelect } from '@/components/SlideshowSelect';
+import { MediaPlaylistSelect } from '@/components/MediaPlaylistSelect';
 import { ThemeSelect } from '@/components/ThemeSelect';
 
 import { KioskSetting } from '../../types';
@@ -43,14 +43,14 @@ export const KioskSettingDetailSettings: React.FC<KioskSettingDetailSettingsProp
 				onRemove={onThemeRemove}
 				isEditing={isEditing}
 			/>
-			<SlideshowSelect
+			<MediaPlaylistSelect
 				type='waiting'
 				value={idlePlaylist}
 				onChange={onIdlePlaylistChange}
 				onRemove={onIdlePlaylistRemove}
 				isEditing={isEditing}
 			/>
-			<SlideshowSelect
+			<MediaPlaylistSelect
 				type='shopping'
 				value={shoppingPlaylist}
 				onRemove={onShoppingPlaylistRemove}

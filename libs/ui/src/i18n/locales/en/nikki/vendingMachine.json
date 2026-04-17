@@ -10,6 +10,7 @@
 		"slideshow": "Presentation",
 		"gallery": "Gallery",
 		"playlists": "Playlists",
+		"mediaPlaylist": "Media playlists",
 		"device": "Devices",
 		"events": "Events",
 		"reports": "Reports",
@@ -288,6 +289,119 @@
 			}
 		}
 	},
+	"mediaPlaylist": {
+		"title": "Media playlists",
+		"detail": {
+			"title": "Media playlist details"
+		},
+		"fields": {
+			"id": "ID",
+			"name": "Name",
+			"scopeType": "Scope",
+			"scopeRef": "Scope reference",
+			"isArchived": "Archived",
+			"status": "Status",	
+			"mediaItems": "Media items",
+			"createdAt": "Created At"
+		},
+		"scopeType": {
+			"domain": "Domain",
+			"org": "Organization",
+			"hierarchy": "Hierarchy",
+			"private": "Private"
+		},
+		"archived": {
+			"yes": "Archived",
+			"no": "Active"
+		},
+		"status": {
+			"expired": "Expired"
+		},
+		"search": {
+			"placeholder": "Search by name or scope reference..."
+		},
+		"filter": {
+			"status": "Filter by Status"
+		},
+		"messages": {
+			"no_slideshows": "No media playlists found",
+			"no_playlists_found": "No playlists found",
+			"update_success": "Media playlist updated successfully",
+			"delete_success": "Media playlist deleted successfully",
+			"delete_confirm": "Are you sure you want to delete <strong>{{name}}</strong>? This cannot be undone.",
+			"archive_modal_title": "Archive media playlist",
+			"restore_modal_title": "Restore media playlist",
+			"archive_confirm": "Archive <strong>{{name}}</strong>?",
+			"restore_confirm": "Restore <strong>{{name}}</strong>?",
+			"archive_success": "Media playlist archived successfully",
+			"restore_success": "Media playlist restored successfully",
+			"name_required": "Please enter a playlist name"
+		},
+		"preview": {
+			"title": "Preview",
+			"layout_select": "Preview layout",
+			"vertical": "Vertical playlist (9:16) - Idle/waiting screen",
+			"horizontal": "Horizontal playlist - Footer area"
+		},
+		"media": {
+			"title": "Media list",
+			"add": "Add media",
+			"empty": "No media yet. Click Add media to add items.",
+			"fields": {
+				"preview": "Preview",
+				"code": "Code",
+				"kioskMediaRef": "Kiosk media",
+				"name": "Name",
+				"type": "Type",
+				"duration": "Duration",
+				"size": "Size",
+				"object_fit": "Object fit"
+			},
+			"object_fit_option": {
+				"fill": "Fill",
+				"contain": "Contain",
+				"cover": "Cover",
+				"none": "None",
+				"scale-down": "Scale down"
+			},
+			"type": {
+				"image": "Image",
+				"video": "Video"
+			},
+			"gallery": {
+				"title": "Media gallery",
+				"tab": "Gallery",
+				"folders": "Folders",
+				"all": "All",
+				"items": "items",
+				"gridView": "Grid view",
+				"listView": "List view",
+				"selected": "Selected",
+				"selectedCount": "items selected",
+				"selectedMedia": "Selected media"
+			},
+			"upload": {
+				"tab": "Upload",
+				"description": "Select files from your computer to upload",
+				"button": "Choose files"
+			},
+			"play_order": "Play order",
+			"preview_modal_title": "Media preview",
+			"edit_modal_title": "Edit media",
+			"drag_hint": "Drag to reorder",
+			"preview": "Preview",
+			"edit": "Edit",
+			"timeline": {
+				"title": "Playlist timeline",
+				"total_duration": "Total duration",
+				"resize_hint": "Drag the right edge to adjust this clip only (other clips unchanged)",
+				"empty": "Add media to see the timeline.",
+				"trial_play": "Play preview",
+				"trial_stop": "Stop",
+				"trial_position": "Playback"
+			}
+		}
+	},
 	"events": {
 		"detail": {
 			"title": "Event Details"
@@ -340,13 +454,21 @@
 			"mediaType": "Type",
 			"thumbnail": "Thumbnail",
 			"duration": "Duration",
-			"selectSlideshows": "Select Slideshows"
+			"selectSlideshows": "Select Slideshows",
+			"selectMediaPlaylists": "Select media playlists"
 		},
 		"selectSlideshows": {
 			"title": "Select Slideshows for Playlist",
 			"searchPlaceholder": "Search slideshows...",
 			"selectedCount": "Selected {{count}} slideshows",
 			"noSlideshows": "No slideshows found",
+			"media": "media"
+		},
+		"selectMediaPlaylists": {
+			"title": "Select media playlists",
+			"searchPlaceholder": "Search playlists...",
+			"selectedCount": "Selected {{count}} playlists",
+			"noPlaylists": "No playlists found",
 			"media": "media"
 		},
 		"selectKiosks": {

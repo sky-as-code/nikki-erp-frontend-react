@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ControlPanelProps } from '@/components/ControlPanel/ControlPanel';
 import { Game } from '@/features/games/types';
-import { Slideshow } from '@/features/slideshow/types';
+import { Slideshow } from '@/features/mediaPlaylist/types';
 import { Theme } from '@/features/themes/types';
 
 import { KioskSetting } from '../../../types';

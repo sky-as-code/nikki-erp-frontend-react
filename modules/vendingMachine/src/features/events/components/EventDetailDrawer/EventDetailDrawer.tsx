@@ -14,7 +14,7 @@ import { KioskSelectModal } from './KioskSelectModal';
 import { ProductSelectModal } from './ProductSelectModal';
 import { Game } from '../../../games/types';
 import { Kiosk } from '../../../kiosks/types';
-import { Slideshow } from '../../../slideshow/types';
+import { Slideshow } from '../../../mediaPlaylist/types';
 import { Theme } from '../../../themes/types';
 import { Event, EventProduct } from '../../types';
 

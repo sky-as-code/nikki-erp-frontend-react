@@ -1,0 +1,22 @@
+{
+	"name": "mediaPlaylist",
+	"fields": {
+		"id": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.mediaPlaylist.fields.id' }",
+			"hidden": true
+		},
+		"name": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.mediaPlaylist.fields.name' }"
+		},
+		"isArchived": {
+			"type": "boolean",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.mediaPlaylist.fields.status' }"
+		},
+		"mediaItems": {
+			"type": "string",
+			"label": "{ \"$ref\": 'nikki.vendingMachine.mediaPlaylist.fields.mediaItems' }"
+		}
+	}
+}

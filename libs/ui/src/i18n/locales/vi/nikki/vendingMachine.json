@@ -9,6 +9,7 @@
 		"presentation": "Trình chiếu",
 		"gallery": "Thư viện",
 		"playlists": "Danh sách phát",
+		"mediaPlaylist": "Danh sách phát media",
 		"events": "Sự kiện",
 		"appearance": "Giao diện",
 		"themes": "Chủ đề",
@@ -329,6 +330,119 @@
 			}
 		}
 	},
+	"mediaPlaylist": {
+		"title": "Danh sách phát media",
+		"detail": {
+			"title": "Chi tiết danh sách phát"
+		},
+		"fields": {
+			"id": "Mã định danh",
+			"name": "Tên",
+			"status": "Trạng thái",
+			"scopeType": "Phạm vi",
+			"scopeRef": "Tham chiếu phạm vi",
+			"isArchived": "Đã lưu trữ",
+			"mediaItems": "Media",
+			"createdAt": "Ngày tạo"
+		},
+		"scopeType": {
+			"domain": "Miền",
+			"org": "Tổ chức",
+			"hierarchy": "Phân cấp",
+			"private": "Riêng tư"
+		},
+		"archived": {
+			"yes": "Đã lưu trữ",
+			"no": "Đang hoạt động"
+		},
+		"status": {
+			"expired": "Đã hết hạn"
+		},
+		"search": {
+			"placeholder": "Tìm theo tên hoặc tham chiếu phạm vi..."
+		},
+		"filter": {
+			"status": "Lọc theo trạng thái"
+		},
+		"messages": {
+			"no_slideshows": "Không tìm thấy playlist nào",
+			"no_playlists_found": "Không tìm thấy danh sách phát nào",
+			"update_success": "Đã cập nhật danh sách phát thành công",
+			"delete_success": "Đã xóa danh sách phát thành công",
+			"delete_confirm": "Bạn có chắc chắn muốn xóa <strong>{{name}}</strong>? Hành động này không thể hoàn tác.",
+			"archive_modal_title": "Lưu trữ danh sách phát",
+			"restore_modal_title": "Khôi phục danh sách phát",
+			"archive_confirm": "Lưu trữ <strong>{{name}}</strong>?",
+			"restore_confirm": "Khôi phục <strong>{{name}}</strong>?",
+			"archive_success": "Đã lưu trữ danh sách phát thành công",
+			"restore_success": "Đã khôi phục danh sách phát thành công",
+			"name_required": "Vui lòng nhập tên danh sách phát"
+		},
+		"preview": {
+			"title": "Xem trước",
+			"layout_select": "Giao diện xem trước",
+			"vertical": "Playlist màn hình dọc (9:16) - Màn hình chờ",
+			"horizontal": "Playlist màn hình ngang - Hiển thị ở footer"
+		},
+		"media": {
+			"title": "Danh sách Media",
+			"add": "Thêm Media",
+			"empty": "Chưa có media nào. Nhấn 'Thêm Media' để thêm.",
+			"fields": {
+				"preview": "Xem trước",
+				"code": "Mã",
+				"kioskMediaRef": "Media kiosk",
+				"name": "Tên",
+				"type": "Loại",
+				"duration": "Thời lượng",
+				"size": "Kích thước",
+				"object_fit": "Vừa khung (object-fit)"
+			},
+			"object_fit_option": {
+				"fill": "Kéo giãn (fill)",
+				"contain": "Chứa trong khung (contain)",
+				"cover": "Phủ khung (cover)",
+				"none": "Không co giãn (none)",
+				"scale-down": "Thu nhỏ nếu cần (scale-down)"
+			},
+			"type": {
+				"image": "Ảnh",
+				"video": "Video"
+			},
+			"gallery": {
+				"title": "Thư viện Media",
+				"tab": "Thư viện",
+				"folders": "Thư mục",
+				"all": "Tất cả",
+				"items": "mục",
+				"gridView": "Xem dạng lưới",
+				"listView": "Xem dạng danh sách",
+				"selected": "Đã chọn",
+				"selectedCount": "mục đã chọn",
+				"selectedMedia": "Media đã chọn"
+			},
+			"upload": {
+				"tab": "Tải lên",
+				"description": "Chọn file từ máy tính của bạn để tải lên",
+				"button": "Chọn file"
+			},
+			"play_order": "Thứ tự phát",
+			"preview_modal_title": "Xem trước media",
+			"edit_modal_title": "Chỉnh sửa media",
+			"drag_hint": "Kéo để sắp xếp",
+			"preview": "Xem trước",
+			"edit": "Chỉnh sửa",
+			"timeline": {
+				"title": "Dòng thời gian playlist",
+				"total_duration": "Tổng thời lượng",
+				"resize_hint": "Kéo cạnh phải để chỉnh thời lượng clip này (các clip khác không đổi)",
+				"empty": "Thêm media để xem dòng thời gian.",
+				"trial_play": "Chạy thử",
+				"trial_stop": "Dừng",
+				"trial_position": "Đang phát"
+			}
+		}
+	},
 	"events": {
 		"detail": {
 			"title": "Chi tiết Sự kiện"
@@ -381,13 +495,21 @@
 			"mediaType": "Loại",
 			"thumbnail": "Hình thu nhỏ",
 			"duration": "Thời lượng",
-			"selectSlideshows": "Chọn trình chiếu"
+			"selectSlideshows": "Chọn trình chiếu",
+			"selectMediaPlaylists": "Chọn danh sách phát"
 		},
 		"selectSlideshows": {
 			"title": "Chọn danh sách phát trình chiếu",
 			"searchPlaceholder": "Tìm kiếm trình chiếu...",
 			"selectedCount": "Đã chọn {{count}} trình chiếu",
 			"noSlideshows": "Không tìm thấy trình chiếu nào",
+			"media": "media"
+		},
+		"selectMediaPlaylists": {
+			"title": "Chọn danh sách phát media",
+			"searchPlaceholder": "Tìm kiếm playlist...",
+			"selectedCount": "Đã chọn {{count}} playlist",
+			"noPlaylists": "Không tìm thấy playlist nào",
 			"media": "media"
 		},
 		"selectKiosks": {

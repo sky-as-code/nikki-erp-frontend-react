@@ -4,11 +4,11 @@ import { IconEdit, IconTrash, IconPhoto } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { MediaPlaylist, MediaPlayListStatus } from '@/features/slideshow/types';
+import type { Playlist } from '@/features/mediaPlaylist/types';
 
 
 export interface MediaPlaylistCardProps {
-	playlist: MediaPlaylist;
+	playlist: Playlist;
 	isLoading?: boolean;
 	onViewDetail: (playlistId: string) => void;
 	onEdit?: (playlistId: string) => void;
@@ -25,16 +25,7 @@ export const MediaPlaylistCard: React.FC<MediaPlaylistCardProps> = ({
 	cardProps = {},
 }) => {
 	const { t: translate } = useTranslation();
-
-	const getStatusBadge = (status: MediaPlayListStatus) => {
-		const statusMap = {
-			active: { color: 'green', label: translate('nikki.general.status.active') },
-			inactive: { color: 'gray', label: translate('nikki.general.status.inactive') },
-			deleted: { color: 'red', label: translate('nikki.general.status.deleted') },
-		};
-		const statusInfo = statusMap[status];
-		return <Badge color={statusInfo.color} size='sm'>{statusInfo.label}</Badge>;
-	};
+	const archived = !!playlist.isArchived;
 
 	if (isLoading) {
 		return <Text c='dimmed'>{translate('nikki.general.messages.loading')}</Text>;
@@ -55,7 +46,7 @@ export const MediaPlaylistCard: React.FC<MediaPlaylistCardProps> = ({
 				<Group justify='space-between' align='flex-start'>
 					<Group gap='xs'>
 						<IconPhoto size={20} />
-						<Text fw={600} size='sm'>{playlist.title}</Text>
+						<Text fw={600} size='sm'>{playlist.name}</Text>
 					</Group>
 					<Group gap='xs' onClick={(e) => e.stopPropagation()}>
 						{onEdit && (
@@ -75,14 +66,18 @@ export const MediaPlaylistCard: React.FC<MediaPlaylistCardProps> = ({
 					</Group>
 				</Group>
 
-				{playlist.description && (
+				{playlist.scopeRef && (
 					<Text size='xs' c='dimmed' lineClamp={3}>
-						{playlist.description}
+						{playlist.scopeRef}
 					</Text>
 				)}
 
 				<Group gap='xs' wrap='nowrap'>
-					{getStatusBadge(playlist.status)}
+					<Badge color={archived ? 'gray' : 'green'} size='sm'>
+						{archived
+							? translate('nikki.vendingMachine.mediaPlaylist.archived.yes')
+							: translate('nikki.vendingMachine.mediaPlaylist.archived.no')}
+					</Badge>
 				</Group>
 
 				<Text size='xs' c='dimmed'>

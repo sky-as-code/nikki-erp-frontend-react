@@ -17,6 +17,9 @@ import { KioskListPage } from '@/pages/kiosks/KioskListPage';
 import { KioskSettingCreatePage } from '@/pages/kioskSettings/KioskSettingCreatePage';
 import { KioskSettingDetailPage } from '@/pages/kioskSettings/KioskSettingDetailPage';
 import { KioskSettingPage } from '@/pages/kioskSettings/KioskSettingPage';
+import { MediaListPage } from '@/pages/mediaPlaylist/MediaListPage';
+import { MediaPlaylistDetailPage } from '@/pages/mediaPlaylist/MediaPlaylistDetailPage';
+import { MediaPlaylistsPage } from '@/pages/mediaPlaylist/MediaPlaylistsPage';
 import OverviewPage from '@/pages/overview/OverviewPage';
 import { PaymentCreatePage } from '@/pages/payment/PaymentCreatePage';
 import { PaymentDetailPage } from '@/pages/payment/PaymentDetailPage';
@@ -24,8 +27,6 @@ import { PaymentListPage } from '@/pages/payment/PaymentListPage';
 import { RevenueOverview } from '@/pages/reports/RevenueOverview';
 import { SettingDetailPage } from '@/pages/settings/SettingDetailPage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
-import { SlideshowDetailPage } from '@/pages/slideshow/SlideshowDetailPage';
-import { SlideshowsPage } from '@/pages/slideshow/SlideshowsPage';
 import { ThemeDetailPage } from '@/pages/themes/ThemeDetailPage';
 import { ThemesPage } from '@/pages/themes/ThemesPage';
 
@@ -125,19 +126,19 @@ export const appRoutes: AppRouteConfig[] = [{
 			element: <SettingDetailPage />,
 		},
 		{
-			key: 'slideshows-gallery',
-			path: 'slideshows/gallery',
-			element: <></>,
+			key: 'media-playlist',
+			path: 'media-playlist/playlists',
+			element: <MediaPlaylistsPage />,
 		},
 		{
-			key: 'slideshow',
-			path: 'slideshow/playlists',
-			element: <SlideshowsPage />,
+			key: 'media-playlist-detail',
+			path: 'media-playlist/playlists/:id',
+			element: <MediaPlaylistDetailPage />,
 		},
 		{
-			key: 'slideshow-detail',
-			path: 'slideshow/:id',
-			element: <SlideshowDetailPage />,
+			key: 'media-playlist-gallery',
+			path: 'media-playlist/gallery',
+			element: <MediaListPage />,
 		},
 		{
 			key: 'themes',

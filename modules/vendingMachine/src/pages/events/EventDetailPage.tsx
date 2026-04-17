@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router';
 
 import { DetailControlPanel } from '@/components/ControlPanel';
 import { PageContainer } from '@/components/PageContainer';
-import { Slideshow } from '@/features/slideshow/types';
+import { Slideshow } from '@/features/mediaPlaylist/types';
 import { useEventDetail } from '@/features/events';
 import { EventGameConfig } from '@/features/events/components/EventDetailDrawer/EventGameConfig';
 import { EventKioskList } from '@/features/events/components/EventDetailDrawer/EventKioskList';
@@ -30,8 +30,8 @@ export const EventDetailPage: React.FC = () => {
 	const [eventKiosks, setEventKiosks] = useState<Kiosk[]>(event?.kiosks || []);
 	const [eventTheme, setEventTheme] = useState<Theme | undefined>(event?.theme);
 	const [eventGame, setEventGame] = useState<Game | undefined>(event?.game);
-	const [idlePlaylist, setIdlePlaylist] = useState<Ad | undefined>(event?.idlePlaylist);
-	const [shoppingPlaylist, setShoppingPlaylist] = useState<Ad | undefined>(event?.shoppingPlaylist);
+	const [idlePlaylist, setIdlePlaylist] = useState<Slideshow | undefined>(event?.idlePlaylist);
+	const [shoppingPlaylist, setShoppingPlaylist] = useState<Slideshow | undefined>(event?.shoppingPlaylist);
 	const [kioskSelectModalOpened, setKioskSelectModalOpened] = useState(false);
 	const [productSelectModalOpened, setProductSelectModalOpened] = useState(false);
 

@@ -1,6 +1,6 @@
 import { KioskModel } from '../kioskModels/types';
 import { KioskSetting } from '../kioskSettings';
-import { Slideshow } from '../slideshow/types';
+import { Slideshow } from '../mediaPlaylist/types';
 
 import type { Game } from '../games/types';
 import type { Theme } from '../themes/types';

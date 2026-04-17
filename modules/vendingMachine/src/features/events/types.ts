@@ -1,4 +1,4 @@
-import { Slideshow } from '../slideshow/types';
+import { Slideshow } from '../mediaPlaylist/types';
 import { Game } from '../games/types';
 import { Kiosk } from '../kiosks/types';
 import { Theme } from '../themes/types';

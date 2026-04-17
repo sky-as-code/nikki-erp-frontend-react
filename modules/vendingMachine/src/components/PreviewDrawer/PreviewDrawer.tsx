@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 
 export type PreviewDrawerProps = {
 	header?: {
-		title?: string;
-		subtitle?: string;
+		title?: React.ReactNode;
+		subtitle?: React.ReactNode;
 		avatar?: React.ReactNode;
 	};
 	opened: boolean;
@@ -61,8 +61,8 @@ export const PreviewDrawer: React.FC<PreviewDrawerProps> = ({
 };
 
 const Header: React.FC<{
-	title?: string;
-	subtitle?: string;
+	title?: React.ReactNode;
+	subtitle?: React.ReactNode;
 	avatar?: React.ReactNode;
 	onViewDetails?: () => void,
 	onClose?: () => void

@@ -8,6 +8,7 @@ import { kioskModelReducer } from './kioskModel';
 import { kioskSettingReducer } from './kioskSetting';
 import { paymentReducer } from './payment';
 import { settingReducer } from './setting';
+import { mediaPlaylistReducer } from './mediaPlaylist';
 import { slideshowReducer } from './slideshow';
 import { themeReducer } from './theme';
 
@@ -15,6 +16,7 @@ import { themeReducer } from './theme';
 export const reducer = combineReducers({
 	...kioskReducer,
 	...slideshowReducer,
+	...mediaPlaylistReducer,
 	...eventReducer,
 	...settingReducer,
 	...kioskModelReducer,
@@ -27,6 +29,7 @@ export const reducer = combineReducers({
 
 export * from './kiosk';
 export * from './slideshow';
+export * from './mediaPlaylist';
 export * from './event';
 export * from './setting';
 export * from './kioskModel';

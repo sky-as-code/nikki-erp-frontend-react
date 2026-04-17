@@ -2,7 +2,7 @@ import { ViewMode } from '@/components/ControlPanel/ControlPanel';
 
 import { Game } from '../games/types';
 import { Kiosk } from '../kiosks/types';
-import { Slideshow } from '../slideshow/types';
+import { Slideshow } from '../mediaPlaylist/types';
 import { Theme } from '../themes/types';
 
 /** Kiosk Setting - nhóm các thông số hoạt động của kiosk (kiosk, trình chiếu, chủ đề, trò chơi, brand...) */
