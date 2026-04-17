@@ -154,27 +154,22 @@ export const DEFAULT_MODULES: Module[] = [
 	},
 	{
 		id: '4',
-		name: 'Vending Machine',
-		slug: 'vending-machine',
-	},
-	{
-		id: '5',
 		name: 'Inventory',
 		slug: 'inventory',
 	},
 	{
-		id: '6',
+		id: '5',
 		name: 'Sales',
 		slug: 'sales',
 	},
 	{
-		id: '7',
+		id: '6',
 		name: 'Purchase',
 		slug: 'purchase',
 	},
 
 	{
-		id: '8',
+		id: '7',
 		name: 'Drive',
 		slug: 'drive',
 	},

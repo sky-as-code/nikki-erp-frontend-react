@@ -1,2 +1,0 @@
-export { KioskHitMap } from './KioskHitMap';
-

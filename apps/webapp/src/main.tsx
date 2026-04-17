@@ -36,12 +36,6 @@ const microApps: MicroAppMetadata[] = [
 		htmlTag: 'nikkiapp-authorize',
 	},
 	{
-		slug: 'nikkierp.vendingMachine',
-		basePath: 'vending-machine',
-		bundleUrl: () => import('@nikkierp/microapp-vending-machine'),
-		htmlTag: 'nikkiapp-vending-machine',
-	},
-	{
 		slug: 'nikkierp.drive',
 		basePath: 'drive',
 		bundleUrl: () => import('@nikkierp/microapp-drive'),

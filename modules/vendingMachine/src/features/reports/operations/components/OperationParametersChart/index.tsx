@@ -1,1 +1,0 @@
-export { OperationParametersChart } from './OperationParametersChart';

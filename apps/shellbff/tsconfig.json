@@ -8,13 +8,13 @@
 		"alwaysStrict": true,
 		"declaration": false,
 		"esModuleInterop": true,
-		"module": "commonjs",
-		"moduleResolution": "node",
+		"module": "node16",
+		"moduleResolution": "node16",
 		"noEmit": false,
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"skipLibCheck": true,
 		"sourceMap": false,
-		"strict": true,
+		"strict": true
 	}
 }
