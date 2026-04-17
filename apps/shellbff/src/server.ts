@@ -1,37 +1,82 @@
 import * as fs from 'node:fs/promises';
+import * as http from 'node:http';
+import * as https from 'node:https';
+import * as net from 'node:net';
 import * as path from 'node:path';
 
 import compression from 'compression';
 import cors from 'cors';
 import express, { Express, NextFunction, Request, RequestHandler, Response } from 'express';
-import * as vite from 'vite';
 
 import { router } from './api';
 import * as config from './config';
 
 
+type ViteDevServer = {
+	middlewares: RequestHandler;
+	transformIndexHtml(url: string, html: string): Promise<string>;
+	ssrFixStacktrace(error: Error): void;
+};
+
+type ViteModule = {
+	createServer(options: Record<string, unknown>): Promise<ViteDevServer>;
+};
+
+let viteModule: ViteModule | undefined;
+
+async function getViteModule(): Promise<ViteModule> {
+	if (!viteModule) {
+		viteModule = (await import('vite')) as unknown as ViteModule;
+	}
+	return viteModule;
+}
+
+
 (async () => {
-	const server = await createServer();
+	let port: string;
+	let protocol: string;
+	const isHttpsEnabled = config.getBffConfig('HTTPS_ENABLED') === 'true';
+	const app = express();
+	const server = await createServer(app, isHttpsEnabled);
+
+	if (isHttpsEnabled) {
+		port = config.mustGetBffConfig('HTTPS_PORT');
+		protocol = 'https';
+	}
+	else {
+		port = config.mustGetBffConfig('HTTP_PORT');
+		protocol = 'http';
+	}
+
 	const host = config.getBffConfig('HTTP_HOST');
-	const port = config.mustGetBffConfig('HTTP_PORT');
 	const bindAddress = host ? `${host}:${port}` : port;
+
 	server.listen(bindAddress, () => {
-		console.log(`Shell BFF Server running on http://${host || 'localhost'}:${port}`);
+		console.log(`Shell BFF Server running on ${protocol}://${host || 'localhost'}:${port}`);
 	});
 })();
 
-async function createServer(): Promise<Express> {
+async function createServer(app: Express, isHttpsEnabled: boolean): Promise<net.Server> {
 	console.log('Client Root Path:', config.clientRootPath);
-	const app = express();
+
+	let server: net.Server;
+	if (isHttpsEnabled) {
+		const httpsCert = await config.mustReadFileVar('HTTPS_CERTIFICATE_FILE');
+		const httpsKey = await config.mustReadFileVar('HTTPS_PRIVATE_KEY_FILE');
+		server = https.createServer({ key: httpsKey, cert: httpsCert }, app);
+	}
+	else {
+		server = http.createServer(app);
+	}
 
 	// CORS middleware - allow all origins
 	app.use(cors());
 
 	app.use('/api/config', router);
 
-	let viteServer: vite.ViteDevServer | undefined;
+	let viteServer: ViteDevServer | undefined;
 	if (config.isLocal) {
-		viteServer = await initViteServer(app);
+		viteServer = await initViteServer(app, server);
 	}
 	else {
 		initStaticServer(app);
@@ -39,12 +84,14 @@ async function createServer(): Promise<Express> {
 
 	app.use(renderIndexHtml(viteServer));
 
-	return app;
+	return server;
 };
 
-async function initViteServer(app: Express): Promise<vite.ViteDevServer> {
+async function initViteServer(app: Express, server: net.Server): Promise<ViteDevServer> {
 	console.log('Initializing Vite Server...');
-	const viteServer = await vite.createServer({
+
+	const vite = await getViteModule();
+	const viteServer: any = await vite.createServer({
 		root: config.clientRootPath,
 		logLevel: 'info',
 		server: {
@@ -53,11 +100,14 @@ async function initViteServer(app: Express): Promise<vite.ViteDevServer> {
 				usePolling: true,
 				interval: 100,
 			},
+			allowedHosts: true,
+			hmr: { server },
 		},
 		appType: 'custom',
 	});
 
 	app.use(viteServer.middlewares);
+
 	return viteServer;
 }
 
@@ -72,7 +122,7 @@ function initStaticServer(app: Express): void {
 	);
 }
 
-function renderIndexHtml(viteServer: vite.ViteDevServer | undefined) {
+function renderIndexHtml(viteServer: ViteDevServer | undefined) {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		if (!viteServer) {
 			// For static server, also inject clientConfig
@@ -91,7 +141,7 @@ function renderIndexHtml(viteServer: vite.ViteDevServer | undefined) {
 	};
 }
 
-async function renderWithVite(req: Request, res: Response, viteServer: vite.ViteDevServer) {
+async function renderWithVite(req: Request, res: Response, viteServer: ViteDevServer) {
 	const url = req.originalUrl;
 	const html = await readIndexHtml();
 

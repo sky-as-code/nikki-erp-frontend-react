@@ -1,8 +1,0 @@
-.formField > * {
-	margin-top: 0 !important;
-}
-
-.formField label {
-	color: var(--mantine-color-gray-6);
-	font-size: var(--mantine-font-size-sm);
-}

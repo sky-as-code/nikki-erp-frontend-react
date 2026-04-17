@@ -1,1 +1,0 @@
-export { default as paymentSchema } from './payment-schema.json';

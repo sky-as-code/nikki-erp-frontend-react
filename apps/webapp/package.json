@@ -5,7 +5,7 @@
 	"version": "0.0.0",
 	"scripts": {
 		"clean": "rimraf dist",
-		"dev": "bash -c \"NIKKI_BFF_HTTP_PORT=3000 NIKKI_BFF_CLIENT_ROOT_PATH=$(realpath .) ts-node ../shellbff/src/server.ts\"",
+		"dev": "bash -c \"NIKKI_BFF_CLIENT_ROOT_PATH=$(realpath .) ts-node ../shellbff/src/server.ts\"",
 		"build": "npm run clean && npm run build:client && npm run build:server",
 		"build:client": "tsc && vite build --outDir dist",
 		"build:server": "tsc -p tsconfig.server.json",
@@ -28,10 +28,9 @@
 		"@mantine/notifications": "~8.3.5",
 		"@nikkierp/common": "workspace:*",
 		"@nikkierp/microapp-authorize": "workspace:*",
+		"@nikkierp/microapp-drive": "workspace:*",
 		"@nikkierp/microapp-essential": "workspace:*",
 		"@nikkierp/microapp-identity": "workspace:*",
-		"@nikkierp/microapp-drive": "workspace:*",
-		"@nikkierp/microapp-vending-machine": "workspace:*",
 		"@nikkierp/microapp-inventory": "workspace:*",
 		"@nikkierp/nikkiportal-shell": "workspace:*",
 		"@nikkierp/ui": "workspace:*",
@@ -69,7 +68,7 @@
 		"stylelint-config-standard-scss": "~16.0.0",
 		"tailwindcss": "~4.1.16",
 		"typescript": "~5.9.3",
-		"vite": "~7.1.11",
+		"vite": "~8.0.8",
 		"vite-tsconfig-paths": "~5.1.4",
 		"vitest": "~4.0.1"
 	}

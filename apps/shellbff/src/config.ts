@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import * as dotenv from 'dotenv';
@@ -71,4 +72,17 @@ export function mustGetEnvVar(fullKey: string): string {
 		throw new Error(`Missing required environment variable: ${fullKey}`);
 	}
 	return value;
+}
+
+export function mustGetPathVar(key: string): string {
+	const value = getBffConfig(key);
+	if (value.startsWith('/')) {
+		return value;
+	}
+	return path.join(clientRootPath, value);
+}
+
+export function mustReadFileVar(key: string): Promise<string> {
+	const value = mustGetPathVar(key);
+	return fs.readFile(value, 'utf8');
 }
