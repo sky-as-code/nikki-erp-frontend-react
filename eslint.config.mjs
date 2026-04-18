@@ -185,6 +185,7 @@ export default defineConfig([
 				ecmaVersion: 'latest',
 				sourceType: 'module',
 				ecmaFeatures: { jsx: true },
+				tsconfigRootDir: import.meta.dirname,
 			},
 		},
 		linterOptions: { reportUnusedDisableDirectives: true },
