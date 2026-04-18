@@ -4,7 +4,6 @@ import general from './nikki/general.json';
 import identity from './nikki/identity.json';
 import inventory from './nikki/inventory.json';
 import shell from './nikki/shell.json';
-import vendingMachine from './nikki/vendingMachine.json';
 
 
 const vi = {
@@ -15,7 +14,6 @@ const vi = {
 		identity,
 		authorize,
 		inventory,
-		vendingMachine,
 	},
 };
 

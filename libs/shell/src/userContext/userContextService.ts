@@ -176,6 +176,14 @@ export const DEFAULT_MODULES: Module[] = [
 ];
 
 
+export const EXTRA_MODULES: Module[] = [
+	{
+		id: '8',
+		name: 'Vending Machine',
+		slug: 'vending-machine',
+	},
+];
+
 
 const FAKE_USER_CONTEXT: UserContext =  {
 	user: {
@@ -187,7 +195,7 @@ const FAKE_USER_CONTEXT: UserContext =  {
 		id: '1',
 		name: 'Core Mart',
 		slug: 'coremart',
-		modules: DEFAULT_MODULES,
+		modules: [...DEFAULT_MODULES, ...EXTRA_MODULES],
 	}],
 	permissions: {
 		'*': [
