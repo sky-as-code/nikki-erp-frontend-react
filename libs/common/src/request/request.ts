@@ -60,11 +60,12 @@ export function initRequestMaker(opts: RequestMakerOts) {
 
 	api = kyLib.create({
 		prefixUrl: opts.baseUrl,
+		// Không set Content-Type mặc định: Ky tự gán `application/json` khi dùng option `json`
+		// (xem Ky constructor). Nếu gán sẵn `application/json`, POST `body: FormData` vẫn kèm
+		// header JSON → server 400; Ky chỉ tự xóa khi input là `Request`, không phải chuỗi URL.
 		headers: {
 			Accept: 'application/json',
-			'Content-Type': 'application/json',
 		},
-		// use a hook to add the authorization header before each request
 		hooks: {
 			beforeRequest: [
 				(request: KyRequest) => {
@@ -72,8 +73,9 @@ export function initRequestMaker(opts: RequestMakerOts) {
 						const token = getToken();
 						request.headers.set('Authorization', `${tokenType} ${token}`);
 					}
-					if (request.body instanceof FormData && !request.headers.get('Content-Type')) {
-						request.headers.set('Content-Type', 'multipart/form-data');
+					if (request.body instanceof FormData) {
+						request.headers.delete('Content-Type');
+						request.headers.delete('content-type');
 					}
 				},
 			],
