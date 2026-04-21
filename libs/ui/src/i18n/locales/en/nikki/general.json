@@ -6,6 +6,7 @@
 		"back": "Back",
 		"create": "Create",
 		"update": "Update",
+		"rename": "Rename",
 		"delete": "Delete",
 		"archive": "Archive",
 		"edit": "Edit",
@@ -31,7 +32,8 @@
 		"today": "Today",
 		"viewDetails": "View Details",
 		"apply": "Apply",
-		"restore": "Restore"
+		"restore": "Restore",
+		"download": "Download"
 	},
 	"selected": "Selected",
 	"boolean": {
