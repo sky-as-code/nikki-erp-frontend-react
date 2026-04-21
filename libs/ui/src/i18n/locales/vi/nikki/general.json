@@ -6,6 +6,7 @@
 		"back": "Quay lại",
 		"create": "Tạo",
 		"update": "Cập nhật",
+		"rename": "Đổi tên",
 		"delete": "Xóa",
 		"archive": "Lưu trữ",
 		"edit": "Chỉnh sửa",
@@ -31,7 +32,8 @@
 		"today": "Hôm nay",
 		"viewDetails": "Xem chi tiết",
 		"apply": "Áp dụng",
-		"restore": "Khôi phục"
+		"restore": "Khôi phục",
+		"download": "Tải xuống"
 	},
 	"selected": "Đã chọn",
 	"boolean": {
