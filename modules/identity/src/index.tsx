@@ -1,3 +1,5 @@
+import { SchemaRegisterOptions, schemaRegistry } from '@nikkierp/common/dynamic_model';
+import { RequestMaker } from '@nikkierp/common/request';
 import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
 import { ACTIONS, RESOURCES } from '@nikkierp/shell/userContext';
 import { useSetMenuBarItems } from '@nikkierp/ui/appState/layoutSlice';
@@ -8,22 +10,20 @@ import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, MicroAppRouter,
 } from '@nikkierp/ui/microApp';
+import React from 'react';
 import { Navigate } from 'react-router';
 
 import { reducer } from './appState';
+import { GROUP_SCHEMA_NAME, ORGANIZATION_SCHEMA_NAME, ORG_UNIT_SCHEMA_NAME, USER_SCHEMA_NAME } from './constants';
 import { useMenuBarItems, useOrgScopeRef } from './hooks';
-import { GroupCreatePage } from './pages/group/GroupCreatePage';
-import { GroupDetailPage } from './pages/group/GroupDetailPage';
+import { GroupFormPage } from './pages/group/GroupFormPage';
 import { GroupListPage } from './pages/group/GroupListPage';
-import { HierarchyCreatePage } from './pages/hierarchy/HierarchyCreatePage';
-import { HierarchyDetailPage } from './pages/hierarchy/HierarchyDetailPage';
 import { HierarchyListPage } from './pages/hierarchy/HierarchyListPage';
-import { OrganizationCreatePage } from './pages/organization/OrganizationCreatePage';
-import { OrganizationDetailPage } from './pages/organization/OrganizationDetailPage';
+import { OrgUnitFormPage } from './pages/hierarchy/OrgUnitFormPage';
+import { OrganizationFormPage } from './pages/organization/OrganizationFormPage';
 import { OrganizationListPage } from './pages/organization/OrganizationListPage';
 import { OverviewPage } from './pages/overview/OverviewPage';
-import { UserCreatePage } from './pages/user/UserCreatePage';
-import { UserDetailPage } from './pages/user/UserDetailPage';
+import { UserFormPage } from './pages/user/UserFormPage';
 import { UserListPage } from './pages/user/UserListPage';
 
 
@@ -38,6 +38,11 @@ function Main(props: MicroAppProps) {
 	const menuBarItems = useMenuBarItems(orgContextScope);
 	useSetMenuBarItems(menuBarItems, dispatch);
 
+	// Trick to run once & synchronously
+	React.useMemo(() => {
+		registerModelSchemas();
+	}, []);
+
 	return (
 		<MicroAppProvider {...props}>
 			<MicroAppRouter
@@ -49,22 +54,25 @@ function Main(props: MicroAppProps) {
 				<AppRoutes>
 					<AppRoute index element={<Navigate to='overview' replace />} />
 					<AppRoute path='overview' element={<OverviewPage />} />
-					{/* Users routes */}
-					<AppRoute path='users' element={<PermissionGuard resource={RESOURCES.IDENTITY_USER} action={ACTIONS.VIEW} contextScope={orgContextScope}><UserListPage /></PermissionGuard>} />
-					<AppRoute path='users/create' element={<PermissionGuard resource={RESOURCES.IDENTITY_USER} action={ACTIONS.CREATE} contextScope={orgContextScope}><UserCreatePage /></PermissionGuard>} />
-					<AppRoute path='users/:userId' element={<PermissionGuard resource={RESOURCES.IDENTITY_USER} action={ACTIONS.VIEW} contextScope={orgContextScope}><UserDetailPage /></PermissionGuard>} />
+					{/* Users routes - the create & update form share the same
+					 * `UserFormPage` element mounted under a layout route so the
+					 * form instance persists across the /users/create → /users/:id
+					 * transition, avoiding a visual flash. */}
+					<AppRoute path='users' element={<UserListPage />} />
+					<AppRoute path='users/create' element={<UserFormPage variant='create' />} />
+					<AppRoute path='users/:id' element={<UserFormPage variant='update' />} />
 					{/* Groups routes */}
-					<AppRoute path='groups' element={<PermissionGuard resource={RESOURCES.IDENTITY_GROUP} action={ACTIONS.VIEW} contextScope={orgContextScope}><GroupListPage /></PermissionGuard>} />
-					<AppRoute path='groups/create' element={<PermissionGuard resource={RESOURCES.IDENTITY_GROUP} action={ACTIONS.CREATE} contextScope={orgContextScope}><GroupCreatePage /></PermissionGuard>} />
-					<AppRoute path='groups/:groupId' element={<PermissionGuard resource={RESOURCES.IDENTITY_GROUP} action={ACTIONS.VIEW} contextScope={orgContextScope}><GroupDetailPage /></PermissionGuard>} />
+					<AppRoute path='groups' element={<GroupListPage />} />
+					<AppRoute path='groups/create' element={<GroupFormPage variant='create' />} />
+					<AppRoute path='groups/:groupId' element={<GroupFormPage variant='update' />} />
 					{/* Organizations routes (domain-only; deny in org context by forcing org scope) */}
-					<AppRoute path='organizations' element={<PermissionGuard resource={RESOURCES.IDENTITY_ORGANIZATION} action={ACTIONS.VIEW} contextScope={orgContextScope}><OrganizationListPage /></PermissionGuard>} />
-					<AppRoute path='organizations/:slug' element={<PermissionGuard resource={RESOURCES.IDENTITY_ORGANIZATION} action={ACTIONS.VIEW} contextScope={orgContextScope}><OrganizationDetailPage /></PermissionGuard>} />
-					<AppRoute path='organizations/create' element={<PermissionGuard resource={RESOURCES.IDENTITY_ORGANIZATION} action={ACTIONS.CREATE} contextScope={orgContextScope}><OrganizationCreatePage /></PermissionGuard>} />
+					<AppRoute path='organizations' element={<OrganizationListPage />} />
+					<AppRoute path='organizations/:slug' element={<OrganizationFormPage variant='update' />} />
+					<AppRoute path='organizations/create' element={<OrganizationFormPage variant='create' />} />
 					{/* Hierarchy levels routes */}
-					<AppRoute path='hierarchy-levels' element={<PermissionGuard resource={RESOURCES.IDENTITY_HIERARCHY_LEVEL} action={ACTIONS.VIEW} contextScope={orgContextScope}><HierarchyListPage /></PermissionGuard>} />
-					<AppRoute path='hierarchy-levels/create' element={<PermissionGuard resource={RESOURCES.IDENTITY_HIERARCHY_LEVEL} action={ACTIONS.CREATE} contextScope={orgContextScope}><HierarchyCreatePage /></PermissionGuard>} />
-					<AppRoute path='hierarchy-levels/:hierarchyId' element={<PermissionGuard resource={RESOURCES.IDENTITY_HIERARCHY_LEVEL} action={ACTIONS.VIEW} contextScope={orgContextScope}><HierarchyDetailPage /></PermissionGuard>} />
+					<AppRoute path='hierarchy-levels' element={<HierarchyListPage />} />
+					<AppRoute path='hierarchy-levels/create' element={<OrgUnitFormPage variant='create' />} />
+					<AppRoute path='hierarchy-levels/:hierarchyId' element={<OrgUnitFormPage variant='update' />} />
 				</AppRoutes>
 				{/* <WidgetRoutes>
 						<WidgetRoute name='org-home' Component={OrgHomePage} />
@@ -93,3 +101,27 @@ const bundle: MicroAppBundle = {
 };
 
 export default bundle;
+
+function registerModelSchemas(): void {
+	const baseOpts: Pick<SchemaRegisterOptions, 'requestMaker'> = {
+		requestMaker: RequestMaker.default,
+	};
+
+	schemaRegistry.register([{
+		...baseOpts,
+		schemaName: GROUP_SCHEMA_NAME,
+		resourcePath: 'v1/identity/groups',
+	}, {
+		...baseOpts,
+		schemaName: ORGANIZATION_SCHEMA_NAME,
+		resourcePath: 'v1/identity/organizations',
+	}, {
+		...baseOpts,
+		schemaName: ORG_UNIT_SCHEMA_NAME,
+		resourcePath: 'v1/identity/orgunits',
+	}, {
+		...baseOpts,
+		schemaName: USER_SCHEMA_NAME,
+		resourcePath: 'v1/identity/users',
+	}]);
+}

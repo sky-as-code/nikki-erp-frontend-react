@@ -1,31 +1,26 @@
 import { Breadcrumbs, Stack, Typography } from '@mantine/core';
 import { NotFound, withWindowTitle, LoadingState } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 
 import { selectHierarchyDetail } from '../../appState/hierarchy';
-import { selectUserList } from '../../appState/user';
+import { selectSearchUsers } from '../../appState/user';
 import { ListUser } from '../../components/User';
-import { HierarchyDetailForm } from '../../features/hierarchy/components';
-import { useHierarchyDetailHandlers, useHierarchyUserManagement } from '../../features/hierarchy/hooks';
+import { OrgUnitForm } from '../../features/hierarchy/components';
+import { useHierarchyUserManagement } from '../../features/hierarchy/hooks';
 import { useIdentityPermissions } from '../../hooks';
-import hierarchySchema from '../../schemas/hierarchy-schema.json';
 
 
 export const HierarchyDetailPageBody: React.FC = () => {
 	const { hierarchyId } = useParams();
 	const hierarchyDetail = useMicroAppSelector(selectHierarchyDetail);
-	const users = useMicroAppSelector(selectUserList);
-	const schema = hierarchySchema as ModelSchema;
+	const users = useMicroAppSelector(selectSearchUsers);
 	const { t } = useTranslation();
 	const permissions = useIdentityPermissions();
 	const navigate = useNavigate();
-	const { isLoadingDetail,
-		handleUpdate,
-		handleDelete } = useHierarchyDetailHandlers();
+	const isLoadingDetail = hierarchyDetail?.status;
 	const { isLoadingManageUsers,
 		handleAddUsers,
 		handleRemoveUsers } = useHierarchyUserManagement();
@@ -33,7 +28,7 @@ export const HierarchyDetailPageBody: React.FC = () => {
 	const usersByHierarchy = React.useMemo(() => {
 		if (!hierarchyId || !users.data.length) return [];
 		return users.data.filter((user: any) =>
-			user.hierarchy?.id === hierarchyId,
+			user.orgUnit?.id === hierarchyId,
 		);
 	}, [users, hierarchyId]);
 
@@ -63,13 +58,11 @@ export const HierarchyDetailPageBody: React.FC = () => {
 					</Link>
 				</Typography>
 			</Breadcrumbs>
-			<HierarchyDetailForm
-				schema={schema}
-				hierarchyDetail={hierarchyDetail?.data}
-				onSubmit={handleUpdate}
-				onDelete={handleDelete}
-				canUpdate={permissions.hierarchy.canUpdate}
-				canDelete={permissions.hierarchy.canDelete}
+			<OrgUnitForm
+				variant='update'
+				orgUnitId={hierarchyId}
+				canUpdate={permissions.orgUnit.canUpdate}
+				canDelete={permissions.orgUnit.canDelete}
 			/>
 			<ListUser
 				users={usersByHierarchy}
@@ -79,7 +72,7 @@ export const HierarchyDetailPageBody: React.FC = () => {
 				onRemoveUsers={handleRemoveUsers}
 				title={t('nikki.identity.hierarchy.title')}
 				emptyMessage={t('nikki.identity.hierarchy.messages.noHierarchies')}
-				canManage={permissions.hierarchy.canUpdate}
+				canManage={permissions.orgUnit.canUpdate}
 			/>
 		</Stack>
 	);

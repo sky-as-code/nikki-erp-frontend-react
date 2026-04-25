@@ -21,8 +21,8 @@ import { organizationActions, IdentityDispatch, userActions, groupActions, hiera
 import { selectGroupList } from '../../appState/group';
 import { selectHierarchyList } from '../../appState/hierarchy';
 import { selectOrganizationList } from '../../appState/organization';
-import { selectUserList } from '../../appState/user';
-import { useIdentityPermissions, useOrgScopeRef } from '../../hooks';
+import { selectSearchUsers } from '../../appState/user';
+import { useIdentityPermissions } from '../../hooks';
 
 
 interface StatCardProps {
@@ -108,13 +108,12 @@ function QuickLinkCard({ title, description, icon, color, link }: QuickLinkProps
 
 // eslint-disable-next-line max-lines-per-function
 export const OverviewPageBody: React.FC = () => {
-	const users  = useMicroAppSelector(selectUserList);
+	const users  = useMicroAppSelector(selectSearchUsers);
 	const groups = useMicroAppSelector(selectGroupList);
 	const hierarchies = useMicroAppSelector(selectHierarchyList);
 	const organizations = useMicroAppSelector(selectOrganizationList);
 	const { t } = useTranslation();
 	const activeOrg = useActiveOrgWithDetails();
-	const orgScopeRef = useOrgScopeRef();
 	const permissions = useIdentityPermissions();
 	const dispatch: IdentityDispatch = useMicroAppDispatch();
 
@@ -123,21 +122,20 @@ export const OverviewPageBody: React.FC = () => {
 			dispatch(organizationActions.listOrganizations());
 		}
 		if (permissions.user.canView) {
-			dispatch(userActions.listUsers({ scopeRef: orgScopeRef }));
+			dispatch(userActions.searchUsers({}));
 		}
 		if (permissions.group.canView) {
-			dispatch(groupActions.listGroups({ scopeRef: orgScopeRef }));
+			dispatch(groupActions.listGroups());
 		}
-		if (permissions.hierarchy.canView) {
-			dispatch(hierarchyActions.listHierarchies({ scopeRef: orgScopeRef }));
+		if (permissions.orgUnit.canView) {
+			dispatch(hierarchyActions.listHierarchies());
 		}
 	}, [
 		activeOrg?.id,
-		orgScopeRef,
 		permissions.organization.canView,
 		permissions.user.canView,
 		permissions.group.canView,
-		permissions.hierarchy.canView,
+		permissions.orgUnit.canView,
 	]);
 
 	return (
@@ -175,7 +173,7 @@ export const OverviewPageBody: React.FC = () => {
 							/>
 						</Grid.Col>
 					)}
-					{permissions.hierarchy.canView && (
+					{permissions.orgUnit.canView && (
 						<Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
 							<StatCard
 								title={t('nikki.identity.overview.stats.hierarchyLevels')}
@@ -225,7 +223,7 @@ export const OverviewPageBody: React.FC = () => {
 								/>
 							</Grid.Col>
 						)}
-						{permissions.hierarchy.canView && (
+						{permissions.orgUnit.canView && (
 							<Grid.Col span={{ base: 12, sm: 6 }}>
 								<QuickLinkCard
 									title={t('nikki.identity.overview.quickLinks.hierarchyLevels.title')}

@@ -198,7 +198,7 @@ function getOrganizationReducers(builder: ActionReducerMapBuilder<OrganizationSt
 		.addCase(getOrganization.pending, (state) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			state.detail.data = null;
 		})
 		.addCase(getOrganization.fulfilled, (state, action) => {
 			state.detail.status = 'success';
@@ -207,7 +207,7 @@ function getOrganizationReducers(builder: ActionReducerMapBuilder<OrganizationSt
 		})
 		.addCase(getOrganization.rejected, (state, action) => {
 			state.detail.status = 'error';
-			state.detail.data = undefined;
+			state.detail.data = null;
 			state.detail.error = action.payload || 'Failed to get organization';
 		});
 }
@@ -217,7 +217,7 @@ function createOrganizationReducers(builder: ActionReducerMapBuilder<Organizatio
 		.addCase(createOrganization.pending, (state) => {
 			state.create.status = 'pending';
 			state.create.error = null;
-			state.create.data = undefined;
+			state.create.data = null;
 		})
 		.addCase(createOrganization.fulfilled, (state, action) => {
 			state.create.status = 'success';
@@ -227,7 +227,7 @@ function createOrganizationReducers(builder: ActionReducerMapBuilder<Organizatio
 		.addCase(createOrganization.rejected, (state, action) => {
 			state.create.status = 'error';
 			state.create.error = action.payload || 'Failed to create organization';
-			state.create.data = undefined;
+			state.create.data = null;
 		});
 }
 
@@ -236,7 +236,7 @@ function updateOrganizationReducers(builder: ActionReducerMapBuilder<Organizatio
 		.addCase(updateOrganization.pending, (state) => {
 			state.update.status = 'pending';
 			state.update.error = null;
-			state.update.data = undefined;
+			state.update.data = null;
 		})
 		.addCase(updateOrganization.fulfilled, (state, action) => {
 			state.update.status = 'success';
@@ -249,7 +249,7 @@ function updateOrganizationReducers(builder: ActionReducerMapBuilder<Organizatio
 		.addCase(updateOrganization.rejected, (state, action) => {
 			state.update.status = 'error';
 			state.update.error = action.payload || 'Failed to update organization';
-			state.update.data = undefined;
+			state.update.data = null;
 		});
 }
 
@@ -258,17 +258,17 @@ function deleteOrganizationReducers(builder: ActionReducerMapBuilder<Organizatio
 		.addCase(deleteOrganization.pending, (state) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
-			state.delete.data = undefined;
+			state.delete.data = null;
 		})
 		.addCase(deleteOrganization.fulfilled, (state) => {
 			state.delete.status = 'success';
-			state.detail.data = undefined;
+			state.detail.data = null;
 			state.delete.error = null;
 		})
 		.addCase(deleteOrganization.rejected, (state, action) => {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete organization';
-			state.delete.data = undefined;
+			state.delete.data = null;
 		});
 }
 
@@ -277,7 +277,7 @@ function manageOrganizationUsersReducers(builder: ActionReducerMapBuilder<Organi
 		.addCase(manageOrganizationUsers.pending, (state) => {
 			state.manageUsers.status = 'pending';
 			state.manageUsers.error = null;
-			state.manageUsers.data = undefined;
+			state.manageUsers.data = null;
 		})
 		.addCase(manageOrganizationUsers.fulfilled, (state, action) => {
 			state.manageUsers.status = 'success';
@@ -290,7 +290,7 @@ function manageOrganizationUsersReducers(builder: ActionReducerMapBuilder<Organi
 		.addCase(manageOrganizationUsers.rejected, (state, action) => {
 			state.manageUsers.status = 'error';
 			state.manageUsers.error = action.payload || 'Failed to manage organization users';
-			state.manageUsers.data = undefined;
+			state.manageUsers.data = null;
 		});
 }
 

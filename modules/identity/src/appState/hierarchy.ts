@@ -63,3 +63,12 @@ export const selectManageHierarchyUsers = createSelector(
 	selectHierarchyState,
 	(state) => state.manageUsers,
 );
+
+export const orgUnitActions = hierarchyActions;
+export const selectOrgUnitState = selectHierarchyState;
+export const selectOrgUnitList = selectHierarchyList;
+export const selectOrgUnitDetail = selectHierarchyDetail;
+export const selectCreateOrgUnit = selectCreateHierarchy;
+export const selectUpdateOrgUnit = selectUpdateHierarchy;
+export const selectDeleteOrgUnit = selectDeleteHierarchy;
+export const selectManageOrgUnitUsers = selectManageHierarchyUsers;

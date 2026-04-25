@@ -28,9 +28,9 @@ function buildHierarchyTree(
 	const nodeMap = new Map<string, HierarchyNode>();
 	const rootNodes: HierarchyNode[] = [];
 
-	// Group users by hierarchyId (support both hierarchyId and hierarchy.id)
+	// Group users by orgUnit id.
 	const groupedUsers = usersByHierarchy?.reduce<Record<string, User[]>>((acc, user) => {
-		const hierarchyId = user.hierarchy?.id || user.hierarchy?.id;
+		const hierarchyId = user.orgUnit?.id;
 		if (hierarchyId) {
 			(acc[hierarchyId] ??= []).push(user);
 		}

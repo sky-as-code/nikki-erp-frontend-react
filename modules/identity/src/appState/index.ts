@@ -6,9 +6,10 @@ import { organizationReducer } from './organization';
 import { userReducer } from './user';
 
 
-export { userActions, selectUserState, selectUserList as selectUsers } from './user';
+export { userActions, selectUserState, selectSearchUsers as selectUsers } from './user';
 export { groupActions, selectGroupState, selectGroupList as selectGroups } from './group';
 export { hierarchyActions, selectHierarchyState, selectHierarchyList as selectHierarchies } from './hierarchy';
+export { hierarchyActions as orgUnitActions, selectHierarchyState as selectOrgUnitState, selectHierarchyList as selectOrgUnits } from './hierarchy';
 export { organizationActions, selectOrganizationState, selectOrganizationList as selectOrganizations, selectOrganizationDetail, selectManageOrganizationUsers } from './organization';
 
 export const reducer = combineReducers({

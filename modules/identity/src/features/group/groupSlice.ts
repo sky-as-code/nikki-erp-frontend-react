@@ -15,9 +15,10 @@ import {
 	UpdateGroupRequest,
 	UpdateGroupResponse,
 } from './types';
+import { GROUP_SCHEMA_NAME } from '../../constants';
 
 
-export const SLICE_NAME = 'identity.group';
+export const SLICE_NAME = GROUP_SCHEMA_NAME;
 
 export type GroupState = {
 	detail: ReduxActionState<Group>;
@@ -199,7 +200,7 @@ function getGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 		.addCase(getGroup.pending, (state) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			state.detail.data = null;
 		})
 		.addCase(getGroup.fulfilled, (state, action) => {
 			state.detail.status = 'success';
@@ -208,7 +209,7 @@ function getGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 		})
 		.addCase(getGroup.rejected, (state, action) => {
 			state.detail.status = 'error';
-			state.detail.data = undefined;
+			state.detail.data = null;
 			state.detail.error = action.payload || 'Failed to get group';
 		});
 }
@@ -218,7 +219,7 @@ function createGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 		.addCase(createGroup.pending, (state) => {
 			state.create.status = 'pending';
 			state.create.error = null;
-			state.create.data = undefined;
+			state.create.data = null;
 
 		})
 		.addCase(createGroup.fulfilled, (state, action) => {
@@ -229,7 +230,7 @@ function createGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 		.addCase(createGroup.rejected, (state, action) => {
 			state.create.status = 'error';
 			state.create.error = action.payload || 'Failed to create group';
-			state.create.data = undefined;
+			state.create.data = null;
 		});
 }
 
@@ -238,7 +239,7 @@ function updateGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 		.addCase(updateGroup.pending, (state) => {
 			state.update.status = 'pending';
 			state.update.error = null;
-			state.update.data = undefined;
+			state.update.data = null;
 		})
 		.addCase(updateGroup.fulfilled, (state, action) => {
 			state.update.status = 'success';
@@ -251,7 +252,7 @@ function updateGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 		.addCase(updateGroup.rejected, (state, action) => {
 			state.update.status = 'error';
 			state.update.error = action.payload || 'Failed to update group';
-			state.update.data = undefined;
+			state.update.data = null;
 		});
 }
 
@@ -260,17 +261,17 @@ function deleteGroupReducers(builder: ActionReducerMapBuilder<GroupState>) {
 		.addCase(deleteGroup.pending, (state) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
-			state.delete.data = undefined;
+			state.delete.data = null;
 		})
 		.addCase(deleteGroup.fulfilled, (state) => {
 			state.delete.status = 'success';
-			state.detail.data = undefined;
+			state.detail.data = null;
 			state.delete.error = null;
 		})
 		.addCase(deleteGroup.rejected, (state, action) => {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete group';
-			state.delete.data = undefined;
+			state.delete.data = null;
 		});
 }
 
@@ -279,7 +280,7 @@ function manageUsersReducers(builder: ActionReducerMapBuilder<GroupState>) {
 		.addCase(manageGroupUsers.pending, (state) => {
 			state.manageUsers.status = 'pending';
 			state.manageUsers.error = null;
-			state.manageUsers.data = undefined;
+			state.manageUsers.data = null;
 		})
 		.addCase(manageGroupUsers.fulfilled, (state, action) => {
 			state.manageUsers.status = 'success';
@@ -292,7 +293,7 @@ function manageUsersReducers(builder: ActionReducerMapBuilder<GroupState>) {
 		.addCase(manageGroupUsers.rejected, (state, action) => {
 			state.manageUsers.status = 'error';
 			state.manageUsers.error = action.payload || 'Failed to manage group users';
-			state.manageUsers.data = undefined;
+			state.manageUsers.data = null;
 		});
 }
 

@@ -77,7 +77,7 @@ export function useGroupDetailHandlers() {
 	React.useEffect(() => {
 		if (groupId) {
 			dispatch(groupActions.getGroup({ id: groupId, scopeRef: orgScopeRef }));
-			dispatch(userActions.listUsers({ scopeRef: orgScopeRef }));
+			dispatch(userActions.searchUsers({}));
 		}
 	}, [groupId, dispatch, orgScopeRef]);
 
@@ -106,7 +106,7 @@ export function useGroupUserManagement() {
 				t('nikki.identity.group.messages.manageUsersSuccess'), '',
 			);
 			dispatch(groupActions.resetManageUsers());
-			dispatch(userActions.listUsers({ scopeRef: orgScopeRef }));
+			dispatch(userActions.searchUsers({}));
 		}
 		if (manageUsersCommand.status === 'error') {
 			notification.showError(
