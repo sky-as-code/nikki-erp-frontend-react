@@ -1,26 +1,23 @@
 import { Breadcrumbs, Stack, Typography } from '@mantine/core';
 import { NotFound, withWindowTitle, LoadingState } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 
 import { selectOrganizationDetail } from '../../appState/organization';
-import { OrganizationDetailForm } from '../../features/organization/components';
-import { useOrganizationDetailHandlers } from '../../features/organization/hooks';
+import { OrganizationForm } from '../../features/organization/components';
 import { useIdentityPermissions } from '../../hooks';
-import organizationSchema from '../../schemas/organization-schema.json';
 
 
 export const OrganizationDetailPageBody: React.FC = () => {
+	const { slug } = useParams();
 	const organizationDetail = useMicroAppSelector(selectOrganizationDetail);
-	const schema = organizationSchema as ModelSchema;
 	const { t } = useTranslation();
 	const permissions = useIdentityPermissions();
 	const navigate = useNavigate();
 
-	const { isLoadingDetail, handleUpdate, handleDelete } = useOrganizationDetailHandlers();
+	const isLoadingDetail = organizationDetail?.status;
 
 	const handleGoBack = () => {
 		navigate('..', { relative: 'path' });
@@ -50,11 +47,9 @@ export const OrganizationDetailPageBody: React.FC = () => {
 					</Link>
 				</Typography>
 			</Breadcrumbs>
-			<OrganizationDetailForm
-				schema={schema}
-				organizationDetail={organizationDetail?.data}
-				onSubmit={handleUpdate}
-				onDelete={handleDelete}
+			<OrganizationForm
+				variant='update'
+				slug={slug}
 				canUpdate={permissions.organization.canUpdate}
 				canDelete={permissions.organization.canDelete}
 			/>

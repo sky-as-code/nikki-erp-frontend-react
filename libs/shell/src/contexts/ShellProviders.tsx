@@ -1,4 +1,4 @@
-import { initRequestMaker } from '@nikkierp/common/request';
+import { initRequestMaker, RequestMaker } from '@nikkierp/common/request';
 import { useRoutingAction, useCurrentStoredPath } from '@nikkierp/ui/appState';
 import { resetCurrentPathAction } from '@nikkierp/ui/appState/routingSlice';
 import i18n from '@nikkierp/ui/i18n';
@@ -35,6 +35,14 @@ export function ShellProviders(props: ShellProvidersProps) {
 	});
 
 	const envVars = props.envVars as ShellEnvVars;
+	RequestMaker.initDefault({
+		baseUrl: envVars.BASE_API_URL,
+		auth: {
+			getToken: authService.getAccessToken.bind(authService),
+			restoreSession: authService.restoreAuthSession.bind(authService),
+			clearSession: authService.clearAuthSession.bind(authService),
+		},
+	});
 	initRequestMaker({
 		baseUrl: envVars.BASE_API_URL,
 		auth: {

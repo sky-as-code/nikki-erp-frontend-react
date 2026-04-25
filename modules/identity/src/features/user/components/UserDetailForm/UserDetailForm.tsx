@@ -22,7 +22,6 @@ import { useTranslation } from 'react-i18next';
 import { AvatarProfile } from './AvatarProfile';
 import { ListBadge } from '../../../../components/Badge';
 import { ListActionDetailPage } from '../../../../components/ListActionBar';
-import { useManageOrganizationRemoveUsers } from '../../hooks/useManageOrganizationUsers';
 
 
 interface UserFieldsProps {
@@ -32,21 +31,6 @@ interface UserFieldsProps {
 // eslint-disable-next-line max-lines-per-function
 function UserFields({ userDetail }: UserFieldsProps) {
 	const { t } = useTranslation();
-	const { userOrganizations, onRemoveOrganization } = useManageOrganizationRemoveUsers();
-	const [organizationToRemove, setOrganizationToRemove] = React.useState<
-		{ id: string; name: string; etag: string } | null
-	>(null);
-
-	const handleRemoveClick = (orgId: string, displayName: string, etag: string) => {
-		setOrganizationToRemove({ id: orgId, name: displayName, etag });
-	};
-
-	const handleConfirmRemove = () => {
-		if (organizationToRemove) {
-			onRemoveOrganization(organizationToRemove.id, organizationToRemove.etag);
-			setOrganizationToRemove(null);
-		}
-	};
 
 	return (
 		<Stack gap='md'>
@@ -130,7 +114,7 @@ function UserFields({ userDetail }: UserFieldsProps) {
 				<Text size='sm' fw={500} mb='xs'>
 					{t('nikki.identity.overview.stats.organizations')}
 				</Text>
-				<Stack gap='md'>
+				{/* <Stack gap='md'>
 					{userOrganizations && userOrganizations.length > 0 ? (
 						<Grid gutter='md'>
 							{userOrganizations.map((org) => (
@@ -174,10 +158,10 @@ function UserFields({ userDetail }: UserFieldsProps) {
 							</Stack>
 						</Card>
 					)}
-				</Stack>
+				</Stack> */}
 			</div>
 
-			<ConfirmModal
+			{/* <ConfirmModal
 				opened={organizationToRemove !== null}
 				onClose={() => setOrganizationToRemove(null)}
 				onConfirm={handleConfirmRemove}
@@ -185,7 +169,7 @@ function UserFields({ userDetail }: UserFieldsProps) {
 				message={t('nikki.identity.organization.messages.confirmDeleteUserMessage', {
 					organization: organizationToRemove?.name,
 				}) || `Bạn có chắc chắn muốn xóa người dùng khỏi ${organizationToRemove?.name}?`}
-			/>
+			/> */}
 		</Stack>
 	);
 }

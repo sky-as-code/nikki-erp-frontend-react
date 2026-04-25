@@ -128,9 +128,7 @@ function applyConstraint(
 	fieldSchema: z.ZodTypeAny,
 	constraint: FieldConstraint,
 ): z.ZodTypeAny {
-	const message = constraint.message
-		? extractLabel(constraint.message)
-		: undefined;
+	const message = constraint.message;
 
 	switch (constraint.type) {
 		case 'required':

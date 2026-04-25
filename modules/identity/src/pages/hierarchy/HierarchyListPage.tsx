@@ -1,24 +1,20 @@
-import { Breadcrumbs, Group, Paper, SegmentedControl, Stack, TagsInput, Typography } from '@mantine/core';
+import { Group, Paper, SegmentedControl } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { selectHierarchyList } from '../../appState/hierarchy';
-import { selectUserList } from '../../appState/user';
-import { ListActionListPage } from '../../components/ListActionBar';
+import { selectSearchUsers } from '../../appState/user';
+import { ListPageLayout } from '../../components/ListPageLayout';
 import { HierarchyTable, HierarchyOrgChart } from '../../features/hierarchy/components';
 import { useHierarchyListHandlers } from '../../features/hierarchy/hooks';
 import { useIdentityPermissions } from '../../hooks';
-import hierarchySchema from '../../schemas/hierarchy-schema.json';
 
 
 export function HierarchyListPageBody(): React.ReactNode {
 	const listHierarchy = useMicroAppSelector(selectHierarchyList);
-	const listUser = useMicroAppSelector(selectUserList);
-	const schema = hierarchySchema as ModelSchema;
-	const columns = ['id', 'name', 'createdAt', 'updatedAt'];
+	const listUser = useMicroAppSelector(selectSearchUsers);
 	const [view, setView] = React.useState<'table' | 'orgChart'>('table');
 	const { t } = useTranslation();
 	const isLoading = listHierarchy.status === 'pending' || listUser.status === 'pending';
@@ -27,49 +23,40 @@ export function HierarchyListPageBody(): React.ReactNode {
 	const { handleCreate, handleRefresh } = useHierarchyListHandlers();
 
 	return (
-		<Stack gap='md'>
-			<Group>
-				<Breadcrumbs style={{ minWidth: '30%' }}>
-					<Typography>
-						<h4>{t('nikki.identity.hierarchy.title')}</h4>
-					</Typography>
-				</Breadcrumbs>
-				<TagsInput
-					placeholder={t('nikki.identity.hierarchy.searchPlaceholder')}
-					w='500px'
-				/>
-			</Group>
-			<Group justify='space-between'>
-				<ListActionListPage
-					onCreate={permissions.hierarchy.canCreate ? handleCreate : undefined}
-					onRefresh={handleRefresh}
-				/>
-				<SegmentedControl
-					value={view}
-					onChange={(value) => setView(value as 'table' | 'orgChart')}
-					data={[
-						{ label: 'Table', value: 'table' },
-						{ label: 'Org Chart', value: 'orgChart' },
-					]}
-				/>
-			</Group>
-
-			{view === 'table' ? (
-				<HierarchyTable
-					columns={columns}
-					hierarchies={listHierarchy?.data}
-					isLoading={isLoading}
-					schema={schema}
-				/>
-			) : (
-				<Paper withBorder>
-					<HierarchyOrgChart
-						hierarchies={listHierarchy?.data}
-						usersByHierarchy={listUser?.data}
-					/>
-				</Paper>
+		<ListPageLayout
+			title={t('nikki.identity.hierarchy.title')}
+			searchPlaceholder={t('nikki.identity.hierarchy.searchPlaceholder')}
+			onCreate={permissions.orgUnit.canCreate ? handleCreate : undefined}
+			onRefresh={handleRefresh}
+		>
+			{() => (
+				<>
+					<Group justify='flex-end'>
+						<SegmentedControl
+							value={view}
+							onChange={(value) => setView(value as 'table' | 'orgChart')}
+							data={[
+								{ label: 'Table', value: 'table' },
+								{ label: 'Org Chart', value: 'orgChart' },
+							]}
+						/>
+					</Group>
+					{view === 'table' ? (
+						<HierarchyTable
+							hierarchies={listHierarchy?.data}
+							isLoading={isLoading}
+						/>
+					) : (
+						<Paper withBorder>
+							<HierarchyOrgChart
+								hierarchies={listHierarchy?.data}
+								usersByHierarchy={listUser?.data}
+							/>
+						</Paper>
+					)}
+				</>
 			)}
-		</Stack>
+		</ListPageLayout>
 	);
 }
 

@@ -6,40 +6,14 @@ import { useTranslation } from 'react-i18next';
 
 type ContextScope = { scopeType: PermissionScopeType; scopeRef: string };
 
-function filterMenuByPermissions(
-	configs: MenuBarItem[],
-	contextScope?: ContextScope,
-): MenuBarItem[] {
-	const result: MenuBarItem[] = [];
-
-	for (const config of configs) {
-		const hasAccess = useHasAnyPermission(config.resource!, config.actions, contextScope);
-
-		if (hasAccess) {
-			const item: MenuBarItem = {
-				label: config.label,
-				link: config.link,
-			};
-
-			if (config.items && config.items.length > 0) {
-				const MenuBarItems = filterMenuByPermissions(config.items, contextScope);
-				if (MenuBarItems.length > 0) {
-					item.items = MenuBarItems;
-				}
-			}
-
-			result.push(item);
-		}
-	}
-
-	return result;
-}
-
-
 export function useMenuBarItems(contextScope?: ContextScope): MenuBarItem[] {
 	const { t: translate } = useTranslation();
 
-	const menuBarConfig: MenuBarItem[] = [
+	const items: MenuBarItem[] = [
+		{
+			label: translate('nikki.identity.menu.overview'),
+			link: '/overview',
+		},
 		{
 			label: translate('nikki.identity.menu.users'),
 			link: '/users',
@@ -65,15 +39,6 @@ export function useMenuBarItems(contextScope?: ContextScope): MenuBarItem[] {
 			actions: [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE],
 		},
 	];
-
-	const items: MenuBarItem[] = [];
-
-	items.push({
-		label: translate('nikki.identity.menu.overview'),
-		link: '/overview',
-	});
-
-	items.push(...filterMenuByPermissions(menuBarConfig, contextScope));
 
 	return items;
 }

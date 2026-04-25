@@ -43,12 +43,12 @@ function OverviewPageBody(): React.ReactNode {
 	const orgId = orgSlug === GLOBAL_CONTEXT_SLUG ? null : activeOrg?.id;
 	const permissions = useAuthorizePermissions();
 
-	const resources = useMicroAppSelector(selectResourceList);
-	const actions = useMicroAppSelector(selectActionList);
-	const entitlements = useMicroAppSelector(selectEntitlementList);
-	const roles = useMicroAppSelector(selectRoleList);
-	const roleSuites = useMicroAppSelector(selectRoleSuiteList);
-	const grantRequests = useMicroAppSelector(selectGrantRequestList);
+	const resources = useMicroAppSelector(selectResourceList) as any;
+	const actions = useMicroAppSelector(selectActionList) as any[];
+	const entitlements = useMicroAppSelector(selectEntitlementList) as any[];
+	const roles = useMicroAppSelector(selectRoleList) as any[];
+	const roleSuites = useMicroAppSelector(selectRoleSuiteList) as any[];
+	const grantRequests = useMicroAppSelector(selectGrantRequestList) as any[];
 
 	const pendingRequests = permissions.grantRequest.canView
 		? grantRequests.filter((r: GrantRequest) => r.status === RequestStatus.PENDING)

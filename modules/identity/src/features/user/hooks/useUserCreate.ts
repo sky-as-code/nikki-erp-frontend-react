@@ -10,46 +10,46 @@ import { useOrgScopeRef } from '../../../hooks';
 
 
 export function useUserCreateHandlers() {
-	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const navigate = useNavigate();
-	const { notification } = useUIState();
-	const { t } = useTranslation();
-	const createCommand = useMicroAppSelector(selectCreateUser);
-	const isLoading = createCommand.status === 'pending';
-	const orgScopeRef = useOrgScopeRef();
+	// const dispatch: IdentityDispatch = useMicroAppDispatch();
+	// const navigate = useNavigate();
+	// const { notification } = useUIState();
+	// const { t } = useTranslation();
+	// const createCommand = useMicroAppSelector(selectCreateUser);
+	// const isLoading = createCommand.status === 'pending';
+	// const orgScopeRef = useOrgScopeRef();
 
-	React.useEffect(() => {
-		if (createCommand.status === 'success') {
-			notification.showInfo(
-				t('nikki.identity.user.messages.createSuccess', { name: createCommand.data?.id }), '',
-			);
-			dispatch(userActions.resetCreateUser());
-			navigate('..', { relative: 'path' });
-		}
+	// React.useEffect(() => {
+	// 	if (createCommand.status === 'success') {
+	// 		notification.showInfo(
+	// 			t('nikki.identity.user.messages.createSuccess', { name: createCommand.data?.id }), '',
+	// 		);
+	// 		dispatch(userActions.resetCreateUser());
+	// 		navigate('..', { relative: 'path' });
+	// 	}
 
-		if (createCommand.status === 'error') {
-			notification.showError(
-				t('nikki.identity.user.messages.createError'), '',
-			);
-			dispatch(userActions.resetCreateUser());
-		}
+	// 	if (createCommand.status === 'error') {
+	// 		notification.showError(
+	// 			t('nikki.identity.user.messages.createError'), '',
+	// 		);
+	// 		dispatch(userActions.resetCreateUser());
+	// 	}
 
-	}, [createCommand.status, dispatch, navigate, notification, t]);
+	// }, [createCommand.status, dispatch, navigate, notification, t]);
 
-	const handleCreate = (data: any) => {
-		if (orgScopeRef) {
-			dispatch(userActions.createUser({
-				data: {
-					...data,
-					orgId: orgScopeRef,
-				},
-				scopeRef: orgScopeRef,
-			}));
-		}
-	};
+	// const handleCreate = (data: any) => {
+	// 	if (orgScopeRef) {
+	// 		dispatch(userActions.createUser({
+	// 			data: {
+	// 				...data,
+	// 				orgId: orgScopeRef,
+	// 			},
+	// 			scopeRef: orgScopeRef,
+	// 		}));
+	// 	}
+	// };
 
-	return {
-		isLoading,
-		handleCreate,
-	};
+	// return {
+	// 	isLoading,
+	// 	handleCreate,
+	// };
 }

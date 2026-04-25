@@ -1,31 +1,28 @@
 import { Breadcrumbs, Stack, Typography } from '@mantine/core';
 import { NotFound, withWindowTitle, LoadingState } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { data, Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 
 
 import { selectGroupDetail } from '../../appState/group';
-import { selectUserList } from '../../appState/user';
+import { selectSearchUsers } from '../../appState/user';
 import { ListUser } from '../../components/User';
-import { GroupDetailForm } from '../../features/group/components';
-import { useGroupDetailHandlers, useGroupUserManagement } from '../../features/group/hooks/useGroupDetail';
+import { GroupForm } from '../../features/group/components';
+import { useGroupUserManagement } from '../../features/group/hooks/useGroupDetail';
 import { User } from '../../features/user/types';
 import { useIdentityPermissions } from '../../hooks';
-import groupSchema from '../../schemas/group-schema.json';
 
 
 export const GroupDetailPageBody: React.FC = () => {
 	const { groupId } = useParams();
 	const groupDetail = useMicroAppSelector(selectGroupDetail);
-	const users = useMicroAppSelector(selectUserList);
-	const schema = groupSchema as ModelSchema;
+	const users = useMicroAppSelector(selectSearchUsers);
 	const { t } = useTranslation();
 	const permissions = useIdentityPermissions();
 	const navigate = useNavigate();
-	const { isLoadingDetail, handleUpdate, handleDelete } = useGroupDetailHandlers();
+	const isLoadingDetail = groupDetail?.status;
 	const { isLoadingManageUsers,
 		handleAddUsers,
 		handleRemoveUsers } = useGroupUserManagement();
@@ -63,11 +60,9 @@ export const GroupDetailPageBody: React.FC = () => {
 					</Link>
 				</Typography>
 			</Breadcrumbs>
-			<GroupDetailForm
-				schema={schema}
-				groupDetail={groupDetail?.data}
-				onSubmit={handleUpdate}
-				onDelete={handleDelete}
+			<GroupForm
+				variant='update'
+				groupId={groupId}
 				canUpdate={permissions.group.canUpdate}
 				canDelete={permissions.group.canDelete}
 			/>

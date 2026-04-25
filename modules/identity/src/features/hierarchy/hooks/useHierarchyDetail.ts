@@ -79,7 +79,7 @@ export function useHierarchyDetailHandlers() {
 		if (!hierarchyId) return;
 
 		dispatch(hierarchyActions.getHierarchy({ id: hierarchyId, scopeRef: orgScopeRef }));
-		dispatch(userActions.listUsers({ scopeRef: orgScopeRef }));
+		dispatch(userActions.searchUsers({}));
 	}, [hierarchyId, orgScopeRef, dispatch]);
 
 	return {
@@ -107,7 +107,7 @@ export function useHierarchyUserManagement() {
 			);
 			dispatch(hierarchyActions.resetManageUsers());
 			if (hierarchyDetail?.data.id) {
-				dispatch(userActions.listUsers({ scopeRef: hierarchyDetail.data.id }));
+				dispatch(userActions.searchUsers({}));
 			}
 		}
 		if (manageUsersCommand.status === 'error') {
