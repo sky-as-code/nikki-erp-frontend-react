@@ -1,290 +1,50 @@
-import { baseReduxActionState, ReduxActionState } from '@nikkierp/ui/appState';
-import {
-	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
-} from '@reduxjs/toolkit';
+import * as uiState from '@nikkierp/ui/appState';
+import { createSlice } from '@reduxjs/toolkit';
 
-import { CreateUserResponse, SearchUserResponse, UpdateUserRequest, UpdateUserResponse, User, DeleteUserResponse } from './types';
-import { CreateUserRequest } from './types';
-import { userService } from './userService';
+import * as svc from './userService';
+import { USER_SCHEMA_NAME } from '../../constants';
 
 
-export const SLICE_NAME = 'identity.user';
+export const SLICE_NAME = USER_SCHEMA_NAME;
 
-export type UserState = {
-	detail :ReduxActionState<User>;
-	list: ReduxActionState<User[]>;
-	listAll: ReduxActionState<User[]>;
-	create: ReduxActionState<CreateUserResponse>;
-	update: ReduxActionState<UpdateUserResponse>;
-	delete: ReduxActionState<DeleteUserResponse>;
-};
+export type UserState = uiState.CrudState & uiState.CrudArchivableState;
 
 export const initialState: UserState = {
-	detail: baseReduxActionState,
-	list: { ...baseReduxActionState, data: [] },
-	create: baseReduxActionState,
-	update: baseReduxActionState,
-	delete: baseReduxActionState,
-	listAll: baseReduxActionState,
+	...uiState.initCrudState(),
+	...uiState.initCrudArchivableState(),
 };
-
-export const listUsers = createAsyncThunk<
-	SearchUserResponse,
-	{ scopeRef?: string } | undefined,
-	{ rejectValue: string; state: any }
->(
-	`${SLICE_NAME}/fetchUsers`,
-	async (params, { rejectWithValue }) => {
-		try {
-			const result = await userService.listUsers(params?.scopeRef);
-			return result;
-		}
-		catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'Failed to list users';
-			return rejectWithValue(errorMessage);
-		}
-	},
-);
-
-export const listAllUsers = createAsyncThunk<
-	SearchUserResponse,
-	undefined,
-	{ rejectValue: string; state: any }
->(
-	`${SLICE_NAME}/fetchAllUsers`,
-	async (_, { rejectWithValue }) => {
-		try {
-			const result = await userService.listUsers();
-			return result;
-		}
-		catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'Failed to list all users';
-			return rejectWithValue(errorMessage);
-		}
-	},
-);
-
-export const getUser = createAsyncThunk<
-	User,
-	{ id: string; scopeRef?: string },
-	{ rejectValue: string }
->(
-	`${SLICE_NAME}/fetchUser`,
-	async ({ id, scopeRef }, { rejectWithValue }) => {
-		try {
-			const result = await userService.getUser(id, scopeRef);
-			return result;
-		}
-		catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'Failed to get user';
-			return rejectWithValue(errorMessage);
-		}
-	},
-);
-
-export const createUser = createAsyncThunk<
-	CreateUserResponse,
-	{ data: CreateUserRequest; scopeRef?: string },
-	{ rejectValue: string; state: any }
->(
-	`${SLICE_NAME}/createUser`,
-	async ({ data, scopeRef }, { rejectWithValue }) => {
-		try {
-			const result = await userService.createUser(data, scopeRef);
-			return result;
-		}
-		catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'Failed to create user';
-			return rejectWithValue(errorMessage);
-		}
-	},
-);
-
-export const updateUser = createAsyncThunk<
-	UpdateUserResponse,
-	{ data: UpdateUserRequest; scopeRef?: string },
-	{ rejectValue: string }
->(
-	`${SLICE_NAME}/updateUser`,
-	async ({ data, scopeRef }, { rejectWithValue }) => {
-		try {
-			const result = await userService.updateUser(data, scopeRef);
-			return result;
-		}
-		catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'Failed to update user';
-			return rejectWithValue(errorMessage);
-		}
-	},
-);
-
-export const deleteUser = createAsyncThunk<
-	void,
-	{ id: string; scopeRef?: string },
-	{ rejectValue: string }
->(
-	`${SLICE_NAME}/deleteUser`,
-	async ({ id, scopeRef }, { rejectWithValue }) => {
-		try {
-			await userService.deleteUser(id, scopeRef);
-		}
-		catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
-			return rejectWithValue(errorMessage);
-		}
-	},
-);
 
 const userSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
 	reducers: {
-		setUsers: (state, action: PayloadAction<User[]>) => {
-			state.list.data = action.payload;
-		},
-		resetCreateUser: (state) => {
-			state.create = baseReduxActionState;
-		},
-		resetUpdateUser: (state) => {
-			state.update = baseReduxActionState;
-		},
-		resetDeleteUser: (state) => {
-			state.delete = baseReduxActionState;
-		},
-		resetListAllUsers: (state) => {
-			state.listAll = baseReduxActionState;
-		},
+		resetSetIsArchived: uiState.baseAction.reducerResetState('setIsArchived'),
+		resetCreateUser: uiState.baseAction.reducerResetState('create'),
+		resetDeleteUser: uiState.baseAction.reducerResetState('delete'),
+		resetGetUser: uiState.baseAction.reducerResetState('getOne'),
+		resetSearchUsers: uiState.baseAction.reducerResetState('search'),
+		resetUpdateUser: uiState.baseAction.reducerResetState('update'),
 	},
 	extraReducers: (builder) => {
-		listUsersReducers(builder);
-		getUserReducers(builder);
-		createUserReducers(builder);
-		updateUserReducers(builder);
-		deleteUserReducers(builder);
-		listAllUsersReducers(builder);
+		uiState.buildActionReducer(builder, svc.createUser, 'create');
+		uiState.buildActionReducer(builder, svc.deleteUser, 'delete');
+		uiState.buildActionReducer(builder, svc.getUser, 'getOne');
+		uiState.buildActionReducer(builder, svc.searchUsers, 'search');
+		uiState.buildActionReducer(builder, svc.setUserIsArchived, 'setIsArchived');
+		uiState.buildActionReducer(builder, svc.userExists, 'exists');
+		uiState.buildActionReducer(builder, svc.updateUser, 'update');
 	},
 });
 
-function listUsersReducers(builder: ActionReducerMapBuilder<UserState>) {
-	builder
-		.addCase(listUsers.pending, (state) => {
-			state.list.status = 'pending';
-			state.list.error = null;
-			state.list.data = [];
-		})
-		.addCase(listUsers.fulfilled, (state, action) => {
-			state.list.status = 'success';
-			state.list.data = action.payload.items;
-			state.list.error = null;
-		})
-		.addCase(listUsers.rejected, (state, action) => {
-			state.list.status = 'error';
-			state.list.data = [];
-			state.list.error = action.payload || 'Failed to list users';
-		});
-}
-
-function getUserReducers(builder: ActionReducerMapBuilder<UserState>) {
-	builder
-		.addCase(getUser.pending, (state) => {
-			state.detail.status = 'pending';
-			state.detail.error = null;
-			state.detail.data = undefined;
-		})
-		.addCase(getUser.fulfilled, (state, action) => {
-			state.detail.status = 'success';
-			state.detail.data = action.payload;
-			state.detail.error = null;
-		})
-		.addCase(getUser.rejected, (state, action) => {
-			state.detail.status = 'error';
-			state.detail.data = undefined;
-			state.detail.error = action.payload || 'Failed to get user';
-		});
-}
-
-function createUserReducers(builder: ActionReducerMapBuilder<UserState>) {
-	builder
-		.addCase(createUser.pending, (state) => {
-			state.create.status = 'pending';
-			state.create.error = null;
-			state.create.data = undefined;
-		})
-		.addCase(createUser.fulfilled, (state, action) => {
-			state.create.status = 'success';
-			state.create.data = action.payload;
-			state.create.error = null;
-		})
-		.addCase(createUser.rejected, (state, action) => {
-			state.create.status = 'error';
-			state.create.error = action.payload || 'Failed to create user';
-			state.create.data = undefined;
-		});
-}
-
-function updateUserReducers(builder: ActionReducerMapBuilder<UserState>) {
-	builder
-		.addCase(updateUser.pending, (state) => {
-			state.update.status = 'pending';
-			state.update.error = null;
-			state.update.data = undefined;
-		})
-		.addCase(updateUser.fulfilled, (state, action) => {
-			state.update.status = 'success';
-			if (state.detail.data) {
-				state.detail.data.etag = action.payload.etag;
-				state.detail.data.updatedAt = action.payload.updatedAt;
-			}
-			state.update.error = null;
-		})
-		.addCase(updateUser.rejected, (state, action) => {
-			state.update.status = 'error';
-			state.update.error = action.payload || 'Failed to update user';
-			state.update.data = undefined;
-		});
-}
-
-function deleteUserReducers(builder: ActionReducerMapBuilder<UserState>) {
-	builder
-		.addCase(deleteUser.pending, (state) => {
-			state.delete.status = 'pending';
-			state.delete.error = null;
-			state.delete.data = undefined;
-		})
-		.addCase(deleteUser.fulfilled, (state) => {
-			state.delete.status = 'success';
-			state.detail.data = undefined;
-			state.delete.error = null;
-		})
-		.addCase(deleteUser.rejected, (state, action) => {
-			state.delete.status = 'error';
-			state.delete.error = action.payload || 'Failed to delete user';
-			state.delete.data = undefined;
-		});
-}
-
-function listAllUsersReducers(builder: ActionReducerMapBuilder<UserState>) {
-	builder
-		.addCase(listAllUsers.pending, (state) => {
-			state.listAll.status = 'pending';
-			state.listAll.error = null;
-			state.listAll.data = [];
-		})
-		.addCase(listAllUsers.fulfilled, (state, action) => {
-			state.listAll.status = 'success';
-			state.listAll.data = action.payload.items;
-			state.listAll.error = null;
-		})
-		.addCase(listAllUsers.rejected, (state, action) => {
-			state.listAll.status = 'error';
-			state.listAll.data = [];
-			state.listAll.error = action.payload || 'Failed to list all users';
-		});
-}
-
-// Action creators are generated for each case reducer function
 export const actions = {
 	...userSlice.actions,
+	createUser: svc.createUser,
+	deleteUser: svc.deleteUser,
+	getUser: svc.getUser,
+	searchUsers: svc.searchUsers,
+	setUserIsArchived: svc.setUserIsArchived,
+	userExists: svc.userExists,
+	updateUser: svc.updateUser,
 };
 
 export const { reducer } = userSlice;

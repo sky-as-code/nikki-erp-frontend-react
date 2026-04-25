@@ -46,3 +46,14 @@ export type ManageHierarchyLevelUsersRequest = ManageMembersRequest;
 export type ManageHierarchyLevelUsersResponse = ManageMembersResponse;
 
 export type DeleteHierarchyLevelResponse = DeleteResponse;
+
+// Backward-compatible model rename aliases.
+export type OrgUnitLevel = HierarchyLevel;
+export type CreateOrgUnitLevelRequest = CreateHierarchyLevelRequest;
+export type UpdateOrgUnitLevelRequest = UpdateHierarchyLevelRequest;
+export type SearchOrgUnitLevelResponse = SearchHierarchyLevelResponse;
+export type CreateOrgUnitLevelResponse = CreateHierarchyLevelResponse;
+export type UpdateOrgUnitLevelResponse = UpdateHierarchyLevelResponse;
+export type ManageOrgUnitLevelUsersRequest = ManageHierarchyLevelUsersRequest;
+export type ManageOrgUnitLevelUsersResponse = ManageHierarchyLevelUsersResponse;
+export type DeleteOrgUnitLevelResponse = DeleteHierarchyLevelResponse;

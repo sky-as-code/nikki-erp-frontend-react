@@ -23,14 +23,11 @@ export function AutoField(props: AutoFieldProps) {
 	const ref = React.useRef<HTMLInputElement | null>(null);
 
 	if (!fieldDef) {
+		console.warn(`Unrecognized field: ${props.name}`);
 		return null;
 	}
 
-	if (fieldDef.hidden) {
-		return null;
-	}
-
-	switch (fieldDef.type) {
+	switch (fieldDef.data_type.name) {
 		case 'string':
 			return <TextInputField
 				name={props.name} type='text' autoFocused={props.autoFocused}
@@ -43,19 +40,19 @@ export function AutoField(props: AutoFieldProps) {
 				inputProps={props.inputProps} htmlProps={props.htmlProps}
 				ref={props.ref ?? ref}
 			/>;
-		case 'password':
+		case 'secret':
 			return <PasswordInputField
 				name={props.name} autoFocused={props.autoFocused}
 				inputProps={props.inputProps} htmlProps={props.htmlProps}
 				ref={props.ref ?? ref}
 			/>;
-		case 'integer':
+		case 'int32':
 			return <NumberInputField
 				name={props.name} autoFocused={props.autoFocused}
 				inputProps={props.inputProps as Partial<NumberInputProps>} htmlProps={props.htmlProps}
 				ref={props.ref ?? ref}
 			/>;
-		case 'date':
+		case 'nikkiDate':
 			return <DateInputField
 				name={props.name} autoFocused={props.autoFocused}
 				inputProps={props.inputProps as Partial<DateInputProps>} htmlProps={props.htmlProps}
@@ -63,23 +60,24 @@ export function AutoField(props: AutoFieldProps) {
 			/>;
 		case 'boolean':
 			return <BooleanField name={props.name} inputProps={props.inputProps} />;
-		case 'enum':
-			if (fieldDef.enum) {
+		case 'enumString':
+			if (fieldDef.data_type.options?.enumValues) {
 				return <StaticEnumSelectField
 					name={props.name} autoFocused={props.autoFocused}
 					inputProps={props.inputProps as Partial<SelectProps>} htmlProps={props.htmlProps}
 					ref={props.ref ?? ref}
 				/>;
 			}
-			if (fieldDef.enumSrc) {
-				return <DynamicEnumSelectField
-					name={props.name} autoFocused={props.autoFocused}
-					inputProps={props.inputProps as Partial<SelectProps>} htmlProps={props.htmlProps}
-					ref={props.ref ?? ref}
-				/>;
-			}
+			// if (fieldDef.enumSrc) {
+			// 	return <DynamicEnumSelectField
+			// 		name={props.name} autoFocused={props.autoFocused}
+			// 		inputProps={props.inputProps as Partial<SelectProps>} htmlProps={props.htmlProps}
+			// 		ref={props.ref ?? ref}
+			// 	/>;
+			// }
 			return null;
 		default:
+			console.warn(`Unknown field type: ${fieldDef.data_type.name}`);
 			return null;
 	}
 }
@@ -477,9 +475,10 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 
 	const defaultValue = modelValue?.[name];
 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
-	const selectData = fieldData.fieldDef.enum!.map((opt) => ({
-		value: opt.value,
-		label: translate(extractLabel(opt.label)),
+	const enumValues = fieldData.fieldDef.data_type.options?.enumValues as string[];
+	const selectData = enumValues.map((val) => ({
+		value: val,
+		label: translate(`${fieldData.schemaName}.${fieldData.fieldDef.name}.${val}`),
 	}));
 
 	useAutoFocusById(autoFocused, inputId, formVariant);
@@ -524,58 +523,58 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 
 export type DynamicEnumSelectFieldProps = BaseInputProps<SelectProps>;
 
-export function DynamicEnumSelectField({
-	name, autoFocused, inputProps, htmlProps, ref }: DynamicEnumSelectFieldProps) {
-	const inputId = useId();
-	const fieldData = useFieldData(name);
-	const { t: translate } = useTranslation();
-	const { control, modelValue, modelLoading, formVariant } = useFormField();
+// export function DynamicEnumSelectField({
+// 	name, autoFocused, inputProps, htmlProps, ref }: DynamicEnumSelectFieldProps) {
+// 	const inputId = useId();
+// 	const fieldData = useFieldData(name);
+// 	const { t: translate } = useTranslation();
+// 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
-	if (!fieldData) {
-		return null;
-	}
+// 	if (!fieldData) {
+// 		return null;
+// 	}
 
-	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
-	useAutoFocusById(autoFocused, inputId, formVariant);
+// 	const defaultValue = modelValue?.[name];
+// 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
+// 	useAutoFocusById(autoFocused, inputId, formVariant);
 
-	return (
-		<BaseFieldWrapper
-			inputId={inputId}
-			label={translate(fieldData.label)}
-			description={translate(fieldData.description ?? '')}
-			isRequired={fieldData.isRequired}
-			error={translate(fieldData.error ?? '')}
-		>
-			<Controller
-				name={name}
-				control={control}
-				defaultValue={defaultValue}
-				render={({ field }) => {
-					const value = field.value !== undefined ? field.value : defaultValue;
-					return (
-						<Select
-							id={inputId}
-							// fix: duplicate error
-							// error={fieldData.error}
-							data={[]}
-							value={(value as string) || null}
-							onChange={(val) => {
-								// Transform null or empty string to undefined for optional enum
-								field.onChange(val === null || val === '' ? undefined : val);
-							}}
-							placeholder={fieldData.placeholder || `TODO: Load from ${fieldData.fieldDef.enumSrc?.stateSource}`}
-							disabled={modelLoading}
-							ref={ref}
-							{...htmlProps}
-							{...(defaultInputProps as SelectProps)}
-						/>
-					);
-				}}
-			/>
-		</BaseFieldWrapper>
-	);
-}
+// 	return (
+// 		<BaseFieldWrapper
+// 			inputId={inputId}
+// 			label={translate(fieldData.label)}
+// 			description={translate(fieldData.description ?? '')}
+// 			isRequired={fieldData.isRequired}
+// 			error={translate(fieldData.error ?? '')}
+// 		>
+// 			<Controller
+// 				name={name}
+// 				control={control}
+// 				defaultValue={defaultValue}
+// 				render={({ field }) => {
+// 					const value = field.value !== undefined ? field.value : defaultValue;
+// 					return (
+// 						<Select
+// 							id={inputId}
+// 							// fix: duplicate error
+// 							// error={fieldData.error}
+// 							data={[]}
+// 							value={(value as string) || null}
+// 							onChange={(val) => {
+// 								// Transform null or empty string to undefined for optional enum
+// 								field.onChange(val === null || val === '' ? undefined : val);
+// 							}}
+// 							placeholder={fieldData.placeholder || `TODO: Load from ${fieldData.fieldDef.enumSrc?.stateSource}`}
+// 							disabled={modelLoading}
+// 							ref={ref}
+// 							{...htmlProps}
+// 							{...(defaultInputProps as SelectProps)}
+// 						/>
+// 					);
+// 				}}
+// 			/>
+// 		</BaseFieldWrapper>
+// 	);
+// }
 
 export type BooleanFieldProps = {
 	name: string;

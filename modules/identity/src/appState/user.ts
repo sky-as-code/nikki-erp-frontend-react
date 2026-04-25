@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { reducer, actions, listUsers, getUser, createUser, updateUser, deleteUser, UserState, listAllUsers } from '../features/user/userSlice';
+import { reducer, actions, UserState } from '../features/user/userSlice';
 import { initialState as initialUserState } from '../features/user/userSlice';
 
 
@@ -10,37 +10,14 @@ export const userReducer = {
 	[STATE_KEY]: reducer,
 };
 
-export const userActions = {
-	listUsers,
-	listAllUsers,
-	getUser,
-	createUser,
-	updateUser,
-	deleteUser,
-	...actions,
-};
+export const userActions = actions;
 
 export const selectUserState =
 	(state: { [STATE_KEY]?: UserState }) => state?.[STATE_KEY] ?? initialUserState;
 
-export const selectUserList = createSelector(
-	selectUserState,
-	(state) => state.list,
-);
-
-export const selectUserDetail = createSelector(
-	selectUserState,
-	(state) => state.detail,
-);
-
 export const selectCreateUser = createSelector(
 	selectUserState,
 	(state) => state.create,
-);
-
-export const selectUpdateUser = createSelector(
-	selectUserState,
-	(state) => state.update,
 );
 
 export const selectDeleteUser = createSelector(
@@ -48,7 +25,27 @@ export const selectDeleteUser = createSelector(
 	(state) => state.delete,
 );
 
-export const selectListAllUsers = createSelector(
+export const selectGetUser = createSelector(
 	selectUserState,
-	(state) => state.listAll,
+	(state) => state.getOne,
+);
+
+export const selectSearchUsers = createSelector(
+	selectUserState,
+	(state) => state.search,
+);
+
+export const selectSetUserIsArchived = createSelector(
+	selectUserState,
+	(state) => state.setIsArchived,
+);
+
+export const selectUserExists = createSelector(
+	selectUserState,
+	(state) => state.exists,
+);
+
+export const selectUpdateUser = createSelector(
+	selectUserState,
+	(state) => state.update,
 );

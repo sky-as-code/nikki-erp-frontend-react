@@ -1,21 +1,19 @@
 import { Avatar, Paper } from '@mantine/core';
 import { AutoTable } from '@nikkierp/ui/components';
-import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 
 import { ListBadge, StatusBadge } from '../../../../components/Badge';
 import { StatusConfig } from '../../../../components/Badge/StatusBadge';
+import { USER_SCHEMA_NAME } from '../../../../constants';
 import { User } from '../../types';
 
 
 interface UserTableProps {
-	columns: string[];
 	users: User[];
 	isLoading: boolean;
-	schema: ModelSchema;
 }
 
-export function UserTable({ columns, users, isLoading, schema }: UserTableProps): React.ReactElement {
+export function UserTable({ users, isLoading }: UserTableProps): React.ReactElement {
 	const statusConfig: Record<string, StatusConfig> = {
 		active: { color: 'green', translationKey: 'nikki.identity.user.status.active' },
 		locked: { color: 'red', translationKey: 'nikki.identity.user.status.locked' },
@@ -23,7 +21,7 @@ export function UserTable({ columns, users, isLoading, schema }: UserTableProps)
 	};
 
 	const columnRenderers = {
-		avatar: (row: Record<string, unknown>) => {
+		avatarUrl: (row: Record<string, unknown>) => {
 			const user = row as User;
 			return <Avatar src={user.avatarUrl} name={user.displayName} size={40} radius='xl' />;
 		},
@@ -53,12 +51,11 @@ export function UserTable({ columns, users, isLoading, schema }: UserTableProps)
 	};
 
 	return (
-		<Paper className='p-4'>
+		<Paper className='p-4 overflow-auto'>
 			<AutoTable
-				columns={columns}
+				schemaName={USER_SCHEMA_NAME}
 				columnAsLink='email'
 				data={users}
-				schema={schema}
 				isLoading={isLoading}
 				columnRenderers={columnRenderers}
 			/>

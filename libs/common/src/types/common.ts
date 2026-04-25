@@ -3,23 +3,35 @@ export type ApiResult<T> = {
 	errors?: string[];
 };
 
+/**
+ * @deprecated Use RestCreateResponse instead
+ */
 export interface CreateResponse {
 	id: string;
 	etag: string;
 	createdAt: Date;
 };
 
+/**
+ * @deprecated Use RestMutateResponse instead
+ */
 export interface UpdateResponse {
 	id: string;
 	etag: string;
 	updatedAt: Date;
 };
 
+/**
+ * @deprecated Use RestDeleteResponse instead
+ */
 export interface DeleteResponse {
 	id: string;
 	deletedAt: Date;
 };
 
+/**
+ * @deprecated Use RestSearchResponse instead
+ */
 export interface SearchResponse<T> {
 	items: T[];
 	total: number;
@@ -27,6 +39,9 @@ export interface SearchResponse<T> {
 	size: number;
 };
 
+/**
+ * @deprecated Use RestSearchRequest instead
+ */
 export interface ListQuery {
 	page?: number;
 	pageSize?: number;
@@ -36,6 +51,9 @@ export interface ListQuery {
 	[key: string]: unknown;
 }
 
+/**
+ * @deprecated Use RestSearchResponse instead
+ */
 export interface ListResponse<T> {
 	items: T[];
 	total: number;
@@ -44,6 +62,9 @@ export interface ListResponse<T> {
 	totalPages: number;
 }
 
+/**
+ * @deprecated
+ */
 export interface ManageMembersRequest {
 	id: string;
 	add?: string[];
@@ -51,6 +72,9 @@ export interface ManageMembersRequest {
 	etag: string;
 };
 
+/**
+ * @deprecated Use RestManageM2mResponse instead
+ */
 export interface ManageMembersResponse {
 	id: string;
 	etag: string;

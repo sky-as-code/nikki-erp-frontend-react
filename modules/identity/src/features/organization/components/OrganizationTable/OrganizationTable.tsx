@@ -1,26 +1,23 @@
 import { Paper } from '@mantine/core';
 import { AutoTable } from '@nikkierp/ui/components';
-import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useLocation } from 'react-router';
 
 
 import { StatusConfig, StatusBadge } from '../../../../components/Badge/StatusBadge';
+import { ORGANIZATION_SCHEMA_NAME } from '../../../../constants';
 import { Organization } from '../../types';
 
 
 export interface OrganizationTableProps {
-	columns: string[];
 	organizations: Organization[];
 	isLoading: boolean;
-	schema: ModelSchema;
 }
 
 export function OrganizationTable({
-	columns,
 	organizations,
 	isLoading,
-	schema }: OrganizationTableProps): React.ReactElement {
+}: OrganizationTableProps): React.ReactElement {
 	const statusConfig: Record<string, StatusConfig> = {
 		active: { color: 'green', translationKey: 'nikki.identity.organization.status.active' },
 		inactive: { color: 'gray', translationKey: 'nikki.identity.organization.status.inactive' },
@@ -42,13 +39,12 @@ export function OrganizationTable({
 	return (
 		<Paper className='p-4'>
 			<AutoTable
-				columns={columns}
+				schemaName={ORGANIZATION_SCHEMA_NAME}
 				columnAsLink='displayName'
 				columnAsLinkHref={(row) => `${location.pathname}/${row.slug}`}
 				columnRenderers={columnRenderers}
 				data={organizations}
 				isLoading={isLoading}
-				schema={schema}
 			/>
 		</Paper>
 	);

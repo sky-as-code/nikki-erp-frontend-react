@@ -1,4 +1,4 @@
-import { initRequestMaker } from '@nikkierp/common/request';
+import { initRequestMaker, RequestMaker } from '@nikkierp/common/request';
 import React from 'react';
 
 import { MicroAppStateProvider } from './MicroAppStateProvider';
@@ -28,6 +28,14 @@ export type MicroAppProviderProps = React.PropsWithChildren & MicroAppProps & {
 export const MicroAppProvider: React.FC<MicroAppProviderProps> = (props) => {
 	// If domType=ISOLATED, this will init the request maker.
 	// If domType=SHARED, this will do nothing because Shell already did it.
+	RequestMaker.initDefault({
+		baseUrl: props.config?.apiBaseUrl ?? props.api.defaultBaseUrl,
+		auth: {
+			getToken: props.api.getToken,
+			restoreSession: props.api.restoreSession,
+			clearSession: props.api.clearSession,
+		},
+	});
 	initRequestMaker({
 		baseUrl: props.config?.apiBaseUrl ?? props.api.defaultBaseUrl,
 		auth: {

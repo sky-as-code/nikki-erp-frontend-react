@@ -55,12 +55,16 @@ export const MicroAppStateProvider: React.FC<MicroAppStateProviderProps> = ({ ch
 	);
 };
 
-export type UseStateSelectorFn<T> = <K extends keyof T>(selector: (microRootState: T) => T[K]) => T[K];
+export type UseStateSelectorFn<TState> = <TSelected>(
+	selector: ((microRootState: TState) => TSelected) | null,
+) => TSelected | null;
 
 /**
  * Invokes `selector` with this micro-app's state, which is a subset of the Shell's state.
  */
 export const useMicroAppSelector: UseStateSelectorFn<any> = (selector) => {
+	if (!selector) return null;
+
 	const ctxVal = useMicroAppStateContext();
 	if (!ctxVal) {
 		throw new Error('useMicroAppSelector must be used within MicroAppStateProvider');
@@ -73,6 +77,8 @@ export const useMicroAppSelector: UseStateSelectorFn<any> = (selector) => {
  * Invokes `selector` with the Shell's root state.
  */
 export const useRootSelector: UseStateSelectorFn<any> = (selector) => {
+	if (!selector) return null;
+
 	const ctxVal = useMicroAppStateContext();
 	if (!ctxVal) {
 		throw new Error('useRootSelector must be used within MicroAppStateProvider');

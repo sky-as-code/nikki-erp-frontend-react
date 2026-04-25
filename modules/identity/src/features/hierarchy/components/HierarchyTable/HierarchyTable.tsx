@@ -1,26 +1,23 @@
 import { Paper } from '@mantine/core';
 import { AutoTable } from '@nikkierp/ui/components';
-import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 
+import { ORG_UNIT_SCHEMA_NAME } from '../../../../constants';
 import { HierarchyLevel } from '../../types';
 
 
 interface HierarchyTableProps {
-	columns: string[];
 	hierarchies: HierarchyLevel[];
 	isLoading: boolean;
-	schema: ModelSchema;
 }
 
-export function HierarchyTable({ columns, hierarchies, isLoading, schema }: HierarchyTableProps): React.ReactElement {
+export function HierarchyTable({ hierarchies, isLoading }: HierarchyTableProps): React.ReactElement {
 	return (
 		<Paper className='p-4'>
 			<AutoTable
-				columns={columns}
+				schemaName={ORG_UNIT_SCHEMA_NAME}
 				columnAsLink='name'
 				data={hierarchies}
-				schema={schema}
 				isLoading={isLoading}
 			/>
 		</Paper>

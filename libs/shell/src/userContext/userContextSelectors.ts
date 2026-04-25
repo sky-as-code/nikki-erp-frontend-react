@@ -71,62 +71,6 @@ export const useHasPermission = (
 	return hasPermission(permissions, resource, action, contextScope);
 };
 
-export const useCanAccessModule = (moduleSlug: string) => {
-	const permissions = useSelector(selectPermissions);
-	if (hasFullAccess(permissions)) return true;
-	const moduleResources = Object.entries(RESOURCE_TO_MODULE)
-		.filter(([, slug]) => slug === moduleSlug)
-		.map(([resource]) => resource);
-	if (moduleResources.length === 0) return true;
-	const actionsToCheck = [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE];
-	const moduleAccessMode = MODULE_ACCESS_POLICY[moduleSlug] ?? 'strict_context';
-
-	if (moduleAccessMode === 'any_scope') {
-		return moduleResources.some((resource) =>
-			actionsToCheck.some((action) => hasPermissionAnyScope(permissions, resource, action)),
-		);
-	}
-
-	return moduleResources.some((resource) =>
-		actionsToCheck.some((action) => hasPermission(permissions, resource, action)),
-	);
-};
-
-export const useCanAccessModuleForContext = (
-	moduleSlug: string,
-	orgSlug?: string | null,
-	contextScope?: { scopeType: PermissionScopeType; scopeRef: string },
-) => {
-	const permissions = useSelector(selectPermissions);
-	if (hasFullAccess(permissions)) return true;
-
-	const moduleResources = Object.entries(RESOURCE_TO_MODULE)
-		.filter(([, slug]) => slug === moduleSlug)
-		.map(([resource]) => resource);
-	if (moduleResources.length === 0) return true;
-	const actionsToCheck = [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE];
-	const moduleAccessMode = MODULE_ACCESS_POLICY[moduleSlug] ?? 'strict_context';
-
-	if (orgSlug === GLOBAL_CONTEXT_SLUG) {
-		const globalContextResources = collectSystemContextResources(permissions);
-		const globalContextModuleResources =
-			moduleResources.filter((resource) => globalContextResources.includes(resource));
-		return globalContextModuleResources.some((resource) =>
-			actionsToCheck.some((action) => hasPermission(permissions, resource, action, contextScope)),
-		);
-	}
-
-	if (moduleAccessMode === 'any_scope') {
-		return moduleResources.some((resource) =>
-			actionsToCheck.some((action) => hasPermissionAnyScope(permissions, resource, action)),
-		);
-	}
-
-	return moduleResources.some((resource) =>
-		actionsToCheck.some((action) => hasPermission(permissions, resource, action, contextScope)),
-	);
-};
-
 export const useActiveOrgWithDetails = () => {
 	const { orgSlug } = useActiveOrgModule();
 	return useFindMyOrg(orgSlug ?? '');

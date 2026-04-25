@@ -1,41 +1,25 @@
 import { Stack, Title } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 
-import { IdentityDispatch, hierarchyActions } from '../../appState';
-import { selectHierarchyList } from '../../appState/hierarchy';
-import { HierarchyCreateForm } from '../../features/hierarchy/components';
-import { useHierarchyCreateHandlers } from '../../features/hierarchy/hooks';
-import { useIdentityPermissions, useOrgScopeRef } from '../../hooks';
-import hierarchySchema from '../../schemas/hierarchy-schema.json';
+import { OrgUnitForm } from '../../features/hierarchy/components';
+import { useIdentityPermissions } from '../../hooks';
 
 
 export const HierarchyCreatePageBody: React.FC = () => {
-	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const list  = useMicroAppSelector(selectHierarchyList);
-	const orgScopeRef = useOrgScopeRef();
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const permissions = useIdentityPermissions();
-
-	React.useEffect(() => {
-		dispatch(hierarchyActions.listHierarchies({ scopeRef: orgScopeRef }));
-	}, [dispatch, orgScopeRef]);
-
-	const schema = hierarchySchema as ModelSchema;
-	const {isLoading, onSubmit } = useHierarchyCreateHandlers();
 
 	return (
 		<Stack gap='md'>
 			<Title order={2}>{t('nikki.identity.hierarchy.actions.createNew')}</Title>
-			<HierarchyCreateForm
-				schema={schema}
-				hierarchies={list.data}
-				isCreating={isLoading}
-				onSubmit={onSubmit}
-				canCreate={permissions.hierarchy.canCreate}
+			<OrgUnitForm
+				variant='create'
+				canCreate={permissions.orgUnit.canCreate}
+				onCreateSuccess={(id) => navigate(`../${id}`, { relative: 'path', replace: true })}
 			/>
 		</Stack>
 	);

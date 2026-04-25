@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
 import { IdentityDispatch, userActions } from '../../../appState';
-import { selectDeleteUser, selectUpdateUser, selectUserDetail } from '../../../appState/user';
+import { selectDeleteUser, selectUpdateUser, selectGetUser } from '../../../appState/user';
 import { useOrgScopeRef } from '../../../hooks';
 
 // eslint-disable-next-line max-lines-per-function
@@ -15,7 +15,7 @@ export function useUserDetailHandlers() {
 	const navigate = useNavigate();
 	const { notification } = useUIState();
 	const { t } = useTranslation();
-	const userDetail = useMicroAppSelector(selectUserDetail);
+	const userDetail = useMicroAppSelector(selectGetUser);
 	const scopeRef = useOrgScopeRef();
 
 	const updateCommand = useMicroAppSelector(selectUpdateUser);
@@ -45,7 +45,7 @@ export function useUserDetailHandlers() {
 				t('nikki.identity.user.messages.deleteSuccess'), '',
 			);
 			dispatch(userActions.resetDeleteUser());
-			dispatch(userActions.getUser({ id: userId || '', scopeRef }));
+			dispatch(userActions.getUser({ id: userId || '' }));
 			navigate('..', { relative: 'path' });
 		}
 
@@ -61,23 +61,24 @@ export function useUserDetailHandlers() {
 		if (userDetail?.data.id) {
 			const dataWithTag = { ...data, etag: userDetail.data.etag };
 			dispatch(userActions.updateUser({
-				data: { id: userDetail.data.id, ...dataWithTag },
-				scopeRef,
+				id: userDetail.data.id,
+				etag: userDetail.data.etag,
+				...dataWithTag,
 			}));
 		}
 	};
 
 	const handleDelete = () => {
 		if (userDetail?.data.id) {
-			dispatch(userActions.deleteUser({ id: userDetail.data.id, scopeRef }));
+			dispatch(userActions.deleteUser({ id: userDetail.data.id }));
 		}
 	};
 
 	React.useEffect(() => {
 		if (!userId) return;
 
-		dispatch(userActions.getUser({ id: userId, scopeRef }));
-	}, [userId, dispatch, scopeRef]);
+		dispatch(userActions.getUser({ id: userId }));
+	}, [userId, dispatch]);
 
 	return {
 		isLoadingDetail,

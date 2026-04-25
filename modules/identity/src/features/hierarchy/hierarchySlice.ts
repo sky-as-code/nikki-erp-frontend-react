@@ -202,7 +202,7 @@ function getHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState>) 
 		.addCase(getHierarchy.pending, (state) => {
 			state.detail.status = 'pending';
 			state.detail.error = null;
-			state.detail.data = undefined;
+			state.detail.data = null;
 		})
 		.addCase(getHierarchy.fulfilled, (state, action) => {
 			state.detail.status = 'success';
@@ -211,7 +211,7 @@ function getHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState>) 
 		})
 		.addCase(getHierarchy.rejected, (state, action) => {
 			state.detail.status = 'error';
-			state.detail.data = undefined;
+			state.detail.data = null;
 			state.detail.error = action.payload || 'Failed to get hierarchy';
 		});
 }
@@ -221,7 +221,7 @@ function createHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState
 		.addCase(createHierarchy.pending, (state) => {
 			state.create.status = 'pending';
 			state.create.error = null;
-			state.create.data = undefined;
+			state.create.data = null;
 		})
 		.addCase(createHierarchy.fulfilled, (state, action) => {
 			state.create.status = 'success';
@@ -231,7 +231,7 @@ function createHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState
 		.addCase(createHierarchy.rejected, (state, action) => {
 			state.create.status = 'error';
 			state.create.error = action.payload || 'Failed to create hierarchy';
-			state.create.data = undefined;
+			state.create.data = null;
 		});
 }
 
@@ -240,7 +240,7 @@ function updateHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState
 		.addCase(updateHierarchy.pending, (state) => {
 			state.update.status = 'pending';
 			state.update.error = null;
-			state.update.data = undefined;
+			state.update.data = null;
 		})
 		.addCase(updateHierarchy.fulfilled, (state, action) => {
 			state.update.status = 'success';
@@ -253,7 +253,7 @@ function updateHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState
 		.addCase(updateHierarchy.rejected, (state, action) => {
 			state.update.status = 'error';
 			state.update.error = action.payload || 'Failed to update hierarchy';
-			state.update.data = undefined;
+			state.update.data = null;
 		});
 }
 
@@ -262,17 +262,17 @@ function deleteHierarchyReducers(builder: ActionReducerMapBuilder<HierarchyState
 		.addCase(deleteHierarchy.pending, (state) => {
 			state.delete.status = 'pending';
 			state.delete.error = null;
-			state.delete.data = undefined;
+			state.delete.data = null;
 		})
 		.addCase(deleteHierarchy.fulfilled, (state) => {
 			state.delete.status = 'success';
-			state.detail.data = undefined;
+			state.detail.data = null;
 			state.delete.error = null;
 		})
 		.addCase(deleteHierarchy.rejected, (state, action) => {
 			state.delete.status = 'error';
 			state.delete.error = action.payload || 'Failed to delete hierarchy';
-			state.delete.data = undefined;
+			state.delete.data = null;
 		});
 }
 
@@ -281,7 +281,7 @@ function manageUsersReducers(builder: ActionReducerMapBuilder<HierarchyState>) {
 		.addCase(manageHierarchyUsers.pending, (state) => {
 			state.manageUsers.status = 'pending';
 			state.manageUsers.error = null;
-			state.manageUsers.data = undefined;
+			state.manageUsers.data = null;
 		})
 		.addCase(manageHierarchyUsers.fulfilled, (state, action) => {
 			state.manageUsers.status = 'success';
@@ -294,7 +294,7 @@ function manageUsersReducers(builder: ActionReducerMapBuilder<HierarchyState>) {
 		.addCase(manageHierarchyUsers.rejected, (state, action) => {
 			state.manageUsers.status = 'error';
 			state.manageUsers.error = action.payload || 'Failed to manage users in hierarchy';
-			state.manageUsers.data = undefined;
+			state.manageUsers.data = null;
 		});
 }
 

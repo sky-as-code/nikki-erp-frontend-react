@@ -16,6 +16,8 @@ export function useIdentityPermissions() {
 	return useResourcePermissions({
 		user: { resource: RESOURCES.IDENTITY_USER, contextScope: orgContextScope },
 		group: { resource: RESOURCES.IDENTITY_GROUP, contextScope: orgContextScope },
+		orgUnit: { resource: RESOURCES.IDENTITY_HIERARCHY_LEVEL, contextScope: orgContextScope },
+		// Backward-compatible alias while hierarchy-facing code is migrated.
 		hierarchy: { resource: RESOURCES.IDENTITY_HIERARCHY_LEVEL, contextScope: orgContextScope },
 		// Organization is domain-scoped; when in org context, force an org scope to hide it
 		organization: { resource: RESOURCES.IDENTITY_ORGANIZATION, contextScope: orgContextScope },

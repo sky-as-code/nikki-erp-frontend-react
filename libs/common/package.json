@@ -19,7 +19,8 @@
 		"chart.js": "~4.4.9",
 		"clsx": "~2.1.1",
 		"dayjs": "~1.11.18",
-		"ky": "~1.12.0"
+		"ky": "~1.12.0",
+		"zod": "~4.1.13"
 	},
 	"devDependencies": {
 		"@types/node": "~22.14.1",
@@ -37,7 +38,8 @@
 		".": "./src/index.ts",
 		"./request": "./src/request/index.ts",
 		"./types": "./src/types/index.ts",
-		"./utils": "./src/utils/index.ts"
+		"./utils": "./src/utils/index.ts",
+		"./dynamic_model": "./src/dynamic_model/index.ts"
 	},
 	"files": [
 		"src",

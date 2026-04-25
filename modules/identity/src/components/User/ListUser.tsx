@@ -4,7 +4,6 @@ import { ConfirmModal } from '@nikkierp/ui/components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AddUserModal } from './AddUserModal';
 import { ListUserHeader } from './ListUserHeader';
 import { AvailableUser, UserInGroup } from './types';
 import { UserTableView } from './UserTableView';
@@ -188,16 +187,6 @@ export const ListUser: React.FC<ListUserProps> = ({
 					)}
 				</Stack>
 			</Paper>
-
-			{canManage && <AddUserModal
-				opened={opened}
-				onClose={close}
-				selectOptions={selectOptions}
-				selectedIds={selectedAddUserIds}
-				onSelectedChange={setSelectedAddUserIds}
-				onSubmit={handleAddUsersSubmit}
-				isAdding={isAdding}
-			/>}
 
 			<ConfirmModal
 				opened={confirmOpened}

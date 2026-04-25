@@ -11,6 +11,8 @@
 		"src/**/*",
 		"types/*",
 		"node_modules/vite/types/*",
+		"../../libs/ui/src/global.d.ts",
+		"../../libs/shell/src/global.d.ts"
 	],
 	"exclude": [
 		"node_modules",
