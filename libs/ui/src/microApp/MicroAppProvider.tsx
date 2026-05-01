@@ -1,4 +1,4 @@
-import { initRequestMaker, RequestMaker } from '@nikkierp/common/request';
+import { RequestMaker } from '@nikkierp/common/request';
 import React from 'react';
 
 import { MicroAppStateProvider } from './MicroAppStateProvider';
@@ -31,19 +31,10 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = (props) => {
 	RequestMaker.initDefault({
 		baseUrl: props.config?.apiBaseUrl ?? props.api.defaultBaseUrl,
 		auth: {
-			getToken: props.api.getToken,
-			restoreSession: props.api.restoreSession,
-			clearSession: props.api.clearSession,
+			getToken: props.api.getAccessToken,
 		},
 	});
-	initRequestMaker({
-		baseUrl: props.config?.apiBaseUrl ?? props.api.defaultBaseUrl,
-		auth: {
-			getToken: props.api.getToken,
-			restoreSession: props.api.restoreSession,
-			clearSession: props.api.clearSession,
-		},
-	});
+
 	return (
 		<MicroAppContext.Provider value={{
 			api: props.api,

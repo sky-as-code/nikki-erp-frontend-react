@@ -1,4 +1,4 @@
-import { baseReduxActionState, ReduxActionState } from '@nikkierp/ui/appState';
+import { baseReduxThunkState, ReduxThunkState } from '@nikkierp/ui/appState';
 import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
@@ -20,21 +20,21 @@ import { CreateOrganizationRequest } from './types';
 export const SLICE_NAME = 'identity.organization';
 
 export type OrganizationState = {
-	detail: ReduxActionState<Organization>;
-	list: ReduxActionState<Organization[]>;
-	create: ReduxActionState<CreateOrganizationResponse>;
-	update: ReduxActionState<UpdateOrganizationResponse>;
-	delete: ReduxActionState<DeleteOrganizationResponse>;
-	manageUsers: ReduxActionState<ManageOrganizationUsersResponse>;
+	detail: ReduxThunkState<Organization>;
+	list: ReduxThunkState<Organization[]>;
+	create: ReduxThunkState<CreateOrganizationResponse>;
+	update: ReduxThunkState<UpdateOrganizationResponse>;
+	delete: ReduxThunkState<DeleteOrganizationResponse>;
+	manageUsers: ReduxThunkState<ManageOrganizationUsersResponse>;
 };
 
 export const initialState: OrganizationState = {
-	detail: baseReduxActionState,
-	list: { ...baseReduxActionState, data: [] },
-	create: baseReduxActionState,
-	update: baseReduxActionState,
-	delete: baseReduxActionState,
-	manageUsers: baseReduxActionState,
+	detail: baseReduxThunkState,
+	list: { ...baseReduxThunkState, data: [] },
+	create: baseReduxThunkState,
+	update: baseReduxThunkState,
+	delete: baseReduxThunkState,
+	manageUsers: baseReduxThunkState,
 };
 
 export const listOrganizations = createAsyncThunk<
@@ -152,16 +152,16 @@ const organizationSlice = createSlice({
 			state.list.data = action.payload;
 		},
 		resetCreateOrganization: (state) => {
-			state.create = baseReduxActionState;
+			state.create = baseReduxThunkState;
 		},
 		resetUpdateOrganization: (state) => {
-			state.update = baseReduxActionState;
+			state.update = baseReduxThunkState;
 		},
 		resetDeleteOrganization: (state) => {
-			state.delete = baseReduxActionState;
+			state.delete = baseReduxThunkState;
 		},
 		resetManageOrganizationUsers: (state) => {
-			state.manageUsers = baseReduxActionState;
+			state.manageUsers = baseReduxThunkState;
 		},
 	},
 	extraReducers: (builder) => {

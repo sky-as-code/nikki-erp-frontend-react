@@ -1,4 +1,4 @@
-import { baseReduxActionState, ReduxActionState } from '@nikkierp/ui/appState';
+import { baseReduxThunkState, ReduxThunkState } from '@nikkierp/ui/appState';
 import {
 	ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction,
 } from '@reduxjs/toolkit';
@@ -21,21 +21,21 @@ import { GROUP_SCHEMA_NAME } from '../../constants';
 export const SLICE_NAME = GROUP_SCHEMA_NAME;
 
 export type GroupState = {
-	detail: ReduxActionState<Group>;
-	list: ReduxActionState<Group[]>;
-	create: ReduxActionState<CreateGroupResponse>
-	update: ReduxActionState<UpdateGroupResponse>
-	delete: ReduxActionState<DeleteGroupResponse>
-	manageUsers: ReduxActionState<ManageGroupUsersResponse>
+	detail: ReduxThunkState<Group>;
+	list: ReduxThunkState<Group[]>;
+	create: ReduxThunkState<CreateGroupResponse>
+	update: ReduxThunkState<UpdateGroupResponse>
+	delete: ReduxThunkState<DeleteGroupResponse>
+	manageUsers: ReduxThunkState<ManageGroupUsersResponse>
 };
 
 export const initialState: GroupState = {
-	detail: baseReduxActionState,
-	list: { ...baseReduxActionState, data: [] },
-	create: baseReduxActionState,
-	update: baseReduxActionState,
-	delete: baseReduxActionState,
-	manageUsers: baseReduxActionState,
+	detail: baseReduxThunkState,
+	list: { ...baseReduxThunkState, data: [] },
+	create: baseReduxThunkState,
+	update: baseReduxThunkState,
+	delete: baseReduxThunkState,
+	manageUsers: baseReduxThunkState,
 };
 
 export const listGroups = createAsyncThunk<
@@ -154,16 +154,16 @@ const groupSlice = createSlice({
 			state.list.data = action.payload;
 		},
 		resetCreateGroup: (state) => {
-			state.create = baseReduxActionState;
+			state.create = baseReduxThunkState;
 		},
 		resetUpdateGroup: (state) => {
-			state.update = baseReduxActionState;
+			state.update = baseReduxThunkState;
 		},
 		resetDeleteGroup: (state) => {
-			state.delete = baseReduxActionState;
+			state.delete = baseReduxThunkState;
 		},
 		resetManageUsers: (state) => {
-			state.manageUsers = baseReduxActionState;
+			state.manageUsers = baseReduxThunkState;
 		},
 	},
 	extraReducers: (builder) => {

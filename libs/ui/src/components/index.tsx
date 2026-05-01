@@ -1,4 +1,3 @@
-export * from '../../../../modules/shell/src/components/AuthorizedGuard';
 export * from './Breadcrumbs';
 export * from './Button';
 export * from './form';
