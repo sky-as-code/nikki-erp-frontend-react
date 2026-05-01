@@ -17,35 +17,35 @@ export const selectUserState =
 
 export const selectCreateUser = createSelector(
 	selectUserState,
-	(state) => state.create,
+	(state) => state.createUser,
 );
 
 export const selectDeleteUser = createSelector(
 	selectUserState,
-	(state) => state.delete,
+	(state) => state.deleteUser,
 );
 
 export const selectGetUser = createSelector(
 	selectUserState,
-	(state) => state.getOne,
+	(state) => state.getUser,
 );
 
 export const selectSearchUsers = createSelector(
 	selectUserState,
-	(state) => state.search,
+	(state) => state.searchUsers,
 );
 
 export const selectSetUserIsArchived = createSelector(
 	selectUserState,
-	(state) => state.setIsArchived,
+	(state) => state.setUserIsArchived,
 );
 
 export const selectUserExists = createSelector(
 	selectUserState,
-	(state) => state.exists,
+	(state) => state.userExists,
 );
 
 export const selectUpdateUser = createSelector(
 	selectUserState,
-	(state) => state.update,
+	(state) => state.updateUser,
 );

@@ -1,4 +1,4 @@
-import { baseReduxActionState, ReduxActionState } from '@nikkierp/ui/appState';
+import { baseReduxThunkState, ReduxThunkState } from '@nikkierp/ui/appState';
 import {
 	ActionReducerMapBuilder,
 	createAsyncThunk,
@@ -23,21 +23,21 @@ import {
 export const SLICE_NAME = 'identity.hierarchy';
 
 export type HierarchyState = {
-	detail: ReduxActionState<HierarchyLevel>;
-	list: ReduxActionState<HierarchyLevel[]>;
-	create: ReduxActionState<CreateHierarchyLevelResponse>;
-	update: ReduxActionState<UpdateHierarchyLevelResponse>;
-	delete: ReduxActionState<DeleteHierarchyLevelResponse>;
-	manageUsers: ReduxActionState<ManageHierarchyLevelUsersResponse>;
+	detail: ReduxThunkState<HierarchyLevel>;
+	list: ReduxThunkState<HierarchyLevel[]>;
+	create: ReduxThunkState<CreateHierarchyLevelResponse>;
+	update: ReduxThunkState<UpdateHierarchyLevelResponse>;
+	delete: ReduxThunkState<DeleteHierarchyLevelResponse>;
+	manageUsers: ReduxThunkState<ManageHierarchyLevelUsersResponse>;
 };
 
 export const initialState: HierarchyState = {
-	detail: baseReduxActionState,
-	list: { ...baseReduxActionState, data: [] },
-	create: baseReduxActionState,
-	update: baseReduxActionState,
-	delete: baseReduxActionState,
-	manageUsers: baseReduxActionState,
+	detail: baseReduxThunkState,
+	list: { ...baseReduxThunkState, data: [] },
+	create: baseReduxThunkState,
+	update: baseReduxThunkState,
+	delete: baseReduxThunkState,
+	manageUsers: baseReduxThunkState,
 };
 
 export const listHierarchies = createAsyncThunk<
@@ -156,16 +156,16 @@ const hierarchySlice = createSlice({
 			state.list.data = action.payload;
 		},
 		resetCreateHierarchy: (state) => {
-			state.create = baseReduxActionState;
+			state.create = baseReduxThunkState;
 		},
 		resetUpdateHierarchy: (state) => {
-			state.update = baseReduxActionState;
+			state.update = baseReduxThunkState;
 		},
 		resetDeleteHierarchy: (state) => {
-			state.delete = baseReduxActionState;
+			state.delete = baseReduxThunkState;
 		},
 		resetManageUsers: (state) => {
-			state.manageUsers = baseReduxActionState;
+			state.manageUsers = baseReduxThunkState;
 		},
 	},
 	extraReducers: (builder) => {

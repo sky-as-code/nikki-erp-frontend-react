@@ -1,4 +1,4 @@
-import { initRequestMaker, RequestMaker } from '@nikkierp/common/request';
+import { RequestMaker } from '@nikkierp/common/request';
 import { useRoutingAction, useCurrentStoredPath } from '@nikkierp/ui/appState';
 import { resetCurrentPathAction } from '@nikkierp/ui/appState/routingSlice';
 import i18n from '@nikkierp/ui/i18n';
@@ -8,11 +8,12 @@ import { I18nextProvider } from 'react-i18next';
 import { Provider as ReduxProvider, useDispatch } from 'react-redux';
 import { Location, useLocation, useNavigate } from 'react-router';
 
-import { initAuthService, TokenLocalStorage, TokenSessionStorage } from '@nikkierp/shell/auth';
-import { NikkiAuthenticateStrategy } from '@nikkierp/shell/auth/strategies';
+import * as authN from '@nikkierp/shell/authenticate';
+import { NikkiAuthenticateStrategy } from '@nikkierp/shell/authenticate/strategies';
+
 
 import { store } from '../appState/store';
-import { SessionRestore } from '../auth/SessionRestore';
+import { SessionRestore } from '../authenticate/SessionRestore';
 import { setEnvVarsAction } from '../config/shellConfigSlice';
 import { MicroAppHostProvider } from '../microApp';
 import { ShellEnvVars } from '../types';
@@ -26,9 +27,9 @@ export type ShellProvidersProps = React.PropsWithChildren & {
 
 export function ShellProviders(props: ShellProvidersProps) {
 	const signInStrategy = new NikkiAuthenticateStrategy();
-	const accessTokenStorage = new TokenSessionStorage('nikki_access_token');
-	const refreshTokenStorage = new TokenLocalStorage('nikki_refresh_token');
-	const authService = initAuthService({
+	const accessTokenStorage = new authN.TokenSessionStorage('nikki_access_token');
+	const refreshTokenStorage = new authN.TokenLocalStorage('nikki_refresh_token');
+	authN.initAuthService({
 		strategy: signInStrategy,
 		accessTokenStorage: accessTokenStorage,
 		refreshTokenStorage: refreshTokenStorage,
@@ -38,17 +39,7 @@ export function ShellProviders(props: ShellProvidersProps) {
 	RequestMaker.initDefault({
 		baseUrl: envVars.BASE_API_URL,
 		auth: {
-			getToken: authService.getAccessToken.bind(authService),
-			restoreSession: authService.restoreAuthSession.bind(authService),
-			clearSession: authService.clearAuthSession.bind(authService),
-		},
-	});
-	initRequestMaker({
-		baseUrl: envVars.BASE_API_URL,
-		auth: {
-			getToken: authService.getAccessToken.bind(authService),
-			restoreSession: authService.restoreAuthSession.bind(authService),
-			clearSession: authService.clearAuthSession.bind(authService),
+			getToken: authN.ensureAccessToken,
 		},
 	});
 

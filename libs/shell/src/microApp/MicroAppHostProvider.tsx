@@ -4,7 +4,7 @@ import { useInRouterContext, useLocation, UNSAFE_NavigationContext } from 'react
 
 import { MicroAppManager, MicroAppPack } from './MicroAppManager';
 import { registerReducerFactory } from '../appState/store';
-import { authService } from '../auth';
+import { ensureAccessToken } from '../authenticate/authService';
 import { useShellEnvVars } from '../config';
 
 
@@ -182,12 +182,13 @@ function useRoutingOpts(basePath?: string): MicroAppRoutingOptions {
 
 function useApiOptions(): MicroAppApiOptions {
 	const envVars = useShellEnvVars();
-	const authSvc = authService();
 
 	return {
 		defaultBaseUrl: envVars.BASE_API_URL,
-		getToken: authSvc.getAccessToken.bind(authSvc),
-		restoreSession: authSvc.restoreAuthSession.bind(authSvc),
-		clearSession: authSvc.clearAuthSession.bind(authSvc),
+		getAccessToken: ensureAccessToken,
 	};
 }
+
+// KYC Event: Before or after the re-verification
+// Reverify all customers? - ask Sam & Josh
+// => for manually onboarded customers.

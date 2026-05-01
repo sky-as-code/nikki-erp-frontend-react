@@ -3,7 +3,7 @@ import * as dyn from '@nikkierp/common/dynamic_model';
 import React from 'react';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 
-import { type ReduxActionState } from '../../appState/reduxActionState';
+import { type ReduxThunkState } from '../../appState/reduxActionState';
 import { useDynamicModel } from '../../hooks/useDynamicModel';
 import { useMicroAppDispatch, useMicroAppSelector } from '../../microApp';
 import { LoadingState } from '../Loading';
@@ -65,7 +65,7 @@ export function useFieldData(fieldName: string) {
 	const label = extractLabel(fieldDef.label);
 	const description = fieldDef.description ? extractLabel(fieldDef.description) : undefined;
 	const placeholder = fieldDef.placeholder ? extractLabel(fieldDef.placeholder) : undefined;
-	const isRequired = Boolean(fieldDef['is_required_for_' + formVariant]);
+	const isRequired = Boolean((fieldDef as any)['is_required_for_' + formVariant]);
 	const rawError = errors[fieldName]?.message as string | undefined;
 	// Extract translation key from $ref format if present
 	const error = rawError ? extractTranslationKey(rawError) : undefined;
@@ -283,14 +283,14 @@ export type CrudFormProviderProps = BaseFormProviderProps & {
 	// Redux action to submit form data
 	submitAction: (data: any) => any,
 	// Selector to get state of the submitAction
-	submitActionSelector: (state: any) => ReduxActionState,
+	submitActionSelector: (state: any) => ReduxThunkState,
 };
 
 export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode {
 	const { children } = props;
 	const schemaPack = useDynamicModel(props.schemaName);
 	const modelValue = useMicroAppSelector(props.dataSelector ?? null);
-	const actionState = useMicroAppSelector(props.submitActionSelector) as ReduxActionState;
+	const actionState = useMicroAppSelector(props.submitActionSelector) as ReduxThunkState;
 	const dispatch = useMicroAppDispatch();
 
 	React.useEffect(() => {

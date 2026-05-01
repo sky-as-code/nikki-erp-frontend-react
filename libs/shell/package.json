@@ -87,9 +87,9 @@
 	],
 	"exports": {
 		"./appState": "./src/appState/store.ts",
-		"./auth": "./src/auth/index.ts",
+		"./authenticate": "./src/authenticate/index.ts",
+		"./authenticate/strategies": "./src/authenticate/strategies/index.ts",
 		"./config": "./src/config/index.ts",
-		"./auth/strategies": "./src/auth/strategies/index.ts",
 		"./constants": "./src/constants/index.ts",
 		"./contexts": "./src/contexts/index.tsx",
 		"./microApp": "./src/microApp/index.tsx",
