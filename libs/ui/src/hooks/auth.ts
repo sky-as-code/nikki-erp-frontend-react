@@ -4,7 +4,9 @@ import { useSelector } from 'react-redux';
 import { useIsMicroApp, useRootSelector } from '../microApp';
 
 
-const selectAuthState = (state: any) => state.shellAuth as any;
+const AUTH_SLICE_KEY = 'shell.authenticate';
+
+const selectAuthState = (state: any) => state[AUTH_SLICE_KEY] as any;
 const selectUserContext = (state: any) => state.shellUserContext;
 
 const selectIsAuthenticated = createSelector(

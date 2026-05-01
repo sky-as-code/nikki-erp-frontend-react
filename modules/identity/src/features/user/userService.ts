@@ -5,56 +5,58 @@ import * as t from './types';
 import { USER_SCHEMA_NAME } from '../../constants';
 
 
-export const createUser = uiState.createActionThunk<t.CreateUserResponse, t.CreateUserRequest>(
+export const createUser = uiState.createSchemaThunkPack<t.CreateUserResponse, t.CreateUserRequest, 'createUser'>(
 	USER_SCHEMA_NAME, 'createUser',
 	async function createUserThunk(schema: dyn.SchemaPack, request: t.CreateUserRequest) {
 		return schema.restApi.create(request);
 	},
 );
 
-export const deleteUser = uiState.createActionThunk<t.DeleteUserResponse, t.DeleteUserRequest>(
+export const deleteUser = uiState.createSchemaThunkPack<t.DeleteUserResponse, t.DeleteUserRequest, 'deleteUser'>(
 	USER_SCHEMA_NAME, 'deleteUser',
-	async function deleteUserThunk(schema: dyn.SchemaPack, { id, scopeRef }: { id: string; scopeRef?: string }) {
-		return schema.restApi.delete({ id }, scopeRef);
+	async function deleteUserThunk(schema: dyn.SchemaPack, request: t.DeleteUserRequest) {
+		return schema.restApi.delete(request);
 	},
 );
 
-export const getUserSchema = uiState.createActionThunk<t.GetUserSchemaResponse>(
+export const getUserSchema = uiState.createSchemaThunkPack<t.GetUserSchemaResponse, void, 'getUserSchema'>(
 	USER_SCHEMA_NAME, 'getUserSchema',
 	async function getUserSchemaThunk(schema: dyn.SchemaPack) {
 		return schema.restApi.getModelSchema();
 	},
 );
 
-export const getUser = uiState.createActionThunk<t.GetUserResponse, t.GetUserRequest>(
+export const getUser = uiState.createSchemaThunkPack<t.GetUserResponse, t.GetUserRequest, 'getUser'>(
 	USER_SCHEMA_NAME, 'getUser',
 	async function getUserThunk(schema: dyn.SchemaPack, request: t.GetUserRequest) {
 		return schema.restApi.getOne(request);
 	},
 );
 
-export const searchUsers = uiState.createActionThunk<t.SearchUserResponse, t.SearchUserRequest>(
+export const searchUsers = uiState.createSchemaThunkPack<t.SearchUserResponse, t.SearchUserRequest, 'searchUsers'>(
 	USER_SCHEMA_NAME, 'searchUsers',
 	async function searchUsersThunk(schema: dyn.SchemaPack, request: t.SearchUserRequest) {
 		return schema.restApi.search(request);
 	},
 );
 
-export const setUserIsArchived = uiState.createActionThunk<t.SetUserIsArchivedResponse, t.SetUserIsArchivedRequest>(
+export const setUserIsArchived = uiState.createSchemaThunkPack<
+	t.SetUserIsArchivedResponse, t.SetUserIsArchivedRequest, 'setUserIsArchived'
+>(
 	USER_SCHEMA_NAME, 'setUserIsArchived',
 	async function setUserIsArchivedThunk(schema: dyn.SchemaPack, request: t.SetUserIsArchivedRequest) {
 		return schema.restApi.setIsArchived(request);
 	},
 );
 
-export const userExists = uiState.createActionThunk<t.UserExistsResponse, t.UserExistsRequest>(
+export const userExists = uiState.createSchemaThunkPack<t.UserExistsResponse, t.UserExistsRequest, 'userExists'>(
 	USER_SCHEMA_NAME, 'userExists',
 	async function userExistsThunk(schema: dyn.SchemaPack, request: t.UserExistsRequest) {
 		return schema.restApi.exists(request);
 	},
 );
 
-export const updateUser = uiState.createActionThunk<t.UpdateUserResponse, t.UpdateUserRequest>(
+export const updateUser = uiState.createSchemaThunkPack<t.UpdateUserResponse, t.UpdateUserRequest, 'updateUser'>(
 	USER_SCHEMA_NAME, 'updateUser',
 	async function updateUserThunk(schema: dyn.SchemaPack, request: t.UpdateUserRequest) {
 		return schema.restApi.update(request);
