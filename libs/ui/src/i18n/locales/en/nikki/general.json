@@ -33,7 +33,9 @@
 		"viewDetails": "View Details",
 		"apply": "Apply",
 		"restore": "Restore",
-		"download": "Download"
+		"download": "Download",
+		"preview": "Preview",
+		"viewDetail": "View Detail"
 	},
 	"selected": "Selected",
 	"boolean": {
