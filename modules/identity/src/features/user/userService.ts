@@ -26,10 +26,10 @@ export const getUserSchema = uiState.createSchemaThunkPack<t.GetUserSchemaRespon
 	},
 );
 
-export const getUser = uiState.createSchemaThunkPack<t.GetUserResponse, t.GetUserRequest, 'getUser'>(
-	USER_SCHEMA_NAME, 'getUser',
-	async function getUserThunk(schema: dyn.SchemaPack, request: t.GetUserRequest) {
-		return schema.restApi.getOne(request);
+export const getUserById = uiState.createSchemaThunkPack<t.GetUserResponse, t.GetUserByIdRequest, 'getUserById'>(
+	USER_SCHEMA_NAME, 'getUserById',
+	async function getUserByIdThunk(schema: dyn.SchemaPack, request: t.GetUserByIdRequest) {
+		return schema.restApi.getById(request);
 	},
 );
 

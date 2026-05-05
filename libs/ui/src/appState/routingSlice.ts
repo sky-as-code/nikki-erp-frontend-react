@@ -30,7 +30,8 @@ const routingSlice = createSlice({
 			state.currentPath = actual.currentPath;
 			state.returnTo = actual.returnTo;
 		},
-		tempNavigateTo: (state, action: PayloadAction<string>) => {
+		// Navigates to a path and set the `returnTo` parameter
+		navigateWillReturn: (state, action: PayloadAction<string>) => {
 			const actual = getActualPath();
 			const destPath = parsePath(action.payload);
 			if (!destPath.pathname) {
@@ -57,6 +58,7 @@ const routingSlice = createSlice({
 				to: finalPath,
 			};
 		},
+		// Navigates to a path whose value is URL-encoded (i.e: `returnTo` parameter)
 		navigateReturnTo: (state, action: PayloadAction<string | null | undefined>) => {
 			state.action = 'navigateTo';
 			state.actionUpdatedAt = Date.now();
@@ -64,6 +66,7 @@ const routingSlice = createSlice({
 				to: decodeURIComponent(action.payload ?? '/'),
 			};
 		},
+		// Navigates to a path whose value is not URL-encoded
 		navigateTo: (state, action: PayloadAction<string>) => {
 			state.action = 'navigateTo';
 			state.actionUpdatedAt = Date.now();
@@ -94,14 +97,9 @@ function getActualPath() {
 	};
 }
 
-export const {
-	resetCurrentPath: resetCurrentPathAction,
-	tempNavigateTo: tempNavigateToAction,
-	navigateReturnTo: navigateReturnToAction,
-	navigateTo: navigateToAction,
-	setActiveOrg: setActiveOrgAction,
-	setActiveModule: setActiveModuleAction,
-} = routingSlice.actions;
+export const actions = {
+	...routingSlice.actions,
+};
 
 export const { reducer } = routingSlice;
 

@@ -4,11 +4,11 @@ import React from 'react';
 import { Outlet } from 'react-router';
 
 
-import { LangSwitchDropdown } from '@/components/LangSwitch';
-import { ScrollableContent } from '@/components/ScrollableContent';
-import { ThemeSwitchDropdown } from '@/components/ThemeSwitch';
-
 import classes from './PublicLayout.module.css';
+import { LangSwitchDropdown } from '../../components/LangSwitch';
+import { ScrollableContent } from '../../components/ScrollableContent';
+import { ThemeSwitchDropdown } from '../../components/ThemeSwitch';
+
 
 
 

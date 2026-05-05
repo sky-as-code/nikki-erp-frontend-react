@@ -1,19 +1,16 @@
 import {
-	Avatar,
-	Box,
-	Button,
-	Divider, Drawer, Flex, Stack, Text,
+	Avatar, Box, Button, Divider, Drawer, Flex, Stack, Text,
 } from '@mantine/core';
 import { IconUserFilled, IconX } from '@tabler/icons-react';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
-import { LangSwitchModal } from '@/components/LangSwitch';
-import { ThemeSwitchModal } from '@/components/ThemeSwitch';
-
 import { handleMenuItemClick } from './helpers';
 import { PROFILE_MENU_CONFIG } from './menuConfig';
+import { LangSwitchModal } from '../../components/LangSwitch';
+import { ThemeSwitchModal } from '../../components/ThemeSwitch';
+
 
 
 export const ProfileMenuDrawer: React.FC = () => {

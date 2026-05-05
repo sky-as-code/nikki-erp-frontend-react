@@ -1,14 +1,6 @@
 import {
-	Box,
-	Button,
-	Text,
-	Menu,
-	Image,
-	Stack,
-	Flex,
-	Divider,
+	Anchor, Box, Button, Text, Menu, Image, Stack, Flex, Divider,
 } from '@mantine/core';
-import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { IconDots, IconStarFilled, IconAugmentedReality } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -24,22 +16,26 @@ export const ModuleCard: FC<{ module: any }> = ({ module }) => {
 	const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
 	return (
-		<Stack
+		<Anchor
+			href={`/${orgSlug}/${module.slug}`}
 			className={clsx(classes.moduleCard, isActionMenuOpen && classes.moduleCardHover)}
-			pos='relative' justify='start' align='center' gap={0} w={'100%'}
-			onClick={() => {
+			pos='relative' w='100%' underline='never'
+			onClick={(evt) => {
+				evt.preventDefault();
 				if (orgSlug) {
 					navigate(`/${orgSlug}/${module.slug}`);
 				}
 			}}
 		>
-			<ModuleCardContent
-				module={module}
-				isActionMenuOpen={isActionMenuOpen}
-				setIsActionMenuOpen={setIsActionMenuOpen}
-			/>
-			<ModuleCardFooter module={module} />
-		</Stack>
+			<Stack justify='start' align='center' gap={0} w='100%'>
+				<ModuleCardContent
+					module={module}
+					isActionMenuOpen={isActionMenuOpen}
+					setIsActionMenuOpen={setIsActionMenuOpen}
+				/>
+				<ModuleCardFooter module={module} />
+			</Stack>
+		</Anchor>
 	);
 };
 
@@ -87,7 +83,7 @@ type ModuleCardMenuProps = {
 };
 const ModuleCardMenu: FC<ModuleCardMenuProps> = ({ module, isActionMenuOpen, setIsActionMenuOpen }) => {
 	const { orgSlug } = useActiveOrgModule();
-	const activeOrgSlug = orgSlug ?? GLOBAL_CONTEXT_SLUG;
+	const activeOrgSlug = orgSlug;
 
 	return (
 		<Menu

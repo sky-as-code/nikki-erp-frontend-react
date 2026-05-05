@@ -2,32 +2,37 @@ import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { createSelector } from '@reduxjs/toolkit';
 import { useSelector } from 'react-redux';
 
-import { GLOBAL_CONTEXT_SLUG } from '../constants';
-import {
-	ACTIONS,
-	ACTIONS_FOR_SYSTEM_CONTEXT,
-	MODULE_ACCESS_POLICY,
-	RESOURCE_TO_MODULE,
-	SYSTEM_CONTEXT_RESOURCES,
-} from './permissionConstants';
+// import { GLOBAL_CONTEXT_SLUG } from '../constants';
+// import {
+// 	ACTIONS,
+// 	ACTIONS_FOR_SYSTEM_CONTEXT,
+// 	MODULE_ACCESS_POLICY,
+// 	RESOURCE_TO_MODULE,
+// 	SYSTEM_CONTEXT_RESOURCES,
+// } from './permissionConstants';
 // import { hasFullAccess, hasPermission, hasPermissionAnyScope } from './permissionUtils';
 import { UserContextOrg } from './types';
+import * as svc from './userContextService';
 import { SLICE_NAME, UserContextState } from './userContextSlice';
 
 import type { RootState } from '../appState/store';
 
 
-export const selectUserContext = (state: RootState) => state[SLICE_NAME as keyof RootState] as UserContextState;
+export const selectUserContextState = (state: RootState) => state[SLICE_NAME as keyof RootState] as UserContextState;
+
+export function useGetUserContext() {
+	return svc.getUserContext.useHook();
+}
+
+export const selectGetUserContext = svc.getUserContext.selector;
+
 const selectPermissions = createSelector(
-	selectUserContext,
+	selectUserContextState,
 	(userContext: UserContextState) => userContext.getUserContext.data?.entitlements ?? [],
 );
 const selectMyOrgs = createSelector(
-	selectUserContext,
-	(userContext: UserContextState) => ({
-		orgs: userContext.getUserContext.data?.orgs ?? [] as UserContextOrg[],
-		isLoading: userContext.getUserContext.status === 'pending',
-	}),
+	selectUserContextState,
+	(userContext: UserContextState) => userContext.getUserContext.data?.orgs ?? [] as UserContextOrg[],
 );
 const selectFindMyOrg = createSelector(
 	selectMyOrgs,
@@ -37,10 +42,12 @@ const selectFindMyOrg = createSelector(
 
 const selectFirstOrgSlug = createSelector(
 	selectMyOrgs,
-	(myOrgs) => ({
-		slug: myOrgs.orgs[0]?.slug ?? null as (string | null),
-		isLoading: myOrgs.isLoading,
-	}),
+	(myOrgs) => myOrgs[0]?.slug ?? null as (string | null),
+);
+
+const selectUserContext = createSelector(
+	selectUserContextState,
+	(userContext: UserContextState) => userContext.getUserContext.data ?? null,
 );
 
 export { selectMyOrgs };

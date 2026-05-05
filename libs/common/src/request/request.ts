@@ -1,6 +1,8 @@
 
 import kyLib, { HTTPError } from 'ky';
 
+import { ClientErrors } from '../types/common';
+
 import type { KyInstance, Input, Options, KyRequest } from 'ky';
 
 
@@ -19,27 +21,37 @@ export type RequestMakerOts = {
 export type RequestOptions = Options & {
 	// If true, the request will not include the Authorization header
 	noAuth?: boolean,
+	dedupKey?: string,
 };
 
 type KyFn = KyInstance['get'];
 
 export class RequestMaker {
-	public static default: RequestMaker = new RequestMaker();
+	private static _default: RequestMaker = null!;
 
-	public static initDefault(opts: RequestMakerOts): void {
-		RequestMaker.default.init(opts);
+	public static default(): RequestMaker {
+		if (!RequestMaker._default) {
+			throw new Error('Must call initDefault() before use');
+		}
+		return RequestMaker._default;
 	}
 
-	private api: KyInstance | null = null;
+	public static initDefault(opts: RequestMakerOts): void {
+		RequestMaker._default = new RequestMaker(opts);
+	}
+
+	#api: KyInstance | null = null;
+
+	#dedupMap: Map<string, Promise<any>> = new Map();
 
 	private isRetried = false;
 
-	public init(opts: RequestMakerOts): void {
-		if (this.api) return;
+	public constructor(opts: RequestMakerOts) {
+		if (this.#api) return;
 
 		const { tokenType = 'Bearer', getToken } = opts.auth || {};
 
-		this.api = kyLib.create({
+		this.#api = kyLib.create({
 			prefixUrl: opts.baseUrl,
 			headers: {
 				Accept: 'application/json',
@@ -63,8 +75,8 @@ export class RequestMaker {
 	}
 
 	public ky(): KyInstance {
-		if (!this.api) throw new Error('Must call init() before use');
-		return this.api;
+		if (!this.#api) throw new Error('Must call init() before use');
+		return this.#api;
 	}
 
 	public get<T>(url: Input, options?: RequestOptions): Promise<T> {
@@ -124,12 +136,24 @@ export class RequestMaker {
 	// }
 
 	private async _send<T>(method: keyof KyInstance, url: Input, options?: RequestOptions): Promise<T> {
-		if (!this.api) throw new Error('Must call initRequestMaker() before sending requests');
+		if (!this.#api) throw new Error('Must call initRequestMaker() before sending requests');
 
 		try {
-			const fn = (this.api as any)[method] as KyFn;
-			const data = await fn.call(this.api, url, options).json<T>();
-			return data;
+			const fn = (this.#api as any)[method] as KyFn;
+			const promise = fn.call(this.#api, url, options).json<T>();
+			const dedupKey = options?.dedupKey;
+			if (dedupKey) {
+				if (this.#dedupMap.has(dedupKey)) {
+					// Must have "await" to throw and catch errors
+					return await this.#dedupMap.get(dedupKey)!;
+				}
+				this.#dedupMap.set(dedupKey, promise);
+				promise.finally(() => {
+					this.#dedupMap.delete(dedupKey);
+				});
+			}
+			// Must have "await" to throw and catch errors
+			return await promise;
 		}
 		catch (error) {
 			if (error instanceof HTTPError) {
@@ -138,46 +162,48 @@ export class RequestMaker {
 
 				try {
 					data = await response.json();
+					if (ClientErrors.canConvert(data)) {
+						throw ClientErrors.from(data);
+					}
 				}
 				catch {
 					data = await response.text();
+					throw new Error('Server responded with unrecognized error format: ' + data);
 				}
-
-				if (typeof data === 'string') {
-					throw new Error(data);
-				}
-				throw data;
+			}
+			else if (error instanceof Error) {
+				throw error;
 			}
 
-			throw new Error(error instanceof Error ? error.message : 'Failed to send request to server');
+			throw new Error('Failed to send request to server: ' + String(error));
 		}
 	}
 }
 
 export function ky(): KyInstance | null {
-	return RequestMaker.default.ky();
+	return RequestMaker.default().ky();
 }
 
 export async function get<T>(url: Input, options?: RequestOptions): Promise<T> {
-	return RequestMaker.default.get<T>(url, options);
+	return RequestMaker.default().get<T>(url, options);
 }
 
 export async function post<T>(url: Input, options?: RequestOptions): Promise<T> {
-	return RequestMaker.default.post<T>(url, options);
+	return RequestMaker.default().post<T>(url, options);
 }
 
 export async function put<T>(url: Input, options?: RequestOptions): Promise<T> {
-	return RequestMaker.default.put<T>(url, options);
+	return RequestMaker.default().put<T>(url, options);
 }
 
 export async function patch<T>(url: Input, options?: RequestOptions): Promise<T> {
-	return RequestMaker.default.patch<T>(url, options);
+	return RequestMaker.default().patch<T>(url, options);
 }
 
 export async function del<T>(url: Input, options?: RequestOptions): Promise<T> {
-	return RequestMaker.default.delete<T>(url, options);
+	return RequestMaker.default().delete<T>(url, options);
 }
 
 export async function head<T>(url: Input, options?: RequestOptions): Promise<T> {
-	return RequestMaker.default.head<T>(url, options);
+	return RequestMaker.default().head<T>(url, options);
 }

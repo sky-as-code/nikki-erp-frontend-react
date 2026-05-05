@@ -67,7 +67,7 @@ function NotFoundContent(): React.ReactNode {
 function ActionButtons(): React.ReactNode {
 	const theme = useMantineTheme();
 	const navigate = useNavigate();
-	const { slug: firstOrgSlug } = useFirstOrgSlug();
+	const firstOrgSlug = useFirstOrgSlug();
 
 	const handleGoHome = () => {
 		if (firstOrgSlug) {

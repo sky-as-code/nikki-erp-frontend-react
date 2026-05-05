@@ -14,6 +14,7 @@ type ShellWindow = typeof window & {
 };
 
 export function MicroAppShell({ microApps }: MicroAppShellProps): React.ReactNode {
+
 	return (
 		<ShellProviders
 			microApps={microApps}
@@ -25,4 +26,3 @@ export function MicroAppShell({ microApps }: MicroAppShellProps): React.ReactNod
 		</ShellProviders>
 	);
 }
-

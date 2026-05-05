@@ -1,3 +1,125 @@
+export class ClientErrors {
+	public static canConvert(error: unknown): error is unknown[] {
+		return Array.isArray(error) && error.every(ClientErrorItem.canConvert);
+	}
+
+	public static from(errors: unknown[]): ClientErrors {
+		return new ClientErrors(errors.map(it => new ClientErrorItem(it)));
+	}
+
+	public static containsAuthorizationError(error: unknown): boolean {
+		if (! (error instanceof ClientErrors)) {
+			return false;
+		}
+		for (const item of error.#items) {
+			if (ClientErrorItem.isAuthorizationError(item)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	#items: ClientErrorItem[];
+
+	public constructor(items: ClientErrorItem[]) {
+		this.#items = items;
+	}
+
+	public get items(): ClientErrorItem[] {
+		return this.#items;
+	}
+
+	public get length(): number {
+		return this.#items.length;
+	}
+
+	public get(idx: number): ClientErrorItem | null {
+		return this.#items[idx] ?? null;
+	}
+
+}
+
+export class ClientErrorItem extends Error {
+	public static canConvert(error: unknown): boolean {
+		return (error instanceof ClientErrorItem) ||
+			(typeof error === 'object' && error !== null && 'key' in error && 'message' in error && 'type' in error);
+	}
+
+	public static isAuthorizationError(error: unknown): boolean {
+		return error instanceof ClientErrorItem && error.name === 'authorization';
+	}
+
+	public static isBusinessError(error: unknown): boolean {
+		return error instanceof ClientErrorItem && error.name === 'business';
+	}
+
+	public static isValidationError(error: unknown): boolean {
+		return error instanceof ClientErrorItem && error.name === 'validation';
+	}
+
+	#field?: string;
+	#key: string;
+	#message: string;
+	#type: 'validation' | 'business' | 'authorization';
+
+	/**
+	 * @implements Error
+	 */
+	public get name(): 'validation' | 'business' | 'authorization' {
+		return this.#type;
+	}
+
+	/**
+	 * @implements Error
+	 */
+	public get message(): string {
+		return this.#message;
+	}
+
+	public get field(): string | undefined {
+		return this.#field;
+	}
+
+	public get key(): string {
+		return this.#key;
+	}
+
+	public constructor(error: unknown) {
+		super();
+		if (error instanceof ClientErrorItem) {
+			this.#field = error.#field;
+			this.#key = error.#key;
+			this.#type = error.#type;
+			this.#message = error.#message;
+		}
+		else {
+			this.#field = (error as any).field;
+			this.#key = (error as any).key;
+			this.#message = (error as any).message;
+			this.#type = (error as any).type;
+			const vars = (error as any).vars;
+			if (vars) {
+				this.#message = this.#interpolateMessage(this.#message, vars);
+			}
+		}
+	}
+
+	#interpolateMessage(message: string, vars?: Record<string, unknown>): string {
+		if (!vars) {
+			return message;
+		}
+
+		return message.replace(/\{\{\.(\w+)\}\}/g, (placeholder, key: string): string => {
+			if (!(key in vars)) {
+				return placeholder;
+			}
+
+			const value = vars[key];
+			return value === null || value === undefined ? '' : String(value);
+		});
+	}
+};
+
+
 export type ApiResult<T> = {
 	data?: T;
 	errors?: string[];

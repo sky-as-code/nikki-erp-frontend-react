@@ -1,15 +1,19 @@
 import * as dyn from '@nikkierp/common/dynamic_model';
+import { ClientErrors } from '@nikkierp/common/types';
 import {
 	ActionReducerMapBuilder,
 	AsyncThunk,
 	AsyncThunkConfig,
 	AsyncThunkPayloadCreator,
 	createAsyncThunk,
+	createSelector,
 } from '@reduxjs/toolkit';
 
+import { useSmartSelector } from '../microApp';
 
-export type ReduxActionStatus = 'idle' | 'pending' | 'success' | 'error';
-type ReduxActionThunkConfig = { rejectValue: string };
+
+export type ReduxActionStatus = 'idle' | 'pending' | 'done' | 'error';
+type ReduxActionThunkConfig = { rejectValue: any };
 export type ReduxActionThunkApi<TReturn = any, TArg = any> =
 	Parameters<AsyncThunkPayloadCreator<TReturn, TArg, ReduxActionThunkConfig>>[1];
 type ReduxActionThunkFn<TReturn, TArg> =
@@ -28,8 +32,8 @@ export type CrudState<TModel = Record<string, any>> = {
 	create: ReduxThunkState<dyn.RestCreateResponse>,
 	delete: ReduxThunkState<dyn.RestDeleteResponse>,
 	exists: ReduxThunkState<dyn.RestExistsResponse>,
-	getOne: ReduxThunkState<dyn.RestGetOneResponse>,
-	search: ReduxThunkState<dyn.RestSearchResponse>,
+	getOne: ReduxThunkState<dyn.RestGetOneResponse<any>>,
+	search: ReduxThunkState<dyn.RestSearchResponse<any>>,
 	update: ReduxThunkState<dyn.RestMutateResponse>,
 	byId: Record<string, TModel>;
 };
@@ -59,47 +63,91 @@ export function initCrudArchivableState(): CrudArchivableState {
 	};
 };
 
+/** Value returned from {@link ThunkPack.useHook}. */
+export type ThunkPackHookReturn<TReturn, TArg> = {
+	action: AsyncThunk<TReturn, TArg, { rejectValue: any }>;
+	isLoading: boolean;
+	isDone: boolean;
+	isError: boolean;
+	error: string | null;
+	data: TReturn | null;
+};
+
 export type ThunkPack<TReturn = void, TArg = void, TStateKey extends string = string> = {
 	stateKey: TStateKey;
-	action: AsyncThunk<TReturn, TArg, { rejectValue: string }>;
-	initialState: ReduxThunkState;
+	action: AsyncThunk<TReturn, TArg, { rejectValue: any }>;
+	initialState: ReduxThunkState<TReturn>;
+	selector: (state: any) => ReduxThunkState<TReturn>;
 	resetThunk: (state: any) => void;
 	buildThunkReducers: (builder: ActionReducerMapBuilder<any>) => void;
+	useHook: () => ThunkPackHookReturn<TReturn, TArg>;
 };
 
 export function createSchemaThunkPack<TReturn, TArg, TStateKey extends string>(
-	schemaName: string,
+	sliceName: string,
 	thunkName: TStateKey,
 	serviceFn: SchemaReduxActionThunkFn<TReturn, TArg>,
 ): ThunkPack<TReturn, TArg, TStateKey> {
-	const stateKey = thunkName;
-	const thunk = createSchemaThunk(schemaName, thunkName, serviceFn);
-	return {
-		stateKey,
-		action: thunk,
-		initialState: baseReduxThunkState,
-		resetThunk: buildResetThunkReducer(stateKey),
-		buildThunkReducers(builder: ActionReducerMapBuilder<any>) {
-			buildThunkReducers(builder, thunk, stateKey);
-		},
-	};
+	const thunk = createSchemaThunk(sliceName, thunkName, serviceFn);
+	return buildThunkPack(sliceName, thunkName, thunk);
 }
+
+// export function createSchemaThunkPackForSchema<TReturn, TArg, TStateKey extends string>(
+// 	sliceName: string,
+// 	schemaName: string,
+// 	thunkName: TStateKey,
+// 	serviceFn: SchemaReduxActionThunkFn<TReturn, TArg>,
+// ): ThunkPack<TReturn, TArg, TStateKey> {
+// 	const thunk = createSchemaThunk(schemaName, thunkName, serviceFn);
+// 	return buildThunkPack(sliceName, thunkName, thunk);
+// }
 
 export function createThunkPack<TReturn, TArg, TStateKey extends string>(
 	sliceName: string,
 	thunkName: TStateKey,
 	fn: ReduxActionThunkFn<TReturn, TArg>,
 ): ThunkPack<TReturn, TArg, TStateKey> {
-	const stateKey = thunkName;
 	const thunk = createThunk(sliceName, thunkName, fn);
+	return buildThunkPack(sliceName, thunkName, thunk);
+}
+
+function buildThunkPack<TReturn, TArg, TStateKey extends string>(
+	sliceName: string,
+	stateKey: TStateKey,
+	thunk: AsyncThunk<TReturn, TArg, { rejectValue: any }>,
+): ThunkPack<TReturn, TArg, TStateKey> {
+	const selector = createSelector(
+		(rootState: any) => {
+			return rootState[sliceName];
+		},
+		selectThunkStateFactory(stateKey));
+
 	return {
 		stateKey,
 		action: thunk,
 		initialState: baseReduxThunkState,
+		selector,
 		resetThunk: buildResetThunkReducer(stateKey),
 		buildThunkReducers(builder: ActionReducerMapBuilder<any>) {
 			buildThunkReducers(builder, thunk, stateKey);
 		},
+		useHook() {
+			const thunkState = useSmartSelector(selector) as ReduxThunkState<TReturn>;
+			return {
+				action: thunk,
+				isLoading: thunkState.status === 'pending',
+				isDone: thunkState.status === 'done',
+				isError: thunkState.status === 'error',
+				error: thunkState.error,
+				data: thunkState.data as TReturn | null,
+			};
+		},
+	};
+}
+
+function selectThunkStateFactory(stateKey: string) {
+	return (sliceState: any) => {
+		return sliceState[stateKey] as ReduxThunkState;
 	};
 }
 
@@ -127,7 +175,7 @@ export function buildThunkReducers<
 ) {
 	builder
 		.addCase(thunk.pending, reducerThunkPending(action))
-		.addCase(thunk.fulfilled, reducerThunkSuccess(action))
+		.addCase(thunk.fulfilled, reducerThunkDone(action))
 		.addCase(thunk.rejected, reducerThunkError(action));
 }
 
@@ -140,9 +188,9 @@ function reducerThunkPending(action: string) {
 	};
 }
 
-function reducerThunkSuccess(action: string) {
+function reducerThunkDone(action: string) {
 	return (state: {[key: string]: ReduxThunkState}, param: any) => {
-		state[action].status = 'success';
+		state[action].status = 'done';
 		state[action].data = param.payload;
 		state[action].error = null;
 	};
@@ -161,18 +209,23 @@ export function createSchemaThunk<TReturn=void, TArg=void>(
 	thunkName: string,
 	serviceFn: SchemaReduxActionThunkFn<TReturn, TArg>,
 ) {
-	return createAsyncThunk<TReturn, TArg, { rejectValue: string }>(
+	return createAsyncThunk<TReturn, TArg, { rejectValue: any }>(
 		`${schemaName}/${thunkName}`,
 		async (thunkArgs, thunkApi) => {
 			const { rejectWithValue } = thunkApi;
 			try {
 				const schema = await dyn.schemaRegistry.get(schemaName);
+				if (!schema) {
+					return rejectWithValue(new Error(`Schema ${schemaName} not found. Make sure it is registered with schemaRegistry.register().`));
+				}
 				const result = await serviceFn(schema!, thunkArgs, thunkApi);
 				return result;
 			}
 			catch (error) {
-				const errorMessage = error instanceof Error ? error.message : `Thunk ${schemaName}/${thunkName} failed`;
-				return rejectWithValue(errorMessage);
+				if (error instanceof ClientErrors) {
+					return rejectWithValue(error);
+				}
+				return rejectWithValue(new Error('Unrecognized error pattern: ' + error));
 			}
 		},
 	);
@@ -183,7 +236,7 @@ export function createThunk<TReturn=any, TArg=any>(
 	thunkName: string,
 	fn: ReduxActionThunkFn<TReturn, TArg>,
 ) {
-	return createAsyncThunk<TReturn, TArg, { rejectValue: string }>(
+	return createAsyncThunk<TReturn, TArg, { rejectValue: any }>(
 		`${sliceName}/${thunkName}`,
 		async (thunkArgs, thunkApi) => {
 			const { rejectWithValue } = thunkApi;
@@ -192,8 +245,10 @@ export function createThunk<TReturn=any, TArg=any>(
 				return result;
 			}
 			catch (error) {
-				const errorMessage = error instanceof Error ? error.message : `Thunk ${sliceName}/${thunkName} failed`;
-				return rejectWithValue(errorMessage);
+				if (error instanceof ClientErrors) {
+					return rejectWithValue(error);
+				}
+				return rejectWithValue(new Error('Unrecognized error pattern: ' + error));
 			}
 		},
 	);

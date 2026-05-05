@@ -1,5 +1,4 @@
 import { Button, ButtonProps, Group, Menu } from '@mantine/core';
-import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
 import { MenuBarItem, useMenuBarItems } from '@nikkierp/ui/appState';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { IconChevronDown, IconDots } from '@tabler/icons-react';
@@ -30,7 +29,7 @@ export function MenuBar({ mode = 'horizontal' }: MenuBarProps): React.ReactNode 
 	const menuBarItems = useMenuBarItems();
 	const location = useLocation();
 	const { orgSlug, moduleSlug } = useActiveOrgModule();
-	const activeOrgSlug = orgSlug ?? GLOBAL_CONTEXT_SLUG;
+	const activeOrgSlug = orgSlug;
 	const pathPrefix = `/${activeOrgSlug}/${moduleSlug}`;
 
 	const getPath = (link: string): string => getPathWithPrefix(link, pathPrefix);

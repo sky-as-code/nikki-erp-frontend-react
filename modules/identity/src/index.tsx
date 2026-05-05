@@ -1,6 +1,5 @@
 import { SchemaRegisterOptions, schemaRegistry } from '@nikkierp/common/dynamic_model';
 import { RequestMaker } from '@nikkierp/common/request';
-import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
 import { ACTIONS, RESOURCES } from '@nikkierp/shell/userContext';
 import { useSetMenuBarItems } from '@nikkierp/ui/appState/layoutSlice';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
@@ -13,30 +12,28 @@ import {
 import React from 'react';
 import { Navigate } from 'react-router';
 
-import { reducer } from './appState';
 import { GROUP_SCHEMA_NAME, ORGANIZATION_SCHEMA_NAME, ORG_UNIT_SCHEMA_NAME, USER_SCHEMA_NAME } from './constants';
-import { useMenuBarItems, useOrgScopeRef } from './hooks';
-import { GroupFormPage } from './pages/group/GroupFormPage';
-import { GroupListPage } from './pages/group/GroupListPage';
-import { HierarchyListPage } from './pages/hierarchy/HierarchyListPage';
-import { OrgUnitFormPage } from './pages/hierarchy/OrgUnitFormPage';
-import { OrganizationFormPage } from './pages/organization/OrganizationFormPage';
-import { OrganizationListPage } from './pages/organization/OrganizationListPage';
-import { OverviewPage } from './pages/overview/OverviewPage';
-import { UserFormPage } from './pages/user/UserFormPage';
-import { UserListPage } from './pages/user/UserListPage';
+import { reducer } from './features/user/userSlice';
+// import { reducer } from './appState';
+// import { useMenuBarItems, useOrgScopeRef } from './hooks';
+// import { GroupFormPage } from './pages/group/GroupFormPage';
+// import { GroupListPage } from './pages/group/GroupListPage';
+// import { HierarchyListPage } from './pages/hierarchy/HierarchyListPage';
+// import { OrgUnitFormPage } from './pages/hierarchy/OrgUnitFormPage';
+// import { OrganizationFormPage } from './pages/organization/OrganizationFormPage';
+// import { OrganizationListPage } from './pages/organization/OrganizationListPage';
+// import { OverviewPage } from './pages/overview/OverviewPage';
+// import { UserFormPage } from './pages/user/UserFormPage';
+// import { UserListPage } from './pages/user/UserListPage';
 
 
 function Main(props: MicroAppProps) {
-	const orgScopeRef = useOrgScopeRef();
+	// const orgScopeRef = useOrgScopeRef();
 	const { orgSlug } = useActiveOrgModule();
-	const isGlobalContext = orgSlug === GLOBAL_CONTEXT_SLUG;
-	const orgContextScope = !isGlobalContext
-		? { scopeType: 'org' as const, scopeRef: orgScopeRef ?? '' }
-		: undefined;
+	// const orgContextScope = { scopeType: 'org' as const, scopeRef: orgScopeRef ?? '' };
 	const dispatch = useMicroAppDispatch();
-	const menuBarItems = useMenuBarItems(orgContextScope);
-	useSetMenuBarItems(menuBarItems, dispatch);
+	// const menuBarItems = useMenuBarItems(orgContextScope);
+	// useSetMenuBarItems(menuBarItems, dispatch);
 
 	// Trick to run once & synchronously
 	React.useMemo(() => {
@@ -52,27 +49,19 @@ function Main(props: MicroAppProps) {
 				widgetProps={props.widgetProps}
 			>
 				<AppRoutes>
-					<AppRoute index element={<Navigate to='overview' replace />} />
+					{/* <AppRoute index element={<Navigate to='overview' replace />} />
 					<AppRoute path='overview' element={<OverviewPage />} />
-					{/* Users routes - the create & update form share the same
-					 * `UserFormPage` element mounted under a layout route so the
-					 * form instance persists across the /users/create → /users/:id
-					 * transition, avoiding a visual flash. */}
 					<AppRoute path='users' element={<UserListPage />} />
-					<AppRoute path='users/create' element={<UserFormPage variant='create' />} />
-					<AppRoute path='users/:id' element={<UserFormPage variant='update' />} />
-					{/* Groups routes */}
+					<AppRoute path='users/:id' element={<UserFormPage />} />
 					<AppRoute path='groups' element={<GroupListPage />} />
 					<AppRoute path='groups/create' element={<GroupFormPage variant='create' />} />
 					<AppRoute path='groups/:groupId' element={<GroupFormPage variant='update' />} />
-					{/* Organizations routes (domain-only; deny in org context by forcing org scope) */}
 					<AppRoute path='organizations' element={<OrganizationListPage />} />
 					<AppRoute path='organizations/:slug' element={<OrganizationFormPage variant='update' />} />
 					<AppRoute path='organizations/create' element={<OrganizationFormPage variant='create' />} />
-					{/* Hierarchy levels routes */}
 					<AppRoute path='hierarchy-levels' element={<HierarchyListPage />} />
 					<AppRoute path='hierarchy-levels/create' element={<OrgUnitFormPage variant='create' />} />
-					<AppRoute path='hierarchy-levels/:hierarchyId' element={<OrgUnitFormPage variant='update' />} />
+					<AppRoute path='hierarchy-levels/:hierarchyId' element={<OrgUnitFormPage variant='update' />} /> */}
 				</AppRoutes>
 				{/* <WidgetRoutes>
 						<WidgetRoute name='org-home' Component={OrgHomePage} />
@@ -104,7 +93,7 @@ export default bundle;
 
 function registerModelSchemas(): void {
 	const baseOpts: Pick<SchemaRegisterOptions, 'requestMaker'> = {
-		requestMaker: RequestMaker.default,
+		requestMaker: RequestMaker.default(),
 	};
 
 	schemaRegistry.register([{

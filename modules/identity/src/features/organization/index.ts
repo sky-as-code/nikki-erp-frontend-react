@@ -1,1 +1,4 @@
-export { actions, reducer } from './organizationSlice';
+export * from './orgSlice';
+export * from './orgService';
+export * from './orgSelectors';
+export * from './types';

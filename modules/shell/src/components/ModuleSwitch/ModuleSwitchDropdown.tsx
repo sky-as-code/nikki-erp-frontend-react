@@ -1,7 +1,6 @@
-import { useIsAuthenticated } from '@nikkierp/shell/auth';
-import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
-import { useMyModules } from '@nikkierp/shell/userContext';
-import { navigateToAction, useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
+import { useListAllModules } from '@nikkierp/shell/erpModules';
+import { actions as routingActions, useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
 import { useMemo } from 'react';
 import { useDispatch } from 'react-redux';
@@ -14,22 +13,19 @@ export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdow
 export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.ReactNode {
 	const dispatch = useDispatch();
 	const isAuthenticated = useIsAuthenticated();
+	const listAllModules = useListAllModules();
+	const modules = listAllModules.data?.items ?? [];
 	const { orgSlug, moduleSlug } = useActiveOrgModule();
-	const modules = useMyModules(orgSlug!);
 
 	const items = useMemo(() => {
 		return modules.map<SearchableSelectItem>((mod) => ({
-			value: mod.slug,
+			value: mod.name,
 			label: mod.name,
 		}));
 	}, [modules]);
 
 	const handleModuleChange = (newModSlug: string) => {
-		if (orgSlug === GLOBAL_CONTEXT_SLUG) {
-			dispatch(navigateToAction(`/${GLOBAL_CONTEXT_SLUG}/${newModSlug}`));
-			return;
-		}
-		dispatch(navigateToAction(`/${orgSlug}/${newModSlug}`));
+		dispatch(routingActions.navigateTo(`/${orgSlug}/${newModSlug}`));
 	};
 
 	return isAuthenticated && (modules.length || !props.hideIfEmpty) && (

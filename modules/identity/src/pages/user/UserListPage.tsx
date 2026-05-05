@@ -1,38 +1,60 @@
-import { withWindowTitle } from '@nikkierp/ui/components';
-import { useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+// import { withWindowTitle } from '@nikkierp/ui/components';
+// import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
+// import React from 'react';
+// import { useTranslation } from 'react-i18next';
+// import { useNavigate } from 'react-router';
 
-import { selectSearchUsers } from '../../appState/user';
-import { ListPageLayout } from '../../components/ListPageLayout';
-import { UserTable } from '../../features/user/components';
-import { useUserListHandlers } from '../../features/user/hooks/useUserList';
-import { useIdentityPermissions } from '../../hooks';
+// import { ListPageLayout } from '../../components/ListPageLayout';
+// import { UserDispatch, useSearchUsers } from '../../features/user';
+// import { UserTable } from '../../features/user/UserTable';
+// // import { useIdentityPermissions } from '../../hooks';
 
 
-export function UserListPageBody(): React.ReactElement {
-	const listUser = useMicroAppSelector(selectSearchUsers);
-	const { t } = useTranslation();
-	const isLoading = listUser?.status === 'pending';
-	const permissions = useIdentityPermissions();
+// export function UserListPageBody(): React.ReactElement {
+// 	const searchUsers = useSearchUsers();
+// 	const { t } = useTranslation();
+// 	// const permissions = useIdentityPermissions();
+// 	const { handleCreate, handleRefresh } = useUserListHandlers();
 
-	const { handleCreate, handleRefresh } = useUserListHandlers();
+// 	return (
+// 		<ListPageLayout
+// 			title={t('nikki.identity.user.title')}
+// 			searchPlaceholder={t('nikki.identity.user.searchPlaceholder')}
+// 			onCreate={handleCreate}
+// 			onRefresh={handleRefresh}
+// 		>
+// 			{() => (
+// 				<UserTable
+// 					users={searchUsers?.data?.items ?? []}
+// 					isLoading={searchUsers.isLoading}
+// 				/>
+// 			)}
+// 		</ListPageLayout>
+// 	);
+// }
 
-	return (
-		<ListPageLayout
-			title={t('nikki.identity.user.title')}
-			searchPlaceholder={t('nikki.identity.user.searchPlaceholder')}
-			onCreate={permissions.user.canCreate ? handleCreate : undefined}
-			onRefresh={handleRefresh}
-		>
-			{() => (
-				<UserTable
-					users={listUser?.data?.items ?? []}
-					isLoading={isLoading}
-				/>
-			)}
-		</ListPageLayout>
-	);
-}
+// export const UserListPage: React.FC = withWindowTitle('User List', UserListPageBody);
 
-export const UserListPage: React.FC = withWindowTitle('User List', UserListPageBody);
+
+// function useUserListHandlers() {
+// 	const searchUsers = useSearchUsers();
+// 	const navigate = useNavigate();
+// 	const dispatch: UserDispatch = useMicroAppDispatch();
+
+// 	const handleCreate = () => {
+// 		navigate('create');
+// 	};
+
+// 	const handleRefresh = () => {
+// 		dispatch(searchUsers.action({}));
+// 	};
+
+// 	React.useEffect(() => {
+// 		handleRefresh();
+// 	}, [dispatch]);
+
+// 	return {
+// 		handleCreate,
+// 		handleRefresh,
+// 	};
+// }

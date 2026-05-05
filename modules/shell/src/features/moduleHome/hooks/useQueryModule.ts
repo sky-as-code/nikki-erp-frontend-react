@@ -1,4 +1,5 @@
-import { useMyModules } from '@nikkierp/shell/userContext';
+import { RestSearchResponse } from '@nikkierp/common/dynamic_model';
+import { Module } from '@nikkierp/shell/erpModules';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { debounce } from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
@@ -7,11 +8,10 @@ import { mockModules as mockModuleListByCategory } from '../components/mockModul
 import { FilterState, ModuleViewMode } from '../components/ModuleHomePage';
 
 
-export function useQueryModule() {
-	const { orgSlug } = useActiveOrgModule();
-	const availableModules = useMyModules(orgSlug ?? '');
+export function useQueryModule(allModules: RestSearchResponse<Module> | null) {
+	const availableModules = allModules?.items ?? [];
 	const availableModuleSlugs = useMemo(
-		() => new Set(availableModules.map((module) => module.slug)),
+		() => new Set(availableModules.map((module) => module.name)),
 		[availableModules],
 	);
 	const [viewMode, setViewMode] = useState<ModuleViewMode>('list');
