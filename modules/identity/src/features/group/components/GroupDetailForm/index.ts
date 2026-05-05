@@ -1,1 +1,0 @@
-export { GroupDetailForm } from './GroupDetailForm';

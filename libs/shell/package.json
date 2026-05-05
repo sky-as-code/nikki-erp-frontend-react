@@ -92,6 +92,7 @@
 		"./config": "./src/config/index.ts",
 		"./constants": "./src/constants/index.ts",
 		"./contexts": "./src/contexts/index.tsx",
+		"./erpModules": "./src/erpModules/index.ts",
 		"./microApp": "./src/microApp/index.tsx",
 		"./userContext": "./src/userContext/index.ts"
 	},

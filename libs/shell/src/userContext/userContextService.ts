@@ -7,7 +7,7 @@ import { GetUserContextResponse, SLICE_NAME } from './types';
 export const getUserContext = uiState.createThunkPack<GetUserContextResponse, void, 'getUserContext'>(
 	SLICE_NAME, 'getUserContext',
 	async function getUserContextThunk() {
-		const data = await request.get<GetUserContextResponse>('identity/me/context');
+		const data = await request.get<GetUserContextResponse>('v1/identity/me/context');
 		return data;
 	},
 );

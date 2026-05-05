@@ -17,7 +17,7 @@ export const ProfileMenuDropdown: React.FC = () => {
 	const dispatch = useDispatch<any>();
 	const { t: translate } = useTranslation();
 
-	const { user } = useUserContext();
+	const userCtx = useUserContext();
 	const themeModeModalRef = useRef<any>(null);
 	const langSwitchModalRef = useRef<any>(null);
 
@@ -41,8 +41,8 @@ export const ProfileMenuDropdown: React.FC = () => {
 							<IconUserFilled color={'var(--mantine-color-gray-6)'} />
 						</Avatar>
 						<Box>
-							<Text size='md' fw={600}>{user?.displayName || 'Display name'}</Text>
-							<Text size='sm' c='dimmed'>{user?.email || 'username@example.com'}</Text>
+							<Text size='md' fw={600}>{userCtx?.display_name}</Text>
+							<Text size='sm' c='dimmed'>{userCtx?.email}</Text>
 						</Box>
 					</Flex>
 

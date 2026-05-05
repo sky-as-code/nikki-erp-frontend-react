@@ -1,16 +1,14 @@
 import {
-	Button,
-	Divider, Drawer, Flex, Stack,
+	Button, Divider, Drawer, Flex, Stack,
 } from '@mantine/core';
 import { IconApps, IconMenu2, IconX } from '@tabler/icons-react';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-
+import { MenuBar } from './MenuBar';
 import { ThemeSwitchModal } from '../ThemeSwitch';
 
-import { MenuBar } from '@/components/MenuBar';
 
 
 

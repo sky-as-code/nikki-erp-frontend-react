@@ -1,55 +1,35 @@
-import {
-	CreateResponse,
-	DeleteResponse,
-	ManageMembersRequest,
-	ManageMembersResponse,
-	SearchResponse,
-	UpdateResponse,
-} from '@nikkierp/common';
+import * as dyn from '@nikkierp/common/dynamic_model';
 
 
 export type Group = {
-	id: string;
-	createdAt: Date;
-	name: string;
-	description?: string;
-	etag: string;
-	org?: {
-		id: string;
-		displayName: string;
-		slug: string;
-	};
-	updatedAt?: Date;
-	users?: Array<{
-		id: string;
-		email: string;
-		displayName?: string;
-		avatarUrl?: string;
-		status?: string;
-	}>;
+	id: string,
+	name?: string,
+	description?: string,
+	owner_id?: string,
+	etag?: string,
+	created_at?: string,
+	updated_at?: string,
 };
 
-export type CreateGroupRequest = {
-	name: string;
-	description?: string;
-	orgId: string;
-};
+export type CreateGroupRequest = Record<string, any>;
+export type CreateGroupResponse = dyn.RestCreateResponse;
 
-export type UpdateGroupRequest = {
-	id: string;
-	etag: string;
-	name?: string;
-	description?: string;
-};
+export type DeleteGroupRequest = dyn.RestDeleteRequest;
+export type DeleteGroupResponse = dyn.RestDeleteResponse;
 
-export type SearchGroupsResponse = SearchResponse<Group>;
+export type GetGroupSchemaResponse = dyn.RestGetModelSchemaResponse;
 
-export type CreateGroupResponse = CreateResponse;
+export type GetGroupByIdRequest = dyn.RestGetByIdRequest;
+export type GetGroupResponse = dyn.RestGetOneResponse<Group>;
 
-export type UpdateGroupResponse = UpdateResponse;
+export type GroupExistsRequest = dyn.RestExistsRequest;
+export type GroupExistsResponse = dyn.RestExistsResponse;
 
-export type ManageGroupUsersRequest = ManageMembersRequest;
+export type ManageGroupUsersRequest = dyn.RestManageM2mRequest;
+export type ManageGroupUsersResponse = dyn.RestMutateResponse;
 
-export type ManageGroupUsersResponse = ManageMembersResponse;
+export type SearchGroupsRequest = dyn.RestSearchRequest;
+export type SearchGroupsResponse = dyn.RestSearchResponse<Group>;
 
-export type DeleteGroupResponse = DeleteResponse;
+export type UpdateGroupRequest = dyn.RestUpdateRequest;
+export type UpdateGroupResponse = dyn.RestMutateResponse;

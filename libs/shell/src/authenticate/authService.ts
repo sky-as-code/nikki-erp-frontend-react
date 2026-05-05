@@ -1,8 +1,8 @@
-import * as request from '@nikkierp/common/request';
+import { ClientErrors } from '@nikkierp/common/types';
 import * as uiState from '@nikkierp/ui/appState';
 
 import * as t from './types';
-import { getUserContext } from '../userContext';
+import * as userCxtSvc from '../userContext/userContextService';
 
 
 export type LoginCredentials = Record<string, unknown>;
@@ -27,8 +27,8 @@ export function initAuthService(params: InitAuthServiceParams): void {
 }
 
 
-export function getSessionExpiresAt(): number {
-	return accessTokenStorage.getToken()?.expiresAt ?? 0;
+export function getSessionExpiresAt(): Date | null {
+	return accessTokenStorage.getToken()?.expiresAt ?? null;
 }
 
 export function getAccessToken(): string | null {
@@ -40,29 +40,29 @@ export function clearAuthSession(): void {
 	refreshTokenStorage.clear();
 }
 
-export const startSignIn = uiState.createThunkPack<UnknownRecord, UnknownRecord, 'startSignIn'>(
+export const startSignIn = uiState.createThunkPack<t.StartSignInResult, t.StartSignInParams, 'startSignIn'>(
 	t.SLICE_NAME, 'startSignIn',
-	async function startSignInThunk(params: UnknownRecord) {
+	async function startSignInThunk(params: t.StartSignInParams) {
 		return strategy.startSignIn(params);
 	},
 );
 
-export const continueSignIn = uiState.createThunkPack<t.SignInResult, UnknownRecord, 'continueSignIn'>(
+export const continueSignIn = uiState.createThunkPack<t.SignInResult, t.SignInParams, 'continueSignIn'>(
 	t.SLICE_NAME, 'continueSignIn',
-	async function continueSignInThunk(params: UnknownRecord, { dispatch }) {
+	async function continueSignInThunk(params: t.SignInParams, { dispatch }) {
 		const result = await strategy.continueSignIn(params);
 		if (result?.done) {
 			onSignInSuccess(result.data!);
-			dispatch(getUserContext.action());
+			dispatch(userCxtSvc.getUserContext.action());
 		}
 		return result;
 	},
 );
 
-export const refreshSession = uiState.createThunkPack<t.AuthenticatedSession, string, 'refreshSession'>(
+export const refreshSession = uiState.createThunkPack<t.AuthenticatedSession, t.RefreshTokenParams, 'refreshSession'>(
 	t.SLICE_NAME, 'refreshSession',
-	async function refreshSessionThunk(refreshToken: string) {
-		const result = await strategy.refreshSession(refreshToken);
+	async function refreshSessionThunk(params: t.RefreshTokenParams) {
+		const result = await strategy.refreshSession(params);
 		onSignInSuccess(result);
 		return result;
 	},
@@ -80,33 +80,49 @@ export const signOut = uiState.createThunkPack<void, void, 'signOut'>(
 
 export const restoreAuthSession = uiState.createThunkPack<boolean, void, 'restoreAuthSession'>(
 	t.SLICE_NAME, 'restoreAuthSession',
-	restoreSession,
+	async function restoreSession(_, { dispatch }): Promise<boolean> {
+		const refreshObj = refreshTokenStorage.getToken();
+		if (!refreshObj || refreshObj.isExpired) {
+			return false;
+		}
+		const session = await strategy.refreshSession({ refreshToken: refreshObj.token });
+		onSignInSuccess(session);
+		dispatch(userCxtSvc.getUserContext.action());
+		return true;
+	},
 );
 
 export async function ensureAccessToken(): Promise<string> {
 	const accessObj = accessTokenStorage.getToken();
-	if (accessObj && accessObj.expiresAt > Date.now()) {
+	if (accessObj && !accessObj.isExpired) {
 		return accessObj.token;
 	}
-	const restored = restoreSession();
+	const restored = await restoreSession();
 	if (!restored) {
-		throw new Error('Unauthenticated');
+		return '';
 	}
 	return getAccessToken()!;
 }
 
 async function restoreSession(): Promise<boolean> {
-	const refreshToken = refreshTokenStorage.getToken();
-	if (!refreshToken) {
+	const refreshObj = refreshTokenStorage.getToken();
+	if (!refreshObj) {
 		return false;
 	}
-	const expiresAtMs = new Date(refreshToken.expiresAt).getTime();
-	if (expiresAtMs <= Date.now()) {
+	if (refreshObj.isExpired) {
 		return false;
 	}
-	const session = await strategy.refreshSession(refreshToken.token);
-	onSignInSuccess(session);
-	return true;
+	try {
+		const session = await strategy.refreshSession({ refreshToken: refreshObj.token });
+		onSignInSuccess(session);
+		return true;
+	}
+	catch (error) {
+		if (ClientErrors.containsAuthorizationError(error)) {
+			return false;
+		}
+		throw error;
+	}
 }
 
 function onSignInSuccess(session: t.AuthenticatedSession): void {
@@ -120,4 +136,15 @@ function onSignInSuccess(session: t.AuthenticatedSession): void {
 			session.refreshTokenExpiresAt!,
 		));
 	}
+}
+
+export function isAuthenticated(): boolean {
+	const accessObj = accessTokenStorage.getToken();
+	if (!accessObj) {
+		return false;
+	}
+	if (accessObj.isExpired) {
+		return false;
+	}
+	return true;
 }

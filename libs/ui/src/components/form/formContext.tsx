@@ -116,162 +116,6 @@ type BaseFormProviderProps = {
 
 export type FormVariant = 'create' | 'update';
 
-// export type CrudCreateFormProviderProps = BaseFormProviderProps & {
-// 	schemaName: string,
-
-// 	// Redux action to submit form data
-// 	submitAction: (data: any) => any,
-// 	// Selector to get state of the submitAction
-// 	submitActionSelector?: (state: any) => any,
-// };
-
-// export function CrudCreateFormProvider(props: CrudCreateFormProviderProps): React.ReactNode {
-// 	const { children } = props;
-// 	const [schemaPack, setSchemaPack] = React.useState<dyn.SchemaPack | null>(null);
-// 	const dispatch = useMicroAppDispatch();
-
-// 	React.useEffect(() => {
-// 		if (props.schemaName) {
-// 			dyn.schemaRegistry.get(props.schemaName).then((schemaPack) => {
-// 				setSchemaPack(schemaPack);
-// 			});
-// 		}
-// 	}, [props.schemaName]);
-
-// 	if (!schemaPack) {
-// 		return <LoadingState />;
-// 	}
-
-// 	const form = useForm({
-// 		resolver: zodResolver(schemaPack.validationSchema),
-// 		mode: 'onChange',
-// 		reValidateMode: 'onChange',
-// 	});
-
-// 	const {
-// 		control,
-// 		formState: { errors },
-// 		register,
-// 		handleSubmit,
-// 		reset,
-// 	} = form;
-
-// 	return schemaPack ? (
-// 		<FormFieldContext.Provider
-// 			value={{
-// 				control,
-// 				errors,
-// 				formVariant: 'create',
-// 				crudSchema: schemaPack,
-// 				modelSchema: schemaPack.modelSchema,
-// 				register,
-// 				getFieldDef: (fieldName) => schemaPack?.modelSchema?.fields[fieldName],
-// 			}}
-// 		>
-// 			{children({
-// 				handleSubmit: (onValid: HandleSubmitOnValid): SubmitEventHandler =>{
-// 					return handleSubmit((data) => {
-// 						const postprocessed = onValid(data);
-// 						if (postprocessed) {
-// 							dispatch(props.submitAction(postprocessed));
-// 						}
-// 					});
-// 				},
-// 				reset,
-// 				form,
-// 				isLoading: false,
-// 			})}
-// 		</FormFieldContext.Provider>
-// 	) : <LoadingState />;
-// };
-
-// export type CrudUpdateFormProviderProps = BaseFormProviderProps & {
-// 	schemaName: string,
-
-// 	// Selector to get form field values
-// 	dataSelector: (state: any) => any,
-// 	// Redux action to load form field values
-// 	loadDataAction: () => any,
-// 	// Redux action to submit form data
-// 	submitAction: (data: any) => any,
-// 	// Selector to get state of the submitAction
-// 	submitActionSelector: (state: any) => ReduxActionState,
-// };
-
-// export function CrudUpdateFormProvider(props: CrudUpdateFormProviderProps): React.ReactNode {
-// 	const { children } = props;
-// 	const [schemaPack, setSchemaPack] = React.useState<dyn.SchemaPack | null>(null);
-// 	const modelValue = useMicroAppSelector(props.dataSelector);
-// 	const actionState = useMicroAppSelector(props.submitActionSelector) as ReduxActionState;
-// 	const dispatch = useMicroAppDispatch();
-
-// 	React.useEffect(() => {
-// 		if (props.schemaName) {
-// 			dyn.schemaRegistry.get(props.schemaName).then((schemaPack) => {
-// 				setSchemaPack(schemaPack);
-// 			});
-// 		}
-// 	}, [props.schemaName]);
-
-// 	React.useEffect(() => {
-// 		dispatch(props.loadDataAction());
-// 	}, [dispatch]);
-
-// 	if (!schemaPack) {
-// 		return <LoadingState />;
-// 	}
-
-// 	const form = useForm({
-// 		resolver: zodResolver(schemaPack.validationSchema),
-// 		defaultValues: modelValue || {},
-// 		mode: 'onChange',
-// 		reValidateMode: 'onChange',
-// 	});
-
-// 	const {
-// 		control,
-// 		formState: { errors },
-// 		register,
-// 		handleSubmit,
-// 		reset,
-// 	} = form;
-
-// 	// Reset form when modelValue changes
-// 	React.useEffect(() => {
-// 		if (schemaPack && modelValue) {
-// 			reset(modelValue);
-// 		}
-// 	}, [schemaPack, modelValue, reset]);
-
-// 	return schemaPack ? (
-// 		<FormFieldContext.Provider
-// 			value={{
-// 				control,
-// 				errors,
-// 				formVariant: 'update',
-// 				crudSchema: schemaPack,
-// 				modelSchema: schemaPack.modelSchema,
-// 				register,
-// 				getFieldDef: (fieldName) => schemaPack?.modelSchema?.fields[fieldName],
-// 			}}
-// 		>
-// 			{children({
-// 				handleSubmit: (onValid: HandleSubmitOnValid): SubmitEventHandler =>{
-// 					return handleSubmit((data) => {
-// 						const postprocessed = onValid(data);
-// 						if (postprocessed) {
-// 							dispatch(props.submitAction(postprocessed));
-// 						}
-// 					});
-// 				},
-// 				reset,
-// 				form,
-// 				isLoading: actionState.status === 'pending',
-// 			})}
-// 		</FormFieldContext.Provider>
-// 	) : <LoadingState />;
-// };
-
 export type CrudFormProviderProps = BaseFormProviderProps & {
 	schemaName: string,
 	formVariant: FormVariant;
@@ -399,12 +243,12 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 				getFieldDef: (fieldName) => modelSchema.fields[fieldName],
 			}}
 		>
-			(schemaPack ? {children({
+			{props.modelLoading ? <LoadingState /> : children({
 				handleSubmit,
 				reset,
 				form,
 				isLoading: false,
-			})} : <LoadingState />)
+			})}
 		</FormFieldContext.Provider>
 	);
 };
@@ -449,6 +293,9 @@ export type FormFieldProviderProps = {
 	}) => React.ReactNode;
 };
 
+/**
+ * @deprecated Use {@link AdhocFormProvider} instead.
+ */
 export const FormFieldProvider: React.FC<FormFieldProviderProps> = (props) => {
 	const { formVariant, modelSchema, modelValue, modelLoading = false, children } = props;
 	// const zodSchema = React.useMemo(() => buildValidationSchema(modelSchema), [modelSchema]);
