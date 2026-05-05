@@ -16,8 +16,8 @@ export type MicroAppShellBundle = {
 export type MicroAppMetadata = {
 	/**
 	 * The slug used as unique identifier for the micro app, as well as
-	 * the root path for the micro app in the URL.
-	 * Must be in camelCase.
+	 * the root path for the micro app in the URL. Therefore, it must be URL-friendly.
+	 * The value must match the backend ERP module name.
 	 */
 	slug: MicroAppSlug;
 

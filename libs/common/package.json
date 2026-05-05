@@ -36,10 +36,10 @@
 	"sideEffects": false,
 	"exports": {
 		".": "./src/index.ts",
+		"./dynamic_model": "./src/dynamic_model/index.ts",
 		"./request": "./src/request/index.ts",
 		"./types": "./src/types/index.ts",
-		"./utils": "./src/utils/index.ts",
-		"./dynamic_model": "./src/dynamic_model/index.ts"
+		"./utils": "./src/utils/index.ts"
 	},
 	"files": [
 		"src",

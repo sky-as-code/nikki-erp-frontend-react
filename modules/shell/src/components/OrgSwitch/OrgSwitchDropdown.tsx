@@ -1,7 +1,6 @@
-import { useIsAuthenticated } from '@nikkierp/shell/auth';
-import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
-import { useHasGlobalContextAccess, useMyOrgs } from '@nikkierp/shell/userContext';
-import { navigateToAction, useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
+import { useMyOrgs } from '@nikkierp/shell/userContext';
+import { actions as routingActions, useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
 import React, { useMemo } from 'react';
 import { useDispatch } from 'react-redux';
@@ -16,30 +15,19 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 	const isAuthenticated = useIsAuthenticated();
 	const { orgSlug } = useActiveOrgModule();
 	const orgs = useMyOrgs();
-	const hasGlobalContextAccess = useHasGlobalContextAccess();
 
 	const items = useMemo(() => {
 		if (!isAuthenticated) return [];
 		const options: SearchableSelectItem[] = [];
-		if (hasGlobalContextAccess) {
-			options.push({
-				value: GLOBAL_CONTEXT_SLUG,
-				label: 'Global',
-			});
-		}
 		options.push(...orgs.map<SearchableSelectItem>((org) => ({
 			value: org.slug,
-			label: org.name,
+			label: org.display_name,
 		})));
 		return options;
-	}, [orgs, isAuthenticated, hasGlobalContextAccess]);
+	}, [orgs, isAuthenticated]);
 
 	const handleOrgChange = (newOrgSlug: string) => {
-		if (newOrgSlug === GLOBAL_CONTEXT_SLUG) {
-			dispatch(navigateToAction(`/${GLOBAL_CONTEXT_SLUG}`));
-			return;
-		}
-		dispatch(navigateToAction(`/${newOrgSlug}`));
+		dispatch(routingActions.navigateTo(`/${newOrgSlug}`));
 	};
 
 	return isAuthenticated && (items.length || !props.hideIfEmpty) && (

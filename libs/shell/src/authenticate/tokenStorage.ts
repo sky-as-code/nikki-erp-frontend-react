@@ -11,11 +11,16 @@ export class TokenSessionStorage implements ITokenStorage {
 	}
 
 	public setToken(token: TokenObj): void {
-		setToken(this.#key, sessionStorage, token);
+		setToken(this.#key, sessionStorage, {
+			token: token.token,
+			expiresAt: token.expiresAt.getTime(),
+		});
 	}
 
 	public getToken(): TokenObj | null {
-		return getToken(this.#key, sessionStorage);
+		const serialized = getToken(this.#key, sessionStorage);
+		if (!serialized) return null;
+		return new TokenObj(serialized.token, serialized.expiresAt);
 	}
 
 	public clear(): void {
@@ -31,11 +36,16 @@ export class TokenLocalStorage implements ITokenStorage {
 	}
 
 	public setToken(token: TokenObj): void {
-		setToken(this.#key, localStorage, token);
+		setToken(this.#key, localStorage, {
+			token: token.token,
+			expiresAt: token.expiresAt.getTime(),
+		});
 	}
 
 	public getToken(): TokenObj | null {
-		return getToken(this.#key, localStorage);
+		const serialized = getToken(this.#key, localStorage);
+		if (!serialized) return null;
+		return new TokenObj(serialized.token, serialized.expiresAt);
 	}
 
 	public clear(): void {
@@ -43,17 +53,22 @@ export class TokenLocalStorage implements ITokenStorage {
 	}
 }
 
-function setToken(key: string, storage: Storage, token: TokenObj): void {
+type SerializedTokenObj = {
+	token: string;
+	expiresAt: number;
+};
+
+function setToken(key: string, storage: Storage, token: SerializedTokenObj): void {
 	const json = JSON.stringify(token);
 	const encoded = encodeBase64(json);
 	storage.setItem(key, encoded);
 }
 
-function getToken(key: string, storage: Storage): TokenObj | null {
+function getToken(key: string, storage: Storage): SerializedTokenObj | null {
 	const encoded = storage.getItem(key);
 	if (!encoded) return null;
 	const json = decodeBase64(encoded);
-	return JSON.parse(json) as TokenObj;
+	return JSON.parse(json) as SerializedTokenObj;
 }
 
 function clearToken(key: string, storage: Storage): void {

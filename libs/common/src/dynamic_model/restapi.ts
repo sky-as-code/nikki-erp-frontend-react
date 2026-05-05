@@ -37,33 +37,58 @@ export class RestApi {
 		});
 	}
 
-	public getOne(request: RestGetOneRequest, primaryResourceId?: string): Promise<RestGetOneResponse> {
+	public getById(request: RestGetByIdRequest, primaryResourceId?: string): Promise<RestGetOneResponse<any>> {
 		const restPath = this._getBasePath(primaryResourceId);
-		return this._opts.requestMaker.get<RestGetOneResponse>(`${restPath}/${request.id}`, {
+		const dedupKey = `GET/${restPath}/${request.id}/${request.fields?.join(',')}`;
+		return this._opts.requestMaker.get<RestGetOneResponse<any>>(`${restPath}/${request.id}`, {
 			searchParams: this._toSearchParams(request),
+			dedupKey,
+		});
+	}
+
+	public getOne<TReq extends RequestWithFields = RestGetByIdRequest>(
+		request: TReq, buildSearchParams: (req: TReq) => URLSearchParams, primaryResourceId?: string,
+	): Promise<RestGetOneResponse<any>> {
+		const restPath = this._getBasePath(primaryResourceId);
+		const { fields, ...rest } = request;
+		const keyFields = Object.values(rest).join('/');
+
+		const dedupKey = `GET/${restPath}/${keyFields}/${fields?.join(',')}`;
+		return this._opts.requestMaker.get<RestGetOneResponse<any>>(`${restPath}/getOne`, {
+			searchParams: buildSearchParams(request),
+			dedupKey,
 		});
 	}
 
 	public getModelSchema(primaryResourceId?: string): Promise<RestGetModelSchemaResponse> {
 		const restPath = this._getBasePath(primaryResourceId);
-		return this._opts.requestMaker.get<RestGetModelSchemaResponse>(`${restPath}/meta/schema`);
+		const dedupKey = `GET/${restPath}/meta/schema`;
+		return this._opts.requestMaker.get<RestGetModelSchemaResponse>(`${restPath}/meta/schema`, {
+			dedupKey,
+		});
 	}
 
 	public manageM2m(
 		request: RestManageM2mRequest, path: string, primaryResourceId?: string,
 	): Promise<RestMutateResponse> {
 		const restPath = this._getBasePath(primaryResourceId);
-		const { add: _, remove: __, ...primaryKey } = request;
-		if (Object.keys(primaryKey).length !== 0) {
-			throw new Error('manageM2m: Must define key field(s)');
-		}
 		return this._opts.requestMaker.post<RestMutateResponse>(`${restPath}/${path}`, { json: request });
 	}
 
-	public search(request: RestSearchRequest, primaryResourceId?: string): Promise<RestSearchResponse> {
+	public search(request: RestSearchRequest, primaryResourceId?: string): Promise<RestSearchResponse<any>> {
 		const restPath = this._getBasePath(primaryResourceId);
-		return this._opts.requestMaker.get<RestSearchResponse>(restPath, {
+		const dedupKey = [
+			'GET',
+			restPath,
+			request.fields?.join(',') ?? '-',
+			request.page ?? '-',
+			request.size ?? '-',
+			request.graph ? JSON.stringify(request.graph) : '-',
+			request.language ?? '-',
+		];
+		return this._opts.requestMaker.get<RestSearchResponse<any>>(restPath, {
 			searchParams: this._toSearchParams(request),
+			dedupKey: dedupKey.join('/'),
 		});
 	}
 
@@ -105,74 +130,76 @@ export class RestApi {
 
 }
 
+export type RequestWithFields = {
+	fields?: string[],
+};
+
 export type RestCreateRequest = Record<string, any>;
 
 export type RestCreateResponse = {
-	id: string;
-	etag: string;
-	created_at: string;
+	id: string,
+	etag: string,
+	created_at: string,
 };
 
 export type RestDeleteRequest = {
-	id: string;
+	id: string,
 };
 
 export type RestDeleteResponse = {
-	affected_count: number;
-	affected_at: string;
+	affected_count: number,
+	affected_at: string,
 };
 
 export type RestExistsRequest = {
-	ids: string[];
+	ids: string[],
 };
 
 export type RestExistsResponse = {
-	existing: string[];
-	not_existing: string[];
+	existing: string[],
+	not_existing: string[],
 };
 
-export type RestGetOneRequest = {
-	id: string;
-	columns?: string[];
+export type RestGetByIdRequest = RequestWithFields & {
+	id: string,
 };
 
-export type RestGetOneResponse = Record<string, any>;
+export type RestGetOneResponse<T extends Record<string, any>> = T;
 
 export type RestGetModelSchemaResponse = ModelSchema;
 
 export type RestSetIsArchivedRequest = {
-	id: string;
-	etag: string;
-	is_archived: boolean;
+	id: string,
+	etag: string,
+	is_archived: boolean,
 };
 
-export type RestSearchRequest = {
-	columns?: string[];
-	page?: number;
-	size?: number;
-	graph?: Record<string, any>;
-	language?: string;
+export type RestSearchRequest = RequestWithFields & {
+	page?: number,
+	size?: number,
+	graph?: Record<string, any>,
+	language?: string,
 };
 
-export type RestSearchResponse = {
-	items: Array<Record<string, any>>;
-	total: number;
-	page: number;
-	size: number;
+export type RestSearchResponse<T extends Record<string, any>> = {
+	items: Array<T>,
+	total: number,
+	page: number,
+	size: number,
 };
 
 export type RestUpdateRequest = Record<string, any> & {
-	id: string;
-	etag: string;
+	id: string,
+	etag: string,
 };
 
 export type RestMutateResponse = {
-	affected_count: number;
-	affected_at: string;
-	etag: string;
+	affected_count: number,
+	affected_at: string,
+	etag: string,
 };
 
 export type RestManageM2mRequest = Record<string, any> & {
-	add?: string[];
-	remove?: string[];
+	add?: string[],
+	remove?: string[],
 };

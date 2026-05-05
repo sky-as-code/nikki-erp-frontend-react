@@ -1,1 +1,0 @@
-export { HierarchyDetailForm } from './HierarchyDetailForm';

@@ -1,58 +1,53 @@
 import { Anchor, Button, Group, Stack } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
-import { startSignInAction, useAuthState, useSignInProgress, actions } from '@nikkierp/shell/auth';
-import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
-import { ModelSchema } from '@nikkierp/ui/model';
+import { useStartSignIn } from '@nikkierp/shell/authenticate';
+import { AdhocFormProvider, AutoField, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { IconMail } from '@tabler/icons-react';
-import { useUIState } from 'node_modules/@nikkierp/shell/src/contexts/UIProviders';
+// import { useUIState } from 'node_modules/@nikkierp/shell/src/contexts/UIProviders';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
-import emailSchema from './email-schema.json';
+import { emailSchema } from './emailSchema';
 import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
 
-
-const emailSchemaTyped = emailSchema as ModelSchema;
 
 export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	const formRef = React.useRef<HTMLFormElement>(null);
 	const dispatch = useDispatch<AppDispatch>();
-	const { isLoading, errorStartSignIn} = useAuthState();
-	const { notification } = useUIState();
-	const signInProgress = useSignInProgress();
+	const { isDone: isSuccess, isLoading, action: startSignIn } = useStartSignIn();
 
 	React.useEffect(() => {
-		if (!isLoading && signInProgress?.nextStep === 'password' && onNext) {
+		if (isSuccess && onNext) {
 			onNext();
 		}
-	}, [isLoading, signInProgress?.nextStep]);
+	}, [isSuccess, onNext]);
 
-	React.useEffect(() => {
-		if (errorStartSignIn) {
-			if (typeof errorStartSignIn === 'string') {
-				notification.showError(errorStartSignIn, 'Error');
-			}
-			else {
-				notification.showError(errorStartSignIn?.message || Object.values(errorStartSignIn?.details || {})[0] || 'Start sign-in attempt failed', 'Error');
-			}
-			dispatch(actions.resetErrorsStartSignIn());
-		}
-	}, [errorStartSignIn]);
+	// React.useEffect(() => {
+	// 	if (errorStartSignIn) {
+	// 		if (typeof errorStartSignIn === 'string') {
+	// 			notification.showError(errorStartSignIn, 'Error');
+	// 		}
+	// 		else {
+	// 			notification.showError(errorStartSignIn?.message || Object.values(errorStartSignIn?.details || {})[0] || 'Start sign-in attempt failed', 'Error');
+	// 		}
+	// 		dispatch(actions.resetErrorsStartSignIn());
+	// 	}
+	// }, [errorStartSignIn]);
 
 	const handleNext = async (data: { email: string }) => {
-		dispatch(startSignInAction({ email: data.email }));
+		dispatch(startSignIn({ username: data.email }));
 	};
 
 	return (
 		<FormStyleProvider layout='onecol'>
-			<FormFieldProvider formVariant='create' modelSchema={emailSchemaTyped}>
+			<AdhocFormProvider formVariant='create' modelSchema={emailSchema}>
 				{({ handleSubmit }) => (
 					<form ref={formRef} onSubmit={handleSubmit(handleNext)} noValidate>
 						<EmailStepFormContent ref={ref} isActive={isActive} isLoading={isLoading} />
 					</form>
 				)}
-			</FormFieldProvider>
+			</AdhocFormProvider>
 		</FormStyleProvider>
 	);
 }

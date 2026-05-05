@@ -1,4 +1,4 @@
-import { signOutAction } from '@nikkierp/shell/auth';
+import { actions as authActions } from '@nikkierp/shell/authenticate';
 import React from 'react';
 
 
@@ -16,7 +16,7 @@ export interface LangSwitchModalRef {
  * Handle logout action
  */
 export const handleLogout = (dispatch: any, onClose?: () => void) => {
-	dispatch(signOutAction());
+	dispatch(authActions.signOut());
 	if (onClose) {
 		onClose();
 	}

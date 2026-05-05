@@ -1,7 +1,10 @@
+import { useListAllModules } from '@nikkierp/shell/erpModules';
+import { LazyMicroApp } from '@nikkierp/shell/microApp';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes, useParams } from 'react-router';
 
-import { LazyModule } from '../components/LazyModule';
+// import { LazyModule } from '../components/LazyModule';
+import { AppLoading } from '../components/Loading';
 import { ToDefaultOrg } from '../components/ToDefaultOrg';
 import { ModuleSubLayout } from '../layouts/ModuleSubLayout';
 import { OrgSubLayout } from '../layouts/OrgSubLayout';
@@ -40,4 +43,34 @@ export function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 			</Route>
 		</Routes>
 	);
+}
+
+function LazyModule(props: { microApps: MicroAppMetadata[] }): React.ReactNode {
+	const { moduleSlug } = useParams();
+	const listAll = useListAllModules();
+	if (listAll.isLoading) {
+		return <AppLoading />;
+	}
+	else if (listAll.isError) {
+		console.error(listAll.error);
+		return <Navigate to='/notfound' replace />;
+	}
+	else if (listAll.isDone) {
+		const isBackendModule = listAll.data!.items.some(module => module.name === moduleSlug);
+		const foundApp = props.microApps.find(app => app.slug === moduleSlug);
+		if (!isBackendModule || !foundApp) {
+			return <Navigate to='/notfound' replace />;
+		}
+		return (
+			<LazyMicroApp
+				key={foundApp.slug}
+				slug={foundApp.slug}
+				basePath={foundApp.basePath}
+				fallback={<AppLoading />}
+			/>
+		);
+	}
+	else {
+		return <Navigate to='/notfound' replace />;
+	}
 }

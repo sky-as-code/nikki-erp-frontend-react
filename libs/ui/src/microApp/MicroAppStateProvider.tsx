@@ -60,6 +60,20 @@ export type UseStateSelectorFn<TState> = <TSelected>(
 ) => TSelected | null;
 
 /**
+ * Auto switches to the appropriate selector based on whether the current component is a micro-app or not.
+ */
+export const useSmartSelector: UseStateSelectorFn<any> = (selector) => {
+	if (!selector) return null;
+	let appState: unknown;
+	const ctxVal = useMicroAppStateContext();
+	if (ctxVal) {
+		appState = useSelector(ctxVal.selectMicroAppState);
+		return selector(appState);
+	}
+	return useSelector(selector);
+};
+
+/**
  * Invokes `selector` with this micro-app's state, which is a subset of the Shell's state.
  */
 export const useMicroAppSelector: UseStateSelectorFn<any> = (selector) => {

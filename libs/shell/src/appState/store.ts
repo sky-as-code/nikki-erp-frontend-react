@@ -3,8 +3,10 @@ import * as routing from '@nikkierp/ui/appState/routingSlice';
 import { RegisterReducerFn } from '@nikkierp/ui/microApp';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
+import { authorizationErrorListener } from '../authenticate/authorizationErrorListener';
 import * as auth from '../authenticate/authSlice';
 import * as shellConfig from '../config/shellConfigSlice';
+import * as erpModule from '../erpModules/moduleSlice';
 import * as userContext from '../userContext/userContextSlice';
 
 
@@ -13,6 +15,7 @@ const localReducers = {
 	[layout.SLICE_NAME]: layout.reducer,
 	[routing.SLICE_NAME]: routing.reducer,
 	[shellConfig.SLICE_NAME]: shellConfig.reducer,
+	[erpModule.SLICE_NAME]: erpModule.reducer,
 	[userContext.SLICE_NAME]: userContext.reducer,
 };
 
@@ -25,33 +28,10 @@ function createRootReducer() {
 	});
 }
 
-// const authSessionListener = createListenerMiddleware();
-// authSessionListener.startListening({
-// 	matcher: isAnyOf(continueSignIn.fulfilled, restoreAuthSessionThunk.fulfilled),
-// 	effect(action, listenerApi) {
-// 		if (continueSignIn.fulfilled.match(action)) {
-// 			const payload = action.payload;
-// 			if (payload?.done && payload?.data?.accessToken) {
-// 				queueMicrotask(() => {
-// 					listenerApi.dispatch(fetchUserContextAction());
-// 				});
-// 			}
-// 			return;
-// 		}
-// 		if (restoreAuthSessionThunk.fulfilled.match(action)) {
-// 			if (action.payload && getAccessToken()) {
-// 				queueMicrotask(() => {
-// 					listenerApi.dispatch(fetchUserContextAction());
-// 				});
-// 			}
-// 		}
-// 	},
-// });
-
 export const store = configureStore({
 	reducer: createRootReducer(),
-	// middleware: (getDefaultMiddleware) =>
-	// 	getDefaultMiddleware().prepend(authSessionListener.middleware),
+	middleware: (getDefaultMiddleware) =>
+		getDefaultMiddleware().prepend(authorizationErrorListener.middleware),
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

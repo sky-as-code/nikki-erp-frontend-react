@@ -1,5 +1,7 @@
 import {Box, Container, Flex } from '@mantine/core';
-import { useMemo, useState } from 'react';
+import { useListAllModules } from '@nikkierp/shell/erpModules';
+import React, { useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 import { MobileBottomBar } from './MobileButtomBar';
 import { ModuleFilterDrawer, ModuleFilterPanel } from './ModuleFilterPanel';
@@ -21,6 +23,8 @@ export interface FilterState {
 }
 
 export function ModuleHomePage(): React.ReactNode {
+	const dispatch = useDispatch();
+	const listAll = useListAllModules();
 	const {
 		viewMode,
 		setViewMode,
@@ -30,9 +34,13 @@ export function ModuleHomePage(): React.ReactNode {
 		filters,
 		setFilters,
 		filteredModules,
-	} = useQueryModule();
+	} = useQueryModule(listAll.data);
 
 	const [drawerOpened, setDrawerOpened] = useState(false);
+
+	React.useEffect(() => {
+		dispatch(listAll.action() as any);
+	}, [filteredModules]);
 
 	const gridView = useMemo(
 		() => <ModuleGridView modules={filteredModules} />,
@@ -72,7 +80,8 @@ export function ModuleHomePage(): React.ReactNode {
 							/>
 						</Box>
 						<Box h={'100%'} p={0}>
-							{viewMode === 'grid' ? gridView : listView}
+							{listAll.isError && <div>Error loading modules: {listAll.error}</div>}
+							{listAll.isDone && viewMode === 'grid' ? gridView : listView}
 						</Box>
 					</Box>
 				</Flex>

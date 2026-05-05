@@ -1,88 +1,88 @@
-import { useUIState } from '@nikkierp/shell/contexts';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router';
+// import { useUIState } from '@nikkierp/shell/contexts';
+// import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+// import React from 'react';
+// import { useTranslation } from 'react-i18next';
+// import { useNavigate, useParams } from 'react-router';
 
-import { IdentityDispatch, userActions } from '../../../appState';
-import { selectDeleteUser, selectUpdateUser, selectGetUser } from '../../../appState/user';
-import { useOrgScopeRef } from '../../../hooks';
+// import { IdentityDispatch, userActions } from '../../../appState';
+// import { selectDeleteUser, selectUpdateUser, selectGetUser } from '../../../appState/user';
+// import { useOrgScopeRef } from '../../../hooks';
 
-// eslint-disable-next-line max-lines-per-function
-export function useUserDetailHandlers() {
-	const { userId } = useParams();
-	const dispatch: IdentityDispatch = useMicroAppDispatch();
-	const navigate = useNavigate();
-	const { notification } = useUIState();
-	const { t } = useTranslation();
-	const userDetail = useMicroAppSelector(selectGetUser);
-	const scopeRef = useOrgScopeRef();
+// // eslint-disable-next-line max-lines-per-function
+// export function useUserDetailHandlers() {
+// 	const { userId } = useParams();
+// 	const dispatch: IdentityDispatch = useMicroAppDispatch();
+// 	const navigate = useNavigate();
+// 	const { notification } = useUIState();
+// 	const { t } = useTranslation();
+// 	const userDetail = useMicroAppSelector(selectGetUser);
+// 	const scopeRef = useOrgScopeRef();
 
-	const updateCommand = useMicroAppSelector(selectUpdateUser);
-	const deleteCommand = useMicroAppSelector(selectDeleteUser);
-	const isLoadingDetail = userDetail?.status;
+// 	const updateCommand = useMicroAppSelector(selectUpdateUser);
+// 	const deleteCommand = useMicroAppSelector(selectDeleteUser);
+// 	const isLoadingDetail = userDetail?.status;
 
-	React.useEffect(() => {
-		if (updateCommand.status === 'success') {
-			notification.showInfo(
-				t('nikki.identity.user.messages.updateSuccess'), '',
-			);
-			dispatch(userActions.resetUpdateUser());
-			navigate('..', { relative: 'path' });
-		}
+// 	React.useEffect(() => {
+// 		if (updateCommand.status === 'success') {
+// 			notification.showInfo(
+// 				t('nikki.identity.user.messages.updateSuccess'), '',
+// 			);
+// 			dispatch(userActions.resetUpdateUser());
+// 			navigate('..', { relative: 'path' });
+// 		}
 
-		if (updateCommand.status === 'error') {
-			notification.showError(
-				t('nikki.identity.user.messages.updateError'), '',
-			);
-			dispatch(userActions.resetUpdateUser());
-		}
-	}, [updateCommand.status, dispatch, navigate, notification, t]);
+// 		if (updateCommand.status === 'error') {
+// 			notification.showError(
+// 				t('nikki.identity.user.messages.updateError'), '',
+// 			);
+// 			dispatch(userActions.resetUpdateUser());
+// 		}
+// 	}, [updateCommand.status, dispatch, navigate, notification, t]);
 
-	React.useEffect(() => {
-		if (deleteCommand.status === 'success') {
-			notification.showInfo(
-				t('nikki.identity.user.messages.deleteSuccess'), '',
-			);
-			dispatch(userActions.resetDeleteUser());
-			dispatch(userActions.getUser({ id: userId || '' }));
-			navigate('..', { relative: 'path' });
-		}
+// 	React.useEffect(() => {
+// 		if (deleteCommand.status === 'success') {
+// 			notification.showInfo(
+// 				t('nikki.identity.user.messages.deleteSuccess'), '',
+// 			);
+// 			dispatch(userActions.resetDeleteUser());
+// 			dispatch(userActions.getUser({ id: userId || '' }));
+// 			navigate('..', { relative: 'path' });
+// 		}
 
-		if (deleteCommand.status === 'error') {
-			notification.showError(
-				t('nikki.identity.user.messages.deleteError'), '',
-			);
-			dispatch(userActions.resetDeleteUser());
-		}
-	}, [deleteCommand.status, dispatch, navigate, notification, t]);
+// 		if (deleteCommand.status === 'error') {
+// 			notification.showError(
+// 				t('nikki.identity.user.messages.deleteError'), '',
+// 			);
+// 			dispatch(userActions.resetDeleteUser());
+// 		}
+// 	}, [deleteCommand.status, dispatch, navigate, notification, t]);
 
-	const handleUpdate = (data: any) => {
-		if (userDetail?.data.id) {
-			const dataWithTag = { ...data, etag: userDetail.data.etag };
-			dispatch(userActions.updateUser({
-				id: userDetail.data.id,
-				etag: userDetail.data.etag,
-				...dataWithTag,
-			}));
-		}
-	};
+// 	const handleUpdate = (data: any) => {
+// 		if (userDetail?.data.id) {
+// 			const dataWithTag = { ...data, etag: userDetail.data.etag };
+// 			dispatch(userActions.updateUser({
+// 				id: userDetail.data.id,
+// 				etag: userDetail.data.etag,
+// 				...dataWithTag,
+// 			}));
+// 		}
+// 	};
 
-	const handleDelete = () => {
-		if (userDetail?.data.id) {
-			dispatch(userActions.deleteUser({ id: userDetail.data.id }));
-		}
-	};
+// 	const handleDelete = () => {
+// 		if (userDetail?.data.id) {
+// 			dispatch(userActions.deleteUser({ id: userDetail.data.id }));
+// 		}
+// 	};
 
-	React.useEffect(() => {
-		if (!userId) return;
+// 	React.useEffect(() => {
+// 		if (!userId) return;
 
-		dispatch(userActions.getUser({ id: userId }));
-	}, [userId, dispatch]);
+// 		dispatch(userActions.getUser({ id: userId }));
+// 	}, [userId, dispatch]);
 
-	return {
-		isLoadingDetail,
-		handleDelete,
-		handleUpdate,
-	};
-}
+// 	return {
+// 		isLoadingDetail,
+// 		handleDelete,
+// 		handleUpdate,
+// 	};
+// }
