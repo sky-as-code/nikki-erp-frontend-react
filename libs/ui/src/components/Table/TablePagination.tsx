@@ -110,7 +110,7 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
 
 	return <Group justify='space-between' mt='xs' px='xs'>
 		<Box>
-			{(totalItems || totalItems === 0) && <Text size='sm'>{translate('nikki.general.pagination.items_found', { count: totalItems })}</Text>}
+			{(totalItems || totalItems === 0) && <Text size='sm' c='dimmed'>{translate('nikki.general.pagination.items_found', { count: totalItems })}</Text>}
 		</Box>
 		<Group gap={'sm'}>
 			<Group gap={2} align='center'>

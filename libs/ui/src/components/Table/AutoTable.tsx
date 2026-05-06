@@ -19,101 +19,36 @@ function getColumnLabel(schema: ModelSchema, fieldName: string): string {
 	return extractLabel(field.label);
 }
 
-export type ColumnSize = {
-	width?: number | string;
-	minWidth?: number | string;
-	maxWidth?: number | string;
-	flex?: number;
-};
-
-export type AutoTableProps = {
+export type AutoTableProps = React.ComponentProps<typeof Table> & {
 	columns: string[];
-	columnSizes?: Record<string, ColumnSize>;
 	columnAsLink?: string;
 	columnAsLinkHref?: (rowData: any) => string;
 	columnAsId?: string;
 	columnRenderers?: Record<string, (row: Record<string, unknown>) => React.ReactNode>;
-	headerRenderers?: Record<string, (columnName: string, schema: ModelSchema) => React.ReactNode>;
+	headerRenderers?: Record<string, (columnName: string) => React.ReactNode>;
 	data: Record<string, unknown>[];
 	isLoading?: boolean;
 	schema: ModelSchema;
+	theadProps?: React.ComponentProps<typeof Table.Thead>;
 };
 
-function parsePxValue(value: number | string): number | null {
-	if (typeof value === 'number') return value;
-	if (value.endsWith('px')) return parseFloat(value);
-	return null;
-}
-
-function buildColumnWidths(
-	columns: string[],
-	sizes: Record<string, ColumnSize>,
-): Record<string, string | number> {
-	let fixedPx = 0;
-	let totalFlex = 0;
-
-	for (const col of columns) {
-		const size = sizes[col];
-		const px = size?.width != null ? parsePxValue(size.width) : null;
-		if (size?.width != null && px != null) {
-			fixedPx += px;
-		}
-		else {
-			totalFlex += size?.flex ?? 1;
-		}
-	}
-
-	const widths: Record<string, string | number> = {};
-	for (const col of columns) {
-		const size = sizes[col];
-		if (size?.width != null) {
-			widths[col] = size.width;
-		}
-		else {
-			const flex = size?.flex ?? 1;
-			const ratio = flex / totalFlex;
-			widths[col] = fixedPx > 0
-				? `calc((100% - ${fixedPx}px) * ${ratio})`
-				: `${(ratio * 100).toFixed(4)}%`;
-		}
-	}
-	return widths;
-}
-
-function computeTableMinWidth(
-	columns: string[],
-	sizes: Record<string, ColumnSize>,
-): number | undefined {
-	let total = 0;
-	let hasMin = false;
-	for (const col of columns) {
-		const size = sizes[col];
-		const min = size?.minWidth != null ? parsePxValue(size.minWidth) : null;
-		const fixed = size?.width != null ? parsePxValue(size.width) : null;
-		const px = min ?? fixed;
-		if (px != null) {
-			total += px;
-			hasMin = true;
-		}
-	}
-	return hasMin ? total : undefined;
-}
 
 const AutoTableHead: React.FC<{
 	columns: string[];
-	headerRenderers?: Record<string, (columnName: string, schema: ModelSchema) => React.ReactNode>;
+	renderers?: Record<string, (columnName: string) => React.ReactNode>;
 	schema: ModelSchema;
-}> = React.memo(({ columns, headerRenderers, schema }) => {
+	theadProps?: React.ComponentProps<typeof Table.Thead>;
+}> = React.memo(({ columns, renderers, schema, theadProps }) => {
 	const { t: translate } = useTranslation();
 
 	return (
-		<Table.Thead>
+		<Table.Thead {...theadProps}>
 			<Table.Tr>
 				{columns.map((col) => {
-					if (headerRenderers?.[col]) {
+					if (renderers?.[col]) {
 						return (
 							<Table.Th key={col}>
-								{headerRenderers[col](col, schema)}
+								{renderers[col](col)}
 							</Table.Th>
 						);
 					}
@@ -128,61 +63,55 @@ const AutoTableHead: React.FC<{
 	);
 });
 
-export const AutoTable: React.FC<AutoTableProps> = (props) => {
-	const { columnAsId = 'id' } = props;
-	const defProps = { ...props, columnAsId };
+export const AutoTable: React.FC<AutoTableProps> = ({
+	columnAsId = 'id',
+	columns,
+	columnAsLink,
+	columnAsLinkHref,
+	columnRenderers,
+	headerRenderers,
+	isLoading,
+	data,
+	schema,
+	theadProps,
+	...tableProps
+}) => {
 
 	const validColumns = useMemo(() => {
-		const available = getAvailableColumns(props.schema);
-		return props.columns.filter((col) => {
-			if (props.columnRenderers?.[col]) return true;
+		const available = getAvailableColumns(schema);
+		return columns.filter((col) => {
+			if (columnRenderers?.[col]) return true;
 			return available.includes(col);
 		});
-	}, [props.columns, props.schema, props.columnRenderers]);
-
-	const hasColumnSizes = !!props.columnSizes;
-
-	const colWidths = useMemo(() => {
-		if (!hasColumnSizes) return {};
-		return buildColumnWidths(validColumns, props.columnSizes!);
-	}, [validColumns, props.columnSizes, hasColumnSizes]);
-
-	const tableMinWidth = useMemo(() => {
-		if (!hasColumnSizes) return undefined;
-		return computeTableMinWidth(validColumns, props.columnSizes!);
-	}, [validColumns, props.columnSizes, hasColumnSizes]);
-
-	const tableStyle: React.CSSProperties | undefined = hasColumnSizes
-		? { tableLayout: 'fixed', width: '100%', minWidth: tableMinWidth }
-		: undefined;
+	}, [columns, schema, columnRenderers]);
 
 	const tableEl = (
-		<Table style={tableStyle}>
-			{hasColumnSizes && (
-				<colgroup>
-					{validColumns.map((col) => (
-						<col key={col} style={{ width: colWidths[col] }} />
-					))}
-				</colgroup>
-			)}
+		<Table {...tableProps}>
 			<AutoTableHead
 				columns={validColumns}
-				headerRenderers={props.headerRenderers}
-				schema={props.schema}
+				renderers={headerRenderers}
+				schema={schema}
+				theadProps={theadProps}
 			/>
 			<Table.Tbody>
-				{props.isLoading && (
+				{isLoading && (
 					<Table.Tr>
 						<Table.Td colSpan={validColumns.length} className='text-center'>
 							<Loader />
 						</Table.Td>
 					</Table.Tr>
 				)}
-				{!props.isLoading && props.data.map((row, index) => (
-					<Table.Tr key={String(row[defProps.columnAsId!] || index)}>
+				{!isLoading && data.map((row, index) => (
+					<Table.Tr key={String(row[columnAsId!] || index)}>
 						{validColumns.map((col) => (
 							<Table.Td key={col}>
-								{formatCellValue(col, row, defProps)}
+								{formatCellValue(col, row, {
+									columnAsId,
+									columnAsLink,
+									columnAsLinkHref,
+									columnRenderers,
+									schema,
+								})}
 							</Table.Td>
 						))}
 					</Table.Tr>
@@ -190,10 +119,6 @@ export const AutoTable: React.FC<AutoTableProps> = (props) => {
 			</Table.Tbody>
 		</Table>
 	);
-
-	if (tableMinWidth) {
-		return <div style={{ overflowX: 'auto' }}>{tableEl}</div>;
-	}
 	return tableEl;
 };
 
@@ -201,7 +126,7 @@ export const AutoTable: React.FC<AutoTableProps> = (props) => {
 function formatCellValue(
 	fieldName: string,
 	rowData: Record<string, unknown>,
-	tableProps: AutoTableProps,
+	tableProps: Pick<AutoTableProps, 'columnRenderers' | 'schema' | 'columnAsLink' | 'columnAsLinkHref' | 'columnAsId'>,
 ): React.ReactNode {
 	if (tableProps.columnRenderers?.[fieldName]) {
 		return tableProps.columnRenderers[fieldName](rowData);

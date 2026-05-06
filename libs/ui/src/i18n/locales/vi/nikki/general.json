@@ -33,7 +33,9 @@
 		"viewDetails": "Xem chi tiết",
 		"apply": "Áp dụng",
 		"restore": "Khôi phục",
-		"download": "Tải xuống"
+		"download": "Tải xuống",
+		"preview": "Xem trước",
+		"viewDetail": "Xem chi tiết"
 	},
 	"selected": "Đã chọn",
 	"boolean": {
