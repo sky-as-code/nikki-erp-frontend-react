@@ -1,6 +1,7 @@
 import { Stack } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ControlPanelAction } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
 import { VariantCreateForm } from '../../features/variant/components';
@@ -12,6 +13,7 @@ import { JsonToString } from '../../utils/serializer';
 
 
 export const VariantCreatePageBody: React.FC = () => {
+	const { t } = useTranslation();
 	const { 
 		isLoading, 
 		handleCancel, 
@@ -22,16 +24,16 @@ export const VariantCreatePageBody: React.FC = () => {
 
 	const breadcrumbs = productId
 		? [
-				{ title: 'Inventory', href: '../' },
-				{ title: 'Products', href: '../products' },
+				{ title: t('nikki.inventory.breadcrumbs.home'), href: '../' },
+				{ title: t('nikki.inventory.menu.products'), href: '../products' },
 				{ title: JsonToString(products.find(p => p.id === productId)?.name), href: `../products/${productId}` },
-				{ title: 'Variants', href: '#' },
-				{ title: 'Create Variant', href: '#' },
+				{ title: t('nikki.inventory.menu.variants'), href: '#' },
+				{ title: t('nikki.inventory.breadcrumbs.createVariant'), href: '#' },
 		  ]
 		: [
-				{ title: 'Inventory', href: '../' },
-				{ title: 'Variants', href: '..' },
-				{ title: 'Create Variant', href: '#' },
+				{ title: t('nikki.inventory.breadcrumbs.home'), href: '../' },
+				{ title: t('nikki.inventory.menu.variants'), href: '..' },
+				{ title: t('nikki.inventory.breadcrumbs.createVariant'), href: '#' },
 		  ];
 
 	return (
@@ -41,8 +43,8 @@ export const VariantCreatePageBody: React.FC = () => {
 			sections={[
 				<ControlPanelAction
 					actions={[
-						{ label: 'Create', type: 'submit' as const, form: 'variant-create-form' as const },
-						{ label: 'Cancel', variant: 'outline', onClick: handleCancel },
+						{ label: t('nikki.general.actions.create'), type: 'submit' as const, form: 'variant-create-form' as const },
+						{ label: t('nikki.general.actions.cancel'), variant: 'outline', onClick: handleCancel },
 					]}
 				/>,
 			]}

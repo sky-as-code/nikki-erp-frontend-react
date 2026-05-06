@@ -11,6 +11,7 @@ import {
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import {
 	AutoField,
+	EntityDisplayField,
 	EntitySelectField,
 	FormFieldProvider,
 	FormStyleProvider,
@@ -175,18 +176,23 @@ function useVariantAttributes(orgId: string, productId?: string) {
 function RowField({
 	row,
 	attributes,
+	usedAttributeIds,
 	onChangeAttribute,
 	onChangeValue,
 	onRemove,
 }: {
 	row: VariantAttributeRow;
 	attributes: Attribute[];
+	usedAttributeIds: string[];
 	onChangeAttribute: (id: string, attrId?: string) => void;
 	onChangeValue: (id: string, value?: string | number | Record<string, string>) => void;
 	onRemove: (id: string) => void;
 }) {
 	const selectedAttribute = attributes.find(a => a.id === row.attributeId);
 	const enumValues = selectedAttribute?.enumValue ?? [];
+	const availableAttributes = attributes.filter(
+		a => a.id === row.attributeId || !usedAttributeIds.includes(a.id)
+	);
 
 	return (
 		<Paper withBorder p="md">
@@ -201,7 +207,7 @@ function RowField({
 				<Select
 					label="Code Name"
 					placeholder="Chọn thuộc tính"
-					data={attributes.map(a => ({
+					data={availableAttributes.map(a => ({
 						value: a.id,
 						label: `${a.codeName} (${JsonToString(a.displayName)})`,
 					}))}
@@ -255,12 +261,13 @@ function FormContent({
 	const orgId = useActiveOrgWithDetails()?.id ?? 'org-1';
 	const [selectedProductId, setSelectedProductId] = React.useState(productId);
 
-	const { attributes, rows, setRows } = useVariantAttributes(orgId, selectedProductId);
+	const effectiveProductId = productId ?? selectedProductId;
+	const { attributes, rows, setRows } = useVariantAttributes(orgId, effectiveProductId);
 
-	const submit = (data: VariantFormValues) => {
+	const submit = (data: any) => {
 		onSubmit({
 			...data,
-			productId: data.productId || selectedProductId,
+			productId: productId ?? data.productId ?? selectedProductId,
 			name: StringToJson(data.name ?? ''),
 			attributes: buildAttributesPayload(rows, attributes),
 		});
@@ -269,13 +276,22 @@ function FormContent({
 	return (
 		<form id="variant-create-form" onSubmit={form((data) => submit(data))}>
 			<Stack>
-				<EntitySelectField
-					fieldName="productId"
-					entities={products}
-					getEntityId={p => p.id}
-					getEntityName={p => JsonToString(p.name)}
-					onChange={(value) => setSelectedProductId(value)}
-				/>
+				{productId ? (
+					<EntityDisplayField
+						fieldName="productId"
+						entities={products}
+						getEntityId={p => p.id}
+						getEntityName={p => JsonToString(p.name)}
+					/>
+				) : (
+					<EntitySelectField
+						fieldName="productId"
+						entities={products}
+						getEntityId={p => p.id}
+						getEntityName={p => JsonToString(p.name)}
+						onChange={(value) => setSelectedProductId(value)}
+					/>
+				)}
 
 				<AutoField name="name" />
 				<AutoField name="sku" />
@@ -286,30 +302,38 @@ function FormContent({
 
 				<Divider label="Attributes" />
 
-				{rows.map(row => (
-					<RowField
-						key={row.rowId}
-						row={row}
-						attributes={attributes}
-						onChangeAttribute={(id, attrId) =>
-							setRows(r =>
-								r.map(x =>
-									x.rowId === id ? { ...x, attributeId: attrId, value: undefined } : x
+				{rows.map(row => {
+					const usedAttributeIds = rows
+						.filter(r => r.rowId !== row.rowId)
+						.map(r => r.attributeId)
+						.filter((id): id is string => Boolean(id));
+
+					return (
+						<RowField
+							key={row.rowId}
+							row={row}
+							attributes={attributes}
+							usedAttributeIds={usedAttributeIds}
+							onChangeAttribute={(id, attrId) =>
+								setRows(r =>
+									r.map(x =>
+										x.rowId === id ? { ...x, attributeId: attrId, value: undefined } : x
+									)
 								)
-							)
-						}
-						onChangeValue={(id, value) =>
-							setRows(r =>
-								r.map(x =>
-									x.rowId === id ? { ...x, value } : x
+							}
+							onChangeValue={(id, value) =>
+								setRows(r =>
+									r.map(x =>
+										x.rowId === id ? { ...x, value } : x
+									)
 								)
-							)
-						}
-						onRemove={id =>
-							setRows(r => r.filter(x => x.rowId !== id))
-						}
-					/>
-				))}
+							}
+							onRemove={id =>
+								setRows(r => r.filter(x => x.rowId !== id))
+							}
+						/>
+					);
+				})}
 
 				<Button
 					type="button"
@@ -334,6 +358,11 @@ export function VariantCreateForm({
 	productId, 
 	onSubmit 
 }: VariantCreateFormProps): React.ReactElement {
+	const modelValue = React.useMemo(
+		() => (productId ? { productId } : undefined),
+		[productId],
+	);
+
 	return (
 		<Paper p="md">
 			<FormStyleProvider layout="onecol">
@@ -341,6 +370,7 @@ export function VariantCreateForm({
 					formVariant="create"
 					modelSchema={schema}
 					modelLoading={isLoading}
+					modelValue={modelValue}
 				>
 					{({ handleSubmit: form }) => (
 						<FormContent

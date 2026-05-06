@@ -3,101 +3,101 @@
 	"fields": {
 		"id": {
 			"type": "string",
-			"label": "ID",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.id' }",
 			"hidden": true,
 			"constraints": [{ "type": "length", "max": 36 }]
 		},
 		"productId": {
 			"type": "string",
-			"label": "Product ID",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.productId' }",
 			"required": { "create": true, "update": false },
 			"hidden": true
 		},
 		"displayName": {
 			"type": "string",
-			"label": "Display Name",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.displayName' }",
 			"required": { "create": true, "update": false },
 			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
 		},
 		"codeName": {
 			"type": "string",
-			"label": "Code Name",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.codeName' }",
 			"required": { "create": true, "update": false },
 			"constraints": [{ "type": "length", "min": 1, "max": 100 }]
 		},
 		"dataType": {
 			"type": "enum",
-			"label": "Data Type",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.dataType' }",
 			"required": { "create": true, "update": false },
 			"constraints": [{ "type": "required" }],
 			"enum": [
-				{ "value": "string", "label": "String" },
-				{ "value": "number", "label": "Number" },
-				{ "value": "bool", "label": "Boolean" }
+				{ "value": "text", "label": "{ \"$ref\": 'nikki.inventory.attribute.dataType.text' }" },
+				{ "value": "number", "label": "{ \"$ref\": 'nikki.inventory.attribute.dataType.number' }" },
+				{ "value": "bool", "label": "{ \"$ref\": 'nikki.inventory.attribute.dataType.bool' }" }
 			]
 		},
 		"isEnum": {
 			"type": "boolean",
-			"label": "Is Enum",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.isEnum' }",
 			"required": { "create": false, "update": false }
 		},
 		"isRequired": {
 			"type": "boolean",
-			"label": "Is Required",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.isRequired' }",
 			"required": { "create": true, "update": false }
 		},
 		"sortIndex": {
 			"type": "integer",
-			"label": "Sort Index",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.sortIndex' }",
 			"required": { "create": false, "update": false },
 			"constraints": [{ "type": "value_range", "min": 0 }]
 		},
 		"groupId": {
 			"type": "string",
-			"label": "Group ID",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.groupId' }",
 			"hidden": true
 		},
 		"enumValue": {
 			"type": "array",
-			"label": "Enum Value"
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.enumValue' }"
 		},
 		"enumValueSort": {
 			"type": "boolean",
-			"label": "Enum Value Sort",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.enumValueSort' }",
 			"hidden": true
 		},
 		"valuesCount": {
 			"type": "integer",
-			"label": "Values Count"
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.valuesCount' }"
 		},
 		"variantsCount": {
 			"type": "integer",
-			"label": "Variants Count"
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.variantsCount' }"
 		},
 		"attributeValues": {
 			"type": "array",
-			"label": "Attribute Values",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.attributeValues' }",
 			"hidden": true
 		},
 		"variants": {
 			"type": "array",
-			"label": "Variants",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.variants' }",
 			"hidden": true
 		},
 		"etag": {
 			"type": "string",
-			"label": "Etag",
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.etag' }",
 			"hidden": true
 		},
 		"createdAt": {
 			"type": "date",
 			"format": "date-time",
-			"label": "Created At"
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.createdAt' }"
 		},
 		"updatedAt": {
 			"type": "date",
 			"format": "date-time",
-			"label": "Updated At"
+			"label": "{ \"$ref\": 'nikki.inventory.attribute.fields.updatedAt' }"
 		}
 	}
 }

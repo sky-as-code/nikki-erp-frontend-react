@@ -1,638 +1,449 @@
-import { Anchor, Badge, Box, Divider, Group, Image, Paper, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+﻿/* eslint-disable max-lines-per-function */
 import {
-	IconArrowRight,
-	IconArrowUpRight,
+	Avatar,
+	Badge,
+	Box,
+	Card,
+	Center,
+	Divider,
+	Grid,
+	Group,
+	Image,
+	Paper,
+	SimpleGrid,
+	Skeleton,
+	Stack,
+	Text,
+	ThemeIcon,
+	Title,
+	Tooltip,
+	ActionIcon,
+} from '@mantine/core';
+import {
 	IconBox,
 	IconCategory,
-	IconRulerMeasure,
-	IconVersions,
+	IconRefresh,
+	IconRuler2,
+	IconTag,
+	IconArrowRight,
 } from '@tabler/icons-react';
 import { withWindowTitle } from '@nikkierp/ui/components';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import React from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
-import {
-	mockProductCategoriesData,
-	mockProductsData,
-	mockUnitCategoriesData,
-	mockUnitsData,
-	mockVariantsData,
-} from '../../mockData';
+import { productActions, selectProductList } from '../../appState/product';
+import { productCategoryActions, selectProductCategoryList } from '../../appState/productCategory';
+import { unitCategoryActions, selectUnitCategoryList } from '../../appState/unitCategory';
+import { unitActions, selectUnitList } from '../../appState/unit';
+import { PageContainer } from '../../components/PageContainer';
+import { JsonToString } from '../../utils/serializer';
 
-type ShowcaseItem = {
-	id: string;
-	title: string;
-	to: string;
-	imageUrl?: string;
-	accent: string;
-};
+import type { InventoryDispatch } from '../../appState';
+import type { Product } from '../../features/product/types';
+import type { ProductCategory } from '../../features/productCategory/types';
+import type { UnitCategory } from '../../features/unitCategory/types';
+import type { Unit } from '../../features/unit/types';
 
-type ShowcaseCardTone = 'rose' | 'sage' | 'sun';
 
-type ShowcaseCardData = {
-	title: string;
-	description: string;
-	seeMoreLabel: string;
-	seeMoreTo: string;
-	items: ShowcaseItem[];
-	tone: ShowcaseCardTone;
-};
+// ─── Stat Card ────────────────────────────────────────────────────────────────
 
-const ACCENT_COLORS = ['#f8d6ce', '#dce9df', '#f9e1cc', '#f6df7d', '#d8e8f8', '#efe8d7'];
-
-type DashboardTone = 'slate' | 'sand' | 'mist';
-
-const DASHBOARD_TONE: Record<DashboardTone, { background: string; border: string; iconBg: string }> = {
-	slate: {
-		background: 'linear-gradient(140deg, rgba(228, 235, 243, 0.92) 0%, rgba(249, 250, 251, 1) 62%)',
-		border: 'rgba(25, 30, 35, 0.14)',
-		iconBg: 'rgba(33, 37, 41, 0.92)',
-	},
-	sand: {
-		background: 'linear-gradient(140deg, rgba(246, 236, 222, 1) 0%, rgba(250, 250, 249, 1) 62%)',
-		border: 'rgba(25, 30, 35, 0.14)',
-		iconBg: 'rgba(122, 71, 8, 0.92)',
-	},
-	mist: {
-		background: 'linear-gradient(140deg, rgba(224, 243, 237, 1) 0%, rgba(248, 250, 249, 1) 62%)',
-		border: 'rgba(25, 30, 35, 0.14)',
-		iconBg: 'rgba(16, 102, 77, 0.92)',
-	},
-};
-
-const CARD_TONE_BACKGROUND: Record<ShowcaseCardTone, string> = {
-	rose: '#f2f3f5',
-	sage: '#eef1ee',
-	sun: '#f4f2ea',
-};
-
-function formatCount(value: number): string {
-	return value.toLocaleString();
-}
-
-function toDisplayText(value: unknown): string {
-	if (typeof value === 'string') {
-		return value;
-	}
-
-	if (value && typeof value === 'object') {
-		const localized = value as Record<string, string>;
-		return localized.en ?? Object.values(localized)[0] ?? '';
-	}
-
-	return '';
-}
-
-function chunkItems<T>(items: T[], size: number): T[][] {
-	const chunks: T[][] = [];
-	for (let index = 0; index < items.length; index += size) {
-		chunks.push(items.slice(index, index + size));
-	}
-	return chunks;
-}
-
-function getProductItems(): ShowcaseItem[] {
-	return mockProductCategoriesData.map((category, index) => {
-		const title = toDisplayText(category.name) || category.id;
-		const product = mockProductsData.find((item) => item.productCategoryIds?.includes(category.id));
-		return {
-			id: category.id,
-			title,
-			to: `../product-categories/${category.id}`,
-			imageUrl: product?.thumbnailURL,
-			accent: ACCENT_COLORS[index % ACCENT_COLORS.length],
-		};
-	});
-}
-
-function getUnitItems(): ShowcaseItem[] {
-	return mockUnitCategoriesData.map((category, index) => {
-		const title = toDisplayText(category.name) || category.id;
-		return {
-			id: category.id,
-			title,
-			to: `../unit-categories/${category.id}`,
-			accent: ACCENT_COLORS[(index + 2) % ACCENT_COLORS.length],
-		};
-	});
-}
-
-type OverviewAction = {
+interface StatCardProps {
 	label: string;
-	to: string;
-};
-
-type OverviewStatCardProps = {
-	id: string;
-	title: string;
-	description: string;
-	value: string;
-	meta: Array<{ label: string; value: string }>;
-	onOpen: () => void;
-	actions: OverviewAction[];
+	value: number;
 	icon: React.ReactNode;
-	tone: DashboardTone;
-	isHovered: boolean;
-	onHoverChange: (next: boolean) => void;
-};
+	color: string;
+	onClick?: () => void;
+}
 
-const OverviewStatCard: React.FC<OverviewStatCardProps> = ({
-	title,
-	description,
-	value,
-	meta,
-	onOpen,
-	actions,
-	icon,
-	tone,
-	isHovered,
-	onHoverChange,
-}) => {
-	const toneTokens = DASHBOARD_TONE[tone];
-
+function StatCard({ label, value, icon, color, onClick }: StatCardProps) {
 	return (
 		<Paper
-			p='lg'
-			radius={0}
-			tabIndex={0}
-			role='link'
-			onClick={onOpen}
-			onKeyDown={(event) => {
-				if (event.key === 'Enter' || event.key === ' ') {
-					event.preventDefault();
-					onOpen();
-				}
-			}}
-			onMouseEnter={() => onHoverChange(true)}
-			onMouseLeave={() => onHoverChange(false)}
-			onFocus={() => onHoverChange(true)}
-			onBlur={() => onHoverChange(false)}
-			style={{
-				cursor: 'pointer',
-				height: '100%',
-				background: toneTokens.background,
-				border: `1px solid ${toneTokens.border}`,
-				boxShadow: isHovered
-					? '0 14px 32px rgba(15, 18, 20, 0.14)'
-					: '0 10px 24px rgba(15, 18, 20, 0.09)',
-				transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
-				transition: 'transform 160ms ease, box-shadow 160ms ease',
-				outline: isHovered ? '2px solid rgba(33, 37, 41, 0.18)' : 'none',
-				outlineOffset: 2,
-			}}
+			p='md'
+			withBorder
+			style={{ cursor: onClick ? 'pointer' : 'default' }}
+			onClick={onClick}
 		>
-			<Stack gap='sm' h='100%'>
-				<Group justify='space-between' align='flex-start' gap='sm' wrap='nowrap'>
-					<Stack gap={4}>
-						<Group gap='sm' wrap='nowrap'>
-							<ThemeIcon
-								size={34}
-								radius={0}
-								style={{ background: toneTokens.iconBg, color: 'white', boxShadow: '0 10px 20px rgba(0, 0, 0, 0.18)' }}
-							>
-								{icon}
-							</ThemeIcon>
-							<Stack gap={0}>
-								<Text size='xs' tt='uppercase' fw={800} style={{ letterSpacing: '0.08em' }}>
-									{title}
-								</Text>
-								<Text size='xs' c='dimmed'>
-									{description}
-								</Text>
-							</Stack>
-						</Group>
-					</Stack>
-					<Group gap={6} wrap='nowrap' align='baseline'>
-						<Text fw={900} fz={34} style={{ letterSpacing: '-0.03em', lineHeight: 1 }}>
-							{value}
-						</Text>
-						<IconArrowUpRight size={16} style={{ opacity: 0.75 }} />
-					</Group>
-				</Group>
-
-				<Group gap='sm' wrap='wrap'>
-					{meta.map((item) => (
-						<Badge key={item.label} variant='light' color='gray'>
-							{item.label}: {item.value}
-						</Badge>
-					))}
-				</Group>
-
-				<Divider style={{ opacity: 0.55 }} />
-
-				<Group gap='md' mt='auto' wrap='wrap'>
-					{actions.map((action) => (
-						<Anchor
-							key={action.to}
-							component={Link}
-							to={action.to}
-							fw={700}
-							size='sm'
-							onClick={(event) => event.stopPropagation()}
-							style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-						>
-							<Text span inherit>
-								{action.label}
-							</Text>
-							<IconArrowRight size={14} />
-						</Anchor>
-					))}
-				</Group>
-			</Stack>
+			<Group justify='space-between' align='flex-start'>
+				<Stack gap={4}>
+					<Text size='xs' c='dimmed' tt='uppercase' fw={600}>
+						{label}
+					</Text>
+					<Title order={2}>{value}</Title>
+				</Stack>
+				<ThemeIcon color={color} variant='light' size='xl' radius='md'>
+					{icon}
+				</ThemeIcon>
+			</Group>
 		</Paper>
 	);
-};
+}
 
-type QuickLinkTone = 'ink' | 'lime' | 'clay';
 
-const QUICK_LINK_TONE: Record<QuickLinkTone, { background: string; border: string; iconBg: string }> = {
-	ink: {
-		background: 'linear-gradient(135deg, rgba(235, 238, 242, 1) 0%, rgba(249, 250, 251, 1) 70%)',
-		border: 'rgba(25, 30, 35, 0.14)',
-		iconBg: 'rgba(33, 37, 41, 0.92)',
-	},
-	lime: {
-		background: 'linear-gradient(135deg, rgba(229, 245, 236, 1) 0%, rgba(249, 251, 250, 1) 70%)',
-		border: 'rgba(25, 30, 35, 0.14)',
-		iconBg: 'rgba(16, 102, 77, 0.92)',
-	},
-	clay: {
-		background: 'linear-gradient(135deg, rgba(248, 233, 215, 1) 0%, rgba(251, 250, 249, 1) 70%)',
-		border: 'rgba(25, 30, 35, 0.14)',
-		iconBg: 'rgba(122, 71, 8, 0.92)',
-	},
-};
+// ─── Product Category Card ─────────────────────────────────────────────────────
 
-type QuickLinkItem = {
-	id: string;
-	label: string;
-	description: string;
-	to: string;
-	icon: React.ReactNode;
-	tone: QuickLinkTone;
-};
+interface ProductCategoryCardProps {
+	category: ProductCategory;
+	products: Product[];
+	onClick: () => void;
+}
 
-const QuickLinkCard: React.FC<{
-	item: QuickLinkItem;
-	isHovered: boolean;
-	onHoverChange: (next: boolean) => void;
-}> = ({ item, isHovered, onHoverChange }) => {
-	const toneTokens = QUICK_LINK_TONE[item.tone];
+const PLACEHOLDER_IMAGE = 'https://placehold.co/64x64?text=No+Image';
+
+function ProductCategoryCard({ category, products, onClick }: ProductCategoryCardProps) {
+	const categoryName = JsonToString(category.name);
+	const productCount = products.length;
+
+	const thumbnails = React.useMemo(() => {
+		return products
+			.filter((p) => !!p.thumbnailURL)
+			.slice(0, 4)
+			.map((p) => p.thumbnailURL as string);
+	}, [products]);
 
 	return (
-		<Anchor
-			component={Link}
-			to={item.to}
-			underline='never'
-			c='inherit'
-			onMouseEnter={() => onHoverChange(true)}
-			onMouseLeave={() => onHoverChange(false)}
-			onFocus={() => onHoverChange(true)}
-			onBlur={() => onHoverChange(false)}
-			style={{ display: 'block' }}
+		<Card
+			withBorder
+			padding='md'
+			radius='md'
+			style={{ cursor: 'pointer' }}
+			onClick={onClick}
 		>
-			<Paper
-				p='md'
-				radius={0}
-				style={{
-					background: toneTokens.background,
-					border: `1px solid ${toneTokens.border}`,
-					boxShadow: isHovered ? '0 12px 22px rgba(15, 18, 20, 0.12)' : '0 8px 16px rgba(15, 18, 20, 0.08)',
-					transform: isHovered ? 'translateY(-1px)' : 'translateY(0)',
-					transition: 'transform 160ms ease, box-shadow 160ms ease',
-				}}
-			>
-				<Group justify='space-between' align='center' wrap='nowrap'>
-					<Group gap='sm' wrap='nowrap' style={{ minWidth: 0 }}>
-						<ThemeIcon size={34} radius={0} style={{ background: toneTokens.iconBg, color: 'white' }}>
-							{item.icon}
-						</ThemeIcon>
-						<Stack gap={0} style={{ minWidth: 0 }}>
-							<Text fw={800} size='sm' lineClamp={1}>
-								{item.label}
-							</Text>
-							<Text size='xs' c='dimmed' lineClamp={1}>
-								{item.description}
-							</Text>
-						</Stack>
+			<Stack gap='sm'>
+				<Group justify='space-between' align='center'>
+					<Text fw={600} size='sm' lineClamp={1} style={{ flex: 1 }}>
+						{categoryName}
+					</Text>
+					<Badge size='sm' color='blue' variant='light'>
+						{productCount} products
+					</Badge>
+				</Group>
+
+				{thumbnails.length > 0 ? (
+					<Group gap={6}>
+						{thumbnails.map((url, idx) => (
+							<Tooltip key={idx} label={products.filter((p) => p.thumbnailURL === url)[0]?.name
+								? JsonToString(products.filter((p) => p.thumbnailURL === url)[0].name)
+								: ''
+							}>
+								<Image
+									src={url}
+									alt='product'
+									w={52}
+									h={52}
+									radius='sm'
+									fit='cover'
+									fallbackSrc={PLACEHOLDER_IMAGE}
+								/>
+							</Tooltip>
+						))}
 					</Group>
-					<IconArrowUpRight size={16} style={{ opacity: 0.75, flex: '0 0 auto' }} />
-				</Group>
-			</Paper>
-		</Anchor>
-	);
-};
+				) : (
+					<Center h={52}>
+						<Text size='xs' c='dimmed'>No product images</Text>
+					</Center>
+				)}
 
-const TileCard: React.FC<{ item: ShowcaseItem }> = ({ item }) => {
-	return (
-		<Anchor
-			component={Link}
-			to={item.to}
-			underline='never'
-			c='inherit'
-			style={{
-				display: 'block',
-				padding: 6,
-				borderRadius: 6,
-				transition: 'background-color 150ms ease',
-			}}
-		>
-			<Stack gap={6}>
-				<Box
-					style={{
-						height: 124,
-						borderRadius: 4,
-						overflow: 'hidden',
-						background: `linear-gradient(145deg, ${item.accent} 0%, #f9f9f9 100%)`,
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.04)',
-					}}
-				>
-					{item.imageUrl ? (
-						<Image src={item.imageUrl} alt={item.title} h='100%' w='100%' fit='cover' />
-					) : (
-						<Text fw={800} size='lg' c='dark'>
-							{item.title.charAt(0).toUpperCase()}
-						</Text>
-					)}
-				</Box>
-				<Text size='sm' fw={500} lineClamp={1}>{item.title}</Text>
-			</Stack>
-		</Anchor>
-	);
-};
-
-const ShowcaseCard: React.FC<ShowcaseCardData> = ({
-	title,
-	description,
-	seeMoreLabel,
-	seeMoreTo,
-	items,
-	tone,
-}) => {
-	return (
-		<Paper p='lg' radius={0} style={{ background: CARD_TONE_BACKGROUND[tone] }}>
-			<Stack h='100%' gap='md'>
-				<Group justify='space-between' align='flex-start' gap='sm'>
-					<Stack gap={2}>
-						<Title order={3} fw={800} style={{ letterSpacing: '-0.02em' }}>{title}</Title>
-						<Text size='xs' c='dimmed'>{description}</Text>
-					</Stack>
-					<Badge variant='light' color='gray'>{items.length} items</Badge>
-				</Group>
-				<SimpleGrid cols={2} spacing='sm'>
-					{items.map((item) => (
-						<TileCard key={item.id} item={item} />
-					))}
-				</SimpleGrid>
-				<Anchor component={Link} to={seeMoreTo} fw={600} size='sm' mt='auto'>
-					<Group gap={4} wrap='nowrap'>
-						<Text span inherit>{seeMoreLabel}</Text>
+				<Group justify='flex-end'>
+					<ActionIcon variant='subtle' color='blue' size='sm' aria-label='View category'>
 						<IconArrowRight size={14} />
-					</Group>
-				</Anchor>
+					</ActionIcon>
+				</Group>
 			</Stack>
-		</Paper>
+		</Card>
 	);
-};
+}
+
+
+// ─── Unit Category Card ────────────────────────────────────────────────────────
+
+interface UnitCategoryCardProps {
+	category: UnitCategory;
+	units: Unit[];
+	onClick: () => void;
+}
+
+function UnitCategoryCard({ category, units, onClick }: UnitCategoryCardProps) {
+	const categoryName = JsonToString(category.name);
+	const unitCount = units.length;
+
+	return (
+		<Card
+			withBorder
+			padding='md'
+			radius='md'
+			style={{ cursor: 'pointer' }}
+			onClick={onClick}
+		>
+			<Stack gap='sm'>
+				<Group justify='space-between' align='center'>
+					<Group gap='xs'>
+						<Avatar color='teal' radius='sm' size='sm'>
+							<IconRuler2 size={14} />
+						</Avatar>
+						<Text fw={600} size='sm' lineClamp={1}>
+							{categoryName}
+						</Text>
+					</Group>
+					<Badge size='sm' color='teal' variant='light'>
+						{unitCount} units
+					</Badge>
+				</Group>
+
+				{unitCount > 0 ? (
+					<Group gap={6} wrap='wrap'>
+						{units.slice(0, 6).map((unit) => (
+							<Badge key={unit.id} size='xs' variant='outline' color='gray'>
+								{JsonToString(unit.name)}{unit.symbol ? ` (${unit.symbol})` : ''}
+							</Badge>
+						))}
+						{unitCount > 6 && (
+							<Badge size='xs' variant='outline' color='gray'>
+								+{unitCount - 6} more
+							</Badge>
+						)}
+					</Group>
+				) : (
+					<Text size='xs' c='dimmed'>No units assigned</Text>
+				)}
+
+				<Group justify='flex-end'>
+					<ActionIcon variant='subtle' color='teal' size='sm' aria-label='View unit category'>
+						<IconArrowRight size={14} />
+					</ActionIcon>
+				</Group>
+			</Stack>
+		</Card>
+	);
+}
+
+
+// ─── Section Header ────────────────────────────────────────────────────────────
+
+interface SectionHeaderProps {
+	title: string;
+	subtitle?: string;
+	action?: React.ReactNode;
+}
+
+function SectionHeader({ title, subtitle, action }: SectionHeaderProps) {
+	return (
+		<Group justify='space-between' align='flex-end'>
+			<Stack gap={2}>
+				<Text fw={700} size='lg'>{title}</Text>
+				{subtitle && <Text size='xs' c='dimmed'>{subtitle}</Text>}
+			</Stack>
+			{action}
+		</Group>
+	);
+}
+
+
+// ─── Skeleton Grid ─────────────────────────────────────────────────────────────
+
+function SkeletonCards({ count = 4 }: { count?: number }) {
+	return (
+		<SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4 }}>
+			{Array.from({ length: count }).map((_, i) => (
+				<Card key={i} withBorder padding='md' radius='md'>
+					<Stack gap='sm'>
+						<Skeleton height={16} width='60%' />
+						<Skeleton height={52} />
+						<Skeleton height={12} width='40%' />
+					</Stack>
+				</Card>
+			))}
+		</SimpleGrid>
+	);
+}
+
+
+// ─── Overview Page Body ────────────────────────────────────────────────────────
 
 export const OverviewPageBody: React.FC = () => {
 	const navigate = useNavigate();
-	const [hoveredStatCard, setHoveredStatCard] = React.useState<string | null>(null);
-	const [hoveredQuickLink, setHoveredQuickLink] = React.useState<string | null>(null);
+	const dispatch = useMicroAppDispatch() as InventoryDispatch;
+	const activeOrg = useActiveOrgWithDetails();
+	const orgId = activeOrg?.id ?? 'org-1';
 
-	const productItemGroups = React.useMemo(() => chunkItems(getProductItems(), 4), []);
-	const unitItems = React.useMemo(() => getUnitItems().slice(0, 4), []);
-	const counts = React.useMemo(() => {
-		return {
-			products: mockProductsData.length,
-			productCategories: mockProductCategoriesData.length,
-			variants: mockVariantsData.length,
-			units: mockUnitsData.length,
-			unitCategories: mockUnitCategoriesData.length,
-		};
-	}, []);
+	const listProduct = useMicroAppSelector(selectProductList);
+	const listProductCategory = useMicroAppSelector(selectProductCategoryList);
+	const listUnitCategory = useMicroAppSelector(selectUnitCategoryList);
+	const listUnit = useMicroAppSelector(selectUnitList);
 
-	const cards = React.useMemo<ShowcaseCardData[]>(() => {
-		const result: ShowcaseCardData[] = [];
+	const products = (listProduct.data ?? []) as Product[];
+	const productCategories = (listProductCategory.data ?? []) as ProductCategory[];
+	const unitCategories = (listUnitCategory.data ?? []) as UnitCategory[];
+	const units = (listUnit.data ?? []) as Unit[];
 
-		if (productItemGroups[0]?.length) {
-			result.push({
-				title: 'Shop Product Categories',
-				description: 'Browse the most used product groups for quick access.',
-				seeMoreLabel: 'See more',
-				seeMoreTo: '../product-categories',
-				items: productItemGroups[0],
-				tone: 'rose',
-			});
+	const isLoadingProducts = listProduct.status === 'pending';
+	const isLoadingProductCategories = listProductCategory.status === 'pending';
+	const isLoadingUnitCategories = listUnitCategory.status === 'pending';
+	const isLoadingUnits = listUnit.status === 'pending';
+
+	const handleRefresh = React.useCallback(() => {
+		dispatch(productActions.listProducts({ orgId }));
+		dispatch(productCategoryActions.listProductCategories(orgId));
+		dispatch(unitCategoryActions.listUnitCategories(orgId));
+		dispatch(unitActions.listUnits(orgId));
+	}, [dispatch, orgId]);
+
+	React.useEffect(() => {
+		handleRefresh();
+	}, [handleRefresh]);
+
+	// Map products by productCategoryId
+	const productsByCategory = React.useMemo(() => {
+		const map = new Map<string, Product[]>();
+		for (const product of products) {
+			for (const categoryId of product.productCategoryIds ?? []) {
+				if (!map.has(categoryId)) {
+					map.set(categoryId, []);
+				}
+				map.get(categoryId)!.push(product);
+			}
 		}
+		return map;
+	}, [products]);
 
-		if (productItemGroups[1]?.length) {
-			result.push({
-				title: 'More Product Categories',
-				description: 'Continue exploring additional product groups.',
-				seeMoreLabel: 'Discover more',
-				seeMoreTo: '../product-categories',
-				items: productItemGroups[1],
-				tone: 'sage',
-			});
+	// Map units by categoryId
+	const unitsByCategory = React.useMemo(() => {
+		const map = new Map<string, Unit[]>();
+		for (const unit of units) {
+			const categoryId = unit.categoryId ?? '__uncategorized__';
+			if (!map.has(categoryId)) {
+				map.set(categoryId, []);
+			}
+			map.get(categoryId)!.push(unit);
 		}
+		return map;
+	}, [units]);
 
-		if (unitItems.length) {
-			result.push({
-				title: 'Shop Unit Categories',
-				description: 'Open measurement groups to manage units faster.',
-				seeMoreLabel: 'See more',
-				seeMoreTo: '../unit-categories',
-				items: unitItems,
-				tone: 'sun',
-			});
-		}
-
-		return result;
-	}, [productItemGroups, unitItems]);
-
-	type StatCardModel = Omit<OverviewStatCardProps, 'isHovered' | 'onHoverChange' | 'onOpen'> & { to: string };
-
-	const statCards = React.useMemo<StatCardModel[]>(() => {
-		return [
-			{
-				id: 'products',
-				title: 'Products',
-				description: 'Items you sell and stock.',
-				value: formatCount(counts.products),
-				meta: [
-					{ label: 'Categories', value: formatCount(counts.productCategories) },
-					{ label: 'Variants', value: formatCount(counts.variants) },
-				],
-				to: '../products',
-				actions: [
-					{ label: 'Manage categories', to: '../product-categories' },
-				],
-				icon: <IconBox size={18} />,
-				tone: 'slate',
-			},
-			{
-				id: 'variants',
-				title: 'Variants',
-				description: 'SKUs and attribute combinations.',
-				value: formatCount(counts.variants),
-				meta: [
-					{ label: 'Products', value: formatCount(counts.products) },
-					{ label: 'Scope', value: 'All' },
-				],
-				to: '../product-variants',
-				actions: [
-					{ label: 'View variants', to: '../product-variants' },
-				],
-				icon: <IconVersions size={18} />,
-				tone: 'sand',
-			},
-			{
-				id: 'units',
-				title: 'Units',
-				description: 'Measurements and conversions.',
-				value: formatCount(counts.units),
-				meta: [
-					{ label: 'Unit categories', value: formatCount(counts.unitCategories) },
-					{ label: 'Status', value: 'Ready' },
-				],
-				to: '../units',
-				actions: [
-					{ label: 'Manage categories', to: '../unit-categories' },
-				],
-				icon: <IconRulerMeasure size={18} />,
-				tone: 'mist',
-			},
-		];
-	}, [counts.productCategories, counts.products, counts.unitCategories, counts.units, counts.variants]);
-
-	const quickLinks = React.useMemo<QuickLinkItem[]>(() => {
-		return [
-			{
-				id: 'ql-create-product',
-				label: 'Create Product',
-				description: 'Add a new product to catalog',
-				to: '../products/create',
-				icon: <IconBox size={18} />,
-				tone: 'ink',
-			},
-			{
-				id: 'ql-product-categories',
-				label: 'Product Categories',
-				description: 'Organize product groups',
-				to: '../product-categories',
-				icon: <IconCategory size={18} />,
-				tone: 'clay',
-			},
-			{
-				id: 'ql-variants',
-				label: 'Product Variants',
-				description: 'Manage SKUs across products',
-				to: '../product-variants',
-				icon: <IconVersions size={18} />,
-				tone: 'lime',
-			},
-			{
-				id: 'ql-units',
-				label: 'Units',
-				description: 'View and edit measurement units',
-				to: '../units',
-				icon: <IconRulerMeasure size={18} />,
-				tone: 'ink',
-			},
-			{
-				id: 'ql-unit-categories',
-				label: 'Unit Categories',
-				description: 'Group units by measurement type',
-				to: '../unit-categories',
-				icon: <IconCategory size={18} />,
-				tone: 'clay',
-			},
-			{
-				id: 'ql-products',
-				label: 'Product Management',
-				description: 'Search and update products',
-				to: '../products',
-				icon: <IconBox size={18} />,
-				tone: 'lime',
-			},
-		];
-	}, []);
+	const breadcrumbs = [
+		{ title: 'Overview', href: '#' },
+	];
 
 	return (
-		<Stack gap='md'>
-			<Paper
-				p='lg'
-				radius={0}
-				style={{
-					background: [
-						'radial-gradient(1100px circle at 8% 20%, rgba(248, 214, 206, 0.55) 0%, transparent 52%)',
-						'radial-gradient(900px circle at 86% 10%, rgba(216, 232, 248, 0.75) 0%, transparent 45%)',
-						'linear-gradient(130deg, #e8ecef 0%, #f6f7f8 70%)',
-					].join(', '),
-					border: '1px solid #d6dbe0',
-				}}
-			>
-				<Stack gap={4}>
-					<Title order={2} fw={800}>Inventory Overview</Title>
-					<Text c='dimmed' size='sm'>
-						Jump into Products, Variants, Units, and your most used categories.
-					</Text>
-				</Stack>
-			</Paper>
-
-			<SimpleGrid cols={{ base: 1, md: 3 }} spacing='md'>
-				{statCards.map((card) => (
-					<OverviewStatCard
-						key={card.id}
-						id={card.id}
-						title={card.title}
-						description={card.description}
-						value={card.value}
-						meta={card.meta}
-						actions={card.actions}
-						icon={card.icon}
-						tone={card.tone}
-						onOpen={() => navigate(card.to, { relative: 'path' })}
-						isHovered={hoveredStatCard === card.id}
-						onHoverChange={(next) => setHoveredStatCard(next ? card.id : null)}
+		<PageContainer breadcrumbs={breadcrumbs}>
+			<Stack gap='xl'>
+				{/* ── Stat Cards ─────────────────────────────────────── */}
+				<SimpleGrid cols={{ base: 2, sm: 2, md: 4 }}>
+					<StatCard
+						label='Products'
+						value={products.length}
+						icon={<IconBox size={20} />}
+						color='blue'
+						onClick={() => navigate('products')}
 					/>
-				))}
-			</SimpleGrid>
-
-			<Paper p='md' radius={0} style={{ background: '#dfe2e5' }}>
-				<Group justify='space-between' align='flex-end' wrap='wrap' mb='md'>
-					<Stack gap={2}>
-						<Title order={3} fw={800} style={{ letterSpacing: '-0.02em' }}>
-							Explore Categories
-						</Title>
-						<Text size='xs' c='dimmed'>
-							Open your most used product and unit groups.
-						</Text>
-					</Stack>
-					<Badge variant='light' color='gray'>
-						{cards.length} panels
-					</Badge>
-				</Group>
-				<SimpleGrid cols={{ base: 1, md: 2, xl: 3 }} spacing='md'>
-					{cards.map((card) => (
-						<ShowcaseCard
-							key={card.title}
-							title={card.title}
-							description={card.description}
-							seeMoreLabel={card.seeMoreLabel}
-							seeMoreTo={card.seeMoreTo}
-							items={card.items}
-							tone={card.tone}
-						/>
-					))}
+					<StatCard
+						label='Product Categories'
+						value={productCategories.length}
+						icon={<IconCategory size={20} />}
+						color='violet'
+						onClick={() => navigate('product-categories')}
+					/>
+					<StatCard
+						label='Units'
+						value={units.length}
+						icon={<IconRuler2 size={20} />}
+						color='teal'
+						onClick={() => navigate('units')}
+					/>
+					<StatCard
+						label='Unit Categories'
+						value={unitCategories.length}
+						icon={<IconTag size={20} />}
+						color='orange'
+						onClick={() => navigate('unit-categories')}
+					/>
 				</SimpleGrid>
-			</Paper>
-		</Stack>
+
+				<Divider />
+
+				{/* ── Product Categories ─────────────────────────────── */}
+				<Stack gap='md'>
+					<SectionHeader
+						title='Product Categories'
+						subtitle='Categories with linked product thumbnails'
+						action={
+							<ActionIcon
+								variant='subtle'
+								color='gray'
+								size='sm'
+								onClick={handleRefresh}
+								aria-label='Refresh'
+							>
+								<IconRefresh size={14} />
+							</ActionIcon>
+						}
+					/>
+
+					{isLoadingProductCategories || isLoadingProducts ? (
+						<SkeletonCards count={4} />
+					) : productCategories.length === 0 ? (
+						<Paper p='lg' withBorder>
+							<Center>
+								<Stack align='center' gap='xs'>
+									<ThemeIcon color='gray' variant='light' size='xl' radius='md'>
+										<IconCategory size={20} />
+									</ThemeIcon>
+									<Text c='dimmed' size='sm'>No product categories found</Text>
+								</Stack>
+							</Center>
+						</Paper>
+					) : (
+						<SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4 }}>
+							{productCategories.map((category) => (
+								<ProductCategoryCard
+									key={category.id}
+									category={category}
+									products={productsByCategory.get(category.id) ?? []}
+									onClick={() => navigate(`product-categories/${category.id}`)}
+								/>
+							))}
+						</SimpleGrid>
+					)}
+				</Stack>
+
+				<Divider />
+
+				{/* ── Unit Categories ────────────────────────────────── */}
+				<Stack gap='md'>
+					<SectionHeader
+						title='Unit Categories'
+						subtitle='Measurement unit groupings'
+					/>
+
+					{isLoadingUnitCategories || isLoadingUnits ? (
+						<SkeletonCards count={3} />
+					) : unitCategories.length === 0 ? (
+						<Paper p='lg' withBorder>
+							<Center>
+								<Stack align='center' gap='xs'>
+									<ThemeIcon color='gray' variant='light' size='xl' radius='md'>
+										<IconTag size={20} />
+									</ThemeIcon>
+									<Text c='dimmed' size='sm'>No unit categories found</Text>
+								</Stack>
+							</Center>
+						</Paper>
+					) : (
+						<SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
+							{unitCategories.map((category) => (
+								<UnitCategoryCard
+									key={category.id}
+									category={category}
+									units={unitsByCategory.get(category.id) ?? []}
+									onClick={() => navigate(`unit-categories/${category.id}`)}
+								/>
+							))}
+						</SimpleGrid>
+					)}
+				</Stack>
+			</Stack>
+		</PageContainer>
 	);
 };
 
-export const OverviewPage: React.FC = withWindowTitle('Inventory Overview', OverviewPageBody);
+export const OverviewPage = withWindowTitle('Inventory Overview', OverviewPageBody);

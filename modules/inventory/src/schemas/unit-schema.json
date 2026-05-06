@@ -3,64 +3,64 @@
 	"fields": {
 		"id": {
 			"type": "string",
-			"label": "ID",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.id' }",
 			"hidden": true,
 			"constraints": [{ "type": "length", "max": 36 }]
 		},
 		"orgId": {
 			"type": "string",
-			"label": "Organization",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.orgId' }",
 			"hidden": true,
 			"constraints": [{ "type": "length", "max": 36 }]
 		},
 		"name": {
 			"type": "string",
-			"label": "Unit Name",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.name' }",
 			"required": { "create": true, "update": false },
 			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
 		},
 		"symbol": {
 			"type": "string",
-			"label": "Symbol",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.symbol' }",
 			"required": { "create": false, "update": false },
 			"constraints": [{ "type": "length", "min": 1, "max": 50 }]
 		},
 		"categoryId": {
 			"type": "string",
-			"label": "Unit Category",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.categoryId' }",
 			"required": { "create": false, "update": false },
 			"constraints": [{ "type": "length", "max": 36 }]
 		},
 		"baseUnit": {
 			"type": "string",
-			"label": "Base Unit",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.baseUnit' }",
 			"required": { "create": false, "update": false },
 			"constraints": [{ "type": "length", "max": 100 }]
 		},
 		"multiplier": {
 			"type": "integer",
-			"label": "Multiplier",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.multiplier' }",
 			"required": { "create": false, "update": false },
 			"constraints": [{ "type": "value_range", "min": 0 }]
 		},
 		"status": {
 			"type": "string",
-			"label": "Status",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.status' }",
 			"required": { "create": false, "update": false }
 		},
 		"etag": {
 			"type": "string",
-			"label": "Etag",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.etag' }",
 			"hidden": true
 		},
 		"createdAt": {
 			"type": "date",
-			"label": "Created At",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.createdAt' }",
 			"hidden": false
 		},
 		"updatedAt": {
 			"type": "date",
-			"label": "Updated At",
+			"label": "{ \"$ref\": 'nikki.inventory.unit.fields.updatedAt' }",
 			"hidden": false
 		}
 	}

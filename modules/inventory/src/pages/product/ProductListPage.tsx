@@ -3,6 +3,7 @@ import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { selectProductList } from '../../appState/product';
 import { selectVariantList } from '../../appState/variant';
@@ -24,6 +25,7 @@ const COLUMNS = [
 ];
 
 export function ProductListPageBody(): React.ReactElement {
+	const { t } = useTranslation();
 	const listProduct = useMicroAppSelector(selectProductList);
 	const listVariants = useMicroAppSelector(selectVariantList);
 	const {
@@ -43,8 +45,8 @@ export function ProductListPageBody(): React.ReactElement {
 
 	const isLoading = listProduct.status === 'pending' || listVariants.status === 'pending';
 	const breadcrumbs = [
-		{ title: 'Inventory', href: '../overview' },
-		{ title: 'Products', href: '#' },
+		{ title: t('nikki.inventory.breadcrumbs.home'), href: '../overview' },
+		{ title: t('nikki.inventory.menu.products'), href: '#' },
 	];
 
 	return (
@@ -54,13 +56,13 @@ export function ProductListPageBody(): React.ReactElement {
 			sections={[
 				<ControlPanel
 					actions={[
-						{ label: 'Create', onClick: handleCreate },
-						{ label: 'Refresh', onClick: handleRefresh, variant: 'outline' },
+						{ label: t('nikki.general.actions.create'), onClick: handleCreate },
+						{ label: t('nikki.general.actions.refresh'), onClick: handleRefresh, variant: 'outline' },
 					]}
 					search={{
 						value: searchValue,
 						onChange: setSearchValue,
-						placeholder: 'Search by name, SKU, barcode',
+						placeholder: t('nikki.inventory.product.searchPlaceholder'),
 					}}
 					filters={filters as ControlPanelFilterConfig[]}
 				/>,

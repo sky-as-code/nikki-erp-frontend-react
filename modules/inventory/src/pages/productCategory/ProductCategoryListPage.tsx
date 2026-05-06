@@ -4,6 +4,7 @@ import {
 } from '@mantine/core';
 import { AutoTable, withWindowTitle } from '@nikkierp/ui/components';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ControlPanel } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
 import { JsonToString } from '../../utils/serializer';
@@ -20,6 +21,7 @@ const CATEGORY_SCHEMA = productCategorySchema as ModelSchema;
 const COLUMNS = ['name', 'createdAt'];
 
 export const ProductCategoryListPageBody: React.FC = () => {
+	const { t: translate } = useTranslation();
 	const {
 		categories,
 		isLoading,
@@ -34,8 +36,8 @@ export const ProductCategoryListPageBody: React.FC = () => {
 	} = useSearchProductCategories({ categories });
 
 	const breadcrumbs = [
-		{ title: 'Inventory', href: '../overview' },
-		{ title: 'Product Categories', href: '#' },
+		{ title: translate('nikki.inventory.breadcrumbs.home'), href: '../overview' },
+		{ title: translate('nikki.inventory.menu.productCategories'), href: '#' },
 	];
 
 	const tableData = React.useMemo(() => {
@@ -51,13 +53,13 @@ export const ProductCategoryListPageBody: React.FC = () => {
 			sections={[
 				<ControlPanel
 					actions={[
-						{ label: 'Create', onClick: handleOpenCreatePage },
-						{ label: 'Refresh', onClick: handleRefresh, variant: 'outline' },
+						{ label: translate('nikki.general.actions.create'), onClick: handleOpenCreatePage },
+						{ label: translate('nikki.general.actions.refresh'), onClick: handleRefresh, variant: 'outline' },
 					]}
 					search={{
 						value: searchValue,
 						onChange: setSearchValue,
-						placeholder: 'Search by category name',
+						placeholder: translate('nikki.inventory.productCategory.searchPlaceholder'),
 					}}
 				/>,
 			]}

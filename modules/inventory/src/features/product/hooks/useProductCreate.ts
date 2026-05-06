@@ -34,7 +34,7 @@ export function useProductCreateHandlers() {
 
 	React.useEffect(() => {
 		if (createCommand.status === 'success') {
-			notification.showInfo('Product created successfully', '');
+			notification.showInfo(t('nikki.inventory.product.messages.createSuccess'), '');
 			dispatch(productActions.resetCreateProduct());
 			dispatch(productActions.listProducts({ orgId }));
 			navigate('..', { relative: 'path' });
@@ -42,7 +42,7 @@ export function useProductCreateHandlers() {
 
 		if (createCommand.status === 'error') {
 			notification.showError(
-				createCommand.error instanceof Error ? createCommand.error.message : 'Failed to create product',
+				createCommand.error instanceof Error ? createCommand.error.message : t('nikki.inventory.product.messages.createError'),
 				'',
 			);
 			dispatch(productActions.resetCreateProduct());

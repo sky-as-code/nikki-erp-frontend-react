@@ -19,6 +19,7 @@ export const productService = {
 	},
 
 	async updateProduct(orgId: string, data: UpdateProductRequest): Promise<UpdateProductResponse> {
+		console.log('Updating product with data:', data);
 		const response = await request.put<UpdateProductResponse>(`${orgId}/inventory/products/${data.id}`, {
 			json: data,
 		});

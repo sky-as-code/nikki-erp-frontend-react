@@ -32,10 +32,7 @@
 		"today": "Hôm nay",
 		"viewDetails": "Xem chi tiết",
 		"apply": "Áp dụng",
-		"restore": "Khôi phục",
-		"download": "Tải xuống",
-		"preview": "Xem trước",
-		"viewDetail": "Xem chi tiết"
+		"reset": "Đặt lại"
 	},
 	"selected": "Đã chọn",
 	"boolean": {

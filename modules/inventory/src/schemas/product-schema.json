@@ -3,91 +3,92 @@
 	"fields": {
 		"id": {
 			"type": "string",
-			"label": "ID",
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.id' }",
 			"hidden": true,
 			"constraints": [{ "type": "length", "max": 36 }]
 		},
 		"orgId": {
 			"type": "string",
-			"label": "Organization",
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.orgId' }",
 			"required": { "create": true, "update": false },
 			"hidden": true
 		},
 		"name": {
 			"type": "string",
-			"label": "Name",
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.name' }",
 			"required": { "create": true, "update": false },
-			"constraints": [{ "type": "length", "min": 1, "max": 20 }]
+			"constraints": [{ "type": "length", "min": 1, "max": 50 }]
 		},
 		"description": {
 			"type": "string",
-			"label": "Description",
-			"constraints": [{ "type": "length", "max": 50 }]
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.description' }",
+			"constraints": [{ "type": "length", "max": 100 }]
 		},
 		"sku": {
 			"type": "string",
-			"label": "SKU",
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.sku' }",
 			"required": { "create": true, "update": false },
-			"constraints": [{ "type": "length", "max": 100 }]
+			"constraints": [{ "type": "length", "min": 1, "max": 100 }]
 		},
 		"barCode": {
 			"type": "string",
-			"label": "Bar Code",
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.barCode' }",
 			"constraints": [{ "type": "length", "max": 100 }]
 		},
 		"status": {
 			"type": "enum",
-			"label": "Status",
-			"required": { "create": false, "update": false },
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.status' }",
+			"required": { "create": false },
 			"enum": [
-				{ "value": "active", "label": "Active" },
-				{ "value": "inactive", "label": "Inactive" }
+				{ "value": "active", "label": "{ \"$ref\": 'nikki.inventory.product.status.active' }" },
+				{ "value": "inactive", "label": "{ \"$ref\": 'nikki.inventory.product.status.inactive' }" }
 			]
 		},
 		"unitId": {
 			"type": "string",
-			"label": "Unit",
-			"required": { "create": false, "update": false }
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.unitId' }",
+			"required": { "create": false }
 		},
 		"thumbnailURL": {
 			"type": "string",
-			"label": "Thumbnail URL"
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.thumbnailURL' }"
 		},
 		"defaultVariantId": {
 			"type": "string",
-			"label": "Default Variant ID",
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.defaultVariantId' }",
 			"hidden": true
 		},
 		"proposedPrice": {
 			"type": "integer",
-			"label": "Proposed Price",
-			"required": { "create": true, "update": false },
-			"constraints": [{ "type": "value_range" }]
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.proposedPrice' }",
+			"required": { "create": true }
 		},
 		"variants": {
 			"type": "array",
-			"label": "Variants",
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.variants' }",
 			"hidden": true
 		},
 		"attributes": {
 			"type": "array",
-			"label": "Attributes",
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.attributes' }",
 			"hidden": true
 		},
 		"etag": {
 			"type": "string",
-			"label": "Etag",
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.etag' }",
 			"hidden": true
 		},
 		"createdAt": {
 			"type": "date",
 			"format": "date-time",
-			"label": "Created At"
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.createdAt' }",
+			"frontendOnly": true
 		},
 		"updatedAt": {
 			"type": "date",
 			"format": "date-time",
-			"label": "Updated At"
+			"label": "{ \"$ref\": 'nikki.inventory.product.fields.updatedAt' }",
+			"frontendOnly": true
 		}
 	}
 }

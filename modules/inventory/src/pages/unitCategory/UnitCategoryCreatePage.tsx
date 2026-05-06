@@ -1,11 +1,6 @@
-import {
-	Group,
-	Stack,
-	Text,
-	Title,
-} from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { ControlPanelAction } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
@@ -18,15 +13,16 @@ import categorySchema from '../../schemas/unit-category-schema.json';
 import type { ModelSchema } from '@nikkierp/ui/model';
 
 export const UnitCategoryCreatePageBody: React.FC = () => {
+	const { t } = useTranslation();
 	const {
 		isSubmitting,
 		onSubmit,
 		handleGoBack,
 	} = useUnitCategoryCreateHandlers();
 	const breadcrumbs = [
-		{ title: 'Inventory', href: '../overview' },
-		{ title: 'Unit Categories', href: '../unit-categories' },
-		{ title: 'Create Unit Category', href: '#' },
+		{ title: t('nikki.inventory.breadcrumbs.home'), href: '../overview' },
+		{ title: t('nikki.inventory.menu.unitCategories'), href: '../unit-categories' },
+		{ title: t('nikki.inventory.breadcrumbs.createUnitCategory'), href: '#' },
 	];
 
 	return (
@@ -35,8 +31,8 @@ export const UnitCategoryCreatePageBody: React.FC = () => {
 			sections={[
 				<ControlPanelAction
 					actions={[
-						{ label: 'Create', type: 'submit'},
-						{ label: 'Cancel', variant: 'outline', onClick: handleGoBack },
+						{ label: t('nikki.general.actions.create'), type: 'submit', form: 'unit-category-create-form'},
+						{ label: t('nikki.general.actions.cancel'), variant: 'outline', onClick: handleGoBack },
 					]}
 				/>,
 			]}

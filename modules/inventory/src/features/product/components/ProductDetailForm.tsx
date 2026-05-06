@@ -20,6 +20,7 @@ import {
 	FormFieldProvider,
 	FormStyleProvider,
 	AutoField,
+	FormContainer,
 } from '@nikkierp/ui/components/form';
 import { IconTrash } from '@tabler/icons-react';
 import React from 'react';
@@ -41,6 +42,7 @@ const ATTRIBUTE_SCHEMA = attributeSchema as ModelSchema;
 const VARIANT_SCHEMA = variantSchema as ModelSchema;
 const ATTRIBUTE_COLUMNS = ['codeName', 'displayName', 'dataType', 'isRequired', 'sortIndex'];
 const VARIANT_COLUMNS = ['sku', 'name', 'barcode', 'proposedPrice', 'status'];
+const UPDATE_FORM_FIELDS = ['name', 'status', 'description', 'thumbnailURL'];
 
 function getVariantAttributeValue(attributes: unknown, codeName: string): unknown {
 	if (!attributes) {
@@ -125,11 +127,11 @@ export const ProductDetailForm = ({
 		}
 
 		if (typeof value.valueBool === 'boolean') {
-			return value.valueBool ? 'Yes' : 'No';
+			return value.valueBool ? t('nikki.general.boolean.yes') : t('nikki.general.boolean.no');
 		}
 
 		return value.valueRef ?? value.id;
-	}, []);
+	}, [t]);
 
 	// Helper to get candidates from AttributeValue
 	const getAttributeValueCandidates = React.useCallback((value: AttributeValue): Array<string | number | boolean> => {
@@ -300,7 +302,15 @@ export const ProductDetailForm = ({
 	}, [deleteTarget, onDeleteAttribute, onDeleteVariant]);
 
 	const productName = productDetail ? JsonToString(productDetail.name) : 'Product Detail';
-	const isFormReadOnly = isLoading || !productDetail || !isEditing;
+	const updateSchema = React.useMemo((): ModelSchema => ({
+		...schema,
+		fields: Object.fromEntries(
+			Object.entries(schema.fields).map(([key, field]) => [
+				key,
+				UPDATE_FORM_FIELDS.includes(key) ? field : { ...field, frontendOnly: true },
+			]),
+		),
+	}), [schema]);
 
 	const getStatusLabel = (status: string | undefined) => {
 		const statusMap: Record<string, { color: string; label: string }> = {
@@ -322,16 +332,15 @@ export const ProductDetailForm = ({
 			<FormStyleProvider layout='onecol'>
 				<FormFieldProvider
 					formVariant='update'
-					modelSchema={schema}
+					modelSchema={updateSchema}
 					modelValue={modelValue}
 					modelLoading={isLoading}
 				>
-					{({ handleSubmit }) => {
+					{({ handleSubmit: formHandleSubmit}) => {
 						return (
-							<form id='' onSubmit={handleSubmit(onSubmit)} noValidate>
-								<Stack gap='md'>
-									{/* Header */}
-									<Group gap='md' align='center' wrap='nowrap'>
+							<Stack gap='md'>
+								{/* Header */}
+								<Group gap='md' align='center' wrap='nowrap'>
 										<Avatar size={52} radius='md' src={productImages[0]}>
 											{productName.charAt(0).toUpperCase()}
 										</Avatar>
@@ -348,9 +357,9 @@ export const ProductDetailForm = ({
 									{/* Tabs */}
 									<Tabs value={activeTab} onChange={setActiveTab}>
 										<Tabs.List>
-											<Tabs.Tab value='product-info'>Product Info</Tabs.Tab>
-											<Tabs.Tab value='attributes'>Attributes</Tabs.Tab>
-											<Tabs.Tab value='variants'>Variants</Tabs.Tab>
+										<Tabs.Tab value='product-info'>{t('nikki.inventory.product.tabs.info')}</Tabs.Tab>
+										<Tabs.Tab value='attributes'>{t('nikki.inventory.attribute.title')}</Tabs.Tab>
+										<Tabs.Tab value='variants'>{t('nikki.inventory.variant.title')}</Tabs.Tab>
 										</Tabs.List>
 
 										{/* Product Info Tab */}
@@ -371,9 +380,9 @@ export const ProductDetailForm = ({
 															) : (
 																<Paper p='xl' withBorder bg='gray.0' style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
 																	<Text c='dimmed' ta='center'>
-																		No images available.
-																		<br />
-																		Add variants with images to see them here.
+																	{t('nikki.inventory.product.detail.noImages')}
+																	<br />
+																	{t('nikki.inventory.product.detail.noImagesHint')}
 																	</Text>
 																</Paper>
 															)}
@@ -385,66 +394,35 @@ export const ProductDetailForm = ({
 														<Stack gap='lg'>
 															<Paper p='md' withBorder>
 																<Stack gap='md'>
-																	{/* Basic Information Section */}
-																	{isEditing ? (
-																		<Stack gap='md'>
-																			<AutoField name='name' htmlProps={{ readOnly: isFormReadOnly }} />
-																			<AutoField name='status' htmlProps={{ readOnly: isFormReadOnly }} />
-																			<AutoField name='description' htmlProps={{ readOnly: isFormReadOnly }} />
-																			<AutoField name='thumbnailURL' htmlProps={{ readOnly: isFormReadOnly }} />
-																		</Stack>
-																	) : (
-																		<div>
-																			<Grid gutter='md'>
-																				{/* Row 1: Name */}
-																				<Grid.Col span={{ base: 12, sm: 6 }}>
-																					<Text size='md' c='dimmed'>Name</Text>
-																					<Text size='md' fw={500}>{productName}</Text>
-																				</Grid.Col>
+{/* Basic Information Section - always rendered, readOnly when not editing */}
+												<form id='product-detail-form' onSubmit={formHandleSubmit(onSubmit)} noValidate>
+													<Stack gap='md'>
+														<AutoField name='name' htmlProps={{ readOnly: !isEditing }} />
+														<AutoField name='description' htmlProps={{ readOnly: !isEditing }} />
+														<AutoField name='status' htmlProps={{ readOnly: !isEditing }} />
+														<AutoField name='thumbnailURL' htmlProps={{ readOnly: !isEditing }} />
+													</Stack>
+												</form>
 
-																				{/* Row 1: Status */}
-																				<Grid.Col span={{ base: 12, sm: 6 }}>
-																					<Text size='md' c='dimmed'>Status</Text>
-																					{getStatusLabel(productDetail?.status)}
-																				</Grid.Col>
-
-																				{/* Row 2: Description (full width) */}
-																				<Grid.Col span={12}>
-																					<Text size='md' c='dimmed'>Description</Text>
-																					<Text size='md' fw={500}>
-																						{JsonToString(productDetail?.description) || '-'}
-																					</Text>
-																				</Grid.Col>
-
-																				<Grid.Col span={{ base: 12, sm: 12 }}>
-																					<Text size='md' c='dimmed'>Thumbnail</Text>
-																					<Text size='md' fw={500}>{productDetail?.thumbnailURL || '-'}</Text>
-																				</Grid.Col>
-
-																				{/* Row 3: SKU - Barcode - Unit */}
-																				<Grid.Col span={{ base: 6, sm: 4 }}>
-																					<Text size='md' c='dimmed'>SKU</Text>
-																					<Text size='md' fw={500}>{selectedVariant?.sku || '-'}</Text>
-																				</Grid.Col>
-
-																				<Grid.Col span={{ base: 6, sm: 4 }}>
-																					<Text size='md' c='dimmed'>Barcode</Text>
-																					<Text size='md' fw={500}>{selectedVariant?.barcode || '-'}</Text>
-																				</Grid.Col>
-
-																				<Grid.Col span={{ base: 6, sm: 4 }}>
-																					<Text size='md' c='dimmed'>Unit</Text>
-																					<Text size='md' fw={500}>{productDetail?.unitId || '-'}</Text>
-																				</Grid.Col>
-
-																				{/* Row 4: Price */}
-																				<Grid.Col span={{ base: 6, sm: 4 }}>
-																					<Text size='md' c='dimmed'>Proposed Price</Text>
-																					<Text size='md' fw={500}>{selectedVariant?.proposedPrice}</Text>
-																				</Grid.Col>
-																			</Grid>
-																		</div>
-																	)}
+												{/* Variant read-only data */}
+												<Grid gutter='md'>
+													<Grid.Col span={{ base: 6, sm: 4 }}>
+															<Text size='md' c='dimmed'>{t('nikki.inventory.product.fields.sku')}</Text>
+															<Text size='md' fw={500}>{selectedVariant?.sku || '-'}</Text>
+														</Grid.Col>
+														<Grid.Col span={{ base: 6, sm: 4 }}>
+															<Text size='md' c='dimmed'>{t('nikki.inventory.product.fields.barCode')}</Text>
+															<Text size='md' fw={500}>{selectedVariant?.barcode || '-'}</Text>
+														</Grid.Col>
+														<Grid.Col span={{ base: 6, sm: 4 }}>
+															<Text size='md' c='dimmed'>{t('nikki.inventory.product.fields.unitId')}</Text>
+															<Text size='md' fw={500}>{productDetail?.unitId || '-'}</Text>
+														</Grid.Col>
+														<Grid.Col span={{ base: 6, sm: 4 }}>
+															<Text size='md' c='dimmed'>{t('nikki.inventory.product.fields.proposedPrice')}</Text>
+														<Text size='md' fw={500}>{selectedVariant?.proposedPrice}</Text>
+													</Grid.Col>
+												</Grid>
 
 																	{/* Attribute Selection Section */}
 																	{sortedAttributes.length > 0 && (
@@ -454,11 +432,12 @@ export const ProductDetailForm = ({
 																				<Group justify='space-between' align='center'>
 																					{Object.keys(selectedAttributes).length > 0 && (
 																						<Button
+																							type='button'
 																							variant='subtle'
 																							size='md'
 																							onClick={handleResetAttributes}
 																						>
-																							Reset
+																							{t('nikki.inventory.product.detail.resetAttributes')}
 																						</Button>
 																					)}
 																				</Group>
@@ -480,9 +459,9 @@ export const ProductDetailForm = ({
 																									</Group>
 
 																									{attributeValuesLoading ? (
-																										<Text size='sm' c='dimmed'>Loading attribute values...</Text>
+																										<Text size='sm' c='dimmed'>{t('nikki.inventory.attribute.messages.loadingValues')}</Text>
 																									) : values.length === 0 ? (
-																										<Text size='sm' c='dimmed'>No attribute values available.</Text>
+																										<Text size='sm' c='dimmed'>{t('nikki.inventory.attribute.messages.noAttributeValues')}</Text>
 																									) : (
 																										<Group gap='xs' wrap='wrap'>
 																											{values.map((value) => {
@@ -514,12 +493,12 @@ export const ProductDetailForm = ({
 																				<Stack gap='xs' p='md'>
 																					<Grid gutter='md'>
 																						<Grid.Col span={{ base: 6, sm: 4 }}>
-																							<Text size='md' c='dimmed'>Created At</Text>
-																							<Text size='md'>{productDetail?.createdAt ? new Date(productDetail.createdAt).toLocaleString() : '--'}</Text>
+																							<Text size='md' c='dimmed'>{t('nikki.inventory.product.fields.createdAt')}</Text>
+																							<Text size='md'>{productDetail?.createdAt || '--'}</Text>
 																						</Grid.Col>
 																						<Grid.Col span={{ base: 6, sm: 4 }}>
-																							<Text size='md' c='dimmed'>Updated At</Text>
-																							<Text size='md'>{productDetail?.updatedAt ? new Date(productDetail.updatedAt).toLocaleString() : '--'}</Text>
+																							<Text size='md' c='dimmed'>{t('nikki.inventory.product.fields.updatedAt')}</Text>
+																							<Text size='md'>{productDetail?.updatedAt || '--'}</Text>
 																						</Grid.Col>
 																					</Grid>
 																				</Stack>
@@ -541,20 +520,21 @@ export const ProductDetailForm = ({
 											<Stack gap='md'>
 												<Group justify='flex-end'>
 													<Button
+														type='button'
 														size='md'
 														variant='light'
 														onClick={() => {
 															navigate('attributes/create', { relative: 'path' });
 														}}
 													>
-														Create Attribute
+														{t('nikki.inventory.attribute.actions.createNew')}
 													</Button>
 												</Group>
 
 												{sortedAttributes.length === 0 ? (
 													<Paper p='xl' withBorder>
 														<Text c='dimmed' ta='center'>
-															No attributes found. Click "Create Attribute" to add attributes to this product.
+															{t('nikki.inventory.attribute.messages.emptyProductDetail')}
 														</Text>
 													</Paper>
 												) : (
@@ -579,7 +559,7 @@ export const ProductDetailForm = ({
 																),
 															}}
 															headerRenderers={{
-																actions: () => 'Action',
+																actions: () => t('nikki.general.actions.title'),
 															}}
 														/>
 													</Paper>
@@ -593,13 +573,14 @@ export const ProductDetailForm = ({
 												<Group justify='flex-end'>
 													<Group gap='xs'>
 														<Button
+															type='button'
 															size='md'
 															variant='light'
 															onClick={() => {
 																navigate('variants/create', { relative: 'path' });
 															}}
 														>
-															Create Variant
+															{t('nikki.inventory.variant.actions.createNew')}
 														</Button>
 													</Group>
 												</Group>
@@ -607,7 +588,7 @@ export const ProductDetailForm = ({
 												{variants.length === 0 ? (
 													<Paper p='xl' withBorder>
 														<Text c='dimmed' ta='center'>
-															No variants found. Click "Create Variant" to add a variant to this product.
+															{t('nikki.inventory.variant.messages.emptyProductDetail')}
 														</Text>
 													</Paper>
 												) : (
@@ -620,7 +601,7 @@ export const ProductDetailForm = ({
 															columnAsLinkHref={(row) => `./variants/${String((row as Variant).id)}`}
 															columnRenderers={{
 																name: (row) => JsonToString((row as Variant).name) || (row as Variant).id,
-																proposedPrice: (row) => `${(((row as Variant).proposedPrice))}`,
+																proposedPrice: (row) => `${(((row as Variant).proposedPrice || 0))}`,
 																status: (row) => {
 																	const variant = row as Variant;
 																	return (
@@ -641,7 +622,7 @@ export const ProductDetailForm = ({
 																),
 															}}
 															headerRenderers={{
-																actions: () => 'Action',
+																actions: () => t('nikki.general.actions.title'),
 															}}
 														/>
 													</Paper>
@@ -649,8 +630,7 @@ export const ProductDetailForm = ({
 											</Stack>
 										</Tabs.Panel>
 									</Tabs>
-								</Stack>
-							</form>
+							</Stack>
 						);
 					}}
 				</FormFieldProvider>
@@ -660,9 +640,18 @@ export const ProductDetailForm = ({
 				opened={deleteTarget !== null}
 				onClose={() => setDeleteTarget(null)}
 				onConfirm={() => void handleConfirmDelete()}
-				title={deleteTarget?.kind === 'attribute' ? 'Delete attribute' : 'Delete variant'}
-				message={deleteTarget ? `Delete ${deleteTarget.kind} "${deleteTarget.label}"?` : undefined}
-				confirmLabel='Delete'
+				title={deleteTarget?.kind === 'attribute'
+					? t('nikki.inventory.attribute.messages.confirmDeleteItemTitle')
+					: t('nikki.inventory.variant.messages.confirmDeleteItemTitle')}
+				message={deleteTarget
+					? t(
+						deleteTarget.kind === 'attribute'
+							? 'nikki.inventory.attribute.messages.confirmDeleteItemMessage'
+							: 'nikki.inventory.variant.messages.confirmDeleteItemMessage',
+						{ label: deleteTarget.label },
+					)
+					: undefined}
+				confirmLabel={t('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>
 		</>

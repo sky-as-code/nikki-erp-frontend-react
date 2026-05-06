@@ -2,6 +2,7 @@ import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
 import { productActions, attributeActions, variantActions } from '../../../appState';
@@ -24,6 +25,7 @@ import type { Attribute } from '../../attribute/types';
 import type { AttributeValue } from '../../attributeValue/types';
 import type { Variant } from '../../variant/types';
 import type { UpdateProductRequest } from '../types';
+import { StringToJson } from '../../../utils/serializer';
 
 
 export function useProductDetailHandlers() {
@@ -31,6 +33,7 @@ export function useProductDetailHandlers() {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
 	const navigate = useNavigate();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 	const activeOrg = useActiveOrgWithDetails();
 	const orgId = activeOrg?.id ?? 'org-1';
 
@@ -44,7 +47,10 @@ export function useProductDetailHandlers() {
 	const variantList = useMicroAppSelector(selectVariantList);
 	const unitList = useMicroAppSelector(selectUnitList);
 
-	const isLoadingDetail = productDetail.status === 'pending';
+	const isLoadingDetail = productDetail.status === 'pending' || 
+							attributeList.status === 'pending' || 
+							variantList.status === 'pending' || 
+							unitList.status === 'pending';
 
 	const attributes = (attributeList.data ?? []) as Attribute[];
 	const variants = (variantList.data ?? []) as Variant[];
@@ -66,7 +72,7 @@ export function useProductDetailHandlers() {
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {
-			notification.showInfo('Product updated successfully', '');
+			notification.showInfo(t('nikki.inventory.product.messages.updateSuccess'), '');
 			dispatch(productActions.resetUpdateProduct());
 			if (productId) {
 				dispatch(productActions.getProduct({ orgId, id: productId }));
@@ -75,7 +81,7 @@ export function useProductDetailHandlers() {
 
 		if (updateCommand.status === 'error') {
 			notification.showError(
-				updateCommand.error ?? 'Failed to update product',
+				updateCommand.error ?? t('nikki.inventory.product.messages.updateError'),
 				'',
 			);
 			dispatch(productActions.resetUpdateProduct());
@@ -84,14 +90,14 @@ export function useProductDetailHandlers() {
 
 	React.useEffect(() => {
 		if (deleteCommand.status === 'success') {
-			notification.showInfo('Product deleted successfully', '');
+			notification.showInfo(t('nikki.inventory.product.messages.deleteSuccess'), '');
 			dispatch(productActions.resetDeleteProduct());
 			navigate('..', { relative: 'path' });
 		}
 
 		if (deleteCommand.status === 'error') {
 			notification.showError(
-				deleteCommand.error ?? 'Failed to delete product',
+				deleteCommand.error ?? t('nikki.inventory.product.messages.deleteError'),
 				'',
 			);
 			dispatch(productActions.resetDeleteProduct());
@@ -144,14 +150,15 @@ export function useProductDetailHandlers() {
 		dispatch(productActions.deleteProduct({ orgId, id: productId }));
 	}, [dispatch, orgId, productId]);
 
-	const handleUpdateProduct = React.useCallback((data: Omit<UpdateProductRequest, 'id' | 'etag'>) => {
+	const handleUpdateProduct = React.useCallback((data: any) => {
+		console.log('Updating product with data:', data);
 		if (!product?.id || !product?.etag) {
 			return;
 		}
 
 		dispatch(productActions.updateProduct({
 			orgId,
-			data: { id: product.id, etag: product.etag, ...data },
+			data: { ...data, id: product.id, name: StringToJson(data.name), description: StringToJson(data.description), etag: product.etag },
 		}));
 	}, [dispatch, orgId, product?.id, product?.etag]);
 
@@ -167,13 +174,13 @@ export function useProductDetailHandlers() {
 				attributeId,
 			})).unwrap();
 
-			notification.showInfo('Attribute deleted successfully', '');
+			notification.showInfo(t('nikki.inventory.attribute.messages.deleteSuccess'), '');
 			dispatch(attributeActions.resetDeleteAttribute());
 			dispatch(attributeActions.listAttributes({ orgId, productId }));
 		}
 		catch (error) {
 			notification.showError(
-				error instanceof Error ? error.message : 'Failed to delete attribute',
+				error instanceof Error ? error.message : t('nikki.inventory.attribute.messages.deleteError'),
 				'',
 			);
 			dispatch(attributeActions.resetDeleteAttribute());
@@ -192,13 +199,13 @@ export function useProductDetailHandlers() {
 				variantId,
 			})).unwrap();
 
-			notification.showInfo('Variant deleted successfully', '');
+			notification.showInfo(t('nikki.inventory.variant.messages.deleteSuccess'), '');
 			dispatch(variantActions.resetDeleteVariant());
 			dispatch(variantActions.listVariants({ orgId, productId }));
 		}
 		catch (error) {
 			notification.showError(
-				error instanceof Error ? error.message : 'Failed to delete variant',
+				error instanceof Error ? error.message : t('nikki.inventory.variant.messages.deleteError'),
 				'',
 			);
 			dispatch(variantActions.resetDeleteVariant());

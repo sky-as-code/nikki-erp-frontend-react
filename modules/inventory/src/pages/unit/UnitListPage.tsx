@@ -7,6 +7,7 @@ import {
 import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { selectUnitList } from '../../appState/unit';
 import { ControlPanel } from '../../components/ControlPanel';
@@ -20,6 +21,7 @@ import type { ModelSchema } from '@nikkierp/ui/model';
 const COLUMNS = ['name', 'symbol', 'Base Unit / Multiplier', 'status', 'createdAt'];
 
 export const UnitListPageBody: React.FC = () => {
+	const { t } = useTranslation();
 	const {
 		handleCreate,
 		handleRefresh,
@@ -27,8 +29,8 @@ export const UnitListPageBody: React.FC = () => {
 	} = useUnitListHandlers();
 
 	const breadcrumbs = [
-		{ title: 'Inventory', href: '../overview' },
-		{ title: 'Units', href: '#' },
+		{ title: t('nikki.inventory.breadcrumbs.home'), href: '../overview' },
+		{ title: t('nikki.inventory.menu.units'), href: '#' },
 	];
 
 	return (
@@ -37,8 +39,8 @@ export const UnitListPageBody: React.FC = () => {
 			sections={[
 				<ControlPanel
 					actions={[
-						{ label: 'Create', onClick: handleCreate },
-						{ label: 'Refresh', onClick: handleRefresh, variant: 'outline' },
+						{ label: t('nikki.general.actions.create'), onClick: handleCreate },
+						{ label: t('nikki.general.actions.refresh'), onClick: handleRefresh, variant: 'outline' },
 					]}
 				/>,
 			]}

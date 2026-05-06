@@ -81,8 +81,8 @@ function Main(props: MicroAppProps) {
 			>
 				<AppRoutes>
 					<AppRoute element={<VendingMachineLayout />}>
-							{/* <AppRoute index element={<Navigate to='overview' replace />} />
-							<AppRoute path='overview' element={<OverviewPage />} /> */}
+							<AppRoute index element={<Navigate to='overview' replace />} />
+							<AppRoute path='overview' element={<OverviewPage />} />
 
 							<AppRoute path='units' element={<UnitListPage />} />
 							<AppRoute path='units/create' element={<UnitCreatePage />} />

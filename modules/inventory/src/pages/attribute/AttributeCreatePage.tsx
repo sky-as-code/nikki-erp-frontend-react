@@ -2,6 +2,7 @@ import { Stack } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import React from 'react';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 
 import { ControlPanelAction } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
@@ -10,13 +11,13 @@ import { useAttributeCreateHandlers } from '../../features/attribute/hooks';
 
 
 export const AttributeCreatePageBody: React.FC = () => {
+	const { t } = useTranslation();
 	const { isLoading, onSubmit } = useAttributeCreateHandlers();
 	const navigate = useNavigate();
-	const formId = 'attribute-create-form';
 	const breadcrumbs = [
-		{ title: 'Inventory', href: '../overview' },
-		{ title: 'Attributes', href: '../attributes' },
-		{ title: 'Create Attribute', href: '#' },
+		{ title: t('nikki.inventory.breadcrumbs.home'), href: '../overview' },
+		{ title: t('nikki.inventory.menu.attributes'), href: '../attributes' },
+		{ title: t('nikki.inventory.breadcrumbs.createAttribute'), href: '#' },
 	];
 
 	return (
@@ -25,8 +26,8 @@ export const AttributeCreatePageBody: React.FC = () => {
 			sections={[
 				<ControlPanelAction
 					actions={[
-						{ label: 'Cancel', variant: 'outline', onClick: () => navigate(-1) },
-						{ label: 'Create', type: 'submit', form: formId },
+						{ label: t('nikki.general.actions.cancel'), variant: 'outline', onClick: () => navigate(-1) },
+						{ label: t('nikki.general.actions.create'), type: 'submit', form: 'attribute-create-form' },
 					]}
 				/>,
 			]}
@@ -34,7 +35,6 @@ export const AttributeCreatePageBody: React.FC = () => {
 			<AttributeCreateForm
 				isLoading={isLoading}
 				onSubmit={onSubmit}
-				formId={formId}
 			/>
 		</PageContainer>
 	);

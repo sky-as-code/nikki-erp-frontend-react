@@ -355,6 +355,7 @@ export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { t: translate } = useTranslation();
+	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -369,7 +370,7 @@ export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={translate(fieldData.label)}
-			description={fieldData.description ? translate(fieldData.description) : undefined}
+			description={translate(fieldData.description ?? '')}
 			isRequired={fieldData.isRequired}
 			error={fieldData.error ? translate(fieldData.error) : undefined}
 		>

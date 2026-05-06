@@ -1,44 +1,44 @@
-{
+﻿{
 	"name": "attribute-group",
 	"fields": {
 		"id": {
 			"type": "string",
-			"label": "ID",
+			"label": "{ \"$ref\": 'nikki.inventory.attributeGroup.fields.id' }",
 			"hidden": true,
 			"constraints": [{ "type": "length", "max": 36 }]
 		},
 		"productId": {
 			"type": "string",
-			"label": "Product ID",
+			"label": "{ \"$ref\": 'nikki.inventory.attributeGroup.fields.productId' }",
 			"required": { "create": true, "update": true },
 			"hidden": true
 		},
 		"name": {
 			"type": "string",
-			"label": "Name",
+			"label": "{ \"$ref\": 'nikki.inventory.attributeGroup.fields.name' }",
 			"required": { "create": true, "update": true },
 			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
 		},
 		"index": {
 			"type": "integer",
-			"label": "Index",
+			"label": "{ \"$ref\": 'nikki.inventory.attributeGroup.fields.index' }",
 			"required": { "create": false, "update": false },
 			"constraints": [{ "type": "value_range", "min": 0 }]
 		},
 		"etag": {
 			"type": "string",
-			"label": "Etag",
+			"label": "{ \"$ref\": 'nikki.inventory.attributeGroup.fields.etag' }",
 			"hidden": true
 		},
 		"createdAt": {
 			"type": "date",
 			"format": "date-time",
-			"label": "Created At"
+			"label": "{ \"$ref\": 'nikki.inventory.attributeGroup.fields.createdAt' }"
 		},
 		"updatedAt": {
 			"type": "date",
 			"format": "date-time",
-			"label": "Updated At"
+			"label": "{ \"$ref\": 'nikki.inventory.attributeGroup.fields.updatedAt' }"
 		}
 	}
 }

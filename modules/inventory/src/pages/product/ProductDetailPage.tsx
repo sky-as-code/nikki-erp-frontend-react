@@ -1,6 +1,6 @@
 import { IconArrowLeft, IconDeviceFloppy, IconEdit, IconTrash, IconX } from '@tabler/icons-react';
-import { withWindowTitle } from '@nikkierp/ui/components';
-import React from 'react';
+import { ConfirmModal, withWindowTitle } from '@nikkierp/ui/components';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ControlPanel } from '../../components/ControlPanel';
@@ -17,6 +17,7 @@ export const ProductDetailPageBody: React.FC = () => {
 	const { t: translate } = useTranslation();
 	const [isEditing, setIsEditing] = React.useState(false);
 	const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
+	const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
 
 	const {
 		isLoading,
@@ -36,16 +37,12 @@ export const ProductDetailPageBody: React.FC = () => {
 		setSelectedImageIndex(index);
 	}, []);
 
-	const handleUpdate = React.useCallback((rawValues: Record<string, unknown>) => {
-		handleUpdateProduct({
-			name: rawValues.name as Record<string, string> | undefined,
-			description: rawValues.description as Record<string, string> | undefined,
-			status: rawValues.status as string | undefined,
-			unitId: rawValues.unitId as string | undefined,
-			thumbnailURL: rawValues.thumbnailURL as string | undefined,
-		});
-		setIsEditing(false);
-	}, [handleUpdateProduct]);
+	const handleSaveClick = useCallback(() => {
+		const el = document.getElementById("product-detail-form");
+		if (el instanceof HTMLFormElement) {
+		el.requestSubmit();
+		}
+	}, []);
 
 	const productImages = React.useMemo(() => {
 		if (!product) return [];
@@ -62,12 +59,13 @@ export const ProductDetailPageBody: React.FC = () => {
 	}, [product, variants]);
 
 	const breadcrumbs = [
-		{ title: 'Inventory', href: '../overview' },
-		{ title: 'Products', href: '../products' },
-		{ title: product ? (JsonToString(product.name) || product.id) : 'Product Detail', href: '#' },
+		{ title: translate('nikki.inventory.breadcrumbs.home'), href: '../overview' },
+		{ title: translate('nikki.inventory.menu.products'), href: '../products' },
+		{ title: product ? (JsonToString(product.name) || product.id) : translate('nikki.inventory.breadcrumbs.productDetail'), href: '#' },
 	];
 
 	return (
+		<>
 		<PageContainer
 			breadcrumbs={breadcrumbs}
 			isLoading={isLoading}
@@ -80,28 +78,32 @@ export const ProductDetailPageBody: React.FC = () => {
 							leftSection: <IconArrowLeft size={16} />,
 							onClick: handleGoBack,
 							variant: 'outline',
+							type: 'button' as const,
 						},
 						...(!isEditing ? [{
 							label: translate('nikki.general.actions.edit'),
 							leftSection: <IconEdit size={16} />,
 							onClick: () => setIsEditing(true),
-							variant: 'filled' as const,
+							type: 'button' as const,
 						}] : [{
 							label: translate('nikki.general.actions.save'),
 							leftSection: <IconDeviceFloppy size={16} />,
-							onClick: () => handleUpdate,
-							variant: 'filled' as const,
+							onClick: handleSaveClick,
+							type: 'button' as const,
+							form: "product-detail-form",
 						}, {
 							label: translate('nikki.general.actions.cancel'),
-							leftSection: <IconX size={16} />,
+							leftSection: <IconX size={16} />,															
 							onClick: () => setIsEditing(false),
 							variant: 'outline' as const,
+							type: 'button' as const,
 						}]),
 						{
 							label: translate('nikki.general.actions.delete'),
 							leftSection: <IconTrash size={16} />,
-							onClick: handleDeleteProduct,
-							variant: 'outline',
+							onClick: () => setShowDeleteConfirm(true),
+							variant: 'outline' as const,
+							type: 'button' as const,
 							color: 'red',
 						},
 					]}
@@ -116,7 +118,7 @@ export const ProductDetailPageBody: React.FC = () => {
 				productImages={productImages}
 				selectedImageIndex={selectedImageIndex}
 				onSelectImage={handleSelectImage}
-				onSubmit={handleUpdate}
+				onSubmit={handleUpdateProduct}
 				attributes={attributes}
 				variants={variants}
 				attributeValuesByAttributeId={attributeValuesByAttributeId}
@@ -125,6 +127,16 @@ export const ProductDetailPageBody: React.FC = () => {
 				onDeleteVariant={handleDeleteVariant}
 			/>
 		</PageContainer>
+		<ConfirmModal
+			opened={showDeleteConfirm}
+			onClose={() => setShowDeleteConfirm(false)}
+			onConfirm={() => { setShowDeleteConfirm(false); handleDeleteProduct(); }}
+			title={translate('nikki.inventory.product.messages.confirmDeleteTitle')}
+			message={translate('nikki.inventory.product.messages.confirmDeleteMessage')}
+			confirmLabel={translate('nikki.general.actions.delete')}
+			confirmColor='red'
+		/>
+		</>
 	);
 };
 

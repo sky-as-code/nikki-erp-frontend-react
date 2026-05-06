@@ -2,6 +2,7 @@ import { useUIState } from '@nikkierp/shell/contexts';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
 import { attributeActions } from '../../../appState';
@@ -9,7 +10,6 @@ import { selectCreateAttribute } from '../../../appState/attribute';
 import { toLocalizedText } from '../../localizedText';
 
 import type { InventoryDispatch } from '../../../appState';
-import type { CreateAttributeRequest } from '../types';
 
 interface UseAttributeCreateHandlersOptions {
 	productId?: string;
@@ -47,13 +47,33 @@ export function useAttributeCreateHandlers({
 	const productId = productIdProp ?? productIdParam;
 	const navigate = useNavigate();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 	const activeOrg = useActiveOrgWithDetails();
 	const orgId = activeOrg?.id ?? 'org-1';
 
 	const createCommand = useMicroAppSelector(selectCreateAttribute);
 	const isLoading = createCommand.status === 'pending';
 
-	const handleCreateAttribute = React.useCallback(async (data: Record<string, unknown>) => {
+	React.useEffect(() => {
+		if (createCommand.status === 'success') {
+			notification.showInfo(t('nikki.inventory.attribute.messages.createSuccess'), '');
+			dispatch(attributeActions.resetCreateAttribute());
+			if (productId) {
+				dispatch(attributeActions.listAttributes({ orgId, productId }));
+			}
+			navigate('../..', { relative: 'path' });
+		}
+
+		if (createCommand.status === 'error') {
+			notification.showError(
+				createCommand.error instanceof Error ? createCommand.error.message : t('nikki.inventory.attribute.messages.createError'),
+				'',
+			);
+			dispatch(attributeActions.resetCreateAttribute());
+		}
+	}, [createCommand.status, dispatch, navigate, notification, onSuccess, orgId, productId]);
+
+	const handleCreateAttribute = React.useCallback((data: any) => {
 		if (!productId) {
 			return;
 		}
@@ -66,39 +86,20 @@ export function useAttributeCreateHandlers({
 			return;
 		}
 
-		try {
-			const result = await dispatch(attributeActions.createAttribute({
-				orgId,
-				data: {
-					productId,
-					displayName,
-					codeName,
-					dataType,
-					isRequired: Boolean(data.isRequired),
-					isEnum: Boolean(data.isEnum),
-					sortIndex: toOptionalNumber(data.sortIndex),
-				} as CreateAttributeRequest,
-			})).unwrap();
-
-			notification.showInfo(`Attribute ${result.id} created successfully`, '');
-			dispatch(attributeActions.resetCreateAttribute());
-			dispatch(attributeActions.listAttributes({ orgId, productId }));
-
-			if (onSuccess) {
-				await onSuccess();
-			}
-			else {
-				navigate('..', { relative: 'path' });
-			}
-		}
-		catch (error) {
-			notification.showError(
-				error instanceof Error ? error.message : 'Failed to create attribute',
-				'',
-			);
-			dispatch(attributeActions.resetCreateAttribute());
-		}
-	}, [dispatch, navigate, notification, onSuccess, orgId, productId]);
+		dispatch(attributeActions.createAttribute({
+			orgId,
+			data: {
+				productId,
+				displayName: displayName as Record<string, string>,
+				codeName,
+				dataType,
+				isRequired: Boolean(data.isRequired),
+				isEnum: Boolean(data.isEnum),
+				enumValue: Array.isArray(data.enumValue) ? data.enumValue : undefined,
+				sortIndex: toOptionalNumber(data.sortIndex),
+			},
+		}));
+	}, [dispatch, orgId, productId]);
 
 	return {
 		isLoading,

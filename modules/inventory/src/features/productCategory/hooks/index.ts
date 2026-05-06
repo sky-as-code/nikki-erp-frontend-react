@@ -9,3 +9,4 @@ export {
 export { useProductCategoryDetail } from './useProductCategoryDetail';
 export type { ProductCategoryCreateFormValues } from './useProductCategoryCreate';
 export type { ProductCategoryDetailFormValues } from './useProductCategoryDetail';
+export type { ProductCategoryDetailFormValues } from './useProductCategoryDetail';

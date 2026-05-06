@@ -3,35 +3,35 @@
 	"fields": {
 		"id": {
 			"type": "string",
-			"label": "ID",
+			"label": "{ \"$ref\": 'nikki.inventory.unitCategory.fields.id' }",
 			"hidden": true,
 			"constraints": [{ "type": "length", "max": 36 }]
 		},
 		"orgId": {
 			"type": "string",
-			"label": "Organization",
+			"label": "{ \"$ref\": 'nikki.inventory.unitCategory.fields.orgId' }",
 			"hidden": true,
 			"required": { "create": true, "update": false }
 		},
 		"name": {
 			"type": "string",
-			"label": "Category Name",
+			"label": "{ \"$ref\": 'nikki.inventory.unitCategory.fields.name' }",
 			"required": { "create": true, "update": false },
 			"constraints": [{ "type": "length", "min": 1, "max": 200 }]
 		},
 		"etag": {
 			"type": "string",
-			"label": "Etag",
+			"label": "{ \"$ref\": 'nikki.inventory.unitCategory.fields.etag' }",
 			"hidden": true
 		},
 		"createdAt": {
 			"type": "date",
-			"label": "Created At",
+			"label": "{ \"$ref\": 'nikki.inventory.unitCategory.fields.createdAt' }",
 			"hidden": false
 		},
 		"updatedAt": {
 			"type": "date",
-			"label": "Updated At",
+			"label": "{ \"$ref\": 'nikki.inventory.unitCategory.fields.updatedAt' }",
 			"hidden": false
 		}
 	}

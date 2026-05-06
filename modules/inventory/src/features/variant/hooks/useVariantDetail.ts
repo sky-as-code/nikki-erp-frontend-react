@@ -46,7 +46,7 @@ export function useVariantDetailHandlers() {
 			notification.showInfo(
 				t('nikki.inventory.variant.messages.updateSuccess'), '',
 			);
-			navigate('..', { relative: 'path' });
+			navigate('../..', { relative: 'path' });
 			dispatch(variantActions.resetUpdateVariant());
 		}
 		if (updateCommand.status === 'error') {
@@ -62,7 +62,7 @@ export function useVariantDetailHandlers() {
 			notification.showInfo(
 				t('nikki.inventory.variant.messages.deleteSuccess'), '',
 			);
-			navigate('..', { relative: 'path' });
+			navigate('../..', { relative: 'path' });
 			dispatch(variantActions.resetDeleteVariant());
 		}
 		if (deleteCommand.status === 'error') {
@@ -73,7 +73,8 @@ export function useVariantDetailHandlers() {
 		}
 	}, [deleteCommand.status, dispatch, navigate, notification, t]);
 
-	const handleUpdate = (data: Record<string, unknown>) => {
+	const handleUpdate = (data: any) => {
+		console.log('Updating variant with data:', data);
 		if (variantDetail?.data?.id && productId) {
 			const dataWithTag = {
 				id: variantDetail.data.id,
@@ -83,6 +84,9 @@ export function useVariantDetailHandlers() {
 				imageURL: toOptionalTrimmedString(data.imageURL),
 				status: toOptionalTrimmedString(data.status),
 				proposedPrice: typeof data.proposedPrice === 'number' ? data.proposedPrice : undefined,
+				attributes: typeof data.attributes === 'object' && data.attributes !== null
+					? data.attributes as Record<string, unknown>
+					: undefined,
 			};
 			dispatch(variantActions.updateVariant({
 				orgId,

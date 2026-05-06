@@ -3,6 +3,7 @@ import {
 } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { ControlPanel } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
@@ -10,6 +11,7 @@ import { VariantTable } from '../../features/variant/components';
 import { useVariantListHandlers, useSearchVariants } from '../../features/variant/hooks';
 
 export function VariantListPageBody(): React.ReactNode {
+	const { t } = useTranslation();
 	const { 
 		handleCreate, 
 		handleRefresh, 
@@ -24,8 +26,8 @@ export function VariantListPageBody(): React.ReactNode {
 	} = useSearchVariants({variants});
 
 	const breadcrumbs = [
-		{ title: 'Inventory', href: '../overview' },
-		{ title: 'Variants', href: '#' },
+		{ title: t('nikki.inventory.breadcrumbs.home'), href: '../overview' },
+		{ title: t('nikki.inventory.menu.variants'), href: '#' },
 	];
 
 	return (
@@ -35,13 +37,13 @@ export function VariantListPageBody(): React.ReactNode {
 			sections={[
 				<ControlPanel
 					actions={[
-						{ label: 'Create', onClick: handleCreate },
-						{ label: 'Refresh', onClick: handleRefresh, variant: 'outline' },
+						{ label: t('nikki.general.actions.create'), onClick: handleCreate },
+						{ label: t('nikki.general.actions.refresh'), onClick: handleRefresh, variant: 'outline' },
 					]}
 					search={{
 						value: searchValue,
 						onChange: setSearchValue,
-						placeholder: 'Search by name, SKU, barcode, product',
+						placeholder: t('nikki.inventory.variant.searchPlaceholder'),
 					}}
 				/>,
 			]}

@@ -2,6 +2,7 @@ import { useUIState } from '@nikkierp/shell/contexts';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
 import { unitActions, unitCategoryActions } from '../../../appState';
@@ -16,6 +17,7 @@ import { selectUnitCategoryList } from '../../../appState/unitCategory';
 import type { InventoryDispatch } from '../../../appState';
 import type { Unit } from '../types';
 import type { UnitCategory } from '../../unitCategory/types';
+import { StringToJson } from '../../../utils/serializer';
 
 
 export type UnitDetailFormValues = {
@@ -48,6 +50,7 @@ export function useUnitDetail() {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
 	const navigate = useNavigate();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 	const { unitId } = useParams();
 	const activeOrg = useActiveOrgWithDetails();
 	const orgId = activeOrg?.id ?? 'org-1';
@@ -68,14 +71,14 @@ export function useUnitDetail() {
 
 	React.useEffect(() => {
 		if (updateCommand.status === 'success') {
-			notification.showInfo('Unit updated successfully', '');
+			notification.showInfo(t('nikki.inventory.unit.messages.updateSuccess'), '');
 			dispatch(unitActions.resetUpdateUnit());
 			navigate('..', { relative: 'path' });
 		}
 
 		if (updateCommand.status === 'error') {
 			notification.showError(
-				updateCommand.error instanceof Error ? updateCommand.error.message : 'Failed to update unit',
+				updateCommand.error instanceof Error ? updateCommand.error.message : t('nikki.inventory.unit.messages.updateError'),
 				'',
 			);
 			dispatch(unitActions.resetUpdateUnit());
@@ -84,14 +87,14 @@ export function useUnitDetail() {
 
 	React.useEffect(() => {
 		if (deleteCommand.status === 'success') {
-			notification.showInfo('Unit deleted successfully', '');
+			notification.showInfo(t('nikki.inventory.unit.messages.deleteSuccess'), '');
 			dispatch(unitActions.resetDeleteUnit());
 			navigate('..', { relative: 'path' });
 		}
 
 		if (deleteCommand.status === 'error') {
 			notification.showError(
-				deleteCommand.error instanceof Error ? deleteCommand.error.message : 'Failed to delete unit',
+				deleteCommand.error instanceof Error ? deleteCommand.error.message : t('nikki.inventory.unit.messages.deleteError'),
 				'',
 			);
 			dispatch(unitActions.resetDeleteUnit());
@@ -102,13 +105,15 @@ export function useUnitDetail() {
 		navigate('..', { relative: 'path' });
 	};
 
-	const handleSave = (data : any) => {
+	const handleSave = (data: any) => {
+		console.log('Saving unit with data:', data);
 		dispatch(unitActions.updateUnit({
 			orgId,
 			data: {
+				...data,
 				id: unitId,
 				etag: unit?.etag,
-				...data,
+				name: StringToJson(data.name),
 			},
 		}));
 	};

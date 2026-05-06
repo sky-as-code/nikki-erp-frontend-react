@@ -33,12 +33,7 @@ export function useVariantCreateHandlers(onSuccess?: () => void) {
 				'',
 			);
 			dispatch(variantActions.resetCreateVariant());
-
-			if (onSuccess) {
-				onSuccess();
-			} else {
-				navigate('..', { relative: 'path' });
-			}
+			navigate('../..', { relative: 'path' });
 		}
 		if (createCommand.status === 'error') {
 			notification.showError(
@@ -47,10 +42,9 @@ export function useVariantCreateHandlers(onSuccess?: () => void) {
 			);
 			dispatch(variantActions.resetCreateVariant());
 		}
-	}, [createCommand.status, dispatch, navigate, notification, t, onSuccess]);
+	}, [createCommand.status, dispatch, navigate, notification, t]);
 
 	const handleCreate = (data: any) => {
-
 		dispatch(variantActions.createVariant({
 			orgId,
 			data

@@ -3,6 +3,7 @@ import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 
 import { attributeActions, productActions } from '../../../appState';
 import {
@@ -55,78 +56,72 @@ export function useAttributeDetailHandlers(options: UseAttributeDetailHandlersOp
 
 	const navigate = useNavigate();
 	const { notification } = useUIState();
-
-	React.useEffect(() => {
-		if (attributeId && productId) {
-			dispatch(attributeActions.getAttribute({ orgId, attributeId, productId }));
-			dispatch(productActions.getProduct({ orgId, id :productId }));
-		}
-	}, [attributeId, dispatch, orgId, productId]);
+	const { t } = useTranslation();
 
 	const isLoadingDetail = attributeDetail.status === 'pending'
 		|| updateCommand.status === 'pending'
 		|| deleteCommand.status === 'pending';
 
-	const handleUpdate = React.useCallback(async (data: Record<string, unknown>) => {
-		if (!attributeDetail.data?.id || !productId) {
-			return;
+	React.useEffect(() => {
+		if (attributeId && productId) {
+			dispatch(attributeActions.getAttribute({ orgId, attributeId, productId }));
+			dispatch(productActions.getProduct({ orgId, id: productId }));
 		}
+	}, [attributeId, dispatch, orgId, productId]);
 
-		try {
-			await dispatch(attributeActions.updateAttribute({
-				orgId,
-				productId,
-				data: {
-					id: attributeDetail.data.id,
-					etag: attributeDetail.data.etag,
-					displayName: toLocalizedText(data.displayName as string | Record<string, string> | null | undefined),
-					codeName: toOptionalString(data.codeName),
-					dataType: toOptionalString(data.dataType),
-					isEnum: Boolean(data.isEnum),
-					isRequired: Boolean(data.isRequired),
-					sortIndex: toOptionalNumber(data.sortIndex),
-				},
-			} as any)).unwrap();
-
-			notification.showInfo('Attribute updated successfully', '');
-			dispatch(attributeActions.resetUpdateAttribute());
-			dispatch(attributeActions.listAttributes({ orgId, productId }));
-			navigate('..', { relative: 'path' });
-		}
-		catch (error) {
-			notification.showError(
-				error instanceof Error ? error.message : 'Failed to update attribute',
-				'',
-			);
+	React.useEffect(() => {
+		if (updateCommand.status === 'success') {
+			notification.showInfo(t('nikki.inventory.attribute.messages.updateSuccess'), '');
+			navigate('../..', { relative: 'path' });
 			dispatch(attributeActions.resetUpdateAttribute());
 		}
-	}, [attributeDetail.data, dispatch, navigate, notification, orgId, productId]);
-
-	const handleDelete = React.useCallback(async () => {
-		if (!attributeDetail.data?.id || !productId) {
-			return;
+		if (updateCommand.status === 'error') {
+			notification.showError(t('nikki.inventory.attribute.messages.updateError'), '');
+			dispatch(attributeActions.resetUpdateAttribute());
 		}
+	}, [updateCommand.status, dispatch, navigate, notification, t]);
 
-		try {
-			await dispatch(attributeActions.deleteAttribute({
-				orgId,
-				productId,
-				attributeId: attributeDetail.data.id,
-			})).unwrap();
-
-			notification.showInfo('Attribute deleted successfully', '');
-			dispatch(attributeActions.resetDeleteAttribute());
-			dispatch(attributeActions.listAttributes({ orgId, productId }));
-			navigate('..', { relative: 'path' });
-		}
-		catch (error) {
-			notification.showError(
-				error instanceof Error ? error.message : 'Failed to delete attribute',
-				'',
-			);
+	React.useEffect(() => {
+		if (deleteCommand.status === 'success') {
+			notification.showInfo(t('nikki.inventory.attribute.messages.deleteSuccess'), '');
+			navigate('../..', { relative: 'path' });
 			dispatch(attributeActions.resetDeleteAttribute());
 		}
-	}, [attributeDetail.data, dispatch, navigate, notification, orgId, productId]);
+		if (deleteCommand.status === 'error') {
+			notification.showError(t('nikki.inventory.attribute.messages.deleteError'), '');
+			dispatch(attributeActions.resetDeleteAttribute());
+		}
+	}, [deleteCommand.status, dispatch, navigate, notification, t]);
+
+	const handleUpdate = React.useCallback((data: any) => {
+		if (!attributeDetail.data?.id || !productId) return;
+
+		dispatch(attributeActions.updateAttribute({
+			orgId,
+			productId,
+			data: {
+				id: attributeDetail.data.id,
+				etag: attributeDetail.data.etag,
+				displayName: toLocalizedText(data.displayName as string | Record<string, string> | null | undefined),
+				codeName: toOptionalString(data.codeName),
+				dataType: toOptionalString(data.dataType),
+				isEnum: Boolean(data.isEnum),
+				isRequired: Boolean(data.isRequired),
+				sortIndex: toOptionalNumber(data.sortIndex),
+				...(data.enumValue !== undefined && { enumValue: data.enumValue as unknown[] }),
+			},
+		} as any));
+	}, [attributeDetail.data, dispatch, orgId, productId]);
+
+	const handleDelete = React.useCallback(() => {
+		if (!attributeDetail.data?.id || !productId) return;
+
+		dispatch(attributeActions.deleteAttribute({
+			orgId,
+			productId,
+			attributeId: attributeDetail.data.id,
+		}));
+	}, [attributeDetail.data, dispatch, orgId, productId]);
 
 	return {
 		isLoadingDetail,

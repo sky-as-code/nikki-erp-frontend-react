@@ -2,6 +2,7 @@ import { useUIState } from '@nikkierp/shell/contexts';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { productCategoryActions } from '../../../appState';
@@ -19,6 +20,7 @@ export function useProductCategoryCreateHandlers() {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
 	const navigate = useNavigate();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 	const activeOrg = useActiveOrgWithDetails();
 	const orgId = activeOrg?.id ?? 'org-1';
 	const createCommand = useMicroAppSelector(selectCreateProductCategory);
@@ -27,13 +29,13 @@ export function useProductCategoryCreateHandlers() {
 
 	React.useEffect(() => {
 		if (createCommand.status === 'success') {
-			notification.showInfo('Category created successfully', '');
+			notification.showInfo(t('nikki.inventory.productCategory.messages.createSuccess'), '');
 			dispatch(productCategoryActions.resetCreateProductCategory());
 			dispatch(productCategoryActions.listProductCategories(orgId));
 			navigate('..', { relative: 'path' });
 		}
 		if (createCommand.status === 'error') {
-			notification.showError('Failed to create category', '');
+			notification.showError(t('nikki.inventory.productCategory.messages.createError'), '');
 			dispatch(productCategoryActions.resetCreateProductCategory());
 		}
 	}, [createCommand.status, dispatch, navigate, notification, orgId]);

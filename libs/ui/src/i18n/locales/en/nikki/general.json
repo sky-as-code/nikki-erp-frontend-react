@@ -32,10 +32,7 @@
 		"today": "Today",
 		"viewDetails": "View Details",
 		"apply": "Apply",
-		"restore": "Restore",
-		"download": "Download",
-		"preview": "Preview",
-		"viewDetail": "View Detail"
+		"reset": "Reset"
 	},
 	"selected": "Selected",
 	"boolean": {

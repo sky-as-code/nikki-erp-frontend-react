@@ -33,7 +33,7 @@ export function UnitCategoryCreateForm({
 			>
 				{({ handleSubmit }) => (
 					<Paper p='md' withBorder>
-						<form onSubmit={handleSubmit(onSubmit)} noValidate>
+						<form id='unit-category-create-form' onSubmit={handleSubmit(onSubmit)} noValidate>
 							<Stack gap='md'>
 								<AutoField
 									name='name'

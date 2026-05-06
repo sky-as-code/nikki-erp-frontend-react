@@ -18,6 +18,8 @@ import type { UnitDetailFormValues } from '../hooks/useUnitDetail';
 import type { UnitCategory } from '../../unitCategory/types';
 import { useTranslation } from 'react-i18next';
 
+const UPDATE_FORM_FIELDS = ['name', 'symbol', 'categoryId', 'baseUnit', 'multiplier', 'status'];
+
 
 interface UnitDetailFormProps {
 	schema: ModelSchema;
@@ -26,6 +28,7 @@ interface UnitDetailFormProps {
 	unitCategories: UnitCategory[];
 	isLoading: boolean;
 	isSubmitting: boolean;
+	isEditing: boolean;
 	onSave: (values: UnitDetailFormValues) => void | Promise<void>;
 }
 
@@ -35,6 +38,7 @@ export function UnitDetailForm({
 	units,
 	unit,
 	isSubmitting,
+	isEditing,
 	onSave,
 }: UnitDetailFormProps): React.ReactElement {
 	const { t } = useTranslation();
@@ -43,36 +47,48 @@ export function UnitDetailForm({
 		name: JsonToString(unit?.name),
 	};
 
+	const isReadOnly = !isEditing || isSubmitting;
+
+	const updateSchema = React.useMemo((): ModelSchema => ({
+		...schema,
+		fields: Object.fromEntries(
+			Object.entries(schema.fields).map(([key, field]) => [
+				key,
+				UPDATE_FORM_FIELDS.includes(key) ? field : { ...field, frontendOnly: true },
+			]),
+		),
+	}), [schema]);
+
 	return (
 		<FormStyleProvider layout='onecol'>
 			<FormFieldProvider
 				formVariant='update'
-				modelSchema={schema}
+				modelSchema={updateSchema}
 				modelLoading={isSubmitting}
 				modelValue={modelValue}
 			>
 				{({ handleSubmit }) => (
-					<form onSubmit={handleSubmit(onSave)} noValidate>
+					<form id='unit-detail-form' onSubmit={handleSubmit(onSave)} noValidate>
 						<Stack gap='md'>
-							<AutoField name='name' inputProps={{ disabled: isSubmitting }} />
-							<AutoField name='symbol' inputProps={{ disabled: isSubmitting }} />
+							<AutoField name='name' htmlProps={{ readOnly: isReadOnly }} />
+							<AutoField name='symbol' htmlProps={{ readOnly: isReadOnly }} />
 							<EntitySelectField
 								fieldName='baseUnit'
 								entities={units}
 								getEntityId={(u) => u.id}
 								getEntityName={(u) => JsonToString(u.name)}
 								placeholder='Select base unit'
-								shouldDisable={isSubmitting}
+								shouldDisable={isReadOnly}
 								selectProps={{ clearable: true }}
 							/>
-							<AutoField name='multiplier' inputProps={{ disabled: isSubmitting }} />
-							<AutoField name='status' inputProps={{ disabled: isSubmitting }} />
+							<AutoField name='multiplier' htmlProps={{ readOnly: isReadOnly }} />
+							<AutoField name='status' htmlProps={{ readOnly: isReadOnly }} />
 							<EntitySelectField
 								fieldName='categoryId'
 								entities={unitCategories}
 								getEntityId={(category) => category.id}
 								getEntityName={(category) => JsonToString(category.name)}
-								shouldDisable={isSubmitting}
+								shouldDisable={isReadOnly}
 								selectProps={{ clearable: true }}
 							/>
 							<div>

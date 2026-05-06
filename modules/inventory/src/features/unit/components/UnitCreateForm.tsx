@@ -14,12 +14,14 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 
 import type { UnitCategory } from '../../unitCategory/types';
+import type { Unit } from '../types';
 import { JsonToString } from '../../../utils/serializer';
 
 
 interface UnitCreateFormProps {
 	schema: ModelSchema;
 	unitCategories: UnitCategory[];
+	units: Unit[];
 	isSubmitting: boolean;
 	onSubmit: (data: Record<string, unknown>) => void;
 }
@@ -27,6 +29,7 @@ interface UnitCreateFormProps {
 export function UnitCreateForm({
 	schema,
 	unitCategories,
+	units,
 	isSubmitting,
 	onSubmit,
 }: UnitCreateFormProps): React.ReactElement {
@@ -48,6 +51,23 @@ export function UnitCreateForm({
 								/>
 								<AutoField
 									name='symbol'
+									inputProps={{ disabled: isSubmitting }}
+								/>
+								<EntitySelectField
+									fieldName='baseUnit'
+									entities={units}
+									getEntityId={(u) => u.id}
+									getEntityName={(u) => JsonToString(u.name)}
+									placeholder='Select base unit'
+									shouldDisable={isSubmitting}
+									selectProps={{ clearable: true }}
+								/>
+								<AutoField
+									name='multiplier'
+									inputProps={{ disabled: isSubmitting }}
+								/>
+								<AutoField
+									name='status'
 									inputProps={{ disabled: isSubmitting }}
 								/>
 								<EntitySelectField

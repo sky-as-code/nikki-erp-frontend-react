@@ -2,6 +2,7 @@ import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 
 import { attributeActions } from '../../../appState';
 import type { InventoryDispatch } from '../../../appState';
@@ -79,6 +80,7 @@ function usePagination<T>(items: T[]) {
 }
 
 export function useAttributeListView(attributes: Attribute[]) {
+	const { t } = useTranslation();
 	const [searchValue, setSearchValue] = React.useState('');
 
 	const filteredAttributes = React.useMemo(() => {
@@ -100,8 +102,8 @@ export function useAttributeListView(attributes: Attribute[]) {
 
 	const hasActiveFilters = searchValue.trim().length > 0;
 	const emptyMessage = hasActiveFilters
-		? 'No attributes match current filters'
-		: 'No attributes found';
+		? t('nikki.inventory.attribute.list.emptyFiltered')
+		: t('nikki.inventory.attribute.list.empty');
 
 	return {
 		searchValue,

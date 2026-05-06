@@ -13,36 +13,36 @@ import { IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { JsonToString } from '../../../utils/serializer';
-import unitSchema from '../../../schemas/unit-schema.json';
-import type { UnitCategory } from '../types';
-import type { UnitCategoryDetailFormValues } from '../hooks/useUnitCategoryDetail';
-import type { Unit } from '../../unit/types';
+import { JsonToString } from '../../../../utils/serializer';
+import productSchema from '../../../../schemas/product-schema.json';
+import type { ProductCategoryDetailFormValues } from '../../hooks/useProductCategoryDetail';
+import type { ProductCategory } from '../../types';
+import type { Product } from '../../../product/types';
 
-const UNIT_SCHEMA = unitSchema as ModelSchema;
-const UNIT_COLUMNS = ['name', 'symbol', 'status'];
+const PRODUCT_SCHEMA = productSchema as ModelSchema;
+const PRODUCT_COLUMNS = ['name', 'status'];
 
 const UPDATE_FORM_FIELDS = ['name'];
 
-interface UnitCategoryDetailFormProps {
+interface ProductCategoryDetailFormProps {
 	schema: ModelSchema;
-	category: UnitCategory | undefined;
+	category: ProductCategory | undefined;
 	isSubmitting: boolean;
 	isEditing: boolean;
-	onSave: (values: UnitCategoryDetailFormValues) => void;
-	units: Unit[];
-	onDeleteUnit: (id: string) => void | Promise<void>;
+	onSave: (values: ProductCategoryDetailFormValues) => void;
+	products: Product[];
+	onDeleteProduct: (id: string) => void | Promise<void>;
 }
 
-export function UnitCategoryDetailForm({
+export function ProductCategoryDetailForm({
 	schema,
 	category,
 	isSubmitting,
 	isEditing,
 	onSave,
-	units,
-	onDeleteUnit,
-}: UnitCategoryDetailFormProps): React.ReactElement {
+	products,
+	onDeleteProduct,
+}: ProductCategoryDetailFormProps): React.ReactElement {
 	const { t } = useTranslation();
 	const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; label: string } | null>(null);
 
@@ -67,8 +67,8 @@ export function UnitCategoryDetailForm({
 		if (!deleteTarget) return;
 		const targetId = deleteTarget.id;
 		setDeleteTarget(null);
-		await onDeleteUnit(targetId);
-	}, [deleteTarget, onDeleteUnit]);
+		await onDeleteProduct(targetId);
+	}, [deleteTarget, onDeleteProduct]);
 
 	return (
 		<>
@@ -81,12 +81,12 @@ export function UnitCategoryDetailForm({
 				>
 					{({ handleSubmit }) => (
 						<Paper p='md' withBorder>
-							<form id='unit-category-detail-form' onSubmit={handleSubmit(onSave)} noValidate>
+							<form id='product-category-detail-form' onSubmit={handleSubmit(onSave)} noValidate>
 								<Stack gap='md'>
 									<AutoField name='name' htmlProps={{ readOnly: isReadOnly }} />
 									<div>
 										<Text size='sm' fw={500} mb='xs'>
-											{t('nikki.inventory.unitCategory.fields.createdAt')}
+											{t('nikki.identity.user.fields.createdAt')}
 										</Text>
 										<TextInput
 											value={category?.createdAt ? new Date(category.createdAt).toLocaleString() : ''}
@@ -97,7 +97,7 @@ export function UnitCategoryDetailForm({
 									</div>
 									<div>
 										<Text size='sm' fw={500} mb='xs'>
-											{t('nikki.inventory.unitCategory.fields.updatedAt')}
+											{t('nikki.identity.user.fields.updatedAt')}
 										</Text>
 										<TextInput
 											value={category?.updatedAt ? new Date(category.updatedAt).toLocaleString() : ''}
@@ -116,27 +116,27 @@ export function UnitCategoryDetailForm({
 			<Paper p='md' withBorder mt='md'>
 				<Stack gap='md'>
 					<Group justify='space-between'>
-						<Text fw={600}>{t('nikki.inventory.unit.title')}</Text>
+						<Text fw={600}>{t('nikki.inventory.product.title')}</Text>
 					</Group>
-					{units.length === 0 ? (
+					{products.length === 0 ? (
 						<Text c='dimmed' ta='center' py='md'>
-							{t('nikki.inventory.unit.messages.emptyInCategory')}
+							{t('nikki.inventory.product.messages.emptyInCategory')}
 						</Text>
 					) : (
 						<AutoTable
-							schema={UNIT_SCHEMA}
-							data={units as unknown as Record<string, unknown>[]}
-							columns={[...UNIT_COLUMNS, 'actions']}
+							schema={PRODUCT_SCHEMA}
+							data={products as unknown as Record<string, unknown>[]}
+							columns={[...PRODUCT_COLUMNS, 'actions']}
 							columnRenderers={{
-								name: (row) => JsonToString((row as Unit).name) || (row as Unit).id,
+								name: (row) => JsonToString((row as Product).name) || (row as Product).id,
 								actions: (row) => (
 									<ActionIcon
-										aria-label='Delete unit'
+										aria-label='Delete product'
 										color='red'
 										variant='light'
 										onClick={() => setDeleteTarget({
-											id: (row as Unit).id,
-											label: JsonToString((row as Unit).name) || (row as Unit).id,
+											id: (row as Product).id,
+											label: JsonToString((row as Product).name) || (row as Product).id,
 										})}
 									>
 										<IconTrash size={16} />
@@ -155,8 +155,8 @@ export function UnitCategoryDetailForm({
 				opened={deleteTarget !== null}
 				onClose={() => setDeleteTarget(null)}
 				onConfirm={() => void handleConfirmDelete()}
-				title={t('nikki.inventory.unit.messages.confirmDeleteTitle')}
-				message={t('nikki.inventory.unit.messages.confirmDeleteMessage')}
+				title={t('nikki.inventory.product.messages.confirmDeleteTitle')}
+				message={t('nikki.inventory.product.messages.confirmDeleteMessage')}
 				confirmLabel={t('nikki.general.actions.delete')}
 				confirmColor='red'
 			/>

@@ -1,18 +1,16 @@
 /* eslint-disable max-lines-per-function */
 import {
-	Group,
 	Stack,
-	Text,
-	Title,
 } from '@mantine/core';
 import { withWindowTitle } from '@nikkierp/ui/components';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { selectUnitCategoryList } from '../../appState/unitCategory';
 import { ControlPanel } from '../../components/ControlPanel';
 import { PageContainer } from '../../components/PageContainer';
-import { useUnitCategoryListHandlers } from '../../features/unitCategory/hooks';
+import { useUnitCategoryListHandlers, useUnitCategoryListView } from '../../features/unitCategory/hooks';
 import { UnitCategoryTable } from '../../features/unitCategory/components';
 import categorySchema from '../../schemas/unit-category-schema.json';
 
@@ -23,6 +21,7 @@ import type { ModelSchema } from '@nikkierp/ui/model';
 const COLUMNS = ['name', 'createdAt', 'updatedAt'];
 
 export const UnitCategoryListPageBody: React.FC = () => {
+	const { t } = useTranslation();
 	const listUnitCategory = useMicroAppSelector(selectUnitCategoryList);
 	const {
 		handleOpenCreatePage,
@@ -31,9 +30,16 @@ export const UnitCategoryListPageBody: React.FC = () => {
 
 	const categories = (listUnitCategory.data ?? []) as UnitCategory[];
 	const isLoading = listUnitCategory.status === 'pending';
+
+	const {
+		searchValue,
+		setSearchValue,
+		pagedCategories,
+	} = useUnitCategoryListView(categories);
+
 	const breadcrumbs = [
-		{ title: 'Inventory', href: '../overview' },
-		{ title: 'Unit Categories', href: '#' },
+		{ title: t('nikki.inventory.breadcrumbs.home'), href: '../overview' },
+		{ title: t('nikki.inventory.menu.unitCategories'), href: '#' },
 	];
 
 	return (
@@ -42,9 +48,14 @@ export const UnitCategoryListPageBody: React.FC = () => {
 			sections={[
 				<ControlPanel
 					actions={[
-						{ label: 'Create', onClick: handleOpenCreatePage },
-						{ label: 'Refresh', onClick: handleRefresh, variant: 'outline' },
+						{ label: t('nikki.general.actions.create'), onClick: handleOpenCreatePage },
+						{ label: t('nikki.general.actions.refresh'), onClick: handleRefresh, variant: 'outline' },
 					]}
+					search={{
+						value: searchValue,
+						onChange: setSearchValue,
+						placeholder: t('nikki.inventory.unitCategory.searchPlaceholder'),
+					}}
 				/>,
 			]}
 		>
@@ -52,7 +63,7 @@ export const UnitCategoryListPageBody: React.FC = () => {
 				<UnitCategoryTable
 					schema={categorySchema as ModelSchema}
 					columns={COLUMNS}
-					categories={categories}
+					categories={pagedCategories as UnitCategory[]}
 					isLoading={isLoading}
 				/>
 			</Stack>
@@ -61,3 +72,4 @@ export const UnitCategoryListPageBody: React.FC = () => {
 };
 
 export const UnitCategoryListPage = withWindowTitle('Unit Categories', UnitCategoryListPageBody);
+

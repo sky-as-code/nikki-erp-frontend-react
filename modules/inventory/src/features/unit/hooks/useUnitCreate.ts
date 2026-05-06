@@ -2,11 +2,13 @@ import { useUIState } from '@nikkierp/shell/contexts';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { unitActions, unitCategoryActions } from '../../../appState';
-import { selectCreateUnit } from '../../../appState/unit';
+import { selectCreateUnit, selectUnitList } from '../../../appState/unit';
 import { selectUnitCategoryList } from '../../../appState/unitCategory';
+import type { Unit } from '../types';
 
 import type { InventoryDispatch } from '../../../appState';
 import type { UnitCategory } from '../../unitCategory/types';
@@ -23,12 +25,15 @@ export function useUnitCreateHandlers() {
 	const dispatch = useMicroAppDispatch() as InventoryDispatch;
 	const navigate = useNavigate();
 	const { notification } = useUIState();
+	const { t } = useTranslation();
 	const activeOrg = useActiveOrgWithDetails();
 	const orgId = activeOrg?.id ?? 'org-1';
 	const listUnitCategory = useMicroAppSelector(selectUnitCategoryList);
+	const listUnit = useMicroAppSelector(selectUnitList);
 	const createCommand = useMicroAppSelector(selectCreateUnit);
 
 	const unitCategories = (listUnitCategory.data ?? []) as UnitCategory[];
+	const units = (listUnit.data ?? []) as Unit[];
 	const isSubmitting = createCommand.status === 'pending';
 
 	React.useEffect(() => {
@@ -38,7 +43,7 @@ export function useUnitCreateHandlers() {
 
 	React.useEffect(() => {
 		if (createCommand.status === 'success') {
-			notification.showInfo('Unit created successfully', '');
+			notification.showInfo(t('nikki.inventory.unit.messages.createSuccess'), '');
 			dispatch(unitActions.resetCreateUnit());
 			dispatch(unitActions.listUnits(orgId));
 			navigate('..', { relative: 'path' });
@@ -46,7 +51,7 @@ export function useUnitCreateHandlers() {
 
 		if (createCommand.status === 'error') {
 			notification.showError(
-				createCommand.error instanceof Error ? createCommand.error.message : 'Failed to create unit',
+				createCommand.error instanceof Error ? createCommand.error.message : t('nikki.inventory.unit.messages.createError'),
 				'',
 			);
 			dispatch(unitActions.resetCreateUnit());
@@ -73,6 +78,7 @@ export function useUnitCreateHandlers() {
 
 	return {
 		unitCategories,
+		units,
 		isSubmitting,
 		onSubmit: handleCreate,
 		handleGoBack,

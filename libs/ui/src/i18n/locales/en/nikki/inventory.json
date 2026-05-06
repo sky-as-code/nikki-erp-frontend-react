@@ -3,7 +3,10 @@
 		"overview": "Overview",
 		"products": "Products",
 		"attributes": "Attributes",
-		"variants": "Variants"
+		"variants": "Variants",
+		"productCategories": "Product Categories",
+		"units": "Units",
+		"unitCategories": "Unit Categories"
 	},
 	"overview": {
 		"title": "Inventory Overview",
@@ -18,6 +21,21 @@
 			"variantsNoteShort": "Go to a product to manage its variants and attributes."
 		}
 	},
+	"breadcrumbs": {
+		"home": "Inventory",
+		"createAttribute": "Create Attribute",
+		"attributeDetail": "Attribute Detail",
+		"createProduct": "Create Product",
+		"productDetail": "Product Detail",
+		"createVariant": "Create Variant",
+		"variantDetail": "Variant",
+		"createUnit": "Create Unit",
+		"unitDetails": "Unit Details",
+		"createUnitCategory": "Create Unit Category",
+		"unitCategoryDetails": "Unit Category Details",
+		"createProductCategory": "Create Product Category",
+		"productCategoryDetails": "Product Category Details"
+	},
 	"actions": {
 		"create": "Create",
 		"refresh": "Refresh",
@@ -29,17 +47,36 @@
 	},
 	"product": {
 		"title": "Products",
-		"searchPlaceholder": "Search products...",
+		"searchPlaceholder": "Search by name, SKU, barcode",
 		"fields": {
 			"id": "ID",
+			"orgId": "Organization",
 			"name": "Name",
 			"description": "Description",
 			"sku": "SKU",
+			"barCode": "Barcode",
 			"status": "Status",
+			"unitId": "Unit",
+			"thumbnailURL": "Thumbnail",
+			"defaultVariantId": "Default Variant",
 			"proposedPrice": "Price",
+			"variants": "Variants",
+			"attributes": "Attributes",
 			"etag": "ETag",
 			"createdAt": "Created At",
 			"updatedAt": "Updated At"
+		},
+		"status": {
+			"active": "Active",
+			"inactive": "Inactive"
+		},
+		"tabs": {
+			"info": "Product Info"
+		},
+		"detail": {
+			"noImages": "No images available.",
+			"noImagesHint": "Add variants with images to see them here.",
+			"resetAttributes": "Reset"
 		},
 		"actions": {
 			"createNew": "Create Product",
@@ -56,23 +93,56 @@
 			"updateError": "Failed to update product",
 			"deleteError": "Failed to delete product",
 			"confirmDeleteMessage": "Are you sure you want to delete this product?",
-			"confirmUpdateMessage": "Are you sure you want to save changes?"
+			"confirmDeleteTitle": "Confirm Delete",
+			"confirmUpdateMessage": "Are you sure you want to save changes?",
+			"emptyInCategory": "No products found in this category"
 		}
 	},
 	"attribute": {
 		"title": "Attributes",
-		"searchPlaceholder": "Search attributes...",
+		"searchPlaceholder": "Search by code, display name, data type",
 		"fields": {
 			"id": "ID",
+			"productId": "Product",
 			"codeName": "Code",
 			"displayName": "Display Name",
 			"dataType": "Data Type",
-			"sortIndex": "Sort Order",
-			"isRequired": "Required",
 			"isEnum": "Predefined Values",
+			"isRequired": "Required",
+			"sortIndex": "Sort Order",
+			"groupId": "Group",
+			"enumValue": "Enum Values",
+			"enumValueSort": "Enum Value Sort",
+			"valuesCount": "Values Count",
+			"variantsCount": "Variants Count",
+			"attributeValues": "Attribute Values",
+			"variants": "Variants",
 			"etag": "ETag",
 			"createdAt": "Created At",
 			"updatedAt": "Updated At"
+		},
+		"dataType": {
+			"text": "Text",
+			"number": "Number",
+			"bool": "Boolean"
+		},
+		"enumValueForm": {
+			"noValues": "No values yet.",
+			"noValuesHint": "Click \"Add value\" to start.",
+			"addValue": "Add value",
+			"removeValue": "Remove value",
+			"placeholder": {
+				"number": "e.g. 42",
+				"text": "e.g. Small"
+			},
+			"errors": {
+				"invalidNumbers": "All values must be valid numbers"
+			}
+		},
+		"list": {
+			"loading": "Loading attributes...",
+			"empty": "No attributes found",
+			"emptyFiltered": "No attributes match current filters"
 		},
 		"actions": {
 			"createNew": "Create Attribute",
@@ -88,22 +158,37 @@
 			"createError": "Failed to create attribute",
 			"updateError": "Failed to update attribute",
 			"deleteError": "Failed to delete attribute",
+			"confirmDeleteTitle": "Confirm Delete",
 			"confirmDeleteMessage": "Are you sure you want to delete this attribute?",
-			"confirmUpdateMessage": "Are you sure you want to save changes?"
+			"confirmUpdateMessage": "Are you sure you want to save changes?",
+			"loadingValues": "Loading attribute values...",
+			"noAttributeValues": "No attribute values available.",
+			"emptyProductDetail": "No attributes found. Click \"Create Attribute\" to add attributes to this product.",
+			"confirmDeleteItemTitle": "Delete Attribute",
+			"confirmDeleteItemMessage": "Delete attribute \"{{label}}\"?"
 		}
 	},
 	"variant": {
 		"title": "Variants",
-		"searchPlaceholder": "Search variants...",
+		"searchPlaceholder": "Search by name, SKU, barcode, product",
 		"fields": {
 			"id": "ID",
+			"productId": "Product",
+			"name": "Name",
 			"sku": "SKU",
 			"barcode": "Barcode",
-			"status": "Status",
+			"imageURL": "Image URL",
 			"proposedPrice": "Price",
+			"status": "Status",
+			"attributes": "Attributes",
+			"product": "Product",
 			"etag": "ETag",
 			"createdAt": "Created At",
 			"updatedAt": "Updated At"
+		},
+		"status": {
+			"active": "Active",
+			"inactive": "Inactive"
 		},
 		"actions": {
 			"createNew": "Create Variant",
@@ -119,8 +204,95 @@
 			"createError": "Failed to create variant",
 			"updateError": "Failed to update variant",
 			"deleteError": "Failed to delete variant",
+			"confirmDeleteTitle": "Confirm Delete",
 			"confirmDeleteMessage": "Are you sure you want to delete this variant?",
-			"confirmUpdateMessage": "Are you sure you want to save changes?"
+			"confirmUpdateMessage": "Are you sure you want to save changes?",
+			"emptyProductDetail": "No variants found. Click \"Create Variant\" to add a variant to this product.",
+			"confirmDeleteItemTitle": "Delete Variant",
+			"confirmDeleteItemMessage": "Delete variant \"{{label}}\"?"
+		}
+	},
+	"productCategory": {
+		"title": "Product Categories",
+		"searchPlaceholder": "Search by category name",
+		"fields": {
+			"id": "ID",
+			"orgId": "Organization",
+			"name": "Name",
+			"etag": "ETag",
+			"createdAt": "Created At",
+			"updatedAt": "Updated At"
+		},
+		"messages": {
+			"createSuccess": "Product category created successfully",
+			"updateSuccess": "Product category updated successfully",
+			"deleteSuccess": "Product category deleted successfully",
+			"createError": "Failed to create product category",
+			"updateError": "Failed to update product category",
+			"deleteError": "Failed to delete product category",
+			"confirmDeleteTitle": "Confirm Delete",
+			"confirmDeleteMessage": "Are you sure you want to delete this category?"
+		}
+	},
+	"unit": {
+		"title": "Units",
+		"fields": {
+			"id": "ID",
+			"orgId": "Organization",
+			"name": "Unit Name",
+			"symbol": "Symbol",
+			"categoryId": "Unit Category",
+			"baseUnit": "Base Unit",
+			"multiplier": "Multiplier",
+			"status": "Status",
+			"etag": "ETag",
+			"createdAt": "Created At",
+			"updatedAt": "Updated At"
+		},
+		"messages": {
+			"createSuccess": "Unit created successfully",
+			"updateSuccess": "Unit updated successfully",
+			"deleteSuccess": "Unit deleted successfully",
+			"createError": "Failed to create unit",
+			"updateError": "Failed to update unit",
+			"deleteError": "Failed to delete unit",
+			"confirmDeleteTitle": "Confirm Delete",
+			"confirmDeleteMessage": "Are you sure you want to delete this unit?",
+			"emptyInCategory": "No units found in this category"
+		}
+	},
+	"unitCategory": {
+		"title": "Unit Categories",
+		"searchPlaceholder": "Search by category name",
+		"fields": {
+			"id": "ID",
+			"orgId": "Organization",
+			"name": "Category Name",
+			"etag": "ETag",
+			"createdAt": "Created At",
+			"updatedAt": "Updated At"
+		},
+		"messages": {
+			"createSuccess": "Unit category created successfully",
+			"updateSuccess": "Unit category updated successfully",
+			"deleteSuccess": "Unit category deleted successfully",
+			"createError": "Failed to create unit category",
+			"updateError": "Failed to update unit category",
+			"deleteError": "Failed to delete unit category",
+			"confirmDeleteTitle": "Confirm Delete",
+			"confirmDeleteMessage": "Are you sure you want to delete this unit category?"
+		}
+	},
+	"attributeGroup": {
+		"title": "Attribute Groups",
+		"fields": {
+			"id": "ID",
+			"productId": "Product",
+			"name": "Name",
+			"index": "Index",
+			"etag": "ETag",
+			"createdAt": "Created At",
+			"updatedAt": "Updated At"
 		}
 	}
 }

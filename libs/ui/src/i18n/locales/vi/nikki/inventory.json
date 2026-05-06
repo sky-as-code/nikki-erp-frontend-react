@@ -3,7 +3,10 @@
 		"overview": "Tổng quan",
 		"products": "Sản phẩm",
 		"attributes": "Thuộc tính",
-		"variants": "Biến thể"
+		"variants": "Biến thể",
+		"productCategories": "Danh mục sản phẩm",
+		"units": "Đơn vị",
+		"unitCategories": "Danh mục đơn vị"
 	},
 	"overview": {
 		"title": "Tổng quan Kho",
@@ -18,6 +21,21 @@
 			"variantsNoteShort": "Vào chi tiết sản phẩm để quản lý biến thể và thuộc tính."
 		}
 	},
+	"breadcrumbs": {
+		"home": "Kho hàng",
+		"createAttribute": "Tạo thuộc tính",
+		"attributeDetail": "Chi tiết thuộc tính",
+		"createProduct": "Tạo sản phẩm",
+		"productDetail": "Chi tiết sản phẩm",
+		"createVariant": "Tạo biến thể",
+		"variantDetail": "Biến thể",
+		"createUnit": "Tạo đơn vị",
+		"unitDetails": "Chi tiết đơn vị",
+		"createUnitCategory": "Tạo danh mục đơn vị",
+		"unitCategoryDetails": "Chi tiết danh mục đơn vị",
+		"createProductCategory": "Tạo danh mục sản phẩm",
+		"productCategoryDetails": "Chi tiết danh mục sản phẩm"
+	},
 	"actions": {
 		"create": "Tạo",
 		"refresh": "Làm mới",
@@ -29,17 +47,36 @@
 	},
 	"product": {
 		"title": "Sản phẩm",
-		"searchPlaceholder": "Tìm sản phẩm...",
+		"searchPlaceholder": "Tìm theo tên, SKU, mã vạch",
 		"fields": {
 			"id": "ID",
+			"orgId": "Tổ chức",
 			"name": "Tên",
 			"description": "Mô tả",
 			"sku": "Mã SKU",
+			"barCode": "Mã vạch",
 			"status": "Trạng thái",
+			"unitId": "Đơn vị",
+			"thumbnailURL": "Ảnh đại diện",
+			"defaultVariantId": "Biến thể mặc định",
 			"proposedPrice": "Giá",
+			"variants": "Biến thể",
+			"attributes": "Thuộc tính",
 			"etag": "ETag",
 			"createdAt": "Ngày tạo",
 			"updatedAt": "Ngày cập nhật"
+		},
+		"status": {
+			"active": "Hoạt động",
+			"inactive": "Không hoạt động"
+		},
+		"tabs": {
+			"info": "Thông tin sản phẩm"
+		},
+		"detail": {
+			"noImages": "Không có ảnh.",
+			"noImagesHint": "Thêm biến thể có ảnh để hiển thị tại đây.",
+			"resetAttributes": "Đặt lại"
 		},
 		"actions": {
 			"createNew": "Tạo sản phẩm",
@@ -56,23 +93,56 @@
 			"updateError": "Cập nhật sản phẩm thất bại",
 			"deleteError": "Xóa sản phẩm thất bại",
 			"confirmDeleteMessage": "Bạn có chắc muốn xóa sản phẩm này?",
-			"confirmUpdateMessage": "Bạn có chắc muốn lưu thay đổi?"
+			"confirmDeleteTitle": "Xác nhận xóa",
+			"confirmUpdateMessage": "Bạn có chắc muốn lưu thay đổi?",
+			"emptyInCategory": "Không có sản phẩm nào trong danh mục này"
 		}
 	},
 	"attribute": {
 		"title": "Thuộc tính",
-		"searchPlaceholder": "Tìm thuộc tính...",
+		"searchPlaceholder": "Tìm theo mã, tên hiển thị, kiểu dữ liệu",
 		"fields": {
 			"id": "ID",
+			"productId": "Sản phẩm",
 			"codeName": "Mã",
 			"displayName": "Tên hiển thị",
 			"dataType": "Kiểu dữ liệu",
-			"sortIndex": "Thứ tự",
-			"isRequired": "Bắt buộc",
 			"isEnum": "Giá trị định sẵn",
+			"isRequired": "Bắt buộc",
+			"sortIndex": "Thứ tự",
+			"groupId": "Nhóm",
+			"enumValue": "Giá trị liệt kê",
+			"enumValueSort": "Sắp xếp giá trị",
+			"valuesCount": "Số lượng giá trị",
+			"variantsCount": "Số lượng biến thể",
+			"attributeValues": "Giá trị thuộc tính",
+			"variants": "Biến thể",
 			"etag": "ETag",
 			"createdAt": "Ngày tạo",
 			"updatedAt": "Ngày cập nhật"
+		},
+		"dataType": {
+			"text": "Văn bản",
+			"number": "Số",
+			"bool": "Boolean"
+		},
+		"enumValueForm": {
+			"noValues": "Chưa có giá trị nào.",
+			"noValuesHint": "Nhấn \"Thêm giá trị\" để bắt đầu.",
+			"addValue": "Thêm giá trị",
+			"removeValue": "Xóa giá trị",
+			"placeholder": {
+				"number": "Vd: 42",
+				"text": "Vd: Nhỏ"
+			},
+			"errors": {
+				"invalidNumbers": "Tất cả giá trị phải là số hợp lệ"
+			}
+		},
+		"list": {
+			"loading": "Đang tải thuộc tính...",
+			"empty": "Không tìm thấy thuộc tính nào",
+			"emptyFiltered": "Không có thuộc tính nào khớp với bộ lọc"
 		},
 		"actions": {
 			"createNew": "Tạo thuộc tính",
@@ -88,22 +158,37 @@
 			"createError": "Tạo thuộc tính thất bại",
 			"updateError": "Cập nhật thuộc tính thất bại",
 			"deleteError": "Xóa thuộc tính thất bại",
+			"confirmDeleteTitle": "Xác nhận xóa",
 			"confirmDeleteMessage": "Bạn có chắc muốn xóa thuộc tính này?",
-			"confirmUpdateMessage": "Bạn có chắc muốn lưu thay đổi?"
+			"confirmUpdateMessage": "Bạn có chắc muốn lưu thay đổi?",
+			"loadingValues": "Đang tải giá trị thuộc tính...",
+			"noAttributeValues": "Không có giá trị thuộc tính.",
+			"emptyProductDetail": "Chưa có thuộc tính nào. Nhấn \"Tạo thuộc tính\" để thêm thuộc tính cho sản phẩm này.",
+			"confirmDeleteItemTitle": "Xóa thuộc tính",
+			"confirmDeleteItemMessage": "Xóa thuộc tính \"{{label}}\"?"
 		}
 	},
 	"variant": {
 		"title": "Biến thể",
-		"searchPlaceholder": "Tìm biến thể...",
+		"searchPlaceholder": "Tìm theo tên, SKU, mã vạch, sản phẩm",
 		"fields": {
 			"id": "ID",
+			"productId": "Sản phẩm",
+			"name": "Tên",
 			"sku": "Mã SKU",
 			"barcode": "Mã vạch",
-			"status": "Trạng thái",
+			"imageURL": "URL ảnh",
 			"proposedPrice": "Giá",
+			"status": "Trạng thái",
+			"attributes": "Thuộc tính",
+			"product": "Sản phẩm",
 			"etag": "ETag",
 			"createdAt": "Ngày tạo",
 			"updatedAt": "Ngày cập nhật"
+		},
+		"status": {
+			"active": "Hoạt động",
+			"inactive": "Không hoạt động"
 		},
 		"actions": {
 			"createNew": "Tạo biến thể",
@@ -119,8 +204,95 @@
 			"createError": "Tạo biến thể thất bại",
 			"updateError": "Cập nhật biến thể thất bại",
 			"deleteError": "Xóa biến thể thất bại",
+			"confirmDeleteTitle": "Xác nhận xóa",
 			"confirmDeleteMessage": "Bạn có chắc muốn xóa biến thể này?",
-			"confirmUpdateMessage": "Bạn có chắc muốn lưu thay đổi?"
+			"confirmUpdateMessage": "Bạn có chắc muốn lưu thay đổi?",
+			"emptyProductDetail": "Chưa có biến thể nào. Nhấn \"Tạo biến thể\" để thêm biến thể cho sản phẩm này.",
+			"confirmDeleteItemTitle": "Xóa biến thể",
+			"confirmDeleteItemMessage": "Xóa biến thể \"{{label}}\"?"
+		}
+	},
+	"productCategory": {
+		"title": "Danh mục sản phẩm",
+		"searchPlaceholder": "Tìm theo tên danh mục",
+		"fields": {
+			"id": "ID",
+			"orgId": "Tổ chức",
+			"name": "Tên",
+			"etag": "ETag",
+			"createdAt": "Ngày tạo",
+			"updatedAt": "Ngày cập nhật"
+		},
+		"messages": {
+			"createSuccess": "Tạo danh mục sản phẩm thành công",
+			"updateSuccess": "Cập nhật danh mục sản phẩm thành công",
+			"deleteSuccess": "Xóa danh mục sản phẩm thành công",
+			"createError": "Tạo danh mục sản phẩm thất bại",
+			"updateError": "Cập nhật danh mục sản phẩm thất bại",
+			"deleteError": "Xóa danh mục sản phẩm thất bại",
+			"confirmDeleteTitle": "Xác nhận xóa",
+			"confirmDeleteMessage": "Bạn có chắc muốn xóa danh mục sản phẩm này?"
+		}
+	},
+	"unit": {
+		"title": "Đơn vị",
+		"fields": {
+			"id": "ID",
+			"orgId": "Tổ chức",
+			"name": "Tên đơn vị",
+			"symbol": "Ký hiệu",
+			"categoryId": "Danh mục đơn vị",
+			"baseUnit": "Đơn vị cơ sở",
+			"multiplier": "Hệ số quy đổi",
+			"status": "Trạng thái",
+			"etag": "ETag",
+			"createdAt": "Ngày tạo",
+			"updatedAt": "Ngày cập nhật"
+		},
+		"messages": {
+			"createSuccess": "Tạo đơn vị thành công",
+			"updateSuccess": "Cập nhật đơn vị thành công",
+			"deleteSuccess": "Xóa đơn vị thành công",
+			"createError": "Tạo đơn vị thất bại",
+			"updateError": "Cập nhật đơn vị thất bại",
+			"deleteError": "Xóa đơn vị thất bại",
+			"confirmDeleteTitle": "Xác nhận xóa",
+			"confirmDeleteMessage": "Bạn có chắc muốn xóa đơn vị này?",
+			"emptyInCategory": "Không có đơn vị nào trong danh mục này"
+		}
+	},
+	"unitCategory": {
+		"title": "Danh mục đơn vị",
+		"searchPlaceholder": "Tìm theo tên danh mục",
+		"fields": {
+			"id": "ID",
+			"orgId": "Tổ chức",
+			"name": "Tên danh mục",
+			"etag": "ETag",
+			"createdAt": "Ngày tạo",
+			"updatedAt": "Ngày cập nhật"
+		},
+		"messages": {
+			"createSuccess": "Tạo danh mục đơn vị thành công",
+			"updateSuccess": "Cập nhật danh mục đơn vị thành công",
+			"deleteSuccess": "Xóa danh mục đơn vị thành công",
+			"createError": "Tạo danh mục đơn vị thất bại",
+			"updateError": "Cập nhật danh mục đơn vị thất bại",
+			"deleteError": "Xóa danh mục đơn vị thất bại",
+			"confirmDeleteTitle": "Xác nhận xóa",
+			"confirmDeleteMessage": "Bạn có chắc muốn xóa danh mục đơn vị này?"
+		}
+	},
+	"attributeGroup": {
+		"title": "Nhóm thuộc tính",
+		"fields": {
+			"id": "ID",
+			"productId": "Sản phẩm",
+			"name": "Tên",
+			"index": "Thứ tự",
+			"etag": "ETag",
+			"createdAt": "Ngày tạo",
+			"updatedAt": "Ngày cập nhật"
 		}
 	}
 }
