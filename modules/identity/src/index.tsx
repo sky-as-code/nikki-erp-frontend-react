@@ -154,12 +154,19 @@ function registerModelSchemas(): void {
 }
 
 function registerPages(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseStateSelectorFn<any>): any[] {
-	return [{
+	return [
+		createUserDetailsPage(),
+		createUsersPage(dispatch, useMicroAppSelector),
+	];
+}
+
+function createUserDetailsPage() {
+	return {
 		routePath: 'users/:id', // param "id" is required by this template
 		template: 'nikkierp.mantine.pages.templates.resourceDetails.v1',
 		templateProps: {
 			schemaName: USER_SCHEMA_NAME,
-			reduxAction: (pathParams: {id: string}) => {},
+			reduxAction: (_pathParams: {id: string}) => {},
 			titleLvl1: {
 				type: 'SchemaField',
 				value: 'display_name',
@@ -218,8 +225,12 @@ function registerPages(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseSta
 				template: 'nikkierp.mantine.pages.templates.resourceDetails.v1.sections.customFields.v1',
 				title: 'nikkierp.common.customFields',
 			}],
-		}, {}],
-	}, {
+		}],
+	};
+}
+
+function createUsersPage(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseStateSelectorFn<any>) {
+	return {
 		routePath: 'users',
 		template: 'nikkierp.mantine.pages.templates.resourceList.v1',
 		templateProps: new ResourceListTemplateProps({
@@ -227,16 +238,26 @@ function registerPages(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseSta
 			resourceName: 'nikkierp.identity.user.resourceName',
 			resourceNamePlural: 'nikkierp.identity.user.resourceNamePlural',
 			dispatch,
-			searchAction: {
-				useThunkHook: () => userSel.useSearchUsers(useMicroAppSelector),
+			actionHooks: {
+				useSearch: () => userSel.useSearchUsers(useMicroAppSelector),
+				useArchive: () => userSel.useSetUserIsArchived(useMicroAppSelector),
+				useCreate: undefined,
+				useDelete: () => userSel.useDeleteUser(useMicroAppSelector),
+				useUpdateSave: () => userSel.useUpdateUser(useMicroAppSelector),
 			},
-			actions: [
-				{ label: 'Create', useThunkHook: () => userSel.useCreateUser(useMicroAppSelector) },
-				{ label: 'Refresh', useThunkHook: () => userSel.useSearchUsers(useMicroAppSelector) },
-				{ label: 'Delete', useThunkHook: () => userSel.useDeleteUser(useMicroAppSelector) },
-				{ label: 'Delete', useThunkHook: () => userSel.useDeleteUser(useMicroAppSelector) },
-				{ isSeparator: true },
-				{ label: 'Archive', useThunkHook: () => userSel.useSetUserIsArchived(useMicroAppSelector) },
+			extraActions: [
+				{
+					label: 'Lock',
+					supportMultiple: true,
+					requireSelection: true,
+					actionHook: () => null as any,
+				},
+				{
+					label: 'Terminate',
+					supportMultiple: true,
+					requireSelection: true,
+					actionHook: () => null as any,
+				},
 			],
 			linkField: 'email',
 			linkRoutePath: 'users/:id',
@@ -252,5 +273,5 @@ function registerPages(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseSta
 				}),
 			},
 		}),
-	}];
+	};
 }

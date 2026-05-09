@@ -69,7 +69,6 @@ export interface ReduxThunkState<T =  any> {
 // 	};
 // };
 
-/** Value returned from {@link ThunkPack.useHook}. */
 export type ThunkPackHookReturn<TReturn, TArg> = {
 	thunkAction: AsyncThunk<TReturn, TArg, { rejectValue: any }>;
 	resetAction: ActionCreatorWithoutPayload<string>;

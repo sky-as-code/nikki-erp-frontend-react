@@ -20,6 +20,7 @@ export type ModelSchemaField = {
 	is_required_for_create: boolean,
 	is_required_for_update: boolean,
 	is_primary_key?: boolean,
+	is_system_field?: boolean,
 	no_update?: boolean,
 	rules?: unknown,
 	default_value?: unknown,

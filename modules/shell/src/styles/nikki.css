@@ -36,7 +36,8 @@
 		--nikki-color-textbox-border: var(--mantine-color-gray-6);
 
 		/* table */
-		--nikki-color-table-selected: var(--mantine-color-gray-3);
+		--nikki-color-table-bg-selected: var(--mantine-color-gray-3);
+		--nikki-color-table-border-selected: var(--mantine-color-gray-1);
 	}
 
 	html[data-mantine-color-scheme='light'] {
@@ -86,6 +87,7 @@
 		--nikki-color-textbox-border-hover: #000000;
 
 		/* table */
-		--nikki-color-table-selected: var(--mantine-color-blue-1);
+		--nikki-color-table-bg-selected: var(--mantine-color-blue-1);
+		--nikki-color-table-border-selected: var(--mantine-color-blue-6);
 	}
 }

@@ -312,7 +312,7 @@ function CollapsibleListSection(props: CollapsibleListSectionProps): React.React
 		<Box>
 			<DataTable
 				tableName={title}
-				searchData={props.list.listSearchData ?? createEmptySearchData()}
+				data={props.list.listSearchData ?? createEmptySearchData()}
 				renderTableName={renderExpandedTableName(() => setCollapsed(true))}
 				allowColumnResizing
 			/>
