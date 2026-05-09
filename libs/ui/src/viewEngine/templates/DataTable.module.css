@@ -1,9 +1,50 @@
 
 th.selectedCell,
 td.selectedCell {
-	background-color: var(--nikki-color-table-selected);
+	background-color: var(--nikki-color-table-bg-selected);
+	border-bottom: 1px solid var(--nikki-color-table-border-selected);
 }
 
 .rowNumberCell {
 	background-color: var(--mantine-color-gray-2);
+}
+
+.rowDropIndicator > th,
+.rowDropIndicator > td {
+	box-shadow: inset 0 3px 0 var(--mantine-color-blue-9) !important;
+}
+
+.stickyHeader {
+	position: sticky;
+	top: 0;
+	left: auto;
+	right: auto;
+	bottom: auto;
+	z-index: 200;
+}
+
+.fillerColumn {
+	width: auto;
+	min-width: 0;
+	max-width: none;
+}
+
+.resizeableHeader {
+	position: relative;
+}
+
+.resizeHandle {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 0.5rem;
+	height: 100%;
+	cursor: col-resize;
+	background-color: color-mix(in srgb, var(--mantine-color-blue-6) 20%, transparent);
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+
+.resizeableHeader:hover .resizeHandle {
+	opacity: 1;
 }

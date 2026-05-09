@@ -1,4 +1,4 @@
-import { Stack } from '@mantine/core';
+import { Box, Stack } from '@mantine/core';
 import { useIsAuthenticated, useIsAuthenticatePending, useRestoreAuthSession } from '@nikkierp/shell/authenticate';
 import { actions as routingActions } from '@nikkierp/ui/appState/routingSlice';
 import React from 'react';
@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux';
 import { Outlet } from 'react-router';
 
 import { Header } from './Header';
-import { ScrollableContent } from '../../components/ScrollableContent';
 
 
 export function PrivateLayout(): React.ReactNode {
@@ -29,9 +28,9 @@ export function PrivateLayout(): React.ReactNode {
 	return isAuthenticated && (
 		<Stack gap={0} h='100vh' miw={320} bg='var(--nikki-color-linear-page-background)'>
 			<Header />
-			<ScrollableContent>
+			<Box className='flex-1 overflow-auto relative p-0 m-0'>
 				<Outlet/>
-			</ScrollableContent>
+			</Box>
 		</Stack>
 	);
 };

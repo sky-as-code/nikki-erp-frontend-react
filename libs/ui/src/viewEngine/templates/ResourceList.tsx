@@ -3,7 +3,7 @@ import * as dyn from '@nikkierp/common/dynamic_model';
 import React from 'react';
 
 import {
-	DataTable, FieldRenderHintMap, IFieldRenderHint, SearchData,
+	DataTable, DataTableActionHook, FieldRenderHintMap, IFieldRenderHint, SearchData,
 } from './DataTable';
 import { ThunkPackHookReturn } from '../../appState';
 import { LoadingState } from '../../components/Loading';
@@ -11,12 +11,7 @@ import { MicroAppDispatchFn } from '../../microApp';
 import { usePaperBgColor } from '../../theme';
 
 
-export type ResourceActionHook = {
-	label?: string,
-	icon?: React.ReactNode,
-	isSeparator?: boolean,
-	useThunkHook?: () => ThunkPackHookReturn<any, any>,
-};
+export type ResourceActionHook = DataTableActionHook;
 
 export type { IFieldRenderHint, FieldRenderHintMap };
 
@@ -57,8 +52,16 @@ type ResourceListTemplatePropsParams = {
 	resourceName: string,
 	resourceNamePlural: string,
 	dispatch: MicroAppDispatchFn,
-	searchAction: ResourceActionHook,
-	actions?: ResourceActionHook[],
+	extraActions?: ResourceActionHook[],
+	actionHooks: {
+		useSearch: () => ThunkPackHookReturn<dyn.RestSearchResponse<any>, dyn.RestSearchRequest>,
+		useArchive?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestSetIsArchivedRequest>,
+		useCreate?: () => ThunkPackHookReturn<void, void>,
+		useDelete?: () => ThunkPackHookReturn<dyn.RestDeleteResponse, dyn.RestDeleteRequest>,
+		useUpdateBegin?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
+		useUpdateCancel?: () => ThunkPackHookReturn<void, void>,
+		useUpdateSave?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
+	}
 	linkField?: string,
 	linkRoutePath?: string,
 	fieldAsLink?: string,
@@ -85,29 +88,122 @@ export function ResourceList({ props }: ResourceListProps): React.ReactNode {
 	}
 	const params = props.params;
 	const pack = useSchemaPack(params.schemaName);
-	const searchResrc = useInitialSearch(params.searchAction, params.dispatch);
+	const searchAct = params.actionHooks.useSearch();
 	const bgColor = usePaperBgColor();
+	const actions = React.useMemo(
+		() => buildResourceActions(params.actionHooks, params.extraActions),
+		[params.actionHooks, params.extraActions],
+	);
+	const searchThunkActionRef = React.useRef(searchAct.thunkAction);
+	const [searchRequest, setSearchRequest] = React.useState<dyn.RestSearchRequest>({
+		page: 0,
+		size: 0,
+		search_name: 'default',
+	});
+	const [cachedSearchData, setCachedSearchData] = React.useState<SearchData | null>(null);
+	const onSearchRequestChange = React.useCallback((newReq: dyn.RestSearchRequest) => {
+		setSearchRequest(oldReq => isSameSearchRequest(oldReq, newReq) ? oldReq : newReq);
+	}, []);
 
-	if (!pack || !searchResrc?.isDone) {
+	React.useEffect(() => {
+		searchThunkActionRef.current = searchAct.thunkAction;
+	}, [searchAct.thunkAction]);
+
+	React.useEffect(() => {
+		if (searchAct.isDone && searchAct.data) {
+			setCachedSearchData(searchAct.data as SearchData);
+		}
+	}, [searchAct.data, searchAct.isDone]);
+
+	React.useEffect(() => {
+		params.dispatch(searchThunkActionRef.current(searchRequest) as any);
+	}, [params.dispatch, searchRequest]);
+
+	// Using cache data to prevent flickering when the search is pending.
+	const searchData = searchAct.isDone && searchAct.data
+		? searchAct.data as SearchData
+		: cachedSearchData;
+	if (!pack || !searchData) {
 		return <LoadingState />;
 	}
 
-	const searchData = searchResrc.data as SearchData;
 	const linkField = params.linkField ?? params.fieldAsLink;
 	const linkRoutePath = params.linkRoutePath;
 	return (
-		<Paper className='p-4' bg={bgColor}>
+		<Paper className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 flex' bg={bgColor}>
 			<DataTable
 				tableName={searchData.total > 0 ? params.resourceNamePlural : params.resourceName}
-				searchData={searchData}
+				data={searchData}
+				initialSearchRequest={searchRequest}
+				modelSchema={pack.modelSchema}
+				onSearchRequestChange={onSearchRequestChange}
 				fieldRenderHint={params.fieldRenderHint}
 				linkField={linkField}
 				linkRoutePath={linkRoutePath}
 				allowColumnResizing
-				actions={params.actions}
+				actions={actions}
+				hasFixHeader
 			/>
 		</Paper>
 	);
+}
+
+function buildResourceActions(
+	actionHooks: ResourceListTemplatePropsParams['actionHooks'],
+	extraActions?: ResourceActionHook[],
+): ResourceActionHook[] {
+	let actions: ResourceActionHook[] = [{
+		label: 'Refresh',
+		actionHook: actionHooks.useSearch,
+	}];
+	if (actionHooks.useCreate) {
+		actions.push({
+			label: 'Create',
+			actionHook: actionHooks.useCreate,
+		});
+	}
+	if (actionHooks.useDelete) {
+		actions.push({
+			label: 'Delete',
+			requireSelection: true,
+			supportMultiple: true,
+			actionHook: actionHooks.useDelete,
+		});
+	}
+	actions = actions.concat(extraActions ?? []);
+	if (actionHooks.useArchive) {
+		actions.push({
+			isSeparator: true,
+		}, {
+			label: 'Archive',
+			requireSelection: true,
+			supportMultiple: true,
+			actionHook: actionHooks.useArchive,
+		});
+	}
+	return actions;
+}
+
+function shallowEqualStringArray(a?: string[], b?: string[]): boolean {
+	if (a === b) {
+		return true;
+	}
+	if (a == null || b == null) {
+		return a === b;
+	}
+	if (a.length !== b.length) {
+		return false;
+	}
+	return a.every((value, index) => value === b[index]);
+}
+
+function isSameSearchRequest(prev: dyn.RestSearchRequest, next: dyn.RestSearchRequest): boolean {
+	return prev.page === next.page
+		&& prev.size === next.size
+		&& prev.search_name === next.search_name
+		&& prev.language === next.language
+		&& prev.graph === next.graph
+		&& shallowEqualStringArray(prev.fields, next.fields);
 }
 
 function useSchemaPack(schemaName: string) {
@@ -124,15 +220,12 @@ function useSchemaPack(schemaName: string) {
 	return pack;
 }
 
-function useInitialSearch(searchAction: ResourceActionHook, dispatch: MicroAppDispatchFn) {
-	const searchResrc = searchAction.useThunkHook?.();
-	React.useEffect(() => {
-		if (!searchResrc) {
-			return;
-		}
-		dispatch(searchResrc.thunkAction({
-			page: 0, size: 50, search_name: 'default',
-		} as dyn.RestSearchRequest) as any);
-	}, []);
-	return searchResrc;
-}
+// function useInitialSearch(dispatch: DispatchActionFn<dyn.RestSearchRequest>) {
+// 	// const searchResrc = searchAction.useThunkHook?.();
+// 	React.useEffect(() => {
+// 		dispatch({
+// 			page: 0, size: 50, search_name: 'default',
+// 		});
+// 	}, []);
+// 	return searchResrc;
+// }
