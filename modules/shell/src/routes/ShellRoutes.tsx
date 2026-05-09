@@ -1,6 +1,8 @@
-import { useListAllModules } from '@nikkierp/shell/erpModules';
+import { useListAllModules, ModuleDispatch } from '@nikkierp/shell/erpModules';
 import { LazyMicroApp } from '@nikkierp/shell/microApp';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Navigate, Route, Routes, useParams } from 'react-router';
 
 // import { LazyModule } from '../components/LazyModule';
@@ -48,6 +50,12 @@ export function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 function LazyModule(props: { microApps: MicroAppMetadata[] }): React.ReactNode {
 	const { moduleSlug } = useParams();
 	const listAll = useListAllModules();
+	const dispatch = useDispatch<ModuleDispatch>();
+
+	React.useEffect(() => {
+		dispatch(listAll.thunkAction());
+	}, []);
+
 	if (listAll.isLoading) {
 		return <AppLoading />;
 	}
@@ -69,8 +77,5 @@ function LazyModule(props: { microApps: MicroAppMetadata[] }): React.ReactNode {
 				fallback={<AppLoading />}
 			/>
 		);
-	}
-	else {
-		return <Navigate to='/notfound' replace />;
 	}
 }

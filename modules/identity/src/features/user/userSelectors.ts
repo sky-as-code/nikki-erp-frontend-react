@@ -1,11 +1,14 @@
+import { ThunkPackUseSelectorFn } from '@nikkierp/ui/appState';
+
 import * as svc from './userService';
 
 
-export const useCreateUser = () => svc.createUser.useHook();
-export const useDeleteUser = () => svc.deleteUser.useHook();
-export const useGetUserById = () => svc.getUserById.useHook();
-export const useGetUserSchema = () => svc.getUserSchema.useHook();
-export const useSearchUsers = () => svc.searchUsers.useHook();
-export const useSetUserIsArchived = () => svc.setUserIsArchived.useHook();
-export const useUserExists = () => svc.userExists.useHook();
-export const useUpdateUser = () => svc.updateUser.useHook();
+export const useCreateUser = (useSelectorFn: ThunkPackUseSelectorFn) => svc.createUser.useHook(useSelectorFn);
+export const useDeleteUser = (useSelectorFn: ThunkPackUseSelectorFn) => svc.deleteUser.useHook(useSelectorFn);
+export const useGetUserById = (useSelectorFn: ThunkPackUseSelectorFn) => svc.getUserById.useHook(useSelectorFn);
+export const useGetUserSchema = (useSelectorFn: ThunkPackUseSelectorFn) => svc.getUserSchema.useHook(useSelectorFn);
+export const useSearchUsers = (useSelectorFn: ThunkPackUseSelectorFn) => svc.searchUsers.useHook(useSelectorFn);
+export const useSetUserIsArchived = (useSelectorFn: ThunkPackUseSelectorFn) =>
+	svc.setUserIsArchived.useHook(useSelectorFn);
+export const useUserExists = (useSelectorFn: ThunkPackUseSelectorFn) => svc.userExists.useHook(useSelectorFn);
+export const useUpdateUser = (useSelectorFn: ThunkPackUseSelectorFn) => svc.updateUser.useHook(useSelectorFn);

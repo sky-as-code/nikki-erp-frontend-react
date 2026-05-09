@@ -21,10 +21,6 @@ const authSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
 	reducers: {
-		resetStartSignIn: svc.startSignIn.resetThunk,
-		resetContinueSignIn: svc.continueSignIn.resetThunk,
-		resetSignOut: svc.signOut.resetThunk,
-		resetRestoreAuthSession: svc.restoreAuthSession.resetThunk,
 	},
 	extraReducers: (builder) => {
 		svc.startSignIn.buildThunkReducers(builder);
@@ -53,10 +49,10 @@ const authSlice = createSlice({
 
 export const actions = {
 	...authSlice.actions,
-	[svc.startSignIn.stateKey]: svc.startSignIn.action,
-	[svc.continueSignIn.stateKey]: svc.continueSignIn.action,
-	[svc.signOut.stateKey]: svc.signOut.action,
-	[svc.restoreAuthSession.stateKey]: svc.restoreAuthSession.action,
+	[svc.startSignIn.stateKey]: svc.startSignIn.thunkAction,
+	[svc.continueSignIn.stateKey]: svc.continueSignIn.thunkAction,
+	[svc.signOut.stateKey]: svc.signOut.thunkAction,
+	[svc.restoreAuthSession.stateKey]: svc.restoreAuthSession.thunkAction,
 };
 
 export const { reducer } = authSlice;

@@ -39,7 +39,7 @@ export function ModuleHomePage(): React.ReactNode {
 	const [drawerOpened, setDrawerOpened] = useState(false);
 
 	React.useEffect(() => {
-		dispatch(listAll.action() as any);
+		dispatch(listAll.thunkAction() as any);
 	}, [filteredModules]);
 
 	const gridView = useMemo(
