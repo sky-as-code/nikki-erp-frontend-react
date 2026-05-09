@@ -19,7 +19,6 @@ const userContextSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
 	reducers: {
-		resetGetUserContext: svc.getUserContext.resetThunk,
 	},
 	extraReducers: (builder) => {
 		svc.getUserContext.buildThunkReducers(builder);
@@ -28,7 +27,7 @@ const userContextSlice = createSlice({
 
 export const actions = {
 	...userContextSlice.actions,
-	[svc.getUserContext.stateKey]: svc.getUserContext.action,
+	[svc.getUserContext.stateKey]: svc.getUserContext.thunkAction,
 };
 
 export const { reducer } = userContextSlice;

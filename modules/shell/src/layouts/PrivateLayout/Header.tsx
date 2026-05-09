@@ -1,7 +1,8 @@
 import {
-	Box, Button, Divider, Flex, Group, useMantineColorScheme, useMantineTheme,
+	Box, Button, Divider, Flex, Group,
 } from '@mantine/core';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { IconCategoryFilled } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
@@ -16,9 +17,7 @@ import { ProfileMenuDrawer, ProfileMenuDropdown } from '../../components/Profile
 
 
 export const Header: React.FC = () => {
-	const { colorScheme } = useMantineColorScheme();
-	const theme = useMantineTheme();
-	const bg = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+	const bg = usePaperBgColor();
 
 	const { pathname } = useLocation();
 	const { orgSlug } = useActiveOrgModule();

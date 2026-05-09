@@ -19,26 +19,27 @@ export type RegisterReducerFn = (reducer: ReducerFn) => RegisterReducersResult;
 type MicroAppStateContextType = RegisterReducersResult & {
 };
 
-let appStateContextValue: RegisterReducersResult;
-let appStateContext: React.Context<RegisterReducersResult>;
+const appStateContext = createContext<MicroAppStateContextType>(null as any);
+let appStateContextValue: RegisterReducersResult | undefined;
+
+function getAppStateContext(): React.Context<RegisterReducersResult> {
+	if (!appStateContextValue) {
+		throw new Error('MicroAppStateContext must be initialized with initMicroAppStateContext() before use');
+	}
+	return appStateContext;
+}
 
 export function initMicroAppStateContext(registerResult: RegisterReducersResult) {
-	if (!appStateContext) {
-		appStateContext = createContext<MicroAppStateContextType>(registerResult);
-	}
 	appStateContextValue = registerResult;
 }
 
 function useMicroAppStateContext(): MicroAppStateContextType {
-	if (!appStateContext) {
-		throw new Error('MicroAppStateContext must be initialized with initMicroAppStateContext() before use');
-	}
-	const ctxVal = useContext<MicroAppStateContextType>(appStateContext);
+	const ctxVal = useContext<MicroAppStateContextType>(getAppStateContext());
 	return ctxVal;
 }
 
 export function useIsMicroApp(): boolean {
-	if (!appStateContext) return false;
+	if (!appStateContextValue) return false;
 
 	const ctxVal = useContext(appStateContext);
 	return Boolean(ctxVal);
@@ -48,10 +49,11 @@ export type MicroAppStateProviderProps = React.PropsWithChildren & {
 };
 
 export const MicroAppStateProvider: React.FC<MicroAppStateProviderProps> = ({ children }) => {
+	const ctx = getAppStateContext();
 	return (
-		<appStateContext.Provider value={appStateContextValue}>
+		<ctx.Provider value={appStateContextValue!}>
 			{children}
-		</appStateContext.Provider>
+		</ctx.Provider>
 	);
 };
 
@@ -64,10 +66,10 @@ export type UseStateSelectorFn<TState> = <TSelected>(
  */
 export const useSmartSelector: UseStateSelectorFn<any> = (selector) => {
 	if (!selector) return null;
-	let appState: unknown;
-	const ctxVal = useMicroAppStateContext();
-	if (ctxVal) {
-		appState = useSelector(ctxVal.selectMicroAppState);
+
+	const microAppCtx = useContext<MicroAppStateContextType>(appStateContext);
+	if (appStateContextValue && microAppCtx) {
+		const appState = useSelector(microAppCtx.selectMicroAppState);
 		return selector(appState);
 	}
 	return useSelector(selector);
@@ -106,9 +108,9 @@ export const useRootSelector: UseStateSelectorFn<any> = (selector) => {
  * Micro-apps must use this instead of useDispatch from react-redux.
  */
 export const useMicroAppDispatch = (): MicroAppDispatchFn => {
-	const ctxVal = useContext(appStateContext);
+	const ctxVal = useContext(getAppStateContext());
 	if (!ctxVal) {
-		throw new Error('useAppDispatch must be used within MicroAppStateProvider');
+		throw new Error('useMicroAppDispatch must be used within MicroAppStateProvider');
 	}
 	return ctxVal.dispatch;
 };

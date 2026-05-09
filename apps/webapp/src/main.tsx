@@ -12,7 +12,7 @@ import './styles/index.css';
 // const essentialBundleUrl = 'http://localhost:3000/@fs/F:/github/sky-as-code/nikki-erp-frontend-react/modules/essential/dist/nikkiapp-essential-CLPVZYir.js';
 const microApps: MicroAppMetadata[] = [
 	{
-		slug: 'nikkierp.identity',
+		slug: 'identity',
 		basePath: 'identity',
 		bundleUrl: () => import('@nikkierp/microapp-identity'),
 		// bundleUrl: () => import('http://localhost:3000/index.ts'),
@@ -20,7 +20,7 @@ const microApps: MicroAppMetadata[] = [
 		htmlTag: 'microapp-identity',
 	},
 	{
-		slug: 'nikkierp.essential',
+		slug: 'essential',
 		basePath: 'essential',
 		// Uncomment when mounting as ShadowDOM
 		// bundleUrl: () => import(essentialBundleUrl),
@@ -28,7 +28,7 @@ const microApps: MicroAppMetadata[] = [
 		htmlTag: 'nikkiapp-essential',
 	},
 	{
-		slug: 'nikkierp.authorize',
+		slug: 'authorize',
 		basePath: 'authorize',
 		// Uncomment when mounting as ShadowDOM
 		// bundleUrl: () => import(authorizeBundleUrl),
@@ -36,13 +36,13 @@ const microApps: MicroAppMetadata[] = [
 		htmlTag: 'nikkiapp-authorize',
 	},
 	{
-		slug: 'nikkierp.drive',
+		slug: 'drive',
 		basePath: 'drive',
 		bundleUrl: () => import('@nikkierp/microapp-drive'),
 		htmlTag: 'nikkiapp-drive',
 	},
 	{
-		slug: 'nikkierp.inventory',
+		slug: 'inventory',
 		basePath: 'inventory',
 		bundleUrl: () => import('@nikkierp/microapp-inventory'),
 		htmlTag: 'nikkiapp-inventory',

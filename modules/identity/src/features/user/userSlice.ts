@@ -23,14 +23,6 @@ const userSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
 	reducers: {
-		resetCreateUser: svc.createUser.resetThunk,
-		resetDeleteUser: svc.deleteUser.resetThunk,
-		resetGetUserById: svc.getUserById.resetThunk,
-		resetGetUserSchema: svc.getUserSchema.resetThunk,
-		resetSearchUsers: svc.searchUsers.resetThunk,
-		resetSetUserIsArchived: svc.setUserIsArchived.resetThunk,
-		resetUpdateUser: svc.updateUser.resetThunk,
-		resetUserExists: svc.userExists.resetThunk,
 	},
 	extraReducers: (builder) => {
 		svc.createUser.buildThunkReducers(builder);
@@ -46,14 +38,14 @@ const userSlice = createSlice({
 
 export const actions = {
 	...userSlice.actions,
-	[svc.createUser.stateKey]: svc.createUser.action,
-	[svc.deleteUser.stateKey]: svc.deleteUser.action,
-	[svc.getUserSchema.stateKey]: svc.getUserSchema.action,
-	[svc.getUserById.stateKey]: svc.getUserById.action,
-	[svc.searchUsers.stateKey]: svc.searchUsers.action,
-	[svc.setUserIsArchived.stateKey]: svc.setUserIsArchived.action,
-	[svc.userExists.stateKey]: svc.userExists.action,
-	[svc.updateUser.stateKey]: svc.updateUser.action,
+	[svc.createUser.stateKey]: svc.createUser.thunkAction,
+	[svc.deleteUser.stateKey]: svc.deleteUser.thunkAction,
+	[svc.getUserSchema.stateKey]: svc.getUserSchema.thunkAction,
+	[svc.getUserById.stateKey]: svc.getUserById.thunkAction,
+	[svc.searchUsers.stateKey]: svc.searchUsers.thunkAction,
+	[svc.setUserIsArchived.stateKey]: svc.setUserIsArchived.thunkAction,
+	[svc.userExists.stateKey]: svc.userExists.thunkAction,
+	[svc.updateUser.stateKey]: svc.updateUser.thunkAction,
 };
 
 export const { reducer } = userSlice;

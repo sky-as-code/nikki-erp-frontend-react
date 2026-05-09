@@ -1,0 +1,13 @@
+.searchBox {
+	min-width: 320px;
+	max-width: min(900px, 62vw);
+}
+
+.pillText {
+	display: inline-block;
+	max-width: 120px;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

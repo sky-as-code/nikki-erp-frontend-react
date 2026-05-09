@@ -1,12 +1,13 @@
-import { useSelector } from 'react-redux';
+import { ThunkPackUseSelectorFn } from '@nikkierp/ui/appState';
 
 import * as svc from './orgService';
 
 
-export const useCreateOrganization = () => useSelector(svc.createOrg.selector);
-export const useDeleteOrganization = () => useSelector(svc.deleteOrg.selector);
-export const useGetOrganization = () => useSelector(svc.getOrgById.selector);
-export const useGetOrganizationSchema = () => useSelector(svc.getOrgSchema.selector);
-export const useOrganizationExists = () => useSelector(svc.orgExists.selector);
-export const useSearchOrganizations = () => useSelector(svc.searchOrgs.selector);
-export const useUpdateOrganization = () => useSelector(svc.updateOrg.selector);
+export const useCreateOrganization = (useSelectorFn: ThunkPackUseSelectorFn) => svc.createOrg.useHook(useSelectorFn);
+export const useDeleteOrganization = (useSelectorFn: ThunkPackUseSelectorFn) => svc.deleteOrg.useHook(useSelectorFn);
+export const useGetOrganization = (useSelectorFn: ThunkPackUseSelectorFn) => svc.getOrgById.useHook(useSelectorFn);
+export const useGetOrganizationSchema = (useSelectorFn: ThunkPackUseSelectorFn) =>
+	svc.getOrgSchema.useHook(useSelectorFn);
+export const useOrganizationExists = (useSelectorFn: ThunkPackUseSelectorFn) => svc.orgExists.useHook(useSelectorFn);
+export const useSearchOrganizations = (useSelectorFn: ThunkPackUseSelectorFn) => svc.searchOrgs.useHook(useSelectorFn);
+export const useUpdateOrganization = (useSelectorFn: ThunkPackUseSelectorFn) => svc.updateOrg.useHook(useSelectorFn);

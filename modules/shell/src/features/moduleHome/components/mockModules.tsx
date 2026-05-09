@@ -14,7 +14,7 @@ export const mockModules = [
 		modules: [
 			{
 				name: 'Essential',
-				slug: 'nikkierp.essential',
+				slug: 'essential',
 				category: 'Essential',
 				icon: essentialIcon,
 				isDisabled: false,
@@ -24,7 +24,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Identity',
-				slug: 'nikkierp.identity',
+				slug: 'identity',
 				category: 'Identity',
 				icon: identityIcon,
 				isDisabled: false,
@@ -34,7 +34,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Authorize',
-				slug: 'nikkierp.authorize',
+				slug: 'authorize',
 				category: 'Authorize',
 				icon: authorizeIcon,
 				isDisabled: false,
@@ -44,7 +44,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Drive',
-				slug: 'nikkierp.drive',
+				slug: 'drive',
 				category: 'Drive',
 				icon: fileDriveIcon,
 				isDisabled: false,
@@ -54,7 +54,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Inventory',
-				slug: 'nikkierp.inventory',
+				slug: 'inventory',
 				category: 'Inventory',
 				icon: inventoryIcon,
 				isDisabled: false,
@@ -64,7 +64,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Sales',
-				slug: 'nikkierp.sales',
+				slug: 'sales',
 				category: 'Sales',
 				icon: salesIcon,
 				isDisabled: false,
@@ -74,7 +74,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Purchase',
-				slug: 'nikkierp.purchase',
+				slug: 'purchase',
 				category: 'Purchase',
 				icon: 'icon-purchase',
 				isDisabled: false,
@@ -84,7 +84,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Vending Machine',
-				slug: 'coremart.vending_machine',
+				slug: 'vending_machine',
 				category: 'Vending Machine',
 				icon: vendingMachineIcon,
 				isDisabled: false,
@@ -100,7 +100,7 @@ export const mockModules = [
 		modules: [
 			{
 				name: 'File Drive',
-				slug: 'nikkierp.file_drive',
+				slug: 'file_drive',
 				category: 'File Drive',
 				icon: fileDriveIcon,
 				isDisabled: true,
@@ -109,7 +109,7 @@ export const mockModules = [
 			},
 			{
 				name: 'HR Management',
-				slug: 'nikkierp.hr_management',
+				slug: 'hr_management',
 				category: 'HR Management',
 				icon: 'icon-hr-management',
 				isDisabled: false,
@@ -118,7 +118,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Asset Management',
-				slug: 'nikkierp.asset_management',
+				slug: 'asset_management',
 				category: 'Asset Management',
 				icon: 'icon-asset-management',
 				isDisabled: false,
@@ -133,7 +133,7 @@ export const mockModules = [
 		modules: [
 			{
 				name: 'Chat',
-				slug: 'nikkierp.chat',
+				slug: 'chat',
 				category: 'communication',
 				icon: 'icon-chat',
 				isDisabled: false,
@@ -142,7 +142,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Email',
-				slug: 'nikkierp.email',
+				slug: 'email',
 				category: 'communication',
 				icon: 'icon-email',
 				isDisabled: false,
@@ -157,7 +157,7 @@ export const mockModules = [
 		modules: [
 			{
 				name: 'Identity',
-				slug: 'nikkierp.identity',
+				slug: 'identity',
 				category: 'identityAndAccessManagement',
 				icon: 'icon-identity',
 				isDisabled: false,
@@ -172,7 +172,7 @@ export const mockModules = [
 		modules: [
 			{
 				name: 'Vending Machine',
-				slug: 'coremart.vending_machine',
+				slug: 'vending_machine',
 				category: 'infomationTechnology',
 				icon: 'icon-vending-machine',
 				isDisabled: false,
@@ -187,7 +187,7 @@ export const mockModules = [
 		modules: [
 			{
 				name: 'Inventory',
-				slug: 'nikkierp.inventory',
+				slug: 'inventory',
 				category: 'inventoryAndLogistics',
 				icon: 'icon-inventory',
 				isDisabled: false,
@@ -196,7 +196,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Purchase',
-				slug: 'nikkierp.purchase',
+				slug: 'purchase',
 				category: 'inventoryAndLogistics',
 				icon: 'icon-purchase',
 				isDisabled: false,
@@ -211,7 +211,7 @@ export const mockModules = [
 		modules: [
 			{
 				name: 'Accounting',
-				slug: 'nikkierp.accounting',
+				slug: 'accounting',
 				category: 'financialManagement',
 				icon: 'icon-accounting',
 				isDisabled: false,
