@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, Dispatch, ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
 
 import * as svc from './moduleService';
 import { MODULE_SCHEMA_NAME } from '../constants';
@@ -24,13 +24,6 @@ const moduleSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
 	reducers: {
-		resetCreateModule: svc.createModule.resetThunk,
-		resetDeleteModule: svc.deleteModule.resetThunk,
-		resetGetModule: svc.getModule.resetThunk,
-		resetListAllModules: svc.listAllModules.resetThunk,
-		resetSearchModules: svc.searchModules.resetThunk,
-		resetSetIsArchived: svc.setModuleIsArchived.resetThunk,
-		resetUpdateModule: svc.updateModule.resetThunk,
 	},
 	extraReducers: (builder) => {
 		svc.createModule.buildThunkReducers(builder);
@@ -47,15 +40,22 @@ const moduleSlice = createSlice({
 
 export const actions = {
 	...moduleSlice.actions,
-	[svc.createModule.stateKey]: svc.createModule.action,
-	[svc.deleteModule.stateKey]: svc.deleteModule.action,
-	[svc.getModuleSchema.stateKey]: svc.getModuleSchema.action,
-	[svc.getModule.stateKey]: svc.getModule.action,
-	[svc.listAllModules.stateKey]: svc.listAllModules.action,
-	[svc.searchModules.stateKey]: svc.searchModules.action,
-	[svc.setModuleIsArchived.stateKey]: svc.setModuleIsArchived.action,
-	[svc.moduleExists.stateKey]: svc.moduleExists.action,
-	[svc.updateModule.stateKey]: svc.updateModule.action,
+	[svc.createModule.stateKey]: svc.createModule.thunkAction,
+	[svc.deleteModule.stateKey]: svc.deleteModule.thunkAction,
+	[svc.getModuleSchema.stateKey]: svc.getModuleSchema.thunkAction,
+	[svc.getModule.stateKey]: svc.getModule.thunkAction,
+	[svc.listAllModules.stateKey]: svc.listAllModules.thunkAction,
+	[svc.searchModules.stateKey]: svc.searchModules.thunkAction,
+	[svc.setModuleIsArchived.stateKey]: svc.setModuleIsArchived.thunkAction,
+	[svc.moduleExists.stateKey]: svc.moduleExists.thunkAction,
+	[svc.updateModule.stateKey]: svc.updateModule.thunkAction,
 };
 
 export const { reducer } = moduleSlice;
+
+export type ModuleDispatch = ThunkDispatch<
+	ReturnType<typeof reducer>,
+	undefined,
+	UnknownAction
+> &
+	Dispatch<UnknownAction>;

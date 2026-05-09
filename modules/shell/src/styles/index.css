@@ -3,7 +3,7 @@
 @import '@mantine/dates/styles.layer.css';
 
 /* @import "tailwindcss/preflight.css" layer(base); */
-@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/theme.css" layer(twtheme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
 /* @import 'mantine-react-table/styles.css' layer(mantine-table); */
@@ -13,7 +13,7 @@
 @import './nikki.css';
 
 
-@layer base, theme, mantine, data-grid, nikki, components, utilities;
+@layer base, twtheme, mantine, data-grid, nikki, components, utilities;
 
 html {
 	font-size: 16px;
@@ -59,7 +59,15 @@ html::-webkit-scrollbar-thumb:hover {
 		--input-description-size: var(--mantine-font-size-md);
 		--input-fz: var(--mantine-font-size-md);
 	}
+
+	html[data-mantine-color-scheme='light'] {
+		:where(.mantine-Table-table, .mantine-Table-root table) {
+			--table-hover-color: var(--mantine-color-gray-2);
+			--table-striped-color: var(--mantine-color-gray-1);
+		}
+
+		th {
+			background-color: var(--mantine-color-gray-2);
+		}
+	}
 }
-
-
-@layer theme {}

@@ -1,0 +1,8 @@
+.thumbnail {
+	border: 1px solid var(--mantine-color-default-border);
+}
+
+.collapsibleHeader {
+	cursor: pointer;
+	user-select: none;
+}

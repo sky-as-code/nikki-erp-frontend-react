@@ -1,4 +1,4 @@
-import { Anchor, Button, Group, Stack } from '@mantine/core';
+import { Anchor, Button, Group, Stack, Text } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
 import { useStartSignIn } from '@nikkierp/shell/authenticate';
 import { AdhocFormProvider, AutoField, FormStyleProvider } from '@nikkierp/ui/components/form';
@@ -6,7 +6,7 @@ import { IconMail } from '@tabler/icons-react';
 // import { useUIState } from 'node_modules/@nikkierp/shell/src/contexts/UIProviders';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { emailSchema } from './emailSchema';
 import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
@@ -15,7 +15,7 @@ import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
 export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	const formRef = React.useRef<HTMLFormElement>(null);
 	const dispatch = useDispatch<AppDispatch>();
-	const { isDone: isSuccess, isLoading, action: startSignIn } = useStartSignIn();
+	const { isDone: isSuccess, isLoading, thunkAction: startSignIn } = useStartSignIn(useSelector);
 
 	React.useEffect(() => {
 		if (isSuccess && onNext) {
@@ -65,6 +65,10 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 					leftSection: <IconMail size={20} />,
 				}}
 			/>
+			<Text size='md' c='dimmed'>
+				Domain admin: <code>nguyen.van.an@nikki.com</code><br/>
+				Identity readonly: <code>tran.thi.binh@nikki.com</code>
+			</Text>
 
 			{props.isActive && (
 				<>

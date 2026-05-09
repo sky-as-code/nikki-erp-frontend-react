@@ -36,7 +36,14 @@ export const getUserById = uiState.createSchemaThunkPack<t.GetUserResponse, t.Ge
 export const searchUsers = uiState.createSchemaThunkPack<t.SearchUserResponse, t.SearchUserRequest, 'searchUsers'>(
 	USER_SCHEMA_NAME, 'searchUsers',
 	async function searchUsersThunk(schema: dyn.SchemaPack, request: t.SearchUserRequest) {
-		return schema.restApi.search(request);
+		const response = await schema.restApi.search(request);
+		if (response.items) {
+			response.desired_fields.push('password');
+			for(let i = 0; i < response.items.length; i++) {
+				response.items[i].password = null;
+			}
+		}
+		return response;
 	},
 );
 

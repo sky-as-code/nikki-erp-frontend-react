@@ -23,14 +23,6 @@ const groupSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
 	reducers: {
-		resetCreateGroup: svc.createGroup.resetThunk,
-		resetDeleteGroup: svc.deleteGroup.resetThunk,
-		resetGetGroupById: svc.getGroupById.resetThunk,
-		resetGetGroupSchema: svc.getGroupSchema.resetThunk,
-		resetGroupExists: svc.groupExists.resetThunk,
-		resetManageGroupUsers: svc.manageGroupUsers.resetThunk,
-		resetSearchGroups: svc.searchGroups.resetThunk,
-		resetUpdateGroup: svc.updateGroup.resetThunk,
 	},
 	extraReducers: (builder) => {
 		svc.createGroup.buildThunkReducers(builder);
@@ -47,13 +39,13 @@ const groupSlice = createSlice({
 
 export const actions = {
 	...groupSlice.actions,
-	[svc.createGroup.stateKey]: svc.createGroup.action,
-	[svc.deleteGroup.stateKey]: svc.deleteGroup.action,
-	[svc.getGroupSchema.stateKey]: svc.getGroupSchema.action,
-	[svc.getGroupById.stateKey]: svc.getGroupById.action,
-	[svc.searchGroups.stateKey]: svc.searchGroups.action,
-	[svc.manageGroupUsers.stateKey]: svc.manageGroupUsers.action,
-	[svc.updateGroup.stateKey]: svc.updateGroup.action,
+	[svc.createGroup.stateKey]: svc.createGroup.thunkAction,
+	[svc.deleteGroup.stateKey]: svc.deleteGroup.thunkAction,
+	[svc.getGroupSchema.stateKey]: svc.getGroupSchema.thunkAction,
+	[svc.getGroupById.stateKey]: svc.getGroupById.thunkAction,
+	[svc.searchGroups.stateKey]: svc.searchGroups.thunkAction,
+	[svc.manageGroupUsers.stateKey]: svc.manageGroupUsers.thunkAction,
+	[svc.updateGroup.stateKey]: svc.updateGroup.thunkAction,
 };
 
 export const { reducer } = groupSlice;

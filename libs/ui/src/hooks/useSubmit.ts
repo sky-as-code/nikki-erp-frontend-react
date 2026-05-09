@@ -2,7 +2,7 @@ import { Cleaned, cleanFormData } from '@nikkierp/common/utils';
 import { useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
-import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
+import { useMicroAppDispatch } from '../microApp';
 
 
 export function useSubmit<TData extends object, TForm = UseFormReturn<TData>>({

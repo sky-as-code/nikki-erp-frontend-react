@@ -1,4 +1,5 @@
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { UseStateSelectorFn } from '@nikkierp/ui/microApp';
 import { createSelector } from '@reduxjs/toolkit';
 import { useSelector } from 'react-redux';
 
@@ -21,7 +22,7 @@ import type { RootState } from '../appState/store';
 export const selectUserContextState = (state: RootState) => state[SLICE_NAME as keyof RootState] as UserContextState;
 
 export function useGetUserContext() {
-	return svc.getUserContext.useHook();
+	return svc.getUserContext.useHook(useSelector);
 }
 
 export const selectGetUserContext = svc.getUserContext.selector;

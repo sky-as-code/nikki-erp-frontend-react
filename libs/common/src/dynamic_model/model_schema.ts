@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 export type ModelSchema = {
 	name: string,
+	etag: string,
 	label?: ModelSchemaLangJson,
 	to_relations?: ModelSchemaRelation[],
 	from_relations?: ModelSchemaRelation[],

@@ -24,15 +24,6 @@ const organizationSlice = createSlice({
 	name: SLICE_NAME,
 	initialState,
 	reducers: {
-		resetCreateOrg: svc.createOrg.resetThunk,
-		resetDeleteOrg: svc.deleteOrg.resetThunk,
-		resetGetOrgById: svc.getOrgById.resetThunk,
-		resetGetOrgBySlug: svc.getOrgBySlug.resetThunk,
-		resetGetOrgSchema: svc.getOrgSchema.resetThunk,
-		resetManageOrgUsers: svc.manageOrgUsers.resetThunk,
-		resetOrgExists: svc.orgExists.resetThunk,
-		resetSearchOrgs: svc.searchOrgs.resetThunk,
-		resetUpdateOrg: svc.updateOrg.resetThunk,
 	},
 	extraReducers: (builder) => {
 		svc.createOrg.buildThunkReducers(builder);
@@ -49,15 +40,15 @@ const organizationSlice = createSlice({
 
 export const actions = {
 	...organizationSlice.actions,
-	[svc.createOrg.stateKey]: svc.createOrg.action,
-	[svc.deleteOrg.stateKey]: svc.deleteOrg.action,
-	[svc.getOrgById.stateKey]: svc.getOrgById.action,
-	[svc.getOrgBySlug.stateKey]: svc.getOrgBySlug.action,
-	[svc.getOrgSchema.stateKey]: svc.getOrgSchema.action,
-	[svc.manageOrgUsers.stateKey]: svc.manageOrgUsers.action,
-	[svc.orgExists.stateKey]: svc.orgExists.action,
-	[svc.searchOrgs.stateKey]: svc.searchOrgs.action,
-	[svc.updateOrg.stateKey]: svc.updateOrg.action,
+	[svc.createOrg.stateKey]: svc.createOrg.thunkAction,
+	[svc.deleteOrg.stateKey]: svc.deleteOrg.thunkAction,
+	[svc.getOrgById.stateKey]: svc.getOrgById.thunkAction,
+	[svc.getOrgBySlug.stateKey]: svc.getOrgBySlug.thunkAction,
+	[svc.getOrgSchema.stateKey]: svc.getOrgSchema.thunkAction,
+	[svc.manageOrgUsers.stateKey]: svc.manageOrgUsers.thunkAction,
+	[svc.orgExists.stateKey]: svc.orgExists.thunkAction,
+	[svc.searchOrgs.stateKey]: svc.searchOrgs.thunkAction,
+	[svc.updateOrg.stateKey]: svc.updateOrg.thunkAction,
 };
 
 export const { reducer } = organizationSlice;

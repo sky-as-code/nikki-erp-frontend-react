@@ -179,6 +179,7 @@ export type RestSearchRequest = RequestWithFields & {
 	size?: number,
 	graph?: Record<string, any>,
 	language?: string,
+	search_name?: string,
 };
 
 export type RestSearchResponse<T extends Record<string, any>> = {
@@ -186,6 +187,9 @@ export type RestSearchResponse<T extends Record<string, any>> = {
 	total: number,
 	page: number,
 	size: number,
+	desired_fields: string[],
+	masked_fields: string[],
+	schema_etag: string,
 };
 
 export type RestUpdateRequest = Record<string, any> & {

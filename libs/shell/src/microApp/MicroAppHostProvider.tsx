@@ -1,4 +1,6 @@
-import { MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps, MicroAppRoutingOptions, MicroAppApiOptions } from '@nikkierp/ui/microApp';
+import {
+	MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps, MicroAppRoutingOptions, MicroAppApiOptions,
+} from '@nikkierp/ui/microApp';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useInRouterContext, useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
 
@@ -170,11 +172,14 @@ function useSetupMicroApp(
 
 function useRoutingOpts(basePath?: string): MicroAppRoutingOptions {
 	const isInRouter = useInRouterContext();
+	const location = useLocation();
+	const navigator = useContext(UNSAFE_NavigationContext).navigator;
+
 	if (isInRouter) {
 		return {
 			basePath,
-			location: useLocation(),
-			navigator: useContext(UNSAFE_NavigationContext).navigator,
+			location,
+			navigator,
 		};
 	}
 	return {};

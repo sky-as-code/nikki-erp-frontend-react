@@ -53,7 +53,7 @@ export const continueSignIn = uiState.createThunkPack<t.SignInResult, t.SignInPa
 		const result = await strategy.continueSignIn(params);
 		if (result?.done) {
 			onSignInSuccess(result.data!);
-			dispatch(userCxtSvc.getUserContext.action());
+			dispatch(userCxtSvc.getUserContext.thunkAction());
 		}
 		return result;
 	},
@@ -87,7 +87,7 @@ export const restoreAuthSession = uiState.createThunkPack<boolean, void, 'restor
 		}
 		const session = await strategy.refreshSession({ refreshToken: refreshObj.token });
 		onSignInSuccess(session);
-		dispatch(userCxtSvc.getUserContext.action());
+		dispatch(userCxtSvc.getUserContext.thunkAction());
 		return true;
 	},
 );

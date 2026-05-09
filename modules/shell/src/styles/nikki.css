@@ -34,6 +34,9 @@
 
 		/* textbox */
 		--nikki-color-textbox-border: var(--mantine-color-gray-6);
+
+		/* table */
+		--nikki-color-table-selected: var(--mantine-color-gray-3);
 	}
 
 	html[data-mantine-color-scheme='light'] {
@@ -81,5 +84,8 @@
 		/* textbox */
 		--nikki-color-textbox-border: var(--mantine-color-gray-6);
 		--nikki-color-textbox-border-hover: #000000;
+
+		/* table */
+		--nikki-color-table-selected: var(--mantine-color-blue-1);
 	}
 }

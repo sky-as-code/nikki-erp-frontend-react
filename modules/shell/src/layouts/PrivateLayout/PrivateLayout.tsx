@@ -19,7 +19,7 @@ export function PrivateLayout(): React.ReactNode {
 		if (isAuthenticatePending) return;
 
 		if (!isAuthenticated && !restore.isDone) {
-			dispatch(restore.action() as any);
+			dispatch(restore.thunkAction() as any);
 		}
 		else if (!isAuthenticated && restore.isDone && !restore.data) {
 			dispatch(routingActions.navigateWillReturn('/signin'));

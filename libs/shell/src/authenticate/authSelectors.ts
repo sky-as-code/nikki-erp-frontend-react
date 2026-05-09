@@ -14,16 +14,16 @@ type AuthState = RootState[(typeof SLICE_NAME) & keyof RootState];
 const selectAuthState = (state: RootState) => state[SLICE_NAME as keyof RootState] as AuthState;
 
 export function useStartSignIn() {
-	return svc.startSignIn.useHook();
+	return svc.startSignIn.useHook(useSelector);
 }
 export function useContinueSignIn() {
-	return svc.continueSignIn.useHook();
+	return svc.continueSignIn.useHook(useSelector);
 }
 export function useSignOut() {
-	return svc.signOut.useHook();
+	return svc.signOut.useHook(useSelector);
 }
 export function useRestoreAuthSession() {
-	return svc.restoreAuthSession.useHook();
+	return svc.restoreAuthSession.useHook(useSelector);
 }
 
 export type AuthViewState = AuthState & {
@@ -61,7 +61,7 @@ export type AuthViewState = AuthState & {
 const selectIsAuthenticated = createSelector(
 	selectGetUserContext,
 	(getUserContext: ReduxThunkState) => {
-		const hasUserContext = (getUserContext.status === 'done');
+		const hasUserContext = (getUserContext.isDone);
 		return svc.isAuthenticated() && hasUserContext;
 	},
 );
@@ -71,8 +71,8 @@ const selectIsAuthenticatePending = createSelector(
 	svc.restoreAuthSession.selector,
 	selectGetUserContext,
 	(continueSignIn: ReduxThunkState, restoreAuthSession: ReduxThunkState, getUserContext: ReduxThunkState) => {
-		const isSigningIn = (continueSignIn.status === 'pending' || restoreAuthSession.status === 'pending');
-		const isFetchingContext = (getUserContext.status === 'pending');
+		const isSigningIn = (continueSignIn.isLoading || restoreAuthSession.isLoading);
+		const isFetchingContext = (getUserContext.isLoading);
 		return isSigningIn || isFetchingContext;
 	},
 );

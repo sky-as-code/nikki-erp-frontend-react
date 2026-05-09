@@ -1,15 +1,18 @@
 import * as dyn from '@nikkierp/common/dynamic_model';
 import { ClientErrors } from '@nikkierp/common/types';
 import {
+	ActionCreatorWithoutPayload,
 	ActionReducerMapBuilder,
 	AsyncThunk,
 	AsyncThunkConfig,
 	AsyncThunkPayloadCreator,
+	createAction,
 	createAsyncThunk,
 	createSelector,
 } from '@reduxjs/toolkit';
+import { UseSelector } from 'react-redux';
 
-import { useSmartSelector } from '../microApp';
+import { useSmartSelector, UseStateSelectorFn } from '../microApp';
 
 
 export type ReduxActionStatus = 'idle' | 'pending' | 'done' | 'error';
@@ -22,50 +25,54 @@ type SchemaReduxActionThunkFn<TReturn, TArg> =
 	(schema: dyn.SchemaPack, thunkArgs: TArg, thunkApi: ReduxActionThunkApi<TReturn, TArg>) => Promise<TReturn>;
 
 export interface ReduxThunkState<T =  any> {
-	status: ReduxActionStatus;
+	// status: ReduxActionStatus;
+	isLoading: boolean;
+	isDone: boolean;
+	isError: boolean;
 	error: string | null;
 	data: T | null;
 	requestId: string | null;
 }
 
-export type CrudState<TModel = Record<string, any>> = {
-	create: ReduxThunkState<dyn.RestCreateResponse>,
-	delete: ReduxThunkState<dyn.RestDeleteResponse>,
-	exists: ReduxThunkState<dyn.RestExistsResponse>,
-	getOne: ReduxThunkState<dyn.RestGetOneResponse<any>>,
-	search: ReduxThunkState<dyn.RestSearchResponse<any>>,
-	update: ReduxThunkState<dyn.RestMutateResponse>,
-	byId: Record<string, TModel>;
-};
+// export type CrudState<TModel = Record<string, any>> = {
+// 	create: ReduxThunkState<dyn.RestCreateResponse>,
+// 	delete: ReduxThunkState<dyn.RestDeleteResponse>,
+// 	exists: ReduxThunkState<dyn.RestExistsResponse>,
+// 	getOne: ReduxThunkState<dyn.RestGetOneResponse<any>>,
+// 	search: ReduxThunkState<dyn.RestSearchResponse<any>>,
+// 	update: ReduxThunkState<dyn.RestMutateResponse>,
+// 	byId: Record<string, TModel>;
+// };
 
-export type CrudArchivableState = {
-	setIsArchived: ReduxThunkState<dyn.RestMutateResponse>,
-};
+// export type CrudArchivableState = {
+// 	setIsArchived: ReduxThunkState<dyn.RestMutateResponse>,
+// };
 
-export type CrudBaseActions = 'setIsArchived' | 'create' | 'delete' | 'exists' | 'getOne' | 'search' | 'update';
+// export type CrudBaseActions = 'setIsArchived' | 'create' | 'delete' | 'exists' | 'getOne' | 'search' | 'update';
 
-export function initCrudState<TModel = Record<string, any>>(): CrudState<TModel> {
-	return {
-		byId: {},
+// export function initCrudState<TModel = Record<string, any>>(): CrudState<TModel> {
+// 	return {
+// 		byId: {},
 
-		create: baseReduxThunkState,
-		delete: baseReduxThunkState,
-		exists: baseReduxThunkState,
-		getOne: baseReduxThunkState,
-		search: baseReduxThunkState,
-		update: baseReduxThunkState,
-	};
-}
+// 		create: baseReduxThunkState,
+// 		delete: baseReduxThunkState,
+// 		exists: baseReduxThunkState,
+// 		getOne: baseReduxThunkState,
+// 		search: baseReduxThunkState,
+// 		update: baseReduxThunkState,
+// 	};
+// }
 
-export function initCrudArchivableState(): CrudArchivableState {
-	return {
-		setIsArchived: baseReduxThunkState,
-	};
-};
+// export function initCrudArchivableState(): CrudArchivableState {
+// 	return {
+// 		setIsArchived: baseReduxThunkState,
+// 	};
+// };
 
 /** Value returned from {@link ThunkPack.useHook}. */
 export type ThunkPackHookReturn<TReturn, TArg> = {
-	action: AsyncThunk<TReturn, TArg, { rejectValue: any }>;
+	thunkAction: AsyncThunk<TReturn, TArg, { rejectValue: any }>;
+	resetAction: ActionCreatorWithoutPayload<string>;
 	isLoading: boolean;
 	isDone: boolean;
 	isError: boolean;
@@ -74,70 +81,68 @@ export type ThunkPackHookReturn<TReturn, TArg> = {
 };
 
 export type ThunkPack<TReturn = void, TArg = void, TStateKey extends string = string> = {
-	stateKey: TStateKey;
-	action: AsyncThunk<TReturn, TArg, { rejectValue: any }>;
-	initialState: ReduxThunkState<TReturn>;
-	selector: (state: any) => ReduxThunkState<TReturn>;
-	resetThunk: (state: any) => void;
-	buildThunkReducers: (builder: ActionReducerMapBuilder<any>) => void;
-	useHook: () => ThunkPackHookReturn<TReturn, TArg>;
+	stateKey: TStateKey,
+	thunkAction: AsyncThunk<TReturn, TArg, { rejectValue: any }>,
+	resetAction: ActionCreatorWithoutPayload<string>,
+	initialState: ReduxThunkState<TReturn>,
+	selector: (state: any) => ReduxThunkState<TReturn>,
+	buildThunkReducers: (builder: ActionReducerMapBuilder<any>) => void,
+	useHook: (useSelectorFn: ThunkPackUseSelectorFn) => ThunkPackHookReturn<TReturn, TArg>,
 };
+
+export type ThunkPackUseSelectorFn = UseStateSelectorFn<any> | UseSelector<unknown>;
 
 export function createSchemaThunkPack<TReturn, TArg, TStateKey extends string>(
 	sliceName: string,
-	thunkName: TStateKey,
+	actionName: TStateKey,
 	serviceFn: SchemaReduxActionThunkFn<TReturn, TArg>,
 ): ThunkPack<TReturn, TArg, TStateKey> {
+	const thunkName = buildThunkName(sliceName, actionName);
 	const thunk = createSchemaThunk(sliceName, thunkName, serviceFn);
-	return buildThunkPack(sliceName, thunkName, thunk);
+	return buildThunkPack(sliceName, actionName, thunkName, thunk);
 }
-
-// export function createSchemaThunkPackForSchema<TReturn, TArg, TStateKey extends string>(
-// 	sliceName: string,
-// 	schemaName: string,
-// 	thunkName: TStateKey,
-// 	serviceFn: SchemaReduxActionThunkFn<TReturn, TArg>,
-// ): ThunkPack<TReturn, TArg, TStateKey> {
-// 	const thunk = createSchemaThunk(schemaName, thunkName, serviceFn);
-// 	return buildThunkPack(sliceName, thunkName, thunk);
-// }
 
 export function createThunkPack<TReturn, TArg, TStateKey extends string>(
 	sliceName: string,
-	thunkName: TStateKey,
+	actionName: TStateKey,
 	fn: ReduxActionThunkFn<TReturn, TArg>,
 ): ThunkPack<TReturn, TArg, TStateKey> {
-	const thunk = createThunk(sliceName, thunkName, fn);
-	return buildThunkPack(sliceName, thunkName, thunk);
+	const thunkName = buildThunkName(sliceName, actionName);
+	const thunk = createThunk(thunkName, fn);
+	return buildThunkPack(sliceName, actionName, thunkName, thunk);
 }
 
 function buildThunkPack<TReturn, TArg, TStateKey extends string>(
 	sliceName: string,
-	stateKey: TStateKey,
+	actionName: TStateKey,
+	thunkName: string,
 	thunk: AsyncThunk<TReturn, TArg, { rejectValue: any }>,
 ): ThunkPack<TReturn, TArg, TStateKey> {
 	const selector = createSelector(
 		(rootState: any) => {
 			return rootState[sliceName];
 		},
-		selectThunkStateFactory(stateKey));
+		selectThunkStateFactory(actionName));
+	const resetAction = createAction(`${thunkName}/reset`);
 
 	return {
-		stateKey,
-		action: thunk,
+		stateKey: actionName,
+		thunkAction: thunk,
+		resetAction,
 		initialState: baseReduxThunkState,
 		selector,
-		resetThunk: buildResetThunkReducer(stateKey),
 		buildThunkReducers(builder: ActionReducerMapBuilder<any>) {
-			buildThunkReducers(builder, thunk, stateKey);
+			buildThunkReducers(builder, thunk, resetAction, actionName);
 		},
-		useHook() {
-			const thunkState = useSmartSelector(selector) as ReduxThunkState<TReturn>;
+		useHook(useSelectorFn: ThunkPackUseSelectorFn) {
+			// How to detect the caller is from shell or micro-app?
+			const thunkState = (useSelectorFn as any)(selector) as ReduxThunkState<TReturn>;
 			return {
-				action: thunk,
-				isLoading: thunkState.status === 'pending',
-				isDone: thunkState.status === 'done',
-				isError: thunkState.status === 'error',
+				thunkAction: thunk,
+				resetAction,
+				isLoading: thunkState.isLoading,
+				isDone: thunkState.isDone,
+				isError: thunkState.isError,
 				error: thunkState.error,
 				data: thunkState.data as TReturn | null,
 			};
@@ -145,22 +150,24 @@ function buildThunkPack<TReturn, TArg, TStateKey extends string>(
 	};
 }
 
-function selectThunkStateFactory(stateKey: string) {
+function selectThunkStateFactory(thunkName: string) {
 	return (sliceState: any) => {
-		return sliceState[stateKey] as ReduxThunkState;
+		return sliceState[thunkName] as ReduxThunkState;
 	};
 }
 
 export const baseReduxThunkState : ReduxThunkState = {
-	status: 'idle',
+	isLoading: false,
+	isDone: false,
+	isError: false,
 	error: null,
 	data: null,
 	requestId: null,
 };
 
-export function buildResetThunkReducer(actionKey: string) {
+export function buildResetThunkReducer(actionName: string) {
 	return (state: any) => {
-		state[actionKey] = baseReduxThunkState;
+		state[actionName] = baseReduxThunkState;
 	};
 }
 
@@ -171,18 +178,22 @@ export function buildThunkReducers<
 >(
 	builder: ActionReducerMapBuilder<any>,
 	thunk: AsyncThunk<TReturn, TArg, TConfig>,
-	action: string,
+	resetAction: ActionCreatorWithoutPayload<string>,
+	actionName: string,
 ) {
 	builder
-		.addCase(thunk.pending, reducerThunkPending(action))
-		.addCase(thunk.fulfilled, reducerThunkDone(action))
-		.addCase(thunk.rejected, reducerThunkError(action));
+		.addCase(thunk.pending, reducerThunkPending(actionName))
+		.addCase(thunk.fulfilled, reducerThunkDone(actionName))
+		.addCase(thunk.rejected, reducerThunkError(actionName))
+		.addCase(resetAction, buildResetThunkReducer(actionName));
 }
-
 
 function reducerThunkPending(action: string) {
 	return (state: {[key: string]: ReduxThunkState}) => {
-		state[action].status = 'pending';
+		state[action].isLoading = true;
+
+		state[action].isDone = false;
+		state[action].isError = false;
 		state[action].error = null;
 		state[action].data = null;
 	};
@@ -190,7 +201,10 @@ function reducerThunkPending(action: string) {
 
 function reducerThunkDone(action: string) {
 	return (state: {[key: string]: ReduxThunkState}, param: any) => {
-		state[action].status = 'done';
+		state[action].isDone = true;
+
+		state[action].isLoading = false;
+		state[action].isError = false;
 		state[action].data = param.payload;
 		state[action].error = null;
 	};
@@ -198,7 +212,10 @@ function reducerThunkDone(action: string) {
 
 function reducerThunkError(action: string) {
 	return (state: {[key: string]: ReduxThunkState}, param: any) => {
-		state[action].status = 'error';
+		state[action].isError = true;
+
+		state[action].isLoading = false;
+		state[action].isDone = false;
 		state[action].error = param.payload || 'Failed to ' + action;
 		state[action].data = null;
 	};
@@ -210,7 +227,7 @@ export function createSchemaThunk<TReturn=void, TArg=void>(
 	serviceFn: SchemaReduxActionThunkFn<TReturn, TArg>,
 ) {
 	return createAsyncThunk<TReturn, TArg, { rejectValue: any }>(
-		`${schemaName}/${thunkName}`,
+		buildThunkName(schemaName, thunkName),
 		async (thunkArgs, thunkApi) => {
 			const { rejectWithValue } = thunkApi;
 			try {
@@ -232,12 +249,11 @@ export function createSchemaThunk<TReturn=void, TArg=void>(
 }
 
 export function createThunk<TReturn=any, TArg=any>(
-	sliceName: string,
 	thunkName: string,
 	fn: ReduxActionThunkFn<TReturn, TArg>,
 ) {
 	return createAsyncThunk<TReturn, TArg, { rejectValue: any }>(
-		`${sliceName}/${thunkName}`,
+		thunkName,
 		async (thunkArgs, thunkApi) => {
 			const { rejectWithValue } = thunkApi;
 			try {
@@ -252,4 +268,11 @@ export function createThunk<TReturn=any, TArg=any>(
 			}
 		},
 	);
+}
+
+function buildThunkName(sliceName: string, actionName: string, status: string = '') {
+	if (status) {
+		return `${sliceName}/${actionName}/${status}`;
+	}
+	return `${sliceName}/${actionName}`;
 }

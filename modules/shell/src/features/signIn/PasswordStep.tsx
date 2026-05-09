@@ -1,4 +1,4 @@
-import { Anchor, Button, Group, Stack } from '@mantine/core';
+import { Anchor, Button, Group, Stack, Text } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
 import { useContinueSignIn, useStartSignIn } from '@nikkierp/shell/authenticate';
 import { AdhocFormProvider, AutoField, FormStyleProvider } from '@nikkierp/ui/components/form';
@@ -19,7 +19,7 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 	const formRef = useRef<HTMLFormElement>(null);
 	const dispatch = useDispatch<AppDispatch>();
 	const { data: startSignInData } = useStartSignIn();
-	const { isError, isLoading, action: continueSignIn } = useContinueSignIn();
+	const { isError, isLoading, thunkAction: continueSignIn } = useContinueSignIn();
 
 	const handleSubmit = async (data: { password: string }) => {
 		// This would be passed as a prop in a real implementation
@@ -60,6 +60,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 					leftSection: <IconLock size={20} />,
 				}}
 			/>
+			<Text size='md' c='dimmed'>Test password: <code>Passwo0rd123</code></Text>
 
 			{props.isActive && (
 				<>

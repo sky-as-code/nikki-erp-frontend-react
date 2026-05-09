@@ -1,21 +1,34 @@
+/* eslint-disable max-lines-per-function */
+
 import { SchemaRegisterOptions, schemaRegistry } from '@nikkierp/common/dynamic_model';
 import { RequestMaker } from '@nikkierp/common/request';
 import { ACTIONS, RESOURCES } from '@nikkierp/shell/userContext';
+import { ThunkPackHookReturn } from '@nikkierp/ui/appState';
 import { useSetMenuBarItems } from '@nikkierp/ui/appState/layoutSlice';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { PermissionGuard } from '@nikkierp/ui/components';
-import { initMicroAppStateContext, useMicroAppDispatch } from '@nikkierp/ui/microApp';
+import { initMicroAppStateContext, MicroAppDispatchFn, useMicroAppDispatch, useMicroAppSelector, UseStateSelectorFn } from '@nikkierp/ui/microApp';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, MicroAppRouter,
 } from '@nikkierp/ui/microApp';
+import {
+	AvatarRenderHint, BadgeRenderHint, ResourceListTemplateProps, ViewEngineRouter,
+} from '@nikkierp/ui/viewEngine';
+import { combineReducers } from '@reduxjs/toolkit';
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router';
 
 import { GROUP_SCHEMA_NAME, ORGANIZATION_SCHEMA_NAME, ORG_UNIT_SCHEMA_NAME, USER_SCHEMA_NAME } from './constants';
-import { reducer } from './features/user/userSlice';
+import { reducer as groupReducer, SLICE_NAME as GROUP_SLICE_NAME } from './features/group/groupSlice';
+import { reducer as orgReducer, SLICE_NAME as ORG_SLICE_NAME } from './features/organization/orgSlice';
+import * as userSel from './features/user/userSelectors';
+import {
+	reducer as userReducer, SLICE_NAME as USER_SLICE_NAME,
+} from './features/user/userSlice';
 // import { reducer } from './appState';
-// import { useMenuBarItems, useOrgScopeRef } from './hooks';
+import { useMenuBarItems } from './hooks';
 // import { GroupFormPage } from './pages/group/GroupFormPage';
 // import { GroupListPage } from './pages/group/GroupListPage';
 // import { HierarchyListPage } from './pages/hierarchy/HierarchyListPage';
@@ -29,19 +42,18 @@ import { reducer } from './features/user/userSlice';
 
 function Main(props: MicroAppProps) {
 	// const orgScopeRef = useOrgScopeRef();
-	const { orgSlug } = useActiveOrgModule();
+	// const { orgSlug } = useActiveOrgModule();
 	// const orgContextScope = { scopeType: 'org' as const, scopeRef: orgScopeRef ?? '' };
-	const dispatch = useMicroAppDispatch();
-	// const menuBarItems = useMenuBarItems(orgContextScope);
-	// useSetMenuBarItems(menuBarItems, dispatch);
-
-	// Trick to run once & synchronously
-	React.useMemo(() => {
-		registerModelSchemas();
-	}, []);
+	// const dispatch = useMicroAppDispatch();
 
 	return (
 		<MicroAppProvider {...props}>
+			<MicroAppInner {...props} />
+
+			{/* <ViewEngineRouter
+				microAppProps={props}
+				engineProps={{ pages }}
+			/>
 			<MicroAppRouter
 				domType={props.domType}
 				basePath={props.routing.basePath}
@@ -49,7 +61,7 @@ function Main(props: MicroAppProps) {
 				widgetProps={props.widgetProps}
 			>
 				<AppRoutes>
-					{/* <AppRoute index element={<Navigate to='overview' replace />} />
+					<AppRoute index element={<Navigate to='overview' replace />} />
 					<AppRoute path='overview' element={<OverviewPage />} />
 					<AppRoute path='users' element={<UserListPage />} />
 					<AppRoute path='users/:id' element={<UserFormPage />} />
@@ -61,18 +73,20 @@ function Main(props: MicroAppProps) {
 					<AppRoute path='organizations/create' element={<OrganizationFormPage variant='create' />} />
 					<AppRoute path='hierarchy-levels' element={<HierarchyListPage />} />
 					<AppRoute path='hierarchy-levels/create' element={<OrgUnitFormPage variant='create' />} />
-					<AppRoute path='hierarchy-levels/:hierarchyId' element={<OrgUnitFormPage variant='update' />} /> */}
+					<AppRoute path='hierarchy-levels/:hierarchyId' element={<OrgUnitFormPage variant='update' />} />
 				</AppRoutes>
-				{/* <WidgetRoutes>
+				<WidgetRoutes>
 						<WidgetRoute name='org-home' Component={OrgHomePage} />
 						<WidgetRoute name='module-management' Component={ModuleManagementPage} />
-					</WidgetRoutes> */}
+					</WidgetRoutes>
 			</MicroAppRouter>
+			*/}
 		</MicroAppProvider>
 	);
 }
 
 const bundle: MicroAppBundle = {
+
 	init({ htmlTag, registerReducer }) {
 		const domType = MicroAppDomType.SHARED;
 		defineWebComponent(Main, {
@@ -80,8 +94,16 @@ const bundle: MicroAppBundle = {
 			domType,
 		});
 
+		// Combine user reducer with other reducers
+		const reducer = combineReducers({
+			[USER_SLICE_NAME]: userReducer,
+			[GROUP_SLICE_NAME]: groupReducer,
+			[ORG_SLICE_NAME]: orgReducer,
+		});
+
 		const result = registerReducer(reducer);
 		initMicroAppStateContext(result);
+		registerModelSchemas();
 
 		return {
 			domType,
@@ -90,6 +112,22 @@ const bundle: MicroAppBundle = {
 };
 
 export default bundle;
+
+function MicroAppInner(props: MicroAppProps): React.ReactNode {
+	const dispatch = useMicroAppDispatch();
+	const menuBarItems = useMenuBarItems();
+
+	useSetMenuBarItems(menuBarItems, dispatch);
+
+	const pages = React.useMemo(() => registerPages(dispatch, useMicroAppSelector), []);
+
+	return (
+		<ViewEngineRouter
+			microAppProps={props}
+			engineProps={{ pages }}
+		/>
+	);
+}
 
 function registerModelSchemas(): void {
 	const baseOpts: Pick<SchemaRegisterOptions, 'requestMaker'> = {
@@ -113,4 +151,106 @@ function registerModelSchemas(): void {
 		schemaName: USER_SCHEMA_NAME,
 		resourcePath: 'v1/identity/users',
 	}]);
+}
+
+function registerPages(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseStateSelectorFn<any>): any[] {
+	return [{
+		routePath: 'users/:id', // param "id" is required by this template
+		template: 'nikkierp.mantine.pages.templates.resourceDetails.v1',
+		templateProps: {
+			schemaName: USER_SCHEMA_NAME,
+			reduxAction: (pathParams: {id: string}) => {},
+			titleLvl1: {
+				type: 'SchemaField',
+				value: 'display_name',
+			},
+			titleLvl2: {
+				type: 'SchemaField',
+				value: 'email',
+			},
+			titleLvl3: {
+				type: 'Link',
+				value: 'nikkierp.identity.user.resourceName', // For type 'Link', value is the label
+				linkHref: '../users',
+			},
+			relatedResources: [],
+		},
+		sections: [{
+			template: 'nikkierp.mantine.pages.templates.resourceDetails.v1.sections.resourceDetails.v1',
+			templateProps: {
+				allStatuses: [
+					{ value: 'invited', label: 'nikkierp.identity.user.status.invited' },
+					{ value: 'active', label: 'nikkierp.identity.user.status.active' },
+					{ value: 'locked', label: 'nikkierp.identity.user.status.locked' },
+					{ value: 'terminated', label: 'nikkierp.identity.user.status.terminated' },
+				],
+				currentStatus: {
+					type: 'SchemaField',
+					value: 'status',
+				},
+				actions: {
+					create: {
+						label: 'nikkierp.identity.user.actions.create',
+						reduxAction: () => {},
+					},
+					delete: {
+						label: 'nikkierp.identity.user.actions.delete',
+						reduxAction: () => {},
+					},
+					save: {
+						label: 'nikkierp.identity.user.actions.save',
+						reduxAction: () => {},
+					},
+				},
+			},
+			sections: [{
+				// type: 'BuiltInFields',
+				title: 'nikkierp.common.generalInformation',
+				content: {
+					type: 'SchemaFieldGroup',
+					fields: [
+						'display_name', 'email', 'status', 'created_at', 'updated_at', 'etag',
+					],
+				},
+			}, {
+				title: 'nikkierp.common.security',
+			}, {
+				template: 'nikkierp.mantine.pages.templates.resourceDetails.v1.sections.customFields.v1',
+				title: 'nikkierp.common.customFields',
+			}],
+		}, {}],
+	}, {
+		routePath: 'users',
+		template: 'nikkierp.mantine.pages.templates.resourceList.v1',
+		templateProps: new ResourceListTemplateProps({
+			schemaName: USER_SCHEMA_NAME,
+			resourceName: 'nikkierp.identity.user.resourceName',
+			resourceNamePlural: 'nikkierp.identity.user.resourceNamePlural',
+			dispatch,
+			searchAction: {
+				useThunkHook: () => userSel.useSearchUsers(useMicroAppSelector),
+			},
+			actions: [
+				{ label: 'Create', useThunkHook: () => userSel.useCreateUser(useMicroAppSelector) },
+				{ label: 'Refresh', useThunkHook: () => userSel.useSearchUsers(useMicroAppSelector) },
+				{ label: 'Delete', useThunkHook: () => userSel.useDeleteUser(useMicroAppSelector) },
+				{ label: 'Delete', useThunkHook: () => userSel.useDeleteUser(useMicroAppSelector) },
+				{ isSeparator: true },
+				{ label: 'Archive', useThunkHook: () => userSel.useSetUserIsArchived(useMicroAppSelector) },
+			],
+			linkField: 'email',
+			linkRoutePath: 'users/:id',
+			fieldRenderHint: {
+				avatar_url: new AvatarRenderHint(),
+				status: new BadgeRenderHint({
+					colorMap: {
+						invited: 'indigo',
+						active: 'green',
+						locked: 'orange',
+						terminated: 'gray',
+					},
+				}),
+			},
+		}),
+	}];
 }

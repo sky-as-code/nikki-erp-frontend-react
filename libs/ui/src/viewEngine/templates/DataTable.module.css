@@ -1,0 +1,9 @@
+
+th.selectedCell,
+td.selectedCell {
+	background-color: var(--nikki-color-table-selected);
+}
+
+.rowNumberCell {
+	background-color: var(--mantine-color-gray-2);
+}
