@@ -76,6 +76,17 @@ export class RestApi {
 	}
 
 	public search(request: RestSearchRequest, primaryResourceId?: string): Promise<RestSearchResponse<any>> {
+		if (request.size === 0) {
+			return Promise.resolve<RestSearchResponse<any>>({
+				items: [],
+				total: 0,
+				page: 0,
+				size: 0,
+				desired_fields: [],
+				masked_fields: [],
+				schema_etag: '',
+			});
+		}
 		const restPath = this._getBasePath(primaryResourceId);
 		const dedupKey = [
 			'GET',
@@ -174,10 +185,49 @@ export type RestSetIsArchivedRequest = {
 	is_archived: boolean,
 };
 
+/**
+ * `condition`, `and`, `or` are mutually exclusive.
+ */
+export type SearchGraph = {
+	condition: [string, SearchOperator, string], // i.e: ['field1', '=', 'value1']
+	and: SearchNode,
+	or: SearchNode,
+	order: Array<[string, SearchOrder]>, // i.e: [['field1', 'asc'], ['field2', 'desc']]
+};
+
+/**
+ * `condition`, `and`, `or` are mutually exclusive.
+ */
+export type SearchNode = {
+	condition: [string, SearchOperator, string], // i.e: ['field1', '=', 'value1']
+	and: SearchNode,
+	or: SearchNode,
+};
+
+export type SearchOperator =
+	'='      // Equals
+	| '!='   // NotEquals
+	| '>'    // GreaterThan
+	| '>='   // GreaterEqual
+	| '<'    // LessThan
+	| '<='   // LessEqual
+	| '*'    // Contains
+	| '!*'   // NotContains
+	| '^'    // StartsWith
+	| '!^'   // NotStartsWith
+	| '$'    // EndsWith
+	| '!$'   // NotEndsWith
+	| 'in'   // In
+	| 'not_in' // NotIn
+	| 'is_set' // IsSet
+	| 'not_set'; // IsNotSet
+
+export type SearchOrder = 'asc' | 'desc';
+
 export type RestSearchRequest = RequestWithFields & {
 	page?: number,
 	size?: number,
-	graph?: Record<string, any>,
+	graph?: SearchGraph,
 	language?: string,
 	search_name?: string,
 };

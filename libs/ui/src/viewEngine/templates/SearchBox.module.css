@@ -1,6 +1,6 @@
-.searchBox {
-	min-width: 320px;
-	max-width: min(900px, 62vw);
+.searchBoxInner {
+	border-color: var(--mantine-color-gray-3);
+	background-color: var(--mantine-color-body);
 }
 
 .pillText {

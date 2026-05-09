@@ -1,35 +1,62 @@
 import {
-	ActionIcon,
-	Box,
-	Button,
-	Checkbox,
-	Divider,
-	Group,
-	Modal,
-	Paper,
-	Pill,
-	Select,
-	Stack,
-	TagsInput,
-	Text,
-	UnstyledButton,
+	ActionIcon, Box, Button, Checkbox, Divider, Group, Modal, Paper, Pill, Select,
+	Stack, TagsInput, Text, UnstyledButton,
 } from '@mantine/core';
 import {
-	IconChevronDown,
-	IconChevronUp,
-	IconFilter,
-	IconSearch,
+	IconChevronDown, IconChevronUp, IconFilter, IconSearch,
 } from '@tabler/icons-react';
+import clsx from 'clsx';
 import React from 'react';
 
 import classes from './SearchBox.module.css';
 
 
-type SearchBoxProps = {
+export type SearchBoxProps = {
 	fields: string[],
 };
 
-const searchBoxWidthStep = 80;
+export function SearchBox({ fields }: SearchBoxProps): React.ReactNode {
+	const [expanded, setExpanded] = React.useState(false);
+	const [searchValue, setSearchValue] = React.useState('');
+	const [customFilterOpen, setCustomFilterOpen] = React.useState(false);
+	const [filters, setFilters] = React.useState(defaultFilters);
+	const options = React.useMemo(() => buildFieldOptions(fields), [fields]);
+	const openCustomFilters = () => {
+		setExpanded(false);
+		setCustomFilterOpen(true);
+	};
+
+	return (
+		<Box className='relative grow basis-0 text-right'>
+			<Box className={clsx('inline-block rounded-md border px-2 py-1 shadow-sm', classes.searchBoxInner)}>
+				<FilterTagsInput
+					filters={filters}
+					setFilters={setFilters}
+					searchValue={searchValue}
+					setSearchValue={setSearchValue}
+					rightSection={<ActionIcon
+						variant='light'
+						size='sm'
+						onClick={() => setExpanded(prev => !prev)}
+						aria-label={expanded ? 'Collapse search options' : 'Expand search options'}
+					>
+						{expanded ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
+					</ActionIcon>}
+				/>
+			</Box>
+
+			{expanded ? (
+				<ExpandedPanel
+					options={options}
+					onDiscard={() => setExpanded(false)}
+					onOpenCustomFilter={openCustomFilters}
+				/>
+			) : null}
+			<CustomFilterDialog opened={customFilterOpen} onClose={() => setCustomFilterOpen(false)} />
+		</Box>
+	);
+}
+
 const defaultFilters = ['Goods or Combo or Services', 'Name does not contain rein'];
 
 function buildFieldOptions(fields: string[]) {
@@ -44,7 +71,7 @@ type ExpandedPanelProps = {
 
 function ExpandedPanel({ options, onDiscard, onOpenCustomFilter }: ExpandedPanelProps): React.ReactNode {
 	return (
-		<Paper p='md' withBorder shadow='xs' className='absolute left-0 right-0 top-[calc(100%+4px)] z-[150]'>
+		<Paper p='md' withBorder shadow='xs' className='absolute right-0 top-[calc(100%+4px)] z-[150] w-[500px] text-left'>
 			<Group align='flex-start' grow>
 				<Stack gap='xs'>
 					<Text fw={600}>Quick filters</Text>
@@ -59,13 +86,22 @@ function ExpandedPanel({ options, onDiscard, onOpenCustomFilter }: ExpandedPanel
 
 				<Stack gap='xs'>
 					<Text fw={600}>Sort by</Text>
-					<Select data={options} defaultValue='' />
-					<Select data={options} defaultValue='' />
+					<Select
+						data={options} defaultValue=''
+						comboboxProps={{ width: 250, position: 'bottom-start' }}
+					/>
+					<Select
+						data={options} defaultValue=''
+						comboboxProps={{ width: 250, position: 'bottom-start' }}
+					/>
 				</Stack>
 
 				<Stack gap='xs'>
 					<Text fw={600}>Group by</Text>
-					<Select data={options} defaultValue='' />
+					<Select
+						data={options} defaultValue=''
+						comboboxProps={{ width: 250, position: 'bottom-start' }}
+					/>
 					<Text fw={600} mt='sm'>Favorites</Text>
 					<Group gap={4}>
 						<Text size='sm'>Save current search</Text>
@@ -103,17 +139,19 @@ function CustomFilterDialog({
 	);
 }
 
-function FilterTagsInput({
-	filters,
-	setFilters,
-	searchValue,
-	setSearchValue,
-}: {
+type FilterTagsInputProps = {
 	filters: string[],
 	setFilters: (items: string[]) => void,
 	searchValue: string,
 	setSearchValue: (value: string) => void,
-}): React.ReactNode {
+	rightSection?: React.ReactNode,
+};
+
+function FilterTagsInput({
+	filters, setFilters,
+	searchValue, setSearchValue,
+	rightSection,
+}: FilterTagsInputProps): React.ReactNode {
 	const nextVersionProps = {
 		renderPill: ({ value, onRemove }: { value: string, onRemove?: () => void }) => (
 			<Pill withRemoveButton onRemove={onRemove} style={{ minWidth: 150, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -132,72 +170,9 @@ function FilterTagsInput({
 			onSearchChange={setSearchValue}
 			placeholder='Search...'
 			leftSection={<IconSearch size={14} />}
+			rightSection={rightSection}
 			variant='unstyled'
-			className='grow'
 			{...nextVersionProps}
 		/>
-	);
-}
-
-export function SearchBox({ fields }: SearchBoxProps): React.ReactNode {
-	const wrapperRef = React.useRef<HTMLDivElement | null>(null);
-	const barRef = React.useRef<HTMLDivElement | null>(null);
-	const [expanded, setExpanded] = React.useState(false);
-	const [searchValue, setSearchValue] = React.useState('');
-	const [customFilterOpen, setCustomFilterOpen] = React.useState(false);
-	const [filters, setFilters] = React.useState(defaultFilters);
-	const [wrapperWidth, setWrapperWidth] = React.useState(360);
-	const options = React.useMemo(() => buildFieldOptions(fields), [fields]);
-	const openCustomFilters = () => {
-		setExpanded(false);
-		setCustomFilterOpen(true);
-	};
-
-	React.useLayoutEffect(() => {
-		const bar = barRef.current;
-		const wrapper = wrapperRef.current;
-		if (!bar || !wrapper || typeof window === 'undefined') {
-			return;
-		}
-		const maxAllowedWidth = Math.min(900, Math.floor(window.innerWidth * 0.62));
-		const isWrapped = bar.getBoundingClientRect().height > 44;
-		if (isWrapped && wrapperWidth < maxAllowedWidth) {
-			setWrapperWidth(prev => Math.min(maxAllowedWidth, prev + searchBoxWidthStep));
-		}
-	}, [filters, searchValue, wrapperWidth]);
-
-	return (
-		<Box ref={wrapperRef} className={`relative ${classes.searchBox}`} w={wrapperWidth}>
-			<Group
-				ref={barRef}
-				gap='xs'
-				wrap='nowrap'
-				className='rounded-md border border-gray-300 bg-white px-2 py-1 shadow-sm'
-			>
-				<FilterTagsInput
-					filters={filters}
-					setFilters={setFilters}
-					searchValue={searchValue}
-					setSearchValue={setSearchValue}
-				/>
-				<ActionIcon
-					variant='light'
-					size='sm'
-					onClick={() => setExpanded(prev => !prev)}
-					aria-label={expanded ? 'Collapse search options' : 'Expand search options'}
-				>
-					{expanded ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
-				</ActionIcon>
-			</Group>
-
-			{expanded ? (
-				<ExpandedPanel
-					options={options}
-					onDiscard={() => setExpanded(false)}
-					onOpenCustomFilter={openCustomFilters}
-				/>
-			) : null}
-			<CustomFilterDialog opened={customFilterOpen} onClose={() => setCustomFilterOpen(false)} />
-		</Box>
 	);
 }
