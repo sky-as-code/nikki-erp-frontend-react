@@ -129,6 +129,7 @@ export function ResourceList({ props }: ResourceListProps): React.ReactNode {
 
 	const linkField = params.linkField ?? params.fieldAsLink;
 	const linkRoutePath = params.linkRoutePath;
+	const orderBy = getSearchRequestOrderBy(searchRequest);
 	return (
 		<Paper className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 flex' bg={bgColor}>
 			<DataTable
@@ -143,6 +144,8 @@ export function ResourceList({ props }: ResourceListProps): React.ReactNode {
 				allowColumnResizing
 				actions={actions}
 				hasFixHeader
+				sortableFields={searchData.desired_fields}
+				orderBy={orderBy}
 			/>
 		</Paper>
 	);
@@ -204,6 +207,20 @@ function isSameSearchRequest(prev: dyn.RestSearchRequest, next: dyn.RestSearchRe
 		&& prev.language === next.language
 		&& prev.graph === next.graph
 		&& shallowEqualStringArray(prev.fields, next.fields);
+}
+
+function getSearchRequestOrderBy(request: dyn.RestSearchRequest): dyn.OrderBy {
+	const rawOrder = (request.graph as Partial<dyn.SearchGraph> | undefined)?.order;
+	if (!Array.isArray(rawOrder)) {
+		return [];
+	}
+	return rawOrder.filter(
+		(item): item is [string, dyn.SearchOrder] =>
+			Array.isArray(item)
+			&& item.length === 2
+			&& typeof item[0] === 'string'
+			&& (item[1] === 'asc' || item[1] === 'desc'),
+	);
 }
 
 function useSchemaPack(schemaName: string) {

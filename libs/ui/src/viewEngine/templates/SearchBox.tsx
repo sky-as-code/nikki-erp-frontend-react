@@ -1,9 +1,10 @@
 import {
-	ActionIcon, Box, Button, Checkbox, Divider, Group, Modal, Paper, Pill, Select,
+	ActionIcon, Box, Button, ButtonGroup, Checkbox, Divider, Group, Modal, Paper, Pill, Select,
 	Stack, TagsInput, Text, UnstyledButton,
 } from '@mantine/core';
+import * as dyn from '@nikkierp/common/dynamic_model';
 import {
-	IconChevronDown, IconChevronUp, IconFilter, IconSearch,
+	IconChevronDown, IconChevronUp, IconFilter, IconSearch, IconSortAscending, IconSortDescending,
 } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
@@ -13,14 +14,21 @@ import classes from './SearchBox.module.css';
 
 export type SearchBoxProps = {
 	fields: string[],
+	sortableFields: string[],
+	orderBy?: dyn.OrderBy,
+	onApplyOrderBy?: (orderBy: dyn.OrderBy) => void,
 };
 
-export function SearchBox({ fields }: SearchBoxProps): React.ReactNode {
+export function SearchBox({ fields, sortableFields, orderBy, onApplyOrderBy }: SearchBoxProps): React.ReactNode {
 	const [expanded, setExpanded] = React.useState(false);
 	const [searchValue, setSearchValue] = React.useState('');
 	const [customFilterOpen, setCustomFilterOpen] = React.useState(false);
 	const [filters, setFilters] = React.useState(defaultFilters);
-	const options = React.useMemo(() => buildFieldOptions(fields), [fields]);
+	const options = React.useMemo(() => {
+		const sourceFields = sortableFields.length > 0 ? sortableFields : fields;
+		return buildFieldOptions(sourceFields);
+	}, [fields, sortableFields]);
+	const sortByState = useSortByState(orderBy, onApplyOrderBy, () => setExpanded(false));
 	const openCustomFilters = () => {
 		setExpanded(false);
 		setCustomFilterOpen(true);
@@ -47,7 +55,16 @@ export function SearchBox({ fields }: SearchBoxProps): React.ReactNode {
 
 			{expanded ? (
 				<ExpandedPanel
-					options={options}
+					fieldOptions={options}
+					firstSortField={sortByState.firstSortField}
+					firstSortDirection={sortByState.firstSortDirection}
+					onFirstSortFieldChange={sortByState.onFirstSortFieldChange}
+					onFirstSortDirectionChange={sortByState.onFirstSortDirectionChange}
+					secondSortField={sortByState.secondSortField}
+					secondSortDirection={sortByState.secondSortDirection}
+					onSecondSortFieldChange={sortByState.onSecondSortFieldChange}
+					onSecondSortDirectionChange={sortByState.onSecondSortDirectionChange}
+					onApply={sortByState.onApply}
 					onDiscard={() => setExpanded(false)}
 					onOpenCustomFilter={openCustomFilters}
 				/>
@@ -59,62 +76,249 @@ export function SearchBox({ fields }: SearchBoxProps): React.ReactNode {
 
 const defaultFilters = ['Goods or Combo or Services', 'Name does not contain rein'];
 
+const sortSelectComboboxProps = { width: 250, position: 'bottom-start' as const };
+const sortSelectStyles = {
+	input: { height: '2rem', minHeight: '2rem', width: '200px' },
+};
+
 function buildFieldOptions(fields: string[]) {
 	return [{ value: '', label: '- Select a field -' }, ...fields.map(field => ({ value: field, label: field }))];
 }
 
+function buildOrderByFromFields(
+	firstField: string,
+	firstDir: dyn.SearchOrder | '',
+	secondField: string,
+	secondDir: dyn.SearchOrder | '',
+): dyn.OrderBy {
+	const seen = new Set<string>();
+	const order: dyn.OrderBy = [];
+	const push = (field: string, dir: dyn.SearchOrder | '') => {
+		if (!field || seen.has(field)) return;
+		seen.add(field);
+		order.push([field, dir || 'asc']);
+	};
+	push(firstField, firstDir);
+	push(secondField, secondDir);
+	return order;
+}
+
+function useSortByState(
+	orderBy: dyn.OrderBy | undefined,
+	onApplyOrderBy: ((orderBy: dyn.OrderBy) => void) | undefined,
+	onApplied: () => void,
+) {
+	const [firstSortField, setFirstSortField] = React.useState('');
+	const [firstSortDirection, setFirstSortDirection] = React.useState<dyn.SearchOrder | ''>('');
+	const [secondSortField, setSecondSortField] = React.useState('');
+	const [secondSortDirection, setSecondSortDirection] = React.useState<dyn.SearchOrder | ''>('');
+	React.useEffect(() => {
+		const primary = orderBy?.[0];
+		const secondary = orderBy?.[1];
+		if (!primary) {
+			setFirstSortField('');
+			setFirstSortDirection('');
+			setSecondSortField('');
+			setSecondSortDirection('');
+			return;
+		}
+		setFirstSortField(primary[0]);
+		setFirstSortDirection(primary[1]);
+		if (!secondary) {
+			setSecondSortField('');
+			setSecondSortDirection('');
+			return;
+		}
+		setSecondSortField(secondary[0]);
+		setSecondSortDirection(secondary[1]);
+	}, [orderBy]);
+	const onFirstSortFieldChange = (fieldName: string | null) => {
+		const next = fieldName ?? '';
+		setFirstSortField(next);
+		if (!next) {
+			setFirstSortDirection('');
+			setSecondSortField('');
+			setSecondSortDirection('');
+			return;
+		}
+		setFirstSortDirection(d => d || 'asc');
+	};
+	const onSecondSortFieldChange = (fieldName: string | null) => {
+		const next = fieldName ?? '';
+		setSecondSortField(next);
+		if (!next) {
+			setSecondSortDirection('');
+			return;
+		}
+		setSecondSortDirection(d => d || 'asc');
+	};
+	const onApply = () => {
+		const nextOrderBy = buildOrderByFromFields(
+			firstSortField, firstSortDirection, secondSortField, secondSortDirection,
+		);
+		onApplyOrderBy?.(nextOrderBy);
+		onApplied();
+	};
+	return {
+		firstSortField,
+		firstSortDirection,
+		secondSortField,
+		secondSortDirection,
+		onFirstSortFieldChange,
+		onFirstSortDirectionChange: setFirstSortDirection,
+		onSecondSortFieldChange,
+		onSecondSortDirectionChange: setSecondSortDirection,
+		onApply,
+	};
+}
+
+type FieldOption = { value: string, label: string };
+
 type ExpandedPanelProps = {
-	options: { value: string, label: string }[],
+	fieldOptions: FieldOption[],
+	firstSortField: string,
+	firstSortDirection: dyn.SearchOrder | '',
+	onFirstSortFieldChange: (fieldName: string | null) => void,
+	onFirstSortDirectionChange: (direction: dyn.SearchOrder | '') => void,
+	secondSortField: string,
+	secondSortDirection: dyn.SearchOrder | '',
+	onSecondSortFieldChange: (fieldName: string | null) => void,
+	onSecondSortDirectionChange: (direction: dyn.SearchOrder | '') => void,
+	onApply: () => void,
 	onDiscard: () => void,
 	onOpenCustomFilter: () => void,
 };
 
-function ExpandedPanel({ options, onDiscard, onOpenCustomFilter }: ExpandedPanelProps): React.ReactNode {
+function ExpandedPanel({
+	fieldOptions,
+	firstSortField,
+	firstSortDirection,
+	onFirstSortFieldChange,
+	onFirstSortDirectionChange,
+	secondSortField,
+	secondSortDirection,
+	onSecondSortFieldChange,
+	onSecondSortDirectionChange,
+	onApply,
+	onDiscard,
+	onOpenCustomFilter,
+}: ExpandedPanelProps): React.ReactNode {
 	return (
-		<Paper p='md' withBorder shadow='xs' className='absolute right-0 top-[calc(100%+4px)] z-[150] w-[500px] text-left'>
-			<Group align='flex-start' grow>
-				<Stack gap='xs'>
-					<Text fw={600}>Quick filters</Text>
-					<Button variant='subtle' justify='flex-start'>Filter 1</Button>
-					<Button variant='subtle' justify='flex-start'>Filter 2</Button>
-					<Checkbox label='Include archive' />
-					<Divider />
-					<UnstyledButton onClick={onOpenCustomFilter}>
-						<Text c='blue.7'>Custom filters</Text>
-					</UnstyledButton>
-				</Stack>
-
-				<Stack gap='xs'>
+		<Paper p='md' withBorder shadow='xs'
+			className='absolute right-0 top-[calc(100%+4px)] z-[300] text-left'
+		>
+			<Group align='flex-start'>
+				<QuickFiltersColumn onOpenCustomFilter={onOpenCustomFilter} />
+				<Stack gap='xs' w={290}>
 					<Text fw={600}>Sort by</Text>
-					<Select
-						data={options} defaultValue=''
-						comboboxProps={{ width: 250, position: 'bottom-start' }}
+					<SortFieldDirectionRow
+						fieldOptions={fieldOptions}
+						selectedField={firstSortField}
+						selectedDirection={firstSortDirection}
+						onFieldChange={onFirstSortFieldChange}
+						onDirectionChange={onFirstSortDirectionChange}
 					/>
-					<Select
-						data={options} defaultValue=''
-						comboboxProps={{ width: 250, position: 'bottom-start' }}
+					<SortFieldDirectionRow
+						fieldOptions={fieldOptions}
+						selectedField={secondSortField}
+						selectedDirection={secondSortDirection}
+						onFieldChange={onSecondSortFieldChange}
+						onDirectionChange={onSecondSortDirectionChange}
 					/>
-				</Stack>
-
-				<Stack gap='xs'>
-					<Text fw={600}>Group by</Text>
-					<Select
-						data={options} defaultValue=''
-						comboboxProps={{ width: 250, position: 'bottom-start' }}
-					/>
-					<Text fw={600} mt='sm'>Favorites</Text>
-					<Group gap={4}>
-						<Text size='sm'>Save current search</Text>
-						<IconChevronDown size={14} />
-					</Group>
 				</Stack>
 			</Group>
 
 			<Group justify='flex-end' mt='md'>
 				<Button variant='default' onClick={onDiscard}>Discard</Button>
-				<Button onClick={() => {}}>Apply</Button>
+				<Button onClick={onApply}>Apply</Button>
 			</Group>
 		</Paper>
+	);
+}
+
+function QuickFiltersColumn({ onOpenCustomFilter }: { onOpenCustomFilter: () => void }): React.ReactNode {
+	return (
+		<Stack gap='xs' w={160}>
+			<Text fw={600}>Quick filters</Text>
+			<Button variant='subtle' justify='flex-start'>Filter 1</Button>
+			<Button variant='subtle' justify='flex-start'>Filter 2</Button>
+			<Checkbox label='Include archive' />
+			<Divider />
+			<UnstyledButton onClick={onOpenCustomFilter}>
+				<Text c='blue.7'>Custom filters</Text>
+			</UnstyledButton>
+		</Stack>
+	);
+}
+
+type SortFieldDirectionRowProps = {
+	fieldOptions: FieldOption[],
+	selectedField: string,
+	selectedDirection: dyn.SearchOrder | '',
+	onFieldChange: (fieldName: string | null) => void,
+	onDirectionChange: (direction: dyn.SearchOrder | '') => void,
+};
+
+function SortFieldDirectionRow({
+	fieldOptions,
+	selectedField,
+	selectedDirection,
+	onFieldChange,
+	onDirectionChange,
+}: SortFieldDirectionRowProps): React.ReactNode {
+	const dirDisabled = !selectedField;
+	const effectiveDir = selectedDirection || 'asc';
+	return (
+		<Group gap={1} justify='space-between'>
+			<Select
+				data={fieldOptions}
+				value={selectedField}
+				onChange={onFieldChange}
+				comboboxProps={sortSelectComboboxProps}
+				size='md'
+				styles={sortSelectStyles}
+			/>
+			<SortDirectionButtonGroup
+				disabled={dirDisabled}
+				activeDirection={effectiveDir}
+				onDirectionChange={onDirectionChange}
+			/>
+		</Group>
+	);
+}
+
+type SortDirectionButtonGroupProps = {
+	disabled: boolean,
+	activeDirection: dyn.SearchOrder,
+	onDirectionChange: (direction: dyn.SearchOrder) => void,
+};
+
+function SortDirectionButtonGroup({
+	disabled,
+	activeDirection,
+	onDirectionChange,
+}: SortDirectionButtonGroupProps): React.ReactNode {
+	return (
+		<ButtonGroup>
+			<Button
+				variant={activeDirection === 'asc' ? 'primary' : 'outline'}
+				size='compact-md'
+				disabled={disabled}
+				onClick={() => onDirectionChange('asc')}
+				aria-label='Sort ascending'
+			>
+				<IconSortAscending size={16} />
+			</Button>
+			<Button
+				variant={activeDirection === 'desc' ? 'primary' : 'outline'}
+				size='compact-md'
+				disabled={disabled}
+				onClick={() => onDirectionChange('desc')}
+				aria-label='Sort descending'
+			>
+				<IconSortDescending size={16} />
+			</Button>
+		</ButtonGroup>
 	);
 }
 
