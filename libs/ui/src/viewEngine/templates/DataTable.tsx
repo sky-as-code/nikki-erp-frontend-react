@@ -5,6 +5,7 @@ import {
 import * as dyn from '@nikkierp/common/dynamic_model';
 import {
 	IconChevronLeft, IconChevronRight, IconDots, IconHash, IconSettings, IconX,
+	IconSortAscending, IconSortDescending,
 } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
@@ -75,13 +76,16 @@ export type DataTableProps = {
 	allowRowMovement?: boolean,
 	onRowMoved?: (payload: RowMovePayload) => void,
 	showControls?: boolean,
+	enableSearchBox?: boolean,
 	hasFixHeader?: boolean,
 	renderTableName?: RenderTableNameFn,
 	modelSchema?: dyn.ModelSchema,
+	orderBy?: dyn.OrderBy,
 	/** Row keys to select on mount (fields-settings nested table). */
 	initialSelectedFieldNames?: string[],
 	fieldsSettingsValueKey?: string,
-	fieldsSettingsSelectionGetterRef?: React.MutableRefObject<(() => string[]) | null>,
+	fieldsSettingsSelectionGetterRef?: React.RefObject<(() => string[]) | null>,
+	sortableFields?: string[],
 };
 
 type RequiredDataTableProps = Omit<
@@ -95,6 +99,7 @@ type RequiredDataTableProps = Omit<
 	selectionColumn: SelectionColumn,
 	allowRowMovement: boolean,
 	showControls: boolean,
+	enableSearchBox: boolean,
 	hasFixHeader: boolean,
 };
 
@@ -311,6 +316,7 @@ function withDataTableDefaults(props: DataTableProps): RequiredDataTableProps {
 		selectionColumn: props.selectionColumn ?? 'number',
 		allowRowMovement: props.allowRowMovement ?? false,
 		showControls: props.showControls ?? true,
+		enableSearchBox: props.enableSearchBox ?? true,
 		hasFixHeader: props.hasFixHeader ?? false,
 	};
 }
@@ -337,6 +343,20 @@ type DataTableControlsProps = {
 
 function DataTableControls(props: DataTableControlsProps): React.ReactNode {
 	const context = useDataTableContext();
+	const onApplyOrderBy = React.useCallback((orderBy: dyn.OrderBy) => {
+		context.setSearchRequest(prev => ({
+			...prev,
+			page: 0,
+			graph: updateSearchGraphOrder(prev.graph, orderBy),
+		}));
+	}, [context]);
+	const activeOrderBy = React.useMemo(() => {
+		const orderFromRequest = getGraphOrder(context.searchRequest.graph);
+		if (orderFromRequest.length > 0) {
+			return orderFromRequest;
+		}
+		return context.settings.orderBy ?? [];
+	}, [context.searchRequest.graph, context.settings.orderBy]);
 	return (
 		<Group justify='space-between' className='px-4'>
 			<Toolbar
@@ -347,7 +367,14 @@ function DataTableControls(props: DataTableControlsProps): React.ReactNode {
 				onClearSelection={props.onClearSelection}
 				renderTableName={context.settings.renderTableName}
 			/>
-			<SearchBox fields={context.tableSearchData.desired_fields} />
+			{context.settings.enableSearchBox ? (
+				<SearchBox
+					fields={context.tableSearchData.desired_fields}
+					sortableFields={context.settings.sortableFields ?? context.tableSearchData.desired_fields}
+					orderBy={activeOrderBy}
+					onApplyOrderBy={onApplyOrderBy}
+				/>
+			) : null}
 			<Pagination />
 		</Group>
 	);
@@ -932,6 +959,7 @@ function ResizeHandle(props: ResizeHandleProps): React.ReactNode {
 type ColumnHeaderProps = {
 	field: string,
 	width: number,
+	sortDirection?: dyn.SearchOrder,
 	allowColumnResizing: boolean,
 	onStartResize: ResizeHandleProps['onStartResize'],
 	onAutoResize: ResizeHandleProps['onAutoResize'],
@@ -940,9 +968,13 @@ type ColumnHeaderProps = {
 function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
 	return (
 		<Table.Th style={getColumnStyle(props.width)} className={classes.resizeableHeader}>
-			<div className='overflow-hidden text-ellipsis whitespace-nowrap' title={props.field}>
-				{props.field}
-			</div>
+			<Group justify='space-between' gap={1} className='overflow-hidden text-ellipsis whitespace-nowrap'>
+				{/* <div className='overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1' title={props.field}> */}
+				<span className='overflow-hidden text-ellipsis whitespace-nowrap'>{props.field}</span>
+				{props.sortDirection === 'asc' ? <IconSortAscending size={16} /> : null}
+				{props.sortDirection === 'desc' ? <IconSortDescending size={16} /> : null}
+				{/* </div> */}
+			</Group>
 			{props.allowColumnResizing ? (
 				<ResizeHandle
 					field={props.field}
@@ -960,6 +992,13 @@ function DataTableHead(): React.ReactNode {
 	const widths = context.cw.widths;
 	const selectedCount = context.rs.indexes.length;
 	const rowCount = context.tableSearchData.items.length;
+	const orderBy = getGraphOrder(context.searchRequest.graph).length > 0
+		? getGraphOrder(context.searchRequest.graph)
+		: (context.settings.orderBy ?? []);
+	const sortOrderMap = React.useMemo(
+		() => new Map(orderBy.map(([field, direction]) => [field, direction])),
+		[orderBy],
+	);
 	return (
 		<Table.Thead className={clsx({
 			[classes.stickyHeader]: context.settings.hasFixHeader,
@@ -977,6 +1016,7 @@ function DataTableHead(): React.ReactNode {
 						key={field}
 						field={field}
 						width={getColumnWidth(field, widths)}
+						sortDirection={sortOrderMap.get(field)}
 						allowColumnResizing={context.settings.allowColumnResizing}
 						onStartResize={context.handlers.onStartResize}
 						onAutoResize={context.handlers.onAutoResize}
@@ -1041,6 +1081,8 @@ function RowNumberCell(props: RowNumberCellProps): React.ReactNode {
 type DataCellProps = {
 	width: number,
 	value: string,
+	rawValue: unknown,
+	fieldSchema?: dyn.ModelSchemaField,
 	linkHref?: string,
 	hint?: IFieldRenderHint,
 	isSelected: boolean,
@@ -1048,8 +1090,11 @@ type DataCellProps = {
 };
 
 function DataCell(props: DataCellProps): React.ReactNode {
-	const content = props.hint ? props.hint.render(props.value) : props.value;
-	const useEllipsis = shouldUseSingleLineEllipsis(props.value);
+	const content = React.useMemo(
+		() => renderDataCellContent(props.rawValue, props.value, props.fieldSchema, props.hint),
+		[props.fieldSchema, props.hint, props.rawValue, props.value],
+	);
+	const useEllipsis = shouldUseSingleLineEllipsis(props.value) && !isArrayField(props.fieldSchema);
 	const contentClassName = clsx('block', {
 		'overflow-hidden text-ellipsis whitespace-nowrap': useEllipsis,
 		'whitespace-normal break-words': !useEllipsis,
@@ -1083,6 +1128,7 @@ type BodyRowProps = {
 	widths: ColumnWidths,
 	isRowSelected: boolean,
 	hints?: FieldRenderHintMap,
+	modelSchema?: dyn.ModelSchema,
 	linkField?: string,
 	linkRoutePath?: string,
 	selectionColumn: SelectionColumn,
@@ -1102,6 +1148,7 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 		widths,
 		isRowSelected,
 		hints,
+		modelSchema,
 		linkField,
 		linkRoutePath,
 		selectionColumn,
@@ -1140,6 +1187,8 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 					key={field}
 					width={getColumnWidth(field, widths)}
 					value={getCellText(item, field, searchData.masked_fields)}
+					rawValue={item[field]}
+					fieldSchema={modelSchema?.fields[field]}
 					linkHref={linkField === field ? rowLink : undefined}
 					hint={hints?.[field]}
 					isSelected={isRowSelected}
@@ -1171,6 +1220,7 @@ function DataTableBody(): React.ReactNode {
 					isRowSelected={Boolean(selectedRows[rowIndex])}
 					widths={context.cw.widths}
 					hints={context.settings.fieldRenderHint}
+					modelSchema={context.settings.modelSchema}
 					linkField={context.settings.linkField}
 					linkRoutePath={context.settings.linkRoutePath}
 					selectionColumn={context.settings.selectionColumn}
@@ -1236,7 +1286,7 @@ type ViewSettingsModalViewProps = {
 	onFieldSearchChange: (value: string) => void,
 	filteredFields: string[],
 	fieldsPanelNonce: number,
-	fieldsSelectionGetterRef: React.MutableRefObject<(() => string[]) | null>,
+	fieldsSelectionGetterRef: React.RefObject<(() => string[]) | null>,
 	initialSelectedFieldNames: string[],
 	draftPageSize: string,
 	onDraftPageSizeChange: (value: string) => void,
@@ -1247,17 +1297,17 @@ type ViewSettingsModalViewProps = {
 
 function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNode {
 	const modalStyles = {
-		body: { height: 'calc(50vh - 60px)', overflow: 'auto' as const },
-		content: { height: '50vh' },
-		header: { height: '60px' },
+		body: { width: '400px' },
+		// body: { height: 'calc(50vh - 60px)', overflow: 'auto' as const },
+		// content: { height: '50vh' },
+		// header: { height: '60px' },
 		title: { fontWeight: 'bold' as const },
 	};
 	return (
 		<Modal
-			centered
 			onClose={props.onClose}
 			opened={props.opened}
-			size='sm'
+			size='auto'
 			styles={modalStyles}
 			title='View settings'
 		>
@@ -1378,7 +1428,7 @@ function FieldsSettingsTable(props: {
 	fields: string[],
 	fieldsPanelNonce: number,
 	initialSelectedFieldNames: string[],
-	selectionGetterRef: React.MutableRefObject<(() => string[]) | null>,
+	selectionGetterRef: React.RefObject<(() => string[]) | null>,
 }): React.ReactNode {
 	return (
 		<div className='mt-2' key={props.fieldsPanelNonce}>
@@ -1391,10 +1441,110 @@ function FieldsSettingsTable(props: {
 				isFullWidthTable
 				selectionColumn='checkbox'
 				showControls={false}
+				enableSearchBox={false}
 				tableName='Fields'
 			/>
 		</div>
 	);
+}
+
+function isArrayField(fieldSchema?: dyn.ModelSchemaField): boolean {
+	if (!fieldSchema || typeof fieldSchema.data_type === 'string') {
+		return false;
+	}
+	return fieldSchema.data_type.is_array === true;
+}
+
+function getFieldDataTypeName(fieldSchema?: dyn.ModelSchemaField): dyn.ModelSchemaFieldDataTypeName | null {
+	if (!fieldSchema) {
+		return null;
+	}
+	if (typeof fieldSchema.data_type === 'string') {
+		return fieldSchema.data_type;
+	}
+	return fieldSchema.data_type.name;
+}
+
+function renderDataCellContent(
+	rawValue: unknown,
+	textValue: string,
+	fieldSchema: dyn.ModelSchemaField | undefined,
+	hint: IFieldRenderHint | undefined,
+): React.ReactNode {
+	if (hint) {
+		return hint.render(textValue);
+	}
+	const dataTypeName = getFieldDataTypeName(fieldSchema);
+	if (!isArrayField(fieldSchema)) {
+		return renderSingleDataTypeValue(rawValue, textValue, dataTypeName);
+	}
+	const values = Array.isArray(rawValue) ? rawValue : (rawValue == null || rawValue === '' ? [] : [rawValue]);
+	if (values.length === 0) {
+		return '';
+	}
+	return values.map((value, index) => (
+		<React.Fragment key={`${String(value)}-${index}`}>
+			{renderSingleDataTypeValue(value, String(value ?? ''), dataTypeName)}
+			{index < values.length - 1 ? <br /> : null}
+		</React.Fragment>
+	));
+}
+
+function renderSingleDataTypeValue(
+	rawValue: unknown,
+	textValue: string,
+	dataTypeName: dyn.ModelSchemaFieldDataTypeName | null,
+): React.ReactNode {
+	if (dataTypeName === 'boolean') {
+		return <Checkbox readOnly checked={normalizeBooleanValue(rawValue)} />;
+	}
+	if (dataTypeName === 'secret') {
+		return '********';
+	}
+	if (dataTypeName === 'ulid' || dataTypeName === 'uuid' || dataTypeName === 'phone') {
+		return <code>{textValue}</code>;
+	}
+	return textValue;
+}
+
+function normalizeBooleanValue(rawValue: unknown): boolean {
+	if (typeof rawValue === 'boolean') {
+		return rawValue;
+	}
+	if (typeof rawValue === 'number') {
+		return rawValue !== 0;
+	}
+	if (typeof rawValue === 'string') {
+		const normalized = rawValue.trim().toLowerCase();
+		return normalized === 'true' || normalized === '1';
+	}
+	return false;
+}
+
+function getGraphOrder(graph?: dyn.SearchGraph): dyn.OrderBy {
+	const rawOrder = (graph as Partial<dyn.SearchGraph> | undefined)?.order;
+	if (!Array.isArray(rawOrder)) {
+		return [];
+	}
+	return rawOrder.filter(
+		(item): item is [string, dyn.SearchOrder] =>
+			Array.isArray(item)
+			&& item.length === 2
+			&& typeof item[0] === 'string'
+			&& (item[1] === 'asc' || item[1] === 'desc'),
+	);
+}
+
+function updateSearchGraphOrder(graph: dyn.SearchGraph | undefined, orderBy: dyn.OrderBy): dyn.SearchGraph | undefined {
+	const graphData = { ...(graph as Partial<dyn.SearchGraph> | undefined) };
+	if (orderBy.length === 0) {
+		delete graphData.order;
+		if (!graphData.condition && !graphData.and && !graphData.or) {
+			return undefined;
+		}
+		return graphData as dyn.SearchGraph;
+	}
+	return { ...graphData, order: orderBy } as dyn.SearchGraph;
 }
 
 function createFieldsSearchData(fields: string[]): SearchData {

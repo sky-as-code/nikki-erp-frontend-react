@@ -129,12 +129,14 @@ export class RestApi {
 			if (value == null) continue;
 			if (Array.isArray(value)) {
 				value.forEach(item => searchParams.append(key, item));
-				continue;
 			}
 			else if (typeof value === 'object') {
-				throw new Error('Unsupported value type in SearchParams');
+				// throw new Error('Unsupported value type in SearchParams');
+				searchParams.append(key, JSON.stringify(value));
 			}
-			searchParams.append(key, String(value));
+			else {
+				searchParams.append(key, String(value));
+			}
 		}
 		return searchParams;
 	}
@@ -192,8 +194,10 @@ export type SearchGraph = {
 	condition: [string, SearchOperator, string], // i.e: ['field1', '=', 'value1']
 	and: SearchNode,
 	or: SearchNode,
-	order: Array<[string, SearchOrder]>, // i.e: [['field1', 'asc'], ['field2', 'desc']]
+	order: OrderBy, // i.e: [['field1', 'asc'], ['field2', 'desc']]
 };
+
+export type OrderBy = Array<[string, SearchOrder]>;
 
 /**
  * `condition`, `and`, `or` are mutually exclusive.
