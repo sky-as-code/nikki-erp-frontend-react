@@ -192,8 +192,8 @@ export function buildFieldSchema(fieldDef: FieldDefinition): z.ZodTypeAny {
 	// For string fields with required constraint, make optional initially
 	// (similar to enum) so they can accept undefined from Select components
 	// The required constraint will handle validation with refine
-	if (fieldDef.type === 'string' && hasRequiredConstraint) {
-		fieldSchema = fieldSchema.optional();
+	if (fieldDef.type === 'string' && (!isRequired || hasRequiredConstraint)) {
+		fieldSchema = fieldSchema.nullish();
 	}
 
 	// Apply constraints
