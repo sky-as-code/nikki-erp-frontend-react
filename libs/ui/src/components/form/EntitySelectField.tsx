@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import { BaseFieldWrapper } from './fields';
 import { useFormField, useFieldData } from './formContext';
+import { useLocalize } from '../../i18n';
 
 
 export interface SelectOption {
@@ -63,17 +64,6 @@ function buildSelectOptions<TEntity>(
 	return finalOptions;
 }
 
-function resolvePlaceholder(
-	placeholder: string | undefined,
-	fieldData: ReturnType<typeof useFieldData> | null,
-	translate: (key: string) => string,
-): string {
-	if (placeholder !== undefined) {
-		return placeholder;
-	}
-	return fieldData?.placeholder ? translate(fieldData.placeholder) : '';
-}
-
 export function EntitySelectField<TEntity>({
 	fieldName,
 	entities = [],
@@ -87,7 +77,7 @@ export function EntitySelectField<TEntity>({
 	onChange,
 	selectProps,
 }: EntitySelectFieldProps<TEntity>) {
-	const { t: translate } = useTranslation();
+	const localize = useLocalize('common');
 	const { control } = useFormField();
 	const fieldData = useFieldData(fieldName);
 	const inputId = useId();
@@ -104,10 +94,10 @@ export function EntitySelectField<TEntity>({
 		[entities, getEntityId, getEntityName, prependOptions, appendOptions, optionsTransformer],
 	);
 
-	const resolvedPlaceholder = React.useMemo(
-		() => resolvePlaceholder(placeholder, fieldData, translate),
-		[placeholder, fieldData, translate],
-	);
+	// const resolvedPlaceholder = React.useMemo(
+	// 	() => resolvePlaceholder(placeholder, fieldData, translate),
+	// 	[placeholder, fieldData, translate],
+	// );
 
 	if (!fieldData) {
 		return null;
@@ -118,10 +108,10 @@ export function EntitySelectField<TEntity>({
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={translate(fieldData.label)}
-			description={translate(fieldData.description ?? '')}
+			label={localize(fieldData.label)}
+			description={localize(fieldData.description)}
 			isRequired={fieldData.isRequired}
-			error={translate(fieldData.error ?? '')}
+			error={localize(fieldData.error as any)}
 		>
 			<Controller
 				name={fieldName}
@@ -130,13 +120,13 @@ export function EntitySelectField<TEntity>({
 				render={({ field }) => (
 					<Select
 						id={inputId}
-						placeholder={resolvedPlaceholder}
+						placeholder={placeholder ? placeholder : localize(fieldData.placeholder)}
 						data={options}
 						value={isDisabled ? null : (field.value ?? null)}
 						onChange={(val) => {
 							const newValue = val === null ? undefined : val;
 							field.onChange(newValue);
-							onChange?.(newValue);
+							onChange?.(newValue as any);
 						}}
 						searchable
 						clearable

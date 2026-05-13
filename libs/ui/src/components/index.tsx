@@ -1,5 +1,6 @@
 export * from './Breadcrumbs';
 export * from './Button';
+export * from './ErrorBoundary/ErrorBoundary';
 export * from './form';
 export * from './hoc';
 export * from './Loading';

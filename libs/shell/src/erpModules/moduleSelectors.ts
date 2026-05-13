@@ -9,12 +9,12 @@ import type { RootState } from '../appState/store';
 
 const selectModuleState = (state: RootState) => state[SLICE_NAME as keyof RootState] as ModuleState;
 
-export function useSearchModules() {
-	return svc.searchModules.useHook(useSelector);
+export function useSearchModules(throwOnError = false) {
+	return svc.searchModules.useHook(useSelector, throwOnError);
 }
 
-export function useListAllModules() {
-	return svc.listAllModules.useHook(useSelector);
+export function useListAllModules(throwOnError = false) {
+	return svc.listAllModules.useHook(useSelector, throwOnError);
 }
 
 const selectListAllModules = createSelector(

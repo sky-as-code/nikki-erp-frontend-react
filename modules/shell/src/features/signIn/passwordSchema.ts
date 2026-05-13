@@ -6,8 +6,8 @@ export const passwordSchema: ModelSchema = {
 	fields: {
 		password: {
 			name: 'password',
-			label: { 'en-US': 'nikki.identity.user.fields.password' },
-			placeholder: { 'en-US': 'nikki.shell.signIn.enterPassword' },
+			label: { '$ref': 'signIn.fields.password' },
+			placeholder: { '$ref': 'signIn.fields.passwordPlaceholder' },
 			data_type: {
 				name: 'secret',
 				options: { length: [10, 255] },

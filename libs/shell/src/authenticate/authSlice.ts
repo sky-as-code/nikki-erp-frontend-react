@@ -1,4 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, Dispatch, ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
+import { useDispatch } from 'react-redux';
 
 import * as svc from './authService';
 import { SLICE_NAME } from './types';
@@ -13,8 +14,7 @@ export const initialState = {
 	[svc.continueSignIn.stateKey]: svc.continueSignIn.initialState,
 	[svc.signOut.stateKey]: svc.signOut.initialState,
 	[svc.restoreAuthSession.stateKey]: svc.restoreAuthSession.initialState,
-	// isLoading: false,
-	// isAuthenticated: false,
+	[svc.settleSession.stateKey]: svc.settleSession.initialState,
 };
 
 const authSlice = createSlice({
@@ -27,14 +27,15 @@ const authSlice = createSlice({
 		svc.continueSignIn.buildThunkReducers(builder);
 		svc.signOut.buildThunkReducers(builder);
 		svc.restoreAuthSession.buildThunkReducers(builder);
+		svc.settleSession.buildThunkReducers(builder);
 
-		// builder.addMatcher(
-		// 	(action: UnknownAction): boolean => {
-		// 		return typeof action.type === 'string' && action.type.endsWith('/pending');
-		// 	},
-		// 	(state) => {
-		// 		state.isLoading = true;
-		// 	});
+		builder.addMatcher(
+			(action: UnknownAction): boolean => {
+				return typeof action.type === 'string' && action.type.startsWith(SLICE_NAME);
+			},
+			(state) => {
+				// state.isLoading = true;
+			});
 
 		// builder.addMatcher(
 		// 	(action: any): action is SignInResult => {
@@ -53,6 +54,18 @@ export const actions = {
 	[svc.continueSignIn.stateKey]: svc.continueSignIn.thunkAction,
 	[svc.signOut.stateKey]: svc.signOut.thunkAction,
 	[svc.restoreAuthSession.stateKey]: svc.restoreAuthSession.thunkAction,
+	[svc.settleSession.stateKey]: svc.settleSession.thunkAction,
 };
 
 export const { reducer } = authSlice;
+
+export type AuthDispatch = ThunkDispatch<
+	ReturnType<typeof reducer>,
+	undefined,
+	UnknownAction
+> &
+	Dispatch<UnknownAction>;
+
+export function useAuthDispatch(): AuthDispatch {
+	return useDispatch<AuthDispatch>();
+}
