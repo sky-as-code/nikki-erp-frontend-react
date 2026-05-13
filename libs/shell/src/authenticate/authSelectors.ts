@@ -4,14 +4,20 @@ import { useSelector } from 'react-redux';
 
 import * as svc from './authService';
 import { SLICE_NAME } from './types';
-import { UserContextState, selectGetUserContext } from '../userContext';
+import { selectGetUserContext } from '../userContext';
 
 import type { RootState } from '../appState/store';
 
 
 type AuthState = RootState[(typeof SLICE_NAME) & keyof RootState];
 
-const selectAuthState = (state: RootState) => state[SLICE_NAME as keyof RootState] as AuthState;
+// export type AuthViewState = AuthState & {
+// 	isLoading: boolean;
+// 	isSignInSuccess: boolean;
+// 	sessionExpiresAt: number | null;
+// 	errorStartSignIn: string | null;
+// 	errorContinueSignIn: string | null;
+// };
 
 export function useStartSignIn() {
 	return svc.startSignIn.useHook(useSelector);
@@ -25,38 +31,31 @@ export function useSignOut() {
 export function useRestoreAuthSession() {
 	return svc.restoreAuthSession.useHook(useSelector);
 }
+export function useSettleSession() {
+	return svc.settleSession.useHook(useSelector);
+}
 
-export type AuthViewState = AuthState & {
-	isLoading: boolean;
-	isSignInSuccess: boolean;
-	sessionExpiresAt: number | null;
-	errorStartSignIn: string | null;
-	errorContinueSignIn: string | null;
-};
 
-// const selectAuthViewState = createSelector(
-// 	selectAuthState,
-// 	(s): AuthViewState => ({
-// 		...s,
-// 		isLoading:
-// 			s.startSignIn.status === 'pending' ||
-// 			s.continueSignIn.status === 'pending' ||
-// 			s.signOut.status === 'pending' ||
-// 			s.restoreAuthSession.status === 'pending',
-// 		isSignInSuccess:
-// 			s.isAuthenticated ||
-// 			s.continueSignIn.status === 'success' ||
-// 			s.restoreAuthSession.status === 'success',
-// 		sessionExpiresAt: svc.getSessionExpiresAt() || null,
-// 		errorStartSignIn: s.startSignIn.status === 'error' ? s.startSignIn.error : null,
-// 		errorContinueSignIn: s.continueSignIn.status === 'error' ? s.continueSignIn.error : null,
-// 	}),
-// );
+export function useAuthState() {
+	return useSelector(selectAuthState);
+}
 
-// const selectSignInProgress = createSelector(
-// 	selectAuthState,
-// 	(state: AuthState) => state.startSignIn.status === 'pending' || state.continueSignIn.status === 'pending',
-// );
+//** Is both fetching access token and fetching user context are completed */
+export function useIsAuthenticated() {
+	return useSelector(selectIsAuthenticated);
+}
+
+//** Is either fetching access token or fetching user context is in progress */
+export function useIsAuthenticatePending() {
+	return useSelector(selectIsAuthenticatePending);
+}
+
+//** Indicates there is no more attempt to authenticate or restore session */
+export function useIsSessionSettled() {
+	return useSelector(selectIsSessionSettled);
+}
+
+
 
 const selectIsAuthenticated = createSelector(
 	selectGetUserContext,
@@ -77,13 +76,11 @@ const selectIsAuthenticatePending = createSelector(
 	},
 );
 
-// const selectIsSessionRestoring = createSelector(
-// 	svc.restoreAuthSession.selector,
-// 	(state: ReduxThunkState) => state.status === 'pending',
-// );
+function selectAuthState(state: RootState) {
+	return state[SLICE_NAME as keyof RootState] as AuthState;
+}
 
-// export const useAuthState = () => useSelector(selectAuthViewState);
-// export const useSignInProgress = () => useSelector(selectSignInProgress);
-export const useIsAuthenticated = () => useSelector(selectIsAuthenticated);
-export const useIsAuthenticatePending = () => useSelector(selectIsAuthenticatePending);
-// export const useIsSessionRestoring = () => useSelector(selectIsSessionRestoring);
+const selectIsSessionSettled = createSelector(
+	selectAuthState,
+	(authState: AuthState) => Boolean(authState.settleSession.data),
+);

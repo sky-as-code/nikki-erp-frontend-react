@@ -11,8 +11,17 @@ import clsx from 'clsx';
 import React from 'react';
 
 import classes from './DataTable.module.css';
+import {
+	FieldRendererMap,
+	IFieldRenderer,
+	renderDefaultByDataType,
+	applyCustomRenderer,
+	TranslatedFieldRenderer,
+} from './fieldRenderers';
 import { SearchBox } from './SearchBox';
+import { SettingsTable } from './SettingsTable';
 import { ThunkPackHookReturn } from '../../appState';
+import { TranslateFn, useTranslate } from '../../i18n';
 
 
 export type DataTableActionHook = {
@@ -24,12 +33,7 @@ export type DataTableActionHook = {
 	actionHook?: () => ThunkPackHookReturn<any, any>,
 };
 
-export interface IFieldRenderHint {
-	readonly type: string;
-	render(value: string): React.ReactNode;
-}
-
-export type FieldRenderHintMap = Record<string, IFieldRenderHint>;
+export type { FieldRendererMap, IFieldRenderer } from './fieldRenderers';
 
 type SearchItem = Record<string, any>;
 export type SearchData = dyn.RestSearchResponse<SearchItem>;
@@ -66,7 +70,7 @@ export type DataTableProps = {
 	data: SearchData,
 	initialSearchRequest?: dyn.RestSearchRequest,
 	onSearchRequestChange?: (request: dyn.RestSearchRequest) => void,
-	fieldRenderHint?: FieldRenderHintMap,
+	fieldRenderer?: FieldRendererMap,
 	linkField?: string,
 	linkRoutePath?: string,
 	actions?: DataTableActionHook[],
@@ -81,17 +85,15 @@ export type DataTableProps = {
 	renderTableName?: RenderTableNameFn,
 	modelSchema?: dyn.ModelSchema,
 	orderBy?: dyn.OrderBy,
-	/** Row keys to select on mount (fields-settings nested table). */
-	initialSelectedFieldNames?: string[],
-	fieldsSettingsValueKey?: string,
-	fieldsSettingsSelectionGetterRef?: React.RefObject<(() => string[]) | null>,
 	sortableFields?: string[],
+	translationNs?: string,
+	translateFieldName?: (field: string) => string,
 };
 
 type RequiredDataTableProps = Omit<
 	DataTableProps,
 	'actions' | 'allowColumnResizing' | 'isFullWidthTable' | 'selectionColumn'
-	| 'allowRowMovement' | 'showControls' | 'hasFixHeader'
+	| 'allowRowMovement' | 'showControls' | 'hasFixHeader' | 'translationNs' | 'translateFieldName'
 > & {
 	actions: DataTableActionHook[],
 	allowColumnResizing: boolean,
@@ -101,6 +103,8 @@ type RequiredDataTableProps = Omit<
 	showControls: boolean,
 	enableSearchBox: boolean,
 	hasFixHeader: boolean,
+	translationNs: string,
+	translateFieldName: (field: string) => string,
 };
 
 type DataTableContextValue = {
@@ -121,45 +125,6 @@ type DataTableContextValue = {
 };
 
 const DataTableContext = React.createContext<DataTableContextValue | null>(null);
-
-function useFieldsSettingsBindings(
-	settings: RequiredDataTableProps,
-	tableSearchData: SearchData,
-	rowMove: ReturnType<typeof useRowMoveState>,
-	rs: ReturnType<typeof useRowSelectionState>,
-): void {
-	const fieldsSettingsValueKey = settings.fieldsSettingsValueKey ?? 'field';
-	const fieldsSettingsItemSig = settings.initialSelectedFieldNames === undefined
-		? ''
-		: tableSearchData.items.map(item => String(item[fieldsSettingsValueKey])).sort().join('\0');
-	const initialSelectedFieldNamesKey = settings.initialSelectedFieldNames?.join('\0');
-	React.useEffect(() => {
-		if (settings.initialSelectedFieldNames === undefined || initialSelectedFieldNamesKey === undefined) {
-			return;
-		}
-		const selected = new Set(settings.initialSelectedFieldNames);
-		const next: RowSelection = {};
-		tableSearchData.items.forEach((item, idx) => {
-			if (selected.has(String(item[fieldsSettingsValueKey]))) {
-				next[idx] = true;
-			}
-		});
-		rs.setRows(next);
-	}, [fieldsSettingsItemSig, fieldsSettingsValueKey, initialSelectedFieldNamesKey, rs.setRows]);
-	React.useLayoutEffect(() => {
-		const ref = settings.fieldsSettingsSelectionGetterRef;
-		if (!ref) {
-			return undefined;
-		}
-		ref.current = () => rowMove.items
-			.map((item, idx) => ({ name: String(item[fieldsSettingsValueKey]), idx }))
-			.filter(x => rs.rows[x.idx])
-			.map(x => x.name);
-		return () => {
-			ref.current = null;
-		};
-	}, [fieldsSettingsValueKey, rowMove.items, rs.rows, settings.fieldsSettingsSelectionGetterRef]);
-}
 
 export function DataTable(props: DataTableProps): React.ReactNode {
 	const settings = withDataTableDefaults(props);
@@ -182,7 +147,6 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 		() => ({ ...settings.data, items: rowMove.items }),
 		[rowMove.items, settings.data],
 	);
-	useFieldsSettingsBindings(settings, tableSearchData, rowMove, rs);
 	const isRowMode = rs.indexes.length > 0;
 	const handlers = useTableHandlers({
 		searchData: tableSearchData,
@@ -318,6 +282,8 @@ function withDataTableDefaults(props: DataTableProps): RequiredDataTableProps {
 		showControls: props.showControls ?? true,
 		enableSearchBox: props.enableSearchBox ?? true,
 		hasFixHeader: props.hasFixHeader ?? false,
+		translationNs: props.translationNs ?? 'common',
+		translateFieldName: props.translateFieldName ?? (field => field),
 	};
 }
 
@@ -422,7 +388,7 @@ function Toolbar(props: ToolbarProps): React.ReactNode {
 	const menuItems = normalizeMenuItems(visibleDefaultActions.slice(2));
 	const titleNode = renderTableName
 		? renderTableName({ name: tableName, total: total ?? 0 })
-		: <Title order={3}>{tableName} ({total ?? 0})</Title>;
+		: <Title order={3} className='capitalize'>{tableName} ({total ?? 0})</Title>;
 	return (
 		<Group gap='xs' className='flex-grow-0'>
 			{titleNode}
@@ -961,6 +927,7 @@ type ColumnHeaderProps = {
 	width: number,
 	sortDirection?: dyn.SearchOrder,
 	allowColumnResizing: boolean,
+	translateFieldName: (field: string) => string,
 	onStartResize: ResizeHandleProps['onStartResize'],
 	onAutoResize: ResizeHandleProps['onAutoResize'],
 };
@@ -970,7 +937,7 @@ function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
 		<Table.Th style={getColumnStyle(props.width)} className={classes.resizeableHeader}>
 			<Group justify='space-between' gap={1} className='overflow-hidden text-ellipsis whitespace-nowrap'>
 				{/* <div className='overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1' title={props.field}> */}
-				<span className='overflow-hidden text-ellipsis whitespace-nowrap'>{props.field}</span>
+				<span className='overflow-hidden text-ellipsis whitespace-nowrap'>{props.translateFieldName(props.field)}</span>
 				{props.sortDirection === 'asc' ? <IconSortAscending size={16} /> : null}
 				{props.sortDirection === 'desc' ? <IconSortDescending size={16} /> : null}
 				{/* </div> */}
@@ -1018,6 +985,7 @@ function DataTableHead(): React.ReactNode {
 						width={getColumnWidth(field, widths)}
 						sortDirection={sortOrderMap.get(field)}
 						allowColumnResizing={context.settings.allowColumnResizing}
+						translateFieldName={context.settings.translateFieldName}
 						onStartResize={context.handlers.onStartResize}
 						onAutoResize={context.handlers.onAutoResize}
 					/>
@@ -1084,15 +1052,17 @@ type DataCellProps = {
 	rawValue: unknown,
 	fieldSchema?: dyn.ModelSchemaField,
 	linkHref?: string,
-	hint?: IFieldRenderHint,
+	fieldRenderer?: IFieldRenderer,
+	translationNs: string,
 	isSelected: boolean,
 	allowRowMovement?: boolean,
 };
 
 function DataCell(props: DataCellProps): React.ReactNode {
+	const t = useTranslate(props.translationNs);
 	const content = React.useMemo(
-		() => renderDataCellContent(props.rawValue, props.value, props.fieldSchema, props.hint),
-		[props.fieldSchema, props.hint, props.rawValue, props.value],
+		() => renderDataCellContent(props.rawValue, props.value, props.fieldSchema, props.fieldRenderer, t),
+		[props.fieldSchema, props.fieldRenderer, props.rawValue, t, props.value],
 	);
 	const useEllipsis = shouldUseSingleLineEllipsis(props.value) && !isArrayField(props.fieldSchema);
 	const contentClassName = clsx('block', {
@@ -1127,10 +1097,11 @@ type BodyRowProps = {
 	searchData: SearchData,
 	widths: ColumnWidths,
 	isRowSelected: boolean,
-	hints?: FieldRenderHintMap,
+	fieldRendererMap?: FieldRendererMap,
 	modelSchema?: dyn.ModelSchema,
 	linkField?: string,
 	linkRoutePath?: string,
+	translationNs: string,
 	selectionColumn: SelectionColumn,
 	allowRowMovement: boolean,
 	allowColumnResizing: boolean,
@@ -1147,7 +1118,7 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 		searchData,
 		widths,
 		isRowSelected,
-		hints,
+		fieldRendererMap,
 		modelSchema,
 		linkField,
 		linkRoutePath,
@@ -1190,7 +1161,8 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 					rawValue={item[field]}
 					fieldSchema={modelSchema?.fields[field]}
 					linkHref={linkField === field ? rowLink : undefined}
-					hint={hints?.[field]}
+					fieldRenderer={fieldRendererMap?.[field]}
+					translationNs={props.translationNs}
 					isSelected={isRowSelected}
 					allowRowMovement={allowRowMovement}
 				/>
@@ -1219,10 +1191,11 @@ function DataTableBody(): React.ReactNode {
 					searchData={searchData}
 					isRowSelected={Boolean(selectedRows[rowIndex])}
 					widths={context.cw.widths}
-					hints={context.settings.fieldRenderHint}
+					fieldRendererMap={context.settings.fieldRenderer}
 					modelSchema={context.settings.modelSchema}
 					linkField={context.settings.linkField}
 					linkRoutePath={context.settings.linkRoutePath}
+					translationNs={context.settings.translationNs}
 					selectionColumn={context.settings.selectionColumn}
 					allowRowMovement={context.settings.allowRowMovement}
 					allowColumnResizing={context.settings.allowColumnResizing}
@@ -1249,10 +1222,11 @@ function TableSettingsPanel(props: {
 	gridMode: string,
 	onGridModeChange: (value: string) => void,
 }): React.ReactNode {
+	const t = useTranslate('common');
 	return (
 		<Stack gap='md'>
 			<Stack gap='xs'>
-				<Text size='sm' fw={500}>Page size</Text>
+				<Text size='sm' fw={500}>{t('datatable.pageSize')}</Text>
 				<Select
 					allowDeselect={false}
 					data={pageSizeSelectData}
@@ -1265,11 +1239,11 @@ function TableSettingsPanel(props: {
 				/>
 			</Stack>
 			<Stack gap='xs'>
-				<Text size='sm' fw={500}>Table mode</Text>
+				<Text size='sm' fw={500}>{t('datatable.viewMode')}</Text>
 				<Radio.Group onChange={props.onGridModeChange} value={props.gridMode}>
 					<Stack gap='xs'>
-						<Radio value='list' label='List' />
-						<Radio value='grid' label='Grid' />
+						<Radio value='list' label={t('datatable.list')} />
+						<Radio value='grid' label={t('datatable.grid')} />
 					</Stack>
 				</Radio.Group>
 			</Stack>
@@ -1288,6 +1262,7 @@ type ViewSettingsModalViewProps = {
 	fieldsPanelNonce: number,
 	fieldsSelectionGetterRef: React.RefObject<(() => string[]) | null>,
 	initialSelectedFieldNames: string[],
+	translationNs: string,
 	draftPageSize: string,
 	onDraftPageSizeChange: (value: string) => void,
 	gridMode: string,
@@ -1296,11 +1271,10 @@ type ViewSettingsModalViewProps = {
 };
 
 function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNode {
+	const t = useTranslate('common');
+
 	const modalStyles = {
 		body: { width: '400px' },
-		// body: { height: 'calc(50vh - 60px)', overflow: 'auto' as const },
-		// content: { height: '50vh' },
-		// header: { height: '60px' },
 		title: { fontWeight: 'bold' as const },
 	};
 	return (
@@ -1309,18 +1283,18 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 			opened={props.opened}
 			size='auto'
 			styles={modalStyles}
-			title='View settings'
+			title={t('datatable.viewSettings')}
 		>
 			<Stack h='100%'>
 				<Tabs onChange={props.onActiveTabChange} style={{ flex: 1, overflow: 'auto' }} value={props.activeTab}>
 					<Tabs.List>
-						<Tabs.Tab value='fields-settings'>Fields</Tabs.Tab>
-						<Tabs.Tab value='table-settings'>Table</Tabs.Tab>
+						<Tabs.Tab value='fields-settings' className='capitalize'>{t('datatable.fields')}</Tabs.Tab>
+						<Tabs.Tab value='table-settings' className='capitalize'>{t('datatable.view')}</Tabs.Tab>
 					</Tabs.List>
 					<Tabs.Panel pt='sm' value='fields-settings'>
 						<TextInput
 							onChange={event => props.onFieldSearchChange(event.currentTarget.value)}
-							placeholder='Field search box'
+							placeholder={t('datatable.fieldFilterPlaceholder')}
 							value={props.fieldSearch}
 						/>
 						<FieldsSettingsTable
@@ -1328,6 +1302,7 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 							fieldsPanelNonce={props.fieldsPanelNonce}
 							initialSelectedFieldNames={props.initialSelectedFieldNames}
 							selectionGetterRef={props.fieldsSelectionGetterRef}
+							translationNs={props.translationNs}
 						/>
 					</Tabs.Panel>
 					<Tabs.Panel pt='sm' value='table-settings'>
@@ -1341,8 +1316,8 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 				</Tabs>
 				<Box className='border-t border-gray-300 mt-auto pt-3'>
 					<Group justify='flex-end'>
-						<Button onClick={props.onClose} variant='default'>Cancel</Button>
-						<Button onClick={props.onApply}>Apply</Button>
+						<Button onClick={props.onClose} variant='default'>{t('action.cancel')}</Button>
+						<Button onClick={props.onApply}>{t('action.apply')}</Button>
 					</Group>
 				</Box>
 			</Stack>
@@ -1352,7 +1327,8 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 
 function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 	const { opened, onClose, modelSchema, desiredFields } = props;
-	const { searchRequest, setSearchRequest } = useDataTableContext();
+	const context = useDataTableContext();
+	const { searchRequest, setSearchRequest } = context;
 	const [activeTab, setActiveTab] = React.useState<string | null>('fields-settings');
 	const [fieldSearch, setFieldSearch] = React.useState('');
 	const [draftPageSize, setDraftPageSize] = React.useState(String(allowedPageSizes[0]));
@@ -1414,6 +1390,7 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 			gridMode={gridMode}
 			initialSelectedFieldNames={desiredFields}
 			opened={opened}
+			translationNs={context.settings.translationNs}
 			onActiveTabChange={setActiveTab}
 			onApply={applyViewSettings}
 			onClose={onClose}
@@ -1424,28 +1401,51 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 	);
 }
 
+const fieldsSettingsTableColumn = 'datatable.fields';
+
 function FieldsSettingsTable(props: {
 	fields: string[],
 	fieldsPanelNonce: number,
 	initialSelectedFieldNames: string[],
 	selectionGetterRef: React.RefObject<(() => string[]) | null>,
+	translationNs: string,
 }): React.ReactNode {
+	const t = useTranslate(props.translationNs);
 	return (
 		<div className='mt-2' key={props.fieldsPanelNonce}>
-			<DataTable
-				allowColumnResizing={true}
+			<SettingsTable
 				allowRowMovement
 				data={createFieldsSearchData(props.fields)}
-				fieldsSettingsSelectionGetterRef={props.selectionGetterRef}
-				initialSelectedFieldNames={props.initialSelectedFieldNames}
-				isFullWidthTable
-				selectionColumn='checkbox'
-				showControls={false}
-				enableSearchBox={false}
-				tableName='Fields'
+				initialSelectedValues={props.initialSelectedFieldNames}
+				selectionGetterRef={props.selectionGetterRef}
+				translateFieldName={field => t(field)}
+				translationNs={props.translationNs}
+				valueKey={fieldsSettingsTableColumn}
+				fieldRenderer={{
+					[fieldsSettingsTableColumn]: new TranslatedFieldRenderer('fields.'),
+				}}
 			/>
 		</div>
 	);
+}
+
+function createFieldsSearchData(fields: string[]): SearchData {
+	const colLabel = fieldsSettingsTableColumn;
+	const items = fields.map((field, index) => ({
+		id: `${field}-${index}`,
+		// [colLabel]: translateFieldName(field),
+		[colLabel]: field,
+	}));
+
+	return {
+		page: 0,
+		size: Math.max(fields.length, 1),
+		total: fields.length,
+		items,
+		desired_fields: [colLabel],
+		masked_fields: [],
+		schema_etag: '',
+	} as SearchData;
 }
 
 function isArrayField(fieldSchema?: dyn.ModelSchemaField): boolean {
@@ -1469,14 +1469,15 @@ function renderDataCellContent(
 	rawValue: unknown,
 	textValue: string,
 	fieldSchema: dyn.ModelSchemaField | undefined,
-	hint: IFieldRenderHint | undefined,
+	fieldRenderer: IFieldRenderer | undefined,
+	t: TranslateFn,
 ): React.ReactNode {
-	if (hint) {
-		return hint.render(textValue);
+	if (fieldRenderer) {
+		return applyCustomRenderer(fieldRenderer, textValue, t);
 	}
 	const dataTypeName = getFieldDataTypeName(fieldSchema);
 	if (!isArrayField(fieldSchema)) {
-		return renderSingleDataTypeValue(rawValue, textValue, dataTypeName);
+		return renderDefaultByDataType(rawValue, textValue, dataTypeName);
 	}
 	const values = Array.isArray(rawValue) ? rawValue : (rawValue == null || rawValue === '' ? [] : [rawValue]);
 	if (values.length === 0) {
@@ -1484,41 +1485,10 @@ function renderDataCellContent(
 	}
 	return values.map((value, index) => (
 		<React.Fragment key={`${String(value)}-${index}`}>
-			{renderSingleDataTypeValue(value, String(value ?? ''), dataTypeName)}
+			{renderDefaultByDataType(value, String(value ?? ''), dataTypeName)}
 			{index < values.length - 1 ? <br /> : null}
 		</React.Fragment>
 	));
-}
-
-function renderSingleDataTypeValue(
-	rawValue: unknown,
-	textValue: string,
-	dataTypeName: dyn.ModelSchemaFieldDataTypeName | null,
-): React.ReactNode {
-	if (dataTypeName === 'boolean') {
-		return <Checkbox readOnly checked={normalizeBooleanValue(rawValue)} />;
-	}
-	if (dataTypeName === 'secret') {
-		return '********';
-	}
-	if (dataTypeName === 'ulid' || dataTypeName === 'uuid' || dataTypeName === 'phone') {
-		return <code>{textValue}</code>;
-	}
-	return textValue;
-}
-
-function normalizeBooleanValue(rawValue: unknown): boolean {
-	if (typeof rawValue === 'boolean') {
-		return rawValue;
-	}
-	if (typeof rawValue === 'number') {
-		return rawValue !== 0;
-	}
-	if (typeof rawValue === 'string') {
-		const normalized = rawValue.trim().toLowerCase();
-		return normalized === 'true' || normalized === '1';
-	}
-	return false;
 }
 
 function getGraphOrder(graph?: dyn.SearchGraph): dyn.OrderBy {
@@ -1545,18 +1515,6 @@ function updateSearchGraphOrder(graph: dyn.SearchGraph | undefined, orderBy: dyn
 		return graphData as dyn.SearchGraph;
 	}
 	return { ...graphData, order: orderBy } as dyn.SearchGraph;
-}
-
-function createFieldsSearchData(fields: string[]): SearchData {
-	return {
-		page: 0,
-		size: Math.max(fields.length, 1),
-		total: fields.length,
-		items: fields.map((field, index) => ({ id: `${field}-${index}`, field })),
-		desired_fields: ['field'],
-		masked_fields: [],
-		schema_etag: '',
-	} as SearchData;
 }
 
 function filterFields(fields: string[], query: string): string[] {

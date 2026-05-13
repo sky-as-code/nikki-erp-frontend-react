@@ -17,11 +17,8 @@ export function PrivateLayout(): React.ReactNode {
 	React.useEffect(() => {
 		if (isAuthenticatePending) return;
 
-		if (!isAuthenticated && !restore.isDone) {
-			dispatch(restore.thunkAction() as any);
-		}
-		else if (!isAuthenticated && restore.isDone && !restore.data) {
-			dispatch(routingActions.navigateWillReturn('/signin'));
+		if (!isAuthenticated && restore.isDone && !restore.data) {
+			dispatch(routingActions.navigateWillReturn({ to: '/signin', hardNavigate: true }));
 		}
 	}, [isAuthenticated, restore.isDone]);
 

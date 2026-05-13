@@ -10,10 +10,6 @@ import { ScrollableContent } from '../../components/ScrollableContent';
 import { ThemeSwitchDropdown } from '../../components/ThemeSwitch';
 
 
-
-
-
-
 export function PublicLayout(): React.ReactNode {
 	return (
 		<Stack gap={0} h='100vh' bg='var(--nikki-color-linear-page-background)'>
@@ -26,7 +22,6 @@ export function PublicLayout(): React.ReactNode {
 	);
 };
 
-
 const Header: React.FC = () => {
 	const { colorScheme } = useMantineColorScheme();
 	const theme = useMantineTheme();
@@ -34,12 +29,8 @@ const Header: React.FC = () => {
 
 	return (
 		<Group
-			component='header'
-			align='center'
-			justify='flex-end'
-			h={50}
-			gap={0}
-			bg={bg}
+			component='header'align='center' justify='flex-end'
+			h={50} gap={0} bg={bg}
 			className={clsx( classes.headerRow )}
 			px={'md'}
 		>

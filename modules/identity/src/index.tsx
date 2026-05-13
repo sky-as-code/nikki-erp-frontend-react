@@ -1,4 +1,4 @@
-/* eslint-disable max-lines-per-function */
+
 
 import { SchemaRegisterOptions, schemaRegistry } from '@nikkierp/common/dynamic_model';
 import { RequestMaker } from '@nikkierp/common/request';
@@ -13,14 +13,14 @@ import {
 	MicroAppProvider, MicroAppRouter,
 } from '@nikkierp/ui/microApp';
 import {
-	AvatarRenderHint, BadgeRenderHint, ResourceListTemplateProps, ViewEngineRouter,
+	AvatarFieldRenderer, BadgeFieldRenderer, ResourceListTemplateProps, ViewEngineRouter,
 } from '@nikkierp/ui/viewEngine';
 import { combineReducers } from '@reduxjs/toolkit';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router';
 
-import { GROUP_SCHEMA_NAME, ORGANIZATION_SCHEMA_NAME, ORG_UNIT_SCHEMA_NAME, USER_SCHEMA_NAME } from './constants';
+import * as c from './constants';
 import { reducer as groupReducer, SLICE_NAME as GROUP_SLICE_NAME } from './features/group/groupSlice';
 import { reducer as orgReducer, SLICE_NAME as ORG_SLICE_NAME } from './features/organization/orgSlice';
 import * as userSel from './features/user/userSelectors';
@@ -28,7 +28,7 @@ import {
 	reducer as userReducer, SLICE_NAME as USER_SLICE_NAME,
 } from './features/user/userSlice';
 // import { reducer } from './appState';
-import { useMenuBarItems } from './hooks';
+import { useIdentityMenuBarItems } from './hooks';
 // import { GroupFormPage } from './pages/group/GroupFormPage';
 // import { GroupListPage } from './pages/group/GroupListPage';
 // import { HierarchyListPage } from './pages/hierarchy/HierarchyListPage';
@@ -115,7 +115,7 @@ export default bundle;
 
 function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	const dispatch = useMicroAppDispatch();
-	const menuBarItems = useMenuBarItems();
+	const menuBarItems = useIdentityMenuBarItems();
 
 	useSetMenuBarItems(menuBarItems, dispatch);
 
@@ -136,19 +136,19 @@ function registerModelSchemas(): void {
 
 	schemaRegistry.register([{
 		...baseOpts,
-		schemaName: GROUP_SCHEMA_NAME,
+		schemaName: c.GROUP_SCHEMA_NAME,
 		resourcePath: 'v1/identity/groups',
 	}, {
 		...baseOpts,
-		schemaName: ORGANIZATION_SCHEMA_NAME,
+		schemaName: c.ORGANIZATION_SCHEMA_NAME,
 		resourcePath: 'v1/identity/organizations',
 	}, {
 		...baseOpts,
-		schemaName: ORG_UNIT_SCHEMA_NAME,
+		schemaName: c.ORG_UNIT_SCHEMA_NAME,
 		resourcePath: 'v1/identity/orgunits',
 	}, {
 		...baseOpts,
-		schemaName: USER_SCHEMA_NAME,
+		schemaName: c.USER_SCHEMA_NAME,
 		resourcePath: 'v1/identity/users',
 	}]);
 }
@@ -156,7 +156,7 @@ function registerModelSchemas(): void {
 function registerPages(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseStateSelectorFn<any>): any[] {
 	return [
 		createUserDetailsPage(),
-		createUsersPage(dispatch, useMicroAppSelector),
+		createUserListPage(dispatch, useMicroAppSelector),
 	];
 }
 
@@ -165,7 +165,7 @@ function createUserDetailsPage() {
 		routePath: 'users/:id', // param "id" is required by this template
 		template: 'nikkierp.mantine.pages.templates.resourceDetails.v1',
 		templateProps: {
-			schemaName: USER_SCHEMA_NAME,
+			schemaName: c.USER_SCHEMA_NAME,
 			reduxAction: (_pathParams: {id: string}) => {},
 			titleLvl1: {
 				type: 'SchemaField',
@@ -229,14 +229,14 @@ function createUserDetailsPage() {
 	};
 }
 
-function createUsersPage(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseStateSelectorFn<any>) {
+function createUserListPage(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseStateSelectorFn<any>) {
 	return {
 		routePath: 'users',
 		template: 'nikkierp.mantine.pages.templates.resourceList.v1',
 		templateProps: new ResourceListTemplateProps({
-			schemaName: USER_SCHEMA_NAME,
-			resourceName: 'nikkierp.identity.user.resourceName',
-			resourceNamePlural: 'nikkierp.identity.user.resourceNamePlural',
+			schemaName: c.USER_SCHEMA_NAME,
+			// resourceNameTransKey: 'user',
+			translationNs: c.IDENTITY_MODULE,
 			dispatch,
 			actionHooks: {
 				useSearch: () => userSel.useSearchUsers(useMicroAppSelector),
@@ -261,14 +261,17 @@ function createUsersPage(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseS
 			],
 			linkField: 'email',
 			linkRoutePath: 'users/:id',
-			fieldRenderHint: {
-				avatar_url: new AvatarRenderHint(),
-				status: new BadgeRenderHint({
+			fieldRenderer: {
+				avatar_url: new AvatarFieldRenderer(),
+				status: new BadgeFieldRenderer({
 					colorMap: {
 						invited: 'indigo',
 						active: 'green',
 						locked: 'orange',
 						terminated: 'gray',
+					},
+					translationKey: (value: string) => {
+						return `status.${value}`;
 					},
 				}),
 			},

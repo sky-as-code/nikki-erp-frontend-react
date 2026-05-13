@@ -65,7 +65,11 @@ export type ResourceDetailProps = {
 export function ResourceDetail({ props }: ResourceDetailProps): React.ReactNode {
 	const bgColor = usePaperBgColor();
 	return (
-		<Stack gap='md' className='p-4'>
+		<Stack
+			bg={bgColor}
+			className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 px-4 flex'
+			gap='md'
+		>
 			<ResourceHeader
 				titleLvl1={props.titleLvl1}
 				titleLvl2={props.titleLvl2}
@@ -93,13 +97,11 @@ function ResourceHeader(props: ResourceHeaderProps): React.ReactNode {
 	return (
 		<Group align='stretch' gap='md' wrap='nowrap'>
 			<ResourceThumbnail />
-			<Paper p='md' bg={props.bgColor} className='flex-1' withBorder>
-				<ResourceTitleBlock
-					titleLvl1={props.titleLvl1}
-					titleLvl2={props.titleLvl2}
-					titleLvl3={props.titleLvl3}
-				/>
-			</Paper>
+			<ResourceTitleBlock
+				titleLvl1={props.titleLvl1}
+				titleLvl2={props.titleLvl2}
+				titleLvl3={props.titleLvl3}
+			/>
 			{props.relatedResources.map((resource, idx) => (
 				<RelatedResourceCard key={idx} resource={resource} bgColor={props.bgColor} />
 			))}
@@ -108,7 +110,7 @@ function ResourceHeader(props: ResourceHeaderProps): React.ReactNode {
 }
 
 function ResourceThumbnail(): React.ReactNode {
-	return <Avatar size={120} radius='md' className={classes.thumbnail} />;
+	return <Avatar size={100} radius='md' className={classes.thumbnail} />;
 }
 
 

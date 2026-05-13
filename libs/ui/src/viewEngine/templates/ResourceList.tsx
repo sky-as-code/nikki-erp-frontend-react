@@ -1,56 +1,32 @@
-import { Avatar, Badge, Paper } from '@mantine/core';
+import { Paper } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamic_model';
 import React from 'react';
 
 import {
-	DataTable, DataTableActionHook, FieldRenderHintMap, IFieldRenderHint, SearchData,
+	DataTable, DataTableActionHook, SearchData,
 } from './DataTable';
 import { ThunkPackHookReturn } from '../../appState';
 import { LoadingState } from '../../components/Loading';
+import { TranslateFn, useLocalize, useTranslate } from '../../i18n';
 import { MicroAppDispatchFn } from '../../microApp';
 import { usePaperBgColor } from '../../theme';
+
+import type { FieldRendererMap } from './fieldRenderers';
 
 
 export type ResourceActionHook = DataTableActionHook;
 
-export type { IFieldRenderHint, FieldRenderHintMap };
-
-
-export class AvatarRenderHint implements IFieldRenderHint {
-	get type(): string {
-		return 'avatar';
-	}
-
-	render(value: string): React.ReactNode {
-		return <Avatar src={value || undefined} size='lg' radius='md' />;
-	}
-}
-
-export type BadgeRenderHintProps = {
-	colorMap: Record<string, string>,
-};
-
-export class BadgeRenderHint implements IFieldRenderHint {
-	private readonly colorMap: Record<string, string>;
-
-	constructor(props: BadgeRenderHintProps) {
-		this.colorMap = props.colorMap;
-	}
-
-	get type(): string {
-		return 'badge';
-	}
-
-	render(value: string): React.ReactNode {
-		return <Badge variant='filled' color={this.colorMap[value]}>{value}</Badge>;
-	}
-}
+export type { FieldRendererMap, IFieldRenderer } from './fieldRenderers';
+export { AvatarFieldRenderer, BadgeFieldRenderer } from './fieldRenderers';
+export type { BadgeFieldRendererProps } from './fieldRenderers';
 
 
 type ResourceListTemplatePropsParams = {
 	schemaName: string,
-	resourceName: string,
-	resourceNamePlural: string,
+	// i18next translation key of the resource name
+	// resourceNameTransKey: string,
+	// i18next namespace of this resource (namespace "common" is included by default)
+	translationNs: string,
 	dispatch: MicroAppDispatchFn,
 	extraActions?: ResourceActionHook[],
 	actionHooks: {
@@ -61,12 +37,12 @@ type ResourceListTemplatePropsParams = {
 		useUpdateBegin?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
 		useUpdateCancel?: () => ThunkPackHookReturn<void, void>,
 		useUpdateSave?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
-	}
+	},
 	linkField?: string,
 	linkRoutePath?: string,
 	fieldAsLink?: string,
 	fieldAsId?: string,
-	fieldRenderHint?: FieldRenderHintMap,
+	fieldRenderer?: FieldRendererMap,
 };
 
 export class ResourceListTemplateProps {
@@ -90,8 +66,10 @@ export function ResourceList({ props }: ResourceListProps): React.ReactNode {
 	const pack = useSchemaPack(params.schemaName);
 	const searchAct = params.actionHooks.useSearch();
 	const bgColor = usePaperBgColor();
+	const lc = useLocalize(params.translationNs);
+	const t = useTranslate(params.translationNs);
 	const actions = React.useMemo(
-		() => buildResourceActions(params.actionHooks, params.extraActions),
+		() => buildResourceActions(params.actionHooks, params.extraActions, t),
 		[params.actionHooks, params.extraActions],
 	);
 	const searchThunkActionRef = React.useRef(searchAct.thunkAction);
@@ -133,12 +111,12 @@ export function ResourceList({ props }: ResourceListProps): React.ReactNode {
 	return (
 		<Paper className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 flex' bg={bgColor}>
 			<DataTable
-				tableName={searchData.total > 0 ? params.resourceNamePlural : params.resourceName}
+				tableName={lc(pack.modelSchema.label, { count: searchData.total })}
 				data={searchData}
 				initialSearchRequest={searchRequest}
 				modelSchema={pack.modelSchema}
 				onSearchRequestChange={onSearchRequestChange}
-				fieldRenderHint={params.fieldRenderHint}
+				fieldRenderer={params.fieldRenderer}
 				linkField={linkField}
 				linkRoutePath={linkRoutePath}
 				allowColumnResizing
@@ -146,6 +124,13 @@ export function ResourceList({ props }: ResourceListProps): React.ReactNode {
 				hasFixHeader
 				sortableFields={searchData.desired_fields}
 				orderBy={orderBy}
+				translationNs={params.translationNs}
+				translateFieldName={(field: string) => {
+					if (field === 'fields') {
+						return t('model_fields');
+					}
+					return lc(pack.modelSchema.fields[field]?.label);
+				}}
 			/>
 		</Paper>
 	);
@@ -153,21 +138,22 @@ export function ResourceList({ props }: ResourceListProps): React.ReactNode {
 
 function buildResourceActions(
 	actionHooks: ResourceListTemplatePropsParams['actionHooks'],
-	extraActions?: ResourceActionHook[],
+	extraActions: ResourceActionHook[] | undefined,
+	t: TranslateFn,
 ): ResourceActionHook[] {
 	let actions: ResourceActionHook[] = [{
-		label: 'Refresh',
+		label: t('action.refresh'),
 		actionHook: actionHooks.useSearch,
 	}];
 	if (actionHooks.useCreate) {
 		actions.push({
-			label: 'Create',
+			label: t('action.create'),
 			actionHook: actionHooks.useCreate,
 		});
 	}
 	if (actionHooks.useDelete) {
 		actions.push({
-			label: 'Delete',
+			label: t('action.delete'),
 			requireSelection: true,
 			supportMultiple: true,
 			actionHook: actionHooks.useDelete,
@@ -178,7 +164,7 @@ function buildResourceActions(
 		actions.push({
 			isSeparator: true,
 		}, {
-			label: 'Archive',
+			label: t('action.archive'),
 			requireSelection: true,
 			supportMultiple: true,
 			actionHook: actionHooks.useArchive,
@@ -236,13 +222,3 @@ function useSchemaPack(schemaName: string) {
 
 	return pack;
 }
-
-// function useInitialSearch(dispatch: DispatchActionFn<dyn.RestSearchRequest>) {
-// 	// const searchResrc = searchAction.useThunkHook?.();
-// 	React.useEffect(() => {
-// 		dispatch({
-// 			page: 0, size: 50, search_name: 'default',
-// 		});
-// 	}, []);
-// 	return searchResrc;
-// }

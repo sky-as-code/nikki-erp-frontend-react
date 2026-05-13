@@ -10,6 +10,7 @@ import clsx from 'clsx';
 import React from 'react';
 
 import classes from './SearchBox.module.css';
+import { TranslateFn, useTranslate } from '../../i18n';
 
 
 export type SearchBoxProps = {
@@ -24,9 +25,10 @@ export function SearchBox({ fields, sortableFields, orderBy, onApplyOrderBy }: S
 	const [searchValue, setSearchValue] = React.useState('');
 	const [customFilterOpen, setCustomFilterOpen] = React.useState(false);
 	const [filters, setFilters] = React.useState(defaultFilters);
+	const t = useTranslate('common');
 	const options = React.useMemo(() => {
 		const sourceFields = sortableFields.length > 0 ? sortableFields : fields;
-		return buildFieldOptions(sourceFields);
+		return buildFieldOptions(sourceFields, t);
 	}, [fields, sortableFields]);
 	const sortByState = useSortByState(orderBy, onApplyOrderBy, () => setExpanded(false));
 	const openCustomFilters = () => {
@@ -46,7 +48,7 @@ export function SearchBox({ fields, sortableFields, orderBy, onApplyOrderBy }: S
 						variant='light'
 						size='sm'
 						onClick={() => setExpanded(prev => !prev)}
-						aria-label={expanded ? 'Collapse search options' : 'Expand search options'}
+						aria-label={expanded ? t('search.collapseSearchOptions') : t('search.expandSearchOptions')}
 					>
 						{expanded ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
 					</ActionIcon>}
@@ -81,8 +83,8 @@ const sortSelectStyles = {
 	input: { height: '2rem', minHeight: '2rem', width: '200px' },
 };
 
-function buildFieldOptions(fields: string[]) {
-	return [{ value: '', label: '- Select a field -' }, ...fields.map(field => ({ value: field, label: field }))];
+function buildFieldOptions(fields: string[], t: TranslateFn) {
+	return [{ value: '', label: `- ${t('form.selectOnePrompt', { item: 'field' })} -` }, ...fields.map(field => ({ value: field, label: field }))];
 }
 
 function buildOrderByFromFields(
@@ -203,6 +205,7 @@ function ExpandedPanel({
 	onDiscard,
 	onOpenCustomFilter,
 }: ExpandedPanelProps): React.ReactNode {
+	const t = useTranslate('common');
 	return (
 		<Paper p='md' withBorder shadow='xs'
 			className='absolute right-0 top-[calc(100%+4px)] z-[300] text-left'
@@ -210,7 +213,7 @@ function ExpandedPanel({
 			<Group align='flex-start'>
 				<QuickFiltersColumn onOpenCustomFilter={onOpenCustomFilter} />
 				<Stack gap='xs' w={290}>
-					<Text fw={600}>Sort by</Text>
+					<Text fw={600}>{t('search.sortBy')}</Text>
 					<SortFieldDirectionRow
 						fieldOptions={fieldOptions}
 						selectedField={firstSortField}
@@ -229,23 +232,24 @@ function ExpandedPanel({
 			</Group>
 
 			<Group justify='flex-end' mt='md'>
-				<Button variant='default' onClick={onDiscard}>Discard</Button>
-				<Button onClick={onApply}>Apply</Button>
+				<Button variant='default' onClick={onDiscard}>{t('action.discard')}</Button>
+				<Button onClick={onApply}>{t('action.apply')}</Button>
 			</Group>
 		</Paper>
 	);
 }
 
 function QuickFiltersColumn({ onOpenCustomFilter }: { onOpenCustomFilter: () => void }): React.ReactNode {
+	const t = useTranslate('common');
 	return (
 		<Stack gap='xs' w={160}>
-			<Text fw={600}>Quick filters</Text>
+			<Text fw={600}>{t('search.filterPresets')}</Text>
 			<Button variant='subtle' justify='flex-start'>Filter 1</Button>
 			<Button variant='subtle' justify='flex-start'>Filter 2</Button>
 			<Checkbox label='Include archive' />
 			<Divider />
 			<UnstyledButton onClick={onOpenCustomFilter}>
-				<Text c='blue.7'>Custom filters</Text>
+				<Text c='blue.7'>{t('search.customFilters')}</Text>
 			</UnstyledButton>
 		</Stack>
 	);
@@ -298,6 +302,7 @@ function SortDirectionButtonGroup({
 	activeDirection,
 	onDirectionChange,
 }: SortDirectionButtonGroupProps): React.ReactNode {
+	const t = useTranslate('common');
 	return (
 		<ButtonGroup>
 			<Button
@@ -305,7 +310,7 @@ function SortDirectionButtonGroup({
 				size='compact-md'
 				disabled={disabled}
 				onClick={() => onDirectionChange('asc')}
-				aria-label='Sort ascending'
+				aria-label={t('search.sortAscending')}
 			>
 				<IconSortAscending size={16} />
 			</Button>
@@ -314,7 +319,7 @@ function SortDirectionButtonGroup({
 				size='compact-md'
 				disabled={disabled}
 				onClick={() => onDirectionChange('desc')}
-				aria-label='Sort descending'
+				aria-label={t('search.sortDescending')}
 			>
 				<IconSortDescending size={16} />
 			</Button>
@@ -329,14 +334,15 @@ function CustomFilterDialog({
 	opened: boolean,
 	onClose: () => void,
 }): React.ReactNode {
+	const t = useTranslate('common');
 	return (
-		<Modal opened={opened} onClose={onClose} title='Custom filter' centered>
+		<Modal opened={opened} onClose={onClose} title={t('search.customFilter')} centered>
 			<Stack gap='md'>
-				<Text>Match <b>any</b> of these conditions</Text>
+				<Text>{t('search.matchAnyOfTheseConditions')}</Text>
 				<Box h={120} />
 				<Group justify='flex-end'>
-					<Button variant='default' onClick={onClose}>Discard</Button>
-					<Button onClick={() => {}}>Apply</Button>
+					<Button variant='default' onClick={onClose}>{t('action.discard')}</Button>
+					<Button onClick={() => {}}>{t('action.apply')}</Button>
 				</Group>
 			</Stack>
 		</Modal>
@@ -360,7 +366,7 @@ function FilterTagsInput({
 		renderPill: ({ value, onRemove }: { value: string, onRemove?: () => void }) => (
 			<Pill withRemoveButton onRemove={onRemove} style={{ minWidth: 150, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
 				<Group gap={4} wrap='nowrap'>
-					<IconFilter size={12} />
+					<IconFilter size={14} />
 					<span className={classes.pillText}>{value}</span>
 				</Group>
 			</Pill>

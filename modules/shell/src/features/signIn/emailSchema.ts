@@ -6,8 +6,8 @@ export const emailSchema: ModelSchema = {
 	fields: {
 		email: {
 			name: 'email',
-			label: { 'en-US': 'nikki.identity.user.fields.email' },
-			placeholder: { 'en-US': 'nikki.shell.signIn.enterEmail' },
+			label: { '$ref': 'signIn.fields.email' },
+			placeholder: { '$ref': 'signIn.fields.emailPlaceholder' },
 			data_type: {
 				name: 'email',
 				options: { length: [10, 255] },

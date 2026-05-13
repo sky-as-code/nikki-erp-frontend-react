@@ -1,4 +1,5 @@
 import { createSlice, Dispatch, ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
+import { useDispatch } from 'react-redux';
 
 import * as svc from './userService';
 import { USER_SCHEMA_NAME } from '../../constants';
@@ -56,3 +57,7 @@ export type UserDispatch = ThunkDispatch<
 	UnknownAction
 > &
 	Dispatch<UnknownAction>;
+
+export function useUserDispatch(): UserDispatch {
+	return useDispatch<UserDispatch>();
+}

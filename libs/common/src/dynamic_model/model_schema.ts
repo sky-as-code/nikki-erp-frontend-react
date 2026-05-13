@@ -3,22 +3,22 @@ import { z } from 'zod';
 
 export type ModelSchema = {
 	name: string,
-	etag: string,
+	fields: ModelSchemaFieldsMap,
+	etag?: string,
 	label?: ModelSchemaLangJson,
 	to_relations?: ModelSchemaRelation[],
 	from_relations?: ModelSchemaRelation[],
-	fields: ModelSchemaFieldsMap,
 };
 
 export type ModelSchemaField = {
 	name: string,
-	label?: ModelSchemaLangJson,
+	label: ModelSchemaLangJson,
 	data_type: ModelSchemaFieldDataType,
 	description?: ModelSchemaLangJson,
 	placeholder?: ModelSchemaLangJson,
 	is_auto_generated?: boolean,
-	is_required_for_create: boolean,
-	is_required_for_update: boolean,
+	is_required_for_create?: boolean,
+	is_required_for_update?: boolean,
 	is_primary_key?: boolean,
 	is_system_field?: boolean,
 	no_update?: boolean,
@@ -71,6 +71,11 @@ export type FieldDataTypeOptName = 'enumValues'
 
 /** Localized UI strings (e.g. labels) keyed by locale tag. */
 export type ModelSchemaLangJson = Record<string, string>;
+export const LangJsonRefKey = '$ref';
+
+export function newLangJsonRef(ref: string): ModelSchemaLangJson {
+	return { [LangJsonRefKey]: ref };
+}
 
 export type ModelSchemaRelation = {
 	edge: string,

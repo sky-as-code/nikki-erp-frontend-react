@@ -4,7 +4,8 @@ import React from 'react';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 
 import { type ReduxThunkState } from '../../appState/reduxActionState';
-import { useDynamicModel } from '../../hooks/useDynamicModel';
+import { useDynamicModel } from '../../hookhoc/useDynamicModel';
+import { LocalizeFn } from '../../i18n';
 import { useMicroAppDispatch, useMicroAppSelector } from '../../microApp';
 import { LoadingState } from '../Loading';
 
@@ -42,6 +43,7 @@ type FormFieldContextValue = {
 	errors: ReturnType<typeof useForm>['formState']['errors'],
 	register: ReturnType<typeof useForm>['register'],
 	getFieldDef: (fieldName: string) => dyn.ModelSchemaField | undefined,
+	localize: LocalizeFn,
 };
 
 const FormFieldContext = React.createContext<FormFieldContextValue | undefined>(undefined);
@@ -62,9 +64,9 @@ export function useFieldData(fieldName: string) {
 		return null;
 	}
 
-	const label = extractLabel(fieldDef.label);
-	const description = fieldDef.description ? extractLabel(fieldDef.description) : undefined;
-	const placeholder = fieldDef.placeholder ? extractLabel(fieldDef.placeholder) : undefined;
+	const label = fieldDef.label;
+	const description = fieldDef.description ? fieldDef.description : undefined;
+	const placeholder = fieldDef.placeholder ? fieldDef.placeholder : undefined;
 	const isRequired = Boolean((fieldDef as any)['is_required_for_' + formVariant]);
 	const rawError = errors[fieldName]?.message as string | undefined;
 	// Extract translation key from $ref format if present
@@ -119,6 +121,7 @@ export type FormVariant = 'create' | 'update';
 export type CrudFormProviderProps = BaseFormProviderProps & {
 	schemaName: string,
 	formVariant: FormVariant;
+	localize: LocalizeFn;
 
 	// Selector to get form field values
 	dataSelector?: (state: any) => any,
@@ -131,7 +134,6 @@ export type CrudFormProviderProps = BaseFormProviderProps & {
 };
 
 export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode {
-	const { children } = props;
 	const schemaPack = useDynamicModel(props.schemaName);
 	const modelValue = useMicroAppSelector(props.dataSelector ?? null);
 	const actionState = useMicroAppSelector(props.submitActionSelector) as ReduxThunkState;
@@ -171,13 +173,14 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 				control,
 				errors,
 				formVariant: props.formVariant,
+				localize: props.localize,
 				crudSchema: schemaPack,
 				modelSchema: schemaPack.modelSchema,
 				register,
 				getFieldDef: (fieldName) => schemaPack?.modelSchema?.fields[fieldName],
 			}}
 		>
-			{children({
+			{props.children({
 				handleSubmit: (onValid: HandleSubmitOnValid): SubmitEventHandler =>{
 					return handleSubmit((data) => {
 						const postprocessed = onValid(data);
@@ -188,7 +191,7 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 				},
 				reset,
 				form,
-				isLoading: actionState.status === 'pending',
+				isLoading: actionState.isLoading,
 			})}
 		</FormFieldContext.Provider>
 	) : <LoadingState />;
@@ -197,17 +200,18 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 export type AdhocFormProviderProps = BaseFormProviderProps & {
 	formVariant: FormVariant;
 	modelSchema: dyn.ModelSchema,
+	localize: LocalizeFn,
 	modelValue?: Record<string, any>;
 	modelLoading?: boolean;
 };
 
 export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNode {
-	const { formVariant, modelSchema, modelValue, modelLoading = false, children } = props;
-	const zodSchema = React.useMemo(() => dyn.buildValidationSchema(modelSchema), [modelSchema]);
+	const { modelLoading = false } = props;
+	const zodSchema = React.useMemo(() => dyn.buildValidationSchema(props.modelSchema), [props.modelSchema]);
 
 	const form = useForm({
 		resolver: zodResolver(zodSchema),
-		defaultValues: modelValue || {},
+		defaultValues: props.modelValue || {},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
@@ -222,28 +226,29 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 
 	// Reset form when modelValue changes
 	React.useEffect(() => {
-		if (zodSchema && modelValue) {
-			reset(modelValue);
+		if (zodSchema && props.modelValue) {
+			reset(props.modelValue);
 		}
-	}, [zodSchema, modelValue, reset]);
+	}, [zodSchema, props.modelValue, reset]);
 
 	return (
 		<FormFieldContext.Provider
 			value={{
 				control,
 				errors,
-				formVariant,
+				formVariant: props.formVariant,
+				localize: props.localize,
 				adhocSchema: {
-					modelSchema,
+					modelSchema: props.modelSchema,
 				},
-				modelSchema,
-				modelValue,
+				modelSchema: props.modelSchema,
+				modelValue: props.modelValue,
 				modelLoading,
 				register,
-				getFieldDef: (fieldName) => modelSchema.fields[fieldName],
+				getFieldDef: (fieldName) => props.modelSchema.fields[fieldName],
 			}}
 		>
-			{props.modelLoading ? <LoadingState /> : children({
+			{props.modelLoading ? <LoadingState /> : props.children({
 				handleSubmit,
 				reset,
 				form,
@@ -252,11 +257,6 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 		</FormFieldContext.Provider>
 	);
 };
-
-export function extractLabel(label: dyn.ModelSchemaLangJson | undefined): string {
-	if (!label) return '';
-	return label['en-US'];
-}
 
 /**
  * Extract full translation key from $ref format: { "$ref": "translation.key.path" }
@@ -329,6 +329,7 @@ export const FormFieldProvider: React.FC<FormFieldProviderProps> = (props) => {
 				control,
 				errors,
 				formVariant,
+				localize: null as any,
 				modelSchema,
 				modelValue,
 				modelLoading,

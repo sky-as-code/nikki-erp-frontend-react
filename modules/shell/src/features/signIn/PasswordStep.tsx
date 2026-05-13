@@ -2,9 +2,9 @@ import { Anchor, Button, Group, Stack, Text } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
 import { useContinueSignIn, useStartSignIn } from '@nikkierp/shell/authenticate';
 import { AdhocFormProvider, AutoField, FormStyleProvider } from '@nikkierp/ui/components/form';
+import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconLock } from '@tabler/icons-react';
 import React, { useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
 import { passwordSchema } from './passwordSchema';
@@ -20,6 +20,7 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 	const dispatch = useDispatch<AppDispatch>();
 	const { data: startSignInData } = useStartSignIn();
 	const { isError, isLoading, thunkAction: continueSignIn } = useContinueSignIn();
+	const localize = useLocalize('common');
 
 	const handleSubmit = async (data: { password: string }) => {
 		// This would be passed as a prop in a real implementation
@@ -33,7 +34,7 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 
 	return (
 		<FormStyleProvider layout='onecol'>
-			<AdhocFormProvider formVariant='create' modelSchema={passwordSchema}>
+			<AdhocFormProvider formVariant='create' modelSchema={passwordSchema} localize={localize}>
 				{({ handleSubmit: formHandleSubmit }) => (
 					<form ref={formRef} onSubmit={formHandleSubmit(handleSubmit)} noValidate>
 						<PasswordStepFormContent
@@ -48,8 +49,7 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 }
 
 function PasswordStepFormContent(props: PasswordStepFormContentProps): React.ReactNode {
-	const {t} = useTranslation();
-
+	const t = useTranslate('common');
 	return (
 		<Stack gap='md'>
 			<AutoField
@@ -70,7 +70,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							size='sm'
 							className='text-blue-600 hover:text-blue-800 transition-colors'
 						>
-							{t('nikki.shell.signIn.forgotPassword')}?
+							{t('signIn.forgotPassword')}?
 						</Anchor>
 					</Group>
 
@@ -81,7 +81,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							loading={props.isLoading}
 							disabled={props.isLoading}
 						>
-							{t('nikki.shell.signIn.signIn')}
+							{t('action.signIn')}
 						</Button>
 						<Button
 							type='button' variant='outline' fullWidth size='lg'
@@ -89,7 +89,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							onClick={props.onBack}
 							disabled={props.isLoading}
 						>
-							{t('nikki.shell.signIn.back')}
+							{t('action.back')}
 						</Button>
 					</Group>
 				</>

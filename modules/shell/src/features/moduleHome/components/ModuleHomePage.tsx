@@ -24,7 +24,7 @@ export interface FilterState {
 
 export function ModuleHomePage(): React.ReactNode {
 	const dispatch = useDispatch();
-	const listAll = useListAllModules();
+	const listAll = useListAllModules(true);
 	const {
 		viewMode,
 		setViewMode,
@@ -80,7 +80,6 @@ export function ModuleHomePage(): React.ReactNode {
 							/>
 						</Box>
 						<Box h={'100%'} p={0}>
-							{listAll.isError && <div>Error loading modules: {listAll.error}</div>}
 							{listAll.isDone && viewMode === 'grid' ? gridView : listView}
 						</Box>
 					</Box>

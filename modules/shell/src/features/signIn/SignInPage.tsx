@@ -1,8 +1,8 @@
 import { Card, Container, Stack, Text, Title } from '@mantine/core';
 import { useIsAuthenticated, useStartSignIn, useContinueSignIn } from '@nikkierp/shell/authenticate';
 import { actions as routingActions } from '@nikkierp/ui/appState/routingSlice';
+import { useTranslate } from '@nikkierp/ui/i18n';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router';
 
@@ -33,7 +33,7 @@ export function SignInPage(): React.ReactNode {
 
 	React.useEffect(() => {
 		if (isAuthenticated) {
-			dispatch(routingActions.navigateReturnTo(returnTo));
+			dispatch(routingActions.navigateReturnTo({ to: returnTo ?? '/', hardNavigate: false }));
 		}
 	}, [isAuthenticated]);
 
@@ -79,7 +79,7 @@ type SignInCardProps = {
 };
 
 function SignInCard(props: SignInCardProps): React.ReactNode {
-	const {t} = useTranslation();
+	const t = useTranslate('common');
 
 	return (
 		<Card
@@ -91,10 +91,10 @@ function SignInCard(props: SignInCardProps): React.ReactNode {
 			<Stack gap='lg'>
 				<div className='text-center'>
 					<Title order={1} className='text-3xl font-bold text-gray-800 mb-2'>
-						{t('nikki.shell.signIn.title')}
+						{t('signIn.title')}
 					</Title>
 					<Text c='dimmed' size='lg'>
-						{t('nikki.shell.signIn.description')}
+						{t('signIn.subtitle')}
 					</Text>
 				</div>
 
