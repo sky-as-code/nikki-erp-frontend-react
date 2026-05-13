@@ -1,5 +1,5 @@
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
-import { UseStateSelectorFn } from '@nikkierp/ui/microApp';
+// import { UseStateSelectorFn } from '@nikkierp/ui/microApp';
 import { createSelector } from '@reduxjs/toolkit';
 import { useSelector } from 'react-redux';
 
@@ -19,43 +19,47 @@ import { SLICE_NAME, UserContextState } from './userContextSlice';
 import type { RootState } from '../appState/store';
 
 
-export const selectUserContextState = (state: RootState) => state[SLICE_NAME as keyof RootState] as UserContextState;
+function selectUserContextState(state: RootState) {
+	return state[SLICE_NAME as keyof RootState] as UserContextState;
+}
+
+export const selectGetUserContext = svc.getUserContext.selector;
+
+export { selectMyOrgs };
 
 export function useGetUserContext() {
 	return svc.getUserContext.useHook(useSelector);
 }
 
-export const selectGetUserContext = svc.getUserContext.selector;
+export function useUserContext() {
+	return useGetUserContext().data;
+}
 
-const selectPermissions = createSelector(
-	selectUserContextState,
-	(userContext: UserContextState) => userContext.getUserContext.data?.entitlements ?? [],
-);
-const selectMyOrgs = createSelector(
-	selectUserContextState,
-	(userContext: UserContextState) => userContext.getUserContext.data?.orgs ?? [] as UserContextOrg[],
-);
-const selectFindMyOrg = createSelector(
-	selectMyOrgs,
-	(_, orgSlug: string) => orgSlug,
-	(orgs: UserContextOrg[], orgSlug) => orgs.find(o => o.slug === orgSlug) ?? null,
-);
+export function useAccountSettings() {
+	return useGetUserContext().data?.accountSettings ?? null;
+}
 
-const selectFirstOrgSlug = createSelector(
-	selectMyOrgs,
-	(myOrgs) => myOrgs[0]?.slug ?? null as (string | null),
-);
+export function useSystemSettings() {
+	return useGetUserContext().data?.systemSettings ?? null;
+}
 
-const selectUserContext = createSelector(
-	selectUserContextState,
-	(userContext: UserContextState) => userContext.getUserContext.data ?? null,
-);
+export function useSetLocalSettings() {
+	return svc.setLocalSettings.useHook(useSelector);
+}
 
-export { selectMyOrgs };
-export const useFirstOrgSlug = () => useSelector(selectFirstOrgSlug);
-export const useUserContext = () => useSelector(selectUserContext);
-export const useMyOrgs = () => useSelector(selectMyOrgs);
-export const useFindMyOrg = (orgSlug: string) => useSelector(state => selectFindMyOrg(state, orgSlug));
+export function useLocalSettings() {
+	return useSetLocalSettings().data;
+}
+
+export function useFirstOrgSlug() {
+	return useSelector(selectFirstOrgSlug);
+}
+export function useMyOrgs() {
+	return useSelector(selectMyOrgs);
+}
+export function useFindMyOrg(orgSlug: string) {
+	return useSelector(state => selectFindMyOrg(state, orgSlug));
+}
 
 // export const useHasPermission = (
 // 	resource: string,
@@ -76,6 +80,25 @@ export const useActiveOrgDetail = () => {
 	const { orgSlug } = useActiveOrgModule();
 	return useFindMyOrg(orgSlug ?? '');
 };
+
+// const selectPermissions = createSelector(
+// 	selectUserContextState,
+// 	(userContext: UserContextState) => userContext.getUserContext.data?.entitlements ?? [],
+// );
+const selectMyOrgs = createSelector(
+	selectUserContextState,
+	(userContext: UserContextState) => userContext.getUserContext.data?.orgs ?? [] as UserContextOrg[],
+);
+const selectFindMyOrg = createSelector(
+	selectMyOrgs,
+	(_, orgSlug: string) => orgSlug,
+	(orgs: UserContextOrg[], orgSlug) => orgs.find(o => o.slug === orgSlug) ?? null,
+);
+
+const selectFirstOrgSlug = createSelector(
+	selectMyOrgs,
+	(myOrgs) => myOrgs[0]?.slug ?? null as (string | null),
+);
 
 // export const useHasAnyPermission = (
 // 	resource: string,

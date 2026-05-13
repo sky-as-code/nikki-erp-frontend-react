@@ -1,30 +1,40 @@
 import { MenuBarItem } from '@nikkierp/ui/appState/layoutSlice';
-import { useTranslation } from 'react-i18next';
+import { useTranslate } from '@nikkierp/ui/i18n';
 
 
-export function useMenuBarItems(): MenuBarItem[] {
-	const { t: translate } = useTranslation();
+export function useIdentityMenuBarItems(): MenuBarItem[] {
+	const t = useTranslate('identity');
 
 	const items: MenuBarItem[] = [
 		{
-			label: translate('nikki.identity.menu.overview'),
+			label: t('menu.overview'),
 			link: '/overview',
 		},
 		{
-			label: translate('nikki.identity.menu.users'),
-			link: '/users',
+			label: t('menu.users'),
+			items: [
+				{
+					label: t('menu.users'),
+					link: '/users',
+				},
+				{
+					label: t('menu.groups'),
+					link: '/groups',
+				},
+			],
 		},
 		{
-			label: translate('nikki.identity.menu.groups'),
-			link: '/groups',
-		},
-		{
-			label: translate('nikki.identity.menu.organizations'),
-			link: '/organizations',
-		},
-		{
-			label: translate('nikki.identity.menu.hierarchyLevels'),
-			link: '/hierarchy-levels',
+			label: t('menu.organizations'),
+			items: [
+				{
+					label: t('menu.organizations'),
+					link: '/organizations',
+				},
+				{
+					label: t('menu.organizationalUnits'),
+					link: '/org-units',
+				},
+			],
 		},
 	];
 

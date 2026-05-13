@@ -1,13 +1,13 @@
 import { Button, Center, Group, Stack, Text, Title, useMantineTheme } from '@mantine/core';
 import { useFirstOrgSlug } from '@nikkierp/shell/userContext';
-import { useDocumentTitle } from '@nikkierp/ui/hooks';
+import { useWindowTitleI18n } from '@nikkierp/ui/hookhoc';
 import { IconArrowLeft, IconHome, IconMoodSad } from '@tabler/icons-react';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
 
 export function NotFoundPage(): React.ReactNode {
-	useDocumentTitle('nikki.shell.notFound.title', '404 - Page Not Found');
+	useWindowTitleI18n('page_not_found');
 
 	return (
 		<Center h='100%'>

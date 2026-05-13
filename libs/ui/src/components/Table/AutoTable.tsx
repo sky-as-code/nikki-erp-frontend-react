@@ -1,11 +1,10 @@
 import { Anchor, Loader, Table } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamic_model';
 import React, { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-import { useDynamicModel } from '../../hooks/useDynamicModel';
-import { extractLabel } from '../form';
+import { useDynamicModel } from '../../hookhoc/useDynamicModel';
+import { useLocalize, useTranslate } from '../../i18n';
 import { LoadingState } from '../Loading';
 
 
@@ -21,6 +20,8 @@ export type HeaderRenderer = (columnName: string, schema: dyn.ModelSchema) => Re
 
 export type AutoTableProps = {
 	schemaName: string;
+	// i18next namespace of this resource (namespace "common" is included by default)
+	translationNs: string,
 	columnSizes?: Record<string, ColumnSize>;
 	columnAsLink?: string;
 	columnAsLinkHref?: (rowData: any) => string;
@@ -58,7 +59,7 @@ type ResolvedAutoTableProps = AutoTableBodyProps & {
 };
 
 const AutoTableBody: React.FC<AutoTableBodyProps> = (props) => {
-	const { t } = useTranslation();
+	const t = useTranslate(props.translationNs);
 	const columnAsId = props.columnAsId ?? 'id';
 
 	const columns = useMemo(
@@ -97,6 +98,7 @@ const AutoTableBody: React.FC<AutoTableBodyProps> = (props) => {
 				columns={columns}
 				headerRenderers={props.headerRenderers}
 				modelSchema={props.modelSchema}
+				translationNs={props.translationNs}
 			/>
 			<Table.Tbody>
 				{props.isLoading && (
@@ -130,8 +132,9 @@ const AutoTableHead: React.FC<{
 	columns: string[];
 	headerRenderers?: Record<string, HeaderRenderer>;
 	modelSchema: dyn.ModelSchema;
-}> = React.memo(({ columns, headerRenderers, modelSchema }) => {
-	const { t } = useTranslation();
+	translationNs: string;
+}> = React.memo(({ columns, headerRenderers, modelSchema, translationNs }) => {
+	const localize = useLocalize(translationNs);
 
 	return (
 		<Table.Thead>
@@ -146,7 +149,7 @@ const AutoTableHead: React.FC<{
 					}
 					return (
 						<Table.Th key={col}>
-							{t(getColumnLabel(modelSchema, col))}
+							{localize(modelSchema.fields[col]?.label)}
 						</Table.Th>
 					);
 				})}
@@ -287,13 +290,6 @@ function buildDetailHref(id: string): string {
 // ---------------------------------------------------------------------------
 // Column helpers
 // ---------------------------------------------------------------------------
-
-function getColumnLabel(schema: dyn.ModelSchema, fieldName: string): string {
-	const field = schema.fields[fieldName];
-	if (!field) return fieldName;
-	const label = extractLabel(field.label);
-	return label || fieldName;
-}
 
 function parsePxValue(value: number | string): number | null {
 	if (typeof value === 'number') return value;

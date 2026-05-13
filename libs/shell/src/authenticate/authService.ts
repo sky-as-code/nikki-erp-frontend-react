@@ -2,7 +2,7 @@ import { ClientErrors } from '@nikkierp/common/types';
 import * as uiState from '@nikkierp/ui/appState';
 
 import * as t from './types';
-import * as userCxtSvc from '../userContext/userContextService';
+import { actions as userCxtActions } from '../userContext/userContextSlice';
 
 
 export type LoginCredentials = Record<string, unknown>;
@@ -12,8 +12,6 @@ export type InitAuthServiceParams = {
 	accessTokenStorage: t.ITokenStorage;
 	refreshTokenStorage: t.ITokenStorage;
 };
-
-// let authServiceInstance: AuthService | null = null;
 
 let strategy: t.ISignInStrategy;
 let accessTokenStorage: t.ITokenStorage;
@@ -53,7 +51,7 @@ export const continueSignIn = uiState.createThunkPack<t.SignInResult, t.SignInPa
 		const result = await strategy.continueSignIn(params);
 		if (result?.done) {
 			onSignInSuccess(result.data!);
-			dispatch(userCxtSvc.getUserContext.thunkAction());
+			dispatch(userCxtActions.getUserContext());
 		}
 		return result;
 	},
@@ -81,13 +79,26 @@ export const signOut = uiState.createThunkPack<void, void, 'signOut'>(
 export const restoreAuthSession = uiState.createThunkPack<boolean, void, 'restoreAuthSession'>(
 	t.SLICE_NAME, 'restoreAuthSession',
 	async function restoreSession(_, { dispatch }): Promise<boolean> {
-		const refreshObj = refreshTokenStorage.getToken();
-		if (!refreshObj || refreshObj.isExpired) {
+		const accessToken = await ensureAccessToken();
+		if (!accessToken) {
+			await dispatch(settleSession.thunkAction());
 			return false;
 		}
-		const session = await strategy.refreshSession({ refreshToken: refreshObj.token });
-		onSignInSuccess(session);
-		dispatch(userCxtSvc.getUserContext.thunkAction());
+
+		queueMicrotask(async () => {
+			await dispatch(userCxtActions.getUserContext());
+			dispatch(settleSession.thunkAction());
+		});
+
+		return true;
+	},
+);
+
+// Indicates that there will be no more attempt to authenticate, or restore session.
+// Other components can rely on this state to determine if they should read user context or keep waiting.
+export const settleSession = uiState.createThunkPack<boolean, void, 'settleSession'>(
+	t.SLICE_NAME, 'settleSession',
+	async function settleSessionThunk() {
 		return true;
 	},
 );
@@ -106,10 +117,7 @@ export async function ensureAccessToken(): Promise<string> {
 
 async function restoreSession(): Promise<boolean> {
 	const refreshObj = refreshTokenStorage.getToken();
-	if (!refreshObj) {
-		return false;
-	}
-	if (refreshObj.isExpired) {
+	if (!refreshObj || refreshObj.isExpired) {
 		return false;
 	}
 	try {

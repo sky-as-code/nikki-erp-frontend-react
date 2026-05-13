@@ -31,9 +31,9 @@ const routingSlice = createSlice({
 			state.returnTo = actual.returnTo;
 		},
 		// Navigates to a path and set the `returnTo` parameter
-		navigateWillReturn: (state, action: PayloadAction<string>) => {
+		navigateWillReturn: (state, action: PayloadAction<ActionNavigateToParams>) => {
 			const actual = getActualPath();
-			const destPath = parsePath(action.payload);
+			const destPath = parsePath(action.payload.to);
 			if (!destPath.pathname) {
 				throw new Error('Invalid destination path');
 			}
@@ -56,22 +56,25 @@ const routingSlice = createSlice({
 			state.actionUpdatedAt = Date.now();
 			state.actionParams = {
 				to: finalPath,
+				hardNavigate: action.payload.hardNavigate ?? false,
 			};
 		},
 		// Navigates to a path whose value is URL-encoded (i.e: `returnTo` parameter)
-		navigateReturnTo: (state, action: PayloadAction<string | null | undefined>) => {
+		navigateReturnTo: (state, action: PayloadAction<ActionNavigateToParams>) => {
 			state.action = 'navigateTo';
 			state.actionUpdatedAt = Date.now();
 			state.actionParams = {
-				to: decodeURIComponent(action.payload ?? '/'),
+				to: decodeURIComponent(action.payload.to ?? '/'),
+				hardNavigate: action.payload.hardNavigate ?? false,
 			};
 		},
 		// Navigates to a path whose value is not URL-encoded
-		navigateTo: (state, action: PayloadAction<string>) => {
+		navigateTo: (state, action: PayloadAction<ActionNavigateToParams>) => {
 			state.action = 'navigateTo';
 			state.actionUpdatedAt = Date.now();
 			state.actionParams = {
-				to: action.payload,
+				to: action.payload.to,
+				hardNavigate: action.payload.hardNavigate ?? false,
 			};
 		},
 		setActiveOrg: (state, action: PayloadAction<string | undefined | null>) => {
@@ -102,6 +105,11 @@ export const actions = {
 };
 
 export const { reducer } = routingSlice;
+
+export type ActionNavigateToParams = {
+	to: string;
+	hardNavigate?: boolean;
+};
 
 const selectRoutingState = (state: any) => state[SLICE_NAME];
 const selectCurrentPath = createSelector(

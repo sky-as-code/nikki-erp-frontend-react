@@ -29,7 +29,7 @@ export interface ReduxThunkState<T =  any> {
 	isLoading: boolean;
 	isDone: boolean;
 	isError: boolean;
-	error: string | null;
+	error: unknown | null;
 	data: T | null;
 	requestId: string | null;
 }
@@ -75,7 +75,7 @@ export type ThunkPackHookReturn<TReturn, TArg> = {
 	isLoading: boolean;
 	isDone: boolean;
 	isError: boolean;
-	error: string | null;
+	error: unknown | null;
 	data: TReturn | null;
 };
 
@@ -86,7 +86,7 @@ export type ThunkPack<TReturn = void, TArg = void, TStateKey extends string = st
 	initialState: ReduxThunkState<TReturn>,
 	selector: (state: any) => ReduxThunkState<TReturn>,
 	buildThunkReducers: (builder: ActionReducerMapBuilder<any>) => void,
-	useHook: (useSelectorFn: ThunkPackUseSelectorFn) => ThunkPackHookReturn<TReturn, TArg>,
+	useHook: (useSelectorFn: ThunkPackUseSelectorFn, throwOnError?: boolean) => ThunkPackHookReturn<TReturn, TArg>,
 };
 
 export type ThunkPackUseSelectorFn = UseStateSelectorFn<any> | UseSelector<unknown>;
@@ -133,9 +133,18 @@ function buildThunkPack<TReturn, TArg, TStateKey extends string>(
 		buildThunkReducers(builder: ActionReducerMapBuilder<any>) {
 			buildThunkReducers(builder, thunk, resetAction, actionName);
 		},
-		useHook(useSelectorFn: ThunkPackUseSelectorFn) {
+		/**
+		 *
+		 * @param useSelectorFn Pass the useSelector function from react-redux or useMicroAppSelector.
+		 * @param throwOnError If true, throw an error if the thunk is in error state. Only set this param when
+		 * you are sure the component is wrapped with ErrorBoundary.
+		 */
+		useHook(useSelectorFn: ThunkPackUseSelectorFn, throwOnError: boolean = false) {
 			// How to detect the caller is from shell or micro-app?
 			const thunkState = (useSelectorFn as any)(selector) as ReduxThunkState<TReturn>;
+			if (throwOnError && thunkState.isError) {
+				throw thunkState.error;
+			}
 			return {
 				thunkAction: thunk,
 				resetAction,
@@ -232,7 +241,7 @@ export function createSchemaThunk<TReturn=void, TArg=void>(
 			try {
 				const schema = await dyn.schemaRegistry.get(schemaName);
 				if (!schema) {
-					return rejectWithValue(new Error(`Schema ${schemaName} not found. Make sure it is registered with schemaRegistry.register().`));
+					return rejectWithValue(`Schema ${schemaName} not found. Make sure it is registered with schemaRegistry.register().`);
 				}
 				const result = await serviceFn(schema!, thunkArgs, thunkApi);
 				return result;
@@ -241,7 +250,7 @@ export function createSchemaThunk<TReturn=void, TArg=void>(
 				if (error instanceof ClientErrors) {
 					return rejectWithValue(error);
 				}
-				return rejectWithValue(new Error('Unrecognized error pattern: ' + error));
+				return rejectWithValue('Unrecognized error pattern: ' + String(error));
 			}
 		},
 	);
@@ -269,7 +278,7 @@ export function createThunk<TReturn=any, TArg=any>(
 	);
 }
 
-function buildThunkName(sliceName: string, actionName: string, status: string = '') {
+export function buildThunkName(sliceName: string, actionName: string, status: string = '') {
 	if (status) {
 		return `${sliceName}/${actionName}/${status}`;
 	}

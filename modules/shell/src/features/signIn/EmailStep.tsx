@@ -2,11 +2,10 @@ import { Anchor, Button, Group, Stack, Text } from '@mantine/core';
 import { AppDispatch } from '@nikkierp/shell/appState';
 import { useStartSignIn } from '@nikkierp/shell/authenticate';
 import { AdhocFormProvider, AutoField, FormStyleProvider } from '@nikkierp/ui/components/form';
+import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconMail } from '@tabler/icons-react';
-// import { useUIState } from 'node_modules/@nikkierp/shell/src/contexts/UIProviders';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { emailSchema } from './emailSchema';
 import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
@@ -15,7 +14,8 @@ import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
 export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	const formRef = React.useRef<HTMLFormElement>(null);
 	const dispatch = useDispatch<AppDispatch>();
-	const { isDone: isSuccess, isLoading, thunkAction: startSignIn } = useStartSignIn(useSelector);
+	const { isDone: isSuccess, isLoading, thunkAction: startSignIn } = useStartSignIn();
+	const localize = useLocalize('common');
 
 	React.useEffect(() => {
 		if (isSuccess && onNext) {
@@ -41,7 +41,7 @@ export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 
 	return (
 		<FormStyleProvider layout='onecol'>
-			<AdhocFormProvider formVariant='create' modelSchema={emailSchema}>
+			<AdhocFormProvider formVariant='create' modelSchema={emailSchema} localize={localize}>
 				{({ handleSubmit }) => (
 					<form ref={formRef} onSubmit={handleSubmit(handleNext)} noValidate>
 						<EmailStepFormContent ref={ref} isActive={isActive} isLoading={isLoading} />
@@ -53,7 +53,7 @@ export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 }
 
 function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
-	const {t} = useTranslation();
+	const t = useTranslate('common');
 
 	return (
 		<Stack gap='md'>
@@ -78,7 +78,7 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 							size='md'
 							className='text-blue-600 hover:text-blue-800 transition-colors'
 						>
-							{t('nikki.shell.signIn.forgotEmail')}?
+							{t('signIn.forgotEmail')}?
 						</Anchor>
 					</Group>
 
@@ -88,7 +88,7 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 						loading={props.isLoading}
 						disabled={props.isLoading}
 					>
-						{t('nikki.shell.signIn.nextStep')}
+						{t('signIn.nextStep')}
 					</Button>
 				</>
 			)}

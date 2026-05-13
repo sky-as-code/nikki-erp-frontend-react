@@ -1,6 +1,5 @@
 import { z, ZodNumber, ZodString } from 'zod';
 
-import { extractLabel } from './formContext';
 import { FieldDefinition, FieldConstraint, ModelSchema } from '../../model';
 
 
