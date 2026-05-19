@@ -3,10 +3,10 @@ import * as dyn from '@nikkierp/common/dynamic_model';
 import React from 'react';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 
-import { type ReduxThunkState } from '../../appState/reduxActionState';
+import { type ThunkPackHookReturn } from '../../appState/reduxActionState';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { LocalizeFn } from '../../i18n';
-import { useMicroAppDispatch, useMicroAppSelector } from '../../microApp';
+import { useMicroAppDispatch } from '../../microApp';
 import { LoadingState } from '../Loading';
 
 
@@ -18,12 +18,14 @@ export type FormLayout = 'onecol' | 'twocol';
 
 const FormStyleContext = React.createContext<FormStyleContextValue | undefined>(undefined);
 
+
+/**
+ * Use this hook under `FormStyleProvider` to get the form layout.
+ * Otherwise, returns null.
+ */
 export function useFormStyle() {
 	const context = React.useContext(FormStyleContext);
-	if (context === undefined) {
-		throw new Error('useFormStyle must be used within a FormStyleProvider');
-	}
-	return context;
+	return context ?? null;
 };
 
 // Form field context
@@ -98,7 +100,7 @@ export function FormStyleProvider(props: FormStyleProviderProps): React.ReactNod
 
 type HandleSubmitOnValid = (data: any) => any;
 type SubmitEventHandler = (e?: React.BaseSyntheticEvent) => Promise<void>;
-type HandleSubmitFn = (onValid: HandleSubmitOnValid) => SubmitEventHandler;
+type HandleSubmitFn = (onValid?: HandleSubmitOnValid) => SubmitEventHandler;
 
 export type FormProviderRenderProps = {
 	/**
@@ -121,29 +123,26 @@ export type FormVariant = 'create' | 'update';
 export type CrudFormProviderProps = BaseFormProviderProps & {
 	schemaName: string,
 	formVariant: FormVariant;
+	getDataRequest?: dyn.RestGetByIdRequest,
 	localize: LocalizeFn;
-
-	// Selector to get form field values
-	dataSelector?: (state: any) => any,
-	// Redux action to load form field values
-	loadDataAction?: () => any,
-	// Redux action to submit form data
-	submitAction: (data: any) => any,
-	// Selector to get state of the submitAction
-	submitActionSelector: (state: any) => ReduxThunkState,
+	// Hook returning state and thunk for loading current entity
+	useGetData?: () => ThunkPackHookReturn<dyn.RestGetOneResponse<any>, unknown>,
+	// Hook returning state and thunk for create/update submit
+	useSubmit: () => ThunkPackHookReturn<dyn.RestCreateResponse | dyn.RestMutateResponse, unknown>,
 };
 
 export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode {
 	const schemaPack = useDynamicModel(props.schemaName);
-	const modelValue = useMicroAppSelector(props.dataSelector ?? null);
-	const actionState = useMicroAppSelector(props.submitActionSelector) as ReduxThunkState;
+	const getDataAct = props.useGetData ? props.useGetData() : null;
+	const submitAct = props.useSubmit();
+	const modelValue = getDataAct?.data?.item ?? null;
 	const dispatch = useMicroAppDispatch();
 
 	React.useEffect(() => {
-		if (props.loadDataAction) {
-			dispatch(props.loadDataAction());
+		if (getDataAct) {
+			dispatch(getDataAct.thunkAction(props.getDataRequest) as any);
 		}
-	}, [dispatch, props.loadDataAction]);
+	}, []);
 
 	const form = useForm({
 		resolver: schemaPack ? zodResolver(schemaPack.validationSchema) : undefined,
@@ -181,17 +180,17 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 			}}
 		>
 			{props.children({
-				handleSubmit: (onValid: HandleSubmitOnValid): SubmitEventHandler =>{
+				handleSubmit: (onValid?: HandleSubmitOnValid): SubmitEventHandler =>{
 					return handleSubmit((data) => {
-						const postprocessed = onValid(data);
+						const postprocessed = onValid ? onValid(data) : data;
 						if (postprocessed) {
-							dispatch(props.submitAction(postprocessed));
+							dispatch(submitAct.thunkAction(postprocessed) as any);
 						}
 					});
 				},
 				reset,
 				form,
-				isLoading: actionState.isLoading,
+				isLoading: submitAct.isLoading,
 			})}
 		</FormFieldContext.Provider>
 	) : <LoadingState />;
@@ -249,7 +248,7 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 			}}
 		>
 			{props.modelLoading ? <LoadingState /> : props.children({
-				handleSubmit,
+				handleSubmit: handleSubmit as any,
 				reset,
 				form,
 				isLoading: false,

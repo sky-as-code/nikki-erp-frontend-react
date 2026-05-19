@@ -6,7 +6,7 @@ export type User = {
 	avatar_url?: string;
 	display_name?: string;
 	email?: string;
-	status?: any;
+	status?: UserStatus;
 	etag?: string;
 	created_at?: string;
 	updated_at?: string;
@@ -14,6 +14,8 @@ export type User = {
 	groups?: any[];
 	orgUnit?: any;
 };
+
+export type UserStatus = 'draft' | 'invited' | 'active' | 'suspended';
 
 export type CreateUserRequest = Record<string, any>;
 export type CreateUserResponse = dyn.RestCreateResponse;
@@ -37,3 +39,14 @@ export type UserExistsResponse = dyn.RestExistsResponse;
 
 export type UpdateUserRequest = dyn.RestUpdateRequest;
 export type UpdateUserResponse = dyn.RestMutateResponse;
+
+/* Status update */
+
+export type ActivateUserRequest = dyn.RestMutateOneRequest;
+export type ActivateUserResponse = dyn.RestMutateResponse;
+
+export type InviteUserRequest = dyn.RestMutateOneRequest;
+export type InviteUserResponse = dyn.RestMutateResponse;
+
+export type SuspendUserRequest = dyn.RestMutateOneRequest;
+export type SuspendUserResponse = dyn.RestMutateResponse;

@@ -1,363 +1,117 @@
-import {
-	ActionIcon, Anchor, Avatar, Badge, Box, Button, Group, Menu,
-	Paper, SimpleGrid, Stack, Text, TextInput, Title,
-} from '@mantine/core';
-import { IconChevronDown, IconChevronRight, IconDots } from '@tabler/icons-react';
+import { Stack } from '@mantine/core';
+import * as dyn from '@nikkierp/common/dynamic_model';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router';
 
-import {
-	DataTable, RenderTableNameFn, SearchData,
-} from './DataTable';
-import classes from './ResourceDetail.module.css';
+import { ResourceCreate } from './ResourceCreate';
+import { ResourceDetailProvider } from './ResourceDetailProvider';
+import { ResourceUpdate } from './ResourceUpdate';
+import { ThunkPackHookReturn } from '../../appState';
+import { useDynamicModel } from '../../hookhoc/useDynamicModel';
+import { MicroAppDispatchFn } from '../../microApp';
 import { usePaperBgColor } from '../../theme';
 
 
-type SchemaFieldSpec = { type: 'SchemaField', value: string };
-type LinkSpec = { type: 'Link', value: string, linkHref: string };
-type TitleSpec = SchemaFieldSpec | LinkSpec;
-
-type StatusOption = { value: string, label: string };
-type ActionDef = { label: string, reduxAction: () => unknown };
-
-type SchemaFieldGroup = { type: 'SchemaFieldGroup', fields: string[] };
-type ListContent = { type: 'List', schemaName: string, listSearchData?: SearchData };
-
-type SubSection = {
-	template?: string,
-	title?: string,
-	content?: SchemaFieldGroup | ListContent,
+export type ResourceDetailExtraAction = {
+	label: string,
+	actionHook: () => ThunkPackHookReturn<dyn.RestMutateResponse, any>,
+	condition?: (resource: any) => boolean,
+	buildRequest?: (resource: any) => unknown,
 };
 
-type TopSectionTemplateProps = {
+export type ResourceDetailContextualActions = Record<string, any>;
+
+export type SchemaFieldSpec = { schemaField: string };
+export type LinkSpec = { linkHref: string };
+
+type StatusOption = { value: string, label: string, color: string };
+
+type OwnPropertySection = {
+	header: string,
+	fieldType: 'SchemaFields' | 'CustomFields',
+	fields?: string[],
+};
+
+type ResourceDetailTemplatePropsParams = {
+	schemaName: string,
+	translationNs: string,
+	dispatch: MicroAppDispatchFn,
+	titleLvl1?: SchemaFieldSpec,
+	titleLvl2?: SchemaFieldSpec,
+	titleLvl3?: LinkSpec,
 	allStatuses?: StatusOption[],
 	currentStatus?: SchemaFieldSpec,
-	actions?: { create?: ActionDef, delete?: ActionDef, save?: ActionDef },
+	ownPropertiesSection?: OwnPropertySection[],
+	contextualActions?: ResourceDetailContextualActions,
+	actionHooks: {
+		useArchive?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestSetIsArchivedRequest>,
+		useCreate?: () => ThunkPackHookReturn<dyn.RestCreateResponse, any>,
+		useDelete?: () => ThunkPackHookReturn<dyn.RestDeleteResponse, dyn.RestDeleteRequest>,
+		useGetById: () => ThunkPackHookReturn<dyn.RestGetOneResponse<any>, dyn.RestGetByIdRequest>,
+		useUpdate?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
+	},
 };
 
-type TopSection = {
-	template?: string,
-	templateProps?: TopSectionTemplateProps,
-	sections?: SubSection[],
-};
+export class ResourceDetailTemplateProps {
+	public readonly params: ResourceDetailTemplatePropsParams;
 
-type RelatedResource = {
-	schemaName?: string,
-	label?: string,
-	count?: number,
-};
-
-export type ResourceDetailParams = {
-	schemaName: string,
-	reduxAction: (pathParams: Record<string, string>) => unknown,
-	titleLvl1: TitleSpec,
-	titleLvl2: TitleSpec,
-	titleLvl3: TitleSpec,
-	relatedResources: RelatedResource[],
-	sections: TopSection[],
-};
+	constructor(params: ResourceDetailTemplatePropsParams) {
+		this.params = params;
+	}
+}
 
 export type ResourceDetailProps = {
-	props: ResourceDetailParams,
+	props: ResourceDetailTemplateProps,
 };
-
 
 export function ResourceDetail({ props }: ResourceDetailProps): React.ReactNode {
+	if (! (props instanceof ResourceDetailTemplateProps)) {
+		throw new Error('props must be an instance of ' + ResourceDetailTemplateProps.name);
+	}
+	const params = props.params;
+	const pack = useDynamicModel(params.schemaName);
 	const bgColor = usePaperBgColor();
+	const getByIdAct = params.actionHooks.useGetById();
+	const createAct = params.actionHooks.useCreate?.();
+	const updateAct = params.actionHooks.useUpdate?.();
+	const { id } = useParams();
+	const createMode = id === 'new';
+	const isReading = getByIdAct.isLoading;
+	const isWriting = Boolean(createAct?.isLoading || updateAct?.isLoading);
+
 	return (
-		<Stack
-			bg={bgColor}
-			className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 px-4 flex'
-			gap='md'
+		<ResourceDetailProvider
+			translationNs={params.translationNs}
+			schemaPack={pack}
+			isReading={isReading}
+			isWriting={isWriting}
 		>
-			<ResourceHeader
-				titleLvl1={props.titleLvl1}
-				titleLvl2={props.titleLvl2}
-				titleLvl3={props.titleLvl3}
-				relatedResources={props.relatedResources}
-				bgColor={bgColor}
-			/>
-			{props.sections.map((section, idx) => (
-				<TopSectionView key={idx} section={section} bgColor={bgColor} />
-			))}
-		</Stack>
-	);
-}
-
-
-type ResourceHeaderProps = {
-	titleLvl1: TitleSpec,
-	titleLvl2: TitleSpec,
-	titleLvl3: TitleSpec,
-	relatedResources: RelatedResource[],
-	bgColor: string,
-};
-
-function ResourceHeader(props: ResourceHeaderProps): React.ReactNode {
-	return (
-		<Group align='stretch' gap='md' wrap='nowrap'>
-			<ResourceThumbnail />
-			<ResourceTitleBlock
-				titleLvl1={props.titleLvl1}
-				titleLvl2={props.titleLvl2}
-				titleLvl3={props.titleLvl3}
-			/>
-			{props.relatedResources.map((resource, idx) => (
-				<RelatedResourceCard key={idx} resource={resource} bgColor={props.bgColor} />
-			))}
-		</Group>
-	);
-}
-
-function ResourceThumbnail(): React.ReactNode {
-	return <Avatar size={100} radius='md' className={classes.thumbnail} />;
-}
-
-
-type ResourceTitleBlockProps = {
-	titleLvl1: TitleSpec,
-	titleLvl2: TitleSpec,
-	titleLvl3: TitleSpec,
-};
-
-function ResourceTitleBlock(props: ResourceTitleBlockProps): React.ReactNode {
-	return (
-		<Stack gap={4}>
-			<TitleSpecValue spec={props.titleLvl1} as='h3' />
-			<TitleSpecValue spec={props.titleLvl2} as='subtitle' />
-			<TitleSpecValue spec={props.titleLvl3} as='caption' />
-		</Stack>
-	);
-}
-
-
-type TitleSpecValueProps = {
-	spec: TitleSpec,
-	as: 'h3' | 'subtitle' | 'caption',
-};
-
-function TitleSpecValue({ spec, as }: TitleSpecValueProps): React.ReactNode {
-	const { t } = useTranslation();
-	if (spec.type === 'Link') {
-		return <Anchor href={spec.linkHref} size={as === 'h3' ? 'xl' : 'sm'}>{t(spec.value)}</Anchor>;
-	}
-	if (as === 'h3') {
-		return <Title order={3}>{`{${spec.value}}`}</Title>;
-	}
-	return <Text c={as === 'caption' ? 'dimmed' : undefined}>{`{${spec.value}}`}</Text>;
-}
-
-
-type RelatedResourceCardProps = {
-	resource: RelatedResource,
-	bgColor: string,
-};
-
-function RelatedResourceCard(props: RelatedResourceCardProps): React.ReactNode {
-	const { t } = useTranslation();
-	const label = props.resource.label ? t(props.resource.label) : '';
-	return (
-		<Paper p='md' bg={props.bgColor} withBorder className='min-w-[160px]'>
-			<Stack gap={4} align='flex-start'>
-				<Text fw={600}>{label}</Text>
-				<Text size='xl'>{props.resource.count ?? 0}</Text>
+			<Stack
+				bg={bgColor}
+				className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 px-4 pb-4 flex overflow-auto'
+				gap='md'
+			>
+				{createMode ? (
+					<ResourceCreate
+						actionHooks={params.actionHooks}
+						titleLvl1={params.titleLvl1}
+						titleLvl3={params.titleLvl3}
+						blocks={params.ownPropertiesSection ?? []}
+					/>
+				) : (
+					<ResourceUpdate
+						dispatch={params.dispatch}
+						allStatuses={params.allStatuses}
+						currentStatus={params.currentStatus}
+						contextualActions={params.contextualActions}
+						actionHooks={params.actionHooks}
+						titleLvl1={params.titleLvl1}
+						titleLvl2={params.titleLvl2}
+						titleLvl3={params.titleLvl3}
+						blocks={params.ownPropertiesSection ?? []}
+					/>
+				)}
 			</Stack>
-		</Paper>
+		</ResourceDetailProvider>
 	);
-}
-
-
-type TopSectionViewProps = {
-	section: TopSection,
-	bgColor: string,
-};
-
-function TopSectionView({ section, bgColor }: TopSectionViewProps): React.ReactNode {
-	const subSections = section.sections ?? [];
-	if (!section.template && subSections.length === 0) {
-		return null;
-	}
-	return (
-		<Paper p='md' bg={bgColor} withBorder>
-			<Stack gap='md'>
-				<SectionActionBar templateProps={section.templateProps ?? {}} />
-				{subSections.map((sub, idx) => (
-					<SubSectionView key={idx} subSection={sub} bgColor={bgColor} />
-				))}
-			</Stack>
-		</Paper>
-	);
-}
-
-
-type SectionActionBarProps = { templateProps: TopSectionTemplateProps };
-
-function SectionActionBar({ templateProps }: SectionActionBarProps): React.ReactNode {
-	const actions = templateProps.actions;
-	if (!actions && !templateProps.allStatuses) {
-		return null;
-	}
-	return (
-		<Group justify='space-between' wrap='wrap'>
-			<Group gap='xs'>
-				{actions?.create ? <CreateActionMenu action={actions.create} /> : null}
-				{actions?.save ? <ActionLabelButton action={actions.save} /> : null}
-				{actions?.delete ? <ActionLabelButton action={actions.delete} variant='outline' /> : null}
-			</Group>
-			<StatusFlow statuses={templateProps.allStatuses ?? []} current={templateProps.currentStatus} />
-		</Group>
-	);
-}
-
-
-type ActionLabelButtonProps = { action: ActionDef, variant?: 'filled' | 'outline' };
-
-function ActionLabelButton({ action, variant = 'outline' }: ActionLabelButtonProps): React.ReactNode {
-	const { t } = useTranslation();
-	return <Button variant={variant} size='compact-md'>{t(action.label)}</Button>;
-}
-
-
-function CreateActionMenu({ action }: { action: ActionDef }): React.ReactNode {
-	const { t } = useTranslation();
-	return (
-		<Menu shadow='md' position='bottom-start'>
-			<Menu.Target>
-				<Button variant='filled' size='compact-md' rightSection={<IconChevronDown size={14} />}>
-					{t(action.label)}
-				</Button>
-			</Menu.Target>
-			<Menu.Dropdown>
-				<Menu.Item>{t(action.label)}</Menu.Item>
-			</Menu.Dropdown>
-		</Menu>
-	);
-}
-
-
-type StatusFlowProps = {
-	statuses: StatusOption[],
-	current?: SchemaFieldSpec,
-};
-
-function StatusFlow({ statuses, current }: StatusFlowProps): React.ReactNode {
-	const { t } = useTranslation();
-	if (statuses.length === 0) {
-		return null;
-	}
-	return (
-		<Group gap={4} wrap='wrap'>
-			{statuses.map((status, idx) => (
-				<React.Fragment key={status.value}>
-					{idx > 0 ? <IconChevronRight size={14} /> : null}
-					<Badge variant={current ? 'light' : 'outline'}>{t(status.label)}</Badge>
-				</React.Fragment>
-			))}
-		</Group>
-	);
-}
-
-
-type SubSectionViewProps = {
-	subSection: SubSection,
-	bgColor: string,
-};
-
-function SubSectionView({ subSection, bgColor }: SubSectionViewProps): React.ReactNode {
-	if (subSection.content?.type === 'List') {
-		return <CollapsibleListSection subSection={subSection} list={subSection.content} bgColor={bgColor} />;
-	}
-	return <SimpleSubSectionView subSection={subSection} />;
-}
-
-
-function SimpleSubSectionView({ subSection }: { subSection: SubSection }): React.ReactNode {
-	const { t } = useTranslation();
-	const fields = subSection.content?.type === 'SchemaFieldGroup' ? subSection.content.fields : [];
-	return (
-		<Stack gap='sm'>
-			{subSection.title ? <Title order={4}>{t(subSection.title)}</Title> : null}
-			{fields.length > 0 ? <FieldGroupGrid fields={fields} /> : null}
-		</Stack>
-	);
-}
-
-
-function FieldGroupGrid({ fields }: { fields: string[] }): React.ReactNode {
-	return (
-		<SimpleGrid cols={{ base: 1, sm: 2 }} spacing='md'>
-			{fields.map(field => (
-				<Stack key={field} gap={4}>
-					<Text size='sm' fw={500}>{field}</Text>
-					<TextInput placeholder={`{${field}}`} disabled />
-				</Stack>
-			))}
-		</SimpleGrid>
-	);
-}
-
-
-type CollapsibleListSectionProps = {
-	subSection: SubSection,
-	list: ListContent,
-	bgColor: string,
-};
-
-function CollapsibleListSection(props: CollapsibleListSectionProps): React.ReactNode {
-	const { t } = useTranslation();
-	const [collapsed, setCollapsed] = React.useState(false);
-	const title = props.subSection.title ? t(props.subSection.title) : props.list.schemaName;
-	if (collapsed) {
-		return <CollapsedListHeader title={title} onExpand={() => setCollapsed(false)} />;
-	}
-	return (
-		<Box>
-			<DataTable
-				tableName={title}
-				data={props.list.listSearchData ?? createEmptySearchData()}
-				renderTableName={renderExpandedTableName(() => setCollapsed(true))}
-				allowColumnResizing
-			/>
-		</Box>
-	);
-}
-
-
-function CollapsedListHeader({ title, onExpand }: { title: string, onExpand: () => void }): React.ReactNode {
-	return (
-		<Group gap='xs' className={classes.collapsibleHeader} onClick={onExpand}>
-			<ActionIcon variant='subtle' size='sm' aria-label='Expand section'>
-				<IconChevronRight size={16} />
-			</ActionIcon>
-			<Title order={4}>{title}</Title>
-		</Group>
-	);
-}
-
-
-function renderExpandedTableName(onCollapse: () => void): RenderTableNameFn {
-	return ({ name, total }) => (
-		<Group gap='xs' className={classes.collapsibleHeader} onClick={onCollapse}>
-			<ActionIcon variant='subtle' size='sm' aria-label='Collapse section'>
-				<IconChevronDown size={16} />
-			</ActionIcon>
-			<Title order={3}>{name} ({total})</Title>
-			<ActionIcon variant='subtle' size='sm' aria-label='More'>
-				<IconDots size={16} />
-			</ActionIcon>
-		</Group>
-	);
-}
-
-
-function createEmptySearchData(): SearchData {
-	return {
-		page: 0,
-		size: 10,
-		total: 0,
-		items: [],
-		desired_fields: [],
-		masked_fields: [],
-		schema_etag: '',
-	} as SearchData;
 }

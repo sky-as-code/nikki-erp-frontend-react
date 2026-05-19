@@ -13,7 +13,8 @@ import {
 	MicroAppProvider, MicroAppRouter,
 } from '@nikkierp/ui/microApp';
 import {
-	AvatarFieldRenderer, BadgeFieldRenderer, ResourceListTemplateProps, ViewEngineRouter,
+	AvatarFieldRenderer, BadgeFieldRenderer, ResourceDetailTemplateProps, ResourceListTemplateProps,
+	ViewEngineRouter,
 } from '@nikkierp/ui/viewEngine';
 import { combineReducers } from '@reduxjs/toolkit';
 import React from 'react';
@@ -23,6 +24,7 @@ import { Navigate } from 'react-router';
 import * as c from './constants';
 import { reducer as groupReducer, SLICE_NAME as GROUP_SLICE_NAME } from './features/group/groupSlice';
 import { reducer as orgReducer, SLICE_NAME as ORG_SLICE_NAME } from './features/organization/orgSlice';
+import { User } from './features/user';
 import * as userSel from './features/user/userSelectors';
 import {
 	reducer as userReducer, SLICE_NAME as USER_SLICE_NAME,
@@ -137,95 +139,105 @@ function registerModelSchemas(): void {
 	schemaRegistry.register([{
 		...baseOpts,
 		schemaName: c.GROUP_SCHEMA_NAME,
-		resourcePath: 'v1/identity/groups',
+		resourcePath: 'v1/iam/groups',
 	}, {
 		...baseOpts,
 		schemaName: c.ORGANIZATION_SCHEMA_NAME,
-		resourcePath: 'v1/identity/organizations',
+		resourcePath: 'v1/iam/organizations',
 	}, {
 		...baseOpts,
 		schemaName: c.ORG_UNIT_SCHEMA_NAME,
-		resourcePath: 'v1/identity/orgunits',
+		resourcePath: 'v1/iam/orgunits',
 	}, {
 		...baseOpts,
 		schemaName: c.USER_SCHEMA_NAME,
-		resourcePath: 'v1/identity/users',
+		resourcePath: 'v1/iam/users',
 	}]);
 }
 
 function registerPages(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseStateSelectorFn<any>): any[] {
 	return [
-		createUserDetailsPage(),
-		createUserListPage(dispatch, useMicroAppSelector),
+		createUserSplitViewPage(dispatch, useMicroAppSelector),
+		// createUserDetailsPage(dispatch, useMicroAppSelector),
+		// createUserListPage(dispatch, useMicroAppSelector),
 	];
 }
 
-function createUserDetailsPage() {
+function createUserSplitViewPage(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseStateSelectorFn<any>) {
+	const list = createUserListPage(dispatch, useMicroAppSelector);
+	const detail = createUserDetailsPage(dispatch, useMicroAppSelector);
+	return {
+		routePath: 'users',
+		template: 'nikkierp.mantine.pages.templates.resourceSplitView.v1',
+		templateProps: {
+			primaryProps: list.templateProps,
+			secondaryProps: detail.templateProps,
+		},
+	};
+}
+
+function createUserDetailsPage(dispatch: MicroAppDispatchFn, useMicroAppSelector: UseStateSelectorFn<any>) {
 	return {
 		routePath: 'users/:id', // param "id" is required by this template
 		template: 'nikkierp.mantine.pages.templates.resourceDetails.v1',
-		templateProps: {
+		templateProps: new ResourceDetailTemplateProps({
 			schemaName: c.USER_SCHEMA_NAME,
-			reduxAction: (_pathParams: {id: string}) => {},
+			translationNs: c.IAM_MODULE,
+			dispatch,
 			titleLvl1: {
-				type: 'SchemaField',
-				value: 'display_name',
+				schemaField: 'display_name',
 			},
 			titleLvl2: {
-				type: 'SchemaField',
-				value: 'email',
+				schemaField: 'email',
 			},
 			titleLvl3: {
-				type: 'Link',
-				value: 'nikkierp.identity.user.resourceName', // For type 'Link', value is the label
-				linkHref: '../users',
+				linkHref: '../',
 			},
-			relatedResources: [],
-		},
-		sections: [{
-			template: 'nikkierp.mantine.pages.templates.resourceDetails.v1.sections.resourceDetails.v1',
-			templateProps: {
-				allStatuses: [
-					{ value: 'invited', label: 'nikkierp.identity.user.status.invited' },
-					{ value: 'active', label: 'nikkierp.identity.user.status.active' },
-					{ value: 'locked', label: 'nikkierp.identity.user.status.locked' },
-					{ value: 'terminated', label: 'nikkierp.identity.user.status.terminated' },
+			allStatuses: [
+				{ value: 'draft', label: 'status.draft', color: 'grape' },
+				{ value: 'invited', label: 'status.invited', color: 'indigo' },
+				{ value: 'active', label: 'status.active', color: 'green' },
+				{ value: 'suspended', label: 'status.suspended', color: 'orange' },
+			],
+			currentStatus: {
+				schemaField: 'status',
+			},
+			actionHooks: {
+				useArchive: () => userSel.useSetUserIsArchived(useMicroAppSelector),
+				useCreate: () => userSel.useCreateUser(useMicroAppSelector),
+				useDelete: () => userSel.useDeleteUser(useMicroAppSelector),
+				useGetById: () => userSel.useGetUserById(useMicroAppSelector),
+				useUpdate: () => userSel.useUpdateUser(useMicroAppSelector),
+			},
+			contextualActions: {
+				activate: {
+					label: 'action.activate',
+					actionHook: () => userSel.useActivateUser(useMicroAppSelector),
+					condition: (resource: User) => resource.status !== 'active',
+				},
+				suspend: {
+					label: 'action.suspend',
+					actionHook: () => userSel.useSuspendUser(useMicroAppSelector),
+					condition: (resource: User) => resource.status === 'active',
+				},
+			},
+			ownPropertiesSection: [{
+				header: 'form.generalInformation',
+				fieldType: 'SchemaFields',
+				fields: [
+					'display_name', 'email',
 				],
-				currentStatus: {
-					type: 'SchemaField',
-					value: 'status',
-				},
-				actions: {
-					create: {
-						label: 'nikkierp.identity.user.actions.create',
-						reduxAction: () => {},
-					},
-					delete: {
-						label: 'nikkierp.identity.user.actions.delete',
-						reduxAction: () => {},
-					},
-					save: {
-						label: 'nikkierp.identity.user.actions.save',
-						reduxAction: () => {},
-					},
-				},
-			},
-			sections: [{
-				// type: 'BuiltInFields',
-				title: 'nikkierp.common.generalInformation',
-				content: {
-					type: 'SchemaFieldGroup',
-					fields: [
-						'display_name', 'email', 'status', 'created_at', 'updated_at', 'etag',
-					],
-				},
 			}, {
-				title: 'nikkierp.common.security',
+				header: 'form.security',
+				fieldType: 'SchemaFields',
+				fields: [
+					'created_at', 'updated_at',
+				],
 			}, {
-				template: 'nikkierp.mantine.pages.templates.resourceDetails.v1.sections.customFields.v1',
-				title: 'nikkierp.common.customFields',
+				header: 'form.customFields',
+				fieldType: 'CustomFields',
 			}],
-		}],
+		}),
 	};
 }
 
@@ -236,7 +248,7 @@ function createUserListPage(dispatch: MicroAppDispatchFn, useMicroAppSelector: U
 		templateProps: new ResourceListTemplateProps({
 			schemaName: c.USER_SCHEMA_NAME,
 			// resourceNameTransKey: 'user',
-			translationNs: c.IDENTITY_MODULE,
+			translationNs: c.IAM_MODULE,
 			dispatch,
 			actionHooks: {
 				useSearch: () => userSel.useSearchUsers(useMicroAppSelector),
@@ -259,8 +271,7 @@ function createUserListPage(dispatch: MicroAppDispatchFn, useMicroAppSelector: U
 					actionHook: () => null as any,
 				},
 			],
-			linkField: 'email',
-			linkRoutePath: 'users/:id',
+			linkField: 'id',
 			fieldRenderer: {
 				avatar_url: new AvatarFieldRenderer(),
 				status: new BadgeFieldRenderer({

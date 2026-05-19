@@ -16,7 +16,7 @@ export class NikkiAuthenticateStrategy implements t.ISignInStrategy {
 			principal_type: params.principalType,
 			username: params.username,
 		};
-		const response = await api.post<StartSignInApiResponse>('v1/authn/signin/start', { json: request, noAuth: true });
+		const response = await api.post<StartSignInApiResponse>('v1/iam/signin/start', { json: request, noAuth: true });
 		return {
 			attemptId: response.attempt_id,
 			createdAt: response.created_at,
@@ -32,7 +32,7 @@ export class NikkiAuthenticateStrategy implements t.ISignInStrategy {
 			attempt_id: params.attemptId,
 			passwords: params.passwords,
 		};
-		const response = await api.post<SignInApiResponse>('v1/authn/signin/continue', {
+		const response = await api.post<SignInApiResponse>('v1/iam/signin/continue', {
 			json: request,
 			noAuth: true,
 		});
@@ -52,7 +52,7 @@ export class NikkiAuthenticateStrategy implements t.ISignInStrategy {
 		const request: RefreshSessionApiRequest = {
 			refresh_token: params.refreshToken,
 		};
-		const response = await api.post<RefreshSessionApiResponse>('v1/authn/signin/refresh', {
+		const response = await api.post<RefreshSessionApiResponse>('v1/iam/signin/refresh', {
 			json: request,
 			noAuth: true,
 		});
@@ -72,7 +72,7 @@ export class NikkiAuthenticateStrategy implements t.ISignInStrategy {
 	// }
 
 	public async signOut(): Promise<void> {
-		const response = await api.post<void>('v1/authn/signout');
+		const response = await api.post<void>('v1/iam/signout');
 		return response;
 	}
 }

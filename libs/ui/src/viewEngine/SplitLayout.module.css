@@ -1,0 +1,58 @@
+.container {
+	background-color: var(--mantine-color-body);
+}
+
+.pane {
+	position: relative;
+	height: 100%;
+	min-width: 0;
+	overflow: auto;
+	transition: width 250ms ease;
+}
+
+.splitter {
+	flex: 0 0 auto;
+	width: 8px;
+	cursor: col-resize;
+	background-color: var(--mantine-color-default-border);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	user-select: none;
+	touch-action: none;
+	overflow: hidden;
+	transition: width 250ms ease, background-color 120ms ease;
+}
+
+.splitter:hover {
+	background-color: var(--mantine-color-default-hover);
+}
+
+.splitterDragging {
+	background-color: var(--mantine-primary-color-filled);
+}
+
+.splitterHidden {
+	width: 0;
+	pointer-events: none;
+	cursor: default;
+}
+
+.handle {
+	width: 4px;
+	height: 32px;
+	border-radius: 2px;
+	background-color: var(--mantine-color-default-color);
+	opacity: 0.6;
+	transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+.splitter:hover .handle,
+.splitterDragging .handle {
+	opacity: 1;
+	background-color: var(--mantine-color-white);
+}
+
+.splitterHidden .handle {
+	opacity: 0;
+}

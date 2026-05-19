@@ -1,4 +1,5 @@
 import {  Group, Stack, Text, useMantineColorScheme, useMantineTheme } from '@mantine/core';
+import { ErrorBoundary } from '@nikkierp/ui/components';
 import clsx from 'clsx';
 import React from 'react';
 import { Outlet } from 'react-router';
@@ -12,13 +13,15 @@ import { ThemeSwitchDropdown } from '../../components/ThemeSwitch';
 
 export function PublicLayout(): React.ReactNode {
 	return (
-		<Stack gap={0} h='100vh' bg='var(--nikki-color-linear-page-background)'>
-			<Header />
-			<ScrollableContent>
-				<Outlet />
-			</ScrollableContent>
-			<Footer />
-		</Stack>
+		<ErrorBoundary>
+			<Stack gap={0} h='100vh' bg='var(--nikki-color-linear-page-background)'>
+				<Header />
+				<ScrollableContent>
+					<Outlet />
+				</ScrollableContent>
+				<Footer />
+			</Stack>
+		</ErrorBoundary>
 	);
 };
 

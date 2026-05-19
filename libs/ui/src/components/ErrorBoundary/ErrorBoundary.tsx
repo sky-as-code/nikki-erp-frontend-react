@@ -1,4 +1,4 @@
-import { Alert, Button, Group, Text } from '@mantine/core';
+import { Alert, Group, Text } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import React from 'react';
 

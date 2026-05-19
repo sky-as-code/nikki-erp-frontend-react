@@ -1,6 +1,7 @@
 import { Paper } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamic_model';
 import React from 'react';
+import { useParams } from 'react-router-dom';
 
 import {
 	DataTable, DataTableActionHook, SearchData,
@@ -39,7 +40,6 @@ type ResourceListTemplatePropsParams = {
 		useUpdateSave?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
 	},
 	linkField?: string,
-	linkRoutePath?: string,
 	fieldAsLink?: string,
 	fieldAsId?: string,
 	fieldRenderer?: FieldRendererMap,
@@ -55,10 +55,12 @@ export class ResourceListTemplateProps {
 
 export type ResourceListProps = {
 	props: ResourceListTemplateProps,
+	/** View-engine page segment (e.g. `users`); detail URLs are `/:orgSlug/:moduleSlug/{routePath}/:id`. */
+	routePath: string,
 };
 
 
-export function ResourceList({ props }: ResourceListProps): React.ReactNode {
+export function ResourceList({ props, routePath }: ResourceListProps): React.ReactNode {
 	if (! (props instanceof ResourceListTemplateProps)) {
 		throw new Error('props must be an instance of ' + ResourceListTemplateProps.name);
 	}
@@ -101,12 +103,22 @@ export function ResourceList({ props }: ResourceListProps): React.ReactNode {
 	const searchData = searchAct.isDone && searchAct.data
 		? searchAct.data as SearchData
 		: cachedSearchData;
+
+	const { orgSlug, moduleSlug } = useParams();
+	const linkField = params.linkField ?? params.fieldAsLink;
+	const buildLinkHref = React.useCallback((rowData: SearchData['items'][number]) => {
+		if (!linkField || !orgSlug || !moduleSlug) {
+			return '#';
+		}
+		const pageSeg = routePath.split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
+		const raw = rowData[linkField];
+		return `/${encodeURIComponent(orgSlug)}/${encodeURIComponent(moduleSlug)}/${pageSeg}/${encodeURIComponent(String(raw))}`;
+	}, [linkField, orgSlug, moduleSlug, routePath]);
+
 	if (!pack || !searchData) {
 		return <LoadingState />;
 	}
 
-	const linkField = params.linkField ?? params.fieldAsLink;
-	const linkRoutePath = params.linkRoutePath;
 	const orderBy = getSearchRequestOrderBy(searchRequest);
 	return (
 		<Paper className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 flex' bg={bgColor}>
@@ -117,8 +129,7 @@ export function ResourceList({ props }: ResourceListProps): React.ReactNode {
 				modelSchema={pack.modelSchema}
 				onSearchRequestChange={onSearchRequestChange}
 				fieldRenderer={params.fieldRenderer}
-				linkField={linkField}
-				linkRoutePath={linkRoutePath}
+				buildLinkHref={buildLinkHref}
 				allowColumnResizing
 				actions={actions}
 				hasFixHeader

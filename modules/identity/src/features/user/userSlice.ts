@@ -18,6 +18,9 @@ export const initialState = {
 	[svc.setUserIsArchived.stateKey]: svc.setUserIsArchived.initialState,
 	[svc.userExists.stateKey]: svc.userExists.initialState,
 	[svc.updateUser.stateKey]: svc.updateUser.initialState,
+	[svc.activateUser.stateKey]: svc.activateUser.initialState,
+	[svc.inviteUser.stateKey]: svc.inviteUser.initialState,
+	[svc.suspendUser.stateKey]: svc.suspendUser.initialState,
 };
 
 const userSlice = createSlice({
@@ -34,6 +37,9 @@ const userSlice = createSlice({
 		svc.setUserIsArchived.buildThunkReducers(builder);
 		svc.userExists.buildThunkReducers(builder);
 		svc.updateUser.buildThunkReducers(builder);
+		svc.activateUser.buildThunkReducers(builder);
+		svc.inviteUser.buildThunkReducers(builder);
+		svc.suspendUser.buildThunkReducers(builder);
 	},
 });
 
@@ -47,6 +53,9 @@ export const actions = {
 	[svc.setUserIsArchived.stateKey]: svc.setUserIsArchived.thunkAction,
 	[svc.userExists.stateKey]: svc.userExists.thunkAction,
 	[svc.updateUser.stateKey]: svc.updateUser.thunkAction,
+	[svc.activateUser.stateKey]: svc.activateUser.thunkAction,
+	[svc.inviteUser.stateKey]: svc.inviteUser.thunkAction,
+	[svc.suspendUser.stateKey]: svc.suspendUser.thunkAction,
 };
 
 export const { reducer } = userSlice;

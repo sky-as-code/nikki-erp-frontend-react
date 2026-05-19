@@ -130,7 +130,7 @@ export function useI18n(): i18n {
 
 export type TranslateFn = ReturnType<typeof useTranslation>['t'];
 export type LocalizeFn = (
-	langJson: dyn.ModelSchemaLangJson | null | undefined,
+	langJson: dyn.ModelSchemaLangJson | string | null | undefined,
 	translateOpts?: { count: number },
 ) => string;
 
@@ -143,6 +143,9 @@ export function useLocalize(moduleName: string): LocalizeFn {
 	const trans = useTranslation(moduleName);
 	return (langJson, translateOpts): string => {
 		if (!langJson) return '';
+		if (typeof langJson === 'string') {
+			return trans.t(langJson, translateOpts);
+		}
 		const transKey = langJson[dyn.LangJsonRefKey];
 		if (!transKey) {
 			return langJson[trans.i18n.language] ?? '$missing.translation';

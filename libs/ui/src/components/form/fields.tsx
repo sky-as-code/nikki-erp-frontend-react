@@ -16,6 +16,7 @@ export type AutoFieldProps = {
 	inputProps?: Partial<InputProps>;
 	htmlProps?: FilteredInputHTMLAttributes;
 	ref?: React.RefObject<any>;
+	translate?: TranslateFn;
 };
 
 export function AutoField(props: AutoFieldProps) {
@@ -189,8 +190,8 @@ type BaseFieldWrapperProps = {
 export function BaseFieldWrapper({
 	inputId, label, description, isRequired, error, children, ariaProps,
 }: BaseFieldWrapperProps) {
-	const { layout } = useFormStyle();
-	const twoColumnLayout = layout === 'twocol';
+	const formStyle = useFormStyle();
+	const twoColumnLayout = formStyle?.layout === 'twocol';
 	const descriptionId = useId();
 	const errorId = useId();
 
@@ -213,7 +214,7 @@ export function BaseFieldWrapper({
 	}), [labelId, ariaDescribedBy, isRequired, error]);
 
 	return (
-		<Grid grow gap={0} mt='md'>
+		<Grid grow gap={0}>
 			<Grid.Col span={twoColumnLayout ? 4 : 12}>
 				<Input.Label htmlFor={inputId} id={labelId}>
 					{label}
@@ -492,7 +493,7 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 	const selectData = enumValues.map((val) => ({
 		value: val,
 		label: t(dyn.newLangJsonRef(
-			`${fieldData.schemaName}.${fieldData.fieldDef.name}.${val}`,
+			`${fieldData.fieldDef.name}.${val}`,
 		)),
 	}));
 

@@ -177,7 +177,18 @@ export type RestGetByIdRequest = RequestWithFields & {
 	id: string,
 };
 
-export type RestGetOneResponse<T extends Record<string, any>> = T;
+type ModelSchemaFieldName = ModelSchema['fields'][string]['name'];
+
+export type RestGetOneMeta<TFieldName extends string = ModelSchemaFieldName> = {
+	desired_fields: TFieldName[],
+	masked_fields: TFieldName[] | null,
+	schema_etag: string,
+};
+
+export type RestGetOneResponse<T extends Record<string, any>, TFieldName extends string = ModelSchemaFieldName> = {
+	item: T,
+	meta: RestGetOneMeta<TFieldName>,
+};
 
 export type RestGetModelSchemaResponse = ModelSchema;
 
@@ -246,7 +257,9 @@ export type RestSearchResponse<T extends Record<string, any>> = {
 	schema_etag: string,
 };
 
-export type RestUpdateRequest = Record<string, any> & {
+export type RestUpdateRequest = Record<string, any> & RestMutateOneRequest;
+
+export type RestMutateOneRequest = {
 	id: string,
 	etag: string,
 };

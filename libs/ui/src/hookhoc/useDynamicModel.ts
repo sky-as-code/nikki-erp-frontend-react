@@ -11,7 +11,7 @@ export function useDynamicModel(schemaName: string): dyn.SchemaPack | null {
 				setSchemaPack(schemaPack);
 			});
 		}
-	}, []);
+	}, [schemaName]);
 
 	return schemaPack;
 }

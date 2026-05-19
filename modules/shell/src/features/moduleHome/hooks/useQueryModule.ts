@@ -12,7 +12,7 @@ export function useQueryModule(allModules: RestSearchResponse<Module> | null) {
 	const availableModules = allModules?.items ?? [];
 	const availableModuleSlugs = useMemo(
 		() => new Set(availableModules.map((module) => module.name)),
-		[availableModules],
+		[...availableModules],
 	);
 	const [viewMode, setViewMode] = useState<ModuleViewMode>('list');
 	const {
@@ -36,7 +36,8 @@ export function useQueryModule(allModules: RestSearchResponse<Module> | null) {
 		// );
 		// return filterModules(modulesByContext, searchQuery, filters);
 		return filterModules(mockModuleListByCategory, searchQuery, filters);
-	}, [searchQuery, filters, availableModuleSlugs]);
+	// }, [searchQuery, filters, availableModuleSlugs]);
+	}, [searchQuery, filters]);
 
 	return {
 		// View mode

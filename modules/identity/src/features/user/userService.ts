@@ -70,6 +70,29 @@ export const updateUser = uiState.createSchemaThunkPack<t.UpdateUserResponse, t.
 	},
 );
 
+/* Update status */
+
+export const activateUser = uiState.createSchemaThunkPack<t.ActivateUserResponse, t.ActivateUserRequest, 'activateUser'>(
+	USER_SCHEMA_NAME, 'activateUser',
+	async function activateUserThunk(schema: dyn.SchemaPack, request: t.ActivateUserRequest) {
+		return schema.restApi.update(request);
+	},
+);
+
+export const inviteUser = uiState.createSchemaThunkPack<t.InviteUserResponse, t.InviteUserRequest, 'inviteUser'>(
+	USER_SCHEMA_NAME, 'inviteUser',
+	async function inviteUserThunk(schema: dyn.SchemaPack, request: t.InviteUserRequest) {
+		return schema.restApi.update(request);
+	},
+);
+
+export const suspendUser = uiState.createSchemaThunkPack<t.SuspendUserResponse, t.SuspendUserRequest, 'suspendUser'>(
+	USER_SCHEMA_NAME, 'suspendUser',
+	async function suspendUserThunk(schema: dyn.SchemaPack, request: t.SuspendUserRequest) {
+		return schema.restApi.update(request);
+	},
+);
+
 // 	{
 // 		id: '550e8400-e29b-41d4-a716-446655440000',
 // 		email: 'john.doe@example.com',
