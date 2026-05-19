@@ -10,64 +10,29 @@ import {
 	createAsyncThunk,
 	createSelector,
 } from '@reduxjs/toolkit';
+import { useMemo } from 'react';
 import { UseSelector } from 'react-redux';
 
-import { useSmartSelector, UseStateSelectorFn } from '../microApp';
+import { UseStateSelectorFn } from '../microApp';
 
 
-export type ReduxActionStatus = 'idle' | 'pending' | 'done' | 'error';
-type ReduxActionThunkConfig = { rejectValue: any };
 export type ReduxActionThunkApi<TReturn = any, TArg = any> =
 	Parameters<AsyncThunkPayloadCreator<TReturn, TArg, ReduxActionThunkConfig>>[1];
 type ReduxActionThunkFn<TReturn, TArg> =
 	(thunkArgs: TArg, thunkApi: ReduxActionThunkApi<TReturn, TArg>) => Promise<TReturn>;
 type SchemaReduxActionThunkFn<TReturn, TArg> =
 	(schema: dyn.SchemaPack, thunkArgs: TArg, thunkApi: ReduxActionThunkApi<TReturn, TArg>) => Promise<TReturn>;
+type ReduxActionThunkConfig = { rejectValue: any };
 
 export interface ReduxThunkState<T =  any> {
-	// status: ReduxActionStatus;
 	isLoading: boolean;
 	isDone: boolean;
 	isError: boolean;
 	error: unknown | null;
 	data: T | null;
-	requestId: string | null;
+	doneAt:  number;
+	requestId?: string | null;
 }
-
-// export type CrudState<TModel = Record<string, any>> = {
-// 	create: ReduxThunkState<dyn.RestCreateResponse>,
-// 	delete: ReduxThunkState<dyn.RestDeleteResponse>,
-// 	exists: ReduxThunkState<dyn.RestExistsResponse>,
-// 	getOne: ReduxThunkState<dyn.RestGetOneResponse<any>>,
-// 	search: ReduxThunkState<dyn.RestSearchResponse<any>>,
-// 	update: ReduxThunkState<dyn.RestMutateResponse>,
-// 	byId: Record<string, TModel>;
-// };
-
-// export type CrudArchivableState = {
-// 	setIsArchived: ReduxThunkState<dyn.RestMutateResponse>,
-// };
-
-// export type CrudBaseActions = 'setIsArchived' | 'create' | 'delete' | 'exists' | 'getOne' | 'search' | 'update';
-
-// export function initCrudState<TModel = Record<string, any>>(): CrudState<TModel> {
-// 	return {
-// 		byId: {},
-
-// 		create: baseReduxThunkState,
-// 		delete: baseReduxThunkState,
-// 		exists: baseReduxThunkState,
-// 		getOne: baseReduxThunkState,
-// 		search: baseReduxThunkState,
-// 		update: baseReduxThunkState,
-// 	};
-// }
-
-// export function initCrudArchivableState(): CrudArchivableState {
-// 	return {
-// 		setIsArchived: baseReduxThunkState,
-// 	};
-// };
 
 export type ThunkPackHookReturn<TReturn, TArg> = {
 	thunkAction: AsyncThunk<TReturn, TArg, { rejectValue: any }>;
@@ -77,6 +42,7 @@ export type ThunkPackHookReturn<TReturn, TArg> = {
 	isError: boolean;
 	error: unknown | null;
 	data: TReturn | null;
+	doneAt: number;
 };
 
 export type ThunkPack<TReturn = void, TArg = void, TStateKey extends string = string> = {
@@ -140,21 +106,39 @@ function buildThunkPack<TReturn, TArg, TStateKey extends string>(
 		 * you are sure the component is wrapped with ErrorBoundary.
 		 */
 		useHook(useSelectorFn: ThunkPackUseSelectorFn, throwOnError: boolean = false) {
-			// How to detect the caller is from shell or micro-app?
 			const thunkState = (useSelectorFn as any)(selector) as ReduxThunkState<TReturn>;
 			if (throwOnError && thunkState.isError) {
 				throw thunkState.error;
 			}
-			return {
-				thunkAction: thunk,
-				resetAction,
-				isLoading: thunkState.isLoading,
-				isDone: thunkState.isDone,
-				isError: thunkState.isError,
-				error: thunkState.error,
-				data: thunkState.data as TReturn | null,
-			};
+			return useMemo(
+				() => buildThunkHookReturn(thunk, resetAction, thunkState),
+				[
+					thunkState.isLoading,
+					thunkState.isDone,
+					thunkState.isError,
+					thunkState.error,
+					thunkState.data,
+					thunkState.doneAt,
+				],
+			);
 		},
+	};
+}
+
+function buildThunkHookReturn<TReturn, TArg>(
+	thunkAction: AsyncThunk<TReturn, TArg, { rejectValue: any }>,
+	resetAction: ActionCreatorWithoutPayload<string>,
+	thunkState: ReduxThunkState<TReturn>,
+): ThunkPackHookReturn<TReturn, TArg> {
+	return {
+		thunkAction,
+		resetAction,
+		isLoading: thunkState.isLoading,
+		isDone: thunkState.isDone,
+		isError: thunkState.isError,
+		error: thunkState.error,
+		data: thunkState.data as TReturn | null,
+		doneAt: thunkState.doneAt,
 	};
 }
 
@@ -171,6 +155,7 @@ export const baseReduxThunkState : ReduxThunkState = {
 	error: null,
 	data: null,
 	requestId: null,
+	doneAt: 0,
 };
 
 export function buildResetThunkReducer(actionName: string) {
@@ -215,6 +200,7 @@ function reducerThunkDone(action: string) {
 		state[action].isError = false;
 		state[action].data = param.payload;
 		state[action].error = null;
+		state[action].doneAt = Date.now();
 	};
 }
 

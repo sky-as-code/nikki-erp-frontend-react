@@ -1,5 +1,5 @@
 import {
-	Anchor, Box, Button, ButtonGroup, Checkbox, Group, Input, Menu, Modal, Radio, Select,
+	Anchor, Box, Button, ButtonGroup, Group, Input, Menu, Modal, Radio, Select,
 	Stack, Table, Tabs, Text, TextInput, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamic_model';
@@ -9,6 +9,7 @@ import {
 } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
+import { Link, useResolvedPath } from 'react-router-dom';
 
 import classes from './DataTable.module.css';
 import {
@@ -43,7 +44,6 @@ type RowDragState = { isActive: boolean, targetSelected: boolean };
 type RowMoveState = { draggingIndex: number | null, dropIndex: number | null };
 type ColumnWidths = Record<string, number>;
 type ResizeState = { field: string, startX: number, startWidth: number };
-type SelectionColumn = 'checkbox' | 'number';
 type RowMovePayload = {
 	fromIndex: number,
 	toIndex: number,
@@ -51,7 +51,6 @@ type RowMovePayload = {
 };
 
 const rowNumberColumnWidth = 64;
-const checkboxColumnWidth = 40;
 const defaultColumnWidth = 200;
 const minimumColumnWidth = 80;
 const maximumAutoColumnWidth = 500;
@@ -71,12 +70,11 @@ export type DataTableProps = {
 	initialSearchRequest?: dyn.RestSearchRequest,
 	onSearchRequestChange?: (request: dyn.RestSearchRequest) => void,
 	fieldRenderer?: FieldRendererMap,
-	linkField?: string,
-	linkRoutePath?: string,
+	/** When set, each row's cells are linked with this absolute pathname (same href for all cells in the row). */
+	buildLinkHref?: (rowData: SearchItem) => string,
 	actions?: DataTableActionHook[],
 	allowColumnResizing?: boolean,
 	isFullWidthTable?: boolean,
-	selectionColumn?: SelectionColumn,
 	allowRowMovement?: boolean,
 	onRowMoved?: (payload: RowMovePayload) => void,
 	showControls?: boolean,
@@ -92,13 +90,12 @@ export type DataTableProps = {
 
 type RequiredDataTableProps = Omit<
 	DataTableProps,
-	'actions' | 'allowColumnResizing' | 'isFullWidthTable' | 'selectionColumn'
+	'actions' | 'allowColumnResizing' | 'isFullWidthTable'
 	| 'allowRowMovement' | 'showControls' | 'hasFixHeader' | 'translationNs' | 'translateFieldName'
 > & {
 	actions: DataTableActionHook[],
 	allowColumnResizing: boolean,
 	isFullWidthTable: boolean,
-	selectionColumn: SelectionColumn,
 	allowRowMovement: boolean,
 	showControls: boolean,
 	enableSearchBox: boolean,
@@ -277,7 +274,6 @@ function withDataTableDefaults(props: DataTableProps): RequiredDataTableProps {
 		actions: props.actions ?? [],
 		allowColumnResizing: props.allowColumnResizing ?? false,
 		isFullWidthTable: props.isFullWidthTable ?? false,
-		selectionColumn: props.selectionColumn ?? 'number',
 		allowRowMovement: props.allowRowMovement ?? false,
 		showControls: props.showControls ?? true,
 		enableSearchBox: props.enableSearchBox ?? true,
@@ -429,6 +425,7 @@ function Pagination(): React.ReactNode {
 					}
 				}}
 				size='sm' w={50} classNames={{ input: 'text-center' }}
+				type='number'
 			/>
 			<span>of {totalPages}</span>
 			<ButtonGroup>
@@ -552,10 +549,6 @@ function getColumnWidth(field: string, widths: ColumnWidths): number {
 	return widths[field] ?? defaultColumnWidth;
 }
 
-function getSelectionColumnWidth(selectionColumn: SelectionColumn): number {
-	return selectionColumn === 'checkbox' ? checkboxColumnWidth : rowNumberColumnWidth;
-}
-
 function getColumnStyle(width: number): React.CSSProperties {
 	// return { width, minWidth: width, maxWidth: width };
 	return { width, minWidth: 0, maxWidth: 'none' };
@@ -605,24 +598,10 @@ function clearRowSelection(
 	rs.setAnchor(null);
 }
 
-function toggleRowSelection(
-	rs: ReturnType<typeof useRowSelectionState>,
-	rowIndex: number,
-): void {
-	const next = !rs.rows[rowIndex];
-	rs.setRows(prev => ({ ...prev, [rowIndex]: next }));
-	rs.setAnchor(rowIndex);
-}
-
 function clearRows(rs: ReturnType<typeof useRowSelectionState>): void {
 	rs.setRows({});
 	rs.setAnchor(null);
 	rs.setDrag({ isActive: false, targetSelected: false });
-}
-
-function buildRowLink(linkRoutePath: string, row: SearchItem): string {
-	return linkRoutePath.replace(/:([a-zA-Z0-9_]+)/g, (_, fieldName: string) =>
-		encodeURIComponent(String(row[fieldName] ?? '')));
 }
 
 function moveRow(items: SearchItem[], fromIndex: number, toIndex: number): SearchItem[] {
@@ -850,6 +829,13 @@ type RowNumberOverlayButtonProps = {
 };
 
 function RowNumberOverlayButton(props: RowNumberOverlayButtonProps): React.ReactNode {
+	function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>): void {
+		if (event.key !== ' ') {
+			return;
+		}
+		event.preventDefault();
+		props.onMouseDown(event as unknown as React.MouseEvent<HTMLButtonElement>);
+	}
 	return (
 		<button
 			type='button'
@@ -858,6 +844,7 @@ function RowNumberOverlayButton(props: RowNumberOverlayButtonProps): React.React
 				'flex items-center justify-center',
 			)}
 			onMouseDown={props.onMouseDown}
+			onKeyDown={handleKeyDown}
 			aria-label={props['aria-label']}
 		>
 			{props.children}
@@ -867,39 +854,22 @@ function RowNumberOverlayButton(props: RowNumberOverlayButtonProps): React.React
 
 type RowNumberHeaderProps = {
 	isRowMode: boolean,
-	selectionColumn: SelectionColumn,
-	selectedCount: number,
-	rowCount: number,
 	onToggle: () => void,
 };
 
 function RowNumberHeader(props: RowNumberHeaderProps): React.ReactNode {
-	const isCheckbox = props.selectionColumn === 'checkbox';
-	const columnWidth = getSelectionColumnWidth(props.selectionColumn);
-	const isIndeterminate = props.selectedCount > 0 && props.selectedCount < props.rowCount;
+	const columnWidth = rowNumberColumnWidth;
 	return (
 		<Table.Th
 			className='p-0 text-center align-middle relative'
 			style={getColumnStyle(columnWidth)}
 		>
-			{isCheckbox ? (
-				<div className='flex items-center justify-center'>
-					<Checkbox
-						checked={props.isRowMode}
-						indeterminate={isIndeterminate}
-						onChange={props.onToggle}
-						onClick={event => event.stopPropagation()}
-						aria-label='Select all rows'
-					/>
-				</div>
-			) : (
-				<RowNumberOverlayButton
-					onMouseDown={() => props.onToggle()}
-					aria-label={props.isRowMode ? 'Deselect all rows' : 'Select all rows'}
-				>
-					{props.isRowMode ? <IconX size={14} /> : <IconHash size={14} />}
-				</RowNumberOverlayButton>
-			)}
+			<RowNumberOverlayButton
+				onMouseDown={() => props.onToggle()}
+				aria-label={props.isRowMode ? 'Deselect all rows' : 'Select all rows'}
+			>
+				{props.isRowMode ? <IconX size={14} /> : <IconHash size={14} />}
+			</RowNumberOverlayButton>
 		</Table.Th>
 	);
 }
@@ -957,8 +927,6 @@ function DataTableHead(): React.ReactNode {
 	const context = useDataTableContext();
 	const fields = context.tableSearchData.desired_fields;
 	const widths = context.cw.widths;
-	const selectedCount = context.rs.indexes.length;
-	const rowCount = context.tableSearchData.items.length;
 	const orderBy = getGraphOrder(context.searchRequest.graph).length > 0
 		? getGraphOrder(context.searchRequest.graph)
 		: (context.settings.orderBy ?? []);
@@ -973,9 +941,6 @@ function DataTableHead(): React.ReactNode {
 			<Table.Tr>
 				<RowNumberHeader
 					isRowMode={context.isRowMode}
-					selectedCount={selectedCount}
-					rowCount={rowCount}
-					selectionColumn={context.settings.selectionColumn}
 					onToggle={context.handlers.onToggleAll}
 				/>
 				{fields.map(field => (
@@ -1002,46 +967,31 @@ type RowNumberCellProps = {
 	rowIndex: number,
 	rowNumber: number,
 	isSelected: boolean,
-	selectionColumn: SelectionColumn,
-	onMouseDown: (e: React.MouseEvent<HTMLButtonElement>, idx: number) => void,
+	onMouseDown: (
+		e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLButtonElement>,
+		idx: number,
+	) => void,
 	onMouseEnter: (idx: number) => void,
-	onToggle: (idx: number) => void,
 };
 
 function RowNumberCell(props: RowNumberCellProps): React.ReactNode {
-	const isCheckbox = props.selectionColumn === 'checkbox';
-	const columnWidth = getSelectionColumnWidth(props.selectionColumn);
-	const displayValue = props.selectionColumn === 'checkbox'
-		? (
-			<div className='flex items-center justify-center'>
-				<Checkbox
-					checked={props.isSelected}
-					onChange={() => props.onToggle(props.rowIndex)}
-					onClick={event => event.stopPropagation()}
-					aria-label={`Select row ${props.rowNumber}`}
-				/>
-			</div>
-		)
-		: (
-			<RowNumberOverlayButton onMouseDown={(e) => props.onMouseDown(e, props.rowIndex)}>
-				{props.rowNumber}
-			</RowNumberOverlayButton>
-		);
+	const columnWidth = rowNumberColumnWidth;
 	return (
 		<Table.Td
 			p={0}
 			onMouseEnter={() => props.onMouseEnter(props.rowIndex)}
-			// onMouseDown={isCheckbox ? undefined : (e => props.onMouseDown(e, props.rowIndex))}
 			className={clsx(
 				'text-center align-middle relative',
 				classes.rowNumberCell, {
 					[classes.selectedCell]: props.isSelected,
-					'cursor-pointer': !isCheckbox,
+					'cursor-pointer': true,
 				},
 			)}
 			style={getColumnStyle(columnWidth)}
 		>
-			{displayValue}
+			<RowNumberOverlayButton onMouseDown={(e) => props.onMouseDown(e, props.rowIndex)}>
+				{props.rowNumber}
+			</RowNumberOverlayButton>
 		</Table.Td>
 	);
 }
@@ -1053,13 +1003,15 @@ type DataCellProps = {
 	fieldSchema?: dyn.ModelSchemaField,
 	linkHref?: string,
 	fieldRenderer?: IFieldRenderer,
-	translationNs: string,
 	isSelected: boolean,
-	allowRowMovement?: boolean,
+	onMouseDown: (e: React.MouseEvent<HTMLTableCellElement>, rowIndex: number) => void,
+	rowIndex: number,
 };
 
 function DataCell(props: DataCellProps): React.ReactNode {
-	const t = useTranslate(props.translationNs);
+	const context = useDataTableContext();
+	const t = useTranslate(context.settings.translationNs);
+	const resolved = useResolvedPath(props.linkHref ?? '.');
 	const content = React.useMemo(
 		() => renderDataCellContent(props.rawValue, props.value, props.fieldSchema, props.fieldRenderer, t),
 		[props.fieldSchema, props.fieldRenderer, props.rawValue, t, props.value],
@@ -1069,20 +1021,24 @@ function DataCell(props: DataCellProps): React.ReactNode {
 		'overflow-hidden text-ellipsis whitespace-nowrap': useEllipsis,
 		'whitespace-normal break-words': !useEllipsis,
 	});
+	const linkClassName = clsx(contentClassName, classes.cellRowLink);
+
 	return (
 		<Table.Td
 			style={getColumnStyle(props.width)}
+			onMouseDown={e => props.onMouseDown(e, props.rowIndex)}
 			className={clsx({
 				[classes.selectedCell]: props.isSelected,
-				'cursor-move': props.allowRowMovement,
+				'cursor-move': context.settings.allowRowMovement,
 			})}
 		>
 			{props.linkHref ? (
 				<Anchor
-					href={props.linkHref}
-					onMouseDown={event => event.stopPropagation()}
-					className={contentClassName}
+					component={Link}
+					to={resolved.pathname}
+					className={linkClassName}
 					title={useEllipsis ? props.value : undefined}
+					tabIndex={-1}
 				>
 					{content}
 				</Anchor>
@@ -1094,44 +1050,20 @@ function DataCell(props: DataCellProps): React.ReactNode {
 type BodyRowProps = {
 	item: SearchItem,
 	rowIndex: number,
-	searchData: SearchData,
-	widths: ColumnWidths,
 	isRowSelected: boolean,
-	fieldRendererMap?: FieldRendererMap,
-	modelSchema?: dyn.ModelSchema,
-	linkField?: string,
-	linkRoutePath?: string,
-	translationNs: string,
-	selectionColumn: SelectionColumn,
-	allowRowMovement: boolean,
-	allowColumnResizing: boolean,
-	rowMove: ReturnType<typeof useRowMoveState>,
-	onRowMouseDown: RowNumberCellProps['onMouseDown'],
-	onRowMouseEnter: RowNumberCellProps['onMouseEnter'],
-	onToggleRow: RowNumberCellProps['onToggle'],
 };
 
 function BodyRow(props: BodyRowProps): React.ReactNode {
-	const {
-		item,
-		rowIndex,
-		searchData,
-		widths,
-		isRowSelected,
-		fieldRendererMap,
-		modelSchema,
-		linkField,
-		linkRoutePath,
-		selectionColumn,
-		allowRowMovement,
-		allowColumnResizing,
-		rowMove,
-	} = props;
-	const rowLink = linkRoutePath ? buildRowLink(linkRoutePath, item) : undefined;
-	const rowNumber = getRowNumber(searchData.page, searchData.size, rowIndex);
+	const context = useDataTableContext();
+	const { item, rowIndex, isRowSelected } = props;
+	const searchData = context.tableSearchData;
+	const widths = context.cw.widths;
+	const rowMove = context.rowMove;
+	const rowLink = context.settings.buildLinkHref?.(item);
+	const rowNumber = getRowNumber(searchData.page, searchData.size, props.rowIndex);
 	const showDropIndicator = rowMove.state.draggingIndex !== null && rowMove.state.dropIndex === rowIndex;
 	const onDragOver = (event: React.DragEvent<HTMLTableRowElement>) => {
-		if (!allowRowMovement) {
+		if (!context.settings.allowRowMovement) {
 			return;
 		}
 		event.preventDefault();
@@ -1139,7 +1071,7 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 	};
 	return (
 		<Table.Tr
-			draggable={allowRowMovement}
+			draggable={context.settings.allowRowMovement}
 			onDragStart={() => rowMove.startDragging(rowIndex)}
 			onDragOver={onDragOver}
 			onDrop={() => rowMove.drop(rowIndex)}
@@ -1148,28 +1080,29 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 		>
 			<RowNumberCell
 				rowIndex={rowIndex} rowNumber={rowNumber} isSelected={isRowSelected}
-				selectionColumn={selectionColumn}
-				onMouseDown={props.onRowMouseDown}
-				onMouseEnter={props.onRowMouseEnter}
-				onToggle={props.onToggleRow}
+				onMouseDown={context.handlers.onRowMouseDown}
+				onMouseEnter={context.handlers.onRowMouseEnter}
 			/>
 			{searchData.desired_fields.map(field => (
 				<DataCell
 					key={field}
+					rowIndex={rowIndex}
 					width={getColumnWidth(field, widths)}
 					value={getCellText(item, field, searchData.masked_fields)}
 					rawValue={item[field]}
-					fieldSchema={modelSchema?.fields[field]}
-					linkHref={linkField === field ? rowLink : undefined}
-					fieldRenderer={fieldRendererMap?.[field]}
-					translationNs={props.translationNs}
+					fieldSchema={context.settings.modelSchema?.fields[field]}
+					linkHref={rowLink}
+					fieldRenderer={context.settings.fieldRenderer?.[field]}
 					isSelected={isRowSelected}
-					allowRowMovement={allowRowMovement}
+					onMouseDown={context.handlers.onDataCellMouseDown}
 				/>
 			))}
-			{allowColumnResizing ? (
+			{context.settings.allowColumnResizing ? (
 				<Table.Td
-					className={clsx(classes.fillerColumn, { [classes.selectedCell]: isRowSelected })}
+					className={clsx(classes.fillerColumn, {
+						[classes.selectedCell]: isRowSelected,
+					})}
+					onMouseDown={e => context.handlers.onDataCellMouseDown(e, rowIndex)}
 					aria-hidden
 				/>
 			) : null}
@@ -1188,21 +1121,7 @@ function DataTableBody(): React.ReactNode {
 					key={item.id ?? rowIndex}
 					item={item}
 					rowIndex={rowIndex}
-					searchData={searchData}
 					isRowSelected={Boolean(selectedRows[rowIndex])}
-					widths={context.cw.widths}
-					fieldRendererMap={context.settings.fieldRenderer}
-					modelSchema={context.settings.modelSchema}
-					linkField={context.settings.linkField}
-					linkRoutePath={context.settings.linkRoutePath}
-					translationNs={context.settings.translationNs}
-					selectionColumn={context.settings.selectionColumn}
-					allowRowMovement={context.settings.allowRowMovement}
-					allowColumnResizing={context.settings.allowColumnResizing}
-					rowMove={context.rowMove}
-					onRowMouseDown={context.handlers.onRowMouseDown}
-					onRowMouseEnter={context.handlers.onRowMouseEnter}
-					onToggleRow={idx => toggleRowSelection(context.rs, idx)}
 				/>
 			))}
 		</Table.Tbody>
@@ -1571,10 +1490,11 @@ function useTableHandlers(args: TableHandlersArgs) {
 	const onToggleAll = useToggleAllHandler(args.searchData, args.rs);
 	const onRowMouseDown = useRowMouseDownHandler(args.rs);
 	const onRowMouseEnter = useRowMouseEnterHandler(args.rs);
+	const onDataCellMouseDown = useDataCellMouseDownHandler(args.rs);
 	const onKeyDown = useKeyDownHandler(args);
 	return {
 		onStartResize, onAutoResize, onToggleAll,
-		onRowMouseDown, onRowMouseEnter, onKeyDown,
+		onRowMouseDown, onRowMouseEnter, onDataCellMouseDown, onKeyDown,
 	};
 }
 
@@ -1617,7 +1537,10 @@ function useToggleAllHandler(
 function useRowMouseDownHandler(
 	rs: ReturnType<typeof useRowSelectionState>,
 ) {
-	return React.useCallback((event: React.MouseEvent<HTMLButtonElement>, rowIndex: number) => {
+	return React.useCallback((
+		event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLButtonElement>,
+		rowIndex: number,
+	) => {
 		event.preventDefault();
 		event.stopPropagation();
 		if (event.shiftKey && rs.anchor !== null) {
@@ -1628,6 +1551,18 @@ function useRowMouseDownHandler(
 		rs.setRows(prev => ({ ...prev, [rowIndex]: next }));
 		rs.setAnchor(rowIndex);
 		rs.setDrag({ isActive: true, targetSelected: next });
+	}, [rs]);
+}
+
+function useDataCellMouseDownHandler(rs: ReturnType<typeof useRowSelectionState>) {
+	return React.useCallback((
+		event: React.MouseEvent<HTMLTableCellElement>,
+		rowIndex: number,
+	) => {
+		// event.preventDefault();
+		rs.setRows({ [rowIndex]: true });
+		rs.setAnchor(rowIndex);
+		rs.setDrag({ isActive: false, targetSelected: false });
 	}, [rs]);
 }
 

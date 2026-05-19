@@ -1,9 +1,11 @@
 import { MenuBarItem } from '@nikkierp/ui/appState/layoutSlice';
 import { useTranslate } from '@nikkierp/ui/i18n';
 
+import { IAM_MODULE } from '../constants';
+
 
 export function useIdentityMenuBarItems(): MenuBarItem[] {
-	const t = useTranslate('identity');
+	const t = useTranslate(IAM_MODULE);
 
 	const items: MenuBarItem[] = [
 		{

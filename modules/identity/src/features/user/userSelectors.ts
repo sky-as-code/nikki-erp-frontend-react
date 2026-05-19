@@ -12,3 +12,8 @@ export const useSetUserIsArchived = (useSelectorFn: ThunkPackUseSelectorFn) =>
 	svc.setUserIsArchived.useHook(useSelectorFn);
 export const useUserExists = (useSelectorFn: ThunkPackUseSelectorFn) => svc.userExists.useHook(useSelectorFn);
 export const useUpdateUser = (useSelectorFn: ThunkPackUseSelectorFn) => svc.updateUser.useHook(useSelectorFn);
+
+/* Status update */
+export const useActivateUser = (useSelectorFn: ThunkPackUseSelectorFn) => svc.activateUser.useHook(useSelectorFn);
+export const useInviteUser = (useSelectorFn: ThunkPackUseSelectorFn) => svc.inviteUser.useHook(useSelectorFn);
+export const useSuspendUser = (useSelectorFn: ThunkPackUseSelectorFn) => svc.suspendUser.useHook(useSelectorFn);

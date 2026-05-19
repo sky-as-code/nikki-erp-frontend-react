@@ -1,6 +1,19 @@
 import { z } from 'zod';
 
 
+const ErrorKeys = {
+	invalidDataType: 'err_invalid_data_type',
+	missingRequiredField: 'err_missing_required_field',
+	formatMismatch: 'err_format_mismatch',
+	invalidEmail: 'err_invalid_email',
+	invalidUrl: 'err_invalid_url',
+	invalidStringPattern: 'err_invalid_string_pattern',
+	invalidStringLength: 'err_invalid_string_length',
+	invalidNumberRange: 'err_invalid_number_range',
+	notOneOf: 'err_not_one_of',
+	invalidArrayLength: 'err_invalid_array_length',
+} as const;
+
 export type ModelSchema = {
 	name: string,
 	fields: ModelSchemaFieldsMap,
@@ -103,9 +116,9 @@ export function buildValidationSchema(modelSchema: ModelSchema): z.ZodObject<any
 
 
 function buildFieldSchema(fieldDef: ModelSchemaField): z.ZodTypeAny {
+	const isRequired = fieldDef.is_required_for_create || fieldDef.is_required_for_update;
 	let fieldSchema = createBaseFieldSchema(fieldDef);
 	const hasDefaultValue = fieldDef.default_value != null;
-	const isRequired = fieldDef.is_required_for_create || fieldDef.is_required_for_update;
 	const shouldBeOptional = !isRequired || fieldDef.is_auto_generated || hasDefaultValue;
 
 	if (Array.isArray(fieldDef.rules) && fieldDef.rules.length >= 2) {
@@ -116,31 +129,97 @@ function buildFieldSchema(fieldDef: ModelSchemaField): z.ZodTypeAny {
 		return fieldSchema.optional();
 	}
 
-	return fieldSchema;
+	return applyRequiredRule(fieldSchema);
 }
 
 function createBaseFieldSchema(fieldDef: ModelSchemaField): z.ZodTypeAny {
 	const dataType = extractFieldDataType(fieldDef);
+	return createSchemaByDataType(dataType);
+}
+
+function createSchemaByDataType(dataType: ModelSchemaFieldDataType): z.ZodTypeAny {
+	const simpleSchema = createSimpleSchemaByDataType(dataType);
+	if (simpleSchema) {
+		return simpleSchema;
+	}
 	switch (dataType.name) {
-		case 'boolean':
-			return z.boolean();
-		case 'email':
-			return applyLengthOptions(z.email(), dataType.options);
 		case 'model':
 			return dataType.is_array ? z.array(z.any()) : z.any();
 		case 'nikkiDateTime':
-			return z.iso.datetime().or(z.date());
-		case 'nikkiEtag':
-			return applyStringLengthOptions(z.string().min(1), dataType.options);
-		case 'ulid':
-			return z.ulid();
-		case 'url':
-			return applyLengthOptions(z.url(), dataType.options);
+			return createDateTimeSchema();
+		case 'nikkiLangJson':
+			return z.record(createStringSchema(), createStringSchema()).or(
+				z.record(z.string(), z.string()),
+			);
 		case 'enumString':
 			return createEnumStringSchema(dataType.options);
+		case 'jsonmap':
+			return z.record(z.string(), z.any()).or(z.array(z.any()));
 		case 'string':
 		default:
-			return applyStringLengthOptions(z.string(), dataType.options);
+			return applyStringLengthOptions(createStringSchema(), dataType.options);
+	}
+}
+
+function createSimpleSchemaByDataType(dataType: ModelSchemaFieldDataType): z.ZodTypeAny | null {
+	const numberSchema = createNumberLikeSchema(dataType);
+	if (numberSchema) {
+		return numberSchema;
+	}
+	switch (dataType.name) {
+		case 'boolean':
+			return z.boolean({ error: ErrorKeys.invalidDataType });
+		case 'email':
+			return applyLengthOptions(
+				createStringSchema().email(ErrorKeys.invalidEmail),
+				dataType.options,
+				ErrorKeys.invalidStringLength,
+			);
+		case 'nikkiDate':
+			return createStringSchema().regex(/^\d{4}-\d{2}-\d{2}$/, ErrorKeys.formatMismatch);
+		case 'nikkiTime':
+			return createStringSchema().regex(/^\d{2}:\d{2}:\d{2}$/, ErrorKeys.formatMismatch);
+		case 'nikkiEtag':
+			return applyStringLengthOptions(createStringSchema(), dataType.options);
+		case 'nikkiLangCode':
+			return createStringSchema().regex(/^[a-z]{2,3}-[A-Z]{2}$/, ErrorKeys.formatMismatch);
+		case 'nikkiSlug':
+			return applyStringLengthOptions(
+				createStringSchema().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, ErrorKeys.invalidDataType),
+				dataType.options,
+			);
+		case 'phone':
+			return createStringSchema();
+		case 'secret':
+			return applyStringLengthOptions(createStringSchema(), dataType.options);
+		case 'ulid':
+			return createStringSchema().regex(/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/, ErrorKeys.invalidDataType);
+		case 'uuid':
+			return createStringSchema().uuid(ErrorKeys.invalidDataType);
+		case 'url':
+			return applyLengthOptions(
+				createStringSchema().url(ErrorKeys.invalidUrl),
+				dataType.options,
+				ErrorKeys.invalidStringLength,
+			);
+		default:
+			return null;
+	}
+}
+
+function createNumberLikeSchema(dataType: ModelSchemaFieldDataType): z.ZodTypeAny | null {
+	switch (dataType.name) {
+		case 'enumInt32':
+		case 'int32':
+			return applyNumericRangeOptions(
+				createNumberSchema().int(ErrorKeys.invalidDataType),
+				dataType.options,
+			);
+		case 'int64':
+		case 'decimal':
+			return applyNumericRangeOptions(createNumberSchema(), dataType.options);
+		default:
+			return null;
 	}
 }
 
@@ -158,10 +237,10 @@ function applyFieldRule(fieldSchema: z.ZodTypeAny, fieldRule: ModelSchemaFieldRu
 	let updatedSchema = fieldSchema;
 
 	if (typeof minValue === 'number') {
-		updatedSchema = updatedSchema.min(minValue);
+		updatedSchema = updatedSchema.min(minValue, ErrorKeys.invalidArrayLength);
 	}
 	if (typeof maxValue === 'number') {
-		updatedSchema = updatedSchema.max(maxValue);
+		updatedSchema = updatedSchema.max(maxValue, ErrorKeys.invalidArrayLength);
 	}
 
 	return updatedSchema;
@@ -174,25 +253,31 @@ function extractFieldDataType(fieldDef: ModelSchemaField): ModelSchemaFieldDataT
 	return fieldDef.data_type;
 }
 
-function createEnumStringSchema(options?: ModelSchemaFieldDataType['options']): z.ZodTypeAny {
+function createEnumStringSchema(options: ModelSchemaFieldDataType['options'] | undefined): z.ZodTypeAny {
 	const enumValues = options?.enumValues;
 	if (!Array.isArray(enumValues) || enumValues.length === 0) {
-		return z.string();
+		return createStringSchema();
 	}
 
 	const normalizedValues = enumValues.filter((value): value is string => typeof value === 'string');
 	if (normalizedValues.length === 0) {
-		return z.string();
+		return createStringSchema();
 	}
 
-	return z.enum(normalizedValues as [string, ...string[]]);
+	return createStringSchema().refine((value) => normalizedValues.includes(value), {
+		message: ErrorKeys.notOneOf,
+	});
 }
 
 function applyStringLengthOptions(schema: z.ZodString, options?: ModelSchemaFieldDataType['options']): z.ZodString {
 	return applyLengthOptions(schema, options);
 }
 
-function applyLengthOptions<T extends z.ZodTypeAny>(schema: T, options?: ModelSchemaFieldDataType['options']): T {
+function applyLengthOptions<T extends z.ZodTypeAny>(
+	schema: T,
+	options: ModelSchemaFieldDataType['options'] | undefined,
+	message: string = ErrorKeys.invalidStringLength,
+): T {
 	const rawLength = options?.length;
 	if (!Array.isArray(rawLength)) {
 		return schema;
@@ -201,14 +286,67 @@ function applyLengthOptions<T extends z.ZodTypeAny>(schema: T, options?: ModelSc
 	const [minValue, maxValue] = rawLength;
 	let nextSchema = schema;
 	const schemaWithLength = nextSchema as T & {
-		min?: (value: number) => T,
-		max?: (value: number) => T,
+		min?: (value: number, msg?: string) => T,
+		max?: (value: number, msg?: string) => T,
 	};
 	if (typeof minValue === 'number' && schemaWithLength.min) {
-		nextSchema = schemaWithLength.min(minValue);
+		nextSchema = schemaWithLength.min(minValue, message);
 	}
 	if (typeof maxValue === 'number' && schemaWithLength.max) {
-		nextSchema = schemaWithLength.max(maxValue);
+		nextSchema = schemaWithLength.max(maxValue, message);
 	}
 	return nextSchema;
+}
+
+function applyNumericRangeOptions(
+	schema: z.ZodNumber,
+	options?: ModelSchemaFieldDataType['options'],
+): z.ZodNumber {
+	const rawRange = options?.range;
+	if (!Array.isArray(rawRange)) {
+		return schema;
+	}
+	const [minValue, maxValue] = rawRange;
+	let nextSchema = schema;
+	if (typeof minValue === 'number') {
+		nextSchema = nextSchema.min(minValue, ErrorKeys.invalidNumberRange);
+	}
+	if (typeof maxValue === 'number') {
+		nextSchema = nextSchema.max(maxValue, ErrorKeys.invalidNumberRange);
+	}
+	return nextSchema;
+}
+
+function createStringSchema(): z.ZodString {
+	return z.string({ error: ErrorKeys.invalidDataType });
+}
+
+function createNumberSchema(): z.ZodNumber {
+	return z.number({ error: ErrorKeys.invalidDataType });
+}
+
+function createDateTimeSchema(): z.ZodTypeAny {
+	const stringSchema = createStringSchema().datetime(ErrorKeys.formatMismatch);
+	const dateSchema = z.date({ error: ErrorKeys.invalidDataType });
+	return stringSchema.or(dateSchema);
+}
+
+function applyRequiredRule(fieldSchema: z.ZodTypeAny): z.ZodTypeAny {
+	return z.any().refine((value) => !isNilOrEmpty(value), ErrorKeys.missingRequiredField).pipe(fieldSchema);
+}
+
+function isNilOrEmpty(value: unknown): boolean {
+	if (value == null) {
+		return true;
+	}
+	if (typeof value === 'string') {
+		return value.trim().length === 0;
+	}
+	if (typeof value === 'number') {
+		return value === 0;
+	}
+	if (Array.isArray(value)) {
+		return value.length === 0;
+	}
+	return false;
 }

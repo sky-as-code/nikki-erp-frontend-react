@@ -12,12 +12,12 @@ import './styles/index.css';
 // const essentialBundleUrl = 'http://localhost:3000/@fs/F:/github/sky-as-code/nikki-erp-frontend-react/modules/essential/dist/nikkiapp-essential-CLPVZYir.js';
 const microApps: MicroAppMetadata[] = [
 	{
-		slug: 'identity',
-		basePath: 'identity',
+		slug: 'iam',
+		basePath: 'iam',
 		bundleUrl: () => import('@nikkierp/microapp-identity'),
 		// bundleUrl: () => import('http://localhost:3000/index.ts'),
 		// configUrl: 'http://localhost:3001/config',
-		htmlTag: 'microapp-identity',
+		htmlTag: 'microapp-iam',
 	},
 	{
 		slug: 'essential',

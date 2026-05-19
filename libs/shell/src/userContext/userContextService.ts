@@ -9,7 +9,7 @@ import {
 export const getUserContext = uiState.createThunkPack<UserContext, void, 'getUserContext'>(
 	SLICE_NAME, 'getUserContext',
 	async function getUserContextThunk(_, { dispatch }): Promise<UserContext> {
-		const data = await request.get<GetUserContextResponse>('v1/identity/me/context');
+		const data = await request.get<GetUserContextResponse>('v1/iam/me/context');
 		const userContext = toUserContext(data);
 		dispatch(setLocalSettings.thunkAction({
 			languageCode: userContext.accountSettings.language.isoCode,

@@ -23,9 +23,9 @@ export const mockModules = [
 				lastUsed: '2025-01-01',
 			},
 			{
-				name: 'Identity',
-				slug: 'identity',
-				category: 'Identity',
+				name: 'IAM',
+				slug: 'iam',
+				category: 'IAM',
 				icon: identityIcon,
 				isDisabled: false,
 				isOrphaned: false,

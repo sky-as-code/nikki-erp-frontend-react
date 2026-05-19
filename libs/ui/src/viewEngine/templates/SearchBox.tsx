@@ -67,7 +67,7 @@ export function SearchBox({ fields, sortableFields, orderBy, onApplyOrderBy }: S
 					onSecondSortFieldChange={sortByState.onSecondSortFieldChange}
 					onSecondSortDirectionChange={sortByState.onSecondSortDirectionChange}
 					onApply={sortByState.onApply}
-					onDiscard={() => setExpanded(false)}
+					onCancel={() => setExpanded(false)}
 					onOpenCustomFilter={openCustomFilters}
 				/>
 			) : null}
@@ -187,7 +187,7 @@ type ExpandedPanelProps = {
 	onSecondSortFieldChange: (fieldName: string | null) => void,
 	onSecondSortDirectionChange: (direction: dyn.SearchOrder | '') => void,
 	onApply: () => void,
-	onDiscard: () => void,
+	onCancel: () => void,
 	onOpenCustomFilter: () => void,
 };
 
@@ -202,7 +202,7 @@ function ExpandedPanel({
 	onSecondSortFieldChange,
 	onSecondSortDirectionChange,
 	onApply,
-	onDiscard,
+	onCancel,
 	onOpenCustomFilter,
 }: ExpandedPanelProps): React.ReactNode {
 	const t = useTranslate('common');
@@ -232,7 +232,7 @@ function ExpandedPanel({
 			</Group>
 
 			<Group justify='flex-end' mt='md'>
-				<Button variant='default' onClick={onDiscard}>{t('action.discard')}</Button>
+				<Button variant='default' onClick={onCancel}>{t('action.cancel')}</Button>
 				<Button onClick={onApply}>{t('action.apply')}</Button>
 			</Group>
 		</Paper>
@@ -341,7 +341,7 @@ function CustomFilterDialog({
 				<Text>{t('search.matchAnyOfTheseConditions')}</Text>
 				<Box h={120} />
 				<Group justify='flex-end'>
-					<Button variant='default' onClick={onClose}>{t('action.discard')}</Button>
+					<Button variant='default' onClick={onClose}>{t('action.cancel')}</Button>
 					<Button onClick={() => {}}>{t('action.apply')}</Button>
 				</Group>
 			</Stack>
