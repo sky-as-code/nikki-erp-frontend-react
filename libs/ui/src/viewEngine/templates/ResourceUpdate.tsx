@@ -1,8 +1,9 @@
 import {
-	ActionIcon, Anchor, Badge, Button, ButtonGroup, Collapse, Group, Menu, Paper, Stack, Text, Title,
+	ActionIcon, Alert, Anchor, Badge, Button, ButtonGroup, Collapse, Group, Menu, Paper, Stack, Text, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamic_model';
 import {
+	IconAlertCircle,
 	IconArchive, IconArchiveOff, IconChevronDown, IconChevronRight, IconCopy, IconDeviceFloppy, IconDots,
 	IconPencil, IconPlus, IconTrash, IconX,
 } from '@tabler/icons-react';
@@ -11,9 +12,9 @@ import React from 'react';
 import { Link, useParams } from 'react-router';
 
 import classes from './ResourceDetail.module.css';
-import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
+import { DebugFormErrors, printDebugFormValues, useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
 import { ThunkPackHookReturn } from '../../appState';
-import { AutoField, CrudFormProvider, FormStyleProvider } from '../../components/form';
+import { AutoField, CrudFormProvider, FormStyleProvider, useFormFieldContext } from '../../components/form';
 import { useLocalize, useTranslate } from '../../i18n';
 import { MicroAppDispatchFn } from '../../microApp';
 
@@ -124,12 +125,12 @@ function ResourceUpdateContent(): React.ReactNode {
 					useGetData={actionHooks.useGetById as () => ResourceGetDataHookReturn}
 					useSubmit={useSubmitAction as () => ResourceSubmitHookReturn}
 				>
-					{({ handleSubmit, isLoading }) => (
+					{({ handleSubmit, isLoading, errors: formErrors }) => (
 						<Stack component={PaperWithBorder} gap='md'>
 							<SectionActionBar
 								expanded={expanded}
 								onToggleCollapse={() => setExpanded(prev => !prev)}
-								onSaveClick={handleSubmit()}
+								onSaveClick={handleSubmit(printDebugFormValues)}
 								isLoading={isLoading}
 								updateMode={updateMode}
 								setUpdateMode={setUpdateMode}
@@ -140,6 +141,7 @@ function ResourceUpdateContent(): React.ReactNode {
 								transitionTimingFunction='ease-in-out'
 								className={classes.containerInlineSize}
 							>
+								<DebugFormErrors errors={formErrors} />
 								<div className={classes.formBlockWrapper}>
 									{blocks.map(block => (
 										<OwnPropertiesBlock

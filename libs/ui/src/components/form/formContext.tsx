@@ -50,10 +50,18 @@ type FormFieldContextValue = {
 
 const FormFieldContext = React.createContext<FormFieldContextValue | undefined>(undefined);
 
+export function useFormFieldContext() {
+	const context = React.useContext(FormFieldContext);
+	if (context === undefined) {
+		throw new Error('useFormFieldContext must be used within a FormStyleContext.Provider');
+	}
+	return context;
+};
+
 export function useFormField() {
 	const context = React.useContext(FormFieldContext);
 	if (context === undefined) {
-		throw new Error('useFormField must be used within a FormFieldProvider');
+		throw new Error('useFormField must be used within a FormStyleContext.Provider');
 	}
 	return context;
 };
@@ -112,6 +120,7 @@ export type FormProviderRenderProps = {
 	reset: () => void,
 	form: UseFormReturn<any>,
 	isLoading: boolean,
+	errors: ReturnType<typeof useForm>['formState']['errors'],
 };
 
 type BaseFormProviderProps = {
@@ -154,10 +163,12 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 	const {
 		control,
 		formState: { errors },
+		getValues,
 		register,
 		handleSubmit,
 		reset,
 	} = form;
+	console.log('getValues:', getValues());
 
 	// Reset form when modelValue changes
 	React.useEffect(() => {
@@ -191,6 +202,7 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 				reset,
 				form,
 				isLoading: submitAct.isLoading,
+				errors,
 			})}
 		</FormFieldContext.Provider>
 	) : <LoadingState />;
@@ -252,6 +264,7 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 				reset,
 				form,
 				isLoading: false,
+				errors,
 			})}
 		</FormFieldContext.Provider>
 	);

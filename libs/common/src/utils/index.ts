@@ -2,6 +2,7 @@ export * from './array';
 export * from './cond';
 export * from './crypto';
 export * from './date';
+export * from './env';
 export * from './general';
 export * from './json';
 export * from './object';

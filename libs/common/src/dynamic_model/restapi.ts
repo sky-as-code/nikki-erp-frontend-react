@@ -112,7 +112,7 @@ export class RestApi {
 	public update(request: RestUpdateRequest, primaryResourceId?: string): Promise<RestMutateResponse> {
 		const restPath = this._getBasePath(primaryResourceId);
 		const { id, ...body } = request;
-		return this._opts.requestMaker.put<RestMutateResponse>(`${restPath}/${id}`, { json: body });
+		return this._opts.requestMaker.patch<RestMutateResponse>(`${restPath}/${id}`, { json: body });
 	}
 
 	private _getBasePath(primaryResourceId?: string): string {

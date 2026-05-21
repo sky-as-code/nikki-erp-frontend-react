@@ -193,7 +193,7 @@ function createSimpleSchemaByDataType(dataType: ModelSchemaFieldDataType): z.Zod
 		case 'secret':
 			return applyStringLengthOptions(createStringSchema(), dataType.options);
 		case 'ulid':
-			return createStringSchema().regex(/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/, ErrorKeys.invalidDataType);
+			return createStringSchema().regex(/^[0-7][0-9A-Z]{25}$/, ErrorKeys.invalidDataType);
 		case 'uuid':
 			return createStringSchema().uuid(ErrorKeys.invalidDataType);
 		case 'url':
