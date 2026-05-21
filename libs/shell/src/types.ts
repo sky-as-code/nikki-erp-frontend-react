@@ -1,5 +1,5 @@
 export type ShellEnvVars = {
-	APP_ENV: 'local' | 'dev' | 'prod';
+	APP_ENV: 'local' | 'dev' | 'prod' | null;
 
 	/**
 	 * Base URL for all API calls made by the microfrontend (MFE) Shell.

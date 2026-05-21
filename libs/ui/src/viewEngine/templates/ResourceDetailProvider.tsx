@@ -1,5 +1,10 @@
+import { Alert, Text } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamic_model';
+import { isLocalEnv } from '@nikkierp/common/utils';
+import { IconAlertCircle } from '@tabler/icons-react';
 import React from 'react';
+
+import { useTranslate } from '../../i18n';
 
 
 export type ResourceDetailContextValue = {
@@ -45,4 +50,24 @@ export function useResourceDetailContext(): ResourceDetailContextValue {
 
 export function useResourceDetailTranslationNs(): string {
 	return useResourceDetailContext().translationNs;
+}
+
+export function DebugFormErrors(props: {errors: Record<string, unknown>}): React.ReactNode {
+	const t = useTranslate(useResourceDetailTranslationNs());
+	const hasErrors = Object.keys(props.errors).length > 0;
+	const errs = Object.fromEntries(Object.entries(props.errors).map(([key, value]) => {
+		delete (value as any)['ref'];
+		return [key, value];
+	}));
+
+	return isLocalEnv() && hasErrors && (
+		<Alert variant='outline' color='red' title={t('debug.form_errors')} icon={<IconAlertCircle />}>
+			<Text>{JSON.stringify(errs)}</Text>
+		</Alert>
+	);
+}
+
+export function printDebugFormValues(values: any): any {
+	isLocalEnv() && console.log('Form values:', values);
+	return values;
 }

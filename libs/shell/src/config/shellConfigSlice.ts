@@ -1,3 +1,4 @@
+import { setIsLocalEnv } from '@nikkierp/common/utils';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { ShellEnvVars } from '../types';
@@ -12,6 +13,9 @@ export type ShellConfigState = {
 const initialState: ShellConfigState = {
 	envVars: {
 		BASE_API_URL: '',
+		APP_ENV: null,
+		ROOT_DOMAIN: '',
+		ROOT_PATH: '',
 	},
 };
 
@@ -21,6 +25,7 @@ const shellConfigSlice = createSlice({
 	reducers: {
 		setEnvVars: (state, action: PayloadAction<ShellEnvVars>) => {
 			state.envVars = action.payload;
+			setIsLocalEnv(action.payload.APP_ENV === 'local');
 		},
 	},
 });
