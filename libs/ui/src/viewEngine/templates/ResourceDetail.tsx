@@ -12,14 +12,16 @@ import { MicroAppDispatchFn } from '../../microApp';
 import { usePaperBgColor } from '../../theme';
 
 
-export type ResourceDetailExtraAction = {
+export type ResourceDetailExtraAction<TResource = Record<string, unknown>> = {
 	label: string,
 	actionHook: () => ThunkPackHookReturn<dyn.RestMutateResponse, any>,
-	condition?: (resource: any) => boolean,
-	buildRequest?: (resource: any) => unknown,
+	condition?: (resource: TResource) => boolean,
+	buildRequest?: (resource: TResource) => unknown,
 };
 
-export type ResourceDetailContextualActions = Record<string, any>;
+export type ResourceDetailContextualActions<TResource = Record<string, unknown>> = Record<
+	string, ResourceDetailExtraAction<TResource>
+>;
 
 export type SchemaFieldSpec = { schemaField: string };
 export type LinkSpec = { linkHref: string };
@@ -32,7 +34,7 @@ type OwnPropertySection = {
 	fields?: string[],
 };
 
-type ResourceDetailTemplatePropsParams = {
+type ResourceDetailTemplatePropsParams<TResource = Record<string, unknown>> = {
 	schemaName: string,
 	translationNs: string,
 	dispatch: MicroAppDispatchFn,
@@ -42,8 +44,8 @@ type ResourceDetailTemplatePropsParams = {
 	allStatuses?: StatusOption[],
 	currentStatus?: SchemaFieldSpec,
 	ownPropertiesSection?: OwnPropertySection[],
-	contextualActions?: ResourceDetailContextualActions,
-	actionHooks: {
+	contextualActions?: ResourceDetailContextualActions<TResource>,
+	standardActions: {
 		useArchive?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestSetIsArchivedRequest>,
 		useCreate?: () => ThunkPackHookReturn<dyn.RestCreateResponse, any>,
 		useDelete?: () => ThunkPackHookReturn<dyn.RestDeleteResponse, dyn.RestDeleteRequest>,
@@ -52,10 +54,10 @@ type ResourceDetailTemplatePropsParams = {
 	},
 };
 
-export class ResourceDetailTemplateProps {
-	public readonly params: ResourceDetailTemplatePropsParams;
+export class ResourceDetailTemplateProps<TResource = Record<string, unknown>> {
+	public readonly params: ResourceDetailTemplatePropsParams<TResource>;
 
-	constructor(params: ResourceDetailTemplatePropsParams) {
+	constructor(params: ResourceDetailTemplatePropsParams<TResource>) {
 		this.params = params;
 	}
 }
@@ -71,9 +73,9 @@ export function ResourceDetail({ props }: ResourceDetailProps): React.ReactNode 
 	const params = props.params;
 	const pack = useDynamicModel(params.schemaName);
 	const bgColor = usePaperBgColor();
-	const getByIdAct = params.actionHooks.useGetById();
-	const createAct = params.actionHooks.useCreate?.();
-	const updateAct = params.actionHooks.useUpdate?.();
+	const getByIdAct = params.standardActions.useGetById();
+	const createAct = params.standardActions.useCreate?.();
+	const updateAct = params.standardActions.useUpdate?.();
 	const { id } = useParams();
 	const createMode = id === 'new';
 	const isReading = getByIdAct.isLoading;
@@ -93,7 +95,7 @@ export function ResourceDetail({ props }: ResourceDetailProps): React.ReactNode 
 			>
 				{createMode ? (
 					<ResourceCreate
-						actionHooks={params.actionHooks}
+						actionHooks={params.standardActions}
 						titleLvl1={params.titleLvl1}
 						titleLvl3={params.titleLvl3}
 						blocks={params.ownPropertiesSection ?? []}
@@ -104,7 +106,7 @@ export function ResourceDetail({ props }: ResourceDetailProps): React.ReactNode 
 						allStatuses={params.allStatuses}
 						currentStatus={params.currentStatus}
 						contextualActions={params.contextualActions}
-						actionHooks={params.actionHooks}
+						actionHooks={params.standardActions}
 						titleLvl1={params.titleLvl1}
 						titleLvl2={params.titleLvl2}
 						titleLvl3={params.titleLvl3}
