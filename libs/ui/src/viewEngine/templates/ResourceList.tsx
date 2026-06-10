@@ -4,18 +4,19 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
-	DataTable, DataTableActionHook, SearchData,
+	DataTable, DataTableAction, SearchData,
 } from './DataTable';
 import { ThunkPackHookReturn } from '../../appState';
 import { LoadingState } from '../../components/Loading';
 import { TranslateFn, useLocalize, useTranslate } from '../../i18n';
 import { MicroAppDispatchFn } from '../../microApp';
 import { usePaperBgColor } from '../../theme';
+import {  } from '../../hookhoc';
 
 import type { FieldRendererMap } from './fieldRenderers';
 
 
-export type ResourceActionHook = DataTableActionHook;
+export type ResourceActionHook = DataTableAction;
 
 export type { FieldRendererMap, IFieldRenderer } from './fieldRenderers';
 export { AvatarFieldRenderer, BadgeFieldRenderer } from './fieldRenderers';
@@ -24,16 +25,13 @@ export type { BadgeFieldRendererProps } from './fieldRenderers';
 
 type ResourceListTemplatePropsParams = {
 	schemaName: string,
-	// i18next translation key of the resource name
-	// resourceNameTransKey: string,
-	// i18next namespace of this resource (namespace "common" is included by default)
 	translationNs: string,
 	dispatch: MicroAppDispatchFn,
 	extraActions?: ResourceActionHook[],
-	actionHooks: {
+	standardActions: {
+		createEnabled?: boolean,
 		useSearch: () => ThunkPackHookReturn<dyn.RestSearchResponse<any>, dyn.RestSearchRequest>,
 		useArchive?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestSetIsArchivedRequest>,
-		useCreate?: () => ThunkPackHookReturn<void, void>,
 		useDelete?: () => ThunkPackHookReturn<dyn.RestDeleteResponse, dyn.RestDeleteRequest>,
 		useUpdateBegin?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
 		useUpdateCancel?: () => ThunkPackHookReturn<void, void>,
@@ -66,13 +64,13 @@ export function ResourceList({ props, routePath }: ResourceListProps): React.Rea
 	}
 	const params = props.params;
 	const pack = useSchemaPack(params.schemaName);
-	const searchAct = params.actionHooks.useSearch();
+	const searchAct = params.standardActions.useSearch();
 	const bgColor = usePaperBgColor();
 	const lc = useLocalize(params.translationNs);
 	const t = useTranslate(params.translationNs);
 	const actions = React.useMemo(
-		() => buildResourceActions(params.actionHooks, params.extraActions, t),
-		[params.actionHooks, params.extraActions],
+		() => buildResourceActions(params.standardActions, params.extraActions, t),
+		[params.standardActions, params.extraActions],
 	);
 	const searchThunkActionRef = React.useRef(searchAct.thunkAction);
 	const [searchRequest, setSearchRequest] = React.useState<dyn.RestSearchRequest>({
@@ -148,7 +146,7 @@ export function ResourceList({ props, routePath }: ResourceListProps): React.Rea
 }
 
 function buildResourceActions(
-	actionHooks: ResourceListTemplatePropsParams['actionHooks'],
+	actionHooks: ResourceListTemplatePropsParams['standardActions'],
 	extraActions: ResourceActionHook[] | undefined,
 	t: TranslateFn,
 ): ResourceActionHook[] {
@@ -156,10 +154,14 @@ function buildResourceActions(
 		label: t('action.refresh'),
 		actionHook: actionHooks.useSearch,
 	}];
-	if (actionHooks.useCreate) {
+	if (actionHooks.createEnabled) {
 		actions.push({
 			label: t('action.create'),
-			actionHook: actionHooks.useCreate,
+			// actionHook() {
+			// 	return {
+
+			// 	};
+			// },
 		});
 	}
 	if (actionHooks.useDelete) {

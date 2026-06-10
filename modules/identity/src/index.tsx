@@ -180,7 +180,7 @@ function createUserDetailsPage(dispatch: MicroAppDispatchFn, useMicroAppSelector
 	return {
 		routePath: 'users/:id', // param "id" is required by this template
 		template: 'nikkierp.mantine.pages.templates.resourceDetails.v1',
-		templateProps: new ResourceDetailTemplateProps({
+		templateProps: new ResourceDetailTemplateProps<User>({
 			schemaName: c.USER_SCHEMA_NAME,
 			translationNs: c.IAM_MODULE,
 			dispatch,
@@ -202,7 +202,7 @@ function createUserDetailsPage(dispatch: MicroAppDispatchFn, useMicroAppSelector
 			currentStatus: {
 				schemaField: 'status',
 			},
-			actionHooks: {
+			standardActions: {
 				useArchive: () => userSel.useSetUserIsArchived(useMicroAppSelector),
 				useCreate: () => userSel.useCreateUser(useMicroAppSelector),
 				useDelete: () => userSel.useDeleteUser(useMicroAppSelector),
@@ -247,13 +247,12 @@ function createUserListPage(dispatch: MicroAppDispatchFn, useMicroAppSelector: U
 		template: 'nikkierp.mantine.pages.templates.resourceList.v1',
 		templateProps: new ResourceListTemplateProps({
 			schemaName: c.USER_SCHEMA_NAME,
-			// resourceNameTransKey: 'user',
 			translationNs: c.IAM_MODULE,
 			dispatch,
-			actionHooks: {
+			standardActions: {
+				createEnabled: true,
 				useSearch: () => userSel.useSearchUsers(useMicroAppSelector),
 				useArchive: () => userSel.useSetUserIsArchived(useMicroAppSelector),
-				useCreate: undefined,
 				useDelete: () => userSel.useDeleteUser(useMicroAppSelector),
 				useUpdateSave: () => userSel.useUpdateUser(useMicroAppSelector),
 			},

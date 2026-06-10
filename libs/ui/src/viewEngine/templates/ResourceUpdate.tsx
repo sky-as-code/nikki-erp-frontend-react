@@ -18,7 +18,9 @@ import { AutoField, CrudFormProvider, FormStyleProvider, useFormFieldContext } f
 import { useLocalize, useTranslate } from '../../i18n';
 import { MicroAppDispatchFn } from '../../microApp';
 
-import type { LinkSpec, SchemaFieldSpec } from './ResourceDetail';
+import type {
+	LinkSpec, ResourceDetailContextualActions, ResourceDetailExtraAction, SchemaFieldSpec,
+} from './ResourceDetail';
 
 
 type StatusOption = { value: string, label: string, color: string };
@@ -44,7 +46,7 @@ type ResourceUpdateContextValue = {
 	dispatch: MicroAppDispatchFn,
 	allStatuses?: StatusOption[],
 	currentStatus?: SchemaFieldSpec,
-	contextualActions?: Record<string, any>,
+	contextualActions?: ResourceDetailContextualActions,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	titleLvl3?: LinkSpec,
@@ -58,7 +60,7 @@ type ResourceUpdateProps = {
 	dispatch: MicroAppDispatchFn,
 	allStatuses?: StatusOption[],
 	currentStatus?: SchemaFieldSpec,
-	contextualActions?: Record<string, any>,
+	contextualActions?: ResourceDetailContextualActions,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	titleLvl3?: LinkSpec,
@@ -378,7 +380,7 @@ function PrimaryActionButtons({
 function ResourceDetailExtraActionButtons({
 	contextualActions, resource, disabled = false,
 }: {
-	contextualActions?: Record<string, any>,
+	contextualActions?: ResourceDetailContextualActions,
 	resource: Record<string, unknown>,
 	disabled?: boolean,
 }): React.ReactNode {
@@ -399,7 +401,7 @@ function ResourceDetailExtraActionButtons({
 function ResourceDetailExtraActionButton({
 	action, resource, disabled = false,
 }: {
-	action: any,
+	action: ResourceDetailExtraAction,
 	resource: Record<string, unknown>,
 	disabled?: boolean,
 }): React.ReactNode {
@@ -432,7 +434,7 @@ function ResourceDetailExtraActionButton({
 }
 
 function hasMatchingExtraAction(
-	contextualActions: Record<string, any> | undefined,
+	contextualActions: ResourceDetailContextualActions | undefined,
 	resource: Record<string, unknown>,
 ): boolean {
 	if (!contextualActions) {

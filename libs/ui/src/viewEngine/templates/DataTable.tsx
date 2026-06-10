@@ -25,13 +25,15 @@ import { ThunkPackHookReturn } from '../../appState';
 import { TranslateFn, useTranslate } from '../../i18n';
 
 
-export type DataTableActionHook = {
+export type DataTableAction = {
 	label?: string,
 	icon?: React.ReactNode,
 	isSeparator?: boolean,
 	supportMultiple?: boolean,
 	requireSelection?: boolean,
+	/* If set, use this value instead of `href` */
 	actionHook?: () => ThunkPackHookReturn<any, any>,
+	href?: string,
 };
 
 export type { FieldRendererMap, IFieldRenderer } from './fieldRenderers';
@@ -72,7 +74,7 @@ export type DataTableProps = {
 	fieldRenderer?: FieldRendererMap,
 	/** When set, each row's cells are linked with this absolute pathname (same href for all cells in the row). */
 	buildLinkHref?: (rowData: SearchItem) => string,
-	actions?: DataTableActionHook[],
+	actions?: DataTableAction[],
 	allowColumnResizing?: boolean,
 	isFullWidthTable?: boolean,
 	allowRowMovement?: boolean,
@@ -93,7 +95,7 @@ type RequiredDataTableProps = Omit<
 	'actions' | 'allowColumnResizing' | 'isFullWidthTable'
 	| 'allowRowMovement' | 'showControls' | 'hasFixHeader' | 'translationNs' | 'translateFieldName'
 > & {
-	actions: DataTableActionHook[],
+	actions: DataTableAction[],
 	allowColumnResizing: boolean,
 	isFullWidthTable: boolean,
 	allowRowMovement: boolean,
@@ -369,7 +371,7 @@ function TableContainer(): React.ReactNode {
 type ToolbarProps = {
 	tableName: string,
 	total: number,
-	actions: DataTableActionHook[],
+	actions: DataTableAction[],
 	selectedCount: number,
 	onClearSelection: () => void,
 	renderTableName?: RenderTableNameFn,
@@ -554,7 +556,7 @@ function getColumnStyle(width: number): React.CSSProperties {
 	return { width, minWidth: 0, maxWidth: 'none' };
 }
 
-function shouldShowSelectionAction(action: DataTableActionHook, selectedCount: number): boolean {
+function shouldShowSelectionAction(action: DataTableAction, selectedCount: number): boolean {
 	if (action.isSeparator) return true;
 	if (!action.requireSelection || selectedCount === 0) {
 		return false;
@@ -565,16 +567,16 @@ function shouldShowSelectionAction(action: DataTableActionHook, selectedCount: n
 	return true;
 }
 
-function getVisibleRowSelectionActions(actions: DataTableActionHook[], selectedCount: number): DataTableActionHook[] {
+function getVisibleRowSelectionActions(actions: DataTableAction[], selectedCount: number): DataTableAction[] {
 	return normalizeMenuItems(actions.filter(action => shouldShowSelectionAction(action, selectedCount)));
 }
 
-function getVisibleDefaultActions(actions: DataTableActionHook[]): DataTableActionHook[] {
+function getVisibleDefaultActions(actions: DataTableAction[]): DataTableAction[] {
 	return normalizeMenuItems(actions.filter(action => !action.requireSelection));
 }
 
-function normalizeMenuItems(items: DataTableActionHook[]): DataTableActionHook[] {
-	const normalized: DataTableActionHook[] = [];
+function normalizeMenuItems(items: DataTableAction[]): DataTableAction[] {
+	const normalized: DataTableAction[] = [];
 	for (const item of items) {
 		if (item.isSeparator) {
 			if (normalized.length === 0 || normalized[normalized.length - 1].isSeparator) {
@@ -1451,7 +1453,7 @@ function getSelectableSchemaFieldNames(schema: dyn.ModelSchema): string[] {
 }
 
 
-function ActionButton({ action }: { action: DataTableActionHook }): React.ReactNode {
+function ActionButton({ action }: { action: DataTableAction }): React.ReactNode {
 	return (
 		<Button variant='outline' size='compact-md' leftSection={action.icon}>
 			{action.label}
@@ -1459,7 +1461,7 @@ function ActionButton({ action }: { action: DataTableActionHook }): React.ReactN
 	);
 }
 
-function ActionMenu({ items }: { items: DataTableActionHook[] }): React.ReactNode {
+function ActionMenu({ items }: { items: DataTableAction[] }): React.ReactNode {
 	return (
 		<Menu shadow='md' position='bottom-end'>
 			<Menu.Target>
