@@ -1,5 +1,5 @@
 import { Stack } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 import { useParams } from 'react-router';
 
@@ -10,12 +10,16 @@ import { ThunkPackHookReturn } from '../../appState';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { MicroAppDispatchFn } from '../../microApp';
 import { usePaperBgColor } from '../../theme';
+import { ConditionExpression } from '../metadata/expression';
+import { AdapterContext } from '../metadata/registry';
+import { MetadataNode } from '../metadata/types';
 
 
+/** Contextual action driven by a command name. `condition` is a serializable expression. */
 export type ResourceDetailExtraAction<TResource = Record<string, unknown>> = {
 	label: string,
-	actionHook: () => ThunkPackHookReturn<dyn.RestMutateResponse, any>,
-	condition?: (resource: TResource) => boolean,
+	command: string,
+	condition?: ConditionExpression,
 	buildRequest?: (resource: TResource) => unknown,
 };
 
@@ -26,18 +30,35 @@ export type ResourceDetailContextualActions<TResource = Record<string, unknown>>
 export type SchemaFieldSpec = { schemaField: string };
 export type LinkSpec = { linkHref: string };
 
-type StatusOption = { value: string, label: string, color: string };
+export type StatusOption = { value: string, label: string, color: string };
 
-type OwnPropertySection = {
+export type OwnPropertySection = {
 	header: string,
 	fieldType: 'SchemaFields' | 'CustomFields',
 	fields?: string[],
 };
 
+export type ResourceDetailStandardActionHooks = {
+	useArchive?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestSetIsArchivedRequest>,
+	useCreate?: () => ThunkPackHookReturn<dyn.RestCreateResponse, any>,
+	useDelete?: () => ThunkPackHookReturn<dyn.RestDeleteResponse, dyn.RestDeleteRequest>,
+	useGetById?: () => ThunkPackHookReturn<dyn.RestGetOneResponse<any>, dyn.RestGetByIdRequest>,
+	useUpdate?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
+};
+
+/** Command names for standard CRUD actions, resolved to data flow by the owning module. */
+export type ResourceDetailStandardActionCommands = {
+	getById?: string,
+	create?: string,
+	update?: string,
+	delete?: string,
+	archive?: string,
+};
+
 type ResourceDetailTemplatePropsParams<TResource = Record<string, unknown>> = {
 	schemaName: string,
 	translationNs: string,
-	dispatch: MicroAppDispatchFn,
+	dispatch?: MicroAppDispatchFn,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	titleLvl3?: LinkSpec,
@@ -45,13 +66,9 @@ type ResourceDetailTemplatePropsParams<TResource = Record<string, unknown>> = {
 	currentStatus?: SchemaFieldSpec,
 	ownPropertiesSection?: OwnPropertySection[],
 	contextualActions?: ResourceDetailContextualActions<TResource>,
-	standardActions: {
-		useArchive?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestSetIsArchivedRequest>,
-		useCreate?: () => ThunkPackHookReturn<dyn.RestCreateResponse, any>,
-		useDelete?: () => ThunkPackHookReturn<dyn.RestDeleteResponse, dyn.RestDeleteRequest>,
-		useGetById: () => ThunkPackHookReturn<dyn.RestGetOneResponse<any>, dyn.RestGetByIdRequest>,
-		useUpdate?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
-	},
+	standardActions?: ResourceDetailStandardActionHooks,
+	standardActionCommands?: ResourceDetailStandardActionCommands,
+	childrenNodes?: MetadataNode[],
 };
 
 export class ResourceDetailTemplateProps<TResource = Record<string, unknown>> {
@@ -62,31 +79,65 @@ export class ResourceDetailTemplateProps<TResource = Record<string, unknown>> {
 	}
 }
 
-export type ResourceDetailProps = {
-	props: ResourceDetailTemplateProps,
+/** Serializable JSON props as authored in page metadata. */
+export type ResourceDetailJsonProps = {
+	schemaName: string,
+	translationNs?: string,
+	titleLvl1?: SchemaFieldSpec,
+	titleLvl2?: SchemaFieldSpec,
+	titleLvl3?: LinkSpec,
+	allStatuses?: StatusOption[],
+	currentStatus?: SchemaFieldSpec,
+	ownPropertiesSection?: OwnPropertySection[],
+	standardActions?: ResourceDetailStandardActionCommands,
+	contextualActions?: Record<string, { label: string, command: string, condition?: ConditionExpression }>,
 };
 
-export function ResourceDetail({ props }: ResourceDetailProps): React.ReactNode {
+export function adaptResourceDetailProps(
+	json: Record<string, unknown> | undefined,
+	ctx: AdapterContext,
+	childrenNodes?: MetadataNode[],
+): ResourceDetailTemplateProps {
+	const props = (json ?? {}) as ResourceDetailJsonProps;
+	return new ResourceDetailTemplateProps({
+		schemaName: props.schemaName,
+		translationNs: props.translationNs ?? ctx.translationNs ?? 'common',
+		dispatch: ctx.dispatch,
+		titleLvl1: props.titleLvl1,
+		titleLvl2: props.titleLvl2,
+		titleLvl3: props.titleLvl3,
+		allStatuses: props.allStatuses,
+		currentStatus: props.currentStatus,
+		ownPropertiesSection: props.ownPropertiesSection,
+		contextualActions: props.contextualActions,
+		standardActionCommands: props.standardActions,
+		childrenNodes,
+	});
+}
+
+export type ResourceDetailProps = {
+	props: ResourceDetailTemplateProps,
+	childrenNodes?: MetadataNode[],
+};
+
+export function ResourceDetail({ props, childrenNodes }: ResourceDetailProps): React.ReactNode {
 	if (! (props instanceof ResourceDetailTemplateProps)) {
 		throw new Error('props must be an instance of ' + ResourceDetailTemplateProps.name);
 	}
 	const params = props.params;
 	const pack = useDynamicModel(params.schemaName);
 	const bgColor = usePaperBgColor();
-	const getByIdAct = params.standardActions.useGetById();
-	const createAct = params.standardActions.useCreate?.();
-	const updateAct = params.standardActions.useUpdate?.();
 	const { id } = useParams();
 	const createMode = id === 'new';
-	const isReading = getByIdAct.isLoading;
-	const isWriting = Boolean(createAct?.isLoading || updateAct?.isLoading);
+	const commands = params.standardActionCommands ?? {};
+	const nodes = childrenNodes ?? params.childrenNodes;
 
 	return (
 		<ResourceDetailProvider
 			translationNs={params.translationNs}
 			schemaPack={pack}
-			isReading={isReading}
-			isWriting={isWriting}
+			isReading={false}
+			isWriting={false}
 		>
 			<Stack
 				bg={bgColor}
@@ -95,22 +146,22 @@ export function ResourceDetail({ props }: ResourceDetailProps): React.ReactNode 
 			>
 				{createMode ? (
 					<ResourceCreate
-						actionHooks={params.standardActions}
+						commands={commands}
 						titleLvl1={params.titleLvl1}
 						titleLvl3={params.titleLvl3}
 						blocks={params.ownPropertiesSection ?? []}
 					/>
 				) : (
 					<ResourceUpdate
-						dispatch={params.dispatch}
+						standardActionCommands={commands}
 						allStatuses={params.allStatuses}
 						currentStatus={params.currentStatus}
 						contextualActions={params.contextualActions}
-						actionHooks={params.standardActions}
 						titleLvl1={params.titleLvl1}
 						titleLvl2={params.titleLvl2}
 						titleLvl3={params.titleLvl3}
 						blocks={params.ownPropertiesSection ?? []}
+						childrenNodes={nodes}
 					/>
 				)}
 			</Stack>

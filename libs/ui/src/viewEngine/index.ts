@@ -1,5 +1,6 @@
 export * from './SplitLayout';
 export * from './ViewEngineRouter';
+export * from './metadata';
 export * from './templates/fieldRenderers';
 export * from './templates/DataTable';
 export * from './templates/ResourceDetail';

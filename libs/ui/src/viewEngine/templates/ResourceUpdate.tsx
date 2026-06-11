@@ -1,10 +1,9 @@
 import {
-	ActionIcon, Alert, Anchor, Badge, Button, ButtonGroup, Collapse, Group, Menu, Paper, Stack, Text, Title,
+	ActionIcon, Anchor, Badge, Button, Collapse, Group, Menu, Paper, Stack, Text, Title,
 } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import {
-	IconAlertCircle,
-	IconArchive, IconArchiveOff, IconChevronDown, IconChevronRight, IconCopy, IconDeviceFloppy, IconDots,
+	IconArchive, IconArchiveOff, IconChevronDown, IconChevronRight, IconDeviceFloppy, IconDots,
 	IconPencil, IconPlus, IconTrash, IconX,
 } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -13,77 +12,96 @@ import { Link, useParams } from 'react-router';
 
 import classes from './ResourceDetail.module.css';
 import { DebugFormErrors, printDebugFormValues, useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
-import { ThunkPackHookReturn } from '../../appState';
-import { AutoField, CrudFormProvider, FormStyleProvider, useFormFieldContext } from '../../components/form';
+import { AutoField, CrudFormProvider, FormStyleProvider } from '../../components/form';
+import { useCommand } from '../../hookhoc';
 import { useLocalize, useTranslate } from '../../i18n';
-import { MicroAppDispatchFn } from '../../microApp';
+import { useCommandBus } from '../../microApp';
+import { RenderNode } from '../metadata/compilePage';
+import { evaluateCondition } from '../metadata/expression';
+import { AdapterContext } from '../metadata/registry';
+import { MetadataNode } from '../metadata/types';
 
 import type {
-	LinkSpec, ResourceDetailContextualActions, ResourceDetailExtraAction, SchemaFieldSpec,
+	LinkSpec, OwnPropertySection, ResourceDetailContextualActions, ResourceDetailExtraAction,
+	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './ResourceDetail';
 
 
-type StatusOption = { value: string, label: string, color: string };
-
-type OwnPropertySection = {
-	header: string,
-	fieldType: 'SchemaFields' | 'CustomFields',
-	fields?: string[],
-};
-
-type ResourceGetDataHookReturn = ThunkPackHookReturn<dyn.RestGetOneResponse<any>, unknown>;
-type ResourceSubmitHookReturn = ThunkPackHookReturn<dyn.RestCreateResponse | dyn.RestMutateResponse, unknown>;
-
-type ResourceUpdateActionHooks = {
-	useArchive?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestSetIsArchivedRequest>,
-	useCreate?: () => ThunkPackHookReturn<dyn.RestCreateResponse, any>,
-	useDelete?: () => ThunkPackHookReturn<dyn.RestDeleteResponse, dyn.RestDeleteRequest>,
-	useGetById: () => ThunkPackHookReturn<dyn.RestGetOneResponse<any>, dyn.RestGetByIdRequest>,
-	useUpdate?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
-};
-
 type ResourceUpdateContextValue = {
-	dispatch: MicroAppDispatchFn,
+	commands: ResourceDetailStandardActionCommands,
+	resource?: Record<string, unknown>,
+	isReading: boolean,
+	isWriting: boolean,
+	refresh: () => void,
+	onSubmit: (data: Record<string, any>) => void,
 	allStatuses?: StatusOption[],
 	currentStatus?: SchemaFieldSpec,
 	contextualActions?: ResourceDetailContextualActions,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	titleLvl3?: LinkSpec,
-	actionHooks: ResourceUpdateActionHooks,
 	blocks: OwnPropertySection[],
+	childrenNodes?: MetadataNode[],
 };
 
 const ResourceUpdateContext = React.createContext<ResourceUpdateContextValue | undefined>(undefined);
 
 type ResourceUpdateProps = {
-	dispatch: MicroAppDispatchFn,
+	standardActionCommands: ResourceDetailStandardActionCommands,
 	allStatuses?: StatusOption[],
 	currentStatus?: SchemaFieldSpec,
 	contextualActions?: ResourceDetailContextualActions,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	titleLvl3?: LinkSpec,
-	actionHooks: ResourceUpdateActionHooks,
 	blocks: OwnPropertySection[],
+	childrenNodes?: MetadataNode[],
 };
 
 export function ResourceUpdate(props: ResourceUpdateProps): React.ReactNode {
+	const commands = props.standardActionCommands;
+	const { id } = useParams();
+	const getByIdCmd = useCommand<dyn.RestGetOneResponse<any>>(commands.getById ?? '');
+	const updateCmd = useCommand<dyn.RestMutateResponse>(commands.update ?? '');
+	const publishGet = getByIdCmd.publish;
+	const publishUpdate = updateCmd.publish;
+
+	const refresh = React.useCallback(() => {
+		if (commands.getById && id && id !== 'new') {
+			void publishGet({ id });
+		}
+	}, [publishGet, commands.getById, id]);
+
+	React.useEffect(() => { refresh(); }, [refresh]);
+
+	const onSubmit = React.useCallback((data: Record<string, any>) => {
+		if (commands.update) {
+			void publishUpdate(data).then(refresh);
+		}
+	}, [publishUpdate, commands.update, refresh]);
+
+	const resource = getByIdCmd.data?.item as Record<string, unknown> | undefined;
 	const value = React.useMemo(
 		(): ResourceUpdateContextValue => ({
-			dispatch: props.dispatch,
+			commands,
+			resource,
+			isReading: getByIdCmd.isPending,
+			isWriting: updateCmd.isPending,
+			refresh,
+			onSubmit,
 			allStatuses: props.allStatuses,
 			currentStatus: props.currentStatus,
 			contextualActions: props.contextualActions,
 			titleLvl1: props.titleLvl1,
 			titleLvl2: props.titleLvl2,
 			titleLvl3: props.titleLvl3,
-			actionHooks: props.actionHooks,
 			blocks: props.blocks,
+			childrenNodes: props.childrenNodes,
 		}),
 		[
-			props.dispatch, props.allStatuses, props.currentStatus, props.contextualActions,
-			props.titleLvl1, props.titleLvl2, props.titleLvl3, props.actionHooks, props.blocks,
+			commands, resource, getByIdCmd.isPending, updateCmd.isPending, refresh, onSubmit,
+			props.allStatuses, props.currentStatus, props.contextualActions,
+			props.titleLvl1, props.titleLvl2, props.titleLvl3, props.blocks, props.childrenNodes,
 		],
 	);
 
@@ -104,18 +122,14 @@ function useResourceUpdateContext(): ResourceUpdateContextValue {
 
 function ResourceUpdateContent(): React.ReactNode {
 	const { schemaPack } = useResourceDetailContext();
-	const { actionHooks, blocks } = useResourceUpdateContext();
+	const { commands, resource, isWriting, onSubmit, blocks, childrenNodes } = useResourceUpdateContext();
 	const [expanded, setExpanded] = React.useState(true);
 	const [updateMode, setUpdateMode] = React.useState(false);
-	const getByIdAct = actionHooks.useGetById();
 	const modelSchema = schemaPack?.modelSchema;
 	const localize = useLocalize(useResourceDetailTranslationNs());
-	const { id } = useParams();
-	const dataRequest = React.useMemo(() => ({ id: id! }), [id]);
-	const useSubmitAction = actionHooks.useUpdate ?? actionHooks.useCreate;
-	const fieldValues = (getByIdAct.data?.item ?? {}) as Record<string, unknown>;
+	const fieldValues = (resource ?? {}) as Record<string, unknown>;
 
-	return modelSchema && useSubmitAction ? (
+	return modelSchema && commands.update && commands.getById ? (
 		<>
 			<ResourceUpdateHeader />
 			<FormStyleProvider layout='onecol'>
@@ -123,9 +137,9 @@ function ResourceUpdateContent(): React.ReactNode {
 					formVariant='update'
 					schemaName={modelSchema.name}
 					localize={localize}
-					getDataRequest={dataRequest}
-					useGetData={actionHooks.useGetById as () => ResourceGetDataHookReturn}
-					useSubmit={useSubmitAction as () => ResourceSubmitHookReturn}
+					modelValue={resource ?? null}
+					isSubmitting={isWriting}
+					onSubmit={onSubmit}
 				>
 					{({ handleSubmit, isLoading, errors: formErrors }) => (
 						<Stack component={PaperWithBorder} gap='md'>
@@ -154,6 +168,7 @@ function ResourceUpdateContent(): React.ReactNode {
 											updateMode={updateMode}
 										/>
 									))}
+									<AppendedChildren nodes={childrenNodes} />
 								</div>
 							</Collapse>
 						</Stack>
@@ -165,16 +180,14 @@ function ResourceUpdateContent(): React.ReactNode {
 }
 
 function ResourceUpdateHeader(): React.ReactNode {
-	const { schemaPack, isReading, isWriting } = useResourceDetailContext();
-	const { actionHooks, titleLvl1, titleLvl2, titleLvl3 } = useResourceUpdateContext();
-	const getByIdAct = actionHooks.useGetById();
-	const createAct = actionHooks.useCreate?.();
-	const data = getByIdAct.data?.item as Record<string, unknown> | undefined;
+	const { schemaPack } = useResourceDetailContext();
+	const { commands, resource, titleLvl1, titleLvl2, titleLvl3, isReading, isWriting } = useResourceUpdateContext();
+	const data = resource;
 	const localize = useLocalize(useResourceDetailTranslationNs());
 	const modelSchema = schemaPack?.modelSchema;
 	const resourceName = localize(modelSchema?.label, { count: 99 });
 	const showTitleLvl3 = Boolean(titleLvl3 && modelSchema);
-	const showCreate = Boolean(actionHooks.useCreate);
+	const showCreate = Boolean(commands.create);
 	const isActionDisabled = isReading || isWriting;
 
 	return (
@@ -199,13 +212,7 @@ function ResourceUpdateHeader(): React.ReactNode {
 								{resourceName}
 							</Anchor>
 						) : null}
-						{showCreate && createAct ? (
-							<CreateActionMenu
-								useCreatePack={createAct}
-								isAllowClone={false}
-								disabled={isActionDisabled}
-							/>
-						) : null}
+						{showCreate ? <CreateActionButton disabled={isActionDisabled} /> : null}
 					</Group>
 				) : null}
 			</Stack>
@@ -213,60 +220,20 @@ function ResourceUpdateHeader(): React.ReactNode {
 	);
 }
 
-function CreateActionMenu({
-	useCreatePack, isAllowClone, disabled = false,
-}: {
-	useCreatePack: ThunkPackHookReturn<dyn.RestCreateResponse, unknown>,
-	isAllowClone: boolean,
-	disabled?: boolean,
-}): React.ReactNode {
+function CreateActionButton({ disabled = false }: { disabled?: boolean }): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
-	if (!isAllowClone) {
-		return (
-			<Button
-				component={Link}
-				to='../new'
-				relative='path'
-				disabled={disabled}
-				leftSection={<IconPlus size={16} />}
-				variant='outline'
-				size='compact-md'
-			>
-				{t('action.create')}
-			</Button>
-		);
-	}
 	return (
-		<ButtonGroup>
-			<Button
-				component={Link}
-				to='../new'
-				relative='path'
-				disabled={disabled}
-				leftSection={<IconPlus size={16} />}
-				variant='outline'
-				size='compact-md'
-				styles={{ section: { marginInlineEnd: 0 } }}
-			>
-				{t('action.create')}
-			</Button>
-			<Menu shadow='md' position='bottom-end'>
-				<Menu.Target>
-					<Button variant='outline' size='compact-md' px={4} aria-label='More actions' disabled={disabled}>
-						<IconChevronDown size={12} />
-					</Button>
-				</Menu.Target>
-				<Menu.Dropdown>
-					<Menu.Item
-						disabled={disabled}
-						onClick={() => void useCreatePack.thunkAction(undefined)}
-						leftSection={<IconCopy size={16} />}
-					>
-						{t('action.duplicate')}
-					</Menu.Item>
-				</Menu.Dropdown>
-			</Menu>
-		</ButtonGroup>
+		<Button
+			component={Link}
+			to='../new'
+			relative='path'
+			disabled={disabled}
+			leftSection={<IconPlus size={16} />}
+			variant='outline'
+			size='compact-md'
+		>
+			{t('action.create')}
+		</Button>
 	);
 }
 
@@ -282,13 +249,11 @@ type SectionActionBarProps = {
 function SectionActionBar({
 	expanded, onToggleCollapse, onSaveClick, isLoading, updateMode, setUpdateMode,
 }: SectionActionBarProps): React.ReactNode {
-	const { allStatuses, currentStatus, contextualActions, actionHooks } = useResourceUpdateContext();
-	const getByIdAct = actionHooks.useGetById();
-	const resource = getByIdAct.data?.item as Record<string, unknown> | undefined;
+	const { allStatuses, currentStatus, contextualActions, commands, resource } = useResourceUpdateContext();
 	const curStatusField = currentStatus?.schemaField;
-	const status = curStatusField ? getByIdAct?.data?.item?.[curStatusField] : null;
+	const status = curStatusField ? resource?.[curStatusField] : null;
 	const hasVisibleContextualActions = resource != null && hasMatchingExtraAction(contextualActions, resource);
-	const hasOverflowMenu = Boolean(actionHooks?.useDelete || actionHooks?.useArchive);
+	const hasOverflowMenu = Boolean(commands.delete || commands.archive);
 
 	return (
 		<Group justify='space-between' wrap='wrap' className={clsx('sticky top-0 py-4', classes.bgBodyColor)}>
@@ -299,7 +264,7 @@ function SectionActionBar({
 				<PrimaryActionButtons
 					updateMode={updateMode}
 					setUpdateMode={setUpdateMode}
-					hasUpdate={Boolean(actionHooks?.useUpdate)}
+					hasUpdate={Boolean(commands.update)}
 					onSaveClick={onSaveClick}
 					isLoading={isLoading}
 				/>
@@ -405,10 +370,9 @@ function ResourceDetailExtraActionButton({
 	resource: Record<string, unknown>,
 	disabled?: boolean,
 }): React.ReactNode {
-	const { dispatch } = useResourceUpdateContext();
 	const t = useTranslate(useResourceDetailTranslationNs());
-	const actionPack = action.actionHook();
-	const isVisible = !action.condition || action.condition(resource);
+	const command = useCommand(action.command);
+	const isVisible = !action.condition || evaluateCondition(action.condition, resource);
 	if (!isVisible) {
 		return null;
 	}
@@ -416,7 +380,7 @@ function ResourceDetailExtraActionButton({
 	const onClick = () => {
 		const request = action.buildRequest ? action.buildRequest(resource) : buildDefaultMutateRequest(resource);
 		if (request != null) {
-			dispatch(actionPack.thunkAction(request) as any);
+			void command.publish(request);
 		}
 	};
 
@@ -424,8 +388,8 @@ function ResourceDetailExtraActionButton({
 		<Button
 			variant='outline'
 			size='compact-md'
-			disabled={disabled || actionPack.isLoading}
-			loading={actionPack.isLoading}
+			disabled={disabled || command.isPending}
+			loading={command.isPending}
 			onClick={onClick}
 		>
 			{t(action.label)}
@@ -442,8 +406,18 @@ function hasMatchingExtraAction(
 	}
 
 	return Object.values(contextualActions).some(
-		action => !action.condition || action.condition(resource),
+		action => !action.condition || evaluateCondition(action.condition, resource),
 	);
+}
+
+function AppendedChildren({ nodes }: { nodes?: MetadataNode[] }): React.ReactNode {
+	const commandBus = useCommandBus();
+	const translationNs = useResourceDetailTranslationNs();
+	const ctx = React.useMemo<AdapterContext>(() => ({ commandBus, translationNs }), [commandBus, translationNs]);
+	if (!nodes || nodes.length === 0) {
+		return null;
+	}
+	return <>{nodes.map((node, index) => <RenderNode key={index} node={node} ctx={ctx} />)}</>;
 }
 
 function buildDefaultMutateRequest(resource: Record<string, unknown>): dyn.RestMutateOneRequest | null {
@@ -461,28 +435,28 @@ function ResourceDetailOverflowMenu({
 	resource: Record<string, unknown>,
 	disabled?: boolean,
 }): React.ReactNode {
-	const { dispatch, actionHooks } = useResourceUpdateContext();
+	const { commands, refresh } = useResourceUpdateContext();
 	const t = useTranslate(useResourceDetailTranslationNs());
-	const deletePack = actionHooks.useDelete?.();
-	const archivePack = actionHooks.useArchive?.();
-	const isBusy = disabled || Boolean(deletePack?.isLoading || archivePack?.isLoading);
+	const deleteCmd = useCommand(commands.delete ?? '');
+	const archiveCmd = useCommand(commands.archive ?? '');
+	const isBusy = disabled || deleteCmd.isPending || archiveCmd.isPending;
 
 	const onDelete = () => {
 		const id = resource.id;
-		if (typeof id !== 'string' || !deletePack) {
+		if (typeof id !== 'string' || !commands.delete) {
 			return;
 		}
-		dispatch(deletePack.thunkAction({ id }) as any);
+		void deleteCmd.publish({ id }).then(refresh);
 	};
 
 	const showArchive = resource.is_archived === false;
 	const showUnarchive = resource.is_archived === true;
 	const onSetArchived = (archived: boolean) => {
 		const request = buildArchiveRequest(resource, archived);
-		if (request == null || !archivePack) {
+		if (request == null || !commands.archive) {
 			return;
 		}
-		dispatch(archivePack.thunkAction(request) as any);
+		void archiveCmd.publish(request).then(refresh);
 	};
 
 	return (
@@ -493,13 +467,13 @@ function ResourceDetailOverflowMenu({
 				</Button>
 			</Menu.Target>
 			<Menu.Dropdown>
-				{actionHooks.useDelete ? (
+				{commands.delete ? (
 					<Menu.Item leftSection={<IconTrash size={16} />} disabled={isBusy} onClick={onDelete}>
 						{t('action.delete')}
 					</Menu.Item>
 				) : null}
-				{actionHooks.useDelete && actionHooks.useArchive ? <Menu.Divider /> : null}
-				{actionHooks.useArchive && showArchive ? (
+				{commands.delete && commands.archive ? <Menu.Divider /> : null}
+				{commands.archive && showArchive ? (
 					<Menu.Item
 						leftSection={<IconArchive size={16} />}
 						disabled={isBusy}
@@ -508,7 +482,7 @@ function ResourceDetailOverflowMenu({
 						{t('action.archive')}
 					</Menu.Item>
 				) : null}
-				{actionHooks.useArchive && showUnarchive ? (
+				{commands.archive && showUnarchive ? (
 					<Menu.Item
 						leftSection={<IconArchiveOff size={16} />}
 						disabled={isBusy}

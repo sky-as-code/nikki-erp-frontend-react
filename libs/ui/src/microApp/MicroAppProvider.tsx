@@ -1,3 +1,4 @@
+import { ICommandBus } from '@nikkierp/common/commandBus';
 import { RequestMaker } from '@nikkierp/common/request';
 import React from 'react';
 
@@ -20,6 +21,16 @@ export function useMicroAppContext(): MicroAppContextType {
 	return context;
 }
 
+const CommandBusContext = React.createContext<ICommandBus | null>(null);
+
+export function useCommandBus(): ICommandBus {
+	const context = React.useContext(CommandBusContext);
+	if (!context) {
+		throw new Error('useCommandBus must be used within a MicroAppProvider');
+	}
+	return context;
+}
+
 export type MicroAppRouting = MicroAppProps['routing'];
 
 export type MicroAppProviderProps = React.PropsWithChildren & MicroAppProps & {
@@ -36,13 +47,15 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = (props) => {
 	});
 
 	return (
-		<MicroAppContext.Provider value={{
-			api: props.api,
-			routing: props.routing,
-		}}>
-			<MicroAppStateProvider>
-				{props.children}
-			</MicroAppStateProvider>
-		</MicroAppContext.Provider>
+		<CommandBusContext.Provider value={props.commandBus}>
+			<MicroAppContext.Provider value={{
+				api: props.api,
+				routing: props.routing,
+			}}>
+				<MicroAppStateProvider>
+					{props.children}
+				</MicroAppStateProvider>
+			</MicroAppContext.Provider>
+		</CommandBusContext.Provider>
 	);
 };

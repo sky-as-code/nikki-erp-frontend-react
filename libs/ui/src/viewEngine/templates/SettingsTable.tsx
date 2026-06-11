@@ -1,5 +1,5 @@
 import { Checkbox, Table } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import clsx from 'clsx';
 import React from 'react';
 

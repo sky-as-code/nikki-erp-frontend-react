@@ -16,7 +16,7 @@ authorizationErrorListener.startListening({
 
 		for (const item of payload.items) {
 			if (item.key === 'authorize.err_invalid_access_token') {
-				api.dispatch(routingActions.navigateTo('/signin'));
+				api.dispatch(routingActions.navigateTo({ to: '/signin' }));
 				return;
 			}
 		}

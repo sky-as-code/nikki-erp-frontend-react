@@ -1,5 +1,5 @@
 import { ActionIcon, Anchor, Button, Collapse, Group, Paper, Stack, Text, Title } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import { IconChevronDown, IconChevronRight, IconDeviceFloppy } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
@@ -7,12 +7,11 @@ import { Link, useNavigate } from 'react-router';
 
 import classes from './ResourceDetail.module.css';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
-import { ThunkPackHookReturn } from '../../appState';
 import { AutoField, CrudFormProvider, FormStyleProvider } from '../../components/form';
+import { useCommand } from '../../hookhoc';
 import { useLocalize, useTranslate } from '../../i18n';
-import { useMicroAppDispatch } from '../../microApp';
 
-import type { LinkSpec, SchemaFieldSpec } from './ResourceDetail';
+import type { LinkSpec, ResourceDetailStandardActionCommands, SchemaFieldSpec } from './ResourceDetail';
 
 
 type OwnPropertySection = {
@@ -22,9 +21,7 @@ type OwnPropertySection = {
 };
 
 type ResourceCreateContextValue = {
-	actionHooks: {
-		useCreate?: () => ThunkPackHookReturn<dyn.RestCreateResponse, any>,
-	},
+	commands: ResourceDetailStandardActionCommands,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl3?: LinkSpec,
 	blocks: OwnPropertySection[],
@@ -33,7 +30,7 @@ type ResourceCreateContextValue = {
 const ResourceCreateContext = React.createContext<ResourceCreateContextValue | undefined>(undefined);
 
 type ResourceCreateProps = {
-	actionHooks: ResourceCreateContextValue['actionHooks'],
+	commands: ResourceDetailStandardActionCommands,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl3?: LinkSpec,
 	blocks: OwnPropertySection[],
@@ -42,12 +39,12 @@ type ResourceCreateProps = {
 export function ResourceCreate(props: ResourceCreateProps): React.ReactNode {
 	const value = React.useMemo(
 		(): ResourceCreateContextValue => ({
-			actionHooks: props.actionHooks,
+			commands: props.commands,
 			titleLvl1: props.titleLvl1,
 			titleLvl3: props.titleLvl3,
 			blocks: props.blocks,
 		}),
-		[props.actionHooks, props.titleLvl1, props.titleLvl3, props.blocks],
+		[props.commands, props.titleLvl1, props.titleLvl3, props.blocks],
 	);
 
 	return (
@@ -67,10 +64,10 @@ function useResourceCreateContext(): ResourceCreateContextValue {
 
 function ResourceCreateContent(): React.ReactNode {
 	const { schemaPack } = useResourceDetailContext();
-	const { actionHooks } = useResourceCreateContext();
+	const { commands } = useResourceCreateContext();
 	const modelSchema = schemaPack?.modelSchema;
 
-	if (!modelSchema || !actionHooks.useCreate) {
+	if (!modelSchema || !commands.create) {
 		return null;
 	}
 
@@ -82,22 +79,15 @@ function ResourceCreateContent(): React.ReactNode {
 	);
 }
 
-function useNavigateAfterCreate(
-	createAct: ThunkPackHookReturn<dyn.RestCreateResponse, unknown> | undefined,
-): void {
+function useNavigateAfterCreate(createdId: string | undefined): void {
 	const navigate = useNavigate();
-	const dispatch = useMicroAppDispatch();
 
 	React.useEffect(() => {
-		if (!createAct?.isDone || createAct.isError || !createAct.data?.id) {
+		if (!createdId) {
 			return;
 		}
-		navigate(`../${createAct.data.id}`, { relative: 'path', replace: true });
-		dispatch(createAct.resetAction());
-	}, [
-		createAct?.isDone, createAct?.isError, createAct?.data?.id,
-		createAct?.resetAction, navigate, dispatch,
-	]);
+		navigate(`../${createdId}`, { relative: 'path', replace: true });
+	}, [createdId, navigate]);
 }
 
 function ResourceCreateHeader(): React.ReactNode {
@@ -136,15 +126,25 @@ function ResourceCreateHeader(): React.ReactNode {
 function ResourceCreateForm(): React.ReactNode {
 	const { schemaPack } = useResourceDetailContext();
 	const translationNs = useResourceDetailTranslationNs();
-	const { actionHooks, blocks } = useResourceCreateContext();
-	const createAct = actionHooks.useCreate?.();
+	const { commands, blocks } = useResourceCreateContext();
+	const createCmd = useCommand<dyn.RestCreateResponse>(commands.create ?? '');
 	const [expanded, setExpanded] = React.useState(true);
 	const localize = useLocalize(translationNs);
 	const modelSchema = schemaPack?.modelSchema;
 
-	useNavigateAfterCreate(createAct);
+	const publishCreate = createCmd.publish;
+	const onSubmit = React.useCallback(
+		(data: Record<string, any>) => {
+			if (commands.create) {
+				void publishCreate(data);
+			}
+		},
+		[publishCreate, commands.create],
+	);
 
-	if (!modelSchema || !actionHooks.useCreate) {
+	useNavigateAfterCreate(createCmd.data?.id);
+
+	if (!modelSchema || !commands.create) {
 		return null;
 	}
 
@@ -154,10 +154,8 @@ function ResourceCreateForm(): React.ReactNode {
 				formVariant='create'
 				schemaName={modelSchema.name}
 				localize={localize}
-				useSubmit={
-					actionHooks.useCreate as
-						() => ThunkPackHookReturn<dyn.RestCreateResponse | dyn.RestMutateResponse, unknown>
-				}
+				isSubmitting={createCmd.isPending}
+				onSubmit={onSubmit}
 			>
 				{({ handleSubmit, isLoading }) => (
 					<Stack component={PaperWithBorder} gap='md'>

@@ -1,4 +1,4 @@
-import { SchemaRegisterOptions, schemaRegistry } from '@nikkierp/common/dynamic_model';
+import { SchemaRegisterOptions, schemaRegistry } from '@nikkierp/common/dynamicModel';
 import { RequestMaker } from '@nikkierp/common/request';
 import { useRoutingAction, useCurrentStoredPath } from '@nikkierp/ui/appState';
 import { actions } from '@nikkierp/ui/appState/routingSlice';

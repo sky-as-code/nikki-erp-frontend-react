@@ -1,4 +1,4 @@
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import { RequestMaker } from '@nikkierp/common/request';
 import i18next, { i18n, InitOptions } from 'i18next';
 import LanguageDetector, { DetectorOptions } from 'i18next-browser-languagedetector';

@@ -1,42 +1,42 @@
 import { Paper } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
 	DataTable, DataTableAction, SearchData,
 } from './DataTable';
-import { ThunkPackHookReturn } from '../../appState';
 import { LoadingState } from '../../components/Loading';
+import { useCommand } from '../../hookhoc';
 import { TranslateFn, useLocalize, useTranslate } from '../../i18n';
-import { MicroAppDispatchFn } from '../../microApp';
+import { useCommandBus } from '../../microApp';
 import { usePaperBgColor } from '../../theme';
-import {  } from '../../hookhoc';
+import { AdapterContext, resolveFieldRenderer } from '../metadata/registry';
 
 import type { FieldRendererMap } from './fieldRenderers';
 
-
-export type ResourceActionHook = DataTableAction;
 
 export type { FieldRendererMap, IFieldRenderer } from './fieldRenderers';
 export { AvatarFieldRenderer, BadgeFieldRenderer } from './fieldRenderers';
 export type { BadgeFieldRendererProps } from './fieldRenderers';
 
 
-type ResourceListTemplatePropsParams = {
+export type ResourceListCommandAction = {
+	label: string,
+	command: string,
+	supportMultiple?: boolean,
+	requireSelection?: boolean,
+};
+
+type ResourceListRuntimeParams = {
 	schemaName: string,
 	translationNs: string,
-	dispatch: MicroAppDispatchFn,
-	extraActions?: ResourceActionHook[],
-	standardActions: {
-		createEnabled?: boolean,
-		useSearch: () => ThunkPackHookReturn<dyn.RestSearchResponse<any>, dyn.RestSearchRequest>,
-		useArchive?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestSetIsArchivedRequest>,
-		useDelete?: () => ThunkPackHookReturn<dyn.RestDeleteResponse, dyn.RestDeleteRequest>,
-		useUpdateBegin?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
-		useUpdateCancel?: () => ThunkPackHookReturn<void, void>,
-		useUpdateSave?: () => ThunkPackHookReturn<dyn.RestMutateResponse, dyn.RestUpdateRequest>,
-	},
+	searchCommand: string,
+	createEnabled?: boolean,
+	deleteCommand?: string,
+	archiveCommand?: string,
+	updateSaveCommand?: string,
+	extraActions?: ResourceListCommandAction[],
 	linkField?: string,
 	fieldAsLink?: string,
 	fieldAsId?: string,
@@ -44,11 +44,66 @@ type ResourceListTemplatePropsParams = {
 };
 
 export class ResourceListTemplateProps {
-	public readonly params: ResourceListTemplatePropsParams;
+	public readonly params: ResourceListRuntimeParams;
 
-	constructor(params: ResourceListTemplatePropsParams) {
+	constructor(params: ResourceListRuntimeParams) {
 		this.params = params;
 	}
+}
+
+/** Serializable JSON props as authored in page metadata. Action values are command names. */
+export type ResourceListJsonProps = {
+	schemaName: string,
+	translationNs?: string,
+	linkField?: string,
+	fieldAsLink?: string,
+	fieldAsId?: string,
+	fieldRenderer?: Record<string, { renderer: string } & Record<string, unknown>>,
+	standardActions: {
+		createEnabled?: boolean,
+		search: string,
+		archive?: string,
+		delete?: string,
+		updateSave?: string,
+	},
+	extraActions?: ResourceListCommandAction[],
+};
+
+export function adaptResourceListProps(
+	json: Record<string, unknown> | undefined,
+	ctx: AdapterContext,
+): ResourceListTemplateProps {
+	const props = (json ?? {}) as ResourceListJsonProps;
+	return new ResourceListTemplateProps({
+		schemaName: props.schemaName,
+		translationNs: props.translationNs ?? ctx.translationNs ?? 'common',
+		searchCommand: props.standardActions.search,
+		createEnabled: props.standardActions.createEnabled,
+		deleteCommand: props.standardActions.delete,
+		archiveCommand: props.standardActions.archive,
+		updateSaveCommand: props.standardActions.updateSave,
+		extraActions: props.extraActions,
+		linkField: props.linkField,
+		fieldAsLink: props.fieldAsLink,
+		fieldAsId: props.fieldAsId,
+		fieldRenderer: resolveRendererMap(props.fieldRenderer),
+	});
+}
+
+function resolveRendererMap(
+	config?: Record<string, { renderer: string } & Record<string, unknown>>,
+): FieldRendererMap | undefined {
+	if (!config) {
+		return undefined;
+	}
+	const result: FieldRendererMap = {};
+	for (const [field, entry] of Object.entries(config)) {
+		const renderer = resolveFieldRenderer(entry.renderer, entry);
+		if (renderer) {
+			result[field] = renderer;
+		}
+	}
+	return result;
 }
 
 export type ResourceListProps = {
@@ -64,15 +119,12 @@ export function ResourceList({ props, routePath }: ResourceListProps): React.Rea
 	}
 	const params = props.params;
 	const pack = useSchemaPack(params.schemaName);
-	const searchAct = params.standardActions.useSearch();
 	const bgColor = usePaperBgColor();
 	const lc = useLocalize(params.translationNs);
 	const t = useTranslate(params.translationNs);
-	const actions = React.useMemo(
-		() => buildResourceActions(params.standardActions, params.extraActions, t),
-		[params.standardActions, params.extraActions],
-	);
-	const searchThunkActionRef = React.useRef(searchAct.thunkAction);
+	const commandBus = useCommandBus();
+	const search = useCommand<dyn.RestSearchResponse<any>>(params.searchCommand);
+
 	const [searchRequest, setSearchRequest] = React.useState<dyn.RestSearchRequest>({
 		page: 0,
 		size: 0,
@@ -83,24 +135,28 @@ export function ResourceList({ props, routePath }: ResourceListProps): React.Rea
 		setSearchRequest(oldReq => isSameSearchRequest(oldReq, newReq) ? oldReq : newReq);
 	}, []);
 
-	React.useEffect(() => {
-		searchThunkActionRef.current = searchAct.thunkAction;
-	}, [searchAct.thunkAction]);
+	const publishSearch = search.publish;
+	const refreshSearch = React.useCallback(() => {
+		void publishSearch(searchRequest);
+	}, [publishSearch, searchRequest]);
 
 	React.useEffect(() => {
-		if (searchAct.isDone && searchAct.data) {
-			setCachedSearchData(searchAct.data as SearchData);
+		void publishSearch(searchRequest);
+	}, [publishSearch, searchRequest]);
+
+	React.useEffect(() => {
+		if (search.data) {
+			setCachedSearchData(search.data as SearchData);
 		}
-	}, [searchAct.data, searchAct.isDone]);
+	}, [search.data]);
 
-	React.useEffect(() => {
-		params.dispatch(searchThunkActionRef.current(searchRequest) as any);
-	}, [params.dispatch, searchRequest]);
+	const actions = React.useMemo(
+		() => buildResourceActions(params, t, commandBus, refreshSearch),
+		[params, t, commandBus, refreshSearch],
+	);
 
-	// Using cache data to prevent flickering when the search is pending.
-	const searchData = searchAct.isDone && searchAct.data
-		? searchAct.data as SearchData
-		: cachedSearchData;
+	// Use cache data to prevent flickering while a search is pending.
+	const searchData = (search.data as SearchData | null) ?? cachedSearchData;
 
 	const { orgSlug, moduleSlug } = useParams();
 	const linkField = params.linkField ?? params.fieldAsLink;
@@ -146,41 +202,46 @@ export function ResourceList({ props, routePath }: ResourceListProps): React.Rea
 }
 
 function buildResourceActions(
-	actionHooks: ResourceListTemplatePropsParams['standardActions'],
-	extraActions: ResourceActionHook[] | undefined,
+	params: ResourceListRuntimeParams,
 	t: TranslateFn,
-): ResourceActionHook[] {
-	let actions: ResourceActionHook[] = [{
-		label: t('action.refresh'),
-		actionHook: actionHooks.useSearch,
-	}];
-	if (actionHooks.createEnabled) {
-		actions.push({
-			label: t('action.create'),
-			// actionHook() {
-			// 	return {
+	commandBus: ReturnType<typeof useCommandBus>,
+	refreshSearch: () => void,
+): DataTableAction[] {
+	const runCommand = (command: string) => (selectedItems: Record<string, unknown>[]) => {
+		const ids = selectedItems.map(item => item.id).filter(Boolean) as string[];
+		void commandBus.publish({ name: command, payload: { ids } }).then(refreshSearch);
+	};
 
-			// 	};
-			// },
-		});
+	let actions: DataTableAction[] = [{
+		label: t('action.refresh'),
+		onTrigger: () => refreshSearch(),
+	}];
+	if (params.createEnabled) {
+		actions.push({ label: t('action.create'), href: '../new' });
 	}
-	if (actionHooks.useDelete) {
+	if (params.deleteCommand) {
 		actions.push({
 			label: t('action.delete'),
 			requireSelection: true,
 			supportMultiple: true,
-			actionHook: actionHooks.useDelete,
+			command: params.deleteCommand,
+			onTrigger: runCommand(params.deleteCommand),
 		});
 	}
-	actions = actions.concat(extraActions ?? []);
-	if (actionHooks.useArchive) {
-		actions.push({
-			isSeparator: true,
-		}, {
+	actions = actions.concat((params.extraActions ?? []).map(action => ({
+		label: action.label,
+		supportMultiple: action.supportMultiple,
+		requireSelection: action.requireSelection,
+		command: action.command,
+		onTrigger: runCommand(action.command),
+	})));
+	if (params.archiveCommand) {
+		actions.push({ isSeparator: true }, {
 			label: t('action.archive'),
 			requireSelection: true,
 			supportMultiple: true,
-			actionHook: actionHooks.useArchive,
+			command: params.archiveCommand,
+			onTrigger: runCommand(params.archiveCommand),
 		});
 	}
 	return actions;

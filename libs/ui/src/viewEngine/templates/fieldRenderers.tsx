@@ -1,5 +1,5 @@
 import { Avatar, Badge, Checkbox } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
 import type { TranslateFn } from '../../i18n';

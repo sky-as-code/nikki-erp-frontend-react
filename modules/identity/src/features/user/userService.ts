@@ -1,182 +1,79 @@
-import * as dyn from '@nikkierp/common/dynamic_model';
-import * as uiState from '@nikkierp/ui/appState';
+import { CommandResponse, fail, ok } from '@nikkierp/common/commandBus';
+import * as dyn from '@nikkierp/common/dynamicModel';
 
 import * as t from './types';
 import { USER_SCHEMA_NAME } from '../../constants';
 
 
-export const createUser = uiState.createSchemaThunkPack<t.CreateUserResponse, t.CreateUserRequest, 'createUser'>(
-	USER_SCHEMA_NAME, 'createUser',
-	async function createUserThunk(schema: dyn.SchemaPack, request: t.CreateUserRequest) {
-		return schema.restApi.create(request);
-	},
-);
+type UserServiceResult<TData> = Promise<CommandResponse<TData, unknown>>;
 
-export const deleteUser = uiState.createSchemaThunkPack<t.DeleteUserResponse, t.DeleteUserRequest, 'deleteUser'>(
-	USER_SCHEMA_NAME, 'deleteUser',
-	async function deleteUserThunk(schema: dyn.SchemaPack, request: t.DeleteUserRequest) {
-		return schema.restApi.delete(request);
-	},
-);
+/** Resolves the user schema then runs `fn`, wrapping the outcome into a `CommandResponse`. */
+async function withUserSchema<TData>(fn: (schema: dyn.SchemaPack) => Promise<TData>): UserServiceResult<TData> {
+	try {
+		const schema = await dyn.schemaRegistry.get(USER_SCHEMA_NAME);
+		if (!schema) {
+			return fail(new Error(`Schema "${USER_SCHEMA_NAME}" is not registered.`));
+		}
+		return ok(await fn(schema));
+	}
+	catch (error) {
+		return fail(error);
+	}
+}
 
-export const getUserSchema = uiState.createSchemaThunkPack<t.GetUserSchemaResponse, void, 'getUserSchema'>(
-	USER_SCHEMA_NAME, 'getUserSchema',
-	async function getUserSchemaThunk(schema: dyn.SchemaPack) {
-		return schema.restApi.getModelSchema();
-	},
-);
+export function createUser(request: t.CreateUserRequest): UserServiceResult<t.CreateUserResponse> {
+	return withUserSchema(schema => schema.restApi.create(request));
+}
 
-export const getUserById = uiState.createSchemaThunkPack<t.GetUserResponse, t.GetUserByIdRequest, 'getUserById'>(
-	USER_SCHEMA_NAME, 'getUserById',
-	async function getUserByIdThunk(schema: dyn.SchemaPack, request: t.GetUserByIdRequest) {
-		return schema.restApi.getById(request);
-	},
-);
+export function deleteUser(request: t.DeleteUserRequest): UserServiceResult<t.DeleteUserResponse> {
+	return withUserSchema(schema => schema.restApi.delete(request));
+}
 
-export const searchUsers = uiState.createSchemaThunkPack<t.SearchUserResponse, t.SearchUserRequest, 'searchUsers'>(
-	USER_SCHEMA_NAME, 'searchUsers',
-	async function searchUsersThunk(schema: dyn.SchemaPack, request: t.SearchUserRequest) {
+export function getUserSchema(): UserServiceResult<t.GetUserSchemaResponse> {
+	return withUserSchema(schema => schema.restApi.getModelSchema());
+}
+
+export function getUserById(request: t.GetUserByIdRequest): UserServiceResult<t.GetUserResponse> {
+	return withUserSchema(schema => schema.restApi.getById(request));
+}
+
+export function searchUsers(request: t.SearchUserRequest): UserServiceResult<t.SearchUserResponse> {
+	return withUserSchema(async (schema) => {
 		const response = await schema.restApi.search(request);
 		if (response.items) {
 			response.desired_fields.push('password');
-			for(let i = 0; i < response.items.length; i++) {
+			for (let i = 0; i < response.items.length; i++) {
 				response.items[i].password = null;
 			}
 		}
 		return response;
-	},
-);
+	});
+}
 
-export const setUserIsArchived = uiState.createSchemaThunkPack<
-	t.SetUserIsArchivedResponse, t.SetUserIsArchivedRequest, 'setUserIsArchived'
->(
-	USER_SCHEMA_NAME, 'setUserIsArchived',
-	async function setUserIsArchivedThunk(schema: dyn.SchemaPack, request: t.SetUserIsArchivedRequest) {
-		return schema.restApi.setIsArchived(request);
-	},
-);
+export function setUserIsArchived(
+	request: t.SetUserIsArchivedRequest,
+): UserServiceResult<t.SetUserIsArchivedResponse> {
+	return withUserSchema(schema => schema.restApi.setIsArchived(request));
+}
 
-export const userExists = uiState.createSchemaThunkPack<t.UserExistsResponse, t.UserExistsRequest, 'userExists'>(
-	USER_SCHEMA_NAME, 'userExists',
-	async function userExistsThunk(schema: dyn.SchemaPack, request: t.UserExistsRequest) {
-		return schema.restApi.exists(request);
-	},
-);
+export function userExists(request: t.UserExistsRequest): UserServiceResult<t.UserExistsResponse> {
+	return withUserSchema(schema => schema.restApi.exists(request));
+}
 
-export const updateUser = uiState.createSchemaThunkPack<t.UpdateUserResponse, t.UpdateUserRequest, 'updateUser'>(
-	USER_SCHEMA_NAME, 'updateUser',
-	async function updateUserThunk(schema: dyn.SchemaPack, request: t.UpdateUserRequest) {
-		return schema.restApi.update(request);
-	},
-);
+export function updateUser(request: t.UpdateUserRequest): UserServiceResult<t.UpdateUserResponse> {
+	return withUserSchema(schema => schema.restApi.update(request));
+}
 
-/* Update status */
+/* Status updates reuse the generic update endpoint. */
 
-export const activateUser = uiState.createSchemaThunkPack<t.ActivateUserResponse, t.ActivateUserRequest, 'activateUser'>(
-	USER_SCHEMA_NAME, 'activateUser',
-	async function activateUserThunk(schema: dyn.SchemaPack, request: t.ActivateUserRequest) {
-		return schema.restApi.update(request);
-	},
-);
+export function activateUser(request: t.ActivateUserRequest): UserServiceResult<t.ActivateUserResponse> {
+	return withUserSchema(schema => schema.restApi.update(request));
+}
 
-export const inviteUser = uiState.createSchemaThunkPack<t.InviteUserResponse, t.InviteUserRequest, 'inviteUser'>(
-	USER_SCHEMA_NAME, 'inviteUser',
-	async function inviteUserThunk(schema: dyn.SchemaPack, request: t.InviteUserRequest) {
-		return schema.restApi.update(request);
-	},
-);
+export function inviteUser(request: t.InviteUserRequest): UserServiceResult<t.InviteUserResponse> {
+	return withUserSchema(schema => schema.restApi.update(request));
+}
 
-export const suspendUser = uiState.createSchemaThunkPack<t.SuspendUserResponse, t.SuspendUserRequest, 'suspendUser'>(
-	USER_SCHEMA_NAME, 'suspendUser',
-	async function suspendUserThunk(schema: dyn.SchemaPack, request: t.SuspendUserRequest) {
-		return schema.restApi.update(request);
-	},
-);
-
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440000',
-// 		email: 'john.doe@example.com',
-// 		displayName: 'John Wick',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440001',
-// 		email: 'jane.smith@example.com',
-// 		displayName: 'Jane Smith',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440002',
-// 		email: 'michael.johnson@example.com',
-// 		displayName: 'Michael Johnson',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440003',
-// 		email: 'sarah.williams@example.com',
-// 		displayName: 'Sarah Williams',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440004',
-// 		email: 'david.brown@example.com',
-// 		displayName: 'David Brown',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440005',
-// 		email: 'emily.davis@example.com',
-// 		displayName: 'Emily Davis',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// ];
-// const data: User[] = [
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440000',
-// 		email: 'john.doe@example.com',
-// 		displayName: 'John Wick',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440001',
-// 		email: 'jane.smith@example.com',
-// 		displayName: 'Jane Smith',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440002',
-// 		email: 'michael.johnson@example.com',
-// 		displayName: 'Michael Johnson',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440003',
-// 		email: 'sarah.williams@example.com',
-// 		displayName: 'Sarah Williams',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440004',
-// 		email: 'david.brown@example.com',
-// 		displayName: 'David Brown',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// 	{
-// 		id: '550e8400-e29b-41d4-a716-446655440005',
-// 		email: 'emily.davis@example.com',
-// 		displayName: 'Emily Davis',
-// 		avatarUrl: '',
-// 		status: 'active',
-// 	},
-// ];
+export function suspendUser(request: t.SuspendUserRequest): UserServiceResult<t.SuspendUserResponse> {
+	return withUserSchema(schema => schema.restApi.update(request));
+}

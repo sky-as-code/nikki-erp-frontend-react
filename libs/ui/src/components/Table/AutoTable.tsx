@@ -1,5 +1,5 @@
 import { Anchor, Loader, Table } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 

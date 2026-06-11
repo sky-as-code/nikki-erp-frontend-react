@@ -27,7 +27,7 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 	}, [orgs, isAuthenticated]);
 
 	const handleOrgChange = (newOrgSlug: string) => {
-		dispatch(routingActions.navigateTo(`/${newOrgSlug}`));
+		dispatch(routingActions.navigateTo({ to: `/${newOrgSlug}` }));
 	};
 
 	return isAuthenticated && (items.length || !props.hideIfEmpty) && (

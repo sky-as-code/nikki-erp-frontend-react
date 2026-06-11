@@ -1,12 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 
-import { type ThunkPackHookReturn } from '../../appState/reduxActionState';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { LocalizeFn } from '../../i18n';
-import { useMicroAppDispatch } from '../../microApp';
 import { LoadingState } from '../Loading';
 
 
@@ -132,26 +130,18 @@ export type FormVariant = 'create' | 'update';
 export type CrudFormProviderProps = BaseFormProviderProps & {
 	schemaName: string,
 	formVariant: FormVariant;
-	getDataRequest?: dyn.RestGetByIdRequest,
 	localize: LocalizeFn;
-	// Hook returning state and thunk for loading current entity
-	useGetData?: () => ThunkPackHookReturn<dyn.RestGetOneResponse<any>, unknown>,
-	// Hook returning state and thunk for create/update submit
-	useSubmit: () => ThunkPackHookReturn<dyn.RestCreateResponse | dyn.RestMutateResponse, unknown>,
+	/** Current entity values (update mode); `null`/omitted for create mode. */
+	modelValue?: Record<string, any> | null,
+	/** `true` while a create/update command is in flight. */
+	isSubmitting?: boolean,
+	/** Invoked with the validated, post-processed form data when the user submits. */
+	onSubmit: (data: Record<string, any>) => void,
 };
 
 export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode {
 	const schemaPack = useDynamicModel(props.schemaName);
-	const getDataAct = props.useGetData ? props.useGetData() : null;
-	const submitAct = props.useSubmit();
-	const modelValue = getDataAct?.data?.item ?? null;
-	const dispatch = useMicroAppDispatch();
-
-	React.useEffect(() => {
-		if (getDataAct) {
-			dispatch(getDataAct.thunkAction(props.getDataRequest) as any);
-		}
-	}, []);
+	const modelValue = props.modelValue ?? null;
 
 	const form = useForm({
 		resolver: schemaPack ? zodResolver(schemaPack.validationSchema) : undefined,
@@ -163,12 +153,10 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 	const {
 		control,
 		formState: { errors },
-		getValues,
 		register,
 		handleSubmit,
 		reset,
 	} = form;
-	console.log('getValues:', getValues());
 
 	// Reset form when modelValue changes
 	React.useEffect(() => {
@@ -195,13 +183,13 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 					return handleSubmit((data) => {
 						const postprocessed = onValid ? onValid(data) : data;
 						if (postprocessed) {
-							dispatch(submitAct.thunkAction(postprocessed) as any);
+							props.onSubmit(postprocessed);
 						}
 					});
 				},
 				reset,
 				form,
-				isLoading: submitAct.isLoading,
+				isLoading: props.isSubmitting ?? false,
 				errors,
 			})}
 		</FormFieldContext.Provider>

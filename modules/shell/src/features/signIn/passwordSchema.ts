@@ -1,4 +1,4 @@
-import type { ModelSchema } from '@nikkierp/common/dynamic_model';
+import type { ModelSchema } from '@nikkierp/common/dynamicModel';
 
 
 export const passwordSchema: ModelSchema = {
