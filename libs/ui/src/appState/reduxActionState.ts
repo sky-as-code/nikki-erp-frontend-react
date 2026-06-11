@@ -1,4 +1,4 @@
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import { ClientErrors } from '@nikkierp/common/types';
 import {
 	ActionCreatorWithoutPayload,

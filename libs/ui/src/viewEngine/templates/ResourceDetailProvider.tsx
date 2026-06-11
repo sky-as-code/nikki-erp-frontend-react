@@ -1,5 +1,5 @@
 import { Alert, Text } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import { isLocalEnv } from '@nikkierp/common/utils';
 import { IconAlertCircle } from '@tabler/icons-react';
 import React from 'react';

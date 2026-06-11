@@ -2,7 +2,7 @@ import {
 	Anchor, Box, Button, ButtonGroup, Group, Input, Menu, Modal, Radio, Select,
 	Stack, Table, Tabs, Text, TextInput, Title,
 } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import {
 	IconChevronLeft, IconChevronRight, IconDots, IconHash, IconSettings, IconX,
 	IconSortAscending, IconSortDescending,
@@ -33,6 +33,10 @@ export type DataTableAction = {
 	requireSelection?: boolean,
 	/* If set, use this value instead of `href` */
 	actionHook?: () => ThunkPackHookReturn<any, any>,
+	/** Command name published (with the selected rows) when the action is triggered. */
+	command?: string,
+	/** Invoked on click with the currently selected row items. Preferred over `actionHook`. */
+	onTrigger?: (selectedItems: Record<string, unknown>[]) => void,
 	href?: string,
 };
 
@@ -379,7 +383,12 @@ type ToolbarProps = {
 
 function Toolbar(props: ToolbarProps): React.ReactNode {
 	const { tableName, total, actions, selectedCount, onClearSelection, renderTableName } = props;
+	const context = useDataTableContext();
 	const isRowMode = selectedCount > 0;
+	const selectedItems = React.useMemo(
+		() => context.rs.indexes.map(index => context.tableSearchData.items[index]).filter(Boolean),
+		[context.rs.indexes, context.tableSearchData.items],
+	);
 	const visibleSelectionActions = getVisibleRowSelectionActions(actions, selectedCount);
 	const visibleDefaultActions = getVisibleDefaultActions(actions);
 	const buttons = visibleDefaultActions.slice(0, 2).filter(a => !a.isSeparator);
@@ -396,11 +405,13 @@ function Toolbar(props: ToolbarProps): React.ReactNode {
 				</Button>
 			) : null}
 			{isRowMode ? (
-				visibleSelectionActions.length > 0 ? <ActionMenu items={visibleSelectionActions} /> : null
+				visibleSelectionActions.length > 0
+					? <ActionMenu items={visibleSelectionActions} selectedItems={selectedItems} />
+					: null
 			) : (
 				<>
-					{buttons.map((action, i) => <ActionButton key={i} action={action} />)}
-					{menuItems.length > 0 ? <ActionMenu items={menuItems} /> : null}
+					{buttons.map((action, i) => <ActionButton key={i} action={action} selectedItems={selectedItems} />)}
+					{menuItems.length > 0 ? <ActionMenu items={menuItems} selectedItems={selectedItems} /> : null}
 				</>
 			)}
 		</Group>
@@ -1453,15 +1464,39 @@ function getSelectableSchemaFieldNames(schema: dyn.ModelSchema): string[] {
 }
 
 
-function ActionButton({ action }: { action: DataTableAction }): React.ReactNode {
+type ActionTriggerProps = {
+	action: DataTableAction,
+	selectedItems: Record<string, unknown>[],
+};
+
+function ActionButton({ action, selectedItems }: ActionTriggerProps): React.ReactNode {
+	if (action.href) {
+		return (
+			<Button
+				component={Link}
+				to={action.href}
+				relative='path'
+				variant='outline'
+				size='compact-md'
+				leftSection={action.icon}
+			>
+				{action.label}
+			</Button>
+		);
+	}
 	return (
-		<Button variant='outline' size='compact-md' leftSection={action.icon}>
+		<Button
+			variant='outline'
+			size='compact-md'
+			leftSection={action.icon}
+			onClick={() => action.onTrigger?.(selectedItems)}
+		>
 			{action.label}
 		</Button>
 	);
 }
 
-function ActionMenu({ items }: { items: DataTableAction[] }): React.ReactNode {
+function ActionMenu({ items, selectedItems }: { items: DataTableAction[], selectedItems: Record<string, unknown>[] }): React.ReactNode {
 	return (
 		<Menu shadow='md' position='bottom-end'>
 			<Menu.Target>
@@ -1472,7 +1507,15 @@ function ActionMenu({ items }: { items: DataTableAction[] }): React.ReactNode {
 			<Menu.Dropdown>
 				{items.map((item, i) => (item.isSeparator
 					? <Menu.Divider key={i} />
-					: <Menu.Item key={i} leftSection={item.icon}>{item.label}</Menu.Item>
+					: (
+						<Menu.Item
+							key={i}
+							leftSection={item.icon}
+							onClick={() => item.onTrigger?.(selectedItems)}
+						>
+							{item.label}
+						</Menu.Item>
+					)
 				))}
 			</Menu.Dropdown>
 		</Menu>

@@ -1,3 +1,4 @@
+import { ICommandBus } from '@nikkierp/common/commandBus';
 import React from 'react';
 import { Location, Navigator } from 'react-router-dom';
 
@@ -88,7 +89,13 @@ export type MicroAppBundleInitOptions = {
 	 */
 	config?: MicroAppConfig;
 
-	registerReducer: RegisterReducerFn
+	registerReducer: RegisterReducerFn;
+
+	/**
+	 * The Shell-hosted command bus. Modules subscribe their command handlers here
+	 * synchronously during `init` so that lazy command resolution can find them.
+	 */
+	commandBus: ICommandBus;
 };
 
 export type MicroAppBundleInitResult = {
@@ -123,6 +130,7 @@ export type MicroAppProps = {
 	widgetProps?: Record<string, any>,
 	slug: string,
 	routing: MicroAppRoutingOptions,
+	commandBus: ICommandBus,
 };
 
 export type MicroAppRoutingOptions = {

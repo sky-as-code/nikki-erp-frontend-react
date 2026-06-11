@@ -1,4 +1,4 @@
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import * as uiState from '@nikkierp/ui/appState';
 
 import { MODULE_SCHEMA_NAME } from '../constants';

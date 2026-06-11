@@ -1,7 +1,7 @@
 import { ActionIcon, Checkbox, Grid, Input, NumberInput, Select, Text, InputProps, NumberInputProps } from '@mantine/core';
 import { DateInput, DateInputProps } from '@mantine/dates';
 import { useId } from '@mantine/hooks';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import React from 'react';
 import { Controller } from 'react-hook-form';

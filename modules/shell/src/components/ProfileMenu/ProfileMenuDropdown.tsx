@@ -41,7 +41,7 @@ export const ProfileMenuDropdown: React.FC = () => {
 							<IconUserFilled color={'var(--mantine-color-gray-6)'} />
 						</Avatar>
 						<Box>
-							<Text size='md' fw={600}>{userCtx?.display_name}</Text>
+							<Text size='md' fw={600}>{userCtx?.displayName}</Text>
 							<Text size='sm' c='dimmed'>{userCtx?.email}</Text>
 						</Box>
 					</Flex>

@@ -1,4 +1,4 @@
-import { RestSearchResponse } from '@nikkierp/common/dynamic_model';
+import { RestSearchResponse } from '@nikkierp/common/dynamicModel';
 import { Module } from '@nikkierp/shell/erpModules';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { debounce } from 'lodash';

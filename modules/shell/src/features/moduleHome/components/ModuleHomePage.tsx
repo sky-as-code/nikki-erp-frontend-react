@@ -1,7 +1,7 @@
 import {Box, Container, Flex } from '@mantine/core';
-import { useListAllModules } from '@nikkierp/shell/erpModules';
+import { useShellCommand } from '@nikkierp/shell/commandBus';
+import { MODULE_COMMANDS, SearchModuleResponse } from '@nikkierp/shell/erpModules';
 import React, { useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { MobileBottomBar } from './MobileButtomBar';
 import { ModuleFilterDrawer, ModuleFilterPanel } from './ModuleFilterPanel';
@@ -23,8 +23,7 @@ export interface FilterState {
 }
 
 export function ModuleHomePage(): React.ReactNode {
-	const dispatch = useDispatch();
-	const listAll = useListAllModules(true);
+	const listAll = useShellCommand<SearchModuleResponse>(MODULE_COMMANDS.listAll);
 	const {
 		viewMode,
 		setViewMode,
@@ -38,9 +37,11 @@ export function ModuleHomePage(): React.ReactNode {
 
 	const [drawerOpened, setDrawerOpened] = useState(false);
 
+	const publishListAll = listAll.publish;
 	React.useEffect(() => {
-		dispatch(listAll.thunkAction() as any);
-	}, [filteredModules]);
+		void publishListAll();
+	}, [publishListAll]);
+	const isModulesLoaded = listAll.data != null;
 
 	const gridView = useMemo(
 		() => <ModuleGridView modules={filteredModules} />,
@@ -80,7 +81,7 @@ export function ModuleHomePage(): React.ReactNode {
 							/>
 						</Box>
 						<Box h={'100%'} p={0}>
-							{listAll.isDone && viewMode === 'grid' ? gridView : listView}
+							{isModulesLoaded && viewMode === 'grid' ? gridView : listView}
 						</Box>
 					</Box>
 				</Flex>

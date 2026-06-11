@@ -1,3 +1,4 @@
+import { ICommandBus } from '@nikkierp/common/commandBus';
 import {
 	MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps, MicroAppRoutingOptions, MicroAppApiOptions,
 } from '@nikkierp/ui/microApp';
@@ -5,29 +6,41 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { useInRouterContext, useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
 
 import { MicroAppManager, MicroAppPack } from './MicroAppManager';
-import { registerReducerFactory } from '../appState/store';
 import { ensureAccessToken } from '../authenticate/authService';
+import { createShellCommandBus } from '../commandBus';
 import { useShellEnvVars } from '../config';
 
 
-const MicroAppHostContext = createContext<MicroAppManager | null>(null);
+type MicroAppHostContextValue = {
+	manager: MicroAppManager,
+	commandBus: ICommandBus,
+};
 
-export const useMicroAppManager = () => {
+const MicroAppHostContext = createContext<MicroAppHostContextValue | null>(null);
+
+function useMicroAppHostContext(): MicroAppHostContextValue {
 	const context = useContext(MicroAppHostContext);
 	if (!context) {
 		throw new Error('useMicroAppManager must be used within a MicroAppProvider');
 	}
 	return context;
-};
+}
+
+export const useMicroAppManager = () => useMicroAppHostContext().manager;
+
+export const useShellCommandBus = (): ICommandBus => useMicroAppHostContext().commandBus;
 
 export type MicroAppHostProviderProps = React.PropsWithChildren & {
 	microApps: MicroAppMetadata[];
 };
 
 export function MicroAppHostProvider({ children, microApps }: MicroAppHostProviderProps): React.ReactNode {
-	const [manager] = useState(() => new MicroAppManager(microApps));
+	const [hostValue] = useState<MicroAppHostContextValue>(() => {
+		const manager = new MicroAppManager(microApps);
+		return { manager, commandBus: createShellCommandBus(manager) };
+	});
 	return (
-		<MicroAppHostContext.Provider value={manager} >
+		<MicroAppHostContext.Provider value={hostValue} >
 			{children}
 		</MicroAppHostContext.Provider>
 	);
@@ -105,7 +118,7 @@ function useFetchMicroAppPack(
 	setError: (error: Error | null) => void,
 ): MicroAppDomType | null {
 	const [domType, setDomType] = useState<MicroAppDomType | null>(null);
-	const manager = useMicroAppManager();
+	const { manager, commandBus } = useMicroAppHostContext();
 
 	useEffect(() => {
 		let isMounted = true;
@@ -114,11 +127,7 @@ function useFetchMicroAppPack(
 		manager.fetchMicroApp(slug).then((pack) => {
 			if (isMounted) {
 				try {
-					const result = pack.init({
-						htmlTag: pack.metadata.htmlTag,
-						config: pack.config,
-						registerReducer: registerReducerFactory(slug),
-					});
+					const result = manager.initPack(slug, pack, commandBus);
 					setDomType(result.domType);
 					setMicroAppPack(pack);
 				}
@@ -137,12 +146,12 @@ function useFetchMicroAppPack(
 		return () => {
 			isMounted = false;
 		};
-	}, [slug, manager, setMicroAppPack, setError]);
+	}, [slug, manager, commandBus, setMicroAppPack, setError]);
 
 	return domType;
 }
 
-type UseSetupMicroAppOptions = Omit<MicroAppProps, 'registerReducer' | 'routing' | 'api'> & {
+type UseSetupMicroAppOptions = Omit<MicroAppProps, 'registerReducer' | 'routing' | 'api' | 'commandBus'> & {
 	basePath?: string;
 };
 
@@ -154,6 +163,7 @@ function useSetupMicroApp(
 	const ref = useRef<IMicroAppWebComponent | null>(null);
 	const routingOpts = useRoutingOpts(opts.basePath);
 	const apiOpts = useApiOptions();
+	const { commandBus } = useMicroAppHostContext();
 
 	useEffect(() => {
 		if (ref.current && microAppPack) {
@@ -161,11 +171,12 @@ function useSetupMicroApp(
 				config: microAppPack.config,
 				routing: routingOpts,
 				api: apiOpts,
+				commandBus,
 				...opts,
 			};
 			forceRerender(n => n + 1);
 		}
-	}, [microAppPack, ref.current, routingOpts.location]);
+	}, [microAppPack, ref.current, routingOpts.location, commandBus]);
 
 	return ref;
 }

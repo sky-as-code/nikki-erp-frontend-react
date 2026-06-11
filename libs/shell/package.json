@@ -88,6 +88,7 @@
 	"exports": {
 		"./appState": "./src/appState/store.ts",
 		"./authenticate": "./src/authenticate/index.ts",
+		"./commandBus": "./src/commandBus/index.ts",
 		"./authenticate/strategies": "./src/authenticate/strategies/index.ts",
 		"./config": "./src/config/index.ts",
 		"./constants": "./src/constants/index.ts",

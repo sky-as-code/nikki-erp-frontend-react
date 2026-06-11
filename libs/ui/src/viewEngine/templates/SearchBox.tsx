@@ -2,7 +2,7 @@ import {
 	ActionIcon, Box, Button, ButtonGroup, Checkbox, Divider, Group, Modal, Paper, Pill, Select,
 	Stack, TagsInput, Text, UnstyledButton,
 } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamic_model';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import {
 	IconChevronDown, IconChevronUp, IconFilter, IconSearch, IconSortAscending, IconSortDescending,
 } from '@tabler/icons-react';
