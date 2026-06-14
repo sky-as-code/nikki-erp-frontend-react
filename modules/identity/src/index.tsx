@@ -12,7 +12,7 @@ import React from 'react';
 import * as c from './constants';
 import { reducer as groupReducer, SLICE_NAME as GROUP_SLICE_NAME } from './features/group/groupSlice';
 import { reducer as orgReducer, SLICE_NAME as ORG_SLICE_NAME } from './features/organization/orgSlice';
-import { registerUserCommands, USER_COMMANDS } from './features/user/commands';
+import { registerUserCommands, UserCommands } from './features/user/commands';
 import { useIdentityMenuBarItems } from './hooks';
 
 
@@ -65,24 +65,16 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 }
 
 function registerModelSchemas(): void {
-	const baseOpts: Pick<SchemaRegisterOptions, 'requestMaker'> = {
-		requestMaker: RequestMaker.default(),
-	};
-
 	schemaRegistry.register([{
-		...baseOpts,
 		schemaName: c.GROUP_SCHEMA_NAME,
 		resourcePath: 'v1/iam/groups',
 	}, {
-		...baseOpts,
 		schemaName: c.ORGANIZATION_SCHEMA_NAME,
 		resourcePath: 'v1/iam/organizations',
 	}, {
-		...baseOpts,
 		schemaName: c.ORG_UNIT_SCHEMA_NAME,
 		resourcePath: 'v1/iam/orgunits',
 	}, {
-		...baseOpts,
 		schemaName: c.USER_SCHEMA_NAME,
 		resourcePath: 'v1/iam/users',
 	}]);
@@ -111,14 +103,14 @@ function createUserListProps(): Record<string, unknown> {
 		linkField: 'id',
 		standardActions: {
 			createEnabled: true,
-			search: USER_COMMANDS.search,
-			archive: USER_COMMANDS.setIsArchived,
-			delete: USER_COMMANDS.delete,
-			updateSave: USER_COMMANDS.update,
+			search: UserCommands.SEARCH,
+			archive: UserCommands.SET_IS_ARCHIVED,
+			delete: UserCommands.DELETE,
+			updateSave: UserCommands.UPDATE,
 		},
 		extraActions: [
-			{ label: 'action.suspend', command: USER_COMMANDS.suspend, supportMultiple: true, requireSelection: true },
-			{ label: 'action.delete', command: USER_COMMANDS.delete, supportMultiple: true, requireSelection: true },
+			{ label: 'action.suspend', command: UserCommands.SUSPEND, supportMultiple: true, requireSelection: true },
+			{ label: 'action.delete', command: UserCommands.DELETE, supportMultiple: true, requireSelection: true },
 		],
 		fieldRenderer: {
 			avatar_url: { renderer: 'avatar' },
@@ -151,21 +143,21 @@ function createUserDetailProps(): Record<string, unknown> {
 		],
 		currentStatus: { schemaField: 'status' },
 		standardActions: {
-			getById: USER_COMMANDS.getById,
-			create: USER_COMMANDS.create,
-			update: USER_COMMANDS.update,
-			delete: USER_COMMANDS.delete,
-			archive: USER_COMMANDS.setIsArchived,
+			getById: UserCommands.GET_BY_ID,
+			create: UserCommands.CREATE,
+			update: UserCommands.UPDATE,
+			delete: UserCommands.DELETE,
+			archive: UserCommands.SET_IS_ARCHIVED,
 		},
 		contextualActions: {
 			activate: {
 				label: 'action.activate',
-				command: USER_COMMANDS.activate,
+				command: UserCommands.ACTIVATE,
 				condition: { field: 'status', operator: 'not_equal', value: 'active' },
 			},
 			suspend: {
 				label: 'action.suspend',
-				command: USER_COMMANDS.suspend,
+				command: UserCommands.SUSPEND,
 				condition: { field: 'status', operator: 'equal', value: 'active' },
 			},
 		},

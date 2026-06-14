@@ -14,6 +14,8 @@ import { ConditionExpression } from '../metadata/expression';
 import { AdapterContext } from '../metadata/registry';
 import { MetadataNode } from '../metadata/types';
 
+import type { IPageProps } from '../core';
+
 
 /** Contextual action driven by a command name. `condition` is a serializable expression. */
 export type ResourceDetailExtraAction<TResource = Record<string, unknown>> = {
@@ -71,7 +73,8 @@ type ResourceDetailTemplatePropsParams<TResource = Record<string, unknown>> = {
 	childrenNodes?: MetadataNode[],
 };
 
-export class ResourceDetailTemplateProps<TResource = Record<string, unknown>> {
+export class ResourceDetailTemplateProps<TResource = Record<string, unknown>>
+implements IPageProps<ResourceDetailTemplatePropsParams<TResource>> {
 	public readonly params: ResourceDetailTemplatePropsParams<TResource>;
 
 	constructor(params: ResourceDetailTemplatePropsParams<TResource>) {
@@ -116,15 +119,14 @@ export function adaptResourceDetailProps(
 }
 
 export type ResourceDetailProps = {
-	props: ResourceDetailTemplateProps,
+	/** Strongly-typed page params, passed as-is from `ResourceDetailTemplateProps.params`. */
+	params: ResourceDetailTemplateProps['params'],
 	childrenNodes?: MetadataNode[],
 };
 
-export function ResourceDetail({ props, childrenNodes }: ResourceDetailProps): React.ReactNode {
-	if (! (props instanceof ResourceDetailTemplateProps)) {
-		throw new Error('props must be an instance of ' + ResourceDetailTemplateProps.name);
-	}
-	const params = props.params;
+export const ResourceDetail = React.memo(ResourceDetailView);
+
+function ResourceDetailView({ params, childrenNodes }: ResourceDetailProps): React.ReactNode {
 	const pack = useDynamicModel(params.schemaName);
 	const bgColor = usePaperBgColor();
 	const { id } = useParams();

@@ -1,35 +1,20 @@
-import { ActionIcon, Anchor, Button, Collapse, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { Collapse, Paper, Stack } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { IconChevronDown, IconChevronRight, IconDeviceFloppy } from '@tabler/icons-react';
-import clsx from 'clsx';
 import React from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import classes from './ResourceDetail.module.css';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
-import { AutoField, CrudFormProvider, FormStyleProvider } from '../../components/form';
+import { ResourceCreateContext, ResourceCreateContextValue, useResourceCreateContext } from './resourceCreateContext';
+import { ResourceCreateActionBar, ResourceCreateBlock, ResourceCreateHeader } from './resourceCreateParts';
+import { CrudFormProvider, FormStyleProvider } from '../../components/form';
 import { useCommand } from '../../hookhoc';
-import { useLocalize, useTranslate } from '../../i18n';
+import { useLocalize } from '../../i18n';
 
-import type { LinkSpec, ResourceDetailStandardActionCommands, SchemaFieldSpec } from './ResourceDetail';
+import type { LinkSpec, OwnPropertySection, ResourceDetailStandardActionCommands, SchemaFieldSpec } from './ResourceDetail';
 
 
-type OwnPropertySection = {
-	header: string,
-	fieldType: 'SchemaFields' | 'CustomFields',
-	fields?: string[],
-};
-
-type ResourceCreateContextValue = {
-	commands: ResourceDetailStandardActionCommands,
-	titleLvl1?: SchemaFieldSpec,
-	titleLvl3?: LinkSpec,
-	blocks: OwnPropertySection[],
-};
-
-const ResourceCreateContext = React.createContext<ResourceCreateContextValue | undefined>(undefined);
-
-type ResourceCreateProps = {
+export type ResourceCreateProps = {
 	commands: ResourceDetailStandardActionCommands,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl3?: LinkSpec,
@@ -37,29 +22,47 @@ type ResourceCreateProps = {
 };
 
 export function ResourceCreate(props: ResourceCreateProps): React.ReactNode {
+	return (
+		<ResourceCreateProvider {...props}>
+			<ResourceCreateContent />
+		</ResourceCreateProvider>
+	);
+}
+
+/** Wires the create command and provides {@link ResourceCreateContext} to its subtree. */
+export function ResourceCreateProvider(
+	props: ResourceCreateProps & { children: React.ReactNode },
+): React.ReactNode {
+	const createCmd = useCommand<dyn.RestCreateResponse>(props.commands.create ?? '');
+	const publishCreate = createCmd.publish;
+	const onSubmit = React.useCallback(
+		(data: Record<string, any>) => {
+			if (props.commands.create) {
+				void publishCreate(data);
+			}
+		},
+		[publishCreate, props.commands.create],
+	);
+
+	useNavigateAfterCreate(createCmd.data?.id);
+
 	const value = React.useMemo(
 		(): ResourceCreateContextValue => ({
 			commands: props.commands,
 			titleLvl1: props.titleLvl1,
 			titleLvl3: props.titleLvl3,
 			blocks: props.blocks,
+			onSubmit,
+			isSubmitting: createCmd.isPending,
 		}),
-		[props.commands, props.titleLvl1, props.titleLvl3, props.blocks],
+		[props.commands, props.titleLvl1, props.titleLvl3, props.blocks, onSubmit, createCmd.isPending],
 	);
 
 	return (
 		<ResourceCreateContext.Provider value={value}>
-			<ResourceCreateContent />
+			{props.children}
 		</ResourceCreateContext.Provider>
 	);
-}
-
-function useResourceCreateContext(): ResourceCreateContextValue {
-	const value = React.useContext(ResourceCreateContext);
-	if (value === undefined) {
-		throw new Error('useResourceCreateContext must be used within ResourceCreate');
-	}
-	return value;
 }
 
 function ResourceCreateContent(): React.ReactNode {
@@ -90,59 +93,13 @@ function useNavigateAfterCreate(createdId: string | undefined): void {
 	}, [createdId, navigate]);
 }
 
-function ResourceCreateHeader(): React.ReactNode {
-	const { schemaPack } = useResourceDetailContext();
-	const { titleLvl1, titleLvl3 } = useResourceCreateContext();
-	const t = useTranslate(useResourceDetailTranslationNs());
-	const localize = useLocalize(useResourceDetailTranslationNs());
-	const modelSchema = schemaPack?.modelSchema;
-	const resourceName = localize(modelSchema?.label, { count: 99 });
-	const showTitleLvl3 = Boolean(titleLvl3 && modelSchema);
-
-	return (
-		<Group gap={4}>
-			<Stack gap={4}>
-				{titleLvl1 ? (
-					<Title order={3}>
-						<span className='capitalize'>{t('form.newResource', { resource: resourceName })}</span>
-					</Title>
-				) : null}
-				{showTitleLvl3 ? (
-					<Anchor
-						component={Link}
-						to={titleLvl3!.linkHref}
-						relative='path'
-						size='md'
-						className='capitalize'
-					>
-						{resourceName}
-					</Anchor>
-				) : null}
-			</Stack>
-		</Group>
-	);
-}
-
 function ResourceCreateForm(): React.ReactNode {
 	const { schemaPack } = useResourceDetailContext();
 	const translationNs = useResourceDetailTranslationNs();
-	const { commands, blocks } = useResourceCreateContext();
-	const createCmd = useCommand<dyn.RestCreateResponse>(commands.create ?? '');
+	const { commands, blocks, onSubmit, isSubmitting } = useResourceCreateContext();
 	const [expanded, setExpanded] = React.useState(true);
 	const localize = useLocalize(translationNs);
 	const modelSchema = schemaPack?.modelSchema;
-
-	const publishCreate = createCmd.publish;
-	const onSubmit = React.useCallback(
-		(data: Record<string, any>) => {
-			if (commands.create) {
-				void publishCreate(data);
-			}
-		},
-		[publishCreate, commands.create],
-	);
-
-	useNavigateAfterCreate(createCmd.data?.id);
 
 	if (!modelSchema || !commands.create) {
 		return null;
@@ -154,7 +111,7 @@ function ResourceCreateForm(): React.ReactNode {
 				formVariant='create'
 				schemaName={modelSchema.name}
 				localize={localize}
-				isSubmitting={createCmd.isPending}
+				isSubmitting={isSubmitting}
 				onSubmit={onSubmit}
 			>
 				{({ handleSubmit, isLoading }) => (
@@ -181,89 +138,6 @@ function ResourceCreateForm(): React.ReactNode {
 				)}
 			</CrudFormProvider>
 		</FormStyleProvider>
-	);
-}
-
-function ResourceCreateActionBar({
-	expanded, onToggleCollapse, onSaveClick, isLoading,
-}: {
-	expanded: boolean,
-	onToggleCollapse: () => void,
-	onSaveClick: () => void,
-	isLoading: boolean,
-}): React.ReactNode {
-	const t = useTranslate(useResourceDetailTranslationNs());
-	return (
-		<Group gap='xs' align='center' className={clsx('sticky top-0 py-4', classes.bgBodyColor)}>
-			<ActionIcon variant='subtle' size='sm' onClick={onToggleCollapse} aria-label='Toggle own properties'>
-				{expanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
-			</ActionIcon>
-			<Button
-				variant='filled'
-				size='compact-md'
-				leftSection={<IconDeviceFloppy size={16} />}
-				onClick={onSaveClick}
-				disabled={isLoading}
-				loading={isLoading}
-				type='submit'
-			>
-				{t('action.save')}
-			</Button>
-		</Group>
-	);
-}
-
-function ResourceCreateBlock({
-	block, isLoading,
-}: {
-	block: OwnPropertySection,
-	isLoading: boolean,
-}): React.ReactNode {
-	const { schemaPack } = useResourceDetailContext();
-	const t = useTranslate(useResourceDetailTranslationNs());
-	const modelSchema = schemaPack?.modelSchema;
-
-	if (!modelSchema) {
-		return null;
-	}
-
-	return (
-		<Stack gap='sm' className={classes.formBlock}>
-			<Title order={4}>{t(block.header)}</Title>
-			{block.fieldType === 'SchemaFields' ? (
-				<ResourceCreateFieldGroup fields={block.fields ?? []} isLoading={isLoading} modelSchema={modelSchema} />
-			) : (
-				<Text c='dimmed'>Custom fields placeholder</Text>
-			)}
-		</Stack>
-	);
-}
-
-function ResourceCreateFieldGroup({
-	fields, isLoading, modelSchema,
-}: {
-	fields: string[],
-	isLoading: boolean,
-	modelSchema: dyn.ModelSchema,
-}): React.ReactNode {
-	if (fields.length === 0) {
-		return <Text c='dimmed'>No fields configured</Text>;
-	}
-
-	return (
-		<div className={classes.formFieldWrapper}>
-			{fields.map(field => {
-				const fieldDef = modelSchema.fields[field];
-				if (!fieldDef || fieldDef.is_system_field || fieldDef.is_primary_key) {
-					return null;
-				}
-				return (
-					<Stack key={field} gap={4}>
-						<AutoField name={field} inputProps={{ disabled: isLoading }} />
-					</Stack>
-				);
-			})}
-		</div>
 	);
 }
 

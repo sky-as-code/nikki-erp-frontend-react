@@ -1,4 +1,5 @@
 import { ICommandBus } from '@nikkierp/common/commandBus';
+import { registerSchemaCommands } from '@nikkierp/common/dynamicModel';
 
 import { registerModuleCommands } from '../erpModules/moduleCommands';
 
@@ -11,6 +12,7 @@ import { registerModuleCommands } from '../erpModules/moduleCommands';
 export function registerShellCommands(bus: ICommandBus): () => void {
 	const unsubscribers = [
 		registerModuleCommands(bus),
+		registerSchemaCommands(bus),
 	];
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
 }

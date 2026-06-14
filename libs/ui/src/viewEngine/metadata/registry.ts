@@ -1,15 +1,10 @@
 import { ICommandBus } from '@nikkierp/common/commandBus';
-import React from 'react';
 
 import { MicroAppDispatchFn } from '../../microApp';
 import {
 	AvatarFieldRenderer, BadgeFieldRenderer, IFieldRenderer, TranslatedFieldRenderer,
 } from '../templates/fieldRenderers';
 
-
-export const RESOURCE_LIST_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceList.v1';
-export const RESOURCE_DETAIL_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceDetails.v1';
-export const RESOURCE_SPLIT_VIEW_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceSplitView.v1';
 
 /**
  * Context passed to template adapters. Adapters convert serializable JSON props
@@ -21,23 +16,6 @@ export type AdapterContext = {
 	dispatch?: MicroAppDispatchFn,
 	translationNs?: string,
 };
-
-export type TemplateAdapter = (json: Record<string, unknown> | undefined, ctx: AdapterContext) => unknown;
-
-export type TemplateEntry = {
-	Component: React.ComponentType<any>,
-	adaptProps?: TemplateAdapter,
-};
-
-const templateRegistry = new Map<string, TemplateEntry>();
-
-export function registerTemplate(id: string, entry: TemplateEntry): void {
-	templateRegistry.set(id, entry);
-}
-
-export function getTemplate(id: string): TemplateEntry | undefined {
-	return templateRegistry.get(id);
-}
 
 export type FieldRendererFactory = (config: Record<string, unknown>) => IFieldRenderer;
 
