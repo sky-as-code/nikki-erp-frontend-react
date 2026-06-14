@@ -1,6 +1,7 @@
 import React from 'react';
 
-import './metadata/registerTemplates';
+import './pageTemplates';
+import './componentRenderers';
 import { AdapterContext, compilePage, PageNode } from './metadata';
 import { AppRoute, AppRoutes, MicroAppProps, MicroAppRouter } from '../microApp';
 

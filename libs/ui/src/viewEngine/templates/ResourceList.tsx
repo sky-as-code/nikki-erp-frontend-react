@@ -11,6 +11,7 @@ import { useCommand } from '../../hookhoc';
 import { TranslateFn, useLocalize, useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp';
 import { usePaperBgColor } from '../../theme';
+import type { IPageProps } from '../core';
 import { AdapterContext, resolveFieldRenderer } from '../metadata/registry';
 
 import type { FieldRendererMap } from './fieldRenderers';
@@ -43,7 +44,7 @@ type ResourceListRuntimeParams = {
 	fieldRenderer?: FieldRendererMap,
 };
 
-export class ResourceListTemplateProps {
+export class ResourceListTemplateProps implements IPageProps<ResourceListRuntimeParams> {
 	public readonly params: ResourceListRuntimeParams;
 
 	constructor(params: ResourceListRuntimeParams) {
@@ -107,17 +108,16 @@ function resolveRendererMap(
 }
 
 export type ResourceListProps = {
-	props: ResourceListTemplateProps,
+	/** Strongly-typed page params, passed as-is from `ResourceListTemplateProps.params`. */
+	params: ResourceListRuntimeParams,
 	/** View-engine page segment (e.g. `users`); detail URLs are `/:orgSlug/:moduleSlug/{routePath}/:id`. */
 	routePath: string,
 };
 
 
-export function ResourceList({ props, routePath }: ResourceListProps): React.ReactNode {
-	if (! (props instanceof ResourceListTemplateProps)) {
-		throw new Error('props must be an instance of ' + ResourceListTemplateProps.name);
-	}
-	const params = props.params;
+export const ResourceList = React.memo(ResourceListView);
+
+function ResourceListView({ params, routePath }: ResourceListProps): React.ReactNode {
 	const pack = useSchemaPack(params.schemaName);
 	const bgColor = usePaperBgColor();
 	const lc = useLocalize(params.translationNs);
@@ -284,15 +284,16 @@ function getSearchRequestOrderBy(request: dyn.RestSearchRequest): dyn.OrderBy {
 }
 
 function useSchemaPack(schemaName: string) {
+	const commandBus = useCommandBus();
 	const [pack, setPack] = React.useState<dyn.SchemaPack | null>(null);
 	const [etag, setEtag] = React.useState<string | undefined>(undefined);
 
 	React.useEffect(() => {
-		dyn.schemaRegistry.get(schemaName).then(next => {
+		void dyn.publishGetSchema(commandBus, schemaName).then(next => {
 			setPack(next);
 			setEtag(next?.modelSchema?.etag);
 		});
-	}, [schemaName, etag === pack?.modelSchema?.etag]);
+	}, [commandBus, schemaName, etag === pack?.modelSchema?.etag]);
 
 	return pack;
 }

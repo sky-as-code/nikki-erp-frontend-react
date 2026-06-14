@@ -35,6 +35,15 @@ export class SchemaRegistry {
 		};
 	}
 
+	/** Clears cached schema data and fetches a fresh {@link SchemaPack}. */
+	public async refresh(schemaName: string): Promise<SchemaPack | null> {
+		const item = this.#registry.get(schemaName);
+		if (!item) return null;
+		item.modelSchema = undefined;
+		item.validationSchema = undefined;
+		return this.get(schemaName);
+	}
+
 	async #fetchModelSchema(schemaName: string): Promise<RegistryItem | null> {
 		const item = this.#registry.get(schemaName);
 		if (!item) return null;

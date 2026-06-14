@@ -3,7 +3,9 @@ import { useParams } from 'react-router-dom';
 
 import { ResourceDetail, ResourceDetailTemplateProps } from './ResourceDetail';
 import { ResourceList, ResourceListTemplateProps } from './ResourceList';
-import { RenderPrimaryParams, SplitLayout } from '../SplitLayout';
+import { SplitLayout } from '../SplitLayout';
+
+import type { IPageProps } from '../core';
 
 
 export type ResourceSplitViewParams = {
@@ -11,31 +13,52 @@ export type ResourceSplitViewParams = {
 	secondaryProps: ResourceDetailTemplateProps;
 };
 
+export class ResourceSplitViewTemplateProps implements IPageProps<ResourceSplitViewParams> {
+	public readonly params: ResourceSplitViewParams;
+
+	constructor(params: ResourceSplitViewParams) {
+		this.params = params;
+	}
+}
+
 export type ResourceSplitViewProps = {
-	props: ResourceSplitViewParams;
+	/** Strongly-typed page params, passed as-is from `ResourceSplitViewTemplateProps.params`. */
+	params: ResourceSplitViewParams;
 	routePath: string;
 };
 
 
-export function ResourceSplitView({ props, routePath }: ResourceSplitViewProps): React.ReactNode {
+export const ResourceSplitView = React.memo(ResourceSplitViewView);
+
+function ResourceSplitViewView({ params: viewParams, routePath }: ResourceSplitViewProps): React.ReactNode {
+	const { primaryProps, secondaryProps } = viewParams;
+	return (
+		<SplitViewBody
+			primary={<ResourceList routePath={routePath} params={primaryProps.params} />}
+			secondary={<ResourceDetail params={secondaryProps.params} />}
+		/>
+	);
+}
+
+export type SplitViewBodyProps = {
+	primary: React.ReactNode,
+	secondary: React.ReactNode,
+};
+
+/**
+ * Two-pane layout shared by {@link ResourceSplitView} and the `resource_split_view`
+ * component renderer. The secondary pane opens when the route carries an `:id`.
+ */
+export function SplitViewBody({ primary, secondary }: SplitViewBodyProps): React.ReactNode {
 	const [isStartFromList, setIsStartFromList] = React.useState<boolean | null>(null);
-	const { primaryProps, secondaryProps } = props;
 	const params = useParams();
 	const isFirstPage = params.id === undefined;
 	const isSecondaryPage = params.id !== undefined;
 	const isPrimaryOpen = isStartFromList || isFirstPage;
 	const isSecondaryOpen = isSecondaryPage;
 
-	const renderPrimary = React.useCallback(() => {
-		return isPrimaryOpen && <ResourceList
-			routePath={routePath}
-			props={new ResourceListTemplateProps(primaryProps.params)}
-		/>;
-	}, [primaryProps, routePath, isPrimaryOpen]);
-
-	const renderSecondary = React.useCallback(() => {
-		return isSecondaryOpen && <ResourceDetail props={new ResourceDetailTemplateProps(secondaryProps.params)} />;
-	}, [secondaryProps, isSecondaryOpen]);
+	const renderPrimary = React.useCallback(() => isPrimaryOpen && primary, [isPrimaryOpen, primary]);
+	const renderSecondary = React.useCallback(() => isSecondaryOpen && secondary, [isSecondaryOpen, secondary]);
 
 	React.useEffect(() => {
 		if (isStartFromList === null || !isSecondaryPage) {

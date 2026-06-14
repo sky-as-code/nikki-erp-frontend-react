@@ -125,9 +125,19 @@ type BaseFormProviderProps = {
 	children: (props: FormProviderRenderProps) => React.ReactNode;
 };
 
+/**
+ * Runtime context exposed by {@link CrudFormProvider} so declarative children
+ * (component renderers) can reach the same values as the render-prop API.
+ */
+const CrudFormRuntimeContext = React.createContext<FormProviderRenderProps | undefined>(undefined);
+
+export function useCrudFormRuntime(): FormProviderRenderProps | null {
+	return React.useContext(CrudFormRuntimeContext) ?? null;
+}
+
 export type FormVariant = 'create' | 'update';
 
-export type CrudFormProviderProps = BaseFormProviderProps & {
+export type CrudFormProviderProps = Omit<BaseFormProviderProps, 'children'> & {
 	schemaName: string,
 	formVariant: FormVariant;
 	localize: LocalizeFn;
@@ -137,6 +147,11 @@ export type CrudFormProviderProps = BaseFormProviderProps & {
 	isSubmitting?: boolean,
 	/** Invoked with the validated, post-processed form data when the user submits. */
 	onSubmit: (data: Record<string, any>) => void,
+	/**
+	 * Either a render function (legacy) or plain nodes (declarative). Node children
+	 * reach the form runtime via {@link useCrudFormRuntime}.
+	 */
+	children: ((props: FormProviderRenderProps) => React.ReactNode) | React.ReactNode,
 };
 
 export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode {
@@ -165,6 +180,23 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 		}
 	}, [schemaPack, modelValue, reset]);
 
+	const runtime: FormProviderRenderProps = {
+		handleSubmit: (onValid?: HandleSubmitOnValid): SubmitEventHandler => {
+			return handleSubmit((data) => {
+				const postprocessed = onValid ? onValid(data) : data;
+				if (postprocessed) {
+					props.onSubmit(postprocessed);
+				}
+			});
+		},
+		reset,
+		form,
+		isLoading: props.isSubmitting ?? false,
+		errors,
+	};
+
+	const content = typeof props.children === 'function' ? props.children(runtime) : props.children;
+
 	return schemaPack ? (
 		<FormFieldContext.Provider
 			value={{
@@ -178,20 +210,9 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 				getFieldDef: (fieldName) => schemaPack?.modelSchema?.fields[fieldName],
 			}}
 		>
-			{props.children({
-				handleSubmit: (onValid?: HandleSubmitOnValid): SubmitEventHandler =>{
-					return handleSubmit((data) => {
-						const postprocessed = onValid ? onValid(data) : data;
-						if (postprocessed) {
-							props.onSubmit(postprocessed);
-						}
-					});
-				},
-				reset,
-				form,
-				isLoading: props.isSubmitting ?? false,
-				errors,
-			})}
+			<CrudFormRuntimeContext.Provider value={runtime}>
+				{content}
+			</CrudFormRuntimeContext.Provider>
 		</FormFieldContext.Provider>
 	) : <LoadingState />;
 };

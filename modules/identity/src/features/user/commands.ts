@@ -1,24 +1,24 @@
 import { Command, CommandResponse, ICommandBus, ok } from '@nikkierp/common/commandBus';
 
-import * as svc from './userService';
 import * as t from './types';
+import * as svc from './userService';
 import { IAM_MODULE, USER_SCHEMA_NAME } from '../../constants';
 
 
 const PREFIX = `${IAM_MODULE}.${USER_SCHEMA_NAME}`;
 
 /** Command names handled by the identity user sub-module. */
-export const USER_COMMANDS = {
-	create: `${PREFIX}.create_user`,
-	getById: `${PREFIX}.get_user_by_id`,
-	search: `${PREFIX}.search_users`,
-	update: `${PREFIX}.update_user`,
-	delete: `${PREFIX}.delete_user`,
-	setIsArchived: `${PREFIX}.set_user_is_archived`,
-	activate: `${PREFIX}.activate_user`,
-	suspend: `${PREFIX}.suspend_user`,
-	invite: `${PREFIX}.invite_user`,
-} as const;
+export const UserCommands = Object.freeze({
+	ACTIVATE: `${PREFIX}.activate_user`,
+	CREATE: `${PREFIX}.create_user`,
+	DELETE: `${PREFIX}.delete_user`,
+	GET_BY_ID: `${PREFIX}.get_user_by_id`,
+	INVITE: `${PREFIX}.invite_user`,
+	SET_IS_ARCHIVED: `${PREFIX}.set_user_is_archived`,
+	SUSPEND: `${PREFIX}.suspend_user`,
+	SEARCH: `${PREFIX}.search_users`,
+	UPDATE: `${PREFIX}.update_user`,
+} as const);
 
 /**
  * Subscribes the user command handlers onto the Shell-hosted bus. Called synchronously
@@ -27,15 +27,18 @@ export const USER_COMMANDS = {
  */
 export function registerUserCommands(bus: ICommandBus): () => void {
 	const unsubscribers = [
-		bus.subscribe(USER_COMMANDS.create, cmd => svc.createUser(payload<t.CreateUserRequest>(cmd))),
-		bus.subscribe(USER_COMMANDS.getById, cmd => svc.getUserById(payload<t.GetUserByIdRequest>(cmd))),
-		bus.subscribe(USER_COMMANDS.search, cmd => svc.searchUsers(payload<t.SearchUserRequest>(cmd))),
-		bus.subscribe(USER_COMMANDS.update, cmd => svc.updateUser(payload<t.UpdateUserRequest>(cmd))),
-		bus.subscribe(USER_COMMANDS.delete, handleDeleteUser),
-		bus.subscribe(USER_COMMANDS.setIsArchived, cmd => svc.setUserIsArchived(payload<t.SetUserIsArchivedRequest>(cmd))),
-		bus.subscribe(USER_COMMANDS.activate, cmd => svc.activateUser(payload<t.ActivateUserRequest>(cmd))),
-		bus.subscribe(USER_COMMANDS.suspend, cmd => svc.suspendUser(payload<t.SuspendUserRequest>(cmd))),
-		bus.subscribe(USER_COMMANDS.invite, cmd => svc.inviteUser(payload<t.InviteUserRequest>(cmd))),
+		bus.subscribe(UserCommands.CREATE, cmd => svc.createUser(payload<t.CreateUserRequest>(cmd))),
+		bus.subscribe(UserCommands.GET_BY_ID, cmd => svc.getUserById(payload<t.GetUserByIdRequest>(cmd))),
+		bus.subscribe(UserCommands.SEARCH, cmd => svc.searchUsers(payload<t.SearchUserRequest>(cmd))),
+		bus.subscribe(UserCommands.UPDATE, cmd => svc.updateUser(payload<t.UpdateUserRequest>(cmd))),
+		bus.subscribe(UserCommands.DELETE, handleDeleteUser),
+		bus.subscribe(
+			UserCommands.SET_IS_ARCHIVED,
+			cmd => svc.setUserIsArchived(payload<t.SetUserIsArchivedRequest>(cmd)),
+		),
+		bus.subscribe(UserCommands.ACTIVATE, cmd => svc.activateUser(payload<t.ActivateUserRequest>(cmd))),
+		bus.subscribe(UserCommands.SUSPEND, cmd => svc.suspendUser(payload<t.SuspendUserRequest>(cmd))),
+		bus.subscribe(UserCommands.INVITE, cmd => svc.inviteUser(payload<t.InviteUserRequest>(cmd))),
 	];
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
 }

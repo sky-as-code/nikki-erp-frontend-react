@@ -10,11 +10,7 @@ type UserServiceResult<TData> = Promise<CommandResponse<TData, unknown>>;
 /** Resolves the user schema then runs `fn`, wrapping the outcome into a `CommandResponse`. */
 async function withUserSchema<TData>(fn: (schema: dyn.SchemaPack) => Promise<TData>): UserServiceResult<TData> {
 	try {
-		const schema = await dyn.schemaRegistry.get(USER_SCHEMA_NAME);
-		if (!schema) {
-			return fail(new Error(`Schema "${USER_SCHEMA_NAME}" is not registered.`));
-		}
-		return ok(await fn(schema));
+		return ok(await dyn.withSchema(USER_SCHEMA_NAME, fn));
 	}
 	catch (error) {
 		return fail(error);

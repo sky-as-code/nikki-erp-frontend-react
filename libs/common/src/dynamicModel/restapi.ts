@@ -4,7 +4,7 @@ import type { ModelSchema } from './model_schema';
 
 
 export type RestApiOptions = {
-	requestMaker: RequestMaker,
+	requestMaker?: RequestMaker,
 	resourcePath: string,
 	primaryResourcePath?: string,
 };
@@ -14,6 +14,9 @@ export class RestApi {
 	private _basePath: string = '';
 
 	constructor(opts: RestApiOptions) {
+		if (!opts.requestMaker) {
+			opts.requestMaker = RequestMaker.default();
+		}
 		this._opts = opts;
 		if (!opts.primaryResourcePath) {
 			this._basePath = opts.resourcePath;
@@ -22,26 +25,28 @@ export class RestApi {
 
 	public create(request: RestCreateRequest, primaryResourceId?: string): Promise<RestCreateResponse> {
 		const restPath = this._getBasePath(primaryResourceId);
-		return this._opts.requestMaker.post<RestCreateResponse>(restPath, { json: request });
+		return this._opts.requestMaker!.post<RestCreateResponse>(restPath, { json: request });
 	}
 
 	public delete(request: RestDeleteRequest, primaryResourceId?: string): Promise<RestDeleteResponse> {
 		const restPath = this._getBasePath(primaryResourceId);
-		return this._opts.requestMaker.delete<RestDeleteResponse>(`${restPath}/${request.id}`, { searchParams: request });
+		return this._opts.requestMaker!.delete<RestDeleteResponse>(`${restPath}/${request.id}`, { searchParams: request });
 	}
 
 	public exists(request: RestExistsRequest): Promise<RestExistsResponse> {
 		const restPath = this._getBasePath();
-		return this._opts.requestMaker.post<RestExistsResponse>(restPath + '/exists', {
+		return this._opts.requestMaker!.post<RestExistsResponse>(restPath + '/exists', {
 			searchParams: this._toSearchParams(request),
 		});
 	}
 
 	public getById(request: RestGetByIdRequest, primaryResourceId?: string): Promise<RestGetOneResponse<any>> {
 		const restPath = this._getBasePath(primaryResourceId);
-		const dedupKey = `GET/${restPath}/${request.id}/${request.fields?.join(',')}`;
-		return this._opts.requestMaker.get<RestGetOneResponse<any>>(`${restPath}/${request.id}`, {
-			searchParams: this._toSearchParams(request),
+		const { id, ...rest } = request;
+		const keyFields = Object.values(rest).join('/');
+		const dedupKey = `GET/${restPath}/${id}/${keyFields}/${rest.fields?.join(',')}`;
+		return this._opts.requestMaker!.get<RestGetOneResponse<any>>(`${restPath}/${id}`, {
+			searchParams: this._toSearchParams(rest),
 			dedupKey,
 		});
 	}
@@ -54,7 +59,7 @@ export class RestApi {
 		const keyFields = Object.values(rest).join('/');
 
 		const dedupKey = `GET/${restPath}/${keyFields}/${fields?.join(',')}`;
-		return this._opts.requestMaker.get<RestGetOneResponse<any>>(`${restPath}/getOne`, {
+		return this._opts.requestMaker!.get<RestGetOneResponse<any>>(`${restPath}/getOne`, {
 			searchParams: buildSearchParams(request),
 			dedupKey,
 		});
@@ -63,7 +68,7 @@ export class RestApi {
 	public getModelSchema(primaryResourceId?: string): Promise<RestGetModelSchemaResponse> {
 		const restPath = this._getBasePath(primaryResourceId);
 		const dedupKey = `GET/${restPath}/meta/schema`;
-		return this._opts.requestMaker.get<RestGetModelSchemaResponse>(`${restPath}/meta/schema`, {
+		return this._opts.requestMaker!.get<RestGetModelSchemaResponse>(`${restPath}/meta/schema`, {
 			dedupKey,
 		});
 	}
@@ -72,7 +77,7 @@ export class RestApi {
 		request: RestManageM2mRequest, path: string, primaryResourceId?: string,
 	): Promise<RestMutateResponse> {
 		const restPath = this._getBasePath(primaryResourceId);
-		return this._opts.requestMaker.post<RestMutateResponse>(`${restPath}/${path}`, { json: request });
+		return this._opts.requestMaker!.post<RestMutateResponse>(`${restPath}/${path}`, { json: request });
 	}
 
 	public search(request: RestSearchRequest, primaryResourceId?: string): Promise<RestSearchResponse<any>> {
@@ -97,7 +102,7 @@ export class RestApi {
 			request.graph ? JSON.stringify(request.graph) : '-',
 			request.language ?? '-',
 		];
-		return this._opts.requestMaker.get<RestSearchResponse<any>>(restPath, {
+		return this._opts.requestMaker!.get<RestSearchResponse<any>>(restPath, {
 			searchParams: this._toSearchParams(request),
 			dedupKey: dedupKey.join('/'),
 		});
@@ -106,13 +111,13 @@ export class RestApi {
 	public setIsArchived(request: RestSetIsArchivedRequest, primaryResourceId?: string): Promise<RestMutateResponse> {
 		const restPath = this._getBasePath(primaryResourceId);
 		const { id, ...body } = request;
-		return this._opts.requestMaker.post<RestMutateResponse>(`${restPath}/${id}/archived`, { json: body });
+		return this._opts.requestMaker!.post<RestMutateResponse>(`${restPath}/${id}/archived`, { json: body });
 	}
 
 	public update(request: RestUpdateRequest, primaryResourceId?: string): Promise<RestMutateResponse> {
 		const restPath = this._getBasePath(primaryResourceId);
 		const { id, ...body } = request;
-		return this._opts.requestMaker.patch<RestMutateResponse>(`${restPath}/${id}`, { json: body });
+		return this._opts.requestMaker!.patch<RestMutateResponse>(`${restPath}/${id}`, { json: body });
 	}
 
 	private _getBasePath(primaryResourceId?: string): string {
