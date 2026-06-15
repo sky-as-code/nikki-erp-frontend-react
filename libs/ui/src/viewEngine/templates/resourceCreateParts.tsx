@@ -5,9 +5,9 @@ import clsx from 'clsx';
 import React from 'react';
 import { Link } from 'react-router';
 
+import { useResourceCreateContext } from './resourceCreateContext';
 import classes from './ResourceDetail.module.css';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
-import { useResourceCreateContext } from './resourceCreateContext';
 import { AutoField } from '../../components/form';
 import { useLocalize, useTranslate } from '../../i18n';
 
@@ -103,11 +103,7 @@ export function ResourceCreateBlock({
 	return (
 		<Stack gap='sm' className={classes.formBlock}>
 			<Title order={4}>{t(block.header)}</Title>
-			{block.fieldType === 'SchemaFields' ? (
-				<ResourceCreateFieldGroup fields={block.fields ?? []} isLoading={isLoading} modelSchema={modelSchema} />
-			) : (
-				<Text c='dimmed'>Custom fields placeholder</Text>
-			)}
+			<ResourceCreateFieldGroup fields={block.fields ?? []} isLoading={isLoading} modelSchema={modelSchema} />
 		</Stack>
 	);
 }

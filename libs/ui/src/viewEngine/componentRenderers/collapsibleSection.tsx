@@ -1,14 +1,14 @@
 import { Collapse, Stack } from '@mantine/core';
 import React from 'react';
 
-import { RenderComponentTree } from './renderComponent';
+import { MetaComponent } from './renderComponent';
 import { useResourceFormView } from './resourceFormViewContext';
 import { useCrudFormRuntime } from '../../components/form';
 import classes from '../templates/ResourceDetail.module.css';
 import { DebugFormErrors, printDebugFormValues } from '../templates/ResourceDetailProvider';
 import { PaperWithBorder, SectionActionBar } from '../templates/resourceUpdateParts';
 
-import type { ComponentRenderContext, IComponentRenderer } from './IComponentRenderer';
+import type { IComponentRenderer } from './IComponentRenderer';
 import type { ComponentNode } from '../metadata/types';
 
 
@@ -22,14 +22,13 @@ type CollapsibleSectionProps = {
 
 export const collapsibleSectionRenderer: IComponentRenderer = {
 	type: COLLAPSIBLE_SECTION,
-	render(node, ctx) {
-		return <CollapsibleSection node={node} ctx={ctx} />;
+	render(node) {
+		return <CollapsibleSection node={node} />;
 	},
 };
 
-function CollapsibleSection({ node, ctx }: {
+function CollapsibleSection({ node }: {
 	node: ComponentNode,
-	ctx: ComponentRenderContext,
 }): React.ReactNode {
 	const props = (node.props ?? {}) as CollapsibleSectionProps;
 	const [expanded, setExpanded] = React.useState(props.expanded ?? true);
@@ -58,7 +57,7 @@ function CollapsibleSection({ node, ctx }: {
 			>
 				<DebugFormErrors errors={runtime?.errors ?? {}} />
 				<div className={classes.formBlockWrapper}>
-					<RenderComponentTree nodes={node.children} ctx={ctx.ctx} />
+					<MetaComponent node={node.children} />
 				</div>
 			</Collapse>
 		</Stack>

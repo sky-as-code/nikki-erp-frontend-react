@@ -10,12 +10,13 @@ import clsx from 'clsx';
 import React from 'react';
 import { Link } from 'react-router';
 
+import { toLangJson } from './fieldRenderers';
 import classes from './ResourceDetail.module.css';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
 import { useResourceUpdateContext } from './resourceUpdateContext';
 import { AutoField } from '../../components/form';
 import { useCommand } from '../../hookhoc';
-import { useLocalize, useTranslate } from '../../i18n';
+import { JsonLangText, useLocalize, useTranslate } from '../../i18n';
 import { evaluateCondition } from '../metadata/expression';
 
 import type {
@@ -50,10 +51,20 @@ export function ResourceUpdateHeader(headerProps: ResourceUpdateHeaderProps = {}
 		<Group gap={4}>
 			<Stack gap={4}>
 				{titleLvl1 ? (
-					<Title order={3}>{formatFieldValue(data?.[titleLvl1.schemaField])}</Title>
+					<Title order={3}>
+						{renderDisplayFieldValue(
+							data?.[titleLvl1.schemaField],
+							modelSchema?.fields[titleLvl1.schemaField],
+						)}
+					</Title>
 				) : null}
 				{titleLvl2 ? (
-					<Text>{formatFieldValue(data?.[titleLvl2.schemaField])}</Text>
+					<Text>
+						{renderDisplayFieldValue(
+							data?.[titleLvl2.schemaField],
+							modelSchema?.fields[titleLvl2.schemaField],
+						)}
+					</Text>
 				) : null}
 				{showTitleLvl3 || showCreate ? (
 					<Group gap='xs' align='center'>
@@ -397,17 +408,13 @@ export function OwnPropertiesBlock({
 	return (
 		<Stack gap='sm' className={classes.formBlock}>
 			<Title order={4}>{t(block.header)}</Title>
-			{block.fieldType === 'SchemaFields' ? (
-				<FieldGroupVertical
-					fields={block.fields ?? []}
-					isLoading={isLoading}
-					modelSchema={modelSchema}
-					fieldValues={fieldValues}
-					updateMode={updateMode}
-				/>
-			) : (
-				<Text c='dimmed'>Custom fields placeholder</Text>
-			)}
+			<FieldGroupVertical
+				fields={block.fields ?? []}
+				isLoading={isLoading}
+				modelSchema={modelSchema}
+				fieldValues={fieldValues}
+				updateMode={updateMode}
+			/>
 		</Stack>
 	);
 }
@@ -452,7 +459,9 @@ function FieldGroupVertical({
 				return (
 					<Stack key={field} gap={4}>
 						<Text size='md' fw='bold'>{localize(modelSchema.fields[field].label)}</Text>
-						<Text size='md'>{formatFieldValue(fieldValues[field])}</Text>
+						<Text size='md'>
+							{renderDisplayFieldValue(fieldValues[field], modelSchema.fields[field])}
+						</Text>
 					</Stack>
 				);
 			})}
@@ -481,4 +490,26 @@ export function formatFieldValue(fieldValue: unknown): string {
 	catch {
 		return String(fieldValue);
 	}
+}
+
+function getFieldDataTypeName(
+	fieldSchema?: dyn.ModelSchemaField,
+): dyn.ModelSchemaFieldDataTypeName | null {
+	if (!fieldSchema) {
+		return null;
+	}
+	if (typeof fieldSchema.data_type === 'string') {
+		return fieldSchema.data_type;
+	}
+	return fieldSchema.data_type.name;
+}
+
+function renderDisplayFieldValue(
+	fieldValue: unknown,
+	fieldSchema?: dyn.ModelSchemaField,
+): React.ReactNode {
+	if (getFieldDataTypeName(fieldSchema) === 'nikkiLangJson') {
+		return <JsonLangText langJson={toLangJson(fieldValue)} />;
+	}
+	return formatFieldValue(fieldValue);
 }

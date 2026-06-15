@@ -1,21 +1,9 @@
-import { ICommandBus } from '@nikkierp/common/commandBus';
-
-import { MicroAppDispatchFn } from '../../microApp';
 import {
 	AvatarFieldRenderer, BadgeFieldRenderer, IFieldRenderer, TranslatedFieldRenderer,
 } from '../templates/fieldRenderers';
 
+import type { FieldRendererMap } from '../templates/fieldRenderers';
 
-/**
- * Context passed to template adapters. Adapters convert serializable JSON props
- * (command names, expression objects, renderer ids) into the runtime props the
- * concrete template component expects.
- */
-export type AdapterContext = {
-	commandBus: ICommandBus,
-	dispatch?: MicroAppDispatchFn,
-	translationNs?: string,
-};
 
 export type FieldRendererFactory = (config: Record<string, unknown>) => IFieldRenderer;
 
@@ -27,6 +15,22 @@ export function registerFieldRenderer(name: string, factory: FieldRendererFactor
 
 export function resolveFieldRenderer(name: string, config: Record<string, unknown>): IFieldRenderer | undefined {
 	return fieldRendererRegistry.get(name)?.(config);
+}
+
+export function resolveFieldRendererMap(
+	config?: Record<string, { renderer: string } & Record<string, unknown>>,
+): FieldRendererMap | undefined {
+	if (!config) {
+		return undefined;
+	}
+	const result: FieldRendererMap = {};
+	for (const [field, entry] of Object.entries(config)) {
+		const renderer = resolveFieldRenderer(entry.renderer, entry);
+		if (renderer) {
+			result[field] = renderer;
+		}
+	}
+	return result;
 }
 
 registerFieldRenderer('avatar', () => new AvatarFieldRenderer());

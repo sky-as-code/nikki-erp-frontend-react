@@ -1,4 +1,5 @@
 export * from './Breadcrumbs';
+export * from './MultiLangInputModal';
 export * from './Button';
 export * from './ErrorBoundary/ErrorBoundary';
 export * from './form';

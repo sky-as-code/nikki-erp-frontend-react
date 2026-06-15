@@ -1,23 +1,20 @@
+import React from 'react';
+
 import {
 	RESOURCE_DETAIL_TEMPLATE, RESOURCE_LIST_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE,
 } from '../pageTemplates';
-import { renderPage } from '../renderPage';
-import { RenderNode } from './renderNode';
+import { MetaPage } from '../renderPage';
 
 import type { RenderResult } from '../core';
-import type { AdapterContext } from './registry';
 import type { PageNode } from './types';
-
-
-export { RenderNode };
 
 export type CompiledPage = {
 	routePath: string,
 	element: RenderResult,
 };
 
-export function compilePage(node: PageNode, ctx: AdapterContext): CompiledPage {
-	return { routePath: resolveRoutePath(node), element: renderPage(node, ctx) };
+export function compilePage(node: PageNode): CompiledPage {
+	return { routePath: resolveRoutePath(node), element: <MetaPage node={node} /> };
 }
 
 export function resolveRoutePath(node: PageNode): string {

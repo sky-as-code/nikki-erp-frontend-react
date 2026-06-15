@@ -1496,7 +1496,9 @@ function ActionButton({ action, selectedItems }: ActionTriggerProps): React.Reac
 	);
 }
 
-function ActionMenu({ items, selectedItems }: { items: DataTableAction[], selectedItems: Record<string, unknown>[] }): React.ReactNode {
+function ActionMenu(
+	{ items, selectedItems }: { items: DataTableAction[], selectedItems: Record<string, unknown>[] },
+): React.ReactNode {
 	return (
 		<Menu shadow='md' position='bottom-end'>
 			<Menu.Target>

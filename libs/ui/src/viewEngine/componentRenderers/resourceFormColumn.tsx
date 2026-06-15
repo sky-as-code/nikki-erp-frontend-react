@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { IComponentRenderer } from './IComponentRenderer';
 import { useResourceFormView } from './resourceFormViewContext';
 import { useCrudFormRuntime } from '../../components/form';
 import { useResourceUpdateContext } from '../templates/resourceUpdateContext';
 import { OwnPropertiesBlock } from '../templates/resourceUpdateParts';
 
-import type { OwnPropertySection } from '../templates/ResourceDetail';
+import type { IComponentRenderer } from './IComponentRenderer';
 import type { ComponentNode } from '../metadata/types';
+import type { OwnPropertySection } from '../templates/ResourceDetail';
 
 
 export const RESOURCE_FORM_COLUMN = 'resource_form__column';

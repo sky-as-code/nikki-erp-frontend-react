@@ -2,7 +2,7 @@ import React from 'react';
 
 import './pageTemplates';
 import './componentRenderers';
-import { AdapterContext, compilePage, PageNode } from './metadata';
+import { compilePage, PageNode } from './metadata';
 import { AppRoute, AppRoutes, MicroAppProps, MicroAppRouter } from '../microApp';
 
 
@@ -15,15 +15,10 @@ export type EngineProps = {
 	pages: PageNode[],
 };
 
-
 export function ViewEngineRouter({ microAppProps, engineProps }: ViewEngineRouterProps) {
-	const ctx = React.useMemo<AdapterContext>(
-		() => ({ commandBus: microAppProps.commandBus }),
-		[microAppProps.commandBus],
-	);
 	const compiled = React.useMemo(
-		() => engineProps.pages.map(page => compilePage(page, ctx)),
-		[engineProps.pages, ctx],
+		() => engineProps.pages.map(page => compilePage(page)),
+		[engineProps.pages],
 	);
 
 	return (

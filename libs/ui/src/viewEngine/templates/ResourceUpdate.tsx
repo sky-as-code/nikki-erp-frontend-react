@@ -1,25 +1,21 @@
-import { Collapse, Stack } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 import { useParams } from 'react-router';
 
-import classes from './ResourceDetail.module.css';
-import { DebugFormErrors, printDebugFormValues, useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
+import { useResourceDetailContext } from './ResourceDetailProvider';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
-import { OwnPropertiesBlock, PaperWithBorder, ResourceUpdateHeader, SectionActionBar } from './resourceUpdateParts';
-import { CrudFormProvider, FormStyleProvider } from '../../components/form';
 import { useCommand } from '../../hookhoc';
-import { useLocalize } from '../../i18n';
-import { useCommandBus } from '../../microApp';
-import { AdapterContext } from '../metadata/registry';
-import { RenderNode } from '../metadata/renderNode';
-import { MetadataNode } from '../metadata/types';
+import { COLLAPSIBLE_SECTION } from '../componentRenderers/collapsibleSection';
+import { MetaComponent } from '../componentRenderers/renderComponent';
+import { RESOURCE_DETAIL_HEADER } from '../componentRenderers/resourceDetailHeader';
+import { RESOURCE_FORM } from '../componentRenderers/resourceForm';
+import { RESOURCE_FORM_COLUMN } from '../componentRenderers/resourceFormColumn';
 
 import type {
 	LinkSpec, OwnPropertySection, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './ResourceDetail';
-
+import type { ComponentNode } from '../metadata/types';
 
 export type ResourceUpdateProps = {
 	standardActionCommands: ResourceDetailStandardActionCommands,
@@ -30,9 +26,14 @@ export type ResourceUpdateProps = {
 	titleLvl2?: SchemaFieldSpec,
 	titleLvl3?: LinkSpec,
 	blocks: OwnPropertySection[],
-	childrenNodes?: MetadataNode[],
+	childrenNodes?: ComponentNode[],
 };
 
+/**
+ * Provides {@link ResourceUpdateContext} and renders the default update component tree
+ * (`resource_detail__header` + `resource_form` → `collapsible_section` →
+ * `resource_form__column`s + appended children) through the component registry.
+ */
 export function ResourceUpdate(props: ResourceUpdateProps): React.ReactNode {
 	return (
 		<ResourceUpdateProvider {...props}>
@@ -100,69 +101,41 @@ export function ResourceUpdateProvider(
 
 function ResourceUpdateContent(): React.ReactNode {
 	const { schemaPack } = useResourceDetailContext();
-	const { commands, resource, isWriting, onSubmit, blocks, childrenNodes } = useResourceUpdateContext();
-	const [expanded, setExpanded] = React.useState(true);
-	const [updateMode, setUpdateMode] = React.useState(false);
+	const context = useResourceUpdateContext();
+	const nodes = React.useMemo(() => buildUpdateNodes(context), [context]);
 	const modelSchema = schemaPack?.modelSchema;
-	const localize = useLocalize(useResourceDetailTranslationNs());
-	const fieldValues = (resource ?? {}) as Record<string, unknown>;
 
-	return modelSchema && commands.update && commands.getById ? (
-		<>
-			<ResourceUpdateHeader />
-			<FormStyleProvider layout='onecol'>
-				<CrudFormProvider
-					formVariant='update'
-					schemaName={modelSchema.name}
-					localize={localize}
-					modelValue={resource ?? null}
-					isSubmitting={isWriting}
-					onSubmit={onSubmit}
-				>
-					{({ handleSubmit, isLoading, errors: formErrors }) => (
-						<Stack component={PaperWithBorder} gap='md'>
-							<SectionActionBar
-								expanded={expanded}
-								onToggleCollapse={() => setExpanded(prev => !prev)}
-								onSaveClick={handleSubmit(printDebugFormValues)}
-								isLoading={isLoading}
-								updateMode={updateMode}
-								setUpdateMode={setUpdateMode}
-							/>
-							<Collapse
-								expanded={expanded}
-								transitionDuration={500}
-								transitionTimingFunction='ease-in-out'
-								className={classes.containerInlineSize}
-							>
-								<DebugFormErrors errors={formErrors} />
-								<div className={classes.formBlockWrapper}>
-									{blocks.map(block => (
-										<OwnPropertiesBlock
-											key={block.header}
-											block={block}
-											isLoading={isLoading}
-											fieldValues={fieldValues}
-											updateMode={updateMode}
-										/>
-									))}
-									<AppendedChildren nodes={childrenNodes} />
-								</div>
-							</Collapse>
-						</Stack>
-					)}
-				</CrudFormProvider>
-			</FormStyleProvider>
-		</>
-	) : null;
-}
-
-function AppendedChildren({ nodes }: { nodes?: MetadataNode[] }): React.ReactNode {
-	const commandBus = useCommandBus();
-	const translationNs = useResourceDetailTranslationNs();
-	const ctx = React.useMemo<AdapterContext>(() => ({ commandBus, translationNs }), [commandBus, translationNs]);
-	if (!nodes || nodes.length === 0) {
+	if (!modelSchema || !context.commands.update || !context.commands.getById) {
 		return null;
 	}
-	return <>{nodes.map((node, index) => <RenderNode key={index} node={node} ctx={ctx} />)}</>;
+
+	return <MetaComponent node={nodes} />;
+}
+
+function buildUpdateNodes(context: ResourceUpdateContextValue): ComponentNode[] {
+	const columns: ComponentNode[] = context.blocks.map(block => ({
+		type: 'component',
+		component: RESOURCE_FORM_COLUMN,
+		props: block as unknown as Record<string, unknown>,
+	}));
+	const sectionChildren: ComponentNode[] = [...columns, ...(context.childrenNodes ?? [])];
+
+	return [
+		{
+			type: 'component',
+			component: RESOURCE_DETAIL_HEADER,
+			props: {
+				titleLvl1: context.titleLvl1,
+				titleLvl2: context.titleLvl2,
+				titleLvl3: context.titleLvl3,
+			},
+		},
+		{
+			type: 'component',
+			component: RESOURCE_FORM,
+			children: [
+				{ type: 'component', component: COLLAPSIBLE_SECTION, props: { expanded: true }, children: sectionChildren },
+			],
+		},
+	];
 }

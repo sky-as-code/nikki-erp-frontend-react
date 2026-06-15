@@ -1,8 +1,8 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 
-import { ResourceDetail, ResourceDetailTemplateProps } from './ResourceDetail';
-import { ResourceList, ResourceListTemplateProps } from './ResourceList';
+import { ResourceDetailTemplateProps } from './ResourceDetail';
+import { ResourceListTemplateProps } from './ResourceList';
 import { SplitLayout } from '../SplitLayout';
 
 import type { IPageProps } from '../core';
@@ -27,26 +27,13 @@ export type ResourceSplitViewProps = {
 	routePath: string;
 };
 
-
-export const ResourceSplitView = React.memo(ResourceSplitViewView);
-
-function ResourceSplitViewView({ params: viewParams, routePath }: ResourceSplitViewProps): React.ReactNode {
-	const { primaryProps, secondaryProps } = viewParams;
-	return (
-		<SplitViewBody
-			primary={<ResourceList routePath={routePath} params={primaryProps.params} />}
-			secondary={<ResourceDetail params={secondaryProps.params} />}
-		/>
-	);
-}
-
 export type SplitViewBodyProps = {
 	primary: React.ReactNode,
 	secondary: React.ReactNode,
 };
 
 /**
- * Two-pane layout shared by {@link ResourceSplitView} and the `resource_split_view`
+ * Two-pane layout shared by {@link ResourceSplitViewMeta} and the `resource_split_view`
  * component renderer. The secondary pane opens when the route carries an `:id`.
  */
 export function SplitViewBody({ primary, secondary }: SplitViewBodyProps): React.ReactNode {
@@ -74,18 +61,4 @@ export function SplitViewBody({ primary, secondary }: SplitViewBodyProps): React
 			renderSecondary={renderSecondary}
 		/>
 	);
-}
-
-
-/**
- * Update the address bar without going through react-router's navigate(). We
- * dispatch a synthetic popstate so react-router's BrowserHistory picks up the
- * new URL — this keeps useParams() working in the detail panel while avoiding
- * any other side effects of an imperative navigate().
- */
-function softNavigate(href: string): void {
-	if (typeof window === 'undefined') return;
-	if (window.location.pathname === href) return;
-	window.history.pushState(null, '', href);
-	window.dispatchEvent(new PopStateEvent('popstate'));
 }

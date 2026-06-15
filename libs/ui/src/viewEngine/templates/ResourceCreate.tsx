@@ -1,17 +1,18 @@
-import { Collapse, Paper, Stack } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import classes from './ResourceDetail.module.css';
-import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
 import { ResourceCreateContext, ResourceCreateContextValue, useResourceCreateContext } from './resourceCreateContext';
-import { ResourceCreateActionBar, ResourceCreateBlock, ResourceCreateHeader } from './resourceCreateParts';
-import { CrudFormProvider, FormStyleProvider } from '../../components/form';
+import { useResourceDetailContext } from './ResourceDetailProvider';
 import { useCommand } from '../../hookhoc';
-import { useLocalize } from '../../i18n';
+import { MetaComponent } from '../componentRenderers/renderComponent';
+import { RESOURCE_CREATE_COLUMN } from '../componentRenderers/resourceCreateColumn';
+import { RESOURCE_CREATE_FORM } from '../componentRenderers/resourceCreateForm';
+import { RESOURCE_CREATE_HEADER } from '../componentRenderers/resourceCreateHeader';
+import { RESOURCE_CREATE_SECTION } from '../componentRenderers/resourceCreateSection';
 
 import type { LinkSpec, OwnPropertySection, ResourceDetailStandardActionCommands, SchemaFieldSpec } from './ResourceDetail';
+import type { ComponentNode } from '../metadata/types';
 
 
 export type ResourceCreateProps = {
@@ -21,6 +22,11 @@ export type ResourceCreateProps = {
 	blocks: OwnPropertySection[],
 };
 
+/**
+ * Provides {@link ResourceCreateContext} and renders the default create component tree
+ * (`resource_create__header` + `resource_create__form` → `resource_create__section`
+ * → `resource_create__column`s) through the component registry.
+ */
 export function ResourceCreate(props: ResourceCreateProps): React.ReactNode {
 	return (
 		<ResourceCreateProvider {...props}>
@@ -65,23 +71,6 @@ export function ResourceCreateProvider(
 	);
 }
 
-function ResourceCreateContent(): React.ReactNode {
-	const { schemaPack } = useResourceDetailContext();
-	const { commands } = useResourceCreateContext();
-	const modelSchema = schemaPack?.modelSchema;
-
-	if (!modelSchema || !commands.create) {
-		return null;
-	}
-
-	return (
-		<>
-			<ResourceCreateHeader />
-			<ResourceCreateForm />
-		</>
-	);
-}
-
 function useNavigateAfterCreate(createdId: string | undefined): void {
 	const navigate = useNavigate();
 
@@ -93,58 +82,38 @@ function useNavigateAfterCreate(createdId: string | undefined): void {
 	}, [createdId, navigate]);
 }
 
-function ResourceCreateForm(): React.ReactNode {
+function ResourceCreateContent(): React.ReactNode {
 	const { schemaPack } = useResourceDetailContext();
-	const translationNs = useResourceDetailTranslationNs();
-	const { commands, blocks, onSubmit, isSubmitting } = useResourceCreateContext();
-	const [expanded, setExpanded] = React.useState(true);
-	const localize = useLocalize(translationNs);
+	const context = useResourceCreateContext();
+	const nodes = React.useMemo(() => buildCreateNodes(context), [context]);
 	const modelSchema = schemaPack?.modelSchema;
 
-	if (!modelSchema || !commands.create) {
+	if (!modelSchema || !context.commands.create) {
 		return null;
 	}
 
-	return (
-		<FormStyleProvider layout='onecol'>
-			<CrudFormProvider
-				formVariant='create'
-				schemaName={modelSchema.name}
-				localize={localize}
-				isSubmitting={isSubmitting}
-				onSubmit={onSubmit}
-			>
-				{({ handleSubmit, isLoading }) => (
-					<Stack component={PaperWithBorder} gap='md'>
-						<ResourceCreateActionBar
-							expanded={expanded}
-							onToggleCollapse={() => setExpanded(prev => !prev)}
-							onSaveClick={handleSubmit()}
-							isLoading={isLoading}
-						/>
-						<Collapse
-							expanded={expanded}
-							transitionDuration={500}
-							transitionTimingFunction='ease-in-out'
-							className={classes.containerInlineSize}
-						>
-							<div className={classes.formBlockWrapper}>
-								{blocks.map(block => (
-									<ResourceCreateBlock key={block.header} block={block} isLoading={isLoading} />
-								))}
-							</div>
-						</Collapse>
-					</Stack>
-				)}
-			</CrudFormProvider>
-		</FormStyleProvider>
-	);
+	return <MetaComponent node={nodes} />;
 }
 
-function PaperWithBorder({ children }: { children: React.ReactNode }): React.ReactNode {
-	return (
-		<Paper withBorder className='px-4 pb-4'>
-			{children}
-		</Paper>
-	);
+function buildCreateNodes(context: ResourceCreateContextValue): ComponentNode[] {
+	const columns: ComponentNode[] = context.blocks.map(block => ({
+		type: 'component',
+		component: RESOURCE_CREATE_COLUMN,
+		props: block as unknown as Record<string, unknown>,
+	}));
+
+	return [
+		{
+			type: 'component',
+			component: RESOURCE_CREATE_HEADER,
+			props: { titleLvl1: context.titleLvl1, titleLvl3: context.titleLvl3 },
+		},
+		{
+			type: 'component',
+			component: RESOURCE_CREATE_FORM,
+			children: [
+				{ type: 'component', component: RESOURCE_CREATE_SECTION, props: { expanded: true }, children: columns },
+			],
+		},
+	];
 }

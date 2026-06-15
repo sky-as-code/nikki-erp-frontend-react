@@ -153,3 +153,5 @@ export function useLocalize(moduleName: string): LocalizeFn {
 		return trans.t(transKey, translateOpts);
 	};
 }
+
+export { JsonLangText } from './JsonLangText';

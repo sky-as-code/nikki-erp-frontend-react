@@ -1,96 +1,59 @@
+import { CommandResponse, fail, ok } from '@nikkierp/common/commandBus';
 import * as dyn from '@nikkierp/common/dynamicModel';
-import * as uiState from '@nikkierp/ui/appState';
 
 import * as t from './types';
 import { ORGANIZATION_SCHEMA_NAME } from '../../constants';
 
 
-export const createOrg = uiState.createSchemaThunkPack<
-	t.CreateOrgResponse, t.CreateOrgRequest, 'createOrg'
->(
-	ORGANIZATION_SCHEMA_NAME, 'createOrg',
-	async function createOrgThunk(schema: dyn.SchemaPack, request) {
-		return schema.restApi.create(request);
-	},
-);
+type OrgServiceResult<TData> = Promise<CommandResponse<TData, unknown>>;
 
-export const deleteOrg = uiState.createSchemaThunkPack<
-	t.DeleteOrgResponse, t.DeleteOrgRequest, 'deleteOrg'
->(
-	ORGANIZATION_SCHEMA_NAME, 'deleteOrg',
-	async function deleteOrgThunk(schema: dyn.SchemaPack, request) {
-		return schema.restApi.delete(request);
-	},
-);
+async function withOrgSchema<TData>(fn: (schema: dyn.SchemaPack) => Promise<TData>): OrgServiceResult<TData> {
+	try {
+		return ok(await dyn.withSchema(ORGANIZATION_SCHEMA_NAME, fn));
+	}
+	catch (error) {
+		return fail(error);
+	}
+}
 
-export const getOrgSchema = uiState.createSchemaThunkPack<
-	t.GetOrgSchemaResponse, void, 'getOrgSchema'
->(
-	ORGANIZATION_SCHEMA_NAME, 'getOrgSchema',
-	async function getOrgSchemaThunk(schema: dyn.SchemaPack) {
-		return schema.restApi.getModelSchema();
-	},
-);
+export function createOrg(request: t.CreateOrgRequest): OrgServiceResult<t.CreateOrgResponse> {
+	return withOrgSchema(schema => schema.restApi.create(request));
+}
 
-export const getOrgById = uiState.createSchemaThunkPack<
-	t.GetOrgResponse, t.GetOrgByIdRequest, 'getOrgById'
->(
-	ORGANIZATION_SCHEMA_NAME, 'getOrgById',
-	async function getOrgByIdThunk(schema: dyn.SchemaPack, request: t.GetOrgByIdRequest) {
-		return schema.restApi.getById(request);
-	},
-);
+export function deleteOrg(request: t.DeleteOrgRequest): OrgServiceResult<t.DeleteOrgResponse> {
+	return withOrgSchema(schema => schema.restApi.delete(request));
+}
 
-export const getOrgBySlug = uiState.createSchemaThunkPack<
-	t.GetOrgResponse, t.GetOrgBySlugRequest, 'getOrgBySlug'
->(
-	ORGANIZATION_SCHEMA_NAME, 'getOrgBySlug',
-	async function getOrgBySlugThunk(schema: dyn.SchemaPack, request: t.GetOrgBySlugRequest) {
-		return schema.restApi.getOne(request, (req) => new URLSearchParams({ slug: req.slug }));
-	},
-);
+export function getOrgSchema(): OrgServiceResult<t.GetOrgSchemaResponse> {
+	return withOrgSchema(schema => schema.restApi.getModelSchema());
+}
 
-export const manageOrgUsers = uiState.createSchemaThunkPack<
-	t.ManageOrgUsersResponse, t.ManageOrgUsersRequest, 'manageOrgUsers'
->(
-	ORGANIZATION_SCHEMA_NAME, 'manageOrgUsers',
-	async function manageOrgUsersThunk(schema: dyn.SchemaPack, request) {
-		return schema.restApi.manageM2m(request, 'manage-users');
-	},
-);
+export function getOrgById(request: t.GetOrgByIdRequest): OrgServiceResult<t.GetOrgResponse> {
+	return withOrgSchema(schema => schema.restApi.getById(request));
+}
 
-export const orgExists = uiState.createSchemaThunkPack<
-	t.OrgExistsResponse, t.OrgExistsRequest, 'orgExists'
->(
-	ORGANIZATION_SCHEMA_NAME, 'orgExists',
-	async function orgExistsThunk(schema: dyn.SchemaPack, request) {
-		return schema.restApi.exists(request);
-	},
-);
+export function getOrgBySlug(request: t.GetOrgBySlugRequest): OrgServiceResult<t.GetOrgResponse> {
+	return withOrgSchema(schema => schema.restApi.getOne(request, (req) => new URLSearchParams({ slug: req.slug })));
+}
 
-export const searchOrgs = uiState.createSchemaThunkPack<
-	t.SearchOrgResponse, t.SearchOrgRequest, 'searchOrgs'
->(
-	ORGANIZATION_SCHEMA_NAME, 'searchOrgs',
-	async function searchOrgsThunk(schema: dyn.SchemaPack, request) {
-		return schema.restApi.search(request);
-	},
-);
+export function manageOrgUsers(request: t.ManageOrgUsersRequest): OrgServiceResult<t.ManageOrgUsersResponse> {
+	return withOrgSchema(schema => schema.restApi.manageM2m(request, 'manage-users'));
+}
 
-export const setOrgIsArchived = uiState.createSchemaThunkPack<
-	t.SetOrgIsArchivedResponse, t.SetOrgIsArchivedRequest, 'setOrgIsArchived'
->(
-	ORGANIZATION_SCHEMA_NAME, 'setOrgIsArchived',
-	async function setOrgIsArchivedThunk(schema: dyn.SchemaPack, request) {
-		return schema.restApi.setIsArchived(request);
-	},
-);
+export function orgExists(request: t.OrgExistsRequest): OrgServiceResult<t.OrgExistsResponse> {
+	return withOrgSchema(schema => schema.restApi.exists(request));
+}
 
-export const updateOrg = uiState.createSchemaThunkPack<
-	t.UpdateOrgResponse, t.UpdateOrgRequest, 'updateOrg'
->(
-	ORGANIZATION_SCHEMA_NAME, 'updateOrg',
-	async function updateOrgThunk(schema: dyn.SchemaPack, request: t.UpdateOrgRequest) {
-		return schema.restApi.update(request);
-	},
-);
+export function searchOrgs(request: t.SearchOrgRequest): OrgServiceResult<t.SearchOrgResponse> {
+	return withOrgSchema(schema => schema.restApi.search(request));
+}
+
+export function setOrgIsArchived(
+	request: t.SetOrgIsArchivedRequest,
+): OrgServiceResult<t.SetOrgIsArchivedResponse> {
+	return withOrgSchema(schema => schema.restApi.setIsArchived(request));
+}
+
+export function updateOrg(request: t.UpdateOrgRequest): OrgServiceResult<t.UpdateOrgResponse> {
+	return withOrgSchema(schema => schema.restApi.update(request));
+}

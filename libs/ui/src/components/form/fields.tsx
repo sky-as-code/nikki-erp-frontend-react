@@ -7,6 +7,7 @@ import React from 'react';
 import { Controller } from 'react-hook-form';
 
 import { useFieldData, useFormField, useFormStyle } from './formContext';
+import { LangJsonField } from './LangJsonField';
 import { LocalizeFn, TranslateFn } from '../../i18n';
 
 
@@ -67,6 +68,8 @@ export function AutoField(props: AutoFieldProps) {
 			/>;
 		case 'boolean':
 			return <BooleanField name={props.name} inputProps={props.inputProps} localize={localize} />;
+		case 'nikkiLangJson':
+			return <LangJsonField name={props.name} inputProps={props.inputProps} localize={localize} />;
 		case 'enumString':
 			if (fieldDef.data_type.options?.enumValues) {
 				return <StaticEnumSelectField

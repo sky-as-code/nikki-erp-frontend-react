@@ -3,8 +3,8 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 
 export type Group = {
 	id: string,
-	name?: string,
-	description?: string,
+	name?: dyn.ModelSchemaLangJson,
+	description?: dyn.ModelSchemaLangJson,
 	owner_id?: string,
 	etag?: string,
 	created_at?: string,

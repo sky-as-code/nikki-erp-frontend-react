@@ -1,4 +1,4 @@
-export type { IComponentRenderer, ComponentRenderContext } from './IComponentRenderer';
+export type { IComponentRenderer } from './IComponentRenderer';
 export { registerComponentRenderer, getComponentRenderer } from './registry';
-export { renderComponent, RenderComponentTree } from './renderComponent';
+export { MetaComponent } from './renderComponent';
 import './registerComponentRenderers';
