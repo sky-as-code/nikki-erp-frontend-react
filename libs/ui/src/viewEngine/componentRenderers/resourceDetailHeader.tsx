@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { IComponentRenderer } from './IComponentRenderer';
 import { ResourceUpdateHeader, ResourceUpdateHeaderProps } from '../templates/resourceUpdateParts';
 
+import type { IComponentRenderer } from './IComponentRenderer';
 import type { ComponentNode } from '../metadata/types';
 
 

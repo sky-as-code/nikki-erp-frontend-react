@@ -2,6 +2,8 @@ import { Avatar, Badge, Checkbox } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
+import { JsonLangText } from '../../i18n';
+
 import type { TranslateFn } from '../../i18n';
 
 
@@ -75,7 +77,7 @@ type DataTypeCellRenderer = {
 	render(rawValue: unknown, textValue: string): React.ReactNode,
 };
 
-export class BooleanFieldRenderer implements DataTypeCellRenderer {
+export class BooleanCellRenderer implements DataTypeCellRenderer {
 	public matches(dataTypeName: dyn.ModelSchemaFieldDataTypeName | null): boolean {
 		return dataTypeName === 'boolean';
 	}
@@ -85,7 +87,7 @@ export class BooleanFieldRenderer implements DataTypeCellRenderer {
 	}
 }
 
-export class SecretFieldRenderer implements DataTypeCellRenderer {
+export class SecretCellRenderer implements DataTypeCellRenderer {
 	public matches(dataTypeName: dyn.ModelSchemaFieldDataTypeName | null): boolean {
 		return dataTypeName === 'secret';
 	}
@@ -95,7 +97,7 @@ export class SecretFieldRenderer implements DataTypeCellRenderer {
 	}
 }
 
-export class MonospaceFieldRenderer implements DataTypeCellRenderer {
+export class MonospaceCellRenderer implements DataTypeCellRenderer {
 	public matches(dataTypeName: dyn.ModelSchemaFieldDataTypeName | null): boolean {
 		return dataTypeName === 'ulid' || dataTypeName === 'uuid' || dataTypeName === 'phone';
 	}
@@ -105,10 +107,21 @@ export class MonospaceFieldRenderer implements DataTypeCellRenderer {
 	}
 }
 
+export class JsonLangCellRenderer implements DataTypeCellRenderer {
+	public matches(dataTypeName: dyn.ModelSchemaFieldDataTypeName | null): boolean {
+		return dataTypeName === 'nikkiLangJson';
+	}
+
+	public render(rawValue: unknown, _textValue: string): React.ReactNode {
+		return <JsonLangText langJson={toLangJson(rawValue)} />;
+	}
+}
+
 const defaultDataTypeCellRenderers: readonly DataTypeCellRenderer[] = [
-	new BooleanFieldRenderer(),
-	new SecretFieldRenderer(),
-	new MonospaceFieldRenderer(),
+	new BooleanCellRenderer(),
+	new SecretCellRenderer(),
+	new MonospaceCellRenderer(),
+	new JsonLangCellRenderer(),
 ];
 
 export function renderDefaultByDataType(
@@ -118,6 +131,28 @@ export function renderDefaultByDataType(
 ): React.ReactNode {
 	const renderer = defaultDataTypeCellRenderers.find(r => r.matches(dataTypeName));
 	return renderer ? renderer.render(rawValue, textValue) : textValue;
+}
+
+export function toLangJson(rawValue: unknown): dyn.ModelSchemaLangJson {
+	if (rawValue != null && typeof rawValue === 'object' && !Array.isArray(rawValue)) {
+		return rawValue as dyn.ModelSchemaLangJson;
+	}
+	if (typeof rawValue === 'string') {
+		try {
+			const parsed: unknown = JSON.parse(rawValue);
+			if (parsed != null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+				return parsed as dyn.ModelSchemaLangJson;
+			}
+			throw new Error(`Expected JSON object for nikkiLangJson, got ${typeof parsed}`);
+		}
+		catch (error) {
+			if (error instanceof SyntaxError) {
+				throw new Error(`Invalid JSON for nikkiLangJson: ${rawValue}`, { cause: error });
+			}
+			throw error;
+		}
+	}
+	return {};
 }
 
 function normalizeBooleanValue(rawValue: unknown): boolean {

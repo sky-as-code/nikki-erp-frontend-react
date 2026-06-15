@@ -11,16 +11,14 @@ import { useCommand } from '../../hookhoc';
 import { TranslateFn, useLocalize, useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp';
 import { usePaperBgColor } from '../../theme';
-import type { IPageProps } from '../core';
-import { AdapterContext, resolveFieldRenderer } from '../metadata/registry';
 
+import type { IPageProps } from '../core';
 import type { FieldRendererMap } from './fieldRenderers';
 
 
 export type { FieldRendererMap, IFieldRenderer } from './fieldRenderers';
 export { AvatarFieldRenderer, BadgeFieldRenderer } from './fieldRenderers';
 export type { BadgeFieldRendererProps } from './fieldRenderers';
-
 
 export type ResourceListCommandAction = {
 	label: string,
@@ -52,68 +50,12 @@ export class ResourceListTemplateProps implements IPageProps<ResourceListRuntime
 	}
 }
 
-/** Serializable JSON props as authored in page metadata. Action values are command names. */
-export type ResourceListJsonProps = {
-	schemaName: string,
-	translationNs?: string,
-	linkField?: string,
-	fieldAsLink?: string,
-	fieldAsId?: string,
-	fieldRenderer?: Record<string, { renderer: string } & Record<string, unknown>>,
-	standardActions: {
-		createEnabled?: boolean,
-		search: string,
-		archive?: string,
-		delete?: string,
-		updateSave?: string,
-	},
-	extraActions?: ResourceListCommandAction[],
-};
-
-export function adaptResourceListProps(
-	json: Record<string, unknown> | undefined,
-	ctx: AdapterContext,
-): ResourceListTemplateProps {
-	const props = (json ?? {}) as ResourceListJsonProps;
-	return new ResourceListTemplateProps({
-		schemaName: props.schemaName,
-		translationNs: props.translationNs ?? ctx.translationNs ?? 'common',
-		searchCommand: props.standardActions.search,
-		createEnabled: props.standardActions.createEnabled,
-		deleteCommand: props.standardActions.delete,
-		archiveCommand: props.standardActions.archive,
-		updateSaveCommand: props.standardActions.updateSave,
-		extraActions: props.extraActions,
-		linkField: props.linkField,
-		fieldAsLink: props.fieldAsLink,
-		fieldAsId: props.fieldAsId,
-		fieldRenderer: resolveRendererMap(props.fieldRenderer),
-	});
-}
-
-function resolveRendererMap(
-	config?: Record<string, { renderer: string } & Record<string, unknown>>,
-): FieldRendererMap | undefined {
-	if (!config) {
-		return undefined;
-	}
-	const result: FieldRendererMap = {};
-	for (const [field, entry] of Object.entries(config)) {
-		const renderer = resolveFieldRenderer(entry.renderer, entry);
-		if (renderer) {
-			result[field] = renderer;
-		}
-	}
-	return result;
-}
-
 export type ResourceListProps = {
 	/** Strongly-typed page params, passed as-is from `ResourceListTemplateProps.params`. */
 	params: ResourceListRuntimeParams,
 	/** View-engine page segment (e.g. `users`); detail URLs are `/:orgSlug/:moduleSlug/{routePath}/:id`. */
 	routePath: string,
 };
-
 
 export const ResourceList = React.memo(ResourceListView);
 

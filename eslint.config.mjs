@@ -77,7 +77,7 @@ export default defineConfig([
 		languageOptions: {
 			parser: parserTs,
 			parserOptions: {
-				project: ['./tsconfig.json'],
+				// project: ['./tsconfig.json'], // Commented out to avoid full project build in every save.
 				ecmaVersion: 'latest',
 				sourceType: 'module',
 			},
@@ -150,7 +150,7 @@ export default defineConfig([
 			},
 			'import/resolver': {
 				node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
-				typescript: { alwaysTryTypes: true },
+				typescript: { alwaysTryTypes: false },
 			},
 		},
 	},
@@ -202,8 +202,5 @@ export default defineConfig([
 			'**/coverage/',
 			'**/public/',
 		],
-		settings: {
-			'import/resolver': { typescript: { alwaysTryTypes: true } },
-		},
 	},
 ]);

@@ -1,12 +1,11 @@
 import React from 'react';
 
-import type { MetadataNode } from '../metadata/types';
+import type { ComponentNode } from '../metadata/types';
 
 import type {
 	LinkSpec, OwnPropertySection, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './ResourceDetail';
-
 
 export type ResourceUpdateContextValue = {
 	commands: ResourceDetailStandardActionCommands,
@@ -22,7 +21,7 @@ export type ResourceUpdateContextValue = {
 	titleLvl2?: SchemaFieldSpec,
 	titleLvl3?: LinkSpec,
 	blocks: OwnPropertySection[],
-	childrenNodes?: MetadataNode[],
+	childrenNodes?: ComponentNode[],
 };
 
 export const ResourceUpdateContext = React.createContext<ResourceUpdateContextValue | undefined>(undefined);

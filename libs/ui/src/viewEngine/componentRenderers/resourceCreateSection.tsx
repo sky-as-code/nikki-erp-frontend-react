@@ -1,8 +1,8 @@
 import { Collapse, Stack } from '@mantine/core';
 import React from 'react';
 
-import type { ComponentRenderContext, IComponentRenderer } from './IComponentRenderer';
-import { RenderComponentTree } from './renderComponent';
+import type { IComponentRenderer } from './IComponentRenderer';
+import { MetaComponent } from './renderComponent';
 import { useCrudFormRuntime } from '../../components/form';
 import classes from '../templates/ResourceDetail.module.css';
 import { ResourceCreateActionBar } from '../templates/resourceCreateParts';
@@ -21,14 +21,13 @@ type ResourceCreateSectionProps = {
 
 export const resourceCreateSectionRenderer: IComponentRenderer = {
 	type: RESOURCE_CREATE_SECTION,
-	render(node, ctx) {
-		return <ResourceCreateSection node={node} ctx={ctx} />;
+	render(node) {
+		return <ResourceCreateSection node={node} />;
 	},
 };
 
-function ResourceCreateSection({ node, ctx }: {
+function ResourceCreateSection({ node }: {
 	node: ComponentNode,
-	ctx: ComponentRenderContext,
 }): React.ReactNode {
 	const props = (node.props ?? {}) as ResourceCreateSectionProps;
 	const [expanded, setExpanded] = React.useState(props.expanded ?? true);
@@ -50,7 +49,7 @@ function ResourceCreateSection({ node, ctx }: {
 				className={classes.containerInlineSize}
 			>
 				<div className={classes.formBlockWrapper}>
-					<RenderComponentTree nodes={node.children} ctx={ctx.ctx} />
+					<MetaComponent node={node.children} />
 				</div>
 			</Collapse>
 		</Stack>

@@ -1,7 +1,7 @@
 import React from 'react';
 
-import type { ComponentRenderContext, IComponentRenderer } from './IComponentRenderer';
-import { RenderComponentTree } from './renderComponent';
+import type { IComponentRenderer } from './IComponentRenderer';
+import { MetaComponent } from './renderComponent';
 import { ResourceFormViewProvider } from './resourceFormViewContext';
 import { CrudFormProvider, FormStyleProvider, FormVariant } from '../../components/form';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from '../templates/ResourceDetailProvider';
@@ -19,12 +19,12 @@ type ResourceFormProps = {
 
 export const resourceFormRenderer: IComponentRenderer = {
 	type: RESOURCE_FORM,
-	render(node, ctx) {
-		return <ResourceForm node={node} ctx={ctx} />;
+	render(node) {
+		return <ResourceForm node={node} />;
 	},
 };
 
-function ResourceForm({ node, ctx }: { node: ComponentNode, ctx: ComponentRenderContext }): React.ReactNode {
+function ResourceForm({ node }: { node: ComponentNode }): React.ReactNode {
 	const { schemaPack } = useResourceDetailContext();
 	const { resource, isWriting, onSubmit } = useResourceUpdateContext();
 	const localize = useLocalize(useResourceDetailTranslationNs());
@@ -47,7 +47,7 @@ function ResourceForm({ node, ctx }: { node: ComponentNode, ctx: ComponentRender
 				onSubmit={onSubmit}
 			>
 				<ResourceFormViewProvider value={{ updateMode, setUpdateMode }}>
-					<RenderComponentTree nodes={node.children} ctx={ctx.ctx} />
+					<MetaComponent node={node.children} />
 				</ResourceFormViewProvider>
 			</CrudFormProvider>
 		</FormStyleProvider>

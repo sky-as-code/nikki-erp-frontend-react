@@ -1,7 +1,7 @@
 import React from 'react';
 
-import type { ComponentRenderContext, IComponentRenderer } from './IComponentRenderer';
-import { RenderComponentTree } from './renderComponent';
+import type { IComponentRenderer } from './IComponentRenderer';
+import { MetaComponent } from './renderComponent';
 import { CrudFormProvider, FormStyleProvider } from '../../components/form';
 import { useLocalize } from '../../i18n';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from '../templates/ResourceDetailProvider';
@@ -14,12 +14,12 @@ export const RESOURCE_CREATE_FORM = 'resource_create__form';
 
 export const resourceCreateFormRenderer: IComponentRenderer = {
 	type: RESOURCE_CREATE_FORM,
-	render(node, ctx) {
-		return <ResourceCreateForm node={node} ctx={ctx} />;
+	render(node) {
+		return <ResourceCreateForm node={node} />;
 	},
 };
 
-function ResourceCreateForm({ node, ctx }: { node: ComponentNode, ctx: ComponentRenderContext }): React.ReactNode {
+function ResourceCreateForm({ node }: { node: ComponentNode }): React.ReactNode {
 	const { schemaPack } = useResourceDetailContext();
 	const { onSubmit, isSubmitting } = useResourceCreateContext();
 	const localize = useLocalize(useResourceDetailTranslationNs());
@@ -38,7 +38,7 @@ function ResourceCreateForm({ node, ctx }: { node: ComponentNode, ctx: Component
 				isSubmitting={isSubmitting}
 				onSubmit={onSubmit}
 			>
-				<RenderComponentTree nodes={node.children} ctx={ctx.ctx} />
+				<MetaComponent node={node.children} />
 			</CrudFormProvider>
 		</FormStyleProvider>
 	);

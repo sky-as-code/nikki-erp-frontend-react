@@ -1,27 +1,24 @@
 import type { IPageProps, RenderResult } from '../core';
-import type { AdapterContext } from '../metadata/registry';
-import type { MetadataNode } from '../metadata/types';
+import type { ComponentNode } from '../metadata/types';
 
 
 /** Runtime data handed to a page template alongside its typed props. */
 export type PageRenderRuntime = {
 	routePath: string,
-	ctx: AdapterContext,
-	childrenNodes?: MetadataNode[],
+	childrenNodes?: ComponentNode[],
 };
 
 /**
  * Engine-agnostic page template descriptor stored in the page template registry.
  * `createProps` adapts serializable JSON props into a strongly-typed IPageProps
  * instance; `render` turns that instance into a RenderResult. The metadata JSON,
- * this registry, and the renderPage signature stay stable across rendering engines.
+ * this registry, and the MetaPage signature stay stable across rendering engines.
  */
 export interface IPageTemplate<TProps extends IPageProps = IPageProps> {
 	readonly id: string,
 	createProps(
-		json: Record<string, unknown> | undefined,
-		ctx: AdapterContext,
-		childrenNodes?: MetadataNode[],
+		json: unknown,
+		childrenNodes?: ComponentNode[],
 	): TProps,
 	render(props: TProps, runtime: PageRenderRuntime): RenderResult,
 }
