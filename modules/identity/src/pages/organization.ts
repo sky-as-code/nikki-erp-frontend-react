@@ -1,34 +1,27 @@
+import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	PageNode, RESOURCE_SPLIT_VIEW_TEMPLATE, resolveFieldRendererMap, ResourceDetailTemplateProps,
-	ResourceListTemplateProps, ResourceSplitViewTemplateProps,
-} from '@nikkierp/ui/viewEngine';
+	resourceDetailProps, resourceListProps, resourceSplitViewProps,
+} from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { OrganizationCommands } from '../features/organization/commands';
 
 
-export function registerOrganizationPages(): PageNode[] {
-	return [createOrganizationSplitViewPage()];
-}
-
-function createOrganizationSplitViewPage(): PageNode {
-	return {
-		type: 'page',
-		routePath: 'organizations',
-		template: RESOURCE_SPLIT_VIEW_TEMPLATE,
-		props: createOrganizationSplitViewProps(),
-	};
-}
-
-function createOrganizationSplitViewProps(): ResourceSplitViewTemplateProps {
-	return new ResourceSplitViewTemplateProps({
-		primaryProps: createOrganizationListProps(),
-		secondaryProps: createOrganizationDetailProps(),
+export function buildOrganizationPages(): PageNode[] {
+	const splitView = resourceSplitViewProps({
+		primary: buildOrganizationListProps(),
+		secondary: buildOrganizationDetailProps(),
 	});
+
+	return [definePage({
+		routePath: 'organizations',
+		template: splitView.template,
+		props: splitView.props,
+	})];
 }
 
-function createOrganizationListProps(): ResourceListTemplateProps {
-	return new ResourceListTemplateProps({
+function buildOrganizationListProps() {
+	return resourceListProps({
 		schemaName: c.ORGANIZATION_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		linkField: 'id',
@@ -45,7 +38,7 @@ function createOrganizationListProps(): ResourceListTemplateProps {
 				requireSelection: true,
 			},
 		],
-		fieldRenderer: resolveFieldRendererMap({
+		fieldRenderers: {
 			status: {
 				renderer: 'badge',
 				prefix: 'status.',
@@ -54,12 +47,12 @@ function createOrganizationListProps(): ResourceListTemplateProps {
 					archived: 'gray',
 				},
 			},
-		}),
+		},
 	});
 }
 
-function createOrganizationDetailProps(): ResourceDetailTemplateProps {
-	return new ResourceDetailTemplateProps({
+function buildOrganizationDetailProps() {
+	return resourceDetailProps({
 		schemaName: c.ORGANIZATION_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'display_name' },

@@ -1,34 +1,27 @@
+import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	PageNode, RESOURCE_SPLIT_VIEW_TEMPLATE, resolveFieldRendererMap, ResourceDetailTemplateProps,
-	ResourceListTemplateProps, ResourceSplitViewTemplateProps,
-} from '@nikkierp/ui/viewEngine';
+	resourceDetailProps, resourceListProps, resourceSplitViewProps,
+} from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { UserCommands } from '../features/user/commands';
 
 
-export function registerUserPages(): PageNode[] {
-	return [createUserSplitViewPage()];
-}
-
-function createUserSplitViewPage(): PageNode {
-	return {
-		type: 'page',
-		routePath: 'users',
-		template: RESOURCE_SPLIT_VIEW_TEMPLATE,
-		props: createUserSplitViewProps(),
-	};
-}
-
-function createUserSplitViewProps(): ResourceSplitViewTemplateProps {
-	return new ResourceSplitViewTemplateProps({
-		primaryProps: createUserListProps(),
-		secondaryProps: createUserDetailProps(),
+export function buildUserPages(): PageNode[] {
+	const splitView = resourceSplitViewProps({
+		primary: buildUserListProps(),
+		secondary: buildUserDetailProps(),
 	});
+
+	return [definePage({
+		routePath: 'users',
+		template: splitView.template,
+		props: splitView.props,
+	})];
 }
 
-function createUserListProps(): ResourceListTemplateProps {
-	return new ResourceListTemplateProps({
+function buildUserListProps() {
+	return resourceListProps({
 		schemaName: c.USER_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		linkField: 'id',
@@ -41,7 +34,7 @@ function createUserListProps(): ResourceListTemplateProps {
 			{ label: 'action.suspend', command: UserCommands.SUSPEND, supportMultiple: true, requireSelection: true },
 			{ label: 'action.delete', command: UserCommands.DELETE, supportMultiple: true, requireSelection: true },
 		],
-		fieldRenderer: resolveFieldRendererMap({
+		fieldRenderers: {
 			avatar_url: { renderer: 'avatar' },
 			status: {
 				renderer: 'badge',
@@ -53,12 +46,12 @@ function createUserListProps(): ResourceListTemplateProps {
 					terminated: 'gray',
 				},
 			},
-		}),
+		},
 	});
 }
 
-function createUserDetailProps(): ResourceDetailTemplateProps {
-	return new ResourceDetailTemplateProps({
+function buildUserDetailProps() {
+	return resourceDetailProps({
 		schemaName: c.USER_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'display_name' },

@@ -1,6 +1,6 @@
-import { ICommandBus } from '@nikkierp/common/commandBus';
 import {
-	MicroAppBundle, MicroAppBundleInitFn, MicroAppBundleInitResult, MicroAppConfig, MicroAppMetadata, MicroAppSlug,
+	HostServices, MicroAppBundle, MicroAppBundleInitFn, MicroAppBundleInitResult, MicroAppConfig,
+	MicroAppMetadata, MicroAppSlug,
 } from '@nikkierp/ui/microApp';
 import { ImportResult } from '@nikkierp/ui/types';
 
@@ -25,6 +25,7 @@ export class MicroAppManager {
 	private readonly downloadedPacks: Map<MicroAppSlug, MicroAppPack | Promise<MicroAppPack>> = new Map();
 	private readonly initResults: Map<MicroAppSlug, MicroAppBundleInitResult> = new Map();
 	private readonly retryOptions: RetryOptions;
+	private hostServices?: HostServices;
 
 	constructor(
 		apps: MicroAppMetadata[],
@@ -37,6 +38,15 @@ export class MicroAppManager {
 			maxDelayMs: 10_000,
 			...retryOptions,
 		};
+	}
+
+	/**
+	 * Supplies the host-owned services handed to every micro-app's `init`.
+	 * Set once by the Shell right after construction -- it cannot be a
+	 * constructor argument because the command bus is built from this manager.
+	 */
+	public setHostServices(host: HostServices): void {
+		this.hostServices = host;
 	}
 
 	public getMicroApp(slug: string): MicroAppPack | undefined {
@@ -55,16 +65,18 @@ export class MicroAppManager {
 	 * Initializes a downloaded pack exactly once, caching the result so repeated
 	 * calls (e.g. lazy command loading then mounting) don't re-run `init`.
 	 */
-	public initPack(slug: string, pack: MicroAppPack, commandBus: ICommandBus): MicroAppBundleInitResult {
+	public initPack(slug: string, pack: MicroAppPack): MicroAppBundleInitResult {
 		const cached = this.initResults.get(slug);
 		if (cached) {
 			return cached;
 		}
+		const host = this.requireHostServices();
 		const result = pack.init({
 			htmlTag: pack.metadata.htmlTag,
 			config: pack.config,
 			registerReducer: registerReducerFactory(slug),
-			commandBus,
+			commandBus: host.commandBus,
+			host,
 		});
 		this.initResults.set(slug, result);
 		return result;
@@ -74,9 +86,16 @@ export class MicroAppManager {
 	 * Downloads (if needed) and initializes a micro-app so its command handlers
 	 * are subscribed. Used by the command bus for lazy module loading.
 	 */
-	public async ensureLoaded(slug: string, commandBus: ICommandBus): Promise<void> {
+	public async ensureLoaded(slug: string): Promise<void> {
 		const pack = await this.fetchMicroApp(slug);
-		this.initPack(slug, pack, commandBus);
+		this.initPack(slug, pack);
+	}
+
+	private requireHostServices(): HostServices {
+		if (!this.hostServices) {
+			throw new Error('MicroAppManager.setHostServices() must be called before initializing a micro-app.');
+		}
+		return this.hostServices;
 	}
 
 	/**

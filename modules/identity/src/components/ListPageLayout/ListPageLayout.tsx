@@ -10,29 +10,29 @@ import { ListActionListPage } from '../ListActionBar';
  * displayed and are driven by props on `<ListPageLayout>` itself.
  */
 export type ListPageLayoutActions = {
-	showImport?: boolean;
-	disableImport?: boolean;
-	onImport?: () => void;
-	importLabel?: React.ReactNode;
+	showImport?: boolean,
+	disableImport?: boolean,
+	onImport?: () => void,
+	importLabel?: React.ReactNode,
 };
 
 export type ListPageLayoutRenderApi = {
 	setActions: (
 		actions: ListPageLayoutActions | ((prev: ListPageLayoutActions) => ListPageLayoutActions),
-	) => void;
+	) => void,
 };
 
 export type ListPageLayoutProps = {
 	/** Page title shown in the breadcrumbs area. */
-	title: React.ReactNode;
+	title: React.ReactNode,
 	/** Optional placeholder for the search input. When omitted, the search input is hidden. */
-	searchPlaceholder?: string;
+	searchPlaceholder?: string,
 	/** Click handler for the Create button. Pass `undefined` to disable. */
-	onCreate?: () => void;
+	onCreate?: () => void,
 	/** Click handler for the Refresh button. Always displayed. */
-	onRefresh: () => void;
+	onRefresh: () => void,
 	/** Render the body of the list page. Receives an API to toggle the Import action. */
-	children: (api: ListPageLayoutRenderApi) => React.ReactNode;
+	children: (api: ListPageLayoutRenderApi) => React.ReactNode,
 };
 
 const DEFAULT_ACTIONS: ListPageLayoutActions = {

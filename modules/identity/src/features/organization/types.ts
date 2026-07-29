@@ -2,15 +2,15 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 
 
 export type Organization = {
-	id: string;
-	address?: string;
-	display_name?: string;
-	legal_name?: string;
-	phone_number?: string;
-	slug?: string;
-	etag?: string;
-	created_at?: string;
-	updated_at?: string;
+	id: string,
+	address?: string,
+	display_name?: string,
+	legal_name?: string,
+	phone_number?: string,
+	slug?: string,
+	etag?: string,
+	created_at?: string,
+	updated_at?: string,
 };
 
 export type CreateOrgRequest = Organization & Record<string, any>;

@@ -4,7 +4,7 @@ import {
 	defineWebComponent, initMicroAppStateContext, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, useMicroAppDispatch,
 } from '@nikkierp/ui/microApp';
-import { ViewEngineRouter } from '@nikkierp/ui/viewEngine';
+import { ViewEngineRouter } from '@nikkierp/viewkit-mantine';
 import React from 'react';
 
 import * as c from './constants';
@@ -12,9 +12,9 @@ import { registerGroupCommands } from './features/group/commands';
 import { registerOrganizationCommands } from './features/organization/commands';
 import { registerUserCommands } from './features/user/commands';
 import { useIdentityMenuBarItems } from './hooks';
-import { registerGroupPages } from './pages/group';
-import { registerOrganizationPages } from './pages/organization';
-import { registerUserPages } from './pages/user';
+import { buildGroupPages } from './pages/group';
+import { buildOrganizationPages } from './pages/organization';
+import { buildUserPages } from './pages/user';
 
 
 function Main(props: MicroAppProps) {
@@ -26,7 +26,7 @@ function Main(props: MicroAppProps) {
 }
 
 const bundle: MicroAppBundle = {
-	init({ htmlTag, registerReducer, commandBus }) {
+	init({ htmlTag, registerReducer, host }) {
 		const domType = MicroAppDomType.SHARED;
 		defineWebComponent(Main, { htmlTag, domType });
 
@@ -34,9 +34,9 @@ const bundle: MicroAppBundle = {
 		initMicroAppStateContext(result);
 
 		registerModelSchemas();
-		registerUserCommands(commandBus);
-		registerGroupCommands(commandBus);
-		registerOrganizationCommands(commandBus);
+		registerUserCommands(host.commandBus);
+		registerGroupCommands(host.commandBus);
+		registerOrganizationCommands(host.commandBus);
 
 		return { domType };
 	},
@@ -51,15 +51,15 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	useSetMenuBarItems(menuBarItems, dispatch);
 
 	const pages = React.useMemo(() => [
-		...registerUserPages(),
-		...registerGroupPages(),
-		...registerOrganizationPages(),
+		...buildUserPages(),
+		...buildGroupPages(),
+		...buildOrganizationPages(),
 	], []);
 
 	return (
 		<ViewEngineRouter
 			microAppProps={props}
-			engineProps={{ pages }}
+			engineProps={{ pages, indexElement: <h1>Identity</h1> }}
 		/>
 	);
 }

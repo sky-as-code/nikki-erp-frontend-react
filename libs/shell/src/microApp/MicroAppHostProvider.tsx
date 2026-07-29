@@ -1,7 +1,10 @@
 import { ICommandBus } from '@nikkierp/common/commandBus';
 import {
-	MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps, MicroAppRoutingOptions, MicroAppApiOptions,
+	HostServices, MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps,
+	MicroAppRoutingOptions, MicroAppApiOptions,
 } from '@nikkierp/ui/microApp';
+import { createViewEngine } from '@nikkierp/viewengine/engine';
+import { contributeMantineViewKit } from '@nikkierp/viewkit-mantine';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useInRouterContext, useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
 
@@ -10,10 +13,12 @@ import { ensureAccessToken } from '../authenticate/authService';
 import { createShellCommandBus } from '../commandBus';
 import { useShellEnvVars } from '../config';
 
+import type { IViewEngine } from '@nikkierp/viewengine/core';
+
 
 type MicroAppHostContextValue = {
 	manager: MicroAppManager,
-	commandBus: ICommandBus,
+	host: HostServices,
 };
 
 const MicroAppHostContext = createContext<MicroAppHostContextValue | null>(null);
@@ -28,16 +33,27 @@ function useMicroAppHostContext(): MicroAppHostContextValue {
 
 export const useMicroAppManager = () => useMicroAppHostContext().manager;
 
-export const useShellCommandBus = (): ICommandBus => useMicroAppHostContext().commandBus;
+export const useShellCommandBus = (): ICommandBus => useMicroAppHostContext().host.commandBus;
+
+export const useShellViewEngine = (): IViewEngine => useMicroAppHostContext().host.viewEngine;
 
 export type MicroAppHostProviderProps = React.PropsWithChildren & {
 	microApps: MicroAppMetadata[];
 };
 
+/**
+ * Creates the host-owned services exactly once. Everything here is an instance
+ * the Shell hands to micro-apps through `init`, which is what makes a
+ * separately-built bundle able to contribute to the same registries.
+ */
 export function MicroAppHostProvider({ children, microApps }: MicroAppHostProviderProps): React.ReactNode {
 	const [hostValue] = useState<MicroAppHostContextValue>(() => {
 		const manager = new MicroAppManager(microApps);
-		return { manager, commandBus: createShellCommandBus(manager) };
+		const viewEngine = createViewEngine({ instanceId: 'shell' });
+		contributeMantineViewKit(viewEngine);
+		const host: HostServices = { commandBus: createShellCommandBus(manager), viewEngine };
+		manager.setHostServices(host);
+		return { manager, host };
 	});
 	return (
 		<MicroAppHostContext.Provider value={hostValue} >
@@ -118,7 +134,7 @@ function useFetchMicroAppPack(
 	setError: (error: Error | null) => void,
 ): MicroAppDomType | null {
 	const [domType, setDomType] = useState<MicroAppDomType | null>(null);
-	const { manager, commandBus } = useMicroAppHostContext();
+	const { manager } = useMicroAppHostContext();
 
 	useEffect(() => {
 		let isMounted = true;
@@ -127,7 +143,7 @@ function useFetchMicroAppPack(
 		manager.fetchMicroApp(slug).then((pack) => {
 			if (isMounted) {
 				try {
-					const result = manager.initPack(slug, pack, commandBus);
+					const result = manager.initPack(slug, pack);
 					setDomType(result.domType);
 					setMicroAppPack(pack);
 				}
@@ -146,12 +162,14 @@ function useFetchMicroAppPack(
 		return () => {
 			isMounted = false;
 		};
-	}, [slug, manager, commandBus, setMicroAppPack, setError]);
+	}, [slug, manager, setMicroAppPack, setError]);
 
 	return domType;
 }
 
-type UseSetupMicroAppOptions = Omit<MicroAppProps, 'registerReducer' | 'routing' | 'api' | 'commandBus'> & {
+type UseSetupMicroAppOptions = Omit<
+	MicroAppProps, 'registerReducer' | 'routing' | 'api' | 'commandBus' | 'viewEngine'
+> & {
 	basePath?: string;
 };
 
@@ -163,7 +181,7 @@ function useSetupMicroApp(
 	const ref = useRef<IMicroAppWebComponent | null>(null);
 	const routingOpts = useRoutingOpts(opts.basePath);
 	const apiOpts = useApiOptions();
-	const { commandBus } = useMicroAppHostContext();
+	const { host } = useMicroAppHostContext();
 
 	useEffect(() => {
 		if (ref.current && microAppPack) {
@@ -171,12 +189,13 @@ function useSetupMicroApp(
 				config: microAppPack.config,
 				routing: routingOpts,
 				api: apiOpts,
-				commandBus,
+				commandBus: host.commandBus,
+				viewEngine: host.viewEngine,
 				...opts,
 			};
 			forceRerender(n => n + 1);
 		}
-	}, [microAppPack, ref.current, routingOpts.location, commandBus]);
+	}, [microAppPack, ref.current, routingOpts.location, host]);
 
 	return ref;
 }

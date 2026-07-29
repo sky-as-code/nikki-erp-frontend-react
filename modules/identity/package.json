@@ -22,6 +22,8 @@
 		"@nikkierp/common": "workspace:*",
 		"@nikkierp/shell": "workspace:*",
 		"@nikkierp/ui": "workspace:*",
+		"@nikkierp/viewengine": "workspace:*",
+		"@nikkierp/viewkit-mantine": "workspace:*",
 		"@tabler/icons-react": "~3.44.0",
 		"chart.js": "~4.5.1",
 		"clsx": "~2.1.1",

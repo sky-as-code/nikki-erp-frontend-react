@@ -7,48 +7,48 @@ import { useNavigate } from 'react-router';
 
 
 export type FormLayoutActionButton = {
-	key: string;
-	label: React.ReactNode;
-	icon?: React.ReactNode;
-	onClick: () => void;
-	variant?: 'filled' | 'outline' | 'light' | 'default' | 'subtle' | 'transparent';
-	color?: string;
-	disabled?: boolean;
-	loading?: boolean;
-	type?: 'button' | 'submit' | 'reset';
+	key: string,
+	label: React.ReactNode,
+	icon?: React.ReactNode,
+	onClick: () => void,
+	variant?: 'filled' | 'outline' | 'light' | 'default' | 'subtle' | 'transparent',
+	color?: string,
+	disabled?: boolean,
+	loading?: boolean,
+	type?: 'button' | 'submit' | 'reset',
 };
 
 export type FormLayoutActions = {
-	showBack?: boolean;
-	backLabel?: React.ReactNode;
-	onBack?: () => void;
+	showBack?: boolean,
+	backLabel?: React.ReactNode,
+	onBack?: () => void,
 
-	showSave?: boolean;
-	saveLabel?: React.ReactNode;
-	disableSave?: boolean;
-	isSaving?: boolean;
+	showSave?: boolean,
+	saveLabel?: React.ReactNode,
+	disableSave?: boolean,
+	isSaving?: boolean,
 
-	showDelete?: boolean;
-	deleteLabel?: React.ReactNode;
-	disableDelete?: boolean;
-	onDelete?: () => void;
+	showDelete?: boolean,
+	deleteLabel?: React.ReactNode,
+	disableDelete?: boolean,
+	onDelete?: () => void,
 	deleteConfirm?: {
-		title?: React.ReactNode;
-		message?: React.ReactNode;
-		confirmLabel?: React.ReactNode;
-	};
+		title?: React.ReactNode,
+		message?: React.ReactNode,
+		confirmLabel?: React.ReactNode,
+	},
 
-	extraButtons?: FormLayoutActionButton[];
+	extraButtons?: FormLayoutActionButton[],
 };
 
 export type FormLayoutRenderApi = {
 	setActions: (
 		actions: FormLayoutActions | ((prev: FormLayoutActions) => FormLayoutActions),
-	) => void;
+	) => void,
 };
 
 export type FormLayoutProps = {
-	children: (api: FormLayoutRenderApi) => React.ReactNode;
+	children: (api: FormLayoutRenderApi) => React.ReactNode,
 };
 
 const DEFAULT_ACTIONS: FormLayoutActions = {

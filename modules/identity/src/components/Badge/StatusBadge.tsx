@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 
 export type StatusConfig = {
-	color: MantineColor;
-	translationKey: string;
+	color: MantineColor,
+	translationKey: string,
 };
 
 interface StatusBadgeProps {

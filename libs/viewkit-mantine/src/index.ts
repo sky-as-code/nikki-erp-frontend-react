@@ -1,0 +1,10 @@
+export * from './ids';
+export * from './props';
+export { mantineViewKit } from './kit';
+export { contributeMantineViewKit } from './contributeMantineViewKit';
+export { ViewEngineRouter } from './ViewEngineRouter';
+export type { ViewEngineRouterProps } from './ViewEngineRouter';
+export { ResourceList } from './pages/resourceList/ResourceList';
+export { ResourceDetail } from './pages/resourceDetail/ResourceDetail';
+export { SplitViewBody } from './pages/resourceSplitView/SplitViewBody';
+export { SplitLayout } from './pages/resourceSplitView/SplitLayout';

@@ -1,6 +1,6 @@
 import { AuthorizeDispatch, resourceActions, selectCreateResource } from '@/appState';
 import { useUIState } from '@nikkierp/shell/contexts';
-import { useSubmit } from '@nikkierp/ui/hooks';
+import { useSubmit } from '@nikkierp/ui/hookhoc';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';

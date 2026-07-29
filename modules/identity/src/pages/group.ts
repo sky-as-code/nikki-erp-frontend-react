@@ -1,34 +1,27 @@
+import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	PageNode, RESOURCE_SPLIT_VIEW_TEMPLATE, ResourceDetailTemplateProps, ResourceListTemplateProps,
-	ResourceSplitViewTemplateProps,
-} from '@nikkierp/ui/viewEngine';
+	resourceDetailProps, resourceListProps, resourceSplitViewProps,
+} from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { GroupCommands } from '../features/group/commands';
 
 
-export function registerGroupPages(): PageNode[] {
-	return [createGroupSplitViewPage()];
-}
-
-function createGroupSplitViewPage(): PageNode {
-	return {
-		type: 'page',
-		routePath: 'groups',
-		template: RESOURCE_SPLIT_VIEW_TEMPLATE,
-		props: createGroupSplitViewProps(),
-	};
-}
-
-function createGroupSplitViewProps(): ResourceSplitViewTemplateProps {
-	return new ResourceSplitViewTemplateProps({
-		primaryProps: createGroupListProps(),
-		secondaryProps: createGroupDetailProps(),
+export function buildGroupPages(): PageNode[] {
+	const splitView = resourceSplitViewProps({
+		primary: buildGroupListProps(),
+		secondary: buildGroupDetailProps(),
 	});
+
+	return [definePage({
+		routePath: 'groups',
+		template: splitView.template,
+		props: splitView.props,
+	})];
 }
 
-function createGroupListProps(): ResourceListTemplateProps {
-	return new ResourceListTemplateProps({
+function buildGroupListProps() {
+	return resourceListProps({
 		schemaName: c.GROUP_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		linkField: 'id',
@@ -42,8 +35,8 @@ function createGroupListProps(): ResourceListTemplateProps {
 	});
 }
 
-function createGroupDetailProps(): ResourceDetailTemplateProps {
-	return new ResourceDetailTemplateProps({
+function buildGroupDetailProps() {
+	return resourceDetailProps({
 		schemaName: c.GROUP_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'name' },

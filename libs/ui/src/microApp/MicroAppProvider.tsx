@@ -1,5 +1,6 @@
 import { ICommandBus } from '@nikkierp/common/commandBus';
 import { RequestMaker } from '@nikkierp/common/request';
+import { ViewEngineProvider } from '@nikkierp/viewengine/render';
 import React from 'react';
 
 import { MicroAppStateProvider } from './MicroAppStateProvider';
@@ -48,14 +49,16 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = (props) => {
 
 	return (
 		<CommandBusContext.Provider value={props.commandBus}>
-			<MicroAppContext.Provider value={{
-				api: props.api,
-				routing: props.routing,
-			}}>
-				<MicroAppStateProvider>
-					{props.children}
-				</MicroAppStateProvider>
-			</MicroAppContext.Provider>
+			<ViewEngineProvider engine={props.viewEngine}>
+				<MicroAppContext.Provider value={{
+					api: props.api,
+					routing: props.routing,
+				}}>
+					<MicroAppStateProvider>
+						{props.children}
+					</MicroAppStateProvider>
+				</MicroAppContext.Provider>
+			</ViewEngineProvider>
 		</CommandBusContext.Provider>
 	);
 };

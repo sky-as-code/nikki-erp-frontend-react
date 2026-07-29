@@ -13,17 +13,17 @@ import { MicroAppManager } from '../microApp/MicroAppManager';
  */
 export function createShellCommandBus(manager: MicroAppManager): ICommandBus {
 	const bus = new CommandBus();
-	bus.setModuleLoader(makeModuleLoader(manager, bus));
+	bus.setModuleLoader(makeModuleLoader(manager));
 	registerShellCommands(bus);
 	return bus;
 }
 
-function makeModuleLoader(manager: MicroAppManager, bus: ICommandBus): ModuleLoader {
+function makeModuleLoader(manager: MicroAppManager): ModuleLoader {
 	return async function loadModule(moduleName: string) {
 		if (!manager.isRegistered(moduleName)) {
 			return 'not_registered';
 		}
-		await manager.ensureLoaded(moduleName, bus);
+		await manager.ensureLoaded(moduleName);
 		return 'loaded';
 	};
 }

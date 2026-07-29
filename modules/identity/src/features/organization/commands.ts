@@ -1,7 +1,7 @@
 import { Command, CommandResponse, ICommandBus, ok } from '@nikkierp/common/commandBus';
 
-import * as t from './types';
 import * as svc from './orgService';
+import * as t from './types';
 import { IAM_MODULE, ORGANIZATION_SCHEMA_NAME } from '../../constants';
 
 

@@ -5,6 +5,21 @@ import { Location, Navigator } from 'react-router-dom';
 import { RegisterReducerFn } from '../microApp';
 import { ImportFn } from '../types/miscs';
 
+import type { IViewEngine } from '@nikkierp/viewengine/core';
+
+
+/**
+ * Everything the Shell owns and shares with every micro-app, in one bag.
+ *
+ * These must be *instances created by the host*, never module singletons: a
+ * separately-built micro-app bundle gets its own copy of any module it imports,
+ * so a singleton registry inside the bundle is invisible to the Shell.
+ */
+export type HostServices = {
+	commandBus: ICommandBus,
+	viewEngine: IViewEngine,
+};
+
 
 export type MicroAppShellProps = {
 	microApps: MicroAppMetadata[],
@@ -94,8 +109,15 @@ export type MicroAppBundleInitOptions = {
 	/**
 	 * The Shell-hosted command bus. Modules subscribe their command handlers here
 	 * synchronously during `init` so that lazy command resolution can find them.
+	 * Same object as `host.commandBus`; kept for backward compatibility.
 	 */
 	commandBus: ICommandBus;
+
+	/**
+	 * All host-owned services. A module registers its view contributions, command
+	 * handlers and schemas against these during `init`.
+	 */
+	host: HostServices,
 };
 
 export type MicroAppBundleInitResult = {
@@ -131,6 +153,8 @@ export type MicroAppProps = {
 	slug: string,
 	routing: MicroAppRoutingOptions,
 	commandBus: ICommandBus,
+	/** Host-owned view engine, provided to the subtree by `MicroAppProvider`. */
+	viewEngine: IViewEngine,
 };
 
 export type MicroAppRoutingOptions = {
