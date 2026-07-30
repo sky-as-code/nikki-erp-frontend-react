@@ -73,6 +73,7 @@ export class MicroAppManager {
 		const host = this.requireHostServices();
 		const result = pack.init({
 			htmlTag: pack.metadata.htmlTag,
+			slug,
 			config: pack.config,
 			registerReducer: registerReducerFactory(slug),
 			commandBus: host.commandBus,

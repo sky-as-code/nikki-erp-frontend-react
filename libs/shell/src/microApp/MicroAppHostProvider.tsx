@@ -1,4 +1,5 @@
 import { ICommandBus } from '@nikkierp/common/commandBus';
+import { createMenuRegistry, IMenuRegistry, MenuContribution, useMenuContribution } from '@nikkierp/ui/menu';
 import {
 	HostServices, MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps,
 	MicroAppRoutingOptions, MicroAppApiOptions,
@@ -37,8 +38,21 @@ export const useShellCommandBus = (): ICommandBus => useMicroAppHostContext().ho
 
 export const useShellViewEngine = (): IViewEngine => useMicroAppHostContext().host.viewEngine;
 
+export const useShellMenuRegistry = (): IMenuRegistry => useMicroAppHostContext().host.menuRegistry;
+
+/**
+ * The menu contributed by `slug`, re-rendering when that module registers.
+ *
+ * The one hook the Shell's menu bar should call: going through the host context is what
+ * guarantees it reads the *host's* registry rather than constructing its own, which would
+ * be invisible to every micro-app.
+ */
+export function useShellMenu(slug?: string | null): MenuContribution | undefined {
+	return useMenuContribution(useShellMenuRegistry(), slug);
+}
+
 export type MicroAppHostProviderProps = React.PropsWithChildren & {
-	microApps: MicroAppMetadata[];
+	microApps: MicroAppMetadata[],
 };
 
 /**
@@ -51,7 +65,10 @@ export function MicroAppHostProvider({ children, microApps }: MicroAppHostProvid
 		const manager = new MicroAppManager(microApps);
 		const viewEngine = createViewEngine({ instanceId: 'shell' });
 		contributeMantineViewKit(viewEngine);
-		const host: HostServices = { commandBus: createShellCommandBus(manager), viewEngine };
+		// The registry must exist before the bus: the shell.layout.* handlers close over it.
+		const menuRegistry = createMenuRegistry();
+		const commandBus = createShellCommandBus(manager, { menuRegistry });
+		const host: HostServices = { commandBus, viewEngine, menuRegistry };
 		manager.setHostServices(host);
 		return { manager, host };
 	});
@@ -75,10 +92,10 @@ export function LazyMicroWidget(props: LazyMicroWidgetProps): React.ReactNode {
 }
 
 type InternalLazyMicroAppProps = {
-	slug: string;
-	basePath?: string;
-	widgetName?: string;
-	fallback?: React.ReactNode;
+	slug: string,
+	basePath?: string,
+	widgetName?: string,
+	fallback?: React.ReactNode,
 };
 
 function InternalLazyMicroApp({ slug, basePath, widgetName, fallback }: InternalLazyMicroAppProps): React.ReactNode {
@@ -170,7 +187,7 @@ function useFetchMicroAppPack(
 type UseSetupMicroAppOptions = Omit<
 	MicroAppProps, 'registerReducer' | 'routing' | 'api' | 'commandBus' | 'viewEngine'
 > & {
-	basePath?: string;
+	basePath?: string,
 };
 
 function useSetupMicroApp(

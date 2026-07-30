@@ -1,6 +1,6 @@
 import { CommandBus, ICommandBus, ModuleLoader } from '@nikkierp/common/commandBus';
 
-import { registerShellCommands } from './registerShellCommands';
+import { registerShellCommands, ShellCommandDeps } from './registerShellCommands';
 import { MicroAppManager } from '../microApp/MicroAppManager';
 
 
@@ -11,10 +11,10 @@ import { MicroAppManager } from '../microApp/MicroAppManager';
  * micro-app (subscribing its handlers) before retrying the lookup. Shell-owned
  * command handlers are subscribed synchronously here.
  */
-export function createShellCommandBus(manager: MicroAppManager): ICommandBus {
+export function createShellCommandBus(manager: MicroAppManager, deps: ShellCommandDeps): ICommandBus {
 	const bus = new CommandBus();
 	bus.setModuleLoader(makeModuleLoader(manager));
-	registerShellCommands(bus);
+	registerShellCommands(bus, deps);
 	return bus;
 }
 
