@@ -1440,7 +1440,7 @@ function updateSearchGraphOrder(graph: dyn.SearchGraph | undefined, orderBy: dyn
 	const graphData = { ...(graph as Partial<dyn.SearchGraph> | undefined) };
 	if (orderBy.length === 0) {
 		delete graphData.order;
-		if (!graphData.condition && !graphData.and && !graphData.or) {
+		if (!graphData.if && !graphData.and && !graphData.or) {
 			return undefined;
 		}
 		return graphData as dyn.SearchGraph;
