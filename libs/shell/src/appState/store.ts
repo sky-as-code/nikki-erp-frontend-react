@@ -1,4 +1,3 @@
-import * as layout from '@nikkierp/ui/appState/layoutSlice';
 import * as routing from '@nikkierp/ui/appState/routingSlice';
 import { RegisterReducerFn } from '@nikkierp/ui/microApp';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
@@ -12,7 +11,6 @@ import * as userContext from '../userContext/userContextSlice';
 
 const localReducers = {
 	[auth.SLICE_NAME]: auth.reducer,
-	[layout.SLICE_NAME]: layout.reducer,
 	[routing.SLICE_NAME]: routing.reducer,
 	[shellConfig.SLICE_NAME]: shellConfig.reducer,
 	[erpModule.SLICE_NAME]: erpModule.reducer,

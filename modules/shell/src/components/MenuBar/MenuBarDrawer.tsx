@@ -18,13 +18,6 @@ export const MenuBarDrawer: React.FC = () => {
 	const themeModeModalRef = useRef<any>(null);
 	const { t } = useTranslation();
 
-	const handleItemClick = (link?: string) => {
-		if (link) {
-			navigate(link);
-		}
-		setDrawerOpened(false);
-	};
-
 	return (
 		<>
 			<Button variant='light' size='sm' px={'xs'} onClick={() => setDrawerOpened(!drawerOpened)}>
@@ -65,7 +58,7 @@ export const MenuBarDrawer: React.FC = () => {
 								{t('nikki.shell.menuBar.allApps')}
 							</Button>
 							<Divider my={8} />
-							<MenuBar mode='vertical' onItemClick={handleItemClick} />
+							<MenuBar mode='vertical' />
 						</Stack>
 					</Drawer.Body>
 				</Drawer.Content>

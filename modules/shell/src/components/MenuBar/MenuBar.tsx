@@ -1,6 +1,8 @@
 import { Button, ButtonProps, Group, Menu } from '@mantine/core';
-import { MenuBarItem, useMenuBarItems } from '@nikkierp/ui/appState';
+import { useShellMenu } from '@nikkierp/shell/microApp';
 import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { TranslateFn, useTranslate } from '@nikkierp/ui/i18n';
+import { MenuItem } from '@nikkierp/ui/menu';
 import { IconChevronDown, IconDots } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
@@ -20,48 +22,57 @@ const MAX_VISIBLE_HORIZONTAL_ITEMS = 5;
 export type MenuBarMode = 'horizontal' | 'vertical';
 
 export type MenuBarProps = {
-	mode?: MenuBarMode;
-	onItemClick?: (link?: string) => void;
+	mode?: MenuBarMode,
 };
 
 
+/**
+ * Renders the menu the *active* micro-app registered with the host menu registry.
+ *
+ * Items carry i18n keys rather than labels (registration happens in `init`, outside
+ * React), so every leaf is translated here at render time. Do not pre-map the tree:
+ * that allocates a new array per render for no benefit.
+ */
 export function MenuBar({ mode = 'horizontal' }: MenuBarProps): React.ReactNode {
-	const menuBarItems = useMenuBarItems();
 	const location = useLocation();
 	const { orgSlug, moduleSlug } = useActiveOrgModule();
-	const activeOrgSlug = orgSlug;
-	const pathPrefix = `/${activeOrgSlug}/${moduleSlug}`;
+	const menu = useShellMenu(moduleSlug);
+	const t = useTranslate(menu?.translationNs ?? 'common');
+	const pathPrefix = `/${orgSlug}/${moduleSlug}`;
 
 	const getPath = (link: string): string => getPathWithPrefix(link, pathPrefix);
+
+	// The active module has not registered a menu (not loaded yet, or contributes none).
+	if (!menu || menu.items.length === 0) {
+		return null;
+	}
 
 	if (mode === 'vertical') {
 		return (
 			<VerticalMenuBar
-				items={menuBarItems}
+				items={menu.items}
 				pathPrefix={pathPrefix}
 				currentPath={location.pathname}
+				t={t}
 			/>
 		);
 	}
 
-	// Horizontal mode (default)
-	const visibleItems = menuBarItems.slice(0, MAX_VISIBLE_HORIZONTAL_ITEMS);
-	const overflowItems = menuBarItems.slice(MAX_VISIBLE_HORIZONTAL_ITEMS);
-
 	return (
 		<Group gap='xs'>
-			{visibleItems.map((item: MenuBarItem) => (
+			{menu.items.slice(0, MAX_VISIBLE_HORIZONTAL_ITEMS).map((item: MenuItem) => (
 				item.items ? (
 					<NavMenu
-						key={item.label}
+						key={item.labelKey}
 						item={item}
 						currentPath={location.pathname}
 						pathPrefix={pathPrefix}
 						getPath={getPath}
+						t={t}
 					/>
 				) : (
 					<Button
-						key={item.label}
+						key={item.labelKey}
 						size='md'
 						px={'xs'}
 						{...buttonProps(
@@ -74,16 +85,17 @@ export function MenuBar({ mode = 'horizontal' }: MenuBarProps): React.ReactNode 
 						component={Link}
 						to={getPath(item.link ?? '/')}
 					>
-						{item.label}
+						{t(item.labelKey)}
 					</Button>
 				)
 			))}
-			{overflowItems.length > 0 && (
+			{menu.items.length > MAX_VISIBLE_HORIZONTAL_ITEMS && (
 				<OverflowMenu
-					items={overflowItems}
+					items={menu.items.slice(MAX_VISIBLE_HORIZONTAL_ITEMS)}
 					currentPath={location.pathname}
 					pathPrefix={pathPrefix}
 					getPath={getPath}
+					t={t}
 				/>
 			)}
 		</Group>
@@ -92,10 +104,11 @@ export function MenuBar({ mode = 'horizontal' }: MenuBarProps): React.ReactNode 
 
 // Horizontal Menu Components
 type OverflowMenuProps = {
-	items: MenuBarItem[];
-	currentPath: string;
-	pathPrefix: string;
-	getPath: (link: string) => string;
+	items: MenuItem[],
+	currentPath: string,
+	pathPrefix: string,
+	getPath: (link: string) => string,
+	t: TranslateFn,
 };
 
 function OverflowMenu({
@@ -103,6 +116,7 @@ function OverflowMenu({
 	currentPath,
 	pathPrefix,
 	getPath,
+	t,
 }: OverflowMenuProps): React.ReactNode {
 	const hasActiveChild = items.some(subItem =>
 		hasActiveNestedItemWithPrefix(subItem, currentPath, pathPrefix),
@@ -123,6 +137,7 @@ function OverflowMenu({
 						currentPath={currentPath}
 						pathPrefix={pathPrefix}
 						getPath={getPath}
+						t={t}
 					/>
 				))}
 			</Menu.Dropdown>
@@ -131,10 +146,11 @@ function OverflowMenu({
 }
 
 type NavMenuProps = {
-	item: MenuBarItem;
-	currentPath: string;
-	pathPrefix: string;
-	getPath: (link: string) => string;
+	item: MenuItem,
+	currentPath: string,
+	pathPrefix: string,
+	getPath: (link: string) => string,
+	t: TranslateFn,
 };
 
 function NavMenu({
@@ -142,6 +158,7 @@ function NavMenu({
 	currentPath,
 	pathPrefix,
 	getPath,
+	t,
 }: NavMenuProps): React.ReactNode {
 	const hasActiveChild = item.items
 		? item.items.some(subItem =>
@@ -153,7 +170,7 @@ function NavMenu({
 		<Menu position='bottom-start' trigger='click-hover'>
 			<Menu.Target>
 				<Button {...buttonProps(hasActiveChild)} rightSection={<IconChevronDown size={14} />} >
-					{item.label}
+					{t(item.labelKey)}
 				</Button>
 			</Menu.Target>
 
@@ -165,6 +182,7 @@ function NavMenu({
 						currentPath={currentPath}
 						pathPrefix={pathPrefix}
 						getPath={getPath}
+						t={t}
 					/>
 				))}
 			</Menu.Dropdown>
@@ -177,6 +195,7 @@ function MenuItemRenderer({
 	currentPath,
 	pathPrefix,
 	getPath,
+	t,
 }: NavMenuProps): React.ReactNode {
 	const isActive = item.link
 		? isPathActiveWithPrefix(item.link, currentPath, pathPrefix)
@@ -198,13 +217,13 @@ function MenuItemRenderer({
 							to={getPath(item.link)}
 							{...itemProps(isActive || hasActiveChild)}
 						>
-							{item.label}
+							{t(item.labelKey)}
 						</Menu.Sub.Item>
 					) : (
 						<Menu.Sub.Item
 							{...itemProps(hasActiveChild)}
 						>
-							{item.label}
+							{t(item.labelKey)}
 						</Menu.Sub.Item>
 					)}
 				</Menu.Sub.Target>
@@ -217,6 +236,7 @@ function MenuItemRenderer({
 							currentPath={currentPath}
 							pathPrefix={pathPrefix}
 							getPath={getPath}
+							t={t}
 						/>
 					))}
 				</Menu.Sub.Dropdown>
@@ -232,14 +252,14 @@ function MenuItemRenderer({
 				to={getPath(item.link)}
 				{...itemProps(isActive)}
 			>
-				{item.label}
+				{t(item.labelKey)}
 			</Menu.Item>
 		);
 	}
 
 	return (
 		<Menu.Item {...itemProps(isActive)}>
-			{item.label}
+			{t(item.labelKey)}
 		</Menu.Item>
 	);
 }

@@ -1,8 +1,7 @@
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
-import { useSetMenuBarItems } from '@nikkierp/ui/appState/layoutSlice';
 import {
 	defineWebComponent, initMicroAppStateContext, MicroAppBundle, MicroAppDomType, MicroAppProps,
-	MicroAppProvider, useMicroAppDispatch,
+	MicroAppProvider,
 } from '@nikkierp/ui/microApp';
 import { ViewEngineRouter } from '@nikkierp/viewkit-mantine';
 import React from 'react';
@@ -11,7 +10,7 @@ import * as c from './constants';
 import { registerGroupCommands } from './features/group/commands';
 import { registerOrganizationCommands } from './features/organization/commands';
 import { registerUserCommands } from './features/user/commands';
-import { useIdentityMenuBarItems } from './hooks';
+import { buildIdentityMenu } from './menu';
 import { buildGroupPages } from './pages/group';
 import { buildOrganizationPages } from './pages/organization';
 import { buildUserPages } from './pages/user';
@@ -26,7 +25,7 @@ function Main(props: MicroAppProps) {
 }
 
 const bundle: MicroAppBundle = {
-	init({ htmlTag, registerReducer, host }) {
+	init({ htmlTag, slug, registerReducer, host }) {
 		const domType = MicroAppDomType.SHARED;
 		defineWebComponent(Main, { htmlTag, domType });
 
@@ -34,6 +33,7 @@ const bundle: MicroAppBundle = {
 		initMicroAppStateContext(result);
 
 		registerModelSchemas();
+		host.menuRegistry.register(buildIdentityMenu(slug));
 		registerUserCommands(host.commandBus);
 		registerGroupCommands(host.commandBus);
 		registerOrganizationCommands(host.commandBus);
@@ -45,11 +45,6 @@ const bundle: MicroAppBundle = {
 export default bundle;
 
 function MicroAppInner(props: MicroAppProps): React.ReactNode {
-	const dispatch = useMicroAppDispatch();
-	const menuBarItems = useIdentityMenuBarItems();
-
-	useSetMenuBarItems(menuBarItems, dispatch);
-
 	const pages = React.useMemo(() => [
 		...buildUserPages(),
 		...buildGroupPages(),
