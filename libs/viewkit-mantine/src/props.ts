@@ -1,14 +1,23 @@
-import { RESOURCE_DETAIL_TEMPLATE, RESOURCE_LIST_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE } from './ids';
+import { defineComponent } from '@nikkierp/viewengine/metadata';
+
+import { collapsiblePanelPropsSchema } from './components/collapsiblePanel/props';
+import { resourceTablePropsSchema } from './components/resourceTable/props';
+import {
+	COLLAPSIBLE_PANEL, RESOURCE_DETAIL_TEMPLATE, RESOURCE_LIST_TEMPLATE,
+	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE,
+} from './ids';
 import { resourceDetailPropsSchema } from './pages/resourceDetail/props';
 import { resourceListPropsSchema } from './pages/resourceList/props';
 import { resourceSplitViewPropsSchema } from './pages/resourceSplitView/props';
 
+import type { CollapsiblePanelPropsInput } from './components/collapsiblePanel/props';
+import type { ResourceTablePropsInput } from './components/resourceTable/props';
 import type {
 	ResourceDetailProps, ResourceDetailPropsInput,
 } from './pages/resourceDetail/props';
 import type { ResourceListProps, ResourceListPropsInput } from './pages/resourceList/props';
 import type { ResourceSplitViewProps } from './pages/resourceSplitView/props';
-import type { TemplateRef } from '@nikkierp/viewengine/metadata';
+import type { ComponentNode, TemplateRef } from '@nikkierp/viewengine/metadata';
 
 
 /**
@@ -37,6 +46,31 @@ export function resourceSplitViewProps(input: {
 	return { template: RESOURCE_SPLIT_VIEW_TEMPLATE, props: resourceSplitViewPropsSchema.parse(input) };
 }
 
+/**
+ * A related-records table node, for a resource detail page's `childrenNodes`.
+ * Returns a `ComponentNode` rather than a `TemplateRef` — `childrenNodes` takes
+ * component nodes, not nested templates.
+ */
+export function resourceTableNode(input: ResourceTablePropsInput): ComponentNode {
+	return defineComponent({
+		component: RESOURCE_TABLE,
+		props: resourceTablePropsSchema.parse(input) as Record<string, unknown>,
+	});
+}
+
+/** Wraps nodes in a titled, self-contained collapsible block. */
+export function collapsiblePanelNode(
+	input: CollapsiblePanelPropsInput, children: ComponentNode[],
+): ComponentNode {
+	return defineComponent({
+		component: COLLAPSIBLE_PANEL,
+		props: collapsiblePanelPropsSchema.parse(input) as Record<string, unknown>,
+		children,
+	});
+}
+
+export * from './components/collapsiblePanel/props';
+export * from './components/resourceTable/props';
 export * from './pages/resourceDetail/props';
 export * from './pages/resourceList/props';
 export * from './pages/resourceSplitView/props';

@@ -50,7 +50,11 @@ export const resourceDetailPropsSchema = z.object({
 	formSections: z.array(ownPropertySectionSchema).default([]),
 	contextualActions: z.record(z.string(), resourceDetailExtraActionSchema).optional(),
 	standardActionCommands: standardActionCommandsSchema.default({}),
-	/** Extra component nodes appended inside the detail form section. */
+	/**
+	 * Extra component nodes rendered after the detail form, as its siblings.
+	 * Update mode only — `ResourceCreate` is not given them, which is correct:
+	 * during create there is no record id for a related-records table to filter by.
+	 */
 	childrenNodes: z.array(componentNodeSchema).optional(),
 }).strict();
 

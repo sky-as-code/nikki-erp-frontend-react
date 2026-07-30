@@ -1,5 +1,6 @@
 import { VIEW_ENGINE_API_VERSION } from '@nikkierp/viewengine/core';
 
+import { collapsiblePanelRenderer } from './components/collapsiblePanel/CollapsiblePanel';
 import { collapsibleSectionRenderer } from './components/collapsibleSection';
 import { resourceCreateColumnRenderer } from './components/resourceCreateColumn';
 import { resourceCreateFormRenderer } from './components/resourceCreateForm';
@@ -9,6 +10,7 @@ import { resourceDetailHeaderRenderer } from './components/resourceDetailHeader'
 import { resourceFormRenderer } from './components/resourceForm';
 import { resourceFormColumnRenderer } from './components/resourceFormColumn';
 import { resourceSplitViewRenderer } from './components/resourceSplitView';
+import { resourceTableRenderer } from './components/resourceTable/ResourceTable';
 import { registerFieldRenderers } from './fields/register';
 import { MANTINE_VIEW_KIT_ID } from './ids';
 import { resourceDetailTemplate } from './pages/resourceDetail/template';
@@ -35,7 +37,9 @@ export const mantineViewKit: IViewKit = {
 		registry.registerPageTemplate(resourceDetailTemplate);
 		registry.registerPageTemplate(resourceSplitViewTemplate);
 
+		registry.registerComponentRenderer(collapsiblePanelRenderer);
 		registry.registerComponentRenderer(collapsibleSectionRenderer);
+		registry.registerComponentRenderer(resourceTableRenderer);
 		registry.registerComponentRenderer(resourceDetailHeaderRenderer);
 		registry.registerComponentRenderer(resourceFormRenderer);
 		registry.registerComponentRenderer(resourceFormColumnRenderer);

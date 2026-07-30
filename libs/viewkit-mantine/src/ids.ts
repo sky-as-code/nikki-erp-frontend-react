@@ -11,7 +11,9 @@ export const RESOURCE_LIST_TEMPLATE = 'nikkierp.mantine.pages.templates.resource
 export const RESOURCE_DETAIL_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceDetails.v1';
 export const RESOURCE_SPLIT_VIEW_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceSplitView.v1';
 
+export const COLLAPSIBLE_PANEL = 'collapsible_panel';
 export const COLLAPSIBLE_SECTION = 'collapsible_section';
+export const RESOURCE_TABLE = 'resource_table';
 export const RESOURCE_DETAIL_HEADER = 'resource_detail__header';
 export const RESOURCE_FORM = 'resource_form';
 export const RESOURCE_FORM_COLUMN = 'resource_form__column';

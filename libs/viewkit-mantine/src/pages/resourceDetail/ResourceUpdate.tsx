@@ -118,7 +118,6 @@ function buildUpdateNodes(context: ResourceUpdateContextValue): ComponentNode[] 
 		component: RESOURCE_FORM_COLUMN,
 		props: block as unknown as Record<string, unknown>,
 	}));
-	const sectionChildren: ComponentNode[] = [...columns, ...(context.childrenNodes ?? [])];
 
 	return [
 		defineComponent({
@@ -135,9 +134,13 @@ function buildUpdateNodes(context: ResourceUpdateContextValue): ComponentNode[] 
 				defineComponent({
 					component: COLLAPSIBLE_SECTION,
 					props: { expanded: true },
-					children: sectionChildren,
+					children: columns,
 				}),
 			],
 		}),
+		// Siblings of the form, not children of its section: the section's inner
+		// wrapper is a 2-4 column grid inside the form context, which would squeeze
+		// a table into a third of the width and bind it to the form's action bar.
+		...(context.childrenNodes ?? []),
 	];
 }
