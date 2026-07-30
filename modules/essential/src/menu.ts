@@ -7,10 +7,10 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
  * now carry i18n keys, and inventing keys for placeholders is not worth it.
  */
 const ITEMS: MenuItem[] = [
-	{ labelKey: 'nikki.essential.menu.orgHome', link: '/org-home' },
-	{ labelKey: 'nikki.essential.menu.moduleManagement', link: '/module-management' },
+	{ labelKey: 'menu_orgHome', link: '/org-home' },
+	{ labelKey: 'menu_moduleManagement', link: '/module-management' },
 ];
 
 export function buildEssentialMenu(slug: string): MenuContribution {
-	return { slug, translationNs: 'common', items: ITEMS };
+	return { slug, translationNs: 'essential', items: ITEMS };
 }

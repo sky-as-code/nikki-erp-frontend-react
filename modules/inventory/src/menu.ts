@@ -1,25 +1,26 @@
 import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
 
 
+/** Keys live in the `inventory` namespace, alongside the module's other labels. */
 const ITEMS: MenuItem[] = [
-	{ labelKey: 'nikki.inventory.menu.overview', link: '/overview' },
+	{ labelKey: 'menu_overview', link: '/overview' },
 	{
-		labelKey: 'nikki.inventory.menu.product',
+		labelKey: 'menu_product',
 		items: [
-			{ labelKey: 'nikki.inventory.menu.products', link: '/products' },
-			{ labelKey: 'nikki.inventory.menu.productCategories', link: '/product-categories' },
-			{ labelKey: 'nikki.inventory.menu.productVariants', link: '/product-variants' },
+			{ labelKey: 'menu_products', link: '/products' },
+			{ labelKey: 'menu_productCategories', link: '/product-categories' },
+			{ labelKey: 'menu_variants', link: '/product-variants' },
 		],
 	},
 	{
-		labelKey: 'nikki.inventory.menu.unit',
+		labelKey: 'menu_unit',
 		items: [
-			{ labelKey: 'nikki.inventory.menu.units', link: '/units' },
-			{ labelKey: 'nikki.inventory.menu.unitCategories', link: '/unit-categories' },
+			{ labelKey: 'menu_units', link: '/units' },
+			{ labelKey: 'menu_unitCategories', link: '/unit-categories' },
 		],
 	},
 ];
 
 export function buildInventoryMenu(slug: string): MenuContribution {
-	return { slug, translationNs: 'common', items: ITEMS };
+	return { slug, translationNs: 'inventory', items: ITEMS };
 }

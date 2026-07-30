@@ -9,10 +9,12 @@ import React from 'react';
 import * as c from './constants';
 import { registerGroupCommands } from './features/group/commands';
 import { registerOrganizationCommands } from './features/organization/commands';
+import { registerRoleCommands } from './features/role/commands';
 import { registerUserCommands } from './features/user/commands';
 import { buildIdentityMenu } from './menu';
 import { buildGroupPages } from './pages/group';
 import { buildOrganizationPages } from './pages/organization';
+import { buildRolePages } from './pages/role';
 import { buildUserPages } from './pages/user';
 
 
@@ -37,6 +39,7 @@ const bundle: MicroAppBundle = {
 		registerUserCommands(host.commandBus);
 		registerGroupCommands(host.commandBus);
 		registerOrganizationCommands(host.commandBus);
+		registerRoleCommands(host.commandBus);
 
 		return { domType };
 	},
@@ -49,6 +52,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildUserPages(),
 		...buildGroupPages(),
 		...buildOrganizationPages(),
+		...buildRolePages(),
 	], []);
 
 	return (
@@ -73,6 +77,9 @@ function registerModelSchemas(): void {
 	}, {
 		schemaName: c.ORG_UNIT_SCHEMA_NAME,
 		resourcePath: 'v1/iam/orgunits',
+	}, {
+		schemaName: c.ROLE_SCHEMA_NAME,
+		resourcePath: 'v1/iam/roles',
 	}, {
 		schemaName: c.USER_SCHEMA_NAME,
 		resourcePath: 'v1/iam/users',

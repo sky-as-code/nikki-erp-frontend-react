@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildGroupPages } from './group';
 import { buildOrganizationPages } from './organization';
+import { buildRolePages } from './role';
 import { buildUserPages } from './user';
 
 import type { PageNode } from '@nikkierp/viewengine/metadata';
@@ -11,6 +12,7 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'user', build: buildUserPages },
 	{ name: 'group', build: buildGroupPages },
 	{ name: 'organization', build: buildOrganizationPages },
+	{ name: 'role', build: buildRolePages },
 ];
 
 describe('IAM page metadata', () => {
