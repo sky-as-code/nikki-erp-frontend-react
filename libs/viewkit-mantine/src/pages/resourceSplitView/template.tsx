@@ -1,4 +1,4 @@
-import { renderTemplateRef } from '@nikkierp/viewengine/render';
+import { PageAnchor, renderTemplateRef } from '@nikkierp/viewengine/render';
 import React from 'react';
 
 import { resourceSplitViewPropsSchema } from './props';
@@ -18,9 +18,11 @@ export const resourceSplitViewTemplate: IPageTemplate<ResourceSplitViewProps> = 
 	 */
 	routePattern: node => `${node.routePath}/:id?`,
 	render: (params, runtime) => (
-		<SplitViewBody
-			primary={renderTemplateRef(params.primary, runtime)}
-			secondary={renderTemplateRef(params.secondary, runtime)}
-		/>
+		<PageAnchor id={RESOURCE_SPLIT_VIEW_TEMPLATE}>
+			<SplitViewBody
+				primary={renderTemplateRef(params.primary, runtime)}
+				secondary={renderTemplateRef(params.secondary, runtime)}
+			/>
+		</PageAnchor>
 	),
 };

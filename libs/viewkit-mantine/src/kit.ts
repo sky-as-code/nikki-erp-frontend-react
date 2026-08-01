@@ -1,7 +1,7 @@
 import { VIEW_ENGINE_API_VERSION } from '@nikkierp/viewengine/core';
 
-import { collapsiblePanelRenderer } from './components/collapsiblePanel/CollapsiblePanel';
-import { collapsibleSectionRenderer } from './components/collapsibleSection';
+import { collapsibleSectionRenderer } from './components/collapsibleSection/CollapsibleSection';
+import { pageHeaderRenderer } from './components/pageHeader/PageHeader';
 import { resourceCreateColumnRenderer } from './components/resourceCreateColumn';
 import { resourceCreateFormRenderer } from './components/resourceCreateForm';
 import { resourceCreateHeaderRenderer } from './components/resourceCreateHeader';
@@ -9,6 +9,7 @@ import { resourceCreateSectionRenderer } from './components/resourceCreateSectio
 import { resourceDetailHeaderRenderer } from './components/resourceDetailHeader';
 import { resourceFormRenderer } from './components/resourceForm';
 import { resourceFormColumnRenderer } from './components/resourceFormColumn';
+import { resourceFormSectionRenderer } from './components/resourceFormSection';
 import { resourceSplitViewRenderer } from './components/resourceSplitView';
 import { resourceTableRenderer } from './components/resourceTable/ResourceTable';
 import { registerFieldRenderers } from './fields/register';
@@ -37,12 +38,13 @@ export const mantineViewKit: IViewKit = {
 		registry.registerPageTemplate(resourceDetailTemplate);
 		registry.registerPageTemplate(resourceSplitViewTemplate);
 
-		registry.registerComponentRenderer(collapsiblePanelRenderer);
+		registry.registerComponentRenderer(pageHeaderRenderer);
 		registry.registerComponentRenderer(collapsibleSectionRenderer);
 		registry.registerComponentRenderer(resourceTableRenderer);
 		registry.registerComponentRenderer(resourceDetailHeaderRenderer);
 		registry.registerComponentRenderer(resourceFormRenderer);
 		registry.registerComponentRenderer(resourceFormColumnRenderer);
+		registry.registerComponentRenderer(resourceFormSectionRenderer);
 		registry.registerComponentRenderer(resourceCreateHeaderRenderer);
 		registry.registerComponentRenderer(resourceCreateFormRenderer);
 		registry.registerComponentRenderer(resourceCreateSectionRenderer);

@@ -27,8 +27,8 @@ export type ResourceUpdateContextValue = {
 export const ResourceUpdateContext = React.createContext<ResourceUpdateContextValue | undefined>(undefined);
 
 export function useResourceUpdateContext(): ResourceUpdateContextValue {
-	const value = React.useContext(ResourceUpdateContext);
-	if (value === undefined) {
+	const value = React.useContext(ResourceUpdateContext) ?? null;
+	if (value === null) {
 		throw new Error('useResourceUpdateContext must be used within ResourceUpdate');
 	}
 	return value;

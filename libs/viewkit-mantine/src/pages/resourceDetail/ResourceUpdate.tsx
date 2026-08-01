@@ -8,7 +8,7 @@ import { useParams } from 'react-router';
 import { useResourceDetailContext } from './ResourceDetailProvider';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
 import {
-	COLLAPSIBLE_SECTION, RESOURCE_DETAIL_HEADER, RESOURCE_FORM, RESOURCE_FORM_COLUMN,
+	RESOURCE_DETAIL_HEADER, RESOURCE_FORM, RESOURCE_FORM_COLUMN, RESOURCE_FORM_SECTION,
 } from '../../ids';
 
 import type {
@@ -32,7 +32,7 @@ export type ResourceUpdateProps = {
 
 /**
  * Provides {@link ResourceUpdateContext} and renders the default update component tree
- * (`resource_detail__header` + `resource_form` → `collapsible_section` →
+ * (`resource_detail__header` + `resource_form` → `resource_form__section` →
  * `resource_form__column`s + appended children) through the component registry.
  */
 export function ResourceUpdate(props: ResourceUpdateProps): React.ReactNode {
@@ -132,7 +132,7 @@ function buildUpdateNodes(context: ResourceUpdateContextValue): ComponentNode[] 
 			component: RESOURCE_FORM,
 			children: [
 				defineComponent({
-					component: COLLAPSIBLE_SECTION,
+					component: RESOURCE_FORM_SECTION,
 					props: { expanded: true },
 					children: columns,
 				}),

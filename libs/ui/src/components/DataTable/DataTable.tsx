@@ -3,6 +3,7 @@ import {
 	Stack, Table, Tabs, Text, TextInput, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
+import { commandAttrs } from '@nikkierp/viewengine/core';
 import {
 	IconChevronLeft, IconChevronRight, IconDots, IconHash, IconSettings, IconX,
 	IconSortAscending, IconSortDescending,
@@ -264,8 +265,11 @@ function buildInitialSearchRequest(
 	searchData: SearchData,
 	initialRequest?: dyn.RestSearchRequest,
 ): dyn.RestSearchRequest {
+	// The caller seeds a `size: 0` stub so the first round-trip resolves locally without an HTTP
+	// call; this is where the table turns it into the first real request. A zero must therefore
+	// fall through to the default page size, otherwise no search is ever sent.
 	const storedSize = readStoredPageSize();
-	const size = storedSize ?? initialRequest?.size ?? searchData.size;
+	const size = storedSize || initialRequest?.size || searchData.size || allowedPageSizes[0];
 	return {
 		...(initialRequest ?? {}),
 		page: searchData.page,
@@ -1478,6 +1482,7 @@ function ActionButton({ action, selectedItems }: ActionTriggerProps): React.Reac
 				variant='outline'
 				size='compact-md'
 				leftSection={action.icon}
+				{...commandAttrs(action.command)}
 			>
 				{action.label}
 			</Button>
@@ -1489,6 +1494,7 @@ function ActionButton({ action, selectedItems }: ActionTriggerProps): React.Reac
 			size='compact-md'
 			leftSection={action.icon}
 			onClick={() => action.onTrigger?.(selectedItems)}
+			{...commandAttrs(action.command)}
 		>
 			{action.label}
 		</Button>
@@ -1513,6 +1519,7 @@ function ActionMenu(
 							key={i}
 							leftSection={item.icon}
 							onClick={() => item.onTrigger?.(selectedItems)}
+							{...commandAttrs(item.command)}
 						>
 							{item.label}
 						</Menu.Item>

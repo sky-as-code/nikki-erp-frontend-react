@@ -3,9 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { buildGroupPages } from './group';
 import { buildOrganizationPages } from './organization';
 import { buildRolePages } from './role';
+import { buildRoleAssignmentPages } from './roleAssignment';
 import { buildUserPages } from './user';
 
-import type { PageNode } from '@nikkierp/viewengine/metadata';
+import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
 
 
 const allPages: { name: string, build: () => PageNode[] }[] = [
@@ -13,6 +14,7 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'group', build: buildGroupPages },
 	{ name: 'organization', build: buildOrganizationPages },
 	{ name: 'role', build: buildRolePages },
+	{ name: 'roleAssignment', build: buildRoleAssignmentPages },
 ];
 
 describe('IAM page metadata', () => {
@@ -53,6 +55,31 @@ describe('IAM page metadata', () => {
 				colorMap: { invited: 'indigo', active: 'green', locked: 'orange', terminated: 'gray' },
 			},
 		});
+	});
+
+	it('keeps both assignment stages on one route, with no extra segment', () => {
+		const routePaths = buildRoleAssignmentPages().map(page => page.routePath);
+
+		// The stage lives in React state, so neither page contributes a `/:step` segment.
+		expect(routePaths).toEqual(['users/:id/roles', 'groups/:id/roles']);
+	});
+
+	it.each([
+		{ kind: 'user', build: buildUserPages, edge: 'assigned_users' },
+		{ kind: 'group', build: buildGroupPages, edge: 'assigned_groups' },
+	])('$kind detail page lists assigned roles through the $edge edge', ({ build, edge }) => {
+		const [page] = build();
+		const detail = (page.props as { secondary: { props: { childrenNodes: ComponentNode[] } } }).secondary;
+		const [panel] = detail.props.childrenNodes;
+		const [table] = panel.children ?? [];
+
+		// The wizard is reached from the table's own action bar, next to Refresh — the panel
+		// header carries no button.
+		expect(panel.props?.headerAction).toBeUndefined();
+		expect(table.props?.extraActions).toEqual([{ label: 'assignment.manageRoles', routePath: 'roles' }]);
+		// `linked` is the membership operator for a many edge; `${id}` is interpolated from
+		// the route at render time.
+		expect(table.props?.filterGraph).toEqual({ if: [edge, 'linked', '${id}'] });
 	});
 });
 

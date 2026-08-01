@@ -29,6 +29,16 @@ export type SettingsTableProps = {
 	fieldRenderer?: FieldRendererMap,
 	initialSelectedValues?: string[],
 	selectionGetterRef?: React.RefObject<(() => string[]) | null>,
+	/**
+	 * Controlled selection. When set, the table owns no selection state: it renders exactly
+	 * these values as checked and reports every change through `onSelectionChange`. Unlike
+	 * `initialSelectedValues` the set is never intersected with the visible rows, so a
+	 * selection made on one page survives paging and filtering.
+	 */
+	selectedValues?: string[],
+	onSelectionChange?: (values: string[]) => void,
+	/** Rendered in place of the rows when there is nothing to show. */
+	emptyState?: React.ReactNode,
 };
 
 export function SettingsTable(props: SettingsTableProps): React.ReactNode {
@@ -46,6 +56,8 @@ export function SettingsTable(props: SettingsTableProps): React.ReactNode {
 		items,
 		valueKey,
 		initialSelectedValues: props.initialSelectedValues,
+		selectedValues: props.selectedValues,
+		onSelectionChange: props.onSelectionChange,
 		selectionGetterRef: props.selectionGetterRef,
 	});
 	const rowMove = useRowMoveController({ allowRowMovement, setItems });
@@ -66,6 +78,13 @@ export function SettingsTable(props: SettingsTableProps): React.ReactNode {
 				onToggleAll={selection.toggleAllRows}
 			/>
 			<Table.Tbody>
+				{items.length === 0 && props.emptyState != null && (
+					<Table.Tr>
+						<Table.Td colSpan={props.data.desired_fields.length + 1} className='text-center'>
+							{props.emptyState}
+						</Table.Td>
+					</Table.Tr>
+				)}
 				{items.map((item, rowIndex) => {
 					const rowValue = getRowValue(item, valueKey);
 					return (
@@ -240,7 +259,7 @@ function moveRow(items: TableItem[], fromIndex: number, toIndex: number): TableI
 	return next;
 }
 
-function toggleRowInSelectionSet(selected: Set<string>, rowValue: string): Set<string> {
+export function toggleRowInSelectionSet(selected: Set<string>, rowValue: string): Set<string> {
 	const next = new Set(selected);
 	if (next.has(rowValue)) {
 		next.delete(rowValue);
@@ -251,66 +270,127 @@ function toggleRowInSelectionSet(selected: Set<string>, rowValue: string): Set<s
 	return next;
 }
 
-function useSelectionController(args: {
+/**
+ * Uncontrolled preselection: only rows present on this page can be selected, because the
+ * uncontrolled table has no way to represent a selection it cannot render.
+ */
+export function resolvePreselection(pageValues: string[], preselected?: string[]): Set<string> {
+	const wanted = new Set(preselected ?? []);
+	if (wanted.size === 0) {
+		return new Set();
+	}
+	return new Set(pageValues.filter(value => wanted.has(value)));
+}
+
+/**
+ * Header checkbox state, computed against the visible page only. A controlled selection may
+ * hold ids belonging to other pages, and those must not make the header read as "everything
+ * here is selected".
+ */
+export function selectionFlags(pageValues: string[], selectedIds: Set<string>): {
+	isAllSelected: boolean,
+	isIndeterminate: boolean,
+} {
+	const selectedOnPage = pageValues.filter(value => selectedIds.has(value)).length;
+	const isAllSelected = pageValues.length > 0 && selectedOnPage === pageValues.length;
+	return { isAllSelected, isIndeterminate: selectedOnPage > 0 && !isAllSelected };
+}
+
+/**
+ * Select-all unions the current page into the selection and deselect-all subtracts it, rather
+ * than replacing the whole set, so selections made on other pages survive.
+ */
+export function toggleAllOnPage(
+	selectedIds: Set<string>, pageValues: string[], isAllSelected: boolean,
+): Set<string> {
+	const next = new Set(selectedIds);
+	pageValues.forEach(value => (isAllSelected ? next.delete(value) : next.add(value)));
+	return next;
+}
+
+type SelectionArgs = {
 	items: TableItem[],
 	valueKey: string,
 	initialSelectedValues?: string[],
+	selectedValues?: string[],
+	onSelectionChange?: (values: string[]) => void,
 	selectionGetterRef?: React.RefObject<(() => string[]) | null>,
-}): SelectionController {
-	const [selectedIds, setSelectedIds] = React.useState<Set<string>>(() => new Set());
+};
+
+function usePageValues(items: TableItem[], valueKey: string): string[] {
+	return React.useMemo(
+		() => items.map(item => getRowValue(item, valueKey)),
+		[items, valueKey],
+	);
+}
+
+/**
+ * Resolves the selected set and the way to change it, for both the controlled and the
+ * uncontrolled caller.
+ */
+function useSelectionSet(args: SelectionArgs, pageValues: string[]): {
+	selectedIds: Set<string>,
+	commit: (next: Set<string>) => void,
+} {
+	const isControlled = args.selectedValues !== undefined;
+	const [internalIds, setInternalIds] = React.useState<Set<string>>(() => new Set());
 
 	React.useEffect(() => {
-		const selectedValues = new Set(args.initialSelectedValues ?? []);
-		if (selectedValues.size === 0) {
-			setSelectedIds(new Set());
+		// Uncontrolled preselection is intersected with the visible rows and re-derived
+		// whenever they change. A controlled selection must not inherit that: it spans pages,
+		// and re-deriving would discard the caller's edits on every filter change.
+		if (isControlled) {
 			return;
 		}
-		const next = new Set<string>();
-		for (const item of args.items) {
-			const rowValue = getRowValue(item, args.valueKey);
-			if (selectedValues.has(rowValue)) {
-				next.add(rowValue);
-			}
-		}
-		setSelectedIds(next);
-	}, [args.initialSelectedValues, args.items, args.valueKey]);
+		setInternalIds(resolvePreselection(pageValues, args.initialSelectedValues));
+	}, [args.initialSelectedValues, isControlled, pageValues]);
 
+	const selectedIds = React.useMemo(
+		() => (args.selectedValues ? new Set(args.selectedValues) : internalIds),
+		[args.selectedValues, internalIds],
+	);
+	const commit = React.useCallback((next: Set<string>) => {
+		if (!isControlled) {
+			setInternalIds(next);
+		}
+		args.onSelectionChange?.([...next]);
+	}, [args.onSelectionChange, isControlled]);
+
+	return { selectedIds, commit };
+}
+
+function useSelectionGetter(
+	getterRef: React.RefObject<(() => string[]) | null> | undefined,
+	pageValues: string[],
+	selectedIds: Set<string>,
+): void {
 	React.useLayoutEffect(() => {
-		const getterRef = args.selectionGetterRef;
 		if (!getterRef) {
 			return undefined;
 		}
-		getterRef.current = () => args.items
-			.map(item => getRowValue(item, args.valueKey))
-			.filter(value => selectedIds.has(value));
+		getterRef.current = () => pageValues.filter(value => selectedIds.has(value));
 		return () => {
 			getterRef.current = null;
 		};
-	}, [args.items, args.selectionGetterRef, args.valueKey, selectedIds]);
+	}, [getterRef, pageValues, selectedIds]);
+}
 
-	const isAllSelected = args.items.length > 0 && selectedIds.size === args.items.length;
-	const isIndeterminate = selectedIds.size > 0 && selectedIds.size < args.items.length;
+function useSelectionController(args: SelectionArgs): SelectionController {
+	const pageValues = usePageValues(args.items, args.valueKey);
+	const { selectedIds, commit } = useSelectionSet(args, pageValues);
+	useSelectionGetter(args.selectionGetterRef, pageValues, selectedIds);
+
+	const { isAllSelected, isIndeterminate } = selectionFlags(pageValues, selectedIds);
 
 	const toggleAllRows = React.useCallback(() => {
-		if (isAllSelected) {
-			setSelectedIds(new Set());
-			return;
-		}
-		const next = new Set(args.items.map(item => getRowValue(item, args.valueKey)));
-		setSelectedIds(next);
-	}, [args.items, args.valueKey, isAllSelected]);
+		commit(toggleAllOnPage(selectedIds, pageValues, isAllSelected));
+	}, [commit, isAllSelected, pageValues, selectedIds]);
 
 	const toggleRowSelection = React.useCallback((rowValue: string) => {
-		setSelectedIds(prev => toggleRowInSelectionSet(prev, rowValue));
-	}, []);
+		commit(toggleRowInSelectionSet(selectedIds, rowValue));
+	}, [commit, selectedIds]);
 
-	return {
-		selectedIds,
-		isAllSelected,
-		isIndeterminate,
-		toggleAllRows,
-		toggleRowSelection,
-	};
+	return { selectedIds, isAllSelected, isIndeterminate, toggleAllRows, toggleRowSelection };
 }
 
 function useRowMoveController(args: {

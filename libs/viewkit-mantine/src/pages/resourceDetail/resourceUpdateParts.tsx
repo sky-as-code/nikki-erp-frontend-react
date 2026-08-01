@@ -1,11 +1,11 @@
 import {
-	ActionIcon, Anchor, Badge, Button, Group, Menu, Paper, Stack, Text, Title,
+	ActionIcon, Badge, Button, Group, Menu, Stack, Text, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { toLangJson } from '@nikkierp/ui/components/DataTable';
 import { AutoField } from '@nikkierp/ui/components/form';
 import { useCommand } from '@nikkierp/ui/hookhoc';
-import { JsonLangText, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import { commandAttrs } from '@nikkierp/viewengine/core';
 import { evaluateCondition } from '@nikkierp/viewengine/metadata';
 import {
 	IconArchive, IconArchiveOff, IconChevronDown, IconChevronRight, IconDeviceFloppy, IconDots,
@@ -18,77 +18,15 @@ import { Link } from 'react-router';
 import classes from './ResourceDetail.module.css';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
 import { useResourceUpdateContext } from './resourceUpdateContext';
+import { renderDisplayFieldValue } from '../../components/fieldValue';
 
 
 import type {
-	LinkSpec, OwnPropertySection, ResourceDetailContextualActions, ResourceDetailExtraAction,
-	SchemaFieldSpec, StatusOption,
+	OwnPropertySection, ResourceDetailContextualActions, ResourceDetailExtraAction, StatusOption,
 } from './props';
 
 
-export type ResourceUpdateHeaderProps = {
-	titleLvl1?: SchemaFieldSpec,
-	titleLvl2?: SchemaFieldSpec,
-	titleLvl3?: LinkSpec,
-};
-
-/** Title overrides fall back to the values held in the resource-update context. */
-export function ResourceUpdateHeader(headerProps: ResourceUpdateHeaderProps = {}): React.ReactNode {
-	const { schemaPack } = useResourceDetailContext();
-	const context = useResourceUpdateContext();
-	const { commands, resource, isReading, isWriting } = context;
-	const titleLvl1 = headerProps.titleLvl1 ?? context.titleLvl1;
-	const titleLvl2 = headerProps.titleLvl2 ?? context.titleLvl2;
-	const titleLvl3 = headerProps.titleLvl3 ?? context.titleLvl3;
-	const data = resource;
-	const localize = useLocalize(useResourceDetailTranslationNs());
-	const modelSchema = schemaPack?.modelSchema;
-	const resourceName = localize(modelSchema?.label, { count: 99 });
-	const showTitleLvl3 = Boolean(titleLvl3 && modelSchema);
-	const showCreate = Boolean(commands.create);
-	const isActionDisabled = isReading || isWriting;
-
-	return (
-		<Group gap={4}>
-			<Stack gap={4}>
-				{titleLvl1 ? (
-					<Title order={3}>
-						{renderDisplayFieldValue(
-							data?.[titleLvl1.schemaField],
-							modelSchema?.fields[titleLvl1.schemaField],
-						)}
-					</Title>
-				) : null}
-				{titleLvl2 ? (
-					<Text>
-						{renderDisplayFieldValue(
-							data?.[titleLvl2.schemaField],
-							modelSchema?.fields[titleLvl2.schemaField],
-						)}
-					</Text>
-				) : null}
-				{showTitleLvl3 || showCreate ? (
-					<Group gap='xs' align='center'>
-						{showTitleLvl3 ? (
-							<Anchor
-								component={Link}
-								to={titleLvl3!.linkHref}
-								relative='path'
-								size='md'
-								className='capitalize'
-							>
-								{resourceName}
-							</Anchor>
-						) : null}
-						{showCreate ? <CreateActionButton disabled={isActionDisabled} /> : null}
-					</Group>
-				) : null}
-			</Stack>
-		</Group>
-	);
-}
-
-function CreateActionButton({ disabled = false }: { disabled?: boolean }): React.ReactNode {
+export function CreateActionButton({ disabled = false }: { disabled?: boolean }): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
 	return (
 		<Button
@@ -126,13 +64,18 @@ export function SectionActionBar({
 	return (
 		<Group justify='space-between' wrap='wrap' className={clsx('sticky top-0 py-4', classes.bgBodyColor)}>
 			<Group gap='xs' align='center'>
-				<ActionIcon variant='subtle' size='sm' onClick={onToggleCollapse} aria-label='Toggle own properties'>
+				<ActionIcon
+					variant='subtle'
+					size='sm'
+					onClick={onToggleCollapse}
+					aria-label='Toggle own properties'
+				>
 					{expanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
 				</ActionIcon>
 				<PrimaryActionButtons
 					updateMode={updateMode}
 					setUpdateMode={setUpdateMode}
-					hasUpdate={Boolean(commands.update)}
+					updateCommand={commands.update}
 					onSaveClick={onSaveClick}
 					isLoading={isLoading}
 				/>
@@ -158,16 +101,20 @@ export function SectionActionBar({
 type PrimaryActionButtonsProps = {
 	updateMode: boolean,
 	setUpdateMode: React.Dispatch<React.SetStateAction<boolean>>,
-	hasUpdate: boolean,
+	/**
+	 * The command Save publishes, or undefined when the resource is read-only. Carried as the
+	 * string rather than a boolean so Save can name it in `data-command`.
+	 */
+	updateCommand?: string,
 	onSaveClick: () => void,
 	isLoading: boolean,
 };
 
 function PrimaryActionButtons({
-	updateMode, setUpdateMode, hasUpdate, onSaveClick, isLoading,
+	updateMode, setUpdateMode, updateCommand, onSaveClick, isLoading,
 }: PrimaryActionButtonsProps): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
-	if (!hasUpdate) {
+	if (!updateCommand) {
 		return null;
 	}
 
@@ -190,6 +137,7 @@ function PrimaryActionButtons({
 					disabled={isLoading}
 					loading={isLoading}
 					type='submit'
+					{...commandAttrs(updateCommand)}
 				>
 					{t('action.save')}
 				</Button>
@@ -259,6 +207,7 @@ function ResourceDetailExtraActionButton({
 			disabled={disabled || command.isPending}
 			loading={command.isPending}
 			onClick={onClick}
+			{...commandAttrs(action.command)}
 		>
 			{t(action.label)}
 		</Button>
@@ -326,16 +275,23 @@ function ResourceDetailOverflowMenu({
 			</Menu.Target>
 			<Menu.Dropdown>
 				{commands.delete ? (
-					<Menu.Item leftSection={<IconTrash size={16} />} disabled={isBusy} onClick={onDelete}>
+					<Menu.Item
+						leftSection={<IconTrash size={16} />}
+						disabled={isBusy}
+						onClick={onDelete}
+						{...commandAttrs(commands.delete)}
+					>
 						{t('action.delete')}
 					</Menu.Item>
 				) : null}
 				{commands.delete && commands.archive ? <Menu.Divider /> : null}
+				{/* Archive and unarchive publish the same command and differ only by payload. */}
 				{commands.archive && showArchive ? (
 					<Menu.Item
 						leftSection={<IconArchive size={16} />}
 						disabled={isBusy}
 						onClick={() => onSetArchived(true)}
+						{...commandAttrs(commands.archive)}
 					>
 						{t('action.archive')}
 					</Menu.Item>
@@ -345,6 +301,7 @@ function ResourceDetailOverflowMenu({
 						leftSection={<IconArchiveOff size={16} />}
 						disabled={isBusy}
 						onClick={() => onSetArchived(false)}
+						{...commandAttrs(commands.archive)}
 					>
 						{t('action.unarchive')}
 					</Menu.Item>
@@ -470,47 +427,3 @@ function FieldGroupVertical({
 	);
 }
 
-export function PaperWithBorder({ children }: { children: React.ReactNode }): React.ReactNode {
-	return (
-		<Paper withBorder className='px-4 pb-4'>
-			{children}
-		</Paper>
-	);
-}
-
-export function formatFieldValue(fieldValue: unknown): string {
-	if (fieldValue === null || fieldValue === undefined || fieldValue === '') {
-		return '-';
-	}
-	if (typeof fieldValue === 'string' || typeof fieldValue === 'number' || typeof fieldValue === 'boolean') {
-		return String(fieldValue);
-	}
-	try {
-		return JSON.stringify(fieldValue);
-	}
-	catch {
-		return String(fieldValue);
-	}
-}
-
-function getFieldDataTypeName(
-	fieldSchema?: dyn.ModelSchemaField,
-): dyn.ModelSchemaFieldDataTypeName | null {
-	if (!fieldSchema) {
-		return null;
-	}
-	if (typeof fieldSchema.data_type === 'string') {
-		return fieldSchema.data_type;
-	}
-	return fieldSchema.data_type.name;
-}
-
-function renderDisplayFieldValue(
-	fieldValue: unknown,
-	fieldSchema?: dyn.ModelSchemaField,
-): React.ReactNode {
-	if (getFieldDataTypeName(fieldSchema) === 'nikkiLangJson') {
-		return <JsonLangText langJson={toLangJson(fieldValue)} />;
-	}
-	return formatFieldValue(fieldValue);
-}

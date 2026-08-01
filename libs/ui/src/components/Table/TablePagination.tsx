@@ -74,11 +74,14 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
 	onPageSizeChange,
 }) => {
 	const { t: translate } = useTranslation();
+	// `pagination.size` / `pagination.itemsFound` are the keys that actually exist in the
+	// `common` namespace; the former `nikki.general.pagination.*` names resolved to nothing
+	// and rendered raw key strings.
 	const defaultPageSizeOptions = useMemo(() => [
-		{ value: '5', label: translate('nikki.general.pagination.page_size', { count: 5 }) },
-		{ value: '10', label: translate('nikki.general.pagination.page_size', { count: 10 }) },
-		{ value: '20', label: translate('nikki.general.pagination.page_size', { count: 20 }) },
-		{ value: '50', label: translate('nikki.general.pagination.page_size', { count: 50 }) },
+		{ value: '5', label: translate('pagination.size', { count: 5 }) },
+		{ value: '10', label: translate('pagination.size', { count: 10 }) },
+		{ value: '20', label: translate('pagination.size', { count: 20 }) },
+		{ value: '50', label: translate('pagination.size', { count: 50 }) },
 	], []);
 
 	const [pageInputValue, setPageInputValue] = React.useState<number | string | undefined>(page);
@@ -110,7 +113,7 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
 
 	return <Group justify='space-between' mt='xs' px='xs'>
 		<Box>
-			{(totalItems || totalItems === 0) && <Text size='sm' c='dimmed'>{translate('nikki.general.pagination.items_found', { count: totalItems })}</Text>}
+			{(totalItems || totalItems === 0) && <Text size='sm'>{translate('pagination.itemsFound', { count: totalItems })}</Text>}
 		</Box>
 		<Group gap={'sm'}>
 			<Group gap={2} align='center'>

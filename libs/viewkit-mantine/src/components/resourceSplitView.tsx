@@ -1,4 +1,4 @@
-import { renderTemplateRef } from '@nikkierp/viewengine/render';
+import { ComponentAnchor, renderTemplateRef } from '@nikkierp/viewengine/render';
 import { templateRefSchema } from '@nikkierp/viewengine/schema';
 import React from 'react';
 import { z } from 'zod';
@@ -27,11 +27,15 @@ export const resourceSplitViewRenderer: IComponentRenderer<ResourceSplitViewComp
 	propsSchema: resourceSplitViewComponentPropsSchema,
 	render(props, runtime) {
 		const pageRuntime = { routePath: props.routePath, engine: runtime.engine };
+		// Anchored: `SplitViewBody` is shared with the page template and renders nothing until it
+		// knows which pane the route opened.
 		return (
-			<SplitViewBody
-				primary={renderTemplateRef(props.primary, pageRuntime)}
-				secondary={renderTemplateRef(props.secondary, pageRuntime)}
-			/>
+			<ComponentAnchor id={RESOURCE_SPLIT_VIEW}>
+				<SplitViewBody
+					primary={renderTemplateRef(props.primary, pageRuntime)}
+					secondary={renderTemplateRef(props.secondary, pageRuntime)}
+				/>
+			</ComponentAnchor>
 		);
 	},
 };

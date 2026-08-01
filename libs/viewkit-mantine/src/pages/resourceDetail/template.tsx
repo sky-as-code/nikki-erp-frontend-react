@@ -1,3 +1,4 @@
+import { PageAnchor } from '@nikkierp/viewengine/render';
 import React from 'react';
 
 import { resourceDetailPropsSchema } from './props';
@@ -16,5 +17,9 @@ export const resourceDetailTemplate: IPageTemplate<ResourceDetailProps> = {
 	createProps: (params: ResourceDetailProps, childrenNodes?: ComponentNode[]) => (
 		childrenNodes?.length ? { ...params, childrenNodes } : params
 	),
-	render: (params, runtime) => <ResourceDetail params={params} childrenNodes={runtime.childrenNodes} />,
+	render: (params, runtime) => (
+		<PageAnchor id={RESOURCE_DETAIL_TEMPLATE}>
+			<ResourceDetail params={params} childrenNodes={runtime.childrenNodes} />
+		</PageAnchor>
+	),
 };

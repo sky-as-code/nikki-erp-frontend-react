@@ -2,6 +2,7 @@ import { ActionIcon, Anchor, Button, Group, Stack, Text, Title } from '@mantine/
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { AutoField } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconChevronDown, IconChevronRight, IconDeviceFloppy } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
@@ -10,6 +11,7 @@ import { Link } from 'react-router';
 import { useResourceCreateContext } from './resourceCreateContext';
 import classes from './ResourceDetail.module.css';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
+import { SplitPaneCloseButton } from './SplitPaneCloseButton';
 
 import type { LinkSpec, OwnPropertySection, SchemaFieldSpec } from './props';
 
@@ -32,7 +34,7 @@ export function ResourceCreateHeader(headerProps: ResourceCreateHeaderProps = {}
 	const showTitleLvl3 = Boolean(titleLvl3 && modelSchema);
 
 	return (
-		<Group gap={4}>
+		<Group gap={4} justify='space-between' align='flex-start' wrap='nowrap' className='w-full'>
 			<Stack gap={4}>
 				{titleLvl1 ? (
 					<Title order={3}>
@@ -51,6 +53,7 @@ export function ResourceCreateHeader(headerProps: ResourceCreateHeaderProps = {}
 					</Anchor>
 				) : null}
 			</Stack>
+			<SplitPaneCloseButton />
 		</Group>
 	);
 }
@@ -66,6 +69,7 @@ export function ResourceCreateActionBar({
 	expanded, onToggleCollapse, onSaveClick, isLoading,
 }: ResourceCreateActionBarProps): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
+	const { commands } = useResourceCreateContext();
 	return (
 		<Group gap='xs' align='center' className={clsx('sticky top-0 py-4', classes.bgBodyColor)}>
 			<ActionIcon variant='subtle' size='sm' onClick={onToggleCollapse} aria-label='Toggle own properties'>
@@ -79,6 +83,7 @@ export function ResourceCreateActionBar({
 				disabled={isLoading}
 				loading={isLoading}
 				type='submit'
+				{...commandAttrs(commands.create)}
 			>
 				{t('action.save')}
 			</Button>

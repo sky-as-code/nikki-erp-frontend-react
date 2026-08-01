@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsiblePanelNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
+	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
 	resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
@@ -73,7 +73,7 @@ function buildRoleDetailProps() {
 			header: 'form.audit',
 			fields: ['created_at', 'updated_at'],
 		}],
-		childrenNodes: buildAssignmentPanels(),
+		childrenNodes: buildAssignmentSections(),
 	});
 }
 
@@ -82,9 +82,9 @@ function buildRoleDetailProps() {
  * search with the `linked` edge operator, from the principal's side. `roles` is the
  * inverse edge on both iam_user and iam_group.
  */
-function buildAssignmentPanels(): ComponentNode[] {
+function buildAssignmentSections(): ComponentNode[] {
 	return [
-		collapsiblePanelNode(
+		collapsibleSectionNode(
 			{ header: 'role_sections_assignedUsers', translationNs: c.IAM_MODULE, expanded: false },
 			[resourceTableNode({
 				schemaName: c.USER_SCHEMA_NAME,
@@ -95,7 +95,7 @@ function buildAssignmentPanels(): ComponentNode[] {
 				linkRoutePath: 'users',
 			})],
 		),
-		collapsiblePanelNode(
+		collapsibleSectionNode(
 			{ header: 'role_sections_assignedGroups', translationNs: c.IAM_MODULE, expanded: false },
 			[resourceTableNode({
 				schemaName: c.GROUP_SCHEMA_NAME,

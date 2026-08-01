@@ -1,4 +1,5 @@
 import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
+import { ComponentAnchor } from '@nikkierp/viewengine/render';
 import React from 'react';
 
 import { RESOURCE_CREATE_COLUMN, RESOURCE_CREATE_FORM } from '../ids';
@@ -13,7 +14,12 @@ export const resourceCreateColumnRenderer: IComponentRenderer<OwnPropertySection
 	type: RESOURCE_CREATE_COLUMN,
 	propsSchema: ownPropertySectionSchema,
 	render(props) {
-		return <ResourceCreateColumn block={props} />;
+		// Anchored: the column renders a shared block component, and nothing at all off-form.
+		return (
+			<ComponentAnchor id={RESOURCE_CREATE_COLUMN}>
+				<ResourceCreateColumn block={props} />
+			</ComponentAnchor>
+		);
 	},
 };
 

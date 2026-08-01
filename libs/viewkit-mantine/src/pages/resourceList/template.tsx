@@ -1,3 +1,4 @@
+import { PageAnchor } from '@nikkierp/viewengine/render';
 import React from 'react';
 
 import { resourceListPropsSchema } from './props';
@@ -11,5 +12,9 @@ import type { IPageTemplate } from '@nikkierp/viewengine/core';
 export const resourceListTemplate: IPageTemplate<ResourceListProps> = {
 	id: RESOURCE_LIST_TEMPLATE,
 	propsSchema: resourceListPropsSchema,
-	render: (params, runtime) => <ResourceList params={params} routePath={runtime.routePath} />,
+	render: (params, runtime) => (
+		<PageAnchor id={RESOURCE_LIST_TEMPLATE}>
+			<ResourceList params={params} routePath={runtime.routePath} />
+		</PageAnchor>
+	),
 };

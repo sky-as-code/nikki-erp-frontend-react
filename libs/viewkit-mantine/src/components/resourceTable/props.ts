@@ -15,6 +15,27 @@ const graphValueSchema: z.ZodType<unknown> = z.lazy(() => z.union([
 export const filterGraphSchema = z.record(z.string(), graphValueSchema);
 
 /**
+ * A toolbar action of the embedded table, rendered by `DataTable` next to Refresh.
+ *
+ * Two variants, exactly one of which must be set: `command` publishes to the command bus with the
+ * selected row ids, `routePath` is a plain link. The link variant exists because the entry points
+ * this schema was added for — "manage roles" on a principal's assigned-roles table — navigate to
+ * another page rather than mutate the listed records.
+ */
+export const resourceTableActionSchema = z.object({
+	/** i18n key, translated with the table's `translationNs`. */
+	label: z.string().min(1),
+	command: z.string().min(1).optional(),
+	/** Link target, resolved path-relative to the current URL. */
+	routePath: z.string().min(1).optional(),
+	supportMultiple: z.boolean().optional(),
+	requireSelection: z.boolean().optional(),
+}).strict().refine(
+	action => Boolean(action.command) !== Boolean(action.routePath),
+	{ message: 'exactly one of `command` or `routePath` must be set' },
+);
+
+/**
  * A related-records table, embeddable in a resource detail page's `childrenNodes`.
  *
  * Only rendered in update mode: `ResourceDetail` passes `childrenNodes` to
@@ -42,7 +63,10 @@ export const resourceTablePropsSchema = z.object({
 	 */
 	linkRoutePath: z.string().min(1).optional(),
 	fieldRenderers: z.record(z.string(), fieldRendererSpecSchema).optional(),
+	/** Toolbar actions appended after Refresh. */
+	extraActions: z.array(resourceTableActionSchema).default([]),
 }).strict();
 
 export type ResourceTableProps = z.infer<typeof resourceTablePropsSchema>;
 export type ResourceTablePropsInput = z.input<typeof resourceTablePropsSchema>;
+export type ResourceTableAction = z.infer<typeof resourceTableActionSchema>;

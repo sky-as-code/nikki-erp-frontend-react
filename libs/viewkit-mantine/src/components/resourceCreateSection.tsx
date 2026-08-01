@@ -1,13 +1,14 @@
 import { Collapse, Stack } from '@mantine/core';
 import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
+import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
 import React from 'react';
 import { z } from 'zod';
 
+import { PaperWithBorder } from './paperWithBorder';
 import { RESOURCE_CREATE_SECTION } from '../ids';
 import { ResourceCreateActionBar } from '../pages/resourceDetail/resourceCreateParts';
 import classes from '../pages/resourceDetail/ResourceDetail.module.css';
-import { PaperWithBorder } from '../pages/resourceDetail/resourceUpdateParts';
 
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
 
@@ -38,7 +39,7 @@ function ResourceCreateSection({ props, runtime }: {
 	const onSaveClick = formRuntime ? formRuntime.handleSubmit() : () => undefined;
 
 	return (
-		<Stack component={PaperWithBorder} gap='md'>
+		<Stack component={PaperWithBorder} gap='md' {...componentAttrs(RESOURCE_CREATE_SECTION)}>
 			<ResourceCreateActionBar
 				expanded={expanded}
 				onToggleCollapse={() => setExpanded(prev => !prev)}

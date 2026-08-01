@@ -1,12 +1,11 @@
-import { Stack } from '@mantine/core';
 import { useDynamicModel } from '@nikkierp/ui/hookhoc';
-import { usePaperBgColor } from '@nikkierp/ui/theme';
 import React from 'react';
 import { useParams } from 'react-router';
 
 import { ResourceCreate } from './ResourceCreate';
 import { ResourceDetailProvider } from './ResourceDetailProvider';
 import { ResourceUpdate } from './ResourceUpdate';
+import { PageContainer } from '../../components/PageContainer';
 
 import type { ResourceDetailProps } from './props';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -27,7 +26,6 @@ export const ResourceDetail = React.memo(ResourceDetailView);
 
 function ResourceDetailView({ params, childrenNodes }: ResourceDetailViewProps): React.ReactNode {
 	const pack = useDynamicModel(params.schemaName);
-	const bgColor = usePaperBgColor();
 	const { id } = useParams();
 	const createMode = id === 'new';
 	const commands = params.standardActionCommands;
@@ -40,11 +38,7 @@ function ResourceDetailView({ params, childrenNodes }: ResourceDetailViewProps):
 			isReading={false}
 			isWriting={false}
 		>
-			<Stack
-				bg={bgColor}
-				className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 px-4 pb-4 flex overflow-auto'
-				gap='md'
-			>
+			<PageContainer>
 				{createMode ? (
 					<ResourceCreate
 						commands={commands}
@@ -65,7 +59,7 @@ function ResourceDetailView({ params, childrenNodes }: ResourceDetailViewProps):
 						childrenNodes={nodes}
 					/>
 				)}
-			</Stack>
+			</PageContainer>
 		</ResourceDetailProvider>
 	);
 }

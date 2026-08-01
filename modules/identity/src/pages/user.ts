@@ -1,10 +1,14 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceListProps, resourceSplitViewProps,
+	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
+	resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
+import { RoleCommands } from '../features/role/commands';
 import { UserCommands } from '../features/user/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export function buildUserPages(): PageNode[] {
@@ -90,5 +94,30 @@ function buildUserDetailProps() {
 			header: 'form.security',
 			fields: ['created_at', 'updated_at'],
 		}],
+		childrenNodes: [buildAssignedRolesSection()],
 	});
+}
+
+/**
+ * The roles assigned to this user, read from the role side of the same many-to-many edge that
+ * `role.ts` reads from the other side: `assigned_users` is the inverse of `iam_user.roles`,
+ * and `linked` is the membership operator for a many edge. No dedicated endpoint is needed.
+ */
+function buildAssignedRolesSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{
+			header: 'user_sections_assignedRoles',
+			translationNs: c.IAM_MODULE,
+		},
+		[resourceTableNode({
+			schemaName: c.ROLE_SCHEMA_NAME,
+			translationNs: c.IAM_MODULE,
+			searchCommand: RoleCommands.SEARCH,
+			filterGraph: { if: ['assigned_users', 'linked', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'roles',
+			// Path-relative to `/{org}/{module}/users/:id`, i.e. the assignment wizard for this user.
+			extraActions: [{ label: 'assignment.manageRoles', routePath: 'roles' }],
+		})],
+	);
 }

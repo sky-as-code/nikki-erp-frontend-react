@@ -1,10 +1,14 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceListProps, resourceSplitViewProps,
+	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
+	resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { GroupCommands } from '../features/group/commands';
+import { RoleCommands } from '../features/role/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export function buildGroupPages(): PageNode[] {
@@ -52,5 +56,25 @@ function buildGroupDetailProps() {
 			header: 'form.generalInformation',
 			fields: ['name', 'description'],
 		}],
+		childrenNodes: [buildAssignedRolesSection()],
 	});
+}
+
+/** Group counterpart of the user page's section; `assigned_groups` is the matching edge. */
+function buildAssignedRolesSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{
+			header: 'group_sections_assignedRoles',
+			translationNs: c.IAM_MODULE,
+		},
+		[resourceTableNode({
+			schemaName: c.ROLE_SCHEMA_NAME,
+			translationNs: c.IAM_MODULE,
+			searchCommand: RoleCommands.SEARCH,
+			filterGraph: { if: ['assigned_groups', 'linked', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'roles',
+			extraActions: [{ label: 'assignment.manageRoles', routePath: 'roles' }],
+		})],
+	);
 }

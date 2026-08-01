@@ -15,7 +15,9 @@ import { buildIdentityMenu } from './menu';
 import { buildGroupPages } from './pages/group';
 import { buildOrganizationPages } from './pages/organization';
 import { buildRolePages } from './pages/role';
+import { buildRoleAssignmentPages } from './pages/roleAssignment';
 import { buildUserPages } from './pages/user';
+import { contributeIdentityViewKit } from './viewkit/kit';
 
 
 function Main(props: MicroAppProps) {
@@ -35,6 +37,8 @@ const bundle: MicroAppBundle = {
 		initMicroAppStateContext(result);
 
 		registerModelSchemas();
+		// IAM-specific templates go onto the host-owned engine, never a new instance.
+		contributeIdentityViewKit(host.viewEngine);
 		host.menuRegistry.register(buildIdentityMenu(slug));
 		registerUserCommands(host.commandBus);
 		registerGroupCommands(host.commandBus);
@@ -53,6 +57,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildGroupPages(),
 		...buildOrganizationPages(),
 		...buildRolePages(),
+		...buildRoleAssignmentPages(),
 	], []);
 
 	return (

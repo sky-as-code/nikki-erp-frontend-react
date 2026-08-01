@@ -1,3 +1,4 @@
+export * from './domAttributes';
 export * from './errors';
 export * from './ids';
 export * from './standardSchema';

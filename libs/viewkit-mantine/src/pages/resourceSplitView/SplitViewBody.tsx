@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 
 import { SplitLayout } from './SplitLayout';
+import { SplitViewSecondaryContext } from './splitViewContext';
 
 
 export type SplitViewBodyProps = {
@@ -23,7 +24,11 @@ export function SplitViewBody({ primary, secondary }: SplitViewBodyProps): React
 	const isSecondaryOpen = isSecondaryPage;
 
 	const renderPrimary = React.useCallback(() => isPrimaryOpen && primary, [isPrimaryOpen, primary]);
-	const renderSecondary = React.useCallback(() => isSecondaryOpen && secondary, [isSecondaryOpen, secondary]);
+	const renderSecondary = React.useCallback(() => isSecondaryOpen && (
+		<SplitViewSecondaryContext.Provider value={true}>
+			{secondary}
+		</SplitViewSecondaryContext.Provider>
+	), [isSecondaryOpen, secondary]);
 
 	React.useEffect(() => {
 		if (isStartFromList === null || !isSecondaryPage) {

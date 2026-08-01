@@ -1,4 +1,5 @@
 export * from './PageContext';
+export * from './anchors';
 export * from './ViewEngineContext';
 export * from './diagnostics';
 export { MetaComponent } from './renderComponent';

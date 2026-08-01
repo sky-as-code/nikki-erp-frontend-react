@@ -1,6 +1,6 @@
 import { CrudFormProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { useLocalize } from '@nikkierp/ui/i18n';
-import { MetaComponent } from '@nikkierp/viewengine/render';
+import { ComponentAnchor, MetaComponent } from '@nikkierp/viewengine/render';
 import React from 'react';
 import { z } from 'zod';
 
@@ -21,7 +21,12 @@ export const resourceCreateFormRenderer: IComponentRenderer<ResourceCreateFormPr
 	type: RESOURCE_CREATE_FORM,
 	propsSchema: resourceCreateFormPropsSchema,
 	render(_props, runtime) {
-		return <ResourceCreateForm runtime={runtime} />;
+		// Anchored: the form's own root is a pair of context providers that emit no DOM.
+		return (
+			<ComponentAnchor id={RESOURCE_CREATE_FORM}>
+				<ResourceCreateForm runtime={runtime} />
+			</ComponentAnchor>
+		);
 	},
 };
 

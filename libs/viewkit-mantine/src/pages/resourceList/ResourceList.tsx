@@ -8,7 +8,7 @@ import { useFieldRenderers } from '@nikkierp/viewengine/render';
 import React from 'react';
 
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
-import { useResourceLinkHref } from '../../data/useResourceLinkHref';
+import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
 
 import type { ResourceListCommandAction, ResourceListProps } from './props';
@@ -38,10 +38,11 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 		initialRequest: INITIAL_REQUEST,
 	});
 	const buildLinkHref = useResourceLinkHref(params.linkField, routePath);
+	const baseHref = useResourceBaseHref(routePath);
 
 	const actions = React.useMemo(
-		() => buildResourceActions(params, t, commandBus, refresh),
-		[params, t, commandBus, refresh],
+		() => buildResourceActions(params, t, commandBus, refresh, baseHref),
+		[params, t, commandBus, refresh, baseHref],
 	);
 
 	if (!pack || !searchData) {
@@ -80,6 +81,7 @@ function buildResourceActions(
 	t: TranslateFn,
 	commandBus: ReturnType<typeof useCommandBus>,
 	refreshSearch: () => void,
+	baseHref: string | undefined,
 ): DataTableAction[] {
 	const runCommand = (command: string) => (selectedItems: Record<string, unknown>[]) => {
 		const ids = selectedItems.map(item => item.id).filter(Boolean) as string[];
@@ -90,8 +92,10 @@ function buildResourceActions(
 		label: t('action.refresh'),
 		onTrigger: () => refreshSearch(),
 	}];
-	if (params.createEnabled) {
-		actions.push({ label: t('action.create'), href: '../new' });
+	if (params.createEnabled && baseHref) {
+		// Absolute: the list renders both at `/{org}/{module}/{page}` and, in a split
+		// view, at `/{org}/{module}/{page}/:id`, so a relative href lands elsewhere.
+		actions.push({ label: t('action.create'), href: `${baseHref}/new` });
 	}
 	if (params.deleteCommand) {
 		actions.push({

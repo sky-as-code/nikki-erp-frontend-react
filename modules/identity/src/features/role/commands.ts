@@ -3,6 +3,7 @@ import { Command, CommandResponse, ICommandBus, ok } from '@nikkierp/common/comm
 import * as svc from './roleService';
 import * as t from './types';
 import { IAM_MODULE, ROLE_SCHEMA_NAME } from '../../constants';
+import { DescribeRolesRequest, describeRoles } from '../roleAssignment';
 
 
 const PREFIX = `${IAM_MODULE}.${ROLE_SCHEMA_NAME}`;
@@ -12,6 +13,7 @@ export const RoleCommands = Object.freeze({
 	CREATE: `${PREFIX}.create_role`,
 	DELETE: `${PREFIX}.delete_role`,
 	GET_BY_ID: `${PREFIX}.get_role_by_id`,
+	DESCRIBE: `${PREFIX}.describe_roles`,
 	MANAGE_ENTITLEMENTS: `${PREFIX}.manage_role_entitlements`,
 	SEARCH: `${PREFIX}.search_roles`,
 	SET_IS_ARCHIVED: `${PREFIX}.set_role_is_archived`,
@@ -23,6 +25,7 @@ export function registerRoleCommands(bus: ICommandBus): () => void {
 		bus.subscribe(RoleCommands.CREATE, cmd => svc.createRole(payload<t.CreateRoleRequest>(cmd))),
 		bus.subscribe(RoleCommands.GET_BY_ID, cmd => svc.getRoleById(payload<t.GetRoleByIdRequest>(cmd))),
 		bus.subscribe(RoleCommands.SEARCH, cmd => svc.searchRoles(payload<t.SearchRolesRequest>(cmd))),
+		bus.subscribe(RoleCommands.DESCRIBE, cmd => describeRoles(payload<DescribeRolesRequest>(cmd))),
 		bus.subscribe(RoleCommands.UPDATE, cmd => svc.updateRole(payload<t.UpdateRoleRequest>(cmd))),
 		bus.subscribe(
 			RoleCommands.MANAGE_ENTITLEMENTS,

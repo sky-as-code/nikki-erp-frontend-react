@@ -7,7 +7,7 @@ import { validateProps } from './validateProps';
 import { useViewEngine } from './ViewEngineContext';
 
 import type { RenderResult } from '../core/renderResult';
-import type { ComponentNode, PageNode } from '../metadata/types';
+import type { PageNode } from '../metadata/types';
 
 
 /**
@@ -18,7 +18,7 @@ import type { ComponentNode, PageNode } from '../metadata/types';
 export function MetaPage({ node }: { node: PageNode }): RenderResult {
 	const body = node.template
 		? <TemplatePage node={node} />
-		: <CustomPage nodes={node.children ?? []} />;
+		: <CustomPage node={node} />;
 	return (
 		<PageContextProvider value={{ templateId: node.template, routePath: node.routePath }}>
 			{body}
@@ -37,7 +37,7 @@ function TemplatePage({ node }: { node: PageNode }): RenderResult {
 
 	const parsed = validateProps(template.propsSchema, node.props, templateId);
 	if (parsed.issues) {
-		return <InvalidProps contributionId={templateId} issues={parsed.issues} />;
+		return <InvalidProps contributionId={templateId} issues={parsed.issues} kind='page' />;
 	}
 
 	const params = template.createProps
@@ -51,12 +51,15 @@ function TemplatePage({ node }: { node: PageNode }): RenderResult {
 	});
 }
 
-function CustomPage({ nodes }: { nodes: ComponentNode[] }): React.ReactNode {
+function CustomPage({ node }: { node: PageNode }): React.ReactNode {
 	return (
 		<div
 			className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 px-4 pb-4 flex flex-col gap-4 overflow-auto'
+			// A template-less page has no contribution id to name, so it identifies itself by the
+			// route it was defined on. Template pages carry their template id instead.
+			data-page={node.routePath}
 		>
-			<MetaComponent node={nodes} />
+			<MetaComponent node={node.children ?? []} />
 		</div>
 	);
 }

@@ -1,16 +1,18 @@
 import { defineComponent } from '@nikkierp/viewengine/metadata';
 
-import { collapsiblePanelPropsSchema } from './components/collapsiblePanel/props';
+import { collapsibleSectionPropsSchema } from './components/collapsibleSection/props';
+import { pageHeaderPropsSchema } from './components/pageHeader/props';
 import { resourceTablePropsSchema } from './components/resourceTable/props';
 import {
-	COLLAPSIBLE_PANEL, RESOURCE_DETAIL_TEMPLATE, RESOURCE_LIST_TEMPLATE,
+	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE, RESOURCE_LIST_TEMPLATE,
 	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE,
 } from './ids';
 import { resourceDetailPropsSchema } from './pages/resourceDetail/props';
 import { resourceListPropsSchema } from './pages/resourceList/props';
 import { resourceSplitViewPropsSchema } from './pages/resourceSplitView/props';
 
-import type { CollapsiblePanelPropsInput } from './components/collapsiblePanel/props';
+import type { CollapsibleSectionPropsInput } from './components/collapsibleSection/props';
+import type { PageHeaderPropsInput } from './components/pageHeader/props';
 import type { ResourceTablePropsInput } from './components/resourceTable/props';
 import type {
 	ResourceDetailProps, ResourceDetailPropsInput,
@@ -58,18 +60,34 @@ export function resourceTableNode(input: ResourceTablePropsInput): ComponentNode
 	});
 }
 
-/** Wraps nodes in a titled, self-contained collapsible block. */
-export function collapsiblePanelNode(
-	input: CollapsiblePanelPropsInput, children: ComponentNode[],
+/**
+ * Wraps nodes in a bordered block. Give it a `header` plus its `translationNs` for a titled,
+ * collapsible block — the usual shape for a resource detail page's appended sections — or leave
+ * both off for a bare block that is always open.
+ */
+export function collapsibleSectionNode(
+	input: CollapsibleSectionPropsInput, children: ComponentNode[],
 ): ComponentNode {
 	return defineComponent({
-		component: COLLAPSIBLE_PANEL,
-		props: collapsiblePanelPropsSchema.parse(input) as Record<string, unknown>,
+		component: COLLAPSIBLE_SECTION,
+		props: collapsibleSectionPropsSchema.parse(input) as Record<string, unknown>,
 		children,
 	});
 }
 
-export * from './components/collapsiblePanel/props';
+/** A page title block. Child nodes render as its action row. */
+export function pageHeaderNode(
+	input: PageHeaderPropsInput, children: ComponentNode[] = [],
+): ComponentNode {
+	return defineComponent({
+		component: PAGE_HEADER,
+		props: pageHeaderPropsSchema.parse(input) as Record<string, unknown>,
+		children,
+	});
+}
+
+export * from './components/collapsibleSection/props';
+export * from './components/pageHeader/props';
 export * from './components/resourceTable/props';
 export * from './pages/resourceDetail/props';
 export * from './pages/resourceList/props';
