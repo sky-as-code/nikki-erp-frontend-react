@@ -18,6 +18,18 @@ export type ModelSchema = {
 	name: string,
 	fields: ModelSchemaFieldsMap,
 	etag?: string,
+	/**
+	 * Groups in which exactly one member may hold a value. The backend enforces this on validate;
+	 * the form only disables the peers of a member that is already set.
+	 */
+	exclusive_required_field_groups?: string[][],
+	/**
+	 * The field identifying a record of this model to a human — what a relation select shows
+	 * instead of a raw id. Absent on schemas that have not declared one yet; fall back to `id`.
+	 */
+	record_label_field?: string,
+	/** Optional secondary field shown beneath the main label to disambiguate similar records. */
+	record_sub_label_field?: string,
 	label?: ModelSchemaLangJson,
 	to_relations?: ModelSchemaRelation[],
 	from_relations?: ModelSchemaRelation[],
@@ -99,6 +111,51 @@ export type ModelSchemaRelation = {
 
 export type ModelSchemaRelationType = 'many:one' | 'one:many' | 'many:many' | 'one:one';
 
+/**
+ * The outgoing relation whose foreign key is `fieldName`, if the field is one.
+ *
+ * Many-to-many entries carry no `src_field` — they are edges, not columns — so they never match
+ * and a field only resolves to a relation it actually owns the key for.
+ */
+export function findRelationBySrcField(
+	modelSchema: ModelSchema, fieldName: string,
+): ModelSchemaRelation | undefined {
+	return modelSchema.to_relations?.find(relation => relation.src_field === fieldName);
+}
+
+/**
+ * The other members of the exclusive group `fieldName` belongs to; empty when it belongs to none.
+ * A field in several groups yields the union, deduplicated and excluding itself.
+ */
+export function findExclusiveGroupPeers(modelSchema: ModelSchema, fieldName: string): string[] {
+	const groups = modelSchema.exclusive_required_field_groups ?? [];
+	const peers = groups
+		.filter(group => group.includes(fieldName))
+		.flatMap(group => group.filter(member => member !== fieldName));
+	return Array.from(new Set(peers));
+}
+
+/**
+ * Data types that `AutoField` can render an input for.
+ *
+ * Keep in step with its switch in `@nikkierp/ui/components/form/fields.tsx` — a type listed here
+ * with no case renders an empty slot, and a case missing from here hides a field that would have
+ * rendered. `model_schema.test.ts` guards the pairing.
+ */
+const RENDERABLE_DATA_TYPES: ReadonlySet<ModelSchemaFieldDataTypeName> = new Set([
+	'boolean', 'email', 'enumString', 'int32', 'nikkiDate', 'nikkiDateTime', 'nikkiLangJson',
+	'nikkiTime', 'secret', 'string', 'ulid',
+]);
+
+/** Whether a form can render an input for this field, as opposed to leaving an empty slot. */
+export function isRenderableFieldType(fieldDef: ModelSchemaField): boolean {
+	if (fieldDef.data_type.name === 'enumString' && !fieldDef.data_type.options?.enumValues) {
+		// AutoField renders nothing for an enum with no values to choose from.
+		return false;
+	}
+	return RENDERABLE_DATA_TYPES.has(fieldDef.data_type.name);
+}
+
 // Extra validation rule for the field. <br/>
 // Format: [rule_name, rule_args] <br/>
 // rule_name: The name of the rule. <br/>
@@ -106,12 +163,34 @@ export type ModelSchemaRelationType = 'many:one' | 'one:many' | 'many:many' | 'o
 // Example: ['arrlength', [0, 100]] means the array length must be between 0 and 100.
 export type ModelSchemaFieldRule = [string, unknown];
 
-export function buildValidationSchema(modelSchema: ModelSchema): z.ZodObject<any> {
+/**
+ * The validation schema for a form over `modelSchema`.
+ *
+ * Not a `ZodObject`: the blank-field transform below makes it a schema that *parses to* an object,
+ * which is all `zodResolver` requires. Anything needing per-field schemas should read
+ * `modelSchema.fields` rather than a `.shape` this no longer exposes.
+ */
+export type ModelValidationSchema = z.ZodType<Record<string, unknown>, any, any>;
+
+export function buildValidationSchema(modelSchema: ModelSchema): ModelValidationSchema {
 	const shape: Record<string, z.ZodTypeAny> = {};
 	Object.entries(modelSchema.fields).forEach(([fieldName, fieldDef]) => {
 		shape[fieldName] = buildFieldSchema(fieldDef);
 	});
-	return z.object(shape);
+	// Blank optional fields parse to `undefined`, which zod still emits as a present key. Dropping
+	// those keys keeps them out of the request body entirely, so the server sees a field the user
+	// left alone as absent rather than as an explicit empty value.
+	return z.object(shape).transform(omitUndefined);
+}
+
+function omitUndefined(parsed: Record<string, unknown>): Record<string, unknown> {
+	const result: Record<string, unknown> = {};
+	Object.entries(parsed).forEach(([key, value]) => {
+		if (value !== undefined) {
+			result[key] = value;
+		}
+	});
+	return result;
 }
 
 
@@ -126,7 +205,7 @@ function buildFieldSchema(fieldDef: ModelSchemaField): z.ZodTypeAny {
 	}
 
 	if (shouldBeOptional) {
-		return fieldSchema.optional();
+		return applyOptionalRule(fieldSchema);
 	}
 
 	return applyRequiredRule(fieldSchema);
@@ -329,6 +408,35 @@ function createDateTimeSchema(): z.ZodTypeAny {
 	const stringSchema = createStringSchema().datetime(ErrorKeys.formatMismatch);
 	const dateSchema = z.date({ error: ErrorKeys.invalidDataType });
 	return stringSchema.or(dateSchema);
+}
+
+/**
+ * Validates an optional field, treating blank input as "not provided".
+ *
+ * An untouched text input submits `''`, and a cleared select `null`. Neither is a value the field's
+ * own schema would accept — an empty string is not a ULID — so validating them directly reports a
+ * spurious "invalid data type" on a field the user was free to leave alone. Blanking them to
+ * `undefined` also drops the key from the parsed output, so the payload carries no property at all
+ * rather than an empty one the server would have to interpret.
+ */
+function applyOptionalRule(fieldSchema: z.ZodTypeAny): z.ZodTypeAny {
+	return z.preprocess(value => (isBlank(value) ? undefined : value), fieldSchema.optional());
+}
+
+/**
+ * Whether a submitted value means "the user entered nothing".
+ *
+ * Deliberately narrower than {@link isNilOrEmpty}: `0` and `false` are real values a number or
+ * checkbox field may legitimately hold, and must not be blanked away.
+ */
+function isBlank(value: unknown): boolean {
+	if (value == null) {
+		return true;
+	}
+	if (typeof value === 'string') {
+		return value.trim().length === 0;
+	}
+	return Array.isArray(value) && value.length === 0;
 }
 
 function applyRequiredRule(fieldSchema: z.ZodTypeAny): z.ZodTypeAny {

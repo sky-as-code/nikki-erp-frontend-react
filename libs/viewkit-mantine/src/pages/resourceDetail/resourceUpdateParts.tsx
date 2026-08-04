@@ -15,6 +15,7 @@ import clsx from 'clsx';
 import React from 'react';
 import { Link } from 'react-router';
 
+import { hasVisibleField, isFieldVisible } from './fieldVisibility';
 import classes from './ResourceDetail.module.css';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
 import { useResourceUpdateContext } from './resourceUpdateContext';
@@ -358,8 +359,11 @@ export function OwnPropertiesBlock({
 	const { schemaPack } = useResourceDetailContext();
 	const modelSchema = schemaPack?.modelSchema;
 	const t = useTranslate(useResourceDetailTranslationNs());
+	const mode = updateMode ? 'update' : 'read';
 
-	if (!modelSchema) {
+	// A header over nothing reads as a broken section, so a block whose fields all filter out is
+	// dropped along with its title.
+	if (!modelSchema || !hasVisibleField(modelSchema, block.fields ?? [], mode, fieldValues)) {
 		return null;
 	}
 
@@ -387,15 +391,12 @@ function FieldGroupVertical({
 	updateMode: boolean,
 }): React.ReactNode {
 	const localize = useLocalize(useResourceDetailTranslationNs());
-	if (fields.length === 0) {
-		return <Text c='dimmed'>No fields configured</Text>;
-	}
 
 	if (updateMode) {
 		return (
 			<div className={classes.formFieldWrapper}>
 				{fields.map(field => {
-					if (!modelSchema.fields[field]) {
+					if (!isFieldVisible(modelSchema, field, 'update')) {
 						return null;
 					}
 					return (
@@ -411,7 +412,7 @@ function FieldGroupVertical({
 	return (
 		<div className={classes.formFieldWrapper}>
 			{fields.map(field => {
-				if (!modelSchema.fields[field]) {
+				if (!isFieldVisible(modelSchema, field, 'read', fieldValues)) {
 					return null;
 				}
 				return (

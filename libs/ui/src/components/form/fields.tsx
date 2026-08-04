@@ -1,33 +1,49 @@
 import { ActionIcon, Checkbox, Grid, Input, NumberInput, Select, Text, InputProps, NumberInputProps } from '@mantine/core';
-import { DateInput, DateInputProps } from '@mantine/dates';
+import { DateInput, DateInputProps, DateTimePickerProps } from '@mantine/dates';
 import { useId } from '@mantine/hooks';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import React from 'react';
-import { Controller } from 'react-hook-form';
+import { Controller, useWatch } from 'react-hook-form';
 
+import { DateTimeInputField, ReadOnlyTextField, TimeInputField } from './dateTimeFields';
 import { useFieldData, useFormField, useFormStyle } from './formContext';
 import { LangJsonField } from './LangJsonField';
+import { RelationSelectField } from './RelationSelectField';
 import { LocalizeFn, TranslateFn } from '../../i18n';
 
 
 export type AutoFieldProps = {
-	name: string;
-	autoFocused?: boolean;
-	inputProps?: Partial<InputProps>;
-	htmlProps?: FilteredInputHTMLAttributes;
-	ref?: React.RefObject<any>;
-	translate?: TranslateFn;
+	name: string,
+	autoFocused?: boolean,
+	inputProps?: Partial<InputProps>,
+	htmlProps?: FilteredInputHTMLAttributes,
+	ref?: React.RefObject<any>,
+	translate?: TranslateFn,
 };
 
 export function AutoField(props: AutoFieldProps) {
-	const { getFieldDef, localize } = useFormField();
+	const { getFieldDef, localize, formVariant } = useFormField();
 	const fieldDef = getFieldDef(props.name);
 	const ref = React.useRef<HTMLInputElement | null>(null);
+	const exclusiveDisabledBy = useExclusiveBlocker(props.name);
 
 	if (!fieldDef) {
 		console.warn(`Unrecognized field: ${props.name}`);
 		return null;
+	}
+
+	// A field the server will not accept an update for is shown, not edited: rendering an input
+	// would invite a change that silently fails to save.
+	if (formVariant === 'update' && fieldDef.no_update) {
+		return <ReadOnlyTextField name={props.name} localize={localize} />;
+	}
+
+	const identityOrTemporal = renderIdentityOrTemporalField({
+		...props, fieldDef, localize, exclusiveDisabledBy, fallbackRef: ref,
+	});
+	if (identityOrTemporal !== undefined) {
+		return identityOrTemporal;
 	}
 
 	switch (fieldDef.data_type.name) {
@@ -94,6 +110,47 @@ export function AutoField(props: AutoFieldProps) {
 }
 
 type SelectProps = React.ComponentPropsWithoutRef<typeof Select>;
+
+type IdentityOrTemporalArgs = AutoFieldProps & {
+	fieldDef: dyn.ModelSchemaField,
+	localize: LocalizeFn,
+	exclusiveDisabledBy?: string,
+	fallbackRef: React.RefObject<HTMLInputElement | null>,
+};
+
+/**
+ * The data types added after the original switch: ids, which may point at another record, and the
+ * temporal types. Returns `undefined` — not `null` — when the type is none of them, so the caller
+ * can tell "not handled here" from "handled, renders nothing".
+ */
+function renderIdentityOrTemporalField(args: IdentityOrTemporalArgs): React.ReactNode | undefined {
+	const { fieldDef, localize, fallbackRef } = args;
+	switch (fieldDef.data_type.name) {
+		case 'ulid':
+			return <UlidField
+				name={args.name} localize={localize}
+				inputProps={args.inputProps as Partial<SelectProps>}
+				htmlProps={args.htmlProps} ref={args.ref ?? fallbackRef}
+				exclusiveDisabledBy={args.exclusiveDisabledBy}
+			/>;
+		case 'nikkiDateTime':
+			return <DateTimeInputField
+				name={args.name} autoFocused={args.autoFocused}
+				inputProps={args.inputProps as Partial<DateTimePickerProps>} htmlProps={args.htmlProps}
+				ref={args.ref ?? fallbackRef}
+				localize={localize}
+			/>;
+		case 'nikkiTime':
+			return <TimeInputField
+				name={args.name} autoFocused={args.autoFocused}
+				inputProps={args.inputProps as Partial<InputProps>} htmlProps={args.htmlProps}
+				ref={args.ref ?? fallbackRef}
+				localize={localize}
+			/>;
+		default:
+			return undefined;
+	}
+}
 
 function useDefaultInputProps(inputProps?: Partial<InputProps>): Partial<InputProps> {
 	return React.useMemo(() => ({
@@ -241,16 +298,16 @@ type FilteredInputHTMLAttributes = Omit<
 >;
 
 type BaseInputProps<TInputProp> = {
-	name: string;
-	autoFocused?: boolean;
-	inputProps?: Partial<TInputProp>;
-	htmlProps?: FilteredInputHTMLAttributes;
-	ref: React.RefObject<HTMLInputElement | null>;
-	localize: LocalizeFn;
+	name: string,
+	autoFocused?: boolean,
+	inputProps?: Partial<TInputProp>,
+	htmlProps?: FilteredInputHTMLAttributes,
+	ref: React.RefObject<HTMLInputElement | null>,
+	localize: LocalizeFn,
 };
 
 export type TextInputFieldProps = BaseInputProps<InputProps> & {
-	type: 'text' | 'email';
+	type: 'text' | 'email',
 };
 
 export function TextInputField(props: TextInputFieldProps) {
@@ -596,9 +653,9 @@ export type DynamicEnumSelectFieldProps = BaseInputProps<SelectProps>;
 // }
 
 export type BooleanFieldProps = {
-	name: string;
-	inputProps?: Partial<InputProps>;
-	localize: LocalizeFn;
+	name: string,
+	inputProps?: Partial<InputProps>,
+	localize: LocalizeFn,
 };
 
 export function BooleanField(props: BooleanFieldProps) {
@@ -640,4 +697,65 @@ export function BooleanField(props: BooleanFieldProps) {
 			</Grid.Col>
 		</Grid>
 	);
+}
+
+export type UlidFieldProps = {
+	name: string,
+	localize: LocalizeFn,
+	inputProps?: Partial<SelectProps>,
+	htmlProps?: FilteredInputHTMLAttributes,
+	ref: React.RefObject<HTMLInputElement | null>,
+	exclusiveDisabledBy?: string,
+};
+
+/**
+ * A `ulid` is either a foreign key or a bare identifier, and the schema says which: a field listed
+ * as the `src_field` of an outgoing relation points at another record and gets a picker, while one
+ * that is not — `org_id` on a role, for instance — is just an id the user types.
+ */
+export function UlidField(props: UlidFieldProps) {
+	const { crudSchema } = useFormField();
+	const modelSchema = crudSchema?.modelSchema;
+	const relation = modelSchema ? dyn.findRelationBySrcField(modelSchema, props.name) : undefined;
+
+	if (relation) {
+		return <RelationSelectField
+			name={props.name}
+			localize={props.localize}
+			inputProps={props.inputProps}
+			exclusiveDisabledBy={props.exclusiveDisabledBy}
+		/>;
+	}
+
+	return <TextInputField
+		name={props.name} type='text'
+		inputProps={props.inputProps as Partial<InputProps>} htmlProps={props.htmlProps}
+		ref={props.ref}
+		localize={props.localize}
+	/>;
+}
+
+/**
+ * The peer field, in an exclusive group with `fieldName`, that already holds a value — meaning
+ * this field must not be filled too. Undefined when the field is free to edit.
+ *
+ * The backend rejects a group with zero or several members set; disabling the peers keeps the user
+ * from building a request it is going to refuse. Clearing is left to the user, so a value is never
+ * silently discarded.
+ */
+export function useExclusiveBlocker(fieldName: string): string | undefined {
+	const { crudSchema, control } = useFormField();
+	const modelSchema = crudSchema?.modelSchema;
+	const peers = React.useMemo(
+		() => (modelSchema ? dyn.findExclusiveGroupPeers(modelSchema, fieldName) : []),
+		[modelSchema, fieldName],
+	);
+	// Called unconditionally with a possibly-empty list, since hooks cannot be skipped.
+	const peerValues = useWatch({ control, name: peers }) as unknown[];
+
+	if (peers.length === 0) {
+		return undefined;
+	}
+	const filledIndex = peerValues.findIndex(value => value !== undefined && value !== null && value !== '');
+	return filledIndex >= 0 ? peers[filledIndex] : undefined;
 }

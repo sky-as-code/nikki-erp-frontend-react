@@ -1,4 +1,4 @@
-import { Command, CommandResponse, fail, ICommandBus, ok } from '@nikkierp/common/commandBus';
+import { Command, ICommandBus, ok, ServiceResult } from '@nikkierp/common/commandBus';
 import { IMenuRegistry, MenuContribution } from '@nikkierp/ui/menu';
 
 
@@ -33,27 +33,26 @@ export function registerMenuCommands(bus: ICommandBus, registry: IMenuRegistry):
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
 }
 
+/**
+ * A malformed payload or a slug conflict is a caller bug, not something an end user
+ * can act on, so both throw and surface as `CommandBusResponse.error`.
+ */
 function handleRegisterMenu(
 	registry: IMenuRegistry, payload?: RegisterMenuPayload,
-): CommandResponse<MenuCommandResult, Error> {
+): ServiceResult<MenuCommandResult> {
 	if (!payload?.slug || !payload.translationNs || !Array.isArray(payload.items)) {
-		return fail(new Error(`${LAYOUT_COMMANDS.REGISTER_MENU} requires { slug, translationNs, items }.`));
+		throw new Error(`${LAYOUT_COMMANDS.REGISTER_MENU} requires { slug, translationNs, items }.`);
 	}
-	try {
-		const { override, ...contribution } = payload;
-		registry.register(contribution, { override });
-		return ok({ slug: payload.slug, itemCount: payload.items.length });
-	}
-	catch (error) {
-		return fail(error as Error);
-	}
+	const { override, ...contribution } = payload;
+	registry.register(contribution, { override });
+	return ok({ slug: payload.slug, itemCount: payload.items.length });
 }
 
 function handleUnregisterMenu(
 	registry: IMenuRegistry, payload?: UnregisterMenuPayload,
-): CommandResponse<MenuCommandResult, Error> {
+): ServiceResult<MenuCommandResult> {
 	if (!payload?.slug) {
-		return fail(new Error(`${LAYOUT_COMMANDS.UNREGISTER_MENU} requires { slug }.`));
+		throw new Error(`${LAYOUT_COMMANDS.UNREGISTER_MENU} requires { slug }.`);
 	}
 	registry.unregister(payload.slug);
 	return ok({ slug: payload.slug, itemCount: 0 });

@@ -1,4 +1,4 @@
-import { ActionIcon, Anchor, Button, Group, Stack, Text, Title } from '@mantine/core';
+import { ActionIcon, Anchor, Button, Group, Stack, Title } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { AutoField } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
@@ -8,6 +8,7 @@ import clsx from 'clsx';
 import React from 'react';
 import { Link } from 'react-router';
 
+import { hasVisibleField, isFieldVisible } from './fieldVisibility';
 import { useResourceCreateContext } from './resourceCreateContext';
 import classes from './ResourceDetail.module.css';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
@@ -101,7 +102,9 @@ export function ResourceCreateBlock({
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const modelSchema = schemaPack?.modelSchema;
 
-	if (!modelSchema) {
+	// A header over nothing reads as a broken section, so a block whose fields all filter out is
+	// dropped along with its title.
+	if (!modelSchema || !hasVisibleField(modelSchema, block.fields ?? [], 'create')) {
 		return null;
 	}
 
@@ -120,15 +123,10 @@ function ResourceCreateFieldGroup({
 	isLoading: boolean,
 	modelSchema: dyn.ModelSchema,
 }): React.ReactNode {
-	if (fields.length === 0) {
-		return <Text c='dimmed'>No fields configured</Text>;
-	}
-
 	return (
 		<div className={classes.formFieldWrapper}>
 			{fields.map(field => {
-				const fieldDef = modelSchema.fields[field];
-				if (!fieldDef || fieldDef.is_system_field || fieldDef.is_primary_key) {
+				if (!isFieldVisible(modelSchema, field, 'create')) {
 					return null;
 				}
 				return (

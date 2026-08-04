@@ -1,3 +1,4 @@
+import { ServiceResult } from '@nikkierp/common/commandBus';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { ClientErrors } from '@nikkierp/common/types';
 import {
@@ -20,8 +21,13 @@ export type ReduxActionThunkApi<TReturn = any, TArg = any> =
 	Parameters<AsyncThunkPayloadCreator<TReturn, TArg, ReduxActionThunkConfig>>[1];
 type ReduxActionThunkFn<TReturn, TArg> =
 	(thunkArgs: TArg, thunkApi: ReduxActionThunkApi<TReturn, TArg>) => Promise<TReturn>;
-type SchemaReduxActionThunkFn<TReturn, TArg> =
-	(schema: dyn.SchemaPack, thunkArgs: TArg, thunkApi: ReduxActionThunkApi<TReturn, TArg>) => Promise<TReturn>;
+/**
+ * May resolve either to the payload directly or to a `{data, clientErrors}` envelope;
+ * `unwrapServiceResult` collapses the latter before the thunk resolves.
+ */
+type SchemaReduxActionThunkFn<TReturn, TArg> = (
+	schema: dyn.SchemaPack, thunkArgs: TArg, thunkApi: ReduxActionThunkApi<TReturn, TArg>,
+) => Promise<TReturn | ServiceResult<TReturn>>;
 type ReduxActionThunkConfig = { rejectValue: any };
 
 export interface ReduxThunkState<T =  any> {
@@ -215,6 +221,24 @@ function reducerThunkError(action: string) {
 	};
 }
 
+/**
+ * Unwraps a `{data, clientErrors}` envelope so a thunk resolves to the payload alone.
+ *
+ * Client errors are raised as {@link ClientErrors}, which the surrounding `catch`
+ * routes to `rejectWithValue` — the shape these thunks already produced when
+ * `request.ts` threw. A plain value passes through, so a service that does not use
+ * the envelope keeps working.
+ */
+function unwrapServiceResult<TReturn>(result: TReturn | ServiceResult<TReturn>): TReturn {
+	if (result == null || typeof result !== 'object') return result as TReturn;
+	const envelope = result as { data?: unknown, clientErrors?: unknown };
+	if (!Array.isArray(envelope.clientErrors) || !('data' in envelope)) return result as TReturn;
+	if (envelope.clientErrors.length > 0) {
+		throw new ClientErrors(envelope.clientErrors);
+	}
+	return envelope.data as TReturn;
+}
+
 export function createSchemaThunk<TReturn=void, TArg=void>(
 	schemaName: string,
 	thunkName: string,
@@ -230,7 +254,7 @@ export function createSchemaThunk<TReturn=void, TArg=void>(
 					return rejectWithValue(`Schema ${schemaName} not found. Make sure it is registered with schemaRegistry.register().`);
 				}
 				const result = await serviceFn(schema!, thunkArgs, thunkApi);
-				return result;
+				return unwrapServiceResult(result);
 			}
 			catch (error) {
 				if (error instanceof ClientErrors) {

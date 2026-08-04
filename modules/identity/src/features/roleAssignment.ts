@@ -1,4 +1,4 @@
-import { CommandResponse, fail, ok } from '@nikkierp/common/commandBus';
+import { ServiceResult } from '@nikkierp/common/commandBus';
 import * as dyn from '@nikkierp/common/dynamicModel';
 
 import { apiGet } from './http';
@@ -44,23 +44,12 @@ export type DescribeRolesResponse = { items: DescribedRole[] };
 /** Matches `DescribeRolesMaxIds` in the backend role commands; exceeding it is a 400. */
 export const DESCRIBE_ROLES_MAX_IDS = 20;
 
-type ServiceResult<TData> = Promise<CommandResponse<TData, unknown>>;
-
-async function attempt<TData>(fn: () => Promise<TData>): ServiceResult<TData> {
-	try {
-		return ok(await fn());
-	}
-	catch (error) {
-		return fail(error);
-	}
-}
-
 /** `GET /v1/iam/{users|groups}/:id/roles` — the roles currently assigned to one principal. */
 export function searchAssignedRoles(
 	kind: PrincipalKind, request: SearchAssignedRolesRequest,
-): ServiceResult<SearchAssignedRolesResponse> {
+): Promise<ServiceResult<SearchAssignedRolesResponse>> {
 	const { id, ...query } = request;
-	return attempt(() => apiGet<SearchAssignedRolesResponse>(`v1/iam/${kind}/${id}/roles`, query));
+	return apiGet<SearchAssignedRolesResponse>(`v1/iam/${kind}/${id}/roles`, query);
 }
 
 /**
@@ -71,12 +60,12 @@ export function searchAssignedRoles(
  */
 export function manageRoleAssignments(
 	kind: PrincipalKind, request: ManageRoleAssignmentsRequest,
-): ServiceResult<ManageRoleAssignmentsResponse> {
+): Promise<ServiceResult<ManageRoleAssignmentsResponse>> {
 	const { id, ...body } = request;
-	return attempt(() => dyn.withSchema(
+	return dyn.withSchema(
 		principalSchemaName(kind),
 		schema => schema.restApi.manageM2m(body, `${id}/roles`),
-	));
+	);
 }
 
 function principalSchemaName(kind: PrincipalKind): string {
@@ -87,8 +76,10 @@ function principalSchemaName(kind: PrincipalKind): string {
  * `GET /v1/iam/roles/describe` — resolves roles into resource/action/scope display names for
  * the assignment confirmation stage. Callers must chunk by DESCRIBE_ROLES_MAX_IDS.
  */
-export function describeRoles(request: DescribeRolesRequest): ServiceResult<DescribeRolesResponse> {
-	return attempt(() => apiGet<DescribeRolesResponse>('v1/iam/roles/describe', {
+export function describeRoles(
+	request: DescribeRolesRequest,
+): Promise<ServiceResult<DescribeRolesResponse>> {
+	return apiGet<DescribeRolesResponse>('v1/iam/roles/describe', {
 		role_id: request.role_ids,
-	}));
+	});
 }

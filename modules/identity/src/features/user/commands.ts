@@ -1,47 +1,54 @@
-import { Command, CommandResponse, ICommandBus, ok } from '@nikkierp/common/commandBus';
+import { Command, ICommandBus } from '@nikkierp/common/commandBus';
+import * as dyn from '@nikkierp/common/dynamicModel';
+import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
-import * as t from './types';
-import * as svc from './userService';
+import { userService } from './userService';
 import { IAM_MODULE, USER_SCHEMA_NAME } from '../../constants';
 import * as ra from '../roleAssignment';
 
 
 const PREFIX = `${IAM_MODULE}.${USER_SCHEMA_NAME}`;
 
-/** Command names handled by the identity user sub-module. */
+/** The status each contextual action moves the user to. */
+const STATUS_BY_ACTION = { activate: 'active', invite: 'invited', suspend: 'suspended' } as const;
+
+/**
+ * Command names for the user resource.
+ *
+ * The CRUD names come from the schema-driven generic path (`core.resource.iam_user.*`),
+ * served by the Shell's single prefix subscription — this module subscribes none of
+ * them.
+ *
+ * The remaining four are genuinely not CRUD over `iam_user`:
+ * - `SEARCH_ASSIGNED_ROLES` / `MANAGE_ROLE_ASSIGNMENTS` hit role-assignment endpoints
+ *   the dynamic schema cannot express.
+ * - `ACTIVATE` / `INVITE` / `SUSPEND` are `update` carrying a fixed `status`. They keep
+ *   dedicated names because the detail template's contextual actions send only the
+ *   record's `{id, etag}` — its props carry no payload — so the status value has
+ *   nowhere else to travel.
+ */
 export const UserCommands = Object.freeze({
+	...resourceCommands(USER_SCHEMA_NAME),
 	ACTIVATE: `${PREFIX}.activate_user`,
-	CREATE: `${PREFIX}.create_user`,
-	DELETE: `${PREFIX}.delete_user`,
-	GET_BY_ID: `${PREFIX}.get_user_by_id`,
 	INVITE: `${PREFIX}.invite_user`,
+	SUSPEND: `${PREFIX}.suspend_user`,
 	MANAGE_ROLE_ASSIGNMENTS: `${PREFIX}.manage_user_role_assignments`,
 	SEARCH_ASSIGNED_ROLES: `${PREFIX}.search_user_assigned_roles`,
-	SET_IS_ARCHIVED: `${PREFIX}.set_user_is_archived`,
-	SUSPEND: `${PREFIX}.suspend_user`,
-	SEARCH: `${PREFIX}.search_users`,
-	UPDATE: `${PREFIX}.update_user`,
 } as const);
 
 /**
- * Subscribes the user command handlers onto the Shell-hosted bus. Called synchronously
- * during the micro-app `init` so lazy command resolution can find the handlers.
+ * Registers the user service and subscribes the non-CRUD handlers. Called
+ * synchronously during the micro-app `init` so lazy command resolution finds them.
  * Returns a function that unsubscribes every handler (for teardown).
  */
 export function registerUserCommands(bus: ICommandBus): () => void {
+	registerSchemaModule(USER_SCHEMA_NAME, IAM_MODULE);
+	registerCrudService(USER_SCHEMA_NAME, userService);
+
 	const unsubscribers = [
-		bus.subscribe(UserCommands.CREATE, cmd => svc.createUser(payload<t.CreateUserRequest>(cmd))),
-		bus.subscribe(UserCommands.GET_BY_ID, cmd => svc.getUserById(payload<t.GetUserByIdRequest>(cmd))),
-		bus.subscribe(UserCommands.SEARCH, cmd => svc.searchUsers(payload<t.SearchUserRequest>(cmd))),
-		bus.subscribe(UserCommands.UPDATE, cmd => svc.updateUser(payload<t.UpdateUserRequest>(cmd))),
-		bus.subscribe(UserCommands.DELETE, handleDeleteUser),
-		bus.subscribe(
-			UserCommands.SET_IS_ARCHIVED,
-			cmd => svc.setUserIsArchived(payload<t.SetUserIsArchivedRequest>(cmd)),
-		),
-		bus.subscribe(UserCommands.ACTIVATE, cmd => svc.activateUser(payload<t.ActivateUserRequest>(cmd))),
-		bus.subscribe(UserCommands.SUSPEND, cmd => svc.suspendUser(payload<t.SuspendUserRequest>(cmd))),
-		bus.subscribe(UserCommands.INVITE, cmd => svc.inviteUser(payload<t.InviteUserRequest>(cmd))),
+		bus.subscribe(UserCommands.ACTIVATE, cmd => setStatus('activate', cmd)),
+		bus.subscribe(UserCommands.INVITE, cmd => setStatus('invite', cmd)),
+		bus.subscribe(UserCommands.SUSPEND, cmd => setStatus('suspend', cmd)),
 		bus.subscribe(
 			UserCommands.SEARCH_ASSIGNED_ROLES,
 			cmd => ra.searchAssignedRoles('users', payload<ra.SearchAssignedRolesRequest>(cmd)),
@@ -54,21 +61,11 @@ export function registerUserCommands(bus: ICommandBus): () => void {
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
 }
 
-function payload<TPayload>(command: Command): TPayload {
-	return command.payload as TPayload;
+function setStatus(action: keyof typeof STATUS_BY_ACTION, command: Command) {
+	const request = payload<dyn.RestMutateOneRequest>(command);
+	return userService.update({ ...request, status: STATUS_BY_ACTION[action] });
 }
 
-/** Supports both single-item (`{ id }`) and bulk list (`{ ids: [] }`) delete payloads. */
-async function handleDeleteUser(command: Command): Promise<CommandResponse<t.DeleteUserResponse[], unknown>> {
-	const raw = command.payload as { id?: string, ids?: string[] };
-	const ids = Array.isArray(raw?.ids) ? raw.ids : raw?.id ? [raw.id] : [];
-	const responses: t.DeleteUserResponse[] = [];
-	for (const id of ids) {
-		const result = await svc.deleteUser({ id });
-		if (result.error) {
-			return result as CommandResponse<t.DeleteUserResponse[], unknown>;
-		}
-		responses.push(result.data as t.DeleteUserResponse);
-	}
-	return ok(responses);
+function payload<TPayload>(command: Command): TPayload {
+	return command.payload as TPayload;
 }

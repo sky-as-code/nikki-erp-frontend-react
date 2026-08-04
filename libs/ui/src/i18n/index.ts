@@ -8,11 +8,22 @@ import { initReactI18next, useTranslation } from 'react-i18next';
 
 export default i18next;
 
+/**
+ * Re-running `i18next.init()` on the live singleton resets its resource store and restarts
+ * namespace loading asynchronously. Any component rendering in that window resolves nothing and,
+ * with no `fallbackLng` and `appendNamespaceToMissingKey`, renders the raw `common:some.key`.
+ * Callers may fire more than once (React effects), so initialization is one-shot here.
+ */
 export function initI18n(
 	debug: boolean,
 	lng?: string | null,
 	supportedLngs?: string[] | null,
 ): void {
+	if (i18next.isInitialized || i18next.isInitializing) {
+		void applyLanguage(lng);
+		return;
+	}
+
 	const options: InitOptions & HttpBackendOptions = {
 		debug,
 		// No fallback language, so the missing translation will be surfaced
@@ -50,6 +61,15 @@ export function initI18n(
 	}
 }
 
+/**
+ * Switch language on an already-initialized instance. `changeLanguage` loads the missing
+ * namespaces before it resolves, so it never empties the resource store the way `init` does.
+ */
+async function applyLanguage(lng?: string | null): Promise<void> {
+	if (!lng || i18next.language === lng) return;
+	await i18next.changeLanguage(lng);
+}
+
 function buildBackendOptions(): HttpBackendOptions {
 	return {
 		loadPath(lngs, namespaces) {
@@ -57,10 +77,12 @@ function buildBackendOptions(): HttpBackendOptions {
 		},
 		async request(options, url, payload, callback) {
 			try {
-				const response = await RequestMaker.default().get(url);
+				// `data` only: the request layer returns a `{data, clientErrors}` envelope,
+				// and i18next expects the bare translation map.
+				const { data } = await RequestMaker.default().get(url);
 				callback(null, {
 					status: 200,
-					data: JSON.stringify(response),
+					data: JSON.stringify(data),
 				});
 			}
 			catch (error) {

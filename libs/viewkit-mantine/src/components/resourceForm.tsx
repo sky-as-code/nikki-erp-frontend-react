@@ -1,6 +1,8 @@
-import { CrudFormProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
-import { useLocalize } from '@nikkierp/ui/i18n';
+import { Alert } from '@mantine/core';
+import { CrudFormProvider, FormStyleProvider, useCrudFormRuntime } from '@nikkierp/ui/components/form';
+import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor, MetaComponent } from '@nikkierp/viewengine/render';
+import { IconAlertCircle } from '@tabler/icons-react';
 import React from 'react';
 import { z } from 'zod';
 
@@ -11,6 +13,7 @@ import {
 } from '../pages/resourceDetail/ResourceDetailProvider';
 import { useResourceUpdateContext } from '../pages/resourceDetail/resourceUpdateContext';
 
+import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
@@ -58,9 +61,41 @@ function ResourceForm({ props, runtime }: {
 				onSubmit={onSubmit}
 			>
 				<ResourceFormViewProvider value={{ updateMode, setUpdateMode }}>
+					<ServerErrorAlert />
 					<MetaComponent node={runtime.children} />
 				</ResourceFormViewProvider>
 			</CrudFormProvider>
 		</FormStyleProvider>
+	);
+}
+
+/**
+ * Routes the last save's rejections into the form: field-scoped items onto their
+ * inputs, the rest into an alert above the form.
+ *
+ * Lives inside `CrudFormProvider` because `setServerErrors` needs the form runtime.
+ */
+function ServerErrorAlert(): React.ReactNode {
+	const { saveClientErrors } = useResourceUpdateContext();
+	const formRuntime = useCrudFormRuntime();
+	const t = useTranslate(useResourceDetailTranslationNs());
+	const [unattached, setUnattached] = React.useState<ClientErrorItem[]>([]);
+	const setServerErrors = formRuntime?.setServerErrors;
+
+	React.useEffect(() => {
+		if (!setServerErrors) return;
+		setUnattached(saveClientErrors.length > 0 ? setServerErrors(saveClientErrors) : []);
+	}, [saveClientErrors, setServerErrors]);
+
+	if (unattached.length === 0) {
+		return null;
+	}
+
+	return (
+		<Alert variant='light' color='red' icon={<IconAlertCircle />} mb='md'>
+			{unattached.map((item, index) => (
+				<div key={index}>{item.key ? t(item.key) : item.message}</div>
+			))}
+		</Alert>
 	);
 }

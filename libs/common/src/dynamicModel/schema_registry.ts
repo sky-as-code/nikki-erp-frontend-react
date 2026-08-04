@@ -1,6 +1,4 @@
-import { z } from 'zod';
-
-import { ModelSchema, buildValidationSchema } from './model_schema';
+import { ModelSchema, ModelValidationSchema, buildValidationSchema } from './model_schema';
 import { RestApi, RestApiOptions } from './restapi';
 
 
@@ -48,11 +46,15 @@ export class SchemaRegistry {
 		const item = this.#registry.get(schemaName);
 		if (!item) return null;
 		if (item.modelSchema) return item;
-		item.modelSchema = item.restApi.getModelSchema().then(response => {
-			if (response.name !== schemaName) {
-				throw new Error(`Registered schema name '${schemaName}' does not match the response name '${response.name}'`);
+		item.modelSchema = item.restApi.getModelSchema().then(({ data, clientErrors }) => {
+			if (!data) {
+				const reason = clientErrors.map(it => it.message).join('; ') || 'no response body';
+				throw new Error(`Failed to fetch model schema '${schemaName}': ${reason}`);
 			}
-			return response;
+			if (data.name !== schemaName) {
+				throw new Error(`Registered schema name '${schemaName}' does not match the response name '${data.name}'`);
+			}
+			return data;
 		});
 		item.validationSchema = item.modelSchema.then(buildValidationSchema);
 		return item;
@@ -63,13 +65,13 @@ export type SchemaPack = {
 	schemaName: string,
 	restApi: RestApi,
 	modelSchema: ModelSchema,
-	validationSchema: z.ZodObject,
+	validationSchema: ModelValidationSchema,
 };
 
 type RegistryItem = {
 	schemaName: string,
 	restApi: RestApi,
-	validationSchema?: Promise<z.ZodObject>,
+	validationSchema?: Promise<ModelValidationSchema>,
 	modelSchema?: Promise<ModelSchema>,
 };
 

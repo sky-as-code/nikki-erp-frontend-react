@@ -1,4 +1,5 @@
 import { ICommandBus } from '@nikkierp/common/commandBus';
+import { createEventBus, IEventBus } from '@nikkierp/common/eventBus';
 import { createMenuRegistry, IMenuRegistry, MenuContribution, useMenuContribution } from '@nikkierp/ui/menu';
 import {
 	HostServices, MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps,
@@ -40,6 +41,8 @@ export const useShellViewEngine = (): IViewEngine => useMicroAppHostContext().ho
 
 export const useShellMenuRegistry = (): IMenuRegistry => useMicroAppHostContext().host.menuRegistry;
 
+export const useShellEventBus = (): IEventBus => useMicroAppHostContext().host.eventBus;
+
 /**
  * The menu contributed by `slug`, re-rendering when that module registers.
  *
@@ -67,8 +70,9 @@ export function MicroAppHostProvider({ children, microApps }: MicroAppHostProvid
 		contributeMantineViewKit(viewEngine);
 		// The registry must exist before the bus: the shell.layout.* handlers close over it.
 		const menuRegistry = createMenuRegistry();
+		const eventBus = createEventBus();
 		const commandBus = createShellCommandBus(manager, { menuRegistry });
-		const host: HostServices = { commandBus, viewEngine, menuRegistry };
+		const host: HostServices = { commandBus, viewEngine, menuRegistry, eventBus };
 		manager.setHostServices(host);
 		return { manager, host };
 	});
@@ -185,7 +189,7 @@ function useFetchMicroAppPack(
 }
 
 type UseSetupMicroAppOptions = Omit<
-	MicroAppProps, 'registerReducer' | 'routing' | 'api' | 'commandBus' | 'viewEngine'
+	MicroAppProps, 'registerReducer' | 'routing' | 'api' | 'commandBus' | 'viewEngine' | 'eventBus'
 > & {
 	basePath?: string,
 };
@@ -208,6 +212,7 @@ function useSetupMicroApp(
 				api: apiOpts,
 				commandBus: host.commandBus,
 				viewEngine: host.viewEngine,
+				eventBus: host.eventBus,
 				...opts,
 			};
 			forceRerender(n => n + 1);

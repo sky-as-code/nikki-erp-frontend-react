@@ -62,9 +62,17 @@ export function ResourceUpdateProvider(
 
 	React.useEffect(() => { refresh(); }, [refresh]);
 
-	const onSubmit = React.useCallback((data: Record<string, any>) => {
-		if (commands.update) {
-			void publishUpdate(data).then(refresh);
+	/**
+	 * Refreshes only on success. A failed save must NOT re-fetch: that would replace
+	 * the user's unsaved edits with the server's unchanged record, discarding exactly
+	 * the input they need to correct.
+	 */
+	const onSubmit = React.useCallback(async (data: Record<string, any>) => {
+		if (!commands.update) return;
+		const response = await publishUpdate(data);
+		const succeeded = response.error == null && (response.result?.clientErrors.length ?? 0) === 0;
+		if (succeeded) {
+			refresh();
 		}
 	}, [publishUpdate, commands.update, refresh]);
 
@@ -77,6 +85,9 @@ export function ResourceUpdateProvider(
 			isWriting: updateCmd.isPending,
 			refresh,
 			onSubmit,
+			saveClientErrors: updateCmd.clientErrors,
+			saveError: updateCmd.error,
+			loadError: getByIdCmd.error,
 			allStatuses: props.allStatuses,
 			currentStatus: props.currentStatus,
 			contextualActions: props.contextualActions,
@@ -88,6 +99,7 @@ export function ResourceUpdateProvider(
 		}),
 		[
 			commands, resource, getByIdCmd.isPending, updateCmd.isPending, refresh, onSubmit,
+			updateCmd.clientErrors, updateCmd.error, getByIdCmd.error,
 			props.allStatuses, props.currentStatus, props.contextualActions,
 			props.titleLvl1, props.titleLvl2, props.titleLvl3, props.blocks, props.childrenNodes,
 		],

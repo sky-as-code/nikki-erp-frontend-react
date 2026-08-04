@@ -1,4 +1,6 @@
-import { Command, CommandHandler, CommandResponse, fail, ICommandBus, ModuleLoader } from './types';
+import {
+	Command, CommandBusResponse, CommandHandler, CommandResponse, ICommandBus, ModuleLoader, ServiceResult,
+} from './types';
 
 
 /**
@@ -10,6 +12,7 @@ import { Command, CommandHandler, CommandResponse, fail, ICommandBus, ModuleLoad
  */
 export class CommandBus implements ICommandBus {
 	private readonly handlers = new Map<string, CommandHandler>();
+	private readonly prefixHandlers = new Map<string, CommandHandler>();
 	private moduleLoader?: ModuleLoader;
 	private readonly inflightLoads = new Map<string, Promise<'loaded' | 'not_registered'>>();
 
@@ -26,30 +29,69 @@ export class CommandBus implements ICommandBus {
 		};
 	}
 
+	public subscribePrefix(prefix: string, handler: CommandHandler): () => void {
+		if (this.prefixHandlers.has(prefix)) {
+			const handlerName = handler.name || 'anonymous';
+			console.warn(`CommandBus: prefix handler for "${prefix}" overridden by "${handlerName}".`);
+		}
+		this.prefixHandlers.set(prefix, handler);
+		return () => {
+			if (this.prefixHandlers.get(prefix) === handler) {
+				this.prefixHandlers.delete(prefix);
+			}
+		};
+	}
+
 	public has(name: string): boolean {
-		return this.handlers.has(name);
+		return this.handlers.has(name) || this.findPrefixHandler(name) !== undefined;
 	}
 
 	public setModuleLoader(loader: ModuleLoader): void {
 		this.moduleLoader = loader;
 	}
 
-	public async publish<TData = unknown, TError = unknown>(
+	public async publish<TData = unknown, _TError = unknown>(
 		command: Command,
-	): Promise<CommandResponse<TData, TError>> {
-		let handler = this.handlers.get(command.name);
+	): Promise<CommandBusResponse<TData>> {
+		const handler = await this.resolveHandler(command.name);
 		if (!handler) {
-			handler = await this.resolveLazyHandler(command.name);
-		}
-		if (!handler) {
-			return fail(new Error(`No handler for command "${command.name}".`)) as CommandResponse<TData, TError>;
+			return this.toResponse<TData>(null, new Error(`No handler for command "${command.name}".`));
 		}
 		try {
-			return (await handler(command)) as CommandResponse<TData, TError>;
+			const returned = await handler(command);
+			return this.toResponse<TData>(normalizeResult<TData>(returned), null);
 		}
 		catch (error) {
-			return fail(error) as CommandResponse<TData, TError>;
+			return this.toResponse<TData>(null, error);
 		}
+	}
+
+	/** Exact name first, then the longest matching prefix, then a lazy module load. */
+	private async resolveHandler(commandName: string): Promise<CommandHandler | undefined> {
+		const exact = this.handlers.get(commandName);
+		if (exact) return exact;
+
+		const byPrefix = this.findPrefixHandler(commandName);
+		if (byPrefix) return byPrefix;
+
+		return this.resolveLazyHandler(commandName);
+	}
+
+	private findPrefixHandler(commandName: string): CommandHandler | undefined {
+		let bestPrefix = '';
+		let bestHandler: CommandHandler | undefined;
+		this.prefixHandlers.forEach((handler, prefix) => {
+			if (commandName.startsWith(prefix) && prefix.length > bestPrefix.length) {
+				bestPrefix = prefix;
+				bestHandler = handler;
+			}
+		});
+		return bestHandler;
+	}
+
+	/** Populates the deprecated `data` mirror alongside `result`. */
+	private toResponse<TData>(result: ServiceResult<TData> | null, error: unknown): CommandBusResponse<TData> {
+		return { result, error, data: result?.data ?? null };
 	}
 
 	private async resolveLazyHandler(commandName: string): Promise<CommandHandler | undefined> {
@@ -61,7 +103,7 @@ export class CommandBus implements ICommandBus {
 		if (result === 'not_registered') {
 			return undefined;
 		}
-		return this.handlers.get(commandName);
+		return this.handlers.get(commandName) ?? this.findPrefixHandler(commandName);
 	}
 
 	private loadModuleOnce(moduleName: string): Promise<'loaded' | 'not_registered'> {
@@ -75,6 +117,27 @@ export class CommandBus implements ICommandBus {
 		this.inflightLoads.set(moduleName, promise);
 		return promise;
 	}
+}
+
+/**
+ * Coerces a handler's return value to a {@link ServiceResult}.
+ *
+ * A handler that has not migrated returns the legacy `{data, error}` shape. Its
+ * `error` is business-or-technical — the old contract did not distinguish — so it is
+ * rethrown, which lands it in `CommandBusResponse.error` exactly where the previous
+ * `fail()` path put it.
+ */
+function normalizeResult<TData>(
+	returned: ServiceResult<TData> | CommandResponse<TData>,
+): ServiceResult<TData> {
+	const candidate = returned as Partial<ServiceResult<TData>> & { error?: unknown };
+	if (Array.isArray(candidate.clientErrors)) {
+		return { data: candidate.data ?? null, clientErrors: candidate.clientErrors };
+	}
+	if (candidate.error != null) {
+		throw candidate.error;
+	}
+	return { data: candidate.data ?? null, clientErrors: [] };
 }
 
 export function createCommandBus(): CommandBus {

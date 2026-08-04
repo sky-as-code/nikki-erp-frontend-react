@@ -1,5 +1,5 @@
-import { CommandResponse, fail, ICommandBus, ok } from '@nikkierp/common/commandBus';
-import * as dyn from '@nikkierp/common/dynamicModel';
+import { ICommandBus, ServiceResult } from '@nikkierp/common/commandBus';
+import { CrudServiceBase } from '@nikkierp/common/service';
 
 import * as t from './types';
 import { MODULE_SCHEMA_NAME } from '../constants';
@@ -11,34 +11,28 @@ export const MODULE_COMMANDS = {
 	search: 'shell.erp_modules.search',
 } as const;
 
-type ModuleServiceResult<TData> = Promise<CommandResponse<TData, unknown>>;
-
-async function withModuleSchema<TData>(fn: (schema: dyn.SchemaPack) => Promise<TData>): ModuleServiceResult<TData> {
-	try {
-		const schema = await dyn.schemaRegistry.get(MODULE_SCHEMA_NAME);
-		if (!schema) {
-			return fail(new Error(`Schema "${MODULE_SCHEMA_NAME}" is not registered.`));
-		}
-		return ok(await fn(schema));
+/** Reads over `essential_module_metadata`; the Shell never mutates it. */
+class ModuleService extends CrudServiceBase {
+	public constructor() {
+		super({ moduleName: 'shell', schemaName: MODULE_SCHEMA_NAME });
 	}
-	catch (error) {
-		return fail(error);
+
+	/** Every module in one page — the count is small and bounded by the backend. */
+	public listAll(): Promise<ServiceResult<t.SearchModuleResponse>> {
+		return this.search({ page: 0, size: 500 });
 	}
 }
 
-function listAllModules(): ModuleServiceResult<t.SearchModuleResponse> {
-	return withModuleSchema(schema => schema.restApi.search({ page: 0, size: 500 }));
-}
-
-function searchModules(request: t.SearchModuleRequest): ModuleServiceResult<t.SearchModuleResponse> {
-	return withModuleSchema(schema => schema.restApi.search(request));
-}
+const moduleService = new ModuleService();
 
 /** Subscribes the ERP module command handlers onto the Shell-hosted bus. */
 export function registerModuleCommands(bus: ICommandBus): () => void {
 	const unsubscribers = [
-		bus.subscribe(MODULE_COMMANDS.listAll, () => listAllModules()),
-		bus.subscribe(MODULE_COMMANDS.search, cmd => searchModules(cmd.payload as t.SearchModuleRequest)),
+		bus.subscribe(MODULE_COMMANDS.listAll, () => moduleService.listAll()),
+		bus.subscribe(
+			MODULE_COMMANDS.search,
+			cmd => moduleService.search(cmd.payload as t.SearchModuleRequest),
+		),
 	];
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
 }

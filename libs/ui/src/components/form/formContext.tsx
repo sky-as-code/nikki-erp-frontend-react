@@ -7,6 +7,8 @@ import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { LocalizeFn } from '../../i18n';
 import { LoadingState } from '../Loading';
 
+import type { ClientErrorItem } from '@nikkierp/common/types';
+
 
 export type FormStyleContextValue = {
 	layout: FormLayout,
@@ -119,6 +121,15 @@ export type FormProviderRenderProps = {
 	form: UseFormReturn<any>,
 	isLoading: boolean,
 	errors: ReturnType<typeof useForm>['formState']['errors'],
+	/**
+	 * Attaches server-side rejections to the form. Items carrying a `field` land on
+	 * that input; the rest are returned so the caller can show them form-level.
+	 *
+	 * `ClientErrorItem.field` matches react-hook-form field names and its `key` is a
+	 * translation key, the same role the client-side zod `$ref` messages play, so both
+	 * error sources render through one path.
+	 */
+	setServerErrors: (clientErrors: ClientErrorItem[]) => ClientErrorItem[],
 };
 
 type BaseFormProviderProps = {
@@ -193,6 +204,7 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 		form,
 		isLoading: props.isSubmitting ?? false,
 		errors,
+		setServerErrors: clientErrors => applyServerErrors(form, clientErrors),
 	};
 
 	const content = typeof props.children === 'function' ? props.children(runtime) : props.children;
@@ -216,6 +228,24 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 		</FormFieldContext.Provider>
 	) : <LoadingState />;
 };
+
+/**
+ * Routes each server error to its form field, returning the ones that have no field
+ * to attach to — anonymous business and authorization failures, which the caller must
+ * render form-level.
+ */
+function applyServerErrors(form: UseFormReturn<any>, clientErrors: ClientErrorItem[]): ClientErrorItem[] {
+	const unattached: ClientErrorItem[] = [];
+	clientErrors.forEach(item => {
+		if (item.field) {
+			form.setError(item.field, { type: 'server', message: item.key || item.message });
+		}
+		else {
+			unattached.push(item);
+		}
+	});
+	return unattached;
+}
 
 export type AdhocFormProviderProps = BaseFormProviderProps & {
 	formVariant: FormVariant;
@@ -274,6 +304,7 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 				form,
 				isLoading: false,
 				errors,
+				setServerErrors: clientErrors => applyServerErrors(form, clientErrors),
 			})}
 		</FormFieldContext.Provider>
 	);

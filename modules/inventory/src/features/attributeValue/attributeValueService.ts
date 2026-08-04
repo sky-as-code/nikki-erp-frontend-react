@@ -18,10 +18,10 @@ export const attributeValueService = {
 		attributeId: string,
 		searchParams?: Record<string, string | number | boolean | undefined>,
 	): Promise<SearchAttributeValuesResponse> {
-		const response = await request.get<SearchAttributeValuesResponse>(
+		const response = request.unwrapResult(await request.get<SearchAttributeValuesResponse>(
 			`${orgId}/inventory/products/${productId}/attributes/${attributeId}/values`,
 			{ searchParams },
-		);
+		));
 		return response;
 	},
 
@@ -31,9 +31,9 @@ export const attributeValueService = {
 		attributeId: string,
 		id: string,
 	): Promise<AttributeValue> {
-		const response = await request.get<AttributeValue>(
+		const response = request.unwrapResult(await request.get<AttributeValue>(
 			`${orgId}/inventory/products/${productId}/attributes/${attributeId}/values/${id}`,
-		);
+		));
 		return response;
 	},
 
@@ -43,10 +43,10 @@ export const attributeValueService = {
 		attributeId: string,
 		data: CreateAttributeValueRequest,
 	): Promise<CreateAttributeValueResponse> {
-		const response = await request.post<CreateAttributeValueResponse>(
+		const response = request.unwrapResult(await request.post<CreateAttributeValueResponse>(
 			`${orgId}/inventory/products/${productId}/attributes/${attributeId}/values`,
 			{ json: data },
-		);
+		));
 		return response;
 	},
 
@@ -56,10 +56,10 @@ export const attributeValueService = {
 		attributeId: string,
 		data: UpdateAttributeValueRequest,
 	): Promise<UpdateAttributeValueResponse> {
-		const response = await request.put<UpdateAttributeValueResponse>(
+		const response = request.unwrapResult(await request.put<UpdateAttributeValueResponse>(
 			`${orgId}/inventory/products/${productId}/attributes/${attributeId}/values/${data.id}`,
 			{ json: data },
-		);
+		));
 		return response;
 	},
 
@@ -69,9 +69,9 @@ export const attributeValueService = {
 		attributeId: string,
 		id: string,
 	): Promise<DeleteAttributeValueResponse> {
-		const response = await request.del<DeleteAttributeValueResponse>(
+		const response = request.unwrapResult(await request.del<DeleteAttributeValueResponse>(
 			`${orgId}/inventory/products/${productId}/attributes/${attributeId}/values/${id}`,
-		);
+		));
 		return response;
 	},
 };

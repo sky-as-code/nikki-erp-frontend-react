@@ -1,5 +1,5 @@
 import { ICommandBus } from '@nikkierp/common/commandBus';
-import { registerSchemaCommands } from '@nikkierp/common/dynamicModel';
+import { registerGenericResourceCommands, registerSchemaCommands } from '@nikkierp/common/dynamicModel';
 import { IMenuRegistry } from '@nikkierp/ui/menu';
 
 import { registerModuleCommands } from '../erpModules/moduleCommands';
@@ -20,6 +20,9 @@ export function registerShellCommands(bus: ICommandBus, deps: ShellCommandDeps):
 	const unsubscribers = [
 		registerModuleCommands(bus),
 		registerSchemaCommands(bus),
+		// One prefix subscription serving CRUD for every registered schema, including
+		// resources defined at runtime that no module knows about.
+		registerGenericResourceCommands(bus),
 		registerMenuCommands(bus, deps.menuRegistry),
 	];
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());

@@ -87,6 +87,9 @@ function InnerShellProviders(props: ShellProvidersProps): React.ReactNode {
 			if (langCode && supportedLangs && !supportedLangs?.includes(langCode)) {
 				langCode = supportedLangs[0];
 			}
+			// `initI18n` is one-shot: this effect re-runs whenever `envVars` or the session
+			// settles, and re-initializing the live instance would blank the loaded namespace
+			// and surface raw `common:*` keys until the refetch lands.
 			initI18n(props.envVars.APP_ENV === 'local', langCode, supportedLangs);
 			setIsInitialized(true);
 		}

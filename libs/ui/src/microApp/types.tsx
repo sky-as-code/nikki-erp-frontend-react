@@ -6,6 +6,7 @@ import { RegisterReducerFn } from '../microApp';
 import { ImportFn } from '../types/miscs';
 
 import type { IMenuRegistry } from '../menu';
+import type { IEventBus } from '@nikkierp/common/eventBus';
 import type { IViewEngine } from '@nikkierp/viewengine/core';
 
 
@@ -20,6 +21,7 @@ export type HostServices = {
 	commandBus: ICommandBus,
 	viewEngine: IViewEngine,
 	menuRegistry: IMenuRegistry,
+	eventBus: IEventBus,
 };
 
 
@@ -163,6 +165,12 @@ export type MicroAppProps = {
 	commandBus: ICommandBus,
 	/** Host-owned view engine, provided to the subtree by `MicroAppProvider`. */
 	viewEngine: IViewEngine,
+	/**
+	 * Host-owned event bus. Repeated here rather than read from a Shell context
+	 * because an ISOLATED micro-app renders in its own detached React root, which no
+	 * Shell context reaches.
+	 */
+	eventBus: IEventBus,
 };
 
 export type MicroAppRoutingOptions = {

@@ -1,6 +1,7 @@
-import { Command, CommandResponse, ICommandBus, ok } from '@nikkierp/common/commandBus';
+import { Command, ICommandBus } from '@nikkierp/common/commandBus';
+import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
-import * as svc from './roleService';
+import { roleService } from './roleService';
 import * as t from './types';
 import { IAM_MODULE, ROLE_SCHEMA_NAME } from '../../constants';
 import { DescribeRolesRequest, describeRoles } from '../roleAssignment';
@@ -8,53 +9,43 @@ import { DescribeRolesRequest, describeRoles } from '../roleAssignment';
 
 const PREFIX = `${IAM_MODULE}.${ROLE_SCHEMA_NAME}`;
 
-/** Command names handled by the identity role sub-module. */
+/**
+ * Command names for the role resource.
+ *
+ * The CRUD names come from the schema-driven generic path (`core.resource.iam_role.*`), served by
+ * the Shell's single prefix subscription — this module subscribes none of them. Deriving them from
+ * the schema name alone is what lets a relation select find the search command for a target it
+ * only knows by `dest_schema_name`.
+ *
+ * The remaining two are not CRUD over `iam_role`: `DESCRIBE` reads a role-assignment endpoint the
+ * dynamic schema cannot express, and `MANAGE_ENTITLEMENTS` is a many-to-many write whose sub-path
+ * is fixed, so callers need send no `path`.
+ */
 export const RoleCommands = Object.freeze({
-	CREATE: `${PREFIX}.create_role`,
-	DELETE: `${PREFIX}.delete_role`,
-	GET_BY_ID: `${PREFIX}.get_role_by_id`,
+	...resourceCommands(ROLE_SCHEMA_NAME),
 	DESCRIBE: `${PREFIX}.describe_roles`,
 	MANAGE_ENTITLEMENTS: `${PREFIX}.manage_role_entitlements`,
-	SEARCH: `${PREFIX}.search_roles`,
-	SET_IS_ARCHIVED: `${PREFIX}.set_role_is_archived`,
-	UPDATE: `${PREFIX}.update_role`,
 } as const);
 
+/**
+ * Registers the role service and subscribes the non-CRUD handlers. Called synchronously during the
+ * micro-app `init` so the service is in place before any generic command is served.
+ * Returns a function that unsubscribes every handler (for teardown).
+ */
 export function registerRoleCommands(bus: ICommandBus): () => void {
+	registerSchemaModule(ROLE_SCHEMA_NAME, IAM_MODULE);
+	registerCrudService(ROLE_SCHEMA_NAME, roleService);
+
 	const unsubscribers = [
-		bus.subscribe(RoleCommands.CREATE, cmd => svc.createRole(payload<t.CreateRoleRequest>(cmd))),
-		bus.subscribe(RoleCommands.GET_BY_ID, cmd => svc.getRoleById(payload<t.GetRoleByIdRequest>(cmd))),
-		bus.subscribe(RoleCommands.SEARCH, cmd => svc.searchRoles(payload<t.SearchRolesRequest>(cmd))),
 		bus.subscribe(RoleCommands.DESCRIBE, cmd => describeRoles(payload<DescribeRolesRequest>(cmd))),
-		bus.subscribe(RoleCommands.UPDATE, cmd => svc.updateRole(payload<t.UpdateRoleRequest>(cmd))),
 		bus.subscribe(
 			RoleCommands.MANAGE_ENTITLEMENTS,
-			cmd => svc.manageRoleEntitlements(payload<t.ManageRoleEntitlementsRequest>(cmd)),
+			cmd => roleService.manageEntitlements(payload<t.ManageRoleEntitlementsRequest>(cmd)),
 		),
-		bus.subscribe(
-			RoleCommands.SET_IS_ARCHIVED,
-			cmd => svc.setRoleIsArchived(payload<t.SetRoleIsArchivedRequest>(cmd)),
-		),
-		bus.subscribe(RoleCommands.DELETE, handleDeleteRole),
 	];
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
 }
 
 function payload<TPayload>(command: Command): TPayload {
 	return command.payload as TPayload;
-}
-
-/** Supports both single-item (`{ id }`) and bulk list (`{ ids: [] }`) delete payloads. */
-async function handleDeleteRole(command: Command): Promise<CommandResponse<t.DeleteRoleResponse[], unknown>> {
-	const raw = command.payload as { id?: string, ids?: string[] };
-	const ids = Array.isArray(raw?.ids) ? raw.ids : raw?.id ? [raw.id] : [];
-	const responses: t.DeleteRoleResponse[] = [];
-	for (const id of ids) {
-		const result = await svc.deleteRole({ id });
-		if (result.error) {
-			return result as CommandResponse<t.DeleteRoleResponse[], unknown>;
-		}
-		responses.push(result.data as t.DeleteRoleResponse);
-	}
-	return ok(responses);
 }

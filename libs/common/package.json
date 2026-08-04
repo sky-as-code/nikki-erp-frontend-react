@@ -38,7 +38,9 @@
 		".": "./src/index.ts",
 		"./commandBus": "./src/commandBus/index.ts",
 		"./dynamicModel": "./src/dynamicModel/index.ts",
+		"./eventBus": "./src/eventBus/index.ts",
 		"./request": "./src/request/index.ts",
+		"./service": "./src/service/index.ts",
 		"./types": "./src/types/index.ts",
 		"./utils": "./src/utils/index.ts"
 	},

@@ -4,6 +4,7 @@ import type {
 	LinkSpec, OwnPropertySection, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './props';
+import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
@@ -14,6 +15,11 @@ export type ResourceUpdateContextValue = {
 	isWriting: boolean,
 	refresh: () => void,
 	onSubmit: (data: Record<string, any>) => void,
+	/** Server-side rejections from the last save. Empty until one occurs. */
+	saveClientErrors: ClientErrorItem[],
+	/** Technical failure from the last save or load, if any. */
+	saveError: unknown | null,
+	loadError: unknown | null,
 	allStatuses?: StatusOption[],
 	currentStatus?: SchemaFieldSpec,
 	contextualActions?: ResourceDetailContextualActions,

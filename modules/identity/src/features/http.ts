@@ -1,5 +1,7 @@
 import { RequestMaker } from '@nikkierp/common/request';
 
+import type { RequestResult } from '@nikkierp/common/request';
+
 
 /**
  * Direct REST access for the handful of IAM endpoints that `RestApi` does not model: nested
@@ -7,7 +9,9 @@ import { RequestMaker } from '@nikkierp/common/request';
  * that is a plain CRUD call on a registered schema must keep going through
  * `dyn.withSchema(...).restApi` so the schema-etag refresh still happens.
  */
-export function apiGet<TResponse>(path: string, params?: Record<string, unknown>): Promise<TResponse> {
+export function apiGet<TResponse>(
+	path: string, params?: Record<string, unknown>,
+): Promise<RequestResult<TResponse>> {
 	const searchParams = toSearchParams(params);
 	return RequestMaker.default().get<TResponse>(path, {
 		searchParams,

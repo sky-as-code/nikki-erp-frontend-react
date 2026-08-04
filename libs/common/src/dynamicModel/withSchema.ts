@@ -1,10 +1,17 @@
 import { schemaRegistry, SchemaPack } from './schema_registry';
 
 
-/** Reads `schema_etag` from REST get-one (`meta`) or search (top-level) responses. */
+/**
+ * Reads `schema_etag` from REST get-one (`meta`) or search (top-level) responses.
+ * Unwraps a `RequestResult` / `ServiceResult` envelope when given one.
+ */
 export function extractSchemaEtag(data: unknown): string | undefined {
 	if (data == null || typeof data !== 'object') return undefined;
-	const record = data as Record<string, unknown>;
+	let record = data as Record<string, unknown>;
+	if ('clientErrors' in record && 'data' in record) {
+		if (record.data == null || typeof record.data !== 'object') return undefined;
+		record = record.data as Record<string, unknown>;
+	}
 	if (typeof record.schema_etag === 'string') return record.schema_etag;
 	const meta = record.meta;
 	if (meta != null && typeof meta === 'object' && typeof (meta as Record<string, unknown>).schema_etag === 'string') {

@@ -1,57 +1,21 @@
-import { CommandResponse, fail, ok } from '@nikkierp/common/commandBus';
-import * as dyn from '@nikkierp/common/dynamicModel';
+import { ServiceResult } from '@nikkierp/common/commandBus';
+import { CrudServiceBase } from '@nikkierp/common/service';
 
 import * as t from './types';
-import { ROLE_SCHEMA_NAME } from '../../constants';
+import { IAM_MODULE, ROLE_SCHEMA_NAME } from '../../constants';
 
 
-type RoleServiceResult<TData> = Promise<CommandResponse<TData, unknown>>;
-
-async function withRoleSchema<TData>(fn: (schema: dyn.SchemaPack) => Promise<TData>): RoleServiceResult<TData> {
-	try {
-		return ok(await dyn.withSchema(ROLE_SCHEMA_NAME, fn));
+/** CRUD over `iam_role`, plus the entitlement many-to-many endpoint. */
+export class RoleService extends CrudServiceBase {
+	public constructor() {
+		super({ moduleName: IAM_MODULE, schemaName: ROLE_SCHEMA_NAME });
 	}
-	catch (error) {
-		return fail(error);
+
+	public manageEntitlements(
+		request: t.ManageRoleEntitlementsRequest,
+	): Promise<ServiceResult<t.ManageRoleEntitlementsResponse>> {
+		return this.manageM2m(request, 'manage-entitlements');
 	}
 }
 
-export function createRole(request: t.CreateRoleRequest): RoleServiceResult<t.CreateRoleResponse> {
-	return withRoleSchema(schema => schema.restApi.create(request));
-}
-
-export function deleteRole(request: t.DeleteRoleRequest): RoleServiceResult<t.DeleteRoleResponse> {
-	return withRoleSchema(schema => schema.restApi.delete(request));
-}
-
-export function getRoleSchema(): RoleServiceResult<t.GetRoleSchemaResponse> {
-	return withRoleSchema(schema => schema.restApi.getModelSchema());
-}
-
-export function getRoleById(request: t.GetRoleByIdRequest): RoleServiceResult<t.GetRoleResponse> {
-	return withRoleSchema(schema => schema.restApi.getById(request));
-}
-
-export function roleExists(request: t.RoleExistsRequest): RoleServiceResult<t.RoleExistsResponse> {
-	return withRoleSchema(schema => schema.restApi.exists(request));
-}
-
-export function manageRoleEntitlements(
-	request: t.ManageRoleEntitlementsRequest,
-): RoleServiceResult<t.ManageRoleEntitlementsResponse> {
-	return withRoleSchema(schema => schema.restApi.manageM2m(request, 'manage-entitlements'));
-}
-
-export function searchRoles(request: t.SearchRolesRequest): RoleServiceResult<t.SearchRolesResponse> {
-	return withRoleSchema(schema => schema.restApi.search(request));
-}
-
-export function setRoleIsArchived(
-	request: t.SetRoleIsArchivedRequest,
-): RoleServiceResult<t.SetRoleIsArchivedResponse> {
-	return withRoleSchema(schema => schema.restApi.setIsArchived(request));
-}
-
-export function updateRole(request: t.UpdateRoleRequest): RoleServiceResult<t.UpdateRoleResponse> {
-	return withRoleSchema(schema => schema.restApi.update(request));
-}
+export const roleService = new RoleService();
