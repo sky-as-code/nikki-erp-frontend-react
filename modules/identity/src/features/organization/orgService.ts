@@ -1,11 +1,14 @@
 import { ServiceResult } from '@nikkierp/common/commandBus';
 import { CrudServiceBase } from '@nikkierp/common/service';
+import { storeService } from '@nikkierp/ui/appState/store';
 
 import * as t from './types';
 import { IAM_MODULE, ORGANIZATION_SCHEMA_NAME } from '../../constants';
+import { identityStore } from '../../store';
 
 
 /** CRUD over `iam_organization`, plus slug lookup and the members many-to-many endpoint. */
+@storeService(identityStore)
 export class OrgService extends CrudServiceBase {
 	public constructor() {
 		super({ moduleName: IAM_MODULE, schemaName: ORGANIZATION_SCHEMA_NAME });

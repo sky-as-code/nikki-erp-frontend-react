@@ -6,6 +6,7 @@ import React from 'react';
 
 import { MicroAppStateProvider } from './MicroAppStateProvider';
 import { MicroAppApiOptions, MicroAppProps, MicroAppRoutingOptions } from './types';
+import { ModuleStoreProvider } from '../appState/ModuleStoreProvider';
 
 
 export type MicroAppContextType = {
@@ -69,9 +70,16 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = (props) => {
 						api: props.api,
 						routing: props.routing,
 					}}>
-						<MicroAppStateProvider>
-							{props.children}
-						</MicroAppStateProvider>
+						{/*
+							The module's own store, on its own react-redux context. The Shell keeps
+							the default context, so MicroAppStateProvider's hooks are unaffected.
+							A module that created no store renders through untouched.
+						*/}
+						<ModuleStoreProvider moduleName={props.slug}>
+							<MicroAppStateProvider>
+								{props.children}
+							</MicroAppStateProvider>
+						</ModuleStoreProvider>
 					</MicroAppContext.Provider>
 				</ViewEngineProvider>
 			</EventBusContext.Provider>

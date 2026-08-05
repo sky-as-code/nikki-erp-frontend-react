@@ -26,6 +26,18 @@ export type UseResourceSearchResult = {
 };
 
 /**
+ * True for the `size: 0` stub that `RestApi.search` resolves locally, without an HTTP call.
+ *
+ * The caller seeds that stub so the first round-trip is free, and `DataTable` rewrites it into
+ * the first real request. It must therefore still reach the table — it is what *starts* the
+ * real search — but it carries no `desired_fields`, so it must never displace real rows in the
+ * cache, or the table would render a header-less body over them.
+ */
+export function isStubSearchData(data: SearchData | null): boolean {
+	return data != null && data.size === 0 && data.desired_fields.length === 0;
+}
+
+/**
  * The schema + search plumbing shared by the resource list page and the
  * related-records table: fetch the schema pack, publish the search command
  * whenever the request changes, and keep the last result so a pending request
@@ -59,13 +71,27 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 		void publishSearch(searchRequest);
 	}, [publishSearch, searchRequest]);
 
+	// Rows and schema must describe the same resource. The cache outlives a schema change when the
+	// hook is reused rather than remounted (a split view swapping panes), and stale rows rendered
+	// against the new schema miss every field lookup, so each cell falls back to `String(value)`.
 	React.useEffect(() => {
-		if (search.data) {
+		setCachedSearchData(null);
+	}, [opts.schemaName, opts.searchCommand]);
+
+	React.useEffect(() => {
+		if (search.data && !isStubSearchData(search.data as SearchData)) {
 			setCachedSearchData(search.data as SearchData);
 		}
 	}, [search.data]);
 
-	const searchData = (search.data as SearchData | null) ?? cachedSearchData;
+	// Prefer the cache over the stub: the stub resolves synchronously and would otherwise beat
+	// every real response to the table, blanking its columns for a frame. It still has to be
+	// handed over when there is nothing cached, because rewriting it is what starts the real
+	// search — dropping it entirely leaves the page loading forever.
+	const liveSearchData = search.data as SearchData | null;
+	const searchData = isStubSearchData(liveSearchData)
+		? (cachedSearchData ?? liveSearchData)
+		: (liveSearchData ?? cachedSearchData);
 	return { pack, searchData, searchRequest, onSearchRequestChange, refresh };
 }
 
@@ -81,5 +107,8 @@ function useSchemaPack(schemaName: string): dyn.SchemaPack | null {
 		});
 	}, [commandBus, schemaName, etag === pack?.modelSchema?.etag]);
 
-	return pack;
+	// `setPack` above lands a render after `schemaName` changed, so until it does, `pack` still
+	// describes the previous resource. Reporting null instead keeps the callers' `!pack` gate shut
+	// rather than letting them pair one resource's schema with another's rows.
+	return pack?.schemaName === schemaName ? pack : null;
 }

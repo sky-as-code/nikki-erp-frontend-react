@@ -9,8 +9,17 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 
 export default defineConfig({
+	// Slice names come from `ServiceClass.name`, which minification would otherwise
+	// mangle — two services could collapse to the same name and share state.
+	// Vite 8 transforms with oxc, so the esbuild option of the same name is ignored.
+	oxc: {
+		keepNames: true,
+	},
 	build: {
 		outDir: 'dist',
+		// The transform-stage keepNames above does not reach the minifier, which is what
+		// actually renames the classes.
+		minify: { compress: true, mangle: { keepNames: true } },
 		lib: {
 			entry: path.resolve(__dirname, 'src/index.tsx'),
 			fileName: 'nikkiapp-essential-[hash]',

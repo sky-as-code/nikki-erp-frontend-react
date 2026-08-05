@@ -90,6 +90,7 @@
 		".": "./src/index.ts",
 		"./appState": "./src/appState/index.tsx",
 		"./appState/routingSlice": "./src/appState/routingSlice.ts",
+		"./appState/store": "./src/appState/store.ts",
 		"./assets": "./src/assets/index.ts",
 		"./assets/*": "./src/assets/*",
 		"./components/form": "./src/components/form/index.tsx",

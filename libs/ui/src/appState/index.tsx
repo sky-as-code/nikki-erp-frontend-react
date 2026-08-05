@@ -3,3 +3,5 @@ export {
 	type RoutingState,
 } from './routingSlice';
 export * from './reduxActionState';
+
+export * from './store';

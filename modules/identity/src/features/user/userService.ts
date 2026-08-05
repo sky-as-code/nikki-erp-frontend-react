@@ -1,6 +1,8 @@
 import { CrudServiceBase } from '@nikkierp/common/service';
+import { storeService } from '@nikkierp/ui/appState/store';
 
 import { IAM_MODULE, USER_SCHEMA_NAME } from '../../constants';
+import { identityStore } from '../../store';
 
 
 /**
@@ -10,6 +12,7 @@ import { IAM_MODULE, USER_SCHEMA_NAME } from '../../constants';
  * behaviour beyond it. Status changes (activate / invite / suspend) are ordinary
  * `update` calls carrying the new `status`, so they get no dedicated method.
  */
+@storeService(identityStore)
 export class UserService extends CrudServiceBase {
 	public constructor() {
 		super({ moduleName: IAM_MODULE, schemaName: USER_SCHEMA_NAME });
