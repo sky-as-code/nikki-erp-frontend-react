@@ -1,5 +1,4 @@
-import { getServiceSlice } from './decorators';
-import { resolveSliceName } from './serviceSlice';
+import { getServiceSlice, getServiceSliceName } from './decorators';
 import { ServiceClass, ServiceSliceState } from './types';
 
 
@@ -33,8 +32,10 @@ export function selectSliceState<TClass extends ServiceClass>(
 
 	const selector: SliceSelector<InstanceType<TClass>> = (state: any) => {
 		// Resolved lazily: the slice exists only once the service has been instantiated,
-		// which may happen after this selector is created.
-		const sliceName = getServiceSlice(serviceClass)?.name ?? resolveSliceName(serviceClass);
+		// which may happen after this selector is created. The name is recorded at
+		// decoration time, so it resolves even before the first `new`.
+		const sliceName = getServiceSlice(serviceClass)?.name ?? getServiceSliceName(serviceClass);
+		if (!sliceName) return undefined as any;
 		return state?.[sliceName];
 	};
 

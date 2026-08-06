@@ -2,6 +2,7 @@ import { ClientErrorItem } from '@nikkierp/common/types';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { getServiceSlice, readStoreMethodTag, storeService } from './decorators';
+import { storeAsyncMethod, storeSyncMethod } from './methodDecorators';
 import { createModuleStore } from './moduleStore';
 import { moduleStoreRegistry } from './moduleStoreRegistry';
 import { selectSliceState } from './selectSliceState';
@@ -59,20 +60,24 @@ describe('createServiceSlice via @storeService', () => {
 		abstract class Base {
 			readonly #secret = 'private-ok';
 
+			@storeAsyncMethod
 			public async inherited(request: { id: string }) {
 				// Reading a #private field throws unless `this` survives the dispatch.
 				return { data: { id: request.id, secret: this.#secret }, clientErrors: [] };
 			}
 
+			// Unannotated, so it must stay out of the slice.
 			protected withSchema() { return null; }
 		}
 
-		@storeService(store)
+		@storeService('SampleService', store)
 		class SampleService extends Base {
+			@storeAsyncMethod
 			public async own(request: { name: string }) {
 				return { data: { name: request.name }, clientErrors: [] };
 			}
 
+			@storeAsyncMethod
 			public async failing() {
 				return {
 					data: null,
@@ -82,10 +87,12 @@ describe('createServiceSlice via @storeService', () => {
 				};
 			}
 
+			@storeAsyncMethod
 			public async twoArgs(first: string, second: string) {
 				return { data: `${first}:${second}`, clientErrors: [] };
 			}
 
+			@storeAsyncMethod
 			public async throwing() {
 				throw new Error('network down');
 			}
@@ -105,10 +112,13 @@ describe('createServiceSlice via @storeService', () => {
 	function dispatchVia(store: ReturnType<typeof createModuleStore>, method: unknown, params?: any) {
 		const tag = readStoreMethodTag(method);
 		if (!tag) throw new Error('method carries no store tag');
-		return store.dispatch(tag.thunk(params) as any);
+		// Exactly one of these is set, per the method's annotation.
+		const action = tag.thunk ?? tag.syncAction;
+		if (!action) throw new Error('method carries neither a thunk nor a sync action');
+		return store.dispatch(action(params) as any);
 	}
 
-	it('creates a slice named after the class, with a state key per method', () => {
+	it('creates a slice under the given name, with a state key per method', () => {
 		const store = createModuleStore('alpha');
 		buildService(store);
 
@@ -224,12 +234,147 @@ describe('selectSliceState', () => {
 	it('returns the same selector for the same class', () => {
 		const store = createModuleStore('alpha');
 
-		@storeService(store)
+		@storeService('Repeated', store)
 		class Repeated {
+			@storeAsyncMethod
 			public async ping() { return { data: 'pong', clientErrors: [] }; }
 		}
 		new Repeated();
 
 		expect(selectSliceState(Repeated)).toBe(selectSliceState(Repeated));
+	});
+
+	it('resolves the slice name before the service is ever instantiated', () => {
+		const store = createModuleStore('alpha');
+
+		@storeService('NeverConstructed', store)
+		class NeverConstructed {
+			@storeAsyncMethod
+			public async ping() { return { data: 'pong', clientErrors: [] }; }
+		}
+
+		// No `new` — the name comes from the decoration-time registration, not the slice.
+		store.injectSliceReducer('NeverConstructed', (state: any = { marker: 1 }) => state);
+		expect(selectSliceState(NeverConstructed)(store.getState())).toEqual({ marker: 1 });
+	});
+});
+
+
+describe('@storeSyncMethod / @storeAsyncMethod', () => {
+	function buildMixed(store: ReturnType<typeof createModuleStore>) {
+		@storeService('MixedService', store)
+		class MixedService {
+			@storeSyncMethod
+			public setActiveOrg(slug: string | null) { return slug; }
+
+			@storeSyncMethod
+			public setPair(first: string, second: string) { return `${first}:${second}`; }
+
+			@storeAsyncMethod
+			public async load(request: { id: string }) {
+				return { data: { id: request.id }, clientErrors: [] };
+			}
+
+			/** Deliberately unannotated: an ordinary helper, not a store operation. */
+			public helper() { return 'not-in-store'; }
+		}
+
+		return { MixedService, service: new MixedService() };
+	}
+
+	function dispatchVia(store: ReturnType<typeof createModuleStore>, method: unknown, params?: any) {
+		const tag = readStoreMethodTag(method)!;
+		return store.dispatch((tag.thunk ?? tag.syncAction)!(params) as any);
+	}
+
+	it('gives a sync method a bare state entry and no envelope', () => {
+		const store = createModuleStore('alpha');
+		const { service } = buildMixed(store);
+
+		dispatchVia(store, service.setActiveOrg, 'acme');
+
+		expect((store.getState().MixedService as any).setActiveOrg).toBe('acme');
+	});
+
+	it('starts a sync method at null and an async one at the full envelope', () => {
+		const store = createModuleStore('alpha');
+		buildMixed(store);
+
+		const state = store.getState().MixedService as any;
+		expect(state.setActiveOrg).toBeNull();
+		expect(state.load).toEqual({ status: null, data: null, clientErrors: [], error: null, doneAt: 0 });
+	});
+
+	it('passes multiple arguments to a sync method', () => {
+		const store = createModuleStore('alpha');
+		const { service } = buildMixed(store);
+
+		dispatchVia(store, service.setPair, ['left', 'right']);
+
+		expect((store.getState().MixedService as any).setPair).toBe('left:right');
+	});
+
+	it('excludes an unannotated method from the slice', () => {
+		const store = createModuleStore('alpha');
+		const { service } = buildMixed(store);
+
+		expect(Object.keys(store.getState().MixedService as any).sort())
+			.toEqual(['load', 'setActiveOrg', 'setPair']);
+		expect(readStoreMethodTag(service.helper)).toBeUndefined();
+		// Still callable as a plain method.
+		expect(service.helper()).toBe('not-in-store');
+	});
+
+	it('tags a sync method with a syncAction and an async one with a thunk', () => {
+		const store = createModuleStore('alpha');
+		const { service } = buildMixed(store);
+
+		expect(readStoreMethodTag(service.setActiveOrg)?.syncAction).toBeDefined();
+		expect(readStoreMethodTag(service.setActiveOrg)?.thunk).toBeUndefined();
+		expect(readStoreMethodTag(service.load)?.thunk).toBeDefined();
+		expect(readStoreMethodTag(service.load)?.syncAction).toBeUndefined();
+	});
+
+	it('inherits annotations from a base class', () => {
+		const store = createModuleStore('alpha');
+
+		abstract class Base {
+			@storeAsyncMethod
+			public async inherited() { return { data: 'base', clientErrors: [] }; }
+		}
+
+		@storeService('Derived', store)
+		class Derived extends Base {}
+		new Derived();
+
+		expect(Object.keys(store.getState().Derived as any)).toEqual(['inherited']);
+	});
+});
+
+
+describe('storeService slice naming', () => {
+	it('rejects an empty slice name at decoration time', () => {
+		const store = createModuleStore('alpha');
+
+		expect(() => storeService('', store)).toThrow(/requires an explicit slice name/);
+	});
+
+	it('throws when two services are given the same slice name on one store', () => {
+		const store = createModuleStore('alpha');
+
+		@storeService('Collide', store)
+		class First {
+			@storeAsyncMethod
+			public async ping() { return { data: 'first', clientErrors: [] }; }
+		}
+
+		@storeService('Collide', store)
+		class Second {
+			@storeAsyncMethod
+			public async ping() { return { data: 'second', clientErrors: [] }; }
+		}
+
+		new First();
+		expect(() => new Second()).toThrow(/already has a slice named 'Collide'/);
 	});
 });

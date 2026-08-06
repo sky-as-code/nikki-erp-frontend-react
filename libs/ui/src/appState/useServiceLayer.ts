@@ -14,6 +14,19 @@ const emptyMethodState: ServiceMethodState = {
 	doneAt: 0,
 };
 
+/**
+ * Normalises what the slice holds into a {@link ServiceMethodState}.
+ *
+ * A sync method stores its return value bare, with no envelope, so it is presented as a
+ * settled state — callers then read `data` the same way for both kinds.
+ */
+function readMethodState<TData>(stored: unknown, isSync: boolean): ServiceMethodState<TData> {
+	if (isSync) {
+		return { ...emptyMethodState, status: 'fulfilled', data: (stored ?? null) as TData | null };
+	}
+	return (stored ?? emptyMethodState) as ServiceMethodState<TData>;
+}
+
 export type UseServiceLayerOptions = {
 	/**
 	 * Dispatch once on mount, and again whenever `params` changes by value.
@@ -41,9 +54,11 @@ export type UseServiceLayerReturn<TData = any> = {
  * const { dispatchMethod, result, data } = useServiceLayer(userService.getById, { id });
  * ```
  *
- * The method must come from an instance of a `@storeService` class — `@storeService`
- * installs bound, tagged copies on each instance, which is what makes a bare
- * `userService.getById` reference resolvable to its thunk.
+ * The method must come from an instance of a `@storeService` class and be annotated
+ * `@storeAsyncMethod` or `@storeSyncMethod` — `@storeService` installs bound, tagged
+ * copies on each instance, which is what makes a bare `userService.getById` reference
+ * resolvable to its thunk. A sync method reports as permanently `fulfilled`, since it
+ * has no pending or rejected state to report.
  *
  * Note `isSuccess`, not `isFulfilled`, is the usual success test: a call that returns
  * client errors completed, so it is fulfilled but not successful.
@@ -63,15 +78,17 @@ export function useServiceLayer<TData = any>(
 	}
 
 	const dispatch = useModuleDispatch();
-	const { thunk, sliceName, methodName } = tag;
+	const { thunk, syncAction, sliceName, methodName } = tag;
+	// Exactly one is set, per the method's annotation, so this picks the right dispatcher.
+	const action = (thunk ?? syncAction)!;
 
 	const dispatchMethod = React.useCallback(
-		(overrideParams?: any) => dispatch(thunk(overrideParams === undefined ? params : overrideParams) as any),
-		[dispatch, thunk, params],
+		(overrideParams?: any) => dispatch(action(overrideParams === undefined ? params : overrideParams) as any),
+		[dispatch, action, params],
 	);
 
 	const methodState = useModuleSelector(
-		(state: any) => (state?.[sliceName]?.[methodName] ?? emptyMethodState) as ServiceMethodState<TData>,
+		(state: any) => readMethodState<TData>(state?.[sliceName]?.[methodName], Boolean(syncAction)),
 	);
 
 	// Compare by value: a caller passing an object literal would otherwise re-dispatch every render.
@@ -82,8 +99,8 @@ export function useServiceLayer<TData = any>(
 
 	React.useEffect(() => {
 		if (!dispatchOnMount) return;
-		dispatch(thunk(latestParams.current) as any);
-	}, [dispatch, thunk, paramsKey, dispatchOnMount]);
+		dispatch(action(latestParams.current) as any);
+	}, [dispatch, action, paramsKey, dispatchOnMount]);
 
 	const result = React.useMemo<ServiceLayerResult<TData>>(() => {
 		const isFulfilled = methodState.status === 'fulfilled';

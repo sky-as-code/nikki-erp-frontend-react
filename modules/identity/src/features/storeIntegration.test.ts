@@ -1,11 +1,11 @@
 import { moduleStoreRegistry, readStoreMethodTag } from '@nikkierp/ui/appState/store';
 import { describe, expect, it } from 'vitest';
 
+import { identityStore } from '../store';
 import { groupService } from './group/groupService';
 import { orgService } from './organization/orgService';
 import { RoleService, roleService } from './role/roleService';
 import { userService } from './user/userService';
-import { identityStore } from '../store';
 
 
 describe('identity module store', () => {
@@ -24,7 +24,9 @@ describe('identity module store', () => {
 	it('gives a subclass with no own methods the full inherited CRUD surface', () => {
 		const userState = identityStore.getState().UserService as Record<string, unknown>;
 
-		// UserService declares nothing of its own; every key here comes from CrudServiceBase.
+		// UserService declares nothing of its own; every key here comes from the
+		// `@storeAsyncMethod` annotations on StoreCrudServiceBase. If one were missing,
+		// that operation would silently vanish from the store — this is the guard.
 		expect(Object.keys(userState).sort()).toEqual(
 			['create', 'delete', 'exists', 'getById', 'getModelSchema', 'getOne', 'manageM2m', 'search', 'setIsArchived', 'update'],
 		);
@@ -38,7 +40,7 @@ describe('identity module store', () => {
 		expect(orgState).toHaveProperty('search');
 	});
 
-	it('excludes the protected internals of CrudServiceBase', () => {
+	it('excludes the unannotated protected internals of CrudServiceBase', () => {
 		const roleState = identityStore.getState().RoleService as Record<string, unknown>;
 
 		expect(roleState).not.toHaveProperty('withSchema');

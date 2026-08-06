@@ -61,11 +61,10 @@ export function createModuleStore(name: string): ModuleStore {
 
 		injectSliceReducer(sliceName: string, reducer: Reducer): void {
 			if (sliceReducers[sliceName]) {
-				// Never skip silently: under minification two classes can collapse to the same
-				// name, and merging their state would be a data-corruption bug.
+				// Never skip silently: merging two services' state would be a data-corruption bug.
 				throw new Error(
 					`Module store '${name}' already has a slice named '${sliceName}'. `
-					+ 'Two service classes share a name — set esbuild.keepNames, or pass an explicit { sliceName }.',
+					+ 'Two @storeService classes passed the same slice name — give each one a distinct name.',
 				);
 			}
 			sliceReducers[sliceName] = reducer;

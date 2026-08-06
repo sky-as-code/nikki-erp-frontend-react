@@ -114,6 +114,17 @@ export type MicroAppBundleInitOptions = {
 	 */
 	config?: MicroAppConfig,
 
+	/**
+	 * Injects a reducer into the **Shell's** store, namespaced by slug.
+	 *
+	 * @deprecated The Shell does not share state with micro-apps. Create the module's own
+	 * store with `createModuleStore(slug)` and reach anything Shell-owned through the
+	 * command bus (request/response) or the event bus (notifications). Still passed, and
+	 * still working, for modules that have not migrated.
+	 *
+	 * Kept non-optional so the modules still calling it keep type-checking; a migrated
+	 * module simply omits it from its `init` destructuring, as `identity` does.
+	 */
 	registerReducer: RegisterReducerFn,
 
 	/**

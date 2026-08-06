@@ -6,8 +6,9 @@
  * a service file loaded by a decorator) throws. Nothing here touches the DOM.
  */
 export * from './ModuleStoreProvider';
-export * from './collectServiceMethods';
+export * from './StoreCrudServiceBase';
 export * from './decorators';
+export * from './methodDecorators';
 export * from './moduleStore';
 export * from './moduleStoreRegistry';
 export * from './selectSliceState';

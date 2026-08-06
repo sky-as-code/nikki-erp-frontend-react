@@ -1,5 +1,7 @@
-import { collectServiceMethods } from './collectServiceMethods';
-import { CreateServiceSliceOptions, ModuleStore, ServiceMethodThunk, ServiceSlice } from './types';
+import { collectMethodKinds } from './methodDecorators';
+import {
+	CreateServiceSliceOptions, ModuleStore, ServiceMethodThunk, ServiceSlice, SyncActionCreator,
+} from './types';
 
 
 /** Marks a bound instance method so `useServiceLayer` can identify it from a bare reference. */
@@ -9,14 +11,30 @@ export type StoreMethodTag = {
 	methodName: string,
 	sliceName: string,
 	moduleName: string,
-	thunk: ServiceMethodThunk,
+	/** Set for a `@storeAsyncMethod`; `undefined` for a sync one. */
+	thunk?: ServiceMethodThunk,
+	/** Set for a `@storeSyncMethod`; `undefined` for an async one. */
+	syncAction?: SyncActionCreator,
 };
 
 /** Class → slice, so `selectSliceState` can resolve a class it was not given a thunk for. */
 const slicesByClass = new WeakMap<object, ServiceSlice>();
 
+/**
+ * Class → slice name, recorded at decoration time.
+ *
+ * The slice itself only exists once the service is instantiated, but a selector may be
+ * created before that. The name is known as soon as the decorator runs, so this map lets
+ * `selectSliceState` resolve without waiting for the first `new`.
+ */
+const sliceNamesByClass = new WeakMap<object, string>();
+
 export function getServiceSlice(serviceClass: object): ServiceSlice | undefined {
 	return slicesByClass.get(serviceClass);
+}
+
+export function getServiceSliceName(serviceClass: object): string | undefined {
+	return sliceNamesByClass.get(serviceClass);
 }
 
 export function readStoreMethodTag(method: unknown): StoreMethodTag | undefined {
@@ -25,7 +43,7 @@ export function readStoreMethodTag(method: unknown): StoreMethodTag | undefined 
 }
 
 /**
- * Turns a service class into a Redux slice on `moduleStore`.
+ * Turns a service class into a Redux slice named `sliceName` on `moduleStore`.
  *
  * Every method found on the prototype chain — including those inherited from a base
  * class such as `CrudServiceBase` — becomes a thunk plus the reducer cases maintaining
@@ -33,9 +51,13 @@ export function readStoreMethodTag(method: unknown): StoreMethodTag | undefined 
  * methods of its own still gets the full inherited set.
  *
  * ```ts
- * @storeService(identityStore)
+ * @storeService('UserService', identityStore)
  * export class UserService extends CrudServiceBase { }
  * ```
+ *
+ * `sliceName` is given by the caller rather than read off `ServiceClass.name`: a
+ * minifier renames the class, and two services collapsing to one mangled name would
+ * silently share a slice.
  *
  * The slice is built on the first instantiation rather than at class-definition time,
  * because the generated thunks call their methods on a real instance. Services are
@@ -43,16 +65,25 @@ export function readStoreMethodTag(method: unknown): StoreMethodTag | undefined 
  * still import time.
  */
 export function storeService<TClass extends abstract new (...args: any[]) => any>(
+	sliceName: string,
 	moduleStore: ModuleStore,
 	options: CreateServiceSliceOptions = {},
 ) {
+	// Validate here, not on first `new`: a blank name is a programmer error, and throwing
+	// at decoration time surfaces it at import rather than at first use.
+	if (!sliceName) {
+		throw new Error('@storeService requires an explicit slice name as its first argument.');
+	}
+
 	return function decorate(target: TClass, context: ClassDecoratorContext): TClass {
 		if (context.kind !== 'class') {
 			throw new Error('@storeService may only decorate a class.');
 		}
 
-		const methodNames = collectServiceMethods(target);
+		const methodNames = Object.keys(collectMethodKinds(target));
 		let slice: ServiceSlice | undefined;
+
+		sliceNamesByClass.set(target, sliceName);
 
 		/**
 		 * Installs bound, tagged copies of every method on the instance.
@@ -64,7 +95,7 @@ export function storeService<TClass extends abstract new (...args: any[]) => any
 		function tagInstance(instance: any): void {
 			// A second `new` of the same class must not rebuild the slice.
 			if (!slice) {
-				slice = moduleStore.createServiceSlice(target as any, instance, options);
+				slice = moduleStore.createServiceSlice(target as any, instance, { ...options, sliceName });
 				// Key both bindings: the declared name resolves to the subclass returned
 				// below, while anything captured earlier still points at the original.
 				slicesByClass.set(target, slice);
@@ -79,7 +110,9 @@ export function storeService<TClass extends abstract new (...args: any[]) => any
 					methodName,
 					sliceName: slice.name,
 					moduleName: moduleStore.name,
+					// Exactly one of these is set, per the method's annotation.
 					thunk: slice.thunks[methodName],
+					syncAction: slice.syncActions[methodName],
 				};
 				Object.defineProperty(bound, STORE_METHOD_TAG, { value: tag, enumerable: false });
 				Object.defineProperty(instance, methodName, { value: bound, writable: true, configurable: true });
@@ -96,8 +129,11 @@ export function storeService<TClass extends abstract new (...args: any[]) => any
 			}
 		};
 
-		// Keep the original name: it is the slice name, and it is what shows in stack traces.
-		Object.defineProperty(Decorated, 'name', { value: target.name, configurable: true });
+		sliceNamesByClass.set(Decorated, sliceName);
+
+		// Only for stack traces and devtools — the slice name is `sliceName`, which is a
+		// literal and so survives minification where `target.name` would not.
+		Object.defineProperty(Decorated, 'name', { value: sliceName, configurable: true });
 
 		return Decorated as unknown as TClass;
 	};

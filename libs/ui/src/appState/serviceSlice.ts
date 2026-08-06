@@ -1,9 +1,9 @@
 import { createAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { collectServiceMethods } from './collectServiceMethods';
+import { collectMethodKinds } from './methodDecorators';
 import {
 	CreateServiceSliceOptions, ModuleStore, ResetActionCreator, SerializedClientError, ServiceClass,
-	ServiceMethodState, ServiceMethodThunk, ServiceSlice,
+	ServiceMethodKind, ServiceMethodState, ServiceMethodThunk, ServiceSlice, SyncActionCreator,
 } from './types';
 
 import type { ActionReducerMapBuilder } from '@reduxjs/toolkit';
@@ -17,24 +17,6 @@ const initialMethodState: ServiceMethodState = {
 	error: null,
 	doneAt: 0,
 };
-
-/** Resolves the slice name and rejects the shapes that would silently corrupt state. */
-export function resolveSliceName(serviceClass: ServiceClass, override?: string): string {
-	const name = override ?? serviceClass.name;
-	if (!name) {
-		throw new Error(
-			'A service class must have a non-empty name to become a slice. '
-			+ 'Anonymous class expressions need an explicit { sliceName } option.',
-		);
-	}
-	if (!override && name.length <= 2) {
-		throw new Error(
-			`Slice name '${name}' looks minified. Set build.minify.mangle.keepNames in the module's `
-			+ 'vite.config.ts, or pass an explicit { sliceName }.',
-		);
-	}
-	return name;
-}
 
 /**
  * Flattens `ClientErrorItem`s to plain JSON.
@@ -139,21 +121,83 @@ function addMethodCases(
 		});
 }
 
-function buildInitialState(methodNames: string[], overrides?: Record<string, unknown>): Record<string, unknown> {
+/**
+ * Carries the call's arguments as the action payload.
+ *
+ * A multi-argument sync method is dispatched with its params as an array, matching what
+ * `createMethodThunk` does for the async side, so both kinds are called the same way.
+ */
+function prepareSyncPayload(...args: any[]) {
+	return { payload: args.length === 1 ? args[0] : args };
+}
+
+/**
+ * The single case maintaining a `@storeSyncMethod`'s state.
+ *
+ * The method runs inside the reducer and its return value *is* the new state — there is
+ * no envelope, because a synchronous call cannot be pending and cannot reject in a way
+ * the store should record.
+ */
+function addSyncMethodCase(
+	builder: ActionReducerMapBuilder<any>,
+	methodName: string,
+	action: SyncActionCreator,
+	getInstance: () => any,
+	resetAction: ResetActionCreator,
+): void {
+	builder
+		.addCase(action as any, (state: any, dispatched: any) => {
+			const instance = getInstance();
+			const args = Array.isArray(dispatched.payload) ? dispatched.payload : [dispatched.payload];
+			state[methodName] = instance[methodName](...args) ?? null;
+		})
+		.addCase(resetAction as any, (state: any) => {
+			state[methodName] = null;
+		});
+}
+
+function buildInitialState(
+	kinds: Record<string, ServiceMethodKind>, overrides?: Record<string, unknown>,
+): Record<string, unknown> {
 	const state: Record<string, unknown> = {};
-	// Every key must exist up front: the reducers above mutate state[methodName] in place.
-	for (const methodName of methodNames) {
-		state[methodName] = { ...initialMethodState };
+	// Every key must exist up front: the async reducers mutate state[methodName] in place.
+	// A sync method has no envelope, so it starts as null and is replaced wholesale.
+	for (const [methodName, kind] of Object.entries(kinds)) {
+		state[methodName] = kind === 'sync' ? null : { ...initialMethodState };
 	}
 	return { ...state, ...overrides };
+}
+
+/** One action per annotated method: a thunk for an async one, a plain action for a sync one. */
+function buildMethodActions(
+	sliceName: string, kinds: Record<string, ServiceMethodKind>, getInstance: () => any,
+) {
+	const thunks: Record<string, ServiceMethodThunk> = {};
+	const syncActions: Record<string, SyncActionCreator> = {};
+	const resetActions: Record<string, ResetActionCreator> = {};
+
+	for (const [methodName, kind] of Object.entries(kinds)) {
+		if (kind === 'sync') {
+			syncActions[methodName] = createAction(
+				`${sliceName}/${methodName}`, prepareSyncPayload,
+			) as SyncActionCreator;
+		}
+		else {
+			thunks[methodName] = createMethodThunk(sliceName, methodName, getInstance);
+		}
+		resetActions[methodName] = createAction(`${sliceName}/${methodName}/reset`) as ResetActionCreator;
+	}
+
+	return { thunks, syncActions, resetActions };
 }
 
 /**
  * Builds a slice from a service class and registers it with `moduleStore`.
  *
- * Each method becomes an async thunk plus the reducer cases that maintain
- * `state[methodName]`. A method cannot literally *be* a reducer — reducers are
- * synchronous and pure, while every service method is async.
+ * Only methods annotated `@storeAsyncMethod` / `@storeSyncMethod` take part. An async
+ * one becomes a thunk plus the reducer cases maintaining `state[methodName]`; a sync one
+ * becomes a single action whose reducer runs the method and stores its return value.
+ * An unannotated method stays an ordinary helper with no presence in the store.
  */
 export function createServiceSlice<TInstance>(
 	moduleStore: ModuleStore,
@@ -161,23 +205,30 @@ export function createServiceSlice<TInstance>(
 	instance: TInstance,
 	options: CreateServiceSliceOptions = {},
 ): ServiceSlice<TInstance> {
-	const sliceName = resolveSliceName(serviceClass, options.sliceName);
-	const methodNames = collectServiceMethods(serviceClass);
-
-	const thunks: Record<string, ServiceMethodThunk> = {};
-	const resetActions: Record<string, ResetActionCreator> = {};
-	for (const methodName of methodNames) {
-		thunks[methodName] = createMethodThunk(sliceName, methodName, () => instance);
-		resetActions[methodName] = createAction(`${sliceName}/${methodName}/reset`) as ResetActionCreator;
+	// Required, and normally supplied by `@storeService`. Checked here too because
+	// `createServiceSlice` is on the public `ModuleStore` interface and can be called directly.
+	const sliceName = options.sliceName;
+	if (!sliceName) {
+		throw new Error('createServiceSlice requires options.sliceName.');
 	}
+	const kinds = collectMethodKinds(serviceClass);
+	const methodNames = Object.keys(kinds);
+	const { thunks, syncActions, resetActions } = buildMethodActions(sliceName, kinds, () => instance);
 
 	const slice = createSlice({
 		name: sliceName,
-		initialState: buildInitialState(methodNames, options.initialState),
+		initialState: buildInitialState(kinds, options.initialState),
 		reducers: options.reducers ?? {},
 		extraReducers: (builder: ActionReducerMapBuilder<any>) => {
-			for (const methodName of methodNames) {
-				addMethodCases(builder, methodName, thunks[methodName], resetActions[methodName]);
+			for (const [methodName, kind] of Object.entries(kinds)) {
+				if (kind === 'sync') {
+					addSyncMethodCase(
+						builder, methodName, syncActions[methodName], () => instance, resetActions[methodName],
+					);
+				}
+				else {
+					addMethodCases(builder, methodName, thunks[methodName], resetActions[methodName]);
+				}
 			}
 			// Last, so a caller can override any generated case.
 			options.extraReducers?.(builder);
@@ -189,8 +240,9 @@ export function createServiceSlice<TInstance>(
 	return {
 		name: sliceName,
 		reducer: slice.reducer as any,
-		actions: { ...slice.actions, ...thunks, ...resetActions },
+		actions: { ...slice.actions, ...thunks, ...syncActions, ...resetActions },
 		thunks,
+		syncActions,
 		resetActions,
 		methodNames,
 	};

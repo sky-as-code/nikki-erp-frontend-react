@@ -1,7 +1,6 @@
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
 import {
-	defineWebComponent, initMicroAppStateContext, MicroAppBundle, MicroAppDomType, MicroAppProps,
-	MicroAppProvider,
+	defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps, MicroAppProvider,
 } from '@nikkierp/ui/microApp';
 import { ViewEngineRouter } from '@nikkierp/viewkit-mantine';
 import React from 'react';
@@ -29,13 +28,12 @@ function Main(props: MicroAppProps) {
 }
 
 const bundle: MicroAppBundle = {
-	init({ htmlTag, slug, registerReducer, host }) {
+	init({ htmlTag, slug, host }) {
 		const domType = MicroAppDomType.SHARED;
 		defineWebComponent(Main, { htmlTag, domType });
 
-		const result = registerReducer(identityReducer);
-		initMicroAppStateContext(result);
-
+		// No `registerReducer`: identity keeps its state in its own store (`./store`), and
+		// reaches the Shell only through the command and event buses.
 		registerModelSchemas();
 		// IAM-specific templates go onto the host-owned engine, never a new instance.
 		contributeIdentityViewKit(host.viewEngine);
@@ -66,10 +64,6 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 			engineProps={{ pages, indexElement: <h1>Identity</h1> }}
 		/>
 	);
-}
-
-function identityReducer(state: Record<string, never> = {}): Record<string, never> {
-	return state;
 }
 
 function registerModelSchemas(): void {

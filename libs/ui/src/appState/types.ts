@@ -16,6 +16,15 @@ export type SerializedClientError = {
 export type ServiceMethodStatus = 'pending' | 'fulfilled' | 'rejected' | null;
 
 /**
+ * How a service method becomes part of its slice.
+ *
+ * `async` — a `createAsyncThunk` with the full `{status, data, clientErrors, error,
+ * doneAt}` envelope. `sync` — a plain reducer whose return value replaces
+ * `state[methodName]` outright.
+ */
+export type ServiceMethodKind = 'async' | 'sync';
+
+/**
  * One service method's request state.
  *
  * `clientErrors` and `error` are deliberately separate. A client error is a validation
@@ -36,8 +45,8 @@ export type ServiceMethodState<TData = any> = {
  * One service's slice state: a {@link ServiceMethodState} per member.
  *
  * Deliberately loose — it maps over **every** member of the class, not just the methods
- * that became thunks. Non-method members are `undefined` at runtime, and so are methods
- * excluded by the deny-list in `collectServiceMethods`.
+ * that became slice entries. Non-method members are `undefined` at runtime, and so is
+ * any method left unannotated.
  */
 export type ServiceSliceState<TInstance> = {
 	[TKey in keyof TInstance]: ServiceMethodState;
@@ -49,8 +58,17 @@ export type ServiceMethodThunk = AsyncThunk<any, any, { rejectValue: string }>;
 /** Resets one method's state back to its initial value. */
 export type ResetActionCreator = (() => { type: string }) & { type?: string };
 
+/**
+ * The action dispatched for one `@storeSyncMethod`. Its arguments are the method's
+ * params; the reducer runs the method and stores what it returns.
+ */
+export type SyncActionCreator = ((...args: any[]) => { type: string, payload: any }) & { type?: string };
+
 export type CreateServiceSliceOptions<TState = any> = {
-	/** Overrides `ServiceClass.name`. Use when minification may mangle the class name. */
+	/**
+	 * The slice's name in the module store. Required — `@storeService` passes the name
+	 * its caller gave it. It is never derived from the class, which a minifier renames.
+	 */
 	sliceName?: string,
 	/** Merged over the generated per-method initial state. */
 	initialState?: Partial<TState>,
@@ -73,8 +91,12 @@ export type ServiceSlice<TInstance = any> = {
 	 * Heterogeneous by nature: caller-supplied creators, thunks and reset actions.
 	 */
 	actions: Record<string, any>,
+	/** One per `@storeAsyncMethod`. */
 	thunks: Record<string, ServiceMethodThunk>,
+	/** One per `@storeSyncMethod`. */
+	syncActions: Record<string, SyncActionCreator>,
 	resetActions: Record<string, ResetActionCreator>,
+	/** Every annotated method, async and sync alike. */
 	methodNames: string[],
 };
 
