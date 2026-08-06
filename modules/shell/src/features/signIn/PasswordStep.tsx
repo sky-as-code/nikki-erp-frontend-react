@@ -1,35 +1,33 @@
 import { Anchor, Button, Group, Stack, Text } from '@mantine/core';
-import { AppDispatch } from '@nikkierp/shell/appState';
-import { useContinueSignIn, useStartSignIn } from '@nikkierp/shell/authenticate';
+import { authService, useStartSignIn } from '@nikkierp/shell/authenticate';
+import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { AdhocFormProvider, AutoField, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconLock } from '@tabler/icons-react';
 import React, { useRef } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { passwordSchema } from './passwordSchema';
 import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
 
 
 type PasswordStepFormContentProps = BaseFormContentProps & {
-	onBack: () => void;
+	onBack: () => void,
 };
 
 export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps): React.ReactNode {
 	const formRef = useRef<HTMLFormElement>(null);
-	const dispatch = useDispatch<AppDispatch>();
 	const { data: startSignInData } = useStartSignIn();
-	const { isError, isLoading, thunkAction: continueSignIn } = useContinueSignIn();
+	const { dispatchMethod: continueSignIn, result } = useServiceLayer(authService.continueSignIn);
+	const { isPending: isLoading } = result;
 	const localize = useLocalize('common');
 
 	const handleSubmit = async (data: { password: string }) => {
-		// This would be passed as a prop in a real implementation
-		dispatch(continueSignIn({
+		continueSignIn({
 			attemptId: startSignInData!.attemptId,
 			passwords: {
 				password: data.password,
 			},
-		}));
+		});
 	};
 
 	return (

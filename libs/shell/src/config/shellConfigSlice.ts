@@ -1,13 +1,14 @@
 import { setIsLocalEnv } from '@nikkierp/common/utils';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+import { shellStore } from '../appState/shellStore';
 import { ShellEnvVars } from '../types';
 
 
 export const SLICE_NAME = 'shellConfig';
 
 export type ShellConfigState = {
-	envVars: ShellEnvVars;
+	envVars: ShellEnvVars,
 };
 
 const initialState: ShellConfigState = {
@@ -35,3 +36,8 @@ export const {
 } = shellConfigSlice.actions;
 
 export const { reducer } = shellConfigSlice;
+
+// Stays a plain slice rather than a `@storeService` class: `setEnvVars` is a single
+// synchronous assignment, and its `setIsLocalEnv` side effect has to land before the
+// first render — not after a thunk resolves.
+shellStore.injectSliceReducer(SLICE_NAME, reducer);

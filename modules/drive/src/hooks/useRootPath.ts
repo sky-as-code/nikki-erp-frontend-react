@@ -1,4 +1,4 @@
-import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { useActiveOrgModule } from '@nikkierp/shell/routing';
 
 
 export function useOrgModulePath(): string {

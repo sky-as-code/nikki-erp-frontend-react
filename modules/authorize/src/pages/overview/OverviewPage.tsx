@@ -1,7 +1,7 @@
 import { Alert, Grid, Stack, Title } from '@mantine/core';
 import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
-import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import {
 	IconKey,

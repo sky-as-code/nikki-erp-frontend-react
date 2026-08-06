@@ -1,13 +1,16 @@
+import { useModuleSelector } from '@nikkierp/ui/appState/store';
 import { createSelector } from '@reduxjs/toolkit';
-import { useSelector } from 'react-redux';
 
-import { RootState } from '../appState/store';
+import { SLICE_NAME, ShellConfigState } from './shellConfigSlice';
+import { ShellEnvVars } from '../types';
 
 
-const selectShellConfig = (state: RootState) => state.shellConfig;
+const selectShellConfig = (state: any) => state[SLICE_NAME] as ShellConfigState;
+
 const selectEnvVars = createSelector(
 	selectShellConfig,
-	(state) => state.envVars,
+	(state: ShellConfigState) => state.envVars,
 );
 
-export const useShellEnvVars = () => useSelector(selectEnvVars);
+/** Reads from the Shell's own store, not the default react-redux context. */
+export const useShellEnvVars = (): ShellEnvVars => useModuleSelector(selectEnvVars);

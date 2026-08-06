@@ -1,17 +1,15 @@
 import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
+import { routingService, useActiveOrgModule } from '@nikkierp/shell/routing';
 import { useMyOrgs } from '@nikkierp/shell/userContext';
-import { actions as routingActions, useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
 import React, { useMemo } from 'react';
-import { useDispatch } from 'react-redux';
 
 
 export type OrgSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'> & {
-	hideIfEmpty: boolean;
+	hideIfEmpty: boolean,
 };
 
 export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNode {
-	const dispatch = useDispatch();
 	const isAuthenticated = useIsAuthenticated();
 	const { orgSlug } = useActiveOrgModule();
 	const orgs = useMyOrgs();
@@ -27,7 +25,7 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 	}, [orgs, isAuthenticated]);
 
 	const handleOrgChange = (newOrgSlug: string) => {
-		dispatch(routingActions.navigateTo({ to: `/${newOrgSlug}` }));
+		void routingService.navigateTo({ to: `/${newOrgSlug}` });
 	};
 
 	return isAuthenticated && (items.length || !props.hideIfEmpty) && (

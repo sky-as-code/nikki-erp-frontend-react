@@ -6,7 +6,7 @@
 // 	useMyModulesForContext,
 // 	useUserContext,
 // } from '@nikkierp/shell/userContext';
-// import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+// import { useActiveOrgModule } from '@nikkierp/shell/routing';
 // import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 // import { Navigate, useParams } from 'react-router';
 

@@ -1,8 +1,8 @@
 import { cleanFormData } from '@nikkierp/common/utils';
 import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
 import { useUIState } from '@nikkierp/shell/contexts';
+import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
-import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -79,11 +79,11 @@ function prepareUpdatePayload(
 	roleSuite: RoleSuite,
 	selectedRoleIds: string[],
 ): {
-	id: string;
-	etag: string;
-	name?: string;
-	description?: string;
-	roleIds: string[];
+	id: string,
+	etag: string,
+	name?: string,
+	description?: string,
+	roleIds: string[],
 } {
 	const newDescription = formData.description ?? null;
 	const originalDescription = roleSuite.description ?? null;
@@ -201,7 +201,7 @@ function validateUpdateData(
 	allRoles: Role[],
 	notification: NotificationType,
 	translate: TFunction,
-): { isValid: boolean; originalRoleIds: string[] } {
+): { isValid: boolean, originalRoleIds: string[] } {
 	const suiteOrgId = roleSuite.orgId || undefined;
 	const invalidRole = validateRoleOrgConstraints(selectedRoleIds, allRoles, suiteOrgId);
 	if (invalidRole) {

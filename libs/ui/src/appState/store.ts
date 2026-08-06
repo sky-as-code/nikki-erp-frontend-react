@@ -8,6 +8,7 @@
 export * from './ModuleStoreProvider';
 export * from './StoreCrudServiceBase';
 export * from './decorators';
+export * from './dispatchServiceMethod';
 export * from './methodDecorators';
 export * from './moduleStore';
 export * from './moduleStoreRegistry';

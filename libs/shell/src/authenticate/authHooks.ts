@@ -1,5 +1,4 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 
 import { useIsAuthenticated, useIsAuthenticatePending, useRestoreAuthSession } from './authSelectors';
 
@@ -7,13 +6,12 @@ import { useIsAuthenticated, useIsAuthenticatePending, useRestoreAuthSession } f
 export function useTryRestoreSession(): void {
 	const isAuthenticatePending = useIsAuthenticatePending();
 	const isAuthenticated = useIsAuthenticated();
-	const restore = useRestoreAuthSession();
-	const dispatch = useDispatch();
+	const { dispatchMethod: restoreAuthSession, result } = useRestoreAuthSession();
 
 	React.useEffect(() => {
 		if (isAuthenticatePending) return;
-		if (!isAuthenticated && !restore.isDone) {
-			dispatch(restore.thunkAction() as any);
+		if (!isAuthenticated && !result.isFulfilled) {
+			restoreAuthSession();
 		}
-	}, [isAuthenticated, restore.isDone]);
+	}, [isAuthenticated, result.isFulfilled]);
 }

@@ -1,10 +1,10 @@
 import { Avatar, Box, Divider, Flex, Menu, Text } from '@mantine/core';
+import { useSignOut } from '@nikkierp/shell/authenticate';
 import { useUserContext } from '@nikkierp/shell/userContext';
 import { IconUserFilled } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 
 import { handleMenuItemClick } from './helpers';
 import { PROFILE_MENU_CONFIG } from './menuConfig';
@@ -14,7 +14,7 @@ import { ThemeSwitchModal } from '../ThemeSwitch';
 
 
 export const ProfileMenuDropdown: React.FC = () => {
-	const dispatch = useDispatch<any>();
+	const { dispatchMethod: signOut } = useSignOut();
 	const { t: translate } = useTranslation();
 
 	const userCtx = useUserContext();
@@ -57,7 +57,7 @@ export const ProfileMenuDropdown: React.FC = () => {
 								leftSection={item.icon}
 								onClick={() => handleMenuItemClick(
 									item.action,
-									dispatch,
+									signOut,
 									themeModeModalRef,
 									langSwitchModalRef)
 								}

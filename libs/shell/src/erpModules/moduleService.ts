@@ -1,74 +1,30 @@
-import * as dyn from '@nikkierp/common/dynamicModel';
-import * as uiState from '@nikkierp/ui/appState';
+import { StoreCrudServiceBase, storeAsyncMethod, storeService } from '@nikkierp/ui/appState/store';
 
-import { MODULE_SCHEMA_NAME } from '../constants';
 import * as t from './types';
+import { shellStore } from '../appState/shellStore';
+import { MODULE_SCHEMA_NAME } from '../constants';
+
+import type { ServiceResult } from '@nikkierp/common/commandBus';
 
 
-export const createModule = uiState.createSchemaThunkPack<t.CreateModuleResponse, t.CreateModuleRequest, 'createModule'>(
-	MODULE_SCHEMA_NAME, 'createModule',
-	async function createModuleThunk(schema: dyn.SchemaPack, request: t.CreateModuleRequest) {
-		return schema.restApi.create(request);
-	},
-);
+/**
+ * Reads over `essential_module_metadata`; the Shell never mutates it.
+ *
+ * Used two ways, both against this one instance: `libs/shell` dispatches through the
+ * generated slice (`useServiceLayer`), while modules reach it over the command bus as
+ * `shell.erp_modules.*` — see ./moduleCommands.ts.
+ */
+@storeService('erpModules', shellStore)
+export class ModuleService extends StoreCrudServiceBase {
+	public constructor() {
+		super({ moduleName: 'shell', schemaName: MODULE_SCHEMA_NAME });
+	}
 
-export const deleteModule = uiState.createSchemaThunkPack<t.DeleteModuleResponse, t.DeleteModuleRequest, 'deleteModule'>(
-	MODULE_SCHEMA_NAME, 'deleteModule',
-	async function deleteModuleThunk(schema: dyn.SchemaPack, request: t.DeleteModuleRequest) {
-		return schema.restApi.delete(request);
-	},
-);
+	/** Every module in one page — the count is small and bounded by the backend. */
+	@storeAsyncMethod
+	public listAll(): Promise<ServiceResult<t.SearchModuleResponse>> {
+		return this.search({ page: 0, size: 500 });
+	}
+}
 
-export const getModuleSchema = uiState.createSchemaThunkPack<t.GetModuleSchemaResponse, void, 'getModuleSchema'>(
-	MODULE_SCHEMA_NAME, 'getModuleSchema',
-	async function getModuleSchemaThunk(schema: dyn.SchemaPack) {
-		return schema.restApi.getModelSchema();
-	},
-);
-
-export const getModule = uiState.createSchemaThunkPack<t.GetModuleResponse, t.GetModuleRequest, 'getModule'>(
-	MODULE_SCHEMA_NAME, 'getModule',
-	async function getModuleThunk(schema: dyn.SchemaPack, request: t.GetModuleRequest) {
-		return schema.restApi.getById(request);
-	},
-);
-
-export const listAllModules = uiState.createSchemaThunkPack<t.SearchModuleResponse, void, 'listAllModules'>(
-	MODULE_SCHEMA_NAME, 'listAllModules',
-	async function listAllModulesThunk(schema: dyn.SchemaPack) {
-		return schema.restApi.search({
-			page: 0,
-			size: 500,
-		});
-	},
-);
-
-export const searchModules = uiState.createSchemaThunkPack<t.SearchModuleResponse, t.SearchModuleRequest, 'searchModules'>(
-	MODULE_SCHEMA_NAME, 'searchModules',
-	async function searchModulesThunk(schema: dyn.SchemaPack, request: t.SearchModuleRequest) {
-		return schema.restApi.search(request);
-	},
-);
-
-export const setModuleIsArchived = uiState.createSchemaThunkPack<
-	t.SetModuleIsArchivedResponse, t.SetModuleIsArchivedRequest, 'setModuleIsArchived'
->(
-	MODULE_SCHEMA_NAME, 'setModuleIsArchived',
-	async function setModuleIsArchivedThunk(schema: dyn.SchemaPack, request: t.SetModuleIsArchivedRequest) {
-		return schema.restApi.setIsArchived(request);
-	},
-);
-
-export const moduleExists = uiState.createSchemaThunkPack<t.ModuleExistsResponse, t.ModuleExistsRequest, 'moduleExists'>(
-	MODULE_SCHEMA_NAME, 'moduleExists',
-	async function moduleExistsThunk(schema: dyn.SchemaPack, request: t.ModuleExistsRequest) {
-		return schema.restApi.exists(request);
-	},
-);
-
-export const updateModule = uiState.createSchemaThunkPack<t.UpdateModuleResponse, t.UpdateModuleRequest, 'updateModule'>(
-	MODULE_SCHEMA_NAME, 'updateModule',
-	async function updateModuleThunk(schema: dyn.SchemaPack, request: t.UpdateModuleRequest) {
-		return schema.restApi.update(request);
-	},
-);
+export const moduleService = new ModuleService();

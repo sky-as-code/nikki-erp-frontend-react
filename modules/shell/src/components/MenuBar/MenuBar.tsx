@@ -1,6 +1,6 @@
 import { Button, ButtonProps, Group, Menu } from '@mantine/core';
 import { useShellMenu } from '@nikkierp/shell/microApp';
-import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { TranslateFn, useTranslate } from '@nikkierp/ui/i18n';
 import { MenuItem } from '@nikkierp/ui/menu';
 import { IconChevronDown, IconDots } from '@tabler/icons-react';

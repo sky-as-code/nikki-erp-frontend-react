@@ -1,7 +1,7 @@
 import {
 	Box, Button, Divider, Flex, Group,
 } from '@mantine/core';
-import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { IconCategoryFilled } from '@tabler/icons-react';
 import clsx from 'clsx';

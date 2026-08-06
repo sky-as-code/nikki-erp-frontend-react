@@ -25,18 +25,18 @@ export type UpdateModuleRequest = dyn.RestUpdateRequest;
 export type UpdateModuleResponse = dyn.RestMutateResponse;
 
 export type ModuleLabelRef = {
-	$ref: string;
+	$ref: string,
 };
 
 export type Module = {
-	id: string;
-	etag: string;
-	created_at: string;
-	is_internal: boolean;
-	is_orphaned: boolean;
-	label?: ModuleLabelRef;
-	name: string;
-	version: string;
+	id: string,
+	etag: string,
+	created_at: string,
+	is_internal: boolean,
+	is_orphaned: boolean,
+	label?: ModuleLabelRef,
+	name: string,
+	version: string,
 };
 
 /**

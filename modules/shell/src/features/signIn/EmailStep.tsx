@@ -1,11 +1,10 @@
 import { Anchor, Button, Group, Stack, Text } from '@mantine/core';
-import { AppDispatch } from '@nikkierp/shell/appState';
-import { useStartSignIn } from '@nikkierp/shell/authenticate';
+import { authService } from '@nikkierp/shell/authenticate';
+import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { AdhocFormProvider, AutoField, FormStyleProvider } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconMail } from '@tabler/icons-react';
 import React from 'react';
-import { useDispatch } from 'react-redux';
 
 import { emailSchema } from './emailSchema';
 import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
@@ -13,8 +12,8 @@ import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
 
 export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	const formRef = React.useRef<HTMLFormElement>(null);
-	const dispatch = useDispatch<AppDispatch>();
-	const { isDone: isSuccess, isLoading, thunkAction: startSignIn } = useStartSignIn();
+	const { dispatchMethod: startSignIn, result } = useServiceLayer(authService.startSignIn);
+	const { isSuccess, isPending: isLoading } = result;
 	const localize = useLocalize('common');
 
 	React.useEffect(() => {
@@ -36,7 +35,7 @@ export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	// }, [errorStartSignIn]);
 
 	const handleNext = async (data: { email: string }) => {
-		dispatch(startSignIn({ username: data.email }));
+		startSignIn({ username: data.email });
 	};
 
 	return (

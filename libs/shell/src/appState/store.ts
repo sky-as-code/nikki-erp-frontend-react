@@ -1,40 +1,40 @@
-import * as routing from '@nikkierp/ui/appState/routingSlice';
 import { RegisterReducerFn } from '@nikkierp/ui/microApp';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
-import { authorizationErrorListener } from '../authenticate/authorizationErrorListener';
-import * as auth from '../authenticate/authSlice';
-import * as shellConfig from '../config/shellConfigSlice';
-import * as erpModule from '../erpModules/moduleSlice';
-import * as userContext from '../userContext/userContextSlice';
 
+/**
+ * The legacy default-context store — a **compatibility shim**, not Shell state.
+ *
+ * Every Shell slice (`auth`, `userContext`, `shellConfig`, `erpModules`, `routing`) now
+ * lives on `shellStore`, on its own react-redux context. What is left here exists only
+ * for micro-apps that still call `registerReducer` in their `init` and read through
+ * `MicroAppStateProvider`. Do not add Shell state to it.
+ *
+ * It disappears once those modules move to their own `createModuleStore` — see
+ * ai-prompts/app-state/00-progress.md, APPST-010.
+ */
 
-const localReducers = {
-	[auth.SLICE_NAME]: auth.reducer,
-	[routing.SLICE_NAME]: routing.reducer,
-	[shellConfig.SLICE_NAME]: shellConfig.reducer,
-	[erpModule.SLICE_NAME]: erpModule.reducer,
-	[userContext.SLICE_NAME]: userContext.reducer,
-};
+/** RTK rejects an empty reducer map, so the store starts with this placeholder. */
+const PLACEHOLDER_KEY = '__shellStoreShim';
+
+function placeholderReducer(state: boolean = true): boolean {
+	return state;
+}
 
 const lazyReducers: Record<string, any> = {};
 
 function createRootReducer() {
 	return combineReducers({
-		...localReducers,
+		[PLACEHOLDER_KEY]: placeholderReducer,
 		...lazyReducers,
 	});
 }
 
 export const store = configureStore({
 	reducer: createRootReducer(),
-	middleware: (getDefaultMiddleware) =>
-		getDefaultMiddleware().prepend(authorizationErrorListener.middleware),
 });
 
-// Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
 export type AppDispatch = typeof store.dispatch;
 
 export function injectReducer(key: string, reducer: any) {
@@ -59,4 +59,3 @@ export function registerReducerFactory(slug: string) {
 		};
 	} as RegisterReducerFn;
 }
-

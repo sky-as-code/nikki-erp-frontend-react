@@ -1,5 +1,5 @@
 // import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
-// import { tempNavigateToAction } from '@nikkierp/ui/appState/routingSlice';
+// import { routingService } from '@nikkierp/shell/routing';
 // import React from 'react';
 // import { useDispatch } from 'react-redux';
 

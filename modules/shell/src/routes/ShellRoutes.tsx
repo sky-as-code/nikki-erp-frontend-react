@@ -1,8 +1,8 @@
-import { useListAllModules, ModuleDispatch } from '@nikkierp/shell/erpModules';
+import { moduleService, SearchModuleResponse } from '@nikkierp/shell/erpModules';
 import { LazyMicroApp } from '@nikkierp/shell/microApp';
+import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { Navigate, Route, Routes, useParams } from 'react-router';
 
 // import { LazyModule } from '../components/LazyModule';
@@ -19,7 +19,7 @@ import { UnauthorizedPage } from '../pages/UnauthorizedPage';
 
 
 type ShellRoutesProps = {
-	microApps: MicroAppMetadata[];
+	microApps: MicroAppMetadata[],
 };
 
 export function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
@@ -49,22 +49,19 @@ export function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 
 function LazyModule(props: { microApps: MicroAppMetadata[] }): React.ReactNode {
 	const { moduleSlug } = useParams();
-	const listAll = useListAllModules();
-	const dispatch = useDispatch<ModuleDispatch>();
+	const { result, data } = useServiceLayer<SearchModuleResponse>(
+		moduleService.listAll, undefined, { dispatchOnMount: true },
+	);
 
-	React.useEffect(() => {
-		dispatch(listAll.thunkAction());
-	}, []);
-
-	if (listAll.isLoading) {
+	if (result.isPending) {
 		return <AppLoading />;
 	}
-	else if (listAll.isError) {
-		console.error(listAll.error);
+	else if (result.isRejected) {
+		console.error(result.error);
 		return <Navigate to='/notfound' replace />;
 	}
-	else if (listAll.isDone) {
-		const isBackendModule = listAll.data!.items.some(module => module.name === moduleSlug);
+	else if (result.isSuccess) {
+		const isBackendModule = data!.items.some(module => module.name === moduleSlug);
 		const foundApp = props.microApps.find(app => app.slug === moduleSlug);
 		if (!isBackendModule || !foundApp) {
 			return <Navigate to='/notfound' replace />;

@@ -1,6 +1,6 @@
 // import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
 // import { useHasGlobalContextAccess } from '@nikkierp/shell/userContext';
-// import { setActiveOrgAction } from '@nikkierp/ui/appState/routingSlice';
+// import { routingService } from '@nikkierp/shell/routing';
 // import React from 'react';
 // import { useDispatch } from 'react-redux';
 // import { Navigate, Outlet, useLocation } from 'react-router';

@@ -1,9 +1,8 @@
 import { Card, Container, Stack, Text, Title } from '@mantine/core';
 import { useIsAuthenticated, useStartSignIn, useContinueSignIn } from '@nikkierp/shell/authenticate';
-import { actions as routingActions } from '@nikkierp/ui/appState/routingSlice';
+import { routingService } from '@nikkierp/shell/routing';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router';
 
 import { EmailStep } from './EmailStep';
@@ -12,8 +11,8 @@ import { SignInStepProps } from './SignInStep.types';
 
 
 type SignInStep = {
-	name: string;
-	component: React.ComponentType<SignInStepProps>;
+	name: string,
+	component: React.ComponentType<SignInStepProps>,
 };
 
 const SIGNIN_STEPS: SignInStep[] = [
@@ -23,17 +22,16 @@ const SIGNIN_STEPS: SignInStep[] = [
 
 export function SignInPage(): React.ReactNode {
 	const [currentStepIdx, setCurrentStepIdx] = React.useState(0);
-	const { isDone: isSignInStarted, data: startSignInData } = useStartSignIn();
-	const { isDone: isSignInInProgress, data: continueSignInData } = useContinueSignIn();
+	const { isSuccess: isSignInStarted, data: startSignInData } = useStartSignIn();
+	const { isSuccess: isSignInInProgress, data: continueSignInData } = useContinueSignIn();
 	const isAuthenticated = useIsAuthenticated();
-	const dispatch = useDispatch();
 
 	const [searchParams] = useSearchParams();
 	const returnTo = searchParams.get('returnTo');
 
 	React.useEffect(() => {
 		if (isAuthenticated) {
-			dispatch(routingActions.navigateReturnTo({ to: returnTo ?? '/', hardNavigate: false }));
+			void routingService.navigateReturnTo({ to: returnTo ?? '/', hardNavigate: false });
 		}
 	}, [isAuthenticated]);
 
@@ -72,10 +70,10 @@ export function SignInPage(): React.ReactNode {
 }
 
 type SignInCardProps = {
-	steps: SignInStep[];
-	currentStepIndex: number;
-	onNext: () => void;
-	onBack: () => void;
+	steps: SignInStep[],
+	currentStepIndex: number,
+	onNext: () => void,
+	onBack: () => void,
 };
 
 function SignInCard(props: SignInCardProps): React.ReactNode {
@@ -110,10 +108,10 @@ function SignInCard(props: SignInCardProps): React.ReactNode {
 }
 
 type MultiStepFormContainerProps = {
-	steps: SignInStep[];
-	currentStepIndex: number;
-	onNext: () => void;
-	onBack: () => void;
+	steps: SignInStep[],
+	currentStepIndex: number,
+	onNext: () => void,
+	onBack: () => void,
 };
 
 function MultiStepFormContainer({
@@ -169,9 +167,9 @@ function ExposedArea({ children }: React.PropsWithChildren) {
 }
 
 type SlidingAreaProps = {
-	children: (index: number, StepComponent: React.ComponentType<SignInStepProps>, step: SignInStep) => React.ReactNode;
-	steps: SignInStep[];
-	currentStepIndex: number;
+	children: (index: number, StepComponent: React.ComponentType<SignInStepProps>, step: SignInStep) => React.ReactNode,
+	steps: SignInStep[],
+	currentStepIndex: number,
 };
 
 function SlidingArea({ children, steps, currentStepIndex }: SlidingAreaProps) {

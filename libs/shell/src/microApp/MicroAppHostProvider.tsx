@@ -1,5 +1,5 @@
 import { ICommandBus } from '@nikkierp/common/commandBus';
-import { createEventBus, IEventBus } from '@nikkierp/common/eventBus';
+import { IEventBus } from '@nikkierp/common/eventBus';
 import { createMenuRegistry, IMenuRegistry, MenuContribution, useMenuContribution } from '@nikkierp/ui/menu';
 import {
 	HostServices, MicroAppMetadata, IMicroAppWebComponent, MicroAppDomType, MicroAppProps,
@@ -14,6 +14,7 @@ import { MicroAppManager, MicroAppPack } from './MicroAppManager';
 import { ensureAccessToken } from '../authenticate/authService';
 import { createShellCommandBus } from '../commandBus';
 import { useShellEnvVars } from '../config';
+import { shellEventBus } from '../eventBus';
 
 import type { IViewEngine } from '@nikkierp/viewengine/core';
 
@@ -70,7 +71,9 @@ export function MicroAppHostProvider({ children, microApps }: MicroAppHostProvid
 		contributeMantineViewKit(viewEngine);
 		// The registry must exist before the bus: the shell.layout.* handlers close over it.
 		const menuRegistry = createMenuRegistry();
-		const eventBus = createEventBus();
+		// Created at module scope, not here: the Shell's own chrome subscribes above this
+		// provider and before it renders. Same instance either way.
+		const eventBus = shellEventBus;
 		const commandBus = createShellCommandBus(manager, { menuRegistry });
 		const host: HostServices = { commandBus, viewEngine, menuRegistry, eventBus };
 		manager.setHostServices(host);

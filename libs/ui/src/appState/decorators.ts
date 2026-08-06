@@ -59,6 +59,13 @@ export function readStoreMethodTag(method: unknown): StoreMethodTag | undefined 
  * minifier renames the class, and two services collapsing to one mangled name would
  * silently share a slice.
  *
+ * **The installed methods do not dispatch.** What lands on the instance is a *bound copy
+ * of the plain method* with its thunk attached as metadata, so `userService.getById(...)`
+ * runs the body and returns the right data while writing nothing to the store. To have a
+ * call recorded in the slice, go through `useServiceLayer` in React or
+ * `dispatchServiceMethod` anywhere else — including from inside another service method,
+ * where `this.otherMethod()` is likewise just a direct call.
+ *
  * The slice is built on the first instantiation rather than at class-definition time,
  * because the generated thunks call their methods on a real instance. Services are
  * module-scope singletons (`export const userService = new UserService()`), so this is

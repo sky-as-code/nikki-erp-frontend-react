@@ -1,6 +1,7 @@
 // import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
 // import { RESOURCES, useResourcePermissions } from '@nikkierp/shell/userContext';
-// import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+// A module must not import Shell state. Publish `shell.routing.get_active_context`
+// on the command bus instead (see ai-prompts/app-state/00-progress.md, APPST-009).
 
 // import { useOrgScopeRef } from './identityScope';
 

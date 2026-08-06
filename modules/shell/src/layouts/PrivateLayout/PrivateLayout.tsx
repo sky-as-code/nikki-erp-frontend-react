@@ -1,9 +1,8 @@
 import { Box, Paper, Stack, Text } from '@mantine/core';
 import { useIsAuthenticated, useIsAuthenticatePending, useRestoreAuthSession } from '@nikkierp/shell/authenticate';
-import { actions as routingActions } from '@nikkierp/ui/appState/routingSlice';
+import { routingService } from '@nikkierp/shell/routing';
 import { ErrorBoundary } from '@nikkierp/ui/components';
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import { Outlet } from 'react-router';
 
 import { Header } from './Header';
@@ -13,15 +12,14 @@ export function PrivateLayout(): React.ReactNode {
 	const isAuthenticatePending = useIsAuthenticatePending();
 	const restore = useRestoreAuthSession();
 	const isAuthenticated = useIsAuthenticated();
-	const dispatch = useDispatch();
 
 	React.useEffect(() => {
 		if (isAuthenticatePending) return;
 
-		if (!isAuthenticated && restore.isDone && !restore.data) {
-			dispatch(routingActions.navigateWillReturn({ to: '/signin', hardNavigate: true }));
+		if (!isAuthenticated && restore.result.isFulfilled && !restore.data) {
+			void routingService.navigateWillReturn({ to: '/signin', hardNavigate: true });
 		}
-	}, [isAuthenticated, restore.isDone]);
+	}, [isAuthenticated, restore.result.isFulfilled]);
 
 	return isAuthenticated && (
 		<ErrorBoundary>

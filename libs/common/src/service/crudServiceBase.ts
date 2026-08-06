@@ -1,6 +1,17 @@
 import { ok, ServiceResult } from '../commandBus';
 import * as dyn from '../dynamicModel';
 import { EventBus, eventTopic, IEventBus } from '../eventBus';
+import { ClientErrorItem } from '../types/common';
+
+
+/**
+ * Published when any service call comes back rejected for an authorization reason.
+ *
+ * Declared here rather than in the Shell because this is where every API call funnels —
+ * which is also why it catches calls made outside Redux, such as the token refresh inside
+ * `RequestMaker`, that a store middleware could never see.
+ */
+export const SESSION_AUTHORIZATION_ERROR_TOPIC = 'shell:session:authorization_error';
 
 
 export type CrudServiceOptions = {
@@ -113,10 +124,12 @@ export abstract class CrudServiceBase {
 	 * Deliberately does NOT catch: a technical failure must propagate so the command
 	 * bus can report it as `error` rather than disguising it as a client error.
 	 */
-	protected withSchema<TData>(
+	protected async withSchema<TData>(
 		fn: (schema: dyn.SchemaPack) => Promise<ServiceResult<TData>>,
 	): Promise<ServiceResult<TData>> {
-		return dyn.withSchema(this.schemaName, fn);
+		const result = await dyn.withSchema(this.schemaName, fn);
+		this.#emitAuthorizationError(result);
+		return result;
 	}
 
 	/**
@@ -133,6 +146,19 @@ export abstract class CrudServiceBase {
 			bus?.publish(eventTopic(this.moduleName, this.schemaName, action), result);
 		}
 		return result;
+	}
+
+	/**
+	 * Announces an expired or invalid session so the Shell can send the user to sign-in.
+	 *
+	 * Emitted from `withSchema` rather than `emitEvent` because a read is just as capable
+	 * of being rejected for authorization as a mutation.
+	 */
+	#emitAuthorizationError(result: ServiceResult<unknown>): void {
+		const item = result.clientErrors.find(it => ClientErrorItem.isAuthorizationError(it));
+		if (!item) return;
+		const bus = this.#eventBus ?? EventBus.instance;
+		bus?.publish(SESSION_AUTHORIZATION_ERROR_TOPIC, { key: item.key });
 	}
 }
 

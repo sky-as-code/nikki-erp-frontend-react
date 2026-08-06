@@ -1,7 +1,7 @@
 import { Stack } from '@mantine/core';
 import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { useActiveOrgWithDetails, useMyOrgs, useUserContext } from '@nikkierp/shell/userContext';
-import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { BreadcrumbsHeader, NotFound, LoadingState } from '@nikkierp/ui/components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';

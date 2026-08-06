@@ -1,8 +1,7 @@
-import { ICommandBus, ServiceResult } from '@nikkierp/common/commandBus';
-import { CrudServiceBase } from '@nikkierp/common/service';
+import { ICommandBus } from '@nikkierp/common/commandBus';
 
+import { moduleService } from './moduleService';
 import * as t from './types';
-import { MODULE_SCHEMA_NAME } from '../constants';
 
 
 /** Shell-owned ERP module command names: `shell.erp_modules.{action}`. */
@@ -11,21 +10,12 @@ export const MODULE_COMMANDS = {
 	search: 'shell.erp_modules.search',
 } as const;
 
-/** Reads over `essential_module_metadata`; the Shell never mutates it. */
-class ModuleService extends CrudServiceBase {
-	public constructor() {
-		super({ moduleName: 'shell', schemaName: MODULE_SCHEMA_NAME });
-	}
-
-	/** Every module in one page — the count is small and bounded by the backend. */
-	public listAll(): Promise<ServiceResult<t.SearchModuleResponse>> {
-		return this.search({ page: 0, size: 500 });
-	}
-}
-
-const moduleService = new ModuleService();
-
-/** Subscribes the ERP module command handlers onto the Shell-hosted bus. */
+/**
+ * Subscribes the ERP module command handlers onto the Shell-hosted bus.
+ *
+ * The handlers call the same `moduleService` singleton the Shell's own components
+ * dispatch through, so both paths hit one instance and one slice.
+ */
 export function registerModuleCommands(bus: ICommandBus): () => void {
 	const unsubscribers = [
 		bus.subscribe(MODULE_COMMANDS.listAll, () => moduleService.listAll()),

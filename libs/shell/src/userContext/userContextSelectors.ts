@@ -1,7 +1,5 @@
-import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
-// import { UseStateSelectorFn } from '@nikkierp/ui/microApp';
+import { selectSliceState, useModuleSelector, useServiceLayer } from '@nikkierp/ui/appState/store';
 import { createSelector } from '@reduxjs/toolkit';
-import { useSelector } from 'react-redux';
 
 // import { GLOBAL_CONTEXT_SLUG } from '../constants';
 // import {
@@ -13,22 +11,22 @@ import { useSelector } from 'react-redux';
 // } from './permissionConstants';
 // import { hasFullAccess, hasPermission, hasPermissionAnyScope } from './permissionUtils';
 import { UserContextOrg } from './types';
-import * as svc from './userContextService';
-import { SLICE_NAME, UserContextState } from './userContextSlice';
-
-import type { RootState } from '../appState/store';
+import { UserContextService, userContextService } from './userContextService';
+import { useActiveOrgModule } from '../routing';
 
 
-function selectUserContextState(state: RootState) {
-	return state[SLICE_NAME as keyof RootState] as UserContextState;
-}
+const selectUserContextState = selectSliceState(UserContextService);
 
-export const selectGetUserContext = svc.getUserContext.selector;
+/** The `getUserContext` request state, as `{status, data, clientErrors, error, doneAt}`. */
+export const selectGetUserContext = createSelector(
+	selectUserContextState,
+	(state: any) => state?.getUserContext,
+);
 
 export { selectMyOrgs };
 
 export function useGetUserContext() {
-	return svc.getUserContext.useHook(useSelector);
+	return useServiceLayer(userContextService.getUserContext).result;
 }
 
 export function useUserContext() {
@@ -44,21 +42,21 @@ export function useSystemSettings() {
 }
 
 export function useSetLocalSettings() {
-	return svc.setLocalSettings.useHook(useSelector);
+	return useServiceLayer(userContextService.setLocalSettings);
 }
 
 export function useLocalSettings() {
-	return useSetLocalSettings().data;
+	return useSetLocalSettings().result.data;
 }
 
 export function useFirstOrgSlug() {
-	return useSelector(selectFirstOrgSlug);
+	return useModuleSelector(selectFirstOrgSlug);
 }
 export function useMyOrgs() {
-	return useSelector(selectMyOrgs);
+	return useModuleSelector(selectMyOrgs);
 }
 export function useFindMyOrg(orgSlug: string) {
-	return useSelector(state => selectFindMyOrg(state, orgSlug));
+	return useModuleSelector((state: any) => selectFindMyOrg(state, orgSlug));
 }
 
 // export const useHasPermission = (
@@ -83,21 +81,21 @@ export const useActiveOrgDetail = () => {
 
 // const selectPermissions = createSelector(
 // 	selectUserContextState,
-// 	(userContext: UserContextState) => userContext.getUserContext.data?.entitlements ?? [],
+// 	(userContext: any) => userContext.getUserContext.data?.entitlements ?? [],
 // );
 const selectMyOrgs = createSelector(
 	selectUserContextState,
-	(userContext: UserContextState) => userContext.getUserContext.data?.orgs ?? [] as UserContextOrg[],
+	(state: any) => (state?.getUserContext?.data?.orgs ?? []) as UserContextOrg[],
 );
 const selectFindMyOrg = createSelector(
 	selectMyOrgs,
-	(_, orgSlug: string) => orgSlug,
-	(orgs: UserContextOrg[], orgSlug) => orgs.find(o => o.slug === orgSlug) ?? null,
+	(_: unknown, orgSlug: string) => orgSlug,
+	(orgs: UserContextOrg[], orgSlug: string) => orgs.find(o => o.slug === orgSlug) ?? null,
 );
 
 const selectFirstOrgSlug = createSelector(
 	selectMyOrgs,
-	(myOrgs) => myOrgs[0]?.slug ?? null as (string | null),
+	(myOrgs: UserContextOrg[]) => myOrgs[0]?.slug ?? null as (string | null),
 );
 
 // export const useHasAnyPermission = (
@@ -146,18 +144,18 @@ const selectFirstOrgSlug = createSelector(
 // };
 
 type ResourcePermissionConfig = {
-	resource: string;
-	customActions?: Record<string, string>;
-	contextScope?: any;
+	resource: string,
+	customActions?: Record<string, string>,
+	contextScope?: any,
 };
 
 type ResourcePermissions<T extends Record<string, ResourcePermissionConfig>> = {
 	[K in keyof T]: {
-		canView: boolean;
-		canCreate: boolean;
-		canUpdate: boolean;
-		canDelete: boolean;
-		[key: string]: boolean;
+		canView: boolean,
+		canCreate: boolean,
+		canUpdate: boolean,
+		canDelete: boolean,
+		[key: string]: boolean,
 	};
 };
 

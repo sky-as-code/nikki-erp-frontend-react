@@ -1,19 +1,19 @@
+import { routingService } from '@nikkierp/shell/routing';
 import { useFindMyOrg } from '@nikkierp/shell/userContext';
-import { actions as routingActions } from '@nikkierp/ui/appState/routingSlice';
+import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import { Navigate, Outlet, useLocation, useParams } from 'react-router';
 
 
 export function OrgSubLayout(): React.ReactNode {
-	const dispatch = useDispatch();
 	const location = useLocation();
 	const { orgSlug } = useParams();
 	const found = useFindMyOrg(orgSlug!);
+	const { dispatchMethod: setActiveOrg } = useServiceLayer(routingService.setActiveOrg);
 
 	React.useEffect(() => {
-		dispatch(routingActions.setActiveOrg(orgSlug!));
-	}, [location, orgSlug, dispatch]);
+		setActiveOrg(orgSlug!);
+	}, [location, orgSlug, setActiveOrg]);
 
 	// Xử lý org context
 	if (found) {

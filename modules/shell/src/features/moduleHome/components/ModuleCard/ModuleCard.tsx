@@ -1,7 +1,7 @@
 import {
 	Anchor, Box, Button, Text, Menu, Image, Stack, Flex, Divider,
 } from '@mantine/core';
-import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { IconDots, IconStarFilled, IconAugmentedReality } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { FC, useState } from 'react';
@@ -42,7 +42,7 @@ export const ModuleCard: FC<{ module: any }> = ({ module }) => {
 type ModuleCardContentProps = {
 	module: any,
 	isActionMenuOpen: boolean,
-	setIsActionMenuOpen: (value: boolean) => void
+	setIsActionMenuOpen: (value: boolean) => void,
 };
 const ModuleCardContent: FC<ModuleCardContentProps> = ({ module, isActionMenuOpen, setIsActionMenuOpen }) => {
 	const [imageError, setImageError] = useState(false);
@@ -79,7 +79,7 @@ const ModuleCardContent: FC<ModuleCardContentProps> = ({ module, isActionMenuOpe
 type ModuleCardMenuProps = {
 	module: any,
 	isActionMenuOpen: boolean,
-	setIsActionMenuOpen: (value: boolean) => void
+	setIsActionMenuOpen: (value: boolean) => void,
 };
 const ModuleCardMenu: FC<ModuleCardMenuProps> = ({ module, isActionMenuOpen, setIsActionMenuOpen }) => {
 	const { orgSlug } = useActiveOrgModule();

@@ -1,86 +1,62 @@
-import { ReduxThunkState } from '@nikkierp/ui/appState';
+import { selectSliceState, useModuleSelector, useServiceLayer } from '@nikkierp/ui/appState/store';
 import { createSelector } from '@reduxjs/toolkit';
-import { useSelector } from 'react-redux';
 
-import * as svc from './authService';
-import { SLICE_NAME } from './types';
-import { selectGetUserContext } from '../userContext';
-
-import type { RootState } from '../appState/store';
+import { AuthService, authService, isAuthenticated } from './authService';
+import { selectGetUserContext } from '../userContext/userContextSelectors';
 
 
-type AuthState = RootState[(typeof SLICE_NAME) & keyof RootState];
-
-// export type AuthViewState = AuthState & {
-// 	isLoading: boolean;
-// 	isSignInSuccess: boolean;
-// 	sessionExpiresAt: number | null;
-// 	errorStartSignIn: string | null;
-// 	errorContinueSignIn: string | null;
-// };
+const selectAuthState = selectSliceState(AuthService);
 
 export function useStartSignIn() {
-	return svc.startSignIn.useHook(useSelector);
+	return useServiceLayer(authService.startSignIn).result;
 }
 export function useContinueSignIn() {
-	return svc.continueSignIn.useHook(useSelector);
+	return useServiceLayer(authService.continueSignIn).result;
 }
 export function useSignOut() {
-	return svc.signOut.useHook(useSelector);
+	return useServiceLayer(authService.signOut);
 }
 export function useRestoreAuthSession() {
-	return svc.restoreAuthSession.useHook(useSelector);
+	return useServiceLayer(authService.restoreAuthSession);
 }
 export function useSettleSession() {
-	return svc.settleSession.useHook(useSelector);
+	return useServiceLayer(authService.settleSession);
 }
-
 
 export function useAuthState() {
-	return useSelector(selectAuthState);
+	return useModuleSelector(selectAuthState);
 }
 
-//** Is both fetching access token and fetching user context are completed */
-export function useIsAuthenticated() {
-	return useSelector(selectIsAuthenticated);
+/** True once the access token is valid **and** the user context has loaded. */
+export function useIsAuthenticated(): boolean {
+	const getUserContext = useModuleSelector(selectGetUserContext);
+	// `isAuthenticated()` reads localStorage, so it is called on every render rather than
+	// from inside a `createSelector`. Memoizing it on user-context state — as this used to
+	// — meant a token expiring in place never invalidated the cached answer.
+	return isAuthenticated() && getUserContext?.status === 'fulfilled';
 }
 
-//** Is either fetching access token or fetching user context is in progress */
-export function useIsAuthenticatePending() {
-	return useSelector(selectIsAuthenticatePending);
+/** True while either the token exchange or the user-context fetch is in flight. */
+export function useIsAuthenticatePending(): boolean {
+	return useModuleSelector(selectIsAuthenticatePending);
 }
 
-//** Indicates there is no more attempt to authenticate or restore session */
-export function useIsSessionSettled() {
-	return useSelector(selectIsSessionSettled);
+/** True once no further attempt will be made to authenticate or restore a session. */
+export function useIsSessionSettled(): boolean {
+	return useModuleSelector(selectIsSessionSettled);
 }
-
-
-
-const selectIsAuthenticated = createSelector(
-	selectGetUserContext,
-	(getUserContext: ReduxThunkState) => {
-		const hasUserContext = (getUserContext.isDone);
-		return svc.isAuthenticated() && hasUserContext;
-	},
-);
 
 const selectIsAuthenticatePending = createSelector(
-	svc.continueSignIn.selector,
-	svc.restoreAuthSession.selector,
+	selectAuthState,
 	selectGetUserContext,
-	(continueSignIn: ReduxThunkState, restoreAuthSession: ReduxThunkState, getUserContext: ReduxThunkState) => {
-		const isSigningIn = (continueSignIn.isLoading || restoreAuthSession.isLoading);
-		const isFetchingContext = (getUserContext.isLoading);
-		return isSigningIn || isFetchingContext;
+	(auth: any, getUserContext: any) => {
+		const isSigningIn = auth?.continueSignIn?.status === 'pending'
+			|| auth?.restoreAuthSession?.status === 'pending';
+		return isSigningIn || getUserContext?.status === 'pending';
 	},
 );
-
-function selectAuthState(state: RootState) {
-	return state[SLICE_NAME as keyof RootState] as AuthState;
-}
 
 const selectIsSessionSettled = createSelector(
 	selectAuthState,
-	(authState: AuthState) => Boolean(authState.settleSession.data),
+	(auth: any) => Boolean(auth?.settleSession?.data),
 );

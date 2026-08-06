@@ -1,10 +1,10 @@
 import {
 	Avatar, Box, Button, Divider, Drawer, Flex, Stack, Text,
 } from '@mantine/core';
+import { useSignOut } from '@nikkierp/shell/authenticate';
 import { IconUserFilled, IconX } from '@tabler/icons-react';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 
 import { handleMenuItemClick } from './helpers';
 import { PROFILE_MENU_CONFIG } from './menuConfig';
@@ -65,15 +65,15 @@ export const ProfileMenuDrawer: React.FC = () => {
 
 
 type ProfileMenuDrawerContentProps = {
-	onClose: () => void;
-	themeModeModalRef: React.RefObject<any>;
-	langSwitchModalRef: React.RefObject<any>;
+	onClose: () => void,
+	themeModeModalRef: React.RefObject<any>,
+	langSwitchModalRef: React.RefObject<any>,
 };
 
 const ProfileMenuDrawerContent: React.FC<ProfileMenuDrawerContentProps> = ({
 	onClose, themeModeModalRef, langSwitchModalRef,
 }) => {
-	const dispatch = useDispatch<any>();
+	const { dispatchMethod: signOut } = useSignOut();
 	const { t: translate } = useTranslation();
 
 	return (
@@ -106,7 +106,7 @@ const ProfileMenuDrawerContent: React.FC<ProfileMenuDrawerContentProps> = ({
 						styles={{ inner: { justifyContent: 'flex-start' } }}
 						onClick={() => handleMenuItemClick(
 							item.action,
-							dispatch,
+							signOut,
 							themeModeModalRef,
 							langSwitchModalRef,
 							onClose,

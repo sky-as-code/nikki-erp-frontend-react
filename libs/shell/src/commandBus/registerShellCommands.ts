@@ -2,8 +2,11 @@ import { ICommandBus } from '@nikkierp/common/commandBus';
 import { registerGenericResourceCommands, registerSchemaCommands } from '@nikkierp/common/dynamicModel';
 import { IMenuRegistry } from '@nikkierp/ui/menu';
 
+import { registerSessionCommands } from '../authenticate/sessionCommands';
 import { registerModuleCommands } from '../erpModules/moduleCommands';
 import { registerMenuCommands } from '../menu';
+import { registerRoutingCommands } from '../routing/routingCommands';
+import { registerUserContextCommands } from '../userContext/userContextCommands';
 
 
 /** Host-owned services the Shell command handlers delegate to. */
@@ -19,6 +22,9 @@ export type ShellCommandDeps = {
 export function registerShellCommands(bus: ICommandBus, deps: ShellCommandDeps): () => void {
 	const unsubscribers = [
 		registerModuleCommands(bus),
+		registerRoutingCommands(bus),
+		registerSessionCommands(bus),
+		registerUserContextCommands(bus),
 		registerSchemaCommands(bus),
 		// One prefix subscription serving CRUD for every registered schema, including
 		// resources defined at runtime that no module knows about.

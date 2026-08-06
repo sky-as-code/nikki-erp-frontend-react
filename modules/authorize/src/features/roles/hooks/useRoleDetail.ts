@@ -1,8 +1,8 @@
 import { cleanFormData } from '@nikkierp/common/utils';
 import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
 import { useUIState } from '@nikkierp/shell/contexts';
+import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { useActiveOrgWithDetails } from '@nikkierp/shell/userContext';
-import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';

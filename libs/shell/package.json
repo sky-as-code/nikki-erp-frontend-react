@@ -91,6 +91,7 @@
 	],
 	"exports": {
 		"./appState": "./src/appState/store.ts",
+		"./appState/shellStore": "./src/appState/shellStore.ts",
 		"./authenticate": "./src/authenticate/index.ts",
 		"./commandBus": "./src/commandBus/index.ts",
 		"./authenticate/strategies": "./src/authenticate/strategies/index.ts",
@@ -99,6 +100,7 @@
 		"./contexts": "./src/contexts/index.tsx",
 		"./erpModules": "./src/erpModules/index.ts",
 		"./microApp": "./src/microApp/index.tsx",
+		"./routing": "./src/routing/index.ts",
 		"./userContext": "./src/userContext/index.ts"
 	},
 	"files": [
