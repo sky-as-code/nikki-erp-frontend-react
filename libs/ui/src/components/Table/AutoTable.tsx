@@ -1,4 +1,4 @@
-import { Anchor, Loader, Table } from '@mantine/core';
+import { Anchor, Loader, Table, TableProps } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
@@ -18,16 +18,22 @@ export type ColumnSize = {
 export type ColumnRenderer = (row: Record<string, unknown>) => React.ReactNode;
 export type HeaderRenderer = (columnName: string, schema: dyn.ModelSchema) => React.ReactNode;
 
-export type AutoTableProps = {
-	schemaName: string;
+export type AutoTableProps = Omit<TableProps, 'data' | 'children'> & {
+	/** Schema resolved from the registry. Omit when `schema` is supplied directly. */
+	schemaName?: string;
 	// i18next namespace of this resource (namespace "common" is included by default)
-	translationNs: string,
+	translationNs?: string,
+	/** Directly supplied model schema (legacy API). Takes precedence over `schemaName`. */
+	schema?: dyn.ModelSchema;
+	/** Explicit column list. Defaults to the schema's non-hidden fields. */
+	columns?: string[];
 	columnSizes?: Record<string, ColumnSize>;
 	columnAsLink?: string;
 	columnAsLinkHref?: (rowData: any) => string;
 	columnAsId?: string;
 	columnRenderers?: Record<string, ColumnRenderer>;
 	headerRenderers?: Record<string, HeaderRenderer>;
+	theadProps?: React.ComponentProps<typeof Table.Thead>;
 	data: Record<string, unknown>[];
 	isLoading?: boolean;
 };
@@ -40,13 +46,14 @@ export type AutoTableProps = {
  * `columnRenderers` before falling back to data-type-specific renderers.
  */
 export const AutoTable: React.FC<AutoTableProps> = (props) => {
-	const schemaPack = useDynamicModel(props.schemaName);
+	const schemaPack = useDynamicModel(props.schemaName ?? '');
+	const modelSchema = props.schema ?? schemaPack?.modelSchema;
 
-	if (!schemaPack) {
+	if (!modelSchema) {
 		return <LoadingState />;
 	}
 
-	return <AutoTableBody {...props} modelSchema={schemaPack.modelSchema} />;
+	return <AutoTableBody {...props} modelSchema={modelSchema} />;
 };
 
 
@@ -59,25 +66,34 @@ type ResolvedAutoTableProps = AutoTableBodyProps & {
 };
 
 const AutoTableBody: React.FC<AutoTableBodyProps> = (props) => {
-	const t = useTranslate(props.translationNs);
-	const columnAsId = props.columnAsId ?? 'id';
+	// Custom props are pulled out (some unused) so `tableProps` holds only Mantine Table props.
+	const {
+		schemaName: _schemaName, translationNs, schema: _schema, columns: columnsProp, columnSizes,
+		columnAsLink: _columnAsLink, columnAsLinkHref: _columnAsLinkHref, columnAsId: columnAsIdProp,
+		columnRenderers: _columnRenderers, headerRenderers, theadProps, data, isLoading, modelSchema,
+		...tableProps
+	} = props;
+	const t = useTranslate(translationNs);
+	const columnAsId = columnAsIdProp ?? 'id';
 
 	const columns = useMemo(
-		() => Object.keys(props.modelSchema.fields),
-		[props.modelSchema],
+		() => columnsProp ?? Object.entries(modelSchema.fields)
+			.filter(([, field]) => !(field as { hidden?: boolean }).hidden)
+			.map(([name]) => name),
+		[columnsProp, modelSchema],
 	);
 
-	const hasColumnSizes = !!props.columnSizes;
+	const hasColumnSizes = !!columnSizes;
 
 	const colWidths = useMemo(() => {
 		if (!hasColumnSizes) return {};
-		return buildColumnWidths(columns, props.columnSizes!);
-	}, [columns, props.columnSizes, hasColumnSizes]);
+		return buildColumnWidths(columns, columnSizes!);
+	}, [columns, columnSizes, hasColumnSizes]);
 
 	const tableMinWidth = useMemo(() => {
 		if (!hasColumnSizes) return undefined;
-		return computeTableMinWidth(columns, props.columnSizes!);
-	}, [columns, props.columnSizes, hasColumnSizes]);
+		return computeTableMinWidth(columns, columnSizes!);
+	}, [columns, columnSizes, hasColumnSizes]);
 
 	const tableStyle: React.CSSProperties | undefined = hasColumnSizes
 		? { tableLayout: 'fixed', width: '100%', minWidth: tableMinWidth }
@@ -86,7 +102,7 @@ const AutoTableBody: React.FC<AutoTableBodyProps> = (props) => {
 	const resolved: ResolvedAutoTableProps = { ...props, columnAsId };
 
 	const tableEl = (
-		<Table style={tableStyle}>
+		<Table {...tableProps} style={{ ...(tableProps.style as React.CSSProperties), ...tableStyle }}>
 			{hasColumnSizes && (
 				<colgroup>
 					{columns.map((col) => (
@@ -96,19 +112,20 @@ const AutoTableBody: React.FC<AutoTableBodyProps> = (props) => {
 			)}
 			<AutoTableHead
 				columns={columns}
-				headerRenderers={props.headerRenderers}
-				modelSchema={props.modelSchema}
-				translationNs={props.translationNs}
+				headerRenderers={headerRenderers}
+				modelSchema={modelSchema}
+				translationNs={translationNs}
+				theadProps={theadProps}
 			/>
 			<Table.Tbody>
-				{props.isLoading && (
+				{isLoading && (
 					<Table.Tr>
 						<Table.Td colSpan={columns.length} className='text-center'>
 							<Loader />
 						</Table.Td>
 					</Table.Tr>
 				)}
-				{!props.isLoading && props.data.map((row, index) => (
+				{!isLoading && data.map((row, index) => (
 					<Table.Tr key={String(row[columnAsId] || index)}>
 						{columns.map((col) => (
 							<Table.Td key={col}>
@@ -132,12 +149,13 @@ const AutoTableHead: React.FC<{
 	columns: string[];
 	headerRenderers?: Record<string, HeaderRenderer>;
 	modelSchema: dyn.ModelSchema;
-	translationNs: string;
-}> = React.memo(({ columns, headerRenderers, modelSchema, translationNs }) => {
+	translationNs?: string;
+	theadProps?: React.ComponentProps<typeof Table.Thead>;
+}> = React.memo(({ columns, headerRenderers, modelSchema, translationNs, theadProps }) => {
 	const localize = useLocalize(translationNs);
 
 	return (
-		<Table.Thead>
+		<Table.Thead {...theadProps}>
 			<Table.Tr>
 				{columns.map((col) => {
 					if (headerRenderers?.[col]) {
@@ -149,7 +167,7 @@ const AutoTableHead: React.FC<{
 					}
 					return (
 						<Table.Th key={col}>
-							{localize(modelSchema.fields[col]?.label)}
+							{localize(normalizeLegacyLabelRef(modelSchema.fields[col]?.label))}
 						</Table.Th>
 					);
 				})}
@@ -157,6 +175,19 @@ const AutoTableHead: React.FC<{
 		</Table.Thead>
 	);
 });
+
+// Legacy local schema JSONs carry labels as pseudo-JSON strings, e.g.
+// "{ \"$ref\": 'themes.fields.code' }" — single-quoted, so not parseable as JSON.
+// Extract the translation key so `useLocalize` can resolve it.
+function normalizeLegacyLabelRef(
+	label: dyn.ModelSchemaLangJson | string | undefined,
+): dyn.ModelSchemaLangJson | string | undefined {
+	if (typeof label === 'string' && label.includes(dyn.LangJsonRefKey)) {
+		const match = label.match(/'([^']+)'/) ?? label.match(/"\$ref"\s*:\s*"([^"]+)"/);
+		if (match) return match[1];
+	}
+	return label;
+}
 
 
 // ---------------------------------------------------------------------------
@@ -204,7 +235,7 @@ function renderCell(
 		fieldName,
 		field,
 		modelSchema: props.modelSchema,
-		schemaName: props.schemaName,
+		schemaName: props.schemaName ?? props.modelSchema.name,
 		t,
 	};
 
@@ -212,7 +243,8 @@ function renderCell(
 		return renderLinkCell(ctx, props);
 	}
 
-	const renderer = field ? TYPE_CELL_RENDERERS[field.data_type.name] : undefined;
+	// Legacy directly-supplied schemas have no `data_type` on their fields.
+	const renderer = field?.data_type ? TYPE_CELL_RENDERERS[field.data_type.name] : undefined;
 	if (renderer) {
 		return renderer(ctx);
 	}
@@ -231,8 +263,8 @@ const TYPE_CELL_RENDERERS: Partial<Record<dyn.ModelSchemaFieldDataTypeName, Type
 };
 
 function renderBooleanCell({ value, t }: CellRendererContext): React.ReactNode {
-	if (value === true) return t('nikki.general.boolean.true');
-	if (value === false) return t('nikki.general.boolean.false');
+	if (value === true) return t('boolean.yes');
+	if (value === false) return t('boolean.no');
 	return String(value);
 }
 

@@ -48,12 +48,20 @@ export abstract class CrudServiceBase {
 		this.#eventBus = opts.eventBus;
 	}
 
-	public create(request: dyn.RestCreateRequest): Promise<ServiceResult<dyn.RestCreateResponse>> {
-		return this.emitEvent('create', () => this.withSchema(schema => schema.restApi.create(request)));
+	public create(
+		request: dyn.RestCreateRequest, primaryResourceId?: string,
+	): Promise<ServiceResult<dyn.RestCreateResponse>> {
+		return this.emitEvent(
+			'create', () => this.withSchema(schema => schema.restApi.create(request, primaryResourceId)),
+		);
 	}
 
-	public update(request: dyn.RestUpdateRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
-		return this.emitEvent('update', () => this.withSchema(schema => schema.restApi.update(request)));
+	public update(
+		request: dyn.RestUpdateRequest, primaryResourceId?: string,
+	): Promise<ServiceResult<dyn.RestMutateResponse>> {
+		return this.emitEvent(
+			'update', () => this.withSchema(schema => schema.restApi.update(request, primaryResourceId)),
+		);
 	}
 
 	/**
@@ -64,32 +72,38 @@ export abstract class CrudServiceBase {
 	 * is summed and client errors are accumulated across the batch, so a partial
 	 * failure reports both what succeeded and what did not.
 	 */
-	public async delete(request: DeleteRequest): Promise<ServiceResult<dyn.RestDeleteResponse>> {
+	public async delete(
+		request: DeleteRequest, primaryResourceId?: string,
+	): Promise<ServiceResult<dyn.RestDeleteResponse>> {
 		const ids = 'ids' in request ? request.ids : [request.id];
 		return this.emitEvent('delete', async () => {
 			const results = await Promise.all(
-				ids.map(id => this.withSchema(schema => schema.restApi.delete({ id }))),
+				ids.map(id => this.withSchema(schema => schema.restApi.delete({ id }, primaryResourceId))),
 			);
 			return mergeDeleteResults(results);
 		});
 	}
 
-	public setIsArchived(request: dyn.RestSetIsArchivedRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
+	public setIsArchived(
+		request: dyn.RestSetIsArchivedRequest, primaryResourceId?: string,
+	): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.emitEvent(
-			'setIsArchived', () => this.withSchema(schema => schema.restApi.setIsArchived(request)),
+			'setIsArchived', () => this.withSchema(schema => schema.restApi.setIsArchived(request, primaryResourceId)),
 		);
 	}
 
 	public manageM2m(
-		request: dyn.RestManageM2mRequest, path: string,
+		request: dyn.RestManageM2mRequest, path: string, primaryResourceId?: string,
 	): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.emitEvent(
-			'manageM2m', () => this.withSchema(schema => schema.restApi.manageM2m(request, path)),
+			'manageM2m', () => this.withSchema(schema => schema.restApi.manageM2m(request, path, primaryResourceId)),
 		);
 	}
 
-	public getById(request: dyn.RestGetByIdRequest): Promise<ServiceResult<dyn.RestGetOneResponse<any>>> {
-		return this.withSchema(schema => schema.restApi.getById(request));
+	public getById(
+		request: dyn.RestGetByIdRequest, primaryResourceId?: string,
+	): Promise<ServiceResult<dyn.RestGetOneResponse<any>>> {
+		return this.withSchema(schema => schema.restApi.getById(request, primaryResourceId));
 	}
 
 	/**
@@ -100,21 +114,28 @@ export abstract class CrudServiceBase {
 	 * `{ id }` without restating the type.
 	 */
 	public getOne<TReq extends dyn.RequestWithFields & Record<string, any>>(
-		request: TReq, buildSearchParams: (req: TReq) => URLSearchParams,
+		request: TReq, buildSearchParams: (req: TReq) => URLSearchParams, primaryResourceId?: string,
 	): Promise<ServiceResult<dyn.RestGetOneResponse<any>>> {
-		return this.withSchema(schema => schema.restApi.getOne(request, buildSearchParams));
+		return this.withSchema(schema => schema.restApi.getOne(request, buildSearchParams, primaryResourceId));
 	}
 
-	public search(request: dyn.RestSearchRequest): Promise<ServiceResult<dyn.RestSearchResponse<any>>> {
-		return this.withSchema(schema => schema.restApi.search(request));
+	public search(
+		request: dyn.RestSearchRequest, primaryResourceId?: string,
+	): Promise<ServiceResult<dyn.RestSearchResponse<any>>> {
+		return this.withSchema(schema => schema.restApi.search(request, primaryResourceId));
 	}
 
+	/**
+	 * Note `RestApi.exists` takes no `primaryResourceId`, so a nested resource cannot be
+	 * existence-checked through its parent path. Accepted here only to keep the signature
+	 * uniform across the ten operations; it is deliberately not forwarded.
+	 */
 	public exists(request: dyn.RestExistsRequest): Promise<ServiceResult<dyn.RestExistsResponse>> {
 		return this.withSchema(schema => schema.restApi.exists(request));
 	}
 
-	public getModelSchema(): Promise<ServiceResult<dyn.RestGetModelSchemaResponse>> {
-		return this.withSchema(schema => schema.restApi.getModelSchema());
+	public getModelSchema(primaryResourceId?: string): Promise<ServiceResult<dyn.RestGetModelSchemaResponse>> {
+		return this.withSchema(schema => schema.restApi.getModelSchema(primaryResourceId));
 	}
 
 	/**

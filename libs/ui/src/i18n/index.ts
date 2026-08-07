@@ -156,12 +156,12 @@ export type LocalizeFn = (
 	translateOpts?: { count: number },
 ) => string;
 
-export function useTranslate(moduleName: string | string[]): TranslateFn {
+export function useTranslate(moduleName?: string | string[]): TranslateFn {
 	const trans = useTranslation(moduleName);
 	return trans.t as any;
 }
 
-export function useLocalize(moduleName: string): LocalizeFn {
+export function useLocalize(moduleName?: string): LocalizeFn {
 	const trans = useTranslation(moduleName);
 	return (langJson, translateOpts): string => {
 		if (!langJson) return '';
