@@ -1,4 +1,4 @@
-import { ICommandBus } from '@nikkierp/common/commandBus';
+import { CommandBus, ICommandBus } from '@nikkierp/common/commandBus';
 import { IEventBus } from '@nikkierp/common/eventBus';
 import { createMenuRegistry, IMenuRegistry, MenuContribution, useMenuContribution } from '@nikkierp/ui/menu';
 import {
@@ -12,7 +12,7 @@ import { useInRouterContext, useLocation, UNSAFE_NavigationContext } from 'react
 
 import { MicroAppManager, MicroAppPack } from './MicroAppManager';
 import { ensureAccessToken } from '../authenticate/authService';
-import { createShellCommandBus } from '../commandBus';
+import { createShellCommandBus, ShellCommandRegistrar } from '../commandBus';
 import { useShellEnvVars } from '../config';
 import { shellEventBus } from '../eventBus';
 
@@ -57,6 +57,8 @@ export function useShellMenu(slug?: string | null): MenuContribution | undefined
 
 export type MicroAppHostProviderProps = React.PropsWithChildren & {
 	microApps: MicroAppMetadata[],
+	/** Command handlers owned by the shell implementation. See {@link ShellCommandDeps}. */
+	extraRegistrars?: ShellCommandRegistrar[],
 };
 
 /**
@@ -64,7 +66,9 @@ export type MicroAppHostProviderProps = React.PropsWithChildren & {
  * the Shell hands to micro-apps through `init`, which is what makes a
  * separately-built bundle able to contribute to the same registries.
  */
-export function MicroAppHostProvider({ children, microApps }: MicroAppHostProviderProps): React.ReactNode {
+export function MicroAppHostProvider(
+	{ children, microApps, extraRegistrars }: MicroAppHostProviderProps,
+): React.ReactNode {
 	const [hostValue] = useState<MicroAppHostContextValue>(() => {
 		const manager = new MicroAppManager(microApps);
 		const viewEngine = createViewEngine({ instanceId: 'shell' });
@@ -74,7 +78,11 @@ export function MicroAppHostProvider({ children, microApps }: MicroAppHostProvid
 		// Created at module scope, not here: the Shell's own chrome subscribes above this
 		// provider and before it renders. Same instance either way.
 		const eventBus = shellEventBus;
-		const commandBus = createShellCommandBus(manager, { menuRegistry });
+		const commandBus = createShellCommandBus(manager, { menuRegistry, extraRegistrars });
+		// Installs the fallback singleton for code running outside React and outside `init` —
+		// chiefly module service classes, which are constructed at import time. Mirrors the
+		// `EventBus.setInstance` call in `MicroAppProvider`.
+		CommandBus.setInstance(commandBus);
 		const host: HostServices = { commandBus, viewEngine, menuRegistry, eventBus };
 		manager.setHostServices(host);
 		return { manager, host };

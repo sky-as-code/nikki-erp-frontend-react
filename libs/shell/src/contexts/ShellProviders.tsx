@@ -19,6 +19,7 @@ import { useTryRestoreSession } from '../authenticate/authHooks';
 import { initAuthService, ensureAccessToken } from '../authenticate/authService';
 import { NikkiAuthenticateStrategy } from '../authenticate/strategies';
 import { TokenSessionStorage, TokenLocalStorage } from '../authenticate/tokenStorage';
+import { ShellCommandRegistrar } from '../commandBus';
 import { setEnvVarsAction } from '../config/shellConfigSlice';
 import { shellEventBus } from '../eventBus';
 import { MicroAppHostProvider } from '../microApp';
@@ -33,6 +34,11 @@ export type ShellProvidersProps = React.PropsWithChildren & {
 	microApps: MicroAppMetadata[],
 	envVars: Record<string, unknown>,
 	fallback?: React.ReactNode,
+	/**
+	 * Command handlers owned by this shell implementation rather than by `@nikkierp/shell`.
+	 * They subscribe alongside the built-in Shell handlers, when the bus is created.
+	 */
+	extraRegistrars?: ShellCommandRegistrar[],
 };
 
 export function ShellProviders(props: ShellProvidersProps) {
@@ -113,7 +119,7 @@ function InnerShellProviders(props: ShellProvidersProps): React.ReactNode {
 
 	return isInitialized && (
 		<I18nextProvider i18n={i18n}>
-			<MicroAppHostProvider microApps={props.microApps}>
+			<MicroAppHostProvider microApps={props.microApps} extraRegistrars={props.extraRegistrars}>
 				{props.children}
 			</MicroAppHostProvider>
 		</I18nextProvider>

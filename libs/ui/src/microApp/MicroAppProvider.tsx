@@ -1,4 +1,4 @@
-import { ICommandBus } from '@nikkierp/common/commandBus';
+import { CommandBus, ICommandBus } from '@nikkierp/common/commandBus';
 import { EventBus, IEventBus } from '@nikkierp/common/eventBus';
 import { RequestMaker } from '@nikkierp/common/request';
 import { ViewEngineProvider } from '@nikkierp/viewengine/render';
@@ -61,6 +61,7 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = (props) => {
 	// Same distinction: ISOLATED gets its own copy of the module and installs the
 	// host's bus; SHARED already sees the Shell's instance, so this is a no-op.
 	EventBus.setInstance(props.eventBus);
+	CommandBus.setInstance(props.commandBus);
 
 	return (
 		<CommandBusContext.Provider value={props.commandBus}>

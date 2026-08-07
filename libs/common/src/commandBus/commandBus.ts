@@ -11,6 +11,30 @@ import {
  * the owning module (the `{module_name}` segment of the command name) and retries.
  */
 export class CommandBus implements ICommandBus {
+	/**
+	 * The single instance for the application, set by the Shell.
+	 *
+	 * Prefer reaching the bus through `HostServices` / `useCommandBus()`. This exists
+	 * for code running outside React and outside `init` — chiefly module service classes,
+	 * which are constructed at import time — and for micro-apps mounted into a Shadow DOM,
+	 * which get their own copy of this module.
+	 */
+	public static instance: ICommandBus | undefined;
+
+	/**
+	 * Installs the host's bus, but only when none is set.
+	 *
+	 * - Light DOM (`SHARED`): the micro-app shares the Shell's module instance, so
+	 *   `instance` is already the Shell's and this call does nothing.
+	 * - Shadow DOM (`ISOLATED`): the separately-built bundle has its own copy of this
+	 *   module, so the assignment succeeds and installs the Shell's bus.
+	 */
+	public static setInstance(bus: ICommandBus): void {
+		if (!CommandBus.instance) {
+			CommandBus.instance = bus;
+		}
+	}
+
 	private readonly handlers = new Map<string, CommandHandler>();
 	private readonly prefixHandlers = new Map<string, CommandHandler>();
 	private moduleLoader?: ModuleLoader;

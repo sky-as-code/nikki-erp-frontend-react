@@ -6,6 +6,8 @@ import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem }
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { useMemo } from 'react';
 
+import { sharedStateService } from '../../features/sharedState';
+
 
 export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'> & {
 	hideIfEmpty: boolean,
@@ -18,6 +20,7 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 	const { data } = useServiceLayer<SearchModuleResponse>(moduleService.listAll);
 	const modules = data?.items ?? [];
 	const { orgSlug, moduleSlug } = useActiveOrgModule();
+	const { dispatchMethod: setCurrentModule } = useServiceLayer(sharedStateService.setCurrentModule);
 
 	const items = useMemo(() => {
 		return modules.map<SearchableSelectItem>((mod) => ({
@@ -26,7 +29,9 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 		}));
 	}, [modules]);
 
+	// Stored before navigating, for the same reason as the org switcher.
 	const handleModuleChange = (newModSlug: string) => {
+		setCurrentModule(newModSlug);
 		void routingService.navigateTo({ to: `/${orgSlug}/${newModSlug}` });
 	};
 

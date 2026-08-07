@@ -109,6 +109,10 @@ export class RestApi {
 			request.size ?? '-',
 			request.graph ? JSON.stringify(request.graph) : '-',
 			request.language ?? '-',
+			// Two orgs asking the same page of the same resource are different queries. Without
+			// this they would share one in-flight promise, and whichever asked first would
+			// answer for both.
+			request.org_id ?? '-',
 		];
 		return this._opts.requestMaker!.get<RestSearchResponse<any>>(restPath, {
 			searchParams: this._toSearchParams(request),
@@ -273,6 +277,8 @@ export type RestSearchRequest = RequestWithFields & {
 	graph?: SearchGraph,
 	language?: string,
 	search_name?: string,
+	/** Scopes the search to one organization, where the resource is org-owned. */
+	org_id?: string,
 };
 
 export type RestSearchResponse<T extends Record<string, any>> = {
