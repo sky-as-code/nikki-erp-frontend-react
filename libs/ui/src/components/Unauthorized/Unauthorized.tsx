@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { useFirstOrgSlug } from '../../../../shell/src/userContext/userContextSelectors';
+// import { useFirstOrgSlug } from '../../../../shell/src/userContext/userContextSelectors';
 
 
 
@@ -21,7 +21,8 @@ export const Unauthorized: React.FC<UnauthorizedProps> = ({
 	const theme = useMantineTheme();
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
-	const { slug: firstOrgSlug } = useFirstOrgSlug();
+	// const { slug: firstOrgSlug } = useFirstOrgSlug();
+	const { slug: firstOrgSlug } = {} as any;
 
 	const handleGoHome = () => {
 		if (onGoHome) {

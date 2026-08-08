@@ -1,5 +1,6 @@
 import { NavLink, Stack } from '@mantine/core';
-import { MenuBarItem } from '@nikkierp/ui/appState';
+import { TranslateFn } from '@nikkierp/ui/i18n';
+import { MenuItem } from '@nikkierp/ui/menu';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -11,24 +12,28 @@ import {
 
 
 export type VerticalMenuBarProps = {
-	items: MenuBarItem[];
-	pathPrefix: string;
-	currentPath: string;
+	items: MenuItem[],
+	pathPrefix: string,
+	currentPath: string,
+	/** Bound to the contributing module's namespace; items carry keys, not labels. */
+	t: TranslateFn,
 };
 
 export const VerticalMenuBar: React.FC<VerticalMenuBarProps> = ({
 	items,
 	pathPrefix,
 	currentPath,
+	t,
 }) => {
 	return (
 		<Stack gap={0}>
 			{items.map((item) => (
 				<VerticalMenuItem
-					key={item.label}
+					key={item.labelKey}
 					item={item}
 					pathPrefix={pathPrefix}
 					currentPath={currentPath}
+					t={t}
 				/>
 			))}
 		</Stack>
@@ -36,15 +41,17 @@ export const VerticalMenuBar: React.FC<VerticalMenuBarProps> = ({
 };
 
 type VerticalMenuItemProps = {
-	item: MenuBarItem;
-	pathPrefix: string;
-	currentPath: string;
+	item: MenuItem,
+	pathPrefix: string,
+	currentPath: string,
+	t: TranslateFn,
 };
 
 const VerticalMenuItem: React.FC<VerticalMenuItemProps> = ({
 	item,
 	pathPrefix,
 	currentPath,
+	t,
 }) => {
 	const hasSubItems = item.items && item.items.length > 0;
 	const isActive = item.link
@@ -60,16 +67,17 @@ const VerticalMenuItem: React.FC<VerticalMenuItemProps> = ({
 	const children = hasSubItems
 		? item.items!.map((subItem) => (
 			<VerticalMenuItem
-				key={subItem.label}
+				key={subItem.labelKey}
 				item={subItem}
 				pathPrefix={pathPrefix}
 				currentPath={currentPath}
+				t={t}
 			/>
 		))
 		: undefined;
 
 	const navLinkProps = {
-		label: item.label,
+		label: t(item.labelKey),
 		active: hasActiveChild || isActive,
 		defaultOpened: hasActiveChild,
 		childrenOffset: 24,

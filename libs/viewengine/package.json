@@ -1,0 +1,45 @@
+{
+	"name": "@nikkierp/viewengine",
+	"private": false,
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"clean": "rimraf dist",
+		"build": "pnpm clean && tsc",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint . --cache",
+		"test": "pnpm typecheck && pnpm vitest run"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@types/node": "~24.9.1",
+		"@types/react": "~19.2.2",
+		"react": "~19.2.0",
+		"typescript": "~5.9.3",
+		"vitest": "~4.0.3",
+		"zod": "~4.1.12"
+	},
+	"peerDependencies": {
+		"react": "~19.2.0",
+		"zod": "~4.1.12"
+	},
+	"peerDependenciesMeta": {
+		"zod": {
+			"optional": true
+		}
+	},
+	"sideEffects": false,
+	"exports": {
+		".": "./src/index.ts",
+		"./core": "./src/core/index.ts",
+		"./metadata": "./src/metadata/index.ts",
+		"./schema": "./src/schema/index.ts",
+		"./engine": "./src/engine/index.ts",
+		"./render": "./src/render/index.tsx",
+		"./testing": "./src/testing/index.ts"
+	},
+	"files": [
+		"src",
+		"README.md"
+	]
+}

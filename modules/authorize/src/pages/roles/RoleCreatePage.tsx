@@ -1,7 +1,7 @@
 import { Stack } from '@mantine/core';
 import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
+import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { useActiveOrgWithDetails, useMyOrgs } from '@nikkierp/shell/userContext';
-import { useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
 import {
 	BreadcrumbsHeader,
 	FormFieldProvider,

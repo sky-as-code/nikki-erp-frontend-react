@@ -1,6 +1,6 @@
 import { Stack, Paper } from '@mantine/core';
 import { Headers, Actions, ConfirmModal } from '@nikkierp/ui/components';
-import { useConfirmModal } from '@nikkierp/ui/hooks';
+import { useConfirmModal } from '@nikkierp/ui/hookhoc';
 import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';

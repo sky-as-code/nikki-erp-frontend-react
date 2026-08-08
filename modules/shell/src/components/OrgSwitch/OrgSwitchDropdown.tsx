@@ -1,45 +1,39 @@
-import { useIsAuthenticated } from '@nikkierp/shell/auth';
-import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
-import { useHasGlobalContextAccess, useMyOrgs } from '@nikkierp/shell/userContext';
-import { navigateToAction, useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
+import { routingService, useActiveOrgModule } from '@nikkierp/shell/routing';
+import { useMyOrgs } from '@nikkierp/shell/userContext';
+import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
 import React, { useMemo } from 'react';
-import { useDispatch } from 'react-redux';
+
+import { sharedStateService } from '../../features/sharedState';
 
 
 export type OrgSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'> & {
-	hideIfEmpty: boolean;
+	hideIfEmpty: boolean,
 };
 
 export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNode {
-	const dispatch = useDispatch();
 	const isAuthenticated = useIsAuthenticated();
 	const { orgSlug } = useActiveOrgModule();
 	const orgs = useMyOrgs();
-	const hasGlobalContextAccess = useHasGlobalContextAccess();
+	const { dispatchMethod: setCurrentOrgId } = useServiceLayer(sharedStateService.setCurrentOrgId);
 
 	const items = useMemo(() => {
 		if (!isAuthenticated) return [];
 		const options: SearchableSelectItem[] = [];
-		if (hasGlobalContextAccess) {
-			options.push({
-				value: GLOBAL_CONTEXT_SLUG,
-				label: 'Global',
-			});
-		}
 		options.push(...orgs.map<SearchableSelectItem>((org) => ({
 			value: org.slug,
-			label: org.name,
+			label: org.display_name,
 		})));
 		return options;
-	}, [orgs, isAuthenticated, hasGlobalContextAccess]);
+	}, [orgs, isAuthenticated]);
 
+	// The id is resolved and stored *before* navigating: the new route's data fetches start as
+	// soon as it renders, and they read this to scope themselves to the right org.
 	const handleOrgChange = (newOrgSlug: string) => {
-		if (newOrgSlug === GLOBAL_CONTEXT_SLUG) {
-			dispatch(navigateToAction(`/${GLOBAL_CONTEXT_SLUG}`));
-			return;
-		}
-		dispatch(navigateToAction(`/${newOrgSlug}`));
+		const selected = orgs.find(org => org.slug === newOrgSlug);
+		setCurrentOrgId(selected?.id ?? null);
+		void routingService.navigateTo({ to: `/${newOrgSlug}` });
 	};
 
 	return isAuthenticated && (items.length || !props.hideIfEmpty) && (

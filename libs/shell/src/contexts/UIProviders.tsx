@@ -4,7 +4,7 @@ import {
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications, notifications as notif } from '@mantine/notifications';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 
 export type UIProvidersProps = React.PropsWithChildren;
@@ -130,34 +130,40 @@ function useScrollDirection(threshold = 10) {
 	return isScrollingUp;
 }
 
+/**
+ * Stable identity across renders: consumers put `notification` in effect dependency arrays,
+ * and a fresh object each render would re-run those effects on every parent render.
+ */
 function useNotification() {
-	const showError = (message: string, title = 'Error') => {
-		notif.show({
-			title,
-			message,
-			color: 'red',
-			autoClose: true,
-			withBorder: true,
-		});
-	};
+	return useMemo(() => {
+		const showError = (message: string, title = 'Error') => {
+			notif.show({
+				title,
+				message,
+				color: 'red',
+				autoClose: true,
+				withBorder: true,
+			});
+		};
 
-	const showInfo = (message: string, title = 'Info') => {
-		notif.show({
-			title,
-			message,
-			color: 'green',
-			withBorder: true,
-		});
-	};
+		const showInfo = (message: string, title = 'Info') => {
+			notif.show({
+				title,
+				message,
+				color: 'green',
+				withBorder: true,
+			});
+		};
 
-	const showWarning = (message: string, title = 'Warning') => {
-		notif.show({
-			title,
-			message,
-			color: 'orange',
-			withBorder: true,
-		});
-	};
+		const showWarning = (message: string, title = 'Warning') => {
+			notif.show({
+				title,
+				message,
+				color: 'orange',
+				withBorder: true,
+			});
+		};
 
-	return { showError, showInfo, showWarning };
+		return { showError, showInfo, showWarning };
+	}, []);
 }

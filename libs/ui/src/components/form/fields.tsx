@@ -1,90 +1,156 @@
 import { ActionIcon, Checkbox, Grid, Input, NumberInput, Select, Text, InputProps, NumberInputProps } from '@mantine/core';
-import { DateInput, DateInputProps } from '@mantine/dates';
+import { DateInput, DateInputProps, DateTimePickerProps } from '@mantine/dates';
 import { useId } from '@mantine/hooks';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import React from 'react';
-import { Controller } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
+import { Controller, useWatch } from 'react-hook-form';
 
-import { extractLabel, useFieldData, useFormField, useFormStyle } from './formContext';
+import { DateTimeInputField, ReadOnlyTextField, TimeInputField } from './dateTimeFields';
+import { useFieldData, useFormField, useFormStyle } from './formContext';
+import { LangJsonField } from './LangJsonField';
+import { RelationSelectField } from './RelationSelectField';
+import { LocalizeFn, TranslateFn } from '../../i18n';
 
 
 export type AutoFieldProps = {
-	name: string;
-	autoFocused?: boolean;
-	inputProps?: Partial<InputProps>;
-	htmlProps?: FilteredInputHTMLAttributes;
-	ref?: React.RefObject<any>;
+	name: string,
+	autoFocused?: boolean,
+	inputProps?: Partial<InputProps>,
+	htmlProps?: FilteredInputHTMLAttributes,
+	ref?: React.RefObject<any>,
+	translate?: TranslateFn,
 };
 
 export function AutoField(props: AutoFieldProps) {
-	const { getFieldDef } = useFormField();
+	const { getFieldDef, localize, formVariant } = useFormField();
 	const fieldDef = getFieldDef(props.name);
 	const ref = React.useRef<HTMLInputElement | null>(null);
+	const exclusiveDisabledBy = useExclusiveBlocker(props.name);
 
 	if (!fieldDef) {
+		console.warn(`Unrecognized field: ${props.name}`);
 		return null;
 	}
 
-	if (fieldDef.hidden) {
-		return null;
+	// A field the server will not accept an update for is shown, not edited: rendering an input
+	// would invite a change that silently fails to save.
+	if (formVariant === 'update' && fieldDef.no_update) {
+		return <ReadOnlyTextField name={props.name} localize={localize} />;
 	}
 
-	switch (fieldDef.type) {
+	const identityOrTemporal = renderIdentityOrTemporalField({
+		...props, fieldDef, localize, exclusiveDisabledBy, fallbackRef: ref,
+	});
+	if (identityOrTemporal !== undefined) {
+		return identityOrTemporal;
+	}
+
+	switch (fieldDef.data_type.name) {
 		case 'string':
 			return <TextInputField
 				name={props.name} type='text' autoFocused={props.autoFocused}
 				inputProps={props.inputProps} htmlProps={props.htmlProps}
 				ref={props.ref ?? ref}
+				localize={localize}
 			/>;
 		case 'email':
 			return <TextInputField
 				name={props.name} type='email' autoFocused={props.autoFocused}
 				inputProps={props.inputProps} htmlProps={props.htmlProps}
 				ref={props.ref ?? ref}
+				localize={localize}
 			/>;
-		case 'password':
+		case 'secret':
 			return <PasswordInputField
 				name={props.name} autoFocused={props.autoFocused}
 				inputProps={props.inputProps} htmlProps={props.htmlProps}
 				ref={props.ref ?? ref}
+				localize={localize}
 			/>;
-		case 'integer':
+		case 'int32':
 			return <NumberInputField
 				name={props.name} autoFocused={props.autoFocused}
 				inputProps={props.inputProps as Partial<NumberInputProps>} htmlProps={props.htmlProps}
 				ref={props.ref ?? ref}
+				localize={localize}
 			/>;
-		case 'date':
+		case 'nikkiDate':
 			return <DateInputField
 				name={props.name} autoFocused={props.autoFocused}
 				inputProps={props.inputProps as Partial<DateInputProps>} htmlProps={props.htmlProps}
 				ref={props.ref ?? ref}
+				localize={localize}
 			/>;
 		case 'boolean':
-			return <BooleanField name={props.name} inputProps={props.inputProps} />;
-		case 'enum':
-			if (fieldDef.enum) {
+			return <BooleanField name={props.name} inputProps={props.inputProps} localize={localize} />;
+		case 'nikkiLangJson':
+			return <LangJsonField name={props.name} inputProps={props.inputProps} localize={localize} />;
+		case 'enumString':
+			if (fieldDef.data_type.options?.enumValues) {
 				return <StaticEnumSelectField
 					name={props.name} autoFocused={props.autoFocused}
 					inputProps={props.inputProps as Partial<SelectProps>} htmlProps={props.htmlProps}
 					ref={props.ref ?? ref}
+					localize={localize}
 				/>;
 			}
-			if (fieldDef.enumSrc) {
-				return <DynamicEnumSelectField
-					name={props.name} autoFocused={props.autoFocused}
-					inputProps={props.inputProps as Partial<SelectProps>} htmlProps={props.htmlProps}
-					ref={props.ref ?? ref}
-				/>;
-			}
+			// if (fieldDef.enumSrc) {
+			// 	return <DynamicEnumSelectField
+			// 		name={props.name} autoFocused={props.autoFocused}
+			// 		inputProps={props.inputProps as Partial<SelectProps>} htmlProps={props.htmlProps}
+			// 		ref={props.ref ?? ref}
+			// 	/>;
+			// }
 			return null;
 		default:
+			console.warn(`Unknown field type: ${fieldDef.data_type.name}`);
 			return null;
 	}
 }
 
 type SelectProps = React.ComponentPropsWithoutRef<typeof Select>;
+
+type IdentityOrTemporalArgs = AutoFieldProps & {
+	fieldDef: dyn.ModelSchemaField,
+	localize: LocalizeFn,
+	exclusiveDisabledBy?: string,
+	fallbackRef: React.RefObject<HTMLInputElement | null>,
+};
+
+/**
+ * The data types added after the original switch: ids, which may point at another record, and the
+ * temporal types. Returns `undefined` — not `null` — when the type is none of them, so the caller
+ * can tell "not handled here" from "handled, renders nothing".
+ */
+function renderIdentityOrTemporalField(args: IdentityOrTemporalArgs): React.ReactNode | undefined {
+	const { fieldDef, localize, fallbackRef } = args;
+	switch (fieldDef.data_type.name) {
+		case 'ulid':
+			return <UlidField
+				name={args.name} localize={localize}
+				inputProps={args.inputProps as Partial<SelectProps>}
+				htmlProps={args.htmlProps} ref={args.ref ?? fallbackRef}
+				exclusiveDisabledBy={args.exclusiveDisabledBy}
+			/>;
+		case 'nikkiDateTime':
+			return <DateTimeInputField
+				name={args.name} autoFocused={args.autoFocused}
+				inputProps={args.inputProps as Partial<DateTimePickerProps>} htmlProps={args.htmlProps}
+				ref={args.ref ?? fallbackRef}
+				localize={localize}
+			/>;
+		case 'nikkiTime':
+			return <TimeInputField
+				name={args.name} autoFocused={args.autoFocused}
+				inputProps={args.inputProps as Partial<InputProps>} htmlProps={args.htmlProps}
+				ref={args.ref ?? fallbackRef}
+				localize={localize}
+			/>;
+		default:
+			return undefined;
+	}
+}
 
 function useDefaultInputProps(inputProps?: Partial<InputProps>): Partial<InputProps> {
 	return React.useMemo(() => ({
@@ -167,25 +233,25 @@ function usePasswordToggle(
 
 
 type BaseFieldWrapperProps = {
-	inputId: string;
-	label: string;
-	description?: string;
-	isRequired: boolean;
-	error: string | undefined;
-	children: React.ReactNode;
+	inputId: string,
+	label: string,
+	description?: string,
+	isRequired: boolean,
+	error: string | undefined,
+	children: React.ReactNode,
 	ariaProps?: {
-		'aria-labelledby': string;
-		'aria-describedby'?: string;
-		'aria-required'?: boolean;
-		'aria-invalid'?: boolean;
-	};
+		'aria-labelledby': string,
+		'aria-describedby'?: string,
+		'aria-required'?: boolean,
+		'aria-invalid'?: boolean,
+	},
 };
 
 export function BaseFieldWrapper({
 	inputId, label, description, isRequired, error, children, ariaProps,
 }: BaseFieldWrapperProps) {
-	const { layout } = useFormStyle();
-	const twoColumnLayout = layout === 'twocol';
+	const formStyle = useFormStyle();
+	const twoColumnLayout = formStyle?.layout === 'twocol';
 	const descriptionId = useId();
 	const errorId = useId();
 
@@ -208,7 +274,7 @@ export function BaseFieldWrapper({
 	}), [labelId, ariaDescribedBy, isRequired, error]);
 
 	return (
-		<Grid grow gutter={0} mt='md'>
+		<Grid grow gap={0}>
 			<Grid.Col span={twoColumnLayout ? 4 : 12}>
 				<Input.Label htmlFor={inputId} id={labelId}>
 					{label}
@@ -232,21 +298,23 @@ type FilteredInputHTMLAttributes = Omit<
 >;
 
 type BaseInputProps<TInputProp> = {
-	name: string;
-	autoFocused?: boolean;
-	inputProps?: Partial<TInputProp>;
-	htmlProps?: FilteredInputHTMLAttributes;
-	ref: React.RefObject<HTMLInputElement | null>;
+	name: string,
+	autoFocused?: boolean,
+	inputProps?: Partial<TInputProp>,
+	htmlProps?: FilteredInputHTMLAttributes,
+	ref: React.RefObject<HTMLInputElement | null>,
+	localize: LocalizeFn,
 };
 
 export type TextInputFieldProps = BaseInputProps<InputProps> & {
-	type: 'text' | 'email';
+	type: 'text' | 'email',
 };
 
-export function TextInputField({ name, type, autoFocused, inputProps, htmlProps, ref }: TextInputFieldProps) {
+export function TextInputField(props: TextInputFieldProps) {
+	const { name, type, autoFocused, inputProps, htmlProps, ref } = props;
+	const t = props.localize;
 	const inputId = useId();
 	const fieldData = useFieldData(name);
-	const { t: translate } = useTranslation();
 	const { register, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -260,10 +328,10 @@ export function TextInputField({ name, type, autoFocused, inputProps, htmlProps,
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={translate(fieldData.label)}
-			description={translate(fieldData.description ?? '')}
+			label={t(fieldData.label)}
+			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
-			error={translate(fieldData.error ?? '')}
+			error={t(fieldData.error as any)}
 		>
 			<Input
 				id={inputId}
@@ -283,7 +351,7 @@ export function TextInputField({ name, type, autoFocused, inputProps, htmlProps,
 				defaultValue={defaultValue}
 				error={fieldData.error}
 				disabled={modelLoading}
-				placeholder={translate(fieldData.placeholder ?? '')}
+				placeholder={t(fieldData.placeholder)}
 				withAria={false}
 				{...htmlProps}
 				{...defaultInputProps}
@@ -294,10 +362,11 @@ export function TextInputField({ name, type, autoFocused, inputProps, htmlProps,
 
 export type PasswordInputFieldProps = BaseInputProps<InputProps>;
 
-export function PasswordInputField({ name, autoFocused, inputProps, htmlProps, ref }: PasswordInputFieldProps) {
+export function PasswordInputField(props: PasswordInputFieldProps) {
+	const { name, autoFocused, inputProps, htmlProps, ref } = props;
+	const t = props.localize;
 	const inputId = useId();
 	const fieldData = useFieldData(name);
-	const { t: translate } = useTranslation();
 	const { register, modelValue, modelLoading, formVariant } = useFormField();
 	const [showPassword, setShowPassword] = React.useState(false);
 
@@ -314,10 +383,10 @@ export function PasswordInputField({ name, autoFocused, inputProps, htmlProps, r
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={translate(fieldData.label)}
-			description={translate(fieldData.description ?? '')}
+			label={t(fieldData.label)}
+			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
-			error={translate(fieldData.error ?? '')}
+			error={t(fieldData.error as any)}
 		>
 			<Input
 				id={inputId}
@@ -337,7 +406,7 @@ export function PasswordInputField({ name, autoFocused, inputProps, htmlProps, r
 				defaultValue={defaultValue}
 				error={fieldData.error}
 				disabled={modelLoading}
-				placeholder={translate(fieldData.placeholder ?? '')}
+				placeholder={t(fieldData.placeholder)}
 				rightSectionPointerEvents='all'
 				rightSection={actionIcon}
 				ff='monospace'
@@ -351,10 +420,11 @@ export function PasswordInputField({ name, autoFocused, inputProps, htmlProps, r
 
 export type NumberInputFieldProps = BaseInputProps<NumberInputProps>;
 
-export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref }: NumberInputFieldProps) {
+export function NumberInputField(props: NumberInputFieldProps) {
+	const { name, autoFocused, inputProps, htmlProps, ref } = props;
+	const t = props.localize;
 	const inputId = useId();
 	const fieldData = useFieldData(name);
-	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -368,10 +438,10 @@ export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={translate(fieldData.label)}
-			description={fieldData.description ? translate(fieldData.description) : undefined}
+			label={t(fieldData.label)}
+			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
-			error={fieldData.error ? translate(fieldData.error) : undefined}
+			error={t(fieldData.error as any)}
 		>
 			<Controller
 				name={name}
@@ -382,7 +452,7 @@ export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref
 					return (
 						<NumberInput
 							id={inputId}
-							error={fieldData.error ? translate(fieldData.error) : undefined}
+							error={t(fieldData.error as any)}
 							value={typeof value === 'number' ? value : undefined}
 							onChange={(val) => field.onChange(typeof val === 'number' ? val : undefined)}
 							onBlur={field.onBlur}
@@ -392,7 +462,7 @@ export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref
 								ref.current = e;
 							}}
 							disabled={modelLoading}
-							placeholder={fieldData.placeholder ? translate(fieldData.placeholder) : undefined}
+							placeholder={fieldData.placeholder ? t(fieldData.placeholder) : undefined}
 							{...htmlProps}
 							{...(defaultInputProps as NumberInputProps)}
 						/>
@@ -405,10 +475,11 @@ export function NumberInputField({ name, autoFocused, inputProps, htmlProps, ref
 
 export type DateInputFieldProps = BaseInputProps<DateInputProps>;
 
-export function DateInputField({ name, autoFocused, inputProps, htmlProps, ref }: DateInputFieldProps) {
+export function DateInputField(props: DateInputFieldProps) {
+	const { name, autoFocused, inputProps, htmlProps, ref } = props;
+	const t = props.localize;
 	const inputId = useId();
 	const fieldData = useFieldData(name);
-	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -422,10 +493,10 @@ export function DateInputField({ name, autoFocused, inputProps, htmlProps, ref }
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={translate(fieldData.label)}
-			description={translate(fieldData.description ?? '')}
+			label={t(fieldData.label)}
+			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
-			error={translate(fieldData.error ?? '')}
+			error={t(fieldData.error as any)}
 		>
 			<Controller
 				name={name}
@@ -451,7 +522,7 @@ export function DateInputField({ name, autoFocused, inputProps, htmlProps, ref }
 							value={dateValue}
 							onChange={(date) => field.onChange(date || undefined)}
 							disabled={modelLoading}
-							placeholder={translate(fieldData.placeholder ?? '')}
+							placeholder={t(fieldData.placeholder)}
 							ref={ref}
 							{...htmlProps}
 							{...(defaultInputProps as DateInputProps)}
@@ -465,10 +536,11 @@ export function DateInputField({ name, autoFocused, inputProps, htmlProps, ref }
 
 export type StaticEnumSelectFieldProps = BaseInputProps<SelectProps>;
 
-export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps, ref }: StaticEnumSelectFieldProps) {
+export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
+	const { name, autoFocused, inputProps, htmlProps, ref } = props;
+	const t = props.localize;
 	const inputId = useId();
 	const fieldData = useFieldData(name);
-	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	if (!fieldData) {
@@ -477,9 +549,12 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 
 	const defaultValue = modelValue?.[name];
 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
-	const selectData = fieldData.fieldDef.enum!.map((opt) => ({
-		value: opt.value,
-		label: translate(extractLabel(opt.label)),
+	const enumValues = fieldData.fieldDef.data_type.options?.enumValues as string[];
+	const selectData = enumValues.map((val) => ({
+		value: val,
+		label: t(dyn.newLangJsonRef(
+			`${fieldData.fieldDef.name}.${val}`,
+		)),
 	}));
 
 	useAutoFocusById(autoFocused, inputId, formVariant);
@@ -487,10 +562,10 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
-			label={translate(fieldData.label)}
-			description={translate(fieldData.description ?? '')}
+			label={t(fieldData.label)}
+			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
-			error={translate(fieldData.error ?? '')}
+			error={t(fieldData.error as any)}
 		>
 			<Controller
 				name={name}
@@ -510,7 +585,7 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 								field.onChange(val === null || val === '' ? undefined : val);
 							}}
 							disabled={modelLoading}
-							placeholder={fieldData.placeholder}
+							placeholder={t(fieldData.placeholder)}
 							ref={ref}
 							{...htmlProps}
 							{...(defaultInputProps as SelectProps)}
@@ -524,68 +599,70 @@ export function StaticEnumSelectField({ name, autoFocused, inputProps, htmlProps
 
 export type DynamicEnumSelectFieldProps = BaseInputProps<SelectProps>;
 
-export function DynamicEnumSelectField({
-	name, autoFocused, inputProps, htmlProps, ref }: DynamicEnumSelectFieldProps) {
-	const inputId = useId();
-	const fieldData = useFieldData(name);
-	const { t: translate } = useTranslation();
-	const { control, modelValue, modelLoading, formVariant } = useFormField();
+// export function DynamicEnumSelectField({
+// 	name, autoFocused, inputProps, htmlProps, ref }: DynamicEnumSelectFieldProps) {
+// 	const inputId = useId();
+// 	const fieldData = useFieldData(name);
+// 	const { t: translate } = useTranslation();
+// 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
-	if (!fieldData) {
-		return null;
-	}
+// 	if (!fieldData) {
+// 		return null;
+// 	}
 
-	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
-	useAutoFocusById(autoFocused, inputId, formVariant);
+// 	const defaultValue = modelValue?.[name];
+// 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
+// 	useAutoFocusById(autoFocused, inputId, formVariant);
 
-	return (
-		<BaseFieldWrapper
-			inputId={inputId}
-			label={translate(fieldData.label)}
-			description={translate(fieldData.description ?? '')}
-			isRequired={fieldData.isRequired}
-			error={translate(fieldData.error ?? '')}
-		>
-			<Controller
-				name={name}
-				control={control}
-				defaultValue={defaultValue}
-				render={({ field }) => {
-					const value = field.value !== undefined ? field.value : defaultValue;
-					return (
-						<Select
-							id={inputId}
-							// fix: duplicate error
-							// error={fieldData.error}
-							data={[]}
-							value={(value as string) || null}
-							onChange={(val) => {
-								// Transform null or empty string to undefined for optional enum
-								field.onChange(val === null || val === '' ? undefined : val);
-							}}
-							placeholder={fieldData.placeholder || `TODO: Load from ${fieldData.fieldDef.enumSrc?.stateSource}`}
-							disabled={modelLoading}
-							ref={ref}
-							{...htmlProps}
-							{...(defaultInputProps as SelectProps)}
-						/>
-					);
-				}}
-			/>
-		</BaseFieldWrapper>
-	);
-}
+// 	return (
+// 		<BaseFieldWrapper
+// 			inputId={inputId}
+// 			label={translate(fieldData.label)}
+// 			description={translate(fieldData.description ?? '')}
+// 			isRequired={fieldData.isRequired}
+// 			error={translate(fieldData.error ?? '')}
+// 		>
+// 			<Controller
+// 				name={name}
+// 				control={control}
+// 				defaultValue={defaultValue}
+// 				render={({ field }) => {
+// 					const value = field.value !== undefined ? field.value : defaultValue;
+// 					return (
+// 						<Select
+// 							id={inputId}
+// 							// fix: duplicate error
+// 							// error={fieldData.error}
+// 							data={[]}
+// 							value={(value as string) || null}
+// 							onChange={(val) => {
+// 								// Transform null or empty string to undefined for optional enum
+// 								field.onChange(val === null || val === '' ? undefined : val);
+// 							}}
+// 							placeholder={fieldData.placeholder || `TODO: Load from ${fieldData.fieldDef.enumSrc?.stateSource}`}
+// 							disabled={modelLoading}
+// 							ref={ref}
+// 							{...htmlProps}
+// 							{...(defaultInputProps as SelectProps)}
+// 						/>
+// 					);
+// 				}}
+// 			/>
+// 		</BaseFieldWrapper>
+// 	);
+// }
 
 export type BooleanFieldProps = {
-	name: string;
-	inputProps?: Partial<InputProps>;
+	name: string,
+	inputProps?: Partial<InputProps>,
+	localize: LocalizeFn,
 };
 
-export function BooleanField({ name, inputProps }: BooleanFieldProps) {
+export function BooleanField(props: BooleanFieldProps) {
+	const { name, inputProps } = props;
+	const t = props.localize;
 	const inputId = useId();
 	const fieldData = useFieldData(name);
-	const { t: translate } = useTranslation();
 	const { control, modelValue, modelLoading } = useFormField();
 
 	if (!fieldData) {
@@ -595,7 +672,7 @@ export function BooleanField({ name, inputProps }: BooleanFieldProps) {
 	const defaultValue = modelValue?.[name] ?? false;
 
 	return (
-		<Grid grow gutter={0} mt='md'>
+		<Grid grow gap={0} mt='md'>
 			<Grid.Col span={12}>
 				<Controller
 					name={name}
@@ -606,8 +683,8 @@ export function BooleanField({ name, inputProps }: BooleanFieldProps) {
 						return (
 							<Checkbox
 								id={inputId}
-								label={translate(fieldData.label)}
-								description={fieldData.description ? translate(fieldData.description) : undefined}
+								label={t(fieldData.label)}
+								description={fieldData.description ? t(fieldData.description) : undefined}
 								checked={checked}
 								onChange={(e) => field.onChange(e.currentTarget.checked)}
 								disabled={modelLoading || inputProps?.disabled}
@@ -616,8 +693,69 @@ export function BooleanField({ name, inputProps }: BooleanFieldProps) {
 						);
 					}}
 				/>
-				{fieldData.error && <Input.Error>{translate(fieldData.error)}</Input.Error>}
+				{fieldData.error && <Input.Error>{t(fieldData.error as any)}</Input.Error>}
 			</Grid.Col>
 		</Grid>
 	);
+}
+
+export type UlidFieldProps = {
+	name: string,
+	localize: LocalizeFn,
+	inputProps?: Partial<SelectProps>,
+	htmlProps?: FilteredInputHTMLAttributes,
+	ref: React.RefObject<HTMLInputElement | null>,
+	exclusiveDisabledBy?: string,
+};
+
+/**
+ * A `ulid` is either a foreign key or a bare identifier, and the schema says which: a field listed
+ * as the `src_field` of an outgoing relation points at another record and gets a picker, while one
+ * that is not — `org_id` on a role, for instance — is just an id the user types.
+ */
+export function UlidField(props: UlidFieldProps) {
+	const { crudSchema } = useFormField();
+	const modelSchema = crudSchema?.modelSchema;
+	const relation = modelSchema ? dyn.findRelationBySrcField(modelSchema, props.name) : undefined;
+
+	if (relation) {
+		return <RelationSelectField
+			name={props.name}
+			localize={props.localize}
+			inputProps={props.inputProps}
+			exclusiveDisabledBy={props.exclusiveDisabledBy}
+		/>;
+	}
+
+	return <TextInputField
+		name={props.name} type='text'
+		inputProps={props.inputProps as Partial<InputProps>} htmlProps={props.htmlProps}
+		ref={props.ref}
+		localize={props.localize}
+	/>;
+}
+
+/**
+ * The peer field, in an exclusive group with `fieldName`, that already holds a value — meaning
+ * this field must not be filled too. Undefined when the field is free to edit.
+ *
+ * The backend rejects a group with zero or several members set; disabling the peers keeps the user
+ * from building a request it is going to refuse. Clearing is left to the user, so a value is never
+ * silently discarded.
+ */
+export function useExclusiveBlocker(fieldName: string): string | undefined {
+	const { crudSchema, control } = useFormField();
+	const modelSchema = crudSchema?.modelSchema;
+	const peers = React.useMemo(
+		() => (modelSchema ? dyn.findExclusiveGroupPeers(modelSchema, fieldName) : []),
+		[modelSchema, fieldName],
+	);
+	// Called unconditionally with a possibly-empty list, since hooks cannot be skipped.
+	const peerValues = useWatch({ control, name: peers }) as unknown[];
+
+	if (peers.length === 0) {
+		return undefined;
+	}
+	const filledIndex = peerValues.findIndex(value => value !== undefined && value !== null && value !== '');
+	return filledIndex >= 0 ? peers[filledIndex] : undefined;
 }

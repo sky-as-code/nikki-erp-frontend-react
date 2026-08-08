@@ -1,10 +1,10 @@
 import { Avatar, Box, Divider, Flex, Menu, Text } from '@mantine/core';
+import { useSignOut } from '@nikkierp/shell/authenticate';
 import { useUserContext } from '@nikkierp/shell/userContext';
 import { IconUserFilled } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 
 import { handleMenuItemClick } from './helpers';
 import { PROFILE_MENU_CONFIG } from './menuConfig';
@@ -14,10 +14,10 @@ import { ThemeSwitchModal } from '../ThemeSwitch';
 
 
 export const ProfileMenuDropdown: React.FC = () => {
-	const dispatch = useDispatch<any>();
+	const { dispatchMethod: signOut } = useSignOut();
 	const { t: translate } = useTranslation();
 
-	const { user } = useUserContext();
+	const userCtx = useUserContext();
 	const themeModeModalRef = useRef<any>(null);
 	const langSwitchModalRef = useRef<any>(null);
 
@@ -41,8 +41,8 @@ export const ProfileMenuDropdown: React.FC = () => {
 							<IconUserFilled color={'var(--mantine-color-gray-6)'} />
 						</Avatar>
 						<Box>
-							<Text size='md' fw={600}>{user?.displayName || 'Display name'}</Text>
-							<Text size='sm' c='dimmed'>{user?.email || 'username@example.com'}</Text>
+							<Text size='md' fw={600}>{userCtx?.displayName}</Text>
+							<Text size='sm' c='dimmed'>{userCtx?.email}</Text>
 						</Box>
 					</Flex>
 
@@ -57,7 +57,7 @@ export const ProfileMenuDropdown: React.FC = () => {
 								leftSection={item.icon}
 								onClick={() => handleMenuItemClick(
 									item.action,
-									dispatch,
+									signOut,
 									themeModeModalRef,
 									langSwitchModalRef)
 								}

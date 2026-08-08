@@ -1,84 +1,60 @@
-import { Breadcrumbs, Group, Stack, TagsInput, Typography } from '@mantine/core';
-import { withWindowTitle } from '@nikkierp/ui/components';
-import { useMicroAppSelector } from '@nikkierp/ui/microApp';
-import { ModelSchema } from '@nikkierp/ui/model';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+// import { withWindowTitle } from '@nikkierp/ui/components';
+// import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
+// import React from 'react';
+// import { useTranslation } from 'react-i18next';
+// import { useNavigate } from 'react-router';
 
-import { selectUserList } from '../../appState/user';
-import { ListActionListPage } from '../../components/ListActionBar';
-import { AddUserModal } from '../../components/User';
-import { UserTable } from '../../features/user/components';
-import { useManageOrganizationAddUsers } from '../../features/user/hooks/useManageOrganizationUsers';
-import { useUserListHandlers } from '../../features/user/hooks/useUserList';
-import { useIdentityPermissions } from '../../hooks';
-import userSchema from '../../schemas/user-schema.json';
+// import { ListPageLayout } from '../../components/ListPageLayout';
+// import { UserDispatch, useSearchUsers } from '../../features/user';
+// import { UserTable } from '../../features/user/UserTable';
+// // import { useIdentityPermissions } from '../../hooks';
 
 
-export function UserListPageBody(): React.ReactElement {
-	const listUser = useMicroAppSelector(selectUserList);
-	const schema = userSchema as ModelSchema;
-	const columns = ['avatar', 'email', 'displayName', 'status', 'groups', 'createdAt', 'updatedAt'];
-	const { t } = useTranslation();
-	const isLoading = listUser.status === 'pending';
-	const permissions = useIdentityPermissions();
+// export function UserListPageBody(): React.ReactElement {
+// 	const searchUsers = useSearchUsers();
+// 	const { t } = useTranslation();
+// 	// const permissions = useIdentityPermissions();
+// 	const { handleCreate, handleRefresh } = useUserListHandlers();
 
-	const { handleCreate, handleRefresh } = useUserListHandlers();
-	const {
-		opened,
-		selectedUserIds,
-		addOptions,
-		isLoading: isAdding,
-		showOrgSelector,
-		selectedOrgId,
-		organizationOptions,
-		onOpen,
-		onClose,
-		onSelectedChange,
-		onOrgChange,
-		onSubmit,
-	} = useManageOrganizationAddUsers();
+// 	return (
+// 		<ListPageLayout
+// 			title={t('nikki.identity.user.title')}
+// 			searchPlaceholder={t('nikki.identity.user.searchPlaceholder')}
+// 			onCreate={handleCreate}
+// 			onRefresh={handleRefresh}
+// 		>
+// 			{() => (
+// 				<UserTable
+// 					users={searchUsers?.data?.items ?? []}
+// 					isLoading={searchUsers.isLoading}
+// 				/>
+// 			)}
+// 		</ListPageLayout>
+// 	);
+// }
 
-	return (
-		<Stack gap='md'>
-			<Group>
-				<Breadcrumbs style={{ minWidth: '30%' }}>
-					<Typography>
-						<h4>{t('nikki.identity.user.title')}</h4>
-					</Typography>
-				</Breadcrumbs>
-				<TagsInput
-					placeholder={t('nikki.identity.user.searchPlaceholder')}
-					w='500px'
-				/>
-			</Group>
-			<ListActionListPage
-				onCreate={permissions.user.canCreate ? handleCreate : undefined}
-				onRefresh={handleRefresh}
-				onAddUser={onOpen}
-			/>
-			<UserTable
-				columns={columns}
-				users={listUser?.data}
-				isLoading={isLoading}
-				schema={schema}
-			/>
-			<AddUserModal
-				opened={opened}
-				onClose={onClose}
-				onSubmit={onSubmit}
-				onSelectedChange={onSelectedChange}
-				onOrgChange={onOrgChange}
-				organizationOptions={organizationOptions}
-				selectedOrgId={selectedOrgId}
-				selectOptions={addOptions}
-				selectedIds={selectedUserIds}
-				showOrgSelector={showOrgSelector}
-				submitLabel={t('nikki.identity.organization.actions.addUsers')}
-				isAdding={isAdding}
-			/>
-		</Stack>
-	);
-}
+// export const UserListPage: React.FC = withWindowTitle('User List', UserListPageBody);
 
-export const UserListPage: React.FC = withWindowTitle('User List', UserListPageBody);
+
+// function useUserListHandlers() {
+// 	const searchUsers = useSearchUsers();
+// 	const navigate = useNavigate();
+// 	const dispatch: UserDispatch = useMicroAppDispatch();
+
+// 	const handleCreate = () => {
+// 		navigate('create');
+// 	};
+
+// 	const handleRefresh = () => {
+// 		dispatch(searchUsers.action({}));
+// 	};
+
+// 	React.useEffect(() => {
+// 		handleRefresh();
+// 	}, [dispatch]);
+
+// 	return {
+// 		handleCreate,
+// 		handleRefresh,
+// 	};
+// }

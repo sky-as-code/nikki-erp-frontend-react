@@ -1,4 +1,4 @@
-import { MenuBarItem } from '@nikkierp/ui/appState';
+import { MenuItem } from '@nikkierp/ui/menu';
 
 // Normalize a path (ensure it starts with /)
 export function normalizePath(path: string): string {
@@ -24,7 +24,7 @@ export function isPathActive(link: string, currentPath: string): boolean {
 }
 
 // Check if any nested item is active
-export function hasActiveNestedItem(item: MenuBarItem, currentPath: string): boolean {
+export function hasActiveNestedItem(item: MenuItem, currentPath: string): boolean {
 	if (item.link && isPathActive(item.link, currentPath)) {
 		return true;
 	}
@@ -55,7 +55,7 @@ export function isPathActiveWithPrefix(
 
 // Check if any nested item is active, considering the path prefix
 export function hasActiveNestedItemWithPrefix(
-	item: MenuBarItem,
+	item: MenuItem,
 	currentPath: string,
 	pathPrefix: string,
 ): boolean {

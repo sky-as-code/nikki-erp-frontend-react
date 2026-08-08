@@ -1,210 +1,65 @@
 import * as request from '@nikkierp/common/request';
+import { dispatchServiceMethod, storeAsyncMethod, storeService } from '@nikkierp/ui/appState/store';
 
+import {
+	GetUserContextResponse, LocalSettings, LOCAL_SETTINGS_STORAGE_KEY, SLICE_NAME, toUserContext, UserContext,
+} from './types';
+import { shellStore } from '../appState/shellStore';
 
-export type User = {
-	id: string;
-	email: string;
-	displayName: string;
-};
+/** The theme/language the user last chose, restored from `localStorage` on boot. */
+function loadSavedLocalSettings(): LocalSettings {
+	const settingsStr = localStorage.getItem(LOCAL_SETTINGS_STORAGE_KEY);
+	if (!settingsStr) return { languageCode: null, themeMode: 'light' };
+	return JSON.parse(atob(settingsStr)) as LocalSettings;
+}
 
-export type Hierarchy = {
-	id: string;
-	name: string
-	parentId?: string;
-	orgId: string;
-};
-
-export type Module = {
-	id: string;
-	name: string;
-	slug: string;
-};
-
-export type Organization = {
-	id: string;
-	name: string;
-	slug: string;
-	modules: Module[];
-};
-
-export type PermissionScopeType = 'domain' | 'org' | 'hierarchy' | 'private';
-
-export type PermissionScope = {
-	scopeType: PermissionScopeType;
-	scopeRef: string;
-};
-
-export type PermissionScopeEntry = {
-	scopeType: PermissionScopeType;
-	scopeRef: string;
-	actions: string[];
-};
-
-export type PermissionsSnapshot = Record<string, PermissionScopeEntry[]>;
-
-export type UserContext = {
-	user: User;
-	orgs: Organization[];
-	permissions: PermissionsSnapshot;
-	hierarchies: Hierarchy[];
-};
-
-// Temporary hardcode user_id
-export const HARDCODED_USER_ID_FOR_CONTEXT = '01JWNXT3EY7FG47VDJTEPTDC98';
-
-type HierarchyApiItem = {
-	id: string;
-	Name: string;
-	ParentId?: string;
-	OrgId: string;
-	etag?: string;
-	createdAt?: string;
-};
-
-type OrgApiItem = {
-	id: string;
-	displayName: string;
-	slug: string;
-	status?: string;
-	address?: string | null;
-	legalName?: string | null;
-	phoneNumber?: string | null;
-	etag?: string;
-	createdAt?: string;
-};
-
-type UserContextApiUser = {
-	id: string;
-	displayName: string;
-	email: string;
-	avatarUrl?: string | null;
-	etag?: string;
-	createdAt?: string;
-	hierarchy?: HierarchyApiItem[];
-	orgs?: OrgApiItem[];
-};
-
-type UserContextApiResponse = {
-	user: UserContextApiUser;
-	permissions: PermissionsSnapshot;
-};
-
-function mapApiContextToUserContext(data: UserContextApiResponse): UserContext {
-	const { user: apiUser, permissions } = data;
-	const hierarchies: Hierarchy[] = (apiUser.hierarchy ?? []).map((h) => ({
-		id: h.id,
-		name: h.Name,
-		parentId: h.ParentId,
-		orgId: h.OrgId,
-	}));
-	const orgs: Organization[] = (apiUser.orgs ?? []).map((org) => ({
-		id: org.id,
-		name: org.displayName,
-		slug: org.slug,
-		modules: DEFAULT_MODULES,
-	}));
+/**
+ * Seeds `setLocalSettings` from `localStorage`.
+ *
+ * The **full** method-state shape has to be spread, not just `data`: the generated
+ * reducers mutate `state[methodName].status` in place, so a partial object would leave
+ * those keys `undefined`.
+ */
+function buildInitialState() {
 	return {
-		user: {
-			id: apiUser.id,
-			email: apiUser.email,
-			displayName: apiUser.displayName,
+		setLocalSettings: {
+			status: null,
+			data: typeof localStorage === 'undefined' ? null : loadSavedLocalSettings(),
+			clientErrors: [],
+			error: null,
+			doneAt: 0,
 		},
-		orgs,
-		permissions: permissions ?? {},
-		hierarchies,
 	};
 }
 
+/** The signed-in user, their organizations, and their account/local settings. */
+@storeService(SLICE_NAME, shellStore, { initialState: buildInitialState() })
 export class UserContextService {
-	public async fetch(): Promise<UserContext> {
-		try {
-			// const data = await request.get<UserContextApiResponse>(
-			// 	`identity/users/context`,
-			// );
-			// const context = mapApiContextToUserContext(data);
-			// return context;
+	/**
+	 * Fetches the user context and mirrors the server's language/theme into local settings.
+	 *
+	 * `setLocalSettings` is dispatched rather than called. `@storeService` installs bound
+	 * copies of the plain methods, so `this.setLocalSettings(...)` would write
+	 * `localStorage` and return, leaving its own slice untouched — and `useLocalSettings`
+	 * reads that slice, so the theme and language the server just supplied would not
+	 * reach the UI until the next reload.
+	 */
+	@storeAsyncMethod
+	public async getUserContext(): Promise<UserContext> {
+		const data = request.unwrapResult(await request.get<GetUserContextResponse>('v1/iam/me/context'));
+		const userContext = toUserContext(data);
+		await dispatchServiceMethod(this.setLocalSettings, {
+			languageCode: userContext.accountSettings.language.isoCode,
+			themeMode: userContext.accountSettings.themeMode,
+		});
+		return userContext;
+	}
 
-			return FAKE_USER_CONTEXT;
-		}
-		catch (error) {
-			console.error('Error fetching user context:', error);
-			throw error;
-		}
+	@storeAsyncMethod
+	public async setLocalSettings(input: LocalSettings): Promise<LocalSettings> {
+		localStorage.setItem(LOCAL_SETTINGS_STORAGE_KEY, btoa(JSON.stringify(input)));
+		return input;
 	}
 }
 
 export const userContextService = new UserContextService();
-
-
-export const DEFAULT_MODULES: Module[] = [
-	{
-		id: '1',
-		name: 'Essential',
-		slug: 'essential',
-	},
-	{
-		id: '2',
-		name: 'Identity',
-		slug: 'identity',
-	},
-	{
-		id: '3',
-		name: 'Authorize',
-		slug: 'authorize',
-	},
-	{
-		id: '4',
-		name: 'Inventory',
-		slug: 'inventory',
-	},
-	{
-		id: '5',
-		name: 'Sales',
-		slug: 'sales',
-	},
-	{
-		id: '6',
-		name: 'Purchase',
-		slug: 'purchase',
-	},
-
-	{
-		id: '7',
-		name: 'Drive',
-		slug: 'drive',
-	},
-];
-
-
-export const EXTRA_MODULES: Module[] = [
-	{
-		id: '8',
-		name: 'Vending Machine',
-		slug: 'vending-machine',
-	},
-];
-
-
-const FAKE_USER_CONTEXT: UserContext =  {
-	user: {
-		id: '1',
-		email: 'test@test.com',
-		displayName: 'Test User',
-	},
-	orgs: [{
-		id: '1',
-		name: 'Core Mart',
-		slug: 'coremart',
-		modules: [...DEFAULT_MODULES, ...EXTRA_MODULES],
-	}],
-	permissions: {
-		'*': [
-			{
-				scopeType: 'org',
-				scopeRef: 'CoreMart',
-				actions: ['*'],
-			},
-		],
-	},
-	hierarchies: [],
-};

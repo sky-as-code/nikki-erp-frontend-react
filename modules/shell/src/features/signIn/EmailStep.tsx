@@ -1,64 +1,58 @@
-import { Anchor, Button, Group, Stack } from '@mantine/core';
-import { AppDispatch } from '@nikkierp/shell/appState';
-import { startSignInAction, useAuthState, useSignInProgress, actions } from '@nikkierp/shell/auth';
-import { AutoField, FormFieldProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
-import { ModelSchema } from '@nikkierp/ui/model';
+import { Anchor, Button, Group, Stack, Text } from '@mantine/core';
+import { authService } from '@nikkierp/shell/authenticate';
+import { useServiceLayer } from '@nikkierp/ui/appState/store';
+import { AdhocFormProvider, AutoField, FormStyleProvider } from '@nikkierp/ui/components/form';
+import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconMail } from '@tabler/icons-react';
-import { useUIState } from 'node_modules/@nikkierp/shell/src/contexts/UIProviders';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 
-import emailSchema from './email-schema.json';
+import { emailSchema } from './emailSchema';
 import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
 
 
-const emailSchemaTyped = emailSchema as ModelSchema;
-
 export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	const formRef = React.useRef<HTMLFormElement>(null);
-	const dispatch = useDispatch<AppDispatch>();
-	const { isLoading, errorStartSignIn} = useAuthState();
-	const { notification } = useUIState();
-	const signInProgress = useSignInProgress();
+	const { dispatchMethod: startSignIn, result } = useServiceLayer(authService.startSignIn);
+	const { isSuccess, isPending: isLoading } = result;
+	const localize = useLocalize('common');
 
 	React.useEffect(() => {
-		if (!isLoading && signInProgress?.nextStep === 'password' && onNext) {
+		if (isSuccess && onNext) {
 			onNext();
 		}
-	}, [isLoading, signInProgress?.nextStep]);
+	}, [isSuccess, onNext]);
 
-	React.useEffect(() => {
-		if (errorStartSignIn) {
-			if (typeof errorStartSignIn === 'string') {
-				notification.showError(errorStartSignIn, 'Error');
-			}
-			else {
-				notification.showError(errorStartSignIn?.message || Object.values(errorStartSignIn?.details || {})[0] || 'Start sign-in attempt failed', 'Error');
-			}
-			dispatch(actions.resetErrorsStartSignIn());
-		}
-	}, [errorStartSignIn]);
+	// React.useEffect(() => {
+	// 	if (errorStartSignIn) {
+	// 		if (typeof errorStartSignIn === 'string') {
+	// 			notification.showError(errorStartSignIn, 'Error');
+	// 		}
+	// 		else {
+	// 			notification.showError(errorStartSignIn?.message || Object.values(errorStartSignIn?.details || {})[0] || 'Start sign-in attempt failed', 'Error');
+	// 		}
+	// 		dispatch(actions.resetErrorsStartSignIn());
+	// 	}
+	// }, [errorStartSignIn]);
 
 	const handleNext = async (data: { email: string }) => {
-		dispatch(startSignInAction({ email: data.email }));
+		startSignIn({ username: data.email });
 	};
 
 	return (
 		<FormStyleProvider layout='onecol'>
-			<FormFieldProvider formVariant='create' modelSchema={emailSchemaTyped}>
+			<AdhocFormProvider formVariant='create' modelSchema={emailSchema} localize={localize}>
 				{({ handleSubmit }) => (
 					<form ref={formRef} onSubmit={handleSubmit(handleNext)} noValidate>
 						<EmailStepFormContent ref={ref} isActive={isActive} isLoading={isLoading} />
 					</form>
 				)}
-			</FormFieldProvider>
+			</AdhocFormProvider>
 		</FormStyleProvider>
 	);
 }
 
 function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
-	const {t} = useTranslation();
+	const t = useTranslate('common');
 
 	return (
 		<Stack gap='md'>
@@ -70,6 +64,10 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 					leftSection: <IconMail size={20} />,
 				}}
 			/>
+			<Text size='md' c='dimmed'>
+				Domain admin: <code>nguyen.van.an@nikki.com</code><br/>
+				Identity readonly: <code>tran.thi.binh@nikki.com</code>
+			</Text>
 
 			{props.isActive && (
 				<>
@@ -79,7 +77,7 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 							size='md'
 							className='text-blue-600 hover:text-blue-800 transition-colors'
 						>
-							{t('nikki.shell.signIn.forgotEmail')}?
+							{t('signIn.forgotEmail')}?
 						</Anchor>
 					</Group>
 
@@ -89,7 +87,7 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 						loading={props.isLoading}
 						disabled={props.isLoading}
 					>
-						{t('nikki.shell.signIn.nextStep')}
+						{t('signIn.nextStep')}
 					</Button>
 				</>
 			)}

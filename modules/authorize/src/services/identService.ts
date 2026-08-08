@@ -1,4 +1,4 @@
-import { del, get, post, put, type Options } from '@nikkierp/common';
+import { del, get, post, put, unwrapResult, type Options } from '@nikkierp/common';
 
 
 export type IdentityUserDto = {
@@ -57,7 +57,7 @@ export async function listUsers(params?: ListQuery): Promise<ListResponse<Identi
 			graph: graph ? JSON.stringify(graph) : undefined,
 		};
 	}
-	return get<ListResponse<IdentityUserDto>>('identity/users', options);
+	return unwrapResult(await get<ListResponse<IdentityUserDto>>('identity/users', options));
 }
 
 export async function getUser(id: string, params?: {
@@ -69,24 +69,24 @@ export async function getUser(id: string, params?: {
 	if (params) {
 		(options as any).searchParams = params;
 	}
-	return get<IdentityUserDto>(`identity/users/${id}`, options);
+	return unwrapResult(await get<IdentityUserDto>(`identity/users/${id}`, options));
 }
 
 export async function createUser(
 	data: Omit<IdentityUserDto, 'id' | 'etag' | 'failedLoginAttempts' | 'lastLoginAt' | 'passwordChangedAt' | 'groups' | 'orgs' | 'hierarchies' | 'manager'>,
 ): Promise<IdentityUserDto> {
-	return post<IdentityUserDto>('identity/users', {
+	return unwrapResult(await post<IdentityUserDto>('identity/users', {
 		json: data,
-	});
+	}));
 }
 
 export async function updateUser(
 	id: string,
 	data: Partial<IdentityUserDto> & { etag: string },
 ): Promise<IdentityUserDto> {
-	return put<IdentityUserDto>(`identity/users/${id}`, {
+	return unwrapResult(await put<IdentityUserDto>(`identity/users/${id}`, {
 		json: data,
-	});
+	}));
 }
 
 export async function deleteUser(id: string, params?: { transferredManagerId?: string }): Promise<void> {
@@ -94,7 +94,7 @@ export async function deleteUser(id: string, params?: { transferredManagerId?: s
 	if (params) {
 		(options as any).searchParams = params;
 	}
-	return del<void>(`identity/users/${id}`, options);
+	return unwrapResult(await del<void>(`identity/users/${id}`, options));
 }
 
 // ============ Group APIs ============
@@ -107,7 +107,7 @@ export async function listGroups(params?: ListQuery): Promise<ListResponse<Ident
 			graph: graph ? JSON.stringify(graph) : undefined,
 		};
 	}
-	return get<ListResponse<IdentityGroupDto>>('identity/groups', options);
+	return unwrapResult(await get<ListResponse<IdentityGroupDto>>('identity/groups', options));
 }
 
 export async function getGroup(id: string, params?: { withOrg?: boolean }): Promise<IdentityGroupDto> {
@@ -115,28 +115,28 @@ export async function getGroup(id: string, params?: { withOrg?: boolean }): Prom
 	if (params) {
 		(options as any).searchParams = params;
 	}
-	return get<IdentityGroupDto>(`identity/groups/${id}`, options);
+	return unwrapResult(await get<IdentityGroupDto>(`identity/groups/${id}`, options));
 }
 
 export async function createGroup(
 	data: Omit<IdentityGroupDto, 'id' | 'etag' | 'org'>,
 ): Promise<IdentityGroupDto> {
-	return post<IdentityGroupDto>('identity/groups', {
+	return unwrapResult(await post<IdentityGroupDto>('identity/groups', {
 		json: data,
-	});
+	}));
 }
 
 export async function updateGroup(
 	id: string,
 	data: Partial<IdentityGroupDto> & { etag: string },
 ): Promise<IdentityGroupDto> {
-	return put<IdentityGroupDto>(`identity/groups/${id}`, {
+	return unwrapResult(await put<IdentityGroupDto>(`identity/groups/${id}`, {
 		json: data,
-	});
+	}));
 }
 
 export async function deleteGroup(id: string): Promise<void> {
-	return del<void>(`identity/groups/${id}`);
+	return unwrapResult(await del<void>(`identity/groups/${id}`));
 }
 
 // ============ Organization APIs ============
@@ -165,5 +165,5 @@ export async function listOrgs(params?: ListQuery): Promise<ListResponse<Identit
 			graph: graph ? JSON.stringify(graph) : undefined,
 		};
 	}
-	return get<ListResponse<IdentityOrgDto>>('identity/organizations', options);
+	return unwrapResult(await get<ListResponse<IdentityOrgDto>>('identity/organizations', options));
 }

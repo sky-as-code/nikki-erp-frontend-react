@@ -1,43 +1,46 @@
-import { useIsAuthenticated } from '@nikkierp/shell/auth';
-import { GLOBAL_CONTEXT_SLUG } from '@nikkierp/shell/constants';
-import { useMyModules } from '@nikkierp/shell/userContext';
-import { navigateToAction, useActiveOrgModule } from '@nikkierp/ui/appState/routingSlice';
+import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
+import { moduleService, SearchModuleResponse } from '@nikkierp/shell/erpModules';
+import { routingService, useActiveOrgModule } from '@nikkierp/shell/routing';
+import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
+import { useTranslate } from '@nikkierp/ui/i18n';
 import { useMemo } from 'react';
-import { useDispatch } from 'react-redux';
+
+import { sharedStateService } from '../../features/sharedState';
 
 
 export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'> & {
-	hideIfEmpty: boolean;
+	hideIfEmpty: boolean,
 };
 
 export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.ReactNode {
-	const dispatch = useDispatch();
+	const t = useTranslate('common');
 	const isAuthenticated = useIsAuthenticated();
+	// Read-only: `ShellRoutes` is what dispatches `listAll`, so this reflects that result.
+	const { data } = useServiceLayer<SearchModuleResponse>(moduleService.listAll);
+	const modules = data?.items ?? [];
 	const { orgSlug, moduleSlug } = useActiveOrgModule();
-	const modules = useMyModules(orgSlug!);
+	const { dispatchMethod: setCurrentModule } = useServiceLayer(sharedStateService.setCurrentModule);
 
 	const items = useMemo(() => {
 		return modules.map<SearchableSelectItem>((mod) => ({
-			value: mod.slug,
-			label: mod.name,
+			value: mod.name,
+			label: t(`module.label.${mod.name}`),
 		}));
 	}, [modules]);
 
+	// Stored before navigating, for the same reason as the org switcher.
 	const handleModuleChange = (newModSlug: string) => {
-		if (orgSlug === GLOBAL_CONTEXT_SLUG) {
-			dispatch(navigateToAction(`/${GLOBAL_CONTEXT_SLUG}/${newModSlug}`));
-			return;
-		}
-		dispatch(navigateToAction(`/${orgSlug}/${newModSlug}`));
+		setCurrentModule(newModSlug);
+		void routingService.navigateTo({ to: `/${orgSlug}/${newModSlug}` });
 	};
 
 	return isAuthenticated && (modules.length || !props.hideIfEmpty) && (
 		<FlatSearchableSelect
 			{...props}
-			actionOptionLabel='Manage modules...'
-			searchPlaceholder='Search module'
-			unselectedPlaceholder='Select module'
+			actionOptionLabel={t('module.manageModules')}
+			searchPlaceholder={t('module.filterModules')}
+			unselectedPlaceholder={t('module.selectModule')}
 			dropdownWidth={props.dropdownWidth}
 			items={items}
 			value={moduleSlug ?? ''}

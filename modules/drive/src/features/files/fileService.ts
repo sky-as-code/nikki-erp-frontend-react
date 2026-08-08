@@ -1,4 +1,4 @@
-import { patch, del, put, get, ky, Options } from '@nikkierp/common/request';
+import { patch, del, put, get, ky, unwrapResult, Options } from '@nikkierp/common/request';
 
 import { DriveFileVisibility, GetDriveFileAncestorsResponse, RestoreDriveFileFromTrashResponse } from './types';
 import {
@@ -50,36 +50,36 @@ export const fileService = {
 
 	async updateFileMetadata(fileId: string,
 		reqBody: UpdateDriveFileMetadataRequest): Promise<UpdateDriveFileMetadataResponse> {
-		return patch<UpdateDriveFileMetadataResponse>(baseEndpointWithId(fileId), {
+		return unwrapResult(await patch<UpdateDriveFileMetadataResponse>(baseEndpointWithId(fileId), {
 			json: reqBody,
-		});
+		}));
 	},
 
 	async deleteDriveFile(fileId: string): Promise<DeleteDriveFileResponse> {
-		return del<DeleteDriveFileResponse>(baseEndpointWithId(fileId));
+		return unwrapResult(await del<DeleteDriveFileResponse>(baseEndpointWithId(fileId)));
 	},
 
 	async moveDriveFileToTrash(fileId: string): Promise<MoveDriveFileToTrashResponse> {
-		return put<MoveDriveFileToTrashResponse>(`${baseEndpointWithId(fileId)}/move-to-trash`);
+		return unwrapResult(await put<MoveDriveFileToTrashResponse>(`${baseEndpointWithId(fileId)}/move-to-trash`));
 	},
 
 	async restoreDriveFileFromTrash(fileId: string,
 		parentDriveFileRef: string | null): Promise<RestoreDriveFileFromTrashResponse> {
 		// backend expect nil khi restore về root -> không gửi field hoặc gửi null
 		const body = parentDriveFileRef ? { parentFileRef: parentDriveFileRef } : {};
-		return put<RestoreDriveFileFromTrashResponse>(`${baseEndpointWithId(fileId)}/restore`, {
+		return unwrapResult(await put<RestoreDriveFileFromTrashResponse>(`${baseEndpointWithId(fileId)}/restore`, {
 			json: {
 				...body,
 			},
-		});
+		}));
 	},
 
 	async getDriveFileById(fileId: string): Promise<GetDriveFileResponse> {
-		return get<GetDriveFileResponse>(baseEndpointWithId(fileId));
+		return unwrapResult(await get<GetDriveFileResponse>(baseEndpointWithId(fileId)));
 	},
 
 	async getDriveFileAncestors(fileId: string): Promise<GetDriveFileAncestorsResponse> {
-		return get<GetDriveFileAncestorsResponse>(`${baseEndpointWithId(fileId)}/ancestors`);
+		return unwrapResult(await get<GetDriveFileAncestorsResponse>(`${baseEndpointWithId(fileId)}/ancestors`));
 	},
 
 	async getDriveFileByParent(parentId: string,
@@ -99,10 +99,10 @@ export const fileService = {
 			options.searchParams = searchParams;
 		}
 		if (parentId == '') {
-			return get<GetDriveFileByParentResponse>(`${baseEndpoint}/root`, options);
+			return unwrapResult(await get<GetDriveFileByParentResponse>(`${baseEndpoint}/root`, options));
 		}
 
-		return get<GetDriveFileByParentResponse>(`${baseEndpointWithId(parentId)}/children`, options);
+		return unwrapResult(await get<GetDriveFileByParentResponse>(`${baseEndpointWithId(parentId)}/children`, options));
 	},
 
 	/** Fetch tất cả children (xử lý pagination). API dùng page bắt đầu từ 0. */
@@ -140,7 +140,7 @@ export const fileService = {
 			options.searchParams = searchParams;
 		}
 
-		return get<GetDriveFileByParentResponse>(baseEndpoint, options);
+		return unwrapResult(await get<GetDriveFileByParentResponse>(baseEndpoint, options));
 	},
 
 	/** Fetch list files that are shared with current user */
@@ -160,7 +160,7 @@ export const fileService = {
 			options.searchParams = searchParams;
 		}
 
-		return get<GetDriveFileByParentResponse>(`${baseEndpoint}/shared`, options);
+		return unwrapResult(await get<GetDriveFileByParentResponse>(`${baseEndpoint}/shared`, options));
 	},
 
 };

@@ -1,5 +1,7 @@
 import {Box, Container, Flex } from '@mantine/core';
-import { useMemo, useState } from 'react';
+import { useShellCommand } from '@nikkierp/shell/commandBus';
+import { MODULE_COMMANDS, SearchModuleResponse } from '@nikkierp/shell/erpModules';
+import React, { useMemo, useState } from 'react';
 
 import { MobileBottomBar } from './MobileButtomBar';
 import { ModuleFilterDrawer, ModuleFilterPanel } from './ModuleFilterPanel';
@@ -21,6 +23,7 @@ export interface FilterState {
 }
 
 export function ModuleHomePage(): React.ReactNode {
+	const listAll = useShellCommand<SearchModuleResponse>(MODULE_COMMANDS.listAll);
 	const {
 		viewMode,
 		setViewMode,
@@ -30,9 +33,15 @@ export function ModuleHomePage(): React.ReactNode {
 		filters,
 		setFilters,
 		filteredModules,
-	} = useQueryModule();
+	} = useQueryModule(listAll.data);
 
 	const [drawerOpened, setDrawerOpened] = useState(false);
+
+	const publishListAll = listAll.publish;
+	React.useEffect(() => {
+		void publishListAll();
+	}, [publishListAll]);
+	const isModulesLoaded = listAll.data != null;
 
 	const gridView = useMemo(
 		() => <ModuleGridView modules={filteredModules} />,
@@ -72,7 +81,7 @@ export function ModuleHomePage(): React.ReactNode {
 							/>
 						</Box>
 						<Box h={'100%'} p={0}>
-							{viewMode === 'grid' ? gridView : listView}
+							{isModulesLoaded && viewMode === 'grid' ? gridView : listView}
 						</Box>
 					</Box>
 				</Flex>

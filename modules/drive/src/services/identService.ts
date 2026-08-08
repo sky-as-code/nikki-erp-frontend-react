@@ -1,4 +1,4 @@
-import { get, type Options } from '@nikkierp/common/request';
+import { get, unwrapResult, type Options } from '@nikkierp/common/request';
 
 
 export type IdentityUserDto = {
@@ -31,6 +31,6 @@ export async function listUsers(
 			graph: graph ? JSON.stringify(graph) : undefined,
 		};
 	}
-	return get<ListResponse<IdentityUserDto>>('identity/users', options);
+	return unwrapResult(await get<ListResponse<IdentityUserDto>>('identity/users', options));
 }
 

@@ -1,75 +1,20 @@
 import { Alert, MantineProvider } from '@mantine/core';
-import { MenuBarItem, useSetMenuBarItems } from '@nikkierp/ui/appState';
 import { AuthorizedGuard } from '@nikkierp/ui/components';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
-	MicroAppProvider, initMicroAppStateContext, useMicroAppDispatch,
+	MicroAppProvider, initMicroAppStateContext,
 	MicroAppRouter, WidgetRoute, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { Link } from 'react-router';
 
 import { reducer } from './appState';
+import { buildEssentialMenu } from './menu';
 import { ModuleManagementPage } from './pages/ModuleManagement';
 import { OrgHomePage } from './pages/OrgHomePage';
 
 
-const menuBarItems: MenuBarItem[] = [
-	{
-		label: 'Home',
-		items: [
-			{
-				label: 'Org Home',
-				link: `/org-home/sub`,
-			},
-		],
-	},
-	{
-		label: 'Management',
-		items: [
-			{
-				label: 'Management lvl 2.1',
-				items: [
-					{
-						label: 'Management lvl 3',
-						link: `/module-management`,
-						items: [
-							{
-								label: 'Management lvl 4',
-								link: `/module-management`,
-								items: [
-									{
-										label: 'Org Home Sub',
-										link: `/org-home`,
-									},
-								],
-							},
-						],
-					},
-				],
-			},
-			{
-				label: 'Management lvl 2.2',
-				items: [
-					{
-						label: 'Management lvl 2.2.1',
-						items: [
-							{
-								label: 'Org Home Sub',
-								link: `/module-management`,
-							},
-						],
-					},
-				],
-			},
-		],
-	},
-];
-
 function Main(props: MicroAppProps) {
-	const dispatch = useMicroAppDispatch();
-	useSetMenuBarItems(menuBarItems, dispatch);
-
 	return (
 		<MicroAppProvider {...props}>
 			<MantineProvider>
@@ -109,7 +54,7 @@ function AuthorizedPage(): React.ReactNode {
 
 
 const bundle: MicroAppBundle = {
-	init({ htmlTag, registerReducer }) {
+	init({ htmlTag, slug, registerReducer, host }) {
 		const domType = MicroAppDomType.SHARED;
 		defineWebComponent(Main, {
 			htmlTag,
@@ -118,6 +63,7 @@ const bundle: MicroAppBundle = {
 
 		const result = registerReducer(reducer);
 		initMicroAppStateContext(result);
+		host.menuRegistry.register(buildEssentialMenu(slug));
 		return {
 			domType,
 		};

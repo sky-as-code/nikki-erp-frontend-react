@@ -1,9 +1,8 @@
 import { Card, Container, Stack, Text, Title } from '@mantine/core';
-import { useIsAuthenticated } from '@nikkierp/shell/auth';
-import { navigateReturnToAction } from '@nikkierp/ui/appState/routingSlice';
+import { useIsAuthenticated, useStartSignIn, useContinueSignIn } from '@nikkierp/shell/authenticate';
+import { routingService } from '@nikkierp/shell/routing';
+import { useTranslate } from '@nikkierp/ui/i18n';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router';
 
 import { EmailStep } from './EmailStep';
@@ -12,38 +11,47 @@ import { SignInStepProps } from './SignInStep.types';
 
 
 type SignInStep = {
-	id: string;
-	component: React.ComponentType<SignInStepProps>;
+	name: string,
+	component: React.ComponentType<SignInStepProps>,
 };
 
 const SIGNIN_STEPS: SignInStep[] = [
-	{ id: 'email', component: EmailStep },
-	{ id: 'password', component: PasswordStep },
+	{ name: 'email', component: EmailStep },
+	{ name: 'password', component: PasswordStep },
 ];
 
 export function SignInPage(): React.ReactNode {
-	const [currentStepIndex, setCurrentStepIndex] = React.useState(0);
+	const [currentStepIdx, setCurrentStepIdx] = React.useState(0);
+	const { isSuccess: isSignInStarted, data: startSignInData } = useStartSignIn();
+	const { isSuccess: isSignInInProgress, data: continueSignInData } = useContinueSignIn();
 	const isAuthenticated = useIsAuthenticated();
-	const dispatch = useDispatch();
 
 	const [searchParams] = useSearchParams();
 	const returnTo = searchParams.get('returnTo');
 
 	React.useEffect(() => {
 		if (isAuthenticated) {
-			dispatch(navigateReturnToAction(returnTo));
+			void routingService.navigateReturnTo({ to: returnTo ?? '/', hardNavigate: false });
 		}
 	}, [isAuthenticated]);
 
 	const handleNext = () => {
-		if (currentStepIndex < SIGNIN_STEPS.length - 1) {
-			setCurrentStepIndex(currentStepIndex + 1);
+		let stepName: string;
+		if (isSignInInProgress && continueSignInData!.nextStep) {
+			stepName = continueSignInData!.nextStep;
+		}
+		else if (isSignInStarted) {
+			stepName = startSignInData!.currentMethod;
+		}
+		const stepIdx = SIGNIN_STEPS.findIndex((step) => step.name === stepName);
+		if (stepIdx !== -1) {
+			setCurrentStepIdx(stepIdx);
 		}
 	};
 
 	const handleBack = () => {
-		if (currentStepIndex > 0) {
-			setCurrentStepIndex(currentStepIndex - 1);
+		if (currentStepIdx > 0) {
+			setCurrentStepIdx(currentStepIdx - 1);
 		}
 	};
 
@@ -52,7 +60,7 @@ export function SignInPage(): React.ReactNode {
 			<Container size='sm' className='w-full'>
 				<SignInCard
 					steps={SIGNIN_STEPS}
-					currentStepIndex={currentStepIndex}
+					currentStepIndex={currentStepIdx}
 					onNext={handleNext}
 					onBack={handleBack}
 				/>
@@ -62,14 +70,14 @@ export function SignInPage(): React.ReactNode {
 }
 
 type SignInCardProps = {
-	steps: SignInStep[];
-	currentStepIndex: number;
-	onNext: () => void;
-	onBack: () => void;
+	steps: SignInStep[],
+	currentStepIndex: number,
+	onNext: () => void,
+	onBack: () => void,
 };
 
 function SignInCard(props: SignInCardProps): React.ReactNode {
-	const {t} = useTranslation();
+	const t = useTranslate('common');
 
 	return (
 		<Card
@@ -81,10 +89,10 @@ function SignInCard(props: SignInCardProps): React.ReactNode {
 			<Stack gap='lg'>
 				<div className='text-center'>
 					<Title order={1} className='text-3xl font-bold text-gray-800 mb-2'>
-						{t('nikki.shell.signIn.title')}
+						{t('signIn.title')}
 					</Title>
 					<Text c='dimmed' size='lg'>
-						{t('nikki.shell.signIn.description')}
+						{t('signIn.subtitle')}
 					</Text>
 				</div>
 
@@ -100,10 +108,10 @@ function SignInCard(props: SignInCardProps): React.ReactNode {
 }
 
 type MultiStepFormContainerProps = {
-	steps: SignInStep[];
-	currentStepIndex: number;
-	onNext: () => void;
-	onBack: () => void;
+	steps: SignInStep[],
+	currentStepIndex: number,
+	onNext: () => void,
+	onBack: () => void,
 };
 
 function MultiStepFormContainer({
@@ -159,9 +167,9 @@ function ExposedArea({ children }: React.PropsWithChildren) {
 }
 
 type SlidingAreaProps = {
-	children: (index: number, StepComponent: React.ComponentType<SignInStepProps>, step: SignInStep) => React.ReactNode;
-	steps: SignInStep[];
-	currentStepIndex: number;
+	children: (index: number, StepComponent: React.ComponentType<SignInStepProps>, step: SignInStep) => React.ReactNode,
+	steps: SignInStep[],
+	currentStepIndex: number,
 };
 
 function SlidingArea({ children, steps, currentStepIndex }: SlidingAreaProps) {
@@ -178,7 +186,7 @@ function SlidingArea({ children, steps, currentStepIndex }: SlidingAreaProps) {
 				const StepComponent = step.component;
 				return (
 					<div
-						key={step.id}
+						key={step.name}
 						className='flex-shrink-0'
 						style={{
 							width: `${100 / steps.length}%`,
