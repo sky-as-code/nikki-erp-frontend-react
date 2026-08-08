@@ -132,14 +132,28 @@ function useInitialRequest(params: ResourceTableProps): dyn.RestSearchRequest {
  * `useParams()` returns a fresh object every render, so the memo is keyed on a
  * serialised form and re-parses it — keying on the object itself would rebuild
  * the graph every render and refetch forever.
+ *
+ * The result is additionally keyed on the interpolated graph's *value*: consumers
+ * feed it straight into the published search request, and `interpolateParams`
+ * allocates a new object per recompute, so identity alone would republish on every
+ * render even when the resolved graph is unchanged.
  */
 function useInterpolatedGraph(
 	filterGraph: ResourceTableProps['filterGraph'],
 ): InterpolateResult<dyn.SearchGraph | undefined> {
 	const paramsKey = JSON.stringify(useParams());
 
-	return React.useMemo(
+	const resolved = React.useMemo(
 		() => interpolateParams(filterGraph as dyn.SearchGraph | undefined, JSON.parse(paramsKey)),
 		[filterGraph, paramsKey],
 	);
+	const resolvedKey = JSON.stringify(resolved);
+	const stableRef = React.useRef(resolved);
+	const stableKeyRef = React.useRef(resolvedKey);
+
+	if (stableKeyRef.current !== resolvedKey) {
+		stableKeyRef.current = resolvedKey;
+		stableRef.current = resolved;
+	}
+	return stableRef.current;
 }

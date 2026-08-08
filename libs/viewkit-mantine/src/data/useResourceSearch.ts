@@ -54,29 +54,41 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 		setSearchRequest(oldReq => isSameSearchRequest(oldReq, newReq) ? oldReq : newReq);
 	}, []);
 
+	// The override is prop-derived, so it must be merged during render rather than folded into
+	// `searchRequest` by an effect. `searchCommand` (and with it `publish`) changes synchronously
+	// on the render that new props arrive, while a state write lands one render later; publishing
+	// in between sends one resource's filter graph to another resource's endpoint. A route change
+	// that swaps both at once — /users/:id to /roles/:id, which reuses this component because the
+	// router keys routes by pattern — did exactly that, and the server rejected the unknown field.
 	const graphOverride = opts.graphOverride;
-	React.useEffect(() => {
-		if (graphOverride === undefined) {
-			return;
-		}
-		setSearchRequest(oldReq => oldReq.graph === graphOverride ? oldReq : { ...oldReq, graph: graphOverride });
-	}, [graphOverride]);
+	const effectiveRequest = React.useMemo(
+		() => graphOverride === undefined ? searchRequest : { ...searchRequest, graph: graphOverride },
+		[searchRequest, graphOverride],
+	);
 
 	const publishSearch = search.publish;
 	const refresh = React.useCallback(() => {
-		void publishSearch(searchRequest);
-	}, [publishSearch, searchRequest]);
+		void publishSearch(effectiveRequest);
+	}, [publishSearch, effectiveRequest]);
 
+	// Guarded on `pack`: it is null while the schema pack still describes the previous resource,
+	// which is the same stale window, so this also suppresses a request built from props that
+	// have not fully settled.
 	React.useEffect(() => {
-		void publishSearch(searchRequest);
-	}, [publishSearch, searchRequest]);
+		if (!pack) {
+			return;
+		}
+		void publishSearch(effectiveRequest);
+	}, [pack, publishSearch, effectiveRequest]);
 
 	// Rows and schema must describe the same resource. The cache outlives a schema change when the
 	// hook is reused rather than remounted (a split view swapping panes), and stale rows rendered
 	// against the new schema miss every field lookup, so each cell falls back to `String(value)`.
+	// The graph is included because /users/1 to /users/2 changes neither schema nor command, yet
+	// must not keep showing record 1's rows while record 2's search is in flight.
 	React.useEffect(() => {
 		setCachedSearchData(null);
-	}, [opts.schemaName, opts.searchCommand]);
+	}, [opts.schemaName, opts.searchCommand, graphOverride]);
 
 	React.useEffect(() => {
 		if (search.data && !isStubSearchData(search.data as SearchData)) {
@@ -92,7 +104,9 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 	const searchData = isStubSearchData(liveSearchData)
 		? (cachedSearchData ?? liveSearchData)
 		: (liveSearchData ?? cachedSearchData);
-	return { pack, searchData, searchRequest, onSearchRequestChange, refresh };
+	// The merged request, not the raw state: it is what was published, and `getSearchRequestOrderBy`
+	// reads `graph.order` off it.
+	return { pack, searchData, searchRequest: effectiveRequest, onSearchRequestChange, refresh };
 }
 
 function useSchemaPack(schemaName: string): dyn.SchemaPack | null {
