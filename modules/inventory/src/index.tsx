@@ -19,12 +19,6 @@ import { ProductListPage } from './pages/product/ProductListPage';
 import { ProductCategoryCreatePage } from './pages/productCategory/ProductCategoryCreatePage';
 import { ProductCategoryDetailPage } from './pages/productCategory/ProductCategoryDetailPage';
 import { ProductCategoryListPage } from './pages/productCategory/ProductCategoryListPage';
-import { UnitCreatePage } from './pages/unit/UnitCreatePage';
-import { UnitDetailPage } from './pages/unit/UnitDetailPage';
-import { UnitListPage } from './pages/unit/UnitListPage';
-import { UnitCategoryCreatePage } from './pages/unitCategory/UnitCategoryCreatePage';
-import { UnitCategoryDetailPage } from './pages/unitCategory/UnitCategoryDetailPage';
-import { UnitCategoryListPage } from './pages/unitCategory/UnitCategoryListPage';
 import { VariantCreatePage } from './pages/variant/VariantCreatePage';
 import { VariantDetailPage } from './pages/variant/VariantDetailPage';
 import { VariantListPage } from './pages/variant/VariantListPage';
@@ -44,12 +38,8 @@ function Main(props: MicroAppProps) {
 						{/* <AppRoute index element={<Navigate to='overview' replace />} />
 							<AppRoute path='overview' element={<OverviewPage />} /> */}
 
-						<AppRoute path='units' element={<UnitListPage />} />
-						<AppRoute path='units/create' element={<UnitCreatePage />} />
-						<AppRoute path='units/:unitId' element={<UnitDetailPage />} />
-						<AppRoute path='unit-categories' element={<UnitCategoryListPage />} />
-						<AppRoute path='unit-categories/create' element={<UnitCategoryCreatePage />} />
-						<AppRoute path='unit-categories/:categoryId' element={<UnitCategoryDetailPage />} />
+						{/* Unit-of-measure configuration moved to the Essential module, which owns
+							the essential_uom / essential_uomcat resources (AC-UOM-32). */}
 
 						<AppRoute path='products' element={<ProductListPage />} />
 						<AppRoute path='products/create' element={<ProductCreatePage />} />

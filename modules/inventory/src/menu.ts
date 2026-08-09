@@ -12,13 +12,10 @@ const ITEMS: MenuItem[] = [
 			{ labelKey: 'menu_variants', link: '/product-variants' },
 		],
 	},
-	{
-		labelKey: 'menu_unit',
-		items: [
-			{ labelKey: 'menu_units', link: '/units' },
-			{ labelKey: 'menu_unitCategories', link: '/unit-categories' },
-		],
-	},
+	// Units of measure are configured in the Essential module (BR-UOM-ESS-022,
+	// AC-UOM-32), which owns the `essential_uom` / `essential_uomcat` resources. The
+	// entries that used to live here pointed at hand-written pages calling
+	// `{orgId}/inventory/units`, an endpoint the backend never served for those models.
 ];
 
 export function buildInventoryMenu(slug: string): MenuContribution {

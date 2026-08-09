@@ -120,13 +120,21 @@ type IdentityOrTemporalArgs = AutoFieldProps & {
 };
 
 /**
- * The data types added after the original switch: ids, which may point at another record, and the
- * temporal types. Returns `undefined` — not `null` — when the type is none of them, so the caller
- * can tell "not handled here" from "handled, renders nothing".
+ * The data types added after the original switch: ids, which may point at another record, the
+ * temporal types, and `decimal`. Returns `undefined` — not `null` — when the type is none of
+ * them, so the caller can tell "not handled here" from "handled, renders nothing".
  */
 function renderIdentityOrTemporalField(args: IdentityOrTemporalArgs): React.ReactNode | undefined {
 	const { fieldDef, localize, fallbackRef } = args;
 	switch (fieldDef.data_type.name) {
+		case 'decimal':
+			return <DecimalInputField
+				name={args.name} autoFocused={args.autoFocused}
+				inputProps={args.inputProps as Partial<NumberInputProps>} htmlProps={args.htmlProps}
+				ref={args.ref ?? fallbackRef}
+				localize={localize}
+				scale={fieldDef.data_type.options?.scale as number | undefined}
+			/>;
 		case 'ulid':
 			return <UlidField
 				name={args.name} localize={localize}
@@ -476,6 +484,75 @@ export function NumberInputField(props: NumberInputFieldProps) {
 								ref.current = e;
 							}}
 							disabled={modelLoading}
+							placeholder={fieldData.placeholder ? t(fieldData.placeholder) : undefined}
+							{...htmlProps}
+							{...(defaultInputProps as NumberInputProps)}
+						/>
+					);
+				}}
+			/>
+		</BaseFieldWrapper>
+	);
+}
+
+export type DecimalInputFieldProps = BaseInputProps<NumberInputProps> & {
+	/** Digits after the decimal point the schema allows, from `data_type.options.scale`. */
+	scale?: number,
+};
+
+/**
+ * A `decimal` is carried as a **string** end to end, never as a JavaScript number.
+ *
+ * The backend sends values such as `0.453592` and `1000000000000` that a float64 cannot hold
+ * exactly, and the UoM conversion rules depend on them surviving unchanged. `NumberInputField`
+ * is therefore not reusable here: it coerces through `typeof value === 'number'` and would
+ * blank out a string value and drop the user's edit.
+ */
+export function DecimalInputField(props: DecimalInputFieldProps) {
+	const { name, autoFocused, inputProps, htmlProps, ref, scale } = props;
+	const t = props.localize;
+	const inputId = useId();
+	const fieldData = useFieldData(name);
+	const { control, modelValue, modelLoading, formVariant } = useFormField();
+
+	if (!fieldData) {
+		return null;
+	}
+
+	const defaultValue = modelValue?.[name];
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
+	useAutoFocus(autoFocused, ref, formVariant);
+
+	return (
+		<BaseFieldWrapper
+			inputId={inputId}
+			label={t(fieldData.label)}
+			description={t(fieldData.description)}
+			isRequired={fieldData.isRequired}
+			error={t(fieldData.error as any)}
+		>
+			<Controller
+				name={name}
+				control={control}
+				defaultValue={defaultValue}
+				render={({ field }) => {
+					const value = field.value !== undefined ? field.value : defaultValue;
+					return (
+						<NumberInput
+							id={inputId}
+							error={t(fieldData.error as any)}
+							value={value ?? ''}
+							// Mantine hands back a string while typing and a number once the value
+							// parses. Normalising to string keeps precision the number never had.
+							onChange={(val) => field.onChange(val === '' ? undefined : String(val))}
+							onBlur={field.onBlur}
+							name={field.name}
+							ref={(e) => {
+								field.ref(e);
+								ref.current = e;
+							}}
+							disabled={modelLoading}
+							decimalScale={scale}
 							placeholder={fieldData.placeholder ? t(fieldData.placeholder) : undefined}
 							{...htmlProps}
 							{...(defaultInputProps as NumberInputProps)}
