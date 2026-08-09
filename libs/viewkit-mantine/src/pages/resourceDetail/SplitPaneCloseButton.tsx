@@ -4,7 +4,7 @@ import { IconX } from '@tabler/icons-react';
 import React from 'react';
 import { Link } from 'react-router';
 
-import { useResourceDetailTranslationNs } from './ResourceDetailProvider';
+import { useResourceDetailTestAttrs, useResourceDetailTranslationNs } from './ResourceDetailProvider';
 import { useIsSplitViewSecondary } from '../resourceSplitView/splitViewContext';
 
 
@@ -16,6 +16,7 @@ import { useIsSplitViewSecondary } from '../resourceSplitView/splitViewContext';
 export function SplitPaneCloseButton(): React.ReactNode {
 	const isSplitPane = useIsSplitViewSecondary();
 	const t = useTranslate(useResourceDetailTranslationNs());
+	const tid = useResourceDetailTestAttrs();
 
 	if (!isSplitPane) {
 		return null;
@@ -29,6 +30,7 @@ export function SplitPaneCloseButton(): React.ReactNode {
 			variant='subtle'
 			size='compact-md'
 			leftSection={<IconX size={16} />}
+			{...tid('closePane')}
 		>
 			{t('action.close')}
 		</Button>

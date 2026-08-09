@@ -56,6 +56,11 @@ export const resourceDetailPropsSchema = z.object({
 	 * during create there is no record id for a related-records table to filter by.
 	 */
 	childrenNodes: z.array(componentNodeSchema).optional(),
+	/**
+	 * `{module}.{component}` prefix for the `data-testid` of every element this page renders.
+	 * Derived from the route and schema name when omitted, so most pages need not set it.
+	 */
+	testId: z.string().min(1).optional(),
 }).strict();
 
 export type ResourceDetailProps = z.infer<typeof resourceDetailPropsSchema>;

@@ -9,3 +9,4 @@ export * from './object';
 export * from './string';
 export * from './number';
 export * from './build-columns-query';
+export * from './testAttributes';

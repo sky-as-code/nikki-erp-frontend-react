@@ -1,4 +1,4 @@
-import { CrudFormProvider, FormStyleProvider } from '@nikkierp/ui/components/form';
+import { CrudFormProvider, FormStyleProvider, FormTestIdProvider } from '@nikkierp/ui/components/form';
 import { useLocalize } from '@nikkierp/ui/i18n';
 import { ComponentAnchor, MetaComponent } from '@nikkierp/viewengine/render';
 import React from 'react';
@@ -31,7 +31,7 @@ export const resourceCreateFormRenderer: IComponentRenderer<ResourceCreateFormPr
 };
 
 function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): React.ReactNode {
-	const { schemaPack } = useResourceDetailContext();
+	const { schemaPack, testId } = useResourceDetailContext();
 	const { onSubmit, isSubmitting } = useResourceCreateContext();
 	const localize = useLocalize(useResourceDetailTranslationNs());
 	const modelSchema = schemaPack?.modelSchema;
@@ -42,15 +42,17 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 
 	return (
 		<FormStyleProvider layout='onecol'>
-			<CrudFormProvider
-				formVariant='create'
-				schemaName={modelSchema.name}
-				localize={localize}
-				isSubmitting={isSubmitting}
-				onSubmit={onSubmit}
-			>
-				<MetaComponent node={runtime.children} />
-			</CrudFormProvider>
+			<FormTestIdProvider testId={testId}>
+				<CrudFormProvider
+					formVariant='create'
+					schemaName={modelSchema.name}
+					localize={localize}
+					isSubmitting={isSubmitting}
+					onSubmit={onSubmit}
+				>
+					<MetaComponent node={runtime.children} />
+				</CrudFormProvider>
+			</FormTestIdProvider>
 		</FormStyleProvider>
 	);
 }

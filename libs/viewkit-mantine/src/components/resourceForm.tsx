@@ -1,5 +1,7 @@
 import { Alert } from '@mantine/core';
-import { CrudFormProvider, FormStyleProvider, useCrudFormRuntime } from '@nikkierp/ui/components/form';
+import {
+	CrudFormProvider, FormStyleProvider, FormTestIdProvider, useCrudFormRuntime,
+} from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor, MetaComponent } from '@nikkierp/viewengine/render';
 import { IconAlertCircle } from '@tabler/icons-react';
@@ -40,7 +42,7 @@ function ResourceForm({ props, runtime }: {
 	props: ResourceFormProps,
 	runtime: ComponentRenderRuntime,
 }): React.ReactNode {
-	const { schemaPack } = useResourceDetailContext();
+	const { schemaPack, testId } = useResourceDetailContext();
 	const { resource, isWriting, onSubmit } = useResourceUpdateContext();
 	const localize = useLocalize(useResourceDetailTranslationNs());
 	const [updateMode, setUpdateMode] = React.useState(false);
@@ -52,19 +54,21 @@ function ResourceForm({ props, runtime }: {
 
 	return (
 		<FormStyleProvider layout='onecol'>
-			<CrudFormProvider
-				formVariant={props.variant}
-				schemaName={modelSchema.name}
-				localize={localize}
-				modelValue={resource ?? null}
-				isSubmitting={isWriting}
-				onSubmit={onSubmit}
-			>
-				<ResourceFormViewProvider value={{ updateMode, setUpdateMode }}>
-					<ServerErrorAlert />
-					<MetaComponent node={runtime.children} />
-				</ResourceFormViewProvider>
-			</CrudFormProvider>
+			<FormTestIdProvider testId={testId}>
+				<CrudFormProvider
+					formVariant={props.variant}
+					schemaName={modelSchema.name}
+					localize={localize}
+					modelValue={resource ?? null}
+					isSubmitting={isWriting}
+					onSubmit={onSubmit}
+				>
+					<ResourceFormViewProvider value={{ updateMode, setUpdateMode }}>
+						<ServerErrorAlert />
+						<MetaComponent node={runtime.children} />
+					</ResourceFormViewProvider>
+				</CrudFormProvider>
+			</FormTestIdProvider>
 		</FormStyleProvider>
 	);
 }

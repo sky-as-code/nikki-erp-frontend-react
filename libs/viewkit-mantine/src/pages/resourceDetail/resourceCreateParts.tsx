@@ -11,7 +11,9 @@ import { Link } from 'react-router';
 import { hasVisibleField, isFieldVisible } from './fieldVisibility';
 import { useResourceCreateContext } from './resourceCreateContext';
 import classes from './ResourceDetail.module.css';
-import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
+import {
+	useResourceDetailContext, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
+} from './ResourceDetailProvider';
 import { SplitPaneCloseButton } from './SplitPaneCloseButton';
 
 import type { LinkSpec, OwnPropertySection, SchemaFieldSpec } from './props';
@@ -30,6 +32,7 @@ export function ResourceCreateHeader(headerProps: ResourceCreateHeaderProps = {}
 	const titleLvl3 = headerProps.titleLvl3 ?? context.titleLvl3;
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const localize = useLocalize(useResourceDetailTranslationNs());
+	const tid = useResourceDetailTestAttrs();
 	const modelSchema = schemaPack?.modelSchema;
 	const resourceName = localize(modelSchema?.label, { count: 99 });
 	const showTitleLvl3 = Boolean(titleLvl3 && modelSchema);
@@ -49,6 +52,7 @@ export function ResourceCreateHeader(headerProps: ResourceCreateHeaderProps = {}
 						relative='path'
 						size='md'
 						className='capitalize'
+						{...tid('breadcrumb')}
 					>
 						{resourceName}
 					</Anchor>
@@ -71,9 +75,13 @@ export function ResourceCreateActionBar({
 }: ResourceCreateActionBarProps): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const { commands } = useResourceCreateContext();
+	const tid = useResourceDetailTestAttrs();
 	return (
 		<Group gap='xs' align='center' className={clsx('sticky top-0 py-4', classes.bgBodyColor)}>
-			<ActionIcon variant='subtle' size='sm' onClick={onToggleCollapse} aria-label='Toggle own properties'>
+			<ActionIcon
+				variant='subtle' size='sm' onClick={onToggleCollapse} aria-label='Toggle own properties'
+				{...tid('toggleOwnProperties')}
+			>
 				{expanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
 			</ActionIcon>
 			<Button
@@ -85,6 +93,7 @@ export function ResourceCreateActionBar({
 				loading={isLoading}
 				type='submit'
 				{...commandAttrs(commands.create)}
+				{...tid('action', 'save')}
 			>
 				{t('action.save')}
 			</Button>

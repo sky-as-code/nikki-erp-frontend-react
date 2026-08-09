@@ -1,6 +1,7 @@
 import {
 	Anchor, Box, Button, Text, Menu, Image, Stack, Flex, Divider,
 } from '@mantine/core';
+import { testAttrs } from '@nikkierp/common/utils';
 import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { IconDots, IconStarFilled, IconAugmentedReality } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -8,6 +9,10 @@ import { FC, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import classes from './ModuleCard.module.css';
+
+
+/** Every card names itself by module slug, so several cards on the grid stay distinguishable. */
+const TEST_ID = 'shell.moduleCard';
 
 
 export const ModuleCard: FC<{ module: any }> = ({ module }) => {
@@ -26,6 +31,7 @@ export const ModuleCard: FC<{ module: any }> = ({ module }) => {
 					navigate(`/${orgSlug}/${module.slug}`);
 				}
 			}}
+			{...testAttrs(TEST_ID, module.slug)}
 		>
 			<Stack justify='start' align='center' gap={0} w='100%'>
 				<ModuleCardContent
@@ -63,7 +69,7 @@ const ModuleCardContent: FC<ModuleCardContentProps> = ({ module, isActionMenuOpe
 					/>
 				)}
 
-				<FavoriteButton />
+				<FavoriteButton moduleSlug={module.slug} />
 				<ModuleCardMenu
 					module={module}
 					isActionMenuOpen={isActionMenuOpen}
@@ -103,27 +109,34 @@ const ModuleCardMenu: FC<ModuleCardMenuProps> = ({ module, isActionMenuOpen, set
 						e.stopPropagation();
 						setIsActionMenuOpen(!isActionMenuOpen);
 					}}
+					{...testAttrs(TEST_ID, module?.slug, 'actionMenu')}
 				>
 					<IconDots size={16} />
 				</Button>
 			</Menu.Target>
 
 			<Menu.Dropdown onClick={(e) => e.stopPropagation()}>
-				<Menu.Item>Unfavorite</Menu.Item>
-				<Menu.Item>Disable</Menu.Item>
+				<Menu.Item {...testAttrs(TEST_ID, module?.slug, 'unfavorite')}>Unfavorite</Menu.Item>
+				<Menu.Item {...testAttrs(TEST_ID, module?.slug, 'disable')}>Disable</Menu.Item>
 				<Divider />
-				<Menu.Item component='a' href={`/${activeOrgSlug}/${module?.slug}`} target='_blank'>Open in new tab</Menu.Item>
+				<Menu.Item
+					component='a' href={`/${activeOrgSlug}/${module?.slug}`} target='_blank'
+					{...testAttrs(TEST_ID, module?.slug, 'openInNewTab')}
+				>
+					Open in new tab
+				</Menu.Item>
 			</Menu.Dropdown>
 		</Menu>
 	);
 };
 
-const FavoriteButton: FC = () => {
+const FavoriteButton: FC<{ moduleSlug?: string }> = ({ moduleSlug }) => {
 	return (
 		<Button
 			variant='transparent'
 			pos='absolute' top={1} left={1}
 			h={24} w={24} p={0}
+			{...testAttrs(TEST_ID, moduleSlug, 'favorite')}
 		>
 			<IconStarFilled size={18} color='var(--mantine-color-yellow-4)' />
 		</Button>

@@ -1,5 +1,12 @@
 import { MenuItem } from '@nikkierp/ui/menu';
 
+
+/**
+ * Test-id prefix shared by the horizontal, vertical and drawer menu bars. It lives here rather than
+ * in `MenuBar.tsx` because those files already import this module, and the reverse would be a cycle.
+ */
+export const MENU_BAR_TEST_ID = 'shell.menuBar';
+
 // Normalize a path (ensure it starts with /)
 export function normalizePath(path: string): string {
 	if (!path) return '/';

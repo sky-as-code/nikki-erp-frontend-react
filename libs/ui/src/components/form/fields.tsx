@@ -8,6 +8,7 @@ import { Controller, useWatch } from 'react-hook-form';
 
 import { DateTimeInputField, ReadOnlyTextField, TimeInputField } from './dateTimeFields';
 import { useFieldData, useFormField, useFormStyle } from './formContext';
+import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
 import { LangJsonField } from './LangJsonField';
 import { RelationSelectField } from './RelationSelectField';
 import { LocalizeFn, TranslateFn } from '../../i18n';
@@ -152,11 +153,21 @@ function renderIdentityOrTemporalField(args: IdentityOrTemporalArgs): React.Reac
 	}
 }
 
-function useDefaultInputProps(inputProps?: Partial<InputProps>): Partial<InputProps> {
+/**
+ * Every field variant funnels its Mantine props through here, which makes it the one place that
+ * has to name the input for tests. The id derives from the schema field name, so a field is
+ * addressable without any call site passing anything; `FormTestIdProvider` adds the
+ * `{module}.{component}` prefix that keeps two forms on one page apart.
+ *
+ * An explicit `data-testid` in `inputProps` still wins — it is spread after.
+ */
+function useDefaultInputProps(inputProps?: Partial<InputProps>, fieldName?: string): Partial<InputProps> {
+	const fieldAttrs = useFieldTestAttrs(fieldName);
 	return React.useMemo(() => ({
 		size: 'md' as const,
+		...fieldAttrs,
 		...inputProps,
-	}), [inputProps]);
+	}), [fieldAttrs, inputProps]);
 }
 
 function useAutoFocus(
@@ -191,7 +202,9 @@ function useAutoFocusById(
 function usePasswordToggle(
 	showPassword: boolean,
 	setShowPassword: React.Dispatch<React.SetStateAction<boolean>>,
+	fieldName: string,
 ): React.ReactNode {
+	const toggleAttrs = useFieldPartTestAttrs(fieldName, 'toggleVisibility');
 	const handleMouseDown = React.useCallback(() => {
 		setShowPassword(true);
 	}, [setShowPassword]);
@@ -223,10 +236,11 @@ function usePasswordToggle(
 			onMouseUp={handleMouseUp}
 			onKeyDown={handleKeyDown}
 			onKeyUp={handleKeyUp}
+			{...toggleAttrs}
 		>
 			{showPassword ? <IconEye size={20} /> : <IconEyeOff size={20} />}
 		</ActionIcon>
-	), [showPassword, handleMouseDown, handleMouseUp, handleKeyDown, handleKeyUp]);
+	), [showPassword, handleMouseDown, handleMouseUp, handleKeyDown, handleKeyUp, toggleAttrs]);
 
 	return actionIcon;
 }
@@ -322,7 +336,7 @@ export function TextInputField(props: TextInputFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps);
+	const defaultInputProps = useDefaultInputProps(inputProps, name);
 	useAutoFocus(autoFocused, ref, formVariant);
 
 	return (
@@ -375,10 +389,10 @@ export function PasswordInputField(props: PasswordInputFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps);
+	const defaultInputProps = useDefaultInputProps(inputProps, name);
 	useAutoFocus(autoFocused, ref, formVariant);
 
-	const actionIcon = usePasswordToggle(showPassword, setShowPassword);
+	const actionIcon = usePasswordToggle(showPassword, setShowPassword, name);
 
 	return (
 		<BaseFieldWrapper
@@ -432,7 +446,7 @@ export function NumberInputField(props: NumberInputFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
 	useAutoFocus(autoFocused, ref, formVariant);
 
 	return (
@@ -487,7 +501,7 @@ export function DateInputField(props: DateInputFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
 	useAutoFocusById(autoFocused, inputId, formVariant);
 
 	return (
@@ -548,7 +562,7 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
 	const enumValues = fieldData.fieldDef.data_type.options?.enumValues as string[];
 	const selectData = enumValues.map((val) => ({
 		value: val,
@@ -611,7 +625,7 @@ export type DynamicEnumSelectFieldProps = BaseInputProps<SelectProps>;
 // 	}
 
 // 	const defaultValue = modelValue?.[name];
-// 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
+// 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
 // 	useAutoFocusById(autoFocused, inputId, formVariant);
 
 // 	return (
@@ -664,6 +678,7 @@ export function BooleanField(props: BooleanFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading } = useFormField();
+	const fieldAttrs = useFieldTestAttrs(name);
 
 	if (!fieldData) {
 		return null;
@@ -689,6 +704,7 @@ export function BooleanField(props: BooleanFieldProps) {
 								onChange={(e) => field.onChange(e.currentTarget.checked)}
 								disabled={modelLoading || inputProps?.disabled}
 								size='md'
+								{...fieldAttrs}
 							/>
 						);
 					}}

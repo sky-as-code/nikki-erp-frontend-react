@@ -17,7 +17,9 @@ import { Link } from 'react-router';
 
 import { hasVisibleField, isFieldVisible } from './fieldVisibility';
 import classes from './ResourceDetail.module.css';
-import { useResourceDetailContext, useResourceDetailTranslationNs } from './ResourceDetailProvider';
+import {
+	useResourceDetailContext, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
+} from './ResourceDetailProvider';
 import { useResourceUpdateContext } from './resourceUpdateContext';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
 
@@ -29,6 +31,7 @@ import type {
 
 export function CreateActionButton({ disabled = false }: { disabled?: boolean }): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
+	const tid = useResourceDetailTestAttrs();
 	return (
 		<Button
 			component={Link}
@@ -38,6 +41,7 @@ export function CreateActionButton({ disabled = false }: { disabled?: boolean })
 			leftSection={<IconPlus size={16} />}
 			variant='outline'
 			size='compact-md'
+			{...tid('action', 'create')}
 		>
 			{t('action.create')}
 		</Button>
@@ -57,6 +61,7 @@ export function SectionActionBar({
 	expanded, onToggleCollapse, onSaveClick, isLoading, updateMode, setUpdateMode,
 }: SectionActionBarProps): React.ReactNode {
 	const { allStatuses, currentStatus, contextualActions, commands, resource } = useResourceUpdateContext();
+	const tid = useResourceDetailTestAttrs();
 	const curStatusField = currentStatus?.schemaField;
 	const status = curStatusField ? resource?.[curStatusField] : null;
 	const hasVisibleContextualActions = resource != null && hasMatchingExtraAction(contextualActions, resource);
@@ -70,6 +75,7 @@ export function SectionActionBar({
 					size='sm'
 					onClick={onToggleCollapse}
 					aria-label='Toggle own properties'
+					{...tid('toggleOwnProperties')}
 				>
 					{expanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
 				</ActionIcon>
@@ -115,6 +121,7 @@ function PrimaryActionButtons({
 	updateMode, setUpdateMode, updateCommand, onSaveClick, isLoading,
 }: PrimaryActionButtonsProps): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
+	const tid = useResourceDetailTestAttrs();
 	if (!updateCommand) {
 		return null;
 	}
@@ -127,6 +134,7 @@ function PrimaryActionButtons({
 					size='compact-md'
 					onClick={() => setUpdateMode(false)}
 					leftSection={<IconX size={16} />}
+					{...tid('action', 'cancel')}
 				>
 					{t('action.cancel')}
 				</Button>
@@ -139,6 +147,7 @@ function PrimaryActionButtons({
 					loading={isLoading}
 					type='submit'
 					{...commandAttrs(updateCommand)}
+					{...tid('action', 'save')}
 				>
 					{t('action.save')}
 				</Button>
@@ -153,6 +162,7 @@ function PrimaryActionButtons({
 			leftSection={<IconPencil size={16} />}
 			variant='filled'
 			size='compact-md'
+			{...tid('action', 'update')}
 		>
 			{t('action.update')}
 		</Button>
@@ -173,6 +183,7 @@ function ResourceDetailExtraActionButtons({
 	return Object.entries(contextualActions).map(([actionKey, action]) => (
 		<ResourceDetailExtraActionButton
 			key={actionKey}
+			actionKey={actionKey}
 			action={action}
 			resource={resource}
 			disabled={disabled}
@@ -181,13 +192,16 @@ function ResourceDetailExtraActionButtons({
 }
 
 function ResourceDetailExtraActionButton({
-	action, resource, disabled = false,
+	actionKey, action, resource, disabled = false,
 }: {
+	/** The page-authored name of this action in `contextualActions`; stable, so it names the button. */
+	actionKey: string,
 	action: ResourceDetailExtraAction,
 	resource: Record<string, unknown>,
 	disabled?: boolean,
 }): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
+	const tid = useResourceDetailTestAttrs();
 	const command = useCommand(action.command);
 	const isVisible = !action.condition || evaluateCondition(action.condition, resource);
 	if (!isVisible) {
@@ -209,6 +223,7 @@ function ResourceDetailExtraActionButton({
 			loading={command.isPending}
 			onClick={onClick}
 			{...commandAttrs(action.command)}
+			{...tid('action', actionKey)}
 		>
 			{t(action.label)}
 		</Button>
@@ -245,6 +260,7 @@ function ResourceDetailOverflowMenu({
 }): React.ReactNode {
 	const { commands, refresh } = useResourceUpdateContext();
 	const t = useTranslate(useResourceDetailTranslationNs());
+	const tid = useResourceDetailTestAttrs();
 	const deleteCmd = useCommand(commands.delete ?? '');
 	const archiveCmd = useCommand(commands.archive ?? '');
 	const isBusy = disabled || deleteCmd.isPending || archiveCmd.isPending;
@@ -270,7 +286,10 @@ function ResourceDetailOverflowMenu({
 	return (
 		<Menu shadow='md' position='bottom-end'>
 			<Menu.Target>
-				<Button variant='outline' size='compact-md' aria-label='More actions' disabled={isBusy}>
+				<Button
+					variant='outline' size='compact-md' aria-label='More actions' disabled={isBusy}
+					{...tid('actionMenu')}
+				>
 					<IconDots size={16} />
 				</Button>
 			</Menu.Target>
@@ -281,18 +300,21 @@ function ResourceDetailOverflowMenu({
 						disabled={isBusy}
 						onClick={onDelete}
 						{...commandAttrs(commands.delete)}
+						{...tid('action', 'delete')}
 					>
 						{t('action.delete')}
 					</Menu.Item>
 				) : null}
 				{commands.delete && commands.archive ? <Menu.Divider /> : null}
-				{/* Archive and unarchive publish the same command and differ only by payload. */}
+				{/* Archive and unarchive publish the same command and differ only by payload, so the
+					test ids name the intent rather than deriving from the shared command name. */}
 				{commands.archive && showArchive ? (
 					<Menu.Item
 						leftSection={<IconArchive size={16} />}
 						disabled={isBusy}
 						onClick={() => onSetArchived(true)}
 						{...commandAttrs(commands.archive)}
+						{...tid('action', 'archive')}
 					>
 						{t('action.archive')}
 					</Menu.Item>
@@ -303,6 +325,7 @@ function ResourceDetailOverflowMenu({
 						disabled={isBusy}
 						onClick={() => onSetArchived(false)}
 						{...commandAttrs(commands.archive)}
+						{...tid('action', 'unarchive')}
 					>
 						{t('action.unarchive')}
 					</Menu.Item>

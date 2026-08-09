@@ -1,4 +1,5 @@
 import { Collapse, Group, Stack, Title, UnstyledButton } from '@mantine/core';
+import { testAttrs } from '@nikkierp/common/utils';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
@@ -43,6 +44,7 @@ function CollapsibleSection({ props, runtime }: {
 					collapsible={props.collapsible}
 					expanded={expanded}
 					onToggle={() => setExpanded(prev => !prev)}
+					testId={props.testId}
 				/>
 			) : null}
 			{props.collapsible ? (
@@ -60,12 +62,13 @@ function CollapsibleSection({ props, runtime }: {
 	);
 }
 
-function SectionHeader({ header, translationNs, collapsible, expanded, onToggle }: {
+function SectionHeader({ header, translationNs, collapsible, expanded, onToggle, testId }: {
 	header: string,
 	translationNs: string,
 	collapsible: boolean,
 	expanded: boolean,
 	onToggle: () => void,
+	testId?: string,
 }): React.ReactNode {
 	// The schema guarantees a namespace wherever a header exists, so this never resolves blank.
 	const t = useTranslate(translationNs);
@@ -78,7 +81,10 @@ function SectionHeader({ header, translationNs, collapsible, expanded, onToggle 
 	}
 
 	return (
-		<UnstyledButton className={classes.collapsibleHeader} onClick={onToggle} aria-expanded={expanded}>
+		<UnstyledButton
+			className={classes.collapsibleHeader} onClick={onToggle} aria-expanded={expanded}
+			{...testAttrs(testId ?? 'ui.collapsibleSection', header, 'toggle')}
+		>
 			<Group gap='xs'>
 				{expanded ? <IconChevronDown size={18} /> : <IconChevronRight size={18} />}
 				<Title order={4}>{t(header)}</Title>

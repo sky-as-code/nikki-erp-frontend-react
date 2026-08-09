@@ -15,6 +15,11 @@ const baseSchema = z.object({
 	expanded: z.boolean().default(true),
 	transitionDuration: z.number().default(500),
 	transitionTimingFunction: z.string().default('ease-in-out'),
+	/**
+	 * `{module}.{component}` prefix for the collapse toggle's `data-testid`. The `header` key is
+	 * appended, so several sections on one page stay distinct without setting this.
+	 */
+	testId: z.string().min(1).optional(),
 }).strict();
 
 /**

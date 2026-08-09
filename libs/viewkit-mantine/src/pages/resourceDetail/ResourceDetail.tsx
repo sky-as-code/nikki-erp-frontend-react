@@ -1,4 +1,5 @@
 import { useDynamicModel } from '@nikkierp/ui/hookhoc';
+import { usePageContext } from '@nikkierp/viewengine/render';
 import React from 'react';
 import { useParams } from 'react-router';
 
@@ -6,6 +7,7 @@ import { ResourceCreate } from './ResourceCreate';
 import { ResourceDetailProvider } from './ResourceDetailProvider';
 import { ResourceUpdate } from './ResourceUpdate';
 import { PageContainer } from '../../components/PageContainer';
+import { resourceTestIdPrefix } from '../../testIds';
 
 import type { ResourceDetailProps } from './props';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -30,6 +32,12 @@ function ResourceDetailView({ params, childrenNodes }: ResourceDetailViewProps):
 	const createMode = id === 'new';
 	const commands = params.standardActionCommands;
 	const nodes = childrenNodes ?? params.childrenNodes;
+	const testId = resourceTestIdPrefix({
+		testId: params.testId,
+		routePath: usePageContext()?.routePath,
+		schemaName: params.schemaName,
+		part: createMode ? 'Create' : 'Detail',
+	});
 
 	return (
 		<ResourceDetailProvider
@@ -37,6 +45,7 @@ function ResourceDetailView({ params, childrenNodes }: ResourceDetailViewProps):
 			schemaPack={pack}
 			isReading={false}
 			isWriting={false}
+			testId={testId}
 		>
 			<PageContainer>
 				{createMode ? (

@@ -18,9 +18,11 @@ import {
 import classes from './DataTable.module.css';
 import { SearchBox } from './SearchBox';
 import { SettingsTable } from './SettingsTable';
+import { dataTableTestIds, rowTestIdOf } from './testIds';
 import { ThunkPackHookReturn } from '../../appState';
 import { TranslateFn, useTranslate } from '../../i18n';
 
+import type { DataTableTestIds, RowId } from './testIds';
 import type { FieldRendererMap, IFieldRenderer } from '@nikkierp/viewengine/core';
 
 
@@ -38,6 +40,8 @@ export type DataTableAction = {
 	/** Invoked on click with the currently selected row items. Preferred over `actionHook`. */
 	onTrigger?: (selectedItems: Record<string, unknown>[]) => void,
 	href?: string,
+	/** Last segment of this action's `data-testid`. Defaults to `command`, then `label`. */
+	testId?: string,
 };
 
 export type { FieldRendererMap, IFieldRenderer } from '@nikkierp/viewengine/core';
@@ -92,6 +96,8 @@ export type DataTableProps = {
 	sortableFields?: string[],
 	translationNs?: string,
 	translateFieldName?: (field: string) => string,
+	/** `{module}.{component}` prefix for the `data-testid` of every element this table renders. */
+	testId?: string,
 };
 
 type RequiredDataTableProps = Omit<
@@ -125,6 +131,7 @@ type DataTableContextValue = {
 	onCloseViewSettings: () => void,
 	searchRequest: dyn.RestSearchRequest,
 	setSearchRequest: React.Dispatch<React.SetStateAction<dyn.RestSearchRequest>>,
+	tid: DataTableTestIds,
 };
 
 const DataTableContext = React.createContext<DataTableContextValue | null>(null);
@@ -158,6 +165,7 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 		containerRef,
 	});
 	const tableStyle: React.CSSProperties = { width: '100%', tableLayout: 'fixed' };
+	const tid = useDataTableTestIds(settings.testId, settings.tableName);
 
 	React.useEffect(() => {
 		setSearchRequest(prev => {
@@ -190,6 +198,7 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 		onCloseViewSettings: () => setIsViewSettingsOpen(false),
 		searchRequest,
 		setSearchRequest,
+		tid,
 	}), [
 		settings,
 		tableSearchData,
@@ -202,6 +211,7 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 		tableStyle,
 		isViewSettingsOpen,
 		searchRequest,
+		tid,
 	]);
 
 	return (
@@ -209,6 +219,10 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 			<DataTableLayout />
 		</DataTableContext.Provider>
 	);
+}
+
+function useDataTableTestIds(testId: string | undefined, tableName: string): DataTableTestIds {
+	return React.useMemo(() => dataTableTestIds(testId, tableName), [testId, tableName]);
 }
 
 function DataTableLayout(): React.ReactNode {
@@ -344,6 +358,7 @@ function DataTableControls(props: DataTableControlsProps): React.ReactNode {
 					sortableFields={context.settings.sortableFields ?? context.tableSearchData.desired_fields}
 					orderBy={activeOrderBy}
 					onApplyOrderBy={onApplyOrderBy}
+					testId={context.tid.prefix}
 				/>
 			) : null}
 			<Pagination />
@@ -403,7 +418,12 @@ function Toolbar(props: ToolbarProps): React.ReactNode {
 		<Group gap='xs' className='flex-grow-0'>
 			{titleNode}
 			{isRowMode ? (
-				<Button variant='light' onClick={onClearSelection} rightSection={<IconX size={14} />}>
+				<Button
+					variant='light'
+					onClick={onClearSelection}
+					rightSection={<IconX size={14} />}
+					{...context.tid.selectedCount()}
+				>
 					{selectedCount} selected
 				</Button>
 			) : null}
@@ -442,6 +462,7 @@ function Pagination(): React.ReactNode {
 				}}
 				size='sm' w={50} classNames={{ input: 'text-center' }}
 				type='number'
+				{...context.tid.pageInput()}
 			/>
 			<span>of {totalPages}</span>
 			<ButtonGroup>
@@ -451,6 +472,7 @@ function Pagination(): React.ReactNode {
 					onClick={paginationState.onGoPrev}
 					disabled={searchData.page <= 0}
 					aria-label='Go to previous page'
+					{...context.tid.pagePrev()}
 				>
 					<IconChevronLeft />
 				</Button>
@@ -460,11 +482,17 @@ function Pagination(): React.ReactNode {
 					onClick={paginationState.onGoNext}
 					disabled={searchData.page >= totalPages - 1}
 					aria-label='Go to next page'
+					{...context.tid.pageNext()}
 				>
 					<IconChevronRight />
 				</Button>
 			</ButtonGroup>
-			<Button variant='outline' size='compact-md' onClick={context.onOpenViewSettings}>
+			<Button
+				variant='outline'
+				size='compact-md'
+				onClick={context.onOpenViewSettings}
+				{...context.tid.settingsOpen()}
+			>
 				<IconSettings />
 			</Button>
 		</Group>
@@ -842,6 +870,7 @@ type RowNumberOverlayButtonProps = {
 	children: React.ReactNode,
 	onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => void,
 	'aria-label'?: string,
+	'data-testid'?: string,
 };
 
 function RowNumberOverlayButton(props: RowNumberOverlayButtonProps): React.ReactNode {
@@ -862,6 +891,7 @@ function RowNumberOverlayButton(props: RowNumberOverlayButtonProps): React.React
 			onMouseDown={props.onMouseDown}
 			onKeyDown={handleKeyDown}
 			aria-label={props['aria-label']}
+			data-testid={props['data-testid']}
 		>
 			{props.children}
 		</button>
@@ -875,6 +905,7 @@ type RowNumberHeaderProps = {
 
 function RowNumberHeader(props: RowNumberHeaderProps): React.ReactNode {
 	const columnWidth = rowNumberColumnWidth;
+	const { tid } = useDataTableContext();
 	return (
 		<Table.Th
 			className='p-0 text-center align-middle relative'
@@ -883,6 +914,7 @@ function RowNumberHeader(props: RowNumberHeaderProps): React.ReactNode {
 			<RowNumberOverlayButton
 				onMouseDown={() => props.onToggle()}
 				aria-label={props.isRowMode ? 'Deselect all rows' : 'Select all rows'}
+				{...tid.selectAll()}
 			>
 				{props.isRowMode ? <IconX size={14} /> : <IconHash size={14} />}
 			</RowNumberOverlayButton>
@@ -919,8 +951,13 @@ type ColumnHeaderProps = {
 };
 
 function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
+	const { tid } = useDataTableContext();
 	return (
-		<Table.Th style={getColumnStyle(props.width)} className={classes.resizeableHeader}>
+		<Table.Th
+			style={getColumnStyle(props.width)}
+			className={classes.resizeableHeader}
+			{...tid.sort(props.field)}
+		>
 			<Group justify='space-between' gap={1} className='overflow-hidden text-ellipsis whitespace-nowrap'>
 				{/* <div className='overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1' title={props.field}> */}
 				<span className='overflow-hidden text-ellipsis whitespace-nowrap'>{props.translateFieldName(props.field)}</span>
@@ -981,6 +1018,7 @@ function DataTableHead(): React.ReactNode {
 
 type RowNumberCellProps = {
 	rowIndex: number,
+	rowId: RowId,
 	rowNumber: number,
 	isSelected: boolean,
 	onMouseDown: (
@@ -992,6 +1030,7 @@ type RowNumberCellProps = {
 
 function RowNumberCell(props: RowNumberCellProps): React.ReactNode {
 	const columnWidth = rowNumberColumnWidth;
+	const { tid } = useDataTableContext();
 	return (
 		<Table.Td
 			p={0}
@@ -1005,7 +1044,10 @@ function RowNumberCell(props: RowNumberCellProps): React.ReactNode {
 			)}
 			style={getColumnStyle(columnWidth)}
 		>
-			<RowNumberOverlayButton onMouseDown={(e) => props.onMouseDown(e, props.rowIndex)}>
+			<RowNumberOverlayButton
+				onMouseDown={(e) => props.onMouseDown(e, props.rowIndex)}
+				{...tid.rowSelect(props.rowId)}
+			>
 				{props.rowNumber}
 			</RowNumberOverlayButton>
 		</Table.Td>
@@ -1022,6 +1064,8 @@ type DataCellProps = {
 	isSelected: boolean,
 	onMouseDown: (e: React.MouseEvent<HTMLTableCellElement>, rowIndex: number) => void,
 	rowIndex: number,
+	rowId: RowId,
+	field: string,
 };
 
 function DataCell(props: DataCellProps): React.ReactNode {
@@ -1047,6 +1091,7 @@ function DataCell(props: DataCellProps): React.ReactNode {
 				[classes.selectedCell]: props.isSelected,
 				'cursor-move': context.settings.allowRowMovement,
 			})}
+			{...context.tid.rowCell(props.rowId, props.field)}
 		>
 			{props.linkHref ? (
 				<Anchor
@@ -1077,6 +1122,7 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 	const rowMove = context.rowMove;
 	const rowLink = context.settings.buildLinkHref?.(item);
 	const rowNumber = getRowNumber(searchData.page, searchData.size, props.rowIndex);
+	const rowId = rowTestIdOf(item, rowIndex);
 	const showDropIndicator = rowMove.state.draggingIndex !== null && rowMove.state.dropIndex === rowIndex;
 	const onDragOver = (event: React.DragEvent<HTMLTableRowElement>) => {
 		if (!context.settings.allowRowMovement) {
@@ -1093,9 +1139,10 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 			onDrop={() => rowMove.drop(rowIndex)}
 			onDragEnd={rowMove.cancel}
 			className={clsx({ [classes.rowDropIndicator]: showDropIndicator })}
+			{...context.tid.row(rowId)}
 		>
 			<RowNumberCell
-				rowIndex={rowIndex} rowNumber={rowNumber} isSelected={isRowSelected}
+				rowIndex={rowIndex} rowId={rowId} rowNumber={rowNumber} isSelected={isRowSelected}
 				onMouseDown={context.handlers.onRowMouseDown}
 				onMouseEnter={context.handlers.onRowMouseEnter}
 			/>
@@ -1103,6 +1150,8 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 				<DataCell
 					key={field}
 					rowIndex={rowIndex}
+					rowId={rowId}
+					field={field}
 					width={getColumnWidth(field, widths)}
 					value={getCellText(item, field, searchData.masked_fields)}
 					rawValue={item[field]}
@@ -1158,6 +1207,7 @@ function TableSettingsPanel(props: {
 	onGridModeChange: (value: string) => void,
 }): React.ReactNode {
 	const t = useTranslate('common');
+	const { tid } = useDataTableContext();
 	return (
 		<Stack gap='md'>
 			<Stack gap='xs'>
@@ -1171,14 +1221,15 @@ function TableSettingsPanel(props: {
 						}
 					}}
 					value={props.draftPageSize}
+					{...tid.settingsPageSize()}
 				/>
 			</Stack>
 			<Stack gap='xs'>
 				<Text size='sm' fw={500}>{t('datatable.viewMode')}</Text>
 				<Radio.Group onChange={props.onGridModeChange} value={props.gridMode}>
 					<Stack gap='xs'>
-						<Radio value='list' label={t('datatable.list')} />
-						<Radio value='grid' label={t('datatable.grid')} />
+						<Radio value='list' label={t('datatable.list')} {...tid.settingsViewMode('list')} />
+						<Radio value='grid' label={t('datatable.grid')} {...tid.settingsViewMode('grid')} />
 					</Stack>
 				</Radio.Group>
 			</Stack>
@@ -1207,6 +1258,7 @@ type ViewSettingsModalViewProps = {
 
 function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNode {
 	const t = useTranslate('common');
+	const { tid } = useDataTableContext();
 
 	const modalStyles = {
 		body: { width: '400px' },
@@ -1223,14 +1275,19 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 			<Stack h='100%'>
 				<Tabs onChange={props.onActiveTabChange} style={{ flex: 1, overflow: 'auto' }} value={props.activeTab}>
 					<Tabs.List>
-						<Tabs.Tab value='fields-settings' className='capitalize'>{t('datatable.fields')}</Tabs.Tab>
-						<Tabs.Tab value='table-settings' className='capitalize'>{t('datatable.view')}</Tabs.Tab>
+						<Tabs.Tab value='fields-settings' className='capitalize' {...tid.settingsTab('fields')}>
+							{t('datatable.fields')}
+						</Tabs.Tab>
+						<Tabs.Tab value='table-settings' className='capitalize' {...tid.settingsTab('view')}>
+							{t('datatable.view')}
+						</Tabs.Tab>
 					</Tabs.List>
 					<Tabs.Panel pt='sm' value='fields-settings'>
 						<TextInput
 							onChange={event => props.onFieldSearchChange(event.currentTarget.value)}
 							placeholder={t('datatable.fieldFilterPlaceholder')}
 							value={props.fieldSearch}
+							{...tid.settingsFieldSearch()}
 						/>
 						<FieldsSettingsTable
 							fields={props.filteredFields}
@@ -1251,8 +1308,10 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 				</Tabs>
 				<Box className='border-t border-gray-300 mt-auto pt-3'>
 					<Group justify='flex-end'>
-						<Button onClick={props.onClose} variant='default'>{t('action.cancel')}</Button>
-						<Button onClick={props.onApply}>{t('action.apply')}</Button>
+						<Button onClick={props.onClose} variant='default' {...tid.settingsCancel()}>
+							{t('action.cancel')}
+						</Button>
+						<Button onClick={props.onApply} {...tid.settingsApply()}>{t('action.apply')}</Button>
 					</Group>
 				</Box>
 			</Stack>
@@ -1473,6 +1532,7 @@ type ActionTriggerProps = {
 };
 
 function ActionButton({ action, selectedItems }: ActionTriggerProps): React.ReactNode {
+	const { tid } = useDataTableContext();
 	if (action.href) {
 		return (
 			<Button
@@ -1483,6 +1543,7 @@ function ActionButton({ action, selectedItems }: ActionTriggerProps): React.Reac
 				size='compact-md'
 				leftSection={action.icon}
 				{...commandAttrs(action.command)}
+				{...tid.action(action)}
 			>
 				{action.label}
 			</Button>
@@ -1495,6 +1556,7 @@ function ActionButton({ action, selectedItems }: ActionTriggerProps): React.Reac
 			leftSection={action.icon}
 			onClick={() => action.onTrigger?.(selectedItems)}
 			{...commandAttrs(action.command)}
+			{...tid.action(action)}
 		>
 			{action.label}
 		</Button>
@@ -1504,10 +1566,11 @@ function ActionButton({ action, selectedItems }: ActionTriggerProps): React.Reac
 function ActionMenu(
 	{ items, selectedItems }: { items: DataTableAction[], selectedItems: Record<string, unknown>[] },
 ): React.ReactNode {
+	const { tid } = useDataTableContext();
 	return (
 		<Menu shadow='md' position='bottom-end'>
 			<Menu.Target>
-				<Button variant='outline' size='compact-md' aria-label='More actions'>
+				<Button variant='outline' size='compact-md' aria-label='More actions' {...tid.actionMenu()}>
 					<IconDots size={16} />
 				</Button>
 			</Menu.Target>
@@ -1520,6 +1583,7 @@ function ActionMenu(
 							leftSection={item.icon}
 							onClick={() => item.onTrigger?.(selectedItems)}
 							{...commandAttrs(item.command)}
+							{...tid.action(item)}
 						>
 							{item.label}
 						</Menu.Item>

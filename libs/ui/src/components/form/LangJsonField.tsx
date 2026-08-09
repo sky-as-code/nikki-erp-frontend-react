@@ -6,6 +6,7 @@ import { Controller } from 'react-hook-form';
 
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
+import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
 import { LocalizeFn, useI18n } from '../../i18n';
 import { MultiLangInputModal, propagateCurrentLangToEmpty } from '../MultiLangInputModal';
 
@@ -34,6 +35,8 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 	const i18n = useI18n();
 	const supportedLngs = useSupportedLngs(i18n);
 	const [modalOpened, setModalOpened] = React.useState(false);
+	const fieldAttrs = useFieldTestAttrs(name);
+	const translateAttrs = useFieldPartTestAttrs(name, 'translate');
 
 	if (!fieldData) {
 		return null;
@@ -50,6 +53,7 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 			disabled={isDisabled}
 			onClick={() => setModalOpened(true)}
 			aria-label='Translate field'
+			{...translateAttrs}
 		>
 			{currentLangShort}
 		</ActionIcon>
@@ -86,6 +90,7 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 								rightSection={langButton}
 								withAria={false}
 								size='md'
+								{...fieldAttrs}
 								{...inputProps}
 							/>
 						</BaseFieldWrapper>

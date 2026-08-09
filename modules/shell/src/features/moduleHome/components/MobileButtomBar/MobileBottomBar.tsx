@@ -1,7 +1,11 @@
 import { Box, Button, Flex, Input, TextInput } from '@mantine/core';
+import { testAttrs } from '@nikkierp/common/utils';
 import { IconAdjustmentsAlt, IconSearch } from '@tabler/icons-react';
 
 import classes from './MobileBottomBar.module.css';
+
+
+const TEST_ID = 'shell.mobileBottomBar';
 
 
 type MobileBottomBarProps = {
@@ -24,6 +28,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
 				h={36} w={40} p={0}
 				style={{ flexShrink: 0 }}
 				onClick={onFilterClick}
+				{...testAttrs(TEST_ID, 'openFilters')}
 			>
 				<IconAdjustmentsAlt stroke={1.5} size={24} />
 			</Button>
@@ -39,9 +44,10 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
 					className={classes.mobileSearchInput}
 					rightSection={
 						searchInputValue !== '' ? (
-							<Input.ClearButton onClick={onSearchClear} />
+							<Input.ClearButton onClick={onSearchClear} {...testAttrs(TEST_ID, 'searchClear')} />
 						) : undefined
 					}
+					{...testAttrs(TEST_ID, 'search')}
 				/>
 			</Box>
 		</Flex>

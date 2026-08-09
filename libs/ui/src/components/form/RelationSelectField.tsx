@@ -6,6 +6,7 @@ import { Controller, useWatch } from 'react-hook-form';
 
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
+import { useFieldTestAttrs } from './formTestIds';
 import { useCommand } from '../../hookhoc/useCommand';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 
@@ -51,6 +52,7 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 	const { control, modelLoading } = useFormField();
 	const [term, setTerm] = React.useState('');
 	const options = useRelationOptions(name, term, localize);
+	const fieldAttrs = useFieldTestAttrs(name);
 
 	if (!fieldData) {
 		return null;
@@ -89,6 +91,7 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 						searchable
 						clearable
 						size='md'
+						{...fieldAttrs}
 						{...props.inputProps}
 						// After the spread: the caller's `disabled` reflects only whether the form
 						// is busy, and must not re-enable a field the exclusive group has closed.
