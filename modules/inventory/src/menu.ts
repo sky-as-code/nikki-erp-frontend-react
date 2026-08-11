@@ -4,12 +4,19 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
 /** Keys live in the `inventory` namespace, alongside the module's other labels. */
 const ITEMS: MenuItem[] = [
 	{ labelKey: 'menu_overview', link: '/overview' },
+	{ labelKey: 'menu_products', link: '/products' },
+	{ labelKey: 'menu_variants', link: '/product-variants' },
+	// Not under Configuration: prices are revised continually, unlike the master data below.
+	{ labelKey: 'menu_prices', link: '/product-prices' },
 	{
-		labelKey: 'menu_product',
+		// Master data a product references. Grouped because these are configured once and then
+		// mostly read, unlike the products themselves.
+		labelKey: 'menu_configuration',
 		items: [
-			{ labelKey: 'menu_products', link: '/products' },
+			{ labelKey: 'menu_productTypes', link: '/product-types' },
 			{ labelKey: 'menu_productCategories', link: '/product-categories' },
-			{ labelKey: 'menu_variants', link: '/product-variants' },
+			{ labelKey: 'menu_brands', link: '/brands' },
+			{ labelKey: 'menu_attributes', link: '/attributes' },
 		],
 	},
 	// Units of measure are configured in the Essential module (BR-UOM-ESS-022,
