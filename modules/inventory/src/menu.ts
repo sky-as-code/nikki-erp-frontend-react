@@ -18,7 +18,7 @@ const ITEMS: MenuItem[] = [
 		// rather than as siblings of everything else.
 		labelKey: 'menu_products',
 		items: [
-			{ labelKey: 'menu_productTemplates', link: '/products' },
+			{ labelKey: 'menu_productTemplates', link: '/product_templates' },
 			{ labelKey: 'menu_productVariants', link: '/product_variants' },
 		],
 	},

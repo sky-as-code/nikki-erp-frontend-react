@@ -20,7 +20,7 @@ export function buildProductTemplatePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'products',
+		routePath: 'product_templates',
 		template: splitView.template,
 		props: splitView.props,
 	})];

@@ -75,7 +75,7 @@ function buildBrandProductsSection(): ComponentNode[] {
 			searchCommand: ProductTemplateCommands.SEARCH,
 			filterGraph: { if: ['brand_id', '=', '${id}'] },
 			linkField: 'id',
-			linkRoutePath: 'products',
+			linkRoutePath: 'product_templates',
 		})],
 	)];
 }

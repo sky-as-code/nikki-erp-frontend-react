@@ -63,7 +63,7 @@ describe('Inventory page metadata', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
 
 		expect(routePaths).toEqual([
-			'products', 'product_variants', 'product_types', 'product_categories',
+			'product_templates', 'product_variants', 'product_types', 'product_categories',
 			'brands', 'attributes', 'attribute_values', 'product_prices',
 			'stock_locations', 'stock_balance', 'stock_transfers',
 		]);

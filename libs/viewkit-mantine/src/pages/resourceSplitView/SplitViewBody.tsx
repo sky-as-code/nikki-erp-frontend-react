@@ -23,12 +23,17 @@ export function SplitViewBody({ primary, secondary }: SplitViewBodyProps): React
 	const isPrimaryOpen = isStartFromList || isFirstPage;
 	const isSecondaryOpen = isSecondaryPage;
 
+	const secondaryState = React.useMemo(
+		() => ({ isSecondary: true, isPrimaryOpen: !!isPrimaryOpen }),
+		[isPrimaryOpen],
+	);
+
 	const renderPrimary = React.useCallback(() => isPrimaryOpen && primary, [isPrimaryOpen, primary]);
 	const renderSecondary = React.useCallback(() => isSecondaryOpen && (
-		<SplitViewSecondaryContext.Provider value={true}>
+		<SplitViewSecondaryContext.Provider value={secondaryState}>
 			{secondary}
 		</SplitViewSecondaryContext.Provider>
-	), [isSecondaryOpen, secondary]);
+	), [isSecondaryOpen, secondary, secondaryState]);
 
 	React.useEffect(() => {
 		if (isStartFromList === null || !isSecondaryPage) {

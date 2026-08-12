@@ -5,20 +5,20 @@ import React from 'react';
 import { Link } from 'react-router';
 
 import { useResourceDetailTestAttrs, useResourceDetailTranslationNs } from './ResourceDetailProvider';
-import { useIsSplitViewSecondary } from '../resourceSplitView/splitViewContext';
+import { useCanClosePane } from '../resourceSplitView/splitViewContext';
 
 
 /**
  * Closes the detail pane by dropping the `:id` segment, which puts the split view
- * back into its list-only state. Renders nothing on a standalone detail page,
- * where there is no pane to close.
+ * back into its list-only state. Renders nothing on a standalone detail page or
+ * while the pane is fullscreen, where there is no list beside it to return to.
  */
 export function SplitPaneCloseButton(): React.ReactNode {
-	const isSplitPane = useIsSplitViewSecondary();
+	const canClose = useCanClosePane();
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const tid = useResourceDetailTestAttrs();
 
-	if (!isSplitPane) {
+	if (!canClose) {
 		return null;
 	}
 
