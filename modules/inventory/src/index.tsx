@@ -14,6 +14,12 @@ import { registerProductTemplateCommands } from './features/productTemplate/comm
 import { registerProductTemplateAttributeCommands } from './features/productTemplateAttribute/commands';
 import { registerProductTypeCommands } from './features/productType/commands';
 import { registerProductVariantCommands } from './features/productVariant/commands';
+import { registerStockLocationCommands } from './features/stockLocation/commands';
+import { registerStockMoveCommands } from './features/stockMove/commands';
+import { registerStockMoveLineCommands } from './features/stockMoveLine/commands';
+import { registerStockOperationTypeCommands } from './features/stockOperationType/commands';
+import { registerStockQuantCommands } from './features/stockQuant/commands';
+import { registerStockTransferCommands } from './features/stockTransfer/commands';
 import { buildInventoryMenu } from './menu';
 import { buildBrandPages } from './pages/brand';
 import { buildProductAttributePages } from './pages/productAttribute';
@@ -23,6 +29,9 @@ import { buildProductPricePages } from './pages/productPrice';
 import { buildProductTemplatePages } from './pages/productTemplate';
 import { buildProductTypePages } from './pages/productType';
 import { buildProductVariantPages } from './pages/productVariant';
+import { buildStockLocationPages } from './pages/stockLocation';
+import { buildStockQuantPages } from './pages/stockQuant';
+import { buildStockTransferPages } from './pages/stockTransfer';
 
 
 function Main(props: MicroAppProps) {
@@ -54,6 +63,12 @@ const bundle: MicroAppBundle = {
 		registerProductTemplateAttributeCommands(host.commandBus);
 		registerProductVariantCommands(host.commandBus);
 		registerProductPriceCommands(host.commandBus);
+		registerStockLocationCommands(host.commandBus);
+		registerStockOperationTypeCommands(host.commandBus);
+		registerStockQuantCommands(host.commandBus);
+		registerStockTransferCommands(host.commandBus);
+		registerStockMoveCommands(host.commandBus);
+		registerStockMoveLineCommands(host.commandBus);
 
 		return {
 			domType,
@@ -73,6 +88,9 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildProductAttributePages(),
 		...buildProductAttributeValuePages(),
 		...buildProductPricePages(),
+		...buildStockLocationPages(),
+		...buildStockQuantPages(),
+		...buildStockTransferPages(),
 	], []);
 
 	return (
@@ -119,5 +137,27 @@ function registerModelSchemas(): void {
 	}, {
 		schemaName: c.PRODUCT_PRICE_SCHEMA_NAME,
 		resourcePath: c.PRODUCT_PRICE_RESOURCE_PATH,
+	}, {
+		schemaName: c.STOCK_LOCATION_SCHEMA_NAME,
+		resourcePath: c.STOCK_LOCATION_RESOURCE_PATH,
+	}, {
+		// No page of its own yet, but registered so that a relation select pointing at an
+		// operation type can already resolve it.
+		schemaName: c.STOCK_OPERATION_TYPE_SCHEMA_NAME,
+		resourcePath: c.STOCK_OPERATION_TYPE_RESOURCE_PATH,
+	}, {
+		schemaName: c.STOCK_QUANT_SCHEMA_NAME,
+		resourcePath: c.STOCK_QUANT_RESOURCE_PATH,
+	}, {
+		schemaName: c.STOCK_TRANSFER_SCHEMA_NAME,
+		resourcePath: c.STOCK_TRANSFER_RESOURCE_PATH,
+	}, {
+		// Moves and their lines have no page of their own: they are reached as related records of
+		// the transfer that owns them, through the same registered schema.
+		schemaName: c.STOCK_MOVE_SCHEMA_NAME,
+		resourcePath: c.STOCK_MOVE_RESOURCE_PATH,
+	}, {
+		schemaName: c.STOCK_MOVE_LINE_SCHEMA_NAME,
+		resourcePath: c.STOCK_MOVE_LINE_RESOURCE_PATH,
 	}]);
 }

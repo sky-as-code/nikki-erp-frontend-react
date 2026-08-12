@@ -15,6 +15,19 @@ export const PRODUCT_VARIANT_SCHEMA_NAME = 'inventory_product_variant';
 // A price rule for a template or one of its variants. See BR §6.12.
 export const PRODUCT_PRICE_SCHEMA_NAME = 'inventory_product_price';
 
+// Stock. See backend .../modules/inventory/domain/models/{stock_location,stock_operation_type,
+// stock_quant}.go.
+export const STOCK_LOCATION_SCHEMA_NAME = 'inventory_stock_location';
+export const STOCK_OPERATION_TYPE_SCHEMA_NAME = 'inventory_stock_operation_type';
+export const STOCK_QUANT_SCHEMA_NAME = 'inventory_stock_quant';
+
+// Stock movement. See backend .../modules/inventory/domain/models/{stock_transfer,stock_move,
+// stock_move_line,stock_move_dependency}.go.
+export const STOCK_TRANSFER_SCHEMA_NAME = 'inventory_stock_transfer';
+export const STOCK_MOVE_SCHEMA_NAME = 'inventory_stock_move';
+export const STOCK_MOVE_LINE_SCHEMA_NAME = 'inventory_stock_move_line';
+export const STOCK_MOVE_DEPENDENCY_SCHEMA_NAME = 'inventory_stock_move_dependency';
+
 // The two junctions. They carry a template's attribute configuration, and are reached as related
 // records of a template rather than as top-level pages of their own.
 export const PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME = 'inventory_product_template_attribute';
@@ -38,6 +51,12 @@ export const PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_RESOURCE_PATH =
 	`v1/inventory/${PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME}`;
 export const PRODUCT_VARIANT_ATTRIBUTE_VALUE_RESOURCE_PATH =
 	`v1/inventory/${PRODUCT_VARIANT_ATTRIBUTE_VALUE_SCHEMA_NAME}`;
+export const STOCK_LOCATION_RESOURCE_PATH = `v1/inventory/${STOCK_LOCATION_SCHEMA_NAME}`;
+export const STOCK_OPERATION_TYPE_RESOURCE_PATH = `v1/inventory/${STOCK_OPERATION_TYPE_SCHEMA_NAME}`;
+export const STOCK_QUANT_RESOURCE_PATH = `v1/inventory/${STOCK_QUANT_SCHEMA_NAME}`;
+export const STOCK_TRANSFER_RESOURCE_PATH = `v1/inventory/${STOCK_TRANSFER_SCHEMA_NAME}`;
+export const STOCK_MOVE_RESOURCE_PATH = `v1/inventory/${STOCK_MOVE_SCHEMA_NAME}`;
+export const STOCK_MOVE_LINE_RESOURCE_PATH = `v1/inventory/${STOCK_MOVE_LINE_SCHEMA_NAME}`;
 
 /**
  * Custom action paths on the Product Template engine. The engine's route pattern rejects hyphens,

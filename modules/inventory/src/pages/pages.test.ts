@@ -8,6 +8,9 @@ import { buildProductPricePages } from './productPrice';
 import { buildProductTemplatePages } from './productTemplate';
 import { buildProductTypePages } from './productType';
 import { buildProductVariantPages } from './productVariant';
+import { buildStockLocationPages } from './stockLocation';
+import { buildStockQuantPages } from './stockQuant';
+import { buildStockTransferPages } from './stockTransfer';
 import * as c from '../constants';
 
 import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
@@ -22,6 +25,9 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'productAttribute', build: buildProductAttributePages },
 	{ name: 'productAttributeValue', build: buildProductAttributeValuePages },
 	{ name: 'productPrice', build: buildProductPricePages },
+	{ name: 'stockLocation', build: buildStockLocationPages },
+	{ name: 'stockQuant', build: buildStockQuantPages },
+	{ name: 'stockTransfer', build: buildStockTransferPages },
 ];
 
 describe('Inventory page metadata', () => {
@@ -48,13 +54,22 @@ describe('Inventory page metadata', () => {
 		expect(findNonPlainValue(build(), '$')).toBeNull();
 	});
 
-	it('registers one route per resource, all kebab-case', () => {
+	/**
+	 * URL paths separate words with `_`. The menu links in `menu.ts` are written by hand and
+	 * nothing checks that one resolves to a declared route, so the exact list is pinned here:
+	 * a rename that misses the menu shows up as a dead link only at runtime.
+	 */
+	it('registers one route per resource, all snake_case', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
 
 		expect(routePaths).toEqual([
-			'products', 'product-variants', 'product-types', 'product-categories',
-			'brands', 'attributes', 'attribute-values', 'product-prices',
+			'products', 'product_variants', 'product_types', 'product_categories',
+			'brands', 'attributes', 'attribute_values', 'product_prices',
+			'stock_locations', 'stock_balance', 'stock_transfers',
 		]);
+		for (const routePath of routePaths) {
+			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);
+		}
 	});
 
 	/**
@@ -109,7 +124,7 @@ describe('Product template detail sections', () => {
 		const variantTable = collectComponents(page, 'resourceTable')
 			.find(node => node.props?.schemaName === c.PRODUCT_VARIANT_SCHEMA_NAME);
 
-		expect(variantTable?.props?.linkRoutePath).toBe('product-variants');
+		expect(variantTable?.props?.linkRoutePath).toBe('product_variants');
 	});
 
 	/**
@@ -127,6 +142,99 @@ describe('Product template detail sections', () => {
 				prefix: 'template_status.',
 			},
 		});
+	});
+});
+
+describe('Stock balance page', () => {
+	/**
+	 * The backend engine refuses create, update and delete on a stock quant: a balance is the
+	 * running total of completed movements, not something a client sets (AC-STOCK-002). Binding a
+	 * write action here would render a button whose only outcome is a business violation, so the
+	 * absence is pinned rather than left to be reintroduced by a copy-paste from another page.
+	 */
+	it('offers no write action', () => {
+		const [page] = buildStockQuantPages();
+		const props = page.props as {
+			primary: { props: Record<string, unknown> },
+			secondary: { props: { standardActionCommands?: Record<string, unknown> } },
+		};
+
+		expect(props.primary.props.createEnabled).toBe(false);
+		expect(props.primary.props.deleteCommand).toBeUndefined();
+		expect(props.primary.props.archiveCommand).toBeUndefined();
+		expect(props.primary.props.updateSaveCommand).toBeUndefined();
+		expect(Object.keys(props.secondary.props.standardActionCommands ?? {})).toEqual(['getById']);
+	});
+
+	it('binds the page to the backend stock quant schema', () => {
+		const [page] = buildStockQuantPages();
+		const props = page.props as { primary: { props: { schemaName: string } } };
+
+		expect(props.primary.props.schemaName).toBe('inventory_stock_quant');
+		expect(props.primary.props.schemaName).toBe(c.STOCK_QUANT_SCHEMA_NAME);
+	});
+});
+
+describe('Stock transfer page', () => {
+	/**
+	 * The six movement operations are what the page exists for. Losing one leaves a transfer that
+	 * can be created and edited but never acted on, which nothing else would report.
+	 */
+	it('offers every movement operation', () => {
+		const [page] = buildStockTransferPages();
+		const props = page.props as {
+			secondary: { props: { contextualActions?: Record<string, unknown> } },
+		};
+
+		expect(Object.keys(props.secondary.props.contextualActions ?? {}).sort()).toEqual([
+			'cancel', 'check_availability', 'confirm', 'reserve', 'unreserve', 'validate',
+		]);
+	});
+
+	/**
+	 * AC-STOCK-009: a completed transfer is corrected by a reverse transfer, never by cancelling.
+	 * Offering Cancel on a done transfer invites a click whose only outcome is a refusal.
+	 */
+	it('hides cancel and validate once a transfer is done', () => {
+		const [page] = buildStockTransferPages();
+		const props = page.props as {
+			secondary: {
+				props: {
+					contextualActions: Record<string, { condition?: { operator: string, value: unknown } }>,
+				},
+			},
+		};
+		const actions = props.secondary.props.contextualActions;
+
+		expect(actions.cancel.condition).toEqual({
+			field: 'status', operator: 'not_in', value: ['done', 'cancelled'],
+		});
+		expect(actions.validate.condition?.value).not.toContain('done');
+	});
+
+	/**
+	 * The related tables filter by the current transfer. A literal `${id}` reaching the backend
+	 * would match nothing, and the wrong operator would be rejected outright.
+	 */
+	it('filters the moves and lines by the transfer id', () => {
+		const [page] = buildStockTransferPages();
+		const tables = collectComponents(page, 'resourceTable');
+
+		expect(tables.map(table => table.props?.schemaName)).toEqual([
+			c.STOCK_MOVE_SCHEMA_NAME,
+			c.STOCK_MOVE_LINE_SCHEMA_NAME,
+		]);
+		for (const table of tables) {
+			expect(table.props?.filterGraph).toEqual({ if: ['transfer_id', '=', '${id}'] });
+		}
+	});
+
+	it('binds the page to the backend stock transfer schema', () => {
+		const [page] = buildStockTransferPages();
+		const props = page.props as { primary: { props: { schemaName: string } } };
+
+		expect(props.primary.props.schemaName).toBe('inventory_stock_transfer');
+		expect(props.primary.props.schemaName).toBe(c.STOCK_TRANSFER_SCHEMA_NAME);
 	});
 });
 

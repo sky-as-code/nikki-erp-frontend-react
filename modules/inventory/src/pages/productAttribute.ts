@@ -91,7 +91,7 @@ function buildAttributeValuesSection(): ComponentNode[] {
 			searchCommand: ProductAttributeValueCommands.SEARCH,
 			filterGraph: { if: ['attribute_id', '=', '${id}'] },
 			linkField: 'id',
-			linkRoutePath: 'attribute-values',
+			linkRoutePath: 'attribute_values',
 		})],
 	)];
 }

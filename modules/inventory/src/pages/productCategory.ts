@@ -18,7 +18,7 @@ export function buildProductCategoryPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'product-categories',
+		routePath: 'product_categories',
 		template: splitView.template,
 		props: splitView.props,
 	})];

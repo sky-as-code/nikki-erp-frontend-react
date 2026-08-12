@@ -115,7 +115,7 @@ function buildTemplateSections(): ComponentNode[] {
 				searchCommand: ProductVariantCommands.SEARCH,
 				filterGraph: { if: ['product_template_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'product-variants',
+				linkRoutePath: 'product_variants',
 			})],
 		),
 		collapsibleSectionNode(
@@ -128,7 +128,7 @@ function buildTemplateSections(): ComponentNode[] {
 				// page, since it exists precisely to differ from the line's base price.
 				filterGraph: { if: ['product_template_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'product-prices',
+				linkRoutePath: 'product_prices',
 			})],
 		),
 	];

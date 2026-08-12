@@ -12,7 +12,7 @@ export function buildProductAttributeValuePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'attribute-values',
+		routePath: 'attribute_values',
 		template: splitView.template,
 		props: splitView.props,
 	})];

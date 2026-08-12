@@ -12,7 +12,7 @@ export function buildProductVariantPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'product-variants',
+		routePath: 'product_variants',
 		template: splitView.template,
 		props: splitView.props,
 	})];
