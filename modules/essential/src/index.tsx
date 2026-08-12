@@ -1,6 +1,5 @@
 import { Alert, MantineProvider } from '@mantine/core';
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
-import { AuthorizedGuard } from '@nikkierp/ui/components';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, initMicroAppStateContext,
@@ -81,12 +80,15 @@ function EssentialIndexPage(): React.ReactNode {
 	);
 }
 
+// `AuthorizedGuard` was removed from `@nikkierp/ui/components` during the auth refactor and has
+// no replacement yet: `PermissionGuard` covers authorization, not authentication, and is itself
+// still stubbed. The route renders unguarded until the authentication guard lands.
 function AuthorizedPage(): React.ReactNode {
 	return (
-		<AuthorizedGuard>
+		<>
 			<p>Essential Authorized Page</p>
 			<Link to='/' data-testid='essential-link-shell'>Back to Shell</Link>
-		</AuthorizedGuard>
+		</>
 	);
 }
 
