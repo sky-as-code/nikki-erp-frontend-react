@@ -9,8 +9,8 @@ import {
 	createRoleSuite,
 	updateRoleSuite,
 	deleteRoleSuite,
-	initialState
-} from '@/features/roleSuites/roleSuiteSlice';
+	initialState,
+} from '../features/roleSuites/roleSuiteSlice';
 
 
 const STATE_KEY = 'roleSuite';

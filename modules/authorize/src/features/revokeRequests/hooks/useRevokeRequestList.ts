@@ -5,7 +5,7 @@ import {
 	AuthorizeDispatch,
 	revokeRequestActions,
 	selectRevokeRequestState,
-} from '@/appState';
+} from '../../../appState';
 
 
 export function useRevokeRequestList() {

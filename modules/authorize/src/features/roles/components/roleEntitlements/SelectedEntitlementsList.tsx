@@ -2,12 +2,12 @@ import { ActionIcon, Box, Group, ScrollArea, Stack, Text, Title } from '@mantine
 import { IconArrowLeft } from '@tabler/icons-react';
 
 import { EntitlementCard } from './EntitlementCard';
+import { createEntitlementKey } from '../../../../utils';
 
-import type { Entitlement } from '@/features/entitlements';
-import type { Resource } from '@/features/resources';
+import type { Entitlement } from '../../../entitlements';
+import type { Resource } from '../../../resources';
 import type { Hierarchy, Organization } from '@nikkierp/shell/userContext';
 
-import { createEntitlementKey } from '@/utils';
 
 
 export interface SelectedEntitlementsListProps {

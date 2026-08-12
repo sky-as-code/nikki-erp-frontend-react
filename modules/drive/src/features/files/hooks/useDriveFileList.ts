@@ -2,18 +2,18 @@
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { useEffect, useState } from 'react';
 
+import { driveFileActions, selectCurrentFolder, selectGetDriveFileByParent, selectSearchDriveFile } from '../../../appState/file';
 import { DriveFileStatus } from '../types';
 
-import { driveFileActions, selectCurrentFolder, selectGetDriveFileByParent, selectSearchDriveFile } from '@/appState/file';
 
 
 
 export type DriveFileListMode = 'folder' | 'trash' | 'shared';
 
 export type UseDriveFileListParams = {
-	mode: DriveFileListMode;
-	parentId?: string;
-	pageSize?: number;
+	mode: DriveFileListMode,
+	parentId?: string,
+	pageSize?: number,
 };
 
 export function useDriveFileList({ mode, parentId = '', pageSize = 20 }: UseDriveFileListParams) {

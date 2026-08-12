@@ -10,27 +10,28 @@ import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+
+
+import { DriveFileSharePermissionDisplay } from '..';
 import { DriveFileShareAccessDetailModalBody } from './DriveFileShareAccessDetailModalBody';
+import {
+	driveFileShareActions,
+} from '../../../appState/fileShare';
+import { DriveUserDisplay } from '../../../components';
+import { isDirectPermission } from '../driveFileShareAccessDetailUtils';
+import { resolveUserRef } from '../driveFileShareUserUtils';
+import { useDriveFileSharesByUser } from '../hooks/useDriveFileSharesByUser';
 
 import type {
 	DriveFileShare,
 	DriveFileSharePermission as DriveFileSharePermissionType,
-} from '@/features/fileShare/type';
-
-import {
-	driveFileShareActions,
-} from '@/appState/fileShare';
-import { DriveUserDisplay } from '@/components';
-import { DriveFileSharePermissionDisplay } from '@/features/fileShare';
-import { isDirectPermission } from '@/features/fileShare/driveFileShareAccessDetailUtils';
-import { resolveUserRef } from '@/features/fileShare/driveFileShareUserUtils';
-import { useDriveFileSharesByUser } from '@/features/fileShare/hooks/useDriveFileSharesByUser';
+} from '../type';
 
 
 function SharesByUserStatusFeedback({ status, error, t }: {
-	status: string;
-	error?: string | null;
-	t: (key: string) => string;
+	status: string,
+	error?: string | null,
+	t: (key: string) => string,
 }): React.ReactNode {
 	if (status === 'pending' || status === 'idle') {
 		return <Group justify='center' py='md'><Loader size='sm' /></Group>;
@@ -86,20 +87,20 @@ function useShareMutations(fileId: string, refresh: () => Promise<void>) {
 }
 
 export type DriveFileShareAccessDetailModalProps = {
-	fileId: string;
-	opened: boolean;
-	anchorShare: DriveFileShare | null;
+	fileId: string,
+	opened: boolean,
+	anchorShare: DriveFileShare | null,
 	/** Chỉ chủ file hoặc chủ folder cha (ANCESTOR_OWNER) mới được cập nhật / thu hồi trong form. */
-	canManageShare: boolean;
-	onClose: () => void;
-	permissionOptions: Array<{ value: DriveFileSharePermissionType; label: string }>;
+	canManageShare: boolean,
+	onClose: () => void,
+	permissionOptions: Array<{ value: DriveFileSharePermissionType, label: string }>,
 	onPermissionChange: (
 		share: DriveFileShare,
 		nextPermission: DriveFileSharePermissionType,
-	) => Promise<boolean>;
-	onNavigateAway?: () => void;
+	) => Promise<boolean>,
+	onNavigateAway?: () => void,
 	/** Gọi sau khi refetch chi tiết user + resolved; truyền `userId` của user đang xem trong modal. */
-	onAccessUpdated?: (userId: string) => void;
+	onAccessUpdated?: (userId: string) => void,
 };
 
 export function DriveFileShareAccessDetailModal({

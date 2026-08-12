@@ -9,8 +9,8 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { GrantRequestFormFields, grantRequestSchema, useGrantRequestCreate } from '@/features/grantRequests';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+import { GrantRequestFormFields, grantRequestSchema, useGrantRequestCreate } from '../../features/grantRequests';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function GrantRequestCreatePageBody(): React.ReactNode {

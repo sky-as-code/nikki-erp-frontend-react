@@ -5,17 +5,17 @@ import { useTranslation } from 'react-i18next';
 import { DriveFileShareAccessItem } from './DriveFileShareAccessItem';
 import { shareAccessAccordionStyles } from './shareAccessAccordionStyles';
 
-import type { UseDriveFileSharesByUserResult } from '@/features/fileShare/hooks/useDriveFileSharesByUser';
-import type { DriveFileShare } from '@/features/fileShare/type';
+import type { UseDriveFileSharesByUserResult } from '../hooks/useDriveFileSharesByUser';
+import type { DriveFileShare } from '../type';
 
 
 
 export type DriveFileShareViewerSectionProps = {
-	viewerShares: UseDriveFileSharesByUserResult;
-	shellUser: { id: string; displayName: string; email: string; avatarUrl?: string } | null | undefined;
+	viewerShares: UseDriveFileSharesByUserResult,
+	shellUser: { id: string, displayName: string, email: string, avatarUrl?: string } | null | undefined,
 	/** `true` khi modal chi tiết chỉ xem, không chỉnh sửa (icon/tooltip tương ứng). */
-	detailReadOnly?: boolean;
-	onOpenShareDetail: (share: DriveFileShare) => void;
+	detailReadOnly?: boolean,
+	onOpenShareDetail: (share: DriveFileShare) => void,
 };
 
 /**

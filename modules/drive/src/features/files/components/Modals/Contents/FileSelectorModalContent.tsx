@@ -6,11 +6,11 @@ import { FileSelector } from '../../FileSelector';
 
 
 type FileSelectorModalProps = {
-	onClose: () => void;
-	afterSelectFn?: (selectedId: string[] | string) => void;
-	mode?: 'file' | 'folder';
-	multiple?: boolean;
-	action?: string;
+	onClose: () => void,
+	afterSelectFn?: (selectedId: string[] | string) => void,
+	mode?: 'file' | 'folder',
+	multiple?: boolean,
+	action?: string,
 };
 
 export function FileSelectorModalContent({ onClose, afterSelectFn, action, mode = 'folder', multiple = false }: FileSelectorModalProps) {

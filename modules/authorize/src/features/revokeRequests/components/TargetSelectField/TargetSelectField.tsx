@@ -6,8 +6,8 @@ import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import type { RoleSuite } from '@/features/roleSuites';
-import type { Role } from '@/features/roles';
+import type { Role } from '../../../roles';
+import type { RoleSuite } from '../../../roleSuites';
 
 
 interface TargetSelectFieldProps {

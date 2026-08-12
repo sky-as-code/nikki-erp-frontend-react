@@ -4,26 +4,26 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router';
 
-import { driveFileActions } from '@/appState/file';
-import { DriveFileStatus } from '@/features/files';
-import { DriveFileTitle } from '@/features/files/components/DriveFileTitle';
-import { DriveFileView, type DriveFileUIViewMode } from '@/features/files/components/DriveFileView';
-import { DriveFileFilterBar } from '@/features/files/components/Filters/DriveFileFilterBar';
-import { useDriveFileList } from '@/features/files/hooks';
-import { useDriveFileFilters } from '@/features/files/hooks/useDriveFileFilters';
-import { useLocalStorage } from '@/features/files/hooks/useLocalStorage';
+import { driveFileActions } from '../../appState/file';
+import { DriveFileStatus } from '../../features/files';
+import { DriveFileTitle } from '../../features/files/components/DriveFileTitle';
+import { DriveFileView, type DriveFileUIViewMode } from '../../features/files/components/DriveFileView';
+import { DriveFileFilterBar } from '../../features/files/components/Filters/DriveFileFilterBar';
+import { useDriveFileList } from '../../features/files/hooks';
+import { useDriveFileFilters } from '../../features/files/hooks/useDriveFileFilters';
+import { useLocalStorage } from '../../features/files/hooks/useLocalStorage';
 
 
 type FolderPageLayoutProps = {
-	currentFolder?: import('@/features/files').DriveFile;
-	viewMode: DriveFileUIViewMode;
-	onViewModeChange: (mode: DriveFileUIViewMode) => void;
-	filters: ReturnType<typeof useDriveFileFilters>['filters'];
-	setFilters: ReturnType<typeof useDriveFileFilters>['setFilters'];
-	onApplyFilters: () => void;
-	totalItems: number;
-	page: number;
-	onPageChange: (page: number) => void;
+	currentFolder?: import('../../features/files').DriveFile,
+	viewMode: DriveFileUIViewMode,
+	onViewModeChange: (mode: DriveFileUIViewMode) => void,
+	filters: ReturnType<typeof useDriveFileFilters>['filters'],
+	setFilters: ReturnType<typeof useDriveFileFilters>['setFilters'],
+	onApplyFilters: () => void,
+	totalItems: number,
+	page: number,
+	onPageChange: (page: number) => void,
 };
 
 function FolderPageLayout({
@@ -96,7 +96,7 @@ function useFolderPageCurrentFolder(currentFileId: string) {
 	}, [currentFileId, dispatch]);
 }
 
-function useFolderPageTitle(currentFolder?: import('@/features/files').DriveFile) {
+function useFolderPageTitle(currentFolder?: import('../../features/files').DriveFile) {
 	useEffect(() => {
 		if (currentFolder) {
 			document.title = `${currentFolder.name} - Drive - Nikki`;

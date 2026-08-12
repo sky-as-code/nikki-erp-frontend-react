@@ -8,12 +8,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 
+import { driveFileActions, selectCreateDriveFile } from '../../../../../appState/file';
 import driveFileSchemaJson from '../../../file-schema.json';
 import { DriveFileVisibility } from '../../../types';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
 
-import { driveFileActions, selectCreateDriveFile } from '@/appState/file';
 
 
 const baseSchema = driveFileSchemaJson as ModelSchema;
@@ -34,10 +34,10 @@ function FileSelectDropzone({
 	t,
 	autoOpen,
 }: {
-	selectedFile: File | null;
-	onSelect: (f: File | null) => void;
-	t: (key: string) => string;
-	autoOpen?: boolean;
+	selectedFile: File | null,
+	onSelect: (f: File | null) => void,
+	t: (key: string) => string,
+	autoOpen?: boolean,
 }): React.ReactNode {
 	const openRef = useRef<() => void>(null);
 	const hasOpenedRef = useRef(false);
@@ -80,11 +80,11 @@ function FileSelectDropzone({
 }
 
 type CreateFileModalProps = {
-	opened: boolean;
-	onClose: () => void;
-	parentId: string;
-	onSuccess?: () => void;
-	defaultIsFolder?: boolean;
+	opened: boolean,
+	onClose: () => void,
+	parentId: string,
+	onSuccess?: () => void,
+	defaultIsFolder?: boolean,
 };
 
 export function CreateFileModalContent({
@@ -165,17 +165,17 @@ export function CreateFileModalContent({
 }
 
 type CreateFileFormInnerProps = {
-	form: ReturnType<typeof import('react-hook-form').useForm>;
+	form: ReturnType<typeof import('react-hook-form').useForm>,
 	handleSubmit: (onValid: (data: Record<string, unknown>) =>
-		void | Promise<void>) => (e?: React.BaseSyntheticEvent) => Promise<void>;
-	onSubmit: (data: Record<string, unknown>) => Promise<void>;
-	selectedFile: File | null;
-	setSelectedFile: (f: File | null) => void;
-	opened: boolean;
-	onClose: () => void;
-	createState: { status: string };
-	t: (key: string) => string;
-	defaultIsFolder: boolean;
+		void | Promise<void>) => (e?: React.BaseSyntheticEvent) => Promise<void>,
+	onSubmit: (data: Record<string, unknown>) => Promise<void>,
+	selectedFile: File | null,
+	setSelectedFile: (f: File | null) => void,
+	opened: boolean,
+	onClose: () => void,
+	createState: { status: string },
+	t: (key: string) => string,
+	defaultIsFolder: boolean,
 };
 
 function CreateFileFormInner({

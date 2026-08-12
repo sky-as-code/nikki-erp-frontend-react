@@ -3,13 +3,13 @@ import { IconArrowDown, IconCheck, IconFile, IconFolder } from '@tabler/icons-re
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { PERMISSION_ICON } from '../EnumDisplay/DriveFileSharePermissionDisplay';
-
 import {
 	PERMISSION_SUMMARY_ROWS,
 	SHARE_PERMISSION_INFO_ORDER,
 	type PermissionSummaryCellKind,
-} from '@/features/fileShare/sharePermissionConstants';
+} from '../../sharePermissionConstants';
+import { PERMISSION_ICON } from '../EnumDisplay/DriveFileSharePermissionDisplay';
+
 
 
 function renderPermissionSummaryCell(t: (key: string) => string, kind: PermissionSummaryCellKind): React.ReactNode {

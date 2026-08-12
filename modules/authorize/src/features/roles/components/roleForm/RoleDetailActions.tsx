@@ -4,7 +4,7 @@ import { IconPlus, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Role } from '@/features/roles';
+import type { Role } from '../..';
 
 
 interface RoleDetailActionsProps {

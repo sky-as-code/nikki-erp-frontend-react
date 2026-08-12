@@ -2,16 +2,16 @@ import { ActionIcon, Group } from '@mantine/core';
 import { IconDownload } from '@tabler/icons-react';
 import React from 'react';
 
+import { useDriveStreamUrl } from '../../../../../hooks';
 import { useDriveFileActions } from '../../../hooks';
 import { DriveFile } from '../../../types';
 import { FilePreview } from '../../Preview';
 
-import { useDriveStreamUrl } from '@/hooks';
 
 
 type PreviewFileModalContentProps = {
-	file: DriveFile;
-	onClose: () => void;
+	file: DriveFile,
+	onClose: () => void,
 };
 
 export function PreviewFileModalContent({

@@ -2,11 +2,11 @@ import { Paper, ScrollArea, Stack, Text, Title } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { createEntitlementKey } from '@/utils';
-
 import { EntitlementCard } from './EntitlementCard';
+import { createEntitlementKey } from '../../../../utils';
 
-import type { Entitlement } from '@/features/entitlements';
+
+import type { Entitlement } from '../../../entitlements';
 
 
 export interface AssignedEntitlementsListProps {

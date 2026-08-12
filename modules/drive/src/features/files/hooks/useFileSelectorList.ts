@@ -9,9 +9,9 @@ import type { DriveFile, FileSelectorMode } from '../types';
 
 
 export type UseFileSelectorListParams = {
-	parentId: string;
-	mode: FileSelectorMode;
-	enabled?: boolean;
+	parentId: string,
+	mode: FileSelectorMode,
+	enabled?: boolean,
 };
 
 export function useFileSelectorList({

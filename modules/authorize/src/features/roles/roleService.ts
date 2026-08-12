@@ -81,7 +81,7 @@ export const roleService = {
 	async addEntitlementsToRole(
 		roleId: string,
 		etag: string,
-		entitlementInputs: Array<{ entitlementId: string; scopeRef?: string }>,
+		entitlementInputs: Array<{ entitlementId: string, scopeRef?: string }>,
 	): Promise<void> {
 		await addEntitlementsToRoleApi(roleId, {
 			entitlementInputs,
@@ -92,7 +92,7 @@ export const roleService = {
 	async removeEntitlementsFromRole(
 		roleId: string,
 		etag: string,
-		entitlementInputs: Array<{ entitlementId: string; scopeRef?: string }>,
+		entitlementInputs: Array<{ entitlementId: string, scopeRef?: string }>,
 	): Promise<void> {
 		await removeEntitlementsFromRoleApi(roleId, {
 			entitlementInputs,

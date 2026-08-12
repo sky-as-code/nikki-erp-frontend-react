@@ -4,16 +4,16 @@ import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { driveFileActions } from '../../../../../appState/file';
 import { useRefreshCurrentFolder } from '../../../hooks';
 
-import { driveFileActions } from '@/appState/file';
 
 
 type DeleteConfirmModalProps = {
-	fileId: string;
-	fileName: string;
-	parentDriveFileRef?: string;
-	onClose: () => void;
+	fileId: string,
+	fileName: string,
+	parentDriveFileRef?: string,
+	onClose: () => void,
 };
 
 export function DeleteConfirmModalContent({

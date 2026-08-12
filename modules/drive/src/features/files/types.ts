@@ -4,7 +4,7 @@ import {
 	UpdateResponse,
 } from '@nikkierp/common';
 
-import { DriveFileSharePermission, type ShareUser } from '@/features/fileShare/type';
+import { DriveFileSharePermission, type ShareUser } from '../fileShare/type';
 
 
 export const DriveFilePermission = {
@@ -70,7 +70,7 @@ export const DriveFileType = {
 
 export type DriveFileType = typeof DriveFileType[keyof typeof DriveFileType];
 
-export type DriveFileStatusBadge = { label: string; color: string };
+export type DriveFileStatusBadge = { label: string, color: string };
 
 export function getDriveFileStatusBadge(
 	status: DriveFileStatus,
@@ -84,14 +84,14 @@ export function getDriveFileStatusBadge(
 }
 
 export type ListResponse<T> = {
-	total: number;
-	items: T[];
+	total: number,
+	items: T[],
 };
 
 export type ListQuery = {
-	page?: number;
-	size?: number;
-	graph?: Record<string, unknown>;
+	page?: number,
+	size?: number,
+	graph?: Record<string, unknown>,
 };
 
 export type CreateDriveFileRequest = Omit<

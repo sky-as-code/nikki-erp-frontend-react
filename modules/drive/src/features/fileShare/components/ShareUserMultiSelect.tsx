@@ -13,21 +13,22 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { DriveFileShare } from '@/features/fileShare/type';
-import type { IdentityUser } from '@/features/identities/types';
 
-import { selectDriveFileShareList } from '@/appState/fileShare';
+import { selectDriveFileShareList } from '../../../appState/fileShare';
 import {
 	identityActions,
 	selectIdentityListUsersState,
 	selectIdentityUsers,
-} from '@/appState/identity';
+} from '../../../appState/identity';
+
+import type { IdentityUser } from '../../identities/types';
+import type { DriveFileShare } from '../type';
 
 
 
 export type ShareUserMultiSelectProps = {
-	selectedUsers: IdentityUser[];
-	setSelectedUsers: React.Dispatch<React.SetStateAction<IdentityUser[]>>;
+	selectedUsers: IdentityUser[],
+	setSelectedUsers: React.Dispatch<React.SetStateAction<IdentityUser[]>>,
 };
 
 function getUserInitials(user: IdentityUser): string {
@@ -74,7 +75,7 @@ function useSearchUsers(search: string) {
 }
 
 function SelectedUserPill(
-	{ user, onRemove }: { user: IdentityUser; onRemove: (id: string) => void },
+	{ user, onRemove }: { user: IdentityUser, onRemove: (id: string) => void },
 ): React.ReactNode {
 	return (
 		<Pill

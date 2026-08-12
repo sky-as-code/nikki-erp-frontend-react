@@ -2,8 +2,7 @@ import { Container, Flex, Stack } from '@mantine/core';
 import { Outlet } from 'react-router';
 
 import { DriveSearchBar } from './DriveSearchBar';
-
-import { DriveSidebar } from '@/features/files';
+import { DriveSidebar } from '../features/files';
 
 
 export const DriveLayout: React.FC = () => {

@@ -17,9 +17,9 @@ import {
 	selectOrgList,
 	selectRoleSuiteState,
 	selectUserList,
-} from '@/appState';
-import { RoleSuiteTable, roleSuiteSchema, useRoleSuiteDelete } from '@/features/roleSuites';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../appState';
+import { RoleSuiteTable, roleSuiteSchema, useRoleSuiteDelete } from '../../features/roleSuites';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 // eslint-disable-next-line max-lines-per-function

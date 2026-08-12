@@ -1,11 +1,11 @@
-import { DriveFilePermission, type DriveFilePermission as DriveFilePermissionType } from '../types';
-
 import {
 	PERMISSION_SUMMARY_ROWS,
 	SHARE_PERMISSION_INFO_ORDER,
 	type PermissionSummaryCellKind,
 	type PermissionSummaryRowKey,
-} from '@/features/fileShare/sharePermissionConstants';
+} from '../../fileShare/sharePermissionConstants';
+import { DriveFilePermission, type DriveFilePermission as DriveFilePermissionType } from '../types';
+
 
 
 /**

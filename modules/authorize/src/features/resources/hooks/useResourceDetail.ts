@@ -2,7 +2,7 @@ import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp'
 import React from 'react';
 import { useParams } from 'react-router';
 
-import { AuthorizeDispatch, resourceActions, selectResourceDetail } from '@/appState';
+import { AuthorizeDispatch, resourceActions, selectResourceDetail } from '../../../appState';
 
 
 export function useResourceDetail() {

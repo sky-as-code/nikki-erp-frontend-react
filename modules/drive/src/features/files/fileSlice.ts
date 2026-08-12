@@ -28,80 +28,80 @@ export const SLICE_NAME = 'drive.file';
 export type TreeExpandedState = Record<string, boolean>;
 
 export type DriveFileUIState = {
-	driveFileModal: DriveFileModalUIState;
-	openPropertiesCard: boolean;
-	openCreateFileModal: boolean;
-	openUpdateMetadataModal: boolean;
+	driveFileModal: DriveFileModalUIState,
+	openPropertiesCard: boolean,
+	openCreateFileModal: boolean,
+	openUpdateMetadataModal: boolean,
 };
 
 export type DriveFileModalUIState = {
-	openedModal: boolean;
-	type: ModalType;
-	title: string;
+	openedModal: boolean,
+	type: ModalType,
+	title: string,
 };
 
 export type ModalType =
 	| { type: 'properties' }
 	| { type: 'share' }
-	| { type: 'create'; defaultIsFolder?: boolean }
+	| { type: 'create', defaultIsFolder?: boolean }
 	| { type: 'update' }
 	| {
-		type: 'file-selector';
-		afterSelectFn: (selectedId: string[] | string) => void;
-		mode?: 'file' | 'folder';
-		multiple?: boolean;
-		action?: string;
+		type: 'file-selector',
+		afterSelectFn: (selectedId: string[] | string) => void,
+		mode?: 'file' | 'folder',
+		multiple?: boolean,
+		action?: string,
 	}
 	| {
-		type: 'delete-confirm';
-		fileId: string;
-		fileName: string;
-		parentDriveFileRef?: string;
+		type: 'delete-confirm',
+		fileId: string,
+		fileName: string,
+		parentDriveFileRef?: string,
 	}
 	| { type: 'preview' };
 
 export type CurrentListContext = {
-	source?: 'byParent' | 'search' | 'shared';
-	parentId: string;
-	page: number;
-	size: number;
-	graph?: Record<string, unknown>;
+	source?: 'byParent' | 'search' | 'shared',
+	parentId: string,
+	page: number,
+	size: number,
+	graph?: Record<string, unknown>,
 };
 
 export type DriveFileState = {
 	/** Danh sách file của folder hiện tại (main content) */
-	files: DriveFile[];
+	files: DriveFile[],
 	/** Thông tin folder hiện tại (dùng cho tiêu đề, breadcrumb, v.v.) */
-	currentFolder?: DriveFile;
+	currentFolder?: DriveFile,
 	/** Danh sách file root cho sidebar FileTree */
-	treeRootItems: DriveFile[];
+	treeRootItems: DriveFile[],
 	/** Thông tin pagination cho từng parent trong FileTree */
 	treePaging: Record<
 		string,
 		{
-			page: number;
-			size: number;
-			total: number;
-			loaded: number;
+			page: number,
+			size: number,
+			total: number,
+			loaded: number,
 		}
-	>;
+	>,
 	/** Trạng thái expand của FileTree, persist để sống qua remount khi navigate */
-	treeExpandedState: TreeExpandedState;
-	fileDetail?: DriveFile;
-	ancestors?: DriveFile[];
-	ui: DriveFileUIState;
-	currentListContext?: CurrentListContext;
+	treeExpandedState: TreeExpandedState,
+	fileDetail?: DriveFile,
+	ancestors?: DriveFile[],
+	ui: DriveFileUIState,
+	currentListContext?: CurrentListContext,
 
-	create: ReduxActionState<CreateDriveFileResponse>;
-	updateMetadata: ReduxActionState<UpdateDriveFileMetadataResponse>;
-	delete: ReduxActionState<void>;
-	moveToTrash: ReduxActionState<void>;
-	getById: ReduxActionState<GetDriveFileResponse>;
-	getByParent: ReduxActionState<GetDriveFileByParentResponse>;
-	getByParentForTree: ReduxActionState<GetDriveFileByParentResponse>;
-	search: ReduxActionState<SearchDriveFileByParentResponse>;
-	getAncestors: ReduxActionState<GetDriveFileAncestorsResponse>;
-	restoreFromTrash: ReduxActionState<RestoreDriveFileFromTrashResponse>;
+	create: ReduxActionState<CreateDriveFileResponse>,
+	updateMetadata: ReduxActionState<UpdateDriveFileMetadataResponse>,
+	delete: ReduxActionState<void>,
+	moveToTrash: ReduxActionState<void>,
+	getById: ReduxActionState<GetDriveFileResponse>,
+	getByParent: ReduxActionState<GetDriveFileByParentResponse>,
+	getByParentForTree: ReduxActionState<GetDriveFileByParentResponse>,
+	search: ReduxActionState<SearchDriveFileByParentResponse>,
+	getAncestors: ReduxActionState<GetDriveFileAncestorsResponse>,
+	restoreFromTrash: ReduxActionState<RestoreDriveFileFromTrashResponse>,
 };
 
 export const initialState: DriveFileState = {
@@ -163,7 +163,7 @@ export const createDriveFile = createAsyncThunk<
 
 export const updateMetadataDriveFile = createAsyncThunk<
 	UpdateDriveFileMetadataResponse,
-	{ fileId: string; req: UpdateDriveFileMetadataRequest },
+	{ fileId: string, req: UpdateDriveFileMetadataRequest },
 	thunkConfig
 >(
 	`${SLICE_NAME}/updateDriveFile`,
@@ -287,7 +287,7 @@ function withDefaultListGraph(
 /** Load folder cho main content (trang folder) — cập nhật files + treeRootItems */
 export const getDriveFileByParent = createAsyncThunk<
 	GetDriveFileByParentResponse,
-	{ parentId: string; req?: GetDriveFileByParentRequest },
+	{ parentId: string, req?: GetDriveFileByParentRequest },
 	thunkConfig
 >(
 	`${SLICE_NAME}/getDriveFileByParent`,
@@ -306,7 +306,7 @@ export const getDriveFileByParent = createAsyncThunk<
 
 export const getDriveFileByParentForTree = createAsyncThunk<
 	GetDriveFileByParentResponse,
-	{ parentId: string; req?: GetDriveFileByParentRequest },
+	{ parentId: string, req?: GetDriveFileByParentRequest },
 	thunkConfig
 >(
 	`${SLICE_NAME}/getDriveFileByParentForTree`,
@@ -394,7 +394,7 @@ export const getDriveFileAncestors = createAsyncThunk<
 
 export const restoreDriveFileFromTrash = createAsyncThunk<
 	RestoreDriveFileFromTrashResponse,
-	{ fileId: string; parentDriveFileRef: string | null },
+	{ fileId: string, parentDriveFileRef: string | null },
 	thunkConfig
 >(
 	`${SLICE_NAME}/restoreDriveFileFromTrash`,

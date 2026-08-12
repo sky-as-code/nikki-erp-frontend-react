@@ -1,7 +1,7 @@
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 
-import { AuthorizeDispatch, resourceActions, selectResourceList } from '@/appState';
+import { AuthorizeDispatch, resourceActions, selectResourceList } from '../../../appState';
 
 
 export function useResourceList() {

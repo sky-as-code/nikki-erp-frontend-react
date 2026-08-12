@@ -15,13 +15,13 @@ import { Link } from 'react-router-dom';
 
 
 import { DriveFileTree } from './DriveFileTree';
+import { DRIVE_TABS } from '../../../../constants/driveTabs';
 import { useDriveSidebarActiveRoutes } from '../../hooks/useDriveSidebarActiveRoutes';
 import { useDriveSidebarTree } from '../../hooks/useDriveSidebarTree';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 import type { ReactNode } from 'react';
 
-import { DRIVE_TABS } from '@/constants/driveTabs';
 
 
 export interface DriveSidebarProps {
@@ -31,14 +31,14 @@ export interface DriveSidebarProps {
 const SIDEBAR_SHOW_KEY = 'drive_sidebarShow';
 
 type SidebarNavButtonProps = {
-	show: boolean;
-	label: string;
-	to: string;
-	active: boolean;
-	leftSection: ReactNode;
-	buttonColor?: string;
-	variant?: 'light' | 'default' | 'subtle';
-	onClick?: () => void;
+	show: boolean,
+	label: string,
+	to: string,
+	active: boolean,
+	leftSection: ReactNode,
+	buttonColor?: string,
+	variant?: 'light' | 'default' | 'subtle',
+	onClick?: () => void,
 };
 
 function SidebarNavButton({
@@ -73,18 +73,18 @@ function SidebarNavButton({
 }
 
 type MyFilesSectionProps = {
-	show: boolean;
-	myFilesOpen: boolean;
-	setMyFilesOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
-	isMyFilesActive: boolean;
-	t: (key: string) => string;
-	tree: ReturnType<typeof useDriveSidebarTree>['tree'];
-	myFilesTreeData: ReturnType<typeof useDriveSidebarTree>['myFilesTreeData'];
-	loadingNodeId: ReturnType<typeof useDriveSidebarTree>['loadingNodeId'];
-	handleLoad: ReturnType<typeof useDriveSidebarTree>['handleLoad'];
-	handleLoadMore: ReturnType<typeof useDriveSidebarTree>['handleLoadMore'];
-	handleNodeClick: ReturnType<typeof useDriveSidebarTree>['handleNodeClick'];
-	currentFolderId: ReturnType<typeof useDriveSidebarTree>['currentFolderId'];
+	show: boolean,
+	myFilesOpen: boolean,
+	setMyFilesOpen: (value: boolean | ((prev: boolean) => boolean)) => void,
+	isMyFilesActive: boolean,
+	t: (key: string) => string,
+	tree: ReturnType<typeof useDriveSidebarTree>['tree'],
+	myFilesTreeData: ReturnType<typeof useDriveSidebarTree>['myFilesTreeData'],
+	loadingNodeId: ReturnType<typeof useDriveSidebarTree>['loadingNodeId'],
+	handleLoad: ReturnType<typeof useDriveSidebarTree>['handleLoad'],
+	handleLoadMore: ReturnType<typeof useDriveSidebarTree>['handleLoadMore'],
+	handleNodeClick: ReturnType<typeof useDriveSidebarTree>['handleNodeClick'],
+	currentFolderId: ReturnType<typeof useDriveSidebarTree>['currentFolderId'],
 };
 
 function MyFilesSection({
@@ -150,11 +150,11 @@ function MyFilesSection({
 }
 
 type SidebarNavLinksProps = {
-	show: boolean;
-	isSharedActive: boolean;
-	isStarredActive: boolean;
-	isTrashActive: boolean;
-	t: (key: string) => string;
+	show: boolean,
+	isSharedActive: boolean,
+	isStarredActive: boolean,
+	isTrashActive: boolean,
+	t: (key: string) => string,
 };
 
 function SidebarNavLinks({

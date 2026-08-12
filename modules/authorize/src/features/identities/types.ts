@@ -1,33 +1,33 @@
-import type { IdentityUserDto, IdentityGroupDto, IdentityOrgDto } from '@/services/identService';
+import type { IdentityUserDto, IdentityGroupDto, IdentityOrgDto } from '../../services/identService';
 
 
 export type User = {
-	id: string;
-	displayName: string;
-	email: string;
-	avatarUrl?: string;
-	etag: string;
-	failedLoginAttempts?: number;
-	hierarchyId?: string;
-	lastLoginAt?: string;
-	lockedUntil?: string;
-	mustChangePassword?: boolean;
-	passwordChangedAt?: string;
-	status: 'active' | 'inactive' | 'lock';
-	managerId?: string;
-	groups?: Array<{ id: string; name: string }>;
-	orgs?: Array<{ id: string; displayName: string; slug: string }>;
-	hierarchies?: Array<{ id: string; name: string }>;
-	manager?: { id: string; displayName: string };
+	id: string,
+	displayName: string,
+	email: string,
+	avatarUrl?: string,
+	etag: string,
+	failedLoginAttempts?: number,
+	hierarchyId?: string,
+	lastLoginAt?: string,
+	lockedUntil?: string,
+	mustChangePassword?: boolean,
+	passwordChangedAt?: string,
+	status: 'active' | 'inactive' | 'lock',
+	managerId?: string,
+	groups?: Array<{ id: string, name: string }>,
+	orgs?: Array<{ id: string, displayName: string, slug: string }>,
+	hierarchies?: Array<{ id: string, name: string }>,
+	manager?: { id: string, displayName: string },
 };
 
 export type Group = {
-	id: string;
-	name: string;
-	description?: string;
-	etag: string;
-	orgId?: string;
-	org?: { id: string; displayName: string; slug: string };
+	id: string,
+	name: string,
+	description?: string,
+	etag: string,
+	orgId?: string,
+	org?: { id: string, displayName: string, slug: string },
 };
 
 export interface Org {

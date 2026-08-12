@@ -3,14 +3,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { SharePermissionSummaryTable } from './SharePermissionSummaryTable';
-
 import {
 	DriveFileSharePermission,
 	DriveFileSharePermissionDisplay,
-} from '@/features/fileShare';
-import { useDriveFileSharePermissionStrings } from '@/features/fileShare/hooks/enum/useDriveFileSharePermissionStrings';
-import { SHARE_PERMISSION_INFO_ORDER } from '@/features/fileShare/sharePermissionConstants';
+} from '../..';
 import { INHERITED_PERMISSIONS } from '../../driveFileShareAccessDetailUtils';
+import { useDriveFileSharePermissionStrings } from '../../hooks/enum/useDriveFileSharePermissionStrings';
+import { SHARE_PERMISSION_INFO_ORDER } from '../../sharePermissionConstants';
 
 
 function showsParentFolderPermissionSuffix(permission: DriveFileSharePermission): boolean {
@@ -18,8 +17,8 @@ function showsParentFolderPermissionSuffix(permission: DriveFileSharePermission)
 }
 
 export type SharePermissionHelpModalProps = {
-	opened: boolean;
-	onClose: () => void;
+	opened: boolean,
+	onClose: () => void,
 };
 
 export function SharePermissionHelpModal({ opened, onClose }: SharePermissionHelpModalProps): React.ReactNode {

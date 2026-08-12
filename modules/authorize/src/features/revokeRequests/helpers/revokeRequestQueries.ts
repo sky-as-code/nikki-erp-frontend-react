@@ -1,7 +1,7 @@
 /**
  * Helper functions to build graph queries for revoke request filtering
  */
-import { ReceiverType } from '@/features/grantRequests/types';
+import { ReceiverType } from '../../grantRequests/types';
 
 
 export function buildRolesByReceiverQuery(

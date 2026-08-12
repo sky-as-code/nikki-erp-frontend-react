@@ -10,8 +10,8 @@ import {
 	selectRoleList,
 	selectRoleSuiteList,
 	selectUserList,
-} from '@/appState';
-import { ReceiverType, TargetType } from '@/features/grantRequests/types';
+} from '../../../appState';
+import { ReceiverType, TargetType } from '../../grantRequests/types';
 import {
 	buildGroupsByRoleQuery,
 	buildGroupsByRoleSuiteQuery,
@@ -19,16 +19,16 @@ import {
 	buildRolesByReceiverQuery,
 	buildUsersByRoleQuery,
 	buildUsersByRoleSuiteQuery,
-} from '@/features/revokeRequests/helpers/revokeRequestQueries';
+} from '../helpers/revokeRequestQueries';
 
 
 export type AssignmentItem = {
-	targetType: TargetType;
-	targetId: string;
-	targetName: string;
-	receiverType: ReceiverType;
-	receiverId: string;
-	receiverName: string;
+	targetType: TargetType,
+	targetId: string,
+	targetName: string,
+	receiverType: ReceiverType,
+	receiverId: string,
+	receiverName: string,
 };
 
 export function useRolesByReceiver(receiverId: string | null, receiverType: ReceiverType | null) {

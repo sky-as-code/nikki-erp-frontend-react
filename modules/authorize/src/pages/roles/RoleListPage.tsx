@@ -16,9 +16,9 @@ import {
 	selectGroupList,
 	selectRoleState,
 	selectUserList,
-} from '@/appState';
-import { RoleTable, roleSchema, useRoleDelete } from '@/features/roles';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../appState';
+import { RoleTable, roleSchema, useRoleDelete } from '../../features/roles';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 // eslint-disable-next-line max-lines-per-function

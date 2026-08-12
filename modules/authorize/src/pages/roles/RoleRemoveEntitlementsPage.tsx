@@ -8,8 +8,8 @@ import {
 	RoleRemoveEntitlementsForm,
 	useRoleRemoveEntitlementsData,
 	useRoleRemoveEntitlements,
-} from '@/features/roles';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../features/roles';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function RoleRemoveEntitlementsPageBody(): React.ReactNode {

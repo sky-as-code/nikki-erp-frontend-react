@@ -6,10 +6,11 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import type { Role } from '@/features/roles';
-import type { RoleSuite } from '@/features/roleSuites';
+import { AuthorizeDispatch, roleActions, roleSuiteActions, selectCreateRoleSuite, selectRoleState } from '../../../appState';
 
-import { AuthorizeDispatch, roleActions, roleSuiteActions, selectCreateRoleSuite, selectRoleState } from '@/appState';
+import type { RoleSuite } from '..';
+import type { Role } from '../../roles';
+
 
 
 function useRolesLoader(

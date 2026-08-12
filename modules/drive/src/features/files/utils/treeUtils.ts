@@ -1,7 +1,8 @@
+import { DRIVE_TABS } from '../../../constants/driveTabs';
+
 import type { DriveFile } from '../types';
 import type { TreeNodeData } from '@mantine/core';
 
-import { DRIVE_TABS } from '@/constants/driveTabs';
 
 
 export type DriveTreeTranslate = (key: string) => string;
@@ -9,8 +10,8 @@ export type DriveTreeTranslate = (key: string) => string;
 type DriveFileApi = DriveFile & { is_folder?: boolean };
 
 type TreePagingState = Record<string, {
-	total?: number;
-	loaded?: number;
+	total?: number,
+	loaded?: number,
 }>;
 
 /** API có thể trả is_folder (snake_case), chuẩn hóa để lấy isFolder. */

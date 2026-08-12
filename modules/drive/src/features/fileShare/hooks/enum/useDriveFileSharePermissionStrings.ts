@@ -4,8 +4,8 @@ import { DriveFileSharePermission } from '../../type';
 
 
 export function useDriveFileSharePermissionStrings(): {
-	label: (e: DriveFileSharePermission) => string;
-	description: (e: DriveFileSharePermission) => string;
+	label: (e: DriveFileSharePermission) => string,
+	description: (e: DriveFileSharePermission) => string,
 } {
 	const { t } = useTranslation();
 	const inherited = t('nikki.drive.share.permissionInParenthesesInherited');

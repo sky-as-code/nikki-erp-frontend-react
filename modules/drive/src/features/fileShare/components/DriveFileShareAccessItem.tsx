@@ -4,21 +4,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 
-import { DriveUserDisplay } from '@/components';
-import { DriveFileSharePermissionDisplay } from '@/features/fileShare';
-import { resolveUserRef } from '@/features/fileShare/driveFileShareUserUtils';
-import { DriveFileSharePermission, type DriveFileShare } from '@/features/fileShare/type';
+import { DriveFileSharePermissionDisplay } from '..';
+import { DriveUserDisplay } from '../../../components';
+import { resolveUserRef } from '../driveFileShareUserUtils';
+import { DriveFileSharePermission, type DriveFileShare } from '../type';
 
 
 export type DriveFileShareAccessItemProps = {
-	share: DriveFileShare;
+	share: DriveFileShare,
 	/** @deprecated Không còn dùng trong logic nút; giữ cho call site cũ. */
-	readOnly?: boolean;
+	readOnly?: boolean,
 	/** `false`: ẩn nút chi tiết. Quyền `OWNER` trên dòng vẫn luôn ẩn nút. */
-	allowOpenDetail?: boolean;
+	allowOpenDetail?: boolean,
 	/** `true`: chỉ xem chi tiết trong modal (icon + tooltip “xem”). */
-	detailReadOnly?: boolean;
-	onOpenDetail?: () => void;
+	detailReadOnly?: boolean,
+	onOpenDetail?: () => void,
 };
 
 export function DriveFileShareAccessItem({

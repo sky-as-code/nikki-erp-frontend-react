@@ -1,10 +1,10 @@
-import { AuthorizeDispatch, roleActions, selectDeleteRole } from '@/appState';
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Role } from '@/features/roles/types';
+import { AuthorizeDispatch, roleActions, selectDeleteRole } from '../../../appState';
+import { Role } from '../types';
 
 
 

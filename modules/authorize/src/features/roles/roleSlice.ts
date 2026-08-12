@@ -13,19 +13,19 @@ import { Entitlement } from '../entitlements/types';
 export const SLICE_NAME = 'authorize.role';
 
 export type RoleState = {
-	roles: Role[];
-	roleDetail: Role | undefined;
+	roles: Role[],
+	roleDetail: Role | undefined,
 
 	list: {
-		isLoading: boolean;
-		error: string | null;
-	};
+		isLoading: boolean,
+		error: string | null,
+	},
 
-	create: ReduxActionState<Role>;
-	update: ReduxActionState<Role>;
-	delete: ReduxActionState<void>;
-	addEntitlements: ReduxActionState<void>;
-	removeEntitlements: ReduxActionState<void>;
+	create: ReduxActionState<Role>,
+	update: ReduxActionState<Role>,
+	delete: ReduxActionState<void>,
+	addEntitlements: ReduxActionState<void>,
+	removeEntitlements: ReduxActionState<void>,
 };
 
 export const initialState: RoleState = {
@@ -68,7 +68,7 @@ async function hydrateEntitlements(
 
 export const listRoles = createAsyncThunk<
 	Role[],
-	{ listQuery?: ListQuery; orgId?: string | null; includeDomainInOrg?: boolean },
+	{ listQuery?: ListQuery, orgId?: string | null, includeDomainInOrg?: boolean },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/list`,
@@ -127,7 +127,7 @@ export const createRole = createAsyncThunk<
 
 export const updateRole = createAsyncThunk<
 	Role,
-	{ id: string; etag: string; role: Role },
+	{ id: string, etag: string, role: Role },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/update`,
@@ -163,7 +163,7 @@ export const deleteRole = createAsyncThunk<
 
 export const addEntitlementsToRole = createAsyncThunk<
 	void,
-	{ roleId: string; etag: string; entitlementInputs: Array<{ entitlementId: string; scopeRef?: string }> },
+	{ roleId: string, etag: string, entitlementInputs: Array<{ entitlementId: string, scopeRef?: string }> },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/addEntitlements`,
@@ -181,7 +181,7 @@ export const addEntitlementsToRole = createAsyncThunk<
 
 export const removeEntitlementsFromRole = createAsyncThunk<
 	void,
-	{ roleId: string; etag: string; entitlementInputs: Array<{ entitlementId: string; scopeRef?: string }> },
+	{ roleId: string, etag: string, entitlementInputs: Array<{ entitlementId: string, scopeRef?: string }> },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/removeEntitlements`,

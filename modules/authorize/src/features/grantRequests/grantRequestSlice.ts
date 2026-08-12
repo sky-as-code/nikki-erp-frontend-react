@@ -13,18 +13,18 @@ import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActi
 export const SLICE_NAME = 'authorize.grantRequests';
 
 export type GrantRequestState = {
-	grantRequests: GrantRequest[];
-	grantRequestDetail?: GrantRequest;
+	grantRequests: GrantRequest[],
+	grantRequestDetail?: GrantRequest,
 
 	list: {
-		isLoading: boolean;
-		error: string | null;
-	};
+		isLoading: boolean,
+		error: string | null,
+	},
 
-	create: ReduxActionState<GrantRequest>;
-	respond: ReduxActionState<GrantRequest>;
-	cancel: ReduxActionState<void>;
-	delete: ReduxActionState<void>;
+	create: ReduxActionState<GrantRequest>,
+	respond: ReduxActionState<GrantRequest>,
+	cancel: ReduxActionState<void>,
+	delete: ReduxActionState<void>,
 };
 
 export const initialState: GrantRequestState = {
@@ -87,7 +87,7 @@ export const createGrantRequest = createAsyncThunk<
 
 export const respondGrantRequest = createAsyncThunk<
 	GrantRequest,
-	{ id: string; decision: 'approve' | 'deny'; etag: string; responderId: string },
+	{ id: string, decision: 'approve' | 'deny', etag: string, responderId: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/respond`,

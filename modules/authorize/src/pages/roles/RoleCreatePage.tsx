@@ -18,9 +18,9 @@ import {
 	identityActions,
 	selectGroupList,
 	selectUserList,
-} from '@/appState';
-import { RoleFormFields, roleSchema, useRoleCreate } from '@/features/roles';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../appState';
+import { RoleFormFields, roleSchema, useRoleCreate } from '../../features/roles';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function RoleCreatePageBody(): React.ReactNode {

@@ -9,8 +9,8 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { EntitlementFormFields, entitlementSchema, useEntitlementCreate } from '@/features/entitlements';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+import { EntitlementFormFields, entitlementSchema, useEntitlementCreate } from '../../features/entitlements';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function EntitlementCreatePageBody(): React.ReactNode {

@@ -20,19 +20,19 @@ import { DriveFileType as DriveFileTypeConst, type DriveFileType as DriveFileTyp
 
 
 export type DriveFileIconProps = {
-	type: DriveFileTypeUnion;
+	type: DriveFileTypeUnion,
 	/** Only used for image types to render preview. */
-	url?: string | null;
-	size?: number;
+	url?: string | null,
+	size?: number,
 };
 
 type IconComponent = React.ComponentType<{
-	size?: number;
-	stroke?: number;
-	color?: string;
+	size?: number,
+	stroke?: number,
+	color?: string,
 }>;
 
-const TYPE_ICON_CONFIG: Partial<Record<DriveFileTypeUnion, { Icon: IconComponent; color: string }>> = {
+const TYPE_ICON_CONFIG: Partial<Record<DriveFileTypeUnion, { Icon: IconComponent, color: string }>> = {
 	[DriveFileTypeConst.FOLDER]: {
 		Icon: IconFolder,
 		color: 'var(--mantine-color-yellow-7)',

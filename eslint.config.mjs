@@ -143,6 +143,14 @@ export default defineConfig([
 				},
 			],
 			'import/newline-after-import': ['error', { 'count': 2 }],
+			'no-restricted-imports': ['error', {
+				patterns: [{
+					group: ['@/*'],
+					message: "Do not use the '@/' path alias — it only resolves inside this package's own build "
+						+ 'tooling and breaks when consumed as a micro-frontend or by cross-package tooling. '
+						+ 'Use a relative import instead.',
+				}],
+			}],
 		},
 		settings: {
 			'import/parsers': {

@@ -1,17 +1,18 @@
 import { Select } from '@mantine/core';
 import React from 'react';
 
-import type { DriveFileSharePermission as DriveFileSharePermissionType } from '@/features/fileShare/type';
+import { DriveFileSharePermissionDisplay } from '..';
 
-import { DriveFileSharePermissionDisplay } from '@/features/fileShare';
+import type { DriveFileSharePermission as DriveFileSharePermissionType } from '../type';
+
 
 
 
 export type PermissionSelectorProps = {
-	value: DriveFileSharePermissionType;
-	options: Array<{ value: DriveFileSharePermissionType; label: string }>;
-	onChange: (nextPermission: DriveFileSharePermissionType) => void;
-	w?: number | string;
+	value: DriveFileSharePermissionType,
+	options: Array<{ value: DriveFileSharePermissionType, label: string }>,
+	onChange: (nextPermission: DriveFileSharePermissionType) => void,
+	w?: number | string,
 };
 
 export function PermissionSelector({

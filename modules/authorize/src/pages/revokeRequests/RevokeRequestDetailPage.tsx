@@ -11,7 +11,7 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { RevokeRequestFormFields, revokeRequestSchema, useRevokeRequestDetail } from '@/features/revokeRequests';
+import { RevokeRequestFormFields, revokeRequestSchema, useRevokeRequestDetail } from '../../features/revokeRequests';
 
 
 function RevokeRequestDetailPageBody(): React.ReactNode {

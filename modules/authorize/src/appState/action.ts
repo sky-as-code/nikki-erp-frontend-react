@@ -10,7 +10,7 @@ import {
 	deleteAction,
 	ActionState,
 	initialState,
-} from '@/features/actions/actionSlice';
+} from '../features/actions/actionSlice';
 
 
 const STATE_KEY = 'action';

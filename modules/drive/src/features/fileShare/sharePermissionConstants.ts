@@ -1,7 +1,7 @@
 import {
 	DriveFileSharePermission,
 	type DriveFileSharePermission as DriveFileSharePermissionType,
-} from '@/features/fileShare/type';
+} from './type';
 
 
 /**
@@ -35,7 +35,7 @@ export type PermissionSummaryRowKey =
 	| 'deletePermanently';
 
 /** Mỗi hàng: `cells[i]` tương ứng cột `SHARE_PERMISSION_INFO_ORDER[i]`. */
-export const PERMISSION_SUMMARY_ROWS: { rowKey: PermissionSummaryRowKey; cells: PermissionSummaryCellKind[] }[] = [
+export const PERMISSION_SUMMARY_ROWS: { rowKey: PermissionSummaryRowKey, cells: PermissionSummaryCellKind[] }[] = [
 	{ rowKey: 'view', cells: ['yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes'] },
 	{ rowKey: 'edit', cells: ['na', 'na', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes'] },
 	{

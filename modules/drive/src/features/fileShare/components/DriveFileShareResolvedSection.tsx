@@ -4,27 +4,27 @@ import { useTranslation } from 'react-i18next';
 
 import { DriveFileShareAccessItem } from './DriveFileShareAccessItem';
 import { shareAccessAccordionStyles } from './shareAccessAccordionStyles';
+import { canOpenShareDetailRow } from '../driveFileShareAccessDetailUtils';
 
-import type { DriveFile } from '@/features/files/types';
+import type { DriveFile } from '../../files/types';
 import type {
 	DriveFileShare,
 	DriveFileSharePermission as DriveFileSharePermissionType,
 	ResolvedDriveFileShareResponse,
-} from '@/features/fileShare/type';
+} from '../type';
 import type { ReduxActionState } from '@nikkierp/ui/appState';
 
-import { canOpenShareDetailRow } from '@/features/fileShare/driveFileShareAccessDetailUtils';
 
 
 const RESOLVED_ACCORDION_ITEM = 'resolved-shares';
 
 export type DriveFileShareResolvedSectionProps = {
-	file: DriveFile;
-	currentUserId: string | undefined;
-	viewerAppliedPermission: DriveFileSharePermissionType | null | undefined;
-	resolvedState: ReduxActionState<ResolvedDriveFileShareResponse>;
-	detailReadOnly?: boolean;
-	onOpenShareDetail: (share: DriveFileShare) => void;
+	file: DriveFile,
+	currentUserId: string | undefined,
+	viewerAppliedPermission: DriveFileSharePermissionType | null | undefined,
+	resolvedState: ReduxActionState<ResolvedDriveFileShareResponse>,
+	detailReadOnly?: boolean,
+	onOpenShareDetail: (share: DriveFileShare) => void,
 };
 
 export function DriveFileShareResolvedSection({

@@ -35,8 +35,8 @@ export function useLocalStorage<T>(
 	key: string,
 	initialValue: T,
 	options?: {
-		parse?: (raw: string) => T;
-		serialize?: (value: T) => string;
+		parse?: (raw: string) => T,
+		serialize?: (value: T) => string,
 	},
 ): [T, (value: T | ((prev: T) => T)) => void] {
 	const parse = options?.parse ?? ((s: string) => s as T);

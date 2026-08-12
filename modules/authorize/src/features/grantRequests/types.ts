@@ -28,14 +28,14 @@ export interface GrantRequest {
 	// org?: Org | null;
 	orgDisplayName?: string;
 	createdAt: string;
-	approver?: { id: string; name?: string } | null;
-	requestor?: { id: string; name?: string };
+	approver?: { id: string, name?: string } | null;
+	requestor?: { id: string, name?: string };
 	requestorId?: string;
-	receiver?: { id: string; name?: string };
+	receiver?: { id: string, name?: string };
 	receiverId?: string;
-	target?: { id: string; name?: string };
+	target?: { id: string, name?: string };
 	targetId?: string;
 	etag?: string;
 	receiverType?: ReceiverType;
-	grantResponses?: Array<{ id: string; responderName: string; isApproved: boolean }>;
+	grantResponses?: Array<{ id: string, responderName: string, isApproved: boolean }>;
 }

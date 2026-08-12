@@ -1,7 +1,7 @@
 import { Grid, Title } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
-import { QuickLinkItem } from '@/features/overviews/QuickLinkItem';
+import { QuickLinkItem } from '../QuickLinkItem';
 
 
 export interface QuickLink {

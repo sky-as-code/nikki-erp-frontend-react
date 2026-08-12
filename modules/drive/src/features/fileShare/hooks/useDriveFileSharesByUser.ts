@@ -1,25 +1,26 @@
 import React from 'react';
 
-import type { DriveFileShare } from '@/features/fileShare/type';
 
-import { orderSharesForAccessDetail } from '@/features/fileShare/driveFileShareAccessDetailUtils';
-import { fileShareService } from '@/features/fileShare/fileShareService';
+import { orderSharesForAccessDetail } from '../driveFileShareAccessDetailUtils';
+import { fileShareService } from '../fileShareService';
+
+import type { DriveFileShare } from '../type';
 
 
 export type DriveFileSharesByUserStatus = 'idle' | 'pending' | 'success' | 'error';
 
 export type UseDriveFileSharesByUserResult = {
-	status: DriveFileSharesByUserStatus;
-	error: string | null;
+	status: DriveFileSharesByUserStatus,
+	error: string | null,
 	/** Phản hồi thô từ API. */
-	rawItems: DriveFileShare[];
+	rawItems: DriveFileShare[],
 	/** Sau `orderSharesForAccessDetail` (reverse + đưa bản ghi của file hiện tại lên đầu). */
-	orderedShares: DriveFileShare[];
+	orderedShares: DriveFileShare[],
 	/** Quyền áp dụng trên file hiện tại (hàng đầu sau khi sort). */
-	appliedShare: DriveFileShare | null;
+	appliedShare: DriveFileShare | null,
 	/** Các bản ghi kế thừa / folder cha (phần còn lại sau hàng đầu). */
-	inheritedChainShares: DriveFileShare[];
-	refetch: () => Promise<void>;
+	inheritedChainShares: DriveFileShare[],
+	refetch: () => Promise<void>,
 };
 
 /**
@@ -27,9 +28,9 @@ export type UseDriveFileSharesByUserResult = {
  * Mỗi lần gọi hook với `fileId`/`userId` khác nhau có state độc lập (không dùng Redux slice `sharesByUser`).
  */
 export function useDriveFileSharesByUser(params: {
-	fileId: string;
-	userId: string | null | undefined;
-	enabled?: boolean;
+	fileId: string,
+	userId: string | null | undefined,
+	enabled?: boolean,
 }): UseDriveFileSharesByUserResult {
 	const { fileId, userId, enabled = true } = params;
 	const [status, setStatus] = React.useState<DriveFileSharesByUserStatus>('idle');

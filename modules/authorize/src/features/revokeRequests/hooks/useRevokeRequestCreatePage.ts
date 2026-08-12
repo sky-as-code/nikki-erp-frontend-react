@@ -6,9 +6,6 @@ import { useLocation, useNavigate, resolvePath } from 'react-router';
 
 import { useRevokeRequestFilter } from './useRevokeRequestFilter';
 import { useUserContext } from '../../../../../../libs/shell/src/userContext/userContextSelectors';
-
-import type { CreateRevokeRequestInput } from '@/features/revokeRequests/revokeRequestService';
-
 import {
 	AuthorizeDispatch,
 	identityActions,
@@ -18,7 +15,10 @@ import {
 	selectRoleList,
 	selectRoleSuiteList,
 	selectUserList,
-} from '@/appState';
+} from '../../../appState';
+
+import type { CreateRevokeRequestInput } from '../revokeRequestService';
+
 
 
 function usePageData() {
@@ -50,10 +50,10 @@ function useFormState() {
 }
 
 type SelectedAssignment = {
-	receiverType: string;
-	receiverId: string;
-	targetType: string;
-	targetId: string;
+	receiverType: string,
+	receiverId: string,
+	targetType: string,
+	targetId: string,
 };
 
 function buildCreateItems(

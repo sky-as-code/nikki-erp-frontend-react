@@ -1,10 +1,10 @@
-import { AuthorizeDispatch, resourceActions, selectDeleteResource } from '@/appState';
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { type Resource } from '@/features/resources';
+import { type Resource } from '..';
+import { AuthorizeDispatch, resourceActions, selectDeleteResource } from '../../../appState';
 
 
 

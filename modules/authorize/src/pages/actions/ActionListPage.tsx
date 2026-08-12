@@ -6,9 +6,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 
-import { AuthorizeDispatch } from '@/appState';
-import { ActionTable, actionSchema, useActionDelete, useActionList } from '@/features/actions';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+import { AuthorizeDispatch } from '../../appState';
+import { ActionTable, actionSchema, useActionDelete, useActionList } from '../../features/actions';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function ActionListPageBody(): React.ReactNode {

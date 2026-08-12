@@ -3,11 +3,11 @@ import { IconArrowRight } from '@tabler/icons-react';
 import React from 'react';
 
 import { EntitlementCard } from './EntitlementCard';
+import { createEntitlementKey } from '../../../../utils';
 
-import type { Entitlement } from '@/features/entitlements';
-import type { Resource } from '@/features/resources';
+import type { Entitlement } from '../../../entitlements';
+import type { Resource } from '../../../resources';
 
-import { createEntitlementKey } from '@/utils';
 
 
 export interface AvailableEntitlementsListProps {

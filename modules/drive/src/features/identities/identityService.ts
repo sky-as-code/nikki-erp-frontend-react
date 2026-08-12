@@ -1,15 +1,15 @@
 
 import { mapDtoToIdentityUser } from './types';
+import { listUsers as listUsersApi } from '../../services/identService';
 
 import type { IdentityUser } from './types';
 
-import { listUsers as listUsersApi } from '@/services/identService';
 
 
 type ListUsersParams = {
-	graph?: Record<string, unknown>;
-	page?: number;
-	size?: number;
+	graph?: Record<string, unknown>,
+	page?: number,
+	size?: number,
 };
 
 export const identityService = {

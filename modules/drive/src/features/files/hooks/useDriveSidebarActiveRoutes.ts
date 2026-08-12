@@ -2,10 +2,10 @@ import { useLocation } from 'react-router';
 
 
 export function useDriveSidebarActiveRoutes(): {
-	isMyFilesActive: boolean;
-	isSharedActive: boolean;
-	isStarredActive: boolean;
-	isTrashActive: boolean;
+	isMyFilesActive: boolean,
+	isSharedActive: boolean,
+	isStarredActive: boolean,
+	isTrashActive: boolean,
 } {
 	const location = useLocation();
 	const isMyFilesActive = location.pathname.endsWith('/management/my-files');

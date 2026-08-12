@@ -1,14 +1,15 @@
 import React from 'react';
 
-import type { DriveFile } from '@/features/files/types';
+import { DriveFileShareManager } from '../../../../fileShare';
 
-import { DriveFileShareManager } from '@/features/fileShare';
+import type { DriveFile } from '../../../types';
+
 
 
 
 
 export type DriveFileShareModalContentProps = {
-	file: DriveFile;
+	file: DriveFile,
 };
 
 export function DriveFileShareModalContent({

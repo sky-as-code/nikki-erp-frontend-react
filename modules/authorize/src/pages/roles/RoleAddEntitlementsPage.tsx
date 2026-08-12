@@ -11,8 +11,8 @@ import {
 	RoleAddEntitlementsForm,
 	useRoleAddEntitlementsData,
 	useRoleAddEntitlements,
-} from '@/features/roles';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../features/roles';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function RoleAddEntitlementsPageBody(): React.ReactNode {

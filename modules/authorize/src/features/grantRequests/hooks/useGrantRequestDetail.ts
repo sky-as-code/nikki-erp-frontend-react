@@ -5,14 +5,14 @@ import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { resolvePath } from 'react-router';
 
+import { GrantRequest } from '..';
 import {
 	AuthorizeDispatch,
 	grantRequestActions,
 	selectGrantRequestState,
 	selectRespondGrantRequest,
 	selectCancelGrantRequest,
-} from '@/appState';
-import { GrantRequest } from '@/features/grantRequests';
+} from '../../../appState';
 
 
 function useGrantRequestDetailData() {

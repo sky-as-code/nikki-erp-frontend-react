@@ -8,7 +8,7 @@ import {
 	listOrgs,
 	type IdentityState,
 	initialState,
-} from '@/features/identities/identitySlice';
+} from '../features/identities/identitySlice';
 
 
 const STATE_KEY = 'identity';

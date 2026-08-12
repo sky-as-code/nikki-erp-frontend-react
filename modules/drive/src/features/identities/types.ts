@@ -1,11 +1,11 @@
-import type { IdentityUserDto } from '@/services/identService';
+import type { IdentityUserDto } from '../../services/identService';
 
 
 export type IdentityUser = {
-	id: string;
-	displayName: string;
-	email: string;
-	avatarUrl?: string;
+	id: string,
+	displayName: string,
+	email: string,
+	avatarUrl?: string,
 };
 
 export function mapDtoToIdentityUser(dto: IdentityUserDto): IdentityUser {

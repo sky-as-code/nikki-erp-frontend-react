@@ -16,16 +16,16 @@ import {
 	GrantRequestFormFields,
 	grantRequestSchema,
 	useGrantRequestDetail,
-} from '@/features/grantRequests';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../features/grantRequests';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function GrantRequestDetailForm({
 	grantRequest,
 	handlers,
 }: {
-	grantRequest: NonNullable<ReturnType<typeof useGrantRequestDetail.detail>['grantRequest']>;
-	handlers: ReturnType<typeof useGrantRequestDetail.handlers>;
+	grantRequest: NonNullable<ReturnType<typeof useGrantRequestDetail.detail>['grantRequest']>,
+	handlers: ReturnType<typeof useGrantRequestDetail.handlers>,
 }) {
 	const schema = grantRequestSchema as ModelSchema;
 	const targetName = grantRequest.target?.name || grantRequest.targetRef;

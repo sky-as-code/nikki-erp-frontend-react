@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Role } from '@/features/roles';
+import { Role } from '../../roles';
 
 
 export function useRoleChanges(originalRoleIds: string[], selectedRoleIds: string[], allRoles: Role[]) {

@@ -3,14 +3,14 @@ import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { driveFileActions } from '@/appState/file';
-import { DriveFileStatus } from '@/features/files';
-import { DriveFileTitle } from '@/features/files/components/DriveFileTitle';
-import { DriveFileView, type DriveFileUIViewMode } from '@/features/files/components/DriveFileView';
-import { DriveFileFilterBar } from '@/features/files/components/Filters/DriveFileFilterBar';
-import { useDriveFileList } from '@/features/files/hooks';
-import { useDriveFileFilters } from '@/features/files/hooks/useDriveFileFilters';
-import { useLocalStorage } from '@/features/files/hooks/useLocalStorage';
+import { driveFileActions } from '../../appState/file';
+import { DriveFileStatus } from '../../features/files';
+import { DriveFileTitle } from '../../features/files/components/DriveFileTitle';
+import { DriveFileView, type DriveFileUIViewMode } from '../../features/files/components/DriveFileView';
+import { DriveFileFilterBar } from '../../features/files/components/Filters/DriveFileFilterBar';
+import { useDriveFileList } from '../../features/files/hooks';
+import { useDriveFileFilters } from '../../features/files/hooks/useDriveFileFilters';
+import { useLocalStorage } from '../../features/files/hooks/useLocalStorage';
 
 
 const PAGE_SIZE = 20;

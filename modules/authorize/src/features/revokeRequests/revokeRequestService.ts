@@ -1,6 +1,3 @@
-import type { RevokeRequest } from './types';
-import type { ListQuery } from '@/services/authzService';
-
 import {
 	listRevokeRequests as listRevokeRequestsApi,
 	getRevokeRequest as getRevokeRequestApi,
@@ -8,21 +5,25 @@ import {
 	bulkCreateRevokeRequests as bulkCreateRevokeRequestsApi,
 	deleteRevokeRequest as deleteRevokeRequestApi,
 	type AuthzBulkRevokeRequestInputDto,
-} from '@/services/authzService';
+} from '../../services/authzService';
+
+import type { RevokeRequest } from './types';
+import type { ListQuery } from '../../services/authzService';
+
 
 
 export type CreateRevokeRequestInput = {
-	attachmentUrl?: string;
-	comment?: string;
-	requestorId: string;
-	receiverType: RevokeRequest['receiverType'];
-	receiverId: string;
-	targetType: RevokeRequest['targetType'];
-	targetRef: string;
+	attachmentUrl?: string,
+	comment?: string,
+	requestorId: string,
+	receiverType: RevokeRequest['receiverType'],
+	receiverId: string,
+	targetType: RevokeRequest['targetType'],
+	targetRef: string,
 };
 
 export type BulkCreateResult = {
-	count: number;
+	count: number,
 };
 
 function mapCreateInputToDto(input: CreateRevokeRequestInput): AuthzBulkRevokeRequestInputDto {

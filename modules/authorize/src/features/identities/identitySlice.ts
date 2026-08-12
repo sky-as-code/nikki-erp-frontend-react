@@ -10,15 +10,15 @@ import type { User, Group, Org } from './types';
 export const SLICE_NAME = 'authorize.identity';
 
 export type IdentityState = {
-	users: User[];
-	groups: Group[];
-	orgs: Org[];
-	isLoadingUsers: boolean;
-	errorUsers: string | null;
-	isLoadingGroups: boolean;
-	errorGroups: string | null;
-	isLoadingOrgs: boolean;
-	errorOrgs: string | null;
+	users: User[],
+	groups: Group[],
+	orgs: Org[],
+	isLoadingUsers: boolean,
+	errorUsers: string | null,
+	isLoadingGroups: boolean,
+	errorGroups: string | null,
+	isLoadingOrgs: boolean,
+	errorOrgs: string | null,
 };
 
 export const initialState: IdentityState = {
@@ -35,7 +35,7 @@ export const initialState: IdentityState = {
 
 export const listUsers = createAsyncThunk<
 	User[],
-	{ graph?: Record<string, unknown>; page?: number; size?: number } | void,
+	{ graph?: Record<string, unknown>, page?: number, size?: number } | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listUsers`,
@@ -52,7 +52,7 @@ export const listUsers = createAsyncThunk<
 
 export const listGroups = createAsyncThunk<
 	Group[],
-	{ graph?: Record<string, unknown>; page?: number; size?: number } | void,
+	{ graph?: Record<string, unknown>, page?: number, size?: number } | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listGroups`,
@@ -69,7 +69,7 @@ export const listGroups = createAsyncThunk<
 
 export const listOrgs = createAsyncThunk<
 	Org[],
-	{ query?: Record<string, unknown>; page?: number; size?: number } | void,
+	{ query?: Record<string, unknown>, page?: number, size?: number } | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listOrgs`,

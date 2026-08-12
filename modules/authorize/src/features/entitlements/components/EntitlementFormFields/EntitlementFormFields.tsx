@@ -2,11 +2,11 @@ import { AutoField, EntityDisplayField, EntitySelectField, useFormField } from '
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '../../helpers/entitlementFormValidation';
 import { useActionSelectLogic } from '../../hooks/useActionSelectLogic';
 
-import type { Resource } from '@/features/resources';
+import type { Resource } from '../../../resources';
 
-import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '@/features/entitlements/helpers/entitlementFormValidation';
 
 
 interface EntitlementFormFieldsProps {

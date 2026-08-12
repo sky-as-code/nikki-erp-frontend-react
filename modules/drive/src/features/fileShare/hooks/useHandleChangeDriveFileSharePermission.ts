@@ -3,9 +3,10 @@ import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { DriveFileShare, DriveFileSharePermission as DriveFileSharePermissionType } from '@/features/fileShare/type';
+import { driveFileShareActions } from '../../../appState/fileShare';
 
-import { driveFileShareActions } from '@/appState/fileShare';
+import type { DriveFileShare, DriveFileSharePermission as DriveFileSharePermissionType } from '../type';
+
 
 
 export function useHandleChangeDriveFileSharePermission(fileId: string) {

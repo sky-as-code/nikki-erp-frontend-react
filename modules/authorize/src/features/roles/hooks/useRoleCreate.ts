@@ -6,8 +6,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import { AuthorizeDispatch, roleActions, selectCreateRole } from '@/appState';
-import { Role } from '@/features/roles/types';
+import { AuthorizeDispatch, roleActions, selectCreateRole } from '../../../appState';
+import { Role } from '../types';
 
 
 export function useRoleCreate(forcedOrgId?: string) {

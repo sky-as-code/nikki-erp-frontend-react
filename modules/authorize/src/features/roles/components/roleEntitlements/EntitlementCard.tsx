@@ -2,8 +2,8 @@ import { Box, Card, Select, Stack, Text } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Entitlement } from '@/features/entitlements';
-import type { Resource } from '@/features/resources';
+import type { Entitlement } from '../../../entitlements';
+import type { Resource } from '../../../resources';
 import type { Hierarchy, Organization } from '@nikkierp/shell/userContext';
 
 

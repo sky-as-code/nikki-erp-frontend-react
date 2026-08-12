@@ -23,7 +23,7 @@ import {
 	resetUpdate,
 	searchFileShares,
 	updateFileShare,
-} from '@/features/fileShare/fileShareSlice';
+} from '../features/fileShare/fileShareSlice';
 
 
 const STATE_KEY = 'fileShare';
@@ -55,7 +55,7 @@ export const driveFileShareActions = {
 };
 
 export const selectDriveFileShareState = (state: {
-	[STATE_KEY]: DriveFileShareState;
+	[STATE_KEY]: DriveFileShareState,
 }) =>
 	state[STATE_KEY] ?? initialState;
 

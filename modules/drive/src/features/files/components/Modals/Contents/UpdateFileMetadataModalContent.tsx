@@ -6,21 +6,21 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 
+import { driveFileActions, selectUpdateMetadataDriveFile } from '../../../../../appState/file';
 import driveFileSchemaJson from '../../../file-schema.json';
 import { useRefreshCurrentFolder } from '../../../hooks';
 import { DriveFile, UpdateDriveFileMetadataRequest } from '../../../types';
 
 import type { ModelSchema } from '@nikkierp/ui/model';
 
-import { driveFileActions, selectUpdateMetadataDriveFile } from '@/appState/file';
 
 
 const driveFileSchema = driveFileSchemaJson as ModelSchema;
 
 type UpdateFileMetadataModalProps = {
-	opened: boolean;
-	onClose: () => void;
-	file?: DriveFile;
+	opened: boolean,
+	onClose: () => void,
+	file?: DriveFile,
 };
 
 export function UpdateFileMetadataModal(

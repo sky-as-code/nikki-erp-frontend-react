@@ -3,13 +3,13 @@ import React from 'react';
 import { Control, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import type { Group } from '@/features/identities';
-import type { User } from '@/features/identities';
-import type { Role } from '@/features/roles';
-import type { RoleSuite } from '@/features/roleSuites';
+import type { Group } from '../../identities';
+import type { User } from '../../identities';
+import type { Role } from '../../roles';
+import type { RoleSuite } from '../../roleSuites';
 
 
-type SelectOption = { id: string; name: string };
+type SelectOption = { id: string, name: string };
 type TargetType = 'role' | 'suite' | undefined;
 type ReceiverType = 'user' | 'group' | undefined;
 
@@ -32,7 +32,7 @@ function resolveRoleSuiteOrgId(roleSuite: RoleSuite): string | null {
 	return roleSuite.orgId ?? roleSuite.org?.id ?? null;
 }
 
-function mapToSelectOptions<T extends { id: string; name: string }>(items: T[]): SelectOption[] {
+function mapToSelectOptions<T extends { id: string, name: string }>(items: T[]): SelectOption[] {
 	return items.map((item) => ({ id: item.id, name: item.name }));
 }
 
@@ -54,12 +54,12 @@ function filterByOrgScope<T>(
 }
 
 function getSelectPlaceholder(params: {
-	selectedOrgId?: string | null;
-	entityType?: string;
-	hasOptions: boolean;
-	selectScopeFirstText: string;
-	selectTypeFirstText: string;
-	noOptionsText: string;
+	selectedOrgId?: string | null,
+	entityType?: string,
+	hasOptions: boolean,
+	selectScopeFirstText: string,
+	selectTypeFirstText: string,
+	noOptionsText: string,
 }): string {
 	if (params.selectedOrgId === undefined) {
 		return params.selectScopeFirstText;
