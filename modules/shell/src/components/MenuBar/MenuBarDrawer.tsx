@@ -1,11 +1,13 @@
 import {
 	Button, Divider, Drawer, Flex, Stack,
 } from '@mantine/core';
+import { testAttrs } from '@nikkierp/common/utils';
 import { IconApps, IconMenu2, IconX } from '@tabler/icons-react';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import { MENU_BAR_TEST_ID } from './helper';
 import { MenuBar } from './MenuBar';
 import { ThemeSwitchModal } from '../ThemeSwitch';
 
@@ -20,7 +22,10 @@ export const MenuBarDrawer: React.FC = () => {
 
 	return (
 		<>
-			<Button variant='light' size='sm' px={'xs'} onClick={() => setDrawerOpened(!drawerOpened)}>
+			<Button
+				variant='light' size='sm' px={'xs'} onClick={() => setDrawerOpened(!drawerOpened)}
+				{...testAttrs(MENU_BAR_TEST_ID, 'drawerToggle')}
+			>
 				{drawerOpened ? <IconX /> : <IconMenu2 />}
 			</Button>
 
@@ -37,6 +42,7 @@ export const MenuBarDrawer: React.FC = () => {
 						<Button variant='transparent'
 							color='var(--mantine-color-gray-6)' h={24} w={24} p={2}
 							onClick={() => setDrawerOpened(false)}
+							{...testAttrs(MENU_BAR_TEST_ID, 'drawerClose')}
 						>
 							<IconX size={20} />
 						</Button>
@@ -54,6 +60,7 @@ export const MenuBarDrawer: React.FC = () => {
 									navigate('/');
 								}}
 								leftSection={<IconApps size={20} />}
+								{...testAttrs(MENU_BAR_TEST_ID, 'allApps')}
 							>
 								{t('nikki.shell.menuBar.allApps')}
 							</Button>

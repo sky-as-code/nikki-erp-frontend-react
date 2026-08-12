@@ -1,13 +1,19 @@
 import { Anchor, Button, Group, Stack, Text } from '@mantine/core';
+import { testAttrs } from '@nikkierp/common/utils';
 import { authService, useStartSignIn } from '@nikkierp/shell/authenticate';
 import { useServiceLayer } from '@nikkierp/ui/appState/store';
-import { AdhocFormProvider, AutoField, FormStyleProvider } from '@nikkierp/ui/components/form';
+import {
+	AdhocFormProvider, AutoField, FormStyleProvider, FormTestIdProvider,
+} from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconLock } from '@tabler/icons-react';
 import React, { useRef } from 'react';
 
 import { passwordSchema } from './passwordSchema';
 import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
+
+
+const SIGN_IN_PASSWORD_TEST_ID = 'shell.signInPassword';
 
 
 type PasswordStepFormContentProps = BaseFormContentProps & {
@@ -32,16 +38,18 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 
 	return (
 		<FormStyleProvider layout='onecol'>
-			<AdhocFormProvider formVariant='create' modelSchema={passwordSchema} localize={localize}>
-				{({ handleSubmit: formHandleSubmit }) => (
-					<form ref={formRef} onSubmit={formHandleSubmit(handleSubmit)} noValidate>
-						<PasswordStepFormContent
-							onBack={onBack!} ref={ref}
-							isActive={isActive} isLoading={isLoading}
-						/>
-					</form>
-				)}
-			</AdhocFormProvider>
+			<FormTestIdProvider testId={SIGN_IN_PASSWORD_TEST_ID}>
+				<AdhocFormProvider formVariant='create' modelSchema={passwordSchema} localize={localize}>
+					{({ handleSubmit: formHandleSubmit }) => (
+						<form ref={formRef} onSubmit={formHandleSubmit(handleSubmit)} noValidate>
+							<PasswordStepFormContent
+								onBack={onBack!} ref={ref}
+								isActive={isActive} isLoading={isLoading}
+							/>
+						</form>
+					)}
+				</AdhocFormProvider>
+			</FormTestIdProvider>
 		</FormStyleProvider>
 	);
 }
@@ -67,6 +75,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							href='#'
 							size='sm'
 							className='text-blue-600 hover:text-blue-800 transition-colors'
+							{...testAttrs(SIGN_IN_PASSWORD_TEST_ID, 'forgotPassword')}
 						>
 							{t('signIn.forgotPassword')}?
 						</Anchor>
@@ -78,6 +87,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							className='bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors'
 							loading={props.isLoading}
 							disabled={props.isLoading}
+							{...testAttrs(SIGN_IN_PASSWORD_TEST_ID, 'submit')}
 						>
 							{t('action.signIn')}
 						</Button>
@@ -86,6 +96,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 							className='rounded-lg font-medium'
 							onClick={props.onBack}
 							disabled={props.isLoading}
+							{...testAttrs(SIGN_IN_PASSWORD_TEST_ID, 'back')}
 						>
 							{t('action.back')}
 						</Button>

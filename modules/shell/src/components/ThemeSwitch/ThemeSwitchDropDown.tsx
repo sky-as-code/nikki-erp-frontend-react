@@ -1,6 +1,9 @@
 import { Box, Button, Menu, Text, useMantineColorScheme } from '@mantine/core';
+import { testAttrs } from '@nikkierp/common/utils';
 import { IconBrightnessFilled, IconChevronDown, IconMoonStars, IconSun } from '@tabler/icons-react';
 
+
+const TEST_ID = 'shell.themeSwitch';
 
 export const ThemeSwitchDropdown: React.FC = () => {
 	const { colorScheme, setColorScheme } = useMantineColorScheme();
@@ -18,6 +21,7 @@ export const ThemeSwitchDropdown: React.FC = () => {
 			key={theme.value}
 			onClick={() => setColorScheme(theme.value as any)}
 			leftSection={theme.icon}
+			{...testAttrs(TEST_ID, 'option', theme.value)}
 		>
 			<Text ta='left' ps={4}>{theme.label}</Text>
 		</Menu.Item>
@@ -26,7 +30,7 @@ export const ThemeSwitchDropdown: React.FC = () => {
 	return (
 		<Menu shadow='md' width={120} position='bottom-end'>
 			<Menu.Target>
-				<Button px={'xs'} variant='default' h={35}>
+				<Button px={'xs'} variant='default' h={35} {...testAttrs(TEST_ID, 'trigger')}>
 					<Box p={0} mx={3}>{ selectedTheme?.icon || <IconBrightnessFilled size={22} /> }</Box>
 					<IconChevronDown size={18} color='var(--mantine-color-gray-7)' />
 				</Button>

@@ -8,7 +8,9 @@
 		"dev": "bash -c \"NIKKI_BFF_HTTP_PORT=3002 NIKKI_BFF_CLIENT_ROOT_PATH=$(realpath .) ts-node ../../apps/shellbff/src/server.ts\"",
 		"dev:dist": "bash -c \"NODE_ENV=production NIKKI_BFF_HTTP_PORT=3002 NIKKI_BFF_CLIENT_ROOT_PATH=$(realpath ./dist) ts-node ../../apps/shellbff/src/server.ts\"",
 		"build": "pnpm clean && tsc && vite build",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "~5.2.2",
@@ -21,6 +23,8 @@
 		"@nikkierp/common": "workspace:*",
 		"@nikkierp/shell": "workspace:*",
 		"@nikkierp/ui": "workspace:*",
+		"@nikkierp/viewengine": "workspace:*",
+		"@nikkierp/viewkit-mantine": "workspace:*",
 		"@tabler/icons-react": "~3.44.0",
 		"clsx": "~2.1.1",
 		"dayjs": "~1.11.18",
@@ -49,7 +53,8 @@
 		"terser": "~5.44.0",
 		"typescript": "~5.9.3",
 		"vite": "~8.0.8",
-		"vite-tsconfig-paths": "~5.1.4"
+		"vite-tsconfig-paths": "~5.1.4",
+		"vitest": "~4.0.3"
 	},
 	"peerDependencies": {
 		"@reduxjs/toolkit": "~2.9.1",

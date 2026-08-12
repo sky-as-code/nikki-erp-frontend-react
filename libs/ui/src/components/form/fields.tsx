@@ -8,6 +8,7 @@ import { Controller, useWatch } from 'react-hook-form';
 
 import { DateTimeInputField, ReadOnlyTextField, TimeInputField } from './dateTimeFields';
 import { useFieldData, useFormField, useFormStyle } from './formContext';
+import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
 import { LangJsonField } from './LangJsonField';
 import { RelationSelectField } from './RelationSelectField';
 import { LocalizeFn, TranslateFn } from '../../i18n';
@@ -119,13 +120,21 @@ type IdentityOrTemporalArgs = AutoFieldProps & {
 };
 
 /**
- * The data types added after the original switch: ids, which may point at another record, and the
- * temporal types. Returns `undefined` — not `null` — when the type is none of them, so the caller
- * can tell "not handled here" from "handled, renders nothing".
+ * The data types added after the original switch: ids, which may point at another record, the
+ * temporal types, and `decimal`. Returns `undefined` — not `null` — when the type is none of
+ * them, so the caller can tell "not handled here" from "handled, renders nothing".
  */
 function renderIdentityOrTemporalField(args: IdentityOrTemporalArgs): React.ReactNode | undefined {
 	const { fieldDef, localize, fallbackRef } = args;
 	switch (fieldDef.data_type.name) {
+		case 'decimal':
+			return <DecimalInputField
+				name={args.name} autoFocused={args.autoFocused}
+				inputProps={args.inputProps as Partial<NumberInputProps>} htmlProps={args.htmlProps}
+				ref={args.ref ?? fallbackRef}
+				localize={localize}
+				scale={fieldDef.data_type.options?.scale as number | undefined}
+			/>;
 		case 'ulid':
 			return <UlidField
 				name={args.name} localize={localize}
@@ -152,11 +161,21 @@ function renderIdentityOrTemporalField(args: IdentityOrTemporalArgs): React.Reac
 	}
 }
 
-function useDefaultInputProps(inputProps?: Partial<InputProps>): Partial<InputProps> {
+/**
+ * Every field variant funnels its Mantine props through here, which makes it the one place that
+ * has to name the input for tests. The id derives from the schema field name, so a field is
+ * addressable without any call site passing anything; `FormTestIdProvider` adds the
+ * `{module}.{component}` prefix that keeps two forms on one page apart.
+ *
+ * An explicit `data-testid` in `inputProps` still wins — it is spread after.
+ */
+function useDefaultInputProps(inputProps?: Partial<InputProps>, fieldName?: string): Partial<InputProps> {
+	const fieldAttrs = useFieldTestAttrs(fieldName);
 	return React.useMemo(() => ({
 		size: 'md' as const,
+		...fieldAttrs,
 		...inputProps,
-	}), [inputProps]);
+	}), [fieldAttrs, inputProps]);
 }
 
 function useAutoFocus(
@@ -191,7 +210,9 @@ function useAutoFocusById(
 function usePasswordToggle(
 	showPassword: boolean,
 	setShowPassword: React.Dispatch<React.SetStateAction<boolean>>,
+	fieldName: string,
 ): React.ReactNode {
+	const toggleAttrs = useFieldPartTestAttrs(fieldName, 'toggleVisibility');
 	const handleMouseDown = React.useCallback(() => {
 		setShowPassword(true);
 	}, [setShowPassword]);
@@ -223,10 +244,11 @@ function usePasswordToggle(
 			onMouseUp={handleMouseUp}
 			onKeyDown={handleKeyDown}
 			onKeyUp={handleKeyUp}
+			{...toggleAttrs}
 		>
 			{showPassword ? <IconEye size={20} /> : <IconEyeOff size={20} />}
 		</ActionIcon>
-	), [showPassword, handleMouseDown, handleMouseUp, handleKeyDown, handleKeyUp]);
+	), [showPassword, handleMouseDown, handleMouseUp, handleKeyDown, handleKeyUp, toggleAttrs]);
 
 	return actionIcon;
 }
@@ -322,7 +344,7 @@ export function TextInputField(props: TextInputFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps);
+	const defaultInputProps = useDefaultInputProps(inputProps, name);
 	useAutoFocus(autoFocused, ref, formVariant);
 
 	return (
@@ -375,10 +397,10 @@ export function PasswordInputField(props: PasswordInputFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps);
+	const defaultInputProps = useDefaultInputProps(inputProps, name);
 	useAutoFocus(autoFocused, ref, formVariant);
 
-	const actionIcon = usePasswordToggle(showPassword, setShowPassword);
+	const actionIcon = usePasswordToggle(showPassword, setShowPassword, name);
 
 	return (
 		<BaseFieldWrapper
@@ -432,7 +454,7 @@ export function NumberInputField(props: NumberInputFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
 	useAutoFocus(autoFocused, ref, formVariant);
 
 	return (
@@ -473,6 +495,75 @@ export function NumberInputField(props: NumberInputFieldProps) {
 	);
 }
 
+export type DecimalInputFieldProps = BaseInputProps<NumberInputProps> & {
+	/** Digits after the decimal point the schema allows, from `data_type.options.scale`. */
+	scale?: number,
+};
+
+/**
+ * A `decimal` is carried as a **string** end to end, never as a JavaScript number.
+ *
+ * The backend sends values such as `0.453592` and `1000000000000` that a float64 cannot hold
+ * exactly, and the UoM conversion rules depend on them surviving unchanged. `NumberInputField`
+ * is therefore not reusable here: it coerces through `typeof value === 'number'` and would
+ * blank out a string value and drop the user's edit.
+ */
+export function DecimalInputField(props: DecimalInputFieldProps) {
+	const { name, autoFocused, inputProps, htmlProps, ref, scale } = props;
+	const t = props.localize;
+	const inputId = useId();
+	const fieldData = useFieldData(name);
+	const { control, modelValue, modelLoading, formVariant } = useFormField();
+
+	if (!fieldData) {
+		return null;
+	}
+
+	const defaultValue = modelValue?.[name];
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
+	useAutoFocus(autoFocused, ref, formVariant);
+
+	return (
+		<BaseFieldWrapper
+			inputId={inputId}
+			label={t(fieldData.label)}
+			description={t(fieldData.description)}
+			isRequired={fieldData.isRequired}
+			error={t(fieldData.error as any)}
+		>
+			<Controller
+				name={name}
+				control={control}
+				defaultValue={defaultValue}
+				render={({ field }) => {
+					const value = field.value !== undefined ? field.value : defaultValue;
+					return (
+						<NumberInput
+							id={inputId}
+							error={t(fieldData.error as any)}
+							value={value ?? ''}
+							// Mantine hands back a string while typing and a number once the value
+							// parses. Normalising to string keeps precision the number never had.
+							onChange={(val) => field.onChange(val === '' ? undefined : String(val))}
+							onBlur={field.onBlur}
+							name={field.name}
+							ref={(e) => {
+								field.ref(e);
+								ref.current = e;
+							}}
+							disabled={modelLoading}
+							decimalScale={scale}
+							placeholder={fieldData.placeholder ? t(fieldData.placeholder) : undefined}
+							{...htmlProps}
+							{...(defaultInputProps as NumberInputProps)}
+						/>
+					);
+				}}
+			/>
+		</BaseFieldWrapper>
+	);
+}
+
 export type DateInputFieldProps = BaseInputProps<DateInputProps>;
 
 export function DateInputField(props: DateInputFieldProps) {
@@ -487,7 +578,7 @@ export function DateInputField(props: DateInputFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
 	useAutoFocusById(autoFocused, inputId, formVariant);
 
 	return (
@@ -548,7 +639,7 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
 	const enumValues = fieldData.fieldDef.data_type.options?.enumValues as string[];
 	const selectData = enumValues.map((val) => ({
 		value: val,
@@ -611,7 +702,7 @@ export type DynamicEnumSelectFieldProps = BaseInputProps<SelectProps>;
 // 	}
 
 // 	const defaultValue = modelValue?.[name];
-// 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>);
+// 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
 // 	useAutoFocusById(autoFocused, inputId, formVariant);
 
 // 	return (
@@ -664,6 +755,7 @@ export function BooleanField(props: BooleanFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading } = useFormField();
+	const fieldAttrs = useFieldTestAttrs(name);
 
 	if (!fieldData) {
 		return null;
@@ -689,6 +781,7 @@ export function BooleanField(props: BooleanFieldProps) {
 								onChange={(e) => field.onChange(e.currentTarget.checked)}
 								disabled={modelLoading || inputProps?.disabled}
 								size='md'
+								{...fieldAttrs}
 							/>
 						);
 					}}

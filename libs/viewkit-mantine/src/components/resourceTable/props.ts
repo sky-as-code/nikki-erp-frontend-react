@@ -30,6 +30,8 @@ export const resourceTableActionSchema = z.object({
 	routePath: z.string().min(1).optional(),
 	supportMultiple: z.boolean().optional(),
 	requireSelection: z.boolean().optional(),
+	/** Last segment of this action's `data-testid`. Defaults to its command name. */
+	testId: z.string().min(1).optional(),
 }).strict().refine(
 	action => Boolean(action.command) !== Boolean(action.routePath),
 	{ message: 'exactly one of `command` or `routePath` must be set' },
@@ -65,6 +67,12 @@ export const resourceTablePropsSchema = z.object({
 	fieldRenderers: z.record(z.string(), fieldRendererSpecSchema).optional(),
 	/** Toolbar actions appended after Refresh. */
 	extraActions: z.array(resourceTableActionSchema).default([]),
+	/**
+	 * `{module}.{component}` prefix for the `data-testid` of every element this table renders.
+	 * Derived from the schema name when omitted. Set it when a page embeds two tables of the same
+	 * schema, which would otherwise collide.
+	 */
+	testId: z.string().min(1).optional(),
 }).strict();
 
 export type ResourceTableProps = z.infer<typeof resourceTablePropsSchema>;

@@ -13,6 +13,7 @@ import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { RESOURCE_TABLE } from '../../ids';
+import { resourceTestIdPrefix } from '../../testIds';
 
 import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 
@@ -46,6 +47,11 @@ function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactN
 		graphOverride: graph.value,
 	});
 	const buildLinkHref = useResourceLinkHref(params.linkField, params.linkRoutePath);
+	// No `routePath` of its own: an embedded table is identified by the schema it lists, which is
+	// unique within its host page unless the author embeds two — hence the explicit `testId` escape.
+	const testId = resourceTestIdPrefix({
+		testId: params.testId, schemaName: params.schemaName, part: 'Table',
+	});
 
 	const actions = React.useMemo(
 		() => buildResourceTableActions(params.extraActions, t, commandBus, refresh),
@@ -60,6 +66,7 @@ function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactN
 		// Bounded box: unlike the list page this is embedded, so it must not go full-bleed.
 		<div className='max-h-[480px] overflow-auto'>
 			<DataTable
+				testId={testId}
 				tableName={lc(pack.modelSchema.label, { count: searchData.total })}
 				data={searchData}
 				initialSearchRequest={searchRequest}
@@ -98,7 +105,9 @@ function buildResourceTableActions(
 		void commandBus.publish({ name: command, payload: { ids } }).then(refreshSearch);
 	};
 
-	const actions: DataTableAction[] = [{ label: t('action.refresh'), onTrigger: () => refreshSearch() }];
+	const actions: DataTableAction[] = [{
+		label: t('action.refresh'), testId: 'refresh', onTrigger: () => refreshSearch(),
+	}];
 	return actions.concat(extraActions.map(action => toDataTableAction(action, t, runCommand)));
 }
 
@@ -106,7 +115,8 @@ function toDataTableAction(action: ResourceTableAction, t: TranslateFn, runComma
 	if (action.routePath) {
 		// `ActionButton` renders `href` as a path-relative `<Link>`, so `'roles'` on
 		// `/{org}/{module}/users/:id` resolves to `/{org}/{module}/users/:id/roles`.
-		return { label: t(action.label), href: action.routePath };
+		// A link action publishes no command, so the route names it rather than its translated label.
+		return { label: t(action.label), href: action.routePath, testId: action.testId ?? action.routePath };
 	}
 	// The schema guarantees exactly one of `command` / `routePath`, so this branch always has one.
 	const command = action.command ?? '';
@@ -115,6 +125,7 @@ function toDataTableAction(action: ResourceTableAction, t: TranslateFn, runComma
 		command,
 		supportMultiple: action.supportMultiple,
 		requireSelection: action.requireSelection,
+		testId: action.testId,
 		onTrigger: runCommand(command),
 	};
 }

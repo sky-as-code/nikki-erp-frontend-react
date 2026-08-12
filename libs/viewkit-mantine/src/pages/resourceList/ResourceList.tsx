@@ -10,6 +10,7 @@ import React from 'react';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
+import { resourceTestIdPrefix } from '../../testIds';
 
 import type { ResourceListCommandAction, ResourceListProps } from './props';
 
@@ -39,6 +40,9 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	});
 	const buildLinkHref = useResourceLinkHref(params.linkField, routePath);
 	const baseHref = useResourceBaseHref(routePath);
+	const testId = resourceTestIdPrefix({
+		testId: params.testId, routePath, schemaName: params.schemaName, part: 'List',
+	});
 
 	const actions = React.useMemo(
 		() => buildResourceActions(params, t, commandBus, refresh, baseHref),
@@ -52,6 +56,7 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	return (
 		<Paper className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 flex' bg={bgColor}>
 			<DataTable
+				testId={testId}
 				tableName={lc(pack.modelSchema.label, { count: searchData.total })}
 				data={searchData}
 				initialSearchRequest={searchRequest}
@@ -88,14 +93,17 @@ function buildResourceActions(
 		void commandBus.publish({ name: command, payload: { ids } }).then(refreshSearch);
 	};
 
+	// `refresh` and `create` publish no command, so they are named explicitly rather than falling
+	// back to their translated labels, which would change the id with the active locale.
 	let actions: DataTableAction[] = [{
 		label: t('action.refresh'),
+		testId: 'refresh',
 		onTrigger: () => refreshSearch(),
 	}];
 	if (params.createEnabled && baseHref) {
 		// Absolute: the list renders both at `/{org}/{module}/{page}` and, in a split
 		// view, at `/{org}/{module}/{page}/:id`, so a relative href lands elsewhere.
-		actions.push({ label: t('action.create'), href: `${baseHref}/new` });
+		actions.push({ label: t('action.create'), testId: 'create', href: `${baseHref}/new` });
 	}
 	if (params.deleteCommand) {
 		actions.push({
@@ -111,6 +119,7 @@ function buildResourceActions(
 		supportMultiple: action.supportMultiple,
 		requireSelection: action.requireSelection,
 		command: action.command,
+		testId: action.testId,
 		onTrigger: runCommand(action.command),
 	})));
 	if (params.archiveCommand) {

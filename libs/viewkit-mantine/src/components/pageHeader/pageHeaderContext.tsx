@@ -18,6 +18,8 @@ export type PageHeaderContextValue = {
 	modelSchema?: dyn.ModelSchema,
 	/** Interpolation values for `{ textKey }` title specs. */
 	titleParams?: Record<string, string>,
+	/** `{module}.{component}` prefix for the `data-testid` of the header's own links. */
+	testId?: string,
 };
 
 const PageHeaderContext = React.createContext<PageHeaderContextValue | null>(null);

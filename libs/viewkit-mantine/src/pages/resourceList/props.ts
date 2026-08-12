@@ -7,6 +7,8 @@ export const resourceListCommandActionSchema = z.object({
 	command: z.string().min(1),
 	supportMultiple: z.boolean().optional(),
 	requireSelection: z.boolean().optional(),
+	/** Last segment of this action's `data-testid`. Defaults to its command name. */
+	testId: z.string().min(1).optional(),
 });
 
 /**
@@ -27,6 +29,11 @@ export const resourceListPropsSchema = z.object({
 	fieldAsId: z.string().min(1).optional(),
 	/** Map of field name -> serializable renderer spec, resolved at render time. */
 	fieldRenderers: z.record(z.string(), fieldRendererSpecSchema).optional(),
+	/**
+	 * `{module}.{component}` prefix for the `data-testid` of every element this page renders.
+	 * Derived from the route and schema name when omitted, so most pages need not set it.
+	 */
+	testId: z.string().min(1).optional(),
 }).strict();
 
 export type ResourceListProps = z.infer<typeof resourceListPropsSchema>;

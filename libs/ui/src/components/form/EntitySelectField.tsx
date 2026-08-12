@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import { BaseFieldWrapper } from './fields';
 import { useFormField, useFieldData } from './formContext';
+import { useFieldTestAttrs } from './formTestIds';
 import { useLocalize } from '../../i18n';
 
 
@@ -81,6 +82,7 @@ export function EntitySelectField<TEntity>({
 	const { control } = useFormField();
 	const fieldData = useFieldData(fieldName);
 	const inputId = useId();
+	const fieldAttrs = useFieldTestAttrs(fieldName);
 
 	const options = React.useMemo(
 		() => buildSelectOptions(
@@ -132,6 +134,7 @@ export function EntitySelectField<TEntity>({
 						clearable
 						required={fieldData.isRequired}
 						disabled={isDisabled}
+						{...fieldAttrs}
 						{...selectProps}
 					/>
 				)}

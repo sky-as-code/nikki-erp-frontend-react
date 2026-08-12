@@ -1,5 +1,6 @@
 import { Anchor, Loader, Table, TableProps } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
+import { testAttrs } from '@nikkierp/common/utils';
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -36,6 +37,11 @@ export type AutoTableProps = Omit<TableProps, 'data' | 'children'> & {
 	theadProps?: React.ComponentProps<typeof Table.Thead>;
 	data: Record<string, unknown>[];
 	isLoading?: boolean;
+	/**
+	 * `{module}.{component}` prefix for the `data-testid` of each row and cell. Rows are keyed by
+	 * `columnAsId` so a test's handle survives sorting and paging.
+	 */
+	testId?: string;
 };
 
 /**
@@ -71,6 +77,7 @@ const AutoTableBody: React.FC<AutoTableBodyProps> = (props) => {
 		schemaName: _schemaName, translationNs, schema: _schema, columns: columnsProp, columnSizes,
 		columnAsLink: _columnAsLink, columnAsLinkHref: _columnAsLinkHref, columnAsId: columnAsIdProp,
 		columnRenderers: _columnRenderers, headerRenderers, theadProps, data, isLoading, modelSchema,
+		testId,
 		...tableProps
 	} = props;
 	const t = useTranslate(translationNs);
@@ -125,15 +132,18 @@ const AutoTableBody: React.FC<AutoTableBodyProps> = (props) => {
 						</Table.Td>
 					</Table.Tr>
 				)}
-				{!isLoading && data.map((row, index) => (
-					<Table.Tr key={String(row[columnAsId] || index)}>
-						{columns.map((col) => (
-							<Table.Td key={col}>
-								{renderCell(col, row, resolved, t)}
-							</Table.Td>
-						))}
-					</Table.Tr>
-				))}
+				{!isLoading && data.map((row, index) => {
+					const rowId = String(row[columnAsId] || index);
+					return (
+						<Table.Tr key={rowId} {...testAttrs(testId, 'row', rowId)}>
+							{columns.map((col) => (
+								<Table.Td key={col} {...testAttrs(testId, 'row', rowId, 'cell', col)}>
+									{renderCell(col, row, resolved, t)}
+								</Table.Td>
+							))}
+						</Table.Tr>
+					);
+				})}
 			</Table.Tbody>
 		</Table>
 	);

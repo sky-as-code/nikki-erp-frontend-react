@@ -11,6 +11,11 @@ import type { ContributionId } from './ids';
  * React dependency, so `libs/ui` can use them too (it may import `./core`, but not the engine
  * barrel, which exposes `defaultViewEngine`).
  *
+ * A fourth attribute completes the family but lives elsewhere: `data-testid`, built by `testAttrs`
+ * in `@nikkierp/common/utils`, names the individual interactive leaf a test clicks or types into,
+ * where the three below name the subtree that produced it. It is not re-exported here because this
+ * package deliberately declares no dependencies — import it from `@nikkierp/common/utils` directly.
+ *
  * Attaching them is each renderer's own job rather than the render pipeline's: several renderers
  * root in a context provider that emits no DOM at all, so there is no element for a wrapper at
  * `renderComponent.tsx` to attach to without inserting one into every node's layout.

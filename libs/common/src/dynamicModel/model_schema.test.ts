@@ -64,11 +64,11 @@ describe('isRenderableFieldType', () => {
 	// Guards the pairing with AutoField's switch: a type here with no case renders an empty slot,
 	// and a case missing from here hides a field that would have rendered.
 	const renderable: ModelSchemaFieldDataTypeName[] = [
-		'boolean', 'email', 'int32', 'nikkiDate', 'nikkiDateTime', 'nikkiLangJson', 'nikkiTime',
-		'secret', 'string', 'ulid',
+		'boolean', 'decimal', 'email', 'int32', 'nikkiDate', 'nikkiDateTime', 'nikkiLangJson',
+		'nikkiTime', 'secret', 'string', 'ulid',
 	];
 	const notRenderable: ModelSchemaFieldDataTypeName[] = [
-		'decimal', 'enumInt32', 'int64', 'jsonmap', 'model', 'nikkiEtag', 'nikkiLangCode',
+		'enumInt32', 'int64', 'jsonmap', 'model', 'nikkiEtag', 'nikkiLangCode',
 		'nikkiSlug', 'phone', 'url', 'uuid',
 	];
 

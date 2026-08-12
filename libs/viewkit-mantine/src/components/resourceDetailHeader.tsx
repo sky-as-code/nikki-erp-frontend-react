@@ -40,12 +40,12 @@ export const resourceDetailHeaderRenderer: IComponentRenderer<ResourceDetailHead
 };
 
 function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode {
-	const { schemaPack, translationNs } = useResourceDetailContext();
+	const { schemaPack, translationNs, testId } = useResourceDetailContext();
 	const context = useResourceUpdateContext();
 	const modelSchema = schemaPack?.modelSchema;
 	const headerContext = React.useMemo(
-		(): PageHeaderContextValue => ({ translationNs, record: context.resource, modelSchema }),
-		[translationNs, context.resource, modelSchema],
+		(): PageHeaderContextValue => ({ translationNs, record: context.resource, modelSchema, testId }),
+		[translationNs, context.resource, modelSchema, testId],
 	);
 	// Title overrides fall back to the values held in the resource-update context.
 	const titleLvl3 = props.titleLvl3 ?? context.titleLvl3;

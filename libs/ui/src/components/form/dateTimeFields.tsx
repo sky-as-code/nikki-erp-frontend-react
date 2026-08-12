@@ -6,6 +6,7 @@ import { Controller } from 'react-hook-form';
 
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
+import { useFieldTestAttrs } from './formTestIds';
 
 import type { LocalizeFn } from '../../i18n';
 
@@ -36,6 +37,7 @@ export function DateTimeInputField(props: DateTimeFieldProps<DateTimePickerProps
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading } = useFormField();
+	const fieldAttrs = useFieldTestAttrs(name);
 
 	if (!fieldData) {
 		return null;
@@ -62,6 +64,7 @@ export function DateTimeInputField(props: DateTimeFieldProps<DateTimePickerProps
 						disabled={modelLoading}
 						placeholder={t(fieldData.placeholder)}
 						size='md'
+						{...fieldAttrs}
 						{...props.inputProps}
 					/>
 				)}
@@ -75,6 +78,7 @@ export function TimeInputField(props: DateTimeFieldProps<InputProps>) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading } = useFormField();
+	const fieldAttrs = useFieldTestAttrs(name);
 
 	if (!fieldData) {
 		return null;
@@ -100,6 +104,7 @@ export function TimeInputField(props: DateTimeFieldProps<InputProps>) {
 						onChange={event => field.onChange(event.currentTarget.value || undefined)}
 						disabled={modelLoading}
 						size='md'
+						{...fieldAttrs}
 						{...(props.inputProps as any)}
 					/>
 				)}

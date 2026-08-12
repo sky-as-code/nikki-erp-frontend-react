@@ -1,4 +1,5 @@
 import { NavLink, Stack } from '@mantine/core';
+import { testAttrs } from '@nikkierp/common/utils';
 import { TranslateFn } from '@nikkierp/ui/i18n';
 import { MenuItem } from '@nikkierp/ui/menu';
 import React from 'react';
@@ -8,6 +9,7 @@ import {
 	getPathWithPrefix,
 	hasActiveNestedItemWithPrefix,
 	isPathActiveWithPrefix,
+	MENU_BAR_TEST_ID,
 } from './helper';
 
 
@@ -87,6 +89,8 @@ const VerticalMenuItem: React.FC<VerticalMenuItemProps> = ({
 				borderRadius: '10px',
 			},
 		},
+		// Keyed on `labelKey`, not the translated label, so the id survives a locale change.
+		...testAttrs(MENU_BAR_TEST_ID, 'verticalItem', item.labelKey),
 	};
 
 	// If item has link, use Link component for navigation

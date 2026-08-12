@@ -1,4 +1,5 @@
 import { Anchor, Group, Stack, Text, Title } from '@mantine/core';
+import { testAttrs } from '@nikkierp/common/utils';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
@@ -98,7 +99,10 @@ function TitleLink({ spec, context }: SpecProps<PageHeaderLinkSpec>): React.Reac
 	}
 
 	return (
-		<Anchor component={Link} to={spec.linkHref} relative='path' size='md' className='capitalize'>
+		<Anchor
+			component={Link} to={spec.linkHref} relative='path' size='md' className='capitalize'
+			{...testAttrs(context?.testId, 'header', 'titleLink')}
+		>
 			{label}
 		</Anchor>
 	);
