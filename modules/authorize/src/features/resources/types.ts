@@ -1,4 +1,4 @@
-import type { Action } from '@/features/actions';
+import type { Action } from '../actions';
 
 
 export enum ResourceType {

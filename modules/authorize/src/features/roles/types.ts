@@ -1,6 +1,6 @@
 import { Entitlement } from '../entitlements';
 
-import type { Org } from '@/features/identities';
+import type { Org } from '../identities';
 
 
 export enum OwnerType {

@@ -10,9 +10,9 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AuthorizeDispatch, resourceActions, selectResourceList } from '@/appState';
-import { ActionFormFields, actionSchema, useActionCreate } from '@/features/actions';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+import { AuthorizeDispatch, resourceActions, selectResourceList } from '../../appState';
+import { ActionFormFields, actionSchema, useActionCreate } from '../../features/actions';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function ActionCreatePageBody(): React.ReactNode {

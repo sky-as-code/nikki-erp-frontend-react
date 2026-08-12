@@ -2,49 +2,49 @@ import { del, get, post, put, unwrapResult, type Options } from '@nikkierp/commo
 
 
 export type IdentityUserDto = {
-	id: string;
-	displayName: string;
-	email: string;
-	avatarUrl?: string;
-	etag: string;
-	failedLoginAttempts?: number;
-	hierarchyId?: string;
-	lastLoginAt?: string;
-	lockedUntil?: string;
-	mustChangePassword?: boolean;
-	passwordChangedAt?: string;
-	status: 'active' | 'inactive' | 'lock';
-	managerId?: string;
-	groups?: Array<{ id: string; name: string }>;
-	orgs?: Array<{ id: string; displayName: string; slug: string }>;
-	hierarchies?: Array<{ id: string; name: string }>;
-	manager?: { id: string; displayName: string };
-	[key: string]: unknown;
+	id: string,
+	displayName: string,
+	email: string,
+	avatarUrl?: string,
+	etag: string,
+	failedLoginAttempts?: number,
+	hierarchyId?: string,
+	lastLoginAt?: string,
+	lockedUntil?: string,
+	mustChangePassword?: boolean,
+	passwordChangedAt?: string,
+	status: 'active' | 'inactive' | 'lock',
+	managerId?: string,
+	groups?: Array<{ id: string, name: string }>,
+	orgs?: Array<{ id: string, displayName: string, slug: string }>,
+	hierarchies?: Array<{ id: string, name: string }>,
+	manager?: { id: string, displayName: string },
+	[key: string]: unknown,
 };
 
 export type IdentityGroupDto = {
-	id: string;
-	name: string;
-	description?: string;
-	etag: string;
-	orgId?: string;
-	org?: { id: string; displayName: string; slug: string };
-	[key: string]: unknown;
+	id: string,
+	name: string,
+	description?: string,
+	etag: string,
+	orgId?: string,
+	org?: { id: string, displayName: string, slug: string },
+	[key: string]: unknown,
 };
 
 export type ListResponse<T> = {
-	total: number;
-	items: T[];
+	total: number,
+	items: T[],
 };
 
 export type ListQuery = {
-	page?: number;
-	size?: number;
-	graph?: Record<string, unknown>;
-	withGroups?: boolean;
-	withOrgs?: boolean;
-	withHierarchies?: boolean;
-	withOrg?: boolean;
+	page?: number,
+	size?: number,
+	graph?: Record<string, unknown>,
+	withGroups?: boolean,
+	withOrgs?: boolean,
+	withHierarchies?: boolean,
+	withOrg?: boolean,
 };
 
 // ============ User APIs ============
@@ -61,9 +61,9 @@ export async function listUsers(params?: ListQuery): Promise<ListResponse<Identi
 }
 
 export async function getUser(id: string, params?: {
-	withGroups?: boolean;
-	withOrgs?: boolean;
-	withHierarchies?: boolean;
+	withGroups?: boolean,
+	withOrgs?: boolean,
+	withHierarchies?: boolean,
 }): Promise<IdentityUserDto> {
 	const options: Options = {};
 	if (params) {
@@ -141,19 +141,19 @@ export async function deleteGroup(id: string): Promise<void> {
 
 // ============ Organization APIs ============
 export type IdentityOrgDto = {
-	id: string;
-	displayName: string;
-	legalName?: string;
-	email?: string;
-	phoneNumber?: string;
-	address?: string;
-	status: 'active' | 'archived';
-	slug: string;
-	etag?: string;
-	createdAt?: string;
-	updatedAt?: string;
-	deletedAt?: string;
-	[key: string]: unknown;
+	id: string,
+	displayName: string,
+	legalName?: string,
+	email?: string,
+	phoneNumber?: string,
+	address?: string,
+	status: 'active' | 'archived',
+	slug: string,
+	etag?: string,
+	createdAt?: string,
+	updatedAt?: string,
+	deletedAt?: string,
+	[key: string]: unknown,
 };
 
 export async function listOrgs(params?: ListQuery): Promise<ListResponse<IdentityOrgDto>> {

@@ -2,7 +2,7 @@ import { ActionIcon, Badge, Group, Text, Tooltip } from '@mantine/core';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 
 
-const OWNER_TYPE_CONFIG: Record<string, { i18nKey: string; color: string }> = {
+const OWNER_TYPE_CONFIG: Record<string, { i18nKey: string, color: string }> = {
 	user: {
 		i18nKey: 'nikki.authorize.role_suite.fields.owner_type.user',
 		color: 'blue',

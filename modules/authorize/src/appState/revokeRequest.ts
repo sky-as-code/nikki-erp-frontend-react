@@ -10,7 +10,7 @@ import {
 	deleteRevokeRequest,
 	RevokeRequestState,
 	initialState,
-} from '@/features/revokeRequests/revokeRequestSlice';
+} from '../features/revokeRequests/revokeRequestSlice';
 
 
 const STATE_KEY = 'revokeRequest';

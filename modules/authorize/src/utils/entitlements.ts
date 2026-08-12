@@ -1,4 +1,4 @@
-import type { Entitlement } from '@/features/entitlements';
+import type { Entitlement } from '../features/entitlements';
 
 
 const GLOBAL_SCOPE = '__GLOBAL__';

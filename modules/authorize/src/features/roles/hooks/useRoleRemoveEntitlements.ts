@@ -1,3 +1,9 @@
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
+
 import {
 	AuthorizeDispatch,
 	resourceActions,
@@ -5,19 +11,11 @@ import {
 	selectRemoveEntitlementsRole,
 	selectResourceState,
 	selectRoleState,
-} from '@/appState';
-import { useUIState } from '@nikkierp/shell/contexts';
-import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
+} from '../../../appState';
+import { createEntitlementKey } from '../../../utils';
 
-
-
-import type { Entitlement } from '@/features/entitlements';
-import type { Role } from '@/features/roles';
-
-import { createEntitlementKey } from '@/utils';
+import type { Role } from '..';
+import type { Entitlement } from '../../entitlements';
 
 
 function buildEntitlementInputs(selected: Entitlement[]) {

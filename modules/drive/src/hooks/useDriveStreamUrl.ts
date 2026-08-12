@@ -1,7 +1,7 @@
 import { useShellEnvVars } from '@nikkierp/shell/config';
 import { useCallback } from 'react';
 
-import { buildDriveStreamUrl } from '@/features/files/utils/driveUrlUtils';
+import { buildDriveStreamUrl } from '../features/files/utils/driveUrlUtils';
 
 
 export function useDriveStreamUrl(): (fileId: string, download: boolean) => string {

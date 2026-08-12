@@ -29,17 +29,17 @@ import type {
 const SLICE_NAME = 'drive.fileShare';
 
 export type DriveFileShareState = {
-	shares: DriveFileShare[];
-	selectedShare?: DriveFileShare;
-	search: ReduxActionState<SearchDriveFileShareResponse>;
-	update: ReduxActionState<UpdateDriveFileShareResponse>;
-	getById: ReduxActionState<GetDriveFileShareResponse>;
-	create: ReduxActionState<CreateDriveFileShareResponse>;
-	createBulk: ReduxActionState<CreateDriveFileShareBulkResponse>;
-	deleteShare: ReduxActionState<DeleteDriveFileShareResponse>;
-	ancestors: ReduxActionState<GetDriveFileShareAncestorsResponse>;
-	resolved: ReduxActionState<ResolvedDriveFileShareResponse>;
-	sharesByUser: ReduxActionState<GetDriveFileSharesByUserResponse>;
+	shares: DriveFileShare[],
+	selectedShare?: DriveFileShare,
+	search: ReduxActionState<SearchDriveFileShareResponse>,
+	update: ReduxActionState<UpdateDriveFileShareResponse>,
+	getById: ReduxActionState<GetDriveFileShareResponse>,
+	create: ReduxActionState<CreateDriveFileShareResponse>,
+	createBulk: ReduxActionState<CreateDriveFileShareBulkResponse>,
+	deleteShare: ReduxActionState<DeleteDriveFileShareResponse>,
+	ancestors: ReduxActionState<GetDriveFileShareAncestorsResponse>,
+	resolved: ReduxActionState<ResolvedDriveFileShareResponse>,
+	sharesByUser: ReduxActionState<GetDriveFileSharesByUserResponse>,
 };
 
 interface thunkConfig {
@@ -62,7 +62,7 @@ export const initialState: DriveFileShareState = {
 
 export const searchFileShares = createAsyncThunk<
 	SearchDriveFileShareResponse,
-	{ fileId: string; req?: SearchDriveFileShareRequest },
+	{ fileId: string, req?: SearchDriveFileShareRequest },
 	thunkConfig
 >(
 	`${SLICE_NAME}/searchFileShares`,
@@ -80,7 +80,7 @@ export const searchFileShares = createAsyncThunk<
 
 export const getFileShare = createAsyncThunk<
 	GetDriveFileShareResponse,
-	{ fileId: string; shareId: string },
+	{ fileId: string, shareId: string },
 	thunkConfig
 >(
 	`${SLICE_NAME}/getFileShare`,
@@ -98,7 +98,7 @@ export const getFileShare = createAsyncThunk<
 
 export const updateFileShare = createAsyncThunk<
 	UpdateDriveFileShareResponse,
-	{ fileId: string; shareId: string; req: UpdateDriveFileShareRequest },
+	{ fileId: string, shareId: string, req: UpdateDriveFileShareRequest },
 	thunkConfig
 >(
 	`${SLICE_NAME}/updateFileShare`,
@@ -116,7 +116,7 @@ export const updateFileShare = createAsyncThunk<
 
 export const createFileShare = createAsyncThunk<
 	CreateDriveFileShareResponse,
-	{ fileId: string; req: CreateDriveFileShareRequest },
+	{ fileId: string, req: CreateDriveFileShareRequest },
 	thunkConfig
 >(
 	`${SLICE_NAME}/createFileShare`,
@@ -134,7 +134,7 @@ export const createFileShare = createAsyncThunk<
 
 export const createFileShareBulk = createAsyncThunk<
 	CreateDriveFileShareBulkResponse,
-	{ fileId: string; req: CreateDriveFileShareBulkRequest },
+	{ fileId: string, req: CreateDriveFileShareBulkRequest },
 	thunkConfig
 >(
 	`${SLICE_NAME}/createFileShareBulk`,
@@ -152,7 +152,7 @@ export const createFileShareBulk = createAsyncThunk<
 
 export const deleteFileShare = createAsyncThunk<
 	DeleteDriveFileShareResponse,
-	{ fileId: string; shareId: string },
+	{ fileId: string, shareId: string },
 	thunkConfig
 >(
 	`${SLICE_NAME}/deleteFileShare`,
@@ -188,7 +188,7 @@ export const getFileShareAncestors = createAsyncThunk<
 
 export const getResolvedFileShares = createAsyncThunk<
 	ResolvedDriveFileShareResponse,
-	{ fileId: string; params?: ResolvedDriveFileShareRequest },
+	{ fileId: string, params?: ResolvedDriveFileShareRequest },
 	thunkConfig
 >(
 	`${SLICE_NAME}/getResolvedFileShares`,
@@ -206,7 +206,7 @@ export const getResolvedFileShares = createAsyncThunk<
 
 export const getFileSharesByUser = createAsyncThunk<
 	GetDriveFileSharesByUserResponse,
-	{ fileId: string; userId: string },
+	{ fileId: string, userId: string },
 	thunkConfig
 >(
 	`${SLICE_NAME}/getFileSharesByUser`,

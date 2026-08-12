@@ -4,17 +4,17 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 
+import { DriveUserDisplay } from '../../../../../components';
+import { useDbDateTime, useDriveStreamUrl } from '../../../../../hooks';
 import { DriveFile, DriveFileVisibility } from '../../../types';
 import { formatSize } from '../../../utils/fortmat';
 import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../../EnumDisplay';
 import { DriveFileTypeDisplay } from '../../EnumDisplay';
 
-import { DriveUserDisplay } from '@/components';
-import { useDbDateTime, useDriveStreamUrl } from '@/hooks';
 
 
 type FilePropertiesCardProps = {
-	file?: DriveFile | null;
+	file?: DriveFile | null,
 };
 
 function useFormatVisibility(): (visibility: DriveFileVisibility) => string {
@@ -74,14 +74,14 @@ export function FilePropertiesModalContent({ file }: FilePropertiesCardProps): R
 }
 
 type FilePropertiesCardContentProps = {
-	file: DriveFile;
-	formatDateTime: (d: Date | string) => string;
-	formatRelative: (d: Date | string) => string;
-	formatVisibility: (v: DriveFileVisibility) => string;
+	file: DriveFile,
+	formatDateTime: (d: Date | string) => string,
+	formatRelative: (d: Date | string) => string,
+	formatVisibility: (v: DriveFileVisibility) => string,
 };
 
 function FileIdentity({ file, buildStreamUrl }: {
-	file: DriveFile; buildStreamUrl: ReturnType<typeof useDriveStreamUrl>
+	file: DriveFile, buildStreamUrl: ReturnType<typeof useDriveStreamUrl>,
 }) {
 	const { t } = useTranslation();
 	const isFolder = file.isFolder;

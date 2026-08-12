@@ -2,7 +2,7 @@ import { ActionIcon, Badge, Tooltip, Text, Group } from '@mantine/core';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 
 
-const RESOURCE_TYPE_CONFIG: Record<string, { i18nKey: string; color: string }> = {
+const RESOURCE_TYPE_CONFIG: Record<string, { i18nKey: string, color: string }> = {
 	nikki_application: {
 		i18nKey: 'nikki.authorize.resource.fields.resource_type.nikki_application',
 		color: 'indigo',
@@ -13,7 +13,7 @@ const RESOURCE_TYPE_CONFIG: Record<string, { i18nKey: string; color: string }> =
 	},
 };
 
-const SCOPE_TYPE_CONFIG: Record<string, { i18nKey: string; color: string }> = {
+const SCOPE_TYPE_CONFIG: Record<string, { i18nKey: string, color: string }> = {
 	domain: {
 		i18nKey: 'nikki.authorize.resource.fields.scope_type.domain',
 		color: 'grape',

@@ -17,7 +17,7 @@ import {
 	initialState,
 	getDriveFileAncestors,
 	restoreDriveFileFromTrash,
-} from '@/features/files/fileSlice';
+} from '../features/files/fileSlice';
 
 
 const STATE_KEY = 'file';

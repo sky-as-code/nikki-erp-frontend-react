@@ -1,13 +1,7 @@
 {
 	"extends": "../../tsconfig-react.base.json",
 	"compilerOptions": {
-		"baseUrl": ".",
 		"outDir": "dist",
-		"paths": {
-			"@/*": [
-				"./src/*"
-			],
-		}
 	},
 	"include": [
 		"src/**/*",

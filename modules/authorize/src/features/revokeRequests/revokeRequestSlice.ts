@@ -12,17 +12,17 @@ import type { RevokeRequest } from './types';
 export const SLICE_NAME = 'authorize.revokeRequest';
 
 export type RevokeRequestState = {
-	revokeRequests: RevokeRequest[];
-	revokeRequestDetail?: RevokeRequest;
+	revokeRequests: RevokeRequest[],
+	revokeRequestDetail?: RevokeRequest,
 
 	list: {
-		isLoading: boolean;
-		error: string | null;
-	};
+		isLoading: boolean,
+		error: string | null,
+	},
 
-	create: ReduxActionState<RevokeRequest>;
-	createMany: ReduxActionState<{ count: number }>;
-	delete: ReduxActionState<void>;
+	create: ReduxActionState<RevokeRequest>,
+	createMany: ReduxActionState<{ count: number }>,
+	delete: ReduxActionState<void>,
 };
 
 export const initialState: RevokeRequestState = {
@@ -41,7 +41,7 @@ export const initialState: RevokeRequestState = {
 
 export const listRevokeRequests = createAsyncThunk<
 	RevokeRequest[],
-	{ graph?: Record<string, unknown>; page?: number; size?: number } | void,
+	{ graph?: Record<string, unknown>, page?: number, size?: number } | void,
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/list`,
@@ -176,7 +176,7 @@ function detailReducers(builder: ActionReducerMapBuilder<RevokeRequestState>) {
 		});
 }
 
-// eslint-disable-next-line max-lines-per-function
+
 function createReducers(builder: ActionReducerMapBuilder<RevokeRequestState>) {
 	builder
 		.addCase(createRevokeRequest.pending, (state, _action) => {

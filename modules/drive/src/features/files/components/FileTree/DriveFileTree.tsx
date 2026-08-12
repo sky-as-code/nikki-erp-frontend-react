@@ -27,13 +27,13 @@ interface LoadMoreLeafProps {
 }
 
 type LeafProps = RenderTreeNodePayload & {
-	onNodeClick?: (value: string) => void;
-	tree: ReturnType<typeof useTree>;
-	onLoad?: (value: string) => void;
-	isLoading?: boolean;
-	onLoadMore?: (parentId: string, nodeValue: string) => void;
-	currentFolderId?: string;
-	t?: (key: string) => string;
+	onNodeClick?: (value: string) => void,
+	tree: ReturnType<typeof useTree>,
+	onLoad?: (value: string) => void,
+	isLoading?: boolean,
+	onLoadMore?: (parentId: string, nodeValue: string) => void,
+	currentFolderId?: string,
+	t?: (key: string) => string,
 };
 
 function LoadMoreLeaf({
@@ -80,15 +80,15 @@ function FileNodeLeaf({
 	collapseLabel,
 	expandLabel,
 }: {
-	node: RenderTreeNodePayload['node'];
-	expanded: boolean;
-	elementProps: RenderTreeNodePayload['elementProps'];
-	isLoading?: boolean;
-	onNodeClick?: (value: string) => void;
-	onToggle: (e: MouseEvent) => void;
-	currentFolderId?: string;
-	collapseLabel: string;
-	expandLabel: string;
+	node: RenderTreeNodePayload['node'],
+	expanded: boolean,
+	elementProps: RenderTreeNodePayload['elementProps'],
+	isLoading?: boolean,
+	onNodeClick?: (value: string) => void,
+	onToggle: (e: MouseEvent) => void,
+	currentFolderId?: string,
+	collapseLabel: string,
+	expandLabel: string,
 }) {
 	const isFolder = node.nodeProps?.type === 'folder';
 	const background =
@@ -187,14 +187,14 @@ function Leaf({
 }
 
 export type DriveFileTreeProps = {
-	tree: ReturnType<typeof useTree>;
-	data: any[];
-	loadingNodeId: string | null;
-	onLoad: (value: string) => void;
-	onLoadMore: (parentId: string, nodeValue: string) => void;
-	onNodeClick: (value: string) => void;
-	currentFolderId?: string;
-	t?: (key: string) => string;
+	tree: ReturnType<typeof useTree>,
+	data: any[],
+	loadingNodeId: string | null,
+	onLoad: (value: string) => void,
+	onLoadMore: (parentId: string, nodeValue: string) => void,
+	onNodeClick: (value: string) => void,
+	currentFolderId?: string,
+	t?: (key: string) => string,
 };
 
 export function DriveFileTree({

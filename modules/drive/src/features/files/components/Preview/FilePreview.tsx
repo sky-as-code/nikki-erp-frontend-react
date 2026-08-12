@@ -2,7 +2,7 @@ import { Box, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
 
-export function FilePreview({ streamUrl, mime, name }: { streamUrl: string; mime: string; name: string; }) {
+export function FilePreview({ streamUrl, mime, name }: { streamUrl: string, mime: string, name: string }) {
 	const { t } = useTranslation();
 	const renderPreview = () => {
 		if (mime.startsWith('image/')) {

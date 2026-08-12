@@ -1,10 +1,10 @@
-import { resolveUserRef } from '@/features/fileShare/driveFileShareUserUtils';
-import { PERMISSION_RANK } from '@/features/fileShare/sharePermissionConstants';
+import { resolveUserRef } from './driveFileShareUserUtils';
+import { PERMISSION_RANK } from './sharePermissionConstants';
 import {
 	DriveFileSharePermission,
 	type DriveFileShare,
 	type DriveFileSharePermission as DriveFileSharePermissionType,
-} from '@/features/fileShare/type';
+} from './type';
 
 
 export type ShareDetailListLayer = 'owner' | 'viewer' | 'inherited' | 'resolved';
@@ -16,11 +16,11 @@ export type ShareDetailListLayer = 'owner' | 'viewer' | 'inherited' | 'resolved'
  * - Lớp inherited/resolved: chủ file, chủ folder cha (ANCESTOR_OWNER trên file), hoặc chính user của dòng đó.
  */
 export function canOpenShareDetailRow(params: {
-	file: Pick<{ ownerRef: string }, 'ownerRef'>;
-	share: DriveFileShare;
-	currentUserId: string | undefined;
-	layer: ShareDetailListLayer;
-	viewerAppliedPermission?: DriveFileSharePermissionType | null;
+	file: Pick<{ ownerRef: string }, 'ownerRef'>,
+	share: DriveFileShare,
+	currentUserId: string | undefined,
+	layer: ShareDetailListLayer,
+	viewerAppliedPermission?: DriveFileSharePermissionType | null,
 }): boolean {
 	const { file, share, currentUserId, layer, viewerAppliedPermission } = params;
 	if (!currentUserId) return false;
@@ -35,9 +35,9 @@ export function canOpenShareDetailRow(params: {
 
 /** Chỉ chủ file hoặc chủ folder cha (quyền ANCESTOR_OWNER trên file) mới cập nhật / thu hồi trong modal chi tiết. */
 export function canManageShareInDetail(params: {
-	file: Pick<{ ownerRef: string }, 'ownerRef'>;
-	currentUserId: string | undefined;
-	viewerAppliedPermission?: DriveFileSharePermissionType | null;
+	file: Pick<{ ownerRef: string }, 'ownerRef'>,
+	currentUserId: string | undefined,
+	viewerAppliedPermission?: DriveFileSharePermissionType | null,
 }): boolean {
 	const { file, currentUserId, viewerAppliedPermission } = params;
 	if (!currentUserId) return false;
@@ -55,9 +55,9 @@ const ASSIGNABLE_PERMISSIONS: DriveFileSharePermissionType[] = [
 ];
 
 export function getAssignableOptions(
-	allOptions: Array<{ value: DriveFileSharePermissionType; label: string }>,
+	allOptions: Array<{ value: DriveFileSharePermissionType, label: string }>,
 	maxInheritedPermission: DriveFileSharePermissionType | null,
-): Array<{ value: DriveFileSharePermissionType; label: string }> {
+): Array<{ value: DriveFileSharePermissionType, label: string }> {
 	const minRank = maxInheritedPermission
 		? PERMISSION_RANK[maxInheritedPermission] ?? 0
 		: 0;

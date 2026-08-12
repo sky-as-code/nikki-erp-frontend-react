@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 
 import { AvailableEntitlementsList } from './AvailableEntitlementsList';
 import { SelectedEntitlementsList } from './SelectedEntitlementsList';
+import { ScopeType } from '../../../resources';
 
-import type { Entitlement } from '@/features/entitlements';
-import type { Resource } from '@/features/resources';
+import type { Entitlement } from '../../../entitlements';
+import type { Resource } from '../../../resources';
 import type { Hierarchy, Organization } from '@nikkierp/shell/userContext';
 
-import { ScopeType } from '@/features/resources';
 
 
 export interface EntitlementTransferListProps {

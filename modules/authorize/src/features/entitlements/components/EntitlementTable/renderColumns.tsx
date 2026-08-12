@@ -2,8 +2,8 @@ import { Badge, Text } from '@mantine/core';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 
-import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '@/features/entitlements/helpers/entitlementFormValidation';
-import { Entitlement } from '@/features/entitlements/types';
+import { ALL_ACTIONS_VALUE, ALL_RESOURCES_VALUE } from '../../helpers/entitlementFormValidation';
+import { Entitlement } from '../../types';
 
 
 export function renderNameColumn(

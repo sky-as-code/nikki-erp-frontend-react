@@ -6,8 +6,8 @@ import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import type { Group } from '@/features/identities';
-import type { User } from '@/features/identities';
+import type { Group } from '../../../identities';
+import type { User } from '../../../identities';
 
 
 interface ReceiverSelectFieldProps {

@@ -6,7 +6,7 @@ import {
 	listUsers,
 	reducer,
 	type IdentityState,
-} from '@/features/identities/identitySlice';
+} from '../features/identities/identitySlice';
 
 
 const STATE_KEY = 'identity';
@@ -21,7 +21,7 @@ export const identityActions = {
 };
 
 export const selectIdentityState = (state: {
-	[STATE_KEY]: IdentityState;
+	[STATE_KEY]: IdentityState,
 }) =>
 	state[STATE_KEY] ?? initialState;
 

@@ -16,8 +16,8 @@ import {
 	AssignedEntitlementsList,
 	roleSchema,
 	useRoleDetailPage,
-} from '@/features/roles';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../features/roles';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 

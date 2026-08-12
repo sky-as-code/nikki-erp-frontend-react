@@ -8,14 +8,14 @@ import type { DriveFileFilterState } from '../components/Filters/DriveFileFilter
 
 
 export type UseDriveFileFiltersOptions = {
-	pageSize?: number;
-	baseConditions?: any[];
-	onBeforeApply?: () => void;
+	pageSize?: number,
+	baseConditions?: any[],
+	onBeforeApply?: () => void,
 	onApply?: (req: {
-		page: number;
-		size: number;
-		graph: Record<string, unknown>;
-	}) => void;
+		page: number,
+		size: number,
+		graph: Record<string, unknown>,
+	}) => void,
 };
 
 export function useDriveFileFilters({

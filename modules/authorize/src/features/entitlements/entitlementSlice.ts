@@ -10,17 +10,17 @@ import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActi
 export const SLICE_NAME = 'authorize.entitlement';
 
 export type EntitlementState = {
-	entitlements: Entitlement[];
-	entitlementDetail?: Entitlement;
+	entitlements: Entitlement[],
+	entitlementDetail?: Entitlement,
 
 	list: {
-		isLoading: boolean;
-		error: string | null;
-	};
+		isLoading: boolean,
+		error: string | null,
+	},
 
-	create: ReduxActionState<Entitlement>;
-	update: ReduxActionState<Entitlement>;
-	delete: ReduxActionState<void>;
+	create: ReduxActionState<Entitlement>,
+	update: ReduxActionState<Entitlement>,
+	delete: ReduxActionState<void>,
 };
 
 export const initialState: EntitlementState = {
@@ -93,7 +93,7 @@ export const createEntitlement = createAsyncThunk<
 
 export const updateEntitlement = createAsyncThunk<
 	Entitlement,
-	{ id: string; etag: string; entitlement: Entitlement },
+	{ id: string, etag: string, entitlement: Entitlement },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateEntitlement`,

@@ -7,22 +7,22 @@ import { EmptyFilesState } from '../..';
 import { FileActionMenu } from '../FileActions';
 import { AddFileCard } from './AddFileCard';
 import { DriveFileIcon } from './DriveFileIcon';
-import { useDriveFileActions, useMinimumLoading } from '../../hooks';
-import { DriveFileStatus, type DriveFile } from '../../types';
-import { formatSize } from '../../utils';
-
 import {
 	selectCurrentFolder,
 	selectDriveFileList,
 	selectGetDriveFileByParent,
-} from '@/appState/file';
-import { useDriveStreamUrl } from '@/hooks/useDriveStreamUrl';
+} from '../../../../appState/file';
+import { useDriveStreamUrl } from '../../../../hooks/useDriveStreamUrl';
+import { useDriveFileActions, useMinimumLoading } from '../../hooks';
+import { DriveFileStatus, type DriveFile } from '../../types';
+import { formatSize } from '../../utils';
+
 
 
 const MIN_LOADING_MS = 300;
 
 export type DriveFileGridProps = {
-	showCreate?: boolean;
+	showCreate?: boolean,
 };
 
 export function DriveFileGrid({ showCreate = true }: DriveFileGridProps): React.ReactNode {

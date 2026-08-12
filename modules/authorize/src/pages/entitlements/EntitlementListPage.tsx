@@ -5,9 +5,9 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AuthorizeDispatch } from '@/appState';
-import { EntitlementTable, entitlementSchema, useEntitlementDelete, useEntitlementList } from '@/features/entitlements';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+import { AuthorizeDispatch } from '../../appState';
+import { EntitlementTable, entitlementSchema, useEntitlementDelete, useEntitlementList } from '../../features/entitlements';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function EntitlementListPageBody(): React.ReactNode {

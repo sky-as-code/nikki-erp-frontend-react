@@ -13,11 +13,11 @@ import {
 export const SLICE_NAME = 'authorize.resource';
 
 export type ResourceState = {
-	detail: ReduxActionState<Resource>;
-	list: ReduxActionState<Resource[]>;
-	create: ReduxActionState<Resource>;
-	update: ReduxActionState<Resource>;
-	delete: ReduxActionState<void>;
+	detail: ReduxActionState<Resource>,
+	list: ReduxActionState<Resource[]>,
+	create: ReduxActionState<Resource>,
+	update: ReduxActionState<Resource>,
+	delete: ReduxActionState<void>,
 };
 
 export const initialState: ResourceState = {
@@ -85,7 +85,7 @@ export const createResource = createAsyncThunk<
 
 export const updateResource = createAsyncThunk<
 	Resource,
-	{ id: string; etag: string; description?: string | null },
+	{ id: string, etag: string, description?: string | null },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateResource`,
@@ -103,7 +103,7 @@ export const updateResource = createAsyncThunk<
 
 export const deleteResource = createAsyncThunk<
 	void,
-	{ name: string; },
+	{ name: string },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/deleteResource`,

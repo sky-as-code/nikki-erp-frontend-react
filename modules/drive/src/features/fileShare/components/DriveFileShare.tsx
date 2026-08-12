@@ -14,6 +14,7 @@ import { IconInfoCircle } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { DriveFileSharePermission } from '..';
 import { DriveFileShareAccessDetailModal } from './DriveFileShareAccessDetailModal';
 import { DriveFileShareAccessItem } from './DriveFileShareAccessItem';
 import { DriveFileShareInheritedSection } from './DriveFileShareInheritedSection';
@@ -23,29 +24,27 @@ import { SharePermissionHelpModal } from './permissionHelp';
 import { PermissionSelector } from './PermissionSelector';
 import { shareAccessAccordionStyles } from './shareAccessAccordionStyles';
 import { ShareUserMultiSelect } from './ShareUserMultiSelect';
-
-import type { DriveFile } from '@/features/files/types';
-import type { DriveFileShare, DriveFileSharePermission as DriveFileSharePermissionType } from '@/features/fileShare/type';
-import type { IdentityUser } from '@/features/identities/types';
-
-import { driveFileActions } from '@/appState/file';
+import { driveFileActions } from '../../../appState/file';
 import {
 	driveFileShareActions,
 	selectDriveFileShareAncestorsState,
 	selectDriveFileShareResolvedState,
-} from '@/appState/fileShare';
-import { DriveFileSharePermission } from '@/features/fileShare';
+} from '../../../appState/fileShare';
 import {
 	canManageShareInDetail,
-} from '@/features/fileShare/driveFileShareAccessDetailUtils';
-import { createOwnerFileShareStub } from '@/features/fileShare/driveFileShareUserUtils';
-import { useDriveFileSharesByUser } from '@/features/fileShare/hooks/useDriveFileSharesByUser';
-import { useHandleChangeDriveFileSharePermission } from '@/features/fileShare/hooks/useHandleChangeDriveFileSharePermission';
-import { useSharePermissionOptions } from '@/features/fileShare/hooks/useSharePermissionOptions';
+} from '../driveFileShareAccessDetailUtils';
+import { createOwnerFileShareStub } from '../driveFileShareUserUtils';
+import { useDriveFileSharesByUser } from '../hooks/useDriveFileSharesByUser';
+import { useHandleChangeDriveFileSharePermission } from '../hooks/useHandleChangeDriveFileSharePermission';
+import { useSharePermissionOptions } from '../hooks/useSharePermissionOptions';
+
+import type { DriveFile } from '../../files/types';
+import type { IdentityUser } from '../../identities/types';
+import type { DriveFileShare, DriveFileSharePermission as DriveFileSharePermissionType } from '../type';
 
 
 export type DriveFileShareManagerProps = {
-	file: DriveFile;
+	file: DriveFile,
 };
 
 export function DriveFileShareManager({ file }: DriveFileShareManagerProps): React.ReactNode {
@@ -68,7 +67,7 @@ export function DriveFileShareManager({ file }: DriveFileShareManagerProps): Rea
 	const ownerShareStub = React.useMemo(() => createOwnerFileShareStub(file), [file]);
 
 	const shellUser = useRootSelector(
-		(s: { shellUserContext?: { user?: { id: string; displayName: string; email: string; avatarUrl?: string } } }) =>
+		(s: { shellUserContext?: { user?: { id: string, displayName: string, email: string, avatarUrl?: string } } }) =>
 			s.shellUserContext?.user,
 	);
 	const currentUserId = shellUser?.id;

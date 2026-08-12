@@ -3,8 +3,8 @@ import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AuthorizeDispatch, revokeRequestActions, selectDeleteRevokeRequest } from '@/appState';
-import { RevokeRequest } from '@/features/revokeRequests/types';
+import { AuthorizeDispatch, revokeRequestActions, selectDeleteRevokeRequest } from '../../../appState';
+import { RevokeRequest } from '../types';
 
 
 export function useRevokeRequestDelete(

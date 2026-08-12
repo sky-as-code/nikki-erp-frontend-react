@@ -18,9 +18,9 @@ import {
 	resourceSchema,
 	useResourceDetail,
 	useResourceEdit,
-} from '@/features/resources';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
-import { handleGoBack } from '@/utils';
+} from '../../features/resources';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
+import { handleGoBack } from '../../utils';
 
 
 function ResourceDetailPageBody(): React.ReactNode {

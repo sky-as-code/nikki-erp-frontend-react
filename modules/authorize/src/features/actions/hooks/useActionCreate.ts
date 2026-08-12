@@ -6,9 +6,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate } from 'react-router';
 
-import type { Action } from '@/features/actions';
+import { AuthorizeDispatch, actionActions, selectCreateAction } from '../../../appState';
 
-import { AuthorizeDispatch, actionActions, selectCreateAction } from '@/appState';
+import type { Action } from '..';
+
 
 
 function useCancelHandler(navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) {

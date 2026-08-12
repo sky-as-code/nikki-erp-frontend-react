@@ -1,8 +1,9 @@
 
-import type { Org } from '@/features/identities';
-import type { Role } from '@/features/roles';
+import { OwnerType } from '../roles';
 
-import { OwnerType } from '@/features/roles';
+import type { Org } from '../identities';
+import type { Role } from '../roles';
+
 
 
 interface RoleSuite {

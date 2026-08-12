@@ -8,8 +8,7 @@ import {
 	renderActionIdColumn,
 	renderActionsColumn,
 } from './renderColumns';
-
-import { Entitlement } from '@/features/entitlements/types';
+import { Entitlement } from '../../types';
 
 
 export interface EntitlementTableProps extends AutoTableProps {

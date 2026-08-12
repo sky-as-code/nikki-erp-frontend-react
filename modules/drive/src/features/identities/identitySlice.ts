@@ -12,16 +12,16 @@ import type { IdentityUser } from './types';
 export const SLICE_NAME = 'drive.identity';
 
 export type ListUsersRequest = {
-	q?: string;
-	graph?: Record<string, unknown>;
-	page?: number;
-	size?: number;
+	q?: string,
+	graph?: Record<string, unknown>,
+	page?: number,
+	size?: number,
 };
 
 export type IdentityState = {
-	users: IdentityUser[];
-	isLoadingUsers: boolean;
-	errorUsers: string | null;
+	users: IdentityUser[],
+	isLoadingUsers: boolean,
+	errorUsers: string | null,
 };
 
 export const initialState: IdentityState = {

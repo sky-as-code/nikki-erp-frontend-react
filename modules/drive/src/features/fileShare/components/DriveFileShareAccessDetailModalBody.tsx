@@ -5,28 +5,28 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 
+import { DriveFileSharePermissionDisplay } from '..';
 import { DriveFileShareRevokeConfirmModal } from './DriveFileShareRevokeConfirmModal';
 import { PermissionSelector } from './PermissionSelector';
+import { useOrgModulePath } from '../../../hooks/useRootPath';
+import {
+	getAssignableOptions,
+	INHERITED_PERMISSIONS,
+} from '../driveFileShareAccessDetailUtils';
+import { resolveUserRef } from '../driveFileShareUserUtils';
+import { PERMISSION_RANK } from '../sharePermissionConstants';
 
 import type {
 	DriveFileShare,
 	DriveFileSharePermission as DriveFileSharePermissionType,
-} from '@/features/fileShare/type';
+} from '../type';
 
-import { DriveFileSharePermissionDisplay } from '@/features/fileShare';
-import {
-	getAssignableOptions,
-	INHERITED_PERMISSIONS,
-} from '@/features/fileShare/driveFileShareAccessDetailUtils';
-import { resolveUserRef } from '@/features/fileShare/driveFileShareUserUtils';
-import { PERMISSION_RANK } from '@/features/fileShare/sharePermissionConstants';
-import { useOrgModulePath } from '@/hooks/useRootPath';
 
 
 export function AncestorShareRow({ row, basePath, onNavigate }: {
-	row: DriveFileShare;
-	basePath: string;
-	onNavigate?: () => void;
+	row: DriveFileShare,
+	basePath: string,
+	onNavigate?: () => void,
 }): React.ReactNode {
 	const inherited = INHERITED_PERMISSIONS[row.permission];
 	const targetId = row.file?.id ?? row.driveFileRef;
@@ -66,9 +66,9 @@ export function AncestorShareRow({ row, basePath, onNavigate }: {
  */
 function getMaxInheritedAncestor(
 	restRows: DriveFileShare[],
-): { permission: DriveFileSharePermissionType; row: DriveFileShare } | null {
+): { permission: DriveFileSharePermissionType, row: DriveFileShare } | null {
 	if (restRows.length === 0) return null;
-	let best: { permission: DriveFileSharePermissionType; row: DriveFileShare } | null = null;
+	let best: { permission: DriveFileSharePermissionType, row: DriveFileShare } | null = null;
 	let maxRank = 0;
 	for (const row of restRows) {
 		const rank = PERMISSION_RANK[row.permission] ?? 0;
@@ -84,15 +84,15 @@ function PermissionEditForm({
 	currentRow, availableOptions, isDirectPermission, subjectUserRef,
 	onUpdatePermission, onCreatePermission, onRevokePermission, inheritedAncestorRow,
 }: {
-	currentRow: DriveFileShare;
-	availableOptions: Array<{ value: DriveFileSharePermissionType; label: string }>;
-	isDirectPermission: boolean;
+	currentRow: DriveFileShare,
+	availableOptions: Array<{ value: DriveFileSharePermissionType, label: string }>,
+	isDirectPermission: boolean,
 	/** User đang xem trong modal (từ anchor); dùng khi bản ghi API thiếu `userRef` nhưng vẫn có `user.id`. */
-	subjectUserRef: string;
-	onUpdatePermission: (share: DriveFileShare, next: DriveFileSharePermissionType) => void;
-	onCreatePermission: (userRef: string, permission: DriveFileSharePermissionType) => void;
-	onRevokePermission: (share: DriveFileShare) => void;
-	inheritedAncestorRow: DriveFileShare | null;
+	subjectUserRef: string,
+	onUpdatePermission: (share: DriveFileShare, next: DriveFileSharePermissionType) => void,
+	onCreatePermission: (userRef: string, permission: DriveFileSharePermissionType) => void,
+	onRevokePermission: (share: DriveFileShare) => void,
+	inheritedAncestorRow: DriveFileShare | null,
 }): React.ReactNode {
 	const { t } = useTranslation();
 	const canEdit = availableOptions.length > 0;
@@ -145,18 +145,18 @@ function PermissionEditForm({
 }
 
 export type DriveFileShareAccessDetailModalBodyProps = {
-	fileId: string;
+	fileId: string,
 	/** User của modal (anchor); fallback khi tạo share trực tiếp mà `currentRow` không có `userRef`. */
-	subjectUserRef: string;
-	currentRow: DriveFileShare;
-	restRows: DriveFileShare[];
-	isDirectPermission: boolean;
-	canManageShare: boolean;
-	permissionOptions: Array<{ value: DriveFileSharePermissionType; label: string }>;
-	onUpdatePermission: (share: DriveFileShare, next: DriveFileSharePermissionType) => void;
-	onCreatePermission: (userRef: string, permission: DriveFileSharePermissionType) => void;
-	onRevokePermission: (share: DriveFileShare) => void;
-	onClose?: () => void;
+	subjectUserRef: string,
+	currentRow: DriveFileShare,
+	restRows: DriveFileShare[],
+	isDirectPermission: boolean,
+	canManageShare: boolean,
+	permissionOptions: Array<{ value: DriveFileSharePermissionType, label: string }>,
+	onUpdatePermission: (share: DriveFileShare, next: DriveFileSharePermissionType) => void,
+	onCreatePermission: (userRef: string, permission: DriveFileSharePermissionType) => void,
+	onRevokePermission: (share: DriveFileShare) => void,
+	onClose?: () => void,
 };
 
 export function DriveFileShareAccessDetailModalBody({

@@ -14,7 +14,7 @@ import { IconArrowLeft, IconArrowRight, IconSearch } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Role } from '@/features/roles';
+import type { Role } from '../../../roles';
 
 
 interface RolesSelectorProps {

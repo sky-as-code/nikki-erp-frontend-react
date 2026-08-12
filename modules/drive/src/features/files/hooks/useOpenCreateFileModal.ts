@@ -1,7 +1,7 @@
 import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 import { useTranslation } from 'react-i18next';
 
-import { driveFileActions } from '@/appState/file';
+import { driveFileActions } from '../../../appState/file';
 
 
 export function useOpenCreateFileModal(): (defaultIsFolder?: boolean) => void {

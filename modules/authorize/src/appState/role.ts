@@ -12,7 +12,7 @@ import {
 	addEntitlementsToRole,
 	removeEntitlementsFromRole,
 	initialState,
-} from '@/features/roles/roleSlice';
+} from '../features/roles/roleSlice';
 
 
 const STATE_KEY = 'role';

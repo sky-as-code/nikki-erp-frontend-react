@@ -6,26 +6,25 @@ import { useNavigate } from 'react-router';
 
 
 import { useRefreshCurrentFolder } from './useRefreshCurrentFolder';
+import { driveFileActions } from '../../../appState/file';
+import { useDriveStreamUrl } from '../../../hooks/useDriveStreamUrl';
+import { useOrgModulePath } from '../../../hooks/useRootPath';
 
 import type { DriveFile } from '../types';
 
-import { driveFileActions } from '@/appState/file';
-import { useDriveStreamUrl } from '@/hooks/useDriveStreamUrl';
-import { useOrgModulePath } from '@/hooks/useRootPath';
-
 
 export type DriveFileActions = {
-	openFolder: () => void;
-	openProperties: () => void;
-	share: () => void;
-	editMetadata: () => void;
-	create: () => void;
-	download: () => void;
-	moveToTrash: () => Promise<void>;
-	restoreFromTrash: (desFileRef?: string) => Promise<void>;
-	restoreTo: () => Promise<void>;
-	confirmDelete: () => void;
-	previewFile: () => void;
+	openFolder: () => void,
+	openProperties: () => void,
+	share: () => void,
+	editMetadata: () => void,
+	create: () => void,
+	download: () => void,
+	moveToTrash: () => Promise<void>,
+	restoreFromTrash: (desFileRef?: string) => Promise<void>,
+	restoreTo: () => Promise<void>,
+	confirmDelete: () => void,
+	previewFile: () => void,
 };
 
 export function useDriveFileActions(file: DriveFile): DriveFileActions {

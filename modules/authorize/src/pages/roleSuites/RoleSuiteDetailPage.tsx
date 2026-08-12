@@ -17,7 +17,6 @@ import { ModelSchema } from '@nikkierp/ui/model';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Group, Org, User } from '@/features/identities';
 
 import {
 	AuthorizeDispatch,
@@ -25,15 +24,17 @@ import {
 	selectGroupList,
 	selectOrgList,
 	selectUserList,
-} from '@/appState';
+} from '../../appState';
 import {
 	RolesSelector,
 	RoleSuiteChangesSummary,
 	RoleSuiteFormFields,
 	roleSuiteSchema,
 	useRoleSuiteDetail,
-} from '@/features/roleSuites';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../features/roleSuites';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
+
+import type { Group, Org, User } from '../../features/identities';
 
 
 function RoleSuiteDetailForm({

@@ -3,17 +3,17 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { AncestorShareRow } from './DriveFileShareAccessDetailModalBody';
+import { useOrgModulePath } from '../../../hooks/useRootPath';
 
-import type { DriveFileShare } from '@/features/fileShare/type';
+import type { DriveFileShare } from '../type';
 
-import { useOrgModulePath } from '@/hooks/useRootPath';
 
 
 export type DriveFileShareRevokeConfirmModalProps = {
-	opened: boolean;
-	onClose: () => void;
-	onConfirm: () => void;
-	inheritedAncestorRow: DriveFileShare | null;
+	opened: boolean,
+	onClose: () => void,
+	onConfirm: () => void,
+	inheritedAncestorRow: DriveFileShare | null,
 };
 
 export function DriveFileShareRevokeConfirmModal({

@@ -19,11 +19,11 @@ const baseEndpointWithId = (id: string): string => {
 };
 
 export type CreateDriveFileFormPayload = {
-	parentDriveFileRef: string;
-	name: string;
-	isFolder: boolean;
-	visibility?: DriveFileVisibility;
-	file?: File;
+	parentDriveFileRef: string,
+	name: string,
+	isFolder: boolean,
+	visibility?: DriveFileVisibility,
+	file?: File,
 };
 
 export const fileService = {

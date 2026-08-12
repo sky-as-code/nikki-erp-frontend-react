@@ -77,9 +77,9 @@ export const PERMISSION_ICON: Record<DriveFileSharePermission, React.ReactNode> 
 };
 
 export type DriveFileSharePermissionDisplayProps = {
-	e: DriveFileSharePermission;
-	labelSuffix?: React.ReactNode;
-	textProps?: Pick<TextProps, 'size' | 'fw' | 'style'>;
+	e: DriveFileSharePermission,
+	labelSuffix?: React.ReactNode,
+	textProps?: Pick<TextProps, 'size' | 'fw' | 'style'>,
 };
 
 export function DriveFileSharePermissionDisplay({

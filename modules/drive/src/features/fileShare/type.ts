@@ -51,7 +51,7 @@ export type CreateDriveFileShareRequest = Pick<DriveFileShare,
 export type CreateDriveFileShareResponse = CreateResponse;
 
 export type CreateDriveFileShareBulkRequest = {
-	userRefs: string[];
+	userRefs: string[],
 } & Pick<DriveFileShare, 'driveFileRef' | 'permission'>;
 export type CreateDriveFileShareBulkResponse = CreateResponse[];
 
@@ -73,7 +73,7 @@ export type ResolvedDriveFileShareResponse = ListResponse<DriveFileShare>;
 export type GetDriveFileSharesByUserResponse = DriveFileShare[];
 
 export type ListShareUsersRequest = Pick<ListQuery, 'page' | 'size' | 'graph'> & {
-	q?: string;
+	q?: string,
 };
 
 export type { DriveFileShare };

@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 import { useOwnerSelectLogic } from '../../hooks/useOwnerSelectLogic';
 
+import type { Group, Org, User } from '../../../identities';
 import type { OwnerType } from '../../types';
-import type { Group, Org, User } from '@/features/identities';
 
 
 interface RoleFormFieldsProps {

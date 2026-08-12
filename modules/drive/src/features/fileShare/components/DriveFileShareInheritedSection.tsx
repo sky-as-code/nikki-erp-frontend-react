@@ -4,23 +4,23 @@ import { useTranslation } from 'react-i18next';
 
 import { DriveFileShareAccessItem } from './DriveFileShareAccessItem';
 import { shareAccessAccordionStyles } from './shareAccessAccordionStyles';
+import { canOpenShareDetailRow } from '../driveFileShareAccessDetailUtils';
 
-import type { DriveFile } from '@/features/files/types';
-import type { DriveFileShare, DriveFileSharePermission as DriveFileSharePermissionType, GetDriveFileShareAncestorsResponse } from '@/features/fileShare/type';
+import type { DriveFile } from '../../files/types';
+import type { DriveFileShare, DriveFileSharePermission as DriveFileSharePermissionType, GetDriveFileShareAncestorsResponse } from '../type';
 import type { ReduxActionState } from '@nikkierp/ui/appState';
 
-import { canOpenShareDetailRow } from '@/features/fileShare/driveFileShareAccessDetailUtils';
 
 
 export type DriveFileShareInheritedSectionProps = {
-	file: DriveFile;
-	currentUserId: string | undefined;
-	viewerAppliedPermission: DriveFileSharePermissionType | null | undefined;
-	ancestorsState: ReduxActionState<GetDriveFileShareAncestorsResponse>;
-	ancestorShares: DriveFileShare[];
+	file: DriveFile,
+	currentUserId: string | undefined,
+	viewerAppliedPermission: DriveFileSharePermissionType | null | undefined,
+	ancestorsState: ReduxActionState<GetDriveFileShareAncestorsResponse>,
+	ancestorShares: DriveFileShare[],
 	/** `true` khi modal chi tiết chỉ xem (icon mắt + tooltip). */
-	detailReadOnly?: boolean;
-	onOpenShareDetail?: (share: DriveFileShare) => void;
+	detailReadOnly?: boolean,
+	onOpenShareDetail?: (share: DriveFileShare) => void,
 };
 
 export function DriveFileShareInheritedSection({

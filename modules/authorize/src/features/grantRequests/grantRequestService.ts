@@ -1,5 +1,3 @@
-import type { GrantRequest } from './types';
-
 import {
 	createGrantRequest as createGrantRequestApi,
 	deleteGrantRequest as deleteGrantRequestApi,
@@ -7,7 +5,10 @@ import {
 	listGrantRequests as listGrantRequestsApi,
 	respondGrantRequest as respondGrantRequestApi,
 	cancelGrantRequest as cancelGrantRequestApi,
-} from '@/services/authzService';
+} from '../../services/authzService';
+
+import type { GrantRequest } from './types';
+
 
 
 export const grantRequestService = {

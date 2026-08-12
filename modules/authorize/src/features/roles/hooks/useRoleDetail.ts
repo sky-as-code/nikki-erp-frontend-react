@@ -8,7 +8,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import type { TFunction } from 'i18next';
 
 import {
 	AuthorizeDispatch,
@@ -19,8 +18,10 @@ import {
 	selectRoleState,
 	selectUserList,
 	selectUpdateRole,
-} from '@/appState';
-import { Role } from '@/features/roles/types';
+} from '../../../appState';
+import { Role } from '../types';
+
+import type { TFunction } from 'i18next';
 
 
 type NotificationType = ReturnType<typeof useUIState>['notification'];

@@ -6,9 +6,9 @@ import { EntitlementTransferList } from './EntitlementTransferList';
 import { FormActionsSection } from './FormActionsSection';
 import { SearchSection } from './SearchSection';
 
-import type { Entitlement } from '@/features/entitlements';
-import type { Resource } from '@/features/resources';
-import type { Role } from '@/features/roles';
+import type { Role } from '../..';
+import type { Entitlement } from '../../../entitlements';
+import type { Resource } from '../../../resources';
 
 
 interface RoleRemoveEntitlementsFormProps {

@@ -4,14 +4,14 @@ import { FormContainer, FormActions } from '@nikkierp/ui/components/form';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ReceiverType } from '@/features/grantRequests/types';
+import { ReceiverType } from '../../features/grantRequests/types';
 import {
 	RevokeRequestAssignmentsList,
 	RevokeRequestFilter,
 	RevokeRequestFormFields,
 	useRevokeRequestCreate,
-} from '@/features/revokeRequests';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../features/revokeRequests';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 type RevokeCreatePageData = ReturnType<typeof useRevokeRequestCreate>;

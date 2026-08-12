@@ -1,6 +1,7 @@
-import type { DriveFile } from '@/features/files/types';
+import { DriveFileSharePermission, type DriveFileShare } from './type';
 
-import { DriveFileSharePermission, type DriveFileShare } from '@/features/fileShare/type';
+import type { DriveFile } from '../files/types';
+
 
 
 export const DRIVE_FILE_OWNER_SHARE_ID = '__drive_file_owner__' as const;
@@ -20,9 +21,9 @@ export function createOwnerFileShareStub(file: DriveFile): DriveFileShare | null
 }
 
 export type RawDriveFileShare = DriveFileShare & {
-	user_ref?: string;
-	userId?: string;
-	user_id?: string;
+	user_ref?: string,
+	userId?: string,
+	user_id?: string,
 };
 
 export function resolveUserRef(share: DriveFileShare): string {
@@ -37,7 +38,7 @@ export function resolveUserRef(share: DriveFileShare): string {
 	);
 }
 
-export function getUserInitials(user?: { displayName?: string; email?: string }): string {
+export function getUserInitials(user?: { displayName?: string, email?: string }): string {
 	const source = user?.displayName?.trim() || user?.email?.trim() || '';
 	if (!source) return '?';
 	return source

@@ -14,8 +14,8 @@ import {
 	ResourceFormFields,
 	resourceSchema,
 	useResourceCreate,
-} from '@/features/resources';
-import { handleGoBack } from '@/utils';
+} from '../../features/resources';
+import { handleGoBack } from '../../utils';
 
 
 function ResourceCreatePageBody(): React.ReactNode {

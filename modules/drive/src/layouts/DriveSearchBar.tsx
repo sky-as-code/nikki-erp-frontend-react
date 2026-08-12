@@ -6,29 +6,29 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { DriveFile, DriveFileType } from '@/features/files';
-import { FileActionMenu } from '@/features/files/components';
-import { DriveFileFilterBar, type DriveFileFilterState } from '@/features/files/components/Filters/DriveFileFilterBar';
-import { fileService } from '@/features/files/fileService';
-import { DRIVE_FILE_TYPE_TO_MIME } from '@/features/files/fileSlice';
-import { useDriveFileActions, useMinimumLoading } from '@/features/files/hooks';
-import { useOrgModulePath } from '@/hooks/useRootPath';
+import { DriveFile, DriveFileType } from '../features/files';
+import { FileActionMenu } from '../features/files/components';
+import { DriveFileFilterBar, type DriveFileFilterState } from '../features/files/components/Filters/DriveFileFilterBar';
+import { fileService } from '../features/files/fileService';
+import { DRIVE_FILE_TYPE_TO_MIME } from '../features/files/fileSlice';
+import { useDriveFileActions, useMinimumLoading } from '../features/files/hooks';
+import { useOrgModulePath } from '../hooks/useRootPath';
 
 
 type DriveSearchResultsPaneProps = {
-	query: string;
-	results: DriveFile[];
-	total: number;
-	loading: boolean;
-	showLoading: boolean;
-	error: string | null;
-	filters: DriveFileFilterState;
-	onFiltersChange: (next: DriveFileFilterState) => void;
-	isOpen: boolean;
-	isHoveringPane: boolean;
-	setIsHoveringPane: (value: boolean) => void;
-	searchInputRef: React.RefObject<HTMLInputElement | null>;
-	onViewAll: () => void;
+	query: string,
+	results: DriveFile[],
+	total: number,
+	loading: boolean,
+	showLoading: boolean,
+	error: string | null,
+	filters: DriveFileFilterState,
+	onFiltersChange: (next: DriveFileFilterState) => void,
+	isOpen: boolean,
+	isHoveringPane: boolean,
+	setIsHoveringPane: (value: boolean) => void,
+	searchInputRef: React.RefObject<HTMLInputElement | null>,
+	onViewAll: () => void,
 };
 
 function buildGraph(queryText: string, currentFilters: DriveFileFilterState): Record<string, unknown> {

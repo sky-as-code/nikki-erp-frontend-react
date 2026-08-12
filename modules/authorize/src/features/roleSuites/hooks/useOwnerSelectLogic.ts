@@ -3,9 +3,9 @@ import React from 'react';
 import { useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import type { Group } from '@/features/identities';
-import type { User } from '@/features/identities';
-import type { OwnerType } from '@/features/roles';
+import type { Group } from '../../identities';
+import type { User } from '../../identities';
+import type { OwnerType } from '../../roles';
 
 
 export function useOwnerSelectLogic(users?: User[], groups?: Group[]) {

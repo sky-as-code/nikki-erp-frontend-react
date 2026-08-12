@@ -8,18 +8,18 @@ import type {
 	Entitlement,
 	GrantRequest,
 	RevokeRequest,
-} from '@/features';
+} from '../features';
 
 
 export type ListResponse<T> = {
-	total: number;
-	items: T[];
+	total: number,
+	items: T[],
 };
 
 export type ListQuery = {
-	page?: number;
-	size?: number;
-	graph?: Record<string, unknown>;
+	page?: number,
+	size?: number,
+	graph?: Record<string, unknown>,
 };
 
 // ============ Resource APIs ============
@@ -187,13 +187,13 @@ export async function deleteRole(id: string): Promise<void> {
 }
 
 export type EntitlementAssignmentInput = {
-	entitlementId: string;
-	scopeRef?: string;
+	entitlementId: string,
+	scopeRef?: string,
 };
 
 export type AddEntitlementsToRoleRequest = {
-	entitlementInputs: EntitlementAssignmentInput[];
-	etag: string;
+	entitlementInputs: EntitlementAssignmentInput[],
+	etag: string,
 };
 
 export async function addEntitlementsToRole(
@@ -206,8 +206,8 @@ export async function addEntitlementsToRole(
 }
 
 export type RemoveEntitlementsFromRoleRequest = {
-	entitlementInputs: EntitlementAssignmentInput[];
-	etag: string;
+	entitlementInputs: EntitlementAssignmentInput[],
+	etag: string,
 };
 
 export async function removeEntitlementsFromRole(
@@ -299,27 +299,27 @@ export async function deleteGrantRequest(id: string): Promise<void> {
 
 // ============ RevokeRequest APIs ============
 export type AuthzBulkRevokeRequestInputDto = {
-	attachmentUrl?: string;
-	comment?: string;
-	requestorId: string;
-	receiverType: string;
-	receiverId: string;
-	targetType: string;
-	targetRef: string;
+	attachmentUrl?: string,
+	comment?: string,
+	requestorId: string,
+	receiverType: string,
+	receiverId: string,
+	targetType: string,
+	targetRef: string,
 };
 
 export type AuthzBulkRevokeRequestRequestDto = {
-	items: AuthzBulkRevokeRequestInputDto[];
+	items: AuthzBulkRevokeRequestInputDto[],
 };
 
 export type AuthzBulkRevokeRequestItemDto = {
-	id: string;
-	createdAt: number;
-	etag: string;
+	id: string,
+	createdAt: number,
+	etag: string,
 };
 
 export type AuthzBulkRevokeRequestResponseDto = {
-	items: AuthzBulkRevokeRequestItemDto[];
+	items: AuthzBulkRevokeRequestItemDto[],
 };
 
 export async function listRevokeRequests(params?: ListQuery): Promise<ListResponse<RevokeRequest>> {

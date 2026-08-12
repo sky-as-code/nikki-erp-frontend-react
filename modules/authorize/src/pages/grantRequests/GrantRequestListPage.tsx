@@ -10,9 +10,9 @@ import {
 	AuthorizeDispatch,
 	grantRequestActions,
 	selectGrantRequestState,
-} from '@/appState';
-import { GrantRequestTable, grantRequestSchema, useGrantRequestDelete } from '@/features/grantRequests';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../appState';
+import { GrantRequestTable, grantRequestSchema, useGrantRequestDelete } from '../../features/grantRequests';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function GrantRequestListPageBody(): React.ReactNode {

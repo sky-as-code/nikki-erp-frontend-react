@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useRoleChanges } from '../../hooks';
 
-import type { Role } from '@/features/roles';
+import type { Role } from '../../../roles';
 
 
 interface RoleSuiteChangesSummaryProps {

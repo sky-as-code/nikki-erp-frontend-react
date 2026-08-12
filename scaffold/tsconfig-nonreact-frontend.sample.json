@@ -6,7 +6,6 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"baseUrl": ".",
 		"outDir": "dist",
 		"target": "es2020",
 	},

@@ -7,7 +7,7 @@ import { FileSelector, type FileSelectorMode } from './FileSelector';
 export const DRIVE_FILE_SELECTOR_TAG = 'drive-file-selector';
 
 export type DriveFilesSelectedDetail = {
-	fileIds: string[];
+	fileIds: string[],
 };
 
 export function registerDriveFileSelectorWebComponent(htmlTag: string = DRIVE_FILE_SELECTOR_TAG): void {
@@ -16,9 +16,9 @@ export function registerDriveFileSelectorWebComponent(htmlTag: string = DRIVE_FI
 	}
 
 	type Props = {
-		parentId: string;
-		multiple: boolean;
-		mode: FileSelectorMode;
+		parentId: string,
+		multiple: boolean,
+		mode: FileSelectorMode,
 	};
 
 	class DriveFileSelectorElement extends HTMLElement {

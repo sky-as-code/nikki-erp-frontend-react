@@ -6,11 +6,11 @@ import { Link } from 'react-router';
 
 
 import { useCurrentFileSortedAncestors } from '../hooks/useCurrentFileAncestor';
+import { DriveFile, DriveFileStatus } from '../types';
 import { FileActionMenu } from './FileActions/FileActionMenu';
 
 import type { DriveFileUIViewMode } from './DriveFileView';
 
-import { DriveFile, DriveFileStatus } from '@/features/files/types';
 
 
 export type DriveFallbackTitleKey = 'nikki.drive.myFiles' | 'nikki.drive.trash';

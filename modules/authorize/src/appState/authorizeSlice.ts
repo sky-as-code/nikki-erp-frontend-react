@@ -5,13 +5,14 @@ import {
 	type PayloadAction,
 } from '@reduxjs/toolkit';
 
-import type { ListResponse } from '@/services/authzService';
 
-import { Resource } from '@/features/resources';
+import { Resource } from '../features/resources';
 import {
 	listEntitlements as listEntitlementsApi,
 	listResources as listResourcesApi,
-} from '@/services/authzService';
+} from '../services/authzService';
+
+import type { ListResponse } from '../services/authzService';
 
 
 
@@ -20,39 +21,39 @@ export const SLICE_NAME = 'authorize';
 export type AuthzResource = Resource;
 
 export type AuthzActionRow = {
-	id: string;
-	name: string;
-	resourceId: string;
-	resourceName: string;
+	id: string,
+	name: string,
+	resourceId: string,
+	resourceName: string,
 };
 
 export type AuthzEntitlement = {
-	id: string;
-	name: string;
-	description?: string;
-	actionId: string;
-	actionName?: string;
-	resourceId: string;
-	resourceName?: string;
-	subjectType?: string;
-	subjectRef?: string;
-	subjectDisplayName?: string | null;
-	orgId?: string | null;
-	scopeRef?: string | null;
+	id: string,
+	name: string,
+	description?: string,
+	actionId: string,
+	actionName?: string,
+	resourceId: string,
+	resourceName?: string,
+	subjectType?: string,
+	subjectRef?: string,
+	subjectDisplayName?: string | null,
+	orgId?: string | null,
+	scopeRef?: string | null,
 };
 
 export type AuthorizeState = {
-	resources: AuthzResource[];
-	isLoadingResources: boolean;
-	resourcesError: string | null;
+	resources: AuthzResource[],
+	isLoadingResources: boolean,
+	resourcesError: string | null,
 
-	actions: AuthzActionRow[];
-	isLoadingActions: boolean;
-	actionsError: string | null;
+	actions: AuthzActionRow[],
+	isLoadingActions: boolean,
+	actionsError: string | null,
 
-	entitlements: AuthzEntitlement[];
-	isLoadingEntitlements: boolean;
-	entitlementsError: string | null;
+	entitlements: AuthzEntitlement[],
+	isLoadingEntitlements: boolean,
+	entitlementsError: string | null,
 };
 
 const initialState: AuthorizeState = {

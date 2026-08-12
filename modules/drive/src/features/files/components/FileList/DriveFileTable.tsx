@@ -10,6 +10,8 @@ import {
 	DRIVE_FILE_TABLE_SCHEMA,
 } from './DRIVE_FILE_TABLE_SCHEMA';
 import { EmptyFilesState } from './EmptyFilesState';
+import { selectCurrentFolder, selectDriveFileList, selectGetDriveFileByParent } from '../../../../appState/file';
+import { useDbDateTime } from '../../../../hooks';
 import { useDriveFileActions, useMinimumLoading, useOpenCreateFileModal } from '../../hooks';
 import {
 	DriveFile,
@@ -21,8 +23,6 @@ import { DriveFileStatusBadge, DriveFileVisibilityBadge } from '../EnumDisplay';
 import { DriveFileTypeDisplay } from '../EnumDisplay';
 import { FileActionMenu } from '../FileActions';
 
-import { selectCurrentFolder, selectDriveFileList, selectGetDriveFileByParent } from '@/appState/file';
-import { useDbDateTime } from '@/hooks';
 
 
 
@@ -62,7 +62,7 @@ function useTableRenderers(): Record<string, (row: Record<string, unknown>) => R
 };
 
 export type DriveFileTableProps = {
-	showCreate?: boolean;
+	showCreate?: boolean,
 };
 
 export function DriveFileTable({ showCreate = true }: DriveFileTableProps): React.ReactNode {
@@ -117,9 +117,9 @@ export function DriveFileTable({ showCreate = true }: DriveFileTableProps): Reac
 }
 
 type AddFileButtonsProps = {
-	openCreateFile: () => void;
-	openCreateFolder: () => void;
-	t: any;
+	openCreateFile: () => void,
+	openCreateFolder: () => void,
+	t: any,
 };
 
 function AddFileButtons({ openCreateFile: createFileFn, openCreateFolder: createFolderFn, t,

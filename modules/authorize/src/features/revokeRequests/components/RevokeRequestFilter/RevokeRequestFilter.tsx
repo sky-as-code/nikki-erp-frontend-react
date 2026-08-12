@@ -2,8 +2,8 @@ import { Paper, Select, Stack, Title } from '@mantine/core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Group as GroupType } from '@/features/identities';
-import type { User } from '@/features/identities';
+import type { Group as GroupType } from '../../../identities';
+import type { User } from '../../../identities';
 
 
 interface RevokeRequestFilterProps {

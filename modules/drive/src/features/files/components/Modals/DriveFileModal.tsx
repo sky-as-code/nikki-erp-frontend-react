@@ -11,16 +11,16 @@ import {
 	CreateFileModalContent,
 	DriveFileShareModalContent,
 } from './Contents';
-import { DriveFileModalUIState } from '../../fileSlice';
-import { useRefreshCurrentFolder } from '../../hooks';
-import { DriveFile } from '../../types';
-
 import {
 	driveFileActions,
 	selectCurrentFolder,
 	selectDriveFileDetail,
 	selectDriveFileModalUIState,
-} from '@/appState/file';
+} from '../../../../appState/file';
+import { DriveFileModalUIState } from '../../fileSlice';
+import { useRefreshCurrentFolder } from '../../hooks';
+import { DriveFile } from '../../types';
+
 
 
 export function DriveFileModal() {
@@ -76,7 +76,7 @@ export function DriveFileModal() {
 }
 
 function DriveFileActionModalContent({ uiState, handleCloseModal }: {
-	uiState: DriveFileModalUIState, handleCloseModal: () => void
+	uiState: DriveFileModalUIState, handleCloseModal: () => void,
 }) {
 	const fileDetail = useMicroAppSelector(selectDriveFileDetail) as DriveFile | undefined;
 

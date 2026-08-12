@@ -7,11 +7,11 @@ import {
 	ListQuery,
 	updateRoleSuite as updateRoleSuiteApi,
 } from '../../services/authzService';
+import { OwnerType } from '../roles';
 
 import type { RoleSuite } from './types';
-import type { Org } from '@/features/identities';
+import type { Org } from '../identities';
 
-import { OwnerType } from '@/features/roles';
 
 
 function mapDtoToRoleSuite(dto: RoleSuite): RoleSuite {
@@ -99,7 +99,7 @@ export const roleSuiteService = {
 	async updateRoleSuite(
 		id: string,
 		etag: string,
-		data: { name?: string; description?: string | null; roleIds?: string[] },
+		data: { name?: string, description?: string | null, roleIds?: string[] },
 	): Promise<RoleSuite> {
 		const dtoData = { ...data } as Partial<RoleSuite>;
 		const dto = await updateRoleSuiteApi(id, etag, dtoData);

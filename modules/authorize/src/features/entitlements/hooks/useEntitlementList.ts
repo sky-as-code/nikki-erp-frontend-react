@@ -6,7 +6,7 @@ import {
 	AuthorizeDispatch,
 	entitlementActions,
 	selectEntitlementState,
-} from '@/appState';
+} from '../../../appState';
 
 
 function useEntitlementListData() {

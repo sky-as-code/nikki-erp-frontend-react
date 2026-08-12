@@ -28,10 +28,10 @@ import {
 	selectResourceList,
 	selectRoleList,
 	selectRoleSuiteList,
-} from '@/appState';
-import { GrantRequest, RequestStatus } from '@/features/grantRequests';
-import { QuickLinks, StatCard } from '@/features/overviews';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../appState';
+import { GrantRequest, RequestStatus } from '../../features/grantRequests';
+import { QuickLinks, StatCard } from '../../features/overviews';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 // eslint-disable-next-line max-lines-per-function

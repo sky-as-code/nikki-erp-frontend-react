@@ -6,16 +6,16 @@ import {
 	useRolesByReceiver,
 	type AssignmentItem,
 } from './useRevokeRequestAssignments';
-
-import type { Group, User } from '@/features/identities';
-import type { Role } from '@/features/roles';
-import type { RoleSuite } from '@/features/roleSuites';
-
 import {
 	selectGroupList,
 	selectUserList,
-} from '@/appState';
-import { ReceiverType, TargetType } from '@/features/grantRequests/types';
+} from '../../../appState';
+import { ReceiverType, TargetType } from '../../grantRequests/types';
+
+import type { Group, User } from '../../identities';
+import type { Role } from '../../roles';
+import type { RoleSuite } from '../../roleSuites';
+
 
 
 function getAssignmentId(a: AssignmentItem): string {

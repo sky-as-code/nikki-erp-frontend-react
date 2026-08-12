@@ -5,9 +5,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolvePath, useLocation, useNavigate, useParams } from 'react-router';
 
-import type { Action } from '@/features/actions';
+import { AuthorizeDispatch, actionActions, selectActionState, selectUpdateAction } from '../../../appState';
 
-import { AuthorizeDispatch, actionActions, selectActionState, selectUpdateAction } from '@/appState';
+import type { Action } from '..';
+
 
 
 function useActionDetailData() {

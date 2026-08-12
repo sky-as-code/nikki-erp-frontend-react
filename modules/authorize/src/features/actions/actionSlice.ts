@@ -10,17 +10,17 @@ import { ReduxActionState, baseReduxActionState } from '../../appState/reduxActi
 export const SLICE_NAME = 'authorize.action';
 
 export type ActionState = {
-	actions: Action[];
-	actionDetail?: Action;
+	actions: Action[],
+	actionDetail?: Action,
 
 	list: {
-		isLoading: boolean;
-		error: string | null;
-	};
+		isLoading: boolean,
+		error: string | null,
+	},
 
-	create: ReduxActionState<Action>;
-	update: ReduxActionState<Action>;
-	delete: ReduxActionState<void>;
+	create: ReduxActionState<Action>,
+	update: ReduxActionState<Action>,
+	delete: ReduxActionState<void>,
 };
 
 export const initialState: ActionState = {
@@ -93,7 +93,7 @@ export const createAction = createAsyncThunk<
 
 export const updateAction = createAsyncThunk<
 	Action,
-	{ actionId: string; data: Action },
+	{ actionId: string, data: Action },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/updateAction`,

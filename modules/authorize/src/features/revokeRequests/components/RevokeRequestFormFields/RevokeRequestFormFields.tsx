@@ -3,13 +3,14 @@ import { AutoField } from '@nikkierp/ui/components/form';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Group } from '@/features/identities';
-import type { User } from '@/features/identities';
-import type { Role } from '@/features/roles';
-import type { RoleSuite } from '@/features/roleSuites';
+import { ReceiverSelectField } from '../ReceiverSelectField/ReceiverSelectField';
+import { TargetSelectField } from '../TargetSelectField/TargetSelectField';
 
-import { ReceiverSelectField } from '@/features/revokeRequests/components/ReceiverSelectField/ReceiverSelectField';
-import { TargetSelectField } from '@/features/revokeRequests/components/TargetSelectField/TargetSelectField';
+import type { Group } from '../../../identities';
+import type { User } from '../../../identities';
+import type { Role } from '../../../roles';
+import type { RoleSuite } from '../../../roleSuites';
+
 
 
 interface TargetFieldsProps {

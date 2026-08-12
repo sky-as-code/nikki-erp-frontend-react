@@ -12,17 +12,17 @@ import type { RoleSuite } from './types';
 export const SLICE_NAME = 'authorize.roleSuite';
 
 export type RoleSuiteState = {
-	roleSuites: RoleSuite[];
-	roleSuiteDetail: RoleSuite | undefined;
+	roleSuites: RoleSuite[],
+	roleSuiteDetail: RoleSuite | undefined,
 
 	list: {
-		isLoading: boolean;
-		error: string | null;
-	};
+		isLoading: boolean,
+		error: string | null,
+	},
 
-	create: ReduxActionState<RoleSuite>;
-	update: ReduxActionState<RoleSuite>;
-	delete: ReduxActionState<void>;
+	create: ReduxActionState<RoleSuite>,
+	update: ReduxActionState<RoleSuite>,
+	delete: ReduxActionState<void>,
 };
 
 export const initialState: RoleSuiteState = {
@@ -41,7 +41,7 @@ export const initialState: RoleSuiteState = {
 
 export const listRoleSuites = createAsyncThunk<
 	RoleSuite[],
-	{ listQuery?: ListQuery; orgId?: string | null; includeDomainInOrg?: boolean },
+	{ listQuery?: ListQuery, orgId?: string | null, includeDomainInOrg?: boolean },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/listRoleSuites`,
@@ -95,7 +95,7 @@ export const createRoleSuite = createAsyncThunk<
 
 export const updateRoleSuite = createAsyncThunk<
 	RoleSuite,
-	{ id: string; etag: string; name?: string; description?: string | null; roleIds?: string[] },
+	{ id: string, etag: string, name?: string, description?: string | null, roleIds?: string[] },
 	{ rejectValue: string }
 >(
 	`${SLICE_NAME}/update`,

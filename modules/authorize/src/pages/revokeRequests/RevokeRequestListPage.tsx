@@ -10,9 +10,9 @@ import {
 	AuthorizeDispatch,
 	revokeRequestActions,
 	selectRevokeRequestState,
-} from '@/appState';
-import { RevokeRequestTable, revokeRequestSchema, useRevokeRequestDelete, useRevokeRequestList } from '@/features/revokeRequests';
-import { useAuthorizePermissions } from '@/hooks/useAuthorizePermissions';
+} from '../../appState';
+import { RevokeRequestTable, revokeRequestSchema, useRevokeRequestDelete, useRevokeRequestList } from '../../features/revokeRequests';
+import { useAuthorizePermissions } from '../../hooks/useAuthorizePermissions';
 
 
 function RevokeRequestListPageBody(): React.ReactNode {

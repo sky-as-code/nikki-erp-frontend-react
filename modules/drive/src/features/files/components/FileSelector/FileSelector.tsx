@@ -13,28 +13,28 @@ export type { FileSelectorMode };
 
 export type FileSelectorProps = {
 	/** Parent folder id (empty = root/my-files). */
-	parentId?: string;
+	parentId?: string,
 	/** Allow selecting multiple files (only applies when mode = 'file'). */
-	multiple?: boolean;
+	multiple?: boolean,
 	/** Chọn file hay chọn folder. */
-	mode?: FileSelectorMode;
+	mode?: FileSelectorMode,
 	/** Called when user selects file(s) or folder. */
-	onSelect: (ids: string[] | string) => void;
+	onSelect: (ids: string[] | string) => void,
 };
 
 type RootSectionKey = 'my-files' | 'starred' | 'shared-with-me';
 
 type SelectorListItem = {
-	key: string;
-	label: string;
-	disabled?: boolean;
+	key: string,
+	label: string,
+	disabled?: boolean,
 	/** để dành cho tương lai: có thể có item không cho chọn */
-	selectable: boolean;
-	selected: boolean;
-	canOpen: boolean;
-	onToggleSelect: () => void;
-	onOpen?: () => void;
-	rightBadge?: string;
+	selectable: boolean,
+	selected: boolean,
+	canOpen: boolean,
+	onToggleSelect: () => void,
+	onOpen?: () => void,
+	rightBadge?: string,
 };
 
 type SelectedMeta = Record<string, { label: string }>;
@@ -110,13 +110,13 @@ function FileSelectorBreadcrumbs({
 	onToggleSelectCurrentFolder: _onToggleSelectCurrentFolder,
 	onBackToAll,
 }: {
-	breadcrumbItems: { id: string; name: string }[];
-	setCurrentParentId: (parentId: string) => void;
-	t: (key: string) => string;
-	isFolderMode: boolean;
-	isCurrentFolderSelected: boolean;
-	onToggleSelectCurrentFolder: () => void;
-	onBackToAll: () => void;
+	breadcrumbItems: { id: string, name: string }[],
+	setCurrentParentId: (parentId: string) => void,
+	t: (key: string) => string,
+	isFolderMode: boolean,
+	isCurrentFolderSelected: boolean,
+	onToggleSelectCurrentFolder: () => void,
+	onBackToAll: () => void,
 }): React.ReactNode {
 	return (
 		<Flex justify='space-between' align='center'>
@@ -171,10 +171,10 @@ function FileSelectorInner({
 	mode,
 	onSelect,
 }: {
-	parentId: string;
-	multiple: boolean;
-	mode: FileSelectorMode;
-	onSelect: (ids: string[] | string) => void;
+	parentId: string,
+	multiple: boolean,
+	mode: FileSelectorMode,
+	onSelect: (ids: string[] | string) => void,
 }): React.ReactNode {
 	const { t } = useTranslation();
 	const [view, setView] = useState<'root' | 'my-files'>('root');

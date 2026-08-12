@@ -3,12 +3,12 @@ import React from 'react';
 import { useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import { ALL_ORGS_VALUE } from '../../helpers/roleSuiteFormValidation';
 import { useOwnerSelectLogic } from '../../hooks/useOwnerSelectLogic';
 
-import type { Group, Org, User } from '@/features/identities';
-import type { OwnerType } from '@/features/roles';
+import type { Group, Org, User } from '../../../identities';
+import type { OwnerType } from '../../../roles';
 
-import { ALL_ORGS_VALUE } from '@/features/roleSuites/helpers/roleSuiteFormValidation';
 
 
 interface RoleSuiteFormFieldsProps {
@@ -20,7 +20,7 @@ interface RoleSuiteFormFieldsProps {
 	showOrgFieldOnCreate?: boolean;
 }
 
-function BaseFields({ isCreate, users, groups }: { isCreate: boolean; users?: User[]; groups?: Group[] }) {
+function BaseFields({ isCreate, users, groups }: { isCreate: boolean, users?: User[], groups?: Group[] }) {
 	const { control } = useFormField();
 	const ownerLogic = useOwnerSelectLogic(users, groups);
 
@@ -106,9 +106,9 @@ function BooleanFields({ isCreate }: { isCreate: boolean }) {
 }
 
 function OrgIdField({ isCreate, orgs, onOrgIdChange }: {
-	isCreate: boolean;
-	orgs?: Org[];
-	onOrgIdChange?: (orgId: string | undefined) => void;
+	isCreate: boolean,
+	orgs?: Org[],
+	onOrgIdChange?: (orgId: string | undefined) => void,
 }) {
 	const { t: translate } = useTranslation();
 

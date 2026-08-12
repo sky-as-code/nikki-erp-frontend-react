@@ -10,11 +10,11 @@ const PAGE_SIZE = 20;
 export type DriveFileUIViewMode = 'grid' | 'list';
 
 type DriveFileViewProps = {
-	totalItems: number;
-	page: number;
-	onPageChange: (page: number) => void;
-	viewMode: DriveFileUIViewMode;
-	showCreateButton?: boolean;
+	totalItems: number,
+	page: number,
+	onPageChange: (page: number) => void,
+	viewMode: DriveFileUIViewMode,
+	showCreateButton?: boolean,
 };
 
 export function DriveFileView({
@@ -55,8 +55,8 @@ export function DriveFileView({
 }
 
 type FilesViewProps = {
-	viewMode: 'grid' | 'list';
-	showCreate?: boolean;
+	viewMode: 'grid' | 'list',
+	showCreate?: boolean,
 };
 
 function FilesView({ viewMode, showCreate = true }: FilesViewProps): React.ReactNode {

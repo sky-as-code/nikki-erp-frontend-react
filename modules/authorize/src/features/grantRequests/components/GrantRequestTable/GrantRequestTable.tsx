@@ -10,7 +10,7 @@ import { IconEye, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { GrantRequest } from '@/features/grantRequests';
+import type { GrantRequest } from '../..';
 
 
 export interface GrantRequestTableProps extends AutoTableProps {
@@ -36,7 +36,7 @@ function renderReceiverColumn(row: Record<string, unknown>) {
 }
 
 function renderTargetColumn(row: Record<string, unknown>) {
-	const target = row.target as { name?: string; id?: string } | undefined;
+	const target = row.target as { name?: string, id?: string } | undefined;
 	const targetType = row.targetType as string;
 	return (
 		<Group gap={4}>

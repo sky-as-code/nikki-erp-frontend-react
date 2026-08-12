@@ -1,12 +1,13 @@
-import { AuthorizeDispatch, actionActions, selectDeleteAction } from '@/appState';
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useMicroAppSelector } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { AuthorizeDispatch, actionActions, selectDeleteAction } from '../../../appState';
 
 
-import type { Action } from '@/features/actions';
+
+import type { Action } from '..';
 
 
 function useConfirmDelete(

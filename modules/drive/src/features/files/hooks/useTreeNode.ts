@@ -1,7 +1,7 @@
 import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 import { useCallback } from 'react';
 
-import { driveFileActions, selectGetDriveFileByParentForTree } from '@/appState/file';
+import { driveFileActions, selectGetDriveFileByParentForTree } from '../../../appState/file';
 
 
 export function useTreeNode(parentId: string) {

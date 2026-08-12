@@ -12,28 +12,28 @@ export type DriveFileSortField = 'name' | 'createdAt';
 export type DriveFileSortDirection = 'asc' | 'desc';
 
 export type DriveFileFilterState = {
-	statuses: DriveFileStatus[];
-	visibilities: DriveFileVisibility[];
-	types: DriveFileType[];
-	sortField: DriveFileSortField;
-	sortDirection: DriveFileSortDirection;
-	folderFirst: boolean;
+	statuses: DriveFileStatus[],
+	visibilities: DriveFileVisibility[],
+	types: DriveFileType[],
+	sortField: DriveFileSortField,
+	sortDirection: DriveFileSortDirection,
+	folderFirst: boolean,
 };
 
 export type DriveFileFilterField = 'status' | 'visibility' | 'type';
 
 export type DriveFileFilterBarProps = {
-	value: DriveFileFilterState;
-	onChange: (next: DriveFileFilterState) => void;
-	onApply: () => void;
-	enabledFields?: DriveFileFilterField[];
-	applyOnChange?: boolean;
+	value: DriveFileFilterState,
+	onChange: (next: DriveFileFilterState) => void,
+	onApply: () => void,
+	enabledFields?: DriveFileFilterField[],
+	applyOnChange?: boolean,
 };
 
 type DriveFileFilterControlsProps = {
-	value: DriveFileFilterState;
-	onChange: (next: DriveFileFilterState) => void;
-	enabledFields?: DriveFileFilterField[];
+	value: DriveFileFilterState,
+	onChange: (next: DriveFileFilterState) => void,
+	enabledFields?: DriveFileFilterField[],
 };
 
 const usePortalTarget = () => {

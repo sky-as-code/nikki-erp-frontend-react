@@ -4,13 +4,14 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 
-import type { Group } from '@/features/identities';
-import type { User } from '@/features/identities';
-import type { Org } from '@/features/identities';
-import type { Role } from '@/features/roles';
-import type { RoleSuite } from '@/features/roleSuites';
+import { useReceiverSelectLogic, useTargetSelectLogic } from '../../hooks';
 
-import { useReceiverSelectLogic, useTargetSelectLogic } from '@/features/grantRequests/hooks';
+import type { Group } from '../../../identities';
+import type { User } from '../../../identities';
+import type { Org } from '../../../identities';
+import type { Role } from '../../../roles';
+import type { RoleSuite } from '../../../roleSuites';
+
 
 
 interface TargetFieldsProps {
