@@ -1,5 +1,5 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
-import { resourceDetailProps, resourceListProps, resourceSplitViewProps } from '@nikkierp/viewkit-mantine/props';
+import { FilterGraph, resourceDetailProps, resourceListProps, resourceSplitViewProps } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { StockQuantCommands } from '../features/stockQuant/commands';
@@ -19,15 +19,28 @@ export function buildStockQuantPages(): PageNode[] {
 		primary: buildStockQuantListProps(),
 		secondary: buildStockQuantDetailProps(),
 	});
+	// Same list and detail, filtered to the cycle-count worklist (BR §4.2.8, AC-STOCK-016): a
+	// second entry point into the balance page rather than a page of its own, reached from the
+	// "Đến hạn kiểm kê" menu item so it is distinguishable from the unfiltered Stock Balance link.
+	const countsDueView = resourceSplitViewProps({
+		primary: buildStockQuantListProps({
+			filterGraph: { if: ['next_count_date', '<=', '${today}'] },
+		}),
+		secondary: buildStockQuantDetailProps(),
+	});
 
 	return [definePage({
 		routePath: 'stock_balance',
 		template: splitView.template,
 		props: splitView.props,
+	}), definePage({
+		routePath: 'stock_balance_counts_due',
+		template: countsDueView.template,
+		props: countsDueView.props,
 	})];
 }
 
-function buildStockQuantListProps() {
+function buildStockQuantListProps(overrides?: { filterGraph?: FilterGraph }) {
 	return resourceListProps({
 		schemaName: c.STOCK_QUANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
@@ -36,6 +49,7 @@ function buildStockQuantListProps() {
 		// No createEnabled, deleteCommand or archiveCommand: every write is refused server-side,
 		// and the resource has no is_archived column to archive against.
 		createEnabled: false,
+		...overrides,
 	});
 }
 
@@ -51,6 +65,7 @@ function buildStockQuantDetailProps() {
 		standardActionCommands: {
 			getById: StockQuantCommands.GET_BY_ID,
 		},
+		contextualActions: buildCountingActions(),
 		formSections: [{
 			header: 'form.generalInformation',
 			fields: ['product_variant_id', 'location_id', 'base_uom_id', 'org_id'],
@@ -75,4 +90,49 @@ function buildStockQuantDetailProps() {
 			fields: ['created_at', 'updated_at'],
 		}],
 	});
+}
+
+/**
+ * The counting operations (BR §4.2.7, §4.2.8).
+ *
+ * These write to a resource whose create, update and delete are all refused, which looks
+ * contradictory and is not: the refusal exists to stop a client setting a balance with no movement
+ * behind it, and none of these touches on_hand_quantity. Enter and reset write count metadata;
+ * apply changes the balance only by generating an adjustment movement.
+ *
+ * Enter Count is the one that carries a `prompt`. A counted quantity is a number the user types,
+ * so the payload-free action bar could never drive it — which is the whole reason the prompt
+ * exists. The other four need nothing beyond the record they act on.
+ */
+function buildCountingActions() {
+	return {
+		enter_count: {
+			label: 'actions.enter_count',
+			command: StockQuantCommands.ENTER_COUNT,
+			prompt: {
+				title: 'actions.enter_count.title',
+				fields: [
+					// Prefilled from the current balance so the counter edits a figure rather than
+					// typing one from scratch — and so a confirmed-correct shelf is one click.
+					{ name: 'counted_quantity', required: true, defaultFromField: 'on_hand_quantity' },
+					{ name: 'count_reason_code' },
+					{ name: 'count_reason_text' },
+				],
+			},
+		},
+		// Both of these are meaningful only while a count is pending, and `count_quantity_set` is
+		// the authority on that — never `counted_quantity`, since a count of zero is a legitimate
+		// result ("the shelf is empty") and testing the value would hide the action for exactly
+		// the case a counter most needs recorded.
+		apply_adjustment: {
+			label: 'actions.apply_adjustment',
+			command: StockQuantCommands.APPLY_ADJUSTMENT,
+			condition: { field: 'count_quantity_set', operator: 'equal' as const, value: true },
+		},
+		reset_count: {
+			label: 'actions.reset_count',
+			command: StockQuantCommands.RESET_COUNT,
+			condition: { field: 'count_quantity_set', operator: 'equal' as const, value: true },
+		},
+	};
 }

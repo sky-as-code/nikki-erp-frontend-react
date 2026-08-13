@@ -102,7 +102,7 @@ function buildStockTransferDetailProps() {
 }
 
 /**
- * The six movement operations, each guarded by the state it makes sense in.
+ * The movement operations, each guarded by the state it makes sense in.
  *
  * The conditions are what keep the action bar honest: Validate on a draft transfer would be
  * refused by the backend anyway, but offering it invites the user to try. Cancel disappears once
@@ -143,6 +143,15 @@ function buildMovementActions() {
 			label: 'actions.cancel',
 			command: StockTransferCommands.CANCEL,
 			condition: { field: 'status', operator: 'not_in' as const, value: ['done', 'cancelled'] },
+		},
+		// The one action that appears only once a transfer is done, and the counterpart to
+		// cancel's disappearing there: a completed movement is corrected by reversing it
+		// (AC-STOCK-009, AC-STOCK-021). No prompt — it defaults to the full returnable quantity
+		// per move and lands as a draft the user can trim before confirming.
+		create_return: {
+			label: 'actions.create_return',
+			command: StockTransferCommands.CREATE_RETURN,
+			condition: { field: 'status', operator: 'equal' as const, value: 'done' },
 		},
 	};
 }

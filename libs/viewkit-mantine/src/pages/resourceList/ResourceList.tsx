@@ -7,12 +7,14 @@ import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { useFieldRenderers } from '@nikkierp/viewengine/render';
 import React from 'react';
 
+import { interpolateParams } from '../../data/interpolate';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { resourceTestIdPrefix } from '../../testIds';
 
 import type { ResourceListCommandAction, ResourceListProps } from './props';
+import type * as dyn from '@nikkierp/common/dynamicModel';
 
 
 export type ResourceListViewProps = {
@@ -33,10 +35,12 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	const commandBus = useCommandBus();
 	const fieldRenderer = useFieldRenderers(params.fieldRenderers);
 
+	const graph = useResolvedFilterGraph(params.filterGraph);
 	const { pack, searchData, searchRequest, onSearchRequestChange, refresh } = useResourceSearch({
 		schemaName: params.schemaName,
 		searchCommand: params.searchCommand,
 		initialRequest: INITIAL_REQUEST,
+		graphOverride: graph,
 	});
 	const buildLinkHref = useResourceLinkHref(params.linkField, routePath);
 	const baseHref = useResourceBaseHref(routePath);
@@ -132,4 +136,24 @@ function buildResourceActions(
 		});
 	}
 	return actions;
+}
+
+/**
+ * Resolves a list page's static `filterGraph`, the same `${name}` substitution `resourceTable`
+ * uses for route params, plus `${today}` for the current date — a list page has no route params
+ * of its own, so `today` is the one dynamic value a static, compile-time graph can still need
+ * (e.g. the cycle-count worklist's `next_count_date <= ${today}`).
+ *
+ * Recomputed only when the graph or the calendar day changes, so identity stays stable across
+ * re-renders within the same day — `useResourceSearch` treats a new `graphOverride` identity as a
+ * reason to refetch.
+ */
+function useResolvedFilterGraph(filterGraph: ResourceListProps['filterGraph']): dyn.SearchGraph | undefined {
+	const today = new Date().toISOString().slice(0, 10);
+	return React.useMemo(
+		() => filterGraph === undefined
+			? undefined
+			: interpolateParams(filterGraph, { today }).value as dyn.SearchGraph,
+		[filterGraph, today],
+	);
 }

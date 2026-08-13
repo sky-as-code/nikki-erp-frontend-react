@@ -10,6 +10,7 @@ import { buildProductTypePages } from './productType';
 import { buildProductVariantPages } from './productVariant';
 import { buildStockLocationPages } from './stockLocation';
 import { buildStockQuantPages } from './stockQuant';
+import { buildStockScrapPages } from './stockScrap';
 import { buildStockTransferPages } from './stockTransfer';
 import * as c from '../constants';
 
@@ -28,6 +29,7 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'stockLocation', build: buildStockLocationPages },
 	{ name: 'stockQuant', build: buildStockQuantPages },
 	{ name: 'stockTransfer', build: buildStockTransferPages },
+	{ name: 'stockScrap', build: buildStockScrapPages },
 ];
 
 describe('Inventory page metadata', () => {
@@ -65,7 +67,8 @@ describe('Inventory page metadata', () => {
 		expect(routePaths).toEqual([
 			'product_templates', 'product_variants', 'product_types', 'product_categories',
 			'brands', 'attributes', 'attribute_values', 'product_prices',
-			'stock_locations', 'stock_balance', 'stock_transfers',
+			'stock_locations', 'stock_balance', 'stock_balance_counts_due', 'stock_transfers',
+			'stock_scraps',
 		]);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);
@@ -173,12 +176,24 @@ describe('Stock balance page', () => {
 		expect(props.primary.props.schemaName).toBe('inventory_stock_quant');
 		expect(props.primary.props.schemaName).toBe(c.STOCK_QUANT_SCHEMA_NAME);
 	});
+
+	/**
+	 * The "Đến hạn kiểm kê" menu item is a second entry point into this same list, distinguished
+	 * only by this filter — without it the route would render the identical unfiltered balance.
+	 */
+	it('filters the counts-due route to balances with a due count', () => {
+		const [, countsDuePage] = buildStockQuantPages();
+		const props = countsDuePage.props as { primary: { props: { filterGraph?: unknown } } };
+
+		expect(countsDuePage.routePath).toBe('stock_balance_counts_due');
+		expect(props.primary.props.filterGraph).toEqual({ if: ['next_count_date', '<=', '${today}'] });
+	});
 });
 
 describe('Stock transfer page', () => {
 	/**
-	 * The six movement operations are what the page exists for. Losing one leaves a transfer that
-	 * can be created and edited but never acted on, which nothing else would report.
+	 * The movement operations are what the page exists for. Losing one leaves a transfer that can
+	 * be created and edited but never acted on, which nothing else would report.
 	 */
 	it('offers every movement operation', () => {
 		const [page] = buildStockTransferPages();
@@ -187,7 +202,8 @@ describe('Stock transfer page', () => {
 		};
 
 		expect(Object.keys(props.secondary.props.contextualActions ?? {}).sort()).toEqual([
-			'cancel', 'check_availability', 'confirm', 'reserve', 'unreserve', 'validate',
+			'cancel', 'check_availability', 'confirm', 'create_return', 'reserve', 'unreserve',
+			'validate',
 		]);
 	});
 

@@ -27,6 +27,7 @@ export const StockTransferCommands = Object.freeze({
 	UNRESERVE: `${PREFIX}.unreserve`,
 	VALIDATE: `${PREFIX}.validate`,
 	CANCEL: `${PREFIX}.cancel`,
+	CREATE_RETURN: `${PREFIX}.create_return`,
 } as const);
 
 /**
@@ -48,20 +49,26 @@ export function registerStockTransferCommands(bus: ICommandBus): () => void {
 		bus.subscribe(StockTransferCommands.UNRESERVE, cmd => stockTransferService.unreserve(request(cmd))),
 		bus.subscribe(StockTransferCommands.VALIDATE, cmd => stockTransferService.validate(request(cmd))),
 		bus.subscribe(StockTransferCommands.CANCEL, cmd => stockTransferService.cancel(request(cmd))),
+		bus.subscribe(
+			StockTransferCommands.CREATE_RETURN,
+			cmd => stockTransferService.createReturn(request(cmd)),
+		),
 	];
 
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
 }
 
 /**
- * The detail template's contextual actions send only the record's `{id, etag}`, so that is the
- * whole payload every one of these operations receives.
+ * The payload a contextual action publishes: the record's `{id, etag}`, plus whatever the action's
+ * `prompt` collected. Extra keys travel straight into the POST body.
  *
- * Validate's `idempotency_key` and `create_backorder` therefore have nowhere to travel from the
- * generic action bar. Both are optional on the backend: a validate with no key simply gets no
- * replay protection, and an `ask` backorder policy refuses with a message telling the user to
- * decide. Wiring a dialog for them needs a template that can carry a payload, which this phase
- * does not add.
+ * Validate's `idempotency_key` and `create_backorder` still have no UI path, but that is now a
+ * choice rather than a limitation: a prompt could carry `create_backorder`, and an idempotency key
+ * should never be typed by a user — it is generated client-side, so wiring it belongs in the
+ * command layer rather than in a dialog. Neither is in this phase's scope.
+ *
+ * `create_return` sends no payload at all, and defaults to the full returnable quantity per move.
+ * The return lands as a draft, so a user who wants less edits its moves before confirming.
  */
 function request(command: Command): dyn.RestMutateOneRequest {
 	return command.payload as dyn.RestMutateOneRequest;

@@ -19,6 +19,7 @@ import { registerStockMoveCommands } from './features/stockMove/commands';
 import { registerStockMoveLineCommands } from './features/stockMoveLine/commands';
 import { registerStockOperationTypeCommands } from './features/stockOperationType/commands';
 import { registerStockQuantCommands } from './features/stockQuant/commands';
+import { registerStockScrapCommands } from './features/stockScrap/commands';
 import { registerStockTransferCommands } from './features/stockTransfer/commands';
 import { buildInventoryMenu } from './menu';
 import { buildBrandPages } from './pages/brand';
@@ -31,6 +32,7 @@ import { buildProductTypePages } from './pages/productType';
 import { buildProductVariantPages } from './pages/productVariant';
 import { buildStockLocationPages } from './pages/stockLocation';
 import { buildStockQuantPages } from './pages/stockQuant';
+import { buildStockScrapPages } from './pages/stockScrap';
 import { buildStockTransferPages } from './pages/stockTransfer';
 
 
@@ -69,6 +71,7 @@ const bundle: MicroAppBundle = {
 		registerStockTransferCommands(host.commandBus);
 		registerStockMoveCommands(host.commandBus);
 		registerStockMoveLineCommands(host.commandBus);
+		registerStockScrapCommands(host.commandBus);
 
 		return {
 			domType,
@@ -91,6 +94,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildStockLocationPages(),
 		...buildStockQuantPages(),
 		...buildStockTransferPages(),
+		...buildStockScrapPages(),
 	], []);
 
 	return (
@@ -159,5 +163,8 @@ function registerModelSchemas(): void {
 	}, {
 		schemaName: c.STOCK_MOVE_LINE_SCHEMA_NAME,
 		resourcePath: c.STOCK_MOVE_LINE_RESOURCE_PATH,
+	}, {
+		schemaName: c.STOCK_SCRAP_SCHEMA_NAME,
+		resourcePath: c.STOCK_SCRAP_RESOURCE_PATH,
 	}]);
 }

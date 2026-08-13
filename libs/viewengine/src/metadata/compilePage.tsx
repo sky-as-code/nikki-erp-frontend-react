@@ -12,7 +12,15 @@ export type CompiledPage = {
 };
 
 export function compilePage(node: PageNode, engine: IViewResolver): CompiledPage {
-	return { routePath: resolveRoutePath(node, engine), element: <MetaPage node={node} /> };
+	return {
+		routePath: resolveRoutePath(node, engine),
+		// Keyed by route path so React remounts on navigation between pages instead of reusing the
+		// same fiber (and its hook state) across two pages that happen to render through the same
+		// template — the router's own `<AppRoute key=.../>` cannot provide this: `AppRoutes`'s
+		// children are read by a manual tree-walk, never by React's reconciler, so that `key` is
+		// inert and the element react-router actually renders at the matched outlet carries none.
+		element: <MetaPage key={node.routePath} node={node} />,
+	};
 }
 
 /**

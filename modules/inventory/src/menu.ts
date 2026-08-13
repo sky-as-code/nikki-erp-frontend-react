@@ -23,12 +23,15 @@ const ITEMS: MenuItem[] = [
 		],
 	},
 	{
-		// A group from the outset: adjustments and scrap join it in later phases.
 		// Stock carries no Products entry — product management has one home, above.
 		labelKey: 'menu_stock',
 		items: [
 			{ labelKey: 'menu_stockTransfers', link: '/stock_transfers' },
 			{ labelKey: 'menu_stockBalance', link: '/stock_balance' },
+			// The cycle-count worklist is the balance list filtered by next_count_date, so it is a
+			// second entry point into an existing page rather than a page of its own (BR §4.2.8).
+			{ labelKey: 'menu_stockCountsDue', link: '/stock_balance_counts_due' },
+			{ labelKey: 'menu_stockScraps', link: '/stock_scraps' },
 			{ labelKey: 'menu_stockLocations', link: '/stock_locations' },
 		],
 	},
