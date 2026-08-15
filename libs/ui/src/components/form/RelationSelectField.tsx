@@ -62,7 +62,8 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={localize(fieldData.label)}
-			description={translatedOrEmpty(localize(fieldData.description))}
+			// Uncomment to show sub-labels
+			// description={translatedOrEmpty(localize(fieldData.description))}
 			isRequired={fieldData.isRequired}
 			error={localize(fieldData.error as any)}
 		>
@@ -239,11 +240,6 @@ function useSelectedLabel(opts: SelectedLabelOptions): { value: string, label: s
 	// Falls back to the raw id while the lookup is in flight — truthful, and less jarring than a
 	// box that looks empty.
 	return { value: selectedId, label: resolved.current.get(selectedId) ?? selectedId };
-}
-
-/** Drops the untranslated-marker so it never reaches the user as literal text. */
-function translatedOrEmpty(text: string): string | undefined {
-	return !text || text === MISSING_TRANSLATION ? undefined : text;
 }
 
 function toOption(

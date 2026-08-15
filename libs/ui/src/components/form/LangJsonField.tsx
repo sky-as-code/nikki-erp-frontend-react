@@ -76,7 +76,8 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 						<BaseFieldWrapper
 							inputId={inputId}
 							label={t(fieldData.label)}
-							description={t(fieldData.description)}
+							// Uncomment to show sub-labels
+							// description={t(fieldData.description)}
 							isRequired={fieldData.isRequired}
 							error={t(fieldData.error as any)}
 						>
