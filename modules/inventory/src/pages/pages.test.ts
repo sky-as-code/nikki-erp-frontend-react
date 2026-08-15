@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildBrandPages } from './brand';
+import { buildInventoryLocationPages } from './inventoryLocation';
 import { buildProductAttributePages } from './productAttribute';
 import { buildProductAttributeValuePages } from './productAttributeValue';
 import { buildProductCategoryPages } from './productCategory';
@@ -8,10 +9,13 @@ import { buildProductPricePages } from './productPrice';
 import { buildProductTemplatePages } from './productTemplate';
 import { buildProductTypePages } from './productType';
 import { buildProductVariantPages } from './productVariant';
-import { buildStockLocationPages } from './stockLocation';
+import { buildPutawayRulePages } from './putawayRule';
 import { buildStockQuantPages } from './stockQuant';
 import { buildStockScrapPages } from './stockScrap';
 import { buildStockTransferPages } from './stockTransfer';
+import { buildStorageCategoryPages } from './storageCategory';
+import { buildSupplyRelationPages } from './supplyRelation';
+import { buildWarehousePages } from './warehouse';
 import * as c from '../constants';
 
 import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
@@ -26,7 +30,11 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'productAttribute', build: buildProductAttributePages },
 	{ name: 'productAttributeValue', build: buildProductAttributeValuePages },
 	{ name: 'productPrice', build: buildProductPricePages },
-	{ name: 'stockLocation', build: buildStockLocationPages },
+	{ name: 'inventoryLocation', build: buildInventoryLocationPages },
+	{ name: 'warehouse', build: buildWarehousePages },
+	{ name: 'storageCategory', build: buildStorageCategoryPages },
+	{ name: 'supplyRelation', build: buildSupplyRelationPages },
+	{ name: 'putawayRule', build: buildPutawayRulePages },
 	{ name: 'stockQuant', build: buildStockQuantPages },
 	{ name: 'stockTransfer', build: buildStockTransferPages },
 	{ name: 'stockScrap', build: buildStockScrapPages },
@@ -67,7 +75,8 @@ describe('Inventory page metadata', () => {
 		expect(routePaths).toEqual([
 			'product_templates', 'product_variants', 'product_types', 'product_categories',
 			'brands', 'attributes', 'attribute_values', 'product_prices',
-			'stock_locations', 'stock_balance', 'stock_balance_counts_due', 'stock_transfers',
+			'locations', 'warehouses', 'storage_categories', 'supply_relations', 'putaway_rules',
+			'stock_balance', 'stock_balance_counts_due', 'stock_transfers',
 			'stock_scraps',
 		]);
 		for (const routePath of routePaths) {

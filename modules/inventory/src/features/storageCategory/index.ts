@@ -1,3 +1,3 @@
 export * from './types';
-export * from './stockLocationService';
+export * from './storageCategoryService';
 export * from './commands';

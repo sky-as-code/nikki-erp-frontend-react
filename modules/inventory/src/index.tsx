@@ -6,6 +6,7 @@ import React from 'react';
 
 import * as c from './constants';
 import { registerBrandCommands } from './features/brand/commands';
+import { registerInventoryLocationCommands } from './features/inventoryLocation/commands';
 import { registerProductAttributeCommands } from './features/productAttribute/commands';
 import { registerProductAttributeValueCommands } from './features/productAttributeValue/commands';
 import { registerProductCategoryCommands } from './features/productCategory/commands';
@@ -14,15 +15,19 @@ import { registerProductTemplateCommands } from './features/productTemplate/comm
 import { registerProductTemplateAttributeCommands } from './features/productTemplateAttribute/commands';
 import { registerProductTypeCommands } from './features/productType/commands';
 import { registerProductVariantCommands } from './features/productVariant/commands';
-import { registerStockLocationCommands } from './features/stockLocation/commands';
+import { registerPutawayRuleCommands } from './features/putawayRule/commands';
 import { registerStockMoveCommands } from './features/stockMove/commands';
 import { registerStockMoveLineCommands } from './features/stockMoveLine/commands';
 import { registerStockOperationTypeCommands } from './features/stockOperationType/commands';
 import { registerStockQuantCommands } from './features/stockQuant/commands';
 import { registerStockScrapCommands } from './features/stockScrap/commands';
 import { registerStockTransferCommands } from './features/stockTransfer/commands';
+import { registerStorageCategoryCommands } from './features/storageCategory/commands';
+import { registerSupplyRelationCommands } from './features/supplyRelation/commands';
+import { registerWarehouseCommands } from './features/warehouse/commands';
 import { buildInventoryMenu } from './menu';
 import { buildBrandPages } from './pages/brand';
+import { buildInventoryLocationPages } from './pages/inventoryLocation';
 import { buildProductAttributePages } from './pages/productAttribute';
 import { buildProductAttributeValuePages } from './pages/productAttributeValue';
 import { buildProductCategoryPages } from './pages/productCategory';
@@ -30,10 +35,13 @@ import { buildProductPricePages } from './pages/productPrice';
 import { buildProductTemplatePages } from './pages/productTemplate';
 import { buildProductTypePages } from './pages/productType';
 import { buildProductVariantPages } from './pages/productVariant';
-import { buildStockLocationPages } from './pages/stockLocation';
+import { buildPutawayRulePages } from './pages/putawayRule';
 import { buildStockQuantPages } from './pages/stockQuant';
 import { buildStockScrapPages } from './pages/stockScrap';
 import { buildStockTransferPages } from './pages/stockTransfer';
+import { buildStorageCategoryPages } from './pages/storageCategory';
+import { buildSupplyRelationPages } from './pages/supplyRelation';
+import { buildWarehousePages } from './pages/warehouse';
 
 
 function Main(props: MicroAppProps) {
@@ -65,7 +73,11 @@ const bundle: MicroAppBundle = {
 		registerProductTemplateAttributeCommands(host.commandBus);
 		registerProductVariantCommands(host.commandBus);
 		registerProductPriceCommands(host.commandBus);
-		registerStockLocationCommands(host.commandBus);
+		registerInventoryLocationCommands(host.commandBus);
+		registerWarehouseCommands(host.commandBus);
+		registerStorageCategoryCommands(host.commandBus);
+		registerSupplyRelationCommands(host.commandBus);
+		registerPutawayRuleCommands(host.commandBus);
 		registerStockOperationTypeCommands(host.commandBus);
 		registerStockQuantCommands(host.commandBus);
 		registerStockTransferCommands(host.commandBus);
@@ -91,7 +103,11 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildProductAttributePages(),
 		...buildProductAttributeValuePages(),
 		...buildProductPricePages(),
-		...buildStockLocationPages(),
+		...buildInventoryLocationPages(),
+		...buildWarehousePages(),
+		...buildStorageCategoryPages(),
+		...buildSupplyRelationPages(),
+		...buildPutawayRulePages(),
 		...buildStockQuantPages(),
 		...buildStockTransferPages(),
 		...buildStockScrapPages(),
@@ -142,8 +158,20 @@ function registerModelSchemas(): void {
 		schemaName: c.PRODUCT_PRICE_SCHEMA_NAME,
 		resourcePath: c.PRODUCT_PRICE_RESOURCE_PATH,
 	}, {
-		schemaName: c.STOCK_LOCATION_SCHEMA_NAME,
-		resourcePath: c.STOCK_LOCATION_RESOURCE_PATH,
+		schemaName: c.WAREHOUSE_SCHEMA_NAME,
+		resourcePath: c.WAREHOUSE_RESOURCE_PATH,
+	}, {
+		schemaName: c.STORAGE_CATEGORY_SCHEMA_NAME,
+		resourcePath: c.STORAGE_CATEGORY_RESOURCE_PATH,
+	}, {
+		schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
+		resourcePath: c.INVENTORY_LOCATION_RESOURCE_PATH,
+	}, {
+		schemaName: c.SUPPLY_RELATION_SCHEMA_NAME,
+		resourcePath: c.SUPPLY_RELATION_RESOURCE_PATH,
+	}, {
+		schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
+		resourcePath: c.PUTAWAY_RULE_RESOURCE_PATH,
 	}, {
 		// No page of its own yet, but registered so that a relation select pointing at an
 		// operation type can already resolve it.

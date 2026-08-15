@@ -17,7 +17,11 @@ export const PRODUCT_PRICE_SCHEMA_NAME = 'inventory_product_price';
 
 // Stock. See backend .../modules/inventory/domain/models/{stock_location,stock_operation_type,
 // stock_quant}.go.
-export const STOCK_LOCATION_SCHEMA_NAME = 'inventory_stock_location';
+export const INVENTORY_LOCATION_SCHEMA_NAME = 'inventory_location';
+export const WAREHOUSE_SCHEMA_NAME = 'inventory_warehouse';
+export const STORAGE_CATEGORY_SCHEMA_NAME = 'inventory_storage_category';
+export const SUPPLY_RELATION_SCHEMA_NAME = 'inventory_warehouse_supply_relation';
+export const PUTAWAY_RULE_SCHEMA_NAME = 'inventory_putaway_rule';
 export const STOCK_OPERATION_TYPE_SCHEMA_NAME = 'inventory_stock_operation_type';
 export const STOCK_QUANT_SCHEMA_NAME = 'inventory_stock_quant';
 
@@ -54,7 +58,11 @@ export const PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_RESOURCE_PATH =
 	`v1/inventory/${PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME}`;
 export const PRODUCT_VARIANT_ATTRIBUTE_VALUE_RESOURCE_PATH =
 	`v1/inventory/${PRODUCT_VARIANT_ATTRIBUTE_VALUE_SCHEMA_NAME}`;
-export const STOCK_LOCATION_RESOURCE_PATH = `v1/inventory/${STOCK_LOCATION_SCHEMA_NAME}`;
+export const INVENTORY_LOCATION_RESOURCE_PATH = `v1/inventory/${INVENTORY_LOCATION_SCHEMA_NAME}`;
+export const WAREHOUSE_RESOURCE_PATH = `v1/inventory/${WAREHOUSE_SCHEMA_NAME}`;
+export const STORAGE_CATEGORY_RESOURCE_PATH = `v1/inventory/${STORAGE_CATEGORY_SCHEMA_NAME}`;
+export const SUPPLY_RELATION_RESOURCE_PATH = `v1/inventory/${SUPPLY_RELATION_SCHEMA_NAME}`;
+export const PUTAWAY_RULE_RESOURCE_PATH = `v1/inventory/${PUTAWAY_RULE_SCHEMA_NAME}`;
 export const STOCK_OPERATION_TYPE_RESOURCE_PATH = `v1/inventory/${STOCK_OPERATION_TYPE_SCHEMA_NAME}`;
 export const STOCK_QUANT_RESOURCE_PATH = `v1/inventory/${STOCK_QUANT_SCHEMA_NAME}`;
 export const STOCK_TRANSFER_RESOURCE_PATH = `v1/inventory/${STOCK_TRANSFER_SCHEMA_NAME}`;
