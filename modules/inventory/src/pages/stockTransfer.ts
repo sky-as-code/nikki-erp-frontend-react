@@ -163,8 +163,10 @@ function buildMovementActions() {
  * variants table. Move lines are read-only: they are written by the reservation engine, and
  * letting a user edit an allocation would need the release-and-re-reserve flow of BR §4.2.5.4.
  *
- * Neither has a `linkRoutePath`: there is no standalone Moves page to navigate to, and a link
- * pointing nowhere is worse than no link.
+ * Neither links to a Moves page, because there is none: a move has no life outside the transfer
+ * that carries it. They link to the *product* instead, which is the question a reader of a
+ * transfer line actually has — "what is this thing?" — and completes the navigation in the
+ * direction Stock → Product (CR §17).
  */
 function buildMovementSections(): ComponentNode[] {
 	return [
@@ -175,6 +177,8 @@ function buildMovementSections(): ComponentNode[] {
 				translationNs: c.INVENTORY_MODULE,
 				searchCommand: StockMoveCommands.SEARCH,
 				filterGraph: { if: ['transfer_id', '=', '${id}'] },
+				linkField: 'product_variant_id',
+				linkRoutePath: 'product_variants',
 			})],
 		),
 		collapsibleSectionNode(
@@ -184,6 +188,8 @@ function buildMovementSections(): ComponentNode[] {
 				translationNs: c.INVENTORY_MODULE,
 				searchCommand: StockMoveLineCommands.SEARCH,
 				filterGraph: { if: ['transfer_id', '=', '${id}'] },
+				linkField: 'product_variant_id',
+				linkRoutePath: 'product_variants',
 			})],
 		),
 	];

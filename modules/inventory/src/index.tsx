@@ -11,6 +11,7 @@ import { registerProductAttributeCommands } from './features/productAttribute/co
 import { registerProductAttributeValueCommands } from './features/productAttributeValue/commands';
 import { registerProductCategoryCommands } from './features/productCategory/commands';
 import { registerProductPriceCommands } from './features/productPrice/commands';
+import { registerProductStockCommands } from './features/productStock/commands';
 import { registerProductTemplateCommands } from './features/productTemplate/commands';
 import { registerProductTemplateAttributeCommands } from './features/productTemplateAttribute/commands';
 import { registerProductTypeCommands } from './features/productType/commands';
@@ -19,6 +20,7 @@ import { registerPutawayRuleCommands } from './features/putawayRule/commands';
 import { registerStockMoveCommands } from './features/stockMove/commands';
 import { registerStockMoveLineCommands } from './features/stockMoveLine/commands';
 import { registerStockOperationTypeCommands } from './features/stockOperationType/commands';
+import { registerStockProductConfigCommands } from './features/stockProductConfig/commands';
 import { registerStockQuantCommands } from './features/stockQuant/commands';
 import { registerStockScrapCommands } from './features/stockScrap/commands';
 import { registerStockTransferCommands } from './features/stockTransfer/commands';
@@ -80,10 +82,14 @@ const bundle: MicroAppBundle = {
 		registerPutawayRuleCommands(host.commandBus);
 		registerStockOperationTypeCommands(host.commandBus);
 		registerStockQuantCommands(host.commandBus);
+		// After the quant registration: both name the quant resource, and this one deliberately
+		// does not re-register the CRUD service that one installs.
+		registerProductStockCommands(host.commandBus);
 		registerStockTransferCommands(host.commandBus);
 		registerStockMoveCommands(host.commandBus);
 		registerStockMoveLineCommands(host.commandBus);
 		registerStockScrapCommands(host.commandBus);
+		registerStockProductConfigCommands(host.commandBus);
 
 		return {
 			domType,
@@ -194,5 +200,10 @@ function registerModelSchemas(): void {
 	}, {
 		schemaName: c.STOCK_SCRAP_SCHEMA_NAME,
 		resourcePath: c.STOCK_SCRAP_RESOURCE_PATH,
+	}, {
+		// Reached as a related record of a product template rather than as a page of its own:
+		// the unit a product's stock is counted in is configured where the product is.
+		schemaName: c.STOCK_PRODUCT_CONFIG_SCHEMA_NAME,
+		resourcePath: c.STOCK_PRODUCT_CONFIG_RESOURCE_PATH,
 	}]);
 }

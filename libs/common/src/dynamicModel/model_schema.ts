@@ -42,10 +42,24 @@ export type ModelSchemaField = {
 	description?: ModelSchemaLangJson,
 	placeholder?: ModelSchemaLangJson,
 	is_auto_generated?: boolean,
+	/** The value is derived rather than supplied: a declared computation, or a hydrated edge. */
+	is_computed?: boolean,
+	/** Model-typed field standing for a relation. Never renderable as a column. */
+	is_edge_model?: boolean,
+	is_foreign_key?: boolean,
+	/** Whether the value occupies a database column, and so can be filtered or sorted on. */
+	is_persisted?: boolean,
 	is_required_for_create?: boolean,
 	is_required_for_update?: boolean,
 	is_primary_key?: boolean,
+	/**
+	 * The server owns this field's meaning: a primary, versioning or tenant key, or a foreign
+	 * key. Says nothing about whether the field has a column — that is `is_persisted`. A computed
+	 * field is read-only yet not a system field, so it stays selectable as a column.
+	 */
 	is_system_field?: boolean,
+	/** `is_computed && !is_persisted`: no column, whether a computed scalar or an edge. */
+	is_virtual?: boolean,
 	no_update?: boolean,
 	rules?: unknown,
 	default_value?: unknown,

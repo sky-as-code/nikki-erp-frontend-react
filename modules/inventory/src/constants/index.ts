@@ -35,6 +35,10 @@ export const STOCK_MOVE_DEPENDENCY_SCHEMA_NAME = 'inventory_stock_move_dependenc
 // Stock corrections. See backend .../modules/inventory/domain/models/stock_scrap.go.
 export const STOCK_SCRAP_SCHEMA_NAME = 'inventory_stock_scrap';
 
+// Stock's settings for a product line, currently the unit its balances are counted in. Owned by
+// Stock rather than Product: see backend .../inventory/domain/models/stock_product_config.go.
+export const STOCK_PRODUCT_CONFIG_SCHEMA_NAME = 'inventory_stock_product_config';
+
 // The two junctions. They carry a template's attribute configuration, and are reached as related
 // records of a template rather than as top-level pages of their own.
 export const PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME = 'inventory_product_template_attribute';
@@ -69,6 +73,7 @@ export const STOCK_TRANSFER_RESOURCE_PATH = `v1/inventory/${STOCK_TRANSFER_SCHEM
 export const STOCK_MOVE_RESOURCE_PATH = `v1/inventory/${STOCK_MOVE_SCHEMA_NAME}`;
 export const STOCK_MOVE_LINE_RESOURCE_PATH = `v1/inventory/${STOCK_MOVE_LINE_SCHEMA_NAME}`;
 export const STOCK_SCRAP_RESOURCE_PATH = `v1/inventory/${STOCK_SCRAP_SCHEMA_NAME}`;
+export const STOCK_PRODUCT_CONFIG_RESOURCE_PATH = `v1/inventory/${STOCK_PRODUCT_CONFIG_SCHEMA_NAME}`;
 
 /**
  * Custom action paths on the Product Template engine. The engine's route pattern rejects hyphens,
