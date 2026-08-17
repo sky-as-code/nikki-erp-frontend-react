@@ -64,6 +64,17 @@ export class StockTransferService extends StoreCrudServiceBase {
 	}
 
 	/**
+	 * Raises a reverse transfer for goods coming back (BR §4.2.10, AC-STOCK-021).
+	 *
+	 * The original is never touched. With no `lines` in the body the backend returns the full
+	 * returnable quantity per move, which is what the action bar sends: the result is a draft the
+	 * user can trim before confirming.
+	 */
+	public createReturn(request: dyn.RestMutateOneRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
+		return this.runOperation(request, 'create_return');
+	}
+
+	/**
 	 * Posts to `{resource}/{id}/{action}`.
 	 *
 	 * It goes through manageM2m because that is the only base-class method that posts to an

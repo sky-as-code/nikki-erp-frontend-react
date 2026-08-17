@@ -13,6 +13,7 @@ const graphValueSchema: z.ZodType<unknown> = z.lazy(() => z.union([
 ]));
 
 export const filterGraphSchema = z.record(z.string(), graphValueSchema);
+export type FilterGraph = z.infer<typeof filterGraphSchema>;
 
 /**
  * A toolbar action of the embedded table, rendered by `DataTable` next to Refresh.

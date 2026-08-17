@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildBrandPages } from './brand';
+import { buildInventoryLocationPages } from './inventoryLocation';
 import { buildProductAttributePages } from './productAttribute';
 import { buildProductAttributeValuePages } from './productAttributeValue';
 import { buildProductCategoryPages } from './productCategory';
@@ -8,9 +9,13 @@ import { buildProductPricePages } from './productPrice';
 import { buildProductTemplatePages } from './productTemplate';
 import { buildProductTypePages } from './productType';
 import { buildProductVariantPages } from './productVariant';
-import { buildStockLocationPages } from './stockLocation';
+import { buildPutawayRulePages } from './putawayRule';
 import { buildStockQuantPages } from './stockQuant';
+import { buildStockScrapPages } from './stockScrap';
 import { buildStockTransferPages } from './stockTransfer';
+import { buildStorageCategoryPages } from './storageCategory';
+import { buildSupplyRelationPages } from './supplyRelation';
+import { buildWarehousePages } from './warehouse';
 import * as c from '../constants';
 
 import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
@@ -25,9 +30,14 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'productAttribute', build: buildProductAttributePages },
 	{ name: 'productAttributeValue', build: buildProductAttributeValuePages },
 	{ name: 'productPrice', build: buildProductPricePages },
-	{ name: 'stockLocation', build: buildStockLocationPages },
+	{ name: 'inventoryLocation', build: buildInventoryLocationPages },
+	{ name: 'warehouse', build: buildWarehousePages },
+	{ name: 'storageCategory', build: buildStorageCategoryPages },
+	{ name: 'supplyRelation', build: buildSupplyRelationPages },
+	{ name: 'putawayRule', build: buildPutawayRulePages },
 	{ name: 'stockQuant', build: buildStockQuantPages },
 	{ name: 'stockTransfer', build: buildStockTransferPages },
+	{ name: 'stockScrap', build: buildStockScrapPages },
 ];
 
 describe('Inventory page metadata', () => {
@@ -65,7 +75,9 @@ describe('Inventory page metadata', () => {
 		expect(routePaths).toEqual([
 			'product_templates', 'product_variants', 'product_types', 'product_categories',
 			'brands', 'attributes', 'attribute_values', 'product_prices',
-			'stock_locations', 'stock_balance', 'stock_transfers',
+			'locations', 'warehouses', 'storage_categories', 'supply_relations', 'putaway_rules',
+			'stock_balance', 'stock_balance_counts_due', 'stock_transfers',
+			'stock_scraps',
 		]);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);
@@ -107,12 +119,21 @@ describe('Product template detail sections', () => {
 		const [page] = buildProductTemplatePages();
 		const tables = collectComponents(page, 'resourceTable');
 
-		// Attributes, variants and prices. Asserted by schema rather than by count alone, so that
-		// adding a section is a deliberate change here rather than a number quietly going up.
+		// Attributes, variants, prices, and the stock breakdown. Asserted by schema rather than by
+		// count alone, so that adding a section is a deliberate change here rather than a number
+		// quietly going up.
+		//
+		// The breakdown lists variants, not quants: a template holds no stock of its own, and a
+		// quant cannot be reached from a template in one search anyway — `linked` traverses only a
+		// many edge, and quant → variant is many:one. See CR §5.3 and §24.
 		expect(tables.map(table => table.props?.schemaName)).toEqual([
 			c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME,
 			c.PRODUCT_VARIANT_SCHEMA_NAME,
 			c.PRODUCT_PRICE_SCHEMA_NAME,
+			c.PRODUCT_VARIANT_SCHEMA_NAME,
+			// The inventory unit, configured here but owned by Stock: it decides what a balance
+			// means, so it is its own resource rather than a column on the template (CR §11.4).
+			c.STOCK_PRODUCT_CONFIG_SCHEMA_NAME,
 		]);
 		for (const table of tables) {
 			expect(table.props?.filterGraph).toEqual({ if: ['product_template_id', '=', '${id}'] });
@@ -145,6 +166,68 @@ describe('Product template detail sections', () => {
 	});
 });
 
+describe('Product stock integration', () => {
+	/**
+	 * Product is an entry point onto stock, not an owner of it. Each section reads a resource
+	 * another part of the module owns and links to the page that owns it (CR §4.4, §6.1).
+	 */
+	it('shows a variant its stock, its movements and its putaway rules', () => {
+		const [page] = buildProductVariantPages();
+		const tables = collectComponents(page, 'resourceTable');
+
+		expect(tables.map(table => table.props?.schemaName)).toEqual([
+			c.STOCK_QUANT_SCHEMA_NAME,
+			c.STOCK_MOVE_SCHEMA_NAME,
+			c.PUTAWAY_RULE_SCHEMA_NAME,
+		]);
+
+		// Stock names the variant `product_variant_id`; a putaway rule calls the same reference
+		// `product_id`, because Warehouse's rule may point at a product or a category. Each filter
+		// has to use the field its own schema declares — a shared spelling would match nothing.
+		expect(tables[0].props?.filterGraph).toEqual({ if: ['product_variant_id', '=', '${id}'] });
+		expect(tables[1].props?.filterGraph).toEqual({ if: ['product_variant_id', '=', '${id}'] });
+		expect(tables[2].props?.filterGraph).toEqual({ if: ['product_id', '=', '${id}'] });
+	});
+
+	/**
+	 * Quantities are read-only on a product page. No section names an update command, so there is
+	 * no edit affordance to suppress and no path from Product to setting a balance (CR §6.2,
+	 * AC-PROD-INT-034).
+	 */
+	it('binds no write command on any variant stock section', () => {
+		const [page] = buildProductVariantPages();
+
+		for (const table of collectComponents(page, 'resourceTable')) {
+			expect(table.props?.updateSaveCommand).toBeUndefined();
+			expect(table.props?.deleteCommand).toBeUndefined();
+			expect(table.props?.archiveCommand).toBeUndefined();
+		}
+	});
+
+	/**
+	 * The two tables listing the same schema on one page need distinct testId prefixes, or their
+	 * rendered `data-testid`s collide and a test cannot tell one from the other.
+	 */
+	it('gives the template its own testId for the second variants table', () => {
+		const [page] = buildProductTemplatePages();
+		const variantTables = collectComponents(page, 'resourceTable')
+			.filter(table => table.props?.schemaName === c.PRODUCT_VARIANT_SCHEMA_NAME);
+
+		expect(variantTables).toHaveLength(2);
+		expect(variantTables[1].props?.testId).toBe('inventory.templateInventory');
+	});
+
+	/** Category-level putaway rules, shown where the category is (CR §10.2, TS-PROD-14). */
+	it('shows a category the putaway rules that match it', () => {
+		const [page] = buildProductCategoryPages();
+		const putaway = collectComponents(page, 'resourceTable')
+			.find(table => table.props?.schemaName === c.PUTAWAY_RULE_SCHEMA_NAME);
+
+		expect(putaway?.props?.filterGraph).toEqual({ if: ['product_category_id', '=', '${id}'] });
+		expect(putaway?.props?.linkRoutePath).toBe('putaway_rules');
+	});
+});
+
 describe('Stock balance page', () => {
 	/**
 	 * The backend engine refuses create, update and delete on a stock quant: a balance is the
@@ -173,12 +256,24 @@ describe('Stock balance page', () => {
 		expect(props.primary.props.schemaName).toBe('inventory_stock_quant');
 		expect(props.primary.props.schemaName).toBe(c.STOCK_QUANT_SCHEMA_NAME);
 	});
+
+	/**
+	 * The "Đến hạn kiểm kê" menu item is a second entry point into this same list, distinguished
+	 * only by this filter — without it the route would render the identical unfiltered balance.
+	 */
+	it('filters the counts-due route to balances with a due count', () => {
+		const [, countsDuePage] = buildStockQuantPages();
+		const props = countsDuePage.props as { primary: { props: { filterGraph?: unknown } } };
+
+		expect(countsDuePage.routePath).toBe('stock_balance_counts_due');
+		expect(props.primary.props.filterGraph).toEqual({ if: ['next_count_date', '<=', '${today}'] });
+	});
 });
 
 describe('Stock transfer page', () => {
 	/**
-	 * The six movement operations are what the page exists for. Losing one leaves a transfer that
-	 * can be created and edited but never acted on, which nothing else would report.
+	 * The movement operations are what the page exists for. Losing one leaves a transfer that can
+	 * be created and edited but never acted on, which nothing else would report.
 	 */
 	it('offers every movement operation', () => {
 		const [page] = buildStockTransferPages();
@@ -187,7 +282,8 @@ describe('Stock transfer page', () => {
 		};
 
 		expect(Object.keys(props.secondary.props.contextualActions ?? {}).sort()).toEqual([
-			'cancel', 'check_availability', 'confirm', 'reserve', 'unreserve', 'validate',
+			'cancel', 'check_availability', 'confirm', 'create_return', 'reserve', 'unreserve',
+			'validate',
 		]);
 	});
 

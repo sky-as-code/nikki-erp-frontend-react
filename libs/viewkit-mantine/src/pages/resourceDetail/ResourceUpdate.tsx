@@ -118,7 +118,12 @@ function ResourceUpdateContent(): React.ReactNode {
 	const nodes = React.useMemo(() => buildUpdateNodes(context), [context]);
 	const modelSchema = schemaPack?.modelSchema;
 
-	if (!modelSchema || !context.commands.update || !context.commands.getById) {
+	// `getById` only. A read-only resource declares no update command on purpose — the stock
+	// balance is the case in point, since its engine refuses client writes — and requiring one
+	// here rendered nothing at all for those pages, hiding their read view and any contextual
+	// action along with it. The form itself already renders read-only when no update command
+	// exists, so the guard was protecting nothing.
+	if (!modelSchema || !context.commands.getById) {
 		return null;
 	}
 

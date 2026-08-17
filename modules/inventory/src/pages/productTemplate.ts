@@ -9,6 +9,7 @@ import { ProductPriceCommands } from '../features/productPrice/commands';
 import { ProductTemplateCommands } from '../features/productTemplate/commands';
 import { ProductTemplateAttributeCommands } from '../features/productTemplateAttribute/commands';
 import { ProductVariantCommands } from '../features/productVariant/commands';
+import { StockProductConfigCommands } from '../features/stockProductConfig/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -131,5 +132,74 @@ function buildTemplateSections(): ComponentNode[] {
 				linkRoutePath: 'product_prices',
 			})],
 		),
+		buildTemplateInventorySection(),
+		buildInventoryUomSection(),
 	];
+}
+
+/**
+ * The unit this product line's stock is counted in (CR §11).
+ *
+ * Configured here because this is where a user works, but owned by Stock: it decides what a
+ * balance means, and the row lives in its own resource rather than as a column on the template
+ * (CR §11.3, §11.4). Every variant inherits it and none may override it in this change request
+ * (CR §11.5, PROD-INT-INV-011, PROD-INT-INV-012, TS-PROD-06).
+ *
+ * The UoM master itself — categories, factors, rounding, conversion — stays in the Essential
+ * module and is not reproduced anywhere in Product (CR §11.1, PROD-INT-INV-009).
+ *
+ * Changing the unit after the product has moved stock is refused by the server, because it would
+ * reinterpret every quantity ever recorded against it (CR §12.2, TS-PROD-09). That rule is not
+ * restated here: it has one home, and a copy in the client could only drift from it.
+ */
+function buildInventoryUomSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{
+			header: 'product_template_sections_inventoryUom',
+			translationNs: c.INVENTORY_MODULE,
+			expanded: false,
+		},
+		[resourceTableNode({
+			schemaName: c.STOCK_PRODUCT_CONFIG_SCHEMA_NAME,
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: StockProductConfigCommands.SEARCH,
+			filterGraph: { if: ['product_template_id', '=', '${id}'] },
+			fields: ['inventory_uom_id'],
+			linkField: 'id',
+		})],
+	);
+}
+
+/**
+ * The stock behind a template, broken down by variant (CR §5.3, §24).
+ *
+ * It lists the variants rather than the quants. A template holds no stock of its own and never
+ * will — only a variant is stocked (CR §5.1, PROD-INT-INV-002) — so the honest breakdown is one
+ * row per variant, each linking to the variant page where its balances are shown in full.
+ *
+ * Quants cannot be listed here directly. `filterGraph` reaches a related resource only across a
+ * *many* edge via the `linked` operator, and quant → variant is many:one, so there is no path from
+ * a template to its variants' quants in one search. The aggregate is served by the
+ * `template_stock_summary` action instead, which sums the variants server-side.
+ *
+ * Every action needing a concrete product lives on the variant page this links to, not here. That
+ * is what stops a stock command being issued with a template id: the template page emits none
+ * (CR §7, AC-PROD-INT-012, AC-PROD-INT-013, TS-PROD-01).
+ */
+function buildTemplateInventorySection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ header: 'product_template_sections_inventory', translationNs: c.INVENTORY_MODULE, expanded: false },
+		[resourceTableNode({
+			schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: ProductVariantCommands.SEARCH,
+			filterGraph: { if: ['product_template_id', '=', '${id}'] },
+			fields: ['sku', 'combination_key', 'status'],
+			linkField: 'id',
+			linkRoutePath: 'product_variants',
+			// A second variants table on one page, so it needs its own testId prefix to avoid
+			// colliding with the configuration section above.
+			testId: 'inventory.templateInventory',
+		})],
+	);
 }

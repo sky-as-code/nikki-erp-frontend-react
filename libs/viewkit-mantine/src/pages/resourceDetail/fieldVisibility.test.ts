@@ -20,10 +20,13 @@ const roleSchema = {
 		name: field('name', 'string', { is_required_for_create: true }),
 		description: field('description', 'string'),
 		org_id: field('org_id', 'ulid'),
-		owner_user_id: field('owner_user_id', 'ulid'),
+		// A foreign key is a system field, yet picking one is the whole point of a create form.
+		owner_user_id: field('owner_user_id', 'ulid', { is_foreign_key: true, is_system_field: true }),
 		created_at: field('created_at', 'nikkiDateTime', { is_auto_generated: true }),
 		expires_at: field('expires_at', 'nikkiDateTime'),
-		assigned_users: field('assigned_users', 'model', { is_system_field: true }),
+		assigned_users: field('assigned_users', 'model', { is_edge_model: true, is_computed: true }),
+		// Copied from a related record on read; read-only, but not server-owned.
+		owner_name: field('owner_name', 'string', { is_computed: true, is_virtual: true }),
 	},
 } as unknown as dyn.ModelSchema;
 
@@ -56,6 +59,19 @@ describe('isFieldVisible', () => {
 	it('hides a type no form input can render', () => {
 		expect(isFieldVisible(roleSchema, 'assigned_users', 'create')).toBe(false);
 		expect(isFieldVisible(roleSchema, 'assigned_users', 'update')).toBe(false);
+	});
+
+	it('never offers a computed field, whose value the server refuses to accept', () => {
+		expect(isFieldVisible(roleSchema, 'owner_name', 'create')).toBe(false);
+		expect(isFieldVisible(roleSchema, 'owner_name', 'update')).toBe(false);
+	});
+
+	// A foreign key is flagged system because the server owns its meaning, but choosing the
+	// related record is exactly what a create form is for. Hiding it would leave no way to set
+	// the relation at all.
+	it('offers a foreign key in both form modes despite its system flag', () => {
+		expect(isFieldVisible(roleSchema, 'owner_user_id', 'create')).toBe(true);
+		expect(isFieldVisible(roleSchema, 'owner_user_id', 'update')).toBe(true);
 	});
 
 	it('never offers an input for a server-assigned value, even now that datetimes render', () => {

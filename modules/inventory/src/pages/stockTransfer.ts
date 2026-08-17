@@ -102,7 +102,7 @@ function buildStockTransferDetailProps() {
 }
 
 /**
- * The six movement operations, each guarded by the state it makes sense in.
+ * The movement operations, each guarded by the state it makes sense in.
  *
  * The conditions are what keep the action bar honest: Validate on a draft transfer would be
  * refused by the backend anyway, but offering it invites the user to try. Cancel disappears once
@@ -144,6 +144,15 @@ function buildMovementActions() {
 			command: StockTransferCommands.CANCEL,
 			condition: { field: 'status', operator: 'not_in' as const, value: ['done', 'cancelled'] },
 		},
+		// The one action that appears only once a transfer is done, and the counterpart to
+		// cancel's disappearing there: a completed movement is corrected by reversing it
+		// (AC-STOCK-009, AC-STOCK-021). No prompt — it defaults to the full returnable quantity
+		// per move and lands as a draft the user can trim before confirming.
+		create_return: {
+			label: 'actions.create_return',
+			command: StockTransferCommands.CREATE_RETURN,
+			condition: { field: 'status', operator: 'equal' as const, value: 'done' },
+		},
 	};
 }
 
@@ -154,8 +163,10 @@ function buildMovementActions() {
  * variants table. Move lines are read-only: they are written by the reservation engine, and
  * letting a user edit an allocation would need the release-and-re-reserve flow of BR §4.2.5.4.
  *
- * Neither has a `linkRoutePath`: there is no standalone Moves page to navigate to, and a link
- * pointing nowhere is worse than no link.
+ * Neither links to a Moves page, because there is none: a move has no life outside the transfer
+ * that carries it. They link to the *product* instead, which is the question a reader of a
+ * transfer line actually has — "what is this thing?" — and completes the navigation in the
+ * direction Stock → Product (CR §17).
  */
 function buildMovementSections(): ComponentNode[] {
 	return [
@@ -166,6 +177,8 @@ function buildMovementSections(): ComponentNode[] {
 				translationNs: c.INVENTORY_MODULE,
 				searchCommand: StockMoveCommands.SEARCH,
 				filterGraph: { if: ['transfer_id', '=', '${id}'] },
+				linkField: 'product_variant_id',
+				linkRoutePath: 'product_variants',
 			})],
 		),
 		collapsibleSectionNode(
@@ -175,6 +188,8 @@ function buildMovementSections(): ComponentNode[] {
 				translationNs: c.INVENTORY_MODULE,
 				searchCommand: StockMoveLineCommands.SEARCH,
 				filterGraph: { if: ['transfer_id', '=', '${id}'] },
+				linkField: 'product_variant_id',
+				linkRoutePath: 'product_variants',
 			})],
 		),
 	];

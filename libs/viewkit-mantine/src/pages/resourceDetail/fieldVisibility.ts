@@ -37,7 +37,14 @@ export function isFieldVisible(
 	if (fieldDef.is_auto_generated) {
 		return false;
 	}
-	if (mode === 'create' && fieldDef.is_system_field) {
+	// A derived value is never an input: the server computes or hydrates it and refuses a write,
+	// so offering a field would invite a value it discards. Keyed off `is_computed` rather than
+	// `is_system_field`, which means "the server owns this field's meaning" and so covers the
+	// foreign keys a create form must still let the user pick.
+	if (fieldDef.is_computed) {
+		return false;
+	}
+	if (mode === 'create' && fieldDef.is_system_field && !fieldDef.is_foreign_key) {
 		return false;
 	}
 	return dyn.isRenderableFieldType(fieldDef);

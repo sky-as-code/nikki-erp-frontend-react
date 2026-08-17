@@ -1,5 +1,5 @@
 import {
-	ActionIcon, Badge, Button, Group, Menu, Stack, Text, Title,
+	ActionIcon, Badge, Button, Group, Stack, Text, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { AutoField } from '@nikkierp/ui/components/form';
@@ -8,18 +8,19 @@ import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { evaluateCondition } from '@nikkierp/viewengine/metadata';
 import {
-	IconArchive, IconArchiveOff, IconChevronDown, IconChevronRight, IconDeviceFloppy, IconDots,
-	IconPencil, IconPlus, IconTrash, IconX,
+	IconChevronDown, IconChevronRight, IconDeviceFloppy, IconPencil, IconPlus, IconX,
 } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 import { Link } from 'react-router';
 
+import { ActionPromptModal } from './ActionPromptModal';
 import { hasVisibleField, isFieldVisible } from './fieldVisibility';
 import classes from './ResourceDetail.module.css';
 import {
 	useResourceDetailContext, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
 } from './ResourceDetailProvider';
+import { ResourceDetailOverflowMenu } from './resourceOverflowMenu';
 import { useResourceUpdateContext } from './resourceUpdateContext';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
 
@@ -203,31 +204,74 @@ function ResourceDetailExtraActionButton({
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const tid = useResourceDetailTestAttrs();
 	const command = useCommand(action.command);
+	const { refresh } = useResourceUpdateContext();
+	// Above the early return: hooks cannot be called conditionally.
+	const [promptOpen, setPromptOpen] = React.useState(false);
 	const isVisible = !action.condition || evaluateCondition(action.condition, resource);
 	if (!isVisible) {
 		return null;
 	}
 
-	const onClick = () => {
+	// The request is spread first, so a prompt field can never overwrite `id` or `etag`.
+	const publish = (values?: Record<string, unknown>) => {
 		const request = buildDefaultMutateRequest(resource);
-		if (request != null) {
-			void command.publish(request);
+		if (request == null) {
+			return;
 		}
+		void command.publish({ ...request, ...values }).then(response => {
+			if (!isPublishRejected(response)) {
+				setPromptOpen(false);
+			}
+			// Refresh either way: a rejected action may still have changed the record's etag, and
+			// delete and archive already do this. Without it the pane keeps showing the old status
+			// after a Confirm or Validate, which is most obvious on an applied count — the whole
+			// point of which is seeing the new balance.
+			refresh();
+		});
 	};
 
+	const onClick = () => (action.prompt ? setPromptOpen(true) : publish());
+
 	return (
-		<Button
-			variant='outline'
-			size='compact-md'
-			disabled={disabled || command.isPending}
-			loading={command.isPending}
-			onClick={onClick}
-			{...commandAttrs(action.command)}
-			{...tid('action', actionKey)}
-		>
-			{t(action.label)}
-		</Button>
+		<>
+			<Button
+				variant='outline'
+				size='compact-md'
+				disabled={disabled || command.isPending}
+				loading={command.isPending}
+				onClick={onClick}
+				{...commandAttrs(action.command)}
+				{...tid('action', actionKey)}
+			>
+				{t(action.label)}
+			</Button>
+			{action.prompt && promptOpen ? (
+				<ActionPromptModal
+					opened={promptOpen}
+					onClose={() => setPromptOpen(false)}
+					prompt={action.prompt}
+					actionKey={actionKey}
+					resource={resource}
+					isSubmitting={command.isPending}
+					onSubmit={publish}
+				/>
+			) : null}
+		</>
 	);
+}
+
+/**
+ * Whether a published command came back refused.
+ *
+ * A rejected action keeps its dialog open so the user's input survives — the same reasoning as the
+ * save path, where losing a form to a validation failure is worse than the failure itself.
+ */
+function isPublishRejected(response: unknown): boolean {
+	if (response == null || typeof response !== 'object') {
+		return false;
+	}
+	const typed = response as { error?: unknown, result?: { clientErrors?: unknown[] } };
+	return Boolean(typed.error) || Boolean(typed.result?.clientErrors?.length);
 }
 
 function hasMatchingExtraAction(
@@ -252,100 +296,6 @@ function buildDefaultMutateRequest(resource: Record<string, unknown>): dyn.RestM
 	return { id, etag };
 }
 
-function ResourceDetailOverflowMenu({
-	resource, disabled = false,
-}: {
-	resource: Record<string, unknown>,
-	disabled?: boolean,
-}): React.ReactNode {
-	const { commands, refresh } = useResourceUpdateContext();
-	const t = useTranslate(useResourceDetailTranslationNs());
-	const tid = useResourceDetailTestAttrs();
-	const deleteCmd = useCommand(commands.delete ?? '');
-	const archiveCmd = useCommand(commands.archive ?? '');
-	const isBusy = disabled || deleteCmd.isPending || archiveCmd.isPending;
-
-	const onDelete = () => {
-		const id = resource.id;
-		if (typeof id !== 'string' || !commands.delete) {
-			return;
-		}
-		void deleteCmd.publish({ id }).then(refresh);
-	};
-
-	const showArchive = resource.is_archived === false;
-	const showUnarchive = resource.is_archived === true;
-	const onSetArchived = (archived: boolean) => {
-		const request = buildArchiveRequest(resource, archived);
-		if (request == null || !commands.archive) {
-			return;
-		}
-		void archiveCmd.publish(request).then(refresh);
-	};
-
-	return (
-		<Menu shadow='md' position='bottom-end'>
-			<Menu.Target>
-				<Button
-					variant='outline' size='compact-md' aria-label='More actions' disabled={isBusy}
-					{...tid('actionMenu')}
-				>
-					<IconDots size={16} />
-				</Button>
-			</Menu.Target>
-			<Menu.Dropdown>
-				{commands.delete ? (
-					<Menu.Item
-						leftSection={<IconTrash size={16} />}
-						disabled={isBusy}
-						onClick={onDelete}
-						{...commandAttrs(commands.delete)}
-						{...tid('action', 'delete')}
-					>
-						{t('action.delete')}
-					</Menu.Item>
-				) : null}
-				{commands.delete && commands.archive ? <Menu.Divider /> : null}
-				{/* Archive and unarchive publish the same command and differ only by payload, so the
-					test ids name the intent rather than deriving from the shared command name. */}
-				{commands.archive && showArchive ? (
-					<Menu.Item
-						leftSection={<IconArchive size={16} />}
-						disabled={isBusy}
-						onClick={() => onSetArchived(true)}
-						{...commandAttrs(commands.archive)}
-						{...tid('action', 'archive')}
-					>
-						{t('action.archive')}
-					</Menu.Item>
-				) : null}
-				{commands.archive && showUnarchive ? (
-					<Menu.Item
-						leftSection={<IconArchiveOff size={16} />}
-						disabled={isBusy}
-						onClick={() => onSetArchived(false)}
-						{...commandAttrs(commands.archive)}
-						{...tid('action', 'unarchive')}
-					>
-						{t('action.unarchive')}
-					</Menu.Item>
-				) : null}
-			</Menu.Dropdown>
-		</Menu>
-	);
-}
-
-function buildArchiveRequest(
-	resource: Record<string, unknown>,
-	isArchived: boolean,
-): dyn.RestSetIsArchivedRequest | null {
-	const id = resource.id;
-	const etag = resource.etag;
-	if (typeof id !== 'string' || typeof etag !== 'string') {
-		return null;
-	}
-	return { id, etag, is_archived: isArchived };
-}
 
 function StatusFlow({
 	statuses, current,

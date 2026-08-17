@@ -1,4 +1,4 @@
-import { ActionIcon, Checkbox, Grid, Input, NumberInput, Select, Text, InputProps, NumberInputProps } from '@mantine/core';
+import { ActionIcon, Grid, Input, NumberInput, Select, Switch, Text, InputProps, NumberInputProps } from '@mantine/core';
 import { DateInput, DateInputProps, DateTimePickerProps } from '@mantine/dates';
 import { useId } from '@mantine/hooks';
 import * as dyn from '@nikkierp/common/dynamicModel';
@@ -351,7 +351,6 @@ export function TextInputField(props: TextInputFieldProps) {
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={t(fieldData.label)}
-			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
 			error={t(fieldData.error as any)}
 		>
@@ -406,7 +405,6 @@ export function PasswordInputField(props: PasswordInputFieldProps) {
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={t(fieldData.label)}
-			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
 			error={t(fieldData.error as any)}
 		>
@@ -461,7 +459,6 @@ export function NumberInputField(props: NumberInputFieldProps) {
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={t(fieldData.label)}
-			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
 			error={t(fieldData.error as any)}
 		>
@@ -527,7 +524,6 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={t(fieldData.label)}
-			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
 			error={t(fieldData.error as any)}
 		>
@@ -585,7 +581,6 @@ export function DateInputField(props: DateInputFieldProps) {
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={t(fieldData.label)}
-			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
 			error={t(fieldData.error as any)}
 		>
@@ -654,7 +649,6 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={t(fieldData.label)}
-			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
 			error={t(fieldData.error as any)}
 		>
@@ -773,10 +767,9 @@ export function BooleanField(props: BooleanFieldProps) {
 					render={({ field }) => {
 						const checked = field.value !== undefined ? Boolean(field.value) : Boolean(defaultValue);
 						return (
-							<Checkbox
+							<Switch
 								id={inputId}
 								label={t(fieldData.label)}
-								description={fieldData.description ? t(fieldData.description) : undefined}
 								checked={checked}
 								onChange={(e) => field.onChange(e.currentTarget.checked)}
 								disabled={modelLoading || inputProps?.disabled}

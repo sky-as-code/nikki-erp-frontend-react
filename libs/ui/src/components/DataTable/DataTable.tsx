@@ -1519,9 +1519,15 @@ function filterFields(fields: string[], query: string): string[] {
 	return fields.filter(field => field.toLowerCase().includes(trimmed));
 }
 
+/**
+ * The columns a user may choose from. Excludes the fields the server owns (keys and foreign
+ * keys) and the model-typed edges, which stand for a relation rather than a value. A computed
+ * field is deliberately kept: it is read-only, but it carries the business meaning a user
+ * actually wants in a listing.
+ */
 function getSelectableSchemaFieldNames(schema: dyn.ModelSchema): string[] {
 	return Object.values(schema.fields)
-		.filter(field => !field.is_system_field)
+		.filter(field => !field.is_system_field && !field.is_edge_model)
 		.map(field => field.name);
 }
 

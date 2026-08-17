@@ -48,7 +48,8 @@ export function DateTimeInputField(props: DateTimeFieldProps<DateTimePickerProps
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={t(fieldData.label)}
-			description={t(fieldData.description)}
+			// Uncomment to show sub-labels
+			// description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
 			error={t(fieldData.error as any)}
 		>
@@ -89,7 +90,6 @@ export function TimeInputField(props: DateTimeFieldProps<InputProps>) {
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={t(fieldData.label)}
-			description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
 			error={t(fieldData.error as any)}
 		>
@@ -137,7 +137,6 @@ export function ReadOnlyTextField(props: { name: string, localize: LocalizeFn })
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={t(fieldData.label)}
-			description={t(fieldData.description)}
 			isRequired={false}
 			error={undefined}
 		>
