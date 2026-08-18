@@ -47,6 +47,18 @@ const microApps: MicroAppMetadata[] = [
 		bundleUrl: () => import('@nikkierp/microapp-inventory'),
 		htmlTag: 'nikkiapp-inventory',
 	},
+	{
+		slug: 'paymentinvoice',
+		basePath: 'paymentinvoice',
+		bundleUrl: () => import('@nikkierp/microapp-paymentinvoice'),
+		htmlTag: 'nikkiapp-paymentinvoice',
+	},
+	{
+		slug: 'purchase',
+		basePath: 'purchase',
+		bundleUrl: () => import('@nikkierp/microapp-purchase'),
+		htmlTag: 'nikkiapp-purchase',
+	},
 	...remoteApps,
 ];
 
