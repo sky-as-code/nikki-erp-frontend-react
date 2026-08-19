@@ -30,6 +30,14 @@ export const RESOURCE_CREATE_COLUMN = 'nikkierp.mantine.components.resourceCreat
 export const RESOURCE_SPLIT_VIEW = 'nikkierp.mantine.components.resourceSplitView.v1';
 
 /**
+ * A tabbed container for a resource detail page. Like `collapsibleSection` it groups nodes, but it
+ * renders the enclosing form's `SectionActionBar`, so — exactly as with `resourceForm.section` — it
+ * belongs inside the resource-update family and nowhere else.
+ */
+export const RESOURCE_FORM_TABS = 'nikkierp.mantine.components.resourceFormTabs.v1';
+export const RESOURCE_FORM_TABS_TAB = 'nikkierp.mantine.components.resourceFormTabs.tab.v1';
+
+/**
  * Field-renderer spec names registered by this kit.
  *
  * Deliberately bare, not contribution ids: `registerFieldRenderer(name, factory)` keys its own

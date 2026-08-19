@@ -2,10 +2,11 @@ import { defineComponent } from '@nikkierp/viewengine/metadata';
 
 import { collapsibleSectionPropsSchema } from './components/collapsibleSection/props';
 import { pageHeaderPropsSchema } from './components/pageHeader/props';
+import { resourceFormTabsPropsSchema } from './components/resourceFormTabs/props';
 import { resourceTablePropsSchema } from './components/resourceTable/props';
 import {
-	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE, RESOURCE_LIST_TEMPLATE,
-	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE,
+	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE, RESOURCE_FORM_TABS,
+	RESOURCE_LIST_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE,
 } from './ids';
 import { resourceDetailPropsSchema } from './pages/resourceDetail/props';
 import { resourceListPropsSchema } from './pages/resourceList/props';
@@ -13,6 +14,7 @@ import { resourceSplitViewPropsSchema } from './pages/resourceSplitView/props';
 
 import type { CollapsibleSectionPropsInput } from './components/collapsibleSection/props';
 import type { PageHeaderPropsInput } from './components/pageHeader/props';
+import type { ResourceFormTabsPropsInput } from './components/resourceFormTabs/props';
 import type { ResourceTablePropsInput } from './components/resourceTable/props';
 import type {
 	ResourceDetailProps, ResourceDetailPropsInput,
@@ -75,6 +77,25 @@ export function collapsibleSectionNode(
 	});
 }
 
+/**
+ * A tabbed block for a resource detail page's `childrenNodes`.
+ *
+ * Children map to `tabs` **by position** — the nth node is the nth tab's body — so pass exactly one
+ * node per tab, wrapping a multi-part tab in its own container node.
+ *
+ * Unlike `collapsibleSectionNode` this renders the enclosing form's action bar, so it belongs
+ * inside a resource detail page and nowhere else.
+ */
+export function resourceFormTabsNode(
+	input: ResourceFormTabsPropsInput, children: ComponentNode[],
+): ComponentNode {
+	return defineComponent({
+		component: RESOURCE_FORM_TABS,
+		props: resourceFormTabsPropsSchema.parse(input) as unknown as Record<string, unknown>,
+		children,
+	});
+}
+
 /** A page title block. Child nodes render as its action row. */
 export function pageHeaderNode(
 	input: PageHeaderPropsInput, children: ComponentNode[] = [],
@@ -88,6 +109,7 @@ export function pageHeaderNode(
 
 export * from './components/collapsibleSection/props';
 export * from './components/pageHeader/props';
+export * from './components/resourceFormTabs/props';
 export * from './components/resourceTable/props';
 export * from './pages/resourceDetail/props';
 export * from './pages/resourceList/props';
