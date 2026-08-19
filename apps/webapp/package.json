@@ -32,6 +32,8 @@
 		"@nikkierp/microapp-essential": "workspace:*",
 		"@nikkierp/microapp-identity": "workspace:*",
 		"@nikkierp/microapp-inventory": "workspace:*",
+		"@nikkierp/microapp-paymentinvoice": "workspace:*",
+		"@nikkierp/microapp-purchase": "workspace:*",
 		"@nikkierp/nikkiportal-shell": "workspace:*",
 		"@nikkierp/ui": "workspace:*",
 		"@tabler/icons-react": "~3.44.0",

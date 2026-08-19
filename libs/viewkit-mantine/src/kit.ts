@@ -10,6 +10,7 @@ import { resourceDetailHeaderRenderer } from './components/resourceDetailHeader'
 import { resourceFormRenderer } from './components/resourceForm';
 import { resourceFormColumnRenderer } from './components/resourceFormColumn';
 import { resourceFormSectionRenderer } from './components/resourceFormSection';
+import { resourceFormTabsRenderer } from './components/resourceFormTabs/ResourceFormTabs';
 import { resourceSplitViewRenderer } from './components/resourceSplitView';
 import { resourceTableRenderer } from './components/resourceTable/ResourceTable';
 import { registerFieldRenderers } from './fields/register';
@@ -45,6 +46,7 @@ export const mantineViewKit: IViewKit = {
 		registry.registerComponentRenderer(resourceFormRenderer);
 		registry.registerComponentRenderer(resourceFormColumnRenderer);
 		registry.registerComponentRenderer(resourceFormSectionRenderer);
+		registry.registerComponentRenderer(resourceFormTabsRenderer);
 		registry.registerComponentRenderer(resourceCreateHeaderRenderer);
 		registry.registerComponentRenderer(resourceCreateFormRenderer);
 		registry.registerComponentRenderer(resourceCreateSectionRenderer);
