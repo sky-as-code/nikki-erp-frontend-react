@@ -1,0 +1,95 @@
+/*
+ * The pane sits in the normal flow between the controls row and the table, so it pushes the
+ * rows down instead of covering the ones it filters. Transparent by request: it reads as part
+ * of the page rather than as a floating card, so it carries no background, border or shadow.
+ *
+ * Still height-capped and internally scrolling, because a schema with many fields would
+ * otherwise grow the condition list past the viewport.
+ */
+.panel {
+	max-height: 60vh;
+	overflow-y: auto;
+	background-color: transparent;
+}
+
+/*
+ * Conditions left, sort right, per the spec's layout. Below the breakpoint the sort pane drops
+ * beneath the conditions rather than being squeezed into an unusable column (§27).
+ */
+.panelGrid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+	gap: var(--mantine-spacing-md);
+	align-items: start;
+}
+
+@media (width <= 62em) {
+	.panelGrid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/*
+ * An OR branch is indented and carries a guide line back up to the row it branches from, so the
+ * grouping reads at a glance. The `or` label is in normal flow rather than absolutely placed, so
+ * it stays visible when the row wraps on a narrow screen.
+ */
+.orBranch {
+	padding-left: var(--mantine-spacing-lg);
+	border-left: 2px solid var(--mantine-color-default-border);
+	margin-left: var(--mantine-spacing-xs);
+}
+
+.orLabel {
+	display: inline-block;
+	margin-bottom: 2px;
+	font-style: italic;
+}
+
+/*
+ * Controls wrap to their own lines instead of shrinking below a usable width (§27). `nowrap` is
+ * deliberately not used here — the spec asks for the vertical stack on narrow screens.
+ */
+.conditionRow {
+	flex-wrap: wrap;
+}
+
+/*
+ * The three condition controls are column-aligned across rows, so their widths are set here
+ * rather than left to content. These are track widths for the row, not size overrides on the
+ * controls: each control fills its track at its standard height and font size.
+ *
+ * Widened from the values the old `xs` controls used — a standard-size select needs the room for
+ * its label plus the chevron, and a field name that truncated at 200px was already tight.
+ */
+.conditionField {
+	width: 240px;
+	flex-shrink: 0;
+}
+
+.conditionOperator {
+	width: 180px;
+	flex-shrink: 0;
+}
+
+/* Fixed like the two before it, so the three line up column-wise across rows of differing
+ * content. `flex-shrink: 0` keeps that alignment when the row wraps. */
+.conditionValue {
+	width: 240px;
+	flex-shrink: 0;
+}
+
+/* Pinned to the end of the row so the buttons line up across rows of differing value widths. */
+.rowActions {
+	margin-left: auto;
+	flex-shrink: 0;
+}
+
+.sortRow {
+	align-items: center;
+}
+
+.sortField {
+	flex: 1 1 auto;
+	min-width: 0;
+}

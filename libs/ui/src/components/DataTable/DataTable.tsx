@@ -1,12 +1,10 @@
 import {
-	ActionIcon, Anchor, Box, Button, ButtonGroup, Group, Input, Menu, Modal, Radio, Select,
-	Stack, Table, Tabs, Text, TextInput, Title,
+	ActionIcon, Anchor, Box, Button, Group, Menu, Modal, Radio, Select,
+	Stack, Table, Tabs, Text, TextInput,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { commandAttrs } from '@nikkierp/viewengine/core';
 import {
-	IconChevronLeft, IconChevronRight, IconDots, IconHash, IconSettings, IconX,
-	IconTriangleFilled, IconTriangleInvertedFilled,
+	IconDots, IconHash, IconX, IconTriangleFilled, IconTriangleInvertedFilled,
 } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
@@ -17,16 +15,19 @@ import {
 } from './cellRenderers';
 import { ColumnFilterRow } from './ColumnFilterRow';
 import classes from './DataTable.module.css';
+import { DataTableContext, useDataTableContext } from './DataTableContext';
 import { FilterBox } from './FilterBox';
-import {
-	buildClauseFromInput, buildSearchGraph, getFilterInputKind, getGraphOrder, isCompleteClause,
-} from './filterModel';
+import { getFilterInputKind } from './filterModel';
+import { FilterPanel } from './FilterPanel';
+import { makeEmptyTree } from './filterTree';
+import { Pagination } from './Pagination';
 import { SettingsTable } from './SettingsTable';
 import { dataTableTestIds, rowTestIdOf } from './testIds';
+import { Toolbar } from './Toolbar';
+import { useApplyFilters, useFilterState } from './useFilterState';
 import { ThunkPackHookReturn } from '../../appState';
 import { TranslateFn, useTranslate } from '../../i18n';
 
-import type { FilterClause, FilterInputKind } from './filterModel';
 import type { DataTableTestIds, RowId } from './testIds';
 import type { FieldRendererMap, IFieldRenderer } from '@nikkierp/viewengine/core';
 
@@ -99,6 +100,14 @@ export type DataTableProps = {
 	hasFixHeader?: boolean,
 	renderTableName?: RenderTableNameFn,
 	modelSchema?: dyn.ModelSchema,
+	/**
+	 * A page-authored graph seeded into the filter panel as **editable** conditions.
+	 *
+	 * For list pages, whose `filterGraph` is a default the user may reasonably widen or drop.
+	 * Scoping that must hold — an embedded table's parent-record condition — is not passed here;
+	 * it goes to `useResourceSearch`'s `baseGraph`, outside the user's reach.
+	 */
+	initialFilterGraph?: dyn.SearchGraph,
 	orderBy?: dyn.OrderBy,
 	sortableFields?: string[],
 	translationNs?: string,
@@ -107,7 +116,7 @@ export type DataTableProps = {
 	testId?: string,
 };
 
-type RequiredDataTableProps = Omit<
+export type RequiredDataTableProps = Omit<
 	DataTableProps,
 	'actions' | 'allowColumnResizing' | 'isFullWidthTable'
 	| 'allowRowMovement' | 'showControls' | 'hasFixHeader' | 'translationNs' | 'translateFieldName'
@@ -124,32 +133,11 @@ type RequiredDataTableProps = Omit<
 	translateFieldName: (field: string) => string,
 };
 
-type DataTableContextValue = {
-	settings: RequiredDataTableProps,
-	tableSearchData: SearchData,
-	rs: ReturnType<typeof useRowSelectionState>,
-	cw: ReturnType<typeof useColumnWidthsState>,
-	isRowMode: boolean,
-	rowMove: ReturnType<typeof useRowMoveState>,
-	handlers: ReturnType<typeof useTableHandlers>,
-	containerRef: React.RefObject<HTMLDivElement | null>,
-	tableStyle: React.CSSProperties,
-	isViewSettingsOpen: boolean,
-	onOpenViewSettings: () => void,
-	onCloseViewSettings: () => void,
-	searchRequest: dyn.RestSearchRequest,
-	setSearchRequest: React.Dispatch<React.SetStateAction<dyn.RestSearchRequest>>,
-	filters: ReturnType<typeof useFilterState>,
-	/** The one path by which conditions and sort order reach the request. */
-	applyFilters: (orderBy?: dyn.OrderBy) => void,
-	tid: DataTableTestIds,
-};
-
-const DataTableContext = React.createContext<DataTableContextValue | null>(null);
 
 export function DataTable(props: DataTableProps): React.ReactNode {
 	const settings = withDataTableDefaults(props);
 	const [isViewSettingsOpen, setIsViewSettingsOpen] = React.useState(false);
+	const [isFilterPaneOpen, setIsFilterPaneOpen] = React.useState(false);
 	const [searchRequest, setSearchRequest] = React.useState<dyn.RestSearchRequest>(() =>
 		buildInitialSearchRequest(settings.data, settings.initialSearchRequest));
 	const containerRef = React.useRef<HTMLDivElement | null>(null);
@@ -177,8 +165,12 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 	});
 	const tableStyle: React.CSSProperties = { width: '100%', tableLayout: 'fixed' };
 	const tid = useDataTableTestIds(settings.testId, settings.tableName);
-	const filters = useFilterState();
-	const applyFilters = useApplyFilters(filters, searchRequest, setSearchRequest, settings.orderBy);
+	const filters = useFilterState({
+		initialFilterGraph: settings.initialFilterGraph,
+		initialGraph: settings.initialSearchRequest?.graph,
+		fallbackOrderBy: settings.orderBy,
+	});
+	const applyFilters = useApplyFilters(filters, setSearchRequest);
 
 	React.useEffect(() => {
 		setSearchRequest(prev => {
@@ -196,17 +188,17 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 		props.onSearchRequestChange?.(searchRequest);
 	}, [props.onSearchRequestChange, searchRequest]);
 
-	useAutoApplyFilters(filters, applyFilters);
-
 	const contextValue = React.useMemo(() => ({
 		settings, tableSearchData, rs, cw, isRowMode, rowMove, handlers, containerRef, tableStyle,
 		isViewSettingsOpen,
 		onOpenViewSettings: () => setIsViewSettingsOpen(true),
 		onCloseViewSettings: () => setIsViewSettingsOpen(false),
+		isFilterPaneOpen,
+		onToggleFilterPane: () => setIsFilterPaneOpen(prev => !prev),
 		searchRequest, setSearchRequest, filters, applyFilters, tid,
 	}), [
 		settings, tableSearchData, rs, cw, isRowMode, rowMove, handlers, containerRef, tableStyle,
-		isViewSettingsOpen, searchRequest, filters, applyFilters, tid,
+		isViewSettingsOpen, isFilterPaneOpen, searchRequest, filters, applyFilters, tid,
 	]);
 
 	return (
@@ -230,6 +222,12 @@ function DataTableLayout(): React.ReactNode {
 					onClearSelection={() => clearRowSelection(context.rs)}
 				/>
 			) : null}
+			{/* Between the controls and the table: expanding it pushes the rows down rather
+			    than covering the ones being filtered. */}
+			{context.settings.showControls && context.settings.enableSearchBox
+				&& context.isFilterPaneOpen
+				? <DataTableFilterPane />
+				: null}
 			<TableContainer />
 			{context.settings.showControls ? (
 				<ViewSettingsModal
@@ -241,14 +239,6 @@ function DataTableLayout(): React.ReactNode {
 			) : null}
 		</Stack>
 	);
-}
-
-function useDataTableContext(): DataTableContextValue {
-	const context = React.useContext(DataTableContext);
-	if (!context) {
-		throw new Error('DataTable context is not available');
-	}
-	return context;
 }
 
 function parseStoredPageSize(raw: string | null): AllowedPageSize | null {
@@ -305,20 +295,6 @@ function withDataTableDefaults(props: DataTableProps): RequiredDataTableProps {
 }
 
 /** Parses 1-based page shown in the UI; returns 0-based index for the API, or null if invalid. */
-function parseUserFacingPageInput(value: string, totalPages: number): number | null {
-	if (!/^\d+$/.test(value.trim())) {
-		return null;
-	}
-	const displayPage = Number(value);
-	if (!Number.isInteger(displayPage)) {
-		return null;
-	}
-	if (displayPage < 1 || displayPage > totalPages) {
-		return null;
-	}
-	return displayPage - 1;
-}
-
 type DataTableControlsProps = {
 	selectedCount: number,
 	onClearSelection: () => void,
@@ -326,11 +302,7 @@ type DataTableControlsProps = {
 
 function DataTableControls(props: DataTableControlsProps): React.ReactNode {
 	const context = useDataTableContext();
-	const { filters, applyFilters } = context;
-	// Clearing writes the empty request directly rather than calling `applyFilters`: that
-	// callback closes over the clause list as it was on this render, so calling it in the same
-	// tick as `clearAll` would re-apply the very filters being cleared.
-	const onClear = filters.clearAll;
+	const { filters } = context;
 	return (
 		<Group justify='space-between' className='px-4'>
 			<Toolbar
@@ -343,20 +315,46 @@ function DataTableControls(props: DataTableControlsProps): React.ReactNode {
 			/>
 			{context.settings.enableSearchBox ? (
 				<FilterBox
-					modelSchema={context.settings.modelSchema}
-					clauses={filters.boxClauses}
-					onClausesChange={filters.setBoxClauses}
-					includeArchived={filters.includeArchived}
-					onIncludeArchivedChange={filters.setIncludeArchived}
 					activeCount={filters.activeCount}
-					onApply={applyFilters}
-					onClear={onClear}
-					translateFieldName={context.settings.translateFieldName}
+					expanded={context.isFilterPaneOpen}
+					onToggle={context.onToggleFilterPane}
 					tid={context.tid}
 				/>
 			) : null}
 			<Pagination />
 		</Group>
+	);
+}
+
+/**
+ * The expanded filter pane, in the flow between the controls row and the table.
+ *
+ * It reads the same `filters` state the trigger's badge counts, so what the pane shows and what
+ * the button reports can never disagree.
+ */
+function DataTableFilterPane(): React.ReactNode {
+	const context = useDataTableContext();
+	const { filters, applyFilters } = context;
+	const onClear = React.useCallback(() => {
+		filters.clearAll();
+		applyFilters({ tree: makeEmptyTree(), orderBy: [] });
+	}, [filters, applyFilters]);
+	return (
+		<FilterPanel
+			modelSchema={context.settings.modelSchema}
+			tree={filters.tree}
+			onTreeChange={filters.setTree}
+			orderBy={filters.orderBy}
+			onOrderByChange={filters.setOrderBy}
+			sortableFields={context.settings.sortableFields}
+			lossy={filters.lossy}
+			includeArchived={filters.includeArchived}
+			onIncludeArchivedChange={filters.setIncludeArchived}
+			onApply={applyFilters}
+			onClear={onClear}
+			translateFieldName={context.settings.translateFieldName}
+			tid={context.tid}
+		/>
 	);
 }
 
@@ -382,155 +380,6 @@ function TableContainer(): React.ReactNode {
 			</Table>
 		</div>
 	);
-}
-
-type ToolbarProps = {
-	tableName: string,
-	total: number,
-	actions: DataTableAction[],
-	selectedCount: number,
-	onClearSelection: () => void,
-	renderTableName?: RenderTableNameFn,
-};
-
-function Toolbar(props: ToolbarProps): React.ReactNode {
-	const { tableName, total, actions, selectedCount, onClearSelection, renderTableName } = props;
-	const context = useDataTableContext();
-	const isRowMode = selectedCount > 0;
-	const selectedItems = React.useMemo(
-		() => context.rs.indexes.map(index => context.tableSearchData.items[index]).filter(Boolean),
-		[context.rs.indexes, context.tableSearchData.items],
-	);
-	const visibleSelectionActions = getVisibleRowSelectionActions(actions, selectedCount);
-	const visibleDefaultActions = getVisibleDefaultActions(actions);
-	const buttons = visibleDefaultActions.slice(0, 2).filter(a => !a.isSeparator);
-	const menuItems = normalizeMenuItems(visibleDefaultActions.slice(2));
-	const titleNode = renderTableName
-		? renderTableName({ name: tableName, total: total ?? 0 })
-		: <Title order={3} className='capitalize'>{tableName} ({total ?? 0})</Title>;
-	return (
-		<Group gap='xs' className='flex-grow-0'>
-			{titleNode}
-			{isRowMode ? (
-				<Button
-					variant='light'
-					onClick={onClearSelection}
-					rightSection={<IconX size={14} />}
-					{...context.tid.selectedCount()}
-				>
-					{selectedCount} selected
-				</Button>
-			) : null}
-			{isRowMode ? (
-				visibleSelectionActions.length > 0
-					? <ActionMenu items={visibleSelectionActions} selectedItems={selectedItems} />
-					: null
-			) : (
-				<>
-					{buttons.map((action, i) => <ActionButton key={i} action={action} selectedItems={selectedItems} />)}
-					{menuItems.length > 0 ? <ActionMenu items={menuItems} selectedItems={selectedItems} /> : null}
-				</>
-			)}
-		</Group>
-	);
-}
-
-function Pagination(): React.ReactNode {
-	const context = useDataTableContext();
-	const searchData = context.tableSearchData;
-	const totalPages = Math.max(1, Math.ceil(searchData.total / searchData.size));
-	const paginationState = usePaginationState(context, totalPages);
-
-	return (
-		<Group gap='xs' justify='flex-end' className='flex-grow-0'>
-			<span>Page</span>
-			<Input
-				value={paginationState.pageInput}
-				onChange={event => paginationState.setPageInput(event.currentTarget.value)}
-				onBlur={paginationState.commitPageChange}
-				onKeyDown={(event) => {
-					if (event.key === 'Enter') {
-						event.preventDefault();
-						paginationState.commitPageChange();
-					}
-				}}
-				size='sm' w={50} classNames={{ input: 'text-center' }}
-				type='number'
-				{...context.tid.pageInput()}
-			/>
-			<span>of {totalPages}</span>
-			<ButtonGroup>
-				<Button
-					variant='outline'
-					size='compact-md'
-					onClick={paginationState.onGoPrev}
-					disabled={searchData.page <= 0}
-					aria-label='Go to previous page'
-					{...context.tid.pagePrev()}
-				>
-					<IconChevronLeft />
-				</Button>
-				<Button
-					variant='outline'
-					size='compact-md'
-					onClick={paginationState.onGoNext}
-					disabled={searchData.page >= totalPages - 1}
-					aria-label='Go to next page'
-					{...context.tid.pageNext()}
-				>
-					<IconChevronRight />
-				</Button>
-			</ButtonGroup>
-			<Button
-				variant='outline'
-				size='compact-md'
-				onClick={context.onOpenViewSettings}
-				{...context.tid.settingsOpen()}
-			>
-				<IconSettings />
-			</Button>
-		</Group>
-	);
-}
-
-function usePaginationState(context: DataTableContextValue, totalPages: number) {
-	const searchData = context.tableSearchData;
-	const [pageInput, setPageInput] = React.useState(String(searchData.page + 1));
-
-	React.useEffect(() => {
-		setPageInput(String(searchData.page + 1));
-	}, [searchData.page]);
-
-	const updateSearchPage = React.useCallback((nextPage: number) => {
-		if (nextPage === searchData.page) {
-			return;
-		}
-		setPageInput(String(nextPage + 1));
-		context.setSearchRequest(prev => ({
-			...prev,
-			page: nextPage,
-			size: searchData.size,
-		}));
-	}, [context, searchData.page, searchData.size]);
-
-	const commitPageChange = React.useCallback(() => {
-		const nextPage = parseUserFacingPageInput(pageInput, totalPages);
-		if (nextPage === null) {
-			setPageInput(String(searchData.page + 1));
-			return;
-		}
-		updateSearchPage(nextPage);
-	}, [pageInput, searchData.page, totalPages, updateSearchPage]);
-
-	const onGoPrev = React.useCallback(() => {
-		updateSearchPage(Math.max(0, searchData.page - 1));
-	}, [searchData.page, updateSearchPage]);
-
-	const onGoNext = React.useCallback(() => {
-		updateSearchPage(Math.min(totalPages - 1, searchData.page + 1));
-	}, [searchData.page, totalPages, updateSearchPage]);
-
-	return { pageInput, setPageInput, commitPageChange, onGoPrev, onGoNext };
 }
 
 function getColWidthStorageKey(): string {
@@ -590,43 +439,6 @@ function getColumnWidth(field: string, widths: ColumnWidths): number {
 function getColumnStyle(width: number): React.CSSProperties {
 	// return { width, minWidth: width, maxWidth: width };
 	return { width, minWidth: 0, maxWidth: 'none' };
-}
-
-function shouldShowSelectionAction(action: DataTableAction, selectedCount: number): boolean {
-	if (action.isSeparator) return true;
-	if (!action.requireSelection || selectedCount === 0) {
-		return false;
-	}
-	if (!action.supportMultiple) {
-		return selectedCount === 1;
-	}
-	return true;
-}
-
-function getVisibleRowSelectionActions(actions: DataTableAction[], selectedCount: number): DataTableAction[] {
-	return normalizeMenuItems(actions.filter(action => shouldShowSelectionAction(action, selectedCount)));
-}
-
-function getVisibleDefaultActions(actions: DataTableAction[]): DataTableAction[] {
-	return normalizeMenuItems(actions.filter(action => !action.requireSelection));
-}
-
-function normalizeMenuItems(items: DataTableAction[]): DataTableAction[] {
-	const normalized: DataTableAction[] = [];
-	for (const item of items) {
-		if (item.isSeparator) {
-			if (normalized.length === 0 || normalized[normalized.length - 1].isSeparator) {
-				continue;
-			}
-			normalized.push(item);
-			continue;
-		}
-		normalized.push(item);
-	}
-	if (normalized.length > 0 && normalized[normalized.length - 1].isSeparator) {
-		normalized.pop();
-	}
-	return normalized;
 }
 
 function clearRowSelection(
@@ -755,154 +567,7 @@ function remapMovedAnchor(anchor: number | null, fromIndex: number, toIndex: num
 }
 
 
-/**
- * The filter state of the whole table: what the user typed per column, the clauses the
- * FilterBox contributes, and whether archived rows are included.
- *
- * Column and FilterBox clauses are kept apart so clearing one does not disturb the other, but
- * they are written to the request through a single function — two writers each spreading the
- * previous graph would silently drop the other's conditions and the sort order with them.
- */
-function useFilterState() {
-	const [columnText, setColumnText] = React.useState<Record<string, string>>({});
-	const [columnClauses, setColumnClauses] = React.useState<Record<string, FilterClause>>({});
-	const [boxClauses, setBoxClauses] = React.useState<FilterClause[]>([]);
-	const [includeArchived, setIncludeArchived] = React.useState(false);
-
-	const setColumnValue = React.useCallback((field: string, value: string) => {
-		setColumnText(prev => ({ ...prev, [field]: value }));
-	}, []);
-
-	const commitColumnValue = React.useCallback(
-		(field: string, value: string, kind: FilterInputKind) => {
-			const clause = buildClauseFromInput(field, value, kind);
-			setColumnClauses(prev => {
-				if (!clause) {
-					if (!(field in prev)) {
-						return prev;
-					}
-					const next = { ...prev };
-					delete next[field];
-					return next;
-				}
-				return { ...prev, [field]: clause };
-			});
-		},
-		[],
-	);
-
-	const clearAll = React.useCallback(() => {
-		setColumnText({});
-		setColumnClauses({});
-		setBoxClauses([]);
-		setIncludeArchived(false);
-	}, []);
-
-	const allClauses = React.useMemo(
-		() => [...boxClauses, ...Object.values(columnClauses)],
-		[boxClauses, columnClauses],
-	);
-
-	// Drives the "N filters applied" chip. `includeArchived` is deliberately excluded: the
-	// requirement keeps it out of the visible condition list, so counting it would report a
-	// filter the user cannot see or remove from there.
-	const activeCount = React.useMemo(
-		() => allClauses.filter(isCompleteClause).length,
-		[allClauses],
-	);
-
-	return {
-		columnText,
-		columnClauses,
-		boxClauses,
-		setBoxClauses,
-		includeArchived,
-		setIncludeArchived,
-		setColumnValue,
-		commitColumnValue,
-		clearAll,
-		allClauses,
-		activeCount,
-	};
-}
-
-/**
- * Republishes the search when a filter the user has already committed changes.
- *
- * Column filters and the archived toggle apply on the spot — the column input has already
- * debounced the typing. The FilterBox's own clause edits are deliberately not watched: those
- * wait for its Apply button, so a half-built condition never reaches the server.
- */
-function useAutoApplyFilters(
-	filters: ReturnType<typeof useFilterState>,
-	applyFilters: (orderBy?: dyn.OrderBy) => void,
-) {
-	const hasApplied = React.useRef(false);
-	// Held in a ref rather than depended on: `applyFilters` is rebuilt whenever the request
-	// changes, so listing it would re-run this effect for the very change it just made and the
-	// request would never settle.
-	const applyRef = React.useRef(applyFilters);
-	applyRef.current = applyFilters;
-	const { columnClauses, includeArchived } = filters;
-	React.useEffect(() => {
-		// Skipped on mount, so an unfiltered table does not publish a second, identical search
-		// before the user has touched anything.
-		if (!hasApplied.current) {
-			hasApplied.current = true;
-			return;
-		}
-		applyRef.current();
-	}, [columnClauses, includeArchived]);
-}
-
-/**
- * Writes the current filter state into the search request — the only place that touches
- * `graph` or `include_archived`.
- *
- * Sort order is folded in here too rather than kept as a separate writer: both live on the
- * same `graph` object, so a second writer spreading the previous graph would drop whichever
- * change had not yet been committed to state.
- *
- * `include_archived` is a request flag, never a graph condition. A positive `is_archived`
- * condition would return *only* archived rows, which is a different query and a silently wrong
- * answer; the backend's `SearchQuery.IncludeArchived` is what widens the result set instead.
- * It is omitted entirely when false so the request stays equal-by-value to an unfiltered one
- * and `isSameSearchRequest` upstream does not see a spurious change.
- */
-function useApplyFilters(
-	filters: ReturnType<typeof useFilterState>,
-	searchRequest: dyn.RestSearchRequest,
-	setSearchRequest: React.Dispatch<React.SetStateAction<dyn.RestSearchRequest>>,
-	fallbackOrderBy: dyn.OrderBy | undefined,
-) {
-	const { allClauses, includeArchived } = filters;
-	const currentOrderBy = React.useMemo(() => {
-		const fromRequest = getGraphOrder(searchRequest.graph);
-		return fromRequest.length > 0 ? fromRequest : (fallbackOrderBy ?? []);
-	}, [searchRequest.graph, fallbackOrderBy]);
-
-	return React.useCallback((orderBy?: dyn.OrderBy) => {
-		const effectiveOrderBy = orderBy ?? currentOrderBy;
-		setSearchRequest(prev => {
-			const next: dyn.RestSearchRequest = {
-				...prev,
-				// A changed filter invalidates the current page: page 5 of the old result set is
-				// rarely page 5 of the new one, and is often past its end.
-				page: 0,
-				graph: buildSearchGraph(allClauses, effectiveOrderBy),
-			};
-			if (includeArchived) {
-				next.include_archived = true;
-			}
-			else {
-				delete next.include_archived;
-			}
-			return next;
-		});
-	}, [allClauses, includeArchived, currentOrderBy, setSearchRequest]);
-}
-
-function useColumnWidthsState(fields: string[]) {
+export function useColumnWidthsState(fields: string[]) {
 	const [widths, setWidths] = React.useState<ColumnWidths>({});
 	const [resizing, setResizing] = React.useState<ResizeState | null>(null);
 
@@ -936,7 +601,7 @@ function useColumnWidthsState(fields: string[]) {
 	return { widths, setWidths, resizing, setResizing };
 }
 
-function useRowSelectionState(rowCount: number) {
+export function useRowSelectionState(rowCount: number) {
 	const [rows, setRows] = React.useState<RowSelection>({});
 	const [anchor, setAnchor] = React.useState<number | null>(null);
 	const [drag, setDrag] = React.useState<RowDragState>({ isActive: false, targetSelected: false });
@@ -963,7 +628,7 @@ function useRowSelectionState(rowCount: number) {
 	return { rows, setRows, anchor, setAnchor, drag, setDrag, indexes };
 }
 
-function useRowMoveState(
+export function useRowMoveState(
 	inputItems: SearchItem[],
 	enabled: boolean,
 	onRowMoved?: (payload: RowMovePayload) => void,
@@ -1193,9 +858,14 @@ function DataTableHead(): React.ReactNode {
 	const widths = context.cw.widths;
 	const modelSchema = context.settings.modelSchema;
 	const commitColumnValue = context.filters.commitColumnValue;
+	const applyColumnFilters = context.applyFilters;
+	// Committing a cell is already an explicit act — Enter, or picking from a select — so it
+	// applies at once rather than waiting for the panel's Apply. The condition it wrote is
+	// visible in the panel either way.
 	const onCommitColumnFilter = React.useCallback((field: string, value: string) => {
-		commitColumnValue(field, value, getFilterInputKind(modelSchema?.fields?.[field]));
-	}, [commitColumnValue, modelSchema]);
+		const next = commitColumnValue(field, value, getFilterInputKind(modelSchema?.fields?.[field]));
+		applyColumnFilters({ tree: next });
+	}, [commitColumnValue, modelSchema, applyColumnFilters]);
 
 	// A column is sortable only if the server can order by it: the caller's explicit list when
 	// given, otherwise every visible field that owns a database column.
@@ -1209,13 +879,16 @@ function DataTableHead(): React.ReactNode {
 		));
 	}, [context.settings.sortableFields, fields, modelSchema]);
 
+	// A header click replaces the whole order and applies at once. It writes the same state the
+	// sort pane edits, so reopening the panel shows the sort the user just chose.
 	const applyFilters = context.applyFilters;
+	const setSortSingle = context.filters.setSortSingle;
 	const onSort = React.useCallback((field: string, direction: dyn.SearchOrder) => {
-		applyFilters([[field, direction]]);
-	}, [applyFilters]);
-	const orderBy = getGraphOrder(context.searchRequest.graph).length > 0
-		? getGraphOrder(context.searchRequest.graph)
-		: (context.settings.orderBy ?? []);
+		const next: dyn.OrderBy = [[field, direction]];
+		setSortSingle(field, direction);
+		applyFilters({ orderBy: next });
+	}, [setSortSingle, applyFilters]);
+	const orderBy = context.filters.orderBy;
 	const sortOrderMap = React.useMemo(
 		() => new Map(orderBy.map(([field, direction]) => [field, direction])),
 		[orderBy],
@@ -1754,74 +1427,6 @@ function getSelectableSchemaFieldNames(schema: dyn.ModelSchema): string[] {
 }
 
 
-type ActionTriggerProps = {
-	action: DataTableAction,
-	selectedItems: Record<string, unknown>[],
-};
-
-function ActionButton({ action, selectedItems }: ActionTriggerProps): React.ReactNode {
-	const { tid } = useDataTableContext();
-	if (action.href) {
-		return (
-			<Button
-				component={Link}
-				to={action.href}
-				relative='path'
-				variant='outline'
-				size='compact-md'
-				leftSection={action.icon}
-				{...commandAttrs(action.command)}
-				{...tid.action(action)}
-			>
-				{action.label}
-			</Button>
-		);
-	}
-	return (
-		<Button
-			variant='outline'
-			size='compact-md'
-			leftSection={action.icon}
-			onClick={() => action.onTrigger?.(selectedItems)}
-			{...commandAttrs(action.command)}
-			{...tid.action(action)}
-		>
-			{action.label}
-		</Button>
-	);
-}
-
-function ActionMenu(
-	{ items, selectedItems }: { items: DataTableAction[], selectedItems: Record<string, unknown>[] },
-): React.ReactNode {
-	const { tid } = useDataTableContext();
-	return (
-		<Menu shadow='md' position='bottom-end'>
-			<Menu.Target>
-				<Button variant='outline' size='compact-md' aria-label='More actions' {...tid.actionMenu()}>
-					<IconDots size={16} />
-				</Button>
-			</Menu.Target>
-			<Menu.Dropdown>
-				{items.map((item, i) => (item.isSeparator
-					? <Menu.Divider key={i} />
-					: (
-						<Menu.Item
-							key={i}
-							leftSection={item.icon}
-							onClick={() => item.onTrigger?.(selectedItems)}
-							{...commandAttrs(item.command)}
-							{...tid.action(item)}
-						>
-							{item.label}
-						</Menu.Item>
-					)
-				))}
-			</Menu.Dropdown>
-		</Menu>
-	);
-}
-
 type TableHandlersArgs = {
 	searchData: SearchData,
 	cw: ReturnType<typeof useColumnWidthsState>,
@@ -1829,7 +1434,7 @@ type TableHandlersArgs = {
 	containerRef: React.RefObject<HTMLDivElement | null>,
 };
 
-function useTableHandlers(args: TableHandlersArgs) {
+export function useTableHandlers(args: TableHandlersArgs) {
 	const onStartResize = useResizeHandler(args.cw);
 	const onAutoResize = useAutoResizeHandler(args.searchData, args.cw, args.containerRef);
 	const onToggleAll = useToggleAllHandler(args.searchData, args.rs);

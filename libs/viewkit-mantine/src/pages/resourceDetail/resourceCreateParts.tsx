@@ -1,5 +1,6 @@
-import { ActionIcon, Anchor, Button, Group, Stack, Title } from '@mantine/core';
+import { ActionIcon, Anchor, Group, Stack, Title } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
+import { Button } from '@nikkierp/ui/components';
 import { AutoField } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
@@ -86,7 +87,6 @@ export function ResourceCreateActionBar({
 			</ActionIcon>
 			<Button
 				variant='filled'
-				size='compact-md'
 				leftSection={<IconDeviceFloppy size={16} />}
 				onClick={onSaveClick}
 				disabled={isLoading}

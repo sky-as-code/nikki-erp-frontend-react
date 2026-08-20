@@ -88,6 +88,10 @@ function ColumnFilterCell(props: ColumnFilterCellProps): React.ReactNode {
 				onCommit={onValueCommit}
 				placeholder={isTextLike(getFilterInputKind(fieldSchema)) ? props.placeholder : undefined}
 				translateEnumValue={translate}
+				// Free text applies only on Enter — the spec's Data Table uplift. A select has no
+				// half-typed state, so it still commits on change.
+				commitOn='enter'
+				clearOnEscape
 				testAttrs={props.tid.columnFilter(field)}
 			/>
 		</Table.Th>

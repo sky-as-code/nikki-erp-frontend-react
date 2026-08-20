@@ -26,7 +26,7 @@ export const LangSwitchModal = forwardRef<LangSwitchModalRef>((props, ref) => {
 			<Modal.Content radius={'md'}>
 				<Modal.Header>
 					<Modal.Title className='flex justify-between items-center' w={'100%'}>
-						<Text w={'100%'} size='xl' fw={700} ta='center'>{translate('nikki.shell.profileMenu.language')}</Text>
+						<Text w={'100%'} size='xl' fw={700} ta='center'>{translate('profile.language')}</Text>
 						<Modal.CloseButton />
 					</Modal.Title>
 				</Modal.Header>

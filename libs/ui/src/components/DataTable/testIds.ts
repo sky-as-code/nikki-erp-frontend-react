@@ -46,6 +46,10 @@ export function dataTableTestIds(testId: string | undefined, tableName: string) 
 		filterConditionRemove: (index: number) => attrs('filter', 'condition', index, 'remove'),
 		filterConditionJoin: (index: number, join: 'and' | 'or') =>
 			attrs('filter', 'condition', index, join),
+		filterConditionError: (index: number) => attrs('filter', 'condition', index, 'error'),
+		filterSortField: (index: number) => attrs('filter', 'sort', index, 'field'),
+		filterSortDirection: (index: number, direction: 'asc' | 'desc') =>
+			attrs('filter', 'sort', index, direction),
 		filterIncludeArchived: () => attrs('filter', 'includeArchived'),
 		filterApply: () => attrs('filter', 'apply'),
 		filterClear: () => attrs('filter', 'clear'),

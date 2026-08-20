@@ -1,6 +1,7 @@
-import { Select, TextInput } from '@mantine/core';
 import React from 'react';
 
+import { Input } from '../Input';
+import { Select } from '../Select';
 import { getEnumOptions, getFilterInputKind, isNoValueOperator } from './filterModel';
 import { useTranslate } from '../../i18n';
 
@@ -8,9 +9,6 @@ import type { FilterInputKind } from './filterModel';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { TestIdAttributes } from '@nikkierp/common/utils';
 
-
-/** How long typing pauses before a text value is committed and a search fires. */
-export const filterInputDebounceMs = 400;
 
 export type FilterValueInputProps = {
 	kind: FilterInputKind,
@@ -25,8 +23,24 @@ export type FilterValueInputProps = {
 	placeholder?: string,
 	/** Translates an enum value to its label. Falls back to the raw value. */
 	translateEnumValue?: (value: string) => string,
-	size?: 'xs' | 'sm',
-	variant?: 'default' | 'unstyled',
+	/**
+	 * When a free-text value is committed.
+	 *
+	 * Defaults to `enter`: a commit is the caller's signal to *act* on the value — publish a
+	 * search — and no caller should start doing that per character by accident. `change` is the
+	 * opt-in for a consumer that genuinely wants a commit on every keystroke.
+	 */
+	commitOn?: 'change' | 'enter',
+	/**
+	 * Whether Escape clears the box.
+	 *
+	 * On the column filter row it is the fastest way to drop one column's filter and re-search.
+	 * In the condition panel the same key would silently destroy a value the user is still
+	 * editing — nothing there has been sent yet, so there is nothing to undo — so it is opt-in.
+	 */
+	clearOnEscape?: boolean,
+	disabled?: boolean,
+	error?: boolean,
 	testAttrs?: TestIdAttributes,
 };
 
@@ -68,6 +82,29 @@ export function SchemaFilterValueInput(
 	return <FilterValueInput {...rest} kind={kind} enumOptions={enumOptions} />;
 }
 
+/**
+ * Whether a plain keystroke — not Enter — should commit the value.
+ *
+ * A commit is the caller's cue to publish a search, so this answers "does typing re-query?".
+ * It must be false for the filter panel: there, typing only edits the condition tree and the
+ * search waits for Enter or the Apply button. Only a consumer that explicitly asks for
+ * `commitOn='change'` gets a commit per character.
+ */
+export function commitsOnKeystroke(commitOn: 'change' | 'enter' | undefined): boolean {
+	return (commitOn ?? 'enter') === 'change';
+}
+
+/**
+ * Whether this kind renders a free-text box rather than a select.
+ *
+ * Callers use it to tell a keystroke-driven commit (Enter, which the user chose) from a
+ * select's change (which fires on the click itself). Kept next to the routing in
+ * `FilterValueInput` so the two cannot disagree about which kinds get a `TextInput`.
+ */
+export function isKeyboardCommitKind(kind: FilterInputKind): boolean {
+	return kind !== 'boolean' && kind !== 'enum';
+}
+
 /** Whether an operator's value input should be hidden entirely. */
 export function shouldHideValueInput(operator: dyn.SearchOperator): boolean {
 	return isNoValueOperator(operator);
@@ -75,58 +112,41 @@ export function shouldHideValueInput(operator: dyn.SearchOperator): boolean {
 
 function TextFilterInput(props: FilterValueInputProps): React.ReactNode {
 	const { value, onChange, onCommit } = props;
-	const commitRef = React.useRef(onCommit);
-	commitRef.current = onCommit;
-	const committedRef = React.useRef(value);
-
-	// Debounced so a search is not published on every keystroke. The timer is keyed to the
-	// latest value via the effect's dependency, so each edit restarts the wait rather than
-	// letting an earlier keystroke's timer commit a stale string.
-	//
-	// The guard is what keeps this from firing on mount: the effect runs once with the initial
-	// value, and committing that would publish a search for a filter the user never typed —
-	// on every table render that mounts a row of these.
-	React.useEffect(() => {
-		if (value === committedRef.current) {
-			return;
-		}
-		const timer = setTimeout(() => {
-			committedRef.current = value;
-			commitRef.current(value);
-		}, filterInputDebounceMs);
-		return () => clearTimeout(timer);
-	}, [value]);
-
-	// Both paths record what they committed, so the debounce guard above stays in step: a value
-	// applied by Enter must not be re-applied by a later timer, and clearing with Escape must
-	// still allow retyping the same text afterwards.
-	const commitNow = (next: string) => {
-		committedRef.current = next;
-		onCommit(next);
-	};
+	// No debounce: `change` mode commits with the keystroke and the caller decides what that
+	// costs, while `enter` mode waits for an explicit key. A timer in between used to fire a
+	// search 400ms into a half-typed `>= 100`.
+	const commitPerKeystroke = commitsOnKeystroke(props.commitOn);
 
 	const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
 		if (event.key === 'Enter') {
-			// Enter is an explicit "apply now", so it must not wait out the debounce.
 			event.preventDefault();
-			commitNow(value);
+			// The element's own value, not `value`: in `change` mode the prop for this keystroke
+			// may not have been re-rendered yet, and committing the stale one applies the filter
+			// the user had a character ago.
+			onCommit(event.currentTarget.value);
 			return;
 		}
-		if (event.key === 'Escape') {
+		if (event.key === 'Escape' && props.clearOnEscape) {
 			event.preventDefault();
 			onChange('');
-			commitNow('');
+			onCommit('');
 		}
 	};
 
 	return (
-		<TextInput
+		<Input
 			value={value}
-			onChange={event => onChange(event.currentTarget.value)}
+			onChange={event => {
+				const next = event.currentTarget.value;
+				onChange(next);
+				if (commitPerKeystroke) {
+					onCommit(next);
+				}
+			}}
 			onKeyDown={onKeyDown}
 			placeholder={props.placeholder}
-			size={props.size ?? 'xs'}
-			variant={props.variant ?? 'unstyled'}
+			disabled={props.disabled}
+			error={props.error}
 			className='w-full'
 			{...props.testAttrs}
 		/>
@@ -176,14 +196,12 @@ function ChoiceFilterInput(props: ChoiceFilterInputProps): React.ReactNode {
 				onCommit(resolved);
 			}}
 			placeholder={props.placeholder}
-			size={props.size ?? 'xs'}
-			variant={props.variant ?? 'unstyled'}
+			disabled={props.disabled}
+			error={props.error}
 			allowDeselect={false}
-			comboboxProps={selectComboboxProps}
 			className='w-full'
 			{...props.testAttrs}
 		/>
 	);
 }
 
-const selectComboboxProps = { withinPortal: true, position: 'bottom-start' as const };

@@ -69,6 +69,18 @@ td.selectedCell {
 	vertical-align: middle;
 }
 
+/*
+ * White inputs, per the spec's Data Table uplift.
+ *
+ * The override is needed because the shell paints every `th` grey in light mode
+ * (`nikkierp/modules/shell/src/styles/index.css`), and this row lives inside `thead`, so its
+ * boxed inputs would inherit that grey and read as disabled. Scoped to the cell so the header
+ * row above keeps its own background.
+ */
+.columnFilterCell :global(.mantine-Input-input) {
+	background-color: var(--mantine-color-body);
+}
+
 .headerMenuButton {
 	opacity: 0;
 	transition: opacity 150ms ease;

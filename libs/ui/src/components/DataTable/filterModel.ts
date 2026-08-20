@@ -21,14 +21,13 @@ export type FilterInputKind =
 	| 'unsupported';
 
 /**
- * One condition, in the form the UI edits it.
+ * A parsed cell entry, on its way into the condition tree.
  *
- * Deliberately not a {@link dyn.SearchCondition}: that is a positional tuple built for the
- * wire, while this carries the `key` a React list needs and keeps `values` separate so an
- * operator change does not have to re-parse the tuple.
+ * The intermediate form {@link buildClauseFromInput} produces: raw column text has been split
+ * into an operator and values, but has not yet been placed in the expression. The tree's
+ * `FilterConditionNode` is the edited form; this one is transient and carries no identity.
  */
 export type FilterClause = {
-	/** Stable across edits, so a row's identity does not depend on its index. */
 	key: string,
 	field: string,
 	operator: dyn.SearchOperator,
@@ -272,65 +271,6 @@ export function buildClauseFromInput(
 	return { key: field, field, operator: parsed.operator, values: parsed.values };
 }
 
-/** Whether a clause is complete enough to send. */
-export function isCompleteClause(clause: FilterClause): boolean {
-	if (!clause.field) {
-		return false;
-	}
-	if (NO_VALUE_OPERATORS.has(clause.operator)) {
-		return true;
-	}
-	return clause.values.length > 0 && clause.values.every(value => value !== '' && value != null);
-}
-
-/** One clause as the positional tuple the backend expects. */
-export function clauseToCondition(clause: FilterClause): dyn.SearchCondition {
-	return [clause.field, clause.operator, ...clause.values] as dyn.SearchCondition;
-}
-
-/**
- * Folds clauses and sort order into a single search graph.
- *
- * The one writer of `graph`. Order and conditions live in the same object, so two callers each
- * spreading the previous graph would drop the other's work; routing every change through here
- * is what stops the column filter row and the FilterBox from clobbering each other.
- *
- * Returns undefined when nothing is left to say, matching how an absent graph is encoded.
- */
-export function buildSearchGraph(
-	clauses: FilterClause[], orderBy: dyn.OrderBy,
-): dyn.SearchGraph | undefined {
-	const nodes = clauses.filter(isCompleteClause).map(clause => ({ if: clauseToCondition(clause) }));
-	const graph: dyn.SearchGraph = {};
-	if (nodes.length === 1) {
-		// A lone condition is expressed directly; `and` of one is the same query with more
-		// nesting, and the flatter form is what the backend's own examples use.
-		graph.if = nodes[0].if;
-	}
-	else if (nodes.length > 1) {
-		graph.and = nodes;
-	}
-	if (orderBy.length > 0) {
-		graph.order = orderBy;
-	}
-	return graph.if || graph.and || graph.order ? graph : undefined;
-}
-
-/** Reads the sort order off a graph, ignoring malformed entries. */
-export function getGraphOrder(graph: dyn.SearchGraph | undefined): dyn.OrderBy {
-	const rawOrder = graph?.order;
-	if (!Array.isArray(rawOrder)) {
-		return [];
-	}
-	return rawOrder.filter(
-		(item): item is [string, dyn.SearchOrder] =>
-			Array.isArray(item)
-			&& item.length === 2
-			&& typeof item[0] === 'string'
-			&& (item[1] === 'asc' || item[1] === 'desc'),
-	);
-}
-
 function matchSymbolOperator(
 	input: string,
 ): { operator: dyn.SearchOperator, rest: string } | null {
@@ -394,4 +334,35 @@ function getDataTypeName(
 		return field.data_type;
 	}
 	return field.data_type?.name ?? null;
+}
+
+/**
+ * Maps an operator to the trailing segment of its translation key.
+ *
+ * The operators are punctuation, which cannot appear in a dotted i18n key, so each gets a
+ * spelled-out name. Kept exhaustive so a new backend operator surfaces as a missing key rather
+ * than rendering as a symbol the user cannot interpret.
+ */
+export function operatorLabelKey(operator: dyn.SearchOperator): string {
+	const names: Record<string, string> = {
+		'=': 'equals',
+		'!=': 'notEquals',
+		'>': 'greaterThan',
+		'>=': 'greaterOrEqual',
+		'<': 'lessThan',
+		'<=': 'lessOrEqual',
+		'*': 'contains',
+		'!*': 'notContains',
+		'^': 'startsWith',
+		'!^': 'notStartsWith',
+		'$': 'endsWith',
+		'!$': 'notEndsWith',
+		'in': 'in',
+		'not_in': 'notIn',
+		'is_set': 'isSet',
+		'not_set': 'notSet',
+		'linked': 'linked',
+		'not_linked': 'notLinked',
+	};
+	return names[operator] ?? operator;
 }

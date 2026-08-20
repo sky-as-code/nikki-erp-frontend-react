@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	buildClauseFromInput, buildSearchGraph, getDefaultOperator, getEnumOptions,
-	getFilterInputKind, getFilterableFieldNames, getGraphOrder, getOperatorsForKind,
-	isCompleteClause, isFilterableField, isTextLikeKind, parseFilterExpression,
+	buildClauseFromInput, getDefaultOperator, getEnumOptions, getFilterInputKind,
+	getFilterableFieldNames, getOperatorsForKind, isFilterableField, isTextLikeKind,
+	parseFilterExpression,
 } from './filterModel';
 
-import type { FilterClause } from './filterModel';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 
@@ -263,85 +262,5 @@ describe('buildClauseFromInput', () => {
 
 	it('returns null when the cell is cleared', () => {
 		expect(buildClauseFromInput('name', '  ', 'text')).toBeNull();
-	});
-});
-
-describe('isCompleteClause', () => {
-	const base: FilterClause = { key: 'k', field: 'name', operator: '*', values: ['x'] };
-
-	it('accepts a valued clause and a presence clause', () => {
-		expect(isCompleteClause(base)).toBe(true);
-		expect(isCompleteClause({ ...base, operator: 'is_set', values: [] })).toBe(true);
-	});
-
-	it('rejects a clause with no field or no value', () => {
-		expect(isCompleteClause({ ...base, field: '' })).toBe(false);
-		expect(isCompleteClause({ ...base, values: [] })).toBe(false);
-		expect(isCompleteClause({ ...base, values: [''] })).toBe(false);
-		expect(isCompleteClause({ ...base, values: [null] })).toBe(false);
-	});
-
-	it('accepts false as a value', () => {
-		// `false` is a legitimate boolean filter, not an empty one.
-		expect(isCompleteClause({ ...base, field: 'flag', operator: '=', values: [false] })).toBe(true);
-	});
-});
-
-describe('buildSearchGraph', () => {
-	const nameClause: FilterClause = { key: 'name', field: 'name', operator: '*', values: ['cola'] };
-	const qtyClause: FilterClause = { key: 'qty', field: 'qty', operator: '>=', values: [5] };
-	const order: dyn.OrderBy = [['name', 'asc']];
-
-	it('expresses a single condition directly rather than as an and-of-one', () => {
-		expect(buildSearchGraph([nameClause], [])).toEqual({ if: ['name', '*', 'cola'] });
-	});
-
-	it('joins several conditions with and', () => {
-		expect(buildSearchGraph([nameClause, qtyClause], [])).toEqual({
-			and: [{ if: ['name', '*', 'cola'] }, { if: ['qty', '>=', 5] }],
-		});
-	});
-
-	it('carries the sort order alongside the conditions', () => {
-		expect(buildSearchGraph([nameClause], order)).toEqual({
-			if: ['name', '*', 'cola'],
-			order: [['name', 'asc']],
-		});
-	});
-
-	it('returns a sort-only graph when there are no conditions', () => {
-		expect(buildSearchGraph([], order)).toEqual({ order: [['name', 'asc']] });
-	});
-
-	it('returns undefined when there is nothing to say', () => {
-		expect(buildSearchGraph([], [])).toBeUndefined();
-	});
-
-	it('drops incomplete clauses instead of sending them', () => {
-		const halfTyped: FilterClause = { key: 'x', field: 'x', operator: '=', values: [] };
-		expect(buildSearchGraph([nameClause, halfTyped], [])).toEqual({ if: ['name', '*', 'cola'] });
-		expect(buildSearchGraph([halfTyped], [])).toBeUndefined();
-	});
-
-	it('spreads multi-value operators into the condition tuple', () => {
-		const inClause: FilterClause = { key: 's', field: 'status', operator: 'in', values: ['a', 'b'] };
-		expect(buildSearchGraph([inClause], [])).toEqual({ if: ['status', 'in', 'a', 'b'] });
-	});
-
-	it('emits a presence condition with no value', () => {
-		const setClause: FilterClause = { key: 'n', field: 'note', operator: 'is_set', values: [] };
-		expect(buildSearchGraph([setClause], [])).toEqual({ if: ['note', 'is_set'] });
-	});
-});
-
-describe('getGraphOrder', () => {
-	it('reads a well-formed order', () => {
-		expect(getGraphOrder({ order: [['name', 'asc']] })).toEqual([['name', 'asc']]);
-	});
-
-	it('ignores malformed entries and a missing graph', () => {
-		expect(getGraphOrder(undefined)).toEqual([]);
-		expect(getGraphOrder({})).toEqual([]);
-		expect(getGraphOrder({ order: [['name', 'sideways']] as unknown as dyn.OrderBy })).toEqual([]);
 	});
 });

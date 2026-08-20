@@ -44,7 +44,7 @@ function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactN
 		schemaName: params.schemaName,
 		searchCommand: params.searchCommand,
 		initialRequest,
-		graphOverride: graph.value,
+		baseGraph: graph.value,
 	});
 	const buildLinkHref = useResourceLinkHref(params.linkField, params.linkRoutePath);
 	// No `routePath` of its own: an embedded table is identified by the schema it lists, which is

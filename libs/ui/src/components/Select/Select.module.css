@@ -1,0 +1,14 @@
+/**
+ * Pins the control one size step shorter than `size='sm'` alone would make it, matching `Input`.
+ *
+ * This has to be a stylesheet rule rather than a `style`/`styles`/`wrapperProps` prop. Mantine
+ * derives `--input-height` from the `size` prop and writes it as an inline style on the wrapper
+ * itself, after any style we pass through — inline versus inline, its declaration always wins.
+ * An `!important` rule outranks a plain inline declaration, so this is the one place the override
+ * sticks. It must land on the wrapper because Mantine sizes the input with
+ * `height: var(--input-size)`, and `--input-size: var(--input-height)` resolves on the wrapper;
+ * by the time the value reaches the input it is already a fixed length.
+ */
+.wrapper {
+	--input-height: var(--input-height-xs) !important;
+}
