@@ -56,3 +56,10 @@
 .splitterHidden .handle {
 	opacity: 0;
 }
+
+.closePrimary {
+	position: absolute;
+	top: 8px;
+	right: 12px;
+	z-index: 2;
+}

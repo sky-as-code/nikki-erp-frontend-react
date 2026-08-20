@@ -1,10 +1,12 @@
+import { ActionIcon } from '@mantine/core';
+import { IconX } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 
 import classes from './SplitLayout.module.css';
 
 
-const DEFAULT_RATIO = 0.3;
+const DEFAULT_RATIO = 0.20;
 const DEFAULT_MIN_RATIO = 0.15;
 const DEFAULT_MAX_RATIO = 0.85;
 
@@ -25,6 +27,13 @@ export type SplitLayoutProps = {
 	defaultRatio?: number,
 	minRatio?: number,
 	maxRatio?: number,
+	/**
+	 * Closes the primary pane, leaving the secondary one fullscreen. When omitted the primary
+	 * pane offers no close affordance — a layout with nothing to fall back to must not
+	 * render a button that would empty the view.
+	 */
+	onClosePrimary?: () => void,
+	closePrimaryLabel?: string,
 };
 
 
@@ -57,6 +66,11 @@ export function SplitLayout(props: SplitLayoutProps): React.ReactNode {
 			{primaryNode ? (
 				<>
 					<div className={classes.pane} style={{ width: primaryWidth, transition: paneTransition }}>
+						<PrimaryCloseButton
+							visible={openState.isOpen}
+							label={props.closePrimaryLabel}
+							onClose={props.onClosePrimary}
+						/>
 						{primaryNode}
 					</div>
 					<SplitterBar
@@ -70,6 +84,36 @@ export function SplitLayout(props: SplitLayoutProps): React.ReactNode {
 				</>
 			) : secondaryNode}
 		</div>
+	);
+}
+
+
+type PrimaryCloseButtonProps = {
+	visible: boolean,
+	label?: string,
+	onClose?: () => void,
+};
+
+/**
+ * Dismisses the primary pane from within it. Absent in single-pane mode, where closing the only
+ * visible pane would leave nothing behind, and absent when the layout supplies no handler.
+ */
+function PrimaryCloseButton({ visible, label, onClose }: PrimaryCloseButtonProps): React.ReactNode {
+	if (!visible || !onClose) {
+		return null;
+	}
+	return (
+		<ActionIcon
+			variant='subtle'
+			size='md'
+			className={classes.closePrimary}
+			aria-label={label}
+			title={label}
+			onClick={onClose}
+			data-testid='splitLayout.closePrimary'
+		>
+			<IconX size={16} />
+		</ActionIcon>
 	);
 }
 

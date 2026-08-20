@@ -20,6 +20,9 @@ export function isSameSearchRequest(prev: dyn.RestSearchRequest, next: dyn.RestS
 		&& prev.search_name === next.search_name
 		&& prev.language === next.language
 		&& prev.graph === next.graph
+		// Absent and false mean the same thing to the server, so they must compare equal here
+		// too — otherwise clearing the toggle would look like a change and republish.
+		&& (prev.include_archived ?? false) === (next.include_archived ?? false)
 		&& shallowEqualStringArray(prev.fields, next.fields);
 }
 

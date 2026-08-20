@@ -1,12 +1,12 @@
 import {
-	Anchor, Box, Button, ButtonGroup, Group, Input, Menu, Modal, Radio, Select,
+	ActionIcon, Anchor, Box, Button, ButtonGroup, Group, Input, Menu, Modal, Radio, Select,
 	Stack, Table, Tabs, Text, TextInput, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import {
 	IconChevronLeft, IconChevronRight, IconDots, IconHash, IconSettings, IconX,
-	IconSortAscending, IconSortDescending,
+	IconTriangleFilled, IconTriangleInvertedFilled,
 } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
@@ -15,13 +15,18 @@ import { Link, useResolvedPath } from 'react-router-dom';
 import {
 	applyCustomRenderer, renderDefaultByDataType, TranslatedFieldRenderer,
 } from './cellRenderers';
+import { ColumnFilterRow } from './ColumnFilterRow';
 import classes from './DataTable.module.css';
-import { SearchBox } from './SearchBox';
+import { FilterBox } from './FilterBox';
+import {
+	buildClauseFromInput, buildSearchGraph, getFilterInputKind, getGraphOrder, isCompleteClause,
+} from './filterModel';
 import { SettingsTable } from './SettingsTable';
 import { dataTableTestIds, rowTestIdOf } from './testIds';
 import { ThunkPackHookReturn } from '../../appState';
 import { TranslateFn, useTranslate } from '../../i18n';
 
+import type { FilterClause, FilterInputKind } from './filterModel';
 import type { DataTableTestIds, RowId } from './testIds';
 import type { FieldRendererMap, IFieldRenderer } from '@nikkierp/viewengine/core';
 
@@ -89,6 +94,8 @@ export type DataTableProps = {
 	onRowMoved?: (payload: RowMovePayload) => void,
 	showControls?: boolean,
 	enableSearchBox?: boolean,
+	/** Renders the per-column filter row beneath the header. Needs `modelSchema` to infer inputs. */
+	enableColumnFilters?: boolean,
 	hasFixHeader?: boolean,
 	renderTableName?: RenderTableNameFn,
 	modelSchema?: dyn.ModelSchema,
@@ -111,6 +118,7 @@ type RequiredDataTableProps = Omit<
 	allowRowMovement: boolean,
 	showControls: boolean,
 	enableSearchBox: boolean,
+	enableColumnFilters: boolean,
 	hasFixHeader: boolean,
 	translationNs: string,
 	translateFieldName: (field: string) => string,
@@ -131,6 +139,9 @@ type DataTableContextValue = {
 	onCloseViewSettings: () => void,
 	searchRequest: dyn.RestSearchRequest,
 	setSearchRequest: React.Dispatch<React.SetStateAction<dyn.RestSearchRequest>>,
+	filters: ReturnType<typeof useFilterState>,
+	/** The one path by which conditions and sort order reach the request. */
+	applyFilters: (orderBy?: dyn.OrderBy) => void,
 	tid: DataTableTestIds,
 };
 
@@ -166,6 +177,8 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 	});
 	const tableStyle: React.CSSProperties = { width: '100%', tableLayout: 'fixed' };
 	const tid = useDataTableTestIds(settings.testId, settings.tableName);
+	const filters = useFilterState();
+	const applyFilters = useApplyFilters(filters, searchRequest, setSearchRequest, settings.orderBy);
 
 	React.useEffect(() => {
 		setSearchRequest(prev => {
@@ -183,35 +196,17 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 		props.onSearchRequestChange?.(searchRequest);
 	}, [props.onSearchRequestChange, searchRequest]);
 
+	useAutoApplyFilters(filters, applyFilters);
+
 	const contextValue = React.useMemo(() => ({
-		settings,
-		tableSearchData,
-		rs,
-		cw,
-		isRowMode,
-		rowMove,
-		handlers,
-		containerRef,
-		tableStyle,
+		settings, tableSearchData, rs, cw, isRowMode, rowMove, handlers, containerRef, tableStyle,
 		isViewSettingsOpen,
 		onOpenViewSettings: () => setIsViewSettingsOpen(true),
 		onCloseViewSettings: () => setIsViewSettingsOpen(false),
-		searchRequest,
-		setSearchRequest,
-		tid,
+		searchRequest, setSearchRequest, filters, applyFilters, tid,
 	}), [
-		settings,
-		tableSearchData,
-		rs,
-		cw,
-		isRowMode,
-		rowMove,
-		handlers,
-		containerRef,
-		tableStyle,
-		isViewSettingsOpen,
-		searchRequest,
-		tid,
+		settings, tableSearchData, rs, cw, isRowMode, rowMove, handlers, containerRef, tableStyle,
+		isViewSettingsOpen, searchRequest, filters, applyFilters, tid,
 	]);
 
 	return (
@@ -300,6 +295,9 @@ function withDataTableDefaults(props: DataTableProps): RequiredDataTableProps {
 		allowRowMovement: props.allowRowMovement ?? false,
 		showControls: props.showControls ?? true,
 		enableSearchBox: props.enableSearchBox ?? true,
+		// Off without a schema: the inputs are inferred from field data types, and every column
+		// would fall back to `unsupported` and render an empty row.
+		enableColumnFilters: props.enableColumnFilters ?? props.modelSchema != null,
 		hasFixHeader: props.hasFixHeader ?? false,
 		translationNs: props.translationNs ?? 'common',
 		translateFieldName: props.translateFieldName ?? (field => field),
@@ -328,20 +326,11 @@ type DataTableControlsProps = {
 
 function DataTableControls(props: DataTableControlsProps): React.ReactNode {
 	const context = useDataTableContext();
-	const onApplyOrderBy = React.useCallback((orderBy: dyn.OrderBy) => {
-		context.setSearchRequest(prev => ({
-			...prev,
-			page: 0,
-			graph: updateSearchGraphOrder(prev.graph, orderBy),
-		}));
-	}, [context]);
-	const activeOrderBy = React.useMemo(() => {
-		const orderFromRequest = getGraphOrder(context.searchRequest.graph);
-		if (orderFromRequest.length > 0) {
-			return orderFromRequest;
-		}
-		return context.settings.orderBy ?? [];
-	}, [context.searchRequest.graph, context.settings.orderBy]);
+	const { filters, applyFilters } = context;
+	// Clearing writes the empty request directly rather than calling `applyFilters`: that
+	// callback closes over the clause list as it was on this render, so calling it in the same
+	// tick as `clearAll` would re-apply the very filters being cleared.
+	const onClear = filters.clearAll;
 	return (
 		<Group justify='space-between' className='px-4'>
 			<Toolbar
@@ -353,12 +342,17 @@ function DataTableControls(props: DataTableControlsProps): React.ReactNode {
 				renderTableName={context.settings.renderTableName}
 			/>
 			{context.settings.enableSearchBox ? (
-				<SearchBox
-					fields={context.tableSearchData.desired_fields}
-					sortableFields={context.settings.sortableFields ?? context.tableSearchData.desired_fields}
-					orderBy={activeOrderBy}
-					onApplyOrderBy={onApplyOrderBy}
-					testId={context.tid.prefix}
+				<FilterBox
+					modelSchema={context.settings.modelSchema}
+					clauses={filters.boxClauses}
+					onClausesChange={filters.setBoxClauses}
+					includeArchived={filters.includeArchived}
+					onIncludeArchivedChange={filters.setIncludeArchived}
+					activeCount={filters.activeCount}
+					onApply={applyFilters}
+					onClear={onClear}
+					translateFieldName={context.settings.translateFieldName}
+					tid={context.tid}
 				/>
 			) : null}
 			<Pagination />
@@ -761,6 +755,153 @@ function remapMovedAnchor(anchor: number | null, fromIndex: number, toIndex: num
 }
 
 
+/**
+ * The filter state of the whole table: what the user typed per column, the clauses the
+ * FilterBox contributes, and whether archived rows are included.
+ *
+ * Column and FilterBox clauses are kept apart so clearing one does not disturb the other, but
+ * they are written to the request through a single function — two writers each spreading the
+ * previous graph would silently drop the other's conditions and the sort order with them.
+ */
+function useFilterState() {
+	const [columnText, setColumnText] = React.useState<Record<string, string>>({});
+	const [columnClauses, setColumnClauses] = React.useState<Record<string, FilterClause>>({});
+	const [boxClauses, setBoxClauses] = React.useState<FilterClause[]>([]);
+	const [includeArchived, setIncludeArchived] = React.useState(false);
+
+	const setColumnValue = React.useCallback((field: string, value: string) => {
+		setColumnText(prev => ({ ...prev, [field]: value }));
+	}, []);
+
+	const commitColumnValue = React.useCallback(
+		(field: string, value: string, kind: FilterInputKind) => {
+			const clause = buildClauseFromInput(field, value, kind);
+			setColumnClauses(prev => {
+				if (!clause) {
+					if (!(field in prev)) {
+						return prev;
+					}
+					const next = { ...prev };
+					delete next[field];
+					return next;
+				}
+				return { ...prev, [field]: clause };
+			});
+		},
+		[],
+	);
+
+	const clearAll = React.useCallback(() => {
+		setColumnText({});
+		setColumnClauses({});
+		setBoxClauses([]);
+		setIncludeArchived(false);
+	}, []);
+
+	const allClauses = React.useMemo(
+		() => [...boxClauses, ...Object.values(columnClauses)],
+		[boxClauses, columnClauses],
+	);
+
+	// Drives the "N filters applied" chip. `includeArchived` is deliberately excluded: the
+	// requirement keeps it out of the visible condition list, so counting it would report a
+	// filter the user cannot see or remove from there.
+	const activeCount = React.useMemo(
+		() => allClauses.filter(isCompleteClause).length,
+		[allClauses],
+	);
+
+	return {
+		columnText,
+		columnClauses,
+		boxClauses,
+		setBoxClauses,
+		includeArchived,
+		setIncludeArchived,
+		setColumnValue,
+		commitColumnValue,
+		clearAll,
+		allClauses,
+		activeCount,
+	};
+}
+
+/**
+ * Republishes the search when a filter the user has already committed changes.
+ *
+ * Column filters and the archived toggle apply on the spot — the column input has already
+ * debounced the typing. The FilterBox's own clause edits are deliberately not watched: those
+ * wait for its Apply button, so a half-built condition never reaches the server.
+ */
+function useAutoApplyFilters(
+	filters: ReturnType<typeof useFilterState>,
+	applyFilters: (orderBy?: dyn.OrderBy) => void,
+) {
+	const hasApplied = React.useRef(false);
+	// Held in a ref rather than depended on: `applyFilters` is rebuilt whenever the request
+	// changes, so listing it would re-run this effect for the very change it just made and the
+	// request would never settle.
+	const applyRef = React.useRef(applyFilters);
+	applyRef.current = applyFilters;
+	const { columnClauses, includeArchived } = filters;
+	React.useEffect(() => {
+		// Skipped on mount, so an unfiltered table does not publish a second, identical search
+		// before the user has touched anything.
+		if (!hasApplied.current) {
+			hasApplied.current = true;
+			return;
+		}
+		applyRef.current();
+	}, [columnClauses, includeArchived]);
+}
+
+/**
+ * Writes the current filter state into the search request — the only place that touches
+ * `graph` or `include_archived`.
+ *
+ * Sort order is folded in here too rather than kept as a separate writer: both live on the
+ * same `graph` object, so a second writer spreading the previous graph would drop whichever
+ * change had not yet been committed to state.
+ *
+ * `include_archived` is a request flag, never a graph condition. A positive `is_archived`
+ * condition would return *only* archived rows, which is a different query and a silently wrong
+ * answer; the backend's `SearchQuery.IncludeArchived` is what widens the result set instead.
+ * It is omitted entirely when false so the request stays equal-by-value to an unfiltered one
+ * and `isSameSearchRequest` upstream does not see a spurious change.
+ */
+function useApplyFilters(
+	filters: ReturnType<typeof useFilterState>,
+	searchRequest: dyn.RestSearchRequest,
+	setSearchRequest: React.Dispatch<React.SetStateAction<dyn.RestSearchRequest>>,
+	fallbackOrderBy: dyn.OrderBy | undefined,
+) {
+	const { allClauses, includeArchived } = filters;
+	const currentOrderBy = React.useMemo(() => {
+		const fromRequest = getGraphOrder(searchRequest.graph);
+		return fromRequest.length > 0 ? fromRequest : (fallbackOrderBy ?? []);
+	}, [searchRequest.graph, fallbackOrderBy]);
+
+	return React.useCallback((orderBy?: dyn.OrderBy) => {
+		const effectiveOrderBy = orderBy ?? currentOrderBy;
+		setSearchRequest(prev => {
+			const next: dyn.RestSearchRequest = {
+				...prev,
+				// A changed filter invalidates the current page: page 5 of the old result set is
+				// rarely page 5 of the new one, and is often past its end.
+				page: 0,
+				graph: buildSearchGraph(allClauses, effectiveOrderBy),
+			};
+			if (includeArchived) {
+				next.include_archived = true;
+			}
+			else {
+				delete next.include_archived;
+			}
+			return next;
+		});
+	}, [allClauses, includeArchived, currentOrderBy, setSearchRequest]);
+}
+
 function useColumnWidthsState(fields: string[]) {
 	const [widths, setWidths] = React.useState<ColumnWidths>({});
 	const [resizing, setResizing] = React.useState<ResizeState | null>(null);
@@ -944,11 +1085,69 @@ type ColumnHeaderProps = {
 	field: string,
 	width: number,
 	sortDirection?: dyn.SearchOrder,
+	sortable: boolean,
+	onSort: (field: string, direction: dyn.SearchOrder) => void,
 	allowColumnResizing: boolean,
 	translateFieldName: (field: string) => string,
 	onStartResize: ResizeHandleProps['onStartResize'],
 	onAutoResize: ResizeHandleProps['onAutoResize'],
 };
+
+type ColumnHeaderMenuProps = {
+	field: string,
+	sortDirection?: dyn.SearchOrder,
+	onSort: (field: string, direction: dyn.SearchOrder) => void,
+};
+
+/**
+ * The per-column `[...]` menu, revealed on header hover.
+ *
+ * Stays mounted while closed and hides with opacity rather than being conditionally rendered:
+ * unmounting it would let the header reflow on hover, shifting the column label sideways every
+ * time the pointer crosses it. It is also pinned visible while its own menu is open, so the
+ * button does not vanish out from under the menu it spawned.
+ */
+function ColumnHeaderMenu(props: ColumnHeaderMenuProps): React.ReactNode {
+	const [opened, setOpened] = React.useState(false);
+	const { tid } = useDataTableContext();
+	const t = useTranslate('common');
+	return (
+		<Menu opened={opened} onChange={setOpened} position='bottom-end' withinPortal shadow='sm'>
+			<Menu.Target>
+				<ActionIcon
+					variant='subtle'
+					size='xs'
+					color='gray'
+					className={classes.headerMenuButton}
+					data-open={opened ? 'true' : undefined}
+					onClick={event => event.stopPropagation()}
+					aria-label={t('search.sort')}
+					{...tid.headerMenu(props.field)}
+				>
+					<IconDots size={14} />
+				</ActionIcon>
+			</Menu.Target>
+			<Menu.Dropdown>
+				<Menu.Item
+					leftSection={<IconTriangleFilled size={8} />}
+					disabled={props.sortDirection === 'asc'}
+					onClick={() => props.onSort(props.field, 'asc')}
+					{...tid.headerMenuSort(props.field, 'asc')}
+				>
+					{t('search.sortAtoZ')}
+				</Menu.Item>
+				<Menu.Item
+					leftSection={<IconTriangleInvertedFilled size={8} />}
+					disabled={props.sortDirection === 'desc'}
+					onClick={() => props.onSort(props.field, 'desc')}
+					{...tid.headerMenuSort(props.field, 'desc')}
+				>
+					{t('search.sortZtoA')}
+				</Menu.Item>
+			</Menu.Dropdown>
+		</Menu>
+	);
+}
 
 function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
 	const { tid } = useDataTableContext();
@@ -958,12 +1157,23 @@ function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
 			className={classes.resizeableHeader}
 			{...tid.sort(props.field)}
 		>
-			<Group justify='space-between' gap={1} className='overflow-hidden text-ellipsis whitespace-nowrap'>
-				{/* <div className='overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-1' title={props.field}> */}
+			<Group justify='space-between' gap={1} wrap='nowrap' className='overflow-hidden'>
 				<span className='overflow-hidden text-ellipsis whitespace-nowrap'>{props.translateFieldName(props.field)}</span>
-				{props.sortDirection === 'asc' ? <IconSortAscending size={16} /> : null}
-				{props.sortDirection === 'desc' ? <IconSortDescending size={16} /> : null}
-				{/* </div> */}
+				<Group gap={2} wrap='nowrap' className='flex-shrink-0'>
+					{props.sortable ? (
+						<ColumnHeaderMenu
+							field={props.field}
+							sortDirection={props.sortDirection}
+							onSort={props.onSort}
+						/>
+					) : null}
+					{props.sortDirection === 'asc'
+						? <IconTriangleFilled size={8} className={classes.sortIndicator} />
+						: null}
+					{props.sortDirection === 'desc'
+						? <IconTriangleInvertedFilled size={8} className={classes.sortIndicator} />
+						: null}
+				</Group>
 			</Group>
 			{props.allowColumnResizing ? (
 				<ResizeHandle
@@ -978,8 +1188,31 @@ function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
 
 function DataTableHead(): React.ReactNode {
 	const context = useDataTableContext();
+	const t = useTranslate('common');
 	const fields = context.tableSearchData.desired_fields;
 	const widths = context.cw.widths;
+	const modelSchema = context.settings.modelSchema;
+	const commitColumnValue = context.filters.commitColumnValue;
+	const onCommitColumnFilter = React.useCallback((field: string, value: string) => {
+		commitColumnValue(field, value, getFilterInputKind(modelSchema?.fields?.[field]));
+	}, [commitColumnValue, modelSchema]);
+
+	// A column is sortable only if the server can order by it: the caller's explicit list when
+	// given, otherwise every visible field that owns a database column.
+	const sortableFields = React.useMemo(() => {
+		const declared = context.settings.sortableFields;
+		if (declared) {
+			return new Set(declared);
+		}
+		return new Set(fields.filter(
+			field => modelSchema?.fields?.[field]?.is_persisted !== false,
+		));
+	}, [context.settings.sortableFields, fields, modelSchema]);
+
+	const applyFilters = context.applyFilters;
+	const onSort = React.useCallback((field: string, direction: dyn.SearchOrder) => {
+		applyFilters([[field, direction]]);
+	}, [applyFilters]);
 	const orderBy = getGraphOrder(context.searchRequest.graph).length > 0
 		? getGraphOrder(context.searchRequest.graph)
 		: (context.settings.orderBy ?? []);
@@ -1002,6 +1235,8 @@ function DataTableHead(): React.ReactNode {
 						field={field}
 						width={getColumnWidth(field, widths)}
 						sortDirection={sortOrderMap.get(field)}
+						sortable={sortableFields.has(field)}
+						onSort={onSort}
 						allowColumnResizing={context.settings.allowColumnResizing}
 						translateFieldName={context.settings.translateFieldName}
 						onStartResize={context.handlers.onStartResize}
@@ -1012,6 +1247,19 @@ function DataTableHead(): React.ReactNode {
 					<Table.Th className={classes.fillerColumn} aria-hidden />
 				) : null}
 			</Table.Tr>
+			{context.settings.enableColumnFilters ? (
+				<ColumnFilterRow
+					fields={fields}
+					modelSchema={context.settings.modelSchema}
+					values={context.filters.columnText}
+					onChange={context.filters.setColumnValue}
+					onCommit={onCommitColumnFilter}
+					getColumnStyle={field => getColumnStyle(getColumnWidth(field, widths))}
+					hasFillerColumn={context.settings.allowColumnResizing}
+					placeholder={t('search.placeholder')}
+					tid={context.tid}
+				/>
+			) : null}
 		</Table.Thead>
 	);
 }
@@ -1483,32 +1731,6 @@ function renderDataCellContent(
 			{index < values.length - 1 ? <br /> : null}
 		</React.Fragment>
 	));
-}
-
-function getGraphOrder(graph?: dyn.SearchGraph): dyn.OrderBy {
-	const rawOrder = (graph as Partial<dyn.SearchGraph> | undefined)?.order;
-	if (!Array.isArray(rawOrder)) {
-		return [];
-	}
-	return rawOrder.filter(
-		(item): item is [string, dyn.SearchOrder] =>
-			Array.isArray(item)
-			&& item.length === 2
-			&& typeof item[0] === 'string'
-			&& (item[1] === 'asc' || item[1] === 'desc'),
-	);
-}
-
-function updateSearchGraphOrder(graph: dyn.SearchGraph | undefined, orderBy: dyn.OrderBy): dyn.SearchGraph | undefined {
-	const graphData = { ...(graph as Partial<dyn.SearchGraph> | undefined) };
-	if (orderBy.length === 0) {
-		delete graphData.order;
-		if (!graphData.if && !graphData.and && !graphData.or) {
-			return undefined;
-		}
-		return graphData as dyn.SearchGraph;
-	}
-	return { ...graphData, order: orderBy } as dyn.SearchGraph;
 }
 
 function filterFields(fields: string[], query: string): string[] {

@@ -1,4 +1,5 @@
 export * from './cellRenderers';
 export * from './DataTable';
-export * from './SearchBox';
+export * from './FilterBox';
+export * from './filterModel';
 export * from './SettingsTable';

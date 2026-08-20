@@ -58,3 +58,27 @@ td.selectedCell {
 .resizeableHeader:hover .resizeHandle {
 	opacity: 1;
 }
+
+.columnFilterRow {
+	background-color: var(--mantine-color-body);
+}
+
+.columnFilterCell {
+	padding: 0.125rem 0.25rem;
+	font-weight: normal;
+	vertical-align: middle;
+}
+
+.headerMenuButton {
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+
+.resizeableHeader:hover .headerMenuButton,
+.headerMenuButton[data-open='true'] {
+	opacity: 1;
+}
+
+.sortIndicator {
+	flex-shrink: 0;
+}

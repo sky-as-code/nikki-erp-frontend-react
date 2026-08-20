@@ -6,24 +6,19 @@ import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor, MetaComponent } from '@nikkierp/viewengine/render';
 import { IconAlertCircle } from '@tabler/icons-react';
 import React from 'react';
-import { z } from 'zod';
 
 import { RESOURCE_FORM } from '../ids';
+import { resourceFormPropsSchema } from './resourceFormProps';
 import { ResourceFormViewProvider } from './resourceFormViewContext';
 import {
 	useResourceDetailContext, useResourceDetailTranslationNs,
 } from '../pages/resourceDetail/ResourceDetailProvider';
 import { useResourceUpdateContext } from '../pages/resourceDetail/resourceUpdateContext';
 
+import type { ResourceFormProps } from './resourceFormProps';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
 
-
-export const resourceFormPropsSchema = z.object({
-	variant: z.enum(['create', 'update']).default('update'),
-}).strict();
-
-export type ResourceFormProps = z.infer<typeof resourceFormPropsSchema>;
 
 export const resourceFormRenderer: IComponentRenderer<ResourceFormProps> = {
 	type: RESOURCE_FORM,

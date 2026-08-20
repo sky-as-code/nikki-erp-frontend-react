@@ -11,3 +11,15 @@ export { ResourceList } from './pages/resourceList/ResourceList';
 export { ResourceDetail } from './pages/resourceDetail/ResourceDetail';
 export { SplitViewBody } from './pages/resourceSplitView/SplitViewBody';
 export { SplitLayout } from './pages/resourceSplitView/SplitLayout';
+
+/**
+ * The resource search lifecycle, for a module building its own list-shaped page template.
+ *
+ * A bespoke template (a map view, a calendar) still wants the same schema pack, the same search
+ * command and the same stale-request handling the stock list uses; re-implementing it in a module
+ * is how the two drift apart.
+ */
+export { useResourceSearch } from './data/useResourceSearch';
+export type {
+	UseResourceSearchOptions, UseResourceSearchResult,
+} from './data/useResourceSearch';
