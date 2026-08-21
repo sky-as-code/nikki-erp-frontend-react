@@ -2,12 +2,12 @@ import { ButtonGroup, Group, Stack, Text } from '@mantine/core';
 import { IconSortAscending, IconSortDescending } from '@tabler/icons-react';
 import React from 'react';
 
-import { Button } from '../Button';
-import { Select } from '../Select';
 import classes from './FilterPanel.module.css';
-import { TranslateFn, useTranslate } from '../../i18n';
+import { TranslateFn, useTranslate } from '../../../i18n';
+import { Button } from '../../Button';
+import { Select } from '../../Select';
 
-import type { DataTableTestIds } from './testIds';
+import type { DataTableTestIds } from '../testIds';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 

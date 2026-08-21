@@ -1,0 +1,28 @@
+/*
+ * The per-column filter row.
+ *
+ * Lives with the filter family rather than with the list view: the row is a filter control
+ * that happens to be drawn inside the table's `thead`, so it follows `ColumnFilterRow` and not
+ * the container it is rendered into.
+ */
+.columnFilterRow {
+	background-color: var(--mantine-color-body);
+}
+
+.columnFilterCell {
+	padding: 0.125rem 0.25rem;
+	font-weight: normal;
+	vertical-align: middle;
+}
+
+/*
+ * White inputs, per the spec's Data Table uplift.
+ *
+ * The override is needed because the shell paints every `th` grey in light mode
+ * (`nikkierp/modules/shell/src/styles/index.css`), and this row lives inside `thead`, so its
+ * boxed inputs would inherit that grey and read as disabled. Scoped to the cell so the header
+ * row above keeps its own background.
+ */
+.columnFilterCell :global(.mantine-Input-input) {
+	background-color: var(--mantine-color-body);
+}

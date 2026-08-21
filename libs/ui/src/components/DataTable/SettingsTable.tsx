@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import React from 'react';
 
 import { applyCustomRenderer } from './cellRenderers';
-import classes from './DataTable.module.css';
+import classes from './SettingsTable.module.css';
 import { TranslateFn, useTranslate } from '../../i18n';
 
 import type { FieldRendererMap } from '@nikkierp/viewengine/core';

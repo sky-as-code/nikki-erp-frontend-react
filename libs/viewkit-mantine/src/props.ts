@@ -109,8 +109,8 @@ export function resourceFormTabsNode(
  * a `resource_form__column` placed there without this wrapper finds no form runtime and renders
  * nothing but a console warning.
  *
- * Emit it in `childrenNodes` with `formSections: []` on the page, so the default form collapses to
- * an empty block rather than duplicating fields above the tabs.
+ * Emit it in `childrenNodes` with `formSections: []` on the page, so the default form renders no
+ * section above the tabs rather than duplicating fields there.
  */
 export function resourceFormNode(
 	input: ResourceFormPropsInput, children: ComponentNode[],

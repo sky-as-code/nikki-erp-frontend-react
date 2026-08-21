@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { Input } from '../Input';
-import { Select } from '../Select';
 import { getEnumOptions, getFilterInputKind, isNoValueOperator } from './filterModel';
-import { useTranslate } from '../../i18n';
+import { useTranslate } from '../../../i18n';
+import { Input } from '../../Input';
+import { Select } from '../../Select';
 
 import type { FilterInputKind } from './filterModel';
 import type * as dyn from '@nikkierp/common/dynamicModel';

@@ -58,7 +58,17 @@ export const actionPromptSchema = z.object({
 
 export const resourceDetailExtraActionSchema = z.object({
 	label: z.string().min(1),
-	command: z.string().min(1),
+	command: z.string().min(1).optional(),
+	/**
+	 * Navigates instead of publishing: the `routePath` of the target **page**, as its
+	 * `definePage` registers it, with `:param` tokens filled from the current route.
+	 *
+	 * A page whose content belongs to the record but is too big to sit inside the detail --
+	 * a shelf grid, an assignment wizard -- is reached this way rather than by a command,
+	 * which has nowhere to navigate to. Mutually exclusive with `command`, the same union
+	 * `resourceTable`'s actions already use.
+	 */
+	routePath: z.string().min(1).optional(),
 	condition: conditionExpressionSchema.optional(),
 	/**
 	 * When present the button opens a dialog collecting these fields, and the
@@ -66,7 +76,13 @@ export const resourceDetailExtraActionSchema = z.object({
 	 * fire immediately, which is what every existing action does.
 	 */
 	prompt: actionPromptSchema.optional(),
-}).strict();
+}).strict().refine(
+	action => Boolean(action.command) !== Boolean(action.routePath),
+	{ message: 'Exactly one of `command` or `routePath` is required' },
+).refine(
+	action => !action.prompt || Boolean(action.command),
+	{ message: '`prompt` collects values for a command, so it needs one', path: ['prompt'] },
+);
 
 /** Command names for standard CRUD actions, resolved by the owning module. */
 export const standardActionCommandsSchema = z.object({

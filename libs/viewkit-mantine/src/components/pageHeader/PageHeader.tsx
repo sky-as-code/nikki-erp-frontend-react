@@ -9,6 +9,7 @@ import { Link } from 'react-router';
 import { PageHeaderContextValue, usePageHeader } from './pageHeaderContext';
 import { pageHeaderPropsSchema, PageHeaderLinkSpec, PageHeaderProps, PageHeaderTitleSpec } from './props';
 import { PAGE_HEADER } from '../../ids';
+import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import { renderDisplayFieldValue } from '../fieldValue';
 
 import type { ComponentAttributes, IComponentRenderer } from '@nikkierp/viewengine/core';
@@ -92,15 +93,19 @@ function TitleText({ spec, context }: SpecProps<PageHeaderTitleSpec>): React.Rea
 function TitleLink({ spec, context }: SpecProps<PageHeaderLinkSpec>): React.ReactNode {
 	const t = useTranslate(context?.translationNs ?? '');
 	const localize = useLocalize(context?.translationNs ?? '');
+	// A `linkHref` naming a page (`'kiosks/:id'`) resolves absolutely, filling its params from the
+	// current route; the `'../'` spelling every resource detail uses keeps React Router's own
+	// path-relative resolution. `useRoutePathHref` returns the latter untouched.
+	const resolved = useRoutePathHref(spec.linkHref);
 	const label = spec.textKey ? t(spec.textKey) : localize(context?.modelSchema?.label, { count: 99 });
 
-	if (!label) {
+	if (!label || !resolved) {
 		return null;
 	}
 
 	return (
 		<Anchor
-			component={Link} to={spec.linkHref} relative='path' size='md' className='capitalize'
+			component={Link} to={resolved} relative='path' size='md' className='capitalize'
 			{...testAttrs(context?.testId, 'header', 'titleLink')}
 		>
 			{label}

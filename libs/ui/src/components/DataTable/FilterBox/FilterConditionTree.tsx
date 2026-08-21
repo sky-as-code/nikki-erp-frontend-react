@@ -7,7 +7,7 @@ import {
 } from './filterTree';
 
 import type { FilterConditionNode, FilterTree, FilterValidationIssue } from './filterTree';
-import type { DataTableTestIds } from './testIds';
+import type { DataTableTestIds } from '../testIds';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 

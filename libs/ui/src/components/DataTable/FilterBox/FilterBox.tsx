@@ -2,10 +2,10 @@ import { Badge, Box, Group } from '@mantine/core';
 import { IconChevronDown, IconChevronUp, IconFilter } from '@tabler/icons-react';
 import React from 'react';
 
-import { useTranslate } from '../../i18n';
-import { Button } from '../Button';
+import { useTranslate } from '../../../i18n';
+import { Button } from '../../Button';
 
-import type { DataTableTestIds } from './testIds';
+import type { DataTableTestIds } from '../testIds';
 
 
 export type FilterBoxProps = {

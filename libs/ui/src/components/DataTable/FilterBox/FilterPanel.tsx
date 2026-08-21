@@ -3,16 +3,16 @@ import { IconAlertTriangle } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 
-import { Button } from '../Button';
 import { FilterConditionTree } from './FilterConditionTree';
 import { getFilterableFieldNames } from './filterModel';
 import classes from './FilterPanel.module.css';
 import { FilterSortPane } from './FilterSortPane';
 import { ensureNonEmpty, validateTree } from './filterTree';
-import { useTranslate } from '../../i18n';
+import { useTranslate } from '../../../i18n';
+import { Button } from '../../Button';
 
 import type { FilterTree, FilterValidationIssue } from './filterTree';
-import type { DataTableTestIds } from './testIds';
+import type { DataTableTestIds } from '../testIds';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 

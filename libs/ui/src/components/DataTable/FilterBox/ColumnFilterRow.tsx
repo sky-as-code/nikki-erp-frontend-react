@@ -1,11 +1,11 @@
 import { Table } from '@mantine/core';
 import React from 'react';
 
-import classes from './DataTable.module.css';
+import classes from './ColumnFilterRow.module.css';
 import { getFilterInputKind, isFilterableField, isTextLikeKind as isTextLike } from './filterModel';
 import { SchemaFilterValueInput } from './FilterValueInput';
 
-import type { DataTableTestIds } from './testIds';
+import type { DataTableTestIds } from '../testIds';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 

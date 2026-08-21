@@ -1,36 +1,29 @@
 import {
-	ActionIcon, Anchor, Box, Button, Group, Menu, Modal, Radio, Select,
-	Stack, Table, Tabs, Text, TextInput,
+	Box, Button, Group, Modal, Radio, Select, Stack, Tabs, Text, TextInput,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
-import {
-	IconDots, IconHash, IconX, IconTriangleFilled, IconTriangleInvertedFilled,
-} from '@tabler/icons-react';
-import clsx from 'clsx';
 import React from 'react';
-import { Link, useResolvedPath } from 'react-router-dom';
 
-import {
-	applyCustomRenderer, renderDefaultByDataType, TranslatedFieldRenderer,
-} from './cellRenderers';
-import { ColumnFilterRow } from './ColumnFilterRow';
-import classes from './DataTable.module.css';
+import { TranslatedFieldRenderer } from './cellRenderers';
+import { getCellText } from './cellValues';
 import { DataTableContext, useDataTableContext } from './DataTableContext';
-import { FilterBox } from './FilterBox';
-import { getFilterInputKind } from './filterModel';
-import { FilterPanel } from './FilterPanel';
-import { makeEmptyTree } from './filterTree';
+import { FilterBox, FilterPanel, makeEmptyTree, useApplyFilters, useFilterState } from './FilterBox';
+import { GridView } from './GridView';
+import { defaultColumnWidth, getAutoColumnWidth, ListView, useColumnWidthsState } from './ListView';
 import { Pagination } from './Pagination';
 import { SettingsTable } from './SettingsTable';
-import { dataTableTestIds, rowTestIdOf } from './testIds';
+import { dataTableTestIds } from './testIds';
 import { Toolbar } from './Toolbar';
-import { useApplyFilters, useFilterState } from './useFilterState';
-import { ThunkPackHookReturn } from '../../appState';
-import { TranslateFn, useTranslate } from '../../i18n';
+import { isDataTableViewMode } from './types';
+import { useTranslate } from '../../i18n';
 
-import type { DataTableTestIds, RowId } from './testIds';
-import type { FieldRendererMap, IFieldRenderer } from '@nikkierp/viewengine/core';
-
+import type { DataTableTestIds } from './testIds';
+import type {
+	DataTableViewMode, RowDragState, RowMovePayload, RowMoveState, RowSelection, SearchData,
+	SearchItem,
+} from './types';
+import type { ThunkPackHookReturn } from '../../appState';
+import type { FieldRendererMap } from '@nikkierp/viewengine/core';
 
 
 export type DataTableAction = {
@@ -52,30 +45,12 @@ export type DataTableAction = {
 
 export type { FieldRendererMap, IFieldRenderer } from '@nikkierp/viewengine/core';
 
-type SearchItem = Record<string, any>;
-export type SearchData = dyn.RestSearchResponse<SearchItem>;
-
-type RowSelection = Record<number, boolean>;
-type RowDragState = { isActive: boolean, targetSelected: boolean };
-type RowMoveState = { draggingIndex: number | null, dropIndex: number | null };
-type ColumnWidths = Record<string, number>;
-type ResizeState = { field: string, startX: number, startWidth: number };
-type RowMovePayload = {
-	fromIndex: number,
-	toIndex: number,
-	items: SearchItem[],
-};
-
-const rowNumberColumnWidth = 64;
-const defaultColumnWidth = 200;
-const minimumColumnWidth = 80;
-const maximumAutoColumnWidth = 500;
-const characterPixelWidth = 8;
-const cellHorizontalPadding = 32;
 const storagePrerix = `ui:${DataTable.name}`;
 const allowedPageSizes = [50, 100, 200] as const;
 type AllowedPageSize = (typeof allowedPageSizes)[number];
 const pageSizeSelectData = allowedPageSizes.map(n => ({ value: String(n), label: String(n) }));
+const defaultViewMode: DataTableViewMode = 'list';
+const defaultGridColumns = { base: 1, xs: 2, sm: 3, md: 4, lg: 5 };
 
 export type RenderTableNameArgs = { name: string, total: number };
 export type RenderTableNameFn = (args: RenderTableNameArgs) => React.ReactNode;
@@ -112,6 +87,19 @@ export type DataTableProps = {
 	sortableFields?: string[],
 	translationNs?: string,
 	translateFieldName?: (field: string) => string,
+	/**
+	 * Which container the rows are shown in when the user has not chosen one on this page.
+	 *
+	 * A page whose records are inherently visual — products, media — can open in `grid`; the
+	 * setting the user picks afterwards is remembered per page and takes precedence.
+	 */
+	defaultViewMode?: DataTableViewMode,
+	/** Off for tables whose records have nothing to show as a card; the setting is then hidden. */
+	enableGridView?: boolean,
+	/** Card columns per breakpoint, passed through to `SimpleGrid`. */
+	gridColumns?: Record<string, number> | number,
+	/** The field holding each card's picture. Inferred from the record when omitted. */
+	gridThumbnailField?: string,
 	/** `{module}.{component}` prefix for the `data-testid` of every element this table renders. */
 	testId?: string,
 };
@@ -120,6 +108,7 @@ export type RequiredDataTableProps = Omit<
 	DataTableProps,
 	'actions' | 'allowColumnResizing' | 'isFullWidthTable'
 	| 'allowRowMovement' | 'showControls' | 'hasFixHeader' | 'translationNs' | 'translateFieldName'
+	| 'enableGridView' | 'gridColumns'
 > & {
 	actions: DataTableAction[],
 	allowColumnResizing: boolean,
@@ -131,6 +120,8 @@ export type RequiredDataTableProps = Omit<
 	hasFixHeader: boolean,
 	translationNs: string,
 	translateFieldName: (field: string) => string,
+	enableGridView: boolean,
+	gridColumns: Record<string, number> | number,
 };
 
 
@@ -140,6 +131,8 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 	const [isFilterPaneOpen, setIsFilterPaneOpen] = React.useState(false);
 	const [searchRequest, setSearchRequest] = React.useState<dyn.RestSearchRequest>(() =>
 		buildInitialSearchRequest(settings.data, settings.initialSearchRequest));
+	const [viewMode, setViewMode] = React.useState<DataTableViewMode>(
+		() => readStoredViewMode() ?? props.defaultViewMode ?? defaultViewMode);
 	const containerRef = React.useRef<HTMLDivElement | null>(null);
 	const rs = useRowSelectionState(settings.data.items.length);
 	const cw = useColumnWidthsState(settings.data.desired_fields);
@@ -171,6 +164,9 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 		fallbackOrderBy: settings.orderBy,
 	});
 	const applyFilters = useApplyFilters(filters, setSearchRequest);
+	// A table that cannot show cards must never be stuck in `grid` — a stored preference from a
+	// page that allowed it would otherwise leave this one with an empty body.
+	const effectiveViewMode: DataTableViewMode = settings.enableGridView ? viewMode : 'list';
 
 	React.useEffect(() => {
 		setSearchRequest(prev => {
@@ -196,9 +192,11 @@ export function DataTable(props: DataTableProps): React.ReactNode {
 		isFilterPaneOpen,
 		onToggleFilterPane: () => setIsFilterPaneOpen(prev => !prev),
 		searchRequest, setSearchRequest, filters, applyFilters, tid,
+		viewMode: effectiveViewMode, setViewMode,
 	}), [
 		settings, tableSearchData, rs, cw, isRowMode, rowMove, handlers, containerRef, tableStyle,
 		isViewSettingsOpen, isFilterPaneOpen, searchRequest, filters, applyFilters, tid,
+		effectiveViewMode,
 	]);
 
 	return (
@@ -228,7 +226,9 @@ function DataTableLayout(): React.ReactNode {
 				&& context.isFilterPaneOpen
 				? <DataTableFilterPane />
 				: null}
-			<TableContainer />
+			{/* The one place the view mode is read: the controls above and below are the same
+			    in either mode, so only the body between them is swapped. */}
+			{context.viewMode === 'grid' ? <GridView /> : <ListView />}
 			{context.settings.showControls ? (
 				<ViewSettingsModal
 					desiredFields={context.settings.data.desired_fields}
@@ -258,6 +258,30 @@ function readStoredPageSize(): AllowedPageSize | null {
 		return null;
 	}
 	return parseStoredPageSize(window.localStorage.getItem(key));
+}
+
+/**
+ * The view mode is remembered per page, unlike the page size, which is one global preference.
+ *
+ * List and grid suit different kinds of record, so a user who wants cards for products has said
+ * nothing about how they want to see invoices.
+ */
+function getViewModeStorageKey(): string {
+	return typeof window === 'undefined' ? '' : `${storagePrerix}:viewmode:${window.location.pathname}`;
+}
+
+function readStoredViewMode(): DataTableViewMode | null {
+	if (typeof window === 'undefined') {
+		return null;
+	}
+	const raw = window.localStorage.getItem(getViewModeStorageKey());
+	return isDataTableViewMode(raw) ? raw : null;
+}
+
+function writeStoredViewMode(mode: DataTableViewMode): void {
+	if (typeof window !== 'undefined') {
+		window.localStorage.setItem(getViewModeStorageKey(), mode);
+	}
 }
 
 function buildInitialSearchRequest(
@@ -291,6 +315,8 @@ function withDataTableDefaults(props: DataTableProps): RequiredDataTableProps {
 		hasFixHeader: props.hasFixHeader ?? false,
 		translationNs: props.translationNs ?? 'common',
 		translateFieldName: props.translateFieldName ?? (field => field),
+		enableGridView: props.enableGridView ?? true,
+		gridColumns: props.gridColumns ?? defaultGridColumns,
 	};
 }
 
@@ -358,87 +384,8 @@ function DataTableFilterPane(): React.ReactNode {
 	);
 }
 
-function TableContainer(): React.ReactNode {
-	const context = useDataTableContext();
-	return (
-		<div
-			ref={context.containerRef}
-			tabIndex={0}
-			onKeyDown={context.handlers.onKeyDown}
-			className='outline-none overflow-auto min-w-0 w-full max-w-full'
-		>
-			<Table
-				withTableBorder
-				withColumnBorders
-				striped='even'
-				highlightOnHover
-				style={context.tableStyle}
-				className={clsx({ 'select-none': context.settings.allowRowMovement })}
-			>
-				<DataTableHead />
-				<DataTableBody />
-			</Table>
-		</div>
-	);
-}
-
-function getColWidthStorageKey(): string {
-	return typeof window === 'undefined' ? '' : `${storagePrerix}:colwidths:${window.location.pathname}`;
-}
-
 function getPageSizeStorageKey(): string {
 	return typeof window === 'undefined' ? '' : `${storagePrerix}:pagesize`;
-}
-
-function createDefaultWidths(fields: string[]): ColumnWidths {
-	return Object.fromEntries(fields.map(field => [field, defaultColumnWidth]));
-}
-
-function readStoredWidths(fields: string[]): ColumnWidths {
-	const fallback = createDefaultWidths(fields);
-	if (typeof window === 'undefined') {
-		return fallback;
-	}
-	const raw = window.localStorage.getItem(getColWidthStorageKey());
-	if (!raw) {
-		return fallback;
-	}
-	try {
-		const parsed = JSON.parse(raw) as Record<string, number>;
-		return Object.fromEntries(fields.map(field => [
-			field,
-			typeof parsed[field] === 'number' ? parsed[field] : defaultColumnWidth,
-		]));
-	}
-	catch {
-		return fallback;
-	}
-}
-
-function writeStoredWidths(widths: ColumnWidths): void {
-	if (typeof window !== 'undefined') {
-		window.localStorage.setItem(getColWidthStorageKey(), JSON.stringify(widths));
-	}
-}
-
-function getCellText(item: SearchItem, field: string, maskedFields: string[]): string {
-	if (maskedFields.includes(field)) {
-		return '********';
-	}
-	return String(item[field] ?? '');
-}
-
-function getRowNumber(page: number, size: number, rowIndex: number): number {
-	return (page * size) + rowIndex + 1;
-}
-
-function getColumnWidth(field: string, widths: ColumnWidths): number {
-	return widths[field] ?? defaultColumnWidth;
-}
-
-function getColumnStyle(width: number): React.CSSProperties {
-	// return { width, minWidth: width, maxWidth: width };
-	return { width, minWidth: 0, maxWidth: 'none' };
 }
 
 function clearRowSelection(
@@ -462,11 +409,6 @@ function moveRow(items: SearchItem[], fromIndex: number, toIndex: number): Searc
 	const [moved] = next.splice(fromIndex, 1);
 	next.splice(toIndex, 0, moved);
 	return next;
-}
-
-function shouldUseSingleLineEllipsis(value: string): boolean {
-	const normalized = value.trim();
-	return normalized.length > 0 && !/\s/.test(normalized);
 }
 
 function escapeHtml(value: string): string {
@@ -499,15 +441,6 @@ async function copyToClipboard(rows: string[][]): Promise<void> {
 	if (navigator.clipboard?.writeText) {
 		await navigator.clipboard.writeText(plainText);
 	}
-}
-
-function getAutoColumnWidth(field: string, searchData: SearchData): number {
-	const longest = searchData.items.reduce((max, item) => {
-		const value = getCellText(item, field, searchData.masked_fields);
-		return Math.max(max, value.length);
-	}, field.length);
-	const estimated = (longest * characterPixelWidth) + cellHorizontalPadding;
-	return Math.min(maximumAutoColumnWidth, Math.max(minimumColumnWidth, estimated));
 }
 
 function rowsFromRowSelection(searchData: SearchData, rowIndexes: number[]): string[][] {
@@ -564,41 +497,6 @@ function remapMovedAnchor(anchor: number | null, fromIndex: number, toIndex: num
 		return anchor;
 	}
 	return remapMovedRowIndex(anchor, fromIndex, toIndex);
-}
-
-
-export function useColumnWidthsState(fields: string[]) {
-	const [widths, setWidths] = React.useState<ColumnWidths>({});
-	const [resizing, setResizing] = React.useState<ResizeState | null>(null);
-
-	React.useEffect(() => {
-		setWidths(readStoredWidths(fields));
-	}, [fields]);
-
-	React.useEffect(() => {
-		if (!resizing) {
-			return undefined;
-		}
-		const onMove = (e: MouseEvent) => setWidths(prev => ({
-			...prev,
-			[resizing.field]: Math.max(minimumColumnWidth, resizing.startWidth + e.clientX - resizing.startX),
-		}));
-		const onUp = () => setResizing(null);
-		window.addEventListener('mousemove', onMove);
-		window.addEventListener('mouseup', onUp);
-		return () => {
-			window.removeEventListener('mousemove', onMove);
-			window.removeEventListener('mouseup', onUp);
-		};
-	}, [resizing]);
-
-	React.useEffect(() => {
-		if (!resizing && Object.keys(widths).length > 0) {
-			writeStoredWidths(widths);
-		}
-	}, [resizing, widths]);
-
-	return { widths, setWidths, resizing, setResizing };
 }
 
 export function useRowSelectionState(rowCount: number) {
@@ -672,448 +570,6 @@ export function useRowMoveState(
 	return { items, state, startDragging, dragOver, drop, cancel };
 }
 
-type RowNumberOverlayButtonProps = {
-	children: React.ReactNode,
-	onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => void,
-	'aria-label'?: string,
-	'data-testid'?: string,
-};
-
-function RowNumberOverlayButton(props: RowNumberOverlayButtonProps): React.ReactNode {
-	function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>): void {
-		if (event.key !== ' ') {
-			return;
-		}
-		event.preventDefault();
-		props.onMouseDown(event as unknown as React.MouseEvent<HTMLButtonElement>);
-	}
-	return (
-		<button
-			type='button'
-			className={clsx(
-				'absolute top-0 left-0 w-full h-full bg-transparent border-none cursor-pointer',
-				'flex items-center justify-center',
-			)}
-			onMouseDown={props.onMouseDown}
-			onKeyDown={handleKeyDown}
-			aria-label={props['aria-label']}
-			data-testid={props['data-testid']}
-		>
-			{props.children}
-		</button>
-	);
-}
-
-type RowNumberHeaderProps = {
-	isRowMode: boolean,
-	onToggle: () => void,
-};
-
-function RowNumberHeader(props: RowNumberHeaderProps): React.ReactNode {
-	const columnWidth = rowNumberColumnWidth;
-	const { tid } = useDataTableContext();
-	return (
-		<Table.Th
-			className='p-0 text-center align-middle relative'
-			style={getColumnStyle(columnWidth)}
-		>
-			<RowNumberOverlayButton
-				onMouseDown={() => props.onToggle()}
-				aria-label={props.isRowMode ? 'Deselect all rows' : 'Select all rows'}
-				{...tid.selectAll()}
-			>
-				{props.isRowMode ? <IconX size={14} /> : <IconHash size={14} />}
-			</RowNumberOverlayButton>
-		</Table.Th>
-	);
-}
-
-type ResizeHandleProps = {
-	field: string,
-	onStartResize: (field: string, e: React.MouseEvent<HTMLDivElement>) => void,
-	onAutoResize: (field: string) => void,
-};
-
-function ResizeHandle(props: ResizeHandleProps): React.ReactNode {
-	return (
-		<div
-			role='separator'
-			aria-label={`Resize ${props.field}`}
-			onMouseDown={e => props.onStartResize(props.field, e)}
-			onDoubleClick={() => props.onAutoResize(props.field)}
-			className={classes.resizeHandle}
-		/>
-	);
-}
-
-type ColumnHeaderProps = {
-	field: string,
-	width: number,
-	sortDirection?: dyn.SearchOrder,
-	sortable: boolean,
-	onSort: (field: string, direction: dyn.SearchOrder) => void,
-	allowColumnResizing: boolean,
-	translateFieldName: (field: string) => string,
-	onStartResize: ResizeHandleProps['onStartResize'],
-	onAutoResize: ResizeHandleProps['onAutoResize'],
-};
-
-type ColumnHeaderMenuProps = {
-	field: string,
-	sortDirection?: dyn.SearchOrder,
-	onSort: (field: string, direction: dyn.SearchOrder) => void,
-};
-
-/**
- * The per-column `[...]` menu, revealed on header hover.
- *
- * Stays mounted while closed and hides with opacity rather than being conditionally rendered:
- * unmounting it would let the header reflow on hover, shifting the column label sideways every
- * time the pointer crosses it. It is also pinned visible while its own menu is open, so the
- * button does not vanish out from under the menu it spawned.
- */
-function ColumnHeaderMenu(props: ColumnHeaderMenuProps): React.ReactNode {
-	const [opened, setOpened] = React.useState(false);
-	const { tid } = useDataTableContext();
-	const t = useTranslate('common');
-	return (
-		<Menu opened={opened} onChange={setOpened} position='bottom-end' withinPortal shadow='sm'>
-			<Menu.Target>
-				<ActionIcon
-					variant='subtle'
-					size='xs'
-					color='gray'
-					className={classes.headerMenuButton}
-					data-open={opened ? 'true' : undefined}
-					onClick={event => event.stopPropagation()}
-					aria-label={t('search.sort')}
-					{...tid.headerMenu(props.field)}
-				>
-					<IconDots size={14} />
-				</ActionIcon>
-			</Menu.Target>
-			<Menu.Dropdown>
-				<Menu.Item
-					leftSection={<IconTriangleFilled size={8} />}
-					disabled={props.sortDirection === 'asc'}
-					onClick={() => props.onSort(props.field, 'asc')}
-					{...tid.headerMenuSort(props.field, 'asc')}
-				>
-					{t('search.sortAtoZ')}
-				</Menu.Item>
-				<Menu.Item
-					leftSection={<IconTriangleInvertedFilled size={8} />}
-					disabled={props.sortDirection === 'desc'}
-					onClick={() => props.onSort(props.field, 'desc')}
-					{...tid.headerMenuSort(props.field, 'desc')}
-				>
-					{t('search.sortZtoA')}
-				</Menu.Item>
-			</Menu.Dropdown>
-		</Menu>
-	);
-}
-
-function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
-	const { tid } = useDataTableContext();
-	return (
-		<Table.Th
-			style={getColumnStyle(props.width)}
-			className={classes.resizeableHeader}
-			{...tid.sort(props.field)}
-		>
-			<Group justify='space-between' gap={1} wrap='nowrap' className='overflow-hidden'>
-				<span className='overflow-hidden text-ellipsis whitespace-nowrap'>{props.translateFieldName(props.field)}</span>
-				<Group gap={2} wrap='nowrap' className='flex-shrink-0'>
-					{props.sortable ? (
-						<ColumnHeaderMenu
-							field={props.field}
-							sortDirection={props.sortDirection}
-							onSort={props.onSort}
-						/>
-					) : null}
-					{props.sortDirection === 'asc'
-						? <IconTriangleFilled size={8} className={classes.sortIndicator} />
-						: null}
-					{props.sortDirection === 'desc'
-						? <IconTriangleInvertedFilled size={8} className={classes.sortIndicator} />
-						: null}
-				</Group>
-			</Group>
-			{props.allowColumnResizing ? (
-				<ResizeHandle
-					field={props.field}
-					onStartResize={props.onStartResize}
-					onAutoResize={props.onAutoResize}
-				/>
-			) : null}
-		</Table.Th>
-	);
-}
-
-function DataTableHead(): React.ReactNode {
-	const context = useDataTableContext();
-	const t = useTranslate('common');
-	const fields = context.tableSearchData.desired_fields;
-	const widths = context.cw.widths;
-	const modelSchema = context.settings.modelSchema;
-	const commitColumnValue = context.filters.commitColumnValue;
-	const applyColumnFilters = context.applyFilters;
-	// Committing a cell is already an explicit act — Enter, or picking from a select — so it
-	// applies at once rather than waiting for the panel's Apply. The condition it wrote is
-	// visible in the panel either way.
-	const onCommitColumnFilter = React.useCallback((field: string, value: string) => {
-		const next = commitColumnValue(field, value, getFilterInputKind(modelSchema?.fields?.[field]));
-		applyColumnFilters({ tree: next });
-	}, [commitColumnValue, modelSchema, applyColumnFilters]);
-
-	// A column is sortable only if the server can order by it: the caller's explicit list when
-	// given, otherwise every visible field that owns a database column.
-	const sortableFields = React.useMemo(() => {
-		const declared = context.settings.sortableFields;
-		if (declared) {
-			return new Set(declared);
-		}
-		return new Set(fields.filter(
-			field => modelSchema?.fields?.[field]?.is_persisted !== false,
-		));
-	}, [context.settings.sortableFields, fields, modelSchema]);
-
-	// A header click replaces the whole order and applies at once. It writes the same state the
-	// sort pane edits, so reopening the panel shows the sort the user just chose.
-	const applyFilters = context.applyFilters;
-	const setSortSingle = context.filters.setSortSingle;
-	const onSort = React.useCallback((field: string, direction: dyn.SearchOrder) => {
-		const next: dyn.OrderBy = [[field, direction]];
-		setSortSingle(field, direction);
-		applyFilters({ orderBy: next });
-	}, [setSortSingle, applyFilters]);
-	const orderBy = context.filters.orderBy;
-	const sortOrderMap = React.useMemo(
-		() => new Map(orderBy.map(([field, direction]) => [field, direction])),
-		[orderBy],
-	);
-	return (
-		<Table.Thead className={clsx({
-			[classes.stickyHeader]: context.settings.hasFixHeader,
-		})}>
-			<Table.Tr>
-				<RowNumberHeader
-					isRowMode={context.isRowMode}
-					onToggle={context.handlers.onToggleAll}
-				/>
-				{fields.map(field => (
-					<ColumnHeader
-						key={field}
-						field={field}
-						width={getColumnWidth(field, widths)}
-						sortDirection={sortOrderMap.get(field)}
-						sortable={sortableFields.has(field)}
-						onSort={onSort}
-						allowColumnResizing={context.settings.allowColumnResizing}
-						translateFieldName={context.settings.translateFieldName}
-						onStartResize={context.handlers.onStartResize}
-						onAutoResize={context.handlers.onAutoResize}
-					/>
-				))}
-				{context.settings.allowColumnResizing ? (
-					<Table.Th className={classes.fillerColumn} aria-hidden />
-				) : null}
-			</Table.Tr>
-			{context.settings.enableColumnFilters ? (
-				<ColumnFilterRow
-					fields={fields}
-					modelSchema={context.settings.modelSchema}
-					values={context.filters.columnText}
-					onChange={context.filters.setColumnValue}
-					onCommit={onCommitColumnFilter}
-					getColumnStyle={field => getColumnStyle(getColumnWidth(field, widths))}
-					hasFillerColumn={context.settings.allowColumnResizing}
-					placeholder={t('search.placeholder')}
-					tid={context.tid}
-				/>
-			) : null}
-		</Table.Thead>
-	);
-}
-
-type RowNumberCellProps = {
-	rowIndex: number,
-	rowId: RowId,
-	rowNumber: number,
-	isSelected: boolean,
-	onMouseDown: (
-		e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLButtonElement>,
-		idx: number,
-	) => void,
-	onMouseEnter: (idx: number) => void,
-};
-
-function RowNumberCell(props: RowNumberCellProps): React.ReactNode {
-	const columnWidth = rowNumberColumnWidth;
-	const { tid } = useDataTableContext();
-	return (
-		<Table.Td
-			p={0}
-			onMouseEnter={() => props.onMouseEnter(props.rowIndex)}
-			className={clsx(
-				'text-center align-middle relative',
-				classes.rowNumberCell, {
-					[classes.selectedCell]: props.isSelected,
-					'cursor-pointer': true,
-				},
-			)}
-			style={getColumnStyle(columnWidth)}
-		>
-			<RowNumberOverlayButton
-				onMouseDown={(e) => props.onMouseDown(e, props.rowIndex)}
-				{...tid.rowSelect(props.rowId)}
-			>
-				{props.rowNumber}
-			</RowNumberOverlayButton>
-		</Table.Td>
-	);
-}
-
-type DataCellProps = {
-	width: number,
-	value: string,
-	rawValue: unknown,
-	fieldSchema?: dyn.ModelSchemaField,
-	linkHref?: string,
-	fieldRenderer?: IFieldRenderer,
-	isSelected: boolean,
-	onMouseDown: (e: React.MouseEvent<HTMLTableCellElement>, rowIndex: number) => void,
-	rowIndex: number,
-	rowId: RowId,
-	field: string,
-};
-
-function DataCell(props: DataCellProps): React.ReactNode {
-	const context = useDataTableContext();
-	const t = useTranslate(context.settings.translationNs);
-	const resolved = useResolvedPath(props.linkHref ?? '.');
-	const content = React.useMemo(
-		() => renderDataCellContent(props.rawValue, props.value, props.fieldSchema, props.fieldRenderer, t),
-		[props.fieldSchema, props.fieldRenderer, props.rawValue, t, props.value],
-	);
-	const useEllipsis = shouldUseSingleLineEllipsis(props.value) && !isArrayField(props.fieldSchema);
-	const contentClassName = clsx('block', {
-		'overflow-hidden text-ellipsis whitespace-nowrap': useEllipsis,
-		'whitespace-normal break-words': !useEllipsis,
-	});
-	const linkClassName = clsx(contentClassName, classes.cellRowLink);
-
-	return (
-		<Table.Td
-			style={getColumnStyle(props.width)}
-			onMouseDown={e => props.onMouseDown(e, props.rowIndex)}
-			className={clsx({
-				[classes.selectedCell]: props.isSelected,
-				'cursor-move': context.settings.allowRowMovement,
-			})}
-			{...context.tid.rowCell(props.rowId, props.field)}
-		>
-			{props.linkHref ? (
-				<Anchor
-					component={Link}
-					to={resolved.pathname}
-					className={linkClassName}
-					title={useEllipsis ? props.value : undefined}
-					tabIndex={-1}
-				>
-					{content}
-				</Anchor>
-			) : <div className={contentClassName} title={useEllipsis ? props.value : undefined}>{content}</div>}
-		</Table.Td>
-	);
-}
-
-type BodyRowProps = {
-	item: SearchItem,
-	rowIndex: number,
-	isRowSelected: boolean,
-};
-
-function BodyRow(props: BodyRowProps): React.ReactNode {
-	const context = useDataTableContext();
-	const { item, rowIndex, isRowSelected } = props;
-	const searchData = context.tableSearchData;
-	const widths = context.cw.widths;
-	const rowMove = context.rowMove;
-	const rowLink = context.settings.buildLinkHref?.(item);
-	const rowNumber = getRowNumber(searchData.page, searchData.size, props.rowIndex);
-	const rowId = rowTestIdOf(item, rowIndex);
-	const showDropIndicator = rowMove.state.draggingIndex !== null && rowMove.state.dropIndex === rowIndex;
-	const onDragOver = (event: React.DragEvent<HTMLTableRowElement>) => {
-		if (!context.settings.allowRowMovement) {
-			return;
-		}
-		event.preventDefault();
-		rowMove.dragOver(rowIndex);
-	};
-	return (
-		<Table.Tr
-			draggable={context.settings.allowRowMovement}
-			onDragStart={() => rowMove.startDragging(rowIndex)}
-			onDragOver={onDragOver}
-			onDrop={() => rowMove.drop(rowIndex)}
-			onDragEnd={rowMove.cancel}
-			className={clsx({ [classes.rowDropIndicator]: showDropIndicator })}
-			{...context.tid.row(rowId)}
-		>
-			<RowNumberCell
-				rowIndex={rowIndex} rowId={rowId} rowNumber={rowNumber} isSelected={isRowSelected}
-				onMouseDown={context.handlers.onRowMouseDown}
-				onMouseEnter={context.handlers.onRowMouseEnter}
-			/>
-			{searchData.desired_fields.map(field => (
-				<DataCell
-					key={field}
-					rowIndex={rowIndex}
-					rowId={rowId}
-					field={field}
-					width={getColumnWidth(field, widths)}
-					value={getCellText(item, field, searchData.masked_fields)}
-					rawValue={item[field]}
-					fieldSchema={context.settings.modelSchema?.fields[field]}
-					linkHref={rowLink}
-					fieldRenderer={context.settings.fieldRenderer?.[field]}
-					isSelected={isRowSelected}
-					onMouseDown={context.handlers.onDataCellMouseDown}
-				/>
-			))}
-			{context.settings.allowColumnResizing ? (
-				<Table.Td
-					className={clsx(classes.fillerColumn, {
-						[classes.selectedCell]: isRowSelected,
-					})}
-					onMouseDown={e => context.handlers.onDataCellMouseDown(e, rowIndex)}
-					aria-hidden
-				/>
-			) : null}
-		</Table.Tr>
-	);
-}
-
-function DataTableBody(): React.ReactNode {
-	const context = useDataTableContext();
-	const searchData = context.tableSearchData;
-	const selectedRows = context.rs.rows;
-	return (
-		<Table.Tbody>
-			{searchData.items.map((item, rowIndex) => (
-				<BodyRow
-					key={item.id ?? rowIndex}
-					item={item}
-					rowIndex={rowIndex}
-					isRowSelected={Boolean(selectedRows[rowIndex])}
-				/>
-			))}
-		</Table.Tbody>
-	);
-}
-
 type ViewSettingsModalProps = {
 	opened: boolean,
 	onClose: () => void,
@@ -1124,8 +580,9 @@ type ViewSettingsModalProps = {
 function TableSettingsPanel(props: {
 	draftPageSize: string,
 	onDraftPageSizeChange: (value: string) => void,
-	gridMode: string,
-	onGridModeChange: (value: string) => void,
+	draftViewMode: DataTableViewMode,
+	onDraftViewModeChange: (value: string) => void,
+	enableGridView: boolean,
 }): React.ReactNode {
 	const t = useTranslate('common');
 	const { tid } = useDataTableContext();
@@ -1145,15 +602,17 @@ function TableSettingsPanel(props: {
 					{...tid.settingsPageSize()}
 				/>
 			</Stack>
-			<Stack gap='xs'>
-				<Text size='sm' fw={500}>{t('datatable.viewMode')}</Text>
-				<Radio.Group onChange={props.onGridModeChange} value={props.gridMode}>
-					<Stack gap='xs'>
-						<Radio value='list' label={t('datatable.list')} {...tid.settingsViewMode('list')} />
-						<Radio value='grid' label={t('datatable.grid')} {...tid.settingsViewMode('grid')} />
-					</Stack>
-				</Radio.Group>
-			</Stack>
+			{props.enableGridView ? (
+				<Stack gap='xs'>
+					<Text size='sm' fw={500}>{t('datatable.viewMode')}</Text>
+					<Radio.Group onChange={props.onDraftViewModeChange} value={props.draftViewMode}>
+						<Stack gap='xs'>
+							<Radio value='list' label={t('datatable.list')} {...tid.settingsViewMode('list')} />
+							<Radio value='grid' label={t('datatable.grid')} {...tid.settingsViewMode('grid')} />
+						</Stack>
+					</Radio.Group>
+				</Stack>
+			) : null}
 		</Stack>
 	);
 }
@@ -1172,8 +631,9 @@ type ViewSettingsModalViewProps = {
 	translationNs: string,
 	draftPageSize: string,
 	onDraftPageSizeChange: (value: string) => void,
-	gridMode: string,
-	onGridModeChange: (value: string) => void,
+	draftViewMode: DataTableViewMode,
+	onDraftViewModeChange: (value: string) => void,
+	enableGridView: boolean,
 	onApply: () => void,
 };
 
@@ -1221,9 +681,10 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 					<Tabs.Panel pt='sm' value='table-settings'>
 						<TableSettingsPanel
 							draftPageSize={props.draftPageSize}
-							gridMode={props.gridMode}
+							draftViewMode={props.draftViewMode}
+							enableGridView={props.enableGridView}
 							onDraftPageSizeChange={props.onDraftPageSizeChange}
-							onGridModeChange={props.onGridModeChange}
+							onDraftViewModeChange={props.onDraftViewModeChange}
 						/>
 					</Tabs.Panel>
 				</Tabs>
@@ -1243,11 +704,11 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 	const { opened, onClose, modelSchema, desiredFields } = props;
 	const context = useDataTableContext();
-	const { searchRequest, setSearchRequest } = context;
+	const { searchRequest, setSearchRequest, viewMode, setViewMode } = context;
 	const [activeTab, setActiveTab] = React.useState<string | null>('fields-settings');
 	const [fieldSearch, setFieldSearch] = React.useState('');
 	const [draftPageSize, setDraftPageSize] = React.useState(String(allowedPageSizes[0]));
-	const [gridMode, setGridMode] = React.useState('list');
+	const { draftViewMode, onDraftViewModeChange } = useDraftViewMode(opened, viewMode);
 	const fieldsSelectionGetterRef = React.useRef<(() => string[]) | null>(null);
 	const [fieldsPanelNonce, setFieldsPanelNonce] = React.useState(0);
 	const allSelectableFields = React.useMemo(
@@ -1284,6 +745,8 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 		if (typeof window !== 'undefined' && key) {
 			window.localStorage.setItem(key, String(size));
 		}
+		setViewMode(draftViewMode);
+		writeStoredViewMode(draftViewMode);
 		const fieldOrder = fieldsSelectionGetterRef.current?.() ?? [];
 		setSearchRequest(prev => ({
 			...prev,
@@ -1292,17 +755,18 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 			size,
 		}));
 		onClose();
-	}, [draftPageSize, onClose, setSearchRequest]);
+	}, [draftPageSize, draftViewMode, onClose, setSearchRequest, setViewMode]);
 
 	return (
 		<ViewSettingsModalView
 			activeTab={activeTab}
 			draftPageSize={draftPageSize}
+			draftViewMode={draftViewMode}
+			enableGridView={context.settings.enableGridView}
 			fieldSearch={fieldSearch}
 			fieldsPanelNonce={fieldsPanelNonce}
 			fieldsSelectionGetterRef={fieldsSelectionGetterRef}
 			filteredFields={filteredFields}
-			gridMode={gridMode}
 			initialSelectedFieldNames={desiredFields}
 			opened={opened}
 			translationNs={context.settings.translationNs}
@@ -1310,10 +774,35 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 			onApply={applyViewSettings}
 			onClose={onClose}
 			onDraftPageSizeChange={setDraftPageSize}
+			onDraftViewModeChange={onDraftViewModeChange}
 			onFieldSearchChange={setFieldSearch}
-			onGridModeChange={setGridMode}
 		/>
 	);
+}
+
+/**
+ * The view-mode radio's draft value.
+ *
+ * The radio is a draft until Apply, like every other setting in this modal: opening it and
+ * cancelling must leave the view the user was looking at untouched. Reseeding on open — rather
+ * than only on mount — also covers the mode being changed elsewhere between two openings.
+ */
+function useDraftViewMode(opened: boolean, viewMode: DataTableViewMode) {
+	const [draftViewMode, setDraftViewMode] = React.useState<DataTableViewMode>(viewMode);
+
+	React.useEffect(() => {
+		if (opened) {
+			setDraftViewMode(viewMode);
+		}
+	}, [opened, viewMode]);
+
+	const onDraftViewModeChange = React.useCallback((value: string) => {
+		if (isDataTableViewMode(value)) {
+			setDraftViewMode(value);
+		}
+	}, []);
+
+	return { draftViewMode, onDraftViewModeChange };
 }
 
 const fieldsSettingsTableColumn = 'datatable.fields';
@@ -1348,7 +837,6 @@ function createFieldsSearchData(fields: string[]): SearchData {
 	const colLabel = fieldsSettingsTableColumn;
 	const items = fields.map((field, index) => ({
 		id: `${field}-${index}`,
-		// [colLabel]: translateFieldName(field),
 		[colLabel]: field,
 	}));
 
@@ -1361,49 +849,6 @@ function createFieldsSearchData(fields: string[]): SearchData {
 		masked_fields: [],
 		schema_etag: '',
 	} as SearchData;
-}
-
-function isArrayField(fieldSchema?: dyn.ModelSchemaField): boolean {
-	if (!fieldSchema || typeof fieldSchema.data_type === 'string') {
-		return false;
-	}
-	return fieldSchema.data_type.is_array === true;
-}
-
-function getFieldDataTypeName(fieldSchema?: dyn.ModelSchemaField): dyn.ModelSchemaFieldDataTypeName | null {
-	if (!fieldSchema) {
-		return null;
-	}
-	if (typeof fieldSchema.data_type === 'string') {
-		return fieldSchema.data_type;
-	}
-	return fieldSchema.data_type.name;
-}
-
-function renderDataCellContent(
-	rawValue: unknown,
-	textValue: string,
-	fieldSchema: dyn.ModelSchemaField | undefined,
-	fieldRenderer: IFieldRenderer | undefined,
-	t: TranslateFn,
-): React.ReactNode {
-	if (fieldRenderer) {
-		return applyCustomRenderer(fieldRenderer, textValue, t);
-	}
-	const dataTypeName = getFieldDataTypeName(fieldSchema);
-	if (!isArrayField(fieldSchema)) {
-		return renderDefaultByDataType(rawValue, textValue, dataTypeName);
-	}
-	const values = Array.isArray(rawValue) ? rawValue : (rawValue == null || rawValue === '' ? [] : [rawValue]);
-	if (values.length === 0) {
-		return '';
-	}
-	return values.map((value, index) => (
-		<React.Fragment key={`${String(value)}-${index}`}>
-			{renderDefaultByDataType(value, String(value ?? ''), dataTypeName)}
-			{index < values.length - 1 ? <br /> : null}
-		</React.Fragment>
-	));
 }
 
 function filterFields(fields: string[], query: string): string[] {
@@ -1509,7 +954,6 @@ function useDataCellMouseDownHandler(rs: ReturnType<typeof useRowSelectionState>
 		event: React.MouseEvent<HTMLTableCellElement>,
 		rowIndex: number,
 	) => {
-		// event.preventDefault();
 		rs.setRows({ [rowIndex]: true });
 		rs.setAnchor(rowIndex);
 		rs.setDrag({ isActive: false, targetSelected: false });

@@ -1,12 +1,12 @@
 import React from 'react';
 
 import type {
-	RequiredDataTableProps, SearchData, useColumnWidthsState, useRowMoveState,
-	useRowSelectionState, useTableHandlers,
+	RequiredDataTableProps, useRowMoveState, useRowSelectionState, useTableHandlers,
 } from './DataTable';
-import type { FilterTree } from './filterTree';
+import type { FilterState, FilterTree } from './FilterBox';
+import type { useColumnWidthsState } from './ListView';
 import type { DataTableTestIds } from './testIds';
-import type { FilterState } from './useFilterState';
+import type { DataTableViewMode, SearchData } from './types';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 
@@ -40,6 +40,12 @@ export type DataTableContextValue = {
 	/** The one path by which conditions and sort order reach the request. */
 	applyFilters: (overrides?: { tree?: FilterTree, orderBy?: dyn.OrderBy }) => void,
 	tid: DataTableTestIds,
+	/**
+	 * Which container renders the body. Already narrowed to what this table permits, so a view
+	 * never has to ask whether the grid is enabled before trusting it.
+	 */
+	viewMode: DataTableViewMode,
+	setViewMode: React.Dispatch<React.SetStateAction<DataTableViewMode>>,
 };
 
 export const DataTableContext = React.createContext<DataTableContextValue | null>(null);

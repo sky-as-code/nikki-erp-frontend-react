@@ -23,6 +23,7 @@ import {
 import { ResourceDetailOverflowMenu } from './resourceOverflowMenu';
 import { useResourceUpdateContext } from './resourceUpdateContext';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
+import { useRoutePathHref } from '../../data/useResourceLinkHref';
 
 
 import type {
@@ -192,6 +193,12 @@ function ResourceDetailExtraActionButtons({
 	));
 }
 
+/**
+ * One contextual action, in whichever of its two shapes the page authored.
+ *
+ * The split is a hooks requirement, not a style choice: the command variant calls `useCommand`
+ * and the link variant `useRoutePathHref`, and neither may be called conditionally.
+ */
 function ResourceDetailExtraActionButton({
 	actionKey, action, resource, disabled = false,
 }: {
@@ -201,9 +208,69 @@ function ResourceDetailExtraActionButton({
 	resource: Record<string, unknown>,
 	disabled?: boolean,
 }): React.ReactNode {
+	if (action.routePath) {
+		return <ResourceDetailLinkActionButton actionKey={actionKey} action={action} disabled={disabled} />;
+	}
+	return (
+		<ResourceDetailCommandActionButton
+			actionKey={actionKey}
+			action={action}
+			resource={resource}
+			disabled={disabled}
+		/>
+	);
+}
+
+/**
+ * The `routePath` variant: a plain link, no command, no request.
+ *
+ * The href is resolved absolutely from the target page's own `routePath` rather than relatively
+ * from the current URL, because `ViewEngineRouter` registers pages as flat routes where `'..'`
+ * pops to the module root. An unresolved href means a route param is still missing, so the
+ * button renders disabled rather than pointing somewhere wrong.
+ */
+function ResourceDetailLinkActionButton({
+	actionKey, action, disabled = false,
+}: {
+	actionKey: string,
+	action: ResourceDetailExtraAction,
+	disabled?: boolean,
+}): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const tid = useResourceDetailTestAttrs();
-	const command = useCommand(action.command);
+	const href = useRoutePathHref(action.routePath);
+
+	if (!href) {
+		return null;
+	}
+
+	return (
+		<Button
+			component={Link}
+			to={href}
+			variant='outline'
+			size='compact-md'
+			disabled={disabled}
+			{...tid('action', actionKey)}
+		>
+			{t(action.label)}
+		</Button>
+	);
+}
+
+function ResourceDetailCommandActionButton({
+	actionKey, action, resource, disabled = false,
+}: {
+	actionKey: string,
+	action: ResourceDetailExtraAction,
+	resource: Record<string, unknown>,
+	disabled?: boolean,
+}): React.ReactNode {
+	const t = useTranslate(useResourceDetailTranslationNs());
+	const tid = useResourceDetailTestAttrs();
+	// The schema's refine guarantees exactly one of `command` / `routePath`, and this component
+	// renders only for the former, so the fallback is unreachable rather than a default.
+	const command = useCommand(action.command ?? '');
 	const { refresh } = useResourceUpdateContext();
 	// Above the early return: hooks cannot be called conditionally.
 	const [promptOpen, setPromptOpen] = React.useState(false);

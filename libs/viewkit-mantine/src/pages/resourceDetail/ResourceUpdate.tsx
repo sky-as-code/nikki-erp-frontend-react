@@ -148,11 +148,14 @@ function buildUpdateNodes(context: ResourceUpdateContextValue): ComponentNode[] 
 		defineComponent({
 			component: RESOURCE_FORM,
 			children: [
-				defineComponent({
+				// Empty `formSections` (a page whose fields all live in `childrenNodes`, e.g. behind
+				// tabs) would otherwise still render this section's own bordered box and action bar
+				// with nothing inside it — a redundant, empty collapsible above the real content.
+				...(columns.length > 0 ? [defineComponent({
 					component: RESOURCE_FORM_SECTION,
 					props: { expanded: true },
 					children: columns,
-				}),
+				})] : []),
 			],
 		}),
 		// Siblings of the form, not children of its section: the section's inner

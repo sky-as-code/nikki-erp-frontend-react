@@ -23,3 +23,9 @@ export { useResourceSearch } from './data/useResourceSearch';
 export type {
 	UseResourceSearchOptions, UseResourceSearchResult,
 } from './data/useResourceSearch';
+/**
+ * Row-link builders, for a module template that renders its own `DataTable` and so cannot
+ * inherit the `href` wiring `resourceList` does for free. A module must not rebuild the URL
+ * shape by hand: `/{orgSlug}/{moduleSlug}/{routePath}/{id}` is owned here.
+ */
+export { useResourceBaseHref, useResourceLinkHref, useRoutePathHref } from './data/useResourceLinkHref';

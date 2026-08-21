@@ -7,15 +7,15 @@ import {
 	getEnumOptions, getFilterInputKind, getOperatorsForKind, isMultiValueOperator,
 	operatorLabelKey,
 } from './filterModel';
-import { Button } from '../Button';
-import { Select } from '../Select';
 import classes from './FilterPanel.module.css';
 import { applyFieldChange, applyOperatorChange } from './filterTree';
 import { FilterValueInput, isKeyboardCommitKind, shouldHideValueInput } from './FilterValueInput';
-import { useTranslate } from '../../i18n';
+import { useTranslate } from '../../../i18n';
+import { Button } from '../../Button';
+import { Select } from '../../Select';
 
 import type { FilterConditionNode, FilterRenderRow } from './filterTree';
-import type { DataTableTestIds } from './testIds';
+import type { DataTableTestIds } from '../testIds';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 
