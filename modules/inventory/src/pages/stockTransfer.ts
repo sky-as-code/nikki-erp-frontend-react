@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -65,7 +65,7 @@ function buildStockTransferDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'transfer_number' },
 		titleLvl2: { schemaField: 'status' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: StockTransferCommands.GET_BY_ID,
 			create: StockTransferCommands.CREATE,
@@ -73,32 +73,47 @@ function buildStockTransferDetailProps() {
 			delete: StockTransferCommands.DELETE,
 		},
 		contextualActions: buildMovementActions(),
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: [
-				'transfer_number', 'operation_type_id', 'operation_code', 'status',
-				'origin_reference', 'note', 'org_id',
-			],
-		}, {
-			header: 'form.movement',
-			fields: ['source_location_id', 'destination_location_id', 'priority'],
-		}, {
-			header: 'form.stockPolicies',
-			// Snapshots taken at create time, shown so a reader can see what this transfer will do
-			// rather than what its operation type currently says (BR §4.2.3.4).
-			fields: ['reservation_method', 'backorder_policy', 'shipping_policy'],
-		}, {
-			header: 'form.scheduling',
-			fields: ['scheduled_at', 'deadline_at', 'completed_at'],
-		}, {
-			header: 'form.backorder',
-			fields: ['backorder_of_id', 'return_of_id', 'chain_group_id'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
-		childrenNodes: buildMovementSections(),
+		createNodes: [buildStockTransferFieldsSection()],
+		childrenNodes: [buildStockTransferFieldsSection(), ...buildMovementSections()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildStockTransferFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: [
+					'transfer_number', 'operation_type_id', 'operation_code', 'status',
+					'origin_reference', 'note', 'org_id',
+				],
+			}),
+			resourceFormColumnNode({
+				header: 'form.movement',
+				fields: ['source_location_id', 'destination_location_id', 'priority'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.stockPolicies',
+				// Snapshots taken at create time, shown so a reader can see what this transfer will do
+				// rather than what its operation type currently says (BR Â§4.2.3.4).
+				fields: ['reservation_method', 'backorder_policy', 'shipping_policy'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.scheduling',
+				fields: ['scheduled_at', 'deadline_at', 'completed_at'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.backorder',
+				fields: ['backorder_of_id', 'return_of_id', 'chain_group_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /**
@@ -146,7 +161,7 @@ function buildMovementActions() {
 		},
 		// The one action that appears only once a transfer is done, and the counterpart to
 		// cancel's disappearing there: a completed movement is corrected by reversing it
-		// (AC-STOCK-009, AC-STOCK-021). No prompt — it defaults to the full returnable quantity
+		// (AC-STOCK-009, AC-STOCK-021). No prompt â€” it defaults to the full returnable quantity
 		// per move and lands as a draft the user can trim before confirming.
 		create_return: {
 			label: 'actions.create_return',
@@ -161,12 +176,12 @@ function buildMovementActions() {
  *
  * Both are filtered by the current route param, the same pattern as the product template's
  * variants table. Move lines are read-only: they are written by the reservation engine, and
- * letting a user edit an allocation would need the release-and-re-reserve flow of BR §4.2.5.4.
+ * letting a user edit an allocation would need the release-and-re-reserve flow of BR Â§4.2.5.4.
  *
  * Neither links to a Moves page, because there is none: a move has no life outside the transfer
  * that carries it. They link to the *product* instead, which is the question a reader of a
- * transfer line actually has — "what is this thing?" — and completes the navigation in the
- * direction Stock → Product (CR §17).
+ * transfer line actually has â€” "what is this thing?" â€” and completes the navigation in the
+ * direction Stock â†’ Product (CR Â§17).
  */
 function buildMovementSections(): ComponentNode[] {
 	return [

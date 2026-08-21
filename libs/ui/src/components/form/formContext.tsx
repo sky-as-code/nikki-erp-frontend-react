@@ -110,6 +110,16 @@ type HandleSubmitOnValid = (data: any) => any;
 type SubmitEventHandler = (e?: React.BaseSyntheticEvent) => Promise<void>;
 type HandleSubmitFn = (onValid?: HandleSubmitOnValid) => SubmitEventHandler;
 
+/**
+ * A submit that reports back whether the write actually succeeded.
+ *
+ * `handleSubmit`'s own return is `Promise<void>` — react-hook-form swallows the result — so a
+ * caller that must react to success (leaving edit mode, closing a dialog) cannot use it. This
+ * variant resolves `false` when validation blocks the submit or `onSubmit` reports failure.
+ */
+type SubmitWithResultHandler = (e?: React.BaseSyntheticEvent) => Promise<boolean>;
+type HandleSubmitWithResultFn = (onValid?: HandleSubmitOnValid) => SubmitWithResultHandler;
+
 export type FormProviderRenderProps = {
 	/**
 	 * Accepts a function to process the form data before submitting.
@@ -117,10 +127,25 @@ export type FormProviderRenderProps = {
 	 * If the function returns null or undefined, the form data will not be submitted.
 	 */
 	handleSubmit: HandleSubmitFn,
+	/**
+	 * Like {@link handleSubmit}, but resolves whether the write succeeded — `false` if validation
+	 * blocked it or `onSubmit` reported failure. Use this when success has a UI consequence.
+	 */
+	handleSubmitWithResult: HandleSubmitWithResultFn,
 	reset: () => void,
 	form: UseFormReturn<any>,
 	isLoading: boolean,
 	errors: ReturnType<typeof useForm>['formState']['errors'],
+	/**
+	 * Which fields the user has actually changed.
+	 *
+	 * Read from `formState` **during render**, not lazily in a callback: `formState` is a Proxy
+	 * that only begins tracking a key once something has read it while rendering. A consumer that
+	 * first touches `formState.dirtyFields` inside a submit handler can get `{}` back, because the
+	 * proxy never activated — which is how a "save only what changed" payload silently becomes
+	 * "save nothing at all".
+	 */
+	dirtyFields: ReturnType<typeof useForm>['formState']['dirtyFields'],
 	/**
 	 * Attaches server-side rejections to the form. Items carrying a `field` land on
 	 * that input; the rest are returned so the caller can show them form-level.
@@ -156,8 +181,13 @@ export type CrudFormProviderProps = Omit<BaseFormProviderProps, 'children'> & {
 	modelValue?: Record<string, any> | null,
 	/** `true` while a create/update command is in flight. */
 	isSubmitting?: boolean,
-	/** Invoked with the validated, post-processed form data when the user submits. */
-	onSubmit: (data: Record<string, any>) => void,
+	/**
+	 * Invoked with the validated, post-processed form data when the user submits.
+	 *
+	 * May report whether the write succeeded, so the caller can leave edit mode only on success —
+	 * a rejected save must keep the user's input on screen to be corrected.
+	 */
+	onSubmit: (data: Record<string, any>) => void | boolean | Promise<void | boolean>,
 	/**
 	 * Either a render function (legacy) or plain nodes (declarative). Node children
 	 * reach the form runtime via {@link useCrudFormRuntime}.
@@ -178,7 +208,11 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 
 	const {
 		control,
-		formState: { errors },
+		// `dirtyFields` is destructured here, during render, purely to subscribe it: `formState` is
+		// a Proxy that only starts tracking a key once it has been read while rendering. Reading it
+		// for the first time inside a submit callback yields `{}`, which would turn a partial-save
+		// payload into `{id, etag}` and silently persist nothing.
+		formState: { errors, dirtyFields },
 		register,
 		handleSubmit,
 		reset,
@@ -196,14 +230,33 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 			return handleSubmit((data) => {
 				const postprocessed = onValid ? onValid(data) : data;
 				if (postprocessed) {
-					props.onSubmit(postprocessed);
+					void props.onSubmit(postprocessed);
 				}
 			});
+		},
+		// `handleSubmit` resolves before its own callback's promise does, so the result is captured
+		// out-of-band rather than returned through it.
+		handleSubmitWithResult: (onValid?: HandleSubmitOnValid): SubmitWithResultHandler => {
+			return async (event?: React.BaseSyntheticEvent) => {
+				let succeeded = false;
+				await handleSubmit(async (data) => {
+					const postprocessed = onValid ? onValid(data) : data;
+					if (!postprocessed) {
+						return;
+					}
+					// A handler that reports nothing is treated as success: most callers just fire
+					// and have no failure to report, and the old behaviour was to always proceed.
+					const result = await props.onSubmit(postprocessed);
+					succeeded = result !== false;
+				})(event);
+				return succeeded;
+			};
 		},
 		reset,
 		form,
 		isLoading: props.isSubmitting ?? false,
 		errors,
+		dirtyFields,
 		setServerErrors: clientErrors => applyServerErrors(form, clientErrors),
 	};
 
@@ -268,7 +321,8 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 
 	const {
 		control,
-		formState: { errors },
+		// Subscribed during render, for the same reason as `CrudFormProvider` — see the note there.
+		formState: { errors, dirtyFields },
 		register,
 		handleSubmit,
 		reset,
@@ -300,10 +354,21 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 		>
 			{props.modelLoading ? <LoadingState /> : props.children({
 				handleSubmit: handleSubmit as any,
+				// This provider has no `onSubmit` of its own to report failure, so a completed
+				// submit is always reported as success.
+				handleSubmitWithResult: (onValid?: HandleSubmitOnValid) => async (event?: React.BaseSyntheticEvent) => {
+					let reached = false;
+					await handleSubmit((data) => {
+						onValid?.(data);
+						reached = true;
+					})(event);
+					return reached;
+				},
 				reset,
 				form,
 				isLoading: false,
 				errors,
+				dirtyFields,
 				setServerErrors: clientErrors => applyServerErrors(form, clientErrors),
 			})}
 		</FormFieldContext.Provider>

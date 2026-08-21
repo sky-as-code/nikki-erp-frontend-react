@@ -368,7 +368,13 @@ type DataCellProps = {
 	rowIndex: number,
 	rowId: RowId,
 	field: string,
+	item: SearchItem,
 };
+
+/** A modified click or non-primary button means "open in new tab/window" — never intercept those. */
+function isModifiedClick(event: React.MouseEvent): boolean {
+	return event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0;
+}
 
 function DataCell(props: DataCellProps): React.ReactNode {
 	const context = useDataTableContext();
@@ -384,6 +390,15 @@ function DataCell(props: DataCellProps): React.ReactNode {
 		'whitespace-normal break-words': !useEllipsis,
 	});
 	const linkClassName = clsx(contentClassName, sharedClasses.rowLink);
+	const onSelectRow = context.settings.onSelectRow;
+	const item = props.item;
+	const onAnchorClick = React.useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
+		if (!onSelectRow || isModifiedClick(event)) {
+			return;
+		}
+		event.preventDefault();
+		onSelectRow(item);
+	}, [onSelectRow, item]);
 
 	return (
 		<Table.Td
@@ -402,6 +417,7 @@ function DataCell(props: DataCellProps): React.ReactNode {
 					className={linkClassName}
 					title={useEllipsis ? props.value : undefined}
 					tabIndex={-1}
+					onClick={onAnchorClick}
 				>
 					{content}
 				</Anchor>
@@ -433,6 +449,18 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 		event.preventDefault();
 		rowMove.dragOver(rowIndex);
 	};
+	// A picker table has no `buildLinkHref`, so none of its cells are links and the anchor's own
+	// click handler never runs. The row carries the fallback so plain clicks still pick, while
+	// modified clicks stay untouched for the linked case.
+	const onSelectRow = context.settings.onSelectRow;
+	const onRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
+		if (!onSelectRow || rowLink || isModifiedClick(event)) {
+			return;
+		}
+		onSelectRow(item);
+	};
+	const isPicked = context.settings.selectedRowId != null
+		&& String(item.id) === context.settings.selectedRowId;
 	return (
 		<Table.Tr
 			draggable={context.settings.allowRowMovement}
@@ -440,7 +468,12 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 			onDragOver={onDragOver}
 			onDrop={() => rowMove.drop(rowIndex)}
 			onDragEnd={rowMove.cancel}
-			className={clsx({ [classes.rowDropIndicator]: showDropIndicator })}
+			onClick={onRowClick}
+			className={clsx({
+				[classes.rowDropIndicator]: showDropIndicator,
+				[classes.pickedRow]: isPicked,
+				'cursor-pointer': Boolean(onSelectRow),
+			})}
 			{...context.tid.row(rowId)}
 		>
 			<RowNumberCell
@@ -454,6 +487,7 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 					rowIndex={rowIndex}
 					rowId={rowId}
 					field={field}
+					item={item}
 					width={getColumnWidth(field, widths)}
 					value={getCellText(item, field, searchData.masked_fields)}
 					rawValue={item[field]}

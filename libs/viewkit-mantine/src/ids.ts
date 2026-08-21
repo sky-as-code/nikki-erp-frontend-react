@@ -22,17 +22,14 @@ export const RESOURCE_TABLE = 'nikkierp.mantine.components.resourceTable.v1';
 export const RESOURCE_DETAIL_HEADER = 'nikkierp.mantine.components.resourceDetail.header.v1';
 export const RESOURCE_FORM = 'nikkierp.mantine.components.resourceForm.v1';
 export const RESOURCE_FORM_COLUMN = 'nikkierp.mantine.components.resourceForm.column.v1';
-export const RESOURCE_FORM_SECTION = 'nikkierp.mantine.components.resourceForm.section.v1';
 export const RESOURCE_CREATE_HEADER = 'nikkierp.mantine.components.resourceCreate.header.v1';
 export const RESOURCE_CREATE_FORM = 'nikkierp.mantine.components.resourceCreate.form.v1';
-export const RESOURCE_CREATE_SECTION = 'nikkierp.mantine.components.resourceCreate.section.v1';
-export const RESOURCE_CREATE_COLUMN = 'nikkierp.mantine.components.resourceCreate.column.v1';
 export const RESOURCE_SPLIT_VIEW = 'nikkierp.mantine.components.resourceSplitView.v1';
 
 /**
  * A tabbed container for a resource detail page. Like `collapsibleSection` it groups nodes, but it
- * renders the enclosing form's `SectionActionBar`, so — exactly as with `resourceForm.section` — it
- * belongs inside the resource-update family and nowhere else.
+ * renders the enclosing form's `SectionActionBar`, so it belongs inside the resource-update family
+ * and nowhere else.
  */
 export const RESOURCE_FORM_TABS = 'nikkierp.mantine.components.resourceFormTabs.v1';
 export const RESOURCE_FORM_TABS_TAB = 'nikkierp.mantine.components.resourceFormTabs.tab.v1';

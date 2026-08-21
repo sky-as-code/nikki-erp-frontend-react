@@ -1,4 +1,4 @@
-import { Loader, Select } from '@mantine/core';
+import { Select } from '@mantine/core';
 import { useDebouncedValue, useId } from '@mantine/hooks';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
@@ -6,11 +6,15 @@ import { Controller, useWatch } from 'react-hook-form';
 
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
-import { useFieldTestAttrs } from './formTestIds';
+import { useFormTestIdPrefix } from './formTestIds';
+import { RelationPickerModal } from './RelationPickerModal';
 import { useCommand } from '../../hookhoc/useCommand';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
+import { useTranslate } from '../../i18n';
+import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 
 import type { LocalizeFn } from '../../i18n';
+import type { SearchItem } from '../DataTable/types';
 
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -44,6 +48,10 @@ export type RelationSelectFieldProps = {
  * Everything it needs comes from the schema: the field's own `to_relations` entry names the target
  * schema, whose `record_label_field` names the text to show. Nothing is hardcoded per resource, so
  * a new relation renders correctly with no page-metadata change.
+ *
+ * The dropdown's own debounced typeahead (fast top-N match) is the default interaction; its action
+ * item opens a `RelationPickerModal` — a full searchable/filterable/paginated table of the
+ * referenced schema — as the "browse everything" escape hatch, not a replacement for typing.
  */
 export function RelationSelectField(props: RelationSelectFieldProps): React.ReactNode {
 	const { name, localize } = props;
@@ -51,8 +59,15 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 	const fieldData = useFieldData(name);
 	const { control, modelLoading } = useFormField();
 	const [term, setTerm] = React.useState('');
+	const [isPickerOpen, setIsPickerOpen] = React.useState(false);
 	const options = useRelationOptions(name, term, localize);
-	const fieldAttrs = useFieldTestAttrs(name);
+	const testIdPrefix = useFormTestIdPrefix();
+	const fieldTestId = testIdPrefix ? `${testIdPrefix}.field.${name}` : undefined;
+	const t = useTranslate('common');
+	const isDisabled = Boolean(
+		modelLoading || props.inputProps?.disabled
+		|| props.exclusiveDisabledBy || options.loadError,
+	);
 
 	if (!fieldData) {
 		return null;
@@ -65,42 +80,49 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 			// Uncomment to show sub-labels
 			// description={translatedOrEmpty(localize(fieldData.description))}
 			isRequired={fieldData.isRequired}
-			error={localize(fieldData.error as any)}
+			error={options.loadError ?? localize(fieldData.error as any)}
 		>
 			<Controller
 				name={name}
 				control={control}
 				render={({ field }) => (
-					<Select
-						id={inputId}
-						data={options.data}
-						// Kept visible while disabled: the value is still in form state and will
-						// still be submitted, so hiding it would misrepresent what gets sent.
-						value={(field.value as string) ?? null}
-						onChange={val => field.onChange(val === null || val === '' ? undefined : val)}
-						// `searchValue` is deliberately left uncontrolled so Mantine can show the
-						// selected option's label in the box. On select it reports that label here
-						// as a "search"; treating it as one would fetch a fresh page, drop the
-						// selected option out of `data`, and leave the input rendering nothing.
-						onSearchChange={value => setTerm(value === options.selectedLabel ? '' : value)}
-						// Results are already filtered server-side; filtering again here would
-						// hide rows the server deliberately returned.
-						filter={({ options: opts }) => opts}
-						rightSection={options.isPending ? <Loader size='xs' /> : undefined}
-						error={options.loadError}
-						placeholder={localize(fieldData.placeholder)}
-						searchable
-						clearable
-						size='md'
-						{...fieldAttrs}
-						{...props.inputProps}
-						// After the spread: the caller's `disabled` reflects only whether the form
-						// is busy, and must not re-enable a field the exclusive group has closed.
-						disabled={
-							modelLoading || props.inputProps?.disabled
-							|| Boolean(props.exclusiveDisabledBy) || Boolean(options.loadError)
-						}
-					/>
+					<>
+						<SearchableSelect
+							items={options.data}
+							// An input, not a filled button: this stands in for a form field and
+							// must match the inputs beside it, not paint in the theme's accent.
+							variant='input'
+							dropdownWidth='target'
+							value={(field.value as string) ?? null}
+							onChange={val => field.onChange(val === '' ? undefined : val)}
+							onSearchChange={setTerm}
+							// Always on: the search box triggers server-side search, not just a
+							// filter over an already-fetched list, so it must show regardless of
+							// how many rows the current page happens to hold.
+							searchBoxEnabledAt={0}
+							actionOptionLabel={options.destSchemaName ? t('action.browseAll') : undefined}
+							onActionTrigger={isDisabled ? undefined : () => setIsPickerOpen(true)}
+							searchPlaceholder={t('action.search')}
+							unselectedPlaceholder={
+								options.isPending ? t('messages.loading') : localize(fieldData.placeholder)
+							}
+							disabled={isDisabled}
+							testId={fieldTestId}
+						/>
+						{options.destSchemaName ? (
+							<RelationPickerModal
+								opened={isPickerOpen}
+								onClose={() => setIsPickerOpen(false)}
+								destSchemaName={options.destSchemaName}
+								localize={localize}
+								selectedId={(field.value as string) ?? null}
+								testId={fieldTestId}
+								onSelect={(item: SearchItem) => {
+									field.onChange(String(item.id));
+								}}
+							/>
+						) : null}
+					</>
 				)}
 			/>
 		</BaseFieldWrapper>
@@ -113,6 +135,8 @@ type RelationOptions = {
 	loadError?: string,
 	/** Label of the option currently selected, so the caller can tell it apart from a typed term. */
 	selectedLabel?: string,
+	/** The referenced schema's own name, or empty until the field's relation resolves. */
+	destSchemaName: string,
 };
 
 /**
@@ -155,6 +179,7 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 		isPending: search.isPending,
 		loadError: search.loadError,
 		selectedLabel: data.find(option => option.value === selectedId)?.label,
+		destSchemaName,
 	};
 }
 

@@ -63,6 +63,19 @@ export type DataTableProps = {
 	fieldRenderer?: FieldRendererMap,
 	/** When set, each row's cells are linked with this absolute pathname (same href for all cells in the row). */
 	buildLinkHref?: (rowData: SearchItem) => string,
+	/**
+	 * Fired on a plain unmodified left click on a row, instead of navigating.
+	 *
+	 * Where `buildLinkHref` is also set, ctrl/cmd/shift+click and right-click ("open in new tab")
+	 * still navigate via the underlying link — only the plain click is intercepted, so a row can be
+	 * both a pick target and a real link.
+	 */
+	onSelectRow?: (rowData: SearchItem) => void,
+	/**
+	 * The `id` of the row to show as picked. Renders the marked state for a caller that commits a
+	 * choice separately (a picker with its own Apply), where `onSelectRow` only stages it.
+	 */
+	selectedRowId?: string,
 	actions?: DataTableAction[],
 	allowColumnResizing?: boolean,
 	isFullWidthTable?: boolean,

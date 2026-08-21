@@ -12,7 +12,13 @@ export const statusOptionSchema = z.object({
 });
 
 export const ownPropertySectionSchema = z.object({
-	header: z.string(),
+	/**
+	 * Optional i18n key for the block's title. A block that is already introduced by its
+	 * enclosing `collapsible_section` header has nothing left to say, so it omits this rather
+	 * than passing an empty string -- which used to resolve through `t('')` and print the raw
+	 * namespace.
+	 */
+	header: z.string().min(1).optional(),
 	fields: z.array(z.string()).optional(),
 });
 
@@ -98,10 +104,9 @@ export const resourceDetailPropsSchema = z.object({
 	translationNs: z.string().min(1),
 	titleLvl1: schemaFieldSpecSchema.optional(),
 	titleLvl2: schemaFieldSpecSchema.optional(),
-	titleLvl3: linkSpecSchema.optional(),
+	backLinkTitle: linkSpecSchema.optional(),
 	allStatuses: z.array(statusOptionSchema).optional(),
 	currentStatus: schemaFieldSpecSchema.optional(),
-	formSections: z.array(ownPropertySectionSchema).default([]),
 	contextualActions: z.record(z.string(), resourceDetailExtraActionSchema).optional(),
 	standardActionCommands: standardActionCommandsSchema.default({}),
 	/**
@@ -110,6 +115,15 @@ export const resourceDetailPropsSchema = z.object({
 	 * during create there is no record id for a related-records table to filter by.
 	 */
 	childrenNodes: z.array(componentNodeSchema).optional(),
+	/**
+	 * Component nodes rendered as the create form's body.
+	 *
+	 * Separate from `childrenNodes` because the two modes genuinely differ: `childrenNodes` may
+	 * hold related-records tables, which have no record id to filter by during create. A page's
+	 * own field blocks belong in both, and the same `resourceFormColumnNode` serves either -- it
+	 * detects the mode from its enclosing form. A page with no `create` command needs neither.
+	 */
+	createNodes: z.array(componentNodeSchema).optional(),
 	/**
 	 * `{module}.{component}` prefix for the `data-testid` of every element this page renders.
 	 * Derived from the route and schema name when omitted, so most pages need not set it.

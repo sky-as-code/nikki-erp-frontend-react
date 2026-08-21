@@ -13,6 +13,16 @@ td.selectedCell {
 	box-shadow: inset 0 3px 0 var(--mantine-color-blue-9) !important;
 }
 
+/*
+ * The row a picker has staged but not yet committed. Deliberately louder than `.selectedCell`,
+ * which marks a copy/keyboard selection: this one answers "which record will Apply choose?", so it
+ * has to read at a glance from anywhere in the table.
+ */
+.pickedRow > td {
+	background-color: var(--nikki-color-table-bg-selected) !important;
+	box-shadow: inset 2px 0 0 var(--mantine-primary-color-filled);
+}
+
 .stickyHeader {
 	position: sticky;
 	top: 0;

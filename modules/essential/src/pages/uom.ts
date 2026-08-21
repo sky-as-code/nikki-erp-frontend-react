@@ -1,8 +1,13 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
-import { resourceDetailProps, resourceListProps, resourceSplitViewProps } from '@nikkierp/viewkit-mantine/props';
+import {
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps,
+} from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { UomCommands } from '../features/uom/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export function buildUomPages(): PageNode[] {
@@ -46,7 +51,7 @@ function buildUomDetailProps() {
 		translationNs: c.ESSENTIAL_MODULE,
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'symbol' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: UomCommands.GET_BY_ID,
 			create: UomCommands.CREATE,
@@ -54,17 +59,30 @@ function buildUomDetailProps() {
 			delete: UomCommands.DELETE,
 			archive: UomCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['name', 'symbol', 'category_id', 'org_id'],
-		}, {
-			// BR-UOM-ESS-016: the factor and the rounding precision are independent concepts,
-			// so they are shown together but never presented as substitutes for one another.
-			header: 'form.conversion',
-			fields: ['uom_type', 'factor', 'rounding'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
+		createNodes: [buildUomFieldsSection()],
+		childrenNodes: [buildUomFieldsSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildUomFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['name', 'symbol', 'category_id', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				// BR-UOM-ESS-016: the factor and the rounding precision are independent concepts,
+				// so they are shown together but never presented as substitutes for one another.
+				header: 'form.conversion',
+				fields: ['uom_type', 'factor', 'rounding'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }

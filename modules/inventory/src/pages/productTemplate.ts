@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -55,7 +55,7 @@ function buildProductTemplateDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'short_name' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: ProductTemplateCommands.GET_BY_ID,
 			create: ProductTemplateCommands.CREATE,
@@ -63,31 +63,46 @@ function buildProductTemplateDetailProps() {
 			delete: ProductTemplateCommands.DELETE,
 			archive: ProductTemplateCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['name', 'short_name', 'status', 'org_id'],
-		}, {
-			header: 'form.identification',
-			fields: ['product_type_id', 'category_id', 'brand_id'],
-		}, {
-			// sale_ok and purchase_ok decide which business processes may reference the product,
-			// which is what makes them belong beside their descriptions rather than in general
-			// information. See BR §2.4.
-			header: 'form.sales',
-			fields: ['sale_ok', 'sales_description'],
-		}, {
-			header: 'form.purchasing',
-			fields: ['purchase_ok', 'purchase_description'],
-		}, {
-			// Defaults a variant inherits when it sets no value of its own. See BR §6.4.
-			header: 'form.dimensions',
-			fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
-		childrenNodes: buildTemplateSections(),
+		createNodes: [buildProductTemplateFieldsSection()],
+		childrenNodes: [buildProductTemplateFieldsSection(), ...buildTemplateSections()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildProductTemplateFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['name', 'short_name', 'status', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.identification',
+				fields: ['product_type_id', 'category_id', 'brand_id'],
+			}),
+			resourceFormColumnNode({
+				// sale_ok and purchase_ok decide which business processes may reference the product,
+				// which is what makes them belong beside their descriptions rather than in general
+				// information. See BR Â§2.4.
+				header: 'form.sales',
+				fields: ['sale_ok', 'sales_description'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.purchasing',
+				fields: ['purchase_ok', 'purchase_description'],
+			}),
+			resourceFormColumnNode({
+				// Defaults a variant inherits when it sets no value of its own. See BR Â§6.4.
+				header: 'form.dimensions',
+				fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /**
@@ -138,18 +153,18 @@ function buildTemplateSections(): ComponentNode[] {
 }
 
 /**
- * The unit this product line's stock is counted in (CR §11).
+ * The unit this product line's stock is counted in (CR Â§11).
  *
  * Configured here because this is where a user works, but owned by Stock: it decides what a
  * balance means, and the row lives in its own resource rather than as a column on the template
- * (CR §11.3, §11.4). Every variant inherits it and none may override it in this change request
- * (CR §11.5, PROD-INT-INV-011, PROD-INT-INV-012, TS-PROD-06).
+ * (CR Â§11.3, Â§11.4). Every variant inherits it and none may override it in this change request
+ * (CR Â§11.5, PROD-INT-INV-011, PROD-INT-INV-012, TS-PROD-06).
  *
- * The UoM master itself — categories, factors, rounding, conversion — stays in the Essential
- * module and is not reproduced anywhere in Product (CR §11.1, PROD-INT-INV-009).
+ * The UoM master itself â€” categories, factors, rounding, conversion â€” stays in the Essential
+ * module and is not reproduced anywhere in Product (CR Â§11.1, PROD-INT-INV-009).
  *
  * Changing the unit after the product has moved stock is refused by the server, because it would
- * reinterpret every quantity ever recorded against it (CR §12.2, TS-PROD-09). That rule is not
+ * reinterpret every quantity ever recorded against it (CR Â§12.2, TS-PROD-09). That rule is not
  * restated here: it has one home, and a copy in the client could only drift from it.
  */
 function buildInventoryUomSection(): ComponentNode {
@@ -171,20 +186,20 @@ function buildInventoryUomSection(): ComponentNode {
 }
 
 /**
- * The stock behind a template, broken down by variant (CR §5.3, §24).
+ * The stock behind a template, broken down by variant (CR Â§5.3, Â§24).
  *
  * It lists the variants rather than the quants. A template holds no stock of its own and never
- * will — only a variant is stocked (CR §5.1, PROD-INT-INV-002) — so the honest breakdown is one
+ * will â€” only a variant is stocked (CR Â§5.1, PROD-INT-INV-002) â€” so the honest breakdown is one
  * row per variant, each linking to the variant page where its balances are shown in full.
  *
  * Quants cannot be listed here directly. `filterGraph` reaches a related resource only across a
- * *many* edge via the `linked` operator, and quant → variant is many:one, so there is no path from
+ * *many* edge via the `linked` operator, and quant â†’ variant is many:one, so there is no path from
  * a template to its variants' quants in one search. The aggregate is served by the
  * `template_stock_summary` action instead, which sums the variants server-side.
  *
  * Every action needing a concrete product lives on the variant page this links to, not here. That
  * is what stops a stock command being issued with a template id: the template page emits none
- * (CR §7, AC-PROD-INT-012, AC-PROD-INT-013, TS-PROD-01).
+ * (CR Â§7, AC-PROD-INT-012, AC-PROD-INT-013, TS-PROD-01).
  */
 function buildTemplateInventorySection(): ComponentNode {
 	return collapsibleSectionNode(

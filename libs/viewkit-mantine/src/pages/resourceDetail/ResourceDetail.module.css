@@ -2,35 +2,8 @@
 	border: 1px solid var(--mantine-color-default-border);
 }
 
-.containerInlineSize {
-	container-type: inline-size;
-}
-
 .bgBodyColor {
 	background-color: var(--mantine-color-body);
-}
-
-.formBlockWrapper {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 1.5rem;
-}
-@container (min-width: 1200px) {
-	.formBlockWrapper {
-	  grid-template-columns: repeat(2, 1fr);
-	}
-  }
-
-@container (min-width: 1600px) {
-	.formBlockWrapper {
-		grid-template-columns: repeat(3, 1fr);
-	}
-}
-
-@container (min-width: 2200px) {
-	.formBlockWrapper {
-		grid-template-columns: repeat(4, 1fr);
-	}
 }
 
 .formFieldWrapper {

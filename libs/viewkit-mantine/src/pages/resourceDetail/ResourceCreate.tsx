@@ -7,27 +7,23 @@ import { useNavigate } from 'react-router';
 
 import { ResourceCreateContext, ResourceCreateContextValue, useResourceCreateContext } from './resourceCreateContext';
 import { useResourceDetailContext } from './ResourceDetailProvider';
-import {
-	RESOURCE_CREATE_COLUMN, RESOURCE_CREATE_FORM, RESOURCE_CREATE_HEADER, RESOURCE_CREATE_SECTION,
-} from '../../ids';
+import { RESOURCE_CREATE_FORM, RESOURCE_CREATE_HEADER } from '../../ids';
 
-import type {
-	LinkSpec, OwnPropertySection, ResourceDetailStandardActionCommands, SchemaFieldSpec,
-} from './props';
+import type { LinkSpec, ResourceDetailStandardActionCommands, SchemaFieldSpec } from './props';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export type ResourceCreateProps = {
 	commands: ResourceDetailStandardActionCommands,
 	titleLvl1?: SchemaFieldSpec,
-	titleLvl3?: LinkSpec,
-	blocks: OwnPropertySection[],
+	backLinkTitle?: LinkSpec,
+	createNodes?: ComponentNode[],
 };
 
 /**
- * Provides {@link ResourceCreateContext} and renders the default create component tree
- * (`resource_create__header` + `resource_create__form` → `resource_create__section`
- * → `resource_create__column`s) through the component registry.
+ * Provides {@link ResourceCreateContext} and renders the create component tree
+ * (`resource_create__header` + `resource_create__form` wrapping the page's `createNodes`)
+ * through the component registry.
  */
 export function ResourceCreate(props: ResourceCreateProps): React.ReactNode {
 	return (
@@ -58,12 +54,15 @@ export function ResourceCreateProvider(
 		(): ResourceCreateContextValue => ({
 			commands: props.commands,
 			titleLvl1: props.titleLvl1,
-			titleLvl3: props.titleLvl3,
-			blocks: props.blocks,
+			backLinkTitle: props.backLinkTitle,
+			createNodes: props.createNodes,
 			onSubmit,
 			isSubmitting: createCmd.isPending,
 		}),
-		[props.commands, props.titleLvl1, props.titleLvl3, props.blocks, onSubmit, createCmd.isPending],
+		[
+			props.commands, props.titleLvl1, props.backLinkTitle, props.createNodes,
+			onSubmit, createCmd.isPending,
+		],
 	);
 
 	return (
@@ -98,25 +97,14 @@ function ResourceCreateContent(): React.ReactNode {
 }
 
 function buildCreateNodes(context: ResourceCreateContextValue): ComponentNode[] {
-	const columns = context.blocks.map(block => defineComponent({
-		component: RESOURCE_CREATE_COLUMN,
-		props: block as unknown as Record<string, unknown>,
-	}));
-
 	return [
 		defineComponent({
 			component: RESOURCE_CREATE_HEADER,
-			props: { titleLvl1: context.titleLvl1, titleLvl3: context.titleLvl3 },
+			props: { titleLvl1: context.titleLvl1, backLinkTitle: context.backLinkTitle },
 		}),
 		defineComponent({
 			component: RESOURCE_CREATE_FORM,
-			children: [
-				defineComponent({
-					component: RESOURCE_CREATE_SECTION,
-					props: { expanded: true },
-					children: columns,
-				}),
-			],
+			children: context.createNodes ?? [],
 		}),
 	];
 }

@@ -39,6 +39,26 @@ describe('collapsibleSectionPropsSchema', () => {
 		expect(collapsibleSectionPropsSchema.parse(once)).toEqual(once);
 	});
 
+	// A section holding a table or a custom widget must keep flowing normally; only one holding
+	// `resource_form__column`s opts into the block grid.
+	it('defaults `layout` to a plain stack', () => {
+		expect(collapsibleSectionPropsSchema.parse({ collapsible: false }).layout).toBe('stack');
+	});
+
+	it('accepts the form-block grid opt-in', () => {
+		const props = collapsibleSectionPropsSchema.parse({
+			header: 'a.b', translationNs: 'iam', layout: 'formBlocks',
+		});
+
+		expect(props.layout).toBe('formBlocks');
+		// The render-time re-parse must survive it, like every other default.
+		expect(collapsibleSectionPropsSchema.parse(props)).toEqual(props);
+	});
+
+	it('rejects an unknown layout', () => {
+		expect(() => collapsibleSectionPropsSchema.parse({ layout: 'grid' })).toThrow();
+	});
+
 	it('validates through the Standard Schema interface the engine uses', () => {
 		const result = collapsibleSectionPropsSchema['~standard'].validate({ collapsible: false });
 

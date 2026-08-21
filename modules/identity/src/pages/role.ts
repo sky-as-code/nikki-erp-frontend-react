@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -50,7 +50,7 @@ function buildRoleDetailProps() {
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'description' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: RoleCommands.GET_BY_ID,
 			create: RoleCommands.CREATE,
@@ -58,23 +58,36 @@ function buildRoleDetailProps() {
 			delete: RoleCommands.DELETE,
 			archive: RoleCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['name', 'description', 'org_id'],
-		}, {
-			// Exactly one of these must be set; the backend enforces it via
-			// ExclusiveRequiredFields, the generated form cannot express it.
-			header: 'form.ownership',
-			fields: ['owner_user_id', 'owner_group_id'],
-		}, {
-			header: 'form.requestSettings',
-			fields: ['is_private', 'is_requestable', 'is_required_comment', 'is_required_attachment'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
-		childrenNodes: buildAssignmentSections(),
+		createNodes: [buildRoleFieldsSection()],
+		childrenNodes: [buildRoleFieldsSection(), ...buildAssignmentSections()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildRoleFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['name', 'description', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				// Exactly one of these must be set; the backend enforces it via
+				// ExclusiveRequiredFields, the generated form cannot express it.
+				header: 'form.ownership',
+				fields: ['owner_user_id', 'owner_group_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.requestSettings',
+				fields: ['is_private', 'is_requestable', 'is_required_comment', 'is_required_attachment'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /**

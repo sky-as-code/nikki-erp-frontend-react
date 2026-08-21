@@ -1,15 +1,20 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
-import { resourceDetailProps, resourceListProps, resourceSplitViewProps } from '@nikkierp/viewkit-mantine/props';
+import {
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps,
+} from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { ProductPriceCommands } from '../features/productPrice/commands';
 
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
+
 
 /**
- * Price rules, as a page of their own. See BR §6.12.
+ * Price rules, as a page of their own. See BR Â§6.12.
  *
- * Most price work happens from the product it belongs to — the template detail page carries a
- * Prices section — but a rule targeting a variant belongs to no single template page, and pricing
+ * Most price work happens from the product it belongs to â€” the template detail page carries a
+ * Prices section â€” but a rule targeting a variant belongs to no single template page, and pricing
  * is reviewed across products as often as within one, so the list exists in its own right.
  */
 export function buildProductPricePages(): PageNode[] {
@@ -53,7 +58,7 @@ function buildProductPriceDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'price' },
 		titleLvl2: { schemaField: 'status' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: ProductPriceCommands.GET_BY_ID,
 			create: ProductPriceCommands.CREATE,
@@ -61,18 +66,31 @@ function buildProductPriceDetailProps() {
 			delete: ProductPriceCommands.DELETE,
 			archive: ProductPriceCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			// Both target fields are offered together because exactly one must be filled, and the
-			// backend rejects the row otherwise. Putting them side by side makes that an evident
-			// choice rather than a validation surprise.
-			header: 'form.generalInformation',
-			fields: ['product_template_id', 'product_variant_id', 'price', 'status', 'org_id'],
-		}, {
-			header: 'form.validity',
-			fields: ['effective_from', 'effective_to'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
+		createNodes: [buildProductPriceFieldsSection()],
+		childrenNodes: [buildProductPriceFieldsSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildProductPriceFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				// Both target fields are offered together because exactly one must be filled, and the
+				// backend rejects the row otherwise. Putting them side by side makes that an evident
+				// choice rather than a validation surprise.
+				header: 'form.generalInformation',
+				fields: ['product_template_id', 'product_variant_id', 'price', 'status', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.validity',
+				fields: ['effective_from', 'effective_to'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }

@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -43,7 +43,7 @@ function buildBrandDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: BrandCommands.GET_BY_ID,
 			create: BrandCommands.CREATE,
@@ -51,18 +51,30 @@ function buildBrandDetailProps() {
 			delete: BrandCommands.DELETE,
 			archive: BrandCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['name', 'code', 'description', 'org_id'],
-		}, {
-			header: 'form.identification',
-			fields: ['website', 'logo_id', 'country_id'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
-		childrenNodes: buildBrandProductsSection(),
+		createNodes: [buildBrandFieldsSection()],
+		childrenNodes: [buildBrandFieldsSection(), ...buildBrandProductsSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildBrandFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['name', 'code', 'description', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.identification',
+				fields: ['website', 'logo_id', 'country_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /** The products carrying this brand. */

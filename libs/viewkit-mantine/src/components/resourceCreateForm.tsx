@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 import { RESOURCE_CREATE_FORM } from '../ids';
 import { useResourceCreateContext } from '../pages/resourceDetail/resourceCreateContext';
+import { ResourceCreateSaveBar } from '../pages/resourceDetail/resourceCreateParts';
 import {
 	useResourceDetailContext, useResourceDetailTranslationNs,
 } from '../pages/resourceDetail/ResourceDetailProvider';
@@ -50,6 +51,11 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 					isSubmitting={isSubmitting}
 					onSubmit={onSubmit}
 				>
+					{/*
+					 * Page-level, like the update form's action bar: a `createNodes` body is an
+					 * arbitrary node tree with no section guaranteed to host Save.
+					 */}
+					<ResourceCreateSaveBar />
 					<MetaComponent node={runtime.children} />
 				</CrudFormProvider>
 			</FormTestIdProvider>

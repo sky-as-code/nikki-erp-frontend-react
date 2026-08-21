@@ -7,6 +7,7 @@ import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import React from 'react';
 
 import classes from './CollapsibleSection.module.css';
+import layoutClasses from '../formBlockLayout.module.css';
 import { collapsibleSectionPropsSchema, CollapsibleSectionProps } from './props';
 import { COLLAPSIBLE_SECTION } from '../../ids';
 import { PaperWithBorder } from '../paperWithBorder';
@@ -17,9 +18,9 @@ import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewe
 /**
  * A general-purpose bordered block, optionally titled and collapsible.
  *
- * It touches no form context, so it is safe anywhere in a page tree — including as an appended
- * section of a resource detail page. The resource form's own section, which carries that form's
- * `SectionActionBar`, is `resource_form__section` and is emitted by `ResourceUpdate` alone.
+ * It touches no form context, so it is safe anywhere in a page tree — including as the section a
+ * resource detail page wraps its `resource_form__column`s in, which is what `layout: 'formBlocks'`
+ * is for.
  */
 export const collapsibleSectionRenderer: IComponentRenderer<CollapsibleSectionProps> = {
 	type: COLLAPSIBLE_SECTION,
@@ -34,6 +35,11 @@ function CollapsibleSection({ props, runtime }: {
 	runtime: ComponentRenderRuntime,
 }): React.ReactNode {
 	const [expanded, setExpanded] = React.useState(props.expanded);
+	const formBlocks = props.layout === 'formBlocks';
+	const children = <MetaComponent node={runtime.children} />;
+	const body = formBlocks
+		? <div className={layoutClasses.formBlockWrapper}>{children}</div>
+		: children;
 
 	return (
 		<Stack component={PaperWithBorder} gap='md' {...componentAttrs(COLLAPSIBLE_SECTION)}>
@@ -52,11 +58,17 @@ function CollapsibleSection({ props, runtime }: {
 					expanded={expanded}
 					transitionDuration={props.transitionDuration}
 					transitionTimingFunction={props.transitionTimingFunction}
+					// The grid's container query measures the nearest `container-type` ancestor, so
+					// under `formBlocks` that element must be the collapse body -- the section's own
+					// content box -- and not something further out that includes the page's chrome.
+					className={formBlocks ? layoutClasses.containerInlineSize : undefined}
 				>
-					<MetaComponent node={runtime.children} />
+					{body}
 				</Collapse>
+			) : formBlocks ? (
+				<div className={layoutClasses.containerInlineSize}>{body}</div>
 			) : (
-				<MetaComponent node={runtime.children} />
+				body
 			)}
 		</Stack>
 	);

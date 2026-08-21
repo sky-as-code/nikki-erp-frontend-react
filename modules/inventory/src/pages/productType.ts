@@ -1,8 +1,13 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
-import { resourceDetailProps, resourceListProps, resourceSplitViewProps } from '@nikkierp/viewkit-mantine/props';
+import {
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps,
+} from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { ProductTypeCommands } from '../features/productType/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export function buildProductTypePages(): PageNode[] {
@@ -37,7 +42,7 @@ function buildProductTypeDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: ProductTypeCommands.GET_BY_ID,
 			create: ProductTypeCommands.CREATE,
@@ -45,16 +50,29 @@ function buildProductTypeDetailProps() {
 			delete: ProductTypeCommands.DELETE,
 			archive: ProductTypeCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['name', 'code', 'description'],
-		}, {
-			// Which business processes a product of this type may take part in. See BR §3.
-			header: 'form.identification',
-			fields: ['supports_stock', 'supports_sale', 'supports_purchase', 'supports_manufacturing'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
+		createNodes: [buildProductTypeFieldsSection()],
+		childrenNodes: [buildProductTypeFieldsSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildProductTypeFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['name', 'code', 'description'],
+			}),
+			resourceFormColumnNode({
+				// Which business processes a product of this type may take part in. See BR Â§3.
+				header: 'form.identification',
+				fields: ['supports_stock', 'supports_sale', 'supports_purchase', 'supports_manufacturing'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }

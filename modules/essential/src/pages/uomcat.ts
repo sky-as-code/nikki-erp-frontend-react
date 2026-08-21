@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -42,7 +42,7 @@ function buildUomCatDetailProps() {
 		schemaName: c.UOMCAT_SCHEMA_NAME,
 		translationNs: c.ESSENTIAL_MODULE,
 		titleLvl1: { schemaField: 'name' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: UomCatCommands.GET_BY_ID,
 			create: UomCatCommands.CREATE,
@@ -50,17 +50,28 @@ function buildUomCatDetailProps() {
 			delete: UomCatCommands.DELETE,
 			archive: UomCatCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			// BR-UOM-ESS-003: the Reference UoM is a property of the category, and every factor
-			// in the category is expressed relative to it.
-			header: 'form.generalInformation',
-			fields: ['name', 'reference_uom_id', 'org_id'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
-		childrenNodes: buildCategoryUomSection(),
+		createNodes: [buildUomCatFieldsSection()],
+		childrenNodes: [buildUomCatFieldsSection(), ...buildCategoryUomSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildUomCatFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				// BR-UOM-ESS-003: the Reference UoM is a property of the category, and every factor
+				// in the category is expressed relative to it.
+				header: 'form.generalInformation',
+				fields: ['name', 'reference_uom_id', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /**

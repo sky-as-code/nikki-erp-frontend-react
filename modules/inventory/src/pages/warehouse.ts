@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
 	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
@@ -9,6 +9,8 @@ import { InventoryLocationCommands } from '../features/inventoryLocation/command
 import { PutawayRuleCommands } from '../features/putawayRule/commands';
 import { SupplyRelationCommands } from '../features/supplyRelation/commands';
 import { WarehouseCommands } from '../features/warehouse/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export function buildWarehousePages(): PageNode[] {
@@ -65,7 +67,7 @@ function buildWarehouseDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: WarehouseCommands.GET_BY_ID,
 			create: WarehouseCommands.CREATE,
@@ -73,23 +75,36 @@ function buildWarehouseDetailProps() {
 			delete: WarehouseCommands.DELETE,
 			archive: WarehouseCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['code', 'name', 'warehouse_role', 'parent_warehouse_id', 'status', 'org_id'],
-		}, {
-			// Flows are policy: changing one provisions the locations the new shape needs and
-			// creates no movement, so they sit apart from the descriptive fields above.
-			header: 'form.warehouseFlows',
-			fields: ['incoming_flow', 'outgoing_flow'],
-		}, {
-			header: 'form.contactInformation',
-			fields: ['address', 'manager_user_id', 'notes'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
-		childrenNodes: buildWarehouseSections(),
+		createNodes: [buildWarehouseFieldsSection()],
+		childrenNodes: [buildWarehouseFieldsSection(), ...buildWarehouseSections()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildWarehouseFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['code', 'name', 'warehouse_role', 'parent_warehouse_id', 'status', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				// Flows are policy: changing one provisions the locations the new shape needs and
+				// creates no movement, so they sit apart from the descriptive fields above.
+				header: 'form.warehouseFlows',
+				fields: ['incoming_flow', 'outgoing_flow'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.contactInformation',
+				fields: ['address', 'manager_user_id', 'notes'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /**

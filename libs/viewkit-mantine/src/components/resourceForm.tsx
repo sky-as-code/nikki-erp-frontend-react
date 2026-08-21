@@ -11,7 +11,7 @@ import { RESOURCE_FORM } from '../ids';
 import { resourceFormPropsSchema } from './resourceFormProps';
 import { ResourceFormViewProvider } from './resourceFormViewContext';
 import {
-	useResourceDetailContext, useResourceDetailTranslationNs,
+	DebugFormErrors, useResourceDetailContext, useResourceDetailTranslationNs,
 } from '../pages/resourceDetail/ResourceDetailProvider';
 import { useResourceUpdateContext } from '../pages/resourceDetail/resourceUpdateContext';
 
@@ -60,12 +60,25 @@ function ResourceForm({ props, runtime }: {
 				>
 					<ResourceFormViewProvider value={{ updateMode, setUpdateMode }}>
 						<ServerErrorAlert />
+						{/*
+						 * Page-level, not section-level: the one form now spans every section, so a
+						 * validation error on a field in an appended `collapsible_section` used to
+						 * surface inside the basic-info section's box -- nowhere near the input that
+						 * caused it. Rendered here it sits above all sections, like `ServerErrorAlert`.
+						 */}
+						<FormErrorDebugPanel />
 						<MetaComponent node={runtime.children} />
 					</ResourceFormViewProvider>
 				</CrudFormProvider>
 			</FormTestIdProvider>
 		</FormStyleProvider>
 	);
+}
+
+/** Reads the form runtime so `DebugFormErrors` can stay a dumb presentational component. */
+function FormErrorDebugPanel(): React.ReactNode {
+	const formRuntime = useCrudFormRuntime();
+	return <DebugFormErrors errors={formRuntime?.errors ?? {}} />;
 }
 
 /**

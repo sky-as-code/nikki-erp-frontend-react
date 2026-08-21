@@ -1,5 +1,5 @@
 import {
-	ActionIcon, Badge, Button, Group, Stack, Text, Title,
+	Badge, Button, Group, Stack, Text, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { AutoField } from '@nikkierp/ui/components/form';
@@ -8,9 +8,8 @@ import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { evaluateCondition } from '@nikkierp/viewengine/metadata';
 import {
-	IconChevronDown, IconChevronRight, IconDeviceFloppy, IconPencil, IconPlus, IconX,
+	IconChevronRight, IconDeviceFloppy, IconPencil, IconPlus, IconX,
 } from '@tabler/icons-react';
-import clsx from 'clsx';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -50,40 +49,35 @@ export function CreateActionButton({ disabled = false }: { disabled?: boolean })
 	);
 }
 
-export type SectionActionBarProps = {
-	expanded: boolean,
-	onToggleCollapse: () => void,
+export type ResourceActionBarProps = {
 	onSaveClick: () => void,
+	/** Discards edits and leaves update mode. Defaults to `setUpdateMode(false)` alone. */
+	onCancel?: () => void,
 	isLoading: boolean,
 	updateMode: boolean,
 	setUpdateMode: React.Dispatch<React.SetStateAction<boolean>>,
 };
 
-export function SectionActionBar({
-	expanded, onToggleCollapse, onSaveClick, isLoading, updateMode, setUpdateMode,
-}: SectionActionBarProps): React.ReactNode {
+/**
+ * The page-level bar of Update/Save/Cancel, contextual actions, overflow menu, and status flow —
+ * rendered once in the header next to Create, not inside the (possibly collapsed) form section.
+ */
+export function ResourceActionBar({
+	onSaveClick, onCancel, isLoading, updateMode, setUpdateMode,
+}: ResourceActionBarProps): React.ReactNode {
 	const { allStatuses, currentStatus, contextualActions, commands, resource } = useResourceUpdateContext();
-	const tid = useResourceDetailTestAttrs();
 	const curStatusField = currentStatus?.schemaField;
 	const status = curStatusField ? resource?.[curStatusField] : null;
 	const hasVisibleContextualActions = resource != null && hasMatchingExtraAction(contextualActions, resource);
 	const hasOverflowMenu = Boolean(commands.delete || commands.archive);
 
 	return (
-		<Group justify='space-between' wrap='wrap' className={clsx('sticky top-0 py-4', classes.bgBodyColor)}>
+		<Group justify='space-between' wrap='wrap' className='flex-1'>
 			<Group gap='xs' align='center'>
-				<ActionIcon
-					variant='subtle'
-					size='sm'
-					onClick={onToggleCollapse}
-					aria-label='Toggle own properties'
-					{...tid('toggleOwnProperties')}
-				>
-					{expanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
-				</ActionIcon>
 				<PrimaryActionButtons
 					updateMode={updateMode}
 					setUpdateMode={setUpdateMode}
+					onCancel={onCancel}
 					updateCommand={commands.update}
 					onSaveClick={onSaveClick}
 					isLoading={isLoading}
@@ -110,6 +104,7 @@ export function SectionActionBar({
 type PrimaryActionButtonsProps = {
 	updateMode: boolean,
 	setUpdateMode: React.Dispatch<React.SetStateAction<boolean>>,
+	onCancel?: () => void,
 	/**
 	 * The command Save publishes, or undefined when the resource is read-only. Carried as the
 	 * string rather than a boolean so Save can name it in `data-command`.
@@ -120,7 +115,7 @@ type PrimaryActionButtonsProps = {
 };
 
 function PrimaryActionButtons({
-	updateMode, setUpdateMode, updateCommand, onSaveClick, isLoading,
+	updateMode, setUpdateMode, onCancel, updateCommand, onSaveClick, isLoading,
 }: PrimaryActionButtonsProps): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const tid = useResourceDetailTestAttrs();
@@ -134,7 +129,7 @@ function PrimaryActionButtons({
 				<Button
 					variant='outline'
 					size='compact-md'
-					onClick={() => setUpdateMode(false)}
+					onClick={() => (onCancel ? onCancel() : setUpdateMode(false))}
 					leftSection={<IconX size={16} />}
 					{...tid('action', 'cancel')}
 				>
@@ -409,7 +404,7 @@ export function OwnPropertiesBlock({
 
 	return (
 		<Stack gap='sm' className={classes.formBlock}>
-			<Title order={4}>{t(block.header)}</Title>
+			{block.header ? <Title order={4}>{t(block.header)}</Title> : null}
 			<FieldGroupVertical
 				fields={block.fields ?? []}
 				isLoading={isLoading}
@@ -430,14 +425,24 @@ function FieldGroupVertical({
 	fieldValues: Record<string, unknown>,
 	updateMode: boolean,
 }): React.ReactNode {
-	const localize = useLocalize(useResourceDetailTranslationNs());
-
 	if (updateMode) {
 		return (
 			<div className={classes.formFieldWrapper}>
 				{fields.map(field => {
+					// A field the server owns — a key, an auto-generated timestamp, a computed
+					// value — has no input to offer, but it is still part of the record the user is
+					// looking at. It stays on screen as read-only text rather than vanishing the
+					// moment Update is pressed, so the layout does not reshuffle under the reader
+					// and `created_at`/`updated_at` remain legible while editing.
 					if (!isFieldVisible(modelSchema, field, 'update')) {
-						return null;
+						return (
+							<ReadOnlyFieldValue
+								key={field}
+								field={field}
+								modelSchema={modelSchema}
+								fieldValues={fieldValues}
+							/>
+						);
 					}
 					return (
 						<Stack key={field} gap={4}>
@@ -456,15 +461,53 @@ function FieldGroupVertical({
 					return null;
 				}
 				return (
-					<Stack key={field} gap={4}>
-						<Text size='md' fw='bold'>{localize(modelSchema.fields[field].label)}</Text>
-						<Text size='md'>
-							{renderDisplayFieldValue(fieldValues[field], modelSchema.fields[field])}
-						</Text>
-					</Stack>
+					<ReadOnlyFieldValue
+						key={field}
+						field={field}
+						modelSchema={modelSchema}
+						fieldValues={fieldValues}
+					/>
 				);
 			})}
 		</div>
 	);
+}
+
+/**
+ * One field as label-over-value text.
+ *
+ * Renders nothing at all when the record holds no value: a dash placeholder reads as content the
+ * record actually carries, and a labelled blank is indistinguishable from a broken field. The
+ * *raw* value decides, not the formatted output — `formatFieldValue` turns null into `'-'`, so
+ * testing the rendered string would let exactly the placeholder this avoids slip through.
+ */
+function ReadOnlyFieldValue({
+	field, modelSchema, fieldValues,
+}: {
+	field: string,
+	modelSchema: dyn.ModelSchema,
+	fieldValues: Record<string, unknown>,
+}): React.ReactNode {
+	const localize = useLocalize(useResourceDetailTranslationNs());
+	const fieldDef = modelSchema.fields[field];
+	const rawValue = fieldValues[field];
+	if (!fieldDef || !hasDisplayableValue(rawValue)) {
+		return null;
+	}
+
+	return (
+		<Stack gap={4}>
+			<Text size='md' fw='bold'>{localize(fieldDef.label)}</Text>
+			<Text size='md'>{renderDisplayFieldValue(rawValue, fieldDef)}</Text>
+		</Stack>
+	);
+}
+
+/** Whether a raw field value is worth putting on screen at all. */
+function hasDisplayableValue(value: unknown): boolean {
+	if (value === null || value === undefined || value === '') {
+		return false;
+	}
+	return !(Array.isArray(value) && value.length === 0);
 }
 

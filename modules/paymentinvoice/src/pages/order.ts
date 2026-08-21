@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -28,7 +28,7 @@ export function buildOrderPages(): PageNode[] {
  * The order list.
  *
  * `createEnabled` is deliberately absent: an order is not typed in. It is minted by
- * `create_payment`, which records the order *and* asks a gateway to start collecting — a form that
+ * `create_payment`, which records the order *and* asks a gateway to start collecting â€” a form that
  * wrote the row without the second half would produce an order no gateway knows about.
  *
  * Delete is likewise absent. An order is the record of an attempt to take money, including a
@@ -43,7 +43,7 @@ function buildOrderListProps() {
 		fieldRenderers: {
 			// The colours track how far the money got: grey while nothing has happened, blue in
 			// flight, green once collected, red when it was refused, and neutral once the order
-			// is history. Refunded is deliberately not green — the money went back.
+			// is history. Refunded is deliberately not green â€” the money went back.
 			status: {
 				renderer: 'badge',
 				colorMap: {
@@ -73,44 +73,57 @@ function buildOrderDetailProps() {
 		translationNs: c.PAYMENTINVOICE_MODULE,
 		titleLvl1: { schemaField: 'order_id' },
 		titleLvl2: { schemaField: 'status' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: OrderCommands.GET_BY_ID,
 			update: OrderCommands.UPDATE,
 		},
 		contextualActions: buildOrderActions(),
-		formSections: [{
-			header: 'form.generalInformation',
-			// order_id is what the ordering system quotes; order_code is what the gateway knows
-			// the order by. They are different strings and both are shown, because a support
-			// conversation may start from either.
-			fields: ['order_id', 'order_code', 'source', 'status', 'content', 'org_id'],
-		}, {
-			header: 'form.money',
-			fields: ['amount', 'refund_amount', 'currency_id', 'payment_method_id'],
-		}, {
-			header: 'form.notification',
-			// How the ordering system was told, and whether it heard. A failure here is what the
-			// retry sweep looks for.
-			fields: ['return_url', 'last_sync_status', 'sync_logs'],
-		}, {
-			header: 'form.gatewayData',
-			// Whatever the paying method needed at order time, plus the gateway's own replies.
-			fields: ['metadata'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
-		childrenNodes: buildTransactionSection(),
+		childrenNodes: [buildOrderFieldsSection(), ...buildTransactionSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildOrderFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				// order_id is what the ordering system quotes; order_code is what the gateway knows
+				// the order by. They are different strings and both are shown, because a support
+				// conversation may start from either.
+				fields: ['order_id', 'order_code', 'source', 'status', 'content', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.money',
+				fields: ['amount', 'refund_amount', 'currency_id', 'payment_method_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.notification',
+				// How the ordering system was told, and whether it heard. A failure here is what the
+				// retry sweep looks for.
+				fields: ['return_url', 'last_sync_status', 'sync_logs'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.gatewayData',
+				// Whatever the paying method needed at order time, plus the gateway's own replies.
+				fields: ['metadata'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /**
  * Refund is the only action offered here, and it is guarded by the one status it makes sense in.
  *
  * `payment_success` is deliberately the only value: the backend's guard rails also permit a retry
- * after `refund_failed`, but offering the button on an order that was never paid — or on one
- * already fully refunded — invites the user to attempt something the backend will refuse. The
+ * after `refund_failed`, but offering the button on an order that was never paid â€” or on one
+ * already fully refunded â€” invites the user to attempt something the backend will refuse. The
  * narrower condition is the honest one for a button.
  *
  * The prompt collects the amount because a partial refund is ordinary: the backend counts refunds

@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -57,7 +57,7 @@ function buildProductAttributeDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: ProductAttributeCommands.GET_BY_ID,
 			create: ProductAttributeCommands.CREATE,
@@ -65,20 +65,32 @@ function buildProductAttributeDetailProps() {
 			delete: ProductAttributeCommands.DELETE,
 			archive: ProductAttributeCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['name', 'code', 'sequence', 'org_id'],
-		}, {
-			// variant_creation_mode decides whether this attribute's values produce variants at
-			// all: NEVER keeps it out of the combination key entirely. See BR §4.7 and §6.5.3.
-			header: 'form.attributes',
-			fields: ['data_type', 'variant_creation_mode', 'display_type'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
-		childrenNodes: buildAttributeValuesSection(),
+		createNodes: [buildProductAttributeFieldsSection()],
+		childrenNodes: [buildProductAttributeFieldsSection(), ...buildAttributeValuesSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildProductAttributeFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['name', 'code', 'sequence', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				// variant_creation_mode decides whether this attribute's values produce variants at
+				// all: NEVER keeps it out of the combination key entirely. See BR Â§4.7 and Â§6.5.3.
+				header: 'form.attributes',
+				fields: ['data_type', 'variant_creation_mode', 'display_type'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /** The values this attribute allows. */

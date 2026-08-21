@@ -2,11 +2,10 @@ import { defineComponent } from '@nikkierp/viewengine/metadata';
 
 import { collapsibleSectionPropsSchema } from './components/collapsibleSection/props';
 import { pageHeaderPropsSchema } from './components/pageHeader/props';
-import { resourceFormPropsSchema } from './components/resourceFormProps';
 import { resourceFormTabsPropsSchema } from './components/resourceFormTabs/props';
 import { resourceTablePropsSchema } from './components/resourceTable/props';
 import {
-	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE, RESOURCE_FORM,
+	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE,
 	RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_LIST_TEMPLATE,
 	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE,
 } from './ids';
@@ -16,7 +15,6 @@ import { resourceSplitViewPropsSchema } from './pages/resourceSplitView/props';
 
 import type { CollapsibleSectionPropsInput } from './components/collapsibleSection/props';
 import type { PageHeaderPropsInput } from './components/pageHeader/props';
-import type { ResourceFormPropsInput } from './components/resourceFormProps';
 import type { ResourceFormTabsPropsInput } from './components/resourceFormTabs/props';
 import type { ResourceTablePropsInput } from './components/resourceTable/props';
 import type { OwnPropertySection } from './pages/resourceDetail/props';
@@ -101,30 +99,22 @@ export function resourceFormTabsNode(
 }
 
 /**
- * A resource form node, for a detail page that lays its own fields out.
+ * One block of the resource's own fields, and the single declaration of which fields the page's
+ * form owns — the partial-save payload is scoped to what these nodes list.
  *
- * `ResourceUpdate` emits one of these itself around `formSections`, so a page needs this builder
- * only when the default single block is the wrong shape — a **tabbed** form being the case it was
- * added for. `childrenNodes` render as *siblings* of that default form, outside its providers, so
- * a `resource_form__column` placed there without this wrapper finds no form runtime and renders
- * nothing but a console warning.
+ * Serves **both** form modes: it detects create vs update from the form enclosing it, so a page
+ * passes the same node to `createNodes` and `childrenNodes` rather than declaring its fields
+ * twice. It must sit inside one of those forms — it reads the form runtime, and warns rather than
+ * throwing when there is none.
  *
- * Emit it in `childrenNodes` with `formSections: []` on the page, so the default form renders no
- * section above the tabs rather than duplicating fields there.
- */
-export function resourceFormNode(
-	input: ResourceFormPropsInput, children: ComponentNode[],
-): ComponentNode {
-	return defineComponent({
-		component: RESOURCE_FORM,
-		props: resourceFormPropsSchema.parse(input) as Record<string, unknown>,
-		children,
-	});
-}
-
-/**
- * One block of the resource's own fields. Must sit inside a `resource_form` — it reads the form
- * runtime and the shared edit-mode view, and warns rather than throwing when either is absent.
+ * `createNodes`/`childrenNodes` already render inside the page's one shared
+ * `resource_form`/`CrudFormProvider` (see `ResourceUpdate`'s `buildUpdateNodes`), so this node —
+ * and `resourceFormTabsNode` — can be placed there directly, with no `resource_form` wrapper of
+ * its own. Wrapping one in a second `resource_form` opens a second, disconnected form instance
+ * instead of reusing the page's one form.
+ *
+ * Wrap a group of these in `collapsibleSectionNode({ layout: 'formBlocks' })` to lay them out
+ * side by side; without that grid each column spans the full section width.
  */
 export function resourceFormColumnNode(input: OwnPropertySection): ComponentNode {
 	return defineComponent({
