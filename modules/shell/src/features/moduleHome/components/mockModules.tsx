@@ -92,6 +92,16 @@ export const mockModules = [
 				isFavourite: false,
 				lastUsed: '2025-01-01',
 			},
+			{
+				name: 'Vending Machine (New)',
+				slug: 'vending_machine_new',
+				category: 'Vending Machine',
+				icon: vendingMachineIcon,
+				isDisabled: false,
+				isOrphaned: false,
+				isFavourite: false,
+				lastUsed: '2025-01-01',
+			},
 		],
 	},
 	{
@@ -168,13 +178,28 @@ export const mockModules = [
 	},
 	{
 		key: 'infomationTechnology',
-		label: 'Information Technology (1)',
+		label: 'Information Technology (2)',
 		modules: [
 			{
 				name: 'Vending Machine',
 				slug: 'vending_machine',
 				category: 'infomationTechnology',
 				icon: 'icon-vending-machine',
+				isDisabled: false,
+				isFavourite: false,
+				lastUsed: '2025-01-01',
+			},
+			{
+				// The settings page is reached from here rather than the main menu (D11), which is
+				// what lets the module contribute no menu items of its own.
+				//
+				// No `icon`: there is no settings image in `@nikkierp/ui/assets/images/modules/`,
+				// and `ModuleCard` already renders `FallbackModuleIcon` when the field is absent.
+				// Pointing at a file that does not exist would only reach that same fallback via a
+				// failed request.
+				name: 'Settings',
+				slug: 'settings',
+				category: 'infomationTechnology',
 				isDisabled: false,
 				isFavourite: false,
 				lastUsed: '2025-01-01',

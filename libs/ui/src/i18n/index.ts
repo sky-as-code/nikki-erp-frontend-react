@@ -3,6 +3,7 @@ import { RequestMaker } from '@nikkierp/common/request';
 import i18next, { i18n, InitOptions } from 'i18next';
 import LanguageDetector, { DetectorOptions } from 'i18next-browser-languagedetector';
 import HttpBackend, { HttpBackendOptions } from 'i18next-http-backend';
+import * as React from 'react';
 import { initReactI18next, useTranslation } from 'react-i18next';
 
 
@@ -174,6 +175,25 @@ export function useLocalize(moduleName?: string): LocalizeFn {
 		}
 		return trans.t(transKey, translateOpts);
 	};
+}
+
+/**
+ * Compares two already-translated strings the way the active locale orders them.
+ *
+ * Lists are sorted by what the reader sees, which is the translated label rather than the field
+ * name or slug behind it -- those diverge in every locale, and in some of them the alphabet does
+ * too. `localeCompare` with no locale would sort by the browser's, not the one the app is showing.
+ *
+ * The collator is rebuilt only when the language changes; constructing one per comparison is the
+ * expensive part of an `Intl` sort.
+ */
+export function useLocaleCollator(): (a: string, b: string) => number {
+	const { i18n } = useTranslation();
+	const language = i18n.language;
+	return React.useMemo(() => {
+		const collator = new Intl.Collator(language, { sensitivity: 'base', numeric: true });
+		return (a: string, b: string) => collator.compare(a, b);
+	}, [language]);
 }
 
 export { JsonLangText } from './JsonLangText';

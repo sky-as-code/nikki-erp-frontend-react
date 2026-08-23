@@ -1,5 +1,6 @@
-import { Button, Menu } from '@mantine/core';
+import { Menu } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
+import { Button } from '@nikkierp/ui/components';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
@@ -50,10 +51,7 @@ export function ResourceDetailOverflowMenu({
 	return (
 		<Menu shadow='md' position='bottom-end'>
 			<Menu.Target>
-				<Button
-					variant='outline' size='compact-md' aria-label='More actions' disabled={isBusy}
-					{...tid('actionMenu')}
-				>
+				<Button aria-label='More actions' disabled={isBusy} {...tid('actionMenu')}>
 					<IconDots size={16} />
 				</Button>
 			</Menu.Target>

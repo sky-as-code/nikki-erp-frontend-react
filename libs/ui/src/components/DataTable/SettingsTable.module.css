@@ -1,0 +1,21 @@
+/*
+ * The settings modal's fields picker.
+ *
+ * It is a small table of its own, not the list view, so it carries its own copies of the row
+ * styling rather than reaching into `ListView.module.css` — the two are free to diverge, and a
+ * change to how data rows look should not silently restyle this picker.
+ */
+th.selectedCell,
+td.selectedCell {
+	background-color: var(--nikki-color-table-bg-selected);
+	border-bottom: 1px solid var(--nikki-color-table-border-selected);
+}
+
+.rowNumberCell {
+	background-color: var(--mantine-color-gray-2);
+}
+
+.rowDropIndicator > th,
+.rowDropIndicator > td {
+	box-shadow: inset 0 3px 0 var(--mantine-color-blue-9) !important;
+}

@@ -1,8 +1,13 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
-import { resourceDetailProps, resourceListProps, resourceSplitViewProps } from '@nikkierp/viewkit-mantine/props';
+import {
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps,
+} from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { PutawayRuleCommands } from '../features/putawayRule/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export function buildPutawayRulePages(): PageNode[] {
@@ -48,7 +53,7 @@ function buildPutawayRuleDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'warehouse_id' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: PutawayRuleCommands.GET_BY_ID,
 			create: PutawayRuleCommands.CREATE,
@@ -56,21 +61,35 @@ function buildPutawayRuleDetailProps() {
 			delete: PutawayRuleCommands.DELETE,
 			archive: PutawayRuleCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['code', 'warehouse_id', 'priority', 'org_id'],
-		}, {
-			// Where goods arrive and where the rule sends them. Both must be in the warehouse
-			// above: a putaway rule is not a way to move goods between warehouses.
-			header: 'form.locationTopology',
-			fields: ['source_location_id', 'destination_location_id', 'sublocation_strategy'],
-		}, {
-			// A criterion left empty matches anything, which is what makes a general rule general.
-			header: 'form.matchingCriteria',
-			fields: ['storage_category_id', 'product_id', 'product_category_id', 'package_type_id'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
+		createNodes: [buildPutawayRuleFieldsSection()],
+		childrenNodes: [buildPutawayRuleFieldsSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildPutawayRuleFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['code', 'warehouse_id', 'priority', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				// Where goods arrive and where the rule sends them. Both must be in the warehouse
+				// above: a putaway rule is not a way to move goods between warehouses.
+				header: 'form.locationTopology',
+				fields: ['source_location_id', 'destination_location_id', 'sublocation_strategy'],
+			}),
+			resourceFormColumnNode({
+				// A criterion left empty matches anything, which is what makes a general rule general.
+				header: 'form.matchingCriteria',
+				fields: ['storage_category_id', 'product_id', 'product_category_id', 'package_type_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }

@@ -1,5 +1,6 @@
-import { Button, Group, Modal, Stack, Title } from '@mantine/core';
+import { Group, Modal, Stack, Title } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
+import { Button } from '@nikkierp/ui/components';
 import { AutoField } from '@nikkierp/ui/components/form';
 import { AdhocFormProvider, FormStyleProvider, FormTestIdProvider } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
@@ -103,8 +104,6 @@ function PromptBody(props: ActionPromptModalProps): React.ReactNode {
 			))}
 			<Group justify='flex-end' mt='sm'>
 				<Button
-					variant='outline'
-					size='compact-md'
 					onClick={props.onClose}
 					disabled={props.isSubmitting}
 					{...tid('actionPrompt', props.actionKey, 'cancel')}
@@ -114,7 +113,6 @@ function PromptBody(props: ActionPromptModalProps): React.ReactNode {
 				<Button
 					type='submit'
 					variant='filled'
-					size='compact-md'
 					disabled={props.isSubmitting}
 					loading={props.isSubmitting}
 					{...tid('actionPrompt', props.actionKey, 'submit')}

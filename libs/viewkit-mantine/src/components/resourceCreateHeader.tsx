@@ -11,7 +11,7 @@ import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 
 export const resourceCreateHeaderPropsSchema = z.object({
 	titleLvl1: schemaFieldSpecSchema.optional(),
-	titleLvl3: linkSpecSchema.optional(),
+	backLinkTitle: linkSpecSchema.optional(),
 }).strict();
 
 export type ResourceCreateHeaderProps = z.infer<typeof resourceCreateHeaderPropsSchema>;
@@ -23,7 +23,7 @@ export const resourceCreateHeaderRenderer: IComponentRenderer<ResourceCreateHead
 		// Anchored: the header itself is a shared component of the create parts.
 		return (
 			<ComponentAnchor id={RESOURCE_CREATE_HEADER}>
-				<ResourceCreateHeader titleLvl1={props.titleLvl1} titleLvl3={props.titleLvl3} />
+				<ResourceCreateHeader titleLvl1={props.titleLvl1} backLinkTitle={props.backLinkTitle} />
 			</ComponentAnchor>
 		);
 	},

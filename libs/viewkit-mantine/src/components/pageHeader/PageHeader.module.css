@@ -1,0 +1,48 @@
+/*
+ * The page's action toolbar, pinned to the top of the content area once the titles scroll past.
+ *
+ * `fixed`, not `sticky`, and that is not a preference. Every renderer in the view engine is wrapped
+ * in a `display: contents` carrier (`ComponentAnchor`), and such an element still forms the
+ * containing block for a sticky descendant while having zero height — so a sticky toolbar gets zero
+ * travel and scrolls away with the header no matter which ancestor actually scrolls. Fixed escapes
+ * that by resolving against the viewport instead.
+ *
+ * The trade-off fixed brings is that the row leaves the flow, so `.pinnedSpacer` reserves its
+ * height and `--nikki-page-toolbar-*` carry the geometry measured from the live layout.
+ */
+.actionsRow {
+	display: flex;
+	align-items: center;
+	gap: var(--mantine-spacing-xs);
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.pinned {
+	position: fixed;
+	/*
+	 * Geometry is measured from the scroll container rather than assumed, so the band covers the
+	 * content column only — anchoring to the viewport instead would run it under the Shell's
+	 * sidebar. `box-sizing` matters here: the measured width is a border-box width, and the padding
+	 * below must fit inside it rather than extend past it.
+	 */
+	box-sizing: border-box;
+	top: var(--nikki-page-toolbar-top, 0);
+	left: var(--nikki-page-toolbar-left, 0);
+	width: var(--nikki-page-toolbar-width, 100%);
+	z-index: 200;
+	/*
+	 * Opaque, not transparent. The row is `fixed`, so the page keeps scrolling underneath it — with
+	 * no background of its own the content below reads straight through the buttons. `--mantine-color-body`
+	 * tracks the light/dark scheme rather than hard-coding white.
+	 */
+	padding-left: var(--mantine-spacing-md);
+	padding-right: var(--mantine-spacing-md);
+	padding-bottom: var(--mantine-spacing-xs);
+	box-shadow: 0 1px 0 0 var(--mantine-color-default-border);
+}
+
+/* Holds the pinned row's place in the flow so the content below does not jump up by its height. */
+.pinnedSpacer {
+	flex: none;
+}

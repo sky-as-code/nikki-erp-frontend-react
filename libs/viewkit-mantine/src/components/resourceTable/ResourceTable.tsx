@@ -44,7 +44,7 @@ function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactN
 		schemaName: params.schemaName,
 		searchCommand: params.searchCommand,
 		initialRequest,
-		graphOverride: graph.value,
+		baseGraph: graph.value,
 	});
 	const buildLinkHref = useResourceLinkHref(params.linkField, params.linkRoutePath);
 	// No `routePath` of its own: an embedded table is identified by the schema it lists, which is
@@ -116,6 +116,12 @@ function toDataTableAction(action: ResourceTableAction, t: TranslateFn, runComma
 		// `ActionButton` renders `href` as a path-relative `<Link>`, so `'roles'` on
 		// `/{org}/{module}/users/:id` resolves to `/{org}/{module}/users/:id/roles`.
 		// A link action publishes no command, so the route names it rather than its translated label.
+		//
+		// Note this is an *append* to the current URL, not a page `routePath`: the sibling
+		// `resourceDetail` contextual action names its target page outright and resolves it
+		// through `useRoutePathHref`. Both spellings are deliberate -- a table sits inside the
+		// record it links out of, so appending is what it means, while a detail action may
+		// target any page in the module.
 		return { label: t(action.label), href: action.routePath, testId: action.testId ?? action.routePath };
 	}
 	// The schema guarantees exactly one of `command` / `routePath`, so this branch always has one.

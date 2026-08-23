@@ -4,11 +4,13 @@ import { collapsibleSectionPropsSchema } from './components/collapsibleSection/p
 import { pageHeaderPropsSchema } from './components/pageHeader/props';
 import { resourceFormTabsPropsSchema } from './components/resourceFormTabs/props';
 import { resourceTablePropsSchema } from './components/resourceTable/props';
+import { settingsItemPropsSchema, settingsSectionPropsSchema } from './components/settings/props';
 import {
-	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE, RESOURCE_FORM_TABS,
-	RESOURCE_LIST_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE,
+	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE,
+	RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_LIST_TEMPLATE,
+	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE, SETTINGS_ITEM, SETTINGS_SECTION,
 } from './ids';
-import { resourceDetailPropsSchema } from './pages/resourceDetail/props';
+import { ownPropertySectionSchema, resourceDetailPropsSchema } from './pages/resourceDetail/props';
 import { resourceListPropsSchema } from './pages/resourceList/props';
 import { resourceSplitViewPropsSchema } from './pages/resourceSplitView/props';
 
@@ -16,6 +18,10 @@ import type { CollapsibleSectionPropsInput } from './components/collapsibleSecti
 import type { PageHeaderPropsInput } from './components/pageHeader/props';
 import type { ResourceFormTabsPropsInput } from './components/resourceFormTabs/props';
 import type { ResourceTablePropsInput } from './components/resourceTable/props';
+import type {
+	SettingsItemPropsInput, SettingsSectionPropsInput,
+} from './components/settings/props';
+import type { OwnPropertySection } from './pages/resourceDetail/props';
 import type {
 	ResourceDetailProps, ResourceDetailPropsInput,
 } from './pages/resourceDetail/props';
@@ -96,6 +102,31 @@ export function resourceFormTabsNode(
 	});
 }
 
+/**
+ * One block of the resource's own fields, and the single declaration of which fields the page's
+ * form owns — the partial-save payload is scoped to what these nodes list.
+ *
+ * Serves **both** form modes: it detects create vs update from the form enclosing it, so a page
+ * passes the same node to `createNodes` and `childrenNodes` rather than declaring its fields
+ * twice. It must sit inside one of those forms — it reads the form runtime, and warns rather than
+ * throwing when there is none.
+ *
+ * `createNodes`/`childrenNodes` already render inside the page's one shared
+ * `resource_form`/`CrudFormProvider` (see `ResourceUpdate`'s `buildUpdateNodes`), so this node —
+ * and `resourceFormTabsNode` — can be placed there directly, with no `resource_form` wrapper of
+ * its own. Wrapping one in a second `resource_form` opens a second, disconnected form instance
+ * instead of reusing the page's one form.
+ *
+ * Wrap a group of these in `collapsibleSectionNode({ layout: 'formBlocks' })` to lay them out
+ * side by side; without that grid each column spans the full section width.
+ */
+export function resourceFormColumnNode(input: OwnPropertySection): ComponentNode {
+	return defineComponent({
+		component: RESOURCE_FORM_COLUMN,
+		props: ownPropertySectionSchema.parse(input) as Record<string, unknown>,
+	});
+}
+
 /** A page title block. Child nodes render as its action row. */
 export function pageHeaderNode(
 	input: PageHeaderPropsInput, children: ComponentNode[] = [],
@@ -107,11 +138,46 @@ export function pageHeaderNode(
 	});
 }
 
+export type { ResourceFormProps, ResourceFormPropsInput } from './components/resourceFormProps';
+
 export * from './components/collapsibleSection/props';
 export * from './components/pageHeader/props';
 export * from './components/resourceFormTabs/props';
 export * from './components/resourceTable/props';
+export * from './components/settings/props';
 export * from './pages/resourceDetail/props';
 export * from './pages/resourceList/props';
 export * from './pages/resourceSplitView/props';
 export * from './ids';
+
+
+/**
+ * A titled group of setting items, for a module's `pages.settings` widget.
+ *
+ * `children` are the items this module chooses to expose. That list is the whole visibility
+ * rule: a setting the backend declares but this call omits does not render, which is what lets
+ * a module ship a setting before it is ready to be configured.
+ */
+export function settingsSectionNode(
+	input: SettingsSectionPropsInput & { children?: ComponentNode[] },
+): ComponentNode {
+	const { children, ...props } = input;
+	return defineComponent({
+		component: SETTINGS_SECTION,
+		props: settingsSectionPropsSchema.parse(props) as Record<string, unknown>,
+		children,
+	});
+}
+
+/**
+ * One setting row: its label, its explanation, and the control bound to it.
+ *
+ * `name` must match the backend setting name verbatim -- it is the key the value is read and
+ * written under, not a display concern.
+ */
+export function settingsItemNode(input: SettingsItemPropsInput): ComponentNode {
+	return defineComponent({
+		component: SETTINGS_ITEM,
+		props: settingsItemPropsSchema.parse(input) as Record<string, unknown>,
+	});
+}

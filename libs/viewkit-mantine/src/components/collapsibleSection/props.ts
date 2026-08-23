@@ -12,6 +12,16 @@ const baseSchema = z.object({
 	 * toggle somewhere to live.
 	 */
 	collapsible: z.boolean().optional(),
+	/**
+	 * How the section arranges its children.
+	 *
+	 * `stack` (the default) leaves them to flow, which is what a section holding a table, a
+	 * custom widget or prose wants. `formBlocks` applies the field-block grid -- 1/2/3/4 columns
+	 * by *container* width -- and is for a section whose children are `resource_form__column`s.
+	 * Without it those columns each span the full section, so their fields spread far wider than
+	 * intended.
+	 */
+	layout: z.enum(['stack', 'formBlocks']).default('stack'),
 	expanded: z.boolean().default(true),
 	transitionDuration: z.number().default(500),
 	transitionTimingFunction: z.string().default('ease-in-out'),

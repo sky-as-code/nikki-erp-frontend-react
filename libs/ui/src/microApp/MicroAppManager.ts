@@ -1,23 +1,35 @@
+import { RegisterReducerFn } from './MicroAppStateProvider';
 import {
 	HostServices, MicroAppBundle, MicroAppBundleInitFn, MicroAppBundleInitResult, MicroAppConfig,
 	MicroAppMetadata, MicroAppSlug,
-} from '@nikkierp/ui/microApp';
-import { ImportResult } from '@nikkierp/ui/types';
-
-import { registerReducerFactory } from '../appState/store';
+} from './types';
+import { ImportResult } from '../types/miscs';
 
 
 export type RetryOptions = {
-	maxAttempts?: number;
-	baseDelayMs?: number;
-	maxDelayMs?: number;
+	maxAttempts?: number,
+	baseDelayMs?: number,
+	maxDelayMs?: number,
+};
+
+/**
+ * Everything the manager needs from the host that this library must not own itself.
+ *
+ * `registerReducerFactory` closes over the host's Redux store, which is a Shell concern:
+ * a component library that reached for that store would tie every consumer to one store
+ * instance. Injecting it keeps the loading machinery reusable while leaving the store
+ * where it belongs.
+ */
+export type MicroAppManagerOptions = {
+	registerReducerFactory: (slug: string) => RegisterReducerFn,
+	retry?: RetryOptions,
 };
 
 export type MicroAppPack = {
-	init: MicroAppBundleInitFn;
-	config: MicroAppConfig | undefined;
-	htmlTag: string;
-	metadata: MicroAppMetadata;
+	init: MicroAppBundleInitFn,
+	config: MicroAppConfig | undefined,
+	htmlTag: string,
+	metadata: MicroAppMetadata,
 };
 
 export class MicroAppManager {
@@ -25,18 +37,20 @@ export class MicroAppManager {
 	private readonly downloadedPacks: Map<MicroAppSlug, MicroAppPack | Promise<MicroAppPack>> = new Map();
 	private readonly initResults: Map<MicroAppSlug, MicroAppBundleInitResult> = new Map();
 	private readonly retryOptions: RetryOptions;
+	private readonly registerReducerFactory: (slug: string) => RegisterReducerFn;
 	private hostServices?: HostServices;
 
 	constructor(
 		apps: MicroAppMetadata[],
-		retryOptions: RetryOptions = {},
+		options: MicroAppManagerOptions,
 	) {
 		this.registeredApps = new Map(apps.map(app => [app.slug, app]));
+		this.registerReducerFactory = options.registerReducerFactory;
 		this.retryOptions = {
 			maxAttempts: 3,
 			baseDelayMs: 1_000,
 			maxDelayMs: 10_000,
-			...retryOptions,
+			...options.retry,
 		};
 	}
 
@@ -75,7 +89,7 @@ export class MicroAppManager {
 			htmlTag: pack.metadata.htmlTag,
 			slug,
 			config: pack.config,
-			registerReducer: registerReducerFactory(slug),
+			registerReducer: this.registerReducerFactory(slug),
 			commandBus: host.commandBus,
 			host,
 		});

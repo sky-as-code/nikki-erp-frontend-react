@@ -7,12 +7,10 @@ import { useParams } from 'react-router';
 
 import { useResourceDetailContext } from './ResourceDetailProvider';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
-import {
-	RESOURCE_DETAIL_HEADER, RESOURCE_FORM, RESOURCE_FORM_COLUMN, RESOURCE_FORM_SECTION,
-} from '../../ids';
+import { RESOURCE_DETAIL_HEADER, RESOURCE_FORM } from '../../ids';
 
 import type {
-	LinkSpec, OwnPropertySection, ResourceDetailContextualActions,
+	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './props';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -25,15 +23,14 @@ export type ResourceUpdateProps = {
 	contextualActions?: ResourceDetailContextualActions,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
-	titleLvl3?: LinkSpec,
-	blocks: OwnPropertySection[],
+	backLinkTitle?: LinkSpec,
 	childrenNodes?: ComponentNode[],
 };
 
 /**
- * Provides {@link ResourceUpdateContext} and renders the default update component tree
- * (`resource_detail__header` + `resource_form` → `resource_form__section` →
- * `resource_form__column`s + appended children) through the component registry.
+ * Provides {@link ResourceUpdateContext} and renders the update component tree
+ * (`resource_detail__header` + `resource_form` wrapping the page's `childrenNodes`) through the
+ * component registry.
  */
 export function ResourceUpdate(props: ResourceUpdateProps): React.ReactNode {
 	return (
@@ -67,13 +64,16 @@ export function ResourceUpdateProvider(
 	 * the user's unsaved edits with the server's unchanged record, discarding exactly
 	 * the input they need to correct.
 	 */
-	const onSubmit = React.useCallback(async (data: Record<string, any>) => {
-		if (!commands.update) return;
+	const onSubmit = React.useCallback(async (data: Record<string, any>): Promise<boolean> => {
+		if (!commands.update) return false;
 		const response = await publishUpdate(data);
 		const succeeded = response.error == null && (response.result?.clientErrors.length ?? 0) === 0;
 		if (succeeded) {
 			refresh();
 		}
+		// Reported back so the action bar can leave edit mode only on success: a rejected save has
+		// to keep the user's input on screen, since that is exactly what they need to correct.
+		return succeeded;
 	}, [publishUpdate, commands.update, refresh]);
 
 	const resource = getByIdCmd.data?.item as Record<string, unknown> | undefined;
@@ -93,15 +93,14 @@ export function ResourceUpdateProvider(
 			contextualActions: props.contextualActions,
 			titleLvl1: props.titleLvl1,
 			titleLvl2: props.titleLvl2,
-			titleLvl3: props.titleLvl3,
-			blocks: props.blocks,
+			backLinkTitle: props.backLinkTitle,
 			childrenNodes: props.childrenNodes,
 		}),
 		[
 			commands, resource, getByIdCmd.isPending, updateCmd.isPending, refresh, onSubmit,
 			updateCmd.clientErrors, updateCmd.error, getByIdCmd.error,
 			props.allStatuses, props.currentStatus, props.contextualActions,
-			props.titleLvl1, props.titleLvl2, props.titleLvl3, props.blocks, props.childrenNodes,
+			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.childrenNodes,
 		],
 	);
 
@@ -131,33 +130,30 @@ function ResourceUpdateContent(): React.ReactNode {
 }
 
 function buildUpdateNodes(context: ResourceUpdateContextValue): ComponentNode[] {
-	const columns = context.blocks.map(block => defineComponent({
-		component: RESOURCE_FORM_COLUMN,
-		props: block as unknown as Record<string, unknown>,
-	}));
-
 	return [
-		defineComponent({
-			component: RESOURCE_DETAIL_HEADER,
-			props: {
-				titleLvl1: context.titleLvl1,
-				titleLvl2: context.titleLvl2,
-				titleLvl3: context.titleLvl3,
-			},
-		}),
 		defineComponent({
 			component: RESOURCE_FORM,
 			children: [
+				// The header is a child of the form, not a sibling before it, so it renders inside
+				// `CrudFormProvider`/`ResourceFormViewProvider` — that's what lets its action bar
+				// (Update/Save/Cancel etc., relocated here from the section) reach the form runtime
+				// and the page-wide edit-mode toggle.
 				defineComponent({
-					component: RESOURCE_FORM_SECTION,
-					props: { expanded: true },
-					children: columns,
+					component: RESOURCE_DETAIL_HEADER,
+					props: {
+						titleLvl1: context.titleLvl1,
+						titleLvl2: context.titleLvl2,
+						backLinkTitle: context.backLinkTitle,
+					},
 				}),
+				// Children of the SAME form, not a second `resource_form` of their own: a page
+				// authoring a tabbed layout (`resourceFormNode` wrapping `resourceFormTabsNode`)
+				// used to have to open its own `RESOURCE_FORM`/`CrudFormProvider` to reach a form
+				// runtime here, which left it with a second, disconnected form instance — invisible
+				// to the header's now-relocated Save/Cancel/updateMode. Rendering them here instead
+				// means one shared `CrudFormProvider` for the whole page, header included.
+				...(context.childrenNodes ?? []),
 			],
 		}),
-		// Siblings of the form, not children of its section: the section's inner
-		// wrapper is a 2-4 column grid inside the form context, which would squeeze
-		// a table into a third of the width and bind it to the form's action bar.
-		...(context.childrenNodes ?? []),
 	];
 }

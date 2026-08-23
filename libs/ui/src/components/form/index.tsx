@@ -3,6 +3,7 @@ export * from './dateTimeFields';
 export * from './formContext';
 export * from './formTestIds';
 export * from './LangJsonField';
+export * from './RelationPickerModal';
 export * from './RelationSelectField';
 export * from './validation';
 export * from './FormContainer';

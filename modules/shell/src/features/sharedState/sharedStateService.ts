@@ -1,13 +1,14 @@
 import { shellStore } from '@nikkierp/shell/appState/shellStore';
 import { storeService, storeSyncMethod } from '@nikkierp/ui/appState/store';
 
-import { SharedState, SLICE_NAME } from './types';
+import { SharedState, ShellEnvVarBag, SLICE_NAME } from './types';
 
 
 function buildInitialState(): SharedState {
 	return {
 		setCurrentOrgId: null,
 		setCurrentModule: null,
+		setEnvVars: null,
 	};
 }
 
@@ -36,6 +37,18 @@ export class SharedStateService {
 	}
 
 	/**
+	 * Stores the env vars the host injected, so micro-apps can read them over the bus.
+	 *
+	 * Written once at boot by the concrete shell, which is the side that owns
+	 * `window.__CLIENT_CONFIG__`. `libs/shell` cannot do it: it is the library `modules/shell` is
+	 * built on, so the dependency only runs one way.
+	 */
+	@storeSyncMethod
+	public setEnvVars(envVars: ShellEnvVarBag | null | undefined): ShellEnvVarBag | null {
+		return envVars ?? null;
+	}
+
+	/**
 	 * Reads the slice directly rather than through a selector, for command-bus callers that
 	 * have no React context to select from. Same escape hatch as
 	 * `RoutingService.getActiveContext`.
@@ -46,6 +59,14 @@ export class SharedStateService {
 
 	public getCurrentModule(): string | null {
 		return this.readState()?.setCurrentModule ?? null;
+	}
+
+	/**
+	 * Empty bag rather than null when unset: every caller reads individual keys off the result,
+	 * and a missing key already means "not configured" to them.
+	 */
+	public getEnvVars(): ShellEnvVarBag {
+		return this.readState()?.setEnvVars ?? {};
 	}
 
 	private readState(): SharedState | undefined {

@@ -1,4 +1,4 @@
-import { Avatar, Box, Divider, Flex, Menu, Text } from '@mantine/core';
+import { Avatar, Box, Divider, Flex, Menu, Text, UnstyledButton } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useSignOut } from '@nikkierp/shell/authenticate';
 import { useUserContext } from '@nikkierp/shell/userContext';
@@ -30,12 +30,18 @@ export const ProfileMenuDropdown: React.FC = () => {
 		<>
 			<Menu shadow='md' width={300} opened={opened} onChange={setOpened}>
 				<Menu.Target>
-					<Avatar
-						size={35} className={clsx(classes.avatar, opened && classes.activeAvatar)}
+					<UnstyledButton
+						type='button'
+						aria-label={translate('profile.profile')}
+						aria-haspopup='menu'
+						aria-expanded={opened}
+						className={clsx(classes.avatarButton, opened && classes.activeAvatarButton)}
 						{...testAttrs(TEST_ID, 'trigger')}
 					>
-						<IconUserFilled color={'var(--mantine-color-gray-6)'} />
-					</Avatar>
+						<Avatar size={35}>
+							<IconUserFilled color={'var(--mantine-color-gray-6)'} />
+						</Avatar>
+					</UnstyledButton>
 				</Menu.Target>
 
 				<Menu.Dropdown className={classes.menuDropdown} p={'xs'}>

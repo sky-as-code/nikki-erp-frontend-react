@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -45,19 +45,29 @@ function buildGroupDetailProps() {
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'description' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: GroupCommands.GET_BY_ID,
 			create: GroupCommands.CREATE,
 			update: GroupCommands.UPDATE,
 			delete: GroupCommands.DELETE,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['name', 'description'],
-		}],
-		childrenNodes: [buildAssignedRolesSection()],
+		createNodes: [buildGroupFieldsSection()],
+		childrenNodes: [buildGroupFieldsSection(), buildAssignedRolesSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildGroupFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['name', 'description'],
+			}),
+		],
+	);
 }
 
 /** Group counterpart of the user page's section; `assigned_groups` is the matching edge. */

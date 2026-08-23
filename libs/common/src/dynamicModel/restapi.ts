@@ -113,6 +113,9 @@ export class RestApi {
 			// this they would share one in-flight promise, and whichever asked first would
 			// answer for both.
 			request.org_id ?? '-',
+			// Same reasoning: an archived-inclusive search and an archived-exclusive one differ
+			// only by this flag, so leaving it out would collapse them into a single request.
+			request.include_archived ? 'archived' : '-',
 		];
 		return this._opts.requestMaker!.get<RestSearchResponse<any>>(restPath, {
 			searchParams: this._toSearchParams(request),
@@ -279,6 +282,16 @@ export type RestSearchRequest = RequestWithFields & {
 	search_name?: string,
 	/** Scopes the search to one organization, where the resource is org-owned. */
 	org_id?: string,
+	/**
+	 * Returns archived rows alongside active ones. Omitted or false keeps the server's default,
+	 * which hides them.
+	 *
+	 * This is the only correct way to widen a search to archived records: the query builder
+	 * injects `is_archived = FALSE` on root queries, and an `is_archived = true` condition in
+	 * the graph would return *only* archived rows rather than both. Mirrors the backend's
+	 * `SearchQuery.IncludeArchived`.
+	 */
+	include_archived?: boolean,
 };
 
 export type RestSearchResponse<T extends Record<string, any>> = {

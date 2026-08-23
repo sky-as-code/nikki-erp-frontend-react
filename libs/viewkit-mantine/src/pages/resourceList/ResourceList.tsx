@@ -35,12 +35,15 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	const commandBus = useCommandBus();
 	const fieldRenderer = useFieldRenderers(params.fieldRenderers);
 
+	// Seeded into the filter panel as editable conditions rather than locked onto the request:
+	// a list page's `filterGraph` is a sensible default view, and the user is entitled to widen
+	// or drop it. An embedded table's record scoping is the opposite case and stays a
+	// `baseGraph` — see `ResourceTable`.
 	const graph = useResolvedFilterGraph(params.filterGraph);
 	const { pack, searchData, searchRequest, onSearchRequestChange, refresh } = useResourceSearch({
 		schemaName: params.schemaName,
 		searchCommand: params.searchCommand,
 		initialRequest: INITIAL_REQUEST,
-		graphOverride: graph,
 	});
 	const buildLinkHref = useResourceLinkHref(params.linkField, routePath);
 	const baseHref = useResourceBaseHref(routePath);
@@ -64,6 +67,7 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 				tableName={lc(pack.modelSchema.label, { count: searchData.total })}
 				data={searchData}
 				initialSearchRequest={searchRequest}
+				initialFilterGraph={graph}
 				modelSchema={pack.modelSchema}
 				onSearchRequestChange={onSearchRequestChange}
 				fieldRenderer={fieldRenderer}
@@ -145,8 +149,7 @@ function buildResourceActions(
  * (e.g. the cycle-count worklist's `next_count_date <= ${today}`).
  *
  * Recomputed only when the graph or the calendar day changes, so identity stays stable across
- * re-renders within the same day — `useResourceSearch` treats a new `graphOverride` identity as a
- * reason to refetch.
+ * re-renders within the same day — the table seeds its condition tree from this once, on mount.
  */
 function useResolvedFilterGraph(filterGraph: ResourceListProps['filterGraph']): dyn.SearchGraph | undefined {
 	const today = new Date().toISOString().slice(0, 10);

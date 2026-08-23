@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type {
-	LinkSpec, OwnPropertySection, ResourceDetailContextualActions,
+	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './props';
 import type { ClientErrorItem } from '@nikkierp/common/types';
@@ -14,7 +14,8 @@ export type ResourceUpdateContextValue = {
 	isReading: boolean,
 	isWriting: boolean,
 	refresh: () => void,
-	onSubmit: (data: Record<string, any>) => void,
+	/** Resolves whether the write succeeded, so callers can leave edit mode only on success. */
+	onSubmit: (data: Record<string, any>) => Promise<boolean>,
 	/** Server-side rejections from the last save. Empty until one occurs. */
 	saveClientErrors: ClientErrorItem[],
 	/** Technical failure from the last save or load, if any. */
@@ -25,8 +26,7 @@ export type ResourceUpdateContextValue = {
 	contextualActions?: ResourceDetailContextualActions,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
-	titleLvl3?: LinkSpec,
-	blocks: OwnPropertySection[],
+	backLinkTitle?: LinkSpec,
 	childrenNodes?: ComponentNode[],
 };
 

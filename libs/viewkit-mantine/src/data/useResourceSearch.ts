@@ -1,5 +1,5 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { SearchData } from '@nikkierp/ui/components/DataTable';
+import { mergeSearchGraphs, SearchData } from '@nikkierp/ui/components/DataTable';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useCommandBus } from '@nikkierp/ui/microApp';
 import React from 'react';
@@ -10,10 +10,15 @@ import { isSameSearchRequest } from './searchRequest';
 export type UseResourceSearchOptions = {
 	schemaName: string,
 	searchCommand: string,
-	/** Read once, on mount. Later changes are ignored — use `graphOverride`. */
+	/** Read once, on mount. Later changes are ignored — use `baseGraph`. */
 	initialRequest: dyn.RestSearchRequest,
-	/** Re-applied whenever it changes; merged into the live request. */
-	graphOverride?: dyn.SearchGraph,
+	/**
+	 * A scoping condition the page author fixed, ANDed with whatever the user filters on.
+	 *
+	 * Re-applied whenever it changes. It narrows the user's query and is never shown as an
+	 * editable condition, so an embedded table's record scoping cannot be widened away.
+	 */
+	baseGraph?: dyn.SearchGraph,
 };
 
 export type UseResourceSearchResult = {
@@ -54,16 +59,26 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 		setSearchRequest(oldReq => isSameSearchRequest(oldReq, newReq) ? oldReq : newReq);
 	}, []);
 
-	// The override is prop-derived, so it must be merged during render rather than folded into
+	// The base graph is prop-derived, so it must be merged during render rather than folded into
 	// `searchRequest` by an effect. `searchCommand` (and with it `publish`) changes synchronously
 	// on the render that new props arrive, while a state write lands one render later; publishing
 	// in between sends one resource's filter graph to another resource's endpoint. A route change
 	// that swaps both at once — /users/:id to /roles/:id, which reuses this component because the
 	// router keys routes by pattern — did exactly that, and the server rejected the unknown field.
-	const graphOverride = opts.graphOverride;
+	//
+	// ANDed, not substituted: the base narrows the user's query. Substituting discarded every
+	// filter and sort the user had set on any page carrying one.
+	const baseGraph = opts.baseGraph;
+	const userGraph = searchRequest.graph;
+	const mergedGraph = React.useMemo(
+		() => mergeSearchGraphs(baseGraph, userGraph),
+		[baseGraph, userGraph],
+	);
+	// Memoised on the merged graph rather than rebuilt inline: `isSameSearchRequest` compares
+	// `graph` by reference, so a fresh object every render would republish forever.
 	const effectiveRequest = React.useMemo(
-		() => graphOverride === undefined ? searchRequest : { ...searchRequest, graph: graphOverride },
-		[searchRequest, graphOverride],
+		() => baseGraph === undefined ? searchRequest : { ...searchRequest, graph: mergedGraph },
+		[searchRequest, baseGraph, mergedGraph],
 	);
 
 	const publishSearch = search.publish;
@@ -88,7 +103,9 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 	// must not keep showing record 1's rows while record 2's search is in flight.
 	React.useEffect(() => {
 		setCachedSearchData(null);
-	}, [opts.schemaName, opts.searchCommand, graphOverride]);
+	// Keyed on `baseGraph` alone, not the merged graph: the merged one changes on every user
+	// filter edit, and blanking the cache there would flash an empty table on each Apply.
+	}, [opts.schemaName, opts.searchCommand, baseGraph]);
 
 	React.useEffect(() => {
 		if (search.data && !isStubSearchData(search.data as SearchData)) {

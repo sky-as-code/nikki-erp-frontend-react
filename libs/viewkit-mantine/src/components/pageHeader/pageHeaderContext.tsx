@@ -14,7 +14,7 @@ export type PageHeaderContextValue = {
 	translationNs: string,
 	/** Record that `{ schemaField }` title specs read from. Absent on non-resource pages. */
 	record?: Record<string, unknown>,
-	/** Schema used to format a `schemaField` value and to label `titleLvl3`. */
+	/** Schema used to format a `schemaField` value and to label `backLinkTitle`. */
 	modelSchema?: dyn.ModelSchema,
 	/** Interpolation values for `{ textKey }` title specs. */
 	titleParams?: Record<string, string>,

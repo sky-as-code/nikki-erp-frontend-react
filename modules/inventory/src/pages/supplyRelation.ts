@@ -1,8 +1,13 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
-import { resourceDetailProps, resourceListProps, resourceSplitViewProps } from '@nikkierp/viewkit-mantine/props';
+import {
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps,
+} from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { SupplyRelationCommands } from '../features/supplyRelation/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export function buildSupplyRelationPages(): PageNode[] {
@@ -37,7 +42,7 @@ function buildSupplyRelationDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'source_warehouse_id' },
 		titleLvl2: { schemaField: 'destination_warehouse_id' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: SupplyRelationCommands.GET_BY_ID,
 			create: SupplyRelationCommands.CREATE,
@@ -45,16 +50,28 @@ function buildSupplyRelationDetailProps() {
 			delete: SupplyRelationCommands.DELETE,
 			archive: SupplyRelationCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			// Declaring a route reserves nothing and starts no transfer. When replenishment
-			// actually happens the Stock movement engine creates the movement.
-			header: 'form.generalInformation',
-			fields: [
-				'source_warehouse_id', 'destination_warehouse_id', 'priority', 'is_default', 'org_id',
-			],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
+		createNodes: [buildSupplyRelationFieldsSection()],
+		childrenNodes: [buildSupplyRelationFieldsSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildSupplyRelationFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				// Declaring a route reserves nothing and starts no transfer. When replenishment
+				// actually happens the Stock movement engine creates the movement.
+				header: 'form.generalInformation',
+				fields: [
+					'source_warehouse_id', 'destination_warehouse_id', 'priority', 'is_default', 'org_id',
+				],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }

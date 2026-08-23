@@ -2,17 +2,16 @@ import { VIEW_ENGINE_API_VERSION } from '@nikkierp/viewengine/core';
 
 import { collapsibleSectionRenderer } from './components/collapsibleSection/CollapsibleSection';
 import { pageHeaderRenderer } from './components/pageHeader/PageHeader';
-import { resourceCreateColumnRenderer } from './components/resourceCreateColumn';
 import { resourceCreateFormRenderer } from './components/resourceCreateForm';
 import { resourceCreateHeaderRenderer } from './components/resourceCreateHeader';
-import { resourceCreateSectionRenderer } from './components/resourceCreateSection';
 import { resourceDetailHeaderRenderer } from './components/resourceDetailHeader';
 import { resourceFormRenderer } from './components/resourceForm';
 import { resourceFormColumnRenderer } from './components/resourceFormColumn';
-import { resourceFormSectionRenderer } from './components/resourceFormSection';
 import { resourceFormTabsRenderer } from './components/resourceFormTabs/ResourceFormTabs';
 import { resourceSplitViewRenderer } from './components/resourceSplitView';
 import { resourceTableRenderer } from './components/resourceTable/ResourceTable';
+import { settingsItemRenderer } from './components/settings/settingsItem';
+import { settingsSectionRenderer } from './components/settings/settingsSection';
 import { registerFieldRenderers } from './fields/register';
 import { MANTINE_VIEW_KIT_ID } from './ids';
 import { resourceDetailTemplate } from './pages/resourceDetail/template';
@@ -44,13 +43,12 @@ export const mantineViewKit: IViewKit = {
 		registry.registerComponentRenderer(resourceTableRenderer);
 		registry.registerComponentRenderer(resourceDetailHeaderRenderer);
 		registry.registerComponentRenderer(resourceFormRenderer);
+		registry.registerComponentRenderer(settingsSectionRenderer);
+		registry.registerComponentRenderer(settingsItemRenderer);
 		registry.registerComponentRenderer(resourceFormColumnRenderer);
-		registry.registerComponentRenderer(resourceFormSectionRenderer);
 		registry.registerComponentRenderer(resourceFormTabsRenderer);
 		registry.registerComponentRenderer(resourceCreateHeaderRenderer);
 		registry.registerComponentRenderer(resourceCreateFormRenderer);
-		registry.registerComponentRenderer(resourceCreateSectionRenderer);
-		registry.registerComponentRenderer(resourceCreateColumnRenderer);
 		registry.registerComponentRenderer(resourceSplitViewRenderer);
 
 		registerFieldRenderers(registry);

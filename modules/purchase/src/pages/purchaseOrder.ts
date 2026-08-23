@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -16,7 +16,7 @@ import type { ComponentNode } from '@nikkierp/viewengine/metadata';
  * Two routes onto ONE resource (PUR-R1).
  *
  * A purchase order starts life as a request for quotation and becomes a committed order on
- * confirmation — same row, same id, different `status`. So `requests_for_quotation` and
+ * confirmation â€” same row, same id, different `status`. So `requests_for_quotation` and
  * `purchase_orders` are the same page under two filters, the way Inventory's cycle-count worklist
  * is the balance list filtered by date. Modelling them as two resources would mean an order
  * changing its identity at confirmation, and every link to it breaking.
@@ -35,7 +35,7 @@ export function buildPurchaseOrderPages(): PageNode[] {
  * The quotation stages: an order still being negotiated, before anyone has committed.
  *
  * `to_approve` belongs here rather than with the committed orders. The business has not committed
- * until someone approves, so an order awaiting approval is still a quotation — and the buyer
+ * until someone approves, so an order awaiting approval is still a quotation â€” and the buyer
  * chasing it needs it on the screen they work from.
  */
 const QUOTATION_FILTER = {
@@ -63,7 +63,7 @@ const COMMITTED_FILTER = {
  * a button that never once succeeds.
  *
  * `runCommand` publishes `{ ids }` from the selected rows, which is what `mergeRequest` reads. The
- * backend picks the target itself — the oldest by deadline — and refuses orders differing in
+ * backend picks the target itself â€” the oldest by deadline â€” and refuses orders differing in
  * vendor, currency or agreement, so no compatibility check is duplicated here.
  */
 const MERGE_ACTION = {
@@ -85,7 +85,7 @@ function splitView(filterGraph: Record<string, unknown>, mergeable: boolean) {
 /**
  * The order list, filtered to one half of the lifecycle.
  *
- * Create is enabled: unlike a payment order, a purchase order IS authored — a buyer raises a
+ * Create is enabled: unlike a payment order, a purchase order IS authored â€” a buyer raises a
  * request for quotation by hand. Delete is absent from the toolbar even though the backend permits
  * it from `cancelled` (BR 24), because a list-level delete invites removing the record of a
  * purchase the business committed to; the guarded path is to cancel, which leaves the trail.
@@ -127,7 +127,7 @@ function buildOrderListProps(filterGraph: Record<string, unknown>, mergeable: bo
  * The order detail form.
  *
  * The three totals sit in their own section and are computed by the backend from the lines
- * ([PUR-014]) — they are shown because they are what the document is for, and they are never
+ * ([PUR-014]) â€” they are shown because they are what the document is for, and they are never
  * typed. Same for `approved_by` / `approved_at`, which the approve action stamps.
  */
 function buildOrderDetailProps() {
@@ -136,38 +136,52 @@ function buildOrderDetailProps() {
 		translationNs: c.PURCHASE_MODULE,
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'status' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: PurchaseOrderCommands.GET_BY_ID,
 			create: PurchaseOrderCommands.CREATE,
 			update: PurchaseOrderCommands.UPDATE,
 		},
 		contextualActions: buildOrderActions(),
-		formSections: [{
-			header: 'form.other_information',
-			// `code` is allocated by the backend; `vendor_reference` is the vendor's own number for
-			// the same document. A support conversation may start from either.
-			fields: ['code', 'status', 'vendor_id', 'vendor_reference', 'buyer_id', 'currency_id',
-				'priority', 'org_id'],
-		}, {
-			header: 'form.terms',
-			fields: ['order_deadline', 'expected_arrival', 'terms_conditions', 'agreement_id',
-				'source_reference'],
-		}, {
-			header: 'form.totals',
-			// Computed from the lines by the backend. Read-only.
-			fields: ['untaxed_amount', 'tax_amount', 'total_amount'],
-		}, {
-			header: 'form.approval',
-			// Set by confirmation and the approve action, never typed.
-			fields: ['approval_required', 'approved_by', 'approved_at', 'confirmed_at'],
-		}, {
-			header: 'form.other_information',
-			fields: ['is_locked', 'vendor_acknowledged', 'sourcing_group_id', 'created_at',
-				'updated_at'],
-		}],
-		childrenNodes: [...buildLinesSection(), ...buildAuditSection()],
+		createNodes: [buildPurchaseOrderFieldsSection()],
+		childrenNodes: [buildPurchaseOrderFieldsSection(), ...buildLinesSection(), ...buildAuditSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildPurchaseOrderFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.other_information',
+				// `code` is allocated by the backend; `vendor_reference` is the vendor's own number for
+				// the same document. A support conversation may start from either.
+				fields: ['code', 'status', 'vendor_id', 'vendor_reference', 'buyer_id', 'currency_id',
+					'priority', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.terms',
+				fields: ['order_deadline', 'expected_arrival', 'terms_conditions', 'agreement_id',
+					'source_reference'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.totals',
+				// Computed from the lines by the backend. Read-only.
+				fields: ['untaxed_amount', 'tax_amount', 'total_amount'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.approval',
+				// Set by confirmation and the approve action, never typed.
+				fields: ['approval_required', 'approved_by', 'approved_at', 'confirmed_at'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.other_information',
+				fields: ['is_locked', 'vendor_acknowledged', 'sourcing_group_id', 'created_at',
+					'updated_at'],
+			}),
+		],
+	);
 }
 /**
  * The lifecycle actions, each gated on the statuses it actually makes sense in.
@@ -175,7 +189,7 @@ function buildOrderDetailProps() {
  * The conditions are deliberately narrower than the backend's guard rails in places. A button
  * offered on a record the backend will refuse invites the user to attempt something that cannot
  * work; one hidden on a record where it would have worked is merely a missing shortcut. The
- * backend remains the authority either way — these conditions decide what to *offer*, never what
+ * backend remains the authority either way â€” these conditions decide what to *offer*, never what
  * is permitted.
  *
  * Only one condition per action: `conditionExpressionSchema` is a single field test, so an action
@@ -201,14 +215,14 @@ function buildOrderActions() {
 		 * sending first.
 		 *
 		 * It collects nothing. An order with open alternatives needs an `alternative_choice`
-		 * saying what becomes of its siblings (§31), but a prompt cannot ask for it: the dialog
+		 * saying what becomes of its siblings (Â§31), but a prompt cannot ask for it: the dialog
 		 * narrows the page's OWN schema to the named fields, and `alternative_choice` is an action
 		 * parameter rather than a field of the order. Naming it here would render an empty dialog
 		 * that submits nothing.
 		 *
 		 * That is survivable rather than broken. The backend answers a confirm with open
 		 * alternatives by returning the warning instead of committing, so the user is told what is
-		 * in the way; it is only the second step — answering it — that has no home yet. See the
+		 * in the way; it is only the second step â€” answering it â€” that has no home yet. See the
 		 * note in `pages.test.ts`.
 		 */
 		confirm: {
@@ -231,11 +245,11 @@ function buildOrderActions() {
 			},
 		},
 		/**
-		 * Cancel is offered from every status except cancelled itself — including
+		 * Cancel is offered from every status except cancelled itself â€” including
 		 * `purchase_order`, which BR 23 makes a point of not being terminal.
 		 *
 		 * No prompt: the backend's cancel takes an OPTIONAL reason, and `reason` is not a field of
-		 * the order — it belongs to the transition, and is stored on the audit event. A prompt
+		 * the order â€” it belongs to the transition, and is stored on the audit event. A prompt
 		 * naming it would render an empty dialog, so the action fires directly and the audit event
 		 * records the cancellation without a note.
 		 */
@@ -273,18 +287,18 @@ function buildLockActions() {
 		},
 		/**
 		 * Unlocking reopens terms already agreed with a vendor, which is why the backend REFUSES
-		 * one without a reason — `purchase_order.unlock_reason_required`.
+		 * one without a reason â€” `purchase_order.unlock_reason_required`.
 		 *
 		 * This is the one action the current prompt cannot serve, and it is deliberately still
 		 * offered rather than hidden. A prompt narrows the page's own schema to the named fields
-		 * and drops the rest, and `reason` is not a field of the order — it belongs to the
-		 * transition and is stored on the audit event — so a dialog naming it would render empty
+		 * and drops the rest, and `reason` is not a field of the order â€” it belongs to the
+		 * transition and is stored on the audit event â€” so a dialog naming it would render empty
 		 * and submit nothing.
 		 *
 		 * Offering it means the user gets the backend's violation, which names the missing reason.
 		 * Hiding it would leave a locked order with no visible way to reopen it and no explanation
 		 * anywhere. Neither is good; the first is honest. Closing this needs a prompt that can
-		 * collect a field the resource schema does not declare — see `pages.test.ts`, which pins
+		 * collect a field the resource schema does not declare â€” see `pages.test.ts`, which pins
 		 * the gap so it cannot be quietly forgotten.
 		 */
 		unlock: {
@@ -309,7 +323,7 @@ function buildSourcingActions() {
 		},
 		/**
 		 * An alternative is the same requirement quoted by a different vendor, so it only makes
-		 * sense while the order is still a quotation. The prompt collects the vendor to quote —
+		 * sense while the order is still a quotation. The prompt collects the vendor to quote â€”
 		 * `vendor_id` IS a field of the order schema, which is what lets this one work where the
 		 * reason prompts cannot.
 		 */
@@ -343,7 +357,7 @@ function buildSourcingActions() {
  * them here. Each write recomputes the header's totals on the backend inside the same transaction
  * ([PUR-014]), so nothing on this side keeps them in step.
  *
- * `linkRoutePath` is absent because a line has no page of its own — it means nothing outside the
+ * `linkRoutePath` is absent because a line has no page of its own â€” it means nothing outside the
  * order that carries it.
  */
 function buildLinesSection(): ComponentNode[] {

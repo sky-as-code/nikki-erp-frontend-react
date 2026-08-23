@@ -26,7 +26,7 @@ export const pageHeaderLinkSpecSchema = z.object({
 export const pageHeaderPropsSchema = z.object({
 	titleLvl1: pageHeaderTitleSpecSchema.optional(),
 	titleLvl2: pageHeaderTitleSpecSchema.optional(),
-	titleLvl3: pageHeaderLinkSpecSchema.optional(),
+	backLinkTitle: pageHeaderLinkSpecSchema.optional(),
 }).strict();
 
 export type PageHeaderTitleSpec = z.infer<typeof pageHeaderTitleSpecSchema>;

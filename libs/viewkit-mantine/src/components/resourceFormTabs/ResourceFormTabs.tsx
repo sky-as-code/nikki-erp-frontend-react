@@ -1,17 +1,14 @@
-import { Stack, Tabs } from '@mantine/core';
+import { ActionIcon, Group, Stack, Tabs } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
+import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import React from 'react';
 
 import { resourceFormTabsPropsSchema, ResourceFormTabsProps } from './props';
 import { RESOURCE_FORM_TABS } from '../../ids';
-import { printDebugFormValues } from '../../pages/resourceDetail/ResourceDetailProvider';
-import { SectionActionBar } from '../../pages/resourceDetail/resourceUpdateParts';
 import { PaperWithBorder } from '../paperWithBorder';
-import { useResourceFormView } from '../resourceFormViewContext';
 
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
 
@@ -22,11 +19,9 @@ import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewe
  * `ai-prompts/ui-design-principles.md` makes tabs the agreed detail-page layout, which is why this
  * lives in the shared kit rather than in one module's own.
  *
- * It sits on the same side of the line as `resource_form__section`, not `collapsible_section`: it
- * renders the enclosing form's `SectionActionBar`, so each tab carries its own Edit/Save/Discard
- * control for the form it contains. `SectionActionBar` reads the resource-update context
- * unconditionally, so this component throws outside that family by design — do not reach for it as
- * a general-purpose tab strip.
+ * Action buttons (Update/Save/Cancel, contextual actions, overflow menu) all live in the page
+ * header's `ResourceActionBar`, not here — only the collapse toggle stays local to the tab group,
+ * the same split the field-block grid uses.
  *
  * Children map to `tabs` **by position**: the nth child node is the body of the nth tab. Extra
  * children beyond `tabs.length` are ignored rather than silently rendered in the wrong panel.
@@ -51,7 +46,16 @@ function ResourceFormTabs({ props, runtime }: {
 
 	return (
 		<Stack component={PaperWithBorder} gap='md' {...componentAttrs(RESOURCE_FORM_TABS)}>
-			<TabsActionBar expanded={expanded} onToggleCollapse={() => setExpanded(prev => !prev)} />
+			<Group gap='xs' align='center'>
+				<ActionIcon
+					variant='subtle'
+					size='sm'
+					onClick={() => setExpanded(prev => !prev)}
+					aria-label='Toggle own properties'
+				>
+					{expanded ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
+				</ActionIcon>
+			</Group>
 			<Tabs value={active} onChange={value => setActive(value ?? props.tabs[0].key)} keepMounted={false}>
 				<Tabs.List>
 					{props.tabs.map(tab => (
@@ -67,30 +71,5 @@ function ResourceFormTabs({ props, runtime }: {
 				)) : null}
 			</Tabs>
 		</Stack>
-	);
-}
-
-/**
- * The same wiring `resource_form__section` uses: `useCrudFormRuntime` supplies submit and loading,
- * `useResourceFormView` shares edit mode across the form subtree, and a local fallback keeps the
- * bar working when no view context is present.
- */
-function TabsActionBar({ expanded, onToggleCollapse }: {
-	expanded: boolean,
-	onToggleCollapse: () => void,
-}): React.ReactNode {
-	const formRuntime = useCrudFormRuntime();
-	const [localMode, setLocalMode] = React.useState(false);
-	const view = useResourceFormView();
-
-	return (
-		<SectionActionBar
-			expanded={expanded}
-			onToggleCollapse={onToggleCollapse}
-			onSaveClick={formRuntime ? formRuntime.handleSubmit(printDebugFormValues) : () => undefined}
-			isLoading={formRuntime?.isLoading ?? false}
-			updateMode={view?.updateMode ?? localMode}
-			setUpdateMode={view?.setUpdateMode ?? setLocalMode}
-		/>
 	);
 }

@@ -1,15 +1,15 @@
 import React from 'react';
 
-import type {
-	LinkSpec, OwnPropertySection, ResourceDetailStandardActionCommands, SchemaFieldSpec,
-} from './props';
+import type { LinkSpec, ResourceDetailStandardActionCommands, SchemaFieldSpec } from './props';
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export type ResourceCreateContextValue = {
 	commands: ResourceDetailStandardActionCommands,
 	titleLvl1?: SchemaFieldSpec,
-	titleLvl3?: LinkSpec,
-	blocks: OwnPropertySection[],
+	backLinkTitle?: LinkSpec,
+	/** The create form's body. See `createNodes` in `props.ts`. */
+	createNodes?: ComponentNode[],
 	onSubmit: (data: Record<string, any>) => void,
 	isSubmitting: boolean,
 };

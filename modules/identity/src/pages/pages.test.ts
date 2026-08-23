@@ -70,12 +70,15 @@ describe('IAM page metadata', () => {
 	])('$kind detail page lists assigned roles through the $edge edge', ({ build, edge }) => {
 		const [page] = build();
 		const detail = (page.props as { secondary: { props: { childrenNodes: ComponentNode[] } } }).secondary;
-		const [panel] = detail.props.childrenNodes;
-		const [table] = panel.children ?? [];
+		const panel = detail.props.childrenNodes
+			.find(node => node.children?.some(child => child.props?.filterGraph != null));
+		const [table] = panel?.children ?? [];
+
+		expect(panel).toBeDefined();
 
 		// The wizard is reached from the table's own action bar, next to Refresh — the panel
 		// header carries no button.
-		expect(panel.props?.headerAction).toBeUndefined();
+		expect(panel?.props?.headerAction).toBeUndefined();
 		expect(table.props?.extraActions).toEqual([{ label: 'assignment.manageRoles', routePath: 'roles' }]);
 		// `linked` is the membership operator for a many edge; `${id}` is interpolated from
 		// the route at render time.

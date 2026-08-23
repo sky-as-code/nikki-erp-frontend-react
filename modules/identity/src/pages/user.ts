@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -60,7 +60,7 @@ function buildUserDetailProps() {
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'display_name' },
 		titleLvl2: { schemaField: 'email' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		allStatuses: [
 			{ value: 'draft', label: 'status.draft', color: 'grape' },
 			{ value: 'invited', label: 'status.invited', color: 'indigo' },
@@ -87,15 +87,26 @@ function buildUserDetailProps() {
 				condition: { field: 'status', operator: 'equal', value: 'active' },
 			},
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['display_name', 'email'],
-		}, {
-			header: 'form.security',
-			fields: ['created_at', 'updated_at'],
-		}],
-		childrenNodes: [buildAssignedRolesSection()],
+		createNodes: [buildUserFieldsSection()],
+		childrenNodes: [buildUserFieldsSection(), buildAssignedRolesSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildUserFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['display_name', 'email'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.security',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /**

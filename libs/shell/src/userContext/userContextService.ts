@@ -9,7 +9,9 @@ import { shellStore } from '../appState/shellStore';
 /** The theme/language the user last chose, restored from `localStorage` on boot. */
 function loadSavedLocalSettings(): LocalSettings {
 	const settingsStr = localStorage.getItem(LOCAL_SETTINGS_STORAGE_KEY);
-	if (!settingsStr) return { languageCode: null, themeMode: 'light' };
+	// `auto` rather than `light`: it is what the backend defaults to, and it defers to the device
+	// instead of overriding a user whose system is set to dark before their stored choice loads.
+	if (!settingsStr) return { languageCode: null, themeMode: 'auto' };
 	return JSON.parse(atob(settingsStr)) as LocalSettings;
 }
 

@@ -4,7 +4,10 @@ import {
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications, notifications as notif } from '@mantine/notifications';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+
+import { shellEventBus } from '../eventBus';
+import { useLocalSettings } from '../userContext';
 
 
 export type UIProvidersProps = React.PropsWithChildren;
@@ -12,7 +15,12 @@ export type UIProvidersProps = React.PropsWithChildren;
 export const UIProviders: React.FC<UIProvidersProps> = ({ children }) => {
 	return (
 		<DirectionProvider>
-			<MantineProvider theme={{} as any} defaultColorScheme='light'>
+			{/* `auto` rather than `light`: it is the value the backend defaults to, and it is
+				what the interface should show before the user's stored choice has loaded --
+				overriding a device set to dark with a flash of light is worse than deferring
+				to it. `ApplyStoredTheme` takes over as soon as the setting arrives. */}
+			<MantineProvider theme={{} as any} defaultColorScheme='auto'>
+				<ApplyStoredTheme />
 				<Notifications
 					position='bottom-right'
 					autoClose={3_000}
@@ -27,6 +35,100 @@ export const UIProviders: React.FC<UIProvidersProps> = ({ children }) => {
 		</DirectionProvider>
 	);
 };
+
+/**
+ * Published by a settings pane after it writes the Shell's mirrored settings.
+ *
+ * Must match the name `settingsSaveBar.tsx` publishes; a micro-app cannot import the Shell, so
+ * the string is the contract.
+ */
+const LOCAL_SETTINGS_CHANGED_EVENT = 'shell:local_settings:changed';
+
+/**
+ * Where Mantine keeps the scheme the user chose (`light` | `dark` | `auto`).
+ *
+ * Mantine's own default, restated because the value is needed for a comparison and the library
+ * exposes no getter for it -- `useMantineColorScheme().colorScheme` reports the *resolved*
+ * scheme, which is a different question. `MantineProvider` is mounted without a custom
+ * `colorSchemeManager`, so this is the key in use; passing one would mean changing this too.
+ */
+const MANTINE_COLOR_SCHEME_KEY = 'mantine-color-scheme-value';
+
+/**
+ * The scheme Mantine has stored, or null when it has none or storage is unreadable.
+ *
+ * Guarded because `localStorage` throws rather than returning null in a few real contexts --
+ * privacy modes and blocked site data among them -- and a theme preference is never worth taking
+ * the interface down for.
+ */
+function readStoredColorScheme(): string | null {
+	try {
+		return localStorage.getItem(MANTINE_COLOR_SCHEME_KEY);
+	}
+	catch {
+		return null;
+	}
+}
+
+/**
+ * Applies the user's stored `theme_mode` to Mantine.
+ *
+ * Renders nothing; it exists only for the effect. Without it the theme was fetched from
+ * `v1/iam/me/context`, mirrored into local settings and then never used -- the provider's
+ * hardcoded default won, so changing the setting had no visible result.
+ *
+ * It reacts to *changes* in the setting rather than continuously asserting it, which is what keeps
+ * it from fighting the theme switcher or another tab -- see the effect for the flicker that
+ * behaviour caused. A change made in the switcher therefore stands until the setting itself
+ * changes again.
+ */
+function ApplyStoredTheme(): null {
+	const localSettings = useLocalSettings();
+	const { setColorScheme } = useMantineColorScheme();
+	const storedTheme = localSettings?.themeMode;
+	// Bumped by the event below to re-run the effect when the store write happened in another
+	// React tree, where this component's selector does not re-render.
+	const [signal, setSignal] = useState(0);
+	// The last value this component pushed into Mantine. A ref rather than state: it must not
+	// itself cause a render, and it only ever gates the effect below.
+	const appliedTheme = useRef<string | null>(null);
+
+	useEffect(() => {
+		return shellEventBus.subscribe(
+			LOCAL_SETTINGS_CHANGED_EVENT,
+			() => setSignal(n => n + 1),
+		);
+	}, []);
+
+	useEffect(() => {
+		if (!storedTheme) return;
+
+		// Push only when *this tab's* setting actually changed -- on the first run, and afterwards
+		// whenever `storedTheme` differs from what this component last applied.
+		//
+		// The tracking ref is what makes this safe across tabs, and the flicker it fixes is worth
+		// spelling out. `setColorScheme` always writes `localStorage`; every such write raises a
+		// `storage` event in *other* tabs, where Mantine applies it, re-rendering them and
+		// re-running this effect. A tab's `themeMode` is read from `localStorage` once at boot and
+		// never refreshed, so after a save in one tab the others still hold the previous value.
+		// Re-asserting it on every run therefore had two tabs overwriting each other several times
+		// a second -- the light/dark strobe -- and comparing against Mantine's stored key alone
+		// could not settle it, because each tab's comparison was against a different `storedTheme`.
+		//
+		// Reacting to a change rather than defending a value means a tab whose setting did not
+		// change stays quiet, and the tab that did change wins once. Whoever saved last is the
+		// most recent intent, which is the behaviour a user expects.
+		if (appliedTheme.current === storedTheme) return;
+		appliedTheme.current = storedTheme;
+
+		// Still skip a redundant write: on first load Mantine has usually persisted this already,
+		// and a no-op write would wake every other tab for nothing.
+		if (readStoredColorScheme() === storedTheme) return;
+		setColorScheme(storedTheme);
+	}, [storedTheme, signal, setColorScheme]);
+
+	return null;
+}
 
 export type ScreenState = {
 	currentScreen: string,

@@ -1,4 +1,4 @@
-import { Button } from '@mantine/core';
+import { ActionIcon } from '@mantine/core';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { IconX } from '@tabler/icons-react';
 import React from 'react';
@@ -23,16 +23,17 @@ export function SplitPaneCloseButton(): React.ReactNode {
 	}
 
 	return (
-		<Button
+		<ActionIcon
 			component={Link}
 			to='..'
 			relative='path'
 			variant='subtle'
-			size='compact-md'
-			leftSection={<IconX size={16} />}
+			size='md'
+			aria-label={t('action.close')}
+			title={t('action.close')}
 			{...tid('closePane')}
 		>
-			{t('action.close')}
-		</Button>
+			<IconX size={16} />
+		</ActionIcon>
 	);
 }

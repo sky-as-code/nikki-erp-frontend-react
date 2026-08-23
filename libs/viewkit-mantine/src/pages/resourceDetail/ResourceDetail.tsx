@@ -52,8 +52,8 @@ function ResourceDetailView({ params, childrenNodes }: ResourceDetailViewProps):
 					<ResourceCreate
 						commands={commands}
 						titleLvl1={params.titleLvl1}
-						titleLvl3={params.titleLvl3}
-						blocks={params.formSections}
+						backLinkTitle={params.backLinkTitle}
+						createNodes={params.createNodes}
 					/>
 				) : (
 					<ResourceUpdate
@@ -63,8 +63,7 @@ function ResourceDetailView({ params, childrenNodes }: ResourceDetailViewProps):
 						contextualActions={params.contextualActions}
 						titleLvl1={params.titleLvl1}
 						titleLvl2={params.titleLvl2}
-						titleLvl3={params.titleLvl3}
-						blocks={params.formSections}
+						backLinkTitle={params.backLinkTitle}
 						childrenNodes={nodes}
 					/>
 				)}

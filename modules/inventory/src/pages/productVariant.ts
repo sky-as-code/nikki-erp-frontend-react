@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
 	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
@@ -9,6 +9,8 @@ import { ProductVariantCommands } from '../features/productVariant/commands';
 import { PutawayRuleCommands } from '../features/putawayRule/commands';
 import { StockMoveCommands } from '../features/stockMove/commands';
 import { StockQuantCommands } from '../features/stockQuant/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export function buildProductVariantPages(): PageNode[] {
@@ -55,7 +57,7 @@ function buildProductVariantDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'sku' },
 		titleLvl2: { schemaField: 'combination_key' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: ProductVariantCommands.GET_BY_ID,
 			create: ProductVariantCommands.CREATE,
@@ -63,25 +65,38 @@ function buildProductVariantDetailProps() {
 			delete: ProductVariantCommands.DELETE,
 			archive: ProductVariantCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['product_template_id', 'status', 'org_id'],
-		}, {
-			header: 'form.identification',
-			fields: ['sku', 'primary_barcode', 'combination_key'],
-		}, {
-			// Left empty, each of these inherits the template's default. Null means "inherited",
-			// never zero. See BR §6.4.
-			header: 'form.dimensions',
-			fields: ['weight', 'length', 'width', 'height'],
-		}, {
-			// archive_source is what lets unarchiving a template restore only the variants it
-			// took down, so it is shown rather than hidden. See BR §8.9.
-			header: 'form.audit',
-			fields: ['is_materialized', 'archive_source', 'created_at', 'updated_at'],
-		}],
-		childrenNodes: buildVariantStockSections(),
+		createNodes: [buildProductVariantFieldsSection()],
+		childrenNodes: [buildProductVariantFieldsSection(), ...buildVariantStockSections()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildProductVariantFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['product_template_id', 'status', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.identification',
+				fields: ['sku', 'primary_barcode', 'combination_key'],
+			}),
+			resourceFormColumnNode({
+				// Left empty, each of these inherits the template's default. Null means "inherited",
+				// never zero. See BR Â§6.4.
+				header: 'form.dimensions',
+				fields: ['weight', 'length', 'width', 'height'],
+			}),
+			resourceFormColumnNode({
+				// archive_source is what lets unarchiving a template restore only the variants it
+				// took down, so it is shown rather than hidden. See BR Â§8.9.
+				header: 'form.audit',
+				fields: ['is_materialized', 'archive_source', 'created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /**
@@ -89,16 +104,16 @@ function buildProductVariantDetailProps() {
  *
  * Product owns none of this. Each section reads a resource another part of the module owns and
  * links through to the page that does own it, so a user sees the stock without Product acquiring
- * a copy of it (CR §4.4, §6.1, §9). Nothing here offers a write: no section names an update
+ * a copy of it (CR Â§4.4, Â§6.1, Â§9). Nothing here offers a write: no section names an update
  * command, so there is no edit affordance to suppress and no way to set a balance from a product
- * page (CR §6.2, AC-PROD-INT-034).
+ * page (CR Â§6.2, AC-PROD-INT-034).
  *
  * They render only in update mode, which is correct: on `/product_variants/new` there is no id to
  * filter by, and a variant that does not exist yet holds no stock.
  *
  * The quantities are shown as the quant rows that make them up rather than as one summary line.
- * `ResourceTable` renders rows of a registered schema — it resolves a `modelSchema` and feeds a
- * paged search into `DataTable` — and a computed on-hand/reserved/available record belongs to no
+ * `ResourceTable` renders rows of a registered schema â€” it resolves a `modelSchema` and feeds a
+ * paged search into `DataTable` â€” and a computed on-hand/reserved/available record belongs to no
  * schema. The rows carry the same numbers, per location, and the table totals them. The scalar
  * form is served by the `variant_stock_summary` action, which the list columns use.
  */
@@ -158,7 +173,7 @@ function buildVariantMovementsSection() {
 	]);
 }
 
-/** Where arriving goods of this product get put (CR §10). Read-only: the rules belong to Warehouse. */
+/** Where arriving goods of this product get put (CR Â§10). Read-only: the rules belong to Warehouse. */
 function buildVariantPutawaySection() {
 	return collapsibleSectionNode({
 		header: 'product_variant_sections_putaway',
@@ -169,7 +184,7 @@ function buildVariantPutawaySection() {
 			translationNs: c.INVENTORY_MODULE,
 			searchCommand: PutawayRuleCommands.SEARCH,
 			// Rules naming this specific product. A rule that matches by category applies to
-			// it too and is shown on the category page instead, where it is owned (CR §10.2).
+			// it too and is shown on the category page instead, where it is owned (CR Â§10.2).
 			filterGraph: { if: ['product_id', '=', '${id}'] },
 			fields: [
 				'code', 'warehouse_id', 'source_location_id',

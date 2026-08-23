@@ -1,8 +1,13 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
-import { resourceDetailProps, resourceListProps, resourceSplitViewProps } from '@nikkierp/viewkit-mantine/props';
+import {
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps,
+} from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { InventoryLocationCommands } from '../features/inventoryLocation/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export function buildInventoryLocationPages(): PageNode[] {
@@ -64,7 +69,7 @@ function buildInventoryLocationDetailProps() {
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: InventoryLocationCommands.GET_BY_ID,
 			create: InventoryLocationCommands.CREATE,
@@ -72,21 +77,35 @@ function buildInventoryLocationDetailProps() {
 			delete: InventoryLocationCommands.DELETE,
 			archive: InventoryLocationCommands.SET_IS_ARCHIVED,
 		},
-		formSections: [{
-			header: 'form.generalInformation',
-			fields: ['code', 'name', 'location_usage', 'status', 'description', 'org_id'],
-		}, {
-			// Where the location sits: which warehouse owns it (null for a vendor, customer or
-			// shared transit location), its parent, and what it is used for inside the warehouse.
-			// complete_path is derived, so it is shown but never edited.
-			header: 'form.locationTopology',
-			fields: ['warehouse_id', 'parent_location_id', 'purpose', 'complete_path', 'barcode'],
-		}, {
-			header: 'form.storagePolicy',
-			fields: ['storage_category_id', 'removal_strategy', 'is_replenishment_destination'],
-		}, {
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}],
+		createNodes: [buildInventoryLocationFieldsSection()],
+		childrenNodes: [buildInventoryLocationFieldsSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildInventoryLocationFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.generalInformation',
+				fields: ['code', 'name', 'location_usage', 'status', 'description', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				// Where the location sits: which warehouse owns it (null for a vendor, customer or
+				// shared transit location), its parent, and what it is used for inside the warehouse.
+				// complete_path is derived, so it is shown but never edited.
+				header: 'form.locationTopology',
+				fields: ['warehouse_id', 'parent_location_id', 'purpose', 'complete_path', 'barcode'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.storagePolicy',
+				fields: ['storage_category_id', 'removal_strategy', 'is_replenishment_destination'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.audit',
+				fields: ['created_at', 'updated_at'],
+			}),
+		],
+	);
 }

@@ -1,0 +1,41 @@
+/*
+ * The field-block grid, shared by every component that lays out `resource_form__column`s:
+ * `resource_form__section`, `resource_create__section`, and `collapsible_section` under
+ * `layout: 'formBlocks'`.
+ *
+ * It lived in `ResourceDetail.module.css` while the resource form's own section was its only
+ * user. `collapsible_section` is not a detail-page component, so importing a page-scoped module
+ * into it would have inverted the dependency.
+ */
+
+/*
+ * A container query, not a media query: a detail page can render inside a split view's narrow
+ * pane, where the viewport width says nothing about the space these blocks actually have.
+ */
+.containerInlineSize {
+	container-type: inline-size;
+}
+
+.formBlockWrapper {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1.5rem;
+}
+
+@container (min-width: 1200px) {
+	.formBlockWrapper {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@container (min-width: 1600px) {
+	.formBlockWrapper {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+@container (min-width: 2200px) {
+	.formBlockWrapper {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}

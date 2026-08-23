@@ -30,6 +30,12 @@ export type ModelSchema = {
 	record_label_field?: string,
 	/** Optional secondary field shown beneath the main label to disambiguate similar records. */
 	record_sub_label_field?: string,
+	/**
+	 * The fields a listing shows when the request names none. Declared per model on the backend;
+	 * a search response echoes the resolved set back as `desired_fields`, which is what the table
+	 * actually renders.
+	 */
+	default_search_fields?: string[],
 	label?: ModelSchemaLangJson,
 	to_relations?: ModelSchemaRelation[],
 	from_relations?: ModelSchemaRelation[],
@@ -304,16 +310,38 @@ function createNumberLikeSchema(dataType: ModelSchemaFieldDataType): z.ZodTypeAn
 	switch (dataType.name) {
 		case 'enumInt32':
 		case 'int32':
-			return applyNumericRangeOptions(
+			return acceptNumericString(applyNumericRangeOptions(
 				createNumberSchema().int(ErrorKeys.invalidDataType),
 				dataType.options,
-			);
+			));
 		case 'int64':
 		case 'decimal':
-			return applyNumericRangeOptions(createNumberSchema(), dataType.options);
+			return acceptNumericString(
+				applyNumericRangeOptions(createNumberSchema(), dataType.options),
+			);
 		default:
 			return null;
 	}
+}
+
+/**
+ * Lets a numeric field accept the string form the API sends.
+ *
+ * `decimal` and `int64` cross the wire as strings on purpose — both can hold values a JS `number`
+ * would round — so a record loaded for editing arrives with `"10.792338"` where the schema expects
+ * `10.792338`. Validating that as-is fails every save on any record carrying one, which is what
+ * kept the kiosk detail page from saving at all.
+ *
+ * Only strings that are entirely a number convert; anything else is left alone so the underlying
+ * schema still reports `invalidDataType` rather than silently turning junk into `NaN`.
+ */
+function acceptNumericString(schema: z.ZodTypeAny): z.ZodTypeAny {
+	return z.preprocess(
+		value => (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value))
+			? Number(value)
+			: value),
+		schema,
+	);
 }
 
 function applyFieldRule(fieldSchema: z.ZodTypeAny, fieldRule: ModelSchemaFieldRule): z.ZodTypeAny {

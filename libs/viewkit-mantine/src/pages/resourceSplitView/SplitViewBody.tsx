@@ -1,3 +1,4 @@
+import { useTranslate } from '@nikkierp/ui/i18n';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -17,11 +18,14 @@ export type SplitViewBodyProps = {
  */
 export function SplitViewBody({ primary, secondary }: SplitViewBodyProps): React.ReactNode {
 	const [isStartFromList, setIsStartFromList] = React.useState<boolean | null>(null);
+	const [isPrimaryClosed, setIsPrimaryClosed] = React.useState(false);
+	const t = useTranslate();
 	const params = useParams();
 	const isFirstPage = params.id === undefined;
 	const isSecondaryPage = params.id !== undefined;
-	const isPrimaryOpen = isStartFromList || isFirstPage;
+	const isPrimaryOpen = (isStartFromList || isFirstPage) && !(isPrimaryClosed && isSecondaryPage);
 	const isSecondaryOpen = isSecondaryPage;
+	const closePrimary = React.useCallback(() => setIsPrimaryClosed(true), []);
 
 	const secondaryState = React.useMemo(
 		() => ({ isSecondary: true, isPrimaryOpen: !!isPrimaryOpen }),
@@ -41,12 +45,22 @@ export function SplitViewBody({ primary, secondary }: SplitViewBodyProps): React
 		}
 	}, [isStartFromList, isSecondaryPage]);
 
+	// Leaving the detail pane puts the list back on screen, so a previous manual close of the
+	// list pane must not survive into the next record the user opens.
+	React.useEffect(() => {
+		if (!isSecondaryPage) {
+			setIsPrimaryClosed(false);
+		}
+	}, [isSecondaryPage]);
+
 	return (isStartFromList != null) && (
 		<SplitLayout
 			primaryOpen={isPrimaryOpen}
 			secondaryOpen={isSecondaryOpen}
 			renderPrimary={renderPrimary}
 			renderSecondary={renderSecondary}
+			onClosePrimary={isSecondaryOpen ? closePrimary : undefined}
+			closePrimaryLabel={t('action.close')}
 		/>
 	);
 }

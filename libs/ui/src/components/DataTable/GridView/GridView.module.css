@@ -1,0 +1,65 @@
+.card {
+	cursor: pointer;
+	transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.card:hover {
+	border-color: var(--mantine-color-blue-4);
+}
+
+.cardSelected {
+	border-color: var(--mantine-color-blue-6);
+	background-color: var(--nikki-color-table-bg-selected);
+}
+
+/*
+ * The picture area is a fixed-ratio box rather than sized by the image, so cards of records
+ * with portrait, landscape and no image at all still line up in the same grid rows.
+ */
+.thumbnail {
+	position: relative;
+	aspect-ratio: 4 / 3;
+	overflow: hidden;
+	border-radius: var(--mantine-radius-md);
+	background-color: var(--mantine-color-gray-1);
+}
+
+.thumbnailImage {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.thumbnailPlaceholder {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.75rem;
+	font-weight: 600;
+	color: var(--mantine-color-gray-6);
+	user-select: none;
+}
+
+/* The drop target while a card is dragged, matching the list view's row indicator. */
+.cardDropIndicator {
+	box-shadow: inset 3px 0 0 var(--mantine-color-blue-9);
+}
+
+.fieldLabel {
+	flex-shrink: 0;
+	max-width: 45%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.fieldValue {
+	min-width: 0;
+	text-align: right;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

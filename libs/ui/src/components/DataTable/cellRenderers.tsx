@@ -20,7 +20,10 @@ export function applyCustomRenderer(
 	textValue: string,
 	t: TranslateFn,
 ): React.ReactNode {
-	const translatedValue = renderer.translationKey
+	// An empty value has no translation to look up: a prefixing `translationKey` would build the
+	// bare prefix (`orders.tx_status.`), which resolves to nothing and renders as that raw key.
+	// A blank cell is what an absent value should look like.
+	const translatedValue = renderer.translationKey && textValue !== ''
 		? t(renderer.translationKey(textValue))
 		: textValue;
 	return renderer.render(textValue, translatedValue);
@@ -94,11 +97,25 @@ export class JsonLangCellRenderer implements DataTypeCellRenderer {
 	}
 }
 
+export class JsonMapCellRenderer implements DataTypeCellRenderer {
+	public matches(dataTypeName: dyn.ModelSchemaFieldDataTypeName | null): boolean {
+		return dataTypeName === 'jsonmap';
+	}
+
+	public render(rawValue: unknown, _textValue: string): React.ReactNode {
+		if (rawValue == null) {
+			return '';
+		}
+		return <code>{JSON.stringify(rawValue)}</code>;
+	}
+}
+
 const defaultDataTypeCellRenderers: readonly DataTypeCellRenderer[] = [
 	new BooleanCellRenderer(),
 	new SecretCellRenderer(),
 	new MonospaceCellRenderer(),
 	new JsonLangCellRenderer(),
+	new JsonMapCellRenderer(),
 ];
 
 export function renderDefaultByDataType(

@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceListProps, resourceSplitViewProps,
-	resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	resourceSplitViewProps, resourceTableNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -38,7 +38,7 @@ export function buildAgreementPages(): PageNode[] {
  * `archiveCommand` is bound here and on no other page in this module: an agreement is the one
  * purchase resource that IS archivable, because a standing arrangement can fall out of use without
  * being cancelled. Archiving takes it out of the working set while leaving the orders drawn
- * against it intact — which cancelling would not.
+ * against it intact â€” which cancelling would not.
  */
 function buildAgreementListProps() {
 	return resourceListProps({
@@ -76,7 +76,7 @@ function buildAgreementDetailProps() {
 		translationNs: c.PURCHASE_MODULE,
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'status' },
-		titleLvl3: { linkHref: '../' },
+		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: AgreementCommands.GET_BY_ID,
 			create: AgreementCommands.CREATE,
@@ -84,29 +84,41 @@ function buildAgreementDetailProps() {
 			archive: AgreementCommands.SET_IS_ARCHIVED,
 		},
 		contextualActions: buildAgreementActions(),
-		formSections: [{
-			header: 'form.other_information',
-			// `vendor_id` is optional here, unlike on an order: a template may be drafted before
-			// anyone has chosen who to buy from.
-			fields: ['code', 'reference', 'agreement_type', 'status', 'vendor_id', 'buyer_id',
-				'currency_id', 'org_id'],
-		}, {
-			header: 'form.terms',
-			fields: ['start_date', 'end_date', 'description'],
-		}, {
-			header: 'form.other_information',
-			fields: ['is_archived', 'created_at', 'updated_at'],
-		}],
-		childrenNodes: [...buildAgreementLinesSection(), ...buildDrawnOrdersSection()],
+		createNodes: [buildAgreementFieldsSection()],
+		childrenNodes: [buildAgreementFieldsSection(), ...buildAgreementLinesSection(), ...buildDrawnOrdersSection()],
 	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildAgreementFieldsSection(): ComponentNode {
+	return collapsibleSectionNode(
+		{ layout: 'formBlocks' },
+		[
+			resourceFormColumnNode({
+				header: 'form.other_information',
+				// `vendor_id` is optional here, unlike on an order: a template may be drafted before
+				// anyone has chosen who to buy from.
+				fields: ['code', 'reference', 'agreement_type', 'status', 'vendor_id', 'buyer_id',
+					'currency_id', 'org_id'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.terms',
+				fields: ['start_date', 'end_date', 'description'],
+			}),
+			resourceFormColumnNode({
+				header: 'form.other_information',
+				fields: ['is_archived', 'created_at', 'updated_at'],
+			}),
+		],
+	);
 }
 
 /**
  * The four lifecycle actions.
  *
  * None takes a prompt. The agreement's cancel accepts an optional reason on the backend, but
- * `reason` is not a field of the agreement — it belongs to the transition and is stored on the
- * audit event — and a prompt can only name fields of the page's own schema. See the same note on
+ * `reason` is not a field of the agreement â€” it belongs to the transition and is stored on the
+ * audit event â€” and a prompt can only name fields of the page's own schema. See the same note on
  * the order page.
  */
 function buildAgreementActions() {
@@ -126,7 +138,7 @@ function buildAgreementActions() {
 		},
 		/**
 		 * Drawing a new quotation is the point of a confirmed agreement, so it is offered only
-		 * once the agreement is actually in force — a draft's prices are not agreed yet, and a
+		 * once the agreement is actually in force â€” a draft's prices are not agreed yet, and a
 		 * closed one's have been withdrawn.
 		 */
 		create_rfq: {
@@ -166,8 +178,8 @@ function buildAgreementActions() {
 /**
  * The agreement's lines: what was committed to, at what price.
  *
- * `ordered_quantity` is deliberately absent from the field list — it is not a column. How much has
- * been drawn against a line is derived on read from the confirmed orders referencing it (§41).
+ * `ordered_quantity` is deliberately absent from the field list â€” it is not a column. How much has
+ * been drawn against a line is derived on read from the confirmed orders referencing it (Â§41).
  */
 function buildAgreementLinesSection(): ComponentNode[] {
 	return [
@@ -192,7 +204,7 @@ function buildAgreementLinesSection(): ComponentNode[] {
 /**
  * The orders drawn against this agreement.
  *
- * Unlike every other table in this module, its rows DO link away — to the order's own page, which
+ * Unlike every other table in this module, its rows DO link away â€” to the order's own page, which
  * is a real destination. `linkRoutePath` is `purchase_orders` rather than the quotation route
  * because an order that already exists against an agreement is most often a committed one, and
  * both routes render the same detail pane anyway.

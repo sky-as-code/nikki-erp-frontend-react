@@ -6,24 +6,19 @@ import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor, MetaComponent } from '@nikkierp/viewengine/render';
 import { IconAlertCircle } from '@tabler/icons-react';
 import React from 'react';
-import { z } from 'zod';
 
 import { RESOURCE_FORM } from '../ids';
+import { resourceFormPropsSchema } from './resourceFormProps';
 import { ResourceFormViewProvider } from './resourceFormViewContext';
 import {
-	useResourceDetailContext, useResourceDetailTranslationNs,
+	DebugFormErrors, useResourceDetailContext, useResourceDetailTranslationNs,
 } from '../pages/resourceDetail/ResourceDetailProvider';
 import { useResourceUpdateContext } from '../pages/resourceDetail/resourceUpdateContext';
 
+import type { ResourceFormProps } from './resourceFormProps';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
 
-
-export const resourceFormPropsSchema = z.object({
-	variant: z.enum(['create', 'update']).default('update'),
-}).strict();
-
-export type ResourceFormProps = z.infer<typeof resourceFormPropsSchema>;
 
 export const resourceFormRenderer: IComponentRenderer<ResourceFormProps> = {
 	type: RESOURCE_FORM,
@@ -65,12 +60,25 @@ function ResourceForm({ props, runtime }: {
 				>
 					<ResourceFormViewProvider value={{ updateMode, setUpdateMode }}>
 						<ServerErrorAlert />
+						{/*
+						 * Page-level, not section-level: the one form now spans every section, so a
+						 * validation error on a field in an appended `collapsible_section` used to
+						 * surface inside the basic-info section's box -- nowhere near the input that
+						 * caused it. Rendered here it sits above all sections, like `ServerErrorAlert`.
+						 */}
+						<FormErrorDebugPanel />
 						<MetaComponent node={runtime.children} />
 					</ResourceFormViewProvider>
 				</CrudFormProvider>
 			</FormTestIdProvider>
 		</FormStyleProvider>
 	);
+}
+
+/** Reads the form runtime so `DebugFormErrors` can stay a dumb presentational component. */
+function FormErrorDebugPanel(): React.ReactNode {
+	const formRuntime = useCrudFormRuntime();
+	return <DebugFormErrors errors={formRuntime?.errors ?? {}} />;
 }
 
 /**
