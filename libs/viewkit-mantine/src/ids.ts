@@ -35,6 +35,17 @@ export const RESOURCE_FORM_TABS = 'nikkierp.mantine.components.resourceFormTabs.
 export const RESOURCE_FORM_TABS_TAB = 'nikkierp.mantine.components.resourceFormTabs.tab.v1';
 
 /**
+ * The settings pane a feature module contributes as its `pages.settings` widget.
+ *
+ * A settings pane is not a resource detail page: it edits values that live in the settings
+ * module's own store, keyed by name and level rather than by record id, and each item can be
+ * locked by a tenant. It therefore has its own small pair of contributions rather than reusing
+ * the resource-form family.
+ */
+export const SETTINGS_SECTION = 'nikkierp.mantine.components.settingsSection.v1';
+export const SETTINGS_ITEM = 'nikkierp.mantine.components.settingsItem.v1';
+
+/**
  * Field-renderer spec names registered by this kit.
  *
  * Deliberately bare, not contribution ids: `registerFieldRenderer(name, factory)` keys its own

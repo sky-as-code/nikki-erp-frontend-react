@@ -15,8 +15,11 @@ import { buildGroupPages } from './pages/group';
 import { buildOrganizationPages } from './pages/organization';
 import { buildRolePages } from './pages/role';
 import { buildRoleAssignmentPages } from './pages/roleAssignment';
+import { SettingsWidget } from './pages/SettingsWidget';
 import { buildUserPages } from './pages/user';
 import { contributeIdentityViewKit } from './viewkit/kit';
+
+import type { WidgetDefinition } from '@nikkierp/viewkit-mantine';
 
 
 function Main(props: MicroAppProps) {
@@ -49,6 +52,14 @@ const bundle: MicroAppBundle = {
 
 export default bundle;
 
+/**
+ * Mounted by the Settings module. The name is the contract between the two; neither imports the
+ * other.
+ */
+const WIDGETS: WidgetDefinition[] = [
+	{ name: 'pages.settings', Component: SettingsWidget },
+];
+
 function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	const pages = React.useMemo(() => [
 		...buildUserPages(),
@@ -61,7 +72,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	return (
 		<ViewEngineRouter
 			microAppProps={props}
-			engineProps={{ pages, indexElement: <h1>Identity</h1> }}
+			engineProps={{ pages, indexElement: <h1>Identity</h1>, widgets: WIDGETS }}
 		/>
 	);
 }

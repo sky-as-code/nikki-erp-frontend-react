@@ -78,7 +78,7 @@ describe('IAM page metadata', () => {
 
 		// The wizard is reached from the table's own action bar, next to Refresh — the panel
 		// header carries no button.
-		expect(panel.props?.headerAction).toBeUndefined();
+		expect(panel?.props?.headerAction).toBeUndefined();
 		expect(table.props?.extraActions).toEqual([{ label: 'assignment.manageRoles', routePath: 'roles' }]);
 		// `linked` is the membership operator for a many edge; `${id}` is interpolated from
 		// the route at render time.

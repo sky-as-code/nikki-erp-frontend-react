@@ -17,6 +17,7 @@ import { registerUomCatCommands } from './features/uomcat/commands';
 import { buildEssentialMenu } from './menu';
 import { ModuleManagementPage } from './pages/ModuleManagement';
 import { OrgHomePage } from './pages/OrgHomePage';
+import { SettingsWidget } from './pages/SettingsWidget';
 import { buildUomPages } from './pages/uom';
 import { buildUomCatPages } from './pages/uomcat';
 
@@ -60,6 +61,9 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 			<WidgetRoutes>
 				<WidgetRoute name='org-home' Component={OrgHomePage} />
 				<WidgetRoute name='module-management' Component={ModuleManagementPage} />
+				{/* Mounted by the Settings module. The name is the contract between the two;
+					neither imports the other. */}
+				<WidgetRoute name='pages.settings' Component={SettingsWidget} />
 			</WidgetRoutes>
 		</MicroAppRouter>
 	);

@@ -1,7 +1,7 @@
 import { CommandBus, ICommandBus, ModuleLoader } from '@nikkierp/common/commandBus';
+import { MicroAppManager } from '@nikkierp/ui/microApp';
 
 import { registerShellCommands, ShellCommandDeps } from './registerShellCommands';
-import { MicroAppManager } from '../microApp/MicroAppManager';
 
 
 /**

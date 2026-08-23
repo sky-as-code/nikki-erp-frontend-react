@@ -165,7 +165,7 @@ type WidgetRouterProps = Omit<MicroAppRouterProps, 'children'> & {
  * In Light DOM mode, the Shell's router will not complain about this nested router.
  */
 function WidgetRouter(props: WidgetRouterProps) {
-	const Comp = React.useMemo<React.ComponentType<WidgetComponentProps>>(() => {
+	const Comp = React.useMemo<React.ComponentType<WidgetComponentProps> | null>(() => {
 		let MatchedComp: React.ComponentType<WidgetComponentProps> | null = null;
 		React.Children.forEach(props.routeGroupElem.props.children, (element) => {
 			if (MatchedComp || !React.isValidElement(element)) {
@@ -186,8 +186,20 @@ function WidgetRouter(props: WidgetRouterProps) {
 				);
 			}
 		});
-		return MatchedComp as any;
+		return MatchedComp;
 	}, [props.widgetName, props.widgetProps]);
+
+	// A name no `<WidgetRoute>` declares renders nothing. It used to reach
+	// `React.createElement(null)`, which throws and takes down the *consuming* page -- a page
+	// that cannot know what widgets another module exposes, since nothing outside a bundle can
+	// enumerate them. Failing soft keeps a host that mounts widgets across several modules
+	// working when one of them does not offer the requested pane.
+	if (!Comp) {
+		console.warn(
+			`Micro-app widget '${props.widgetName}' is not declared by any <WidgetRoute>.`,
+		);
+		return null;
+	}
 
 	return React.createElement(Comp, {
 		domType: props.domType,

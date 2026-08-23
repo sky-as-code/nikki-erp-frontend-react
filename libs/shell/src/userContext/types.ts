@@ -1,6 +1,16 @@
 export const SLICE_NAME = 'shell.userContext';
 export const LOCAL_SETTINGS_STORAGE_KEY = `shell:userContext:settings`;
 
+/**
+ * How the interface is coloured.
+ *
+ * `auto` follows the device's own light/dark setting and is what the backend defaults to
+ * (`iam/transport/restful/v1/user_rest.go`, `ThemeModeAuto`). It is also a value the settings API
+ * accepts, so a type of `'light' | 'dark'` could not hold what the server actually sends. These
+ * are the three values Mantine's `setColorScheme` takes, deliberately.
+ */
+export type ThemeMode = 'light' | 'dark' | 'auto';
+
 export type GetUserContextResponse = {
 	id: string,
 	avatar_url: string | null,
@@ -23,7 +33,7 @@ export type GetUserContextResponse = {
 		},
 		supported_languages: string[],
 		timezone: string,
-		theme_mode: 'light' | 'dark',
+		theme_mode: ThemeMode,
 	},
 	system_settings: {
 		app_name: string,
@@ -56,7 +66,7 @@ export type AccountSettings = {
 	},
 	supportedLanguages: string[],
 	timezone: string,
-	themeMode: 'light' | 'dark',
+	themeMode: ThemeMode,
 };
 
 export type SystemSettings = {
@@ -115,5 +125,5 @@ export type Language = {
 
 export type LocalSettings = {
 	languageCode: string | null,
-	themeMode: 'light' | 'dark',
+	themeMode: ThemeMode,
 };

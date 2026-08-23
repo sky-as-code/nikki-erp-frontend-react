@@ -4,10 +4,11 @@ import { collapsibleSectionPropsSchema } from './components/collapsibleSection/p
 import { pageHeaderPropsSchema } from './components/pageHeader/props';
 import { resourceFormTabsPropsSchema } from './components/resourceFormTabs/props';
 import { resourceTablePropsSchema } from './components/resourceTable/props';
+import { settingsItemPropsSchema, settingsSectionPropsSchema } from './components/settings/props';
 import {
 	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE,
 	RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_LIST_TEMPLATE,
-	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE,
+	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE, SETTINGS_ITEM, SETTINGS_SECTION,
 } from './ids';
 import { ownPropertySectionSchema, resourceDetailPropsSchema } from './pages/resourceDetail/props';
 import { resourceListPropsSchema } from './pages/resourceList/props';
@@ -17,6 +18,9 @@ import type { CollapsibleSectionPropsInput } from './components/collapsibleSecti
 import type { PageHeaderPropsInput } from './components/pageHeader/props';
 import type { ResourceFormTabsPropsInput } from './components/resourceFormTabs/props';
 import type { ResourceTablePropsInput } from './components/resourceTable/props';
+import type {
+	SettingsItemPropsInput, SettingsSectionPropsInput,
+} from './components/settings/props';
 import type { OwnPropertySection } from './pages/resourceDetail/props';
 import type {
 	ResourceDetailProps, ResourceDetailPropsInput,
@@ -140,7 +144,40 @@ export * from './components/collapsibleSection/props';
 export * from './components/pageHeader/props';
 export * from './components/resourceFormTabs/props';
 export * from './components/resourceTable/props';
+export * from './components/settings/props';
 export * from './pages/resourceDetail/props';
 export * from './pages/resourceList/props';
 export * from './pages/resourceSplitView/props';
 export * from './ids';
+
+
+/**
+ * A titled group of setting items, for a module's `pages.settings` widget.
+ *
+ * `children` are the items this module chooses to expose. That list is the whole visibility
+ * rule: a setting the backend declares but this call omits does not render, which is what lets
+ * a module ship a setting before it is ready to be configured.
+ */
+export function settingsSectionNode(
+	input: SettingsSectionPropsInput & { children?: ComponentNode[] },
+): ComponentNode {
+	const { children, ...props } = input;
+	return defineComponent({
+		component: SETTINGS_SECTION,
+		props: settingsSectionPropsSchema.parse(props) as Record<string, unknown>,
+		children,
+	});
+}
+
+/**
+ * One setting row: its label, its explanation, and the control bound to it.
+ *
+ * `name` must match the backend setting name verbatim -- it is the key the value is read and
+ * written under, not a display concern.
+ */
+export function settingsItemNode(input: SettingsItemPropsInput): ComponentNode {
+	return defineComponent({
+		component: SETTINGS_ITEM,
+		props: settingsItemPropsSchema.parse(input) as Record<string, unknown>,
+	});
+}
