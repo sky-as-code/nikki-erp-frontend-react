@@ -1,6 +1,7 @@
 import { Anchor, Group, Stack, Text, Title } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
 import clsx from 'clsx';
@@ -67,6 +68,7 @@ export function PageHeader({
 	const context = usePageHeader();
 	const hasTitleRow = Boolean(backLinkTitle) || Boolean(titleLvl1);
 	const toolbar = usePinnedToolbar(Boolean(actions));
+	const bg = usePaperBgColor();
 
 	return (
 		<>
@@ -79,7 +81,7 @@ export function PageHeader({
 					{hasTitleRow ? (
 						<Group gap='xs' align='center'>
 							{backLinkTitle ? <TitleLink spec={backLinkTitle} context={context} /> : null}
-							{backLinkTitle && titleLvl1 ? <Text c='dimmed'>{'>'}</Text> : null}
+							{backLinkTitle && titleLvl1 ? <Text c='dimmed'>{'/'}</Text> : null}
 							{titleLvl1 ? (
 								<Title order={3}><TitleText spec={titleLvl1} context={context} /></Title>
 							) : null}
@@ -94,7 +96,10 @@ export function PageHeader({
 					<div
 						ref={toolbar.rowRef}
 						className={clsx(classes.actionsRow, { [classes.pinned]: toolbar.isPinned })}
-						style={toolbar.isPinned ? toolbar.pinnedStyle : undefined}
+						style={{
+							backgroundColor: bg,
+							...(toolbar.isPinned ? toolbar.pinnedStyle : {}),
+						}}
 					>
 						{actions}
 					</div>

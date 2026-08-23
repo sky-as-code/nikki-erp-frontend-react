@@ -30,6 +30,12 @@ export type ModelSchema = {
 	record_label_field?: string,
 	/** Optional secondary field shown beneath the main label to disambiguate similar records. */
 	record_sub_label_field?: string,
+	/**
+	 * The fields a listing shows when the request names none. Declared per model on the backend;
+	 * a search response echoes the resolved set back as `desired_fields`, which is what the table
+	 * actually renders.
+	 */
+	default_search_fields?: string[],
 	label?: ModelSchemaLangJson,
 	to_relations?: ModelSchemaRelation[],
 	from_relations?: ModelSchemaRelation[],

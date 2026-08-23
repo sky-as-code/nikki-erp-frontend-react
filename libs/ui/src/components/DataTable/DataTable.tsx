@@ -15,7 +15,7 @@ import { SettingsTable } from './SettingsTable';
 import { dataTableTestIds } from './testIds';
 import { Toolbar } from './Toolbar';
 import { isDataTableViewMode } from './types';
-import { useTranslate } from '../../i18n';
+import { useLocaleCollator, useTranslate } from '../../i18n';
 
 import type { DataTableTestIds } from './testIds';
 import type {
@@ -637,7 +637,8 @@ type ViewSettingsModalViewProps = {
 	onActiveTabChange: (value: string | null) => void,
 	fieldSearch: string,
 	onFieldSearchChange: (value: string) => void,
-	filteredFields: string[],
+	selectableFields: string[],
+	hasExplicitFieldOrder: boolean,
 	fieldsPanelNonce: number,
 	fieldsSelectionGetterRef: React.RefObject<(() => string[]) | null>,
 	initialSelectedFieldNames: string[],
@@ -684,8 +685,10 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 							{...tid.settingsFieldSearch()}
 						/>
 						<FieldsSettingsTable
-							fields={props.filteredFields}
+							fields={props.selectableFields}
+							fieldSearch={props.fieldSearch}
 							fieldsPanelNonce={props.fieldsPanelNonce}
+							hasExplicitFieldOrder={props.hasExplicitFieldOrder}
 							initialSelectedFieldNames={props.initialSelectedFieldNames}
 							selectionGetterRef={props.fieldsSelectionGetterRef}
 							translationNs={props.translationNs}
@@ -728,11 +731,6 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 		() => (modelSchema ? getSelectableSchemaFieldNames(modelSchema) : [...desiredFields]),
 		[desiredFields, modelSchema],
 	);
-	const filteredFields = React.useMemo(
-		() => filterFields(allSelectableFields, fieldSearch),
-		[allSelectableFields, fieldSearch],
-	);
-
 	React.useLayoutEffect(() => {
 		if (!opened) {
 			return;
@@ -779,7 +777,8 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 			fieldSearch={fieldSearch}
 			fieldsPanelNonce={fieldsPanelNonce}
 			fieldsSelectionGetterRef={fieldsSelectionGetterRef}
-			filteredFields={filteredFields}
+			selectableFields={allSelectableFields}
+			hasExplicitFieldOrder={(searchRequest.fields?.length ?? 0) > 0}
 			initialSelectedFieldNames={desiredFields}
 			opened={opened}
 			translationNs={context.settings.translationNs}
@@ -822,17 +821,39 @@ const fieldsSettingsTableColumn = 'datatable.fields';
 
 function FieldsSettingsTable(props: {
 	fields: string[],
+	fieldSearch: string,
 	fieldsPanelNonce: number,
+	hasExplicitFieldOrder: boolean,
 	initialSelectedFieldNames: string[],
 	selectionGetterRef: React.RefObject<(() => string[]) | null>,
 	translationNs: string,
 }): React.ReactNode {
 	const t = useTranslate(props.translationNs);
+	const compareLocalized = useLocaleCollator();
+	const label = React.useCallback((field: string) => t(`fields.${field}`), [t]);
+
+	// Filtered and sorted here rather than upstream because this is the only component holding
+	// the same `t` that renders the rows, so the text matched and ordered is the text shown.
+	//
+	// An order the user arranged by dragging is left alone: it is saved on the request, and
+	// re-sorting it alphabetically on reopen would silently discard their arrangement.
+	const rows = React.useMemo(() => {
+		const query = props.fieldSearch.trim().toLowerCase();
+		const matched = query
+			? props.fields.filter(field => field.toLowerCase().includes(query)
+				|| label(field).toLowerCase().includes(query))
+			: [...props.fields];
+		if (props.hasExplicitFieldOrder) {
+			return matched;
+		}
+		return matched.sort((a, b) => compareLocalized(label(a), label(b)));
+	}, [props.fields, props.fieldSearch, props.hasExplicitFieldOrder, label, compareLocalized]);
+
 	return (
 		<div className='mt-2' key={props.fieldsPanelNonce}>
 			<SettingsTable
 				allowRowMovement
-				data={createFieldsSearchData(props.fields)}
+				data={createFieldsSearchData(rows)}
 				initialSelectedValues={props.initialSelectedFieldNames}
 				selectionGetterRef={props.selectionGetterRef}
 				translateFieldName={field => t(field)}
@@ -864,24 +885,33 @@ function createFieldsSearchData(fields: string[]): SearchData {
 	} as SearchData;
 }
 
-function filterFields(fields: string[], query: string): string[] {
-	const trimmed = query.trim().toLowerCase();
-	if (!trimmed) {
-		return fields;
-	}
-	return fields.filter(field => field.toLowerCase().includes(trimmed));
-}
-
 /**
  * The columns a user may choose from. Excludes the fields the server owns (keys and foreign
- * keys) and the model-typed edges, which stand for a relation rather than a value. A computed
- * field is deliberately kept: it is read-only, but it carries the business meaning a user
- * actually wants in a listing.
+ * keys), the model-typed edges, which stand for a relation rather than a value, and anything
+ * whose value is an opaque id. A computed field is deliberately kept: it is read-only, but it
+ * carries the business meaning a user actually wants in a listing.
+ *
+ * Foreign keys are named explicitly even though `is_system_field` already covers the declared
+ * ones, so the list does not depend on that coupling.
  */
 function getSelectableSchemaFieldNames(schema: dyn.ModelSchema): string[] {
 	return Object.values(schema.fields)
-		.filter(field => !field.is_system_field && !field.is_edge_model)
+		.filter(field => !field.is_system_field && !field.is_edge_model && !field.is_foreign_key)
+		.filter(field => !isOpaqueIdField(schema, field))
 		.map(field => field.name);
+}
+
+/**
+ * Whether the field's value is an id with nothing readable in it.
+ *
+ * The discriminator is the data type rather than computedness: a schema can declare a computed
+ * field that copies a *peer's* id (a variant carrying its template's category id, say), which is
+ * neither a foreign key nor a system field yet still renders as a raw ULID. The record label is
+ * the one id worth showing, because that is what identifies the row.
+ */
+function isOpaqueIdField(schema: dyn.ModelSchema, field: dyn.ModelSchemaField): boolean {
+	const typeName = typeof field.data_type === 'string' ? field.data_type : field.data_type?.name;
+	return typeName === 'ulid' && field.name !== schema.record_label_field;
 }
 
 

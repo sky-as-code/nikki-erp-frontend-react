@@ -20,10 +20,16 @@ export class ModuleService extends StoreCrudServiceBase {
 		super({ moduleName: 'shell', schemaName: MODULE_SCHEMA_NAME });
 	}
 
-	/** Every module in one page — the count is small and bounded by the backend. */
+	/**
+	 * Every module in one page — the count is small and bounded by the backend.
+	 *
+	 * Ordered by `name` so the response is stable rather than whatever order the rows come back
+	 * in. Callers that display modules re-sort by the translated label, which the server cannot
+	 * order by: the label is an i18n string in the client bundle, not a column.
+	 */
 	@storeAsyncMethod
 	public listAll(): Promise<ServiceResult<t.SearchModuleResponse>> {
-		return this.search({ page: 0, size: 500 });
+		return this.search({ page: 0, size: 500, graph: { order: [['name', 'asc']] } });
 	}
 }
 

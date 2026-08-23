@@ -1,3 +1,6 @@
+import type * as dyn from '@nikkierp/common/dynamicModel';
+
+
 export const SLICE_NAME = 'shell.userContext';
 export const LOCAL_SETTINGS_STORAGE_KEY = `shell:userContext:settings`;
 
@@ -106,7 +109,8 @@ export function toUserContext(response: GetUserContextResponse): UserContext {
 
 export type UserContextOrg = {
 	id: string,
-	display_name: string,
+	/** LangJson: the backend stores one document per organization, keyed by language. */
+	display_name: dyn.ModelSchemaLangJson,
 	slug: string,
 };
 

@@ -248,14 +248,14 @@ function ListViewHead(): React.ReactNode {
 		applyColumnFilters({ tree: next });
 	}, [commitColumnValue, modelSchema, applyColumnFilters]);
 
-	// A column is sortable only if the server can order by it: the caller's explicit list when
-	// given, otherwise every visible field that owns a database column.
+	// A column is sortable only if the server can order by it: it must own a database column.
+	// A field with no column (a computed one hydrated after the query, say) is rejected by the
+	// query builder, so offering the header as sortable only produces a client error. The
+	// caller's explicit list narrows which fields are considered, but cannot make an unorderable
+	// one sortable -- `desired_fields` is passed in wholesale and includes computed columns.
 	const sortableFields = React.useMemo(() => {
-		const declared = context.settings.sortableFields;
-		if (declared) {
-			return new Set(declared);
-		}
-		return new Set(fields.filter(
+		const candidates = context.settings.sortableFields ?? fields;
+		return new Set(candidates.filter(
 			field => modelSchema?.fields?.[field]?.is_persisted !== false,
 		));
 	}, [context.settings.sortableFields, fields, modelSchema]);

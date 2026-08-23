@@ -2,22 +2,74 @@ import React from 'react';
 
 
 /**
- * Which element actually scrolls above `node`.
+ * Every ancestor box that can scroll above `node`, nearest first.
  *
- * The page's scroll box is not a fixed part of this kit's markup — the Shell owns it, and a page
- * embedded in a split pane scrolls in a different one again — so it is discovered rather than
- * assumed. Falls back to the viewport, which is what an unscrollable ancestor chain means.
+ * The page's scroll box is not a fixed part of this kit's markup — the Shell owns it, a page
+ * embedded in a split pane scrolls in a different one again, and the view engine adds
+ * `position: absolute` frames of its own in between. So the chain is discovered rather than
+ * assumed, and *all* of it is returned rather than just the first hit.
+ *
+ * Returning the whole chain is what makes the pin reliable. Picking a single scroller forces two
+ * guesses that are both wrong here: testing `overflow-y` alone stops at an inner absolute frame
+ * that carries `auto` but never actually scrolls, while adding a `scrollHeight > clientHeight`
+ * test rejects the real scroller for being momentarily short — this hook resolves the chain while
+ * the record is still loading and the sections below have not rendered yet — and falls through to
+ * the viewport, which then never fires a scroll event at all. Listening to every candidate and
+ * re-measuring geometry each time sidesteps the guess entirely.
  */
-function findScrollParent(node: HTMLElement | null): HTMLElement | Window {
+function findScrollAncestors(node: HTMLElement | null): HTMLElement[] {
+	const found: HTMLElement[] = [];
 	let current = node?.parentElement ?? null;
 	while (current) {
 		const overflowY = getComputedStyle(current).overflowY;
-		if ((overflowY === 'auto' || overflowY === 'scroll') && current.scrollHeight > current.clientHeight) {
-			return current;
+		if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') {
+			found.push(current);
 		}
 		current = current.parentElement;
 	}
-	return window;
+	return found;
+}
+
+/**
+ * The box the pinned row should align to: the nearest ancestor that actually clips its content.
+ *
+ * A frame that carries `overflow-y: auto` but whose content fits exactly (`scrollHeight` equal to
+ * `clientHeight`) is not the box the row scrolls within — its top edge tracks the content and
+ * would place the pinned row off-screen. The first genuinely-clipping box is the honest boundary,
+ * and it is resolved on every measure because which box clips changes as content loads in.
+ */
+function findClippingBox(candidates: HTMLElement[]): HTMLElement | null {
+	return candidates.find(el => el.scrollHeight > el.clientHeight) ?? null;
+}
+
+type PinMeasurement = {
+	isPinned: boolean,
+	placeholderHeight: number,
+	geometry: { top: number, left: number, width: number },
+};
+
+/**
+ * Reads the live layout and decides whether the row should be pinned, and where.
+ *
+ * The sentinel stays in flow whether or not the row is pinned, so it is the honest reference for
+ * "has the header scrolled past?" — reading the row's own box once it is `fixed` would compare it
+ * against itself and latch.
+ */
+function measurePin(row: HTMLElement, sentinel: HTMLElement, scrollers: HTMLElement[]): PinMeasurement {
+	// Resolved per measure, not once: which ancestor clips depends on how much content has loaded,
+	// and the row must align to whichever box is clipping right now.
+	const clipper = findClippingBox(scrollers);
+	const boundaryTop = clipper ? clipper.getBoundingClientRect().top : 0;
+	const isPinned = sentinel.getBoundingClientRect().bottom <= boundaryTop;
+	const box = clipper?.getBoundingClientRect();
+
+	return {
+		isPinned,
+		placeholderHeight: row.offsetHeight,
+		geometry: box
+			? { top: box.top, left: box.left, width: box.width }
+			: { top: 0, left: 0, width: window.innerWidth },
+	};
 }
 
 export type PinnedToolbarState = {
@@ -54,43 +106,31 @@ export function usePinnedToolbar(enabled: boolean): PinnedToolbarState {
 			return undefined;
 		}
 
-		const scroller = findScrollParent(row);
-		const scrollerEl = scroller === window ? null : (scroller as HTMLElement);
+		const scrollers = findScrollAncestors(row);
 
 		const measure = (): void => {
-			// The sentinel stays in flow whether or not the row is pinned, so it is the honest
-			// reference for "has the header scrolled past?" — reading the row's own box once it is
-			// fixed would compare it against itself and latch.
-			const boundaryTop = scrollerEl ? scrollerEl.getBoundingClientRect().top : 0;
-			const sentinelBottom = sentinel.getBoundingClientRect().bottom;
-			const shouldPin = sentinelBottom <= boundaryTop;
-
-			setIsPinned(shouldPin);
-			setPlaceholderHeight(row.offsetHeight);
-			if (scrollerEl) {
-				const box = scrollerEl.getBoundingClientRect();
-				setGeometry({ top: box.top, left: box.left, width: box.width });
-			}
-			else {
-				setGeometry({ top: 0, left: 0, width: window.innerWidth });
-			}
+			const next = measurePin(row, sentinel, scrollers);
+			setIsPinned(next.isPinned);
+			setPlaceholderHeight(next.placeholderHeight);
+			setGeometry(next.geometry);
 		};
 
 		measure();
-		const target: HTMLElement | Window = scroller;
-		target.addEventListener('scroll', measure, { passive: true });
+		// Every candidate is listened to, not just the one clipping at setup time — the box that
+		// scrolls can change as the page fills in, and a listener on the wrong one is silent.
+		scrollers.forEach(el => el.addEventListener('scroll', measure, { passive: true }));
+		window.addEventListener('scroll', measure, { passive: true });
 		window.addEventListener('resize', measure);
 		// Content above the toolbar can change height without any scroll — a section collapsing, a
 		// record loading in — which moves the boundary the pin decision is made against.
 		const observer = new ResizeObserver(measure);
 		observer.observe(sentinel);
 		observer.observe(row);
-		if (scrollerEl) {
-			observer.observe(scrollerEl);
-		}
+		scrollers.forEach(el => observer.observe(el));
 
 		return () => {
-			target.removeEventListener('scroll', measure);
+			scrollers.forEach(el => el.removeEventListener('scroll', measure));
+			window.removeEventListener('scroll', measure);
 			window.removeEventListener('resize', measure);
 			observer.disconnect();
 		};

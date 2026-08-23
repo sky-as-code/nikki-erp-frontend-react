@@ -14,9 +14,8 @@
 	display: flex;
 	align-items: center;
 	gap: var(--mantine-spacing-xs);
-	padding-top: var(--mantine-spacing-xs);
-	padding-bottom: var(--mantine-spacing-xs);
-	background-color: var(--mantine-color-body);
+	padding-top: 0;
+	padding-bottom: 0;
 }
 
 .pinned {
@@ -32,8 +31,14 @@
 	left: var(--nikki-page-toolbar-left, 0);
 	width: var(--nikki-page-toolbar-width, 100%);
 	z-index: 200;
+	/*
+	 * Opaque, not transparent. The row is `fixed`, so the page keeps scrolling underneath it — with
+	 * no background of its own the content below reads straight through the buttons. `--mantine-color-body`
+	 * tracks the light/dark scheme rather than hard-coding white.
+	 */
 	padding-left: var(--mantine-spacing-md);
 	padding-right: var(--mantine-spacing-md);
+	padding-bottom: var(--mantine-spacing-xs);
 	box-shadow: 0 1px 0 0 var(--mantine-color-default-border);
 }
 

@@ -23,5 +23,21 @@ const selectEnvVars = createSelector(
 	(state: ShellConfigState | undefined) => state?.envVars ?? EMPTY_ENV_VARS,
 );
 
-/** Reads from the Shell's own store, not the default react-redux context. */
+/**
+ * Reads from the Shell's own store, not the default react-redux context.
+ *
+ * @deprecated Only usable from inside the Shell's own store scope. `useModuleSelector` resolves
+ * whichever store is in React scope, and in a micro-app that is the module's own store, which
+ * never carries the `shellConfig` slice — so this silently returns {@link EMPTY_ENV_VARS} rather
+ * than throwing, and the failure surfaces as empty config far from its cause. It also narrows to
+ * `ShellEnvVars`, dropping deployment-specific vars such as coremart's `MAPLIBRE_GL_API_KEY`.
+ *
+ * Existing Shell-internal callers are fine. New modules must publish
+ * `shell.shared_state.get_env_vars` on the command bus instead, which crosses store boundaries
+ * and returns the whole untyped bag. See `docs/wiki/01. Micro Frontend architecture.md` §3.7 and
+ * `coremart/modules/vendingMachineNew/src/common/hooks/useShellEnv.ts` for a worked example.
+ *
+ * Note the lint zone bans `@nikkierp/microapp-*` inside modules but not `@nikkierp/shell/*`, so a
+ * module importing this still lints clean — the boundary is convention, not enforcement.
+ */
 export const useShellEnvVars = (): ShellEnvVars => useModuleSelector(selectEnvVars);

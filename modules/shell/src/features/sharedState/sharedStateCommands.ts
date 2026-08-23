@@ -1,6 +1,7 @@
 import { ICommandBus, ok, ServiceResult } from '@nikkierp/common/commandBus';
 
 import { sharedStateService } from './sharedStateService';
+import { ShellEnvVarBag } from './types';
 
 
 /**
@@ -12,6 +13,7 @@ import { sharedStateService } from './sharedStateService';
 export const SHARED_STATE_COMMANDS = Object.freeze({
 	GET_CURRENT_ORG_ID: 'shell.shared_state.get_current_org_id',
 	GET_CURRENT_MODULE: 'shell.shared_state.get_current_module',
+	GET_ENV_VARS: 'shell.shared_state.get_env_vars',
 } as const);
 
 /**
@@ -23,6 +25,7 @@ export function registerSharedStateCommands(bus: ICommandBus): () => void {
 	const unsubscribers = [
 		bus.subscribe(SHARED_STATE_COMMANDS.GET_CURRENT_ORG_ID, () => handleGetCurrentOrgId()),
 		bus.subscribe(SHARED_STATE_COMMANDS.GET_CURRENT_MODULE, () => handleGetCurrentModule()),
+		bus.subscribe(SHARED_STATE_COMMANDS.GET_ENV_VARS, () => handleGetEnvVars()),
 	];
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
 }
@@ -33,4 +36,14 @@ function handleGetCurrentOrgId(): ServiceResult<string | null> {
 
 function handleGetCurrentModule(): ServiceResult<string | null> {
 	return ok(sharedStateService.getCurrentModule());
+}
+
+/**
+ * The only route to the host's env vars from inside a micro-app.
+ *
+ * `useShellEnvVars` cannot serve one: it selects from whichever store is in React scope, and in a
+ * micro-app that is the module's own store, which never carries the Shell's `shellConfig` slice.
+ */
+function handleGetEnvVars(): ServiceResult<ShellEnvVarBag> {
+	return ok(sharedStateService.getEnvVars());
 }

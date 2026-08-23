@@ -3,7 +3,7 @@ import { moduleService, SearchModuleResponse } from '@nikkierp/shell/erpModules'
 import { routingService, useActiveOrgModule } from '@nikkierp/shell/routing';
 import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
-import { useTranslate } from '@nikkierp/ui/i18n';
+import { useLocaleCollator, useTranslate } from '@nikkierp/ui/i18n';
 import { useMemo } from 'react';
 
 import { sharedStateService } from '../../features/sharedState';
@@ -15,6 +15,7 @@ export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdow
 
 export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.ReactNode {
 	const t = useTranslate('common');
+	const compareLocalized = useLocaleCollator();
 	const isAuthenticated = useIsAuthenticated();
 	// Read-only: `ShellRoutes` is what dispatches `listAll`, so this reflects that result.
 	const { data } = useServiceLayer<SearchModuleResponse>(moduleService.listAll);
@@ -22,12 +23,17 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 	const { orgSlug, moduleSlug } = useActiveOrgModule();
 	const { dispatchMethod: setCurrentModule } = useServiceLayer(sharedStateService.setCurrentModule);
 
+	// Sorted here rather than in the request: the label is `module.label.*` out of the client
+	// bundle, so the server has no column to order by, and `name` order would be visibly wrong in
+	// any locale whose translations do not share its alphabet.
 	const items = useMemo(() => {
-		return modules.map<SearchableSelectItem>((mod) => ({
-			value: mod.name,
-			label: t(`module.label.${mod.name}`),
-		}));
-	}, [modules]);
+		return modules
+			.map<SearchableSelectItem>((mod) => ({
+				value: mod.name,
+				label: t(`module.label.${mod.name}`),
+			}))
+			.sort((a, b) => compareLocalized(a.label, b.label));
+	}, [modules, t, compareLocalized]);
 
 	// Stored before navigating, for the same reason as the org switcher.
 	const handleModuleChange = (newModSlug: string) => {
