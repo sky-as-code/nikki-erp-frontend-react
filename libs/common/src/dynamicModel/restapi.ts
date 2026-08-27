@@ -62,8 +62,16 @@ export class RestApi {
 		const keyFields = Object.values(rest).join('/');
 
 		const dedupKey = `GET/${restPath}/${keyFields}/${fields?.join(',')}`;
+		// buildSearchParams is the caller's, and knows only the fields it looks records up by.
+		// org_id is added by the service layer after that function was written, so it has to be
+		// appended here or an org-scoped getOne would go out unscoped.
+		const searchParams = buildSearchParams(request);
+		const orgId = (request as Record<string, any>).org_id;
+		if (orgId != null && !searchParams.has('org_id')) {
+			searchParams.append('org_id', String(orgId));
+		}
 		return this._opts.requestMaker!.get<RestGetOneResponse<any>>(`${restPath}/getOne`, {
-			searchParams: buildSearchParams(request),
+			searchParams,
 			dedupKey,
 		});
 	}
@@ -195,6 +203,8 @@ export type RestCreateResponse = {
 
 export type RestDeleteRequest = {
 	id: string,
+	/** Scopes the delete to one organization, where the resource is org-owned. */
+	org_id?: string,
 };
 
 export type RestDeleteResponse = {
@@ -204,6 +214,8 @@ export type RestDeleteResponse = {
 
 export type RestExistsRequest = {
 	ids: string[],
+	/** Scopes the check to one organization, where the resource is org-owned. */
+	org_id?: string,
 };
 
 export type RestExistsResponse = {
@@ -213,6 +225,8 @@ export type RestExistsResponse = {
 
 export type RestGetByIdRequest = RequestWithFields & {
 	id: string,
+	/** Scopes the read to one organization, where the resource is org-owned. */
+	org_id?: string,
 };
 
 type ModelSchemaFieldName = ModelSchema['fields'][string]['name'];
