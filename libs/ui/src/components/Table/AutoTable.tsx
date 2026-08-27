@@ -10,10 +10,10 @@ import { LoadingState } from '../Loading';
 
 
 export type ColumnSize = {
-	width?: number | string;
-	minWidth?: number | string;
-	maxWidth?: number | string;
-	flex?: number;
+	width?: number | string,
+	minWidth?: number | string,
+	maxWidth?: number | string,
+	flex?: number,
 };
 
 export type ColumnRenderer = (row: Record<string, unknown>) => React.ReactNode;
@@ -21,27 +21,27 @@ export type HeaderRenderer = (columnName: string, schema: dyn.ModelSchema) => Re
 
 export type AutoTableProps = Omit<TableProps, 'data' | 'children'> & {
 	/** Schema resolved from the registry. Omit when `schema` is supplied directly. */
-	schemaName?: string;
+	schemaName?: string,
 	// i18next namespace of this resource (namespace "common" is included by default)
 	translationNs?: string,
 	/** Directly supplied model schema (legacy API). Takes precedence over `schemaName`. */
-	schema?: dyn.ModelSchema;
+	schema?: dyn.ModelSchema,
 	/** Explicit column list. Defaults to the schema's non-hidden fields. */
-	columns?: string[];
-	columnSizes?: Record<string, ColumnSize>;
-	columnAsLink?: string;
-	columnAsLinkHref?: (rowData: any) => string;
-	columnAsId?: string;
-	columnRenderers?: Record<string, ColumnRenderer>;
-	headerRenderers?: Record<string, HeaderRenderer>;
-	theadProps?: React.ComponentProps<typeof Table.Thead>;
-	data: Record<string, unknown>[];
-	isLoading?: boolean;
+	columns?: string[],
+	columnSizes?: Record<string, ColumnSize>,
+	columnAsLink?: string,
+	columnAsLinkHref?: (rowData: any) => string,
+	columnAsId?: string,
+	columnRenderers?: Record<string, ColumnRenderer>,
+	headerRenderers?: Record<string, HeaderRenderer>,
+	theadProps?: React.ComponentProps<typeof Table.Thead>,
+	data: Record<string, unknown>[],
+	isLoading?: boolean,
 	/**
 	 * `{module}.{component}` prefix for the `data-testid` of each row and cell. Rows are keyed by
 	 * `columnAsId` so a test's handle survives sorting and paging.
 	 */
-	testId?: string;
+	testId?: string,
 };
 
 /**
@@ -64,11 +64,11 @@ export const AutoTable: React.FC<AutoTableProps> = (props) => {
 
 
 type AutoTableBodyProps = AutoTableProps & {
-	modelSchema: dyn.ModelSchema;
+	modelSchema: dyn.ModelSchema,
 };
 
 type ResolvedAutoTableProps = AutoTableBodyProps & {
-	columnAsId: string;
+	columnAsId: string,
 };
 
 const AutoTableBody: React.FC<AutoTableBodyProps> = (props) => {
@@ -156,11 +156,11 @@ const AutoTableBody: React.FC<AutoTableBodyProps> = (props) => {
 
 
 const AutoTableHead: React.FC<{
-	columns: string[];
-	headerRenderers?: Record<string, HeaderRenderer>;
-	modelSchema: dyn.ModelSchema;
-	translationNs?: string;
-	theadProps?: React.ComponentProps<typeof Table.Thead>;
+	columns: string[],
+	headerRenderers?: Record<string, HeaderRenderer>,
+	modelSchema: dyn.ModelSchema,
+	translationNs?: string,
+	theadProps?: React.ComponentProps<typeof Table.Thead>,
 }> = React.memo(({ columns, headerRenderers, modelSchema, translationNs, theadProps }) => {
 	const localize = useLocalize(translationNs);
 
@@ -207,13 +207,13 @@ function normalizeLegacyLabelRef(
 type TranslateFn = (key: string) => string;
 
 type CellRendererContext = {
-	value: unknown;
-	row: Record<string, unknown>;
-	fieldName: string;
-	field?: dyn.ModelSchemaField;
-	modelSchema: dyn.ModelSchema;
-	schemaName: string;
-	t: TranslateFn;
+	value: unknown,
+	row: Record<string, unknown>,
+	fieldName: string,
+	field?: dyn.ModelSchemaField,
+	modelSchema: dyn.ModelSchema,
+	schemaName: string,
+	t: TranslateFn,
 };
 
 type TypeCellRenderer = (ctx: CellRendererContext) => React.ReactNode;

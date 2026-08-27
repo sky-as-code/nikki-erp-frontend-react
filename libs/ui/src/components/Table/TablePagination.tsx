@@ -5,7 +5,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 
-export type PageSizeOption = { value: string; label: string };
+export type PageSizeOption = { value: string, label: string };
 
 export interface TablePaginationProps {
 	totalItems?: number;
@@ -24,12 +24,12 @@ const DEFAULT_TOTAL_PAGES = 1;
 
 
 const PaginationButton = ({ page, type, icon, disabled, onPageChange, testId }: {
-	page: number;
-	type: 'back' | 'forward';
-	icon?: React.ComponentType<IconProps>;
-	disabled?: boolean;
-	onPageChange?: (page: number) => void;
-	testId?: string;
+	page: number,
+	type: 'back' | 'forward',
+	icon?: React.ComponentType<IconProps>,
+	disabled?: boolean,
+	onPageChange?: (page: number) => void,
+	testId?: string,
 }) => {
 	const nextPage = type === 'back' ? page - 1 : page + 1;
 	const handleClick = () => {
@@ -52,10 +52,10 @@ const PaginationButton = ({ page, type, icon, disabled, onPageChange, testId }: 
 
 
 const PageInput = ({ totalPages, value, onPageChange, testId }: {
-	value: string | number | undefined;
-	totalPages: number;
-	onPageChange: (value: string | number | undefined) => void;
-	testId?: string;
+	value: string | number | undefined,
+	totalPages: number,
+	onPageChange: (value: string | number | undefined) => void,
+	testId?: string,
 }) => {
 	return (
 		<Group gap={3} justify='center' bdrs={'sm'} bd={'solid 1px var(--mantine-color-gray-3)'}>

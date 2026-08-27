@@ -27,6 +27,7 @@
 		"@mantine/modals": "~9.1.1",
 		"@mantine/notifications": "~9.1.1",
 		"@nikkierp/common": "workspace:*",
+		"@nikkierp/microapp-accounting": "workspace:*",
 		"@nikkierp/microapp-authorize": "workspace:*",
 		"@nikkierp/microapp-drive": "workspace:*",
 		"@nikkierp/microapp-essential": "workspace:*",

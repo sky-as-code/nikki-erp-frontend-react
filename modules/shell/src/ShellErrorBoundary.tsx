@@ -2,11 +2,11 @@ import React from 'react';
 
 
 export type ShellErrorBoundaryProps = {
-	children: React.ReactNode;
+	children: React.ReactNode,
 };
 
 type ShellErrorBoundaryState = {
-	error: Error | null;
+	error: Error | null,
 };
 
 /** Catches render/lifecycle errors in the shell tree so the app does not blank the screen. */

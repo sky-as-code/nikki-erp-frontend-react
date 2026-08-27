@@ -1,13 +1,13 @@
-/* eslint-disable max-lines-per-function */
+
 import { minify } from 'terser';
 
 import type { Plugin } from 'vite';
 
 
 export interface TerserMinifyOptions {
-	compress?: boolean | Record<string, any>
-	mangle?: boolean | Record<string, any>
-	format?: Record<string, any>
+	compress?: boolean | Record<string, any>;
+	mangle?: boolean | Record<string, any>;
+	format?: Record<string, any>;
 }
 
 export function terserMinifyPlugin(options: TerserMinifyOptions = {}): Plugin {

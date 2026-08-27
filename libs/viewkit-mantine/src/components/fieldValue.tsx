@@ -3,6 +3,8 @@ import { toLangJson } from '@nikkierp/ui/components/DataTable';
 import { JsonLangText } from '@nikkierp/ui/i18n';
 import React from 'react';
 
+import type { LocalizeFn } from '@nikkierp/ui/i18n';
+
 
 /**
  * Read-mode rendering of a dynamic-model field value.
@@ -14,9 +16,21 @@ import React from 'react';
 export function renderDisplayFieldValue(
 	fieldValue: unknown,
 	fieldSchema?: dyn.ModelSchemaField,
+	localize?: LocalizeFn,
 ): React.ReactNode {
 	if (getFieldDataTypeName(fieldSchema) === 'nikkiLangJson') {
 		return <JsonLangText langJson={toLangJson(fieldValue)} />;
+	}
+	// An enum stores a machine value (`country`); the label for it lives under
+	// `{field}.{value}`, the same key the edit form's select builds. Without this, read mode
+	// shows the raw stored value while edit mode shows the translated one, for the same field.
+	if (localize && getFieldDataTypeName(fieldSchema) === 'enumString'
+		&& typeof fieldValue === 'string' && fieldValue !== '') {
+		const key = `${fieldSchema!.name}.${fieldValue}`;
+		const label = localize(dyn.newLangJsonRef(key));
+		// i18next runs with `appendNamespaceToMissingKey` and no `fallbackLng`, so an untranslated
+		// enum comes back as `module:field.value`. Showing the stored value is the lesser evil.
+		return label && !label.endsWith(key) ? label : formatFieldValue(fieldValue);
 	}
 	return formatFieldValue(fieldValue);
 }

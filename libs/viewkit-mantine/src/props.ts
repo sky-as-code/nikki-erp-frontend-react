@@ -5,10 +5,12 @@ import { pageHeaderPropsSchema } from './components/pageHeader/props';
 import { resourceFormTabsPropsSchema } from './components/resourceFormTabs/props';
 import { resourceTablePropsSchema } from './components/resourceTable/props';
 import { settingsItemPropsSchema, settingsSectionPropsSchema } from './components/settings/props';
+import { tabCollapsibleSectionPropsSchema } from './components/tabCollapsibleSection/props';
 import {
 	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE,
 	RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_LIST_TEMPLATE,
 	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE, SETTINGS_ITEM, SETTINGS_SECTION,
+	TAB_COLLAPSIBLE_SECTION,
 } from './ids';
 import { ownPropertySectionSchema, resourceDetailPropsSchema } from './pages/resourceDetail/props';
 import { resourceListPropsSchema } from './pages/resourceList/props';
@@ -21,7 +23,8 @@ import type { ResourceTablePropsInput } from './components/resourceTable/props';
 import type {
 	SettingsItemPropsInput, SettingsSectionPropsInput,
 } from './components/settings/props';
-import type { OwnPropertySection } from './pages/resourceDetail/props';
+import type { TabCollapsibleSectionPropsInput } from './components/tabCollapsibleSection/props';
+import type { OwnPropertySectionInput } from './pages/resourceDetail/props';
 import type {
 	ResourceDetailProps, ResourceDetailPropsInput,
 } from './pages/resourceDetail/props';
@@ -103,6 +106,19 @@ export function resourceFormTabsNode(
 }
 
 /**
+ * Like `collapsibleSectionNode({ layout: 'formBlocks' })`, but for a row of blocks that has grown
+ * too large to show all at once: past `minBlockCountWithoutTabs` tabs, a `SegmentedControl` narrows
+ * visible blocks to one at a time. Each tab carries its own `content` node -- typically a
+ * `resourceFormColumnNode({ header, fields })` -- rather than a separate positional-children array.
+ */
+export function tabCollapsibleSectionNode(input: TabCollapsibleSectionPropsInput): ComponentNode {
+	return defineComponent({
+		component: TAB_COLLAPSIBLE_SECTION,
+		props: tabCollapsibleSectionPropsSchema.parse(input) as unknown as Record<string, unknown>,
+	});
+}
+
+/**
  * One block of the resource's own fields, and the single declaration of which fields the page's
  * form owns — the partial-save payload is scoped to what these nodes list.
  *
@@ -120,7 +136,7 @@ export function resourceFormTabsNode(
  * Wrap a group of these in `collapsibleSectionNode({ layout: 'formBlocks' })` to lay them out
  * side by side; without that grid each column spans the full section width.
  */
-export function resourceFormColumnNode(input: OwnPropertySection): ComponentNode {
+export function resourceFormColumnNode(input: OwnPropertySectionInput): ComponentNode {
 	return defineComponent({
 		component: RESOURCE_FORM_COLUMN,
 		props: ownPropertySectionSchema.parse(input) as Record<string, unknown>,

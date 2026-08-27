@@ -5,6 +5,7 @@ export * from './formTestIds';
 export * from './LangJsonField';
 export * from './RelationPickerModal';
 export * from './RelationSelectField';
+export * from './useComputedField';
 export * from './validation';
 export * from './FormContainer';
 export * from './FormActions';

@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	resourceSplitViewProps, resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -70,33 +70,55 @@ function buildProductVariantDetailProps() {
 	});
 }
 
-/** Shared by both form modes: the resource's own fields, as titled blocks. */
+/**
+ * Shared by both form modes: the resource's own fields, as titled blocks.
+ *
+ * Pilot for `tabCollapsibleSectionNode`: four blocks is past the default
+ * `minBlockCountWithoutTabs` (2), so this now shows a `[All] | [tab...]` block-visibility
+ * control instead of every block's fields at once.
+ */
 function buildProductVariantFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['product_template_id', 'status', 'org_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['product_template_id', 'status', 'org_id'],
+				}),
+			},
+			{
+				key: 'identification',
 				header: 'form.identification',
-				fields: ['sku', 'primary_barcode', 'combination_key'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.identification',
+					fields: ['sku', 'primary_barcode', 'combination_key'],
+				}),
+			},
+			{
+				key: 'dimensions',
 				// Left empty, each of these inherits the template's default. Null means "inherited",
 				// never zero. See BR Â§6.4.
 				header: 'form.dimensions',
-				fields: ['weight', 'length', 'width', 'height'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.dimensions',
+					fields: ['weight', 'length', 'width', 'height'],
+				}),
+			},
+			{
+				key: 'audit',
 				// archive_source is what lets unarchiving a template restore only the variants it
 				// took down, so it is shown rather than hidden. See BR Â§8.9.
 				header: 'form.audit',
-				fields: ['is_materialized', 'archive_source', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['is_materialized', 'archive_source', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

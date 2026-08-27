@@ -140,9 +140,9 @@ export type UIStateContextType = {
 	isScrollingUp: boolean,
 	isMobile: boolean,
 	notification: {
-		showError: (message: string, title: string) => void;
-		showInfo: (message: string, title: string) => void;
-		showWarning: (message: string, title: string) => void;
+		showError: (message: string, title: string) => void,
+		showInfo: (message: string, title: string) => void,
+		showWarning: (message: string, title: string) => void,
 	},
 	screen: {
 		currentScreen: string,

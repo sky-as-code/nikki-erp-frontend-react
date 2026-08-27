@@ -2,7 +2,7 @@ import {
 	Badge, Button, Group, Stack, Text, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { AutoField } from '@nikkierp/ui/components/form';
+import { AutoField, useComputedField } from '@nikkierp/ui/components/form';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
@@ -404,7 +404,7 @@ export function OwnPropertiesBlock({
 
 	return (
 		<Stack gap='sm' className={classes.formBlock}>
-			{block.header ? <Title order={4}>{t(block.header)}</Title> : null}
+			{block.header && block.showTitle ? <Title order={4}>{t(block.header)}</Title> : null}
 			<FieldGroupVertical
 				fields={block.fields ?? []}
 				isLoading={isLoading}
@@ -489,8 +489,16 @@ function ReadOnlyFieldValue({
 	fieldValues: Record<string, unknown>,
 }): React.ReactNode {
 	const localize = useLocalize(useResourceDetailTranslationNs());
+	// Called before the early return, since hooks cannot be skipped. It no-ops for every field
+	// that is not function-computed with a declared dependency.
+	const computed = useComputedField(field);
 	const fieldDef = modelSchema.fields[field];
-	const rawValue = fieldValues[field];
+	// A live recompute wins over the loaded value, which went stale the moment the user edited the
+	// field it derives from. Before the first answer arrives there is nothing fresher to show, so
+	// the loaded value stands.
+	const rawValue = computed.isLive && computed.value !== undefined
+		? computed.value
+		: fieldValues[field];
 	if (!fieldDef || !hasDisplayableValue(rawValue)) {
 		return null;
 	}
@@ -498,7 +506,7 @@ function ReadOnlyFieldValue({
 	return (
 		<Stack gap={4}>
 			<Text size='md' fw='bold'>{localize(fieldDef.label)}</Text>
-			<Text size='md'>{renderDisplayFieldValue(rawValue, fieldDef)}</Text>
+			<Text size='md'>{renderDisplayFieldValue(rawValue, fieldDef, localize)}</Text>
 		</Stack>
 	);
 }

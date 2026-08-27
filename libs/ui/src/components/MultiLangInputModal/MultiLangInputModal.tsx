@@ -4,13 +4,13 @@ import React from 'react';
 
 
 export type MultiLangInputModalProps = {
-	opened: boolean;
-	onClose: () => void;
-	onSave: (value: dyn.ModelSchemaLangJson) => void;
-	title: string;
-	value?: dyn.ModelSchemaLangJson;
-	supportedLngs: string[];
-	currentLanguage: string;
+	opened: boolean,
+	onClose: () => void,
+	onSave: (value: dyn.ModelSchemaLangJson) => void,
+	title: string,
+	value?: dyn.ModelSchemaLangJson,
+	supportedLngs: string[],
+	currentLanguage: string,
 };
 
 export function propagateCurrentLangToEmpty(

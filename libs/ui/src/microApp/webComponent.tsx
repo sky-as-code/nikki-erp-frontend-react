@@ -5,8 +5,8 @@ import { MicroAppDomType, MicroAppProps } from './types';
 
 
 export type DefineWebComponentOpts = {
-	domType?: MicroAppDomType;
-	htmlTag: string;
+	domType?: MicroAppDomType,
+	htmlTag: string,
 };
 
 export function defineWebComponent(Component: React.ComponentType<MicroAppProps>, opts: DefineWebComponentOpts): void {

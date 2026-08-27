@@ -12,9 +12,9 @@ import { MultiLangInputModal, propagateCurrentLangToEmpty } from '../MultiLangIn
 
 
 export type LangJsonFieldProps = {
-	name: string;
-	inputProps?: Partial<InputProps>;
-	localize: LocalizeFn;
+	name: string,
+	inputProps?: Partial<InputProps>,
+	localize: LocalizeFn,
 };
 
 function useSupportedLngs(i18n: ReturnType<typeof useI18n>): string[] {

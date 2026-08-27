@@ -20,6 +20,12 @@ export const ownPropertySectionSchema = z.object({
 	 */
 	header: z.string().min(1).optional(),
 	fields: z.array(z.string()).optional(),
+	/**
+	 * Whether `header` also prints above the block's fields. Defaults to `false`: a block used as a
+	 * `tabCollapsibleSection` tab already shows its title in the tab control, so printing it again
+	 * inside the block would be redundant.
+	 */
+	showTitle: z.boolean().default(false),
 });
 
 /**
@@ -137,6 +143,7 @@ export type SchemaFieldSpec = z.infer<typeof schemaFieldSpecSchema>;
 export type LinkSpec = z.infer<typeof linkSpecSchema>;
 export type StatusOption = z.infer<typeof statusOptionSchema>;
 export type OwnPropertySection = z.infer<typeof ownPropertySectionSchema>;
+export type OwnPropertySectionInput = z.input<typeof ownPropertySectionSchema>;
 export type ActionPromptField = z.infer<typeof actionPromptFieldSchema>;
 export type ActionPrompt = z.infer<typeof actionPromptSchema>;
 export type ResourceDetailExtraAction = z.infer<typeof resourceDetailExtraActionSchema>;

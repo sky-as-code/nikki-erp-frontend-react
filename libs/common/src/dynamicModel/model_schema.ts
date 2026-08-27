@@ -69,6 +69,22 @@ export type ModelSchemaField = {
 	no_update?: boolean,
 	rules?: unknown,
 	default_value?: unknown,
+	/** How a computed value arrives, and what to watch to recompute it. Absent when not computed. */
+	computed?: ModelSchemaComputed,
+};
+
+/**
+ * The client-facing summary of a computed field. The expression itself stays server-side: a form
+ * needs the trigger, not the formula.
+ */
+export type ModelSchemaComputed = {
+	/** e.g. "expression", "related", "aggregate", "function". */
+	kind?: string,
+	/**
+	 * The same-schema field a function-kind computation reads. When set, editing that field must
+	 * recompute this one through `meta/compute/{field}` so the displayed value never lags.
+	 */
+	depends_on?: string,
 };
 
 export type ModelSchemaFieldsMap = Record<string, ModelSchemaField>;
@@ -499,4 +515,20 @@ function isNilOrEmpty(value: unknown): boolean {
 		return value.length === 0;
 	}
 	return false;
+}
+
+/**
+ * The field a function-computed field must be recomputed on, or undefined when it has none.
+ *
+ * Only a `function` kind declares one: the other kinds are computed from data the server already
+ * has, so there is nothing an unsaved edit could change about them.
+ */
+export function findComputedDependency(
+	modelSchema: ModelSchema | undefined, fieldName: string,
+): string | undefined {
+	const field = modelSchema?.fields?.[fieldName];
+	if (field?.computed?.kind !== 'function') {
+		return undefined;
+	}
+	return field.computed.depends_on || undefined;
 }

@@ -41,14 +41,14 @@ export interface ReduxThunkState<T =  any> {
 }
 
 export type ThunkPackHookReturn<TReturn, TArg> = {
-	thunkAction: AsyncThunk<TReturn, TArg, { rejectValue: any }>;
-	resetAction: ActionCreatorWithoutPayload<string>;
-	isLoading: boolean;
-	isDone: boolean;
-	isError: boolean;
-	error: unknown | null;
-	data: TReturn | null;
-	doneAt: number;
+	thunkAction: AsyncThunk<TReturn, TArg, { rejectValue: any }>,
+	resetAction: ActionCreatorWithoutPayload<string>,
+	isLoading: boolean,
+	isDone: boolean,
+	isError: boolean,
+	error: unknown | null,
+	data: TReturn | null,
+	doneAt: number,
 };
 
 export type ThunkPack<TReturn = void, TArg = void, TStateKey extends string = string> = {

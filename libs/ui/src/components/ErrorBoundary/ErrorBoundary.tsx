@@ -16,11 +16,11 @@ export function withErrorBoundary<T extends object>(
 }
 
 export type ErrorBoundaryProps = {
-	children: React.ReactNode;
+	children: React.ReactNode,
 };
 
 type ErrorBoundaryState = {
-	error: Error | null;
+	error: Error | null,
 };
 
 /** Catches render/lifecycle errors in the  tree so the app does not blank the screen. */

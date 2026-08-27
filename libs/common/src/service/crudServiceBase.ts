@@ -1,7 +1,9 @@
 import { ok, ServiceResult } from '../commandBus';
 import * as dyn from '../dynamicModel';
 import { EventBus, eventTopic, IEventBus } from '../eventBus';
+import { withOrgId } from './orgContext';
 import { ClientErrorItem } from '../types/common';
+
 
 
 /**
@@ -52,7 +54,8 @@ export abstract class CrudServiceBase {
 		request: dyn.RestCreateRequest, primaryResourceId?: string,
 	): Promise<ServiceResult<dyn.RestCreateResponse>> {
 		return this.emitEvent(
-			'create', () => this.withSchema(schema => schema.restApi.create(request, primaryResourceId)),
+			'create', () => this.withSchema(async schema =>
+				schema.restApi.create(await this.withOrgScope(schema, request), primaryResourceId)),
 		);
 	}
 
@@ -60,7 +63,8 @@ export abstract class CrudServiceBase {
 		request: dyn.RestUpdateRequest, primaryResourceId?: string,
 	): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.emitEvent(
-			'update', () => this.withSchema(schema => schema.restApi.update(request, primaryResourceId)),
+			'update', () => this.withSchema(async schema =>
+				schema.restApi.update(await this.withOrgScope(schema, request), primaryResourceId)),
 		);
 	}
 
@@ -78,7 +82,8 @@ export abstract class CrudServiceBase {
 		const ids = 'ids' in request ? request.ids : [request.id];
 		return this.emitEvent('delete', async () => {
 			const results = await Promise.all(
-				ids.map(id => this.withSchema(schema => schema.restApi.delete({ id }, primaryResourceId))),
+				ids.map(id => this.withSchema(async schema =>
+					schema.restApi.delete(await this.withOrgScope(schema, { id }), primaryResourceId))),
 			);
 			return mergeDeleteResults(results);
 		});
@@ -88,7 +93,8 @@ export abstract class CrudServiceBase {
 		request: dyn.RestSetIsArchivedRequest, primaryResourceId?: string,
 	): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.emitEvent(
-			'setIsArchived', () => this.withSchema(schema => schema.restApi.setIsArchived(request, primaryResourceId)),
+			'setIsArchived', () => this.withSchema(async schema =>
+				schema.restApi.setIsArchived(await this.withOrgScope(schema, request), primaryResourceId)),
 		);
 	}
 
@@ -96,14 +102,28 @@ export abstract class CrudServiceBase {
 		request: dyn.RestManageM2mRequest, path: string, primaryResourceId?: string,
 	): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.emitEvent(
-			'manageM2m', () => this.withSchema(schema => schema.restApi.manageM2m(request, path, primaryResourceId)),
+			'manageM2m', () => this.withSchema(async schema =>
+				schema.restApi.manageM2m(await this.withOrgScope(schema, request), path, primaryResourceId)),
 		);
+	}
+
+	/**
+	 * Evaluates one function-kind computed field against an unsaved model.
+	 *
+	 * Not an `emitEvent` action: this computes and returns a value without touching a record, so
+	 * a mutation event would tell listeners a write happened when none did.
+	 */
+	public computeField(
+		request: dyn.RestComputeFieldRequest, fieldName: string, primaryResourceId?: string,
+	): Promise<ServiceResult<dyn.RestComputeFieldResponse>> {
+		return this.withSchema(schema => schema.restApi.computeField(request, fieldName, primaryResourceId));
 	}
 
 	public getById(
 		request: dyn.RestGetByIdRequest, primaryResourceId?: string,
 	): Promise<ServiceResult<dyn.RestGetOneResponse<any>>> {
-		return this.withSchema(schema => schema.restApi.getById(request, primaryResourceId));
+		return this.withSchema(async schema =>
+			schema.restApi.getById(await this.withOrgScope(schema, request), primaryResourceId));
 	}
 
 	/**
@@ -116,13 +136,15 @@ export abstract class CrudServiceBase {
 	public getOne<TReq extends dyn.RequestWithFields & Record<string, any>>(
 		request: TReq, buildSearchParams: (req: TReq) => URLSearchParams, primaryResourceId?: string,
 	): Promise<ServiceResult<dyn.RestGetOneResponse<any>>> {
-		return this.withSchema(schema => schema.restApi.getOne(request, buildSearchParams, primaryResourceId));
+		return this.withSchema(async schema =>
+			schema.restApi.getOne(await this.withOrgScope(schema, request), buildSearchParams, primaryResourceId));
 	}
 
 	public search(
 		request: dyn.RestSearchRequest, primaryResourceId?: string,
 	): Promise<ServiceResult<dyn.RestSearchResponse<any>>> {
-		return this.withSchema(schema => schema.restApi.search(request, primaryResourceId));
+		return this.withSchema(async schema =>
+			schema.restApi.search(await this.withOrgScope(schema, request), primaryResourceId));
 	}
 
 	/**
@@ -131,11 +153,28 @@ export abstract class CrudServiceBase {
 	 * uniform across the ten operations; it is deliberately not forwarded.
 	 */
 	public exists(request: dyn.RestExistsRequest): Promise<ServiceResult<dyn.RestExistsResponse>> {
-		return this.withSchema(schema => schema.restApi.exists(request));
+		return this.withSchema(async schema => schema.restApi.exists(await this.withOrgScope(schema, request)));
 	}
 
 	public getModelSchema(primaryResourceId?: string): Promise<ServiceResult<dyn.RestGetModelSchemaResponse>> {
 		return this.withSchema(schema => schema.restApi.getModelSchema(primaryResourceId));
+	}
+
+	/**
+	 * Supplies `org_id` for a resource the backend scopes to an organization.
+	 *
+	 * Applied to every operation except `getModelSchema` and `computeField`, which opt out
+	 * server-side. `getModelSchema` especially: it is how the schema this decision reads is
+	 * fetched, so scoping it would deadlock the bootstrap.
+	 *
+	 * Lives here rather than in each module because this is the one place every call passes
+	 * through - hand-written services, the `GenericCrudService` the command bus falls back to,
+	 * and with it every metadata-driven view-engine page.
+	 */
+	protected withOrgScope<TRequest extends object>(
+		schema: dyn.SchemaPack, request: TRequest,
+	): Promise<TRequest> {
+		return withOrgId(request, schema, this.schemaName);
 	}
 
 	/**

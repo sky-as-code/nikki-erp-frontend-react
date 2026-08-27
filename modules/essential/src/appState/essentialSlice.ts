@@ -4,9 +4,9 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export const SLICE_NAME = 'essential';
 
 export type EssentialState = {
-	modules: any[];
-	isLoading: boolean;
-	error: string | null;
+	modules: any[],
+	isLoading: boolean,
+	error: string | null,
 };
 
 const initialState: EssentialState = {

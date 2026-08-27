@@ -9,8 +9,8 @@ export function useSubmit<TData extends object, TForm = UseFormReturn<TData>>({
 	submitAction,
 	validate,
 }: {
-	submitAction: (payload: TData) => any;
-	validate?: (data: Cleaned<TData>, form?: TForm) => boolean;
+	submitAction: (payload: TData) => any,
+	validate?: (data: Cleaned<TData>, form?: TForm) => boolean,
 }) {
 	const dispatch = useMicroAppDispatch();
 

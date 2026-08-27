@@ -5,9 +5,9 @@ import { ModuleSearchInput } from './ModuleSearchInput';
 
 
 type ModuleSearchPanelProps = {
-	searchInputValue: string;
-	onSearchChange: (value: string) => void;
-	onSearchClear: () => void;
+	searchInputValue: string,
+	onSearchChange: (value: string) => void,
+	onSearchClear: () => void,
 };
 
 export const ModuleSearchPanel: FC<ModuleSearchPanelProps> = ({

@@ -11,15 +11,15 @@ export type FlatSearchableSelectProps = Omit<
 	SearchableSelectProps,
 	'triggerComponent'
 > & {
-	targetColor?: ButtonProps['color'];
-	targetClass?: ButtonProps['className'];
-	targetFz?: ButtonProps['fz'];
-	targetFw?: ButtonProps['fw'];
-	targetP?: ButtonProps['p'];
-	targetPb?: ButtonProps['pb'];
-	targetPt?: ButtonProps['pt'];
-	targetSize?: ButtonProps['size'];
-	targetVariant?: ButtonProps['variant'];
+	targetColor?: ButtonProps['color'],
+	targetClass?: ButtonProps['className'],
+	targetFz?: ButtonProps['fz'],
+	targetFw?: ButtonProps['fw'],
+	targetP?: ButtonProps['p'],
+	targetPb?: ButtonProps['pb'],
+	targetPt?: ButtonProps['pt'],
+	targetSize?: ButtonProps['size'],
+	targetVariant?: ButtonProps['variant'],
 };
 
 export const FlatSearchableSelect: React.FC<FlatSearchableSelectProps> = (props) => {

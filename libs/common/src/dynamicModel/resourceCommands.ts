@@ -13,11 +13,13 @@ export const RESOURCE_COMMAND_PREFIX = 'core.resource';
 
 export type ResourceAction =
 	'create' | 'delete' | 'update' | 'get_by_id' | 'get_one'
-	| 'search' | 'exists' | 'set_is_archived' | 'get_model_schema' | 'manage_m2m';
+	| 'search' | 'exists' | 'set_is_archived' | 'get_model_schema' | 'manage_m2m'
+	| 'compute_field';
 
 const RESOURCE_ACTIONS: ResourceAction[] = [
 	'create', 'delete', 'update', 'get_by_id', 'get_one',
 	'search', 'exists', 'set_is_archived', 'get_model_schema', 'manage_m2m',
+	'compute_field',
 ];
 
 /** `resourceCommand('iam_user', 'search')` -> `core.resource.iam_user.search` */
@@ -36,6 +38,7 @@ export type ResourceCommandNames = {
 	SET_IS_ARCHIVED: string,
 	GET_MODEL_SCHEMA: string,
 	MANAGE_M2M: string,
+	COMPUTE_FIELD: string,
 };
 
 /** The command names for one schema, shaped like a hand-written `XCommands` object. */
@@ -51,6 +54,7 @@ export function resourceCommands(schemaName: string): Readonly<ResourceCommandNa
 		SET_IS_ARCHIVED: resourceCommand(schemaName, 'set_is_archived'),
 		GET_MODEL_SCHEMA: resourceCommand(schemaName, 'get_model_schema'),
 		MANAGE_M2M: resourceCommand(schemaName, 'manage_m2m'),
+		COMPUTE_FIELD: resourceCommand(schemaName, 'compute_field'),
 	});
 }
 
@@ -247,5 +251,8 @@ function runAction(
 		case 'search': return service.search(payload);
 		case 'exists': return service.exists(payload);
 		case 'get_model_schema': return service.getModelSchema();
+		// The field name travels in the payload, like manage_m2m's path, so the command name
+		// stays one-per-schema rather than one-per-field.
+		case 'compute_field': return service.computeField(payload, payload.field);
 	}
 }

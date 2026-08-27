@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	buildValidationSchema, findExclusiveGroupPeers, findRelationBySrcField, isRenderableFieldType,
+	buildValidationSchema, findComputedDependency, findExclusiveGroupPeers, findRelationBySrcField,
+	isRenderableFieldType,
 } from './model_schema';
 
 import type { ModelSchema, ModelSchemaField, ModelSchemaFieldDataTypeName } from './model_schema';
@@ -147,5 +148,48 @@ describe('buildValidationSchema: blank optional fields', () => {
 		const parsed = buildValidationSchema(formSchema).safeParse({ name: '' });
 
 		expect(parsed.success).toBe(false);
+	});
+});
+
+describe('findComputedDependency', () => {
+	const schemaWith = (computed: any): ModelSchema => ({
+		name: 'inventory_product_variant',
+		fields: {
+			sales_tax_mode: { name: 'sales_tax_mode', label: {}, data_type: { type: 'string' } },
+			effective_sales_tax_ids: {
+				name: 'effective_sales_tax_ids',
+				label: {},
+				data_type: { type: 'ulid', is_array: true },
+				is_computed: true,
+				computed,
+			},
+		},
+	} as unknown as ModelSchema);
+
+	it('returns the dependency of a function-computed field', () => {
+		const schema = schemaWith({ kind: 'function', depends_on: 'sales_tax_mode' });
+
+		expect(findComputedDependency(schema, 'effective_sales_tax_ids')).toBe('sales_tax_mode');
+	});
+
+	// The other kinds are computed from data the server already holds, so no unsaved edit can
+	// change them and there is nothing to watch.
+	it('ignores non-function computed kinds', () => {
+		const schema = schemaWith({ kind: 'aggregate' });
+
+		expect(findComputedDependency(schema, 'effective_sales_tax_ids')).toBeUndefined();
+	});
+
+	it('returns undefined for a function field declaring no dependency', () => {
+		const schema = schemaWith({ kind: 'function' });
+
+		expect(findComputedDependency(schema, 'effective_sales_tax_ids')).toBeUndefined();
+	});
+
+	it('returns undefined for a plain field or a missing schema', () => {
+		const schema = schemaWith({ kind: 'function', depends_on: 'sales_tax_mode' });
+
+		expect(findComputedDependency(schema, 'sales_tax_mode')).toBeUndefined();
+		expect(findComputedDependency(undefined, 'effective_sales_tax_ids')).toBeUndefined();
 	});
 });

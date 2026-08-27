@@ -7,12 +7,12 @@ import { ModuleFilterPanel } from './ModuleFilterPanel';
 
 
 type FilterDrawerProps = {
-	opened: boolean;
-	onClose: () => void;
-	viewMode: ModuleViewMode;
-	onViewModeChange: (mode: ModuleViewMode) => void;
-	filters: FilterState;
-	onFiltersChange: (filters: FilterState) => void;
+	opened: boolean,
+	onClose: () => void,
+	viewMode: ModuleViewMode,
+	onViewModeChange: (mode: ModuleViewMode) => void,
+	filters: FilterState,
+	onFiltersChange: (filters: FilterState) => void,
 };
 
 export const ModuleFilterDrawer: React.FC<FilterDrawerProps> = ({

@@ -8,8 +8,8 @@ import { Unauthorized } from '@nikkierp/ui/components';
 
 
 export type RoutePermission = {
-	resource: string;
-	action: string;
+	resource: string,
+	action: string,
 };
 
 export type GetRoutePermissionFn = (pathname: string) => RoutePermission | null;
@@ -18,7 +18,7 @@ interface PermissionGuardProps {
 	children: React.ReactNode;
 	resource?: string;
 	action?: string;
-	contextScope?: { scopeType: any ; scopeRef: string };
+	contextScope?: { scopeType: any, scopeRef: string };
 	fallback?: React.ReactNode;
 	getRoutePermission?: GetRoutePermissionFn;
 }

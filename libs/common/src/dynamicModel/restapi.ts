@@ -62,8 +62,16 @@ export class RestApi {
 		const keyFields = Object.values(rest).join('/');
 
 		const dedupKey = `GET/${restPath}/${keyFields}/${fields?.join(',')}`;
+		// buildSearchParams is the caller's, and knows only the fields it looks records up by.
+		// org_id is added by the service layer after that function was written, so it has to be
+		// appended here or an org-scoped getOne would go out unscoped.
+		const searchParams = buildSearchParams(request);
+		const orgId = (request as Record<string, any>).org_id;
+		if (orgId != null && !searchParams.has('org_id')) {
+			searchParams.append('org_id', String(orgId));
+		}
 		return this._opts.requestMaker!.get<RestGetOneResponse<any>>(`${restPath}/getOne`, {
-			searchParams: buildSearchParams(request),
+			searchParams,
 			dedupKey,
 		});
 	}
@@ -74,6 +82,20 @@ export class RestApi {
 		return this._opts.requestMaker!.get<RestGetModelSchemaResponse>(`${restPath}/meta/schema`, {
 			dedupKey,
 		});
+	}
+
+	/**
+	 * Evaluates one function-kind computed field against a model the user is still editing.
+	 *
+	 * A read computes these fields from rows that exist; a form needs the same answer before a
+	 * save, or a value derived from a field they just changed stays stale until afterwards.
+	 */
+	public computeField(
+		request: RestComputeFieldRequest, fieldName: string, primaryResourceId?: string,
+	): Promise<RequestResult<RestComputeFieldResponse>> {
+		const restPath = this._getBasePath(primaryResourceId);
+		return this._opts.requestMaker!.post<RestComputeFieldResponse>(
+			`${restPath}/meta/compute/${fieldName}`, { json: request });
 	}
 
 	public manageM2m(
@@ -181,6 +203,8 @@ export type RestCreateResponse = {
 
 export type RestDeleteRequest = {
 	id: string,
+	/** Scopes the delete to one organization, where the resource is org-owned. */
+	org_id?: string,
 };
 
 export type RestDeleteResponse = {
@@ -190,6 +214,8 @@ export type RestDeleteResponse = {
 
 export type RestExistsRequest = {
 	ids: string[],
+	/** Scopes the check to one organization, where the resource is org-owned. */
+	org_id?: string,
 };
 
 export type RestExistsResponse = {
@@ -199,6 +225,8 @@ export type RestExistsResponse = {
 
 export type RestGetByIdRequest = RequestWithFields & {
 	id: string,
+	/** Scopes the read to one organization, where the resource is org-owned. */
+	org_id?: string,
 };
 
 type ModelSchemaFieldName = ModelSchema['fields'][string]['name'];
@@ -215,6 +243,21 @@ export type RestGetOneResponse<T extends Record<string, any>, TFieldName extends
 };
 
 export type RestGetModelSchemaResponse = ModelSchema;
+
+export type RestComputeFieldRequest = {
+	/** The unsaved model to compute against; the server needs no stored row. */
+	model?: Record<string, any>,
+	/** Caller-supplied extras the function reads by name. */
+	args?: Record<string, any>,
+};
+
+export type RestComputeFieldResponse = {
+	/** Base data-type name, e.g. "ulid". */
+	data_type: string,
+	/** Array-ness is a modifier on the base type, so it travels separately from the name. */
+	is_array: boolean,
+	value: any,
+};
 
 export type RestSetIsArchivedRequest = {
 	id: string,
