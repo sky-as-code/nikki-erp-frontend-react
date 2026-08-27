@@ -7,11 +7,11 @@ const baseSchema = z.object({
 	/** Namespace `header` is resolved against. Required whenever `header` is set. */
 	translationNs: z.string().min(1).optional(),
 	/**
-	 * Whether the block can be collapsed at all. Defaults to `header !== undefined`: an untitled
-	 * block has nothing to click, so it stays a plain bordered block until a header gives the
-	 * toggle somewhere to live.
+	 * Whether the block can be collapsed at all. Defaults to `true`: the toggle caret renders
+	 * whether or not `header` is set, so an untitled block can still be collapsed by its caret
+	 * alone.
 	 */
-	collapsible: z.boolean().optional(),
+	collapsible: z.boolean().default(true),
 	/**
 	 * How the section arranges its children.
 	 *
@@ -50,14 +50,7 @@ export const collapsibleSectionPropsSchema = baseSchema
 				message: '`translationNs` does nothing without a `header`',
 			});
 		}
-		if (val.collapsible === true && val.header == null) {
-			ctx.addIssue({
-				code: 'custom', path: ['collapsible'],
-				message: '`collapsible: true` needs a `header` to host the toggle',
-			});
-		}
-	})
-	.transform(val => ({ ...val, collapsible: val.collapsible ?? val.header != null }));
+	});
 
 export type CollapsibleSectionProps = z.output<typeof collapsibleSectionPropsSchema>;
 export type CollapsibleSectionPropsInput = z.input<typeof collapsibleSectionPropsSchema>;

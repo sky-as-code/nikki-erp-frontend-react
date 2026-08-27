@@ -9,10 +9,10 @@ const TEST_ID = 'shell.mobileBottomBar';
 
 
 type MobileBottomBarProps = {
-	searchInputValue: string;
-	onSearchChange: (value: string) => void;
-	onSearchClear: () => void;
-	onFilterClick: () => void;
+	searchInputValue: string,
+	onSearchChange: (value: string) => void,
+	onSearchClear: () => void,
+	onFilterClick: () => void,
 };
 
 export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({

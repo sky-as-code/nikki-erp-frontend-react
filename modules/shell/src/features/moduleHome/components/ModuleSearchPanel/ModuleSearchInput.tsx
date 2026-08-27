@@ -11,11 +11,11 @@ const TEST_ID = 'shell.moduleSearch';
 
 
 type ModuleSearchInputProps = {
-	searchInputValue: string;
-	onSearchChange: (value: string) => void;
-	onSearchClear: () => void;
-	placeholder?: string;
-	maxWidth?: number | string;
+	searchInputValue: string,
+	onSearchChange: (value: string) => void,
+	onSearchClear: () => void,
+	placeholder?: string,
+	maxWidth?: number | string,
 };
 
 export const ModuleSearchInput: FC<ModuleSearchInputProps> = ({

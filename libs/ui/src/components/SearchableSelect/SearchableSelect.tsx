@@ -16,8 +16,8 @@ import { FC, JSX, useEffect, useState } from 'react';
 
 
 export type SearchableSelectItem = {
-	value: string;
-	label: string;
+	value: string,
+	label: string,
 };
 
 /**
@@ -30,34 +30,34 @@ export type SearchableSelectItem = {
 export type SearchableSelectVariant = 'button' | 'input';
 
 export type SearchableSelectProps = {
-	actionOptionLabel?: string;
+	actionOptionLabel?: string,
 	/**
 	 * Fired when the action option (`actionOptionLabel`) is picked, instead of `onChange` — so a
 	 * caller opening a modal from it never has to compare against the `'$$action$$'` sentinel
 	 * value itself. The dropdown is already closed by the time this fires.
 	 */
-	onActionTrigger?: () => void;
-	dropdownWidth?: PopoverWidth;
-	items: SearchableSelectItem[];
-	searchBoxEnabledAt?: number; // Show search box when there are more than this number of items
-	searchPlaceholder?: string;
-	scrollAreaHeight?: MantineStyleProps['mah'];
-	triggerComponent?: typeof Button;
+	onActionTrigger?: () => void,
+	dropdownWidth?: PopoverWidth,
+	items: SearchableSelectItem[],
+	searchBoxEnabledAt?: number, // Show search box when there are more than this number of items
+	searchPlaceholder?: string,
+	scrollAreaHeight?: MantineStyleProps['mah'],
+	triggerComponent?: typeof Button,
 	/** How the closed control paints. Defaults to `button`. See {@link SearchableSelectVariant}. */
-	variant?: SearchableSelectVariant;
-	unselectedPlaceholder?: string;
-	value?: string | null;
-	onChange?: (value: string) => void;
-	disabled?: boolean;
+	variant?: SearchableSelectVariant,
+	unselectedPlaceholder?: string,
+	value?: string | null,
+	onChange?: (value: string) => void,
+	disabled?: boolean,
 	/**
 	 * Reports every keystroke in the search box, verbatim. For a caller whose `items` are already
 	 * server-filtered for the current term (rather than a fixed in-memory list), this is what
 	 * drives the next server request — the box's own client-side substring filter over `items`
 	 * still runs too, but only ever narrows what's already on the current page.
 	 */
-	onSearchChange?: (term: string) => void;
+	onSearchChange?: (term: string) => void,
 	/** `{module}.{component}` prefix for the trigger, search box and options. */
-	testId?: string;
+	testId?: string,
 };
 
 const ACTION_OPTION_VALUE = '$$action$$';
@@ -173,13 +173,13 @@ function findItem(items: SearchableSelectItem[], value: string | undefined | nul
 }
 
 type ComboboxTargetProps = {
-	value?: string | null;
-	combobox: ComboboxStore;
-	triggerComponent?: typeof Button;
-	unselectedPlaceholder?: string;
-	disabled?: boolean;
-	variant?: SearchableSelectVariant;
-	testId?: string;
+	value?: string | null,
+	combobox: ComboboxStore,
+	triggerComponent?: typeof Button,
+	unselectedPlaceholder?: string,
+	disabled?: boolean,
+	variant?: SearchableSelectVariant,
+	testId?: string,
 };
 
 const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
@@ -235,15 +235,15 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 };
 
 type ComboboxDropdownProps = {
-	actionOptionLabel?: string;
-	testId?: string;
-	search: string;
-	searchBoxEnabledAt?: number; // Show search box when there are more than this number of items
-	searchPlaceholder?: string;
-	setSearch: (value: string) => void;
-	scrollAreaHeight?: MantineStyleProps['mah'];
-	totalOptsCount: number; // Number of options without applied search/filter
-	options: JSX.Element[];
+	actionOptionLabel?: string,
+	testId?: string,
+	search: string,
+	searchBoxEnabledAt?: number, // Show search box when there are more than this number of items
+	searchPlaceholder?: string,
+	setSearch: (value: string) => void,
+	scrollAreaHeight?: MantineStyleProps['mah'],
+	totalOptsCount: number, // Number of options without applied search/filter
+	options: JSX.Element[],
 };
 
 const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {

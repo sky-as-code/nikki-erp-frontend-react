@@ -18,9 +18,9 @@ export interface FormModalProps {
 	children: (props: {
 		handleSubmit: (
 			onValid: (data: unknown) => void | Promise<void>,
-		) => (e?: React.BaseSyntheticEvent) => Promise<void>;
-		reset: () => void;
-		form: UseFormReturn<any>;
+		) => (e?: React.BaseSyntheticEvent) => Promise<void>,
+		reset: () => void,
+		form: UseFormReturn<any>,
 	}) => React.ReactNode;
 	size?: string | number;
 	layout?: 'onecol' | 'twocol';

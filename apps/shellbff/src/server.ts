@@ -13,13 +13,13 @@ import * as config from './config';
 
 
 type ViteDevServer = {
-	middlewares: RequestHandler;
-	transformIndexHtml(url: string, html: string): Promise<string>;
-	ssrFixStacktrace(error: Error): void;
+	middlewares: RequestHandler,
+	transformIndexHtml(url: string, html: string): Promise<string>,
+	ssrFixStacktrace(error: Error): void,
 };
 
 type ViteModule = {
-	createServer(options: Record<string, unknown>): Promise<ViteDevServer>;
+	createServer(options: Record<string, unknown>): Promise<ViteDevServer>,
 };
 
 let viteModule: ViteModule | undefined;

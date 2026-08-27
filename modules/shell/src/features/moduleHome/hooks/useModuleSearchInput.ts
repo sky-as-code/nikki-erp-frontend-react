@@ -3,9 +3,9 @@ import { RefObject, useEffect, useRef, useState } from 'react';
 
 
 type UseModuleSearchInputProps = {
-	searchInputValue: string;
-	onSearchChange: (value: string) => void;
-	onSearchClear: () => void;
+	searchInputValue: string,
+	onSearchChange: (value: string) => void,
+	onSearchClear: () => void,
 };
 
 export function useModuleSearchInput({

@@ -3,7 +3,7 @@
 const AUTH_KEY = 'nikki_auth';
 
 export type AuthData = {
-	token: string;
+	token: string,
 	// user?: User;
 	// orgs?: Organization[];
 };

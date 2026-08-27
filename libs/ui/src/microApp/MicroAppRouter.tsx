@@ -9,7 +9,7 @@ import { MicroAppDomType, MicroAppProps } from './types';
 export { Route as AppRoute } from 'react-router-dom';
 
 type MicroAppRouterContextType = {
-	basePath?: string;
+	basePath?: string,
 };
 
 const RouterContext = React.createContext<MicroAppRouterContextType | null>(null);
@@ -26,18 +26,18 @@ export type MicroAppRouterProps = React.PropsWithChildren & {
 	/**
 	 * Indicates how the parent Shell has mounted this micro-app.
 	 */
-	domType: MicroAppDomType;
+	domType: MicroAppDomType,
 
 	/**
 	 * Only effective in ISOLATED domType. This will be passed to the micro-app's router.
 	 */
-	basePath?: string;
+	basePath?: string,
 
 	/**
 	 * The wiget route name to render the corresponding widget component.
 	 * If specified, `basePath` will be ignored because widget is supposed to be static with no routing.
 	 */
-	widgetName?: string;
+	widgetName?: string,
 
 	/**
 	 * This object is passed as-is to the widget component.
@@ -157,7 +157,7 @@ export type WidgetComponentProps = {
 };
 
 type WidgetRouterProps = Omit<MicroAppRouterProps, 'children'> & {
-	routeGroupElem: React.ReactElement<React.PropsWithChildren>
+	routeGroupElem: React.ReactElement<React.PropsWithChildren>,
 };
 
 /**

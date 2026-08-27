@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resourceDetailExtraActionSchema } from './props';
+import { ownPropertySectionSchema, resourceDetailExtraActionSchema } from './props';
 
 
 /**
@@ -55,5 +55,21 @@ describe('resourceDetailExtraActionSchema', () => {
 		});
 
 		expect(action.prompt?.fields).toHaveLength(1);
+	});
+});
+
+describe('ownPropertySectionSchema', () => {
+	it('defaults showTitle to false', () => {
+		const block = ownPropertySectionSchema.parse({ header: 'form.general', fields: ['name'] });
+
+		expect(block.showTitle).toBe(false);
+	});
+
+	it('accepts an explicit showTitle', () => {
+		const block = ownPropertySectionSchema.parse({
+			header: 'form.general', fields: ['name'], showTitle: true,
+		});
+
+		expect(block.showTitle).toBe(true);
 	});
 });

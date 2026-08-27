@@ -54,8 +54,8 @@ export class TokenLocalStorage implements ITokenStorage {
 }
 
 type SerializedTokenObj = {
-	token: string;
-	expiresAt: number;
+	token: string,
+	expiresAt: number,
 };
 
 function setToken(key: string, storage: Storage, token: SerializedTokenObj): void {

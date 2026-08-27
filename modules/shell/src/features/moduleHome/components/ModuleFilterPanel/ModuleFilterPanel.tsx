@@ -18,11 +18,11 @@ const MODULE_FILTER_TEST_ID = 'shell.moduleFilter';
 
 
 type ModuleFilterPanelProps = {
-	styleProps?: MantineStyleProps;
-	viewMode: ModuleViewMode;
-	onViewModeChange: (mode: ModuleViewMode) => void;
-	filters: FilterState;
-	onFiltersChange: (filters: FilterState) => void;
+	styleProps?: MantineStyleProps,
+	viewMode: ModuleViewMode,
+	onViewModeChange: (mode: ModuleViewMode) => void,
+	filters: FilterState,
+	onFiltersChange: (filters: FilterState) => void,
 };
 
 export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
@@ -89,8 +89,8 @@ export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
 
 
 type GroupBySelectProps = {
-	value: GroupByOption;
-	onChange: (value: GroupByOption) => void;
+	value: GroupByOption,
+	onChange: (value: GroupByOption) => void,
 };
 
 const GroupBySelect: FC<GroupBySelectProps> = ({ value, onChange }) => {
@@ -113,8 +113,8 @@ const GroupBySelect: FC<GroupBySelectProps> = ({ value, onChange }) => {
 
 
 type SortBySelectProps = {
-	value: SortByOption | null;
-	onChange: (value: SortByOption | null) => void;
+	value: SortByOption | null,
+	onChange: (value: SortByOption | null) => void,
 };
 
 const SortBySelect: FC<SortBySelectProps> = ({ value, onChange }) => {
@@ -137,8 +137,8 @@ const SortBySelect: FC<SortBySelectProps> = ({ value, onChange }) => {
 
 
 const ViewModeSegmentedControl: FC<{
-	viewMode: ModuleViewMode;
-	onViewModeChange: (mode: ModuleViewMode) => void;
+	viewMode: ModuleViewMode,
+	onViewModeChange: (mode: ModuleViewMode) => void,
 }> = ({ viewMode, onViewModeChange }) => {
 	const segments = [
 

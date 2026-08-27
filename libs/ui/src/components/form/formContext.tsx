@@ -39,7 +39,7 @@ type FormFieldContextValue = {
 	/**
 	 * @deprecated
 	 */
-	modelSchema: any;
+	modelSchema: any,
 	modelLoading?: boolean,
 	modelValue?: Record<string, any>,
 	errors: ReturnType<typeof useForm>['formState']['errors'],
@@ -94,7 +94,7 @@ export function useFieldData(fieldName: string) {
 }
 
 export type FormStyleProviderProps = React.PropsWithChildren & {
-	layout: FormLayout;
+	layout: FormLayout,
 };
 
 export function FormStyleProvider(props: FormStyleProviderProps): React.ReactNode {
@@ -158,7 +158,7 @@ export type FormProviderRenderProps = {
 };
 
 type BaseFormProviderProps = {
-	children: (props: FormProviderRenderProps) => React.ReactNode;
+	children: (props: FormProviderRenderProps) => React.ReactNode,
 };
 
 /**
@@ -175,8 +175,8 @@ export type FormVariant = 'create' | 'update';
 
 export type CrudFormProviderProps = Omit<BaseFormProviderProps, 'children'> & {
 	schemaName: string,
-	formVariant: FormVariant;
-	localize: LocalizeFn;
+	formVariant: FormVariant,
+	localize: LocalizeFn,
 	/** Current entity values (update mode); `null`/omitted for create mode. */
 	modelValue?: Record<string, any> | null,
 	/** `true` while a create/update command is in flight. */
@@ -301,11 +301,11 @@ function applyServerErrors(form: UseFormReturn<any>, clientErrors: ClientErrorIt
 }
 
 export type AdhocFormProviderProps = BaseFormProviderProps & {
-	formVariant: FormVariant;
+	formVariant: FormVariant,
 	modelSchema: dyn.ModelSchema,
 	localize: LocalizeFn,
-	modelValue?: Record<string, any>;
-	modelLoading?: boolean;
+	modelValue?: Record<string, any>,
+	modelLoading?: boolean,
 };
 
 export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNode {
@@ -399,15 +399,15 @@ export function extractTranslationKey(ref: string): string {
 }
 
 export type FormFieldProviderProps = {
-	formVariant: 'create' | 'update';
-	modelSchema: any;
-	modelValue?: Record<string, any>;
-	modelLoading?: boolean;
+	formVariant: 'create' | 'update',
+	modelSchema: any,
+	modelValue?: Record<string, any>,
+	modelLoading?: boolean,
 	children: (props: {
-		handleSubmit: (onValid: (data: any) => void | Promise<void>) => (e?: React.BaseSyntheticEvent) => Promise<void>;
-		reset: () => void;
-		form: UseFormReturn<any>;
-	}) => React.ReactNode;
+		handleSubmit: (onValid: (data: any) => void | Promise<void>) => (e?: React.BaseSyntheticEvent) => Promise<void>,
+		reset: () => void,
+		form: UseFormReturn<any>,
+	}) => React.ReactNode,
 };
 
 /**

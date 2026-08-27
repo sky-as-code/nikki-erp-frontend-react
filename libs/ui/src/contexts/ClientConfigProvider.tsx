@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 
 
 export type ClientConfigContextType = {
-	envVars: Record<string, unknown>;
+	envVars: Record<string, unknown>,
 };
 
 const ClientConfigContext = createContext<ClientConfigContextType | null>(null);
@@ -19,7 +19,7 @@ export function useEnvVars<T>(): T {
 }
 
 export type ClientConfigProviderProps = React.PropsWithChildren & {
-	envVars: Record<string, unknown>;
+	envVars: Record<string, unknown>,
 };
 
 export function ClientConfigProvider(props: ClientConfigProviderProps): React.ReactNode {

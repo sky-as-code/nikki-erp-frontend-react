@@ -12,6 +12,7 @@ import { resourceSplitViewRenderer } from './components/resourceSplitView';
 import { resourceTableRenderer } from './components/resourceTable/ResourceTable';
 import { settingsItemRenderer } from './components/settings/settingsItem';
 import { settingsSectionRenderer } from './components/settings/settingsSection';
+import { tabCollapsibleSectionRenderer } from './components/tabCollapsibleSection/TabCollapsibleSection';
 import { registerFieldRenderers } from './fields/register';
 import { MANTINE_VIEW_KIT_ID } from './ids';
 import { resourceDetailTemplate } from './pages/resourceDetail/template';
@@ -40,6 +41,7 @@ export const mantineViewKit: IViewKit = {
 
 		registry.registerComponentRenderer(pageHeaderRenderer);
 		registry.registerComponentRenderer(collapsibleSectionRenderer);
+		registry.registerComponentRenderer(tabCollapsibleSectionRenderer);
 		registry.registerComponentRenderer(resourceTableRenderer);
 		registry.registerComponentRenderer(resourceDetailHeaderRenderer);
 		registry.registerComponentRenderer(resourceFormRenderer);

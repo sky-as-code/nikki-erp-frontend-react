@@ -235,6 +235,12 @@ function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
 function ListViewHead(): React.ReactNode {
 	const context = useDataTableContext();
 	const t = useTranslate('common');
+	const tField = useTranslate(context.settings.translationNs);
+	const fieldRenderer = context.settings.fieldRenderer;
+	const translateEnumValue = React.useCallback((field: string, value: string) => {
+		const renderer = fieldRenderer?.[field];
+		return renderer?.translationKey && value !== '' ? tField(renderer.translationKey(value)) : value;
+	}, [fieldRenderer, tField]);
 	const fields = context.tableSearchData.desired_fields;
 	const widths = context.cw.widths;
 	const modelSchema = context.settings.modelSchema;
@@ -311,6 +317,7 @@ function ListViewHead(): React.ReactNode {
 					getColumnStyle={field => getColumnStyle(getColumnWidth(field, widths))}
 					hasFillerColumn={context.settings.allowColumnResizing}
 					placeholder={t('search.placeholder')}
+					translateEnumValue={translateEnumValue}
 					tid={context.tid}
 				/>
 			) : null}

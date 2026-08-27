@@ -148,6 +148,15 @@ importers:
       '@nikkierp/microapp-inventory':
         specifier: workspace:*
         version: link:../../modules/inventory
+      '@nikkierp/microapp-paymentinvoice':
+        specifier: workspace:*
+        version: link:../../modules/paymentinvoice
+      '@nikkierp/microapp-purchase':
+        specifier: workspace:*
+        version: link:../../modules/purchase
+      '@nikkierp/microapp-settings':
+        specifier: workspace:*
+        version: link:../../modules/settings
       '@nikkierp/nikkiportal-shell':
         specifier: workspace:*
         version: link:../../modules/shell
@@ -678,6 +687,135 @@ importers:
       vitest:
         specifier: ~4.0.3
         version: 4.0.18(@types/node@24.9.2)(jiti@2.7.0)(jsdom@27.0.1)(lightningcss@1.33.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+
+  modules/accounting:
+    devDependencies:
+      '@hookform/resolvers':
+        specifier: ~5.2.2
+        version: 5.2.2(react-hook-form@7.65.0(react@19.2.5))
+      '@mantine/core':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/dates':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(dayjs@1.11.21)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/dropzone':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/form':
+        specifier: ~9.1.1
+        version: 9.1.1(react@19.2.5)
+      '@mantine/hooks':
+        specifier: 9.1.1
+        version: 9.1.1(react@19.2.5)
+      '@mantine/modals':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/notifications':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@nikkierp/common':
+        specifier: workspace:*
+        version: link:../../libs/common
+      '@nikkierp/shell':
+        specifier: workspace:*
+        version: link:../../libs/shell
+      '@nikkierp/ui':
+        specifier: workspace:*
+        version: link:../../libs/ui
+      '@nikkierp/viewengine':
+        specifier: workspace:*
+        version: link:../../libs/viewengine
+      '@nikkierp/viewkit-mantine':
+        specifier: workspace:*
+        version: link:../../libs/viewkit-mantine
+      '@reduxjs/toolkit':
+        specifier: ~2.9.2
+        version: 2.9.2(react-redux@9.2.0(@types/react@19.2.18)(react@19.2.5)(redux@5.0.1))(react@19.2.5)
+      '@tabler/icons-react':
+        specifier: ~3.44.0
+        version: 3.44.0(react@19.2.5)
+      '@tailwindcss/vite':
+        specifier: ~4.1.16
+        version: 4.1.18(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      '@types/node':
+        specifier: ~24.9.1
+        version: 24.9.2
+      '@types/react':
+        specifier: ~19.2.2
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ~19.2.2
+        version: 19.2.4(@types/react@19.2.18)
+      '@vitejs/plugin-react':
+        specifier: ~5.1.0
+        version: 5.1.4(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      chart.js:
+        specifier: ~4.5.1
+        version: 4.5.1
+      clsx:
+        specifier: ~2.1.1
+        version: 2.1.1
+      dayjs:
+        specifier: ~1.11.18
+        version: 1.11.21
+      i18next:
+        specifier: ~25.6.0
+        version: 25.6.3(typescript@5.9.3)
+      ky:
+        specifier: ~1.13.0
+        version: 1.13.0
+      postcss:
+        specifier: ~8.5.6
+        version: 8.5.26
+      postcss-preset-mantine:
+        specifier: 1.18.0
+        version: 1.18.0(postcss@8.5.26)
+      postcss-simple-vars:
+        specifier: ~7.0.1
+        version: 7.0.1(postcss@8.5.26)
+      react:
+        specifier: 19.2.5
+        version: 19.2.5
+      react-dom:
+        specifier: 19.2.5
+        version: 19.2.5(react@19.2.5)
+      react-hook-form:
+        specifier: ~7.65.0
+        version: 7.65.0(react@19.2.5)
+      react-i18next:
+        specifier: ~16.2.0
+        version: 16.2.4(i18next@25.6.3(typescript@5.9.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
+      react-redux:
+        specifier: ~9.2.0
+        version: 9.2.0(@types/react@19.2.18)(react@19.2.5)(redux@5.0.1)
+      react-router:
+        specifier: ~7.9.4
+        version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react-router-dom:
+        specifier: ~7.9.4
+        version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      tailwindcss:
+        specifier: ~4.1.16
+        version: 4.1.18
+      terser:
+        specifier: ~5.44.0
+        version: 5.44.1
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.3
+      vite:
+        specifier: ~8.0.8
+        version: 8.0.16(@types/node@24.9.2)(esbuild@0.25.12)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+      vite-tsconfig-paths:
+        specifier: ~5.1.4
+        version: 5.1.4(typescript@5.9.3)(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      vitest:
+        specifier: ~4.0.3
+        version: 4.0.18(@types/node@24.9.2)(jiti@2.7.0)(jsdom@27.0.1)(lightningcss@1.33.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+      zod:
+        specifier: ~4.1.12
+        version: 4.1.13
 
   modules/authorize:
     devDependencies:
@@ -1299,6 +1437,318 @@ importers:
       react-router-dom:
         specifier: ~7.9.4
         version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      terser:
+        specifier: ~5.44.0
+        version: 5.44.1
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.3
+      vite:
+        specifier: ~8.0.8
+        version: 8.0.16(@types/node@24.9.2)(esbuild@0.25.12)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+      vite-tsconfig-paths:
+        specifier: ~5.1.4
+        version: 5.1.4(typescript@5.9.3)(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      vitest:
+        specifier: ~4.0.3
+        version: 4.0.18(@types/node@24.9.2)(jiti@2.7.0)(jsdom@27.0.1)(lightningcss@1.33.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+      zod:
+        specifier: ~4.1.12
+        version: 4.1.13
+
+  modules/paymentinvoice:
+    devDependencies:
+      '@hookform/resolvers':
+        specifier: ~5.2.2
+        version: 5.2.2(react-hook-form@7.65.0(react@19.2.5))
+      '@mantine/core':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/dates':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(dayjs@1.11.21)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/dropzone':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/form':
+        specifier: ~9.1.1
+        version: 9.1.1(react@19.2.5)
+      '@mantine/hooks':
+        specifier: 9.1.1
+        version: 9.1.1(react@19.2.5)
+      '@mantine/modals':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/notifications':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@nikkierp/common':
+        specifier: workspace:*
+        version: link:../../libs/common
+      '@nikkierp/shell':
+        specifier: workspace:*
+        version: link:../../libs/shell
+      '@nikkierp/ui':
+        specifier: workspace:*
+        version: link:../../libs/ui
+      '@nikkierp/viewengine':
+        specifier: workspace:*
+        version: link:../../libs/viewengine
+      '@nikkierp/viewkit-mantine':
+        specifier: workspace:*
+        version: link:../../libs/viewkit-mantine
+      '@reduxjs/toolkit':
+        specifier: ~2.9.2
+        version: 2.9.2(react-redux@9.2.0(@types/react@19.2.18)(react@19.2.5)(redux@5.0.1))(react@19.2.5)
+      '@tabler/icons-react':
+        specifier: ~3.44.0
+        version: 3.44.0(react@19.2.5)
+      '@types/node':
+        specifier: ~24.9.1
+        version: 24.9.2
+      '@types/react':
+        specifier: ~19.2.2
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ~19.2.2
+        version: 19.2.4(@types/react@19.2.18)
+      '@vitejs/plugin-react':
+        specifier: ~5.1.0
+        version: 5.1.4(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      clsx:
+        specifier: ~2.1.1
+        version: 2.1.1
+      dayjs:
+        specifier: ~1.11.18
+        version: 1.11.21
+      i18next:
+        specifier: ~25.6.0
+        version: 25.6.3(typescript@5.9.3)
+      ky:
+        specifier: ~1.13.0
+        version: 1.13.0
+      react:
+        specifier: 19.2.5
+        version: 19.2.5
+      react-dom:
+        specifier: 19.2.5
+        version: 19.2.5(react@19.2.5)
+      react-hook-form:
+        specifier: ~7.65.0
+        version: 7.65.0(react@19.2.5)
+      react-i18next:
+        specifier: ~16.2.0
+        version: 16.2.4(i18next@25.6.3(typescript@5.9.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
+      react-redux:
+        specifier: ~9.2.0
+        version: 9.2.0(@types/react@19.2.18)(react@19.2.5)(redux@5.0.1)
+      react-router:
+        specifier: ~7.9.4
+        version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react-router-dom:
+        specifier: ~7.9.4
+        version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      terser:
+        specifier: ~5.44.0
+        version: 5.44.1
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.3
+      vite:
+        specifier: ~8.0.8
+        version: 8.0.16(@types/node@24.9.2)(esbuild@0.25.12)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+      vite-tsconfig-paths:
+        specifier: ~5.1.4
+        version: 5.1.4(typescript@5.9.3)(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      vitest:
+        specifier: ~4.0.3
+        version: 4.0.18(@types/node@24.9.2)(jiti@2.7.0)(jsdom@27.0.1)(lightningcss@1.33.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+      zod:
+        specifier: ~4.1.12
+        version: 4.1.13
+
+  modules/purchase:
+    devDependencies:
+      '@hookform/resolvers':
+        specifier: ~5.2.2
+        version: 5.2.2(react-hook-form@7.65.0(react@19.2.5))
+      '@mantine/core':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/dates':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(dayjs@1.11.21)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/dropzone':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/form':
+        specifier: ~9.1.1
+        version: 9.1.1(react@19.2.5)
+      '@mantine/hooks':
+        specifier: 9.1.1
+        version: 9.1.1(react@19.2.5)
+      '@mantine/modals':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/notifications':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@nikkierp/common':
+        specifier: workspace:*
+        version: link:../../libs/common
+      '@nikkierp/shell':
+        specifier: workspace:*
+        version: link:../../libs/shell
+      '@nikkierp/ui':
+        specifier: workspace:*
+        version: link:../../libs/ui
+      '@nikkierp/viewengine':
+        specifier: workspace:*
+        version: link:../../libs/viewengine
+      '@nikkierp/viewkit-mantine':
+        specifier: workspace:*
+        version: link:../../libs/viewkit-mantine
+      '@reduxjs/toolkit':
+        specifier: ~2.9.2
+        version: 2.9.2(react-redux@9.2.0(@types/react@19.2.18)(react@19.2.5)(redux@5.0.1))(react@19.2.5)
+      '@tabler/icons-react':
+        specifier: ~3.44.0
+        version: 3.44.0(react@19.2.5)
+      '@types/node':
+        specifier: ~24.9.1
+        version: 24.9.2
+      '@types/react':
+        specifier: ~19.2.2
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ~19.2.2
+        version: 19.2.4(@types/react@19.2.18)
+      '@vitejs/plugin-react':
+        specifier: ~5.1.0
+        version: 5.1.4(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      clsx:
+        specifier: ~2.1.1
+        version: 2.1.1
+      dayjs:
+        specifier: ~1.11.18
+        version: 1.11.21
+      i18next:
+        specifier: ~25.6.0
+        version: 25.6.3(typescript@5.9.3)
+      ky:
+        specifier: ~1.13.0
+        version: 1.13.0
+      react:
+        specifier: 19.2.5
+        version: 19.2.5
+      react-dom:
+        specifier: 19.2.5
+        version: 19.2.5(react@19.2.5)
+      react-hook-form:
+        specifier: ~7.65.0
+        version: 7.65.0(react@19.2.5)
+      react-i18next:
+        specifier: ~16.2.0
+        version: 16.2.4(i18next@25.6.3(typescript@5.9.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
+      react-redux:
+        specifier: ~9.2.0
+        version: 9.2.0(@types/react@19.2.18)(react@19.2.5)(redux@5.0.1)
+      react-router:
+        specifier: ~7.9.4
+        version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react-router-dom:
+        specifier: ~7.9.4
+        version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      terser:
+        specifier: ~5.44.0
+        version: 5.44.1
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.3
+      vite:
+        specifier: ~8.0.8
+        version: 8.0.16(@types/node@24.9.2)(esbuild@0.25.12)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+      vite-tsconfig-paths:
+        specifier: ~5.1.4
+        version: 5.1.4(typescript@5.9.3)(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      vitest:
+        specifier: ~4.0.3
+        version: 4.0.18(@types/node@24.9.2)(jiti@2.7.0)(jsdom@27.0.1)(lightningcss@1.33.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+      zod:
+        specifier: ~4.1.12
+        version: 4.1.13
+
+  modules/settings:
+    devDependencies:
+      '@mantine/core':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/hooks':
+        specifier: 9.1.1
+        version: 9.1.1(react@19.2.5)
+      '@nikkierp/common':
+        specifier: workspace:*
+        version: link:../../libs/common
+      '@nikkierp/ui':
+        specifier: workspace:*
+        version: link:../../libs/ui
+      '@nikkierp/viewengine':
+        specifier: workspace:*
+        version: link:../../libs/viewengine
+      '@nikkierp/viewkit-mantine':
+        specifier: workspace:*
+        version: link:../../libs/viewkit-mantine
+      '@tabler/icons-react':
+        specifier: ~3.44.0
+        version: 3.44.0(react@19.2.5)
+      '@tailwindcss/vite':
+        specifier: ~4.1.16
+        version: 4.1.18(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      '@types/node':
+        specifier: ~24.9.1
+        version: 24.9.2
+      '@types/react':
+        specifier: ~19.2.2
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ~19.2.2
+        version: 19.2.4(@types/react@19.2.18)
+      '@vitejs/plugin-react':
+        specifier: ~5.1.0
+        version: 5.1.4(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      clsx:
+        specifier: ~2.1.1
+        version: 2.1.1
+      i18next:
+        specifier: ~25.6.0
+        version: 25.6.3(typescript@5.9.3)
+      postcss:
+        specifier: ~8.5.6
+        version: 8.5.26
+      postcss-preset-mantine:
+        specifier: 1.18.0
+        version: 1.18.0(postcss@8.5.26)
+      postcss-simple-vars:
+        specifier: ~7.0.1
+        version: 7.0.1(postcss@8.5.26)
+      react:
+        specifier: 19.2.5
+        version: 19.2.5
+      react-dom:
+        specifier: 19.2.5
+        version: 19.2.5(react@19.2.5)
+      react-i18next:
+        specifier: ~16.2.0
+        version: 16.2.4(i18next@25.6.3(typescript@5.9.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
+      react-router:
+        specifier: ~7.9.4
+        version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react-router-dom:
+        specifier: ~7.9.4
+        version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      tailwindcss:
+        specifier: ~4.1.16
+        version: 4.1.18
       terser:
         specifier: ~5.44.0
         version: 5.44.1

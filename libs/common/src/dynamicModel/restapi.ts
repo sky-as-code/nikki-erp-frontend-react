@@ -76,6 +76,20 @@ export class RestApi {
 		});
 	}
 
+	/**
+	 * Evaluates one function-kind computed field against a model the user is still editing.
+	 *
+	 * A read computes these fields from rows that exist; a form needs the same answer before a
+	 * save, or a value derived from a field they just changed stays stale until afterwards.
+	 */
+	public computeField(
+		request: RestComputeFieldRequest, fieldName: string, primaryResourceId?: string,
+	): Promise<RequestResult<RestComputeFieldResponse>> {
+		const restPath = this._getBasePath(primaryResourceId);
+		return this._opts.requestMaker!.post<RestComputeFieldResponse>(
+			`${restPath}/meta/compute/${fieldName}`, { json: request });
+	}
+
 	public manageM2m(
 		request: RestManageM2mRequest, path: string, primaryResourceId?: string,
 	): Promise<RequestResult<RestMutateResponse>> {
@@ -215,6 +229,21 @@ export type RestGetOneResponse<T extends Record<string, any>, TFieldName extends
 };
 
 export type RestGetModelSchemaResponse = ModelSchema;
+
+export type RestComputeFieldRequest = {
+	/** The unsaved model to compute against; the server needs no stored row. */
+	model?: Record<string, any>,
+	/** Caller-supplied extras the function reads by name. */
+	args?: Record<string, any>,
+};
+
+export type RestComputeFieldResponse = {
+	/** Base data-type name, e.g. "ulid". */
+	data_type: string,
+	/** Array-ness is a modifier on the base type, so it travels separately from the name. */
+	is_array: boolean,
+	value: any,
+};
 
 export type RestSetIsArchivedRequest = {
 	id: string,

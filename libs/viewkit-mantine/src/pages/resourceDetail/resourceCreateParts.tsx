@@ -160,7 +160,7 @@ export function ResourceCreateBlock({
 
 	return (
 		<Stack gap='sm' className={classes.formBlock}>
-			{block.header ? <Title order={4}>{t(block.header)}</Title> : null}
+			{block.header && block.showTitle ? <Title order={4}>{t(block.header)}</Title> : null}
 			<ResourceCreateFieldGroup fields={block.fields ?? []} isLoading={isLoading} modelSchema={modelSchema} />
 		</Stack>
 	);

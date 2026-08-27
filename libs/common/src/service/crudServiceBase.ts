@@ -100,6 +100,18 @@ export abstract class CrudServiceBase {
 		);
 	}
 
+	/**
+	 * Evaluates one function-kind computed field against an unsaved model.
+	 *
+	 * Not an `emitEvent` action: this computes and returns a value without touching a record, so
+	 * a mutation event would tell listeners a write happened when none did.
+	 */
+	public computeField(
+		request: dyn.RestComputeFieldRequest, fieldName: string, primaryResourceId?: string,
+	): Promise<ServiceResult<dyn.RestComputeFieldResponse>> {
+		return this.withSchema(schema => schema.restApi.computeField(request, fieldName, primaryResourceId));
+	}
+
 	public getById(
 		request: dyn.RestGetByIdRequest, primaryResourceId?: string,
 	): Promise<ServiceResult<dyn.RestGetOneResponse<any>>> {

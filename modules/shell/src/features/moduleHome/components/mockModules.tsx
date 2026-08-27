@@ -13,6 +13,16 @@ export const mockModules = [
 		label: 'Favourites and Recently Used',
 		modules: [
 			{
+				name: 'Accounting',
+				slug: 'accounting',
+				category: 'Accounting',
+				icon: essentialIcon,
+				isDisabled: false,
+				isOrphaned: false,
+				isFavourite: true,
+				lastUsed: '2025-01-01',
+			},
+			{
 				name: 'Essential',
 				slug: 'essential',
 				category: 'Essential',

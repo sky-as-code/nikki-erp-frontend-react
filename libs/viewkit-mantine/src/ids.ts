@@ -35,6 +35,13 @@ export const RESOURCE_FORM_TABS = 'nikkierp.mantine.components.resourceFormTabs.
 export const RESOURCE_FORM_TABS_TAB = 'nikkierp.mantine.components.resourceFormTabs.tab.v1';
 
 /**
+ * Like `collapsibleSection` with `layout: 'formBlocks'`, but once its block count passes
+ * `minBlockCountWithoutTabs` it narrows to one visible block at a time via a `SegmentedControl`
+ * (`[All] | [Block 1] | ...`) instead of showing every block's fields at once.
+ */
+export const TAB_COLLAPSIBLE_SECTION = 'nikkierp.mantine.components.tabCollapsibleSection.v1';
+
+/**
  * The settings pane a feature module contributes as its `pages.settings` widget.
  *
  * A settings pane is not a resource detail page: it edits values that live in the settings

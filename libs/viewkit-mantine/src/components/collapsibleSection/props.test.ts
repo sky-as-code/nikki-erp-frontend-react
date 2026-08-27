@@ -10,8 +10,8 @@ describe('collapsibleSectionPropsSchema', () => {
 		expect(props.collapsible).toBe(true);
 	});
 
-	it('leaves an untitled block open, since there is nothing to click', () => {
-		expect(collapsibleSectionPropsSchema.parse({}).collapsible).toBe(false);
+	it('makes an untitled block collapsible too, by its bare caret', () => {
+		expect(collapsibleSectionPropsSchema.parse({}).collapsible).toBe(true);
 	});
 
 	it('allows a title that cannot be collapsed', () => {
@@ -27,8 +27,11 @@ describe('collapsibleSectionPropsSchema', () => {
 		expect(() => collapsibleSectionPropsSchema.parse({ translationNs: 'iam' })).toThrow();
 	});
 
-	it('rejects a toggle with no header to host it', () => {
-		expect(() => collapsibleSectionPropsSchema.parse({ collapsible: true })).toThrow();
+	it('allows a toggle with no header, as a bare caret', () => {
+		const props = collapsibleSectionPropsSchema.parse({ collapsible: true });
+
+		expect(props.collapsible).toBe(true);
+		expect(props.header).toBeUndefined();
 	});
 
 	// The builder parses at authoring time and the renderer parses again at render time, so a

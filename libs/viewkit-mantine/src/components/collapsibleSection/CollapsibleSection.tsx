@@ -7,16 +7,18 @@ import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import React from 'react';
 
 import classes from './CollapsibleSection.module.css';
-import layoutClasses from '../formBlockLayout.module.css';
 import { collapsibleSectionPropsSchema, CollapsibleSectionProps } from './props';
 import { COLLAPSIBLE_SECTION } from '../../ids';
+import layoutClasses from '../formBlockLayout.module.css';
 import { PaperWithBorder } from '../paperWithBorder';
 
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
 /**
- * A general-purpose bordered block, optionally titled and collapsible.
+ * A general-purpose bordered block, optionally titled and collapsible. The collapse toggle caret
+ * renders whether or not a `header` is set -- an untitled block collapses by its bare caret --
+ * unless a caller opts out with `collapsible: false`.
  *
  * It touches no form context, so it is safe anywhere in a page tree — including as the section a
  * resource detail page wraps its `resource_form__column`s in, which is what `layout: 'formBlocks'`
@@ -43,7 +45,7 @@ function CollapsibleSection({ props, runtime }: {
 
 	return (
 		<Stack component={PaperWithBorder} gap='md' {...componentAttrs(COLLAPSIBLE_SECTION)}>
-			{props.header != null ? (
+			{props.collapsible || props.header != null ? (
 				<SectionHeader
 					header={props.header}
 					translationNs={props.translationNs ?? ''}
@@ -75,7 +77,7 @@ function CollapsibleSection({ props, runtime }: {
 }
 
 function SectionHeader({ header, translationNs, collapsible, expanded, onToggle, testId }: {
-	header: string,
+	header?: string,
 	translationNs: string,
 	collapsible: boolean,
 	expanded: boolean,
@@ -84,12 +86,10 @@ function SectionHeader({ header, translationNs, collapsible, expanded, onToggle,
 }): React.ReactNode {
 	// The schema guarantees a namespace wherever a header exists, so this never resolves blank.
 	const t = useTranslate(translationNs);
+	const title = header != null ? <Title order={4}>{t(header)}</Title> : null;
+
 	if (!collapsible) {
-		return (
-			<Group gap='xs'>
-				<Title order={4}>{t(header)}</Title>
-			</Group>
-		);
+		return <Group gap='xs'>{title}</Group>;
 	}
 
 	return (
@@ -99,7 +99,7 @@ function SectionHeader({ header, translationNs, collapsible, expanded, onToggle,
 		>
 			<Group gap='xs'>
 				{expanded ? <IconChevronDown size={18} /> : <IconChevronRight size={18} />}
-				<Title order={4}>{t(header)}</Title>
+				{title}
 			</Group>
 		</UnstyledButton>
 	);
