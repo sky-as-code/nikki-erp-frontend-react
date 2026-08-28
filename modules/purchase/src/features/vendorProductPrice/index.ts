@@ -1,3 +1,3 @@
 export * from './types';
-export * from './productPriceService';
+export * from './vendorProductPriceService';
 export * from './commands';

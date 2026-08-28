@@ -204,6 +204,7 @@ function buildOrderActions() {
 	return {
 		...buildLockActions(),
 		...buildSourcingActions(),
+		...buildPricingActions(),
 		// Sending turns a draft into a quotation with a vendor, so only the draft offers it.
 		send: {
 			label: 'actions.send',
@@ -312,6 +313,40 @@ function buildLockActions() {
 /**
  * The actions that concern the set of competing quotations rather than this order's own progress.
  */
+/**
+ * Repricing, kept apart from the lifecycle actions because it is not one.
+ *
+ * Every action in `buildOrderActions` moves the order to another status; this one changes what the
+ * order will PAY and leaves its status exactly where it was. Grouping it with confirm and cancel
+ * would suggest a progression it is not part of.
+ */
+function buildPricingActions() {
+	return {
+		/**
+		 * Offered on the three draft statuses and nowhere else.
+		 *
+		 * The backend refuses a confirmed order outright, and rightly: the vendor holds a copy of
+		 * that document, and moving its prices would make the two disagree. Offering the button
+		 * there would invite an attempt that cannot work.
+		 *
+		 * `to_approve` IS offered — an order waiting on an approver is still a draft, and the
+		 * approver is precisely the person who might want the prices current before deciding.
+		 *
+		 * A locked draft is refused by the backend too, but the condition cannot say so: only one
+		 * field test is allowed per action, and status is the one that matters more.
+		 */
+		reprice: {
+			label: 'actions.reprice',
+			command: PurchaseOrderCommands.REPRICE,
+			condition: {
+				field: 'status',
+				operator: 'in' as const,
+				value: [c.ORDER_STATUS_RFQ, c.ORDER_STATUS_RFQ_SENT, c.ORDER_STATUS_TO_APPROVE],
+			},
+		},
+	};
+}
+
 function buildSourcingActions() {
 	return {
 		// Always available: copying a document is safe whatever state the original is in, and

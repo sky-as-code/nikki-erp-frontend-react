@@ -11,10 +11,12 @@ import { registerAuditEventCommands } from './features/auditEvent/commands';
 import { registerConfigurationCommands } from './features/configuration/commands';
 import { registerPurchaseOrderCommands } from './features/purchaseOrder/commands';
 import { registerPurchaseOrderLineCommands } from './features/purchaseOrderLine/commands';
+import { registerVendorProductPriceCommands } from './features/vendorProductPrice/commands';
 import { buildPurchaseMenu } from './menu';
 import { buildAgreementPages } from './pages/agreement';
 import { buildConfigurationPages } from './pages/configuration';
 import { buildPurchaseOrderPages } from './pages/purchaseOrder';
+import { buildVendorProductPricePages } from './pages/vendorProductPrice';
 
 
 function Main(props: MicroAppProps) {
@@ -41,6 +43,9 @@ const bundle: MicroAppBundle = {
 		// the documents that consult it keeps this list in the same order as `registerModelSchemas`
 		// — referenced before referencing — which makes a missing entry obvious side by side.
 		registerConfigurationCommands(host.commandBus);
+		// Vendor prices before the documents that resolve through them, same rule as configuration:
+		// a purchase order line records which quote it was priced from.
+		registerVendorProductPriceCommands(host.commandBus);
 		registerAgreementCommands(host.commandBus);
 		registerAgreementLineCommands(host.commandBus);
 		registerPurchaseOrderCommands(host.commandBus);
@@ -62,6 +67,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildPurchaseOrderPages(),
 		...buildAgreementPages(),
 		...buildConfigurationPages(),
+		...buildVendorProductPricePages(),
 	], []);
 
 	return (
@@ -84,6 +90,11 @@ function registerModelSchemas(): void {
 		// One record per organization, holding the approval mode and threshold.
 		schemaName: c.CONFIGURATION_SCHEMA_NAME,
 		resourcePath: c.CONFIGURATION_RESOURCE_PATH,
+	}, {
+		// What each vendor offers a product at. Registered before the order line, which records
+		// which quote it resolved through.
+		schemaName: c.VENDOR_PRODUCT_PRICE_SCHEMA_NAME,
+		resourcePath: c.VENDOR_PRODUCT_PRICE_RESOURCE_PATH,
 	}, {
 		// No page of its own: a sourcing group is created by adding an alternative to an order and
 		// reaped when fewer than two remain (§28), so a hand-made one would be an empty container

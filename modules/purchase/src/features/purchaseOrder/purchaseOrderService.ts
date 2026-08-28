@@ -76,6 +76,20 @@ export class PurchaseOrderService extends StoreCrudServiceBase {
 		return this.postAction(request, c.ACKNOWLEDGE_PATH);
 	}
 
+	/**
+	 * Re-resolves the order's line prices from the vendor's current price list (section 30).
+	 *
+	 * It takes only the order id. WHICH prices apply is the backend resolver's answer, and letting
+	 * a caller pass one in would make this an override with extra steps rather than a repricing.
+	 *
+	 * Refused on a confirmed order, deliberately: the vendor holds a copy of that document, and
+	 * moving its prices afterwards would make the two disagree. The operation exists precisely
+	 * BECAUSE a vendor price change must never rewrite an order by itself.
+	 */
+	public reprice(request: OrderActionRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
+		return this.postAction(request, c.REPRICE_PATH);
+	}
+
 	/** Copies the order and its lines into a fresh quotation. */
 	public duplicate(request: OrderActionRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.postAction(request, c.DUPLICATE_PATH);

@@ -7,7 +7,9 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
  * because there is deliberately no fallback locale. All five below were written in [PUR-013].
  *
  * Exactly five top-level entries, which is what the Shell renders before collapsing the rest into
- * an overflow menu — so a sixth sibling would push whichever came last out of sight.
+ * an overflow menu — so a sixth sibling would push whichever came last out of sight. That limit is
+ * why Configuration is a group: vendor prices needed a home, and nesting them there keeps the count
+ * at five where a sixth entry would have hidden Configuration itself.
  *
  * Requests for Quotation and Purchase Orders are the SAME resource, not two (PUR-R1): an order
  * starts at `rfq` and becomes a `purchase_order` on confirmation. They are two entry points into
@@ -24,9 +26,22 @@ const ITEMS: MenuItem[] = [
 	{ labelKey: 'menu_requestsForQuotation', link: '/requests_for_quotation' },
 	{ labelKey: 'menu_orders', link: '/purchase_orders' },
 	{ labelKey: 'menu_agreements', link: '/agreements' },
-	// Configuration is the module's approval settings — one record per organization, configured
-	// once and then mostly read.
-	{ labelKey: 'menu_configuration', link: '/configuration' },
+	// Configuration is a GROUP rather than a leaf, so that vendor prices get a home without
+	// becoming a sixth top-level sibling — which would have pushed this entry itself into the
+	// overflow. The trade is deliberate: the approval settings now cost two clicks instead of one,
+	// and they are read far less often than they were configured.
+	{
+		labelKey: 'menu_configuration',
+		items: [
+			// The module's approval settings — one record per organization, configured once and
+			// then mostly read.
+			{ labelKey: 'menu_settings', link: '/configuration' },
+			// Master data, not a document: what each vendor currently offers a product at. Also
+			// reachable from the product detail page, which is where a buyer comparing suppliers
+			// starts; this entry is for maintaining the list itself.
+			{ labelKey: 'menu_vendorProductPrices', link: '/vendor_product_prices' },
+		],
+	},
 	// No entry for order lines, agreement lines, sourcing groups or audit events. Lines are
 	// related records of the document that owns them; a sourcing group is created by adding an
 	// alternative and reaped when fewer than two remain (§28), so it has no page to offer; and the

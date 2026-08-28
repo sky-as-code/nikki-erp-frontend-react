@@ -12,8 +12,6 @@ export const PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME = 'inventory_product_attribute_
 export const PRODUCT_TEMPLATE_SCHEMA_NAME = 'inventory_product_template';
 export const PRODUCT_VARIANT_SCHEMA_NAME = 'inventory_product_variant';
 
-// A price rule for a template or one of its variants. See BR §6.12.
-export const PRODUCT_PRICE_SCHEMA_NAME = 'inventory_product_price';
 
 // Stock. See backend .../modules/inventory/domain/models/{stock_location,stock_operation_type,
 // stock_quant}.go.
@@ -56,7 +54,6 @@ export const PRODUCT_ATTRIBUTE_RESOURCE_PATH = `v1/inventory/${PRODUCT_ATTRIBUTE
 export const PRODUCT_ATTRIBUTE_VALUE_RESOURCE_PATH = `v1/inventory/${PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME}`;
 export const PRODUCT_TEMPLATE_RESOURCE_PATH = `v1/inventory/${PRODUCT_TEMPLATE_SCHEMA_NAME}`;
 export const PRODUCT_VARIANT_RESOURCE_PATH = `v1/inventory/${PRODUCT_VARIANT_SCHEMA_NAME}`;
-export const PRODUCT_PRICE_RESOURCE_PATH = `v1/inventory/${PRODUCT_PRICE_SCHEMA_NAME}`;
 export const PRODUCT_TEMPLATE_ATTRIBUTE_RESOURCE_PATH = `v1/inventory/${PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME}`;
 export const PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_RESOURCE_PATH =
 	`v1/inventory/${PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME}`;
