@@ -133,6 +133,9 @@ importers:
       '@nikkierp/common':
         specifier: workspace:*
         version: link:../../libs/common
+      '@nikkierp/microapp-accounting':
+        specifier: workspace:*
+        version: link:../../modules/accounting
       '@nikkierp/microapp-authorize':
         specifier: workspace:*
         version: link:../../modules/authorize

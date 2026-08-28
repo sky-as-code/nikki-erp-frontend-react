@@ -3,6 +3,7 @@
 	"license": "LGPL-2.1-only",
 	"scripts": {
 		"build": "turbo run build",
+		"commitlint": "commitlint --edit",
 		"dev": "turbo run dev",
 		"dev:shell": "turbo run dev --filter=shellbff",
 		"dev:webapp": "turbo run dev --filter=webapp",
