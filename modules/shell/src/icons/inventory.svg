@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="url(#g-inventory)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <linearGradient id="g-inventory" x1="8" y1="0" x2="24" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1B3F9E"/>
+      <stop offset="0.55" stop-color="#1477D6"/>
+      <stop offset="1" stop-color="#0AA8EE"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="34" width="20" height="20" rx="2"/>
+  <rect x="34" y="34" width="20" height="20" rx="2"/>
+  <rect x="22" y="12" width="20" height="20" rx="2"/>
+  <path d="M32 12 V32 M20 34 V54 M44 34 V54"/>
+  <path d="M6 58 H58"/>
+</svg>

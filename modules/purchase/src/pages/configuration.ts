@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -83,19 +82,27 @@ function buildConfigurationDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildConfigurationFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.PURCHASE_MODULE,
+		tabs: [
+			{
+				key: 'approval',
 				header: 'form.approval',
-				// An empty threshold under `two_step` means every order needs approval, not none â€”
-				// the backend reads a missing threshold as "always". Under `one_step` it is ignored.
-				fields: ['approval_mode', 'approval_threshold'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.approval',
+					// An empty threshold under `two_step` means every order needs approval, not none â€”
+					// the backend reads a missing threshold as "always". Under `one_step` it is ignored.
+					fields: ['approval_mode', 'approval_threshold'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['po_modification_policy', 'org_id', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['po_modification_policy', 'org_id', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }

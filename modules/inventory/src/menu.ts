@@ -54,7 +54,6 @@ const ITEMS: MenuItem[] = [
 			// resource, so it sits with the other things configured once and then referenced,
 			// not under Stock where it used to live.
 			{ labelKey: 'menu_locations', link: '/locations' },
-			{ labelKey: 'menu_prices', link: '/product_prices' },
 			{ labelKey: 'menu_productTypes', link: '/product_types' },
 			{ labelKey: 'menu_productCategories', link: '/product_categories' },
 			{ labelKey: 'menu_brands', link: '/brands' },

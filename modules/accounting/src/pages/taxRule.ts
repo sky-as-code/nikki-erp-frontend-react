@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -79,31 +79,51 @@ function buildDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.ACCOUNTING_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['code', 'name', 'jurisdiction_id', 'org_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['code', 'name', 'jurisdiction_id', 'org_id'],
+				}),
+			},
+			{
+				key: 'calculation',
 				header: 'form.calculation',
-				fields: ['priority', 'stop_processing'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.calculation',
+					fields: ['priority', 'stop_processing'],
+				}),
+			},
+			{
+				key: 'effective_period',
 				header: 'form.effectivePeriod',
-				fields: ['effective_from', 'effective_to'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.effectivePeriod',
+					fields: ['effective_from', 'effective_to'],
+				}),
+			},
+			{
+				key: 'lifecycle',
 				header: 'form.lifecycle',
-				fields: ['lifecycle_status', 'version_no', 'legal_reference', 'supersedes_rule_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.lifecycle',
+					fields: ['lifecycle_status', 'version_no', 'legal_reference', 'supersedes_rule_id'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['is_archived', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['is_archived', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

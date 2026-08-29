@@ -16,7 +16,7 @@ const PREFIX = `${PURCHASE_MODULE}.${PURCHASE_ORDER_SCHEMA_NAME}`;
  * The CRUD names come from the schema-driven generic path (`core.resource.purchase_order.*`),
  * served by the Shell's single prefix subscription — this module subscribes none of them.
  *
- * The eleven below are genuinely not CRUD, and each carries its own permission on the backend.
+ * The twelve below are genuinely not CRUD, and each carries its own permission on the backend.
  */
 export const PurchaseOrderCommands = Object.freeze({
 	...resourceCommands(PURCHASE_ORDER_SCHEMA_NAME),
@@ -28,13 +28,14 @@ export const PurchaseOrderCommands = Object.freeze({
 	UNLOCK: `${PREFIX}.unlock`,
 	ACKNOWLEDGE: `${PREFIX}.acknowledge`,
 	DUPLICATE: `${PREFIX}.duplicate`,
+	REPRICE: `${PREFIX}.reprice`,
 	MERGE: `${PREFIX}.merge`,
 	CREATE_ALTERNATIVE: `${PREFIX}.create_alternative`,
 	COMPARE_ALTERNATIVES: `${PREFIX}.compare_alternatives`,
 } as const);
 
 /**
- * Registers the order service and subscribes the eleven lifecycle handlers. Called synchronously
+ * Registers the order service and subscribes the twelve lifecycle handlers. Called synchronously
  * during the micro-app `init` so lazy command resolution finds them.
  * Returns a function that unsubscribes every handler (for teardown).
  */
@@ -51,7 +52,7 @@ export function registerPurchaseOrderCommands(bus: ICommandBus): () => void {
 }
 
 /**
- * The eight actions that move one order through its lifecycle.
+ * The nine actions that move one order through its lifecycle.
  *
  * Split from the sourcing-group ones below only to keep each function inside the line budget; the
  * division is along a real seam, since these act on the order named in the path and those do not.
@@ -65,6 +66,10 @@ function transitionSubscriptions(bus: ICommandBus): (() => void)[] {
 		bus.subscribe(
 			PurchaseOrderCommands.APPROVE,
 			cmd => purchaseOrderService.approve(actionRequest(cmd)),
+		),
+		bus.subscribe(
+			PurchaseOrderCommands.REPRICE,
+			cmd => purchaseOrderService.reprice(actionRequest(cmd)),
 		),
 		bus.subscribe(
 			PurchaseOrderCommands.CANCEL,

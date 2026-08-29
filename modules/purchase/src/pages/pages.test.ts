@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { buildAgreementPages } from './agreement';
 import { buildConfigurationPages } from './configuration';
 import { buildPurchaseOrderPages } from './purchaseOrder';
+import { buildVendorProductPricePages } from './vendorProductPrice';
 import * as c from '../constants';
 
 import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
@@ -12,6 +13,7 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'purchaseOrder', build: buildPurchaseOrderPages },
 	{ name: 'agreement', build: buildAgreementPages },
 	{ name: 'configuration', build: buildConfigurationPages },
+	{ name: 'vendorProductPrice', build: buildVendorProductPricePages },
 ];
 
 describe('Purchase page metadata', () => {
@@ -51,6 +53,7 @@ describe('Purchase page metadata', () => {
 
 		expect(routePaths).toEqual([
 			'requests_for_quotation', 'purchase_orders', 'agreements', 'configuration',
+			'vendor_product_prices',
 		]);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);
@@ -511,3 +514,92 @@ function findNonPlainValue(value: unknown, path: string): string | null {
 	}
 	return null;
 }
+
+describe('Vendor product price page', () => {
+	/**
+	 * A schema name that does not match the backend Go constant fails SILENTLY: the page hangs on
+	 * its loading spinner rather than reporting anything, because `SchemaRegistry` simply never
+	 * resolves a schema it was never given. That is why the literal is written out here rather than
+	 * compared against the constant alone — asserting `c.X === c.X` would pass no matter what the
+	 * constant said.
+	 *
+	 * Note the purchase module's naming quirk: `purchase_order`, not `purchase_purchase_order`.
+	 * This resource does carry the module prefix, so the two conventions sit side by side.
+	 */
+	it('binds both panes to the backend vendor price schema', () => {
+		const [page] = buildVendorProductPricePages();
+		const props = page.props as {
+			primary: { props: { schemaName: string } },
+			secondary: { props: { schemaName: string } },
+		};
+
+		expect(props.primary.props.schemaName).toBe('purchase_vendor_product_price');
+		expect(props.secondary.props.schemaName).toBe(c.VENDOR_PRODUCT_PRICE_SCHEMA_NAME);
+	});
+
+	/**
+	 * The resource path segment IS the schema name — the engine serves it at
+	 * `/v1/{module}/{schema_name}` — so a pluralised or hyphenated path would 404 every request.
+	 */
+	it('derives the resource path from the schema name', () => {
+		expect(c.VENDOR_PRODUCT_PRICE_RESOURCE_PATH)
+			.toBe(`v1/purchase/${c.VENDOR_PRODUCT_PRICE_SCHEMA_NAME}`);
+	});
+
+	/**
+	 * A quote is master data, not a document: it has no lifecycle, so it must carry none of the
+	 * order's transition actions. Archiving is how a withdrawn offer is retired, and it is a
+	 * standard action rather than a contextual one.
+	 */
+	it('offers archiving and no lifecycle actions', () => {
+		const [page] = buildVendorProductPricePages();
+		const props = page.props as {
+			secondary: {
+				props: {
+					standardActionCommands?: Record<string, string>,
+					contextualActions?: Record<string, unknown>,
+				},
+			},
+		};
+
+		expect(props.secondary.props.standardActionCommands?.archive)
+			.toBe('core.resource.purchase_vendor_product_price.set_is_archived');
+		expect(props.secondary.props.contextualActions ?? {}).toEqual({});
+	});
+});
+
+describe('Reprice action', () => {
+	/**
+	 * Repricing is refused by the backend on a confirmed order, so offering it there would invite
+	 * an attempt that cannot work. `to_approve` IS offered: an order waiting on an approver is
+	 * still a draft, and the approver is exactly who might want the prices current.
+	 */
+	it('is offered on the draft statuses only', () => {
+		const orders = buildPurchaseOrderPages()
+			.find(page => page.routePath === 'purchase_orders')!;
+		const props = orders.props as {
+			secondary: {
+				props: {
+					contextualActions: Record<string, {
+						command: string,
+						condition?: { field: string, operator: string, value: unknown },
+					}>,
+				},
+			},
+		};
+		const reprice = props.secondary.props.contextualActions.reprice;
+
+		expect(reprice.command).toBe('purchase.purchase_order.reprice');
+		expect(reprice.condition).toEqual({
+			field: 'status',
+			operator: 'in',
+			value: [c.ORDER_STATUS_RFQ, c.ORDER_STATUS_RFQ_SENT, c.ORDER_STATUS_TO_APPROVE],
+		});
+		expect(reprice.condition?.value).not.toContain(c.ORDER_STATUS_PURCHASE_ORDER);
+	});
+
+	/** The action sub-path must match the backend route, which rejects hyphens. */
+	it('posts to the underscored backend sub-path', () => {
+		expect(c.REPRICE_PATH).toBe('reprice');
+	});
+});

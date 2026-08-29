@@ -73,7 +73,7 @@ function buildProductVariantDetailProps() {
 /**
  * Shared by both form modes: the resource's own fields, as titled blocks.
  *
- * Pilot for `tabCollapsibleSectionNode`: four blocks is past the default
+ * Pilot for `tabCollapsibleSectionNode`: five blocks is past the default
  * `minBlockCountWithoutTabs` (2), so this now shows a `[All] | [tab...]` block-visibility
  * control instead of every block's fields at once.
  */
@@ -95,6 +95,28 @@ function buildProductVariantFieldsSection(): ComponentNode {
 				content: resourceFormColumnNode({
 					header: 'form.identification',
 					fields: ['sku', 'primary_barcode', 'combination_key'],
+				}),
+			},
+			{
+				key: 'pricing',
+				// Three fields that are deliberately three different things.
+				//
+				// `cost` is what the business values this variant at, and it is the only one a user
+				// types. It lives on the variant rather than the template because two variants of
+				// one product routinely cost different amounts.
+				//
+				// `template_base_sales_price` and `effective_base_sales_price` are both computed and
+				// read-only: the first is what the template asks for the product, the second adds
+				// what this variant's attribute values charge on top of it. Showing both is what
+				// makes the difference legible — a variant priced above its template is answering
+				// "because of the options", and one number alone cannot say that.
+				//
+				// A selling price is NOT here. What a customer pays is resolved from a Sales price
+				// list, and these are only the inputs to it.
+				header: 'form.pricing',
+				content: resourceFormColumnNode({
+					header: 'form.pricing',
+					fields: ['cost', 'template_base_sales_price', 'effective_base_sales_price'],
 				}),
 			},
 			{

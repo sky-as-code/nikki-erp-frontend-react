@@ -14,6 +14,7 @@ export const AGREEMENT_LINE_SCHEMA_NAME = 'purchase_agreement_line';
 export const CONFIGURATION_SCHEMA_NAME = 'purchase_configuration';
 export const SOURCING_GROUP_SCHEMA_NAME = 'purchase_sourcing_group';
 export const AUDIT_EVENT_SCHEMA_NAME = 'purchase_audit_event';
+export const VENDOR_PRODUCT_PRICE_SCHEMA_NAME = 'purchase_vendor_product_price';
 
 /**
  * The dynamic resource engine serves a resource at `/v1/{module}/{schema_name}`, so the path
@@ -26,6 +27,7 @@ export const AGREEMENT_LINE_RESOURCE_PATH = `v1/purchase/${AGREEMENT_LINE_SCHEMA
 export const CONFIGURATION_RESOURCE_PATH = `v1/purchase/${CONFIGURATION_SCHEMA_NAME}`;
 export const SOURCING_GROUP_RESOURCE_PATH = `v1/purchase/${SOURCING_GROUP_SCHEMA_NAME}`;
 export const AUDIT_EVENT_RESOURCE_PATH = `v1/purchase/${AUDIT_EVENT_SCHEMA_NAME}`;
+export const VENDOR_PRODUCT_PRICE_RESOURCE_PATH = `v1/purchase/${VENDOR_PRODUCT_PRICE_SCHEMA_NAME}`;
 
 /**
  * Purchase order statuses, matching the enum in the backend's `statuses.go`.
@@ -67,3 +69,4 @@ export const CREATE_ALTERNATIVE_PATH = 'create_alternative';
 export const COMPARE_ALTERNATIVES_PATH = 'compare_alternatives';
 export const CLOSE_PATH = 'close';
 export const CREATE_RFQ_PATH = 'create_rfq';
+export const REPRICE_PATH = 'reprice';

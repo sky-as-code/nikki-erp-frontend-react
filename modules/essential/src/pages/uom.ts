@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -66,23 +65,35 @@ function buildUomDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildUomFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.ESSENTIAL_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['name', 'symbol', 'category_id', 'org_id'],
-			}),
-			resourceFormColumnNode({
-				// BR-UOM-ESS-016: the factor and the rounding precision are independent concepts,
-				// so they are shown together but never presented as substitutes for one another.
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['name', 'symbol', 'category_id', 'org_id'],
+				}),
+			},
+			{
+				key: 'conversion',
 				header: 'form.conversion',
-				fields: ['uom_type', 'factor', 'rounding'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					// BR-UOM-ESS-016: the factor and the rounding precision are independent concepts,
+					// so they are shown together but never presented as substitutes for one another.
+					header: 'form.conversion',
+					fields: ['uom_type', 'factor', 'rounding'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }

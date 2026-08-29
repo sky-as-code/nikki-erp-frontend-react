@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -57,21 +57,29 @@ function buildUomCatDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildUomCatFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
-				// BR-UOM-ESS-003: the Reference UoM is a property of the category, and every factor
-				// in the category is expressed relative to it.
+	return tabCollapsibleSectionNode({
+		translationNs: c.ESSENTIAL_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['name', 'reference_uom_id', 'org_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					// BR-UOM-ESS-003: the Reference UoM is a property of the category, and every factor
+					// in the category is expressed relative to it.
+					header: 'form.generalInformation',
+					fields: ['name', 'reference_uom_id', 'org_id'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

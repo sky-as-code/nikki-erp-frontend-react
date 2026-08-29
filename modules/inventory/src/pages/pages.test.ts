@@ -5,8 +5,8 @@ import { buildInventoryLocationPages } from './inventoryLocation';
 import { buildProductAttributePages } from './productAttribute';
 import { buildProductAttributeValuePages } from './productAttributeValue';
 import { buildProductCategoryPages } from './productCategory';
-import { buildProductPricePages } from './productPrice';
 import { buildProductTemplatePages } from './productTemplate';
+import { buildProductTemplateAttributeValuePages } from './productTemplateAttributeValue';
 import { buildProductTypePages } from './productType';
 import { buildProductVariantPages } from './productVariant';
 import { buildPutawayRulePages } from './putawayRule';
@@ -29,7 +29,7 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'brand', build: buildBrandPages },
 	{ name: 'productAttribute', build: buildProductAttributePages },
 	{ name: 'productAttributeValue', build: buildProductAttributeValuePages },
-	{ name: 'productPrice', build: buildProductPricePages },
+	{ name: 'productTemplateAttributeValue', build: buildProductTemplateAttributeValuePages },
 	{ name: 'inventoryLocation', build: buildInventoryLocationPages },
 	{ name: 'warehouse', build: buildWarehousePages },
 	{ name: 'storageCategory', build: buildStorageCategoryPages },
@@ -74,7 +74,7 @@ describe('Inventory page metadata', () => {
 
 		expect(routePaths).toEqual([
 			'product_templates', 'product_variants', 'product_types', 'product_categories',
-			'brands', 'attributes', 'attribute_values', 'product_prices',
+			'brands', 'attributes', 'attribute_values', 'template_attribute_values',
 			'locations', 'warehouses', 'storage_categories', 'supply_relations', 'putaway_rules',
 			'stock_balance', 'stock_balance_counts_due', 'stock_transfers',
 			'stock_scraps',
@@ -82,21 +82,6 @@ describe('Inventory page metadata', () => {
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);
 		}
-	});
-
-	/**
-	 * A schema name that does not match the backend Go constant fails silently: the page hangs on
-	 * its loading spinner rather than reporting anything, so it is pinned here.
-	 */
-	it('binds the price page to the backend price schema', () => {
-		const [page] = buildProductPricePages();
-		const props = page.props as {
-			primary: { props: { schemaName: string } },
-			secondary: { props: { schemaName: string } },
-		};
-
-		expect(props.primary.props.schemaName).toBe('inventory_product_price');
-		expect(props.secondary.props.schemaName).toBe(c.PRODUCT_PRICE_SCHEMA_NAME);
 	});
 
 	it('nests both split-view panes as template refs', () => {
@@ -129,7 +114,10 @@ describe('Product template detail sections', () => {
 		expect(tables.map(table => table.props?.schemaName)).toEqual([
 			c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME,
 			c.PRODUCT_VARIANT_SCHEMA_NAME,
-			c.PRODUCT_PRICE_SCHEMA_NAME,
+			// Purchase's resource on Inventory's page. A literal rather than a constant, because
+			// the module may not import from purchase/ and this test must fail if the string here
+			// ever drifts from the one the page sends.
+			'purchase_vendor_product_price',
 			c.PRODUCT_VARIANT_SCHEMA_NAME,
 			// The inventory unit, configured here but owned by Stock: it decides what a balance
 			// means, so it is its own resource rather than a column on the template (CR §11.4).
@@ -391,3 +379,49 @@ function findNonPlainValue(value: unknown, path: string): string | null {
 	}
 	return path;
 }
+
+describe('Template attribute value page', () => {
+	/**
+	 * A schema name that disagrees with the backend Go constant does not error — it leaves the page
+	 * on its loading spinner forever, because the registry simply never resolves it. Pinned as a
+	 * literal so the assertion is against the real string rather than the constant against itself.
+	 */
+	it('binds both panes to the backend junction schema', () => {
+		const [page] = buildProductTemplateAttributeValuePages();
+		const props = page.props as {
+			primary: { props: { schemaName: string } },
+			secondary: { props: { schemaName: string } },
+		};
+
+		expect(props.primary.props.schemaName)
+			.toBe('inventory_product_template_attribute_value');
+		expect(props.secondary.props.schemaName)
+			.toBe(c.PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME);
+	});
+
+	/**
+	 * The whole reason this page exists. `sales_price_extra` moved onto this junction, and a
+	 * surcharge nobody can edit is a surcharge nobody can set — so if it ever drops off the form,
+	 * the field is dead and nothing else would say so.
+	 */
+	it('puts sales_price_extra on the form', () => {
+		const [page] = buildProductTemplateAttributeValuePages();
+		const fields = collectComponents(page, 'resourceForm.column')
+			.flatMap(node => (node.props?.fields as string[] | undefined) ?? []);
+
+		expect(fields).toContain('sales_price_extra');
+	});
+
+	/**
+	 * Reached from the attributes table on the template page, because the junction row carries
+	 * `template_attribute_id` and not the template id — its values are two hops from a template.
+	 * A missing link here leaves the page unreachable except by typing the URL.
+	 */
+	it('is linked from the template attributes table', () => {
+		const [template] = buildProductTemplatePages();
+		const attributes = collectComponents(template, 'resourceTable')
+			.find(node => node.props?.schemaName === c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME);
+
+		expect(attributes?.props?.linkRoutePath).toBe('template_attribute_values');
+	});
+});

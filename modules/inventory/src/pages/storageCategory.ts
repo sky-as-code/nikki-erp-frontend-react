@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -68,23 +67,35 @@ function buildStorageCategoryDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildStorageCategoryFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['code', 'name', 'description', 'org_id'],
-			}),
-			resourceFormColumnNode({
-				// Capacity is a limit, not a reading: what is currently stored depends on actual
-				// inventory and is computed from Stock rather than held here.
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['code', 'name', 'description', 'org_id'],
+				}),
+			},
+			{
+				key: 'storage_policy',
 				header: 'form.storagePolicy',
-				fields: ['max_weight', 'allow_new_item_policy'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					// Capacity is a limit, not a reading: what is currently stored depends on actual
+					// inventory and is computed from Stock rather than held here.
+					header: 'form.storagePolicy',
+					fields: ['max_weight', 'allow_new_item_policy'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }

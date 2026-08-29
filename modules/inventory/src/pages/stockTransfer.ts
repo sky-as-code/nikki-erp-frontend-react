@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -10,6 +10,7 @@ import { StockMoveLineCommands } from '../features/stockMoveLine/commands';
 import { StockTransferCommands } from '../features/stockTransfer/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
+import type { TabCollapsibleSectionTab } from '@nikkierp/viewkit-mantine/props';
 
 
 export function buildStockTransferPages(): PageNode[] {
@@ -80,40 +81,73 @@ function buildStockTransferDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildStockTransferFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		tabs: [...buildStockTransferDocumentTabs(), ...buildStockTransferTimelineTabs()],
+	});
+}
+
+function buildStockTransferDocumentTabs(): TabCollapsibleSectionTab[] {
+	return [
+		{
+			key: 'general',
+			header: 'form.generalInformation',
+			content: resourceFormColumnNode({
 				header: 'form.generalInformation',
 				fields: [
 					'transfer_number', 'operation_type_id', 'operation_code', 'status',
 					'origin_reference', 'note', 'org_id',
 				],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'movement',
+			header: 'form.movement',
+			content: resourceFormColumnNode({
 				header: 'form.movement',
 				fields: ['source_location_id', 'destination_location_id', 'priority'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'stock_policies',
+			header: 'form.stockPolicies',
+			content: resourceFormColumnNode({
 				header: 'form.stockPolicies',
 				// Snapshots taken at create time, shown so a reader can see what this transfer will do
 				// rather than what its operation type currently says (BR Â§4.2.3.4).
 				fields: ['reservation_method', 'backorder_policy', 'shipping_policy'],
 			}),
-			resourceFormColumnNode({
+		},
+	];
+}
+
+function buildStockTransferTimelineTabs(): TabCollapsibleSectionTab[] {
+	return [
+		{
+			key: 'scheduling',
+			header: 'form.scheduling',
+			content: resourceFormColumnNode({
 				header: 'form.scheduling',
 				fields: ['scheduled_at', 'deadline_at', 'completed_at'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'backorder',
+			header: 'form.backorder',
+			content: resourceFormColumnNode({
 				header: 'form.backorder',
 				fields: ['backorder_of_id', 'return_of_id', 'chain_group_id'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'audit',
+			header: 'form.audit',
+			content: resourceFormColumnNode({
 				header: 'form.audit',
 				fields: ['created_at', 'updated_at'],
 			}),
-		],
-	);
+		},
+	];
 }
 
 /**

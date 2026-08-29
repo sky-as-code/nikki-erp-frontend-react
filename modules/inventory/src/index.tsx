@@ -10,10 +10,10 @@ import { registerInventoryLocationCommands } from './features/inventoryLocation/
 import { registerProductAttributeCommands } from './features/productAttribute/commands';
 import { registerProductAttributeValueCommands } from './features/productAttributeValue/commands';
 import { registerProductCategoryCommands } from './features/productCategory/commands';
-import { registerProductPriceCommands } from './features/productPrice/commands';
 import { registerProductStockCommands } from './features/productStock/commands';
 import { registerProductTemplateCommands } from './features/productTemplate/commands';
 import { registerProductTemplateAttributeCommands } from './features/productTemplateAttribute/commands';
+import { registerProductTemplateAttributeValueCommands } from './features/productTemplateAttributeValue/commands';
 import { registerProductTypeCommands } from './features/productType/commands';
 import { registerProductVariantCommands } from './features/productVariant/commands';
 import { registerPutawayRuleCommands } from './features/putawayRule/commands';
@@ -33,8 +33,8 @@ import { buildInventoryLocationPages } from './pages/inventoryLocation';
 import { buildProductAttributePages } from './pages/productAttribute';
 import { buildProductAttributeValuePages } from './pages/productAttributeValue';
 import { buildProductCategoryPages } from './pages/productCategory';
-import { buildProductPricePages } from './pages/productPrice';
 import { buildProductTemplatePages } from './pages/productTemplate';
+import { buildProductTemplateAttributeValuePages } from './pages/productTemplateAttributeValue';
 import { buildProductTypePages } from './pages/productType';
 import { buildProductVariantPages } from './pages/productVariant';
 import { buildPutawayRulePages } from './pages/putawayRule';
@@ -73,8 +73,8 @@ const bundle: MicroAppBundle = {
 		registerProductAttributeValueCommands(host.commandBus);
 		registerProductTemplateCommands(host.commandBus);
 		registerProductTemplateAttributeCommands(host.commandBus);
+		registerProductTemplateAttributeValueCommands(host.commandBus);
 		registerProductVariantCommands(host.commandBus);
-		registerProductPriceCommands(host.commandBus);
 		registerInventoryLocationCommands(host.commandBus);
 		registerWarehouseCommands(host.commandBus);
 		registerStorageCategoryCommands(host.commandBus);
@@ -108,7 +108,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildBrandPages(),
 		...buildProductAttributePages(),
 		...buildProductAttributeValuePages(),
-		...buildProductPricePages(),
+		...buildProductTemplateAttributeValuePages(),
 		...buildInventoryLocationPages(),
 		...buildWarehousePages(),
 		...buildStorageCategoryPages(),
@@ -160,9 +160,6 @@ function registerModelSchemas(): void {
 	}, {
 		schemaName: c.PRODUCT_VARIANT_ATTRIBUTE_VALUE_SCHEMA_NAME,
 		resourcePath: c.PRODUCT_VARIANT_ATTRIBUTE_VALUE_RESOURCE_PATH,
-	}, {
-		schemaName: c.PRODUCT_PRICE_SCHEMA_NAME,
-		resourcePath: c.PRODUCT_PRICE_RESOURCE_PATH,
 	}, {
 		schemaName: c.WAREHOUSE_SCHEMA_NAME,
 		resourcePath: c.WAREHOUSE_RESOURCE_PATH,

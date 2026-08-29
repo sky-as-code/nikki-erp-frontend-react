@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="url(#g-sales)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <linearGradient id="g-sales" x1="8" y1="0" x2="24" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1B3F9E"/>
+      <stop offset="0.55" stop-color="#1477D6"/>
+      <stop offset="1" stop-color="#0AA8EE"/>
+    </linearGradient>
+  </defs>
+  <path d="M8 26 V10 C8 8.9 8.9 8 10 8 H26 L56 38 L38 56 Z"/>
+  <circle cx="18" cy="18" r="3"/>
+  <path d="M22 42 L30 34 L36 40 L46 30"/>
+  <path d="M40 30 H46 V36"/>
+</svg>

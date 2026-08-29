@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -84,28 +83,44 @@ function buildInventoryLocationDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildInventoryLocationFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['code', 'name', 'location_usage', 'status', 'description', 'org_id'],
-			}),
-			resourceFormColumnNode({
-				// Where the location sits: which warehouse owns it (null for a vendor, customer or
-				// shared transit location), its parent, and what it is used for inside the warehouse.
-				// complete_path is derived, so it is shown but never edited.
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['code', 'name', 'location_usage', 'status', 'description', 'org_id'],
+				}),
+			},
+			{
+				key: 'location_topology',
 				header: 'form.locationTopology',
-				fields: ['warehouse_id', 'parent_location_id', 'purpose', 'complete_path', 'barcode'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					// Where the location sits: which warehouse owns it (null for a vendor, customer or
+					// shared transit location), its parent, and what it is used for inside the warehouse.
+					// complete_path is derived, so it is shown but never edited.
+					header: 'form.locationTopology',
+					fields: ['warehouse_id', 'parent_location_id', 'purpose', 'complete_path', 'barcode'],
+				}),
+			},
+			{
+				key: 'storage_policy',
 				header: 'form.storagePolicy',
-				fields: ['storage_category_id', 'removal_strategy', 'is_replenishment_destination'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.storagePolicy',
+					fields: ['storage_category_id', 'removal_strategy', 'is_replenishment_destination'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }

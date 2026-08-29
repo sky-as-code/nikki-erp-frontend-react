@@ -1,17 +1,18 @@
+import { resourceCommands } from '@nikkierp/common/dynamicModel';
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
-import { ProductPriceCommands } from '../features/productPrice/commands';
 import { ProductTemplateCommands } from '../features/productTemplate/commands';
 import { ProductTemplateAttributeCommands } from '../features/productTemplateAttribute/commands';
 import { ProductVariantCommands } from '../features/productVariant/commands';
 import { StockProductConfigCommands } from '../features/stockProductConfig/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
+import type { TabCollapsibleSectionTab } from '@nikkierp/viewkit-mantine/props';
 
 
 export function buildProductTemplatePages(): PageNode[] {
@@ -70,39 +71,100 @@ function buildProductTemplateDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildProductTemplateFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		tabs: [
+			...buildProductTemplateIdentityTabs(),
+			...buildProductTemplateCommercialTabs(),
+			...buildProductTemplatePhysicalTabs(),
+		],
+	});
+}
+
+function buildProductTemplateIdentityTabs(): TabCollapsibleSectionTab[] {
+	return [
+		{
+			key: 'general',
+			header: 'form.generalInformation',
+			content: resourceFormColumnNode({
 				header: 'form.generalInformation',
 				fields: ['name', 'short_name', 'status', 'org_id'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'identification',
+			header: 'form.identification',
+			content: resourceFormColumnNode({
 				header: 'form.identification',
 				fields: ['product_type_id', 'category_id', 'brand_id'],
 			}),
-			resourceFormColumnNode({
+		},
+	];
+}
+
+function buildProductTemplateCommercialTabs(): TabCollapsibleSectionTab[] {
+	return [
+		{
+			key: 'sales',
+			header: 'form.sales',
+			content: resourceFormColumnNode({
 				// sale_ok and purchase_ok decide which business processes may reference the product,
 				// which is what makes them belong beside their descriptions rather than in general
 				// information. See BR Â§2.4.
 				header: 'form.sales',
-				fields: ['sale_ok', 'sales_description'],
+				fields: ['sale_ok', 'sales_description', 'base_sales_price'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'purchasing',
+			header: 'form.purchasing',
+			content: resourceFormColumnNode({
 				header: 'form.purchasing',
 				fields: ['purchase_ok', 'purchase_description'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'costing',
+			header: 'form.costing',
+			content: resourceFormColumnNode({
+				// The template holds no cost of its own, deliberately: cost belongs to the variant,
+				// because two variants of one product routinely cost different amounts. What the
+				// template can honestly show is the RANGE across its variants, so these two fields
+				// together read as "60,000 - 100,000" when they differ and as one figure when they
+				// agree.
+				//
+				// Both are computed and virtual, so they render read-only here and are dropped from
+				// the create form entirely — a product with no variants yet has no range to show.
+				// That is the same treatment created_at and updated_at get, and it needs no
+				// page-side flag because there is none to give: read-only comes from the backend
+				// schema's field metadata.
+				header: 'form.costing',
+				fields: ['min_variant_cost', 'max_variant_cost'],
+			}),
+		},
+	];
+}
+
+function buildProductTemplatePhysicalTabs(): TabCollapsibleSectionTab[] {
+	return [
+		{
+			key: 'dimensions',
+			header: 'form.dimensions',
+			content: resourceFormColumnNode({
 				// Defaults a variant inherits when it sets no value of its own. See BR Â§6.4.
 				header: 'form.dimensions',
 				fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'audit',
+			header: 'form.audit',
+			content: resourceFormColumnNode({
 				header: 'form.audit',
 				fields: ['created_at', 'updated_at'],
 			}),
-		],
-	);
+		},
+	];
 }
 
 /**
@@ -121,6 +183,11 @@ function buildTemplateSections(): ComponentNode[] {
 				searchCommand: ProductTemplateAttributeCommands.SEARCH,
 				filterGraph: { if: ['product_template_id', '=', '${id}'] },
 				linkField: 'id',
+				// Opens the values this template offers for the attribute, which is where each
+				// value's sales_price_extra is set. The junction row carries template_attribute_id
+				// rather than the template id, so its values are two hops from here and reachable
+				// only through the attribute row itself.
+				linkRoutePath: 'template_attribute_values',
 			})],
 		),
 		collapsibleSectionNode(
@@ -135,16 +202,26 @@ function buildTemplateSections(): ComponentNode[] {
 			})],
 		),
 		collapsibleSectionNode(
-			{ header: 'product_template_sections_prices', translationNs: c.INVENTORY_MODULE, expanded: false },
+			{ header: 'product_template_sections_vendor_prices', translationNs: c.INVENTORY_MODULE, expanded: false },
 			[resourceTableNode({
-				schemaName: c.PRODUCT_PRICE_SCHEMA_NAME,
+				// Purchase's resource, shown on Inventory's page, with NO import from Purchase.
+				// Command names are derived from the schema string alone, so naming the schema is
+				// enough to reach the owning module's service — and it has to be, because the root
+				// eslint config bans a module from importing another ("Modules must not import each
+				// other. Communicate via the command bus."). Hence the literal below rather than a
+				// constant borrowed from purchase/.
+				//
+				// It must match the Go constant verbatim: a mismatch does not error, it leaves the
+				// section spinning forever.
+				schemaName: 'purchase_vendor_product_price',
 				translationNs: c.INVENTORY_MODULE,
-				searchCommand: ProductPriceCommands.SEARCH,
-				// Only the template's own rules. A variant's price rule belongs to that variant's
-				// page, since it exists precisely to differ from the line's base price.
+				searchCommand: resourceCommands('purchase_vendor_product_price').SEARCH,
+				// What every vendor offers this product, at any quantity — the buyer's comparison
+				// view. Filtered by template rather than variant because a template-wide quote
+				// prices every variant that has none of its own.
 				filterGraph: { if: ['product_template_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'product_prices',
+				linkRoutePath: 'vendor_product_prices',
 			})],
 		),
 		buildTemplateInventorySection(),

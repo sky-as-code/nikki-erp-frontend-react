@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -90,19 +90,27 @@ function buildDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.ACCOUNTING_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['code', 'name', 'tax_kind', 'invoice_label', 'description', 'org_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['code', 'name', 'tax_kind', 'invoice_label', 'description', 'org_id'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['is_archived', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['is_archived', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

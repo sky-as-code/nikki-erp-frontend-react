@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -91,26 +91,38 @@ function buildAgreementDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildAgreementFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
-				header: 'form.other_information',
-				// `vendor_id` is optional here, unlike on an order: a template may be drafted before
-				// anyone has chosen who to buy from.
-				fields: ['code', 'reference', 'agreement_type', 'status', 'vendor_id', 'buyer_id',
-					'currency_id', 'org_id'],
-			}),
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.PURCHASE_MODULE,
+		tabs: [
+			{
+				key: 'general',
+				header: 'form.generalInformation',
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					// `vendor_id` is optional here, unlike on an order: a template may be drafted before
+					// anyone has chosen who to buy from.
+					fields: ['code', 'reference', 'agreement_type', 'status', 'vendor_id', 'buyer_id',
+						'currency_id', 'org_id'],
+				}),
+			},
+			{
+				key: 'terms',
 				header: 'form.terms',
-				fields: ['start_date', 'end_date', 'description'],
-			}),
-			resourceFormColumnNode({
-				header: 'form.other_information',
-				fields: ['is_archived', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.terms',
+					fields: ['start_date', 'end_date', 'description'],
+				}),
+			},
+			{
+				key: 'audit',
+				header: 'form.audit',
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['is_archived', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**
