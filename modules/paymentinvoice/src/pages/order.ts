@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -85,37 +85,57 @@ function buildOrderDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildOrderFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.PAYMENTINVOICE_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				// order_id is what the ordering system quotes; order_code is what the gateway knows
-				// the order by. They are different strings and both are shown, because a support
-				// conversation may start from either.
-				fields: ['order_id', 'order_code', 'source', 'status', 'content', 'org_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					// order_id is what the ordering system quotes; order_code is what the gateway knows
+					// the order by. They are different strings and both are shown, because a support
+					// conversation may start from either.
+					fields: ['order_id', 'order_code', 'source', 'status', 'content', 'org_id'],
+				}),
+			},
+			{
+				key: 'money',
 				header: 'form.money',
-				fields: ['amount', 'refund_amount', 'currency_id', 'payment_method_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.money',
+					fields: ['amount', 'refund_amount', 'currency_id', 'payment_method_id'],
+				}),
+			},
+			{
+				key: 'notification',
 				header: 'form.notification',
-				// How the ordering system was told, and whether it heard. A failure here is what the
-				// retry sweep looks for.
-				fields: ['return_url', 'last_sync_status', 'sync_logs'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.notification',
+					// How the ordering system was told, and whether it heard. A failure here is what the
+					// retry sweep looks for.
+					fields: ['return_url', 'last_sync_status', 'sync_logs'],
+				}),
+			},
+			{
+				key: 'gateway_data',
 				header: 'form.gatewayData',
-				// Whatever the paying method needed at order time, plus the gateway's own replies.
-				fields: ['metadata'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.gatewayData',
+					// Whatever the paying method needed at order time, plus the gateway's own replies.
+					fields: ['metadata'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

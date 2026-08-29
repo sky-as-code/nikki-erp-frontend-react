@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -82,36 +81,56 @@ function buildStockScrapDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildStockScrapFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['scrap_number', 'status', 'origin_reference', 'transfer_id', 'note', 'org_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['scrap_number', 'status', 'origin_reference', 'transfer_id', 'note', 'org_id'],
+				}),
+			},
+			{
+				key: 'scrap_details',
 				header: 'form.scrapDetails',
-				fields: [
-					'product_variant_id', 'quantity', 'base_uom_id',
-					'source_location_id', 'scrap_location_id',
-				],
-			}),
-			resourceFormColumnNode({
-				// Empty until a lot, package or owner narrows which goods are scrapped â€” a read-mode
-				// field with no value is hidden, so an untracked scrap does not show this block.
+				content: resourceFormColumnNode({
+					header: 'form.scrapDetails',
+					fields: [
+						'product_variant_id', 'quantity', 'base_uom_id',
+						'source_location_id', 'scrap_location_id',
+					],
+				}),
+			},
+			{
+				key: 'identification',
 				header: 'form.identification',
-				fields: ['lot_ref', 'package_ref', 'owner_ref'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					// Empty until a lot, package or owner narrows which goods are scrapped â€” a read-mode
+					// field with no value is hidden, so an untracked scrap does not show this block.
+					header: 'form.identification',
+					fields: ['lot_ref', 'package_ref', 'owner_ref'],
+				}),
+			},
+			{
+				key: 'reason',
 				header: 'form.reason',
-				fields: ['reason_code', 'reason'],
-			}),
-			resourceFormColumnNode({
-				// move_id is the audit trail from the document to the stock it removed; both are
-				// written by Do Scrap and by nothing else.
+				content: resourceFormColumnNode({
+					header: 'form.reason',
+					fields: ['reason_code', 'reason'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['move_id', 'completed_at', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					// move_id is the audit trail from the document to the stock it removed; both are
+					// written by Do Scrap and by nothing else.
+					header: 'form.audit',
+					fields: ['move_id', 'completed_at', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }

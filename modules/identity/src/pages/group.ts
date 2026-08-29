@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -59,15 +59,19 @@ function buildGroupDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildGroupFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.IAM_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['name', 'description'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['name', 'description'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /** Group counterpart of the user page's section; `assigned_groups` is the matching edge. */

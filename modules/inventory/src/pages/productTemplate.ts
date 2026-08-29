@@ -1,8 +1,8 @@
 import { resourceCommands } from '@nikkierp/common/dynamicModel';
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -12,6 +12,7 @@ import { ProductVariantCommands } from '../features/productVariant/commands';
 import { StockProductConfigCommands } from '../features/stockProductConfig/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
+import type { TabCollapsibleSectionTab } from '@nikkierp/viewkit-mantine/props';
 
 
 export function buildProductTemplatePages(): PageNode[] {
@@ -70,29 +71,62 @@ function buildProductTemplateDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildProductTemplateFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		tabs: [
+			...buildProductTemplateIdentityTabs(),
+			...buildProductTemplateCommercialTabs(),
+			...buildProductTemplatePhysicalTabs(),
+		],
+	});
+}
+
+function buildProductTemplateIdentityTabs(): TabCollapsibleSectionTab[] {
+	return [
+		{
+			key: 'general',
+			header: 'form.generalInformation',
+			content: resourceFormColumnNode({
 				header: 'form.generalInformation',
 				fields: ['name', 'short_name', 'status', 'org_id'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'identification',
+			header: 'form.identification',
+			content: resourceFormColumnNode({
 				header: 'form.identification',
 				fields: ['product_type_id', 'category_id', 'brand_id'],
 			}),
-			resourceFormColumnNode({
+		},
+	];
+}
+
+function buildProductTemplateCommercialTabs(): TabCollapsibleSectionTab[] {
+	return [
+		{
+			key: 'sales',
+			header: 'form.sales',
+			content: resourceFormColumnNode({
 				// sale_ok and purchase_ok decide which business processes may reference the product,
 				// which is what makes them belong beside their descriptions rather than in general
 				// information. See BR Â§2.4.
 				header: 'form.sales',
 				fields: ['sale_ok', 'sales_description', 'base_sales_price'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'purchasing',
+			header: 'form.purchasing',
+			content: resourceFormColumnNode({
 				header: 'form.purchasing',
 				fields: ['purchase_ok', 'purchase_description'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'costing',
+			header: 'form.costing',
+			content: resourceFormColumnNode({
 				// The template holds no cost of its own, deliberately: cost belongs to the variant,
 				// because two variants of one product routinely cost different amounts. What the
 				// template can honestly show is the RANGE across its variants, so these two fields
@@ -107,17 +141,30 @@ function buildProductTemplateFieldsSection(): ComponentNode {
 				header: 'form.costing',
 				fields: ['min_variant_cost', 'max_variant_cost'],
 			}),
-			resourceFormColumnNode({
+		},
+	];
+}
+
+function buildProductTemplatePhysicalTabs(): TabCollapsibleSectionTab[] {
+	return [
+		{
+			key: 'dimensions',
+			header: 'form.dimensions',
+			content: resourceFormColumnNode({
 				// Defaults a variant inherits when it sets no value of its own. See BR Â§6.4.
 				header: 'form.dimensions',
 				fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
 			}),
-			resourceFormColumnNode({
+		},
+		{
+			key: 'audit',
+			header: 'form.audit',
+			content: resourceFormColumnNode({
 				header: 'form.audit',
 				fields: ['created_at', 'updated_at'],
 			}),
-		],
-	);
+		},
+	];
 }
 
 /**

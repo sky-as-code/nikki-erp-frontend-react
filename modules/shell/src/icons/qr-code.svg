@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="url(#g-qr-code)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <linearGradient id="g-qr-code" x1="8" y1="0" x2="24" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1B3F9E"/>
+      <stop offset="0.55" stop-color="#1477D6"/>
+      <stop offset="1" stop-color="#0AA8EE"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="18" height="18" rx="2"/>
+  <rect x="14" y="14" width="6" height="6" rx="1"/>
+  <rect x="38" y="8" width="18" height="18" rx="2"/>
+  <rect x="44" y="14" width="6" height="6" rx="1"/>
+  <rect x="8" y="38" width="18" height="18" rx="2"/>
+  <rect x="14" y="44" width="6" height="6" rx="1"/>
+  <path d="M32 8 V14 M32 20 V26 M8 32 H14 M20 32 H26 M32 32 H38 M44 32 H50 M56 32 V38 M32 38 V44 M38 44 H44 M50 44 V50 M56 50 V56 M32 50 V56 M38 56 H44 M44 38 H50"/>
+</svg>

@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -65,29 +65,45 @@ function buildRoleDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildRoleFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.IAM_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['name', 'description', 'org_id'],
-			}),
-			resourceFormColumnNode({
-				// Exactly one of these must be set; the backend enforces it via
-				// ExclusiveRequiredFields, the generated form cannot express it.
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['name', 'description', 'org_id'],
+				}),
+			},
+			{
+				key: 'ownership',
 				header: 'form.ownership',
-				fields: ['owner_user_id', 'owner_group_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					// Exactly one of these must be set; the backend enforces it via
+					// ExclusiveRequiredFields, the generated form cannot express it.
+					header: 'form.ownership',
+					fields: ['owner_user_id', 'owner_group_id'],
+				}),
+			},
+			{
+				key: 'request_settings',
 				header: 'form.requestSettings',
-				fields: ['is_private', 'is_requestable', 'is_required_comment', 'is_required_attachment'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.requestSettings',
+					fields: ['is_private', 'is_requestable', 'is_required_comment', 'is_required_attachment'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

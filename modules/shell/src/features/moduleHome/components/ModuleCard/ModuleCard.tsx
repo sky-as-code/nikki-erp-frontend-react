@@ -9,6 +9,7 @@ import { FC, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import classes from './ModuleCard.module.css';
+import genericIcon from '../../../../icons/generic.svg';
 
 
 /** Every card names itself by module slug, so several cards on the grid stay distinguishable. */
@@ -59,12 +60,12 @@ const ModuleCardContent: FC<ModuleCardContentProps> = ({ module, isActionMenuOpe
 				pos='relative' w={'100%'} maw={90} p={5}
 				className={clsx(classes.moduleCardInner)}
 			>
-				{imageError || !module.icon ? (
+				{imageError ? (
 					<FallbackModuleIcon />
 				) : (
 					<Image
 						h={'100%'} w={'100%'} radius='md' fit='contain' bg='transparent'
-						src={module.icon || ''} alt={module.name || 'no image'}
+						src={module.icon || genericIcon} alt={module.name || 'no image'}
 						onError={() => setImageError(true)}
 					/>
 				)}

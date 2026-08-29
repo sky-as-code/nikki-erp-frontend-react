@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -75,34 +74,54 @@ function buildDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.ACCOUNTING_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['tax_id', 'description', 'org_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['tax_id', 'description', 'org_id'],
+				}),
+			},
+			{
+				key: 'calculation',
 				header: 'form.calculation',
-				// `rate` for a percentage tax, `fixed_amount` with its currency and unit for a
-				// fixed one. Which pair is meaningful follows from the definition version's
-				// calculation type, and the backend refuses the wrong combination.
-				fields: ['rate', 'fixed_amount', 'currency_code', 'rate_uom_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.calculation',
+					// `rate` for a percentage tax, `fixed_amount` with its currency and unit for a
+					// fixed one. Which pair is meaningful follows from the definition version's
+					// calculation type, and the backend refuses the wrong combination.
+					fields: ['rate', 'fixed_amount', 'currency_code', 'rate_uom_id'],
+				}),
+			},
+			{
+				key: 'effective_period',
 				header: 'form.effectivePeriod',
-				fields: ['effective_from', 'effective_to'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.effectivePeriod',
+					fields: ['effective_from', 'effective_to'],
+				}),
+			},
+			{
+				key: 'lifecycle',
 				header: 'form.lifecycle',
-				fields: ['lifecycle_status', 'version_no', 'legal_reference'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.lifecycle',
+					fields: ['lifecycle_status', 'version_no', 'legal_reference'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['is_archived', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['is_archived', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

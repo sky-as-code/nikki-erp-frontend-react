@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -64,25 +63,37 @@ function buildSalesPointDetailProps() {
 }
 
 function buildSalesPointFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'point',
 				header: 'form.point',
-				fields: ['sales_channel_id', 'name', 'code', 'status'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.point',
+					fields: ['sales_channel_id', 'name', 'code', 'status'],
+				}),
+			},
+			{
+				key: 'external',
 				header: 'form.external',
-				// How another module names this point. Unique within the channel, which makes it an
-				// idempotency handle for provisioning.
-				fields: ['external_reference_id', 'external_reference_type'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.external',
+					// How another module names this point. Unique within the channel, which makes it an
+					// idempotency handle for provisioning.
+					fields: ['external_reference_id', 'external_reference_type'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['org_id', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['org_id', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

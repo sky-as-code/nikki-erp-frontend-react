@@ -161,6 +161,7 @@ export * from './components/pageHeader/props';
 export * from './components/resourceFormTabs/props';
 export * from './components/resourceTable/props';
 export * from './components/settings/props';
+export * from './components/tabCollapsibleSection/props';
 export * from './pages/resourceDetail/props';
 export * from './pages/resourceList/props';
 export * from './pages/resourceSplitView/props';

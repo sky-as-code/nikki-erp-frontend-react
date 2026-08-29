@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -59,28 +59,44 @@ function buildSalesPricelistDetailProps() {
 }
 
 function buildSalesPricelistFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'pricelist',
 				header: 'form.pricelist',
-				fields: ['code', 'name', 'description', 'currency_id', 'is_default'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.pricelist',
+					fields: ['code', 'name', 'description', 'currency_id', 'is_default'],
+				}),
+			},
+			{
+				key: 'scope',
 				header: 'form.scope',
-				// Both nullable; a list scoped to neither applies everywhere.
-				fields: ['sales_channel_id', 'sales_point_id', 'priority'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.scope',
+					// Both nullable; a list scoped to neither applies everywhere.
+					fields: ['sales_channel_id', 'sales_point_id', 'priority'],
+				}),
+			},
+			{
+				key: 'validity',
 				header: 'form.validity',
-				fields: ['valid_from', 'valid_until'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.validity',
+					fields: ['valid_from', 'valid_until'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

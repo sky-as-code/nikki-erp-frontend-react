@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -81,30 +81,46 @@ function buildInvoiceDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildInvoiceFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.PAYMENTINVOICE_MODULE,
+		tabs: [
+			{
+				key: 'general',
 				header: 'form.generalInformation',
-				fields: ['number', 'status', 'issued_at', 'order_id', 'note', 'org_id'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['number', 'status', 'issued_at', 'order_id', 'note', 'org_id'],
+				}),
+			},
+			{
+				key: 'partner',
 				header: 'form.partner',
-				fields: ['partner_name', 'partner_tax_code', 'partner_address'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.partner',
+					fields: ['partner_name', 'partner_tax_code', 'partner_address'],
+				}),
+			},
+			{
+				key: 'money',
 				header: 'form.money',
-				// All three are system-managed and recomputed from the lines on issue. They are shown
-				// rather than hidden because they are the point of the document; the engine ignores
-				// them on update, so showing them cannot let anyone write one.
-				fields: ['currency_id', 'subtotal_amount', 'tax_amount', 'total_amount'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.money',
+					// All three are system-managed and recomputed from the lines on issue. They are shown
+					// rather than hidden because they are the point of the document; the engine ignores
+					// them on update, so showing them cannot let anyone write one.
+					fields: ['currency_id', 'subtotal_amount', 'tax_amount', 'total_amount'],
+				}),
+			},
+			{
+				key: 'audit',
 				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

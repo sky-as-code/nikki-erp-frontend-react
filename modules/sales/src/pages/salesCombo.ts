@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -58,28 +58,44 @@ function buildSalesComboDetailProps() {
 }
 
 function buildSalesComboFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'combo',
 				header: 'form.combo',
-				fields: ['code', 'name', 'description', 'combo_price'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.combo',
+					fields: ['code', 'name', 'description', 'combo_price'],
+				}),
+			},
+			{
+				key: 'policy',
 				header: 'form.policy',
-				// Whether the bundle may be broken up on return, or must come back whole.
-				fields: ['return_policy'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.policy',
+					// Whether the bundle may be broken up on return, or must come back whole.
+					fields: ['return_policy'],
+				}),
+			},
+			{
+				key: 'validity',
 				header: 'form.validity',
-				fields: ['valid_from', 'valid_until'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.validity',
+					fields: ['valid_from', 'valid_until'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /** `selection_group` is how a "choose one of these" bundle is expressed. */

@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -71,36 +70,59 @@ function buildVendorProductPriceDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildVendorProductPriceFieldsSection(): ComponentNode {
-	return collapsibleSectionNode({ layout: 'formBlocks' }, [
-		resourceFormColumnNode({
-			// Who is offering what. product_variant_id is deliberately here beside the template
-			// rather than in its own block: leaving it empty is a meaningful choice — the quote then
-			// covers every variant of the template — and separating the two would hide that they are
-			// one decision.
-			header: 'form.other_information',
-			fields: ['vendor_id', 'product_template_id', 'product_variant_id', 'org_id'],
-		}),
-		resourceFormColumnNode({
-			// The four fields that make a price a price. A number without its unit, its currency and
-			// the quantity it applies from is not a quote — it is a number.
-			header: 'form.pricing',
-			fields: ['unit_price', 'currency_id', 'purchase_uom_id', 'min_quantity'],
-		}),
-		resourceFormColumnNode({
-			// An absent bound is open-ended, not closed: a quote with no valid_to is a standing
-			// offer. sequence breaks ties between rows that are otherwise equally applicable.
-			header: 'form.validity',
-			fields: ['valid_from', 'valid_to', 'lead_time_days', 'sequence'],
-		}),
-		resourceFormColumnNode({
-			// What the vendor calls this product. Kept so their paperwork can be reconciled against
-			// ours without anybody having to remember the mapping.
-			header: 'form.vendor_reference',
-			fields: ['vendor_product_code', 'vendor_product_name'],
-		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
-	]);
+	return tabCollapsibleSectionNode({
+		translationNs: c.PURCHASE_MODULE,
+		tabs: [
+			{
+				key: 'other',
+				header: 'form.other_information',
+				content: resourceFormColumnNode({
+					// Who is offering what. product_variant_id is deliberately here beside the template
+					// rather than in its own block: leaving it empty is a meaningful choice — the quote then
+					// covers every variant of the template — and separating the two would hide that they are
+					// one decision.
+					header: 'form.other_information',
+					fields: ['vendor_id', 'product_template_id', 'product_variant_id', 'org_id'],
+				}),
+			},
+			{
+				key: 'pricing',
+				header: 'form.pricing',
+				content: resourceFormColumnNode({
+					// The four fields that make a price a price. A number without its unit, its currency and
+					// the quantity it applies from is not a quote — it is a number.
+					header: 'form.pricing',
+					fields: ['unit_price', 'currency_id', 'purchase_uom_id', 'min_quantity'],
+				}),
+			},
+			{
+				key: 'validity',
+				header: 'form.validity',
+				content: resourceFormColumnNode({
+					// An absent bound is open-ended, not closed: a quote with no valid_to is a standing
+					// offer. sequence breaks ties between rows that are otherwise equally applicable.
+					header: 'form.validity',
+					fields: ['valid_from', 'valid_to', 'lead_time_days', 'sequence'],
+				}),
+			},
+			{
+				key: 'vendor_reference',
+				header: 'form.vendor_reference',
+				content: resourceFormColumnNode({
+					// What the vendor calls this product. Kept so their paperwork can be reconciled against
+					// ours without anybody having to remember the mapping.
+					header: 'form.vendor_reference',
+					fields: ['vendor_product_code', 'vendor_product_name'],
+				}),
+			},
+			{
+				key: 'audit',
+				header: 'form.audit',
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['created_at', 'updated_at'],
+				}),
+			},
+		],
+	});
 }

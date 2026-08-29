@@ -1,5 +1,5 @@
 import {
-	Badge, Button, Group, Stack, Text, Title,
+	Alert, Badge, Button, Group, Stack, Text, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { AutoField, useComputedField } from '@nikkierp/ui/components/form';
@@ -8,7 +8,7 @@ import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { evaluateCondition } from '@nikkierp/viewengine/metadata';
 import {
-	IconChevronRight, IconDeviceFloppy, IconPencil, IconPlus, IconX,
+	IconAlertCircle, IconChevronRight, IconDeviceFloppy, IconPencil, IconPlus, IconX,
 } from '@tabler/icons-react';
 import React from 'react';
 import { Link } from 'react-router';
@@ -28,6 +28,7 @@ import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import type {
 	OwnPropertySection, ResourceDetailContextualActions, ResourceDetailExtraAction, StatusOption,
 } from './props';
+import type { ClientErrorItem } from '@nikkierp/common/types';
 
 
 export function CreateActionButton({ disabled = false }: { disabled?: boolean }): React.ReactNode {
@@ -318,7 +319,44 @@ function ResourceDetailCommandActionButton({
 					onSubmit={publish}
 				/>
 			) : null}
+			<ActionRefusalAlert clientErrors={command.clientErrors} actionKey={actionKey} />
 		</>
+	);
+}
+
+/**
+ * Shows why an action was refused.
+ *
+ * Without this the refusal is silent: the publish handler keeps the dialog open and refreshes, but
+ * the server's explanation is dropped, so a user who presses Confirm on an order that cannot be
+ * confirmed sees nothing happen at all. A refusal is a business answer the operator has to act on —
+ * "this quotation lapsed and must be re-quoted" tells them what to do next — so it is shown rather
+ * than logged.
+ *
+ * Prefers the translated `key` and falls back to the server's `message`, the same order the save
+ * path uses: an untranslated key would otherwise render as raw `sales:...` text on screen.
+ */
+function ActionRefusalAlert({ clientErrors, actionKey }: {
+	clientErrors: ClientErrorItem[],
+	actionKey: string,
+}): React.ReactNode {
+	const t = useTranslate(useResourceDetailTranslationNs());
+	const tid = useResourceDetailTestAttrs();
+	if (clientErrors.length === 0) {
+		return null;
+	}
+	return (
+		<Alert
+			variant='light'
+			color='red'
+			icon={<IconAlertCircle />}
+			mt='xs'
+			{...tid('action', actionKey, 'refusal')}
+		>
+			{clientErrors.map((item, index) => (
+				<div key={index}>{item.key ? t(item.key) : item.message}</div>
+			))}
+		</Alert>
 	);
 }
 

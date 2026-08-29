@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -68,21 +67,29 @@ function buildSalesPaymentDetailProps() {
 
 /** All of these are written by the bill's `pay` action. */
 function buildSalesPaymentFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'payment',
 				header: 'form.payment',
-				fields: ['sales_bill_id', 'payment_method_id', 'payment_method_code_snapshot',
-					'amount', 'currency_code', 'status'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.payment',
+					fields: ['sales_bill_id', 'payment_method_id', 'payment_method_code_snapshot',
+						'amount', 'currency_code', 'status'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				// Cash carries no external transaction id, so it has no replay protection and a
-				// double-tap records twice. That is a property of cash, not a gap here.
-				fields: ['external_transaction_id', 'provider_reference', 'paid_at', 'org_id',
-					'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					// Cash carries no external transaction id, so it has no replay protection and a
+					// double-tap records twice. That is a property of cash, not a gap here.
+					fields: ['external_transaction_id', 'provider_reference', 'paid_at', 'org_id',
+						'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }

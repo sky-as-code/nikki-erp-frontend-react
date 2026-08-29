@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -66,35 +66,55 @@ function buildSalesPromotionProgramDetailProps() {
 }
 
 function buildSalesPromotionProgramFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'program',
 				header: 'form.program',
-				fields: ['code', 'name', 'activation_type', 'priority'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.program',
+					fields: ['code', 'name', 'activation_type', 'priority'],
+				}),
+			},
+			{
+				key: 'stacking',
 				header: 'form.stacking',
-				// Resolution order is fixed: explicit `denied` wins, then explicit `allowed`, then
-				// this policy — and the question is asked in both directions.
-				fields: ['stack_policy', 'exclusive_group'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.stacking',
+					// Resolution order is fixed: explicit `denied` wins, then explicit `allowed`, then
+					// this policy — and the question is asked in both directions.
+					fields: ['stack_policy', 'exclusive_group'],
+				}),
+			},
+			{
+				key: 'validity',
 				header: 'form.validity',
-				fields: ['valid_from', 'valid_until', 'usage_limit', 'usage_limit_per_customer'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.validity',
+					fields: ['valid_from', 'valid_until', 'usage_limit', 'usage_limit_per_customer'],
+				}),
+			},
+			{
+				key: 'returns',
 				header: 'form.returns',
-				// Returns are not built yet, so these are recorded and not yet acted on.
-				fields: ['return_behavior', 'restore_on_full_return',
-					'restore_on_partial_return'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.returns',
+					// Returns are not built yet, so these are recorded and not yet acted on.
+					fields: ['return_behavior', 'restore_on_full_return',
+						'restore_on_partial_return'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

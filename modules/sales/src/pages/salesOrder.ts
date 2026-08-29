@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -134,30 +134,46 @@ function buildSalesOrderDetailProps() {
  * read-only from the schema.
  */
 function buildSalesOrderFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'order',
 				header: 'form.order',
-				fields: ['order_number', 'status', 'sales_channel_id', 'sales_point_id',
-					'customer_reference', 'currency_code'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.order',
+					fields: ['order_number', 'status', 'sales_channel_id', 'sales_point_id',
+						'customer_reference', 'currency_code'],
+				}),
+			},
+			{
+				key: 'progress',
 				header: 'form.progress',
-				fields: ['payment_status', 'fulfillment_status', 'invoice_status', 'confirmed_at',
-					'completed_at', 'cancelled_at'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.progress',
+					fields: ['payment_status', 'fulfillment_status', 'invoice_status', 'confirmed_at',
+						'completed_at', 'cancelled_at'],
+				}),
+			},
+			{
+				key: 'totals',
 				header: 'form.totals',
-				fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.totals',
+					fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['external_reference', 'crm_opportunity_reference', 'exchange_of_return_id',
-					'org_id', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['external_reference', 'crm_opportunity_reference', 'exchange_of_return_id',
+						'org_id', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

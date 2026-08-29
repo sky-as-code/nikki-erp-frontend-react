@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -64,21 +63,29 @@ function buildSalesChannelDetailProps() {
 }
 
 function buildSalesChannelFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'channel',
 				header: 'form.channel',
-				// `is_system` marks channels the platform creates for itself; editing one by hand
-				// is how a kiosk network loses the channel its tills are configured with.
-				fields: ['code', 'name', 'description', 'status'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.channel',
+					// `is_system` marks channels the platform creates for itself; editing one by hand
+					// is how a kiosk network loses the channel its tills are configured with.
+					fields: ['code', 'name', 'description', 'status'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['managed_by_module', 'is_system', 'org_id', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['managed_by_module', 'is_system', 'org_id', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

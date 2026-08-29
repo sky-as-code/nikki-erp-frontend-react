@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -70,21 +69,36 @@ function buildDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildFieldsSection(): ComponentNode {
-	return collapsibleSectionNode({ layout: 'formBlocks' }, [
-		resourceFormColumnNode({
-			header: 'form.generalInformation',
-			fields: ['template_attribute_id', 'attribute_value_id', 'sequence'],
-		}),
-		resourceFormColumnNode({
-			// Signed, and that is the point: XL may add 20,000 while a plain colour subtracts. It is
-			// a SALES figure only — it must never reach a cost calculation, because a colour that
-			// sells for more does not thereby cost more.
-			header: 'form.pricing',
-			fields: ['sales_price_extra'],
-		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
-	]);
+	return tabCollapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		tabs: [
+			{
+				key: 'general',
+				header: 'form.generalInformation',
+				content: resourceFormColumnNode({
+					header: 'form.generalInformation',
+					fields: ['template_attribute_id', 'attribute_value_id', 'sequence'],
+				}),
+			},
+			{
+				key: 'pricing',
+				header: 'form.pricing',
+				content: resourceFormColumnNode({
+					// Signed, and that is the point: XL may add 20,000 while a plain colour subtracts. It is
+					// a SALES figure only — it must never reach a cost calculation, because a colour that
+					// sells for more does not thereby cost more.
+					header: 'form.pricing',
+					fields: ['sales_price_extra'],
+				}),
+			},
+			{
+				key: 'audit',
+				header: 'form.audit',
+				content: resourceFormColumnNode({
+					header: 'form.audit',
+					fields: ['created_at', 'updated_at'],
+				}),
+			},
+		],
+	});
 }

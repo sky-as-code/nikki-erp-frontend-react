@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -72,29 +72,45 @@ function buildSalesQuotationDetailProps() {
 }
 
 function buildSalesQuotationFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'quotation',
 				header: 'form.quotation',
-				fields: ['quotation_number', 'status', 'sales_channel_id', 'sales_point_id',
-					'customer_reference', 'currency_code'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.quotation',
+					fields: ['quotation_number', 'status', 'sales_channel_id', 'sales_point_id',
+						'customer_reference', 'currency_code'],
+				}),
+			},
+			{
+				key: 'validity',
 				header: 'form.validity',
-				// An empty `valid_until` never lapses, and that absence is deliberate.
-				fields: ['valid_until', 'sent_at', 'accepted_at', 'cancelled_at'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.validity',
+					// An empty `valid_until` never lapses, and that absence is deliberate.
+					fields: ['valid_until', 'sent_at', 'accepted_at', 'cancelled_at'],
+				}),
+			},
+			{
+				key: 'totals',
 				header: 'form.totals',
-				fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.totals',
+					fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['converted_sales_order_id', 'org_id', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['converted_sales_order_id', 'org_id', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

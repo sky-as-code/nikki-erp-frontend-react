@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps,
+	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -67,24 +66,36 @@ function buildSalesFiscalRequestDetailProps() {
 
 /** No update or delete: a fiscal document that could be edited afterwards would not be one. */
 function buildSalesFiscalRequestFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'request',
 				header: 'form.request',
-				fields: ['sales_bill_id', 'intent', 'status', 'requested_at', 'issued_at'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.request',
+					fields: ['sales_bill_id', 'intent', 'status', 'requested_at', 'issued_at'],
+				}),
+			},
+			{
+				key: 'provider',
 				header: 'form.provider',
-				// `provider_reference` is the only durable link to the issued document.
-				// `idempotency_key` travels to the provider rather than merely constraining the
-				// table: a retry must send the same one or it issues a second invoice.
-				fields: ['provider_reference', 'idempotency_key', 'attempt_count', 'last_error'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.provider',
+					// `provider_reference` is the only durable link to the issued document.
+					// `idempotency_key` travels to the provider rather than merely constraining the
+					// table: a retry must send the same one or it issues a second invoice.
+					fields: ['provider_reference', 'idempotency_key', 'attempt_count', 'last_error'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['original_fiscal_request_id', 'buyer_snapshot', 'org_id', 'created_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['original_fiscal_request_id', 'buyer_snapshot', 'org_id', 'created_at'],
+				}),
+			},
 		],
-	);
+	});
 }

@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -85,24 +85,36 @@ function buildSalesBillDetailProps() {
 
 /** `total_amount` here is the same figure the order calls `grand_total`. */
 function buildSalesBillFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'bill',
 				header: 'form.bill',
-				fields: ['bill_number', 'sales_order_id', 'status', 'payment_status',
-					'currency_code'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.bill',
+					fields: ['bill_number', 'sales_order_id', 'status', 'payment_status',
+						'currency_code'],
+				}),
+			},
+			{
+				key: 'totals',
 				header: 'form.totals',
-				fields: ['subtotal', 'discount_total', 'tax_total', 'total_amount'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.totals',
+					fields: ['subtotal', 'discount_total', 'tax_total', 'total_amount'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['settled_at', 'cancelled_at', 'org_id', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['settled_at', 'cancelled_at', 'org_id', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**

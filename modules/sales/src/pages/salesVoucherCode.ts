@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
-	resourceSplitViewProps, resourceTableNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -66,29 +66,45 @@ function buildSalesVoucherCodeDetailProps() {
 }
 
 function buildSalesVoucherCodeFieldsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ layout: 'formBlocks' },
-		[
-			resourceFormColumnNode({
+	return tabCollapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		tabs: [
+			{
+				key: 'voucher',
 				header: 'form.voucher',
-				fields: ['code', 'sales_promotion_program_id', 'status'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.voucher',
+					fields: ['code', 'sales_promotion_program_id', 'status'],
+				}),
+			},
+			{
+				key: 'usage',
 				header: 'form.usage',
-				// `usage_count` is written by redemption; editing it by hand grants another use of
-				// a code that was already spent.
-				fields: ['usage_limit', 'usage_count'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.usage',
+					// `usage_count` is written by redemption; editing it by hand grants another use of
+					// a code that was already spent.
+					fields: ['usage_limit', 'usage_count'],
+				}),
+			},
+			{
+				key: 'validity',
 				header: 'form.validity',
-				fields: ['valid_from', 'valid_until'],
-			}),
-			resourceFormColumnNode({
+				content: resourceFormColumnNode({
+					header: 'form.validity',
+					fields: ['valid_from', 'valid_until'],
+				}),
+			},
+			{
+				key: 'other',
 				header: 'form.other_information',
-				fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
-			}),
+				content: resourceFormColumnNode({
+					header: 'form.other_information',
+					fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
+				}),
+			},
 		],
-	);
+	});
 }
 
 /**
