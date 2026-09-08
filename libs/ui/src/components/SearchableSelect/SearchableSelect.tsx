@@ -1,7 +1,10 @@
 import {
+	ActionIcon,
+	Box,
 	Button,
 	Combobox,
 	ComboboxStore,
+	Group,
 	Input,
 	InputBase,
 	MantineStyleProps,
@@ -11,8 +14,11 @@ import {
 	useCombobox,
 } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { IconChevronDown } from '@tabler/icons-react';
-import { FC, JSX, useEffect, useState } from 'react';
+import { IconChevronDown, IconLock } from '@tabler/icons-react';
+import React, { FC, JSX, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { useShowLockedFeature } from '../ErrorState';
 
 
 export type SearchableSelectItem = {
@@ -58,6 +64,14 @@ export type SearchableSelectProps = {
 	onSearchChange?: (term: string) => void,
 	/** `{module}.{component}` prefix for the trigger, search box and options. */
 	testId?: string,
+	/**
+	 * The caller may not read the data behind this dropdown. Renders a lock button beside the
+	 * control which explains the refusal when clicked, rather than leaving an empty list the user
+	 * cannot account for.
+	 */
+	locked?: boolean,
+	/** The entitlements the caller lacks, shown in the refusal. */
+	lockedMissing?: string[],
 };
 
 const ACTION_OPTION_VALUE = '$$action$$';
@@ -96,7 +110,7 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 		));
 
 
-	return (
+	const control = (
 		<Combobox
 			size='md'
 			store={combobox}
@@ -138,7 +152,38 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 			/>
 		</Combobox>
 	);
+
+	if (!props.locked) {
+		return control;
+	}
+
+	// The lock sits beside the control rather than replacing it: the field keeps its shape and its
+	// current value, and only the affordance for reading more data is called out.
+	return (
+		<Group gap='xs' wrap='nowrap' align='center'>
+			<Box style={{ flex: 1, minWidth: 0 }}>{control}</Box>
+			<LockButton missing={props.lockedMissing} testId={props.testId} />
+		</Group>
+	);
 };
+
+/** The affordance that explains a dropdown the caller may not populate. */
+function LockButton(props: { missing?: string[], testId?: string }): React.ReactElement {
+	const showLocked = useShowLockedFeature();
+	const { t: translate } = useTranslation();
+
+	return (
+		<ActionIcon
+			variant='subtle'
+			color='gray'
+			aria-label={translate('insufficient_permission_title')}
+			onClick={() => showLocked(props.missing ?? [])}
+			{...testAttrs(props.testId, 'lock')}
+		>
+			<IconLock size={16} />
+		</ActionIcon>
+	);
+}
 
 function useSearchSelect(isSearchBoxEnabled: boolean) {
 	const [search, setSearch] = useState('');

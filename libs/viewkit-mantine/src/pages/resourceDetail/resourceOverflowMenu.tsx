@@ -1,14 +1,18 @@
 import { Menu } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { Button } from '@nikkierp/ui/components';
+import { Button, useLockedItemProps } from '@nikkierp/ui/components';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconArchive, IconArchiveOff, IconDots, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 
-import { useResourceDetailTestAttrs, useResourceDetailTranslationNs } from './ResourceDetailProvider';
+
+import {
+	useResourceDetailSchemaName, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
+} from './ResourceDetailProvider';
 import { useResourceUpdateContext } from './resourceUpdateContext';
+import { StandardActionCode, useActionLock } from '../../permissions';
 
 
 // Delete and archive sit behind an overflow menu rather than in the action bar: both are
@@ -29,6 +33,14 @@ export function ResourceDetailOverflowMenu({
 	const deleteCmd = useCommand(commands.delete ?? '');
 	const archiveCmd = useCommand(commands.archive ?? '');
 	const isBusy = disabled || deleteCmd.isPending || archiveCmd.isPending;
+
+	// Locked is orthogonal to busy: a busy item is disabled and unclickable, a locked one is greyed
+	// but still answers a click with the reason.
+	const schemaName = useResourceDetailSchemaName();
+	const deleteLock = useActionLock(schemaName, commands.delete ? StandardActionCode.Delete : null);
+	const archiveLock = useActionLock(schemaName, commands.archive ? StandardActionCode.Archive : null);
+	const deleteLocked = useLockedItemProps(deleteLock.locked, deleteLock.missing);
+	const archiveLocked = useLockedItemProps(archiveLock.locked, archiveLock.missing);
 
 	const onDelete = () => {
 		const id = resource.id;
@@ -63,6 +75,7 @@ export function ResourceDetailOverflowMenu({
 						onClick={onDelete}
 						{...commandAttrs(commands.delete)}
 						{...tid('action', 'delete')}
+						{...deleteLocked}
 					>
 						{t('action.delete')}
 					</Menu.Item>
@@ -77,6 +90,7 @@ export function ResourceDetailOverflowMenu({
 						onClick={() => onSetArchived(true)}
 						{...commandAttrs(commands.archive)}
 						{...tid('action', 'archive')}
+						{...archiveLocked}
 					>
 						{t('action.archive')}
 					</Menu.Item>
@@ -88,6 +102,7 @@ export function ResourceDetailOverflowMenu({
 						onClick={() => onSetArchived(false)}
 						{...commandAttrs(commands.archive)}
 						{...tid('action', 'unarchive')}
+						{...archiveLocked}
 					>
 						{t('action.unarchive')}
 					</Menu.Item>

@@ -1,7 +1,8 @@
 import { Box, Paper, Stack, Text } from '@mantine/core';
 import { useIsAuthenticated, useIsAuthenticatePending, useRestoreAuthSession } from '@nikkierp/shell/authenticate';
 import { routingService } from '@nikkierp/shell/routing';
-import { ErrorBoundary } from '@nikkierp/ui/components';
+import { useEntitlementSource } from '@nikkierp/shell/userContext';
+import { EntitlementProvider, ErrorBoundary } from '@nikkierp/ui/components';
 import React from 'react';
 import { Outlet } from 'react-router';
 
@@ -12,6 +13,7 @@ export function PrivateLayout(): React.ReactNode {
 	const isAuthenticatePending = useIsAuthenticatePending();
 	const restore = useRestoreAuthSession();
 	const isAuthenticated = useIsAuthenticated();
+	const entitlementSource = useEntitlementSource();
 
 	React.useEffect(() => {
 		if (isAuthenticatePending) return;
@@ -23,13 +25,17 @@ export function PrivateLayout(): React.ReactNode {
 
 	return isAuthenticated && (
 		<ErrorBoundary>
-			<Stack gap={0} h='100vh' miw={320} bg='var(--nikki-color-linear-page-background)'>
-				<Header />
-				<Box className='flex-1 overflow-auto relative p-0 m-0'>
-					<Outlet/>
-				</Box>
-				{/* <Footer /> */}
-			</Stack>
+			{/* Mounted inside the router so the scope resolver can read `:orgSlug`, and below
+				authentication so the context it supplies is the signed-in caller's. */}
+			<EntitlementProvider value={entitlementSource}>
+				<Stack gap={0} h='100vh' miw={320} bg='var(--nikki-color-linear-page-background)'>
+					<Header />
+					<Box className='flex-1 overflow-auto relative p-0 m-0'>
+						<Outlet/>
+					</Box>
+					{/* <Footer /> */}
+				</Stack>
+			</EntitlementProvider>
 		</ErrorBoundary>
 	);
 };

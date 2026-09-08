@@ -11,6 +11,7 @@ import { interpolateParams } from '../../data/interpolate';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
+import { commandActionCode, StandardActionCode, useActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
 
 import type { ResourceListCommandAction, ResourceListProps } from './props';
@@ -56,6 +57,10 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 		[params, t, commandBus, refresh, baseHref],
 	);
 
+	// Greys the actions the caller may not perform, leaving them clickable so the refusal can
+	// explain itself. Derived from the page's own schema name, so no page metadata declares it.
+	const gatedActions = useActionLocks(actions, params.schemaName, listActionCode);
+
 	if (!pack || !searchData) {
 		return <LoadingState />;
 	}
@@ -73,7 +78,7 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 				fieldRenderer={fieldRenderer}
 				buildLinkHref={buildLinkHref}
 				allowColumnResizing
-				actions={actions}
+				actions={gatedActions}
 				hasFixHeader
 				sortableFields={searchData.desired_fields}
 				orderBy={getSearchRequestOrderBy(searchRequest)}
@@ -87,6 +92,22 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 			/>
 		</Paper>
 	);
+}
+
+/**
+ * The action code a toolbar entry performs, or null to leave it ungated.
+ *
+ * `create` publishes no command, so it is identified by its stable `testId`. `refresh` re-runs a
+ * search the user is already looking at, so it needs nothing.
+ */
+function listActionCode(action: DataTableAction): string | null {
+	if (action.isSeparator) {
+		return null;
+	}
+	if (action.testId === 'create') {
+		return StandardActionCode.Create;
+	}
+	return commandActionCode(action.command);
 }
 
 function buildResourceActions(

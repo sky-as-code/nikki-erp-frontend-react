@@ -1,7 +1,10 @@
 import {
-	Alert, Badge, Button, Group, Stack, Text, Title,
+	Alert, Badge, Group, Stack, Text, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
+// The wrapper rather than Mantine's Button: it carries the `locked` state, and the design system
+// prefers it wherever one exists.
+import { Button } from '@nikkierp/ui/components';
 import { AutoField, useComputedField } from '@nikkierp/ui/components/form';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
@@ -17,12 +20,14 @@ import { ActionPromptModal } from './ActionPromptModal';
 import { hasVisibleField, isFieldVisible } from './fieldVisibility';
 import classes from './ResourceDetail.module.css';
 import {
-	useResourceDetailContext, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
+	useResourceDetailContext, useResourceDetailSchemaName, useResourceDetailTestAttrs,
+	useResourceDetailTranslationNs,
 } from './ResourceDetailProvider';
 import { ResourceDetailOverflowMenu } from './resourceOverflowMenu';
 import { useResourceUpdateContext } from './resourceUpdateContext';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
+import { commandActionCode, StandardActionCode, useActionLock } from '../../permissions';
 
 
 import type {
@@ -34,12 +39,15 @@ import type { ClientErrorItem } from '@nikkierp/common/types';
 export function CreateActionButton({ disabled = false }: { disabled?: boolean }): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const tid = useResourceDetailTestAttrs();
+	const lock = useActionLock(useResourceDetailSchemaName(), StandardActionCode.Create);
 	return (
 		<Button
 			component={Link}
 			to='../new'
 			relative='path'
 			disabled={disabled}
+			locked={lock.locked}
+			lockedMissing={lock.missing}
 			leftSection={<IconPlus size={16} />}
 			variant='outline'
 			size='compact-md'
@@ -120,6 +128,9 @@ function PrimaryActionButtons({
 }: PrimaryActionButtonsProps): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const tid = useResourceDetailTestAttrs();
+	// Gating the entry point rather than Save: a caller who may not update should not be able to
+	// enter update mode at all, and Save inside it would then always be reachable.
+	const updateLock = useActionLock(useResourceDetailSchemaName(), StandardActionCode.Update);
 	if (!updateCommand) {
 		return null;
 	}
@@ -157,6 +168,8 @@ function PrimaryActionButtons({
 		<Button
 			onClick={() => setUpdateMode(true)}
 			disabled={isLoading}
+			locked={updateLock.locked}
+			lockedMissing={updateLock.missing}
 			leftSection={<IconPencil size={16} />}
 			variant='filled'
 			size='compact-md'
@@ -270,6 +283,7 @@ function ResourceDetailCommandActionButton({
 	const { refresh } = useResourceUpdateContext();
 	// Above the early return: hooks cannot be called conditionally.
 	const [promptOpen, setPromptOpen] = React.useState(false);
+	const lock = useActionLock(useResourceDetailSchemaName(), commandActionCode(action.command));
 	const isVisible = !action.condition || evaluateCondition(action.condition, resource);
 	if (!isVisible) {
 		return null;
@@ -302,6 +316,8 @@ function ResourceDetailCommandActionButton({
 				size='compact-md'
 				disabled={disabled || command.isPending}
 				loading={command.isPending}
+				locked={lock.locked}
+				lockedMissing={lock.missing}
 				onClick={onClick}
 				{...commandAttrs(action.command)}
 				{...tid('action', actionKey)}

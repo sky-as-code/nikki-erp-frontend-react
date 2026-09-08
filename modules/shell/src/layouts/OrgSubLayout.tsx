@@ -1,16 +1,19 @@
 import { routingService } from '@nikkierp/shell/routing';
-import { useFindMyOrg } from '@nikkierp/shell/userContext';
+import { useFindMyOrg, useGetUserContext } from '@nikkierp/shell/userContext';
 import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import React from 'react';
-import { Navigate, Outlet, useLocation, useParams } from 'react-router';
+import { Outlet, useLocation, useParams } from 'react-router';
 
+import { AppLoading } from '../components/Loading';
 import { sharedStateService } from '../features/sharedState';
+import { NotFoundPage } from '../pages/NotFoundPage';
 
 
 export function OrgSubLayout(): React.ReactNode {
 	const location = useLocation();
 	const { orgSlug } = useParams();
 	const found = useFindMyOrg(orgSlug!);
+	const userContext = useGetUserContext();
 	const { dispatchMethod: setActiveOrg } = useServiceLayer(routingService.setActiveOrg);
 	const { dispatchMethod: setCurrentOrgId } = useServiceLayer(sharedStateService.setCurrentOrgId);
 
@@ -25,9 +28,18 @@ export function OrgSubLayout(): React.ReactNode {
 		setCurrentOrgId(found?.id ?? null);
 	}, [found?.id, setCurrentOrgId]);
 
-	// Xử lý org context
 	if (found) {
 		return <Outlet />;
 	}
-	return <Navigate to='/notfound' replace />;
+
+	// An org list that has not arrived is indistinguishable from a slug that does not exist, so
+	// waiting is the only correct answer until the fetch settles — otherwise a hard reload shows
+	// Not Found for an org the user does have.
+	if (userContext.isPending) {
+		return <AppLoading />;
+	}
+
+	// Rendered in place rather than redirected: the URL keeps naming the org the user asked for,
+	// which is what they need to see to correct it.
+	return <NotFoundPage />;
 }

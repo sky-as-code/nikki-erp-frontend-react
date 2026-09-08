@@ -163,7 +163,12 @@ function useHandleNavigateRequest(eventBus: IEventBus): void {
 	);
 }
 
-/** Sends the user to sign-in when any service call reports an authorization failure. */
+/**
+ * Sends the user to sign-in when a service call reports that nothing authenticated them.
+ *
+ * Only an unauthenticated failure ends the session — an insufficient-permission refusal is
+ * handled by `LockedFeatureProvider`, which explains it in place without signing the user out.
+ */
 function useHandleAuthorizationError(eventBus: IEventBus): void {
 	React.useEffect(
 		() => eventBus.subscribe(SESSION_AUTHORIZATION_ERROR_TOPIC, () => {
@@ -172,6 +177,7 @@ function useHandleAuthorizationError(eventBus: IEventBus): void {
 		[eventBus],
 	);
 }
+
 
 function registerModelSchemas(): void {
 	const baseOpts: Pick<SchemaRegisterOptions, 'requestMaker'> = {

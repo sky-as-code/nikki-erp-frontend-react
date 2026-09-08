@@ -60,6 +60,16 @@ export function useResourceDetailTranslationNs(): string {
 	return useResourceDetailContext().translationNs;
 }
 
+/**
+ * The resource code this page edits, which is also the schema name — the frontend name equals the
+ * backend constant verbatim, so it is what an entitlement expression names.
+ *
+ * Null until the schema pack resolves; callers gating on it must not refuse while it is null.
+ */
+export function useResourceDetailSchemaName(): string | null {
+	return useResourceDetailContext().schemaPack?.schemaName ?? null;
+}
+
 /** Builds `data-testid` attributes under this detail page's prefix. */
 export function useResourceDetailTestAttrs(): (...segments: Array<string | undefined>) => TestIdAttributes {
 	const { testId } = useResourceDetailContext();

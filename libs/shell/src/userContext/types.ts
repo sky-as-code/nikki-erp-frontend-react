@@ -20,6 +20,14 @@ export type GetUserContextResponse = {
 	display_name: string,
 	email: string,
 	entitlements: string[],
+	/**
+	 * The caller's own evaluation context, needed to mirror the backend guard. Entitlements alone
+	 * are not enough: a bare `org` grant answers only for an org the caller belongs to.
+	 */
+	is_owner: boolean,
+	user_org_ids: string[],
+	org_unit_id: string | null,
+	org_unit_org_id: string | null,
 	orgs: UserContextOrg[],
 	account_settings: {
 		language: {
@@ -49,6 +57,10 @@ export type UserContext = {
 	displayName: string,
 	email: string,
 	entitlements: string[],
+	isOwner: boolean,
+	userOrgIds: string[],
+	orgUnitId: string | null,
+	orgUnitOrgId: string | null,
 	orgs: UserContextOrg[],
 	accountSettings: AccountSettings,
 	systemSettings: SystemSettings,
@@ -83,6 +95,10 @@ export function toUserContext(response: GetUserContextResponse): UserContext {
 		displayName: response.display_name,
 		email: response.email,
 		entitlements: response.entitlements,
+		isOwner: response.is_owner,
+		userOrgIds: response.user_org_ids ?? [],
+		orgUnitId: response.org_unit_id,
+		orgUnitOrgId: response.org_unit_org_id,
 		orgs: response.orgs,
 		accountSettings: {
 			language: {

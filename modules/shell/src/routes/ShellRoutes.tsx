@@ -3,7 +3,7 @@ import { LazyMicroApp } from '@nikkierp/shell/microApp';
 import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 import React from 'react';
-import { Navigate, Route, Routes, useParams } from 'react-router';
+import { Route, Routes, useParams } from 'react-router';
 
 // import { LazyModule } from '../components/LazyModule';
 import { AppLoading } from '../components/Loading';
@@ -39,9 +39,12 @@ export function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 						<Route element={<ModuleSubLayout />}>
 							<Route index element={<ModuleHomePage />} />
 							<Route path=':moduleSlug/*' element={<LazyModule microApps={props.microApps} />} />
+							{/* Keeps the org chrome around an unknown path inside a real org. */}
+							<Route path='*' element={<NotFoundPage />} />
 						</Route>
 					</Route>
 				</Route>
+				<Route path='*' element={<NotFoundPage />} />
 			</Route>
 		</Routes>
 	);
@@ -58,13 +61,15 @@ function LazyModule(props: { microApps: MicroAppMetadata[] }): React.ReactNode {
 	}
 	else if (result.isRejected) {
 		console.error(result.error);
-		return <Navigate to='/notfound' replace />;
+		// Rendered in place rather than redirected, so the URL still names the module that could
+		// not be loaded.
+		return <NotFoundPage />;
 	}
 	else if (result.isSuccess) {
 		const isBackendModule = data!.items.some(module => module.name === moduleSlug);
 		const foundApp = props.microApps.find(app => app.slug === moduleSlug);
 		if (!isBackendModule || !foundApp) {
-			return <Navigate to='/notfound' replace />;
+			return <NotFoundPage />;
 		}
 		return (
 			<LazyMicroApp
