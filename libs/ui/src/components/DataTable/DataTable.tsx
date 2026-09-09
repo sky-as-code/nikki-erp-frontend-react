@@ -41,6 +41,13 @@ export type DataTableAction = {
 	href?: string,
 	/** Last segment of this action's `data-testid`. Defaults to `command`, then `label`. */
 	testId?: string,
+	/**
+	 * The caller may not perform this action. Rendered greyed with a lock but still clickable, so
+	 * the refusal is reachable — see `LockedProps` on the Button wrapper.
+	 */
+	locked?: boolean,
+	/** The entitlements the caller lacks, shown in the refusal. */
+	lockedMissing?: string[],
 };
 
 export type { FieldRendererMap, IFieldRenderer } from '@nikkierp/viewengine/core';

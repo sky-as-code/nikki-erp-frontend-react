@@ -99,16 +99,6 @@ export const mockModules = [
 				isFavourite: false,
 				lastUsed: '2025-01-01',
 			},
-			{
-				name: 'Vending Machine (New)',
-				slug: 'vending_machine_new',
-				category: 'Vending Machine',
-				icon: vendingMachineIcon,
-				isDisabled: false,
-				isOrphaned: false,
-				isFavourite: false,
-				lastUsed: '2025-01-01',
-			},
 		],
 	},
 	{

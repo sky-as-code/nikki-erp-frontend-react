@@ -2,6 +2,7 @@ import { Button, ButtonProps, Group, Menu } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useShellMenu } from '@nikkierp/shell/microApp';
 import { useActiveOrgModule } from '@nikkierp/shell/routing';
+import { useHasEntitlement, useLockedItemProps } from '@nikkierp/ui/components';
 import { TranslateFn, useTranslate } from '@nikkierp/ui/i18n';
 import { MenuItem } from '@nikkierp/ui/menu';
 import { IconChevronDown, IconDots } from '@tabler/icons-react';
@@ -73,23 +74,13 @@ export function MenuBar({ mode = 'horizontal' }: MenuBarProps): React.ReactNode 
 						t={t}
 					/>
 				) : (
-					<Button
+					<HorizontalMenuItem
 						key={item.labelKey}
-						size='md'
-						px={'xs'}
-						{...buttonProps(
-							isPathActiveWithPrefix(
-								item.link ?? '/',
-								location.pathname,
-								pathPrefix,
-							),
-							item.labelKey,
-						)}
-						component={Link}
+						item={item}
+						isActive={isPathActiveWithPrefix(item.link ?? '/', location.pathname, pathPrefix)}
 						to={getPath(item.link ?? '/')}
-					>
-						{t(item.labelKey)}
-					</Button>
+						t={t}
+					/>
 				)
 			))}
 			{menu.items.length > MAX_VISIBLE_HORIZONTAL_ITEMS && (
@@ -193,6 +184,35 @@ function NavMenu({
 	);
 }
 
+/**
+ * One of the top-level horizontal entries. A component rather than inline JSX because the locked
+ * props come from a hook, which cannot be called inside a `map` callback.
+ */
+function HorizontalMenuItem({ item, isActive, to, t }: {
+	item: MenuItem,
+	isActive: boolean,
+	to: string,
+	t: TranslateFn,
+}): React.ReactNode {
+	const decision = useHasEntitlement(item.requiredEntitlements ?? []);
+	const isLocked = !decision.isPending && !decision.allowed
+		&& (item.requiredEntitlements?.length ?? 0) > 0;
+	const lockedProps = useLockedItemProps(isLocked, decision.missing);
+
+	return (
+		<Button
+			size='md'
+			px={'xs'}
+			{...buttonProps(isActive, item.labelKey)}
+			component={Link}
+			to={to}
+			{...lockedProps}
+		>
+			{t(item.labelKey)}
+		</Button>
+	);
+}
+
 function MenuItemRenderer({
 	item,
 	currentPath,
@@ -208,6 +228,13 @@ function MenuItemRenderer({
 			hasActiveNestedItemWithPrefix(subItem, currentPath, pathPrefix),
 		)
 		: false;
+
+	// A menu entry the caller cannot reach is greyed with a lock rather than hidden, so the menu
+	// keeps the same shape for everyone and the refusal explains itself on click.
+	const decision = useHasEntitlement(item.requiredEntitlements ?? []);
+	const isLocked = !decision.isPending && !decision.allowed
+		&& (item.requiredEntitlements?.length ?? 0) > 0;
+	const lockedProps = useLockedItemProps(isLocked, decision.missing);
 
 	if (item.items) {
 		// Item has nested items, render as a submenu
@@ -254,6 +281,7 @@ function MenuItemRenderer({
 				component={Link}
 				to={getPath(item.link)}
 				{...itemProps(isActive, item.labelKey)}
+				{...lockedProps}
 			>
 				{t(item.labelKey)}
 			</Menu.Item>
@@ -261,7 +289,7 @@ function MenuItemRenderer({
 	}
 
 	return (
-		<Menu.Item {...itemProps(isActive, item.labelKey)}>
+		<Menu.Item {...itemProps(isActive, item.labelKey)} {...lockedProps}>
 			{t(item.labelKey)}
 		</Menu.Item>
 	);

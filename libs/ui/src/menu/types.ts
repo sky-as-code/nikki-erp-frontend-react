@@ -1,3 +1,6 @@
+import type { EntitlementRequirementInput } from '../components/PermissionGuard';
+
+
 /**
  * A menu entry as *data*.
  *
@@ -9,10 +12,16 @@
 export type MenuItem = {
 	labelKey: string,
 	link?: string,
-	/** Reserved for the permission registry; unused today. */
-	resource?: string,
-	/** Reserved for the permission registry; unused today. */
-	actions?: string[],
+	/**
+	 * Permissions this entry needs, all of which must hold. An entry the caller cannot reach is
+	 * rendered locked — greyed with a lock, still clickable — rather than hidden, so the menu does
+	 * not silently change shape between users.
+	 *
+	 * Each is either `{action, resource, scope}` or the literal a refusal would name, e.g.
+	 * `read:sales_order:org`. An org-scoped requirement may omit the org; the Shell fills in the
+	 * active one.
+	 */
+	requiredEntitlements?: EntitlementRequirementInput[],
 	items?: MenuItem[],
 };
 

@@ -38,6 +38,18 @@ export class ClientErrors {
 
 }
 
+/**
+ * Error keys that mean "nothing authenticated you", as opposed to "you may not".
+ *
+ * Matches the backend's `common/fault` factories and the JWT middleware. Keys arrive namespaced
+ * (`common:err_unauthenticated`), so the suffix is what is compared.
+ */
+const UNAUTHENTICATED_KEYS = [
+	'err_unauthenticated',
+	'err_invalid_access_token',
+	'err_malformed_access_token',
+] as const;
+
 export class ClientErrorItem extends Error {
 	public static canConvert(error: unknown): boolean {
 		return (error instanceof ClientErrorItem) ||
@@ -46,6 +58,23 @@ export class ClientErrorItem extends Error {
 
 	public static isAuthorizationError(error: unknown): boolean {
 		return error instanceof ClientErrorItem && error.name === 'authorization';
+	}
+
+	/**
+	 * Whether the caller was not authenticated at all, as opposed to being known and refused.
+	 *
+	 * The backend types both as `authorization`, so the key is what separates them: signing a user
+	 * out because they lack one grant would end their session every time they open a page holding
+	 * an action they cannot perform.
+	 */
+	public static isUnauthenticatedError(error: unknown): boolean {
+		if (!ClientErrorItem.isAuthorizationError(error) || !(error instanceof ClientErrorItem)) {
+			return false;
+		}
+		// The namespace separator is `:` (`common:err_unauthenticated`), but `.` is tolerated so a
+		// differently-namespaced token error cannot silently degrade into a permission refusal.
+		const bare = error.key.split(/[:.]/).pop() ?? error.key;
+		return UNAUTHENTICATED_KEYS.some(key => key === bare);
 	}
 
 	public static isBusinessError(error: unknown): boolean {
@@ -58,6 +87,7 @@ export class ClientErrorItem extends Error {
 
 	#field?: string;
 	#key: string;
+	#vars?: Record<string, unknown>;
 	#message: string;
 	#type: 'validation' | 'business' | 'authorization';
 
@@ -83,6 +113,16 @@ export class ClientErrorItem extends Error {
 		return this.#key;
 	}
 
+	/**
+	 * The message template's variables, kept after interpolation.
+	 *
+	 * An insufficient-permission refusal carries the entitlements it required here, which is what
+	 * lets the UI list them rather than only showing the interpolated sentence.
+	 */
+	public get vars(): Record<string, unknown> | undefined {
+		return this.#vars;
+	}
+
 	public constructor(error: unknown) {
 		super();
 		if (error instanceof ClientErrorItem) {
@@ -90,6 +130,7 @@ export class ClientErrorItem extends Error {
 			this.#key = error.#key;
 			this.#type = error.#type;
 			this.#message = error.#message;
+			this.#vars = error.#vars;
 		}
 		else {
 			this.#field = (error as any).field;
@@ -98,6 +139,7 @@ export class ClientErrorItem extends Error {
 			this.#type = (error as any).type;
 			const vars = (error as any).vars;
 			if (vars) {
+				this.#vars = vars;
 				this.#message = this.#interpolateMessage(this.#message, vars);
 			}
 		}

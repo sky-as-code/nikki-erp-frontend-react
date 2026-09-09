@@ -4,6 +4,7 @@ import {
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications, notifications as notif } from '@mantine/notifications';
+import { LockedFeatureProvider } from '@nikkierp/ui/components';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { shellEventBus } from '../eventBus';
@@ -28,7 +29,11 @@ export const UIProviders: React.FC<UIProvidersProps> = ({ children }) => {
 				/>
 				<ModalsProvider>
 					<UIStateProvider>
-						{children}
+						{/* One mounted refusal dialog for every locked control in the app; a
+							locked control can only refuse one thing at a time. */}
+						<LockedFeatureProvider>
+							{children}
+						</LockedFeatureProvider>
 					</UIStateProvider>
 				</ModalsProvider>
 			</MantineProvider>

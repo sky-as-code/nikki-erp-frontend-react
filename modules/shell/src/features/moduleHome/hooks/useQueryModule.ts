@@ -12,7 +12,7 @@ export function useQueryModule(allModules: RestSearchResponse<Module> | null) {
 	const availableModules = allModules?.items ?? [];
 	const availableModuleSlugs = useMemo(
 		() => new Set(availableModules.map((module) => module.name)),
-		[...availableModules],
+		[availableModules],
 	);
 	const [viewMode, setViewMode] = useState<ModuleViewMode>('list');
 	const {

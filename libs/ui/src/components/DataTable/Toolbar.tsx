@@ -4,6 +4,7 @@ import { IconDots, IconX } from '@tabler/icons-react';
 import React from 'react';
 
 import { Button, LinkButton } from '../Button';
+import { useLockedItemProps } from '../ErrorState';
 import { useDataTableContext } from './DataTableContext';
 
 import type { DataTableAction, RenderTableNameFn } from './DataTable';
@@ -67,11 +68,15 @@ type ActionTriggerProps = {
 
 function ActionButton({ action, selectedItems }: ActionTriggerProps): React.ReactNode {
 	const { tid } = useDataTableContext();
+	// `locked` rides through the Button wrapper, which greys the control, adds the lock and
+	// swaps the click for the refusal — including on the anchor LinkButton renders.
 	if (action.href) {
 		return (
 			<LinkButton
 				to={action.href}
 				leftSection={action.icon}
+				locked={action.locked}
+				lockedMissing={action.lockedMissing}
 				{...commandAttrs(action.command)}
 				{...tid.action(action)}
 			>
@@ -82,12 +87,40 @@ function ActionButton({ action, selectedItems }: ActionTriggerProps): React.Reac
 	return (
 		<Button
 			leftSection={action.icon}
+			locked={action.locked}
+			lockedMissing={action.lockedMissing}
 			onClick={() => action.onTrigger?.(selectedItems)}
 			{...commandAttrs(action.command)}
 			{...tid.action(action)}
 		>
 			{action.label}
 		</Button>
+	);
+}
+
+/**
+ * One overflow-menu entry. A component rather than inline JSX because the locked props come from a
+ * hook, which cannot be called inside a `map` callback.
+ */
+function ActionMenuItem(
+	{ item, selectedItems, testAttrs: itemTestAttrs }: {
+		item: DataTableAction,
+		selectedItems: Record<string, unknown>[],
+		testAttrs: Record<string, unknown>,
+	},
+): React.ReactNode {
+	const lockedProps = useLockedItemProps(item.locked, item.lockedMissing);
+
+	return (
+		<Menu.Item
+			leftSection={item.icon}
+			onClick={() => item.onTrigger?.(selectedItems)}
+			{...commandAttrs(item.command)}
+			{...itemTestAttrs}
+			{...lockedProps}
+		>
+			{item.label}
+		</Menu.Item>
 	);
 }
 
@@ -106,15 +139,12 @@ function ActionMenu(
 				{items.map((item, i) => (item.isSeparator
 					? <Menu.Divider key={i} />
 					: (
-						<Menu.Item
+						<ActionMenuItem
 							key={i}
-							leftSection={item.icon}
-							onClick={() => item.onTrigger?.(selectedItems)}
-							{...commandAttrs(item.command)}
-							{...tid.action(item)}
-						>
-							{item.label}
-						</Menu.Item>
+							item={item}
+							selectedItems={selectedItems}
+							testAttrs={tid.action(item)}
+						/>
 					)
 				))}
 			</Menu.Dropdown>
