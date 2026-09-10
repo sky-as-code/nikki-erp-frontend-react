@@ -1,3 +1,4 @@
+import { getCurrentOrgId, isOrgScoped } from '@nikkierp/common/service';
 import { CrudFormProvider, FormStyleProvider, FormTestIdProvider } from '@nikkierp/ui/components/form';
 import { useLocalize } from '@nikkierp/ui/i18n';
 import { ComponentAnchor, MetaComponent } from '@nikkierp/viewengine/render';
@@ -36,10 +37,19 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 	const { onSubmit, isSubmitting } = useResourceCreateContext();
 	const localize = useLocalize(useResourceDetailTranslationNs());
 	const modelSchema = schemaPack?.modelSchema;
+	const orgScoped = Boolean(
+		schemaPack && modelSchema && isOrgScoped(schemaPack, modelSchema.name),
+	);
+	const createDefaults = useResolvedOrgId(orgScoped);
 
-	if (!modelSchema) {
+	// For an org-scoped resource, hold the form back until the active org is known: mounting it
+	// with no `org_id` seed lets validation fail on a field the user cannot see, which silently
+	// blocks Save. A resource that needs no seed renders straight away.
+	if (!modelSchema || (orgScoped && createDefaults === undefined)) {
 		return null;
 	}
+
+	const modelValue = createDefaults ?? undefined;
 
 	return (
 		<FormStyleProvider layout='onecol'>
@@ -49,6 +59,7 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 					schemaName={modelSchema.name}
 					localize={localize}
 					isSubmitting={isSubmitting}
+					modelValue={modelValue}
 					onSubmit={onSubmit}
 				>
 					{/*
@@ -61,4 +72,44 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 			</FormTestIdProvider>
 		</FormStyleProvider>
 	);
+}
+
+/**
+ * The `{ org_id }` seed a create form needs for an org-scoped resource, or `null` once it is
+ * known that none can be supplied; `undefined` until then.
+ *
+ * The base `org_base_model` mixin marks `org_id` `required_for_create` with no default, so the
+ * generated validation schema rejects a submit that omits it. No create form renders an input for
+ * it — the value is the active organization, not a user choice — so without this seed the Save
+ * button silently no-ops: validation fails on a field the user cannot see, `onSubmit` never fires
+ * and no request is sent. `CrudServiceBase.create` also folds in the org via `withOrgId`, but only
+ * after client-side validation has already passed.
+ */
+function useResolvedOrgId(enabled: boolean): Record<string, unknown> | null | undefined {
+	const [seed, setSeed] = React.useState<Record<string, unknown> | null | undefined>(undefined);
+
+	React.useEffect(() => {
+		if (!enabled) {
+			return;
+		}
+		let active = true;
+		void getCurrentOrgId()
+			.then((orgId) => {
+				if (active) {
+					setSeed(orgId ? { org_id: orgId } : null);
+				}
+			})
+			.catch(() => {
+				// No org resolved (e.g. rendered outside an org route): fall through with no seed
+				// and let validation surface the missing field.
+				if (active) {
+					setSeed(null);
+				}
+			});
+		return () => {
+			active = false;
+		};
+	}, [enabled]);
+
+	return seed;
 }
