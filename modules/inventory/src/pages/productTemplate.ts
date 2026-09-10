@@ -1,8 +1,8 @@
 import { resourceCommands } from '@nikkierp/common/dynamicModel';
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceImportProps, resourceListProps,
+	resourceSplitViewProps, resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -20,12 +20,17 @@ export function buildProductTemplatePages(): PageNode[] {
 		primary: buildProductTemplateListProps(),
 		secondary: buildProductTemplateDetailProps(),
 	});
+	// Import pilot: the list's "Import" entry navigates here. Static, so it outranks `:id`.
+	const importPage = resourceImportProps({
+		schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		returnRoutePath: 'product_templates',
+	});
 
-	return [definePage({
-		routePath: 'product_templates',
-		template: splitView.template,
-		props: splitView.props,
-	})];
+	return [
+		definePage({ routePath: 'product_templates', template: splitView.template, props: splitView.props }),
+		definePage({ routePath: 'product_templates/import', template: importPage.template, props: importPage.props }),
+	];
 }
 
 function buildProductTemplateListProps() {
@@ -35,6 +40,7 @@ function buildProductTemplateListProps() {
 		linkField: 'id',
 		searchCommand: ProductTemplateCommands.SEARCH,
 		createEnabled: true,
+		importEnabled: true,
 		deleteCommand: ProductTemplateCommands.DELETE,
 		// BR-PROD-TPL-005: a template that owns variants is archived, never deleted, so that
 		// transactions referencing those variants keep their meaning.

@@ -2,6 +2,7 @@ import { Button as MantineButton, Group, Menu, Title } from '@mantine/core';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconDots, IconX } from '@tabler/icons-react';
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 import { Button, LinkButton } from '../Button';
 import { useLockedItemProps } from '../ErrorState';
@@ -111,6 +112,22 @@ function ActionMenuItem(
 ): React.ReactNode {
 	const lockedProps = useLockedItemProps(item.locked, item.lockedMissing);
 
+	// A navigating entry renders as a real link, like ActionButton does, so it stays
+	// middle-clickable; the locked props spread last because their onClick cancels the navigation.
+	if (item.href) {
+		return (
+			<Menu.Item
+				component={Link}
+				to={item.href}
+				leftSection={item.icon}
+				{...commandAttrs(item.command)}
+				{...itemTestAttrs}
+				{...lockedProps}
+			>
+				{item.label}
+			</Menu.Item>
+		);
+	}
 	return (
 		<Menu.Item
 			leftSection={item.icon}

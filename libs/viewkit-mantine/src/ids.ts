@@ -15,6 +15,7 @@ export const MANTINE_VIEW_KIT_ID = 'nikkierp.mantine';
 export const RESOURCE_LIST_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceList.v1';
 export const RESOURCE_DETAIL_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceDetails.v1';
 export const RESOURCE_SPLIT_VIEW_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceSplitView.v1';
+export const RESOURCE_IMPORT_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceImport.v1';
 
 export const PAGE_HEADER = 'nikkierp.mantine.components.pageHeader.v1';
 export const COLLAPSIBLE_SECTION = 'nikkierp.mantine.components.collapsibleSection.v1';

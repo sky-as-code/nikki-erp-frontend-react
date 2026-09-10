@@ -16,6 +16,7 @@ import { tabCollapsibleSectionRenderer } from './components/tabCollapsibleSectio
 import { registerFieldRenderers } from './fields/register';
 import { MANTINE_VIEW_KIT_ID } from './ids';
 import { resourceDetailTemplate } from './pages/resourceDetail/template';
+import { resourceImportTemplate } from './pages/resourceImport/template';
 import { resourceListTemplate } from './pages/resourceList/template';
 import { resourceSplitViewTemplate } from './pages/resourceSplitView/template';
 
@@ -38,6 +39,7 @@ export const mantineViewKit: IViewKit = {
 		registry.registerPageTemplate(resourceListTemplate);
 		registry.registerPageTemplate(resourceDetailTemplate);
 		registry.registerPageTemplate(resourceSplitViewTemplate);
+		registry.registerPageTemplate(resourceImportTemplate);
 
 		registry.registerComponentRenderer(pageHeaderRenderer);
 		registry.registerComponentRenderer(collapsibleSectionRenderer);

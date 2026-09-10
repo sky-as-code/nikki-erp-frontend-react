@@ -127,3 +127,42 @@ describe('unwrapResult', () => {
 		expect(() => unwrapResult(result)).toThrow(ClientErrors);
 	});
 });
+
+describe('RequestMaker multipart bodies', () => {
+	let fetchMock: ReturnType<typeof vi.fn>;
+
+	beforeEach(() => {
+		fetchMock = vi.fn();
+		vi.stubGlobal('fetch', fetchMock);
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	/**
+	 * The instance default header is application/json. A FormData body must go out with NO
+	 * Content-Type of ours, so the runtime writes `multipart/form-data; boundary=…` from the body;
+	 * a header without the boundary makes the server refuse the form.
+	 */
+	it('lets the runtime write the multipart boundary when the body is a FormData', async () => {
+		fetchMock.mockResolvedValue(jsonResponse(200, { ok: true }));
+		const form = new FormData();
+		form.append('mapping', '{}');
+
+		await newRequestMaker().post('v1/things/import', { body: form });
+
+		const sent = fetchMock.mock.calls[0][0] as Request;
+		expect(sent.headers.get('Content-Type')).toMatch(/^multipart\/form-data; boundary=/);
+		expect(sent.headers.get('Authorization')).toBe('Bearer token');
+	});
+
+	it('keeps the JSON content type for a JSON body', async () => {
+		fetchMock.mockResolvedValue(jsonResponse(200, { ok: true }));
+
+		await newRequestMaker().post('v1/things', { json: { a: 1 } });
+
+		const sent = fetchMock.mock.calls[0][0] as Request;
+		expect(sent.headers.get('Content-Type')).toBe('application/json');
+	});
+});

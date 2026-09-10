@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceImportProps, resourceListProps,
+	resourceSplitViewProps, resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -17,12 +17,17 @@ export function buildProductCategoryPages(): PageNode[] {
 		primary: buildProductCategoryListProps(),
 		secondary: buildProductCategoryDetailProps(),
 	});
+	// Import pilot: the list's "Import" entry navigates here. Static, so it outranks `:id`.
+	const importPage = resourceImportProps({
+		schemaName: c.PRODUCT_CATEGORY_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		returnRoutePath: 'product_categories',
+	});
 
-	return [definePage({
-		routePath: 'product_categories',
-		template: splitView.template,
-		props: splitView.props,
-	})];
+	return [
+		definePage({ routePath: 'product_categories', template: splitView.template, props: splitView.props }),
+		definePage({ routePath: 'product_categories/import', template: importPage.template, props: importPage.props }),
+	];
 }
 
 function buildProductCategoryListProps() {
@@ -32,6 +37,7 @@ function buildProductCategoryListProps() {
 		linkField: 'id',
 		searchCommand: ProductCategoryCommands.SEARCH,
 		createEnabled: true,
+		importEnabled: true,
 		deleteCommand: ProductCategoryCommands.DELETE,
 		archiveCommand: ProductCategoryCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductCategoryCommands.UPDATE,
