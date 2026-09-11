@@ -69,19 +69,51 @@ describe('Inventory page metadata', () => {
 	 * nothing checks that one resolves to a declared route, so the exact list is pinned here:
 	 * a rename that misses the menu shows up as a dead link only at runtime.
 	 */
-	it('registers one route per resource, all snake_case', () => {
+	it('registers one route per resource, all snake_case, plus the import pilot pages', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
 
 		expect(routePaths).toEqual([
-			'product_templates', 'product_variants', 'product_types', 'product_categories',
+			'product_templates', 'product_templates/import',
+			'product_variants', 'product_variants/import',
+			'product_types',
+			'product_categories', 'product_categories/import',
 			'brands', 'attributes', 'attribute_values', 'template_attribute_values',
 			'locations', 'warehouses', 'storage_categories', 'supply_relations', 'putaway_rules',
 			'stock_balance', 'stock_balance_counts_due', 'stock_transfers',
 			'stock_scraps',
 		]);
 		for (const routePath of routePaths) {
-			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);
+			expect(routePath).toMatch(/^[a-z][a-z0-9_]*(\/import)?$/);
 		}
+	});
+
+	/**
+	 * The import pilot: each of the three product master lists shows the "Import" entry, and the
+	 * page it navigates to sits at `{list}/import` and returns to that list. A static segment
+	 * outranks the split view's `:id?`, so the order of declaration does not matter.
+	 */
+	it.each([
+		{
+			name: 'productTemplate', build: buildProductTemplatePages,
+			route: 'product_templates', schema: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
+		},
+		{
+			name: 'productVariant', build: buildProductVariantPages,
+			route: 'product_variants', schema: c.PRODUCT_VARIANT_SCHEMA_NAME,
+		},
+		{
+			name: 'productCategory', build: buildProductCategoryPages,
+			route: 'product_categories', schema: c.PRODUCT_CATEGORY_SCHEMA_NAME,
+		},
+	])('$name declares the import pilot page beside its list', ({ build, route, schema }) => {
+		const pages = build();
+		const list = pages.find(page => page.routePath === route);
+		const importPage = pages.find(page => page.routePath === `${route}/import`);
+
+		const listProps = list?.props as { primary: { props: { importEnabled: boolean } } };
+		expect(listProps.primary.props.importEnabled).toBe(true);
+		expect(importPage?.template).toBe('nikkierp.mantine.pages.templates.resourceImport.v1');
+		expect(importPage?.props).toMatchObject({ schemaName: schema, returnRoutePath: route });
 	});
 
 	it('nests both split-view panes as template refs', () => {

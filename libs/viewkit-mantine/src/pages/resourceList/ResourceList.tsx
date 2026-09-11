@@ -104,7 +104,8 @@ function listActionCode(action: DataTableAction): string | null {
 	if (action.isSeparator) {
 		return null;
 	}
-	if (action.testId === 'create') {
+	// Import writes records, so it is gated by the same entitlement as create.
+	if (action.testId === 'create' || action.testId === 'import') {
 		return StandardActionCode.Create;
 	}
 	return commandActionCode(action.command);
@@ -133,6 +134,9 @@ function buildResourceActions(
 		// Absolute: the list renders both at `/{org}/{module}/{page}` and, in a split
 		// view, at `/{org}/{module}/{page}/:id`, so a relative href lands elsewhere.
 		actions.push({ label: t('action.create'), testId: 'create', href: `${baseHref}/new` });
+	}
+	if (params.importEnabled && baseHref) {
+		actions.push({ label: t('action.import'), testId: 'import', href: `${baseHref}/import` });
 	}
 	if (params.deleteCommand) {
 		actions.push({

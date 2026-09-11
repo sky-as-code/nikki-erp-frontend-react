@@ -12,6 +12,12 @@ export const pageHeaderTitleSpecSchema = z.union([
 	z.object({ schemaField: z.string().min(1) }).strict(),
 	/** i18n key, interpolated with the provider's `titleParams`. */
 	z.object({ textKey: z.string().min(1) }).strict(),
+	/**
+	 * An already-resolved string. For a title whose text is not a fixed key but a value the page
+	 * has localized itself -- a model's own label, say, which lives in the schema rather than in
+	 * this app's translation files.
+	 */
+	z.object({ text: z.string() }).strict(),
 ]);
 
 export const pageHeaderLinkSpecSchema = z.object({

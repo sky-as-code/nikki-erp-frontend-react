@@ -23,6 +23,12 @@ export const resourceListPropsSchema = z.object({
 	translationNs: z.string().min(1),
 	searchCommand: z.string().min(1),
 	createEnabled: z.boolean().default(false),
+	/**
+	 * Adds the "Import" entry, which navigates to `{routePath}/import`. Off by default because the
+	 * backend serves import only for resources on the composable engine; a page switching it on
+	 * must also declare the import page (see `resourceImportProps`).
+	 */
+	importEnabled: z.boolean().default(false),
 	deleteCommand: z.string().min(1).optional(),
 	archiveCommand: z.string().min(1).optional(),
 	updateSaveCommand: z.string().min(1).optional(),

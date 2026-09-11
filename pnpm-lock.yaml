@@ -635,9 +635,21 @@ importers:
 
   libs/viewkit-mantine:
     dependencies:
+      '@dnd-kit/core':
+        specifier: ~6.3.1
+        version: 6.3.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@dnd-kit/sortable':
+        specifier: ~10.0.0
+        version: 10.0.0(@dnd-kit/core@6.3.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)
+      '@dnd-kit/utilities':
+        specifier: ~3.2.2
+        version: 3.2.2(react@19.2.5)
       clsx:
         specifier: ~2.1.1
         version: 2.1.1
+      xlsx:
+        specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
+        version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
       zod:
         specifier: ~4.1.12
         version: 4.1.13
@@ -645,9 +657,15 @@ importers:
       '@mantine/core':
         specifier: ~9.1.1
         version: 9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/dropzone':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@mantine/hooks':
         specifier: 9.1.1
         version: 9.1.1(react@19.2.5)
+      '@mantine/notifications':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@nikkierp/common':
         specifier: workspace:*
         version: link:../common
@@ -1681,6 +1699,117 @@ importers:
         specifier: ~4.1.12
         version: 4.1.13
 
+  modules/sales:
+    devDependencies:
+      '@hookform/resolvers':
+        specifier: ~5.2.2
+        version: 5.2.2(react-hook-form@7.65.0(react@19.2.5))
+      '@mantine/core':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/dates':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(dayjs@1.11.21)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/dropzone':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/form':
+        specifier: ~9.1.1
+        version: 9.1.1(react@19.2.5)
+      '@mantine/hooks':
+        specifier: 9.1.1
+        version: 9.1.1(react@19.2.5)
+      '@mantine/modals':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@mantine/notifications':
+        specifier: ~9.1.1
+        version: 9.1.1(@mantine/core@9.1.1(@mantine/hooks@9.1.1(react@19.2.5))(@types/react@19.2.18)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@mantine/hooks@9.1.1(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@nikkierp/common':
+        specifier: workspace:*
+        version: link:../../libs/common
+      '@nikkierp/shell':
+        specifier: workspace:*
+        version: link:../../libs/shell
+      '@nikkierp/ui':
+        specifier: workspace:*
+        version: link:../../libs/ui
+      '@nikkierp/viewengine':
+        specifier: workspace:*
+        version: link:../../libs/viewengine
+      '@nikkierp/viewkit-mantine':
+        specifier: workspace:*
+        version: link:../../libs/viewkit-mantine
+      '@reduxjs/toolkit':
+        specifier: ~2.9.2
+        version: 2.9.2(react-redux@9.2.0(@types/react@19.2.18)(react@19.2.5)(redux@5.0.1))(react@19.2.5)
+      '@tabler/icons-react':
+        specifier: ~3.44.0
+        version: 3.44.0(react@19.2.5)
+      '@types/node':
+        specifier: ~24.9.1
+        version: 24.9.2
+      '@types/react':
+        specifier: ~19.2.2
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ~19.2.2
+        version: 19.2.4(@types/react@19.2.18)
+      '@vitejs/plugin-react':
+        specifier: ~5.1.0
+        version: 5.1.4(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      clsx:
+        specifier: ~2.1.1
+        version: 2.1.1
+      dayjs:
+        specifier: ~1.11.18
+        version: 1.11.21
+      i18next:
+        specifier: ~25.6.0
+        version: 25.6.3(typescript@5.9.3)
+      ky:
+        specifier: ~1.13.0
+        version: 1.13.0
+      react:
+        specifier: 19.2.5
+        version: 19.2.5
+      react-dom:
+        specifier: 19.2.5
+        version: 19.2.5(react@19.2.5)
+      react-hook-form:
+        specifier: ~7.65.0
+        version: 7.65.0(react@19.2.5)
+      react-i18next:
+        specifier: ~16.2.0
+        version: 16.2.4(i18next@25.6.3(typescript@5.9.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
+      react-redux:
+        specifier: ~9.2.0
+        version: 9.2.0(@types/react@19.2.18)(react@19.2.5)(redux@5.0.1)
+      react-router:
+        specifier: ~7.9.4
+        version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react-router-dom:
+        specifier: ~7.9.4
+        version: 7.9.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      terser:
+        specifier: ~5.44.0
+        version: 5.44.1
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.3
+      vite:
+        specifier: ~8.0.8
+        version: 8.0.16(@types/node@24.9.2)(esbuild@0.25.12)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+      vite-tsconfig-paths:
+        specifier: ~5.1.4
+        version: 5.1.4(typescript@5.9.3)(vite@8.0.16(@types/node@24.9.2)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0))
+      vitest:
+        specifier: ~4.0.3
+        version: 4.0.18(@types/node@24.9.2)(jiti@2.7.0)(jsdom@27.0.1)(lightningcss@1.33.0)(sugarss@5.0.1(postcss@8.5.26))(terser@5.44.1)(yaml@2.9.0)
+      zod:
+        specifier: ~4.1.12
+        version: 4.1.13
+
   modules/settings:
     devDependencies:
       '@mantine/core':
@@ -2182,6 +2311,28 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       postcss-selector-parser: ^7.0.0
+
+  '@dnd-kit/accessibility@3.1.1':
+    resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
+    peerDependencies:
+      react: 19.2.5
+
+  '@dnd-kit/core@6.3.1':
+    resolution: {integrity: sha512-xkGBRQQab4RLwgXxoqETICr6S5JlogafbhNsidmrkVv2YRs5MLwpjoF2qpiGjQt8S9AoxtIV603s0GIUpY5eYQ==}
+    peerDependencies:
+      react: 19.2.5
+      react-dom: 19.2.5
+
+  '@dnd-kit/sortable@10.0.0':
+    resolution: {integrity: sha512-+xqhmIIzvAYMGfBYYnbKuNicfSsk4RksY2XdmJhT+HAC01nix6fHCztU68jooFiMUB01Ky3F0FyOvhG/BZrWkg==}
+    peerDependencies:
+      '@dnd-kit/core': ^6.3.0
+      react: 19.2.5
+
+  '@dnd-kit/utilities@3.2.2':
+    resolution: {integrity: sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg==}
+    peerDependencies:
+      react: 19.2.5
 
   '@dual-bundle/import-meta-resolve@4.2.1':
     resolution: {integrity: sha512-id+7YRUgoUX6CgV0DtuhirQWodeeA7Lf4i2x71JS/vtA5pRb/hIGWlw+G6MeXvsM+MXrz0VAydTGElX1rAfgPg==}
@@ -6414,6 +6565,12 @@ packages:
       utf-8-validate:
         optional: true
 
+  xlsx@https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz:
+    resolution: {tarball: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz}
+    version: 0.20.3
+    engines: {node: '>=0.8'}
+    hasBin: true
+
   xml-name-validator@5.0.0:
     resolution: {integrity: sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg==}
     engines: {node: '>=18'}
@@ -6830,6 +6987,31 @@ snapshots:
   '@csstools/selector-specificity@5.0.0(postcss-selector-parser@7.1.5)':
     dependencies:
       postcss-selector-parser: 7.1.5
+
+  '@dnd-kit/accessibility@3.1.1(react@19.2.5)':
+    dependencies:
+      react: 19.2.5
+      tslib: 2.8.1
+
+  '@dnd-kit/core@6.3.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+    dependencies:
+      '@dnd-kit/accessibility': 3.1.1(react@19.2.5)
+      '@dnd-kit/utilities': 3.2.2(react@19.2.5)
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+      tslib: 2.8.1
+
+  '@dnd-kit/sortable@10.0.0(@dnd-kit/core@6.3.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)':
+    dependencies:
+      '@dnd-kit/core': 6.3.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@dnd-kit/utilities': 3.2.2(react@19.2.5)
+      react: 19.2.5
+      tslib: 2.8.1
+
+  '@dnd-kit/utilities@3.2.2(react@19.2.5)':
+    dependencies:
+      react: 19.2.5
+      tslib: 2.8.1
 
   '@dual-bundle/import-meta-resolve@4.2.1': {}
 
@@ -11275,6 +11457,8 @@ snapshots:
       signal-exit: 4.1.0
 
   ws@8.21.3: {}
+
+  xlsx@https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz: {}
 
   xml-name-validator@5.0.0: {}
 

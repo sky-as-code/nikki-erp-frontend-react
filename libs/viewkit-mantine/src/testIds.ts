@@ -24,7 +24,7 @@ export function resourceTestIdPrefix(args: {
 	return joinTestId(moduleSegment, `${entityOf(args.schemaName)}${args.part}`);
 }
 
-export type ResourcePart = 'List' | 'Detail' | 'Create' | 'Table' | 'SplitView';
+export type ResourcePart = 'List' | 'Detail' | 'Create' | 'Table' | 'SplitView' | 'Import';
 
 /** First segment of the route, which is the page's own slug (`users`, `roles/:id` -> `roles`). */
 function moduleSegmentOf(routePath: string | undefined): string | undefined {

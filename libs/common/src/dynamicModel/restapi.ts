@@ -29,6 +29,27 @@ export class RestApi {
 		return this._opts.requestMaker!.post<RestCreateResponse>(restPath, { json: request });
 	}
 
+	/** `POST {resource}/bulk`: many records under one permission check and one transaction. */
+	public createBulk(request: RestBulkCreateRequest): Promise<RequestResult<RestBulkCreateResponse>> {
+		const restPath = this._getBasePath();
+		return this._opts.requestMaker!.post<RestBulkCreateResponse>(`${restPath}/bulk`, { json: request });
+	}
+
+	/**
+	 * `POST {resource}/import`: a multipart form of one file plus the column mapping. The org
+	 * travels in the query string like on a read, because a form has no JSON body to carry it.
+	 */
+	public importFile(request: RestImportRequest): Promise<RequestResult<RestBulkCreateResponse>> {
+		const restPath = this._getBasePath();
+		const form = new FormData();
+		form.append('file', request.file, request.file.name);
+		form.append('mapping', JSON.stringify(request.mapping));
+		return this._opts.requestMaker!.post<RestBulkCreateResponse>(`${restPath}/import`, {
+			body: form,
+			searchParams: request.org_id ? { org_id: request.org_id } : undefined,
+		});
+	}
+
 	public delete(request: RestDeleteRequest, primaryResourceId?: string): Promise<RequestResult<RestDeleteResponse>> {
 		const restPath = this._getBasePath(primaryResourceId);
 		return this._opts.requestMaker!.delete<RestDeleteResponse>(`${restPath}/${request.id}`, { searchParams: request });
@@ -199,6 +220,51 @@ export type RestCreateResponse = {
 	id: string,
 	etag: string,
 	created_at: string,
+};
+
+export type RestBulkCreateRequest = {
+	/** Scopes every item to one organization, where the resource is org-owned. */
+	org_id?: string,
+	items: Record<string, any>[],
+};
+
+/** One rejected row of a bulk create or import; `row` is 1-based over the data rows. */
+export type RestImportRowError = {
+	row: number,
+	field?: string,
+	/** Translation key under the `common` namespace, e.g. `err_import_reference_not_found`. */
+	code: string,
+	params?: Record<string, any>,
+};
+
+export type RestBulkCreateResponse = {
+	affected_count: number,
+	created_count: number,
+	updated_count: number,
+	affected_at: string,
+	total_rows: number,
+	error_count: number,
+	errors: RestImportRowError[],
+};
+
+export type RestImportColumnMapping = {
+	/** Header text as read from the file. */
+	source: string,
+	/** Schema field name. The referenced schema of an edge field is derived server-side. */
+	target: string,
+};
+
+export type RestImportMapping = {
+	language_code: string,
+	create_missing_references: boolean,
+	columns: RestImportColumnMapping[],
+};
+
+export type RestImportRequest = {
+	file: File,
+	mapping: RestImportMapping,
+	/** Scopes the import to one organization, where the resource is org-owned. */
+	org_id?: string,
 };
 
 export type RestDeleteRequest = {

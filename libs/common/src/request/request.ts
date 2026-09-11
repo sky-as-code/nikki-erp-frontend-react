@@ -25,6 +25,21 @@ export type RequestOptions = Options & {
 };
 
 /**
+ * The instance default is `Content-Type: application/json`. A multipart body must carry the
+ * boundary the runtime generates, which only happens when no Content-Type is set at all, so a
+ * FormData body unsets the header the way ky supports: an explicit `undefined` in the options.
+ */
+function withMultipartHeaders(options?: RequestOptions): RequestOptions | undefined {
+	if (!(options?.body instanceof FormData)) {
+		return options;
+	}
+	return {
+		...options,
+		headers: { ...(options.headers as Record<string, string | undefined> | undefined), 'Content-Type': undefined },
+	};
+}
+
+/**
  * Outcome of an HTTP call, split along the line the backend draws.
  *
  * - `data` is the parsed 2xx body, or `null` when the server answered 4xx.
@@ -107,9 +122,6 @@ export class RequestMaker {
 						if (!options.noAuth) {
 							const token = await getToken();
 							request.headers.set('Authorization', `${tokenType} ${token}`);
-						}
-						if (request.body instanceof FormData && !request.headers.get('Content-Type')) {
-							request.headers.set('Content-Type', 'multipart/form-data');
 						}
 					},
 				],
@@ -205,7 +217,7 @@ export class RequestMaker {
 	): Promise<RequestResult<T>> {
 		try {
 			const fn = (this.#api as any)[method] as KyFn;
-			return okResult(await fn.call(this.#api, url, options).json<T>());
+			return okResult(await fn.call(this.#api, url, withMultipartHeaders(options)).json<T>());
 		}
 		catch (error) {
 			if (error instanceof HTTPError) {

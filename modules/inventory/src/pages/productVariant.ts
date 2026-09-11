@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps,
+	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceImportProps, resourceListProps,
 	resourceSplitViewProps, resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
@@ -18,12 +18,17 @@ export function buildProductVariantPages(): PageNode[] {
 		primary: buildProductVariantListProps(),
 		secondary: buildProductVariantDetailProps(),
 	});
+	// Import pilot: the list's "Import" entry navigates here. Static, so it outranks `:id`.
+	const importPage = resourceImportProps({
+		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		returnRoutePath: 'product_variants',
+	});
 
-	return [definePage({
-		routePath: 'product_variants',
-		template: splitView.template,
-		props: splitView.props,
-	})];
+	return [
+		definePage({ routePath: 'product_variants', template: splitView.template, props: splitView.props }),
+		definePage({ routePath: 'product_variants/import', template: importPage.template, props: importPage.props }),
+	];
 }
 
 function buildProductVariantListProps() {
@@ -33,6 +38,7 @@ function buildProductVariantListProps() {
 		linkField: 'id',
 		searchCommand: ProductVariantCommands.SEARCH,
 		createEnabled: true,
+		importEnabled: true,
 		deleteCommand: ProductVariantCommands.DELETE,
 		archiveCommand: ProductVariantCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductVariantCommands.UPDATE,
