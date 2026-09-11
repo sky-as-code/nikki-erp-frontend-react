@@ -1,5 +1,4 @@
 import { Group, Stack, Table, Text, Title } from '@mantine/core';
-import { Button, LinkButton } from '@nikkierp/ui/components';
 import React from 'react';
 
 import { targetLabelOf } from './MappingStep';
@@ -14,11 +13,10 @@ type SummaryStepProps = {
 	tid: (part: string) => Record<string, string>,
 	result: RestBulkCreateResponse,
 	targets: ImportTarget[],
-	backHref: string | undefined,
-	onRestart: () => void,
 };
 
-export function SummaryStep({ t, tid, result, targets, backHref, onRestart }: SummaryStepProps): React.ReactNode {
+/** Counts and per-row errors. "Back to list" and "Import again" render in the page header. */
+export function SummaryStep({ t, tid, result, targets }: SummaryStepProps): React.ReactNode {
 	const counts: [string, number][] = [
 		['import.totalRows', result.total_rows],
 		['import.createdRows', result.created_count],
@@ -56,10 +54,6 @@ export function SummaryStep({ t, tid, result, targets, backHref, onRestart }: Su
 					</Table.Tbody>
 				</Table>
 			) : null}
-			<Group>
-				{backHref ? <LinkButton to={backHref} variant='filled' {...tid('backToList')}>{t('import.backToList')}</LinkButton> : null}
-				<Button onClick={onRestart} {...tid('restart')}>{t('import.title')}</Button>
-			</Group>
 		</Stack>
 	);
 }

@@ -8,11 +8,13 @@ import { settingsItemPropsSchema, settingsSectionPropsSchema } from './component
 import { tabCollapsibleSectionPropsSchema } from './components/tabCollapsibleSection/props';
 import {
 	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE,
-	RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_TEMPLATE,
+	RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_GENERIC_PAGE_TEMPLATE,
+	RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_TEMPLATE,
 	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE, SETTINGS_ITEM, SETTINGS_SECTION,
 	TAB_COLLAPSIBLE_SECTION,
 } from './ids';
 import { ownPropertySectionSchema, resourceDetailPropsSchema } from './pages/resourceDetail/props';
+import { resourceGenericPagePropsSchema } from './pages/resourceGenericPage/props';
 import { resourceImportPropsSchema } from './pages/resourceImport/props';
 import { resourceListPropsSchema } from './pages/resourceList/props';
 import { resourceSplitViewPropsSchema } from './pages/resourceSplitView/props';
@@ -29,6 +31,9 @@ import type { OwnPropertySectionInput } from './pages/resourceDetail/props';
 import type {
 	ResourceDetailProps, ResourceDetailPropsInput,
 } from './pages/resourceDetail/props';
+import type {
+	ResourceGenericPageProps, ResourceGenericPagePropsInput,
+} from './pages/resourceGenericPage/props';
 import type { ResourceImportProps, ResourceImportPropsInput } from './pages/resourceImport/props';
 import type { ResourceListProps, ResourceListPropsInput } from './pages/resourceList/props';
 import type { ResourceSplitViewProps } from './pages/resourceSplitView/props';
@@ -60,6 +65,21 @@ export function resourceDetailProps(input: ResourceDetailPropsInput): TemplateRe
  */
 export function resourceImportProps(input: ResourceImportPropsInput): TemplateRef<ResourceImportProps> {
 	return { template: RESOURCE_IMPORT_TEMPLATE, props: resourceImportPropsSchema.parse(input) };
+}
+
+/**
+ * A page that belongs to one resource without being its CRUD form -- an import wizard, a bulk
+ * action, a resource-scoped report. Same shell and header as the detail page, and the same back
+ * link to the resource's listing, but no record, no form and no commands: whatever the page does,
+ * it does through its own `childrenNodes`.
+ */
+export function resourceGenericPageProps(
+	input: ResourceGenericPagePropsInput,
+): TemplateRef<ResourceGenericPageProps> {
+	return {
+		template: RESOURCE_GENERIC_PAGE_TEMPLATE,
+		props: resourceGenericPagePropsSchema.parse(input),
+	};
 }
 
 export function resourceSplitViewProps(input: {
@@ -173,6 +193,7 @@ export * from './components/resourceTable/props';
 export * from './components/settings/props';
 export * from './components/tabCollapsibleSection/props';
 export * from './pages/resourceDetail/props';
+export * from './pages/resourceGenericPage/props';
 export * from './pages/resourceList/props';
 export * from './pages/resourceSplitView/props';
 export * from './ids';

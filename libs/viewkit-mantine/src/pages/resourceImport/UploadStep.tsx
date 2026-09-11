@@ -1,6 +1,5 @@
 import { Group, Stack, Text } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
-import { Button } from '@nikkierp/ui/components';
 import { IconFileSpreadsheet, IconUpload, IconX } from '@tabler/icons-react';
 import React from 'react';
 
@@ -22,37 +21,24 @@ const ACCEPT = {
 type UploadStepProps = {
 	t: TranslateFn,
 	tid: (part: string) => Record<string, string>,
-	file: File | null,
+	pending: File | null,
 	problem: ImportFileProblem | null,
-	onSelect: (file: File) => Promise<void>,
+	onPick: (file: File | null) => void,
 };
 
 /**
  * "Select a file to upload" — the file is only parsed on confirm, so a wrong pick costs nothing
  * and the refusal (extension, size, no header) is shown in place before anything is uploaded.
+ *
+ * Confirm itself lives in the page header's action row, so the pick is reported upward rather
+ * than held here.
  */
-export function UploadStep({ t, tid, file, problem, onSelect }: UploadStepProps): React.ReactNode {
-	const [pending, setPending] = React.useState<File | null>(file);
-	const [busy, setBusy] = React.useState(false);
-
-	const confirm = async () => {
-		if (!pending) {
-			return;
-		}
-		setBusy(true);
-		try {
-			await onSelect(pending);
-		}
-		finally {
-			setBusy(false);
-		}
-	};
-
+export function UploadStep({ t, tid, pending, problem, onPick }: UploadStepProps): React.ReactNode {
 	return (
 		<Stack gap='sm' maw={640}>
 			<Text fw={500}>{t('import.selectFile')}</Text>
 			<Dropzone
-				onDrop={files => setPending(files[0] ?? null)}
+				onDrop={files => onPick(files[0] ?? null)}
 				accept={ACCEPT}
 				maxSize={IMPORT_MAX_BYTES}
 				multiple={false}
@@ -69,11 +55,6 @@ export function UploadStep({ t, tid, file, problem, onSelect }: UploadStepProps)
 				</Group>
 			</Dropzone>
 			{problem ? <Text size='sm' c='red' {...tid('fileProblem')}>{describeProblem(t, problem)}</Text> : null}
-			<Group justify='flex-end'>
-				<Button variant='filled' disabled={!pending} loading={busy} onClick={() => void confirm()} {...tid('confirm')}>
-					{t('import.confirmNext')}
-				</Button>
-			</Group>
 		</Stack>
 	);
 }

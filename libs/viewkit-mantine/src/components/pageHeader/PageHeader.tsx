@@ -119,6 +119,9 @@ type SpecProps<TSpec> = { spec: TSpec, context: PageHeaderContextValue | null };
 function TitleText({ spec, context }: SpecProps<PageHeaderTitleSpec>): React.ReactNode {
 	const t = useTranslate(context?.translationNs ?? '');
 
+	if ('text' in spec) {
+		return spec.text;
+	}
 	if ('textKey' in spec) {
 		return t(spec.textKey, context?.titleParams);
 	}

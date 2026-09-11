@@ -16,6 +16,10 @@ import { tabCollapsibleSectionRenderer } from './components/tabCollapsibleSectio
 import { registerFieldRenderers } from './fields/register';
 import { MANTINE_VIEW_KIT_ID } from './ids';
 import { resourceDetailTemplate } from './pages/resourceDetail/template';
+import { genericPageHeaderRenderer } from './pages/resourceGenericPage/GenericPageHeader';
+import { resourceGenericPageTemplate } from './pages/resourceGenericPage/template';
+import { importActionsRenderer } from './pages/resourceImport/ImportActions';
+import { importBodyRenderer } from './pages/resourceImport/ImportBody';
 import { resourceImportTemplate } from './pages/resourceImport/template';
 import { resourceListTemplate } from './pages/resourceList/template';
 import { resourceSplitViewTemplate } from './pages/resourceSplitView/template';
@@ -40,6 +44,7 @@ export const mantineViewKit: IViewKit = {
 		registry.registerPageTemplate(resourceDetailTemplate);
 		registry.registerPageTemplate(resourceSplitViewTemplate);
 		registry.registerPageTemplate(resourceImportTemplate);
+		registry.registerPageTemplate(resourceGenericPageTemplate);
 
 		registry.registerComponentRenderer(pageHeaderRenderer);
 		registry.registerComponentRenderer(collapsibleSectionRenderer);
@@ -54,6 +59,9 @@ export const mantineViewKit: IViewKit = {
 		registry.registerComponentRenderer(resourceCreateHeaderRenderer);
 		registry.registerComponentRenderer(resourceCreateFormRenderer);
 		registry.registerComponentRenderer(resourceSplitViewRenderer);
+		registry.registerComponentRenderer(genericPageHeaderRenderer);
+		registry.registerComponentRenderer(importActionsRenderer);
+		registry.registerComponentRenderer(importBodyRenderer);
 
 		registerFieldRenderers(registry);
 	},

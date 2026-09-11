@@ -19,6 +19,12 @@ export type ImportFileProblem = NonNullable<FileRefusal> | 'noHeaders';
 export type ImportWizardState = {
 	step: ImportStep,
 	file: File | null,
+	/**
+	 * The file chosen in the dropzone but not yet confirmed. Wizard state rather than upload-step
+	 * state because the button that confirms it renders in the page header, not beside the
+	 * dropzone.
+	 */
+	pendingFile: File | null,
 	fileProblem: ImportFileProblem | null,
 	rows: MappingRow[],
 	createMissing: boolean,
@@ -30,13 +36,15 @@ export type ImportWizardState = {
 };
 
 const INITIAL: ImportWizardState = {
-	step: 'upload', file: null, fileProblem: null, rows: [], createMissing: false,
+	step: 'upload', file: null, pendingFile: null, fileProblem: null, rows: [], createMissing: false,
 	result: null, requestErrors: [], failure: null,
 };
 
 export type ImportWizard = {
 	state: ImportWizardState,
 	missing: ImportTarget[],
+	/** Records the dropzone's pick, which arms the header's confirm button. */
+	setPendingFile: (file: File | null) => void,
 	/** Validates and parses the file in the browser, then opens the mapping step. */
 	selectFile: (file: File) => Promise<void>,
 	moveSourceRow: (from: number, to: number) => void,
@@ -77,16 +85,16 @@ export function useImportWizard(
 	const selectFile = React.useCallback(async (file: File) => {
 		const refusal = validateImportFile(file);
 		if (refusal) {
-			setState(current => ({ ...current, file, fileProblem: refusal }));
+			setState(current => ({ ...current, file, pendingFile: file, fileProblem: refusal }));
 			return;
 		}
 		const parsed = await parseHeaders(file);
 		if (parsed.headers.length === 0) {
-			setState(current => ({ ...current, file, fileProblem: 'noHeaders' }));
+			setState(current => ({ ...current, file, pendingFile: file, fileProblem: 'noHeaders' }));
 			return;
 		}
 		setState(current => ({
-			...current, file, fileProblem: null, requestErrors: [], failure: null,
+			...current, file, pendingFile: file, fileProblem: null, requestErrors: [], failure: null,
 			rows: autoMatch(parsed.headers, targets), step: 'mapping',
 		}));
 	}, [targets]);
@@ -104,6 +112,7 @@ export function useImportWizard(
 		state,
 		missing: missingMandatory(state.rows),
 		selectFile,
+		setPendingFile: file => setState(current => ({ ...current, pendingFile: file })),
 		moveSourceRow: (from, to) => setState(current => ({ ...current, rows: moveSource(current.rows, from, to) })),
 		moveTargetRow: (from, to) => setState(current => ({ ...current, rows: moveTarget(current.rows, from, to) })),
 		setCreateMissing: value => setState(current => ({ ...current, createMissing: value })),

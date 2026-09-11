@@ -17,6 +17,12 @@ export const RESOURCE_DETAIL_TEMPLATE = 'nikkierp.mantine.pages.templates.resour
 export const RESOURCE_SPLIT_VIEW_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceSplitView.v1';
 export const RESOURCE_IMPORT_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceImport.v1';
 
+/**
+ * A page that belongs to one resource but is not its CRUD form — an import wizard, a bulk action,
+ * a report scoped to the resource. Same shell and header as the detail page, no update context.
+ */
+export const RESOURCE_GENERIC_PAGE_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceGenericPage.v1';
+
 export const PAGE_HEADER = 'nikkierp.mantine.components.pageHeader.v1';
 export const COLLAPSIBLE_SECTION = 'nikkierp.mantine.components.collapsibleSection.v1';
 export const RESOURCE_TABLE = 'nikkierp.mantine.components.resourceTable.v1';
@@ -26,6 +32,26 @@ export const RESOURCE_FORM_COLUMN = 'nikkierp.mantine.components.resourceForm.co
 export const RESOURCE_CREATE_HEADER = 'nikkierp.mantine.components.resourceCreate.header.v1';
 export const RESOURCE_CREATE_FORM = 'nikkierp.mantine.components.resourceCreate.form.v1';
 export const RESOURCE_SPLIT_VIEW = 'nikkierp.mantine.components.resourceSplitView.v1';
+
+/**
+ * The header of a `resourceGenericPage`: the resource-detail header's layout and back link,
+ * without any of its CRUD machinery.
+ *
+ * It is a separate contribution rather than a mode of `resourceDetail.header` because the two
+ * differ in what they read, not merely in what they show: the detail header requires the
+ * resource-update context and builds its own action row from that page's commands, while this one
+ * has no record, no form and no commands, and takes its action row from its child nodes the way
+ * `pageHeader` does.
+ */
+export const RESOURCE_GENERIC_PAGE_HEADER = 'nikkierp.mantine.components.resourceGenericPage.header.v1';
+
+/**
+ * The import wizard's two contributions: the buttons that drive the current step, which the
+ * generic page renders in its header's action row, and the step's own body. Both read the live
+ * wizard from React context — only their ids travel in the page's node tree.
+ */
+export const RESOURCE_IMPORT_ACTIONS = 'nikkierp.mantine.components.resourceImport.actions.v1';
+export const RESOURCE_IMPORT_BODY = 'nikkierp.mantine.components.resourceImport.body.v1';
 
 /**
  * A tabbed container for a resource detail page. Like `collapsibleSection` it groups nodes, but it
