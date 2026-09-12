@@ -91,7 +91,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Vending Machine',
-				slug: 'vending_machine',
+				slug: 'vendingmachine',
 				category: 'Vending Machine',
 				icon: vendingMachineIcon,
 				isDisabled: false,
@@ -277,7 +277,7 @@ export const mockModules = [
 			},
 			{
 				name: 'Vending Machine',
-				slug: 'vending_machine',
+				slug: 'vendingmachine',
 				category: 'infomationTechnology',
 				icon: vendingMachineIcon,
 				isDisabled: false,
