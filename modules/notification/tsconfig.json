@@ -1,0 +1,15 @@
+{
+	"extends": "../shell/tsconfig.json",
+	"compilerOptions": {
+		"skipLibCheck": true
+	},
+	"include": [
+		"src/**/*",
+		"types/*",
+		"node_modules/vite/types/*",
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+	]
+}
