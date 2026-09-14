@@ -42,7 +42,7 @@ export const ResourceImport = React.memo(ResourceImportView);
  * {@link ImportWizardProvider}, since a state machine cannot travel in JSON metadata.
  */
 function ResourceImportView({ params, routePath }: ResourceImportViewProps): React.ReactNode {
-	const pack = useDynamicModel(params.schemaName);
+	const { pack } = useDynamicModel(params.schemaName);
 	// Module namespace first for `$ref` field labels, `common` for the page's own words.
 	const t = useTranslate([params.translationNs, COMMON_NS]);
 	const lc = useLocalize(params.translationNs);

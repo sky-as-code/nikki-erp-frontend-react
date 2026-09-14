@@ -94,7 +94,7 @@ function buildProductTemplateIdentityTabs(): TabCollapsibleSectionTab[] {
 			header: 'form.generalInformation',
 			content: resourceFormColumnNode({
 				header: 'form.generalInformation',
-				fields: ['name', 'short_name', 'status', 'org_id'],
+				fields: ['name', 'short_name', 'status', 'org_id', 'uom_id'],
 			}),
 		},
 		{

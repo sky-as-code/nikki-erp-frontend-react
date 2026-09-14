@@ -178,6 +178,23 @@ export function useLocalize(moduleName?: string): LocalizeFn {
 }
 
 /**
+ * A localizer bound to the module owning `schemaName`, rather than to the calling page's module.
+ *
+ * A schema's `label` and field labels are `$ref` translation keys resolved against the namespace
+ * of the module that defines them. A page showing another module's resource — a relation picker
+ * for `essential_uom` opened from an inventory page — must therefore localize against `essential`,
+ * not `inventory`, or every key misses and renders as its raw name.
+ *
+ * The module is the schema-name prefix, by the `{module}_{entity}` convention. i18next loads the
+ * namespace on demand, so naming one the page never used is enough to fetch it.
+ */
+export function useSchemaLocalize(schemaName: string): LocalizeFn {
+	const separatorIdx = schemaName.indexOf('_');
+	const moduleName = separatorIdx > 0 ? schemaName.slice(0, separatorIdx) : undefined;
+	return useLocalize(moduleName);
+}
+
+/**
  * Compares two already-translated strings the way the active locale orders them.
  *
  * Lists are sorted by what the reader sees, which is the translated label rather than the field

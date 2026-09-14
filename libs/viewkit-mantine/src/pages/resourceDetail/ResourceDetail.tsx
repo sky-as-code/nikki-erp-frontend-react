@@ -27,7 +27,7 @@ export type ResourceDetailViewProps = {
 export const ResourceDetail = React.memo(ResourceDetailView);
 
 function ResourceDetailView({ params, childrenNodes }: ResourceDetailViewProps): React.ReactNode {
-	const pack = useDynamicModel(params.schemaName);
+	const { pack } = useDynamicModel(params.schemaName);
 	const { id } = useParams();
 	const createMode = id === 'new';
 	const commands = params.standardActionCommands;

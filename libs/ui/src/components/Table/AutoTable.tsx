@@ -52,7 +52,7 @@ export type AutoTableProps = Omit<TableProps, 'data' | 'children'> & {
  * `columnRenderers` before falling back to data-type-specific renderers.
  */
 export const AutoTable: React.FC<AutoTableProps> = (props) => {
-	const schemaPack = useDynamicModel(props.schemaName ?? '');
+	const { pack: schemaPack } = useDynamicModel(props.schemaName ?? '');
 	const modelSchema = props.schema ?? schemaPack?.modelSchema;
 
 	if (!modelSchema) {

@@ -196,7 +196,7 @@ export type CrudFormProviderProps = Omit<BaseFormProviderProps, 'children'> & {
 };
 
 export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode {
-	const schemaPack = useDynamicModel(props.schemaName);
+	const { pack: schemaPack } = useDynamicModel(props.schemaName);
 	const modelValue = props.modelValue ?? null;
 
 	const form = useForm({

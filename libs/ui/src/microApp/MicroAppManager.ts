@@ -76,6 +76,26 @@ export class MicroAppManager {
 	}
 
 	/**
+	 * The micro-app owning `schemaName`, by the `{prefix}_{entity}` naming convention.
+	 *
+	 * Module names are lowercase alphabetic with no underscore, so the prefix is exactly the
+	 * segment before the first `_` and the match is an equality test — no prefix scanning.
+	 */
+	public findOwnerSlug(schemaName: string): MicroAppSlug | undefined {
+		const separatorIdx = schemaName.indexOf('_');
+		if (separatorIdx <= 0) {
+			return undefined;
+		}
+		const prefix = schemaName.slice(0, separatorIdx);
+		for (const [slug, app] of this.registeredApps) {
+			if ((app.schemaPrefix ?? slug) === prefix) {
+				return slug;
+			}
+		}
+		return undefined;
+	}
+
+	/**
 	 * Initializes a downloaded pack exactly once, caching the result so repeated
 	 * calls (e.g. lazy command loading then mounting) don't re-run `init`.
 	 */

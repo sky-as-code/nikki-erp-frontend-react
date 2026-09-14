@@ -10,7 +10,7 @@ import { useFormTestIdPrefix } from './formTestIds';
 import { RelationPickerModal } from './RelationPickerModal';
 import { useCommand } from '../../hookhoc/useCommand';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
-import { useTranslate } from '../../i18n';
+import { useLocaleCollator, useTranslate } from '../../i18n';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 
 import type { LocalizeFn } from '../../i18n';
@@ -114,7 +114,6 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 								opened={isPickerOpen}
 								onClose={() => setIsPickerOpen(false)}
 								destSchemaName={options.destSchemaName}
-								localize={localize}
 								selectedId={(field.value as string) ?? null}
 								testId={fieldTestId}
 								onSelect={(item: SearchItem) => {
@@ -153,7 +152,7 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 		: undefined;
 	const destSchemaName = relation?.dest_schema_name ?? '';
 	const targetPack = useDynamicModel(destSchemaName);
-	const targetSchema = targetPack?.modelSchema;
+	const targetSchema = targetPack.pack?.modelSchema;
 	const labelField = targetSchema?.record_label_field ?? 'id';
 	const subLabelField = targetSchema?.record_sub_label_field;
 
@@ -164,9 +163,14 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 		targetSchema ? destSchemaName : '', debouncedTerm, labelField, subLabelField,
 	);
 	const selectedId = useWatch({ control, name: fieldName }) as string | undefined;
+	const compareLocalized = useLocaleCollator();
+	// Sorted here rather than by the server, which stores the label as a LangJson and so cannot
+	// order by the one language the reader sees.
 	const pageOptions = React.useMemo(
-		() => (search.items ?? []).map(item => toOption(item, labelField, subLabelField, localize)),
-		[search.items, labelField, subLabelField, localize],
+		() => (search.items ?? [])
+			.map(item => toOption(item, labelField, subLabelField, localize))
+			.sort((a, b) => compareLocalized(a.label, b.label)),
+		[search.items, labelField, subLabelField, localize, compareLocalized],
 	);
 	const offPageOption = useSelectedLabel({
 		destSchemaName, selectedId, labelField, subLabelField, localize,
@@ -176,8 +180,10 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 	const data = offPageOption ? [offPageOption, ...pageOptions] : pageOptions;
 	return {
 		data,
-		isPending: search.isPending,
-		loadError: search.loadError,
+		isPending: targetPack.isPending || search.isPending,
+		// A target schema that never resolves would otherwise leave an empty, innocuous-looking
+		// dropdown, since the search below is gated on it.
+		loadError: targetPack.error ?? search.loadError,
 		selectedLabel: data.find(option => option.value === selectedId)?.label,
 		destSchemaName,
 	};
