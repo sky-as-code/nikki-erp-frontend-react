@@ -1,7 +1,11 @@
 import { TranslatedFieldRenderer } from '@nikkierp/ui/components/DataTable';
 import { z } from 'zod';
 
-import { FIELD_RENDERER_AVATAR, FIELD_RENDERER_BADGE, FIELD_RENDERER_TRANSLATED } from '../ids';
+import {
+	FIELD_RENDERER_ATTRIBUTE_PILLS, FIELD_RENDERER_AVATAR, FIELD_RENDERER_BADGE,
+	FIELD_RENDERER_TRANSLATED,
+} from '../ids';
+import { attributePillsSpecSchema, AttributePillsFieldRenderer } from './attributePills';
 import { AvatarFieldRenderer } from './avatar';
 import { badgeSpecSchema, BadgeFieldRenderer } from './badge';
 
@@ -32,5 +36,10 @@ export function registerFieldRenderers(registry: IViewRegistry): void {
 	registry.registerFieldRenderer(FIELD_RENDERER_TRANSLATED, (spec) => {
 		const { prefix } = translatedSpecSchema.parse(spec);
 		return new TranslatedFieldRenderer(prefix ?? '');
+	});
+
+	registry.registerFieldRenderer(FIELD_RENDERER_ATTRIBUTE_PILLS, (spec) => {
+		const { separator } = attributePillsSpecSchema.parse(spec);
+		return new AttributePillsFieldRenderer({ separator });
 	});
 }

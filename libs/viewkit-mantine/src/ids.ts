@@ -89,3 +89,4 @@ export const SETTINGS_ITEM = 'nikkierp.mantine.components.settingsItem.v1';
 export const FIELD_RENDERER_AVATAR = 'avatar';
 export const FIELD_RENDERER_BADGE = 'badge';
 export const FIELD_RENDERER_TRANSLATED = 'translated';
+export const FIELD_RENDERER_ATTRIBUTE_PILLS = 'attributePills';

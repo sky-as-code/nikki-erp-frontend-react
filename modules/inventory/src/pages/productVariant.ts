@@ -42,7 +42,23 @@ function buildProductVariantListProps() {
 		deleteCommand: ProductVariantCommands.DELETE,
 		archiveCommand: ProductVariantCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductVariantCommands.UPDATE,
+		// The buying view of a variant: what it is, what it costs, and how much is on hand. The
+		// schema's own default set leads with identifiers, which answers a different question.
+		displayed_fields: [
+			'sku',
+			// Labelled here rather than taking the schema's: on the template this field is just
+			// "Name", which on a list of variants reads as the variant's own name.
+			{ field: 'product_template_name', label: 'fields.product_name' },
+			{ field: 'attribute_summary', label: 'fields.attributes' },
+			{ field: 'effective_base_sales_price', label: 'fields.sale_price' },
+			'cost',
+			'on_hand_quantity',
+			// The unit's id, not its name: the name sits two edges away on essential_uom, and a
+			// related computed field walks exactly one edge to a physical column.
+			{ field: 'product_template_uom_id', label: 'fields.product_template_uom_id' },
+		],
 		fieldRenderers: {
+			attribute_summary: { renderer: 'attributePills' },
 			status: {
 				renderer: 'badge',
 				colorMap: { active: 'green', discontinued: 'orange' },

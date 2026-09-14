@@ -7,8 +7,10 @@ import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { useFieldRenderers } from '@nikkierp/viewengine/render';
 import React from 'react';
 
+import { displayedFieldLabelKeys, displayedFieldNames, resolveSchemaField } from '../../data/displayedFields';
 import { interpolateParams } from '../../data/interpolate';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
+import { useRelatedSchemas } from '../../data/useRelatedSchemas';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { commandActionCode, StandardActionCode, useActionLocks } from '../../permissions';
@@ -41,11 +43,30 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	// or drop it. An embedded table's record scoping is the opposite case and stays a
 	// `baseGraph` — see `ResourceTable`.
 	const graph = useResolvedFilterGraph(params.filterGraph);
+	// Seeded onto the initial request rather than forced onto every later one: the table rewrites
+	// the request as the user pages, sorts and picks columns, and a page's declared columns are
+	// the starting view, not an override of the choice they make afterwards.
+	const initialRequest = React.useMemo(
+		() => {
+			const fields = displayedFieldNames(params.displayed_fields);
+			return fields ? { ...INITIAL_REQUEST, fields } : INITIAL_REQUEST;
+		},
+		[params.displayed_fields],
+	);
 	const { pack, searchData, searchRequest, onSearchRequestChange, refresh } = useResourceSearch({
 		schemaName: params.schemaName,
 		searchCommand: params.searchCommand,
-		initialRequest: INITIAL_REQUEST,
+		initialRequest,
 	});
+	const displayedNames = React.useMemo(
+		() => displayedFieldNames(params.displayed_fields),
+		[params.displayed_fields],
+	);
+	const labelKeys = React.useMemo(
+		() => displayedFieldLabelKeys(params.displayed_fields),
+		[params.displayed_fields],
+	);
+	const relatedSchemas = useRelatedSchemas(pack?.modelSchema, displayedNames);
 	const buildLinkHref = useResourceLinkHref(params.linkField, routePath);
 	const baseHref = useResourceBaseHref(routePath);
 	const testId = resourceTestIdPrefix({
@@ -74,6 +95,7 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 				initialSearchRequest={searchRequest}
 				initialFilterGraph={graph}
 				modelSchema={pack.modelSchema}
+				relatedSchemas={relatedSchemas}
 				onSearchRequestChange={onSearchRequestChange}
 				fieldRenderer={fieldRenderer}
 				buildLinkHref={buildLinkHref}
@@ -87,7 +109,19 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 					if (field === 'fields') {
 						return t('model_fields');
 					}
-					return lc(pack.modelSchema.fields[field]?.label);
+					// A page-declared label wins: it is the one wording chosen for this list, and for
+					// a field reached through an edge it is usually the only sensible one, the
+					// schema's own label belonging to the other resource.
+					const labelKey = labelKeys[field];
+					if (labelKey) {
+						return t(labelKey);
+					}
+					const schemaField = resolveSchemaField(
+						pack.modelSchema, field, name => relatedSchemas[name],
+					);
+					// A dotted field whose edge schema has not loaded yet has no label to show. Its
+					// own path reads better than a blank header while that request is in flight.
+					return schemaField ? lc(schemaField.label) : field;
 				}}
 			/>
 		</Paper>

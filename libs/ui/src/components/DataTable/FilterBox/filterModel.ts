@@ -174,12 +174,56 @@ export function isFilterableField(field: dyn.ModelSchemaField | undefined): bool
 	return getFilterInputKind(field) !== 'unsupported';
 }
 
-/** The filterable field names of a schema, in declaration order. */
-export function getFilterableFieldNames(schema: dyn.ModelSchema | undefined): string[] {
+/**
+ * The schema of a field that may reach one edge deep, e.g. `product_template.name`.
+ *
+ * `schema.fields` is flat, so a dotted name has no entry in it — the leaf belongs to the schema
+ * the edge points at. `relatedSchemas` is keyed by schema name and is empty until that schema
+ * loads, so a miss means "not yet" and leaves the caller on its untyped fallback rather than
+ * mislabelling the column or offering the wrong filter input.
+ */
+export function getFieldSchema(
+	schema: dyn.ModelSchema | undefined,
+	field: string,
+	relatedSchemas?: Record<string, dyn.ModelSchema>,
+): dyn.ModelSchemaField | undefined {
+	if (!schema) {
+		return undefined;
+	}
+	const dot = field.indexOf('.');
+	if (dot < 0) {
+		return schema.fields[field];
+	}
+	const edgeName = field.slice(0, dot);
+	const relations = [...(schema.to_relations ?? []), ...(schema.from_relations ?? [])];
+	const destSchemaName = relations.find(relation => relation.edge === edgeName)?.dest_schema_name;
+	if (!destSchemaName) {
+		return undefined;
+	}
+	return relatedSchemas?.[destSchemaName]?.fields[field.slice(dot + 1)];
+}
+
+/**
+ * The filterable field names of a schema, in declaration order, followed by any filterable
+ * columns the page reached through an edge.
+ *
+ * The dotted ones are appended rather than merged in place: they are not fields of this schema
+ * and have no declaration order here, and the page named them explicitly, so they belong at the
+ * end of the list where the user will recognise them as the extra columns they chose.
+ */
+export function getFilterableFieldNames(
+	schema: dyn.ModelSchema | undefined,
+	displayedFields?: string[],
+	relatedSchemas?: Record<string, dyn.ModelSchema>,
+): string[] {
 	if (!schema) {
 		return [];
 	}
-	return Object.values(schema.fields).filter(isFilterableField).map(field => field.name);
+	const own = Object.values(schema.fields).filter(isFilterableField).map(field => field.name);
+	const related = (displayedFields ?? []).filter(
+		field => field.includes('.') && isFilterableField(getFieldSchema(schema, field, relatedSchemas)),
+	);
+	return [...own, ...Array.from(new Set(related))];
 }
 
 /** The choices an enum field offers, as `Select` data. */

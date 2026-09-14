@@ -96,6 +96,14 @@ export type DataTableProps = {
 	renderTableName?: RenderTableNameFn,
 	modelSchema?: dyn.ModelSchema,
 	/**
+	 * Schemas reached through an edge, keyed by schema name, for columns named `edge.field`.
+	 *
+	 * Those leaves belong to another resource, so their label, data type and filter input are only
+	 * knowable once its schema is loaded. Absent or still empty, such a column falls back to plain
+	 * text — correct, just untyped.
+	 */
+	relatedSchemas?: Record<string, dyn.ModelSchema>,
+	/**
 	 * A page-authored graph seeded into the filter panel as **editable** conditions.
 	 *
 	 * For list pages, whose `filterGraph` is a default the user may reasonably widen or drop.
@@ -388,6 +396,8 @@ function DataTableFilterPane(): React.ReactNode {
 	return (
 		<FilterPanel
 			modelSchema={context.settings.modelSchema}
+			displayedFields={context.tableSearchData.desired_fields}
+			relatedSchemas={context.settings.relatedSchemas}
 			tree={filters.tree}
 			onTreeChange={filters.setTree}
 			orderBy={filters.orderBy}
@@ -734,8 +744,18 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 	const { draftViewMode, onDraftViewModeChange } = useDraftViewMode(opened, viewMode);
 	const fieldsSelectionGetterRef = React.useRef<(() => string[]) | null>(null);
 	const [fieldsPanelNonce, setFieldsPanelNonce] = React.useState(0);
+	// The shown columns are folded in because a field reached through an edge is not one of this
+	// schema's own: leaving it out would drop the page's declared column the first time the user
+	// opened this modal, which reads as the setting having deselected it.
 	const allSelectableFields = React.useMemo(
-		() => (modelSchema ? getSelectableSchemaFieldNames(modelSchema) : [...desiredFields]),
+		() => {
+			if (!modelSchema) {
+				return [...desiredFields];
+			}
+			const own = getSelectableSchemaFieldNames(modelSchema);
+			const related = desiredFields.filter(field => field.includes('.'));
+			return Array.from(new Set([...own, ...related]));
+		},
 		[desiredFields, modelSchema],
 	);
 	React.useLayoutEffect(() => {

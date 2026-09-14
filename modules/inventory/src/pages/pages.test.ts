@@ -116,6 +116,27 @@ describe('Inventory page metadata', () => {
 		expect(importPage?.props).toMatchObject({ schemaName: schema, returnRoutePath: route });
 	});
 
+	// The buying view of a variant, in order. Pinned because the schema's own default set answers a
+	// different question, and losing a column here is invisible until someone opens the page.
+	it('shows the product variant list as identity, attributes, price and stock', () => {
+		const [page] = buildProductVariantPages();
+		const props = page.props as {
+			primary: { props: { displayed_fields: unknown[], fieldRenderers: Record<string, unknown> } },
+		};
+
+		expect(props.primary.props.displayed_fields).toEqual([
+			'sku',
+			{ field: 'product_template_name', label: 'fields.product_name' },
+			{ field: 'attribute_summary', label: 'fields.attributes' },
+			{ field: 'effective_base_sales_price', label: 'fields.sale_price' },
+			'cost',
+			'on_hand_quantity',
+			{ field: 'product_template_uom_id', label: 'fields.product_template_uom_id' },
+		]);
+		expect(props.primary.props.fieldRenderers.attribute_summary)
+			.toEqual({ renderer: 'attributePills' });
+	});
+
 	it('nests both split-view panes as template refs', () => {
 		const [page] = buildProductTemplatePages();
 		const props = page.props as { primary: { template: string }, secondary: { template: string } };

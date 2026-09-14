@@ -18,6 +18,13 @@ import type * as dyn from '@nikkierp/common/dynamicModel';
 
 export type FilterPanelProps = {
 	modelSchema?: dyn.ModelSchema,
+	/**
+	 * The columns on show, so the ones reaching through an edge can be filtered on too. They are
+	 * not fields of `modelSchema` and would otherwise never appear in the condition builder.
+	 */
+	displayedFields?: string[],
+	/** Schemas behind those edges, keyed by schema name. */
+	relatedSchemas?: Record<string, dyn.ModelSchema>,
 	tree: FilterTree,
 	onTreeChange: (tree: FilterTree) => void,
 	orderBy: dyn.OrderBy,
@@ -57,8 +64,8 @@ export function FilterPanel(props: FilterPanelProps): React.ReactNode {
 	const t = useTranslate('common');
 	const [issues, setIssues] = React.useState<FilterValidationIssue[]>([]);
 	const filterableFields = React.useMemo(
-		() => getFilterableFieldNames(props.modelSchema),
-		[props.modelSchema],
+		() => getFilterableFieldNames(props.modelSchema, props.displayedFields, props.relatedSchemas),
+		[props.modelSchema, props.displayedFields, props.relatedSchemas],
 	);
 	const sortableFields = props.sortableFields ?? filterableFields;
 
