@@ -15,3 +15,16 @@
 	color: inherit;
 	text-decoration: underline dotted;
 }
+
+/*
+ * The view-settings modal body.
+ *
+ * Wide enough for the field picker's two lists side by side. On a narrow screen the width holds
+ * and the body scrolls sideways rather than stacking the lists: the picker's whole purpose is
+ * moving fields between two lists you can both see.
+ */
+.settingsModalBody {
+	width: 720px;
+	max-width: 100%;
+	overflow-x: auto;
+}

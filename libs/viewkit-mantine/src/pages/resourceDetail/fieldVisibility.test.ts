@@ -27,6 +27,8 @@ const roleSchema = {
 		assigned_users: field('assigned_users', 'model', { is_edge_model: true, is_computed: true }),
 		// Copied from a related record on read; read-only, but not server-owned.
 		owner_name: field('owner_name', 'string', { is_computed: true, is_virtual: true }),
+		// An enum carrying no values renders nothing, in any mode.
+		valueless_enum: field('valueless_enum', 'enumString'),
 	},
 } as unknown as dyn.ModelSchema;
 
@@ -34,7 +36,7 @@ describe('isFieldVisible', () => {
 	it('hides a field the schema does not define, in every mode', () => {
 		expect(isFieldVisible(roleSchema, 'nope', 'create')).toBe(false);
 		expect(isFieldVisible(roleSchema, 'nope', 'update')).toBe(false);
-		expect(isFieldVisible(roleSchema, 'nope', 'read', { nope: 'x' })).toBe(false);
+		expect(isFieldVisible(roleSchema, 'nope', 'read')).toBe(false);
 	});
 
 	it('shows ordinary editable fields in both form modes', () => {
@@ -83,15 +85,16 @@ describe('isFieldVisible', () => {
 		expect(isFieldVisible(roleSchema, 'expires_at', 'update')).toBe(true);
 	});
 
-	it('shows a read-mode field only when it holds a value', () => {
-		expect(isFieldVisible(roleSchema, 'description', 'read', { description: 'Admins' })).toBe(true);
-		expect(isFieldVisible(roleSchema, 'description', 'read', { description: '' })).toBe(false);
-		expect(isFieldVisible(roleSchema, 'description', 'read', {})).toBe(false);
-		expect(isFieldVisible(roleSchema, 'assigned_users', 'read', { assigned_users: [] })).toBe(false);
+	it('shows a read-mode field whether or not the record holds a value', () => {
+		expect(isFieldVisible(roleSchema, 'description', 'read')).toBe(true);
+		expect(isFieldVisible(roleSchema, 'assigned_users', 'read')).toBe(true);
 	});
 
 	it('shows any type in read mode, since display is not limited to form inputs', () => {
-		expect(isFieldVisible(roleSchema, 'etag', 'read', { etag: 'v1' })).toBe(true);
+		expect(isFieldVisible(roleSchema, 'etag', 'read')).toBe(true);
+		// The same field a form refuses to offer an input for still displays.
+		expect(isFieldVisible(roleSchema, 'valueless_enum', 'update')).toBe(false);
+		expect(isFieldVisible(roleSchema, 'valueless_enum', 'read')).toBe(true);
 	});
 });
 

@@ -1,21 +1,24 @@
 import {
-	Box, Button, Group, Modal, Radio, Select, Stack, Tabs, Text, TextInput,
+	Box, Button, Group, Modal, Select, Stack, Tabs, Text,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
+import { IconSettings } from '@tabler/icons-react';
 import React from 'react';
 
-import { TranslatedFieldRenderer } from './cellRenderers';
 import { getCellText } from './cellValues';
+import classes from './DataTable.module.css';
 import { DataTableContext, useDataTableContext } from './DataTableContext';
+import { FieldPicker } from './FieldPicker';
 import { FilterBox, FilterPanel, makeEmptyTree, useApplyFilters, useFilterState } from './FilterBox';
 import { GridView } from './GridView';
 import { defaultColumnWidth, getAutoColumnWidth, ListView, useColumnWidthsState } from './ListView';
 import { Pagination } from './Pagination';
-import { SettingsTable } from './SettingsTable';
 import { dataTableTestIds } from './testIds';
 import { Toolbar } from './Toolbar';
 import { isDataTableViewMode } from './types';
-import { useLocaleCollator, useTranslate } from '../../i18n';
+import { ViewModeToggle } from './ViewModeToggle';
+import { useTranslate } from '../../i18n';
+import { Button as UiButton } from '../Button';
 
 import type { DataTableTestIds } from './testIds';
 import type {
@@ -306,7 +309,8 @@ function readStoredViewMode(): DataTableViewMode | null {
 	return isDataTableViewMode(raw) ? raw : null;
 }
 
-function writeStoredViewMode(mode: DataTableViewMode): void {
+/** Exported for the toolbar toggle, which persists the mode it sets through the same key. */
+export function writeStoredViewMode(mode: DataTableViewMode): void {
 	if (typeof window !== 'undefined') {
 		window.localStorage.setItem(getViewModeStorageKey(), mode);
 	}
@@ -375,7 +379,13 @@ function DataTableControls(props: DataTableControlsProps): React.ReactNode {
 					tid={context.tid}
 				/>
 			) : null}
-			<Pagination />
+			<Group gap='xs' className='flex-grow-0'>
+				<Pagination />
+				{context.settings.enableGridView ? <ViewModeToggle /> : null}
+				<UiButton onClick={context.onOpenViewSettings} {...context.tid.settingsOpen()}>
+					<IconSettings />
+				</UiButton>
+			</Group>
 		</Group>
 	);
 }
@@ -610,9 +620,6 @@ type ViewSettingsModalProps = {
 function TableSettingsPanel(props: {
 	draftPageSize: string,
 	onDraftPageSizeChange: (value: string) => void,
-	draftViewMode: DataTableViewMode,
-	onDraftViewModeChange: (value: string) => void,
-	enableGridView: boolean,
 }): React.ReactNode {
 	const t = useTranslate('common');
 	const { tid } = useDataTableContext();
@@ -632,17 +639,6 @@ function TableSettingsPanel(props: {
 					{...tid.settingsPageSize()}
 				/>
 			</Stack>
-			{props.enableGridView ? (
-				<Stack gap='xs'>
-					<Text size='sm' fw={500}>{t('datatable.viewMode')}</Text>
-					<Radio.Group onChange={props.onDraftViewModeChange} value={props.draftViewMode}>
-						<Stack gap='xs'>
-							<Radio value='list' label={t('datatable.list')} {...tid.settingsViewMode('list')} />
-							<Radio value='grid' label={t('datatable.grid')} {...tid.settingsViewMode('grid')} />
-						</Stack>
-					</Radio.Group>
-				</Stack>
-			) : null}
 		</Stack>
 	);
 }
@@ -652,19 +648,13 @@ type ViewSettingsModalViewProps = {
 	onClose: () => void,
 	activeTab: string | null,
 	onActiveTabChange: (value: string | null) => void,
-	fieldSearch: string,
-	onFieldSearchChange: (value: string) => void,
 	selectableFields: string[],
-	hasExplicitFieldOrder: boolean,
 	fieldsPanelNonce: number,
 	fieldsSelectionGetterRef: React.RefObject<(() => string[]) | null>,
 	initialSelectedFieldNames: string[],
 	translationNs: string,
 	draftPageSize: string,
 	onDraftPageSizeChange: (value: string) => void,
-	draftViewMode: DataTableViewMode,
-	onDraftViewModeChange: (value: string) => void,
-	enableGridView: boolean,
 	onApply: () => void,
 };
 
@@ -672,15 +662,13 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 	const t = useTranslate('common');
 	const { tid } = useDataTableContext();
 
-	const modalStyles = {
-		body: { width: '400px' },
-		title: { fontWeight: 'bold' as const },
-	};
+	const modalStyles = { title: { fontWeight: 'bold' as const } };
 	return (
 		<Modal
 			onClose={props.onClose}
 			opened={props.opened}
 			size='auto'
+			classNames={{ body: classes.settingsModalBody }}
 			styles={modalStyles}
 			title={t('datatable.viewSettings')}
 		>
@@ -695,18 +683,10 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 						</Tabs.Tab>
 					</Tabs.List>
 					<Tabs.Panel pt='sm' value='fields-settings'>
-						<TextInput
-							onChange={event => props.onFieldSearchChange(event.currentTarget.value)}
-							placeholder={t('datatable.fieldFilterPlaceholder')}
-							value={props.fieldSearch}
-							{...tid.settingsFieldSearch()}
-						/>
-						<FieldsSettingsTable
-							fields={props.selectableFields}
-							fieldSearch={props.fieldSearch}
-							fieldsPanelNonce={props.fieldsPanelNonce}
-							hasExplicitFieldOrder={props.hasExplicitFieldOrder}
-							initialSelectedFieldNames={props.initialSelectedFieldNames}
+						<FieldPicker
+							key={props.fieldsPanelNonce}
+							initialDisplayedFields={props.initialSelectedFieldNames}
+							selectableFields={props.selectableFields}
 							selectionGetterRef={props.fieldsSelectionGetterRef}
 							translationNs={props.translationNs}
 						/>
@@ -714,10 +694,7 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 					<Tabs.Panel pt='sm' value='table-settings'>
 						<TableSettingsPanel
 							draftPageSize={props.draftPageSize}
-							draftViewMode={props.draftViewMode}
-							enableGridView={props.enableGridView}
 							onDraftPageSizeChange={props.onDraftPageSizeChange}
-							onDraftViewModeChange={props.onDraftViewModeChange}
 						/>
 					</Tabs.Panel>
 				</Tabs>
@@ -737,11 +714,9 @@ function ViewSettingsModalView(props: ViewSettingsModalViewProps): React.ReactNo
 function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 	const { opened, onClose, modelSchema, desiredFields } = props;
 	const context = useDataTableContext();
-	const { searchRequest, setSearchRequest, viewMode, setViewMode } = context;
+	const { searchRequest, setSearchRequest } = context;
 	const [activeTab, setActiveTab] = React.useState<string | null>('fields-settings');
-	const [fieldSearch, setFieldSearch] = React.useState('');
 	const [draftPageSize, setDraftPageSize] = React.useState(String(allowedPageSizes[0]));
-	const { draftViewMode, onDraftViewModeChange } = useDraftViewMode(opened, viewMode);
 	const fieldsSelectionGetterRef = React.useRef<(() => string[]) | null>(null);
 	const [fieldsPanelNonce, setFieldsPanelNonce] = React.useState(0);
 	// The shown columns are folded in because a field reached through an edge is not one of this
@@ -783,8 +758,6 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 		if (typeof window !== 'undefined' && key) {
 			window.localStorage.setItem(key, String(size));
 		}
-		setViewMode(draftViewMode);
-		writeStoredViewMode(draftViewMode);
 		const fieldOrder = fieldsSelectionGetterRef.current?.() ?? [];
 		setSearchRequest(prev => ({
 			...prev,
@@ -793,19 +766,15 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 			size,
 		}));
 		onClose();
-	}, [draftPageSize, draftViewMode, onClose, setSearchRequest, setViewMode]);
+	}, [draftPageSize, onClose, setSearchRequest]);
 
 	return (
 		<ViewSettingsModalView
 			activeTab={activeTab}
 			draftPageSize={draftPageSize}
-			draftViewMode={draftViewMode}
-			enableGridView={context.settings.enableGridView}
-			fieldSearch={fieldSearch}
 			fieldsPanelNonce={fieldsPanelNonce}
 			fieldsSelectionGetterRef={fieldsSelectionGetterRef}
 			selectableFields={allSelectableFields}
-			hasExplicitFieldOrder={(searchRequest.fields?.length ?? 0) > 0}
 			initialSelectedFieldNames={desiredFields}
 			opened={opened}
 			translationNs={context.settings.translationNs}
@@ -813,103 +782,8 @@ function ViewSettingsModal(props: ViewSettingsModalProps): React.ReactNode {
 			onApply={applyViewSettings}
 			onClose={onClose}
 			onDraftPageSizeChange={setDraftPageSize}
-			onDraftViewModeChange={onDraftViewModeChange}
-			onFieldSearchChange={setFieldSearch}
 		/>
 	);
-}
-
-/**
- * The view-mode radio's draft value.
- *
- * The radio is a draft until Apply, like every other setting in this modal: opening it and
- * cancelling must leave the view the user was looking at untouched. Reseeding on open — rather
- * than only on mount — also covers the mode being changed elsewhere between two openings.
- */
-function useDraftViewMode(opened: boolean, viewMode: DataTableViewMode) {
-	const [draftViewMode, setDraftViewMode] = React.useState<DataTableViewMode>(viewMode);
-
-	React.useEffect(() => {
-		if (opened) {
-			setDraftViewMode(viewMode);
-		}
-	}, [opened, viewMode]);
-
-	const onDraftViewModeChange = React.useCallback((value: string) => {
-		if (isDataTableViewMode(value)) {
-			setDraftViewMode(value);
-		}
-	}, []);
-
-	return { draftViewMode, onDraftViewModeChange };
-}
-
-const fieldsSettingsTableColumn = 'datatable.fields';
-
-function FieldsSettingsTable(props: {
-	fields: string[],
-	fieldSearch: string,
-	fieldsPanelNonce: number,
-	hasExplicitFieldOrder: boolean,
-	initialSelectedFieldNames: string[],
-	selectionGetterRef: React.RefObject<(() => string[]) | null>,
-	translationNs: string,
-}): React.ReactNode {
-	const t = useTranslate(props.translationNs);
-	const compareLocalized = useLocaleCollator();
-	const label = React.useCallback((field: string) => t(`fields.${field}`), [t]);
-
-	// Filtered and sorted here rather than upstream because this is the only component holding
-	// the same `t` that renders the rows, so the text matched and ordered is the text shown.
-	//
-	// An order the user arranged by dragging is left alone: it is saved on the request, and
-	// re-sorting it alphabetically on reopen would silently discard their arrangement.
-	const rows = React.useMemo(() => {
-		const query = props.fieldSearch.trim().toLowerCase();
-		const matched = query
-			? props.fields.filter(field => field.toLowerCase().includes(query)
-				|| label(field).toLowerCase().includes(query))
-			: [...props.fields];
-		if (props.hasExplicitFieldOrder) {
-			return matched;
-		}
-		return matched.sort((a, b) => compareLocalized(label(a), label(b)));
-	}, [props.fields, props.fieldSearch, props.hasExplicitFieldOrder, label, compareLocalized]);
-
-	return (
-		<div className='mt-2' key={props.fieldsPanelNonce}>
-			<SettingsTable
-				allowRowMovement
-				data={createFieldsSearchData(rows)}
-				initialSelectedValues={props.initialSelectedFieldNames}
-				selectionGetterRef={props.selectionGetterRef}
-				translateFieldName={field => t(field)}
-				translationNs={props.translationNs}
-				valueKey={fieldsSettingsTableColumn}
-				fieldRenderer={{
-					[fieldsSettingsTableColumn]: new TranslatedFieldRenderer('fields.'),
-				}}
-			/>
-		</div>
-	);
-}
-
-function createFieldsSearchData(fields: string[]): SearchData {
-	const colLabel = fieldsSettingsTableColumn;
-	const items = fields.map((field, index) => ({
-		id: `${field}-${index}`,
-		[colLabel]: field,
-	}));
-
-	return {
-		page: 0,
-		size: Math.max(fields.length, 1),
-		total: fields.length,
-		items,
-		desired_fields: [colLabel],
-		masked_fields: [],
-		schema_etag: '',
-	} as SearchData;
 }
 
 /**

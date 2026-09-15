@@ -452,7 +452,7 @@ export function OwnPropertiesBlock({
 
 	// A header over nothing reads as a broken section, so a block whose fields all filter out is
 	// dropped along with its title.
-	if (!modelSchema || !hasVisibleField(modelSchema, block.fields ?? [], mode, fieldValues)) {
+	if (!modelSchema || !hasVisibleField(modelSchema, block.fields ?? [], mode)) {
 		return null;
 	}
 
@@ -511,7 +511,7 @@ function FieldGroupVertical({
 	return (
 		<div className={classes.formFieldWrapper}>
 			{fields.map(field => {
-				if (!isFieldVisible(modelSchema, field, 'read', fieldValues)) {
+				if (!isFieldVisible(modelSchema, field, 'read')) {
 					return null;
 				}
 				return (
@@ -530,10 +530,10 @@ function FieldGroupVertical({
 /**
  * One field as label-over-value text.
  *
- * Renders nothing at all when the record holds no value: a dash placeholder reads as content the
- * record actually carries, and a labelled blank is indistinguishable from a broken field. The
- * *raw* value decides, not the formatted output — `formatFieldValue` turns null into `'-'`, so
- * testing the rendered string would let exactly the placeholder this avoids slip through.
+ * A field the record left unset still renders, as its label over an em-dash: the reader is asking
+ * what this record holds, and "no short name" is an answer, while a row that silently disappears
+ * is indistinguishable from a field that does not exist. The placeholder is deliberately the
+ * em-dash rather than empty space, so the absence reads as intentional.
  */
 function ReadOnlyFieldValue({
 	field, modelSchema, fieldValues,
@@ -553,17 +553,23 @@ function ReadOnlyFieldValue({
 	const rawValue = computed.isLive && computed.value !== undefined
 		? computed.value
 		: fieldValues[field];
-	if (!fieldDef || !hasDisplayableValue(rawValue)) {
+	if (!fieldDef) {
 		return null;
 	}
 
 	return (
 		<Stack gap={4}>
 			<Text size='md' fw='bold'>{localize(fieldDef.label)}</Text>
-			<Text size='md'>{renderDisplayFieldValue(rawValue, fieldDef, localize)}</Text>
+			<Text size='md'>
+				{hasDisplayableValue(rawValue)
+					? renderDisplayFieldValue(rawValue, fieldDef, localize)
+					: emptyFieldPlaceholder}
+			</Text>
 		</Stack>
 	);
 }
+
+const emptyFieldPlaceholder = '—';
 
 /** Whether a raw field value is worth putting on screen at all. */
 function hasDisplayableValue(value: unknown): boolean {
