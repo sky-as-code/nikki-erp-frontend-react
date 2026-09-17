@@ -156,6 +156,10 @@ export type RequiredDataTableProps = Omit<
 };
 
 
+/**
+ * @deprecated Use `ExcelDataTable` from `@nikkierp/ui/components/ExcelDataTable` for new tables and
+ * pages; this component stays only for the templates and pickers that have not moved yet.
+ */
 export function DataTable(props: DataTableProps): React.ReactNode {
 	const settings = withDataTableDefaults(props);
 	const [isViewSettingsOpen, setIsViewSettingsOpen] = React.useState(false);

@@ -24,7 +24,7 @@ export function buildNotificationPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'notifications',
+		routePath: 'notification_notification',
 		template: splitView.template,
 		props: splitView.props,
 	})];

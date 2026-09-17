@@ -16,12 +16,14 @@ import { tabCollapsibleSectionRenderer } from './components/tabCollapsibleSectio
 import { registerFieldRenderers } from './fields/register';
 import { MANTINE_VIEW_KIT_ID } from './ids';
 import { resourceDetailTemplate } from './pages/resourceDetail/template';
+import { resourceDetailV2Template } from './pages/resourceDetailV2/template';
 import { genericPageHeaderRenderer } from './pages/resourceGenericPage/GenericPageHeader';
 import { resourceGenericPageTemplate } from './pages/resourceGenericPage/template';
 import { importActionsRenderer } from './pages/resourceImport/ImportActions';
 import { importBodyRenderer } from './pages/resourceImport/ImportBody';
 import { resourceImportTemplate } from './pages/resourceImport/template';
 import { resourceListTemplate } from './pages/resourceList/template';
+import { resourceListV2Template } from './pages/resourceListV2/template';
 import { resourceSplitViewTemplate } from './pages/resourceSplitView/template';
 
 import type { IViewKit } from '@nikkierp/viewengine/core';
@@ -41,7 +43,9 @@ export const mantineViewKit: IViewKit = {
 
 	contribute(registry) {
 		registry.registerPageTemplate(resourceListTemplate);
+		registry.registerPageTemplate(resourceListV2Template);
 		registry.registerPageTemplate(resourceDetailTemplate);
+		registry.registerPageTemplate(resourceDetailV2Template);
 		registry.registerPageTemplate(resourceSplitViewTemplate);
 		registry.registerPageTemplate(resourceImportTemplate);
 		registry.registerPageTemplate(resourceGenericPageTemplate);

@@ -33,7 +33,7 @@ export function buildEssentialSettingsNodes(): ComponentNode[] {
 			level: 'org',
 			translationNs: c.ESSENTIAL_MODULE,
 			children: [
-				settingsItemNode({ name: 'system_locale', labelKey: 'settings.systemLocale' }),
+				settingsItemNode({ name: 'system_language', labelKey: 'settings.systemLanguage' }),
 				settingsItemNode({ name: 'system_timezone', labelKey: 'settings.systemTimezone' }),
 				settingsItemNode({ name: 'default_currency', labelKey: 'settings.defaultCurrency' }),
 			],

@@ -16,7 +16,7 @@ export function buildOrganizationPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'organizations',
+		routePath: 'iam_org',
 		template: splitView.template,
 		props: splitView.props,
 	})];

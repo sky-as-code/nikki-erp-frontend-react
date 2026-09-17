@@ -18,7 +18,7 @@ export function buildInvoicePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'invoices',
+		routePath: 'paymentinvoice_invoice',
 		template: splitView.template,
 		props: splitView.props,
 	})];

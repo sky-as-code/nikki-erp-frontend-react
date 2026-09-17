@@ -16,7 +16,7 @@ export function buildProductAttributeValuePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'attribute_values',
+		routePath: 'inventory_product_attribute_value',
 		template: splitView.template,
 		props: splitView.props,
 	})];

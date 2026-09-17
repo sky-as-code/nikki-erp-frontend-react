@@ -13,21 +13,21 @@ const ITEMS: MenuItem[] = [
 	{
 		labelKey: 'menu.users',
 		items: [
-			{ labelKey: 'menu.users', link: '/users' },
-			{ labelKey: 'menu.groups', link: '/groups' },
+			{ labelKey: 'menu.users', link: '/iam_user' },
+			{ labelKey: 'menu.groups', link: '/iam_group' },
 		],
 	},
 	{
 		labelKey: 'menu.organizations',
 		items: [
-			{ labelKey: 'menu.organizations', link: '/organizations' },
+			{ labelKey: 'menu.organizations', link: '/iam_org' },
 			{ labelKey: 'menu.organizationalUnits', link: '/org-units' },
 		],
 	},
 	{
 		labelKey: 'menu.authorization',
 		items: [
-			{ labelKey: 'menu.roles', link: '/roles' },
+			{ labelKey: 'menu.roles', link: '/iam_role' },
 		],
 	},
 ];

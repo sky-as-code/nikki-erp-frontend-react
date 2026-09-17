@@ -1,9 +1,10 @@
 import { selectSliceState, useModuleSelector, useServiceLayer } from '@nikkierp/ui/appState/store';
 import { createSelector } from '@reduxjs/toolkit';
 
+import { useActiveOrg } from './activeOrg';
+import { selectMyOrgs } from './orgSelectors';
 import { UserContextOrg } from './types';
 import { UserContextService, userContextService } from './userContextService';
-import { useActiveOrgModule } from '../routing';
 
 
 const selectUserContextState = selectSliceState(UserContextService);
@@ -13,8 +14,6 @@ export const selectGetUserContext = createSelector(
 	selectUserContextState,
 	(state: any) => state?.getUserContext,
 );
-
-export { selectMyOrgs };
 
 export function useGetUserContext() {
 	return useServiceLayer(userContextService.getUserContext).result;
@@ -51,20 +50,18 @@ export function useFindMyOrg(orgSlug: string) {
 }
 
 
-export const useActiveOrgWithDetails = () => {
-	const { orgSlug } = useActiveOrgModule();
-	return useFindMyOrg(orgSlug ?? '');
-};
+/**
+ * The active organization.
+ *
+ * Both of these used to resolve the org by matching the routing slice's `orgSlug` against the
+ * org list. The org is no longer in the URL, so they delegate to `useActiveOrg`, which resolves
+ * it from storage. Kept as-is rather than deleted: the remaining callers are in the deprecated
+ * `authorize` module, and pointing them at the new source keeps them working without touching it.
+ */
+export const useActiveOrgWithDetails = () => useActiveOrg();
 
-export const useActiveOrgDetail = () => {
-	const { orgSlug } = useActiveOrgModule();
-	return useFindMyOrg(orgSlug ?? '');
-};
+export const useActiveOrgDetail = () => useActiveOrg();
 
-const selectMyOrgs = createSelector(
-	selectUserContextState,
-	(state: any) => (state?.getUserContext?.data?.orgs ?? []) as UserContextOrg[],
-);
 const selectFindMyOrg = createSelector(
 	selectMyOrgs,
 	(_: unknown, orgSlug: string) => orgSlug,

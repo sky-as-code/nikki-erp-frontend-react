@@ -27,7 +27,7 @@ export function buildTaxRulePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'tax_rules',
+		routePath: 'accounting_tax_rule',
 		template: splitView.template,
 		props: splitView.props,
 	})];

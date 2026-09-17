@@ -18,7 +18,7 @@ export function buildGroupPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'groups',
+		routePath: 'iam_group',
 		template: splitView.template,
 		props: splitView.props,
 	})];
@@ -87,8 +87,8 @@ function buildAssignedRolesSection(): ComponentNode {
 			searchCommand: RoleCommands.SEARCH,
 			filterGraph: { if: ['assigned_groups', 'linked', '${id}'] },
 			linkField: 'id',
-			linkRoutePath: 'roles',
-			extraActions: [{ label: 'assignment.manageRoles', routePath: 'roles' }],
+			linkRoutePath: 'iam_role',
+			extraActions: [{ label: 'assignment.manageRoles', routePath: 'iam_role' }],
 		})],
 	);
 }

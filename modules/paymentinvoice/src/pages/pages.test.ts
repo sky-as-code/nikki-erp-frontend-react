@@ -46,7 +46,7 @@ describe('Payment & Invoice page metadata', () => {
 	it('registers one route per page, all snake_case', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
 
-		expect(routePaths).toEqual(['orders', 'transactions', 'invoices']);
+		expect(routePaths).toEqual(['paymentinvoice_order', 'transactions', 'paymentinvoice_invoice']);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);
 		}

@@ -2,7 +2,10 @@ import { defineComponent } from '@nikkierp/viewengine/metadata';
 import { describe, expect, it } from 'vitest';
 
 import { buildPartialSavePayload, collectColumnFields } from './resourceDetailHeader';
-import { COLLAPSIBLE_SECTION, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_TABLE } from '../ids';
+import {
+	COLLAPSIBLE_SECTION, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_TABLE,
+	TAB_COLLAPSIBLE_SECTION,
+} from '../ids';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -45,6 +48,28 @@ describe('resource detail save scoping', () => {
 
 			expect(collectColumnFields(nodes).flatMap(block => block.fields ?? []))
 				.toEqual(['a', 'b', 'c']);
+		});
+
+		/**
+		 * Regression: `tabCollapsibleSection` holds one node per tab under `props.tabs[].content`,
+		 * not under `children`. A scan that followed only `children` found **no columns at all** on
+		 * the product-template detail page, so `hasDirtySectionField` was always false and Save
+		 * silently left edit mode without issuing a PATCH — an edit the user watched disappear.
+		 */
+		it('finds columns nested in a container that holds them in props, not children', () => {
+			const nodes = [defineComponent({
+				component: TAB_COLLAPSIBLE_SECTION,
+				props: {
+					translationNs: 'inventory',
+					tabs: [
+						{ key: 'general', header: 'general', content: column(['name', 'uom_id']) },
+						{ key: 'sales', header: 'sales', content: section([column(['sale_ok'])]) },
+					],
+				},
+			})];
+
+			expect(collectColumnFields(nodes).flatMap(block => block.fields ?? []))
+				.toEqual(['name', 'uom_id', 'sale_ok']);
 		});
 
 		/**

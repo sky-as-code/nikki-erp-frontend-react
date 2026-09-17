@@ -22,7 +22,7 @@ export function buildTaxJurisdictionPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'tax_jurisdictions',
+		routePath: 'accounting_tax_jurisdiction',
 		template: splitView.template,
 		props: splitView.props,
 	})];

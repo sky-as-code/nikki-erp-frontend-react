@@ -218,12 +218,26 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 		reset,
 	} = form;
 
-	// Reset form when modelValue changes
+	/**
+	 * Re-seed the form when the loaded record changes.
+	 *
+	 * Keyed on the record's *content*, not its reference. A refetch that returns the same record
+	 * hands back a new object every time, and `reset` clears `dirtyFields` — so a reference-keyed
+	 * effect silently marks the user's in-progress edits clean, and the partial-save payload
+	 * (built from `dirtyFields`) then contains nothing but `id`/`etag`. The visible symptom is a
+	 * Save that reports success and performs no request at all.
+	 *
+	 * Serializing the record on each render is affordable here: it is one already-parsed API
+	 * response, and it runs only while a detail form is mounted.
+	 */
+	const modelValueKey = modelValue ? JSON.stringify(modelValue) : null;
 	React.useEffect(() => {
 		if (schemaPack && modelValue) {
 			reset(modelValue);
 		}
-	}, [schemaPack, modelValue, reset]);
+	// `modelValue` is deliberately absent: `modelValueKey` stands in for it, and listing it too
+	// would restore the reference dependency this exists to avoid.
+	}, [schemaPack, modelValueKey, reset]);
 
 	const runtime: FormProviderRenderProps = {
 		handleSubmit: (onValid?: HandleSubmitOnValid): SubmitEventHandler => {
@@ -328,12 +342,13 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 		reset,
 	} = form;
 
-	// Reset form when modelValue changes
+	// Content-keyed for the same reason as `CrudFormProvider` — see the note there.
+	const modelValueKey = props.modelValue ? JSON.stringify(props.modelValue) : null;
 	React.useEffect(() => {
 		if (zodSchema && props.modelValue) {
 			reset(props.modelValue);
 		}
-	}, [zodSchema, props.modelValue, reset]);
+	}, [zodSchema, modelValueKey, reset]);
 
 	return (
 		<FormFieldContext.Provider

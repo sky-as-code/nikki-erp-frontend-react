@@ -25,7 +25,7 @@ export function buildSalesOrderPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_orders',
+		routePath: 'sales_order',
 		template: splitView.template,
 		props: splitView.props,
 	})];

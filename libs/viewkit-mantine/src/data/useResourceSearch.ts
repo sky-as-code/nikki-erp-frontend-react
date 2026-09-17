@@ -28,6 +28,8 @@ export type UseResourceSearchResult = {
 	searchRequest: dyn.RestSearchRequest,
 	onSearchRequestChange: (request: dyn.RestSearchRequest) => void,
 	refresh: () => void,
+	/** True while a search is in flight; drives the table's progress row. */
+	isPending: boolean,
 };
 
 /**
@@ -123,7 +125,9 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 		: (liveSearchData ?? cachedSearchData);
 	// The merged request, not the raw state: it is what was published, and `getSearchRequestOrderBy`
 	// reads `graph.order` off it.
-	return { pack, searchData, searchRequest: effectiveRequest, onSearchRequestChange, refresh };
+	return {
+		pack, searchData, searchRequest: effectiveRequest, onSearchRequestChange, refresh, isPending: search.isPending,
+	};
 }
 
 function useSchemaPack(schemaName: string): dyn.SchemaPack | null {

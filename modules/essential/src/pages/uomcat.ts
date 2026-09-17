@@ -18,7 +18,7 @@ export function buildUomCatPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'uom-categories',
+		routePath: 'essential_uomcat',
 		template: splitView.template,
 		props: splitView.props,
 	})];
@@ -96,7 +96,7 @@ function buildCategoryUomSection(): ComponentNode[] {
 				searchCommand: UomCommands.SEARCH,
 				filterGraph: { if: ['category_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'uoms',
+				linkRoutePath: 'essential_uom',
 			})],
 		),
 	];

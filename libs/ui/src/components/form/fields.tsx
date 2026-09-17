@@ -338,14 +338,17 @@ export function TextInputField(props: TextInputFieldProps) {
 	const inputId = useId();
 	const fieldData = useFieldData(name);
 	const { register, modelValue, modelLoading, formVariant } = useFormField();
+	const defaultInputProps = useDefaultInputProps(inputProps, name);
+	useAutoFocus(autoFocused, ref, formVariant);
 
+	// Hooks stay above the guard: a field the current record has no data for must render nothing
+	// without changing how many hooks this component called, or React tears down the whole form
+	// with "rendered fewer hooks than expected".
 	if (!fieldData) {
 		return null;
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps, name);
-	useAutoFocus(autoFocused, ref, formVariant);
 
 	return (
 		<BaseFieldWrapper
@@ -390,16 +393,18 @@ export function PasswordInputField(props: PasswordInputFieldProps) {
 	const fieldData = useFieldData(name);
 	const { register, modelValue, modelLoading, formVariant } = useFormField();
 	const [showPassword, setShowPassword] = React.useState(false);
+	const defaultInputProps = useDefaultInputProps(inputProps, name);
+	useAutoFocus(autoFocused, ref, formVariant);
+	const actionIcon = usePasswordToggle(showPassword, setShowPassword, name);
 
+	// Hooks stay above the guard: a field the current record has no data for must render nothing
+	// without changing how many hooks this component called, or React tears down the whole form
+	// with "rendered fewer hooks than expected".
 	if (!fieldData) {
 		return null;
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps, name);
-	useAutoFocus(autoFocused, ref, formVariant);
-
-	const actionIcon = usePasswordToggle(showPassword, setShowPassword, name);
 
 	return (
 		<BaseFieldWrapper
@@ -447,13 +452,17 @@ export function NumberInputField(props: NumberInputFieldProps) {
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
+	useAutoFocus(autoFocused, ref, formVariant);
+
+	// Hooks stay above the guard: a field the current record has no data for must render nothing
+	// without changing how many hooks this component called, or React tears down the whole form
+	// with "rendered fewer hooks than expected".
 	if (!fieldData) {
 		return null;
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
-	useAutoFocus(autoFocused, ref, formVariant);
 
 	return (
 		<BaseFieldWrapper
@@ -512,13 +521,17 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
+	useAutoFocus(autoFocused, ref, formVariant);
+
+	// Hooks stay above the guard: a field the current record has no data for must render nothing
+	// without changing how many hooks this component called, or React tears down the whole form
+	// with "rendered fewer hooks than expected".
 	if (!fieldData) {
 		return null;
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
-	useAutoFocus(autoFocused, ref, formVariant);
 
 	return (
 		<BaseFieldWrapper
@@ -569,13 +582,17 @@ export function DateInputField(props: DateInputFieldProps) {
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
+	useAutoFocusById(autoFocused, inputId, formVariant);
+
+	// Hooks stay above the guard: a field the current record has no data for must render nothing
+	// without changing how many hooks this component called, or React tears down the whole form
+	// with "rendered fewer hooks than expected".
 	if (!fieldData) {
 		return null;
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
-	useAutoFocusById(autoFocused, inputId, formVariant);
 
 	return (
 		<BaseFieldWrapper
@@ -629,12 +646,17 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
+	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
+	useAutoFocusById(autoFocused, inputId, formVariant);
+
+	// Hooks stay above the guard: a field the current record has no data for must render nothing
+	// without changing how many hooks this component called, or React tears down the whole form
+	// with "rendered fewer hooks than expected".
 	if (!fieldData) {
 		return null;
 	}
 
 	const defaultValue = modelValue?.[name];
-	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
 	const enumValues = fieldData.fieldDef.data_type.options?.enumValues as string[];
 	const selectData = enumValues.map((val) => ({
 		value: val,
@@ -642,8 +664,6 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 			`${fieldData.fieldDef.name}.${val}`,
 		)),
 	}));
-
-	useAutoFocusById(autoFocused, inputId, formVariant);
 
 	return (
 		<BaseFieldWrapper

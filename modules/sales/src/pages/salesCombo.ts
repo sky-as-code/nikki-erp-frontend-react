@@ -22,7 +22,7 @@ export function buildSalesComboPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_combos',
+		routePath: 'sales_combo',
 		template: splitView.template,
 		props: splitView.props,
 	})];

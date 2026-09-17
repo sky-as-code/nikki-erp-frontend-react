@@ -1,6 +1,7 @@
 import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
-import { routingService, useActiveOrgModule } from '@nikkierp/shell/routing';
-import { useMyOrgs } from '@nikkierp/shell/userContext';
+import { ORG_HOME_PATH } from '@nikkierp/shell/constants';
+import { routingService } from '@nikkierp/shell/routing';
+import { saveActiveOrgId, useActiveOrgId, useMyOrgs } from '@nikkierp/shell/userContext';
 import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
 import { useLocaleCollator, useLocalize } from '@nikkierp/ui/i18n';
@@ -17,7 +18,7 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 	const isAuthenticated = useIsAuthenticated();
 	const lc = useLocalize();
 	const compareLocalized = useLocaleCollator();
-	const { orgSlug } = useActiveOrgModule();
+	const activeOrgId = useActiveOrgId();
 	const orgs = useMyOrgs();
 	const { dispatchMethod: setCurrentOrgId } = useServiceLayer(sharedStateService.setCurrentOrgId);
 
@@ -27,18 +28,27 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 		if (!isAuthenticated) return [];
 		return orgs
 			.map<SearchableSelectItem>((org) => ({
-				value: org.slug,
+				value: org.id,
 				label: lc(org.display_name),
 			}))
 			.sort((a, b) => compareLocalized(a.label, b.label));
 	}, [orgs, isAuthenticated, lc, compareLocalized]);
 
-	// The id is resolved and stored *before* navigating: the new route's data fetches start as
-	// soon as it renders, and they read this to scope themselves to the right org.
-	const handleOrgChange = (newOrgSlug: string) => {
-		const selected = orgs.find(org => org.slug === newOrgSlug);
-		setCurrentOrgId(selected?.id ?? null);
-		void routingService.navigateTo({ to: `/${newOrgSlug}` });
+	/**
+	 * Persists the choice, then reloads the whole document onto the org home.
+	 *
+	 * A soft switch would have to convince every mounted query, cache entry and micro-app that
+	 * the org changed. Org scoping is injected deep in the service layer (`withOrgId`) rather
+	 * than expressed as a query key, so there is no single cache key to invalidate — a reload is
+	 * both the cheaper and the more reliable answer, and switching org is rare.
+	 *
+	 * Org home rather than the current page: the record being viewed may not exist in the new
+	 * org, and the module list is the one page valid in every org.
+	 */
+	const handleOrgChange = (newOrgId: string) => {
+		saveActiveOrgId(newOrgId);
+		setCurrentOrgId(newOrgId);
+		void routingService.navigateTo({ to: ORG_HOME_PATH, hardNavigate: true });
 	};
 
 	return isAuthenticated && (items.length || !props.hideIfEmpty) && (
@@ -49,7 +59,7 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 			unselectedPlaceholder='Select organization'
 			dropdownWidth={props.dropdownWidth}
 			items={items}
-			value={orgSlug}
+			value={activeOrgId ?? undefined}
 			onChange={handleOrgChange}
 		/>
 	);

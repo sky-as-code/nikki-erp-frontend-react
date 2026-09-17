@@ -26,7 +26,7 @@ export function buildTaxRateVersionPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'tax_rates',
+		routePath: 'accounting_tax_rate_version',
 		template: splitView.template,
 		props: splitView.props,
 	})];

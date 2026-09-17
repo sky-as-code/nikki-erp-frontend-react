@@ -16,7 +16,7 @@ export function buildStorageCategoryPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'storage_categories',
+		routePath: 'inventory_storage_category',
 		template: splitView.template,
 		props: splitView.props,
 	})];

@@ -20,7 +20,7 @@ export function buildWarehousePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'warehouses',
+		routePath: 'inventory_warehouse',
 		template: splitView.template,
 		props: splitView.props,
 	})];
@@ -141,7 +141,7 @@ function buildWarehouseSections() {
 				searchCommand: InventoryLocationCommands.SEARCH,
 				filterGraph: { if: ['warehouse_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'locations',
+				linkRoutePath: 'inventory_location',
 			}),
 		]),
 		collapsibleSectionNode({
@@ -154,7 +154,7 @@ function buildWarehouseSections() {
 				searchCommand: PutawayRuleCommands.SEARCH,
 				filterGraph: { if: ['warehouse_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'putaway_rules',
+				linkRoutePath: 'inventory_putaway_rule',
 			}),
 		]),
 		collapsibleSectionNode({
@@ -168,7 +168,7 @@ function buildWarehouseSections() {
 				// Routes into this warehouse: who is allowed to restock it.
 				filterGraph: { if: ['destination_warehouse_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'supply_relations',
+				linkRoutePath: 'inventory_warehouse_supply_relation',
 			}),
 		]),
 	];

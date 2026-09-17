@@ -126,29 +126,50 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 	);
 }
 
-/** Whether any `resource_form__column`-scoped field has been edited since the last reset. */
 /**
  * Every `resource_form__column`'s `fields`, depth-first through the page's node tree.
  *
- * Columns are nested inside `collapsible_section`s (and possibly `resource_form__tabs`), so a
- * shallow scan of the top-level nodes would miss all of them.
+ * Columns are nested inside `collapsible_section`s, so a shallow scan of the top-level nodes
+ * would miss all of them.
+ *
+ * A child node is not always in `children`: `tabCollapsibleSection` carries one per tab under
+ * `props.tabs[].content`. Walking `children` alone returned **no columns at all** for a page
+ * whose sections live in tabs — which made `hasDirtySectionField` always false, so Save took the
+ * "nothing changed" path and left edit mode without issuing a request. Any node holding another
+ * node in its props has to be followed, so the scan looks for component nodes by shape rather
+ * than by knowing each container's prop name.
  */
 export function collectColumnFields(nodes: ComponentNode[]): { fields?: string[] }[] {
 	const out: { fields?: string[] }[] = [];
-	const walk = (list: ComponentNode[]): void => {
-		for (const node of list) {
+	const seen = new Set<unknown>();
+
+	const walkValue = (value: unknown): void => {
+		if (!value || typeof value !== 'object' || seen.has(value)) {
+			return;
+		}
+		seen.add(value);
+		if (Array.isArray(value)) {
+			value.forEach(walkValue);
+			return;
+		}
+		const node = value as Partial<ComponentNode> & Record<string, unknown>;
+		if (typeof node.component === 'string') {
 			if (node.component === RESOURCE_FORM_COLUMN) {
 				out.push((node.props ?? {}) as { fields?: string[] });
 			}
-			if (node.children) {
-				walk(node.children);
-			}
+			// `props` is walked too: a column reached through `tabs[].content` lives there.
+			walkValue(node.props);
+			walkValue(node.children);
+			return;
 		}
+		Object.values(node).forEach(walkValue);
 	};
-	walk(nodes);
+
+	walkValue(nodes);
 	return out;
 }
 
+/** Whether any `resource_form__column`-scoped field has been edited since the last reset. */
 function hasDirtySectionField(
 	blocks: { fields?: string[] }[],
 	dirtyFields: FormProviderRenderProps['dirtyFields'] | undefined,

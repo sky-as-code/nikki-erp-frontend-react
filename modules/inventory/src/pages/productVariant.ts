@@ -22,12 +22,12 @@ export function buildProductVariantPages(): PageNode[] {
 	const importPage = resourceImportProps({
 		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		returnRoutePath: 'product_variants',
+		returnRoutePath: 'inventory_product_variant',
 	});
 
 	return [
-		definePage({ routePath: 'product_variants', template: splitView.template, props: splitView.props }),
-		definePage({ routePath: 'product_variants/import', template: importPage.template, props: importPage.props }),
+		definePage({ routePath: 'inventory_product_variant', template: splitView.template, props: splitView.props }),
+		definePage({ routePath: 'inventory_product_variant/import', template: importPage.template, props: importPage.props }),
 	];
 }
 
@@ -209,7 +209,7 @@ function buildVariantInventorySection() {
 				'available_quantity', 'base_uom_id', 'lot_ref',
 			],
 			linkField: 'id',
-			linkRoutePath: 'stock_balance',
+			linkRoutePath: 'inventory_stock_quant',
 			testId: 'inventory.variantInventory',
 		}),
 	]);
@@ -233,7 +233,7 @@ function buildVariantMovementsSection() {
 			// Rows point at the transfer that carries them: a move has no page of its own,
 			// and the transfer is the document a user acts on.
 			linkField: 'transfer_id',
-			linkRoutePath: 'stock_transfers',
+			linkRoutePath: 'inventory_stock_transfer',
 			testId: 'inventory.variantMovements',
 		}),
 	]);
@@ -257,7 +257,7 @@ function buildVariantPutawaySection() {
 				'destination_location_id', 'priority',
 			],
 			linkField: 'id',
-			linkRoutePath: 'putaway_rules',
+			linkRoutePath: 'inventory_putaway_rule',
 			testId: 'inventory.variantPutaway',
 		}),
 	]);

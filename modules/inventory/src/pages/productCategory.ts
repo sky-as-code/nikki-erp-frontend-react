@@ -21,12 +21,12 @@ export function buildProductCategoryPages(): PageNode[] {
 	const importPage = resourceImportProps({
 		schemaName: c.PRODUCT_CATEGORY_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		returnRoutePath: 'product_categories',
+		returnRoutePath: 'inventory_product_category',
 	});
 
 	return [
-		definePage({ routePath: 'product_categories', template: splitView.template, props: splitView.props }),
-		definePage({ routePath: 'product_categories/import', template: importPage.template, props: importPage.props }),
+		definePage({ routePath: 'inventory_product_category', template: splitView.template, props: splitView.props }),
+		definePage({ routePath: 'inventory_product_category/import', template: importPage.template, props: importPage.props }),
 	];
 }
 
@@ -109,7 +109,7 @@ function buildCategoryProductsSection(): ComponentNode[] {
 				searchCommand: ProductTemplateCommands.SEARCH,
 				filterGraph: { if: ['category_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'product_templates',
+				linkRoutePath: 'inventory_product_template',
 			})],
 		),
 		// Rules that place goods by category rather than by individual product (CR Â§10.2,
@@ -132,7 +132,7 @@ function buildCategoryProductsSection(): ComponentNode[] {
 					'destination_location_id', 'priority',
 				],
 				linkField: 'id',
-				linkRoutePath: 'putaway_rules',
+				linkRoutePath: 'inventory_putaway_rule',
 			})],
 		),
 	];

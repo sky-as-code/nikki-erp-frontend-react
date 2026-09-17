@@ -3,6 +3,7 @@ import type * as dyn from '@nikkierp/common/dynamicModel';
 
 export const SLICE_NAME = 'shell.userContext';
 export const LOCAL_SETTINGS_STORAGE_KEY = `shell:userContext:settings`;
+export const ACTIVE_ORG_STORAGE_KEY = `shell:userContext:activeOrgId`;
 
 /**
  * How the interface is coloured.
@@ -42,6 +43,16 @@ export type GetUserContextResponse = {
 			short_time_format: string,
 			first_day_of_week: string,
 		},
+		/**
+		 * The organization's `default_currency`, resolved against the currency catalogue. Absent
+		 * when the organization has not set one: there is no safe default, so the backend omits
+		 * the key rather than guessing.
+		 */
+		currency?: {
+			code: string,
+			symbol: string,
+			decimal_places: number,
+		},
 		supported_languages: string[],
 		timezone: string,
 		theme_mode: ThemeMode,
@@ -79,9 +90,22 @@ export type AccountSettings = {
 		shortTimeFormat: string,
 		firstDayOfWeek: string,
 	},
+	currency?: Currency,
 	supportedLanguages: string[],
 	timezone: string,
 	themeMode: ThemeMode,
+};
+
+/**
+ * What it takes to render an amount.
+ *
+ * `symbol` is routinely empty — the currency catalogue seeds no symbols, on the grounds that a
+ * wrong symbol on money is worse than none — so a renderer falls back to `code`.
+ */
+export type Currency = {
+	code: string,
+	symbol: string,
+	decimalPlaces: number,
 };
 
 export type SystemSettings = {
@@ -113,6 +137,7 @@ export function toUserContext(response: GetUserContextResponse): UserContext {
 				shortTimeFormat: response.account_settings.language.short_time_format,
 				firstDayOfWeek: response.account_settings.language.first_day_of_week,
 			},
+			currency: toCurrency(response.account_settings.currency),
 			supportedLanguages: response.account_settings.supported_languages,
 			timezone: response.account_settings.timezone,
 			themeMode: response.account_settings.theme_mode,
@@ -120,6 +145,14 @@ export function toUserContext(response: GetUserContextResponse): UserContext {
 		systemSettings: {
 			appName: response.system_settings.app_name,
 		},
+	};
+}
+
+function toCurrency(src: GetUserContextResponse['account_settings']['currency']): Currency | undefined {
+	return src && {
+		code: src.code,
+		symbol: src.symbol,
+		decimalPlaces: src.decimal_places,
 	};
 }
 

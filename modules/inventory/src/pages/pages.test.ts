@@ -73,14 +73,14 @@ describe('Inventory page metadata', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
 
 		expect(routePaths).toEqual([
-			'product_templates', 'product_templates/import',
-			'product_variants', 'product_variants/import',
-			'product_types',
-			'product_categories', 'product_categories/import',
-			'brands', 'attributes', 'attribute_values', 'template_attribute_values',
-			'locations', 'warehouses', 'storage_categories', 'supply_relations', 'putaway_rules',
-			'stock_balance', 'stock_balance_counts_due', 'stock_transfers',
-			'stock_scraps',
+			'inventory_product_template', 'inventory_product_template/import',
+			'inventory_product_variant', 'inventory_product_variant/import',
+			'inventory_product_type',
+			'inventory_product_category', 'inventory_product_category/import',
+			'inventory_brand', 'inventory_product_attribute', 'inventory_product_attribute_value', 'inventory_product_template_attribute_value',
+			'inventory_location', 'inventory_warehouse', 'inventory_storage_category', 'inventory_warehouse_supply_relation', 'inventory_putaway_rule',
+			'inventory_stock_quant', 'stock_balance_counts_due', 'inventory_stock_transfer',
+			'inventory_stock_scrap',
 		]);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*(\/import)?$/);
@@ -95,15 +95,15 @@ describe('Inventory page metadata', () => {
 	it.each([
 		{
 			name: 'productTemplate', build: buildProductTemplatePages,
-			route: 'product_templates', schema: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
+			route: 'inventory_product_template', schema: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
 		},
 		{
 			name: 'productVariant', build: buildProductVariantPages,
-			route: 'product_variants', schema: c.PRODUCT_VARIANT_SCHEMA_NAME,
+			route: 'inventory_product_variant', schema: c.PRODUCT_VARIANT_SCHEMA_NAME,
 		},
 		{
 			name: 'productCategory', build: buildProductCategoryPages,
-			route: 'product_categories', schema: c.PRODUCT_CATEGORY_SCHEMA_NAME,
+			route: 'inventory_product_category', schema: c.PRODUCT_CATEGORY_SCHEMA_NAME,
 		},
 	])('$name declares the import pilot page beside its list', ({ build, route, schema }) => {
 		const pages = build();
@@ -186,7 +186,7 @@ describe('Product template detail sections', () => {
 		const variantTable = collectComponents(page, 'resourceTable')
 			.find(node => node.props?.schemaName === c.PRODUCT_VARIANT_SCHEMA_NAME);
 
-		expect(variantTable?.props?.linkRoutePath).toBe('product_variants');
+		expect(variantTable?.props?.linkRoutePath).toBe('inventory_product_variant');
 	});
 
 	/**
@@ -265,7 +265,7 @@ describe('Product stock integration', () => {
 			.find(table => table.props?.schemaName === c.PUTAWAY_RULE_SCHEMA_NAME);
 
 		expect(putaway?.props?.filterGraph).toEqual({ if: ['product_category_id', '=', '${id}'] });
-		expect(putaway?.props?.linkRoutePath).toBe('putaway_rules');
+		expect(putaway?.props?.linkRoutePath).toBe('inventory_putaway_rule');
 	});
 });
 
@@ -475,6 +475,6 @@ describe('Template attribute value page', () => {
 		const attributes = collectComponents(template, 'resourceTable')
 			.find(node => node.props?.schemaName === c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME);
 
-		expect(attributes?.props?.linkRoutePath).toBe('template_attribute_values');
+		expect(attributes?.props?.linkRoutePath).toBe('inventory_product_template_attribute_value');
 	});
 });

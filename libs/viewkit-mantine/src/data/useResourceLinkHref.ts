@@ -3,22 +3,22 @@ import { useParams } from 'react-router-dom';
 
 
 /**
- * Builds `/{orgSlug}/{moduleSlug}/{routePath}` for the current org and module,
+ * Builds `/{moduleSlug}/{routePath}` for the current module,
  * or `undefined` while any of them is unknown.
  *
  * `routePath` is the *target* page segment, which is not always the current one.
  */
 export function useResourceBaseHref(routePath: string | undefined): string | undefined {
-	const { orgSlug, moduleSlug } = useParams();
+	const { moduleSlug } = useParams();
 
 	return React.useMemo(
-		() => buildResourceBaseHref(orgSlug, moduleSlug, routePath),
-		[orgSlug, moduleSlug, routePath],
+		() => buildResourceBaseHref(moduleSlug, routePath),
+		[moduleSlug, routePath],
 	);
 }
 
 /**
- * Builds `/{orgSlug}/{moduleSlug}/{routePath}/{id}` for a table row.
+ * Builds `/{moduleSlug}/{routePath}/{id}` for a table row.
  *
  * `routePath` is the *target* page segment, which is not always the current
  * one: a users table embedded in a role detail page passes `'users'`.
@@ -45,8 +45,8 @@ export function useResourceLinkHref(
  * pops the whole route to the module root rather than one segment. Naming the target page
  * outright sidesteps that: the result never depends on which route happens to be current.
  *
- * Returns `undefined` while the org, the module or any `:param` is still unknown, which is the
- * signal to render the link disabled rather than pointing it at a half-built path.
+ * Returns `undefined` while the module or any `:param` is still unknown, which is the signal to
+ * render the link disabled rather than pointing it at a half-built path.
  *
  * A `routePath` that starts with `.` is left to React Router's own relative resolution: the
  * existing `'../'` back links mean exactly what they say and must keep working.
@@ -59,7 +59,7 @@ export function useRoutePathHref(routePath: string | undefined): string | undefi
 			return routePath;
 		}
 		const filled = fillRouteParams(routePath, params);
-		return buildResourceBaseHref(params.orgSlug, params.moduleSlug, filled);
+		return buildResourceBaseHref(params.moduleSlug, filled);
 	}, [routePath, params]);
 }
 
@@ -100,14 +100,31 @@ export function fillRouteParams(
 	return filled.join('/');
 }
 
-function buildResourceBaseHref(
-	orgSlug: string | undefined,
+/**
+ * `/{moduleSlug}/{routePath}`.
+ *
+ * The organization used to lead this path. It is no longer a URL segment — it is resolved from
+ * storage and validated against the user's org list — so a module now hangs directly off the
+ * root. Exported for its own test: this is the one place the resource URL shape is decided, and
+ * every helper in this file flows through it.
+ */
+export function buildResourceBaseHref(
 	moduleSlug: string | undefined,
 	routePath: string | undefined,
 ): string | undefined {
-	if (!routePath || !orgSlug || !moduleSlug) {
+	if (!routePath) {
+		return undefined;
+	}
+	// A leading slash names the module itself: `/purchase/purchase_vendor_product_price`. Needed
+	// wherever a page embeds a table of a schema another module owns, since the bare form is
+	// resolved against the *current* module and could only ever reach that module's own pages.
+	if (routePath.startsWith('/')) {
+		const segs = routePath.split('/').filter(Boolean).map(seg => encodeURIComponent(seg));
+		return `/${segs.join('/')}`;
+	}
+	if (!moduleSlug) {
 		return undefined;
 	}
 	const pageSeg = routePath.split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
-	return `/${encodeURIComponent(orgSlug)}/${encodeURIComponent(moduleSlug)}/${pageSeg}`;
+	return `/${encodeURIComponent(moduleSlug)}/${pageSeg}`;
 }

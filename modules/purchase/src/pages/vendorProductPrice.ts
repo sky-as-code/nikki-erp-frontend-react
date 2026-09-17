@@ -28,7 +28,7 @@ export function buildVendorProductPricePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'vendor_product_prices',
+		routePath: 'purchase_vendor_product_price',
 		template: splitView.template,
 		props: splitView.props,
 	})];

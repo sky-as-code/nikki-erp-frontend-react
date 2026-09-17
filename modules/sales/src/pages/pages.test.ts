@@ -63,9 +63,9 @@ describe('Sales page metadata', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
 
 		expect(routePaths).toEqual([
-			'sales_orders', 'sales_quotations', 'sales_bills', 'sales_payments',
-			'sales_fiscal_requests', 'sales_pricelists', 'sales_promotion_programs', 'sales_combos',
-			'sales_voucher_codes', 'sales_channels', 'sales_points',
+			'sales_order', 'sales_quotation', 'sales_bill', 'sales_payment',
+			'sales_fiscal_request', 'sales_pricelist', 'sales_promotion_program', 'sales_combo',
+			'sales_voucher_code', 'sales_channel', 'sales_point',
 		]);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);
@@ -139,17 +139,17 @@ describe('Derived test ids', () => {
 		}));
 
 		expect(derived).toEqual([
-			'sales_orders.orderList',
-			'sales_quotations.quotationList',
-			'sales_bills.billList',
-			'sales_payments.paymentList',
-			'sales_fiscal_requests.fiscalRequestList',
-			'sales_pricelists.pricelistList',
-			'sales_promotion_programs.promotionProgramList',
-			'sales_combos.comboList',
-			'sales_voucher_codes.voucherCodeList',
-			'sales_channels.channelList',
-			'sales_points.pointList',
+			'sales_order.orderList',
+			'sales_quotation.quotationList',
+			'sales_bill.billList',
+			'sales_payment.paymentList',
+			'sales_fiscal_request.fiscalRequestList',
+			'sales_pricelist.pricelistList',
+			'sales_promotion_program.promotionProgramList',
+			'sales_combo.comboList',
+			'sales_voucher_code.voucherCodeList',
+			'sales_channel.channelList',
+			'sales_point.pointList',
 		]);
 		// Two pages sharing an id make an end-to-end selector ambiguous rather than wrong, which is
 		// the harder failure to diagnose.

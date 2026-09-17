@@ -1,7 +1,7 @@
 import {
 	Box, Button, Divider, Flex, Group,
 } from '@mantine/core';
-import { useActiveOrgModule } from '@nikkierp/shell/routing';
+import { ORG_HOME_PATH } from '@nikkierp/shell/constants';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { IconCategoryFilled } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -20,9 +20,8 @@ export const Header: React.FC = () => {
 	const bg = usePaperBgColor();
 
 	const { pathname } = useLocation();
-	const { orgSlug } = useActiveOrgModule();
 
-	const isRootPath = pathname === `/${orgSlug ?? ''}` || pathname === '/';
+	const isRootPath = pathname === '/';
 
 	return (
 		<Box className={clsx( classes.headerRow )}
@@ -73,7 +72,6 @@ const HeaderMobile: React.FC = () => {
 
 const GoHomeButton: React.FC = () => {
 	const navigate = useNavigate();
-	const { orgSlug } = useActiveOrgModule();
 	const [isAnimating, setIsAnimating] = React.useState(false);
 
 	const handleClick = () => {
@@ -82,12 +80,7 @@ const GoHomeButton: React.FC = () => {
 
 	const handleAnimationEnd = () => {
 		setIsAnimating(false);
-		if (orgSlug) {
-			navigate(`/${orgSlug}`);
-		}
-		else {
-			navigate('/');
-		}
+		navigate(ORG_HOME_PATH);
 	};
 
 	return (

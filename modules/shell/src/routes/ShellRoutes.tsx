@@ -7,7 +7,6 @@ import { Route, Routes, useParams } from 'react-router';
 
 // import { LazyModule } from '../components/LazyModule';
 import { AppLoading } from '../components/Loading';
-import { ToDefaultOrg } from '../components/ToDefaultOrg';
 import { ModuleSubLayout } from '../layouts/ModuleSubLayout';
 import { OrgSubLayout } from '../layouts/OrgSubLayout';
 import { PrivateLayout } from '../layouts/PrivateLayout';
@@ -32,19 +31,18 @@ export function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 			</Route>
 
 
+			{/* The organization is no longer a URL segment: it is resolved from storage and
+				validated against the user's org list, so `/` is org home and every module hangs
+				directly off it. `OrgSubLayout` still gates the tree on an org being resolved. */}
 			<Route element={<PrivateLayout />}>
-				<Route path='/' element={<ToDefaultOrg />} />
 				<Route element={<OrgSubLayout />}>
-					<Route path=':orgSlug'>
-						<Route element={<ModuleSubLayout />}>
-							<Route index element={<ModuleHomePage />} />
-							<Route path=':moduleSlug/*' element={<LazyModule microApps={props.microApps} />} />
-							{/* Keeps the org chrome around an unknown path inside a real org. */}
-							<Route path='*' element={<NotFoundPage />} />
-						</Route>
+					<Route element={<ModuleSubLayout />}>
+						<Route index element={<ModuleHomePage />} />
+						<Route path=':moduleSlug/*' element={<LazyModule microApps={props.microApps} />} />
+						{/* Keeps the org chrome around an unknown path. */}
+						<Route path='*' element={<NotFoundPage />} />
 					</Route>
 				</Route>
-				<Route path='*' element={<NotFoundPage />} />
 			</Route>
 		</Routes>
 	);

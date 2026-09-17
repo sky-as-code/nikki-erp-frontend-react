@@ -25,6 +25,7 @@ import {
 } from './ResourceDetailProvider';
 import { ResourceDetailOverflowMenu } from './resourceOverflowMenu';
 import { useResourceUpdateContext } from './resourceUpdateContext';
+import { EdgeFieldValue } from '../../components/edgeFieldValue';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import { commandActionCode, StandardActionCode, useActionLock } from '../../permissions';
@@ -546,7 +547,11 @@ function ReadOnlyFieldValue({
 	// Called before the early return, since hooks cannot be skipped. It no-ops for every field
 	// that is not function-computed with a declared dependency.
 	const computed = useComputedField(field);
+	const { edgeSchemas } = useResourceUpdateContext();
 	const fieldDef = modelSchema.fields[field];
+	// A foreign key resolves to the relation it owns the key for, the same dispatch edit mode
+	// uses to choose `RelationSelectField`.
+	const relation = dyn.findRelationBySrcField(modelSchema, field);
 	// A live recompute wins over the loaded value, which went stale the moment the user edited the
 	// field it derives from. Before the first answer arrives there is nothing fresher to show, so
 	// the loaded value stands.
@@ -557,13 +562,22 @@ function ReadOnlyFieldValue({
 		return null;
 	}
 
+	const plainValue = hasDisplayableValue(rawValue)
+		? renderDisplayFieldValue(rawValue, fieldDef, localize)
+		: emptyFieldPlaceholder;
+
 	return (
 		<Stack gap={4}>
 			<Text size='md' fw='bold'>{localize(fieldDef.label)}</Text>
 			<Text size='md'>
-				{hasDisplayableValue(rawValue)
-					? renderDisplayFieldValue(rawValue, fieldDef, localize)
-					: emptyFieldPlaceholder}
+				{relation ? (
+					<EdgeFieldValue
+						relation={relation}
+						destSchema={edgeSchemas[relation.dest_schema_name]}
+						fieldValues={fieldValues}
+						fallback={plainValue}
+					/>
+				) : plainValue}
 			</Text>
 		</Stack>
 	);

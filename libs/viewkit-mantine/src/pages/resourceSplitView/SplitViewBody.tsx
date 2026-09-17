@@ -3,7 +3,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 
 import { SplitLayout } from './SplitLayout';
-import { SplitViewSecondaryContext } from './splitViewContext';
+import { SplitViewPrimaryContext, SplitViewSecondaryContext } from './splitViewContext';
 
 
 export type SplitViewBodyProps = {
@@ -32,7 +32,18 @@ export function SplitViewBody({ primary, secondary }: SplitViewBodyProps): React
 		[isPrimaryOpen],
 	);
 
-	const renderPrimary = React.useCallback(() => isPrimaryOpen && primary, [isPrimaryOpen, primary]);
+	// The close action travels to the list pane rather than being drawn over it, so the template
+	// can place it among its own toolbar controls and match their styling.
+	const primaryState = React.useMemo(
+		() => (isSecondaryOpen ? { closePane: closePrimary, closeLabel: t('action.close') } : {}),
+		[isSecondaryOpen, closePrimary, t],
+	);
+
+	const renderPrimary = React.useCallback(() => isPrimaryOpen && (
+		<SplitViewPrimaryContext.Provider value={primaryState}>
+			{primary}
+		</SplitViewPrimaryContext.Provider>
+	), [isPrimaryOpen, primary, primaryState]);
 	const renderSecondary = React.useCallback(() => isSecondaryOpen && (
 		<SplitViewSecondaryContext.Provider value={secondaryState}>
 			{secondary}
@@ -59,8 +70,6 @@ export function SplitViewBody({ primary, secondary }: SplitViewBodyProps): React
 			secondaryOpen={isSecondaryOpen}
 			renderPrimary={renderPrimary}
 			renderSecondary={renderSecondary}
-			onClosePrimary={isSecondaryOpen ? closePrimary : undefined}
-			closePrimaryLabel={t('action.close')}
 		/>
 	);
 }

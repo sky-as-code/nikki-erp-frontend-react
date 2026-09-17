@@ -22,7 +22,7 @@ export function buildSalesPricelistPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_pricelists',
+		routePath: 'sales_pricelist',
 		template: splitView.template,
 		props: splitView.props,
 	})];

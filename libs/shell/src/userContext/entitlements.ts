@@ -12,9 +12,9 @@
 
 import { ResourceScope } from '@nikkierp/common/entitlements';
 import { useMemo } from 'react';
-import { useParams } from 'react-router';
 
-import { useFindMyOrg, useGetUserContext } from './userContextSelectors';
+import { useActiveOrgId } from './activeOrg';
+import { useGetUserContext } from './userContextSelectors';
 
 import type { EntitlementContext, EntitlementRequirement } from '@nikkierp/common/entitlements';
 import type { EntitlementSource } from '@nikkierp/ui/components';
@@ -42,13 +42,11 @@ export function useEntitlementContext(): EntitlementContext | null {
  * The context plus a scope resolver, ready to pass to `EntitlementProvider`.
  *
  * An org-scoped requirement usually omits the org, because the call site does not know it: the org
- * comes from the route the user is on. One that names an org explicitly keeps it.
+ * comes from the active organization. One that names an org explicitly keeps it.
  */
 export function useEntitlementSource(): EntitlementSource {
 	const context = useEntitlementContext();
-	const { orgSlug } = useParams();
-	const activeOrg = useFindMyOrg(orgSlug ?? '');
-	const activeOrgId = activeOrg?.id ?? null;
+	const activeOrgId = useActiveOrgId();
 	const orgUnitId = context?.orgUnitId ?? null;
 
 	return useMemo(() => ({

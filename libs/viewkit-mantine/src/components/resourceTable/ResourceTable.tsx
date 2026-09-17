@@ -155,7 +155,7 @@ function useInitialRequest(params: ResourceTableProps): dyn.RestSearchRequest {
  * allocates a new object per recompute, so identity alone would republish on every
  * render even when the resolved graph is unchanged.
  */
-function useInterpolatedGraph(
+export function useInterpolatedGraph(
 	filterGraph: ResourceTableProps['filterGraph'],
 ): InterpolateResult<dyn.SearchGraph | undefined> {
 	const paramsKey = JSON.stringify(useParams());

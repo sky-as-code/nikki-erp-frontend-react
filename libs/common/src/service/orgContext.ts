@@ -68,8 +68,8 @@ export function isOrgScoped(schema: SchemaPack, schemaName: string): boolean {
  * Throws when the resource needs an org and none is resolved. The alternative is to send the
  * request anyway and let the server answer 400 `err_org_id_required`, which surfaces as a
  * generic validation toast naming a field the user never filled in. Failing here names the
- * resource and the real cause: the Shell has not resolved an org yet, or the page is being
- * rendered outside an org route.
+ * resource and the real cause: the Shell has not resolved an org yet, or the user belongs to
+ * none.
  */
 export async function withOrgId<TRequest extends object>(
 	request: TRequest, schema: SchemaPack, schemaName: string,
@@ -83,8 +83,8 @@ export async function withOrgId<TRequest extends object>(
 	if (!orgId) {
 		throw new Error(
 			`Resource '${schemaName}' is scoped to an organization, but no current organization is set. `
-			+ 'The Shell resolves it from the :orgSlug route segment; a page rendered outside an org '
-			+ 'route has none.',
+			+ 'The Shell resolves it from storage, validated against the org list in the user context; '
+			+ 'a user belonging to no organization has none.',
 		);
 	}
 	return { ...request, [ORG_ID_FIELD]: orgId };

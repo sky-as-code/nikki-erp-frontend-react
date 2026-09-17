@@ -23,7 +23,7 @@ export function buildSalesPromotionProgramPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_promotion_programs',
+		routePath: 'sales_promotion_program',
 		template: splitView.template,
 		props: splitView.props,
 	})];

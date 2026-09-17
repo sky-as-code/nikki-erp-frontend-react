@@ -16,11 +16,11 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
 const ITEMS: MenuItem[] = [
 	// Orders first: it is the record of money actually moving, and the entry point for the
 	// question this module most often has to answer — did this payment go through.
-	{ labelKey: 'menu_orders', link: '/orders' },
+	{ labelKey: 'menu_orders', link: '/paymentinvoice_order' },
 	// Transactions is the same money seen per movement rather than per order, which is the way in
 	// when the question starts from a gateway reference.
 	{ labelKey: 'menu_transactions', link: '/transactions' },
-	{ labelKey: 'menu_invoices', link: '/invoices' },
+	{ labelKey: 'menu_invoices', link: '/paymentinvoice_invoice' },
 	// No entry for payment methods: they are configuration a deployment sets up once, and they
 	// have no page. They are reached through the relation selects on an order.
 ];

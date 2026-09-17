@@ -25,7 +25,7 @@ export function buildStockScrapPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'stock_scraps',
+		routePath: 'inventory_stock_scrap',
 		template: splitView.template,
 		props: splitView.props,
 	})];

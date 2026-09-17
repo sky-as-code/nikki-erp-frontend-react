@@ -16,7 +16,7 @@ export function buildUomPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'uoms',
+		routePath: 'essential_uom',
 		template: splitView.template,
 		props: splitView.props,
 	})];

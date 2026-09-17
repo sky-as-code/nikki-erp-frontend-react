@@ -7,6 +7,7 @@ export * from './form';
 export * from './Input';
 export * from './hoc';
 export * from './Loading';
+export * from './Localized';
 export * from './Modal';
 export * from './NotFound';
 export * from './SearchableSelect';

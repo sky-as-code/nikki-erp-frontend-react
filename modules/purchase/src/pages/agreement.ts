@@ -26,7 +26,7 @@ export function buildAgreementPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'agreements',
+		routePath: 'purchase_agreement',
 		template: splitView.template,
 		props: splitView.props,
 	})];
@@ -232,7 +232,7 @@ function buildDrawnOrdersSection(): ComponentNode[] {
 				filterGraph: { if: ['agreement_id', '=', '${id}'] },
 				fields: ['code', 'status', 'vendor_id', 'order_deadline', 'total_amount'],
 				linkField: 'id',
-				linkRoutePath: 'purchase_orders',
+				linkRoutePath: 'purchase_order',
 				fieldRenderers: {
 					status: {
 						renderer: 'badge',
