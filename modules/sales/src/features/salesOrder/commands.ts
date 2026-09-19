@@ -2,7 +2,7 @@ import { Command, ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import {
-	ApplyVoucherRequest, CreateOrderRequest, ManualDiscountRequest, OrderActionRequest,
+	ApplyVoucherRequest, CreateOrderRequest, ManualDiscountRequest, NotedActionRequest, OrderActionRequest,
 	ReasonedActionRequest, RevokeManualDiscountRequest, salesOrderService,
 } from './salesOrderService';
 import { SALES_MODULE, SALES_ORDER_SCHEMA_NAME } from '../../constants';
@@ -51,11 +51,11 @@ function lifecycleSubscriptions(bus: ICommandBus): (() => void)[] {
 		),
 		bus.subscribe(
 			SalesOrderCommands.CONFIRM,
-			cmd => salesOrderService.confirm(actionRequest(cmd)),
+			cmd => salesOrderService.confirm(notedRequest(cmd, 'confirmation_note')),
 		),
 		bus.subscribe(
 			SalesOrderCommands.CANCEL,
-			cmd => salesOrderService.cancel(reasonedRequest(cmd)),
+			cmd => salesOrderService.cancel({ ...reasonedRequest(cmd), ...noteOf(cmd, 'cancellation_note') }),
 		),
 		bus.subscribe(
 			SalesOrderCommands.REPRICE,
@@ -108,6 +108,22 @@ function reasonedRequest(command: Command): ReasonedActionRequest {
 		...actionRequest(command),
 		reason: String(payload.reason ?? ''),
 	};
+}
+
+/**
+ * The notes ARE fields of the order, so a prompt can collect them: the backend writes each through
+ * its own action and keeps it closed to a plain update.
+ */
+function notedRequest(command: Command, field: 'confirmation_note' | 'cancellation_note'): NotedActionRequest {
+	return { ...actionRequest(command), ...noteOf(command, field) };
+}
+
+function noteOf(command: Command, field: 'confirmation_note' | 'cancellation_note'): Partial<NotedActionRequest> {
+	const value = (command.payload as Record<string, unknown>)[field];
+	if (value == null || value === '') {
+		return {};
+	}
+	return { [field]: String(value) };
 }
 
 function voucherRequest(command: Command): ApplyVoucherRequest {

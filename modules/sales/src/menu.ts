@@ -25,6 +25,8 @@ const ITEMS: MenuItem[] = [
 			{ labelKey: 'menu.payments', link: '/sales_payment' },
 			// Read-mostly: the backend creates these; issuing one is an action on a bill.
 			{ labelKey: 'menu.fiscalRequests', link: '/sales_fiscal_request' },
+			// Refund requests: raised from an order, confirmed here.
+			{ labelKey: 'menu.returns', link: '/sales_return' },
 		],
 	},
 	{

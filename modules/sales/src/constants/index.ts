@@ -32,12 +32,18 @@ export const SALES_FISCAL_REQUEST_SCHEMA_NAME = 'sales_fiscal_request';
 export const SALES_FULFILLMENT_REQUEST_SCHEMA_NAME = 'sales_fulfillment_request';
 export const SALES_FULFILLMENT_REQUEST_LINE_SCHEMA_NAME = 'sales_fulfillment_request_line';
 export const SALES_MANUAL_DISCOUNT_SCHEMA_NAME = 'sales_manual_discount';
+export const SALES_ORDER_FULFILLMENT_SCHEMA_NAME = 'sales_order_fulfillment';
+export const SALES_ORDER_FULFILLMENT_ITEM_SCHEMA_NAME = 'sales_order_fulfillment_item';
+export const SALES_RETURN_SCHEMA_NAME = 'sales_return';
 
 /**
  * The engine serves a resource at `/v1/{module}/{schema_name}`, so the path segment is the schema
  * name itself — singular snake_case. A pluralised path 404s every request.
  */
 export const SALES_ORDER_RESOURCE_PATH = `v1/sales/${SALES_ORDER_SCHEMA_NAME}`;
+export const SALES_ORDER_FULFILLMENT_RESOURCE_PATH = `v1/sales/${SALES_ORDER_FULFILLMENT_SCHEMA_NAME}`;
+export const SALES_ORDER_FULFILLMENT_ITEM_RESOURCE_PATH = `v1/sales/${SALES_ORDER_FULFILLMENT_ITEM_SCHEMA_NAME}`;
+export const SALES_RETURN_RESOURCE_PATH = `v1/sales/${SALES_RETURN_SCHEMA_NAME}`;
 export const SALES_ORDER_LINE_RESOURCE_PATH = `v1/sales/${SALES_ORDER_LINE_SCHEMA_NAME}`;
 export const SALES_ORDER_LINE_COMPONENT_RESOURCE_PATH = `v1/sales/${SALES_ORDER_LINE_COMPONENT_SCHEMA_NAME}`;
 export const SALES_ORDER_ADJUSTMENT_RESOURCE_PATH = `v1/sales/${SALES_ORDER_ADJUSTMENT_SCHEMA_NAME}`;
@@ -101,6 +107,13 @@ export const EXPLAIN_PRICE_PATH = 'explain_price';
 export const MANUAL_DISCOUNT_PATH = 'manual_discount';
 export const REVOKE_MANUAL_DISCOUNT_PATH = 'revoke_manual_discount';
 export const CREATE_ORDER_PATH = 'create_order';
+export const CONFIRM_RETURN_PATH = 'confirm';
+export const PROCESS_RETURN_PATH = 'process';
+
+// Refund request (sales_return) statuses, verbatim from the backend enum.
+export const RETURN_STATUS_DRAFT = 'draft';
+export const RETURN_STATUS_APPROVED = 'approved';
+export const RETURN_STATUS_PROCESSING = 'processing';
 
 export const SPLIT_PATH = 'split';
 export const MERGE_PATH = 'merge';

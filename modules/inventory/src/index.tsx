@@ -22,6 +22,7 @@ import { registerStockMoveLineCommands } from './features/stockMoveLine/commands
 import { registerStockOperationTypeCommands } from './features/stockOperationType/commands';
 import { registerStockProductConfigCommands } from './features/stockProductConfig/commands';
 import { registerStockQuantCommands } from './features/stockQuant/commands';
+import { registerStockReservationCommands } from './features/stockReservation/commands';
 import { registerStockScrapCommands } from './features/stockScrap/commands';
 import { registerStockTransferCommands } from './features/stockTransfer/commands';
 import { registerStorageCategoryCommands } from './features/storageCategory/commands';
@@ -39,6 +40,7 @@ import { buildProductTypePages } from './pages/productType';
 import { buildProductVariantPages } from './pages/productVariant';
 import { buildPutawayRulePages } from './pages/putawayRule';
 import { buildStockQuantPages } from './pages/stockQuant';
+import { buildStockReservationPages } from './pages/stockReservation';
 import { buildStockScrapPages } from './pages/stockScrap';
 import { buildStockTransferPages } from './pages/stockTransfer';
 import { buildStorageCategoryPages } from './pages/storageCategory';
@@ -89,6 +91,7 @@ const bundle: MicroAppBundle = {
 		registerStockMoveCommands(host.commandBus);
 		registerStockMoveLineCommands(host.commandBus);
 		registerStockScrapCommands(host.commandBus);
+		registerStockReservationCommands(host.commandBus);
 		registerStockProductConfigCommands(host.commandBus);
 
 		return {
@@ -117,6 +120,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildStockQuantPages(),
 		...buildStockTransferPages(),
 		...buildStockScrapPages(),
+		...buildStockReservationPages(),
 	], []);
 
 	return (
@@ -197,6 +201,11 @@ function registerModelSchemas(): void {
 	}, {
 		schemaName: c.STOCK_SCRAP_SCHEMA_NAME,
 		resourcePath: c.STOCK_SCRAP_RESOURCE_PATH,
+	}, {
+		// Read-only over HTTP: a reservation is written by reserving, consuming, releasing and
+		// protecting, never by editing the row. Reached from a sales order's items as well.
+		schemaName: c.STOCK_RESERVATION_SCHEMA_NAME,
+		resourcePath: c.STOCK_RESERVATION_RESOURCE_PATH,
 	}, {
 		// Reached as a related record of a product template rather than as a page of its own:
 		// the unit a product's stock is counted in is configured where the product is.

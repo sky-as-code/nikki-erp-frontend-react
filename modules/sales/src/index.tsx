@@ -18,6 +18,8 @@ import { registerSalesManualDiscountCommands } from './features/salesManualDisco
 import { registerSalesOrderCommands } from './features/salesOrder/commands';
 import { registerSalesOrderAdjustmentCommands } from './features/salesOrderAdjustment/commands';
 import { registerSalesOrderEventCommands } from './features/salesOrderEvent/commands';
+import { registerSalesOrderFulfillmentCommands } from './features/salesOrderFulfillment/commands';
+import { registerSalesOrderFulfillmentItemCommands } from './features/salesOrderFulfillmentItem/commands';
 import { registerSalesOrderLineCommands } from './features/salesOrderLine/commands';
 import { registerSalesOrderLineComponentCommands } from './features/salesOrderLineComponent/commands';
 import { registerSalesPaymentCommands } from './features/salesPayment/commands';
@@ -29,6 +31,7 @@ import { registerSalesPromotionProgramCommands } from './features/salesPromotion
 import { registerSalesPromotionRewardCommands } from './features/salesPromotionReward/commands';
 import { registerSalesQuotationCommands } from './features/salesQuotation/commands';
 import { registerSalesQuotationLineCommands } from './features/salesQuotationLine/commands';
+import { registerSalesReturnCommands } from './features/salesReturn/commands';
 import { registerSalesVoucherCodeCommands } from './features/salesVoucherCode/commands';
 import { registerSalesVoucherRedemptionCommands } from './features/salesVoucherRedemption/commands';
 import { buildSalesMenu } from './menu';
@@ -42,6 +45,7 @@ import { buildSalesPointPages } from './pages/salesPoint';
 import { buildSalesPricelistPages } from './pages/salesPricelist';
 import { buildSalesPromotionProgramPages } from './pages/salesPromotionProgram';
 import { buildSalesQuotationPages } from './pages/salesQuotation';
+import { buildSalesReturnPages } from './pages/salesReturn';
 import { buildSalesVoucherCodePages } from './pages/salesVoucherCode';
 
 
@@ -84,6 +88,8 @@ const bundle: MicroAppBundle = {
 		registerSalesOrderLineComponentCommands(host.commandBus);
 		registerSalesOrderAdjustmentCommands(host.commandBus);
 		registerSalesOrderEventCommands(host.commandBus);
+		registerSalesOrderFulfillmentCommands(host.commandBus);
+		registerSalesOrderFulfillmentItemCommands(host.commandBus);
 		registerSalesManualDiscountCommands(host.commandBus);
 		registerSalesBillCommands(host.commandBus);
 		registerSalesBillLineCommands(host.commandBus);
@@ -92,6 +98,7 @@ const bundle: MicroAppBundle = {
 		registerSalesFulfillmentRequestCommands(host.commandBus);
 		registerSalesFulfillmentRequestLineCommands(host.commandBus);
 		registerSalesFiscalRequestCommands(host.commandBus);
+		registerSalesReturnCommands(host.commandBus);
 
 		return {
 			domType,
@@ -108,6 +115,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildSalesBillPages(),
 		...buildSalesPaymentPages(),
 		...buildSalesFiscalRequestPages(),
+		...buildSalesReturnPages(),
 		...buildSalesPricelistPages(),
 		...buildSalesPromotionProgramPages(),
 		...buildSalesComboPages(),
@@ -217,6 +225,19 @@ function documentSchemas() {
 		// request context rather than accepting one.
 		schemaName: c.SALES_MANUAL_DISCOUNT_SCHEMA_NAME,
 		resourcePath: c.SALES_MANUAL_DISCOUNT_RESOURCE_PATH,
+	}, {
+		// Read-only: a kiosk sale's delivery, created by confirming the order and moved by the
+		// attempt and result actions. Its items carry the warehouse reservation each is held by.
+		schemaName: c.SALES_ORDER_FULFILLMENT_SCHEMA_NAME,
+		resourcePath: c.SALES_ORDER_FULFILLMENT_RESOURCE_PATH,
+	}, {
+		schemaName: c.SALES_ORDER_FULFILLMENT_ITEM_SCHEMA_NAME,
+		resourcePath: c.SALES_ORDER_FULFILLMENT_ITEM_RESOURCE_PATH,
+	}, {
+		// The refund request. Raised from an order; confirmed, processed and cancelled by its own
+		// actions rather than by editing the row.
+		schemaName: c.SALES_RETURN_SCHEMA_NAME,
+		resourcePath: c.SALES_RETURN_RESOURCE_PATH,
 	}, {
 		schemaName: c.SALES_BILL_SCHEMA_NAME,
 		resourcePath: c.SALES_BILL_RESOURCE_PATH,

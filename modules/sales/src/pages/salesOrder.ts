@@ -9,6 +9,8 @@ import { SalesFulfillmentRequestCommands } from '../features/salesFulfillmentReq
 import { SalesOrderCommands } from '../features/salesOrder/commands';
 import { SalesOrderAdjustmentCommands } from '../features/salesOrderAdjustment/commands';
 import { SalesOrderEventCommands } from '../features/salesOrderEvent/commands';
+import { SalesOrderFulfillmentCommands } from '../features/salesOrderFulfillment/commands';
+import { SalesOrderFulfillmentItemCommands } from '../features/salesOrderFulfillmentItem/commands';
 import { SalesOrderLineCommands } from '../features/salesOrderLine/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -124,9 +126,54 @@ function buildSalesOrderDetailProps() {
 			...buildSalesOrderLinesSection(),
 			...buildSalesOrderAdjustmentsSection(),
 			...buildSalesOrderFulfillmentSection(),
+			...buildSalesOrderKioskFulfillmentSections(),
 			...buildSalesOrderEventsSection(),
 		],
 	});
+}
+
+/**
+ * The kiosk delivery of the sale and the stock held for it. The items table is filtered through
+ * the fulfillment edge because an item carries no order id of its own, and each row links to the
+ * warehouse reservation holding it, on the inventory module's own page.
+ */
+function buildSalesOrderKioskFulfillmentSections(): ComponentNode[] {
+	return [
+		collapsibleSectionNode(
+			{
+				header: 'sales_order_sections_kiosk_fulfillments',
+				translationNs: c.SALES_MODULE,
+				expanded: false,
+			},
+			[resourceTableNode({
+				schemaName: c.SALES_ORDER_FULFILLMENT_SCHEMA_NAME,
+				translationNs: c.SALES_MODULE,
+				searchCommand: SalesOrderFulfillmentCommands.SEARCH,
+				filterGraph: { if: ['sales_order_id', '=', '${id}'] },
+				fields: ['fulfillment_type', 'fulfillment_status', 'target_outlet_id', 'reservation_expires_at',
+					'max_attempts', 'failure_action'],
+			})],
+		),
+		collapsibleSectionNode(
+			{
+				header: 'sales_order_sections_reservations',
+				translationNs: c.SALES_MODULE,
+				expanded: false,
+			},
+			[resourceTableNode({
+				schemaName: c.SALES_ORDER_FULFILLMENT_ITEM_SCHEMA_NAME,
+				translationNs: c.SALES_MODULE,
+				searchCommand: SalesOrderFulfillmentItemCommands.SEARCH,
+				filterGraph: { if: ['fulfillment.sales_order_id', '=', '${id}'] },
+				fields: ['product_variant_id', 'ordered_qty', 'fulfilled_qty', 'refunded_qty', 'item_status',
+					'source_location_id', 'inventory_reservation_ref'],
+				linkField: 'inventory_reservation_ref',
+				// A leading slash names the inventory module absolutely; without it the link would
+				// resolve against this module, which has no such page.
+				linkRoutePath: '/inventory/inventory_stock_reservation',
+			})],
+		),
+	];
 }
 
 /**
@@ -155,6 +202,7 @@ function buildSalesOrderFieldsSection(): ComponentNode {
 						'completed_at', 'cancelled_at'],
 				}),
 			},
+			...buildSalesOrderDeadlineTabs(),
 			{
 				key: 'totals',
 				header: 'form.totals',
@@ -174,6 +222,32 @@ function buildSalesOrderFieldsSection(): ComponentNode {
 			},
 		],
 	});
+}
+
+/**
+ * The payment deadline, the automation the order was created under, and the notes. All read-only:
+ * the deadline is set at create and never extended, the flags are the channel's settings frozen at
+ * that moment, expiry is derived from the clock, and each note is written by its own action alone.
+ */
+function buildSalesOrderDeadlineTabs() {
+	return [
+		{
+			key: 'expiry',
+			header: 'form.expiry',
+			content: resourceFormColumnNode({
+				header: 'form.expiry',
+				fields: ['valid_until', 'is_expired', 'expired_at', 'auto_confirm_order', 'auto_confirm_refund'],
+			}),
+		},
+		{
+			key: 'notes',
+			header: 'form.notes',
+			content: resourceFormColumnNode({
+				header: 'form.notes',
+				fields: ['confirmation_note', 'cancellation_note', 'refund_note'],
+			}),
+		},
+	];
 }
 
 /**
@@ -206,6 +280,12 @@ function buildSalesOrderActions() {
 				operator: 'in' as const,
 				value: [c.ORDER_STATUS_DRAFT, c.ORDER_STATUS_CONFIRMED, c.ORDER_STATUS_PROCESSING],
 			},
+			// `cancellation_note` is a field of the order itself, so the prompt can collect it; it
+			// is stored only when given, never filled in by the system.
+			prompt: {
+				title: 'actions.cancel.title',
+				fields: [{ name: 'cancellation_note' }],
+			},
 		},
 	};
 }
@@ -228,6 +308,10 @@ function buildDraftOnlyActions() {
 			label: 'actions.confirm',
 			command: SalesOrderCommands.CONFIRM,
 			condition: onlyOnDraft,
+			prompt: {
+				title: 'actions.confirm.title',
+				fields: [{ name: 'confirmation_note' }],
+			},
 		},
 		reprice: {
 			label: 'actions.reprice',
