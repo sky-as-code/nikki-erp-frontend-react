@@ -16,7 +16,7 @@ export function buildInventoryLocationPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'locations',
+		routePath: 'inventory_location',
 		template: splitView.template,
 		props: splitView.props,
 	})];

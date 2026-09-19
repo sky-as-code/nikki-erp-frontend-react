@@ -36,7 +36,7 @@ export function buildStockQuantPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'stock_balance',
+		routePath: 'inventory_stock_quant',
 		template: splitView.template,
 		props: splitView.props,
 	}), definePage({

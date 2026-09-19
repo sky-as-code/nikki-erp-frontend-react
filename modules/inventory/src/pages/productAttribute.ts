@@ -18,7 +18,7 @@ export function buildProductAttributePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'attributes',
+		routePath: 'inventory_product_attribute',
 		template: splitView.template,
 		props: splitView.props,
 	})];
@@ -115,7 +115,7 @@ function buildAttributeValuesSection(): ComponentNode[] {
 			searchCommand: ProductAttributeValueCommands.SEARCH,
 			filterGraph: { if: ['attribute_id', '=', '${id}'] },
 			linkField: 'id',
-			linkRoutePath: 'attribute_values',
+			linkRoutePath: 'inventory_product_attribute_value',
 		})],
 	)];
 }

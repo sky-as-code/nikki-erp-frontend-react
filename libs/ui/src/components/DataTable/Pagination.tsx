@@ -1,24 +1,33 @@
-import { ButtonGroup, Group } from '@mantine/core';
-import { IconChevronLeft, IconChevronRight, IconSettings } from '@tabler/icons-react';
+import { Group, Text } from '@mantine/core';
+import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import React from 'react';
 
+import { useDataTableContext } from './DataTableContext';
+import { useTranslate } from '../../i18n';
 import { Button } from '../Button';
 import { Input } from '../Input';
-import { useDataTableContext } from './DataTableContext';
 
 import type { DataTableContextValue } from './DataTableContext';
 
 
-/** The page box, the prev/next pair, and the view-settings button, right-aligned. */
+/** The prev/next pair around the page box, reading `[<] [1]/10 [>]`. */
 export function Pagination(): React.ReactNode {
 	const context = useDataTableContext();
+	const t = useTranslate('common');
 	const searchData = context.tableSearchData;
-	const totalPages = Math.max(1, Math.ceil(searchData.total / searchData.size));
+	const totalPages = countPages(searchData.total, searchData.size);
 	const paginationState = usePaginationState(context, totalPages);
 
 	return (
 		<Group gap='xs' justify='flex-end' className='flex-grow-0'>
-			<span>Page</span>
+			<Button
+				onClick={paginationState.onGoPrev}
+				disabled={searchData.page <= 0}
+				aria-label={t('datatable.previousPage')}
+				{...context.tid.pagePrev()}
+			>
+				<IconChevronLeft />
+			</Button>
 			<Input
 				value={paginationState.pageInput}
 				onChange={event => paginationState.setPageInput(event.currentTarget.value)}
@@ -33,30 +42,15 @@ export function Pagination(): React.ReactNode {
 				type='number'
 				{...context.tid.pageInput()}
 			/>
-			<span>of {totalPages}</span>
-			<ButtonGroup>
-				<Button
-					onClick={paginationState.onGoPrev}
-					disabled={searchData.page <= 0}
-					aria-label='Go to previous page'
-					{...context.tid.pagePrev()}
-				>
-					<IconChevronLeft />
-				</Button>
-				<Button
-					onClick={paginationState.onGoNext}
-					disabled={searchData.page >= totalPages - 1}
-					aria-label='Go to next page'
-					{...context.tid.pageNext()}
-				>
-					<IconChevronRight />
-				</Button>
-			</ButtonGroup>
+			<Text size='sm'>/</Text>
+			<Text size='sm'>{totalPages}</Text>
 			<Button
-				onClick={context.onOpenViewSettings}
-				{...context.tid.settingsOpen()}
+				onClick={paginationState.onGoNext}
+				disabled={searchData.page >= totalPages - 1}
+				aria-label={t('datatable.nextPage')}
+				{...context.tid.pageNext()}
 			>
-				<IconSettings />
+				<IconChevronRight />
 			</Button>
 		</Group>
 	);
@@ -100,6 +94,22 @@ function usePaginationState(context: DataTableContextValue, totalPages: number) 
 	}, [searchData.page, totalPages, updateSearchPage]);
 
 	return { pageInput, setPageInput, commitPageChange, onGoPrev, onGoNext };
+}
+
+/**
+ * How many pages `total` records fill, never fewer than one.
+ *
+ * Both operands are guarded because the first render happens before any response has arrived, so
+ * `size` can be absent or zero — and `total / 0` is `Infinity` while `undefined / n` is `NaN`,
+ * neither of which `Math.max` filters out. An empty table reads `1/1` rather than `1/NaN`.
+ *
+ * Exported for its unit tests.
+ */
+export function countPages(total: number | undefined, size: number | undefined): number {
+	if (!Number.isFinite(total) || !Number.isFinite(size) || (size as number) <= 0) {
+		return 1;
+	}
+	return Math.max(1, Math.ceil((total as number) / (size as number)));
 }
 
 /**

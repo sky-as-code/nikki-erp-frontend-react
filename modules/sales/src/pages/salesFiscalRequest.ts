@@ -22,7 +22,7 @@ export function buildSalesFiscalRequestPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_fiscal_requests',
+		routePath: 'sales_fiscal_request',
 		template: splitView.template,
 		props: splitView.props,
 	})];

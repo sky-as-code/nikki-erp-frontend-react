@@ -2,7 +2,9 @@ import { Table } from '@mantine/core';
 import React from 'react';
 
 import classes from './ColumnFilterRow.module.css';
-import { getFilterInputKind, isFilterableField, isTextLikeKind as isTextLike } from './filterModel';
+import {
+	getFieldSchema, getFilterInputKind, isFilterableField, isTextLikeKind as isTextLike,
+} from './filterModel';
 import { SchemaFilterValueInput } from './FilterValueInput';
 
 import type { DataTableTestIds } from '../testIds';
@@ -12,6 +14,8 @@ import type * as dyn from '@nikkierp/common/dynamicModel';
 export type ColumnFilterRowProps = {
 	fields: string[],
 	modelSchema?: dyn.ModelSchema,
+	/** Schemas behind the edges any dotted column reaches through, keyed by schema name. */
+	relatedSchemas?: Record<string, dyn.ModelSchema>,
 	/** Raw text per field, as typed. Parsing happens on commit, not here. */
 	values: Record<string, string>,
 	onChange: (field: string, value: string) => void,
@@ -52,7 +56,7 @@ type ColumnFilterCellProps = ColumnFilterRowProps & { field: string };
 
 function ColumnFilterCell(props: ColumnFilterCellProps): React.ReactNode {
 	const { field, modelSchema, onChange, onCommit } = props;
-	const fieldSchema = modelSchema?.fields?.[field];
+	const fieldSchema = getFieldSchema(modelSchema, field, props.relatedSchemas);
 	const translateEnumValue = props.translateEnumValue;
 	const onValueChange = React.useCallback(
 		(value: string) => onChange(field, value),

@@ -35,3 +35,25 @@ export function useCanClosePane(): boolean {
 	const { isSecondary, isPrimaryOpen } = React.useContext(SplitViewSecondaryContext);
 	return isSecondary && isPrimaryOpen;
 }
+
+
+export type SplitViewPrimaryState = {
+	/**
+	 * Closes the list pane, leaving the detail pane fullscreen. Undefined when there is nothing to
+	 * close back to — a list rendered on its own, or a split view showing only the list.
+	 */
+	closePane?: () => void,
+	/** Label for the close control, translated by the layout that owns the action. */
+	closeLabel?: string,
+};
+
+/** Provided by `SplitViewBody` around the primary pane, and nowhere else. */
+export const SplitViewPrimaryContext = React.createContext<SplitViewPrimaryState>({});
+
+/**
+ * The list pane's own close action, for a template that wants to place it among its toolbar
+ * controls rather than let the layout float one over the pane's top-right corner.
+ */
+export function useClosePrimaryPane(): SplitViewPrimaryState {
+	return React.useContext(SplitViewPrimaryContext);
+}

@@ -94,6 +94,7 @@
 		"./assets/*": "./src/assets/*",
 		"./components/form": "./src/components/form/index.tsx",
 		"./components/DataTable": "./src/components/DataTable/index.tsx",
+		"./components/ExcelDataTable": "./src/components/ExcelDataTable/index.tsx",
 		"./components": "./src/components/index.tsx",
 		"./contexts": "./src/contexts/index.tsx",
 		"./hookhoc": "./src/hookhoc/index.ts",

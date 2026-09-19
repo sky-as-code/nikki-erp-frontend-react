@@ -18,7 +18,7 @@ export function buildOrderPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'orders',
+		routePath: 'paymentinvoice_order',
 		template: splitView.template,
 		props: splitView.props,
 	})];

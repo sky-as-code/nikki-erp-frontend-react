@@ -1,0 +1,173 @@
+/*
+ * Layout containers of the toolbar.
+ *
+ * Deliberately NOT `container-type: inline-size`. That applies inline-size containment, which cuts
+ * the element's width off from its own contents — so a flex row of buttons collapsed toward zero
+ * and every button shrank into an empty pill. The compact treatment is driven from JS
+ * (`useIsCompact`), which folds the bar into a `[...]` menu; nothing here needs a container query.
+ */
+.toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--mantine-spacing-xs);
+	min-width: 0;
+}
+
+.toolbarSide {
+	display: flex;
+	align-items: center;
+	gap: var(--mantine-spacing-xs);
+	/* Wrap rather than squash: a row too wide for one line belongs on two, not clipped. */
+	flex-wrap: wrap;
+}
+
+.toolbarLeft {
+	/* `min-width: 0` lets the title ellipsize; the actions beside it keep their natural width. */
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.toolbarRight {
+	flex: 0 0 auto;
+	justify-content: flex-end;
+}
+
+.title {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* The action bar: buttons keep their intrinsic width and never shrink into empty pills. */
+.actions {
+	display: flex;
+	align-items: center;
+	gap: var(--mantine-spacing-xs);
+	flex-wrap: wrap;
+	flex: 0 0 auto;
+}
+
+.actions > * {
+	flex: 0 0 auto;
+}
+
+/*
+ * The inline cell link. Inline, unlike the block link of the original table: the cell itself is
+ * the click target for selection, only the text is the navigation target.
+ */
+.cellLink {
+	display: inline;
+	color: inherit;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.cellLink:hover {
+	color: inherit;
+	text-decoration: underline dotted;
+}
+
+.selectedCell {
+	background-color: var(--nikki-color-table-bg-selected);
+	border-bottom: 1px solid var(--nikki-color-table-border-selected);
+}
+
+.rowNumberCell {
+	background-color: var(--mantine-color-gray-2);
+	cursor: pointer;
+	user-select: none;
+}
+
+/*
+ * The handle cell of a selected row takes the selection colour like every other cell. It needs its
+ * own rule because it carries both classes, and at equal specificity the later declaration wins —
+ * which would leave the row's own handle the one cell that does not look selected.
+ */
+.rowNumberCell.selectedCell {
+	background-color: var(--nikki-color-table-bg-selected);
+}
+
+.headerCell {
+	background-color: var(--mantine-color-gray-2);
+	position: relative;
+}
+
+/* The 2px progress row: header background, bar in the selected-row border colour. */
+.progressRow {
+	height: 2px;
+	padding: 0;
+	background-color: var(--mantine-color-gray-2);
+	overflow: hidden;
+}
+
+.progressBar {
+	height: 2px;
+	width: 40%;
+	background-color: var(--nikki-color-table-border-selected);
+	animation: progressSlide 1.2s ease-in-out infinite;
+}
+
+@keyframes progressSlide {
+	from {
+		transform: translateX(-100%);
+	}
+
+	to {
+		transform: translateX(250%);
+	}
+}
+
+.resizeHandle {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 0.5rem;
+	height: 100%;
+	cursor: col-resize;
+	background-color: color-mix(in srgb, var(--mantine-color-blue-6) 20%, transparent);
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+
+.headerCell:hover .resizeHandle {
+	opacity: 1;
+}
+
+.headerMenuButton {
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+
+.headerCell:hover .headerMenuButton,
+.headerMenuButton[data-open='true'] {
+	opacity: 1;
+}
+
+/* The header mirrors the body's horizontal scroll; the gutter keeps its columns over the body's. */
+.headerScroller {
+	overflow-x: hidden;
+	overflow-y: hidden;
+	scrollbar-gutter: stable;
+}
+
+.bodyScroller {
+	overflow: auto;
+	outline: none;
+}
+
+.settingsModalBody {
+	width: 720px;
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+/* An input in an editing row: the column header is its label, so the field's own label goes. */
+.editingCell {
+	padding: 0.125rem 0.25rem;
+	vertical-align: middle;
+}
+
+.editingCell :global(.mantine-InputWrapper-label) {
+	display: none;
+}

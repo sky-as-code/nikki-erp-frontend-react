@@ -14,8 +14,8 @@ const ITEMS: MenuItem[] = [
 		// offering their own UoM configuration.
 		labelKey: 'menu_uom',
 		items: [
-			{ labelKey: 'menu_uoms', link: '/uoms' },
-			{ labelKey: 'menu_uomCategories', link: '/uom-categories' },
+			{ labelKey: 'menu_uoms', link: '/essential_uom' },
+			{ labelKey: 'menu_uomCategories', link: '/essential_uomcat' },
 		],
 	},
 ];

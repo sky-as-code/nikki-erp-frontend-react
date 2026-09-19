@@ -1,12 +1,32 @@
+/*
+ * The layout fills the shell's content area exactly, and never more.
+ *
+ * `absolute inset-0` rather than `height: 100%`: the shell's scroll container is a flex child with
+ * no intrinsic height, so a percentage height resolves against nothing and the panes spill past the
+ * bottom — which is what put a scrollbar on the page itself, outside and in addition to the table's
+ * own. Pinning to the container's edges gives the panes a real box to divide, and leaves the shell
+ * with nothing to scroll.
+ */
 .container {
+	position: absolute;
+	inset: 0;
 	background-color: var(--mantine-color-body);
+	overflow: hidden;
 }
 
+/*
+ * The pane clips rather than scrolls.
+ *
+ * Its content owns its own scrolling — the list template stretches a flex column across the pane
+ * and scrolls the table body alone, so the bottom edge and the horizontal scrollbar stay on the
+ * window bottom. A scrollable pane put a second scrollbar around that one, and the outer bar
+ * scrolled the header out of view while the inner one was the only bar that moved the columns.
+ */
 .pane {
 	position: relative;
 	height: 100%;
 	min-width: 0;
-	overflow: auto;
+	overflow: hidden;
 	transition: width 250ms ease;
 }
 
@@ -57,9 +77,3 @@
 	opacity: 0;
 }
 
-.closePrimary {
-	position: absolute;
-	top: 8px;
-	right: 12px;
-	z-index: 2;
-}

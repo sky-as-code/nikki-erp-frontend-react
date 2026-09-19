@@ -16,7 +16,7 @@ export function buildProductTypePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'product_types',
+		routePath: 'inventory_product_type',
 		template: splitView.template,
 		props: splitView.props,
 	})];

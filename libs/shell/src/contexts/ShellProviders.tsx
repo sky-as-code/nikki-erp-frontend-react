@@ -3,6 +3,7 @@ import { IEventBus } from '@nikkierp/common/eventBus';
 import { RequestMaker } from '@nikkierp/common/request';
 import { SESSION_AUTHORIZATION_ERROR_TOPIC } from '@nikkierp/common/service';
 import { ModuleStoreProvider, useServiceLayer } from '@nikkierp/ui/appState/store';
+import { FormatDefaultsProvider } from '@nikkierp/ui/components';
 import i18n, { initI18n } from '@nikkierp/ui/i18n';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 import React from 'react';
@@ -28,6 +29,9 @@ import {
 } from '../routing';
 import { ShellEnvVars } from '../types';
 import { useGetUserContext, useLocalSettings } from '../userContext';
+
+import type { AccountSettings } from '../userContext/types';
+import type { FormatDefaults } from '@nikkierp/ui/components';
 
 
 export type ShellProvidersProps = React.PropsWithChildren & {
@@ -119,11 +123,46 @@ function InnerShellProviders(props: ShellProvidersProps): React.ReactNode {
 
 	return isInitialized && (
 		<I18nextProvider i18n={i18n}>
-			<MicroAppHostProvider microApps={props.microApps} extraRegistrars={props.extraRegistrars}>
-				{props.children}
-			</MicroAppHostProvider>
+			<FormatDefaultsProvider value={formatDefaultsOf(getUserCxt.data?.accountSettings)}>
+				<MicroAppHostProvider microApps={props.microApps} extraRegistrars={props.extraRegistrars}>
+					{props.children}
+				</MicroAppHostProvider>
+			</FormatDefaultsProvider>
 		</I18nextProvider>
 	);
+}
+
+/**
+ * Turns the account settings into the formatting rules every `Localized*` component reads.
+ *
+ * The separators are passed through only when they disagree with what `Intl` already produces for
+ * the locale, so a language record that matches its locale's conventions — both of the ones shipped
+ * today — costs nothing, and only a customized record overrides.
+ */
+function formatDefaultsOf(settings?: AccountSettings): FormatDefaults {
+	if (!settings) {
+		return {};
+	}
+	const locale = settings.language.isoCode;
+	const intlSeparators = separatorsOf(locale);
+	return {
+		locale,
+		decimalSeparator: differing(settings.language.decimalSeparator, intlSeparators.decimal),
+		thousandsSeparator: differing(settings.language.thousandsSeparator, intlSeparators.group),
+		currency: settings.currency,
+	};
+}
+
+function differing(recorded: string | undefined, intl: string): string | undefined {
+	return recorded && recorded !== intl ? recorded : undefined;
+}
+
+function separatorsOf(locale: string): { decimal: string, group: string } {
+	const parts = new Intl.NumberFormat(locale).formatToParts(1234.5);
+	return {
+		decimal: parts.find(part => part.type === 'decimal')?.value ?? '.',
+		group: parts.find(part => part.type === 'group')?.value ?? ',',
+	};
 }
 
 function fullPath(location: Location): string {
@@ -153,7 +192,7 @@ function useHandleNavigateRequest(eventBus: IEventBus): void {
 	React.useEffect(
 		() => eventBus.subscribe<NavigateEventPayload>(SHELL_EVENTS.ROUTING_NAVIGATE, (payload) => {
 			if (payload.hardNavigate) {
-				window.location.href = payload.to;
+				hardNavigate(payload.to);
 			}
 			else {
 				navigate(payload.to);
@@ -161,6 +200,22 @@ function useHandleNavigateRequest(eventBus: IEventBus): void {
 		}),
 		[eventBus, navigate],
 	);
+}
+
+/**
+ * Loads `to` as a fresh document, discarding every in-memory cache.
+ *
+ * Assigning `location.href` the URL the page is already on is a same-document navigation: it
+ * does nothing, no reload happens. That is the common case for an org switch, which targets the
+ * org home and is often invoked from it, so the equal case has to reload explicitly.
+ */
+function hardNavigate(to: string): void {
+	const target = new URL(to, window.location.href);
+	if (target.href === window.location.href) {
+		window.location.reload();
+		return;
+	}
+	window.location.href = target.href;
 }
 
 /**

@@ -38,10 +38,10 @@ export type MenuBarProps = {
  */
 export function MenuBar({ mode = 'horizontal' }: MenuBarProps): React.ReactNode {
 	const location = useLocation();
-	const { orgSlug, moduleSlug } = useActiveOrgModule();
+	const { moduleSlug } = useActiveOrgModule();
 	const menu = useShellMenu(moduleSlug);
 	const t = useTranslate(menu?.translationNs ?? 'common');
-	const pathPrefix = `/${orgSlug}/${moduleSlug}`;
+	const pathPrefix = `/${moduleSlug}`;
 
 	const getPath = (link: string): string => getPathWithPrefix(link, pathPrefix);
 

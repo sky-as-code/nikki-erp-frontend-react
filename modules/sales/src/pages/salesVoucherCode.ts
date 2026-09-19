@@ -23,7 +23,7 @@ export function buildSalesVoucherCodePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_voucher_codes',
+		routePath: 'sales_voucher_code',
 		template: splitView.template,
 		props: splitView.props,
 	})];

@@ -1,5 +1,5 @@
 import { Button, useMantineTheme } from '@mantine/core';
-import { useFirstOrgSlug } from '@nikkierp/shell/userContext';
+import { ORG_HOME_PATH } from '@nikkierp/shell/constants';
 import { ErrorStatePage, errorStateGradient } from '@nikkierp/ui/components';
 import { useWindowTitleI18n } from '@nikkierp/ui/hookhoc';
 import { IconArrowLeft, IconHome, IconMoodSad } from '@tabler/icons-react';
@@ -14,9 +14,8 @@ export function NotFoundPage(): React.ReactNode {
 	const theme = useMantineTheme();
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
-	const firstOrgSlug = useFirstOrgSlug();
 
-	const handleGoHome = () => navigate(firstOrgSlug ? `/${firstOrgSlug}` : '/');
+	const handleGoHome = () => navigate(ORG_HOME_PATH);
 
 	return (
 		<ErrorStatePage

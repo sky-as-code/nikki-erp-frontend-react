@@ -21,7 +21,7 @@ export function buildSalesChannelPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_channels',
+		routePath: 'sales_channel',
 		template: splitView.template,
 		props: splitView.props,
 	})];

@@ -22,7 +22,7 @@ export function buildSalesQuotationPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_quotations',
+		routePath: 'sales_quotation',
 		template: splitView.template,
 		props: splitView.props,
 	})];

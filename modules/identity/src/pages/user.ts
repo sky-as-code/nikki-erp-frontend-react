@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -18,14 +18,16 @@ export function buildUserPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'users',
+		routePath: 'iam_user',
 		template: splitView.template,
 		props: splitView.props,
 	})];
 }
 
+// On the v2 list template (`ExcelDataTable`): `updateCommand` is what turns on inline row editing,
+// and is separate from `updateSaveCommand`, which the detail form saves through.
 function buildUserListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.USER_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		linkField: 'id',
@@ -34,6 +36,7 @@ function buildUserListProps() {
 		deleteCommand: UserCommands.DELETE,
 		archiveCommand: UserCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: UserCommands.UPDATE,
+		updateCommand: UserCommands.UPDATE,
 		extraActions: [
 			{ label: 'action.suspend', command: UserCommands.SUSPEND, supportMultiple: true, requireSelection: true },
 			{ label: 'action.delete', command: UserCommands.DELETE, supportMultiple: true, requireSelection: true },
@@ -54,8 +57,10 @@ function buildUserListProps() {
 	});
 }
 
+// On the v2 detail template: the assigned-roles table is a related-resource tab below the form
+// rather than a collapsible section inside it.
 function buildUserDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.USER_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'display_name' },
@@ -88,7 +93,8 @@ function buildUserDetailProps() {
 			},
 		},
 		createNodes: [buildUserFieldsSection()],
-		childrenNodes: [buildUserFieldsSection(), buildAssignedRolesSection()],
+		childrenNodes: [buildUserFieldsSection()],
+		relatedResources: buildAssignedRoleResources(),
 	});
 }
 
@@ -122,21 +128,18 @@ function buildUserFieldsSection(): ComponentNode {
  * `role.ts` reads from the other side: `assigned_users` is the inverse of `iam_user.roles`,
  * and `linked` is the membership operator for a many edge. No dedicated endpoint is needed.
  */
-function buildAssignedRolesSection(): ComponentNode {
-	return collapsibleSectionNode(
+function buildAssignedRoleResources() {
+	return [
 		{
-			header: 'user_sections_assignedRoles',
-			translationNs: c.IAM_MODULE,
-		},
-		[resourceTableNode({
+			label: 'user_sections_assignedRoles',
 			schemaName: c.ROLE_SCHEMA_NAME,
 			translationNs: c.IAM_MODULE,
 			searchCommand: RoleCommands.SEARCH,
 			filterGraph: { if: ['assigned_users', 'linked', '${id}'] },
 			linkField: 'id',
-			linkRoutePath: 'roles',
+			linkRoutePath: 'iam_role',
 			// Path-relative to `/{org}/{module}/users/:id`, i.e. the assignment wizard for this user.
-			extraActions: [{ label: 'assignment.manageRoles', routePath: 'roles' }],
-		})],
-	);
+			extraActions: [{ label: 'assignment.manageRoles', routePath: 'iam_role' }],
+		},
+	];
 }

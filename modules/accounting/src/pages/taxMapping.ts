@@ -26,7 +26,7 @@ export function buildTaxMappingPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'tax_mappings',
+		routePath: 'accounting_tax_mapping',
 		template: splitView.template,
 		props: splitView.props,
 	})];

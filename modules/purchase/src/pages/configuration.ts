@@ -28,7 +28,7 @@ export function buildConfigurationPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'configuration',
+		routePath: 'purchase_configuration',
 		template: splitView.template,
 		props: splitView.props,
 	})];

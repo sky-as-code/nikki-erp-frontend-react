@@ -11,7 +11,8 @@ import { getColumnStyle, getColumnWidth, rowNumberColumnWidth } from './columnWi
 import classes from './ListView.module.css';
 import { useTranslate } from '../../../i18n';
 import {
-	getCellText, getRowNumber, isArrayField, renderDataCellContent, shouldUseSingleLineEllipsis,
+	getCellText, getCellValue, getFieldSchema, getRowNumber, isArrayField, renderDataCellContent,
+	shouldUseSingleLineEllipsis,
 } from '../cellValues';
 import sharedClasses from '../DataTable.module.css';
 import { useDataTableContext } from '../DataTableContext';
@@ -249,10 +250,12 @@ function ListViewHead(): React.ReactNode {
 	// Committing a cell is already an explicit act — Enter, or picking from a select — so it
 	// applies at once rather than waiting for the panel's Apply. The condition it wrote is
 	// visible in the panel either way.
+	const relatedSchemas = context.settings.relatedSchemas;
 	const onCommitColumnFilter = React.useCallback((field: string, value: string) => {
-		const next = commitColumnValue(field, value, getFilterInputKind(modelSchema?.fields?.[field]));
+		const fieldSchema = getFieldSchema(modelSchema, field, relatedSchemas);
+		const next = commitColumnValue(field, value, getFilterInputKind(fieldSchema));
 		applyColumnFilters({ tree: next });
-	}, [commitColumnValue, modelSchema, applyColumnFilters]);
+	}, [commitColumnValue, modelSchema, relatedSchemas, applyColumnFilters]);
 
 	// A column is sortable only if the server can order by it: it must own a database column.
 	// A field with no column (a computed one hydrated after the query, say) is rejected by the
@@ -262,9 +265,9 @@ function ListViewHead(): React.ReactNode {
 	const sortableFields = React.useMemo(() => {
 		const candidates = context.settings.sortableFields ?? fields;
 		return new Set(candidates.filter(
-			field => modelSchema?.fields?.[field]?.is_persisted !== false,
+			field => getFieldSchema(modelSchema, field, relatedSchemas)?.is_persisted !== false,
 		));
-	}, [context.settings.sortableFields, fields, modelSchema]);
+	}, [context.settings.sortableFields, fields, modelSchema, relatedSchemas]);
 
 	// A header click replaces the whole order and applies at once. It writes the same state the
 	// sort pane edits, so reopening the panel shows the sort the user just chose.
@@ -311,6 +314,7 @@ function ListViewHead(): React.ReactNode {
 				<ColumnFilterRow
 					fields={fields}
 					modelSchema={context.settings.modelSchema}
+					relatedSchemas={context.settings.relatedSchemas}
 					values={context.filters.columnText}
 					onChange={context.filters.setColumnValue}
 					onCommit={onCommitColumnFilter}
@@ -497,8 +501,10 @@ function BodyRow(props: BodyRowProps): React.ReactNode {
 					item={item}
 					width={getColumnWidth(field, widths)}
 					value={getCellText(item, field, searchData.masked_fields)}
-					rawValue={item[field]}
-					fieldSchema={context.settings.modelSchema?.fields[field]}
+					rawValue={getCellValue(item, field)}
+					fieldSchema={getFieldSchema(
+						context.settings.modelSchema, field, context.settings.relatedSchemas,
+					)}
 					linkHref={rowLink}
 					fieldRenderer={context.settings.fieldRenderer?.[field]}
 					isSelected={isRowSelected}

@@ -20,7 +20,7 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 	// Read-only: `ShellRoutes` is what dispatches `listAll`, so this reflects that result.
 	const { data } = useServiceLayer<SearchModuleResponse>(moduleService.listAll);
 	const modules = data?.items ?? [];
-	const { orgSlug, moduleSlug } = useActiveOrgModule();
+	const { moduleSlug } = useActiveOrgModule();
 	const { dispatchMethod: setCurrentModule } = useServiceLayer(sharedStateService.setCurrentModule);
 
 	// Sorted here rather than in the request: the label is `module.label.*` out of the client
@@ -38,7 +38,7 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 	// Stored before navigating, for the same reason as the org switcher.
 	const handleModuleChange = (newModSlug: string) => {
 		setCurrentModule(newModSlug);
-		void routingService.navigateTo({ to: `/${orgSlug}/${newModSlug}` });
+		void routingService.navigateTo({ to: `/${newModSlug}` });
 	};
 
 	return isAuthenticated && (modules.length || !props.hideIfEmpty) && (

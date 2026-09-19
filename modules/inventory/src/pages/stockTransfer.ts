@@ -20,7 +20,7 @@ export function buildStockTransferPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'stock_transfers',
+		routePath: 'inventory_stock_transfer',
 		template: splitView.template,
 		props: splitView.props,
 	})];
@@ -227,7 +227,7 @@ function buildMovementSections(): ComponentNode[] {
 				searchCommand: StockMoveCommands.SEARCH,
 				filterGraph: { if: ['transfer_id', '=', '${id}'] },
 				linkField: 'product_variant_id',
-				linkRoutePath: 'product_variants',
+				linkRoutePath: 'inventory_product_variant',
 			})],
 		),
 		collapsibleSectionNode(
@@ -238,7 +238,7 @@ function buildMovementSections(): ComponentNode[] {
 				searchCommand: StockMoveLineCommands.SEARCH,
 				filterGraph: { if: ['transfer_id', '=', '${id}'] },
 				linkField: 'product_variant_id',
-				linkRoutePath: 'product_variants',
+				linkRoutePath: 'inventory_product_variant',
 			})],
 		),
 	];

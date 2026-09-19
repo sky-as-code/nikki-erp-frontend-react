@@ -21,7 +21,7 @@ export function buildSalesPointPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_points',
+		routePath: 'sales_point',
 		template: splitView.template,
 		props: splitView.props,
 	})];

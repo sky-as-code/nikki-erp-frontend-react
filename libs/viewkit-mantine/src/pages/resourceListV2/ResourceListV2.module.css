@@ -1,0 +1,20 @@
+/*
+ * The page is a column: the panel keeps its height, the body takes the rest and is the only
+ * scroll container, so its bottom edge (and horizontal scrollbar) sits on the window bottom
+ * however short the window is.
+ */
+.stickyPanel {
+	flex: none;
+	display: flex;
+	flex-direction: column;
+	gap: var(--mantine-spacing-xs);
+	padding: var(--mantine-spacing-xs) var(--mantine-spacing-xs) 0;
+	background-color: var(--mantine-color-body);
+	z-index: 1;
+}
+
+.body {
+	flex: 1 1 auto;
+	min-height: 0;
+	margin: 0 var(--mantine-spacing-xs);
+}

@@ -1,6 +1,42 @@
 import { describe, expect, it } from 'vitest';
 
-import { fillRouteParams, isAbsoluteRoutePath } from './useResourceLinkHref';
+import { buildResourceBaseHref, fillRouteParams, isAbsoluteRoutePath } from './useResourceLinkHref';
+
+
+/**
+ * The resource URL shape, which every helper in the module flows through. The organization used
+ * to lead this path; it is now resolved from storage instead of the URL.
+ */
+describe('buildResourceBaseHref', () => {
+	it('builds /{moduleSlug}/{routePath}, with no org segment', () => {
+		expect(buildResourceBaseHref('essential', 'essential_uom')).toBe('/essential/essential_uom');
+	});
+
+	it('keeps a multi-segment route path', () => {
+		expect(buildResourceBaseHref('vendingmachine', 'kiosks/k1/stock-grid'))
+			.toBe('/vendingmachine/kiosks/k1/stock-grid');
+	});
+
+	it('gives up while the module or the route path is unknown', () => {
+		expect(buildResourceBaseHref(undefined, 'essential_uom')).toBeUndefined();
+		expect(buildResourceBaseHref('essential', undefined)).toBeUndefined();
+	});
+
+	/**
+	 * A page embedding a table of a schema another module owns — the product template's vendor
+	 * prices, owned by `purchase`. The bare form resolves against the current module, so it could
+	 * only ever reach that module's own pages.
+	 */
+	it('takes a leading slash as naming the module, not the current one', () => {
+		expect(buildResourceBaseHref('inventory', '/purchase/purchase_vendor_product_price'))
+			.toBe('/purchase/purchase_vendor_product_price');
+	});
+
+	it('resolves an absolute path even before the current module is known', () => {
+		expect(buildResourceBaseHref(undefined, '/purchase/purchase_vendor_product_price'))
+			.toBe('/purchase/purchase_vendor_product_price');
+	});
+});
 
 
 /**

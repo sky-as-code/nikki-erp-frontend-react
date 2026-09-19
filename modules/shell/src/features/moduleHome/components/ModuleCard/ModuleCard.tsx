@@ -2,7 +2,6 @@ import {
 	Anchor, Box, Button, Text, Menu, Image, Stack, Flex, Divider,
 } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { IconDots, IconStarFilled, IconAugmentedReality } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { FC, useState } from 'react';
@@ -18,19 +17,16 @@ const TEST_ID = 'shell.moduleCard';
 
 export const ModuleCard: FC<{ module: any }> = ({ module }) => {
 	const navigate = useNavigate();
-	const { orgSlug } = useActiveOrgModule();
 	const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
 	return (
 		<Anchor
-			href={`/${orgSlug}/${module.slug}`}
+			href={`/${module.slug}`}
 			className={clsx(classes.moduleCard, isActionMenuOpen && classes.moduleCardHover)}
 			pos='relative' w='100%' underline='never'
 			onClick={(evt) => {
 				evt.preventDefault();
-				if (orgSlug) {
-					navigate(`/${orgSlug}/${module.slug}`);
-				}
+				navigate(`/${module.slug}`);
 			}}
 			{...testAttrs(TEST_ID, module.slug)}
 		>
@@ -89,9 +85,6 @@ type ModuleCardMenuProps = {
 	setIsActionMenuOpen: (value: boolean) => void,
 };
 const ModuleCardMenu: FC<ModuleCardMenuProps> = ({ module, isActionMenuOpen, setIsActionMenuOpen }) => {
-	const { orgSlug } = useActiveOrgModule();
-	const activeOrgSlug = orgSlug;
-
 	return (
 		<Menu
 			withinPortal shadow='sm' width={200}
@@ -121,7 +114,7 @@ const ModuleCardMenu: FC<ModuleCardMenuProps> = ({ module, isActionMenuOpen, set
 				<Menu.Item {...testAttrs(TEST_ID, module?.slug, 'disable')}>Disable</Menu.Item>
 				<Divider />
 				<Menu.Item
-					component='a' href={`/${activeOrgSlug}/${module?.slug}`} target='_blank'
+					component='a' href={`/${module?.slug}`} target='_blank'
 					{...testAttrs(TEST_ID, module?.slug, 'openInNewTab')}
 				>
 					Open in new tab

@@ -6,7 +6,7 @@ import { Link, useResolvedPath } from 'react-router-dom';
 import classes from './GridView.module.css';
 import { getThumbnailInitials, resolveThumbnailField } from './thumbnail';
 import { useTranslate } from '../../../i18n';
-import { getCellText, getRowNumber, renderDataCellContent } from '../cellValues';
+import { getCellText, getCellValue, getFieldSchema, getRowNumber, renderDataCellContent } from '../cellValues';
 import sharedClasses from '../DataTable.module.css';
 import { useDataTableContext } from '../DataTableContext';
 import { rowTestIdOf } from '../testIds';
@@ -254,9 +254,11 @@ function useFieldContent(field: string, item: SearchItem): React.ReactNode {
 	const context = useDataTableContext();
 	const t = useTranslate(context.settings.translationNs);
 	const searchData = context.tableSearchData;
-	const fieldSchema = context.settings.modelSchema?.fields[field];
+	const fieldSchema = getFieldSchema(
+		context.settings.modelSchema, field, context.settings.relatedSchemas,
+	);
 	const fieldRenderer = context.settings.fieldRenderer?.[field];
-	const rawValue = item[field];
+	const rawValue = getCellValue(item, field);
 	const value = getCellText(item, field, searchData.masked_fields);
 	return React.useMemo(
 		() => renderDataCellContent(rawValue, value, fieldSchema, fieldRenderer, t),

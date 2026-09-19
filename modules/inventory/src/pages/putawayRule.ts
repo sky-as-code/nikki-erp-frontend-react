@@ -16,7 +16,7 @@ export function buildPutawayRulePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'putaway_rules',
+		routePath: 'inventory_putaway_rule',
 		template: splitView.template,
 		props: splitView.props,
 	})];

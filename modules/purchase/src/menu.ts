@@ -24,8 +24,8 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
 const ITEMS: MenuItem[] = [
 	{ labelKey: 'menu_overview', link: '/overview' },
 	{ labelKey: 'menu_requestsForQuotation', link: '/requests_for_quotation' },
-	{ labelKey: 'menu_orders', link: '/purchase_orders' },
-	{ labelKey: 'menu_agreements', link: '/agreements' },
+	{ labelKey: 'menu_orders', link: '/purchase_order' },
+	{ labelKey: 'menu_agreements', link: '/purchase_agreement' },
 	// Configuration is a GROUP rather than a leaf, so that vendor prices get a home without
 	// becoming a sixth top-level sibling — which would have pushed this entry itself into the
 	// overflow. The trade is deliberate: the approval settings now cost two clicks instead of one,
@@ -35,11 +35,11 @@ const ITEMS: MenuItem[] = [
 		items: [
 			// The module's approval settings — one record per organization, configured once and
 			// then mostly read.
-			{ labelKey: 'menu_settings', link: '/configuration' },
+			{ labelKey: 'menu_settings', link: '/purchase_configuration' },
 			// Master data, not a document: what each vendor currently offers a product at. Also
 			// reachable from the product detail page, which is where a buyer comparing suppliers
 			// starts; this entry is for maintaining the list itself.
-			{ labelKey: 'menu_vendorProductPrices', link: '/vendor_product_prices' },
+			{ labelKey: 'menu_vendorProductPrices', link: '/purchase_vendor_product_price' },
 		],
 	},
 	// No entry for order lines, agreement lines, sourcing groups or audit events. Lines are

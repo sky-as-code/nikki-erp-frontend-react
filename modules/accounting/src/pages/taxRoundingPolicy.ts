@@ -23,7 +23,7 @@ export function buildTaxRoundingPolicyPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'tax_rounding_policies',
+		routePath: 'accounting_tax_rounding_policy',
 		template: splitView.template,
 		props: splitView.props,
 	})];

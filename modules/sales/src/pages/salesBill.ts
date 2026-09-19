@@ -25,7 +25,7 @@ export function buildSalesBillPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_bills',
+		routePath: 'sales_bill',
 		template: splitView.template,
 		props: splitView.props,
 	})];
@@ -226,7 +226,7 @@ function buildSalesBillFiscalSection(): ComponentNode[] {
 				filterGraph: { if: ['sales_bill_id', '=', '${id}'] },
 				fields: ['requested_at', 'intent', 'status', 'provider_reference', 'attempt_count',
 					'last_error'],
-				linkRoutePath: 'sales_fiscal_requests',
+				linkRoutePath: 'sales_fiscal_request',
 				linkField: 'id',
 				fieldRenderers: {
 					status: {

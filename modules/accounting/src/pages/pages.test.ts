@@ -62,8 +62,8 @@ describe('Accounting page metadata', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
 
 		expect(routePaths).toEqual([
-			'tax_jurisdictions', 'tax_groups', 'tax_classifications', 'taxes', 'tax_rates',
-			'tax_rules', 'tax_mappings', 'tax_rounding_policies', 'tax_simulator',
+			'accounting_tax_jurisdiction', 'accounting_tax_group', 'accounting_tax_product_classification', 'accounting_tax', 'accounting_tax_rate_version',
+			'accounting_tax_rule', 'accounting_tax_mapping', 'accounting_tax_rounding_policy', 'tax_simulator',
 		]);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);

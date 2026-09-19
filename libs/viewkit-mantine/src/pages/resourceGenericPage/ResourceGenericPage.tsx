@@ -40,7 +40,7 @@ export const ResourceGenericPage = React.memo(ResourceGenericPageView);
 function ResourceGenericPageView({
 	params, childrenNodes, actionNodes, routePath, part,
 }: ResourceGenericPageViewProps): React.ReactNode {
-	const pack = useDynamicModel(params.schemaName);
+	const { pack } = useDynamicModel(params.schemaName);
 	const pageRoutePath = usePageContext()?.routePath ?? routePath;
 	const testId = resourceTestIdPrefix({
 		testId: params.testId,

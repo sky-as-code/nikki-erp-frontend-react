@@ -22,7 +22,7 @@ export function buildTaxGroupPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'tax_groups',
+		routePath: 'accounting_tax_group',
 		template: splitView.template,
 		props: splitView.props,
 	})];

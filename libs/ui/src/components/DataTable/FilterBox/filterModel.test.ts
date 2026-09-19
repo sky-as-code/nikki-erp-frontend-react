@@ -122,6 +122,55 @@ describe('getFilterableFieldNames', () => {
 	it('tolerates a missing schema', () => {
 		expect(getFilterableFieldNames(undefined)).toEqual([]);
 	});
+
+	describe('columns reached through an edge', () => {
+		const variantSchema = {
+			name: 'inventory_product_variant',
+			fields: { sku: field('sku', 'string') },
+			to_relations: [{
+				edge: 'product_template',
+				src_field: 'product_template_id',
+				dest_schema_name: 'inventory_product_template',
+				relation_type: 'many:one',
+			}],
+		} as unknown as dyn.ModelSchema;
+		const templateSchema = {
+			name: 'inventory_product_template',
+			fields: {
+				name: field('name', 'string'),
+				meta: field('meta', 'jsonmap'),
+			},
+		} as unknown as dyn.ModelSchema;
+		const related = { inventory_product_template: templateSchema };
+
+		it('appends a filterable dotted column after the schema\'s own fields', () => {
+			const names = getFilterableFieldNames(variantSchema, ['sku', 'product_template.name'], related);
+			expect(names).toEqual(['sku', 'product_template.name']);
+		});
+
+		// The leaf's own type decides this exactly as it would on its own resource; reaching it
+		// through an edge does not make an unfilterable type filterable.
+		it('leaves out a dotted column whose leaf type cannot be filtered', () => {
+			const names = getFilterableFieldNames(variantSchema, ['product_template.meta'], related);
+			expect(names).toEqual(['sku']);
+		});
+
+		// Until the edge's schema arrives there is no data type to build an input from, so the
+		// column is withheld rather than offered with a guessed one.
+		it('withholds a dotted column while the related schema is still loading', () => {
+			expect(getFilterableFieldNames(variantSchema, ['product_template.name'], {})).toEqual(['sku']);
+		});
+
+		it('ignores an unknown edge', () => {
+			expect(getFilterableFieldNames(variantSchema, ['nope.name'], related)).toEqual(['sku']);
+		});
+
+		it('lists a repeated dotted column once', () => {
+			const fields = ['product_template.name', 'product_template.name'];
+			expect(getFilterableFieldNames(variantSchema, fields, related))
+				.toEqual(['sku', 'product_template.name']);
+		});
+	});
 });
 
 describe('getEnumOptions', () => {

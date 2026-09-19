@@ -22,7 +22,7 @@ export function buildTaxProductClassificationPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'tax_classifications',
+		routePath: 'accounting_tax_product_classification',
 		template: splitView.template,
 		props: splitView.props,
 	})];

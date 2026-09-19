@@ -18,7 +18,7 @@ export function buildBrandPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'brands',
+		routePath: 'inventory_brand',
 		template: splitView.template,
 		props: splitView.props,
 	})];
@@ -99,7 +99,7 @@ function buildBrandProductsSection(): ComponentNode[] {
 			searchCommand: ProductTemplateCommands.SEARCH,
 			filterGraph: { if: ['brand_id', '=', '${id}'] },
 			linkField: 'id',
-			linkRoutePath: 'product_templates',
+			linkRoutePath: 'inventory_product_template',
 		})],
 	)];
 }

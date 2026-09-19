@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -19,14 +19,15 @@ export function buildRolePages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'roles',
+		routePath: 'iam_role',
 		template: splitView.template,
 		props: splitView.props,
 	})];
 }
 
+/** On the v2 list template (`ExcelDataTable`): same actions as before, plus inline row editing. */
 function buildRoleListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.ROLE_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		linkField: 'id',
@@ -35,6 +36,7 @@ function buildRoleListProps() {
 		deleteCommand: RoleCommands.DELETE,
 		archiveCommand: RoleCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: RoleCommands.UPDATE,
+		updateCommand: RoleCommands.UPDATE,
 		extraActions: [
 			{ label: 'action.delete', command: RoleCommands.DELETE, supportMultiple: true, requireSelection: true },
 		],
@@ -44,8 +46,9 @@ function buildRoleListProps() {
 	});
 }
 
+/** On the v2 detail template: the assignment tables are related-resource tabs below the form. */
 function buildRoleDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.ROLE_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -59,7 +62,8 @@ function buildRoleDetailProps() {
 			archive: RoleCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildRoleFieldsSection()],
-		childrenNodes: [buildRoleFieldsSection(), ...buildAssignmentSections()],
+		childrenNodes: [buildRoleFieldsSection()],
+		relatedResources: buildAssignmentResources(),
 	});
 }
 
@@ -111,29 +115,25 @@ function buildRoleFieldsSection(): ComponentNode {
  * search with the `linked` edge operator, from the principal's side. `roles` is the
  * inverse edge on both iam_user and iam_group.
  */
-function buildAssignmentSections(): ComponentNode[] {
+function buildAssignmentResources() {
 	return [
-		collapsibleSectionNode(
-			{ header: 'role_sections_assignedUsers', translationNs: c.IAM_MODULE, expanded: false },
-			[resourceTableNode({
-				schemaName: c.USER_SCHEMA_NAME,
-				translationNs: c.IAM_MODULE,
-				searchCommand: UserCommands.SEARCH,
-				filterGraph: { if: ['roles', 'linked', '${id}'] },
-				linkField: 'id',
-				linkRoutePath: 'users',
-			})],
-		),
-		collapsibleSectionNode(
-			{ header: 'role_sections_assignedGroups', translationNs: c.IAM_MODULE, expanded: false },
-			[resourceTableNode({
-				schemaName: c.GROUP_SCHEMA_NAME,
-				translationNs: c.IAM_MODULE,
-				searchCommand: GroupCommands.SEARCH,
-				filterGraph: { if: ['roles', 'linked', '${id}'] },
-				linkField: 'id',
-				linkRoutePath: 'groups',
-			})],
-		),
+		{
+			label: 'role_sections_assignedUsers',
+			schemaName: c.USER_SCHEMA_NAME,
+			translationNs: c.IAM_MODULE,
+			searchCommand: UserCommands.SEARCH,
+			filterGraph: { if: ['roles', 'linked', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'iam_user',
+		},
+		{
+			label: 'role_sections_assignedGroups',
+			schemaName: c.GROUP_SCHEMA_NAME,
+			translationNs: c.IAM_MODULE,
+			searchCommand: GroupCommands.SEARCH,
+			filterGraph: { if: ['roles', 'linked', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'iam_group',
+		},
 	];
 }

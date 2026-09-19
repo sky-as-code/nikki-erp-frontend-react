@@ -14,6 +14,37 @@ export const resourceListCommandActionSchema = z.object({
 });
 
 /**
+ * The backend resolves a `fields=` selection one dot deep — `MaxSelectGraphColumnDots`. Filtering
+ * reaches further, but a column has to be selected before it can be shown, so the column form is
+ * what this cap applies to. Rejecting it here turns a server-side "field path too deep" into an
+ * authoring-time diagnostic naming the offending field.
+ */
+const MAX_DISPLAYED_FIELD_DOTS = 1;
+
+const displayedFieldPathSchema = z.string().min(1).refine(
+	field => (field.split('.').length - 1) <= MAX_DISPLAYED_FIELD_DOTS,
+	{ message: 'a displayed field reaches at most one edge deep, e.g. `product_template.name`' },
+);
+
+/**
+ * A column of the list, either a bare field name or a field paired with its own label.
+ *
+ * The bare form takes its header from the model schema's per-field label, which the backend
+ * already localizes. The object form is for the cases the schema cannot answer: a field reached
+ * through an edge, which belongs to the *other* schema and carries that schema's wording, and a
+ * column whose heading should read differently here than it does on its own resource.
+ */
+export const resourceListDisplayedFieldSchema = z.union([
+	displayedFieldPathSchema,
+	z.object({
+		/** Schema field name, or a single-dot path through an edge (`product_template.name`). */
+		field: displayedFieldPathSchema,
+		/** i18n key, translated with the list's `translationNs`. */
+		label: z.string().min(1),
+	}).strict(),
+]);
+
+/**
  * `.strict()` is deliberate: with the previous class props a misspelled
  * `archiveComand` was a silently dead action. It now fails validation and the
  * engine renders a visible diagnostic instead.
@@ -33,6 +64,15 @@ export const resourceListPropsSchema = z.object({
 	archiveCommand: z.string().min(1).optional(),
 	updateSaveCommand: z.string().min(1).optional(),
 	extraActions: z.array(resourceListCommandActionSchema).default([]),
+	/**
+	 * The columns to show, in order. Omitted, the server chooses them from the model's
+	 * `default_search_fields`, which is what every list did before this prop existed.
+	 *
+	 * Setting it requests exactly these fields, so it decides both what is fetched and what is
+	 * shown. The user's own column choice, saved from the view settings, still outranks it — this
+	 * is the page's default view, not a lock.
+	 */
+	displayed_fields: z.array(resourceListDisplayedFieldSchema).nonempty().optional(),
 	linkField: z.string().min(1).optional(),
 	fieldAsId: z.string().min(1).optional(),
 	/**
@@ -52,5 +92,6 @@ export const resourceListPropsSchema = z.object({
 }).strict();
 
 export type ResourceListProps = z.infer<typeof resourceListPropsSchema>;
+export type ResourceListDisplayedField = z.infer<typeof resourceListDisplayedFieldSchema>;
 export type ResourceListPropsInput = z.input<typeof resourceListPropsSchema>;
 export type ResourceListCommandAction = z.infer<typeof resourceListCommandActionSchema>;

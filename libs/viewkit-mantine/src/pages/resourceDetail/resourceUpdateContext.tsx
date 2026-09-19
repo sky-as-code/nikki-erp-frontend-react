@@ -4,6 +4,7 @@ import type {
 	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './props';
+import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -11,6 +12,13 @@ import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 export type ResourceUpdateContextValue = {
 	commands: ResourceDetailStandardActionCommands,
 	resource?: Record<string, unknown>,
+	/**
+	 * The schemas this resource's to-one edges point at, keyed by name.
+	 *
+	 * Resolved once by the provider to build the detail fetch's `fields`, and shared here so the
+	 * read-mode fields can render each edge's label without fetching them a second time.
+	 */
+	edgeSchemas: Record<string, dyn.ModelSchema>,
 	isReading: boolean,
 	isWriting: boolean,
 	refresh: () => void,

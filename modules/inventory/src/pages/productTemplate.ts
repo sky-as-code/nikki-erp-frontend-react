@@ -24,12 +24,12 @@ export function buildProductTemplatePages(): PageNode[] {
 	const importPage = resourceImportProps({
 		schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		returnRoutePath: 'product_templates',
+		returnRoutePath: 'inventory_product_template',
 	});
 
 	return [
-		definePage({ routePath: 'product_templates', template: splitView.template, props: splitView.props }),
-		definePage({ routePath: 'product_templates/import', template: importPage.template, props: importPage.props }),
+		definePage({ routePath: 'inventory_product_template', template: splitView.template, props: splitView.props }),
+		definePage({ routePath: 'inventory_product_template/import', template: importPage.template, props: importPage.props }),
 	];
 }
 
@@ -94,7 +94,7 @@ function buildProductTemplateIdentityTabs(): TabCollapsibleSectionTab[] {
 			header: 'form.generalInformation',
 			content: resourceFormColumnNode({
 				header: 'form.generalInformation',
-				fields: ['name', 'short_name', 'status', 'org_id'],
+				fields: ['name', 'short_name', 'status', 'org_id', 'uom_id'],
 			}),
 		},
 		{
@@ -193,7 +193,7 @@ function buildTemplateSections(): ComponentNode[] {
 				// value's sales_price_extra is set. The junction row carries template_attribute_id
 				// rather than the template id, so its values are two hops from here and reachable
 				// only through the attribute row itself.
-				linkRoutePath: 'template_attribute_values',
+				linkRoutePath: 'inventory_product_template_attribute_value',
 			})],
 		),
 		collapsibleSectionNode(
@@ -204,7 +204,7 @@ function buildTemplateSections(): ComponentNode[] {
 				searchCommand: ProductVariantCommands.SEARCH,
 				filterGraph: { if: ['product_template_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'product_variants',
+				linkRoutePath: 'inventory_product_variant',
 			})],
 		),
 		collapsibleSectionNode(
@@ -227,7 +227,11 @@ function buildTemplateSections(): ComponentNode[] {
 				// prices every variant that has none of its own.
 				filterGraph: { if: ['product_template_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'vendor_product_prices',
+				// The row links into the `purchase` module, which owns this schema; `linkRoutePath`
+				// is resolved against the *current* module, so the module segment is named here.
+				// Pre-existing defect: this read `vendor_product_prices`, a path `inventory` never
+				// registered, so every row linked to a 404.
+				linkRoutePath: '/purchase/purchase_vendor_product_price',
 			})],
 		),
 		buildTemplateInventorySection(),
@@ -294,7 +298,7 @@ function buildTemplateInventorySection(): ComponentNode {
 			filterGraph: { if: ['product_template_id', '=', '${id}'] },
 			fields: ['sku', 'combination_key', 'status'],
 			linkField: 'id',
-			linkRoutePath: 'product_variants',
+			linkRoutePath: 'inventory_product_variant',
 			// A second variants table on one page, so it needs its own testId prefix to avoid
 			// colliding with the configuration section above.
 			testId: 'inventory.templateInventory',

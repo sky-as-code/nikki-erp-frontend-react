@@ -25,6 +25,7 @@ import {
 } from './ResourceDetailProvider';
 import { ResourceDetailOverflowMenu } from './resourceOverflowMenu';
 import { useResourceUpdateContext } from './resourceUpdateContext';
+import { EdgeFieldValue } from '../../components/edgeFieldValue';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import { commandActionCode, StandardActionCode, useActionLock } from '../../permissions';
@@ -452,7 +453,7 @@ export function OwnPropertiesBlock({
 
 	// A header over nothing reads as a broken section, so a block whose fields all filter out is
 	// dropped along with its title.
-	if (!modelSchema || !hasVisibleField(modelSchema, block.fields ?? [], mode, fieldValues)) {
+	if (!modelSchema || !hasVisibleField(modelSchema, block.fields ?? [], mode)) {
 		return null;
 	}
 
@@ -511,7 +512,7 @@ function FieldGroupVertical({
 	return (
 		<div className={classes.formFieldWrapper}>
 			{fields.map(field => {
-				if (!isFieldVisible(modelSchema, field, 'read', fieldValues)) {
+				if (!isFieldVisible(modelSchema, field, 'read')) {
 					return null;
 				}
 				return (
@@ -530,10 +531,10 @@ function FieldGroupVertical({
 /**
  * One field as label-over-value text.
  *
- * Renders nothing at all when the record holds no value: a dash placeholder reads as content the
- * record actually carries, and a labelled blank is indistinguishable from a broken field. The
- * *raw* value decides, not the formatted output — `formatFieldValue` turns null into `'-'`, so
- * testing the rendered string would let exactly the placeholder this avoids slip through.
+ * A field the record left unset still renders, as its label over an em-dash: the reader is asking
+ * what this record holds, and "no short name" is an answer, while a row that silently disappears
+ * is indistinguishable from a field that does not exist. The placeholder is deliberately the
+ * em-dash rather than empty space, so the absence reads as intentional.
  */
 function ReadOnlyFieldValue({
 	field, modelSchema, fieldValues,
@@ -546,24 +547,43 @@ function ReadOnlyFieldValue({
 	// Called before the early return, since hooks cannot be skipped. It no-ops for every field
 	// that is not function-computed with a declared dependency.
 	const computed = useComputedField(field);
+	const { edgeSchemas } = useResourceUpdateContext();
 	const fieldDef = modelSchema.fields[field];
+	// A foreign key resolves to the relation it owns the key for, the same dispatch edit mode
+	// uses to choose `RelationSelectField`.
+	const relation = dyn.findRelationBySrcField(modelSchema, field);
 	// A live recompute wins over the loaded value, which went stale the moment the user edited the
 	// field it derives from. Before the first answer arrives there is nothing fresher to show, so
 	// the loaded value stands.
 	const rawValue = computed.isLive && computed.value !== undefined
 		? computed.value
 		: fieldValues[field];
-	if (!fieldDef || !hasDisplayableValue(rawValue)) {
+	if (!fieldDef) {
 		return null;
 	}
+
+	const plainValue = hasDisplayableValue(rawValue)
+		? renderDisplayFieldValue(rawValue, fieldDef, localize)
+		: emptyFieldPlaceholder;
 
 	return (
 		<Stack gap={4}>
 			<Text size='md' fw='bold'>{localize(fieldDef.label)}</Text>
-			<Text size='md'>{renderDisplayFieldValue(rawValue, fieldDef, localize)}</Text>
+			<Text size='md'>
+				{relation ? (
+					<EdgeFieldValue
+						relation={relation}
+						destSchema={edgeSchemas[relation.dest_schema_name]}
+						fieldValues={fieldValues}
+						fallback={plainValue}
+					/>
+				) : plainValue}
+			</Text>
 		</Stack>
 	);
 }
+
+const emptyFieldPlaceholder = '—';
 
 /** Whether a raw field value is worth putting on screen at all. */
 function hasDisplayableValue(value: unknown): boolean {

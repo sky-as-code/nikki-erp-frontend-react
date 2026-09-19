@@ -22,7 +22,7 @@ export function buildSalesPaymentPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'sales_payments',
+		routePath: 'sales_payment',
 		template: splitView.template,
 		props: splitView.props,
 	})];

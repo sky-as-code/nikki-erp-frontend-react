@@ -16,7 +16,7 @@ export function buildSupplyRelationPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'supply_relations',
+		routePath: 'inventory_warehouse_supply_relation',
 		template: splitView.template,
 		props: splitView.props,
 	})];

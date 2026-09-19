@@ -27,7 +27,7 @@ import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 export function buildPurchaseOrderPages(): PageNode[] {
 	return [
 		definePage({ routePath: 'requests_for_quotation', ...splitView(QUOTATION_FILTER, true) }),
-		definePage({ routePath: 'purchase_orders', ...splitView(COMMITTED_FILTER, false) }),
+		definePage({ routePath: 'purchase_order', ...splitView(COMMITTED_FILTER, false) }),
 	];
 }
 

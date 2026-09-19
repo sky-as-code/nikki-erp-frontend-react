@@ -9,21 +9,27 @@ export type FieldVisibilityMode = 'create' | 'update' | 'read';
  * The rules differ per mode because the modes render through different components: the two form
  * modes go through `AutoField`, which has an input for only some data types, while read mode goes
  * through `renderDisplayFieldValue`, which can show a value of any type.
+ *
+ * Visibility is decided by the schema alone, never by the record: read mode labels an unset field
+ * rather than dropping it, so the same fields appear whatever a given record happens to hold.
  */
 export function isFieldVisible(
 	modelSchema: dyn.ModelSchema,
 	fieldName: string,
 	mode: FieldVisibilityMode,
-	fieldValues?: Record<string, unknown>,
 ): boolean {
 	const fieldDef = modelSchema.fields[fieldName];
 	if (!fieldDef) {
 		return false;
 	}
 
+	// Read mode shows every field the schema defines, unset ones included: a labelled blank states
+	// that the record carries no value there, which a row that is simply absent cannot state.
+	// `isRenderableFieldType` is deliberately NOT consulted — it asks whether `AutoField` has an
+	// *input* for the type, while read mode goes through `renderDisplayFieldValue`, which displays
+	// edge models and etags that no form can edit.
 	if (mode === 'read') {
-		// A blank row tells the reader nothing, so an unset field is left out entirely.
-		return hasValue(fieldValues?.[fieldName]);
+		return true;
 	}
 
 	// The primary key is assigned by the server and identifies the record being edited; offering
@@ -55,14 +61,7 @@ export function hasVisibleField(
 	modelSchema: dyn.ModelSchema,
 	fields: string[],
 	mode: FieldVisibilityMode,
-	fieldValues?: Record<string, unknown>,
 ): boolean {
-	return fields.some(field => isFieldVisible(modelSchema, field, mode, fieldValues));
+	return fields.some(field => isFieldVisible(modelSchema, field, mode));
 }
 
-function hasValue(value: unknown): boolean {
-	if (value === null || value === undefined || value === '') {
-		return false;
-	}
-	return !(Array.isArray(value) && value.length === 0);
-}

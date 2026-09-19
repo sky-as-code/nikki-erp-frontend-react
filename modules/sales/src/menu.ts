@@ -15,32 +15,32 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
 const ITEMS: MenuItem[] = [
 	// Orders and quotations are different resources with separate tables and routes: a quotation
 	// that never converts must not burn an order number, since fiscal systems read that sequence.
-	{ labelKey: 'menu.orders', link: '/sales_orders' },
-	{ labelKey: 'menu.quotations', link: '/sales_quotations' },
+	{ labelKey: 'menu.orders', link: '/sales_order' },
+	{ labelKey: 'menu.quotations', link: '/sales_quotation' },
 	{
 		labelKey: 'menu.billing',
 		items: [
-			{ labelKey: 'menu.bills', link: '/sales_bills' },
+			{ labelKey: 'menu.bills', link: '/sales_bill' },
 			// Read-only: money is recorded through a bill's `pay` action, never by creating a row.
-			{ labelKey: 'menu.payments', link: '/sales_payments' },
+			{ labelKey: 'menu.payments', link: '/sales_payment' },
 			// Read-mostly: the backend creates these; issuing one is an action on a bill.
-			{ labelKey: 'menu.fiscalRequests', link: '/sales_fiscal_requests' },
+			{ labelKey: 'menu.fiscalRequests', link: '/sales_fiscal_request' },
 		],
 	},
 	{
 		labelKey: 'menu.pricing',
 		items: [
-			{ labelKey: 'menu.pricelists', link: '/sales_pricelists' },
-			{ labelKey: 'menu.promotions', link: '/sales_promotion_programs' },
-			{ labelKey: 'menu.combos', link: '/sales_combos' },
-			{ labelKey: 'menu.voucherCodes', link: '/sales_voucher_codes' },
+			{ labelKey: 'menu.pricelists', link: '/sales_pricelist' },
+			{ labelKey: 'menu.promotions', link: '/sales_promotion_program' },
+			{ labelKey: 'menu.combos', link: '/sales_combo' },
+			{ labelKey: 'menu.voucherCodes', link: '/sales_voucher_code' },
 		],
 	},
 	{
 		labelKey: 'menu.setup',
 		items: [
-			{ labelKey: 'menu.channels', link: '/sales_channels' },
-			{ labelKey: 'menu.points', link: '/sales_points' },
+			{ labelKey: 'menu.channels', link: '/sales_channel' },
+			{ labelKey: 'menu.points', link: '/sales_point' },
 		],
 	},
 	// Child records (order lines, adjustments, events, bill lines, combo components, pricelist

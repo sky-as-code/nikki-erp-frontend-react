@@ -9,7 +9,7 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
  * module's menu, so an entry there would be invisible from every other module.
  */
 const ITEMS: MenuItem[] = [
-	{ labelKey: 'menu.notifications', link: '/notifications' },
+	{ labelKey: 'menu.notifications', link: '/notification_notification' },
 ];
 
 export function buildNotificationMenu(slug: string): MenuContribution {

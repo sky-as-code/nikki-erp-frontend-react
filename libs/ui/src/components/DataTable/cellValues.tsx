@@ -2,6 +2,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
 import { applyCustomRenderer, renderDefaultByDataType } from './cellRenderers';
+import { getFieldSchema } from './FilterBox/filterModel';
 
 import type { SearchItem } from './types';
 import type { TranslateFn } from '../../i18n';
@@ -20,8 +21,33 @@ export function getCellText(item: SearchItem, field: string, maskedFields: strin
 	if (maskedFields.includes(field)) {
 		return '********';
 	}
-	return String(item[field] ?? '');
+	return String(getCellValue(item, field) ?? '');
 }
+
+/**
+ * The value of a field, which may reach one edge deep (`product_template.name`).
+ *
+ * The server nests a selected edge field under the edge name rather than flattening it into the
+ * row, so a dotted name is a path to walk and never a key on the record itself.
+ */
+export function getCellValue(item: SearchItem | undefined, field: string): unknown {
+	if (!item) {
+		return undefined;
+	}
+	if (!field.includes('.')) {
+		return item[field];
+	}
+	let current: unknown = item;
+	for (const segment of field.split('.')) {
+		if (current == null || typeof current !== 'object') {
+			return undefined;
+		}
+		current = (current as Record<string, unknown>)[segment];
+	}
+	return current;
+}
+
+export { getFieldSchema };
 
 export function isArrayField(fieldSchema?: dyn.ModelSchemaField): boolean {
 	if (!fieldSchema || typeof fieldSchema.data_type === 'string') {
@@ -50,7 +76,7 @@ export function renderDataCellContent(
 	t: TranslateFn,
 ): React.ReactNode {
 	if (fieldRenderer) {
-		return applyCustomRenderer(fieldRenderer, textValue, t);
+		return applyCustomRenderer(fieldRenderer, textValue, t, rawValue);
 	}
 	const dataTypeName = getFieldDataTypeName(fieldSchema);
 	if (!isArrayField(fieldSchema)) {

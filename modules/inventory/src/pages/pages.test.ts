@@ -73,14 +73,14 @@ describe('Inventory page metadata', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
 
 		expect(routePaths).toEqual([
-			'product_templates', 'product_templates/import',
-			'product_variants', 'product_variants/import',
-			'product_types',
-			'product_categories', 'product_categories/import',
-			'brands', 'attributes', 'attribute_values', 'template_attribute_values',
-			'locations', 'warehouses', 'storage_categories', 'supply_relations', 'putaway_rules',
-			'stock_balance', 'stock_balance_counts_due', 'stock_transfers',
-			'stock_scraps',
+			'inventory_product_template', 'inventory_product_template/import',
+			'inventory_product_variant', 'inventory_product_variant/import',
+			'inventory_product_type',
+			'inventory_product_category', 'inventory_product_category/import',
+			'inventory_brand', 'inventory_product_attribute', 'inventory_product_attribute_value', 'inventory_product_template_attribute_value',
+			'inventory_location', 'inventory_warehouse', 'inventory_storage_category', 'inventory_warehouse_supply_relation', 'inventory_putaway_rule',
+			'inventory_stock_quant', 'stock_balance_counts_due', 'inventory_stock_transfer',
+			'inventory_stock_scrap',
 		]);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*(\/import)?$/);
@@ -95,15 +95,15 @@ describe('Inventory page metadata', () => {
 	it.each([
 		{
 			name: 'productTemplate', build: buildProductTemplatePages,
-			route: 'product_templates', schema: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
+			route: 'inventory_product_template', schema: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
 		},
 		{
 			name: 'productVariant', build: buildProductVariantPages,
-			route: 'product_variants', schema: c.PRODUCT_VARIANT_SCHEMA_NAME,
+			route: 'inventory_product_variant', schema: c.PRODUCT_VARIANT_SCHEMA_NAME,
 		},
 		{
 			name: 'productCategory', build: buildProductCategoryPages,
-			route: 'product_categories', schema: c.PRODUCT_CATEGORY_SCHEMA_NAME,
+			route: 'inventory_product_category', schema: c.PRODUCT_CATEGORY_SCHEMA_NAME,
 		},
 	])('$name declares the import pilot page beside its list', ({ build, route, schema }) => {
 		const pages = build();
@@ -114,6 +114,27 @@ describe('Inventory page metadata', () => {
 		expect(listProps.primary.props.importEnabled).toBe(true);
 		expect(importPage?.template).toBe('nikkierp.mantine.pages.templates.resourceImport.v1');
 		expect(importPage?.props).toMatchObject({ schemaName: schema, returnRoutePath: route });
+	});
+
+	// The buying view of a variant, in order. Pinned because the schema's own default set answers a
+	// different question, and losing a column here is invisible until someone opens the page.
+	it('shows the product variant list as identity, attributes, price and stock', () => {
+		const [page] = buildProductVariantPages();
+		const props = page.props as {
+			primary: { props: { displayed_fields: unknown[], fieldRenderers: Record<string, unknown> } },
+		};
+
+		expect(props.primary.props.displayed_fields).toEqual([
+			'sku',
+			{ field: 'product_template_name', label: 'fields.product_name' },
+			{ field: 'attribute_summary', label: 'fields.attributes' },
+			{ field: 'effective_base_sales_price', label: 'fields.sale_price' },
+			'cost',
+			'on_hand_quantity',
+			{ field: 'product_template_uom_id', label: 'fields.product_template_uom_id' },
+		]);
+		expect(props.primary.props.fieldRenderers.attribute_summary)
+			.toEqual({ renderer: 'attributePills' });
 	});
 
 	it('nests both split-view panes as template refs', () => {
@@ -165,7 +186,7 @@ describe('Product template detail sections', () => {
 		const variantTable = collectComponents(page, 'resourceTable')
 			.find(node => node.props?.schemaName === c.PRODUCT_VARIANT_SCHEMA_NAME);
 
-		expect(variantTable?.props?.linkRoutePath).toBe('product_variants');
+		expect(variantTable?.props?.linkRoutePath).toBe('inventory_product_variant');
 	});
 
 	/**
@@ -244,7 +265,7 @@ describe('Product stock integration', () => {
 			.find(table => table.props?.schemaName === c.PUTAWAY_RULE_SCHEMA_NAME);
 
 		expect(putaway?.props?.filterGraph).toEqual({ if: ['product_category_id', '=', '${id}'] });
-		expect(putaway?.props?.linkRoutePath).toBe('putaway_rules');
+		expect(putaway?.props?.linkRoutePath).toBe('inventory_putaway_rule');
 	});
 });
 
@@ -454,6 +475,6 @@ describe('Template attribute value page', () => {
 		const attributes = collectComponents(template, 'resourceTable')
 			.find(node => node.props?.schemaName === c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME);
 
-		expect(attributes?.props?.linkRoutePath).toBe('template_attribute_values');
+		expect(attributes?.props?.linkRoutePath).toBe('inventory_product_template_attribute_value');
 	});
 });

@@ -10,6 +10,16 @@ export interface IFieldRenderer {
 	 */
 	render(rawValue: string, translatedValue: string): RenderResult;
 
+	/**
+	 * Render from the value as it came off the record, before it was flattened to text.
+	 *
+	 * Takes precedence over {@link render} when present. `render` receives `String(value)`, which
+	 * is all a scalar needs but destroys a structured one — an array of attribute values arrives
+	 * as `[object Object]`. A renderer whose cell is built from more than one value implements
+	 * this instead, and only such a renderer pays the cost of handling untyped input.
+	 */
+	renderRaw?(rawValue: unknown, textValue: string): RenderResult;
+
 	/** When set, the value is translated with this key before `render` runs. */
 	translationKey?(value: string): string;
 }

@@ -22,12 +22,12 @@ export function buildProductVariantPages(): PageNode[] {
 	const importPage = resourceImportProps({
 		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		returnRoutePath: 'product_variants',
+		returnRoutePath: 'inventory_product_variant',
 	});
 
 	return [
-		definePage({ routePath: 'product_variants', template: splitView.template, props: splitView.props }),
-		definePage({ routePath: 'product_variants/import', template: importPage.template, props: importPage.props }),
+		definePage({ routePath: 'inventory_product_variant', template: splitView.template, props: splitView.props }),
+		definePage({ routePath: 'inventory_product_variant/import', template: importPage.template, props: importPage.props }),
 	];
 }
 
@@ -42,7 +42,23 @@ function buildProductVariantListProps() {
 		deleteCommand: ProductVariantCommands.DELETE,
 		archiveCommand: ProductVariantCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductVariantCommands.UPDATE,
+		// The buying view of a variant: what it is, what it costs, and how much is on hand. The
+		// schema's own default set leads with identifiers, which answers a different question.
+		displayed_fields: [
+			'sku',
+			// Labelled here rather than taking the schema's: on the template this field is just
+			// "Name", which on a list of variants reads as the variant's own name.
+			{ field: 'product_template_name', label: 'fields.product_name' },
+			{ field: 'attribute_summary', label: 'fields.attributes' },
+			{ field: 'effective_base_sales_price', label: 'fields.sale_price' },
+			'cost',
+			'on_hand_quantity',
+			// The unit's id, not its name: the name sits two edges away on essential_uom, and a
+			// related computed field walks exactly one edge to a physical column.
+			{ field: 'product_template_uom_id', label: 'fields.product_template_uom_id' },
+		],
 		fieldRenderers: {
+			attribute_summary: { renderer: 'attributePills' },
 			status: {
 				renderer: 'badge',
 				colorMap: { active: 'green', discontinued: 'orange' },
@@ -193,7 +209,7 @@ function buildVariantInventorySection() {
 				'available_quantity', 'base_uom_id', 'lot_ref',
 			],
 			linkField: 'id',
-			linkRoutePath: 'stock_balance',
+			linkRoutePath: 'inventory_stock_quant',
 			testId: 'inventory.variantInventory',
 		}),
 	]);
@@ -217,7 +233,7 @@ function buildVariantMovementsSection() {
 			// Rows point at the transfer that carries them: a move has no page of its own,
 			// and the transfer is the document a user acts on.
 			linkField: 'transfer_id',
-			linkRoutePath: 'stock_transfers',
+			linkRoutePath: 'inventory_stock_transfer',
 			testId: 'inventory.variantMovements',
 		}),
 	]);
@@ -241,7 +257,7 @@ function buildVariantPutawaySection() {
 				'destination_location_id', 'priority',
 			],
 			linkField: 'id',
-			linkRoutePath: 'putaway_rules',
+			linkRoutePath: 'inventory_putaway_rule',
 			testId: 'inventory.variantPutaway',
 		}),
 	]);

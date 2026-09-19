@@ -7,6 +7,8 @@ import { useParams } from 'react-router';
 
 import { useResourceDetailContext } from './ResourceDetailProvider';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
+import { ownFieldNames } from '../../data/edgeLabelFields';
+import { useEdgeLabelFields } from '../../data/useEdgeLabelFields';
 import { RESOURCE_DETAIL_HEADER, RESOURCE_FORM } from '../../ids';
 
 import type {
@@ -46,16 +48,36 @@ export function ResourceUpdateProvider(
 ): React.ReactNode {
 	const commands = props.standardActionCommands;
 	const { id } = useParams();
+	const { schemaPack } = useResourceDetailContext();
 	const getByIdCmd = useCommand<dyn.RestGetOneResponse<any>>(commands.getById ?? '');
 	const updateCmd = useCommand<dyn.RestMutateResponse>(commands.update ?? '');
 	const publishGet = getByIdCmd.publish;
 	const publishUpdate = updateCmd.publish;
 
+	// Selecting each to-one edge's label field turns `uom_id` into a `uom: {id, name}` object on
+	// the response, so the view form can show the name and link to the record. The server adds the
+	// edge's own id to the projection for free, so no second request is needed to build the href.
+	const edgeLabels = useEdgeLabelFields(schemaPack?.modelSchema);
+	const edgeFieldKey = edgeLabels.fields.join(',');
+	// Both joined to strings for the same reason: `schemaPack` is a new object on every etag
+	// check, so depending on it directly would re-issue the detail request on each one.
+	const ownFieldKey = ownFieldNames(schemaPack?.modelSchema).join(',');
+
 	const refresh = React.useCallback(() => {
-		if (commands.getById && id && id !== 'new') {
-			void publishGet({ id });
+		// Waiting on `isReady` rather than fetching twice: the edge schemas resolve asynchronously
+		// and a first request without them would be replaced by a second with them, repainting the
+		// form in front of the user.
+		if (commands.getById && id && id !== 'new' && edgeLabels.isReady) {
+			// `fields` is omitted entirely when there is no edge to select, which leaves the server
+			// on its own default projection. Once anything is listed that default no longer
+			// applies, so the record's own columns have to be named alongside the edges or the
+			// response would carry the edges and nothing else.
+			const edgeFields = edgeFieldKey ? edgeFieldKey.split(',') : [];
+			const ownFields = ownFieldKey ? ownFieldKey.split(',') : [];
+			const fields = edgeFields.length > 0 ? [...ownFields, ...edgeFields] : undefined;
+			void publishGet(fields ? { id, fields } : { id });
 		}
-	}, [publishGet, commands.getById, id]);
+	}, [publishGet, commands.getById, id, edgeLabels.isReady, edgeFieldKey, ownFieldKey]);
 
 	React.useEffect(() => { refresh(); }, [refresh]);
 
@@ -81,6 +103,7 @@ export function ResourceUpdateProvider(
 		(): ResourceUpdateContextValue => ({
 			commands,
 			resource,
+			edgeSchemas: edgeLabels.destSchemas,
 			isReading: getByIdCmd.isPending,
 			isWriting: updateCmd.isPending,
 			refresh,
@@ -97,7 +120,8 @@ export function ResourceUpdateProvider(
 			childrenNodes: props.childrenNodes,
 		}),
 		[
-			commands, resource, getByIdCmd.isPending, updateCmd.isPending, refresh, onSubmit,
+			commands, resource, edgeLabels.destSchemas, getByIdCmd.isPending, updateCmd.isPending,
+			refresh, onSubmit,
 			updateCmd.clientErrors, updateCmd.error, getByIdCmd.error,
 			props.allStatuses, props.currentStatus, props.contextualActions,
 			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.childrenNodes,

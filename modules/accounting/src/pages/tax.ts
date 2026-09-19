@@ -28,7 +28,7 @@ export function buildTaxPages(): PageNode[] {
 	});
 
 	return [definePage({
-		routePath: 'taxes',
+		routePath: 'accounting_tax',
 		template: splitView.template,
 		props: splitView.props,
 	})];
@@ -161,7 +161,7 @@ function buildRateVersionsSection(): ComponentNode {
 				searchCommand: TaxRateVersionCommands.SEARCH,
 				filterGraph: { if: ['tax_id', '=', '${id}'] },
 				linkField: 'id',
-				linkRoutePath: 'tax_rates',
+				linkRoutePath: 'accounting_tax_rate_version',
 				fields: ['version_no', 'rate', 'fixed_amount', 'currency_code', 'lifecycle_status',
 					'effective_from', 'effective_to'],
 				fieldRenderers: {

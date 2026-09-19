@@ -13,7 +13,11 @@
 export const MANTINE_VIEW_KIT_ID = 'nikkierp.mantine';
 
 export const RESOURCE_LIST_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceList.v1';
+/** The v1 list on the composable `ExcelDataTable`; same props plus `updateCommand` and `viewModes`. */
+export const RESOURCE_LIST_V2_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceList.v2';
 export const RESOURCE_DETAIL_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceDetails.v1';
+/** The v1 detail plus a related-resources tab section, each tab an `ExcelDataTable`. */
+export const RESOURCE_DETAIL_V2_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceDetails.v2';
 export const RESOURCE_SPLIT_VIEW_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceSplitView.v1';
 export const RESOURCE_IMPORT_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceImport.v1';
 
@@ -89,3 +93,6 @@ export const SETTINGS_ITEM = 'nikkierp.mantine.components.settingsItem.v1';
 export const FIELD_RENDERER_AVATAR = 'avatar';
 export const FIELD_RENDERER_BADGE = 'badge';
 export const FIELD_RENDERER_TRANSLATED = 'translated';
+/** A decimal shown as money with a page-declared currency symbol; the schema has no money type. */
+export const FIELD_RENDERER_MONEY = 'money';
+export const FIELD_RENDERER_ATTRIBUTE_PILLS = 'attributePills';

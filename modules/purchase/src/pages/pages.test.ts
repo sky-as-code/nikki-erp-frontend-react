@@ -12,7 +12,7 @@ import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
 const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'purchaseOrder', build: buildPurchaseOrderPages },
 	{ name: 'agreement', build: buildAgreementPages },
-	{ name: 'configuration', build: buildConfigurationPages },
+	{ name: 'purchase_configuration', build: buildConfigurationPages },
 	{ name: 'vendorProductPrice', build: buildVendorProductPricePages },
 ];
 
@@ -52,8 +52,8 @@ describe('Purchase page metadata', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
 
 		expect(routePaths).toEqual([
-			'requests_for_quotation', 'purchase_orders', 'agreements', 'configuration',
-			'vendor_product_prices',
+			'requests_for_quotation', 'purchase_order', 'purchase_agreement', 'purchase_configuration',
+			'purchase_vendor_product_price',
 		]);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);
@@ -106,7 +106,7 @@ describe('RFQ and purchase order routes', () => {
 		const [quotations, orders] = buildPurchaseOrderPages();
 
 		expect(quotations.routePath).toBe('requests_for_quotation');
-		expect(orders.routePath).toBe('purchase_orders');
+		expect(orders.routePath).toBe('purchase_order');
 		expect(listProps(quotations).schemaName).toBe(c.PURCHASE_ORDER_SCHEMA_NAME);
 		expect(listProps(orders).schemaName).toBe(c.PURCHASE_ORDER_SCHEMA_NAME);
 	});
@@ -374,7 +374,7 @@ describe('Agreement page', () => {
 		const drawn = tables.find(table => table.props?.schemaName === c.PURCHASE_ORDER_SCHEMA_NAME);
 
 		expect(drawn?.props?.filterGraph).toEqual({ if: ['agreement_id', '=', '${id}'] });
-		expect(drawn?.props?.linkRoutePath).toBe('purchase_orders');
+		expect(drawn?.props?.linkRoutePath).toBe('purchase_order');
 		expect(drawn?.props?.linkField).toBe('id');
 	});
 });
@@ -576,7 +576,7 @@ describe('Reprice action', () => {
 	 */
 	it('is offered on the draft statuses only', () => {
 		const orders = buildPurchaseOrderPages()
-			.find(page => page.routePath === 'purchase_orders')!;
+			.find(page => page.routePath === 'purchase_order')!;
 		const props = orders.props as {
 			secondary: {
 				props: {
