@@ -11,6 +11,7 @@ import { buildProductTypePages } from './productType';
 import { buildProductVariantPages } from './productVariant';
 import { buildPutawayRulePages } from './putawayRule';
 import { buildStockQuantPages } from './stockQuant';
+import { buildStockReservationPages } from './stockReservation';
 import { buildStockScrapPages } from './stockScrap';
 import { buildStockTransferPages } from './stockTransfer';
 import { buildStorageCategoryPages } from './storageCategory';
@@ -38,6 +39,7 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'stockQuant', build: buildStockQuantPages },
 	{ name: 'stockTransfer', build: buildStockTransferPages },
 	{ name: 'stockScrap', build: buildStockScrapPages },
+	{ name: 'stockReservation', build: buildStockReservationPages },
 ];
 
 describe('Inventory page metadata', () => {
@@ -80,7 +82,7 @@ describe('Inventory page metadata', () => {
 			'inventory_brand', 'inventory_product_attribute', 'inventory_product_attribute_value', 'inventory_product_template_attribute_value',
 			'inventory_location', 'inventory_warehouse', 'inventory_storage_category', 'inventory_warehouse_supply_relation', 'inventory_putaway_rule',
 			'inventory_stock_quant', 'stock_balance_counts_due', 'inventory_stock_transfer',
-			'inventory_stock_scrap',
+			'inventory_stock_scrap', 'inventory_stock_reservation',
 		]);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*(\/import)?$/);

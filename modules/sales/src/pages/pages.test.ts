@@ -10,6 +10,7 @@ import { buildSalesPointPages } from './salesPoint';
 import { buildSalesPricelistPages } from './salesPricelist';
 import { buildSalesPromotionProgramPages } from './salesPromotionProgram';
 import { buildSalesQuotationPages } from './salesQuotation';
+import { buildSalesReturnPages } from './salesReturn';
 import { buildSalesVoucherCodePages } from './salesVoucherCode';
 import * as c from '../constants';
 
@@ -22,6 +23,7 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'salesBill', build: buildSalesBillPages },
 	{ name: 'salesPayment', build: buildSalesPaymentPages },
 	{ name: 'salesFiscalRequest', build: buildSalesFiscalRequestPages },
+	{ name: 'salesReturn', build: buildSalesReturnPages },
 	{ name: 'salesPricelist', build: buildSalesPricelistPages },
 	{ name: 'salesPromotionProgram', build: buildSalesPromotionProgramPages },
 	{ name: 'salesCombo', build: buildSalesComboPages },
@@ -64,7 +66,7 @@ describe('Sales page metadata', () => {
 
 		expect(routePaths).toEqual([
 			'sales_order', 'sales_quotation', 'sales_bill', 'sales_payment',
-			'sales_fiscal_request', 'sales_pricelist', 'sales_promotion_program', 'sales_combo',
+			'sales_fiscal_request', 'sales_return', 'sales_pricelist', 'sales_promotion_program', 'sales_combo',
 			'sales_voucher_code', 'sales_channel', 'sales_point',
 		]);
 		for (const routePath of routePaths) {
@@ -98,6 +100,7 @@ describe('Sales schema binding', () => {
 			{ primary: 'sales_bill', secondary: 'sales_bill' },
 			{ primary: 'sales_payment', secondary: 'sales_payment' },
 			{ primary: 'sales_fiscal_request', secondary: 'sales_fiscal_request' },
+			{ primary: 'sales_return', secondary: 'sales_return' },
 			{ primary: 'sales_pricelist', secondary: 'sales_pricelist' },
 			{ primary: 'sales_promotion_program', secondary: 'sales_promotion_program' },
 			{ primary: 'sales_combo', secondary: 'sales_combo' },
@@ -144,6 +147,7 @@ describe('Derived test ids', () => {
 			'sales_bill.billList',
 			'sales_payment.paymentList',
 			'sales_fiscal_request.fiscalRequestList',
+			'sales_return.returnList',
 			'sales_pricelist.pricelistList',
 			'sales_promotion_program.promotionProgramList',
 			'sales_combo.comboList',
@@ -272,10 +276,16 @@ describe('Sales order related tables', () => {
 			c.SALES_ORDER_LINE_SCHEMA_NAME,
 			c.SALES_ORDER_ADJUSTMENT_SCHEMA_NAME,
 			c.SALES_FULFILLMENT_REQUEST_SCHEMA_NAME,
+			c.SALES_ORDER_FULFILLMENT_SCHEMA_NAME,
+			c.SALES_ORDER_FULFILLMENT_ITEM_SCHEMA_NAME,
 			c.SALES_ORDER_EVENT_SCHEMA_NAME,
 		]);
+		// A fulfillment item carries no order id of its own, so its table filters through the
+		// fulfillment edge; every other table filters on the column directly.
 		for (const table of tables) {
-			expect(table.props?.filterGraph).toEqual({ if: ['sales_order_id', '=', '${id}'] });
+			const filter = table.props?.filterGraph as { if: [string, string, string] };
+			expect(['sales_order_id', 'fulfillment.sales_order_id']).toContain(filter.if[0]);
+			expect(filter.if.slice(1)).toEqual(['=', '${id}']);
 		}
 	});
 
@@ -302,9 +312,20 @@ describe('Sales order related tables', () => {
 	it('asks for nothing on the actions whose parameters are not schema fields', () => {
 		const pages = buildSalesOrderPages();
 
-		for (const name of ['cancel', 'apply_voucher', 'manual_discount']) {
+		for (const name of ['apply_voucher', 'manual_discount']) {
 			expect(contextualAction(pages, name).prompt, `'${name}' prompt`).toBeUndefined();
 		}
+	});
+
+	/**
+	 * The notes are fields of the order, so confirm and cancel can prompt for them; each is written
+	 * by its own action and closed to a plain update on the backend.
+	 */
+	it('prompts for the note on confirm and cancel', () => {
+		const pages = buildSalesOrderPages();
+
+		expect(contextualAction(pages, 'confirm').prompt?.fields.map(field => field.name)).toEqual(['confirmation_note']);
+		expect(contextualAction(pages, 'cancel').prompt?.fields.map(field => field.name)).toEqual(['cancellation_note']);
 	});
 });
 

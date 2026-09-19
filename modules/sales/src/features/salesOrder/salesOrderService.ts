@@ -36,12 +36,12 @@ export class SalesOrderService extends StoreCrudServiceBase {
 	 * 200 hands over goods no reservation covers. Re-confirming is refused rather than treated as
 	 * idempotent, since a silent second success would redeem the voucher twice.
 	 */
-	public confirm(request: OrderActionRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
+	public confirm(request: NotedActionRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.postAction(request, c.CONFIRM_PATH);
 	}
 
 	/** Refused on a paid or fulfilled order; the refusal names the refund or return workflow instead. */
-	public cancel(request: ReasonedActionRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
+	public cancel(request: ReasonedActionRequest & NotedActionRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.postAction(request, c.CANCEL_PATH);
 	}
 
@@ -122,6 +122,12 @@ export type OrderActionRequest = {
  */
 export type ReasonedActionRequest = OrderActionRequest & {
 	reason: string,
+};
+
+/** The optional note a confirm or cancel records on the order. */
+export type NotedActionRequest = OrderActionRequest & {
+	confirmation_note?: string,
+	cancellation_note?: string,
 };
 
 export type ApplyVoucherRequest = OrderActionRequest & {

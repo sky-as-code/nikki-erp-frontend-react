@@ -32,6 +32,8 @@ const ITEMS: MenuItem[] = [
 			// second entry point into an existing page rather than a page of its own (BR §4.2.8).
 			{ labelKey: 'menu_stockCountsDue', link: '/stock_balance_counts_due' },
 			{ labelKey: 'menu_stockScraps', link: '/inventory_stock_scrap' },
+			// Warehouse-level holds taken by sales; released here when a demand is abandoned.
+			{ labelKey: 'menu_stockReservations', link: '/inventory_stock_reservation' },
 		],
 	},
 	{

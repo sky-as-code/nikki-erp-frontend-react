@@ -73,7 +73,9 @@ function buildSalesChannelFieldsSection(): ComponentNode {
 					header: 'form.channel',
 					// `is_system` marks channels the platform creates for itself; editing one by hand
 					// is how a kiosk network loses the channel its tills are configured with.
-					fields: ['code', 'name', 'description', 'status'],
+					// The two automation flags are snapshotted onto every order this channel takes at
+					// create; changing them here never reaches an existing order.
+					fields: ['code', 'name', 'description', 'status', 'auto_confirm_order', 'auto_confirm_refund'],
 				}),
 			},
 			{
