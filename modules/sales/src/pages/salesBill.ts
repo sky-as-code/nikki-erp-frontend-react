@@ -166,7 +166,7 @@ function buildSalesBillLinesSection(): ComponentNode[] {
 				schemaName: c.SALES_BILL_LINE_SCHEMA_NAME,
 				translationNs: c.SALES_MODULE,
 				searchCommand: SalesBillLineCommands.SEARCH,
-				filterGraph: { if: ['sales_bill_id', '=', '${id}'] },
+				initialGraph: { if: ['sales_bill_id', '=', '${id}'] },
 				fields: ['sales_order_line_id', 'quantity', 'allocated_net_amount',
 					'allocated_tax_amount', 'allocated_total_amount'],
 			})],
@@ -190,7 +190,7 @@ function buildSalesBillPaymentsSection(): ComponentNode[] {
 				schemaName: c.SALES_PAYMENT_SCHEMA_NAME,
 				translationNs: c.SALES_MODULE,
 				searchCommand: SalesPaymentCommands.SEARCH,
-				filterGraph: { if: ['sales_bill_id', '=', '${id}'] },
+				initialGraph: { if: ['sales_bill_id', '=', '${id}'] },
 				fields: ['paid_at', 'payment_method_code_snapshot', 'amount', 'currency_code',
 					'status', 'external_transaction_id'],
 				fieldRenderers: {
@@ -223,7 +223,7 @@ function buildSalesBillFiscalSection(): ComponentNode[] {
 				schemaName: c.SALES_FISCAL_REQUEST_SCHEMA_NAME,
 				translationNs: c.SALES_MODULE,
 				searchCommand: SalesFiscalRequestCommands.SEARCH,
-				filterGraph: { if: ['sales_bill_id', '=', '${id}'] },
+				initialGraph: { if: ['sales_bill_id', '=', '${id}'] },
 				fields: ['requested_at', 'intent', 'status', 'provider_reference', 'attempt_count',
 					'last_error'],
 				linkRoutePath: 'sales_fiscal_request',
@@ -261,7 +261,7 @@ function buildSalesBillLineageSection(): ComponentNode[] {
 				schemaName: c.SALES_BILL_RELATION_SCHEMA_NAME,
 				translationNs: c.SALES_MODULE,
 				searchCommand: SalesBillRelationCommands.SEARCH,
-				filterGraph: { if: ['source_bill_id', '=', '${id}'] },
+				initialGraph: { if: ['source_bill_id', '=', '${id}'] },
 				fields: ['relation_type', 'target_bill_id', 'created_at'],
 				fieldRenderers: {
 					relation_type: {

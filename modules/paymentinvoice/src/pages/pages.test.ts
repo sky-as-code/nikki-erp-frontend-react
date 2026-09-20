@@ -161,7 +161,7 @@ describe('Order transactions section', () => {
 
 		expect(tables.map(table => table.props?.schemaName))
 			.toEqual([c.TRANSACTION_SCHEMA_NAME]);
-		expect(tables[0].props?.filterGraph).toEqual({ if: ['order_id', '=', '${id}'] });
+		expect(tables[0].props?.initialGraph).toEqual({ if: ['order_id', '=', '${id}'] });
 	});
 
 	/**
@@ -246,7 +246,7 @@ describe('Invoice page', () => {
 
 		expect(tables.map(table => table.props?.schemaName))
 			.toEqual([c.INVOICE_LINE_SCHEMA_NAME]);
-		expect(tables[0].props?.filterGraph).toEqual({ if: ['invoice_id', '=', '${id}'] });
+		expect(tables[0].props?.initialGraph).toEqual({ if: ['invoice_id', '=', '${id}'] });
 	});
 });
 

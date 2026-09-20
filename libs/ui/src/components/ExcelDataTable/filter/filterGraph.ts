@@ -37,7 +37,7 @@ export function toSearchNode(graph: dyn.SearchGraph | undefined): dyn.SearchNode
  * The base is a scoping condition the page author fixed — an embedded table's
  * `product_template_id = ${id}`, a report's `kiosk_ref = …`. It must narrow the user's query,
  * never replace it: replacing is what discarded every user filter and sort on any page carrying
- * a `filterGraph`.
+ * an `initialGraph`.
  *
  * The base node is nested rather than spliced into the user's `and` list. Splicing would be
  * wrong whenever the user's graph is an `or` — `base && (A || B)` would become
@@ -108,6 +108,12 @@ export function filterTreeToGraph(
 
 function nodeToSearchNode(node: FilterNode): dyn.SearchNode | null {
 	if (isConditionNode(node)) {
+		// A locked condition is displayed, not owned: it mirrors the base graph the search hook
+		// already ANDs into every request. Emitting it here would put the same condition on the
+		// wire twice.
+		if (node.locked) {
+			return null;
+		}
 		return isCompleteCondition(node)
 			? { if: [node.field, node.operator, ...node.values] as dyn.SearchCondition }
 			: null;
@@ -138,7 +144,7 @@ export type GraphToTreeResult = {
 /**
  * Reads a graph back into an editable tree.
  *
- * Used to seed a list page's `filterGraph` as conditions the user can see and change. The
+ * Used to seed a list page's `initialGraph` as conditions the user can see and change. The
  * inverse of {@link filterTreeToGraph} up to node ids and to structures deeper than two levels.
  *
  * Operators outside the field's offered list are **kept**, not dropped: a graph written by hand

@@ -1,6 +1,6 @@
 import { Paper } from '@mantine/core';
 import { LoadingState } from '@nikkierp/ui/components';
-import { ExcelDataTable, isActionVisible } from '@nikkierp/ui/components/ExcelDataTable';
+import { ExcelDataTable, isActionVisible, mergeSearchGraphs } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { MetaComponent, useFieldRenderers } from '@nikkierp/viewengine/render';
@@ -8,12 +8,14 @@ import {
 	IconArchive, IconLayoutGrid, IconList, IconPlus, IconTrash, IconUpload, IconX,
 } from '@tabler/icons-react';
 import React from 'react';
+import { useSearchParams } from 'react-router';
 
 import { buildResourceListActions, listActionCode, selectionModeOf } from './actions';
 import classes from './ResourceListV2.module.css';
 import { getViewModeIcon } from './viewModeIcons';
 import { displayedFieldLabelKeys, displayedFieldNames, resolveSchemaField } from '../../data/displayedFields';
 import { interpolateParams } from '../../data/interpolate';
+import { parseSearchGraphParam } from '../../data/searchGraphParam';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useRelatedSchemas } from '../../data/useRelatedSchemas';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
@@ -52,7 +54,11 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 	// actions name keys in its module. A single namespace leaves one of the two rendering raw keys.
 	const t = useTranslate([params.translationNs, 'common']);
 	const fieldRenderers = useFieldRenderers(params.fieldRenderers);
-	const graph = useResolvedFilterGraph(params.filterGraph);
+	const pageGraph = useResolvedInitialGraph(params.initialGraph);
+	const urlGraph = useUrlSearchGraph();
+	// ANDed rather than substituted: a link that narrows the list must not silently widen past
+	// the scope the page itself declared. Both halves stay editable in the panel.
+	const graph = React.useMemo(() => mergeSearchGraphs(pageGraph, urlGraph), [pageGraph, urlGraph]);
 	const initialRequest = React.useMemo(() => {
 		const fields = displayedFieldNames(params.displayed_fields);
 		return fields ? { ...INITIAL_REQUEST, fields } : INITIAL_REQUEST;
@@ -85,7 +91,7 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 				isLoading={search.isPending}
 				initialSearchRequest={search.searchRequest}
 				onSearchRequestChange={search.onSearchRequestChange}
-				initialFilterGraph={graph}
+				initialGraph={graph}
 				orderBy={getSearchRequestOrderBy(search.searchRequest)}
 				initialViewMode={params.viewModes[0].mode}
 				allowedViewModes={allowedViewModes}
@@ -300,13 +306,27 @@ function useTranslateFieldName(
 	}, [labelKeys, lc, modelSchema, relatedSchemas, t]);
 }
 
+/**
+ * The `initialGraph` search graph carried in the URL, for a link that opens the list pre-filtered.
+ *
+ * Read once per navigation and then owned by the filter panel: it seeds the conditions rather
+ * than constraining them, so the user may edit or drop any of it.
+ */
+function useUrlSearchGraph(): dyn.SearchGraph | undefined {
+	const [searchParams] = useSearchParams();
+	return React.useMemo(
+		() => parseSearchGraphParam(searchParams.get('initialGraph')),
+		[searchParams],
+	);
+}
+
 /** The same `${name}` substitution v1 does, with `${today}` as the one dynamic value a static graph can need. */
-function useResolvedFilterGraph(filterGraph: ResourceListV2Props['filterGraph']): dyn.SearchGraph | undefined {
+function useResolvedInitialGraph(initialGraph: ResourceListV2Props['initialGraph']): dyn.SearchGraph | undefined {
 	const today = new Date().toISOString().slice(0, 10);
 	return React.useMemo(
-		() => (filterGraph === undefined
+		() => (initialGraph === undefined
 			? undefined
-			: interpolateParams(filterGraph, { today }).value as dyn.SearchGraph),
-		[filterGraph, today],
+			: interpolateParams(initialGraph, { today }).value as dyn.SearchGraph),
+		[initialGraph, today],
 	);
 }

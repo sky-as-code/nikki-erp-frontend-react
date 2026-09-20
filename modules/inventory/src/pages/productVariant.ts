@@ -201,7 +201,7 @@ function buildVariantInventorySection() {
 			schemaName: c.STOCK_QUANT_SCHEMA_NAME,
 			translationNs: c.INVENTORY_MODULE,
 			searchCommand: StockQuantCommands.SEARCH,
-			filterGraph: { if: ['product_variant_id', '=', '${id}'] },
+			initialGraph: { if: ['product_variant_id', '=', '${id}'] },
 			// The location's own status is on the location, not the quant, so a suspended
 			// place is badged on the Stock Balance page this links to (TS-PROD-05).
 			fields: [
@@ -225,7 +225,7 @@ function buildVariantMovementsSection() {
 			schemaName: c.STOCK_MOVE_SCHEMA_NAME,
 			translationNs: c.INVENTORY_MODULE,
 			searchCommand: StockMoveCommands.SEARCH,
-			filterGraph: { if: ['product_variant_id', '=', '${id}'] },
+			initialGraph: { if: ['product_variant_id', '=', '${id}'] },
 			fields: [
 				'status', 'demand_quantity', 'source_location_id',
 				'destination_location_id', 'scheduled_at',
@@ -251,7 +251,7 @@ function buildVariantPutawaySection() {
 			searchCommand: PutawayRuleCommands.SEARCH,
 			// Rules naming this specific product. A rule that matches by category applies to
 			// it too and is shown on the category page instead, where it is owned (CR Â§10.2).
-			filterGraph: { if: ['product_id', '=', '${id}'] },
+			initialGraph: { if: ['product_id', '=', '${id}'] },
 			fields: [
 				'code', 'warehouse_id', 'source_location_id',
 				'destination_location_id', 'priority',

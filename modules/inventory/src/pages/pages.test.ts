@@ -179,7 +179,7 @@ describe('Product template detail sections', () => {
 			c.STOCK_PRODUCT_CONFIG_SCHEMA_NAME,
 		]);
 		for (const table of tables) {
-			expect(table.props?.filterGraph).toEqual({ if: ['product_template_id', '=', '${id}'] });
+			expect(table.props?.initialGraph).toEqual({ if: ['product_template_id', '=', '${id}'] });
 		}
 	});
 
@@ -227,9 +227,9 @@ describe('Product stock integration', () => {
 		// Stock names the variant `product_variant_id`; a putaway rule calls the same reference
 		// `product_id`, because Warehouse's rule may point at a product or a category. Each filter
 		// has to use the field its own schema declares — a shared spelling would match nothing.
-		expect(tables[0].props?.filterGraph).toEqual({ if: ['product_variant_id', '=', '${id}'] });
-		expect(tables[1].props?.filterGraph).toEqual({ if: ['product_variant_id', '=', '${id}'] });
-		expect(tables[2].props?.filterGraph).toEqual({ if: ['product_id', '=', '${id}'] });
+		expect(tables[0].props?.initialGraph).toEqual({ if: ['product_variant_id', '=', '${id}'] });
+		expect(tables[1].props?.initialGraph).toEqual({ if: ['product_variant_id', '=', '${id}'] });
+		expect(tables[2].props?.initialGraph).toEqual({ if: ['product_id', '=', '${id}'] });
 	});
 
 	/**
@@ -266,7 +266,7 @@ describe('Product stock integration', () => {
 		const putaway = collectComponents(page, 'resourceTable')
 			.find(table => table.props?.schemaName === c.PUTAWAY_RULE_SCHEMA_NAME);
 
-		expect(putaway?.props?.filterGraph).toEqual({ if: ['product_category_id', '=', '${id}'] });
+		expect(putaway?.props?.initialGraph).toEqual({ if: ['product_category_id', '=', '${id}'] });
 		expect(putaway?.props?.linkRoutePath).toBe('inventory_putaway_rule');
 	});
 });
@@ -306,10 +306,10 @@ describe('Stock balance page', () => {
 	 */
 	it('filters the counts-due route to balances with a due count', () => {
 		const [, countsDuePage] = buildStockQuantPages();
-		const props = countsDuePage.props as { primary: { props: { filterGraph?: unknown } } };
+		const props = countsDuePage.props as { primary: { props: { initialGraph?: unknown } } };
 
 		expect(countsDuePage.routePath).toBe('stock_balance_counts_due');
-		expect(props.primary.props.filterGraph).toEqual({ if: ['next_count_date', '<=', '${today}'] });
+		expect(props.primary.props.initialGraph).toEqual({ if: ['next_count_date', '<=', '${today}'] });
 	});
 });
 
@@ -364,7 +364,7 @@ describe('Stock transfer page', () => {
 			c.STOCK_MOVE_LINE_SCHEMA_NAME,
 		]);
 		for (const table of tables) {
-			expect(table.props?.filterGraph).toEqual({ if: ['transfer_id', '=', '${id}'] });
+			expect(table.props?.initialGraph).toEqual({ if: ['transfer_id', '=', '${id}'] });
 		}
 	});
 

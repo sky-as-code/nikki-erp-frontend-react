@@ -111,7 +111,7 @@ function buildSalesComboComponentsSection(): ComponentNode[] {
 				schemaName: c.SALES_COMBO_COMPONENT_SCHEMA_NAME,
 				translationNs: c.SALES_MODULE,
 				searchCommand: SalesComboComponentCommands.SEARCH,
-				filterGraph: { if: ['sales_combo_id', '=', '${id}'] },
+				initialGraph: { if: ['sales_combo_id', '=', '${id}'] },
 				fields: ['product_variant_id', 'quantity', 'uom_id', 'is_required',
 					'selection_group'],
 			})],

@@ -26,8 +26,16 @@ export type ExcelDataTableProviderProps = {
 	isLoading?: boolean,
 	initialSearchRequest?: dyn.RestSearchRequest,
 	onSearchRequestChange?: (request: dyn.RestSearchRequest) => void,
-	/** A page-authored graph seeded into the filter panel as editable conditions. */
-	initialFilterGraph?: dyn.SearchGraph,
+	/**
+	 * A page-authored graph seeded into the filter panel as editable conditions and into the sort
+	 * pane as its order. An initiator: the user may change or remove any of it.
+	 */
+	initialGraph?: dyn.SearchGraph,
+	/**
+	 * The locked scoping graph the search hook ANDs into every request, shown in the panel above
+	 * the editable conditions so the user can see the scope without being able to widen it.
+	 */
+	baseGraph?: dyn.SearchGraph,
 	orderBy?: dyn.OrderBy,
 	initialViewMode?: ExcelViewMode,
 	/**
@@ -60,8 +68,8 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		data, props.initialSearchRequest, props.onSearchRequestChange,
 	);
 	const filters = useFilterState({
-		initialFilterGraph: props.initialFilterGraph,
-		initialGraph: props.initialSearchRequest?.graph,
+		baseGraph: props.baseGraph,
+		initialGraph: props.initialGraph ?? props.initialSearchRequest?.graph,
 		fallbackOrderBy: props.orderBy,
 	});
 	const applyFilters = useApplyFilters(filters, setSearchRequest);

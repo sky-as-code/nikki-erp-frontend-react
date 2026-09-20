@@ -133,7 +133,7 @@ function buildDefinitionVersionsSection(): ComponentNode {
 				searchCommand: TaxDefinitionVersionCommands.SEARCH,
 				// '${id}' is a literal placeholder the engine resolves from the route param, not a
 				// JS template literal — it has to stay inside single quotes.
-				filterGraph: { if: ['tax_id', '=', '${id}'] },
+				initialGraph: { if: ['tax_id', '=', '${id}'] },
 				fields: ['version_no', 'calculation_type', 'tax_treatment', 'lifecycle_status',
 					'effective_from', 'effective_to'],
 				fieldRenderers: {
@@ -159,7 +159,7 @@ function buildRateVersionsSection(): ComponentNode {
 				schemaName: c.TAX_RATE_VERSION_SCHEMA_NAME,
 				translationNs: c.ACCOUNTING_MODULE,
 				searchCommand: TaxRateVersionCommands.SEARCH,
-				filterGraph: { if: ['tax_id', '=', '${id}'] },
+				initialGraph: { if: ['tax_id', '=', '${id}'] },
 				linkField: 'id',
 				linkRoutePath: 'accounting_tax_rate_version',
 				fields: ['version_no', 'rate', 'fixed_amount', 'currency_code', 'lifecycle_status',

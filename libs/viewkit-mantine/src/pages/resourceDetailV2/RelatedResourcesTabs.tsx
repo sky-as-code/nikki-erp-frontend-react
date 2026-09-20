@@ -1,18 +1,21 @@
-import { Tabs, Title } from '@mantine/core';
+import { Collapse, Group, Stack, Tabs, Title, UnstyledButton } from '@mantine/core';
+import { testAttrs } from '@nikkierp/common/utils';
 import { LoadingState } from '@nikkierp/ui/components';
 import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { useFieldRenderers } from '@nikkierp/viewengine/render';
+import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import React from 'react';
 
+import classes from '../../components/collapsibleSection/CollapsibleSection.module.css';
+import { PaperWithBorder } from '../../components/paperWithBorder';
 import { useInterpolatedGraph } from '../../components/resourceTable/ResourceTable';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
-import { useResourceLinkHref } from '../../data/useResourceLinkHref';
+import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { resourceTestIdPrefix } from '../../testIds';
 
 import type { RelatedResource } from './props';
-import type { ResourceTableAction } from '../../components/resourceTable/props';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 
@@ -25,27 +28,65 @@ export type RelatedResourcesTabsProps = {
 /** The "related resources" section: one tab per related resource, each an embedded table. */
 export function RelatedResourcesTabs({ resources, header, translationNs }: RelatedResourcesTabsProps): React.ReactNode {
 	const t = useTranslate(translationNs);
+	const [expanded, setExpanded] = React.useState(false);
+	const [hasExpanded, setHasExpanded] = React.useState(false);
+	const onToggle = React.useCallback(() => {
+		setExpanded(prev => !prev);
+		setHasExpanded(true);
+	}, []);
 	if (resources.length === 0) {
 		return null;
 	}
 	return (
-		<section className='mt-4'>
-			<Title order={4} className='mb-2'>
-				{t(header ?? 'datatable.relatedResources', { defaultValue: 'Related resources' })}
-			</Title>
-			<Tabs defaultValue={tabKey(resources[0], 0)} keepMounted={false}>
-				<Tabs.List>
-					{resources.map((resource, index) => (
-						<TabLabel key={tabKey(resource, index)} value={tabKey(resource, index)} resource={resource} />
-					))}
-				</Tabs.List>
+		<Stack component={PaperWithBorder} gap='md' className='mt-4'>
+			<UnstyledButton
+				className={classes.collapsibleHeader}
+				onClick={onToggle}
+				aria-expanded={expanded}
+				{...testAttrs('ui.relatedResources', 'toggle')}
+			>
+				<Group gap='xs'>
+					{expanded ? <IconChevronDown size={18} /> : <IconChevronRight size={18} />}
+					<Title order={4}>
+						{t(header ?? 'datatable.relatedResources', { defaultValue: 'Related resources' })}
+					</Title>
+				</Group>
+			</UnstyledButton>
+			{/*
+				`Collapse` mounts its children even while collapsed -- it animates height -- so the
+				`hasExpanded` latch, not `Collapse`, is what keeps the tables from searching on page
+				load. Once opened the tabs stay mounted, so collapsing never discards tab or page state.
+			*/}
+			{hasExpanded ? (
+				<Collapse expanded={expanded}>
+					<RelatedResourcesTabList resources={resources} />
+				</Collapse>
+			) : null}
+		</Stack>
+	);
+}
+
+/**
+ * One tab per related resource.
+ *
+ * `keepMounted={false}` unmounts the tab that loses focus, so returning to it searches again. That
+ * is the accepted trade: a mounted table holds a full result set, and a detail page may carry
+ * several.
+ */
+function RelatedResourcesTabList({ resources }: { resources: RelatedResource[] }): React.ReactNode {
+	return (
+		<Tabs defaultValue={tabKey(resources[0], 0)} keepMounted={false}>
+			<Tabs.List>
 				{resources.map((resource, index) => (
-					<Tabs.Panel key={tabKey(resource, index)} value={tabKey(resource, index)} pt='sm'>
-						<RelatedResourceTable resource={resource} />
-					</Tabs.Panel>
+					<TabLabel key={tabKey(resource, index)} value={tabKey(resource, index)} resource={resource} />
 				))}
-			</Tabs>
-		</section>
+			</Tabs.List>
+			{resources.map((resource, index) => (
+				<Tabs.Panel key={tabKey(resource, index)} value={tabKey(resource, index)} pt='sm'>
+					<RelatedResourceTable resource={resource} />
+				</Tabs.Panel>
+			))}
+		</Tabs>
 	);
 }
 
@@ -65,7 +106,7 @@ function TabLabel({ resource, value }: { resource: RelatedResource, value: strin
 
 /** An embedded table in the pagination-above-and-below layout, scoped by the interpolated graph. */
 function RelatedResourceTable({ resource }: { resource: RelatedResource }): React.ReactNode {
-	const graph = useInterpolatedGraph(resource.filterGraph);
+	const graph = useInterpolatedGraph(resource.initialGraph);
 	const lc = useLocalize(resource.translationNs);
 	const fieldRenderers = useFieldRenderers(resource.fieldRenderers);
 	const initialRequest = React.useMemo((): dyn.RestSearchRequest => ({
@@ -91,6 +132,7 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 			modelSchema={pack.modelSchema}
 			data={searchData}
 			isLoading={search.isPending}
+			baseGraph={graph.value}
 			initialSearchRequest={search.searchRequest}
 			onSearchRequestChange={search.onSearchRequestChange}
 			orderBy={getSearchRequestOrderBy(search.searchRequest)}
@@ -101,7 +143,7 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 			fieldRenderers={fieldRenderers}
 		>
 			<ExcelDataTable.Toolbar
-				left={<RelatedActions actions={resource.extraActions} translationNs={resource.translationNs} />}
+				left={<RelatedActions resource={resource} />}
 				right={<><ExcelDataTable.Pagination /><ExcelDataTable.SettingsButton /></>}
 			/>
 			<ExcelDataTable.TableHeader enableColumnFilters={false} />
@@ -111,13 +153,23 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 	);
 }
 
-/** Refresh, then the page-authored extras: a link (`routePath`, path-relative) or a command. */
-function RelatedActions({ actions, translationNs }: { actions: ResourceTableAction[], translationNs: string }) {
-	const t = useTranslate(translationNs);
+/** Refresh, the optional "View all" link, then the page-authored extras (a link or a command). */
+function RelatedActions({ resource }: { resource: RelatedResource }) {
+	// Both namespaces: "View all" is a standard label from `common`, while a page's own extra
+	// actions name keys in its module.
+	const t = useTranslate([resource.translationNs, 'common']);
+	const viewAllHref = useResourceBaseHref(resource.linkRoutePath);
 	return (
 		<ExcelDataTable.Actions>
 			<ExcelDataTable.ActionRefresh />
-			{actions.map((action, index) => (
+			{resource.showViewAll && viewAllHref ? (
+				<ExcelDataTable.Action
+					label={t('datatable.viewAll', { defaultValue: 'View all' })}
+					href={viewAllHref}
+					testId='viewAll'
+				/>
+			) : null}
+			{resource.extraActions.map((action, index) => (
 				<ExcelDataTable.Action
 					key={`${index}:${action.testId ?? action.command ?? action.routePath}`}
 					label={t(action.label)}

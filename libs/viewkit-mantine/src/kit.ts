@@ -17,6 +17,11 @@ import { tabCollapsibleSectionRenderer } from './components/tabCollapsibleSectio
 import { registerFieldRenderers } from './fields/register';
 import { MANTINE_VIEW_KIT_ID } from './ids';
 import { resourceDetailTemplate } from './pages/resourceDetail/template';
+import { resourceCreateFormV2Renderer } from './pages/resourceDetailV2/form/resourceCreateForm';
+import { resourceCreateHeaderV2Renderer } from './pages/resourceDetailV2/form/resourceCreateHeader';
+import { resourceDetailHeaderV2Renderer } from './pages/resourceDetailV2/form/resourceDetailHeader';
+import { resourceFormV2Renderer } from './pages/resourceDetailV2/form/resourceForm';
+import { resourceFormColumnV2Renderer } from './pages/resourceDetailV2/form/resourceFormColumn';
 import { resourceDetailV2Template } from './pages/resourceDetailV2/template';
 import { genericPageHeaderRenderer } from './pages/resourceGenericPage/GenericPageHeader';
 import { resourceGenericPageTemplate } from './pages/resourceGenericPage/template';
@@ -63,6 +68,13 @@ export const mantineViewKit: IViewKit = {
 		registry.registerComponentRenderer(resourceFormColumnRenderer);
 		registry.registerComponentRenderer(resourceFormTabsRenderer);
 		registry.registerComponentRenderer(resourceCreateHeaderRenderer);
+		// The v2 form set, registered beside v1 so the detail v2 template can own its own form
+		// behaviour without altering a page still on v1.
+		registry.registerComponentRenderer(resourceDetailHeaderV2Renderer);
+		registry.registerComponentRenderer(resourceFormV2Renderer);
+		registry.registerComponentRenderer(resourceFormColumnV2Renderer);
+		registry.registerComponentRenderer(resourceCreateHeaderV2Renderer);
+		registry.registerComponentRenderer(resourceCreateFormV2Renderer);
 		registry.registerComponentRenderer(resourceCreateFormRenderer);
 		registry.registerComponentRenderer(resourceSplitViewRenderer);
 		registry.registerComponentRenderer(genericPageHeaderRenderer);

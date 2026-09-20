@@ -113,7 +113,7 @@ function buildAttributeValuesSection(): ComponentNode[] {
 			schemaName: c.PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME,
 			translationNs: c.INVENTORY_MODULE,
 			searchCommand: ProductAttributeValueCommands.SEARCH,
-			filterGraph: { if: ['attribute_id', '=', '${id}'] },
+			initialGraph: { if: ['attribute_id', '=', '${id}'] },
 			linkField: 'id',
 			linkRoutePath: 'inventory_product_attribute_value',
 		})],

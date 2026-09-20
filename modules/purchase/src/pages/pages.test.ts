@@ -119,10 +119,10 @@ describe('RFQ and purchase order routes', () => {
 	it('distinguishes the two routes by filter, sharing one detail pane', () => {
 		const [quotations, orders] = buildPurchaseOrderPages();
 
-		expect(listProps(quotations).filterGraph).toEqual({
+		expect(listProps(quotations).initialGraph).toEqual({
 			if: ['status', 'in', ['rfq', 'rfq_sent', 'to_approve']],
 		});
-		expect(listProps(orders).filterGraph).toEqual({
+		expect(listProps(orders).initialGraph).toEqual({
 			if: ['status', 'in', ['purchase_order', 'cancelled']],
 		});
 		expect(detailProps(quotations)).toEqual(detailProps(orders));
@@ -160,8 +160,8 @@ describe('RFQ and purchase order routes', () => {
 	 */
 	it('partitions every order status across the two routes', () => {
 		const [quotations, orders] = buildPurchaseOrderPages();
-		const quotationStatuses = filterStatuses(listProps(quotations).filterGraph);
-		const orderStatuses = filterStatuses(listProps(orders).filterGraph);
+		const quotationStatuses = filterStatuses(listProps(quotations).initialGraph);
+		const orderStatuses = filterStatuses(listProps(orders).initialGraph);
 		const every = [
 			c.ORDER_STATUS_RFQ, c.ORDER_STATUS_RFQ_SENT, c.ORDER_STATUS_TO_APPROVE,
 			c.ORDER_STATUS_PURCHASE_ORDER, c.ORDER_STATUS_CANCELLED,
@@ -288,10 +288,10 @@ describe('Purchase order related tables', () => {
 
 		expect(tables.map(table => table.props?.schemaName))
 			.toEqual([c.PURCHASE_ORDER_LINE_SCHEMA_NAME, c.AUDIT_EVENT_SCHEMA_NAME]);
-		expect(tables[0].props?.filterGraph).toEqual({ if: ['purchase_order_id', '=', '${id}'] });
+		expect(tables[0].props?.initialGraph).toEqual({ if: ['purchase_order_id', '=', '${id}'] });
 		// Filtered by `entity_id`, not an order-specific column: one audit table records the
 		// transitions of both orders and agreements.
-		expect(tables[1].props?.filterGraph).toEqual({ if: ['entity_id', '=', '${id}'] });
+		expect(tables[1].props?.initialGraph).toEqual({ if: ['entity_id', '=', '${id}'] });
 	});
 
 	/** Neither has a page of its own; pointing at one would produce a dead link. */
@@ -373,7 +373,7 @@ describe('Agreement page', () => {
 		const tables = collectComponents(page, 'resourceTable');
 		const drawn = tables.find(table => table.props?.schemaName === c.PURCHASE_ORDER_SCHEMA_NAME);
 
-		expect(drawn?.props?.filterGraph).toEqual({ if: ['agreement_id', '=', '${id}'] });
+		expect(drawn?.props?.initialGraph).toEqual({ if: ['agreement_id', '=', '${id}'] });
 		expect(drawn?.props?.linkRoutePath).toBe('purchase_order');
 		expect(drawn?.props?.linkField).toBe('id');
 	});
@@ -415,7 +415,7 @@ type ContextualAction = {
 
 type ListProps = {
 	schemaName: string,
-	filterGraph?: Record<string, unknown>,
+	initialGraph?: Record<string, unknown>,
 	extraActions?: { command: string, requireSelection?: boolean, supportMultiple?: boolean }[],
 	archiveCommand?: string,
 	deleteCommand?: string,
@@ -452,8 +452,8 @@ function splitViewSchemas(pages: PageNode[]): { primary: string, secondary: stri
 }
 
 /** Reads the status list out of an `{ if: ['status', 'in', [...]] }` filter graph. */
-function filterStatuses(filterGraph: Record<string, unknown> | undefined): string[] {
-	const clause = filterGraph?.if as [string, string, string[]] | undefined;
+function filterStatuses(initialGraph: Record<string, unknown> | undefined): string[] {
+	const clause = initialGraph?.if as [string, string, string[]] | undefined;
 
 	expect(clause, 'filter graph is not an `if` clause').toBeDefined();
 	return clause![2];

@@ -134,7 +134,7 @@ function buildSalesPromotionRewardsSection(): ComponentNode[] {
 				schemaName: c.SALES_PROMOTION_REWARD_SCHEMA_NAME,
 				translationNs: c.SALES_MODULE,
 				searchCommand: SalesPromotionRewardCommands.SEARCH,
-				filterGraph: { if: ['sales_promotion_program_id', '=', '${id}'] },
+				initialGraph: { if: ['sales_promotion_program_id', '=', '${id}'] },
 				fields: ['sequence', 'reward_type', 'value', 'target_scope'],
 			})],
 		),

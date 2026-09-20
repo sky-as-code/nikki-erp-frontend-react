@@ -74,9 +74,9 @@ const MERGE_ACTION = {
 	testId: 'merge',
 };
 
-function splitView(filterGraph: Record<string, unknown>, mergeable: boolean) {
+function splitView(initialGraph: Record<string, unknown>, mergeable: boolean) {
 	const view = resourceSplitViewProps({
-		primary: buildOrderListProps(filterGraph, mergeable),
+		primary: buildOrderListProps(initialGraph, mergeable),
 		secondary: buildOrderDetailProps(),
 	});
 	return { template: view.template, props: view.props };
@@ -90,14 +90,14 @@ function splitView(filterGraph: Record<string, unknown>, mergeable: boolean) {
  * it from `cancelled` (BR 24), because a list-level delete invites removing the record of a
  * purchase the business committed to; the guarded path is to cancel, which leaves the trail.
  */
-function buildOrderListProps(filterGraph: Record<string, unknown>, mergeable: boolean) {
+function buildOrderListProps(initialGraph: Record<string, unknown>, mergeable: boolean) {
 	return resourceListProps({
 		schemaName: c.PURCHASE_ORDER_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		linkField: 'id',
 		searchCommand: PurchaseOrderCommands.SEARCH,
 		createEnabled: true,
-		filterGraph,
+		initialGraph,
 		extraActions: mergeable ? [MERGE_ACTION] : [],
 		fieldRenderers: {
 			// The colours track how far the commitment got: grey while it is only a request, blue
@@ -423,7 +423,7 @@ function buildLinesSection(): ComponentNode[] {
 				schemaName: c.PURCHASE_ORDER_LINE_SCHEMA_NAME,
 				translationNs: c.PURCHASE_MODULE,
 				searchCommand: PurchaseOrderLineCommands.SEARCH,
-				filterGraph: { if: ['purchase_order_id', '=', '${id}'] },
+				initialGraph: { if: ['purchase_order_id', '=', '${id}'] },
 				fields: ['sequence', 'line_type', 'product_variant_id', 'description', 'quantity',
 					'uom_id', 'unit_price', 'discount_percent', 'subtotal', 'tax_amount', 'total'],
 				fieldRenderers: {
@@ -461,7 +461,7 @@ function buildAuditSection(): ComponentNode[] {
 				schemaName: c.AUDIT_EVENT_SCHEMA_NAME,
 				translationNs: c.PURCHASE_MODULE,
 				searchCommand: AuditEventCommands.SEARCH,
-				filterGraph: { if: ['entity_id', '=', '${id}'] },
+				initialGraph: { if: ['entity_id', '=', '${id}'] },
 				fields: ['created_at', 'action', 'from_status', 'to_status', 'actor_id', 'reason'],
 			})],
 		),

@@ -12,7 +12,7 @@ import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
 /** The shape `resourceDetails.v2` carries each related table as: a table's props plus a tab label. */
 type RelatedResource = {
 	label: string,
-	filterGraph?: unknown,
+	initialGraph?: unknown,
 	extraActions?: unknown,
 };
 
@@ -78,7 +78,7 @@ describe('IAM page metadata', () => {
 		const [page] = buildGroupPages();
 		const detail = (page.props as { secondary: { props: { childrenNodes: ComponentNode[] } } }).secondary;
 		const panel = detail.props.childrenNodes
-			.find(node => node.children?.some(child => child.props?.filterGraph != null));
+			.find(node => node.children?.some(child => child.props?.initialGraph != null));
 		const [table] = panel?.children ?? [];
 
 		expect(panel).toBeDefined();
@@ -89,7 +89,7 @@ describe('IAM page metadata', () => {
 		expect(table.props?.extraActions).toEqual([{ label: 'assignment.manageRoles', routePath: 'iam_role' }]);
 		// `linked` is the membership operator for a many edge; `${id}` is interpolated from
 		// the route at render time.
-		expect(table.props?.filterGraph).toEqual({ if: ['assigned_groups', 'linked', '${id}'] });
+		expect(table.props?.initialGraph).toEqual({ if: ['assigned_groups', 'linked', '${id}'] });
 	});
 
 	// Same edge read, same wizard link, different home: on the v2 detail template a related table
@@ -102,7 +102,7 @@ describe('IAM page metadata', () => {
 		expect(detail.props.relatedResources).toHaveLength(1);
 		expect(assignedRoles.label).toBe('user_sections_assignedRoles');
 		expect(assignedRoles.extraActions).toEqual([{ label: 'assignment.manageRoles', routePath: 'iam_role' }]);
-		expect(assignedRoles.filterGraph).toEqual({ if: ['assigned_users', 'linked', '${id}'] });
+		expect(assignedRoles.initialGraph).toEqual({ if: ['assigned_users', 'linked', '${id}'] });
 	});
 });
 

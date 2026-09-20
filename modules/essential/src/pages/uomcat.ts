@@ -94,7 +94,7 @@ function buildCategoryUomSection(): ComponentNode[] {
 				schemaName: c.UOM_SCHEMA_NAME,
 				translationNs: c.ESSENTIAL_MODULE,
 				searchCommand: UomCommands.SEARCH,
-				filterGraph: { if: ['category_id', '=', '${id}'] },
+				initialGraph: { if: ['category_id', '=', '${id}'] },
 				linkField: 'id',
 				linkRoutePath: 'essential_uom',
 			})],

@@ -130,9 +130,9 @@ describe('Accounting page bindings', () => {
 
 		expect(tables.length).toBe(5);
 		for (const table of tables) {
-			const filterGraph = (table.props as { filterGraph?: { if?: unknown[] } }).filterGraph;
-			expect(filterGraph?.if?.[1]).toBe('=');
-			expect(filterGraph?.if?.[2]).toBe('${id}');
+			const initialGraph = (table.props as { initialGraph?: { if?: unknown[] } }).initialGraph;
+			expect(initialGraph?.if?.[1]).toBe('=');
+			expect(initialGraph?.if?.[2]).toBe('${id}');
 		}
 	});
 

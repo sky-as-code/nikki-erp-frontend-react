@@ -133,7 +133,7 @@ function buildSalesPricelistItemsSection(): ComponentNode[] {
 				schemaName: c.SALES_PRICELIST_ITEM_SCHEMA_NAME,
 				translationNs: c.SALES_MODULE,
 				searchCommand: SalesPricelistItemCommands.SEARCH,
-				filterGraph: { if: ['sales_pricelist_id', '=', '${id}'] },
+				initialGraph: { if: ['sales_pricelist_id', '=', '${id}'] },
 				fields: ['sequence', 'applies_to', 'product_variant_id', 'min_quantity',
 					'calculation_method', 'price', 'discount_percent', 'valid_from', 'valid_to'],
 				fieldRenderers: {

@@ -135,7 +135,7 @@ function buildAssignedRoleResources() {
 			schemaName: c.ROLE_SCHEMA_NAME,
 			translationNs: c.IAM_MODULE,
 			searchCommand: RoleCommands.SEARCH,
-			filterGraph: { if: ['assigned_users', 'linked', '${id}'] },
+			initialGraph: { if: ['assigned_users', 'linked', '${id}'] },
 			linkField: 'id',
 			linkRoutePath: 'iam_role',
 			// Path-relative to `/{org}/{module}/users/:id`, i.e. the assignment wizard for this user.

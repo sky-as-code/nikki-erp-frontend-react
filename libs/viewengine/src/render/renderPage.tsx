@@ -54,7 +54,7 @@ function TemplatePage({ node }: { node: PageNode }): RenderResult {
 function CustomPage({ node }: { node: PageNode }): React.ReactNode {
 	return (
 		<div
-			className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 px-4 pb-4 flex flex-col gap-4 overflow-auto'
+			className='absolute inset-0 p-0 m-0 px-4 pb-4 flex flex-col gap-4 overflow-auto'
 			// A template-less page has no contribution id to name, so it identifies itself by the
 			// route it was defined on. Template pages carry their template id instead.
 			data-page={node.routePath}
