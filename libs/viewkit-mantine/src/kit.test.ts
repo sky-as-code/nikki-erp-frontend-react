@@ -5,11 +5,22 @@ import * as ids from './ids';
 import { mantineViewKit } from './kit';
 
 
-/** Every page template id this kit declares, derived from `ids.ts` rather than hand-listed. */
-const TEMPLATE_IDS = Object.entries(ids)
+/** Every contribution id this kit declares, derived from `ids.ts` rather than hand-listed. */
+const DECLARED_IDS = Object.entries(ids)
 	.filter(([name, value]) => typeof value === 'string' && name !== 'MANTINE_VIEW_KIT_ID')
-	.map(([, value]) => value as string)
-	.filter(id => id.includes('.pages.templates.'));
+	.map(([, value]) => value as string);
+
+const TEMPLATE_IDS = DECLARED_IDS.filter(id => id.includes('.pages.templates.'));
+/**
+ * `resourceFormTabs.tab` is declared but has no renderer and no caller: tabs are passed to
+ * `resourceFormTabs` as props, not placed as nodes. Left out rather than asserted, so this test
+ * stays strict about the ids that are meant to be placeable.
+ */
+const UNREGISTERED_IDS: string[] = [ids.RESOURCE_FORM_TABS_TAB];
+
+const COMPONENT_IDS = DECLARED_IDS
+	.filter(id => id.includes('.components.'))
+	.filter(id => !UNREGISTERED_IDS.includes(id));
 
 describe('mantineViewKit', () => {
 	it('registers every declared page template', () => {
@@ -19,6 +30,18 @@ describe('mantineViewKit', () => {
 		expect(TEMPLATE_IDS).toContain(ids.RESOURCE_IMPORT_TEMPLATE);
 		for (const id of TEMPLATE_IDS) {
 			expect(engine.getPageTemplate(id), `unregistered template: ${id}`).toBeDefined();
+		}
+	});
+
+	// An id declared but never registered renders as `UnknownComponent` at runtime rather than
+	// failing anywhere a test would notice, so the two lists are pinned to each other here.
+	it('registers every declared component', () => {
+		const engine = createTestEngine();
+		engine.use(mantineViewKit);
+
+		expect(COMPONENT_IDS).toContain(ids.EXCEL_DATA_TABLE_BODY);
+		for (const id of COMPONENT_IDS) {
+			expect(engine.getComponentRenderer(id), `unregistered component: ${id}`).toBeDefined();
 		}
 	});
 });

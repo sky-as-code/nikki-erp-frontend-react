@@ -30,6 +30,11 @@ export type ExcelDataTableProviderProps = {
 	initialFilterGraph?: dyn.SearchGraph,
 	orderBy?: dyn.OrderBy,
 	initialViewMode?: ExcelViewMode,
+	/**
+	 * The modes this table offers. A remembered mode outside the list falls back to
+	 * `initialViewMode`, so a mode a page has since dropped cannot leave the body blank.
+	 */
+	allowedViewModes?: ExcelViewMode[],
 	/** The command an inline row update publishes; inline editing is off when absent. */
 	updateCommand?: string,
 	/** Re-runs the current search; wired to the refresh action and to a saved inline update. */
@@ -62,7 +67,7 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 	const applyFilters = useApplyFilters(filters, setSearchRequest);
 	const editing = useEditingState(isLoading);
 	const selection = useSelectionState(data.items, props.onSelectionChange, editing.rowId !== null);
-	const { viewMode, setViewMode } = useViewModeState(props.initialViewMode);
+	const { viewMode, setViewMode } = useViewModeState(props.initialViewMode, props.allowedViewModes);
 	const settings = useOpenState();
 	const filterPane = useOpenState();
 	const columnWidths = useColumnWidthsState(data.desired_fields);

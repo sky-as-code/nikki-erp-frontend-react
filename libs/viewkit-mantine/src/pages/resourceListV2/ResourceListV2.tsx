@@ -3,18 +3,22 @@ import { LoadingState } from '@nikkierp/ui/components';
 import { ExcelDataTable, isActionVisible } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
-import { useFieldRenderers } from '@nikkierp/viewengine/render';
-import { IconArchive, IconLayoutGrid, IconList, IconPlus, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
+import { MetaComponent, useFieldRenderers } from '@nikkierp/viewengine/render';
+import {
+	IconArchive, IconLayoutGrid, IconList, IconPlus, IconTrash, IconUpload, IconX,
+} from '@tabler/icons-react';
 import React from 'react';
 
 import { buildResourceListActions, listActionCode, selectionModeOf } from './actions';
 import classes from './ResourceListV2.module.css';
+import { getViewModeIcon } from './viewModeIcons';
 import { displayedFieldLabelKeys, displayedFieldNames, resolveSchemaField } from '../../data/displayedFields';
 import { interpolateParams } from '../../data/interpolate';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useRelatedSchemas } from '../../data/useRelatedSchemas';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
+import { EXCEL_DATA_TABLE_BODY } from '../../ids';
 import { useActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
 import { useClosePrimaryPane } from '../resourceSplitView/splitViewContext';
@@ -64,6 +68,7 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 	const translateFieldName = useTranslateFieldName(params, pack?.modelSchema, relatedSchemas);
 	const testId = resourceTestIdPrefix({ testId: params.testId, routePath, schemaName: params.schemaName, part: 'List' });
 	const actions = React.useMemo(() => buildResourceListActions(params, t, baseHref), [params, t, baseHref]);
+	const allowedViewModes = React.useMemo(() => params.viewModes.map(view => view.mode), [params.viewModes]);
 	const gatedActions = useActionLocks(actions, params.schemaName, listActionCode) as ResourceListAction[];
 
 	if (!pack || !searchData) {
@@ -83,6 +88,7 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 				initialFilterGraph={graph}
 				orderBy={getSearchRequestOrderBy(search.searchRequest)}
 				initialViewMode={params.viewModes[0].mode}
+				allowedViewModes={allowedViewModes}
 				updateCommand={params.updateCommand}
 				onRefresh={search.refresh}
 				translationNs={params.translationNs}
@@ -111,14 +117,42 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 						)}
 					/>
 					<ExcelDataTable.FilterPanel />
-					<ExcelDataTable.ForViewMode view='list'><ExcelDataTable.TableHeader /></ExcelDataTable.ForViewMode>
+					<ViewModeHeaders viewModes={params.viewModes} />
 				</div>
-				<ExcelDataTable.ForViewMode view='list'>
-					<ExcelDataTable.Table className={classes.body} />
-				</ExcelDataTable.ForViewMode>
+				<ViewModeBodies viewModes={params.viewModes} />
 			</ExcelDataTable.Provider>
 		</Paper>
 	);
+}
+
+/**
+ * The column header, wherever the table body is declared.
+ *
+ * Gated per mode rather than on the first one: a page whose leading mode is a card must not draw
+ * a header, and one that offers the table second still needs it.
+ */
+function ViewModeHeaders({ viewModes }: { viewModes: ResourceListV2Props['viewModes'] }): React.ReactNode {
+	return viewModes
+		.filter(view => view.viewkitComponent?.component === EXCEL_DATA_TABLE_BODY)
+		.map(view => (
+			<ExcelDataTable.ForViewMode key={view.mode} view={view.mode}>
+				<ExcelDataTable.TableHeader />
+			</ExcelDataTable.ForViewMode>
+		));
+}
+
+/**
+ * Each mode's body, rendered from the node it declares.
+ *
+ * `MetaComponent` renders nothing for a mode that names no component, which is the "slot the page
+ * fills later" case rather than an error.
+ */
+function ViewModeBodies({ viewModes }: { viewModes: ResourceListV2Props['viewModes'] }): React.ReactNode {
+	return viewModes.map(view => (
+		<ExcelDataTable.ForViewMode key={view.mode} view={view.mode}>
+			<MetaComponent node={view.viewkitComponent} />
+		</ExcelDataTable.ForViewMode>
+	));
 }
 
 /**
@@ -148,6 +182,8 @@ function ClosePaneButton(): React.ReactNode {
 			label={closeLabel ?? ''}
 			icon={<IconX size={16} />}
 			iconOnly
+			// Borderless, to match the detail pane's own close button.
+			variant='subtle'
 			onClick={closePane}
 			testId='closePane'
 		/>
@@ -205,7 +241,13 @@ function ListAction({ action }: { action: ResourceListAction }): React.ReactNode
 	);
 }
 
-const viewModeIcons: Record<string, React.ReactNode> = {
+/**
+ * Icons for the modes this template defines itself.
+ *
+ * `list` is the default every page gets without declaring anything, so its icon cannot come from
+ * a page's `getViewModes` — there may not be one. A page's own icon still wins.
+ */
+const builtinViewModeIcons: Record<string, React.ReactNode> = {
 	list: <IconList size={16} />,
 	grid: <IconLayoutGrid size={16} />,
 };
@@ -214,12 +256,17 @@ function ViewModes({ params }: { params: ResourceListV2Props }): React.ReactNode
 	const t = useTranslate(params.translationNs);
 	return (
 		<ExcelDataTable.ViewModeButtons>
+			{/*
+			  * `ViewModeButton` has to stay the direct child: the compact fold collects its options
+			  * by matching `child.type`, so a wrapper element here would silently drop the mode
+			  * from the dropdown on a narrow screen.
+			  */}
 			{params.viewModes.map(view => (
 				<ExcelDataTable.ViewModeButton
 					key={view.mode}
 					mode={view.mode}
 					label={t(view.label)}
-					icon={viewModeIcons[view.mode]}
+					icon={getViewModeIcon(view.iconToken) ?? builtinViewModeIcons[view.mode]}
 				/>
 			))}
 		</ExcelDataTable.ViewModeButtons>
