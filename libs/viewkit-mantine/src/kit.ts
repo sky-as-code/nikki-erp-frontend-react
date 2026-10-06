@@ -5,6 +5,7 @@ import { pageHeaderRenderer } from './components/pageHeader/PageHeader';
 import { resourceCreateFormRenderer } from './components/resourceCreateForm';
 import { resourceCreateHeaderRenderer } from './components/resourceCreateHeader';
 import { resourceDetailHeaderRenderer } from './components/resourceDetailHeader';
+import { resourceFileFieldRenderer } from './components/resourceFileField/ResourceFileField';
 import { resourceFormRenderer } from './components/resourceForm';
 import { resourceFormColumnRenderer } from './components/resourceFormColumn';
 import { resourceFormTabsRenderer } from './components/resourceFormTabs/ResourceFormTabs';
@@ -50,6 +51,7 @@ export const mantineViewKit: IViewKit = {
 		registry.registerComponentRenderer(collapsibleSectionRenderer);
 		registry.registerComponentRenderer(tabCollapsibleSectionRenderer);
 		registry.registerComponentRenderer(resourceTableRenderer);
+		registry.registerComponentRenderer(resourceFileFieldRenderer);
 		registry.registerComponentRenderer(resourceDetailHeaderRenderer);
 		registry.registerComponentRenderer(resourceFormRenderer);
 		registry.registerComponentRenderer(settingsSectionRenderer);

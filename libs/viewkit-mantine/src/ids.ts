@@ -29,6 +29,7 @@ export const RESOURCE_TABLE = 'nikkierp.mantine.components.resourceTable.v1';
 export const RESOURCE_DETAIL_HEADER = 'nikkierp.mantine.components.resourceDetail.header.v1';
 export const RESOURCE_FORM = 'nikkierp.mantine.components.resourceForm.v1';
 export const RESOURCE_FORM_COLUMN = 'nikkierp.mantine.components.resourceForm.column.v1';
+export const RESOURCE_FILE_FIELD = 'nikkierp.mantine.components.resourceForm.fileField.v1';
 export const RESOURCE_CREATE_HEADER = 'nikkierp.mantine.components.resourceCreate.header.v1';
 export const RESOURCE_CREATE_FORM = 'nikkierp.mantine.components.resourceCreate.form.v1';
 export const RESOURCE_SPLIT_VIEW = 'nikkierp.mantine.components.resourceSplitView.v1';

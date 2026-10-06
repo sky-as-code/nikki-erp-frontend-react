@@ -5,6 +5,7 @@ import { MetaComponent } from '@nikkierp/viewengine/render';
 import React from 'react';
 import { useParams } from 'react-router';
 
+import { notifyAfterSaveFailure, useAfterSaveHooks } from './afterSave';
 import { useResourceDetailContext } from './ResourceDetailProvider';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
 import { RESOURCE_DETAIL_HEADER, RESOURCE_FORM } from '../../ids';
@@ -64,17 +65,27 @@ export function ResourceUpdateProvider(
 	 * the user's unsaved edits with the server's unchanged record, discarding exactly
 	 * the input they need to correct.
 	 */
+	const afterSave = useAfterSaveHooks();
+	const runAfterSave = afterSave.run;
 	const onSubmit = React.useCallback(async (data: Record<string, any>): Promise<boolean> => {
 		if (!commands.update) return false;
 		const response = await publishUpdate(data);
 		const succeeded = response.error == null && (response.result?.clientErrors.length ?? 0) === 0;
+		if (succeeded && id) {
+			try {
+				await runAfterSave({ id, etag: response.result?.data?.etag, values: data });
+			}
+			catch (error) {
+				notifyAfterSaveFailure(error);
+			}
+		}
 		if (succeeded) {
 			refresh();
 		}
 		// Reported back so the action bar can leave edit mode only on success: a rejected save has
 		// to keep the user's input on screen, since that is exactly what they need to correct.
 		return succeeded;
-	}, [publishUpdate, commands.update, refresh]);
+	}, [publishUpdate, commands.update, refresh, runAfterSave, id]);
 
 	const resource = getByIdCmd.data?.item as Record<string, unknown> | undefined;
 	const value = React.useMemo(
@@ -82,7 +93,7 @@ export function ResourceUpdateProvider(
 			commands,
 			resource,
 			isReading: getByIdCmd.isPending,
-			isWriting: updateCmd.isPending,
+			isWriting: updateCmd.isPending || afterSave.isRunning,
 			refresh,
 			onSubmit,
 			saveClientErrors: updateCmd.clientErrors,
@@ -95,12 +106,13 @@ export function ResourceUpdateProvider(
 			titleLvl2: props.titleLvl2,
 			backLinkTitle: props.backLinkTitle,
 			childrenNodes: props.childrenNodes,
+			registerAfterSave: afterSave.register,
 		}),
 		[
-			commands, resource, getByIdCmd.isPending, updateCmd.isPending, refresh, onSubmit,
+			commands, resource, getByIdCmd.isPending, updateCmd.isPending, afterSave.isRunning, refresh, onSubmit,
 			updateCmd.clientErrors, updateCmd.error, getByIdCmd.error,
 			props.allStatuses, props.currentStatus, props.contextualActions,
-			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.childrenNodes,
+			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.childrenNodes, afterSave.register,
 		],
 	);
 

@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceImportProps, resourceListProps,
+	collapsibleSectionNode, resourceDetailProps, resourceFileFieldNode, resourceFormColumnNode, resourceImportProps,
+	resourceListProps,
 	resourceSplitViewProps, resourceTableNode, tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
@@ -133,6 +134,15 @@ function buildProductVariantFieldsSection(): ComponentNode {
 				content: resourceFormColumnNode({
 					header: 'form.dimensions',
 					fields: ['weight', 'length', 'width', 'height'],
+				}),
+			},
+			{
+				key: 'image',
+				header: 'form.image',
+				content: resourceFileFieldNode({
+					field: 'variant_image',
+					urlField: 'variant_image_url',
+					label: 'fields.variant_image_file_key',
 				}),
 			},
 			{
