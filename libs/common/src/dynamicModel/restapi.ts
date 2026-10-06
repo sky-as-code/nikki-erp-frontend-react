@@ -50,6 +50,27 @@ export class RestApi {
 		});
 	}
 
+	public uploadFile(request: RestUploadFileRequest): Promise<RequestResult<RestMutateResponse>> {
+		const form = new FormData();
+		form.append('file', request.file, request.file.name);
+		if (request.etag) form.append('etag', request.etag);
+		if (request.org_id) form.append('org_id', request.org_id);
+		const url = `${this._getBasePath()}/${request.id}/files/${request.field}`;
+		const maker = this._opts.requestMaker!;
+		return request.replace
+			? maker.put<RestMutateResponse>(url, { body: form })
+			: maker.post<RestMutateResponse>(url, { body: form });
+	}
+
+	public deleteFile(request: RestDeleteFileRequest): Promise<RequestResult<RestMutateResponse>> {
+		const searchParams: Record<string, string> = {};
+		if (request.etag) searchParams.etag = request.etag;
+		if (request.org_id) searchParams.org_id = request.org_id;
+		return this._opts.requestMaker!.delete<RestMutateResponse>(
+			`${this._getBasePath()}/${request.id}/files/${request.field}`, { searchParams },
+		);
+	}
+
 	public delete(request: RestDeleteRequest, primaryResourceId?: string): Promise<RequestResult<RestDeleteResponse>> {
 		const restPath = this._getBasePath(primaryResourceId);
 		return this._opts.requestMaker!.delete<RestDeleteResponse>(`${restPath}/${request.id}`, { searchParams: request });
@@ -262,6 +283,22 @@ export type RestImportMapping = {
 	language_code: string,
 	create_missing_references: boolean,
 	columns: RestImportColumnMapping[],
+};
+
+export type RestUploadFileRequest = {
+	id: string,
+	field: string,
+	file: File,
+	replace: boolean,
+	etag?: string,
+	org_id?: string,
+};
+
+export type RestDeleteFileRequest = {
+	id: string,
+	field: string,
+	etag?: string,
+	org_id?: string,
 };
 
 export type RestImportRequest = {

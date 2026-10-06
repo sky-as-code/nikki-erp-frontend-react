@@ -39,6 +39,7 @@ export const EXCEL_DATA_TABLE_BODY = 'nikkierp.mantine.components.excelDataTable
 export const RESOURCE_DETAIL_HEADER = 'nikkierp.mantine.components.resourceDetail.header.v1';
 export const RESOURCE_FORM = 'nikkierp.mantine.components.resourceForm.v1';
 export const RESOURCE_FORM_COLUMN = 'nikkierp.mantine.components.resourceForm.column.v1';
+export const RESOURCE_FILE_FIELD = 'nikkierp.mantine.components.resourceForm.fileField.v1';
 export const RESOURCE_CREATE_HEADER = 'nikkierp.mantine.components.resourceCreate.header.v1';
 export const RESOURCE_CREATE_FORM = 'nikkierp.mantine.components.resourceCreate.form.v1';
 

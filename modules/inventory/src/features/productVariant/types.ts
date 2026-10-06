@@ -29,7 +29,8 @@ export type ProductVariant = {
 	/** False while the variant is only implied by its template's attributes. See BR §8.3. */
 	is_materialized?: boolean,
 	archive_source?: ArchiveSource,
-	variant_image_id?: string,
+	variant_image_file_key?: string | null,
+	variant_image_url?: string | null,
 	weight?: string,
 	length?: string,
 	width?: string,
@@ -87,7 +88,7 @@ export type EffectiveProduct = {
 	sku?: string,
 	barcode?: string,
 
-	image_id?: string,
+	image_url?: string,
 	weight?: string,
 	length?: string,
 	width?: string,
