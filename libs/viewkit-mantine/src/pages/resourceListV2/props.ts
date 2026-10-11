@@ -1,7 +1,47 @@
+import { componentNodeSchema } from '@nikkierp/viewengine/schema';
 import { z } from 'zod';
 
+import { excelDataTableBodyPropsSchema } from '../../components/excelDataTableBody/props';
+import { EXCEL_DATA_TABLE_BODY } from '../../ids';
 import { resourceListPropsSchema } from '../resourceList/props';
 
+
+/**
+ * One entry of the view-mode switcher.
+ *
+ * `viewkitComponent` is what makes a mode renderable: the template puts it inside the table's
+ * `ForViewMode`, so a page contributes a view by naming a registered component rather than by
+ * the template knowing about it. A mode without one renders nothing, which is a slot a page
+ * means to fill later rather than an error.
+ *
+ * The icon is absent here on purpose. It is a React element, and page metadata has to survive
+ * `JSON.stringify`, so `resourceListV2Props` keeps icons in a runtime map and stores only the
+ * `iconToken` that finds one again.
+ */
+export const resourceListV2ViewModeSchema = z.object({
+	mode: z.string().min(1),
+	/** i18n key, translated with the list's `translationNs`. */
+	label: z.string().min(1),
+	viewkitComponent: componentNodeSchema.optional(),
+	/** Assigned by the builder when the page passes a JSX icon; never authored by hand. */
+	iconToken: z.string().min(1).optional(),
+}).strict();
+
+export type ResourceListV2ViewMode = z.infer<typeof resourceListV2ViewModeSchema>;
+export type ResourceListV2ViewModeInput = z.input<typeof resourceListV2ViewModeSchema>;
+
+/** The table's own rows: the `list` mode every page gets unless it says otherwise. */
+export function defaultListViewMode(): ResourceListV2ViewModeInput {
+	return {
+		mode: 'list',
+		label: 'datatable.list',
+		viewkitComponent: {
+			type: 'component',
+			component: EXCEL_DATA_TABLE_BODY,
+			props: excelDataTableBodyPropsSchema.parse({}),
+		},
+	};
+}
 
 /**
  * The v2 list page takes every v1 prop and adds what the composable table offers. `.strict()`
@@ -11,14 +51,12 @@ export const resourceListV2PropsSchema = resourceListPropsSchema.extend({
 	/** Publishes an inline row update `{id, etag?, ...changedFields}`; enables edit mode when set. */
 	updateCommand: z.string().min(1).optional(),
 	/**
-	 * The view modes offered, `list` first. Only `list` renders here; another mode is a slot the
-	 * page fills through its own `ForViewMode` — until then it shows nothing.
+	 * The view modes offered, the first one being the initial mode. Each renders its own
+	 * `viewkitComponent`; build the list with `getViewModes` to add one beside the default.
 	 */
-	viewModes: z.array(z.object({
-		mode: z.string().min(1),
-		/** i18n key, translated with the list's `translationNs`. */
-		label: z.string().min(1),
-	}).strict()).min(1).default([{ mode: 'list', label: 'datatable.list' }]),
+	viewModes: z.array(resourceListV2ViewModeSchema).min(1).default(() => [
+		resourceListV2ViewModeSchema.parse(defaultListViewMode()),
+	]),
 }).strict();
 
 export type ResourceListV2Props = z.infer<typeof resourceListV2PropsSchema>;

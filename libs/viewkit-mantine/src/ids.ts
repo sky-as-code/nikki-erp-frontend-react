@@ -30,11 +30,30 @@ export const RESOURCE_GENERIC_PAGE_TEMPLATE = 'nikkierp.mantine.pages.templates.
 export const PAGE_HEADER = 'nikkierp.mantine.components.pageHeader.v1';
 export const COLLAPSIBLE_SECTION = 'nikkierp.mantine.components.collapsibleSection.v1';
 export const RESOURCE_TABLE = 'nikkierp.mantine.components.resourceTable.v1';
+/**
+ * `ExcelDataTable`'s row body, so a list template's `list` view mode is a node like any other and
+ * a page can swap in its own. Valid only inside an `ExcelDataTable.Provider`, which the enclosing
+ * template mounts — it reads every row, column and selection off that context.
+ */
+export const EXCEL_DATA_TABLE_BODY = 'nikkierp.mantine.components.excelDataTable.tableBody.v1';
 export const RESOURCE_DETAIL_HEADER = 'nikkierp.mantine.components.resourceDetail.header.v1';
 export const RESOURCE_FORM = 'nikkierp.mantine.components.resourceForm.v1';
 export const RESOURCE_FORM_COLUMN = 'nikkierp.mantine.components.resourceForm.column.v1';
 export const RESOURCE_CREATE_HEADER = 'nikkierp.mantine.components.resourceCreate.header.v1';
 export const RESOURCE_CREATE_FORM = 'nikkierp.mantine.components.resourceCreate.form.v1';
+
+/**
+ * The v2 form components, registered alongside the v1 set rather than replacing it.
+ *
+ * A component renderer is registered once per kit, so v1 and v2 cannot share one id and still
+ * render different parts. The detail v2 template emits these ids instead, which is what lets it
+ * own its own form behaviour without touching a v1 page.
+ */
+export const RESOURCE_DETAIL_HEADER_V2 = 'nikkierp.mantine.components.resourceDetail.header.v2';
+export const RESOURCE_FORM_V2 = 'nikkierp.mantine.components.resourceForm.v2';
+export const RESOURCE_FORM_COLUMN_V2 = 'nikkierp.mantine.components.resourceForm.column.v2';
+export const RESOURCE_CREATE_HEADER_V2 = 'nikkierp.mantine.components.resourceCreate.header.v2';
+export const RESOURCE_CREATE_FORM_V2 = 'nikkierp.mantine.components.resourceCreate.form.v2';
 export const RESOURCE_SPLIT_VIEW = 'nikkierp.mantine.components.resourceSplitView.v1';
 
 /**

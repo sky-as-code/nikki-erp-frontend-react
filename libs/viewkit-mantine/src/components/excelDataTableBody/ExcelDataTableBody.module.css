@@ -1,0 +1,9 @@
+/*
+ * The body takes the rest of the page column and is the only scroll container, so its bottom edge
+ * (and horizontal scrollbar) sits on the window bottom however short the window is.
+ */
+.body {
+	flex: 1 1 auto;
+	min-height: 0;
+	margin: 0 var(--mantine-spacing-xs);
+}

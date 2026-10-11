@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	FilterGraph, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	InitialGraph, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
 	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
@@ -30,7 +30,7 @@ export function buildStockQuantPages(): PageNode[] {
 	// "Äáº¿n háº¡n kiá»ƒm kÃª" menu item so it is distinguishable from the unfiltered Stock Balance link.
 	const countsDueView = resourceSplitViewProps({
 		primary: buildStockQuantListProps({
-			filterGraph: { if: ['next_count_date', '<=', '${today}'] },
+			initialGraph: { if: ['next_count_date', '<=', '${today}'] },
 		}),
 		secondary: buildStockQuantDetailProps(),
 	});
@@ -46,7 +46,7 @@ export function buildStockQuantPages(): PageNode[] {
 	})];
 }
 
-function buildStockQuantListProps(overrides?: { filterGraph?: FilterGraph }) {
+function buildStockQuantListProps(overrides?: { initialGraph?: InitialGraph }) {
 	return resourceListProps({
 		schemaName: c.STOCK_QUANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,

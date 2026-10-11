@@ -250,3 +250,29 @@ describe('round trip', () => {
 		expect(filterTreeToGraph(tree, [])).toEqual(graph);
 	});
 });
+
+describe('locked conditions', () => {
+	it('marks every condition locked when asked', () => {
+		const { tree } = graphToFilterTree({ and: [{ if: ['a', '=', '1'] }, { if: ['b', '=', '2'] }] }, { locked: true });
+		expect(tree.children).toHaveLength(2);
+		expect(tree.children.every(child => 'locked' in child && child.locked === true)).toBe(true);
+	});
+
+	it('leaves conditions unlocked by default', () => {
+		const { tree } = graphToFilterTree({ if: ['a', '=', '1'] });
+		expect(tree.children.some(child => 'locked' in child && child.locked === true)).toBe(false);
+	});
+
+	// The base graph is ANDed server-side already, so re-emitting it would send it twice.
+	it('omits locked conditions from the emitted graph', () => {
+		const locked = graphToFilterTree({ if: ['org_id', '=', 'o1'] }, { locked: true }).tree;
+		const editable = graphToFilterTree({ if: ['name', '*', 'w'] }).tree;
+		const tree = { ...editable, children: [...locked.children, ...editable.children] };
+		expect(filterTreeToGraph(tree, [])).toEqual({ if: ['name', '*', 'w'] });
+	});
+
+	it('emits nothing when every condition is locked', () => {
+		const { tree } = graphToFilterTree({ if: ['org_id', '=', 'o1'] }, { locked: true });
+		expect(filterTreeToGraph(tree, [])).toBeUndefined();
+	});
+});

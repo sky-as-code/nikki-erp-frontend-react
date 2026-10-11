@@ -85,7 +85,7 @@ function buildAssignedRolesSection(): ComponentNode {
 			schemaName: c.ROLE_SCHEMA_NAME,
 			translationNs: c.IAM_MODULE,
 			searchCommand: RoleCommands.SEARCH,
-			filterGraph: { if: ['assigned_groups', 'linked', '${id}'] },
+			initialGraph: { if: ['assigned_groups', 'linked', '${id}'] },
 			linkField: 'id',
 			linkRoutePath: 'iam_role',
 			extraActions: [{ label: 'assignment.manageRoles', routePath: 'iam_role' }],

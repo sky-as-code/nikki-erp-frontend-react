@@ -177,7 +177,7 @@ function buildSalesQuotationLinesSection(): ComponentNode[] {
 				schemaName: c.SALES_QUOTATION_LINE_SCHEMA_NAME,
 				translationNs: c.SALES_MODULE,
 				searchCommand: SalesQuotationLineCommands.SEARCH,
-				filterGraph: { if: ['sales_quotation_id', '=', '${id}'] },
+				initialGraph: { if: ['sales_quotation_id', '=', '${id}'] },
 				fields: ['line_number', 'product_name_snapshot', 'quantity', 'uom_id',
 					'unit_price', 'discount_amount', 'net_amount', 'tax_amount', 'final_amount'],
 			})],

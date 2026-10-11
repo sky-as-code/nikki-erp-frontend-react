@@ -1,13 +1,14 @@
 import { defineComponent } from '@nikkierp/viewengine/metadata';
 
 import { collapsibleSectionPropsSchema } from './components/collapsibleSection/props';
+import { excelDataTableBodyPropsSchema } from './components/excelDataTableBody/props';
 import { pageHeaderPropsSchema } from './components/pageHeader/props';
 import { resourceFormTabsPropsSchema } from './components/resourceFormTabs/props';
 import { resourceTablePropsSchema } from './components/resourceTable/props';
 import { settingsItemPropsSchema, settingsSectionPropsSchema } from './components/settings/props';
 import { tabCollapsibleSectionPropsSchema } from './components/tabCollapsibleSection/props';
 import {
-	COLLAPSIBLE_SECTION, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE, RESOURCE_DETAIL_V2_TEMPLATE,
+	COLLAPSIBLE_SECTION, EXCEL_DATA_TABLE_BODY, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE, RESOURCE_DETAIL_V2_TEMPLATE,
 	RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_GENERIC_PAGE_TEMPLATE,
 	RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE,
 	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE, SETTINGS_ITEM, SETTINGS_SECTION,
@@ -22,6 +23,7 @@ import { resourceListV2PropsSchema } from './pages/resourceListV2/props';
 import { resourceSplitViewPropsSchema } from './pages/resourceSplitView/props';
 
 import type { CollapsibleSectionPropsInput } from './components/collapsibleSection/props';
+import type { ExcelDataTableBodyPropsInput } from './components/excelDataTableBody/props';
 import type { PageHeaderPropsInput } from './components/pageHeader/props';
 import type { ResourceFormTabsPropsInput } from './components/resourceFormTabs/props';
 import type { ResourceTablePropsInput } from './components/resourceTable/props';
@@ -110,6 +112,20 @@ export function resourceTableNode(input: ResourceTablePropsInput): ComponentNode
 	return defineComponent({
 		component: RESOURCE_TABLE,
 		props: resourceTablePropsSchema.parse(input) as Record<string, unknown>,
+	});
+}
+
+/**
+ * The enclosing `ExcelDataTable`'s rows, as a node — what a list template's `list` view mode
+ * points at, and what a page replaces to render its rows some other way.
+ *
+ * Only valid inside a template that mounts an `ExcelDataTable.Provider`; it draws its rows from
+ * that context rather than searching for its own.
+ */
+export function excelDataTableBodyNode(input: ExcelDataTableBodyPropsInput = {}): ComponentNode {
+	return defineComponent({
+		component: EXCEL_DATA_TABLE_BODY,
+		props: excelDataTableBodyPropsSchema.parse(input) as Record<string, unknown>,
 	});
 }
 

@@ -131,7 +131,7 @@ function buildMappingLinesSection(): ComponentNode {
 				schemaName: c.TAX_MAPPING_LINE_SCHEMA_NAME,
 				translationNs: c.ACCOUNTING_MODULE,
 				searchCommand: TaxMappingLineCommands.SEARCH,
-				filterGraph: { if: ['tax_mapping_id', '=', '${id}'] },
+				initialGraph: { if: ['tax_mapping_id', '=', '${id}'] },
 				fields: ['sequence', 'source_tax_id', 'target_tax_id'],
 			}),
 		],

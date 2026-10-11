@@ -12,8 +12,8 @@ const graphValueSchema: z.ZodType<unknown> = z.lazy(() => z.union([
 	z.record(z.string(), graphValueSchema),
 ]));
 
-export const filterGraphSchema = z.record(z.string(), graphValueSchema);
-export type FilterGraph = z.infer<typeof filterGraphSchema>;
+export const initialGraphSchema = z.record(z.string(), graphValueSchema);
+export type InitialGraph = z.infer<typeof initialGraphSchema>;
 
 /**
  * A toolbar action of the embedded table, rendered by `DataTable` next to Refresh.
@@ -57,7 +57,7 @@ export const resourceTablePropsSchema = z.object({
 	 * is replaced with the current route param of that name, e.g.
 	 * `{ if: ['roles', 'linked', '${id}'] }` on a role detail page.
 	 */
-	filterGraph: filterGraphSchema.optional(),
+	initialGraph: initialGraphSchema.optional(),
 	/** Row field whose value becomes the link's `:id`. */
 	linkField: z.string().min(1).optional(),
 	/**
@@ -66,6 +66,13 @@ export const resourceTablePropsSchema = z.object({
 	 */
 	linkRoutePath: z.string().min(1).optional(),
 	fieldRenderers: z.record(z.string(), fieldRendererSpecSchema).optional(),
+	/**
+	 * Renders a standard "View all" link to `linkRoutePath`'s list page, beside Refresh.
+	 *
+	 * Off by default so a page that already authors the link through `extraActions` keeps the one
+	 * it has. Has no effect without `linkRoutePath`, which names the page to open.
+	 */
+	showViewAll: z.boolean().default(false),
 	/** Toolbar actions appended after Refresh. */
 	extraActions: z.array(resourceTableActionSchema).default([]),
 	/**

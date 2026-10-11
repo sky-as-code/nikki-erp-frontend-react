@@ -57,8 +57,13 @@ export function useOpenState(initial = false): OpenState {
 	}), [isOpen]);
 }
 
-export function useViewModeState(initial: ExcelViewMode | undefined) {
-	const [viewMode, setViewModeState] = React.useState<ExcelViewMode>(() => resolveInitialViewMode(initial));
+/**
+ * `allowed` is what keeps a remembered mode from outliving the page that offered it: the stored
+ * value is per path, but a path's modes change between builds, and a mode nothing renders any
+ * more would leave the table blank with no way back.
+ */
+export function useViewModeState(initial: ExcelViewMode | undefined, allowed?: ExcelViewMode[]) {
+	const [viewMode, setViewModeState] = React.useState<ExcelViewMode>(() => resolveInitialViewMode(initial, allowed));
 	const setViewMode = React.useCallback((mode: ExcelViewMode) => {
 		writeStoredViewMode(mode);
 		setViewModeState(mode);

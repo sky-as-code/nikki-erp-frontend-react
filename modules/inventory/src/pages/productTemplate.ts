@@ -187,7 +187,7 @@ function buildTemplateSections(): ComponentNode[] {
 				schemaName: c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME,
 				translationNs: c.INVENTORY_MODULE,
 				searchCommand: ProductTemplateAttributeCommands.SEARCH,
-				filterGraph: { if: ['product_template_id', '=', '${id}'] },
+				initialGraph: { if: ['product_template_id', '=', '${id}'] },
 				linkField: 'id',
 				// Opens the values this template offers for the attribute, which is where each
 				// value's sales_price_extra is set. The junction row carries template_attribute_id
@@ -202,7 +202,7 @@ function buildTemplateSections(): ComponentNode[] {
 				schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
 				translationNs: c.INVENTORY_MODULE,
 				searchCommand: ProductVariantCommands.SEARCH,
-				filterGraph: { if: ['product_template_id', '=', '${id}'] },
+				initialGraph: { if: ['product_template_id', '=', '${id}'] },
 				linkField: 'id',
 				linkRoutePath: 'inventory_product_variant',
 			})],
@@ -225,7 +225,7 @@ function buildTemplateSections(): ComponentNode[] {
 				// What every vendor offers this product, at any quantity — the buyer's comparison
 				// view. Filtered by template rather than variant because a template-wide quote
 				// prices every variant that has none of its own.
-				filterGraph: { if: ['product_template_id', '=', '${id}'] },
+				initialGraph: { if: ['product_template_id', '=', '${id}'] },
 				linkField: 'id',
 				// The row links into the `purchase` module, which owns this schema; `linkRoutePath`
 				// is resolved against the *current* module, so the module segment is named here.
@@ -265,7 +265,7 @@ function buildInventoryUomSection(): ComponentNode {
 			schemaName: c.STOCK_PRODUCT_CONFIG_SCHEMA_NAME,
 			translationNs: c.INVENTORY_MODULE,
 			searchCommand: StockProductConfigCommands.SEARCH,
-			filterGraph: { if: ['product_template_id', '=', '${id}'] },
+			initialGraph: { if: ['product_template_id', '=', '${id}'] },
 			fields: ['inventory_uom_id'],
 			linkField: 'id',
 		})],
@@ -279,7 +279,7 @@ function buildInventoryUomSection(): ComponentNode {
  * will â€” only a variant is stocked (CR Â§5.1, PROD-INT-INV-002) â€” so the honest breakdown is one
  * row per variant, each linking to the variant page where its balances are shown in full.
  *
- * Quants cannot be listed here directly. `filterGraph` reaches a related resource only across a
+ * Quants cannot be listed here directly. `initialGraph` reaches a related resource only across a
  * *many* edge via the `linked` operator, and quant â†’ variant is many:one, so there is no path from
  * a template to its variants' quants in one search. The aggregate is served by the
  * `template_stock_summary` action instead, which sums the variants server-side.
@@ -295,7 +295,7 @@ function buildTemplateInventorySection(): ComponentNode {
 			schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
 			translationNs: c.INVENTORY_MODULE,
 			searchCommand: ProductVariantCommands.SEARCH,
-			filterGraph: { if: ['product_template_id', '=', '${id}'] },
+			initialGraph: { if: ['product_template_id', '=', '${id}'] },
 			fields: ['sku', 'combination_key', 'status'],
 			linkField: 'id',
 			linkRoutePath: 'inventory_product_variant',

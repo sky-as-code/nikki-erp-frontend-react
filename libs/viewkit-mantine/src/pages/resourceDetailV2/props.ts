@@ -6,7 +6,7 @@ import { resourceDetailPropsSchema } from '../resourceDetail/props';
 
 /**
  * One tab of the related-resources section: the embedded table's own props plus the tab label.
- * `filterGraph` is interpolated from the route (`${id}`) exactly as `resourceTable` does, and the
+ * `initialGraph` is interpolated from the route (`${id}`) exactly as `resourceTable` does, and the
  * section is update-mode only for the same reason — on `/new` there is no id to filter by.
  */
 export const relatedResourceSchema = resourceTablePropsSchema.extend({

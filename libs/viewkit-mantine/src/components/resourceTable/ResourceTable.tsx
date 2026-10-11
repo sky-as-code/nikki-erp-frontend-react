@@ -33,7 +33,7 @@ export const resourceTableRenderer: IComponentRenderer<ResourceTableProps> = {
 };
 
 function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactNode {
-	const graph = useInterpolatedGraph(params.filterGraph);
+	const graph = useInterpolatedGraph(params.initialGraph);
 	const lc = useLocalize(params.translationNs);
 	const t = useTranslate(params.translationNs);
 	const fieldRenderer = useFieldRenderers(params.fieldRenderers);
@@ -156,13 +156,13 @@ function useInitialRequest(params: ResourceTableProps): dyn.RestSearchRequest {
  * render even when the resolved graph is unchanged.
  */
 export function useInterpolatedGraph(
-	filterGraph: ResourceTableProps['filterGraph'],
+	initialGraph: ResourceTableProps['initialGraph'],
 ): InterpolateResult<dyn.SearchGraph | undefined> {
 	const paramsKey = JSON.stringify(useParams());
 
 	const resolved = React.useMemo(
-		() => interpolateParams(filterGraph as dyn.SearchGraph | undefined, JSON.parse(paramsKey)),
-		[filterGraph, paramsKey],
+		() => interpolateParams(initialGraph as dyn.SearchGraph | undefined, JSON.parse(paramsKey)),
+		[initialGraph, paramsKey],
 	);
 	const resolvedKey = JSON.stringify(resolved);
 	const stableRef = React.useRef(resolved);

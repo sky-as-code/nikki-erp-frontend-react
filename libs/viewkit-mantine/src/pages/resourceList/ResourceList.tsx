@@ -39,10 +39,10 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	const fieldRenderer = useFieldRenderers(params.fieldRenderers);
 
 	// Seeded into the filter panel as editable conditions rather than locked onto the request:
-	// a list page's `filterGraph` is a sensible default view, and the user is entitled to widen
+	// a list page's `initialGraph` is a sensible default view, and the user is entitled to widen
 	// or drop it. An embedded table's record scoping is the opposite case and stays a
 	// `baseGraph` — see `ResourceTable`.
-	const graph = useResolvedFilterGraph(params.filterGraph);
+	const graph = useResolvedInitialGraph(params.initialGraph);
 	// Seeded onto the initial request rather than forced onto every later one: the table rewrites
 	// the request as the user pages, sorts and picks columns, and a page's declared columns are
 	// the starting view, not an override of the choice they make afterwards.
@@ -87,7 +87,7 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	}
 
 	return (
-		<Paper className='absolute top-0 left-0 right-0 bottom-0 p-0 m-0 flex' bg={bgColor}>
+		<Paper className='absolute inset-0 p-0 m-0 flex' bg={bgColor}>
 			<DataTable
 				testId={testId}
 				tableName={lc(pack.modelSchema.label, { count: searchData.total })}
@@ -202,7 +202,7 @@ function buildResourceActions(
 }
 
 /**
- * Resolves a list page's static `filterGraph`, the same `${name}` substitution `resourceTable`
+ * Resolves a list page's static `initialGraph`, the same `${name}` substitution `resourceTable`
  * uses for route params, plus `${today}` for the current date — a list page has no route params
  * of its own, so `today` is the one dynamic value a static, compile-time graph can still need
  * (e.g. the cycle-count worklist's `next_count_date <= ${today}`).
@@ -210,12 +210,12 @@ function buildResourceActions(
  * Recomputed only when the graph or the calendar day changes, so identity stays stable across
  * re-renders within the same day — the table seeds its condition tree from this once, on mount.
  */
-function useResolvedFilterGraph(filterGraph: ResourceListProps['filterGraph']): dyn.SearchGraph | undefined {
+function useResolvedInitialGraph(initialGraph: ResourceListProps['initialGraph']): dyn.SearchGraph | undefined {
 	const today = new Date().toISOString().slice(0, 10);
 	return React.useMemo(
-		() => filterGraph === undefined
+		() => initialGraph === undefined
 			? undefined
-			: interpolateParams(filterGraph, { today }).value as dyn.SearchGraph,
-		[filterGraph, today],
+			: interpolateParams(initialGraph, { today }).value as dyn.SearchGraph,
+		[initialGraph, today],
 	);
 }

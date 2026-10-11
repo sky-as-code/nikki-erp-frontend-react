@@ -107,7 +107,7 @@ function buildCategoryProductsSection(): ComponentNode[] {
 				schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
 				translationNs: c.INVENTORY_MODULE,
 				searchCommand: ProductTemplateCommands.SEARCH,
-				filterGraph: { if: ['category_id', '=', '${id}'] },
+				initialGraph: { if: ['category_id', '=', '${id}'] },
 				linkField: 'id',
 				linkRoutePath: 'inventory_product_template',
 			})],
@@ -126,7 +126,7 @@ function buildCategoryProductsSection(): ComponentNode[] {
 				schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
 				translationNs: c.INVENTORY_MODULE,
 				searchCommand: PutawayRuleCommands.SEARCH,
-				filterGraph: { if: ['product_category_id', '=', '${id}'] },
+				initialGraph: { if: ['product_category_id', '=', '${id}'] },
 				fields: [
 					'code', 'warehouse_id', 'source_location_id',
 					'destination_location_id', 'priority',

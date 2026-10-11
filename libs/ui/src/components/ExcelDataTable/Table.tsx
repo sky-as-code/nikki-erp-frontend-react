@@ -172,9 +172,15 @@ function DataCell({ field, item, rowId, href, isSelected }: DataCellProps) {
 			selection.selectRow(rowId);
 		}
 	};
-	// The plain click was consumed by the selection on mousedown; modified clicks reach the link.
+	// A plain click selects the row *and* follows the link, which is what opens the detail pane
+	// beside the list in a split view. Selecting without navigating left the click looking dead on
+	// a page whose whole point is that pane; the row handle is there for selection alone.
+	//
+	// Ctrl and Shift are the selection gestures, so they must not also navigate. Everything else —
+	// a middle click, Ctrl+Shift — is left to the browser, which is what keeps "open in a new tab"
+	// working from a cell.
 	const onAnchorClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-		if (!isModifiedClick(event)) {
+		if (event.ctrlKey || event.metaKey || event.shiftKey) {
 			event.preventDefault();
 		}
 	};

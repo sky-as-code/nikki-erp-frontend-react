@@ -4,11 +4,11 @@ import React from 'react';
 import { useParams } from 'react-router';
 
 import { RelatedResourcesTabs } from './RelatedResourcesTabs';
+import { ResourceCreate } from './ResourceCreate';
+import { ResourceUpdate } from './ResourceUpdate';
 import { PageContainer } from '../../components/PageContainer';
 import { resourceTestIdPrefix } from '../../testIds';
-import { ResourceCreate } from '../resourceDetail/ResourceCreate';
 import { ResourceDetailProvider } from '../resourceDetail/ResourceDetailProvider';
-import { ResourceUpdate } from '../resourceDetail/ResourceUpdate';
 
 import type { ResourceDetailV2Props } from './props';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';

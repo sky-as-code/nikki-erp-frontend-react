@@ -1,5 +1,9 @@
 export * from './ids';
 export * from './props';
+export { resourceListV2PropsWithViewModes } from './propsWithIcons';
+export type {
+	ResourceListV2PropsWithIconsInput, ViewModeInput,
+} from './propsWithIcons';
 export { mantineViewKit } from './kit';
 export { contributeMantineViewKit } from './contributeMantineViewKit';
 export { ViewEngineRouter } from './ViewEngineRouter';

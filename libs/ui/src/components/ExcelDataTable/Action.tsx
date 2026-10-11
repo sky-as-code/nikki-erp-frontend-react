@@ -12,7 +12,7 @@ import { Button, LinkButton } from '../Button';
 import { useLockedItemProps } from '../ErrorState';
 
 import type { SearchItem } from './types';
-import type { LockedProps } from '../Button';
+import type { ButtonProps, LockedProps } from '../Button';
 
 
 export type ActionSelectionMode = 'single' | 'multiple';
@@ -34,6 +34,11 @@ export type ActionProps = LockedProps & {
 	 */
 	selectionMode?: ActionSelectionMode,
 	testId?: string,
+	/**
+	 * Passed to `Button`, which defaults it to `outline`. `subtle` for a borderless control — the
+	 * split view's close button, which has to match the detail pane's own `ActionIcon`.
+	 */
+	variant?: ButtonProps['variant'],
 };
 
 /**
@@ -77,10 +82,11 @@ type TriggerProps = ActionProps & { onTrigger: () => void };
 
 function ActionButton(props: TriggerProps) {
 	const { tid } = useExcelDataTableContext();
-	const { label, icon, iconOnly = false, href, command, locked, lockedMissing, onTrigger } = props;
+	const { label, icon, iconOnly = false, href, command, locked, lockedMissing, variant, onTrigger } = props;
 	const shared = {
 		locked,
 		lockedMissing,
+		variant,
 		'aria-label': iconOnly ? label : undefined,
 		leftSection: iconOnly ? undefined : icon,
 		...commandAttrs(command),
@@ -98,6 +104,7 @@ function ActionButton(props: TriggerProps) {
 function ActionMenuItem(props: TriggerProps) {
 	const { tid } = useExcelDataTableContext();
 	const lockedProps = useLockedItemProps(props.locked, props.lockedMissing);
+	// No `variant`: a menu item is not a button and has no variant to carry.
 	const shared = { leftSection: props.icon, ...commandAttrs(props.command), ...tid.action(props) };
 	// A navigating entry is a real link so it stays middle-clickable; the locked props spread last
 	// because their onClick cancels the navigation.

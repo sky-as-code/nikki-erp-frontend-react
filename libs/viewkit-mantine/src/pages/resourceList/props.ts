@@ -1,7 +1,7 @@
 import { fieldRendererSpecSchema } from '@nikkierp/viewengine/schema';
 import { z } from 'zod';
 
-import { filterGraphSchema } from '../../components/resourceTable/props';
+import { initialGraphSchema } from '../../components/resourceTable/props';
 
 
 export const resourceListCommandActionSchema = z.object({
@@ -78,10 +78,10 @@ export const resourceListPropsSchema = z.object({
 	/**
 	 * Search graph applied to every request, e.g. to give a menu item a second, filtered entry
 	 * point into a list its schema would otherwise render unfiltered. Same grammar as
-	 * `resourceTable`'s `filterGraph`: a whole-string `${name}` leaf is resolved at render time —
+	 * `resourceTable`'s `initialGraph`: a whole-string `${name}` leaf is resolved at render time —
 	 * `${today}` to the current date, in addition to any route param.
 	 */
-	filterGraph: filterGraphSchema.optional(),
+	initialGraph: initialGraphSchema.optional(),
 	/** Map of field name -> serializable renderer spec, resolved at render time. */
 	fieldRenderers: z.record(z.string(), fieldRendererSpecSchema).optional(),
 	/**

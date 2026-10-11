@@ -124,7 +124,7 @@ function buildSalesVoucherRedemptionsSection(): ComponentNode[] {
 				schemaName: c.SALES_VOUCHER_REDEMPTION_SCHEMA_NAME,
 				translationNs: c.SALES_MODULE,
 				searchCommand: SalesVoucherRedemptionCommands.SEARCH,
-				filterGraph: { if: ['voucher_code_id', '=', '${id}'] },
+				initialGraph: { if: ['voucher_code_id', '=', '${id}'] },
 				fields: ['sales_order_id', 'status', 'reserved_at', 'redeemed_at', 'released_at',
 					'reversed_at'],
 				fieldRenderers: {

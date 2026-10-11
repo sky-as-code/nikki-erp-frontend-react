@@ -283,7 +283,7 @@ describe('Sales order related tables', () => {
 		// A fulfillment item carries no order id of its own, so its table filters through the
 		// fulfillment edge; every other table filters on the column directly.
 		for (const table of tables) {
-			const filter = table.props?.filterGraph as { if: [string, string, string] };
+			const filter = table.props?.initialGraph as { if: [string, string, string] };
 			expect(['sales_order_id', 'fulfillment.sales_order_id']).toContain(filter.if[0]);
 			expect(filter.if.slice(1)).toEqual(['=', '${id}']);
 		}
@@ -298,7 +298,7 @@ describe('Sales order related tables', () => {
 		const events = collectComponents(page, 'resourceTable')
 			.find(table => table.props?.schemaName === c.SALES_ORDER_EVENT_SCHEMA_NAME);
 
-		expect(events?.props?.filterGraph).toEqual({ if: ['sales_order_id', '=', '${id}'] });
+		expect(events?.props?.initialGraph).toEqual({ if: ['sales_order_id', '=', '${id}'] });
 	});
 
 	/**
@@ -416,13 +416,13 @@ describe('Sales bill page', () => {
 		const byName = new Map(collectComponents(page, 'resourceTable')
 			.map(table => [table.props?.schemaName as string, table]));
 
-		expect(byName.get(c.SALES_BILL_LINE_SCHEMA_NAME)?.props?.filterGraph)
+		expect(byName.get(c.SALES_BILL_LINE_SCHEMA_NAME)?.props?.initialGraph)
 			.toEqual({ if: ['sales_bill_id', '=', '${id}'] });
-		expect(byName.get(c.SALES_PAYMENT_SCHEMA_NAME)?.props?.filterGraph)
+		expect(byName.get(c.SALES_PAYMENT_SCHEMA_NAME)?.props?.initialGraph)
 			.toEqual({ if: ['sales_bill_id', '=', '${id}'] });
-		expect(byName.get(c.SALES_FISCAL_REQUEST_SCHEMA_NAME)?.props?.filterGraph)
+		expect(byName.get(c.SALES_FISCAL_REQUEST_SCHEMA_NAME)?.props?.initialGraph)
 			.toEqual({ if: ['sales_bill_id', '=', '${id}'] });
-		expect(byName.get(c.SALES_BILL_RELATION_SCHEMA_NAME)?.props?.filterGraph)
+		expect(byName.get(c.SALES_BILL_RELATION_SCHEMA_NAME)?.props?.initialGraph)
 			.toEqual({ if: ['source_bill_id', '=', '${id}'] });
 	});
 });
@@ -524,7 +524,7 @@ describe('Pricing resources', () => {
 		const [redemptions] = collectComponents(page, 'resourceTable');
 
 		expect(redemptions.props?.schemaName).toBe(c.SALES_VOUCHER_REDEMPTION_SCHEMA_NAME);
-		expect(redemptions.props?.filterGraph).toEqual({ if: ['voucher_code_id', '=', '${id}'] });
+		expect(redemptions.props?.initialGraph).toEqual({ if: ['voucher_code_id', '=', '${id}'] });
 	});
 
 	/**
@@ -551,7 +551,7 @@ type ContextualAction = {
 type ListProps = {
 	schemaName: string,
 	createEnabled?: boolean,
-	filterGraph?: Record<string, unknown>,
+	initialGraph?: Record<string, unknown>,
 	archiveCommand?: string,
 	deleteCommand?: string,
 	fieldRenderers?: Record<string, { prefix?: string }>,

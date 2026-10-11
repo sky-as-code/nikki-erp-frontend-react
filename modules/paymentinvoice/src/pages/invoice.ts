@@ -162,7 +162,7 @@ function buildLineSection(): ComponentNode[] {
 				schemaName: c.INVOICE_LINE_SCHEMA_NAME,
 				translationNs: c.PAYMENTINVOICE_MODULE,
 				searchCommand: InvoiceLineCommands.SEARCH,
-				filterGraph: { if: ['invoice_id', '=', '${id}'] },
+				initialGraph: { if: ['invoice_id', '=', '${id}'] },
 			})],
 		),
 	];

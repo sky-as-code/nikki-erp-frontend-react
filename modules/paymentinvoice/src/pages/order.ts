@@ -189,7 +189,7 @@ function buildTransactionSection(): ComponentNode[] {
 				schemaName: c.TRANSACTION_SCHEMA_NAME,
 				translationNs: c.PAYMENTINVOICE_MODULE,
 				searchCommand: TransactionCommands.SEARCH,
-				filterGraph: { if: ['order_id', '=', '${id}'] },
+				initialGraph: { if: ['order_id', '=', '${id}'] },
 			})],
 		),
 	];

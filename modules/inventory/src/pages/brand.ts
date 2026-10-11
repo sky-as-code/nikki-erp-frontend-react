@@ -97,7 +97,7 @@ function buildBrandProductsSection(): ComponentNode[] {
 			schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
 			translationNs: c.INVENTORY_MODULE,
 			searchCommand: ProductTemplateCommands.SEARCH,
-			filterGraph: { if: ['brand_id', '=', '${id}'] },
+			initialGraph: { if: ['brand_id', '=', '${id}'] },
 			linkField: 'id',
 			linkRoutePath: 'inventory_product_template',
 		})],

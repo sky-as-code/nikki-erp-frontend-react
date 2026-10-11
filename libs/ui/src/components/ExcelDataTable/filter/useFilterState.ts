@@ -14,16 +14,23 @@ import type * as dyn from '@nikkierp/common/dynamicModel';
 
 export type UseFilterStateOptions = {
 	/**
-	 * A page-authored graph seeded into the tree as editable conditions, once on mount.
+	 * A page-authored graph seeded into the tree as editable conditions, and into the sort pane as
+	 * its order, once on mount.
 	 *
-	 * List pages pass their `filterGraph` here so its conditions are visible and removable. An
-	 * embedded table's record scoping is *not* passed here — that stays a locked base graph on
-	 * the search hook, where the user cannot widen it away.
+	 * An initiator, not a constraint: every condition it carries is visible, editable and
+	 * removable, and nothing re-applies it afterwards. Scoping that must survive belongs in
+	 * `baseGraph`.
 	 */
-	initialFilterGraph?: dyn.SearchGraph,
-	/** Seeds the sort pane when the initial request carries no order of its own. */
-	fallbackOrderBy?: dyn.OrderBy,
 	initialGraph?: dyn.SearchGraph,
+	/**
+	 * The locked scoping graph the search hook ANDs into every request.
+	 *
+	 * Seeded above the editable conditions so the user can see what the table is already scoped to
+	 * -- an embedded table showing only the parent record's rows -- without being able to widen it.
+	 */
+	baseGraph?: dyn.SearchGraph,
+	/** Seeds the sort pane when `initialGraph` carries no order of its own. */
+	fallbackOrderBy?: dyn.OrderBy,
 };
 
 export type FilterState = ReturnType<typeof useFilterState>;
@@ -43,8 +50,8 @@ export type FilterState = ReturnType<typeof useFilterState>;
  * result set never shifts under a user who is still composing.
  */
 export function useFilterState(opts: UseFilterStateOptions = {}) {
-	const [tree, setTree] = React.useState<FilterTree>(() => seedTree(opts.initialFilterGraph));
-	const [lossy] = React.useState(() => graphToFilterTree(opts.initialFilterGraph).lossy);
+	const [tree, setTree] = React.useState<FilterTree>(() => seedTree(opts.baseGraph, opts.initialGraph));
+	const [lossy] = React.useState(() => graphToFilterTree(opts.initialGraph).lossy);
 	const [orderBy, setOrderBy] = React.useState<dyn.OrderBy>(
 		() => seedOrderBy(opts.initialGraph, opts.fallbackOrderBy),
 	);
@@ -178,8 +185,12 @@ function useDirectWriters(
 	return { commitColumnValue };
 }
 
-function seedTree(graph: dyn.SearchGraph | undefined): FilterTree {
-	return ensureNonEmpty(graphToFilterTree(graph).tree);
+function seedTree(
+	baseGraph: dyn.SearchGraph | undefined, initialGraph: dyn.SearchGraph | undefined,
+): FilterTree {
+	const locked = graphToFilterTree(baseGraph, { locked: true }).tree;
+	const editable = graphToFilterTree(initialGraph).tree;
+	return ensureNonEmpty({ ...editable, children: [...locked.children, ...editable.children] });
 }
 
 function seedOrderBy(

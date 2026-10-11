@@ -17,7 +17,7 @@ describe('resourceDetailV2PropsSchema', () => {
 			...base,
 			relatedResources: [{
 				label: 'role_sections_assignedUsers', schemaName: 'iam_user', translationNs: 'iam',
-				searchCommand: 'iam.user.search', filterGraph: { if: ['roles', 'linked', '${id}'] }, linkRoutePath: 'iam_user',
+				searchCommand: 'iam.user.search', initialGraph: { if: ['roles', 'linked', '${id}'] }, linkRoutePath: 'iam_user',
 			}],
 		});
 		expect(parsed.relatedResources[0].pageSize).toBe(20);
