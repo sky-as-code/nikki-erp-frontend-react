@@ -1,3 +1,4 @@
+import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
 import { buildBrandPages } from './brand';
@@ -20,6 +21,7 @@ import { buildWarehousePages } from './warehouse';
 import * as c from '../constants';
 
 import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
+import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
 
 
 const allPages: { name: string, build: () => PageNode[] }[] = [
@@ -144,8 +146,33 @@ describe('Inventory page metadata', () => {
 		const props = page.props as { primary: { template: string }, secondary: { template: string } };
 
 		expect(page.template).toContain('resourceSplitView');
-		expect(props.primary.template).toContain('resourceList');
-		expect(props.secondary.template).toContain('resourceDetails');
+		expect(props.primary.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
+		expect(props.secondary.template).toBe(RESOURCE_DETAIL_V2_TEMPLATE);
+	});
+});
+
+describe('Inventory list and detail templates', () => {
+	it.each(allPages)('$name pages render v2 list and detail templates', ({ build }) => {
+		for (const page of build().filter(({ template }) => template?.includes('resourceSplitView'))) {
+			const props = page.props as { primary: { template: string }, secondary: { template: string } };
+
+			expect(props.primary.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
+			expect(props.secondary.template).toBe(RESOURCE_DETAIL_V2_TEMPLATE);
+		}
+	});
+
+	/**
+	 * Inline row editing goes on master data only. Stock documents and balances change through
+	 * their workflow actions, which a cell edit would bypass.
+	 */
+	it('enables inline row editing on master data, not on stock documents or balances', () => {
+		const noInlineEdit = allPages
+			.filter(({ build }) => !build().some(page => (
+				page.props as { primary?: { props?: { updateCommand?: string } } }
+			).primary?.props?.updateCommand))
+			.map(({ name }) => name);
+
+		expect(noInlineEdit.sort()).toEqual(['stockQuant', 'stockReservation', 'stockScrap', 'stockTransfer']);
 	});
 });
 
@@ -157,7 +184,7 @@ describe('Product template detail sections', () => {
 	 */
 	it('filters the template detail tables by the template id', () => {
 		const [page] = buildProductTemplatePages();
-		const tables = collectComponents(page, 'resourceTable');
+		const tables = relatedTables(page);
 
 		// Attributes, variants, prices, and the stock breakdown. Asserted by schema rather than by
 		// count alone, so that adding a section is a deliberate change here rather than a number
@@ -166,7 +193,7 @@ describe('Product template detail sections', () => {
 		// The breakdown lists variants, not quants: a template holds no stock of its own, and a
 		// quant cannot be reached from a template in one search anyway — `linked` traverses only a
 		// many edge, and quant → variant is many:one. See CR §5.3 and §24.
-		expect(tables.map(table => table.props?.schemaName)).toEqual([
+		expect(tables.map(table => table.schemaName)).toEqual([
 			c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME,
 			c.PRODUCT_VARIANT_SCHEMA_NAME,
 			// Purchase's resource on Inventory's page. A literal rather than a constant, because
@@ -179,16 +206,16 @@ describe('Product template detail sections', () => {
 			c.STOCK_PRODUCT_CONFIG_SCHEMA_NAME,
 		]);
 		for (const table of tables) {
-			expect(table.props?.initialGraph).toEqual({ if: ['product_template_id', '=', '${id}'] });
+			expect(table.initialGraph).toEqual({ if: ['product_template_id', '=', '${id}'] });
 		}
 	});
 
 	it('points the variants table at the variant page, not the current one', () => {
 		const [page] = buildProductTemplatePages();
-		const variantTable = collectComponents(page, 'resourceTable')
-			.find(node => node.props?.schemaName === c.PRODUCT_VARIANT_SCHEMA_NAME);
+		const variantTable = relatedTables(page)
+			.find(node => node.schemaName === c.PRODUCT_VARIANT_SCHEMA_NAME);
 
-		expect(variantTable?.props?.linkRoutePath).toBe('inventory_product_variant');
+		expect(variantTable?.linkRoutePath).toBe('inventory_product_variant');
 	});
 
 	/**
@@ -216,9 +243,9 @@ describe('Product stock integration', () => {
 	 */
 	it('shows a variant its stock, its movements and its putaway rules', () => {
 		const [page] = buildProductVariantPages();
-		const tables = collectComponents(page, 'resourceTable');
+		const tables = relatedTables(page);
 
-		expect(tables.map(table => table.props?.schemaName)).toEqual([
+		expect(tables.map(table => table.schemaName)).toEqual([
 			c.STOCK_QUANT_SCHEMA_NAME,
 			c.STOCK_MOVE_SCHEMA_NAME,
 			c.PUTAWAY_RULE_SCHEMA_NAME,
@@ -227,9 +254,9 @@ describe('Product stock integration', () => {
 		// Stock names the variant `product_variant_id`; a putaway rule calls the same reference
 		// `product_id`, because Warehouse's rule may point at a product or a category. Each filter
 		// has to use the field its own schema declares — a shared spelling would match nothing.
-		expect(tables[0].props?.initialGraph).toEqual({ if: ['product_variant_id', '=', '${id}'] });
-		expect(tables[1].props?.initialGraph).toEqual({ if: ['product_variant_id', '=', '${id}'] });
-		expect(tables[2].props?.initialGraph).toEqual({ if: ['product_id', '=', '${id}'] });
+		expect(tables[0].initialGraph).toEqual({ if: ['product_variant_id', '=', '${id}'] });
+		expect(tables[1].initialGraph).toEqual({ if: ['product_variant_id', '=', '${id}'] });
+		expect(tables[2].initialGraph).toEqual({ if: ['product_id', '=', '${id}'] });
 	});
 
 	/**
@@ -240,10 +267,10 @@ describe('Product stock integration', () => {
 	it('binds no write command on any variant stock section', () => {
 		const [page] = buildProductVariantPages();
 
-		for (const table of collectComponents(page, 'resourceTable')) {
-			expect(table.props?.updateSaveCommand).toBeUndefined();
-			expect(table.props?.deleteCommand).toBeUndefined();
-			expect(table.props?.archiveCommand).toBeUndefined();
+		for (const table of relatedTables(page)) {
+			expect(table).not.toHaveProperty('updateSaveCommand');
+			expect(table).not.toHaveProperty('deleteCommand');
+			expect(table).not.toHaveProperty('archiveCommand');
 		}
 	});
 
@@ -253,21 +280,21 @@ describe('Product stock integration', () => {
 	 */
 	it('gives the template its own testId for the second variants table', () => {
 		const [page] = buildProductTemplatePages();
-		const variantTables = collectComponents(page, 'resourceTable')
-			.filter(table => table.props?.schemaName === c.PRODUCT_VARIANT_SCHEMA_NAME);
+		const variantTables = relatedTables(page)
+			.filter(table => table.schemaName === c.PRODUCT_VARIANT_SCHEMA_NAME);
 
 		expect(variantTables).toHaveLength(2);
-		expect(variantTables[1].props?.testId).toBe('inventory.templateInventory');
+		expect(variantTables[1].testId).toBe('inventory.templateInventory');
 	});
 
 	/** Category-level putaway rules, shown where the category is (CR §10.2, TS-PROD-14). */
 	it('shows a category the putaway rules that match it', () => {
 		const [page] = buildProductCategoryPages();
-		const putaway = collectComponents(page, 'resourceTable')
-			.find(table => table.props?.schemaName === c.PUTAWAY_RULE_SCHEMA_NAME);
+		const putaway = relatedTables(page)
+			.find(table => table.schemaName === c.PUTAWAY_RULE_SCHEMA_NAME);
 
-		expect(putaway?.props?.initialGraph).toEqual({ if: ['product_category_id', '=', '${id}'] });
-		expect(putaway?.props?.linkRoutePath).toBe('inventory_putaway_rule');
+		expect(putaway?.initialGraph).toEqual({ if: ['product_category_id', '=', '${id}'] });
+		expect(putaway?.linkRoutePath).toBe('inventory_putaway_rule');
 	});
 });
 
@@ -357,14 +384,14 @@ describe('Stock transfer page', () => {
 	 */
 	it('filters the moves and lines by the transfer id', () => {
 		const [page] = buildStockTransferPages();
-		const tables = collectComponents(page, 'resourceTable');
+		const tables = relatedTables(page);
 
-		expect(tables.map(table => table.props?.schemaName)).toEqual([
+		expect(tables.map(table => table.schemaName)).toEqual([
 			c.STOCK_MOVE_SCHEMA_NAME,
 			c.STOCK_MOVE_LINE_SCHEMA_NAME,
 		]);
 		for (const table of tables) {
-			expect(table.props?.initialGraph).toEqual({ if: ['transfer_id', '=', '${id}'] });
+			expect(table.initialGraph).toEqual({ if: ['transfer_id', '=', '${id}'] });
 		}
 	});
 
@@ -376,6 +403,12 @@ describe('Stock transfer page', () => {
 		expect(props.primary.props.schemaName).toBe(c.STOCK_TRANSFER_SCHEMA_NAME);
 	});
 });
+
+/** The related-resource tabs of a split view's detail pane. */
+function relatedTables(page: PageNode): RelatedResource[] {
+	const props = page.props as { secondary?: { props?: { relatedResources?: RelatedResource[] } } };
+	return props.secondary?.props?.relatedResources ?? [];
+}
 
 /** Collects every component node of the given kind, at any depth of a page's props. */
 function collectComponents(page: PageNode, componentIdPart: string): ComponentNode[] {
@@ -474,9 +507,9 @@ describe('Template attribute value page', () => {
 	 */
 	it('is linked from the template attributes table', () => {
 		const [template] = buildProductTemplatePages();
-		const attributes = collectComponents(template, 'resourceTable')
-			.find(node => node.props?.schemaName === c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME);
+		const attributes = relatedTables(template)
+			.find(node => node.schemaName === c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME);
 
-		expect(attributes?.props?.linkRoutePath).toBe('inventory_product_template_attribute_value');
+		expect(attributes?.linkRoutePath).toBe('inventory_product_template_attribute_value');
 	});
 });

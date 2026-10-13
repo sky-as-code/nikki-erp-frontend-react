@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	InitialGraph, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	InitialGraph, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
@@ -47,7 +47,7 @@ export function buildStockQuantPages(): PageNode[] {
 }
 
 function buildStockQuantListProps(overrides?: { initialGraph?: InitialGraph }) {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.STOCK_QUANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -60,7 +60,7 @@ function buildStockQuantListProps(overrides?: { initialGraph?: InitialGraph }) {
 }
 
 function buildStockQuantDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.STOCK_QUANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'product_variant_id' },

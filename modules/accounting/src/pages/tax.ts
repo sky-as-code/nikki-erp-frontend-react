@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -35,7 +35,7 @@ export function buildTaxPages(): PageNode[] {
 }
 
 function buildListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.TAX_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		linkField: 'id',
@@ -44,6 +44,7 @@ function buildListProps() {
 		deleteCommand: TaxCommands.DELETE,
 		archiveCommand: TaxCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: TaxCommands.UPDATE,
+		updateCommand: TaxCommands.UPDATE,
 		fieldRenderers: {
 			// Withholding is grey rather than coloured on purpose: the kind is seeded for reporting,
 			// but BR-TAX-ESS-SUP-030 withholds the capability to calculate it until a requirement
@@ -66,7 +67,7 @@ function buildListProps() {
 }
 
 function buildDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.TAX_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -80,10 +81,10 @@ function buildDetailProps() {
 			archive: TaxCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildFieldsSection()],
-		childrenNodes: [
-			buildFieldsSection(),
-			buildDefinitionVersionsSection(),
-			buildRateVersionsSection(),
+		childrenNodes: [buildFieldsSection()],
+		relatedResources: [
+			buildDefinitionVersionsResource(),
+			buildRateVersionsResource(),
 		],
 	});
 }
@@ -116,58 +117,42 @@ function buildFieldsSection(): ComponentNode {
 /**
  * The tax's definition versions — everything that decides determination or calculation, per period.
  *
- * Expanded by default because a tax with no published definition on a date cannot be calculated at
- * all, so this is the first thing an administrator needs to see.
+ * The first related tab because a tax with no published definition on a date cannot be calculated
+ * at all, so this is the first thing an administrator needs to see.
  */
-function buildDefinitionVersionsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{
-			header: 'accounting_tax_definition_version.label',
-			translationNs: c.ACCOUNTING_MODULE,
-			expanded: true,
+function buildDefinitionVersionsResource() {
+	return {
+		label: 'accounting_tax_definition_version.label',
+		schemaName: c.TAX_DEFINITION_VERSION_SCHEMA_NAME,
+		translationNs: c.ACCOUNTING_MODULE,
+		searchCommand: TaxDefinitionVersionCommands.SEARCH,
+		// '${id}' is a literal placeholder the engine resolves from the route param, not a
+		// JS template literal — it has to stay inside single quotes.
+		initialGraph: { if: ['tax_id', '=', '${id}'] },
+		fields: ['version_no', 'calculation_type', 'tax_treatment', 'lifecycle_status',
+			'effective_from', 'effective_to'],
+		fieldRenderers: {
+			calculation_type: { renderer: 'translated', prefix: 'calculation_type.' },
+			tax_treatment: { renderer: 'translated', prefix: 'tax_treatment.' },
+			lifecycle_status: { renderer: 'translated', prefix: 'lifecycle_status.' },
 		},
-		[
-			resourceTableNode({
-				schemaName: c.TAX_DEFINITION_VERSION_SCHEMA_NAME,
-				translationNs: c.ACCOUNTING_MODULE,
-				searchCommand: TaxDefinitionVersionCommands.SEARCH,
-				// '${id}' is a literal placeholder the engine resolves from the route param, not a
-				// JS template literal — it has to stay inside single quotes.
-				initialGraph: { if: ['tax_id', '=', '${id}'] },
-				fields: ['version_no', 'calculation_type', 'tax_treatment', 'lifecycle_status',
-					'effective_from', 'effective_to'],
-				fieldRenderers: {
-					calculation_type: { renderer: 'translated', prefix: 'calculation_type.' },
-					tax_treatment: { renderer: 'translated', prefix: 'tax_treatment.' },
-					lifecycle_status: { renderer: 'translated', prefix: 'lifecycle_status.' },
-				},
-			}),
-		],
-	);
+	};
 }
 
 /** The tax's rate versions, so the rate in force on a date is visible from the tax itself. */
-function buildRateVersionsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{
-			header: 'accounting_tax_rate_version.label',
-			translationNs: c.ACCOUNTING_MODULE,
-			expanded: true,
+function buildRateVersionsResource() {
+	return {
+		label: 'accounting_tax_rate_version.label',
+		schemaName: c.TAX_RATE_VERSION_SCHEMA_NAME,
+		translationNs: c.ACCOUNTING_MODULE,
+		searchCommand: TaxRateVersionCommands.SEARCH,
+		initialGraph: { if: ['tax_id', '=', '${id}'] },
+		linkField: 'id',
+		linkRoutePath: 'accounting_tax_rate_version',
+		fields: ['version_no', 'rate', 'fixed_amount', 'currency_code', 'lifecycle_status',
+			'effective_from', 'effective_to'],
+		fieldRenderers: {
+			lifecycle_status: { renderer: 'translated', prefix: 'lifecycle_status.' },
 		},
-		[
-			resourceTableNode({
-				schemaName: c.TAX_RATE_VERSION_SCHEMA_NAME,
-				translationNs: c.ACCOUNTING_MODULE,
-				searchCommand: TaxRateVersionCommands.SEARCH,
-				initialGraph: { if: ['tax_id', '=', '${id}'] },
-				linkField: 'id',
-				linkRoutePath: 'accounting_tax_rate_version',
-				fields: ['version_no', 'rate', 'fixed_amount', 'currency_code', 'lifecycle_status',
-					'effective_from', 'effective_to'],
-				fieldRenderers: {
-					lifecycle_status: { renderer: 'translated', prefix: 'lifecycle_status.' },
-				},
-			}),
-		],
-	);
+	};
 }

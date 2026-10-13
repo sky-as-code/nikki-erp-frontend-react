@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -34,7 +34,7 @@ export function buildTaxRulePages(): PageNode[] {
 }
 
 function buildListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.TAX_RULE_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		linkField: 'id',
@@ -54,7 +54,7 @@ function buildListProps() {
 }
 
 function buildDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.TAX_RULE_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -69,10 +69,10 @@ function buildDetailProps() {
 		},
 		contextualActions: buildLifecycleActions(),
 		createNodes: [buildFieldsSection()],
-		childrenNodes: [
-			buildFieldsSection(),
-			buildConditionsSection(),
-			buildResultsSection(),
+		childrenNodes: [buildFieldsSection()],
+		relatedResources: [
+			buildConditionsResource(),
+			buildResultsResource(),
 		],
 	});
 }
@@ -132,43 +132,27 @@ function buildFieldsSection(): ComponentNode {
  * `field_key` may only name a field on the closed whitelist the backend accepts
  * (BR-TAX-ESS-SUP-022), so a condition cannot come to depend on something no one guaranteed.
  */
-function buildConditionsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{
-			header: 'accounting_tax_rule_condition.label',
-			translationNs: c.ACCOUNTING_MODULE,
-			expanded: true,
-		},
-		[
-			resourceTableNode({
-				schemaName: c.TAX_RULE_CONDITION_SCHEMA_NAME,
-				translationNs: c.ACCOUNTING_MODULE,
-				searchCommand: TaxRuleConditionCommands.SEARCH,
-				initialGraph: { if: ['tax_rule_id', '=', '${id}'] },
-				fields: ['sequence', 'field_key', 'operator', 'value', 'value_currency_code'],
-			}),
-		],
-	);
+function buildConditionsResource() {
+	return {
+		label: 'accounting_tax_rule_condition.label',
+		schemaName: c.TAX_RULE_CONDITION_SCHEMA_NAME,
+		translationNs: c.ACCOUNTING_MODULE,
+		searchCommand: TaxRuleConditionCommands.SEARCH,
+		initialGraph: { if: ['tax_rule_id', '=', '${id}'] },
+		fields: ['sequence', 'field_key', 'operator', 'value', 'value_currency_code'],
+	};
 }
 
 /** What a matching rule does to the candidate tax set: add, remove, or substitute via a mapping. */
-function buildResultsSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{
-			header: 'accounting_tax_rule_result.label',
-			translationNs: c.ACCOUNTING_MODULE,
-			expanded: true,
-		},
-		[
-			resourceTableNode({
-				schemaName: c.TAX_RULE_RESULT_SCHEMA_NAME,
-				translationNs: c.ACCOUNTING_MODULE,
-				searchCommand: TaxRuleResultCommands.SEARCH,
-				initialGraph: { if: ['tax_rule_id', '=', '${id}'] },
-				fields: ['sequence', 'action', 'tax_id', 'tax_mapping_id', 'tax_treatment'],
-			}),
-		],
-	);
+function buildResultsResource() {
+	return {
+		label: 'accounting_tax_rule_result.label',
+		schemaName: c.TAX_RULE_RESULT_SCHEMA_NAME,
+		translationNs: c.ACCOUNTING_MODULE,
+		searchCommand: TaxRuleResultCommands.SEARCH,
+		initialGraph: { if: ['tax_rule_id', '=', '${id}'] },
+		fields: ['sequence', 'action', 'tax_id', 'tax_mapping_id', 'tax_treatment'],
+	};
 }
 
 /**

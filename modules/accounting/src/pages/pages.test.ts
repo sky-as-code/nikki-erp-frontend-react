@@ -1,3 +1,4 @@
+import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
 import { buildTaxPages } from './tax';
@@ -11,7 +12,8 @@ import { buildTaxRulePages } from './taxRule';
 import { buildTaxSimulatorPages } from './taxSimulator';
 import * as c from '../constants';
 
-import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
+import type { PageNode, TemplateRef } from '@nikkierp/viewengine/metadata';
+import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
 
 
 const allPages: { name: string, build: () => PageNode[] }[] = [
@@ -104,13 +106,27 @@ describe('Accounting page bindings', () => {
 		'$name pages nest a list and a detail pane in a split view',
 		({ build }) => {
 			for (const page of build()) {
+				const { primary, secondary } = page.props as { primary: TemplateRef, secondary: TemplateRef };
 				expect(page.template).toContain('resourceSplitView');
-				const rendered = JSON.stringify(page);
-				expect(rendered).toContain('resourceList');
-				expect(rendered).toContain('resourceDetails');
+				expect(primary.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
+				expect(secondary.template).toBe(RESOURCE_DETAIL_V2_TEMPLATE);
 			}
 		},
 	);
+
+	/**
+	 * Inline row editing goes only on master data. A versioned resource changes through its
+	 * lifecycle actions, and a cell edit there would bypass the publish/withdraw prompts.
+	 */
+	it('enables inline row editing on exactly the unversioned master data', () => {
+		const inlineEditable = allPages
+			.filter(({ build }) => build().some(page => (
+				page.props as { primary?: TemplateRef<{ updateCommand?: string }> }
+			).primary?.props?.updateCommand))
+			.map(({ name }) => name);
+
+		expect(inlineEditable).toEqual(['taxJurisdiction', 'taxGroup', 'taxProductClassification', 'tax']);
+	});
 
 	it('serves the simulator from the accounting view kit, not a resource template', () => {
 		const [simulator] = buildTaxSimulatorPages();
@@ -124,13 +140,11 @@ describe('Accounting page bindings', () => {
 	 * `'eq'`, which the engine rejects outright.
 	 */
 	it('filters every related table by its parent id', () => {
-		const withChildren = [buildTaxPages, buildTaxRulePages, buildTaxMappingPages];
-		const tables = withChildren.flatMap(build =>
-			build().flatMap(page => collectComponents(page, 'resourceTable')));
+		const tables = allPages.flatMap(({ build }) => build().flatMap(relatedResources));
 
 		expect(tables.length).toBe(5);
 		for (const table of tables) {
-			const initialGraph = (table.props as { initialGraph?: { if?: unknown[] } }).initialGraph;
+			const initialGraph = table.initialGraph as { if?: unknown[] } | undefined;
 			expect(initialGraph?.if?.[1]).toBe('=');
 			expect(initialGraph?.if?.[2]).toBe('${id}');
 		}
@@ -227,25 +241,10 @@ function splitViewSchemas(page: PageNode): string[] {
 		.filter((name): name is string => typeof name === 'string');
 }
 
-function collectComponents(page: PageNode, componentIdPart: string): ComponentNode[] {
-	const found: ComponentNode[] = [];
-	walk(page);
-	return found;
-
-	function walk(value: unknown): void {
-		if (Array.isArray(value)) {
-			value.forEach(walk);
-			return;
-		}
-		if (value === null || typeof value !== 'object') {
-			return;
-		}
-		const node = value as ComponentNode;
-		if (typeof node.component === 'string' && node.component.includes(componentIdPart)) {
-			found.push(node);
-		}
-		Object.values(value).forEach(walk);
-	}
+/** The related-resource tabs of a split view's detail pane. */
+function relatedResources(page: PageNode): RelatedResource[] {
+	const props = page.props as { secondary?: TemplateRef<{ relatedResources?: RelatedResource[] }> };
+	return props.secondary?.props?.relatedResources ?? [];
 }
 
 function findNonPlainValue(value: unknown, path: string): string | null {

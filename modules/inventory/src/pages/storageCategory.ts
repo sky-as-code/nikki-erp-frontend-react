@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -23,7 +24,7 @@ export function buildStorageCategoryPages(): PageNode[] {
 }
 
 function buildStorageCategoryListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.STORAGE_CATEGORY_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -32,6 +33,7 @@ function buildStorageCategoryListProps() {
 		deleteCommand: StorageCategoryCommands.DELETE,
 		archiveCommand: StorageCategoryCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: StorageCategoryCommands.UPDATE,
+		updateCommand: StorageCategoryCommands.UPDATE,
 		fieldRenderers: {
 			allow_new_item_policy: {
 				renderer: 'badge',
@@ -47,7 +49,7 @@ function buildStorageCategoryListProps() {
 }
 
 function buildStorageCategoryDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.STORAGE_CATEGORY_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },

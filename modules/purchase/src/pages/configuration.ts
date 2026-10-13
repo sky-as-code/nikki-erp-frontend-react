@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -35,7 +36,7 @@ export function buildConfigurationPages(): PageNode[] {
 }
 
 function buildConfigurationListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.CONFIGURATION_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		linkField: 'id',
@@ -65,7 +66,7 @@ function buildConfigurationListProps() {
  * decide whether approval is required, and changed by editing it.
  */
 function buildConfigurationDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.CONFIGURATION_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		titleLvl1: { schemaField: 'approval_mode' },

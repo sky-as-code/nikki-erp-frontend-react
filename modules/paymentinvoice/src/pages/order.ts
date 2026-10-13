@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -35,7 +35,7 @@ export function buildOrderPages(): PageNode[] {
  * failed one, and removing it destroys the only evidence the attempt was made.
  */
 function buildOrderListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.ORDER_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
 		linkField: 'id',
@@ -68,7 +68,7 @@ function buildOrderListProps() {
 }
 
 function buildOrderDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.ORDER_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
 		titleLvl1: { schemaField: 'order_id' },
@@ -79,7 +79,8 @@ function buildOrderDetailProps() {
 			update: OrderCommands.UPDATE,
 		},
 		contextualActions: buildOrderActions(),
-		childrenNodes: [buildOrderFieldsSection(), ...buildTransactionSection()],
+		childrenNodes: [buildOrderFieldsSection()],
+		relatedResources: buildTransactionResources(),
 	});
 }
 
@@ -181,16 +182,14 @@ function buildOrderActions() {
  * current route param and links nowhere: a transaction has no life outside the order that carries
  * it, and there is no transaction detail page to link to.
  */
-function buildTransactionSection(): ComponentNode[] {
+function buildTransactionResources() {
 	return [
-		collapsibleSectionNode(
-			{ header: 'form.transactions', translationNs: c.PAYMENTINVOICE_MODULE, expanded: true },
-			[resourceTableNode({
-				schemaName: c.TRANSACTION_SCHEMA_NAME,
-				translationNs: c.PAYMENTINVOICE_MODULE,
-				searchCommand: TransactionCommands.SEARCH,
-				initialGraph: { if: ['order_id', '=', '${id}'] },
-			})],
-		),
+		{
+			label: 'form.transactions',
+			schemaName: c.TRANSACTION_SCHEMA_NAME,
+			translationNs: c.PAYMENTINVOICE_MODULE,
+			searchCommand: TransactionCommands.SEARCH,
+			initialGraph: { if: ['order_id', '=', '${id}'] },
+		},
 	];
 }

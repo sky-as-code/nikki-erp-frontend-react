@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceImportProps, resourceListProps,
-	resourceSplitViewProps, resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -32,7 +32,7 @@ export function buildProductVariantPages(): PageNode[] {
 }
 
 function buildProductVariantListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -42,6 +42,7 @@ function buildProductVariantListProps() {
 		deleteCommand: ProductVariantCommands.DELETE,
 		archiveCommand: ProductVariantCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductVariantCommands.UPDATE,
+		updateCommand: ProductVariantCommands.UPDATE,
 		// The buying view of a variant: what it is, what it costs, and how much is on hand. The
 		// schema's own default set leads with identifiers, which answers a different question.
 		displayed_fields: [
@@ -74,7 +75,7 @@ function buildProductVariantListProps() {
 }
 
 function buildProductVariantDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'sku' },
@@ -88,7 +89,8 @@ function buildProductVariantDetailProps() {
 			archive: ProductVariantCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildProductVariantFieldsSection()],
-		childrenNodes: [buildProductVariantFieldsSection(), ...buildVariantStockSections()],
+		childrenNodes: [buildProductVariantFieldsSection()],
+		relatedResources: buildVariantStockResources(),
 	});
 }
 
@@ -168,9 +170,9 @@ function buildProductVariantFieldsSection(): ComponentNode {
 /**
  * The stock a variant holds, where it sits, how it has moved and where it gets put away.
  *
- * Product owns none of this. Each section reads a resource another part of the module owns and
+ * Product owns none of this. Each related tab reads a resource another part of the module owns and
  * links through to the page that does own it, so a user sees the stock without Product acquiring
- * a copy of it (CR Â§4.4, Â§6.1, Â§9). Nothing here offers a write: no section names an update
+ * a copy of it (CR Â§4.4, Â§6.1, Â§9). Nothing here offers a write: no tab names an update
  * command, so there is no edit affordance to suppress and no way to set a balance from a product
  * page (CR Â§6.2, AC-PROD-INT-034).
  *
@@ -178,87 +180,75 @@ function buildProductVariantFieldsSection(): ComponentNode {
  * filter by, and a variant that does not exist yet holds no stock.
  *
  * The quantities are shown as the quant rows that make them up rather than as one summary line.
- * `ResourceTable` renders rows of a registered schema â€” it resolves a `modelSchema` and feeds a
- * paged search into `DataTable` â€” and a computed on-hand/reserved/available record belongs to no
- * schema. The rows carry the same numbers, per location, and the table totals them. The scalar
+ * A related tab renders rows of a registered schema â€” it resolves a `modelSchema` and feeds a
+ * paged search into `ExcelDataTable` â€” and a computed on-hand/reserved/available record belongs to no
+ * schema. The rows carry the same numbers, per location. The scalar
  * form is served by the `variant_stock_summary` action, which the list columns use.
  */
-function buildVariantStockSections() {
+function buildVariantStockResources() {
 	return [
-		buildVariantInventorySection(),
-		buildVariantMovementsSection(),
-		buildVariantPutawaySection(),
+		buildVariantInventoryResource(),
+		buildVariantMovementsResource(),
+		buildVariantPutawayResource(),
 	];
 }
 
 /** What the variant holds, and where. Rows link to the Stock Balance page that owns them. */
-function buildVariantInventorySection() {
-	return collapsibleSectionNode({
-		header: 'product_variant_sections_inventory',
+function buildVariantInventoryResource() {
+	return {
+		label: 'product_variant_sections_inventory',
+		schemaName: c.STOCK_QUANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-	}, [
-		resourceTableNode({
-			schemaName: c.STOCK_QUANT_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: StockQuantCommands.SEARCH,
-			initialGraph: { if: ['product_variant_id', '=', '${id}'] },
-			// The location's own status is on the location, not the quant, so a suspended
-			// place is badged on the Stock Balance page this links to (TS-PROD-05).
-			fields: [
-				'location_id', 'on_hand_quantity', 'reserved_quantity',
-				'available_quantity', 'base_uom_id', 'lot_ref',
-			],
-			linkField: 'id',
-			linkRoutePath: 'inventory_stock_quant',
-			testId: 'inventory.variantInventory',
-		}),
-	]);
+		searchCommand: StockQuantCommands.SEARCH,
+		initialGraph: { if: ['product_variant_id', '=', '${id}'] },
+		// The location's own status is on the location, not the quant, so a suspended
+		// place is badged on the Stock Balance page this links to (TS-PROD-05).
+		fields: [
+			'location_id', 'on_hand_quantity', 'reserved_quantity',
+			'available_quantity', 'base_uom_id', 'lot_ref',
+		],
+		linkField: 'id',
+		linkRoutePath: 'inventory_stock_quant',
+		testId: 'inventory.variantInventory',
+	};
 }
 
 /** How the variant has moved, open and completed alike. */
-function buildVariantMovementsSection() {
-	return collapsibleSectionNode({
-		header: 'product_variant_sections_movements',
+function buildVariantMovementsResource() {
+	return {
+		label: 'product_variant_sections_movements',
+		schemaName: c.STOCK_MOVE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-	}, [
-		resourceTableNode({
-			schemaName: c.STOCK_MOVE_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: StockMoveCommands.SEARCH,
-			initialGraph: { if: ['product_variant_id', '=', '${id}'] },
-			fields: [
-				'status', 'demand_quantity', 'source_location_id',
-				'destination_location_id', 'scheduled_at',
-			],
-			// Rows point at the transfer that carries them: a move has no page of its own,
-			// and the transfer is the document a user acts on.
-			linkField: 'transfer_id',
-			linkRoutePath: 'inventory_stock_transfer',
-			testId: 'inventory.variantMovements',
-		}),
-	]);
+		searchCommand: StockMoveCommands.SEARCH,
+		initialGraph: { if: ['product_variant_id', '=', '${id}'] },
+		fields: [
+			'status', 'demand_quantity', 'source_location_id',
+			'destination_location_id', 'scheduled_at',
+		],
+		// Rows point at the transfer that carries them: a move has no page of its own,
+		// and the transfer is the document a user acts on.
+		linkField: 'transfer_id',
+		linkRoutePath: 'inventory_stock_transfer',
+		testId: 'inventory.variantMovements',
+	};
 }
 
 /** Where arriving goods of this product get put (CR Â§10). Read-only: the rules belong to Warehouse. */
-function buildVariantPutawaySection() {
-	return collapsibleSectionNode({
-		header: 'product_variant_sections_putaway',
+function buildVariantPutawayResource() {
+	return {
+		label: 'product_variant_sections_putaway',
+		schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-	}, [
-		resourceTableNode({
-			schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: PutawayRuleCommands.SEARCH,
-			// Rules naming this specific product. A rule that matches by category applies to
-			// it too and is shown on the category page instead, where it is owned (CR Â§10.2).
-			initialGraph: { if: ['product_id', '=', '${id}'] },
-			fields: [
-				'code', 'warehouse_id', 'source_location_id',
-				'destination_location_id', 'priority',
-			],
-			linkField: 'id',
-			linkRoutePath: 'inventory_putaway_rule',
-			testId: 'inventory.variantPutaway',
-		}),
-	]);
+		searchCommand: PutawayRuleCommands.SEARCH,
+		// Rules naming this specific product. A rule that matches by category applies to
+		// it too and is shown on the category page instead, where it is owned (CR Â§10.2).
+		initialGraph: { if: ['product_id', '=', '${id}'] },
+		fields: [
+			'code', 'warehouse_id', 'source_location_id',
+			'destination_location_id', 'priority',
+		],
+		linkField: 'id',
+		linkRoutePath: 'inventory_putaway_rule',
+		testId: 'inventory.variantPutaway',
+	};
 }

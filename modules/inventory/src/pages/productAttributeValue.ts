@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -23,7 +24,7 @@ export function buildProductAttributeValuePages(): PageNode[] {
 }
 
 function buildProductAttributeValueListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -32,11 +33,12 @@ function buildProductAttributeValueListProps() {
 		deleteCommand: ProductAttributeValueCommands.DELETE,
 		archiveCommand: ProductAttributeValueCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductAttributeValueCommands.UPDATE,
+		updateCommand: ProductAttributeValueCommands.UPDATE,
 	});
 }
 
 function buildProductAttributeValueDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },

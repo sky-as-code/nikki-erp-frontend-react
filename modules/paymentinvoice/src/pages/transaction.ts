@@ -1,5 +1,5 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
-import { resourceListProps } from '@nikkierp/viewkit-mantine/props';
+import { resourceListV2Props } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { TransactionCommands } from '../features/transaction/commands';
@@ -17,7 +17,7 @@ import { TransactionCommands } from '../features/transaction/commands';
  * the question starts from a gateway reference rather than from an order.
  */
 export function buildTransactionPages(): PageNode[] {
-	const list = resourceListProps({
+	const list = resourceListV2Props({
 		schemaName: c.TRANSACTION_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
 		searchCommand: TransactionCommands.SEARCH,

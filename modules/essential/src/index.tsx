@@ -78,8 +78,8 @@ function EssentialIndexPage(): React.ReactNode {
 			<Link to='module-management' data-testid='essential-link-module-management'>
 				Module Management
 			</Link><br />
-			<Link to='uoms' data-testid='essential-link-uoms'>Units of Measure</Link><br />
-			<Link to='uom-categories' data-testid='essential-link-uom-categories'>UoM Categories</Link>
+			<Link to='essential_uom' data-testid='essential-link-uoms'>Units of Measure</Link><br />
+			<Link to='essential_uomcat' data-testid='essential-link-uom-categories'>UoM Categories</Link>
 		</>
 	);
 }

@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -33,7 +33,7 @@ export function buildTaxMappingPages(): PageNode[] {
 }
 
 function buildListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.TAX_MAPPING_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		linkField: 'id',
@@ -53,7 +53,7 @@ function buildListProps() {
 }
 
 function buildDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.TAX_MAPPING_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -68,7 +68,8 @@ function buildDetailProps() {
 		},
 		contextualActions: buildLifecycleActions(),
 		createNodes: [buildFieldsSection()],
-		childrenNodes: [buildFieldsSection(), buildMappingLinesSection()],
+		childrenNodes: [buildFieldsSection()],
+		relatedResources: [buildMappingLinesResource()],
 	});
 }
 
@@ -116,26 +117,17 @@ function buildFieldsSection(): ComponentNode {
 /**
  * The substitutions themselves: source tax in, target tax out.
  *
- * A mapping leaves any tax it does not name alone, so the lines are the whole of what it does —
- * which is why they are expanded by default.
+ * A mapping leaves any tax it does not name alone, so the lines are the whole of what it does.
  */
-function buildMappingLinesSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{
-			header: 'accounting_tax_mapping_line.label',
-			translationNs: c.ACCOUNTING_MODULE,
-			expanded: true,
-		},
-		[
-			resourceTableNode({
-				schemaName: c.TAX_MAPPING_LINE_SCHEMA_NAME,
-				translationNs: c.ACCOUNTING_MODULE,
-				searchCommand: TaxMappingLineCommands.SEARCH,
-				initialGraph: { if: ['tax_mapping_id', '=', '${id}'] },
-				fields: ['sequence', 'source_tax_id', 'target_tax_id'],
-			}),
-		],
-	);
+function buildMappingLinesResource() {
+	return {
+		label: 'accounting_tax_mapping_line.label',
+		schemaName: c.TAX_MAPPING_LINE_SCHEMA_NAME,
+		translationNs: c.ACCOUNTING_MODULE,
+		searchCommand: TaxMappingLineCommands.SEARCH,
+		initialGraph: { if: ['tax_mapping_id', '=', '${id}'] },
+		fields: ['sequence', 'source_tax_id', 'target_tax_id'],
+	};
 }
 
 /**

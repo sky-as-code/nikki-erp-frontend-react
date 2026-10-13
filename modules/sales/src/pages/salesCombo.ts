@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -29,18 +29,19 @@ export function buildSalesComboPages(): PageNode[] {
 }
 
 function buildSalesComboListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_COMBO_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
 		searchCommand: SalesComboCommands.SEARCH,
+		updateCommand: SalesComboCommands.UPDATE,
 		createEnabled: true,
 		archiveCommand: SalesComboCommands.SET_IS_ARCHIVED,
 	});
 }
 
 function buildSalesComboDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_COMBO_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -53,7 +54,8 @@ function buildSalesComboDetailProps() {
 			archive: SalesComboCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildSalesComboFieldsSection()],
-		childrenNodes: [buildSalesComboFieldsSection(), ...buildSalesComboComponentsSection()],
+		childrenNodes: [buildSalesComboFieldsSection()],
+		relatedResources: buildSalesComboComponentsResources(),
 	});
 }
 
@@ -99,22 +101,16 @@ function buildSalesComboFieldsSection(): ComponentNode {
 }
 
 /** `selection_group` is how a "choose one of these" bundle is expressed. */
-function buildSalesComboComponentsSection(): ComponentNode[] {
+function buildSalesComboComponentsResources() {
 	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_combo_sections_components',
-				translationNs: c.SALES_MODULE,
-				expanded: true,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_COMBO_COMPONENT_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesComboComponentCommands.SEARCH,
-				initialGraph: { if: ['sales_combo_id', '=', '${id}'] },
-				fields: ['product_variant_id', 'quantity', 'uom_id', 'is_required',
-					'selection_group'],
-			})],
-		),
+		{
+			label: 'sales_combo_sections_components',
+			schemaName: c.SALES_COMBO_COMPONENT_SCHEMA_NAME,
+			translationNs: c.SALES_MODULE,
+			searchCommand: SalesComboComponentCommands.SEARCH,
+			initialGraph: { if: ['sales_combo_id', '=', '${id}'] },
+			fields: ['product_variant_id', 'quantity', 'uom_id', 'is_required',
+				'selection_group'],
+		},
 	];
 }

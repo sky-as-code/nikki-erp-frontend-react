@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -27,7 +27,7 @@ export function buildStockTransferPages(): PageNode[] {
 }
 
 function buildStockTransferListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.STOCK_TRANSFER_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -61,7 +61,7 @@ function buildStockTransferListProps() {
 }
 
 function buildStockTransferDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.STOCK_TRANSFER_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'transfer_number' },
@@ -75,7 +75,8 @@ function buildStockTransferDetailProps() {
 		},
 		contextualActions: buildMovementActions(),
 		createNodes: [buildStockTransferFieldsSection()],
-		childrenNodes: [buildStockTransferFieldsSection(), ...buildMovementSections()],
+		childrenNodes: [buildStockTransferFieldsSection()],
+		relatedResources: buildMovementResources(),
 	});
 }
 
@@ -217,29 +218,25 @@ function buildMovementActions() {
  * transfer line actually has â€” "what is this thing?" â€” and completes the navigation in the
  * direction Stock â†’ Product (CR Â§17).
  */
-function buildMovementSections(): ComponentNode[] {
+function buildMovementResources() {
 	return [
-		collapsibleSectionNode(
-			{ header: 'form.moves', translationNs: c.INVENTORY_MODULE, expanded: true },
-			[resourceTableNode({
-				schemaName: c.STOCK_MOVE_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: StockMoveCommands.SEARCH,
-				initialGraph: { if: ['transfer_id', '=', '${id}'] },
-				linkField: 'product_variant_id',
-				linkRoutePath: 'inventory_product_variant',
-			})],
-		),
-		collapsibleSectionNode(
-			{ header: 'form.moveLines', translationNs: c.INVENTORY_MODULE, expanded: false },
-			[resourceTableNode({
-				schemaName: c.STOCK_MOVE_LINE_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: StockMoveLineCommands.SEARCH,
-				initialGraph: { if: ['transfer_id', '=', '${id}'] },
-				linkField: 'product_variant_id',
-				linkRoutePath: 'inventory_product_variant',
-			})],
-		),
+		{
+			label: 'form.moves',
+			schemaName: c.STOCK_MOVE_SCHEMA_NAME,
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: StockMoveCommands.SEARCH,
+			initialGraph: { if: ['transfer_id', '=', '${id}'] },
+			linkField: 'product_variant_id',
+			linkRoutePath: 'inventory_product_variant',
+		},
+		{
+			label: 'form.moveLines',
+			schemaName: c.STOCK_MOVE_LINE_SCHEMA_NAME,
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: StockMoveLineCommands.SEARCH,
+			initialGraph: { if: ['transfer_id', '=', '${id}'] },
+			linkField: 'product_variant_id',
+			linkRoutePath: 'inventory_product_variant',
+		},
 	];
 }

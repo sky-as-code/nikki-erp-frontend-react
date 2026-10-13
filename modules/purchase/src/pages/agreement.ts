@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -41,7 +41,7 @@ export function buildAgreementPages(): PageNode[] {
  * against it intact â€” which cancelling would not.
  */
 function buildAgreementListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.AGREEMENT_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		linkField: 'id',
@@ -71,7 +71,7 @@ function buildAgreementListProps() {
 }
 
 function buildAgreementDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.AGREEMENT_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		titleLvl1: { schemaField: 'code' },
@@ -85,7 +85,8 @@ function buildAgreementDetailProps() {
 		},
 		contextualActions: buildAgreementActions(),
 		createNodes: [buildAgreementFieldsSection()],
-		childrenNodes: [buildAgreementFieldsSection(), ...buildAgreementLinesSection(), ...buildDrawnOrdersSection()],
+		childrenNodes: [buildAgreementFieldsSection()],
+		relatedResources: [buildAgreementLinesResource(), buildDrawnOrdersResource()],
 	});
 }
 
@@ -193,24 +194,16 @@ function buildAgreementActions() {
  * `ordered_quantity` is deliberately absent from the field list â€” it is not a column. How much has
  * been drawn against a line is derived on read from the confirmed orders referencing it (Â§41).
  */
-function buildAgreementLinesSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{
-				header: 'purchase_agreement_sections_lines',
-				translationNs: c.PURCHASE_MODULE,
-				expanded: true,
-			},
-			[resourceTableNode({
-				schemaName: c.AGREEMENT_LINE_SCHEMA_NAME,
-				translationNs: c.PURCHASE_MODULE,
-				searchCommand: AgreementLineCommands.SEARCH,
-				initialGraph: { if: ['purchase_agreement_id', '=', '${id}'] },
-				fields: ['sequence', 'product_variant_id', 'description', 'quantity', 'uom_id',
-					'unit_price'],
-			})],
-		),
-	];
+function buildAgreementLinesResource() {
+	return {
+		label: 'purchase_agreement_sections_lines',
+		schemaName: c.AGREEMENT_LINE_SCHEMA_NAME,
+		translationNs: c.PURCHASE_MODULE,
+		searchCommand: AgreementLineCommands.SEARCH,
+		initialGraph: { if: ['purchase_agreement_id', '=', '${id}'] },
+		fields: ['sequence', 'product_variant_id', 'description', 'quantity', 'uom_id',
+			'unit_price'],
+	};
 }
 
 /**
@@ -221,32 +214,28 @@ function buildAgreementLinesSection(): ComponentNode[] {
  * because an order that already exists against an agreement is most often a committed one, and
  * both routes render the same detail pane anyway.
  */
-function buildDrawnOrdersSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{ header: 'purchase_agreement_sections_orders', translationNs: c.PURCHASE_MODULE },
-			[resourceTableNode({
-				schemaName: c.PURCHASE_ORDER_SCHEMA_NAME,
-				translationNs: c.PURCHASE_MODULE,
-				searchCommand: PurchaseOrderCommands.SEARCH,
-				initialGraph: { if: ['agreement_id', '=', '${id}'] },
-				fields: ['code', 'status', 'vendor_id', 'order_deadline', 'total_amount'],
-				linkField: 'id',
-				linkRoutePath: 'purchase_order',
-				fieldRenderers: {
-					status: {
-						renderer: 'badge',
-						colorMap: {
-							rfq: 'gray',
-							rfq_sent: 'blue',
-							to_approve: 'orange',
-							purchase_order: 'green',
-							cancelled: 'red',
-						},
-						prefix: 'status.',
-					},
+function buildDrawnOrdersResource() {
+	return {
+		label: 'purchase_agreement_sections_orders',
+		schemaName: c.PURCHASE_ORDER_SCHEMA_NAME,
+		translationNs: c.PURCHASE_MODULE,
+		searchCommand: PurchaseOrderCommands.SEARCH,
+		initialGraph: { if: ['agreement_id', '=', '${id}'] },
+		fields: ['code', 'status', 'vendor_id', 'order_deadline', 'total_amount'],
+		linkField: 'id',
+		linkRoutePath: 'purchase_order',
+		fieldRenderers: {
+			status: {
+				renderer: 'badge',
+				colorMap: {
+					rfq: 'gray',
+					rfq_sent: 'blue',
+					to_approve: 'orange',
+					purchase_order: 'green',
+					cancelled: 'red',
 				},
-			})],
-		),
-	];
+				prefix: 'status.',
+			},
+		},
+	};
 }

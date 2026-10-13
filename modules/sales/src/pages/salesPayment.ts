@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -29,7 +30,7 @@ export function buildSalesPaymentPages(): PageNode[] {
 }
 
 function buildSalesPaymentListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_PAYMENT_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
@@ -52,7 +53,7 @@ function buildSalesPaymentListProps() {
 }
 
 function buildSalesPaymentDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_PAYMENT_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'payment_method_code_snapshot' },

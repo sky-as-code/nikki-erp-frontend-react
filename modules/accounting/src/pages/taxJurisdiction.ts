@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -29,7 +30,7 @@ export function buildTaxJurisdictionPages(): PageNode[] {
 }
 
 function buildListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.TAX_JURISDICTION_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		linkField: 'id',
@@ -38,6 +39,7 @@ function buildListProps() {
 		deleteCommand: TaxJurisdictionCommands.DELETE,
 		archiveCommand: TaxJurisdictionCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: TaxJurisdictionCommands.UPDATE,
+		updateCommand: TaxJurisdictionCommands.UPDATE,
 		fieldRenderers: {
 			// The colours run cool-to-warm with descending scope, so a reader can see the depth of
 			// a jurisdiction without reading the label.
@@ -58,7 +60,7 @@ function buildListProps() {
 }
 
 function buildDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.TAX_JURISDICTION_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		titleLvl1: { schemaField: 'name' },

@@ -1,6 +1,6 @@
 import { definePage } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
@@ -31,7 +31,7 @@ export function buildNotificationPages(): PageNode[] {
 }
 
 function buildNotificationListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.NOTIFICATION_SCHEMA_NAME,
 		translationNs: c.NOTIFICATION_MODULE,
 		linkField: 'id',
@@ -41,7 +41,7 @@ function buildNotificationListProps() {
 }
 
 function buildNotificationDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.NOTIFICATION_SCHEMA_NAME,
 		translationNs: c.NOTIFICATION_MODULE,
 		titleLvl1: { schemaField: 'title' },

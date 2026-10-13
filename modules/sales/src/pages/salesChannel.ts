@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -28,11 +29,12 @@ export function buildSalesChannelPages(): PageNode[] {
 }
 
 function buildSalesChannelListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_CHANNEL_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
 		searchCommand: SalesChannelCommands.SEARCH,
+		updateCommand: SalesChannelCommands.UPDATE,
 		createEnabled: true,
 		fieldRenderers: {
 			status: {
@@ -45,7 +47,7 @@ function buildSalesChannelListProps() {
 }
 
 function buildSalesChannelDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_CHANNEL_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'name' },

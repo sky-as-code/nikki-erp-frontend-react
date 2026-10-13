@@ -1,3 +1,4 @@
+import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
 import { buildSalesBillPages } from './salesBill';
@@ -14,7 +15,8 @@ import { buildSalesReturnPages } from './salesReturn';
 import { buildSalesVoucherCodePages } from './salesVoucherCode';
 import * as c from '../constants';
 
-import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
+import type { PageNode } from '@nikkierp/viewengine/metadata';
+import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
 
 
 const allPages: { name: string, build: () => PageNode[] }[] = [
@@ -79,8 +81,35 @@ describe('Sales page metadata', () => {
 		const props = page.props as { primary: { template: string }, secondary: { template: string } };
 
 		expect(page.template).toContain('resourceSplitView');
-		expect(props.primary.template).toContain('resourceList');
-		expect(props.secondary.template).toContain('resourceDetails');
+		expect(props.primary.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
+		expect(props.secondary.template).toBe(RESOURCE_DETAIL_V2_TEMPLATE);
+	});
+});
+
+describe('Sales list templates', () => {
+	it.each(allPages)('$name pages render v2 list and detail templates', ({ build }) => {
+		for (const page of build()) {
+			const props = page.props as { primary: { template: string }, secondary: { template: string } };
+
+			expect(props.primary.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
+			expect(props.secondary.template).toBe(RESOURCE_DETAIL_V2_TEMPLATE);
+		}
+	});
+
+	/**
+	 * Inline row editing goes on master data only. Orders, quotations, bills, payments, fiscal
+	 * requests and returns change through their workflow actions, which a cell edit would bypass.
+	 */
+	it('enables inline row editing on master data only', () => {
+		const inlineEditable = allPages
+			.filter(({ build }) => build().some(page => (
+				page.props as { primary?: { props?: { updateCommand?: string } } }
+			).primary?.props?.updateCommand))
+			.map(({ name }) => name);
+
+		expect(inlineEditable).toEqual([
+			'salesPricelist', 'salesPromotionProgram', 'salesCombo', 'salesVoucherCode', 'salesChannel', 'salesPoint',
+		]);
 	});
 });
 
@@ -270,9 +299,9 @@ describe('Sales order related tables', () => {
 	 */
 	it('filters every related table by the order id', () => {
 		const [page] = buildSalesOrderPages();
-		const tables = collectComponents(page, 'resourceTable');
+		const tables = relatedTables(page);
 
-		expect(tables.map(table => table.props?.schemaName)).toEqual([
+		expect(tables.map(table => table.schemaName)).toEqual([
 			c.SALES_ORDER_LINE_SCHEMA_NAME,
 			c.SALES_ORDER_ADJUSTMENT_SCHEMA_NAME,
 			c.SALES_FULFILLMENT_REQUEST_SCHEMA_NAME,
@@ -283,7 +312,7 @@ describe('Sales order related tables', () => {
 		// A fulfillment item carries no order id of its own, so its table filters through the
 		// fulfillment edge; every other table filters on the column directly.
 		for (const table of tables) {
-			const filter = table.props?.initialGraph as { if: [string, string, string] };
+			const filter = table.initialGraph as { if: [string, string, string] };
 			expect(['sales_order_id', 'fulfillment.sales_order_id']).toContain(filter.if[0]);
 			expect(filter.if.slice(1)).toEqual(['=', '${id}']);
 		}
@@ -295,10 +324,10 @@ describe('Sales order related tables', () => {
 	 */
 	it('filters the audit trail by the order column, not the polymorphic one', () => {
 		const [page] = buildSalesOrderPages();
-		const events = collectComponents(page, 'resourceTable')
-			.find(table => table.props?.schemaName === c.SALES_ORDER_EVENT_SCHEMA_NAME);
+		const events = relatedTables(page)
+			.find(table => table.schemaName === c.SALES_ORDER_EVENT_SCHEMA_NAME);
 
-		expect(events?.props?.initialGraph).toEqual({ if: ['sales_order_id', '=', '${id}'] });
+		expect(events?.initialGraph).toEqual({ if: ['sales_order_id', '=', '${id}'] });
 	});
 
 	/**
@@ -413,16 +442,16 @@ describe('Sales bill page', () => {
 	 */
 	it('filters each related table by its own foreign key', () => {
 		const [page] = buildSalesBillPages();
-		const byName = new Map(collectComponents(page, 'resourceTable')
-			.map(table => [table.props?.schemaName as string, table]));
+		const byName = new Map(relatedTables(page)
+			.map(table => [table.schemaName as string, table]));
 
-		expect(byName.get(c.SALES_BILL_LINE_SCHEMA_NAME)?.props?.initialGraph)
+		expect(byName.get(c.SALES_BILL_LINE_SCHEMA_NAME)?.initialGraph)
 			.toEqual({ if: ['sales_bill_id', '=', '${id}'] });
-		expect(byName.get(c.SALES_PAYMENT_SCHEMA_NAME)?.props?.initialGraph)
+		expect(byName.get(c.SALES_PAYMENT_SCHEMA_NAME)?.initialGraph)
 			.toEqual({ if: ['sales_bill_id', '=', '${id}'] });
-		expect(byName.get(c.SALES_FISCAL_REQUEST_SCHEMA_NAME)?.props?.initialGraph)
+		expect(byName.get(c.SALES_FISCAL_REQUEST_SCHEMA_NAME)?.initialGraph)
 			.toEqual({ if: ['sales_bill_id', '=', '${id}'] });
-		expect(byName.get(c.SALES_BILL_RELATION_SCHEMA_NAME)?.props?.initialGraph)
+		expect(byName.get(c.SALES_BILL_RELATION_SCHEMA_NAME)?.initialGraph)
 			.toEqual({ if: ['source_bill_id', '=', '${id}'] });
 	});
 });
@@ -521,10 +550,10 @@ describe('Pricing resources', () => {
 	 */
 	it('filters redemptions by the unconventional foreign key', () => {
 		const [page] = buildSalesVoucherCodePages();
-		const [redemptions] = collectComponents(page, 'resourceTable');
+		const [redemptions] = relatedTables(page);
 
-		expect(redemptions.props?.schemaName).toBe(c.SALES_VOUCHER_REDEMPTION_SCHEMA_NAME);
-		expect(redemptions.props?.initialGraph).toEqual({ if: ['voucher_code_id', '=', '${id}'] });
+		expect(redemptions.schemaName).toBe(c.SALES_VOUCHER_REDEMPTION_SCHEMA_NAME);
+		expect(redemptions.initialGraph).toEqual({ if: ['voucher_code_id', '=', '${id}'] });
 	});
 
 	/**
@@ -533,8 +562,8 @@ describe('Pricing resources', () => {
 	 */
 	it('names the item validity column as the item schema spells it', () => {
 		const [page] = buildSalesPricelistPages();
-		const [items] = collectComponents(page, 'resourceTable');
-		const fields = items.props?.fields as string[];
+		const [items] = relatedTables(page);
+		const fields = items.fields as string[];
 
 		expect(fields).toContain('valid_to');
 		expect(fields).not.toContain('valid_until');
@@ -613,25 +642,10 @@ function collectPrefixes(value: unknown, found: Set<string>): void {
 	}
 }
 
-function collectComponents(page: PageNode, componentIdPart: string): ComponentNode[] {
-	const found: ComponentNode[] = [];
-	walk(page);
-	return found;
-
-	function walk(value: unknown): void {
-		if (Array.isArray(value)) {
-			value.forEach(walk);
-			return;
-		}
-		if (value === null || typeof value !== 'object') {
-			return;
-		}
-		const node = value as ComponentNode;
-		if (typeof node.component === 'string' && node.component.includes(componentIdPart)) {
-			found.push(node);
-		}
-		Object.values(value).forEach(walk);
-	}
+/** The related-resource tabs of a split view's detail pane. */
+function relatedTables(page: PageNode): RelatedResource[] {
+	const props = page.props as { secondary?: { props?: { relatedResources?: RelatedResource[] } } };
+	return props.secondary?.props?.relatedResources ?? [];
 }
 
 function findNonPlainValue(value: unknown, path: string): string | null {

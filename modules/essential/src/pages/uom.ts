@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -23,7 +24,7 @@ export function buildUomPages(): PageNode[] {
 }
 
 function buildUomListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.UOM_SCHEMA_NAME,
 		translationNs: c.ESSENTIAL_MODULE,
 		linkField: 'id',
@@ -34,6 +35,7 @@ function buildUomListProps() {
 		// documents keep their meaning.
 		archiveCommand: UomCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: UomCommands.UPDATE,
+		updateCommand: UomCommands.UPDATE,
 		fieldRenderers: {
 			uom_type: {
 				renderer: 'badge',
@@ -45,7 +47,7 @@ function buildUomListProps() {
 }
 
 function buildUomDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.UOM_SCHEMA_NAME,
 		translationNs: c.ESSENTIAL_MODULE,
 		titleLvl1: { schemaField: 'name' },

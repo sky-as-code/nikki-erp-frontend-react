@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -25,7 +25,7 @@ export function buildGroupPages(): PageNode[] {
 }
 
 function buildGroupListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.GROUP_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		linkField: 'id',
@@ -33,6 +33,7 @@ function buildGroupListProps() {
 		createEnabled: true,
 		deleteCommand: GroupCommands.DELETE,
 		updateSaveCommand: GroupCommands.UPDATE,
+		updateCommand: GroupCommands.UPDATE,
 		extraActions: [
 			{ label: 'action.delete', command: GroupCommands.DELETE, supportMultiple: true, requireSelection: true },
 		],
@@ -40,7 +41,7 @@ function buildGroupListProps() {
 }
 
 function buildGroupDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.GROUP_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -53,7 +54,8 @@ function buildGroupDetailProps() {
 			delete: GroupCommands.DELETE,
 		},
 		createNodes: [buildGroupFieldsSection()],
-		childrenNodes: [buildGroupFieldsSection(), buildAssignedRolesSection()],
+		childrenNodes: [buildGroupFieldsSection()],
+		relatedResources: [buildAssignedRolesResource()],
 	});
 }
 
@@ -75,20 +77,15 @@ function buildGroupFieldsSection(): ComponentNode {
 }
 
 /** Group counterpart of the user page's section; `assigned_groups` is the matching edge. */
-function buildAssignedRolesSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{
-			header: 'group_sections_assignedRoles',
-			translationNs: c.IAM_MODULE,
-		},
-		[resourceTableNode({
-			schemaName: c.ROLE_SCHEMA_NAME,
-			translationNs: c.IAM_MODULE,
-			searchCommand: RoleCommands.SEARCH,
-			initialGraph: { if: ['assigned_groups', 'linked', '${id}'] },
-			linkField: 'id',
-			linkRoutePath: 'iam_role',
-			extraActions: [{ label: 'assignment.manageRoles', routePath: 'iam_role' }],
-		})],
-	);
+function buildAssignedRolesResource() {
+	return {
+		label: 'group_sections_assignedRoles',
+		schemaName: c.ROLE_SCHEMA_NAME,
+		translationNs: c.IAM_MODULE,
+		searchCommand: RoleCommands.SEARCH,
+		initialGraph: { if: ['assigned_groups', 'linked', '${id}'] },
+		linkField: 'id',
+		linkRoutePath: 'iam_role',
+		extraActions: [{ label: 'assignment.manageRoles', routePath: 'iam_role' }],
+	};
 }

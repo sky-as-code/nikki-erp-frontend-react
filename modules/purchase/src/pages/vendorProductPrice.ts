@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -35,7 +36,7 @@ export function buildVendorProductPricePages(): PageNode[] {
 }
 
 function buildVendorProductPriceListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.VENDOR_PRODUCT_PRICE_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		linkField: 'id',
@@ -44,11 +45,12 @@ function buildVendorProductPriceListProps() {
 		deleteCommand: VendorProductPriceCommands.DELETE,
 		archiveCommand: VendorProductPriceCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: VendorProductPriceCommands.UPDATE,
+		updateCommand: VendorProductPriceCommands.UPDATE,
 	});
 }
 
 function buildVendorProductPriceDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.VENDOR_PRODUCT_PRICE_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		// The price is what identifies the row to somebody scanning a list of them; the vendor says

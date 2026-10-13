@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -23,7 +24,7 @@ export function buildOrganizationPages(): PageNode[] {
 }
 
 function buildOrganizationListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.ORGANIZATION_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		linkField: 'id',
@@ -32,6 +33,7 @@ function buildOrganizationListProps() {
 		deleteCommand: OrganizationCommands.DELETE,
 		archiveCommand: OrganizationCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: OrganizationCommands.UPDATE,
+		updateCommand: OrganizationCommands.UPDATE,
 		extraActions: [
 			{
 				label: 'action.delete',
@@ -54,7 +56,7 @@ function buildOrganizationListProps() {
 }
 
 function buildOrganizationDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.ORGANIZATION_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'display_name' },

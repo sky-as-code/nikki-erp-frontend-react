@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -23,7 +24,7 @@ export function buildSupplyRelationPages(): PageNode[] {
 }
 
 function buildSupplyRelationListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SUPPLY_RELATION_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -32,11 +33,12 @@ function buildSupplyRelationListProps() {
 		deleteCommand: SupplyRelationCommands.DELETE,
 		archiveCommand: SupplyRelationCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: SupplyRelationCommands.UPDATE,
+		updateCommand: SupplyRelationCommands.UPDATE,
 	});
 }
 
 function buildSupplyRelationDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SUPPLY_RELATION_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'source_warehouse_id' },

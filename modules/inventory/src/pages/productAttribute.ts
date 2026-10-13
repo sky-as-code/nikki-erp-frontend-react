@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -25,7 +25,7 @@ export function buildProductAttributePages(): PageNode[] {
 }
 
 function buildProductAttributeListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.PRODUCT_ATTRIBUTE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -34,6 +34,7 @@ function buildProductAttributeListProps() {
 		deleteCommand: ProductAttributeCommands.DELETE,
 		archiveCommand: ProductAttributeCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductAttributeCommands.UPDATE,
+		updateCommand: ProductAttributeCommands.UPDATE,
 		fieldRenderers: {
 			variant_creation_mode: {
 				renderer: 'badge',
@@ -52,7 +53,7 @@ function buildProductAttributeListProps() {
 }
 
 function buildProductAttributeDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_ATTRIBUTE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -66,7 +67,8 @@ function buildProductAttributeDetailProps() {
 			archive: ProductAttributeCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildProductAttributeFieldsSection()],
-		childrenNodes: [buildProductAttributeFieldsSection(), ...buildAttributeValuesSection()],
+		childrenNodes: [buildProductAttributeFieldsSection()],
+		relatedResources: buildAttributeValuesResources(),
 	});
 }
 
@@ -106,16 +108,14 @@ function buildProductAttributeFieldsSection(): ComponentNode {
 }
 
 /** The values this attribute allows. */
-function buildAttributeValuesSection(): ComponentNode[] {
-	return [collapsibleSectionNode(
-		{ header: 'inventory_product_attribute_value.label', translationNs: c.INVENTORY_MODULE, expanded: false },
-		[resourceTableNode({
-			schemaName: c.PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: ProductAttributeValueCommands.SEARCH,
-			initialGraph: { if: ['attribute_id', '=', '${id}'] },
-			linkField: 'id',
-			linkRoutePath: 'inventory_product_attribute_value',
-		})],
-	)];
+function buildAttributeValuesResources() {
+	return [{
+		label: 'inventory_product_attribute_value.label',
+		schemaName: c.PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		searchCommand: ProductAttributeValueCommands.SEARCH,
+		initialGraph: { if: ['attribute_id', '=', '${id}'] },
+		linkField: 'id',
+		linkRoutePath: 'inventory_product_attribute_value',
+	}];
 }

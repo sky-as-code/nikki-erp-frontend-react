@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -23,7 +24,7 @@ export function buildInventoryLocationPages(): PageNode[] {
 }
 
 function buildInventoryLocationListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -32,6 +33,7 @@ function buildInventoryLocationListProps() {
 		deleteCommand: InventoryLocationCommands.DELETE,
 		archiveCommand: InventoryLocationCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: InventoryLocationCommands.UPDATE,
+		updateCommand: InventoryLocationCommands.UPDATE,
 		fieldRenderers: {
 			// Only `internal` holds company-owned stock, so the colours separate it from the
 			// counterparty and virtual locations rather than giving each usage its own hue.
@@ -63,7 +65,7 @@ function buildInventoryLocationListProps() {
 }
 
 function buildInventoryLocationDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },

@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -29,7 +30,7 @@ export function buildSalesFiscalRequestPages(): PageNode[] {
 }
 
 function buildSalesFiscalRequestListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_FISCAL_REQUEST_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
@@ -51,7 +52,7 @@ function buildSalesFiscalRequestListProps() {
 }
 
 function buildSalesFiscalRequestDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_FISCAL_REQUEST_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'provider_reference' },

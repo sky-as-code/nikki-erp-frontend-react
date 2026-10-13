@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -29,18 +29,19 @@ export function buildSalesPricelistPages(): PageNode[] {
 }
 
 function buildSalesPricelistListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_PRICELIST_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
 		searchCommand: SalesPricelistCommands.SEARCH,
+		updateCommand: SalesPricelistCommands.UPDATE,
 		createEnabled: true,
 		archiveCommand: SalesPricelistCommands.SET_IS_ARCHIVED,
 	});
 }
 
 function buildSalesPricelistDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_PRICELIST_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -54,7 +55,8 @@ function buildSalesPricelistDetailProps() {
 		},
 		contextualActions: buildSalesPricelistActions(),
 		createNodes: [buildSalesPricelistFieldsSection()],
-		childrenNodes: [buildSalesPricelistFieldsSection(), ...buildSalesPricelistItemsSection()],
+		childrenNodes: [buildSalesPricelistFieldsSection()],
+		relatedResources: buildSalesPricelistItemsResources(),
 	});
 }
 
@@ -121,39 +123,33 @@ function buildSalesPricelistActions() {
  * Items use `valid_to`, not the parent's `valid_until` — the two schemas genuinely disagree, and
  * naming the wrong one yields an empty column rather than an error.
  */
-function buildSalesPricelistItemsSection(): ComponentNode[] {
+function buildSalesPricelistItemsResources() {
 	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_pricelist_sections_items',
-				translationNs: c.SALES_MODULE,
-				expanded: true,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_PRICELIST_ITEM_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesPricelistItemCommands.SEARCH,
-				initialGraph: { if: ['sales_pricelist_id', '=', '${id}'] },
-				fields: ['sequence', 'applies_to', 'product_variant_id', 'min_quantity',
-					'calculation_method', 'price', 'discount_percent', 'valid_from', 'valid_to'],
-				fieldRenderers: {
-					applies_to: {
-						renderer: 'badge',
-						colorMap: {
-							ALL_PRODUCTS: 'gray',
-							PRODUCT_CATEGORY: 'blue',
-							PRODUCT_TEMPLATE: 'indigo',
-							PRODUCT_VARIANT: 'grape',
-						},
-						prefix: 'applies_to.',
+		{
+			label: 'sales_pricelist_sections_items',
+			schemaName: c.SALES_PRICELIST_ITEM_SCHEMA_NAME,
+			translationNs: c.SALES_MODULE,
+			searchCommand: SalesPricelistItemCommands.SEARCH,
+			initialGraph: { if: ['sales_pricelist_id', '=', '${id}'] },
+			fields: ['sequence', 'applies_to', 'product_variant_id', 'min_quantity',
+				'calculation_method', 'price', 'discount_percent', 'valid_from', 'valid_to'],
+			fieldRenderers: {
+				applies_to: {
+					renderer: 'badge',
+					colorMap: {
+						ALL_PRODUCTS: 'gray',
+						PRODUCT_CATEGORY: 'blue',
+						PRODUCT_TEMPLATE: 'indigo',
+						PRODUCT_VARIANT: 'grape',
 					},
-					calculation_method: {
-						renderer: 'badge',
-						colorMap: { FIXED_PRICE: 'green', DISCOUNT: 'orange', FORMULA: 'violet' },
-						prefix: 'calculation_method.',
-					},
+					prefix: 'applies_to.',
 				},
-			})],
-		),
+				calculation_method: {
+					renderer: 'badge',
+					colorMap: { FIXED_PRICE: 'green', DISCOUNT: 'orange', FORMULA: 'violet' },
+					prefix: 'calculation_method.',
+				},
+			},
+		},
 	];
 }

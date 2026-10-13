@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -25,7 +25,7 @@ export function buildBrandPages(): PageNode[] {
 }
 
 function buildBrandListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.BRAND_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -34,11 +34,12 @@ function buildBrandListProps() {
 		deleteCommand: BrandCommands.DELETE,
 		archiveCommand: BrandCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: BrandCommands.UPDATE,
+		updateCommand: BrandCommands.UPDATE,
 	});
 }
 
 function buildBrandDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.BRAND_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -52,7 +53,8 @@ function buildBrandDetailProps() {
 			archive: BrandCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildBrandFieldsSection()],
-		childrenNodes: [buildBrandFieldsSection(), ...buildBrandProductsSection()],
+		childrenNodes: [buildBrandFieldsSection()],
+		relatedResources: buildBrandProductsResources(),
 	});
 }
 
@@ -90,16 +92,14 @@ function buildBrandFieldsSection(): ComponentNode {
 }
 
 /** The products carrying this brand. */
-function buildBrandProductsSection(): ComponentNode[] {
-	return [collapsibleSectionNode(
-		{ header: 'menu_products', translationNs: c.INVENTORY_MODULE, expanded: false },
-		[resourceTableNode({
-			schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: ProductTemplateCommands.SEARCH,
-			initialGraph: { if: ['brand_id', '=', '${id}'] },
-			linkField: 'id',
-			linkRoutePath: 'inventory_product_template',
-		})],
-	)];
+function buildBrandProductsResources() {
+	return [{
+		label: 'menu_products',
+		schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		searchCommand: ProductTemplateCommands.SEARCH,
+		initialGraph: { if: ['brand_id', '=', '${id}'] },
+		linkField: 'id',
+		linkRoutePath: 'inventory_product_template',
+	}];
 }

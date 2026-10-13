@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -30,7 +31,7 @@ export function buildTaxRoundingPolicyPages(): PageNode[] {
 }
 
 function buildListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.TAX_ROUNDING_POLICY_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		linkField: 'id',
@@ -57,7 +58,7 @@ function buildListProps() {
 }
 
 function buildDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.TAX_ROUNDING_POLICY_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		titleLvl1: { schemaField: 'name' },

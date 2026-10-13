@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -23,7 +24,7 @@ export function buildPutawayRulePages(): PageNode[] {
 }
 
 function buildPutawayRuleListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -32,6 +33,7 @@ function buildPutawayRuleListProps() {
 		deleteCommand: PutawayRuleCommands.DELETE,
 		archiveCommand: PutawayRuleCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: PutawayRuleCommands.UPDATE,
+		updateCommand: PutawayRuleCommands.UPDATE,
 		fieldRenderers: {
 			sublocation_strategy: {
 				renderer: 'badge',
@@ -47,7 +49,7 @@ function buildPutawayRuleListProps() {
 }
 
 function buildPutawayRuleDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'code' },

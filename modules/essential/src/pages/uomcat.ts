@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	tabCollapsibleSectionNode,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -25,7 +25,7 @@ export function buildUomCatPages(): PageNode[] {
 }
 
 function buildUomCatListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.UOMCAT_SCHEMA_NAME,
 		translationNs: c.ESSENTIAL_MODULE,
 		linkField: 'id',
@@ -34,11 +34,12 @@ function buildUomCatListProps() {
 		deleteCommand: UomCatCommands.DELETE,
 		archiveCommand: UomCatCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: UomCatCommands.UPDATE,
+		updateCommand: UomCatCommands.UPDATE,
 	});
 }
 
 function buildUomCatDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.UOMCAT_SCHEMA_NAME,
 		translationNs: c.ESSENTIAL_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -51,7 +52,8 @@ function buildUomCatDetailProps() {
 			archive: UomCatCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildUomCatFieldsSection()],
-		childrenNodes: [buildUomCatFieldsSection(), ...buildCategoryUomSection()],
+		childrenNodes: [buildUomCatFieldsSection()],
+		relatedResources: buildCategoryUomResources(),
 	});
 }
 
@@ -86,18 +88,16 @@ function buildUomCatFieldsSection(): ComponentNode {
  * The UoMs of the category. `category_id` is a plain foreign key rather than a many edge, so
  * this filters on equality instead of the `linked` operator the IAM assignment pages use.
  */
-function buildCategoryUomSection(): ComponentNode[] {
+function buildCategoryUomResources() {
 	return [
-		collapsibleSectionNode(
-			{ header: 'uom_sections_uoms', translationNs: c.ESSENTIAL_MODULE, expanded: true },
-			[resourceTableNode({
-				schemaName: c.UOM_SCHEMA_NAME,
-				translationNs: c.ESSENTIAL_MODULE,
-				searchCommand: UomCommands.SEARCH,
-				initialGraph: { if: ['category_id', '=', '${id}'] },
-				linkField: 'id',
-				linkRoutePath: 'essential_uom',
-			})],
-		),
+		{
+			label: 'uom_sections_uoms',
+			schemaName: c.UOM_SCHEMA_NAME,
+			translationNs: c.ESSENTIAL_MODULE,
+			searchCommand: UomCommands.SEARCH,
+			initialGraph: { if: ['category_id', '=', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'essential_uom',
+		},
 	];
 }
