@@ -150,7 +150,7 @@ leave `icon` off the module entry.
 `accounting`, `assets`, `chat`, `contacts`, `crm`, `customers`, `documents`,
 `drive`, `generic`, `helpdesk`, `hrm`, `iam`, `incident-management`,
 `inventory`, `it-applications`, `it-deployments`, `it-secrets`, `it-vpn`,
-`manufacture`, `project-management`, `purchase`, `qr-code`, `risk-management`,
+`manufacture`, `parking-lot`, `project-management`, `purchase`, `qr-code`, `risk-management`,
 `sales`, `settings`, `vending-machine`.
 
 Before adding one, check whether an existing icon already covers the concept -

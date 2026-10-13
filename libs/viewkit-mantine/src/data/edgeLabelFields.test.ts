@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { edgeDisplay, edgeLabelFieldNames, toOneEdgeTargets } from './edgeLabelFields';
+import {
+	edgeDisplay, edgeLabelFieldNames, stripAddedFields, toOneEdgeTargets, withEdgeLabelFields,
+} from './edgeLabelFields';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -142,5 +144,79 @@ describe('edgeDisplay', () => {
 			.toEqual({ kind: 'fallback' });
 		expect(edgeDisplay(uomEdge, uomSchema, { id: ID, name: null }, 'essential'))
 			.toEqual({ kind: 'fallback' });
+	});
+});
+
+describe('withEdgeLabelFields', () => {
+	const lotEdge: dyn.ModelSchemaRelation = {
+		edge: 'parking_lot', src_field: 'parking_lot_id', dest_schema_name: 'parkinglot_parking_lot',
+		relation_type: 'many:one',
+	};
+	const orgEdge: dyn.ModelSchemaRelation = {
+		edge: 'org', src_field: 'org_id', dest_schema_name: 'iam_org', relation_type: 'many:one',
+	};
+	const slot = {
+		...schema('parkinglot_slot', [lotEdge, orgEdge, tagsEdge]),
+		fields: { name: { name: 'name' }, parking_lot_id: { name: 'parking_lot_id' }, org_id: { name: 'org_id' } },
+		default_search_fields: ['name', 'parking_lot_id'],
+	} as unknown as dyn.ModelSchema;
+	const dests = {
+		parkinglot_parking_lot: schema('parkinglot_parking_lot', [], 'name'),
+		iam_org: schema('iam_org', [], 'display_name'),
+	};
+
+	it('writes out default_search_fields and adds the label of each selected foreign key', () => {
+		const result = withEdgeLabelFields({ page: 0 }, slot, dests);
+
+		expect(result.request.fields).toEqual(['name', 'parking_lot_id', 'parking_lot.name']);
+		expect(result.added).toEqual(['parking_lot.name']);
+	});
+
+	it('builds on the fields the caller selected', () => {
+		const result = withEdgeLabelFields({ fields: ['org_id'] }, slot, dests);
+
+		expect(result.request.fields).toEqual(['org_id', 'org.display_name']);
+	});
+
+	it('falls back to the own columns when the schema has no default_search_fields', () => {
+		const bare = { ...slot, default_search_fields: [] } as dyn.ModelSchema;
+
+		expect(withEdgeLabelFields({}, bare, dests).request.fields)
+			.toEqual(['name', 'parking_lot_id', 'org_id', 'parking_lot.name', 'org.display_name']);
+	});
+
+	it('skips a destination with no record_label_field, or one not loaded yet', () => {
+		const result = withEdgeLabelFields({ fields: ['parking_lot_id', 'org_id'] }, slot, {
+			iam_org: schema('iam_org'),
+		});
+
+		expect(result.added).toEqual([]);
+	});
+
+	it('returns a request needing no label untouched, so it still sends no fields', () => {
+		const request = { page: 0 };
+
+		expect(withEdgeLabelFields(request, schema('x'), dests)).toEqual({ request, added: [] });
+	});
+
+	it('neither duplicates nor reports a label the caller already selected', () => {
+		const result = withEdgeLabelFields({ fields: ['parking_lot_id', 'parking_lot.name'] }, slot, dests);
+
+		expect(result.request.fields).toEqual(['parking_lot_id', 'parking_lot.name']);
+		expect(result.added).toEqual([]);
+	});
+});
+
+describe('stripAddedFields', () => {
+	it('drops only the added selections from the columns', () => {
+		const data = { desired_fields: ['name', 'parking_lot_id', 'parking_lot.name'], items: [] };
+
+		expect(stripAddedFields(data, ['parking_lot.name']).desired_fields).toEqual(['name', 'parking_lot_id']);
+	});
+
+	it('returns the same object when nothing was added', () => {
+		const data = { desired_fields: ['name'] };
+
+		expect(stripAddedFields(data, [])).toBe(data);
 	});
 });

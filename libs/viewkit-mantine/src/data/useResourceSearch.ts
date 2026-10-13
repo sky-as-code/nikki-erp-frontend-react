@@ -4,7 +4,9 @@ import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useCommandBus } from '@nikkierp/ui/microApp';
 import React from 'react';
 
+import { stripAddedFields, withEdgeLabelFields } from './edgeLabelFields';
 import { isSameSearchRequest } from './searchRequest';
+import { useEdgeLabelFields } from './useEdgeLabelFields';
 
 
 export type UseResourceSearchOptions = {
@@ -19,6 +21,13 @@ export type UseResourceSearchOptions = {
 	 * editable condition, so an embedded table's record scoping cannot be widened away.
 	 */
 	baseGraph?: dyn.SearchGraph,
+	/**
+	 * Also select the label of every to-one edge whose foreign key the request selects, so an
+	 * `ExcelDataTable` shows the related record's `record_label_field` instead of its id. The added
+	 * selections never reach the caller: they are stripped from `desired_fields`, and the returned
+	 * `searchRequest` is the one without them, so the table neither shows nor re-sends them.
+	 */
+	withEdgeLabels?: boolean,
 };
 
 export type UseResourceSearchResult = {
@@ -30,6 +39,8 @@ export type UseResourceSearchResult = {
 	refresh: () => void,
 	/** True while a search is in flight; drives the table's progress row. */
 	isPending: boolean,
+	/** The edges' destination schemas, for the table's `relatedSchemas`; empty without `withEdgeLabels`. */
+	edgeLabelSchemas: Record<string, dyn.ModelSchema>,
 };
 
 /**
@@ -83,20 +94,25 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 		[searchRequest, baseGraph, mergedGraph],
 	);
 
+	const labelled = useEdgeLabelledRequest(opts.withEdgeLabels === true, pack, effectiveRequest);
+	const publishedRequest = labelled.request;
+
 	const publishSearch = search.publish;
 	const refresh = React.useCallback(() => {
-		void publishSearch(effectiveRequest);
-	}, [publishSearch, effectiveRequest]);
+		void publishSearch(publishedRequest);
+	}, [publishSearch, publishedRequest]);
 
 	// Guarded on `pack`: it is null while the schema pack still describes the previous resource,
 	// which is the same stale window, so this also suppresses a request built from props that
 	// have not fully settled.
+	// Also waits for the edge destinations, so the list is fetched once, with its labels, rather
+	// than once without and again with.
 	React.useEffect(() => {
-		if (!pack) {
+		if (!pack || !labelled.isReady) {
 			return;
 		}
-		void publishSearch(effectiveRequest);
-	}, [pack, publishSearch, effectiveRequest]);
+		void publishSearch(publishedRequest);
+	}, [pack, labelled.isReady, publishSearch, publishedRequest]);
 
 	// Rows and schema must describe the same resource. The cache outlives a schema change when the
 	// hook is reused rather than remounted (a split view swapping panes), and stale rows rendered
@@ -120,14 +136,36 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 	// handed over when there is nothing cached, because rewriting it is what starts the real
 	// search — dropping it entirely leaves the page loading forever.
 	const liveSearchData = search.data as SearchData | null;
-	const searchData = isStubSearchData(liveSearchData)
+	const searchData = useWithoutAddedFields(isStubSearchData(liveSearchData)
 		? (cachedSearchData ?? liveSearchData)
-		: (liveSearchData ?? cachedSearchData);
+		: (liveSearchData ?? cachedSearchData), labelled.added);
 	// The merged request, not the raw state: it is what was published, and `getSearchRequestOrderBy`
 	// reads `graph.order` off it.
 	return {
 		pack, searchData, searchRequest: effectiveRequest, onSearchRequestChange, refresh, isPending: search.isPending,
+		edgeLabelSchemas: labelled.destSchemas,
 	};
+}
+
+const noEdgeSchemas: Record<string, dyn.ModelSchema> = {};
+
+/**
+ * `request` with the edge label selections added when `enabled`, plus whether the destination
+ * schemas those come from have settled. Disabled, it is `request` unchanged and always ready.
+ */
+function useEdgeLabelledRequest(
+	enabled: boolean, pack: dyn.SchemaPack | null, request: dyn.RestSearchRequest,
+) {
+	const edgeLabels = useEdgeLabelFields(enabled ? pack?.modelSchema : undefined);
+	return React.useMemo(() => {
+		if (!enabled) {
+			return { request, added: [] as string[], isReady: true, destSchemas: noEdgeSchemas };
+		}
+		const labelled = pack
+			? withEdgeLabelFields(request, pack.modelSchema, edgeLabels.destSchemas)
+			: { request, added: [] as string[] };
+		return { ...labelled, isReady: edgeLabels.isReady, destSchemas: edgeLabels.destSchemas };
+	}, [enabled, pack, request, edgeLabels.destSchemas, edgeLabels.isReady]);
 }
 
 function useSchemaPack(schemaName: string): dyn.SchemaPack | null {
@@ -146,4 +184,13 @@ function useSchemaPack(schemaName: string): dyn.SchemaPack | null {
 	// describes the previous resource. Reporting null instead keeps the callers' `!pack` gate shut
 	// rather than letting them pair one resource's schema with another's rows.
 	return pack?.schemaName === schemaName ? pack : null;
+}
+
+/** `data` without the selections `useEdgeLabelledRequest` added; joined so a new array each render does not recompute. */
+function useWithoutAddedFields(data: SearchData | null, added: string[]): SearchData | null {
+	const addedKey = added.join(',');
+	return React.useMemo(
+		() => data && stripAddedFields(data, addedKey ? addedKey.split(',') : []),
+		[data, addedKey],
+	);
 }

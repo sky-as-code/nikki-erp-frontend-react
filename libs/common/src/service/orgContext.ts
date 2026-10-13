@@ -46,6 +46,16 @@ export async function getCurrentOrgId(): Promise<string | null> {
 }
 
 /**
+ * The current org as query-string tuples, for a call that reaches no schema-backed service (a
+ * report, a lookup on another module's endpoint). Empty before the Shell has resolved an org:
+ * such endpoints answer `err_org_id_required` themselves, which names the cause.
+ */
+export async function currentOrgSearchParams(): Promise<string[][]> {
+	const orgId = await getCurrentOrgId();
+	return orgId ? [[ORG_ID_FIELD, orgId]] : [];
+}
+
+/**
  * Whether a resource is scoped to an organization, and so must carry an `org_id`.
  *
  * Mirrors the backend's own test — it asks whether the schema declares an `org_id` field

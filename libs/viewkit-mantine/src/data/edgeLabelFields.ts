@@ -101,3 +101,60 @@ export function edgeLabelFieldNames(
 		})
 		.filter((field): field is string => field !== null);
 }
+
+/** A search request with the edge label selections it needs, and which of them were added. */
+export type EdgeLabelRequest = {
+	request: dyn.RestSearchRequest,
+	added: string[],
+};
+
+/**
+ * Adds the label of every to-one edge whose foreign key the request selects, e.g.
+ * `parking_lot_id` brings `parking_lot.name`, so the table can show the related record's label
+ * where it would show the raw id (`resolveEdgeLabel`).
+ *
+ * A request without `fields` gets the server's own fallback written out first —
+ * `default_search_fields`, else the record's own columns — because `fields` replaces that default
+ * rather than adding to it. A request that needs no label is returned untouched, so it still
+ * sends no `fields` at all.
+ *
+ * `added` lists only what the caller did not ask for; `stripAddedFields` takes exactly those back
+ * out of the response, so the table never shows a column it did not request.
+ */
+export function withEdgeLabelFields(
+	request: dyn.RestSearchRequest,
+	schema: dyn.ModelSchema,
+	destSchemas: Record<string, dyn.ModelSchema>,
+): EdgeLabelRequest {
+	const base = request.fields ?? defaultSearchFieldNames(schema);
+	const selected = new Set(base);
+	const toOneEdges = new Set(toOneEdgeTargets(schema).map(target => target.edge));
+	const added = (schema.to_relations ?? [])
+		.filter(relation => toOneEdges.has(relation.edge) && selected.has(relation.src_field ?? ''))
+		.map(relation => {
+			const labelField = destSchemas[relation.dest_schema_name]?.record_label_field;
+			return labelField ? `${relation.edge}.${labelField}` : null;
+		})
+		.filter((field): field is string => field !== null && !selected.has(field));
+	if (added.length === 0) {
+		return { request, added };
+	}
+	return { request: { ...request, fields: [...base, ...added] }, added };
+}
+
+/**
+ * The response as the caller requested it: the label selections `withEdgeLabelFields` added are
+ * dropped from its columns. The rows keep the edge objects, which is where the labels are read.
+ */
+export function stripAddedFields<TData extends { desired_fields: string[] }>(data: TData, added: string[]): TData {
+	if (added.length === 0) {
+		return data;
+	}
+	const extra = new Set(added);
+	return { ...data, desired_fields: data.desired_fields.filter(field => !extra.has(field)) };
+}
+
+function defaultSearchFieldNames(schema: dyn.ModelSchema): string[] {
+	const defaults = schema.default_search_fields ?? [];
+	return defaults.length > 0 ? defaults : ownFieldNames(schema);
+}

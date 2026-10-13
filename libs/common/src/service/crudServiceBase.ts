@@ -195,6 +195,15 @@ export abstract class CrudServiceBase {
 	}
 
 	/**
+	 * `withOrgScope` for a subclass's custom action, which posts through `request.*` rather than
+	 * `RestApi` and so has no schema in hand. The same rule applies: a custom action has no stored
+	 * record to take the org from, and the engine refuses it without one.
+	 */
+	protected withCurrentOrg<TRequest extends object>(request: TRequest): Promise<TRequest> {
+		return dyn.withSchema(this.schemaName, schema => this.withOrgScope(schema, request));
+	}
+
+	/**
 	 * Resolves this service's schema, runs `fn`, and refreshes the registry when the
 	 * response carries a `schema_etag` newer than the cached one.
 	 *

@@ -1,7 +1,7 @@
+import { getCurrentOrgId } from '@nikkierp/common/service';
 import { useMicroAppContext } from '@nikkierp/ui/microApp';
 import React from 'react';
 
-import { getCurrentOrgId } from '../common/orgContext';
 import { BELL_PAGE_SIZE } from '../constants';
 import { inboxService } from '../features/notification/inboxService';
 import { NotificationStream } from '../features/notification/stream';
