@@ -64,11 +64,10 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 		return fields ? { ...INITIAL_REQUEST, fields } : INITIAL_REQUEST;
 	}, [params.displayed_fields]);
 	const search = useResourceSearch({
-		schemaName: params.schemaName, searchCommand: params.searchCommand, initialRequest,
+		schemaName: params.schemaName, searchCommand: params.searchCommand, initialRequest, withEdgeLabels: true,
 	});
 	const { pack, searchData } = search;
-	const displayedNames = React.useMemo(() => displayedFieldNames(params.displayed_fields), [params.displayed_fields]);
-	const relatedSchemas = useRelatedSchemas(pack?.modelSchema, displayedNames);
+	const relatedSchemas = useListRelatedSchemas(pack?.modelSchema, params.displayed_fields, search.edgeLabelSchemas);
 	const buildLinkHref = useResourceLinkHref(params.linkField, routePath);
 	const baseHref = useResourceBaseHref(routePath);
 	const translateFieldName = useTranslateFieldName(params, pack?.modelSchema, relatedSchemas);
@@ -329,4 +328,18 @@ function useResolvedInitialGraph(initialGraph: ResourceListV2Props['initialGraph
 			: interpolateParams(initialGraph, { today }).value as dyn.SearchGraph),
 		[initialGraph, today],
 	);
+}
+
+/**
+ * The schemas the table reads related fields from: the destinations of the dotted columns the page
+ * displays, plus those of every foreign key whose label the search selected.
+ */
+function useListRelatedSchemas(
+	schema: dyn.ModelSchema | undefined,
+	displayedFields: ResourceListV2Props['displayed_fields'],
+	edgeLabelSchemas: Record<string, dyn.ModelSchema>,
+): Record<string, dyn.ModelSchema> {
+	const displayedNames = React.useMemo(() => displayedFieldNames(displayedFields), [displayedFields]);
+	const displayedSchemas = useRelatedSchemas(schema, displayedNames);
+	return React.useMemo(() => ({ ...edgeLabelSchemas, ...displayedSchemas }), [edgeLabelSchemas, displayedSchemas]);
 }

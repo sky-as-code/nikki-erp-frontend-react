@@ -65,8 +65,9 @@ export function getFieldDataTypeName(
  * The label of the record an edge-id column points at, when the row carries the edge object.
  *
  * A foreign-key column (`product_template_id`) shows its target's `record_label_field` rather
- * than the id, provided the search selected `product_template.{label}` — which the resource
- * templates do for every to-one edge. Without it, the id itself is all there is to show.
+ * than the id, provided the search selected `product_template.{label}`. The resource list, its
+ * related-record tabs and the detail page select it for every to-one edge (`withEdgeLabels` on
+ * `useResourceSearch`, `useEdgeLabelFields`); without it, the id itself is all there is to show.
  */
 export function resolveEdgeLabel(
 	item: SearchItem | undefined,

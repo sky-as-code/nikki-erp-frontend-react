@@ -15,6 +15,7 @@ import itApplicationsIcon from '../../../icons/it-applications.svg';
 import itDeploymentsIcon from '../../../icons/it-deployments.svg';
 import itSecretsIcon from '../../../icons/it-secrets.svg';
 import manufactureIcon from '../../../icons/manufacture.svg';
+import parkingLotIcon from '../../../icons/parking-lot.svg';
 import projectManagementIcon from '../../../icons/project-management.svg';
 import purchaseIcon from '../../../icons/purchase.svg';
 import qrCodeIcon from '../../../icons/qr-code.svg';
@@ -94,6 +95,16 @@ export const mockModules = [
 				slug: 'vendingmachine',
 				category: 'Vending Machine',
 				icon: vendingMachineIcon,
+				isDisabled: false,
+				isOrphaned: false,
+				isFavourite: false,
+				lastUsed: '2025-01-01',
+			},
+			{
+				name: 'Parking Lot',
+				slug: 'parkinglot',
+				category: 'Parking Lot',
+				icon: parkingLotIcon,
 				isDisabled: false,
 				isOrphaned: false,
 				isFavourite: false,
@@ -280,6 +291,15 @@ export const mockModules = [
 				slug: 'vendingmachine',
 				category: 'infomationTechnology',
 				icon: vendingMachineIcon,
+				isDisabled: false,
+				isFavourite: false,
+				lastUsed: '2025-01-01',
+			},
+			{
+				name: 'Parking Lot',
+				slug: 'parkinglot',
+				category: 'infomationTechnology',
+				icon: parkingLotIcon,
 				isDisabled: false,
 				isFavourite: false,
 				lastUsed: '2025-01-01',

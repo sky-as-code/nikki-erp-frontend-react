@@ -1,8 +1,7 @@
 import { ServiceResult } from '@nikkierp/common/commandBus';
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { storeService } from '@nikkierp/ui/appState/store';
+import { StoreCrudServiceBase, storeService } from '@nikkierp/ui/appState/store';
 
-import { OrgScopedCrudService } from '../../common/service/OrgScopedCrudService';
 import * as c from '../../constants';
 import { accountingStore } from '../../store';
 
@@ -16,7 +15,7 @@ import { accountingStore } from '../../store';
  * whose permissions gate them, not because they mutate a tax.
  */
 @storeService('TaxService', accountingStore)
-export class TaxService extends OrgScopedCrudService {
+export class TaxService extends StoreCrudServiceBase {
 	public constructor() {
 		super({ moduleName: c.ACCOUNTING_MODULE, schemaName: c.TAX_SCHEMA_NAME });
 	}

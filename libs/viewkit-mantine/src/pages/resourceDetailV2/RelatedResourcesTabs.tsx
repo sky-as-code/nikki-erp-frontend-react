@@ -114,6 +114,7 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 	}), [resource.pageSize, resource.searchName, resource.fields]);
 	const search = useResourceSearch({
 		schemaName: resource.schemaName, searchCommand: resource.searchCommand, initialRequest, baseGraph: graph.value,
+		withEdgeLabels: true,
 	});
 	const { pack, searchData } = search;
 	const buildLinkHref = useResourceLinkHref(resource.linkField, resource.linkRoutePath);
@@ -130,6 +131,7 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 			testId={testId}
 			tableName={resource.schemaName}
 			modelSchema={pack.modelSchema}
+			relatedSchemas={search.edgeLabelSchemas}
 			data={searchData}
 			isLoading={search.isPending}
 			baseGraph={graph.value}
