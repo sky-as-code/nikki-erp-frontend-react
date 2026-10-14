@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -79,51 +78,32 @@ function buildDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.ACCOUNTING_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['code', 'name', 'jurisdiction_id', 'currency_code', 'org_id'],
-				}),
-			},
-			{
-				key: 'calculation',
-				header: 'form.calculation',
-				content: resourceFormColumnNode({
-					header: 'form.calculation',
-					fields: ['rounding_scope', 'rounding_method', 'rounding_increment', 'precision'],
-				}),
-			},
-			{
-				key: 'effective_period',
-				header: 'form.effectivePeriod',
-				content: resourceFormColumnNode({
-					header: 'form.effectivePeriod',
-					fields: ['effective_from', 'effective_to'],
-				}),
-			},
-			{
-				key: 'lifecycle',
-				header: 'form.lifecycle',
-				content: resourceFormColumnNode({
-					header: 'form.lifecycle',
-					fields: ['lifecycle_status', 'version_no', 'supersedes_policy_id'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['is_archived', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['code', 'name', 'jurisdiction_id', 'currency_code', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.calculation',
+			fields: ['rounding_scope', 'rounding_method', 'rounding_increment', 'precision'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.effectivePeriod',
+			fields: ['effective_from', 'effective_to'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.lifecycle',
+			fields: ['lifecycle_status', 'version_no', 'supersedes_policy_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['is_archived', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**

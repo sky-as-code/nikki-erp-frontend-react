@@ -1,42 +1,5 @@
-import type { ResourceListDisplayedField } from '../pages/resourceList/props';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
-
-export type DisplayedFieldLabels = Record<string, string>;
-
-/**
- * The field names to request, in the order the page declared them.
- *
- * Returns undefined for an undeclared list so the request carries no `fields` at all, which is
- * what makes the server fall back to the model's `default_search_fields`. Sending an empty array
- * instead would ask for no columns and render a header-less table.
- */
-export function displayedFieldNames(
-	displayedFields: ResourceListDisplayedField[] | undefined,
-): string[] | undefined {
-	if (!displayedFields || displayedFields.length === 0) {
-		return undefined;
-	}
-	return displayedFields.map(entry => typeof entry === 'string' ? entry : entry.field);
-}
-
-/**
- * The explicit header labels, keyed by field name.
- *
- * Only the object form contributes: a bare string defers to the schema's own field label, and
- * mapping it here would freeze a translation the backend is responsible for.
- */
-export function displayedFieldLabelKeys(
-	displayedFields: ResourceListDisplayedField[] | undefined,
-): DisplayedFieldLabels {
-	const labels: DisplayedFieldLabels = {};
-	for (const entry of displayedFields ?? []) {
-		if (typeof entry !== 'string') {
-			labels[entry.field] = entry.label;
-		}
-	}
-	return labels;
-}
 
 /**
  * Resolves a field name that may reach through one edge, e.g. `product_template.name`.
@@ -97,8 +60,8 @@ export function relationDestSchemaName(
 	return relations.find(relation => relation.edge === edgeName)?.dest_schema_name;
 }
 
-/** The edge names a list's displayed fields reach through, deduplicated. */
-export function displayedEdgeNames(fieldNames: string[] | undefined): string[] {
+/** The edges a list's dotted columns (`product_template.name`) reach through, deduplicated. */
+export function dottedEdgeNames(fieldNames: string[] | undefined): string[] {
 	const edges = (fieldNames ?? [])
 		.filter(field => field.includes('.'))
 		.map(field => field.slice(0, field.indexOf('.')));

@@ -48,7 +48,7 @@ function ResourceDetailV2View({ params, childrenNodes }: ResourceDetailV2ViewPro
 			isWriting={false}
 			testId={testId}
 		>
-			<PageContainer>
+			<PageContainer gap={0}>
 				{createMode ? (
 					<ResourceCreate
 						commands={commands}

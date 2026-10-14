@@ -207,6 +207,23 @@ describe('withEdgeLabelFields', () => {
 	});
 });
 
+// The server reads the foreign key behind a related computed field (`uom_name` reads `uom.name`)
+// but does not list it as a column, so no label join is owed for it.
+describe('withEdgeLabelFields with a related computed field', () => {
+	it('adds nothing for a foreign key that only the computed field depends on', () => {
+		const template = {
+			...schema('inventory_product_template', [uomEdge]),
+			fields: { name: { name: 'name' }, uom_id: { name: 'uom_id' }, uom_name: { name: 'uom_name' } },
+			default_search_fields: ['name', 'uom_name'],
+		} as unknown as dyn.ModelSchema;
+		const request = { page: 0 };
+
+		const result = withEdgeLabelFields(request, template, { essential_uom: schema('essential_uom', [], 'name') });
+
+		expect(result).toEqual({ request, added: [] });
+	});
+});
+
 describe('withEdgeLabelFields with a wildcard', () => {
 	const slot = {
 		...schema('parkinglot_slot', [templateEdge, uomEdge]),

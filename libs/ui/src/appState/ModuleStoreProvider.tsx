@@ -1,3 +1,4 @@
+import { configureStore } from '@reduxjs/toolkit';
 import React from 'react';
 import { Provider as ReduxProvider, createDispatchHook, createSelectorHook, createStoreHook } from 'react-redux';
 
@@ -26,18 +27,30 @@ export type ModuleStoreProviderProps = React.PropsWithChildren<{
 	moduleName: string,
 }>;
 
+/** Only for the tree above any registered store, so the Provider below never has to be omitted. */
+const inertStore = configureStore({ reducer: (state: Record<string, unknown> = {}) => state });
+
 /**
  * Mounts the module's own Redux store, if it created one.
  *
- * A module without a store renders untouched, so modules still on the Shell's shared
+ * A module without a store keeps the store it inherits, so modules still on the Shell's shared
  * store keep working unchanged.
+ *
+ * The Provider is rendered either way, and the registry is subscribed to. A module creates its
+ * store when `store.ts` is first imported, which a lazily loaded command handler may do after the
+ * first render. Rendering bare children until then, and a Provider after, changed the tree's shape
+ * on the next re-render and remounted the whole page under it: a split view opened from its list
+ * lost the list pane on the first click and on that one only.
  */
 export function ModuleStoreProvider({ moduleName, children }: ModuleStoreProviderProps): React.ReactNode {
-	const moduleStore = moduleStoreRegistry.get(moduleName);
-	if (!moduleStore) return children;
+	const moduleStore = React.useSyncExternalStore(
+		moduleStoreRegistry.subscribe,
+		() => moduleStoreRegistry.get(moduleName),
+	);
+	const inheritedStore = React.useContext(ModuleStoreContext)?.store;
 
 	return (
-		<ReduxProvider store={moduleStore.store} context={ModuleStoreContext as any}>
+		<ReduxProvider store={moduleStore?.store ?? inheritedStore ?? inertStore} context={ModuleStoreContext as any}>
 			{children}
 		</ReduxProvider>
 	);

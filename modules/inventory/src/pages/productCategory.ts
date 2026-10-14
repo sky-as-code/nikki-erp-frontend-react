@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props,
+	resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -67,37 +67,26 @@ function buildProductCategoryDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildProductCategoryFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					// The backend rejects a category that is its own ancestor; the generated form cannot
-					// express that, so `product_category.cycle` is what the user sees on save.
-					header: 'form.generalInformation',
-					fields: ['name', 'code', 'parent_category_id', 'sequence', 'org_id'],
-				}),
-			},
-			{
-				key: 'identification',
-				header: 'form.identification',
-				content: resourceFormColumnNode({
-					header: 'form.identification',
-					fields: ['description'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			// The backend rejects a category that is its own ancestor; the generated form cannot
+			// express that, so `product_category.cycle` is what the user sees on save.
+			header: 'form.generalInformation',
+			fields: ['name', 'code', 'parent_category_id', 'sequence', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.identification',
+			fields: ['description'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /** The products filed under this category, and the putaway rules that apply to them. */

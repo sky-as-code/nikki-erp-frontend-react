@@ -148,7 +148,6 @@
 .headerScroller {
 	overflow-x: hidden;
 	overflow-y: hidden;
-	scrollbar-gutter: stable;
 }
 
 .bodyScroller {

@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	displayedEdgeNames, displayedFieldLabelKeys, displayedFieldNames, readFieldValue,
-	relationDestSchemaName, resolveSchemaField,
-} from './displayedFields';
+	dottedEdgeNames, readFieldValue, relationDestSchemaName, resolveSchemaField,
+} from './fieldPaths';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -32,31 +31,6 @@ const templateSchema = schema({
 });
 
 const lookup = (name: string) => name === 'inventory_product_template' ? templateSchema : undefined;
-
-describe('displayedFieldNames', () => {
-	// An empty `fields` would ask the server for no columns at all; omitting it is what makes the
-	// server fall back to the model's own default set.
-	it('is undefined when nothing is declared', () => {
-		expect(displayedFieldNames(undefined)).toBeUndefined();
-		expect(displayedFieldNames([])).toBeUndefined();
-	});
-
-	it('keeps the declared order and unwraps the object form', () => {
-		const declared = ['sku', { field: 'product_template.name', label: 'fields.product_name' }, 'cost'];
-		expect(displayedFieldNames(declared)).toEqual(['sku', 'product_template.name', 'cost']);
-	});
-});
-
-describe('displayedFieldLabelKeys', () => {
-	it('maps only the entries that carry their own label', () => {
-		const declared = ['sku', { field: 'cost', label: 'fields.unit_cost' }];
-		expect(displayedFieldLabelKeys(declared)).toEqual({ cost: 'fields.unit_cost' });
-	});
-
-	it('is empty when nothing is declared', () => {
-		expect(displayedFieldLabelKeys(undefined)).toEqual({});
-	});
-});
 
 describe('resolveSchemaField', () => {
 	it('reads a flat field off the schema itself', () => {
@@ -98,7 +72,7 @@ describe('readFieldValue', () => {
 	});
 });
 
-describe('relationDestSchemaName / displayedEdgeNames', () => {
+describe('relationDestSchemaName / dottedEdgeNames', () => {
 	it('finds the schema an edge points at', () => {
 		expect(relationDestSchemaName(variantSchema, 'product_template')).toBe('inventory_product_template');
 		expect(relationDestSchemaName(variantSchema, 'nope')).toBeUndefined();
@@ -106,10 +80,10 @@ describe('relationDestSchemaName / displayedEdgeNames', () => {
 
 	it('lists each reached edge once', () => {
 		const fields = ['sku', 'product_template.name', 'product_template.uom_name'];
-		expect(displayedEdgeNames(fields)).toEqual(['product_template']);
+		expect(dottedEdgeNames(fields)).toEqual(['product_template']);
 	});
 
 	it('is empty when no column reaches an edge', () => {
-		expect(displayedEdgeNames(['sku', 'cost'])).toEqual([]);
+		expect(dottedEdgeNames(['sku', 'cost'])).toEqual([]);
 	});
 });

@@ -64,6 +64,7 @@ function ResourceFormColumn({ block }: { block: OwnPropertySection }): React.Rea
 		return null;
 	}
 
+
 	return (
 		<OwnPropertiesBlock
 			block={block}

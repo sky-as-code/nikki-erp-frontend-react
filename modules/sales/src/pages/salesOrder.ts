@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -169,47 +168,32 @@ function buildSalesOrderKioskFulfillmentResources() {
  * read-only from the schema.
  */
 function buildSalesOrderFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'order',
-				header: 'form.order',
-				content: resourceFormColumnNode({
-					header: 'form.order',
-					fields: ['order_number', 'status', 'sales_channel_id', 'sales_point_id',
-						'customer_reference', 'currency_code'],
-				}),
-			},
-			{
-				key: 'progress',
-				header: 'form.progress',
-				content: resourceFormColumnNode({
-					header: 'form.progress',
-					fields: ['payment_status', 'fulfillment_status', 'invoice_status', 'confirmed_at',
-						'completed_at', 'cancelled_at'],
-				}),
-			},
-			...buildSalesOrderDeadlineTabs(),
-			{
-				key: 'totals',
-				header: 'form.totals',
-				content: resourceFormColumnNode({
-					header: 'form.totals',
-					fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['external_reference', 'crm_opportunity_reference', 'exchange_of_return_id',
-						'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.order',
+			fields: ['order_number', 'status', 'sales_channel_id', 'sales_point_id',
+				'customer_reference', 'currency_code'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.progress',
+			fields: ['payment_status', 'fulfillment_status', 'invoice_status', 'confirmed_at',
+				'completed_at', 'cancelled_at'],
+		}),
+		...buildSalesOrderDeadlineColumns(),
+		resourceFormColumnNode({
+			header: 'form.totals',
+			fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['external_reference', 'crm_opportunity_reference', 'exchange_of_return_id',
+				'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**
@@ -217,24 +201,16 @@ function buildSalesOrderFieldsSection(): ComponentNode {
  * the deadline is set at create and never extended, the flags are the channel's settings frozen at
  * that moment, expiry is derived from the clock, and each note is written by its own action alone.
  */
-function buildSalesOrderDeadlineTabs() {
+function buildSalesOrderDeadlineColumns() {
 	return [
-		{
-			key: 'expiry',
+		resourceFormColumnNode({
 			header: 'form.expiry',
-			content: resourceFormColumnNode({
-				header: 'form.expiry',
-				fields: ['valid_until', 'is_expired', 'expired_at', 'auto_confirm_order', 'auto_confirm_refund'],
-			}),
-		},
-		{
-			key: 'notes',
+			fields: ['valid_until', 'is_expired', 'expired_at', 'auto_confirm_order', 'auto_confirm_refund'],
+		}),
+		resourceFormColumnNode({
 			header: 'form.notes',
-			content: resourceFormColumnNode({
-				header: 'form.notes',
-				fields: ['confirmation_note', 'cancellation_note', 'refund_note'],
-			}),
-		},
+			fields: ['confirmation_note', 'cancellation_note', 'refund_note'],
+		}),
 	];
 }
 

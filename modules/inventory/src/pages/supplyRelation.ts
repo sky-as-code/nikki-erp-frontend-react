@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -58,29 +57,22 @@ function buildSupplyRelationDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildSupplyRelationFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					// Declaring a route reserves nothing and starts no transfer. When replenishment
-					// actually happens the Stock movement engine creates the movement.
-					header: 'form.generalInformation',
-					fields: [
-						'source_warehouse_id', 'destination_warehouse_id', 'priority', 'is_default', 'org_id',
-					],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			// Declaring a route reserves nothing and starts no transfer. When replenishment
+			// actually happens the Stock movement engine creates the movement.
+			header: 'form.generalInformation',
+			fields: [
+				'source_warehouse_id', 'destination_warehouse_id', 'priority', 'is_default', 'org_id',
+			],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }

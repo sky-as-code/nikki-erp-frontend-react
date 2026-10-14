@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -107,35 +106,24 @@ function buildSalesReturnActions() {
 }
 
 function buildSalesReturnFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'return',
-				header: 'form.return',
-				content: resourceFormColumnNode({
-					header: 'form.return',
-					fields: ['return_number', 'sales_order_id', 'status', 'return_type', 'refund_reason',
-						'refund_status', 'refund_total', 'locked_refund_amount', 'reason'],
-				}),
-			},
-			{
-				key: 'notes',
-				header: 'form.notes',
-				content: resourceFormColumnNode({
-					header: 'form.notes',
-					fields: ['confirmation_note', 'confirmed_at', 'requested_at', 'completed_at', 'cancelled_at'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['inventory_return_status', 'fiscal_adjustment_status', 'inventory_reference',
-						'failure_reason', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.return',
+			fields: ['return_number', 'sales_order_id', 'status', 'return_type', 'refund_reason',
+				'refund_status', 'refund_total', 'locked_refund_amount', 'reason'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.notes',
+			fields: ['confirmation_note', 'confirmed_at', 'requested_at', 'completed_at', 'cancelled_at'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['inventory_return_status', 'fiscal_adjustment_status', 'inventory_reference',
+				'failure_reason', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }

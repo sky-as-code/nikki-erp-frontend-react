@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -60,44 +59,29 @@ function buildSalesComboDetailProps() {
 }
 
 function buildSalesComboFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'combo',
-				header: 'form.combo',
-				content: resourceFormColumnNode({
-					header: 'form.combo',
-					fields: ['code', 'name', 'description', 'combo_price'],
-				}),
-			},
-			{
-				key: 'policy',
-				header: 'form.policy',
-				content: resourceFormColumnNode({
-					header: 'form.policy',
-					// Whether the bundle may be broken up on return, or must come back whole.
-					fields: ['return_policy'],
-				}),
-			},
-			{
-				key: 'validity',
-				header: 'form.validity',
-				content: resourceFormColumnNode({
-					header: 'form.validity',
-					fields: ['valid_from', 'valid_until'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.combo',
+			fields: ['code', 'name', 'description', 'combo_price'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.policy',
+			// Whether the bundle may be broken up on return, or must come back whole.
+			fields: ['return_policy'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.validity',
+			fields: ['valid_from', 'valid_until'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /** `selection_group` is how a "choose one of these" bundle is expressed. */

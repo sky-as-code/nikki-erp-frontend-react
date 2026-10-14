@@ -2,7 +2,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import { useCommandBus } from '@nikkierp/ui/microApp';
 import React from 'react';
 
-import { displayedEdgeNames, relationDestSchemaName } from './displayedFields';
+import { dottedEdgeNames, relationDestSchemaName } from './fieldPaths';
 
 
 /**
@@ -25,7 +25,7 @@ export function useRelatedSchemas(
 
 	// Joined rather than passed by reference: the caller rebuilds this array every render, and a
 	// reference dependency would refetch on each one.
-	const edgeKey = displayedEdgeNames(fieldNames).join(',');
+	const edgeKey = dottedEdgeNames(fieldNames).join(',');
 	const schemaName = schema?.name;
 
 	React.useEffect(() => {

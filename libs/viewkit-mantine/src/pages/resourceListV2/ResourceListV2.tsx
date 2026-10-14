@@ -13,7 +13,7 @@ import { useSearchParams } from 'react-router';
 import { buildResourceListActions, listActionCode, selectionModeOf } from './actions';
 import classes from './ResourceListV2.module.css';
 import { getViewModeIcon } from './viewModeIcons';
-import { displayedFieldLabelKeys, displayedFieldNames, resolveSchemaField } from '../../data/displayedFields';
+import { resolveSchemaField } from '../../data/fieldPaths';
 import { interpolateParams } from '../../data/interpolate';
 import { parseSearchGraphParam } from '../../data/searchGraphParam';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
@@ -59,15 +59,16 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 	// ANDed rather than substituted: a link that narrows the list must not silently widen past
 	// the scope the page itself declared. Both halves stay editable in the panel.
 	const graph = React.useMemo(() => mergeSearchGraphs(pageGraph, urlGraph), [pageGraph, urlGraph]);
-	const initialRequest = React.useMemo(() => {
-		const fields = displayedFieldNames(params.displayed_fields);
-		return fields ? { ...INITIAL_REQUEST, fields } : INITIAL_REQUEST;
-	}, [params.displayed_fields]);
+	// No `fields`: the columns are the backend's `default_search_fields`, or the user's own choice
+	// from the table settings, never the page's.
 	const search = useResourceSearch({
-		schemaName: params.schemaName, searchCommand: params.searchCommand, initialRequest, withEdgeLabels: true,
+		schemaName: params.schemaName, searchCommand: params.searchCommand, initialRequest: INITIAL_REQUEST,
+		withEdgeLabels: true,
 	});
 	const { pack, searchData } = search;
-	const relatedSchemas = useListRelatedSchemas(pack?.modelSchema, params.displayed_fields, search.edgeLabelSchemas);
+	const relatedSchemas = useListRelatedSchemas(
+		pack?.modelSchema, searchData?.desired_fields, search.edgeLabelSchemas,
+	);
 	const buildLinkHref = useResourceLinkHref(params.linkField, routePath);
 	const baseHref = useResourceBaseHref(routePath);
 	const translateFieldName = useTranslateFieldName(params, pack?.modelSchema, relatedSchemas);
@@ -279,8 +280,8 @@ function ViewModes({ params }: { params: ResourceListV2Props }): React.ReactNode
 }
 
 /**
- * A page-declared label wins; then the schema's own label (or the edge schema's, once loaded);
- * a dotted field whose edge schema is still in flight reads as its own path rather than blank.
+ * The schema's own label, or the edge schema's once loaded; a dotted field whose edge schema is
+ * still in flight reads as its own path rather than blank.
  */
 function useTranslateFieldName(
 	params: ResourceListV2Props,
@@ -289,20 +290,15 @@ function useTranslateFieldName(
 ): (field: string) => string {
 	const lc = useLocalize(params.translationNs);
 	const t = useTranslate(params.translationNs);
-	const labelKeys = React.useMemo(() => displayedFieldLabelKeys(params.displayed_fields), [params.displayed_fields]);
 	return React.useCallback((field: string) => {
 		if (field === 'fields') {
 			return t('model_fields');
-		}
-		const labelKey = labelKeys[field];
-		if (labelKey) {
-			return t(labelKey);
 		}
 		const schemaField = modelSchema
 			? resolveSchemaField(modelSchema, field, name => relatedSchemas[name])
 			: undefined;
 		return schemaField ? lc(schemaField.label) : field;
-	}, [labelKeys, lc, modelSchema, relatedSchemas, t]);
+	}, [lc, modelSchema, relatedSchemas, t]);
 }
 
 /**
@@ -331,15 +327,15 @@ function useResolvedInitialGraph(initialGraph: ResourceListV2Props['initialGraph
 }
 
 /**
- * The schemas the table reads related fields from: the destinations of the dotted columns the page
- * displays, plus those of every foreign key whose label the search selected.
+ * The schemas the table reads related fields from: the destinations of the dotted columns the
+ * search returned (from `default_search_fields` or the user's saved columns), plus those of every
+ * foreign key whose label the search selected.
  */
 function useListRelatedSchemas(
 	schema: dyn.ModelSchema | undefined,
-	displayedFields: ResourceListV2Props['displayed_fields'],
+	desiredFields: string[] | undefined,
 	edgeLabelSchemas: Record<string, dyn.ModelSchema>,
 ): Record<string, dyn.ModelSchema> {
-	const displayedNames = React.useMemo(() => displayedFieldNames(displayedFields), [displayedFields]);
-	const displayedSchemas = useRelatedSchemas(schema, displayedNames);
-	return React.useMemo(() => ({ ...edgeLabelSchemas, ...displayedSchemas }), [edgeLabelSchemas, displayedSchemas]);
+	const dottedSchemas = useRelatedSchemas(schema, desiredFields);
+	return React.useMemo(() => ({ ...edgeLabelSchemas, ...dottedSchemas }), [edgeLabelSchemas, dottedSchemas]);
 }

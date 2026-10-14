@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -61,44 +60,29 @@ function buildSalesPricelistDetailProps() {
 }
 
 function buildSalesPricelistFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'pricelist',
-				header: 'form.pricelist',
-				content: resourceFormColumnNode({
-					header: 'form.pricelist',
-					fields: ['code', 'name', 'description', 'currency_id', 'is_default'],
-				}),
-			},
-			{
-				key: 'scope',
-				header: 'form.scope',
-				content: resourceFormColumnNode({
-					header: 'form.scope',
-					// Both nullable; a list scoped to neither applies everywhere.
-					fields: ['sales_channel_id', 'sales_point_id', 'priority'],
-				}),
-			},
-			{
-				key: 'validity',
-				header: 'form.validity',
-				content: resourceFormColumnNode({
-					header: 'form.validity',
-					fields: ['valid_from', 'valid_until'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.pricelist',
+			fields: ['code', 'name', 'description', 'currency_id', 'is_default'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.scope',
+			// Both nullable; a list scoped to neither applies everywhere.
+			fields: ['sales_channel_id', 'sales_point_id', 'priority'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.validity',
+			fields: ['valid_from', 'valid_until'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**

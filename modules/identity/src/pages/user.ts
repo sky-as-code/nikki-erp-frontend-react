@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -100,27 +99,20 @@ function buildUserDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildUserFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.IAM_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['display_name', 'email'],
-				}),
-			},
-			{
-				key: 'security',
-				header: 'form.security',
-				content: resourceFormColumnNode({
-					header: 'form.security',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['display_name', 'email'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.security',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**

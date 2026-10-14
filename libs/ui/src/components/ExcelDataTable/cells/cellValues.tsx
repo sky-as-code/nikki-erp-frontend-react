@@ -74,6 +74,7 @@ export function resolveEdgeLabel(
 	field: string,
 	modelSchema: dyn.ModelSchema | undefined,
 	relatedSchemas: Record<string, dyn.ModelSchema>,
+	language?: string,
 ): string | undefined {
 	const relation = modelSchema?.to_relations?.find(rel => rel.src_field === field);
 	if (!relation) {
@@ -84,7 +85,22 @@ export function resolveEdgeLabel(
 		return undefined;
 	}
 	const label = getCellValue(item, `${relation.edge}.${labelField}`);
-	return label == null ? undefined : String(label);
+	if (label == null) {
+		return undefined;
+	}
+	return typeof label === 'object' ? langJsonText(label as dyn.ModelSchemaLangJson, language) : String(label);
+}
+
+/**
+ * A localized label (`essential_uom.name`) in the active language, else in any language it has:
+ * a label in the wrong language still names the record better than its id does.
+ */
+function langJsonText(langJson: dyn.ModelSchemaLangJson, language: string | undefined): string | undefined {
+	const preferred = language ? langJson[language] : undefined;
+	if (preferred) {
+		return preferred;
+	}
+	return Object.entries(langJson).find(([key, text]) => key !== dyn.LangJsonRefKey && Boolean(text))?.[1];
 }
 
 export function getCellAlignment(

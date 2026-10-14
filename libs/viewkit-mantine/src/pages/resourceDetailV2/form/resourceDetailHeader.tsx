@@ -121,6 +121,7 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 					</>
 				)}
 				trailing={<SplitPaneCloseButton />}
+				rowSpacing='md'
 			/>
 		</PageHeaderProvider>
 	);

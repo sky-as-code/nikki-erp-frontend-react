@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props,
+	resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -43,21 +43,6 @@ function buildProductVariantListProps() {
 		archiveCommand: ProductVariantCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductVariantCommands.UPDATE,
 		updateCommand: ProductVariantCommands.UPDATE,
-		// The buying view of a variant: what it is, what it costs, and how much is on hand. The
-		// schema's own default set leads with identifiers, which answers a different question.
-		displayed_fields: [
-			'sku',
-			// Labelled here rather than taking the schema's: on the template this field is just
-			// "Name", which on a list of variants reads as the variant's own name.
-			{ field: 'product_template_name', label: 'fields.product_name' },
-			{ field: 'attribute_summary', label: 'fields.attributes' },
-			{ field: 'effective_base_sales_price', label: 'fields.sale_price' },
-			'cost',
-			'on_hand_quantity',
-			// The unit's id, not its name: the name sits two edges away on essential_uom, and a
-			// related computed field walks exactly one edge to a physical column.
-			{ field: 'product_template_uom_id', label: 'fields.product_template_uom_id' },
-		],
 		fieldRenderers: {
 			attribute_summary: { renderer: 'attributePills' },
 			status: {
@@ -78,8 +63,8 @@ function buildProductVariantDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		titleLvl1: { schemaField: 'sku' },
-		titleLvl2: { schemaField: 'combination_key' },
+		titleLvl1: { schemaField: 'product_template_name' },
+		titleLvl2: { schemaField: 'sku' },
 		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: ProductVariantCommands.GET_BY_ID,
@@ -94,77 +79,48 @@ function buildProductVariantDetailProps() {
 	});
 }
 
-/**
- * Shared by both form modes: the resource's own fields, as titled blocks.
- *
- * Pilot for `tabCollapsibleSectionNode`: five blocks is past the default
- * `minBlockCountWithoutTabs` (2), so this now shows a `[All] | [tab...]` block-visibility
- * control instead of every block's fields at once.
- */
+/** Shared by both form modes: the resource's own fields, as titled blocks laid out side by side. */
 function buildProductVariantFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['product_template_id', 'status', 'org_id'],
-				}),
-			},
-			{
-				key: 'identification',
-				header: 'form.identification',
-				content: resourceFormColumnNode({
-					header: 'form.identification',
-					fields: ['sku', 'primary_barcode', 'combination_key'],
-				}),
-			},
-			{
-				key: 'pricing',
-				// Three fields that are deliberately three different things.
-				//
-				// `cost` is what the business values this variant at, and it is the only one a user
-				// types. It lives on the variant rather than the template because two variants of
-				// one product routinely cost different amounts.
-				//
-				// `template_base_sales_price` and `effective_base_sales_price` are both computed and
-				// read-only: the first is what the template asks for the product, the second adds
-				// what this variant's attribute values charge on top of it. Showing both is what
-				// makes the difference legible — a variant priced above its template is answering
-				// "because of the options", and one number alone cannot say that.
-				//
-				// A selling price is NOT here. What a customer pays is resolved from a Sales price
-				// list, and these are only the inputs to it.
-				header: 'form.pricing',
-				content: resourceFormColumnNode({
-					header: 'form.pricing',
-					fields: ['cost', 'template_base_sales_price', 'effective_base_sales_price'],
-				}),
-			},
-			{
-				key: 'dimensions',
-				// Left empty, each of these inherits the template's default. Null means "inherited",
-				// never zero. See BR Â§6.4.
-				header: 'form.dimensions',
-				content: resourceFormColumnNode({
-					header: 'form.dimensions',
-					fields: ['weight', 'length', 'width', 'height'],
-				}),
-			},
-			{
-				key: 'audit',
-				// archive_source is what lets unarchiving a template restore only the variants it
-				// took down, so it is shown rather than hidden. See BR Â§8.9.
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['is_materialized', 'archive_source', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.identification',
+			fields: ['sku', 'primary_barcode', 'combination_key', 'product_template_id'],
+		}),
+		// Three fields that are deliberately three different things.
+		//
+		// `cost` is what the business values this variant at, and it is the only one a user
+		// types. It lives on the variant rather than the template because two variants of
+		// one product routinely cost different amounts.
+		//
+		// `template_base_sales_price` and `effective_base_sales_price` are both computed and
+		// read-only: the first is what the template asks for the product, the second adds
+		// what this variant's attribute values charge on top of it. Showing both is what
+		// makes the difference legible — a variant priced above its template is answering
+		// "because of the options", and one number alone cannot say that.
+		//
+		// A selling price is NOT here. What a customer pays is resolved from a Sales price
+		// list, and these are only the inputs to it.
+		resourceFormColumnNode({
+			header: 'form.pricing',
+			fields: ['cost', 'template_base_sales_price', 'effective_base_sales_price'],
+		}),
+		// Left empty, each of these inherits the template's default. Null means "inherited",
+		// never zero. See BR Â§6.4.
+		resourceFormColumnNode({
+			header: 'form.dimensions',
+			fields: ['weight', 'length', 'width', 'height'],
+		}),
+		// archive_source is what lets unarchiving a template restore only the variants it
+		// took down, so it is shown rather than hidden. See BR Â§8.9.
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['status', 'is_materialized', 'archive_source', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**

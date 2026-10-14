@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -58,34 +57,23 @@ function buildProductTypeDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildProductTypeFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['name', 'code', 'description'],
-				}),
-			},
-			{
-				key: 'identification',
-				header: 'form.identification',
-				content: resourceFormColumnNode({
-					// Which business processes a product of this type may take part in. See BR Â§3.
-					header: 'form.identification',
-					fields: ['supports_stock', 'supports_sale', 'supports_purchase', 'supports_manufacturing'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['name', 'code', 'description'],
+		}),
+		resourceFormColumnNode({
+			// Which business processes a product of this type may take part in. See BR Â§3.
+			header: 'form.identification',
+			fields: ['supports_stock', 'supports_sale', 'supports_purchase', 'supports_manufacturing'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }

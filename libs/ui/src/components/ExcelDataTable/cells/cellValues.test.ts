@@ -89,6 +89,12 @@ describe('resolveEdgeLabel', () => {
 		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, related)).toBe('Coca Cola');
 	});
 
+	it('localizes a lang-json label, falling back to another language before giving up', () => {
+		const row = { product_template_id: '01H', product_template: { name: { 'en-US': 'Cola', 'vi-VN': 'Nước ngọt' } } };
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, related, 'vi-VN')).toBe('Nước ngọt');
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, related, 'fr-FR')).toBe('Cola');
+	});
+
 	it('is undefined when the column is not a foreign key, the schema is missing or the edge was not selected', () => {
 		const row = { product_template_id: '01H' };
 		expect(resolveEdgeLabel(row, 'sku', variantSchema, related)).toBeUndefined();

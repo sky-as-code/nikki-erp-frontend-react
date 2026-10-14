@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -58,35 +57,24 @@ function buildProductAttributeValueDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildProductAttributeValueFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['attribute_id', 'name', 'code', 'sequence', 'org_id'],
-				}),
-			},
-			{
-				key: 'sales',
-				header: 'form.sales',
-				content: resourceFormColumnNode({
-					// price_extra is added to the template's price when this value is chosen, which is
-					// why it sits with the sales fields rather than with general information.
-					header: 'form.sales',
-					fields: ['price_extra'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['attribute_id', 'name', 'code', 'sequence', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			// price_extra is added to the template's price when this value is chosen, which is
+			// why it sits with the sales fields rather than with general information.
+			header: 'form.sales',
+			fields: ['price_extra'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }

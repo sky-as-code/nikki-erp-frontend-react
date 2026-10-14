@@ -44,7 +44,7 @@ function CollapsibleSection({ props, runtime }: {
 		: children;
 
 	return (
-		<Stack component={PaperWithBorder} gap='md' {...componentAttrs(COLLAPSIBLE_SECTION)}>
+		<Stack component={PaperWithBorder} gap='xs' mb='0.5rem' {...componentAttrs(COLLAPSIBLE_SECTION)}>
 			{props.collapsible || props.header != null ? (
 				<SectionHeader
 					header={props.header}

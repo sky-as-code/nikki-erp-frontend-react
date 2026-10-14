@@ -12,6 +12,8 @@ import { ModuleStore } from './types';
 class ModuleStoreRegistry {
 	readonly #stores = new Map<string, ModuleStore>();
 
+	readonly #listeners = new Set<() => void>();
+
 	public register(moduleStore: ModuleStore): void {
 		const existing = this.#stores.get(moduleStore.name);
 		if (existing && existing !== moduleStore) {
@@ -21,8 +23,18 @@ class ModuleStoreRegistry {
 				+ 'A duplicate usually means the module was imported through two different paths.',
 			);
 		}
+		if (existing) return;
 		this.#stores.set(moduleStore.name, moduleStore);
+		this.#listeners.forEach(listener => listener());
 	}
+
+	/** An arrow property so it can be handed to `useSyncExternalStore` unbound. */
+	public subscribe = (listener: () => void): (() => void) => {
+		this.#listeners.add(listener);
+		return () => {
+			this.#listeners.delete(listener);
+		};
+	};
 
 	public get(name: string): ModuleStore | undefined {
 		return this.#stores.get(name);

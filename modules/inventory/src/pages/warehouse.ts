@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -84,45 +83,30 @@ function buildWarehouseDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildWarehouseFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['code', 'name', 'warehouse_role', 'parent_warehouse_id', 'status', 'org_id'],
-				}),
-			},
-			{
-				key: 'warehouse_flows',
-				header: 'form.warehouseFlows',
-				content: resourceFormColumnNode({
-					// Flows are policy: changing one provisions the locations the new shape needs and
-					// creates no movement, so they sit apart from the descriptive fields above.
-					header: 'form.warehouseFlows',
-					fields: ['incoming_flow', 'outgoing_flow'],
-				}),
-			},
-			{
-				key: 'contact',
-				header: 'form.contactInformation',
-				content: resourceFormColumnNode({
-					header: 'form.contactInformation',
-					fields: ['address', 'manager_user_id', 'notes'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['code', 'name', 'warehouse_role', 'parent_warehouse_id', 'status', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			// Flows are policy: changing one provisions the locations the new shape needs and
+			// creates no movement, so they sit apart from the descriptive fields above.
+			header: 'form.warehouseFlows',
+			fields: ['incoming_flow', 'outgoing_flow'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.contactInformation',
+			fields: ['address', 'manager_user_id', 'notes'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**

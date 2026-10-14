@@ -28,16 +28,26 @@ export function initI18n(
 	const options: InitOptions & HttpBackendOptions = {
 		debug,
 		// No fallback language, so the missing translation will be surfaced
-		// and easily detected to fix.
-		// fallbackLng: 'en-US',
+		// and easily detected to fix. `false` rather than unset: unset means `dev`, and with
+		// `load: 'all'` every lookup also tried `en`, each rejected by `supportedLngs` with a warning.
+		fallbackLng: false,
+		load: 'currentOnly',
 		supportedLngs: supportedLngs ?? ['en-US', 'vi-VN'],
 		ns: ['common'],
 		fallbackNS: ['common'],
-		maxRetries: 0,
+		// A failed load leaves the namespace "loaded with error": `useTranslation` reports ready
+		// and renders raw keys until something else asks for the namespace again.
+		maxRetries: 2,
 		appendNamespaceToMissingKey: true,
 		backend: buildBackendOptions(),
 		interpolation: {
 			escapeValue: false,
+		},
+		react: {
+			// Re-render on a bundle arriving, not only on a language change. A namespace that lands
+			// after the first paint (a retry, a second module's pack) otherwise leaves whatever
+			// rendered meanwhile showing raw keys, a different set on every load.
+			bindI18nStore: 'added',
 		},
 	};
 
@@ -157,13 +167,29 @@ export type LocalizeFn = (
 	translateOpts?: { count: number },
 ) => string;
 
-export function useTranslate(moduleName?: string | string[]): TranslateFn {
+/**
+ * react-i18next 16.2 caches its `t` without the namespace in the cache key, so a component whose
+ * namespace changes after mount keeps a `t` bound to the first one: the menu bar renders before
+ * the active micro-app registers its menu, and stayed on `common` once it switched to the module's.
+ * Rebinding on the namespace here, while still depending on `trans.t` so a language change or a
+ * newly loaded bundle re-renders as before.
+ */
+function useNamespacedTranslate(moduleName?: string | string[]): { t: TranslateFn, i18n: i18n } {
 	const trans = useTranslation(moduleName);
-	return trans.t as any;
+	const firstNs = Array.isArray(moduleName) ? moduleName[0] : moduleName;
+	const t = React.useMemo(
+		() => (firstNs ? trans.i18n.getFixedT(null, firstNs) : trans.t) as TranslateFn,
+		[trans.t, trans.i18n, firstNs],
+	);
+	return { t, i18n: trans.i18n };
+}
+
+export function useTranslate(moduleName?: string | string[]): TranslateFn {
+	return useNamespacedTranslate(moduleName).t;
 }
 
 export function useLocalize(moduleName?: string): LocalizeFn {
-	const trans = useTranslation(moduleName);
+	const trans = useNamespacedTranslate(moduleName);
 	return (langJson, translateOpts): string => {
 		if (!langJson) return '';
 		if (typeof langJson === 'string') {

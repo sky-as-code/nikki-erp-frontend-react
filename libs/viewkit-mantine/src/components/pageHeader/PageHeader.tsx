@@ -1,4 +1,4 @@
-import { Anchor, Group, Stack, Text, Title } from '@mantine/core';
+import { Anchor, getSpacing, Group, Stack, Text, Title } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
@@ -16,6 +16,7 @@ import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import { PAGE_HEADER } from '../../ids';
 import { renderDisplayFieldValue } from '../fieldValue';
 
+import type { MantineSpacing } from '@mantine/core';
 import type { ComponentAttributes, IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
@@ -45,6 +46,12 @@ export type PageHeaderViewProps = PageHeaderProps & Partial<ComponentAttributes>
 	actions?: React.ReactNode,
 	/** Rendered flush right, opposite the titles. */
 	trailing?: React.ReactNode,
+	/**
+	 * Space below the title row and below the actions row, for a page whose `PageContainer` has no
+	 * gap of its own. A margin, not padding: the title row is the pinning sentinel and the actions
+	 * row's height is what the spacer reserves, so neither box may grow.
+	 */
+	rowSpacing?: MantineSpacing,
 };
 
 /**
@@ -63,18 +70,19 @@ export type PageHeaderViewProps = PageHeaderProps & Partial<ComponentAttributes>
  * there is anything left to scroll.
  */
 export function PageHeader({
-	titleLvl1, titleLvl2, backLinkTitle, actions, trailing, ...attrs
+	titleLvl1, titleLvl2, backLinkTitle, actions, trailing, rowSpacing, ...attrs
 }: PageHeaderViewProps): React.ReactNode {
 	const context = usePageHeader();
 	const hasTitleRow = Boolean(backLinkTitle) || Boolean(titleLvl1);
 	const toolbar = usePinnedToolbar(Boolean(actions));
 	const bg = usePaperBgColor();
+	const rowMargin = rowSpacing === undefined ? undefined : getSpacing(rowSpacing);
 
 	return (
 		<>
 			<Group
 				ref={toolbar.sentinelRef}
-				gap={4} justify='space-between' align='flex-start' wrap='nowrap' className='w-full'
+				gap={4} justify='space-between' align='flex-start' wrap='nowrap' className='w-full' mb={rowSpacing}
 				{...attrs}
 			>
 				<Stack gap={4}>
@@ -98,6 +106,7 @@ export function PageHeader({
 						className={clsx(classes.actionsRow, { [classes.pinned]: toolbar.isPinned })}
 						style={{
 							backgroundColor: bg,
+							marginBottom: rowMargin,
 							...(toolbar.isPinned ? toolbar.pinnedStyle : {}),
 						}}
 					>
@@ -106,7 +115,10 @@ export function PageHeader({
 					{/* Reserves the row's height once it leaves the flow, so the content below does
 					    not jump up by exactly that much at the moment it pins. */}
 					{toolbar.isPinned ? (
-						<div className={classes.pinnedSpacer} style={{ height: toolbar.placeholderHeight }} />
+						<div
+							className={classes.pinnedSpacer}
+							style={{ height: toolbar.placeholderHeight, marginBottom: rowMargin }}
+						/>
 					) : null}
 				</>
 			) : null}

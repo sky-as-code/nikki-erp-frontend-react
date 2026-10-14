@@ -2,6 +2,8 @@ import { Stack } from '@mantine/core';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
 import React from 'react';
 
+import type { MantineSpacing } from '@mantine/core';
+
 
 /**
  * The page shell every full-width page renders into.
@@ -17,15 +19,21 @@ import React from 'react';
  * A React component rather than a registered contribution — it is layout with no configuration,
  * and it belongs to the template's React seam alongside the page's providers and
  * `MetaComponent`, not to the metadata a page author writes.
+ *
+ * `gap` defaults to `md`, which the dashboard-style pages rely on. A page whose blocks carry their
+ * own bottom margin (the resource detail sections) passes 0, so its last block keeps that margin
+ * above the window bottom instead of sitting flush against it.
  */
-export function PageContainer({ children }: { children: React.ReactNode }): React.ReactNode {
+export function PageContainer(
+	{ children, gap = 'md' }: { children: React.ReactNode, gap?: MantineSpacing | number },
+): React.ReactNode {
 	const bgColor = usePaperBgColor();
 
 	return (
 		<Stack
 			bg={bgColor}
 			className='absolute inset-0 p-0 m-0 px-4 pb-4 flex overflow-auto'
-			gap='md'
+			gap={gap}
 		>
 			{children}
 		</Stack>

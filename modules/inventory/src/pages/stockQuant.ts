@@ -1,14 +1,13 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	InitialGraph, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, InitialGraph, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props,
+	resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import { StockQuantCommands } from '../features/stockQuant/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
-import type { TabCollapsibleSectionTab } from '@nikkierp/viewkit-mantine/props';
 
 
 /**
@@ -78,66 +77,47 @@ function buildStockQuantDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildStockQuantFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [...buildStockQuantBalanceTabs(), ...buildStockQuantCountingTabs()],
-	});
+		header: 'form.generalInformation',
+	}, [...buildStockQuantBalanceColumns(), ...buildStockQuantCountingColumns()]);
 }
 
-function buildStockQuantBalanceTabs(): TabCollapsibleSectionTab[] {
+function buildStockQuantBalanceColumns(): ComponentNode[] {
 	return [
-		{
-			key: 'general',
+		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			content: resourceFormColumnNode({
-				header: 'form.generalInformation',
-				fields: ['product_variant_id', 'location_id', 'base_uom_id', 'org_id'],
-			}),
-		},
-		{
-			key: 'quantities',
+			fields: ['product_variant_id', 'location_id', 'base_uom_id', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			// available_quantity is derived on the server; it has no column and is never sent back.
 			header: 'form.quantities',
-			content: resourceFormColumnNode({
-				// available_quantity is derived on the server; it has no column and is never sent back.
-				header: 'form.quantities',
-				fields: ['on_hand_quantity', 'reserved_quantity', 'available_quantity', 'incoming_date'],
-			}),
-		},
-		{
-			key: 'identification',
+			fields: ['on_hand_quantity', 'reserved_quantity', 'available_quantity', 'incoming_date'],
+		}),
+		resourceFormColumnNode({
+			// Empty until a lot, package or owner actually narrows the balance â€” a read-mode field
+			// with no value is hidden, so an untracked balance simply does not show this block.
 			header: 'form.identification',
-			content: resourceFormColumnNode({
-				// Empty until a lot, package or owner actually narrows the balance â€” a read-mode field
-				// with no value is hidden, so an untracked balance simply does not show this block.
-				header: 'form.identification',
-				fields: ['lot_ref', 'package_ref', 'owner_ref'],
-			}),
-		},
+			fields: ['lot_ref', 'package_ref', 'owner_ref'],
+		}),
 	];
 }
 
-function buildStockQuantCountingTabs(): TabCollapsibleSectionTab[] {
+function buildStockQuantCountingColumns(): ComponentNode[] {
 	return [
-		{
-			key: 'counting',
+		resourceFormColumnNode({
 			header: 'form.counting',
-			content: resourceFormColumnNode({
-				header: 'form.counting',
-				fields: [
-					'counted_quantity', 'count_quantity_set', 'count_snapshot_quantity',
-					'count_reason_code', 'count_reason_text',
-					'next_count_date', 'last_count_date', 'count_assigned_user_id',
-				],
-			}),
-		},
-		{
-			key: 'audit',
+			fields: [
+				'counted_quantity', 'count_quantity_set', 'count_snapshot_quantity',
+				'count_reason_code', 'count_reason_text',
+				'next_count_date', 'last_count_date', 'count_assigned_user_id',
+			],
+		}),
+		resourceFormColumnNode({
 			header: 'form.audit',
-			content: resourceFormColumnNode({
-				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
-		},
+			fields: ['created_at', 'updated_at'],
+		}),
 	];
 }
 

@@ -1,8 +1,8 @@
 import { resourceCommands } from '@nikkierp/common/dynamicModel';
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props,
+	resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -12,7 +12,6 @@ import { ProductVariantCommands } from '../features/productVariant/commands';
 import { StockProductConfigCommands } from '../features/stockProductConfig/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
-import type { TabCollapsibleSectionTab } from '@nikkierp/viewkit-mantine/props';
 
 
 export function buildProductTemplatePages(): PageNode[] {
@@ -79,99 +78,68 @@ function buildProductTemplateDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildProductTemplateFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			...buildProductTemplateIdentityTabs(),
-			...buildProductTemplateCommercialTabs(),
-			...buildProductTemplatePhysicalTabs(),
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		...buildProductTemplateIdentityColumns(),
+		...buildProductTemplateCommercialColumns(),
+		...buildProductTemplatePhysicalColumns(),
+	]);
 }
 
-function buildProductTemplateIdentityTabs(): TabCollapsibleSectionTab[] {
+function buildProductTemplateIdentityColumns(): ComponentNode[] {
 	return [
-		{
-			key: 'general',
-			header: 'form.generalInformation',
-			content: resourceFormColumnNode({
-				header: 'form.generalInformation',
-				fields: ['name', 'short_name', 'status', 'org_id', 'uom_id'],
-			}),
-		},
-		{
-			key: 'identification',
+		resourceFormColumnNode({
 			header: 'form.identification',
-			content: resourceFormColumnNode({
-				header: 'form.identification',
-				fields: ['product_type_id', 'category_id', 'brand_id'],
-			}),
-		},
+			fields: ['name', 'short_name', 'product_type_id', 'category_id', 'brand_id'],
+		}),
 	];
 }
 
-function buildProductTemplateCommercialTabs(): TabCollapsibleSectionTab[] {
+function buildProductTemplateCommercialColumns(): ComponentNode[] {
 	return [
-		{
-			key: 'sales',
+		resourceFormColumnNode({
+			// sale_ok and purchase_ok decide which business processes may reference the product,
+			// which is what makes them belong beside their descriptions rather than in general
+			// information. See BR Â§2.4.
 			header: 'form.sales',
-			content: resourceFormColumnNode({
-				// sale_ok and purchase_ok decide which business processes may reference the product,
-				// which is what makes them belong beside their descriptions rather than in general
-				// information. See BR Â§2.4.
-				header: 'form.sales',
-				fields: ['sale_ok', 'sales_description', 'base_sales_price'],
-			}),
-		},
-		{
-			key: 'purchasing',
+			fields: ['sale_ok', 'sales_description', 'base_sales_price'],
+		}),
+		resourceFormColumnNode({
 			header: 'form.purchasing',
-			content: resourceFormColumnNode({
-				header: 'form.purchasing',
-				fields: ['purchase_ok', 'purchase_description'],
-			}),
-		},
-		{
-			key: 'costing',
+			fields: ['purchase_ok', 'uom_id', 'purchase_description'],
+		}),
+		resourceFormColumnNode({
+			// The template holds no cost of its own, deliberately: cost belongs to the variant,
+			// because two variants of one product routinely cost different amounts. What the
+			// template can honestly show is the RANGE across its variants, so these two fields
+			// together read as "60,000 - 100,000" when they differ and as one figure when they
+			// agree.
+			//
+			// Both are computed and virtual, so they render read-only here and are dropped from
+			// the create form entirely — a product with no variants yet has no range to show.
+			// That is the same treatment created_at and updated_at get, and it needs no
+			// page-side flag because there is none to give: read-only comes from the backend
+			// schema's field metadata.
 			header: 'form.costing',
-			content: resourceFormColumnNode({
-				// The template holds no cost of its own, deliberately: cost belongs to the variant,
-				// because two variants of one product routinely cost different amounts. What the
-				// template can honestly show is the RANGE across its variants, so these two fields
-				// together read as "60,000 - 100,000" when they differ and as one figure when they
-				// agree.
-				//
-				// Both are computed and virtual, so they render read-only here and are dropped from
-				// the create form entirely — a product with no variants yet has no range to show.
-				// That is the same treatment created_at and updated_at get, and it needs no
-				// page-side flag because there is none to give: read-only comes from the backend
-				// schema's field metadata.
-				header: 'form.costing',
-				fields: ['min_variant_cost', 'max_variant_cost'],
-			}),
-		},
+			fields: ['min_variant_cost', 'max_variant_cost'],
+		}),
 	];
 }
 
-function buildProductTemplatePhysicalTabs(): TabCollapsibleSectionTab[] {
+function buildProductTemplatePhysicalColumns(): ComponentNode[] {
 	return [
-		{
-			key: 'dimensions',
+		resourceFormColumnNode({
+			// Defaults a variant inherits when it sets no value of its own. See BR Â§6.4.
 			header: 'form.dimensions',
-			content: resourceFormColumnNode({
-				// Defaults a variant inherits when it sets no value of its own. See BR Â§6.4.
-				header: 'form.dimensions',
-				fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
-			}),
-		},
-		{
-			key: 'audit',
+			fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
+		}),
+		resourceFormColumnNode({
 			header: 'form.audit',
-			content: resourceFormColumnNode({
-				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
-		},
+			fields: ['status', 'created_at', 'updated_at'],
+		}),
 	];
 }
 

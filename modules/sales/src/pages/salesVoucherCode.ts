@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -68,45 +67,30 @@ function buildSalesVoucherCodeDetailProps() {
 }
 
 function buildSalesVoucherCodeFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'voucher',
-				header: 'form.voucher',
-				content: resourceFormColumnNode({
-					header: 'form.voucher',
-					fields: ['code', 'sales_promotion_program_id', 'status'],
-				}),
-			},
-			{
-				key: 'usage',
-				header: 'form.usage',
-				content: resourceFormColumnNode({
-					header: 'form.usage',
-					// `usage_count` is written by redemption; editing it by hand grants another use of
-					// a code that was already spent.
-					fields: ['usage_limit', 'usage_count'],
-				}),
-			},
-			{
-				key: 'validity',
-				header: 'form.validity',
-				content: resourceFormColumnNode({
-					header: 'form.validity',
-					fields: ['valid_from', 'valid_until'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.voucher',
+			fields: ['code', 'sales_promotion_program_id', 'status'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.usage',
+			// `usage_count` is written by redemption; editing it by hand grants another use of
+			// a code that was already spent.
+			fields: ['usage_limit', 'usage_count'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.validity',
+			fields: ['valid_from', 'valid_until'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**

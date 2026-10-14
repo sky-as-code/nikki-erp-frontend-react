@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -92,38 +91,27 @@ function buildAgreementDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildAgreementFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.PURCHASE_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					// `vendor_id` is optional here, unlike on an order: a template may be drafted before
-					// anyone has chosen who to buy from.
-					fields: ['code', 'reference', 'agreement_type', 'status', 'vendor_id', 'buyer_id',
-						'currency_id', 'org_id'],
-				}),
-			},
-			{
-				key: 'terms',
-				header: 'form.terms',
-				content: resourceFormColumnNode({
-					header: 'form.terms',
-					fields: ['start_date', 'end_date', 'description'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['is_archived', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			// `vendor_id` is optional here, unlike on an order: a template may be drafted before
+			// anyone has chosen who to buy from.
+			fields: ['code', 'reference', 'agreement_type', 'status', 'vendor_id', 'buyer_id',
+				'currency_id', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.terms',
+			fields: ['start_date', 'end_date', 'description'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['is_archived', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**

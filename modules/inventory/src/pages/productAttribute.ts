@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -74,37 +73,26 @@ function buildProductAttributeDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildProductAttributeFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['name', 'code', 'sequence', 'org_id'],
-				}),
-			},
-			{
-				key: 'attributes',
-				header: 'form.attributes',
-				content: resourceFormColumnNode({
-					// variant_creation_mode decides whether this attribute's values produce variants at
-					// all: NEVER keeps it out of the combination key entirely. See BR Â§4.7 and Â§6.5.3.
-					header: 'form.attributes',
-					fields: ['data_type', 'variant_creation_mode', 'display_type'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['name', 'code', 'sequence', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			// variant_creation_mode decides whether this attribute's values produce variants at
+			// all: NEVER keeps it out of the combination key entirely. See BR Â§4.7 and Â§6.5.3.
+			header: 'form.attributes',
+			fields: ['data_type', 'variant_creation_mode', 'display_type'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /** The values this attribute allows. */

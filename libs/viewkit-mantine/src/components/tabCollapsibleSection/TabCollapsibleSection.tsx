@@ -62,7 +62,7 @@ function TabCollapsibleSection({ props }: { props: TabCollapsibleSectionProps })
 	);
 
 	return (
-		<Stack component={PaperWithBorder} gap='md' {...componentAttrs(TAB_COLLAPSIBLE_SECTION)}>
+		<Stack component={PaperWithBorder} gap='xs' mb='0.5rem' {...componentAttrs(TAB_COLLAPSIBLE_SECTION)}>
 			<Group gap='xs' align='center' wrap='wrap'>
 				{props.collapsible ? (
 					<UnstyledButton

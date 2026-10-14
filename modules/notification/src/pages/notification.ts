@@ -1,7 +1,6 @@
 import { definePage } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -55,33 +54,22 @@ function buildNotificationDetailProps() {
 }
 
 function buildNotificationFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.NOTIFICATION_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['title', 'message', 'severity', 'created_at', 'expires_at'],
-				}),
-			},
-			{
-				key: 'source',
-				header: 'form.source',
-				content: resourceFormColumnNode({
-					header: 'form.source',
-					fields: ['source_module', 'source_resource_name', 'source_resource_key', 'metadata'],
-				}),
-			},
-			{
-				key: 'distribution',
-				header: 'form.distribution',
-				content: resourceFormColumnNode({
-					header: 'form.distribution',
-					fields: ['distribution_mode', 'requested_channels', 'org_id'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['title', 'message', 'severity', 'created_at', 'expires_at'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.source',
+			fields: ['source_module', 'source_resource_name', 'source_resource_key', 'metadata'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.distribution',
+			fields: ['distribution_mode', 'requested_channels', 'org_id'],
+		}),
+	]);
 }

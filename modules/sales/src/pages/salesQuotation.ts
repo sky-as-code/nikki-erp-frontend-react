@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -73,45 +72,30 @@ function buildSalesQuotationDetailProps() {
 }
 
 function buildSalesQuotationFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'quotation',
-				header: 'form.quotation',
-				content: resourceFormColumnNode({
-					header: 'form.quotation',
-					fields: ['quotation_number', 'status', 'sales_channel_id', 'sales_point_id',
-						'customer_reference', 'currency_code'],
-				}),
-			},
-			{
-				key: 'validity',
-				header: 'form.validity',
-				content: resourceFormColumnNode({
-					header: 'form.validity',
-					// An empty `valid_until` never lapses, and that absence is deliberate.
-					fields: ['valid_until', 'sent_at', 'accepted_at', 'cancelled_at'],
-				}),
-			},
-			{
-				key: 'totals',
-				header: 'form.totals',
-				content: resourceFormColumnNode({
-					header: 'form.totals',
-					fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['converted_sales_order_id', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.quotation',
+			fields: ['quotation_number', 'status', 'sales_channel_id', 'sales_point_id',
+				'customer_reference', 'currency_code'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.validity',
+			// An empty `valid_until` never lapses, and that absence is deliberate.
+			fields: ['valid_until', 'sent_at', 'accepted_at', 'cancelled_at'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.totals',
+			fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['converted_sales_order_id', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**

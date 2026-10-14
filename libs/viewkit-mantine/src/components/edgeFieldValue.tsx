@@ -5,8 +5,8 @@ import { useMicroAppManager } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { Link } from 'react-router';
 
-import { readFieldValue } from '../data/displayedFields';
 import { edgeDisplay } from '../data/edgeLabelFields';
+import { readFieldValue } from '../data/fieldPaths';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 

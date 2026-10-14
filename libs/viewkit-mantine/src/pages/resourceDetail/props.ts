@@ -25,7 +25,7 @@ export const ownPropertySectionSchema = z.object({
 	 * `tabCollapsibleSection` tab already shows its title in the tab control, so printing it again
 	 * inside the block would be redundant.
 	 */
-	showTitle: z.boolean().default(false),
+	showTitle: z.boolean().default(true),
 });
 
 /**
