@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	buildClauseFromInput, getDefaultOperator, getEnumOptions, getFilterInputKind,
-	getFilterableFieldNames, getOperatorsForKind, isFilterableField, isTextLikeKind,
+	getFilterableFieldNames, getOperatorsForKind, isFilterableField, isSortableFieldName, isTextLikeKind,
 	parseFilterExpression,
 } from './filterModel';
 
@@ -89,9 +89,21 @@ describe('isFilterableField', () => {
 		expect(isFilterableField(field('name', 'string', { is_persisted: true }))).toBe(true);
 	});
 
-	it('rejects a field with no database column', () => {
-		// Nothing can appear in a WHERE clause without a column to name.
+	it('rejects a field with no database column when the server sends no flag', () => {
+		// An older server predates is_filterable; then only a column can appear in a WHERE clause.
 		expect(isFilterableField(field('total', 'int32', { is_persisted: false }))).toBe(false);
+	});
+
+	it('follows is_filterable for a computed field with no column', () => {
+		// An aggregate or related field is rendered in SQL; a Go-filled one is not.
+		const aggregate = field('variant_count', 'int64', { is_computed: true, is_persisted: false, is_filterable: true });
+		const goOnly = field('display_name', 'string', { is_computed: true, is_persisted: false, is_filterable: false });
+		expect(isFilterableField(aggregate)).toBe(true);
+		expect(isFilterableField(goOnly)).toBe(false);
+	});
+
+	it('keeps rejecting an edge even when the server flags nothing', () => {
+		expect(isFilterableField(field('peer', 'model', { is_edge_model: true, is_filterable: true }))).toBe(false);
 	});
 
 	it('rejects an edge and an unsupported type', () => {
@@ -102,6 +114,30 @@ describe('isFilterableField', () => {
 	it('keeps a computed field that still has a column', () => {
 		expect(isFilterableField(field('count', 'int32', { is_computed: true, is_persisted: true })))
 			.toBe(true);
+	});
+});
+
+describe('isSortableFieldName', () => {
+	const schema = {
+		name: 'inventory_product_template',
+		fields: {
+			name: field('name', 'string'),
+			variant_count: field('variant_count', 'int64', { is_computed: true, is_persisted: false, is_sortable: true }),
+			display_name: field('display_name', 'string', { is_computed: true, is_persisted: false, is_sortable: false }),
+			legacy_total: field('legacy_total', 'decimal', { is_persisted: false }),
+		},
+	} as unknown as dyn.ModelSchema;
+
+	it('follows is_sortable, falling back to the column rule', () => {
+		expect(isSortableFieldName(schema, 'name')).toBe(true);
+		expect(isSortableFieldName(schema, 'variant_count')).toBe(true);
+		expect(isSortableFieldName(schema, 'display_name')).toBe(false);
+		expect(isSortableFieldName(schema, 'legacy_total')).toBe(false);
+	});
+
+	it('keeps a field sortable while its schema is unknown', () => {
+		expect(isSortableFieldName(undefined, 'name')).toBe(true);
+		expect(isSortableFieldName(schema, 'peer.name')).toBe(true);
 	});
 });
 

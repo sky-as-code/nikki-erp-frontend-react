@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	buildValidationSchema, findComputedDependency, findExclusiveGroupPeers, findRelationBySrcField,
-	isRenderableFieldType,
+	isFieldFilterable, isFieldSortable, isRenderableFieldType,
 } from './model_schema';
 
 import type { ModelSchema, ModelSchemaField, ModelSchemaFieldDataTypeName } from './model_schema';
@@ -191,5 +191,27 @@ describe('findComputedDependency', () => {
 
 		expect(findComputedDependency(schema, 'sales_tax_mode')).toBeUndefined();
 		expect(findComputedDependency(undefined, 'effective_sales_tax_ids')).toBeUndefined();
+	});
+});
+
+describe('isFieldFilterable / isFieldSortable', () => {
+	it('follows the server flags when present', () => {
+		const aggregate = field('variant_count', 'int64', {
+			is_computed: true, is_persisted: false, is_filterable: true, is_sortable: true,
+		});
+		const goOnly = field('display_name', 'string', {
+			is_computed: true, is_persisted: false, is_filterable: false, is_sortable: false,
+		});
+		expect(isFieldFilterable(aggregate)).toBe(true);
+		expect(isFieldSortable(aggregate)).toBe(true);
+		expect(isFieldFilterable(goOnly)).toBe(false);
+		expect(isFieldSortable(goOnly)).toBe(false);
+	});
+
+	it('falls back to is_persisted when the server sends no flags', () => {
+		expect(isFieldFilterable(field('name', 'string'))).toBe(true);
+		expect(isFieldSortable(field('name', 'string', { is_persisted: true }))).toBe(true);
+		expect(isFieldFilterable(field('total', 'decimal', { is_persisted: false }))).toBe(false);
+		expect(isFieldSortable(field('total', 'decimal', { is_persisted: false }))).toBe(false);
 	});
 });
