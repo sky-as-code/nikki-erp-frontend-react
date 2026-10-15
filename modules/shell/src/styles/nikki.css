@@ -1,33 +1,32 @@
 @layer nikki {
-
 	html[data-mantine-color-scheme='dark'] {
 		/* black */
-		--nikki-color-black: #000000;
-		--nikki-color-black-shadow: rgba(0, 0, 0, 0.65);
+		--nikki-color-black: #000;
+		--nikki-color-black-shadow: rgb(0, 0, 0, 0.65);
 
 		/* white */
-		--nikki-color-white: #ffffff;
+		--nikki-color-white: #fff;
 		--nikki-color-white-hover: var(--mantine-color-gray-4);
 
 		/* disabled */
 		--nikki-color-disabled: var(--mantine-color-gray-6);
-		--nikki-color-disabled-shadow: rgba(134, 142, 150, 0.65);
+		--nikki-color-disabled-shadow: rgb(134, 142, 150, 0.65);
 
 		/* error */
 		--nikki-color-error: var(--mantine-color-red-3);
 
 		/* page */
-		--nikki-color-page-background: #d2e3f3;
+		--nikki-color-page-background: var(--mantine-color-dark-7);
 		--nikki-color-linear-page-background: linear-gradient(135deg, var(--mantine-color-dark-4), var(--mantine-color-dark-4), var(--mantine-color-dark-9));
 
 		/* paper */
-		--nikki-color-paper-background: var(--mantine-color-gray-1);
+		--nikki-color-paper-background: var(--mantine-color-dark-6);
 		--nikki-color-paper-border: #adb5bd;
 
 		/* primary */
 		--nikki-color-primary: #29abe2;
 		--nikki-color-primary-hover: #2a3b90;
-		--nikki-color-primary-shadow: rgba(42, 115, 185, 0.65);
+		--nikki-color-primary-shadow: rgb(42, 115, 185, 0.65);
 
 		/* success */
 		--nikki-color-success: #12b886;
@@ -36,24 +35,24 @@
 		--nikki-color-textbox-border: var(--mantine-color-gray-6);
 
 		/* table */
-		--nikki-color-table-bg-selected: var(--mantine-color-gray-3);
-		--nikki-color-table-border-selected: var(--mantine-color-gray-1);
+		--nikki-color-table-bg-selected: var(--mantine-color-blue-9);
+		--nikki-color-table-border-selected: var(--mantine-color-blue-4);
 	}
 
 	html[data-mantine-color-scheme='light'] {
 		/* black */
-		--nikki-color-black: #000000;
-		--nikki-color-black-shadow: rgba(0, 0, 0, 0.65);
+		--nikki-color-black: #000;
+		--nikki-color-black-shadow: rgb(0, 0, 0, 0.65);
 
 		/* white */
-		--nikki-color-white: #ffffff;
+		--nikki-color-white: #fff;
 		--nikki-color-white-bg-hover: var(--mantine-color-gray-4);
 		--nikki-color-white-border-hover: var(--mantine-color-black);
 		/* --nikki-color-white-hover: var(--mantine-color-gray-4); */
 
 		/* disabled */
 		--nikki-color-disabled: var(--mantine-color-gray-6);
-		--nikki-color-disabled-shadow: rgba(134, 142, 150, 0.65);
+		--nikki-color-disabled-shadow: rgb(134, 142, 150, 0.65);
 
 		/* error */
 		--nikki-color-error: var(--mantine-color-red-6);
@@ -77,14 +76,14 @@
 
 		/* --nikki-color-primary: #2a73b9;
 		--nikki-color-primary-hover: #2a3b90; */
-		--nikki-color-primary-shadow: rgba(42, 115, 185, 0.65);
+		--nikki-color-primary-shadow: rgb(42, 115, 185, 0.65);
 
 		/* success */
 		--nikki-color-success: #12b886;
 
 		/* textbox */
 		--nikki-color-textbox-border: var(--mantine-color-gray-6);
-		--nikki-color-textbox-border-hover: #000000;
+		--nikki-color-textbox-border-hover: #000;
 
 		/* table */
 		--nikki-color-table-bg-selected: var(--mantine-color-blue-1);

@@ -1,10 +1,11 @@
 import {
 	DirectionProvider, MantineProvider, MantineStyleProps,
-	useMantineColorScheme, useMantineTheme,
+	useMantineColorScheme,
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications, notifications as notif } from '@mantine/notifications';
 import { LockedFeatureProvider } from '@nikkierp/ui/components';
+import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { shellEventBus } from '../eventBus';
@@ -53,8 +54,7 @@ const LOCAL_SETTINGS_CHANGED_EVENT = 'shell:local_settings:changed';
  * Where Mantine keeps the scheme the user chose (`light` | `dark` | `auto`).
  *
  * Mantine's own default, restated because the value is needed for a comparison and the library
- * exposes no getter for it -- `useMantineColorScheme().colorScheme` reports the *resolved*
- * scheme, which is a different question. `MantineProvider` is mounted without a custom
+ * exposes no getter for it outside the provider's state. `MantineProvider` is mounted without a custom
  * `colorSchemeManager`, so this is the key in use; passing one would mean changing this too.
  */
 const MANTINE_COLOR_SCHEME_KEY = 'mantine-color-scheme-value';
@@ -167,9 +167,7 @@ export const useUIState = () => {
 };
 
 const UIStateProvider: React.FC<UIProvidersProps> = ({ children }) => {
-	const { colorScheme } = useMantineColorScheme();
-	const theme = useMantineTheme();
-	const backgroundColor = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+	const backgroundColor = usePaperBgColor();
 
 	const isScrollingUp = useScrollDirection();
 	const isMobile = useMobileScreen();

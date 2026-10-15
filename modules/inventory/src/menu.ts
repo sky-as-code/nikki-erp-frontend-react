@@ -12,7 +12,6 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
  * link resolves to a declared route, so the two are kept in step by hand.
  */
 const ITEMS: MenuItem[] = [
-	{ labelKey: 'menu_overview', link: '/overview' },
 	{
 		// A variant is the concrete, transactable form of a template, so the two belong together
 		// rather than as siblings of everything else.

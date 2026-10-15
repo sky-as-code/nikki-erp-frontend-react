@@ -123,10 +123,15 @@ export class AuthService {
 		return result;
 	}
 
+	/** The local session is cleared even when the strategy fails: a user who asked to leave must be signed out. */
 	@storeAsyncMethod
 	public async signOut(): Promise<void> {
-		await strategy.signOut();
-		clearAuthSession();
+		try {
+			await strategy.signOut();
+		}
+		finally {
+			clearAuthSession();
+		}
 	}
 
 	/**

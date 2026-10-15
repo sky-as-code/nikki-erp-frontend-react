@@ -33,8 +33,8 @@
 	z-index: 200;
 	/*
 	 * Opaque, not transparent. The row is `fixed`, so the page keeps scrolling underneath it — with
-	 * no background of its own the content below reads straight through the buttons. `--mantine-color-body`
-	 * tracks the light/dark scheme rather than hard-coding white.
+	 * no background of its own the content below reads straight through the buttons. The colour is set
+	 * inline from `usePaperBgColor()`, so it matches the page container in both schemes.
 	 */
 	padding-left: var(--mantine-spacing-md);
 	padding-right: var(--mantine-spacing-md);

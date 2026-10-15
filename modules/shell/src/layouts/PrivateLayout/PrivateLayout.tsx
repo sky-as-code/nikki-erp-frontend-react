@@ -47,7 +47,7 @@ function Footer(): React.ReactNode {
 			withBorder
 			bdrs={0}
 			component='footer'
-			bg={'var(--nikki-color-white)'}
+			bg='light-dark(var(--nikki-color-white), var(--mantine-color-dark-7))'
 			className='flex items-center justify-center h-10'
 		>
 			<Text c='dimmed' fz='sm'>

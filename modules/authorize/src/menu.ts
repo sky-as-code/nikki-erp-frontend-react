@@ -7,7 +7,6 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
  * default value, so the bar rendered raw key names.
  */
 const ITEMS: MenuItem[] = [
-	{ labelKey: 'menu.overview', link: '/overview' },
 	{
 		labelKey: 'menu.resources_actions',
 		items: [

@@ -47,8 +47,6 @@ describe('Purchase page metadata', () => {
 	 * URL paths separate words with `_`. The menu links in `menu.ts` are written by hand and
 	 * nothing checks that one resolves to a declared route, so the exact list is pinned here: a
 	 * rename that misses the menu shows up as a dead link only at runtime.
-	 *
-	 * `overview` is deliberately absent — the menu offers it but no page declares it yet.
 	 */
 	it('registers one route per page, all snake_case', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));

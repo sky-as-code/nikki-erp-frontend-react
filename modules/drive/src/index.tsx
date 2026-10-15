@@ -1,4 +1,5 @@
 import { MantineProvider } from '@mantine/core';
+import { MenuIndexRedirect } from '@nikkierp/ui/menu';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, initMicroAppStateContext,
@@ -23,7 +24,7 @@ import './styles/index.css';
 function Main(props: MicroAppProps) {
 	return (
 		<MicroAppProvider {...props}>
-			<MantineProvider>
+			<MantineProvider defaultColorScheme='auto'>
 				<MicroAppRouter
 					domType={props.domType}
 					basePath={props.routing.basePath}
@@ -32,7 +33,7 @@ function Main(props: MicroAppProps) {
 				>
 					<AppRoutes>
 						<AppRoute>
-							<AppRoute index element={<Navigate to={`management/${DRIVE_TABS.MY_FILES}`} replace />} />
+							<AppRoute index element={<MenuIndexRedirect items={buildDriveMenu(props.slug).items} />} />
 							<AppRoute path='overview' element={<OverviewPage />} />
 							<AppRoute path='management' element={<DriveLayout />}>
 								<AppRoute index element={<Navigate to={DRIVE_TABS.MY_FILES} replace />} />

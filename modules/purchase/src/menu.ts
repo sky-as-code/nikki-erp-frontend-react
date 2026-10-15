@@ -22,7 +22,6 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
  * route list so a rename that misses this file is at least visible there.
  */
 const ITEMS: MenuItem[] = [
-	{ labelKey: 'menu_overview', link: '/overview' },
 	{ labelKey: 'menu_requestsForQuotation', link: '/requests_for_quotation' },
 	{ labelKey: 'menu_orders', link: '/purchase_order' },
 	{ labelKey: 'menu_agreements', link: '/purchase_agreement' },

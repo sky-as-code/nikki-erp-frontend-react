@@ -28,11 +28,10 @@ export const SETTINGS_PAGE_RAIL = 'nikkierp.settings.components.settingsPage.rai
 export const SETTINGS_PAGE_PANE = 'nikkierp.settings.components.settingsPage.pane.v1';
 
 /**
- * The two-column frame holding the rail and the pane.
+ * The static two-column frame holding the rail and the pane: first child left, second right.
  *
- * It exists as its own contribution because `SplitLayout` takes *render callbacks*, which cannot
- * survive `JSON.stringify` and so cannot be authored in page JSON. This node owns those
- * callbacks and renders its two children into them by position -- first child left, second
- * right -- which keeps the page tree plain metadata.
+ * The id keeps its `split` name although the frame no longer uses `SplitLayout`: contribution ids
+ * are versioned contracts referenced from page metadata, and the role -- one frame, two columns
+ * by position -- is unchanged.
  */
 export const SETTINGS_PAGE_SPLIT = 'nikkierp.settings.components.settingsPage.split.v1';

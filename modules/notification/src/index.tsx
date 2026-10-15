@@ -1,4 +1,5 @@
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
+import { MenuIndexRedirect } from '@nikkierp/ui/menu';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, MicroAppRouter, WidgetRoute, WidgetRoutes,
@@ -57,6 +58,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 			widgetProps={props.widgetProps}
 		>
 			<AppRoutes>
+				<AppRoute index element={<MenuIndexRedirect items={buildNotificationMenu(props.slug).items} />} />
 				{pages.map(page => (
 					<AppRoute key={page.routePath} path={page.routePath} element={page.element} />
 				))}

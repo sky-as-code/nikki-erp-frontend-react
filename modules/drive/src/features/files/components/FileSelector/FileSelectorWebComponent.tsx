@@ -75,7 +75,7 @@ export function registerDriveFileSelectorWebComponent(htmlTag: string = DRIVE_FI
 			const mode = (modeAttr === 'folder' ? 'folder' : this.#props.mode);
 
 			this.#root.render(
-				<MantineProvider>
+				<MantineProvider defaultColorScheme='auto'>
 					<FileSelector
 						parentId={parentId}
 						multiple={multiple}

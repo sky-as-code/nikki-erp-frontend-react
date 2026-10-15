@@ -1,5 +1,5 @@
 import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
-import { moduleService, SearchModuleResponse } from '@nikkierp/shell/erpModules';
+import { isListedModule, moduleService, SearchModuleResponse } from '@nikkierp/shell/erpModules';
 import { routingService, useActiveOrgModule } from '@nikkierp/shell/routing';
 import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
@@ -19,7 +19,7 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 	const isAuthenticated = useIsAuthenticated();
 	// Read-only: `ShellRoutes` is what dispatches `listAll`, so this reflects that result.
 	const { data } = useServiceLayer<SearchModuleResponse>(moduleService.listAll);
-	const modules = data?.items ?? [];
+	const modules = useMemo(() => (data?.items ?? []).filter((mod) => isListedModule(mod)), [data]);
 	const { moduleSlug } = useActiveOrgModule();
 	const { dispatchMethod: setCurrentModule } = useServiceLayer(sharedStateService.setCurrentModule);
 
@@ -49,6 +49,7 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 			unselectedPlaceholder={t('module.selectModule')}
 			dropdownWidth={props.dropdownWidth}
 			items={items}
+			testId='shell.moduleSwitch'
 			value={moduleSlug ?? ''}
 			onChange={handleModuleChange}
 		/>

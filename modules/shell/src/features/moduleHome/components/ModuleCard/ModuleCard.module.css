@@ -1,9 +1,9 @@
 .moduleCardInner {
 	backdrop-filter: blur(10px);
-	background-color: light-dark(rgba(255, 255, 255, 0.7), var(--mantine-color-dark-5));
+	background-color: light-dark(rgb(255, 255, 255, 0.7), var(--mantine-color-dark-5));
 	border-radius: var(--mantine-radius-md);
-	border: 1px solid light-dark(rgba(255, 255, 255, 0.9), var(--mantine-color-dark-2));
-	box-shadow: 0 2px 6px light-dark(rgba(0, 0, 0, 0.1), var(--mantine-color-dark-2));
+	border: 1px solid light-dark(rgb(255, 255, 255, 0.9), var(--mantine-color-dark-2));
+	box-shadow: 0 2px 6px light-dark(rgb(0, 0, 0, 0.1), var(--mantine-color-dark-2));
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
 	aspect-ratio: 1 / 1;
 	min-height: 60px;
@@ -19,9 +19,10 @@
 .moduleCardHover .actionBtn {
 	opacity: 0.8 !important;
 }
+
 .moduleCardHover .moduleCardInner {
 	transform: translateY(-4px);
-	box-shadow: 0 8px 16px light-dark(rgba(0, 0, 0, 0.12), var(--mantine-color-dark-2)), 0 2px 4px light-dark(rgba(0, 0, 0, 0.08), var(--mantine-color-dark-2));
+	box-shadow: 0 8px 16px light-dark(rgb(0, 0, 0, 0.12), var(--mantine-color-dark-2)), 0 2px 4px light-dark(rgb(0, 0, 0, 0.08), var(--mantine-color-dark-2));
 }
 
 
@@ -30,6 +31,7 @@
 	opacity: 0;
 	transition: opacity 150ms ease;
 }
+
 .moduleCard:hover .actionBtn,
 .moduleCard:focus .actionBtn,
 .moduleCard:active .actionBtn,
@@ -40,12 +42,12 @@
 /* Card hover effect */
 .moduleCard:hover .moduleCardInner {
 	transform: translateY(-4px);
-	box-shadow: 0 8px 16px light-dark(rgba(0, 0, 0, 0.12), var(--mantine-color-dark-2)), 0 2px 4px light-dark(rgba(0, 0, 0, 0.08), var(--mantine-color-dark-2));
+	box-shadow: 0 8px 16px light-dark(rgb(0, 0, 0, 0.12), var(--mantine-color-dark-2)), 0 2px 4px light-dark(rgb(0, 0, 0, 0.08), var(--mantine-color-dark-2));
 }
 
 .moduleCard:active .moduleCardInner {
 	/* transform: translateY(-2px);
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06); */
 	transform: translateY(-4px);
-	box-shadow: 0 8px 16px light-dark(rgba(0, 0, 0, 0.12), var(--mantine-color-dark-2)), 0 2px 4px light-dark(rgba(0, 0, 0, 0.08), var(--mantine-color-dark-2));
+	box-shadow: 0 8px 16px light-dark(rgb(0, 0, 0, 0.12), var(--mantine-color-dark-2)), 0 2px 4px light-dark(rgb(0, 0, 0, 0.08), var(--mantine-color-dark-2));
 }

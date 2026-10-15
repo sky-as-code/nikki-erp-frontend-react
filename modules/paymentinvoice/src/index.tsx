@@ -1,4 +1,5 @@
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
+import { MenuIndexRedirect } from '@nikkierp/ui/menu';
 import { defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps } from '@nikkierp/ui/microApp';
 import { MicroAppProvider } from '@nikkierp/ui/microApp';
 import { ViewEngineRouter } from '@nikkierp/viewkit-mantine';
@@ -59,10 +60,12 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildInvoicePages(),
 	], []);
 
+	const indexElement = <MenuIndexRedirect items={buildPaymentInvoiceMenu(props.slug).items} />;
+
 	return (
 		<ViewEngineRouter
 			microAppProps={props}
-			engineProps={{ pages, indexElement: <h1>Payment &amp; Invoice</h1> }}
+			engineProps={{ pages, indexElement }}
 		/>
 	);
 }

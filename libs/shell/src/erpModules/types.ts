@@ -37,6 +37,10 @@ export type Module = {
 	label?: ModuleLabelRef,
 	name: string,
 	version: string,
+	/** The module ships a frontend micro-app; only these appear on Module Home. */
+	has_ui: boolean,
+	/** Prefix of the module's resource codes (`vdmc` for vendingmachine); decides module access. */
+	model_prefix?: string,
 };
 
 /**

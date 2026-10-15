@@ -88,7 +88,6 @@ function useHeaderSort() {
 }
 
 function ConnectedColumnFilterRow() {
-	const t = useTranslate('common');
 	const ctx = useExcelDataTableContext();
 	const { fields, modelSchema, relatedSchemas, filters, applyFilters, fieldRenderers } = ctx;
 	const tField = useTranslate(ctx.translationNs);
@@ -111,7 +110,6 @@ function ConnectedColumnFilterRow() {
 			onChange={filters.setColumnValue}
 			onCommit={onCommit}
 			hasFillerColumn
-			placeholder={t('search.placeholder')}
 			translateEnumValue={translateEnumValue}
 			tid={ctx.tid}
 		/>

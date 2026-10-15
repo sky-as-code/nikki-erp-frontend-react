@@ -1,38 +1,53 @@
-import {
-	Anchor, Box, Button, Text, Menu, Image, Stack, Flex, Divider,
-} from '@mantine/core';
+import { Anchor, Box, Button, Text, Menu, Stack, Flex } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { IconDots, IconStarFilled, IconAugmentedReality } from '@tabler/icons-react';
+import { useModuleAccess } from '@nikkierp/shell/erpModules';
+import { ModuleIcon } from '@nikkierp/ui/components';
+import { IconDots } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { FC, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import classes from './ModuleCard.module.css';
-import genericIcon from '../../../../icons/generic.svg';
+
+import type { ModuleCardItem } from '../../hooks/useQueryModule';
 
 
 /** Every card names itself by module slug, so several cards on the grid stay distinguishable. */
 const TEST_ID = 'shell.moduleCard';
+const UNAUTHORIZED_PATH = '/unauthorized';
 
 
-export const ModuleCard: FC<{ module: any }> = ({ module }) => {
+/** A module the user holds nothing in stays listed, but opens the No Permission page. */
+function useModuleTargetPath(module: ModuleCardItem): string {
+	const { isPending, canAccess } = useModuleAccess();
+	const modulePath = `/${module.slug}`;
+	// While the user context loads, the route guard in ShellRoutes makes the same decision.
+	if (isPending || canAccess({ name: module.slug, model_prefix: module.modelPrefix })) {
+		return modulePath;
+	}
+	return UNAUTHORIZED_PATH;
+}
+
+export const ModuleCard: FC<{ module: ModuleCardItem }> = ({ module }) => {
 	const navigate = useNavigate();
 	const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+	const targetPath = useModuleTargetPath(module);
 
 	return (
 		<Anchor
-			href={`/${module.slug}`}
+			href={targetPath}
 			className={clsx(classes.moduleCard, isActionMenuOpen && classes.moduleCardHover)}
 			pos='relative' w='100%' underline='never'
 			onClick={(evt) => {
 				evt.preventDefault();
-				navigate(`/${module.slug}`);
+				navigate(targetPath);
 			}}
 			{...testAttrs(TEST_ID, module.slug)}
 		>
 			<Stack justify='start' align='center' gap={0} w='100%'>
 				<ModuleCardContent
 					module={module}
+					targetPath={targetPath}
 					isActionMenuOpen={isActionMenuOpen}
 					setIsActionMenuOpen={setIsActionMenuOpen}
 				/>
@@ -43,48 +58,44 @@ export const ModuleCard: FC<{ module: any }> = ({ module }) => {
 };
 
 type ModuleCardContentProps = {
-	module: any,
+	module: ModuleCardItem,
+	targetPath: string,
 	isActionMenuOpen: boolean,
 	setIsActionMenuOpen: (value: boolean) => void,
 };
-const ModuleCardContent: FC<ModuleCardContentProps> = ({ module, isActionMenuOpen, setIsActionMenuOpen }) => {
-	const [imageError, setImageError] = useState(false);
-
+const ModuleCardContent: FC<ModuleCardContentProps> = ({
+	module, targetPath, isActionMenuOpen, setIsActionMenuOpen,
+}) => {
 	return (
 		<Flex justify='center' align='start' w={'100%'} p={10}>
 			<Box
 				pos='relative' w={'100%'} maw={90} p={5}
 				className={clsx(classes.moduleCardInner)}
 			>
-				{imageError ? (
-					<FallbackModuleIcon />
-				) : (
-					<Image
-						h={'100%'} w={'100%'} radius='md' fit='contain' bg='transparent'
-						src={module.icon || genericIcon} alt={module.name || 'no image'}
-						onError={() => setImageError(true)}
-					/>
-				)}
+				<ModuleIcon h={'100%'} w={'100%'} radius='md' name={module.slug} alt={module.name} />
 
-				<FavoriteButton moduleSlug={module.slug} />
 				<ModuleCardMenu
 					module={module}
+					targetPath={targetPath}
 					isActionMenuOpen={isActionMenuOpen}
 					setIsActionMenuOpen={setIsActionMenuOpen}
 				/>
 			</Box>
 		</Flex>
-
 	);
 };
 
 
 type ModuleCardMenuProps = {
-	module: any,
+	module: ModuleCardItem,
+	targetPath: string,
 	isActionMenuOpen: boolean,
 	setIsActionMenuOpen: (value: boolean) => void,
 };
-const ModuleCardMenu: FC<ModuleCardMenuProps> = ({ module, isActionMenuOpen, setIsActionMenuOpen }) => {
+// Favorite and disable are not offered: the backend module list carries neither.
+const ModuleCardMenu: FC<ModuleCardMenuProps> = ({
+	module, targetPath, isActionMenuOpen, setIsActionMenuOpen,
+}) => {
 	return (
 		<Menu
 			withinPortal shadow='sm' width={200}
@@ -103,19 +114,16 @@ const ModuleCardMenu: FC<ModuleCardMenuProps> = ({ module, isActionMenuOpen, set
 						e.stopPropagation();
 						setIsActionMenuOpen(!isActionMenuOpen);
 					}}
-					{...testAttrs(TEST_ID, module?.slug, 'actionMenu')}
+					{...testAttrs(TEST_ID, module.slug, 'actionMenu')}
 				>
 					<IconDots size={16} />
 				</Button>
 			</Menu.Target>
 
 			<Menu.Dropdown onClick={(e) => e.stopPropagation()}>
-				<Menu.Item {...testAttrs(TEST_ID, module?.slug, 'unfavorite')}>Unfavorite</Menu.Item>
-				<Menu.Item {...testAttrs(TEST_ID, module?.slug, 'disable')}>Disable</Menu.Item>
-				<Divider />
 				<Menu.Item
-					component='a' href={`/${module?.slug}`} target='_blank'
-					{...testAttrs(TEST_ID, module?.slug, 'openInNewTab')}
+					component='a' href={targetPath} target='_blank'
+					{...testAttrs(TEST_ID, module.slug, 'openInNewTab')}
 				>
 					Open in new tab
 				</Menu.Item>
@@ -124,35 +132,7 @@ const ModuleCardMenu: FC<ModuleCardMenuProps> = ({ module, isActionMenuOpen, set
 	);
 };
 
-const FavoriteButton: FC<{ moduleSlug?: string }> = ({ moduleSlug }) => {
-	return (
-		<Button
-			variant='transparent'
-			pos='absolute' top={1} left={1}
-			h={24} w={24} p={0}
-			{...testAttrs(TEST_ID, moduleSlug, 'favorite')}
-		>
-			<IconStarFilled size={18} color='var(--mantine-color-yellow-4)' />
-		</Button>
-	);
-};
-
-const FallbackModuleIcon: FC = () => {
-	return (
-		<Flex
-			component='div'
-			align='center' justify='center' h={'100%'} w={'100%'}
-		>
-			<IconAugmentedReality
-				size={56}
-				color='var(--mantine-color-gray-5)'
-			/>
-		</Flex>
-	);
-};
-
-
-const ModuleCardFooter: FC<{ module: any }> = ({ module }) => {
+const ModuleCardFooter: FC<{ module: ModuleCardItem }> = ({ module }) => {
 	return (
 		<Box py={8} px={4} w='100%'>
 			<Text

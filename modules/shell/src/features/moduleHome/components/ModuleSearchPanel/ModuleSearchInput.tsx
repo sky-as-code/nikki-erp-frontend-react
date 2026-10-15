@@ -55,7 +55,7 @@ export const ModuleSearchInput: FC<ModuleSearchInputProps> = ({
 	);
 
 	return (
-		<MantineProvider theme={theme}>
+		<MantineProvider theme={theme} defaultColorScheme='auto'>
 			<TextInput
 				ref={inputRef}
 				placeholder={placeholder}

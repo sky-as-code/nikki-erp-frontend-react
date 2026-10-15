@@ -1,12 +1,12 @@
 import { MantineProvider } from '@mantine/core';
 import { ACTIONS, RESOURCES } from '@nikkierp/shell/userContext';
 import { PermissionGuard } from '@nikkierp/ui/components';
+import { MenuIndexRedirect } from '@nikkierp/ui/menu';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, initMicroAppStateContext,
 	MicroAppRouter, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
-import { Navigate } from 'react-router';
 
 import { reducer } from './appState';
 import { buildAuthorizeMenu } from './menu';
@@ -39,7 +39,7 @@ import { RoleSuiteListPage } from './pages/roleSuites/RoleSuiteListPage';
 function Main(props: MicroAppProps) {
 	return (
 		<MicroAppProvider {...props}>
-			<MantineProvider>
+			<MantineProvider defaultColorScheme='auto'>
 				<MicroAppRouter
 					domType={props.domType}
 					basePath={props.routing.basePath}
@@ -47,7 +47,7 @@ function Main(props: MicroAppProps) {
 					widgetProps={props.widgetProps}
 				>
 					<AppRoutes>
-						<AppRoute index element={<Navigate to='overview' replace />} />
+						<AppRoute index element={<MenuIndexRedirect items={buildAuthorizeMenu(props.slug).items} />} />
 						<AppRoute path='overview' element={<OverviewPage />} />
 						{/* Resource routes */}
 						<AppRoute path='resources' element={<PermissionGuard resource={RESOURCES.AUTHZ_RESOURCE} action={ACTIONS.VIEW}><ResourceListPage /></PermissionGuard>} />

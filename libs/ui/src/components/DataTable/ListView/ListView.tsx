@@ -235,7 +235,6 @@ function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
 
 function ListViewHead(): React.ReactNode {
 	const context = useDataTableContext();
-	const t = useTranslate('common');
 	const tField = useTranslate(context.settings.translationNs);
 	const fieldRenderer = context.settings.fieldRenderer;
 	const translateEnumValue = React.useCallback((field: string, value: string) => {
@@ -318,7 +317,6 @@ function ListViewHead(): React.ReactNode {
 					onCommit={onCommitColumnFilter}
 					getColumnStyle={field => getColumnStyle(getColumnWidth(field, widths))}
 					hasFillerColumn={context.settings.allowColumnResizing}
-					placeholder={t('search.placeholder')}
 					translateEnumValue={translateEnumValue}
 					tid={context.tid}
 				/>
