@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-	tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -88,36 +87,25 @@ function buildStatusRenderers() {
 }
 
 function buildStockReservationFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'reservation',
-				header: 'form.reservation',
-				content: resourceFormColumnNode({
-					header: 'form.reservation',
-					fields: ['warehouse_id', 'product_variant_id', 'base_uom_id', 'quantity', 'consumed_quantity',
-						'released_quantity', 'remaining_quantity', 'effective_reserved_quantity'],
-				}),
-			},
-			{
-				key: 'lifecycle',
-				header: 'form.lifecycle',
-				content: resourceFormColumnNode({
-					header: 'form.lifecycle',
-					fields: ['status', 'effective_status', 'reserved_until', 'release_reason', 'released_at',
-						'expiry_recorded_at'],
-				}),
-			},
-			{
-				key: 'source',
-				header: 'form.source',
-				content: resourceFormColumnNode({
-					header: 'form.source',
-					fields: ['source_module', 'source_type', 'source_id', 'source_line_id', 'source_revision',
-						'idempotency_key', 'request_fingerprint', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.reservation',
+			fields: ['warehouse_id', 'product_variant_id', 'base_uom_id', 'quantity', 'consumed_quantity',
+				'released_quantity', 'remaining_quantity', 'effective_reserved_quantity'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.lifecycle',
+			fields: ['status', 'effective_status', 'reserved_until', 'release_reason', 'released_at',
+				'expiry_recorded_at'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.source',
+			fields: ['source_module', 'source_type', 'source_id', 'source_line_id', 'source_revision',
+				'idempotency_key', 'request_fingerprint', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }

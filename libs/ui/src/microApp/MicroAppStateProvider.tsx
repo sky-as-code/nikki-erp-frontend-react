@@ -53,14 +53,17 @@ export type MicroAppStateProviderProps = React.PropsWithChildren & {
 };
 
 export const MicroAppStateProvider: React.FC<MicroAppStateProviderProps> = ({ children }) => {
-	// A module owning its state through `createModuleStore` never initializes this, and
-	// renders through untouched. The hooks below are what report the missing context, and
-	// only to a caller that actually tried to read Shell state.
-	if (!appStateContextValue) return children;
-
 	const ctx = getAppStateContext();
+	const inherited = useContext(ctx);
+	// A module owning its state through `createModuleStore` never initializes this, and passes on
+	// whatever it inherits. The hooks below are what report the missing context, and only to a
+	// caller that actually tried to read Shell state.
+	//
+	// The Provider is rendered either way: `appStateContextValue` can be set after the first render,
+	// and switching from bare children to a Provider on the next one remounted the whole page below
+	// it, which closed a split view's list pane on the first row click.
 	return (
-		<ctx.Provider value={appStateContextValue}>
+		<ctx.Provider value={appStateContextValue ?? inherited}>
 			{children}
 		</ctx.Provider>
 	);

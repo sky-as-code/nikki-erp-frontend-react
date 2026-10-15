@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -29,7 +29,7 @@ export function buildSalesFiscalRequestPages(): PageNode[] {
 }
 
 function buildSalesFiscalRequestListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_FISCAL_REQUEST_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
@@ -51,7 +51,7 @@ function buildSalesFiscalRequestListProps() {
 }
 
 function buildSalesFiscalRequestDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_FISCAL_REQUEST_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'provider_reference' },
@@ -66,36 +66,25 @@ function buildSalesFiscalRequestDetailProps() {
 
 /** No update or delete: a fiscal document that could be edited afterwards would not be one. */
 function buildSalesFiscalRequestFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'request',
-				header: 'form.request',
-				content: resourceFormColumnNode({
-					header: 'form.request',
-					fields: ['sales_bill_id', 'intent', 'status', 'requested_at', 'issued_at'],
-				}),
-			},
-			{
-				key: 'provider',
-				header: 'form.provider',
-				content: resourceFormColumnNode({
-					header: 'form.provider',
-					// `provider_reference` is the only durable link to the issued document.
-					// `idempotency_key` travels to the provider rather than merely constraining the
-					// table: a retry must send the same one or it issues a second invoice.
-					fields: ['provider_reference', 'idempotency_key', 'attempt_count', 'last_error'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['original_fiscal_request_id', 'buyer_snapshot', 'org_id', 'created_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.request',
+			fields: ['sales_bill_id', 'intent', 'status', 'requested_at', 'issued_at'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.provider',
+			// `provider_reference` is the only durable link to the issued document.
+			// `idempotency_key` travels to the provider rather than merely constraining the
+			// table: a retry must send the same one or it issues a second invoice.
+			fields: ['provider_reference', 'idempotency_key', 'attempt_count', 'last_error'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['original_fiscal_request_id', 'buyer_snapshot', 'org_id', 'created_at'],
+		}),
+	]);
 }

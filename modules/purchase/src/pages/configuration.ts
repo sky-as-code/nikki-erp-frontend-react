@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -35,7 +35,7 @@ export function buildConfigurationPages(): PageNode[] {
 }
 
 function buildConfigurationListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.CONFIGURATION_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		linkField: 'id',
@@ -65,7 +65,7 @@ function buildConfigurationListProps() {
  * decide whether approval is required, and changed by editing it.
  */
 function buildConfigurationDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.CONFIGURATION_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		titleLvl1: { schemaField: 'approval_mode' },
@@ -82,27 +82,20 @@ function buildConfigurationDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildConfigurationFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.PURCHASE_MODULE,
-		tabs: [
-			{
-				key: 'approval',
-				header: 'form.approval',
-				content: resourceFormColumnNode({
-					header: 'form.approval',
-					// An empty threshold under `two_step` means every order needs approval, not none â€”
-					// the backend reads a missing threshold as "always". Under `one_step` it is ignored.
-					fields: ['approval_mode', 'approval_threshold'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['po_modification_policy', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.approval',
+			// An empty threshold under `two_step` means every order needs approval, not none â€”
+			// the backend reads a missing threshold as "always". Under `one_step` it is ignored.
+			fields: ['approval_mode', 'approval_threshold'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['po_modification_policy', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }

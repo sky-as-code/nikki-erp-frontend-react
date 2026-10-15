@@ -1,4 +1,4 @@
-import type * as dyn from '@nikkierp/common/dynamicModel';
+import * as dyn from '@nikkierp/common/dynamicModel';
 
 
 /** A to-one edge and the destination schema its label has to come from. */
@@ -65,12 +65,8 @@ export function edgeDisplay(
 }
 
 /**
- * The record's own columns, as a get-detail selection.
- *
- * Mirrors the projection the server falls back to when no `fields` is sent — `ReadableFields()`,
- * every field that is not an edge model. It has to be sent explicitly as soon as *anything* is
- * selected, because `fields` replaces that default rather than adding to it: asking for only
- * `uom.name` would return a record consisting of the uom and nothing else.
+ * The record's own columns: what `dyn.ALL_FIELDS` expands to on the server (`ReadableFields()`,
+ * every field that is not an edge model).
  */
 export function ownFieldNames(schema: dyn.ModelSchema | undefined): string[] {
 	return Object.values(schema?.fields ?? {})
@@ -114,8 +110,8 @@ export type EdgeLabelRequest = {
  * where it would show the raw id (`resolveEdgeLabel`).
  *
  * A request without `fields` gets the server's own fallback written out first —
- * `default_search_fields`, else the record's own columns — because `fields` replaces that default
- * rather than adding to it. A request that needs no label is returned untouched, so it still
+ * `default_search_fields`, else `dyn.ALL_FIELDS` — because `fields` replaces that default rather
+ * than adding to it. A request that needs no label is returned untouched, so it still
  * sends no `fields` at all.
  *
  * `added` lists only what the caller did not ask for; `stripAddedFields` takes exactly those back
@@ -127,7 +123,7 @@ export function withEdgeLabelFields(
 	destSchemas: Record<string, dyn.ModelSchema>,
 ): EdgeLabelRequest {
 	const base = request.fields ?? defaultSearchFieldNames(schema);
-	const selected = new Set(base);
+	const selected = new Set(base.includes(dyn.ALL_FIELDS) ? [...base, ...ownFieldNames(schema)] : base);
 	const toOneEdges = new Set(toOneEdgeTargets(schema).map(target => target.edge));
 	const added = (schema.to_relations ?? [])
 		.filter(relation => toOneEdges.has(relation.edge) && selected.has(relation.src_field ?? ''))
@@ -156,5 +152,5 @@ export function stripAddedFields<TData extends { desired_fields: string[] }>(dat
 
 function defaultSearchFieldNames(schema: dyn.ModelSchema): string[] {
 	const defaults = schema.default_search_fields ?? [];
-	return defaults.length > 0 ? defaults : ownFieldNames(schema);
+	return defaults.length > 0 ? defaults : [dyn.ALL_FIELDS];
 }

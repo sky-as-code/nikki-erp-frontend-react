@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -35,7 +34,7 @@ export function buildOrderPages(): PageNode[] {
  * failed one, and removing it destroys the only evidence the attempt was made.
  */
 function buildOrderListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.ORDER_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
 		linkField: 'id',
@@ -68,7 +67,7 @@ function buildOrderListProps() {
 }
 
 function buildOrderDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.ORDER_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
 		titleLvl1: { schemaField: 'order_id' },
@@ -79,63 +78,45 @@ function buildOrderDetailProps() {
 			update: OrderCommands.UPDATE,
 		},
 		contextualActions: buildOrderActions(),
-		childrenNodes: [buildOrderFieldsSection(), ...buildTransactionSection()],
+		childrenNodes: [buildOrderFieldsSection()],
+		relatedResources: buildTransactionResources(),
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildOrderFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.PAYMENTINVOICE_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					// order_id is what the ordering system quotes; order_code is what the gateway knows
-					// the order by. They are different strings and both are shown, because a support
-					// conversation may start from either.
-					fields: ['order_id', 'order_code', 'source', 'status', 'content', 'org_id'],
-				}),
-			},
-			{
-				key: 'money',
-				header: 'form.money',
-				content: resourceFormColumnNode({
-					header: 'form.money',
-					fields: ['amount', 'refund_amount', 'currency_id', 'payment_method_id'],
-				}),
-			},
-			{
-				key: 'notification',
-				header: 'form.notification',
-				content: resourceFormColumnNode({
-					header: 'form.notification',
-					// How the ordering system was told, and whether it heard. A failure here is what the
-					// retry sweep looks for.
-					fields: ['return_url', 'last_sync_status', 'sync_logs'],
-				}),
-			},
-			{
-				key: 'gateway_data',
-				header: 'form.gatewayData',
-				content: resourceFormColumnNode({
-					header: 'form.gatewayData',
-					// Whatever the paying method needed at order time, plus the gateway's own replies.
-					fields: ['metadata'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			// order_id is what the ordering system quotes; order_code is what the gateway knows
+			// the order by. They are different strings and both are shown, because a support
+			// conversation may start from either.
+			fields: ['order_id', 'order_code', 'source', 'status', 'content', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.money',
+			fields: ['amount', 'refund_amount', 'currency_id', 'payment_method_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.notification',
+			// How the ordering system was told, and whether it heard. A failure here is what the
+			// retry sweep looks for.
+			fields: ['return_url', 'last_sync_status', 'sync_logs'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.gatewayData',
+			// Whatever the paying method needed at order time, plus the gateway's own replies.
+			fields: ['metadata'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**
@@ -181,16 +162,14 @@ function buildOrderActions() {
  * current route param and links nowhere: a transaction has no life outside the order that carries
  * it, and there is no transaction detail page to link to.
  */
-function buildTransactionSection(): ComponentNode[] {
+function buildTransactionResources() {
 	return [
-		collapsibleSectionNode(
-			{ header: 'form.transactions', translationNs: c.PAYMENTINVOICE_MODULE, expanded: true },
-			[resourceTableNode({
-				schemaName: c.TRANSACTION_SCHEMA_NAME,
-				translationNs: c.PAYMENTINVOICE_MODULE,
-				searchCommand: TransactionCommands.SEARCH,
-				initialGraph: { if: ['order_id', '=', '${id}'] },
-			})],
-		),
+		{
+			label: 'form.transactions',
+			schemaName: c.TRANSACTION_SCHEMA_NAME,
+			translationNs: c.PAYMENTINVOICE_MODULE,
+			searchCommand: TransactionCommands.SEARCH,
+			initialGraph: { if: ['order_id', '=', '${id}'] },
+		},
 	];
 }

@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -30,11 +29,12 @@ export function buildSalesVoucherCodePages(): PageNode[] {
 }
 
 function buildSalesVoucherCodeListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_VOUCHER_CODE_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
 		searchCommand: SalesVoucherCodeCommands.SEARCH,
+		updateCommand: SalesVoucherCodeCommands.UPDATE,
 		createEnabled: true,
 		archiveCommand: SalesVoucherCodeCommands.SET_IS_ARCHIVED,
 		fieldRenderers: {
@@ -48,7 +48,7 @@ function buildSalesVoucherCodeListProps() {
 }
 
 function buildSalesVoucherCodeDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_VOUCHER_CODE_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'code' },
@@ -61,50 +61,36 @@ function buildSalesVoucherCodeDetailProps() {
 			archive: SalesVoucherCodeCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildSalesVoucherCodeFieldsSection()],
-		childrenNodes: [buildSalesVoucherCodeFieldsSection(), ...buildSalesVoucherRedemptionsSection()],
+		childrenNodes: [buildSalesVoucherCodeFieldsSection()],
+		relatedResources: buildSalesVoucherRedemptionsResources(),
 	});
 }
 
 function buildSalesVoucherCodeFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'voucher',
-				header: 'form.voucher',
-				content: resourceFormColumnNode({
-					header: 'form.voucher',
-					fields: ['code', 'sales_promotion_program_id', 'status'],
-				}),
-			},
-			{
-				key: 'usage',
-				header: 'form.usage',
-				content: resourceFormColumnNode({
-					header: 'form.usage',
-					// `usage_count` is written by redemption; editing it by hand grants another use of
-					// a code that was already spent.
-					fields: ['usage_limit', 'usage_count'],
-				}),
-			},
-			{
-				key: 'validity',
-				header: 'form.validity',
-				content: resourceFormColumnNode({
-					header: 'form.validity',
-					fields: ['valid_from', 'valid_until'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.voucher',
+			fields: ['code', 'sales_promotion_program_id', 'status'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.usage',
+			// `usage_count` is written by redemption; editing it by hand grants another use of
+			// a code that was already spent.
+			fields: ['usage_limit', 'usage_count'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.validity',
+			fields: ['valid_from', 'valid_until'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**
@@ -112,34 +98,28 @@ function buildSalesVoucherCodeFieldsSection(): ComponentNode {
  * `{parent_schema}_id` convention, and the conventional name would return an empty table rather
  * than an error. Read-only, because redemption is what enforces the usage limit.
  */
-function buildSalesVoucherRedemptionsSection(): ComponentNode[] {
+function buildSalesVoucherRedemptionsResources() {
 	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_voucher_code_sections_redemptions',
-				translationNs: c.SALES_MODULE,
-				expanded: true,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_VOUCHER_REDEMPTION_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesVoucherRedemptionCommands.SEARCH,
-				initialGraph: { if: ['voucher_code_id', '=', '${id}'] },
-				fields: ['sales_order_id', 'status', 'reserved_at', 'redeemed_at', 'released_at',
-					'reversed_at'],
-				fieldRenderers: {
-					status: {
-						renderer: 'badge',
-						colorMap: {
-							reserved: 'orange',
-							redeemed: 'green',
-							released: 'gray',
-							reversed: 'red',
-						},
-						prefix: 'status.',
+		{
+			label: 'sales_voucher_code_sections_redemptions',
+			schemaName: c.SALES_VOUCHER_REDEMPTION_SCHEMA_NAME,
+			translationNs: c.SALES_MODULE,
+			searchCommand: SalesVoucherRedemptionCommands.SEARCH,
+			initialGraph: { if: ['voucher_code_id', '=', '${id}'] },
+			fields: ['sales_order_id', 'status', 'reserved_at', 'redeemed_at', 'released_at',
+				'reversed_at'],
+			fieldRenderers: {
+				status: {
+					renderer: 'badge',
+					colorMap: {
+						reserved: 'orange',
+						redeemed: 'green',
+						released: 'gray',
+						reversed: 'red',
 					},
+					prefix: 'status.',
 				},
-			})],
-		),
+			},
+		},
 	];
 }

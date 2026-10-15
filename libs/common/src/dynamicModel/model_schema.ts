@@ -53,8 +53,15 @@ export type ModelSchemaField = {
 	/** Model-typed field standing for a relation. Never renderable as a column. */
 	is_edge_model?: boolean,
 	is_foreign_key?: boolean,
-	/** Whether the value occupies a database column, and so can be filtered or sorted on. */
+	/**
+	 * Whether the value occupies a database column. A computed field has none, yet may still be
+	 * filtered or sorted on when the server renders it in SQL: ask `is_filterable` / `is_sortable`.
+	 */
 	is_persisted?: boolean,
+	/** Whether a search may filter on this field. Read it through `isFieldFilterable`. */
+	is_filterable?: boolean,
+	/** Whether a search may order by this field. Read it through `isFieldSortable`. */
+	is_sortable?: boolean,
 	is_required_for_create?: boolean,
 	is_required_for_update?: boolean,
 	is_primary_key?: boolean,
@@ -190,6 +197,20 @@ export function isRenderableFieldType(fieldDef: ModelSchemaField): boolean {
 		return false;
 	}
 	return RENDERABLE_DATA_TYPES.has(fieldDef.data_type.name);
+}
+
+/**
+ * Whether a search may filter on this field. The server decides: a computed field it renders in
+ * SQL is filterable although it has no column. A server too old to send the flag is answered by
+ * the rule it predates, which is that only a column can be filtered.
+ */
+export function isFieldFilterable(fieldDef: ModelSchemaField): boolean {
+	return fieldDef.is_filterable ?? fieldDef.is_persisted !== false;
+}
+
+/** Whether a search may order by this field. Same contract as `isFieldFilterable`. */
+export function isFieldSortable(fieldDef: ModelSchemaField): boolean {
+	return fieldDef.is_sortable ?? fieldDef.is_persisted !== false;
 }
 
 // Extra validation rule for the field. <br/>

@@ -40,3 +40,17 @@
 	min-width: 0;
 	flex: 1;
 }
+
+.profileHeader {
+	border-radius: 3px;
+	background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6));
+}
+
+/* The default avatar: no photo, a user icon in the placeholder's text colour. */
+.avatarPlaceholder {
+	color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-1));
+
+	@mixin dark {
+		background-color: var(--mantine-color-dark-4);
+	}
+}

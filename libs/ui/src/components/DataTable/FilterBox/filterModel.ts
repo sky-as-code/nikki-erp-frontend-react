@@ -162,13 +162,12 @@ export function getFilterInputKind(field: dyn.ModelSchemaField | undefined): Fil
 /**
  * Whether a column can be filtered on at all.
  *
- * `is_persisted` is the gate that matters: a field with no database column cannot appear in a
- * WHERE clause, so offering an input for it would build a request the server rejects. A
- * computed-but-persisted field is fine, which is why this tests the column rather than
- * `is_computed`.
+ * The server decides through `is_filterable`: a computed field it renders in SQL (an aggregate,
+ * a related copy, a formula) is filterable although it has no column, while one filled in Go
+ * after the read is not, and an input for it would build a request the server rejects.
  */
 export function isFilterableField(field: dyn.ModelSchemaField | undefined): boolean {
-	if (!field || field.is_edge_model || field.is_persisted === false) {
+	if (!field || field.is_edge_model || !dyn.isFieldFilterable(field)) {
 		return false;
 	}
 	return getFilterInputKind(field) !== 'unsupported';
@@ -201,6 +200,22 @@ export function getFieldSchema(
 		return undefined;
 	}
 	return relatedSchemas?.[destSchemaName]?.fields[field.slice(dot + 1)];
+}
+
+/**
+ * Whether a search may order by `field`, which may reach one edge deep.
+ *
+ * The server decides through `is_sortable`: a computed field it renders in SQL can be ordered by,
+ * one filled in Go after the query cannot. A field whose schema has not loaded yet stays
+ * sortable, so a column is never stripped of its sort while its schema is still in flight.
+ */
+export function isSortableFieldName(
+	schema: dyn.ModelSchema | undefined,
+	field: string,
+	relatedSchemas?: Record<string, dyn.ModelSchema>,
+): boolean {
+	const fieldSchema = getFieldSchema(schema, field, relatedSchemas);
+	return !fieldSchema || dyn.isFieldSortable(fieldSchema);
 }
 
 /**

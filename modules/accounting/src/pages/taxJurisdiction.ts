@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -29,7 +29,7 @@ export function buildTaxJurisdictionPages(): PageNode[] {
 }
 
 function buildListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.TAX_JURISDICTION_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		linkField: 'id',
@@ -38,6 +38,7 @@ function buildListProps() {
 		deleteCommand: TaxJurisdictionCommands.DELETE,
 		archiveCommand: TaxJurisdictionCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: TaxJurisdictionCommands.UPDATE,
+		updateCommand: TaxJurisdictionCommands.UPDATE,
 		fieldRenderers: {
 			// The colours run cool-to-warm with descending scope, so a reader can see the depth of
 			// a jurisdiction without reading the label.
@@ -58,7 +59,7 @@ function buildListProps() {
 }
 
 function buildDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.TAX_JURISDICTION_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -78,26 +79,19 @@ function buildDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.ACCOUNTING_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['code', 'name', 'country_code', 'level', 'parent_id', 'authority_name',
-						'org_id'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['is_archived', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['code', 'name', 'country_code', 'level', 'parent_id', 'authority_name',
+				'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['is_archived', 'created_at', 'updated_at'],
+		}),
+	]);
 }

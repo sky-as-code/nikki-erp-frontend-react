@@ -1,0 +1,11 @@
+.card {
+	background-color: light-dark(rgb(255 255 255 / 80%), rgb(36 36 36 / 80%));
+}
+
+.link {
+	color: light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-4));
+
+	&:hover {
+		color: light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-2));
+	}
+}

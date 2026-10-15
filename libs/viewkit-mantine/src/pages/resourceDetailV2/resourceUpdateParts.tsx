@@ -459,7 +459,7 @@ export function OwnPropertiesBlock({
 
 	return (
 		<Stack gap='sm' className={classes.formBlock}>
-			{block.header && block.showTitle ? <Title order={4}>{t(block.header)}</Title> : null}
+			{block.header && block.showTitle ? <Title order={5} className='uppercase'>{t(block.header)}</Title> : null}
 			<FieldGroupVertical
 				fields={block.fields ?? []}
 				isLoading={isLoading}
@@ -568,7 +568,7 @@ function ReadOnlyFieldValue({
 
 	return (
 		<Stack gap={4}>
-			<Text size='md' fw='bold'>{localize(fieldDef.label)}</Text>
+			<Text size='md' fw='600'>{localize(fieldDef.label)}</Text>
 			<Text size='md'>
 				{relation ? (
 					<EdgeFieldValue

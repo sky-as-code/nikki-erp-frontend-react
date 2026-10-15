@@ -1,5 +1,6 @@
-import {  Group, Stack, Text, useMantineColorScheme, useMantineTheme } from '@mantine/core';
+import { Group, Stack, Text } from '@mantine/core';
 import { ErrorBoundary } from '@nikkierp/ui/components';
+import { usePaperBgColor } from '@nikkierp/ui/theme';
 import clsx from 'clsx';
 import React from 'react';
 import { Outlet } from 'react-router';
@@ -26,9 +27,7 @@ export function PublicLayout(): React.ReactNode {
 };
 
 const Header: React.FC = () => {
-	const { colorScheme } = useMantineColorScheme();
-	const theme = useMantineTheme();
-	const bg = colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+	const bg = usePaperBgColor();
 
 	return (
 		<Group
@@ -46,9 +45,12 @@ const Header: React.FC = () => {
 	);
 };
 
+/** `--nikki-color-white` is a literal white in both schemes; the footer needs a surface colour. */
+const FOOTER_BG = 'light-dark(var(--nikki-color-white), var(--mantine-color-dark-7))';
+
 const Footer: React.FC = () => {
 	return (
-		<Group bg={'var(--nikki-color-white)'} component='footer' align='center' justify='center' h={30}>
+		<Group bg={FOOTER_BG} component='footer' align='center' justify='center' h={30}>
 			<Text c='dimmed' fz='sm'>
 				Copyright © 2026 Nikki ERP
 			</Text>

@@ -1,16 +1,21 @@
 import { Paper } from '@mantine/core';
+import clsx from 'clsx';
 import React from 'react';
+
+import type { PaperProps } from '@mantine/core';
 
 
 /**
  * The bordered card every block in this kit sits on. Shared by the generic
  * `collapsible_section` and by the resource form's own sections, so it lives here rather
  * than in any one of them.
+ *
+ * Used as `<Stack component={PaperWithBorder}>`, so it must forward everything the Stack hands
+ * it — the flex/gap class, style props such as `mb`, and the `componentAttrs` test ids — or the
+ * caller's layout silently never reaches the DOM.
  */
-export function PaperWithBorder({ children, props }: { children: React.ReactNode, props: any }): React.ReactNode {
-	return (
-		<Paper withBorder className='p-4' {...props}>
-			{children}
-		</Paper>
-	);
+export function PaperWithBorder(
+	{ className, ...rest }: PaperProps & React.ComponentPropsWithRef<'div'>,
+): React.ReactNode {
+	return <Paper withBorder {...rest} className={clsx('p-4', className)} />;
 }

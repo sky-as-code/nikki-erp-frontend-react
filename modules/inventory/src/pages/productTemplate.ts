@@ -1,8 +1,8 @@
 import { resourceCommands } from '@nikkierp/common/dynamicModel';
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceImportProps, resourceListProps,
-	resourceSplitViewProps, resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props,
+	resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -12,7 +12,6 @@ import { ProductVariantCommands } from '../features/productVariant/commands';
 import { StockProductConfigCommands } from '../features/stockProductConfig/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
-import type { TabCollapsibleSectionTab } from '@nikkierp/viewkit-mantine/props';
 
 
 export function buildProductTemplatePages(): PageNode[] {
@@ -34,7 +33,7 @@ export function buildProductTemplatePages(): PageNode[] {
 }
 
 function buildProductTemplateListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -46,6 +45,7 @@ function buildProductTemplateListProps() {
 		// transactions referencing those variants keep their meaning.
 		archiveCommand: ProductTemplateCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductTemplateCommands.UPDATE,
+		updateCommand: ProductTemplateCommands.UPDATE,
 		fieldRenderers: {
 			status: {
 				renderer: 'badge',
@@ -57,7 +57,7 @@ function buildProductTemplateListProps() {
 }
 
 function buildProductTemplateDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -71,105 +71,75 @@ function buildProductTemplateDetailProps() {
 			archive: ProductTemplateCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildProductTemplateFieldsSection()],
-		childrenNodes: [buildProductTemplateFieldsSection(), ...buildTemplateSections()],
+		childrenNodes: [buildProductTemplateFieldsSection()],
+		relatedResources: buildTemplateResources(),
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildProductTemplateFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			...buildProductTemplateIdentityTabs(),
-			...buildProductTemplateCommercialTabs(),
-			...buildProductTemplatePhysicalTabs(),
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		...buildProductTemplateIdentityColumns(),
+		...buildProductTemplateCommercialColumns(),
+		...buildProductTemplatePhysicalColumns(),
+	]);
 }
 
-function buildProductTemplateIdentityTabs(): TabCollapsibleSectionTab[] {
+function buildProductTemplateIdentityColumns(): ComponentNode[] {
 	return [
-		{
-			key: 'general',
-			header: 'form.generalInformation',
-			content: resourceFormColumnNode({
-				header: 'form.generalInformation',
-				fields: ['name', 'short_name', 'status', 'org_id', 'uom_id'],
-			}),
-		},
-		{
-			key: 'identification',
+		resourceFormColumnNode({
 			header: 'form.identification',
-			content: resourceFormColumnNode({
-				header: 'form.identification',
-				fields: ['product_type_id', 'category_id', 'brand_id'],
-			}),
-		},
+			fields: ['name', 'short_name', 'product_type_id', 'category_id', 'brand_id'],
+		}),
 	];
 }
 
-function buildProductTemplateCommercialTabs(): TabCollapsibleSectionTab[] {
+function buildProductTemplateCommercialColumns(): ComponentNode[] {
 	return [
-		{
-			key: 'sales',
+		resourceFormColumnNode({
+			// sale_ok and purchase_ok decide which business processes may reference the product,
+			// which is what makes them belong beside their descriptions rather than in general
+			// information. See BR Â§2.4.
 			header: 'form.sales',
-			content: resourceFormColumnNode({
-				// sale_ok and purchase_ok decide which business processes may reference the product,
-				// which is what makes them belong beside their descriptions rather than in general
-				// information. See BR Â§2.4.
-				header: 'form.sales',
-				fields: ['sale_ok', 'sales_description', 'base_sales_price'],
-			}),
-		},
-		{
-			key: 'purchasing',
+			fields: ['sale_ok', 'sales_description', 'base_sales_price'],
+		}),
+		resourceFormColumnNode({
 			header: 'form.purchasing',
-			content: resourceFormColumnNode({
-				header: 'form.purchasing',
-				fields: ['purchase_ok', 'purchase_description'],
-			}),
-		},
-		{
-			key: 'costing',
+			fields: ['purchase_ok', 'uom_id', 'purchase_description'],
+		}),
+		resourceFormColumnNode({
+			// The template holds no cost of its own, deliberately: cost belongs to the variant,
+			// because two variants of one product routinely cost different amounts. What the
+			// template can honestly show is the RANGE across its variants, so these two fields
+			// together read as "60,000 - 100,000" when they differ and as one figure when they
+			// agree.
+			//
+			// Both are computed and virtual, so they render read-only here and are dropped from
+			// the create form entirely — a product with no variants yet has no range to show.
+			// That is the same treatment created_at and updated_at get, and it needs no
+			// page-side flag because there is none to give: read-only comes from the backend
+			// schema's field metadata.
 			header: 'form.costing',
-			content: resourceFormColumnNode({
-				// The template holds no cost of its own, deliberately: cost belongs to the variant,
-				// because two variants of one product routinely cost different amounts. What the
-				// template can honestly show is the RANGE across its variants, so these two fields
-				// together read as "60,000 - 100,000" when they differ and as one figure when they
-				// agree.
-				//
-				// Both are computed and virtual, so they render read-only here and are dropped from
-				// the create form entirely — a product with no variants yet has no range to show.
-				// That is the same treatment created_at and updated_at get, and it needs no
-				// page-side flag because there is none to give: read-only comes from the backend
-				// schema's field metadata.
-				header: 'form.costing',
-				fields: ['min_variant_cost', 'max_variant_cost'],
-			}),
-		},
+			fields: ['min_variant_cost', 'max_variant_cost'],
+		}),
 	];
 }
 
-function buildProductTemplatePhysicalTabs(): TabCollapsibleSectionTab[] {
+function buildProductTemplatePhysicalColumns(): ComponentNode[] {
 	return [
-		{
-			key: 'dimensions',
+		resourceFormColumnNode({
+			// Defaults a variant inherits when it sets no value of its own. See BR Â§6.4.
 			header: 'form.dimensions',
-			content: resourceFormColumnNode({
-				// Defaults a variant inherits when it sets no value of its own. See BR Â§6.4.
-				header: 'form.dimensions',
-				fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
-			}),
-		},
-		{
-			key: 'audit',
+			fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
+		}),
+		resourceFormColumnNode({
 			header: 'form.audit',
-			content: resourceFormColumnNode({
-				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
-		},
+			fields: ['status', 'created_at', 'updated_at'],
+		}),
 	];
 }
 
@@ -179,63 +149,57 @@ function buildProductTemplatePhysicalTabs(): TabCollapsibleSectionTab[] {
  * Both are filtered by the current record's id: `${id}` is replaced with the route param at
  * render time. They render only in update mode, since during create there is no id to filter by.
  */
-function buildTemplateSections(): ComponentNode[] {
+function buildTemplateResources() {
 	return [
-		collapsibleSectionNode(
-			{ header: 'product_template_sections_attributes', translationNs: c.INVENTORY_MODULE, expanded: false },
-			[resourceTableNode({
-				schemaName: c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: ProductTemplateAttributeCommands.SEARCH,
-				initialGraph: { if: ['product_template_id', '=', '${id}'] },
-				linkField: 'id',
-				// Opens the values this template offers for the attribute, which is where each
-				// value's sales_price_extra is set. The junction row carries template_attribute_id
-				// rather than the template id, so its values are two hops from here and reachable
-				// only through the attribute row itself.
-				linkRoutePath: 'inventory_product_template_attribute_value',
-			})],
-		),
-		collapsibleSectionNode(
-			{ header: 'product_template_sections_variants', translationNs: c.INVENTORY_MODULE, expanded: false },
-			[resourceTableNode({
-				schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: ProductVariantCommands.SEARCH,
-				initialGraph: { if: ['product_template_id', '=', '${id}'] },
-				linkField: 'id',
-				linkRoutePath: 'inventory_product_variant',
-			})],
-		),
-		collapsibleSectionNode(
-			{ header: 'product_template_sections_vendor_prices', translationNs: c.INVENTORY_MODULE, expanded: false },
-			[resourceTableNode({
-				// Purchase's resource, shown on Inventory's page, with NO import from Purchase.
-				// Command names are derived from the schema string alone, so naming the schema is
-				// enough to reach the owning module's service — and it has to be, because the root
-				// eslint config bans a module from importing another ("Modules must not import each
-				// other. Communicate via the command bus."). Hence the literal below rather than a
-				// constant borrowed from purchase/.
-				//
-				// It must match the Go constant verbatim: a mismatch does not error, it leaves the
-				// section spinning forever.
-				schemaName: 'purchase_vendor_product_price',
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: resourceCommands('purchase_vendor_product_price').SEARCH,
-				// What every vendor offers this product, at any quantity — the buyer's comparison
-				// view. Filtered by template rather than variant because a template-wide quote
-				// prices every variant that has none of its own.
-				initialGraph: { if: ['product_template_id', '=', '${id}'] },
-				linkField: 'id',
-				// The row links into the `purchase` module, which owns this schema; `linkRoutePath`
-				// is resolved against the *current* module, so the module segment is named here.
-				// Pre-existing defect: this read `vendor_product_prices`, a path `inventory` never
-				// registered, so every row linked to a 404.
-				linkRoutePath: '/purchase/purchase_vendor_product_price',
-			})],
-		),
-		buildTemplateInventorySection(),
-		buildInventoryUomSection(),
+		{
+			label: 'product_template_sections_attributes',
+			schemaName: c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME,
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: ProductTemplateAttributeCommands.SEARCH,
+			initialGraph: { if: ['product_template_id', '=', '${id}'] },
+			linkField: 'id',
+			// Opens the values this template offers for the attribute, which is where each
+			// value's sales_price_extra is set. The junction row carries template_attribute_id
+			// rather than the template id, so its values are two hops from here and reachable
+			// only through the attribute row itself.
+			linkRoutePath: 'inventory_product_template_attribute_value',
+		},
+		{
+			label: 'product_template_sections_variants',
+			schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: ProductVariantCommands.SEARCH,
+			initialGraph: { if: ['product_template_id', '=', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'inventory_product_variant',
+		},
+		{
+			label: 'product_template_sections_vendor_prices',
+			// Purchase's resource, shown on Inventory's page, with NO import from Purchase.
+			// Command names are derived from the schema string alone, so naming the schema is
+			// enough to reach the owning module's service — and it has to be, because the root
+			// eslint config bans a module from importing another ("Modules must not import each
+			// other. Communicate via the command bus."). Hence the literal below rather than a
+			// constant borrowed from purchase/.
+			//
+			// It must match the Go constant verbatim: a mismatch does not error, it leaves the
+			// section spinning forever.
+			schemaName: 'purchase_vendor_product_price',
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: resourceCommands('purchase_vendor_product_price').SEARCH,
+			// What every vendor offers this product, at any quantity — the buyer's comparison
+			// view. Filtered by template rather than variant because a template-wide quote
+			// prices every variant that has none of its own.
+			initialGraph: { if: ['product_template_id', '=', '${id}'] },
+			linkField: 'id',
+			// The row links into the `purchase` module, which owns this schema; `linkRoutePath`
+			// is resolved against the *current* module, so the module segment is named here.
+			// Pre-existing defect: this read `vendor_product_prices`, a path `inventory` never
+			// registered, so every row linked to a 404.
+			linkRoutePath: '/purchase/purchase_vendor_product_price',
+		},
+		buildTemplateInventoryResource(),
+		buildInventoryUomResource(),
 	];
 }
 
@@ -254,22 +218,16 @@ function buildTemplateSections(): ComponentNode[] {
  * reinterpret every quantity ever recorded against it (CR Â§12.2, TS-PROD-09). That rule is not
  * restated here: it has one home, and a copy in the client could only drift from it.
  */
-function buildInventoryUomSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{
-			header: 'product_template_sections_inventoryUom',
-			translationNs: c.INVENTORY_MODULE,
-			expanded: false,
-		},
-		[resourceTableNode({
-			schemaName: c.STOCK_PRODUCT_CONFIG_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: StockProductConfigCommands.SEARCH,
-			initialGraph: { if: ['product_template_id', '=', '${id}'] },
-			fields: ['inventory_uom_id'],
-			linkField: 'id',
-		})],
-	);
+function buildInventoryUomResource() {
+	return {
+		label: 'product_template_sections_inventoryUom',
+		schemaName: c.STOCK_PRODUCT_CONFIG_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		searchCommand: StockProductConfigCommands.SEARCH,
+		initialGraph: { if: ['product_template_id', '=', '${id}'] },
+		fields: ['inventory_uom_id'],
+		linkField: 'id',
+	};
 }
 
 /**
@@ -288,20 +246,18 @@ function buildInventoryUomSection(): ComponentNode {
  * is what stops a stock command being issued with a template id: the template page emits none
  * (CR Â§7, AC-PROD-INT-012, AC-PROD-INT-013, TS-PROD-01).
  */
-function buildTemplateInventorySection(): ComponentNode {
-	return collapsibleSectionNode(
-		{ header: 'product_template_sections_inventory', translationNs: c.INVENTORY_MODULE, expanded: false },
-		[resourceTableNode({
-			schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: ProductVariantCommands.SEARCH,
-			initialGraph: { if: ['product_template_id', '=', '${id}'] },
-			fields: ['sku', 'combination_key', 'status'],
-			linkField: 'id',
-			linkRoutePath: 'inventory_product_variant',
-			// A second variants table on one page, so it needs its own testId prefix to avoid
-			// colliding with the configuration section above.
-			testId: 'inventory.templateInventory',
-		})],
-	);
+function buildTemplateInventoryResource() {
+	return {
+		label: 'product_template_sections_inventory',
+		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		searchCommand: ProductVariantCommands.SEARCH,
+		initialGraph: { if: ['product_template_id', '=', '${id}'] },
+		fields: ['sku', 'combination_key', 'status'],
+		linkField: 'id',
+		linkRoutePath: 'inventory_product_variant',
+		// A second variants table on one page, so it needs its own testId prefix to avoid
+		// colliding with the configuration tab before it.
+		testId: 'inventory.templateInventory',
+	};
 }

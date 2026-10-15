@@ -1,4 +1,5 @@
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
+import { MenuIndexRedirect } from '@nikkierp/ui/menu';
 import {
 	defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps, MicroAppProvider,
 } from '@nikkierp/ui/microApp';
@@ -101,10 +102,12 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildTaxSimulatorPages(),
 	], []);
 
+	const indexElement = <MenuIndexRedirect items={buildAccountingMenu(props.slug).items} />;
+
 	return (
 		<ViewEngineRouter
 			microAppProps={props}
-			engineProps={{ pages, indexElement: <h1>Accounting</h1> }}
+			engineProps={{ pages, indexElement }}
 		/>
 	);
 }

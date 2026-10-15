@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import React from 'react';
 
 import { FilterConditionTree } from './FilterConditionTree';
-import { getFilterableFieldNames } from './filterModel';
+import { getFilterableFieldNames, isSortableFieldName } from './filterModel';
 import classes from './FilterPanel.module.css';
 import { FilterSortPane } from './FilterSortPane';
 import { ensureNonEmpty, validateTree } from './filterTree';
@@ -67,7 +67,13 @@ export function FilterPanelView(props: FilterPanelViewProps): React.ReactNode {
 		() => getFilterableFieldNames(props.modelSchema, props.displayedFields, props.relatedSchemas),
 		[props.modelSchema, props.displayedFields, props.relatedSchemas],
 	);
-	const sortableFields = props.sortableFields ?? filterableFields;
+	// A caller's explicit list narrows the choice but cannot offer a field the server cannot order
+	// by: pages pass `desired_fields` wholesale, which includes computed columns filled in Go.
+	const sortableFields = React.useMemo(
+		() => props.sortableFields?.filter(field => isSortableFieldName(props.modelSchema, field, props.relatedSchemas))
+			?? filterableFields,
+		[props.sortableFields, props.modelSchema, props.relatedSchemas, filterableFields],
+	);
 
 	// Applying leaves the pane open. It sits above the table rather than over it, so the user
 	// can see the result take effect against the conditions that produced it; closing would hide

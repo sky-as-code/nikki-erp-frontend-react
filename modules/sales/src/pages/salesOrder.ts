@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -39,7 +38,7 @@ export function buildSalesOrderPages(): PageNode[] {
  * unfulfilled — so collapsing them into one would hide states somebody needs to act on.
  */
 function buildSalesOrderListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_ORDER_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
@@ -109,7 +108,7 @@ function buildSalesOrderStatusRenderers() {
 }
 
 function buildSalesOrderDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_ORDER_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'order_number' },
@@ -121,13 +120,13 @@ function buildSalesOrderDetailProps() {
 		},
 		contextualActions: buildSalesOrderActions(),
 		// No `createNodes`: an order is raised through `create_order`, never through this form.
-		childrenNodes: [
-			buildSalesOrderFieldsSection(),
-			...buildSalesOrderLinesSection(),
-			...buildSalesOrderAdjustmentsSection(),
-			...buildSalesOrderFulfillmentSection(),
-			...buildSalesOrderKioskFulfillmentSections(),
-			...buildSalesOrderEventsSection(),
+		childrenNodes: [buildSalesOrderFieldsSection()],
+		relatedResources: [
+			buildSalesOrderLinesResource(),
+			buildSalesOrderAdjustmentsResource(),
+			buildSalesOrderFulfillmentResource(),
+			...buildSalesOrderKioskFulfillmentResources(),
+			buildSalesOrderEventsResource(),
 		],
 	});
 }
@@ -137,42 +136,30 @@ function buildSalesOrderDetailProps() {
  * the fulfillment edge because an item carries no order id of its own, and each row links to the
  * warehouse reservation holding it, on the inventory module's own page.
  */
-function buildSalesOrderKioskFulfillmentSections(): ComponentNode[] {
+function buildSalesOrderKioskFulfillmentResources() {
 	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_order_sections_kiosk_fulfillments',
-				translationNs: c.SALES_MODULE,
-				expanded: false,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_ORDER_FULFILLMENT_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesOrderFulfillmentCommands.SEARCH,
-				initialGraph: { if: ['sales_order_id', '=', '${id}'] },
-				fields: ['fulfillment_type', 'fulfillment_status', 'target_outlet_id', 'reservation_expires_at',
-					'max_attempts', 'failure_action'],
-			})],
-		),
-		collapsibleSectionNode(
-			{
-				header: 'sales_order_sections_reservations',
-				translationNs: c.SALES_MODULE,
-				expanded: false,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_ORDER_FULFILLMENT_ITEM_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesOrderFulfillmentItemCommands.SEARCH,
-				initialGraph: { if: ['fulfillment.sales_order_id', '=', '${id}'] },
-				fields: ['product_variant_id', 'ordered_qty', 'fulfilled_qty', 'refunded_qty', 'item_status',
-					'source_location_id', 'inventory_reservation_ref'],
-				linkField: 'inventory_reservation_ref',
-				// A leading slash names the inventory module absolutely; without it the link would
-				// resolve against this module, which has no such page.
-				linkRoutePath: '/inventory/inventory_stock_reservation',
-			})],
-		),
+		{
+			label: 'sales_order_sections_kiosk_fulfillments',
+			schemaName: c.SALES_ORDER_FULFILLMENT_SCHEMA_NAME,
+			translationNs: c.SALES_MODULE,
+			searchCommand: SalesOrderFulfillmentCommands.SEARCH,
+			initialGraph: { if: ['sales_order_id', '=', '${id}'] },
+			fields: ['fulfillment_type', 'fulfillment_status', 'target_outlet_id', 'reservation_expires_at',
+				'max_attempts', 'failure_action'],
+		},
+		{
+			label: 'sales_order_sections_reservations',
+			schemaName: c.SALES_ORDER_FULFILLMENT_ITEM_SCHEMA_NAME,
+			translationNs: c.SALES_MODULE,
+			searchCommand: SalesOrderFulfillmentItemCommands.SEARCH,
+			initialGraph: { if: ['fulfillment.sales_order_id', '=', '${id}'] },
+			fields: ['product_variant_id', 'ordered_qty', 'fulfilled_qty', 'refunded_qty', 'item_status',
+				'source_location_id', 'inventory_reservation_ref'],
+			linkField: 'inventory_reservation_ref',
+			// A leading slash names the inventory module absolutely; without it the link would
+			// resolve against this module, which has no such page.
+			linkRoutePath: '/inventory/inventory_stock_reservation',
+		},
 	];
 }
 
@@ -181,47 +168,32 @@ function buildSalesOrderKioskFulfillmentSections(): ComponentNode[] {
  * read-only from the schema.
  */
 function buildSalesOrderFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'order',
-				header: 'form.order',
-				content: resourceFormColumnNode({
-					header: 'form.order',
-					fields: ['order_number', 'status', 'sales_channel_id', 'sales_point_id',
-						'customer_reference', 'currency_code'],
-				}),
-			},
-			{
-				key: 'progress',
-				header: 'form.progress',
-				content: resourceFormColumnNode({
-					header: 'form.progress',
-					fields: ['payment_status', 'fulfillment_status', 'invoice_status', 'confirmed_at',
-						'completed_at', 'cancelled_at'],
-				}),
-			},
-			...buildSalesOrderDeadlineTabs(),
-			{
-				key: 'totals',
-				header: 'form.totals',
-				content: resourceFormColumnNode({
-					header: 'form.totals',
-					fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['external_reference', 'crm_opportunity_reference', 'exchange_of_return_id',
-						'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.order',
+			fields: ['order_number', 'status', 'sales_channel_id', 'sales_point_id',
+				'customer_reference', 'currency_code'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.progress',
+			fields: ['payment_status', 'fulfillment_status', 'invoice_status', 'confirmed_at',
+				'completed_at', 'cancelled_at'],
+		}),
+		...buildSalesOrderDeadlineColumns(),
+		resourceFormColumnNode({
+			header: 'form.totals',
+			fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['external_reference', 'crm_opportunity_reference', 'exchange_of_return_id',
+				'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**
@@ -229,24 +201,16 @@ function buildSalesOrderFieldsSection(): ComponentNode {
  * the deadline is set at create and never extended, the flags are the channel's settings frozen at
  * that moment, expiry is derived from the clock, and each note is written by its own action alone.
  */
-function buildSalesOrderDeadlineTabs() {
+function buildSalesOrderDeadlineColumns() {
 	return [
-		{
-			key: 'expiry',
+		resourceFormColumnNode({
 			header: 'form.expiry',
-			content: resourceFormColumnNode({
-				header: 'form.expiry',
-				fields: ['valid_until', 'is_expired', 'expired_at', 'auto_confirm_order', 'auto_confirm_refund'],
-			}),
-		},
-		{
-			key: 'notes',
+			fields: ['valid_until', 'is_expired', 'expired_at', 'auto_confirm_order', 'auto_confirm_refund'],
+		}),
+		resourceFormColumnNode({
 			header: 'form.notes',
-			content: resourceFormColumnNode({
-				header: 'form.notes',
-				fields: ['confirmation_note', 'cancellation_note', 'refund_note'],
-			}),
-		},
+			fields: ['confirmation_note', 'cancellation_note', 'refund_note'],
+		}),
 	];
 }
 
@@ -335,77 +299,61 @@ function buildDraftOnlyActions() {
  * Lines are plain CRUD writes on `sales_order_line`; the backend has no add-line action. Call
  * `reprice` afterwards — it is deliberately not automatic, so adding three lines costs one repricing.
  */
-function buildSalesOrderLinesSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_order_sections_lines',
-				translationNs: c.SALES_MODULE,
-				expanded: true,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_ORDER_LINE_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesOrderLineCommands.SEARCH,
-				initialGraph: { if: ['sales_order_id', '=', '${id}'] },
-				fields: ['line_number', 'line_type', 'product_name_snapshot', 'ordered_quantity',
-					'uom_id', 'effective_unit_price', 'discount_amount', 'net_amount', 'tax_amount',
-					'final_amount'],
-				fieldRenderers: {
-					// A reward line's price is zero and a combo line's price belongs to the combo,
-					// so the badge is what explains a row whose money columns read oddly.
-					line_type: {
-						renderer: 'badge',
-						colorMap: {
-							product: 'gray',
-							combo: 'indigo',
-							promotion_reward: 'green',
-						},
-						prefix: 'line_type.',
-					},
+function buildSalesOrderLinesResource() {
+	return {
+		label: 'sales_order_sections_lines',
+		schemaName: c.SALES_ORDER_LINE_SCHEMA_NAME,
+		translationNs: c.SALES_MODULE,
+		searchCommand: SalesOrderLineCommands.SEARCH,
+		initialGraph: { if: ['sales_order_id', '=', '${id}'] },
+		fields: ['line_number', 'line_type', 'product_name_snapshot', 'ordered_quantity',
+			'uom_id', 'effective_unit_price', 'discount_amount', 'net_amount', 'tax_amount',
+			'final_amount'],
+		fieldRenderers: {
+			// A reward line's price is zero and a combo line's price belongs to the combo,
+			// so the badge is what explains a row whose money columns read oddly.
+			line_type: {
+				renderer: 'badge',
+				colorMap: {
+					product: 'gray',
+					combo: 'indigo',
+					promotion_reward: 'green',
 				},
-			})],
-		),
-	];
+				prefix: 'line_type.',
+			},
+		},
+	};
 }
 
 /**
  * The adjustment chain. Read-only: the pricing engine replaces it wholesale on every repricing, so
  * a hand-written row would show a discount that was never given and then vanish.
  */
-function buildSalesOrderAdjustmentsSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_order_sections_adjustments',
-				translationNs: c.SALES_MODULE,
-				expanded: false,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_ORDER_ADJUSTMENT_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesOrderAdjustmentCommands.SEARCH,
-				initialGraph: { if: ['sales_order_id', '=', '${id}'] },
-				fields: ['sequence', 'adjustment_type', 'description', 'base_amount',
-					'adjustment_amount'],
-				fieldRenderers: {
-					adjustment_type: {
-						renderer: 'badge',
-						colorMap: {
-							combo_price: 'indigo',
-							conditional_price: 'blue',
-							percentage_discount: 'green',
-							fixed_discount: 'green',
-							voucher: 'grape',
-							manual_discount: 'orange',
-							rounding: 'gray',
-						},
-						prefix: 'adjustment_type.',
-					},
+function buildSalesOrderAdjustmentsResource() {
+	return {
+		label: 'sales_order_sections_adjustments',
+		schemaName: c.SALES_ORDER_ADJUSTMENT_SCHEMA_NAME,
+		translationNs: c.SALES_MODULE,
+		searchCommand: SalesOrderAdjustmentCommands.SEARCH,
+		initialGraph: { if: ['sales_order_id', '=', '${id}'] },
+		fields: ['sequence', 'adjustment_type', 'description', 'base_amount',
+			'adjustment_amount'],
+		fieldRenderers: {
+			adjustment_type: {
+				renderer: 'badge',
+				colorMap: {
+					combo_price: 'indigo',
+					conditional_price: 'blue',
+					percentage_discount: 'green',
+					fixed_discount: 'green',
+					voucher: 'grape',
+					manual_discount: 'orange',
+					rounding: 'gray',
 				},
-			})],
-		),
-	];
+				prefix: 'adjustment_type.',
+			},
+		},
+	};
 }
 
 /**
@@ -413,59 +361,43 @@ function buildSalesOrderAdjustmentsSection(): ComponentNode[] {
  * request is fixed upstream in Inventory. `accepted` is not `completed`: the gap between them is
  * money captured with goods not dispensed.
  */
-function buildSalesOrderFulfillmentSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_order_sections_fulfillment',
-				translationNs: c.SALES_MODULE,
-				expanded: false,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_FULFILLMENT_REQUEST_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesFulfillmentRequestCommands.SEARCH,
-				initialGraph: { if: ['sales_order_id', '=', '${id}'] },
-				fields: ['request_type', 'status', 'inventory_reference', 'failure_reason',
-					'requested_at', 'completed_at'],
-				fieldRenderers: {
-					status: {
-						renderer: 'badge',
-						colorMap: {
-							pending: 'orange',
-							accepted: 'blue',
-							completed: 'green',
-							rejected: 'red',
-							cancelled: 'gray',
-						},
-						prefix: 'status.',
-					},
+function buildSalesOrderFulfillmentResource() {
+	return {
+		label: 'sales_order_sections_fulfillment',
+		schemaName: c.SALES_FULFILLMENT_REQUEST_SCHEMA_NAME,
+		translationNs: c.SALES_MODULE,
+		searchCommand: SalesFulfillmentRequestCommands.SEARCH,
+		initialGraph: { if: ['sales_order_id', '=', '${id}'] },
+		fields: ['request_type', 'status', 'inventory_reference', 'failure_reason',
+			'requested_at', 'completed_at'],
+		fieldRenderers: {
+			status: {
+				renderer: 'badge',
+				colorMap: {
+					pending: 'orange',
+					accepted: 'blue',
+					completed: 'green',
+					rejected: 'red',
+					cancelled: 'gray',
 				},
-			})],
-		),
-	];
+				prefix: 'status.',
+			},
+		},
+	};
 }
 
 /**
  * Filtered by `sales_order_id`, not the polymorphic `entity_id` — the latter would show every event
  * whose subject happens to share an id shape with this order.
  */
-function buildSalesOrderEventsSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_order_sections_events',
-				translationNs: c.SALES_MODULE,
-				expanded: false,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_ORDER_EVENT_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesOrderEventCommands.SEARCH,
-				initialGraph: { if: ['sales_order_id', '=', '${id}'] },
-				fields: ['created_at', 'action', 'entity_type', 'from_status', 'to_status',
-					'actor_id', 'reason'],
-			})],
-		),
-	];
+function buildSalesOrderEventsResource() {
+	return {
+		label: 'sales_order_sections_events',
+		schemaName: c.SALES_ORDER_EVENT_SCHEMA_NAME,
+		translationNs: c.SALES_MODULE,
+		searchCommand: SalesOrderEventCommands.SEARCH,
+		initialGraph: { if: ['sales_order_id', '=', '${id}'] },
+		fields: ['created_at', 'action', 'entity_type', 'from_status', 'to_status',
+			'actor_id', 'reason'],
+	};
 }

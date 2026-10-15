@@ -38,19 +38,16 @@ export const ProfileMenuDropdown: React.FC = () => {
 						className={clsx(classes.avatarButton, opened && classes.activeAvatarButton)}
 						{...testAttrs(TEST_ID, 'trigger')}
 					>
-						<Avatar size={35}>
-							<IconUserFilled color={'var(--mantine-color-gray-6)'} />
+						<Avatar size={35} classNames={{ placeholder: classes.avatarPlaceholder }}>
+							<IconUserFilled />
 						</Avatar>
 					</UnstyledButton>
 				</Menu.Target>
 
 				<Menu.Dropdown className={classes.menuDropdown} p={'xs'}>
-					<Flex gap={'sm'} p={'sm'} mb={'sm'} align='center'
-						bg={'var(--mantine-color-gray-1)'}
-						style={{ borderRadius: '3px' }}
-					>
-						<Avatar size={60}>
-							<IconUserFilled color={'var(--mantine-color-gray-6)'} />
+					<Flex gap={'sm'} p={'sm'} mb={'sm'} align='center' className={classes.profileHeader}>
+						<Avatar size={60} classNames={{ placeholder: classes.avatarPlaceholder }}>
+							<IconUserFilled />
 						</Avatar>
 						<Box>
 							<Text size='md' fw={600}>{userCtx?.displayName}</Text>

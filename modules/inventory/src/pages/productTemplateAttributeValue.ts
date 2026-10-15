@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -38,7 +38,7 @@ export function buildProductTemplateAttributeValuePages(): PageNode[] {
 }
 
 function buildListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -46,11 +46,12 @@ function buildListProps() {
 		createEnabled: true,
 		deleteCommand: ProductTemplateAttributeValueCommands.DELETE,
 		updateSaveCommand: ProductTemplateAttributeValueCommands.UPDATE,
+		updateCommand: ProductTemplateAttributeValueCommands.UPDATE,
 	});
 }
 
 function buildDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'attribute_value_id' },
@@ -69,36 +70,25 @@ function buildDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['template_attribute_id', 'attribute_value_id', 'sequence'],
-				}),
-			},
-			{
-				key: 'pricing',
-				header: 'form.pricing',
-				content: resourceFormColumnNode({
-					// Signed, and that is the point: XL may add 20,000 while a plain colour subtracts. It is
-					// a SALES figure only — it must never reach a cost calculation, because a colour that
-					// sells for more does not thereby cost more.
-					header: 'form.pricing',
-					fields: ['sales_price_extra'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['template_attribute_id', 'attribute_value_id', 'sequence'],
+		}),
+		resourceFormColumnNode({
+			// Signed, and that is the point: XL may add 20,000 while a plain colour subtracts. It is
+			// a SALES figure only — it must never reach a cost calculation, because a colour that
+			// sells for more does not thereby cost more.
+			header: 'form.pricing',
+			fields: ['sales_price_extra'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }

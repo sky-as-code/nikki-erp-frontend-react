@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -10,7 +9,6 @@ import { StockMoveLineCommands } from '../features/stockMoveLine/commands';
 import { StockTransferCommands } from '../features/stockTransfer/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
-import type { TabCollapsibleSectionTab } from '@nikkierp/viewkit-mantine/props';
 
 
 export function buildStockTransferPages(): PageNode[] {
@@ -27,7 +25,7 @@ export function buildStockTransferPages(): PageNode[] {
 }
 
 function buildStockTransferListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.STOCK_TRANSFER_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -61,7 +59,7 @@ function buildStockTransferListProps() {
 }
 
 function buildStockTransferDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.STOCK_TRANSFER_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'transfer_number' },
@@ -75,78 +73,56 @@ function buildStockTransferDetailProps() {
 		},
 		contextualActions: buildMovementActions(),
 		createNodes: [buildStockTransferFieldsSection()],
-		childrenNodes: [buildStockTransferFieldsSection(), ...buildMovementSections()],
+		childrenNodes: [buildStockTransferFieldsSection()],
+		relatedResources: buildMovementResources(),
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildStockTransferFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [...buildStockTransferDocumentTabs(), ...buildStockTransferTimelineTabs()],
-	});
+		header: 'form.generalInformation',
+	}, [...buildStockTransferDocumentColumns(), ...buildStockTransferTimelineColumns()]);
 }
 
-function buildStockTransferDocumentTabs(): TabCollapsibleSectionTab[] {
+function buildStockTransferDocumentColumns(): ComponentNode[] {
 	return [
-		{
-			key: 'general',
+		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			content: resourceFormColumnNode({
-				header: 'form.generalInformation',
-				fields: [
-					'transfer_number', 'operation_type_id', 'operation_code', 'status',
-					'origin_reference', 'note', 'org_id',
-				],
-			}),
-		},
-		{
-			key: 'movement',
+			fields: [
+				'transfer_number', 'operation_type_id', 'operation_code', 'status',
+				'origin_reference', 'note', 'org_id',
+			],
+		}),
+		resourceFormColumnNode({
 			header: 'form.movement',
-			content: resourceFormColumnNode({
-				header: 'form.movement',
-				fields: ['source_location_id', 'destination_location_id', 'priority'],
-			}),
-		},
-		{
-			key: 'stock_policies',
+			fields: ['source_location_id', 'destination_location_id', 'priority'],
+		}),
+		resourceFormColumnNode({
 			header: 'form.stockPolicies',
-			content: resourceFormColumnNode({
-				header: 'form.stockPolicies',
-				// Snapshots taken at create time, shown so a reader can see what this transfer will do
-				// rather than what its operation type currently says (BR Â§4.2.3.4).
-				fields: ['reservation_method', 'backorder_policy', 'shipping_policy'],
-			}),
-		},
+			// Snapshots taken at create time, shown so a reader can see what this transfer will do
+			// rather than what its operation type currently says (BR Â§4.2.3.4).
+			fields: ['reservation_method', 'backorder_policy', 'shipping_policy'],
+		}),
 	];
 }
 
-function buildStockTransferTimelineTabs(): TabCollapsibleSectionTab[] {
+function buildStockTransferTimelineColumns(): ComponentNode[] {
 	return [
-		{
-			key: 'scheduling',
+		resourceFormColumnNode({
 			header: 'form.scheduling',
-			content: resourceFormColumnNode({
-				header: 'form.scheduling',
-				fields: ['scheduled_at', 'deadline_at', 'completed_at'],
-			}),
-		},
-		{
-			key: 'backorder',
+			fields: ['scheduled_at', 'deadline_at', 'completed_at'],
+		}),
+		resourceFormColumnNode({
 			header: 'form.backorder',
-			content: resourceFormColumnNode({
-				header: 'form.backorder',
-				fields: ['backorder_of_id', 'return_of_id', 'chain_group_id'],
-			}),
-		},
-		{
-			key: 'audit',
+			fields: ['backorder_of_id', 'return_of_id', 'chain_group_id'],
+		}),
+		resourceFormColumnNode({
 			header: 'form.audit',
-			content: resourceFormColumnNode({
-				header: 'form.audit',
-				fields: ['created_at', 'updated_at'],
-			}),
-		},
+			fields: ['created_at', 'updated_at'],
+		}),
 	];
 }
 
@@ -217,29 +193,25 @@ function buildMovementActions() {
  * transfer line actually has â€” "what is this thing?" â€” and completes the navigation in the
  * direction Stock â†’ Product (CR Â§17).
  */
-function buildMovementSections(): ComponentNode[] {
+function buildMovementResources() {
 	return [
-		collapsibleSectionNode(
-			{ header: 'form.moves', translationNs: c.INVENTORY_MODULE, expanded: true },
-			[resourceTableNode({
-				schemaName: c.STOCK_MOVE_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: StockMoveCommands.SEARCH,
-				initialGraph: { if: ['transfer_id', '=', '${id}'] },
-				linkField: 'product_variant_id',
-				linkRoutePath: 'inventory_product_variant',
-			})],
-		),
-		collapsibleSectionNode(
-			{ header: 'form.moveLines', translationNs: c.INVENTORY_MODULE, expanded: false },
-			[resourceTableNode({
-				schemaName: c.STOCK_MOVE_LINE_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: StockMoveLineCommands.SEARCH,
-				initialGraph: { if: ['transfer_id', '=', '${id}'] },
-				linkField: 'product_variant_id',
-				linkRoutePath: 'inventory_product_variant',
-			})],
-		),
+		{
+			label: 'form.moves',
+			schemaName: c.STOCK_MOVE_SCHEMA_NAME,
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: StockMoveCommands.SEARCH,
+			initialGraph: { if: ['transfer_id', '=', '${id}'] },
+			linkField: 'product_variant_id',
+			linkRoutePath: 'inventory_product_variant',
+		},
+		{
+			label: 'form.moveLines',
+			schemaName: c.STOCK_MOVE_LINE_SCHEMA_NAME,
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: StockMoveLineCommands.SEARCH,
+			initialGraph: { if: ['transfer_id', '=', '${id}'] },
+			linkField: 'product_variant_id',
+			linkRoutePath: 'inventory_product_variant',
+		},
 	];
 }

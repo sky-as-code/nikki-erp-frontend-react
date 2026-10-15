@@ -210,6 +210,10 @@ export class RestApi {
 
 }
 
+// In `fields`, every readable field of the root record, combinable with edge paths. The backend
+// expands it; it is unrelated to the `*` Contains search operator.
+export const ALL_FIELDS = '*';
+
 export type RequestWithFields = {
 	fields?: string[],
 };

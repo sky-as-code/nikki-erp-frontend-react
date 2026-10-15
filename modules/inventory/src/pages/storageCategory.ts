@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -23,7 +23,7 @@ export function buildStorageCategoryPages(): PageNode[] {
 }
 
 function buildStorageCategoryListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.STORAGE_CATEGORY_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -32,6 +32,7 @@ function buildStorageCategoryListProps() {
 		deleteCommand: StorageCategoryCommands.DELETE,
 		archiveCommand: StorageCategoryCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: StorageCategoryCommands.UPDATE,
+		updateCommand: StorageCategoryCommands.UPDATE,
 		fieldRenderers: {
 			allow_new_item_policy: {
 				renderer: 'badge',
@@ -47,7 +48,7 @@ function buildStorageCategoryListProps() {
 }
 
 function buildStorageCategoryDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.STORAGE_CATEGORY_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -67,35 +68,24 @@ function buildStorageCategoryDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildStorageCategoryFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['code', 'name', 'description', 'org_id'],
-				}),
-			},
-			{
-				key: 'storage_policy',
-				header: 'form.storagePolicy',
-				content: resourceFormColumnNode({
-					// Capacity is a limit, not a reading: what is currently stored depends on actual
-					// inventory and is computed from Stock rather than held here.
-					header: 'form.storagePolicy',
-					fields: ['max_weight', 'allow_new_item_policy'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['code', 'name', 'description', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			// Capacity is a limit, not a reading: what is currently stored depends on actual
+			// inventory and is computed from Stock rather than held here.
+			header: 'form.storagePolicy',
+			fields: ['max_weight', 'allow_new_item_policy'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }

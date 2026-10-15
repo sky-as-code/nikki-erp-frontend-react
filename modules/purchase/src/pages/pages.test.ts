@@ -1,3 +1,4 @@
+import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
 import { buildAgreementPages } from './agreement';
@@ -6,7 +7,8 @@ import { buildPurchaseOrderPages } from './purchaseOrder';
 import { buildVendorProductPricePages } from './vendorProductPrice';
 import * as c from '../constants';
 
-import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
+import type { PageNode } from '@nikkierp/viewengine/metadata';
+import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
 
 
 const allPages: { name: string, build: () => PageNode[] }[] = [
@@ -45,8 +47,6 @@ describe('Purchase page metadata', () => {
 	 * URL paths separate words with `_`. The menu links in `menu.ts` are written by hand and
 	 * nothing checks that one resolves to a declared route, so the exact list is pinned here: a
 	 * rename that misses the menu shows up as a dead link only at runtime.
-	 *
-	 * `overview` is deliberately absent — the menu offers it but no page declares it yet.
 	 */
 	it('registers one route per page, all snake_case', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
@@ -90,8 +90,33 @@ describe('Purchase page metadata', () => {
 		const props = page.props as { primary: { template: string }, secondary: { template: string } };
 
 		expect(page.template).toContain('resourceSplitView');
-		expect(props.primary.template).toContain('resourceList');
-		expect(props.secondary.template).toContain('resourceDetails');
+		expect(props.primary.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
+		expect(props.secondary.template).toBe(RESOURCE_DETAIL_V2_TEMPLATE);
+	});
+});
+
+describe('Purchase list templates', () => {
+	it.each(allPages)('$name pages render v2 list and detail templates', ({ build }) => {
+		for (const page of build()) {
+			const props = page.props as { primary: { template: string }, secondary: { template: string } };
+
+			expect(props.primary.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
+			expect(props.secondary.template).toBe(RESOURCE_DETAIL_V2_TEMPLATE);
+		}
+	});
+
+	/**
+	 * Inline row editing goes on the vendor price list only. Orders and agreements change through
+	 * their workflow actions, and the configuration is one record per org edited on its form.
+	 */
+	it('enables inline row editing on the vendor price list only', () => {
+		const inlineEditable = allPages
+			.filter(({ build }) => build().some(page => (
+				page.props as { primary?: { props?: { updateCommand?: string } } }
+			).primary?.props?.updateCommand))
+			.map(({ name }) => name);
+
+		expect(inlineEditable).toEqual(['vendorProductPrice']);
 	});
 });
 
@@ -284,22 +309,22 @@ describe('Purchase order related tables', () => {
 	 */
 	it('filters lines and audit events by the order id', () => {
 		const [page] = buildPurchaseOrderPages();
-		const tables = collectComponents(page, 'resourceTable');
+		const tables = relatedTables(page);
 
-		expect(tables.map(table => table.props?.schemaName))
+		expect(tables.map(table => table.schemaName))
 			.toEqual([c.PURCHASE_ORDER_LINE_SCHEMA_NAME, c.AUDIT_EVENT_SCHEMA_NAME]);
-		expect(tables[0].props?.initialGraph).toEqual({ if: ['purchase_order_id', '=', '${id}'] });
+		expect(tables[0].initialGraph).toEqual({ if: ['purchase_order_id', '=', '${id}'] });
 		// Filtered by `entity_id`, not an order-specific column: one audit table records the
 		// transitions of both orders and agreements.
-		expect(tables[1].props?.initialGraph).toEqual({ if: ['entity_id', '=', '${id}'] });
+		expect(tables[1].initialGraph).toEqual({ if: ['entity_id', '=', '${id}'] });
 	});
 
 	/** Neither has a page of its own; pointing at one would produce a dead link. */
 	it('links no row away from the order page', () => {
 		const [page] = buildPurchaseOrderPages();
 
-		for (const table of collectComponents(page, 'resourceTable')) {
-			expect(table.props?.linkRoutePath).toBeUndefined();
+		for (const table of relatedTables(page)) {
+			expect(table.linkRoutePath).toBeUndefined();
 		}
 	});
 
@@ -311,11 +336,11 @@ describe('Purchase order related tables', () => {
 	 */
 	it('shows the computed money columns and explains the empty ones', () => {
 		const [page] = buildPurchaseOrderPages();
-		const [lines] = collectComponents(page, 'resourceTable');
-		const fields = lines.props?.fields as string[];
+		const [lines] = relatedTables(page);
+		const fields = lines.fields as string[];
 
 		expect(fields).toEqual(expect.arrayContaining(['subtotal', 'tax_amount', 'total']));
-		const renderers = lines.props?.fieldRenderers as Record<string, { prefix?: string }>;
+		const renderers = lines.fieldRenderers as Record<string, { prefix?: string }>;
 		expect(renderers.line_type?.prefix).toBe('line_type.');
 	});
 });
@@ -361,21 +386,21 @@ describe('Agreement page', () => {
 	 */
 	it('shows no ordered quantity column on the agreement lines', () => {
 		const [page] = buildAgreementPages();
-		const [lines] = collectComponents(page, 'resourceTable');
+		const [lines] = relatedTables(page);
 
-		expect(lines.props?.schemaName).toBe(c.AGREEMENT_LINE_SCHEMA_NAME);
-		expect(lines.props?.fields).not.toContain('ordered_quantity');
+		expect(lines.schemaName).toBe(c.AGREEMENT_LINE_SCHEMA_NAME);
+		expect(lines.fields).not.toContain('ordered_quantity');
 	});
 
 	/** The orders drawn against an agreement DO have a page, so these rows link to it. */
 	it('links drawn orders to the order page', () => {
 		const [page] = buildAgreementPages();
-		const tables = collectComponents(page, 'resourceTable');
-		const drawn = tables.find(table => table.props?.schemaName === c.PURCHASE_ORDER_SCHEMA_NAME);
+		const tables = relatedTables(page);
+		const drawn = tables.find(table => table.schemaName === c.PURCHASE_ORDER_SCHEMA_NAME);
 
-		expect(drawn?.props?.initialGraph).toEqual({ if: ['agreement_id', '=', '${id}'] });
-		expect(drawn?.props?.linkRoutePath).toBe('purchase_order');
-		expect(drawn?.props?.linkField).toBe('id');
+		expect(drawn?.initialGraph).toEqual({ if: ['agreement_id', '=', '${id}'] });
+		expect(drawn?.linkRoutePath).toBe('purchase_order');
+		expect(drawn?.linkField).toBe('id');
 	});
 });
 
@@ -459,25 +484,10 @@ function filterStatuses(initialGraph: Record<string, unknown> | undefined): stri
 	return clause![2];
 }
 
-function collectComponents(page: PageNode, componentIdPart: string): ComponentNode[] {
-	const found: ComponentNode[] = [];
-	walk(page);
-	return found;
-
-	function walk(value: unknown): void {
-		if (Array.isArray(value)) {
-			value.forEach(walk);
-			return;
-		}
-		if (value === null || typeof value !== 'object') {
-			return;
-		}
-		const node = value as ComponentNode;
-		if (typeof node.component === 'string' && node.component.includes(componentIdPart)) {
-			found.push(node);
-		}
-		Object.values(value).forEach(walk);
-	}
+/** The related-resource tabs of a split view's detail pane. */
+function relatedTables(page: PageNode): RelatedResource[] {
+	const props = page.props as { secondary?: { props?: { relatedResources?: RelatedResource[] } } };
+	return props.secondary?.props?.relatedResources ?? [];
 }
 
 /** Returns the path of the first non-JSON value found, or null when everything is plain. */

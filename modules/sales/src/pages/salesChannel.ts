@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -28,11 +28,12 @@ export function buildSalesChannelPages(): PageNode[] {
 }
 
 function buildSalesChannelListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_CHANNEL_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
 		searchCommand: SalesChannelCommands.SEARCH,
+		updateCommand: SalesChannelCommands.UPDATE,
 		createEnabled: true,
 		fieldRenderers: {
 			status: {
@@ -45,7 +46,7 @@ function buildSalesChannelListProps() {
 }
 
 function buildSalesChannelDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_CHANNEL_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -63,31 +64,24 @@ function buildSalesChannelDetailProps() {
 }
 
 function buildSalesChannelFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'channel',
-				header: 'form.channel',
-				content: resourceFormColumnNode({
-					header: 'form.channel',
-					// `is_system` marks channels the platform creates for itself; editing one by hand
-					// is how a kiosk network loses the channel its tills are configured with.
-					// The two automation flags are snapshotted onto every order this channel takes at
-					// create; changing them here never reaches an existing order.
-					fields: ['code', 'name', 'description', 'status', 'auto_confirm_order', 'auto_confirm_refund'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['managed_by_module', 'is_system', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.channel',
+			// `is_system` marks channels the platform creates for itself; editing one by hand
+			// is how a kiosk network loses the channel its tills are configured with.
+			// The two automation flags are snapshotted onto every order this channel takes at
+			// create; changing them here never reaches an existing order.
+			fields: ['code', 'name', 'description', 'status', 'auto_confirm_order', 'auto_confirm_refund'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['managed_by_module', 'is_system', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**

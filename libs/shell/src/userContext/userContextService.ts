@@ -6,13 +6,25 @@ import {
 } from './types';
 import { shellStore } from '../appState/shellStore';
 
-/** The theme/language the user last chose, restored from `localStorage` on boot. */
-function loadSavedLocalSettings(): LocalSettings {
-	const settingsStr = localStorage.getItem(LOCAL_SETTINGS_STORAGE_KEY);
+/**
+ * The theme/language the user last chose, restored from `localStorage` on boot.
+ *
+ * This is also what the sign-in page shows: the value survives sign-out on purpose.
+ */
+export function loadSavedLocalSettings(): LocalSettings {
 	// `auto` rather than `light`: it is what the backend defaults to, and it defers to the device
 	// instead of overriding a user whose system is set to dark before their stored choice loads.
-	if (!settingsStr) return { languageCode: null, themeMode: 'auto' };
-	return JSON.parse(atob(settingsStr)) as LocalSettings;
+	const fallback: LocalSettings = { languageCode: null, themeMode: 'auto' };
+	try {
+		const settingsStr = localStorage.getItem(LOCAL_SETTINGS_STORAGE_KEY);
+		if (!settingsStr) return fallback;
+		const saved = JSON.parse(atob(settingsStr)) as Partial<LocalSettings>;
+		return { languageCode: saved.languageCode ?? null, themeMode: saved.themeMode ?? 'auto' };
+	}
+	// A corrupt value or blocked storage must not take the whole Shell down at boot.
+	catch {
+		return fallback;
+	}
 }
 
 /**

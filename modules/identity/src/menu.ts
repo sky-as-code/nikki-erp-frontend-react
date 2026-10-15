@@ -9,7 +9,6 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
  * The Shell resolves them against `translationNs` at render time.
  */
 const ITEMS: MenuItem[] = [
-	{ labelKey: 'menu.overview', link: '/overview' },
 	{
 		labelKey: 'menu.users',
 		items: [

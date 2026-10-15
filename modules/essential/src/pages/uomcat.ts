@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -25,7 +24,7 @@ export function buildUomCatPages(): PageNode[] {
 }
 
 function buildUomCatListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.UOMCAT_SCHEMA_NAME,
 		translationNs: c.ESSENTIAL_MODULE,
 		linkField: 'id',
@@ -34,11 +33,12 @@ function buildUomCatListProps() {
 		deleteCommand: UomCatCommands.DELETE,
 		archiveCommand: UomCatCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: UomCatCommands.UPDATE,
+		updateCommand: UomCatCommands.UPDATE,
 	});
 }
 
 function buildUomCatDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.UOMCAT_SCHEMA_NAME,
 		translationNs: c.ESSENTIAL_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -51,53 +51,45 @@ function buildUomCatDetailProps() {
 			archive: UomCatCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildUomCatFieldsSection()],
-		childrenNodes: [buildUomCatFieldsSection(), ...buildCategoryUomSection()],
+		childrenNodes: [buildUomCatFieldsSection()],
+		relatedResources: buildCategoryUomResources(),
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildUomCatFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.ESSENTIAL_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					// BR-UOM-ESS-003: the Reference UoM is a property of the category, and every factor
-					// in the category is expressed relative to it.
-					header: 'form.generalInformation',
-					fields: ['name', 'reference_uom_id', 'org_id'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			// BR-UOM-ESS-003: the Reference UoM is a property of the category, and every factor
+			// in the category is expressed relative to it.
+			header: 'form.generalInformation',
+			fields: ['name', 'reference_uom_id', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**
  * The UoMs of the category. `category_id` is a plain foreign key rather than a many edge, so
  * this filters on equality instead of the `linked` operator the IAM assignment pages use.
  */
-function buildCategoryUomSection(): ComponentNode[] {
+function buildCategoryUomResources() {
 	return [
-		collapsibleSectionNode(
-			{ header: 'uom_sections_uoms', translationNs: c.ESSENTIAL_MODULE, expanded: true },
-			[resourceTableNode({
-				schemaName: c.UOM_SCHEMA_NAME,
-				translationNs: c.ESSENTIAL_MODULE,
-				searchCommand: UomCommands.SEARCH,
-				initialGraph: { if: ['category_id', '=', '${id}'] },
-				linkField: 'id',
-				linkRoutePath: 'essential_uom',
-			})],
-		),
+		{
+			label: 'uom_sections_uoms',
+			schemaName: c.UOM_SCHEMA_NAME,
+			translationNs: c.ESSENTIAL_MODULE,
+			searchCommand: UomCommands.SEARCH,
+			initialGraph: { if: ['category_id', '=', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'essential_uom',
+		},
 	];
 }

@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -33,7 +32,7 @@ export function buildInvoicePages(): PageNode[] {
  * decision the person doing it should be making deliberately rather than by habit.
  */
 function buildInvoiceListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.INVOICE_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
 		linkField: 'id',
@@ -41,6 +40,7 @@ function buildInvoiceListProps() {
 		createEnabled: true,
 		deleteCommand: InvoiceCommands.DELETE,
 		updateSaveCommand: InvoiceCommands.UPDATE,
+		updateCommand: InvoiceCommands.UPDATE,
 		fieldRenderers: {
 			// Grey while it is only a draft, blue once it is a document, green when the money has
 			// arrived, red once it has been struck out.
@@ -59,7 +59,7 @@ function buildInvoiceListProps() {
 }
 
 function buildInvoiceDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.INVOICE_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
 		// A draft has no number, so the partner is the heading that always says something. The
@@ -75,52 +75,38 @@ function buildInvoiceDetailProps() {
 		},
 		contextualActions: buildInvoiceActions(),
 		createNodes: [buildInvoiceFieldsSection()],
-		childrenNodes: [buildInvoiceFieldsSection(), ...buildLineSection()],
+		childrenNodes: [buildInvoiceFieldsSection()],
+		relatedResources: buildLineResources(),
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildInvoiceFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.PAYMENTINVOICE_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['number', 'status', 'issued_at', 'order_id', 'note', 'org_id'],
-				}),
-			},
-			{
-				key: 'partner',
-				header: 'form.partner',
-				content: resourceFormColumnNode({
-					header: 'form.partner',
-					fields: ['partner_name', 'partner_tax_code', 'partner_address'],
-				}),
-			},
-			{
-				key: 'money',
-				header: 'form.money',
-				content: resourceFormColumnNode({
-					header: 'form.money',
-					// All three are system-managed and recomputed from the lines on issue. They are shown
-					// rather than hidden because they are the point of the document; the engine ignores
-					// them on update, so showing them cannot let anyone write one.
-					fields: ['currency_id', 'subtotal_amount', 'tax_amount', 'total_amount'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['number', 'status', 'issued_at', 'order_id', 'note', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.partner',
+			fields: ['partner_name', 'partner_tax_code', 'partner_address'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.money',
+			// All three are system-managed and recomputed from the lines on issue. They are shown
+			// rather than hidden because they are the point of the document; the engine ignores
+			// them on update, so showing them cannot let anyone write one.
+			fields: ['currency_id', 'subtotal_amount', 'tax_amount', 'total_amount'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**
@@ -151,19 +137,16 @@ function buildInvoiceActions() {
  * The invoice's lines, as a related-records table.
  *
  * Filtered by the current route param and linking nowhere: a line has no life outside the invoice
- * that carries it, and there is no line page to link to. It is expanded by default because the
- * lines *are* the invoice â€” the totals above are only their sum.
+ * that carries it, and there is no line page to link to.
  */
-function buildLineSection(): ComponentNode[] {
+function buildLineResources() {
 	return [
-		collapsibleSectionNode(
-			{ header: 'form.invoiceLines', translationNs: c.PAYMENTINVOICE_MODULE, expanded: true },
-			[resourceTableNode({
-				schemaName: c.INVOICE_LINE_SCHEMA_NAME,
-				translationNs: c.PAYMENTINVOICE_MODULE,
-				searchCommand: InvoiceLineCommands.SEARCH,
-				initialGraph: { if: ['invoice_id', '=', '${id}'] },
-			})],
-		),
+		{
+			label: 'form.invoiceLines',
+			schemaName: c.INVOICE_LINE_SCHEMA_NAME,
+			translationNs: c.PAYMENTINVOICE_MODULE,
+			searchCommand: InvoiceLineCommands.SEARCH,
+			initialGraph: { if: ['invoice_id', '=', '${id}'] },
+		},
 	];
 }

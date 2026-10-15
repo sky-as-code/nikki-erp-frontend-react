@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -29,7 +29,7 @@ export function buildSalesPaymentPages(): PageNode[] {
 }
 
 function buildSalesPaymentListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_PAYMENT_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
@@ -52,7 +52,7 @@ function buildSalesPaymentListProps() {
 }
 
 function buildSalesPaymentDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_PAYMENT_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'payment_method_code_snapshot' },
@@ -67,29 +67,22 @@ function buildSalesPaymentDetailProps() {
 
 /** All of these are written by the bill's `pay` action. */
 function buildSalesPaymentFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'payment',
-				header: 'form.payment',
-				content: resourceFormColumnNode({
-					header: 'form.payment',
-					fields: ['sales_bill_id', 'payment_method_id', 'payment_method_code_snapshot',
-						'amount', 'currency_code', 'status'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					// Cash carries no external transaction id, so it has no replay protection and a
-					// double-tap records twice. That is a property of cash, not a gap here.
-					fields: ['external_transaction_id', 'provider_reference', 'paid_at', 'org_id',
-						'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.payment',
+			fields: ['sales_bill_id', 'payment_method_id', 'payment_method_code_snapshot',
+				'amount', 'currency_code', 'status'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			// Cash carries no external transaction id, so it has no replay protection and a
+			// double-tap records twice. That is a property of cash, not a gap here.
+			fields: ['external_transaction_id', 'provider_reference', 'paid_at', 'org_id',
+				'created_at', 'updated_at'],
+		}),
+	]);
 }

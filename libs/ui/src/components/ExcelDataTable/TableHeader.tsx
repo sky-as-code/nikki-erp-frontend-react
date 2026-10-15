@@ -7,7 +7,7 @@ import { getFieldSchema } from './cells/cellValues';
 import { useExcelDataTableContext } from './context';
 import classes from './ExcelDataTable.module.css';
 import { ColumnFilterRow } from './filter/ColumnFilterRow';
-import { getFilterInputKind } from './filter/filterModel';
+import { getFilterInputKind, isSortableFieldName } from './filter/filterModel';
 import { TableColGroup, getTableStyle, useColumnResize, useHeaderScrollSync } from './tableLayout';
 import { useTranslate } from '../../i18n';
 
@@ -67,15 +67,17 @@ export function TableHeader({ allowColumnResizing = true, enableColumnFilters = 
 }
 
 /**
- * A column is sortable only if the server can order by it: it must own a database column.
- * A header click replaces the whole order and applies at once, writing the same state the sort
- * pane edits, so reopening the panel shows the sort the user just chose.
+ * A column is sortable only if the server can order by it, which `is_sortable` says: a computed
+ * field rendered in SQL qualifies, one filled in Go after the query does not. A header click
+ * replaces the whole order and applies at once, writing the same state the sort pane edits, so
+ * reopening the panel shows the sort the user just chose.
  */
 function useHeaderSort() {
 	const { fields, modelSchema, relatedSchemas, filters, applyFilters } = useExcelDataTableContext();
-	const sortableFields = React.useMemo(() => new Set(fields.filter(
-		field => getFieldSchema(modelSchema, field, relatedSchemas)?.is_persisted !== false,
-	)), [fields, modelSchema, relatedSchemas]);
+	const sortableFields = React.useMemo(
+		() => new Set(fields.filter(field => isSortableFieldName(modelSchema, field, relatedSchemas))),
+		[fields, modelSchema, relatedSchemas],
+	);
 	const { setSortSingle, orderBy } = filters;
 	const onSort = React.useCallback((field: string, direction: dyn.SearchOrder) => {
 		setSortSingle(field, direction);
@@ -86,7 +88,6 @@ function useHeaderSort() {
 }
 
 function ConnectedColumnFilterRow() {
-	const t = useTranslate('common');
 	const ctx = useExcelDataTableContext();
 	const { fields, modelSchema, relatedSchemas, filters, applyFilters, fieldRenderers } = ctx;
 	const tField = useTranslate(ctx.translationNs);
@@ -109,7 +110,6 @@ function ConnectedColumnFilterRow() {
 			onChange={filters.setColumnValue}
 			onCommit={onCommit}
 			hasFillerColumn
-			placeholder={t('search.placeholder')}
 			translateEnumValue={translateEnumValue}
 			tid={ctx.tid}
 		/>

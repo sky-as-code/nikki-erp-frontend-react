@@ -74,7 +74,7 @@
 }
 
 .rowNumberCell {
-	background-color: var(--mantine-color-gray-2);
+	background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
 	cursor: pointer;
 	user-select: none;
 }
@@ -89,7 +89,7 @@
 }
 
 .headerCell {
-	background-color: var(--mantine-color-gray-2);
+	background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
 	position: relative;
 }
 
@@ -97,7 +97,7 @@
 .progressRow {
 	height: 2px;
 	padding: 0;
-	background-color: var(--mantine-color-gray-2);
+	background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
 	overflow: hidden;
 }
 
@@ -105,10 +105,10 @@
 	height: 2px;
 	width: 40%;
 	background-color: var(--nikki-color-table-border-selected);
-	animation: progressSlide 1.2s ease-in-out infinite;
+	animation: progress-slide 1.2s ease-in-out infinite;
 }
 
-@keyframes progressSlide {
+@keyframes progress-slide {
 	from {
 		transform: translateX(-100%);
 	}
@@ -148,7 +148,6 @@
 .headerScroller {
 	overflow-x: hidden;
 	overflow-y: hidden;
-	scrollbar-gutter: stable;
 }
 
 .bodyScroller {

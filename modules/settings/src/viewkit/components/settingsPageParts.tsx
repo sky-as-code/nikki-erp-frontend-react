@@ -1,13 +1,14 @@
-import { NavLink, Stack, Text, Title } from '@mantine/core';
+import { Box, Flex, NavLink, Stack, Text, Title } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { ModuleIcon } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { LazyMicroWidget } from '@nikkierp/ui/microApp';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
-import { SplitLayout } from '@nikkierp/viewkit-mantine';
 import React from 'react';
 import { z } from 'zod';
 
+import classes from './settingsPageParts.module.css';
 import {
 	SETTINGS_PAGE_PANE, SETTINGS_PAGE_RAIL, SETTINGS_PAGE_SPLIT, SETTINGS_PAGE_TITLE,
 } from '../ids';
@@ -68,6 +69,7 @@ function SettingsPageRail(): React.ReactNode {
 					key={pane.slug}
 					active={pane.slug === activeSlug}
 					label={t(pane.labelKey)}
+					leftSection={<ModuleIcon name={pane.slug} w={20} h={20} />}
 					onClick={() => setActiveSlug(pane.slug)}
 					{...testAttrs('settings.railItem', pane.slug)}
 				/>
@@ -120,11 +122,11 @@ function SettingsPagePane(): React.ReactNode {
 }
 
 /**
- * The two-column frame: rail on the left, active module's pane on the right.
+ * The two-column frame: a fixed-width rail on the left, the active module's pane on the right.
  *
- * Its children map to the two columns **by position** -- first left, second right -- because
- * `SplitLayout` takes render callbacks and a callback cannot be authored in page JSON. Wrapping
- * it here is what keeps the page tree plain metadata.
+ * Its children map to the two columns **by position** -- first left, second right -- so the page
+ * tree stays plain metadata. The columns are static on purpose: a settings page always shows both,
+ * so the draggable split of the master-detail views has nothing to offer here.
  */
 export const settingsPageSplitRenderer: IComponentRenderer<Record<string, never>> = {
 	type: SETTINGS_PAGE_SPLIT,
@@ -134,20 +136,19 @@ export const settingsPageSplitRenderer: IComponentRenderer<Record<string, never>
 	},
 };
 
+const RAIL_WIDTH = 240;
+
 function SettingsPageSplit({ runtime }: { runtime: ComponentRenderRuntime }): React.ReactNode {
 	const [primary, secondary] = runtime.children ?? [];
 
 	return (
-		<div {...componentAttrs(SETTINGS_PAGE_SPLIT)}>
-			<SplitLayout
-				// Controlled open: `SplitLayout` is uncontrolled-*closed* by default, which suits
-				// the master-detail flow it was written for -- no row picked yet, no detail pane.
-				// A settings page always has an active pane, so leaving it uncontrolled renders
-				// the rail beside an empty right-hand column.
-				secondaryOpen
-				renderPrimary={() => <MetaComponent node={primary} />}
-				renderSecondary={() => <MetaComponent node={secondary} />}
-			/>
-		</div>
+		<Flex h='100%' gap='md' align='stretch' {...componentAttrs(SETTINGS_PAGE_SPLIT)}>
+			<Box w={RAIL_WIDTH} flex='none' className={classes.rail}>
+				<MetaComponent node={primary} />
+			</Box>
+			<Box flex={1} miw={0} className={classes.pane}>
+				<MetaComponent node={secondary} />
+			</Box>
+		</Flex>
 	);
 }

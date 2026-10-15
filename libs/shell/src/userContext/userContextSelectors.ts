@@ -1,9 +1,10 @@
 import { selectSliceState, useModuleSelector, useServiceLayer } from '@nikkierp/ui/appState/store';
 import { createSelector } from '@reduxjs/toolkit';
+import { useCallback } from 'react';
 
 import { useActiveOrg } from './activeOrg';
 import { selectMyOrgs } from './orgSelectors';
-import { UserContextOrg } from './types';
+import { ThemeMode, UserContextOrg } from './types';
 import { UserContextService, userContextService } from './userContextService';
 
 
@@ -37,6 +38,22 @@ export function useSetLocalSettings() {
 
 export function useLocalSettings() {
 	return useSetLocalSettings().result.data;
+}
+
+/**
+ * The user's theme mode and the one way to change it.
+ *
+ * Writes the Shell's local settings, never Mantine directly: `ApplyStoredTheme` applies them, and a
+ * scheme set on Mantine alone was overridden by the stale local value on the next boot.
+ */
+export function useThemeMode(): { themeMode: ThemeMode, setThemeMode: (mode: ThemeMode) => void } {
+	const { result, dispatchMethod } = useSetLocalSettings();
+	const languageCode = result.data?.languageCode ?? null;
+	const setThemeMode = useCallback(
+		(themeMode: ThemeMode) => dispatchMethod({ languageCode, themeMode }),
+		[dispatchMethod, languageCode],
+	);
+	return { themeMode: result.data?.themeMode ?? 'auto', setThemeMode };
 }
 
 export function useFirstOrgSlug() {

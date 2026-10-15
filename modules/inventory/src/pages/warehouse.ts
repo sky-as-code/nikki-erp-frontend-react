@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -27,7 +26,7 @@ export function buildWarehousePages(): PageNode[] {
 }
 
 function buildWarehouseListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.WAREHOUSE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -36,6 +35,7 @@ function buildWarehouseListProps() {
 		deleteCommand: WarehouseCommands.DELETE,
 		archiveCommand: WarehouseCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: WarehouseCommands.UPDATE,
+		updateCommand: WarehouseCommands.UPDATE,
 		fieldRenderers: {
 			// Suspended is a temporary close rather than a retirement, so it reads as a warning
 			// rather than an error: the warehouse is expected back.
@@ -62,7 +62,7 @@ function buildWarehouseListProps() {
 }
 
 function buildWarehouseDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.WAREHOUSE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -76,51 +76,37 @@ function buildWarehouseDetailProps() {
 			archive: WarehouseCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildWarehouseFieldsSection()],
-		childrenNodes: [buildWarehouseFieldsSection(), ...buildWarehouseSections()],
+		childrenNodes: [buildWarehouseFieldsSection()],
+		relatedResources: buildWarehouseResources(),
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildWarehouseFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['code', 'name', 'warehouse_role', 'parent_warehouse_id', 'status', 'org_id'],
-				}),
-			},
-			{
-				key: 'warehouse_flows',
-				header: 'form.warehouseFlows',
-				content: resourceFormColumnNode({
-					// Flows are policy: changing one provisions the locations the new shape needs and
-					// creates no movement, so they sit apart from the descriptive fields above.
-					header: 'form.warehouseFlows',
-					fields: ['incoming_flow', 'outgoing_flow'],
-				}),
-			},
-			{
-				key: 'contact',
-				header: 'form.contactInformation',
-				content: resourceFormColumnNode({
-					header: 'form.contactInformation',
-					fields: ['address', 'manager_user_id', 'notes'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['code', 'name', 'warehouse_role', 'parent_warehouse_id', 'status', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			// Flows are policy: changing one provisions the locations the new shape needs and
+			// creates no movement, so they sit apart from the descriptive fields above.
+			header: 'form.warehouseFlows',
+			fields: ['incoming_flow', 'outgoing_flow'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.contactInformation',
+			fields: ['address', 'manager_user_id', 'notes'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**
@@ -129,47 +115,35 @@ function buildWarehouseFieldsSection(): ComponentNode {
  * They render only in update mode, which is correct: during create there is no id to filter by
  * yet, and a warehouse's locations do not exist until it has been created.
  */
-function buildWarehouseSections() {
+function buildWarehouseResources() {
 	return [
-		collapsibleSectionNode({
-			header: 'warehouse_sections_locations',
+		{
+			label: 'warehouse_sections_locations',
+			schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
 			translationNs: c.INVENTORY_MODULE,
-		}, [
-			resourceTableNode({
-				schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: InventoryLocationCommands.SEARCH,
-				initialGraph: { if: ['warehouse_id', '=', '${id}'] },
-				linkField: 'id',
-				linkRoutePath: 'inventory_location',
-			}),
-		]),
-		collapsibleSectionNode({
-			header: 'warehouse_sections_putawayRules',
+			searchCommand: InventoryLocationCommands.SEARCH,
+			initialGraph: { if: ['warehouse_id', '=', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'inventory_location',
+		},
+		{
+			label: 'warehouse_sections_putawayRules',
+			schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
 			translationNs: c.INVENTORY_MODULE,
-		}, [
-			resourceTableNode({
-				schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: PutawayRuleCommands.SEARCH,
-				initialGraph: { if: ['warehouse_id', '=', '${id}'] },
-				linkField: 'id',
-				linkRoutePath: 'inventory_putaway_rule',
-			}),
-		]),
-		collapsibleSectionNode({
-			header: 'warehouse_sections_supplyRelations',
+			searchCommand: PutawayRuleCommands.SEARCH,
+			initialGraph: { if: ['warehouse_id', '=', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'inventory_putaway_rule',
+		},
+		{
+			label: 'warehouse_sections_supplyRelations',
+			schemaName: c.SUPPLY_RELATION_SCHEMA_NAME,
 			translationNs: c.INVENTORY_MODULE,
-		}, [
-			resourceTableNode({
-				schemaName: c.SUPPLY_RELATION_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: SupplyRelationCommands.SEARCH,
-				// Routes into this warehouse: who is allowed to restock it.
-				initialGraph: { if: ['destination_warehouse_id', '=', '${id}'] },
-				linkField: 'id',
-				linkRoutePath: 'inventory_warehouse_supply_relation',
-			}),
-		]),
+			searchCommand: SupplyRelationCommands.SEARCH,
+			// Routes into this warehouse: who is allowed to restock it.
+			initialGraph: { if: ['destination_warehouse_id', '=', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'inventory_warehouse_supply_relation',
+		},
 	];
 }

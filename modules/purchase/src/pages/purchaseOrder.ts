@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -91,7 +90,7 @@ function splitView(initialGraph: Record<string, unknown>, mergeable: boolean) {
  * purchase the business committed to; the guarded path is to cancel, which leaves the trail.
  */
 function buildOrderListProps(initialGraph: Record<string, unknown>, mergeable: boolean) {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.PURCHASE_ORDER_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		linkField: 'id',
@@ -131,7 +130,7 @@ function buildOrderListProps(initialGraph: Record<string, unknown>, mergeable: b
  * typed. Same for `approved_by` / `approved_at`, which the approve action stamps.
  */
 function buildOrderDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.PURCHASE_ORDER_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
 		titleLvl1: { schemaField: 'code' },
@@ -144,64 +143,46 @@ function buildOrderDetailProps() {
 		},
 		contextualActions: buildOrderActions(),
 		createNodes: [buildPurchaseOrderFieldsSection()],
-		childrenNodes: [buildPurchaseOrderFieldsSection(), ...buildLinesSection(), ...buildAuditSection()],
+		childrenNodes: [buildPurchaseOrderFieldsSection()],
+		relatedResources: [buildLinesResource(), buildAuditResource()],
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildPurchaseOrderFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.PURCHASE_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					// `code` is allocated by the backend; `vendor_reference` is the vendor's own number for
-					// the same document. A support conversation may start from either.
-					fields: ['code', 'status', 'vendor_id', 'vendor_reference', 'buyer_id', 'currency_id',
-						'priority', 'org_id'],
-				}),
-			},
-			{
-				key: 'terms',
-				header: 'form.terms',
-				content: resourceFormColumnNode({
-					header: 'form.terms',
-					fields: ['order_deadline', 'expected_arrival', 'terms_conditions', 'agreement_id',
-						'source_reference'],
-				}),
-			},
-			{
-				key: 'totals',
-				header: 'form.totals',
-				content: resourceFormColumnNode({
-					header: 'form.totals',
-					// Computed from the lines by the backend. Read-only.
-					fields: ['untaxed_amount', 'tax_amount', 'total_amount'],
-				}),
-			},
-			{
-				key: 'approval',
-				header: 'form.approval',
-				content: resourceFormColumnNode({
-					header: 'form.approval',
-					// Set by confirmation and the approve action, never typed.
-					fields: ['approval_required', 'approved_by', 'approved_at', 'confirmed_at'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['is_locked', 'vendor_acknowledged', 'sourcing_group_id', 'created_at',
-						'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			// `code` is allocated by the backend; `vendor_reference` is the vendor's own number for
+			// the same document. A support conversation may start from either.
+			fields: ['code', 'status', 'vendor_id', 'vendor_reference', 'buyer_id', 'currency_id',
+				'priority', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.terms',
+			fields: ['order_deadline', 'expected_arrival', 'terms_conditions', 'agreement_id',
+				'source_reference'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.totals',
+			// Computed from the lines by the backend. Read-only.
+			fields: ['untaxed_amount', 'tax_amount', 'total_amount'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.approval',
+			// Set by confirmation and the approve action, never typed.
+			fields: ['approval_required', 'approved_by', 'approved_at', 'confirmed_at'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['is_locked', 'vendor_acknowledged', 'sourcing_group_id', 'created_at',
+				'updated_at'],
+		}),
+	]);
 }
 /**
  * The lifecycle actions, each gated on the statuses it actually makes sense in.
@@ -415,55 +396,47 @@ function buildSourcingActions() {
  * `linkRoutePath` is absent because a line has no page of its own â€” it means nothing outside the
  * order that carries it.
  */
-function buildLinesSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{ header: 'purchase_order_sections_lines', translationNs: c.PURCHASE_MODULE, expanded: true },
-			[resourceTableNode({
-				schemaName: c.PURCHASE_ORDER_LINE_SCHEMA_NAME,
-				translationNs: c.PURCHASE_MODULE,
-				searchCommand: PurchaseOrderLineCommands.SEARCH,
-				initialGraph: { if: ['purchase_order_id', '=', '${id}'] },
-				fields: ['sequence', 'line_type', 'product_variant_id', 'description', 'quantity',
-					'uom_id', 'unit_price', 'discount_percent', 'subtotal', 'tax_amount', 'total'],
-				fieldRenderers: {
-					// Only a `product` line carries money; the other three are structure and text,
-					// which the totals engine skips. The badge is what makes that visible in a
-					// table where the money columns are otherwise just empty.
-					line_type: {
-						renderer: 'badge',
-						colorMap: {
-							product: 'blue',
-							section: 'gray',
-							subsection: 'gray',
-							note: 'gray',
-						},
-						prefix: 'line_type.',
-					},
+function buildLinesResource() {
+	return {
+		label: 'purchase_order_sections_lines',
+		schemaName: c.PURCHASE_ORDER_LINE_SCHEMA_NAME,
+		translationNs: c.PURCHASE_MODULE,
+		searchCommand: PurchaseOrderLineCommands.SEARCH,
+		initialGraph: { if: ['purchase_order_id', '=', '${id}'] },
+		fields: ['sequence', 'line_type', 'product_variant_id', 'description', 'quantity',
+			'uom_id', 'unit_price', 'discount_percent', 'subtotal', 'tax_amount', 'total'],
+		fieldRenderers: {
+			// Only a `product` line carries money; the other three are structure and text,
+			// which the totals engine skips. The badge is what makes that visible in a
+			// table where the money columns are otherwise just empty.
+			line_type: {
+				renderer: 'badge',
+				colorMap: {
+					product: 'blue',
+					section: 'gray',
+					subsection: 'gray',
+					note: 'gray',
 				},
-			})],
-		),
-	];
+				prefix: 'line_type.',
+			},
+		},
+	};
 }
 
 /**
  * The order's audit trail, as a read-only related-records table.
  *
- * Collapsed by default: it is what you consult when a question arises about who did what, not
+ * The last related tab: it is what you consult when a question arises about who did what, not
  * what you read on the way past. Filtered by `entity_id` rather than an order-specific column,
  * because one audit table records transitions of both orders and agreements.
  */
-function buildAuditSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{ header: 'purchase_order_sections_auditTrail', translationNs: c.PURCHASE_MODULE },
-			[resourceTableNode({
-				schemaName: c.AUDIT_EVENT_SCHEMA_NAME,
-				translationNs: c.PURCHASE_MODULE,
-				searchCommand: AuditEventCommands.SEARCH,
-				initialGraph: { if: ['entity_id', '=', '${id}'] },
-				fields: ['created_at', 'action', 'from_status', 'to_status', 'actor_id', 'reason'],
-			})],
-		),
-	];
+function buildAuditResource() {
+	return {
+		label: 'purchase_order_sections_auditTrail',
+		schemaName: c.AUDIT_EVENT_SCHEMA_NAME,
+		translationNs: c.PURCHASE_MODULE,
+		searchCommand: AuditEventCommands.SEARCH,
+		initialGraph: { if: ['entity_id', '=', '${id}'] },
+		fields: ['created_at', 'action', 'from_status', 'to_status', 'actor_id', 'reason'],
+	};
 }

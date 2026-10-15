@@ -6,7 +6,7 @@
 	background: var(--mantine-color-white);
 	border-top: 1px solid var(--mantine-color-gray-3);
 	z-index: 100;
-	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 -2px 8px rgb(0, 0, 0, 0.1);
 }
 
 .mobileSearchInput :global(.mantine-TextInput-input) {

@@ -73,8 +73,12 @@ export class NikkiAuthenticateStrategy implements t.ISignInStrategy {
 	// 	} as AuthenticatedSession);
 	// }
 
-	public async signOut(): Promise<void> {
-		api.unwrapResult(await api.post<void>('v1/iam/signout'));
+	/**
+	 * Client-side only. The backend has no sign-out endpoint, and its tokens are stateless JWTs that
+	 * nothing could revoke; the caller discards them.
+	 */
+	public signOut(): Promise<void> {
+		return Promise.resolve();
 	}
 }
 

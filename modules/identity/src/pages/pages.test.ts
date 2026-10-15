@@ -1,3 +1,4 @@
+import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
 import { buildGroupPages } from './group';
@@ -6,15 +7,8 @@ import { buildRolePages } from './role';
 import { buildRoleAssignmentPages } from './roleAssignment';
 import { buildUserPages } from './user';
 
-import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
-
-
-/** The shape `resourceDetails.v2` carries each related table as: a table's props plus a tab label. */
-type RelatedResource = {
-	label: string,
-	initialGraph?: unknown,
-	extraActions?: unknown,
-};
+import type { PageNode } from '@nikkierp/viewengine/metadata';
+import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
 
 
 const allPages: { name: string, build: () => PageNode[] }[] = [
@@ -42,14 +36,17 @@ describe('IAM page metadata', () => {
 		expect(findNonPlainValue(build(), '$')).toBeNull();
 	});
 
-	it('nests both split-view panes as template refs', () => {
-		const [page] = buildUserPages();
-		const props = page.props as { primary: { template: string }, secondary: { template: string } };
+	it.each(allPages.filter(({ name }) => name !== 'roleAssignment'))(
+		'$name pages nest a v2 list and a v2 detail in a split view',
+		({ build }) => {
+			const [page] = build();
+			const props = page.props as { primary: { template: string }, secondary: { template: string } };
 
-		expect(page.template).toContain('resourceSplitView');
-		expect(props.primary.template).toContain('resourceList');
-		expect(props.secondary.template).toContain('resourceDetails');
-	});
+			expect(page.template).toContain('resourceSplitView');
+			expect(props.primary.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
+			expect(props.secondary.template).toBe(RESOURCE_DETAIL_V2_TEMPLATE);
+		},
+	);
 
 	it('keeps field renderers as serializable specs, not resolved renderers', () => {
 		const [page] = buildUserPages();
@@ -72,37 +69,21 @@ describe('IAM page metadata', () => {
 		expect(routePaths).toEqual(['users/:id/roles', 'groups/:id/roles']);
 	});
 
-	// The group detail page is still on the v1 template, where a related table is a collapsible
-	// section nested in `childrenNodes`. User has moved to v2 — see the next test.
-	it('group detail page lists assigned roles through the assigned_groups edge', () => {
-		const [page] = buildGroupPages();
-		const detail = (page.props as { secondary: { props: { childrenNodes: ComponentNode[] } } }).secondary;
-		const panel = detail.props.childrenNodes
-			.find(node => node.children?.some(child => child.props?.initialGraph != null));
-		const [table] = panel?.children ?? [];
-
-		expect(panel).toBeDefined();
-
-		// The wizard is reached from the table's own action bar, next to Refresh — the panel
-		// header carries no button.
-		expect(panel?.props?.headerAction).toBeUndefined();
-		expect(table.props?.extraActions).toEqual([{ label: 'assignment.manageRoles', routePath: 'iam_role' }]);
-		// `linked` is the membership operator for a many edge; `${id}` is interpolated from
-		// the route at render time.
-		expect(table.props?.initialGraph).toEqual({ if: ['assigned_groups', 'linked', '${id}'] });
-	});
-
-	// Same edge read, same wizard link, different home: on the v2 detail template a related table
-	// is a tab of its own rather than a section inside the form.
-	it('user detail page lists assigned roles as a related resource', () => {
-		const [page] = buildUserPages();
+	// The same many-to-many edge read from the role side, with the assignment wizard reached from
+	// the related tab's own action bar. `linked` is the membership operator for a many edge;
+	// `${id}` is interpolated from the route at render time.
+	it.each([
+		{ name: 'user', build: buildUserPages, label: 'user_sections_assignedRoles', edge: 'assigned_users' },
+		{ name: 'group', build: buildGroupPages, label: 'group_sections_assignedRoles', edge: 'assigned_groups' },
+	])('$name detail page lists assigned roles as a related resource', ({ build, label, edge }) => {
+		const [page] = build();
 		const detail = (page.props as { secondary: { props: { relatedResources: RelatedResource[] } } }).secondary;
 		const [assignedRoles] = detail.props.relatedResources;
 
 		expect(detail.props.relatedResources).toHaveLength(1);
-		expect(assignedRoles.label).toBe('user_sections_assignedRoles');
+		expect(assignedRoles.label).toBe(label);
 		expect(assignedRoles.extraActions).toEqual([{ label: 'assignment.manageRoles', routePath: 'iam_role' }]);
-		expect(assignedRoles.initialGraph).toEqual({ if: ['assigned_users', 'linked', '${id}'] });
+		expect(assignedRoles.initialGraph).toEqual({ if: [edge, 'linked', '${id}'] });
 	});
 });
 

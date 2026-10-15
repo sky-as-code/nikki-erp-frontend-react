@@ -47,8 +47,10 @@ belong, or breaks it at runtime.
 6. **Fixed geometry**: `viewBox="0 0 64 64"`, `width`/`height` `64`,
    `stroke-width="2.5"`, `stroke-linecap="round"`, `stroke-linejoin="round"`.
    Do not scale the stroke to "balance" a busy icon - draw fewer things instead.
-7. **`kebab-case.svg`** file names, matching the module slug where one exists
-   (`it-secrets.svg`, `project-management.svg`).
+7. **File name = the backend module name**, exactly as `InCodeModule.Name()` returns it
+   (`vendingmachine.svg`, `parkinglot.svg`). `ModuleIcon` looks the icon up by that name and
+   falls back to `generic.svg` when no file matches. Concepts with no backend module yet use
+   `kebab-case.svg` (`it-secrets.svg`, `project-management.svg`).
 
 ## The gradient, and why those coordinates
 
@@ -124,35 +126,22 @@ still holds.
 
 ## Consuming an icon
 
-There is no svgr plugin configured, so a bare SVG import resolves to a **URL
-string** (Vite inlines small ones as a `data:` URI). That is what `ModuleCard`
-wants, since it passes `module.icon` straight to the Mantine `<Image src>`:
+Render `<ModuleIcon name={module.name}/>` from `@nikkierp/ui/components`, or get the URL with
+`getModuleIconUrl(name)`. Both resolve the file through `import.meta.glob` in
+`components/ModuleIcon/moduleIconUrl.ts`, so adding a correctly named SVG here is all a new
+module needs. An unknown name resolves to `generic.svg`; `ModuleIcon` also swaps to `generic.svg`
+if the image fails to load.
 
-```ts
-import qrCodeIcon from '../../../icons/qr-code.svg';
-```
-
-Import **relatively**. Do not reach for `@nikkierp/shell/...`: that is a
-different package (`nikkierp/libs/shell`). This package is
-`@nikkierp/nikkiportal-shell`, and its `exports` only expose `.` and
-`./styles/*`, so a subpath import of these icons will not resolve.
-
-Omitting `icon` is legitimate. `ModuleCard` substitutes `generic.svg` when the
-field is absent, so an unknown or not-yet-designed module still renders in the
-house style. The Tabler `FallbackModuleIcon` now only appears if the image
-itself fails to load - it is an error state, not the normal empty state.
-
-That means you do not need to import `generic.svg` at every call site: just
-leave `icon` off the module entry.
+A one-off direct import still works: `import icon from '@nikkierp/ui/assets/moduleIcons/qr-code.svg';`
+(there is no svgr plugin, so it resolves to a URL string).
 
 ## Current inventory
 
 `accounting`, `assets`, `chat`, `contacts`, `crm`, `customers`, `documents`,
 `drive`, `generic`, `helpdesk`, `hrm`, `iam`, `incident-management`,
 `inventory`, `it-applications`, `it-deployments`, `it-secrets`, `it-vpn`,
-`manufacture`, `parking-lot`, `project-management`, `purchase`, `qr-code`, `risk-management`,
-`sales`, `settings`, `vending-machine`.
+`manufacture`, `parkinglot`, `project-management`, `purchase`, `qr-code`, `risk-management`,
+`sales`, `settings`, `vendingmachine`.
 
 Before adding one, check whether an existing icon already covers the concept -
-`iam.svg` is reused for the Identity module, and `vending-machine.svg` appears
-in two groups.
+`iam.svg` serves the Identity micro-app, whose backend module is `iam`.

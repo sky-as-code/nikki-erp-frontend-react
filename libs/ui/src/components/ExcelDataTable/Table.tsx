@@ -13,7 +13,7 @@ import { EditingRow } from './RowEditor';
 import { TableColGroup, getTableStyle, useBodyScrollSync } from './tableLayout';
 import { rowIdOf } from './types';
 import { useTableKeyboard } from './useTableKeyboard';
-import { useTranslate } from '../../i18n';
+import { useI18n, useTranslate } from '../../i18n';
 
 
 import type { RowId, SearchItem } from './types';
@@ -154,10 +154,11 @@ function DataCell({ field, item, rowId, href, isSelected }: DataCellProps) {
 	const context = useExcelDataTableContext();
 	const { modelSchema, relatedSchemas, fieldRenderers, selection, tid, data } = context;
 	const t = useTranslate(context.translationNs);
+	const { language } = useI18n();
 	const resolved = useResolvedPath(href ?? '.');
 	const fieldSchema = getFieldSchema(modelSchema, field, relatedSchemas);
 	const renderer = fieldRenderers[field];
-	const edgeLabel = resolveEdgeLabel(item, field, modelSchema, relatedSchemas);
+	const edgeLabel = resolveEdgeLabel(item, field, modelSchema, relatedSchemas, language);
 	const rawValue = edgeLabel ?? getCellValue(item, field);
 	const text = edgeLabel ?? getCellText(item, field, data.masked_fields);
 	const content = React.useMemo(

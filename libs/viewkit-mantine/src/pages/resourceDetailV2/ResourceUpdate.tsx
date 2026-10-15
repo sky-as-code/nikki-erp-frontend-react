@@ -7,7 +7,6 @@ import { useParams } from 'react-router';
 
 import { toV2FormNodes } from './formNodes';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
-import { ownFieldNames } from '../../data/edgeLabelFields';
 import { useEdgeLabelFields } from '../../data/useEdgeLabelFields';
 import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_V2 } from '../../ids';
 import { useResourceDetailContext } from '../resourceDetail/ResourceDetailProvider';
@@ -59,26 +58,22 @@ export function ResourceUpdateProvider(
 	// the response, so the view form can show the name and link to the record. The server adds the
 	// edge's own id to the projection for free, so no second request is needed to build the href.
 	const edgeLabels = useEdgeLabelFields(schemaPack?.modelSchema);
+	// Joined to a string because `schemaPack` is a new object on every etag check, so depending
+	// on it directly would re-issue the detail request on each one.
 	const edgeFieldKey = edgeLabels.fields.join(',');
-	// Both joined to strings for the same reason: `schemaPack` is a new object on every etag
-	// check, so depending on it directly would re-issue the detail request on each one.
-	const ownFieldKey = ownFieldNames(schemaPack?.modelSchema).join(',');
 
 	const refresh = React.useCallback(() => {
 		// Waiting on `isReady` rather than fetching twice: the edge schemas resolve asynchronously
 		// and a first request without them would be replaced by a second with them, repainting the
 		// form in front of the user.
 		if (commands.getById && id && id !== 'new' && edgeLabels.isReady) {
-			// `fields` is omitted entirely when there is no edge to select, which leaves the server
-			// on its own default projection. Once anything is listed that default no longer
-			// applies, so the record's own columns have to be named alongside the edges or the
-			// response would carry the edges and nothing else.
+			// A listed `fields` replaces the server's default projection, so the edges travel with
+			// `ALL_FIELDS` to keep the record's own columns.
 			const edgeFields = edgeFieldKey ? edgeFieldKey.split(',') : [];
-			const ownFields = ownFieldKey ? ownFieldKey.split(',') : [];
-			const fields = edgeFields.length > 0 ? [...ownFields, ...edgeFields] : undefined;
+			const fields = edgeFields.length > 0 ? [dyn.ALL_FIELDS, ...edgeFields] : undefined;
 			void publishGet(fields ? { id, fields } : { id });
 		}
-	}, [publishGet, commands.getById, id, edgeLabels.isReady, edgeFieldKey, ownFieldKey]);
+	}, [publishGet, commands.getById, id, edgeLabels.isReady, edgeFieldKey]);
 
 	React.useEffect(() => { refresh(); }, [refresh]);
 

@@ -1,5 +1,6 @@
-import { Alert, MantineProvider } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
+import { MenuIndexRedirect } from '@nikkierp/ui/menu';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, initMicroAppStateContext,
@@ -25,7 +26,7 @@ import { buildUomCatPages } from './pages/uomcat';
 function Main(props: MicroAppProps) {
 	return (
 		<MicroAppProvider {...props}>
-			<MantineProvider>
+			<MantineProvider defaultColorScheme='auto'>
 				<MicroAppInner {...props} />
 			</MantineProvider>
 		</MicroAppProvider>
@@ -50,7 +51,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 			widgetProps={props.widgetProps}
 		>
 			<AppRoutes>
-				<AppRoute index element={<EssentialIndexPage />} />
+				<AppRoute index element={<MenuIndexRedirect items={buildEssentialMenu(props.slug).items} />} />
 				<AppRoute path='authorized' element={<AuthorizedPage />} />
 				<AppRoute path='org-home' element={<OrgHomePage />} />
 				<AppRoute path='module-management' element={<ModuleManagementPage />} />
@@ -66,21 +67,6 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 				<WidgetRoute name='pages.settings' Component={SettingsWidget} />
 			</WidgetRoutes>
 		</MicroAppRouter>
-	);
-}
-
-function EssentialIndexPage(): React.ReactNode {
-	return (
-		<>
-			<Alert variant='filled' color='blue'><h1>Essential Module</h1></Alert>
-			<Link to='authorized' data-testid='essential-link-authorized'>Authorized</Link><br />
-			<Link to='org-home' data-testid='essential-link-org-home'>Org Home</Link><br />
-			<Link to='module-management' data-testid='essential-link-module-management'>
-				Module Management
-			</Link><br />
-			<Link to='uoms' data-testid='essential-link-uoms'>Units of Measure</Link><br />
-			<Link to='uom-categories' data-testid='essential-link-uom-categories'>UoM Categories</Link>
-		</>
 	);
 }
 

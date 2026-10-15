@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -23,7 +23,7 @@ export function buildInventoryLocationPages(): PageNode[] {
 }
 
 function buildInventoryLocationListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -32,6 +32,7 @@ function buildInventoryLocationListProps() {
 		deleteCommand: InventoryLocationCommands.DELETE,
 		archiveCommand: InventoryLocationCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: InventoryLocationCommands.UPDATE,
+		updateCommand: InventoryLocationCommands.UPDATE,
 		fieldRenderers: {
 			// Only `internal` holds company-owned stock, so the colours separate it from the
 			// counterparty and virtual locations rather than giving each usage its own hue.
@@ -63,7 +64,7 @@ function buildInventoryLocationListProps() {
 }
 
 function buildInventoryLocationDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -83,44 +84,29 @@ function buildInventoryLocationDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildInventoryLocationFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['code', 'name', 'location_usage', 'status', 'description', 'org_id'],
-				}),
-			},
-			{
-				key: 'location_topology',
-				header: 'form.locationTopology',
-				content: resourceFormColumnNode({
-					// Where the location sits: which warehouse owns it (null for a vendor, customer or
-					// shared transit location), its parent, and what it is used for inside the warehouse.
-					// complete_path is derived, so it is shown but never edited.
-					header: 'form.locationTopology',
-					fields: ['warehouse_id', 'parent_location_id', 'purpose', 'complete_path', 'barcode'],
-				}),
-			},
-			{
-				key: 'storage_policy',
-				header: 'form.storagePolicy',
-				content: resourceFormColumnNode({
-					header: 'form.storagePolicy',
-					fields: ['storage_category_id', 'removal_strategy', 'is_replenishment_destination'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['code', 'name', 'location_usage', 'status', 'description', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			// Where the location sits: which warehouse owns it (null for a vendor, customer or
+			// shared transit location), its parent, and what it is used for inside the warehouse.
+			// complete_path is derived, so it is shown but never edited.
+			header: 'form.locationTopology',
+			fields: ['warehouse_id', 'parent_location_id', 'purpose', 'complete_path', 'barcode'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.storagePolicy',
+			fields: ['storage_category_id', 'removal_strategy', 'is_replenishment_destination'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }

@@ -9,6 +9,7 @@ export * from './hoc';
 export * from './Loading';
 export * from './Localized';
 export * from './Modal';
+export * from './ModuleIcon';
 export * from './NotFound';
 export * from './SearchableSelect';
 export * from './Select';

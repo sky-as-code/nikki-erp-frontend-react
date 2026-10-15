@@ -221,8 +221,10 @@ export * from './components/resourceTable/props';
 export * from './components/settings/props';
 export * from './components/tabCollapsibleSection/props';
 export * from './pages/resourceDetail/props';
+export * from './pages/resourceDetailV2/props';
 export * from './pages/resourceGenericPage/props';
 export * from './pages/resourceList/props';
+export * from './pages/resourceListV2/props';
 export * from './pages/resourceSplitView/props';
 export * from './ids';
 

@@ -13,13 +13,14 @@
 }
 
 .goHomeButtonClick {
-	animation: clickPulse 0.5s ease-out;
+	animation: click-pulse 0.5s ease-out;
 }
 
-@keyframes clickPulse {
+@keyframes click-pulse {
 	from {
 		transform: rotateY(0deg);
 	}
+
 	to {
 		transform: rotateY(180deg);
 	}

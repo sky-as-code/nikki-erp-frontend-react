@@ -2,12 +2,15 @@ import { Card, Container, Stack, Text, Title } from '@mantine/core';
 import { useIsAuthenticated, useStartSignIn, useContinueSignIn } from '@nikkierp/shell/authenticate';
 import { routingService } from '@nikkierp/shell/routing';
 import { useTranslate } from '@nikkierp/ui/i18n';
+import clsx from 'clsx';
 import React from 'react';
 import { useSearchParams } from 'react-router';
 
 import { EmailStep } from './EmailStep';
 import { PasswordStep } from './PasswordStep';
+import classes from './SignIn.module.css';
 import { SignInStepProps } from './SignInStep.types';
+
 
 
 type SignInStep = {
@@ -84,11 +87,11 @@ function SignInCard(props: SignInCardProps): React.ReactNode {
 			shadow='xl'
 			radius='lg'
 			p='xl'
-			className='bg-white/80 backdrop-blur-sm border-0'
+			className={clsx(classes.card, 'backdrop-blur-sm border-0')}
 		>
 			<Stack gap='lg'>
 				<div className='text-center'>
-					<Title order={1} className='text-3xl font-bold text-gray-800 mb-2'>
+					<Title order={1} className='text-3xl font-bold mb-2'>
 						{t('signIn.title')}
 					</Title>
 					<Text c='dimmed' size='lg'>

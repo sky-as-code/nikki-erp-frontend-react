@@ -8,8 +8,10 @@ import { useTranslation } from 'react-i18next';
 
 import { handleMenuItemClick } from './helpers';
 import { PROFILE_MENU_CONFIG } from './menuConfig';
+import classes from './ProfileMenuDropdown.module.css';
 import { LangSwitchModal } from '../../components/LangSwitch';
 import { ThemeSwitchModal } from '../../components/ThemeSwitch';
+
 
 
 
@@ -22,9 +24,10 @@ export const ProfileMenuDrawer: React.FC = () => {
 		<>
 			<Avatar
 				size={35}
+				classNames={{ placeholder: classes.avatarPlaceholder }}
 				onClick={() => setDrawerOpened(!drawerOpened)}
 			>
-				<IconUserFilled color={'var(--mantine-color-gray-6)'} />
+				<IconUserFilled />
 			</Avatar>
 
 			<Drawer.Root
@@ -78,12 +81,9 @@ const ProfileMenuDrawerContent: React.FC<ProfileMenuDrawerContentProps> = ({
 
 	return (
 		<Stack gap={0}>
-			<Flex gap={'sm'} p={'sm'} mb={'sm'} align='center'
-				bg={'var(--mantine-color-gray-1)'}
-				style={{ borderRadius: '3px' }}
-			>
-				<Avatar size={60}>
-					<IconUserFilled color={'var(--mantine-color-gray-6)'} />
+			<Flex gap={'sm'} p={'sm'} mb={'sm'} align='center' className={classes.profileHeader}>
+				<Avatar size={60} classNames={{ placeholder: classes.avatarPlaceholder }}>
+					<IconUserFilled />
 				</Avatar>
 				<Box>
 					<Text size='md' fw={600}>Display name</Text>
@@ -101,7 +101,7 @@ const ProfileMenuDrawerContent: React.FC<ProfileMenuDrawerContentProps> = ({
 						key={item.id}
 						variant='subtle' justify='flex-start' fullWidth
 						leftSection={item.icon}
-						c='var(--mantine-color-gray-7)'
+						c='var(--mantine-color-text)'
 						fw={500} fz={15}
 						styles={{ inner: { justifyContent: 'flex-start' } }}
 						onClick={() => handleMenuItemClick(

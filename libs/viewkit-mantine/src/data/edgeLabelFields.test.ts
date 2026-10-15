@@ -178,11 +178,11 @@ describe('withEdgeLabelFields', () => {
 		expect(result.request.fields).toEqual(['org_id', 'org.display_name']);
 	});
 
-	it('falls back to the own columns when the schema has no default_search_fields', () => {
+	it('falls back to all fields when the schema has no default_search_fields', () => {
 		const bare = { ...slot, default_search_fields: [] } as dyn.ModelSchema;
 
 		expect(withEdgeLabelFields({}, bare, dests).request.fields)
-			.toEqual(['name', 'parking_lot_id', 'org_id', 'parking_lot.name', 'org.display_name']);
+			.toEqual(['*', 'parking_lot.name', 'org.display_name']);
 	});
 
 	it('skips a destination with no record_label_field, or one not loaded yet', () => {
@@ -204,6 +204,41 @@ describe('withEdgeLabelFields', () => {
 
 		expect(result.request.fields).toEqual(['parking_lot_id', 'parking_lot.name']);
 		expect(result.added).toEqual([]);
+	});
+});
+
+// The server reads the foreign key behind a related computed field (`uom_name` reads `uom.name`)
+// but does not list it as a column, so no label join is owed for it.
+describe('withEdgeLabelFields with a related computed field', () => {
+	it('adds nothing for a foreign key that only the computed field depends on', () => {
+		const template = {
+			...schema('inventory_product_template', [uomEdge]),
+			fields: { name: { name: 'name' }, uom_id: { name: 'uom_id' }, uom_name: { name: 'uom_name' } },
+			default_search_fields: ['name', 'uom_name'],
+		} as unknown as dyn.ModelSchema;
+		const request = { page: 0 };
+
+		const result = withEdgeLabelFields(request, template, { essential_uom: schema('essential_uom', [], 'name') });
+
+		expect(result).toEqual({ request, added: [] });
+	});
+});
+
+describe('withEdgeLabelFields with a wildcard', () => {
+	const slot = {
+		...schema('parkinglot_slot', [templateEdge, uomEdge]),
+		fields: { name: { name: 'name' }, product_template_id: { name: 'product_template_id' }, uom_id: { name: 'uom_id' } },
+	} as unknown as dyn.ModelSchema;
+	const dests = {
+		inventory_product_template: schema('inventory_product_template', [], 'name'),
+		essential_uom: schema('essential_uom', [], 'name'),
+	};
+
+	it('treats `*` as selecting every foreign key', () => {
+		const result = withEdgeLabelFields({ fields: ['*'] }, slot, dests);
+
+		expect(result.request.fields).toEqual(['*', 'product_template.name', 'uom.name']);
+		expect(result.added).toEqual(['product_template.name', 'uom.name']);
 	});
 });
 

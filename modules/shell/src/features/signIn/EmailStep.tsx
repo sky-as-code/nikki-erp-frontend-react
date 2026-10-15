@@ -7,10 +7,13 @@ import {
 } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconMail } from '@tabler/icons-react';
+import clsx from 'clsx';
 import React from 'react';
 
 import { emailSchema } from './emailSchema';
+import classes from './SignIn.module.css';
 import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
+
 
 
 const SIGN_IN_EMAIL_TEST_ID = 'shell.signInEmail';
@@ -83,7 +86,7 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 						<Anchor
 							href='#'
 							size='md'
-							className='text-blue-600 hover:text-blue-800 transition-colors'
+							className={clsx(classes.link, 'transition-colors')}
 							{...testAttrs(SIGN_IN_EMAIL_TEST_ID, 'forgotEmail')}
 						>
 							{t('signIn.forgotEmail')}?

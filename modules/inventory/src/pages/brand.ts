@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -25,7 +24,7 @@ export function buildBrandPages(): PageNode[] {
 }
 
 function buildBrandListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.BRAND_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -34,11 +33,12 @@ function buildBrandListProps() {
 		deleteCommand: BrandCommands.DELETE,
 		archiveCommand: BrandCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: BrandCommands.UPDATE,
+		updateCommand: BrandCommands.UPDATE,
 	});
 }
 
 function buildBrandDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.BRAND_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -52,54 +52,42 @@ function buildBrandDetailProps() {
 			archive: BrandCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildBrandFieldsSection()],
-		childrenNodes: [buildBrandFieldsSection(), ...buildBrandProductsSection()],
+		childrenNodes: [buildBrandFieldsSection()],
+		relatedResources: buildBrandProductsResources(),
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildBrandFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['name', 'code', 'description', 'org_id'],
-				}),
-			},
-			{
-				key: 'identification',
-				header: 'form.identification',
-				content: resourceFormColumnNode({
-					header: 'form.identification',
-					fields: ['website', 'logo_id', 'country_id'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['name', 'code', 'description', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.identification',
+			fields: ['website', 'logo_id', 'country_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /** The products carrying this brand. */
-function buildBrandProductsSection(): ComponentNode[] {
-	return [collapsibleSectionNode(
-		{ header: 'menu_products', translationNs: c.INVENTORY_MODULE, expanded: false },
-		[resourceTableNode({
-			schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: ProductTemplateCommands.SEARCH,
-			initialGraph: { if: ['brand_id', '=', '${id}'] },
-			linkField: 'id',
-			linkRoutePath: 'inventory_product_template',
-		})],
-	)];
+function buildBrandProductsResources() {
+	return [{
+		label: 'menu_products',
+		schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		searchCommand: ProductTemplateCommands.SEARCH,
+		initialGraph: { if: ['brand_id', '=', '${id}'] },
+		linkField: 'id',
+		linkRoutePath: 'inventory_product_template',
+	}];
 }

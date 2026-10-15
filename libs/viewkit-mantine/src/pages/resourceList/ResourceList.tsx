@@ -7,7 +7,7 @@ import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { useFieldRenderers } from '@nikkierp/viewengine/render';
 import React from 'react';
 
-import { displayedFieldLabelKeys, displayedFieldNames, resolveSchemaField } from '../../data/displayedFields';
+import { resolveSchemaField } from '../../data/fieldPaths';
 import { interpolateParams } from '../../data/interpolate';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useRelatedSchemas } from '../../data/useRelatedSchemas';
@@ -43,30 +43,14 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	// or drop it. An embedded table's record scoping is the opposite case and stays a
 	// `baseGraph` — see `ResourceTable`.
 	const graph = useResolvedInitialGraph(params.initialGraph);
-	// Seeded onto the initial request rather than forced onto every later one: the table rewrites
-	// the request as the user pages, sorts and picks columns, and a page's declared columns are
-	// the starting view, not an override of the choice they make afterwards.
-	const initialRequest = React.useMemo(
-		() => {
-			const fields = displayedFieldNames(params.displayed_fields);
-			return fields ? { ...INITIAL_REQUEST, fields } : INITIAL_REQUEST;
-		},
-		[params.displayed_fields],
-	);
+	// No `fields`: the columns are the backend's `default_search_fields`, or the user's own choice
+	// from the table settings, never the page's.
 	const { pack, searchData, searchRequest, onSearchRequestChange, refresh } = useResourceSearch({
 		schemaName: params.schemaName,
 		searchCommand: params.searchCommand,
-		initialRequest,
+		initialRequest: INITIAL_REQUEST,
 	});
-	const displayedNames = React.useMemo(
-		() => displayedFieldNames(params.displayed_fields),
-		[params.displayed_fields],
-	);
-	const labelKeys = React.useMemo(
-		() => displayedFieldLabelKeys(params.displayed_fields),
-		[params.displayed_fields],
-	);
-	const relatedSchemas = useRelatedSchemas(pack?.modelSchema, displayedNames);
+	const relatedSchemas = useRelatedSchemas(pack?.modelSchema, searchData?.desired_fields);
 	const buildLinkHref = useResourceLinkHref(params.linkField, routePath);
 	const baseHref = useResourceBaseHref(routePath);
 	const testId = resourceTestIdPrefix({
@@ -108,13 +92,6 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 				translateFieldName={(field: string) => {
 					if (field === 'fields') {
 						return t('model_fields');
-					}
-					// A page-declared label wins: it is the one wording chosen for this list, and for
-					// a field reached through an edge it is usually the only sensible one, the
-					// schema's own label belonging to the other resource.
-					const labelKey = labelKeys[field];
-					if (labelKey) {
-						return t(labelKey);
 					}
 					const schemaField = resolveSchemaField(
 						pack.modelSchema, field, name => relatedSchemas[name],

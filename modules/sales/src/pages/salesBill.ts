@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -32,7 +31,7 @@ export function buildSalesBillPages(): PageNode[] {
 }
 
 function buildSalesBillListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_BILL_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
@@ -62,7 +61,7 @@ function buildSalesBillListProps() {
 }
 
 function buildSalesBillDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_BILL_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'bill_number' },
@@ -73,48 +72,37 @@ function buildSalesBillDetailProps() {
 			update: SalesBillCommands.UPDATE,
 		},
 		contextualActions: buildSalesBillActions(),
-		childrenNodes: [
-			buildSalesBillFieldsSection(),
-			...buildSalesBillLinesSection(),
-			...buildSalesBillPaymentsSection(),
-			...buildSalesBillFiscalSection(),
-			...buildSalesBillLineageSection(),
+		childrenNodes: [buildSalesBillFieldsSection()],
+		relatedResources: [
+			buildSalesBillLinesResource(),
+			buildSalesBillPaymentsResource(),
+			buildSalesBillFiscalResource(),
+			buildSalesBillLineageResource(),
 		],
 	});
 }
 
 /** `total_amount` here is the same figure the order calls `grand_total`. */
 function buildSalesBillFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'bill',
-				header: 'form.bill',
-				content: resourceFormColumnNode({
-					header: 'form.bill',
-					fields: ['bill_number', 'sales_order_id', 'status', 'payment_status',
-						'currency_code'],
-				}),
-			},
-			{
-				key: 'totals',
-				header: 'form.totals',
-				content: resourceFormColumnNode({
-					header: 'form.totals',
-					fields: ['subtotal', 'discount_total', 'tax_total', 'total_amount'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['settled_at', 'cancelled_at', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.bill',
+			fields: ['bill_number', 'sales_order_id', 'status', 'payment_status',
+				'currency_code'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.totals',
+			fields: ['subtotal', 'discount_total', 'tax_total', 'total_amount'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['settled_at', 'cancelled_at', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**
@@ -154,123 +142,91 @@ function buildSalesBillActions() {
  * Read-only: allocations are written by splitting and merging, and a writable one could break the
  * exactly-once invariant, billing goods twice or not at all.
  */
-function buildSalesBillLinesSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_bill_sections_lines',
-				translationNs: c.SALES_MODULE,
-				expanded: true,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_BILL_LINE_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesBillLineCommands.SEARCH,
-				initialGraph: { if: ['sales_bill_id', '=', '${id}'] },
-				fields: ['sales_order_line_id', 'quantity', 'allocated_net_amount',
-					'allocated_tax_amount', 'allocated_total_amount'],
-			})],
-		),
-	];
+function buildSalesBillLinesResource() {
+	return {
+		label: 'sales_bill_sections_lines',
+		schemaName: c.SALES_BILL_LINE_SCHEMA_NAME,
+		translationNs: c.SALES_MODULE,
+		searchCommand: SalesBillLineCommands.SEARCH,
+		initialGraph: { if: ['sales_bill_id', '=', '${id}'] },
+		fields: ['sales_order_line_id', 'quantity', 'allocated_net_amount',
+			'allocated_tax_amount', 'allocated_total_amount'],
+	};
 }
 
 /**
  * Only `captured` counts toward settlement; an `authorized` row is a hold the provider may still
  * release, so the badge distinguishes them rather than showing both as success.
  */
-function buildSalesBillPaymentsSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_bill_sections_payments',
-				translationNs: c.SALES_MODULE,
-				expanded: true,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_PAYMENT_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesPaymentCommands.SEARCH,
-				initialGraph: { if: ['sales_bill_id', '=', '${id}'] },
-				fields: ['paid_at', 'payment_method_code_snapshot', 'amount', 'currency_code',
-					'status', 'external_transaction_id'],
-				fieldRenderers: {
-					status: {
-						renderer: 'badge',
-						colorMap: {
-							pending: 'orange',
-							authorized: 'blue',
-							captured: 'green',
-							failed: 'red',
-							cancelled: 'gray',
-						},
-						prefix: 'payment_state.',
-					},
+function buildSalesBillPaymentsResource() {
+	return {
+		label: 'sales_bill_sections_payments',
+		schemaName: c.SALES_PAYMENT_SCHEMA_NAME,
+		translationNs: c.SALES_MODULE,
+		searchCommand: SalesPaymentCommands.SEARCH,
+		initialGraph: { if: ['sales_bill_id', '=', '${id}'] },
+		fields: ['paid_at', 'payment_method_code_snapshot', 'amount', 'currency_code',
+			'status', 'external_transaction_id'],
+		fieldRenderers: {
+			status: {
+				renderer: 'badge',
+				colorMap: {
+					pending: 'orange',
+					authorized: 'blue',
+					captured: 'green',
+					failed: 'red',
+					cancelled: 'gray',
 				},
-			})],
-		),
-	];
+				prefix: 'payment_state.',
+			},
+		},
+	};
 }
 
-function buildSalesBillFiscalSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_bill_sections_fiscal',
-				translationNs: c.SALES_MODULE,
-				expanded: false,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_FISCAL_REQUEST_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesFiscalRequestCommands.SEARCH,
-				initialGraph: { if: ['sales_bill_id', '=', '${id}'] },
-				fields: ['requested_at', 'intent', 'status', 'provider_reference', 'attempt_count',
-					'last_error'],
-				linkRoutePath: 'sales_fiscal_request',
-				linkField: 'id',
-				fieldRenderers: {
-					status: {
-						renderer: 'badge',
-						colorMap: {
-							pending: 'orange',
-							issued: 'green',
-							failed: 'red',
-							cancelled: 'gray',
-						},
-						prefix: 'fiscal_status.',
-					},
+function buildSalesBillFiscalResource() {
+	return {
+		label: 'sales_bill_sections_fiscal',
+		schemaName: c.SALES_FISCAL_REQUEST_SCHEMA_NAME,
+		translationNs: c.SALES_MODULE,
+		searchCommand: SalesFiscalRequestCommands.SEARCH,
+		initialGraph: { if: ['sales_bill_id', '=', '${id}'] },
+		fields: ['requested_at', 'intent', 'status', 'provider_reference', 'attempt_count',
+			'last_error'],
+		linkRoutePath: 'sales_fiscal_request',
+		linkField: 'id',
+		fieldRenderers: {
+			status: {
+				renderer: 'badge',
+				colorMap: {
+					pending: 'orange',
+					issued: 'green',
+					failed: 'red',
+					cancelled: 'gray',
 				},
-			})],
-		),
-	];
+				prefix: 'fiscal_status.',
+			},
+		},
+	};
 }
 
 /**
  * Read-only: a writable lineage row could fabricate a payment trail between unrelated bills.
  * Filtered on `source_bill_id`, the outgoing direction.
  */
-function buildSalesBillLineageSection(): ComponentNode[] {
-	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_bill_sections_lineage',
-				translationNs: c.SALES_MODULE,
-				expanded: false,
+function buildSalesBillLineageResource() {
+	return {
+		label: 'sales_bill_sections_lineage',
+		schemaName: c.SALES_BILL_RELATION_SCHEMA_NAME,
+		translationNs: c.SALES_MODULE,
+		searchCommand: SalesBillRelationCommands.SEARCH,
+		initialGraph: { if: ['source_bill_id', '=', '${id}'] },
+		fields: ['relation_type', 'target_bill_id', 'created_at'],
+		fieldRenderers: {
+			relation_type: {
+				renderer: 'badge',
+				colorMap: { split_into: 'blue', merged_into: 'indigo' },
+				prefix: 'relation_type.',
 			},
-			[resourceTableNode({
-				schemaName: c.SALES_BILL_RELATION_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesBillRelationCommands.SEARCH,
-				initialGraph: { if: ['source_bill_id', '=', '${id}'] },
-				fields: ['relation_type', 'target_bill_id', 'created_at'],
-				fieldRenderers: {
-					relation_type: {
-						renderer: 'badge',
-						colorMap: { split_into: 'blue', merged_into: 'indigo' },
-						prefix: 'relation_type.',
-					},
-				},
-			})],
-		),
-	];
+		},
+	};
 }

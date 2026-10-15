@@ -16,7 +16,7 @@ import {
 } from '../cellValues';
 import sharedClasses from '../DataTable.module.css';
 import { useDataTableContext } from '../DataTableContext';
-import { ColumnFilterRow, getFilterInputKind } from '../FilterBox';
+import { ColumnFilterRow, getFilterInputKind, isSortableFieldName } from '../FilterBox';
 import { rowTestIdOf } from '../testIds';
 
 import type { RowId } from '../testIds';
@@ -235,7 +235,6 @@ function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
 
 function ListViewHead(): React.ReactNode {
 	const context = useDataTableContext();
-	const t = useTranslate('common');
 	const tField = useTranslate(context.settings.translationNs);
 	const fieldRenderer = context.settings.fieldRenderer;
 	const translateEnumValue = React.useCallback((field: string, value: string) => {
@@ -257,16 +256,14 @@ function ListViewHead(): React.ReactNode {
 		applyColumnFilters({ tree: next });
 	}, [commitColumnValue, modelSchema, relatedSchemas, applyColumnFilters]);
 
-	// A column is sortable only if the server can order by it: it must own a database column.
-	// A field with no column (a computed one hydrated after the query, say) is rejected by the
-	// query builder, so offering the header as sortable only produces a client error. The
+	// A column is sortable only if the server can order by it, which `is_sortable` says: a
+	// computed field rendered in SQL qualifies, one filled in Go after the query does not and
+	// would only produce a client error. A field whose schema has not loaded stays sortable. The
 	// caller's explicit list narrows which fields are considered, but cannot make an unorderable
 	// one sortable -- `desired_fields` is passed in wholesale and includes computed columns.
 	const sortableFields = React.useMemo(() => {
 		const candidates = context.settings.sortableFields ?? fields;
-		return new Set(candidates.filter(
-			field => getFieldSchema(modelSchema, field, relatedSchemas)?.is_persisted !== false,
-		));
+		return new Set(candidates.filter(field => isSortableFieldName(modelSchema, field, relatedSchemas)));
 	}, [context.settings.sortableFields, fields, modelSchema, relatedSchemas]);
 
 	// A header click replaces the whole order and applies at once. It writes the same state the
@@ -320,7 +317,6 @@ function ListViewHead(): React.ReactNode {
 					onCommit={onCommitColumnFilter}
 					getColumnStyle={field => getColumnStyle(getColumnWidth(field, widths))}
 					hasFillerColumn={context.settings.allowColumnResizing}
-					placeholder={t('search.placeholder')}
 					translateEnumValue={translateEnumValue}
 					tid={context.tid}
 				/>

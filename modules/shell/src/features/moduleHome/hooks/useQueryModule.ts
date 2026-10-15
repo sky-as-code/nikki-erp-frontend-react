@@ -1,18 +1,33 @@
 import { RestSearchResponse } from '@nikkierp/common/dynamicModel';
-import { Module } from '@nikkierp/shell/erpModules';
-import { useActiveOrgModule } from '@nikkierp/shell/routing';
+import { isListedModule, Module } from '@nikkierp/shell/erpModules';
+import { TranslateFn, useTranslate } from '@nikkierp/ui/i18n';
 import { debounce } from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
 
-import { mockModules as mockModuleListByCategory } from '../components/mockModules';
 import { FilterState, ModuleViewMode } from '../components/ModuleHomePage';
 
 
+/** What a `ModuleCard` renders. `slug` is the backend module name, which is also its route. */
+export type ModuleCardItem = {
+	slug: string,
+	name: string,
+	modelPrefix?: string,
+	isOrphaned: boolean,
+	isDisabled: boolean,
+};
+
+export type ModuleCategory = {
+	key: string,
+	label: string,
+	modules: ModuleCardItem[],
+};
+
+
 export function useQueryModule(allModules: RestSearchResponse<Module> | null) {
-	const availableModules = allModules?.items ?? [];
-	const availableModuleSlugs = useMemo(
-		() => new Set(availableModules.map((module) => module.name)),
-		[availableModules],
+	const t = useTranslate('common');
+	const moduleCategories = useMemo(
+		() => toModuleCategories(allModules?.items ?? [], t),
+		[allModules, t],
 	);
 	const [viewMode, setViewMode] = useState<ModuleViewMode>('list');
 	const {
@@ -29,15 +44,10 @@ export function useQueryModule(allModules: RestSearchResponse<Module> | null) {
 		groupBy: null,
 	});
 
-	const filteredModules = useMemo(() => {
-		// const modulesByContext = filterModulesBySlugs(
-		// 	mockModuleListByCategory,
-		// 	availableModuleSlugs,
-		// );
-		// return filterModules(modulesByContext, searchQuery, filters);
-		return filterModules(mockModuleListByCategory, searchQuery, filters);
-	// }, [searchQuery, filters, availableModuleSlugs]);
-	}, [searchQuery, filters]);
+	const filteredModules = useMemo(
+		() => filterModules(moduleCategories, searchQuery, filters),
+		[moduleCategories, searchQuery, filters],
+	);
 
 	return {
 		// View mode
@@ -106,13 +116,22 @@ function filterModules(
 	return result;
 }
 
-function filterModulesBySlugs(categories: any[], allowedSlugs: Set<string>): any[] {
-	return categories
-		.map((category) => ({
-			...category,
-			modules: category.modules.filter((module: any) => allowedSlugs.has(module.slug)),
-		}))
-		.filter((category) => category.modules.length > 0);
+/**
+ * The backend carries no category, so every module lands in one group. The mock list in
+ * `mockModules.tsx` is kept as the reference for a later categorized layout.
+ */
+function toModuleCategories(modules: Module[], t: TranslateFn): ModuleCategory[] {
+	const cards = modules
+		// Orphans are kept here: the page's own "show orphaned" filter decides on them.
+		.filter((module) => isListedModule(module, true))
+		.map<ModuleCardItem>((module) => ({
+			slug: module.name,
+			name: t(`module.label.${module.name}`, { defaultValue: module.name }),
+			modelPrefix: module.model_prefix,
+			isOrphaned: module.is_orphaned,
+			isDisabled: false,
+		}));
+	return cards.length ? [{ key: 'all', label: t('module.all'), modules: cards }] : [];
 }
 
 function filterCategoriesWithModules(categories: any[]): any[] {

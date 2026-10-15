@@ -1,26 +1,18 @@
 /// <reference types="vitest" />
 
-import tailwindcssVite from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 
+// Plain TypeScript, no React and no CSS: the React, Tailwind and icon-alias setup the UI libs use
+// does not belong here, and its plugins are not dependencies of this package.
 export default defineConfig({
 	plugins: [
 		tsconfigPaths(),
-		react(),
-		tailwindcssVite(),
 	],
 	server: {
 		watch: {
 			exclude: ['**/routes.bak/**'],
-		},
-	},
-	resolve: {
-		alias: {
-			// Tree-shaking
-			'@tabler/icons-react': '@tabler/icons-react/dist/esm/icons',
 		},
 	},
 });

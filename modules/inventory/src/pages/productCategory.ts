@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceImportProps, resourceListProps,
-	resourceSplitViewProps, resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props,
+	resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -31,7 +31,7 @@ export function buildProductCategoryPages(): PageNode[] {
 }
 
 function buildProductCategoryListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.PRODUCT_CATEGORY_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -41,11 +41,12 @@ function buildProductCategoryListProps() {
 		deleteCommand: ProductCategoryCommands.DELETE,
 		archiveCommand: ProductCategoryCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductCategoryCommands.UPDATE,
+		updateCommand: ProductCategoryCommands.UPDATE,
 	});
 }
 
 function buildProductCategoryDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_CATEGORY_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -59,81 +60,63 @@ function buildProductCategoryDetailProps() {
 			archive: ProductCategoryCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildProductCategoryFieldsSection()],
-		childrenNodes: [buildProductCategoryFieldsSection(), ...buildCategoryProductsSection()],
+		childrenNodes: [buildProductCategoryFieldsSection()],
+		relatedResources: buildCategoryResources(),
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildProductCategoryFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					// The backend rejects a category that is its own ancestor; the generated form cannot
-					// express that, so `product_category.cycle` is what the user sees on save.
-					header: 'form.generalInformation',
-					fields: ['name', 'code', 'parent_category_id', 'sequence', 'org_id'],
-				}),
-			},
-			{
-				key: 'identification',
-				header: 'form.identification',
-				content: resourceFormColumnNode({
-					header: 'form.identification',
-					fields: ['description'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			// The backend rejects a category that is its own ancestor; the generated form cannot
+			// express that, so `product_category.cycle` is what the user sees on save.
+			header: 'form.generalInformation',
+			fields: ['name', 'code', 'parent_category_id', 'sequence', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.identification',
+			fields: ['description'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /** The products filed under this category, and the putaway rules that apply to them. */
-function buildCategoryProductsSection(): ComponentNode[] {
+function buildCategoryResources() {
 	return [
-		collapsibleSectionNode(
-			{ header: 'menu_products', translationNs: c.INVENTORY_MODULE, expanded: false },
-			[resourceTableNode({
-				schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: ProductTemplateCommands.SEARCH,
-				initialGraph: { if: ['category_id', '=', '${id}'] },
-				linkField: 'id',
-				linkRoutePath: 'inventory_product_template',
-			})],
-		),
+		{
+			label: 'menu_products',
+			schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: ProductTemplateCommands.SEARCH,
+			initialGraph: { if: ['category_id', '=', '${id}'] },
+			linkField: 'id',
+			linkRoutePath: 'inventory_product_template',
+		},
 		// Rules that place goods by category rather than by individual product (CR Â§10.2,
 		// AC-PROD-INT-020, TS-PROD-14). Read-only here: a putaway rule belongs to Warehouse, and
 		// this section shows and links to it without letting Product create a competing copy
 		// (CR Â§10.1, PROD-INT-INV-020, PROD-INT-INV-021).
-		collapsibleSectionNode(
-			{
-				header: 'product_category_sections_putawayRules',
-				translationNs: c.INVENTORY_MODULE,
-				expanded: false,
-			},
-			[resourceTableNode({
-				schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
-				translationNs: c.INVENTORY_MODULE,
-				searchCommand: PutawayRuleCommands.SEARCH,
-				initialGraph: { if: ['product_category_id', '=', '${id}'] },
-				fields: [
-					'code', 'warehouse_id', 'source_location_id',
-					'destination_location_id', 'priority',
-				],
-				linkField: 'id',
-				linkRoutePath: 'inventory_putaway_rule',
-			})],
-		),
+		{
+			label: 'product_category_sections_putawayRules',
+			schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
+			translationNs: c.INVENTORY_MODULE,
+			searchCommand: PutawayRuleCommands.SEARCH,
+			initialGraph: { if: ['product_category_id', '=', '${id}'] },
+			fields: [
+				'code', 'warehouse_id', 'source_location_id',
+				'destination_location_id', 'priority',
+			],
+			linkField: 'id',
+			linkRoutePath: 'inventory_putaway_rule',
+		},
 	];
 }

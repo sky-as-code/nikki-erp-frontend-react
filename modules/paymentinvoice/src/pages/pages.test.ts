@@ -1,3 +1,4 @@
+import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
 import { buildInvoicePages } from './invoice';
@@ -5,7 +6,8 @@ import { buildOrderPages } from './order';
 import { buildTransactionPages } from './transaction';
 import * as c from '../constants';
 
-import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
+import type { PageNode } from '@nikkierp/viewengine/metadata';
+import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
 
 
 const allPages: { name: string, build: () => PageNode[] }[] = [
@@ -77,8 +79,18 @@ describe('Payment & Invoice page metadata', () => {
 		const props = page.props as { primary: { template: string }, secondary: { template: string } };
 
 		expect(page.template).toContain('resourceSplitView');
-		expect(props.primary.template).toContain('resourceList');
-		expect(props.secondary.template).toContain('resourceDetails');
+		expect(props.primary.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
+		expect(props.secondary.template).toBe(RESOURCE_DETAIL_V2_TEMPLATE);
+	});
+
+	// Orders and transactions are written by checkout and the gateway, never edited in a row.
+	it('enables inline row editing on the invoice list only', () => {
+		const updateCommand = (pages: PageNode[]) =>
+			(pages[0].props as { primary?: { props?: { updateCommand?: string } } }).primary?.props?.updateCommand;
+
+		expect(updateCommand(buildInvoicePages())).toBeDefined();
+		expect(updateCommand(buildOrderPages())).toBeUndefined();
+		expect((buildTransactionPages()[0].props as { updateCommand?: string }).updateCommand).toBeUndefined();
 	});
 });
 
@@ -157,11 +169,11 @@ describe('Order transactions section', () => {
 	 */
 	it('filters the transactions table by the order id', () => {
 		const [page] = buildOrderPages();
-		const tables = collectComponents(page, 'resourceTable');
+		const tables = relatedTables(page);
 
-		expect(tables.map(table => table.props?.schemaName))
+		expect(tables.map(table => table.schemaName))
 			.toEqual([c.TRANSACTION_SCHEMA_NAME]);
-		expect(tables[0].props?.initialGraph).toEqual({ if: ['order_id', '=', '${id}'] });
+		expect(tables[0].initialGraph).toEqual({ if: ['order_id', '=', '${id}'] });
 	});
 
 	/**
@@ -171,10 +183,10 @@ describe('Order transactions section', () => {
 	it('binds no write command and no row link on the transactions table', () => {
 		const [page] = buildOrderPages();
 
-		for (const table of collectComponents(page, 'resourceTable')) {
-			expect(table.props?.linkRoutePath).toBeUndefined();
-			expect(table.props?.updateSaveCommand).toBeUndefined();
-			expect(table.props?.deleteCommand).toBeUndefined();
+		for (const table of relatedTables(page)) {
+			expect(table.linkRoutePath).toBeUndefined();
+			expect(table).not.toHaveProperty('updateSaveCommand');
+			expect(table).not.toHaveProperty('deleteCommand');
 		}
 	});
 });
@@ -242,11 +254,11 @@ describe('Invoice page', () => {
 
 	it('filters the lines table by the invoice id', () => {
 		const [page] = buildInvoicePages();
-		const tables = collectComponents(page, 'resourceTable');
+		const tables = relatedTables(page);
 
-		expect(tables.map(table => table.props?.schemaName))
+		expect(tables.map(table => table.schemaName))
 			.toEqual([c.INVOICE_LINE_SCHEMA_NAME]);
-		expect(tables[0].props?.initialGraph).toEqual({ if: ['invoice_id', '=', '${id}'] });
+		expect(tables[0].initialGraph).toEqual({ if: ['invoice_id', '=', '${id}'] });
 	});
 });
 
@@ -279,25 +291,10 @@ function splitViewSchemas(pages: PageNode[]): { primary: string, secondary: stri
 	return { primary: props.primary.props.schemaName, secondary: props.secondary.props.schemaName };
 }
 
-function collectComponents(page: PageNode, componentIdPart: string): ComponentNode[] {
-	const found: ComponentNode[] = [];
-	walk(page);
-	return found;
-
-	function walk(value: unknown): void {
-		if (Array.isArray(value)) {
-			value.forEach(walk);
-			return;
-		}
-		if (value === null || typeof value !== 'object') {
-			return;
-		}
-		const node = value as ComponentNode;
-		if (typeof node.component === 'string' && node.component.includes(componentIdPart)) {
-			found.push(node);
-		}
-		Object.values(value).forEach(walk);
-	}
+/** The related-resource tabs of a split view's detail pane. */
+function relatedTables(page: PageNode): RelatedResource[] {
+	const props = page.props as { secondary?: { props?: { relatedResources?: RelatedResource[] } } };
+	return props.secondary?.props?.relatedResources ?? [];
 }
 
 /** Returns the path of the first non-JSON value found, or null when everything is plain. */

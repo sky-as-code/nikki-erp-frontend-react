@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -28,11 +28,12 @@ export function buildSalesPointPages(): PageNode[] {
 }
 
 function buildSalesPointListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_POINT_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
 		searchCommand: SalesPointCommands.SEARCH,
+		updateCommand: SalesPointCommands.UPDATE,
 		createEnabled: true,
 		fieldRenderers: {
 			status: {
@@ -45,7 +46,7 @@ function buildSalesPointListProps() {
 }
 
 function buildSalesPointDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_POINT_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -63,37 +64,26 @@ function buildSalesPointDetailProps() {
 }
 
 function buildSalesPointFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'point',
-				header: 'form.point',
-				content: resourceFormColumnNode({
-					header: 'form.point',
-					fields: ['sales_channel_id', 'name', 'code', 'status'],
-				}),
-			},
-			{
-				key: 'external',
-				header: 'form.external',
-				content: resourceFormColumnNode({
-					header: 'form.external',
-					// How another module names this point. Unique within the channel, which makes it an
-					// idempotency handle for provisioning.
-					fields: ['external_reference_id', 'external_reference_type'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.point',
+			fields: ['sales_channel_id', 'name', 'code', 'status'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.external',
+			// How another module names this point. Unique within the channel, which makes it an
+			// idempotency handle for provisioning.
+			fields: ['external_reference_id', 'external_reference_type'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**

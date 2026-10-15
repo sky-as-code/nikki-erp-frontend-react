@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -30,11 +29,12 @@ export function buildSalesPromotionProgramPages(): PageNode[] {
 }
 
 function buildSalesPromotionProgramListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.SALES_PROMOTION_PROGRAM_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		linkField: 'id',
 		searchCommand: SalesPromotionProgramCommands.SEARCH,
+		updateCommand: SalesPromotionProgramCommands.UPDATE,
 		createEnabled: true,
 		archiveCommand: SalesPromotionProgramCommands.SET_IS_ARCHIVED,
 		fieldRenderers: {
@@ -48,7 +48,7 @@ function buildSalesPromotionProgramListProps() {
 }
 
 function buildSalesPromotionProgramDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.SALES_PROMOTION_PROGRAM_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -61,60 +61,42 @@ function buildSalesPromotionProgramDetailProps() {
 			archive: SalesPromotionProgramCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildSalesPromotionProgramFieldsSection()],
-		childrenNodes: [buildSalesPromotionProgramFieldsSection(), ...buildSalesPromotionRewardsSection()],
+		childrenNodes: [buildSalesPromotionProgramFieldsSection()],
+		relatedResources: buildSalesPromotionRewardsResources(),
 	});
 }
 
 function buildSalesPromotionProgramFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
-		tabs: [
-			{
-				key: 'program',
-				header: 'form.program',
-				content: resourceFormColumnNode({
-					header: 'form.program',
-					fields: ['code', 'name', 'activation_type', 'priority'],
-				}),
-			},
-			{
-				key: 'stacking',
-				header: 'form.stacking',
-				content: resourceFormColumnNode({
-					header: 'form.stacking',
-					// Resolution order is fixed: explicit `denied` wins, then explicit `allowed`, then
-					// this policy — and the question is asked in both directions.
-					fields: ['stack_policy', 'exclusive_group'],
-				}),
-			},
-			{
-				key: 'validity',
-				header: 'form.validity',
-				content: resourceFormColumnNode({
-					header: 'form.validity',
-					fields: ['valid_from', 'valid_until', 'usage_limit', 'usage_limit_per_customer'],
-				}),
-			},
-			{
-				key: 'returns',
-				header: 'form.returns',
-				content: resourceFormColumnNode({
-					header: 'form.returns',
-					// Returns are not built yet, so these are recorded and not yet acted on.
-					fields: ['return_behavior', 'restore_on_full_return',
-						'restore_on_partial_return'],
-				}),
-			},
-			{
-				key: 'other',
-				header: 'form.other_information',
-				content: resourceFormColumnNode({
-					header: 'form.other_information',
-					fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.program',
+			fields: ['code', 'name', 'activation_type', 'priority'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.stacking',
+			// Resolution order is fixed: explicit `denied` wins, then explicit `allowed`, then
+			// this policy — and the question is asked in both directions.
+			fields: ['stack_policy', 'exclusive_group'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.validity',
+			fields: ['valid_from', 'valid_until', 'usage_limit', 'usage_limit_per_customer'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.returns',
+			// Returns are not built yet, so these are recorded and not yet acted on.
+			fields: ['return_behavior', 'restore_on_full_return',
+				'restore_on_partial_return'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.other_information',
+			fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**
@@ -122,21 +104,15 @@ function buildSalesPromotionProgramFieldsSection(): ComponentNode {
  * conditions hang off `group_id` rather than the usual `{parent}_id`. They get a page of their own
  * rather than being nested here.
  */
-function buildSalesPromotionRewardsSection(): ComponentNode[] {
+function buildSalesPromotionRewardsResources() {
 	return [
-		collapsibleSectionNode(
-			{
-				header: 'sales_promotion_program_sections_rewards',
-				translationNs: c.SALES_MODULE,
-				expanded: true,
-			},
-			[resourceTableNode({
-				schemaName: c.SALES_PROMOTION_REWARD_SCHEMA_NAME,
-				translationNs: c.SALES_MODULE,
-				searchCommand: SalesPromotionRewardCommands.SEARCH,
-				initialGraph: { if: ['sales_promotion_program_id', '=', '${id}'] },
-				fields: ['sequence', 'reward_type', 'value', 'target_scope'],
-			})],
-		),
+		{
+			label: 'sales_promotion_program_sections_rewards',
+			schemaName: c.SALES_PROMOTION_REWARD_SCHEMA_NAME,
+			translationNs: c.SALES_MODULE,
+			searchCommand: SalesPromotionRewardCommands.SEARCH,
+			initialGraph: { if: ['sales_promotion_program_id', '=', '${id}'] },
+			fields: ['sequence', 'reward_type', 'value', 'target_scope'],
+		},
 	];
 }

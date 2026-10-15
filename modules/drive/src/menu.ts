@@ -7,7 +7,6 @@ import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
  * from the i18next default-value argument, i.e. hardcoded English.
  */
 const ITEMS: MenuItem[] = [
-	{ labelKey: 'menu_overview', link: '/overview' },
 	{ labelKey: 'menu_my-files', link: '/management/my-files' },
 	{ labelKey: 'menu_trash', link: '/management/trash' },
 ];

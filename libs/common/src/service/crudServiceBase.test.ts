@@ -162,7 +162,7 @@ describe('CrudServiceBase', () => {
 			await service.delete({ id: '1' });
 
 			expect(restApi.delete).toHaveBeenCalledOnce();
-			expect(restApi.delete).toHaveBeenCalledWith({ id: '1' });
+			expect(restApi.delete).toHaveBeenCalledWith({ id: '1' }, undefined);
 		});
 
 		it('fans `{ids}` out to one call per id and sums affected_count', async () => {

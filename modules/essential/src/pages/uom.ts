@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -23,7 +23,7 @@ export function buildUomPages(): PageNode[] {
 }
 
 function buildUomListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.UOM_SCHEMA_NAME,
 		translationNs: c.ESSENTIAL_MODULE,
 		linkField: 'id',
@@ -34,6 +34,7 @@ function buildUomListProps() {
 		// documents keep their meaning.
 		archiveCommand: UomCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: UomCommands.UPDATE,
+		updateCommand: UomCommands.UPDATE,
 		fieldRenderers: {
 			uom_type: {
 				renderer: 'badge',
@@ -45,7 +46,7 @@ function buildUomListProps() {
 }
 
 function buildUomDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.UOM_SCHEMA_NAME,
 		translationNs: c.ESSENTIAL_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -65,35 +66,24 @@ function buildUomDetailProps() {
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildUomFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.ESSENTIAL_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['name', 'symbol', 'category_id', 'org_id'],
-				}),
-			},
-			{
-				key: 'conversion',
-				header: 'form.conversion',
-				content: resourceFormColumnNode({
-					// BR-UOM-ESS-016: the factor and the rounding precision are independent concepts,
-					// so they are shown together but never presented as substitutes for one another.
-					header: 'form.conversion',
-					fields: ['uom_type', 'factor', 'rounding'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['name', 'symbol', 'category_id', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			// BR-UOM-ESS-016: the factor and the rounding precision are independent concepts,
+			// so they are shown together but never presented as substitutes for one another.
+			header: 'form.conversion',
+			fields: ['uom_type', 'factor', 'rounding'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }

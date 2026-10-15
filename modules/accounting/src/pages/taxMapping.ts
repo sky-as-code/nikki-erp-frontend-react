@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -33,7 +32,7 @@ export function buildTaxMappingPages(): PageNode[] {
 }
 
 function buildListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.TAX_MAPPING_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		linkField: 'id',
@@ -53,7 +52,7 @@ function buildListProps() {
 }
 
 function buildDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.TAX_MAPPING_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -68,74 +67,51 @@ function buildDetailProps() {
 		},
 		contextualActions: buildLifecycleActions(),
 		createNodes: [buildFieldsSection()],
-		childrenNodes: [buildFieldsSection(), buildMappingLinesSection()],
+		childrenNodes: [buildFieldsSection()],
+		relatedResources: [buildMappingLinesResource()],
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.ACCOUNTING_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['code', 'name', 'priority', 'org_id'],
-				}),
-			},
-			{
-				key: 'effective_period',
-				header: 'form.effectivePeriod',
-				content: resourceFormColumnNode({
-					header: 'form.effectivePeriod',
-					fields: ['effective_from', 'effective_to'],
-				}),
-			},
-			{
-				key: 'lifecycle',
-				header: 'form.lifecycle',
-				content: resourceFormColumnNode({
-					header: 'form.lifecycle',
-					fields: ['lifecycle_status', 'version_no', 'supersedes_mapping_id'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['is_archived', 'created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['code', 'name', 'priority', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.effectivePeriod',
+			fields: ['effective_from', 'effective_to'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.lifecycle',
+			fields: ['lifecycle_status', 'version_no', 'supersedes_mapping_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['is_archived', 'created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /**
  * The substitutions themselves: source tax in, target tax out.
  *
- * A mapping leaves any tax it does not name alone, so the lines are the whole of what it does —
- * which is why they are expanded by default.
+ * A mapping leaves any tax it does not name alone, so the lines are the whole of what it does.
  */
-function buildMappingLinesSection(): ComponentNode {
-	return collapsibleSectionNode(
-		{
-			header: 'accounting_tax_mapping_line.label',
-			translationNs: c.ACCOUNTING_MODULE,
-			expanded: true,
-		},
-		[
-			resourceTableNode({
-				schemaName: c.TAX_MAPPING_LINE_SCHEMA_NAME,
-				translationNs: c.ACCOUNTING_MODULE,
-				searchCommand: TaxMappingLineCommands.SEARCH,
-				initialGraph: { if: ['tax_mapping_id', '=', '${id}'] },
-				fields: ['sequence', 'source_tax_id', 'target_tax_id'],
-			}),
-		],
-	);
+function buildMappingLinesResource() {
+	return {
+		label: 'accounting_tax_mapping_line.label',
+		schemaName: c.TAX_MAPPING_LINE_SCHEMA_NAME,
+		translationNs: c.ACCOUNTING_MODULE,
+		searchCommand: TaxMappingLineCommands.SEARCH,
+		initialGraph: { if: ['tax_mapping_id', '=', '${id}'] },
+		fields: ['sequence', 'source_tax_id', 'target_tax_id'],
+	};
 }
 
 /**

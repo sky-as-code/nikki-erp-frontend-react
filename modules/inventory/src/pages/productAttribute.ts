@@ -1,7 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailProps, resourceFormColumnNode, resourceListProps, resourceSplitViewProps,
-	resourceTableNode, tabCollapsibleSectionNode,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -25,7 +24,7 @@ export function buildProductAttributePages(): PageNode[] {
 }
 
 function buildProductAttributeListProps() {
-	return resourceListProps({
+	return resourceListV2Props({
 		schemaName: c.PRODUCT_ATTRIBUTE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
@@ -34,6 +33,7 @@ function buildProductAttributeListProps() {
 		deleteCommand: ProductAttributeCommands.DELETE,
 		archiveCommand: ProductAttributeCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductAttributeCommands.UPDATE,
+		updateCommand: ProductAttributeCommands.UPDATE,
 		fieldRenderers: {
 			variant_creation_mode: {
 				renderer: 'badge',
@@ -52,7 +52,7 @@ function buildProductAttributeListProps() {
 }
 
 function buildProductAttributeDetailProps() {
-	return resourceDetailProps({
+	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_ATTRIBUTE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
@@ -66,56 +66,44 @@ function buildProductAttributeDetailProps() {
 			archive: ProductAttributeCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildProductAttributeFieldsSection()],
-		childrenNodes: [buildProductAttributeFieldsSection(), ...buildAttributeValuesSection()],
+		childrenNodes: [buildProductAttributeFieldsSection()],
+		relatedResources: buildAttributeValuesResources(),
 	});
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
 function buildProductAttributeFieldsSection(): ComponentNode {
-	return tabCollapsibleSectionNode({
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
-		tabs: [
-			{
-				key: 'general',
-				header: 'form.generalInformation',
-				content: resourceFormColumnNode({
-					header: 'form.generalInformation',
-					fields: ['name', 'code', 'sequence', 'org_id'],
-				}),
-			},
-			{
-				key: 'attributes',
-				header: 'form.attributes',
-				content: resourceFormColumnNode({
-					// variant_creation_mode decides whether this attribute's values produce variants at
-					// all: NEVER keeps it out of the combination key entirely. See BR Â§4.7 and Â§6.5.3.
-					header: 'form.attributes',
-					fields: ['data_type', 'variant_creation_mode', 'display_type'],
-				}),
-			},
-			{
-				key: 'audit',
-				header: 'form.audit',
-				content: resourceFormColumnNode({
-					header: 'form.audit',
-					fields: ['created_at', 'updated_at'],
-				}),
-			},
-		],
-	});
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['name', 'code', 'sequence', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			// variant_creation_mode decides whether this attribute's values produce variants at
+			// all: NEVER keeps it out of the combination key entirely. See BR Â§4.7 and Â§6.5.3.
+			header: 'form.attributes',
+			fields: ['data_type', 'variant_creation_mode', 'display_type'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['created_at', 'updated_at'],
+		}),
+	]);
 }
 
 /** The values this attribute allows. */
-function buildAttributeValuesSection(): ComponentNode[] {
-	return [collapsibleSectionNode(
-		{ header: 'inventory_product_attribute_value.label', translationNs: c.INVENTORY_MODULE, expanded: false },
-		[resourceTableNode({
-			schemaName: c.PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: ProductAttributeValueCommands.SEARCH,
-			initialGraph: { if: ['attribute_id', '=', '${id}'] },
-			linkField: 'id',
-			linkRoutePath: 'inventory_product_attribute_value',
-		})],
-	)];
+function buildAttributeValuesResources() {
+	return [{
+		label: 'inventory_product_attribute_value.label',
+		schemaName: c.PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		searchCommand: ProductAttributeValueCommands.SEARCH,
+		initialGraph: { if: ['attribute_id', '=', '${id}'] },
+		linkField: 'id',
+		linkRoutePath: 'inventory_product_attribute_value',
+	}];
 }

@@ -2,9 +2,7 @@ import { Table } from '@mantine/core';
 import React from 'react';
 
 import classes from './ColumnFilterRow.module.css';
-import {
-	getFieldSchema, getFilterInputKind, isFilterableField, isTextLikeKind as isTextLike,
-} from './filterModel';
+import { getFieldSchema, isFilterableField } from './filterModel';
 import { SchemaFilterValueInput } from './FilterValueInput';
 
 import type { ExcelDataTableTestIds } from '../testIds';
@@ -25,7 +23,6 @@ export type ColumnFilterRowProps = {
 	widths?: Record<string, number>,
 	/** Mirrors the header's trailing filler cell, present only when resizing is on. */
 	hasFillerColumn: boolean,
-	placeholder: string,
 	translateEnumValue?: (field: string, value: string) => string,
 	tid: ExcelDataTableTestIds,
 };
@@ -88,7 +85,6 @@ function ColumnFilterCell(props: ColumnFilterCellProps): React.ReactNode {
 				value={props.values[field] ?? ''}
 				onChange={onValueChange}
 				onCommit={onValueCommit}
-				placeholder={isTextLike(getFilterInputKind(fieldSchema)) ? props.placeholder : undefined}
 				translateEnumValue={translate}
 				// Free text applies only on Enter — the spec's Data Table uplift. A select has no
 				// half-typed state, so it still commits on change.

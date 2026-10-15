@@ -1,9 +1,9 @@
-import { moduleService, SearchModuleResponse } from '@nikkierp/shell/erpModules';
+import { moduleService, SearchModuleResponse, useModuleAccess } from '@nikkierp/shell/erpModules';
 import { LazyMicroApp } from '@nikkierp/shell/microApp';
 import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 import React from 'react';
-import { Route, Routes, useParams } from 'react-router';
+import { Navigate, Route, Routes, useParams } from 'react-router';
 
 // import { LazyModule } from '../components/LazyModule';
 import { AppLoading } from '../components/Loading';
@@ -50,6 +50,7 @@ export function ShellRoutes(props: ShellRoutesProps): React.ReactNode {
 
 function LazyModule(props: { microApps: MicroAppMetadata[] }): React.ReactNode {
 	const { moduleSlug } = useParams();
+	const moduleAccess = useModuleAccess();
 	const { result, data } = useServiceLayer<SearchModuleResponse>(
 		moduleService.listAll, undefined, { dispatchOnMount: true },
 	);
@@ -64,10 +65,17 @@ function LazyModule(props: { microApps: MicroAppMetadata[] }): React.ReactNode {
 		return <NotFoundPage />;
 	}
 	else if (result.isSuccess) {
-		const isBackendModule = data!.items.some(module => module.name === moduleSlug);
+		const backendModule = data!.items.find(module => module.name === moduleSlug);
 		const foundApp = props.microApps.find(app => app.slug === moduleSlug);
-		if (!isBackendModule || !foundApp) {
+		if (!backendModule || !foundApp) {
 			return <NotFoundPage />;
+		}
+		if (moduleAccess.isPending) {
+			return <AppLoading />;
+		}
+		// Redirected, unlike the cases above: Module Home sends a forbidden click to the same page.
+		if (!moduleAccess.canAccess(backendModule)) {
+			return <Navigate to='/unauthorized' replace />;
 		}
 		return (
 			<LazyMicroApp

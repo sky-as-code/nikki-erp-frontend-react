@@ -38,7 +38,7 @@ export function RelatedResourcesTabs({ resources, header, translationNs }: Relat
 		return null;
 	}
 	return (
-		<Stack component={PaperWithBorder} gap='md' className='mt-4'>
+		<Stack component={PaperWithBorder} gap='xs' mb='0.5rem'>
 			<UnstyledButton
 				className={classes.collapsibleHeader}
 				onClick={onToggle}
@@ -144,13 +144,19 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 			buildLinkHref={buildLinkHref}
 			fieldRenderers={fieldRenderers}
 		>
-			<ExcelDataTable.Toolbar
-				left={<RelatedActions resource={resource} />}
-				right={<><ExcelDataTable.Pagination /><ExcelDataTable.SettingsButton /></>}
-			/>
-			<ExcelDataTable.TableHeader enableColumnFilters={false} />
-			<ExcelDataTable.Table className='max-h-[480px]' />
-			<ExcelDataTable.Toolbar right={<ExcelDataTable.Pagination />} />
+			{/* The same xs spacing the list page puts between its toolbar and the table; the header
+			    and body stay in one wrapper because together they read as a single table. */}
+			<Stack gap='xs'>
+				<ExcelDataTable.Toolbar
+					left={<RelatedActions resource={resource} />}
+					right={<><ExcelDataTable.Pagination /><ExcelDataTable.SettingsButton /></>}
+				/>
+				<div>
+					<ExcelDataTable.TableHeader enableColumnFilters={false} />
+					<ExcelDataTable.Table className='max-h-[480px]' />
+				</div>
+				<ExcelDataTable.Toolbar right={<ExcelDataTable.Pagination />} />
+			</Stack>
 		</ExcelDataTable.Provider>
 	);
 }
