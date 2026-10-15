@@ -10,7 +10,8 @@ import {
 } from './useProviderState';
 
 import type { ExcelDataTableContextValue, ScrollSyncRefs } from './context';
-import type { ExcelViewMode, SearchData, SearchItem } from './types';
+import type { SelectionMode } from './selectionModel';
+import type { ExcelViewMode, RowId, SearchData, SearchItem } from './types';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { FieldRendererMap } from '@nikkierp/viewengine/core';
 
@@ -48,6 +49,10 @@ export type ExcelDataTableProviderProps = {
 	/** Re-runs the current search; wired to the refresh action and to a saved inline update. */
 	onRefresh?: () => void,
 	onSelectionChange?: (selected: SearchItem[]) => void,
+	/** `single` clamps every selection gesture to one row; defaults to `multiple`. */
+	selectionMode?: SelectionMode,
+	/** Rows selected once the first page loads, e.g. a picker's current value. Read on mount only. */
+	initialSelectedIds?: RowId[],
 	translationNs?: string,
 	translateFieldName?: (field: string) => string,
 	buildLinkHref?: (item: SearchItem) => string,
@@ -74,7 +79,9 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 	});
 	const applyFilters = useApplyFilters(filters, setSearchRequest);
 	const editing = useEditingState(isLoading);
-	const selection = useSelectionState(data.items, props.onSelectionChange, editing.rowId !== null);
+	const selection = useSelectionState(data.items, props.onSelectionChange, editing.rowId !== null, {
+		mode: props.selectionMode, initialSelectedIds: props.initialSelectedIds,
+	});
 	const { viewMode, setViewMode } = useViewModeState(props.initialViewMode, props.allowedViewModes);
 	const settings = useOpenState();
 	const filterPane = useOpenState();

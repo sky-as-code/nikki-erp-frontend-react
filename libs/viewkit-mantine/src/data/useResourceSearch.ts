@@ -1,5 +1,5 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { mergeSearchGraphs, SearchData } from '@nikkierp/ui/components/DataTable';
+import { mergeSearchGraphs, SearchData } from '@nikkierp/ui/components/ExcelDataTable';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useCommandBus } from '@nikkierp/ui/microApp';
 import React from 'react';

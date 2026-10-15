@@ -777,31 +777,31 @@ export function BooleanField(props: BooleanFieldProps) {
 
 	const defaultValue = modelValue?.[name] ?? false;
 
+	// Label above the switch, through the same wrapper as every other field, so a form column
+	// reads as one stack of label/control pairs rather than a switch with its label beside it.
 	return (
-		<Grid grow gap={0} mt='md'>
-			<Grid.Col span={12}>
-				<Controller
-					name={name}
-					control={control}
-					defaultValue={defaultValue}
-					render={({ field }) => {
-						const checked = field.value !== undefined ? Boolean(field.value) : Boolean(defaultValue);
-						return (
-							<Switch
-								id={inputId}
-								label={t(fieldData.label)}
-								checked={checked}
-								onChange={(e) => field.onChange(e.currentTarget.checked)}
-								disabled={modelLoading || inputProps?.disabled}
-								size='md'
-								{...fieldAttrs}
-							/>
-						);
-					}}
-				/>
-				{fieldData.error && <Input.Error>{t(fieldData.error as any)}</Input.Error>}
-			</Grid.Col>
-		</Grid>
+		<Controller
+			name={name}
+			control={control}
+			defaultValue={defaultValue}
+			render={({ field }) => (
+				<BaseFieldWrapper
+					inputId={inputId}
+					label={t(fieldData.label)}
+					isRequired={fieldData.isRequired}
+					error={fieldData.error ? t(fieldData.error as any) : undefined}
+				>
+					<Switch
+						id={inputId}
+						checked={field.value !== undefined ? Boolean(field.value) : Boolean(defaultValue)}
+						onChange={(e) => field.onChange(e.currentTarget.checked)}
+						disabled={modelLoading || inputProps?.disabled}
+						size='md'
+						{...fieldAttrs}
+					/>
+				</BaseFieldWrapper>
+			)}
+		/>
 	);
 }
 

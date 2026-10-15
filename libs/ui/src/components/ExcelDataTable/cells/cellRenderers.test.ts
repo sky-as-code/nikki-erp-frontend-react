@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	BooleanCellRenderer, DateTimeCellRenderer, JsonMapCellRenderer, MoneyFieldRenderer, NumberCellRenderer,
-	findDefaultRenderer, getDecimalScale, normalizeBooleanValue,
+	findDefaultRenderer, getDecimalScale,
 } from './cellRenderers';
+import { normalizeBooleanValue } from '../../form/ReadOnlyBooleanSwitch';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 import type React from 'react';

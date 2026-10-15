@@ -56,6 +56,9 @@ import type { ComponentNode, TemplateRef } from '@nikkierp/viewengine/metadata';
  *
  * Each builder parses eagerly, so a bad page fails where it is authored rather
  * than at render time, and returns a `JSON.stringify`-able object.
+ *
+ * @deprecated Renders the legacy `DataTable`. Use `resourceListV2Props` (ExcelDataTable); this
+ * stays only for the coremart pages not yet migrated.
  */
 export function resourceListProps(input: ResourceListPropsInput): TemplateRef<ResourceListProps> {
 	return { template: RESOURCE_LIST_TEMPLATE, props: resourceListPropsSchema.parse(input) };
@@ -65,6 +68,10 @@ export function resourceListV2Props(input: ResourceListV2PropsInput): TemplateRe
 	return { template: RESOURCE_LIST_V2_TEMPLATE, props: resourceListV2PropsSchema.parse(input) };
 }
 
+/**
+ * @deprecated Its related tables are the legacy `resourceTableNode`. Use `resourceDetailV2Props`
+ * with `relatedResources`; this stays only for the coremart pages not yet migrated.
+ */
 export function resourceDetailProps(input: ResourceDetailPropsInput): TemplateRef<ResourceDetailProps> {
 	return { template: RESOURCE_DETAIL_TEMPLATE, props: resourceDetailPropsSchema.parse(input) };
 }
@@ -107,6 +114,8 @@ export function resourceSplitViewProps(input: {
  * A related-records table node, for a resource detail page's `childrenNodes`.
  * Returns a `ComponentNode` rather than a `TemplateRef` — `childrenNodes` takes
  * component nodes, not nested templates.
+ *
+ * @deprecated Renders the legacy `DataTable`. Use `relatedResources` on `resourceDetailV2Props`.
  */
 export function resourceTableNode(input: ResourceTablePropsInput): ComponentNode {
 	return defineComponent({

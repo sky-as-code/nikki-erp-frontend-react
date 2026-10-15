@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { isStubSearchData } from './useResourceSearch';
 
-import type { SearchData } from '@nikkierp/ui/components/DataTable';
+import type { SearchData } from '@nikkierp/ui/components/ExcelDataTable';
 
 
 /** The resolution `useResourceSearch` applies to pick what reaches `DataTable`. */

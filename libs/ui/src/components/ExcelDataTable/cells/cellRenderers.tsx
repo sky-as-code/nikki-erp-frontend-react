@@ -3,6 +3,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
 import { JsonLangText } from '../../../i18n';
+import { normalizeBooleanValue } from '../../form/ReadOnlyBooleanSwitch';
 import { LocalizedDateTime } from '../../Localized/LocalizedDateTime';
 import { LocalizedMoney } from '../../Localized/LocalizedMoney';
 import { LocalizedNumber } from '../../Localized/LocalizedNumber';
@@ -234,18 +235,4 @@ export function toLangJson(rawValue: unknown): dyn.ModelSchemaLangJson {
 		}
 	}
 	return {};
-}
-
-export function normalizeBooleanValue(rawValue: unknown): boolean {
-	if (typeof rawValue === 'boolean') {
-		return rawValue;
-	}
-	if (typeof rawValue === 'number') {
-		return rawValue !== 0;
-	}
-	if (typeof rawValue === 'string') {
-		const normalized = rawValue.trim().toLowerCase();
-		return normalized === 'yes' || normalized === 'true' || normalized === '1';
-	}
-	return false;
 }

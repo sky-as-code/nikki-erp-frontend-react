@@ -252,13 +252,24 @@ function omitUndefined(parsed: Record<string, unknown>): Record<string, unknown>
 
 
 function buildFieldSchema(fieldDef: ModelSchemaField): z.ZodTypeAny {
+	// The form loads the whole record, virtual fields included, but never submits one. A read-back
+	// shape the client does not model must not be able to block a save the user cannot even see.
+	if (fieldDef.is_virtual) {
+		return z.any().optional();
+	}
 	const isRequired = fieldDef.is_required_for_create || fieldDef.is_required_for_update;
-	let fieldSchema = createBaseFieldSchema(fieldDef);
+	const dataType = extractFieldDataType(fieldDef);
+	let fieldSchema = createSchemaByDataType(dataType);
 	const hasDefaultValue = fieldDef.default_value != null;
 	const shouldBeOptional = !isRequired || fieldDef.is_auto_generated || hasDefaultValue;
 
 	if (Array.isArray(fieldDef.rules) && fieldDef.rules.length >= 2) {
 		fieldSchema = applyFieldRule(fieldSchema, fieldDef.rules as ModelSchemaFieldRule);
+	}
+	// `model` arrays are already wrapped by createSchemaByDataType; every other type validates its
+	// rules per element.
+	if (dataType.is_array && dataType.name !== 'model') {
+		fieldSchema = z.array(fieldSchema, { error: ErrorKeys.invalidDataType });
 	}
 
 	if (shouldBeOptional) {
@@ -266,11 +277,6 @@ function buildFieldSchema(fieldDef: ModelSchemaField): z.ZodTypeAny {
 	}
 
 	return applyRequiredRule(fieldSchema);
-}
-
-function createBaseFieldSchema(fieldDef: ModelSchemaField): z.ZodTypeAny {
-	const dataType = extractFieldDataType(fieldDef);
-	return createSchemaByDataType(dataType);
 }
 
 function createSchemaByDataType(dataType: ModelSchemaFieldDataType): z.ZodTypeAny {

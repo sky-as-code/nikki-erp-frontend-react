@@ -14,7 +14,7 @@ import { useLocaleCollator, useTranslate } from '../../i18n';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 
 import type { LocalizeFn } from '../../i18n';
-import type { SearchItem } from '../DataTable/types';
+import type { SearchItem, SelectionMode } from '../ExcelDataTable';
 
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -114,10 +114,11 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 								opened={isPickerOpen}
 								onClose={() => setIsPickerOpen(false)}
 								destSchemaName={options.destSchemaName}
-								selectedId={(field.value as string) ?? null}
+								selectionMode={options.selectionMode}
+								selectedIds={field.value ? [String(field.value)] : []}
 								testId={fieldTestId}
-								onSelect={(item: SearchItem) => {
-									field.onChange(String(item.id));
+								onSelect={(items: SearchItem[]) => {
+									field.onChange(String(items[0].id));
 								}}
 							/>
 						) : null}
@@ -136,6 +137,8 @@ type RelationOptions = {
 	selectedLabel?: string,
 	/** The referenced schema's own name, or empty until the field's relation resolves. */
 	destSchemaName: string,
+	/** How many referenced records the field holds, from its relation's cardinality. */
+	selectionMode: SelectionMode,
 };
 
 /**
@@ -186,7 +189,18 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 		loadError: targetPack.error ?? search.loadError,
 		selectedLabel: data.find(option => option.value === selectedId)?.label,
 		destSchemaName,
+		selectionMode: relationSelectionMode(relation),
 	};
+}
+
+/**
+ * A field that owns the foreign key points at one record; a to-many relation holds several. Today
+ * only owning (many:one / one:one) relations reach this field, so `multiple` is the case a future
+ * to-many field will hit, not one this field produces yet.
+ */
+export function relationSelectionMode(relation: dyn.ModelSchemaRelation | undefined): SelectionMode {
+	const type = relation?.relation_type;
+	return type === 'one:many' || type === 'many:many' ? 'multiple' : 'single';
 }
 
 type SearchPageResult = {

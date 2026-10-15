@@ -94,10 +94,10 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 	// Reset before leaving update mode: read mode renders `context.resource`, not form state, so
 	// this is invisible today, but it stops re-entering update mode from resurrecting discarded
 	// edits from the previous session.
-	const onCancel = () => {
+	const onCancel = view?.cancelUpdate ?? (() => {
 		formRuntime?.reset();
 		setUpdateMode(false);
-	};
+	});
 
 	return (
 		<PageHeaderProvider value={headerContext}>

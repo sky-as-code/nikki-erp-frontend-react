@@ -9,7 +9,7 @@ import React from 'react';
 
 import { RESOURCE_FORM } from '../ids';
 import { resourceFormPropsSchema } from './resourceFormProps';
-import { ResourceFormViewProvider } from './resourceFormViewContext';
+import { ResourceFormViewScope } from './resourceFormViewContext';
 import {
 	DebugFormErrors, useResourceDetailContext, useResourceDetailTranslationNs,
 } from '../pages/resourceDetail/ResourceDetailProvider';
@@ -58,7 +58,7 @@ function ResourceForm({ props, runtime }: {
 					isSubmitting={isWriting}
 					onSubmit={onSubmit}
 				>
-					<ResourceFormViewProvider value={{ updateMode, setUpdateMode }}>
+					<ResourceFormViewScope updateMode={updateMode} setUpdateMode={setUpdateMode}>
 						<ServerErrorAlert />
 						{/*
 						 * Page-level, not section-level: the one form now spans every section, so a
@@ -68,7 +68,7 @@ function ResourceForm({ props, runtime }: {
 						 */}
 						<FormErrorDebugPanel />
 						<MetaComponent node={runtime.children} />
-					</ResourceFormViewProvider>
+					</ResourceFormViewScope>
 				</CrudFormProvider>
 			</FormTestIdProvider>
 		</FormStyleProvider>

@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { emptySelection, moveSelection, pruneSelection, selectWithModifiers } from './selectionModel';
+import { emptySelection, moveSelection, pruneSelection, seedSelection, selectWithModifiers } from './selectionModel';
 import { readStoredPageSize, allowedPageSizes, resolveInitialViewMode, writeStoredViewMode } from './storage';
 import { rowIdOf } from './types';
 
 import type { EditingApi, OpenState, SelectionApi } from './context';
-import type { SelectionModifiers, SelectionState } from './selectionModel';
+import type { SelectionMode, SelectionModifiers, SelectionState } from './selectionModel';
 import type { ExcelViewMode, RowId, SearchData, SearchItem } from './types';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -84,15 +84,30 @@ export function useRowOrder(items: SearchItem[]) {
 	}, [items]);
 }
 
+export type SelectionOptions = {
+	mode?: SelectionMode,
+	initialSelectedIds?: RowId[],
+};
+
 export function useSelectionState(
 	items: SearchItem[],
 	onSelectionChange: ((selected: SearchItem[]) => void) | undefined,
 	isEditing: boolean,
+	options: SelectionOptions = {},
 ): SelectionApi {
+	const { mode = 'multiple', initialSelectedIds } = options;
 	const { order, itemsById } = useRowOrder(items);
 	const [state, setState] = React.useState<SelectionState>(emptySelection);
+	// Held until the first rows arrive: pruning against the empty pre-load order would drop it.
+	const pendingSeed = React.useRef(initialSelectedIds?.length ? seedSelection(initialSelectedIds, mode) : null);
 
 	React.useEffect(() => {
+		const seed = pendingSeed.current;
+		if (seed && order.length > 0) {
+			pendingSeed.current = null;
+			setState(pruneSelection(seed, order));
+			return;
+		}
 		setState(prev => pruneSelection(prev, order));
 	}, [order]);
 
@@ -103,9 +118,9 @@ export function useSelectionState(
 	// Every gesture is inert while a row is being edited: the requirement freezes selection there.
 	const selectRow = React.useCallback((id: RowId, mods: SelectionModifiers = {}) => {
 		if (!isEditing) {
-			setState(prev => selectWithModifiers(prev, order, id, mods));
+			setState(prev => selectWithModifiers(prev, order, id, mods, mode));
 		}
-	}, [isEditing, order]);
+	}, [isEditing, order, mode]);
 	const move = React.useCallback((delta: number) => {
 		if (!isEditing) {
 			setState(prev => moveSelection(prev, order, delta));

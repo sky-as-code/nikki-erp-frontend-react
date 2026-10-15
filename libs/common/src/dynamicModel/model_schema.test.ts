@@ -151,6 +151,43 @@ describe('buildValidationSchema: blank optional fields', () => {
 	});
 });
 
+describe('buildValidationSchema: arrays and virtual fields', () => {
+	const formSchema = schema({
+		fields: {
+			sku: field('sku', 'string'),
+			tag_ids: { ...field('tag_ids', 'ulid'), data_type: { name: 'ulid', is_array: true } },
+			attribute_summary: field('attribute_summary', 'string', {
+				is_virtual: true, is_computed: true, is_persisted: false,
+			}),
+		},
+	});
+
+	// The variant form loads `attribute_summary` as a string array; validating it as a string
+	// silently blocked every save on a variant with attributes.
+	it('does not let a virtual field block a save, whatever shape it arrives in', () => {
+		const parsed = buildValidationSchema(formSchema).safeParse({
+			sku: 'INV-1', attribute_summary: ['Size: 1500ml'],
+		});
+
+		expect(parsed.success).toBe(true);
+	});
+
+	it('validates an array field element by element', () => {
+		const ulid = '01JWNMZ36QHC7CQQ748H9NQ6J6';
+		const valid = buildValidationSchema(formSchema).safeParse({ tag_ids: [ulid] });
+		const invalid = buildValidationSchema(formSchema).safeParse({ tag_ids: [ulid, 'nope'] });
+
+		expect(valid.success).toBe(true);
+		expect(invalid.success).toBe(false);
+	});
+
+	it('rejects a scalar where an array is declared', () => {
+		const parsed = buildValidationSchema(formSchema).safeParse({ tag_ids: '01JWNMZ36QHC7CQQ748H9NQ6J6' });
+
+		expect(parsed.success).toBe(false);
+	});
+});
+
 describe('findComputedDependency', () => {
 	const schemaWith = (computed: any): ModelSchema => ({
 		name: 'inventory_product_variant',

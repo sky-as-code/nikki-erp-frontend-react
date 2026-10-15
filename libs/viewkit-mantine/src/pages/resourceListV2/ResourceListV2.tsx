@@ -75,7 +75,7 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 	const testId = resourceTestIdPrefix({ testId: params.testId, routePath, schemaName: params.schemaName, part: 'List' });
 	const actions = React.useMemo(() => buildResourceListActions(params, t, baseHref), [params, t, baseHref]);
 	const allowedViewModes = React.useMemo(() => params.viewModes.map(view => view.mode), [params.viewModes]);
-	const gatedActions = useActionLocks(actions, params.schemaName, listActionCode) as ResourceListAction[];
+	const gatedActions = useActionLocks(actions, params.schemaName, listActionCode);
 
 	if (!pack || !searchData) {
 		return <LoadingState />;

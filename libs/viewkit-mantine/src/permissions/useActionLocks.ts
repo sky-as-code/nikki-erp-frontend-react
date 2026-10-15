@@ -3,7 +3,12 @@ import React from 'react';
 
 import { actionRequirement } from './actionEntitlements';
 
-import type { DataTableAction } from '@nikkierp/ui/components/DataTable';
+
+/** What locking writes onto an action; any toolbar entry shape carrying these can be gated. */
+export type LockableAction = {
+	locked?: boolean,
+	lockedMissing?: string[],
+};
 
 
 /**
@@ -16,11 +21,11 @@ import type { DataTableAction } from '@nikkierp/ui/components/DataTable';
  * indistinguishable from an empty one, and locking on it would flash every button greyed on each
  * cold load.
  */
-export function useActionLocks(
-	actions: DataTableAction[],
+export function useActionLocks<TAction extends LockableAction>(
+	actions: TAction[],
 	schemaName: string,
-	actionCodeOf: (action: DataTableAction) => string | null,
-): DataTableAction[] {
+	actionCodeOf: (action: TAction) => string | null,
+): TAction[] {
 	// An action with no derivable code is left ungated: locking a button the user may in fact
 	// click is worse than not locking one they cannot.
 	const codes = React.useMemo(() => actions.map(actionCodeOf), [actions, actionCodeOf]);

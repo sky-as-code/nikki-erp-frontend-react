@@ -3,7 +3,7 @@
  *
  * - Engine, metadata types and registries -> `@nikkierp/viewengine`
  * - Built-in Mantine templates / renderers / prop builders -> `@nikkierp/viewkit-mantine`
- * - Generic table plumbing -> `@nikkierp/ui/components/DataTable`
+ * - Generic table plumbing -> `@nikkierp/ui/components/ExcelDataTable`
  *
  * This shim exists only to keep downstream packages compiling across the
  * migration and re-exports types and pure values *only*: it registers nothing.

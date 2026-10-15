@@ -6,21 +6,21 @@ import React from 'react';
 import { useCommand } from '../../hookhoc/useCommand';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
-import { DataTable } from '../DataTable/DataTable';
+import { ExcelDataTable } from '../ExcelDataTable';
 import { LoadingState } from '../Loading';
 
-import type { SearchData, SearchItem } from '../DataTable/types';
+import type { SearchData, SearchItem, SelectionMode } from '../ExcelDataTable';
 
 
 const PAGE_SIZE = 50;
 
 /**
  * `search_name: 'default'` asks the server for its default field set, which is what fills
- * `desired_fields` on the response — and `desired_fields` is what `DataTable` builds its columns
+ * `desired_fields` on the response — and `desired_fields` is what the table builds its columns
  * from. Omitting it yields rows with no header.
  *
  * A real `size` from the outset, unlike the `size: 0` stub a list page seeds: `RestApi.search`
- * resolves that stub locally with no HTTP call, relying on `DataTable` to rewrite it into the first
+ * resolves that stub locally with no HTTP call, relying on the table to rewrite it into the first
  * real request. This modal only mounts the table once it has data to show, so nothing would ever
  * perform that rewrite and the picker would spin forever.
  */
@@ -31,10 +31,15 @@ export type RelationPickerModalProps = {
 	onClose: () => void,
 	/** The referenced schema's own name — not the field's, the edge's `dest_schema_name`. */
 	destSchemaName: string,
-	/** The value currently held by the field, so reopening the picker shows it pre-selected. */
-	selectedId?: string | null,
-	/** Fired with the row the user confirmed via Apply. The modal closes itself afterwards. */
-	onSelect: (item: SearchItem) => void,
+	/**
+	 * Whether the field holds one reference or several; the field decides from its relation's
+	 * cardinality. `single` clamps the table so Ctrl/Shift cannot select a second row.
+	 */
+	selectionMode: SelectionMode,
+	/** The values currently held by the field, so the picker opens with them pre-selected. */
+	selectedIds?: string[],
+	/** Fired with the rows the user confirmed via Apply. The modal closes itself afterwards. */
+	onSelect: (items: SearchItem[]) => void,
 	testId?: string,
 };
 
@@ -43,7 +48,8 @@ export type RelationPickerModalProps = {
  * `SearchableSelect`'s action item ("Browse all…") — the escape hatch for when the field's own
  * debounced typeahead is not enough to find the right row.
  *
- * Picking is **two-step**: clicking a row marks it, and Apply commits it. A single click cannot
+ * Picking is **two-step**: clicking a row marks it (Ctrl/Shift add more in `multiple` mode), and
+ * Apply commits it. A single click cannot
  * commit, because the table is also how the user reads and compares rows before deciding, and a
  * click that both selected and dismissed would make browsing impossible.
  *
@@ -56,32 +62,32 @@ export type RelationPickerModalProps = {
  * an inventory page must read `essential_uom.label` out of `essential`, not `inventory`.
  */
 export function RelationPickerModal(props: RelationPickerModalProps): React.ReactNode {
-	const { destSchemaName, onSelect, testId } = props;
+	const { destSchemaName, testId } = props;
 	const t = useTranslate('common');
 	const localize = useSchemaLocalize(destSchemaName);
 	// Full-bleed on a phone, where 80% would waste the little width a table most needs.
 	const isMobile = useMediaQuery('(max-width: 48em)');
 	const { pack } = useDynamicModel(destSchemaName);
 	const modelSchema = pack?.modelSchema;
-	const [pendingItem, setPendingItem] = React.useState<SearchItem | null>(null);
+	const [pendingItems, setPendingItems] = React.useState<SearchItem[]>([]);
 	const { searchData, searchRequest, setSearchRequest } = usePickerSearch(destSchemaName, props.opened);
+	// Without this the table falls back to the raw field name.
+	const translateFieldName = React.useCallback(
+		(field: string): string => localize(modelSchema?.fields[field]?.label) || field,
+		[localize, modelSchema],
+	);
 
 	// Reopening starts clean: a picker left mid-selection on one field must not open another
-	// field's picker pointing at an unrelated row.
+	// field's picker with Apply already armed for an unrelated row.
 	React.useEffect(() => {
 		if (props.opened) {
-			setPendingItem(null);
+			setPendingItems([]);
 		}
 	}, [props.opened, destSchemaName]);
 
-	const pendingId = pendingItem ? String(pendingItem.id) : props.selectedId;
-	// Without this `DataTable` falls back to the raw field name.
-	const translateFieldName = (field: string): string =>
-		localize(modelSchema?.fields[field]?.label) || field;
-
 	const onApply = (): void => {
-		if (pendingItem) {
-			onSelect(pendingItem);
+		if (pendingItems.length > 0) {
+			props.onSelect(pendingItems);
 		}
 		props.onClose();
 	};
@@ -94,26 +100,43 @@ export function RelationPickerModal(props: RelationPickerModalProps): React.Reac
 			title={localize(modelSchema?.label, { count: 99 })}
 		>
 			<Stack gap='md'>
+				{/* Mounted only with data, and the modal unmounts its body on close: every opening
+				    gets a fresh table, so the field's current value is re-seeded as the selection. */}
 				{searchData && modelSchema ? (
-					<DataTable
-						tableName={localize(modelSchema.label, { count: searchData.total })}
+					<ExcelDataTable.Provider
+						testId={testId}
+						tableName={destSchemaName}
+						modelSchema={modelSchema}
 						data={searchData}
 						initialSearchRequest={searchRequest}
 						onSearchRequestChange={setSearchRequest}
-						modelSchema={modelSchema}
 						translateFieldName={translateFieldName}
-						onSelectRow={setPendingItem}
-						selectedRowId={pendingId ?? undefined}
-						sortableFields={searchData.desired_fields}
-						enableGridView={false}
-						testId={testId}
-					/>
+						selectionMode={props.selectionMode}
+						initialSelectedIds={props.selectedIds}
+						onSelectionChange={setPendingItems}
+					>
+						<Stack gap='xs'>
+							<ExcelDataTable.Toolbar
+								left={(
+									<ExcelDataTable.Title
+										render={ctx => localize(modelSchema.label, { count: ctx.data.total })}
+									/>
+								)}
+								right={<><ExcelDataTable.FilterButton /><ExcelDataTable.Pagination /></>}
+							/>
+							<ExcelDataTable.FilterPanel />
+							<div>
+								<ExcelDataTable.TableHeader />
+								<ExcelDataTable.Table className='max-h-[60vh]' />
+							</div>
+						</Stack>
+					</ExcelDataTable.Provider>
 				) : <LoadingState />}
 				<Group justify='flex-end'>
 					<Button variant='default' onClick={props.onClose}>
 						{t('action.close')}
 					</Button>
-					<Button variant='filled' disabled={!pendingItem} onClick={onApply}>
+					<Button variant='filled' disabled={pendingItems.length === 0} onClick={onApply}>
 						{t('action.apply')}
 					</Button>
 				</Group>
@@ -151,7 +174,7 @@ function usePickerSearch(destSchemaName: string, opened: boolean): PickerSearch 
 	 * `publish` clears `data` to null before each call, so a re-publish on every render is not
 	 * merely wasteful — it re-enters the loading state forever and the table never receives rows.
 	 * Comparing the serialized request is what makes the effect converge, since `searchRequest` is
-	 * a fresh object each time `DataTable` reports a change.
+	 * a fresh object each time the table reports a change.
 	 */
 	const publishedKeyRef = React.useRef<string | null>(null);
 

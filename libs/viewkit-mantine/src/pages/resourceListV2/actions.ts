@@ -1,7 +1,7 @@
 import { commandActionCode, StandardActionCode } from '../../permissions';
 
 import type { ResourceListV2Props } from './props';
-import type { DataTableAction } from '@nikkierp/ui/components/DataTable';
+import type { LockableAction } from '../../permissions';
 import type { TranslateFn } from '@nikkierp/ui/i18n';
 
 
@@ -10,9 +10,18 @@ import type { TranslateFn } from '@nikkierp/ui/i18n';
  * elements, so the entitlement pass can run once and the bar can fold it into a menu on a
  * compact screen.
  */
-export type ResourceListAction = Pick<
-	DataTableAction, 'label' | 'testId' | 'command' | 'href' | 'requireSelection' | 'supportMultiple' | 'locked' | 'lockedMissing'
-> & { kind: 'refresh' | 'link' | 'command', collapsed?: boolean };
+export type ResourceListAction = {
+	kind: 'refresh' | 'link' | 'command',
+	label?: string,
+	/** Last segment of this action's `data-testid`. */
+	testId?: string,
+	/** Command published with the selected rows when the action is triggered. */
+	command?: string,
+	href?: string,
+	requireSelection?: boolean,
+	supportMultiple?: boolean,
+	collapsed?: boolean,
+} & LockableAction;
 
 /**
  * The same entries v1 builds, in the same order: refresh, create, import, delete, the page's
@@ -59,7 +68,7 @@ export function buildResourceListActions(
 }
 
 /** The action code an entry performs, or null to leave it ungated (refresh needs nothing). */
-export function listActionCode(action: Pick<DataTableAction, 'testId' | 'command'>): string | null {
+export function listActionCode(action: { testId?: string, command?: string }): string | null {
 	// Import writes records, so it is gated by the same entitlement as create.
 	if (action.testId === 'create' || action.testId === 'import') {
 		return StandardActionCode.Create;

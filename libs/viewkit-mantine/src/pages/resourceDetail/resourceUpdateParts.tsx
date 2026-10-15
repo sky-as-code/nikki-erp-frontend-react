@@ -5,7 +5,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 // The wrapper rather than Mantine's Button: it carries the `locked` state, and the design system
 // prefers it wherever one exists.
 import { Button } from '@nikkierp/ui/components';
-import { AutoField, useComputedField } from '@nikkierp/ui/components/form';
+import { AutoField, ReadOnlyBooleanSwitch, useComputedField } from '@nikkierp/ui/components/form';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
@@ -560,6 +560,15 @@ function ReadOnlyFieldValue({
 		: fieldValues[field];
 	if (!fieldDef) {
 		return null;
+	}
+	// A boolean is a switch in both modes, so flipping into update mode does not change its look.
+	if (fieldDef.data_type?.name === 'boolean') {
+		return (
+			<Stack gap={4}>
+				<Text size='md' fw='bold'>{localize(fieldDef.label)}</Text>
+				<ReadOnlyBooleanSwitch value={rawValue} />
+			</Stack>
+		);
 	}
 
 	const plainValue = hasDisplayableValue(rawValue)
