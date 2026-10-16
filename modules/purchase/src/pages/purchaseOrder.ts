@@ -68,6 +68,7 @@ const COMMITTED_FILTER = {
 const MERGE_ACTION = {
 	label: 'actions.merge',
 	command: PurchaseOrderCommands.MERGE,
+	actionCode: 'merge',
 	requireSelection: true,
 	supportMultiple: true,
 	testId: 'merge',
@@ -210,6 +211,7 @@ function buildOrderActions() {
 		send: {
 			label: 'actions.send',
 			command: PurchaseOrderCommands.SEND,
+			actionCode: 'send',
 			condition: { field: 'status', operator: 'equal' as const, value: c.ORDER_STATUS_RFQ },
 		},
 		/**
@@ -230,6 +232,7 @@ function buildOrderActions() {
 		confirm: {
 			label: 'actions.confirm',
 			command: PurchaseOrderCommands.CONFIRM,
+			actionCode: 'confirm',
 			condition: {
 				field: 'status',
 				operator: 'in' as const,
@@ -240,6 +243,7 @@ function buildOrderActions() {
 		approve: {
 			label: 'actions.approve',
 			command: PurchaseOrderCommands.APPROVE,
+			actionCode: 'approve',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -258,6 +262,7 @@ function buildOrderActions() {
 		cancel: {
 			label: 'actions.cancel',
 			command: PurchaseOrderCommands.CANCEL,
+			actionCode: 'cancel',
 			condition: {
 				field: 'status',
 				operator: 'not_equal' as const,
@@ -267,6 +272,7 @@ function buildOrderActions() {
 		acknowledge: {
 			label: 'actions.acknowledge',
 			command: PurchaseOrderCommands.ACKNOWLEDGE,
+			actionCode: 'acknowledge',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -285,6 +291,7 @@ function buildLockActions() {
 		lock: {
 			label: 'actions.lock',
 			command: PurchaseOrderCommands.LOCK,
+			actionCode: 'lock',
 			condition: { field: 'is_locked', operator: 'not_equal' as const, value: true },
 		},
 		/**
@@ -306,6 +313,7 @@ function buildLockActions() {
 		unlock: {
 			label: 'actions.unlock',
 			command: PurchaseOrderCommands.UNLOCK,
+			actionCode: 'unlock',
 			condition: { field: 'is_locked', operator: 'equal' as const, value: true },
 		},
 	};
@@ -339,6 +347,7 @@ function buildPricingActions() {
 		reprice: {
 			label: 'actions.reprice',
 			command: PurchaseOrderCommands.REPRICE,
+			actionCode: 'reprice',
 			condition: {
 				field: 'status',
 				operator: 'in' as const,
@@ -356,6 +365,7 @@ function buildSourcingActions() {
 		duplicate: {
 			label: 'actions.duplicate',
 			command: PurchaseOrderCommands.DUPLICATE,
+			actionCode: 'create',
 		},
 		/**
 		 * An alternative is the same requirement quoted by a different vendor, so it only makes
@@ -366,6 +376,7 @@ function buildSourcingActions() {
 		create_alternative: {
 			label: 'actions.create_alternative',
 			command: PurchaseOrderCommands.CREATE_ALTERNATIVE,
+			actionCode: 'create',
 			condition: {
 				field: 'status',
 				operator: 'in' as const,
@@ -381,6 +392,7 @@ function buildSourcingActions() {
 		compare_alternatives: {
 			label: 'actions.compare_alternatives',
 			command: PurchaseOrderCommands.COMPARE_ALTERNATIVES,
+			actionCode: 'read',
 			condition: { field: 'sourcing_group_id', operator: 'exists' as const },
 		},
 	};

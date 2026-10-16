@@ -4,9 +4,14 @@ import { IconPlus, IconRefresh, IconUpload } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Button as LockableButton } from '../Button/Button';
+
 
 export interface ActionsProps {
 	onCreate?: () => void;
+	/** Greys Create with a lock; a click explains the refusal instead of creating. */
+	createLocked?: boolean;
+	createLockedMissing?: string[];
 	onRefresh: () => void;
 	showImport?: boolean;
 	onImport?: () => void;
@@ -16,6 +21,8 @@ export interface ActionsProps {
 
 export const Actions: React.FC<ActionsProps> = ({
 	onCreate,
+	createLocked,
+	createLockedMissing,
 	onRefresh,
 	showImport = true,
 	onImport,
@@ -26,13 +33,17 @@ export const Actions: React.FC<ActionsProps> = ({
 	return (
 		<Group>
 			{onCreate && (
-				<Button
+				<LockableButton
+					variant='filled'
+					size='sm'
 					leftSection={<IconPlus size={16} />}
 					onClick={onCreate}
+					locked={createLocked}
+					lockedMissing={createLockedMissing}
 					{...testAttrs(prefix, 'create')}
 				>
 					{translate('nikki.general.actions.create')}
-				</Button>
+				</LockableButton>
 			)}
 			<Button
 				variant='outline'

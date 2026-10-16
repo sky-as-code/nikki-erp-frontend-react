@@ -1,6 +1,9 @@
 import { Alert, Button, Checkbox, Group } from '@mantine/core';
+import { ResourceScope } from '@nikkierp/common/entitlements';
+import { Button as LockableButton } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs, componentAttrs } from '@nikkierp/viewengine/core';
+import { useActionLock } from '@nikkierp/viewkit-mantine';
 import React from 'react';
 import { z } from 'zod';
 
@@ -27,9 +30,16 @@ export const roleAssignmentActionsRenderer: IComponentRenderer<Record<string, ne
 	},
 };
 
+/**
+ * What the backend asserts on `POST /v1/iam/{users|groups}/:id/roles`, on the principal. It passes
+ * no org, so only a tenant-wide grant satisfies it, and the lock asks for tenant scope to match.
+ */
+const MANAGE_ROLE_ASSIGNMENTS = 'manage_role_assignments';
+
 function RoleAssignmentActions(): React.ReactNode {
 	const context = useRoleAssignmentContext();
 	const t = useTranslate(context.params.translationNs);
+	const lock = useActionLock(context.params.principalSchemaName, MANAGE_ROLE_ASSIGNMENTS, ResourceScope.Tenant);
 
 	return (
 		<Group gap='sm' {...componentAttrs(ROLE_ASSIGNMENT_ACTIONS)}>
@@ -46,13 +56,17 @@ function RoleAssignmentActions(): React.ReactNode {
 					</Button>
 				)
 				: (
-					<Button
+					<LockableButton
+						variant='filled'
+						size='sm'
 						onClick={context.save}
 						disabled={!context.acknowledged || context.isBusy}
+						locked={lock.locked}
+						lockedMissing={lock.missing}
 						{...commandAttrs(context.params.saveCommand)}
 					>
 						{t('action.save')}
-					</Button>
+					</LockableButton>
 				)}
 		</Group>
 	);

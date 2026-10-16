@@ -18,10 +18,12 @@ const UNLOCKED: ActionLock = { locked: false, missing: [] };
  * known — refusing on absent information would grey the control on every cold load. Use
  * {@link useActionLocks} for a list of actions instead.
  */
-export function useActionLock(schemaName: string | null, actionCode: string | null): ActionLock {
+export function useActionLock(
+	schemaName: string | null, actionCode: string | null, scope?: string,
+): ActionLock {
 	const requirements = React.useMemo(
-		() => (schemaName && actionCode ? [actionRequirement(schemaName, actionCode)] : []),
-		[schemaName, actionCode],
+		() => (schemaName && actionCode ? [actionRequirement(schemaName, actionCode, scope)] : []),
+		[schemaName, actionCode, scope],
 	);
 
 	const decision = useHasEntitlement(requirements);

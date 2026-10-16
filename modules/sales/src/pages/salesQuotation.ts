@@ -108,6 +108,7 @@ function buildSalesQuotationActions() {
 		send: {
 			label: 'actions.send',
 			command: SalesQuotationCommands.SEND,
+			actionCode: 'update',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -122,6 +123,7 @@ function buildSalesQuotationActions() {
 		convert: {
 			label: 'actions.convert',
 			command: SalesQuotationCommands.CONVERT,
+			actionCode: 'convert',
 			condition: {
 				field: 'status',
 				operator: 'in' as const,
@@ -136,6 +138,7 @@ function buildSalesQuotationActions() {
 		cancel: {
 			label: 'actions.cancel',
 			command: SalesQuotationCommands.CANCEL,
+			actionCode: 'update',
 			condition: {
 				field: 'status',
 				operator: 'in' as const,

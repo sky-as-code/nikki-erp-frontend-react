@@ -1,3 +1,4 @@
+import { findUngatedActions } from '@nikkierp/viewkit-mantine/actionCodes';
 import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
@@ -20,6 +21,14 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 ];
 
 describe('IAM page metadata', () => {
+	/**
+	 * Every action resolves to the code the backend asserts, or the button is not locked for a user
+	 * the server refuses. A custom verb needs an explicit `actionCode` from the application service.
+	 */
+	it.each(allPages)('$name pages declare no ungated action', ({ build }) => {
+		expect(findUngatedActions(build())).toEqual([]);
+	});
+
 	/**
 	 * The gate for the whole migration. Page props used to be class instances
 	 * guarded by `instanceof`, which can never survive a bundle boundary. If this
@@ -73,16 +82,21 @@ describe('IAM page metadata', () => {
 	// the related tab's own action bar. `linked` is the membership operator for a many edge;
 	// `${id}` is interpolated from the route at render time.
 	it.each([
-		{ name: 'user', build: buildUserPages, label: 'user_sections_assignedRoles', edge: 'assigned_users' },
-		{ name: 'group', build: buildGroupPages, label: 'group_sections_assignedRoles', edge: 'assigned_groups' },
-	])('$name detail page lists assigned roles as a related resource', ({ build, label, edge }) => {
+		{ name: 'user', build: buildUserPages, label: 'user_sections_assignedRoles', edge: 'assigned_users', principal: 'iam_user' },
+		{ name: 'group', build: buildGroupPages, label: 'group_sections_assignedRoles', edge: 'assigned_groups', principal: 'iam_group' },
+	])('$name detail page lists assigned roles as a related resource', ({ build, label, edge, principal }) => {
 		const [page] = build();
 		const detail = (page.props as { secondary: { props: { relatedResources: RelatedResource[] } } }).secondary;
 		const [assignedRoles] = detail.props.relatedResources;
 
 		expect(detail.props.relatedResources).toHaveLength(1);
 		expect(assignedRoles.label).toBe(label);
-		expect(assignedRoles.extraActions).toEqual([{ label: 'assignment.manageRoles', routePath: 'iam_role' }]);
+		// Gated on the principal, at tenant scope: that is what the backend asserts on the save the
+		// wizard ends in, and it passes no org.
+		expect(assignedRoles.extraActions).toEqual([{
+			label: 'assignment.manageRoles', routePath: 'iam_role',
+			actionCode: 'manage_role_assignments', actionResource: principal, actionScope: 'tenant',
+		}]);
 		expect(assignedRoles.initialGraph).toEqual({ if: [edge, 'linked', '${id}'] });
 	});
 });

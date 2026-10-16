@@ -54,7 +54,9 @@ function GrantRequestListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.grant_request.title' />
 				<Actions
-					onCreate={permissions.grantRequest.canCreate ? handleCreate : undefined}
+					onCreate={handleCreate}
+					createLocked={!permissions.grantRequest.canCreate}
+					createLockedMissing={permissions.grantRequest.createMissing}
 					onRefresh={handleRefresh}
 					showImport={false}
 				/>

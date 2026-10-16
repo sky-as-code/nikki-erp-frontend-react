@@ -1,5 +1,4 @@
 import { MantineProvider } from '@mantine/core';
-import { ACTIONS, RESOURCES } from '@nikkierp/shell/userContext';
 import { PermissionGuard } from '@nikkierp/ui/components';
 import { MenuIndexRedirect } from '@nikkierp/ui/menu';
 import {
@@ -34,6 +33,7 @@ import { RoleRemoveEntitlementsPage } from './pages/roles/RoleRemoveEntitlements
 import { RoleSuiteCreatePage } from './pages/roleSuites/RoleSuiteCreatePage';
 import { RoleSuiteDetailPage } from './pages/roleSuites/RoleSuiteDetailPage';
 import { RoleSuiteListPage } from './pages/roleSuites/RoleSuiteListPage';
+import { authzRequirement } from './permissions';
 
 
 function Main(props: MicroAppProps) {
@@ -50,35 +50,35 @@ function Main(props: MicroAppProps) {
 						<AppRoute index element={<MenuIndexRedirect items={buildAuthorizeMenu(props.slug).items} />} />
 						<AppRoute path='overview' element={<OverviewPage />} />
 						{/* Resource routes */}
-						<AppRoute path='resources' element={<PermissionGuard resource={RESOURCES.AUTHZ_RESOURCE} action={ACTIONS.VIEW}><ResourceListPage /></PermissionGuard>} />
-						<AppRoute path='resources/create' element={<PermissionGuard resource={RESOURCES.AUTHZ_RESOURCE} action={ACTIONS.CREATE}><ResourceCreatePage /></PermissionGuard>} />
-						<AppRoute path='resources/:resourceName' element={<PermissionGuard resource={RESOURCES.AUTHZ_RESOURCE} action={ACTIONS.VIEW}><ResourceDetailPage /></PermissionGuard>} />
+						<AppRoute path='resources' element={<PermissionGuard requires={[authzRequirement('resource', 'view')]}><ResourceListPage /></PermissionGuard>} />
+						<AppRoute path='resources/create' element={<PermissionGuard requires={[authzRequirement('resource', 'create')]}><ResourceCreatePage /></PermissionGuard>} />
+						<AppRoute path='resources/:resourceName' element={<PermissionGuard requires={[authzRequirement('resource', 'view')]}><ResourceDetailPage /></PermissionGuard>} />
 						{/* Action routes */}
-						<AppRoute path='actions' element={<PermissionGuard resource={RESOURCES.AUTHZ_ACTION} action={ACTIONS.VIEW}><ActionListPage /></PermissionGuard>} />
-						<AppRoute path='actions/create' element={<PermissionGuard resource={RESOURCES.AUTHZ_ACTION} action={ACTIONS.CREATE}><ActionCreatePage /></PermissionGuard>} />
-						<AppRoute path='actions/:actionId' element={<PermissionGuard resource={RESOURCES.AUTHZ_ACTION} action={ACTIONS.VIEW}><ActionDetailPage /></PermissionGuard>} />
+						<AppRoute path='actions' element={<PermissionGuard requires={[authzRequirement('action', 'view')]}><ActionListPage /></PermissionGuard>} />
+						<AppRoute path='actions/create' element={<PermissionGuard requires={[authzRequirement('action', 'create')]}><ActionCreatePage /></PermissionGuard>} />
+						<AppRoute path='actions/:actionId' element={<PermissionGuard requires={[authzRequirement('action', 'view')]}><ActionDetailPage /></PermissionGuard>} />
 						{/* Entitlement routes */}
-						<AppRoute path='entitlements' element={<PermissionGuard resource={RESOURCES.AUTHZ_ENTITLEMENT} action={ACTIONS.VIEW}><EntitlementListPage /></PermissionGuard>} />
-						<AppRoute path='entitlements/create' element={<PermissionGuard resource={RESOURCES.AUTHZ_ENTITLEMENT} action={ACTIONS.CREATE}><EntitlementCreatePage /></PermissionGuard>} />
-						<AppRoute path='entitlements/:entitlementId' element={<PermissionGuard resource={RESOURCES.AUTHZ_ENTITLEMENT} action={ACTIONS.VIEW}><EntitlementDetailPage /></PermissionGuard>} />
+						<AppRoute path='entitlements' element={<PermissionGuard requires={[authzRequirement('entitlement', 'view')]}><EntitlementListPage /></PermissionGuard>} />
+						<AppRoute path='entitlements/create' element={<PermissionGuard requires={[authzRequirement('entitlement', 'create')]}><EntitlementCreatePage /></PermissionGuard>} />
+						<AppRoute path='entitlements/:entitlementId' element={<PermissionGuard requires={[authzRequirement('entitlement', 'view')]}><EntitlementDetailPage /></PermissionGuard>} />
 						{/* Role routes */}
-						<AppRoute path='roles' element={<PermissionGuard resource={RESOURCES.AUTHZ_ROLE} action={ACTIONS.VIEW}><RoleListPage /></PermissionGuard>} />
-						<AppRoute path='roles/create' element={<PermissionGuard resource={RESOURCES.AUTHZ_ROLE} action={ACTIONS.CREATE}><RoleCreatePage /></PermissionGuard>} />
-						<AppRoute path='roles/:roleId' element={<PermissionGuard resource={RESOURCES.AUTHZ_ROLE} action={ACTIONS.VIEW}><RoleDetailPage /></PermissionGuard>} />
-						<AppRoute path='roles/:roleId/add-entitlements' element={<PermissionGuard resource={RESOURCES.AUTHZ_ROLE} action={ACTIONS.UPDATE}><RoleAddEntitlementsPage /></PermissionGuard>} />
-						<AppRoute path='roles/:roleId/remove-entitlements' element={<PermissionGuard resource={RESOURCES.AUTHZ_ROLE} action={ACTIONS.UPDATE}><RoleRemoveEntitlementsPage /></PermissionGuard>} />
+						<AppRoute path='roles' element={<PermissionGuard requires={[authzRequirement('role', 'view')]}><RoleListPage /></PermissionGuard>} />
+						<AppRoute path='roles/create' element={<PermissionGuard requires={[authzRequirement('role', 'create')]}><RoleCreatePage /></PermissionGuard>} />
+						<AppRoute path='roles/:roleId' element={<PermissionGuard requires={[authzRequirement('role', 'view')]}><RoleDetailPage /></PermissionGuard>} />
+						<AppRoute path='roles/:roleId/add-entitlements' element={<PermissionGuard requires={[authzRequirement('role', 'addEntitlement')]}><RoleAddEntitlementsPage /></PermissionGuard>} />
+						<AppRoute path='roles/:roleId/remove-entitlements' element={<PermissionGuard requires={[authzRequirement('role', 'removeEntitlement')]}><RoleRemoveEntitlementsPage /></PermissionGuard>} />
 						{/* RoleSuite routes */}
-						<AppRoute path='role-suites' element={<PermissionGuard resource={RESOURCES.AUTHZ_ROLE_SUITE} action={ACTIONS.VIEW}><RoleSuiteListPage /></PermissionGuard>} />
-						<AppRoute path='role-suites/create' element={<PermissionGuard resource={RESOURCES.AUTHZ_ROLE_SUITE} action={ACTIONS.CREATE}><RoleSuiteCreatePage /></PermissionGuard>} />
-						<AppRoute path='role-suites/:roleSuiteId' element={<PermissionGuard resource={RESOURCES.AUTHZ_ROLE_SUITE} action={ACTIONS.VIEW}><RoleSuiteDetailPage /></PermissionGuard>} />
+						<AppRoute path='role-suites' element={<PermissionGuard requires={[authzRequirement('roleSuite', 'view')]}><RoleSuiteListPage /></PermissionGuard>} />
+						<AppRoute path='role-suites/create' element={<PermissionGuard requires={[authzRequirement('roleSuite', 'create')]}><RoleSuiteCreatePage /></PermissionGuard>} />
+						<AppRoute path='role-suites/:roleSuiteId' element={<PermissionGuard requires={[authzRequirement('roleSuite', 'view')]}><RoleSuiteDetailPage /></PermissionGuard>} />
 						{/* GrantRequest routes */}
-						<AppRoute path='grant-requests' element={<PermissionGuard resource={RESOURCES.AUTHZ_GRANT_REQUEST} action={ACTIONS.VIEW}><GrantRequestListPage /></PermissionGuard>} />
-						<AppRoute path='grant-requests/create' element={<PermissionGuard resource={RESOURCES.AUTHZ_GRANT_REQUEST} action={ACTIONS.CREATE}><GrantRequestCreatePage /></PermissionGuard>} />
-						<AppRoute path='grant-requests/:grantRequestId' element={<PermissionGuard resource={RESOURCES.AUTHZ_GRANT_REQUEST} action={ACTIONS.VIEW}><GrantRequestDetailPage /></PermissionGuard>} />
+						<AppRoute path='grant-requests' element={<PermissionGuard requires={[authzRequirement('grantRequest', 'view')]}><GrantRequestListPage /></PermissionGuard>} />
+						<AppRoute path='grant-requests/create' element={<PermissionGuard requires={[authzRequirement('grantRequest', 'create')]}><GrantRequestCreatePage /></PermissionGuard>} />
+						<AppRoute path='grant-requests/:grantRequestId' element={<PermissionGuard requires={[authzRequirement('grantRequest', 'view')]}><GrantRequestDetailPage /></PermissionGuard>} />
 						{/* RevokeRequest routes */}
-						<AppRoute path='revoke-requests' element={<PermissionGuard resource={RESOURCES.AUTHZ_REVOKE_REQUEST} action={ACTIONS.VIEW}><RevokeRequestListPage /></PermissionGuard>} />
-						<AppRoute path='revoke-requests/create' element={<PermissionGuard resource={RESOURCES.AUTHZ_REVOKE_REQUEST} action={ACTIONS.CREATE}><RevokeRequestCreatePage /></PermissionGuard>} />
-						<AppRoute path='revoke-requests/:revokeRequestId' element={<PermissionGuard resource={RESOURCES.AUTHZ_REVOKE_REQUEST} action={ACTIONS.VIEW}><RevokeRequestDetailPage /></PermissionGuard>} />
+						<AppRoute path='revoke-requests' element={<PermissionGuard requires={[authzRequirement('revokeRequest', 'view')]}><RevokeRequestListPage /></PermissionGuard>} />
+						<AppRoute path='revoke-requests/create' element={<PermissionGuard requires={[authzRequirement('revokeRequest', 'create')]}><RevokeRequestCreatePage /></PermissionGuard>} />
+						<AppRoute path='revoke-requests/:revokeRequestId' element={<PermissionGuard requires={[authzRequirement('revokeRequest', 'view')]}><RevokeRequestDetailPage /></PermissionGuard>} />
 					</AppRoutes>
 					<WidgetRoutes>
 					</WidgetRoutes>

@@ -29,6 +29,22 @@ export const resourceTableActionSchema = z.object({
 	command: z.string().min(1).optional(),
 	/** Link target, resolved path-relative to the current URL. */
 	routePath: z.string().min(1).optional(),
+	/**
+	 * The backend action code this entry performs, or a `routePath` leads to, when no command verb names it
+	 * (`confirm`, `do_scrap`, `create_return`). Copy it from the application service's
+	 * `AssertAction` call; it is what the entitlement lock checks. Absent means derived.
+	 */
+	actionCode: z.string().min(1).optional(),
+	/**
+	 * The resource `actionCode` is checked on, when it is not the listed one: "Manage roles" on a
+	 * user's role table is `manage_role_assignments` on `iam_user`, not on the role rows.
+	 */
+	actionResource: z.string().min(1).optional(),
+	/**
+	 * The scope `actionCode` is checked at, when the backend does not check it at org: an assert
+	 * that passes no org is satisfied only by a `tenant` grant.
+	 */
+	actionScope: z.enum(['tenant', 'org', 'orgunit', 'private']).optional(),
 	supportMultiple: z.boolean().optional(),
 	requireSelection: z.boolean().optional(),
 	/** Last segment of this action's `data-testid`. Defaults to its command name. */

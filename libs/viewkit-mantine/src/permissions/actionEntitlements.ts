@@ -10,12 +10,15 @@ import { ResourceScope, type EntitlementRequirement } from '@nikkierp/common/ent
  * without touching its metadata — an opt-in `requiredEntitlements` on every action across every
  * page would be a large JSON change and easy to forget on the next page written.
  *
- * Scope is org: almost every business resource is org-scoped, and the Shell fills in the active
- * org. A resource that is genuinely tenant-scoped still resolves, because a tenant-level grant
- * answers an org-scoped question (see `candidateExpressions`).
+ * Scope defaults to org: almost every business resource is org-scoped, and the Shell fills in the
+ * active org. Pass `tenant` only where the backend asserts with no org (settings, the tenant-wide
+ * iam resources) — there a bare org grant does not satisfy the server, so it must not unlock the
+ * button either.
  */
-export function actionRequirement(schemaName: string, actionCode: string): EntitlementRequirement {
-	return { action: actionCode, resource: schemaName, scope: ResourceScope.Org };
+export function actionRequirement(
+	schemaName: string, actionCode: string, scope: string = ResourceScope.Org,
+): EntitlementRequirement {
+	return { action: actionCode, resource: schemaName, scope };
 }
 
 /**
@@ -62,4 +65,13 @@ export function commandActionCode(command: string | undefined): string | null {
 		default:
 			return null;
 	}
+}
+
+/**
+ * The action code a page-declared action performs: its explicit `actionCode` first, then the one
+ * derived from its command. Every action surface resolves through here so the order is the same
+ * on lists, detail pages and related tables.
+ */
+export function resolveActionCode(action: { actionCode?: string, command?: string }): string | null {
+	return action.actionCode ?? commandActionCode(action.command);
 }

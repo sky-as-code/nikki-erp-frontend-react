@@ -40,7 +40,9 @@ export const ResourceListPage: React.FC = () => {
 	return (
 		<Stack gap='md'>
 			<Headers titleKey='nikki.authorize.resource.title' />
-			<Actions onCreate={permissions.resource.canCreate ? handleCreate : undefined} onRefresh={handleRefresh} />
+			<Actions onCreate={handleCreate}
+				createLocked={!permissions.resource.canCreate}
+				createLockedMissing={permissions.resource.createMissing} onRefresh={handleRefresh} />
 			<Paper className='p-4'>
 				<ResourceTable
 					columns={['name', 'description', 'resourceType', 'scopeType', 'actionsCount', 'actions']}

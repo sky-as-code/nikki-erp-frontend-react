@@ -5,5 +5,4 @@ export * from './orgStorage';
 export * from './userContextCommands';
 export * from './userContextSelectors';
 export * from './userContextService';
-export * from './permissionConstants';
 export * from './types';

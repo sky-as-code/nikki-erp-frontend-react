@@ -95,6 +95,7 @@ function buildSalesPointActions() {
 		suspend: {
 			label: 'actions.suspend',
 			command: SalesPointCommands.SUSPEND,
+			actionCode: 'suspend',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -104,6 +105,7 @@ function buildSalesPointActions() {
 		activate: {
 			label: 'actions.activate',
 			command: SalesPointCommands.ACTIVATE,
+			actionCode: 'activate',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -113,6 +115,7 @@ function buildSalesPointActions() {
 		archive: {
 			label: 'actions.archive',
 			command: SalesPointCommands.ARCHIVE,
+			actionCode: 'set_archived',
 			condition: {
 				field: 'is_archived',
 				operator: 'not_equal' as const,
@@ -122,6 +125,7 @@ function buildSalesPointActions() {
 		unarchive: {
 			label: 'actions.unarchive',
 			command: SalesPointCommands.UNARCHIVE,
+			actionCode: 'set_archived',
 			condition: {
 				field: 'is_archived',
 				operator: 'equal' as const,

@@ -27,7 +27,9 @@ function ActionListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.action.title' />
 				<Actions
-					onCreate={permissions.action.canCreate ? handleCreate : undefined}
+					onCreate={handleCreate}
+					createLocked={!permissions.action.canCreate}
+					createLockedMissing={permissions.action.createMissing}
 					onRefresh={handleRefresh}
 				/>
 				<Paper className='p-4'>

@@ -13,7 +13,7 @@ import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useRelatedSchemas } from '../../data/useRelatedSchemas';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
-import { commandActionCode, StandardActionCode, useActionLocks } from '../../permissions';
+import { resolveActionCode, StandardActionCode, useActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
 
 import type { ResourceListCommandAction, ResourceListProps } from './props';
@@ -64,7 +64,11 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 
 	// Greys the actions the caller may not perform, leaving them clickable so the refusal can
 	// explain itself. Derived from the page's own schema name, so no page metadata declares it.
-	const gatedActions = useActionLocks(actions, params.schemaName, listActionCode);
+	const actionCodeOf = React.useCallback(
+		(action: DataTableAction) => listActionCode(action, params.extraActions),
+		[params.extraActions],
+	);
+	const gatedActions = useActionLocks(actions, params.schemaName, actionCodeOf);
 
 	if (!pack || !searchData) {
 		return <LoadingState />;
@@ -111,7 +115,7 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
  * `create` publishes no command, so it is identified by its stable `testId`. `refresh` re-runs a
  * search the user is already looking at, so it needs nothing.
  */
-function listActionCode(action: DataTableAction): string | null {
+function listActionCode(action: DataTableAction, extraActions: ResourceListCommandAction[]): string | null {
 	if (action.isSeparator) {
 		return null;
 	}
@@ -119,7 +123,10 @@ function listActionCode(action: DataTableAction): string | null {
 	if (action.testId === 'create' || action.testId === 'import') {
 		return StandardActionCode.Create;
 	}
-	return commandActionCode(action.command);
+	// `DataTableAction` has no slot for the explicit code, so it is found again on the page's own
+	// declaration by command.
+	const declared = extraActions.find(extra => extra.command === action.command);
+	return resolveActionCode({ actionCode: declared?.actionCode, command: action.command });
 }
 
 function buildResourceActions(

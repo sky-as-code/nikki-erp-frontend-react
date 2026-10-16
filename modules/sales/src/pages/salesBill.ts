@@ -115,6 +115,7 @@ function buildSalesBillActions() {
 		pay: {
 			label: 'actions.pay',
 			command: SalesBillCommands.PAY,
+			actionCode: 'pay',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -129,6 +130,7 @@ function buildSalesBillActions() {
 		settle: {
 			label: 'actions.settle',
 			command: SalesBillCommands.SETTLE,
+			actionCode: 'settle',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,

@@ -1,10 +1,12 @@
 import { Group, Text } from '@mantine/core';
+import { ResourceScope } from '@nikkierp/common/entitlements';
 import { Button } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { useCommandBus, useEventBus } from '@nikkierp/ui/microApp';
 import React from 'react';
 
 import { SETTINGS_SET_COMMAND, useSettingsData } from './settingsDataContext';
+import { StandardActionCode, useActionLock } from '../../permissions';
 
 import type { SettingLevel } from './props';
 import type { SettingsDataContextValue } from './settingsDataContext';
@@ -64,6 +66,8 @@ export function SettingsSaveBar({ moduleKey, onSaved }: SettingsSaveBarProps): R
 	// An override-only change is a real change: a tenant admin may lock a setting without touching
 	// its value, and a Save that stayed disabled would silently discard that.
 	const dirtyCount = (data?.drafts.size ?? 0) + (data?.overrideDrafts.size ?? 0);
+	const lockedSchema = data && touchesSharedLevel(data) ? SETTINGS_RECORD_SCHEMA : null;
+	const lock = useActionLock(lockedSchema, StandardActionCode.Update, ResourceScope.Tenant);
 
 	const onSave = React.useCallback(async () => {
 		// Guards on the same count the button does. Testing `drafts` alone would let an
@@ -113,6 +117,8 @@ export function SettingsSaveBar({ moduleKey, onSaved }: SettingsSaveBarProps): R
 				onClick={() => void onSave()}
 				disabled={dirtyCount === 0 || isSaving}
 				loading={isSaving}
+				locked={lock.locked}
+				lockedMissing={lock.missing}
 			>
 				{t('page.save')}
 			</Button>
@@ -190,6 +196,17 @@ function valueFor(data: SettingsDataContextValue, key: string): unknown {
  * Grouped by level because each level is its own endpoint -- the level is a path segment, never
  * a payload field.
  */
+/**
+ * The backend asserts `update:settings_record:tenant` on a tenant or org write, and nothing on a
+ * user's own preferences. With no org passed, a bare org grant does not satisfy it.
+ */
+const SETTINGS_RECORD_SCHEMA = 'settings_record';
+
+/** Whether the pending edits write a tenant or org row, which is what needs the grant. */
+export function touchesSharedLevel(data: Pick<SettingsDataContextValue, 'drafts' | 'overrideDrafts'>): boolean {
+	return [...data.drafts.keys(), ...data.overrideDrafts.keys()].some(key => !key.startsWith('user:'));
+}
+
 export function buildSavePayload(data: SettingsDataContextValue): Map<SettingLevel, SetItem[]> {
 	const byLevel = new Map<SettingLevel, SetItem[]>();
 	const touched = new Set([...data.drafts.keys(), ...data.overrideDrafts.keys()]);

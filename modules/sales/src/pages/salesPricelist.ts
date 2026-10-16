@@ -94,6 +94,7 @@ function buildSalesPricelistActions() {
 		set_default: {
 			label: 'actions.set_default',
 			command: SalesPricelistCommands.SET_DEFAULT,
+			actionCode: 'update',
 			condition: {
 				field: 'is_default',
 				operator: 'not_equal' as const,

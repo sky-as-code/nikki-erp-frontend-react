@@ -23,16 +23,24 @@ export type LockableAction = {
  */
 export function useActionLocks<TAction extends LockableAction>(
 	actions: TAction[],
-	schemaName: string,
+	schemaName: string | ((action: TAction) => string),
 	actionCodeOf: (action: TAction) => string | null,
+	scope?: string | ((action: TAction) => string | undefined),
 ): TAction[] {
 	// An action with no derivable code is left ungated: locking a button the user may in fact
 	// click is worse than not locking one they cannot.
 	const codes = React.useMemo(() => actions.map(actionCodeOf), [actions, actionCodeOf]);
 
 	const requirements = React.useMemo(
-		() => codes.map(code => (code == null ? null : actionRequirement(schemaName, code))),
-		[codes, schemaName],
+		() => codes.map((code, index) => {
+			if (code == null) {
+				return null;
+			}
+			const resource = typeof schemaName === 'function' ? schemaName(actions[index]) : schemaName;
+			const actionScope = typeof scope === 'function' ? scope(actions[index]) : scope;
+			return actionRequirement(resource, code, actionScope);
+		}),
+		[codes, schemaName, scope, actions],
 	);
 
 	// Nulls are dropped for the query but the index mapping is kept, so each result can be put

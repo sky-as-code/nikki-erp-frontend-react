@@ -13,8 +13,10 @@ import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { RESOURCE_TABLE } from '../../ids';
+import { useTableActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
 
+import type { LockableAction } from '../../permissions';
 import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
@@ -53,9 +55,10 @@ function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactN
 		testId: params.testId, schemaName: params.schemaName, part: 'Table',
 	});
 
+	const lockedExtras = useTableActionLocks(params.extraActions, params.schemaName);
 	const actions = React.useMemo(
-		() => buildResourceTableActions(params.extraActions, t, commandBus, refresh),
-		[params.extraActions, t, commandBus, refresh],
+		() => buildResourceTableActions(lockedExtras, t, commandBus, refresh),
+		[lockedExtras, t, commandBus, refresh],
 	);
 
 	if (!pack || !searchData || graph.missing.length > 0) {
@@ -95,7 +98,7 @@ type RunCommand = (command: string) => (selectedItems: Record<string, unknown>[]
  * and collapses the rest into the overflow menu, so a third default action here pushes one in.
  */
 function buildResourceTableActions(
-	extraActions: ResourceTableAction[],
+	extraActions: Array<ResourceTableAction & LockableAction>,
 	t: TranslateFn,
 	commandBus: ReturnType<typeof useCommandBus>,
 	refreshSearch: () => void,
@@ -111,7 +114,10 @@ function buildResourceTableActions(
 	return actions.concat(extraActions.map(action => toDataTableAction(action, t, runCommand)));
 }
 
-function toDataTableAction(action: ResourceTableAction, t: TranslateFn, runCommand: RunCommand): DataTableAction {
+function toDataTableAction(
+	action: ResourceTableAction & LockableAction, t: TranslateFn, runCommand: RunCommand,
+): DataTableAction {
+	const lock = { locked: action.locked, lockedMissing: action.lockedMissing };
 	if (action.routePath) {
 		// `ActionButton` renders `href` as a path-relative `<Link>`, so `'roles'` on
 		// `/{org}/{module}/users/:id` resolves to `/{org}/{module}/users/:id/roles`.
@@ -122,7 +128,7 @@ function toDataTableAction(action: ResourceTableAction, t: TranslateFn, runComma
 		// through `useRoutePathHref`. Both spellings are deliberate -- a table sits inside the
 		// record it links out of, so appending is what it means, while a detail action may
 		// target any page in the module.
-		return { label: t(action.label), href: action.routePath, testId: action.testId ?? action.routePath };
+		return { label: t(action.label), href: action.routePath, testId: action.testId ?? action.routePath, ...lock };
 	}
 	// The schema guarantees exactly one of `command` / `routePath`, so this branch always has one.
 	const command = action.command ?? '';
@@ -133,6 +139,7 @@ function toDataTableAction(action: ResourceTableAction, t: TranslateFn, runComma
 		requireSelection: action.requireSelection,
 		testId: action.testId,
 		onTrigger: runCommand(command),
+		...lock,
 	};
 }
 

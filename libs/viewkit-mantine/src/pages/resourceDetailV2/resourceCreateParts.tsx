@@ -12,8 +12,9 @@ import { Link } from 'react-router';
 import { hasVisibleField, isFieldVisible } from './fieldVisibility';
 import { useResourceCreateContext } from './resourceCreateContext';
 import classes from './ResourceDetail.module.css';
+import { StandardActionCode, useActionLock } from '../../permissions';
 import {
-	useResourceDetailContext, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
+	useResourceDetailContext, useResourceDetailSchemaName, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
 } from '../resourceDetail/ResourceDetailProvider';
 import { SplitPaneCloseButton } from '../resourceDetail/SplitPaneCloseButton';
 
@@ -83,6 +84,7 @@ export function ResourceCreateHeader(headerProps: ResourceCreateHeaderProps = {}
 export function ResourceCreateSaveBar(): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const { commands } = useResourceCreateContext();
+	const createLock = useCreateLock();
 	const tid = useResourceDetailTestAttrs();
 	const formRuntime = useCrudFormRuntime();
 	const isLoading = formRuntime?.isLoading ?? false;
@@ -95,6 +97,8 @@ export function ResourceCreateSaveBar(): React.ReactNode {
 				onClick={formRuntime ? formRuntime.handleSubmit() : () => undefined}
 				disabled={isLoading}
 				loading={isLoading}
+				locked={createLock.locked}
+				lockedMissing={createLock.missing}
 				type='submit'
 				{...commandAttrs(commands.create)}
 				{...tid('action', 'save')}
@@ -117,6 +121,7 @@ export function ResourceCreateActionBar({
 }: ResourceCreateActionBarProps): React.ReactNode {
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const { commands } = useResourceCreateContext();
+	const createLock = useCreateLock();
 	const tid = useResourceDetailTestAttrs();
 	return (
 		<Group gap='xs' align='center' className={clsx('sticky top-0 py-4', classes.bgBodyColor)}>
@@ -132,6 +137,8 @@ export function ResourceCreateActionBar({
 				onClick={onSaveClick}
 				disabled={isLoading}
 				loading={isLoading}
+				locked={createLock.locked}
+				lockedMissing={createLock.missing}
 				type='submit'
 				{...commandAttrs(commands.create)}
 				{...tid('action', 'save')}
@@ -187,4 +194,12 @@ function ResourceCreateFieldGroup({
 			})}
 		</div>
 	);
+}
+
+/**
+ * Locks Save on a create form. The way in is already gated, but `/{resource}/new` is a URL anyone
+ * can type, and the form should say up front that it cannot be submitted.
+ */
+function useCreateLock() {
+	return useActionLock(useResourceDetailSchemaName(), StandardActionCode.Create);
 }

@@ -82,6 +82,9 @@ function buildAssignedRolesResource() {
 		initialGraph: { if: ['assigned_groups', 'linked', '${id}'] },
 		linkField: 'id',
 		linkRoutePath: 'iam_role',
-		extraActions: [{ label: 'assignment.manageRoles', routePath: 'iam_role' }],
+		extraActions: [{
+			label: 'assignment.manageRoles', routePath: 'iam_role',
+			actionCode: 'manage_role_assignments', actionResource: c.GROUP_SCHEMA_NAME, actionScope: 'tenant' as const,
+		}],
 	};
 }

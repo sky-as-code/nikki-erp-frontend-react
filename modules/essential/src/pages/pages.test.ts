@@ -1,3 +1,4 @@
+import { findUngatedActions } from '@nikkierp/viewkit-mantine/actionCodes';
 import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
@@ -15,6 +16,14 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 
 describe('Essential page metadata', () => {
 	// Building runs each prop builder's zod `parse`, and every page schema is `.strict()`.
+	/**
+	 * Every action resolves to the code the backend asserts, or the button is not locked for a user
+	 * the server refuses. A custom verb needs an explicit `actionCode` from the application service.
+	 */
+	it.each(allPages)('$name pages declare no ungated action', ({ build }) => {
+		expect(findUngatedActions(build())).toEqual([]);
+	});
+
 	it.each(allPages)('$name pages survive a JSON round-trip unchanged', ({ build }) => {
 		const pages = build();
 

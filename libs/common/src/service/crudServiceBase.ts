@@ -2,36 +2,15 @@ import { ok, ServiceResult } from '../commandBus';
 import * as dyn from '../dynamicModel';
 import { EventBus, eventTopic, IEventBus } from '../eventBus';
 import { withOrgId } from './orgContext';
-import { ClientErrorItem } from '../types/common';
 
 
 
-/**
- * Published when any service call comes back rejected for an authorization reason.
- *
- * Declared here rather than in the Shell because this is where every API call funnels —
- * which is also why it catches calls made outside Redux, such as the token refresh inside
- * `RequestMaker`, that a store middleware could never see.
- */
-export const SESSION_AUTHORIZATION_ERROR_TOPIC = 'shell:session:authorization_error';
-
-/**
- * Published when a call is refused for lack of permission, as opposed to lack of a session.
- *
- * The frontend gates what it can from the user context, but that check can only cover what a page
- * declares. When it misses — an action nobody gated, or a rule the server applies and the client
- * does not model — the server's refusal is the authority, and this is how it reaches the UI.
- */
-export const PERMISSION_DENIED_TOPIC = 'shell:session:permission_denied';
-
-/** Payload of {@link PERMISSION_DENIED_TOPIC}: the entitlements the server said were required. */
-export type PermissionDeniedEvent = {
-	key: string,
-	message: string,
-	/** Parsed out of the error's `entitlements` var; empty when the server named none. */
-	entitlements: string[],
-};
-
+// Announced by the request layer now, which every call funnels through; re-exported here because
+// this is where consumers have always imported them from.
+export {
+	PERMISSION_DENIED_TOPIC, SESSION_AUTHORIZATION_ERROR_TOPIC,
+} from '../request/authorizationEvents';
+export type { PermissionDeniedEvent } from '../request/authorizationEvents';
 
 export type CrudServiceOptions = {
 	/** Micro-app slug / backend module name, e.g. `iam`. First part of an event topic. */
@@ -213,9 +192,7 @@ export abstract class CrudServiceBase {
 	protected async withSchema<TData>(
 		fn: (schema: dyn.SchemaPack) => Promise<ServiceResult<TData>>,
 	): Promise<ServiceResult<TData>> {
-		const result = await dyn.withSchema(this.schemaName, fn);
-		this.#emitAuthorizationError(result);
-		return result;
+		return dyn.withSchema(this.schemaName, fn);
 	}
 
 	/**
@@ -232,38 +209,6 @@ export abstract class CrudServiceBase {
 			bus?.publish(eventTopic(this.moduleName, this.schemaName, action), result);
 		}
 		return result;
-	}
-
-	/**
-	 * Announces an expired or invalid session so the Shell can send the user to sign-in.
-	 *
-	 * Emitted from `withSchema` rather than `emitEvent` because a read is just as capable
-	 * of being rejected for authorization as a mutation.
-	 *
-	 * Only an *unauthenticated* failure ends the session. A plain insufficient-permission refusal
-	 * is a normal answer for a user who holds some grants and not others — signing them out for it
-	 * would log them off the moment they opened a page containing one action they cannot perform.
-	 * The backend types both as `authorization`, so the key is what separates them.
-	 */
-	#emitAuthorizationError(result: ServiceResult<unknown>): void {
-		const bus = this.#eventBus ?? EventBus.instance;
-
-		const expired = result.clientErrors.find(it => ClientErrorItem.isUnauthenticatedError(it));
-		if (expired) {
-			bus?.publish(SESSION_AUTHORIZATION_ERROR_TOPIC, { key: expired.key });
-			return;
-		}
-
-		// A refusal the frontend's own check did not anticipate. Announced rather than swallowed:
-		// the server is the authority, and a silently dropped action looks like a broken button.
-		const refused = result.clientErrors.find(it => ClientErrorItem.isAuthorizationError(it));
-		if (refused) {
-			bus?.publish(PERMISSION_DENIED_TOPIC, {
-				key: refused.key,
-				message: refused.message,
-				entitlements: toEntitlementList(refused.vars?.entitlements),
-			} satisfies PermissionDeniedEvent);
-		}
 	}
 }
 
@@ -285,12 +230,4 @@ function mergeDeleteResults(
 		(latest, it) => (it.data && it.data.affected_at > latest ? it.data.affected_at : latest), '',
 	);
 	return ok({ affected_count: affectedCount, affected_at: affectedAt });
-}
-
-/** The `entitlements` var arrives as a list from the backend, but tolerate a single string. */
-function toEntitlementList(value: unknown): string[] {
-	if (Array.isArray(value)) {
-		return value.map(String);
-	}
-	return typeof value === 'string' && value.length > 0 ? [value] : [];
 }

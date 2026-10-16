@@ -124,6 +124,7 @@ function buildInvoiceActions() {
 		issue: {
 			label: 'actions.issue',
 			command: InvoiceCommands.ISSUE,
+			actionCode: 'issue',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,

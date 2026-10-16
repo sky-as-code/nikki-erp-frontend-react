@@ -1,4 +1,4 @@
-import { commandActionCode, StandardActionCode } from '../../permissions';
+import { resolveActionCode, StandardActionCode } from '../../permissions';
 
 import type { ResourceListV2Props } from './props';
 import type { LockableAction } from '../../permissions';
@@ -17,6 +17,8 @@ export type ResourceListAction = {
 	testId?: string,
 	/** Command published with the selected rows when the action is triggered. */
 	command?: string,
+	/** Explicit backend action code; see `resolveActionCode`. */
+	actionCode?: string,
 	href?: string,
 	requireSelection?: boolean,
 	supportMultiple?: boolean,
@@ -54,8 +56,8 @@ export function buildResourceListActions(
 			continue;
 		}
 		actions.push({
-			kind: 'command', label: t(extra.label), command: extra.command, testId: extra.testId,
-			requireSelection: extra.requireSelection, supportMultiple: extra.supportMultiple,
+			kind: 'command', label: t(extra.label), command: extra.command, actionCode: extra.actionCode,
+			testId: extra.testId, requireSelection: extra.requireSelection, supportMultiple: extra.supportMultiple,
 		});
 	}
 	if (params.archiveCommand) {
@@ -68,12 +70,14 @@ export function buildResourceListActions(
 }
 
 /** The action code an entry performs, or null to leave it ungated (refresh needs nothing). */
-export function listActionCode(action: { testId?: string, command?: string }): string | null {
+export function listActionCode(
+	action: { testId?: string, command?: string, actionCode?: string },
+): string | null {
 	// Import writes records, so it is gated by the same entitlement as create.
 	if (action.testId === 'create' || action.testId === 'import') {
 		return StandardActionCode.Create;
 	}
-	return commandActionCode(action.command);
+	return resolveActionCode(action);
 }
 
 export function selectionModeOf(action: ResourceListAction): 'single' | 'multiple' | undefined {

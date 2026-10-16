@@ -1,6 +1,7 @@
 import { Indicator, Menu, ScrollArea, Stack, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { Button } from '@nikkierp/ui/components';
+import { Button, useLockedItemProps } from '@nikkierp/ui/components';
+import { useActionLock } from '@nikkierp/viewkit-mantine';
 import { IconBell } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,9 @@ import type { NotificationItem, NotificationSeverity } from '../features/notific
 
 const TEST_ID = 'notification.bell';
 
+/** The backend asserts `mark_read` on this resource for both the single and the bulk mark. */
+const RECIPIENT_SCHEMA = 'notification_recipient';
+
 /**
  * The notification bell in the Shell header.
  *
@@ -24,9 +28,13 @@ export function HeaderBell(): React.ReactNode {
 	const { t } = useTranslation(NOTIFICATION_MODULE);
 	const [opened, setOpened] = React.useState(false);
 	const { items, unreadCount, failed, markRead, markAllRead, reload } = useNotificationFeed();
+	const lock = useActionLock(RECIPIENT_SCHEMA, 'mark_read');
+	const markAllLockProps = useLockedItemProps(lock.locked, lock.missing);
 
+	// Opening an item marks it read as a side effect, so a caller without the grant just reads it
+	// rather than being shown a refusal for something they did not ask to do.
 	const onItemClick = (item: NotificationItem) => {
-		if (!item.is_read) markRead(item.notification_id);
+		if (!item.is_read && !lock.locked) markRead(item.notification_id);
 	};
 
 	return (
@@ -62,7 +70,7 @@ export function HeaderBell(): React.ReactNode {
 				<Menu.Divider />
 
 				{unreadCount > 0 && (
-					<Menu.Item onClick={markAllRead} {...testAttrs(TEST_ID, 'markAllRead')}>
+					<Menu.Item onClick={markAllRead} {...testAttrs(TEST_ID, 'markAllRead')} {...markAllLockProps}>
 						{t('bell.markAllRead')}
 					</Menu.Item>
 				)}

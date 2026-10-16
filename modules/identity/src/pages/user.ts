@@ -131,7 +131,10 @@ function buildAssignedRoleResources() {
 			linkField: 'id',
 			linkRoutePath: 'iam_role',
 			// Path-relative to `/{org}/{module}/users/:id`, i.e. the assignment wizard for this user.
-			extraActions: [{ label: 'assignment.manageRoles', routePath: 'iam_role' }],
+			extraActions: [{
+				label: 'assignment.manageRoles', routePath: 'iam_role',
+				actionCode: 'manage_role_assignments', actionResource: c.USER_SCHEMA_NAME, actionScope: 'tenant' as const,
+			}],
 		},
 	];
 }

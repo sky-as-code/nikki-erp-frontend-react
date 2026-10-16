@@ -7,6 +7,12 @@ import { initialGraphSchema } from '../../components/resourceTable/props';
 export const resourceListCommandActionSchema = z.object({
 	label: z.string().min(1),
 	command: z.string().min(1),
+	/**
+	 * The backend action code this entry performs, when the command's verb does not name it
+	 * (`confirm`, `do_scrap`, `create_return`). Copy it from the application service's
+	 * `AssertAction` call; it is what the entitlement lock checks. Absent means derived.
+	 */
+	actionCode: z.string().min(1).optional(),
 	supportMultiple: z.boolean().optional(),
 	requireSelection: z.boolean().optional(),
 	/** Last segment of this action's `data-testid`. Defaults to its command name. */

@@ -66,6 +66,7 @@ function buildStockReservationDetailProps() {
 			release: {
 				label: 'actions.release',
 				command: StockReservationCommands.RELEASE,
+				actionCode: 'release_reservation',
 				condition: { field: 'effective_status', operator: 'equal' as const, value: 'active' },
 				prompt: {
 					title: 'actions.release.title',

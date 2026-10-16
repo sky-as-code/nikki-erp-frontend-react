@@ -42,3 +42,12 @@ export type {
  * shape by hand: `/{orgSlug}/{moduleSlug}/{routePath}/{id}` is owned here.
  */
 export { useResourceBaseHref, useResourceLinkHref, useRoutePathHref } from './data/useResourceLinkHref';
+/**
+ * Action locks, for a module's hand-written button. The derived requirement is the backend's own
+ * `{action}:{schemaName}:{scope}`, so a bespoke page locks on exactly what the server asserts.
+ */
+export {
+	actionRequirement, commandActionCode, resolveActionCode, StandardActionCode, useActionLock, useActionLocks,
+} from './permissions';
+export { findUngatedActions, useTableActionLocks } from './permissions';
+export type { ActionLock, LockableAction, UngatedAction } from './permissions';
