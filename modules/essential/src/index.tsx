@@ -1,4 +1,3 @@
-import { MantineProvider } from '@mantine/core';
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
 import { MenuIndexRedirect } from '@nikkierp/ui/menu';
 import {
@@ -6,6 +5,7 @@ import {
 	MicroAppProvider, initMicroAppStateContext,
 	MicroAppRouter, WidgetRoute, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
+import { SyncedMantineProvider } from '@nikkierp/ui/theme';
 import { compilePage } from '@nikkierp/viewengine/metadata';
 import { useViewEngine } from '@nikkierp/viewengine/render';
 import React from 'react';
@@ -26,9 +26,9 @@ import { buildUomCatPages } from './pages/uomcat';
 function Main(props: MicroAppProps) {
 	return (
 		<MicroAppProvider {...props}>
-			<MantineProvider defaultColorScheme='auto'>
+			<SyncedMantineProvider>
 				<MicroAppInner {...props} />
-			</MantineProvider>
+			</SyncedMantineProvider>
 		</MicroAppProvider>
 	);
 }

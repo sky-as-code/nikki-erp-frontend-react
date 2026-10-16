@@ -1,4 +1,4 @@
-import { MantineProvider } from '@mantine/core';
+import { SyncedMantineProvider } from '@nikkierp/ui/theme';
 import ReactDOM from 'react-dom/client';
 
 import { FileSelector, type FileSelectorMode } from './FileSelector';
@@ -75,7 +75,7 @@ export function registerDriveFileSelectorWebComponent(htmlTag: string = DRIVE_FI
 			const mode = (modeAttr === 'folder' ? 'folder' : this.#props.mode);
 
 			this.#root.render(
-				<MantineProvider defaultColorScheme='auto'>
+				<SyncedMantineProvider>
 					<FileSelector
 						parentId={parentId}
 						multiple={multiple}
@@ -91,7 +91,7 @@ export function registerDriveFileSelectorWebComponent(htmlTag: string = DRIVE_FI
 							);
 						}}
 					/>
-				</MantineProvider>,
+				</SyncedMantineProvider>,
 			);
 		}
 	}

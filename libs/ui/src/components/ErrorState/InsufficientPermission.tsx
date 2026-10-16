@@ -1,4 +1,5 @@
 import { Code, List, Stack, Text } from '@mantine/core';
+import { toDisplayedEntitlements } from '@nikkierp/common/entitlements';
 import { IconLock } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +8,7 @@ import { ErrorStatePage } from './ErrorStatePage';
 
 
 export type InsufficientPermissionContentProps = {
-	/** The expressions the caller lacks, exactly as a backend refusal would name them. */
+	/** The expressions the caller lacks, as a backend refusal names them; scope ids are not shown. */
 	missing: string[],
 };
 
@@ -15,7 +16,7 @@ export type InsufficientPermissionContentProps = {
  * The refusal message: a hint followed by the required entitlements as real bullets.
  *
  * The list is rendered rather than interpolated into the sentence, so each entitlement stays
- * readable and copyable — an administrator acts on these literals verbatim.
+ * readable and copyable — an administrator grants these codes as shown.
  */
 export function InsufficientPermissionContent(props: InsufficientPermissionContentProps): React.ReactElement {
 	const { t: translate } = useTranslation();
@@ -26,7 +27,7 @@ export function InsufficientPermissionContent(props: InsufficientPermissionConte
 				{translate('insufficient_permission_hint')}
 			</Text>
 			<List size='sm' spacing='xs' withPadding>
-				{props.missing.map(entitlement => (
+				{toDisplayedEntitlements(props.missing).map(entitlement => (
 					<List.Item key={entitlement}>
 						<Code>{entitlement}</Code>
 					</List.Item>

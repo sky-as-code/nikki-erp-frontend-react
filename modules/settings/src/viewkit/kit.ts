@@ -1,8 +1,8 @@
 import { VIEW_ENGINE_API_VERSION } from '@nikkierp/viewengine/core';
 
+import { settingsPageTitleRenderer } from './components/settingsPageHeader';
 import {
 	settingsPagePaneRenderer, settingsPageRailRenderer, settingsPageSplitRenderer,
-	settingsPageTitleRenderer,
 } from './components/settingsPageParts';
 import { SETTINGS_VIEW_KIT_ID } from './ids';
 import { settingsPageTemplate } from './pages/template';

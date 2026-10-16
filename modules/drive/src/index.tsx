@@ -1,10 +1,10 @@
-import { MantineProvider } from '@mantine/core';
 import { MenuIndexRedirect } from '@nikkierp/ui/menu';
 import {
 	AppRoute, AppRoutes, defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps,
 	MicroAppProvider, initMicroAppStateContext,
 	MicroAppRouter, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
+import { SyncedMantineProvider } from '@nikkierp/ui/theme';
 import { Navigate } from 'react-router';
 
 import { reducer } from './appState';
@@ -24,7 +24,7 @@ import './styles/index.css';
 function Main(props: MicroAppProps) {
 	return (
 		<MicroAppProvider {...props}>
-			<MantineProvider defaultColorScheme='auto'>
+			<SyncedMantineProvider>
 				<MicroAppRouter
 					domType={props.domType}
 					basePath={props.routing.basePath}
@@ -48,7 +48,7 @@ function Main(props: MicroAppProps) {
 					</AppRoutes>
 					<WidgetRoutes />
 				</MicroAppRouter>
-			</MantineProvider>
+			</SyncedMantineProvider>
 		</MicroAppProvider>
 	);
 }

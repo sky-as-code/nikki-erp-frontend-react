@@ -1,5 +1,6 @@
-import { createTheme, Input, MantineProvider, Stack, TextInput } from '@mantine/core';
+import { createTheme, Input, Stack, TextInput } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { SyncedMantineProvider } from '@nikkierp/ui/theme';
 import { IconSearch } from '@tabler/icons-react';
 import { FC } from 'react';
 
@@ -55,7 +56,7 @@ export const ModuleSearchInput: FC<ModuleSearchInputProps> = ({
 	);
 
 	return (
-		<MantineProvider theme={theme} defaultColorScheme='auto'>
+		<SyncedMantineProvider theme={theme}>
 			<TextInput
 				ref={inputRef}
 				placeholder={placeholder}
@@ -77,7 +78,7 @@ export const ModuleSearchInput: FC<ModuleSearchInputProps> = ({
 				rightSectionPointerEvents='auto'
 				maw={maxWidth}
 			/>
-		</MantineProvider>
+		</SyncedMantineProvider>
 	);
 };
 

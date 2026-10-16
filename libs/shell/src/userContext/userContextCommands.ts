@@ -1,9 +1,12 @@
 import { Command, ICommandBus, ok, ServiceResult } from '@nikkierp/common/commandBus';
 import { dispatchServiceMethod } from '@nikkierp/ui/appState/store';
 
-import { LocalSettings, SLICE_NAME, UserContext, UserContextOrg } from './types';
+import {
+	LOCAL_SETTINGS_CHANGED_EVENT, LocalSettings, SLICE_NAME, UserContext, UserContextOrg,
+} from './types';
 import { userContextService } from './userContextService';
 import { shellStore } from '../appState/shellStore';
+import { shellEventBus } from '../eventBus';
 import { routingService } from '../routing/routingService';
 
 
@@ -13,6 +16,7 @@ export const USER_CONTEXT_COMMANDS = Object.freeze({
 	GET_ACTIVE_ORG: 'shell.user_context.get_active_org',
 	GET_LOCAL_SETTINGS: 'shell.user_context.get_local_settings',
 	SET_LOCAL_SETTINGS: 'shell.user_context.set_local_settings',
+	REFRESH: 'shell.user_context.refresh',
 } as const);
 
 export function registerUserContextCommands(bus: ICommandBus): () => void {
@@ -21,6 +25,7 @@ export function registerUserContextCommands(bus: ICommandBus): () => void {
 		bus.subscribe(USER_CONTEXT_COMMANDS.GET_ACTIVE_ORG, () => handleGetActiveOrg()),
 		bus.subscribe(USER_CONTEXT_COMMANDS.GET_LOCAL_SETTINGS, () => handleGetLocalSettings()),
 		bus.subscribe(USER_CONTEXT_COMMANDS.SET_LOCAL_SETTINGS, cmd => handleSetLocalSettings(cmd)),
+		bus.subscribe(USER_CONTEXT_COMMANDS.REFRESH, () => handleRefresh()),
 	];
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
 }
@@ -54,4 +59,17 @@ async function handleSetLocalSettings(command: Command): Promise<ServiceResult<L
 		throw new Error(`${USER_CONTEXT_COMMANDS.SET_LOCAL_SETTINGS} requires { languageCode, themeMode }.`);
 	}
 	return ok(await dispatchServiceMethod<LocalSettings>(userContextService.setLocalSettings, payload));
+}
+
+/**
+ * Refetches the user context after something changed what it reports -- a Settings save, chiefly.
+ *
+ * `getUserContext` re-mirrors the server's language and theme into local settings, which
+ * `ApplyStoredTheme`, `ApplyStoredLanguage` and the format defaults read; the event wakes the
+ * appliers whose React tree did not see the store write.
+ */
+async function handleRefresh(): Promise<ServiceResult<UserContext>> {
+	const userContext = await dispatchServiceMethod<UserContext>(userContextService.getUserContext);
+	shellEventBus.publish(LOCAL_SETTINGS_CHANGED_EVENT, {});
+	return ok(userContext);
 }

@@ -21,8 +21,8 @@ export function buildSettingsPages(): PageNode[] {
 		emptyKey: 'page.empty',
 		widgetName: SETTINGS_WIDGET_NAME,
 		panes: [
-			{ slug: 'essential', labelKey: 'pane.general' },
-			{ slug: 'iam', labelKey: 'pane.security' },
+			{ slug: 'essential', labelKey: 'pane.general', levels: ['user', 'org'] },
+			{ slug: 'iam', labelKey: 'pane.security', levels: ['tenant'] },
 		],
 	});
 

@@ -42,6 +42,12 @@ export type SettingItemData = {
 	field?: ModelSchemaField,
 };
 
+/** One choice for a setting whose allowed values are data rather than a schema enum. */
+export type SettingOption = {
+	value: string,
+	label: string,
+};
+
 type GetSettingsResponse = {
 	module_key: string,
 	/** The scope the caller is reading as. See `SettingsDataContextValue.ownerType`. */
@@ -82,7 +88,14 @@ export type SettingsDataContextValue = {
 	hiddenLevels: SettingLevel[],
 	isLoading: boolean,
 	loadError: string | null,
+	/** Labelled choices by setting name; see `SettingsDataProviderProps.options`. */
+	options: Record<string, SettingOption[]>,
+	/** Shown values for unstored settings, keyed like `items`; see the provider prop. */
+	displayDefaults: Record<string, unknown>,
 };
+
+const NO_OPTIONS: Record<string, SettingOption[]> = {};
+const NO_DEFAULTS: Record<string, unknown> = {};
 
 const SettingsDataContext = React.createContext<SettingsDataContextValue | null>(null);
 
@@ -111,6 +124,16 @@ export type SettingsDataProviderProps = React.PropsWithChildren & {
 	 * A module registering at both user and org level needs both.
 	 */
 	levels: SettingLevel[],
+	/**
+	 * Labelled choices for a setting, by name. Supplied by the owning module when the allowed values
+	 * are its data -- Essential's enabled languages -- so the control can show names, not codes.
+	 */
+	options?: Record<string, SettingOption[]>,
+	/**
+	 * What to show, keyed `{level}:{name}`, for a setting the owner has never stored. Display only:
+	 * it creates no draft, so it is never sent unless the user picks it.
+	 */
+	displayDefaults?: Record<string, unknown>,
 };
 
 /**
@@ -123,7 +146,7 @@ export type SettingsDataProviderProps = React.PropsWithChildren & {
  * only thing protecting it.
  */
 export function SettingsDataProvider(
-	{ children, moduleKey, levels }: SettingsDataProviderProps,
+	{ children, moduleKey, levels, options = NO_OPTIONS, displayDefaults = NO_DEFAULTS }: SettingsDataProviderProps,
 ): React.ReactNode {
 	const commandBus = useCommandBus();
 	const [items, setItems] = React.useState<Map<string, SettingItemData>>(() => new Map());
@@ -212,9 +235,12 @@ export function SettingsDataProvider(
 	const value = React.useMemo<SettingsDataContextValue>(
 		() => ({
 			items, drafts, setDraft, overrideDrafts, setOverrideDraft,
-			ownerType, hiddenLevels, isLoading, loadError,
+			ownerType, hiddenLevels, isLoading, loadError, options, displayDefaults,
 		}),
-		[items, drafts, setDraft, overrideDrafts, setOverrideDraft, ownerType, hiddenLevels, isLoading, loadError],
+		[
+			items, drafts, setDraft, overrideDrafts, setOverrideDraft, ownerType, hiddenLevels, isLoading, loadError,
+			options, displayDefaults,
+		],
 	);
 
 	return (

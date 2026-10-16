@@ -107,3 +107,16 @@ export function parseExpression(expr: string): ParsedExpression | null {
 
 	return { actionCode: action, resourceCode: resource, scope, scopeId };
 }
+
+/**
+ * The entitlements to show a person who was refused: `action:resource:scope`, without the scope
+ * id. The id names one org the reader cannot tell apart from a ULID, and repeating the same code
+ * per org adds nothing an administrator acts on. A string that does not parse is kept verbatim.
+ */
+export function toDisplayedEntitlements(expressions: string[]): string[] {
+	const displayed = expressions.map(expr => {
+		const parsed = parseExpression(expr);
+		return parsed ? buildExpression(parsed.actionCode, parsed.resourceCode, parsed.scope) : expr;
+	});
+	return [...new Set(displayed)];
+}

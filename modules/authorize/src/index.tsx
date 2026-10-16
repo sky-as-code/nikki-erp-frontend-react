@@ -1,4 +1,3 @@
-import { MantineProvider } from '@mantine/core';
 import { PermissionGuard } from '@nikkierp/ui/components';
 import { MenuIndexRedirect } from '@nikkierp/ui/menu';
 import {
@@ -6,6 +5,7 @@ import {
 	MicroAppProvider, initMicroAppStateContext,
 	MicroAppRouter, WidgetRoutes,
 } from '@nikkierp/ui/microApp';
+import { SyncedMantineProvider } from '@nikkierp/ui/theme';
 
 import { reducer } from './appState';
 import { buildAuthorizeMenu } from './menu';
@@ -39,7 +39,7 @@ import { authzRequirement } from './permissions';
 function Main(props: MicroAppProps) {
 	return (
 		<MicroAppProvider {...props}>
-			<MantineProvider defaultColorScheme='auto'>
+			<SyncedMantineProvider>
 				<MicroAppRouter
 					domType={props.domType}
 					basePath={props.routing.basePath}
@@ -83,7 +83,7 @@ function Main(props: MicroAppProps) {
 					<WidgetRoutes>
 					</WidgetRoutes>
 				</MicroAppRouter>
-			</MantineProvider>
+			</SyncedMantineProvider>
 		</MicroAppProvider>
 	);
 }

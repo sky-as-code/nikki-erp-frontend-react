@@ -1,6 +1,7 @@
 import React from 'react';
 
-import type { SettingsPageProps } from '../props';
+import type { SettingsPageProps, SettingsPaneProps } from '../props';
+import type { SettingsSaveState } from '@nikkierp/viewkit-mantine';
 
 
 /**
@@ -15,7 +16,14 @@ export type SettingsPageContextValue = {
 	params: SettingsPageProps,
 	/** Slug of the pane currently rendered on the right, or null when there are none. */
 	activeSlug: string | null,
-	setActiveSlug: (slug: string) => void,
+	/** Switches pane, asking first when the active one has unsaved edits. */
+	selectPane: (slug: string) => void,
+	/** The panes with something this user can see, or null while that is resolving. */
+	visiblePanes: SettingsPaneProps[] | null,
+	/** What the active pane reports about its edits; drives the header's Save. */
+	saveState: SettingsSaveState | null,
+	/** Asks the active pane to save; the pane owns the edits and the request. */
+	requestSave: () => void,
 };
 
 const SettingsPageContext = React.createContext<SettingsPageContextValue | undefined>(undefined);
