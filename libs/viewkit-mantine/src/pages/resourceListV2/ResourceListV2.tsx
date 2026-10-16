@@ -1,5 +1,5 @@
 import { Paper } from '@mantine/core';
-import { LoadingState } from '@nikkierp/ui/components';
+import { LoadingState, Unauthorized } from '@nikkierp/ui/components';
 import { ExcelDataTable, isActionVisible, mergeSearchGraphs } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
@@ -80,6 +80,9 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 	// rather than one whose every save is refused.
 	const updateLock = useActionLock(params.updateCommand ? params.schemaName : null, StandardActionCode.Update);
 
+	if (search.refused) {
+		return <Unauthorized missing={search.refused} />;
+	}
 	if (!pack || !searchData) {
 		return <LoadingState />;
 	}

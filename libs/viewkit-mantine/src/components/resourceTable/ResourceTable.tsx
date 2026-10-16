@@ -1,5 +1,5 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { LoadingState } from '@nikkierp/ui/components';
+import { InsufficientPermissionContent, LoadingState } from '@nikkierp/ui/components';
 import { DataTable, DataTableAction } from '@nikkierp/ui/components/DataTable';
 import { TranslateFn, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { useCommandBus } from '@nikkierp/ui/microApp';
@@ -42,7 +42,7 @@ function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactN
 	const initialRequest = useInitialRequest(params);
 	const commandBus = useCommandBus();
 
-	const { pack, searchData, searchRequest, onSearchRequestChange, refresh } = useResourceSearch({
+	const { pack, searchData, searchRequest, onSearchRequestChange, refresh, refused } = useResourceSearch({
 		schemaName: params.schemaName,
 		searchCommand: params.searchCommand,
 		initialRequest,
@@ -61,6 +61,10 @@ function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactN
 		[lockedExtras, t, commandBus, refresh],
 	);
 
+	// Compact, not the full refusal page: this table is one section of a larger page.
+	if (refused) {
+		return <InsufficientPermissionContent missing={refused} />;
+	}
 	if (!pack || !searchData || graph.missing.length > 0) {
 		return <LoadingState />;
 	}

@@ -1,5 +1,5 @@
 import { Paper } from '@mantine/core';
-import { LoadingState } from '@nikkierp/ui/components';
+import { LoadingState, Unauthorized } from '@nikkierp/ui/components';
 import { DataTable, DataTableAction } from '@nikkierp/ui/components/DataTable';
 import { TranslateFn, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { useCommandBus } from '@nikkierp/ui/microApp';
@@ -45,7 +45,7 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	const graph = useResolvedInitialGraph(params.initialGraph);
 	// No `fields`: the columns are the backend's `default_search_fields`, or the user's own choice
 	// from the table settings, never the page's.
-	const { pack, searchData, searchRequest, onSearchRequestChange, refresh } = useResourceSearch({
+	const { pack, searchData, searchRequest, onSearchRequestChange, refresh, refused } = useResourceSearch({
 		schemaName: params.schemaName,
 		searchCommand: params.searchCommand,
 		initialRequest: INITIAL_REQUEST,
@@ -70,6 +70,9 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	);
 	const gatedActions = useActionLocks(actions, params.schemaName, actionCodeOf);
 
+	if (refused) {
+		return <Unauthorized missing={refused} />;
+	}
 	if (!pack || !searchData) {
 		return <LoadingState />;
 	}

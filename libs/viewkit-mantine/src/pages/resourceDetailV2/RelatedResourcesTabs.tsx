@@ -1,6 +1,6 @@
 import { Collapse, Group, Stack, Tabs, Title, UnstyledButton } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { LoadingState } from '@nikkierp/ui/components';
+import { InsufficientPermissionContent, LoadingState } from '@nikkierp/ui/components';
 import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { useFieldRenderers } from '@nikkierp/viewengine/render';
@@ -124,6 +124,10 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 		(field: string) => lc(pack?.modelSchema.fields[field]?.label) || field, [lc, pack],
 	);
 
+	// Compact, not the full refusal page: this tab is one section of the detail page.
+	if (search.refused) {
+		return <InsufficientPermissionContent missing={search.refused} />;
+	}
 	if (!pack || !searchData || graph.missing.length > 0) {
 		return <LoadingState />;
 	}

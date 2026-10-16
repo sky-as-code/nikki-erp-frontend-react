@@ -1,5 +1,4 @@
 import { Grid, Group, Stack, TextInput } from '@mantine/core';
-import { ResourceScope } from '@nikkierp/common/entitlements';
 import { testAttrs } from '@nikkierp/common/utils';
 import { Button, Select } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
@@ -41,8 +40,7 @@ export const taxSimulatorFormRenderer: IComponentRenderer<Record<string, never>>
 function TaxSimulatorForm(): React.ReactNode {
 	const { params, state } = useTaxSimulatorContext();
 	const translate = useTranslate(params.translationNs);
-	// Tenant scope: the backend asserts `simulate` without an org, so a bare org grant is refused.
-	const lock = useActionLock(c.TAX_SCHEMA_NAME, 'simulate', ResourceScope.Tenant);
+	const lock = useActionLock(c.TAX_SCHEMA_NAME, 'simulate');
 
 	return (
 		<Stack gap='md'>
