@@ -1,5 +1,6 @@
 import React from 'react';
 
+import type { RegisterAfterSave } from './afterSave';
 import type {
 	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
@@ -36,6 +37,9 @@ export type ResourceUpdateContextValue = {
 	titleLvl2?: SchemaFieldSpec,
 	backLinkTitle?: LinkSpec,
 	childrenNodes?: ComponentNode[],
+	registerAfterSave: RegisterAfterSave,
+	hasPendingAfterSave: () => boolean,
+	submitAfterSaveOnly: () => Promise<boolean>,
 };
 
 export const ResourceUpdateContext = React.createContext<ResourceUpdateContextValue | undefined>(undefined);

@@ -3,17 +3,12 @@ import { defineComponent } from '@nikkierp/viewengine/metadata';
 import { collapsibleSectionPropsSchema } from './components/collapsibleSection/props';
 import { excelDataTableBodyPropsSchema } from './components/excelDataTableBody/props';
 import { pageHeaderPropsSchema } from './components/pageHeader/props';
+import { resourceFileFieldPropsSchema } from './components/resourceFileField/props';
 import { resourceFormTabsPropsSchema } from './components/resourceFormTabs/props';
 import { resourceTablePropsSchema } from './components/resourceTable/props';
 import { settingsItemPropsSchema, settingsSectionPropsSchema } from './components/settings/props';
 import { tabCollapsibleSectionPropsSchema } from './components/tabCollapsibleSection/props';
-import {
-	COLLAPSIBLE_SECTION, EXCEL_DATA_TABLE_BODY, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE, RESOURCE_DETAIL_V2_TEMPLATE,
-	RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_GENERIC_PAGE_TEMPLATE,
-	RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE,
-	RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE, SETTINGS_ITEM, SETTINGS_SECTION,
-	TAB_COLLAPSIBLE_SECTION,
-} from './ids';
+import { COLLAPSIBLE_SECTION, EXCEL_DATA_TABLE_BODY, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE, RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_FILE_FIELD, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_GENERIC_PAGE_TEMPLATE, RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE, SETTINGS_ITEM, SETTINGS_SECTION, TAB_COLLAPSIBLE_SECTION } from './ids';
 import { ownPropertySectionSchema, resourceDetailPropsSchema } from './pages/resourceDetail/props';
 import { resourceDetailV2PropsSchema } from './pages/resourceDetailV2/props';
 import { resourceGenericPagePropsSchema } from './pages/resourceGenericPage/props';
@@ -25,6 +20,7 @@ import { resourceSplitViewPropsSchema } from './pages/resourceSplitView/props';
 import type { CollapsibleSectionPropsInput } from './components/collapsibleSection/props';
 import type { ExcelDataTableBodyPropsInput } from './components/excelDataTableBody/props';
 import type { PageHeaderPropsInput } from './components/pageHeader/props';
+import type { ResourceFileFieldPropsInput } from './components/resourceFileField/props';
 import type { ResourceFormTabsPropsInput } from './components/resourceFormTabs/props';
 import type { ResourceTablePropsInput } from './components/resourceTable/props';
 import type {
@@ -207,6 +203,13 @@ export function resourceFormColumnNode(input: OwnPropertySectionInput): Componen
 	return defineComponent({
 		component: RESOURCE_FORM_COLUMN,
 		props: ownPropertySectionSchema.parse(input) as Record<string, unknown>,
+	});
+}
+
+export function resourceFileFieldNode(input: ResourceFileFieldPropsInput): ComponentNode {
+	return defineComponent({
+		component: RESOURCE_FILE_FIELD,
+		props: resourceFileFieldPropsSchema.parse(input) as Record<string, unknown>,
 	});
 }
 

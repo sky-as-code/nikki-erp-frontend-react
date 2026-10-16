@@ -1,5 +1,6 @@
 import React from 'react';
 
+import type { RegisterAfterSave } from './afterSave';
 import type { LinkSpec, ResourceDetailStandardActionCommands, SchemaFieldSpec } from './props';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -12,6 +13,7 @@ export type ResourceCreateContextValue = {
 	createNodes?: ComponentNode[],
 	onSubmit: (data: Record<string, any>) => void,
 	isSubmitting: boolean,
+	registerAfterSave: RegisterAfterSave,
 };
 
 export const ResourceCreateContext = React.createContext<ResourceCreateContextValue | undefined>(undefined);

@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props,
-	resourceSplitViewProps,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFileFieldNode, resourceFormColumnNode, resourceImportProps,
+	resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -113,6 +113,11 @@ function buildProductVariantFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.dimensions',
 			fields: ['weight', 'length', 'width', 'height'],
+		}),
+		resourceFileFieldNode({
+			field: 'variant_image',
+			urlField: 'variant_image_url',
+			label: 'fields.variant_image_file_key',
 		}),
 		// archive_source is what lets unarchiving a template restore only the variants it
 		// took down, so it is shown rather than hidden. See BR Â§8.9.

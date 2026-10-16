@@ -77,7 +77,15 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 			// Saving an untouched form has nothing to send, so it skips the request and simply
 			// leaves edit mode — the outcome the user expects from Save either way.
 			if (!hasChanges) {
-				setUpdateMode(false);
+				if (!context.hasPendingAfterSave()) {
+					setUpdateMode(false);
+					return;
+				}
+				void context.submitAfterSaveOnly().then(succeeded => {
+					if (succeeded) {
+						setUpdateMode(false);
+					}
+				});
 				return;
 			}
 			void formRuntime
@@ -156,6 +164,10 @@ export function collectColumnFields(nodes: ComponentNode[]): { fields?: string[]
 		if (typeof node.component === 'string') {
 			if (node.component === RESOURCE_FORM_COLUMN) {
 				out.push((node.props ?? {}) as { fields?: string[] });
+			}
+			const formFields = (node.props as { formFields?: unknown } | undefined)?.formFields;
+			if (Array.isArray(formFields)) {
+				out.push({ fields: formFields.filter((field): field is string => typeof field === 'string') });
 			}
 			// `props` is walked too: a column reached through `tabs[].content` lives there.
 			walkValue(node.props);

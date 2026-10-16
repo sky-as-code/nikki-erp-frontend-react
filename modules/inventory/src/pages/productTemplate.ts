@@ -1,8 +1,8 @@
 import { resourceCommands } from '@nikkierp/common/dynamicModel';
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props,
-	resourceSplitViewProps,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFileFieldNode, resourceFormColumnNode, resourceImportProps,
+	resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -135,6 +135,11 @@ function buildProductTemplatePhysicalColumns(): ComponentNode[] {
 			// Defaults a variant inherits when it sets no value of its own. See BR Â§6.4.
 			header: 'form.dimensions',
 			fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
+		}),
+		resourceFileFieldNode({
+			field: 'default_image',
+			urlField: 'default_image_url',
+			label: 'fields.default_image_file_key',
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',
