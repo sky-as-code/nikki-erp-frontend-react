@@ -159,6 +159,9 @@ function useFileFieldAfterSave(
 				return unwrapResult(result)?.etag;
 			}
 			return saved.etag;
+		}, () => {
+			const current = pendingRef.current;
+			return Boolean(current.file) || (current.removed && current.hadFile);
 		});
 	}, [registerAfterSave, schemaPack, field]);
 }

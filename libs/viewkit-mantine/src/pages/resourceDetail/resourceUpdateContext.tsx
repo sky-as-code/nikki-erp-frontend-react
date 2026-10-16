@@ -38,6 +38,8 @@ export type ResourceUpdateContextValue = {
 	backLinkTitle?: LinkSpec,
 	childrenNodes?: ComponentNode[],
 	registerAfterSave: RegisterAfterSave,
+	hasPendingAfterSave: () => boolean,
+	submitAfterSaveOnly: () => Promise<boolean>,
 };
 
 export const ResourceUpdateContext = React.createContext<ResourceUpdateContextValue | undefined>(undefined);
