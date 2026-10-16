@@ -2,7 +2,7 @@ import { NumberInput, Switch } from '@mantine/core';
 import { Input, Select } from '@nikkierp/ui/components';
 import React from 'react';
 
-import type { SettingItemData } from './settingsDataContext';
+import type { SettingItemData, SettingOption } from './settingsDataContext';
 import type { ModelSchemaFieldDataTypeName } from '@nikkierp/common/dynamicModel';
 
 
@@ -11,6 +11,8 @@ export type SettingControlProps = {
 	/** The unsaved edit, or the loaded value when the user has not touched this setting. */
 	value: unknown,
 	onChange: (value: unknown) => void,
+	/** Labelled choices from the owning module; when present they win over the declared type. */
+	options?: SettingOption[],
 };
 
 /**
@@ -25,8 +27,19 @@ export type SettingControlProps = {
  * `allow_override` together. It is never re-derived here: a locked setting shown as editable
  * lets a user submit a change the server then refuses.
  */
-export function SettingControl({ item, value, onChange }: SettingControlProps): React.ReactNode {
+export function SettingControl({ item, value, onChange, options }: SettingControlProps): React.ReactNode {
 	const disabled = !item.editable;
+	if (options) {
+		return (
+			<Select
+				w={220}
+				data={withCurrentValue(options, value)}
+				value={typeof value === 'string' ? value : null}
+				disabled={disabled}
+				onChange={next => onChange(next)}
+			/>
+		);
+	}
 	const dataType = item.field?.data_type;
 	const typeName: ModelSchemaFieldDataTypeName = dataType?.name ?? 'string';
 
@@ -91,4 +104,13 @@ export function SettingControl({ item, value, onChange }: SettingControlProps): 
 function enumOptions(enumValues: unknown): string[] {
 	if (!Array.isArray(enumValues)) return [];
 	return enumValues.filter((entry): entry is string => typeof entry === 'string');
+}
+
+/**
+ * The choices, plus the current value when it is no longer one of them -- a language disabled after
+ * it was stored, say. Dropping it would show an empty select that silently reads as "unset".
+ */
+function withCurrentValue(options: SettingOption[], value: unknown): SettingOption[] {
+	if (typeof value !== 'string' || value === '' || options.some(option => option.value === value)) return options;
+	return [...options, { value, label: value }];
 }

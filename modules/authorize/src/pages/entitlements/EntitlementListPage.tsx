@@ -26,7 +26,9 @@ function EntitlementListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.entitlement.title' />
 				<Actions
-					onCreate={permissions.entitlement.canCreate ? handleCreate : undefined}
+					onCreate={handleCreate}
+					createLocked={!permissions.entitlement.canCreate}
+					createLockedMissing={permissions.entitlement.createMissing}
 					onRefresh={handleRefresh}
 				/>
 				<Paper className='p-4'>

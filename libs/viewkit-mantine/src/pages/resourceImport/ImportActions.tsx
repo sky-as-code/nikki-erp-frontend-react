@@ -84,6 +84,7 @@ function UploadActions(): React.ReactNode {
 	return (
 		<Button
 			variant='filled' disabled={!pending} loading={busy}
+			locked={context.createLock.locked} lockedMissing={context.createLock.missing}
 			onClick={() => void confirm()} {...context.tid('confirm')}
 		>
 			{context.t('import.confirmNext')}
@@ -104,6 +105,8 @@ function MappingActions(): React.ReactNode {
 			variant='filled'
 			disabled={wizard.missing.length > 0}
 			loading={running}
+			locked={context.createLock.locked}
+			lockedMissing={context.createLock.missing}
 			onClick={() => void wizard.start()}
 			{...tid('start')}
 		>

@@ -137,6 +137,7 @@ function buildOrderActions() {
 		refund: {
 			label: 'actions.refund',
 			command: OrderCommands.REFUND,
+			actionCode: 'refund',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,

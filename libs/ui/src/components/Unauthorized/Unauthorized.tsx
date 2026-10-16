@@ -4,15 +4,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
-import { ErrorStatePage, errorStateGradient } from '../ErrorState';
+import { ErrorStatePage, errorStateGradient, InsufficientPermissionContent } from '../ErrorState';
 
 
 export interface UnauthorizedProps {
 	onGoHome?: () => void;
 	onGoBack?: () => void;
+	/** The entitlements the caller lacks; listed under the hint so an administrator can act on them. */
+	missing?: string[];
 }
 
-export const Unauthorized: React.FC<UnauthorizedProps> = ({ onGoHome, onGoBack }) => {
+/**
+ * Rendered in place of the page the user may not read. Never navigated to: the URL keeps naming
+ * the page that was refused, so a reload or a granted permission lands on it.
+ */
+export const Unauthorized: React.FC<UnauthorizedProps> = ({ onGoHome, onGoBack, missing }) => {
 	const theme = useMantineTheme();
 	const { t: translate } = useTranslation();
 	const navigate = useNavigate();
@@ -29,7 +35,9 @@ export const Unauthorized: React.FC<UnauthorizedProps> = ({ onGoHome, onGoBack }
 			colorTo='orange'
 			icon={<IconLock size={80} stroke={1.5} style={{ color: theme.colors.red[6], opacity: 0.8 }} />}
 			title={translate('unauthorized_title')}
-			message={translate('unauthorized_hint')}
+			message={missing && missing.length > 0
+				? <InsufficientPermissionContent missing={missing} />
+				: translate('unauthorized_hint')}
 			testId='ui.unauthorized'
 			actions={
 				<>

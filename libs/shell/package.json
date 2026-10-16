@@ -101,6 +101,7 @@
 		"./erpModules": "./src/erpModules/index.ts",
 		"./microApp": "./src/microApp/index.tsx",
 		"./routing": "./src/routing/index.ts",
+		"./languages": "./src/languages/index.ts",
 		"./userContext": "./src/userContext/index.ts"
 	},
 	"files": [

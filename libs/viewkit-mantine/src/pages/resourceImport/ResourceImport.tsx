@@ -10,6 +10,7 @@ import { buildImportTargets } from './targets';
 import { useImportWizard } from './useImportWizard';
 import { useResourceBaseHref } from '../../data/useResourceLinkHref';
 import { RESOURCE_IMPORT_ACTIONS, RESOURCE_IMPORT_BODY } from '../../ids';
+import { StandardActionCode, useActionLock } from '../../permissions';
 import { collapsibleSectionNode } from '../../props';
 import { resourceTestIdPrefix } from '../../testIds';
 import { ResourceGenericPage } from '../resourceGenericPage/ResourceGenericPage';
@@ -59,9 +60,10 @@ function ResourceImportView({ params, routePath }: ResourceImportViewProps): Rea
 		[pack, language, t, referenceSuffix],
 	);
 	const wizard = useImportWizard(pack, params.schemaName, targets, language);
+	const createLock = useActionLock(params.schemaName, StandardActionCode.Create);
 	const context = React.useMemo(
-		(): ImportWizardContextValue => ({ wizard, t, tid, targets, backHref }),
-		[wizard, t, tid, targets, backHref],
+		(): ImportWizardContextValue => ({ wizard, t, tid, targets, backHref, createLock }),
+		[wizard, t, tid, targets, backHref, createLock],
 	);
 
 	// Two title levels, as on a detail page: the action names the page, the resource names what it

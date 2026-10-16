@@ -1,6 +1,13 @@
-import { Modal, Text, Radio, Stack, Flex, Box } from '@mantine/core';
+import { Box, Flex, Modal, Radio, Stack, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { forwardRef, useImperativeHandle, useState } from 'react';
+import { testAttrs } from '@nikkierp/common/utils';
+import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
+import { useShellCommand } from '@nikkierp/shell/commandBus';
+import { useUIState } from '@nikkierp/shell/contexts';
+import { useEnabledLanguages } from '@nikkierp/shell/languages';
+import { useLanguageCode } from '@nikkierp/shell/userContext';
+import { useTranslate } from '@nikkierp/ui/i18n';
+import { forwardRef, useCallback, useImperativeHandle } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import classes from './LangSwitchModal.module.css';
@@ -13,7 +20,7 @@ export interface LangSwitchModalRef {
 
 export const LangSwitchModal = forwardRef<LangSwitchModalRef>((props, ref) => {
 	const [opened, { open, close }] = useDisclosure(false);
-	const { t: translate } = useTranslation();
+	const t = useTranslate('common');
 
 	useImperativeHandle(ref, () => ({
 		open,
@@ -26,7 +33,7 @@ export const LangSwitchModal = forwardRef<LangSwitchModalRef>((props, ref) => {
 			<Modal.Content radius={'md'}>
 				<Modal.Header>
 					<Modal.Title className='flex justify-between items-center' w={'100%'}>
-						<Text w={'100%'} size='xl' fw={700} ta='center'>{translate('profile.language')}</Text>
+						<Text w={'100%'} size='xl' fw={700} ta='center'>{t('profile.language')}</Text>
 						<Modal.CloseButton />
 					</Modal.Title>
 				</Modal.Header>
@@ -40,83 +47,82 @@ export const LangSwitchModal = forwardRef<LangSwitchModalRef>((props, ref) => {
 
 LangSwitchModal.displayName = 'LangSwitchModal';
 
-interface LanguageItem {
-	name: string;
-	value: string;
-	icon: React.ReactNode;
-	description?: string;
-	disabled?: boolean;
-}
+const TEST_ID = 'shell.langSwitchModal';
 
-const LangSwitcher: React.FC = () => {
+/** Restated rather than imported: the Shell never imports a module. See `ThemeSwitchModal`. */
+const SETTINGS_SET_COMMAND = 'settings.settings.set_settings';
+
+/** A flag for the languages shipped today; a language without one is listed without an icon. */
+const FLAGS: Record<string, string> = {
+	'en-US': '🇺🇸',
+	'vi-VN': '🇻🇳',
+};
+
+function LangSwitcher(): React.ReactNode {
+	const t = useTranslate('common');
 	const { i18n } = useTranslation();
+	const languages = useEnabledLanguages();
+	const { setLanguageCode } = useLanguageCode();
+	const persistLanguage = usePersistLanguage();
+	// Derived from i18n on every render, never held in state: the selection must name the language
+	// the interface is actually shown in, whoever changed it.
+	const current = languages.find(language => language.isoCode === i18n.language)?.isoCode ?? null;
 
-	const data: LanguageItem[] = [
-		{ name: 'Tiếng Việt', value: 'vi', icon: <Box style={{ fontSize: '24px', lineHeight: '24px' }}>🇻🇳</Box>, disabled: false },
-		{ name: 'English', value: 'en', icon: <Box style={{ fontSize: '24px', lineHeight: '24px' }}>🇺🇸</Box>, disabled: false },
-		{ name: '中文', value: 'zh', icon: <Box style={{ fontSize: '24px', lineHeight: '24px' }}>🇨🇳</Box>, disabled: true },
-		{ name: '日本語', value: 'ja', icon: <Box style={{ fontSize: '24px', lineHeight: '24px' }}>🇯🇵</Box>, disabled: true },
-		{ name: '한국어', value: 'ko', icon: <Box style={{ fontSize: '24px', lineHeight: '24px' }}>🇰🇷</Box>, disabled: true },
-		{ name: 'Français', value: 'fr', icon: <Box style={{ fontSize: '24px', lineHeight: '24px' }}>🇫🇷</Box>, disabled: true },
-		{ name: 'Deutsch', value: 'de', icon: <Box style={{ fontSize: '24px', lineHeight: '24px' }}>🇩🇪</Box>, disabled: true },
-		{ name: 'Español', value: 'es', icon: <Box style={{ fontSize: '24px', lineHeight: '24px' }}>🇪🇸</Box>, disabled: true },
-	];
-
-	// Get current language or default to first enabled language
-	const getCurrentValue = () => {
-		const currentLang = data.find((item) => item.value === i18n.language && !item.disabled);
-		return currentLang?.value || data.find((item) => !item.disabled)?.value || null;
+	const handleChange = (code: string) => {
+		if (code === current) return;
+		setLanguageCode(code);
+		void persistLanguage(code);
 	};
-
-	const [value, setValue] = useState<string | null>(getCurrentValue());
-
-	const changeLang = (lang: string) => {
-		const selectedLang = data.find((item) => item.value === lang);
-		// Only allow changing to enabled languages
-		if (selectedLang && !selectedLang.disabled) {
-			i18n.changeLanguage(lang);
-			setValue(lang);
-		}
-	};
-
-
-	const cards = data.map((item) => (
-		<Radio.Card
-			className={classes.root}
-			radius='md'
-			value={item.value}
-			key={item.value}
-			disabled={item.disabled}
-			style={{
-				opacity: item.disabled ? 0.5 : 1,
-				cursor: item.disabled ? 'not-allowed' : 'pointer',
-			}}
-		>
-			<Flex wrap='nowrap' align='center' justify='flex-start'>
-				<Box mr={'md'}>{item.icon}</Box>
-				<Text w='100%' className={classes.label} c={item.disabled ? 'dimmed' : undefined}>
-					{item.name}
-					{item.disabled && (
-						<Text component='span' size='xs' c='dimmed' ml='xs'>
-							(Coming soon)
-						</Text>
-					)}
-				</Text>
-				<Radio.Indicator />
-			</Flex>
-		</Radio.Card>
-	));
 
 	return (
 		<Radio.Group
-			value={value}
-			onChange={(value) => changeLang(value as string)}
-			label='Pick your language'
-			description='Choose a language that you will use in your application'
+			value={current}
+			onChange={handleChange}
+			label={t('profile.languagePick')}
+			description={t('profile.languagePickHint')}
 		>
 			<Stack pt='md' gap='xs'>
-				{cards}
+				{languages.map(language => (
+					<Radio.Card
+						className={classes.root}
+						radius='md'
+						value={language.isoCode}
+						key={language.isoCode}
+						{...testAttrs(TEST_ID, 'option', language.isoCode)}
+					>
+						<Flex wrap='nowrap' align='center' justify='flex-start'>
+							<Box mr='md' fz={24} lh='24px'>{FLAGS[language.isoCode] ?? ''}</Box>
+							<Text w='100%' className={classes.label}>{language.name}</Text>
+							<Radio.Indicator />
+						</Flex>
+					</Radio.Card>
+				))}
 			</Stack>
 		</Radio.Group>
 	);
-};
+}
+
+/**
+ * Saves the choice as the user's `essential.language`, so it follows them to the next sign-in.
+ *
+ * The local choice is applied first and kept when the save fails -- for instance when a tenant
+ * policy forbids a user override -- exactly as the theme choice is.
+ */
+function usePersistLanguage(): (code: string) => Promise<void> {
+	const t = useTranslate('common');
+	const isAuthenticated = useIsAuthenticated();
+	const { notification } = useUIState();
+	const { publish } = useShellCommand(SETTINGS_SET_COMMAND);
+
+	return useCallback(async (code: string) => {
+		if (!isAuthenticated) return;
+		const response = await publish({
+			level: 'user',
+			moduleKey: 'essential',
+			items: [{ name: 'language', value: code }],
+		});
+		if (response.error != null || response.result?.clientErrors?.length) {
+			notification.showError(t('language.saveFailed'), t('messages.error'));
+		}
+	}, [isAuthenticated, notification, publish, t]);
+}

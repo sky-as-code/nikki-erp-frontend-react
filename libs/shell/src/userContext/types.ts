@@ -180,3 +180,12 @@ export type LocalSettings = {
 	languageCode: string | null,
 	themeMode: ThemeMode,
 };
+
+/**
+ * Published after the Shell's mirrored settings are written from outside its React tree -- a
+ * settings pane, or a user-context refresh.
+ *
+ * Must match the name `settingsSaveBar.tsx` publishes; a micro-app cannot import the Shell, so
+ * the string is the contract.
+ */
+export const LOCAL_SETTINGS_CHANGED_EVENT = 'shell:local_settings:changed';

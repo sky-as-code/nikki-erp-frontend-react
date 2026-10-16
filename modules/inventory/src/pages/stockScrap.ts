@@ -71,6 +71,7 @@ function buildStockScrapDetailProps() {
 			do_scrap: {
 				label: 'actions.do_scrap',
 				command: StockScrapCommands.DO_SCRAP,
+				actionCode: 'do_scrap',
 				condition: { field: 'status', operator: 'equal' as const, value: 'draft' },
 			},
 		},

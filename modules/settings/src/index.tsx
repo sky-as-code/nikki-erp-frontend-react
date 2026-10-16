@@ -1,7 +1,7 @@
-import { MantineProvider } from '@mantine/core';
 import {
 	defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps, MicroAppProvider,
 } from '@nikkierp/ui/microApp';
+import { SyncedMantineProvider } from '@nikkierp/ui/theme';
 import { ViewEngineRouter } from '@nikkierp/viewkit-mantine';
 import React from 'react';
 
@@ -14,11 +14,9 @@ import { contributeSettingsViewKit } from './viewkit/kit';
 function Main(props: MicroAppProps) {
 	return (
 		<MicroAppProvider {...props}>
-			{/* Must match the Shell's default: on a first visit nothing is stored yet, and Mantine's own
-				default (`light`) would be written onto <html>, overriding a device set to dark. */}
-			<MantineProvider defaultColorScheme='auto'>
+			<SyncedMantineProvider>
 				<MicroAppInner {...props} />
-			</MantineProvider>
+			</SyncedMantineProvider>
 		</MicroAppProvider>
 	);
 }

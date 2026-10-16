@@ -8,7 +8,7 @@ import { IconAlertCircle } from '@tabler/icons-react';
 import React from 'react';
 
 import { resourceFormPropsSchema } from '../../../components/resourceFormProps';
-import { ResourceFormViewProvider } from '../../../components/resourceFormViewContext';
+import { ResourceFormViewScope } from '../../../components/resourceFormViewContext';
 import { RESOURCE_FORM_V2 } from '../../../ids';
 import {
 	DebugFormErrors, useResourceDetailContext, useResourceDetailTranslationNs,
@@ -58,7 +58,7 @@ function ResourceForm({ props, runtime }: {
 					isSubmitting={isWriting}
 					onSubmit={onSubmit}
 				>
-					<ResourceFormViewProvider value={{ updateMode, setUpdateMode }}>
+					<ResourceFormViewScope updateMode={updateMode} setUpdateMode={setUpdateMode}>
 						<ServerErrorAlert />
 						{/*
 						 * Page-level, not section-level: the one form now spans every section, so a
@@ -68,7 +68,7 @@ function ResourceForm({ props, runtime }: {
 						 */}
 						<FormErrorDebugPanel />
 						<MetaComponent node={runtime.children} />
-					</ResourceFormViewProvider>
+					</ResourceFormViewScope>
 				</CrudFormProvider>
 			</FormTestIdProvider>
 		</FormStyleProvider>

@@ -1,5 +1,6 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { mergeSearchGraphs, SearchData } from '@nikkierp/ui/components/DataTable';
+import { ClientErrorItem } from '@nikkierp/common/types';
+import { mergeSearchGraphs, SearchData } from '@nikkierp/ui/components/ExcelDataTable';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useCommandBus } from '@nikkierp/ui/microApp';
 import React from 'react';
@@ -41,6 +42,12 @@ export type UseResourceSearchResult = {
 	isPending: boolean,
 	/** The edges' destination schemas, for the table's `relatedSchemas`; empty without `withEdgeLabels`. */
 	edgeLabelSchemas: Record<string, dyn.ModelSchema>,
+	/**
+	 * Set when the server refused to serve this list: the entitlements it named for a refused
+	 * search, or an empty list when the schema itself could not be loaded. A template renders the
+	 * refusal on it instead of waiting for rows that will never come.
+	 */
+	refused: string[] | null,
 };
 
 /**
@@ -62,7 +69,7 @@ export function isStubSearchData(data: SearchData | null): boolean {
  * does not blank the table.
  */
 export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSearchResult {
-	const pack = useSchemaPack(opts.schemaName);
+	const { pack, failed: schemaFailed } = useSchemaPack(opts.schemaName);
 	const search = useCommand<dyn.RestSearchResponse<any>>(opts.searchCommand);
 	// Initialiser form: a fresh object literal from the caller must not retrigger.
 	const [searchRequest, setSearchRequest] = React.useState<dyn.RestSearchRequest>(() => opts.initialRequest);
@@ -141,10 +148,22 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 		: (liveSearchData ?? cachedSearchData), labelled.added);
 	// The merged request, not the raw state: it is what was published, and `getSearchRequestOrderBy`
 	// reads `graph.order` off it.
+	const refused = React.useMemo(
+		() => refusalOf(search.clientErrors, schemaFailed), [search.clientErrors, schemaFailed],
+	);
 	return {
 		pack, searchData, searchRequest: effectiveRequest, onSearchRequestChange, refresh, isPending: search.isPending,
-		edgeLabelSchemas: labelled.destSchemas,
+		edgeLabelSchemas: labelled.destSchemas, refused,
 	};
+}
+
+export function refusalOf(clientErrors: ClientErrorItem[], schemaFailed: boolean): string[] | null {
+	const refusal = clientErrors.find(item => ClientErrorItem.isAuthorizationError(item));
+	if (refusal) {
+		const named = refusal.vars?.entitlements;
+		return Array.isArray(named) ? named.map(String) : [];
+	}
+	return schemaFailed ? [] : null;
 }
 
 const noEdgeSchemas: Record<string, dyn.ModelSchema> = {};
@@ -168,22 +187,25 @@ function useEdgeLabelledRequest(
 	}, [enabled, pack, request, edgeLabels.destSchemas, edgeLabels.isReady]);
 }
 
-function useSchemaPack(schemaName: string): dyn.SchemaPack | null {
+function useSchemaPack(schemaName: string): { pack: dyn.SchemaPack | null, failed: boolean } {
 	const commandBus = useCommandBus();
 	const [pack, setPack] = React.useState<dyn.SchemaPack | null>(null);
 	const [etag, setEtag] = React.useState<string | undefined>(undefined);
+	// Keyed by schema, so a failure on one resource never blocks the next one the hook is reused for.
+	const [failedFor, setFailedFor] = React.useState<string | null>(null);
 
 	React.useEffect(() => {
 		void dyn.publishGetSchema(commandBus, schemaName).then(next => {
 			setPack(next);
 			setEtag(next?.modelSchema?.etag);
+			setFailedFor(next == null ? schemaName : null);
 		});
 	}, [commandBus, schemaName, etag === pack?.modelSchema?.etag]);
 
 	// `setPack` above lands a render after `schemaName` changed, so until it does, `pack` still
 	// describes the previous resource. Reporting null instead keeps the callers' `!pack` gate shut
 	// rather than letting them pair one resource's schema with another's rows.
-	return pack?.schemaName === schemaName ? pack : null;
+	return { pack: pack?.schemaName === schemaName ? pack : null, failed: failedFor === schemaName };
 }
 
 /** `data` without the selections `useEdgeLabelledRequest` added; joined so a new array each render does not recompute. */

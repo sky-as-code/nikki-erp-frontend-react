@@ -227,6 +227,7 @@ function buildSalesOrderActions() {
 		explain_price: {
 			label: 'actions.explain_price',
 			command: SalesOrderCommands.EXPLAIN_PRICE,
+			actionCode: 'read',
 			condition: {
 				field: 'status',
 				operator: 'not_equal' as const,
@@ -239,6 +240,7 @@ function buildSalesOrderActions() {
 		cancel: {
 			label: 'actions.cancel',
 			command: SalesOrderCommands.CANCEL,
+			actionCode: 'cancel',
 			condition: {
 				field: 'status',
 				operator: 'in' as const,
@@ -271,6 +273,7 @@ function buildDraftOnlyActions() {
 		confirm: {
 			label: 'actions.confirm',
 			command: SalesOrderCommands.CONFIRM,
+			actionCode: 'confirm',
 			condition: onlyOnDraft,
 			prompt: {
 				title: 'actions.confirm.title',
@@ -280,16 +283,19 @@ function buildDraftOnlyActions() {
 		reprice: {
 			label: 'actions.reprice',
 			command: SalesOrderCommands.REPRICE,
+			actionCode: 'update',
 			condition: onlyOnDraft,
 		},
 		apply_voucher: {
 			label: 'actions.apply_voucher',
 			command: SalesOrderCommands.APPLY_VOUCHER,
+			actionCode: 'apply_voucher',
 			condition: onlyOnDraft,
 		},
 		manual_discount: {
 			label: 'actions.manual_discount',
 			command: SalesOrderCommands.MANUAL_DISCOUNT,
+			actionCode: 'manual_discount',
 			condition: onlyOnDraft,
 		},
 	};

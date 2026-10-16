@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { ImportTarget } from './targets';
 import type { ImportWizard } from './useImportWizard';
+import type { ActionLock } from '../../permissions';
 import type { TranslateFn } from '@nikkierp/ui/i18n';
 
 
@@ -19,6 +20,8 @@ export type ImportWizardContextValue = {
 	targets: ImportTarget[],
 	/** Listing page the summary and the header's back link return to. */
 	backHref: string | undefined,
+	/** Import writes records, so starting one needs the same entitlement as create. */
+	createLock: ActionLock,
 };
 
 const ImportWizardContext = React.createContext<ImportWizardContextValue | null>(null);

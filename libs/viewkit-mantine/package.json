@@ -60,6 +60,7 @@
 	],
 	"exports": {
 		".": "./src/index.ts",
+		"./actionCodes": "./src/actionCodes.ts",
 		"./ids": "./src/ids.ts",
 		"./props": "./src/props.ts"
 	},

@@ -1,5 +1,4 @@
-import { TranslatedFieldRenderer } from '@nikkierp/ui/components/DataTable';
-import { MoneyFieldRenderer } from '@nikkierp/ui/components/ExcelDataTable';
+import { MoneyFieldRenderer, TranslatedFieldRenderer } from '@nikkierp/ui/components/ExcelDataTable';
 import { z } from 'zod';
 
 import {

@@ -1,5 +1,5 @@
 import { Paper } from '@mantine/core';
-import { LoadingState } from '@nikkierp/ui/components';
+import { LoadingState, Unauthorized } from '@nikkierp/ui/components';
 import { ExcelDataTable, isActionVisible, mergeSearchGraphs } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
@@ -21,7 +21,7 @@ import { useRelatedSchemas } from '../../data/useRelatedSchemas';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { EXCEL_DATA_TABLE_BODY } from '../../ids';
-import { useActionLocks } from '../../permissions';
+import { StandardActionCode, useActionLock, useActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
 import { useClosePrimaryPane } from '../resourceSplitView/splitViewContext';
 
@@ -75,8 +75,14 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 	const testId = resourceTestIdPrefix({ testId: params.testId, routePath, schemaName: params.schemaName, part: 'List' });
 	const actions = React.useMemo(() => buildResourceListActions(params, t, baseHref), [params, t, baseHref]);
 	const allowedViewModes = React.useMemo(() => params.viewModes.map(view => view.mode), [params.viewModes]);
-	const gatedActions = useActionLocks(actions, params.schemaName, listActionCode) as ResourceListAction[];
+	const gatedActions = useActionLocks(actions, params.schemaName, listActionCode);
+	// Row editing has no button to grey out, so a caller who may not update gets no editor at all
+	// rather than one whose every save is refused.
+	const updateLock = useActionLock(params.updateCommand ? params.schemaName : null, StandardActionCode.Update);
 
+	if (search.refused) {
+		return <Unauthorized missing={search.refused} />;
+	}
 	if (!pack || !searchData) {
 		return <LoadingState />;
 	}
@@ -95,7 +101,7 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 				orderBy={getSearchRequestOrderBy(search.searchRequest)}
 				initialViewMode={params.viewModes[0].mode}
 				allowedViewModes={allowedViewModes}
-				updateCommand={params.updateCommand}
+				updateCommand={updateLock.locked ? undefined : params.updateCommand}
 				onRefresh={search.refresh}
 				translationNs={params.translationNs}
 				translateFieldName={translateFieldName}

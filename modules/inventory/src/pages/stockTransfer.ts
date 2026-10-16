@@ -142,31 +142,37 @@ function buildMovementActions() {
 		confirm: {
 			label: 'actions.confirm',
 			command: StockTransferCommands.CONFIRM,
+			actionCode: 'confirm',
 			condition: { field: 'status', operator: 'equal' as const, value: 'draft' },
 		},
 		check_availability: {
 			label: 'actions.check_availability',
 			command: StockTransferCommands.CHECK_AVAILABILITY,
+			actionCode: 'read',
 			condition: { field: 'status', operator: 'not_in' as const, value: ['draft', 'done', 'cancelled'] },
 		},
 		reserve: {
 			label: 'actions.reserve',
 			command: StockTransferCommands.RESERVE,
+			actionCode: 'reserve',
 			condition: { field: 'status', operator: 'not_in' as const, value: ['draft', 'done', 'cancelled'] },
 		},
 		unreserve: {
 			label: 'actions.unreserve',
 			command: StockTransferCommands.UNRESERVE,
+			actionCode: 'unreserve',
 			condition: { field: 'status', operator: 'in' as const, value: ['confirmed', 'ready'] },
 		},
 		validate: {
 			label: 'actions.validate',
 			command: StockTransferCommands.VALIDATE,
+			actionCode: 'validate',
 			condition: { field: 'status', operator: 'in' as const, value: ['confirmed', 'ready'] },
 		},
 		cancel: {
 			label: 'actions.cancel',
 			command: StockTransferCommands.CANCEL,
+			actionCode: 'cancel',
 			condition: { field: 'status', operator: 'not_in' as const, value: ['done', 'cancelled'] },
 		},
 		// The one action that appears only once a transfer is done, and the counterpart to
@@ -176,6 +182,7 @@ function buildMovementActions() {
 		create_return: {
 			label: 'actions.create_return',
 			command: StockTransferCommands.CREATE_RETURN,
+			actionCode: 'create_return',
 			condition: { field: 'status', operator: 'equal' as const, value: 'done' },
 		},
 	};

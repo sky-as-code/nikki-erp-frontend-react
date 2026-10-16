@@ -49,7 +49,9 @@ function RevokeRequestListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.revoke_request.title' />
 				<Actions
-					onCreate={permissions.revokeRequest.canCreate ? handleCreate : undefined}
+					onCreate={handleCreate}
+					createLocked={!permissions.revokeRequest.canCreate}
+					createLockedMissing={permissions.revokeRequest.createMissing}
 					onRefresh={handleRefresh}
 					showImport={false}
 				/>

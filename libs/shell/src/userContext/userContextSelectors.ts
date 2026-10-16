@@ -56,6 +56,17 @@ export function useThemeMode(): { themeMode: ThemeMode, setThemeMode: (mode: The
 	return { themeMode: result.data?.themeMode ?? 'auto', setThemeMode };
 }
 
+/** The user's display language and the one way to change it; see `ApplyStoredLanguage`. */
+export function useLanguageCode(): { languageCode: string | null, setLanguageCode: (code: string) => void } {
+	const { result, dispatchMethod } = useSetLocalSettings();
+	const themeMode = result.data?.themeMode ?? 'auto';
+	const setLanguageCode = useCallback(
+		(languageCode: string) => dispatchMethod({ languageCode, themeMode }),
+		[dispatchMethod, themeMode],
+	);
+	return { languageCode: result.data?.languageCode ?? null, setLanguageCode };
+}
+
 export function useFirstOrgSlug() {
 	return useModuleSelector(selectFirstOrgSlug);
 }

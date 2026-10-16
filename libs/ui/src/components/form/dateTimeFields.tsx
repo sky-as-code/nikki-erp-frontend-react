@@ -7,6 +7,7 @@ import { Controller, useWatch } from 'react-hook-form';
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
 import { useFieldTestAttrs } from './formTestIds';
+import { ReadOnlyBooleanSwitch } from './ReadOnlyBooleanSwitch';
 
 import type { LocalizeFn } from '../../i18n';
 
@@ -133,7 +134,12 @@ export function ReadOnlyTextField(props: { name: string, localize: LocalizeFn })
 	const watched = useWatch({ control, name }) as unknown;
 	const value = watched ?? modelValue?.[name];
 
-	if (!fieldData || value === null || value === undefined || value === '') {
+	if (!fieldData) {
+		return null;
+	}
+	const isBoolean = extractDataTypeName(fieldData.fieldDef) === 'boolean';
+	// A boolean always has an answer to show -- unset reads as off -- so only other types vanish.
+	if (!isBoolean && (value === null || value === undefined || value === '')) {
 		return null;
 	}
 
@@ -144,9 +150,13 @@ export function ReadOnlyTextField(props: { name: string, localize: LocalizeFn })
 			isRequired={false}
 			error={undefined}
 		>
-			<Input.Wrapper id={inputId}>
-				<Text size='md'>{displayReadOnlyValue(value, t)}</Text>
-			</Input.Wrapper>
+			{isBoolean ? (
+				<ReadOnlyBooleanSwitch id={inputId} value={value} />
+			) : (
+				<Input.Wrapper id={inputId}>
+					<Text size='md'>{displayReadOnlyValue(value, t)}</Text>
+				</Input.Wrapper>
+			)}
 		</BaseFieldWrapper>
 	);
 }
@@ -168,3 +178,8 @@ function displayReadOnlyValue(value: unknown, localize: LocalizeFn): string {
 
 /** What `useLocalize` hands back for a LangJson carrying no entry for the active language. */
 const MISSING_TRANSLATION = '$missing.translation';
+
+function extractDataTypeName(fieldDef: { data_type: unknown }): string | undefined {
+	const dataType = fieldDef.data_type as string | { name?: string } | undefined;
+	return typeof dataType === 'string' ? dataType : dataType?.name;
+}

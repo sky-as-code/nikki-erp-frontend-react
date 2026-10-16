@@ -89,7 +89,9 @@ function RoleListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.role.title' />
 				<Actions
-					onCreate={permissions.role.canCreate ? handleCreate : undefined}
+					onCreate={handleCreate}
+					createLocked={!permissions.role.canCreate}
+					createLockedMissing={permissions.role.createMissing}
 					onRefresh={handleRefresh}
 				/>
 				<Paper className='p-4'>

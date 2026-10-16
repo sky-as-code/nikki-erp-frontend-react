@@ -3,6 +3,7 @@ import { testAttrs } from '@nikkierp/common/utils';
 import { Button, Select } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
+import { useActionLock } from '@nikkierp/viewkit-mantine';
 import React from 'react';
 import { z } from 'zod';
 
@@ -39,6 +40,7 @@ export const taxSimulatorFormRenderer: IComponentRenderer<Record<string, never>>
 function TaxSimulatorForm(): React.ReactNode {
 	const { params, state } = useTaxSimulatorContext();
 	const translate = useTranslate(params.translationNs);
+	const lock = useActionLock(c.TAX_SCHEMA_NAME, 'simulate');
 
 	return (
 		<Stack gap='md'>
@@ -52,6 +54,8 @@ function TaxSimulatorForm(): React.ReactNode {
 				<Button
 					onClick={() => state.run()}
 					loading={state.isRunning}
+					locked={lock.locked}
+					lockedMissing={lock.missing}
 					{...testAttrs('accounting', 'taxSimulator', 'run')}
 				>
 					{translate('actions.simulate')}

@@ -17,6 +17,8 @@
 
 		/* page */
 		--nikki-color-page-background: var(--mantine-color-dark-7);
+		/* The surface behind a page's content (PageContainer, pinned toolbars); see usePaperBgColor. */
+		--nikki-color-page-surface: var(--mantine-color-dark-7);
 		--nikki-color-linear-page-background: linear-gradient(135deg, var(--mantine-color-dark-4), var(--mantine-color-dark-4), var(--mantine-color-dark-9));
 
 		/* paper */
@@ -64,6 +66,7 @@
 
 		/* page */
 		--nikki-color-page-background: #d2e3f3;
+		--nikki-color-page-surface: var(--mantine-color-gray-0);
 		--nikki-color-linear-page-background: linear-gradient(135deg, var(--nikki-color-page-background), var(--nikki-color-page-background), var(--nikki-color-white));
 
 		/* paper */

@@ -5,7 +5,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 // The wrapper rather than Mantine's Button: it carries the `locked` state, and the design system
 // prefers it wherever one exists.
 import { Button } from '@nikkierp/ui/components';
-import { AutoField, useComputedField } from '@nikkierp/ui/components/form';
+import { AutoField, ReadOnlyBooleanSwitch, useComputedField } from '@nikkierp/ui/components/form';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
@@ -28,7 +28,7 @@ import { useResourceUpdateContext } from './resourceUpdateContext';
 import { EdgeFieldValue } from '../../components/edgeFieldValue';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
-import { commandActionCode, StandardActionCode, useActionLock } from '../../permissions';
+import { resolveActionCode, StandardActionCode, useActionLock } from '../../permissions';
 
 
 import type {
@@ -249,6 +249,9 @@ function ResourceDetailLinkActionButton({
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const tid = useResourceDetailTestAttrs();
 	const href = useRoutePathHref(action.routePath);
+	// A link is gated only when the page names the action its target performs: navigation alone
+	// mutates nothing, but a page that leads straight into an edit should say so up front.
+	const lock = useActionLock(useResourceDetailSchemaName(), action.actionCode ?? null);
 
 	if (!href) {
 		return null;
@@ -261,6 +264,8 @@ function ResourceDetailLinkActionButton({
 			variant='outline'
 			size='compact-md'
 			disabled={disabled}
+			locked={lock.locked}
+			lockedMissing={lock.missing}
 			{...tid('action', actionKey)}
 		>
 			{t(action.label)}
@@ -284,7 +289,7 @@ function ResourceDetailCommandActionButton({
 	const { refresh } = useResourceUpdateContext();
 	// Above the early return: hooks cannot be called conditionally.
 	const [promptOpen, setPromptOpen] = React.useState(false);
-	const lock = useActionLock(useResourceDetailSchemaName(), commandActionCode(action.command));
+	const lock = useActionLock(useResourceDetailSchemaName(), resolveActionCode(action));
 	const isVisible = !action.condition || evaluateCondition(action.condition, resource);
 	if (!isVisible) {
 		return null;
@@ -560,6 +565,15 @@ function ReadOnlyFieldValue({
 		: fieldValues[field];
 	if (!fieldDef) {
 		return null;
+	}
+	// A boolean is a switch in both modes, so flipping into update mode does not change its look.
+	if (fieldDef.data_type?.name === 'boolean') {
+		return (
+			<Stack gap={4}>
+				<Text size='md' fw='bold'>{localize(fieldDef.label)}</Text>
+				<ReadOnlyBooleanSwitch value={rawValue} />
+			</Stack>
+		);
 	}
 
 	const plainValue = hasDisplayableValue(rawValue)

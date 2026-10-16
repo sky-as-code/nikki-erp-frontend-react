@@ -3,7 +3,7 @@ import { LazyMicroApp } from '@nikkierp/shell/microApp';
 import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 import React from 'react';
-import { Navigate, Route, Routes, useParams } from 'react-router';
+import { Route, Routes, useParams } from 'react-router';
 
 // import { LazyModule } from '../components/LazyModule';
 import { AppLoading } from '../components/Loading';
@@ -73,9 +73,9 @@ function LazyModule(props: { microApps: MicroAppMetadata[] }): React.ReactNode {
 		if (moduleAccess.isPending) {
 			return <AppLoading />;
 		}
-		// Redirected, unlike the cases above: Module Home sends a forbidden click to the same page.
+		// In place, like the cases above: the URL keeps naming the module that was refused.
 		if (!moduleAccess.canAccess(backendModule)) {
-			return <Navigate to='/unauthorized' replace />;
+			return <UnauthorizedPage />;
 		}
 		return (
 			<LazyMicroApp

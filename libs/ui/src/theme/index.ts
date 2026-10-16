@@ -1,12 +1,14 @@
-import { useComputedColorScheme, useMantineTheme } from '@mantine/core';
+export * from './colorScheme';
+export * from './SyncedMantineProvider';
 
 
 /**
- * Resolved, not stored: `useMantineColorScheme().colorScheme` is the user's choice, usually `auto`,
- * which never equals `dark` -- so a device set to dark got light surfaces.
+ * The surface behind a page's content, as a CSS variable rather than a resolved colour.
+ *
+ * A colour resolved in JS follows the scheme of the provider it was computed in, and a micro-app's
+ * provider used to lag the Shell's; a variable follows the `<html>` attribute, which is always
+ * current. Defined for both schemes in the Shell's `nikki.css`.
  */
 export function usePaperBgColor(): string {
-	const colorScheme = useComputedColorScheme('light');
-	const theme = useMantineTheme();
-	return colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0];
+	return 'var(--nikki-color-page-surface)';
 }

@@ -131,6 +131,7 @@ function buildAgreementActions() {
 		confirm: {
 			label: 'actions.confirm',
 			command: AgreementCommands.CONFIRM,
+			actionCode: 'confirm',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -145,6 +146,7 @@ function buildAgreementActions() {
 		create_rfq: {
 			label: 'actions.create_rfq',
 			command: AgreementCommands.CREATE_RFQ,
+			actionCode: 'create',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -156,6 +158,7 @@ function buildAgreementActions() {
 		close: {
 			label: 'actions.close',
 			command: AgreementCommands.CLOSE,
+			actionCode: 'close',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -167,6 +170,7 @@ function buildAgreementActions() {
 		cancel: {
 			label: 'actions.cancel',
 			command: AgreementCommands.CANCEL,
+			actionCode: 'cancel',
 			condition: {
 				field: 'status',
 				operator: 'in' as const,

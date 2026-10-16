@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildSavePayload } from './settingsSaveBar';
+import { buildSavePayload, touchesSharedLevel } from './settingsSaveBar';
 
 import type { SettingItemData, SettingsDataContextValue } from './settingsDataContext';
 
@@ -98,5 +98,15 @@ describe('buildSavePayload', () => {
 		}));
 
 		expect(payload.get('user')).toEqual([{ name: 'a:b', value: 2 }]);
+	});
+});
+
+describe('touchesSharedLevel', () => {
+	it('needs the settings grant only when a tenant or org row is written', () => {
+		const userOnly = { drafts: new Map([['user:theme', 'dark']]), overrideDrafts: new Map() };
+		const orgEdit = { drafts: new Map(), overrideDrafts: new Map([['org:currency', true]]) };
+
+		expect(touchesSharedLevel(userOnly)).toBe(false);
+		expect(touchesSharedLevel(orgEdit)).toBe(true);
 	});
 });

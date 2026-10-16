@@ -1,4 +1,4 @@
-import { Box, Flex, NavLink, Stack, Text, Title } from '@mantine/core';
+import { Box, Flex, NavLink, Skeleton, Stack, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { ModuleIcon } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
@@ -9,42 +9,21 @@ import React from 'react';
 import { z } from 'zod';
 
 import classes from './settingsPageParts.module.css';
-import {
-	SETTINGS_PAGE_PANE, SETTINGS_PAGE_RAIL, SETTINGS_PAGE_SPLIT, SETTINGS_PAGE_TITLE,
-} from '../ids';
+import { SETTINGS_PAGE_PANE, SETTINGS_PAGE_RAIL, SETTINGS_PAGE_SPLIT } from '../ids';
 import { useSettingsPageContext } from '../pages/settingsPageContext';
 
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
 /**
- * The settings page's three pieces: its title, the rail of modules, and the pane the rail
- * selects.
+ * The settings page's body: the rail of modules, the pane the rail selects, and the frame holding
+ * them. The header lives in `settingsPageHeader.tsx`.
  *
- * All three take no props. What they need is state and behaviour -- which pane is active, what
+ * They take no props. What they need is state and behaviour -- which pane is active, what
  * clicking an entry does -- and neither can survive `JSON.stringify`, so it comes from the
  * page's context instead. Page JSON says where they go; the provider says what they do.
  */
 const noProps = z.object({}).strict();
-
-export const settingsPageTitleRenderer: IComponentRenderer<Record<string, never>> = {
-	type: SETTINGS_PAGE_TITLE,
-	propsSchema: noProps,
-	render() {
-		return <SettingsPageTitle />;
-	},
-};
-
-function SettingsPageTitle(): React.ReactNode {
-	const { params } = useSettingsPageContext();
-	const t = useTranslate(params.translationNs);
-
-	return (
-		<Title order={2} {...componentAttrs(SETTINGS_PAGE_TITLE)} {...testAttrs('settings.page')}>
-			{t(params.titleKey)}
-		</Title>
-	);
-}
 
 export const settingsPageRailRenderer: IComponentRenderer<Record<string, never>> = {
 	type: SETTINGS_PAGE_RAIL,
@@ -59,18 +38,23 @@ export const settingsPageRailRenderer: IComponentRenderer<Record<string, never>>
  * clicking one swaps what the right pane renders rather than scrolling a long page.
  */
 function SettingsPageRail(): React.ReactNode {
-	const { params, activeSlug, setActiveSlug } = useSettingsPageContext();
+	const { params, activeSlug, selectPane, visiblePanes } = useSettingsPageContext();
 	const t = useTranslate(params.translationNs);
+
+	// Held back until visibility resolves, so an entry that turns out empty never flashes in.
+	if (visiblePanes == null) {
+		return <Skeleton h={36} {...componentAttrs(SETTINGS_PAGE_RAIL)} {...testAttrs('settings.rail')} />;
+	}
 
 	return (
 		<Stack gap={0} {...componentAttrs(SETTINGS_PAGE_RAIL)} {...testAttrs('settings.rail')}>
-			{params.panes.map(pane => (
+			{visiblePanes.map(pane => (
 				<NavLink
 					key={pane.slug}
 					active={pane.slug === activeSlug}
 					label={t(pane.labelKey)}
 					leftSection={<ModuleIcon name={pane.slug} w={20} h={20} />}
-					onClick={() => setActiveSlug(pane.slug)}
+					onClick={() => selectPane(pane.slug)}
 					{...testAttrs('settings.railItem', pane.slug)}
 				/>
 			))}
@@ -94,9 +78,10 @@ export const settingsPagePaneRenderer: IComponentRenderer<Record<string, never>>
  * adding a setting to a module needs no change here.
  */
 function SettingsPagePane(): React.ReactNode {
-	const { params, activeSlug } = useSettingsPageContext();
+	const { params, activeSlug, visiblePanes } = useSettingsPageContext();
 	const t = useTranslate(params.translationNs);
 
+	if (visiblePanes == null) return null;
 	if (activeSlug == null) {
 		return (
 			<Text c='dimmed' {...componentAttrs(SETTINGS_PAGE_PANE)} {...testAttrs('settings.pane')}>

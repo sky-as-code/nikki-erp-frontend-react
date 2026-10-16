@@ -1,3 +1,5 @@
+import { ResourceScope } from '@nikkierp/common/entitlements';
+import { useHasEntitlement } from '@nikkierp/ui/components';
 import { useCommandBus } from '@nikkierp/ui/microApp';
 import { PageContextProvider } from '@nikkierp/viewengine/render';
 import React from 'react';
@@ -25,6 +27,9 @@ const SETTINGS_SET_COMMAND = 'settings.settings.set_settings';
  */
 const PAGE_CONTEXT = { templateId: 'nikkierp.mantine.pages.settingsPane' };
 
+/** What `GetTenantSettings` and `GetOrgSettings` assert; `settings_appservice.go` passes no org. */
+const SHARED_LEVEL_READ = [{ action: 'read', resource: 'settings_record', scope: ResourceScope.Tenant }];
+
 /** One setting as the settings API returns it. Mirrors the backend's `SettingItemResponse`. */
 export type SettingItemData = {
 	name: string,
@@ -35,6 +40,12 @@ export type SettingItemData = {
 	/** Backend-computed. The control disables on this and never re-derives it. */
 	editable: boolean,
 	field?: ModelSchemaField,
+};
+
+/** One choice for a setting whose allowed values are data rather than a schema enum. */
+export type SettingOption = {
+	value: string,
+	label: string,
 };
 
 type GetSettingsResponse = {
@@ -69,9 +80,22 @@ export type SettingsDataContextValue = {
 	 * scope itself. Taken from the response envelope rather than inferred.
 	 */
 	ownerType: SettingLevel | null,
+	/**
+	 * Levels the pane asked for but the caller may not read. Their sections render nothing: the
+	 * backend asserts `read:settings_record:tenant` on a tenant or org read, and a user without it
+	 * is shown their own settings alone rather than a refusal over the whole pane.
+	 */
+	hiddenLevels: SettingLevel[],
 	isLoading: boolean,
 	loadError: string | null,
+	/** Labelled choices by setting name; see `SettingsDataProviderProps.options`. */
+	options: Record<string, SettingOption[]>,
+	/** Shown values for unstored settings, keyed like `items`; see the provider prop. */
+	displayDefaults: Record<string, unknown>,
 };
+
+const NO_OPTIONS: Record<string, SettingOption[]> = {};
+const NO_DEFAULTS: Record<string, unknown> = {};
 
 const SettingsDataContext = React.createContext<SettingsDataContextValue | null>(null);
 
@@ -100,6 +124,16 @@ export type SettingsDataProviderProps = React.PropsWithChildren & {
 	 * A module registering at both user and org level needs both.
 	 */
 	levels: SettingLevel[],
+	/**
+	 * Labelled choices for a setting, by name. Supplied by the owning module when the allowed values
+	 * are its data -- Essential's enabled languages -- so the control can show names, not codes.
+	 */
+	options?: Record<string, SettingOption[]>,
+	/**
+	 * What to show, keyed `{level}:{name}`, for a setting the owner has never stored. Display only:
+	 * it creates no draft, so it is never sent unless the user picks it.
+	 */
+	displayDefaults?: Record<string, unknown>,
 };
 
 /**
@@ -112,7 +146,7 @@ export type SettingsDataProviderProps = React.PropsWithChildren & {
  * only thing protecting it.
  */
 export function SettingsDataProvider(
-	{ children, moduleKey, levels }: SettingsDataProviderProps,
+	{ children, moduleKey, levels, options = NO_OPTIONS, displayDefaults = NO_DEFAULTS }: SettingsDataProviderProps,
 ): React.ReactNode {
 	const commandBus = useCommandBus();
 	const [items, setItems] = React.useState<Map<string, SettingItemData>>(() => new Map());
@@ -122,10 +156,22 @@ export function SettingsDataProvider(
 	const [isLoading, setIsLoading] = React.useState(true);
 	const [loadError, setLoadError] = React.useState<string | null>(null);
 
+	// Only the shared levels need a grant; a person always reads their own settings.
+	const sharedRead = useHasEntitlement(SHARED_LEVEL_READ);
+	const hiddenLevels = React.useMemo(
+		(): SettingLevel[] => (sharedRead.isPending || sharedRead.allowed ? [] : levels.filter(level => level !== 'user')),
+		[levels, sharedRead.isPending, sharedRead.allowed],
+	);
 	// Joined so a caller passing a fresh array literal each render does not reload forever.
-	const levelsKey = levels.join(',');
+	const levelsKey = levels.filter(level => !hiddenLevels.includes(level)).join(',');
+	const waitingForGrant = sharedRead.isPending && levels.some(level => level !== 'user');
 
 	React.useEffect(() => {
+		// Decided before anything is fetched: a read the server would refuse must not be sent, or
+		// the refusal surfaces as an error over a pane that is about to hide that level anyway.
+		if (waitingForGrant) {
+			return;
+		}
 		let isMounted = true;
 		const wanted = levelsKey.split(',').filter(Boolean) as SettingLevel[];
 
@@ -167,7 +213,7 @@ export function SettingsDataProvider(
 		return () => {
 			isMounted = false;
 		};
-	}, [commandBus, moduleKey, levelsKey]);
+	}, [commandBus, moduleKey, levelsKey, waitingForGrant]);
 
 	const setDraft = React.useCallback((level: SettingLevel, name: string, value: unknown) => {
 		setDrafts((previous) => {
@@ -189,9 +235,12 @@ export function SettingsDataProvider(
 	const value = React.useMemo<SettingsDataContextValue>(
 		() => ({
 			items, drafts, setDraft, overrideDrafts, setOverrideDraft,
-			ownerType, isLoading, loadError,
+			ownerType, hiddenLevels, isLoading, loadError, options, displayDefaults,
 		}),
-		[items, drafts, setDraft, overrideDrafts, setOverrideDraft, ownerType, isLoading, loadError],
+		[
+			items, drafts, setDraft, overrideDrafts, setOverrideDraft, ownerType, hiddenLevels, isLoading, loadError,
+			options, displayDefaults,
+		],
 	);
 
 	return (

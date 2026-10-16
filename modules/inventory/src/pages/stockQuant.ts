@@ -138,6 +138,7 @@ function buildCountingActions() {
 		enter_count: {
 			label: 'actions.enter_count',
 			command: StockQuantCommands.ENTER_COUNT,
+			actionCode: 'enter_count',
 			prompt: {
 				title: 'actions.enter_count.title',
 				fields: [
@@ -156,11 +157,13 @@ function buildCountingActions() {
 		apply_adjustment: {
 			label: 'actions.apply_adjustment',
 			command: StockQuantCommands.APPLY_ADJUSTMENT,
+			actionCode: 'apply_adjustment',
 			condition: { field: 'count_quantity_set', operator: 'equal' as const, value: true },
 		},
 		reset_count: {
 			label: 'actions.reset_count',
 			command: StockQuantCommands.RESET_COUNT,
+			actionCode: 'reset_count',
 			condition: { field: 'count_quantity_set', operator: 'equal' as const, value: true },
 		},
 	};

@@ -1,15 +1,15 @@
 import {
-	DirectionProvider, MantineProvider, MantineStyleProps,
+	DirectionProvider, MantineStyleProps,
 	useMantineColorScheme,
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications, notifications as notif } from '@mantine/notifications';
 import { LockedFeatureProvider } from '@nikkierp/ui/components';
-import { usePaperBgColor } from '@nikkierp/ui/theme';
+import { SyncedMantineProvider, usePaperBgColor } from '@nikkierp/ui/theme';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { shellEventBus } from '../eventBus';
-import { useLocalSettings } from '../userContext';
+import { LOCAL_SETTINGS_CHANGED_EVENT, useLocalSettings } from '../userContext';
 
 
 export type UIProvidersProps = React.PropsWithChildren;
@@ -17,11 +17,7 @@ export type UIProvidersProps = React.PropsWithChildren;
 export const UIProviders: React.FC<UIProvidersProps> = ({ children }) => {
 	return (
 		<DirectionProvider>
-			{/* `auto` rather than `light`: it is the value the backend defaults to, and it is
-				what the interface should show before the user's stored choice has loaded --
-				overriding a device set to dark with a flash of light is worse than deferring
-				to it. `ApplyStoredTheme` takes over as soon as the setting arrives. */}
-			<MantineProvider theme={{} as any} defaultColorScheme='auto'>
+			<SyncedMantineProvider theme={{} as any}>
 				<ApplyStoredTheme />
 				<Notifications
 					position='bottom-right'
@@ -37,25 +33,17 @@ export const UIProviders: React.FC<UIProvidersProps> = ({ children }) => {
 						</LockedFeatureProvider>
 					</UIStateProvider>
 				</ModalsProvider>
-			</MantineProvider>
+			</SyncedMantineProvider>
 		</DirectionProvider>
 	);
 };
 
 /**
- * Published by a settings pane after it writes the Shell's mirrored settings.
- *
- * Must match the name `settingsSaveBar.tsx` publishes; a micro-app cannot import the Shell, so
- * the string is the contract.
- */
-const LOCAL_SETTINGS_CHANGED_EVENT = 'shell:local_settings:changed';
-
-/**
  * Where Mantine keeps the scheme the user chose (`light` | `dark` | `auto`).
  *
- * Mantine's own default, restated because the value is needed for a comparison and the library
- * exposes no getter for it outside the provider's state. `MantineProvider` is mounted without a custom
- * `colorSchemeManager`, so this is the key in use; passing one would mean changing this too.
+ * Restated because the value is needed for a comparison and Mantine exposes no getter for it
+ * outside the provider's state. It is the key `createSyncedColorSchemeManager` (`@nikkierp/ui/theme`)
+ * stores under -- Mantine's own default -- so the two must change together.
  */
 const MANTINE_COLOR_SCHEME_KEY = 'mantine-color-scheme-value';
 

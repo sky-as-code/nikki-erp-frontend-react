@@ -56,6 +56,19 @@ describe('listActionCode', () => {
 		expect(listActionCode({ testId: 'import' })).toBe('create');
 		expect(listActionCode({ testId: 'refresh' })).toBeNull();
 	});
+
+	it('prefers an explicit code on an extra action over the one its command derives', () => {
+		const params = resourceListV2PropsSchema.parse({
+			schemaName: 's', translationNs: 'n', searchCommand: 'c',
+			extraActions: [{ label: 'x', command: 'purchase.purchase_order.merge', actionCode: 'merge' }],
+		});
+		const merge = buildResourceListActions(params, t, '/base').find(a => a.command === 'purchase.purchase_order.merge');
+
+		expect(merge?.actionCode).toBe('merge');
+		expect(listActionCode(merge ?? {})).toBe('merge');
+		expect(listActionCode({ command: 'inventory.inventory_stock_transfer.create_return', actionCode: 'create_return' }))
+			.toBe('create_return');
+	});
 });
 
 describe('selectionModeOf', () => {

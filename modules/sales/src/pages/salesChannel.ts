@@ -94,6 +94,7 @@ function buildSalesChannelActions() {
 		suspend: {
 			label: 'actions.suspend',
 			command: SalesChannelCommands.SUSPEND,
+			actionCode: 'suspend',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -103,6 +104,7 @@ function buildSalesChannelActions() {
 		activate: {
 			label: 'actions.activate',
 			command: SalesChannelCommands.ACTIVATE,
+			actionCode: 'activate',
 			condition: {
 				field: 'status',
 				operator: 'equal' as const,
@@ -113,6 +115,7 @@ function buildSalesChannelActions() {
 		archive: {
 			label: 'actions.archive',
 			command: SalesChannelCommands.ARCHIVE,
+			actionCode: 'set_archived',
 		},
 	};
 }

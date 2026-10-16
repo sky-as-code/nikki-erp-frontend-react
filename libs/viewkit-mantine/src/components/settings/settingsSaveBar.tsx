@@ -1,12 +1,17 @@
 import { Group, Text } from '@mantine/core';
+import { ResourceScope } from '@nikkierp/common/entitlements';
 import { Button } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { useCommandBus, useEventBus } from '@nikkierp/ui/microApp';
+import { IconDeviceFloppy } from '@tabler/icons-react';
 import React from 'react';
 
+import { SETTINGS_SAVE_REQUEST_EVENT, SETTINGS_SAVE_STATE_EVENT } from './saveBus';
 import { SETTINGS_SET_COMMAND, useSettingsData } from './settingsDataContext';
+import { StandardActionCode, useActionLock } from '../../permissions';
 
 import type { SettingLevel } from './props';
+import type { SettingsSaveRequest, SettingsSaveState } from './saveBus';
 import type { SettingsDataContextValue } from './settingsDataContext';
 import type { ICommandBus } from '@nikkierp/common/commandBus';
 import type { IEventBus } from '@nikkierp/common/eventBus';
@@ -39,10 +44,18 @@ const SHELL_MIRRORED_SETTINGS: Record<string, 'themeMode' | 'languageCode'> = {
 	language: 'languageCode',
 };
 
+/** Refetches the user context, so the whole page applies what was just saved. Shell-owned. */
+const SHELL_REFRESH_USER_CONTEXT = 'shell.user_context.refresh';
+
 export type SettingsSaveBarProps = {
 	/** The module being configured. Equal to that module's micro-app slug. */
 	moduleKey: string,
 	onSaved?: () => void,
+	/**
+	 * Render the Save button here. Off by default: a pane hosted by the Settings page has its Save
+	 * in the page header, reached through the save bus (`saveBus.ts`), and renders nothing itself.
+	 */
+	standalone?: boolean,
 };
 
 /**
@@ -53,71 +66,115 @@ export type SettingsSaveBarProps = {
  * body is left untouched by the server. Since the write has no version check, sending the whole
  * pane would clobber every concurrent edit to settings this user never opened.
  */
-export function SettingsSaveBar({ moduleKey, onSaved }: SettingsSaveBarProps): React.ReactNode {
+export function SettingsSaveBar({ moduleKey, onSaved, standalone }: SettingsSaveBarProps): React.ReactNode {
 	const t = useTranslate(SETTINGS_NS);
+	const data = useSettingsData();
+	const save = useSettingsSave(moduleKey, data, onSaved);
+	const lockedSchema = data && touchesSharedLevel(data) ? SETTINGS_RECORD_SCHEMA : null;
+	const lock = useActionLock(lockedSchema, StandardActionCode.Update, ResourceScope.Tenant);
+	useSaveBusBridge(moduleKey, save, lock);
+
+	if (!data || !standalone) return null;
+
+	return (
+		<Group justify='flex-start' gap='md'>
+			<Button
+				variant='filled'
+				size='compact-md'
+				leftSection={<IconDeviceFloppy size={16} />}
+				onClick={() => void save.run()}
+				disabled={save.dirtyCount === 0 || save.isSaving}
+				loading={save.isSaving}
+				locked={lock.locked}
+				lockedMissing={lock.missing}
+			>
+				{t('page.save')}
+			</Button>
+			{save.error != null ? <Text size='sm' c='red'>{save.error}</Text> : null}
+		</Group>
+	);
+}
+
+type SettingsSave = {
+	run: () => Promise<void>,
+	dirtyCount: number,
+	isSaving: boolean,
+	error: string | null,
+};
+
+function useSettingsSave(
+	moduleKey: string, data: SettingsDataContextValue | null, onSaved?: () => void,
+): SettingsSave {
 	const commandBus = useCommandBus();
 	const eventBus = useEventBus();
-	const data = useSettingsData();
 	const [isSaving, setIsSaving] = React.useState(false);
-	const [saveError, setSaveError] = React.useState<string | null>(null);
-
+	const [error, setError] = React.useState<string | null>(null);
 	// An override-only change is a real change: a tenant admin may lock a setting without touching
 	// its value, and a Save that stayed disabled would silently discard that.
 	const dirtyCount = (data?.drafts.size ?? 0) + (data?.overrideDrafts.size ?? 0);
 
-	const onSave = React.useCallback(async () => {
+	const run = React.useCallback(async () => {
 		// Guards on the same count the button does. Testing `drafts` alone would let an
-		// override-only change enable Save and then return here without saving it -- silently
-		// discarding exactly the edit the `dirtyCount` comment above exists to preserve.
+		// override-only change enable Save and then return here without saving it.
 		if (!data || dirtyCount === 0) return;
-
 		setIsSaving(true);
-		setSaveError(null);
-
-		const byLevel = buildSavePayload(data);
-
+		setError(null);
 		try {
-			const responses = await Promise.all([...byLevel].map(([level, items]) =>
-				commandBus.publish({
-					name: SETTINGS_SET_COMMAND,
-					payload: { level, moduleKey, items },
-				})));
-
-			const failed = responses.find(r => r.error != null);
-			const rejected = responses.flatMap(r => r.result?.clientErrors ?? []);
-			if (failed) {
-				setSaveError(String(failed.error));
+			const failure = await publishSave(commandBus, moduleKey, data);
+			if (failure) {
+				setError(failure);
+				return;
 			}
-			else if (rejected.length > 0) {
-				setSaveError(rejected.map(item => item.message).join('; '));
-			}
-			else {
-				await syncShellLocalSettings(commandBus, eventBus, data.drafts);
-				onSaved?.();
-			}
+			await syncShellLocalSettings(commandBus, eventBus, data.drafts);
+			// The local mirror above is instant; the refresh is authoritative, and is what carries a
+			// change the Shell does not mirror (formats, an org-level language) to the whole page.
+			await commandBus.publish({ name: SHELL_REFRESH_USER_CONTEXT });
+			onSaved?.();
 		}
-		catch (error: unknown) {
-			setSaveError(error instanceof Error ? error.message : String(error));
+		catch (caught: unknown) {
+			setError(caught instanceof Error ? caught.message : String(caught));
 		}
 		finally {
 			setIsSaving(false);
 		}
 	}, [commandBus, eventBus, data, dirtyCount, moduleKey, onSaved]);
 
-	if (!data) return null;
+	return { run, dirtyCount, isSaving, error };
+}
 
-	return (
-		<Group justify='flex-end' gap='md'>
-			{saveError != null ? <Text size='sm' c='red'>{saveError}</Text> : null}
-			<Button
-				onClick={() => void onSave()}
-				disabled={dirtyCount === 0 || isSaving}
-				loading={isSaving}
-			>
-				{t('page.save')}
-			</Button>
-		</Group>
-	);
+/** Sends one PATCH per level; returns the message to show, or null when every level saved. */
+async function publishSave(
+	commandBus: ICommandBus, moduleKey: string, data: SettingsDataContextValue,
+): Promise<string | null> {
+	const responses = await Promise.all([...buildSavePayload(data)].map(([level, items]) =>
+		commandBus.publish({ name: SETTINGS_SET_COMMAND, payload: { level, moduleKey, items } })));
+	const failed = responses.find(response => response.error != null);
+	if (failed) return String(failed.error);
+	const rejected = responses.flatMap(response => response.result?.clientErrors ?? []);
+	return rejected.length > 0 ? rejected.map(item => item.message).join('; ') : null;
+}
+
+/** Tells the hosting page what its Save button should show, and runs a save it asks for. */
+function useSaveBusBridge(moduleKey: string, save: SettingsSave, lock: { locked: boolean, missing: string[] }): void {
+	const eventBus = useEventBus();
+	const runRef = React.useRef(save.run);
+	runRef.current = save.run;
+
+	React.useEffect(() => eventBus.subscribe<SettingsSaveRequest>(SETTINGS_SAVE_REQUEST_EVENT, (request) => {
+		if (request?.moduleKey === moduleKey) void runRef.current();
+	}), [eventBus, moduleKey]);
+
+	const missingKey = lock.missing.join(',');
+	React.useEffect(() => {
+		eventBus.publish<SettingsSaveState>(SETTINGS_SAVE_STATE_EVENT, {
+			moduleKey,
+			dirty: save.dirtyCount > 0,
+			saving: save.isSaving,
+			locked: lock.locked,
+			lockedMissing: missingKey ? missingKey.split(',') : [],
+			error: save.error,
+		});
+	}, [eventBus, moduleKey, save.dirtyCount, save.isSaving, save.error, lock.locked, missingKey]);
 }
 
 
@@ -190,6 +247,17 @@ function valueFor(data: SettingsDataContextValue, key: string): unknown {
  * Grouped by level because each level is its own endpoint -- the level is a path segment, never
  * a payload field.
  */
+/**
+ * The backend asserts `update:settings_record:tenant` on a tenant or org write, and nothing on a
+ * user's own preferences. With no org passed, a bare org grant does not satisfy it.
+ */
+const SETTINGS_RECORD_SCHEMA = 'settings_record';
+
+/** Whether the pending edits write a tenant or org row, which is what needs the grant. */
+export function touchesSharedLevel(data: Pick<SettingsDataContextValue, 'drafts' | 'overrideDrafts'>): boolean {
+	return [...data.drafts.keys(), ...data.overrideDrafts.keys()].some(key => !key.startsWith('user:'));
+}
+
 export function buildSavePayload(data: SettingsDataContextValue): Map<SettingLevel, SetItem[]> {
 	const byLevel = new Map<SettingLevel, SetItem[]>();
 	const touched = new Set([...data.drafts.keys(), ...data.overrideDrafts.keys()]);

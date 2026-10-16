@@ -2,9 +2,9 @@ import { ResourceScope } from '@nikkierp/common/entitlements';
 import React from 'react';
 import { useLocation } from 'react-router';
 
-import { InsufficientPermissionPage } from '../ErrorState';
 import { LoadingState } from '../Loading';
 import { useHasEntitlement, type EntitlementRequirementInput } from './entitlementContext';
+import { Unauthorized } from '../Unauthorized/Unauthorized';
 
 
 /**
@@ -83,7 +83,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 	}
 
 	if (!decision.allowed) {
-		return fallback ? <>{fallback}</> : <InsufficientPermissionPage missing={decision.missing} />;
+		return fallback ? <>{fallback}</> : <Unauthorized missing={decision.missing} />;
 	}
 
 	return <>{children}</>;

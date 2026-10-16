@@ -14,6 +14,10 @@ const SLICE_NAME = 'SettingsService';
 /**
  * Reads and writes one module's settings at one level.
  *
+ * The read is the Settings module's; the write goes to the owning module's own endpoint, which
+ * validates against its own data (an enabled language, say) before persisting. Every module serves
+ * it at the same path shape, so the module key alone names it.
+ *
  * Not a `StoreCrudServiceBase`: settings are not a dynamic-model resource. There is no record id
  * and no schema registration -- a setting is addressed by module, level and name, and the level
  * is a path segment rather than a payload field so that a caller holding org permission cannot
@@ -32,7 +36,7 @@ export class SettingsService {
 
 	@storeAsyncMethod
 	public async setSettings(req: SetSettingsRequest): Promise<ServiceResult<SetSettingsResponse>> {
-		return request.patch<SetSettingsResponse>(settingsPath(req.level, req.moduleKey), {
+		return request.patch<SetSettingsResponse>(moduleSettingsPath(req.level, req.moduleKey), {
 			// Only the changed items. See `SetSettingsRequest.items`.
 			json: { items: req.items },
 		});
@@ -45,6 +49,11 @@ export class SettingsService {
  */
 function settingsPath(level: string, moduleKey: string): string {
 	return `v1/settings/${level}/${encodeURIComponent(moduleKey)}`;
+}
+
+/** `v1/{module_key}/settings/{level}`: the owning module's update endpoint. */
+function moduleSettingsPath(level: string, moduleKey: string): string {
+	return `v1/${encodeURIComponent(moduleKey)}/settings/${level}`;
 }
 
 export const settingsService = new SettingsService();

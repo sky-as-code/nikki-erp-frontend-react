@@ -27,6 +27,11 @@ export const settingsPanePropsSchema = z.object({
 	 * heading both read "General" rather than "Essential".
 	 */
 	labelKey: z.string().min(1),
+	/**
+	 * The levels the module registers settings at -- the same list its widget reads. The rail
+	 * reads them too, to hide an entry with no setting this user can see.
+	 */
+	levels: z.array(z.enum(['tenant', 'org', 'user'])).min(1),
 }).strict();
 
 /**

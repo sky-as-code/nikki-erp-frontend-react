@@ -81,6 +81,12 @@ export const resourceDetailExtraActionSchema = z.object({
 	 * `resourceTable`'s actions already use.
 	 */
 	routePath: z.string().min(1).optional(),
+	/**
+	 * The backend action code this entry performs, or a `routePath` leads to, when no command verb names it
+	 * (`confirm`, `do_scrap`, `create_return`). Copy it from the application service's
+	 * `AssertAction` call; it is what the entitlement lock checks. Absent means derived.
+	 */
+	actionCode: z.string().min(1).optional(),
 	condition: conditionExpressionSchema.optional(),
 	/**
 	 * When present the button opens a dialog collecting these fields, and the

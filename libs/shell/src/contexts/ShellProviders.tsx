@@ -13,6 +13,7 @@ import { Location, useLocation, useNavigate } from 'react-router';
 
 import { MODULE_SCHEMA_NAME } from '@nikkierp/shell/constants';
 
+import { ApplyStoredLanguage } from './ApplyStoredLanguage';
 import { SHELL_STORE_NAME, shellStore } from '../appState/shellStore';
 import { store } from '../appState/store';
 import { useIsSessionSettled } from '../authenticate';
@@ -123,6 +124,7 @@ function InnerShellProviders(props: ShellProvidersProps): React.ReactNode {
 
 	return isInitialized && (
 		<I18nextProvider i18n={i18n}>
+			<ApplyStoredLanguage />
 			<FormatDefaultsProvider value={formatDefaultsOf(getUserCxt.data?.accountSettings)}>
 				<MicroAppHostProvider microApps={props.microApps} extraRegistrars={props.extraRegistrars}>
 					{props.children}

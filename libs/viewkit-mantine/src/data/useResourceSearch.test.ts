@@ -1,8 +1,9 @@
+import { ClientErrorItem } from '@nikkierp/common/types';
 import { describe, expect, it } from 'vitest';
 
-import { isStubSearchData } from './useResourceSearch';
+import { isStubSearchData, refusalOf } from './useResourceSearch';
 
-import type { SearchData } from '@nikkierp/ui/components/DataTable';
+import type { SearchData } from '@nikkierp/ui/components/ExcelDataTable';
 
 
 /** The resolution `useResourceSearch` applies to pick what reaches `DataTable`. */
@@ -83,5 +84,17 @@ describe('resolving what reaches the table', () => {
 		const cached = buildSearchData();
 
 		expect(resolveSearchData(null, cached)).toBe(cached);
+	});
+});
+
+describe('refusalOf', () => {
+	it('names the entitlements of a refused search, and nothing for a failed schema', () => {
+		const refusal = new ClientErrorItem({
+			key: 'common:err_insufficient_permissions', message: 'no', type: 'authorization',
+			vars: { entitlements: ['read:iam_role:org/ORG1'] },
+		});
+		expect(refusalOf([refusal], false)).toEqual(['read:iam_role:org/ORG1']);
+		expect(refusalOf([], true)).toEqual([]);
+		expect(refusalOf([], false)).toBeNull();
 	});
 });

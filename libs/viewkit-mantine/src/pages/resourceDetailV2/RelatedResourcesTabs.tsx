@@ -1,6 +1,6 @@
 import { Collapse, Group, Stack, Tabs, Title, UnstyledButton } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { LoadingState } from '@nikkierp/ui/components';
+import { InsufficientPermissionContent, LoadingState } from '@nikkierp/ui/components';
 import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { useFieldRenderers } from '@nikkierp/viewengine/render';
@@ -13,6 +13,7 @@ import { useInterpolatedGraph } from '../../components/resourceTable/ResourceTab
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
+import { useTableActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
 
 import type { RelatedResource } from './props';
@@ -123,6 +124,10 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 		(field: string) => lc(pack?.modelSchema.fields[field]?.label) || field, [lc, pack],
 	);
 
+	// Compact, not the full refusal page: this tab is one section of the detail page.
+	if (search.refused) {
+		return <InsufficientPermissionContent missing={search.refused} />;
+	}
 	if (!pack || !searchData || graph.missing.length > 0) {
 		return <LoadingState />;
 	}
@@ -167,6 +172,7 @@ function RelatedActions({ resource }: { resource: RelatedResource }) {
 	// actions name keys in its module.
 	const t = useTranslate([resource.translationNs, 'common']);
 	const viewAllHref = useResourceBaseHref(resource.linkRoutePath);
+	const extraActions = useTableActionLocks(resource.extraActions, resource.schemaName);
 	return (
 		<ExcelDataTable.Actions>
 			<ExcelDataTable.ActionRefresh />
@@ -177,7 +183,7 @@ function RelatedActions({ resource }: { resource: RelatedResource }) {
 					testId='viewAll'
 				/>
 			) : null}
-			{resource.extraActions.map((action, index) => (
+			{extraActions.map((action, index) => (
 				<ExcelDataTable.Action
 					key={`${index}:${action.testId ?? action.command ?? action.routePath}`}
 					label={t(action.label)}
@@ -185,6 +191,8 @@ function RelatedActions({ resource }: { resource: RelatedResource }) {
 					command={action.command}
 					testId={action.testId ?? action.routePath}
 					selectionMode={action.requireSelection ? (action.supportMultiple ? 'multiple' : 'single') : undefined}
+					locked={action.locked}
+					lockedMissing={action.lockedMissing}
 				/>
 			))}
 		</ExcelDataTable.Actions>

@@ -33,7 +33,17 @@ export function useIsAuthenticated(): boolean {
 	// `isAuthenticated()` reads localStorage, so it is called on every render rather than
 	// from inside a `createSelector`. Memoizing it on user-context state — as this used to
 	// — meant a token expiring in place never invalidated the cached answer.
-	return isAuthenticated() && getUserContext?.status === 'fulfilled';
+	return isAuthenticated() && hasUserContext(getUserContext);
+}
+
+/**
+ * Loaded, or being refreshed over a context already loaded. A refresh -- after a Settings save --
+ * keeps the previous data while pending; counting only `fulfilled` signed the user out for the
+ * length of the request, unmounting the page they were on.
+ */
+function hasUserContext(getUserContext: any): boolean {
+	return getUserContext?.status === 'fulfilled'
+		|| (getUserContext?.status === 'pending' && getUserContext?.data != null);
 }
 
 /** True while either the token exchange or the user-context fetch is in flight. */
@@ -52,7 +62,8 @@ const selectIsAuthenticatePending = createSelector(
 	(auth: any, getUserContext: any) => {
 		const isSigningIn = auth?.continueSignIn?.status === 'pending'
 			|| auth?.restoreAuthSession?.status === 'pending';
-		return isSigningIn || getUserContext?.status === 'pending';
+		// A refresh over a loaded context is not authentication: the session is already up.
+		return isSigningIn || (getUserContext?.status === 'pending' && getUserContext?.data == null);
 	},
 );
 

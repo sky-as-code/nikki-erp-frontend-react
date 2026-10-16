@@ -52,7 +52,7 @@ function SettingsItem({ props }: { props: SettingsItemProps }): React.ReactNode 
 	const item = data?.items.get(key);
 	// The draft wins over the loaded value, but only when one exists: `has(key)` rather than a
 	// nullish check, because clearing a setting stores a real `null` the user chose.
-	const value = data?.drafts.has(key) ? data.drafts.get(key) : item?.value;
+	const value = data?.drafts.has(key) ? data.drafts.get(key) : shownValue(item, data?.displayDefaults[key]);
 
 	const lockKey = item ? lockReasonKey(item) : null;
 
@@ -73,6 +73,7 @@ function SettingsItem({ props }: { props: SettingsItemProps }): React.ReactNode 
 					<SettingControl
 						item={item}
 						value={value}
+						options={data.options[props.name]}
 						onChange={next => data.setDraft(level, props.name, next)}
 					/>
 					{lockKey != null ? (
@@ -116,3 +117,15 @@ export function lockReasonKey(item: SettingItemData): string | null {
  * from a non-tenant caller rather than ignoring it. What is missing is the actor's real scope,
  * which belongs to the deferred authorization work -- see `02-progress.md`.
  */
+
+/**
+ * The stored value, or the module's display default when there is none to show.
+ *
+ * Keyed on the value, not on `has_value`: a seeded or cleared row exists with a null value, and
+ * means "not chosen" exactly as a missing row does.
+ */
+function shownValue(item: SettingItemData | undefined, displayDefault: unknown): unknown {
+	const isEmpty = item?.value == null || item.value === '';
+	if (item && isEmpty && displayDefault !== undefined) return displayDefault;
+	return item?.value;
+}

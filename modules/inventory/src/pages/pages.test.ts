@@ -1,3 +1,4 @@
+import { findUngatedActions } from '@nikkierp/viewkit-mantine/actionCodes';
 import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
@@ -52,6 +53,14 @@ describe('Inventory page metadata', () => {
 	 */
 	it.each(allPages)('$name pages build without a schema violation', ({ build }) => {
 		expect(() => build()).not.toThrow();
+	});
+
+	/**
+	 * Every action resolves to the code the backend asserts, or the button is not locked for a user
+	 * the server refuses. A custom verb needs an explicit `actionCode` from the application service.
+	 */
+	it.each(allPages)('$name pages declare no ungated action', ({ build }) => {
+		expect(findUngatedActions(build())).toEqual([]);
 	});
 
 	/**

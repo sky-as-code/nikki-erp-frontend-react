@@ -1,5 +1,5 @@
 import { Paper } from '@mantine/core';
-import { LoadingState } from '@nikkierp/ui/components';
+import { LoadingState, Unauthorized } from '@nikkierp/ui/components';
 import { DataTable, DataTableAction } from '@nikkierp/ui/components/DataTable';
 import { TranslateFn, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { useCommandBus } from '@nikkierp/ui/microApp';
@@ -13,7 +13,7 @@ import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useRelatedSchemas } from '../../data/useRelatedSchemas';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
-import { commandActionCode, StandardActionCode, useActionLocks } from '../../permissions';
+import { resolveActionCode, StandardActionCode, useActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
 
 import type { ResourceListCommandAction, ResourceListProps } from './props';
@@ -45,7 +45,7 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 	const graph = useResolvedInitialGraph(params.initialGraph);
 	// No `fields`: the columns are the backend's `default_search_fields`, or the user's own choice
 	// from the table settings, never the page's.
-	const { pack, searchData, searchRequest, onSearchRequestChange, refresh } = useResourceSearch({
+	const { pack, searchData, searchRequest, onSearchRequestChange, refresh, refused } = useResourceSearch({
 		schemaName: params.schemaName,
 		searchCommand: params.searchCommand,
 		initialRequest: INITIAL_REQUEST,
@@ -64,8 +64,15 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 
 	// Greys the actions the caller may not perform, leaving them clickable so the refusal can
 	// explain itself. Derived from the page's own schema name, so no page metadata declares it.
-	const gatedActions = useActionLocks(actions, params.schemaName, listActionCode);
+	const actionCodeOf = React.useCallback(
+		(action: DataTableAction) => listActionCode(action, params.extraActions),
+		[params.extraActions],
+	);
+	const gatedActions = useActionLocks(actions, params.schemaName, actionCodeOf);
 
+	if (refused) {
+		return <Unauthorized missing={refused} />;
+	}
 	if (!pack || !searchData) {
 		return <LoadingState />;
 	}
@@ -111,7 +118,7 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
  * `create` publishes no command, so it is identified by its stable `testId`. `refresh` re-runs a
  * search the user is already looking at, so it needs nothing.
  */
-function listActionCode(action: DataTableAction): string | null {
+function listActionCode(action: DataTableAction, extraActions: ResourceListCommandAction[]): string | null {
 	if (action.isSeparator) {
 		return null;
 	}
@@ -119,7 +126,10 @@ function listActionCode(action: DataTableAction): string | null {
 	if (action.testId === 'create' || action.testId === 'import') {
 		return StandardActionCode.Create;
 	}
-	return commandActionCode(action.command);
+	// `DataTableAction` has no slot for the explicit code, so it is found again on the page's own
+	// declaration by command.
+	const declared = extraActions.find(extra => extra.command === action.command);
+	return resolveActionCode({ actionCode: declared?.actionCode, command: action.command });
 }
 
 function buildResourceActions(

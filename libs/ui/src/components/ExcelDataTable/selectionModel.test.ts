@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	emptySelection, isSelected, moveSelection, pruneSelection, selectSingle, selectWithModifiers,
+	emptySelection, isSelected, moveSelection, pruneSelection, seedSelection, selectSingle, selectWithModifiers,
 } from './selectionModel';
 
 
@@ -72,5 +72,34 @@ describe('pruneSelection', () => {
 	it('returns the same state when nothing changed', () => {
 		const state = selectSingle('a');
 		expect(pruneSelection(state, order)).toBe(state);
+	});
+});
+
+describe('single selection mode', () => {
+	it('treats Ctrl and Shift clicks as a plain click', () => {
+		const start = selectSingle('a');
+		expect(selectWithModifiers(start, order, 'c', { ctrl: true }, 'single').ids).toEqual(['c']);
+		expect(selectWithModifiers(start, order, 'd', { shift: true }, 'single').ids).toEqual(['d']);
+	});
+
+	it('keeps multiple mode as the default', () => {
+		expect(selectWithModifiers(selectSingle('a'), order, 'c', { ctrl: true }).ids).toEqual(['a', 'c']);
+	});
+});
+
+describe('seedSelection', () => {
+	it('presets every id in multiple mode', () => {
+		const state = seedSelection(['b', 'd']);
+		expect(state.ids).toEqual(['b', 'd']);
+		expect(state.anchorId).toBe('b');
+		expect(state.lastId).toBe('d');
+	});
+
+	it('keeps only the first id in single mode', () => {
+		expect(seedSelection(['b', 'd'], 'single').ids).toEqual(['b']);
+	});
+
+	it('is empty for no ids', () => {
+		expect(seedSelection([])).toEqual(emptySelection());
 	});
 });

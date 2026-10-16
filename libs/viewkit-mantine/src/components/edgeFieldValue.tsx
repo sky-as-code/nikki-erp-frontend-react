@@ -1,5 +1,5 @@
 import { Anchor } from '@mantine/core';
-import { toLangJson } from '@nikkierp/ui/components/DataTable';
+import { toLangJson } from '@nikkierp/ui/components/ExcelDataTable';
 import { JsonLangText } from '@nikkierp/ui/i18n';
 import { useMicroAppManager } from '@nikkierp/ui/microApp';
 import React from 'react';

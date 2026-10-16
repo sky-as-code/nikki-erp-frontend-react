@@ -16,6 +16,9 @@ export type SelectionState = {
 
 export type SelectionModifiers = { ctrl?: boolean, shift?: boolean };
 
+/** `single` keeps at most one row selected: every gesture behaves as a plain click. */
+export type SelectionMode = 'single' | 'multiple';
+
 export function emptySelection(): SelectionState {
 	return { ids: [], anchorId: null, lastId: null };
 }
@@ -26,6 +29,13 @@ export function isSelected(state: SelectionState, id: RowId): boolean {
 
 export function selectSingle(id: RowId): SelectionState {
 	return { ids: [id], anchorId: id, lastId: id };
+}
+
+/** A selection preset by the caller, e.g. the value a picker opens on. */
+export function seedSelection(ids: RowId[], mode: SelectionMode = 'multiple'): SelectionState {
+	const seeded = mode === 'single' ? ids.slice(0, 1) : ids;
+	const last = seeded.length > 0 ? seeded[seeded.length - 1] : null;
+	return { ids: seeded, anchorId: seeded[0] ?? null, lastId: last };
 }
 
 function toggle(state: SelectionState, id: RowId): SelectionState {
@@ -55,8 +65,11 @@ function addAll(ids: RowId[], extra: RowId[]): RowId[] {
  * `order` is the rows as displayed, so the range follows the current sort.
  */
 export function selectWithModifiers(
-	state: SelectionState, order: RowId[], id: RowId, mods: SelectionModifiers,
+	state: SelectionState, order: RowId[], id: RowId, mods: SelectionModifiers, mode: SelectionMode = 'multiple',
 ): SelectionState {
+	if (mode === 'single') {
+		return selectSingle(id);
+	}
 	if (mods.shift) {
 		const anchor = state.anchorId ?? state.lastId ?? id;
 		const range = rangeBetween(order, anchor, id);

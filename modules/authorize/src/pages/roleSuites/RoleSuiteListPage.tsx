@@ -102,7 +102,9 @@ function RoleSuiteListPageBody(): React.ReactNode {
 			<Stack gap='md'>
 				<Headers titleKey='nikki.authorize.role_suite.title' />
 				<Actions
-					onCreate={permissions.roleSuite.canCreate ? handleCreate : undefined}
+					onCreate={handleCreate}
+					createLocked={!permissions.roleSuite.canCreate}
+					createLockedMissing={permissions.roleSuite.createMissing}
 					onRefresh={handleRefresh}
 				/>
 				<Paper className='p-4'>

@@ -1,6 +1,7 @@
 
 import kyLib, { HTTPError } from 'ky';
 
+import { announceAuthorizationErrors } from './authorizationEvents';
 import { ClientErrorItem, ClientErrors } from '../types/common';
 
 import type { KyInstance, Input, Options, KyRequest } from 'ky';
@@ -84,6 +85,20 @@ export function unwrapResult<T>(result: RequestResult<T>): T {
 	return result.data as T;
 }
 
+/**
+ * Reads a refused response's errors off a clone and announces them; the response itself is
+ * returned untouched, so the caller still sees its `clientErrors` as before.
+ */
+async function announceRefusal(_request: KyRequest, _options: unknown, response: Response): Promise<void> {
+	if (response.status !== 401 && response.status !== 403) {
+		return;
+	}
+	const body: unknown = await response.clone().json().catch(() => null);
+	if (ClientErrors.canConvert(body)) {
+		announceAuthorizationErrors(ClientErrors.from(body).items);
+	}
+}
+
 export class RequestMaker {
 	private static _default: RequestMaker = null!;
 
@@ -125,6 +140,9 @@ export class RequestMaker {
 						}
 					},
 				],
+				// Every refusal is announced here, whatever made the call: a typed service, a command
+				// handler posting to a custom route, or a raw `ky()` download that never parses the body.
+				afterResponse: [announceRefusal],
 				// afterResponse: [this._refreshTokenInterceptor(opts)],
 			},
 		});

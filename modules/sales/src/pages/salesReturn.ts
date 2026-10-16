@@ -78,6 +78,7 @@ function buildSalesReturnActions() {
 		confirm: {
 			label: 'actions.confirm_refund',
 			command: SalesReturnCommands.CONFIRM,
+			actionCode: 'confirm_return',
 			condition: { field: 'status', operator: 'equal' as const, value: c.RETURN_STATUS_DRAFT },
 			prompt: {
 				title: 'actions.confirm_refund.title',
@@ -87,6 +88,7 @@ function buildSalesReturnActions() {
 		process: {
 			label: 'actions.process',
 			command: SalesReturnCommands.PROCESS,
+			actionCode: 'process_return',
 			condition: {
 				field: 'status',
 				operator: 'in' as const,
@@ -96,6 +98,7 @@ function buildSalesReturnActions() {
 		cancel: {
 			label: 'actions.cancel',
 			command: SalesReturnCommands.CANCEL,
+			actionCode: 'update',
 			condition: {
 				field: 'status',
 				operator: 'in' as const,

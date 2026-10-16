@@ -1,3 +1,4 @@
+import { findUngatedActions } from '@nikkierp/viewkit-mantine/actionCodes';
 import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
@@ -35,6 +36,14 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 ];
 
 describe('Sales page metadata', () => {
+	/**
+	 * Every action resolves to the code the backend asserts, or the button is not locked for a user
+	 * the server refuses. A custom verb needs an explicit `actionCode` from the application service.
+	 */
+	it.each(allPages)('$name pages declare no ungated action', ({ build }) => {
+		expect(findUngatedActions(build())).toEqual([]);
+	});
+
 	/**
 	 * Building a page runs each prop builder's zod `parse`, so an invalid prop set throws here rather
 	 * than at render time. `tsc` cannot catch it: the builders take a permissive input type and
