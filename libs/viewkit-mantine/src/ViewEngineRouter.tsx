@@ -5,6 +5,8 @@ import { compilePage } from '@nikkierp/viewengine/metadata';
 import { useViewEngine } from '@nikkierp/viewengine/render';
 import React from 'react';
 
+import { PageReadGuard } from './permissions/PageReadGuard';
+
 import type { WidgetComponentProps } from '@nikkierp/ui/microApp';
 import type { PageNode } from '@nikkierp/viewengine/metadata';
 
@@ -47,7 +49,7 @@ export type EngineProps = {
 export function ViewEngineRouter({ microAppProps, engineProps }: ViewEngineRouterProps): React.ReactNode {
 	const engine = useViewEngine();
 	const compiled = React.useMemo(
-		() => engineProps.pages.map(page => compilePage(page, engine)),
+		() => engineProps.pages.map(page => ({ page, ...compilePage(page, engine) })),
 		[engineProps.pages, engine],
 	);
 
@@ -58,7 +60,11 @@ export function ViewEngineRouter({ microAppProps, engineProps }: ViewEngineRoute
 			<AppRoutes>
 				{engineProps.indexElement ? <AppRoute index element={engineProps.indexElement} /> : null}
 				{compiled.map(page => (
-					<AppRoute key={page.routePath} path={page.routePath} element={page.element} />
+					<AppRoute
+						key={page.routePath}
+						path={page.routePath}
+						element={<PageReadGuard page={page.page}>{page.element}</PageReadGuard>}
+					/>
 				))}
 			</AppRoutes>
 			{/* Omitted entirely when the module exposes none: every child of `<WidgetRoutes>`

@@ -7,6 +7,7 @@ import React from 'react';
 
 import { settingsSectionPropsSchema, SettingsSectionProps } from './props';
 import { SettingsSectionProvider } from './settingsContext';
+import { useSettingsData } from './settingsDataContext';
 import { SETTINGS_SECTION } from '../../ids';
 
 import type { SettingLevel } from './props';
@@ -58,6 +59,13 @@ function SettingsSection({ props, runtime }: {
 		() => ({ translationNs: props.translationNs, level: props.level }),
 		[props.translationNs, props.level],
 	);
+	const data = useSettingsData();
+
+	// A level the caller may not read is left out entirely, heading included: an empty section
+	// under "Organization settings" would read as a module with nothing to configure.
+	if (data?.hiddenLevels.includes(props.level)) {
+		return null;
+	}
 
 	return (
 		<SettingsSectionProvider value={contextValue}>

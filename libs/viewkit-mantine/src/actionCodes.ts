@@ -7,3 +7,4 @@ export {
 } from './permissions/actionEntitlements';
 export { findUngatedActions } from './permissions/ungatedActions';
 export type { UngatedAction } from './permissions/ungatedActions';
+export { pageReadRequirements } from './permissions/pageRead';

@@ -1,6 +1,5 @@
 import { Anchor, Box, Button, Text, Menu, Stack, Flex } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { useModuleAccess } from '@nikkierp/shell/erpModules';
 import { ModuleIcon } from '@nikkierp/ui/components';
 import { IconDots } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -14,18 +13,14 @@ import type { ModuleCardItem } from '../../hooks/useQueryModule';
 
 /** Every card names itself by module slug, so several cards on the grid stay distinguishable. */
 const TEST_ID = 'shell.moduleCard';
-const UNAUTHORIZED_PATH = '/unauthorized';
 
 
-/** A module the user holds nothing in stays listed, but opens the No Permission page. */
+/**
+ * Every card opens its module. A module the user holds nothing in renders the refusal in place
+ * at that URL (see `LazyModule` in ShellRoutes), so there is no separate page to send them to.
+ */
 function useModuleTargetPath(module: ModuleCardItem): string {
-	const { isPending, canAccess } = useModuleAccess();
-	const modulePath = `/${module.slug}`;
-	// While the user context loads, the route guard in ShellRoutes makes the same decision.
-	if (isPending || canAccess({ name: module.slug, model_prefix: module.modelPrefix })) {
-		return modulePath;
-	}
-	return UNAUTHORIZED_PATH;
+	return `/${module.slug}`;
 }
 
 export const ModuleCard: FC<{ module: ModuleCardItem }> = ({ module }) => {

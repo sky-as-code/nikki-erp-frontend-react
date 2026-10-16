@@ -25,12 +25,16 @@ export type NotificationFeed = {
  * The bell's data: the recent notifications, the unread count, and the live stream that keeps both
  * current.
  */
-export function useNotificationFeed(): NotificationFeed {
+/**
+ * @param enabled false while the caller may not read the inbox: nothing is fetched and no stream
+ * is opened, so a user without `read_inbox` is not met with the server's refusal at every login.
+ */
+export function useNotificationFeed(enabled: boolean = true): NotificationFeed {
 	const { api } = useMicroAppContext();
 	const state = useFeedState();
 	const [reloadToken, setReloadToken] = React.useState(0);
 
-	useFeedConnection(api, state, reloadToken);
+	useFeedConnection(api, state, reloadToken, enabled);
 
 	const markRead = React.useCallback((notificationId: string) => {
 		const orgId = state.orgIdRef.current;
@@ -108,11 +112,15 @@ function useFeedState() {
  * to neither and is missed until the next reload.
  */
 function useFeedConnection(
-	api: MicroAppApiOptions, state: FeedState, reloadToken: number,
+	api: MicroAppApiOptions, state: FeedState, reloadToken: number, enabled: boolean,
 ): void {
 	const { accept, setStatus, setFailed, setItems, setUnreadCount, orgIdRef } = state;
 
 	React.useEffect(() => {
+		if (!enabled) {
+			setStatus('closed');
+			return;
+		}
 		let cancelled = false;
 		let stream: NotificationStream | null = null;
 
@@ -165,7 +173,7 @@ function useFeedConnection(
 		// `state` is deliberately not a dependency: it changes on every notification, and
 		// depending on it would tear down and reopen the stream each time one arrived. The
 		// setters it destructures are stable, so this list is complete in practice.
-	}, [accept, api, reloadToken, orgIdRef, setFailed, setItems, setStatus, setUnreadCount]);
+	}, [accept, api, reloadToken, enabled, orgIdRef, setFailed, setItems, setStatus, setUnreadCount]);
 }
 
 function asRead(item: NotificationItem): NotificationItem {

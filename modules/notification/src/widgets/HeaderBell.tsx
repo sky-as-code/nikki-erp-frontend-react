@@ -14,7 +14,7 @@ import type { NotificationItem, NotificationSeverity } from '../features/notific
 
 const TEST_ID = 'notification.bell';
 
-/** The backend asserts `mark_read` on this resource for both the single and the bulk mark. */
+/** The backend asserts `read_inbox` on this resource for the feed, `mark_read` for either mark. */
 const RECIPIENT_SCHEMA = 'notification_recipient';
 
 /**
@@ -27,7 +27,10 @@ const RECIPIENT_SCHEMA = 'notification_recipient';
 export function HeaderBell(): React.ReactNode {
 	const { t } = useTranslation(NOTIFICATION_MODULE);
 	const [opened, setOpened] = React.useState(false);
-	const { items, unreadCount, failed, markRead, markAllRead, reload } = useNotificationFeed();
+	// Reading is checked before anything is fetched: the bell is on every page, so an unchecked
+	// fetch would greet a user without the grant with the server's refusal at each login.
+	const readLock = useActionLock(RECIPIENT_SCHEMA, 'read_inbox');
+	const { items, unreadCount, failed, markRead, markAllRead, reload } = useNotificationFeed(!readLock.locked);
 	const lock = useActionLock(RECIPIENT_SCHEMA, 'mark_read');
 	const markAllLockProps = useLockedItemProps(lock.locked, lock.missing);
 
@@ -43,6 +46,8 @@ export function HeaderBell(): React.ReactNode {
 				<Button
 					variant={opened ? 'outline' : 'subtle'}
 					aria-label={t('bell.label')}
+					locked={readLock.locked}
+					lockedMissing={readLock.missing}
 					{...testAttrs(TEST_ID, 'trigger')}
 				>
 					<Indicator
