@@ -26,10 +26,13 @@ export class ModuleService extends StoreCrudServiceBase {
 	 * Ordered by `name` so the response is stable rather than whatever order the rows come back
 	 * in. Callers that display modules re-sort by the translated label, which the server cannot
 	 * order by: the label is an i18n string in the client bundle, not a column.
+	 *
+	 * `fields=*` (every persisted column) is what the default projection is today; it is spelled out
+	 * so that `category` and `is_enabled`, which Module Home filters on, survive a narrower default.
 	 */
 	@storeAsyncMethod
 	public listAll(): Promise<ServiceResult<t.SearchModuleResponse>> {
-		return this.search({ page: 0, size: 500, graph: { order: [['name', 'asc']] } });
+		return this.search({ fields: ['*'], page: 0, size: 500, graph: { order: [['name', 'asc']] } });
 	}
 }
 

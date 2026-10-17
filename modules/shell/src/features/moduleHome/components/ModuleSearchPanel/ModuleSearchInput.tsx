@@ -1,5 +1,6 @@
 import { createTheme, Input, Stack, TextInput } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { useTranslate } from '@nikkierp/ui/i18n';
 import { SyncedMantineProvider } from '@nikkierp/ui/theme';
 import { IconSearch } from '@tabler/icons-react';
 import { FC } from 'react';
@@ -23,9 +24,10 @@ export const ModuleSearchInput: FC<ModuleSearchInputProps> = ({
 	searchInputValue,
 	onSearchChange,
 	onSearchClear,
-	placeholder = 'Search modules... (Ctrl + K)',
+	placeholder,
 	maxWidth = 550,
 }) => {
+	const translate = useTranslate('common');
 	const theme = createTheme({
 		components: {
 			Input: Input.extend({
@@ -59,7 +61,7 @@ export const ModuleSearchInput: FC<ModuleSearchInputProps> = ({
 		<SyncedMantineProvider theme={theme}>
 			<TextInput
 				ref={inputRef}
-				placeholder={placeholder}
+				placeholder={placeholder ?? `${translate('search.placeholder')} (Ctrl + K)`}
 				flex={1}
 				size='sm'
 				w={'100%'}
