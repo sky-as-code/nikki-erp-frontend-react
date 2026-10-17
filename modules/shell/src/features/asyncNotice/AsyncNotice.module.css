@@ -1,0 +1,110 @@
+/* Above Mantine modals (200), popovers (300) and its toasts (400): an async outcome can land while a modal is open. */
+.container {
+	z-index: 1000;
+}
+
+.stack {
+	--peek: 0.5rem;
+
+	position: relative;
+	display: grid;
+	padding-bottom: calc((var(--layers) - 1) * var(--peek));
+}
+
+.card {
+	--tone-light: var(--mantine-color-blue-light);
+	--tone-hover: var(--mantine-color-blue-light-hover);
+	--tone-border: var(--mantine-color-blue-outline);
+
+	grid-area: 1 / 1;
+	align-self: start;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	z-index: var(--layer);
+	overflow: hidden;
+	border: 1px solid var(--tone-border);
+	border-radius: var(--mantine-radius-md);
+
+	/* The tone colours are translucent; the body colour underneath keeps the lower cards from showing through. */
+	background: linear-gradient(var(--tone-light), var(--tone-light)), var(--mantine-color-body);
+	box-shadow: var(--mantine-shadow-md);
+	color: var(--mantine-color-text);
+	pointer-events: auto;
+	touch-action: pan-y;
+	transform:
+		translate(var(--swipe-x, 0px), calc(var(--layer) * var(--peek)))
+		scale(calc(1 - var(--depth) * 0.04));
+	transform-origin: top center;
+	transition: transform 180ms ease, opacity 180ms ease;
+
+	&[data-type='error'] {
+		--tone-light: var(--mantine-color-red-light);
+		--tone-hover: var(--mantine-color-red-light-hover);
+		--tone-border: var(--mantine-color-red-outline);
+	}
+
+	&[data-dragging] {
+		transition: none;
+		user-select: none;
+	}
+
+	&[data-leaving] {
+		opacity: 0;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+.cardTop {
+	cursor: grab;
+
+	&[data-dragging] {
+		cursor: grabbing;
+	}
+}
+
+.message {
+	max-height: 40vh;
+	overflow: auto;
+	padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+	font-size: var(--mantine-font-size-sm);
+	overflow-wrap: anywhere;
+
+	& a {
+		color: inherit;
+		text-decoration: underline;
+	}
+
+	& p {
+		margin: 0;
+	}
+}
+
+.closeButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	align-self: stretch;
+	width: 2.5rem;
+	border-left: 1px solid var(--tone-border);
+	color: var(--mantine-color-text);
+
+	@mixin hover {
+		background-color: var(--tone-hover);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--mantine-primary-color-filled);
+		outline-offset: -2px;
+	}
+}
+
+.hiddenCount {
+	position: absolute;
+	top: calc(var(--peek) * -1);
+	right: calc(var(--peek) * -1);
+	z-index: 10;
+	pointer-events: none;
+}

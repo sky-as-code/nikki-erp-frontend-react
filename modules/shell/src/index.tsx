@@ -4,6 +4,7 @@ import { dispatchServiceMethod } from '@nikkierp/ui/appState/store';
 import { MicroAppShellProps } from '@nikkierp/ui/microApp';
 import React from 'react';
 
+import { AsyncNoticeContainer, registerAsyncNoticeCommands } from './features/asyncNotice';
 import { registerSharedStateCommands, sharedStateService } from './features/sharedState';
 import { ShellRoutes } from './routes';
 
@@ -20,7 +21,7 @@ type ShellWindow = typeof window & {
  * shell is built on. Listing them here is also what imports the services, and `@storeService`
  * builds a slice on first instantiation — so the slices exist before anything reads them.
  */
-const shellCommandRegistrars = [registerSharedStateCommands];
+const shellCommandRegistrars = [registerSharedStateCommands, registerAsyncNoticeCommands];
 
 const envVars = (window as ShellWindow).__CLIENT_CONFIG__;
 
@@ -49,6 +50,7 @@ export function MicroAppShell({ microApps }: MicroAppShellProps): React.ReactNod
 		>
 			<UIProviders>
 				<ShellRoutes microApps={microApps} />
+				<AsyncNoticeContainer />
 			</UIProviders>
 		</ShellProviders>
 	);
