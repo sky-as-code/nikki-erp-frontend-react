@@ -1,33 +1,40 @@
-import { Collapse, Group, Stack, Tabs, Title, UnstyledButton } from '@mantine/core';
+import { Alert, Collapse, Group, Stack, Tabs, Title, UnstyledButton } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { InsufficientPermissionContent, LoadingState } from '@nikkierp/ui/components';
 import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
-import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import { useTranslate } from '@nikkierp/ui/i18n';
 import { useFieldRenderers } from '@nikkierp/viewengine/render';
-import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
+import { IconChevronDown, IconChevronRight, IconInfoCircle } from '@tabler/icons-react';
 import React from 'react';
 
+import { AssignBar, AssignmentRemoveActions, useAssignmentManager } from './RelatedAssignment';
 import classes from '../../components/collapsibleSection/CollapsibleSection.module.css';
 import { PaperWithBorder } from '../../components/paperWithBorder';
 import { useInterpolatedGraph } from '../../components/resourceTable/ResourceTable';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
+import { useTableRelatedSchemas, useTranslateFieldName } from '../../data/useTableFieldLabels';
 import { useTableActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
 
 import type { RelatedResource } from './props';
+import type { AssignmentManager } from './RelatedAssignment';
+import type { InterpolateResult } from '../../data/interpolate';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 
 export type RelatedResourcesTabsProps = {
 	resources: RelatedResource[],
 	header?: string,
+	/** i18n key of an info box above the tabs, translated with `translationNs`. */
+	notice?: string,
 	translationNs: string,
 };
 
 /** The "related resources" section: one tab per related resource, each an embedded table. */
-export function RelatedResourcesTabs({ resources, header, translationNs }: RelatedResourcesTabsProps): React.ReactNode {
+export function RelatedResourcesTabs(props: RelatedResourcesTabsProps): React.ReactNode {
+	const { resources, header, notice, translationNs } = props;
 	const t = useTranslate(translationNs);
 	const [expanded, setExpanded] = React.useState(false);
 	const [hasExpanded, setHasExpanded] = React.useState(false);
@@ -60,6 +67,11 @@ export function RelatedResourcesTabs({ resources, header, translationNs }: Relat
 			*/}
 			{hasExpanded ? (
 				<Collapse expanded={expanded}>
+					{notice ? (
+						<Alert color='blue' icon={<IconInfoCircle />} mb='xs' {...testAttrs('ui.relatedResources', 'notice')}>
+							{t(notice)}
+						</Alert>
+					) : null}
 					<RelatedResourcesTabList resources={resources} />
 				</Collapse>
 			) : null}
@@ -105,10 +117,22 @@ function TabLabel({ resource, value }: { resource: RelatedResource, value: strin
 	return <Tabs.Tab value={value}>{t(resource.label)}</Tabs.Tab>;
 }
 
-/** An embedded table in the pagination-above-and-below layout, scoped by the interpolated graph. */
+/**
+ * Keyed on the interpolated scope, so selecting another parent record (the next row of a split
+ * view) starts its table afresh -- page, sort and filters belong to the record they were set on.
+ */
 function RelatedResourceTable({ resource }: { resource: RelatedResource }): React.ReactNode {
 	const graph = useInterpolatedGraph(resource.initialGraph);
-	const lc = useLocalize(resource.translationNs);
+	return <ScopedRelatedResourceTable key={JSON.stringify(graph.value ?? null)} resource={resource} graph={graph} />;
+}
+
+type ScopedRelatedResourceTableProps = {
+	resource: RelatedResource,
+	graph: InterpolateResult<dyn.SearchGraph | undefined>,
+};
+
+/** An embedded table in the pagination-above-and-below layout, scoped by the interpolated graph. */
+function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTableProps): React.ReactNode {
 	const fieldRenderers = useFieldRenderers(resource.fieldRenderers);
 	const initialRequest = React.useMemo((): dyn.RestSearchRequest => ({
 		page: 0, size: resource.pageSize, search_name: resource.searchName, fields: resource.fields,
@@ -118,11 +142,13 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 		withEdgeLabels: true,
 	});
 	const { pack, searchData } = search;
+	const assignment = useAssignmentManager(resource, search.refresh);
 	const buildLinkHref = useResourceLinkHref(resource.linkField, resource.linkRoutePath);
 	const testId = resourceTestIdPrefix({ testId: resource.testId, schemaName: resource.schemaName, part: 'Table' });
-	const translateFieldName = React.useCallback(
-		(field: string) => lc(pack?.modelSchema.fields[field]?.label) || field, [lc, pack],
+	const relatedSchemas = useTableRelatedSchemas(
+		pack?.modelSchema, searchData?.desired_fields, search.edgeLabelSchemas,
 	);
+	const translateFieldName = useTranslateFieldName(resource.translationNs, pack?.modelSchema, relatedSchemas);
 
 	// Compact, not the full refusal page: this tab is one section of the detail page.
 	if (search.refused) {
@@ -136,11 +162,11 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 			testId={testId}
 			tableName={resource.schemaName}
 			modelSchema={pack.modelSchema}
-			relatedSchemas={search.edgeLabelSchemas}
+			relatedSchemas={relatedSchemas}
 			data={searchData}
 			isLoading={search.isPending}
 			baseGraph={graph.value}
-			initialSearchRequest={search.searchRequest}
+			initialSearchRequest={search.userRequest}
 			onSearchRequestChange={search.onSearchRequestChange}
 			orderBy={getSearchRequestOrderBy(search.searchRequest)}
 			onRefresh={search.refresh}
@@ -152,8 +178,9 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 			{/* The same xs spacing the list page puts between its toolbar and the table; the header
 			    and body stay in one wrapper because together they read as a single table. */}
 			<Stack gap='xs'>
+				{assignment ? <AssignBar translationNs={resource.translationNs} manager={assignment} /> : null}
 				<ExcelDataTable.Toolbar
-					left={<RelatedActions resource={resource} />}
+					left={<RelatedActions resource={resource} assignment={assignment} />}
 					right={<><ExcelDataTable.Pagination /><ExcelDataTable.SettingsButton /></>}
 				/>
 				<div>
@@ -166,8 +193,13 @@ function RelatedResourceTable({ resource }: { resource: RelatedResource }): Reac
 	);
 }
 
-/** Refresh, the optional "View all" link, then the page-authored extras (a link or a command). */
-function RelatedActions({ resource }: { resource: RelatedResource }) {
+type RelatedActionsProps = { resource: RelatedResource, assignment: AssignmentManager | null };
+
+/**
+ * Refresh, the optional "View all" link, the assignment's Remove actions, then the page-authored
+ * extras (a link or a command).
+ */
+function RelatedActions({ resource, assignment }: RelatedActionsProps) {
 	// Both namespaces: "View all" is a standard label from `common`, while a page's own extra
 	// actions name keys in its module.
 	const t = useTranslate([resource.translationNs, 'common']);
@@ -183,6 +215,7 @@ function RelatedActions({ resource }: { resource: RelatedResource }) {
 					testId='viewAll'
 				/>
 			) : null}
+			{assignment ? <AssignmentRemoveActions manager={assignment} /> : null}
 			{extraActions.map((action, index) => (
 				<ExcelDataTable.Action
 					key={`${index}:${action.testId ?? action.command ?? action.routePath}`}

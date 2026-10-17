@@ -1,4 +1,4 @@
-import { Menu, Tooltip } from '@mantine/core';
+import { Loader, Menu, Tooltip } from '@mantine/core';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconDots, IconRefresh } from '@tabler/icons-react';
 import React from 'react';
@@ -39,7 +39,29 @@ export type ActionProps = LockedProps & {
 	 * split view's close button, which has to match the detail pane's own `ActionIcon`.
 	 */
 	variant?: ButtonProps['variant'],
+	/**
+	 * A request is pending: a spinner replaces the icon, the label stays and the control is
+	 * disabled. Not Mantine's `loading`, which hides the label.
+	 */
+	loading?: boolean,
+	/**
+	 * Greyed but still clickable, for an action that can explain why it does nothing yet — e.g. a
+	 * row action outside selection mode that answers a click with "No selected target".
+	 */
+	dimmed?: boolean,
 };
+
+/** The props `loading` and `dimmed` add to a bar button or a menu item. */
+export function getActionStateProps(
+	{ loading = false, dimmed = false, icon }: Pick<ActionProps, 'loading' | 'dimmed' | 'icon'>,
+) {
+	return {
+		leftSection: loading ? <Loader size='xs' /> : icon,
+		disabled: loading,
+		'aria-busy': loading || undefined,
+		...(dimmed ? { color: 'gray', c: 'dimmed', 'data-dimmed': 'true' } : {}),
+	};
+}
 
 /**
  * Selecting rows swaps the bar rather than adding to it, as the v1 table did.
@@ -83,18 +105,20 @@ type TriggerProps = ActionProps & { onTrigger: () => void };
 function ActionButton(props: TriggerProps) {
 	const { tid } = useExcelDataTableContext();
 	const { label, icon, iconOnly = false, href, command, locked, lockedMissing, variant, onTrigger } = props;
+	const state = getActionStateProps(props);
 	const shared = {
 		locked,
 		lockedMissing,
 		variant,
 		'aria-label': iconOnly ? label : undefined,
-		leftSection: iconOnly ? undefined : icon,
+		...state,
+		leftSection: iconOnly ? undefined : state.leftSection,
 		...commandAttrs(command),
 		...tid.action(props),
 	};
 	// An icon-only button carries its label in the tooltip and `aria-label`; every other button
 	// shows the text, with the icon beside it via `leftSection`.
-	const content = iconOnly ? icon : label;
+	const content = iconOnly ? (props.loading ? <Loader size='xs' /> : icon) : label;
 	const button = href
 		? <LinkButton to={href} {...shared}>{content}</LinkButton>
 		: <Button onClick={onTrigger} {...shared}>{content}</Button>;
@@ -105,7 +129,7 @@ function ActionMenuItem(props: TriggerProps) {
 	const { tid } = useExcelDataTableContext();
 	const lockedProps = useLockedItemProps(props.locked, props.lockedMissing);
 	// No `variant`: a menu item is not a button and has no variant to carry.
-	const shared = { leftSection: props.icon, ...commandAttrs(props.command), ...tid.action(props) };
+	const shared = { ...getActionStateProps(props), ...commandAttrs(props.command), ...tid.action(props) };
 	// A navigating entry is a real link so it stays middle-clickable; the locked props spread last
 	// because their onClick cancels the navigation.
 	if (props.href) {

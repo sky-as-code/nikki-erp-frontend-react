@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { RegisterAfterSave } from './afterSave';
+import type { RegisterAfterSave, RegisterUpdatePayload } from './afterSave';
 import type {
 	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
@@ -40,6 +40,9 @@ export type ResourceUpdateContextValue = {
 	registerAfterSave: RegisterAfterSave,
 	hasPendingAfterSave: () => boolean,
 	submitAfterSaveOnly: () => Promise<boolean>,
+	/** Optional because only the v2 update provider merges contributions into its request. */
+	registerUpdatePayload?: RegisterUpdatePayload,
+	hasPendingUpdatePayload?: () => boolean,
 };
 
 export const ResourceUpdateContext = React.createContext<ResourceUpdateContextValue | undefined>(undefined);

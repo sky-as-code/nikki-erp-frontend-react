@@ -3,6 +3,7 @@ import {
 	Box,
 	Button,
 	Combobox,
+	ComboboxProps,
 	ComboboxStore,
 	Group,
 	Input,
@@ -44,6 +45,11 @@ export type SearchableSelectProps = {
 	 */
 	onActionTrigger?: () => void,
 	dropdownWidth?: PopoverWidth,
+	/**
+	 * Passed through to Mantine's `Combobox`, after this component's own defaults, e.g. `classNames`
+	 * to bound a content-sized (`width: 'max-content'`) dropdown.
+	 */
+	comboboxProps?: Omit<ComboboxProps, 'store' | 'onOptionSubmit' | 'children'>,
 	items: SearchableSelectItem[],
 	searchBoxEnabledAt?: number, // Show search box when there are more than this number of items
 	searchPlaceholder?: string,
@@ -115,7 +121,7 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 			size='md'
 			store={combobox}
 			withinPortal={true}
-			width={props.dropdownWidth}
+			width={props.dropdownWidth} {...props.comboboxProps}
 			onOptionSubmit={(val) => {
 				combobox.closeDropdown();
 				if (val === ACTION_OPTION_VALUE) {
@@ -248,11 +254,13 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 					disabled={props.disabled}
 					{...testAttrs(props.testId, 'trigger')}
 				>
-					{value ?? (
-						<Input.Placeholder>
-							{props.unselectedPlaceholder ?? 'No item selected'}
-						</Input.Placeholder>
-					)}
+					{value
+						? <span className='block truncate' title={value}>{value}</span>
+						: (
+							<Input.Placeholder>
+								{props.unselectedPlaceholder ?? 'No item selected'}
+							</Input.Placeholder>
+						)}
 				</InputBase>
 			</Combobox.Target>
 		);
@@ -270,7 +278,7 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 				{...testAttrs(props.testId, 'trigger')}
 			>
 				{value
-					? <Text ta={'left'} fz={'h5'} fw={'bolder'} miw={20}>{value}</Text>
+					? <Text ta={'left'} fz={'h5'} fw={'bolder'} miw={20} truncate title={value}>{value}</Text>
 					: <Input.Placeholder>
 						{props.unselectedPlaceholder ?? 'No item selected'}
 					</Input.Placeholder>}

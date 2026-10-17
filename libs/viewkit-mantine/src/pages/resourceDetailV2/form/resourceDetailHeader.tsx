@@ -14,6 +14,7 @@ import { useResourceUpdateContext } from '../resourceUpdateContext';
 import { CreateActionButton, ResourceActionBar } from '../resourceUpdateParts';
 
 import type { PageHeaderContextValue } from '../../../components/pageHeader/pageHeaderContext';
+import type { ResourceUpdateContextValue } from '../resourceUpdateContext';
 import type { FormProviderRenderProps } from '@nikkierp/ui/components/form';
 import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -77,11 +78,12 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 			// Saving an untouched form has nothing to send, so it skips the request and simply
 			// leaves edit mode — the outcome the user expects from Save either way.
 			if (!hasChanges) {
-				if (!context.hasPendingAfterSave()) {
+				const pendingSave = saveWithoutFieldChanges(context, resource);
+				if (!pendingSave) {
 					setUpdateMode(false);
 					return;
 				}
-				void context.submitAfterSaveOnly().then(succeeded => {
+				void pendingSave.then(succeeded => {
 					if (succeeded) {
 						setUpdateMode(false);
 					}
@@ -133,6 +135,24 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 			/>
 		</PageHeaderProvider>
 	);
+}
+
+/**
+ * The save for a form whose own fields are untouched: a section's update-payload contribution
+ * (sent as `{id, etag, ...contribution}`), else the after-save hooks alone, else nothing (`null`).
+ */
+function saveWithoutFieldChanges(
+	context: ResourceUpdateContextValue, resource: Record<string, unknown> | undefined,
+): Promise<boolean> | null {
+	if (context.hasPendingUpdatePayload?.()) {
+		const id = resource?.id;
+		const etag = resource?.etag;
+		if (typeof id !== 'string' || typeof etag !== 'string') {
+			return Promise.resolve(false);
+		}
+		return context.onSubmit({ id, etag });
+	}
+	return context.hasPendingAfterSave() ? context.submitAfterSaveOnly() : null;
 }
 
 /**

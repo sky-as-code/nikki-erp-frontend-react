@@ -26,7 +26,8 @@ function mergeClassNames(classNames: SelectProps['classNames']): SelectProps['cl
  *
  * Sized to match {@link Input} exactly — same `size='sm'` typography, same `--input-height-xs`
  * box — because the two sit side by side in filter rows and forms, where a half-step difference
- * in height between a text box and a dropdown is the kind of thing that reads as a bug.
+ * in height between a text box and a dropdown is the kind of thing that reads as a bug. A caller
+ * passing its own `size` gets that size's own height, again like {@link Input}.
  *
  * The dropdown is portalled and bottom-start aligned by default: a select inside a scrolling,
  * height-capped pane would otherwise clip its own menu against the pane's overflow.
@@ -38,7 +39,7 @@ export function Select<Value extends string = string>(
 		<MantineSelect
 			size={size ?? 'sm'}
 			style={style}
-			classNames={mergeClassNames(classNames)}
+			classNames={size ? classNames : mergeClassNames(classNames)}
 			comboboxProps={{ ...defaultComboboxProps, ...comboboxProps }}
 			{...rest as SelectProps<Value>}
 		/>

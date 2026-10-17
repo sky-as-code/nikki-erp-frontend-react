@@ -59,7 +59,7 @@ const LANG_TEXT_DATA_TYPES: ReadonlySet<dyn.ModelSchemaFieldDataTypeName> = new 
 	'nikkiLangJson',
 ]);
 
-const ENUM_DATA_TYPES: ReadonlySet<dyn.ModelSchemaFieldDataTypeName> = new Set([
+export const ENUM_DATA_TYPES: ReadonlySet<dyn.ModelSchemaFieldDataTypeName> = new Set([
 	'enumInt32', 'enumString',
 ]);
 

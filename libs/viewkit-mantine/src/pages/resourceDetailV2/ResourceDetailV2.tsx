@@ -71,6 +71,7 @@ function ResourceDetailV2View({ params, childrenNodes }: ResourceDetailV2ViewPro
 						<RelatedResourcesTabs
 							resources={params.relatedResources}
 							header={params.relatedResourcesHeader}
+							notice={params.relatedResourcesNotice}
 							translationNs={params.translationNs}
 						/>
 					</>

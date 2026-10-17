@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isActionVisible } from './Action';
+import { getActionStateProps, isActionVisible } from './Action';
 
 
 describe('isActionVisible', () => {
@@ -22,5 +22,27 @@ describe('isActionVisible', () => {
 		expect(isActionVisible('multiple', 0)).toBe(false);
 		expect(isActionVisible('multiple', 1)).toBe(true);
 		expect(isActionVisible('multiple', 5)).toBe(true);
+	});
+});
+
+describe('getActionStateProps', () => {
+	it('keeps the icon and stays enabled when idle', () => {
+		const props = getActionStateProps({ icon: 'icon' });
+		expect(props.leftSection).toBe('icon');
+		expect(props.disabled).toBe(false);
+		expect(props).not.toHaveProperty('c');
+	});
+
+	it('swaps the icon for a spinner and disables the control while loading', () => {
+		const props = getActionStateProps({ icon: 'icon', loading: true });
+		expect(props.leftSection).not.toBe('icon');
+		expect(props.disabled).toBe(true);
+		expect(props['aria-busy']).toBe(true);
+	});
+
+	it('greys a dimmed action without disabling it, so the click still answers', () => {
+		const props = getActionStateProps({ dimmed: true });
+		expect(props.disabled).toBe(false);
+		expect(props).toMatchObject({ color: 'gray', c: 'dimmed', 'data-dimmed': 'true' });
 	});
 });

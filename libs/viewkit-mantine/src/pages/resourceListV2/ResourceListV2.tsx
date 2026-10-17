@@ -13,13 +13,12 @@ import { useSearchParams } from 'react-router';
 import { buildResourceListActions, listActionCode, selectionModeOf } from './actions';
 import classes from './ResourceListV2.module.css';
 import { getViewModeIcon } from './viewModeIcons';
-import { resolveSchemaField } from '../../data/fieldPaths';
 import { interpolateParams } from '../../data/interpolate';
 import { parseSearchGraphParam } from '../../data/searchGraphParam';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
-import { useRelatedSchemas } from '../../data/useRelatedSchemas';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
+import { useTableRelatedSchemas, useTranslateFieldName } from '../../data/useTableFieldLabels';
 import { EXCEL_DATA_TABLE_BODY } from '../../ids';
 import { StandardActionCode, useActionLock, useActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
@@ -66,12 +65,12 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 		withEdgeLabels: true,
 	});
 	const { pack, searchData } = search;
-	const relatedSchemas = useListRelatedSchemas(
+	const relatedSchemas = useTableRelatedSchemas(
 		pack?.modelSchema, searchData?.desired_fields, search.edgeLabelSchemas,
 	);
 	const buildLinkHref = useResourceLinkHref(params.linkField, routePath);
 	const baseHref = useResourceBaseHref(routePath);
-	const translateFieldName = useTranslateFieldName(params, pack?.modelSchema, relatedSchemas);
+	const translateFieldName = useTranslateFieldName(params.translationNs, pack?.modelSchema, relatedSchemas);
 	const testId = resourceTestIdPrefix({ testId: params.testId, routePath, schemaName: params.schemaName, part: 'List' });
 	const actions = React.useMemo(() => buildResourceListActions(params, t, baseHref), [params, t, baseHref]);
 	const allowedViewModes = React.useMemo(() => params.viewModes.map(view => view.mode), [params.viewModes]);
@@ -286,28 +285,6 @@ function ViewModes({ params }: { params: ResourceListV2Props }): React.ReactNode
 }
 
 /**
- * The schema's own label, or the edge schema's once loaded; a dotted field whose edge schema is
- * still in flight reads as its own path rather than blank.
- */
-function useTranslateFieldName(
-	params: ResourceListV2Props,
-	modelSchema: dyn.ModelSchema | undefined,
-	relatedSchemas: Record<string, dyn.ModelSchema>,
-): (field: string) => string {
-	const lc = useLocalize(params.translationNs);
-	const t = useTranslate(params.translationNs);
-	return React.useCallback((field: string) => {
-		if (field === 'fields') {
-			return t('model_fields');
-		}
-		const schemaField = modelSchema
-			? resolveSchemaField(modelSchema, field, name => relatedSchemas[name])
-			: undefined;
-		return schemaField ? lc(schemaField.label) : field;
-	}, [lc, modelSchema, relatedSchemas, t]);
-}
-
-/**
  * The `initialGraph` search graph carried in the URL, for a link that opens the list pre-filtered.
  *
  * Read once per navigation and then owned by the filter panel: it seeds the conditions rather
@@ -330,18 +307,4 @@ function useResolvedInitialGraph(initialGraph: ResourceListV2Props['initialGraph
 			: interpolateParams(initialGraph, { today }).value as dyn.SearchGraph),
 		[initialGraph, today],
 	);
-}
-
-/**
- * The schemas the table reads related fields from: the destinations of the dotted columns the
- * search returned (from `default_search_fields` or the user's saved columns), plus those of every
- * foreign key whose label the search selected.
- */
-function useListRelatedSchemas(
-	schema: dyn.ModelSchema | undefined,
-	desiredFields: string[] | undefined,
-	edgeLabelSchemas: Record<string, dyn.ModelSchema>,
-): Record<string, dyn.ModelSchema> {
-	const dottedSchemas = useRelatedSchemas(schema, desiredFields);
-	return React.useMemo(() => ({ ...edgeLabelSchemas, ...dottedSchemas }), [edgeLabelSchemas, dottedSchemas]);
 }

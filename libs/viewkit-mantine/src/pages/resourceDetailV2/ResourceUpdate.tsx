@@ -9,7 +9,7 @@ import { toV2FormNodes } from './formNodes';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
 import { useEdgeLabelFields } from '../../data/useEdgeLabelFields';
 import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_V2 } from '../../ids';
-import { useUpdateAfterSave } from '../resourceDetail/afterSave';
+import { useUpdateAfterSave, useUpdatePayloadContributors } from '../resourceDetail/afterSave';
 import { useResourceDetailContext } from '../resourceDetail/ResourceDetailProvider';
 
 import type {
@@ -81,6 +81,8 @@ export function ResourceUpdateProvider(
 	const resource = getByIdCmd.data?.item as Record<string, unknown> | undefined;
 	const afterSave = useUpdateAfterSave(id, resource, refresh);
 	const runAfterUpdate = afterSave.runAfterUpdate;
+	const payloadContributors = useUpdatePayloadContributors();
+	const collectContributions = payloadContributors.collect;
 
 	/**
 	 * Refreshes only on success. A failed save must NOT re-fetch: that would replace
@@ -89,16 +91,18 @@ export function ResourceUpdateProvider(
 	 */
 	const onSubmit = React.useCallback(async (data: Record<string, any>): Promise<boolean> => {
 		if (!commands.update) return false;
-		const response = await publishUpdate(data);
+		const contributions = collectContributions();
+		const response = await publishUpdate({ ...data, ...contributions.payload });
 		const succeeded = response.error == null && (response.result?.clientErrors.length ?? 0) === 0;
 		if (succeeded) {
+			contributions.notifySaved();
 			await runAfterUpdate(response.result?.data?.etag, data);
 			refresh();
 		}
 		// Reported back so the action bar can leave edit mode only on success: a rejected save has
 		// to keep the user's input on screen, since that is exactly what they need to correct.
 		return succeeded;
-	}, [publishUpdate, commands.update, refresh, runAfterUpdate]);
+	}, [publishUpdate, commands.update, refresh, runAfterUpdate, collectContributions]);
 
 	const value = React.useMemo(
 		(): ResourceUpdateContextValue => ({
@@ -122,6 +126,8 @@ export function ResourceUpdateProvider(
 			registerAfterSave: afterSave.register,
 			hasPendingAfterSave: afterSave.hasPending,
 			submitAfterSaveOnly: afterSave.submitAfterSaveOnly,
+			registerUpdatePayload: payloadContributors.register,
+			hasPendingUpdatePayload: payloadContributors.hasPending,
 		}),
 		[
 			commands, resource, edgeLabels.destSchemas, getByIdCmd.isPending, updateCmd.isPending,
@@ -130,6 +136,7 @@ export function ResourceUpdateProvider(
 			props.allStatuses, props.currentStatus, props.contextualActions,
 			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.childrenNodes,
 			afterSave.register, afterSave.hasPending, afterSave.isRunning, afterSave.submitAfterSaveOnly,
+			payloadContributors.register, payloadContributors.hasPending,
 		],
 	);
 

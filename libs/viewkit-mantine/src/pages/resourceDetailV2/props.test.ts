@@ -30,4 +30,31 @@ describe('resourceDetailV2PropsSchema', () => {
 		})).toThrow();
 		expect(() => resourceDetailV2PropsSchema.parse({ ...base, relatedResource: [] })).toThrow();
 	});
+
+	it('accepts an assignment spec and a section notice', () => {
+		const parsed = resourceDetailV2PropsSchema.parse({
+			...base,
+			relatedResourcesNotice: 'role_relatedNotice',
+			relatedResources: [{
+				label: 'role_sections_assignedUsers', schemaName: 'iam_user', translationNs: 'iam', searchCommand: 'c',
+				assignment: {
+					pickerSchemaName: 'iam_user', manageCommand: 'iam.iam_role.manage_role_users',
+					actionCode: 'manage_role_assignments',
+				},
+			}],
+		});
+		expect(parsed.relatedResourcesNotice).toBe('role_relatedNotice');
+		expect(parsed.relatedResources[0].assignment?.actionResource).toBeUndefined();
+	});
+
+	it('rejects an assignment missing its command or carrying unknown keys', () => {
+		const tab = { label: 'l', schemaName: 'iam_user', translationNs: 'iam', searchCommand: 'c' };
+		const assignment = { pickerSchemaName: 'iam_user', manageCommand: 'm', actionCode: 'a' };
+		expect(() => resourceDetailV2PropsSchema.parse({
+			...base, relatedResources: [{ ...tab, assignment: { ...assignment, manageCommand: undefined } }],
+		})).toThrow();
+		expect(() => resourceDetailV2PropsSchema.parse({
+			...base, relatedResources: [{ ...tab, assignment: { ...assignment, extra: true } }],
+		})).toThrow();
+	});
 });

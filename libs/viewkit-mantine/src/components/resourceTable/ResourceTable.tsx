@@ -42,12 +42,13 @@ function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactN
 	const initialRequest = useInitialRequest(params);
 	const commandBus = useCommandBus();
 
-	const { pack, searchData, searchRequest, onSearchRequestChange, refresh, refused } = useResourceSearch({
+	const search = useResourceSearch({
 		schemaName: params.schemaName,
 		searchCommand: params.searchCommand,
 		initialRequest,
 		baseGraph: graph.value,
 	});
+	const { pack, searchData, searchRequest, userRequest, onSearchRequestChange, refresh, refused } = search;
 	const buildLinkHref = useResourceLinkHref(params.linkField, params.linkRoutePath);
 	// No `routePath` of its own: an embedded table is identified by the schema it lists, which is
 	// unique within its host page unless the author embeds two — hence the explicit `testId` escape.
@@ -76,7 +77,8 @@ function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactN
 				testId={testId}
 				tableName={lc(pack.modelSchema.label, { count: searchData.total })}
 				data={searchData}
-				initialSearchRequest={searchRequest}
+				// The user's request, not the merged one: `DataTable` echoes its seed back on mount.
+				initialSearchRequest={userRequest}
 				modelSchema={pack.modelSchema}
 				onSearchRequestChange={onSearchRequestChange}
 				fieldRenderer={fieldRenderer}

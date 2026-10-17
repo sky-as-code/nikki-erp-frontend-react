@@ -83,7 +83,7 @@ function buildAssignedRolesResource() {
 		linkField: 'id',
 		linkRoutePath: 'iam_role',
 		extraActions: [{
-			label: 'assignment.manageRoles', routePath: 'iam_role',
+			label: 'assignment.manageRoles', routePath: 'roles',
 			actionCode: 'manage_role_assignments', actionResource: c.GROUP_SCHEMA_NAME, actionScope: 'tenant' as const,
 		}],
 	};

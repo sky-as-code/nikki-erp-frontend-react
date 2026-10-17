@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { MoneyFieldRenderer } from './cellRenderers';
-import { getCellAlignment, getCellText, getCellValue, getFieldSchema, resolveEdgeLabel } from './cellValues';
+import { BadgeFieldRenderer, MoneyFieldRenderer } from './cellRenderers';
+import {
+	getCellAlignment, getCellText, getCellValue, getFieldSchema, renderDataCellContent, resolveEdgeLabel,
+} from './cellValues';
 
+import type { TranslateFn } from '../../../i18n';
 import type * as dyn from '@nikkierp/common/dynamicModel';
+import type React from 'react';
 
 
 const variantSchema = {
@@ -112,5 +116,45 @@ describe('getCellAlignment', () => {
 		expect(getCellAlignment(text, undefined)).toBe('left');
 		expect(getCellAlignment(text, new MoneyFieldRenderer('$'))).toBe('right');
 		expect(getCellAlignment(undefined, undefined)).toBe('left');
+	});
+});
+
+describe('renderDataCellContent for enums', () => {
+	type BadgeElement = React.ReactElement<{ color?: string, children?: React.ReactNode }>;
+	const statusField = {
+		name: 'status', data_type: { name: 'enumString', options: { enumValues: ['active', 'locked'] } },
+	} as unknown as dyn.ModelSchemaField;
+	const tagsField = {
+		name: 'tags', data_type: { name: 'enumString', is_array: true },
+	} as unknown as dyn.ModelSchemaField;
+	const translations: Record<string, string> = { 'status.active': 'Active' };
+	const t = ((key: string) => translations[key] ?? `iam:${key}`) as unknown as TranslateFn;
+
+	it('renders a gray badge labelled with the {field}.{value} translation', () => {
+		const node = renderDataCellContent('active', 'active', statusField, undefined, t) as BadgeElement;
+		expect(node.props.color).toBe('gray');
+		expect(node.props.children).toBe('Active');
+	});
+
+	it('falls back to the stored value when the key is untranslated', () => {
+		const node = renderDataCellContent('locked', 'locked', statusField, undefined, t) as BadgeElement;
+		expect(node.props.children).toBe('locked');
+	});
+
+	it('renders nothing for an empty value', () => {
+		expect(renderDataCellContent(null, '', statusField, undefined, t)).toBe('');
+	});
+
+	it('lets a page renderer override the default', () => {
+		const renderer = new BadgeFieldRenderer({ colorMap: { active: 'green' } });
+		const node = renderDataCellContent('active', 'active', statusField, renderer, t) as BadgeElement;
+		expect(node.props.color).toBe('green');
+	});
+
+	it('renders one badge per element of an array enum', () => {
+		const nodes = renderDataCellContent(['a', 'b'], 'a,b', tagsField, undefined, t) as BadgeElement[];
+		expect(nodes).toHaveLength(2);
+		const first = nodes[0].props.children as React.ReactNode[];
+		expect((first[0] as BadgeElement).props.color).toBe('gray');
 	});
 });

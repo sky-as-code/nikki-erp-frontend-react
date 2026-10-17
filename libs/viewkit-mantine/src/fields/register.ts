@@ -1,4 +1,4 @@
-import { MoneyFieldRenderer, TranslatedFieldRenderer } from '@nikkierp/ui/components/ExcelDataTable';
+import { BadgeFieldRenderer, MoneyFieldRenderer, TranslatedFieldRenderer } from '@nikkierp/ui/components/ExcelDataTable';
 import { z } from 'zod';
 
 import {
@@ -7,7 +7,7 @@ import {
 } from '../ids';
 import { attributePillsSpecSchema, AttributePillsFieldRenderer } from './attributePills';
 import { AvatarFieldRenderer } from './avatar';
-import { badgeSpecSchema, BadgeFieldRenderer } from './badge';
+import { badgeSpecSchema } from './badge';
 
 import type { IViewRegistry } from '@nikkierp/viewengine/core';
 

@@ -1,0 +1,12 @@
+.draftRow {
+	background-color: var(--mantine-color-green-light);
+}
+
+.removedRow {
+	color: var(--mantine-color-dimmed);
+	text-decoration: line-through;
+}
+
+.grantRow {
+	background-color: var(--mantine-color-default-hover);
+}

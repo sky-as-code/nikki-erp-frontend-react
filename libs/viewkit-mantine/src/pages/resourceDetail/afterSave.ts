@@ -52,6 +52,65 @@ export function useAfterSaveHooks(): {
 	return { register, run, hasPending, isRunning };
 }
 
+/**
+ * Adds keys to the update request itself, for a section whose edits must land in the same write
+ * as the form's fields (e.g. a role's entitlement delta) rather than in a second request after it.
+ */
+export type UpdatePayloadContributor = {
+	/** The keys to merge into the next update request, or `undefined` while there is nothing to send. */
+	build: () => Record<string, unknown> | undefined,
+	/** Called once an update that carried this contribution has succeeded. */
+	onSaved?: () => void,
+};
+
+export type RegisterUpdatePayload = (contributor: UpdatePayloadContributor) => () => void;
+
+export type UpdatePayloadContributions = {
+	payload: Record<string, unknown>,
+	notifySaved: () => void,
+};
+
+export function useUpdatePayloadContributors(): {
+	register: RegisterUpdatePayload,
+	hasPending: () => boolean,
+	collect: () => UpdatePayloadContributions,
+} {
+	const contributorsRef = React.useRef(new Set<UpdatePayloadContributor>());
+
+	const register = React.useCallback<RegisterUpdatePayload>((contributor) => {
+		contributorsRef.current.add(contributor);
+		return () => {
+			contributorsRef.current.delete(contributor);
+		};
+	}, []);
+
+	const hasPending = React.useCallback(
+		() => [...contributorsRef.current].some(contributor => contributor.build() !== undefined),
+		[],
+	);
+
+	const collect = React.useCallback(() => collectContributions([...contributorsRef.current]), []);
+
+	return { register, hasPending, collect };
+}
+
+/** Exported for tests: merges every pending contribution and notifies only those that sent one. */
+export function collectContributions(contributors: UpdatePayloadContributor[]): UpdatePayloadContributions {
+	const payload: Record<string, unknown> = {};
+	const contributing: UpdatePayloadContributor[] = [];
+	contributors.forEach(contributor => {
+		const part = contributor.build();
+		if (part !== undefined) {
+			Object.assign(payload, part);
+			contributing.push(contributor);
+		}
+	});
+	return {
+		payload,
+		notifySaved: () => contributing.forEach(contributor => contributor.onSaved?.()),
+	};
+}
+
 export function notifyAfterSaveFailure(error: unknown): void {
 	console.error(error);
 	notifications.show({

@@ -1,8 +1,8 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
-import { applyCustomRenderer, findDefaultRenderer, renderDefaultByDataType } from './cellRenderers';
-import { getFieldSchema } from '../filter/filterModel';
+import { applyCustomRenderer, findDefaultRenderer, renderDefaultByDataType, renderEnumBadge } from './cellRenderers';
+import { ENUM_DATA_TYPES, getFieldSchema } from '../filter/filterModel';
 
 import type { CellAlignment } from './cellRenderers';
 import type { TranslateFn } from '../../../i18n';
@@ -123,9 +123,8 @@ export function renderDataCellContent(
 	if (fieldRenderer) {
 		return applyCustomRenderer(fieldRenderer, textValue, t, rawValue);
 	}
-	const dataTypeName = getFieldDataTypeName(fieldSchema);
 	if (!isArrayField(fieldSchema)) {
-		return renderDefaultByDataType(rawValue, textValue, dataTypeName, fieldSchema);
+		return renderDefaultValue(rawValue, textValue, fieldSchema, t);
 	}
 	const values = Array.isArray(rawValue) ? rawValue : (rawValue == null || rawValue === '' ? [] : [rawValue]);
 	if (values.length === 0) {
@@ -133,10 +132,24 @@ export function renderDataCellContent(
 	}
 	return values.map((value, index) => (
 		<React.Fragment key={`${String(value)}-${index}`}>
-			{renderDefaultByDataType(value, String(value ?? ''), dataTypeName, fieldSchema)}
+			{renderDefaultValue(value, String(value ?? ''), fieldSchema, t)}
 			{index < values.length - 1 ? <br /> : null}
 		</React.Fragment>
 	));
+}
+
+/** An enum needs `t` for its label, which the data-type renderers do not get, so it is routed here. */
+function renderDefaultValue(
+	rawValue: unknown,
+	textValue: string,
+	fieldSchema: dyn.ModelSchemaField | undefined,
+	t: TranslateFn,
+): React.ReactNode {
+	const dataTypeName = getFieldDataTypeName(fieldSchema);
+	if (fieldSchema && dataTypeName && ENUM_DATA_TYPES.has(dataTypeName)) {
+		return renderEnumBadge(textValue, fieldSchema.name, t);
+	}
+	return renderDefaultByDataType(rawValue, textValue, dataTypeName, fieldSchema);
 }
 
 /** A value with no whitespace cannot wrap, so it is clipped rather than allowed to overflow. */
