@@ -115,18 +115,28 @@ describe('IAM role page metadata', () => {
 	// Written from the role side, but gated like the principal pages: the backend asserts
 	// `manage_role_assignments` on the principal with no org, which only a tenant grant satisfies.
 	it.each([
-		{ tab: 0, principal: 'iam_user', command: 'iam.iam_role.manage_role_users' },
-		{ tab: 1, principal: 'iam_group', command: 'iam.iam_role.manage_role_groups' },
-	])('role detail tab $tab assigns $principal through $command', ({ tab, principal, command }) => {
+		{ tab: 0, principal: 'iam_user', command: 'iam.iam_role.manage_role_users', prompt: 'role_assign_newUser' },
+		{ tab: 1, principal: 'iam_group', command: 'iam.iam_role.manage_role_groups', prompt: 'role_assign_newGroup' },
+	])('role detail tab $tab assigns $principal through $command', ({ tab, principal, command, prompt }) => {
 		const [page] = buildRolePages();
 		type Detail = { relatedResources: RelatedResource[], relatedResourcesNotice?: string };
 		const detail = (page.props as { secondary: { props: Detail } }).secondary.props;
 
 		expect(detail.relatedResourcesNotice).toBe('role_relatedNotice');
 		expect(detail.relatedResources[tab].assignment).toMatchObject({
-			pickerSchemaName: principal, manageCommand: command,
+			pickerSchemaName: principal, manageCommand: command, newRowPrompt: prompt,
 			actionCode: 'manage_role_assignments', actionResource: principal, actionScope: 'tenant',
 		});
+	});
+
+	it('role detail tabs request their own columns, not the schema defaults', () => {
+		const [page] = buildRolePages();
+		type Detail = { relatedResources: RelatedResource[] };
+		const [users, groups] = (page.props as { secondary: { props: Detail } }).secondary.props.relatedResources;
+
+		expect(users.fields).toEqual(['avatar_url', 'display_name', 'email']);
+		expect(users.fieldRenderers).toEqual({ avatar_url: { renderer: 'avatar' } });
+		expect(groups.fields).toEqual(['name']);
 	});
 
 	// `iam_role` opts out of org scoping, so nothing seeds `org_id` and no input sends one: a role

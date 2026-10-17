@@ -23,6 +23,24 @@ export function isRowEditableField(modelSchema: dyn.ModelSchema | undefined, fie
 }
 
 /**
+ * Whether a column takes an input in the insert row. Like {@link isRowEditableField}, except that a
+ * `no_update` field is writable here: it is set once, at creation, which is exactly this row.
+ */
+export function isRowCreatableField(modelSchema: dyn.ModelSchema | undefined, field: string): boolean {
+	if (!modelSchema || field.includes('.')) {
+		return false;
+	}
+	const fieldDef = modelSchema.fields[field];
+	if (!fieldDef || fieldDef.is_primary_key || fieldDef.is_auto_generated || fieldDef.is_computed) {
+		return false;
+	}
+	if (fieldDef.is_edge_model) {
+		return false;
+	}
+	return dyn.isRenderableFieldType(fieldDef);
+}
+
+/**
  * Why an inline row update cannot be sent, or `undefined` when it can.
  *
  * `unchanged` is the ordinary case and not a failure: nothing was edited, so there is nothing to

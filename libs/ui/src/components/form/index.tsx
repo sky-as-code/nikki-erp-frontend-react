@@ -1,5 +1,6 @@
 export * from './fields';
 export * from './dateTimeFields';
+export * from './fieldLabelContext';
 export * from './formContext';
 export * from './formTestIds';
 export * from './LangJsonField';

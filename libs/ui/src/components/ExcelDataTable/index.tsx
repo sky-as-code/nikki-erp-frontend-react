@@ -4,8 +4,10 @@ import { ExcelDataTableContext, useExcelDataTableContext } from './context';
 import { FilterButton } from './FilterButton';
 import { FilterPanel } from './FilterPane';
 import { ForViewMode } from './ForViewMode';
+import { NewRowSlot } from './NewRowSlot';
 import { Pagination } from './Pagination';
 import { ExcelDataTableProvider } from './Provider';
+import { EditRowActions } from './rowActions';
 import { SettingsButton } from './SettingsButton';
 import { Table } from './Table';
 import { TableHeader } from './TableHeader';
@@ -17,6 +19,7 @@ import { ViewModeButton, ViewModeButtons } from './ViewMode';
 export * from './Action';
 export * from './Actions';
 export * from './actionsContext';
+export * from './capabilities';
 export * from './cells/cellRenderers';
 export * from './cells/cellValues';
 export * from './clipboard';
@@ -30,8 +33,12 @@ export * from './filter/useFilterState';
 export * from './FilterButton';
 export * from './FilterPane';
 export * from './ForViewMode';
+export * from './NewRow';
+export * from './newRowModel';
+export * from './NewRowSlot';
 export * from './Pagination';
 export * from './Provider';
+export * from './rowActions';
 export * from './selectionModel';
 export * from './SettingsButton';
 export * from './settings/SettingsModal';
@@ -68,4 +75,6 @@ export const ExcelDataTable = {
 	ForViewMode,
 	ViewModeButtons,
 	ViewModeButton,
+	EditRowActions,
+	NewRowSlot,
 };

@@ -93,6 +93,16 @@
 	position: relative;
 }
 
+.fillerHeaderCell {
+	background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+	overflow: hidden;
+}
+
+/* The select-all cell is one click target; while a row is being edited it is inert. */
+.selectAllCell[data-disabled='true'] {
+	cursor: default;
+}
+
 /* The 2px progress row: header background, bar in the selected-row border colour. */
 .progressRow {
 	height: 2px;
@@ -169,4 +179,26 @@
 
 .editingCell :global(.mantine-InputWrapper-label) {
 	display: none;
+}
+
+/*
+ * A read row's actions appear on hover, and stay while the row is selected. Opacity rather than
+ * `visibility` keeps the button in the tab order, so `:focus-within` can reveal it to the keyboard.
+ */
+.rowActions {
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+
+.bodyRow:hover .rowActions,
+.rowActions:focus-within,
+.rowActionsVisible {
+	opacity: 1;
+}
+
+/* Nothing hovers on a touch screen: the actions are always shown there. */
+@media (hover: none) {
+	.rowActions {
+		opacity: 1;
+	}
 }

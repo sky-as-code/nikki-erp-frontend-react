@@ -2,6 +2,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
 import { applyCustomRenderer, findDefaultRenderer, renderDefaultByDataType, renderEnumBadge } from './cellRenderers';
+import i18next, { schemaModuleName } from '../../../i18n';
 import { ENUM_DATA_TYPES, getFieldSchema } from '../filter/filterModel';
 
 import type { CellAlignment } from './cellRenderers';
@@ -75,6 +76,7 @@ export function resolveEdgeLabel(
 	modelSchema: dyn.ModelSchema | undefined,
 	relatedSchemas: Record<string, dyn.ModelSchema>,
 	language?: string,
+	translateRef: SchemaRefTranslator = translateSchemaRef,
 ): string | undefined {
 	const relation = modelSchema?.to_relations?.find(rel => rel.src_field === field);
 	if (!relation) {
@@ -88,14 +90,41 @@ export function resolveEdgeLabel(
 	if (label == null) {
 		return undefined;
 	}
-	return typeof label === 'object' ? langJsonText(label as dyn.ModelSchemaLangJson, language) : String(label);
+	if (typeof label !== 'object') {
+		return String(label);
+	}
+	const destSchemaName = relation.dest_schema_name;
+	return localizeLangJson(label as dyn.ModelSchemaLangJson, language, key => translateRef(key, destSchemaName));
+}
+
+/** Translates a `$ref` key owned by `schemaName`'s module; undefined when it has no translation (yet). */
+export type SchemaRefTranslator = (key: string, schemaName: string) => string | undefined;
+
+/**
+ * Reads the shared i18next store rather than a hook, so it can run per cell. The namespace must
+ * already be loaded: the Provider's default `translateFieldName` loads those of every schema the
+ * table shows, and re-renders the table once they arrive.
+ */
+export function translateSchemaRef(key: string, schemaName: string): string | undefined {
+	const ns = schemaModuleName(schemaName);
+	return i18next.exists(key, { ns }) ? i18next.t(key, { ns }) : undefined;
 }
 
 /**
- * A localized label (`essential_uom.name`) in the active language, else in any language it has:
- * a label in the wrong language still names the record better than its id does.
+ * A lang-json value (`essential_uom.name`, a field label) as text: its `$ref` translation when
+ * there is one, else the active language, else any language it has — a label in the wrong
+ * language still names the record better than its id does.
  */
-function langJsonText(langJson: dyn.ModelSchemaLangJson, language: string | undefined): string | undefined {
+export function localizeLangJson(
+	langJson: dyn.ModelSchemaLangJson,
+	language: string | undefined,
+	translateRef?: (key: string) => string | undefined,
+): string | undefined {
+	const refKey = langJson[dyn.LangJsonRefKey];
+	const translated = refKey ? translateRef?.(refKey) : undefined;
+	if (translated) {
+		return translated;
+	}
 	const preferred = language ? langJson[language] : undefined;
 	if (preferred) {
 		return preferred;
@@ -119,9 +148,10 @@ export function renderDataCellContent(
 	fieldSchema: dyn.ModelSchemaField | undefined,
 	fieldRenderer: IFieldRenderer | undefined,
 	t: TranslateFn,
+	record?: SearchItem,
 ): React.ReactNode {
 	if (fieldRenderer) {
-		return applyCustomRenderer(fieldRenderer, textValue, t, rawValue);
+		return applyCustomRenderer(fieldRenderer, textValue, t, rawValue, record);
 	}
 	if (!isArrayField(fieldSchema)) {
 		return renderDefaultValue(rawValue, textValue, fieldSchema, t);

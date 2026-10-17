@@ -27,11 +27,12 @@ export function applyCustomRenderer(
 	textValue: string,
 	t: TranslateFn,
 	rawValue?: unknown,
+	record?: Record<string, unknown>,
 ): React.ReactNode {
 	// A structured value has to reach the renderer intact; `textValue` is already `String(value)`
 	// by this point, which is `[object Object]` for anything but a scalar.
 	if (renderer.renderRaw) {
-		return renderer.renderRaw(rawValue, textValue);
+		return renderer.renderRaw(rawValue, textValue, record);
 	}
 	// An empty value has no translation to look up: a prefixing `translationKey` would build the
 	// bare prefix (`orders.tx_status.`), which resolves to nothing and renders as that raw key.

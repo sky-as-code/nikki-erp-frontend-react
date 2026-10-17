@@ -1,8 +1,12 @@
 import React from 'react';
 
-import { defaultColumnWidth, getAutoColumnWidth, getColumnWidth, rowNumberColumnWidth } from './columnWidths';
+import {
+	defaultColumnWidth, defaultTableLayout, getAutoColumnWidth, getColumnCount, getColumnWidth, getRowActionsMinWidth,
+	getTableMinWidth, rowNumberColumnWidth,
+} from './columnWidths';
 import { useExcelDataTableContext } from './context';
 
+import type { TableLayout } from './columnWidths';
 import type { ColumnWidths } from './types';
 
 
@@ -11,20 +15,37 @@ import type { ColumnWidths } from './types';
  * fixed` with this same `<colgroup>` and the same width rule: the column widths alone decide
  * the layout, so identical inputs give identical columns.
  */
-export function TableColGroup({ fields, widths }: { fields: string[], widths: ColumnWidths }) {
+export type TableColGroupProps = { fields: string[], widths: ColumnWidths, layout?: TableLayout };
+
+export function TableColGroup({ fields, widths, layout = defaultTableLayout }: TableColGroupProps) {
 	return (
 		<colgroup>
-			<col style={{ width: rowNumberColumnWidth }} />
+			{layout.indexColumnVisible ? <col style={{ width: rowNumberColumnWidth }} /> : null}
 			{fields.map(field => <col key={field} style={{ width: getColumnWidth(field, widths) }} />)}
-			<col />
+			<col style={{ minWidth: layout.fillerMinWidth }} />
 		</colgroup>
 	);
 }
 
 /** Fills the container, and grows past it (horizontal scroll) once the columns need more. */
-export function getTableStyle(fields: string[], widths: ColumnWidths): React.CSSProperties {
-	const minWidth = fields.reduce((sum, field) => sum + getColumnWidth(field, widths), rowNumberColumnWidth);
-	return { width: '100%', minWidth, tableLayout: 'fixed' };
+export function getTableStyle(
+	fields: string[], widths: ColumnWidths, layout: TableLayout = defaultTableLayout,
+): React.CSSProperties {
+	return { width: '100%', minWidth: getTableMinWidth(fields, widths, layout), tableLayout: 'fixed' };
+}
+
+/** The layout both `<table>`s share; header and body must read the same one or columns drift. */
+export function useTableLayout(): TableLayout {
+	const { indexColumnVisible, columnWidths, capabilities } = useExcelDataTableContext();
+	const fillerMinWidth = Math.max(columnWidths.fillerMinWidth, getRowActionsMinWidth(capabilities));
+	return React.useMemo(() => ({ indexColumnVisible, fillerMinWidth }), [indexColumnVisible, fillerMinWidth]);
+}
+
+/** The `colSpan` of a row that spans the whole table. */
+export function useColumnCount(): number {
+	const { fields } = useExcelDataTableContext();
+	const layout = useTableLayout();
+	return getColumnCount(fields.length, layout);
 }
 
 export function useColumnResize() {

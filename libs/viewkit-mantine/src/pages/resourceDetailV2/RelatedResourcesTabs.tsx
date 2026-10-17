@@ -1,13 +1,14 @@
 import { Alert, Collapse, Group, Stack, Tabs, Title, UnstyledButton } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { InsufficientPermissionContent, LoadingState } from '@nikkierp/ui/components';
-import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
+import { ExcelDataTable, withLeadingField } from '@nikkierp/ui/components/ExcelDataTable';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { useFieldRenderers } from '@nikkierp/viewengine/render';
 import { IconChevronDown, IconChevronRight, IconInfoCircle } from '@tabler/icons-react';
 import React from 'react';
 
-import { AssignBar, AssignmentRemoveActions, useAssignmentManager } from './RelatedAssignment';
+import { assignmentSearchField } from './assignmentPayloads';
+import { useAssignmentWriteProps } from './RelatedAssignment';
 import classes from '../../components/collapsibleSection/CollapsibleSection.module.css';
 import { PaperWithBorder } from '../../components/paperWithBorder';
 import { useInterpolatedGraph } from '../../components/resourceTable/ResourceTable';
@@ -19,7 +20,6 @@ import { useTableActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
 
 import type { RelatedResource } from './props';
-import type { AssignmentManager } from './RelatedAssignment';
 import type { InterpolateResult } from '../../data/interpolate';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -134,15 +134,16 @@ type ScopedRelatedResourceTableProps = {
 /** An embedded table in the pagination-above-and-below layout, scoped by the interpolated graph. */
 function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTableProps): React.ReactNode {
 	const fieldRenderers = useFieldRenderers(resource.fieldRenderers);
+	const fields = useRequestedFields(resource);
 	const initialRequest = React.useMemo((): dyn.RestSearchRequest => ({
-		page: 0, size: resource.pageSize, search_name: resource.searchName, fields: resource.fields,
-	}), [resource.pageSize, resource.searchName, resource.fields]);
+		page: 0, size: resource.pageSize, search_name: resource.searchName, fields,
+	}), [resource.pageSize, resource.searchName, fields]);
 	const search = useResourceSearch({
 		schemaName: resource.schemaName, searchCommand: resource.searchCommand, initialRequest, baseGraph: graph.value,
 		withEdgeLabels: true,
 	});
 	const { pack, searchData } = search;
-	const assignment = useAssignmentManager(resource, search.refresh);
+	const assignment = useAssignmentWriteProps(resource);
 	const buildLinkHref = useResourceLinkHref(resource.linkField, resource.linkRoutePath);
 	const testId = resourceTestIdPrefix({ testId: resource.testId, schemaName: resource.schemaName, part: 'Table' });
 	const relatedSchemas = useTableRelatedSchemas(
@@ -174,13 +175,13 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 			translateFieldName={translateFieldName}
 			buildLinkHref={buildLinkHref}
 			fieldRenderers={fieldRenderers}
+			{...assignment}
 		>
 			{/* The same xs spacing the list page puts between its toolbar and the table; the header
 			    and body stay in one wrapper because together they read as a single table. */}
 			<Stack gap='xs'>
-				{assignment ? <AssignBar translationNs={resource.translationNs} manager={assignment} /> : null}
 				<ExcelDataTable.Toolbar
-					left={<RelatedActions resource={resource} assignment={assignment} />}
+					left={assignment ? null : <RelatedActions resource={resource} />}
 					right={<><ExcelDataTable.Pagination /><ExcelDataTable.SettingsButton /></>}
 				/>
 				<div>
@@ -193,13 +194,22 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 	);
 }
 
-type RelatedActionsProps = { resource: RelatedResource, assignment: AssignmentManager | null };
+/** An assignment tab also fetches its picker's column, which the table shows first. */
+function useRequestedFields(resource: RelatedResource): string[] | undefined {
+	const { assignment, fields } = resource;
+	return React.useMemo(
+		() => (assignment && fields
+			? withLeadingField(fields, assignmentSearchField(assignment.newRowSearchField, fields))
+			: fields),
+		[assignment, fields],
+	);
+}
 
 /**
- * Refresh, the optional "View all" link, the assignment's Remove actions, then the page-authored
- * extras (a link or a command).
+ * Refresh, the optional "View all" link, then the page-authored extras (a link or a command). An
+ * assignment tab has none: its insert row and row Delete are its actions.
  */
-function RelatedActions({ resource, assignment }: RelatedActionsProps) {
+function RelatedActions({ resource }: { resource: RelatedResource }) {
 	// Both namespaces: "View all" is a standard label from `common`, while a page's own extra
 	// actions name keys in its module.
 	const t = useTranslate([resource.translationNs, 'common']);
@@ -215,7 +225,6 @@ function RelatedActions({ resource, assignment }: RelatedActionsProps) {
 					testId='viewAll'
 				/>
 			) : null}
-			{assignment ? <AssignmentRemoveActions manager={assignment} /> : null}
 			{extraActions.map((action, index) => (
 				<ExcelDataTable.Action
 					key={`${index}:${action.testId ?? action.command ?? action.routePath}`}

@@ -107,3 +107,19 @@ export function pruneSelection(state: SelectionState, order: RowId[]): Selection
 	const keep = (id: RowId | null) => (id !== null && order.includes(id) ? id : null);
 	return { ids, anchorId: keep(state.anchorId), lastId: keep(state.lastId) };
 }
+
+/** Every given row, e.g. the header's select-all over the rows loaded. */
+export function selectAll(ids: RowId[]): SelectionState {
+	return seedSelection([...ids]);
+}
+
+export type SelectionCoverage = 'none' | 'some' | 'all';
+
+/** How much of `ids` is selected: what the header's select-all checkbox shows. */
+export function selectionStateOf(state: SelectionState, ids: RowId[]): SelectionCoverage {
+	const selectedCount = ids.filter(id => isSelected(state, id)).length;
+	if (selectedCount === 0) {
+		return 'none';
+	}
+	return selectedCount === ids.length ? 'all' : 'some';
+}

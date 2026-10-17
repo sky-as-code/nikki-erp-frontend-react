@@ -34,22 +34,7 @@ function toLoadedList<TItem>(command: {
 	};
 }
 
-/** The role's saved entitlements, re-read on every record switch and after a save. */
-export function useRoleEntitlements(roleId: string): LoadedList<RoleEntitlement> & { refetch: () => void } {
-	const command = useCommand<dyn.RestSearchResponse<RoleEntitlement>>(RoleCommands.SEARCH_ENTITLEMENTS);
-	const publish = command.publish;
-	const refetch = React.useCallback(() => {
-		void publish({ role_id: roleId });
-	}, [publish, roleId]);
-
-	React.useEffect(() => {
-		refetch();
-	}, [refetch]);
-
-	return { ...toLoadedList<RoleEntitlement>(command), refetch };
-}
-
-/** Every resource, read when the grant row mounts, i.e. on entering update mode: read mode has no picker. */
+/** Every resource, read when the insert row opens: read mode has no picker. */
 export function useGrantableResources(): LoadedList<GrantableResource> {
 	const command = useCommand<dyn.RestSearchResponse<GrantableResource>>(RoleCommands.SEARCH_GRANTABLE_RESOURCES);
 	const publish = command.publish;
@@ -89,11 +74,12 @@ export type PermissionDraftState = {
  */
 export function usePermissionDraftState(args: {
 	roleId: string,
-	existing: RoleEntitlement[],
+	/** The saved rows as last loaded, read when a grant is drafted. */
+	getExisting: () => RoleEntitlement[],
 	updateMode: boolean,
 	onSaved: () => void,
 }): PermissionDraftState {
-	const { roleId, existing, updateMode, onSaved } = args;
+	const { roleId, getExisting, updateMode, onSaved } = args;
 	const [state, setState] = React.useState(() => emptyDrafts(roleId));
 	const drafts = draftsFor(state, roleId);
 
@@ -111,7 +97,7 @@ export function usePermissionDraftState(args: {
 	return {
 		drafts,
 		grant: (draft: DraftGrant): GrantOutcome => {
-			const result = grantDraft(drafts, draft, existing);
+			const result = grantDraft(drafts, draft, getExisting());
 			setState(result.drafts);
 			return result.outcome;
 		},

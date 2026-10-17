@@ -215,9 +215,13 @@ export function useLocalize(moduleName?: string): LocalizeFn {
  * namespace on demand, so naming one the page never used is enough to fetch it.
  */
 export function useSchemaLocalize(schemaName: string): LocalizeFn {
+	return useLocalize(schemaModuleName(schemaName));
+}
+
+/** The translation namespace of the module owning `schemaName`, by the `{module}_{entity}` convention. */
+export function schemaModuleName(schemaName: string): string | undefined {
 	const separatorIdx = schemaName.indexOf('_');
-	const moduleName = separatorIdx > 0 ? schemaName.slice(0, separatorIdx) : undefined;
-	return useLocalize(moduleName);
+	return separatorIdx > 0 ? schemaName.slice(0, separatorIdx) : undefined;
 }
 
 /**

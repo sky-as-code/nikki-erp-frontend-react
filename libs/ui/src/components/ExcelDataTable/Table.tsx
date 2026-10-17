@@ -9,9 +9,13 @@ import {
 } from './cells/cellValues';
 import { useExcelDataTableContext } from './context';
 import classes from './ExcelDataTable.module.css';
+import { NewRowSlot } from './NewRowSlot';
+import { DeleteRowAction } from './rowActions';
+import { isRowDeleteDisabled, isRowDeleteShown } from './rowDeleteModel';
 import { EditingRow } from './RowEditor';
-import { TableColGroup, getTableStyle, useBodyScrollSync } from './tableLayout';
+import { TableColGroup, getTableStyle, useBodyScrollSync, useColumnCount, useTableLayout } from './tableLayout';
 import { rowIdOf } from './types';
+import { useRowDelete } from './useRowDelete';
 import { useTableKeyboard } from './useTableKeyboard';
 import { useI18n, useTranslate } from '../../i18n';
 
@@ -31,11 +35,14 @@ export type TableProps = {
  */
 export function Table({ className, emptyText }: TableProps) {
 	const t = useTranslate('common');
-	const { data, fields, columnWidths, isLoading, selection, tid } = useExcelDataTableContext();
+	const { data, fields, columnWidths, isLoading, selection, capabilities, tid } = useExcelDataTableContext();
 	const scroller = useBodyScrollSync();
+	const layout = useTableLayout();
+	const columnCount = useColumnCount();
 	const onKeyDown = useTableKeyboard();
 	useFocusAfterEditing();
-	const showEmpty = data.items.length === 0 && !isLoading;
+	// A table rows can be added to always ends in the insert row, which already says what to do next.
+	const showEmpty = data.items.length === 0 && !isLoading && !capabilities.includes('create');
 	return (
 		<div
 			ref={scroller.ref}
@@ -45,21 +52,16 @@ export function Table({ className, emptyText }: TableProps) {
 			className={clsx(classes.bodyScroller, className)}
 			{...tid.attrs('body')}
 		>
-			<MantineTable
-				withTableBorder
-				withColumnBorders
-				striped='even'
-				highlightOnHover
-				style={getTableStyle(fields, columnWidths.widths)}
-			>
-				<TableColGroup fields={fields} widths={columnWidths.widths} />
+			<MantineTable striped='even' highlightOnHover style={getTableStyle(fields, columnWidths.widths, layout)}>
+				<TableColGroup fields={fields} widths={columnWidths.widths} layout={layout} />
 				<MantineTable.Tbody>
 					{data.items.map((item, rowIndex) => (
 						<BodyRow key={rowIdOf(item, rowIndex)} item={item} rowIndex={rowIndex} />
 					))}
+					<NewRowSlot />
 					{showEmpty ? (
 						<MantineTable.Tr>
-							<MantineTable.Td colSpan={fields.length + 2} className='text-center'>
+							<MantineTable.Td colSpan={columnCount} className='text-center'>
 								{emptyText ?? t('search.noResults')}
 							</MantineTable.Td>
 						</MantineTable.Tr>
@@ -88,19 +90,18 @@ type BodyRowProps = { item: SearchItem, rowIndex: number };
  */
 function useFocusAfterEditing(): void {
 	const { editing, scrollSync } = useExcelDataTableContext();
-	const wasEditing = React.useRef(editing.rowId !== null);
+	const wasEditing = React.useRef(editing.isActive);
 	React.useEffect(() => {
-		const isEditing = editing.rowId !== null;
-		if (wasEditing.current && !isEditing) {
+		if (wasEditing.current && !editing.isActive) {
 			scrollSync.current.body?.focus({ preventScroll: true });
 		}
-		wasEditing.current = isEditing;
-	}, [editing.rowId, scrollSync]);
+		wasEditing.current = editing.isActive;
+	}, [editing.isActive, scrollSync]);
 }
 
 function BodyRow({ item, rowIndex }: BodyRowProps) {
 	const context = useExcelDataTableContext();
-	const { data, fields, selection, editing, buildLinkHref, tid, updateCommand } = context;
+	const { data, fields, selection, editing, buildLinkHref, tid, canUpdateRows, indexColumnVisible } = context;
 	const rowId = rowIdOf(item, rowIndex);
 	const rowNumber = getRowNumber(data.page, data.size, rowIndex);
 	const isSelected = selection.ids.includes(rowId);
@@ -109,18 +110,57 @@ function BodyRow({ item, rowIndex }: BodyRowProps) {
 	}
 	const linkHref = buildLinkHref?.(item);
 	const onDoubleClick = () => {
-		if (updateCommand && selection.ids.length <= 1) {
+		if (canUpdateRows && !editing.creating && selection.ids.length <= 1) {
 			editing.start(rowId);
 		}
 	};
 	return (
-		<MantineTable.Tr aria-selected={isSelected} onDoubleClick={onDoubleClick} {...tid.row(rowId)}>
-			<RowNumberCell rowId={rowId} rowNumber={rowNumber} isSelected={isSelected} />
+		<MantineTable.Tr
+			aria-selected={isSelected}
+			onDoubleClick={onDoubleClick}
+			className={classes.bodyRow}
+			{...tid.row(rowId)}
+		>
+			{indexColumnVisible ? <RowNumberCell rowId={rowId} rowNumber={rowNumber} isSelected={isSelected} /> : null}
 			{fields.map(field => (
 				<DataCell key={field} field={field} item={item} rowId={rowId} href={linkHref} isSelected={isSelected} />
 			))}
-			<MantineTable.Td className={clsx({ [classes.selectedCell]: isSelected })} aria-hidden />
+			<RowActionsCell item={item} rowId={rowId} isSelected={isSelected} />
 		</MantineTable.Tr>
+	);
+}
+
+type RowActionsCellProps = { item: SearchItem, rowId: RowId, isSelected: boolean };
+
+/**
+ * The filler cell of a read row, holding its delete when the table may delete. Its keys and
+ * double-clicks stay here: Enter on the button must not also open the row editor.
+ */
+function RowActionsCell({ item, rowId, isSelected }: RowActionsCellProps) {
+	const { capabilities, locks, editing, isLoading, tid } = useExcelDataTableContext();
+	const rowDelete = useRowDelete(item);
+	const cellClass = clsx('align-middle', { [classes.selectedCell]: isSelected });
+	if (!isRowDeleteShown(capabilities)) {
+		return <MantineTable.Td className={cellClass} aria-hidden />;
+	}
+	const disabled = !rowDelete.isDeletable
+		|| isRowDeleteDisabled({ isEditing: editing.isActive, isLoading, isDeleting: rowDelete.isDeleting });
+	return (
+		<MantineTable.Td
+			className={cellClass}
+			onKeyDown={event => event.stopPropagation()}
+			onDoubleClick={event => event.stopPropagation()}
+		>
+			<div className={clsx(classes.rowActions, { [classes.rowActionsVisible]: isSelected })}>
+				<DeleteRowAction
+					onDelete={() => void rowDelete.onDelete()}
+					disabled={disabled}
+					locked={locks.delete.locked}
+					lockedMissing={locks.delete.missing}
+					testId={tid.rowDelete(rowId)}
+				/>
+			</div>
+		</MantineTable.Td>
 	);
 }
 
@@ -164,8 +204,8 @@ function DataCell({ field, item, rowId, href, isSelected }: DataCellProps) {
 	const content = React.useMemo(
 		() => (edgeLabel !== undefined && !renderer
 			? edgeLabel
-			: renderDataCellContent(rawValue, text, fieldSchema, renderer, t)),
-		[edgeLabel, fieldSchema, rawValue, renderer, t, text],
+			: renderDataCellContent(rawValue, text, fieldSchema, renderer, t, item)),
+		[edgeLabel, fieldSchema, item, rawValue, renderer, t, text],
 	);
 	const useEllipsis = shouldUseSingleLineEllipsis(text) && !isArrayField(fieldSchema);
 	const onMouseDown = (event: React.MouseEvent<HTMLTableCellElement>) => {

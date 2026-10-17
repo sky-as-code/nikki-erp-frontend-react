@@ -23,6 +23,8 @@ export type ColumnFilterRowProps = {
 	widths?: Record<string, number>,
 	/** Mirrors the header's trailing filler cell, present only when resizing is on. */
 	hasFillerColumn: boolean,
+	/** Mirrors the header's leading index cell; defaults to present. */
+	hasIndexColumn?: boolean,
 	translateEnumValue?: (field: string, value: string) => string,
 	tid: ExcelDataTableTestIds,
 };
@@ -40,7 +42,7 @@ export function ColumnFilterRow(props: ColumnFilterRowProps): React.ReactNode {
 	// `stickyHeader` pins that element as a whole, so both rows travel together for free.
 	return (
 		<Table.Tr className={classes.columnFilterRow}>
-			<Table.Th className={classes.columnFilterCell} aria-hidden />
+			{(props.hasIndexColumn ?? true) ? <Table.Th className={classes.columnFilterCell} aria-hidden /> : null}
 			{props.fields.map(field => (
 				<ColumnFilterCell key={field} field={field} {...props} />
 			))}

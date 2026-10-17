@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	emptySelection, isSelected, moveSelection, pruneSelection, seedSelection, selectSingle, selectWithModifiers,
+	emptySelection, isSelected, moveSelection, pruneSelection, seedSelection, selectAll, selectSingle, selectionStateOf,
+	selectWithModifiers,
 } from './selectionModel';
 
 
@@ -101,5 +102,38 @@ describe('seedSelection', () => {
 
 	it('is empty for no ids', () => {
 		expect(seedSelection([])).toEqual(emptySelection());
+	});
+});
+
+describe('selectAll', () => {
+	it('selects every row, anchored on the first and last on the final one', () => {
+		expect(selectAll(order)).toEqual({ ids: order, anchorId: 'a', lastId: 'e' });
+	});
+
+	it('does not share the given array', () => {
+		expect(selectAll(order).ids).not.toBe(order);
+	});
+
+	it('is empty for no rows', () => {
+		expect(selectAll([])).toEqual(emptySelection());
+	});
+});
+
+describe('selectionStateOf', () => {
+	it('is none when no displayed row is selected', () => {
+		expect(selectionStateOf(emptySelection(), order)).toBe('none');
+		expect(selectionStateOf(selectSingle('z'), order)).toBe('none');
+	});
+
+	it('is some when part of the rows is selected', () => {
+		expect(selectionStateOf(seedSelection(['a', 'c']), order)).toBe('some');
+	});
+
+	it('is all when every row is selected', () => {
+		expect(selectionStateOf(selectAll(order), order)).toBe('all');
+	});
+
+	it('is none for an empty table', () => {
+		expect(selectionStateOf(emptySelection(), [])).toBe('none');
 	});
 });

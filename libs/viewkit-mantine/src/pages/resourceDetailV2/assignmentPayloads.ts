@@ -19,6 +19,20 @@ export function buildRemovePayload(parentId: string, rows: Array<Record<string, 
 }
 
 /**
+ * The column holding the insert row's record picker: the declared one, else the tab's first field.
+ * `id` is the last resort only: the table shows the picker's column, so `id` would add one.
+ */
+export function assignmentSearchField(newRowSearchField: string | undefined, fields: string[] | undefined): string {
+	return newRowSearchField ?? fields?.[0] ?? 'id';
+}
+
+/** The picked record: the insert row's picker writes the record id as its column's value. */
+export function pickedRecordId(values: Record<string, unknown>, searchField: string): string | null {
+	const value = values[searchField];
+	return typeof value === 'string' && value !== '' ? value : null;
+}
+
+/**
  * The text to show for a failed command, or null when it succeeded. Plain text: the caller
  * escapes it before handing it to `showAsyncNotice`, which injects HTML.
  */
@@ -27,11 +41,6 @@ export function commandFailureMessage(response: CommandBusResponse<unknown>): st
 		return errorText(response.error);
 	}
 	return clientErrorsText(response.result?.clientErrors ?? []);
-}
-
-/** A failed dropdown load: a technical error first, else whatever the server refused with. */
-export function searchFailureMessage(loadError: string | undefined, clientErrors: ClientErrorItem[]): string | null {
-	return loadError || clientErrorsText(clientErrors);
 }
 
 function clientErrorsText(clientErrors: ClientErrorItem[]): string | null {

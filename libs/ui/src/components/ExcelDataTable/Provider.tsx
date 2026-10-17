@@ -1,7 +1,9 @@
 import React from 'react';
 
+import { useRowCapabilities, withLeadingField } from './capabilities';
 import { useColumnWidthsState } from './columnWidths';
 import { ExcelDataTableContext } from './context';
+import { useSchemaFieldNameTranslator } from './fieldLabels';
 import { useApplyFilters, useFilterState } from './filter/useFilterState';
 import { excelDataTableTestIds } from './testIds';
 import { useContainerWidthState, useIsCompact } from './useIsCompact';
@@ -9,6 +11,7 @@ import {
 	useEditingState, useOpenState, useSearchRequestState, useSelectionState, useViewModeState,
 } from './useProviderState';
 
+import type { ExcelDataTableRowWriteProps } from './capabilities';
 import type { ExcelDataTableContextValue, ScrollSyncRefs } from './context';
 import type { SelectionMode } from './selectionModel';
 import type { ExcelViewMode, RowId, SearchData, SearchItem } from './types';
@@ -16,7 +19,7 @@ import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { FieldRendererMap } from '@nikkierp/viewengine/core';
 
 
-export type ExcelDataTableProviderProps = {
+export type ExcelDataTableProviderProps = ExcelDataTableRowWriteProps & {
 	/** Names the table in test ids (`ui.{tableName}`) when no `testId` is given. */
 	tableName?: string,
 	modelSchema?: dyn.ModelSchema,
@@ -44,16 +47,17 @@ export type ExcelDataTableProviderProps = {
 	 * `initialViewMode`, so a mode a page has since dropped cannot leave the body blank.
 	 */
 	allowedViewModes?: ExcelViewMode[],
-	/** The command an inline row update publishes; inline editing is off when absent. */
-	updateCommand?: string,
 	/** Re-runs the current search; wired to the refresh action and to a saved inline update. */
 	onRefresh?: () => void,
 	onSelectionChange?: (selected: SearchItem[]) => void,
 	/** `single` clamps every selection gesture to one row; defaults to `multiple`. */
 	selectionMode?: SelectionMode,
+	/** Off to hide the row-number column and its select-all; defaults to shown. */
+	indexColumnVisible?: boolean,
 	/** Rows selected once the first page loads, e.g. a picker's current value. Read on mount only. */
 	initialSelectedIds?: RowId[],
 	translationNs?: string,
+	/** Defaults to the field's schema label, `$ref` resolved against the module owning the schema. */
 	translateFieldName?: (field: string) => string,
 	buildLinkHref?: (item: SearchItem) => string,
 	fieldRenderers?: FieldRendererMap,
@@ -63,7 +67,6 @@ export type ExcelDataTableProviderProps = {
 };
 
 const noopRefresh = () => undefined;
-const identity = (field: string) => field;
 const emptyRenderers: FieldRendererMap = {};
 const emptySchemas: Record<string, dyn.ModelSchema> = {};
 
@@ -79,7 +82,7 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 	});
 	const applyFilters = useApplyFilters(filters, setSearchRequest);
 	const editing = useEditingState(isLoading);
-	const selection = useSelectionState(data.items, props.onSelectionChange, editing.rowId !== null, {
+	const selection = useSelectionState(data.items, props.onSelectionChange, editing.isActive, {
 		mode: props.selectionMode, initialSelectedIds: props.initialSelectedIds,
 	});
 	const { viewMode, setViewMode } = useViewModeState(props.initialViewMode, props.allowedViewModes);
@@ -91,6 +94,12 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 	const isCompact = useIsCompact(container.width);
 	const tableName = props.tableName ?? props.modelSchema?.name ?? 'table';
 	const tid = React.useMemo(() => excelDataTableTestIds(props.testId, tableName), [props.testId, tableName]);
+	const schemaFieldName = useSchemaFieldNameTranslator(props.modelSchema, props.relatedSchemas ?? emptySchemas);
+	const rows = useRowCapabilities(props, tableName);
+	const { newRowSearchField } = props;
+	const fields = React.useMemo(
+		() => withLeadingField(data.desired_fields, newRowSearchField), [data.desired_fields, newRowSearchField],
+	);
 
 	const value = React.useMemo<ExcelDataTableContextValue>(() => ({
 		tableName,
@@ -110,13 +119,15 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		setViewMode,
 		settings,
 		filterPane,
-		fields: data.desired_fields,
+		indexColumnVisible: props.indexColumnVisible ?? true,
+		fields,
 		columnWidths,
 		scrollSync,
 		updateCommand: props.updateCommand,
+		...rows,
 		refresh: props.onRefresh ?? noopRefresh,
 		translationNs: props.translationNs,
-		translateFieldName: props.translateFieldName ?? identity,
+		translateFieldName: props.translateFieldName ?? schemaFieldName,
 		buildLinkHref: props.buildLinkHref,
 		fieldRenderers: props.fieldRenderers ?? emptyRenderers,
 		tid,
@@ -124,8 +135,9 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		tableName, props.modelSchema, props.relatedSchemas, data, isLoading, isCompact, container.setWidth,
 		searchRequest,
 		setSearchRequest, filters, applyFilters, selection, editing, viewMode, setViewMode, settings,
-		filterPane, columnWidths, props.updateCommand, props.onRefresh, props.translationNs,
-		props.translateFieldName, props.buildLinkHref, props.fieldRenderers, tid,
+		filterPane, fields, columnWidths, props.indexColumnVisible, props.updateCommand, rows, props.onRefresh,
+		props.translationNs,
+		props.translateFieldName, schemaFieldName, props.buildLinkHref, props.fieldRenderers, tid,
 	]);
 
 	return (

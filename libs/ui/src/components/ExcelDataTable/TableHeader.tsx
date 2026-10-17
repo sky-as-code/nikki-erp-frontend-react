@@ -1,5 +1,5 @@
-import { ActionIcon, Group, Menu, Table } from '@mantine/core';
-import { IconDots, IconHash, IconTriangleFilled, IconTriangleInvertedFilled } from '@tabler/icons-react';
+import { ActionIcon, Checkbox, Group, Menu, Table, Tooltip } from '@mantine/core';
+import { IconDots, IconTriangleFilled, IconTriangleInvertedFilled } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 
@@ -8,7 +8,10 @@ import { useExcelDataTableContext } from './context';
 import classes from './ExcelDataTable.module.css';
 import { ColumnFilterRow } from './filter/ColumnFilterRow';
 import { getFilterInputKind, isSortableFieldName } from './filter/filterModel';
-import { TableColGroup, getTableStyle, useColumnResize, useHeaderScrollSync } from './tableLayout';
+import { selectionStateOf } from './selectionModel';
+import {
+	TableColGroup, getTableStyle, useColumnCount, useColumnResize, useHeaderScrollSync, useTableLayout,
+} from './tableLayout';
 import { useTranslate } from '../../i18n';
 
 
@@ -20,6 +23,13 @@ export type TableHeaderProps = {
 	allowColumnResizing?: boolean,
 	/** Off to drop the per-column filter row. */
 	enableColumnFilters?: boolean,
+	/** Content of the trailing filler column's header, e.g. a toolbar for the row actions below it. */
+	renderFillerColumnHeader?: () => React.ReactNode,
+	/**
+	 * The filler column never gets narrower than this: widening a field column grows the table
+	 * (horizontal scroll) instead. Defaults to 0, a filler that may shrink away entirely.
+	 */
+	fillerColumnMinWidth?: number,
 	className?: string,
 };
 
@@ -28,41 +38,97 @@ export type TableHeaderProps = {
  * shown while data loads. Rendered apart from `Table` so a sticky panel can hold it; the two
  * share column widths through context and horizontal scroll through `scrollSync`.
  */
-export function TableHeader({ allowColumnResizing = true, enableColumnFilters = true, className }: TableHeaderProps) {
-	const context = useExcelDataTableContext();
-	const { fields, columnWidths, isLoading, tid } = context;
+export function TableHeader(props: TableHeaderProps) {
+	const { allowColumnResizing = true, enableColumnFilters = true, fillerColumnMinWidth = 0 } = props;
+	const { fields, columnWidths, isLoading, tid } = useExcelDataTableContext();
+	const { setFillerMinWidth } = columnWidths;
+	React.useEffect(() => setFillerMinWidth(fillerColumnMinWidth), [fillerColumnMinWidth, setFillerMinWidth]);
 	const scrollerRef = useHeaderScrollSync();
-	const sort = useHeaderSort();
-	const resize = useColumnResize();
+	const layout = useTableLayout();
+	const columnCount = useColumnCount();
 	return (
-		<div ref={scrollerRef} className={clsx(classes.headerScroller, className)}>
-			<Table withTableBorder withColumnBorders style={getTableStyle(fields, columnWidths.widths)}>
-				<TableColGroup fields={fields} widths={columnWidths.widths} />
+		<div ref={scrollerRef} className={clsx(classes.headerScroller, props.className)}>
+			<Table style={getTableStyle(fields, columnWidths.widths, layout)}>
+				<TableColGroup fields={fields} widths={columnWidths.widths} layout={layout} />
 				<Table.Thead>
-					<Table.Tr>
-						<Table.Th className={classes.rowNumberCell} aria-hidden><IconHash size={14} /></Table.Th>
-						{fields.map(field => (
-							<ColumnHeader
-								key={field}
-								field={field}
-								sortDirection={sort.orderMap.get(field)}
-								sortable={sort.sortableFields.has(field)}
-								onSort={sort.onSort}
-								allowColumnResizing={allowColumnResizing}
-								{...resize}
-							/>
-						))}
-						<Table.Th aria-hidden />
-					</Table.Tr>
+					<HeaderLabelsRow
+						allowColumnResizing={allowColumnResizing}
+						renderFillerColumnHeader={props.renderFillerColumnHeader}
+					/>
 					{enableColumnFilters ? <ConnectedColumnFilterRow /> : null}
 					<Table.Tr aria-hidden={!isLoading}>
-						<Table.Td colSpan={fields.length + 2} className={classes.progressRow} {...tid.loading()}>
+						<Table.Td colSpan={columnCount} className={classes.progressRow} {...tid.loading()}>
 							{isLoading ? <div role='progressbar' aria-busy className={classes.progressBar} /> : null}
 						</Table.Td>
 					</Table.Tr>
 				</Table.Thead>
 			</Table>
 		</div>
+	);
+}
+
+type HeaderLabelsRowProps = Pick<TableHeaderProps, 'renderFillerColumnHeader'> & { allowColumnResizing: boolean };
+
+function HeaderLabelsRow({ allowColumnResizing, renderFillerColumnHeader }: HeaderLabelsRowProps) {
+	const { fields, indexColumnVisible } = useExcelDataTableContext();
+	const sort = useHeaderSort();
+	const resize = useColumnResize();
+	const filler = renderFillerColumnHeader?.();
+	return (
+		<Table.Tr>
+			{indexColumnVisible ? <SelectAllHeaderCell /> : null}
+			{fields.map(field => (
+				<ColumnHeader
+					key={field}
+					field={field}
+					sortDirection={sort.orderMap.get(field)}
+					sortable={sort.sortableFields.has(field)}
+					onSort={sort.onSort}
+					allowColumnResizing={allowColumnResizing}
+					{...resize}
+				/>
+			))}
+			<Table.Th className={classes.fillerHeaderCell} aria-hidden={filler ? undefined : true}>
+				{filler}
+			</Table.Th>
+		</Table.Tr>
+	);
+}
+
+/**
+ * The index column's header: a select-all over the rows loaded. The whole cell is the click target;
+ * the checkbox's own click bubbles up to it, and stays focusable so Space toggles it too. Single
+ * mode has nothing to select all of, so the cell stays empty there.
+ */
+function SelectAllHeaderCell() {
+	const { selection, tid } = useExcelDataTableContext();
+	const t = useTranslate('common');
+	if (selection.mode === 'single') {
+		return <Table.Th className={classes.rowNumberCell} aria-hidden />;
+	}
+	const coverage = selectionStateOf(selection, selection.order);
+	const disabled = !selection.isEnabled || selection.order.length === 0;
+	const label = t('datatable.selectAll', { defaultValue: 'Select all' });
+	return (
+		<Tooltip label={label}>
+			<Table.Th
+				className={clsx('align-middle', classes.rowNumberCell, classes.selectAllCell)}
+				data-disabled={disabled || undefined}
+				onClick={disabled ? undefined : selection.toggleAll}
+				{...tid.selectAll()}
+			>
+				<div className='flex justify-center'>
+					<Checkbox
+						size='xs'
+						checked={coverage === 'all'}
+						indeterminate={coverage === 'some'}
+						disabled={disabled}
+						aria-label={label}
+						readOnly
+					/>
+				</div>
+			</Table.Th>
+		</Tooltip>
 	);
 }
 
@@ -110,6 +176,7 @@ function ConnectedColumnFilterRow() {
 			onChange={filters.setColumnValue}
 			onCommit={onCommit}
 			hasFillerColumn
+			hasIndexColumn={ctx.indexColumnVisible}
 			translateEnumValue={translateEnumValue}
 			tid={ctx.tid}
 		/>

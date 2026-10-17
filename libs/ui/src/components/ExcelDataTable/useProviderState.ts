@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { emptySelection, moveSelection, pruneSelection, seedSelection, selectWithModifiers } from './selectionModel';
+import {
+	emptySelection, moveSelection, pruneSelection, seedSelection, selectAll, selectionStateOf, selectWithModifiers,
+} from './selectionModel';
 import { readStoredPageSize, allowedPageSizes, resolveInitialViewMode, writeStoredViewMode } from './storage';
 import { rowIdOf } from './types';
 
@@ -127,16 +129,32 @@ export function useSelectionState(
 		}
 	}, [isEditing, order]);
 	const clear = React.useCallback(() => setState(emptySelection()), []);
+	const toggleAll = useToggleAll(setState, order, isEditing || mode === 'single');
 
 	return React.useMemo(
-		() => ({ ...state, selectRow, move, clear, order, itemsById }),
-		[state, selectRow, move, clear, order, itemsById],
+		() => ({ ...state, selectRow, move, clear, toggleAll, isEnabled: !isEditing, mode, order, itemsById }),
+		[state, selectRow, move, clear, toggleAll, isEditing, mode, order, itemsById],
 	);
 }
 
-/** Edit mode ends by itself when a load finishes, so a refreshed row never shows stale inputs. */
+function useToggleAll(
+	setState: React.Dispatch<React.SetStateAction<SelectionState>>, order: RowId[], isInert: boolean,
+): () => void {
+	return React.useCallback(() => {
+		if (!isInert) {
+			setState(prev => (selectionStateOf(prev, order) === 'all' ? emptySelection() : selectAll(order)));
+		}
+	}, [setState, order, isInert]);
+}
+
+/**
+ * Edit mode ends by itself when a load finishes, so a refreshed row never shows stale inputs. The
+ * insert row does not: its values belong to no loaded row, and an unrelated refresh must not lose
+ * what the user typed. The two are exclusive, one form at a time.
+ */
 export function useEditingState(isLoading: boolean): EditingApi {
 	const [rowId, setRowId] = React.useState<RowId | null>(null);
+	const [creating, setCreating] = React.useState(false);
 	const wasLoading = React.useRef(isLoading);
 	React.useEffect(() => {
 		if (wasLoading.current && !isLoading) {
@@ -146,7 +164,17 @@ export function useEditingState(isLoading: boolean): EditingApi {
 	}, [isLoading]);
 	return React.useMemo(() => ({
 		rowId,
-		start: (id: RowId) => setRowId(id),
+		start: (id: RowId) => {
+			setCreating(false);
+			setRowId(id);
+		},
 		stop: () => setRowId(null),
-	}), [rowId]);
+		creating,
+		startCreate: () => {
+			setRowId(null);
+			setCreating(true);
+		},
+		stopCreate: () => setCreating(false),
+		isActive: rowId !== null || creating,
+	}), [rowId, creating]);
 }

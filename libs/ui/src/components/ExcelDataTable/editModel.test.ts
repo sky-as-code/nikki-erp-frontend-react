@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildRowUpdatePayload, isRowEditableField } from './editModel';
+import { buildRowUpdatePayload, isRowCreatableField, isRowEditableField } from './editModel';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -29,6 +29,21 @@ describe('isRowEditableField', () => {
 			expect(isRowEditableField(schema, field)).toBe(false);
 		}
 		expect(isRowEditableField(undefined, 'name')).toBe(false);
+	});
+});
+
+describe('isRowCreatableField', () => {
+	it('allows writable fields, no_update ones included, since creation is when they are set', () => {
+		for (const field of ['name', 'status', 'code']) {
+			expect(isRowCreatableField(schema, field)).toBe(true);
+		}
+	});
+
+	it('refuses keys, generated, computed, edge models, dotted and unknown fields', () => {
+		for (const field of ['id', 'created_at', 'total', 'category', 'category.name', 'missing']) {
+			expect(isRowCreatableField(schema, field)).toBe(false);
+		}
+		expect(isRowCreatableField(undefined, 'name')).toBe(false);
 	});
 });
 

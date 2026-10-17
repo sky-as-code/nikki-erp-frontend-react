@@ -119,13 +119,16 @@ function buildAssignmentResources() {
 			translationNs: c.IAM_MODULE,
 			searchCommand: UserCommands.SEARCH,
 			initialGraph: { if: ['roles', 'linked', '${id}'] },
+			fields: ['avatar_url', 'display_name', 'email'],
+			fieldRenderers: { avatar_url: { renderer: 'avatar' } },
 			linkField: 'id',
 			linkRoutePath: 'iam_user',
 			assignment: {
 				...assignmentLock(c.USER_SCHEMA_NAME),
 				pickerSchemaName: c.USER_SCHEMA_NAME,
 				manageCommand: RoleCommands.MANAGE_USERS,
-				placeholder: 'role_assign_selectUser',
+				newRowPrompt: 'role_assign_newUser',
+				newRowSearchField: 'display_name',
 			},
 		},
 		{
@@ -134,13 +137,14 @@ function buildAssignmentResources() {
 			translationNs: c.IAM_MODULE,
 			searchCommand: GroupCommands.SEARCH,
 			initialGraph: { if: ['roles', 'linked', '${id}'] },
+			fields: ['name'],
 			linkField: 'id',
 			linkRoutePath: 'iam_group',
 			assignment: {
 				...assignmentLock(c.GROUP_SCHEMA_NAME),
 				pickerSchemaName: c.GROUP_SCHEMA_NAME,
 				manageCommand: RoleCommands.MANAGE_GROUPS,
-				placeholder: 'role_assign_selectGroup',
+				newRowPrompt: 'role_assign_newGroup',
 			},
 		},
 	];

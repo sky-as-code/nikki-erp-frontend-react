@@ -51,6 +51,11 @@ export function excelDataTableTestIds(testId: string | undefined, tableName: str
 		rowEditSave: (rowId: RowId) => attrs('row', rowId, 'save'),
 		rowEditDiscard: (rowId: RowId) => attrs('row', rowId, 'discard'),
 		rowEditInput: (rowId: RowId, field: string) => attrs('row', rowId, 'input', field),
+		addLine: () => attrs('addLine'),
+		newRowInput: (field: string) => attrs('newRow', 'input', field),
+		newRowAdd: () => attrs('newRow', 'add'),
+		newRowDiscard: () => attrs('newRow', 'discard'),
+		rowDelete: (rowId: RowId) => attrs('row', rowId, 'delete'),
 		...filterTestIds(attrs),
 		...settingsTestIds(attrs),
 	};

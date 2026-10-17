@@ -4,6 +4,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 import { Controller } from 'react-hook-form';
 
+import { useFieldLabelHidden } from './fieldLabelContext';
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
 import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
@@ -37,6 +38,7 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 	const [modalOpened, setModalOpened] = React.useState(false);
 	const fieldAttrs = useFieldTestAttrs(name);
 	const translateAttrs = useFieldPartTestAttrs(name, 'translate');
+	const labelHidden = useFieldLabelHidden();
 
 	if (!fieldData) {
 		return null;
@@ -45,6 +47,9 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 	const defaultValue = (modelValue?.[name] ?? {}) as dyn.ModelSchemaLangJson;
 	const isDisabled = modelLoading || Boolean(inputProps?.disabled);
 	const currentLangShort = i18n.language.split('-')[0].toUpperCase();
+	// With no visible label the language the input edits goes into the hidden one, so a screen
+	// reader announces it; an `aria-label` would lose to the wrapper's `aria-labelledby`.
+	const label = labelHidden ? `${t(fieldData.label)} (${i18n.language})` : t(fieldData.label);
 
 	const langButton = (
 		<ActionIcon
@@ -75,7 +80,7 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 					<>
 						<BaseFieldWrapper
 							inputId={inputId}
-							label={t(fieldData.label)}
+							label={label}
 							// Uncomment to show sub-labels
 							// description={t(fieldData.description)}
 							isRequired={fieldData.isRequired}

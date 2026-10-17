@@ -1,40 +1,36 @@
-import { Alert, Badge, Box, Group, Loader, Table, Text } from '@mantine/core';
+import { Alert, Badge, Box, Group, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { Button } from '@nikkierp/ui/components';
-import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import { useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
 import {
-	useActionLock, useResourceFormView, useResourceUpdateContext,
+	actionRequirement, FormDataTable, useResourceFormView, useResourceUpdateContext,
 } from '@nikkierp/viewkit-mantine';
-import { IconArrowBackUp, IconX } from '@tabler/icons-react';
-import clsx from 'clsx';
 import React from 'react';
 import { useParams } from 'react-router';
 import { z } from 'zod';
 
-import { GrantRow, TEST_ID_PREFIX } from './GrantRow';
-import { entitlementErrors, resolveName, toPermissionRows } from './permissionDrafts';
-import classes from './RolePermissions.module.css';
-import { usePermissionDraftState, useRoleEntitlements } from './rolePermissionsData';
+import { GRANT_FIELD_EDITORS, GrantEditorContext, TEST_ID_PREFIX } from './grantEditors';
+import { entitlementErrors } from './permissionDrafts';
+import {
+	ACTION_FIELD, isDraftRow, mergeDraftRows, PERMISSION_FIELDS, RESOURCE_FIELD, revocationOf, toDraftGrant,
+} from './permissionTable';
+import { usePermissionDraftState } from './rolePermissionsData';
 import { IAM_MODULE, ROLE_SCHEMA_NAME } from '../../../constants';
 import { ROLE_PERMISSIONS } from '../../ids';
 
+import type { GrantEditorBridge } from './grantEditors';
+import type { PermissionDraftState } from './rolePermissionsData';
+import type { RoleEntitlement } from '../../../features/role/rolePermissions';
+import type * as dyn from '@nikkierp/common/dynamicModel';
+import type { SearchItem } from '@nikkierp/ui/components/ExcelDataTable';
+import type { FieldRendererMap, IComponentRenderer } from '@nikkierp/viewengine/core';
 
-import type { NameResolver, PermissionRow } from './permissionDrafts';
-import type { LoadFailure, PermissionDraftState } from './rolePermissionsData';
-import type { IComponentRenderer } from '@nikkierp/viewengine/core';
-import type { ActionLock } from '@nikkierp/viewkit-mantine';
 
+const ENTITLEMENT_SCHEMA_NAME = 'iam_entitlement';
+const CAPABILITIES: ['create', 'delete'] = ['create', 'delete'];
 
 /** The backend asserts `manage_entitlements` on `iam_role` with no org, so only a tenant grant satisfies it. */
-const MANAGE_ACTION = 'manage_entitlements';
-const MANAGE_SCOPE = 'tenant';
-
-/*
- * Fixed widths: the table must not stretch with the window. Its box scrolls sideways instead when
- * the pane is narrower.
- */
-const COLUMN_WIDTHS = { resource: 280, action: 200, description: 280, button: 140 };
+const MANAGE_REQUIREMENT = actionRequirement(ROLE_SCHEMA_NAME, 'manage_entitlements', 'tenant');
 
 export const rolePermissionsRenderer: IComponentRenderer<Record<string, never>> = {
 	type: ROLE_PERMISSIONS,
@@ -49,157 +45,105 @@ export const rolePermissionsRenderer: IComponentRenderer<Record<string, never>> 
 };
 
 /**
- * The role's entitlements as a plain table. In update mode a grant row heads the body and each row
- * gets a Revoke; both only draft changes, which ride the role's own update request on Save.
+ * The role's entitlements. In update mode the table's insert row and row deletes only draft
+ * changes: added rows show as "New", deleted saved rows disappear, and both ride the role's own
+ * update request on Save. Cancel or a successful Save discards the drafts.
  */
 function RolePermissionsSection(): React.ReactNode {
+	const t = useTranslate([IAM_MODULE, 'common']);
 	const section = usePermissionSection();
 	return (
 		<Box>
 			<DeltaErrors />
-			{section.loadFailure ? <Text size='sm' c='red'>{section.loadFailure}</Text> : null}
-			<Box className='overflow-x-auto'>
-				<Table
-					layout='fixed'
-					w={tableWidth(section.updateMode)}
-					withTableBorder
-					{...testAttrs(TEST_ID_PREFIX, 'table')}
-				>
-					<PermissionHeader updateMode={section.updateMode} />
-					<PermissionBody section={section} />
-				</Table>
-			</Box>
+			<GrantEditorContext.Provider value={section.bridge}>
+				<FormDataTable
+					key={section.loadCount}
+					schemaName={ENTITLEMENT_SCHEMA_NAME}
+					baseGraph={section.baseGraph}
+					fields={PERMISSION_FIELDS}
+					transformItems={section.transformItems}
+					capabilities={CAPABILITIES}
+					indexColumnVisible={false}
+					newRowPrompt={t('role_permission_addEntitlement', { defaultValue: 'Add new entitlement' })}
+					newRowFieldEditors={GRANT_FIELD_EDITORS}
+					onCreated={section.onCreated}
+					onDeleted={section.onDeleted}
+					createEntitlement={MANAGE_REQUIREMENT}
+					deleteEntitlement={MANAGE_REQUIREMENT}
+					fieldRenderers={section.fieldRenderers}
+					emptyText={t('role_permission_empty')}
+					testId={TEST_ID_PREFIX}
+				/>
+			</GrantEditorContext.Provider>
 		</Box>
 	);
 }
 
-type PermissionSection = ReturnType<typeof usePermissionSection>;
-
 function usePermissionSection() {
 	const roleId = useParams().id ?? '';
 	const updateMode = useResourceFormView()?.updateMode ?? false;
-	const nameOf = useNameResolver();
-	const t = useTranslate([IAM_MODULE, 'common']);
-	const describeFailure = useFailureDescriber();
-	const entitlements = useRoleEntitlements(roleId);
+	const baseGraph = React.useMemo((): dyn.SearchGraph => ({ if: ['role_id', '=', roleId] }), [roleId]);
+	const bridge = React.useRef<GrantEditorBridge>({ names: new Map(), form: null });
+	const saved = React.useRef<RoleEntitlement[]>([]);
+	// A save re-reads the rows: the table remounts and runs its search again.
+	const [loadCount, setLoadCount] = React.useState(0);
 	const draftState = usePermissionDraftState({
-		roleId, existing: entitlements.items, updateMode, onSaved: entitlements.refetch,
+		roleId, updateMode, getExisting: () => saved.current, onSaved: () => setLoadCount(count => count + 1),
 	});
-	const lock = useActionLock(ROLE_SCHEMA_NAME, MANAGE_ACTION, MANAGE_SCOPE);
-	const rows = toPermissionRows(entitlements.items, draftState.drafts, { nameOf, allLabel: t('role_permission_all') });
+	const { drafts } = draftState;
+	const transformItems = React.useCallback((items: SearchItem[]) => {
+		// Remembered for the duplicate check, which runs in an event handler, after this render.
+		saved.current = items as RoleEntitlement[];
+		return mergeDraftRows(items, drafts);
+	}, [drafts]);
 	return {
-		updateMode, nameOf, describeFailure, draftState, lock, rows,
-		isPending: entitlements.isPending,
-		loadFailure: describeFailure(entitlements.failure),
+		baseGraph, bridge, loadCount, transformItems,
+		...useDraftSinks(draftState, bridge),
+		fieldRenderers: usePermissionRenderers(),
 	};
 }
 
-function PermissionBody({ section }: { section: PermissionSection }): React.ReactNode {
-	const { updateMode, lock, draftState, rows } = section;
-	return (
-		<Table.Tbody>
-			{updateMode ? (
-				<GrantRow
-					nameOf={section.nameOf}
-					lock={lock}
-					onGrant={draftState.grant}
-					describeFailure={section.describeFailure}
-				/>
-			) : null}
-			{rows.map(row => (
-				<PermissionRowView
-					key={row.key}
-					row={row}
-					updateMode={updateMode}
-					lock={lock}
-					onRevoke={draftState.revoke}
-				/>
-			))}
-			<EmptyRow isEmpty={rows.length === 0} isPending={section.isPending} updateMode={updateMode} />
-		</Table.Tbody>
-	);
+/**
+ * The table's row writes, as drafts. A refused grant is pinned on the picker it concerns and keeps
+ * the insert row open.
+ */
+function useDraftSinks(draftState: PermissionDraftState, bridge: React.RefObject<GrantEditorBridge>) {
+	const onCreated = (values: Record<string, unknown>): boolean => {
+		const result = toDraftGrant(values, id => bridge.current.names.get(id));
+		const problem = result.problem ?? (draftState.grant(result.grant) === 'duplicate'
+			? { field: ACTION_FIELD, key: 'role_permission_duplicate' }
+			: undefined);
+		if (problem) {
+			bridge.current.form?.setError(problem.field, { type: 'validate', message: problem.key });
+			return false;
+		}
+		return true;
+	};
+	// The table deletes one row at a time.
+	const onDeleted = (items: SearchItem[]) => items.forEach(item => draftState.revoke(revocationOf(item)));
+	return { onCreated, onDeleted };
 }
 
-function tableWidth(updateMode: boolean): number {
-	const { resource, action, description, button } = COLUMN_WIDTHS;
-	return resource + action + description + (updateMode ? button : 0);
-}
-
-function PermissionHeader({ updateMode }: { updateMode: boolean }): React.ReactNode {
-	const t = useTranslate([IAM_MODULE, 'common']);
-	return (
-		<Table.Thead>
-			<Table.Tr>
-				<Table.Th w={COLUMN_WIDTHS.resource}>{t('role_permission_resource')}</Table.Th>
-				<Table.Th w={COLUMN_WIDTHS.action}>{t('role_permission_action')}</Table.Th>
-				<Table.Th w={COLUMN_WIDTHS.description}>{t('role_permission_description')}</Table.Th>
-				{updateMode ? <Table.Th w={COLUMN_WIDTHS.button}>{t('action.title')}</Table.Th> : null}
-			</Table.Tr>
-		</Table.Thead>
-	);
-}
-
-type PermissionRowViewProps = {
-	row: PermissionRow,
-	updateMode: boolean,
-	lock: ActionLock,
-	onRevoke: PermissionDraftState['revoke'],
-};
-
-function PermissionRowView({ row, updateMode, lock, onRevoke }: PermissionRowViewProps): React.ReactNode {
+/** `resource_id` badges a draft row as "New"; `action_id` reads `null` as "All" actions. */
+function usePermissionRenderers(): FieldRendererMap {
 	const t = useTranslate(IAM_MODULE);
-	const className = clsx({ [classes.draftRow]: row.state === 'draft', [classes.removedRow]: row.state === 'removed' });
-	return (
-		<Table.Tr className={className} {...testAttrs(TEST_ID_PREFIX, 'row', row.key)}>
-			<Table.Td>
+	const allLabel = t('role_permission_all');
+	const newLabel = t('role_permission_new');
+	return React.useMemo(() => ({
+		[RESOURCE_FIELD]: {
+			render: text => text,
+			renderRaw: (_raw, text, record) => (isDraftRow(record) ? (
 				<Group gap='xs' wrap='nowrap'>
-					<Text size='sm' truncate>{row.resourceLabel}</Text>
-					{row.state === 'draft' ? <Badge size='xs' variant='light' color='green'>{t('role_permission_new')}</Badge> : null}
+					<Text size='sm' truncate>{text}</Text>
+					<Badge size='xs' variant='light' {...testAttrs(TEST_ID_PREFIX, 'new')}>{newLabel}</Badge>
 				</Group>
-			</Table.Td>
-			<Table.Td><Text size='sm' truncate>{row.actionLabel}</Text></Table.Td>
-			<Table.Td><Text size='sm' lineClamp={2}>{row.description}</Text></Table.Td>
-			{updateMode ? (
-				<Table.Td>
-					<RevokeButton row={row} lock={lock} onRevoke={() => onRevoke(row)} />
-				</Table.Td>
-			) : null}
-		</Table.Tr>
-	);
-}
-
-type RevokeButtonProps = { row: PermissionRow, lock: ActionLock, onRevoke: () => void };
-
-/** `[X Revoke]`; on a row already marked for removal it becomes `[Undo]`. */
-function RevokeButton({ row, lock, onRevoke }: RevokeButtonProps): React.ReactNode {
-	const t = useTranslate(IAM_MODULE);
-	const isUndo = row.state === 'removed';
-	return (
-		<Button
-			color={isUndo ? 'gray' : 'red'}
-			leftSection={isUndo ? <IconArrowBackUp size={16} /> : <IconX size={16} />}
-			locked={lock.locked}
-			lockedMissing={lock.missing}
-			onClick={onRevoke}
-			{...testAttrs(TEST_ID_PREFIX, 'row', row.key, isUndo ? 'undo' : 'revoke')}
-		>
-			{t(isUndo ? 'role_permission_undo' : 'role_permission_revoke')}
-		</Button>
-	);
-}
-
-function EmptyRow(props: { isEmpty: boolean, isPending: boolean, updateMode: boolean }): React.ReactNode {
-	const t = useTranslate(IAM_MODULE);
-	if (!props.isEmpty) {
-		return null;
-	}
-	return (
-		<Table.Tr>
-			<Table.Td colSpan={props.updateMode ? 4 : 3}>
-				{props.isPending ? <Loader size='xs' /> : <Text size='sm' c='dimmed'>{t('role_permission_empty')}</Text>}
-			</Table.Td>
-		</Table.Tr>
-	);
+			) : text),
+		},
+		[ACTION_FIELD]: {
+			render: text => text,
+			renderRaw: (raw, text) => (raw == null || raw === '' ? allLabel : text),
+		},
+	}), [allLabel, newLabel]);
 }
 
 /**
@@ -220,23 +164,4 @@ function DeltaErrors(): React.ReactNode {
 			))}
 		</Alert>
 	);
-}
-
-function useNameResolver(): NameResolver {
-	const localize = useLocalize(IAM_MODULE);
-	return name => resolveName(name, localize);
-}
-
-function useFailureDescriber(): (failure: LoadFailure | null) => string | null {
-	const t = useTranslate([IAM_MODULE, 'common']);
-	return (failure) => {
-		if (!failure) {
-			return null;
-		}
-		const first = failure.clientErrors[0];
-		if (first) {
-			return first.key ? t(first.key, first.vars) : first.message;
-		}
-		return failure.error instanceof Error ? failure.error.message : String(failure.error);
-	};
 }

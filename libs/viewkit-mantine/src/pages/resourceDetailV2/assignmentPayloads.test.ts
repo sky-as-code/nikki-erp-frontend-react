@@ -2,7 +2,7 @@ import { ClientErrorItem } from '@nikkierp/common/types';
 import { describe, expect, it } from 'vitest';
 
 import {
-	buildAssignPayload, buildRemovePayload, commandFailureMessage, searchFailureMessage,
+	assignmentSearchField, buildAssignPayload, buildRemovePayload, commandFailureMessage, pickedRecordId,
 } from './assignmentPayloads';
 
 
@@ -44,10 +44,23 @@ describe('commandFailureMessage', () => {
 	});
 });
 
-describe('searchFailureMessage', () => {
-	it('prefers the technical error, then the refusal, else null', () => {
-		expect(searchFailureMessage('boom', [clientError('k', 'denied')])).toBe('boom');
-		expect(searchFailureMessage(undefined, [clientError('k', 'denied')])).toBe('denied');
-		expect(searchFailureMessage(undefined, [])).toBeNull();
+describe('assignmentSearchField', () => {
+	it('prefers the declared column, then the first field, then id', () => {
+		expect(assignmentSearchField('display_name', ['avatar_url', 'display_name'])).toBe('display_name');
+		expect(assignmentSearchField(undefined, ['name'])).toBe('name');
+		expect(assignmentSearchField(undefined, [])).toBe('id');
+		expect(assignmentSearchField(undefined, undefined)).toBe('id');
+	});
+});
+
+describe('pickedRecordId', () => {
+	it('reads the id the picker wrote into its column', () => {
+		expect(pickedRecordId({ display_name: 'U1' }, 'display_name')).toBe('U1');
+	});
+
+	it('is null when nothing was picked', () => {
+		expect(pickedRecordId({ display_name: '' }, 'display_name')).toBeNull();
+		expect(pickedRecordId({}, 'display_name')).toBeNull();
+		expect(pickedRecordId({ display_name: 7 }, 'display_name')).toBeNull();
 	});
 });

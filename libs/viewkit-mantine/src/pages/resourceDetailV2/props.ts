@@ -5,10 +5,10 @@ import { resourceDetailPropsSchema } from '../resourceDetail/props';
 
 
 /**
- * Assign and remove the listed records from the page's own record, e.g. users on a role. Renders a
- * picker with `[+ Assign]` above the table, a `[X Remove]` per row and two toolbar `[X Remove]`
- * (dimmed with no selection, bulk with one). Every change publishes `manageCommand` with
- * `{id, add?, remove?}` (`id` = the route's `:id`) and takes effect at once.
+ * Assign and remove the listed records from the page's own record, e.g. users on a role. The table
+ * gets an insert row whose record picker assigns and a per-row Delete that unassigns, and no toolbar
+ * actions. Every change publishes `manageCommand` with `{id, add?, remove?}` (`id` = the route's
+ * `:id`) and takes effect at once.
  */
 export const relatedAssignmentSchema = z.object({
 	/** Schema the picker searches; usually the tab's own `schemaName`. */
@@ -20,8 +20,13 @@ export const relatedAssignmentSchema = z.object({
 	/** The resource `actionCode` is asserted on. Defaults to the tab's `schemaName`. */
 	actionResource: z.string().min(1).optional(),
 	actionScope: z.enum(['tenant', 'org', 'orgunit', 'private']).optional(),
-	/** i18n key of the picker's placeholder, translated with the tab's `translationNs`. */
-	placeholder: z.string().min(1).optional(),
+	/** i18n key of the insert button's label, translated with the tab's `translationNs`. */
+	newRowPrompt: z.string().min(1).optional(),
+	/**
+	 * The column the insert row's record picker sits in, moved first. Defaults to the tab's first
+	 * field; name the record-label column when the first one is narrow (an avatar).
+	 */
+	newRowSearchField: z.string().min(1).optional(),
 }).strict();
 
 /**
