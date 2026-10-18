@@ -1,21 +1,26 @@
 import { Table as MantineTable, Text } from '@mantine/core';
 import { ClientErrorItem } from '@nikkierp/common/types';
 import { IconPlus } from '@tabler/icons-react';
+import clsx from 'clsx';
 import React from 'react';
 import { useWatch } from 'react-hook-form';
 
 import { useExcelDataTableContext } from './context';
+import tableClasses from './ExcelDataTable.module.css';
+import classes from './NewRow.module.css';
 import { buildNewRowPayload, findNewRowConfigProblems, resolveNewRowColumns, splitNewRowErrors } from './newRowModel';
 import { useNewRowSearch } from './newRowSearch';
 import { EditRowActions } from './rowActions';
 import { readRowKey } from './rowKeys';
+import { RowLoading } from './RowLoading';
+import { ROW_SELECT_DEFAULTS } from './rowSelectDefaults';
 import { useColumnCount } from './tableLayout';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
 import { Button } from '../Button';
 import { AutoField, CrudFormProvider } from '../form';
 import { SearchableSelect } from '../SearchableSelect';
-import classes from './NewRow.module.css';
+import { SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
 
 import type { NewRowColumns } from './newRowModel';
 import type { FormProviderRenderProps } from '../form';
@@ -33,14 +38,18 @@ type TranslateFn = ReturnType<typeof useTranslate>;
 /**
  * The table's last row when rows can be created: `[+ Add a line]` until clicked, then an input per
  * creatable column with Add / Discard in the filler cell. Rendered by `Table` after the data rows.
+ * A successful Add opens a fresh, empty insert row in its place; only Discard closes it.
  */
 export function NewRow(): React.ReactNode {
 	const { capabilities, editing, modelSchema } = useExcelDataTableContext();
+	const [generation, setGeneration] = React.useState(0);
 	useNewRowConfigCheck();
 	if (!capabilities.includes('create') || !modelSchema) {
 		return null;
 	}
-	return editing.creating ? <InsertRow modelSchema={modelSchema} /> : <AddLineRow />;
+	return editing.creating
+		? <InsertRow key={generation} modelSchema={modelSchema} onAdded={() => setGeneration(count => count + 1)} />
+		: <AddLineRow />;
 }
 
 function useNewRowConfigCheck(): void {
@@ -60,8 +69,13 @@ function useNewRowConfigCheck(): void {
  */
 function AddLineRow() {
 	const t = useTranslate('common');
-	const { newRow, locks, editing, tid } = useExcelDataTableContext();
+	const { newRow, locks, editing, selection, tid } = useExcelDataTableContext();
 	const columnCount = useColumnCount();
+	// The insert row is the selection while it is open: no other row looks picked beside it.
+	const onOpen = () => {
+		selection.clear();
+		editing.startCreate();
+	};
 	return (
 		<MantineTable.Tr>
 			<MantineTable.Td colSpan={columnCount}>
@@ -72,7 +86,7 @@ function AddLineRow() {
 					locked={locks.create.locked}
 					lockedMissing={locks.create.missing}
 					disabled={editing.rowId !== null}
-					onClick={editing.startCreate}
+					onClick={onOpen}
 					{...tid.addLine()}
 				>
 					{newRow.prompt ?? t('datatable.addLine', { defaultValue: 'Add a line' })}
@@ -86,11 +100,17 @@ function AddLineRow() {
  * A create form of its own, so the detail form's field inputs and validation apply unchanged. Its
  * `onSubmit` is never reached: the row validates only the columns it shows (see `useNewRowAdd`).
  */
-function InsertRow({ modelSchema }: { modelSchema: dyn.ModelSchema }) {
+function InsertRow({ modelSchema, onAdded }: { modelSchema: dyn.ModelSchema, onAdded: () => void }) {
 	const localize = useSchemaLocalize(modelSchema.name);
 	return (
-		<CrudFormProvider schemaName={modelSchema.name} formVariant='create' localize={localize} onSubmit={ignoreSubmit}>
-			{runtime => <InsertCells runtime={runtime} />}
+		<CrudFormProvider
+			schemaName={modelSchema.name}
+			formVariant='create'
+			localize={localize}
+			onSubmit={ignoreSubmit}
+			loadingFallback={<RowLoading />}
+		>
+			{runtime => <InsertCells runtime={runtime} onAdded={onAdded} />}
 		</CrudFormProvider>
 	);
 }
@@ -99,39 +119,44 @@ function ignoreSubmit(): void {
 	// The insert row never submits through the form; `useNewRowAdd` writes instead.
 }
 
-function InsertCells({ runtime }: { runtime: FormProviderRenderProps }) {
+function InsertCells({ runtime, onAdded }: { runtime: FormProviderRenderProps, onAdded: () => void }) {
 	const t = useTranslate('common');
 	const { fields, newRow, modelSchema, indexColumnVisible, editing, isLoading, tid } = useExcelDataTableContext();
 	const columns = React.useMemo(
 		() => resolveNewRowColumns(modelSchema, fields, newRow), [modelSchema, fields, newRow],
 	);
-	const submit = useNewRowAdd(runtime, columns, t);
+	const submit = useNewRowAdd({ runtime, columns, t, onAdded });
 	const busy = submit.isSubmitting || isLoading;
 	const rowRef = useFirstInputFocus();
 	const onKeyDown = useInsertRowKeys(busy, submit.add, editing.stopCreate);
 	return (
-		<MantineTable.Tr
-			ref={rowRef}
-			tabIndex={-1}
-			onKeyDown={onKeyDown}
-			aria-label={t('datatable.newLine', { defaultValue: 'New line' })}
-			{...tid.attrs('newRow')}
-		>
-			{indexColumnVisible ? (
-				<MantineTable.Td className={classes.indexCell}><IconPlus size={14} aria-hidden /></MantineTable.Td>
-			) : null}
-			{fields.map(field => (
-				<NewRowCell key={field} field={field} columns={columns} runtime={runtime} disabled={busy} />
-			))}
-			<InsertRowActions submit={submit} busy={busy} />
-		</MantineTable.Tr>
+		<SelectDefaultsContext.Provider value={ROW_SELECT_DEFAULTS}>
+			<MantineTable.Tr
+				ref={rowRef}
+				tabIndex={-1}
+				onKeyDown={onKeyDown}
+				aria-selected
+				aria-label={t('datatable.newLine', { defaultValue: 'New line' })}
+				{...tid.attrs('newRow')}
+			>
+				{indexColumnVisible ? (
+					<MantineTable.Td className={clsx(classes.indexCell, tableClasses.selectedCell)}>
+						<IconPlus size={14} aria-hidden />
+					</MantineTable.Td>
+				) : null}
+				{fields.map(field => (
+					<NewRowCell key={field} field={field} columns={columns} runtime={runtime} disabled={busy} />
+				))}
+				<InsertRowActions submit={submit} busy={busy} />
+			</MantineTable.Tr>
+		</SelectDefaultsContext.Provider>
 	);
 }
 
 function InsertRowActions({ submit, busy }: { submit: NewRowAdd, busy: boolean }) {
 	const { editing, tid } = useExcelDataTableContext();
 	return (
-		<MantineTable.Td className={classes.actionsCell}>
+		<MantineTable.Td className={clsx(classes.actionsCell, tableClasses.selectedCell)}>
 			<EditRowActions
 				mode='create'
 				busy={busy}
@@ -180,7 +205,7 @@ type NewRowCellProps = { field: string, columns: NewRowColumns, runtime: FormPro
 function NewRowCell({ field, columns, runtime, disabled }: NewRowCellProps) {
 	const { newRow, tid } = useExcelDataTableContext();
 	if (!columns.editable.includes(field)) {
-		return <MantineTable.Td className={classes.inputCell} />;
+		return <MantineTable.Td className={clsx(classes.inputCell, tableClasses.selectedCell)} />;
 	}
 	const Editor = columns.editorFields.includes(field) ? newRow.fieldEditors[field] : undefined;
 	let content: React.ReactNode;
@@ -194,7 +219,7 @@ function NewRowCell({ field, columns, runtime, disabled }: NewRowCellProps) {
 		content = <AutoField name={field} labelHidden />;
 	}
 	return (
-		<MantineTable.Td className={classes.inputCell} {...tid.newRowInput(field)}>
+		<MantineTable.Td className={clsx(classes.inputCell, tableClasses.selectedCell)} {...tid.newRowInput(field)}>
 			<fieldset disabled={disabled} className='m-0 p-0 border-0 min-w-0'>{content}</fieldset>
 		</MantineTable.Td>
 	);
@@ -237,8 +262,16 @@ function RecordSearchInput({ field, runtime, disabled }: RecordSearchInputProps)
  * this row has no input for (a parent id the page or the command supplies), and the form's own
  * submit would refuse on those without anything on screen saying why.
  */
-function useNewRowAdd(runtime: FormProviderRenderProps, columns: NewRowColumns, t: TranslateFn) {
-	const { editing, refresh, locks, modelSchema } = useExcelDataTableContext();
+type NewRowAddDeps = {
+	runtime: FormProviderRenderProps,
+	columns: NewRowColumns,
+	t: TranslateFn,
+	/** Called after a successful write: the caller opens the next, empty insert row. */
+	onAdded: () => void,
+};
+
+function useNewRowAdd({ runtime, columns, t, onAdded }: NewRowAddDeps) {
+	const { refresh, locks, modelSchema } = useExcelDataTableContext();
 	const write = useNewRowWrite(t);
 	const [isSubmitting, setSubmitting] = React.useState(false);
 	const [errors, setErrors] = React.useState<ClientErrorItem[]>([]);
@@ -259,9 +292,9 @@ function useNewRowAdd(runtime: FormProviderRenderProps, columns: NewRowColumns, 
 			setErrors(showServerErrors(runtime, columns, clientErrors));
 			return;
 		}
-		editing.stopCreate();
+		onAdded();
 		refresh();
-	}, [columns, editing, locks.create.locked, modelSchema, refresh, runtime, t, write]);
+	}, [columns, locks.create.locked, modelSchema, onAdded, refresh, runtime, t, write]);
 	return { isSubmitting, errors, add };
 }
 

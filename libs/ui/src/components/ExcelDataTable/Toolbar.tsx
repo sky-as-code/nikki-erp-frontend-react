@@ -3,6 +3,7 @@ import React from 'react';
 
 import { useExcelDataTableContext } from './context';
 import classes from './ExcelDataTable.module.css';
+import { tableScopeAttrs } from './tableScope';
 import { useMeasuredWidth } from './useIsCompact';
 
 
@@ -20,10 +21,10 @@ export type ToolbarProps = {
  * split view is the case that makes the difference — narrower than a phone on a wide screen.
  */
 export function Toolbar({ left, right, className }: ToolbarProps) {
-	const { setContainerWidth } = useExcelDataTableContext();
+	const { setContainerWidth, scopeId } = useExcelDataTableContext();
 	const measureRef = useMeasuredWidth(setContainerWidth);
 	return (
-		<div ref={measureRef} className={clsx(classes.toolbar, className)}>
+		<div ref={measureRef} className={clsx(classes.toolbar, className)} {...tableScopeAttrs(scopeId)}>
 			<div className={clsx(classes.toolbarSide, classes.toolbarLeft)}>{left}</div>
 			<div className={clsx(classes.toolbarSide, classes.toolbarRight)}>{right}</div>
 		</div>

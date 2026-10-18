@@ -117,6 +117,8 @@ export type ExcelDataTableContextValue = {
 	buildLinkHref: ((item: SearchItem) => string) | undefined,
 	fieldRenderers: FieldRendererMap,
 	tid: ExcelDataTableTestIds,
+	/** Marks the table's own elements (`tableScopeAttrs`); a click or focus outside them clears the selection. */
+	scopeId: string,
 };
 
 export const ExcelDataTableContext = React.createContext<ExcelDataTableContextValue | null>(null);

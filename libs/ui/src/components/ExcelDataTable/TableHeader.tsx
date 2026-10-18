@@ -12,6 +12,7 @@ import { selectionStateOf } from './selectionModel';
 import {
 	TableColGroup, getTableStyle, useColumnCount, useColumnResize, useHeaderScrollSync, useTableLayout,
 } from './tableLayout';
+import { tableScopeAttrs } from './tableScope';
 import { useTranslate } from '../../i18n';
 
 
@@ -40,14 +41,14 @@ export type TableHeaderProps = {
  */
 export function TableHeader(props: TableHeaderProps) {
 	const { allowColumnResizing = true, enableColumnFilters = true, fillerColumnMinWidth = 0 } = props;
-	const { fields, columnWidths, isLoading, tid } = useExcelDataTableContext();
+	const { fields, columnWidths, isLoading, tid, scopeId } = useExcelDataTableContext();
 	const { setFillerMinWidth } = columnWidths;
 	React.useEffect(() => setFillerMinWidth(fillerColumnMinWidth), [fillerColumnMinWidth, setFillerMinWidth]);
 	const scrollerRef = useHeaderScrollSync();
 	const layout = useTableLayout();
 	const columnCount = useColumnCount();
 	return (
-		<div ref={scrollerRef} className={clsx(classes.headerScroller, props.className)}>
+		<div ref={scrollerRef} className={clsx(classes.headerScroller, props.className)} {...tableScopeAttrs(scopeId)}>
 			<Table style={getTableStyle(fields, columnWidths.widths, layout)}>
 				<TableColGroup fields={fields} widths={columnWidths.widths} layout={layout} />
 				<Table.Thead>

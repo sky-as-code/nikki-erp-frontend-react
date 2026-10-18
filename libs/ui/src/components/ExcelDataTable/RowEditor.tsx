@@ -3,14 +3,17 @@ import { ClientErrorItem } from '@nikkierp/common/types';
 import clsx from 'clsx';
 import React from 'react';
 
-import { getCellText } from './cells/cellValues';
+import { CellContent } from './cells/CellContent';
 import { useExcelDataTableContext } from './context';
 import { buildRowUpdatePayload, isRowEditableField } from './editModel';
 import { EditRowActions } from './rowActions';
 import { readRowKey } from './rowKeys';
+import { RowLoading } from './RowLoading';
+import { ROW_SELECT_DEFAULTS } from './rowSelectDefaults';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
 import { AutoField, CrudFormProvider } from '../form';
+import { SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
 import classes from './ExcelDataTable.module.css';
 
 import type { RowUpdateRefusal } from './editModel';
@@ -52,6 +55,7 @@ export function EditingRow({ item, rowId, rowNumber, isSelected }: EditingRowPro
 			modelValue={item}
 			isSubmitting={submit.isSubmitting}
 			onSubmit={submit.onSubmit}
+			loadingFallback={<RowLoading />}
 		>
 			{runtime => (
 				<EditingCells
@@ -180,19 +184,64 @@ function useFirstInputFocus(rowId: RowId): React.RefObject<HTMLTableRowElement |
 
 function EditingCells({ item, rowId, rowNumber, isSelected, runtime, submit }: EditingCellsProps) {
 	const t = useTranslate('common');
-	const { fields, data, editing, isLoading, indexColumnVisible, tid } = useExcelDataTableContext();
+	const { fields, editing, isLoading, indexColumnVisible, tid } = useExcelDataTableContext();
 	const editable = new Set(submit.editableFields);
 	const disabled = isLoading || submit.isSubmitting;
 	const selected = { [classes.selectedCell]: isSelected };
-
 	const save = useRowSave({ item, runtime, submit, editing, t });
 	const rowRef = useFirstInputFocus(rowId);
+	const onKeyDown = useEditingRowKeys(disabled, save, editing.stop);
+	return (
+		<SelectDefaultsContext.Provider value={ROW_SELECT_DEFAULTS}>
+			<MantineTable.Tr
+				ref={rowRef}
+				tabIndex={-1}
+				onKeyDown={onKeyDown}
+				aria-selected={isSelected}
+				aria-label={`Editing row ${rowNumber}`}
+				{...tid.row(rowId)}
+			>
+				{indexColumnVisible ? (
+					<MantineTable.Td className={clsx('text-center align-middle', classes.rowNumberCell, selected)}>
+						{rowNumber}
+					</MantineTable.Td>
+				) : null}
+				{fields.map(field => (
+					<MantineTable.Td
+						key={field}
+						className={clsx(classes.editingCell, selected)}
+						{...tid.rowEditInput(rowId, field)}
+					>
+						{editable.has(field) ? (
+							<fieldset disabled={disabled} className='m-0 p-0 border-0 min-w-0'>
+								<AutoField name={field} labelHidden />
+							</fieldset>
+						) : <CellContent item={item} field={field} />}
+					</MantineTable.Td>
+				))}
+				<MantineTable.Td className={clsx('align-middle', selected)}>
+					<EditRowActions
+						mode='update'
+						busy={disabled}
+						onConfirm={() => void save()}
+						onDiscard={editing.stop}
+						confirmTestId={tid.rowEditSave(rowId)}
+						discardTestId={tid.rowEditDiscard(rowId)}
+					/>
+					<RowErrors errors={submit.errors.filter(error => !error.field)} />
+				</MantineTable.Td>
+			</MantineTable.Tr>
+		</SelectDefaultsContext.Provider>
+	);
+}
 
-	const onKeyDown = (event: React.KeyboardEvent<HTMLTableRowElement>) => {
+/** Enter saves and Escape discards, for keys pressed in the row's own inputs (see `rowKeyIntent`). */
+function useEditingRowKeys(disabled: boolean, save: () => Promise<void>, discard: () => void) {
+	return (event: React.KeyboardEvent<HTMLTableRowElement>) => {
 		const intent = readRowKey(event);
 		if (intent === 'discard') {
 			event.preventDefault();
-			editing.stop();
+			discard();
 		}
 		else if (intent === 'confirm') {
 			event.preventDefault();
@@ -201,48 +250,6 @@ function EditingCells({ item, rowId, rowNumber, isSelected, runtime, submit }: E
 			}
 		}
 	};
-	const unattached = submit.errors.filter(error => !error.field);
-
-	return (
-		<MantineTable.Tr
-			ref={rowRef}
-			tabIndex={-1}
-			onKeyDown={onKeyDown}
-			aria-selected={isSelected}
-			aria-label={`Editing row ${rowNumber}`}
-			{...tid.row(rowId)}
-		>
-			{indexColumnVisible ? (
-				<MantineTable.Td className={clsx('text-center align-middle', classes.rowNumberCell, selected)}>
-					{rowNumber}
-				</MantineTable.Td>
-			) : null}
-			{fields.map(field => (
-				<MantineTable.Td
-					key={field}
-					className={clsx(classes.editingCell, selected)}
-					{...tid.rowEditInput(rowId, field)}
-				>
-					{editable.has(field) ? (
-						<fieldset disabled={disabled} className='m-0 p-0 border-0 min-w-0'>
-							<AutoField name={field} labelHidden />
-						</fieldset>
-					) : getCellText(item, field, data.masked_fields)}
-				</MantineTable.Td>
-			))}
-			<MantineTable.Td className={clsx('align-middle', selected)}>
-				<EditRowActions
-					mode='update'
-					busy={disabled}
-					onConfirm={() => void save()}
-					onDiscard={editing.stop}
-					confirmTestId={tid.rowEditSave(rowId)}
-					discardTestId={tid.rowEditDiscard(rowId)}
-				/>
-				<RowErrors errors={unattached} />
-			</MantineTable.Td>
-		</MantineTable.Tr>
-	);
 }
 
 function RowErrors({ errors }: { errors: ClientErrorItem[] }) {

@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import React from 'react';
 
 import classes from './Select.module.css';
+import { contentWidthComboboxProps, SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
 
 import type { SelectProps as MantineSelectProps } from '@mantine/core';
 
@@ -35,12 +36,14 @@ function mergeClassNames(classNames: SelectProps['classNames']): SelectProps['cl
 export function Select<Value extends string = string>(
 	{ size, style, classNames, comboboxProps, ...rest }: SelectProps<Value>,
 ): React.ReactElement {
+	const { contentWidthDropdown } = React.useContext(SelectDefaultsContext);
+	const widthProps = contentWidthDropdown && comboboxProps?.width === undefined ? contentWidthComboboxProps : {};
 	return (
 		<MantineSelect
 			size={size ?? 'sm'}
 			style={style}
 			classNames={size ? classNames : mergeClassNames(classNames)}
-			comboboxProps={{ ...defaultComboboxProps, ...comboboxProps }}
+			comboboxProps={{ ...defaultComboboxProps, ...widthProps, ...comboboxProps }}
 			{...rest as SelectProps<Value>}
 		/>
 	);

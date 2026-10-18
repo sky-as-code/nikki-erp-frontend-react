@@ -1,6 +1,8 @@
 import { Table } from '@mantine/core';
+import clsx from 'clsx';
 import React from 'react';
 
+import tableClasses from '../ExcelDataTable.module.css';
 import classes from './ColumnFilterRow.module.css';
 import { getFieldSchema, isFilterableField } from './filterModel';
 import { SchemaFilterValueInput } from './FilterValueInput';
@@ -42,7 +44,9 @@ export function ColumnFilterRow(props: ColumnFilterRowProps): React.ReactNode {
 	// `stickyHeader` pins that element as a whole, so both rows travel together for free.
 	return (
 		<Table.Tr className={classes.columnFilterRow}>
-			{(props.hasIndexColumn ?? true) ? <Table.Th className={classes.columnFilterCell} aria-hidden /> : null}
+			{(props.hasIndexColumn ?? true) ? (
+				<Table.Th className={clsx(classes.columnFilterCell, tableClasses.rowNumberCell)} aria-hidden />
+			) : null}
 			{props.fields.map(field => (
 				<ColumnFilterCell key={field} field={field} {...props} />
 			))}

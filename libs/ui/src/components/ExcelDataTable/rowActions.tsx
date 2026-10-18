@@ -20,7 +20,7 @@ export type EditRowActionsProps = {
 	discardTestId?: TestIdAttributes,
 };
 
-/** The confirm/discard pair an editing or inserting row shows in the filler column. */
+/** The confirm/discard pair an editing or inserting row shows in the filler column, both in the default colour. */
 export function EditRowActions({
 	mode, onConfirm, onDiscard, busy = false, confirmTestId, discardTestId,
 }: EditRowActionsProps): React.ReactElement {
@@ -31,7 +31,7 @@ export function EditRowActions({
 	return (
 		<Group gap='xs' wrap='nowrap'>
 			<Button
-				variant='filled'
+				variant='default'
 				size='xs'
 				leftSection={<IconCheck size={14} />}
 				disabled={busy}

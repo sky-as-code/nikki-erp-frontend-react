@@ -193,6 +193,11 @@ export type CrudFormProviderProps = Omit<BaseFormProviderProps, 'children'> & {
 	 * reach the form runtime via {@link useCrudFormRuntime}.
 	 */
 	children: ((props: FormProviderRenderProps) => React.ReactNode) | React.ReactNode,
+	/**
+	 * Shown while the schema loads, in place of the default `LoadingState`. A form rendered where a
+	 * `<div>` is not allowed (a table row) passes markup that fits there.
+	 */
+	loadingFallback?: React.ReactNode,
 };
 
 export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode {
@@ -293,7 +298,7 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 				{content}
 			</CrudFormRuntimeContext.Provider>
 		</FormFieldContext.Provider>
-	) : <LoadingState />;
+	) : (props.loadingFallback ?? <LoadingState />);
 };
 
 /**

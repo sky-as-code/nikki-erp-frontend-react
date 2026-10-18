@@ -19,6 +19,7 @@ import { IconChevronDown, IconLock } from '@tabler/icons-react';
 import React, { FC, JSX, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useDropdownWidthProps } from './dropdownWidth';
 import { useShowLockedFeature } from '../ErrorState';
 
 
@@ -82,6 +83,25 @@ export type SearchableSelectProps = {
 
 const ACTION_OPTION_VALUE = '$$action$$';
 
+/** The options whose label contains the search term, the current value marked active. */
+function renderOptions(
+	items: SearchableSelectItem[], search: string, activeValue: string | null | undefined, testId: string | undefined,
+): JSX.Element[] {
+	const term = search.toLowerCase().trim();
+	return items
+		.filter(item => item.label?.toLowerCase().includes(term))
+		.map(item => (
+			<Combobox.Option
+				value={item.value}
+				key={item.value}
+				active={item.value === activeValue}
+				{...testAttrs(testId, 'option', item.value)}
+			>
+				{item.label || item.value}
+			</Combobox.Option>
+		));
+}
+
 
 
 export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
@@ -100,28 +120,15 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 		setActiveItem(selectedItem);
 	}, [activeValue, props.items]);
 
-	const options = props.items
-		.filter((item) =>
-			item.label?.toLowerCase().includes(search.toLowerCase().trim()),
-		)
-		.map((item) => (
-			<Combobox.Option
-				value={item.value}
-				key={item.value}
-				active={item.value === activeValue}
-				{...testAttrs(props.testId, 'option', item.value)}
-			>
-				{item.label || item.value}
-			</Combobox.Option>
-		));
-
+	const widthProps = useDropdownWidthProps(props.dropdownWidth);
+	const options = renderOptions(props.items, search, activeValue, props.testId);
 
 	const control = (
 		<Combobox
 			size='md'
 			store={combobox}
 			withinPortal={true}
-			width={props.dropdownWidth} {...props.comboboxProps}
+			{...widthProps} {...props.comboboxProps}
 			onOptionSubmit={(val) => {
 				combobox.closeDropdown();
 				if (val === ACTION_OPTION_VALUE) {

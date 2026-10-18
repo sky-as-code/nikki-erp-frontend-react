@@ -3,21 +3,20 @@ import clsx from 'clsx';
 import React from 'react';
 import { Link, useResolvedPath } from 'react-router-dom';
 
-import {
-	getCellAlignment, getCellText, getCellValue, getFieldSchema, getRowNumber, isArrayField, renderDataCellContent,
-	resolveEdgeLabel, shouldUseSingleLineEllipsis,
-} from './cells/cellValues';
+import { useCellDisplay } from './cells/CellContent';
+import { getCellAlignment, getRowNumber, isArrayField, shouldUseSingleLineEllipsis } from './cells/cellValues';
 import { useExcelDataTableContext } from './context';
 import classes from './ExcelDataTable.module.css';
 import { NewRow } from './NewRow';
 import { DeleteRowAction, EditRowAction } from './rowActions';
 import { isRowDeleteDisabled, isRowDeleteShown, isRowEditShown } from './rowDeleteModel';
 import { EditingRow } from './RowEditor';
+import { tableScopeAttrs } from './tableScope';
 import { TableColGroup, getTableStyle, useBodyScrollSync, useColumnCount, useTableLayout } from './tableLayout';
 import { rowIdOf } from './types';
 import { useRowDelete } from './useRowDelete';
 import { useTableKeyboard } from './useTableKeyboard';
-import { useI18n, useTranslate } from '../../i18n';
+import { useTranslate } from '../../i18n';
 
 
 import type { RowId, SearchItem } from './types';
@@ -35,7 +34,7 @@ export type TableProps = {
  */
 export function Table({ className, emptyText }: TableProps) {
 	const t = useTranslate('common');
-	const { data, fields, columnWidths, isLoading, selection, capabilities, tid } = useExcelDataTableContext();
+	const { data, fields, columnWidths, isLoading, selection, capabilities, tid, scopeId } = useExcelDataTableContext();
 	const scroller = useBodyScrollSync();
 	const layout = useTableLayout();
 	const columnCount = useColumnCount();
@@ -50,6 +49,7 @@ export function Table({ className, emptyText }: TableProps) {
 			tabIndex={0}
 			onKeyDown={onKeyDown}
 			className={clsx(classes.bodyScroller, className)}
+			{...tableScopeAttrs(scopeId)}
 			{...tid.attrs('body')}
 		>
 			<MantineTable striped='even' highlightOnHover style={getTableStyle(fields, columnWidths.widths, layout)}>
@@ -223,22 +223,9 @@ function RowNumberCell({ rowId, rowNumber, isSelected }: RowNumberCellProps) {
 type DataCellProps = { field: string, item: SearchItem, rowId: RowId, href?: string, isSelected: boolean };
 
 function DataCell({ field, item, rowId, href, isSelected }: DataCellProps) {
-	const context = useExcelDataTableContext();
-	const { modelSchema, relatedSchemas, fieldRenderers, selection, tid, data } = context;
-	const t = useTranslate(context.translationNs);
-	const { language } = useI18n();
+	const { selection, tid } = useExcelDataTableContext();
 	const resolved = useResolvedPath(href ?? '.');
-	const fieldSchema = getFieldSchema(modelSchema, field, relatedSchemas);
-	const renderer = fieldRenderers[field];
-	const edgeLabel = resolveEdgeLabel(item, field, modelSchema, relatedSchemas, language);
-	const rawValue = edgeLabel ?? getCellValue(item, field);
-	const text = edgeLabel ?? getCellText(item, field, data.masked_fields);
-	const content = React.useMemo(
-		() => (edgeLabel !== undefined && !renderer
-			? edgeLabel
-			: renderDataCellContent(rawValue, text, fieldSchema, renderer, t, item)),
-		[edgeLabel, fieldSchema, item, rawValue, renderer, t, text],
-	);
+	const { content, text, fieldSchema, renderer } = useCellDisplay(item, field);
 	const useEllipsis = shouldUseSingleLineEllipsis(text) && !isArrayField(fieldSchema);
 	const onMouseDown = (event: React.MouseEvent<HTMLTableCellElement>) => {
 		if (!isModifiedClick(event)) {

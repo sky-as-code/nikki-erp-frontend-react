@@ -5,6 +5,7 @@ import { useColumnWidthsState } from './columnWidths';
 import { ExcelDataTableContext } from './context';
 import { useSchemaFieldNameTranslator } from './fieldLabels';
 import { useApplyFilters, useFilterState } from './filter/useFilterState';
+import { useClearSelectionOnLeave } from './tableScope';
 import { excelDataTableTestIds } from './testIds';
 import { useContainerWidthState, useIsCompact } from './useIsCompact';
 import {
@@ -89,6 +90,8 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		mode: props.selectionMode, initialSelectedIds: props.initialSelectedIds,
 	});
 	useDiscardEditOnSelectionChange(editing, selection.ids);
+	const scopeId = React.useId();
+	useClearSelectionOnLeave(scopeId, editing.isActive, selection);
 	const { viewMode, setViewMode } = useViewModeState(props.initialViewMode, props.allowedViewModes);
 	const settings = useOpenState();
 	const filterPane = useOpenState();
@@ -135,13 +138,14 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		buildLinkHref: props.buildLinkHref,
 		fieldRenderers: props.fieldRenderers ?? emptyRenderers,
 		tid,
+		scopeId,
 	}), [
 		tableName, props.modelSchema, props.relatedSchemas, data, isLoading, isCompact, container.setWidth,
 		searchRequest,
 		setSearchRequest, filters, applyFilters, selection, editing, viewMode, setViewMode, settings,
 		filterPane, fields, columnWidths, props.indexColumnVisible, props.updateCommand, rows, props.onRefresh,
 		props.translationNs,
-		props.translateFieldName, schemaFieldName, props.buildLinkHref, props.fieldRenderers, tid,
+		props.translateFieldName, schemaFieldName, props.buildLinkHref, props.fieldRenderers, tid, scopeId,
 	]);
 
 	return (
