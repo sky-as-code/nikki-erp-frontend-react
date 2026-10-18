@@ -2,7 +2,7 @@ import { ClientErrorItem } from '@nikkierp/common/types';
 import { describe, expect, it } from 'vitest';
 
 import {
-	buildRowDeletePayload, deletableRowId, isRowDeleteDisabled, isRowDeleteShown, rowDeleteOutcome,
+	buildRowDeletePayload, deletableRowId, isRowDeleteDisabled, isRowDeleteShown, isRowEditShown, rowDeleteOutcome,
 } from './rowDeleteModel';
 
 
@@ -66,5 +66,12 @@ describe('row delete gating', () => {
 		expect(isRowDeleteDisabled({ ...idle, isEditing: true })).toBe(true);
 		expect(isRowDeleteDisabled({ ...idle, isLoading: true })).toBe(true);
 		expect(isRowDeleteDisabled({ ...idle, isDeleting: true })).toBe(true);
+	});
+});
+
+describe('isRowEditShown', () => {
+	it('offers Edit only to a table that may update rows', () => {
+		expect(isRowEditShown(['update'])).toBe(true);
+		expect(isRowEditShown(['create', 'delete'])).toBe(false);
 	});
 });

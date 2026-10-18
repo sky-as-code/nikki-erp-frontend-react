@@ -8,6 +8,7 @@ import { useExcelDataTableContext } from './context';
 import { buildNewRowPayload, findNewRowConfigProblems, resolveNewRowColumns, splitNewRowErrors } from './newRowModel';
 import { useNewRowSearch } from './newRowSearch';
 import { EditRowActions } from './rowActions';
+import { readRowKey } from './rowKeys';
 import { useColumnCount } from './tableLayout';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
@@ -31,7 +32,7 @@ type TranslateFn = ReturnType<typeof useTranslate>;
 
 /**
  * The table's last row when rows can be created: `[+ Add a line]` until clicked, then an input per
- * creatable column with Add / Discard in the filler cell. Rendered by `NewRowSlot`.
+ * creatable column with Add / Discard in the filler cell. Rendered by `Table` after the data rows.
  */
 export function NewRow(): React.ReactNode {
 	const { capabilities, editing, modelSchema } = useExcelDataTableContext();
@@ -144,21 +145,15 @@ function InsertRowActions({ submit, busy }: { submit: NewRowAdd, busy: boolean }
 	);
 }
 
-/**
- * Enter adds and Escape discards, for keys pressed in the row's own inputs. A dropdown's search box
- * is portalled out of the row but still bubbles here through React, so a key from outside the
- * row's DOM, or one a select already consumed (its option pick), is left alone.
- */
+/** Enter adds and Escape discards, for keys pressed in the row's own inputs (see `rowKeyIntent`). */
 function useInsertRowKeys(busy: boolean, add: () => Promise<void>, discard: () => void) {
 	return (event: React.KeyboardEvent<HTMLTableRowElement>) => {
-		if (event.defaultPrevented || !event.currentTarget.contains(event.target as Node)) {
-			return;
-		}
-		if (event.key === 'Escape') {
+		const intent = readRowKey(event);
+		if (intent === 'discard') {
 			event.preventDefault();
 			discard();
 		}
-		else if (event.key === 'Enter' && !(event.target instanceof HTMLTextAreaElement)) {
+		else if (intent === 'confirm') {
 			event.preventDefault();
 			if (!busy) {
 				void add();

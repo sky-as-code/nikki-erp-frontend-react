@@ -1,10 +1,7 @@
 import { Command, ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
-import {
-	SearchResourceActionsRequest, SearchRoleEntitlementsRequest, searchGrantableResources, searchResourceActions,
-	searchRoleEntitlements,
-} from './rolePermissions';
+import { SearchResourceActionsRequest, searchGrantableResources, searchResourceActions } from './rolePermissions';
 import { roleService } from './roleService';
 import * as t from './types';
 import { IAM_MODULE, ROLE_SCHEMA_NAME } from '../../constants';
@@ -24,16 +21,14 @@ const PREFIX = `${IAM_MODULE}.${ROLE_SCHEMA_NAME}`;
  * The rest are not CRUD over `iam_role`: `DESCRIBE` reads a role-assignment endpoint the dynamic
  * schema cannot express, and the `MANAGE_*` commands are many-to-many writes whose sub-path is
  * fixed, so callers need send no `path`. `MANAGE_USERS` / `MANAGE_GROUPS` take
- * `{id, add?, remove?}` with `id` the role. The `SEARCH_*` reads feed the role's Permission
- * section; its writes ride `UPDATE` as an `entitlements: {add, remove}` delta.
+ * `{id, add?, remove?}` with `id` the role. The `SEARCH_*` reads feed the pickers of the role's
+ * Entitlements section; its writes ride `UPDATE` as an `entitlements: {add, remove, update}` delta.
  */
 export const RoleCommands = Object.freeze({
 	...resourceCommands(ROLE_SCHEMA_NAME),
 	DESCRIBE: `${PREFIX}.describe_roles`,
-	MANAGE_ENTITLEMENTS: `${PREFIX}.manage_role_entitlements`,
 	MANAGE_USERS: `${PREFIX}.manage_role_users`,
 	MANAGE_GROUPS: `${PREFIX}.manage_role_groups`,
-	SEARCH_ENTITLEMENTS: `${PREFIX}.search_role_entitlements`,
 	SEARCH_GRANTABLE_RESOURCES: `${PREFIX}.search_grantable_resources`,
 	SEARCH_RESOURCE_ACTIONS: `${PREFIX}.search_resource_actions`,
 } as const);
@@ -50,18 +45,10 @@ export function registerRoleCommands(bus: ICommandBus): () => void {
 	const unsubscribers = [
 		bus.subscribe(RoleCommands.DESCRIBE, cmd => describeRoles(payload<DescribeRolesRequest>(cmd))),
 		bus.subscribe(
-			RoleCommands.MANAGE_ENTITLEMENTS,
-			cmd => roleService.manageEntitlements(payload<t.ManageRoleEntitlementsRequest>(cmd)),
-		),
-		bus.subscribe(
 			RoleCommands.MANAGE_USERS, cmd => roleService.manageUsers(payload<t.ManageRolePrincipalsRequest>(cmd)),
 		),
 		bus.subscribe(
 			RoleCommands.MANAGE_GROUPS, cmd => roleService.manageGroups(payload<t.ManageRolePrincipalsRequest>(cmd)),
-		),
-		bus.subscribe(
-			RoleCommands.SEARCH_ENTITLEMENTS,
-			cmd => searchRoleEntitlements(payload<SearchRoleEntitlementsRequest>(cmd)),
 		),
 		bus.subscribe(RoleCommands.SEARCH_GRANTABLE_RESOURCES, () => searchGrantableResources()),
 		bus.subscribe(

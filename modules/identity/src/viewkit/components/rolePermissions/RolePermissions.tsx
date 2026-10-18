@@ -12,10 +12,11 @@ import { z } from 'zod';
 import { GRANT_FIELD_EDITORS, GrantEditorContext, TEST_ID_PREFIX } from './grantEditors';
 import { entitlementErrors } from './permissionDrafts';
 import {
-	ACTION_FIELD, isDraftRow, mergeDraftRows, PERMISSION_FIELDS, RESOURCE_FIELD, revocationOf, toDraftGrant,
+	ACTION_FIELD, DESCRIPTION_FIELD, isDraftRow, mergeDraftRows, PERMISSION_FIELDS, PERMISSION_ORDER, RESOURCE_FIELD,
+	rowRefOf, toDraftGrant,
 } from './permissionTable';
 import { usePermissionDraftState } from './rolePermissionsData';
-import { IAM_MODULE, ROLE_SCHEMA_NAME } from '../../../constants';
+import { ENTITLEMENT_SCHEMA_NAME, IAM_MODULE, ROLE_SCHEMA_NAME } from '../../../constants';
 import { ROLE_PERMISSIONS } from '../../ids';
 
 import type { GrantEditorBridge } from './grantEditors';
@@ -26,8 +27,7 @@ import type { SearchItem } from '@nikkierp/ui/components/ExcelDataTable';
 import type { FieldRendererMap, IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
-const ENTITLEMENT_SCHEMA_NAME = 'iam_entitlement';
-const CAPABILITIES: ['create', 'delete'] = ['create', 'delete'];
+const CAPABILITIES: ['create', 'update', 'delete'] = ['create', 'update', 'delete'];
 
 /** The backend asserts `manage_entitlements` on `iam_role` with no org, so only a tenant grant satisfies it. */
 const MANAGE_REQUIREMENT = actionRequirement(ROLE_SCHEMA_NAME, 'manage_entitlements', 'tenant');
@@ -45,9 +45,9 @@ export const rolePermissionsRenderer: IComponentRenderer<Record<string, never>> 
 };
 
 /**
- * The role's entitlements. In update mode the table's insert row and row deletes only draft
- * changes: added rows show as "New", deleted saved rows disappear, and both ride the role's own
- * update request on Save. Cancel or a successful Save discards the drafts.
+ * The role's entitlements. In update mode the table's insert row, row edits (description only) and
+ * row deletes only draft changes: added rows show as "New", deleted saved rows disappear, and all
+ * of it rides the role's own update request on Save. Cancel or a successful Save discards the drafts.
  */
 function RolePermissionsSection(): React.ReactNode {
 	const t = useTranslate([IAM_MODULE, 'common']);
@@ -67,8 +67,10 @@ function RolePermissionsSection(): React.ReactNode {
 					newRowPrompt={t('role_permission_addEntitlement', { defaultValue: 'Add new entitlement' })}
 					newRowFieldEditors={GRANT_FIELD_EDITORS}
 					onCreated={section.onCreated}
+					onUpdated={section.onUpdated}
 					onDeleted={section.onDeleted}
 					createEntitlement={MANAGE_REQUIREMENT}
+					updateEntitlement={MANAGE_REQUIREMENT}
 					deleteEntitlement={MANAGE_REQUIREMENT}
 					fieldRenderers={section.fieldRenderers}
 					emptyText={t('role_permission_empty')}
@@ -82,7 +84,9 @@ function RolePermissionsSection(): React.ReactNode {
 function usePermissionSection() {
 	const roleId = useParams().id ?? '';
 	const updateMode = useResourceFormView()?.updateMode ?? false;
-	const baseGraph = React.useMemo((): dyn.SearchGraph => ({ if: ['role_id', '=', roleId] }), [roleId]);
+	const baseGraph = React.useMemo(
+		(): dyn.SearchGraph => ({ if: ['role_id', '=', roleId], order: PERMISSION_ORDER }), [roleId],
+	);
 	const bridge = React.useRef<GrantEditorBridge>({ names: new Map(), form: null });
 	const saved = React.useRef<RoleEntitlement[]>([]);
 	// A save re-reads the rows: the table remounts and runs its search again.
@@ -119,9 +123,14 @@ function useDraftSinks(draftState: PermissionDraftState, bridge: React.RefObject
 		}
 		return true;
 	};
+	const onUpdated = (values: Record<string, unknown>): boolean => {
+		const description = values[DESCRIPTION_FIELD];
+		draftState.update(rowRefOf(values), typeof description === 'string' ? description : '');
+		return true;
+	};
 	// The table deletes one row at a time.
-	const onDeleted = (items: SearchItem[]) => items.forEach(item => draftState.revoke(revocationOf(item)));
-	return { onCreated, onDeleted };
+	const onDeleted = (items: SearchItem[]) => items.forEach(item => draftState.revoke(rowRefOf(item)));
+	return { onCreated, onUpdated, onDeleted };
 }
 
 /** `resource_id` badges a draft row as "New"; `action_id` reads `null` as "All" actions. */

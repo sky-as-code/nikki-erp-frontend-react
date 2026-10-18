@@ -1,9 +1,12 @@
+import { Stack } from '@mantine/core';
 import { resourceCommand } from '@nikkierp/common/dynamicModel';
 import { InsufficientPermissionContent, LoadingState } from '@nikkierp/ui/components';
 import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
 import React from 'react';
 
-import { formDataTableCapabilities, formDataTableRequest } from './formDataTableModel';
+import {
+	FORM_DATA_TABLE_PAGE_SIZE, formDataTableCapabilities, formDataTableRequest, isFormDataTablePaginated,
+} from './formDataTableModel';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { useTableRelatedSchemas } from '../../data/useTableFieldLabels';
@@ -47,9 +50,10 @@ export type FormDataTableProps = ExcelDataTableRowWriteProps & {
 };
 
 /**
- * An `ExcelDataTable` for one section of a detail form: every row at once, no pagination or
- * column filters. Row writes follow the form's mode: offered while it is being updated (and on a
- * create page, which has no read mode), read-only otherwise.
+ * An `ExcelDataTable` for one section of a detail form: 100 rows a page, with pagination above and
+ * below only when there are more, and no column filters. Row writes follow the form's mode:
+ * offered while it is being updated (and on a create page, which has no read mode), read-only
+ * otherwise.
  */
 export function FormDataTable(props: FormDataTableProps): React.ReactNode {
 	return <ScopedFormDataTable key={JSON.stringify(props.baseGraph ?? null)} {...props} />;
@@ -89,10 +93,32 @@ function ScopedFormDataTable(props: FormDataTableProps): React.ReactNode {
 			data={data}
 			isLoading={search.isPending}
 			initialSearchRequest={search.userRequest}
+			pageSize={FORM_DATA_TABLE_PAGE_SIZE}
 			onSearchRequestChange={search.onSearchRequestChange}
 			orderBy={getSearchRequestOrderBy(search.searchRequest)}
 			onRefresh={search.refresh}
 		>
+			<FormDataTableLayout
+				paginated={isFormDataTablePaginated(searchData?.total)}
+				enableSettings={enableSettings}
+				fillerColumnMinWidth={fillerColumnMinWidth}
+				emptyText={emptyText}
+			/>
+		</ExcelDataTable.Provider>
+	);
+}
+
+type FormDataTableLayoutProps = Pick<FormDataTableProps, 'enableSettings' | 'fillerColumnMinWidth' | 'emptyText'> & {
+	paginated: boolean,
+};
+
+function FormDataTableLayout({
+	paginated, enableSettings, fillerColumnMinWidth, emptyText,
+}: FormDataTableLayoutProps): React.ReactNode {
+	const pagination = paginated ? <ExcelDataTable.Toolbar right={<ExcelDataTable.Pagination />} /> : null;
+	return (
+		<Stack gap='xs'>
+			{pagination}
 			<div>
 				<ExcelDataTable.TableHeader
 					enableColumnFilters={false}
@@ -101,7 +127,8 @@ function ScopedFormDataTable(props: FormDataTableProps): React.ReactNode {
 				/>
 				<ExcelDataTable.Table emptyText={emptyText} />
 			</div>
-		</ExcelDataTable.Provider>
+			{pagination}
+		</Stack>
 	);
 }
 

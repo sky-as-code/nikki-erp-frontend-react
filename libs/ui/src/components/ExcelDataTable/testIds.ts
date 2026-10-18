@@ -55,6 +55,7 @@ export function excelDataTableTestIds(testId: string | undefined, tableName: str
 		newRowInput: (field: string) => attrs('newRow', 'input', field),
 		newRowAdd: () => attrs('newRow', 'add'),
 		newRowDiscard: () => attrs('newRow', 'discard'),
+		rowEdit: (rowId: RowId) => attrs('row', rowId, 'edit'),
 		rowDelete: (rowId: RowId) => attrs('row', rowId, 'delete'),
 		...filterTestIds(attrs),
 		...settingsTestIds(attrs),

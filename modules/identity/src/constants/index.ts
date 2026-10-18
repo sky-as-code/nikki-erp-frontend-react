@@ -8,3 +8,6 @@ export const USER_SCHEMA_NAME = 'iam_user';
 export const ORGANIZATION_SCHEMA_NAME = 'iam_org';
 export const ORG_UNIT_SCHEMA_NAME = 'iam_orgunit';
 export const ROLE_SCHEMA_NAME = 'iam_role';
+export const ENTITLEMENT_SCHEMA_NAME = 'iam_entitlement';
+export const RESOURCE_SCHEMA_NAME = 'iam_resource';
+export const ACTION_SCHEMA_NAME = 'iam_action';

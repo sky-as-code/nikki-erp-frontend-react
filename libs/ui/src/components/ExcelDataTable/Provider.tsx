@@ -8,7 +8,8 @@ import { useApplyFilters, useFilterState } from './filter/useFilterState';
 import { excelDataTableTestIds } from './testIds';
 import { useContainerWidthState, useIsCompact } from './useIsCompact';
 import {
-	useEditingState, useOpenState, useSearchRequestState, useSelectionState, useViewModeState,
+	useDiscardEditOnSelectionChange, useEditingState, useOpenState, useSearchRequestState, useSelectionState,
+	useViewModeState,
 } from './useProviderState';
 
 import type { ExcelDataTableRowWriteProps } from './capabilities';
@@ -29,6 +30,8 @@ export type ExcelDataTableProviderProps = ExcelDataTableRowWriteProps & {
 	/** Drives the header's progress row and freezes an editing row until the load finishes. */
 	isLoading?: boolean,
 	initialSearchRequest?: dyn.RestSearchRequest,
+	/** A fixed page size for the first request, ahead of the size the user last picked on any table. */
+	pageSize?: number,
 	onSearchRequestChange?: (request: dyn.RestSearchRequest) => void,
 	/**
 	 * A page-authored graph seeded into the filter panel as editable conditions and into the sort
@@ -73,7 +76,7 @@ const emptySchemas: Record<string, dyn.ModelSchema> = {};
 export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 	const { data, isLoading = false } = props;
 	const { searchRequest, setSearchRequest } = useSearchRequestState(
-		data, props.initialSearchRequest, props.onSearchRequestChange,
+		data, props.initialSearchRequest, props.onSearchRequestChange, props.pageSize,
 	);
 	const filters = useFilterState({
 		baseGraph: props.baseGraph,
@@ -82,9 +85,10 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 	});
 	const applyFilters = useApplyFilters(filters, setSearchRequest);
 	const editing = useEditingState(isLoading);
-	const selection = useSelectionState(data.items, props.onSelectionChange, editing.isActive, {
+	const selection = useSelectionState(data.items, props.onSelectionChange, editing.creating, {
 		mode: props.selectionMode, initialSelectedIds: props.initialSelectedIds,
 	});
+	useDiscardEditOnSelectionChange(editing, selection.ids);
 	const { viewMode, setViewMode } = useViewModeState(props.initialViewMode, props.allowedViewModes);
 	const settings = useOpenState();
 	const filterPane = useOpenState();

@@ -1,5 +1,5 @@
 import { Group } from '@mantine/core';
-import { IconCheck, IconTrash, IconX } from '@tabler/icons-react';
+import { IconCheck, IconPencil, IconTrash, IconX } from '@tabler/icons-react';
 import React from 'react';
 
 import { useTranslate } from '../../i18n';
@@ -77,6 +77,33 @@ export function DeleteRowAction({
 			{...testId}
 		>
 			{t('action.delete', { defaultValue: 'Delete' })}
+		</Button>
+	);
+}
+
+export type EditRowActionProps = LockedProps & {
+	onEdit: () => void,
+	disabled?: boolean,
+	testId?: TestIdAttributes,
+};
+
+/** The edit a read row offers left of its delete; it opens the row editor on that row. */
+export function EditRowAction({
+	onEdit, disabled = false, locked, lockedMissing, testId,
+}: EditRowActionProps): React.ReactElement {
+	const t = useTranslate('common');
+	return (
+		<Button
+			variant='default'
+			size='xs'
+			leftSection={<IconPencil size={14} />}
+			disabled={disabled}
+			locked={locked}
+			lockedMissing={lockedMissing}
+			onClick={onEdit}
+			{...testId}
+		>
+			{t('action.edit', { defaultValue: 'Edit' })}
 		</Button>
 	);
 }

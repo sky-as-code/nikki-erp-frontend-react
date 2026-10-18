@@ -7,6 +7,7 @@ import { getCellText } from './cells/cellValues';
 import { useExcelDataTableContext } from './context';
 import { buildRowUpdatePayload, isRowEditableField } from './editModel';
 import { EditRowActions } from './rowActions';
+import { readRowKey } from './rowKeys';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
 import { AutoField, CrudFormProvider } from '../form';
@@ -17,7 +18,7 @@ import type { RowId, SearchItem } from './types';
 import type { FormProviderRenderProps } from '../form';
 
 
-export type EditingRowProps = { item: SearchItem, rowId: RowId, rowNumber: number };
+export type EditingRowProps = { item: SearchItem, rowId: RowId, rowNumber: number, isSelected: boolean };
 
 /** Mantine renders selects and date pickers as inputs too, so one selector covers every field type. */
 const FOCUSABLE_INPUT = 'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled])';
@@ -34,9 +35,9 @@ const REFUSAL_TEXT: Record<Exclude<RowUpdateRefusal, 'unchanged'>, string> = {
 /**
  * The row in inline update mode: an input per editable column, text for the rest, and the
  * save/discard pair in the filler cell. It hosts its own form runtime, seeded from the row, so the
- * detail form's field inputs and validation apply unchanged. Selection is frozen while it lives.
+ * detail form's field inputs and validation apply unchanged. Selecting another row discards it.
  */
-export function EditingRow({ item, rowId, rowNumber }: EditingRowProps) {
+export function EditingRow({ item, rowId, rowNumber, isSelected }: EditingRowProps) {
 	const { modelSchema } = useExcelDataTableContext();
 	const localize = useSchemaLocalize(modelSchema?.name ?? '');
 	const submit = useRowSubmit(item);
@@ -53,7 +54,14 @@ export function EditingRow({ item, rowId, rowNumber }: EditingRowProps) {
 			onSubmit={submit.onSubmit}
 		>
 			{runtime => (
-				<EditingCells item={item} rowId={rowId} rowNumber={rowNumber} runtime={runtime} submit={submit} />
+				<EditingCells
+					item={item}
+					rowId={rowId}
+					rowNumber={rowNumber}
+					isSelected={isSelected}
+					runtime={runtime}
+					submit={submit}
+				/>
 			)}
 		</CrudFormProvider>
 	);
@@ -170,23 +178,27 @@ function useFirstInputFocus(rowId: RowId): React.RefObject<HTMLTableRowElement |
 	return rowRef;
 }
 
-function EditingCells({ item, rowId, rowNumber, runtime, submit }: EditingCellsProps) {
+function EditingCells({ item, rowId, rowNumber, isSelected, runtime, submit }: EditingCellsProps) {
 	const t = useTranslate('common');
 	const { fields, data, editing, isLoading, indexColumnVisible, tid } = useExcelDataTableContext();
 	const editable = new Set(submit.editableFields);
 	const disabled = isLoading || submit.isSubmitting;
+	const selected = { [classes.selectedCell]: isSelected };
 
 	const save = useRowSave({ item, runtime, submit, editing, t });
 	const rowRef = useFirstInputFocus(rowId);
 
 	const onKeyDown = (event: React.KeyboardEvent<HTMLTableRowElement>) => {
-		if (event.key === 'Escape') {
+		const intent = readRowKey(event);
+		if (intent === 'discard') {
 			event.preventDefault();
 			editing.stop();
 		}
-		else if (event.key === 'Enter' && !(event.target instanceof HTMLTextAreaElement) && !disabled) {
+		else if (intent === 'confirm') {
 			event.preventDefault();
-			void save();
+			if (!disabled) {
+				void save();
+			}
 		}
 	};
 	const unattached = submit.errors.filter(error => !error.field);
@@ -196,16 +208,21 @@ function EditingCells({ item, rowId, rowNumber, runtime, submit }: EditingCellsP
 			ref={rowRef}
 			tabIndex={-1}
 			onKeyDown={onKeyDown}
+			aria-selected={isSelected}
 			aria-label={`Editing row ${rowNumber}`}
 			{...tid.row(rowId)}
 		>
 			{indexColumnVisible ? (
-				<MantineTable.Td className={clsx('text-center align-middle', classes.rowNumberCell)}>
+				<MantineTable.Td className={clsx('text-center align-middle', classes.rowNumberCell, selected)}>
 					{rowNumber}
 				</MantineTable.Td>
 			) : null}
 			{fields.map(field => (
-				<MantineTable.Td key={field} className={classes.editingCell} {...tid.rowEditInput(rowId, field)}>
+				<MantineTable.Td
+					key={field}
+					className={clsx(classes.editingCell, selected)}
+					{...tid.rowEditInput(rowId, field)}
+				>
 					{editable.has(field) ? (
 						<fieldset disabled={disabled} className='m-0 p-0 border-0 min-w-0'>
 							<AutoField name={field} labelHidden />
@@ -213,7 +230,7 @@ function EditingCells({ item, rowId, rowNumber, runtime, submit }: EditingCellsP
 					) : getCellText(item, field, data.masked_fields)}
 				</MantineTable.Td>
 			))}
-			<MantineTable.Td className='align-middle'>
+			<MantineTable.Td className={clsx('align-middle', selected)}>
 				<EditRowActions
 					mode='update'
 					busy={disabled}

@@ -4,7 +4,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { emptyDrafts, grantKey } from './permissionDrafts';
 import {
-	ACTION_FIELD, DRAFT_ROW_FLAG, isDraftRow, mergeDraftRows, RESOURCE_FIELD, revocationOf, toDraftGrant, toDraftRow,
+	ACTION_FIELD, allActionsFirst, DRAFT_ROW_FLAG, isDraftRow, mergeDraftRows, RESOURCE_FIELD, rowRefOf, toDraftGrant,
+	toDraftRow,
 } from './permissionTable';
 
 import type { DraftGrant } from './permissionDrafts';
@@ -32,6 +33,7 @@ describe('toDraftRow', () => {
 		const row = toDraftRow(readGrant);
 		expect(row).toEqual({
 			id: `draft:${grantKey('res-product', 'act-read')}`,
+			etag: 'draft',
 			[DRAFT_ROW_FLAG]: true,
 			resource_id: 'res-product',
 			action_id: 'act-read',
@@ -54,18 +56,48 @@ describe('mergeDraftRows', () => {
 		expect(rows.map(row => row.id)).toEqual(['ent-2', toDraftRow(readGrant).id]);
 	});
 
-	it('returns the loaded items untouched without drafts', () => {
-		expect(mergeDraftRows(saved, emptyDrafts(ROLE))).toBe(saved);
+	it('returns the loaded items unchanged without drafts', () => {
+		expect(mergeDraftRows(saved, emptyDrafts(ROLE))).toEqual(saved);
+	});
+
+	it('shows the edited description of a saved row', () => {
+		const drafts = { ...emptyDrafts(ROLE), updated: { 'ent-2': 'Write products' } };
+		expect(mergeDraftRows(saved, drafts)[1]).toMatchObject({ id: 'ent-2', description: 'Write products' });
+	});
+
+	it('keeps drafts after the saved rows, in the order they were added', () => {
+		const drafts = { ...emptyDrafts(ROLE), added: [readGrant, allGrant] };
+		const ids = mergeDraftRows(saved, drafts).map(row => row.id);
+		expect(ids).toEqual(['ent-1', 'ent-2', toDraftRow(readGrant).id, toDraftRow(allGrant).id]);
 	});
 });
 
-describe('revocationOf', () => {
-	it('drops a draft by its grant key', () => {
-		expect(revocationOf(toDraftRow(allGrant))).toEqual({ key: grantKey('res-user', null), state: 'draft' });
+describe('allActionsFirst', () => {
+	it('moves the All grant to the front of its resource and keeps the server order otherwise', () => {
+		const rows = [
+			{ id: 'a-read', resource_id: 'res-a', action_id: 'read' },
+			{ id: 'a-all', resource_id: 'res-a', action_id: null },
+			{ id: 'b-read', resource_id: 'res-b', action_id: 'read' },
+			{ id: 'b-write', resource_id: 'res-b', action_id: 'write' },
+			{ id: 'b-all', resource_id: 'res-b', action_id: null },
+		];
+		expect(allActionsFirst(rows).map(row => row.id)).toEqual(['a-all', 'a-read', 'b-all', 'b-read', 'b-write']);
+	});
+});
+
+describe('rowRefOf', () => {
+	it('names a draft by its grant key', () => {
+		expect(rowRefOf(toDraftRow(allGrant))).toEqual({ key: grantKey('res-user', null), state: 'draft' });
 	});
 
-	it('marks a saved row by its id', () => {
-		expect(revocationOf(saved[0]!)).toEqual({ key: 'ent-1', state: 'existing' });
+	it('names a draft from the row editor payload, which carries only its id', () => {
+		expect(rowRefOf({ id: toDraftRow(readGrant).id, description: 'x' })).toEqual({
+			key: grantKey('res-product', 'act-read'), state: 'draft',
+		});
+	});
+
+	it('names a saved row by its id', () => {
+		expect(rowRefOf(saved[0]!)).toEqual({ key: 'ent-1', state: 'existing' });
 		expect(isDraftRow(saved[0])).toBe(false);
 	});
 });

@@ -50,6 +50,11 @@ export function isRowDeleteShown(capabilities: ExcelDataTableCapability[]): bool
 	return capabilities.includes('delete');
 }
 
+/** A locked update still shows its Edit, rendered locked, so the user learns what is missing. */
+export function isRowEditShown(capabilities: ExcelDataTableCapability[]): boolean {
+	return capabilities.includes('update');
+}
+
 /** A delete never runs beside an open row editor, a pending load, or another delete of the row. */
 export function isRowDeleteDisabled(state: RowDeleteState): boolean {
 	return state.isEditing || state.isLoading || state.isDeleting;

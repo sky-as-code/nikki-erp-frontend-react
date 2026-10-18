@@ -4,11 +4,11 @@ import { useResourceUpdateContext } from '@nikkierp/viewkit-mantine';
 import React from 'react';
 
 import {
-	buildEntitlementsContribution, draftsFor, emptyDrafts, grantDraft, revokeRow,
+	buildEntitlementsContribution, draftsFor, emptyDrafts, grantDraft, revokeRow, updateDescription,
 } from './permissionDrafts';
 import { RoleCommands } from '../../../features/role/commands';
 
-import type { DraftGrant, GrantOutcome, PermissionDrafts, PermissionRow } from './permissionDrafts';
+import type { DraftGrant, GrantOutcome, PermissionDrafts, RowRef } from './permissionDrafts';
 import type { GrantableAction, GrantableResource, RoleEntitlement } from '../../../features/role/rolePermissions';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 
@@ -64,11 +64,12 @@ export function useResourceActions(resourceId: string | null): LoadedList<Granta
 export type PermissionDraftState = {
 	drafts: PermissionDrafts,
 	grant: (grant: DraftGrant) => GrantOutcome,
-	revoke: (row: Pick<PermissionRow, 'key' | 'state'>) => void,
+	revoke: (row: RowRef) => void,
+	update: (row: RowRef, description: string) => void,
 };
 
 /**
- * The section's unsaved grants and revokes. They live only for one edit session of one record:
+ * The section's unsaved grants, revokes and description edits. They live only for one edit session of one record:
  * leaving update mode (Cancel, or a successful Save) discards them, and they are keyed by role id
  * so a split view switching records in place never shows, or sends, another role's drafts.
  */
@@ -102,6 +103,10 @@ export function usePermissionDraftState(args: {
 			return result.outcome;
 		},
 		revoke: row => setState(revokeRow(drafts, row)),
+		update: (row, description) => {
+			const saved = getExisting().find(item => item.id === row.key)?.description ?? '';
+			setState(updateDescription(drafts, row, description, saved));
+		},
 	};
 }
 

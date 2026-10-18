@@ -5,10 +5,15 @@ import type { ExcelDataTableCapability } from '@nikkierp/ui/components/ExcelData
 
 
 /**
- * A form table shows every row of its record at once: there is no pagination to reach the rest.
- * The backend's `MODEL_RULE_PAGE_MAX_SIZE` caps a search page at 500 and refuses a larger size.
+ * A form table pages its rows 100 at a time, a size fixed for every form table rather than the one
+ * the user last picked on a list. Below the backend's `MODEL_RULE_PAGE_MAX_SIZE` of 500.
  */
-export const FORM_DATA_TABLE_PAGE_SIZE = 500;
+export const FORM_DATA_TABLE_PAGE_SIZE = 100;
+
+/** Pagination appears only when the rows do not fit on one page. */
+export function isFormDataTablePaginated(total: number | undefined): boolean {
+	return (total ?? 0) > FORM_DATA_TABLE_PAGE_SIZE;
+}
 
 const readOnly: ExcelDataTableCapability[] = [];
 
@@ -23,7 +28,7 @@ export function formDataTableCapabilities(
 	return updateMode ? capabilities : readOnly;
 }
 
-/** The one search the table runs; the insert row's search column is always projected, and first. */
+/** The first page the table asks for; the insert row's search column is always projected, and first. */
 export function formDataTableRequest(
 	fields: string[], newRowSearchField: string | undefined, searchName?: string,
 ): dyn.RestSearchRequest {

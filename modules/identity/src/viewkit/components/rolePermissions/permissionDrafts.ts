@@ -20,41 +20,38 @@ export type DraftGrant = {
 	description: string,
 };
 
-/** The unsaved changes of one role's Permission section. `roleId` keeps them from leaking to another record. */
+/** The unsaved changes of one role's Entitlements section. `roleId` keeps them from leaking to another record. */
 export type PermissionDrafts = {
 	roleId: string,
 	added: DraftGrant[],
 	/** Entitlement ids marked for removal. */
 	removed: string[],
+	/** New descriptions of saved entitlements, by entitlement id. */
+	updated: Record<string, string>,
 };
 
 export type GrantOutcome = 'added' | 'restored' | 'duplicate';
 
-export type PermissionRow = {
-	/** The entitlement id, or {@link grantKey} for a draft: stable across sorting, so usable in test ids. */
+/** A table row as the drafts know it: an entitlement id, or {@link grantKey} for a draft. */
+export type RowRef = {
 	key: string,
-	state: 'existing' | 'draft' | 'removed',
-	resourceLabel: string,
-	actionLabel: string,
-	isAllActions: boolean,
-	description: string,
+	state: 'existing' | 'draft',
 };
 
 export type SelectOption = { value: string, label: string };
 
 export type NameResolver = (name: PermissionName) => string;
 
-export type RowLabels = { nameOf: NameResolver, allLabel: string };
-
 export type EntitlementsContribution = {
 	entitlements: {
 		add: { resource_id: string, action_id: string | null, description?: string }[],
 		remove: string[],
+		update: { id: string, description: string }[],
 	},
 };
 
 export function emptyDrafts(roleId: string): PermissionDrafts {
-	return { roleId, added: [], removed: [] };
+	return { roleId, added: [], removed: [], updated: {} };
 }
 
 /** The drafts of `roleId`, or none when the state still belongs to the previously shown record. */
@@ -63,7 +60,7 @@ export function draftsFor(state: PermissionDrafts, roleId: string): PermissionDr
 }
 
 export function hasDrafts(drafts: PermissionDrafts): boolean {
-	return drafts.added.length > 0 || drafts.removed.length > 0;
+	return drafts.added.length > 0 || drafts.removed.length > 0 || Object.keys(drafts.updated).length > 0;
 }
 
 /** One grant per resource + action, which is what the backend's unique expression enforces. */
@@ -90,15 +87,37 @@ export function grantDraft(
 	return { drafts: { ...drafts, added: [...drafts.added, grant] }, outcome: 'added' };
 }
 
-/** Revoke on a draft row drops it; on a saved row it toggles the removal mark, so it is undoable. */
-export function revokeRow(drafts: PermissionDrafts, row: Pick<PermissionRow, 'key' | 'state'>): PermissionDrafts {
+/**
+ * Revoke on a draft row drops it; on a saved row it toggles the removal mark, so it is undoable. A
+ * removed entitlement keeps no description edit: the backend refuses to update what it removes.
+ */
+export function revokeRow(drafts: PermissionDrafts, row: RowRef): PermissionDrafts {
 	if (row.state === 'draft') {
 		return { ...drafts, added: drafts.added.filter(item => grantKey(item.resourceId, item.actionId) !== row.key) };
 	}
-	const removed = drafts.removed.includes(row.key)
-		? drafts.removed.filter(id => id !== row.key)
-		: [...drafts.removed, row.key];
-	return { ...drafts, removed };
+	if (drafts.removed.includes(row.key)) {
+		return { ...drafts, removed: drafts.removed.filter(id => id !== row.key) };
+	}
+	const { [row.key]: _dropped, ...updated } = drafts.updated;
+	return { ...drafts, removed: [...drafts.removed, row.key], updated };
+}
+
+/**
+ * A description edited in the row editor. On a draft it rewrites the draft; on a saved entitlement
+ * it is remembered for the save, and forgotten again once it matches the saved text.
+ */
+export function updateDescription(
+	drafts: PermissionDrafts, row: RowRef, description: string, savedDescription: string,
+): PermissionDrafts {
+	if (row.state === 'draft') {
+		const added = drafts.added.map(item => (
+			grantKey(item.resourceId, item.actionId) === row.key ? { ...item, description } : item
+		));
+		return { ...drafts, added };
+	}
+	const { [row.key]: _previous, ...rest } = drafts.updated;
+	const updated = description === savedDescription ? rest : { ...rest, [row.key]: description };
+	return { ...drafts, updated };
 }
 
 /** The `entitlements` key of the role's update request, or `undefined` when nothing changed. */
@@ -114,40 +133,8 @@ export function buildEntitlementsContribution(drafts: PermissionDrafts): Entitle
 			...(description ? { description } : {}),
 		};
 	});
-	return { entitlements: { add, remove: [...drafts.removed] } };
-}
-
-/** Saved and drafted rows together, sorted by resource label, then `All` first, then action label. */
-export function toPermissionRows(
-	existing: RoleEntitlement[], drafts: PermissionDrafts, labels: RowLabels,
-): PermissionRow[] {
-	const saved = existing.map((item): PermissionRow => ({
-		key: item.id,
-		state: drafts.removed.includes(item.id) ? 'removed' : 'existing',
-		resourceLabel: labelOrFallback(labels.nameOf(item.resource?.name), item.resource?.code, item.resource_id),
-		actionLabel: item.action_id == null
-			? labels.allLabel
-			: labelOrFallback(labels.nameOf(item.action?.name), item.action?.code, item.action_id),
-		isAllActions: item.action_id == null,
-		description: item.description ?? '',
-	}));
-	const added = drafts.added.map((item): PermissionRow => ({
-		key: grantKey(item.resourceId, item.actionId),
-		state: 'draft',
-		resourceLabel: labelOrFallback(labels.nameOf(item.resourceName), null, item.resourceId),
-		actionLabel: item.actionId == null
-			? labels.allLabel
-			: labelOrFallback(labels.nameOf(item.actionName), null, item.actionId),
-		isAllActions: item.actionId == null,
-		description: item.description.trim(),
-	}));
-	return [...saved, ...added].sort(compareRows);
-}
-
-function compareRows(left: PermissionRow, right: PermissionRow): number {
-	return compareLabels(left.resourceLabel, right.resourceLabel)
-		|| Number(right.isAllActions) - Number(left.isAllActions)
-		|| compareLabels(left.actionLabel, right.actionLabel);
+	const update = Object.entries(drafts.updated).map(([id, description]) => ({ id, description: description.trim() }));
+	return { entitlements: { add, remove: [...drafts.removed], update } };
 }
 
 export function toResourceOptions(resources: GrantableResource[], nameOf: NameResolver): SelectOption[] {

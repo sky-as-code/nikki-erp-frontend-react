@@ -4,7 +4,6 @@ import { ExcelDataTableContext, useExcelDataTableContext } from './context';
 import { FilterButton } from './FilterButton';
 import { FilterPanel } from './FilterPane';
 import { ForViewMode } from './ForViewMode';
-import { NewRowSlot } from './NewRowSlot';
 import { Pagination } from './Pagination';
 import { ExcelDataTableProvider } from './Provider';
 import { EditRowActions } from './rowActions';
@@ -35,7 +34,6 @@ export * from './FilterPane';
 export * from './ForViewMode';
 export * from './NewRow';
 export * from './newRowModel';
-export * from './NewRowSlot';
 export * from './Pagination';
 export * from './Provider';
 export * from './rowActions';
@@ -76,5 +74,4 @@ export const ExcelDataTable = {
 	ViewModeButtons,
 	ViewModeButton,
 	EditRowActions,
-	NewRowSlot,
 };

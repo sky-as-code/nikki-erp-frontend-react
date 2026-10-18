@@ -38,9 +38,6 @@ export type GetRoleResponse = dyn.RestGetOneResponse<Role>;
 export type RoleExistsRequest = dyn.RestExistsRequest;
 export type RoleExistsResponse = dyn.RestExistsResponse;
 
-export type ManageRoleEntitlementsRequest = dyn.RestManageM2mRequest;
-export type ManageRoleEntitlementsResponse = dyn.RestMutateResponse;
-
 /**
  * `POST /v1/iam/roles/:role_id/manage-users` (and `manage-groups`): one add/remove delta of the
  * role's principals, applied in one transaction.

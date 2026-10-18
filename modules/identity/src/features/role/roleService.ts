@@ -24,18 +24,11 @@ export function toManagePrincipalsCall(request: t.ManageRolePrincipalsRequest, a
 	return { path: `${encodeURIComponent(request.id)}/${action}`, body };
 }
 
-/** CRUD over `iam_role`, plus its many-to-many endpoints (entitlements, users, groups). */
+/** CRUD over `iam_role`, plus its many-to-many endpoints (users, groups). */
 @storeService('RoleService', identityStore)
 export class RoleService extends StoreCrudServiceBase {
 	public constructor() {
 		super({ moduleName: IAM_MODULE, schemaName: ROLE_SCHEMA_NAME });
-	}
-
-	@storeAsyncMethod
-	public manageEntitlements(
-		request: t.ManageRoleEntitlementsRequest,
-	): Promise<ServiceResult<t.ManageRoleEntitlementsResponse>> {
-		return this.manageM2m(request, 'manage-entitlements');
 	}
 
 	@storeAsyncMethod

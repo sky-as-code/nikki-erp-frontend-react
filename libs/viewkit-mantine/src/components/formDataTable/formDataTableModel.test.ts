@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { FORM_DATA_TABLE_PAGE_SIZE, formDataTableCapabilities, formDataTableRequest } from './formDataTableModel';
+import {
+	FORM_DATA_TABLE_PAGE_SIZE, formDataTableCapabilities, formDataTableRequest, isFormDataTablePaginated,
+} from './formDataTableModel';
 
 
 describe('formDataTableCapabilities', () => {
@@ -19,7 +21,7 @@ describe('formDataTableCapabilities', () => {
 });
 
 describe('formDataTableRequest', () => {
-	it('requests one large first page of the fields', () => {
+	it('requests the first page of the fields', () => {
 		expect(formDataTableRequest(['name', 'code'], undefined)).toEqual({
 			page: 0, size: FORM_DATA_TABLE_PAGE_SIZE, search_name: undefined, fields: ['name', 'code'],
 		});
@@ -31,5 +33,17 @@ describe('formDataTableRequest', () => {
 
 	it('adds the insert row search field when it is not requested', () => {
 		expect(formDataTableRequest(['name'], 'id', 'by_role').fields).toEqual(['id', 'name']);
+	});
+});
+
+describe('isFormDataTablePaginated', () => {
+	it('pages 100 rows at a time', () => {
+		expect(FORM_DATA_TABLE_PAGE_SIZE).toBe(100);
+	});
+
+	it('shows pagination only when the rows do not fit on one page', () => {
+		expect(isFormDataTablePaginated(undefined)).toBe(false);
+		expect(isFormDataTablePaginated(100)).toBe(false);
+		expect(isFormDataTablePaginated(101)).toBe(true);
 	});
 });

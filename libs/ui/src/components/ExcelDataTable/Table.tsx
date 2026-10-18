@@ -1,4 +1,4 @@
-import { Anchor, Table as MantineTable } from '@mantine/core';
+import { Anchor, Group, Table as MantineTable } from '@mantine/core';
 import clsx from 'clsx';
 import React from 'react';
 import { Link, useResolvedPath } from 'react-router-dom';
@@ -9,9 +9,9 @@ import {
 } from './cells/cellValues';
 import { useExcelDataTableContext } from './context';
 import classes from './ExcelDataTable.module.css';
-import { NewRowSlot } from './NewRowSlot';
-import { DeleteRowAction } from './rowActions';
-import { isRowDeleteDisabled, isRowDeleteShown } from './rowDeleteModel';
+import { NewRow } from './NewRow';
+import { DeleteRowAction, EditRowAction } from './rowActions';
+import { isRowDeleteDisabled, isRowDeleteShown, isRowEditShown } from './rowDeleteModel';
 import { EditingRow } from './RowEditor';
 import { TableColGroup, getTableStyle, useBodyScrollSync, useColumnCount, useTableLayout } from './tableLayout';
 import { rowIdOf } from './types';
@@ -58,7 +58,7 @@ export function Table({ className, emptyText }: TableProps) {
 					{data.items.map((item, rowIndex) => (
 						<BodyRow key={rowIdOf(item, rowIndex)} item={item} rowIndex={rowIndex} />
 					))}
-					<NewRowSlot />
+					<NewRow />
 					{showEmpty ? (
 						<MantineTable.Tr>
 							<MantineTable.Td colSpan={columnCount} className='text-center'>
@@ -106,7 +106,7 @@ function BodyRow({ item, rowIndex }: BodyRowProps) {
 	const rowNumber = getRowNumber(data.page, data.size, rowIndex);
 	const isSelected = selection.ids.includes(rowId);
 	if (editing.rowId === rowId) {
-		return <EditingRow item={item} rowId={rowId} rowNumber={rowNumber} />;
+		return <EditingRow item={item} rowId={rowId} rowNumber={rowNumber} isSelected={isSelected} />;
 	}
 	const linkHref = buildLinkHref?.(item);
 	const onDoubleClick = () => {
@@ -133,34 +133,66 @@ function BodyRow({ item, rowIndex }: BodyRowProps) {
 type RowActionsCellProps = { item: SearchItem, rowId: RowId, isSelected: boolean };
 
 /**
- * The filler cell of a read row, holding its delete when the table may delete. Its keys and
- * double-clicks stay here: Enter on the button must not also open the row editor.
+ * The filler cell of a read row, holding its edit and delete when the table allows them. Its keys
+ * and double-clicks stay here: Enter on a button must not also open the row editor.
  */
 function RowActionsCell({ item, rowId, isSelected }: RowActionsCellProps) {
-	const { capabilities, locks, editing, isLoading, tid } = useExcelDataTableContext();
-	const rowDelete = useRowDelete(item);
+	const { capabilities } = useExcelDataTableContext();
 	const cellClass = clsx('align-middle', { [classes.selectedCell]: isSelected });
-	if (!isRowDeleteShown(capabilities)) {
+	const showEdit = isRowEditShown(capabilities);
+	const showDelete = isRowDeleteShown(capabilities);
+	if (!showEdit && !showDelete) {
 		return <MantineTable.Td className={cellClass} aria-hidden />;
 	}
-	const disabled = !rowDelete.isDeletable
-		|| isRowDeleteDisabled({ isEditing: editing.isActive, isLoading, isDeleting: rowDelete.isDeleting });
 	return (
 		<MantineTable.Td
 			className={cellClass}
 			onKeyDown={event => event.stopPropagation()}
 			onDoubleClick={event => event.stopPropagation()}
 		>
-			<div className={clsx(classes.rowActions, { [classes.rowActionsVisible]: isSelected })}>
-				<DeleteRowAction
-					onDelete={() => void rowDelete.onDelete()}
-					disabled={disabled}
-					locked={locks.delete.locked}
-					lockedMissing={locks.delete.missing}
-					testId={tid.rowDelete(rowId)}
-				/>
-			</div>
+			<Group
+				gap='xs'
+				wrap='nowrap'
+				className={clsx(classes.rowActions, { [classes.rowActionsVisible]: isSelected })}
+			>
+				{showEdit ? <RowEditButton rowId={rowId} /> : null}
+				{showDelete ? <RowDeleteButton item={item} rowId={rowId} /> : null}
+			</Group>
 		</MantineTable.Td>
+	);
+}
+
+/** Selects the row first: an edit lives only while its row is the selection. */
+function RowEditButton({ rowId }: { rowId: RowId }) {
+	const { locks, editing, isLoading, selection, tid } = useExcelDataTableContext();
+	const onEdit = () => {
+		selection.selectRow(rowId);
+		editing.start(rowId);
+	};
+	return (
+		<EditRowAction
+			onEdit={onEdit}
+			disabled={editing.creating || isLoading || editing.rowId === rowId}
+			locked={locks.update.locked}
+			lockedMissing={locks.update.missing}
+			testId={tid.rowEdit(rowId)}
+		/>
+	);
+}
+
+function RowDeleteButton({ item, rowId }: { item: SearchItem, rowId: RowId }) {
+	const { locks, editing, isLoading, tid } = useExcelDataTableContext();
+	const rowDelete = useRowDelete(item);
+	const disabled = !rowDelete.isDeletable
+		|| isRowDeleteDisabled({ isEditing: editing.isActive, isLoading, isDeleting: rowDelete.isDeleting });
+	return (
+		<DeleteRowAction
+			onDelete={() => void rowDelete.onDelete()}
+			disabled={disabled}
+			locked={locks.delete.locked}
+			lockedMissing={locks.delete.missing}
+			testId={tid.rowDelete(rowId)}
+		/>
 	);
 }
 

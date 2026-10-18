@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	ALL_ACTIONS_VALUE, buildEntitlementsContribution, draftsFor, emptyDrafts, entitlementErrors, grantDraft,
-	resolveName, revokeRow, toActionOptions, toPermissionRows, toResourceOptions,
+	hasDrafts, resolveName, revokeRow, toActionOptions, toResourceOptions, updateDescription,
 } from './permissionDrafts';
 
 import type { DraftGrant, PermissionDrafts } from './permissionDrafts';
@@ -27,8 +27,6 @@ const existing: RoleEntitlement[] = [
 function nameOf(name: PermissionName): string {
 	return resolveName(name, langJson => langJson['en-US'] ?? '$missing.translation');
 }
-
-const labels = { nameOf, allLabel: 'All' };
 
 function draft(resourceId: string, actionId: string | null, overrides: Partial<DraftGrant> = {}): DraftGrant {
 	return {
@@ -78,7 +76,35 @@ describe('revokeRow', () => {
 	it('marks a saved row removed, and a second revoke undoes it', () => {
 		const marked = revokeRow(emptyDrafts(ROLE), { key: 'ent-product-read', state: 'existing' });
 		expect(marked.removed).toEqual(['ent-product-read']);
-		expect(revokeRow(marked, { key: 'ent-product-read', state: 'removed' }).removed).toEqual([]);
+		expect(revokeRow(marked, { key: 'ent-product-read', state: 'existing' }).removed).toEqual([]);
+	});
+
+	it('drops the description edit of a saved row it removes', () => {
+		const edited = updateDescription(emptyDrafts(ROLE), { key: 'ent-product-read', state: 'existing' }, 'New', '');
+		const removed = revokeRow(edited, { key: 'ent-product-read', state: 'existing' });
+		expect(removed.updated).toEqual({});
+		expect(removed.removed).toEqual(['ent-product-read']);
+	});
+});
+
+describe('updateDescription', () => {
+	it('remembers a changed description of a saved entitlement', () => {
+		const drafts = updateDescription(emptyDrafts(ROLE), { key: 'ent-product-read', state: 'existing' }, 'Read', '');
+		expect(drafts.updated).toEqual({ 'ent-product-read': 'Read' });
+		expect(hasDrafts(drafts)).toBe(true);
+	});
+
+	it('forgets the edit once the description is back to the saved text', () => {
+		const ref = { key: 'ent-user-all', state: 'existing' } as const;
+		const edited = updateDescription(emptyDrafts(ROLE), ref, 'Changed', 'All IAM power');
+		expect(updateDescription(edited, ref, 'All IAM power', 'All IAM power')).toEqual(emptyDrafts(ROLE));
+	});
+
+	it('rewrites a draft grant in place', () => {
+		const drafts = grantDraft(emptyDrafts(ROLE), draft('res-group', null), existing).drafts;
+		const edited = updateDescription(drafts, { key: 'res-group:*', state: 'draft' }, 'Groups', '');
+		expect(edited.added[0].description).toBe('Groups');
+		expect(edited.updated).toEqual({});
 	});
 });
 
@@ -87,31 +113,6 @@ describe('draftsFor', () => {
 		const drafts = grantDraft(emptyDrafts(ROLE), draft('res-group', null), existing).drafts;
 		expect(draftsFor(drafts, ROLE)).toBe(drafts);
 		expect(draftsFor(drafts, 'role-2')).toEqual(emptyDrafts('role-2'));
-	});
-});
-
-describe('toPermissionRows', () => {
-	it('sorts by resource label, All first, then action label, with drafts in place', () => {
-		let drafts = grantDraft(emptyDrafts(ROLE), draft('res-user', 'act-write', {
-			resourceName: { 'en-US': 'IAM User' }, actionName: { 'en-US': 'Write' },
-		}), existing).drafts;
-		drafts = grantDraft(drafts, draft('res-account', null, { resourceName: { 'en-US': 'Accounting Tax' } }), existing)
-			.drafts;
-		drafts = revokeRow(drafts, { key: 'ent-product-read', state: 'existing' });
-		const rows = toPermissionRows(existing, drafts, labels);
-		expect(rows.map(row => [row.resourceLabel, row.actionLabel, row.state])).toEqual([
-			['Accounting Tax', 'All', 'draft'],
-			['IAM User', 'All', 'existing'],
-			['IAM User', 'Write', 'draft'],
-			['Inventory Product', 'Read', 'removed'],
-		]);
-		expect(rows[0].key).toBe('res-account:*');
-	});
-
-	it('falls back to the code when a name has no label', () => {
-		const rows = toPermissionRows([{ id: 'ent', resource_id: 'res', action_id: 'act',
-			resource: { code: 'iam_org', name: null }, action: { code: 'read', name: '' } }], emptyDrafts(ROLE), labels);
-		expect(rows[0]).toMatchObject({ resourceLabel: 'iam_org', actionLabel: 'read' });
 	});
 });
 
@@ -125,6 +126,7 @@ describe('buildEntitlementsContribution', () => {
 			.drafts;
 		drafts = grantDraft(drafts, draft('res-org', 'act-read', { description: '   ' }), existing).drafts;
 		drafts = revokeRow(drafts, { key: 'ent-user-all', state: 'existing' });
+		drafts = updateDescription(drafts, { key: 'ent-product-read', state: 'existing' }, ' Read products ', '');
 		expect(buildEntitlementsContribution(drafts)).toEqual({
 			entitlements: {
 				add: [
@@ -132,6 +134,7 @@ describe('buildEntitlementsContribution', () => {
 					{ resource_id: 'res-org', action_id: 'act-read' },
 				],
 				remove: ['ent-user-all'],
+				update: [{ id: 'ent-product-read', description: 'Read products' }],
 			},
 		});
 	});
@@ -175,32 +178,6 @@ function bilingual(enUs: string, viVn: string): PermissionName {
 }
 
 describe('localized labels from langjson names', () => {
-	it('labels saved rows from the projected resource.name / action.name edges, not their codes', () => {
-		const projected: RoleEntitlement[] = [{
-			id: 'ent-1', resource_id: 'res-orgunit', action_id: 'act-manage',
-			resource: { id: 'res-orgunit', code: 'iam_orgunit', name: bilingual('Org Unit', 'Đơn vị tổ chức') },
-			action: { id: 'act-manage', code: 'manage_users', name: bilingual('Manage users', 'Quản lý người dùng') },
-		}, {
-			id: 'ent-2', resource_id: 'res-group', action_id: 'act-read',
-			resource: { id: 'res-group', code: 'iam_group', name: bilingual('Group', 'Nhóm') },
-			action: { id: 'act-read', code: 'read', name: bilingual('Read', 'Xem') },
-		}];
-		const rows = toPermissionRows(projected, emptyDrafts(ROLE), { nameOf: viNameOf, allLabel: 'Tất cả' });
-		expect(rows.map(row => [row.resourceLabel, row.actionLabel])).toEqual([
-			['Đơn vị tổ chức', 'Quản lý người dùng'],
-			['Nhóm', 'Xem'],
-		]);
-	});
-
-	it('labels a drafted grant from the langjson name of the picked option', () => {
-		const grant = draft('res-group', 'act-read', {
-			resourceName: bilingual('Group', 'Nhóm'), actionName: bilingual('Read', 'Xem'),
-		});
-		const drafts = grantDraft(emptyDrafts(ROLE), grant, []).drafts;
-		const [row] = toPermissionRows([], drafts, { nameOf: viNameOf, allLabel: 'Tất cả' });
-		expect(row).toMatchObject({ resourceLabel: 'Nhóm', actionLabel: 'Xem', state: 'draft' });
-	});
-
 	it('labels and sorts both pickers by the localized name', () => {
 		const resources = toResourceOptions([
 			{ id: 'res-group', code: 'iam_group', name: bilingual('Group', 'Nhóm') },

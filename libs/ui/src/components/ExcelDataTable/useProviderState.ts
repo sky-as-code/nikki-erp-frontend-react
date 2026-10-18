@@ -18,10 +18,9 @@ import type * as dyn from '@nikkierp/common/dynamicModel';
  * search is ever sent.
  */
 export function buildInitialSearchRequest(
-	data: SearchData, initialRequest?: dyn.RestSearchRequest,
+	data: SearchData, initialRequest?: dyn.RestSearchRequest, pageSize?: number,
 ): dyn.RestSearchRequest {
-	const storedSize = readStoredPageSize();
-	const size = storedSize || initialRequest?.size || data.size || allowedPageSizes[0];
+	const size = pageSize || readStoredPageSize() || initialRequest?.size || data.size || allowedPageSizes[0];
 	return { ...(initialRequest ?? {}), page: data.page, size };
 }
 
@@ -29,9 +28,10 @@ export function useSearchRequestState(
 	data: SearchData,
 	initialRequest: dyn.RestSearchRequest | undefined,
 	onChange: ((request: dyn.RestSearchRequest) => void) | undefined,
+	pageSize?: number,
 ) {
 	const [searchRequest, setSearchRequest] = React.useState<dyn.RestSearchRequest>(
-		() => buildInitialSearchRequest(data, initialRequest),
+		() => buildInitialSearchRequest(data, initialRequest, pageSize),
 	);
 
 	// The server may clamp the page (e.g. past the end after a delete); follow it, but only when
@@ -91,10 +91,14 @@ export type SelectionOptions = {
 	initialSelectedIds?: RowId[],
 };
 
+/**
+ * `isFrozen` holds every gesture while the insert row is open. A row being updated does not freeze
+ * it: picking another row, select-all or Deselect leave that row, which discards its edit.
+ */
 export function useSelectionState(
 	items: SearchItem[],
 	onSelectionChange: ((selected: SearchItem[]) => void) | undefined,
-	isEditing: boolean,
+	isFrozen: boolean,
 	options: SelectionOptions = {},
 ): SelectionApi {
 	const { mode = 'multiple', initialSelectedIds } = options;
@@ -117,23 +121,22 @@ export function useSelectionState(
 		onSelectionChange?.(state.ids.map(id => itemsById.get(id)).filter((item): item is SearchItem => !!item));
 	}, [itemsById, onSelectionChange, state.ids]);
 
-	// Every gesture is inert while a row is being edited: the requirement freezes selection there.
 	const selectRow = React.useCallback((id: RowId, mods: SelectionModifiers = {}) => {
-		if (!isEditing) {
+		if (!isFrozen) {
 			setState(prev => selectWithModifiers(prev, order, id, mods, mode));
 		}
-	}, [isEditing, order, mode]);
+	}, [isFrozen, order, mode]);
 	const move = React.useCallback((delta: number) => {
-		if (!isEditing) {
+		if (!isFrozen) {
 			setState(prev => moveSelection(prev, order, delta));
 		}
-	}, [isEditing, order]);
+	}, [isFrozen, order]);
 	const clear = React.useCallback(() => setState(emptySelection()), []);
-	const toggleAll = useToggleAll(setState, order, isEditing || mode === 'single');
+	const toggleAll = useToggleAll(setState, order, isFrozen || mode === 'single');
 
 	return React.useMemo(
-		() => ({ ...state, selectRow, move, clear, toggleAll, isEnabled: !isEditing, mode, order, itemsById }),
-		[state, selectRow, move, clear, toggleAll, isEditing, mode, order, itemsById],
+		() => ({ ...state, selectRow, move, clear, toggleAll, isEnabled: !isFrozen, mode, order, itemsById }),
+		[state, selectRow, move, clear, toggleAll, isFrozen, mode, order, itemsById],
 	);
 }
 
@@ -177,4 +180,26 @@ export function useEditingState(isLoading: boolean): EditingApi {
 		stopCreate: () => setCreating(false),
 		isActive: rowId !== null || creating,
 	}), [rowId, creating]);
+}
+
+export function isEditedRowDeselected(rowId: RowId | null, selectedIds: RowId[]): boolean {
+	return rowId !== null && !selectedIds.includes(rowId);
+}
+
+/**
+ * A selection change that leaves the edited row — another row picked, select-all, Deselect —
+ * discards the edit. Only a change of the selection counts: starting an edit selects its row in
+ * the same update, and a start alone must not be undone here.
+ */
+export function useDiscardEditOnSelectionChange(editing: EditingApi, selectedIds: RowId[]): void {
+	const previousIds = React.useRef(selectedIds);
+	React.useEffect(() => {
+		if (previousIds.current === selectedIds) {
+			return;
+		}
+		previousIds.current = selectedIds;
+		if (isEditedRowDeselected(editing.rowId, selectedIds)) {
+			editing.stop();
+		}
+	}, [editing, selectedIds]);
 }
