@@ -54,7 +54,7 @@ export const AGREEMENT_STATUS_CANCELLED = 'cancelled';
 /**
  * Custom action sub-paths on the purchase order and agreement engines. The engine's route pattern
  * rejects hyphens, so these are underscored. See
- * backend .../purchase/dynamicengines/{order_actions,agreement_actions}.go.
+ * backend .../purchase/transport/restful/index.go (purchaseOrderRoutes, agreementRoutes).
  */
 export const CONFIRM_PATH = 'confirm';
 export const APPROVE_PATH = 'approve';
