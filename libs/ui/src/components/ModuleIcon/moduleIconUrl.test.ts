@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
 import { GENERIC_MODULE_ICON_URL, getModuleIconUrl } from './moduleIconUrl';
+import genericUrl from '../../assets/moduleIconsBlueAmber/generic.svg?url';
+import iamUrl from '../../assets/moduleIconsBlueAmber/iam.svg?url';
+import vendingMachineUrl from '../../assets/moduleIconsBlueAmber/vendingmachine.svg?url';
 
 
-// Vite inlines small SVGs as data: URIs, so the file is identified by its unique gradient id.
-function iconId(url: string): string | undefined {
-	return /id='g-([a-z-]+)'/.exec(decodeURIComponent(url))?.[1] ?? /([a-z-]+)\.svg/.exec(url)?.[1];
-}
-
+// Blue-amber icons carry no ids and Vite may inline them as data: URIs, so compare against a direct import.
 describe('getModuleIconUrl', () => {
 	it('resolves an icon named after the backend module', () => {
-		expect(iconId(getModuleIconUrl('vendingmachine'))).toBe('vendingmachine');
-		expect(iconId(getModuleIconUrl('iam'))).toBe('iam');
+		expect(getModuleIconUrl('vendingmachine')).toBe(vendingMachineUrl);
+		expect(getModuleIconUrl('iam')).toBe(iamUrl);
+		expect(iamUrl).not.toBe(vendingMachineUrl);
 	});
 
 	it('falls back to the generic icon for an unknown or missing name', () => {
-		expect(iconId(GENERIC_MODULE_ICON_URL)).toBe('generic');
+		expect(GENERIC_MODULE_ICON_URL).toBe(genericUrl);
 		expect(getModuleIconUrl('no_such_module')).toBe(GENERIC_MODULE_ICON_URL);
 		expect(getModuleIconUrl(undefined)).toBe(GENERIC_MODULE_ICON_URL);
 		expect(getModuleIconUrl('')).toBe(GENERIC_MODULE_ICON_URL);

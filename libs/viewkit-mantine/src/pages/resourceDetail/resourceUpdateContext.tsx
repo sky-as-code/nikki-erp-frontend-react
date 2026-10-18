@@ -5,6 +5,7 @@ import type {
 	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './props';
+import type { ResourceThumbnailSpec } from '../../components/resourceThumbnail/props';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -36,6 +37,8 @@ export type ResourceUpdateContextValue = {
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	backLinkTitle?: LinkSpec,
+	/** v2 only: the photo the header shows left of the titles. */
+	thumbnail?: ResourceThumbnailSpec,
 	childrenNodes?: ComponentNode[],
 	registerAfterSave: RegisterAfterSave,
 	hasPendingAfterSave: () => boolean,

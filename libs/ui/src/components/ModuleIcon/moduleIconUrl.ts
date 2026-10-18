@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 const ICON_URLS = buildIconUrlMap(
-	import.meta.glob<string>('../../assets/moduleIcons/*.svg', { eager: true, import: 'default', query: '?url' }),
+	import.meta.glob<string>('../../assets/moduleIconsBlueAmber/*.svg', { eager: true, import: 'default', query: '?url' }),
 );
 
 export const GENERIC_MODULE_ICON_URL = ICON_URLS.get('generic')!;

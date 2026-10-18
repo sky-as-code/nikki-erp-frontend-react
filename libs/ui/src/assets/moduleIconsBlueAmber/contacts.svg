@@ -1,0 +1,8 @@
+<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><style data-ba-palette="1">svg{--ba-blue:#1f5a96;--ba-blue-mid:#5093ce;--ba-blue-light:#9dc4e4;--ba-amber:#f0a137;--ba-amber-light:#f9cf93;--ba-white:#ffffff;--ba-red:#d9503f;--ba-green:#2e9e6b}@media (prefers-color-scheme: dark){svg{--ba-blue:#3b7cc0;--ba-blue-mid:#6fa8dc;--ba-blue-light:#9cc3e6;--ba-amber:#f4ab4a;--ba-amber-light:#f8c98a;--ba-white:#f5f7fa;--ba-red:#ec6a5a;--ba-green:#45b984}}[fill="#1f5a96"]{fill:var(--ba-blue)}[stroke="#1f5a96"]{stroke:var(--ba-blue)}[fill="#5093ce"]{fill:var(--ba-blue-mid)}[stroke="#5093ce"]{stroke:var(--ba-blue-mid)}[fill="#9dc4e4"]{fill:var(--ba-blue-light)}[stroke="#9dc4e4"]{stroke:var(--ba-blue-light)}[fill="#f0a137"]{fill:var(--ba-amber)}[stroke="#f0a137"]{stroke:var(--ba-amber)}[fill="#f9cf93"]{fill:var(--ba-amber-light)}[stroke="#f9cf93"]{stroke:var(--ba-amber-light)}[fill="#ffffff"],[fill="#fff"]{fill:var(--ba-white)}[stroke="#ffffff"],[stroke="#fff"]{stroke:var(--ba-white)}[fill="#d9503f"]{fill:var(--ba-red)}[stroke="#d9503f"]{stroke:var(--ba-red)}[fill="#2e9e6b"]{fill:var(--ba-green)}[stroke="#2e9e6b"]{stroke:var(--ba-green)}</style>
+  <rect x="3.5" y="8" width="5" height="3" rx="1.5" fill="#5093ce"/>
+  <rect x="3.5" y="14.5" width="5" height="3" rx="1.5" fill="#5093ce"/>
+  <rect x="3.5" y="21" width="5" height="3" rx="1.5" fill="#5093ce"/>
+  <rect x="6" y="3" width="21" height="26" rx="3" fill="#1f5a96"/>
+  <circle cx="16.5" cy="12.5" r="3.8" fill="#f0a137"/>
+  <path d="M10.5 23.5a6 6 0 0 1 12 0z" fill="#f0a137"/>
+</svg>

@@ -12,6 +12,7 @@ import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_V2 } from '../../ids';
 import { useUpdateAfterSave, useUpdatePayloadContributors } from '../resourceDetail/afterSave';
 import { useResourceDetailContext } from '../resourceDetail/ResourceDetailProvider';
 
+import type { ResourceThumbnailSpec } from '../../components/resourceThumbnail/props';
 import type {
 	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
@@ -27,6 +28,7 @@ export type ResourceUpdateProps = {
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	backLinkTitle?: LinkSpec,
+	thumbnail?: ResourceThumbnailSpec,
 	childrenNodes?: ComponentNode[],
 };
 
@@ -122,6 +124,7 @@ export function ResourceUpdateProvider(
 			titleLvl1: props.titleLvl1,
 			titleLvl2: props.titleLvl2,
 			backLinkTitle: props.backLinkTitle,
+			thumbnail: props.thumbnail,
 			childrenNodes: props.childrenNodes,
 			registerAfterSave: afterSave.register,
 			hasPendingAfterSave: afterSave.hasPending,
@@ -134,7 +137,7 @@ export function ResourceUpdateProvider(
 			refresh, onSubmit,
 			updateCmd.clientErrors, updateCmd.error, getByIdCmd.error,
 			props.allStatuses, props.currentStatus, props.contextualActions,
-			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.childrenNodes,
+			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.thumbnail, props.childrenNodes,
 			afterSave.register, afterSave.hasPending, afterSave.isRunning, afterSave.submitAfterSaveOnly,
 			payloadContributors.register, payloadContributors.hasPending,
 		],
@@ -180,6 +183,7 @@ function buildUpdateNodes(context: ResourceUpdateContextValue): ComponentNode[] 
 						titleLvl1: context.titleLvl1,
 						titleLvl2: context.titleLvl2,
 						backLinkTitle: context.backLinkTitle,
+						thumbnail: context.thumbnail,
 					},
 				}),
 				// Children of the SAME form, not a second `resource_form` of their own: a page

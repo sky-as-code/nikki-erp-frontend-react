@@ -1,10 +1,10 @@
 import { FileInput, Group, Image, Stack, Text } from '@mantine/core';
-import { unwrapResult } from '@nikkierp/common/request';
 import { Button } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
 import React from 'react';
 
+import { useFileFieldAfterSave, useObjectPreviewUrl } from './fileFieldHooks';
 import { resourceFileFieldPropsSchema } from './props';
 import { RESOURCE_FILE_FIELD } from '../../ids';
 import { ResourceCreateContext } from '../../pages/resourceDetail/resourceCreateContext';
@@ -15,8 +15,6 @@ import { ResourceUpdateContext } from '../../pages/resourceDetail/resourceUpdate
 import { useResourceFormView } from '../resourceFormViewContext';
 
 import type { ResourceFileFieldProps } from './props';
-import type { RegisterAfterSave, SavedRecord } from '../../pages/resourceDetail/afterSave';
-import type { SchemaPack } from '@nikkierp/common/dynamicModel';
 import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
@@ -30,13 +28,6 @@ export const resourceFileFieldRenderer: IComponentRenderer<ResourceFileFieldProp
 			</ComponentAnchor>
 		);
 	},
-};
-
-type PendingFile = {
-	file: File | null,
-	removed: boolean,
-	hadFile: boolean,
-	orgId?: string,
 };
 
 function readString(record: Record<string, unknown> | undefined, key: string): string | null {
@@ -120,64 +111,4 @@ function ResourceFileField({ props }: { props: ResourceFileFieldProps }): React.
 				: !editable && <Text size='sm' c='dimmed'>—</Text>}
 		</Stack>
 	);
-}
-
-function useFileFieldAfterSave(
-	field: string,
-	registerAfterSave: RegisterAfterSave | undefined,
-	schemaPack: SchemaPack | null,
-	pending: PendingFile,
-): void {
-	const pendingRef = React.useRef<PendingFile>(pending);
-	pendingRef.current = pending;
-
-	React.useEffect(() => {
-		if (!registerAfterSave || !schemaPack) {
-			return undefined;
-		}
-		return registerAfterSave(async (saved: SavedRecord) => {
-			const current = pendingRef.current;
-			const orgId = (typeof saved.values.org_id === 'string' ? saved.values.org_id : undefined) ?? current.orgId;
-			if (current.file) {
-				const result = await schemaPack.restApi.uploadFile({
-					id: saved.id,
-					field,
-					file: current.file,
-					replace: current.hadFile,
-					etag: saved.etag,
-					org_id: orgId,
-				});
-				return unwrapResult(result)?.etag;
-			}
-			if (current.removed && current.hadFile) {
-				const result = await schemaPack.restApi.deleteFile({
-					id: saved.id,
-					field,
-					etag: saved.etag,
-					org_id: orgId,
-				});
-				return unwrapResult(result)?.etag;
-			}
-			return saved.etag;
-		}, () => {
-			const current = pendingRef.current;
-			return Boolean(current.file) || (current.removed && current.hadFile);
-		});
-	}, [registerAfterSave, schemaPack, field]);
-}
-
-function useObjectPreviewUrl(file: File | null): string | null {
-	const [url, setUrl] = React.useState<string | null>(null);
-
-	React.useEffect(() => {
-		if (!file) {
-			setUrl(null);
-			return undefined;
-		}
-		const objectUrl = URL.createObjectURL(file);
-		setUrl(objectUrl);
-		return () => URL.revokeObjectURL(objectUrl);
-	}, [file]);
-
-	return url;
 }

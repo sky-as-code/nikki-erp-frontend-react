@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { resourceTablePropsSchema } from '../../components/resourceTable/props';
+import { resourceThumbnailSpecSchema } from '../../components/resourceThumbnail/props';
 import { resourceDetailPropsSchema } from '../resourceDetail/props';
 
 
@@ -43,6 +44,8 @@ export const relatedResourceSchema = resourceTablePropsSchema.extend({
 }).strict();
 
 export const resourceDetailV2PropsSchema = resourceDetailPropsSchema.extend({
+	/** A photo of the record shown left of the header titles; editable in update mode. */
+	thumbnail: resourceThumbnailSpecSchema.optional(),
 	relatedResources: z.array(relatedResourceSchema).default([]),
 	/** i18n key for the section heading, translated with the page's `translationNs`. */
 	relatedResourcesHeader: z.string().min(1).optional(),

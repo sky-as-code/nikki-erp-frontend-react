@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { PageHeader } from '../../../components/pageHeader/PageHeader';
 import { PageHeaderProvider } from '../../../components/pageHeader/pageHeaderContext';
 import { useResourceFormView } from '../../../components/resourceFormViewContext';
+import { resourceThumbnailSpecSchema } from '../../../components/resourceThumbnail/props';
+import { ResourceThumbnail } from '../../../components/resourceThumbnail/ResourceThumbnail';
 import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_COLUMN, RESOURCE_FORM_COLUMN_V2 } from '../../../ids';
 import { linkSpecSchema, schemaFieldSpecSchema } from '../../resourceDetail/props';
 import { useResourceDetailContext } from '../../resourceDetail/ResourceDetailProvider';
@@ -24,6 +26,7 @@ export const resourceDetailHeaderPropsSchema = z.object({
 	titleLvl1: schemaFieldSpecSchema.optional(),
 	titleLvl2: schemaFieldSpecSchema.optional(),
 	backLinkTitle: linkSpecSchema.optional(),
+	thumbnail: resourceThumbnailSpecSchema.optional(),
 }).strict();
 
 export type ResourceDetailHeaderProps = z.infer<typeof resourceDetailHeaderPropsSchema>;
@@ -54,6 +57,7 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 	);
 	// Title overrides fall back to the values held in the resource-update context.
 	const backLinkTitle = props.backLinkTitle ?? context.backLinkTitle;
+	const thumbnail = props.thumbnail ?? context.thumbnail;
 	const formRuntime = useCrudFormRuntime();
 	const view = useResourceFormView();
 	const [localUpdateMode, setLocalUpdateMode] = React.useState(false);
@@ -132,6 +136,7 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 						/>
 					</>
 				)}
+				leading={thumbnail ? <ResourceThumbnail spec={thumbnail} /> : undefined}
 				trailing={<SplitPaneCloseButton />}
 				rowSpacing='md'
 			/>

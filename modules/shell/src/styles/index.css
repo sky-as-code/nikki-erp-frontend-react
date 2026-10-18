@@ -17,6 +17,10 @@ html {
 	font-size: 16px;
 }
 
+/* Mantine only sets the data attribute; SVG images evaluate prefers-color-scheme against this property. */
+html[data-mantine-color-scheme='light'] { color-scheme: light; }
+html[data-mantine-color-scheme='dark'] { color-scheme: dark; }
+
 /* Custom scrollbar for entire page */
 /* html::-webkit-scrollbar {
 	width: 5px;

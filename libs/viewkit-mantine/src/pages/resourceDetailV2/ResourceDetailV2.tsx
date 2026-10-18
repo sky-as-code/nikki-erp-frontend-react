@@ -66,6 +66,7 @@ function ResourceDetailV2View({ params, childrenNodes }: ResourceDetailV2ViewPro
 							titleLvl1={params.titleLvl1}
 							titleLvl2={params.titleLvl2}
 							backLinkTitle={params.backLinkTitle}
+							thumbnail={params.thumbnail}
 							childrenNodes={nodes}
 						/>
 						<RelatedResourcesTabs
