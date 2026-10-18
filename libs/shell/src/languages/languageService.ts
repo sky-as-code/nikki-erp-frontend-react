@@ -33,7 +33,7 @@ export type EnabledLanguages = {
  * which a module-level promise covers without a slice.
  */
 export function fetchEnabledLanguages(): Promise<RequestResult<ListEnabledLanguagesResponse>> {
-	return request.get<ListEnabledLanguagesResponse>('v1/essential/languages/enabled');
+	return request.get<ListEnabledLanguagesResponse>('v1/essential/essential_language/enabled');
 }
 
 export function toEnabledLanguages(response: ListEnabledLanguagesResponse | null): EnabledLanguages {

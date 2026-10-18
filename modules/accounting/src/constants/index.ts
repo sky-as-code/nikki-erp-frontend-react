@@ -42,15 +42,15 @@ export const TAX_RULE_CONDITION_RESOURCE_PATH = `v1/accounting/${TAX_RULE_CONDIT
 export const TAX_RULE_RESULT_RESOURCE_PATH = `v1/accounting/${TAX_RULE_RESULT_SCHEMA_NAME}`;
 
 /**
- * The tax engine's own endpoints, which no resource engine serves.
+ * The tax engine's calculation actions, served as collection actions of accounting_tax.
  *
  * They are POST throughout, including the two that only read: the request is a whole document of
  * lines and party context, which does not fit a query string.
  */
-export const TAX_CALCULATE_PATH = 'v1/accounting/tax/calculate';
-export const TAX_SIMULATE_PATH = 'v1/accounting/tax/simulate';
-export const TAX_REVERSE_FULL_PATH = 'v1/accounting/tax/reverse-full';
-export const TAX_REVERSE_PARTIAL_PATH = 'v1/accounting/tax/reverse-partial';
+export const TAX_CALCULATE_PATH = 'v1/accounting/accounting_tax/calculate';
+export const TAX_SIMULATE_PATH = 'v1/accounting/accounting_tax/simulate';
+export const TAX_REVERSE_FULL_PATH = 'v1/accounting/accounting_tax/reverse_full';
+export const TAX_REVERSE_PARTIAL_PATH = 'v1/accounting/accounting_tax/reverse_partial';
 
 /**
  * Lifecycle states of a versioned tax configuration, matching `enums.go`.

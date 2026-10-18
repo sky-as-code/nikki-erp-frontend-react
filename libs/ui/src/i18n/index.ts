@@ -85,7 +85,7 @@ async function applyLanguage(lng?: string | null): Promise<void> {
 function buildBackendOptions(): HttpBackendOptions {
 	return {
 		loadPath(lngs, namespaces) {
-			return `v1/essential/languages/json?language_code=${lngs[0]}&module_name=${namespaces[0]}`;
+			return `v1/essential/essential_language/json?language_code=${lngs[0]}&module_name=${namespaces[0]}`;
 		},
 		async request(options, url, payload, callback) {
 			try {

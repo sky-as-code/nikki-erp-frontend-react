@@ -62,8 +62,8 @@ export class SchemaRegistry {
 	/**
 	 * A schema a module has not registered yet is not an error: its micro-app may simply not be
 	 * loaded, which is the normal case for a relation pointing across module boundaries. Loading
-	 * the owner lets it register its own `resourcePath`, which cannot be derived — `iam_role` is
-	 * served from `v1/iam/roles`, not `v1/iam/iam_role`.
+	 * the owner lets it register its own `resourcePath`, which cannot be derived from the schema
+	 * name alone — the module key in the path is the owner's, not the schema prefix.
 	 *
 	 * Attempted once per schema per session: a second miss means the owner loaded and still did
 	 * not register it, which retrying cannot fix.
