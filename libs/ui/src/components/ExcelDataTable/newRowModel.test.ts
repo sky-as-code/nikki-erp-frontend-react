@@ -132,12 +132,12 @@ describe('findNewRowConfigProblems', () => {
 describe('buildContainsSearchRequest', () => {
 	it('searches the label with contains and asks for the label columns once', () => {
 		expect(buildContainsSearchRequest(' adm ', 'name', 'code')).toEqual({
-			page: 0, size: 20, fields: ['id', 'name', 'code'], graph: { if: ['name', '*', 'adm'] },
+			page: 0, size: 10, fields: ['id', 'name', 'code'], graph: { if: ['name', '*', 'adm'] },
 		});
 	});
 
 	it('sends no condition for a blank term or an id label', () => {
 		expect(buildContainsSearchRequest('', 'name').graph).toBeUndefined();
-		expect(buildContainsSearchRequest('01H', 'id')).toEqual({ page: 0, size: 20, fields: ['id'], graph: undefined });
+		expect(buildContainsSearchRequest('01H', 'id')).toEqual({ page: 0, size: 10, fields: ['id'], graph: undefined });
 	});
 });

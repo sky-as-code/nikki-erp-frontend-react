@@ -7,6 +7,7 @@ export * from './LangJsonField';
 export * from './RelationPickerModal';
 export * from './recordSearchOptions';
 export * from './RelationSelectField';
+export * from './updatePayload';
 export * from './ReadOnlyBooleanSwitch';
 export * from './useComputedField';
 export * from './validation';

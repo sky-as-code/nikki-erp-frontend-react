@@ -1,4 +1,4 @@
-import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
+import { dirtyFieldUpdateValue, useCrudFormRuntime } from '@nikkierp/ui/components/form';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import React from 'react';
 import { z } from 'zod';
@@ -91,7 +91,9 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 				return;
 			}
 			void formRuntime
-				.handleSubmitWithResult(data => buildPartialSavePayload(data, blocks, dirtyFields, resource))()
+				.handleSubmitWithResult(data => buildPartialSavePayload(
+					data, blocks, dirtyFields, resource, formRuntime.form.getValues(),
+				))()
 				.then(succeeded => {
 					// Only on success: a rejected save keeps the fields editable so the user can
 					// fix what the server complained about.
@@ -232,6 +234,8 @@ export function buildPartialSavePayload(
 	blocks: { fields?: string[] }[],
 	dirtyFields: FormProviderRenderProps['dirtyFields'] | undefined,
 	resource: Record<string, unknown> | undefined,
+	/** The form's unparsed values, which tell a cleared field (sent as `null`) from an untouched one. */
+	rawValues?: Record<string, unknown>,
 ): Record<string, any> | undefined {
 	const id = resource?.id;
 	const etag = resource?.etag;
@@ -243,8 +247,9 @@ export function buildPartialSavePayload(
 	const payload: Record<string, any> = { id, etag };
 	let changedCount = 0;
 	for (const field of sectionFields) {
-		if (dirty[field] && field in data) {
-			payload[field] = data[field];
+		const value = dirty[field] ? dirtyFieldUpdateValue(data, rawValues, field) : undefined;
+		if (value !== undefined) {
+			payload[field] = value;
 			changedCount += 1;
 		}
 	}

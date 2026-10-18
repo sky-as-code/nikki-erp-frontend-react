@@ -11,12 +11,11 @@ import { NewRow } from './NewRow';
 import { DeleteRowAction, EditRowAction } from './rowActions';
 import { isRowDeleteDisabled, isRowDeleteShown, isRowEditShown } from './rowDeleteModel';
 import { EditingRow } from './RowEditor';
-import { tableScopeAttrs } from './tableScope';
 import { TableColGroup, getTableStyle, useBodyScrollSync, useColumnCount, useTableLayout } from './tableLayout';
+import { tableScopeAttrs } from './tableScope';
 import { rowIdOf } from './types';
 import { useRowDelete } from './useRowDelete';
 import { useTableKeyboard } from './useTableKeyboard';
-import { useTranslate } from '../../i18n';
 
 
 import type { RowId, SearchItem } from './types';
@@ -24,7 +23,7 @@ import type { RowId, SearchItem } from './types';
 
 export type TableProps = {
 	className?: string,
-	/** Shown in place of rows when the result set is empty and nothing is loading. */
+	/** Overrides the Provider's `emptyMessage` for this body. */
 	emptyText?: string,
 };
 
@@ -33,15 +32,13 @@ export type TableProps = {
  * vertical scrolling belongs to it, and its horizontal position is mirrored into the header.
  */
 export function Table({ className, emptyText }: TableProps) {
-	const t = useTranslate('common');
-	const { data, fields, columnWidths, isLoading, selection, capabilities, tid, scopeId } = useExcelDataTableContext();
+	const { data, fields, columnWidths, isLoading, selection, tid, scopeId, emptyMessage } = useExcelDataTableContext();
 	const scroller = useBodyScrollSync();
 	const layout = useTableLayout();
 	const columnCount = useColumnCount();
 	const onKeyDown = useTableKeyboard();
 	useFocusAfterEditing();
-	// A table rows can be added to always ends in the insert row, which already says what to do next.
-	const showEmpty = data.items.length === 0 && !isLoading && !capabilities.includes('create');
+	const showEmpty = data.items.length === 0 && !isLoading;
 	return (
 		<div
 			ref={scroller.ref}
@@ -58,14 +55,14 @@ export function Table({ className, emptyText }: TableProps) {
 					{data.items.map((item, rowIndex) => (
 						<BodyRow key={rowIdOf(item, rowIndex)} item={item} rowIndex={rowIndex} />
 					))}
-					<NewRow />
 					{showEmpty ? (
 						<MantineTable.Tr>
-							<MantineTable.Td colSpan={columnCount} className='text-center'>
-								{emptyText ?? t('search.noResults')}
+							<MantineTable.Td colSpan={columnCount} className='text-center' {...tid.attrs('empty')}>
+								{emptyText ?? emptyMessage}
 							</MantineTable.Td>
 						</MantineTable.Tr>
 					) : null}
+					<NewRow />
 				</MantineTable.Tbody>
 			</MantineTable>
 			<span className='sr-only' aria-live='polite'>{selection.ids.length}</span>
@@ -106,7 +103,7 @@ function BodyRow({ item, rowIndex }: BodyRowProps) {
 	const rowNumber = getRowNumber(data.page, data.size, rowIndex);
 	const isSelected = selection.ids.includes(rowId);
 	if (editing.rowId === rowId) {
-		return <EditingRow item={item} rowId={rowId} rowNumber={rowNumber} isSelected={isSelected} />;
+		return <EditingRow item={item} rowId={rowId} rowNumber={rowNumber} />;
 	}
 	const linkHref = buildLinkHref?.(item);
 	const onDoubleClick = () => {

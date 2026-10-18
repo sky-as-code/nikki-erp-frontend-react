@@ -119,6 +119,8 @@ export type ExcelDataTableContextValue = {
 	tid: ExcelDataTableTestIds,
 	/** Marks the table's own elements (`tableScopeAttrs`); a click or focus outside them clears the selection. */
 	scopeId: string,
+	/** The Provider's `emptyMessage`, its default already applied. */
+	emptyMessage: string,
 };
 
 export const ExcelDataTableContext = React.createContext<ExcelDataTableContextValue | null>(null);

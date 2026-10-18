@@ -131,7 +131,7 @@ export function EntitySelectField<TEntity>({
 							onChange?.(newValue as any);
 						}}
 						searchable
-						clearable
+						clearable={!fieldData.isRequired}
 						required={fieldData.isRequired}
 						disabled={isDisabled}
 						{...fieldAttrs}

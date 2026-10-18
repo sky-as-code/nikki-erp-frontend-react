@@ -37,6 +37,8 @@ export const relatedAssignmentSchema = z.object({
 export const relatedResourceSchema = resourceTablePropsSchema.extend({
 	/** i18n key for the tab, translated with the related resource's own `translationNs`. */
 	label: z.string().min(1),
+	/** i18n key of the message an empty table shows, translated with the tab's `translationNs`. */
+	emptyMessage: z.string().min(1).optional(),
 	assignment: relatedAssignmentSchema.optional(),
 }).strict();
 

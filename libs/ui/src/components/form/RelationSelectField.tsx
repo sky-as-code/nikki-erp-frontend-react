@@ -11,6 +11,8 @@ import { recordLabelOf, useRecordSearchOptions } from './recordSearchOptions';
 import { RelationPickerModal } from './RelationPickerModal';
 import { useCommand } from '../../hookhoc/useCommand';
 import { useTranslate } from '../../i18n';
+import { SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
+import { DEFAULT_MAX_OPTIONS } from '../SearchableSelect/optionLimit';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 
 import type { LocalizeFn } from '../../i18n';
@@ -53,6 +55,7 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 	const testIdPrefix = useFormTestIdPrefix();
 	const fieldTestId = testIdPrefix ? `${testIdPrefix}.field.${name}` : undefined;
 	const t = useTranslate('common');
+	const { contentWidthDropdown } = React.useContext(SelectDefaultsContext);
 	const isDisabled = Boolean(
 		modelLoading || props.inputProps?.disabled
 		|| props.exclusiveDisabledBy || options.loadError,
@@ -81,9 +84,14 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 							// An input, not a filled button: this stands in for a form field and
 							// must match the inputs beside it, not paint in the theme's accent.
 							variant='input'
-							dropdownWidth='target'
+							// A table row's select opens wider than its cell; a form field matches its input.
+							dropdownWidth={contentWidthDropdown ? undefined : 'target'}
 							value={(field.value as string) ?? null}
 							onChange={val => field.onChange(val === '' ? undefined : val)}
+							// Null, not undefined: an update must tell the server to clear the reference.
+							clearable={!fieldData.isRequired}
+							onClear={() => field.onChange(null)}
+							maxOptions={DEFAULT_MAX_OPTIONS}
 							onSearchChange={setTerm}
 							// Always on: the search box triggers server-side search, not just a
 							// filter over an already-fetched list, so it must show regardless of

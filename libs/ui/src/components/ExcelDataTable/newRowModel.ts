@@ -1,4 +1,5 @@
 import { isRowCreatableField } from './editModel';
+import { searchPageSize } from '../SearchableSelect/optionLimit';
 
 import type { NewRowConfig } from './context';
 import type * as dyn from '@nikkierp/common/dynamicModel';
@@ -7,7 +8,6 @@ import type { ClientErrorItem } from '@nikkierp/common/types';
 
 /** `*` is the contains operator; see `SearchOperator` in `@nikkierp/common/dynamicModel`. */
 const CONTAINS = '*';
-const SEARCH_PAGE_SIZE = 20;
 
 /**
  * Which columns of the insert row take an input, and how.
@@ -132,7 +132,7 @@ export function buildContainsSearchRequest(
 	const trimmed = term.trim();
 	return {
 		page: 0,
-		size: SEARCH_PAGE_SIZE,
+		size: searchPageSize(),
 		fields,
 		// Searching by id would be a prefix match on an opaque ULID, which no user types.
 		graph: trimmed && labelField !== 'id' ? { if: [labelField, CONTAINS, trimmed] } : undefined,

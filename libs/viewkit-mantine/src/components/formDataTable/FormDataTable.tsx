@@ -45,7 +45,8 @@ export type FormDataTableProps = ExcelDataTableRowWriteProps & {
 	fieldRenderers?: FieldRendererMap,
 	buildLinkHref?: (item: SearchItem) => string,
 	fillerColumnMinWidth?: number,
-	emptyText?: string,
+	/** Shown centred while the table has no rows; defaults to the table's "No data". */
+	emptyMessage?: string,
 	testId?: string,
 };
 
@@ -62,7 +63,7 @@ export function FormDataTable(props: FormDataTableProps): React.ReactNode {
 function ScopedFormDataTable(props: FormDataTableProps): React.ReactNode {
 	const {
 		schemaName, searchCommand: _command, searchName: _name, fields: _fields, transformItems, enableSettings,
-		fillerColumnMinWidth, emptyText, ...providerProps
+		fillerColumnMinWidth, ...providerProps
 	} = props;
 	const updateMode = useResourceFormView()?.updateMode ?? true;
 	const search = useFormDataTableSearch(props);
@@ -102,18 +103,17 @@ function ScopedFormDataTable(props: FormDataTableProps): React.ReactNode {
 				paginated={isFormDataTablePaginated(searchData?.total)}
 				enableSettings={enableSettings}
 				fillerColumnMinWidth={fillerColumnMinWidth}
-				emptyText={emptyText}
 			/>
 		</ExcelDataTable.Provider>
 	);
 }
 
-type FormDataTableLayoutProps = Pick<FormDataTableProps, 'enableSettings' | 'fillerColumnMinWidth' | 'emptyText'> & {
+type FormDataTableLayoutProps = Pick<FormDataTableProps, 'enableSettings' | 'fillerColumnMinWidth'> & {
 	paginated: boolean,
 };
 
 function FormDataTableLayout({
-	paginated, enableSettings, fillerColumnMinWidth, emptyText,
+	paginated, enableSettings, fillerColumnMinWidth,
 }: FormDataTableLayoutProps): React.ReactNode {
 	const pagination = paginated ? <ExcelDataTable.Toolbar right={<ExcelDataTable.Pagination />} /> : null;
 	return (
@@ -125,7 +125,7 @@ function FormDataTableLayout({
 					fillerColumnMinWidth={fillerColumnMinWidth}
 					{...(enableSettings ? { renderFillerColumnHeader: renderSettingsButton } : {})}
 				/>
-				<ExcelDataTable.Table emptyText={emptyText} />
+				<ExcelDataTable.Table />
 			</div>
 			{pagination}
 		</Stack>

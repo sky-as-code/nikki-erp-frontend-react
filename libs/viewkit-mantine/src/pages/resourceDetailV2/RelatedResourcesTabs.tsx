@@ -150,6 +150,7 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 		pack?.modelSchema, searchData?.desired_fields, search.edgeLabelSchemas,
 	);
 	const translateFieldName = useTranslateFieldName(resource.translationNs, pack?.modelSchema, relatedSchemas);
+	const emptyMessage = useTranslatedKey(resource.translationNs, resource.emptyMessage);
 
 	// Compact, not the full refusal page: this tab is one section of the detail page.
 	if (search.refused) {
@@ -175,6 +176,7 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 			translateFieldName={translateFieldName}
 			buildLinkHref={buildLinkHref}
 			fieldRenderers={fieldRenderers}
+			emptyMessage={emptyMessage}
 			{...assignment}
 		>
 			{/* The same xs spacing the list page puts between its toolbar and the table; the header
@@ -239,4 +241,10 @@ function RelatedActions({ resource }: { resource: RelatedResource }) {
 			))}
 		</ExcelDataTable.Actions>
 	);
+}
+
+/** A page-given i18n key, translated; `undefined` leaves the table's own default. */
+function useTranslatedKey(translationNs: string | undefined, key: string | undefined): string | undefined {
+	const t = useTranslate(translationNs);
+	return key ? t(key) : undefined;
 }

@@ -727,6 +727,8 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 							}}
 							disabled={modelLoading}
 							placeholder={t(fieldData.placeholder)}
+							// A clear lands as undefined; the update payload turns a cleared field into null.
+							clearable={!fieldData.isRequired}
 							ref={ref}
 							{...htmlProps}
 							{...(defaultInputProps as SelectProps)}

@@ -54,6 +54,8 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 	return isAuthenticated && (items.length || !props.hideIfEmpty) && (
 		<FlatSearchableSelect
 			{...props}
+			// A short in-memory list the user picks from by sight: show it whole.
+			maxOptions={0}
 			actionOptionLabel='Manage organizations...'
 			searchPlaceholder='Search organization'
 			unselectedPlaceholder='Select organization'

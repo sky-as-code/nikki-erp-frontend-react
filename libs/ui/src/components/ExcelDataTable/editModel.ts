@@ -1,5 +1,7 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 
+import { dirtyFieldUpdateValue } from '../form/updatePayload';
+
 import type { SearchItem } from './types';
 
 
@@ -69,6 +71,8 @@ export function buildRowUpdatePayload(
 	dirtyFields: Record<string, unknown> | undefined,
 	item: SearchItem,
 	editableFields: string[],
+	/** The row form's unparsed values, which tell a cleared field (sent as `null`) from an untouched one. */
+	rawValues?: Record<string, unknown>,
 ): RowUpdatePayload {
 	if (typeof item.id !== 'string' && typeof item.id !== 'number') {
 		return { refusal: 'no-id' };
@@ -77,8 +81,9 @@ export function buildRowUpdatePayload(
 	const dirty = dirtyFields ?? {};
 	let changed = 0;
 	for (const field of editableFields) {
-		if (dirty[field] && field in data) {
-			payload[field] = data[field];
+		const value = dirty[field] ? dirtyFieldUpdateValue(data, rawValues, field) : undefined;
+		if (value !== undefined) {
+			payload[field] = value;
 			changed += 1;
 		}
 	}

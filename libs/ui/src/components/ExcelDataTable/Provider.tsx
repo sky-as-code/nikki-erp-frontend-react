@@ -5,13 +5,14 @@ import { useColumnWidthsState } from './columnWidths';
 import { ExcelDataTableContext } from './context';
 import { useSchemaFieldNameTranslator } from './fieldLabels';
 import { useApplyFilters, useFilterState } from './filter/useFilterState';
-import { useClearSelectionOnLeave } from './tableScope';
+import { useTableScope } from './tableScope';
 import { excelDataTableTestIds } from './testIds';
 import { useContainerWidthState, useIsCompact } from './useIsCompact';
 import {
 	useDiscardEditOnSelectionChange, useEditingState, useOpenState, useSearchRequestState, useSelectionState,
 	useViewModeState,
 } from './useProviderState';
+import { useTranslate } from '../../i18n';
 
 import type { ExcelDataTableRowWriteProps } from './capabilities';
 import type { ExcelDataTableContextValue, ScrollSyncRefs } from './context';
@@ -56,6 +57,8 @@ export type ExcelDataTableProviderProps = ExcelDataTableRowWriteProps & {
 	onSelectionChange?: (selected: SearchItem[]) => void,
 	/** `single` clamps every selection gesture to one row; defaults to `multiple`. */
 	selectionMode?: SelectionMode,
+	/** Shown centred in a full-width row while the table has no rows; defaults to "No data". */
+	emptyMessage?: string,
 	/** Off to hide the row-number column and its select-all; defaults to shown. */
 	indexColumnVisible?: boolean,
 	/** Rows selected once the first page loads, e.g. a picker's current value. Read on mount only. */
@@ -90,8 +93,8 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		mode: props.selectionMode, initialSelectedIds: props.initialSelectedIds,
 	});
 	useDiscardEditOnSelectionChange(editing, selection.ids);
-	const scopeId = React.useId();
-	useClearSelectionOnLeave(scopeId, editing.isActive, selection);
+	const emptyMessage = useEmptyMessage(props.emptyMessage);
+	const scopeId = useTableScope(editing.isActive, selection);
 	const { viewMode, setViewMode } = useViewModeState(props.initialViewMode, props.allowedViewModes);
 	const settings = useOpenState();
 	const filterPane = useOpenState();
@@ -139,6 +142,7 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		fieldRenderers: props.fieldRenderers ?? emptyRenderers,
 		tid,
 		scopeId,
+		emptyMessage,
 	}), [
 		tableName, props.modelSchema, props.relatedSchemas, data, isLoading, isCompact, container.setWidth,
 		searchRequest,
@@ -146,6 +150,7 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		filterPane, fields, columnWidths, props.indexColumnVisible, props.updateCommand, rows, props.onRefresh,
 		props.translationNs,
 		props.translateFieldName, schemaFieldName, props.buildLinkHref, props.fieldRenderers, tid, scopeId,
+		emptyMessage,
 	]);
 
 	return (
@@ -153,4 +158,9 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 			{props.children}
 		</ExcelDataTableContext.Provider>
 	);
+}
+
+function useEmptyMessage(message: string | undefined): string {
+	const t = useTranslate('common');
+	return message ?? t('messages.no.data', { defaultValue: 'No data' });
 }

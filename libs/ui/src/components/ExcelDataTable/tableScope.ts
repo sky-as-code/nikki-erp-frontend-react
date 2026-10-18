@@ -54,3 +54,10 @@ export function useClearSelectionOnLeave(scopeId: string, isEditing: boolean, se
 		};
 	}, [scopeId]);
 }
+
+/** A table's scope id, with the selection cleared when the user leaves that scope. */
+export function useTableScope(isEditing: boolean, selection: SelectionApi): string {
+	const scopeId = React.useId();
+	useClearSelectionOnLeave(scopeId, isEditing, selection);
+	return scopeId;
+}

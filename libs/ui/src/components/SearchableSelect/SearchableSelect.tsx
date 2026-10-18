@@ -2,6 +2,7 @@ import {
 	ActionIcon,
 	Box,
 	Button,
+	CloseButton,
 	Combobox,
 	ComboboxProps,
 	ComboboxStore,
@@ -20,6 +21,7 @@ import React, { FC, JSX, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useDropdownWidthProps } from './dropdownWidth';
+import { DEFAULT_MAX_OPTIONS, limitOptions } from './optionLimit';
 import { useShowLockedFeature } from '../ErrorState';
 
 
@@ -61,6 +63,18 @@ export type SearchableSelectProps = {
 	unselectedPlaceholder?: string,
 	value?: string | null,
 	onChange?: (value: string) => void,
+	/**
+	 * Offers a clear mark on the `input` variant while a value is picked; picking it (or Backspace /
+	 * Delete on the control) calls `onClear`. A form field passes this when it is not required.
+	 */
+	clearable?: boolean,
+	onClear?: () => void,
+	/**
+	 * At most this many matching options are shown, the picked one always among them; `0` shows
+	 * all. Defaults to {@link DEFAULT_MAX_OPTIONS}. A caller that fetches the options should request
+	 * `searchPageSize(maxOptions)` rows, so the list and the request agree.
+	 */
+	maxOptions?: number,
 	disabled?: boolean,
 	/**
 	 * Reports every keystroke in the search box, verbatim. For a caller whose `items` are already
@@ -86,10 +100,11 @@ const ACTION_OPTION_VALUE = '$$action$$';
 /** The options whose label contains the search term, the current value marked active. */
 function renderOptions(
 	items: SearchableSelectItem[], search: string, activeValue: string | null | undefined, testId: string | undefined,
+	maxOptions: number,
 ): JSX.Element[] {
 	const term = search.toLowerCase().trim();
-	return items
-		.filter(item => item.label?.toLowerCase().includes(term))
+	const matching = items.filter(item => item.label?.toLowerCase().includes(term));
+	return limitOptions(matching, maxOptions, activeValue)
 		.map(item => (
 			<Combobox.Option
 				value={item.value}
@@ -121,7 +136,13 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 	}, [activeValue, props.items]);
 
 	const widthProps = useDropdownWidthProps(props.dropdownWidth);
-	const options = renderOptions(props.items, search, activeValue, props.testId);
+	const options = renderOptions(
+		props.items, search, activeValue, props.testId, props.maxOptions ?? DEFAULT_MAX_OPTIONS,
+	);
+	const onClear = props.clearable ? () => {
+		setActiveItem(null);
+		props.onClear?.();
+	} : undefined;
 
 	const control = (
 		<Combobox
@@ -147,6 +168,7 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 				variant={props.variant}
 				unselectedPlaceholder={props.unselectedPlaceholder}
 				disabled={props.disabled}
+				onClear={onClear}
 				testId={props.testId}
 			/>
 			<ComboboxDropdown
@@ -237,6 +259,8 @@ type ComboboxTargetProps = {
 	unselectedPlaceholder?: string,
 	disabled?: boolean,
 	variant?: SearchableSelectVariant,
+	/** Set only when the control may be cleared; shown while a value is picked. */
+	onClear?: () => void,
 	testId?: string,
 };
 
@@ -248,6 +272,7 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 	// input beside it. The default Button trigger is filled in the theme's primary colour, which
 	// reads as a call-to-action — right for the shell's org switcher, wrong for a field.
 	if (props.variant === 'input' && !props.triggerComponent) {
+		const onClear = value && !props.disabled ? props.onClear : undefined;
 		return (
 			<Combobox.Target>
 				<InputBase
@@ -255,9 +280,12 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 					type='button'
 					pointer
 					size='md'
-					rightSection={<Combobox.Chevron />}
-					rightSectionPointerEvents='none'
+					rightSection={onClear
+						? <ClearMark onClear={onClear} testId={props.testId} />
+						: <Combobox.Chevron />}
+					rightSectionPointerEvents={onClear ? 'all' : 'none'}
 					onClick={() => combobox.toggleDropdown()}
+					onKeyDown={onClear ? event => isClearKey(event.key) && onClear() : undefined}
 					disabled={props.disabled}
 					{...testAttrs(props.testId, 'trigger')}
 				>
@@ -322,11 +350,6 @@ const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
 					type='scroll'
 					mah={props.scrollAreaHeight ?? '50vh'}
 				>
-					{props.actionOptionLabel && (
-						<Combobox.Option value={ACTION_OPTION_VALUE} {...testAttrs(props.testId, 'actionOption')}>
-							{props.actionOptionLabel}
-						</Combobox.Option>
-					)}
 					<Combobox.Group label=' '>
 						{props.options.length > 0 ? (
 							props.options
@@ -334,8 +357,42 @@ const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
 							<Combobox.Empty>Nothing found</Combobox.Empty>
 						)}
 					</Combobox.Group>
+					{props.actionOptionLabel && (
+						<Combobox.Option value={ACTION_OPTION_VALUE} {...testAttrs(props.testId, 'actionOption')}>
+							{props.actionOptionLabel}
+						</Combobox.Option>
+					)}
 				</ScrollArea.Autosize>
 			</Combobox.Options>
 		</Combobox.Dropdown>
 	);
 };
+
+function isClearKey(key: string): boolean {
+	return key === 'Backspace' || key === 'Delete';
+}
+
+/**
+ * The clear mark inside the control. A `span`, not a button: the control itself is a `<button>`,
+ * which may not contain another. Its mouse-down is swallowed so the press does not also open the
+ * dropdown; keyboard users clear with Backspace / Delete on the control.
+ */
+function ClearMark({ onClear, testId }: { onClear: () => void, testId?: string }): React.ReactElement {
+	const { t: translate } = useTranslation();
+	return (
+		<CloseButton
+			component='span'
+			size='sm'
+			aria-label={translate('action.clear', { defaultValue: 'Clear' })}
+			onMouseDown={(event: React.MouseEvent) => {
+				event.preventDefault();
+				event.stopPropagation();
+			}}
+			onClick={(event: React.MouseEvent) => {
+				event.stopPropagation();
+				onClear();
+			}}
+			{...testAttrs(testId, 'clear')}
+		/>
+	);
+}

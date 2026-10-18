@@ -1,12 +1,10 @@
 import { Table as MantineTable, Text } from '@mantine/core';
 import { ClientErrorItem } from '@nikkierp/common/types';
 import { IconPlus } from '@tabler/icons-react';
-import clsx from 'clsx';
 import React from 'react';
 import { useWatch } from 'react-hook-form';
 
 import { useExcelDataTableContext } from './context';
-import tableClasses from './ExcelDataTable.module.css';
 import classes from './NewRow.module.css';
 import { buildNewRowPayload, findNewRowConfigProblems, resolveNewRowColumns, splitNewRowErrors } from './newRowModel';
 import { useNewRowSearch } from './newRowSearch';
@@ -71,7 +69,7 @@ function AddLineRow() {
 	const t = useTranslate('common');
 	const { newRow, locks, editing, selection, tid } = useExcelDataTableContext();
 	const columnCount = useColumnCount();
-	// The insert row is the selection while it is open: no other row looks picked beside it.
+	// No row stays picked behind the insert row: its gestures are frozen while it is open.
 	const onOpen = () => {
 		selection.clear();
 		editing.startCreate();
@@ -135,12 +133,11 @@ function InsertCells({ runtime, onAdded }: { runtime: FormProviderRenderProps, o
 				ref={rowRef}
 				tabIndex={-1}
 				onKeyDown={onKeyDown}
-				aria-selected
 				aria-label={t('datatable.newLine', { defaultValue: 'New line' })}
 				{...tid.attrs('newRow')}
 			>
 				{indexColumnVisible ? (
-					<MantineTable.Td className={clsx(classes.indexCell, tableClasses.selectedCell)}>
+					<MantineTable.Td className={classes.indexCell}>
 						<IconPlus size={14} aria-hidden />
 					</MantineTable.Td>
 				) : null}
@@ -156,7 +153,7 @@ function InsertCells({ runtime, onAdded }: { runtime: FormProviderRenderProps, o
 function InsertRowActions({ submit, busy }: { submit: NewRowAdd, busy: boolean }) {
 	const { editing, tid } = useExcelDataTableContext();
 	return (
-		<MantineTable.Td className={clsx(classes.actionsCell, tableClasses.selectedCell)}>
+		<MantineTable.Td className={classes.actionsCell}>
 			<EditRowActions
 				mode='create'
 				busy={busy}
@@ -205,7 +202,7 @@ type NewRowCellProps = { field: string, columns: NewRowColumns, runtime: FormPro
 function NewRowCell({ field, columns, runtime, disabled }: NewRowCellProps) {
 	const { newRow, tid } = useExcelDataTableContext();
 	if (!columns.editable.includes(field)) {
-		return <MantineTable.Td className={clsx(classes.inputCell, tableClasses.selectedCell)} />;
+		return <MantineTable.Td className={classes.inputCell} />;
 	}
 	const Editor = columns.editorFields.includes(field) ? newRow.fieldEditors[field] : undefined;
 	let content: React.ReactNode;
@@ -219,7 +216,7 @@ function NewRowCell({ field, columns, runtime, disabled }: NewRowCellProps) {
 		content = <AutoField name={field} labelHidden />;
 	}
 	return (
-		<MantineTable.Td className={clsx(classes.inputCell, tableClasses.selectedCell)} {...tid.newRowInput(field)}>
+		<MantineTable.Td className={classes.inputCell} {...tid.newRowInput(field)}>
 			<fieldset disabled={disabled} className='m-0 p-0 border-0 min-w-0'>{content}</fieldset>
 		</MantineTable.Td>
 	);

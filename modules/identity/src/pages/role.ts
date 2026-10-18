@@ -115,6 +115,7 @@ function buildAssignmentResources() {
 	return [
 		{
 			label: 'role_sections_assignedUsers',
+			emptyMessage: 'role_assign_emptyUsers',
 			schemaName: c.USER_SCHEMA_NAME,
 			translationNs: c.IAM_MODULE,
 			searchCommand: UserCommands.SEARCH,
@@ -133,6 +134,7 @@ function buildAssignmentResources() {
 		},
 		{
 			label: 'role_sections_assignedGroups',
+			emptyMessage: 'role_assign_emptyGroups',
 			schemaName: c.GROUP_SCHEMA_NAME,
 			translationNs: c.IAM_MODULE,
 			searchCommand: GroupCommands.SEARCH,

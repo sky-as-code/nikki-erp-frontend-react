@@ -5,6 +5,7 @@ import React from 'react';
 import { useCommand } from '../../hookhoc/useCommand';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { useLocaleCollator } from '../../i18n';
+import { searchPageSize } from '../SearchableSelect/optionLimit';
 
 import type { LocalizeFn } from '../../i18n';
 import type { ClientErrorItem } from '@nikkierp/common/types';
@@ -17,7 +18,6 @@ const SEARCH_DEBOUNCE_MS = 300;
  * place to surface one — an empty description reads better than a placeholder token.
  */
 const MISSING_TRANSLATION = '$missing.translation';
-const PAGE_SIZE = 20;
 /** `*` is the contains operator; see `SearchOperator` in `@nikkierp/common/dynamicModel`. */
 const CONTAINS = '*';
 
@@ -41,7 +41,7 @@ export type RecordSearchOptions = {
  * with `RelationPickerModal` outside a form.
  */
 export function useRecordSearchOptions(
-	destSchemaName: string, term: string, localize: LocalizeFn,
+	destSchemaName: string, term: string, localize: LocalizeFn, pageSize: number = searchPageSize(),
 ): RecordSearchOptions {
 	const targetPack = useDynamicModel(destSchemaName);
 	const targetSchema = targetPack.pack?.modelSchema;
@@ -50,7 +50,9 @@ export function useRecordSearchOptions(
 	const [debouncedTerm] = useDebouncedValue(term, SEARCH_DEBOUNCE_MS);
 	// Held back until the target schema resolves: searching before then would use the `id`
 	// fallback for `labelField` and be immediately re-issued with the real one.
-	const search = useSearchPage(targetSchema ? destSchemaName : '', debouncedTerm, labelField, subLabelField);
+	const search = useSearchPage({
+		destSchemaName: targetSchema ? destSchemaName : '', term: debouncedTerm, labelField, subLabelField, pageSize,
+	});
 	const compareLocalized = useLocaleCollator();
 	// Sorted here rather than by the server, which stores the label as a LangJson and so cannot
 	// order by the one language the reader sees.
@@ -79,9 +81,17 @@ type SearchPageResult = {
 	clientErrors: ClientErrorItem[],
 };
 
-function useSearchPage(
-	destSchemaName: string, term: string, labelField: string, subLabelField?: string,
-): SearchPageResult {
+type SearchPageQuery = {
+	destSchemaName: string,
+	term: string,
+	labelField: string,
+	subLabelField?: string,
+	/** The select's `maxOptions` as a page size (`searchPageSize`). */
+	pageSize: number,
+};
+
+function useSearchPage(query: SearchPageQuery): SearchPageResult {
+	const { destSchemaName, term, labelField, subLabelField, pageSize } = query;
 	const command = destSchemaName ? dyn.resourceCommands(destSchemaName).SEARCH : '';
 	const search = useCommand<dyn.RestSearchResponse<Record<string, any>>>(command);
 	const publish = search.publish;
@@ -97,12 +107,12 @@ function useSearchPage(
 		const fields = Array.from(new Set(['id', labelField, ...(subLabelField ? [subLabelField] : [])]));
 		void publish({
 			page: 0,
-			size: PAGE_SIZE,
+			size: pageSize,
 			fields,
 			// Searching by id would be a prefix match on an opaque ULID, which no user types.
 			graph: term && labelField !== 'id' ? { if: [labelField, CONTAINS, term] } : undefined,
 		} satisfies dyn.RestSearchRequest);
-	}, [publish, destSchemaName, term, labelField, subLabelField]);
+	}, [publish, destSchemaName, term, labelField, subLabelField, pageSize]);
 
 	React.useEffect(() => {
 		if (search.data?.items) {

@@ -3,11 +3,9 @@
 	vertical-align: top;
 }
 
-/*
- * The index column of the insert row. Its background is the selection colour (`selectedCell`), like
- * every other cell of the open insert row, so it sets none of its own.
- */
+/* The index column of the insert row: the gray handle of a read row, without its selection role. */
 .indexCell {
+	background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
 	color: var(--mantine-color-dimmed);
 	text-align: center;
 	vertical-align: middle;

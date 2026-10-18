@@ -44,6 +44,8 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 	return isAuthenticated && (modules.length || !props.hideIfEmpty) && (
 		<FlatSearchableSelect
 			{...props}
+			// A short in-memory list the user picks from by sight: show it whole.
+			maxOptions={0}
 			actionOptionLabel={t('module.manageModules')}
 			searchPlaceholder={t('module.filterModules')}
 			unselectedPlaceholder={t('module.selectModule')}

@@ -73,7 +73,7 @@ function RolePermissionsSection(): React.ReactNode {
 					updateEntitlement={MANAGE_REQUIREMENT}
 					deleteEntitlement={MANAGE_REQUIREMENT}
 					fieldRenderers={section.fieldRenderers}
-					emptyText={t('role_permission_empty')}
+					emptyMessage={t('role_permission_empty')}
 					testId={TEST_ID_PREFIX}
 				/>
 			</GrantEditorContext.Provider>
