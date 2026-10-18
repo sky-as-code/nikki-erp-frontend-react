@@ -88,9 +88,31 @@
 	background-color: var(--nikki-color-table-bg-selected);
 }
 
+/*
+ * Mantine paints stripes and hover on the row, not the cell. The index column keeps one colour on
+ * every row, so its cells restate it with enough weight to win over anything the row brings.
+ */
+.bodyScroller tr > td.rowNumberCell {
+	background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+}
+
+.bodyScroller tr > td.rowNumberCell.selectedCell {
+	background-color: var(--nikki-color-table-bg-selected);
+}
+
 .headerCell {
 	background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
 	position: relative;
+}
+
+.fillerHeaderCell {
+	background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+	overflow: hidden;
+}
+
+/* The select-all cell is one click target; while a row is being edited it is inert. */
+.selectAllCell[data-disabled='true'] {
+	cursor: default;
 }
 
 /* The 2px progress row: header background, bar in the selected-row border colour. */
@@ -161,12 +183,30 @@
 	overflow-x: auto;
 }
 
-/* An input in an editing row: the column header is its label, so the field's own label goes. */
+/* An input in an editing row; `AutoField labelHidden` keeps the column header as its only label. */
 .editingCell {
 	padding: 0.125rem 0.25rem;
 	vertical-align: middle;
 }
 
-.editingCell :global(.mantine-InputWrapper-label) {
-	display: none;
+/*
+ * A read row's actions appear on hover, and stay while the row is selected. Opacity rather than
+ * `visibility` keeps the button in the tab order, so `:focus-within` can reveal it to the keyboard.
+ */
+.rowActions {
+	opacity: 0;
+	transition: opacity 150ms ease;
+}
+
+.bodyRow:hover .rowActions,
+.rowActions:focus-within,
+.rowActionsVisible {
+	opacity: 1;
+}
+
+/* Nothing hovers on a touch screen: the actions are always shown there. */
+@media (hover: none) {
+	.rowActions {
+		opacity: 1;
+	}
 }

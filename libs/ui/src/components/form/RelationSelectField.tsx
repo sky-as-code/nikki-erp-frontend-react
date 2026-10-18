@@ -1,32 +1,24 @@
 import { Select } from '@mantine/core';
-import { useDebouncedValue, useId } from '@mantine/hooks';
+import { useId } from '@mantine/hooks';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
+import { fieldErrorText } from './fieldErrors';
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
 import { useFormTestIdPrefix } from './formTestIds';
+import { recordLabelOf, useRecordSearchOptions } from './recordSearchOptions';
 import { RelationPickerModal } from './RelationPickerModal';
 import { useCommand } from '../../hookhoc/useCommand';
-import { useDynamicModel } from '../../hookhoc/useDynamicModel';
-import { useLocaleCollator, useTranslate } from '../../i18n';
+import { useTranslate } from '../../i18n';
+import { SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
+import { DEFAULT_MAX_OPTIONS } from '../SearchableSelect/optionLimit';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 
 import type { LocalizeFn } from '../../i18n';
 import type { SearchItem, SelectionMode } from '../ExcelDataTable';
 
-
-const SEARCH_DEBOUNCE_MS = 300;
-/**
- * What `useLocalize` returns for a LangJson carrying no entry for the active language. i18n is
- * configured without a fallback language so gaps are visible, but a field description is the wrong
- * place to surface one — an empty description reads better than a placeholder token.
- */
-const MISSING_TRANSLATION = '$missing.translation';
-const PAGE_SIZE = 20;
-/** `*` is the contains operator; see `SearchOperator` in `@nikkierp/common/dynamicModel`. */
-const CONTAINS = '*';
 
 type SelectProps = React.ComponentPropsWithoutRef<typeof Select>;
 
@@ -64,6 +56,7 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 	const testIdPrefix = useFormTestIdPrefix();
 	const fieldTestId = testIdPrefix ? `${testIdPrefix}.field.${name}` : undefined;
 	const t = useTranslate('common');
+	const { contentWidthDropdown } = React.useContext(SelectDefaultsContext);
 	const isDisabled = Boolean(
 		modelLoading || props.inputProps?.disabled
 		|| props.exclusiveDisabledBy || options.loadError,
@@ -80,7 +73,7 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 			// Uncomment to show sub-labels
 			// description={translatedOrEmpty(localize(fieldData.description))}
 			isRequired={fieldData.isRequired}
-			error={options.loadError ?? localize(fieldData.error as any)}
+			error={options.loadError ?? fieldErrorText(localize, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -92,9 +85,15 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 							// An input, not a filled button: this stands in for a form field and
 							// must match the inputs beside it, not paint in the theme's accent.
 							variant='input'
-							dropdownWidth='target'
+							// A table row's select opens wider than its cell; a form field matches its input.
+							dropdownWidth={contentWidthDropdown ? undefined : 'target'}
 							value={(field.value as string) ?? null}
 							onChange={val => field.onChange(val === '' ? undefined : val)}
+							// Null, not undefined: an update must tell the server to clear the reference.
+							clearable={!fieldData.isRequired}
+							onClear={() => field.onChange(null)}
+							onBlur={field.onBlur}
+							maxOptions={DEFAULT_MAX_OPTIONS}
 							onSearchChange={setTerm}
 							// Always on: the search box triggers server-side search, not just a
 							// filter over an already-fetched list, so it must show regardless of
@@ -112,7 +111,10 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 						{options.destSchemaName ? (
 							<RelationPickerModal
 								opened={isPickerOpen}
-								onClose={() => setIsPickerOpen(false)}
+								onClose={() => {
+									setIsPickerOpen(false);
+									field.onBlur();
+								}}
 								destSchemaName={options.destSchemaName}
 								selectionMode={options.selectionMode}
 								selectedIds={field.value ? [String(field.value)] : []}
@@ -154,27 +156,9 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 		? dyn.findRelationBySrcField(crudSchema.modelSchema, fieldName)
 		: undefined;
 	const destSchemaName = relation?.dest_schema_name ?? '';
-	const targetPack = useDynamicModel(destSchemaName);
-	const targetSchema = targetPack.pack?.modelSchema;
-	const labelField = targetSchema?.record_label_field ?? 'id';
-	const subLabelField = targetSchema?.record_sub_label_field;
-
-	const [debouncedTerm] = useDebouncedValue(term, SEARCH_DEBOUNCE_MS);
-	// Held back until the target schema resolves: searching before then would use the `id`
-	// fallback for `labelField` and be immediately re-issued with the real one.
-	const search = useSearchPage(
-		targetSchema ? destSchemaName : '', debouncedTerm, labelField, subLabelField,
-	);
+	const search = useRecordSearchOptions(destSchemaName, term, localize);
+	const { labelField, subLabelField, options: pageOptions } = search;
 	const selectedId = useWatch({ control, name: fieldName }) as string | undefined;
-	const compareLocalized = useLocaleCollator();
-	// Sorted here rather than by the server, which stores the label as a LangJson and so cannot
-	// order by the one language the reader sees.
-	const pageOptions = React.useMemo(
-		() => (search.items ?? [])
-			.map(item => toOption(item, labelField, subLabelField, localize))
-			.sort((a, b) => compareLocalized(a.label, b.label)),
-		[search.items, labelField, subLabelField, localize, compareLocalized],
-	);
 	const offPageOption = useSelectedLabel({
 		destSchemaName, selectedId, labelField, subLabelField, localize,
 		isOnPage: pageOptions.some(option => option.value === selectedId),
@@ -183,10 +167,8 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 	const data = offPageOption ? [offPageOption, ...pageOptions] : pageOptions;
 	return {
 		data,
-		isPending: targetPack.isPending || search.isPending,
-		// A target schema that never resolves would otherwise leave an empty, innocuous-looking
-		// dropdown, since the search below is gated on it.
-		loadError: targetPack.error ?? search.loadError,
+		isPending: search.isPending,
+		loadError: search.loadError,
 		selectedLabel: data.find(option => option.value === selectedId)?.label,
 		destSchemaName,
 		selectionMode: relationSelectionMode(relation),
@@ -201,50 +183,6 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 export function relationSelectionMode(relation: dyn.ModelSchemaRelation | undefined): SelectionMode {
 	const type = relation?.relation_type;
 	return type === 'one:many' || type === 'many:many' ? 'multiple' : 'single';
-}
-
-type SearchPageResult = {
-	items: Array<Record<string, any>> | null,
-	isPending: boolean,
-	loadError?: string,
-};
-
-function useSearchPage(
-	destSchemaName: string, term: string, labelField: string, subLabelField?: string,
-): SearchPageResult {
-	const command = destSchemaName ? dyn.resourceCommands(destSchemaName).SEARCH : '';
-	const search = useCommand<dyn.RestSearchResponse<Record<string, any>>>(command);
-	const publish = search.publish;
-	// The last page is kept so a request in flight does not blank the dropdown mid-typing.
-	const [cached, setCached] = React.useState<Array<Record<string, any>> | null>(null);
-
-	React.useEffect(() => {
-		if (!destSchemaName) {
-			return;
-		}
-		// Deduplicated because `labelField` falls back to `id` on a schema that declares none,
-		// which would otherwise ask for the same column twice.
-		const fields = Array.from(new Set(['id', labelField, ...(subLabelField ? [subLabelField] : [])]));
-		void publish({
-			page: 0,
-			size: PAGE_SIZE,
-			fields,
-			// Searching by id would be a prefix match on an opaque ULID, which no user types.
-			graph: term && labelField !== 'id' ? { if: [labelField, CONTAINS, term] } : undefined,
-		} satisfies dyn.RestSearchRequest);
-	}, [publish, destSchemaName, term, labelField, subLabelField]);
-
-	React.useEffect(() => {
-		if (search.data?.items) {
-			setCached(search.data.items);
-		}
-	}, [search.data]);
-
-	return {
-		items: search.data?.items ?? cached,
-		isPending: search.isPending,
-		loadError: search.error ? String(search.error) : undefined,
-	};
 }
 
 type SelectedLabelOptions = {
@@ -273,7 +211,9 @@ function useSelectedLabel(opts: SelectedLabelOptions): { value: string, label: s
 		void publish({ id: selectedId }).then(response => {
 			const record = response.result?.data;
 			if (record) {
-				resolved.current.set(selectedId, labelOf(record, opts.labelField, opts.subLabelField, opts.localize));
+				resolved.current.set(
+					selectedId, recordLabelOf(record, opts.labelField, opts.subLabelField, opts.localize),
+				);
 				forceRender(tick => tick + 1);
 			}
 		});
@@ -285,35 +225,4 @@ function useSelectedLabel(opts: SelectedLabelOptions): { value: string, label: s
 	// Falls back to the raw id while the lookup is in flight — truthful, and less jarring than a
 	// box that looks empty.
 	return { value: selectedId, label: resolved.current.get(selectedId) ?? selectedId };
-}
-
-function toOption(
-	item: Record<string, any>, labelField: string, subLabelField: string | undefined, localize: LocalizeFn,
-): { value: string, label: string } {
-	return { value: String(item.id), label: labelOf(item, labelField, subLabelField, localize) };
-}
-
-/** A record's display text, with its secondary field in parentheses when the schema names one. */
-function labelOf(
-	item: Record<string, any>, labelField: string, subLabelField: string | undefined, localize: LocalizeFn,
-): string {
-	const main = displayValue(item[labelField], localize) || String(item.id);
-	const sub = subLabelField ? displayValue(item[subLabelField], localize) : '';
-	return sub ? `${main} (${sub})` : main;
-}
-
-/**
- * A field value as text. A label field is either a LangJson object (`iam_group.name`) or a plain
- * string already in its final form (`iam_user.display_name`) — and the latter must not go through
- * `localize`, which would treat the value as a translation key and hand back `{namespace}:{value}`.
- */
-function displayValue(value: unknown, localize: LocalizeFn): string {
-	if (value === null || value === undefined) {
-		return '';
-	}
-	if (typeof value === 'object') {
-		const localized = localize(value as dyn.ModelSchemaLangJson);
-		return localized === MISSING_TRANSLATION ? '' : localized;
-	}
-	return String(value);
 }

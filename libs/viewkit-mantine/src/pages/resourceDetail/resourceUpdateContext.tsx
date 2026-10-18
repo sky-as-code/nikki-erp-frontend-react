@@ -1,10 +1,11 @@
 import React from 'react';
 
-import type { RegisterAfterSave } from './afterSave';
+import type { RegisterAfterSave, RegisterUpdatePayload } from './afterSave';
 import type {
 	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './props';
+import type { ResourceThumbnailSpec } from '../../components/resourceThumbnail/props';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -30,16 +31,23 @@ export type ResourceUpdateContextValue = {
 	/** Technical failure from the last save or load, if any. */
 	saveError: unknown | null,
 	loadError: unknown | null,
+	/** v2 only: the record fetch answered not-found, so the page renders a 404 state instead. */
+	notFound?: boolean,
 	allStatuses?: StatusOption[],
 	currentStatus?: SchemaFieldSpec,
 	contextualActions?: ResourceDetailContextualActions,
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	backLinkTitle?: LinkSpec,
+	/** v2 only: the photo the header shows left of the titles. */
+	thumbnail?: ResourceThumbnailSpec,
 	childrenNodes?: ComponentNode[],
 	registerAfterSave: RegisterAfterSave,
 	hasPendingAfterSave: () => boolean,
 	submitAfterSaveOnly: () => Promise<boolean>,
+	/** Optional because only the v2 update provider merges contributions into its request. */
+	registerUpdatePayload?: RegisterUpdatePayload,
+	hasPendingUpdatePayload?: () => boolean,
 };
 
 export const ResourceUpdateContext = React.createContext<ResourceUpdateContextValue | undefined>(undefined);

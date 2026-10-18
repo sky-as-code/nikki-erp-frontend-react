@@ -53,14 +53,14 @@ describe('identity module store', () => {
 		expect(readStoreMethodTag(userService.getById)?.sliceName).toBe('UserService');
 		expect(readStoreMethodTag(groupService.getById)?.sliceName).toBe('GroupService');
 		expect(readStoreMethodTag(orgService.getBySlug)?.sliceName).toBe('OrgService');
-		expect(readStoreMethodTag(roleService.manageEntitlements)?.sliceName).toBe('RoleService');
+		expect(readStoreMethodTag(roleService.manageUsers)?.sliceName).toBe('RoleService');
 	});
 
 	it('keeps the singletons usable as plain services for the command bus', () => {
 		// registerCrudService() hands these instances to the Shell's CRUD prefix handler,
 		// so decoration must not change how they are called.
 		expect(typeof userService.search).toBe('function');
-		expect(typeof roleService.manageEntitlements).toBe('function');
+		expect(typeof roleService.manageUsers).toBe('function');
 		// `@storeService` returns a subclass, so `instanceof` against the exported binding
 		// must still hold for anything doing type checks on the singleton.
 		expect(roleService).toBeInstanceOf(RoleService);

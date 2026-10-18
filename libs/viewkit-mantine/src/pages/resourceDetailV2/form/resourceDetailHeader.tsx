@@ -1,4 +1,4 @@
-import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
+import { dirtyFieldUpdateValue, useCrudFormRuntime } from '@nikkierp/ui/components/form';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import React from 'react';
 import { z } from 'zod';
@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { PageHeader } from '../../../components/pageHeader/PageHeader';
 import { PageHeaderProvider } from '../../../components/pageHeader/pageHeaderContext';
 import { useResourceFormView } from '../../../components/resourceFormViewContext';
+import { resourceThumbnailSpecSchema } from '../../../components/resourceThumbnail/props';
+import { ResourceThumbnail } from '../../../components/resourceThumbnail/ResourceThumbnail';
 import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_COLUMN, RESOURCE_FORM_COLUMN_V2 } from '../../../ids';
 import { linkSpecSchema, schemaFieldSpecSchema } from '../../resourceDetail/props';
 import { useResourceDetailContext } from '../../resourceDetail/ResourceDetailProvider';
@@ -14,6 +16,7 @@ import { useResourceUpdateContext } from '../resourceUpdateContext';
 import { CreateActionButton, ResourceActionBar } from '../resourceUpdateParts';
 
 import type { PageHeaderContextValue } from '../../../components/pageHeader/pageHeaderContext';
+import type { ResourceUpdateContextValue } from '../resourceUpdateContext';
 import type { FormProviderRenderProps } from '@nikkierp/ui/components/form';
 import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -23,6 +26,7 @@ export const resourceDetailHeaderPropsSchema = z.object({
 	titleLvl1: schemaFieldSpecSchema.optional(),
 	titleLvl2: schemaFieldSpecSchema.optional(),
 	backLinkTitle: linkSpecSchema.optional(),
+	thumbnail: resourceThumbnailSpecSchema.optional(),
 }).strict();
 
 export type ResourceDetailHeaderProps = z.infer<typeof resourceDetailHeaderPropsSchema>;
@@ -53,6 +57,7 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 	);
 	// Title overrides fall back to the values held in the resource-update context.
 	const backLinkTitle = props.backLinkTitle ?? context.backLinkTitle;
+	const thumbnail = props.thumbnail ?? context.thumbnail;
 	const formRuntime = useCrudFormRuntime();
 	const view = useResourceFormView();
 	const [localUpdateMode, setLocalUpdateMode] = React.useState(false);
@@ -77,11 +82,12 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 			// Saving an untouched form has nothing to send, so it skips the request and simply
 			// leaves edit mode — the outcome the user expects from Save either way.
 			if (!hasChanges) {
-				if (!context.hasPendingAfterSave()) {
+				const pendingSave = saveWithoutFieldChanges(context, resource);
+				if (!pendingSave) {
 					setUpdateMode(false);
 					return;
 				}
-				void context.submitAfterSaveOnly().then(succeeded => {
+				void pendingSave.then(succeeded => {
 					if (succeeded) {
 						setUpdateMode(false);
 					}
@@ -89,7 +95,9 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 				return;
 			}
 			void formRuntime
-				.handleSubmitWithResult(data => buildPartialSavePayload(data, blocks, dirtyFields, resource))()
+				.handleSubmitWithResult(data => buildPartialSavePayload(
+					data, blocks, dirtyFields, resource, formRuntime.form.getValues(),
+				))()
 				.then(succeeded => {
 					// Only on success: a rejected save keeps the fields editable so the user can
 					// fix what the server complained about.
@@ -128,11 +136,30 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 						/>
 					</>
 				)}
+				leading={thumbnail ? <ResourceThumbnail spec={thumbnail} /> : undefined}
 				trailing={<SplitPaneCloseButton />}
 				rowSpacing='md'
 			/>
 		</PageHeaderProvider>
 	);
+}
+
+/**
+ * The save for a form whose own fields are untouched: a section's update-payload contribution
+ * (sent as `{id, etag, ...contribution}`), else the after-save hooks alone, else nothing (`null`).
+ */
+function saveWithoutFieldChanges(
+	context: ResourceUpdateContextValue, resource: Record<string, unknown> | undefined,
+): Promise<boolean> | null {
+	if (context.hasPendingUpdatePayload?.()) {
+		const id = resource?.id;
+		const etag = resource?.etag;
+		if (typeof id !== 'string' || typeof etag !== 'string') {
+			return Promise.resolve(false);
+		}
+		return context.onSubmit({ id, etag });
+	}
+	return context.hasPendingAfterSave() ? context.submitAfterSaveOnly() : null;
 }
 
 /**
@@ -212,6 +239,8 @@ export function buildPartialSavePayload(
 	blocks: { fields?: string[] }[],
 	dirtyFields: FormProviderRenderProps['dirtyFields'] | undefined,
 	resource: Record<string, unknown> | undefined,
+	/** The form's unparsed values, which tell a cleared field (sent as `null`) from an untouched one. */
+	rawValues?: Record<string, unknown>,
 ): Record<string, any> | undefined {
 	const id = resource?.id;
 	const etag = resource?.etag;
@@ -223,8 +252,9 @@ export function buildPartialSavePayload(
 	const payload: Record<string, any> = { id, etag };
 	let changedCount = 0;
 	for (const field of sectionFields) {
-		if (dirty[field] && field in data) {
-			payload[field] = data[field];
+		const value = dirty[field] ? dirtyFieldUpdateValue(data, rawValues, field) : undefined;
+		if (value !== undefined) {
+			payload[field] = value;
 			changedCount += 1;
 		}
 	}

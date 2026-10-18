@@ -11,7 +11,7 @@ export type InputProps<C = 'input'> = PolymorphicComponentProps<C, MantineInputP
 const heightVar = { '--input-height': 'var(--input-height-xs)' } as React.CSSProperties;
 
 function InputBase<C = 'input'>({ size, style, ...rest }: InputProps<C>): React.ReactElement {
-	return <MantineInput size={size ?? 'sm'} style={[heightVar, style]} {...rest as InputProps} />;
+	return <MantineInput size={size ?? 'sm'} style={size ? style : [heightVar, style]} {...rest as InputProps} />;
 }
 
 /**
@@ -19,8 +19,8 @@ function InputBase<C = 'input'>({ size, style, ...rest }: InputProps<C>): React.
  *
  * `size='sm'` picks the small font size and horizontal padding, while `--input-height` is pinned
  * one step lower to `--input-height-xs`, so the control keeps `sm` typography in an `xs` box.
- * Both are defaults: a caller passing its own `size` or `style` still wins, since Mantine merges
- * a `style` array left to right.
+ * Both are defaults: a caller passing its own `size` gets that size's own height, and a `style`
+ * still wins, since Mantine merges a `style` array left to right.
  *
  * The sub-components are re-attached because callers reach `Input.Wrapper` and friends through
  * this same name; they are plain Mantine components, unaffected by the density defaults above.

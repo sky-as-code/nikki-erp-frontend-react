@@ -1,13 +1,9 @@
+import { escapeHtml } from '@nikkierp/common/utils';
+
 import { getCellText } from './cells/cellValues';
 
 import type { RowId, SearchData } from './types';
 
-
-function escapeHtml(value: string): string {
-	return value
-		.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;').replaceAll("'", '&#39;');
-}
 
 export function buildClipboardPayload(rows: string[][]) {
 	const plainText = rows.map(row => row.join('\t')).join('\n');

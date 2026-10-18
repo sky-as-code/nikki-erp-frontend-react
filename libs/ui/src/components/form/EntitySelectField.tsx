@@ -4,6 +4,7 @@ import React from 'react';
 import { Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import { fieldErrorText } from './fieldErrors';
 import { BaseFieldWrapper } from './fields';
 import { useFormField, useFieldData } from './formContext';
 import { useFieldTestAttrs } from './formTestIds';
@@ -113,7 +114,7 @@ export function EntitySelectField<TEntity>({
 			label={localize(fieldData.label)}
 			description={localize(fieldData.description)}
 			isRequired={fieldData.isRequired}
-			error={localize(fieldData.error as any)}
+			error={fieldErrorText(localize, fieldData)}
 		>
 			<Controller
 				name={fieldName}
@@ -130,8 +131,9 @@ export function EntitySelectField<TEntity>({
 							field.onChange(newValue);
 							onChange?.(newValue as any);
 						}}
+						onBlur={field.onBlur}
 						searchable
-						clearable
+						clearable={!fieldData.isRequired}
 						required={fieldData.isRequired}
 						disabled={isDisabled}
 						{...fieldAttrs}

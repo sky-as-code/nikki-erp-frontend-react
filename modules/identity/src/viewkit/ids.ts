@@ -27,3 +27,5 @@ export const ROLE_ASSIGNMENT_ACKNOWLEDGE = 'nikkierp.identity.components.roleAss
 export const ASSIGNMENT_CHANGE_SUMMARY = 'nikkierp.identity.components.assignmentChangeSummary.v1';
 export const ROLE_PICKER = 'nikkierp.identity.components.rolePicker.v1';
 export const ENTITLEMENT_CHANGE_LIST = 'nikkierp.identity.components.entitlementChangeList.v1';
+/** The role detail's Permission section: the role's entitlements, with drafted grants and revokes. */
+export const ROLE_PERMISSIONS = 'nikkierp.identity.components.rolePermissions.v1';

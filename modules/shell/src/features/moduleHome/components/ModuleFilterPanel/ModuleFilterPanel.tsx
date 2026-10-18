@@ -1,17 +1,11 @@
-import {
-	Center,
-	Checkbox,
-	MantineStyleProps,
-	SegmentedControl,
-	Select,
-	Stack,
-	Text,
-} from '@mantine/core';
+import { Center, Checkbox, MantineStyleProps, SegmentedControl, Stack } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { Select } from '@nikkierp/ui/components';
+import { useTranslate } from '@nikkierp/ui/i18n';
 import { IconLayoutGrid, IconList } from '@tabler/icons-react';
 import { FC } from 'react';
 
-import { FilterState, GroupByOption, ModuleViewMode, SortByOption } from '../ModuleHomePage';
+import type { FilterState, GroupByOption, ModuleViewMode } from '../../moduleHomeModel';
 
 
 const MODULE_FILTER_TEST_ID = 'shell.moduleFilter';
@@ -32,21 +26,7 @@ export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
 	filters,
 	onFiltersChange,
 }) => {
-	const handleShowDisabledChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		onFiltersChange({ ...filters, showDisabled: event.currentTarget.checked });
-	};
-
-	const handleShowOrphanedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		onFiltersChange({ ...filters, showOrphaned: event.currentTarget.checked });
-	};
-
-	const handleSortByChange = (value: string | null) => {
-		onFiltersChange({ ...filters, sortBy: value as SortByOption | null });
-	};
-
-	const handleGroupByChange = (value: string | null) => {
-		onFiltersChange({ ...filters, groupBy: value as GroupByOption });
-	};
+	const translate = useTranslate('common');
 
 	return (
 		<Stack
@@ -55,33 +35,18 @@ export const ModuleFilterPanel: FC<ModuleFilterPanelProps> = ({
 			bdrs={styleProps?.bdrs || 'md'}
 			p={styleProps?.p || 'md'}
 		>
-			<ViewModeSegmentedControl
-				viewMode={viewMode}
-				onViewModeChange={onViewModeChange}
-			/>
+			<ViewModeSegmentedControl viewMode={viewMode} onViewModeChange={onViewModeChange} />
 
 			<Checkbox
-				label={<Text className='capitalize' size={'sm'} fw={500}>Show disabled modules</Text>}
-				color='var(--mantine-color-black)'
-				checked={filters.showDisabled}
-				onChange={handleShowDisabledChange}
-				{...testAttrs(MODULE_FILTER_TEST_ID, 'showDisabled')}
-			/>
-			<Checkbox
-				label={<Text className='capitalize' size={'sm'} fw={500}>Show orphaned modules</Text>}
-				color='var(--mantine-color-black)'
-				checked={filters.showOrphaned}
-				onChange={handleShowOrphanedChange}
-				{...testAttrs(MODULE_FILTER_TEST_ID, 'showOrphaned')}
+				label={translate('module.showUnavailable')}
+				checked={filters.showUnavailable}
+				onChange={(event) => onFiltersChange({ ...filters, showUnavailable: event.currentTarget.checked })}
+				{...testAttrs(MODULE_FILTER_TEST_ID, 'showUnavailable')}
 			/>
 
-			<SortBySelect
-				value={filters.sortBy}
-				onChange={handleSortByChange}
-			/>
 			<GroupBySelect
 				value={filters.groupBy}
-				onChange={handleGroupByChange}
+				onChange={(groupBy) => onFiltersChange({ ...filters, groupBy })}
 			/>
 		</Stack>
 	);
@@ -94,43 +59,20 @@ type GroupBySelectProps = {
 };
 
 const GroupBySelect: FC<GroupBySelectProps> = ({ value, onChange }) => {
+	const translate = useTranslate('common');
+	const options: { value: GroupByOption, label: string }[] = [
+		{ value: 'none', label: translate('module.groupBy.none') },
+		{ value: 'category', label: translate('module.groupBy.category') },
+	];
+
 	return (
-		<Select
-			label={
-				<Text className='capitalize' size={'sm'} fw={700}>
-					Group by
-				</Text>
-			}
-			placeholder='Pick value'
-			data={['Category', 'Status']}
+		<Select<GroupByOption>
+			label={translate('search.groupBy')}
+			data={options}
 			value={value}
-			onChange={(val) => onChange(val as GroupByOption)}
-			clearable
+			allowDeselect={false}
+			onChange={(selected) => selected && onChange(selected)}
 			{...testAttrs(MODULE_FILTER_TEST_ID, 'groupBy')}
-		/>
-	);
-};
-
-
-type SortBySelectProps = {
-	value: SortByOption | null,
-	onChange: (value: SortByOption | null) => void,
-};
-
-const SortBySelect: FC<SortBySelectProps> = ({ value, onChange }) => {
-	return (
-		<Select
-			label={
-				<Text className='capitalize' size={'sm'} fw={700}>
-					Sort by
-				</Text>
-			}
-			placeholder='Pick value'
-			data={['Name', 'Commonly used']}
-			value={value}
-			onChange={(val) => onChange(val as SortByOption | null)}
-			clearable
-			{...testAttrs(MODULE_FILTER_TEST_ID, 'sortBy')}
 		/>
 	);
 };
@@ -140,27 +82,19 @@ const ViewModeSegmentedControl: FC<{
 	viewMode: ModuleViewMode,
 	onViewModeChange: (mode: ModuleViewMode) => void,
 }> = ({ viewMode, onViewModeChange }) => {
+	const translate = useTranslate('common');
 	const segments = [
-
-		{
-			value: 'list',
-			label: (
-				<Center style={{ gap: 10 }}>
-					<IconList size={16} />
-					<span>List</span>
-				</Center>
-			),
-		},
-		{
-			value: 'grid',
-			label: (
-				<Center style={{ gap: 10 }}>
-					<IconLayoutGrid size={16} />
-					<span>Grid</span>
-				</Center>
-			),
-		},
-	];
+		{ value: 'list', icon: <IconList size={16} />, label: translate('datatable.list') },
+		{ value: 'grid', icon: <IconLayoutGrid size={16} />, label: translate('datatable.grid') },
+	].map((segment) => ({
+		value: segment.value,
+		label: (
+			<Center style={{ gap: 10 }}>
+				{segment.icon}
+				<span>{segment.label}</span>
+			</Center>
+		),
+	}));
 
 	return (
 		<SegmentedControl

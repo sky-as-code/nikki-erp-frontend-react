@@ -28,26 +28,12 @@ const microApps: MicroAppMetadata[] = [
 		htmlTag: 'nikkiapp-essential',
 	},
 	{
-		slug: 'authorize',
-		basePath: 'authorize',
-		// Uncomment when mounting as ShadowDOM
-		// bundleUrl: () => import(authorizeBundleUrl),
-		bundleUrl: () => import('@nikkierp/microapp-authorize'),
-		htmlTag: 'nikkiapp-authorize',
-	},
-	{
 		// The slug matches the backend ERP module name, which is what makes `/v1/accounting/...`
 		// and this URL root the same word in both products.
 		slug: 'accounting',
 		basePath: 'accounting',
 		bundleUrl: () => import('@nikkierp/microapp-accounting'),
 		htmlTag: 'nikkiapp-accounting',
-	},
-	{
-		slug: 'drive',
-		basePath: 'drive',
-		bundleUrl: () => import('@nikkierp/microapp-drive'),
-		htmlTag: 'nikkiapp-drive',
 	},
 	{
 		slug: 'inventory',

@@ -7,6 +7,7 @@ import * as c from '../constants';
 import { GroupCommands } from '../features/group/commands';
 import { RoleCommands } from '../features/role/commands';
 import { UserCommands } from '../features/user/commands';
+import { rolePermissionsNode } from '../viewkit/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -39,9 +40,6 @@ function buildRoleListProps() {
 		extraActions: [
 			{ label: 'action.delete', command: RoleCommands.DELETE, supportMultiple: true, requireSelection: true },
 		],
-		fieldRenderers: {
-			is_private: { renderer: 'badge', colorMap: { true: 'orange', false: 'gray' } },
-		},
 	});
 }
 
@@ -61,12 +59,17 @@ function buildRoleDetailProps() {
 			archive: RoleCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildRoleFieldsSection()],
-		childrenNodes: [buildRoleFieldsSection()],
+		childrenNodes: [buildRoleFieldsSection(), buildRolePermissionSection()],
 		relatedResources: buildAssignmentResources(),
+		relatedResourcesNotice: 'role_relatedNotice',
 	});
 }
 
-/** Shared by both form modes: the resource's own fields, as titled blocks. */
+/**
+ * The resource's own fields, as titled blocks, the same on create and update. `org_id` is shown on
+ * neither: `iam_role` opts out of org scoping, so nothing seeds it either, and a new role is
+ * tenant-wide (NULL org).
+ */
 function buildRoleFieldsSection(): ComponentNode {
 	return collapsibleSectionNode({
 		layout: 'formBlocks',
@@ -74,8 +77,8 @@ function buildRoleFieldsSection(): ComponentNode {
 		header: 'form.generalInformation',
 	}, [
 		resourceFormColumnNode({
-			header: 'form.generalInformation',
-			fields: ['name', 'description', 'org_id'],
+			header: 'form.identification',
+			fields: ['name', 'description'],
 		}),
 		resourceFormColumnNode({
 			// Exactly one of these must be set; the backend enforces it via
@@ -94,30 +97,68 @@ function buildRoleFieldsSection(): ComponentNode {
 	]);
 }
 
+/** Below the fields on an existing role only; its grants and revokes are saved with the role's Save. */
+function buildRolePermissionSection(): ComponentNode {
+	return collapsibleSectionNode({
+		translationNs: c.IAM_MODULE,
+		header: 'role_sections_permission',
+	}, [rolePermissionsNode()]);
+}
+
 /**
  * The backend exposes no `/roles/:id/users`; assignment is read through the generic
  * search with the `linked` edge operator, from the principal's side. `roles` is the
- * inverse edge on both iam_user and iam_group.
+ * inverse edge on both iam_user and iam_group. It is written through the role-side
+ * `manage-users` / `manage-groups`, which assert what the principal side asserts.
  */
 function buildAssignmentResources() {
 	return [
 		{
 			label: 'role_sections_assignedUsers',
+			emptyMessage: 'role_assign_emptyUsers',
 			schemaName: c.USER_SCHEMA_NAME,
 			translationNs: c.IAM_MODULE,
 			searchCommand: UserCommands.SEARCH,
 			initialGraph: { if: ['roles', 'linked', '${id}'] },
+			fields: ['avatar_url', 'display_name', 'email'],
+			fieldRenderers: { avatar_url: { renderer: 'avatar', urlField: 'avatar_file_url' } },
 			linkField: 'id',
 			linkRoutePath: 'iam_user',
+			assignment: {
+				...assignmentLock(c.USER_SCHEMA_NAME),
+				pickerSchemaName: c.USER_SCHEMA_NAME,
+				manageCommand: RoleCommands.MANAGE_USERS,
+				newRowPrompt: 'role_assign_newUser',
+				newRowSearchField: 'display_name',
+				btnDeleteLabel: 'common:action.unassign',
+			},
 		},
 		{
 			label: 'role_sections_assignedGroups',
+			emptyMessage: 'role_assign_emptyGroups',
 			schemaName: c.GROUP_SCHEMA_NAME,
 			translationNs: c.IAM_MODULE,
 			searchCommand: GroupCommands.SEARCH,
 			initialGraph: { if: ['roles', 'linked', '${id}'] },
+			fields: ['name'],
 			linkField: 'id',
 			linkRoutePath: 'iam_group',
+			assignment: {
+				...assignmentLock(c.GROUP_SCHEMA_NAME),
+				pickerSchemaName: c.GROUP_SCHEMA_NAME,
+				manageCommand: RoleCommands.MANAGE_GROUPS,
+				newRowPrompt: 'role_assign_newGroup',
+				btnDeleteLabel: 'common:action.unassign',
+			},
 		},
 	];
+}
+
+/** The assert never names an org, so only a tenant grant satisfies it — as on the principal pages. */
+function assignmentLock(principalSchemaName: string) {
+	return {
+		actionCode: 'manage_role_assignments',
+		actionResource: principalSchemaName,
+		actionScope: 'tenant' as const,
+	};
 }

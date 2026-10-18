@@ -4,6 +4,8 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 import { Controller } from 'react-hook-form';
 
+import { fieldErrorText } from './fieldErrors';
+import { useFieldLabelHidden } from './fieldLabelContext';
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
 import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
@@ -37,6 +39,7 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 	const [modalOpened, setModalOpened] = React.useState(false);
 	const fieldAttrs = useFieldTestAttrs(name);
 	const translateAttrs = useFieldPartTestAttrs(name, 'translate');
+	const labelHidden = useFieldLabelHidden();
 
 	if (!fieldData) {
 		return null;
@@ -45,6 +48,9 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 	const defaultValue = (modelValue?.[name] ?? {}) as dyn.ModelSchemaLangJson;
 	const isDisabled = modelLoading || Boolean(inputProps?.disabled);
 	const currentLangShort = i18n.language.split('-')[0].toUpperCase();
+	// With no visible label the language the input edits goes into the hidden one, so a screen
+	// reader announces it; an `aria-label` would lose to the wrapper's `aria-labelledby`.
+	const label = labelHidden ? `${t(fieldData.label)} (${i18n.language})` : t(fieldData.label);
 
 	const langButton = (
 		<ActionIcon
@@ -75,16 +81,17 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 					<>
 						<BaseFieldWrapper
 							inputId={inputId}
-							label={t(fieldData.label)}
+							label={label}
 							// Uncomment to show sub-labels
 							// description={t(fieldData.description)}
 							isRequired={fieldData.isRequired}
-							error={t(fieldData.error as any)}
+							error={fieldErrorText(t, fieldData)}
 						>
 							<Input
 								id={inputId}
 								value={preview}
 								onChange={handleInputChange}
+								onBlur={field.onBlur}
 								disabled={isDisabled}
 								placeholder={t(fieldData.placeholder)}
 								rightSectionPointerEvents='all'
@@ -98,7 +105,7 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 						<MultiLangInputModal
 							opened={modalOpened}
 							onClose={() => setModalOpened(false)}
-							onSave={val => field.onChange(val)}
+							onSave={val => saveTranslations(field, val)}
 							title={`Translate: ${name}`}
 							value={langJson}
 							supportedLngs={supportedLngs}
@@ -109,4 +116,10 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 			}}
 		/>
 	);
+}
+
+/** The modal's save is the user leaving the field, so the new value is validated at once. */
+function saveTranslations(field: { onChange: (value: unknown) => void, onBlur: () => void }, value: unknown): void {
+	field.onChange(value);
+	field.onBlur();
 }

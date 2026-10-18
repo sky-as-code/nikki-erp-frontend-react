@@ -1,9 +1,9 @@
-import { defineTemplateRef } from '@nikkierp/viewengine/metadata';
+import { defineComponent, defineTemplateRef } from '@nikkierp/viewengine/metadata';
 import { z } from 'zod';
 
-import { ROLE_ASSIGNMENT_TEMPLATE } from './ids';
+import { ROLE_ASSIGNMENT_TEMPLATE, ROLE_PERMISSIONS } from './ids';
 
-import type { TemplateRef } from '@nikkierp/viewengine/metadata';
+import type { ComponentNode, TemplateRef } from '@nikkierp/viewengine/metadata';
 
 
 /**
@@ -43,6 +43,14 @@ export type RoleAssignmentPropsInput = z.input<typeof roleAssignmentPropsSchema>
 
 export function roleAssignmentProps(input: RoleAssignmentPropsInput): TemplateRef<RoleAssignmentProps> {
 	return defineTemplateRef(ROLE_ASSIGNMENT_TEMPLATE, roleAssignmentPropsSchema.parse(input));
+}
+
+/**
+ * The role detail's Permission section. It belongs in the update form's `childrenNodes` only: a role
+ * being created has no id to grant against.
+ */
+export function rolePermissionsNode(): ComponentNode {
+	return defineComponent({ component: ROLE_PERMISSIONS });
 }
 
 export * from './ids';

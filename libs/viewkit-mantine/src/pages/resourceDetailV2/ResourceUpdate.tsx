@@ -6,12 +6,15 @@ import React from 'react';
 import { useParams } from 'react-router';
 
 import { toV2FormNodes } from './formNodes';
+import { useRecordLoadErrors } from './loadErrors';
+import { HideWhenNotFound, ResourceNotFound } from './ResourceNotFound';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
 import { useEdgeLabelFields } from '../../data/useEdgeLabelFields';
 import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_V2 } from '../../ids';
-import { useUpdateAfterSave } from '../resourceDetail/afterSave';
+import { useUpdateAfterSave, useUpdatePayloadContributors } from '../resourceDetail/afterSave';
 import { useResourceDetailContext } from '../resourceDetail/ResourceDetailProvider';
 
+import type { ResourceThumbnailSpec } from '../../components/resourceThumbnail/props';
 import type {
 	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
@@ -27,18 +30,25 @@ export type ResourceUpdateProps = {
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	backLinkTitle?: LinkSpec,
+	thumbnail?: ResourceThumbnailSpec,
 	childrenNodes?: ComponentNode[],
+	/**
+	 * Page sections rendered after the update tree, inside its context, and only while the record
+	 * exists: Not Found replaces the whole page, not just the header and form.
+	 */
+	children?: React.ReactNode,
 };
 
 /**
  * Provides {@link ResourceUpdateContext} and renders the update component tree
  * (`resource_detail__header` + `resource_form` wrapping the page's `childrenNodes`) through the
- * component registry.
+ * component registry, followed by `children` while the record exists.
  */
-export function ResourceUpdate(props: ResourceUpdateProps): React.ReactNode {
+export function ResourceUpdate({ children, ...props }: ResourceUpdateProps): React.ReactNode {
 	return (
 		<ResourceUpdateProvider {...props}>
 			<ResourceUpdateContent />
+			<HideWhenNotFound>{children}</HideWhenNotFound>
 		</ResourceUpdateProvider>
 	);
 }
@@ -79,8 +89,11 @@ export function ResourceUpdateProvider(
 	React.useEffect(() => { refresh(); }, [refresh]);
 
 	const resource = getByIdCmd.data?.item as Record<string, unknown> | undefined;
+	const notFound = useRecordLoadErrors(getByIdCmd.clientErrors);
 	const afterSave = useUpdateAfterSave(id, resource, refresh);
 	const runAfterUpdate = afterSave.runAfterUpdate;
+	const payloadContributors = useUpdatePayloadContributors();
+	const collectContributions = payloadContributors.collect;
 
 	/**
 	 * Refreshes only on success. A failed save must NOT re-fetch: that would replace
@@ -89,16 +102,18 @@ export function ResourceUpdateProvider(
 	 */
 	const onSubmit = React.useCallback(async (data: Record<string, any>): Promise<boolean> => {
 		if (!commands.update) return false;
-		const response = await publishUpdate(data);
+		const contributions = collectContributions();
+		const response = await publishUpdate({ ...data, ...contributions.payload });
 		const succeeded = response.error == null && (response.result?.clientErrors.length ?? 0) === 0;
 		if (succeeded) {
+			contributions.notifySaved();
 			await runAfterUpdate(response.result?.data?.etag, data);
 			refresh();
 		}
 		// Reported back so the action bar can leave edit mode only on success: a rejected save has
 		// to keep the user's input on screen, since that is exactly what they need to correct.
 		return succeeded;
-	}, [publishUpdate, commands.update, refresh, runAfterUpdate]);
+	}, [publishUpdate, commands.update, refresh, runAfterUpdate, collectContributions]);
 
 	const value = React.useMemo(
 		(): ResourceUpdateContextValue => ({
@@ -112,24 +127,28 @@ export function ResourceUpdateProvider(
 			saveClientErrors: updateCmd.clientErrors,
 			saveError: updateCmd.error,
 			loadError: getByIdCmd.error,
+			notFound,
 			allStatuses: props.allStatuses,
 			currentStatus: props.currentStatus,
 			contextualActions: props.contextualActions,
 			titleLvl1: props.titleLvl1,
 			titleLvl2: props.titleLvl2,
 			backLinkTitle: props.backLinkTitle,
+			thumbnail: props.thumbnail,
 			childrenNodes: props.childrenNodes,
 			registerAfterSave: afterSave.register,
 			hasPendingAfterSave: afterSave.hasPending,
 			submitAfterSaveOnly: afterSave.submitAfterSaveOnly,
+			registerUpdatePayload: payloadContributors.register,
+			hasPendingUpdatePayload: payloadContributors.hasPending,
 		}),
 		[
 			commands, resource, edgeLabels.destSchemas, getByIdCmd.isPending, updateCmd.isPending,
-			refresh, onSubmit,
-			updateCmd.clientErrors, updateCmd.error, getByIdCmd.error,
+			refresh, onSubmit, updateCmd.clientErrors, updateCmd.error, getByIdCmd.error, notFound,
 			props.allStatuses, props.currentStatus, props.contextualActions,
-			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.childrenNodes,
+			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.thumbnail, props.childrenNodes,
 			afterSave.register, afterSave.hasPending, afterSave.isRunning, afterSave.submitAfterSaveOnly,
+			payloadContributors.register, payloadContributors.hasPending,
 		],
 	);
 
@@ -154,6 +173,9 @@ function ResourceUpdateContent(): React.ReactNode {
 	if (!modelSchema || !context.commands.getById) {
 		return null;
 	}
+	if (context.notFound) {
+		return <ResourceNotFound />;
+	}
 
 	return <MetaComponent node={nodes} />;
 }
@@ -173,6 +195,7 @@ function buildUpdateNodes(context: ResourceUpdateContextValue): ComponentNode[] 
 						titleLvl1: context.titleLvl1,
 						titleLvl2: context.titleLvl2,
 						backLinkTitle: context.backLinkTitle,
+						thumbnail: context.thumbnail,
 					},
 				}),
 				// Children of the SAME form, not a second `resource_form` of their own: a page

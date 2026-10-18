@@ -6,7 +6,25 @@ import { IAM_MODULE, ROLE_SCHEMA_NAME } from '../../constants';
 import { identityStore } from '../../store';
 
 
-/** CRUD over `iam_role`, plus the entitlement many-to-many endpoint. */
+export type RolePrincipalsAction = 'manage-users' | 'manage-groups';
+
+/**
+ * `manageM2m` appends its path to the schema's base path (`v1/iam/roles`), so the role id goes into
+ * the path: the routes are `roles/:role_id/manage-*`, not `roles/manage-*`. Empty lists are dropped
+ * so a remove-only call sends no `add`.
+ */
+export function toManagePrincipalsCall(request: t.ManageRolePrincipalsRequest, action: RolePrincipalsAction) {
+	const body: { add?: string[], remove?: string[] } = {};
+	if (request.add?.length) {
+		body.add = request.add;
+	}
+	if (request.remove?.length) {
+		body.remove = request.remove;
+	}
+	return { path: `${encodeURIComponent(request.id)}/${action}`, body };
+}
+
+/** CRUD over `iam_role`, plus its many-to-many endpoints (users, groups). */
 @storeService('RoleService', identityStore)
 export class RoleService extends StoreCrudServiceBase {
 	public constructor() {
@@ -14,10 +32,24 @@ export class RoleService extends StoreCrudServiceBase {
 	}
 
 	@storeAsyncMethod
-	public manageEntitlements(
-		request: t.ManageRoleEntitlementsRequest,
-	): Promise<ServiceResult<t.ManageRoleEntitlementsResponse>> {
-		return this.manageM2m(request, 'manage-entitlements');
+	public manageUsers(
+		request: t.ManageRolePrincipalsRequest,
+	): Promise<ServiceResult<t.ManageRolePrincipalsResponse>> {
+		return this.managePrincipals(request, 'manage-users');
+	}
+
+	@storeAsyncMethod
+	public manageGroups(
+		request: t.ManageRolePrincipalsRequest,
+	): Promise<ServiceResult<t.ManageRolePrincipalsResponse>> {
+		return this.managePrincipals(request, 'manage-groups');
+	}
+
+	private managePrincipals(
+		request: t.ManageRolePrincipalsRequest, action: RolePrincipalsAction,
+	): Promise<ServiceResult<t.ManageRolePrincipalsResponse>> {
+		const { path, body } = toManagePrincipalsCall(request, action);
+		return this.manageM2m(body, path);
 	}
 }
 

@@ -1,4 +1,6 @@
-import { ActionIcon, Grid, Input, NumberInput, Select, Switch, Text, InputProps, NumberInputProps } from '@mantine/core';
+import {
+	ActionIcon, Grid, Input, NumberInput, Select, Switch, Text, VisuallyHidden, InputProps, NumberInputProps,
+} from '@mantine/core';
 import { DateInput, DateInputProps, DateTimePickerProps } from '@mantine/dates';
 import { useId } from '@mantine/hooks';
 import * as dyn from '@nikkierp/common/dynamicModel';
@@ -7,6 +9,8 @@ import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
 import { DateTimeInputField, ReadOnlyTextField, TimeInputField } from './dateTimeFields';
+import { fieldErrorText } from './fieldErrors';
+import { FieldLabelProvider, useFieldLabelHidden } from './fieldLabelContext';
 import { useFieldData, useFormField, useFormStyle } from './formContext';
 import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
 import { LangJsonField } from './LangJsonField';
@@ -21,9 +25,25 @@ export type AutoFieldProps = {
 	htmlProps?: FilteredInputHTMLAttributes,
 	ref?: React.RefObject<any>,
 	translate?: TranslateFn,
+	/**
+	 * Hides the label row (and description) while keeping the label for screen readers; errors
+	 * still show below the input. Unset inherits an enclosing `FieldLabelProvider`, else shown.
+	 */
+	labelHidden?: boolean,
 };
 
 export function AutoField(props: AutoFieldProps) {
+	if (props.labelHidden === undefined) {
+		return <AutoFieldControl {...props} />;
+	}
+	return (
+		<FieldLabelProvider labelHidden={props.labelHidden}>
+			<AutoFieldControl {...props} />
+		</FieldLabelProvider>
+	);
+}
+
+function AutoFieldControl(props: AutoFieldProps) {
 	const { getFieldDef, localize, formVariant } = useFormField();
 	const fieldDef = getFieldDef(props.name);
 	const ref = React.useRef<HTMLInputElement | null>(null);
@@ -273,21 +293,21 @@ export function BaseFieldWrapper({
 	inputId, label, description, isRequired, error, children, ariaProps,
 }: BaseFieldWrapperProps) {
 	const formStyle = useFormStyle();
+	const labelHidden = useFieldLabelHidden();
 	const twoColumnLayout = formStyle?.layout === 'twocol';
 	const descriptionId = useId();
 	const errorId = useId();
+	const shownDescription = labelHidden ? undefined : description;
 
-	// Build aria-describedby from description and error
 	const ariaDescribedBy = React.useMemo(() => {
 		const ids: string[] = [];
-		if (description) ids.push(descriptionId);
+		if (shownDescription) ids.push(descriptionId);
 		if (error) ids.push(errorId);
 		return ids.length > 0 ? ids.join(' ') : undefined;
-	}, [description, error, descriptionId, errorId]);
+	}, [shownDescription, error, descriptionId, errorId]);
 
 	const labelId = `${inputId}-label`;
 
-	// Build aria attributes object
 	const defaultAriaProps = React.useMemo(() => ({
 		'aria-labelledby': labelId,
 		'aria-describedby': ariaDescribedBy,
@@ -295,22 +315,39 @@ export function BaseFieldWrapper({
 		'aria-invalid': error ? true : undefined,
 	}), [labelId, ariaDescribedBy, isRequired, error]);
 
+	const fieldLabel = <FieldLabel inputId={inputId} labelId={labelId} label={label} isRequired={isRequired} />;
+	const control = (
+		<>
+			{React.cloneElement(children as React.ReactElement, {
+				...(ariaProps || defaultAriaProps),
+			})}
+			{error && <Input.Error id={errorId}>{error}</Input.Error>}
+		</>
+	);
+	if (labelHidden) {
+		return <div><VisuallyHidden>{fieldLabel}</VisuallyHidden>{control}</div>;
+	}
 	return (
 		<Grid grow gap={0}>
 			<Grid.Col span={twoColumnLayout ? 4 : 12}>
-				<Input.Label htmlFor={inputId} id={labelId}>
-					{label}
-					{isRequired && <Text component='span' c='red' ml={4}>*</Text>}
-				</Input.Label>
-				{description && <Input.Description id={descriptionId}>{description}</Input.Description>}
+				{fieldLabel}
+				{shownDescription && <Input.Description id={descriptionId}>{shownDescription}</Input.Description>}
 			</Grid.Col>
 			<Grid.Col span={twoColumnLayout ? 8 : 12}>
-				{React.cloneElement(children as React.ReactElement, {
-					...(ariaProps || defaultAriaProps),
-				})}
-				{error && <Input.Error id={errorId}>{error}</Input.Error>}
+				{control}
 			</Grid.Col>
 		</Grid>
+	);
+}
+
+type FieldLabelProps = { inputId: string, labelId: string, label: string, isRequired: boolean };
+
+function FieldLabel({ inputId, labelId, label, isRequired }: FieldLabelProps) {
+	return (
+		<Input.Label htmlFor={inputId} id={labelId}>
+			{label}
+			{isRequired && <Text component='span' c='red' ml={4}>*</Text>}
+		</Input.Label>
 	);
 }
 
@@ -355,7 +392,7 @@ export function TextInputField(props: TextInputFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Input
 				id={inputId}
@@ -411,7 +448,7 @@ export function PasswordInputField(props: PasswordInputFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Input
 				id={inputId}
@@ -469,7 +506,7 @@ export function NumberInputField(props: NumberInputFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -480,7 +517,7 @@ export function NumberInputField(props: NumberInputFieldProps) {
 					return (
 						<NumberInput
 							id={inputId}
-							error={t(fieldData.error as any)}
+							error={fieldErrorText(t, fieldData)}
 							value={typeof value === 'number' ? value : undefined}
 							onChange={(val) => field.onChange(typeof val === 'number' ? val : undefined)}
 							onBlur={field.onBlur}
@@ -538,7 +575,7 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -549,7 +586,7 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 					return (
 						<NumberInput
 							id={inputId}
-							error={t(fieldData.error as any)}
+							error={fieldErrorText(t, fieldData)}
 							value={value ?? ''}
 							// Mantine hands back a string while typing and a number once the value
 							// parses. Normalising to string keeps precision the number never had.
@@ -599,7 +636,7 @@ export function DateInputField(props: DateInputFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -624,6 +661,7 @@ export function DateInputField(props: DateInputFieldProps) {
 							error={fieldData.error}
 							value={dateValue}
 							onChange={(date) => field.onChange(date || undefined)}
+							onBlur={field.onBlur}
 							disabled={modelLoading}
 							placeholder={t(fieldData.placeholder)}
 							ref={ref}
@@ -670,7 +708,7 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -689,8 +727,11 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 								// Transform null or empty string to undefined for optional enum
 								field.onChange(val === null || val === '' ? undefined : val);
 							}}
+							onBlur={field.onBlur}
 							disabled={modelLoading}
 							placeholder={t(fieldData.placeholder)}
+							// A clear lands as undefined; the update payload turns a cleared field into null.
+							clearable={!fieldData.isRequired}
 							ref={ref}
 							{...htmlProps}
 							{...(defaultInputProps as SelectProps)}
@@ -789,12 +830,13 @@ export function BooleanField(props: BooleanFieldProps) {
 					inputId={inputId}
 					label={t(fieldData.label)}
 					isRequired={fieldData.isRequired}
-					error={fieldData.error ? t(fieldData.error as any) : undefined}
+					error={fieldErrorText(t, fieldData)}
 				>
 					<Switch
 						id={inputId}
 						checked={field.value !== undefined ? Boolean(field.value) : Boolean(defaultValue)}
 						onChange={(e) => field.onChange(e.currentTarget.checked)}
+						onBlur={field.onBlur}
 						disabled={modelLoading || inputProps?.disabled}
 						size='md'
 						{...fieldAttrs}

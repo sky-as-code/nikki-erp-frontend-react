@@ -1,4 +1,4 @@
-import { MoneyFieldRenderer, TranslatedFieldRenderer } from '@nikkierp/ui/components/ExcelDataTable';
+import { BadgeFieldRenderer, MoneyFieldRenderer, TranslatedFieldRenderer } from '@nikkierp/ui/components/ExcelDataTable';
 import { z } from 'zod';
 
 import {
@@ -6,8 +6,8 @@ import {
 	FIELD_RENDERER_MONEY, FIELD_RENDERER_TRANSLATED,
 } from '../ids';
 import { attributePillsSpecSchema, AttributePillsFieldRenderer } from './attributePills';
-import { AvatarFieldRenderer } from './avatar';
-import { badgeSpecSchema, BadgeFieldRenderer } from './badge';
+import { AvatarFieldRenderer, avatarSpecSchema } from './avatar';
+import { badgeSpecSchema } from './badge';
 
 import type { IViewRegistry } from '@nikkierp/viewengine/core';
 
@@ -34,7 +34,10 @@ export const moneySpecSchema = z.object({
  * page metadata stays plain JSON.
  */
 export function registerFieldRenderers(registry: IViewRegistry): void {
-	registry.registerFieldRenderer(FIELD_RENDERER_AVATAR, () => new AvatarFieldRenderer());
+	registry.registerFieldRenderer(FIELD_RENDERER_AVATAR, (spec) => {
+		const { urlField } = avatarSpecSchema.parse(spec);
+		return new AvatarFieldRenderer(urlField);
+	});
 
 	registry.registerFieldRenderer(FIELD_RENDERER_BADGE, (spec) => {
 		const { colorMap, prefix } = badgeSpecSchema.parse(spec);

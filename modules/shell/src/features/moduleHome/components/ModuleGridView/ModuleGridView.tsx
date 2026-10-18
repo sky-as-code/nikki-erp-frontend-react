@@ -1,45 +1,19 @@
-import { Center, SimpleGrid, Stack, Text } from '@mantine/core';
-import { IconBoxOff } from '@tabler/icons-react';
-import { FC, useMemo } from 'react';
+import { SimpleGrid } from '@mantine/core';
+import { FC } from 'react';
 
 import { ModuleCard } from '../ModuleCard';
+import { ModuleGroups } from '../ModuleGroups/ModuleGroups';
+
+import type { ModuleGroup } from '../../moduleHomeModel';
 
 
-export const ModuleGridView: FC<{ modules: any[] }> = ({ modules }) => {
-	const allModules = useMemo(
-		() => modules.flatMap((moduleByCategory: any) =>
-			moduleByCategory.modules.map((module: any) => ({
-				...module,
-				categoryLabel: moduleByCategory.label,
-			})),
-		),
-		[modules],
-	);
-
-	if (allModules.length === 0) {
-		return (
-			<Center h={'100%'} p={'xl'}>
-				<Stack align='center' gap='md'>
-					<IconBoxOff size={64} stroke={1.5} style={{ color: 'var(--mantine-color-gray-5)' }} />
-					<Text c='dimmed' size='lg' fw={500}>
-						No modules found
-					</Text>
-					<Text c='dimmed' size='sm' ta='center'>
-						Try adjusting your search or filter criteria
-					</Text>
-				</Stack>
-			</Center>
-		);
-	}
-
-	return (
-		<SimpleGrid
-			cols={{ base: 3, xs: 4, sm: 5, md: 6}}
-			spacing={3}
-		>
-			{allModules.map((module: any) => (
-				<ModuleCard key={`${module.categoryLabel}-${module.slug}`} module={module} />
-			))}
-		</SimpleGrid>
-	);
-};
+export const ModuleGridView: FC<{ groups: ModuleGroup[] }> = ({ groups }) => (
+	<ModuleGroups
+		groups={groups}
+		renderGroup={(group) => (
+			<SimpleGrid cols={{ base: 3, xs: 4, sm: 5, md: 6 }} spacing={3}>
+				{group.modules.map((module) => <ModuleCard key={module.slug} module={module} />)}
+			</SimpleGrid>
+		)}
+	/>
+);

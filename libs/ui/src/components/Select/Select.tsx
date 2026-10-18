@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import React from 'react';
 
 import classes from './Select.module.css';
+import { contentWidthComboboxProps, SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
 
 import type { SelectProps as MantineSelectProps } from '@mantine/core';
 
@@ -26,7 +27,8 @@ function mergeClassNames(classNames: SelectProps['classNames']): SelectProps['cl
  *
  * Sized to match {@link Input} exactly — same `size='sm'` typography, same `--input-height-xs`
  * box — because the two sit side by side in filter rows and forms, where a half-step difference
- * in height between a text box and a dropdown is the kind of thing that reads as a bug.
+ * in height between a text box and a dropdown is the kind of thing that reads as a bug. A caller
+ * passing its own `size` gets that size's own height, again like {@link Input}.
  *
  * The dropdown is portalled and bottom-start aligned by default: a select inside a scrolling,
  * height-capped pane would otherwise clip its own menu against the pane's overflow.
@@ -34,12 +36,14 @@ function mergeClassNames(classNames: SelectProps['classNames']): SelectProps['cl
 export function Select<Value extends string = string>(
 	{ size, style, classNames, comboboxProps, ...rest }: SelectProps<Value>,
 ): React.ReactElement {
+	const { contentWidthDropdown } = React.useContext(SelectDefaultsContext);
+	const widthProps = contentWidthDropdown && comboboxProps?.width === undefined ? contentWidthComboboxProps : {};
 	return (
 		<MantineSelect
 			size={size ?? 'sm'}
 			style={style}
-			classNames={mergeClassNames(classNames)}
-			comboboxProps={{ ...defaultComboboxProps, ...comboboxProps }}
+			classNames={size ? classNames : mergeClassNames(classNames)}
+			comboboxProps={{ ...defaultComboboxProps, ...widthProps, ...comboboxProps }}
 			{...rest as SelectProps<Value>}
 		/>
 	);

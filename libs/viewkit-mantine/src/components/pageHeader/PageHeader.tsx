@@ -46,6 +46,8 @@ export type PageHeaderViewProps = PageHeaderProps & Partial<ComponentAttributes>
 	actions?: React.ReactNode,
 	/** Rendered flush right, opposite the titles. */
 	trailing?: React.ReactNode,
+	/** Rendered left of the titles, e.g. the record's photo. */
+	leading?: React.ReactNode,
 	/**
 	 * Space below the title row and below the actions row, for a page whose `PageContainer` has no
 	 * gap of its own. A margin, not padding: the title row is the pinning sentinel and the actions
@@ -70,7 +72,7 @@ export type PageHeaderViewProps = PageHeaderProps & Partial<ComponentAttributes>
  * there is anything left to scroll.
  */
 export function PageHeader({
-	titleLvl1, titleLvl2, backLinkTitle, actions, trailing, rowSpacing, ...attrs
+	titleLvl1, titleLvl2, backLinkTitle, actions, trailing, leading, rowSpacing, ...attrs
 }: PageHeaderViewProps): React.ReactNode {
 	const context = usePageHeader();
 	const hasTitleRow = Boolean(backLinkTitle) || Boolean(titleLvl1);
@@ -85,18 +87,21 @@ export function PageHeader({
 				gap={4} justify='space-between' align='flex-start' wrap='nowrap' className='w-full' mb={rowSpacing}
 				{...attrs}
 			>
-				<Stack gap={4}>
-					{hasTitleRow ? (
-						<Group gap='xs' align='center'>
-							{backLinkTitle ? <TitleLink spec={backLinkTitle} context={context} /> : null}
-							{backLinkTitle && titleLvl1 ? <Text c='dimmed'>{'/'}</Text> : null}
-							{titleLvl1 ? (
-								<Title order={3}><TitleText spec={titleLvl1} context={context} /></Title>
-							) : null}
-						</Group>
-					) : null}
-					{titleLvl2 ? <Text><TitleText spec={titleLvl2} context={context} /></Text> : null}
-				</Stack>
+				<Group gap='md' align='center' wrap='nowrap'>
+					{leading}
+					<Stack gap={4}>
+						{hasTitleRow ? (
+							<Group gap='xs' align='center'>
+								{backLinkTitle ? <TitleLink spec={backLinkTitle} context={context} /> : null}
+								{backLinkTitle && titleLvl1 ? <Text c='dimmed'>{'/'}</Text> : null}
+								{titleLvl1 ? (
+									<Title order={3}><TitleText spec={titleLvl1} context={context} /></Title>
+								) : null}
+							</Group>
+						) : null}
+						{titleLvl2 ? <Text><TitleText spec={titleLvl2} context={context} /></Text> : null}
+					</Stack>
+				</Group>
 				{trailing}
 			</Group>
 			{actions ? (

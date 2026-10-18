@@ -13,14 +13,14 @@ import { roleAssignmentProps } from '../viewkit/props';
  */
 export function buildRoleAssignmentPages(): PageNode[] {
 	return [
-		buildPage('users/:id/roles', {
+		buildPage('iam_user/:id/roles', {
 			principalSchemaName: c.USER_SCHEMA_NAME,
 			principalDisplayField: 'display_name',
 			getPrincipalCommand: UserCommands.GET_BY_ID,
 			assignedRolesCommand: UserCommands.SEARCH_ASSIGNED_ROLES,
 			saveCommand: UserCommands.MANAGE_ROLE_ASSIGNMENTS,
 		}),
-		buildPage('groups/:id/roles', {
+		buildPage('iam_group/:id/roles', {
 			principalSchemaName: c.GROUP_SCHEMA_NAME,
 			principalDisplayField: 'name',
 			getPrincipalCommand: GroupCommands.GET_BY_ID,
@@ -45,7 +45,7 @@ function buildPage(routePath: string, principal: PrincipalConfig): PageNode {
 		titleKey: 'assignment.rolesOf',
 		roleSearchCommand: RoleCommands.SEARCH,
 		describeCommand: RoleCommands.DESCRIBE,
-		// Up one URL segment from `{users|groups}/:id/roles`, i.e. back to the detail page.
+		// Up one URL segment from `{iam_user|iam_group}/:id/roles`, i.e. back to the detail page.
 		// `ViewEngineRouter` registers every page as its own flat route, so React Router's
 		// default route-relative `'..'` would pop the whole route and land on the module root;
 		// the template navigates with `{ relative: 'path' }` instead.

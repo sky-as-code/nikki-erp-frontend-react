@@ -2,6 +2,7 @@ import {
 	Box, Button, Group, Modal, Select, Stack, Tabs, Text,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
+import { escapeHtml } from '@nikkierp/common/utils';
 import { IconSettings } from '@tabler/icons-react';
 import React from 'react';
 
@@ -453,12 +454,6 @@ function moveRow(items: SearchItem[], fromIndex: number, toIndex: number): Searc
 	const [moved] = next.splice(fromIndex, 1);
 	next.splice(toIndex, 0, moved);
 	return next;
-}
-
-function escapeHtml(value: string): string {
-	return value
-		.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 }
 
 function buildClipboardPayload(rows: string[][]) {

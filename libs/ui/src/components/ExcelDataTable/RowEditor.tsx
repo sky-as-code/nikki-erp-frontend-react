@@ -1,16 +1,20 @@
-import { ActionIcon, Group, Table as MantineTable, Text } from '@mantine/core';
+import { Table as MantineTable, Text } from '@mantine/core';
 import { ClientErrorItem } from '@nikkierp/common/types';
-import { IconCheck, IconX } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 
-import { getCellText } from './cells/cellValues';
+import { CellContent } from './cells/CellContent';
 import { useExcelDataTableContext } from './context';
 import { buildRowUpdatePayload, isRowEditableField } from './editModel';
+import classes from './ExcelDataTable.module.css';
+import { EditRowActions } from './rowActions';
+import { readRowKey } from './rowKeys';
+import { RowLoading } from './RowLoading';
+import { ROW_SELECT_DEFAULTS } from './rowSelectDefaults';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
 import { AutoField, CrudFormProvider } from '../form';
-import classes from './ExcelDataTable.module.css';
+import { SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
 
 import type { RowUpdateRefusal } from './editModel';
 import type { RowId, SearchItem } from './types';
@@ -33,8 +37,8 @@ const REFUSAL_TEXT: Record<Exclude<RowUpdateRefusal, 'unchanged'>, string> = {
 
 /**
  * The row in inline update mode: an input per editable column, text for the rest, and the
- * save/discard pair in the gray cell. It hosts its own form runtime, seeded from the row, so the
- * detail form's field inputs and validation apply unchanged. Selection is frozen while it lives.
+ * save/discard pair in the filler cell. It hosts its own form runtime, seeded from the row, so the
+ * detail form's field inputs and validation apply unchanged. Selecting another row discards it.
  */
 export function EditingRow({ item, rowId, rowNumber }: EditingRowProps) {
 	const { modelSchema } = useExcelDataTableContext();
@@ -51,9 +55,16 @@ export function EditingRow({ item, rowId, rowNumber }: EditingRowProps) {
 			modelValue={item}
 			isSubmitting={submit.isSubmitting}
 			onSubmit={submit.onSubmit}
+			loadingFallback={<RowLoading />}
 		>
 			{runtime => (
-				<EditingCells item={item} rowId={rowId} rowNumber={rowNumber} runtime={runtime} submit={submit} />
+				<EditingCells
+					item={item}
+					rowId={rowId}
+					rowNumber={rowNumber}
+					runtime={runtime}
+					submit={submit}
+				/>
 			)}
 		</CrudFormProvider>
 	);
@@ -61,10 +72,12 @@ export function EditingRow({ item, rowId, rowNumber }: EditingRowProps) {
 
 type RowSubmit = ReturnType<typeof useRowSubmit>;
 
-/** Publishes the partial update; success ends edit mode and refreshes, failure keeps the inputs. */
+/**
+ * Publishes the partial update, or hands it to `onUpdated` when no command is given; success ends
+ * edit mode and refreshes, failure keeps the inputs.
+ */
 function useRowSubmit(item: SearchItem) {
-	const { updateCommand, editing, refresh, modelSchema, fields } = useExcelDataTableContext();
-	const commandBus = useCommandBus();
+	const { editing, refresh, modelSchema, fields } = useExcelDataTableContext();
 	const [isSubmitting, setSubmitting] = React.useState(false);
 	const [errors, setErrors] = React.useState<ClientErrorItem[]>([]);
 	// Read by `save` right after the submit resolves, before the state write has re-rendered.
@@ -72,23 +85,37 @@ function useRowSubmit(item: SearchItem) {
 	const editableFields = React.useMemo(
 		() => fields.filter(field => isRowEditableField(modelSchema, field)), [fields, modelSchema],
 	);
+	const write = useRowUpdateWrite();
 	const onSubmit = React.useCallback(async (data: Record<string, unknown>): Promise<boolean> => {
-		if (!updateCommand) {
-			return false;
-		}
 		setSubmitting(true);
-		const response = await commandBus.publish<unknown>({ name: updateCommand, payload: data });
+		const clientErrors = await write(data);
 		setSubmitting(false);
-		const clientErrors = response.result?.clientErrors ?? [];
-		lastErrorsRef.current = clientErrors;
-		if (response.error != null || clientErrors.length > 0) {
+		lastErrorsRef.current = clientErrors ?? [];
+		if (clientErrors) {
 			return false;
 		}
 		editing.stop();
 		refresh();
 		return true;
-	}, [commandBus, editing, refresh, updateCommand]);
+	}, [editing, refresh, write]);
 	return { isSubmitting, errors, setErrors, lastErrorsRef, editableFields, onSubmit, item };
+}
+
+/** Resolves the write's client errors, `[]` for a failure without any, or `null` on success. */
+function useRowUpdateWrite(): (data: Record<string, unknown>) => Promise<ClientErrorItem[] | null> {
+	const { sinks } = useExcelDataTableContext();
+	const commandBus = useCommandBus();
+	return React.useCallback(async (data) => {
+		if (sinks.updateCommand) {
+			const response = await commandBus.publish<unknown>({ name: sinks.updateCommand, payload: data });
+			const clientErrors = response.result?.clientErrors ?? [];
+			return response.error != null || clientErrors.length > 0 ? clientErrors : null;
+		}
+		if (sinks.onUpdated) {
+			return (await sinks.onUpdated(data)) === false ? [] : null;
+		}
+		return [];
+	}, [commandBus, sinks]);
 }
 
 type EditingCellsProps = EditingRowProps & { runtime: FormProviderRenderProps, submit: RowSubmit };
@@ -112,7 +139,7 @@ function useRowSave({ item, runtime, submit, editing, t }: RowSaveDeps): () => P
 		const dirty = dirtyFields as Record<string, unknown>;
 		let refusal: RowUpdateRefusal | undefined;
 		const ok = await runtime.handleSubmitWithResult((formData) => {
-			const built = buildRowUpdatePayload(formData, dirty, item, submit.editableFields);
+			const built = buildRowUpdatePayload(formData, dirty, item, submit.editableFields, runtime.form.getValues());
 			refusal = built.refusal;
 			return built.payload;
 		})();
@@ -156,71 +183,75 @@ function useFirstInputFocus(rowId: RowId): React.RefObject<HTMLTableRowElement |
 
 function EditingCells({ item, rowId, rowNumber, runtime, submit }: EditingCellsProps) {
 	const t = useTranslate('common');
-	const { fields, data, editing, isLoading, tid } = useExcelDataTableContext();
+	const { fields, editing, isLoading, indexColumnVisible, tid } = useExcelDataTableContext();
 	const editable = new Set(submit.editableFields);
 	const disabled = isLoading || submit.isSubmitting;
-
 	const save = useRowSave({ item, runtime, submit, editing, t });
 	const rowRef = useFirstInputFocus(rowId);
+	const onKeyDown = useEditingRowKeys(disabled, save, editing.stop);
+	return (
+		<SelectDefaultsContext.Provider value={ROW_SELECT_DEFAULTS}>
+			<MantineTable.Tr
+				ref={rowRef}
+				tabIndex={-1}
+				onKeyDown={onKeyDown}
+				aria-label={`Editing row ${rowNumber}`}
+				{...tid.row(rowId)}
+			>
+				{indexColumnVisible ? (
+					<MantineTable.Td className={clsx('text-center align-middle', classes.rowNumberCell)}>
+						{rowNumber}
+					</MantineTable.Td>
+				) : null}
+				{fields.map(field => (
+					<MantineTable.Td
+						key={field}
+						className={classes.editingCell}
+						{...tid.rowEditInput(rowId, field)}
+					>
+						{editable.has(field) ? (
+							<fieldset disabled={disabled} className='m-0 p-0 border-0 min-w-0'>
+								<AutoField name={field} labelHidden />
+							</fieldset>
+						) : <CellContent item={item} field={field} />}
+					</MantineTable.Td>
+				))}
+				<MantineTable.Td className='align-middle'>
+					<EditRowActions
+						mode='update'
+						busy={disabled}
+						onConfirm={() => void save()}
+						onDiscard={editing.stop}
+						confirmTestId={tid.rowEditSave(rowId)}
+						discardTestId={tid.rowEditDiscard(rowId)}
+					/>
+					<RowErrors errors={submit.errors.filter(error => !error.field)} />
+				</MantineTable.Td>
+			</MantineTable.Tr>
+		</SelectDefaultsContext.Provider>
+	);
+}
 
-	const onKeyDown = (event: React.KeyboardEvent<HTMLTableRowElement>) => {
-		if (event.key === 'Escape') {
+/** Enter saves and Escape discards, for keys pressed in the row's own inputs (see `rowKeyIntent`). */
+function useEditingRowKeys(disabled: boolean, save: () => Promise<void>, discard: () => void) {
+	return (event: React.KeyboardEvent<HTMLTableRowElement>) => {
+		const intent = readRowKey(event);
+		if (intent === 'discard') {
 			event.preventDefault();
-			editing.stop();
+			discard();
 		}
-		else if (event.key === 'Enter' && !(event.target instanceof HTMLTextAreaElement) && !disabled) {
+		else if (intent === 'confirm') {
 			event.preventDefault();
-			void save();
+			if (!disabled) {
+				void save();
+			}
 		}
 	};
-	const unattached = submit.errors.filter(error => !error.field);
+}
 
-	return (
-		<MantineTable.Tr
-			ref={rowRef}
-			tabIndex={-1}
-			onKeyDown={onKeyDown}
-			aria-label={`Editing row ${rowNumber}`}
-			{...tid.row(rowId)}
-		>
-			<MantineTable.Td className={clsx('align-middle', classes.rowNumberCell)}>
-				<Group gap={2} wrap='nowrap' justify='center'>
-					<ActionIcon
-						variant='subtle'
-						color='green'
-						title={t('action.save')}
-						aria-label={t('action.save')}
-						disabled={disabled}
-						onClick={() => void save()}
-						{...tid.rowEditSave(rowId)}
-					>
-						<IconCheck size={16} />
-					</ActionIcon>
-					<ActionIcon
-						variant='subtle'
-						color='red'
-						title={t('action.cancel')}
-						aria-label={t('action.cancel')}
-						onClick={editing.stop}
-						{...tid.rowEditDiscard(rowId)}
-					>
-						<IconX size={16} />
-					</ActionIcon>
-				</Group>
-				{unattached.length > 0 ? (
-					<Text size='xs' c='red'>{unattached.map(error => error.message || error.key).join(', ')}</Text>
-				) : null}
-			</MantineTable.Td>
-			{fields.map(field => (
-				<MantineTable.Td key={field} className={classes.editingCell} {...tid.rowEditInput(rowId, field)}>
-					{editable.has(field) ? (
-						<fieldset disabled={disabled} className='m-0 p-0 border-0 min-w-0'>
-							<AutoField name={field} />
-						</fieldset>
-					) : getCellText(item, field, data.masked_fields)}
-				</MantineTable.Td>
-			))}
-			<MantineTable.Td aria-hidden />
-		</MantineTable.Tr>
-	);
+function RowErrors({ errors }: { errors: ClientErrorItem[] }) {
+	if (errors.length === 0) {
+		return null;
+	}
+	return <Text size='xs' c='red'>{errors.map(error => error.message || error.key).join(', ')}</Text>;
 }

@@ -4,6 +4,7 @@ import { useId } from '@mantine/hooks';
 import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
+import { fieldErrorText } from './fieldErrors';
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
 import { useFieldTestAttrs } from './formTestIds';
@@ -52,7 +53,7 @@ export function DateTimeInputField(props: DateTimeFieldProps<DateTimePickerProps
 			// Uncomment to show sub-labels
 			// description={t(fieldData.description)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -63,6 +64,8 @@ export function DateTimeInputField(props: DateTimeFieldProps<DateTimePickerProps
 						id={inputId}
 						value={toDate(field.value !== undefined ? field.value : defaultValue)}
 						onChange={value => field.onChange(value || undefined)}
+						// The picker moves focus into its dropdown; leaving it is closing the dropdown.
+						onDropdownClose={field.onBlur}
 						disabled={modelLoading}
 						placeholder={t(fieldData.placeholder)}
 						size='md'
@@ -92,7 +95,7 @@ export function TimeInputField(props: DateTimeFieldProps<InputProps>) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -103,6 +106,7 @@ export function TimeInputField(props: DateTimeFieldProps<InputProps>) {
 						id={inputId}
 						value={(field.value as string) ?? ''}
 						onChange={event => field.onChange(event.currentTarget.value || undefined)}
+						onBlur={field.onBlur}
 						disabled={modelLoading}
 						size='md'
 						{...fieldAttrs}

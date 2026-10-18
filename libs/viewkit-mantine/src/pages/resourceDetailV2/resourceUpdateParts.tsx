@@ -2,6 +2,7 @@ import {
 	Alert, Badge, Group, Stack, Text, Title,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
+import { translateClientError } from '@nikkierp/common/types';
 // The wrapper rather than Mantine's Button: it carries the `locked` state, and the design system
 // prefers it wherever one exists.
 import { Button } from '@nikkierp/ui/components';
@@ -355,8 +356,8 @@ function ResourceDetailCommandActionButton({
  * "this quotation lapsed and must be re-quoted" tells them what to do next — so it is shown rather
  * than logged.
  *
- * Prefers the translated `key` and falls back to the server's `message`, the same order the save
- * path uses: an untranslated key would otherwise render as raw `sales:...` text on screen.
+ * Translates the `key` with its `vars` and falls back to the server's `message`, the same order the
+ * save path uses: an untranslated key would otherwise render as raw `sales:...` text on screen.
  */
 function ActionRefusalAlert({ clientErrors, actionKey }: {
 	clientErrors: ClientErrorItem[],
@@ -376,7 +377,7 @@ function ActionRefusalAlert({ clientErrors, actionKey }: {
 			{...tid('action', actionKey, 'refusal')}
 		>
 			{clientErrors.map((item, index) => (
-				<div key={index}>{item.key ? t(item.key) : item.message}</div>
+				<div key={index}>{translateClientError(t, item)}</div>
 			))}
 		</Alert>
 	);

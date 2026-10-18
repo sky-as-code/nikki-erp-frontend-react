@@ -1,5 +1,6 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { RequestMaker } from '@nikkierp/common/request';
+import { translateClientError, TranslatableClientError } from '@nikkierp/common/types';
 import i18next, { i18n, InitOptions } from 'i18next';
 import LanguageDetector, { DetectorOptions } from 'i18next-browser-languagedetector';
 import HttpBackend, { HttpBackendOptions } from 'i18next-http-backend';
@@ -188,6 +189,18 @@ export function useTranslate(moduleName?: string | string[]): TranslateFn {
 	return useNamespacedTranslate(moduleName).t;
 }
 
+/**
+ * A translator for server `ClientErrorItem`s: `key` with `vars` interpolated, falling back to the
+ * server `message`. `ns` only sets the default namespace; namespaced keys resolve on their own.
+ */
+export function useClientErrorTranslate(ns?: string | string[]): (item: TranslatableClientError) => string {
+	const t = useTranslate(ns);
+	return React.useCallback(
+		(item: TranslatableClientError) => translateClientError(t, item),
+		[t],
+	);
+}
+
 export function useLocalize(moduleName?: string): LocalizeFn {
 	const trans = useNamespacedTranslate(moduleName);
 	return (langJson, translateOpts): string => {
@@ -215,9 +228,13 @@ export function useLocalize(moduleName?: string): LocalizeFn {
  * namespace on demand, so naming one the page never used is enough to fetch it.
  */
 export function useSchemaLocalize(schemaName: string): LocalizeFn {
+	return useLocalize(schemaModuleName(schemaName));
+}
+
+/** The translation namespace of the module owning `schemaName`, by the `{module}_{entity}` convention. */
+export function schemaModuleName(schemaName: string): string | undefined {
 	const separatorIdx = schemaName.indexOf('_');
-	const moduleName = separatorIdx > 0 ? schemaName.slice(0, separatorIdx) : undefined;
-	return useLocalize(moduleName);
+	return separatorIdx > 0 ? schemaName.slice(0, separatorIdx) : undefined;
 }
 
 /**

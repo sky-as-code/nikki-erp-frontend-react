@@ -57,3 +57,19 @@ describe('isUnauthenticatedError', () => {
 		expect(ClientErrorItem.isUnauthenticatedError(new Error('boom'))).toBe(false);
 	});
 });
+
+describe('isNotFoundError', () => {
+	function item(key: string): ClientErrorItem {
+		return new ClientErrorItem({ key, message: 'x', type: 'business' });
+	}
+
+	it.each(['common:err_not_found', 'iam:err_not_found', 'err_not_found'])('matches %s', key => {
+		expect(ClientErrorItem.isNotFoundError(item(key))).toBe(true);
+	});
+
+	it('rejects other keys and non-items', () => {
+		expect(ClientErrorItem.isNotFoundError(item('essential:uom.not_found'))).toBe(false);
+		expect(ClientErrorItem.isNotFoundError(item('common:err_not_found_extra'))).toBe(false);
+		expect(ClientErrorItem.isNotFoundError({ key: 'common:err_not_found' })).toBe(false);
+	});
+});

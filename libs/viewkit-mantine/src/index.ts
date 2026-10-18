@@ -55,4 +55,15 @@ export {
 	actionRequirement, commandActionCode, resolveActionCode, StandardActionCode, useActionLock, useActionLocks,
 } from './permissions';
 export { findUngatedActions, useTableActionLocks } from './permissions';
+/**
+ * For a module's own section on a resource detail page: the record, its edit mode, and the hook
+ * that folds the section's drafts into the page's single update request.
+ */
+export { useResourceUpdateContext } from './pages/resourceDetail/resourceUpdateContext';
+export type { ResourceUpdateContextValue } from './pages/resourceDetail/resourceUpdateContext';
+export { useResourceFormView } from './components/resourceFormViewContext';
+/** A detail form's embedded table: all rows, row writes offered only while the form is updated. */
+export { FormDataTable } from './components/formDataTable/FormDataTable';
+export type { FormDataTableProps } from './components/formDataTable/FormDataTable';
+export type { UpdatePayloadContributor } from './pages/resourceDetail/afterSave';
 export type { ActionLock, LockableAction, UngatedAction } from './permissions';

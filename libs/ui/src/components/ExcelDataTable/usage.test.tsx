@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ExcelDataTable } from './index';
 
-import type { SearchData } from './types';
+import type { NewRowFieldEditor, SearchData } from './types';
 
 
 /**
@@ -70,6 +70,51 @@ describe('ExcelDataTable compositions', () => {
 				<ExcelDataTable.TableHeader />
 				<ExcelDataTable.Table />
 				<ExcelDataTable.Toolbar right={<ExcelDataTable.Pagination />} />
+			</ExcelDataTable.Provider>
+		);
+		expect(React.isValidElement(tree)).toBe(true);
+	});
+});
+
+describe('ExcelDataTable row-write compositions', () => {
+	it('builds a page-fed table that creates, updates and deletes through callbacks', () => {
+		const resourcePicker: NewRowFieldEditor = ({ field }) => <span>{field}</span>;
+		const tree = (
+			<ExcelDataTable.Provider
+				data={data}
+				indexColumnVisible={false}
+				capabilities={['create', 'update', 'delete']}
+				onCreated={() => undefined}
+				onUpdated={async () => true}
+				onDeleted={() => false}
+				createEntitlement='manage_entitlements:iam_role:tenant'
+				updateEntitlement='manage_entitlements:iam_role:tenant'
+				deleteEntitlement='manage_entitlements:iam_role:tenant'
+				newRowPrompt='Add new entitlement'
+				newRowFieldEditors={{ resource_id: resourcePicker }}
+			>
+				<ExcelDataTable.TableHeader />
+				<ExcelDataTable.Table />
+			</ExcelDataTable.Provider>
+		);
+		expect(React.isValidElement(tree)).toBe(true);
+	});
+
+	it('builds an assignment table that inserts existing records through commands', () => {
+		const tree = (
+			<ExcelDataTable.Provider
+				data={data}
+				capabilities={['create', 'delete']}
+				createCommand='iam.role.manageUsers'
+				deleteCommand='iam.role.manageUsers'
+				newRowSource='server-resource'
+				newRowResourceSchema='iam_user'
+				newRowSearchField='id'
+				newRowSearchCommand='iam.user.search'
+				btnDeleteLabel='common:action.unassign'
+			>
+				<ExcelDataTable.Table />
+				<ExcelDataTable.EditRowActions mode='create' onConfirm={() => undefined} onDiscard={() => undefined} />
 			</ExcelDataTable.Provider>
 		);
 		expect(React.isValidElement(tree)).toBe(true);

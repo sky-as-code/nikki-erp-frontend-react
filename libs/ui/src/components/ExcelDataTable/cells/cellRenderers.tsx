@@ -1,4 +1,4 @@
-import { Switch } from '@mantine/core';
+import { Badge, Switch } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
@@ -27,11 +27,12 @@ export function applyCustomRenderer(
 	textValue: string,
 	t: TranslateFn,
 	rawValue?: unknown,
+	record?: Record<string, unknown>,
 ): React.ReactNode {
 	// A structured value has to reach the renderer intact; `textValue` is already `String(value)`
 	// by this point, which is `[object Object]` for anything but a scalar.
 	if (renderer.renderRaw) {
-		return renderer.renderRaw(rawValue, textValue);
+		return renderer.renderRaw(rawValue, textValue, record);
 	}
 	// An empty value has no translation to look up: a prefixing `translationKey` would build the
 	// bare prefix (`orders.tx_status.`), which resolves to nothing and renders as that raw key.
@@ -82,6 +83,53 @@ export class MoneyFieldRenderer implements IFieldRenderer {
 		}
 		return <LocalizedMoney value={rawValue} currencySymbol={this.#symbol} fractionDigits={this.#fractionDigits} />;
 	}
+}
+
+export type BadgeFieldRendererProps = {
+	colorMap: Record<string, string>,
+	/** The colour of a value the map does not name; omitted, Mantine's primary colour. */
+	defaultColor?: string,
+	translationKey?: (value: string) => string,
+};
+
+/** A value as a coloured pill; the kit registers it as `badge`, and enum columns use it by default. */
+export class BadgeFieldRenderer implements IFieldRenderer {
+	private readonly colorMap: Record<string, string>;
+	private readonly defaultColor?: string;
+	public readonly translationKey?: (value: string) => string;
+
+	constructor(props: BadgeFieldRendererProps) {
+		this.colorMap = props.colorMap;
+		this.defaultColor = props.defaultColor;
+		this.translationKey = props.translationKey;
+	}
+
+	public render(rawValue: string, translatedValue: string): React.ReactNode {
+		return <Badge variant='filled' color={this.colorMap[rawValue] ?? this.defaultColor}>{translatedValue}</Badge>;
+	}
+}
+
+const enumBadgeRenderer = new BadgeFieldRenderer({ colorMap: {}, defaultColor: 'gray' });
+
+/**
+ * An enum value as a neutral badge, for a column no page gave a renderer of its own. The label is
+ * `{field}.{value}`, the key the edit form's select and the detail page already use.
+ */
+export function renderEnumBadge(textValue: string, fieldName: string, t: TranslateFn): React.ReactNode {
+	if (textValue === '') {
+		return '';
+	}
+	return enumBadgeRenderer.render(textValue, translateEnumValue(t, fieldName, textValue));
+}
+
+/**
+ * i18next runs with `appendNamespaceToMissingKey` and no `fallbackLng`, so a missing key comes back
+ * as `ns:field.value`; the stored value reads better than that.
+ */
+export function translateEnumValue(t: TranslateFn, fieldName: string, value: string): string {
+	const key = `${fieldName}.${value}`;
+	const label = String(t(key));
+	return label && !label.endsWith(key) ? label : value;
 }
 
 export type DataTypeCellRenderer = {

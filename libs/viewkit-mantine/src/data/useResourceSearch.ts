@@ -35,7 +35,15 @@ export type UseResourceSearchResult = {
 	pack: dyn.SchemaPack | null,
 	/** Cached across pending requests, so the table does not flicker. */
 	searchData: SearchData | null,
+	/** The published request: the user's, with `baseGraph` ANDed in. Read the order off this one. */
 	searchRequest: dyn.RestSearchRequest,
+	/**
+	 * The user's request alone, without `baseGraph`. This, not `searchRequest`, is what seeds a
+	 * table's `initialSearchRequest`: the table echoes its seed back through `onSearchRequestChange`
+	 * on mount, and an echoed base graph becomes part of the user graph, so the next record's scope
+	 * is ANDed with the previous one's and the table comes back empty.
+	 */
+	userRequest: dyn.RestSearchRequest,
 	onSearchRequestChange: (request: dyn.RestSearchRequest) => void,
 	refresh: () => void,
 	/** True while a search is in flight; drives the table's progress row. */
@@ -89,16 +97,11 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 	// ANDed, not substituted: the base narrows the user's query. Substituting discarded every
 	// filter and sort the user had set on any page carrying one.
 	const baseGraph = opts.baseGraph;
-	const userGraph = searchRequest.graph;
-	const mergedGraph = React.useMemo(
-		() => mergeSearchGraphs(baseGraph, userGraph),
-		[baseGraph, userGraph],
-	);
-	// Memoised on the merged graph rather than rebuilt inline: `isSameSearchRequest` compares
-	// `graph` by reference, so a fresh object every render would republish forever.
+	// Memoised rather than rebuilt inline: the published request is an effect dependency, so a
+	// fresh object every render would republish forever.
 	const effectiveRequest = React.useMemo(
-		() => baseGraph === undefined ? searchRequest : { ...searchRequest, graph: mergedGraph },
-		[searchRequest, baseGraph, mergedGraph],
+		() => withBaseGraph(searchRequest, baseGraph),
+		[searchRequest, baseGraph],
 	);
 
 	const labelled = useEdgeLabelledRequest(opts.withEdgeLabels === true, pack, effectiveRequest);
@@ -152,9 +155,16 @@ export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSe
 		() => refusalOf(search.clientErrors, schemaFailed), [search.clientErrors, schemaFailed],
 	);
 	return {
-		pack, searchData, searchRequest: effectiveRequest, onSearchRequestChange, refresh, isPending: search.isPending,
-		edgeLabelSchemas: labelled.destSchemas, refused,
+		pack, searchData, searchRequest: effectiveRequest, userRequest: searchRequest, onSearchRequestChange, refresh,
+		isPending: search.isPending, edgeLabelSchemas: labelled.destSchemas, refused,
 	};
+}
+
+/** `request` with `baseGraph` ANDed into its graph; `request` itself when there is no base. */
+export function withBaseGraph(
+	request: dyn.RestSearchRequest, baseGraph: dyn.SearchGraph | undefined,
+): dyn.RestSearchRequest {
+	return baseGraph === undefined ? request : { ...request, graph: mergeSearchGraphs(baseGraph, request.graph) };
 }
 
 export function refusalOf(clientErrors: ClientErrorItem[], schemaFailed: boolean): string[] | null {

@@ -1,9 +1,11 @@
 import {  Button, Drawer, Flex } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { useTranslate } from '@nikkierp/ui/i18n';
 import { IconX } from '@tabler/icons-react';
 
-import { FilterState, ModuleViewMode } from '../ModuleHomePage';
 import { ModuleFilterPanel } from './ModuleFilterPanel';
+
+import type { FilterState, ModuleViewMode } from '../../moduleHomeModel';
 
 
 type FilterDrawerProps = {
@@ -23,6 +25,7 @@ export const ModuleFilterDrawer: React.FC<FilterDrawerProps> = ({
 	filters,
 	onFiltersChange,
 }) => {
+	const translate = useTranslate('common');
 	return (
 		<Drawer.Root
 			opened={opened}
@@ -39,6 +42,7 @@ export const ModuleFilterDrawer: React.FC<FilterDrawerProps> = ({
 						color='var(--mantine-color-gray-6)'
 						h={24} w={24} p={2}
 						onClick={onClose}
+						aria-label={translate('action.close')}
 						{...testAttrs('shell.moduleFilterDrawer', 'close')}
 					>
 						<IconX size={20} />

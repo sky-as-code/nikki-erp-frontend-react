@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blue-amber icons</title>
+<style>
+  :root{color-scheme:light;--page:#f8f9fa;--text:#1e3a5f;--muted:#5b7191;--card:#fff;--shadow:rgba(30,58,138,.08);--line:#dde3ea}
+  :root[data-theme="dark"]{color-scheme:dark;--page:#242424;--text:#e6edf5;--muted:#9aa8b8;--card:#2f2f2f;--shadow:rgba(0,0,0,.35);--line:#3a3a3a}
+  body{margin:0;padding:32px;background:var(--page);font-family:system-ui,sans-serif;color:var(--text);transition:background .2s}
+  h1{font-size:18px;font-weight:600;margin:0 0 4px}
+  h2{font-size:15px;font-weight:600;margin:32px 0 12px}
+  p{margin:0 0 24px;font-size:12px;color:var(--muted)}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}
+  .switch{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--card)}
+  .switch button{border:0;background:none;color:var(--muted);font:inherit;font-size:12px;padding:6px 14px;border-radius:999px;cursor:pointer}
+  .switch button[aria-pressed="true"]{background:#1f5a96;color:#fff}
+  .palettes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+  .palette{border-radius:12px;padding:16px 20px 20px;border:1px solid var(--line)}
+  .palette h3{font-size:13px;font-weight:600;margin:0 0 12px}
+  .palette.light{background:#f8f9fa;color:#1e3a5f}
+  .palette.dark{background:#242424;color:#e6edf5}
+  .swatches{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid rgba(127,127,127,.25)}
+  .swatch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border-bottom:1px solid rgba(127,127,127,.25)}
+  .swatch:nth-child(odd){border-right:1px solid rgba(127,127,127,.25)}
+  .chip{width:100%;max-width:120px;height:48px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(127,127,127,.3)}
+  .swatch code{font-size:12px}
+  .swatch small{font-size:11px;opacity:.65}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:24px}
+  .card{background:var(--card);border-radius:12px;padding:20px 12px 14px;text-align:center;box-shadow:0 2px 8px var(--shadow)}
+  .card img{width:72px;height:72px;object-fit:contain}
+  .card code{display:block;margin-top:10px;font-size:11px;color:var(--muted);word-break:break-word}
+  @media (max-width:600px){body{padding:16px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <h1>Blue-amber icons</h1>
+    <p style="margin:0">82 icons, sorted alphabetically. Captions below are file names only.</p>
+  </div>
+  <div class="switch" role="group" aria-label="Theme">
+    <button type="button" data-set-theme="light">Light</button>
+    <button type="button" data-set-theme="dark">Dark</button>
+  </div>
+</div>
+
+<h2>Color palette</h2>
+<div class="palettes">
+  <section class="palette light">
+    <h3>Light theme</h3>
+    <div class="swatches">
+      <div class="swatch"><span class="chip" style="background:#1f5a96"></span><code>#1f5a96</code><small>Primary blue</small></div>
+      <div class="swatch"><span class="chip" style="background:#5093ce"></span><code>#5093ce</code><small>Mid blue</small></div>
+      <div class="swatch"><span class="chip" style="background:#9dc4e4"></span><code>#9dc4e4</code><small>Light blue</small></div>
+      <div class="swatch"><span class="chip" style="background:#f0a137"></span><code>#f0a137</code><small>Amber</small></div>
+      <div class="swatch"><span class="chip" style="background:#f9cf93"></span><code>#f9cf93</code><small>Light amber</small></div>
+      <div class="swatch"><span class="chip" style="background:#ffffff"></span><code>#ffffff</code><small>White</small></div>
+      <div class="swatch"><span class="chip" style="background:#d9503f"></span><code>#d9503f</code><small>Error red</small></div>
+      <div class="swatch"><span class="chip" style="background:#2e9e6b"></span><code>#2e9e6b</code><small>Success green</small></div>
+    </div>
+  </section>
+  <section class="palette dark">
+    <h3>Dark theme</h3>
+    <div class="swatches">
+      <div class="swatch"><span class="chip" style="background:#3b7cc0"></span><code>#3b7cc0</code><small>Primary blue</small></div>
+      <div class="swatch"><span class="chip" style="background:#6fa8dc"></span><code>#6fa8dc</code><small>Mid blue</small></div>
+      <div class="swatch"><span class="chip" style="background:#9cc3e6"></span><code>#9cc3e6</code><small>Light blue</small></div>
+      <div class="swatch"><span class="chip" style="background:#f4ab4a"></span><code>#f4ab4a</code><small>Amber</small></div>
+      <div class="swatch"><span class="chip" style="background:#f8c98a"></span><code>#f8c98a</code><small>Light amber</small></div>
+      <div class="swatch"><span class="chip" style="background:#f5f7fa"></span><code>#f5f7fa</code><small>White</small></div>
+      <div class="swatch"><span class="chip" style="background:#ec6a5a"></span><code>#ec6a5a</code><small>Error red</small></div>
+      <div class="swatch"><span class="chip" style="background:#45b984"></span><code>#45b984</code><small>Success green</small></div>
+    </div>
+  </section>
+</div>
+
+<h2>Icons</h2>
+<div class="grid">
+  <div class="card"><img src="accounting.svg" alt=""><code>accounting.svg</code></div>
+  <div class="card"><img src="add.svg" alt=""><code>add.svg</code></div>
+  <div class="card"><img src="arrow-left.svg" alt=""><code>arrow-left.svg</code></div>
+  <div class="card"><img src="arrow-right.svg" alt=""><code>arrow-right.svg</code></div>
+  <div class="card"><img src="assets.svg" alt=""><code>assets.svg</code></div>
+  <div class="card"><img src="attendance.svg" alt=""><code>attendance.svg</code></div>
+  <div class="card"><img src="calendar.svg" alt=""><code>calendar.svg</code></div>
+  <div class="card"><img src="card-reader.svg" alt=""><code>card-reader.svg</code></div>
+  <div class="card"><img src="cash.svg" alt=""><code>cash.svg</code></div>
+  <div class="card"><img src="chat.svg" alt=""><code>chat.svg</code></div>
+  <div class="card"><img src="chevron.svg" alt=""><code>chevron.svg</code></div>
+  <div class="card"><img src="coin.svg" alt=""><code>coin.svg</code></div>
+  <div class="card"><img src="contacts.svg" alt=""><code>contacts.svg</code></div>
+  <div class="card"><img src="crm.svg" alt=""><code>crm.svg</code></div>
+  <div class="card"><img src="customers.svg" alt=""><code>customers.svg</code></div>
+  <div class="card"><img src="dashboard.svg" alt=""><code>dashboard.svg</code></div>
+  <div class="card"><img src="delete.svg" alt=""><code>delete.svg</code></div>
+  <div class="card"><img src="document.svg" alt=""><code>document.svg</code></div>
+  <div class="card"><img src="documents.svg" alt=""><code>documents.svg</code></div>
+  <div class="card"><img src="drive.svg" alt=""><code>drive.svg</code></div>
+  <div class="card"><img src="duplicate.svg" alt=""><code>duplicate.svg</code></div>
+  <div class="card"><img src="edit.svg" alt=""><code>edit.svg</code></div>
+  <div class="card"><img src="error.svg" alt=""><code>error.svg</code></div>
+  <div class="card"><img src="expand.svg" alt=""><code>expand.svg</code></div>
+  <div class="card"><img src="export.svg" alt=""><code>export.svg</code></div>
+  <div class="card"><img src="filter.svg" alt=""><code>filter.svg</code></div>
+  <div class="card"><img src="filters.svg" alt=""><code>filters.svg</code></div>
+  <div class="card"><img src="finance.svg" alt=""><code>finance.svg</code></div>
+  <div class="card"><img src="generic.svg" alt=""><code>generic.svg</code></div>
+  <div class="card"><img src="helpdesk.svg" alt=""><code>helpdesk.svg</code></div>
+  <div class="card"><img src="home.svg" alt=""><code>home.svg</code></div>
+  <div class="card"><img src="hr.svg" alt=""><code>hr.svg</code></div>
+  <div class="card"><img src="hrm.svg" alt=""><code>hrm.svg</code></div>
+  <div class="card"><img src="iam.svg" alt=""><code>iam.svg</code></div>
+  <div class="card"><img src="Icon%20bam-vao-day.png" alt=""><code>Icon bam-vao-day.png</code></div>
+  <div class="card"><img src="Icon%20thong-so-ky-thuat.png" alt=""><code>Icon thong-so-ky-thuat.png</code></div>
+  <div class="card"><img src="Icon%20Tinh-nang-phan-mem.png" alt=""><code>Icon Tinh-nang-phan-mem.png</code></div>
+  <div class="card"><img src="Icon%20ung-dung-thuc-te.png" alt=""><code>Icon ung-dung-thuc-te.png</code></div>
+  <div class="card"><img src="import.svg" alt=""><code>import.svg</code></div>
+  <div class="card"><img src="incident-management.svg" alt=""><code>incident-management.svg</code></div>
+  <div class="card"><img src="info.svg" alt=""><code>info.svg</code></div>
+  <div class="card"><img src="inventory.svg" alt=""><code>inventory.svg</code></div>
+  <div class="card"><img src="invoice.svg" alt=""><code>invoice.svg</code></div>
+  <div class="card"><img src="it-applications.svg" alt=""><code>it-applications.svg</code></div>
+  <div class="card"><img src="it-deployments.svg" alt=""><code>it-deployments.svg</code></div>
+  <div class="card"><img src="it-secrets.svg" alt=""><code>it-secrets.svg</code></div>
+  <div class="card"><img src="it-vpn.svg" alt=""><code>it-vpn.svg</code></div>
+  <div class="card"><img src="location.svg" alt=""><code>location.svg</code></div>
+  <div class="card"><img src="lock.svg" alt=""><code>lock.svg</code></div>
+  <div class="card"><img src="logout.svg" alt=""><code>logout.svg</code></div>
+  <div class="card"><img src="manufacture.svg" alt=""><code>manufacture.svg</code></div>
+  <div class="card"><img src="menu.svg" alt=""><code>menu.svg</code></div>
+  <div class="card"><img src="more.svg" alt=""><code>more.svg</code></div>
+  <div class="card"><img src="notification.svg" alt=""><code>notification.svg</code></div>
+  <div class="card"><img src="offline.svg" alt=""><code>offline.svg</code></div>
+  <div class="card"><img src="parkinglot.svg" alt=""><code>parkinglot.svg</code></div>
+  <div class="card"><img src="payroll.svg" alt=""><code>payroll.svg</code></div>
+  <div class="card"><img src="pending.svg" alt=""><code>pending.svg</code></div>
+  <div class="card"><img src="permissions.svg" alt=""><code>permissions.svg</code></div>
+  <div class="card"><img src="power.svg" alt=""><code>power.svg</code></div>
+  <div class="card"><img src="print.svg" alt=""><code>print.svg</code></div>
+  <div class="card"><img src="project-management.svg" alt=""><code>project-management.svg</code></div>
+  <div class="card"><img src="purchase.svg" alt=""><code>purchase.svg</code></div>
+  <div class="card"><img src="qr-code.svg" alt=""><code>qr-code.svg</code></div>
+  <div class="card"><img src="refill.svg" alt=""><code>refill.svg</code></div>
+  <div class="card"><img src="refresh.svg" alt=""><code>refresh.svg</code></div>
+  <div class="card"><img src="report.svg" alt=""><code>report.svg</code></div>
+  <div class="card"><img src="risk-management.svg" alt=""><code>risk-management.svg</code></div>
+  <div class="card"><img src="sales.svg" alt=""><code>sales.svg</code></div>
+  <div class="card"><img src="save.svg" alt=""><code>save.svg</code></div>
+  <div class="card"><img src="scan.svg" alt=""><code>scan.svg</code></div>
+  <div class="card"><img src="search.svg" alt=""><code>search.svg</code></div>
+  <div class="card"><img src="settings.svg" alt=""><code>settings.svg</code></div>
+  <div class="card"><img src="signal.svg" alt=""><code>signal.svg</code></div>
+  <div class="card"><img src="sort.svg" alt=""><code>sort.svg</code></div>
+  <div class="card"><img src="success.svg" alt=""><code>success.svg</code></div>
+  <div class="card"><img src="sync.svg" alt=""><code>sync.svg</code></div>
+  <div class="card"><img src="temperature.svg" alt=""><code>temperature.svg</code></div>
+  <div class="card"><img src="upload.svg" alt=""><code>upload.svg</code></div>
+  <div class="card"><img src="vending.svg" alt=""><code>vending.svg</code></div>
+  <div class="card"><img src="vendingmachine.svg" alt=""><code>vendingmachine.svg</code></div>
+  <div class="card"><img src="warning.svg" alt=""><code>warning.svg</code></div>
+</div>
+<script>
+  (function () {
+    var root = document.documentElement;
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      document.querySelectorAll('[data-set-theme]').forEach(function (btn) {
+        btn.setAttribute('aria-pressed', String(btn.getAttribute('data-set-theme') === theme));
+      });
+      try { localStorage.setItem('ba-preview-theme', theme); } catch (e) {}
+    }
+    var saved = null;
+    try { saved = localStorage.getItem('ba-preview-theme'); } catch (e) {}
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    apply(saved || (prefersDark ? 'dark' : 'light'));
+    document.querySelectorAll('[data-set-theme]').forEach(function (btn) {
+      btn.addEventListener('click', function () { apply(btn.getAttribute('data-set-theme')); });
+    });
+  })();
+</script>
+</body>
+</html>

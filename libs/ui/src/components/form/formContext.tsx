@@ -3,6 +3,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 
+import { SERVER_ERROR_TYPE, useServerErrorSetter } from './fieldErrors';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { LocalizeFn } from '../../i18n';
 import { LoadingState } from '../Loading';
@@ -78,9 +79,11 @@ export function useFieldData(fieldName: string) {
 	const description = fieldDef.description ? fieldDef.description : undefined;
 	const placeholder = fieldDef.placeholder ? fieldDef.placeholder : undefined;
 	const isRequired = Boolean((fieldDef as any)['is_required_for_' + formVariant]);
-	const rawError = errors[fieldName]?.message as string | undefined;
-	// Extract translation key from $ref format if present
-	const error = rawError ? extractTranslationKey(rawError) : undefined;
+	const fieldError = errors[fieldName];
+	const rawError = fieldError?.message as string | undefined;
+	const isServerError = fieldError?.type === SERVER_ERROR_TYPE;
+	// Extract translation key from $ref format if present; a server message is already final text.
+	const error = rawError && !isServerError ? extractTranslationKey(rawError) : rawError;
 
 	return {
 		label,
@@ -88,6 +91,7 @@ export function useFieldData(fieldName: string) {
 		placeholder,
 		isRequired,
 		error,
+		isServerError,
 		fieldDef,
 		schemaName: crudSchema?.schemaName,
 	};
@@ -150,9 +154,9 @@ export type FormProviderRenderProps = {
 	 * Attaches server-side rejections to the form. Items carrying a `field` land on
 	 * that input; the rest are returned so the caller can show them form-level.
 	 *
-	 * `ClientErrorItem.field` matches react-hook-form field names and its `key` is a
-	 * translation key, the same role the client-side zod `$ref` messages play, so both
-	 * error sources render through one path.
+	 * `ClientErrorItem.field` matches react-hook-form field names. The message is stored translated
+	 * (with `vars`) under the `server` error type; `useFieldData` reports it as `isServerError` so
+	 * fields show it without translating it again (`fieldErrorText`).
 	 */
 	setServerErrors: (clientErrors: ClientErrorItem[]) => ClientErrorItem[],
 };
@@ -193,6 +197,11 @@ export type CrudFormProviderProps = Omit<BaseFormProviderProps, 'children'> & {
 	 * reach the form runtime via {@link useCrudFormRuntime}.
 	 */
 	children: ((props: FormProviderRenderProps) => React.ReactNode) | React.ReactNode,
+	/**
+	 * Shown while the schema loads, in place of the default `LoadingState`. A form rendered where a
+	 * `<div>` is not allowed (a table row) passes markup that fits there.
+	 */
+	loadingFallback?: React.ReactNode,
 };
 
 export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode {
@@ -202,9 +211,10 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 	const form = useForm({
 		resolver: schemaPack ? zodResolver(schemaPack.validationSchema) : undefined,
 		defaultValues: modelValue || {},
-		mode: 'onChange',
-		reValidateMode: 'onChange',
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 	});
+	const setServerErrors = useServerErrorSetter(form);
 
 	const {
 		control,
@@ -271,7 +281,7 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 		isLoading: props.isSubmitting ?? false,
 		errors,
 		dirtyFields,
-		setServerErrors: clientErrors => applyServerErrors(form, clientErrors),
+		setServerErrors,
 	};
 
 	const content = typeof props.children === 'function' ? props.children(runtime) : props.children;
@@ -293,26 +303,8 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 				{content}
 			</CrudFormRuntimeContext.Provider>
 		</FormFieldContext.Provider>
-	) : <LoadingState />;
+	) : (props.loadingFallback ?? <LoadingState />);
 };
-
-/**
- * Routes each server error to its form field, returning the ones that have no field
- * to attach to — anonymous business and authorization failures, which the caller must
- * render form-level.
- */
-function applyServerErrors(form: UseFormReturn<any>, clientErrors: ClientErrorItem[]): ClientErrorItem[] {
-	const unattached: ClientErrorItem[] = [];
-	clientErrors.forEach(item => {
-		if (item.field) {
-			form.setError(item.field, { type: 'server', message: item.key || item.message });
-		}
-		else {
-			unattached.push(item);
-		}
-	});
-	return unattached;
-}
 
 export type AdhocFormProviderProps = BaseFormProviderProps & {
 	formVariant: FormVariant,
@@ -329,9 +321,10 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 	const form = useForm({
 		resolver: zodResolver(zodSchema),
 		defaultValues: props.modelValue || {},
-		mode: 'onChange',
-		reValidateMode: 'onChange',
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 	});
+	const setServerErrors = useServerErrorSetter(form);
 
 	const {
 		control,
@@ -384,7 +377,7 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 				isLoading: false,
 				errors,
 				dirtyFields,
-				setServerErrors: clientErrors => applyServerErrors(form, clientErrors),
+				setServerErrors,
 			})}
 		</FormFieldContext.Provider>
 	);
@@ -436,8 +429,8 @@ export const FormFieldProvider: React.FC<FormFieldProviderProps> = (props) => {
 	const form = useForm({
 		// resolver: zodResolver(zodSchema),
 		defaultValues: modelValue || {},
-		mode: 'onChange',
-		reValidateMode: 'onChange',
+		mode: 'onBlur',
+		reValidateMode: 'onBlur',
 	});
 
 	const {

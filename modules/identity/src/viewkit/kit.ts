@@ -5,6 +5,7 @@ import { entitlementChangeListRenderer } from './components/EntitlementChangeLis
 import {
 	roleAssignmentAcknowledgeRenderer, roleAssignmentActionsRenderer, roleAssignmentErrorRenderer,
 } from './components/roleAssignmentParts';
+import { rolePermissionsRenderer } from './components/rolePermissions/RolePermissions';
 import { rolePickerRenderer } from './components/RolePicker';
 import { IDENTITY_VIEW_KIT_ID } from './ids';
 import { roleAssignmentTemplate } from './pages/template';
@@ -33,6 +34,7 @@ export const identityViewKit: IViewKit = {
 		registry.registerComponentRenderer(assignmentChangeSummaryRenderer);
 		registry.registerComponentRenderer(rolePickerRenderer);
 		registry.registerComponentRenderer(entitlementChangeListRenderer);
+		registry.registerComponentRenderer(rolePermissionsRenderer);
 	},
 };
 

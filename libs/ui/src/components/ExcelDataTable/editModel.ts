@@ -1,5 +1,7 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 
+import { dirtyFieldUpdateValue } from '../form/updatePayload';
+
 import type { SearchItem } from './types';
 
 
@@ -17,6 +19,24 @@ export function isRowEditableField(modelSchema: dyn.ModelSchema | undefined, fie
 		return false;
 	}
 	if (fieldDef.no_update || fieldDef.is_edge_model) {
+		return false;
+	}
+	return dyn.isRenderableFieldType(fieldDef);
+}
+
+/**
+ * Whether a column takes an input in the insert row. Like {@link isRowEditableField}, except that a
+ * `no_update` field is writable here: it is set once, at creation, which is exactly this row.
+ */
+export function isRowCreatableField(modelSchema: dyn.ModelSchema | undefined, field: string): boolean {
+	if (!modelSchema || field.includes('.')) {
+		return false;
+	}
+	const fieldDef = modelSchema.fields[field];
+	if (!fieldDef || fieldDef.is_primary_key || fieldDef.is_auto_generated || fieldDef.is_computed) {
+		return false;
+	}
+	if (fieldDef.is_edge_model) {
 		return false;
 	}
 	return dyn.isRenderableFieldType(fieldDef);
@@ -51,6 +71,8 @@ export function buildRowUpdatePayload(
 	dirtyFields: Record<string, unknown> | undefined,
 	item: SearchItem,
 	editableFields: string[],
+	/** The row form's unparsed values, which tell a cleared field (sent as `null`) from an untouched one. */
+	rawValues?: Record<string, unknown>,
 ): RowUpdatePayload {
 	if (typeof item.id !== 'string' && typeof item.id !== 'number') {
 		return { refusal: 'no-id' };
@@ -59,8 +81,9 @@ export function buildRowUpdatePayload(
 	const dirty = dirtyFields ?? {};
 	let changed = 0;
 	for (const field of editableFields) {
-		if (dirty[field] && field in data) {
-			payload[field] = data[field];
+		const value = dirty[field] ? dirtyFieldUpdateValue(data, rawValues, field) : undefined;
+		if (value !== undefined) {
+			payload[field] = value;
 			changed += 1;
 		}
 	}

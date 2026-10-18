@@ -6,7 +6,7 @@ import React from 'react';
 import { z } from 'zod';
 
 import { RESOURCE_CREATE_FORM } from '../ids';
-import { useResourceCreateContext } from '../pages/resourceDetail/resourceCreateContext';
+import { BindCreateServerErrors, useResourceCreateContext } from '../pages/resourceDetail/resourceCreateContext';
 import { ResourceCreateSaveBar } from '../pages/resourceDetail/resourceCreateParts';
 import {
 	useResourceDetailContext, useResourceDetailTranslationNs,
@@ -66,6 +66,7 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 					 * Page-level, like the update form's action bar: a `createNodes` body is an
 					 * arbitrary node tree with no section guaranteed to host Save.
 					 */}
+					<BindCreateServerErrors />
 					<ResourceCreateSaveBar />
 					<MetaComponent node={runtime.children} />
 				</CrudFormProvider>

@@ -24,6 +24,9 @@ export type ModuleExistsResponse = dyn.RestExistsResponse;
 export type UpdateModuleRequest = dyn.RestUpdateRequest;
 export type UpdateModuleResponse = dyn.RestMutateResponse;
 
+/** Which product a module ships with; `essential_module_metadata.category`. */
+export type ModuleCategoryCode = 'foundation' | 'coremart' | 'coreparking';
+
 export type ModuleLabelRef = {
 	$ref: string,
 };
@@ -41,6 +44,10 @@ export type Module = {
 	has_ui: boolean,
 	/** Prefix of the module's resource codes (`vdmc` for vendingmachine); decides module access. */
 	model_prefix?: string,
+	/** Null on rows synced before the column existed; read those as `foundation`. */
+	category?: ModuleCategoryCode | null,
+	/** Hard-coded `true` by the backend for now; there is no toggle yet. */
+	is_enabled: boolean,
 };
 
 /**
