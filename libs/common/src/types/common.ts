@@ -77,6 +77,15 @@ export class ClientErrorItem extends Error {
 		return UNAUTHENTICATED_KEYS.some(key => key === bare);
 	}
 
+	/** Whether the record asked for does not exist; the namespace prefix is ignored. */
+	public static isNotFoundError(error: unknown): boolean {
+		if (!(error instanceof ClientErrorItem)) {
+			return false;
+		}
+		const bare = error.key.split(/[:.]/).pop() ?? error.key;
+		return bare === 'err_not_found';
+	}
+
 	public static isBusinessError(error: unknown): boolean {
 		return error instanceof ClientErrorItem && error.name === 'business';
 	}

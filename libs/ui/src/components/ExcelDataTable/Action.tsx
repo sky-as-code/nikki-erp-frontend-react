@@ -1,4 +1,6 @@
 import { Loader, Menu, Tooltip } from '@mantine/core';
+import { notifyClientErrors, showShellNotice } from '@nikkierp/common/service';
+import { escapeHtml } from '@nikkierp/common/utils';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconDots, IconRefresh } from '@tabler/icons-react';
 import React from 'react';
@@ -13,6 +15,8 @@ import { useLockedItemProps } from '../ErrorState';
 
 import type { SearchItem } from './types';
 import type { ButtonProps, LockedProps } from '../Button';
+import type { ICommandBus } from '@nikkierp/common/commandBus';
+import type { ClientErrorTranslator } from '@nikkierp/common/types';
 
 
 export type ActionSelectionMode = 'single' | 'multiple';
@@ -77,17 +81,52 @@ export function isActionVisible(selectionMode: ActionSelectionMode | undefined, 
 	return selectionMode === 'single' ? selectedCount === 1 : selectedCount >= 1;
 }
 
+/**
+ * Publishes a row command and surfaces its failures in the Shell Notice stack: each client error
+ * translated, or one generic notice for a technical failure, whose text is meaningless to a user.
+ * The table refreshes either way, because a bulk command may have applied to some rows only.
+ */
+export async function publishActionCommand(
+	commandBus: Pick<ICommandBus, 'publish'>,
+	command: string,
+	ids: string[],
+	t: ClientErrorTranslator,
+	refresh: () => void,
+): Promise<void> {
+	try {
+		const response = await commandBus.publish({ name: command, payload: { ids } });
+		if (response.error) {
+			notifyActionFailed(t, response.error);
+		}
+		else {
+			notifyClientErrors(t, response.result?.clientErrors ?? []);
+		}
+	}
+	catch (error: unknown) {
+		notifyActionFailed(t, error);
+	}
+	refresh();
+}
+
+function notifyActionFailed(t: ClientErrorTranslator, error: unknown): void {
+	console.error('Table action failed', error);
+	showShellNotice('error', escapeHtml(t('common:datatable.actionFailed', {}))).catch((noticeError: unknown) => {
+		console.error('Failed to show the Shell Notice', noticeError);
+	});
+}
+
 function useActionTrigger(props: Pick<ActionProps, 'command' | 'onClick'>) {
-	const { refresh } = useExcelDataTableContext();
+	const { refresh, translationNs } = useExcelDataTableContext();
+	const t = useTranslate(translationNs ?? 'common');
 	const commandBus = useCommandBus();
 	const { selectedItems } = useActionsContext();
 	return React.useCallback(() => {
 		props.onClick?.(selectedItems);
 		if (props.command) {
 			const ids = selectedItems.map(item => item.id).filter(Boolean) as string[];
-			void commandBus.publish({ name: props.command, payload: { ids } }).then(refresh);
+			void publishActionCommand(commandBus, props.command, ids, t, refresh);
 		}
-	}, [commandBus, props, refresh, selectedItems]);
+	}, [commandBus, props, refresh, selectedItems, t]);
 }
 
 /** One action of the bar: a button in the bar, a menu item inside a `CollapsedActions` or the compact fold. */

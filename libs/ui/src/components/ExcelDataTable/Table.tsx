@@ -75,6 +75,16 @@ export function isModifiedClick(event: React.MouseEvent): boolean {
 	return event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0;
 }
 
+/** Data and filler cells: a plain primary press selects that row alone; anything else is the browser's. */
+function useSelectOnlyPress(rowId: RowId): (event: React.MouseEvent) => void {
+	const { selection } = useExcelDataTableContext();
+	return (event: React.MouseEvent) => {
+		if (!isModifiedClick(event)) {
+			selection.selectRow(rowId);
+		}
+	};
+}
+
 type BodyRowProps = { item: SearchItem, rowIndex: number };
 
 /**
@@ -130,20 +140,24 @@ function BodyRow({ item, rowIndex }: BodyRowProps) {
 type RowActionsCellProps = { item: SearchItem, rowId: RowId, isSelected: boolean };
 
 /**
- * The filler cell of a read row, holding its edit and delete when the table allows them. Its keys
- * and double-clicks stay here: Enter on a button must not also open the row editor.
+ * The filler cell of a read row, holding its edit and delete when the table allows them. A press
+ * on it selects its row like a data cell; a press on its buttons does not, so a delete never
+ * re-selects. Its keys and double-clicks stay here: Enter on a button must not also open the row
+ * editor.
  */
 function RowActionsCell({ item, rowId, isSelected }: RowActionsCellProps) {
 	const { capabilities } = useExcelDataTableContext();
+	const onMouseDown = useSelectOnlyPress(rowId);
 	const cellClass = clsx('align-middle', { [classes.selectedCell]: isSelected });
 	const showEdit = isRowEditShown(capabilities);
 	const showDelete = isRowDeleteShown(capabilities);
 	if (!showEdit && !showDelete) {
-		return <MantineTable.Td className={cellClass} aria-hidden />;
+		return <MantineTable.Td className={cellClass} onMouseDown={onMouseDown} aria-hidden />;
 	}
 	return (
 		<MantineTable.Td
 			className={cellClass}
+			onMouseDown={onMouseDown}
 			onKeyDown={event => event.stopPropagation()}
 			onDoubleClick={event => event.stopPropagation()}
 		>
@@ -151,6 +165,7 @@ function RowActionsCell({ item, rowId, isSelected }: RowActionsCellProps) {
 				gap='xs'
 				wrap='nowrap'
 				className={clsx(classes.rowActions, { [classes.rowActionsVisible]: isSelected })}
+				onMouseDown={event => event.stopPropagation()}
 			>
 				{showEdit ? <RowEditButton rowId={rowId} /> : null}
 				{showDelete ? <RowDeleteButton item={item} rowId={rowId} /> : null}
@@ -178,7 +193,7 @@ function RowEditButton({ rowId }: { rowId: RowId }) {
 }
 
 function RowDeleteButton({ item, rowId }: { item: SearchItem, rowId: RowId }) {
-	const { locks, editing, isLoading, tid } = useExcelDataTableContext();
+	const { locks, editing, isLoading, tid, btnDeleteLabel } = useExcelDataTableContext();
 	const rowDelete = useRowDelete(item);
 	const disabled = !rowDelete.isDeletable
 		|| isRowDeleteDisabled({ isEditing: editing.isActive, isLoading, isDeleting: rowDelete.isDeleting });
@@ -188,6 +203,7 @@ function RowDeleteButton({ item, rowId }: { item: SearchItem, rowId: RowId }) {
 			disabled={disabled}
 			locked={locks.delete.locked}
 			lockedMissing={locks.delete.missing}
+			label={btnDeleteLabel}
 			testId={tid.rowDelete(rowId)}
 		/>
 	);
@@ -195,19 +211,43 @@ function RowDeleteButton({ item, rowId }: { item: SearchItem, rowId: RowId }) {
 
 type RowNumberCellProps = { rowId: RowId, rowNumber: number, isSelected: boolean };
 
-/** The gray handle: plain, Ctrl, Shift and Ctrl+Shift clicks, and Space, drive the selection. */
+/**
+ * The gray handle, the one cell that deselects: a press toggles its row and starts a drag over the
+ * other handles, Shift+press adds the range from the anchor, Space toggles.
+ *
+ * Pointer capture would hold `pointerenter` back from every other cell, which is what the drag
+ * listens to. Mouse input is never captured implicitly, but touch and pen are, so it is released.
+ */
 function RowNumberCell({ rowId, rowNumber, isSelected }: RowNumberCellProps) {
 	const { selection, tid } = useExcelDataTableContext();
-	const onMouseDown = (event: React.MouseEvent | React.KeyboardEvent) => {
+	const onPointerDown = (event: React.PointerEvent<HTMLTableCellElement>) => {
+		if (event.button !== 0) {
+			return;
+		}
 		event.preventDefault();
 		event.stopPropagation();
-		selection.selectRow(rowId, { ctrl: event.ctrlKey || event.metaKey, shift: event.shiftKey });
+		const cell = event.currentTarget;
+		if (cell.hasPointerCapture?.(event.pointerId)) {
+			cell.releasePointerCapture(event.pointerId);
+		}
+		if (event.shiftKey) {
+			selection.selectRange(rowId);
+			return;
+		}
+		selection.startDrag(rowId);
+	};
+	const onKeyDown = (event: React.KeyboardEvent) => {
+		if (event.key === ' ') {
+			event.preventDefault();
+			selection.toggleRow(rowId);
+		}
 	};
 	return (
 		<MantineTable.Td
 			className={clsx('text-center align-middle', classes.rowNumberCell, { [classes.selectedCell]: isSelected })}
-			onMouseDown={onMouseDown}
-			onKeyDown={event => event.key === ' ' && onMouseDown(event)}
+			onPointerDown={onPointerDown}
+			onPointerEnter={() => selection.dragOver(rowId)}
+			onKeyDown={onKeyDown}
 			tabIndex={-1}
 			aria-label={`Row ${rowNumber}`}
 			{...tid.rowSelect(rowId)}
@@ -220,27 +260,17 @@ function RowNumberCell({ rowId, rowNumber, isSelected }: RowNumberCellProps) {
 type DataCellProps = { field: string, item: SearchItem, rowId: RowId, href?: string, isSelected: boolean };
 
 function DataCell({ field, item, rowId, href, isSelected }: DataCellProps) {
-	const { selection, tid } = useExcelDataTableContext();
+	const { tid } = useExcelDataTableContext();
 	const resolved = useResolvedPath(href ?? '.');
 	const { content, text, fieldSchema, renderer } = useCellDisplay(item, field);
 	const useEllipsis = shouldUseSingleLineEllipsis(text) && !isArrayField(fieldSchema);
-	const onMouseDown = (event: React.MouseEvent<HTMLTableCellElement>) => {
-		if (!isModifiedClick(event)) {
-			selection.selectRow(rowId);
-		}
-	};
 	// A plain click selects the row *and* follows the link, which is what opens the detail pane
 	// beside the list in a split view. Selecting without navigating left the click looking dead on
-	// a page whose whole point is that pane; the row handle is there for selection alone.
+	// a page whose whole point is that pane; the row handle is there for multi-selection.
 	//
-	// Ctrl and Shift are the selection gestures, so they must not also navigate. Everything else —
-	// a middle click, Ctrl+Shift — is left to the browser, which is what keeps "open in a new tab"
-	// working from a cell.
-	const onAnchorClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-		if (event.ctrlKey || event.metaKey || event.shiftKey) {
-			event.preventDefault();
-		}
-	};
+	// A modified click selects nothing and is left to the browser, which is what keeps Ctrl/Cmd
+	// "open in a new tab" working from a cell.
+	const onMouseDown = useSelectOnlyPress(rowId);
 	return (
 		<MantineTable.Td
 			onMouseDown={onMouseDown}
@@ -259,7 +289,6 @@ function DataCell({ field, item, rowId, href, isSelected }: DataCellProps) {
 					to={resolved.pathname}
 					className={classes.cellLink}
 					tabIndex={-1}
-					onClick={onAnchorClick}
 				>
 					{content}
 				</Anchor>

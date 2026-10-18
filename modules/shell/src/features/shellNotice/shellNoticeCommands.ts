@@ -1,41 +1,41 @@
 import { Command, ICommandBus, ok, ServiceResult } from '@nikkierp/common/commandBus';
 
-import { AsyncNoticeStore, AsyncNoticeType, asyncNoticeStore } from './asyncNoticeStore';
+import { ShellNoticeStore, ShellNoticeType, shellNoticeStore } from './shellNoticeStore';
 
 
 /**
  * Shell-owned async-action notices: transient, center-top, unrelated to the Notification module's
- * persistent inbox. Micro-apps call `showAsyncNotice` from `@nikkierp/common/service` instead of
+ * persistent inbox. Micro-apps call `showShellNotice` from `@nikkierp/common/service` instead of
  * naming this command.
  */
-export const ASYNC_NOTICE_COMMANDS = Object.freeze({
-	NOTIFY: 'shell.async_notice.notify',
+export const SHELL_NOTICE_COMMANDS = Object.freeze({
+	NOTIFY: 'shell.shell_notice.notify',
 } as const);
 
-export type AsyncNoticeNotifyPayload = {
-	type: AsyncNoticeType,
+export type ShellNoticeNotifyPayload = {
+	type: ShellNoticeType,
 	/** Trusted HTML, injected as-is (see problem shell-001): callers must escape interpolated values. */
 	html: string,
 };
 
-export type AsyncNoticeNotifyResult = {
+export type ShellNoticeNotifyResult = {
 	id: string,
 };
 
-const NOTICE_TYPES: ReadonlySet<string> = new Set<AsyncNoticeType>(['info', 'error']);
+const NOTICE_TYPES: ReadonlySet<string> = new Set<ShellNoticeType>(['info', 'error']);
 
-export function registerAsyncNoticeCommands(
-	bus: ICommandBus, store: AsyncNoticeStore = asyncNoticeStore,
+export function registerShellNoticeCommands(
+	bus: ICommandBus, store: ShellNoticeStore = shellNoticeStore,
 ): () => void {
-	const unsubscribe = bus.subscribe(ASYNC_NOTICE_COMMANDS.NOTIFY, command => handleNotify(command, store));
+	const unsubscribe = bus.subscribe(SHELL_NOTICE_COMMANDS.NOTIFY, command => handleNotify(command, store));
 	return () => {
 		unsubscribe();
 		store.clear();
 	};
 }
 
-function handleNotify(command: Command, store: AsyncNoticeStore): ServiceResult<AsyncNoticeNotifyResult> {
-	const payload = command.payload as Partial<AsyncNoticeNotifyPayload> | undefined;
+function handleNotify(command: Command, store: ShellNoticeStore): ServiceResult<ShellNoticeNotifyResult> {
+	const payload = command.payload as Partial<ShellNoticeNotifyPayload> | undefined;
 	// A malformed payload is a caller bug, so it throws and surfaces as `CommandBusResponse.error`.
 	if (!payload?.type || !NOTICE_TYPES.has(payload.type)) {
 		throw new Error(`${command.name} requires { type: 'info' | 'error' }.`);

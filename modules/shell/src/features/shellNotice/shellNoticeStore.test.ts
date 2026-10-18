@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createAsyncNoticeStore, INFO_TIMEOUT_MS } from './asyncNoticeStore';
+import { createShellNoticeStore, INFO_TIMEOUT_MS } from './shellNoticeStore';
 
 
-describe('async notice store', () => {
+describe('Shell Notice store', () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
 	});
@@ -13,7 +13,7 @@ describe('async notice store', () => {
 	});
 
 	it('keeps info and error in separate stacks, newest last', () => {
-		const store = createAsyncNoticeStore();
+		const store = createShellNoticeStore();
 		store.push('info', 'a');
 		store.push('error', 'b');
 		store.push('info', 'c');
@@ -23,7 +23,7 @@ describe('async notice store', () => {
 	});
 
 	it('auto-dismisses info after the timeout but never errors', () => {
-		const store = createAsyncNoticeStore();
+		const store = createShellNoticeStore();
 		store.push('info', 'a');
 		store.push('error', 'b');
 
@@ -38,7 +38,7 @@ describe('async notice store', () => {
 	});
 
 	it('continues the remaining time after a pause instead of restarting', () => {
-		const store = createAsyncNoticeStore();
+		const store = createShellNoticeStore();
 		store.push('info', 'a');
 
 		vi.advanceTimersByTime(6_000);
@@ -54,7 +54,7 @@ describe('async notice store', () => {
 	});
 
 	it('starts an info pushed during a pause as paused', () => {
-		const store = createAsyncNoticeStore();
+		const store = createShellNoticeStore();
 		store.pauseInfo();
 		store.push('info', 'a');
 
@@ -67,7 +67,7 @@ describe('async notice store', () => {
 	});
 
 	it('dismisses by id, idempotently, and notifies listeners only on change', () => {
-		const store = createAsyncNoticeStore();
+		const store = createShellNoticeStore();
 		const listener = vi.fn();
 		store.subscribe(listener);
 		const id = store.push('error', 'a');
@@ -80,7 +80,7 @@ describe('async notice store', () => {
 	});
 
 	it('drops the oldest notices past the cap and stops their timers', () => {
-		const store = createAsyncNoticeStore({ stackCap: 2 });
+		const store = createShellNoticeStore({ stackCap: 2 });
 		const listener = vi.fn();
 		store.push('info', 'a');
 		store.push('info', 'b');
@@ -95,7 +95,7 @@ describe('async notice store', () => {
 	});
 
 	it('clears everything and cancels pending timers', () => {
-		const store = createAsyncNoticeStore();
+		const store = createShellNoticeStore();
 		store.push('info', 'a');
 		store.push('error', 'b');
 		store.clear();

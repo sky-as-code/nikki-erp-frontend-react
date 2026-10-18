@@ -1,45 +1,84 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	emptySelection, isSelected, moveSelection, pruneSelection, seedSelection, selectAll, selectSingle, selectionStateOf,
-	selectWithModifiers,
+	dragRange, emptySelection, isSelected, moveSelection, pruneSelection, rangeIndex, seedSelection, selectAll,
+	selectOnly, selectSingle, selectionStateOf, toggleIndex,
 } from './selectionModel';
 
 
 const order = ['a', 'b', 'c', 'd', 'e'];
 
-describe('selectWithModifiers', () => {
-	it('plain click selects only the clicked row', () => {
-		const state = selectWithModifiers(selectSingle('a'), order, 'c', {});
-		expect(state.ids).toEqual(['c']);
+describe('toggleIndex', () => {
+	it('adds an unselected row, keeping the rest, and anchors on it', () => {
+		const state = toggleIndex(selectSingle('a'), 'c');
+		expect(state.ids).toEqual(['a', 'c']);
 		expect(state.anchorId).toBe('c');
 		expect(state.lastId).toBe('c');
 	});
 
-	it('ctrl click toggles the row and keeps the rest', () => {
-		const added = selectWithModifiers(selectSingle('a'), order, 'c', { ctrl: true });
-		expect(added.ids).toEqual(['a', 'c']);
-		const removed = selectWithModifiers(added, order, 'a', { ctrl: true });
-		expect(removed.ids).toEqual(['c']);
-		expect(removed.lastId).toBe('a');
-	});
-
-	it('shift click selects the range from the anchor, replacing the rest', () => {
-		const state = selectWithModifiers(selectSingle('d'), order, 'b', { shift: true });
-		expect(state.ids).toEqual(['b', 'c', 'd']);
-		expect(state.anchorId).toBe('d');
-		expect(state.lastId).toBe('b');
-	});
-
-	it('ctrl+shift click adds the range to the existing selection', () => {
-		const base = selectWithModifiers(selectSingle('a'), order, 'e', { ctrl: true });
-		const state = selectWithModifiers(base, order, 'c', { ctrl: true, shift: true });
-		expect(state.ids).toEqual(['a', 'e', 'c', 'd']);
-	});
-
-	it('shift click with no anchor selects the clicked row', () => {
-		const state = selectWithModifiers(emptySelection(), order, 'c', { shift: true });
+	it('removes a selected row, keeping the rest', () => {
+		const state = toggleIndex(seedSelection(['a', 'c']), 'a');
 		expect(state.ids).toEqual(['c']);
+		expect(state.lastId).toBe('a');
+	});
+
+	it('selects only that row in single mode, or nothing when it was the selected one', () => {
+		expect(toggleIndex(selectSingle('a'), 'c', 'single').ids).toEqual(['c']);
+		expect(toggleIndex(selectSingle('a'), 'a', 'single')).toEqual(emptySelection());
+	});
+});
+
+describe('rangeIndex', () => {
+	it('adds the range from the anchor to the row to the selection', () => {
+		const base = toggleIndex(toggleIndex(emptySelection(), 'e'), 'b');
+		const state = rangeIndex(base, order, 'd');
+		expect(state.ids).toEqual(['e', 'b', 'c', 'd']);
+		expect(state.anchorId).toBe('b');
+		expect(state.lastId).toBe('d');
+	});
+
+	it('follows the display order backwards too', () => {
+		expect(rangeIndex(selectSingle('d'), order, 'b').ids).toEqual(['d', 'b', 'c']);
+	});
+
+	it('selects the clicked row when there is no anchor', () => {
+		expect(rangeIndex(emptySelection(), order, 'c').ids).toEqual(['c']);
+	});
+
+	it('is a plain index click in single mode', () => {
+		expect(rangeIndex(selectSingle('a'), order, 'd', 'single').ids).toEqual(['d']);
+		expect(rangeIndex(selectSingle('d'), order, 'd', 'single').ids).toEqual([]);
+	});
+});
+
+describe('dragRange', () => {
+	it('adds the start…over range to the base', () => {
+		const state = dragRange(['e'], order, 'b', 'd', 'add');
+		expect(state.ids).toEqual(['e', 'b', 'c', 'd']);
+		expect(state.anchorId).toBe('b');
+		expect(state.lastId).toBe('d');
+	});
+
+	it('shrinks when dragging back, since it recomputes from the base', () => {
+		expect(dragRange([], order, 'b', 'd', 'add').ids).toEqual(['b', 'c', 'd']);
+		expect(dragRange([], order, 'b', 'c', 'add').ids).toEqual(['b', 'c']);
+		expect(dragRange([], order, 'b', 'a', 'add').ids).toEqual(['a', 'b']);
+	});
+
+	it('removes the range from the base in remove mode', () => {
+		expect(dragRange(order, order, 'b', 'd', 'remove').ids).toEqual(['a', 'e']);
+	});
+
+	it('at the start row equals a toggle of that row', () => {
+		expect(dragRange(['a'], order, 'c', 'c', 'add').ids).toEqual(toggleIndex(selectSingle('a'), 'c').ids);
+		expect(dragRange(['a', 'c'], order, 'c', 'c', 'remove').ids).toEqual(['a']);
+	});
+});
+
+describe('selectOnly', () => {
+	it('leaves exactly that row selected, even when it already was', () => {
+		expect(selectOnly('c')).toEqual({ ids: ['c'], anchorId: 'c', lastId: 'c' });
+		expect(selectOnly('a').ids).toEqual(['a']);
 	});
 });
 
@@ -51,7 +90,7 @@ describe('moveSelection', () => {
 	});
 
 	it('collapses a multi-selection to the last touched row before moving', () => {
-		const multi = selectWithModifiers(selectSingle('a'), order, 'd', { ctrl: true });
+		const multi = toggleIndex(selectSingle('a'), 'd');
 		expect(moveSelection(multi, order, 1).ids).toEqual(['e']);
 	});
 
@@ -63,7 +102,7 @@ describe('moveSelection', () => {
 
 describe('pruneSelection', () => {
 	it('drops ids that are no longer displayed', () => {
-		const multi = selectWithModifiers(selectSingle('a'), order, 'c', { ctrl: true });
+		const multi = toggleIndex(selectSingle('a'), 'c');
 		const pruned = pruneSelection(multi, ['a', 'b']);
 		expect(pruned.ids).toEqual(['a']);
 		expect(pruned.lastId).toBeNull();
@@ -73,18 +112,6 @@ describe('pruneSelection', () => {
 	it('returns the same state when nothing changed', () => {
 		const state = selectSingle('a');
 		expect(pruneSelection(state, order)).toBe(state);
-	});
-});
-
-describe('single selection mode', () => {
-	it('treats Ctrl and Shift clicks as a plain click', () => {
-		const start = selectSingle('a');
-		expect(selectWithModifiers(start, order, 'c', { ctrl: true }, 'single').ids).toEqual(['c']);
-		expect(selectWithModifiers(start, order, 'd', { shift: true }, 'single').ids).toEqual(['d']);
-	});
-
-	it('keeps multiple mode as the default', () => {
-		expect(selectWithModifiers(selectSingle('a'), order, 'c', { ctrl: true }).ids).toEqual(['a', 'c']);
 	});
 });
 

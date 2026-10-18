@@ -1,5 +1,6 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { RequestMaker } from '@nikkierp/common/request';
+import { translateClientError, TranslatableClientError } from '@nikkierp/common/types';
 import i18next, { i18n, InitOptions } from 'i18next';
 import LanguageDetector, { DetectorOptions } from 'i18next-browser-languagedetector';
 import HttpBackend, { HttpBackendOptions } from 'i18next-http-backend';
@@ -186,6 +187,18 @@ function useNamespacedTranslate(moduleName?: string | string[]): { t: TranslateF
 
 export function useTranslate(moduleName?: string | string[]): TranslateFn {
 	return useNamespacedTranslate(moduleName).t;
+}
+
+/**
+ * A translator for server `ClientErrorItem`s: `key` with `vars` interpolated, falling back to the
+ * server `message`. `ns` only sets the default namespace; namespaced keys resolve on their own.
+ */
+export function useClientErrorTranslate(ns?: string | string[]): (item: TranslatableClientError) => string {
+	const t = useTranslate(ns);
+	return React.useCallback(
+		(item: TranslatableClientError) => translateClientError(t, item),
+		[t],
+	);
 }
 
 export function useLocalize(moduleName?: string): LocalizeFn {

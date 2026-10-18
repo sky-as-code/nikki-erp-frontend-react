@@ -37,7 +37,7 @@ export function randomString(length: number): string {
 	return Math.random().toString(36).substring(2, 2 + length);
 }
 
-/** Escapes text for interpolation into HTML, e.g. a server message passed to `showAsyncNotice`. */
+/** Escapes text for interpolation into HTML, e.g. a server message passed to `showShellNotice`. */
 export function escapeHtml(value: string): string {
 	return value
 		.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')

@@ -5,13 +5,13 @@ import { IconX } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 
-import classes from './AsyncNotice.module.css';
-import { AsyncNotice } from './asyncNoticeStore';
+import classes from './ShellNotice.module.css';
+import { ShellNotice } from './shellNoticeStore';
 import { useSwipeDismiss } from './useSwipeDismiss';
 
 
 export type NoticeCardProps = {
-	notice: AsyncNotice,
+	notice: ShellNotice,
 	/** Position from the oldest visible card; drives the downward peek offset and paint order. */
 	layer: number,
 	/** Distance from the newest card; drives the shrink of the cards underneath. */
@@ -39,7 +39,7 @@ export function NoticeCard({ notice, layer, depth, onDismiss }: NoticeCardProps)
 			data-dragging={swipe.isDragging || undefined}
 			data-leaving={swipe.isLeaving || undefined}
 			{...swipe.handlers}
-			{...testAttrs('shell', 'asyncNotice', notice.type, notice.id)}
+			{...testAttrs('shell', 'shellNotice', notice.type, notice.id)}
 		>
 			{/* Trusted module HTML, see problem shell-001. */}
 			<div className={classes.message} dangerouslySetInnerHTML={{ __html: notice.html }} />
@@ -49,7 +49,7 @@ export function NoticeCard({ notice, layer, depth, onDismiss }: NoticeCardProps)
 				title={translate('action.close')}
 				tabIndex={isTop ? 0 : -1}
 				onClick={dismiss}
-				{...testAttrs('shell', 'asyncNotice', 'close', notice.id)}
+				{...testAttrs('shell', 'shellNotice', 'close', notice.id)}
 			>
 				<IconX size={16} />
 			</UnstyledButton>

@@ -130,6 +130,7 @@ function buildAssignmentResources() {
 				manageCommand: RoleCommands.MANAGE_USERS,
 				newRowPrompt: 'role_assign_newUser',
 				newRowSearchField: 'display_name',
+				btnDeleteLabel: 'common:action.unassign',
 			},
 		},
 		{
@@ -147,6 +148,7 @@ function buildAssignmentResources() {
 				pickerSchemaName: c.GROUP_SCHEMA_NAME,
 				manageCommand: RoleCommands.MANAGE_GROUPS,
 				newRowPrompt: 'role_assign_newGroup',
+				btnDeleteLabel: 'common:action.unassign',
 			},
 		},
 	];

@@ -7,7 +7,7 @@ import { resourceDetailPropsSchema } from '../resourceDetail/props';
 
 /**
  * Assign and remove the listed records from the page's own record, e.g. users on a role. The table
- * gets an insert row whose record picker assigns and a per-row Delete that unassigns, and no toolbar
+ * gets an insert row whose record picker assigns and a per-row Unassign button, and no toolbar
  * actions. Every change publishes `manageCommand` with `{id, add?, remove?}` (`id` = the route's
  * `:id`) and takes effect at once.
  */
@@ -28,6 +28,8 @@ export const relatedAssignmentSchema = z.object({
 	 * field; name the record-label column when the first one is narrow (an avatar).
 	 */
 	newRowSearchField: z.string().min(1).optional(),
+	/** i18n key of the row delete button, `ns:key` for a namespace other than `common`. */
+	btnDeleteLabel: z.string().min(1).optional(),
 }).strict();
 
 /**

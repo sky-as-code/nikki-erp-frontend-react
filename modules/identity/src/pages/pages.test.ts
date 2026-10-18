@@ -125,6 +125,7 @@ describe('IAM role page metadata', () => {
 		expect(detail.relatedResourcesNotice).toBe('role_relatedNotice');
 		expect(detail.relatedResources[tab].assignment).toMatchObject({
 			pickerSchemaName: principal, manageCommand: command, newRowPrompt: prompt,
+			btnDeleteLabel: 'common:action.unassign',
 			actionCode: 'manage_role_assignments', actionResource: principal, actionScope: 'tenant',
 		});
 	});

@@ -9,7 +9,7 @@ import { RESOURCE_CREATE_FORM_V2 } from '../../../ids';
 import {
 	useResourceDetailContext, useResourceDetailTranslationNs,
 } from '../../resourceDetail/ResourceDetailProvider';
-import { useResourceCreateContext } from '../resourceCreateContext';
+import { BindCreateServerErrors, useResourceCreateContext } from '../resourceCreateContext';
 import { ResourceCreateSaveBar } from '../resourceCreateParts';
 
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
@@ -66,6 +66,7 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 					 * Page-level, like the update form's action bar: a `createNodes` body is an
 					 * arbitrary node tree with no section guaranteed to host Save.
 					 */}
+					<BindCreateServerErrors />
 					<ResourceCreateSaveBar />
 					<MetaComponent node={runtime.children} />
 				</CrudFormProvider>

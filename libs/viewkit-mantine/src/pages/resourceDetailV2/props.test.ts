@@ -58,3 +58,17 @@ describe('resourceDetailV2PropsSchema', () => {
 		})).toThrow();
 	});
 });
+
+describe('relatedAssignmentSchema btnDeleteLabel', () => {
+	it('keeps the row delete label of an assignment and rejects an empty one', () => {
+		const tab = { label: 'l', schemaName: 'iam_user', translationNs: 'iam', searchCommand: 'c' };
+		const assignment = { pickerSchemaName: 'iam_user', manageCommand: 'm', actionCode: 'a' };
+		const parsed = resourceDetailV2PropsSchema.parse({
+			...base, relatedResources: [{ ...tab, assignment: { ...assignment, btnDeleteLabel: 'iam:role_remove' } }],
+		});
+		expect(parsed.relatedResources[0].assignment?.btnDeleteLabel).toBe('iam:role_remove');
+		expect(() => resourceDetailV2PropsSchema.parse({
+			...base, relatedResources: [{ ...tab, assignment: { ...assignment, btnDeleteLabel: '' } }],
+		})).toThrow();
+	});
+});

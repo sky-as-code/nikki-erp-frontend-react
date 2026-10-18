@@ -1,4 +1,4 @@
-import { showAsyncNotice } from '@nikkierp/common/service';
+import { showShellNotice } from '@nikkierp/common/service';
 import { escapeHtml } from '@nikkierp/common/utils';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { useCommandBus } from '@nikkierp/ui/microApp';
@@ -16,12 +16,12 @@ import type { ExcelDataTableRowWriteProps, SearchItem } from '@nikkierp/ui/compo
 
 
 /**
- * Sends a Shell error notice. The text is escaped here, once, because `showAsyncNotice` injects
+ * Sends a Shell error notice. The text is escaped here, once, because `showShellNotice` injects
  * HTML and server messages may carry anything (problem shell-001).
  */
 export function notifyAssignmentError(message: string): void {
-	showAsyncNotice('error', escapeHtml(message)).catch((error: unknown) => {
-		console.error('Failed to show the async notice', error);
+	showShellNotice('error', escapeHtml(message)).catch((error: unknown) => {
+		console.error('Failed to show the Shell Notice', error);
 	});
 }
 
@@ -56,6 +56,7 @@ export function useAssignmentWriteProps(resource: RelatedResource): ExcelDataTab
 			...assignmentEntitlements(assignment, resource.schemaName),
 			newRowSource: 'server-resource', newRowResourceSchema: assignment.pickerSchemaName,
 			newRowSearchField: searchField, newRowPrompt: prompt,
+			btnDeleteLabel: assignment.btnDeleteLabel ?? 'common:action.unassign',
 		};
 	}, [assignment, resource.schemaName, onCreated, onDeleted, searchField, prompt]);
 }

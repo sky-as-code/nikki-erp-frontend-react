@@ -1,6 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { ClientErrorItem } from '@nikkierp/common/types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getActionStateProps, isActionVisible } from './Action';
+import { getActionStateProps, isActionVisible, publishActionCommand } from './Action';
+
+
+const notice = vi.hoisted(() => ({
+	notifyClientErrors: vi.fn(),
+	showShellNotice: vi.fn(() => Promise.resolve('id')),
+}));
+vi.mock('@nikkierp/common/service', () => notice);
 
 
 describe('isActionVisible', () => {
@@ -44,5 +52,60 @@ describe('getActionStateProps', () => {
 		const props = getActionStateProps({ dimmed: true });
 		expect(props.disabled).toBe(false);
 		expect(props).toMatchObject({ color: 'gray', c: 'dimmed', 'data-dimmed': 'true' });
+	});
+});
+
+describe('publishActionCommand', () => {
+	const t = vi.fn((key: string) => `t(${key})`);
+	const inUse = new ClientErrorItem({ key: 'common:err_resource_in_use', message: 'In use', type: 'business' });
+
+	function busReturning(response: unknown) {
+		return { publish: vi.fn(() => Promise.resolve(response)) } as never;
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.spyOn(console, 'error').mockImplementation(() => undefined);
+	});
+
+	it('publishes the ids and refreshes without a notice on success', async () => {
+		const publish = vi.fn(() => Promise.resolve({ result: { data: null, clientErrors: [] }, error: null }));
+		const refresh = vi.fn();
+		await publishActionCommand({ publish } as never, 'iam.iam_role.delete_many', ['1', '2'], t, refresh);
+		expect(publish).toHaveBeenCalledWith({ name: 'iam.iam_role.delete_many', payload: { ids: ['1', '2'] } });
+		expect(notice.notifyClientErrors).toHaveBeenCalledWith(t, []);
+		expect(notice.showShellNotice).not.toHaveBeenCalled();
+		expect(refresh).toHaveBeenCalledOnce();
+	});
+
+	it('publishes client errors to the Shell Notice and still refreshes', async () => {
+		const bus = busReturning({ result: { data: null, clientErrors: [inUse] }, error: null });
+		const refresh = vi.fn();
+		await publishActionCommand(bus, 'cmd', ['1'], t, refresh);
+		expect(notice.notifyClientErrors).toHaveBeenCalledWith(t, [inUse]);
+		expect(refresh).toHaveBeenCalledOnce();
+	});
+
+	it('shows one generic notice for a technical error and still refreshes', async () => {
+		const bus = busReturning({ result: null, error: new Error('<boom>') });
+		const refresh = vi.fn();
+		await publishActionCommand(bus, 'cmd', ['1'], t, refresh);
+		expect(notice.notifyClientErrors).not.toHaveBeenCalled();
+		expect(notice.showShellNotice).toHaveBeenCalledWith('error', 't(common:datatable.actionFailed)');
+		expect(refresh).toHaveBeenCalledOnce();
+	});
+
+	it('treats a rejected publish as a technical error', async () => {
+		const bus = { publish: vi.fn(() => Promise.reject(new Error('down'))) } as never;
+		const refresh = vi.fn();
+		await publishActionCommand(bus, 'cmd', ['1'], t, refresh);
+		expect(notice.showShellNotice).toHaveBeenCalledOnce();
+		expect(refresh).toHaveBeenCalledOnce();
+	});
+
+	it('escapes the generic notice text', async () => {
+		const bus = busReturning({ result: null, error: new Error('x') });
+		await publishActionCommand(bus, 'cmd', [], () => '<b>failed</b>', vi.fn());
+		expect(notice.showShellNotice).toHaveBeenCalledWith('error', '&lt;b&gt;failed&lt;/b&gt;');
 	});
 });

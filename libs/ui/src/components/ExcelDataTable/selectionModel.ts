@@ -4,9 +4,9 @@ import type { RowId } from './types';
 /**
  * The selection as an ordered set plus the two ids Excel-style gestures pivot on.
  *
- * `anchorId` is where a Shift range starts: the row of the last plain or Ctrl click. `lastId` is
- * the most recent row touched by any gesture, which is what the arrow keys move from and what
- * survives when a multi-selection collapses to one row.
+ * `anchorId` is where a Shift range starts: the row of the last index-cell click, or where a drag
+ * began. `lastId` is the most recent row touched by any gesture, which is what the arrow keys move
+ * from and what survives when a multi-selection collapses to one row.
  */
 export type SelectionState = {
 	ids: RowId[],
@@ -14,10 +14,17 @@ export type SelectionState = {
 	lastId: RowId | null,
 };
 
+/**
+ * @deprecated Ctrl/Meta no longer selects and Shift ranges belong to the index cell only.
+ * Kept so card views that still pass modifiers to `selectRow` compile; they are ignored.
+ */
 export type SelectionModifiers = { ctrl?: boolean, shift?: boolean };
 
-/** `single` keeps at most one row selected: every gesture behaves as a plain click. */
+/** `single` keeps at most one row selected. */
 export type SelectionMode = 'single' | 'multiple';
+
+/** Whether a drag over index cells adds its range to the selection or takes it out. */
+export type DragMode = 'add' | 'remove';
 
 export function emptySelection(): SelectionState {
 	return { ids: [], anchorId: null, lastId: null };
@@ -31,16 +38,16 @@ export function selectSingle(id: RowId): SelectionState {
 	return { ids: [id], anchorId: id, lastId: id };
 }
 
+/** A data or filler cell click: that row alone, whatever was selected, never a deselect. */
+export function selectOnly(id: RowId): SelectionState {
+	return selectSingle(id);
+}
+
 /** A selection preset by the caller, e.g. the value a picker opens on. */
 export function seedSelection(ids: RowId[], mode: SelectionMode = 'multiple'): SelectionState {
 	const seeded = mode === 'single' ? ids.slice(0, 1) : ids;
 	const last = seeded.length > 0 ? seeded[seeded.length - 1] : null;
 	return { ids: seeded, anchorId: seeded[0] ?? null, lastId: last };
-}
-
-function toggle(state: SelectionState, id: RowId): SelectionState {
-	const ids = isSelected(state, id) ? state.ids.filter(other => other !== id) : [...state.ids, id];
-	return { ids, anchorId: id, lastId: id };
 }
 
 function rangeBetween(order: RowId[], from: RowId, to: RowId): RowId[] {
@@ -58,28 +65,44 @@ function addAll(ids: RowId[], extra: RowId[]): RowId[] {
 }
 
 /**
- * Applies a click on the row handle (the first gray cell):
- * plain → that row only; Ctrl → toggle it, keeping the rest; Shift → the range from the anchor
- * to it, replacing the rest; Ctrl+Shift → that range added to the rest.
+ * An index-cell click (or Space on it). `multiple`: adds the row, or removes it when selected,
+ * keeping the rest. `single`: that row only, or nothing when it was the selected one.
+ */
+export function toggleIndex(state: SelectionState, id: RowId, mode: SelectionMode = 'multiple'): SelectionState {
+	if (mode === 'single') {
+		return isSelected(state, id) ? emptySelection() : selectSingle(id);
+	}
+	const ids = isSelected(state, id) ? state.ids.filter(other => other !== id) : [...state.ids, id];
+	return { ids, anchorId: id, lastId: id };
+}
+
+/**
+ * Shift+click on an index cell: the rows from the anchor to `id` are added to the selection. The
+ * anchor stays, so successive Shift clicks pivot on the same row. `single` treats it as a click.
  *
  * `order` is the rows as displayed, so the range follows the current sort.
  */
-export function selectWithModifiers(
-	state: SelectionState, order: RowId[], id: RowId, mods: SelectionModifiers, mode: SelectionMode = 'multiple',
+export function rangeIndex(
+	state: SelectionState, order: RowId[], id: RowId, mode: SelectionMode = 'multiple',
 ): SelectionState {
 	if (mode === 'single') {
-		return selectSingle(id);
+		return toggleIndex(state, id, mode);
 	}
-	if (mods.shift) {
-		const anchor = state.anchorId ?? state.lastId ?? id;
-		const range = rangeBetween(order, anchor, id);
-		return {
-			ids: mods.ctrl ? addAll(state.ids, range) : range,
-			anchorId: anchor,
-			lastId: id,
-		};
-	}
-	return mods.ctrl ? toggle(state, id) : selectSingle(id);
+	const anchor = state.anchorId ?? state.lastId ?? id;
+	return { ids: addAll(state.ids, rangeBetween(order, anchor, id)), anchorId: anchor, lastId: id };
+}
+
+/**
+ * The selection while dragging over index cells: the range `startId`…`overId` added to (or removed
+ * from) `baseIds`, the selection as it was when the drag began. Recomputed from that base on every
+ * move, so dragging back shrinks the range instead of leaving rows behind.
+ */
+export function dragRange(
+	baseIds: RowId[], order: RowId[], startId: RowId, overId: RowId, mode: DragMode,
+): SelectionState {
+	const range = rangeBetween(order, startId, overId);
+	const ids = mode === 'add' ? addAll(baseIds, range) : baseIds.filter(id => !range.includes(id));
+	return { ids, anchorId: startId, lastId: overId };
 }
 
 /**

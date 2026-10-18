@@ -31,6 +31,8 @@ export type ResourceUpdateContextValue = {
 	/** Technical failure from the last save or load, if any. */
 	saveError: unknown | null,
 	loadError: unknown | null,
+	/** v2 only: the record fetch answered not-found, so the page renders a 404 state instead. */
+	notFound?: boolean,
 	allStatuses?: StatusOption[],
 	currentStatus?: SchemaFieldSpec,
 	contextualActions?: ResourceDetailContextualActions,

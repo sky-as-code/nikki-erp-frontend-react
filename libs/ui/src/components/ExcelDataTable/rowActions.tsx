@@ -57,12 +57,14 @@ export type DeleteRowActionProps = LockedProps & {
 	onDelete: () => void,
 	/** Editing, loading, or the delete itself in flight. A locked button still answers a click. */
 	disabled?: boolean,
+	/** A translation key replacing the default "Delete"; a `ns:key` form names another namespace. */
+	label?: string,
 	testId?: TestIdAttributes,
 };
 
 /** The delete a read row offers in the filler column. */
 export function DeleteRowAction({
-	onDelete, disabled = false, locked, lockedMissing, testId,
+	onDelete, disabled = false, locked, lockedMissing, label, testId,
 }: DeleteRowActionProps): React.ReactElement {
 	const t = useTranslate('common');
 	return (
@@ -76,7 +78,7 @@ export function DeleteRowAction({
 			onClick={onDelete}
 			{...testId}
 		>
-			{t('action.delete', { defaultValue: 'Delete' })}
+			{label ? t(label) : t('action.delete', { defaultValue: 'Delete' })}
 		</Button>
 	);
 }

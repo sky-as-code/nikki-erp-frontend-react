@@ -6,7 +6,9 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 
 import { notifyAfterSaveFailure, useAfterSaveHooks } from './afterSave';
-import { ResourceCreateContext, ResourceCreateContextValue, useResourceCreateContext } from './resourceCreateContext';
+import {
+	ResourceCreateContext, ResourceCreateContextValue, useCreateServerErrors, useResourceCreateContext,
+} from './resourceCreateContext';
 import { useResourceDetailContext } from './ResourceDetailProvider';
 import { RESOURCE_CREATE_FORM, RESOURCE_CREATE_HEADER } from '../../ids';
 
@@ -43,6 +45,7 @@ export function ResourceCreateProvider(
 	const afterSave = useAfterSaveHooks();
 	const runAfterSave = afterSave.run;
 	const navigate = useNavigate();
+	const { bindServerErrorSink, routeServerErrors } = useCreateServerErrors();
 	const onSubmit = React.useCallback(
 		async (data: Record<string, any>) => {
 			if (!props.commands.create) {
@@ -50,7 +53,12 @@ export function ResourceCreateProvider(
 			}
 			const response = await publishCreate(data);
 			const created = response.result?.data;
-			if (response.error != null || (response.result?.clientErrors.length ?? 0) > 0 || !created?.id) {
+			const clientErrors = response.result?.clientErrors ?? [];
+			if (clientErrors.length > 0) {
+				routeServerErrors(clientErrors);
+				return;
+			}
+			if (response.error != null || !created?.id) {
 				return;
 			}
 			try {
@@ -61,7 +69,7 @@ export function ResourceCreateProvider(
 			}
 			navigate(`../${created.id}`, { relative: 'path', replace: true });
 		},
-		[publishCreate, props.commands.create, runAfterSave, navigate],
+		[publishCreate, props.commands.create, runAfterSave, navigate, routeServerErrors],
 	);
 
 	const value = React.useMemo(
@@ -73,10 +81,11 @@ export function ResourceCreateProvider(
 			onSubmit,
 			isSubmitting: createCmd.isPending || afterSave.isRunning,
 			registerAfterSave: afterSave.register,
+			bindServerErrorSink,
 		}),
 		[
 			props.commands, props.titleLvl1, props.backLinkTitle, props.createNodes,
-			onSubmit, createCmd.isPending, afterSave.isRunning, afterSave.register,
+			onSubmit, createCmd.isPending, afterSave.isRunning, afterSave.register, bindServerErrorSink,
 		],
 	);
 

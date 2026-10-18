@@ -34,7 +34,7 @@ export function pickedRecordId(values: Record<string, unknown>, searchField: str
 
 /**
  * The text to show for a failed command, or null when it succeeded. Plain text: the caller
- * escapes it before handing it to `showAsyncNotice`, which injects HTML.
+ * escapes it before handing it to `showShellNotice`, which injects HTML.
  */
 export function commandFailureMessage(response: CommandBusResponse<unknown>): string | null {
 	if (response.error) {

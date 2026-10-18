@@ -4,7 +4,7 @@ import type { CapabilityLocks } from './capabilities';
 import type { useColumnWidthsState } from './columnWidths';
 import type { FilterTree } from './filter/filterTree';
 import type { FilterState } from './filter/useFilterState';
-import type { SelectionMode, SelectionModifiers, SelectionState } from './selectionModel';
+import type { SelectionMode, SelectionState } from './selectionModel';
 import type { ExcelDataTableTestIds } from './testIds';
 import type {
 	ExcelDataTableCapability, ExcelViewMode, NewRowFieldEditor, NewRowSource, RowId, RowsDeletedSink, RowValuesSink,
@@ -17,8 +17,19 @@ import type { FieldRendererMap } from '@nikkierp/viewengine/core';
 export type ScrollSyncRefs = { header: HTMLElement | null, body: HTMLElement | null };
 
 export type SelectionApi = SelectionState & {
-	/** The row-handle click with its modifier keys. */
-	selectRow: (id: RowId, mods?: SelectionModifiers) => void,
+	/** A data cell, the filler cell or a card: that row alone. Never deselects. */
+	selectRow: (id: RowId) => void,
+	/** An index-cell click or Space: toggles the row (`multiple`) or selects/deselects it (`single`). */
+	toggleRow: (id: RowId) => void,
+	/** Shift+click on an index cell: adds the anchor…row range; a plain toggle in `single` mode. */
+	selectRange: (id: RowId) => void,
+	/**
+	 * A press on an index cell: toggles the row and, in `multiple` mode, starts a drag that adds (or,
+	 * from a selected row, removes) the range up to the index cell under the pointer until release.
+	 */
+	startDrag: (id: RowId) => void,
+	/** The pointer reached another index cell; ignored when no drag is in progress. */
+	dragOver: (id: RowId) => void,
 	/** Arrow-key navigation; collapses a multi-selection to one row. */
 	move: (delta: number) => void,
 	clear: () => void,
@@ -111,6 +122,8 @@ export type ExcelDataTableContextValue = {
 	canUpdateRows: boolean,
 	sinks: RowWriteSinks,
 	newRow: NewRowConfig,
+	/** The Provider's `btnDeleteLabel`: a translation key, or the default "Delete" when absent. */
+	btnDeleteLabel: string | undefined,
 	refresh: () => void,
 	translationNs: string | undefined,
 	translateFieldName: (field: string) => string,

@@ -6,6 +6,7 @@ import {
 	Combobox,
 	ComboboxProps,
 	ComboboxStore,
+	Divider,
 	Group,
 	Input,
 	InputBase,
@@ -70,6 +71,12 @@ export type SearchableSelectProps = {
 	clearable?: boolean,
 	onClear?: () => void,
 	/**
+	 * The user left the control: an option was picked (after `onChange`) or the dropdown was
+	 * dismissed. Not fired for the action option, whose caller decides when its own flow ends. A form
+	 * field passes its `onBlur` here, since focus moves into the dropdown long before the user leaves.
+	 */
+	onBlur?: () => void,
+	/**
 	 * At most this many matching options are shown, the picked one always among them; `0` shows
 	 * all. Defaults to {@link DEFAULT_MAX_OPTIONS}. A caller that fetches the options should request
 	 * `searchPageSize(maxOptions)` rows, so the list and the request agree.
@@ -127,8 +134,8 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 	const { value: activeValue } = props;
 	const isSearchBoxEnabled =
 		props.items.length >= Number(props.searchBoxEnabledAt);
-	const { search, setSearch, activeItem, setActiveItem, combobox } =
-		useSearchSelect(isSearchBoxEnabled);
+	const { search, setSearch, activeItem, setActiveItem, combobox, closeOnSubmit } =
+		useSearchSelect(isSearchBoxEnabled, props.onBlur);
 
 	useEffect(() => {
 		const selectedItem = findItem(props.items, activeValue);
@@ -151,7 +158,7 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 			withinPortal={true}
 			{...widthProps} {...props.comboboxProps}
 			onOptionSubmit={(val) => {
-				combobox.closeDropdown();
+				closeOnSubmit();
 				if (val === ACTION_OPTION_VALUE) {
 					props.onActionTrigger?.();
 					return;
@@ -159,6 +166,7 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 				const selected = findItem(props.items, val);
 				setActiveItem(selected);
 				props.onChange?.(val);
+				props.onBlur?.();
 			}}
 		>
 			<ComboboxTarget
@@ -220,7 +228,11 @@ function LockButton(props: { missing?: string[], testId?: string }): React.React
 	);
 }
 
-function useSearchSelect(isSearchBoxEnabled: boolean) {
+function useSearchSelect(isSearchBoxEnabled: boolean, onBlur: (() => void) | undefined) {
+	const onBlurRef = React.useRef(onBlur);
+	onBlurRef.current = onBlur;
+	// An option submit reports the blur itself, after its change, so the field validates the new value.
+	const isSubmittingRef = React.useRef(false);
 	const [search, setSearch] = useState('');
 	const [activeItem, setActiveItem] = useState<
 		SearchableSelectItem | null | undefined
@@ -231,6 +243,9 @@ function useSearchSelect(isSearchBoxEnabled: boolean) {
 			combobox.resetSelectedOption();
 			// combobox.focusTarget();
 			setSearch('');
+			if (!isSubmittingRef.current) {
+				onBlurRef.current?.();
+			}
 		},
 		onDropdownOpen: (_eventSource) => {
 			if(isSearchBoxEnabled) combobox.focusSearchInput();
@@ -244,7 +259,13 @@ function useSearchSelect(isSearchBoxEnabled: boolean) {
 		},
 	});
 
-	return { search, setSearch, activeItem, setActiveItem, combobox };
+	const closeOnSubmit = () => {
+		isSubmittingRef.current = true;
+		combobox.closeDropdown();
+		isSubmittingRef.current = false;
+	};
+
+	return { search, setSearch, activeItem, setActiveItem, combobox, closeOnSubmit };
 }
 
 function findItem(items: SearchableSelectItem[], value: string | undefined | null) {
@@ -357,12 +378,15 @@ const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
 							<Combobox.Empty>Nothing found</Combobox.Empty>
 						)}
 					</Combobox.Group>
-					{props.actionOptionLabel && (
+				</ScrollArea.Autosize>
+				{props.actionOptionLabel && (
+					<>
+						<Divider my={4} {...testAttrs(props.testId, 'actionDivider')} />
 						<Combobox.Option value={ACTION_OPTION_VALUE} {...testAttrs(props.testId, 'actionOption')}>
 							{props.actionOptionLabel}
 						</Combobox.Option>
-					)}
-				</ScrollArea.Autosize>
+					</>
+				)}
 			</Combobox.Options>
 		</Combobox.Dropdown>
 	);

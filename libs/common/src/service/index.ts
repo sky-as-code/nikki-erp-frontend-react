@@ -1,3 +1,3 @@
-export * from './asyncNotice';
+export * from './shellNotice';
 export * from './crudServiceBase';
 export * from './orgContext';

@@ -1,4 +1,8 @@
 import { CommandBus } from '../commandBus';
+import { ClientErrorItem, translateClientError } from '../types';
+import { escapeHtml } from '../utils/string';
+
+import type { ClientErrorTranslator } from '../types';
 
 
 /**
@@ -7,9 +11,9 @@ import { CommandBus } from '../commandBus';
  * A literal rather than an import: the Shell owns the name, and `common` must not take a
  * compile-time dependency on the shell implementation to read it.
  */
-const NOTIFY = 'shell.async_notice.notify';
+const NOTIFY = 'shell.shell_notice.notify';
 
-export type AsyncNoticeType = 'info' | 'error';
+export type ShellNoticeType = 'info' | 'error';
 
 /**
  * Shows a transient notice at the top-center of the Shell for the outcome of an async action.
@@ -22,7 +26,7 @@ export type AsyncNoticeType = 'info' | 'error';
  *
  * @returns the notice id.
  */
-export async function showAsyncNotice(type: AsyncNoticeType, html: string): Promise<string> {
+export async function showShellNotice(type: ShellNoticeType, html: string): Promise<string> {
 	const bus = CommandBus.instance;
 	if (!bus) {
 		throw new Error('CommandBus is not initialized; the Shell installs it when the host provider mounts.');
@@ -33,4 +37,20 @@ export async function showAsyncNotice(type: AsyncNoticeType, html: string): Prom
 		throw response.error ?? new Error(`${NOTIFY} returned no notice id.`);
 	}
 	return id;
+}
+
+/**
+ * Sends every client error to the Shell Notice stack as an `error` notice, translated and escaped
+ * (problem shell-001). Authorization errors are skipped: the request layer already shows the
+ * locked-feature modal for them, and a notice on top would repeat it.
+ */
+export function notifyClientErrors(t: ClientErrorTranslator, errors: ClientErrorItem[]): void {
+	for (const item of errors) {
+		if (ClientErrorItem.isAuthorizationError(item)) {
+			continue;
+		}
+		showShellNotice('error', escapeHtml(translateClientError(t, item))).catch((error: unknown) => {
+			console.error('Failed to show the Shell Notice', error);
+		});
+	}
 }

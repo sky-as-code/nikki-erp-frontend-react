@@ -1,27 +1,27 @@
-export type AsyncNoticeType = 'info' | 'error';
+export type ShellNoticeType = 'info' | 'error';
 
-export type AsyncNotice = {
+export type ShellNotice = {
 	id: string,
-	type: AsyncNoticeType,
+	type: ShellNoticeType,
 	html: string,
 };
 
-export type AsyncNoticeSnapshot = {
-	readonly info: readonly AsyncNotice[],
-	readonly error: readonly AsyncNotice[],
+export type ShellNoticeSnapshot = {
+	readonly info: readonly ShellNotice[],
+	readonly error: readonly ShellNotice[],
 };
 
-export type AsyncNoticeStore = {
+export type ShellNoticeStore = {
 	subscribe: (listener: () => void) => () => void,
-	getSnapshot: () => AsyncNoticeSnapshot,
-	push: (type: AsyncNoticeType, html: string) => string,
+	getSnapshot: () => ShellNoticeSnapshot,
+	push: (type: ShellNoticeType, html: string) => string,
 	dismiss: (id: string) => void,
 	pauseInfo: () => void,
 	resumeInfo: () => void,
 	clear: () => void,
 };
 
-export type AsyncNoticeStoreOptions = {
+export type ShellNoticeStoreOptions = {
 	infoTimeoutMs?: number,
 	stackCap?: number,
 };
@@ -41,7 +41,7 @@ type InfoTimer = {
 };
 
 type StoreState = {
-	snapshot: AsyncNoticeSnapshot,
+	snapshot: ShellNoticeSnapshot,
 	timers: Map<string, InfoTimer>,
 	listeners: Set<() => void>,
 	paused: boolean,
@@ -52,7 +52,7 @@ type StoreState = {
  * Transient, in-memory notices for async actions. A plain external store rather than a
  * `@storeService` slice: it owns timers, and the command handler writes to it outside React.
  */
-export function createAsyncNoticeStore(options: AsyncNoticeStoreOptions = {}): AsyncNoticeStore {
+export function createShellNoticeStore(options: ShellNoticeStoreOptions = {}): ShellNoticeStore {
 	const infoTimeoutMs = options.infoTimeoutMs ?? INFO_TIMEOUT_MS;
 	const stackCap = options.stackCap ?? STACK_CAP;
 	const state: StoreState = {
@@ -80,7 +80,7 @@ export function createAsyncNoticeStore(options: AsyncNoticeStoreOptions = {}): A
 }
 
 type PushArgs = {
-	type: AsyncNoticeType,
+	type: ShellNoticeType,
 	html: string,
 	infoTimeoutMs: number,
 	stackCap: number,
@@ -89,7 +89,7 @@ type PushArgs = {
 
 function pushNotice(state: StoreState, args: PushArgs): string {
 	state.sequence += 1;
-	const notice: AsyncNotice = { id: `async-notice-${state.sequence}`, type: args.type, html: args.html };
+	const notice: ShellNotice = { id: `shell-notice-${state.sequence}`, type: args.type, html: args.html };
 	const stack = [...state.snapshot[args.type], notice];
 	const dropped = stack.splice(0, Math.max(0, stack.length - args.stackCap));
 	dropped.forEach(old => stopTimer(state, old.id));
@@ -149,10 +149,10 @@ function clearAll(state: StoreState): void {
 	commit(state, { info: [], error: [] });
 }
 
-function commit(state: StoreState, snapshot: AsyncNoticeSnapshot): void {
+function commit(state: StoreState, snapshot: ShellNoticeSnapshot): void {
 	state.snapshot = snapshot;
 	state.listeners.forEach(listener => listener());
 }
 
 /** The Shell's single instance, shared by the command handler and the container. */
-export const asyncNoticeStore = createAsyncNoticeStore();
+export const shellNoticeStore = createShellNoticeStore();

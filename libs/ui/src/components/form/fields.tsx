@@ -9,6 +9,7 @@ import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
 import { DateTimeInputField, ReadOnlyTextField, TimeInputField } from './dateTimeFields';
+import { fieldErrorText } from './fieldErrors';
 import { FieldLabelProvider, useFieldLabelHidden } from './fieldLabelContext';
 import { useFieldData, useFormField, useFormStyle } from './formContext';
 import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
@@ -391,7 +392,7 @@ export function TextInputField(props: TextInputFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Input
 				id={inputId}
@@ -447,7 +448,7 @@ export function PasswordInputField(props: PasswordInputFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Input
 				id={inputId}
@@ -505,7 +506,7 @@ export function NumberInputField(props: NumberInputFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -516,7 +517,7 @@ export function NumberInputField(props: NumberInputFieldProps) {
 					return (
 						<NumberInput
 							id={inputId}
-							error={t(fieldData.error as any)}
+							error={fieldErrorText(t, fieldData)}
 							value={typeof value === 'number' ? value : undefined}
 							onChange={(val) => field.onChange(typeof val === 'number' ? val : undefined)}
 							onBlur={field.onBlur}
@@ -574,7 +575,7 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -585,7 +586,7 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 					return (
 						<NumberInput
 							id={inputId}
-							error={t(fieldData.error as any)}
+							error={fieldErrorText(t, fieldData)}
 							value={value ?? ''}
 							// Mantine hands back a string while typing and a number once the value
 							// parses. Normalising to string keeps precision the number never had.
@@ -635,7 +636,7 @@ export function DateInputField(props: DateInputFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -660,6 +661,7 @@ export function DateInputField(props: DateInputFieldProps) {
 							error={fieldData.error}
 							value={dateValue}
 							onChange={(date) => field.onChange(date || undefined)}
+							onBlur={field.onBlur}
 							disabled={modelLoading}
 							placeholder={t(fieldData.placeholder)}
 							ref={ref}
@@ -706,7 +708,7 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 			inputId={inputId}
 			label={t(fieldData.label)}
 			isRequired={fieldData.isRequired}
-			error={t(fieldData.error as any)}
+			error={fieldErrorText(t, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -725,6 +727,7 @@ export function StaticEnumSelectField(props: StaticEnumSelectFieldProps) {
 								// Transform null or empty string to undefined for optional enum
 								field.onChange(val === null || val === '' ? undefined : val);
 							}}
+							onBlur={field.onBlur}
 							disabled={modelLoading}
 							placeholder={t(fieldData.placeholder)}
 							// A clear lands as undefined; the update payload turns a cleared field into null.
@@ -827,12 +830,13 @@ export function BooleanField(props: BooleanFieldProps) {
 					inputId={inputId}
 					label={t(fieldData.label)}
 					isRequired={fieldData.isRequired}
-					error={fieldData.error ? t(fieldData.error as any) : undefined}
+					error={fieldErrorText(t, fieldData)}
 				>
 					<Switch
 						id={inputId}
 						checked={field.value !== undefined ? Boolean(field.value) : Boolean(defaultValue)}
 						onChange={(e) => field.onChange(e.currentTarget.checked)}
+						onBlur={field.onBlur}
 						disabled={modelLoading || inputProps?.disabled}
 						size='md'
 						{...fieldAttrs}

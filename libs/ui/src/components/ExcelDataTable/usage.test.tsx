@@ -111,6 +111,7 @@ describe('ExcelDataTable row-write compositions', () => {
 				newRowResourceSchema='iam_user'
 				newRowSearchField='id'
 				newRowSearchCommand='iam.user.search'
+				btnDeleteLabel='common:action.unassign'
 			>
 				<ExcelDataTable.Table />
 				<ExcelDataTable.EditRowActions mode='create' onConfirm={() => undefined} onDiscard={() => undefined} />

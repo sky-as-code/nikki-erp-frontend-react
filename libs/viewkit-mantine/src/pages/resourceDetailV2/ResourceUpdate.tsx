@@ -6,6 +6,8 @@ import React from 'react';
 import { useParams } from 'react-router';
 
 import { toV2FormNodes } from './formNodes';
+import { useRecordLoadErrors } from './loadErrors';
+import { ResourceNotFound } from './ResourceNotFound';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
 import { useEdgeLabelFields } from '../../data/useEdgeLabelFields';
 import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_V2 } from '../../ids';
@@ -81,6 +83,7 @@ export function ResourceUpdateProvider(
 	React.useEffect(() => { refresh(); }, [refresh]);
 
 	const resource = getByIdCmd.data?.item as Record<string, unknown> | undefined;
+	const notFound = useRecordLoadErrors(getByIdCmd.clientErrors);
 	const afterSave = useUpdateAfterSave(id, resource, refresh);
 	const runAfterUpdate = afterSave.runAfterUpdate;
 	const payloadContributors = useUpdatePayloadContributors();
@@ -118,6 +121,7 @@ export function ResourceUpdateProvider(
 			saveClientErrors: updateCmd.clientErrors,
 			saveError: updateCmd.error,
 			loadError: getByIdCmd.error,
+			notFound,
 			allStatuses: props.allStatuses,
 			currentStatus: props.currentStatus,
 			contextualActions: props.contextualActions,
@@ -134,8 +138,7 @@ export function ResourceUpdateProvider(
 		}),
 		[
 			commands, resource, edgeLabels.destSchemas, getByIdCmd.isPending, updateCmd.isPending,
-			refresh, onSubmit,
-			updateCmd.clientErrors, updateCmd.error, getByIdCmd.error,
+			refresh, onSubmit, updateCmd.clientErrors, updateCmd.error, getByIdCmd.error, notFound,
 			props.allStatuses, props.currentStatus, props.contextualActions,
 			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.thumbnail, props.childrenNodes,
 			afterSave.register, afterSave.hasPending, afterSave.isRunning, afterSave.submitAfterSaveOnly,
@@ -163,6 +166,9 @@ function ResourceUpdateContent(): React.ReactNode {
 	// exists, so the guard was protecting nothing.
 	if (!modelSchema || !context.commands.getById) {
 		return null;
+	}
+	if (context.notFound) {
+		return <ResourceNotFound />;
 	}
 
 	return <MetaComponent node={nodes} />;

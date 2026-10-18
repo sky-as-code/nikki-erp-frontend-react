@@ -1,13 +1,14 @@
 import React from 'react';
 
 import {
-	emptySelection, moveSelection, pruneSelection, seedSelection, selectAll, selectionStateOf, selectWithModifiers,
+	dragRange, emptySelection, isSelected, moveSelection, pruneSelection, rangeIndex, seedSelection, selectAll,
+	selectionStateOf, selectOnly, toggleIndex,
 } from './selectionModel';
 import { readStoredPageSize, allowedPageSizes, resolveInitialViewMode, writeStoredViewMode } from './storage';
 import { rowIdOf } from './types';
 
 import type { EditingApi, OpenState, SelectionApi } from './context';
-import type { SelectionMode, SelectionModifiers, SelectionState } from './selectionModel';
+import type { DragMode, SelectionMode, SelectionState } from './selectionModel';
 import type { ExcelViewMode, RowId, SearchData, SearchItem } from './types';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -121,11 +122,7 @@ export function useSelectionState(
 		onSelectionChange?.(state.ids.map(id => itemsById.get(id)).filter((item): item is SearchItem => !!item));
 	}, [itemsById, onSelectionChange, state.ids]);
 
-	const selectRow = React.useCallback((id: RowId, mods: SelectionModifiers = {}) => {
-		if (!isFrozen) {
-			setState(prev => selectWithModifiers(prev, order, id, mods, mode));
-		}
-	}, [isFrozen, order, mode]);
+	const gestures = useSelectionGestures(state, setState, order, mode, isFrozen);
 	const move = React.useCallback((delta: number) => {
 		if (!isFrozen) {
 			setState(prev => moveSelection(prev, order, delta));
@@ -135,9 +132,85 @@ export function useSelectionState(
 	const toggleAll = useToggleAll(setState, order, isFrozen || mode === 'single');
 
 	return React.useMemo(
-		() => ({ ...state, selectRow, move, clear, toggleAll, isEnabled: !isFrozen, mode, order, itemsById }),
-		[state, selectRow, move, clear, toggleAll, isFrozen, mode, order, itemsById],
+		() => ({ ...state, ...gestures, move, clear, toggleAll, isEnabled: !isFrozen, mode, order, itemsById }),
+		[state, gestures, move, clear, toggleAll, isFrozen, mode, order, itemsById],
 	);
+}
+
+type SetSelection = React.Dispatch<React.SetStateAction<SelectionState>>;
+
+type SelectionGestures = Pick<SelectionApi, 'selectRow' | 'toggleRow' | 'selectRange' | 'startDrag' | 'dragOver'>;
+
+/** The click gestures; each one is a no-op while the selection is frozen. */
+function useSelectionGestures(
+	state: SelectionState, setState: SetSelection, order: RowId[], mode: SelectionMode, isFrozen: boolean,
+): SelectionGestures {
+	const apply = React.useCallback((next: (prev: SelectionState) => SelectionState) => {
+		if (!isFrozen) {
+			setState(next);
+		}
+	}, [isFrozen, setState]);
+	const { startDrag, dragOver } = useIndexDrag(state, apply, order, mode, isFrozen);
+	return React.useMemo(() => ({
+		selectRow: (id: RowId) => apply(() => selectOnly(id)),
+		toggleRow: (id: RowId) => apply(prev => toggleIndex(prev, id, mode)),
+		selectRange: (id: RowId) => apply(prev => rangeIndex(prev, order, id, mode)),
+		startDrag,
+		dragOver,
+	}), [apply, order, mode, startDrag, dragOver]);
+}
+
+type IndexDrag = { startId: RowId, baseIds: RowId[], mode: DragMode };
+
+/**
+ * A press on an index cell followed by moves over other index cells. The press decides the mode
+ * from the row it lands on and freezes the selection of that moment as the base; every move
+ * recomputes the range from that base, so dragging back shrinks it. The release can land anywhere,
+ * hence the document listener.
+ */
+function useIndexDrag(
+	state: SelectionState,
+	apply: (next: (prev: SelectionState) => SelectionState) => void,
+	order: RowId[],
+	mode: SelectionMode,
+	isFrozen: boolean,
+): Pick<SelectionGestures, 'startDrag' | 'dragOver'> {
+	const drag = React.useRef<IndexDrag | null>(null);
+	const latest = React.useRef(state);
+	React.useEffect(() => {
+		latest.current = state;
+	}, [state]);
+	React.useEffect(() => {
+		const end = () => {
+			drag.current = null;
+		};
+		document.addEventListener('pointerup', end);
+		document.addEventListener('pointercancel', end);
+		return () => {
+			document.removeEventListener('pointerup', end);
+			document.removeEventListener('pointercancel', end);
+		};
+	}, []);
+	const startDrag = React.useCallback((id: RowId) => {
+		if (isFrozen) {
+			return;
+		}
+		if (mode === 'single') {
+			apply(prev => toggleIndex(prev, id, mode));
+			return;
+		}
+		const base = latest.current.ids;
+		const dragMode: DragMode = isSelected(latest.current, id) ? 'remove' : 'add';
+		drag.current = { startId: id, baseIds: base, mode: dragMode };
+		apply(() => dragRange(base, order, id, id, dragMode));
+	}, [apply, isFrozen, mode, order]);
+	const dragOver = React.useCallback((id: RowId) => {
+		const current = drag.current;
+		if (current) {
+			apply(() => dragRange(current.baseIds, order, current.startId, id, current.mode));
+		}
+	}, [apply, order]);
+	return { startDrag, dragOver };
 }
 
 function useToggleAll(

@@ -3,6 +3,7 @@ import { useId } from '@mantine/hooks';
 import React from 'react';
 import { useWatch } from 'react-hook-form';
 
+import { fieldErrorText } from './fieldErrors';
 import { BaseFieldWrapper } from './fields';
 import { useFormField, useFieldData } from './formContext';
 import { useLocalize, useTranslate } from '../../i18n';
@@ -54,7 +55,7 @@ export function EntityDisplayField<TEntity>({
 			label={localize(fieldData.label)}
 			description={localize(fieldData.description as any)}
 			isRequired={fieldData.isRequired}
-			error={localize(fieldData.error as any)}
+			error={fieldErrorText(localize, fieldData)}
 		>
 			<TextInput
 				id={inputId}

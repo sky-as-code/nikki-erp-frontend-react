@@ -1,22 +1,20 @@
-import { Alert } from '@mantine/core';
 import {
 	CrudFormProvider, FormStyleProvider, FormTestIdProvider, useCrudFormRuntime,
 } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor, MetaComponent } from '@nikkierp/viewengine/render';
-import { IconAlertCircle } from '@tabler/icons-react';
 import React from 'react';
 
 import { resourceFormPropsSchema } from '../../../components/resourceFormProps';
 import { ResourceFormViewScope } from '../../../components/resourceFormViewContext';
 import { RESOURCE_FORM_V2 } from '../../../ids';
+import { publishServerErrors } from '../../resourceDetail/publishServerErrors';
 import {
 	DebugFormErrors, useResourceDetailContext, useResourceDetailTranslationNs,
 } from '../../resourceDetail/ResourceDetailProvider';
 import { useResourceUpdateContext } from '../resourceUpdateContext';
 
 import type { ResourceFormProps } from '../../../components/resourceFormProps';
-import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
@@ -59,12 +57,12 @@ function ResourceForm({ props, runtime }: {
 					onSubmit={onSubmit}
 				>
 					<ResourceFormViewScope updateMode={updateMode} setUpdateMode={setUpdateMode}>
-						<ServerErrorAlert />
+						<ServerErrorRouter />
 						{/*
 						 * Page-level, not section-level: the one form now spans every section, so a
 						 * validation error on a field in an appended `collapsible_section` used to
 						 * surface inside the basic-info section's box -- nowhere near the input that
-						 * caused it. Rendered here it sits above all sections, like `ServerErrorAlert`.
+						 * caused it. Rendered here it sits above all sections.
 						 */}
 						<FormErrorDebugPanel />
 						<MetaComponent node={runtime.children} />
@@ -82,32 +80,26 @@ function FormErrorDebugPanel(): React.ReactNode {
 }
 
 /**
- * Routes the last save's rejections into the form: field-scoped items onto their
- * inputs, the rest into an alert above the form.
+ * Routes the last save's rejections: field-scoped items onto their inputs, the rest to the Shell
+ * Notice stack.
  *
- * Lives inside `CrudFormProvider` because `setServerErrors` needs the form runtime.
+ * Lives inside `CrudFormProvider` because `setServerErrors` needs the form runtime. Each rejection
+ * is routed once: a re-render, a language switch or a StrictMode effect replay must not publish the
+ * same notice again.
  */
-function ServerErrorAlert(): React.ReactNode {
+function ServerErrorRouter(): null {
 	const { saveClientErrors } = useResourceUpdateContext();
-	const formRuntime = useCrudFormRuntime();
+	const setServerErrors = useCrudFormRuntime()?.setServerErrors;
 	const t = useTranslate(useResourceDetailTranslationNs());
-	const [unattached, setUnattached] = React.useState<ClientErrorItem[]>([]);
-	const setServerErrors = formRuntime?.setServerErrors;
+	const routedRef = React.useRef<unknown>(null);
 
 	React.useEffect(() => {
-		if (!setServerErrors) return;
-		setUnattached(saveClientErrors.length > 0 ? setServerErrors(saveClientErrors) : []);
-	}, [saveClientErrors, setServerErrors]);
+		if (!setServerErrors || saveClientErrors.length === 0 || routedRef.current === saveClientErrors) {
+			return;
+		}
+		routedRef.current = saveClientErrors;
+		setServerErrors(publishServerErrors(t, saveClientErrors));
+	}, [saveClientErrors, setServerErrors, t]);
 
-	if (unattached.length === 0) {
-		return null;
-	}
-
-	return (
-		<Alert variant='light' color='red' icon={<IconAlertCircle />} mb='md'>
-			{unattached.map((item, index) => (
-				<div key={index}>{item.key ? t(item.key) : item.message}</div>
-			))}
-		</Alert>
-	);
+	return null;
 }

@@ -2,16 +2,16 @@ import { Badge } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import React from 'react';
 
-import classes from './AsyncNotice.module.css';
-import { AsyncNotice, AsyncNoticeType } from './asyncNoticeStore';
 import { NoticeCard } from './NoticeCard';
+import classes from './ShellNotice.module.css';
+import { ShellNotice, ShellNoticeType } from './shellNoticeStore';
 
 
 export const VISIBLE_LAYERS = 3;
 
 export type NoticeStackProps = {
-	type: AsyncNoticeType,
-	notices: readonly AsyncNotice[],
+	type: ShellNoticeType,
+	notices: readonly ShellNotice[],
 	onDismiss: (id: string) => void,
 	onPause?: () => void,
 	onResume?: () => void,
@@ -31,7 +31,7 @@ export function NoticeStack({ type, notices, onDismiss, onPause, onResume }: Not
 			// Pointer events cover mouse hover and touch: a touch fires enter on press and leave on lift.
 			onPointerEnter={onPause}
 			onPointerLeave={onResume}
-			{...testAttrs('shell', 'asyncNotice', 'stack', type)}
+			{...testAttrs('shell', 'shellNotice', 'stack', type)}
 		>
 			{visible.map((notice, layer) => (
 				<NoticeCard
@@ -48,7 +48,7 @@ export function NoticeStack({ type, notices, onDismiss, onPause, onResume }: Not
 					size='sm'
 					circle={hiddenCount < 10}
 					color={type === 'error' ? 'red' : 'blue'}
-					{...testAttrs('shell', 'asyncNotice', 'hiddenCount', type)}
+					{...testAttrs('shell', 'shellNotice', 'hiddenCount', type)}
 				>
 					+{hiddenCount}
 				</Badge>

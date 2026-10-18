@@ -4,6 +4,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
+import { fieldErrorText } from './fieldErrors';
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
 import { useFormTestIdPrefix } from './formTestIds';
@@ -72,7 +73,7 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 			// Uncomment to show sub-labels
 			// description={translatedOrEmpty(localize(fieldData.description))}
 			isRequired={fieldData.isRequired}
-			error={options.loadError ?? localize(fieldData.error as any)}
+			error={options.loadError ?? fieldErrorText(localize, fieldData)}
 		>
 			<Controller
 				name={name}
@@ -91,6 +92,7 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 							// Null, not undefined: an update must tell the server to clear the reference.
 							clearable={!fieldData.isRequired}
 							onClear={() => field.onChange(null)}
+							onBlur={field.onBlur}
 							maxOptions={DEFAULT_MAX_OPTIONS}
 							onSearchChange={setTerm}
 							// Always on: the search box triggers server-side search, not just a
@@ -109,7 +111,10 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 						{options.destSchemaName ? (
 							<RelationPickerModal
 								opened={isPickerOpen}
-								onClose={() => setIsPickerOpen(false)}
+								onClose={() => {
+									setIsPickerOpen(false);
+									field.onBlur();
+								}}
 								destSchemaName={options.destSchemaName}
 								selectionMode={options.selectionMode}
 								selectedIds={field.value ? [String(field.value)] : []}

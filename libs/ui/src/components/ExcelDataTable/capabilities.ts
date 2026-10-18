@@ -145,6 +145,8 @@ export type ExcelDataTableRowWriteProps = {
 	updateEntitlement?: EntitlementRequirementInput,
 	createEntitlement?: EntitlementRequirementInput,
 	deleteEntitlement?: EntitlementRequirementInput,
+	/** A translation key (`ns:key` works) replacing the row delete button's default "Delete" label. */
+	btnDeleteLabel?: string,
 	/** Defaults to `user-input`. */
 	newRowSource?: NewRowSource,
 	/** With `server-resource`: the schema whose records the insert row searches. */
@@ -165,6 +167,7 @@ export type RowCapabilities = {
 	canUpdateRows: boolean,
 	sinks: RowWriteSinks,
 	newRow: NewRowConfig,
+	btnDeleteLabel: string | undefined,
 };
 
 const emptyEditors: Record<string, NewRowFieldEditor> = {};
@@ -186,7 +189,8 @@ export function useRowCapabilities(props: ExcelDataTableRowWriteProps, tableName
 		canUpdateRows: capabilities.includes('update') && !locks.update.locked,
 		sinks,
 		newRow,
-	}), [capabilities, locks, sinks, newRow]);
+		btnDeleteLabel: props.btnDeleteLabel,
+	}), [capabilities, locks, sinks, newRow, props.btnDeleteLabel]);
 }
 
 function useRowWriteSinks(props: ExcelDataTableRowWriteProps): RowWriteSinks {
