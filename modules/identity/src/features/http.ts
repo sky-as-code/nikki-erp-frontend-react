@@ -5,7 +5,7 @@ import type { RequestResult } from '@nikkierp/common/request';
 
 /**
  * Direct REST access for the handful of IAM endpoints that `RestApi` does not model: nested
- * reads such as `GET /users/:id/roles` and the non-paged `GET /roles/describe`. Everything
+ * reads such as `GET /iam_user/:id/roles` and the non-paged `GET /iam_role/describe`. Everything
  * that is a plain CRUD call on a registered schema must keep going through
  * `dyn.withSchema(...).restApi` so the schema-etag refresh still happens.
  */

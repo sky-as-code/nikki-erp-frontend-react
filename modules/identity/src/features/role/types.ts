@@ -39,7 +39,7 @@ export type RoleExistsRequest = dyn.RestExistsRequest;
 export type RoleExistsResponse = dyn.RestExistsResponse;
 
 /**
- * `POST /v1/iam/roles/:role_id/manage-users` (and `manage-groups`): one add/remove delta of the
+ * `POST /v1/iam/iam_role/:id/manage_users` (and `manage_groups`): one add/remove delta of the
  * role's principals, applied in one transaction.
  */
 export type ManageRolePrincipalsRequest = { id: string, add?: string[], remove?: string[] };

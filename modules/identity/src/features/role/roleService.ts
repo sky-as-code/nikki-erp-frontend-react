@@ -6,12 +6,12 @@ import { IAM_MODULE, ROLE_SCHEMA_NAME } from '../../constants';
 import { identityStore } from '../../store';
 
 
-export type RolePrincipalsAction = 'manage-users' | 'manage-groups';
+export type RolePrincipalsAction = 'manage_users' | 'manage_groups';
 
 /**
- * `manageM2m` appends its path to the schema's base path (`v1/iam/roles`), so the role id goes into
- * the path: the routes are `roles/:role_id/manage-*`, not `roles/manage-*`. Empty lists are dropped
- * so a remove-only call sends no `add`.
+ * `manageM2m` appends its path to the schema's base path (`v1/iam/iam_role`), so the role id goes
+ * into the path: the routes are `iam_role/:id/manage_*`, not `iam_role/manage_*`. Empty lists are
+ * dropped so a remove-only call sends no `add`.
  */
 export function toManagePrincipalsCall(request: t.ManageRolePrincipalsRequest, action: RolePrincipalsAction) {
 	const body: { add?: string[], remove?: string[] } = {};
@@ -35,14 +35,14 @@ export class RoleService extends StoreCrudServiceBase {
 	public manageUsers(
 		request: t.ManageRolePrincipalsRequest,
 	): Promise<ServiceResult<t.ManageRolePrincipalsResponse>> {
-		return this.managePrincipals(request, 'manage-users');
+		return this.managePrincipals(request, 'manage_users');
 	}
 
 	@storeAsyncMethod
 	public manageGroups(
 		request: t.ManageRolePrincipalsRequest,
 	): Promise<ServiceResult<t.ManageRolePrincipalsResponse>> {
-		return this.managePrincipals(request, 'manage-groups');
+		return this.managePrincipals(request, 'manage_groups');
 	}
 
 	private managePrincipals(

@@ -109,7 +109,7 @@ function buildRolePermissionSection(): ComponentNode {
  * The backend exposes no `/roles/:id/users`; assignment is read through the generic
  * search with the `linked` edge operator, from the principal's side. `roles` is the
  * inverse edge on both iam_user and iam_group. It is written through the role-side
- * `manage-users` / `manage-groups`, which assert what the principal side asserts.
+ * `manage_users` / `manage_groups`, which assert what the principal side asserts.
  */
 function buildAssignmentResources() {
 	return [

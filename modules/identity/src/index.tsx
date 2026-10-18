@@ -81,31 +81,15 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 }
 
 function registerModelSchemas(): void {
-	schemaRegistry.register([{
-		schemaName: c.GROUP_SCHEMA_NAME,
-		resourcePath: 'v1/iam/groups',
-	}, {
-		schemaName: c.ORGANIZATION_SCHEMA_NAME,
-		resourcePath: 'v1/iam/organizations',
-	}, {
-		schemaName: c.ORG_UNIT_SCHEMA_NAME,
-		resourcePath: 'v1/iam/orgunits',
-	}, {
-		schemaName: c.ROLE_SCHEMA_NAME,
-		resourcePath: 'v1/iam/roles',
-	}, {
-		// The composable engine routes; the hand-written /users CRUD is retired.
-		schemaName: c.USER_SCHEMA_NAME,
-		resourcePath: 'v1/iam/iam_user',
-	}, {
-		// The engine routes; the hand-written /entitlements and /resources routes return other shapes.
-		schemaName: c.ENTITLEMENT_SCHEMA_NAME,
-		resourcePath: `v1/iam/${c.ENTITLEMENT_SCHEMA_NAME}`,
-	}, {
-		schemaName: c.RESOURCE_SCHEMA_NAME,
-		resourcePath: `v1/iam/${c.RESOURCE_SCHEMA_NAME}`,
-	}, {
-		schemaName: c.ACTION_SCHEMA_NAME,
-		resourcePath: `v1/iam/${c.ACTION_SCHEMA_NAME}`,
-	}]);
+	// Every IAM resource is served by the composable engine at v1/iam/{schema_name}.
+	schemaRegistry.register([
+		c.GROUP_SCHEMA_NAME,
+		c.ORGANIZATION_SCHEMA_NAME,
+		c.ORG_UNIT_SCHEMA_NAME,
+		c.ROLE_SCHEMA_NAME,
+		c.USER_SCHEMA_NAME,
+		c.ENTITLEMENT_SCHEMA_NAME,
+		c.RESOURCE_SCHEMA_NAME,
+		c.ACTION_SCHEMA_NAME,
+	].map(schemaName => ({ schemaName, resourcePath: `v1/iam/${schemaName}` })));
 }
