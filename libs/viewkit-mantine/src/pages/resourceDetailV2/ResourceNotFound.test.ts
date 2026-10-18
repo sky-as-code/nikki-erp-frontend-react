@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ResourceNotFound } from './ResourceNotFound';
+import { HideWhenNotFound, ResourceNotFound } from './ResourceNotFound';
 import { ResourceUpdateContext } from '../resourceDetail/resourceUpdateContext';
 
 import type { ResourceUpdateContextValue } from '../resourceDetail/resourceUpdateContext';
@@ -38,6 +38,15 @@ describe('ResourceNotFound', () => {
 		expect(html).toContain('unauthorized_go_back');
 		// `'../'` resolves path-relative against `/identity/roles/missing`.
 		expect(html).toMatch(/<a[^>]*data-testid="roleDetail\.notFound\.goBack"[^>]*href="\/identity\/roles\/"/);
+	});
+
+	it('hides the sections after the update view only when the record is not found', () => {
+		const renderGuard = (notFound: boolean): string => renderToStaticMarkup(
+			React.createElement(ResourceUpdateContext.Provider, { value: { notFound } as ResourceUpdateContextValue },
+				React.createElement(HideWhenNotFound, null, React.createElement('section', null, 'related'))),
+		);
+		expect(renderGuard(false)).toBe('<section>related</section>');
+		expect(renderGuard(true)).toBe('');
 	});
 
 	it('points Go back at the page back link', () => {

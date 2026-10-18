@@ -5,11 +5,12 @@ import { IconArrowLeft, IconMoodSad } from '@tabler/icons-react';
 import React from 'react';
 
 import { useResourceDetailTestAttrs } from '../resourceDetail/ResourceDetailProvider';
+import { useResourceUpdateContext } from '../resourceDetail/resourceUpdateContext';
 import { useBackLinkTarget } from '../resourceDetail/useBackLinkTarget';
 
 
 /**
- * The 404 state rendered in place of the header and form when the record does not exist.
+ * The 404 state that replaces the whole detail page when the record does not exist.
  *
  * The URL is kept on purpose, so the user can see and share what was asked for. There is no
  * "Go home": its destination lives in `@nikkierp/shell`, which this package must not import.
@@ -42,4 +43,12 @@ export function ResourceNotFound(): React.ReactNode {
 			}
 		/>
 	);
+}
+
+/**
+ * Renders its children only while the record exists. Not Found replaces the whole page, so the
+ * sections composed after the update view (the related-resources tabs) must not survive it.
+ */
+export function HideWhenNotFound({ children }: { children?: React.ReactNode }): React.ReactNode {
+	return useResourceUpdateContext().notFound ? null : children;
 }

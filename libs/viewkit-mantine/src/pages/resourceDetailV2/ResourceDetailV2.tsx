@@ -22,8 +22,8 @@ export type ResourceDetailV2ViewProps = {
 
 /**
  * The v1 detail page (same create/update flow, unupdatable fields shown as label + read-only
- * text) followed, in update mode, by the related-resources tabs. Reuses the v1 parts by import:
- * nothing in `resourceDetail/` changes.
+ * text) followed, in update mode, by the related-resources tabs, which a Not Found record hides
+ * along with the rest of the page. Reuses the v1 parts by import: nothing in `resourceDetail/` changes.
  */
 export const ResourceDetailV2 = React.memo(ResourceDetailV2View);
 
@@ -57,25 +57,24 @@ function ResourceDetailV2View({ params, childrenNodes }: ResourceDetailV2ViewPro
 						createNodes={params.createNodes}
 					/>
 				) : (
-					<>
-						<ResourceUpdate
-							standardActionCommands={commands}
-							allStatuses={params.allStatuses}
-							currentStatus={params.currentStatus}
-							contextualActions={params.contextualActions}
-							titleLvl1={params.titleLvl1}
-							titleLvl2={params.titleLvl2}
-							backLinkTitle={params.backLinkTitle}
-							thumbnail={params.thumbnail}
-							childrenNodes={nodes}
-						/>
+					<ResourceUpdate
+						standardActionCommands={commands}
+						allStatuses={params.allStatuses}
+						currentStatus={params.currentStatus}
+						contextualActions={params.contextualActions}
+						titleLvl1={params.titleLvl1}
+						titleLvl2={params.titleLvl2}
+						backLinkTitle={params.backLinkTitle}
+						thumbnail={params.thumbnail}
+						childrenNodes={nodes}
+					>
 						<RelatedResourcesTabs
 							resources={params.relatedResources}
 							header={params.relatedResourcesHeader}
 							notice={params.relatedResourcesNotice}
 							translationNs={params.translationNs}
 						/>
-					</>
+					</ResourceUpdate>
 				)}
 			</PageContainer>
 		</ResourceDetailProvider>

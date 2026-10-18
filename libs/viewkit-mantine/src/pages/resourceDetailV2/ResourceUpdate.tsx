@@ -7,7 +7,7 @@ import { useParams } from 'react-router';
 
 import { toV2FormNodes } from './formNodes';
 import { useRecordLoadErrors } from './loadErrors';
-import { ResourceNotFound } from './ResourceNotFound';
+import { HideWhenNotFound, ResourceNotFound } from './ResourceNotFound';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
 import { useEdgeLabelFields } from '../../data/useEdgeLabelFields';
 import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_V2 } from '../../ids';
@@ -32,17 +32,23 @@ export type ResourceUpdateProps = {
 	backLinkTitle?: LinkSpec,
 	thumbnail?: ResourceThumbnailSpec,
 	childrenNodes?: ComponentNode[],
+	/**
+	 * Page sections rendered after the update tree, inside its context, and only while the record
+	 * exists: Not Found replaces the whole page, not just the header and form.
+	 */
+	children?: React.ReactNode,
 };
 
 /**
  * Provides {@link ResourceUpdateContext} and renders the update component tree
  * (`resource_detail__header` + `resource_form` wrapping the page's `childrenNodes`) through the
- * component registry.
+ * component registry, followed by `children` while the record exists.
  */
-export function ResourceUpdate(props: ResourceUpdateProps): React.ReactNode {
+export function ResourceUpdate({ children, ...props }: ResourceUpdateProps): React.ReactNode {
 	return (
 		<ResourceUpdateProvider {...props}>
 			<ResourceUpdateContent />
+			<HideWhenNotFound>{children}</HideWhenNotFound>
 		</ResourceUpdateProvider>
 	);
 }

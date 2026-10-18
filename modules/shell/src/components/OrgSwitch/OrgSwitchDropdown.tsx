@@ -4,7 +4,7 @@ import { routingService } from '@nikkierp/shell/routing';
 import { saveActiveOrgId, useActiveOrgId, useMyOrgs } from '@nikkierp/shell/userContext';
 import { useServiceLayer } from '@nikkierp/ui/appState/store';
 import { FlatSearchableSelect, FlatSearchableSelectProps, SearchableSelectItem } from '@nikkierp/ui/components';
-import { useLocaleCollator, useLocalize } from '@nikkierp/ui/i18n';
+import { useLocaleCollator, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import React, { useMemo } from 'react';
 
 import { sharedStateService } from '../../features/sharedState';
@@ -17,6 +17,7 @@ export type OrgSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWi
 export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNode {
 	const isAuthenticated = useIsAuthenticated();
 	const lc = useLocalize();
+	const t = useTranslate('common');
 	const compareLocalized = useLocaleCollator();
 	const activeOrgId = useActiveOrgId();
 	const orgs = useMyOrgs();
@@ -54,13 +55,14 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 	return isAuthenticated && (items.length || !props.hideIfEmpty) && (
 		<FlatSearchableSelect
 			{...props}
-			actionOptionLabel='Manage organizations...'
+			actionOptionLabel={t('org.manageOrganizations')}
 			searchPlaceholder='Search organization'
 			unselectedPlaceholder='Select organization'
 			dropdownWidth={props.dropdownWidth}
 			items={items}
 			value={activeOrgId ?? undefined}
 			onChange={handleOrgChange}
+			testId='shell.orgSwitch'
 		/>
 	);
 };
