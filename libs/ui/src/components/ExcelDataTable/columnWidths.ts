@@ -12,43 +12,6 @@ const maximumAutoColumnWidth = 500;
 const characterPixelWidth = 8;
 const cellHorizontalPadding = 32;
 
-const storagePrefix = 'ui:ExcelDataTable';
-
-function getColWidthStorageKey(): string {
-	return typeof window === 'undefined' ? '' : `${storagePrefix}:colwidths:${window.location.pathname}`;
-}
-
-function createDefaultWidths(fields: string[]): ColumnWidths {
-	return Object.fromEntries(fields.map(field => [field, defaultColumnWidth]));
-}
-
-function readStoredWidths(fields: string[]): ColumnWidths {
-	const fallback = createDefaultWidths(fields);
-	if (typeof window === 'undefined') {
-		return fallback;
-	}
-	const raw = window.localStorage.getItem(getColWidthStorageKey());
-	if (!raw) {
-		return fallback;
-	}
-	try {
-		const parsed = JSON.parse(raw) as Record<string, number>;
-		return Object.fromEntries(fields.map(field => [
-			field,
-			typeof parsed[field] === 'number' ? parsed[field] : defaultColumnWidth,
-		]));
-	}
-	catch {
-		return fallback;
-	}
-}
-
-function writeStoredWidths(widths: ColumnWidths): void {
-	if (typeof window !== 'undefined') {
-		window.localStorage.setItem(getColWidthStorageKey(), JSON.stringify(widths));
-	}
-}
-
 export function getColumnWidth(field: string, widths: ColumnWidths): number {
 	return widths[field] ?? defaultColumnWidth;
 }
@@ -100,15 +63,11 @@ export function getAutoColumnWidth(field: string, searchData: SearchData): numbe
 	return Math.min(maximumAutoColumnWidth, Math.max(minimumColumnWidth, estimated));
 }
 
-export function useColumnWidthsState(fields: string[]) {
+export function useColumnWidthsState() {
 	const [widths, setWidths] = React.useState<ColumnWidths>({});
 	const [resizing, setResizing] = React.useState<ResizeState | null>(null);
 	// Set by `TableHeader`, which owns the prop, and read by `Table`, whose colgroup must match.
 	const [fillerMinWidth, setFillerMinWidth] = React.useState(0);
-
-	React.useEffect(() => {
-		setWidths(readStoredWidths(fields));
-	}, [fields]);
 
 	React.useEffect(() => {
 		if (!resizing) {
@@ -126,12 +85,6 @@ export function useColumnWidthsState(fields: string[]) {
 			window.removeEventListener('mouseup', onUp);
 		};
 	}, [resizing]);
-
-	React.useEffect(() => {
-		if (!resizing && Object.keys(widths).length > 0) {
-			writeStoredWidths(widths);
-		}
-	}, [resizing, widths]);
 
 	return { widths, setWidths, resizing, setResizing, fillerMinWidth, setFillerMinWidth };
 }

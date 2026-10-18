@@ -8,15 +8,20 @@ import {
 	DEFAULT_FILTERS, filterModuleItems, FilterState, groupModuleItems, ModuleCardItem, ModuleViewMode,
 	toModuleCardItems,
 } from '../moduleHomeModel';
+import { loadModuleHomePrefs, saveModuleHomePrefs } from '../moduleHomeStorage';
 
 
 export type { ModuleCardItem, ModuleGroup } from '../moduleHomeModel';
 
 
 export function useQueryModule(allModules: RestSearchResponse<Module> | null) {
-	const [viewMode, setViewMode] = useState<ModuleViewMode>('list');
+	const [initialPrefs] = useState(loadModuleHomePrefs);
+	const [viewMode, setViewMode] = useState<ModuleViewMode>(initialPrefs.viewMode);
 	const search = useDebouncedSearch(300);
-	const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+	const [filters, setFilters] = useState<FilterState>({ ...DEFAULT_FILTERS, groupBy: initialPrefs.groupBy });
+	useEffect(() => {
+		saveModuleHomePrefs({ viewMode, groupBy: filters.groupBy });
+	}, [viewMode, filters.groupBy]);
 	const { cards, isAccessPending } = useModuleCards(allModules);
 	const groups = useModuleGroups(cards, search.searchQuery, filters);
 

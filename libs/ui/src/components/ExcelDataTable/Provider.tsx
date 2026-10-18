@@ -98,7 +98,7 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 	const { viewMode, setViewMode } = useViewModeState(props.initialViewMode, props.allowedViewModes);
 	const settings = useOpenState();
 	const filterPane = useOpenState();
-	const columnWidths = useColumnWidthsState(data.desired_fields);
+	const columnWidths = useColumnWidthsState();
 	const scrollSync = React.useRef<ScrollSyncRefs>({ header: null, body: null });
 	const container = useContainerWidthState();
 	const isCompact = useIsCompact(container.width);
