@@ -14,7 +14,7 @@ const PREFIX = `${IAM_MODULE}.${GROUP_SCHEMA_NAME}`;
  * The CRUD names come from the schema-driven generic path (`core.resource.iam_group.*`), served by
  * the Shell's single prefix subscription — this module subscribes none of them. `groupService`
  * stays reachable through them because `registerCrudService` below hands it to that handler, and
- * `manageUsers` is published as the generic `manage_m2m` with `path: 'manage-users'`.
+ * `manageUsers` posts to `iam_group/:id/manage_users`.
  *
  * The remaining two hit role-assignment endpoints the dynamic schema cannot express.
  */

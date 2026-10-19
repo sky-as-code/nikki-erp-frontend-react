@@ -51,7 +51,7 @@ export type Module = {
 };
 
 /**
-Sample get module request: GET essential/modules?page=0&size=500
+Sample get module request: GET essential/essential_module_metadata?page=0&size=500
 Sample get module response:
 {
   "items": [

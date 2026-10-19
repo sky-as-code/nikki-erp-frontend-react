@@ -6,7 +6,7 @@ import { GROUP_SCHEMA_NAME, IAM_MODULE } from '../../constants';
 import { identityStore } from '../../store';
 
 
-/** CRUD over `iam_group`, plus the group-members many-to-many endpoint. */
+/** CRUD over `iam_group`, plus the members action `iam_group/:id/manage_users`. */
 @storeService('GroupService', identityStore)
 export class GroupService extends StoreCrudServiceBase {
 	public constructor() {
@@ -15,7 +15,8 @@ export class GroupService extends StoreCrudServiceBase {
 
 	@storeAsyncMethod
 	public manageUsers(request: t.ManageGroupUsersRequest): Promise<ServiceResult<t.ManageGroupUsersResponse>> {
-		return this.manageM2m(request, 'manage-users');
+		const { id, ...body } = request;
+		return this.manageM2m(body, `${encodeURIComponent(id)}/manage_users`);
 	}
 }
 

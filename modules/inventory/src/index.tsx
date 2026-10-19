@@ -15,7 +15,6 @@ import { registerProductStockCommands } from './features/productStock/commands';
 import { registerProductTemplateCommands } from './features/productTemplate/commands';
 import { registerProductTemplateAttributeCommands } from './features/productTemplateAttribute/commands';
 import { registerProductTemplateAttributeValueCommands } from './features/productTemplateAttributeValue/commands';
-import { registerProductTypeCommands } from './features/productType/commands';
 import { registerProductVariantCommands } from './features/productVariant/commands';
 import { registerPutawayRuleCommands } from './features/putawayRule/commands';
 import { registerStockMoveCommands } from './features/stockMove/commands';
@@ -37,7 +36,6 @@ import { buildProductAttributeValuePages } from './pages/productAttributeValue';
 import { buildProductCategoryPages } from './pages/productCategory';
 import { buildProductTemplatePages } from './pages/productTemplate';
 import { buildProductTemplateAttributeValuePages } from './pages/productTemplateAttributeValue';
-import { buildProductTypePages } from './pages/productType';
 import { buildProductVariantPages } from './pages/productVariant';
 import { buildPutawayRulePages } from './pages/putawayRule';
 import { buildStockQuantPages } from './pages/stockQuant';
@@ -69,7 +67,6 @@ const bundle: MicroAppBundle = {
 		// reaches the Shell only through the command and event buses.
 		registerModelSchemas();
 		host.menuRegistry.register(buildInventoryMenu(slug));
-		registerProductTypeCommands(host.commandBus);
 		registerProductCategoryCommands(host.commandBus);
 		registerBrandCommands(host.commandBus);
 		registerProductAttributeCommands(host.commandBus);
@@ -107,7 +104,6 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	const pages = React.useMemo(() => [
 		...buildProductTemplatePages(),
 		...buildProductVariantPages(),
-		...buildProductTypePages(),
 		...buildProductCategoryPages(),
 		...buildBrandPages(),
 		...buildProductAttributePages(),
@@ -136,9 +132,6 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 
 function registerModelSchemas(): void {
 	schemaRegistry.register([{
-		schemaName: c.PRODUCT_TYPE_SCHEMA_NAME,
-		resourcePath: c.PRODUCT_TYPE_RESOURCE_PATH,
-	}, {
 		schemaName: c.PRODUCT_CATEGORY_SCHEMA_NAME,
 		resourcePath: c.PRODUCT_CATEGORY_RESOURCE_PATH,
 	}, {

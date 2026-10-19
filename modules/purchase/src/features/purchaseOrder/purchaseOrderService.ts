@@ -130,7 +130,9 @@ export class PurchaseOrderService extends StoreCrudServiceBase {
 	}
 
 	/**
-	 * Posts to `{resource}/{sub-path}`.
+	 * Posts to `{resource}/:id/{action}`, or to `{resource}/{action}` for a request naming no record
+	 * (`merge`, the one collection-level action). The backend routes every record action as
+	 * `:id/{action}`, so the id travels in the path and the body carries the rest.
 	 *
 	 * It goes through `manageM2m` because that is the only base-class method that posts to an
 	 * arbitrary sub-path; the name is about its usual caller, not a constraint on the path.
@@ -138,7 +140,9 @@ export class PurchaseOrderService extends StoreCrudServiceBase {
 	private postAction(
 		request: Record<string, unknown>, action: string,
 	): Promise<ServiceResult<dyn.RestMutateResponse>> {
-		return this.manageM2m(request as dyn.RestManageM2mRequest, action);
+		const { id, ...body } = request;
+		const path = typeof id === 'string' && id !== '' ? `${id}/${action}` : action;
+		return this.manageM2m(body as dyn.RestManageM2mRequest, path);
 	}
 }
 

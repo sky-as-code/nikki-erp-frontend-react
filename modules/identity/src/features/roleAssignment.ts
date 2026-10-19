@@ -44,16 +44,18 @@ export type DescribeRolesResponse = { items: DescribedRole[] };
 /** Matches `DescribeRolesMaxIds` in the backend role commands; exceeding it is a 400. */
 export const DESCRIBE_ROLES_MAX_IDS = 20;
 
-/** `GET /v1/iam/{users|groups}/:id/roles` — the roles currently assigned to one principal. */
+/** `GET /v1/iam/{iam_user|iam_group}/:id/roles` — the roles currently assigned to one principal. */
 export function searchAssignedRoles(
 	kind: PrincipalKind, request: SearchAssignedRolesRequest,
 ): Promise<ServiceResult<SearchAssignedRolesResponse>> {
 	const { id, ...query } = request;
-	return apiGet<SearchAssignedRolesResponse>(`v1/iam/${kind}/${id}/roles`, query);
+	return apiGet<SearchAssignedRolesResponse>(
+		`v1/iam/${principalSchemaName(kind)}/${encodeURIComponent(id)}/roles`, query,
+	);
 }
 
 /**
- * `POST /v1/iam/{users|groups}/:id/roles` — applies an add/remove delta.
+ * `POST /v1/iam/{iam_user|iam_group}/:id/manage_roles` — applies an add/remove delta.
  *
  * `manageM2m` appends its second argument to the schema's own resource path, so the principal
  * id goes there: the principal schema owns the route, not the role schema.
@@ -64,7 +66,7 @@ export function manageRoleAssignments(
 	const { id, ...body } = request;
 	return dyn.withSchema(
 		principalSchemaName(kind),
-		schema => schema.restApi.manageM2m(body, `${id}/roles`),
+		schema => schema.restApi.manageM2m(body, `${encodeURIComponent(id)}/manage_roles`),
 	);
 }
 
@@ -73,13 +75,13 @@ function principalSchemaName(kind: PrincipalKind): string {
 }
 
 /**
- * `GET /v1/iam/roles/describe` — resolves roles into resource/action/scope display names for
+ * `GET /v1/iam/iam_role/describe` — resolves roles into resource/action/scope display names for
  * the assignment confirmation stage. Callers must chunk by DESCRIBE_ROLES_MAX_IDS.
  */
 export function describeRoles(
 	request: DescribeRolesRequest,
 ): Promise<ServiceResult<DescribeRolesResponse>> {
-	return apiGet<DescribeRolesResponse>('v1/iam/roles/describe', {
+	return apiGet<DescribeRolesResponse>(`v1/iam/${c.ROLE_SCHEMA_NAME}/describe`, {
 		role_id: request.role_ids,
 	});
 }

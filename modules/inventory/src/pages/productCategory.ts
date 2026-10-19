@@ -50,7 +50,7 @@ function buildProductCategoryDetailProps() {
 		schemaName: c.PRODUCT_CATEGORY_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
-		titleLvl2: { schemaField: 'code' },
+		titleLvl2: { schemaField: 'canonical_name' },
 		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: ProductCategoryCommands.GET_BY_ID,
@@ -76,7 +76,7 @@ function buildProductCategoryFieldsSection(): ComponentNode {
 			// The backend rejects a category that is its own ancestor; the generated form cannot
 			// express that, so `product_category.cycle` is what the user sees on save.
 			header: 'form.generalInformation',
-			fields: ['name', 'description', 'code', 'parent_category_id', 'sequence'],
+			fields: ['name', 'description', 'parent_category_id', 'display_order'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',

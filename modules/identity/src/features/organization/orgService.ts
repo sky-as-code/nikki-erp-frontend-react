@@ -6,7 +6,7 @@ import { IAM_MODULE, ORGANIZATION_SCHEMA_NAME } from '../../constants';
 import { identityStore } from '../../store';
 
 
-/** CRUD over `iam_organization`, plus slug lookup and the members many-to-many endpoint. */
+/** CRUD over `iam_org`, plus slug lookup and the members action `iam_org/:id/manage_users`. */
 @storeService('OrgService', identityStore)
 export class OrgService extends StoreCrudServiceBase {
 	public constructor() {
@@ -20,7 +20,8 @@ export class OrgService extends StoreCrudServiceBase {
 
 	@storeAsyncMethod
 	public manageUsers(request: t.ManageOrgUsersRequest): Promise<ServiceResult<t.ManageOrgUsersResponse>> {
-		return this.manageM2m(request, 'manage-users');
+		const { id, ...body } = request;
+		return this.manageM2m(body, `${encodeURIComponent(id)}/manage_users`);
 	}
 }
 

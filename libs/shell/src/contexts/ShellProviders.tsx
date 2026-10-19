@@ -244,6 +244,6 @@ function registerModelSchemas(): void {
 	schemaRegistry.register([{
 		...baseOpts,
 		schemaName: MODULE_SCHEMA_NAME,
-		resourcePath: 'v1/essential/modules',
+		resourcePath: `v1/essential/${MODULE_SCHEMA_NAME}`,
 	}]);
 }
