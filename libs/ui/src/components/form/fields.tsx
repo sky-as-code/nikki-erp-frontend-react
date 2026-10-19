@@ -68,7 +68,9 @@ function AutoFieldControl(props: AutoFieldProps) {
 	}
 
 	switch (fieldDef.data_type.name) {
+		// A slug is typed as text; its format is checked by the validation schema.
 		case 'string':
+		case 'nikkiSlug':
 			return <TextInputField
 				name={props.name} type='text' autoFocused={props.autoFocused}
 				inputProps={props.inputProps} htmlProps={props.htmlProps}

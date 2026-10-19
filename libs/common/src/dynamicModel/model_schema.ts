@@ -187,7 +187,7 @@ export function findExclusiveGroupPeers(modelSchema: ModelSchema, fieldName: str
  */
 const RENDERABLE_DATA_TYPES: ReadonlySet<ModelSchemaFieldDataTypeName> = new Set([
 	'boolean', 'decimal', 'email', 'enumString', 'int32', 'nikkiDate', 'nikkiDateTime',
-	'nikkiLangJson', 'nikkiTime', 'secret', 'string', 'ulid',
+	'nikkiLangJson', 'nikkiSlug', 'nikkiTime', 'secret', 'string', 'ulid',
 ]);
 
 /** Whether a form can render an input for this field, as opposed to leaving an empty slot. */

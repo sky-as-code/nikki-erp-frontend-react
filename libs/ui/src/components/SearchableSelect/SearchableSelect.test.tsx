@@ -74,3 +74,28 @@ describe('SearchableSelect onBlur', () => {
 		expect(onBlur).not.toHaveBeenCalled();
 	});
 });
+
+describe('SearchableSelect search box', () => {
+	function openWith(count: number): void {
+		const many = Array.from({ length: count }, (_, i) => ({ value: `v${i}`, label: `Item ${i}` }));
+		render(
+			<MantineProvider env='test'>
+				<SearchableSelect items={many} searchBoxEnabledAt={5} testId='t.select' />
+			</MantineProvider>,
+		);
+		fireEvent.click(screen.getByTestId('t.select.trigger'));
+	}
+
+	it('shows the search box and its separator once there are enough items', () => {
+		openWith(5);
+		expect(screen.queryByTestId('t.select.search')).not.toBeNull();
+		expect(screen.queryByTestId('t.select.searchSeparator')).not.toBeNull();
+	});
+
+	it('shows no top bar without a search box', () => {
+		openWith(4);
+		expect(screen.queryByTestId('t.select.search')).toBeNull();
+		expect(screen.queryByTestId('t.select.searchSeparator')).toBeNull();
+		expect(screen.getByText('Item 0')).not.toBeNull();
+	});
+});

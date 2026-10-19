@@ -1,7 +1,7 @@
 import { defineComponent, defineTemplateRef } from '@nikkierp/viewengine/metadata';
 import { z } from 'zod';
 
-import { ROLE_ASSIGNMENT_TEMPLATE, ROLE_PERMISSIONS } from './ids';
+import { ORG_LIFECYCLE_STATUS, ROLE_ASSIGNMENT_TEMPLATE, ROLE_PERMISSIONS } from './ids';
 
 import type { ComponentNode, TemplateRef } from '@nikkierp/viewengine/metadata';
 
@@ -51,6 +51,10 @@ export function roleAssignmentProps(input: RoleAssignmentPropsInput): TemplateRe
  */
 export function rolePermissionsNode(): ComponentNode {
 	return defineComponent({ component: ROLE_PERMISSIONS });
+}
+
+export function orgLifecycleStatusNode(): ComponentNode {
+	return defineComponent({ component: ORG_LIFECYCLE_STATUS });
 }
 
 export * from './ids';

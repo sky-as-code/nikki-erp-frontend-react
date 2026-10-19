@@ -11,3 +11,6 @@ export const ROLE_SCHEMA_NAME = 'iam_role';
 export const ENTITLEMENT_SCHEMA_NAME = 'iam_entitlement';
 export const RESOURCE_SCHEMA_NAME = 'iam_resource';
 export const ACTION_SCHEMA_NAME = 'iam_action';
+
+/** The Shell's `USER_ORGS_CHANGED_EVENT`: the Org Switch refetches its list on it. */
+export const SHELL_USER_ORGS_CHANGED_EVENT = 'shell:user_orgs:changed';

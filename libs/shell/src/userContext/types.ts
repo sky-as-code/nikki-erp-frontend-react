@@ -189,3 +189,11 @@ export type LocalSettings = {
  * the string is the contract.
  */
 export const LOCAL_SETTINGS_CHANGED_EVENT = 'shell:local_settings:changed';
+
+/**
+ * Published when something changed which organizations the user belongs to, or how they read: one
+ * was created, became ready, was renamed, archived or deleted. The Org Switch refetches its list
+ * on it. A micro-app cannot import the Shell, so this string is the contract (see the identity
+ * module's `SHELL_USER_ORGS_CHANGED_EVENT`).
+ */
+export const USER_ORGS_CHANGED_EVENT = 'shell:user_orgs:changed';

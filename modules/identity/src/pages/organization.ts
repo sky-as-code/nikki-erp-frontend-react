@@ -5,6 +5,7 @@ import {
 
 import * as c from '../constants';
 import { OrganizationCommands } from '../features/organization/commands';
+import { orgLifecycleStatusNode } from '../viewkit/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -46,8 +47,9 @@ function buildOrganizationListProps() {
 				renderer: 'badge',
 				prefix: 'status.',
 				colorMap: {
-					active: 'green',
-					archived: 'gray',
+					provisioning: 'yellow',
+					ready: 'green',
+					deleted: 'red',
 				},
 			},
 		},
@@ -62,8 +64,9 @@ function buildOrganizationDetailProps() {
 		titleLvl2: { schemaField: 'slug' },
 		backLinkTitle: { linkHref: '../' },
 		allStatuses: [
-			{ value: 'active', label: 'status.active', color: 'green' },
-			{ value: 'archived', label: 'status.archived', color: 'gray' },
+			{ value: 'provisioning', label: 'status.provisioning', color: 'yellow' },
+			{ value: 'ready', label: 'status.ready', color: 'green' },
+			{ value: 'deleted', label: 'status.deleted', color: 'red' },
 		],
 		currentStatus: { schemaField: 'status' },
 		standardActionCommands: {
@@ -74,7 +77,8 @@ function buildOrganizationDetailProps() {
 			archive: OrganizationCommands.SET_IS_ARCHIVED,
 		},
 		createNodes: [buildOrganizationFieldsSection()],
-		childrenNodes: [buildOrganizationFieldsSection()],
+		// The lifecycle banner is for a saved org only: a new one has no status until it is created.
+		childrenNodes: [orgLifecycleStatusNode(), buildOrganizationFieldsSection()],
 	});
 }
 
