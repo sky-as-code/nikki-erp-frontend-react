@@ -29,3 +29,5 @@ export const ROLE_PICKER = 'nikkierp.identity.components.rolePicker.v1';
 export const ENTITLEMENT_CHANGE_LIST = 'nikkierp.identity.components.entitlementChangeList.v1';
 /** The role detail's Permission section: the role's entitlements, with drafted grants and revokes. */
 export const ROLE_PERMISSIONS = 'nikkierp.identity.components.rolePermissions.v1';
+/** The org detail's lifecycle banner: set-up or clean-up in progress, or the reason it failed. */
+export const ORG_LIFECYCLE_STATUS = 'nikkierp.identity.components.orgLifecycleStatus.v1';

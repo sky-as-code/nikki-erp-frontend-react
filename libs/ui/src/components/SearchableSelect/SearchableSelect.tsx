@@ -183,14 +183,13 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 				actionOptionLabel={props.actionOptionLabel}
 				testId={props.testId}
 				search={search}
-				searchBoxEnabledAt={props.searchBoxEnabledAt}
+				showSearchBox={isSearchBoxEnabled}
 				searchPlaceholder={props.searchPlaceholder}
 				setSearch={value => {
 					setSearch(value);
 					props.onSearchChange?.(value);
 				}}
 				scrollAreaHeight={props.scrollAreaHeight}
-				totalOptsCount={props.items.length}
 				options={options}
 			/>
 		</Combobox>
@@ -347,18 +346,18 @@ type ComboboxDropdownProps = {
 	actionOptionLabel?: string,
 	testId?: string,
 	search: string,
-	searchBoxEnabledAt?: number, // Show search box when there are more than this number of items
+	/** Decided once, from the unfiltered item count, by the same rule that focuses the box on open. */
+	showSearchBox: boolean,
 	searchPlaceholder?: string,
 	setSearch: (value: string) => void,
 	scrollAreaHeight?: MantineStyleProps['mah'],
-	totalOptsCount: number, // Number of options without applied search/filter
 	options: JSX.Element[],
 };
 
 const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
 	return (
 		<Combobox.Dropdown>
-			{props.totalOptsCount >= Number(props.searchBoxEnabledAt) && (
+			{props.showSearchBox && (
 				<Combobox.Search
 					value={props.search}
 					onChange={(event) => props.setSearch(event.currentTarget.value)}
@@ -371,13 +370,15 @@ const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
 					type='scroll'
 					mah={props.scrollAreaHeight ?? '50vh'}
 				>
-					<Combobox.Group label=' '>
-						{props.options.length > 0 ? (
-							props.options
-						) : (
-							<Combobox.Empty>Nothing found</Combobox.Empty>
-						)}
-					</Combobox.Group>
+					{props.showSearchBox ? (
+						// The blank group label draws the rule that separates the list from the search box
+						// above it; without a search box it would be a bar with nothing to separate.
+						<Combobox.Group label=' ' {...testAttrs(props.testId, 'searchSeparator')}>
+							<OptionsOrEmpty options={props.options} />
+						</Combobox.Group>
+					) : (
+						<OptionsOrEmpty options={props.options} />
+					)}
 				</ScrollArea.Autosize>
 				{props.actionOptionLabel && (
 					<>
@@ -391,6 +392,10 @@ const ComboboxDropdown: FC<ComboboxDropdownProps> = (props) => {
 		</Combobox.Dropdown>
 	);
 };
+
+function OptionsOrEmpty({ options }: { options: JSX.Element[] }): React.ReactNode {
+	return options.length > 0 ? options : <Combobox.Empty>Nothing found</Combobox.Empty>;
+}
 
 function isClearKey(key: string): boolean {
 	return key === 'Backspace' || key === 'Delete';

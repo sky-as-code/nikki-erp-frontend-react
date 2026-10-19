@@ -2,6 +2,7 @@ import { VIEW_ENGINE_API_VERSION } from '@nikkierp/viewengine/core';
 
 import { assignmentChangeSummaryRenderer } from './components/AssignmentChangeSummary';
 import { entitlementChangeListRenderer } from './components/EntitlementChangeList';
+import { orgLifecycleStatusRenderer } from './components/OrgLifecycleStatus';
 import {
 	roleAssignmentAcknowledgeRenderer, roleAssignmentActionsRenderer, roleAssignmentErrorRenderer,
 } from './components/roleAssignmentParts';
@@ -35,6 +36,7 @@ export const identityViewKit: IViewKit = {
 		registry.registerComponentRenderer(rolePickerRenderer);
 		registry.registerComponentRenderer(entitlementChangeListRenderer);
 		registry.registerComponentRenderer(rolePermissionsRenderer);
+		registry.registerComponentRenderer(orgLifecycleStatusRenderer);
 	},
 };
 

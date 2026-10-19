@@ -1,6 +1,8 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 
 
+export type OrgStatus = 'provisioning' | 'ready' | 'deleted';
+
 export type Organization = {
 	id: string,
 	address?: string,
@@ -8,6 +10,10 @@ export type Organization = {
 	legal_name?: string,
 	phone_number?: string,
 	slug?: string,
+	status?: OrgStatus,
+	/** Translation key of why the last lifecycle step failed, interpolated with status_message_vars. */
+	status_message?: string,
+	status_message_vars?: Record<string, string>,
 	etag?: string,
 	created_at?: string,
 	updated_at?: string,

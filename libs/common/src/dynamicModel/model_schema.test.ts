@@ -66,11 +66,11 @@ describe('isRenderableFieldType', () => {
 	// and a case missing from here hides a field that would have rendered.
 	const renderable: ModelSchemaFieldDataTypeName[] = [
 		'boolean', 'decimal', 'email', 'int32', 'nikkiDate', 'nikkiDateTime', 'nikkiLangJson',
-		'nikkiTime', 'secret', 'string', 'ulid',
+		'nikkiSlug', 'nikkiTime', 'secret', 'string', 'ulid',
 	];
 	const notRenderable: ModelSchemaFieldDataTypeName[] = [
 		'enumInt32', 'int64', 'jsonmap', 'model', 'nikkiEtag', 'nikkiLangCode',
-		'nikkiSlug', 'phone', 'url', 'uuid',
+		'phone', 'url', 'uuid',
 	];
 
 	it.each(renderable)('renders %s', dataType => {
