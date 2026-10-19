@@ -9,7 +9,6 @@ import { buildProductAttributeValuePages } from './productAttributeValue';
 import { buildProductCategoryPages } from './productCategory';
 import { buildProductTemplatePages } from './productTemplate';
 import { buildProductTemplateAttributeValuePages } from './productTemplateAttributeValue';
-import { buildProductTypePages } from './productType';
 import { buildProductVariantPages } from './productVariant';
 import { buildPutawayRulePages } from './putawayRule';
 import { buildStockQuantPages } from './stockQuant';
@@ -28,7 +27,6 @@ import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
 const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'productTemplate', build: buildProductTemplatePages },
 	{ name: 'productVariant', build: buildProductVariantPages },
-	{ name: 'productType', build: buildProductTypePages },
 	{ name: 'productCategory', build: buildProductCategoryPages },
 	{ name: 'brand', build: buildBrandPages },
 	{ name: 'productAttribute', build: buildProductAttributePages },
@@ -88,7 +86,6 @@ describe('Inventory page metadata', () => {
 		expect(routePaths).toEqual([
 			'inventory_product_template', 'inventory_product_template/import',
 			'inventory_product_variant', 'inventory_product_variant/import',
-			'inventory_product_type',
 			'inventory_product_category', 'inventory_product_category/import',
 			'inventory_brand', 'inventory_product_attribute', 'inventory_product_attribute_value', 'inventory_product_template_attribute_value',
 			'inventory_location', 'inventory_warehouse', 'inventory_storage_category', 'inventory_warehouse_supply_relation', 'inventory_putaway_rule',
@@ -228,6 +225,11 @@ describe('Product template detail sections', () => {
 				renderer: 'badge',
 				colorMap: { draft: 'gray', active: 'green', discontinued: 'orange' },
 				prefix: 'template_status.',
+			},
+			product_type: {
+				renderer: 'badge',
+				colorMap: { goods: 'blue', service: 'violet' },
+				prefix: 'product_type.',
 			},
 		});
 	});

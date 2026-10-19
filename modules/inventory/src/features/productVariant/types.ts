@@ -1,5 +1,7 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 
+import type { ProductType } from '../productTemplate/types';
+
 
 /** Commercial lifecycle of a variant, independent of `is_archived`. See BR §6.2.2. */
 export type ProductVariantStatus = 'active' | 'discontinued';
@@ -78,7 +80,8 @@ export type EffectiveProduct = {
 	/** The template name plus the variant's attribute values — "Classic T-Shirt / Black / M". */
 	display_name: string,
 
-	product_type_id?: string,
+	product_type?: ProductType,
+	is_combo: boolean,
 	category_id?: string,
 	brand_id?: string,
 

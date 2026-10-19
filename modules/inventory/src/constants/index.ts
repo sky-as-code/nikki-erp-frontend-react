@@ -2,9 +2,8 @@ export const INVENTORY_MODULE = 'inventory';
 
 // These must match the backend Go constants verbatim — `SchemaRegistry` rejects a schema whose
 // response name differs, which leaves the page loading forever. See
-// backend .../modules/inventory/domain/models/{product_type,product_category,brand,
+// backend .../modules/inventory/domain/models/{product_category,brand,
 // product_attribute,product_attribute_value,product_template,product_variant}.go.
-export const PRODUCT_TYPE_SCHEMA_NAME = 'inventory_product_type';
 export const PRODUCT_CATEGORY_SCHEMA_NAME = 'inventory_product_category';
 export const BRAND_SCHEMA_NAME = 'inventory_brand';
 export const PRODUCT_ATTRIBUTE_SCHEMA_NAME = 'inventory_product_attribute';
@@ -50,7 +49,6 @@ export const PRODUCT_VARIANT_ATTRIBUTE_VALUE_SCHEMA_NAME = 'inventory_product_va
  * The dynamic resource engine serves a resource at `/v1/{module}/{schema_name}`, so the path
  * segment is the schema name itself rather than a pluralized noun.
  */
-export const PRODUCT_TYPE_RESOURCE_PATH = `v1/inventory/${PRODUCT_TYPE_SCHEMA_NAME}`;
 export const PRODUCT_CATEGORY_RESOURCE_PATH = `v1/inventory/${PRODUCT_CATEGORY_SCHEMA_NAME}`;
 export const BRAND_RESOURCE_PATH = `v1/inventory/${BRAND_SCHEMA_NAME}`;
 export const PRODUCT_ATTRIBUTE_RESOURCE_PATH = `v1/inventory/${PRODUCT_ATTRIBUTE_SCHEMA_NAME}`;

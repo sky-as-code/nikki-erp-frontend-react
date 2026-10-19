@@ -12,6 +12,12 @@ import type { VariantCreationMode } from '../productAttribute/types';
 export type ProductTemplateStatus = 'draft' | 'active' | 'discontinued';
 
 /**
+ * How the system processes the product: goods are tracked in stock, services never are.
+ * `is_combo` does not change that, so a goods combo is stocked and a service combo is not.
+ */
+export type ProductType = 'goods' | 'service';
+
+/**
  * The template is the product as a customer thinks of it — "Classic T-Shirt". What is actually
  * stocked and sold is one of its variants. See BR §2.
  *
@@ -22,7 +28,8 @@ export type ProductTemplate = {
 	id: string,
 	name?: dyn.ModelSchemaLangJson,
 	short_name?: string,
-	product_type_id?: string,
+	product_type?: ProductType,
+	is_combo?: boolean,
 	category_id?: string,
 	brand_id?: string,
 	status?: ProductTemplateStatus,

@@ -52,6 +52,11 @@ function buildProductTemplateListProps() {
 				colorMap: { draft: 'gray', active: 'green', discontinued: 'orange' },
 				prefix: 'template_status.',
 			},
+			product_type: {
+				renderer: 'badge',
+				colorMap: { goods: 'blue', service: 'violet' },
+				prefix: 'product_type.',
+			},
 		},
 	});
 }
@@ -93,7 +98,7 @@ function buildProductTemplateIdentityColumns(): ComponentNode[] {
 	return [
 		resourceFormColumnNode({
 			header: 'form.identification',
-			fields: ['name', 'short_name', 'product_type_id', 'category_id', 'brand_id'],
+			fields: ['name', 'short_name', 'product_type', 'is_combo', 'category_id', 'brand_id'],
 		}),
 	];
 }
