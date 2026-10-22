@@ -3,6 +3,7 @@ import { usePageContext } from '@nikkierp/viewengine/render';
 import React from 'react';
 import { useParams } from 'react-router';
 
+import { DetailFieldDisplayScope } from './detailFieldDisplay';
 import { RelatedResourcesTabs } from './RelatedResourcesTabs';
 import { ResourceCreate } from './ResourceCreate';
 import { ResourceUpdate } from './ResourceUpdate';
@@ -48,35 +49,37 @@ function ResourceDetailV2View({ params, childrenNodes }: ResourceDetailV2ViewPro
 			isWriting={false}
 			testId={testId}
 		>
-			<PageContainer gap={0}>
-				{createMode ? (
-					<ResourceCreate
-						commands={commands}
-						titleLvl1={params.titleLvl1}
-						backLinkTitle={params.backLinkTitle}
-						createNodes={params.createNodes}
-					/>
-				) : (
-					<ResourceUpdate
-						standardActionCommands={commands}
-						allStatuses={params.allStatuses}
-						currentStatus={params.currentStatus}
-						contextualActions={params.contextualActions}
-						titleLvl1={params.titleLvl1}
-						titleLvl2={params.titleLvl2}
-						backLinkTitle={params.backLinkTitle}
-						thumbnail={params.thumbnail}
-						childrenNodes={nodes}
-					>
-						<RelatedResourcesTabs
-							resources={params.relatedResources}
-							header={params.relatedResourcesHeader}
-							notice={params.relatedResourcesNotice}
-							translationNs={params.translationNs}
+			<DetailFieldDisplayScope params={params}>
+				<PageContainer gap={0}>
+					{createMode ? (
+						<ResourceCreate
+							commands={commands}
+							titleLvl1={params.titleLvl1}
+							backLinkTitle={params.backLinkTitle}
+							createNodes={params.createNodes}
 						/>
-					</ResourceUpdate>
-				)}
-			</PageContainer>
+					) : (
+						<ResourceUpdate
+							standardActionCommands={commands}
+							allStatuses={params.allStatuses}
+							currentStatus={params.currentStatus}
+							contextualActions={params.contextualActions}
+							titleLvl1={params.titleLvl1}
+							titleLvl2={params.titleLvl2}
+							backLinkTitle={params.backLinkTitle}
+							thumbnail={params.thumbnail}
+							childrenNodes={nodes}
+						>
+							<RelatedResourcesTabs
+								resources={params.relatedResources}
+								header={params.relatedResourcesHeader}
+								notice={params.relatedResourcesNotice}
+								translationNs={params.translationNs}
+							/>
+						</ResourceUpdate>
+					)}
+				</PageContainer>
+			</DetailFieldDisplayScope>
 		</ResourceDetailProvider>
 	);
 }

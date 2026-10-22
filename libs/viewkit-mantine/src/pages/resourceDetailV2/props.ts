@@ -1,3 +1,4 @@
+import { fieldRendererSpecSchema } from '@nikkierp/viewengine/schema';
 import { z } from 'zod';
 
 import { resourceTablePropsSchema } from '../../components/resourceTable/props';
@@ -56,6 +57,13 @@ export const resourceDetailV2PropsSchema = resourceDetailPropsSchema.extend({
 	 * that assignments made in the tabs take effect immediately.
 	 */
 	relatedResourcesNotice: z.string().min(1).optional(),
+	/** Read-mode renderers of the form's own fields, keyed by field name, e.g. `{renderer: 'money'}`. */
+	fieldRenderers: z.record(z.string(), fieldRendererSpecSchema).optional(),
+	/**
+	 * Every field listed in the form blocks renders in every mode, so the layout never changes
+	 * shape; a field not editable in the current mode renders read-only, and an empty one as `-`.
+	 */
+	stableFieldLayout: z.boolean().optional(),
 }).strict();
 
 export type RelatedResource = z.infer<typeof relatedResourceSchema>;

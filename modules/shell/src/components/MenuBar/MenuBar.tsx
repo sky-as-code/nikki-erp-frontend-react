@@ -17,10 +17,9 @@ import {
 	MENU_BAR_TEST_ID,
 } from './helper';
 import classes from './MenuBar.module.css';
+import { MenuMeasureRow, useMenuOverflow } from './menuOverflow';
 import { VerticalMenuBar } from './VerticalMenuBar';
 
-
-const MAX_VISIBLE_HORIZONTAL_ITEMS = 5;
 
 export type MenuBarMode = 'horizontal' | 'vertical';
 
@@ -62,37 +61,61 @@ export function MenuBar({ mode = 'horizontal' }: MenuBarProps): React.ReactNode 
 	}
 
 	return (
-		<Group gap='xs'>
-			{menu.items.slice(0, MAX_VISIBLE_HORIZONTAL_ITEMS).map((item: MenuItem) => (
-				item.items ? (
-					<NavMenu
-						key={item.labelKey}
-						item={item}
-						currentPath={location.pathname}
+		<HorizontalMenuBar
+			items={menu.items}
+			currentPath={location.pathname}
+			pathPrefix={pathPrefix}
+			getPath={getPath}
+			t={t}
+		/>
+	);
+}
+
+type HorizontalMenuBarProps = Omit<OverflowMenuProps, 'items'> & { items: MenuItem[] };
+
+/**
+ * Shows every top-level entry the bar has room for and moves only the rest into the overflow
+ * menu, so a wide screen never hides entries behind `…` for no reason.
+ */
+function HorizontalMenuBar({ items, currentPath, pathPrefix, getPath, t }: HorizontalMenuBarProps): React.ReactNode {
+	const { containerRef, measureRef, visibleCount } = useMenuOverflow(items.length);
+	const { 'data-testid': _testId, ...measureProps } = buttonProps(false) as ButtonProps & { 'data-testid'?: string };
+
+	return (
+		<div ref={containerRef} className={classes.horizontalBar}>
+			<Group gap='xs' wrap='nowrap'>
+				{items.slice(0, visibleCount).map((item: MenuItem) => (
+					item.items ? (
+						<NavMenu
+							key={item.labelKey}
+							item={item}
+							currentPath={currentPath}
+							pathPrefix={pathPrefix}
+							getPath={getPath}
+							t={t}
+						/>
+					) : (
+						<HorizontalMenuItem
+							key={item.labelKey}
+							item={item}
+							isActive={isPathActiveWithPrefix(item.link ?? '/', currentPath, pathPrefix)}
+							to={getPath(item.link ?? '/')}
+							t={t}
+						/>
+					)
+				))}
+				{visibleCount < items.length && (
+					<OverflowMenu
+						items={items.slice(visibleCount)}
+						currentPath={currentPath}
 						pathPrefix={pathPrefix}
 						getPath={getPath}
 						t={t}
 					/>
-				) : (
-					<HorizontalMenuItem
-						key={item.labelKey}
-						item={item}
-						isActive={isPathActiveWithPrefix(item.link ?? '/', location.pathname, pathPrefix)}
-						to={getPath(item.link ?? '/')}
-						t={t}
-					/>
-				)
-			))}
-			{menu.items.length > MAX_VISIBLE_HORIZONTAL_ITEMS && (
-				<OverflowMenu
-					items={menu.items.slice(MAX_VISIBLE_HORIZONTAL_ITEMS)}
-					currentPath={location.pathname}
-					pathPrefix={pathPrefix}
-					getPath={getPath}
-					t={t}
-				/>
-			)}
-		</Group>
+				)}
+			</Group>
+			<MenuMeasureRow items={items} buttonProps={measureProps} t={t} measureRef={measureRef} />
+		</div>
 	);
 }
 

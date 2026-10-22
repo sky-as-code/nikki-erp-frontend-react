@@ -115,4 +115,8 @@ export const FIELD_RENDERER_BADGE = 'badge';
 export const FIELD_RENDERER_TRANSLATED = 'translated';
 /** A decimal shown as money with a page-declared currency symbol; the schema has no money type. */
 export const FIELD_RENDERER_MONEY = 'money';
+export const FIELD_RENDERER_INTEGER = 'integer';
+export const FIELD_RENDERER_FLOAT = 'float';
+/** A filled badge with a translated label, coloured per value. */
+export const FIELD_RENDERER_ENUM = 'enum';
 export const FIELD_RENDERER_ATTRIBUTE_PILLS = 'attributePills';

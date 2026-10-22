@@ -14,6 +14,7 @@ import { pageHeaderPropsSchema, PageHeaderLinkSpec, PageHeaderProps, PageHeaderT
 import { usePinnedToolbar } from './usePinnedToolbar';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import { PAGE_HEADER } from '../../ids';
+import { useDetailFieldDisplay } from '../../pages/resourceDetailV2/detailFieldDisplay';
 import { renderDisplayFieldValue } from '../fieldValue';
 
 import type { MantineSpacing } from '@mantine/core';
@@ -99,7 +100,7 @@ export function PageHeader({
 								) : null}
 							</Group>
 						) : null}
-						{titleLvl2 ? <Text><TitleText spec={titleLvl2} context={context} /></Text> : null}
+						{titleLvl2 ? <Text component='div'><TitleText spec={titleLvl2} context={context} /></Text> : null}
 					</Stack>
 				</Group>
 				{trailing}
@@ -135,6 +136,8 @@ type SpecProps<TSpec> = { spec: TSpec, context: PageHeaderContextValue | null };
 
 function TitleText({ spec, context }: SpecProps<PageHeaderTitleSpec>): React.ReactNode {
 	const t = useTranslate(context?.translationNs ?? '');
+	const localize = useLocalize(context?.translationNs ?? '');
+	const { fieldRenderers } = useDetailFieldDisplay();
 
 	if ('text' in spec) {
 		return spec.text;
@@ -143,10 +146,14 @@ function TitleText({ spec, context }: SpecProps<PageHeaderTitleSpec>): React.Rea
 		return t(spec.textKey, context?.titleParams);
 	}
 	// A schema-field title on a page with no record yet renders empty rather than throwing:
-	// the header paints before the fetch resolves, every time.
+	// the header paints before the fetch resolves, every time. An enum value is translated as
+	// `{field}.{value}`, or styled by the renderer the detail page declares for the field.
 	return renderDisplayFieldValue(
 		context?.record?.[spec.schemaField],
 		context?.modelSchema?.fields[spec.schemaField],
+		localize,
+		fieldRenderers?.[spec.schemaField],
+		context?.record ?? undefined,
 	);
 }
 

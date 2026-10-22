@@ -71,3 +71,42 @@ export function hasVisibleField(
 	return fields.some(field => isFieldVisible(modelSchema, field, mode));
 }
 
+
+/** How a field listed in a form block shows: as an input, as read-only text, or not at all. */
+export type FieldPresentation = 'input' | 'readonly' | 'hidden';
+
+/**
+ * Update mode already keeps a field it cannot edit on screen as read-only text. With
+ * `stableFieldLayout` create mode does the same, so every listed field renders in every mode and
+ * the layout keeps its shape; a read-only field has no input, so it is never dirty and never sent.
+ */
+export function fieldPresentation(
+	modelSchema: dyn.ModelSchema,
+	fieldName: string,
+	mode: FieldVisibilityMode,
+	stableFieldLayout = false,
+): FieldPresentation {
+	if (!modelSchema.fields[fieldName]) {
+		return 'hidden';
+	}
+	if (mode === 'read') {
+		return 'readonly';
+	}
+	if (isFieldVisible(modelSchema, fieldName, mode)) {
+		return 'input';
+	}
+	return mode === 'update' || stableFieldLayout ? 'readonly' : 'hidden';
+}
+
+/**
+ * Whether a block is worth rendering. A stable layout keeps every block whose fields exist, even one
+ * that holds nothing editable in this mode, so blocks do not come and go when Update is pressed.
+ */
+export function isBlockVisible(
+	modelSchema: dyn.ModelSchema,
+	fields: string[],
+	mode: FieldVisibilityMode,
+	stableFieldLayout = false,
+): boolean {
+	return hasVisibleField(modelSchema, fields, stableFieldLayout ? 'read' : mode);
+}

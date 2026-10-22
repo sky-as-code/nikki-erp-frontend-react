@@ -2,6 +2,7 @@ import { MoneyFieldRenderer } from '@nikkierp/ui/components/ExcelDataTable';
 import { describe, expect, it } from 'vitest';
 
 import { formatFieldValue, renderDisplayFieldValue } from './fieldValue';
+import { EnumFieldRenderer, MoneyValueFieldRenderer } from '../fields/valueRenderers';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 import type React from 'react';
@@ -36,6 +37,23 @@ describe('renderDisplayFieldValue', () => {
 		const node = renderDisplayFieldValue('1000', field('total', 'decimal'), undefined, new MoneyFieldRenderer('₫', 0)) as
 			React.ReactElement<{ currencySymbol: string }>;
 		expect(node.props.currencySymbol).toBe('₫');
+	});
+
+	it('hands the record to a page-declared renderer', () => {
+		const node = renderDisplayFieldValue(
+			'1000', field('total', 'decimal'), undefined, new MoneyValueFieldRenderer('currency_code'), { currency_code: 'USD' },
+		) as React.ReactElement<{ currency?: { code: string } }>;
+		expect(node.props.currency).toEqual({ code: 'USD' });
+	});
+
+	it('translates the value of a page-declared renderer through its key, falling back to the raw value', () => {
+		const renderer = new EnumFieldRenderer({}, 'status.');
+		const translated = renderDisplayFieldValue('done', field('status', 'enumString'), () => 'Done', renderer) as
+			React.ReactElement<{ label: string }>;
+		const missing = renderDisplayFieldValue('done', field('status', 'enumString'), () => 'ns:status.done', renderer) as
+			React.ReactElement<{ label: string }>;
+		expect(translated.props.label).toBe('Done');
+		expect(missing.props.label).toBe('done');
 	});
 
 	it('translates an enum through its `{field}.{value}` key and falls back to the stored value', () => {

@@ -213,7 +213,7 @@ describe('Product template detail sections', () => {
 	});
 
 	/**
-	 * A badge renderer's `prefix` is what turns a stored enum value into an i18n key
+	 * An enum renderer's `prefix` is what turns a stored enum value into an i18n key
 	 * (`active` → `template_status.active`). Without it the raw value is displayed.
 	 */
 	it('keeps status renderers as serializable specs with their i18n prefix', () => {
@@ -222,15 +222,16 @@ describe('Product template detail sections', () => {
 
 		expect(props.primary.props.fieldRenderers).toEqual({
 			status: {
-				renderer: 'badge',
-				colorMap: { draft: 'gray', active: 'green', discontinued: 'orange' },
+				renderer: 'enum',
+				colorMap: { draft: 'gray', active: 'green', discontinued: 'red' },
 				prefix: 'template_status.',
 			},
 			product_type: {
-				renderer: 'badge',
+				renderer: 'enum',
 				colorMap: { goods: 'blue', service: 'violet' },
 				prefix: 'product_type.',
 			},
+			base_sales_price: { renderer: 'money' },
 		});
 	});
 });
