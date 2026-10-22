@@ -5,10 +5,10 @@ import React from 'react';
 import { useResourceFormView } from '../../../components/resourceFormViewContext';
 import { RESOURCE_CREATE_FORM_V2, RESOURCE_FORM_V2, RESOURCE_FORM_COLUMN_V2 } from '../../../ids';
 import { ownPropertySectionSchema } from '../../resourceDetail/props';
+import { OwnPropertiesBlock } from '../ownPropertiesBlock';
 import { ResourceCreateContext } from '../resourceCreateContext';
 import { ResourceCreateBlock } from '../resourceCreateParts';
 import { ResourceUpdateContext } from '../resourceUpdateContext';
-import { OwnPropertiesBlock } from '../resourceUpdateParts';
 
 import type { OwnPropertySection } from '../../resourceDetail/props';
 import type { IComponentRenderer } from '@nikkierp/viewengine/core';

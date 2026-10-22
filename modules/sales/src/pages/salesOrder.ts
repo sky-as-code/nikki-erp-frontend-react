@@ -15,6 +15,9 @@ import { SalesOrderLineCommands } from '../features/salesOrderLine/commands';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** Amounts are in the order's own currency, which sets the decimal places shown. */
+const SALES_ORDER_MONEY_RENDERER = { renderer: 'money', currencyField: 'currency_code' };
+
 /**
  * The sales order. One route, not two: unlike purchase's RFQ/PO pair, a Sales quotation is a
  * separate resource with its own table and numbering, so it gets its own page.
@@ -46,12 +49,24 @@ function buildSalesOrderListProps() {
 		// Orders are created through `create_order`, which derives the channel from the sales point
 		// rather than trusting the request; a plain create form would bypass that.
 		createEnabled: false,
-		fieldRenderers: buildSalesOrderStatusRenderers(),
+		fieldRenderers: {
+			...buildSalesOrderStatusRenderers(),
+			grand_total: SALES_ORDER_MONEY_RENDERER,
+		},
 	});
 }
 
+function buildSalesOrderMoneyRenderers() {
+	return {
+		subtotal: SALES_ORDER_MONEY_RENDERER,
+		discount_total: SALES_ORDER_MONEY_RENDERER,
+		tax_total: SALES_ORDER_MONEY_RENDERER,
+		grand_total: SALES_ORDER_MONEY_RENDERER,
+	};
+}
+
 /**
- * A badge renderer's `prefix` turns a stored enum value into an i18n key
+ * An enum renderer's `prefix` turns a stored enum value into an i18n key
  * (`partially_paid` → `payment_status.partially_paid`); without it the raw snake_case value reaches
  * the user. Colours mark what still needs action: `overpaid` is orange because change is owed, and
  * `pending` fulfilment is red because money taken with nothing dispensed is the failure that matters.
@@ -59,7 +74,7 @@ function buildSalesOrderListProps() {
 function buildSalesOrderStatusRenderers() {
 	return {
 		status: {
-			renderer: 'badge',
+			renderer: 'enum',
 			colorMap: {
 				draft: 'gray',
 				confirmed: 'blue',
@@ -70,7 +85,7 @@ function buildSalesOrderStatusRenderers() {
 			prefix: 'status.',
 		},
 		payment_status: {
-			renderer: 'badge',
+			renderer: 'enum',
 			colorMap: {
 				unpaid: 'red',
 				partially_paid: 'orange',
@@ -82,7 +97,7 @@ function buildSalesOrderStatusRenderers() {
 			prefix: 'payment_status.',
 		},
 		fulfillment_status: {
-			renderer: 'badge',
+			renderer: 'enum',
 			colorMap: {
 				pending: 'red',
 				not_required: 'gray',
@@ -94,7 +109,7 @@ function buildSalesOrderStatusRenderers() {
 			prefix: 'fulfillment_status.',
 		},
 		invoice_status: {
-			renderer: 'badge',
+			renderer: 'enum',
 			colorMap: {
 				not_requested: 'gray',
 				requested: 'blue',
@@ -114,6 +129,12 @@ function buildSalesOrderDetailProps() {
 		titleLvl1: { schemaField: 'order_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
+		// Read and update show the same fields in the same columns; an uneditable one reads `-`.
+		stableFieldLayout: true,
+		fieldRenderers: {
+			...buildSalesOrderStatusRenderers(),
+			...buildSalesOrderMoneyRenderers(),
+		},
 		standardActionCommands: {
 			getById: SalesOrderCommands.GET_BY_ID,
 			update: SalesOrderCommands.UPDATE,
@@ -190,8 +211,7 @@ function buildSalesOrderFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['external_reference', 'crm_opportunity_reference', 'exchange_of_return_id',
-				'org_id', 'created_at', 'updated_at'],
+			fields: ['created_at', 'updated_at'],
 		}),
 	]);
 }
@@ -378,7 +398,7 @@ function buildSalesOrderFulfillmentResource() {
 			'requested_at', 'completed_at'],
 		fieldRenderers: {
 			status: {
-				renderer: 'badge',
+				renderer: 'enum',
 				colorMap: {
 					pending: 'orange',
 					accepted: 'blue',

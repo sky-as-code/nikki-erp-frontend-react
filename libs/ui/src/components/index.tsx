@@ -17,4 +17,5 @@ export * from './Table';
 export * from './tableHeader';
 export * from './NotFound';
 export * from './Unauthorized';
+export * from './valueRenderers';
 export * from './PermissionGuard';

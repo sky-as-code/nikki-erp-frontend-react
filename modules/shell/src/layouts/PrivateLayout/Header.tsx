@@ -31,9 +31,10 @@ export const Header: React.FC = () => {
 				component='header' align='center' justify='space-between'
 				display={{ base: 'none', md: 'flex' }} gap={0} h='100%'
 			>
-				<Flex gap={'xs'} h='100%' align='center' justify='center'>
+				{/* The left side takes the free width so the menu bar can measure what fits in it. */}
+				<Flex gap={'xs'} h='100%' align='center' flex={1} miw={0}>
 					<GoHomeButton />
-					<Flex gap={'xs'} align='center' justify='center' h='100%'>
+					<Flex gap={'xs'} align='center' h='100%' flex={1} miw={0}>
 						<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
 						{!isRootPath && <>
 							<ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />

@@ -1,13 +1,17 @@
-import { BadgeFieldRenderer, MoneyFieldRenderer, TranslatedFieldRenderer } from '@nikkierp/ui/components/ExcelDataTable';
+import { BadgeFieldRenderer, TranslatedFieldRenderer } from '@nikkierp/ui/components/ExcelDataTable';
 import { z } from 'zod';
 
 import {
-	FIELD_RENDERER_ATTRIBUTE_PILLS, FIELD_RENDERER_AVATAR, FIELD_RENDERER_BADGE,
-	FIELD_RENDERER_MONEY, FIELD_RENDERER_TRANSLATED,
+	FIELD_RENDERER_ATTRIBUTE_PILLS, FIELD_RENDERER_AVATAR, FIELD_RENDERER_BADGE, FIELD_RENDERER_ENUM,
+	FIELD_RENDERER_FLOAT, FIELD_RENDERER_INTEGER, FIELD_RENDERER_MONEY, FIELD_RENDERER_TRANSLATED,
 } from '../ids';
 import { attributePillsSpecSchema, AttributePillsFieldRenderer } from './attributePills';
 import { AvatarFieldRenderer, avatarSpecSchema } from './avatar';
 import { badgeSpecSchema } from './badge';
+import {
+	EnumFieldRenderer, enumSpecSchema, FloatFieldRenderer, floatSpecSchema, IntegerFieldRenderer,
+	integerSpecSchema, MoneyValueFieldRenderer, moneySpecSchema,
+} from './valueRenderers';
 
 import type { IViewRegistry } from '@nikkierp/viewengine/core';
 
@@ -15,17 +19,6 @@ import type { IViewRegistry } from '@nikkierp/viewengine/core';
 export const translatedSpecSchema = z.object({
 	renderer: z.literal('translated'),
 	prefix: z.string().optional(),
-}).strict();
-
-export const moneySpecSchema = z.object({
-	renderer: z.literal('money'),
-	/**
-	 * Overrides the organization's own currency, for a column denominated in something else.
-	 * Omitted, the amount is marked with whatever currency the session was booted with.
-	 */
-	currencySymbol: z.string().min(1).optional(),
-	/** Defaults to the currency's decimal places, then to the digits the raw value carries. */
-	fractionDigits: z.number().int().min(0).max(20).optional(),
 }).strict();
 
 /**
@@ -52,13 +45,32 @@ export function registerFieldRenderers(registry: IViewRegistry): void {
 		return new TranslatedFieldRenderer(prefix ?? '');
 	});
 
-	registry.registerFieldRenderer(FIELD_RENDERER_MONEY, (spec) => {
-		const { currencySymbol, fractionDigits } = moneySpecSchema.parse(spec);
-		return new MoneyFieldRenderer(currencySymbol, fractionDigits);
-	});
+	registerValueRenderers(registry);
 
 	registry.registerFieldRenderer(FIELD_RENDERER_ATTRIBUTE_PILLS, (spec) => {
 		const { separator } = attributePillsSpecSchema.parse(spec);
 		return new AttributePillsFieldRenderer({ separator });
+	});
+}
+
+function registerValueRenderers(registry: IViewRegistry): void {
+	registry.registerFieldRenderer(FIELD_RENDERER_INTEGER, (spec) => {
+		integerSpecSchema.parse(spec);
+		return new IntegerFieldRenderer();
+	});
+
+	registry.registerFieldRenderer(FIELD_RENDERER_FLOAT, (spec) => {
+		const { precision } = floatSpecSchema.parse(spec);
+		return new FloatFieldRenderer(precision);
+	});
+
+	registry.registerFieldRenderer(FIELD_RENDERER_MONEY, (spec) => {
+		const { currencyField } = moneySpecSchema.parse(spec);
+		return new MoneyValueFieldRenderer(currencyField);
+	});
+
+	registry.registerFieldRenderer(FIELD_RENDERER_ENUM, (spec) => {
+		const { colorMap, prefix } = enumSpecSchema.parse(spec);
+		return new EnumFieldRenderer(colorMap, prefix);
 	});
 }

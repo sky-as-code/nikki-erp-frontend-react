@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasVisibleField, isFieldVisible } from './fieldVisibility';
+import { fieldPresentation, hasVisibleField, isBlockVisible, isFieldVisible } from './fieldVisibility';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -125,5 +125,37 @@ describe('hasVisibleField', () => {
 
 	it('is false for an empty field list', () => {
 		expect(hasVisibleField(roleSchema, [], 'create')).toBe(false);
+	});
+});
+
+describe('fieldPresentation', () => {
+	it('shows every listed field read-only in read mode, and drops an undefined one', () => {
+		expect(fieldPresentation(roleSchema, 'created_at', 'read')).toBe('readonly');
+		expect(fieldPresentation(roleSchema, 'nope', 'read', true)).toBe('hidden');
+	});
+
+	it('keeps an uneditable field read-only in update mode, with or without a stable layout', () => {
+		expect(fieldPresentation(roleSchema, 'reference_code', 'update')).toBe('readonly');
+		expect(fieldPresentation(roleSchema, 'owner_name', 'update', true)).toBe('readonly');
+		expect(fieldPresentation(roleSchema, 'description', 'update', true)).toBe('input');
+	});
+
+	it('hides an uneditable field on create unless the layout is stable', () => {
+		expect(fieldPresentation(roleSchema, 'created_at', 'create')).toBe('hidden');
+		expect(fieldPresentation(roleSchema, 'created_at', 'create', true)).toBe('readonly');
+		expect(fieldPresentation(roleSchema, 'name', 'create', true)).toBe('input');
+	});
+});
+
+describe('isBlockVisible', () => {
+	it('drops a block with nothing editable unless the layout is stable', () => {
+		expect(isBlockVisible(roleSchema, ['created_at'], 'create')).toBe(false);
+		expect(isBlockVisible(roleSchema, ['created_at', 'owner_name'], 'update')).toBe(false);
+		expect(isBlockVisible(roleSchema, ['created_at'], 'create', true)).toBe(true);
+		expect(isBlockVisible(roleSchema, ['created_at', 'owner_name'], 'update', true)).toBe(true);
+	});
+
+	it('still drops a stable block whose fields the schema does not define', () => {
+		expect(isBlockVisible(roleSchema, ['nope'], 'update', true)).toBe(false);
 	});
 });

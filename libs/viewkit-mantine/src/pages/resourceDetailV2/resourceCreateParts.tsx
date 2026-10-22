@@ -1,7 +1,6 @@
 import { ActionIcon, Anchor, Group, Stack, Text, Title } from '@mantine/core';
-import * as dyn from '@nikkierp/common/dynamicModel';
 import { Button } from '@nikkierp/ui/components';
-import { AutoField, useCrudFormRuntime } from '@nikkierp/ui/components/form';
+import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconChevronDown, IconChevronRight, IconDeviceFloppy } from '@tabler/icons-react';
@@ -9,7 +8,9 @@ import clsx from 'clsx';
 import React from 'react';
 import { Link } from 'react-router';
 
-import { hasVisibleField, isFieldVisible } from './fieldVisibility';
+import { useDetailFieldDisplay } from './detailFieldDisplay';
+import { isBlockVisible } from './fieldVisibility';
+import { FieldGroupVertical } from './ownPropertiesBlock';
 import { useResourceCreateContext } from './resourceCreateContext';
 import classes from './ResourceDetail.module.css';
 import { StandardActionCode, useActionLock } from '../../permissions';
@@ -156,45 +157,31 @@ export function ResourceCreateBlock({
 	isLoading: boolean,
 }): React.ReactNode {
 	const { schemaPack } = useResourceDetailContext();
+	const { stableFieldLayout } = useDetailFieldDisplay();
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const modelSchema = schemaPack?.modelSchema;
 
 	// A header over nothing reads as a broken section, so a block whose fields all filter out is
 	// dropped along with its title.
-	if (!modelSchema || !hasVisibleField(modelSchema, block.fields ?? [], 'create')) {
+	if (!modelSchema || !isBlockVisible(modelSchema, block.fields ?? [], 'create', stableFieldLayout)) {
 		return null;
 	}
 
 	return (
 		<Stack gap='sm' className={classes.formBlock}>
 			{block.header && block.showTitle ? <Title order={4}>{t(block.header)}</Title> : null}
-			<ResourceCreateFieldGroup fields={block.fields ?? []} isLoading={isLoading} modelSchema={modelSchema} />
+			<FieldGroupVertical
+				fields={block.fields ?? []}
+				isLoading={isLoading}
+				modelSchema={modelSchema}
+				fieldValues={NO_RECORD}
+				mode='create'
+			/>
 		</Stack>
 	);
 }
 
-function ResourceCreateFieldGroup({
-	fields, isLoading, modelSchema,
-}: {
-	fields: string[],
-	isLoading: boolean,
-	modelSchema: dyn.ModelSchema,
-}): React.ReactNode {
-	return (
-		<div className={classes.formFieldWrapper}>
-			{fields.map(field => {
-				if (!isFieldVisible(modelSchema, field, 'create')) {
-					return null;
-				}
-				return (
-					<Stack key={field} gap={4}>
-						<AutoField name={field} inputProps={{ disabled: isLoading }} />
-					</Stack>
-				);
-			})}
-		</div>
-	);
-}
+const NO_RECORD: Record<string, unknown> = {};
 
 /**
  * Locks Save on a create form. The way in is already gated, but `/{resource}/new` is a URL anyone

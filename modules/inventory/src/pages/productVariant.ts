@@ -13,6 +13,10 @@ import { StockQuantCommands } from '../features/stockQuant/commands';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** No currency field of its own: amounts are in the organization's currency. */
+const MONEY_RENDERER = { renderer: 'money' };
+const FLOAT_RENDERER = { renderer: 'float' };
+
 export function buildProductVariantPages(): PageNode[] {
 	const splitView = resourceSplitViewProps({
 		primary: buildProductVariantListProps(),
@@ -45,18 +49,40 @@ function buildProductVariantListProps() {
 		updateCommand: ProductVariantCommands.UPDATE,
 		fieldRenderers: {
 			attribute_summary: { renderer: 'attributePills' },
-			status: {
-				renderer: 'badge',
-				colorMap: { active: 'green', discontinued: 'orange' },
-				prefix: 'variant_status.',
-			},
-			archive_source: {
-				renderer: 'badge',
-				colorMap: { user: 'red', template_cascade: 'gray', system_sync: 'blue' },
-				prefix: 'archive_source.',
-			},
+			...buildProductVariantEnumRenderers(),
+			effective_base_sales_price: MONEY_RENDERER,
+			cost: MONEY_RENDERER,
+			on_hand_quantity: FLOAT_RENDERER,
 		},
 	});
+}
+
+function buildProductVariantEnumRenderers() {
+	return {
+		status: {
+			renderer: 'enum',
+			colorMap: { active: 'green', discontinued: 'red' },
+			prefix: 'variant_status.',
+		},
+		archive_source: {
+			renderer: 'enum',
+			colorMap: { user: 'red', template_cascade: 'gray', system_sync: 'blue' },
+			prefix: 'archive_source.',
+		},
+	};
+}
+
+function buildProductVariantDetailRenderers() {
+	return {
+		...buildProductVariantEnumRenderers(),
+		cost: MONEY_RENDERER,
+		product_template_base_sales_price: MONEY_RENDERER,
+		effective_base_sales_price: MONEY_RENDERER,
+		weight: FLOAT_RENDERER,
+		length: FLOAT_RENDERER,
+		width: FLOAT_RENDERER,
+		height: FLOAT_RENDERER,
+	};
 }
 
 function buildProductVariantDetailProps() {
@@ -66,6 +92,7 @@ function buildProductVariantDetailProps() {
 		titleLvl1: { schemaField: 'product_template_name' },
 		titleLvl2: { schemaField: 'sku' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: buildProductVariantDetailRenderers(),
 		standardActionCommands: {
 			getById: ProductVariantCommands.GET_BY_ID,
 			create: ProductVariantCommands.CREATE,
@@ -106,7 +133,7 @@ function buildProductVariantFieldsSection(): ComponentNode {
 		// list, and these are only the inputs to it.
 		resourceFormColumnNode({
 			header: 'form.pricing',
-			fields: ['cost', 'template_base_sales_price', 'effective_base_sales_price'],
+			fields: ['cost', 'product_template_base_sales_price', 'effective_base_sales_price'],
 		}),
 		// Left empty, each of these inherits the template's default. Null means "inherited",
 		// never zero. See BR Â§6.4.

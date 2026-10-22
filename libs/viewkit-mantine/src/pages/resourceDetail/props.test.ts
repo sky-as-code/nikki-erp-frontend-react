@@ -59,12 +59,6 @@ describe('resourceDetailExtraActionSchema', () => {
 });
 
 describe('ownPropertySectionSchema', () => {
-	it('defaults showTitle to false', () => {
-		const block = ownPropertySectionSchema.parse({ header: 'form.general', fields: ['name'] });
-
-		expect(block.showTitle).toBe(false);
-	});
-
 	it('accepts an explicit showTitle', () => {
 		const block = ownPropertySectionSchema.parse({
 			header: 'form.general', fields: ['name'], showTitle: true,

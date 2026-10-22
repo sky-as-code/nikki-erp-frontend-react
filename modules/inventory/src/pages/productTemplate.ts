@@ -14,6 +14,10 @@ import { StockProductConfigCommands } from '../features/stockProductConfig/comma
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** No currency field of its own: amounts are in the organization's currency. */
+const MONEY_RENDERER = { renderer: 'money' };
+const FLOAT_RENDERER = { renderer: 'float' };
+
 export function buildProductTemplatePages(): PageNode[] {
 	const splitView = resourceSplitViewProps({
 		primary: buildProductTemplateListProps(),
@@ -47,18 +51,38 @@ function buildProductTemplateListProps() {
 		updateSaveCommand: ProductTemplateCommands.UPDATE,
 		updateCommand: ProductTemplateCommands.UPDATE,
 		fieldRenderers: {
-			status: {
-				renderer: 'badge',
-				colorMap: { draft: 'gray', active: 'green', discontinued: 'orange' },
-				prefix: 'template_status.',
-			},
-			product_type: {
-				renderer: 'badge',
-				colorMap: { goods: 'blue', service: 'violet' },
-				prefix: 'product_type.',
-			},
+			...buildProductTemplateEnumRenderers(),
+			base_sales_price: MONEY_RENDERER,
 		},
 	});
+}
+
+function buildProductTemplateEnumRenderers() {
+	return {
+		status: {
+			renderer: 'enum',
+			colorMap: { draft: 'gray', active: 'green', discontinued: 'red' },
+			prefix: 'template_status.',
+		},
+		product_type: {
+			renderer: 'enum',
+			colorMap: { goods: 'blue', service: 'violet' },
+			prefix: 'product_type.',
+		},
+	};
+}
+
+function buildProductTemplateDetailRenderers() {
+	return {
+		...buildProductTemplateEnumRenderers(),
+		base_sales_price: MONEY_RENDERER,
+		min_variant_cost: MONEY_RENDERER,
+		max_variant_cost: MONEY_RENDERER,
+		default_weight: FLOAT_RENDERER,
+		default_length: FLOAT_RENDERER,
+		default_width: FLOAT_RENDERER,
+		default_height: FLOAT_RENDERER,
+	};
 }
 
 function buildProductTemplateDetailProps() {
@@ -68,6 +92,7 @@ function buildProductTemplateDetailProps() {
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'short_name' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: buildProductTemplateDetailRenderers(),
 		standardActionCommands: {
 			getById: ProductTemplateCommands.GET_BY_ID,
 			create: ProductTemplateCommands.CREATE,

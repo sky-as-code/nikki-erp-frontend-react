@@ -25,11 +25,11 @@ export function renderDisplayFieldValue(
 	fieldSchema?: dyn.ModelSchemaField,
 	localize?: LocalizeFn,
 	fieldRenderer?: IFieldRenderer,
+	record?: Record<string, unknown>,
 ): React.ReactNode {
 	const isUnset = fieldValue === null || fieldValue === undefined || fieldValue === '';
 	if (fieldRenderer && !isUnset) {
-		const text = formatFieldValue(fieldValue);
-		return fieldRenderer.renderRaw ? fieldRenderer.renderRaw(fieldValue, text) : fieldRenderer.render(text, text);
+		return renderWithFieldRenderer(fieldRenderer, fieldValue, localize, record);
 	}
 	const typeName = getFieldDataTypeName(fieldSchema);
 	if (typeName === 'nikkiLangJson') {
@@ -51,6 +51,24 @@ export function renderDisplayFieldValue(
 	return formatFieldValue(fieldValue);
 }
 
+/** The same contract a list cell honours: `renderRaw` first, else `render` with the translated value. */
+function renderWithFieldRenderer(
+	fieldRenderer: IFieldRenderer, fieldValue: unknown, localize?: LocalizeFn, record?: Record<string, unknown>,
+): React.ReactNode {
+	const text = formatFieldValue(fieldValue);
+	if (fieldRenderer.renderRaw) {
+		return fieldRenderer.renderRaw(fieldValue, text, record);
+	}
+	const key = fieldRenderer.translationKey?.(text);
+	return fieldRenderer.render(text, key && localize ? translateOrRaw(key, text, localize) : text);
+}
+
+/** A missing key comes back as `module:key` (see {@link renderEnumValue}); the raw value reads better. */
+function translateOrRaw(key: string, rawValue: string, localize: LocalizeFn): string {
+	const label = localize(dyn.newLangJsonRef(key));
+	return label && !label.endsWith(key) ? label : rawValue;
+}
+
 /**
  * An enum stores a machine value (`country`); the label for it lives under `{field}.{value}`,
  * the same key the edit form's select builds. i18next runs with `appendNamespaceToMissingKey`
@@ -58,9 +76,7 @@ export function renderDisplayFieldValue(
  * stored value is then the lesser evil.
  */
 function renderEnumValue(fieldValue: string, fieldSchema: dyn.ModelSchemaField, localize: LocalizeFn): string {
-	const key = `${fieldSchema.name}.${fieldValue}`;
-	const label = localize(dyn.newLangJsonRef(key));
-	return label && !label.endsWith(key) ? label : formatFieldValue(fieldValue);
+	return translateOrRaw(`${fieldSchema.name}.${fieldValue}`, fieldValue, localize);
 }
 
 export function formatFieldValue(fieldValue: unknown): string {

@@ -1,5 +1,7 @@
 import { ClientErrors } from '@nikkierp/common/types';
-import { dispatchServiceMethod, storeAsyncMethod, storeService } from '@nikkierp/ui/appState/store';
+import {
+	dispatchServiceMethod, storeAsyncMethod, storeService, storeSyncMethod,
+} from '@nikkierp/ui/appState/store';
 
 import * as t from './types';
 import { shellStore } from '../appState/shellStore';
@@ -9,6 +11,9 @@ import { userContextService } from '../userContext/userContextService';
 export const SLICE_NAME = t.SLICE_NAME;
 
 export type LoginCredentials = Record<string, unknown>;
+
+/** `null` until the first token write or refresh failure; `'none'` once a session is lost. */
+export type SessionState = 'active' | 'none';
 
 export type InitAuthServiceParams = {
 	strategy: t.ISignInStrategy,
@@ -22,6 +27,13 @@ export type InitAuthServiceParams = {
 let strategy: t.ISignInStrategy;
 let accessTokenStorage: t.ITokenStorage;
 let refreshTokenStorage: t.ITokenStorage;
+let refreshInFlight: Promise<boolean> | null = null;
+
+/**
+ * Refreshes this long before expiry, so a token that passes the client check is not refused by
+ * the server a moment later -- which would send the user to `/signin` for no reason.
+ */
+const ACCESS_TOKEN_REFRESH_MARGIN_MS = 30_000;
 
 
 export function initAuthService(params: InitAuthServiceParams): void {
@@ -44,11 +56,18 @@ export function getAccessToken(): string | null {
 export function clearAuthSession(): void {
 	accessTokenStorage?.clear();
 	refreshTokenStorage?.clear();
+	markSession('none');
 }
 
+/**
+ * Whether a usable session exists: a live access token, or a refresh token to get one.
+ *
+ * Not for render gating -- storage is invisible to React. Components use `useIsAuthenticated`.
+ */
 export function isAuthenticated(): boolean {
 	const accessObj = accessTokenStorage?.getToken();
-	return Boolean(accessObj && !accessObj.isExpired);
+	const refreshObj = refreshTokenStorage?.getToken();
+	return Boolean((accessObj && !accessObj.isExpired) || (refreshObj && !refreshObj.isExpired));
 }
 
 /**
@@ -59,16 +78,33 @@ export function isAuthenticated(): boolean {
  */
 export async function ensureAccessToken(): Promise<string> {
 	const accessObj = accessTokenStorage.getToken();
-	if (accessObj && !accessObj.isExpired) {
+	if (accessObj && !accessObj.isExpiringWithin(ACCESS_TOKEN_REFRESH_MARGIN_MS)) {
 		return accessObj.token;
 	}
-	const restored = await restoreSession();
-	return restored ? getAccessToken()! : '';
+	try {
+		const restored = await refreshOnce();
+		return restored ? getAccessToken()! : '';
+	}
+	catch (error) {
+		// A transient refresh failure inside the margin: the current token still works.
+		if (accessObj && !accessObj.isExpired) return accessObj.token;
+		throw error;
+	}
 }
 
+/** Every request racing past an expired token shares one refresh call. */
+function refreshOnce(): Promise<boolean> {
+	refreshInFlight ??= restoreSession().finally(() => {
+		refreshInFlight = null;
+	});
+	return refreshInFlight;
+}
+
+/** A thrown error is a technical failure, not a refusal, so it leaves the session state alone. */
 async function restoreSession(): Promise<boolean> {
 	const refreshObj = refreshTokenStorage.getToken();
 	if (!refreshObj || refreshObj.isExpired) {
+		markSession('none');
 		return false;
 	}
 	try {
@@ -77,6 +113,7 @@ async function restoreSession(): Promise<boolean> {
 	}
 	catch (error) {
 		if (ClientErrors.containsAuthorizationError(error)) {
+			markSession('none');
 			return false;
 		}
 		throw error;
@@ -88,6 +125,17 @@ function onSignInSuccess(session: t.AuthenticatedSession): void {
 	if (session.refreshToken) {
 		refreshTokenStorage.setToken(new t.TokenObj(session.refreshToken, session.refreshTokenExpiresAt!));
 	}
+	markSession('active');
+}
+
+/**
+ * Tokens live in storage, which React cannot observe, so every change in whether a session
+ * exists is also dispatched. `useIsAuthenticated` reads this rather than the token: an expired
+ * access token is not a lost session -- the next request refreshes it -- only a failed refresh is.
+ */
+function markSession(state: SessionState): void {
+	if (authService.readSessionState() === state) return;
+	void dispatchServiceMethod(authService.setSessionState, state);
 }
 
 
@@ -169,6 +217,17 @@ export class AuthService {
 	@storeAsyncMethod
 	public async settleSession(): Promise<boolean> {
 		return true;
+	}
+
+	/** Written by the token helpers above, not by callers. */
+	@storeSyncMethod
+	public setSessionState(state: SessionState): SessionState {
+		return state;
+	}
+
+	public readSessionState(): SessionState | null {
+		const slice = shellStore.getState()[SLICE_NAME] as { setSessionState?: SessionState | null } | undefined;
+		return slice?.setSessionState ?? null;
 	}
 }
 

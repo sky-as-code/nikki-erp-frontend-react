@@ -60,7 +60,11 @@ export class TokenObj {
 	}
 
 	public get isExpired(): boolean {
-		return this.#expiresAt.getTime() < Date.now();
+		return this.isExpiringWithin(0);
+	}
+
+	public isExpiringWithin(marginMs: number): boolean {
+		return this.#expiresAt.getTime() - marginMs < Date.now();
 	}
 
 	public get token(): string {

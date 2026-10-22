@@ -1,8 +1,10 @@
 import { CommandBus, ICommandBus, ModuleLoader } from '@nikkierp/common/commandBus';
 import { schemaRegistry, SchemaOwnerLoader } from '@nikkierp/common/dynamicModel';
+import { configureValueRenderers } from '@nikkierp/ui/components/valueRenderers';
 import { MicroAppManager } from '@nikkierp/ui/microApp';
 
 import { registerShellCommands, ShellCommandDeps } from './registerShellCommands';
+import { USER_CONTEXT_COMMANDS } from '../userContext/userContextCommands';
 
 
 /**
@@ -21,6 +23,7 @@ export function createShellCommandBus(manager: MicroAppManager, deps: ShellComma
 	bus.setModuleLoader(makeModuleLoader(manager));
 	schemaRegistry.setOwnerLoader(makeSchemaOwnerLoader(manager));
 	registerShellCommands(bus, deps);
+	configureValueRenderers({ userSettingsCommand: USER_CONTEXT_COMMANDS.GET });
 	return bus;
 }
 
