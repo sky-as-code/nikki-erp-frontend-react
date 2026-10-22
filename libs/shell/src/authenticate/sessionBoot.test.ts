@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { TokenObj } from './types';
 import { shellStore } from '../appState/shellStore';
 
 
@@ -41,7 +42,7 @@ async function importAuth() {
 	return { authModule, NikkiAuthenticateStrategy };
 }
 
-function tokenStorage(token: { token: string, expiresAt: Date, isExpired: boolean } | null) {
+function tokenStorage(token: TokenObj | null) {
 	return {
 		getToken: () => token,
 		setToken: vi.fn(),
@@ -49,7 +50,8 @@ function tokenStorage(token: { token: string, expiresAt: Date, isExpired: boolea
 	} as any;
 }
 
-const validToken = { token: 'access-1', expiresAt: new Date(Date.now() + 60_000), isExpired: false };
+// Beyond `ensureAccessToken`'s refresh margin, so no refresh is attempted.
+const validToken = new TokenObj('access-1', Date.now() + 3_600_000);
 
 /** The server's wire shape — `toUserContext` maps snake_case across, so send that. */
 const userContextPayload = {

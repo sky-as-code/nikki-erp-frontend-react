@@ -1,7 +1,7 @@
 import { selectSliceState, useModuleSelector, useServiceLayer } from '@nikkierp/ui/appState/store';
 import { createSelector } from '@reduxjs/toolkit';
 
-import { AuthService, authService, isAuthenticated } from './authService';
+import { AuthService, authService } from './authService';
 import { selectGetUserContext } from '../userContext/userContextSelectors';
 
 
@@ -27,13 +27,17 @@ export function useAuthState() {
 	return useModuleSelector(selectAuthState);
 }
 
-/** True once the access token is valid **and** the user context has loaded. */
+/**
+ * True while a session exists **and** the user context has loaded.
+ *
+ * Reads the store only. It used to check the access token in storage on every render, which
+ * hid everything gated on it -- the org and module switchers first -- whenever a re-render
+ * landed between the token expiring and the next request refreshing it, with nothing to bring
+ * them back. An expired access token is refreshed transparently; only a failed refresh ends
+ * the session, and that is dispatched as `setSessionState('none')`.
+ */
 export function useIsAuthenticated(): boolean {
-	const getUserContext = useModuleSelector(selectGetUserContext);
-	// `isAuthenticated()` reads localStorage, so it is called on every render rather than
-	// from inside a `createSelector`. Memoizing it on user-context state — as this used to
-	// — meant a token expiring in place never invalidated the cached answer.
-	return isAuthenticated() && hasUserContext(getUserContext);
+	return useModuleSelector(selectIsAuthenticated);
 }
 
 /**
@@ -55,6 +59,12 @@ export function useIsAuthenticatePending(): boolean {
 export function useIsSessionSettled(): boolean {
 	return useModuleSelector(selectIsSessionSettled);
 }
+
+export const selectIsAuthenticated = createSelector(
+	selectAuthState,
+	selectGetUserContext,
+	(auth: any, getUserContext: any) => auth?.setSessionState !== 'none' && hasUserContext(getUserContext),
+);
 
 const selectIsAuthenticatePending = createSelector(
 	selectAuthState,

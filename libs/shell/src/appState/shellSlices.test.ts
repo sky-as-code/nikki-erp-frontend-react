@@ -25,7 +25,8 @@ describe('shellStore slices', () => {
 		const auth = shellStore.getState()[AUTH_SLICE] as Record<string, unknown>;
 
 		expect(Object.keys(auth).sort()).toEqual([
-			'continueSignIn', 'refreshSession', 'restoreAuthSession', 'settleSession', 'signOut', 'startSignIn',
+			'continueSignIn', 'refreshSession', 'restoreAuthSession', 'setSessionState', 'settleSession', 'signOut',
+			'startSignIn',
 		]);
 	});
 

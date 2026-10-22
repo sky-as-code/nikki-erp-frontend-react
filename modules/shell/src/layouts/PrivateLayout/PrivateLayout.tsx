@@ -18,10 +18,12 @@ export function PrivateLayout(): React.ReactNode {
 	React.useEffect(() => {
 		if (isAuthenticatePending) return;
 
-		if (!isAuthenticated && restore.result.isFulfilled && !restore.data) {
+		// Not only when restoring found no session: one lost after boot -- a refused refresh, or a
+		// user context wiped by a failed refetch -- would otherwise leave a blank page.
+		if (!isAuthenticated && restore.result.isFulfilled) {
 			void routingService.navigateWillReturn({ to: '/signin', hardNavigate: true });
 		}
-	}, [isAuthenticated, restore.result.isFulfilled]);
+	}, [isAuthenticated, isAuthenticatePending, restore.result.isFulfilled]);
 
 	return isAuthenticated && (
 		<ErrorBoundary>
