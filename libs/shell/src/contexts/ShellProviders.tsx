@@ -20,7 +20,7 @@ import { useIsSessionSettled } from '../authenticate';
 import { useTryRestoreSession } from '../authenticate/authHooks';
 import { initAuthService, ensureAccessToken } from '../authenticate/authService';
 import { NikkiAuthenticateStrategy } from '../authenticate/strategies';
-import { TokenSessionStorage, TokenLocalStorage } from '../authenticate/tokenStorage';
+import { TokenLocalStorage } from '../authenticate/tokenStorage';
 import { ShellCommandRegistrar } from '../commandBus';
 import { setEnvVarsAction } from '../config/shellConfigSlice';
 import { shellEventBus } from '../eventBus';
@@ -74,7 +74,9 @@ function initServices(props: ShellProvidersProps): void {
 	shellStore.dispatch(setEnvVarsAction(props.envVars as ShellEnvVars));
 
 	const signInStrategy = new NikkiAuthenticateStrategy();
-	const accessTokenStorage = new TokenSessionStorage('nikki_access_token');
+	// localStorage, like the refresh token: a menu item opened in a new tab must start signed in, and
+	// sessionStorage is empty in every new tab.
+	const accessTokenStorage = new TokenLocalStorage('nikki_access_token');
 	const refreshTokenStorage = new TokenLocalStorage('nikki_refresh_token');
 
 	initAuthService({

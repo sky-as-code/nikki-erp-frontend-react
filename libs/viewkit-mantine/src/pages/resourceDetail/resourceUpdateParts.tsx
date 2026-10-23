@@ -14,6 +14,7 @@ import { evaluateCondition } from '@nikkierp/viewengine/metadata';
 import {
 	IconAlertCircle, IconChevronRight, IconDeviceFloppy, IconPencil, IconPlus, IconX,
 } from '@tabler/icons-react';
+import clsx from 'clsx';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -28,6 +29,7 @@ import { ResourceDetailOverflowMenu } from './resourceOverflowMenu';
 import { useResourceUpdateContext } from './resourceUpdateContext';
 import { EdgeFieldValue } from '../../components/edgeFieldValue';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
+import { formBlockSpanClass } from '../../components/formBlockSpan';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import { resolveActionCode, StandardActionCode, useActionLock } from '../../permissions';
 
@@ -464,7 +466,7 @@ export function OwnPropertiesBlock({
 	}
 
 	return (
-		<Stack gap='sm' className={classes.formBlock}>
+		<Stack gap='sm' className={clsx(classes.formBlock, formBlockSpanClass(block))}>
 			{block.header && block.showTitle ? <Title order={4}>{t(block.header)}</Title> : null}
 			<FieldGroupVertical
 				fields={block.fields ?? []}

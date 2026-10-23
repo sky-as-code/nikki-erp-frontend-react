@@ -13,6 +13,7 @@ import { isBlockVisible } from './fieldVisibility';
 import { FieldGroupVertical } from './ownPropertiesBlock';
 import { useResourceCreateContext } from './resourceCreateContext';
 import classes from './ResourceDetail.module.css';
+import { formBlockSpanClass } from '../../components/formBlockSpan';
 import { StandardActionCode, useActionLock } from '../../permissions';
 import {
 	useResourceDetailContext, useResourceDetailSchemaName, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
@@ -168,7 +169,7 @@ export function ResourceCreateBlock({
 	}
 
 	return (
-		<Stack gap='sm' className={classes.formBlock}>
+		<Stack gap='sm' className={clsx(classes.formBlock, formBlockSpanClass(block))}>
 			{block.header && block.showTitle ? <Title order={4}>{t(block.header)}</Title> : null}
 			<FieldGroupVertical
 				fields={block.fields ?? []}

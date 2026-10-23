@@ -26,6 +26,11 @@ export const ownPropertySectionSchema = z.object({
 	 * inside the block would be redundant.
 	 */
 	showTitle: z.boolean().default(true),
+	/**
+	 * `full` gives the block a row of its own in a `formBlocks` grid, and lets its fields spread
+	 * across that row. Omitted, the block takes one grid cell.
+	 */
+	span: z.enum(['full']).optional(),
 });
 
 /**

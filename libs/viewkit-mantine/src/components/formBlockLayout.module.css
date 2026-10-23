@@ -39,3 +39,8 @@
 		grid-template-columns: repeat(4, 1fr);
 	}
 }
+
+/* A `resource_form__column` with `span: 'full'`: its own row, its fields spread across it. */
+.formBlockFullRow {
+	grid-column: 1 / -1;
+}
