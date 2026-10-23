@@ -66,4 +66,13 @@ describe('ownPropertySectionSchema', () => {
 
 		expect(block.showTitle).toBe(true);
 	});
+
+	it('takes one grid cell unless told to span the row', () => {
+		expect(ownPropertySectionSchema.parse({ fields: ['name'] }).span).toBeUndefined();
+		expect(ownPropertySectionSchema.parse({ fields: ['name'], span: 'full' }).span).toBe('full');
+	});
+
+	it('rejects a span other than full', () => {
+		expect(() => ownPropertySectionSchema.parse({ fields: ['name'], span: 'half' })).toThrow();
+	});
 });

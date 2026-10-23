@@ -16,6 +16,7 @@ import {
 	useResourceDetailContext, useResourceDetailSchemaName, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
 } from './ResourceDetailProvider';
 import { SplitPaneCloseButton } from './SplitPaneCloseButton';
+import { formBlockSpanClass } from '../../components/formBlockSpan';
 import { StandardActionCode, useActionLock } from '../../permissions';
 
 import type { LinkSpec, OwnPropertySection, SchemaFieldSpec } from './props';
@@ -166,7 +167,7 @@ export function ResourceCreateBlock({
 	}
 
 	return (
-		<Stack gap='sm' className={classes.formBlock}>
+		<Stack gap='sm' className={clsx(classes.formBlock, formBlockSpanClass(block))}>
 			{block.header && block.showTitle ? <Title order={4}>{t(block.header)}</Title> : null}
 			<ResourceCreateFieldGroup fields={block.fields ?? []} isLoading={isLoading} modelSchema={modelSchema} />
 		</Stack>

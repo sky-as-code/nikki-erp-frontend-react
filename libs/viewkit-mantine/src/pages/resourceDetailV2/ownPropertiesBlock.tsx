@@ -2,6 +2,7 @@ import { Stack, Text, Title } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { AutoField, ReadOnlyBooleanSwitch, useComputedField } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import clsx from 'clsx';
 import React from 'react';
 
 import { useDetailFieldDisplay } from './detailFieldDisplay';
@@ -10,6 +11,7 @@ import classes from './ResourceDetail.module.css';
 import { ResourceUpdateContext } from './resourceUpdateContext';
 import { EdgeFieldValue } from '../../components/edgeFieldValue';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
+import { formBlockSpanClass } from '../../components/formBlockSpan';
 import { useResourceDetailContext, useResourceDetailTranslationNs } from '../resourceDetail/ResourceDetailProvider';
 
 import type { FieldVisibilityMode } from './fieldVisibility';
@@ -37,7 +39,7 @@ export function OwnPropertiesBlock({
 	}
 
 	return (
-		<Stack gap='sm' className={classes.formBlock}>
+		<Stack gap='sm' className={clsx(classes.formBlock, formBlockSpanClass(block))}>
 			{block.header && block.showTitle ? <Title order={5} className='uppercase'>{t(block.header)}</Title> : null}
 			<FieldGroupVertical
 				fields={block.fields ?? []}
