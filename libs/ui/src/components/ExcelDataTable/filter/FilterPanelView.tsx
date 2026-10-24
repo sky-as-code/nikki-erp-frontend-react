@@ -43,6 +43,8 @@ export type FilterPanelViewProps = {
 	onApply: (overrides?: { tree: FilterTree }) => void,
 	onClear: () => void,
 	translateFieldName: (field: string) => string,
+	/** The label of an enum value; the stored value is shown without it. */
+	translateEnumValue?: (field: string, value: string) => string,
 	tid: ExcelDataTableTestIds,
 };
 
@@ -127,7 +129,6 @@ export function FilterPanelView(props: FilterPanelViewProps): React.ReactNode {
 				) : null}
 				<Divider />
 				<Group align='start'>
-					{/* <div className={classes.panelGrid}> */}
 					<FilterConditionTree
 						tree={props.tree}
 						onTreeChange={onTreeChange}
@@ -136,6 +137,7 @@ export function FilterPanelView(props: FilterPanelViewProps): React.ReactNode {
 						fields={filterableFields}
 						modelSchema={props.modelSchema}
 						translateFieldName={props.translateFieldName}
+						translateEnumValue={props.translateEnumValue}
 						tid={props.tid}
 					/>
 					<FilterSortPane
@@ -145,7 +147,6 @@ export function FilterPanelView(props: FilterPanelViewProps): React.ReactNode {
 						translateFieldName={props.translateFieldName}
 						tid={props.tid}
 					/>
-					{/* </div> */}
 				</Group>
 				<Divider />
 				{/* Local state like every other control here: it is read at Apply time, so ticking

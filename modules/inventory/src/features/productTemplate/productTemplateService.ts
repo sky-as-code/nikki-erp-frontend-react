@@ -4,13 +4,14 @@ import { StoreCrudServiceBase, storeAsyncMethod, storeService } from '@nikkierp/
 
 import * as t from './types';
 import {
-	GENERATE_VARIANTS_PATH, INVENTORY_MODULE, PRODUCT_TEMPLATE_SCHEMA_NAME, RESOLVE_SELECTION_PATH,
+	COPY_TEMPLATE_PATH, GENERATE_VARIANTS_PATH, INVENTORY_MODULE, PREVIEW_ATTRIBUTE_CONFIGURATION_PATH,
+	PRODUCT_TEMPLATE_SCHEMA_NAME, RESOLVE_SELECTION_PATH,
 } from '../../constants';
 import { inventoryStore } from '../../store';
 
 
 /**
- * CRUD over `inventory_product_template`, plus the two capabilities the engine defines as custom
+ * CRUD over `inventory_product_template`, plus the capabilities the engine defines as custom
  * actions beyond CRUD.
  *
  * Both are a `POST {resourcePath}/{actionPath}` with a JSON body, which is exactly what
@@ -25,10 +26,8 @@ export class ProductTemplateService extends StoreCrudServiceBase {
 	}
 
 	/**
-	 * Brings a template's variants in step with its INSTANT attribute configuration.
-	 *
-	 * Obsolete variants come back in the response rather than being deleted: one a transaction
-	 * already references must be archived instead, and only the caller knows which. See BR §8.2.
+	 * Re-reconciles a template's variants with its saved attribute configuration: creates, extends
+	 * and restores what is missing, and deletes or archives what no longer fits.
 	 */
 	@storeAsyncMethod
 	public generateVariants(templateId: string): Promise<ServiceResult<t.GenerateVariantsResponse>> {
@@ -44,6 +43,25 @@ export class ProductTemplateService extends StoreCrudServiceBase {
 		request: t.ResolveSelectionRequest,
 	): Promise<ServiceResult<t.ResolveSelectionResponse>> {
 		return this.postAction<t.ResolveSelectionResponse>(RESOLVE_SELECTION_PATH, request);
+	}
+
+	/**
+	 * Dry run of a configuration save: what applying these lines and exclusions would do to every
+	 * variant. Refused with `err_etag_mismatched` once the template moved past `etag`.
+	 */
+	@storeAsyncMethod
+	public previewAttributeConfiguration(
+		request: t.PreviewAttributeConfigurationRequest,
+	): Promise<ServiceResult<unknown>> {
+		const { id, ...body } = request;
+		return this.postAction<unknown>(`${id}/${PREVIEW_ATTRIBUTE_CONFIGURATION_PATH}`, body);
+	}
+
+	/** Copies a template with its active configuration; stock, history, SKUs and variants are not copied. */
+	@storeAsyncMethod
+	public copyTemplate(request: t.CopyTemplateRequest): Promise<ServiceResult<t.CopyTemplateResponse>> {
+		const body = request.name === undefined ? {} : { name: request.name };
+		return this.postAction<t.CopyTemplateResponse>(`${request.id}/${COPY_TEMPLATE_PATH}`, body);
 	}
 
 	/**

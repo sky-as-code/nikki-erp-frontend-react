@@ -24,6 +24,17 @@ describe('resourceDetailV2PropsSchema', () => {
 		expect(parsed.relatedResources[0].extraActions).toEqual([]);
 	});
 
+	it('accepts a filtered, relabelled "View all" on a related resource', () => {
+		const parsed = resourceDetailV2PropsSchema.parse({
+			...base,
+			relatedResources: [{
+				label: 'tab', schemaName: 'iam_user', translationNs: 'iam', searchCommand: 'iam.user.search',
+				linkRoutePath: 'iam_user', showViewAll: true, viewAllFiltered: true, viewAllLabel: 'role_viewUsers',
+			}],
+		});
+		expect(parsed.relatedResources[0]).toMatchObject({ viewAllFiltered: true, viewAllLabel: 'role_viewUsers' });
+	});
+
 	it('rejects a related resource without a label or with unknown keys', () => {
 		expect(() => resourceDetailV2PropsSchema.parse({
 			...base, relatedResources: [{ schemaName: 'iam_user', translationNs: 'iam', searchCommand: 'c' }],

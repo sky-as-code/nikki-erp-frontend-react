@@ -48,6 +48,12 @@ export type ResourceUpdateContextValue = {
 	/** Optional because only the v2 update provider merges contributions into its request. */
 	registerUpdatePayload?: RegisterUpdatePayload,
 	hasPendingUpdatePayload?: () => boolean,
+	/**
+	 * v2 only: the page-wide edit mode, which the form adopts. Lifted here so a section outside the
+	 * form -- the related tabs -- can hide its navigation while the form holds unsaved edits.
+	 */
+	updateMode?: boolean,
+	setUpdateMode?: React.Dispatch<React.SetStateAction<boolean>>,
 };
 
 export const ResourceUpdateContext = React.createContext<ResourceUpdateContextValue | undefined>(undefined);

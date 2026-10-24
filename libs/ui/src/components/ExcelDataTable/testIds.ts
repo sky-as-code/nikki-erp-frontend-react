@@ -57,6 +57,11 @@ export function excelDataTableTestIds(testId: string | undefined, tableName: str
 		newRowDiscard: () => attrs('newRow', 'discard'),
 		rowEdit: (rowId: RowId) => attrs('row', rowId, 'edit'),
 		rowDelete: (rowId: RowId) => attrs('row', rowId, 'delete'),
+		rowSortHandle: (rowId: RowId) => attrs('row', rowId, 'sortHandle'),
+		rowChangeBadge: (rowId: RowId) => attrs('row', rowId, 'change'),
+		rowAction: (rowId: RowId, column: string, action: string) => attrs('row', rowId, 'action', column, action),
+		actionColumnHeader: (column: string) => attrs('actionColumn', column),
+		sortPlaceholder: () => attrs('sortPlaceholder'),
 		...filterTestIds(attrs),
 		...settingsTestIds(attrs),
 	};

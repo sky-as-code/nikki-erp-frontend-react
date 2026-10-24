@@ -6,6 +6,7 @@ import {
 import * as c from '../constants';
 import { ProductAttributeCommands } from '../features/productAttribute/commands';
 import { ProductAttributeValueCommands } from '../features/productAttributeValue/commands';
+import { attributeValuesNode } from '../viewkit/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -34,21 +35,33 @@ function buildProductAttributeListProps() {
 		archiveCommand: ProductAttributeCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductAttributeCommands.UPDATE,
 		updateCommand: ProductAttributeCommands.UPDATE,
-		fieldRenderers: {
-			variant_creation_mode: {
-				renderer: 'badge',
-				colorMap: { instant: 'green', dynamic: 'blue', never: 'gray' },
-				prefix: 'variant_creation_mode.',
-			},
-			data_type: {
-				renderer: 'badge',
-				colorMap: {
-					option: 'blue', text: 'gray', number: 'teal', date: 'grape', boolean: 'orange',
-				},
-				prefix: 'attribute_data_type.',
-			},
-		},
+		fieldRenderers: attributeFieldRenderers(),
 	});
+}
+
+/** Shared by the list and the detail's read mode, so an enum reads the same in both. */
+function attributeFieldRenderers() {
+	return {
+		variant_creation_mode: {
+			renderer: 'badge',
+			colorMap: { instant: 'green', dynamic: 'blue', never: 'gray' },
+			prefix: 'variant_creation_mode.',
+		},
+		display_type: {
+			renderer: 'badge',
+			colorMap: {
+				pills: 'blue', radio: 'cyan', select: 'indigo', color: 'grape', multi_checkbox: 'orange',
+			},
+			prefix: 'display_type.',
+		},
+		data_type: {
+			renderer: 'badge',
+			colorMap: {
+				option: 'blue', text: 'gray', number: 'teal', date: 'grape', boolean: 'orange',
+			},
+			prefix: 'attribute_data_type.',
+		},
+	};
 }
 
 function buildProductAttributeDetailProps() {
@@ -65,8 +78,9 @@ function buildProductAttributeDetailProps() {
 			delete: ProductAttributeCommands.DELETE,
 			archive: ProductAttributeCommands.SET_IS_ARCHIVED,
 		},
-		createNodes: [buildProductAttributeFieldsSection()],
-		childrenNodes: [buildProductAttributeFieldsSection()],
+		fieldRenderers: attributeFieldRenderers(),
+		createNodes: [buildProductAttributeFieldsSection(), buildAttributeValuesSection()],
+		childrenNodes: [buildProductAttributeFieldsSection(), buildAttributeValuesSection()],
 		relatedResources: buildAttributeValuesResources(),
 	});
 }
@@ -84,9 +98,19 @@ function buildProductAttributeFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			// variant_creation_mode decides whether this attribute's values produce variants at
-			// all: NEVER keeps it out of the combination key entirely. See BR Â§4.7 and Â§6.5.3.
+			// all: NEVER keeps it out of the combination key entirely. See BR §4.7 and §6.5.3.
 			header: 'form.attributes',
 			fields: ['data_type', 'variant_creation_mode', 'display_type'],
+			// Changing it would reinterpret the variants of every template applying the attribute.
+			lockedFields: {
+				variant_creation_mode: {
+					unless: 'can_change_variant_creation', hint: 'product_attribute_modeLockedHint',
+				},
+			},
+		}),
+		resourceFormColumnNode({
+			header: 'form.usage',
+			fields: ['current_template_usage_count', 'historical_template_usage_count'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',
@@ -95,7 +119,21 @@ function buildProductAttributeFieldsSection(): ComponentNode {
 	]);
 }
 
-/** The values this attribute allows. */
+/**
+ * The values, edited inline and saved with the attribute in one transaction (create: add only).
+ * A section of the form, not a related-resources tab: those are read-only and update-mode only.
+ */
+function buildAttributeValuesSection(): ComponentNode {
+	return collapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		header: 'product_attribute_values_section',
+	}, [attributeValuesNode()]);
+}
+
+/**
+ * Read-only navigation to each value's own page, which is where a value is archived or restored:
+ * archiving is its own write, so it is not drafted into the attribute's Save.
+ */
 function buildAttributeValuesResources() {
 	return [{
 		label: 'inventory_product_attribute_value.label',

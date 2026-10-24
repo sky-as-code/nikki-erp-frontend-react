@@ -13,10 +13,17 @@ export type MultiLangInputModalProps = {
 	currentLanguage: string,
 };
 
+/**
+ * Fills the other languages from the current one. A language follows the current one while it is
+ * empty or still holds what the current language held before this edit (`previousValue`), so typing
+ * "Navy" keystroke by keystroke mirrors "Navy" rather than freezing the first letter; a language the
+ * user translated differently is never touched.
+ */
 export function propagateCurrentLangToEmpty(
 	langJson: dyn.ModelSchemaLangJson,
 	currentLng: string,
 	supportedLngs: string[],
+	previousValue?: string,
 ): dyn.ModelSchemaLangJson {
 	const currentValue = langJson[currentLng] ?? '';
 	const result = { ...langJson, [currentLng]: currentValue };
@@ -24,7 +31,8 @@ export function propagateCurrentLangToEmpty(
 		if (lng === currentLng) {
 			continue;
 		}
-		if (!(result[lng] ?? '').trim()) {
+		const other = result[lng] ?? '';
+		if (!other.trim() || (previousValue !== undefined && previousValue !== '' && other === previousValue)) {
 			result[lng] = currentValue;
 		}
 	}

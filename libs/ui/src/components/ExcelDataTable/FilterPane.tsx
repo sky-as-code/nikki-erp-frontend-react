@@ -3,6 +3,7 @@ import React from 'react';
 
 import { useExcelDataTableContext } from './context';
 import { FilterPanelView } from './filter/FilterPanelView';
+import { useEnumValueLabel } from './useEnumValueLabel';
 import { useTranslate } from '../../i18n';
 
 import type { FilterTree } from './filter/filterTree';
@@ -36,6 +37,7 @@ export function FilterPanel() {
 
 function ConnectedFilterPanel({ onApplied }: { onApplied?: () => void }) {
 	const context = useExcelDataTableContext();
+	const translateEnumValue = useEnumValueLabel();
 	const { filters, applyFilters } = context;
 	const onApply = React.useCallback((overrides?: { tree: FilterTree }) => {
 		applyFilters(overrides);
@@ -65,6 +67,7 @@ function ConnectedFilterPanel({ onApplied }: { onApplied?: () => void }) {
 			onApply={onApply}
 			onClear={onClear}
 			translateFieldName={context.translateFieldName}
+			translateEnumValue={translateEnumValue}
 			tid={context.tid}
 		/>
 	);

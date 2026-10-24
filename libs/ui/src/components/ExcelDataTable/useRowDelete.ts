@@ -3,8 +3,10 @@ import React from 'react';
 
 import { useExcelDataTableContext } from './context';
 import { buildRowDeletePayload, deletableRowId, rowDeleteOutcome } from './rowDeleteModel';
+import { rowIdOf } from './types';
 import { useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
+
 
 import type { RowDeleteOutcome } from './rowDeleteModel';
 import type { SearchItem } from './types';
@@ -23,7 +25,7 @@ export type RowDelete = {
  * a failure nobody else explained shows a notice.
  */
 export function useRowDelete(item: SearchItem): RowDelete {
-	const { sinks, refresh } = useExcelDataTableContext();
+	const { sinks, refresh, changes } = useExcelDataTableContext();
 	const t = useTranslate('common');
 	const [isDeleting, setDeleting] = React.useState(false);
 	const write = useRowDeleteWrite(item);
@@ -32,6 +34,7 @@ export function useRowDelete(item: SearchItem): RowDelete {
 		const outcome = await write();
 		setDeleting(false);
 		if (outcome.status === 'deleted') {
+			changes.noteDeleted([rowIdOf(item, -1)]);
 			refresh();
 		}
 		else if (outcome.status === 'failed') {
@@ -43,7 +46,7 @@ export function useRowDelete(item: SearchItem): RowDelete {
 				message: message || title,
 			});
 		}
-	}, [refresh, t, write]);
+	}, [changes, item, refresh, t, write]);
 	const isDeletable = !sinks.deleteCommand || deletableRowId(item) !== undefined;
 	return { isDeletable, isDeleting, onDelete };
 }

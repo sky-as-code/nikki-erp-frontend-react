@@ -1,7 +1,6 @@
 import { withLeadingField } from '@nikkierp/ui/components/ExcelDataTable';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
-import type { ExcelDataTableCapability } from '@nikkierp/ui/components/ExcelDataTable';
 
 
 /**
@@ -15,27 +14,15 @@ export function isFormDataTablePaginated(total: number | undefined): boolean {
 	return (total ?? 0) > FORM_DATA_TABLE_PAGE_SIZE;
 }
 
-const readOnly: ExcelDataTableCapability[] = [];
-
-/**
- * What the table may do in the form's current mode. Read mode is an empty list rather than
- * `undefined`: undefined plus an `updateCommand` is the table's legacy inline update, which a form
- * in read mode must not offer.
- */
-export function formDataTableCapabilities(
-	updateMode: boolean, capabilities: ExcelDataTableCapability[] | undefined,
-): ExcelDataTableCapability[] | undefined {
-	return updateMode ? capabilities : readOnly;
-}
-
 /** The first page the table asks for; the insert row's search column is always projected, and first. */
 export function formDataTableRequest(
-	fields: string[], newRowSearchField: string | undefined, searchName?: string,
+	fields: string[], newRowSearchField: string | undefined, searchName?: string, includeArchived?: boolean,
 ): dyn.RestSearchRequest {
 	return {
 		page: 0,
 		size: FORM_DATA_TABLE_PAGE_SIZE,
 		search_name: searchName,
 		fields: withLeadingField(fields, newRowSearchField),
+		...(includeArchived ? { include_archived: true } : {}),
 	};
 }

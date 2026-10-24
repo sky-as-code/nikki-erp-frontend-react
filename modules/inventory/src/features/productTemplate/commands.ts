@@ -16,12 +16,14 @@ const PREFIX = `${INVENTORY_MODULE}.${PRODUCT_TEMPLATE_SCHEMA_NAME}`;
  * subscription — this module subscribes none of them. `productTemplateService` stays reachable
  * through them because `registerCrudService` below hands it to that handler.
  *
- * The remaining two are the engine's custom actions, which the generic path cannot express.
+ * The remaining ones are the engine's custom actions, which the generic path cannot express.
  */
 export const ProductTemplateCommands = Object.freeze({
 	...resourceCommands(PRODUCT_TEMPLATE_SCHEMA_NAME),
 	GENERATE_VARIANTS: `${PREFIX}.generate_variants`,
 	RESOLVE_SELECTION: `${PREFIX}.resolve_selection`,
+	PREVIEW_ATTRIBUTE_CONFIGURATION: `${PREFIX}.preview_attribute_configuration`,
+	COPY: `${PREFIX}.copy`,
 } as const);
 
 /**
@@ -42,8 +44,25 @@ export function registerProductTemplateCommands(bus: ICommandBus): () => void {
 			ProductTemplateCommands.RESOLVE_SELECTION,
 			cmd => productTemplateService.resolveSelection(payload<t.ResolveSelectionRequest>(cmd)),
 		),
+		bus.subscribe(
+			ProductTemplateCommands.PREVIEW_ATTRIBUTE_CONFIGURATION,
+			cmd => productTemplateService.previewAttributeConfiguration(
+				payload<t.PreviewAttributeConfigurationRequest>(cmd),
+			),
+		),
+		// The detail's contextual action publishes `{id, etag, ...prompt}`; the copy needs no etag.
+		bus.subscribe(
+			ProductTemplateCommands.COPY,
+			cmd => productTemplateService.copyTemplate(copyRequest(payload<Record<string, unknown>>(cmd))),
+		),
 	];
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
+}
+
+function copyRequest(values: Record<string, unknown>): t.CopyTemplateRequest {
+	const name = values.name;
+	const hasName = name != null && name !== '' && !(typeof name === 'object' && Object.keys(name).length === 0);
+	return { id: String(values.id ?? ''), ...(hasName ? { name: name as t.CopyTemplateRequest['name'] } : {}) };
 }
 
 function payload<TPayload>(command: Command): TPayload {

@@ -75,7 +75,7 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 				const preview = langJson[i18n.language] ?? '';
 				const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 					const next = { ...langJson, [i18n.language]: event.target.value };
-					field.onChange(propagateCurrentLangToEmpty(next, i18n.language, supportedLngs));
+					field.onChange(propagateCurrentLangToEmpty(next, i18n.language, supportedLngs, preview));
 				};
 				return (
 					<>

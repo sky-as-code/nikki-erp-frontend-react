@@ -3,21 +3,23 @@ import { ClientErrorItem } from '@nikkierp/common/types';
 import clsx from 'clsx';
 import React from 'react';
 
+import { EmptyActionColumnCell } from './actionColumns/ActionColumnCell';
 import { CellContent } from './cells/CellContent';
 import { useExcelDataTableContext } from './context';
-import { buildRowUpdatePayload, isRowEditableField } from './editModel';
+import { buildRowUpdatePayload, isRowEditableField, rowFormData } from './editModel';
 import classes from './ExcelDataTable.module.css';
+import { EmptySortHandleCell } from './manualSort/ManualSort';
 import { EditRowActions } from './rowActions';
-import { readRowKey } from './rowKeys';
+import { isPopupEnterForRow, readRowKey } from './rowKeys';
 import { RowLoading } from './RowLoading';
 import { ROW_SELECT_DEFAULTS } from './rowSelectDefaults';
+import { useRowUpdateWrite } from './rowUpdateWrite';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
-import { useCommandBus } from '../../microApp/MicroAppProvider';
 import { AutoField, CrudFormProvider } from '../form';
 import { SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
 
 import type { RowUpdateRefusal } from './editModel';
-import type { RowId, SearchItem } from './types';
+import type { NewRowFieldEditor, RowId, SearchItem } from './types';
 import type { FormProviderRenderProps } from '../form';
 
 
@@ -30,7 +32,7 @@ const FOCUSABLE_INPUT = 'input:not([type="hidden"]):not([disabled]), textarea:no
  * Shown when a row cannot be saved at all. Both cases mean the row was read without the columns a
  * checked write needs, which is a misconfigured list rather than anything the user did.
  */
-const REFUSAL_TEXT: Record<Exclude<RowUpdateRefusal, 'unchanged'>, string> = {
+export const REFUSAL_TEXT: Record<Exclude<RowUpdateRefusal, 'unchanged'>, string> = {
 	'no-id': 'This row cannot be updated: it carries no id.',
 	'no-etag': 'This row cannot be updated safely: reload the list and try again.',
 };
@@ -77,7 +79,7 @@ type RowSubmit = ReturnType<typeof useRowSubmit>;
  * edit mode and refreshes, failure keeps the inputs.
  */
 function useRowSubmit(item: SearchItem) {
-	const { editing, refresh, modelSchema, fields } = useExcelDataTableContext();
+	const { editing, refresh, modelSchema, fields, changes } = useExcelDataTableContext();
 	const [isSubmitting, setSubmitting] = React.useState(false);
 	const [errors, setErrors] = React.useState<ClientErrorItem[]>([]);
 	// Read by `save` right after the submit resolves, before the state write has re-rendered.
@@ -95,27 +97,11 @@ function useRowSubmit(item: SearchItem) {
 			return false;
 		}
 		editing.stop();
+		changes.noteUpdated(data.id as RowId);
 		refresh();
 		return true;
-	}, [editing, refresh, write]);
+	}, [changes, editing, refresh, write]);
 	return { isSubmitting, errors, setErrors, lastErrorsRef, editableFields, onSubmit, item };
-}
-
-/** Resolves the write's client errors, `[]` for a failure without any, or `null` on success. */
-function useRowUpdateWrite(): (data: Record<string, unknown>) => Promise<ClientErrorItem[] | null> {
-	const { sinks } = useExcelDataTableContext();
-	const commandBus = useCommandBus();
-	return React.useCallback(async (data) => {
-		if (sinks.updateCommand) {
-			const response = await commandBus.publish<unknown>({ name: sinks.updateCommand, payload: data });
-			const clientErrors = response.result?.clientErrors ?? [];
-			return response.error != null || clientErrors.length > 0 ? clientErrors : null;
-		}
-		if (sinks.onUpdated) {
-			return (await sinks.onUpdated(data)) === false ? [] : null;
-		}
-		return [];
-	}, [commandBus, sinks]);
 }
 
 type EditingCellsProps = EditingRowProps & { runtime: FormProviderRenderProps, submit: RowSubmit };
@@ -132,22 +118,28 @@ type RowSaveDeps = {
  * Saves the row, translating the three outcomes the payload builder reports: a no-op simply leaves
  * edit mode, a refusal shows why the row cannot be written at all, and a rejected write falls
  * through to the server's own errors.
+ *
+ * Only the row's editable columns are validated, as the insert row does: the schema may require
+ * fields the list never projects (a parent id, `org_id`), and the form's full submit would refuse on
+ * those with nothing on screen saying why, so the save would silently do nothing.
  */
 function useRowSave({ item, runtime, submit, editing, t }: RowSaveDeps): () => Promise<void> {
 	const { dirtyFields, setServerErrors } = runtime;
 	return React.useCallback(async () => {
+		const { editableFields } = submit;
+		if (editableFields.length > 0 && !(await runtime.form.trigger(editableFields, { shouldFocus: true }))) {
+			return;
+		}
+		const rawValues = runtime.form.getValues();
 		const dirty = dirtyFields as Record<string, unknown>;
-		let refusal: RowUpdateRefusal | undefined;
-		const ok = await runtime.handleSubmitWithResult((formData) => {
-			const built = buildRowUpdatePayload(formData, dirty, item, submit.editableFields, runtime.form.getValues());
-			refusal = built.refusal;
-			return built.payload;
-		})();
-		if (refusal === 'unchanged') {
+		const data = rowFormData(rawValues, editableFields);
+		const built = buildRowUpdatePayload(data, dirty, item, editableFields, rawValues);
+		if (built.refusal === 'unchanged') {
 			editing.stop();
 			return;
 		}
-		if (refusal) {
+		if (built.refusal || !built.payload) {
+			const refusal = built.refusal ?? 'no-id';
 			submit.setErrors([new ClientErrorItem({
 				key: `datatable.${refusal}`,
 				message: t(`datatable.${refusal}`, { defaultValue: REFUSAL_TEXT[refusal] }),
@@ -155,7 +147,7 @@ function useRowSave({ item, runtime, submit, editing, t }: RowSaveDeps): () => P
 			})]);
 			return;
 		}
-		if (!ok) {
+		if (!(await submit.onSubmit(built.payload))) {
 			// Field-level rejections land on their inputs; the rest show beside the buttons.
 			submit.setErrors(setServerErrors(submit.lastErrorsRef.current));
 		}
@@ -183,18 +175,20 @@ function useFirstInputFocus(rowId: RowId): React.RefObject<HTMLTableRowElement |
 
 function EditingCells({ item, rowId, rowNumber, runtime, submit }: EditingCellsProps) {
 	const t = useTranslate('common');
-	const { fields, editing, isLoading, indexColumnVisible, tid } = useExcelDataTableContext();
+	const context = useExcelDataTableContext();
+	const { columns, editing, isLoading, indexColumnVisible, tid, rowFieldEditors, manualSort } = context;
 	const editable = new Set(submit.editableFields);
 	const disabled = isLoading || submit.isSubmitting;
 	const save = useRowSave({ item, runtime, submit, editing, t });
 	const rowRef = useFirstInputFocus(rowId);
-	const onKeyDown = useEditingRowKeys(disabled, save, editing.stop);
+	const { onKeyDown, onKeyDownCapture } = useEditingRowKeys(disabled, save, editing.stop);
 	return (
 		<SelectDefaultsContext.Provider value={ROW_SELECT_DEFAULTS}>
 			<MantineTable.Tr
 				ref={rowRef}
 				tabIndex={-1}
 				onKeyDown={onKeyDown}
+				onKeyDownCapture={onKeyDownCapture}
 				aria-label={`Editing row ${rowNumber}`}
 				{...tid.row(rowId)}
 			>
@@ -203,19 +197,24 @@ function EditingCells({ item, rowId, rowNumber, runtime, submit }: EditingCellsP
 						{rowNumber}
 					</MantineTable.Td>
 				) : null}
-				{fields.map(field => (
+				{manualSort.enabled ? <EmptySortHandleCell /> : null}
+				{columns.map(column => (column.kind === 'action' ? <EmptyActionColumnCell key={column.key} /> : (
 					<MantineTable.Td
-						key={field}
+						key={column.key}
 						className={classes.editingCell}
-						{...tid.rowEditInput(rowId, field)}
+						{...tid.rowEditInput(rowId, column.field)}
 					>
-						{editable.has(field) ? (
+						{editable.has(column.field) ? (
 							<fieldset disabled={disabled} className='m-0 p-0 border-0 min-w-0'>
-								<AutoField name={field} labelHidden />
+								<EditingInput
+									field={column.field}
+									runtime={runtime}
+									editor={rowFieldEditors[column.field]}
+								/>
 							</fieldset>
-						) : <CellContent item={item} field={field} />}
+						) : <CellContent item={item} field={column.field} />}
 					</MantineTable.Td>
-				))}
+				)))}
 				<MantineTable.Td className='align-middle'>
 					<EditRowActions
 						mode='update'
@@ -232,9 +231,27 @@ function EditingCells({ item, rowId, rowNumber, runtime, submit }: EditingCellsP
 	);
 }
 
+export function EditingInput({ field, runtime, editor: Editor }: {
+	field: string, runtime: FormProviderRenderProps, editor: NewRowFieldEditor | undefined,
+}) {
+	return Editor ? <Editor field={field} form={runtime} /> : <AutoField name={field} labelHidden />;
+}
+
 /** Enter saves and Escape discards, for keys pressed in the row's own inputs (see `rowKeyIntent`). */
 function useEditingRowKeys(disabled: boolean, save: () => Promise<void>, discard: () => void) {
-	return (event: React.KeyboardEvent<HTMLTableRowElement>) => {
+	const confirm = () => {
+		if (!disabled) {
+			void save();
+		}
+	};
+	const onKeyDownCapture = (event: React.KeyboardEvent<HTMLTableRowElement>) => {
+		if (isPopupEnterForRow(event)) {
+			event.preventDefault();
+			event.stopPropagation();
+			confirm();
+		}
+	};
+	const onKeyDown = (event: React.KeyboardEvent<HTMLTableRowElement>) => {
 		const intent = readRowKey(event);
 		if (intent === 'discard') {
 			event.preventDefault();
@@ -242,14 +259,13 @@ function useEditingRowKeys(disabled: boolean, save: () => Promise<void>, discard
 		}
 		else if (intent === 'confirm') {
 			event.preventDefault();
-			if (!disabled) {
-				void save();
-			}
+			confirm();
 		}
 	};
+	return { onKeyDown, onKeyDownCapture };
 }
 
-function RowErrors({ errors }: { errors: ClientErrorItem[] }) {
+export function RowErrors({ errors }: { errors: ClientErrorItem[] }) {
 	if (errors.length === 0) {
 		return null;
 	}

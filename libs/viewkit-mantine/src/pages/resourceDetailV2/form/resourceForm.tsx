@@ -36,9 +36,12 @@ function ResourceForm({ props, runtime }: {
 	runtime: ComponentRenderRuntime,
 }): React.ReactNode {
 	const { schemaPack, testId } = useResourceDetailContext();
-	const { resource, isWriting, onSubmit } = useResourceUpdateContext();
+	const context = useResourceUpdateContext();
+	const { resource, isWriting, onSubmit } = context;
 	const localize = useLocalize(useResourceDetailTranslationNs());
-	const [updateMode, setUpdateMode] = React.useState(false);
+	const [localUpdateMode, setLocalUpdateMode] = React.useState(false);
+	const updateMode = context.updateMode ?? localUpdateMode;
+	const setUpdateMode = context.setUpdateMode ?? setLocalUpdateMode;
 	const modelSchema = schemaPack?.modelSchema;
 
 	if (!modelSchema) {

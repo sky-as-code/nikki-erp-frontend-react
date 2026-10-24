@@ -2,6 +2,7 @@ import React from 'react';
 
 import { copyRowsToClipboard, rowsFromSelection } from './clipboard';
 import { useExcelDataTableContext } from './context';
+import { SORT_HANDLE_ATTRIBUTE } from './manualSort/ManualSort';
 
 
 /**
@@ -9,12 +10,13 @@ import { useExcelDataTableContext } from './context';
  * to its last row first), Enter with exactly one selected row starts inline editing (when rows are
  * updatable and not locked), Ctrl/Cmd+C
  * copies the selected rows as TSV and HTML. Nothing here runs while a row is being edited or
- * inserted; that row owns its own keys.
+ * inserted; that row owns its own keys. Nor for a key typed into an input — a table-scope row is all
+ * inputs, and its arrows and Ctrl+C belong to the text being edited — or on a sort handle.
  */
 export function useTableKeyboard() {
 	const { selection, editing, canUpdateRows, data } = useExcelDataTableContext();
 	return React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
-		if (editing.isActive) {
+		if (editing.isActive || isInputTarget(event.target)) {
 			return;
 		}
 		if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
@@ -32,4 +34,14 @@ export function useTableKeyboard() {
 			editing.start(selection.ids[0]);
 		}
 	}, [data, editing, selection, canUpdateRows]);
+}
+
+/** Keys the target keeps: typing in an input, or driving a row drag from its handle. */
+function isInputTarget(target: EventTarget | null): boolean {
+	const element = target as HTMLElement | null;
+	const tag = element?.tagName?.toLowerCase();
+	if (tag === 'input' || tag === 'textarea' || tag === 'select' || element?.isContentEditable === true) {
+		return true;
+	}
+	return element?.closest?.(`[${SORT_HANDLE_ATTRIBUTE}]`) != null;
 }

@@ -27,6 +27,8 @@ export type ColumnFilterRowProps = {
 	hasFillerColumn: boolean,
 	/** Mirrors the header's leading index cell; defaults to present. */
 	hasIndexColumn?: boolean,
+	/** Mirrors the manual sort handle column after the index cell; defaults to absent. */
+	hasSortHandleColumn?: boolean,
 	translateEnumValue?: (field: string, value: string) => string,
 	tid: ExcelDataTableTestIds,
 };
@@ -47,6 +49,7 @@ export function ColumnFilterRow(props: ColumnFilterRowProps): React.ReactNode {
 			{(props.hasIndexColumn ?? true) ? (
 				<Table.Th className={clsx(classes.columnFilterCell, tableClasses.rowNumberCell)} aria-hidden />
 			) : null}
+			{props.hasSortHandleColumn ? <Table.Th className={classes.columnFilterCell} aria-hidden /> : null}
 			{props.fields.map(field => (
 				<ColumnFilterCell key={field} field={field} {...props} />
 			))}

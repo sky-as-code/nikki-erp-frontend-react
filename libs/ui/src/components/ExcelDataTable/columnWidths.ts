@@ -6,6 +6,9 @@ import type { ColumnWidths, ExcelDataTableCapability, ResizeState, SearchData } 
 
 
 export const rowNumberColumnWidth = 64;
+/** The index column with room for a "Changed" badge beside the row number. */
+export const rowNumberWithBadgeColumnWidth = 112;
+export const sortHandleColumnWidth = 28;
 export const defaultColumnWidth = 200;
 export const minimumColumnWidth = 80;
 const maximumAutoColumnWidth = 500;
@@ -16,14 +19,27 @@ export function getColumnWidth(field: string, widths: ColumnWidths): number {
 	return widths[field] ?? defaultColumnWidth;
 }
 
-/** What besides the field columns takes width: the index column and the trailing filler column. */
-export type TableLayout = { indexColumnVisible: boolean, fillerMinWidth: number };
+/**
+ * What besides the displayed columns takes width: the index column, the manual sort handle column
+ * and the trailing filler (built-in action) column.
+ */
+export type TableLayout = {
+	indexColumnVisible: boolean,
+	fillerMinWidth: number,
+	sortHandleVisible?: boolean,
+	/** Defaults to {@link rowNumberColumnWidth}. */
+	indexColumnWidth?: number,
+};
 
 export const defaultTableLayout: TableLayout = { indexColumnVisible: true, fillerMinWidth: 0 };
 
-/** Every `<td>` a full-width row spans: the fields, the filler, and the index column when shown. */
+/** Every `<td>` a full-width row spans: the columns, the filler, and the index and handle columns when shown. */
 export function getColumnCount(fieldCount: number, layout: TableLayout = defaultTableLayout): number {
-	return fieldCount + 1 + (layout.indexColumnVisible ? 1 : 0);
+	return fieldCount + 1 + (layout.indexColumnVisible ? 1 : 0) + (layout.sortHandleVisible ? 1 : 0);
+}
+
+export function getIndexColumnWidth(layout: TableLayout = defaultTableLayout): number {
+	return layout.indexColumnWidth ?? rowNumberColumnWidth;
 }
 
 /**
@@ -31,7 +47,8 @@ export function getColumnCount(fieldCount: number, layout: TableLayout = default
  * (horizontal scroll) instead of squeezing the filler below what its header needs.
  */
 export function getTableMinWidth(fields: string[], widths: ColumnWidths, layout: TableLayout = defaultTableLayout) {
-	const fixed = (layout.indexColumnVisible ? rowNumberColumnWidth : 0) + layout.fillerMinWidth;
+	const fixed = (layout.indexColumnVisible ? getIndexColumnWidth(layout) : 0) + layout.fillerMinWidth
+		+ (layout.sortHandleVisible ? sortHandleColumnWidth : 0);
 	return fields.reduce((sum, field) => sum + getColumnWidth(field, widths), fixed);
 }
 
@@ -63,8 +80,8 @@ export function getAutoColumnWidth(field: string, searchData: SearchData): numbe
 	return Math.min(maximumAutoColumnWidth, Math.max(minimumColumnWidth, estimated));
 }
 
-export function useColumnWidthsState() {
-	const [widths, setWidths] = React.useState<ColumnWidths>({});
+export function useColumnWidthsState(initialWidths?: ColumnWidths) {
+	const [widths, setWidths] = React.useState<ColumnWidths>(() => ({ ...initialWidths }));
 	const [resizing, setResizing] = React.useState<ResizeState | null>(null);
 	// Set by `TableHeader`, which owns the prop, and read by `Table`, whose colgroup must match.
 	const [fillerMinWidth, setFillerMinWidth] = React.useState(0);

@@ -11,6 +11,12 @@ export const PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME = 'inventory_product_attribute_
 export const PRODUCT_TEMPLATE_SCHEMA_NAME = 'inventory_product_template';
 export const PRODUCT_VARIANT_SCHEMA_NAME = 'inventory_product_variant';
 
+/**
+ * Editing a template value's extra price is asserted as this action on the ATTRIBUTE, not as
+ * `update` on the junction. See backend .../inventory/app/product_template_attribute_value_appservice.go.
+ */
+export const PRODUCT_ATTRIBUTE_UPDATE_VALUE_ACTION = 'update_value';
+
 
 // Stock. See backend .../modules/inventory/domain/models/{stock_location,stock_operation_type,
 // stock_quant}.go.
@@ -80,3 +86,5 @@ export const STOCK_PRODUCT_CONFIG_RESOURCE_PATH = `v1/inventory/${STOCK_PRODUCT_
  */
 export const GENERATE_VARIANTS_PATH = 'generate_variants';
 export const RESOLVE_SELECTION_PATH = 'resolve_selection';
+export const PREVIEW_ATTRIBUTE_CONFIGURATION_PATH = 'preview_attribute_configuration';
+export const COPY_TEMPLATE_PATH = 'copy';

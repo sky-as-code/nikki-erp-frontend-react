@@ -19,6 +19,7 @@ import React from 'react';
 import { Link } from 'react-router';
 
 import { ActionPromptModal } from './ActionPromptModal';
+import { ComponentContextualAction } from './ComponentContextualAction';
 import { hasVisibleField, isFieldVisible } from './fieldVisibility';
 import classes from './ResourceDetail.module.css';
 import {
@@ -207,7 +208,7 @@ function ResourceDetailExtraActionButtons({
 }
 
 /**
- * One contextual action, in whichever of its two shapes the page authored.
+ * One contextual action, in whichever of its three shapes the page authored.
  *
  * The split is a hooks requirement, not a style choice: the command variant calls `useCommand`
  * and the link variant `useRoutePathHref`, and neither may be called conditionally.
@@ -221,6 +222,9 @@ function ResourceDetailExtraActionButton({
 	resource: Record<string, unknown>,
 	disabled?: boolean,
 }): React.ReactNode {
+	if (action.component) {
+		return isActionVisible(action, resource) ? <ComponentContextualAction action={action} /> : null;
+	}
 	if (action.routePath) {
 		return <ResourceDetailLinkActionButton actionKey={actionKey} action={action} disabled={disabled} />;
 	}
@@ -407,9 +411,11 @@ function hasMatchingExtraAction(
 		return false;
 	}
 
-	return Object.values(contextualActions).some(
-		action => !action.condition || evaluateCondition(action.condition, resource),
-	);
+	return Object.values(contextualActions).some(action => isActionVisible(action, resource));
+}
+
+function isActionVisible(action: ResourceDetailExtraAction, resource: Record<string, unknown>): boolean {
+	return !action.condition || evaluateCondition(action.condition, resource);
 }
 
 function buildDefaultMutateRequest(resource: Record<string, unknown>): dyn.RestMutateOneRequest | null {

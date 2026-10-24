@@ -4,7 +4,8 @@ import { useHasEntitlement } from '../PermissionGuard/entitlementContext';
 
 import type { NewRowConfig, RowWriteSinks } from './context';
 import type {
-	ExcelDataTableCapability, NewRowFieldEditor, NewRowSource, RowsDeletedSink, RowValuesSink,
+	ActionColumn, ExcelDataTableCapability, NewRowFieldEditor, NewRowSource, RowsDeletedSink, RowValuesSink, SearchItem,
+	UpdateScope,
 } from './types';
 import type { EntitlementRequirementInput } from '../PermissionGuard/entitlementContext';
 
@@ -13,6 +14,7 @@ export const allCapabilities: readonly ExcelDataTableCapability[] = ['update', '
 
 export type CapabilityInput = {
 	capabilities?: ExcelDataTableCapability[],
+	updateMode?: boolean,
 	updateCommand?: string,
 	createCommand?: string,
 	deleteCommand?: string,
@@ -25,10 +27,14 @@ export type CapabilityInput = {
 };
 
 /**
- * Declared capabilities win. Without them, a table given an `updateCommand` keeps the inline update
+ * A host out of update mode (`updateMode: false`) is read-only whatever else it passes. Otherwise
+ * declared capabilities win. Without them, a table given an `updateCommand` keeps the inline update
  * it had before capabilities existed, so pages written against the old contract need no change.
  */
 export function resolveCapabilities(input: CapabilityInput): ExcelDataTableCapability[] {
+	if (input.updateMode === false) {
+		return [];
+	}
 	if (input.capabilities) {
 		return allCapabilities.filter(capability => input.capabilities!.includes(capability));
 	}
@@ -132,6 +138,19 @@ export type ExcelDataTableRowWriteProps = {
 	 * an `updateCommand` keeps its legacy inline update.
 	 */
 	capabilities?: ExcelDataTableCapability[],
+	/**
+	 * Whether the host is in update mode; `false` makes the table read-only, overriding
+	 * `capabilities` and the legacy `updateCommand` rule. Defaults to `true`: a list page has no read
+	 * mode. `FormDataTable` passes its form's mode.
+	 */
+	updateMode?: boolean,
+	/** Defaults to `row`; see {@link UpdateScope}. */
+	updateScope?: UpdateScope,
+	/**
+	 * Limits inline updates to these columns, for a resource whose update accepts fewer fields than
+	 * its schema declares writable; the schema still decides within them. The insert row is unaffected.
+	 */
+	editableFields?: string[],
 	/** The command an inline row update publishes; `onUpdated` takes the payload when absent. */
 	updateCommand?: string,
 	/** The command the insert row publishes; `onCreated` takes the values when absent. */
@@ -157,8 +176,38 @@ export type ExcelDataTableRowWriteProps = {
 	newRowSearchCommand?: string,
 	/** Replaces the insert button's default "Add a line" label. */
 	newRowPrompt?: string,
+	/**
+	 * Per-column editors for both the insert row and the row editor (either scope). The specific
+	 * `newRowFieldEditors` / `rowFieldEditors` override it per field. Declare the map at module level.
+	 */
+	fieldEditors?: Record<string, NewRowFieldEditor>,
 	/** Per-column editors replacing the insert row's default `AutoField`. */
 	newRowFieldEditors?: Record<string, NewRowFieldEditor>,
+	/**
+	 * Per-column editors replacing the row editor's default `AutoField`, for editable columns only.
+	 * Same contract and same rule as `newRowFieldEditors`: declare the map at module level.
+	 */
+	rowFieldEditors?: Record<string, NewRowFieldEditor>,
+};
+
+/** Row features beside the writes: manual sort, action columns, and change badges. */
+export type ExcelDataTableRowFeatureProps = {
+	/**
+	 * A drag handle column right after the index column. The table never writes the order: a drop
+	 * calls `onManualSort` with every displayed row id in the new order, and the host maps it to
+	 * its own field (e.g. `sequence`).
+	 */
+	enableManualSort?: boolean,
+	onManualSort?: (orderedIds: string[]) => void,
+	/** Custom columns of row controls; see {@link ActionColumn}. */
+	actionColumns?: ActionColumn[],
+	/**
+	 * "New" / "Changed" badges on the rows this table created or updated since it mounted (a host
+	 * `key` resets them), plus those `isNewRow` / `isChangedRow` mark. Default `false`.
+	 */
+	enableChangeIndicator?: boolean,
+	isNewRow?: (row: SearchItem) => boolean,
+	isChangedRow?: (row: SearchItem) => boolean,
 };
 
 export type RowCapabilities = {
@@ -167,7 +216,9 @@ export type RowCapabilities = {
 	canUpdateRows: boolean,
 	sinks: RowWriteSinks,
 	newRow: NewRowConfig,
+	rowFieldEditors: Record<string, NewRowFieldEditor>,
 	btnDeleteLabel: string | undefined,
+	updateScope: UpdateScope,
 };
 
 const emptyEditors: Record<string, NewRowFieldEditor> = {};
@@ -183,14 +234,34 @@ export function useRowCapabilities(props: ExcelDataTableRowWriteProps, tableName
 	});
 	const sinks = useRowWriteSinks(props);
 	const newRow = useNewRowConfig(props);
+	const rowFieldEditors = useMergedEditors(props.fieldEditors, props.rowFieldEditors);
+	const updateScope = props.updateScope ?? 'row';
 	return React.useMemo(() => ({
 		capabilities,
 		locks,
 		canUpdateRows: capabilities.includes('update') && !locks.update.locked,
 		sinks,
 		newRow,
+		rowFieldEditors,
 		btnDeleteLabel: props.btnDeleteLabel,
-	}), [capabilities, locks, sinks, newRow, props.btnDeleteLabel]);
+		updateScope,
+	}), [capabilities, locks, sinks, newRow, rowFieldEditors, props.btnDeleteLabel, updateScope]);
+}
+
+/** The shared `fieldEditors` under the specific map, which wins per field. */
+export function mergeFieldEditors(
+	shared: Record<string, NewRowFieldEditor> | undefined, specific: Record<string, NewRowFieldEditor> | undefined,
+): Record<string, NewRowFieldEditor> {
+	if (!shared) {
+		return specific ?? emptyEditors;
+	}
+	return specific ? { ...shared, ...specific } : shared;
+}
+
+function useMergedEditors(
+	shared: Record<string, NewRowFieldEditor> | undefined, specific: Record<string, NewRowFieldEditor> | undefined,
+): Record<string, NewRowFieldEditor> {
+	return React.useMemo(() => mergeFieldEditors(shared, specific), [shared, specific]);
 }
 
 function useRowWriteSinks(props: ExcelDataTableRowWriteProps): RowWriteSinks {
@@ -204,7 +275,7 @@ function useRowWriteSinks(props: ExcelDataTableRowWriteProps): RowWriteSinks {
 function useNewRowConfig(props: ExcelDataTableRowWriteProps): NewRowConfig {
 	const source = props.newRowSource ?? 'user-input';
 	const { newRowResourceSchema, newRowSearchField, newRowSearchCommand, newRowPrompt } = props;
-	const fieldEditors = props.newRowFieldEditors ?? emptyEditors;
+	const fieldEditors = useMergedEditors(props.fieldEditors, props.newRowFieldEditors);
 	return React.useMemo(() => ({
 		source,
 		resourceSchema: newRowResourceSchema,

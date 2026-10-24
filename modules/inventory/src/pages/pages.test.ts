@@ -19,6 +19,9 @@ import { buildStorageCategoryPages } from './storageCategory';
 import { buildSupplyRelationPages } from './supplyRelation';
 import { buildWarehousePages } from './warehouse';
 import * as c from '../constants';
+import { ProductTemplateCommands } from '../features/productTemplate/commands';
+import { ProductTemplateAttributeValueCommands } from '../features/productTemplateAttributeValue/commands';
+import { ATTRIBUTE_VALUES, TEMPLATE_ATTRIBUTES, TEMPLATE_RESOLVE_VARIANT } from '../viewkit/ids';
 
 import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
 import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
@@ -161,12 +164,12 @@ describe('Inventory list and detail templates', () => {
 	 */
 	it('enables inline row editing on master data, not on stock documents or balances', () => {
 		const noInlineEdit = allPages
-			.filter(({ build }) => !build().some(page => (
-				page.props as { primary?: { props?: { updateCommand?: string } } }
-			).primary?.props?.updateCommand))
+			.filter(({ build }) => !build().some(page => listPropsOf(page)?.updateCommand))
 			.map(({ name }) => name);
 
-		expect(noInlineEdit.sort()).toEqual(['stockQuant', 'stockReservation', 'stockScrap', 'stockTransfer']);
+		expect(noInlineEdit.sort()).toEqual([
+			'stockQuant', 'stockReservation', 'stockScrap', 'stockTransfer',
+		]);
 	});
 });
 
@@ -180,7 +183,7 @@ describe('Product template detail sections', () => {
 		const [page] = buildProductTemplatePages();
 		const tables = relatedTables(page);
 
-		// Attributes, variants, prices, and the stock breakdown. Asserted by schema rather than by
+		// Variants, prices, and the stock breakdown. Asserted by schema rather than by
 		// count alone, so that adding a section is a deliberate change here rather than a number
 		// quietly going up.
 		//
@@ -188,7 +191,6 @@ describe('Product template detail sections', () => {
 		// quant cannot be reached from a template in one search anyway — `linked` traverses only a
 		// many edge, and quant → variant is many:one. See CR §5.3 and §24.
 		expect(tables.map(table => table.schemaName)).toEqual([
-			c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME,
 			c.PRODUCT_VARIANT_SCHEMA_NAME,
 			// Purchase's resource on Inventory's page. A literal rather than a constant, because
 			// the module may not import from purchase/ and this test must fail if the string here
@@ -233,6 +235,99 @@ describe('Product template detail sections', () => {
 			},
 			base_sales_price: { renderer: 'money' },
 		});
+	});
+});
+
+type TemplateDetailProps = {
+	createNodes: ComponentNode[],
+	childrenNodes: ComponentNode[],
+	contextualActions: Record<string, { command?: string, actionCode?: string, prompt?: unknown, component?: string }>,
+};
+
+describe('Product template attribute configuration', () => {
+	function detailProps() {
+		const [page] = buildProductTemplatePages();
+		return (page.props as { secondary: { props: TemplateDetailProps } }).secondary.props;
+	}
+
+	/**
+	 * PROD-009: the lines are edited in a form section, so they ride the template's own save, and it
+	 * sits right after General, above the related tabs. Create too: the create accepts them.
+	 */
+	it('edits the attributes in a section after General, on create and on update', () => {
+		const { createNodes, childrenNodes } = detailProps();
+
+		for (const nodes of [createNodes, childrenNodes]) {
+			expect(nodes).toHaveLength(2);
+			expect(nodes[0].props).toMatchObject({ header: 'form.generalInformation' });
+			expect(nodes[1].props).toMatchObject({ header: 'product_template_sections_attributes' });
+			expect(JSON.stringify(nodes[1])).toContain(TEMPLATE_ATTRIBUTES);
+		}
+	});
+
+	it('no longer lists the read-only attribute junction as a related tab', () => {
+		const [page] = buildProductTemplatePages();
+
+		expect(relatedTables(page).map(table => table.schemaName))
+			.not.toContain(c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME);
+	});
+
+	/** The codes are copied from the application service's AssertAction calls. */
+	it('offers copy (with a name prompt) and re-sync, locked on the codes the backend asserts', () => {
+		const { contextualActions } = detailProps();
+
+		expect(contextualActions.copy).toMatchObject({
+			command: ProductTemplateCommands.COPY, actionCode: 'copy',
+			prompt: { fields: [{ name: 'name', required: false }] },
+		});
+		expect(contextualActions.resyncVariants).toMatchObject({
+			command: ProductTemplateCommands.GENERATE_VARIANTS, actionCode: 'generate_variants',
+		});
+	});
+
+	/** SFB-001: Resolve variant sits with Copy and Re-sync, as the kit's own component. */
+	it('puts Resolve variant among the contextual actions, as the kit component', () => {
+		const { contextualActions } = detailProps();
+
+		expect(Object.keys(contextualActions)).toEqual(['copy', 'resyncVariants', 'resolveVariant']);
+		expect(contextualActions.resolveVariant).toEqual({
+			label: 'product_template_config_resolve', component: TEMPLATE_RESOLVE_VARIANT,
+		});
+	});
+
+	/** SFB-002: "View variants" is the Variants tab's own link, filtered to the template. */
+	it('links the Variants tab to the variant list filtered by the template', () => {
+		const [variants] = relatedTables(buildProductTemplatePages()[0]);
+
+		expect(variants).toMatchObject({
+			label: 'product_template_sections_variants',
+			linkRoutePath: 'inventory_product_variant',
+			initialGraph: { if: ['product_template_id', '=', '${id}'] },
+			showViewAll: true,
+			viewAllFiltered: true,
+			viewAllLabel: 'product_template_config_viewVariants',
+		});
+	});
+});
+
+describe('Product variant kinds', () => {
+	/** PROD-023: complete variants by default; the filter panel switches to Base or All. */
+	it('lists complete variants by default and badges the kind', () => {
+		const [page] = buildProductVariantPages();
+		const props = page.props as {
+			primary: { props: { initialGraph: unknown, fieldRenderers: Record<string, { prefix?: string }> } },
+		};
+
+		expect(props.primary.props.initialGraph).toEqual({ if: ['variant_kind', '=', 'complete'] });
+		expect(props.primary.props.fieldRenderers.variant_kind.prefix).toBe('variant_kind_label.');
+	});
+
+	it('shows the kind, the base and the eligibility on the variant form', () => {
+		const [page] = buildProductVariantPages();
+		const fields = collectComponents(page, 'resourceForm.column')
+			.flatMap(node => (node.props?.fields as string[] | undefined) ?? []);
+
+		expect(fields).toEqual(expect.arrayContaining(['variant_kind', 'base_variant_id', 'is_transaction_eligible']));
 	});
 });
 
@@ -295,6 +390,61 @@ describe('Product stock integration', () => {
 
 		expect(putaway?.initialGraph).toEqual({ if: ['product_category_id', '=', '${id}'] });
 		expect(putaway?.linkRoutePath).toBe('inventory_putaway_rule');
+	});
+});
+
+describe('Product attribute detail', () => {
+	function detailNodes(): { createNodes: ComponentNode[], childrenNodes: ComponentNode[] } {
+		const [page] = buildProductAttributePages();
+		const props = page.props as {
+			secondary: { props: { createNodes: ComponentNode[], childrenNodes: ComponentNode[] } },
+		};
+		return props.secondary.props;
+	}
+
+	/**
+	 * The values are edited inline and saved with the attribute (PROD-001), in create as well as in
+	 * update mode, so the section sits in both form bodies rather than in the update-only related tabs.
+	 */
+	it('edits the attribute values in a form section, on create and on update', () => {
+		const { createNodes, childrenNodes } = detailNodes();
+
+		for (const nodes of [createNodes, childrenNodes]) {
+			const sections = nodes.filter(node => JSON.stringify(node).includes(ATTRIBUTE_VALUES));
+			expect(sections).toHaveLength(1);
+			expect(sections[0].props).toMatchObject({ header: 'product_attribute_values_section' });
+		}
+	});
+
+	it('keeps the related values tab as read-only navigation to the value page', () => {
+		const [page] = buildProductAttributePages();
+		const [values] = relatedTables(page);
+
+		expect(values.schemaName).toBe(c.PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME);
+		expect(values.linkRoutePath).toBe('inventory_product_attribute_value');
+		expect(values).not.toHaveProperty('assignment');
+	});
+
+	/** PROD-005: the mode is shown locked, not hidden, while a template applies the attribute. */
+	it('locks the variant creation mode on can_change_variant_creation', () => {
+		const [page] = buildProductAttributePages();
+		const columns = collectComponents(page, 'resourceForm.column')
+			.filter(node => (node.props as { fields?: string[] }).fields?.includes('variant_creation_mode'));
+
+		expect(columns.length).toBeGreaterThan(0);
+		for (const column of columns) {
+			expect((column.props as { lockedFields?: unknown }).lockedFields).toEqual({
+				variant_creation_mode: { unless: 'can_change_variant_creation', hint: 'product_attribute_modeLockedHint' },
+			});
+		}
+	});
+
+	it('renders the variant creation mode and display type as coloured badges', () => {
+		const [page] = buildProductAttributePages();
+		const props = page.props as { secondary: { props: { fieldRenderers: Record<string, { prefix?: string }> } } };
+
+		expect(props.secondary.props.fieldRenderers.variant_creation_mode.prefix).toBe('variant_creation_mode.');
+		expect(props.secondary.props.fieldRenderers.display_type.prefix).toBe('display_type.');
 	});
 });
 
@@ -468,48 +618,53 @@ function findNonPlainValue(value: unknown, path: string): string | null {
 	return path;
 }
 
+/** A list page's props, whether it stands alone or is the primary pane of a split view. */
+function listPropsOf(page: PageNode): Record<string, unknown> | undefined {
+	const props = page.props as { primary?: { props?: Record<string, unknown> } } & Record<string, unknown>;
+	return page.template === RESOURCE_LIST_V2_TEMPLATE ? props : props.primary?.props;
+}
+
 describe('Template attribute value page', () => {
 	/**
 	 * A schema name that disagrees with the backend Go constant does not error — it leaves the page
 	 * on its loading spinner forever, because the registry simply never resolves it. Pinned as a
 	 * literal so the assertion is against the real string rather than the constant against itself.
 	 */
-	it('binds both panes to the backend junction schema', () => {
+	it('is a list of the backend junction schema, with no detail pane and no row link', () => {
 		const [page] = buildProductTemplateAttributeValuePages();
-		const props = page.props as {
-			primary: { props: { schemaName: string } },
-			secondary: { props: { schemaName: string } },
-		};
+		const props = listPropsOf(page);
 
-		expect(props.primary.props.schemaName)
-			.toBe('inventory_product_template_attribute_value');
-		expect(props.secondary.props.schemaName)
-			.toBe(c.PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME);
+		expect(page.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
+		expect(props?.schemaName).toBe('inventory_product_template_attribute_value');
+		expect(props).not.toHaveProperty('linkField');
 	});
 
 	/**
-	 * The whole reason this page exists. `sales_price_extra` moved onto this junction, and a
-	 * surcharge nobody can edit is a surcharge nobody can set — so if it ever drops off the form,
-	 * the field is dead and nothing else would say so.
+	 * The whole reason this page exists: `sales_price_extra` lives on this junction, and the row's
+	 * update accepts it and nothing else, so the list edits that one column inline and offers no
+	 * create or delete. The selection is written only through the template's own save.
 	 */
-	it('puts sales_price_extra on the form', () => {
-		const [page] = buildProductTemplateAttributeValuePages();
-		const fields = collectComponents(page, 'resourceForm.column')
-			.flatMap(node => (node.props?.fields as string[] | undefined) ?? []);
+	it('edits sales_price_extra inline and nothing else', () => {
+		const props = listPropsOf(buildProductTemplateAttributeValuePages()[0]);
 
-		expect(fields).toContain('sales_price_extra');
+		expect(props?.updateCommand).toBe(ProductTemplateAttributeValueCommands.UPDATE);
+		expect(props?.editableFields).toEqual(['sales_price_extra']);
+		expect(props?.createEnabled).toBe(false);
+		expect(props).not.toHaveProperty('deleteCommand');
 	});
 
-	/**
-	 * Reached from the attributes table on the template page, because the junction row carries
-	 * `template_attribute_id` and not the template id — its values are two hops from a template.
-	 * A missing link here leaves the page unreachable except by typing the URL.
-	 */
-	it('is linked from the template attributes table', () => {
-		const [template] = buildProductTemplatePages();
-		const attributes = relatedTables(template)
-			.find(node => node.schemaName === c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME);
+	// The backend asserts `update_value` on the attribute, not `update` on the junction (PFU-010).
+	it('locks the extra price editor on update_value of the product attribute', () => {
+		const props = listPropsOf(buildProductTemplateAttributeValuePages()[0]);
 
-		expect(attributes?.linkRoutePath).toBe('inventory_product_template_attribute_value');
+		expect(props?.updateActionCode).toBe('update_value');
+		expect(props?.updateActionResource).toBe('inventory_product_attribute');
+	});
+
+	it('orders the values as the template does and shows a missing extra price as 0', () => {
+		const props = listPropsOf(buildProductTemplateAttributeValuePages()[0]);
+
+		expect(props?.initialGraph).toEqual({ order: [['sequence', 'asc']] });
+		expect(props?.fieldRenderers).toEqual({ sales_price_extra: { renderer: 'money', blankAsZero: true } });
 	});
 });

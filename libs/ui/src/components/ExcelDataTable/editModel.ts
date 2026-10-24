@@ -1,9 +1,27 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 
-import { dirtyFieldUpdateValue } from '../form/updatePayload';
+import { dirtyFieldUpdateValue, isClearedValue } from '../form/updatePayload';
 
 import type { SearchItem } from './types';
 
+
+/**
+ * The schema with every field outside `editableFields` marked `no_update`, so an inline update
+ * offers inputs for those fields only. For a resource whose update accepts fewer fields than its
+ * schema declares writable. Absent, the schema is returned as is.
+ */
+export function restrictEditableFields(
+	modelSchema: dyn.ModelSchema | undefined, editableFields: string[] | undefined,
+): dyn.ModelSchema | undefined {
+	if (!modelSchema || !editableFields) {
+		return modelSchema;
+	}
+	const allowed = new Set(editableFields);
+	const fields = Object.fromEntries(Object.entries(modelSchema.fields).map(([name, field]) => (
+		[name, allowed.has(name) ? field : { ...field, no_update: true }]
+	)));
+	return { ...modelSchema, fields };
+}
 
 /**
  * Whether a column takes an input in inline update mode. Mirrors the detail form's update-mode
@@ -95,4 +113,18 @@ export function buildRowUpdatePayload(
 	}
 	payload.etag = item.etag;
 	return { payload };
+}
+
+/**
+ * The row form's values for its editable columns, the way the form schema would hand them over: a
+ * blank value is left out, so {@link buildRowUpdatePayload} sends it as a cleared `null`.
+ */
+export function rowFormData(values: Record<string, unknown>, editableFields: string[]): Record<string, unknown> {
+	const data: Record<string, unknown> = {};
+	for (const field of editableFields) {
+		if (!isClearedValue(values[field])) {
+			data[field] = values[field];
+		}
+	}
+	return data;
 }

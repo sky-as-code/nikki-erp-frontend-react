@@ -26,6 +26,7 @@ export type FilterConditionRowProps = {
 	fields: string[],
 	modelSchema?: dyn.ModelSchema,
 	translateFieldName: (field: string) => string,
+	translateEnumValue?: (field: string, value: string) => string,
 	errorReason?: 'noField' | 'noValue',
 	onPatch: (id: string, patch: Partial<FilterConditionNode>) => void,
 	/**
@@ -107,14 +108,19 @@ function useConditionOptions(props: FilterConditionRowProps) {
 		() => kind === 'enum' ? getEnumOptions(fieldSchema) : [],
 		[kind, fieldSchema],
 	);
-	return { t, kind, fieldOptions, operatorOptions, enumOptions };
+	const { translateEnumValue } = props;
+	const translateEnum = React.useMemo(
+		() => (translateEnumValue ? (value: string) => translateEnumValue(node.field, value) : undefined),
+		[translateEnumValue, node.field],
+	);
+	return { t, kind, fieldOptions, operatorOptions, enumOptions, translateEnum };
 }
 
 /** Field, operator and value: the three controls whose options depend on each other. */
 function ConditionControls(props: FilterConditionRowProps): React.ReactNode {
 	const { row, onPatch } = props;
 	const node = row.node;
-	const { t, kind, fieldOptions, operatorOptions, enumOptions } = useConditionOptions(props);
+	const { t, kind, fieldOptions, operatorOptions, enumOptions, translateEnum } = useConditionOptions(props);
 
 	const onFieldChange = (next: string | null) => {
 		if (next) {
@@ -160,6 +166,7 @@ function ConditionControls(props: FilterConditionRowProps): React.ReactNode {
 					<FilterValueInput
 						kind={kind}
 						enumOptions={enumOptions}
+						translateEnumValue={translateEnum}
 						value={node.values.map(String).join(', ')}
 						onChange={onValueChange}
 						// Typing only edits the tree. `commitOn='enter'` is what keeps `onCommit`

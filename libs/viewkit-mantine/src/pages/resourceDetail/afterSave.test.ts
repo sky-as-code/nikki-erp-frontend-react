@@ -29,4 +29,20 @@ describe('collectContributions', () => {
 	it('yields an empty payload without contributors', () => {
 		expect(collectContributions([]).payload).toEqual({});
 	});
+
+	it('asks only the contributing sections to confirm, and stops at the first refusal', async () => {
+		const declines = vi.fn(async () => false);
+		const idle = vi.fn(async () => true);
+		const never = vi.fn(async () => true);
+		const contributions = collectContributions([
+			{ build: () => ({ key: 1 }), confirm: declines },
+			{ build: () => undefined, confirm: idle },
+			{ build: () => ({ other: 2 }), confirm: never },
+		]);
+		await expect(contributions.confirm({ id: 'r1' })).resolves.toBe(false);
+		expect(declines).toHaveBeenCalledWith({ id: 'r1' });
+		expect(idle).not.toHaveBeenCalled();
+		expect(never).not.toHaveBeenCalled();
+		await expect(collectContributions([{ build: () => ({ key: 1 }) }]).confirm({})).resolves.toBe(true);
+	});
 });

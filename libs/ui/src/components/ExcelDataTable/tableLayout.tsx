@@ -1,8 +1,9 @@
 import React from 'react';
 
+import { withActionColumnWidths } from './actionColumns/actionColumnsModel';
 import {
-	defaultColumnWidth, defaultTableLayout, getAutoColumnWidth, getColumnCount, getColumnWidth, getRowActionsMinWidth,
-	getTableMinWidth, rowNumberColumnWidth,
+	defaultColumnWidth, defaultTableLayout, getAutoColumnWidth, getColumnCount, getColumnWidth, getIndexColumnWidth,
+	getRowActionsMinWidth, getTableMinWidth, rowNumberWithBadgeColumnWidth, sortHandleColumnWidth,
 } from './columnWidths';
 import { useExcelDataTableContext } from './context';
 
@@ -13,14 +14,16 @@ import type { ColumnWidths } from './types';
 /**
  * `TableHeader` and `Table` are two `<table>`s. They line up because both are `table-layout:
  * fixed` with this same `<colgroup>` and the same width rule: the column widths alone decide
- * the layout, so identical inputs give identical columns.
+ * the layout, so identical inputs give identical columns. `fields` are the column keys: fields and
+ * action columns (`TableColumn.key`), in display order.
  */
 export type TableColGroupProps = { fields: string[], widths: ColumnWidths, layout?: TableLayout };
 
 export function TableColGroup({ fields, widths, layout = defaultTableLayout }: TableColGroupProps) {
 	return (
 		<colgroup>
-			{layout.indexColumnVisible ? <col style={{ width: rowNumberColumnWidth }} /> : null}
+			{layout.indexColumnVisible ? <col style={{ width: getIndexColumnWidth(layout) }} /> : null}
+			{layout.sortHandleVisible ? <col style={{ width: sortHandleColumnWidth }} /> : null}
 			{fields.map(field => <col key={field} style={{ width: getColumnWidth(field, widths) }} />)}
 			<col style={{ minWidth: layout.fillerMinWidth }} />
 		</colgroup>
@@ -36,16 +39,47 @@ export function getTableStyle(
 
 /** The layout both `<table>`s share; header and body must read the same one or columns drift. */
 export function useTableLayout(): TableLayout {
-	const { indexColumnVisible, columnWidths, capabilities } = useExcelDataTableContext();
+	const { indexColumnVisible, columnWidths, capabilities, manualSort, changes } = useExcelDataTableContext();
 	const fillerMinWidth = Math.max(columnWidths.fillerMinWidth, getRowActionsMinWidth(capabilities));
-	return React.useMemo(() => ({ indexColumnVisible, fillerMinWidth }), [indexColumnVisible, fillerMinWidth]);
+	const sortHandleVisible = manualSort.enabled;
+	const indexColumnWidth = changes.enabled ? rowNumberWithBadgeColumnWidth : undefined;
+	return React.useMemo(
+		() => ({ indexColumnVisible, fillerMinWidth, sortHandleVisible, indexColumnWidth }),
+		[indexColumnVisible, fillerMinWidth, sortHandleVisible, indexColumnWidth],
+	);
+}
+
+export type TableGeometry = {
+	layout: TableLayout,
+	/** The `<colgroup>` keys: every field and action column, in display order. */
+	columnKeys: string[],
+	/** The user's widths over the action columns' own. */
+	widths: ColumnWidths,
+	style: React.CSSProperties,
+};
+
+/** Everything a `<table>` of this table needs to line up with the other one. */
+export function useTableGeometry(): TableGeometry {
+	const { columns, columnWidths } = useExcelDataTableContext();
+	const layout = useTableLayout();
+	const columnKeys = React.useMemo(() => columns.map(column => column.key), [columns]);
+	const widths = React.useMemo(
+		() => withActionColumnWidths(columns, columnWidths.widths), [columns, columnWidths.widths],
+	);
+	const style = React.useMemo(() => getTableStyle(columnKeys, widths, layout), [columnKeys, widths, layout]);
+	return { layout, columnKeys, widths, style };
+}
+
+/** The table's colgroup, from {@link useTableGeometry}. */
+export function TableGeometryColGroup({ geometry }: { geometry: TableGeometry }) {
+	return <TableColGroup fields={geometry.columnKeys} widths={geometry.widths} layout={geometry.layout} />;
 }
 
 /** The `colSpan` of a row that spans the whole table. */
 export function useColumnCount(): number {
-	const { fields } = useExcelDataTableContext();
+	const { columns } = useExcelDataTableContext();
 	const layout = useTableLayout();
-	return getColumnCount(fields.length, layout);
+	return getColumnCount(columns.length, layout);
 }
 
 export function useColumnResize() {

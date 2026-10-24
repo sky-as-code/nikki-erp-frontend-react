@@ -1,8 +1,5 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 
-import type { VariantCreationMode } from '../productAttribute/types';
-
-
 /**
  * Commercial lifecycle, independent of `is_archived`.
  *
@@ -71,43 +68,62 @@ export type SearchProductTemplatesResponse = dyn.RestSearchResponse<ProductTempl
 export type UpdateProductTemplateRequest = dyn.RestUpdateRequest;
 export type UpdateProductTemplateResponse = dyn.RestMutateResponse;
 
-// The two custom actions the template engine defines beyond CRUD. Their shapes must match the
-// backend view structs verbatim — see
-// backend .../modules/inventory/interfaces/product/views.go.
+// The custom actions the template engine defines beyond CRUD. Their shapes must match the
+// backend views verbatim — see backend .../modules/inventory/interfaces/product/.
 
 /** One attribute-value choice, as `resolve_selection` expects it. */
 export type AttributeSelectionInput = {
 	attribute_id: string,
 	value_id: string,
-	/** An unrecognized mode falls back to `instant`, which keeps the attribute in the key. */
-	mode?: VariantCreationMode,
 };
 
+/**
+ * Turns a full selection (one value per instant and dynamic attribute) into the complete variant.
+ * Never-mode values may be passed too: they are validated and echoed back, never stored.
+ */
 export type ResolveSelectionRequest = {
-	template_id: string,
+	product_template_id: string,
 	selections: AttributeSelectionInput[],
+	/** Refuses the resolve when the template moved past this etag. */
+	expected_etag?: string,
 	/**
-	 * Creates the variant when the combination is valid but has no variant yet, which is what a
-	 * DYNAMIC-mode template needs. Left false, an unknown combination resolves to nothing rather
-	 * than silently creating master data.
+	 * Creates (or restores) the complete variant when the combination is valid but has none, which
+	 * needs the `generate_variants` permission. Left false, a missing combination reports `missing`.
 	 */
 	materialize_if_missing?: boolean,
 };
 
+export type ResolveOutcome = 'existing' | 'created' | 'restored' | 'missing';
+
 export type ResolveSelectionResponse = {
 	variant_id?: string,
+	base_variant_id?: string,
 	combination_key: string,
+	outcome: ResolveOutcome,
 	materialized: boolean,
+	never_selections?: AttributeSelectionInput[],
 };
 
 export type GenerateVariantsRequest = Record<string, never>;
 
 export type GenerateVariantsResponse = {
 	created_variant_ids: string[],
-	/**
-	 * Reported rather than removed: a variant a transaction already references must be archived,
-	 * not deleted, and only the caller knows which. See BR §8.5 and AC-PROD-030.
-	 */
+	extended_variant_ids: string[],
+	restored_variant_ids: string[],
+	archived_variant_ids: string[],
+	deleted_variant_ids: string[],
 	obsolete_variant_ids: string[],
 	unchanged_count: number,
+};
+
+/** `POST product_template/:id/copy`: the copy's name is optional, the source's name plus a suffix otherwise. */
+export type CopyTemplateRequest = { id: string, name?: dyn.ModelSchemaLangJson };
+
+export type CopyTemplateResponse = { id: string, etag: string, created_at: string };
+
+export type PreviewAttributeConfigurationRequest = {
+	id: string,
+	etag: string,
+	attribute_lines: { attribute_id: string, value_ids: string[], sequence?: number }[],
+	exclusions: { left_value_id: string, right_value_id: string }[],
 };

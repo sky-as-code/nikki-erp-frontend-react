@@ -7,9 +7,9 @@ import {
 
 import * as c from '../constants';
 import { ProductTemplateCommands } from '../features/productTemplate/commands';
-import { ProductTemplateAttributeCommands } from '../features/productTemplateAttribute/commands';
 import { ProductVariantCommands } from '../features/productVariant/commands';
 import { StockProductConfigCommands } from '../features/stockProductConfig/commands';
+import { TEMPLATE_RESOLVE_VARIANT, templateAttributesNode } from '../viewkit/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -100,10 +100,55 @@ function buildProductTemplateDetailProps() {
 			delete: ProductTemplateCommands.DELETE,
 			archive: ProductTemplateCommands.SET_IS_ARCHIVED,
 		},
-		createNodes: [buildProductTemplateFieldsSection()],
-		childrenNodes: [buildProductTemplateFieldsSection()],
+		contextualActions: buildTemplateContextualActions(),
+		createNodes: [buildProductTemplateFieldsSection(), buildTemplateAttributesSection()],
+		childrenNodes: [buildProductTemplateFieldsSection(), buildTemplateAttributesSection()],
 		relatedResources: buildTemplateResources(),
 	});
+}
+
+/**
+ * The attribute configuration, between General and the related tabs. A form section rather than a
+ * related tab: its lines and exclusions are written only through the template's own create or
+ * update (the junction resources are read-only), in the same request as the template's fields.
+ */
+function buildTemplateAttributesSection(): ComponentNode {
+	return collapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		header: 'product_template_sections_attributes',
+	}, [templateAttributesNode()]);
+}
+
+/**
+ * Copy creates a new template with the active configuration (no stock, SKUs or variants), and
+ * asserts `copy` besides the create it performs; on success it says so and opens the copy. Re-sync
+ * re-runs the variant reconcile of the saved configuration, asserting `generate_variants`. Resolve
+ * variant is the view kit's own dialog (one value per variant-creating attribute of the saved
+ * configuration), locking itself on `generate_variants` and hidden in update mode.
+ */
+function buildTemplateContextualActions() {
+	return {
+		copy: {
+			label: 'actions.copy',
+			command: ProductTemplateCommands.COPY,
+			actionCode: 'copy',
+			prompt: {
+				title: 'product_template_copyTitle',
+				fields: [{ name: 'name', required: false }],
+			},
+			successNotice: 'product_template_copied',
+			openResult: true,
+		},
+		resyncVariants: {
+			label: 'actions.resync_variants',
+			command: ProductTemplateCommands.GENERATE_VARIANTS,
+			actionCode: 'generate_variants',
+		},
+		resolveVariant: {
+			label: 'product_template_config_resolve',
+			component: TEMPLATE_RESOLVE_VARIANT,
+		},
+	};
 }
 
 /** Shared by both form modes: the resource's own fields, as titled blocks. */
@@ -179,26 +224,14 @@ function buildProductTemplatePhysicalColumns(): ComponentNode[] {
 }
 
 /**
- * The template's attribute configuration and the variants it produces.
+ * The variants the template produces, its vendor prices and stock. The attribute configuration
+ * is the form section above, not a tab here.
  *
- * Both are filtered by the current record's id: `${id}` is replaced with the route param at
+ * Each is filtered by the current record's id: `${id}` is replaced with the route param at
  * render time. They render only in update mode, since during create there is no id to filter by.
  */
 function buildTemplateResources() {
 	return [
-		{
-			label: 'product_template_sections_attributes',
-			schemaName: c.PRODUCT_TEMPLATE_ATTRIBUTE_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: ProductTemplateAttributeCommands.SEARCH,
-			initialGraph: { if: ['product_template_id', '=', '${id}'] },
-			linkField: 'id',
-			// Opens the values this template offers for the attribute, which is where each
-			// value's sales_price_extra is set. The junction row carries template_attribute_id
-			// rather than the template id, so its values are two hops from here and reachable
-			// only through the attribute row itself.
-			linkRoutePath: 'inventory_product_template_attribute_value',
-		},
 		{
 			label: 'product_template_sections_variants',
 			schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
@@ -207,6 +240,10 @@ function buildTemplateResources() {
 			initialGraph: { if: ['product_template_id', '=', '${id}'] },
 			linkField: 'id',
 			linkRoutePath: 'inventory_product_variant',
+			// "View variants": the variant list filtered to this template, hidden in update mode.
+			showViewAll: true,
+			viewAllFiltered: true,
+			viewAllLabel: 'product_template_config_viewVariants',
 		},
 		{
 			label: 'product_template_sections_vendor_prices',

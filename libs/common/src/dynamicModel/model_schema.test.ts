@@ -252,3 +252,35 @@ describe('isFieldFilterable / isFieldSortable', () => {
 		expect(isFieldSortable(field('total', 'decimal', { is_persisted: false }))).toBe(false);
 	});
 });
+
+describe('buildValidationSchema: decimals', () => {
+	const formSchema = schema({
+		fields: {
+			price: {
+				...field('price', 'decimal'),
+				data_type: { name: 'decimal', options: { range: [-10, 10] } },
+			} as ModelSchemaField,
+		},
+	});
+
+	// The server's decimal type refuses a JSON number: parsing one goes through a float64.
+	it('validates as a number but submits the typed string', () => {
+		const parsed = buildValidationSchema(formSchema).safeParse({ price: ' 5.250 ' });
+
+		expect(parsed.success).toBe(true);
+		expect(parsed.data).toEqual({ price: '5.250' });
+	});
+
+	it('stringifies a number already in the form', () => {
+		expect(buildValidationSchema(formSchema).safeParse({ price: 3 }).data).toEqual({ price: '3' });
+	});
+
+	it('still refuses junk and out-of-range values', () => {
+		expect(buildValidationSchema(formSchema).safeParse({ price: 'abc' }).success).toBe(false);
+		expect(buildValidationSchema(formSchema).safeParse({ price: '11' }).success).toBe(false);
+	});
+
+	it('leaves a blank optional decimal out', () => {
+		expect(buildValidationSchema(formSchema).safeParse({ price: '' }).data).toEqual({});
+	});
+});

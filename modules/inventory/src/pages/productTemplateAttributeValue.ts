@@ -1,94 +1,50 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
-import {
-	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
-} from '@nikkierp/viewkit-mantine/props';
+import { resourceListV2Props } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
 import {
 	ProductTemplateAttributeValueCommands,
 } from '../features/productTemplateAttributeValue/commands';
 
-import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+/** The one field the junction's update accepts; the selection rides the template's own save. */
+const EDITABLE_FIELDS = ['sales_price_extra'];
 
 /**
- * Which values a template offers for one of its attributes, and what each adds to its price.
+ * The extra price of each value one template line offers, edited in the list itself: there is no
+ * detail pane, because a row holds nothing else worth a form.
  *
- * The junction had no page until `sales_price_extra` moved onto it. It was reachable only as a
- * relation select, which was enough while the row held nothing but a link and a sequence — but a
- * surcharge nobody can edit is a surcharge nobody can set, and the field would have been dead on
- * arrival.
+ * The template's Attributes table opens it through "Configure" with
+ * `?initialGraph={"if":["template_attribute_id","=",lineId],...}`: a value belongs to one attribute
+ * OF one template, and `template_attribute_id` is the column the row carries, so that is the
+ * filter. Rows unselected on the template still show, with "Selected" off: their price is kept for
+ * when the value is selected again.
  *
- * It is filtered by `template_attribute_id` rather than by the template, because that is the column
- * the row actually carries: a value belongs to one attribute OF one template, and the template is
- * two hops away. Hence the route being reached from the attributes table on the template page
- * rather than being a menu entry of its own.
+ * Only `sales_price_extra` is edited (`editableFields`), since the backend refuses any other field
+ * on this update, and the row editor locks on `update_value` of the attribute, which is what the
+ * backend asserts for it. A NULL price adds nothing and shows as 0. It is a SALES figure only and must
+ * never reach a cost calculation: a colour that sells for more does not thereby cost more.
  */
 export function buildProductTemplateAttributeValuePages(): PageNode[] {
-	const splitView = resourceSplitViewProps({
-		primary: buildListProps(),
-		secondary: buildDetailProps(),
+	const list = resourceListV2Props({
+		schemaName: c.PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		searchCommand: ProductTemplateAttributeValueCommands.SEARCH,
+		updateCommand: ProductTemplateAttributeValueCommands.UPDATE,
+		updateSaveCommand: ProductTemplateAttributeValueCommands.UPDATE,
+		editableFields: EDITABLE_FIELDS,
+		updateActionCode: c.PRODUCT_ATTRIBUTE_UPDATE_VALUE_ACTION,
+		updateActionResource: c.PRODUCT_ATTRIBUTE_SCHEMA_NAME,
+		// The order the template shows its values in; a link's own graph narrows it to one line.
+		initialGraph: { order: [['sequence', 'asc']] },
+		fieldRenderers: {
+			sales_price_extra: { renderer: 'money', blankAsZero: true },
+		},
 	});
 
 	return [definePage({
 		routePath: 'inventory_product_template_attribute_value',
-		template: splitView.template,
-		props: splitView.props,
+		template: list.template,
+		props: list.props,
 	})];
-}
-
-function buildListProps() {
-	return resourceListV2Props({
-		schemaName: c.PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME,
-		translationNs: c.INVENTORY_MODULE,
-		linkField: 'id',
-		searchCommand: ProductTemplateAttributeValueCommands.SEARCH,
-		createEnabled: true,
-		deleteCommand: ProductTemplateAttributeValueCommands.DELETE,
-		updateSaveCommand: ProductTemplateAttributeValueCommands.UPDATE,
-		updateCommand: ProductTemplateAttributeValueCommands.UPDATE,
-	});
-}
-
-function buildDetailProps() {
-	return resourceDetailV2Props({
-		schemaName: c.PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME,
-		translationNs: c.INVENTORY_MODULE,
-		titleLvl1: { schemaField: 'attribute_value_id' },
-		titleLvl2: { schemaField: 'sales_price_extra' },
-		backLinkTitle: { linkHref: '../' },
-		standardActionCommands: {
-			getById: ProductTemplateAttributeValueCommands.GET_BY_ID,
-			create: ProductTemplateAttributeValueCommands.CREATE,
-			update: ProductTemplateAttributeValueCommands.UPDATE,
-			delete: ProductTemplateAttributeValueCommands.DELETE,
-		},
-		createNodes: [buildFieldsSection()],
-		childrenNodes: [buildFieldsSection()],
-	});
-}
-
-/** Shared by both form modes: the resource's own fields, as titled blocks. */
-function buildFieldsSection(): ComponentNode {
-	return collapsibleSectionNode({
-		layout: 'formBlocks',
-		translationNs: c.INVENTORY_MODULE,
-		header: 'form.generalInformation',
-	}, [
-		resourceFormColumnNode({
-			header: 'form.generalInformation',
-			fields: ['template_attribute_id', 'attribute_value_id', 'sequence'],
-		}),
-		resourceFormColumnNode({
-			// Signed, and that is the point: XL may add 20,000 while a plain colour subtracts. It is
-			// a SALES figure only — it must never reach a cost calculation, because a colour that
-			// sells for more does not thereby cost more.
-			header: 'form.pricing',
-			fields: ['sales_price_extra'],
-		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
-	]);
 }

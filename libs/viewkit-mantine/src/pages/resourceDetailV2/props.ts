@@ -36,13 +36,21 @@ export const relatedAssignmentSchema = z.object({
 /**
  * One tab of the related-resources section: the embedded table's own props plus the tab label.
  * `initialGraph` is interpolated from the route (`${id}`) exactly as `resourceTable` does, and the
- * section is update-mode only for the same reason — on `/new` there is no id to filter by.
+ * section is update-mode only for the same reason — on `/new` there is no id to filter by. While
+ * the form is being edited, the tab hides what navigates (row links, "View all", link actions).
  */
 export const relatedResourceSchema = resourceTablePropsSchema.extend({
 	/** i18n key for the tab, translated with the related resource's own `translationNs`. */
 	label: z.string().min(1),
 	/** i18n key of the message an empty table shows, translated with the tab's `translationNs`. */
 	emptyMessage: z.string().min(1).optional(),
+	/** i18n key replacing the "View all" link's standard label, translated with the tab's `translationNs`. */
+	viewAllLabel: z.string().min(1).optional(),
+	/**
+	 * "View all" opens the list filtered as this tab is: its interpolated `initialGraph` rides along
+	 * as the list's `?initialGraph=`, e.g. a template's variants rather than every variant.
+	 */
+	viewAllFiltered: z.boolean().optional(),
 	assignment: relatedAssignmentSchema.optional(),
 }).strict();
 

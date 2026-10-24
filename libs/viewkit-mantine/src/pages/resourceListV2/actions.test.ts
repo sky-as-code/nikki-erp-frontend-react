@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildResourceListActions, listActionCode, selectionModeOf } from './actions';
+import { buildResourceListActions, listActionCode, listRowUpdateProps, selectionModeOf } from './actions';
 import { resourceListV2PropsSchema } from './props';
 
 import type { TranslateFn } from '@nikkierp/ui/i18n';
@@ -76,5 +76,32 @@ describe('selectionModeOf', () => {
 		expect(selectionModeOf({ kind: 'command' })).toBeUndefined();
 		expect(selectionModeOf({ kind: 'command', requireSelection: true })).toBe('single');
 		expect(selectionModeOf({ kind: 'command', requireSelection: true, supportMultiple: true })).toBe('multiple');
+	});
+});
+
+describe('listRowUpdateProps', () => {
+	it('edits one row at a time, keeping the command and locking it by the update entitlement', () => {
+		const params = resourceListV2PropsSchema.parse({
+			schemaName: 's', translationNs: 'n', searchCommand: 'c', updateCommand: 'upd',
+		});
+		expect(listRowUpdateProps(params)).toEqual({
+			updateCommand: 'upd', updateScope: 'row',
+			updateEntitlement: { action: 'update', resource: 's', scope: 'org' },
+		});
+	});
+
+	it('locks the row editor by another resource action when the page names one', () => {
+		const params = resourceListV2PropsSchema.parse({
+			schemaName: 's', translationNs: 'n', searchCommand: 'c', updateCommand: 'upd',
+			updateActionCode: 'update_value', updateActionResource: 'other',
+		});
+		expect(listRowUpdateProps(params).updateEntitlement).toEqual({
+			action: 'update_value', resource: 'other', scope: 'org',
+		});
+	});
+
+	it('asks nothing when the page edits no rows', () => {
+		const params = resourceListV2PropsSchema.parse({ schemaName: 's', translationNs: 'n', searchCommand: 'c' });
+		expect(listRowUpdateProps(params)).toEqual({ updateScope: 'row' });
 	});
 });

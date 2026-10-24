@@ -10,7 +10,7 @@ import {
 import React from 'react';
 import { useSearchParams } from 'react-router';
 
-import { buildResourceListActions, listActionCode, selectionModeOf } from './actions';
+import { buildResourceListActions, listActionCode, listRowUpdateProps, selectionModeOf } from './actions';
 import classes from './ResourceListV2.module.css';
 import { getViewModeIcon } from './viewModeIcons';
 import { interpolateParams } from '../../data/interpolate';
@@ -20,7 +20,7 @@ import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResource
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { useTableRelatedSchemas, useTranslateFieldName } from '../../data/useTableFieldLabels';
 import { EXCEL_DATA_TABLE_BODY } from '../../ids';
-import { StandardActionCode, useActionLock, useActionLocks } from '../../permissions';
+import { useActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
 import { useClosePrimaryPane } from '../resourceSplitView/splitViewContext';
 
@@ -75,9 +75,6 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 	const actions = React.useMemo(() => buildResourceListActions(params, t, baseHref), [params, t, baseHref]);
 	const allowedViewModes = React.useMemo(() => params.viewModes.map(view => view.mode), [params.viewModes]);
 	const gatedActions = useActionLocks(actions, params.schemaName, listActionCode);
-	// Row editing has no button to grey out, so a caller who may not update gets no editor at all
-	// rather than one whose every save is refused.
-	const updateLock = useActionLock(params.updateCommand ? params.schemaName : null, StandardActionCode.Update);
 
 	if (search.refused) {
 		return <Unauthorized missing={search.refused} />;
@@ -100,11 +97,14 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 				orderBy={getSearchRequestOrderBy(search.searchRequest)}
 				initialViewMode={params.viewModes[0].mode}
 				allowedViewModes={allowedViewModes}
-				updateCommand={updateLock.locked ? undefined : params.updateCommand}
+				{...listRowUpdateProps(params)}
+				editableFields={params.editableFields}
 				onRefresh={search.refresh}
 				translationNs={params.translationNs}
 				translateFieldName={translateFieldName}
-				buildLinkHref={buildLinkHref}
+				// No `linkField` means no detail page: cells must not link, or a click would reload the
+				// list without its URL graph.
+				buildLinkHref={params.linkField ? buildLinkHref : undefined}
 				fieldRenderers={fieldRenderers}
 			>
 				<div className={classes.stickyPanel}>

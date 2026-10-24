@@ -9,6 +9,7 @@ import React from 'react';
 
 import { assignmentSearchField } from './assignmentPayloads';
 import { useAssignmentWriteProps } from './RelatedAssignment';
+import { ResourceUpdateContext } from './resourceUpdateContext';
 import classes from '../../components/collapsibleSection/CollapsibleSection.module.css';
 import { PaperWithBorder } from '../../components/paperWithBorder';
 import { useInterpolatedGraph } from '../../components/resourceTable/ResourceTable';
@@ -145,6 +146,7 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 	const { pack, searchData } = search;
 	const assignment = useAssignmentWriteProps(resource);
 	const buildLinkHref = useResourceLinkHref(resource.linkField, resource.linkRoutePath);
+	const editing = useIsFormEditing();
 	const testId = resourceTestIdPrefix({ testId: resource.testId, schemaName: resource.schemaName, part: 'Table' });
 	const relatedSchemas = useTableRelatedSchemas(
 		pack?.modelSchema, searchData?.desired_fields, search.edgeLabelSchemas,
@@ -174,7 +176,7 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 			onRefresh={search.refresh}
 			translationNs={resource.translationNs}
 			translateFieldName={translateFieldName}
-			buildLinkHref={buildLinkHref}
+			buildLinkHref={editing ? undefined : buildLinkHref}
 			fieldRenderers={fieldRenderers}
 			emptyMessage={emptyMessage}
 			{...assignment}
@@ -183,7 +185,9 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 			    and body stay in one wrapper because together they read as a single table. */}
 			<Stack gap='xs'>
 				<ExcelDataTable.Toolbar
-					left={assignment ? null : <RelatedActions resource={resource} />}
+					left={assignment
+						? null
+						: <RelatedActions resource={resource} graph={graph.value} editing={editing} />}
 					right={<><ExcelDataTable.Pagination /><ExcelDataTable.SettingsButton /></>}
 				/>
 				<div>
@@ -207,23 +211,36 @@ function useRequestedFields(resource: RelatedResource): string[] | undefined {
 	);
 }
 
+/** True while the page's form is in update mode; the tabs render outside the form's own context. */
+function useIsFormEditing(): boolean {
+	return React.useContext(ResourceUpdateContext)?.updateMode ?? false;
+}
+
 /**
  * Refresh, the optional "View all" link, then the page-authored extras (a link or a command). An
- * assignment tab has none: its insert row and row Delete are its actions.
+ * assignment tab has none: its insert row and row Delete are its actions. While the form is edited
+ * the links are hidden -- following one would discard the edits -- and only commands remain.
  */
-function RelatedActions({ resource }: { resource: RelatedResource }) {
+function RelatedActions({ resource, graph, editing }: {
+	resource: RelatedResource,
+	graph: dyn.SearchGraph | undefined,
+	editing: boolean,
+}) {
 	// Both namespaces: "View all" is a standard label from `common`, while a page's own extra
 	// actions name keys in its module.
 	const t = useTranslate([resource.translationNs, 'common']);
 	const viewAllHref = useResourceBaseHref(resource.linkRoutePath);
-	const extraActions = useTableActionLocks(resource.extraActions, resource.schemaName);
+	const extraActions = useTableActionLocks(resource.extraActions, resource.schemaName)
+		.filter(action => !(editing && action.routePath));
 	return (
 		<ExcelDataTable.Actions>
 			<ExcelDataTable.ActionRefresh />
-			{resource.showViewAll && viewAllHref ? (
+			{resource.showViewAll && viewAllHref && !editing ? (
 				<ExcelDataTable.Action
-					label={t('datatable.viewAll', { defaultValue: 'View all' })}
-					href={viewAllHref}
+					label={resource.viewAllLabel
+						? t(resource.viewAllLabel)
+						: t('datatable.viewAll', { defaultValue: 'View all' })}
+					href={viewAllHrefOf(viewAllHref, resource.viewAllFiltered ? graph : undefined)}
 					testId='viewAll'
 				/>
 			) : null}
@@ -241,6 +258,11 @@ function RelatedActions({ resource }: { resource: RelatedResource }) {
 			))}
 		</ExcelDataTable.Actions>
 	);
+}
+
+/** The list's href, carrying the tab's filter as `?initialGraph=` when one is given. */
+function viewAllHrefOf(baseHref: string, graph: dyn.SearchGraph | undefined): string {
+	return graph ? `${baseHref}?initialGraph=${encodeURIComponent(JSON.stringify(graph))}` : baseHref;
 }
 
 /** A page-given i18n key, translated; `undefined` leaves the table's own default. */

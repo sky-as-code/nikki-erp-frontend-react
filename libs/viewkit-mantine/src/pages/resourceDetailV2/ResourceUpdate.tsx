@@ -94,24 +94,22 @@ export function ResourceUpdateProvider(
 	const runAfterUpdate = afterSave.runAfterUpdate;
 	const payloadContributors = useUpdatePayloadContributors();
 	const collectContributions = payloadContributors.collect;
+	const [updateMode, setUpdateMode] = React.useState(false);
 
-	/**
-	 * Refreshes only on success. A failed save must NOT re-fetch: that would replace
-	 * the user's unsaved edits with the server's unchanged record, discarding exactly
-	 * the input they need to correct.
-	 */
+	// Refreshes only on success: a refetch would wipe the edits to correct. A section may decline the save.
 	const onSubmit = React.useCallback(async (data: Record<string, any>): Promise<boolean> => {
 		if (!commands.update) return false;
 		const contributions = collectContributions();
-		const response = await publishUpdate({ ...data, ...contributions.payload });
+		const request = { ...data, ...contributions.payload };
+		if (!(await contributions.confirm(request))) return false;
+		const response = await publishUpdate(request);
 		const succeeded = response.error == null && (response.result?.clientErrors.length ?? 0) === 0;
 		if (succeeded) {
 			contributions.notifySaved();
 			await runAfterUpdate(response.result?.data?.etag, data);
 			refresh();
 		}
-		// Reported back so the action bar can leave edit mode only on success: a rejected save has
-		// to keep the user's input on screen, since that is exactly what they need to correct.
+		// Reported back so the action bar leaves edit mode only on success, keeping rejected input on screen.
 		return succeeded;
 	}, [publishUpdate, commands.update, refresh, runAfterUpdate, collectContributions]);
 
@@ -141,6 +139,7 @@ export function ResourceUpdateProvider(
 			submitAfterSaveOnly: afterSave.submitAfterSaveOnly,
 			registerUpdatePayload: payloadContributors.register,
 			hasPendingUpdatePayload: payloadContributors.hasPending,
+			updateMode, setUpdateMode,
 		}),
 		[
 			commands, resource, edgeLabels.destSchemas, getByIdCmd.isPending, updateCmd.isPending,
@@ -148,7 +147,7 @@ export function ResourceUpdateProvider(
 			props.allStatuses, props.currentStatus, props.contextualActions,
 			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.thumbnail, props.childrenNodes,
 			afterSave.register, afterSave.hasPending, afterSave.isRunning, afterSave.submitAfterSaveOnly,
-			payloadContributors.register, payloadContributors.hasPending,
+			payloadContributors.register, payloadContributors.hasPending, updateMode,
 		],
 	);
 

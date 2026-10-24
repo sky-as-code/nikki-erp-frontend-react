@@ -51,6 +51,18 @@ export const resourceListV2PropsSchema = resourceListPropsSchema.extend({
 	/** Publishes an inline row update `{id, etag?, ...changedFields}`; enables edit mode when set. */
 	updateCommand: z.string().min(1).optional(),
 	/**
+	 * The only columns an inline row update edits, when the backend's update accepts fewer fields
+	 * than the schema declares writable; every other column stays text. Absent, the schema decides.
+	 */
+	editableFields: z.array(z.string().min(1)).optional(),
+	/**
+	 * The action the backend asserts for the inline row update, when it is not `update` on the
+	 * listed schema; copied from the application service's `AssertAction`.
+	 */
+	updateActionCode: z.string().min(1).optional(),
+	/** The resource `updateActionCode` is checked on, when it is not the listed schema. */
+	updateActionResource: z.string().min(1).optional(),
+	/**
 	 * The view modes offered, the first one being the initial mode. Each renders its own
 	 * `viewkitComponent`; build the list with `getViewModes` to add one beside the default.
 	 */

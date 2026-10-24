@@ -1,7 +1,8 @@
-import { Stack, Text, Title } from '@mantine/core';
+import { Group, Stack, Text, Title } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { AutoField, ReadOnlyBooleanSwitch, useComputedField } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import { IconLock } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 
@@ -47,9 +48,21 @@ export function OwnPropertiesBlock({
 				modelSchema={modelSchema}
 				fieldValues={fieldValues}
 				mode={mode}
+				lockedFields={block.lockedFields}
+				readOnlyFields={block.readOnlyFields}
 			/>
 		</Stack>
 	);
+}
+
+type LockedFields = OwnPropertySection['lockedFields'];
+
+/** The hint of `field` while the record locks it in update mode, else `undefined`. */
+export function lockedFieldHint(
+	lockedFields: LockedFields, field: string, mode: FieldVisibilityMode, fieldValues: Record<string, unknown>,
+): string | undefined {
+	const lock = lockedFields?.[field];
+	return lock && mode === 'update' && fieldValues[lock.unless] === false ? lock.hint : undefined;
 }
 
 /**
@@ -59,19 +72,23 @@ export function OwnPropertiesBlock({
  * reshuffle the moment Update is pressed. With `stableFieldLayout` create mode does the same.
  */
 export function FieldGroupVertical({
-	fields, isLoading, modelSchema, fieldValues, mode,
+	fields, isLoading, modelSchema, fieldValues, mode, lockedFields, readOnlyFields,
 }: {
 	fields: string[],
 	isLoading: boolean,
 	modelSchema: dyn.ModelSchema,
 	fieldValues: Record<string, unknown>,
 	mode: FieldVisibilityMode,
+	lockedFields?: LockedFields,
+	readOnlyFields?: string[],
 }): React.ReactNode {
 	const { stableFieldLayout } = useDetailFieldDisplay();
 	return (
 		<div className={classes.formFieldWrapper}>
 			{fields.map(field => {
-				const presentation = fieldPresentation(modelSchema, field, mode, stableFieldLayout);
+				const presentation = readOnlyFields?.includes(field) && mode === 'update'
+					? 'readonly'
+					: fieldPresentation(modelSchema, field, mode, stableFieldLayout);
 				if (presentation === 'hidden') {
 					return null;
 				}
@@ -85,13 +102,25 @@ export function FieldGroupVertical({
 						/>
 					);
 				}
+				const lockHint = lockedFieldHint(lockedFields, field, mode, fieldValues);
 				return (
 					<Stack key={field} gap={4}>
-						<AutoField name={field} inputProps={{ disabled: isLoading }} />
+						<AutoField name={field} inputProps={{ disabled: isLoading || lockHint !== undefined }} />
+						{lockHint ? <LockedFieldHint hint={lockHint} /> : null}
 					</Stack>
 				);
 			})}
 		</div>
+	);
+}
+
+function LockedFieldHint({ hint }: { hint: string }): React.ReactNode {
+	const t = useTranslate(useResourceDetailTranslationNs());
+	return (
+		<Group gap={4} wrap='nowrap' data-testid='resourceForm.lockedFieldHint'>
+			<IconLock size={14} aria-hidden />
+			<Text size='xs' c='dimmed'>{t(hint)}</Text>
+		</Group>
 	);
 }
 

@@ -10,9 +10,10 @@ import { ColumnFilterRow } from './filter/ColumnFilterRow';
 import { getFilterInputKind, isSortableFieldName } from './filter/filterModel';
 import { selectionStateOf } from './selectionModel';
 import {
-	TableColGroup, getTableStyle, useColumnCount, useColumnResize, useHeaderScrollSync, useTableLayout,
+	TableGeometryColGroup, useColumnCount, useColumnResize, useHeaderScrollSync, useTableGeometry,
 } from './tableLayout';
 import { tableScopeAttrs } from './tableScope';
+import { useEnumValueLabel } from './useEnumValueLabel';
 import { useTranslate } from '../../i18n';
 
 
@@ -41,16 +42,16 @@ export type TableHeaderProps = {
  */
 export function TableHeader(props: TableHeaderProps) {
 	const { allowColumnResizing = true, enableColumnFilters = true, fillerColumnMinWidth = 0 } = props;
-	const { fields, columnWidths, isLoading, tid, scopeId } = useExcelDataTableContext();
+	const { columnWidths, isLoading, tid, scopeId } = useExcelDataTableContext();
 	const { setFillerMinWidth } = columnWidths;
 	React.useEffect(() => setFillerMinWidth(fillerColumnMinWidth), [fillerColumnMinWidth, setFillerMinWidth]);
 	const scrollerRef = useHeaderScrollSync();
-	const layout = useTableLayout();
+	const geometry = useTableGeometry();
 	const columnCount = useColumnCount();
 	return (
 		<div ref={scrollerRef} className={clsx(classes.headerScroller, props.className)} {...tableScopeAttrs(scopeId)}>
-			<Table style={getTableStyle(fields, columnWidths.widths, layout)}>
-				<TableColGroup fields={fields} widths={columnWidths.widths} layout={layout} />
+			<Table style={geometry.style}>
+				<TableGeometryColGroup geometry={geometry} />
 				<Table.Thead>
 					<HeaderLabelsRow
 						allowColumnResizing={allowColumnResizing}
@@ -71,24 +72,36 @@ export function TableHeader(props: TableHeaderProps) {
 type HeaderLabelsRowProps = Pick<TableHeaderProps, 'renderFillerColumnHeader'> & { allowColumnResizing: boolean };
 
 function HeaderLabelsRow({ allowColumnResizing, renderFillerColumnHeader }: HeaderLabelsRowProps) {
-	const { fields, indexColumnVisible } = useExcelDataTableContext();
+	const { columns, indexColumnVisible, manualSort, tid } = useExcelDataTableContext();
 	const sort = useHeaderSort();
 	const resize = useColumnResize();
 	const filler = renderFillerColumnHeader?.();
 	return (
 		<Table.Tr>
 			{indexColumnVisible ? <SelectAllHeaderCell /> : null}
-			{fields.map(field => (
+			{manualSort.enabled ? (
+				// A label-less header still takes the header background, or it reads as a hole in the row.
+				<Table.Th className={clsx(classes.headerCell, classes.sortHandleCell)} aria-hidden />
+			) : null}
+			{columns.map(column => (column.kind === 'action' ? (
+				<Table.Th
+					key={column.key}
+					className={classes.headerCell}
+					{...tid.actionColumnHeader(column.column.key)}
+				>
+					<span className='overflow-hidden text-ellipsis whitespace-nowrap'>{column.column.label}</span>
+				</Table.Th>
+			) : (
 				<ColumnHeader
-					key={field}
-					field={field}
-					sortDirection={sort.orderMap.get(field)}
-					sortable={sort.sortableFields.has(field)}
+					key={column.key}
+					field={column.field}
+					sortDirection={sort.orderMap.get(column.field)}
+					sortable={sort.sortableFields.has(column.field)}
 					onSort={sort.onSort}
 					allowColumnResizing={allowColumnResizing}
 					{...resize}
 				/>
-			))}
+			)))}
 			<Table.Th className={classes.fillerHeaderCell} aria-hidden={filler ? undefined : true}>
 				{filler}
 			</Table.Th>
@@ -99,12 +112,12 @@ function HeaderLabelsRow({ allowColumnResizing, renderFillerColumnHeader }: Head
 /**
  * The index column's header: a select-all over the rows loaded. The whole cell is the click target;
  * the checkbox's own click bubbles up to it, and stays focusable so Space toggles it too. Single
- * mode has nothing to select all of, so the cell stays empty there.
+ * and none modes have nothing to select all of, so the cell stays empty there.
  */
 function SelectAllHeaderCell() {
 	const { selection, tid } = useExcelDataTableContext();
 	const t = useTranslate('common');
-	if (selection.mode === 'single') {
+	if (selection.mode !== 'multiple') {
 		return <Table.Th className={classes.rowNumberCell} aria-hidden />;
 	}
 	const coverage = selectionStateOf(selection, selection.order);
@@ -156,12 +169,9 @@ function useHeaderSort() {
 
 function ConnectedColumnFilterRow() {
 	const ctx = useExcelDataTableContext();
-	const { fields, modelSchema, relatedSchemas, filters, applyFilters, fieldRenderers } = ctx;
-	const tField = useTranslate(ctx.translationNs);
-	const translateEnumValue = React.useCallback((field: string, value: string) => {
-		const renderer = fieldRenderers[field];
-		return renderer?.translationKey && value !== '' ? tField(renderer.translationKey(value)) : value;
-	}, [fieldRenderers, tField]);
+	const { columns, modelSchema, relatedSchemas, filters, applyFilters } = ctx;
+	const columnKeys = React.useMemo(() => columns.map(column => column.key), [columns]);
+	const translateEnumValue = useEnumValueLabel();
 	// Committing a cell is already an explicit act (Enter, or picking from a select), so it
 	// applies at once rather than waiting for the panel's Apply.
 	const onCommit = React.useCallback((field: string, value: string) => {
@@ -170,7 +180,7 @@ function ConnectedColumnFilterRow() {
 	}, [applyFilters, filters, modelSchema, relatedSchemas]);
 	return (
 		<ColumnFilterRow
-			fields={fields}
+			fields={columnKeys}
 			modelSchema={modelSchema}
 			relatedSchemas={relatedSchemas}
 			values={filters.columnText}
@@ -178,6 +188,7 @@ function ConnectedColumnFilterRow() {
 			onCommit={onCommit}
 			hasFillerColumn
 			hasIndexColumn={ctx.indexColumnVisible}
+			hasSortHandleColumn={ctx.manualSort.enabled}
 			translateEnumValue={translateEnumValue}
 			tid={ctx.tid}
 		/>

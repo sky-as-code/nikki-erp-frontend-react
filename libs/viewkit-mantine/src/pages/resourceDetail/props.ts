@@ -31,6 +31,20 @@ export const ownPropertySectionSchema = z.object({
 	 * across that row. Omitted, the block takes one grid cell.
 	 */
 	span: z.enum(['full']).optional(),
+	/**
+	 * v2 only. Fields the record itself says may no longer change: in update mode `field` renders as a
+	 * disabled input with `hint` (an i18n key in the page's namespace) under it whenever the record's
+	 * boolean `unless` is `false`. Locked, never hidden; the server enforces the rule either way.
+	 */
+	lockedFields: z.record(z.string(), z.object({
+		unless: z.string().min(1),
+		hint: z.string().min(1),
+	}).strict()).optional(),
+	/**
+	 * v2 only. Fields this page never edits although the schema allows it, because another page
+	 * owns the change: in update mode they render as read-only text, like a server-owned field.
+	 */
+	readOnlyFields: z.array(z.string()).optional(),
 });
 
 /**
@@ -92,6 +106,15 @@ export const resourceDetailExtraActionSchema = z.object({
 	 * `AssertAction` call; it is what the entitlement lock checks. Absent means derived.
 	 */
 	actionCode: z.string().min(1).optional(),
+	/**
+	 * Renders a registered component in the button's place instead of publishing or navigating: the
+	 * contribution id of a view-kit component renderer, given `{label}` (this entry's `label`,
+	 * translated). For an action that needs more than a command and a prompt -- its own dialog fed
+	 * from the record -- while staying placed with the page's other actions. The component reads the
+	 * record from the update context, locks itself on what it asserts, and hides itself where it must
+	 * (update mode, for one that leaves the page or reads the saved record).
+	 */
+	component: z.string().min(1).optional(),
 	condition: conditionExpressionSchema.optional(),
 	/**
 	 * When present the button opens a dialog collecting these fields, and the
@@ -99,9 +122,16 @@ export const resourceDetailExtraActionSchema = z.object({
 	 * fire immediately, which is what every existing action does.
 	 */
 	prompt: actionPromptSchema.optional(),
+	/** An i18n key shown as a success notice once the command succeeds. */
+	successNotice: z.string().min(1).optional(),
+	/**
+	 * The command creates another record of this resource (a copy): on success the page opens it,
+	 * at `../{id}` of the command's result, instead of refreshing the current one.
+	 */
+	openResult: z.boolean().optional(),
 }).strict().refine(
-	action => Boolean(action.command) !== Boolean(action.routePath),
-	{ message: 'Exactly one of `command` or `routePath` is required' },
+	action => [action.command, action.routePath, action.component].filter(Boolean).length === 1,
+	{ message: 'Exactly one of `command`, `routePath` or `component` is required' },
 ).refine(
 	action => !action.prompt || Boolean(action.command),
 	{ message: '`prompt` collects values for a command, so it needs one', path: ['prompt'] },

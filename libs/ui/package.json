@@ -13,6 +13,9 @@
 		"test": "pnpm typecheck && pnpm lint && pnpm vitest"
 	},
 	"dependencies": {
+		"@dnd-kit/core": "~6.3.1",
+		"@dnd-kit/sortable": "~10.0.0",
+		"@dnd-kit/utilities": "~3.2.2",
 		"@hookform/resolvers": "~5.2.2",
 		"@nikkierp/viewengine": "workspace:*",
 		"chart.js": "~4.5.1",

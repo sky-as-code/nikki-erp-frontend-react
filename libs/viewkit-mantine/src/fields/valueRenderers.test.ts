@@ -73,6 +73,12 @@ describe('MoneyValueFieldRenderer', () => {
 	it('leaves a blank cell blank', () => {
 		expect(new MoneyValueFieldRenderer().renderRaw(null)).toBe('');
 	});
+
+	it('shows a blank amount as 0 when asked to', () => {
+		const node = new MoneyValueFieldRenderer(undefined, true).renderRaw(null) as Element<MoneyProps>;
+		expect(node.type).toBe(MoneyRenderer);
+		expect(node.props.rawValue).toBe(0);
+	});
 });
 
 describe('EnumFieldRenderer', () => {
