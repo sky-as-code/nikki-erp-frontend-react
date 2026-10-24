@@ -2,6 +2,7 @@ import { ActionIcon, Anchor, Group, Stack, Text, Title } from '@mantine/core';
 import { Button } from '@nikkierp/ui/components';
 import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import { ShortcutSequence } from '@nikkierp/ui/shortcuts';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconChevronDown, IconChevronRight, IconDeviceFloppy } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -92,7 +93,7 @@ export function ResourceCreateSaveBar(): React.ReactNode {
 	const isLoading = formRuntime?.isLoading ?? false;
 
 	return (
-		<Group gap='xs' align='center' className={clsx('sticky top-0 py-4', classes.bgBodyColor)}>
+		<CreateBar>
 			<Button
 				variant='filled'
 				leftSection={<IconDeviceFloppy size={16} />}
@@ -107,6 +108,19 @@ export function ResourceCreateSaveBar(): React.ReactNode {
 			>
 				{t('action.save')}
 			</Button>
+		</CreateBar>
+	);
+}
+
+/**
+ * The sticky row a create form's Save sits in. Its buttons are numbered `Alt+Shift+n` like the
+ * update page's action bar, so Save is `Alt+Shift+1`; the collapse toggle is no `Button` and
+ * takes no number.
+ */
+function CreateBar({ children }: { children: React.ReactNode }): React.ReactNode {
+	return (
+		<Group gap='xs' align='center' className={clsx('sticky top-0', classes.createBar, classes.bgBodyColor)}>
+			<ShortcutSequence prefix='Shift+' max={9}>{children}</ShortcutSequence>
 		</Group>
 	);
 }
@@ -126,7 +140,7 @@ export function ResourceCreateActionBar({
 	const createLock = useCreateLock();
 	const tid = useResourceDetailTestAttrs();
 	return (
-		<Group gap='xs' align='center' className={clsx('sticky top-0 py-4', classes.bgBodyColor)}>
+		<CreateBar>
 			<ActionIcon
 				variant='subtle' size='sm' onClick={onToggleCollapse} aria-label='Toggle own properties'
 				{...tid('toggleOwnProperties')}
@@ -147,7 +161,7 @@ export function ResourceCreateActionBar({
 			>
 				{t('action.save')}
 			</Button>
-		</Group>
+		</CreateBar>
 	);
 }
 

@@ -99,6 +99,7 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 				allowedViewModes={allowedViewModes}
 				{...listRowUpdateProps(params)}
 				editableFields={params.editableFields}
+				enableHotKeys={params.enableHotKeys}
 				onRefresh={search.refresh}
 				translationNs={params.translationNs}
 				translateFieldName={translateFieldName}

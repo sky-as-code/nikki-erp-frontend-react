@@ -1,0 +1,8 @@
+/*
+ * Density-aware (see the Shell's `styles/density.css`); the fallbacks are the spacious values, the
+ * `p-4` and `mb='0.5rem'` every section spelled out before, for where the Shell's tokens are not loaded.
+ */
+.sectionCard {
+	padding: var(--nikki-section-padding, 1rem);
+	margin-bottom: var(--nikki-section-gap, 0.5rem);
+}

@@ -10,19 +10,24 @@ import { Input } from '../Input';
 import type { DataTableContextValue } from './DataTableContext';
 
 
-/** The prev/next pair around the page box, reading `[<] [1]/10 [>]`. */
+/**
+ * The prev/next pair around the page box, reading `[<] [1]/10 [>]`; `Alt+←`, `Alt+P`, `Alt+→` unless
+ * the table's `enableHotKeys` is off.
+ */
 export function Pagination(): React.ReactNode {
 	const context = useDataTableContext();
 	const t = useTranslate('common');
 	const searchData = context.tableSearchData;
 	const totalPages = countPages(searchData.total, searchData.size);
 	const paginationState = usePaginationState(context, totalPages);
+	const hotKey = (spec: string) => (context.settings.enableHotKeys ? spec : undefined);
 
 	return (
 		<Group gap='xs' justify='flex-end' className='flex-grow-0'>
 			<Button
 				onClick={paginationState.onGoPrev}
 				disabled={searchData.page <= 0}
+				shortcut={hotKey('ArrowLeft')}
 				aria-label={t('datatable.previousPage')}
 				{...context.tid.pagePrev()}
 			>
@@ -40,6 +45,7 @@ export function Pagination(): React.ReactNode {
 				}}
 				w={50} classNames={{ input: 'text-center' }}
 				type='number'
+				shortcut={hotKey('P')}
 				{...context.tid.pageInput()}
 			/>
 			<Text size='sm'>/</Text>
@@ -47,6 +53,7 @@ export function Pagination(): React.ReactNode {
 			<Button
 				onClick={paginationState.onGoNext}
 				disabled={searchData.page >= totalPages - 1}
+				shortcut={hotKey('ArrowRight')}
 				aria-label={t('datatable.nextPage')}
 				{...context.tid.pageNext()}
 			>

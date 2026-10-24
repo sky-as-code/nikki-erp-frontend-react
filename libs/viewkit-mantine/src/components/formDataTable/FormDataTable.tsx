@@ -10,6 +10,7 @@ import {
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { useTableRelatedSchemas } from '../../data/useTableFieldLabels';
+import { useDefaultTableHotKeys } from '../../pages/resourceSplitView/splitViewContext';
 import { resourceTestIdPrefix } from '../../testIds';
 import { useResourceFormView } from '../resourceFormViewContext';
 
@@ -39,6 +40,11 @@ export type FormDataTableProps = ExcelDataTableRowWriteProps & ExcelDataTableRow
 	/** Puts the column settings button in the filler header; off by default. */
 	enableSettings?: boolean,
 	indexColumnVisible?: boolean,
+	/**
+	 * Off to keep the pagination free of `Alt+P`/`Alt+←`/`Alt+→`. Defaults to on, except in a split
+	 * view's detail pane, where the list beside it owns those keys.
+	 */
+	enableHotKeys?: boolean,
 	selectionMode?: SelectionMode,
 	onSelectionChange?: (selected: SearchItem[]) => void,
 	translationNs?: string,
@@ -78,6 +84,7 @@ function ScopedFormDataTable(props: FormDataTableProps): React.ReactNode {
 		[searchData, transformItems],
 	);
 	const testId = resourceTestIdPrefix({ testId: props.testId, schemaName, part: 'Table' });
+	const defaultHotKeys = useDefaultTableHotKeys();
 
 	if (search.refused) {
 		return <InsufficientPermissionContent missing={search.refused} />;
@@ -89,6 +96,7 @@ function ScopedFormDataTable(props: FormDataTableProps): React.ReactNode {
 		<ExcelDataTable.Provider
 			{...providerProps}
 			updateMode={updateMode}
+			enableHotKeys={props.enableHotKeys ?? defaultHotKeys}
 			testId={testId}
 			tableName={schemaName}
 			modelSchema={pack.modelSchema}
@@ -117,10 +125,13 @@ type FormDataTableLayoutProps = Pick<FormDataTableProps, 'enableSettings' | 'fil
 function FormDataTableLayout({
 	paginated, enableSettings, fillerColumnMinWidth,
 }: FormDataTableLayoutProps): React.ReactNode {
-	const pagination = paginated ? <ExcelDataTable.Toolbar right={<ExcelDataTable.Pagination />} /> : null;
+	// The keys stay on the top copy only: one key held by two buttons shows two badges.
+	const pagination = (hotKeys: boolean) => (paginated
+		? <ExcelDataTable.Toolbar right={<ExcelDataTable.Pagination enableHotKeys={hotKeys ? undefined : false} />} />
+		: null);
 	return (
 		<Stack gap='xs'>
-			{pagination}
+			{pagination(true)}
 			<div>
 				<ExcelDataTable.TableHeader
 					enableColumnFilters={false}
@@ -129,7 +140,7 @@ function FormDataTableLayout({
 				/>
 				<ExcelDataTable.Table />
 			</div>
-			{pagination}
+			{pagination(false)}
 		</Stack>
 	);
 }

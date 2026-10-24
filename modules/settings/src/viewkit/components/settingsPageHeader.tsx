@@ -57,7 +57,6 @@ function SettingsSaveAction(): React.ReactNode {
 		<>
 			<Button
 				variant='filled'
-				size='compact-md'
 				leftSection={<IconDeviceFloppy size={16} />}
 				onClick={requestSave}
 				disabled={!saveState?.dirty || saveState.saving}

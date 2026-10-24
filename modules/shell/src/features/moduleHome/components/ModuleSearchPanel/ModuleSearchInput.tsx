@@ -1,6 +1,7 @@
 import { createTheme, Input, Stack, TextInput } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useTranslate } from '@nikkierp/ui/i18n';
+import { toAriaKeyShortcuts, useShortcut } from '@nikkierp/ui/shortcuts';
 import { SyncedMantineProvider } from '@nikkierp/ui/theme';
 import { IconSearch } from '@tabler/icons-react';
 import { FC } from 'react';
@@ -10,6 +11,7 @@ import { useModuleSearchInput } from '../../hooks/useModuleSearchInput';
 
 
 const TEST_ID = 'shell.moduleSearch';
+const SEARCH_SHORTCUT = '/';
 
 
 type ModuleSearchInputProps = {
@@ -47,6 +49,7 @@ export const ModuleSearchInput: FC<ModuleSearchInputProps> = ({
 		handleFocus,
 		handleBlur,
 	} = useModuleSearchInput({ searchInputValue, onSearchChange, onSearchClear });
+	useShortcut(inputRef, SEARCH_SHORTCUT, { mode: 'focus' });
 
 	const ClearButtonWrapper = () => (
 		<Stack justify='center' align='center'>
@@ -61,9 +64,9 @@ export const ModuleSearchInput: FC<ModuleSearchInputProps> = ({
 		<SyncedMantineProvider theme={theme}>
 			<TextInput
 				ref={inputRef}
-				placeholder={placeholder ?? `${translate('search.placeholder')} (Ctrl + K)`}
+				placeholder={placeholder ?? translate('search.placeholder')}
+				aria-keyshortcuts={toAriaKeyShortcuts(SEARCH_SHORTCUT)}
 				flex={1}
-				size='sm'
 				w={'100%'}
 				radius={'md'}
 				value={searchInputValue}

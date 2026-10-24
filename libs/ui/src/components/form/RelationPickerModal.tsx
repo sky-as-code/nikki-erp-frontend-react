@@ -1,4 +1,4 @@
-import { Button, Group, Modal, Stack } from '@mantine/core';
+import { Button, Group, Stack } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
@@ -8,6 +8,7 @@ import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
 import { ExcelDataTable, mergeSearchGraphs } from '../ExcelDataTable';
 import { LoadingState } from '../Loading';
+import { Modal } from '../Modal/Modal';
 
 import type { SearchData, SearchItem, SelectionMode } from '../ExcelDataTable';
 

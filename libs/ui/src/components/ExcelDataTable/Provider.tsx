@@ -66,6 +66,12 @@ export type ExcelDataTableProviderProps = ExcelDataTableRowWriteProps & ExcelDat
 	emptyMessage?: string,
 	/** Off to hide the row-number column and its select-all; defaults to shown. */
 	indexColumnVisible?: boolean,
+	/**
+	 * Off to keep the filter toggle (`Alt+/`) and the pagination (`Alt+P`, `Alt+←`/`Alt+→`) free of
+	 * shortcuts; defaults to on. A page showing several tables leaves it on for the one that owns
+	 * those keys only, since two registrations of one key make the newest win.
+	 */
+	enableHotKeys?: boolean,
 	/** Rows selected once the first page loads, e.g. a picker's current value. Read on mount only. */
 	initialSelectedIds?: RowId[],
 	translationNs?: string,
@@ -149,6 +155,7 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		settings,
 		filterPane,
 		indexColumnVisible: props.indexColumnVisible ?? true,
+		enableHotKeys: props.enableHotKeys ?? true,
 		fields,
 		columnWidths,
 		scrollSync,
@@ -166,12 +173,10 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		scopeId,
 		emptyMessage,
 	}), [
-		tableName, modelSchema, props.relatedSchemas, data, isLoading, isCompact, container.setWidth,
-		searchRequest,
+		tableName, modelSchema, props.relatedSchemas, data, isLoading, isCompact, container.setWidth, searchRequest,
 		setSearchRequest, filters, applyFilters, selection, editing, viewMode, setViewMode, settings,
-		filterPane, fields, columnWidths, props.indexColumnVisible, props.updateCommand, rows, features,
-		props.onRefresh,
-		props.translationNs,
+		filterPane, fields, columnWidths, props.indexColumnVisible, props.enableHotKeys, props.updateCommand,
+		rows, features, props.onRefresh, props.translationNs,
 		props.translateFieldName, schemaFieldName, props.buildLinkHref, props.fieldRenderers, tid, scopeId,
 		emptyMessage,
 	]);

@@ -20,7 +20,7 @@ import type { IEventBus } from '@nikkierp/common/eventBus';
 const SETTINGS_NS = 'settings';
 
 /**
- * Shell-owned commands for the copy of theme/language the chrome actually renders from.
+ * Shell-owned commands for the copy of theme/density/language the chrome actually renders from.
  *
  * Restated as literals for the same reason the settings ids are: this file runs inside whichever
  * module owns the pane, and a module cannot import the Shell.
@@ -39,8 +39,9 @@ const SHELL_SET_LOCAL_SETTINGS = 'shell.user_context.set_local_settings';
 const SHELL_LOCAL_SETTINGS_CHANGED = 'shell:local_settings:changed';
 
 /** Settings whose stored value the Shell mirrors locally, keyed by the name the API uses. */
-const SHELL_MIRRORED_SETTINGS: Record<string, 'themeMode' | 'languageCode'> = {
+const SHELL_MIRRORED_SETTINGS: Record<string, 'themeMode' | 'density' | 'languageCode'> = {
 	theme_mode: 'themeMode',
+	density: 'density',
 	language: 'languageCode',
 };
 
@@ -80,7 +81,6 @@ export function SettingsSaveBar({ moduleKey, onSaved, standalone }: SettingsSave
 		<Group justify='flex-start' gap='md'>
 			<Button
 				variant='filled'
-				size='compact-md'
 				leftSection={<IconDeviceFloppy size={16} />}
 				onClick={() => void save.run()}
 				disabled={save.dirtyCount === 0 || save.isSaving}
@@ -179,10 +179,10 @@ function useSaveBusBridge(moduleKey: string, save: SettingsSave, lock: { locked:
 
 
 /**
- * Pushes a just-saved theme or language into the Shell's own copy.
+ * Pushes a just-saved theme, density or language into the Shell's own copy.
  *
  * Without this the chrome keeps rendering the previous theme until a reload: the Shell mirrors
- * these two values at boot from `v1/iam/me/context` and has no reason to re-read them when
+ * these values at boot from `v1/iam/me/context` and has no reason to re-read them when
  * another module writes a setting.
  *
  * The whole `LocalSettings` object is sent, not just the changed key -- the command replaces the

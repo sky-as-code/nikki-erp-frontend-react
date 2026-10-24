@@ -1,10 +1,11 @@
-import { Collapse, Modal } from '@mantine/core';
+import { Collapse } from '@mantine/core';
 import React from 'react';
 
 import { useExcelDataTableContext } from './context';
 import { FilterPanelView } from './filter/FilterPanelView';
 import { useEnumValueLabel } from './useEnumValueLabel';
 import { useTranslate } from '../../i18n';
+import { Modal } from '../Modal/Modal';
 
 import type { FilterTree } from './filter/filterTree';
 

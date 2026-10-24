@@ -1,6 +1,6 @@
-import { Group, Modal, Stack, Title } from '@mantine/core';
+import { Group, Stack, Title } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { Button } from '@nikkierp/ui/components';
+import { Button, Modal } from '@nikkierp/ui/components';
 import { AutoField } from '@nikkierp/ui/components/form';
 import { AdhocFormProvider, FormStyleProvider, FormTestIdProvider } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';

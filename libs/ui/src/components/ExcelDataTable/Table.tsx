@@ -9,7 +9,9 @@ import classes from './ExcelDataTable.module.css';
 import { ManualSortArea, ManualSortRow } from './manualSort/ManualSort';
 import { NewRow } from './NewRow';
 import { EditingRow } from './RowEditor';
-import { TableGeometryColGroup, useBodyScrollSync, useColumnCount, useTableGeometry } from './tableLayout';
+import {
+	tableDensityVars, TableGeometryColGroup, useBodyScrollSync, useColumnCount, useTableGeometry,
+} from './tableLayout';
 import { tableScopeAttrs } from './tableScope';
 import { rowIdOf } from './types';
 import { TableScopeRow } from './updateScope/TableScopeRow';
@@ -47,7 +49,7 @@ export function Table({ className, emptyText }: TableProps) {
 			{...tid.attrs('body')}
 		>
 			<ManualSortArea>
-				<MantineTable striped='even' highlightOnHover style={geometry.style}>
+				<MantineTable striped='even' highlightOnHover style={geometry.style} vars={tableDensityVars}>
 					<TableGeometryColGroup geometry={geometry} />
 					<MantineTable.Tbody>
 						{data.items.map((item, rowIndex) => (

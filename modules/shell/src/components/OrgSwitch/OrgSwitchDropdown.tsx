@@ -78,6 +78,7 @@ export function OrgSwitchDropdown(props: OrgSwitchDropdownProps): React.ReactNod
 			value={activeOrgId ?? undefined}
 			onChange={handleOrgChange}
 			testId='shell.orgSwitch'
+			shortcut='O'
 		/>
 	);
 };

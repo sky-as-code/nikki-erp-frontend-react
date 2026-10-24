@@ -5,11 +5,12 @@ import {
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications, notifications as notif } from '@mantine/notifications';
 import { LockedFeatureProvider } from '@nikkierp/ui/components';
+import { ShortcutOverlay } from '@nikkierp/ui/shortcuts';
 import { SyncedMantineProvider, usePaperBgColor } from '@nikkierp/ui/theme';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { shellEventBus } from '../eventBus';
-import { LOCAL_SETTINGS_CHANGED_EVENT, useLocalSettings } from '../userContext';
+import { DENSITY_ATTRIBUTE, LOCAL_SETTINGS_CHANGED_EVENT, useLocalSettings } from '../userContext';
 
 
 export type UIProvidersProps = React.PropsWithChildren;
@@ -19,6 +20,10 @@ export const UIProviders: React.FC<UIProvidersProps> = ({ children }) => {
 		<DirectionProvider>
 			<SyncedMantineProvider theme={{} as any}>
 				<ApplyStoredTheme />
+				<ApplyStoredDensity />
+				{/* Every micro-app renders in this React root (SHARED) and the registry is a
+					global singleton, so one overlay draws the badges for the whole app. */}
+				<ShortcutOverlay />
 				<Notifications
 					position='bottom-right'
 					autoClose={3_000}
@@ -119,6 +124,36 @@ function ApplyStoredTheme(): null {
 		if (readStoredColorScheme() === storedTheme) return;
 		setColorScheme(storedTheme);
 	}, [storedTheme, signal, setColorScheme]);
+
+	return null;
+}
+
+/**
+ * Applies the user's stored `density` as `<html data-nikki-density>`, which `density.css` reads.
+ *
+ * Renders nothing. Like `ApplyStoredTheme` it reacts to *changes* in the setting, and follows
+ * `LOCAL_SETTINGS_CHANGED_EVENT` for writes made from another React tree (a Settings pane). The
+ * attribute lives on `<html>` rather than a provider so that portals -- menus, modals, the
+ * shortcut overlay -- pick the tokens up too.
+ */
+function ApplyStoredDensity(): null {
+	const storedDensity = useLocalSettings()?.density;
+	const [signal, setSignal] = useState(0);
+	const appliedDensity = useRef<string | null>(null);
+
+	useEffect(() => {
+		return shellEventBus.subscribe(
+			LOCAL_SETTINGS_CHANGED_EVENT,
+			() => setSignal(n => n + 1),
+		);
+	}, []);
+
+	useEffect(() => {
+		if (!storedDensity) return;
+		if (appliedDensity.current === storedDensity) return;
+		appliedDensity.current = storedDensity;
+		document.documentElement.setAttribute(DENSITY_ATTRIBUTE, storedDensity);
+	}, [storedDensity, signal]);
 
 	return null;
 }

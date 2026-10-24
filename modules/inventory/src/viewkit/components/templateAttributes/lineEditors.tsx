@@ -1,6 +1,8 @@
 import { Badge, MultiSelect } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { DEFAULT_MAX_OPTIONS, limitOptions, RelationPickerModal, SearchableSelect } from '@nikkierp/ui/components';
+import {
+	DEFAULT_MAX_OPTIONS, limitOptions, RelationPickerModal, SearchableSelect, withPillsInputDensity,
+} from '@nikkierp/ui/components';
 import React from 'react';
 import { useController, useWatch } from 'react-hook-form';
 
@@ -103,6 +105,9 @@ function AttributeEditor({ field, form }: NewRowFieldEditorProps): React.ReactNo
 	);
 }
 
+/** No `size`: the row's inline-controls scope sizes the box, like every other input in it. */
+const VALUES_INPUT_CLASS_NAMES = withPillsInputDensity({});
+
 /** Label matches, at most {@link DEFAULT_MAX_OPTIONS} of them, and "Browse all…" always last. */
 const filterValueOptions: OptionsFilter = ({ options, search }) => {
 	const term = search.toLowerCase().trim();
@@ -143,7 +148,7 @@ function ValuesEditor({ field, form }: NewRowFieldEditorProps): React.ReactNode 
 	return (
 		<KeyBoundary isPickerOpen={isPickerOpen}>
 			<MultiSelect
-				size='xs'
+				classNames={VALUES_INPUT_CLASS_NAMES}
 				searchable
 				data={data}
 				value={selectedIds}

@@ -1,6 +1,8 @@
-import { Button, Group, Modal, Stack, Text, Textarea, Title } from '@mantine/core';
+import { Button, Group, Stack, Text, Textarea, Title } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
+
+import { Modal } from '../Modal/Modal';
 
 
 export type MultiLangInputModalProps = {

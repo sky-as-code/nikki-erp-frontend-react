@@ -1,7 +1,9 @@
-import { Button, Group, Modal, ModalProps, Stack, Text } from '@mantine/core';
+import { Button, Group, ModalProps, Stack, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { Modal } from './Modal';
 
 
 export interface ConfirmModalProps {

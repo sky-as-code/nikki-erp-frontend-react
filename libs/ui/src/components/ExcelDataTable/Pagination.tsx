@@ -10,27 +10,23 @@ import { Input } from '../Input';
 import type { ExcelDataTableContextValue } from './context';
 
 
-/** `[<] [1]/10 [>]`; on a compact screen only the Prev/Next pair, as one button group. */
-export function Pagination() {
+/**
+ * `[<] [1]/10 [>]`; on a compact screen only the Prev/Next pair, as one button group.
+ *
+ * `Alt+←`/`Alt+→` page and `Alt+P` focuses the page input. A step button disabled at a bound still
+ * holds its key, so `Alt+←` on the first page does nothing rather than navigating the browser back.
+ * None of these keys register while the Provider's `enableHotKeys` is off, or this part's own
+ * `enableHotKeys` is: a table showing its pagination above and below keeps the keys on one copy.
+ */
+export function Pagination(props: { enableHotKeys?: boolean }) {
 	const context = useExcelDataTableContext();
-	const t = useTranslate('common');
 	const { data, isCompact, tid } = context;
+	const enableHotKeys = props.enableHotKeys ?? context.enableHotKeys;
 	const totalPages = countPages(data.total, data.size);
 	const state = usePaginationState(context, totalPages);
-	const prev = (
-		<Button onClick={state.onGoPrev} disabled={data.page <= 0} aria-label={t('datatable.previousPage')} {...tid.pagePrev()}>
-			<IconChevronLeft size={16} />
-		</Button>
-	);
+	const prev = <StepButton direction='prev' onClick={state.onGoPrev} disabled={data.page <= 0} hotKey={enableHotKeys} />;
 	const next = (
-		<Button
-			onClick={state.onGoNext}
-			disabled={data.page >= totalPages - 1}
-			aria-label={t('datatable.nextPage')}
-			{...tid.pageNext()}
-		>
-			<IconChevronRight size={16} />
-		</Button>
+		<StepButton direction='next' onClick={state.onGoNext} disabled={data.page >= totalPages - 1} hotKey={enableHotKeys} />
 	);
 	if (isCompact) {
 		return <MantineButton.Group>{prev}{next}</MantineButton.Group>;
@@ -51,12 +47,33 @@ export function Pagination() {
 				w={50}
 				classNames={{ input: 'text-center' }}
 				type='number'
+				shortcut={enableHotKeys ? 'P' : undefined}
 				{...tid.pageInput()}
 			/>
 			<Text size='sm'>/</Text>
 			<Text size='sm'>{totalPages}</Text>
 			{next}
 		</Group>
+	);
+}
+
+type StepButtonProps = { direction: 'prev' | 'next', onClick: () => void, disabled: boolean, hotKey: boolean };
+
+function StepButton({ direction, onClick, disabled, hotKey }: StepButtonProps) {
+	const t = useTranslate('common');
+	const { tid } = useExcelDataTableContext();
+	const isPrev = direction === 'prev';
+	const shortcut = isPrev ? 'ArrowLeft' : 'ArrowRight';
+	return (
+		<Button
+			onClick={onClick}
+			disabled={disabled}
+			shortcut={hotKey ? shortcut : undefined}
+			aria-label={t(isPrev ? 'datatable.previousPage' : 'datatable.nextPage')}
+			{...(isPrev ? tid.pagePrev() : tid.pageNext())}
+		>
+			{isPrev ? <IconChevronLeft size={16} /> : <IconChevronRight size={16} />}
+		</Button>
 	);
 }
 

@@ -1,4 +1,4 @@
-import { Alert, Badge, Group } from '@mantine/core';
+import { Alert, Badge, Divider, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { translateClientError } from '@nikkierp/common/types';
@@ -46,7 +46,6 @@ export function CreateActionButton({ disabled = false }: { disabled?: boolean })
 			lockedMissing={lock.missing}
 			leftSection={<IconPlus size={16} />}
 			variant='outline'
-			size='compact-md'
 			{...tid('action', 'create')}
 		>
 			{t('action.create')}
@@ -55,6 +54,8 @@ export function CreateActionButton({ disabled = false }: { disabled?: boolean })
 }
 
 export type ResourceActionBarProps = {
+	/** The Create button, or nothing when the resource cannot be created. Shown in read mode only. */
+	createAction?: React.ReactNode,
 	onSaveClick: () => void,
 	/** Discards edits and leaves update mode. Defaults to `setUpdateMode(false)` alone. */
 	onCancel?: () => void,
@@ -64,29 +65,54 @@ export type ResourceActionBarProps = {
 };
 
 /**
- * The page-level bar of Update/Save/Cancel, contextual actions, overflow menu, and status flow —
- * rendered once in the header next to Create, not inside the (possibly collapsed) form section.
+ * The page-level action bar, rendered once in the header rather than inside the (possibly
+ * collapsed) form section.
+ *
+ * Read mode: Create, a separator, Update, contextual actions, overflow menu, then the status flow.
+ * Update mode: Discard and Save alone, so nothing else can be started over unsaved edits.
  */
 export function ResourceActionBar({
-	onSaveClick, onCancel, isLoading, updateMode, setUpdateMode,
+	createAction, onSaveClick, onCancel, isLoading, updateMode, setUpdateMode,
 }: ResourceActionBarProps): React.ReactNode {
+	const { commands } = useResourceUpdateContext();
+	const primaryActions = (
+		<PrimaryActionButtons
+			updateMode={updateMode}
+			setUpdateMode={setUpdateMode}
+			onCancel={onCancel}
+			updateCommand={commands.update}
+			onSaveClick={onSaveClick}
+			isLoading={isLoading}
+		/>
+	);
+
+	if (updateMode) {
+		return <Group gap='xs' align='center' className='flex-1'>{primaryActions}</Group>;
+	}
+	return (
+		<ReadModeActionBar createAction={createAction} primaryActions={primaryActions} isLoading={isLoading} />
+	);
+}
+
+function ReadModeActionBar({ createAction, primaryActions, isLoading }: {
+	createAction?: React.ReactNode,
+	primaryActions: React.ReactNode,
+	isLoading: boolean,
+}): React.ReactNode {
 	const { allStatuses, currentStatus, contextualActions, commands, resource } = useResourceUpdateContext();
 	const curStatusField = currentStatus?.schemaField;
 	const status = curStatusField ? resource?.[curStatusField] : null;
 	const hasVisibleContextualActions = resource != null && hasMatchingExtraAction(contextualActions, resource);
-	const hasOverflowMenu = Boolean(commands.delete || commands.archive);
+	const hasOverflowMenu = Boolean(commands.delete || commands.archive) && resource != null;
+	// The status flow sits apart on the right, so it does not count as something the separator divides.
+	const hasActionsAfterCreate = Boolean(commands.update) || hasVisibleContextualActions || hasOverflowMenu;
 
 	return (
 		<Group justify='space-between' wrap='wrap' className='flex-1'>
 			<Group gap='xs' align='center'>
-				<PrimaryActionButtons
-					updateMode={updateMode}
-					setUpdateMode={setUpdateMode}
-					onCancel={onCancel}
-					updateCommand={commands.update}
-					onSaveClick={onSaveClick}
-					isLoading={isLoading}
-				/>
+				{createAction}
+				{createAction && hasActionsAfterCreate ? <Divider orientation='vertical' my={4} /> : null}
+				{primaryActions}
 				{hasVisibleContextualActions ? (
 					<ResourceDetailExtraActionButtons
 						contextualActions={contextualActions}
@@ -94,12 +120,7 @@ export function ResourceActionBar({
 						disabled={isLoading}
 					/>
 				) : null}
-				{hasOverflowMenu && resource != null ? (
-					<ResourceDetailOverflowMenu
-						resource={resource}
-						disabled={isLoading}
-					/>
-				) : null}
+				{hasOverflowMenu ? <ResourceDetailOverflowMenu resource={resource} disabled={isLoading} /> : null}
 			</Group>
 			<StatusFlow statuses={allStatuses ?? []} current={status as string | null} />
 		</Group>
@@ -136,16 +157,14 @@ function PrimaryActionButtons({
 			<>
 				<Button
 					variant='outline'
-					size='compact-md'
 					onClick={() => (onCancel ? onCancel() : setUpdateMode(false))}
 					leftSection={<IconX size={16} />}
 					{...tid('action', 'cancel')}
 				>
-					{t('action.cancel')}
+					{t('action.discard')}
 				</Button>
 				<Button
 					variant='filled'
-					size='compact-md'
 					leftSection={<IconDeviceFloppy size={16} />}
 					onClick={onSaveClick}
 					disabled={isLoading}
@@ -168,7 +187,6 @@ function PrimaryActionButtons({
 			lockedMissing={updateLock.missing}
 			leftSection={<IconPencil size={16} />}
 			variant='filled'
-			size='compact-md'
 			{...tid('action', 'update')}
 		>
 			{t('action.update')}
@@ -260,7 +278,6 @@ function ResourceDetailLinkActionButton({
 			component={Link}
 			to={href}
 			variant='outline'
-			size='compact-md'
 			disabled={disabled}
 			locked={lock.locked}
 			lockedMissing={lock.missing}
@@ -321,7 +338,6 @@ function ResourceDetailCommandActionButton({
 		<>
 			<Button
 				variant='outline'
-				size='compact-md'
 				disabled={disabled || command.isPending}
 				loading={command.isPending}
 				locked={lock.locked}

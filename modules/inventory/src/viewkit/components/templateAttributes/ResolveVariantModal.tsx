@@ -1,6 +1,6 @@
-import { Alert, Group, Modal, Stack, Text } from '@mantine/core';
+import { Alert, Group, Stack, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { Button, LinkButton, Select } from '@nikkierp/ui/components';
+import { Button, LinkButton, Modal, Select } from '@nikkierp/ui/components';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
 import { useActionLock, useResourceBaseHref, useResourceFormView } from '@nikkierp/viewkit-mantine';
@@ -84,7 +84,6 @@ function ResolveVariantButton({ label, ...props }: ResolveProps & ActionProps): 
 		<>
 			<Button
 				variant='outline'
-				size='compact-md'
 				locked={lock.locked}
 				lockedMissing={lock.missing}
 				disabled={lines.length === 0}

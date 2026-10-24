@@ -25,6 +25,7 @@ export function buildEssentialSettingsNodes(): ComponentNode[] {
 			translationNs: c.ESSENTIAL_MODULE,
 			children: [
 				settingsItemNode({ name: 'theme_mode', labelKey: 'settings.themeMode' }),
+				settingsItemNode({ name: 'density', labelKey: 'settings.density' }),
 				settingsItemNode({ name: 'language', labelKey: 'settings.language' }),
 				settingsItemNode({ name: 'timezone', labelKey: 'settings.timezone' }),
 			],

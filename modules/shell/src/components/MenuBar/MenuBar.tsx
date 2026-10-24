@@ -5,6 +5,9 @@ import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { useHasEntitlement, useLockedItemProps } from '@nikkierp/ui/components';
 import { TranslateFn, useTranslate } from '@nikkierp/ui/i18n';
 import { MenuItem } from '@nikkierp/ui/menu';
+import {
+	ShortcutSequence, type ShortcutSpec, toAriaKeyShortcuts, useSequenceShortcut, useShortcut,
+} from '@nikkierp/ui/shortcuts';
 import { IconChevronDown, IconDots } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
@@ -83,43 +86,49 @@ function HorizontalMenuBar({ items, currentPath, pathPrefix, getPath, t }: Horiz
 
 	return (
 		<div ref={containerRef} className={classes.horizontalBar}>
-			<Group gap='xs' wrap='nowrap'>
-				{items.slice(0, visibleCount).map((item: MenuItem) => (
-					item.items ? (
-						<NavMenu
-							key={item.labelKey}
-							item={item}
+			{/* Only the shown row is numbered. The measuring copy stays outside the sequence, and is
+				`aria-hidden` and `inert` besides, so its buttons never take a number. */}
+			<ShortcutSequence prefix='' max={9}>
+				<Group gap='xs' wrap='nowrap'>
+					{items.slice(0, visibleCount).map((item: MenuItem) => (
+						item.items ? (
+							<NavMenu
+								key={item.labelKey}
+								item={item}
+								currentPath={currentPath}
+								pathPrefix={pathPrefix}
+								getPath={getPath}
+								t={t}
+							/>
+						) : (
+							<HorizontalMenuItem
+								key={item.labelKey}
+								item={item}
+								isActive={isPathActiveWithPrefix(item.link ?? '/', currentPath, pathPrefix)}
+								to={getPath(item.link ?? '/')}
+								t={t}
+							/>
+						)
+					))}
+					{visibleCount < items.length && (
+						<OverflowMenu
+							items={items.slice(visibleCount)}
 							currentPath={currentPath}
 							pathPrefix={pathPrefix}
 							getPath={getPath}
 							t={t}
 						/>
-					) : (
-						<HorizontalMenuItem
-							key={item.labelKey}
-							item={item}
-							isActive={isPathActiveWithPrefix(item.link ?? '/', currentPath, pathPrefix)}
-							to={getPath(item.link ?? '/')}
-							t={t}
-						/>
-					)
-				))}
-				{visibleCount < items.length && (
-					<OverflowMenu
-						items={items.slice(visibleCount)}
-						currentPath={currentPath}
-						pathPrefix={pathPrefix}
-						getPath={getPath}
-						t={t}
-					/>
-				)}
-			</Group>
+					)}
+				</Group>
+			</ShortcutSequence>
 			<MenuMeasureRow items={items} buttonProps={measureProps} t={t} measureRef={measureRef} />
 		</div>
 	);
 }
 
 // Horizontal Menu Components
+const OVERFLOW_SHORTCUT: ShortcutSpec = '0';
+
 type OverflowMenuProps = {
 	items: MenuItem[],
 	currentPath: string,
@@ -138,11 +147,20 @@ function OverflowMenu({
 	const hasActiveChild = items.some(subItem =>
 		hasActiveNestedItemWithPrefix(subItem, currentPath, pathPrefix),
 	);
+	// A fixed key rather than a sequence number: the entries before it are renumbered as the bar
+	// resizes, and `…` should stay on the same key whatever the width.
+	const overflowRef = React.useRef<HTMLButtonElement>(null);
+	useShortcut(overflowRef, OVERFLOW_SHORTCUT, { mode: 'click' });
 
 	return (
 		<Menu position='bottom-start' trigger='click-hover'>
 			<Menu.Target>
-				<Button {...buttonProps(hasActiveChild, 'overflow')} rightSection={<IconChevronDown size={14} />}>
+				<Button
+					{...buttonProps(hasActiveChild, 'overflow')}
+					ref={overflowRef}
+					aria-keyshortcuts={toAriaKeyShortcuts(OVERFLOW_SHORTCUT)}
+					rightSection={<IconChevronDown size={14} />}
+				>
 					<IconDots size={16} />
 				</Button>
 			</Menu.Target>
@@ -183,10 +201,16 @@ function NavMenu({
 		)
 		: false;
 
+	const entryShortcut = useNumberedEntry<HTMLButtonElement>();
+
 	return (
 		<Menu position='bottom-start' trigger='click-hover'>
 			<Menu.Target>
-				<Button {...buttonProps(hasActiveChild, item.labelKey)} rightSection={<IconChevronDown size={14} />} >
+				<Button
+					{...buttonProps(hasActiveChild, item.labelKey)}
+					{...entryShortcut}
+					rightSection={<IconChevronDown size={14} />}
+				>
 					{t(item.labelKey)}
 				</Button>
 			</Menu.Target>
@@ -221,6 +245,8 @@ function HorizontalMenuItem({ item, isActive, to, t }: {
 	const isLocked = !decision.isPending && !decision.allowed
 		&& (item.requiredEntitlements?.length ?? 0) > 0;
 	const lockedProps = useLockedItemProps(isLocked, decision.missing);
+	// A locked entry keeps its number: the shortcut clicks it, and the click shows the refusal.
+	const entryShortcut = useNumberedEntry<HTMLAnchorElement>();
 
 	return (
 		<Button
@@ -230,10 +256,21 @@ function HorizontalMenuItem({ item, isActive, to, t }: {
 			component={Link}
 			to={to}
 			{...lockedProps}
+			{...entryShortcut}
 		>
 			{t(item.labelKey)}
 		</Button>
 	);
+}
+
+/**
+ * Joins the bar's sequence, so the shown top-level entries answer `Alt+1` … `Alt+9` in visual
+ * order. Entries pushed into the overflow menu unmount from the row and so lose their number.
+ */
+function useNumberedEntry<T extends HTMLElement>(): { ref: React.RefObject<T | null>, 'aria-keyshortcuts'?: string } {
+	const ref = React.useRef<T>(null);
+	const spec = useSequenceShortcut(ref, { mode: 'click' });
+	return { ref, 'aria-keyshortcuts': toAriaKeyShortcuts(spec) };
 }
 
 function MenuItemRenderer({

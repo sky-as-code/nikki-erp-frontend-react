@@ -10,7 +10,7 @@ import { ColumnFilterRow } from './filter/ColumnFilterRow';
 import { getFilterInputKind, isSortableFieldName } from './filter/filterModel';
 import { selectionStateOf } from './selectionModel';
 import {
-	TableGeometryColGroup, useColumnCount, useColumnResize, useHeaderScrollSync, useTableGeometry,
+	tableDensityVars, TableGeometryColGroup, useColumnCount, useColumnResize, useHeaderScrollSync, useTableGeometry,
 } from './tableLayout';
 import { tableScopeAttrs } from './tableScope';
 import { useEnumValueLabel } from './useEnumValueLabel';
@@ -50,7 +50,7 @@ export function TableHeader(props: TableHeaderProps) {
 	const columnCount = useColumnCount();
 	return (
 		<div ref={scrollerRef} className={clsx(classes.headerScroller, props.className)} {...tableScopeAttrs(scopeId)}>
-			<Table style={geometry.style}>
+			<Table style={geometry.style} vars={tableDensityVars}>
 				<TableGeometryColGroup geometry={geometry} />
 				<Table.Thead>
 					<HeaderLabelsRow

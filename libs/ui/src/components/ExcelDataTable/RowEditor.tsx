@@ -8,15 +8,15 @@ import { CellContent } from './cells/CellContent';
 import { useExcelDataTableContext } from './context';
 import { buildRowUpdatePayload, isRowEditableField, rowFormData } from './editModel';
 import classes from './ExcelDataTable.module.css';
+import { InlineRowScope } from './InlineRowScope';
 import { EmptySortHandleCell } from './manualSort/ManualSort';
 import { EditRowActions } from './rowActions';
 import { isPopupEnterForRow, readRowKey } from './rowKeys';
 import { RowLoading } from './RowLoading';
-import { ROW_SELECT_DEFAULTS } from './rowSelectDefaults';
 import { useRowUpdateWrite } from './rowUpdateWrite';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
 import { AutoField, CrudFormProvider } from '../form';
-import { SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
+import { INLINE_CONTROLS_ATTRS } from '../Input/inputDensity';
 
 import type { RowUpdateRefusal } from './editModel';
 import type { NewRowFieldEditor, RowId, SearchItem } from './types';
@@ -183,13 +183,14 @@ function EditingCells({ item, rowId, rowNumber, runtime, submit }: EditingCellsP
 	const rowRef = useFirstInputFocus(rowId);
 	const { onKeyDown, onKeyDownCapture } = useEditingRowKeys(disabled, save, editing.stop);
 	return (
-		<SelectDefaultsContext.Provider value={ROW_SELECT_DEFAULTS}>
+		<InlineRowScope>
 			<MantineTable.Tr
 				ref={rowRef}
 				tabIndex={-1}
 				onKeyDown={onKeyDown}
 				onKeyDownCapture={onKeyDownCapture}
 				aria-label={`Editing row ${rowNumber}`}
+				{...INLINE_CONTROLS_ATTRS}
 				{...tid.row(rowId)}
 			>
 				{indexColumnVisible ? (
@@ -227,7 +228,7 @@ function EditingCells({ item, rowId, rowNumber, runtime, submit }: EditingCellsP
 					<RowErrors errors={submit.errors.filter(error => !error.field)} />
 				</MantineTable.Td>
 			</MantineTable.Tr>
-		</SelectDefaultsContext.Provider>
+		</InlineRowScope>
 	);
 }
 

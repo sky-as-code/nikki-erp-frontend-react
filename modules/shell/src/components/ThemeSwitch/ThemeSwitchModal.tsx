@@ -1,13 +1,15 @@
-import { Flex, Modal, Text } from '@mantine/core';
+import { Divider, Flex, Stack, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
 import { useShellCommand } from '@nikkierp/shell/commandBus';
 import { useUIState } from '@nikkierp/shell/contexts';
-import { ThemeMode, useThemeMode } from '@nikkierp/shell/userContext';
-import { Button } from '@nikkierp/ui/components';
+import { Density, ThemeMode, useDensity, useThemeMode } from '@nikkierp/shell/userContext';
+import { Button, Modal } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
-import { IconBrightnessFilled, IconMoonStars, IconSun } from '@tabler/icons-react';
+import {
+	IconBaselineDensityMedium, IconBaselineDensitySmall, IconBrightnessFilled, IconMoonStars, IconSun,
+} from '@tabler/icons-react';
 import { forwardRef, useCallback, useImperativeHandle } from 'react';
 
 
@@ -24,6 +26,24 @@ const THEMES: { labelKey: string, value: ThemeMode, icon: React.ReactNode }[] = 
 	{ labelKey: 'theme.dark', value: 'dark', icon: <IconMoonStars size={30} /> },
 	{ labelKey: 'theme.auto', value: 'auto', icon: <IconBrightnessFilled size={30} /> },
 ];
+
+const DENSITIES: { labelKey: string, descriptionKey: string, value: Density, icon: React.ReactNode }[] = [
+	{
+		labelKey: 'density.spacious',
+		descriptionKey: 'density.spacious.description',
+		value: 'spacious',
+		icon: <IconBaselineDensityMedium size={30} />,
+	},
+	{
+		labelKey: 'density.compact',
+		descriptionKey: 'density.compact.description',
+		value: 'compact',
+		icon: <IconBaselineDensitySmall size={30} />,
+	},
+];
+
+/** Lets a tile's description wrap: Mantine keeps a button label on one line. */
+const WRAPPING_LABEL = { label: { whiteSpace: 'normal' } } as const;
 
 export const ThemeSwitchModal = forwardRef((props, ref) => {
 	const t = useTranslate('common');
@@ -45,9 +65,14 @@ export const ThemeSwitchModal = forwardRef((props, ref) => {
 					</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
-					<Flex justify='center' align='center' mih={150}>
-						<ThemeSwitcher/>
-					</Flex>
+					<Stack align='center' gap='md'>
+						<Flex justify='center' align='center' mih={100}>
+							<ThemeSwitcher/>
+						</Flex>
+						<Divider w='100%' />
+						<Text fw={700} ta='center'>{t('profile.density')}</Text>
+						<DensitySwitcher/>
+					</Stack>
 				</Modal.Body>
 			</Modal.Content>
 		</Modal.Root>
@@ -57,12 +82,12 @@ export const ThemeSwitchModal = forwardRef((props, ref) => {
 function ThemeSwitcher(): React.ReactNode {
 	const t = useTranslate('common');
 	const { themeMode, setThemeMode } = useThemeMode();
-	const persistThemeMode = usePersistThemeMode();
+	const persistSetting = usePersistEssentialSetting();
 
 	const handleSelect = (mode: ThemeMode) => {
 		if (mode === themeMode) return;
 		setThemeMode(mode);
-		void persistThemeMode(mode);
+		void persistSetting('theme_mode', mode, 'theme.saveFailed');
 	};
 
 	return (
@@ -85,30 +110,61 @@ function ThemeSwitcher(): React.ReactNode {
 	);
 }
 
+function DensitySwitcher(): React.ReactNode {
+	const t = useTranslate('common');
+	const { density, setDensity } = useDensity();
+	const persistSetting = usePersistEssentialSetting();
+
+	const handleSelect = (next: Density) => {
+		if (next === density) return;
+		setDensity(next);
+		void persistSetting('density', next, 'density.saveFailed');
+	};
+
+	return (
+		<Flex gap='md' justify='center' wrap='wrap'>
+			{DENSITIES.map((option) => (
+				<Button
+					key={option.value}
+					variant={option.value === density ? 'light' : 'default'}
+					h='auto' w={180} py='sm' px='sm' radius='sm'
+					styles={WRAPPING_LABEL}
+					aria-pressed={option.value === density}
+					onClick={() => handleSelect(option.value)}
+					{...testAttrs(TEST_ID, 'density', option.value)}
+				>
+					<Stack align='center' gap={4}>
+						{option.icon}
+						<Text size='sm' fw={700} ta='center'>{t(option.labelKey)}</Text>
+						<Text size='xs' c='dimmed' ta='center'>{t(option.descriptionKey)}</Text>
+					</Stack>
+				</Button>
+			))}
+		</Flex>
+	);
+}
+
 /**
- * Saves the choice as the user's `essential.theme_mode`, so it follows them to the next sign-in.
+ * Saves one of the user's `essential.*` settings, so the choice follows them to the next sign-in.
  *
  * The local choice is applied first and kept when the save fails -- for instance when a tenant
  * policy forbids a user override. It then lasts until the next sign-in brings the stored value.
  */
-function usePersistThemeMode(): (mode: ThemeMode) => Promise<void> {
+function usePersistEssentialSetting(): (name: string, value: string, failureKey: string) => Promise<void> {
 	const t = useTranslate('common');
 	const isAuthenticated = useIsAuthenticated();
 	const { notification } = useUIState();
 	const { publish } = useShellCommand(SETTINGS_SET_COMMAND);
 
-	return useCallback(async (themeMode: ThemeMode) => {
+	return useCallback(async (name: string, value: string, failureKey: string) => {
 		if (!isAuthenticated) return;
 		const response = await publish({
 			level: 'user',
 			moduleKey: 'essential',
-			items: [{ name: 'theme_mode', value: themeMode }],
+			items: [{ name, value }],
 		});
 		if (response.error != null || response.result?.clientErrors?.length) {
-			notification.showError(
-				t('theme.saveFailed'),
-				t('messages.error'),
-			);
+			notification.showError(t(failureKey), t('messages.error'));
 		}
 	}, [isAuthenticated, notification, publish, t]);
 }

@@ -2,24 +2,28 @@ import * as request from '@nikkierp/common/request';
 import { dispatchServiceMethod, storeAsyncMethod, storeService } from '@nikkierp/ui/appState/store';
 
 import {
-	GetUserContextResponse, LocalSettings, LOCAL_SETTINGS_STORAGE_KEY, SLICE_NAME, toUserContext, UserContext,
+	DEFAULT_LOCAL_SETTINGS, GetUserContextResponse, LocalSettings, LOCAL_SETTINGS_STORAGE_KEY, SLICE_NAME, toDensity,
+	toUserContext, UserContext,
 } from './types';
 import { shellStore } from '../appState/shellStore';
 
 /**
- * The theme/language the user last chose, restored from `localStorage` on boot.
+ * The theme/density/language the user last chose, restored from `localStorage` on boot.
  *
  * This is also what the sign-in page shows: the value survives sign-out on purpose.
  */
 export function loadSavedLocalSettings(): LocalSettings {
-	// `auto` rather than `light`: it is what the backend defaults to, and it defers to the device
-	// instead of overriding a user whose system is set to dark before their stored choice loads.
-	const fallback: LocalSettings = { languageCode: null, themeMode: 'auto' };
+	const fallback = DEFAULT_LOCAL_SETTINGS;
 	try {
 		const settingsStr = localStorage.getItem(LOCAL_SETTINGS_STORAGE_KEY);
 		if (!settingsStr) return fallback;
 		const saved = JSON.parse(atob(settingsStr)) as Partial<LocalSettings>;
-		return { languageCode: saved.languageCode ?? null, themeMode: saved.themeMode ?? 'auto' };
+		return {
+			languageCode: saved.languageCode ?? fallback.languageCode,
+			themeMode: saved.themeMode ?? fallback.themeMode,
+			// Narrowed: a value stored before density existed, or by an older build, has none.
+			density: toDensity(saved.density),
+		};
 	}
 	// A corrupt value or blocked storage must not take the whole Shell down at boot.
 	catch {
@@ -50,7 +54,7 @@ function buildInitialState() {
 @storeService(SLICE_NAME, shellStore, { initialState: buildInitialState() })
 export class UserContextService {
 	/**
-	 * Fetches the user context and mirrors the server's language/theme into local settings.
+	 * Fetches the user context and mirrors the server's language/theme/density into local settings.
 	 *
 	 * `setLocalSettings` is dispatched rather than called. `@storeService` installs bound
 	 * copies of the plain methods, so `this.setLocalSettings(...)` would write
@@ -65,6 +69,7 @@ export class UserContextService {
 		await dispatchServiceMethod(this.setLocalSettings, {
 			languageCode: userContext.accountSettings.language.isoCode,
 			themeMode: userContext.accountSettings.themeMode,
+			density: userContext.accountSettings.density,
 		});
 		return userContext;
 	}

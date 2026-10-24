@@ -1,7 +1,8 @@
 import { ActionIcon, Group, Stack, Table, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { Button, Select } from '@nikkierp/ui/components';
-import { IconTrash } from '@tabler/icons-react';
+import { Button, INLINE_CONTROLS_ATTRS, Select } from '@nikkierp/ui/components';
+import { EditRowActions } from '@nikkierp/ui/components/ExcelDataTable';
+import { IconPlus, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 
 import { attributeLabel, TEST_ID_PREFIX, valueLabel } from './sectionText';
@@ -36,8 +37,8 @@ export function ExclusionsTable(props: ExclusionsProps): React.ReactNode {
 			<Text size='sm' fw={600}>{text.t('product_template_config_exclusions')}</Text>
 			{draft.exclusions.length === 0 ? (
 				<Text size='sm' c='dimmed'>{text.t('product_template_config_exclusionsEmpty')}</Text>
-			) : <ExclusionRows {...props} />}
-			{editable ? <ExclusionAdder {...props} /> : null}
+			) : null}
+			<ExclusionRows {...props} />
 		</Stack>
 	);
 }
@@ -70,12 +71,43 @@ function ExclusionRows({ draft, editable, exclusionErrors, onChange, text, catal
 						) : null}
 					</Table.Tr>
 				))}
+				{editable ? (
+					<ExclusionAddRow draft={draft} catalogue={catalogue} onChange={onChange} text={text} />
+				) : null}
 			</Table.Tbody>
 		</Table>
 	);
 }
 
-function ExclusionAdder({ draft, catalogue, onChange, text }: ExclusionsProps): React.ReactNode {
+type ExclusionAddProps = Pick<ExclusionsProps, 'draft' | 'catalogue' | 'onChange' | 'text'>;
+
+/**
+ * The table's last row, in the ExcelDataTable add-line style: `[+ Add exclusion]` until clicked,
+ * then the two value pickers with Add / Discard. Add keeps the row open for the next pair.
+ */
+function ExclusionAddRow(props: ExclusionAddProps): React.ReactNode {
+	const [isAdding, setIsAdding] = React.useState(false);
+	return (
+		<Table.Tr {...INLINE_CONTROLS_ATTRS}>
+			<Table.Td colSpan={2}>
+				{isAdding ? <ExclusionInsert {...props} onClose={() => setIsAdding(false)} /> : (
+					<Button
+						variant='subtle'
+						leftSection={<IconPlus size={14} />}
+						onClick={() => setIsAdding(true)}
+						{...testAttrs(TEST_ID_PREFIX, 'addExclusion')}
+					>
+						{props.text.t('product_template_config_addExclusion')}
+					</Button>
+				)}
+			</Table.Td>
+		</Table.Tr>
+	);
+}
+
+type ExclusionInsertProps = ExclusionAddProps & { onClose: () => void };
+
+function ExclusionInsert({ draft, catalogue, onChange, text, onClose }: ExclusionInsertProps) {
 	const [left, setLeft] = React.useState<string | null>(null);
 	const [right, setRight] = React.useState<string | null>(null);
 	const groups = selectableValueGroups(draft, catalogue, text);
@@ -89,9 +121,9 @@ function ExclusionAdder({ draft, catalogue, onChange, text }: ExclusionsProps): 
 		}
 	};
 	return (
-		<Group gap='xs' align='flex-end'>
+		<Group gap='xs' align='center'>
 			<Select
-				size='xs' searchable w={220} data={groups} value={left}
+				searchable w={220} data={groups} value={left}
 				placeholder={text.t('product_template_config_exclusionLeft')}
 				onChange={next => {
 					setLeft(next);
@@ -101,14 +133,19 @@ function ExclusionAdder({ draft, catalogue, onChange, text }: ExclusionsProps): 
 			/>
 			<Text size='sm'>×</Text>
 			<Select
-				size='xs' searchable w={220} data={rightGroups} value={right} disabled={!left}
+				searchable w={220} data={rightGroups} value={right} disabled={!left}
 				placeholder={text.t('product_template_config_exclusionRight')}
 				onChange={setRight}
 				{...testAttrs(TEST_ID_PREFIX, 'exclusionRight')}
 			/>
-			<Button disabled={!left || !right} onClick={add} {...testAttrs(TEST_ID_PREFIX, 'addExclusion')}>
-				{text.t('product_template_config_addExclusion')}
-			</Button>
+			<EditRowActions
+				mode='create'
+				busy={!left || !right}
+				onConfirm={add}
+				onDiscard={onClose}
+				confirmTestId={testAttrs(TEST_ID_PREFIX, 'confirmExclusion')}
+				discardTestId={testAttrs(TEST_ID_PREFIX, 'discardExclusion')}
+			/>
 		</Group>
 	);
 }

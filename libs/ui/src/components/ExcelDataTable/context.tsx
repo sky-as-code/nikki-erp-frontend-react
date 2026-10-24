@@ -112,6 +112,8 @@ export type ExcelDataTableContextValue = {
 	filterPane: OpenState,
 	/** Off to drop the row-number column, its header select-all and its cells. */
 	indexColumnVisible: boolean,
+	/** The Provider's `enableHotKeys`, default applied: off, the toolbar parts register no `Alt+` keys. */
+	enableHotKeys: boolean,
 	/** The displayed columns, in order; the header and the body render the same list. */
 	fields: string[],
 	columnWidths: ReturnType<typeof useColumnWidthsState>,

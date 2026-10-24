@@ -1,5 +1,5 @@
 import {
-	Box, Button, Group, Modal, Select, Stack, Tabs, Text,
+	Box, Button, Group, Select, Stack, Tabs, Text,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { escapeHtml } from '@nikkierp/common/utils';
@@ -20,6 +20,7 @@ import { isDataTableViewMode } from './types';
 import { ViewModeToggle } from './ViewModeToggle';
 import { useTranslate } from '../../i18n';
 import { Button as UiButton } from '../Button';
+import { Modal } from '../Modal/Modal';
 
 import type { DataTableTestIds } from './testIds';
 import type {
@@ -94,6 +95,11 @@ export type DataTableProps = {
 	onRowMoved?: (payload: RowMovePayload) => void,
 	showControls?: boolean,
 	enableSearchBox?: boolean,
+	/**
+	 * Off to keep the filter toggle (`Alt+/`) and the pagination (`Alt+P`, `Alt+←`/`Alt+→`) free of
+	 * shortcuts; defaults to on. Turn it off on every table but one where several share a page.
+	 */
+	enableHotKeys?: boolean,
 	/** Renders the per-column filter row beneath the header. Needs `modelSchema` to infer inputs. */
 	enableColumnFilters?: boolean,
 	hasFixHeader?: boolean,
@@ -148,6 +154,7 @@ export type RequiredDataTableProps = Omit<
 	allowRowMovement: boolean,
 	showControls: boolean,
 	enableSearchBox: boolean,
+	enableHotKeys: boolean,
 	enableColumnFilters: boolean,
 	hasFixHeader: boolean,
 	translationNs: string,
@@ -346,6 +353,7 @@ function withDataTableDefaults(props: DataTableProps): RequiredDataTableProps {
 		allowRowMovement: props.allowRowMovement ?? false,
 		showControls: props.showControls ?? true,
 		enableSearchBox: props.enableSearchBox ?? true,
+		enableHotKeys: props.enableHotKeys ?? true,
 		// Off without a schema: the inputs are inferred from field data types, and every column
 		// would fall back to `unsupported` and render an empty row.
 		enableColumnFilters: props.enableColumnFilters ?? props.modelSchema != null,
@@ -381,6 +389,7 @@ function DataTableControls(props: DataTableControlsProps): React.ReactNode {
 					activeCount={filters.activeCount}
 					expanded={context.isFilterPaneOpen}
 					onToggle={context.onToggleFilterPane}
+					enableHotKeys={context.settings.enableHotKeys}
 					tid={context.tid}
 				/>
 			) : null}

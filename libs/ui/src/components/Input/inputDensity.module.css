@@ -1,0 +1,56 @@
+/*
+ * Sizes a Mantine input from the density token `--nikki-control-height` (see the Shell's
+ * `styles/density.css`); inside an ExcelDataTable row in insert or edit mode the token is already
+ * remapped to the inline height, so nothing here has to know about rows.
+ *
+ * Mantine writes `--input-height` inline on this same element from the `size` prop, and an inline
+ * declaration beats any stylesheet. So rather than fight over `--input-height`, this restates every
+ * value Mantine derives from it, from the token instead. The formulas are Mantine 9.1's own
+ * (`Input.css`), so at the spacious token (30px) the control renders exactly as the former
+ * `--input-height-xs` pin did. The fallback keeps that look where the Shell's tokens are not loaded.
+ *
+ * Multiline inputs size to their content and unstyled ones carry no padding: both are left alone.
+ */
+.wrapper:not([data-multiline]) {
+	--nikki-input-height: var(--nikki-control-height, calc(1.875rem * var(--mantine-scale)));
+	--nikki-input-inner-height: calc(var(--nikki-input-height) - calc(0.125rem * var(--mantine-scale)));
+	--input-size: var(--nikki-input-height);
+	--input-line-height: var(--nikki-input-inner-height);
+	--input-left-section-size: var(--input-left-section-width, var(--nikki-input-inner-height));
+	--input-right-section-size: var(--input-right-section-width, var(--nikki-input-inner-height));
+}
+
+.wrapper:not([data-multiline], [data-variant='unstyled']) {
+	--input-padding: calc(var(--nikki-input-height) / 3);
+}
+
+/* The input's own floor is `min-height: var(--input-height)`, still Mantine's inline value. */
+.wrapper:not([data-multiline]) > .input {
+	min-height: var(--nikki-input-height);
+}
+
+/*
+ * Form fields (`withFormInputDensity`): the same rules, from the form token. The fallback is read
+ * here on the wrapper, where Mantine declares `--input-height-md`, so it holds without the Shell.
+ */
+.wrapper.form:not([data-multiline]) {
+	--nikki-input-height: var(--nikki-form-control-height, var(--input-height-md));
+}
+
+/*
+ * Pill inputs (`withPillsInputDensity`) are multiline: the box keeps growing with its pills, so only
+ * its floor and its vertical padding follow the token. The padding centres one line of the pill
+ * field (Mantine's `1.6em`) in that floor; it is declared on the input because `em` must be its own.
+ */
+.wrapper.pills[data-multiline] {
+	--nikki-input-height: var(--nikki-control-height, calc(1.875rem * var(--mantine-scale)));
+	--nikki-input-inner-height: calc(var(--nikki-input-height) - calc(0.125rem * var(--mantine-scale)));
+	--input-padding: calc(var(--nikki-input-height) / 3);
+	--input-left-section-size: var(--input-left-section-width, var(--nikki-input-inner-height));
+	--input-right-section-size: var(--input-right-section-width, var(--nikki-input-inner-height));
+}
+
+.wrapper.pills[data-multiline] > .input {
+	--input-padding-y: max(0rem, calc((var(--nikki-input-inner-height) - 1.6em) / 2));
+	min-height: var(--nikki-input-height);
+}

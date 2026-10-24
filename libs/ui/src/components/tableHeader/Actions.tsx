@@ -1,10 +1,10 @@
-import { Button, Group } from '@mantine/core';
+import { Group } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { IconPlus, IconRefresh, IconUpload } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Button as LockableButton } from '../Button/Button';
+import { Button } from '../Button/Button';
 
 
 export interface ActionsProps {
@@ -33,9 +33,8 @@ export const Actions: React.FC<ActionsProps> = ({
 	return (
 		<Group>
 			{onCreate && (
-				<LockableButton
+				<Button
 					variant='filled'
-					size='sm'
 					leftSection={<IconPlus size={16} />}
 					onClick={onCreate}
 					locked={createLocked}
@@ -43,7 +42,7 @@ export const Actions: React.FC<ActionsProps> = ({
 					{...testAttrs(prefix, 'create')}
 				>
 					{translate('nikki.general.actions.create')}
-				</LockableButton>
+				</Button>
 			)}
 			<Button
 				variant='outline'

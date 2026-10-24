@@ -9,10 +9,13 @@ import { Button } from '../Button';
 /**
  * Toggles the filter panel. Reads `[filter] Filters` and `[filter] Filters (n)` with active
  * conditions; on a compact screen the label drops and only `(n)` remains beside the icon.
+ * `Alt+/` toggles it, unless the Provider's `enableHotKeys` is off or this part's own overrides it.
  */
-export function FilterButton() {
+export function FilterButton(props: { enableHotKeys?: boolean }) {
 	const t = useTranslate('common');
-	const { filters, filterPane, isCompact, tid } = useExcelDataTableContext();
+	const context = useExcelDataTableContext();
+	const { filters, filterPane, isCompact, tid } = context;
+	const enableHotKeys = props.enableHotKeys ?? context.enableHotKeys;
 	const count = filters.activeCount;
 	const label = t('search.filters');
 	const countText = count > 0 ? `(${count})` : '';
@@ -26,6 +29,7 @@ export function FilterButton() {
 		<Button
 			variant={filterPane.isOpen || count > 0 ? 'light' : 'default'}
 			onClick={filterPane.toggle}
+			shortcut={enableHotKeys ? '/' : undefined}
 			leftSection={iconOnly ? undefined : <IconFilter size={16} />}
 			rightSection={isCompact ? undefined : chevron}
 			aria-label={isCompact ? label : undefined}

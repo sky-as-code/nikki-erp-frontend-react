@@ -10,6 +10,8 @@ import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
 import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
 import { LocalizeFn, useI18n } from '../../i18n';
+import { useFormInputSize } from '../Input/inlineControls';
+import { formInputProps } from '../Input/inputDensity';
 import { MultiLangInputModal, propagateCurrentLangToEmpty } from '../MultiLangInputModal';
 
 
@@ -40,6 +42,7 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 	const fieldAttrs = useFieldTestAttrs(name);
 	const translateAttrs = useFieldPartTestAttrs(name, 'translate');
 	const labelHidden = useFieldLabelHidden();
+	const size = useFormInputSize();
 
 	if (!fieldData) {
 		return null;
@@ -97,9 +100,8 @@ export function LangJsonField({ name, inputProps, localize }: LangJsonFieldProps
 								rightSectionPointerEvents='all'
 								rightSection={langButton}
 								withAria={false}
-								size='md'
 								{...fieldAttrs}
-								{...inputProps}
+								{...formInputProps(inputProps, size)}
 							/>
 						</BaseFieldWrapper>
 						<MultiLangInputModal

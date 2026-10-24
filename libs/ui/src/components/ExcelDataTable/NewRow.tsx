@@ -6,6 +6,7 @@ import { useWatch } from 'react-hook-form';
 
 import { EmptyActionColumnCell } from './actionColumns/ActionColumnCell';
 import { useExcelDataTableContext } from './context';
+import { InlineRowScope } from './InlineRowScope';
 import { EmptySortHandleCell } from './manualSort/ManualSort';
 import classes from './NewRow.module.css';
 import { buildNewRowPayload, findNewRowConfigProblems, resolveNewRowColumns, splitNewRowErrors } from './newRowModel';
@@ -13,14 +14,13 @@ import { useNewRowSearch } from './newRowSearch';
 import { EditRowActions } from './rowActions';
 import { isPopupEnterForRow, readRowKey } from './rowKeys';
 import { RowLoading } from './RowLoading';
-import { ROW_SELECT_DEFAULTS } from './rowSelectDefaults';
 import { useColumnCount } from './tableLayout';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
 import { Button } from '../Button';
 import { AutoField, CrudFormProvider } from '../form';
+import { INLINE_CONTROLS_ATTRS } from '../Input/inputDensity';
 import { SearchableSelect } from '../SearchableSelect';
-import { SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
 
 import type { NewRowColumns } from './newRowModel';
 import type { FormProviderRenderProps } from '../form';
@@ -77,11 +77,10 @@ function AddLineRow() {
 		editing.startCreate();
 	};
 	return (
-		<MantineTable.Tr>
+		<MantineTable.Tr {...INLINE_CONTROLS_ATTRS}>
 			<MantineTable.Td colSpan={columnCount}>
 				<Button
 					variant='subtle'
-					size='xs'
 					leftSection={<IconPlus size={14} />}
 					locked={locks.create.locked}
 					lockedMissing={locks.create.missing}
@@ -131,13 +130,14 @@ function InsertCells({ runtime, onAdded }: { runtime: FormProviderRenderProps, o
 	const rowRef = useFirstInputFocus(busy);
 	const { onKeyDown, onKeyDownCapture } = useInsertRowKeys(busy, submit.add, editing.stopCreate);
 	return (
-		<SelectDefaultsContext.Provider value={ROW_SELECT_DEFAULTS}>
+		<InlineRowScope>
 			<MantineTable.Tr
 				ref={rowRef}
 				tabIndex={-1}
 				onKeyDown={onKeyDown}
 				onKeyDownCapture={onKeyDownCapture}
 				aria-label={t('datatable.newLine', { defaultValue: 'New line' })}
+				{...INLINE_CONTROLS_ATTRS}
 				{...tid.attrs('newRow')}
 			>
 				{indexColumnVisible ? (
@@ -157,7 +157,7 @@ function InsertCells({ runtime, onAdded }: { runtime: FormProviderRenderProps, o
 				)))}
 				<InsertRowActions submit={submit} busy={busy} />
 			</MantineTable.Tr>
-		</SelectDefaultsContext.Provider>
+		</InlineRowScope>
 	);
 }
 
