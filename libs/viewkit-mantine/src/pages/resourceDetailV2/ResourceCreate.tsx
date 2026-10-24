@@ -10,7 +10,7 @@ import {
 	ResourceCreateContext, ResourceCreateContextValue, useCreateServerErrors, useResourceCreateContext,
 } from './resourceCreateContext';
 import { RESOURCE_CREATE_FORM_V2, RESOURCE_CREATE_HEADER_V2 } from '../../ids';
-import { notifyAfterSaveFailure, useAfterSaveHooks } from '../resourceDetail/afterSave';
+import { notifyAfterSaveFailure, useAfterSaveHooks, useUpdatePayloadContributors } from '../resourceDetail/afterSave';
 import { useResourceDetailContext } from '../resourceDetail/ResourceDetailProvider';
 
 import type { LinkSpec, ResourceDetailStandardActionCommands, SchemaFieldSpec } from '../resourceDetail/props';
@@ -47,12 +47,15 @@ export function ResourceCreateProvider(
 	const runAfterSave = afterSave.run;
 	const navigate = useNavigate();
 	const { bindServerErrorSink, routeServerErrors } = useCreateServerErrors();
+	const payloadContributors = useUpdatePayloadContributors();
+	const collectContributions = payloadContributors.collect;
 	const onSubmit = React.useCallback(
 		async (data: Record<string, any>) => {
 			if (!props.commands.create) {
 				return;
 			}
-			const response = await publishCreate(data);
+			const contributions = collectContributions();
+			const response = await publishCreate({ ...data, ...contributions.payload });
 			const created = response.result?.data;
 			const clientErrors = response.result?.clientErrors ?? [];
 			if (clientErrors.length > 0) {
@@ -62,6 +65,7 @@ export function ResourceCreateProvider(
 			if (response.error != null || !created?.id) {
 				return;
 			}
+			contributions.notifySaved();
 			try {
 				await runAfterSave({ id: created.id, etag: created.etag, values: data });
 			}
@@ -70,7 +74,7 @@ export function ResourceCreateProvider(
 			}
 			navigate(`../${created.id}`, { relative: 'path', replace: true });
 		},
-		[publishCreate, props.commands.create, runAfterSave, navigate, routeServerErrors],
+		[publishCreate, props.commands.create, runAfterSave, navigate, routeServerErrors, collectContributions],
 	);
 
 	const value = React.useMemo(
@@ -82,11 +86,14 @@ export function ResourceCreateProvider(
 			onSubmit,
 			isSubmitting: createCmd.isPending || afterSave.isRunning,
 			registerAfterSave: afterSave.register,
+			registerCreatePayload: payloadContributors.register,
+			saveClientErrors: createCmd.clientErrors,
 			bindServerErrorSink,
 		}),
 		[
 			props.commands, props.titleLvl1, props.backLinkTitle, props.createNodes,
 			onSubmit, createCmd.isPending, afterSave.isRunning, afterSave.register, bindServerErrorSink,
+			payloadContributors.register, createCmd.clientErrors,
 		],
 	);
 

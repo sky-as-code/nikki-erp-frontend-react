@@ -5,7 +5,7 @@ import React from 'react';
 import { publishServerErrors } from './publishServerErrors';
 import { useResourceDetailTranslationNs } from './ResourceDetailProvider';
 
-import type { RegisterAfterSave } from './afterSave';
+import type { RegisterAfterSave, RegisterUpdatePayload } from './afterSave';
 import type { LinkSpec, ResourceDetailStandardActionCommands, SchemaFieldSpec } from './props';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -23,6 +23,13 @@ export type ResourceCreateContextValue = {
 	onSubmit: (data: Record<string, any>) => void,
 	isSubmitting: boolean,
 	registerAfterSave: RegisterAfterSave,
+	/**
+	 * v2 only: adds keys to the create request itself, for a section whose rows must be created in
+	 * the same write as the record (e.g. an attribute's values). Same contract as the update one.
+	 */
+	registerCreatePayload?: RegisterUpdatePayload,
+	/** v2 only: the last create's rejections, for a section that maps its own rows' errors. */
+	saveClientErrors?: ClientErrorItem[],
 	/**
 	 * Lets the mounted create form receive a create's field rejections: the submit runs in the
 	 * provider, above `CrudFormProvider`, so it cannot reach `setServerErrors` itself. Returns the

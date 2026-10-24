@@ -62,6 +62,8 @@ export { findUngatedActions, useTableActionLocks } from './permissions';
 export { useResourceUpdateContext } from './pages/resourceDetail/resourceUpdateContext';
 export type { ResourceUpdateContextValue } from './pages/resourceDetail/resourceUpdateContext';
 export { useResourceFormView } from './components/resourceFormViewContext';
+export { useDetailSavePayload } from './pages/resourceDetail/savePayloadContext';
+export type { DetailSavePayload } from './pages/resourceDetail/savePayloadContext';
 /** A detail form's embedded table: all rows, row writes offered only while the form is updated. */
 export { FormDataTable } from './components/formDataTable/FormDataTable';
 export type { FormDataTableProps } from './components/formDataTable/FormDataTable';

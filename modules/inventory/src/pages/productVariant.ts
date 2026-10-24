@@ -47,6 +47,10 @@ function buildProductVariantListProps() {
 		archiveCommand: ProductVariantCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: ProductVariantCommands.UPDATE,
 		updateCommand: ProductVariantCommands.UPDATE,
+		// Complete variants by default (PROD-023): a base is a placeholder awaiting its on-demand
+		// attributes and is never transacted. The condition seeds the filter panel, where it is
+		// switched to Base, or dropped for All.
+		initialGraph: COMPLETE_VARIANTS,
 		fieldRenderers: {
 			attribute_summary: { renderer: 'attributePills' },
 			...buildProductVariantEnumRenderers(),
@@ -57,8 +61,17 @@ function buildProductVariantListProps() {
 	});
 }
 
+/** The list's default filter, exported for its test. */
+export const COMPLETE_VARIANTS = { if: ['variant_kind', '=', 'complete'] };
+
 function buildProductVariantEnumRenderers() {
 	return {
+		// The base label names what it waits for, so it is not read as a sellable product.
+		variant_kind: {
+			renderer: 'enum',
+			colorMap: { complete: 'green', base: 'orange' },
+			prefix: 'variant_kind_label.',
+		},
 		status: {
 			renderer: 'enum',
 			colorMap: { active: 'green', discontinued: 'red' },
@@ -117,6 +130,11 @@ function buildProductVariantFieldsSection(): ComponentNode {
 			header: 'form.identification',
 			fields: ['sku', 'primary_barcode', 'combination_key', 'product_template_id'],
 		}),
+		// A base holds the instant values only; its completes add the dynamic ones and link back.
+		resourceFormColumnNode({
+			header: 'form.variantKind',
+			fields: ['variant_kind', 'base_variant_id', 'is_transaction_eligible'],
+		}),
 		// Three fields that are deliberately three different things.
 		//
 		// `cost` is what the business values this variant at, and it is the only one a user
@@ -150,7 +168,7 @@ function buildProductVariantFieldsSection(): ComponentNode {
 		// took down, so it is shown rather than hidden. See BR Â§8.9.
 		resourceFormColumnNode({
 			header: 'form.audit',
-			fields: ['status', 'is_materialized', 'archive_source', 'created_at', 'updated_at'],
+			fields: ['status', 'archive_source', 'created_at', 'updated_at'],
 		}),
 	]);
 }

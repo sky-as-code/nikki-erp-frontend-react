@@ -5,7 +5,7 @@ import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
 import React from 'react';
 
 import {
-	FORM_DATA_TABLE_PAGE_SIZE, formDataTableCapabilities, formDataTableRequest, isFormDataTablePaginated,
+	FORM_DATA_TABLE_PAGE_SIZE, formDataTableRequest, isFormDataTablePaginated,
 } from './formDataTableModel';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useResourceSearch } from '../../data/useResourceSearch';
@@ -15,12 +15,12 @@ import { useResourceFormView } from '../resourceFormViewContext';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 import type {
-	ExcelDataTableRowWriteProps, SearchItem, SelectionMode,
+	ExcelDataTableRowFeatureProps, ExcelDataTableRowWriteProps, SearchItem, SelectionMode,
 } from '@nikkierp/ui/components/ExcelDataTable';
 import type { FieldRendererMap } from '@nikkierp/viewengine/core';
 
 
-export type FormDataTableProps = ExcelDataTableRowWriteProps & {
+export type FormDataTableProps = ExcelDataTableRowWriteProps & ExcelDataTableRowFeatureProps & {
 	schemaName: string,
 	/** Defaults to the schema's generic `core.resource.{schemaName}.search`. */
 	searchCommand?: string,
@@ -29,6 +29,8 @@ export type FormDataTableProps = ExcelDataTableRowWriteProps & {
 	baseGraph?: dyn.SearchGraph,
 	/** Requested columns, in order. Read on mount. */
 	fields: string[],
+	/** Lists archived rows beside active ones (`include_archived`). Read on mount: re-key to change it. */
+	includeArchived?: boolean,
 	/**
 	 * Rewrites the loaded rows before they are shown, e.g. to merge a form's unsaved drafts.
 	 * Keep it stable (`useCallback`): a fresh function re-runs it every render.
@@ -52,9 +54,9 @@ export type FormDataTableProps = ExcelDataTableRowWriteProps & {
 
 /**
  * An `ExcelDataTable` for one section of a detail form: 100 rows a page, with pagination above and
- * below only when there are more, and no column filters. Row writes follow the form's mode:
- * offered while it is being updated (and on a create page, which has no read mode), read-only
- * otherwise.
+ * below only when there are more, and no column filters. Row writes follow the form's mode, passed as
+ * the table's `updateMode`: offered while it is being updated (and on a create page, which has no
+ * read mode), read-only otherwise. An `updateScope='table'` table edits every row inline in that mode.
  */
 export function FormDataTable(props: FormDataTableProps): React.ReactNode {
 	return <ScopedFormDataTable key={JSON.stringify(props.baseGraph ?? null)} {...props} />;
@@ -62,10 +64,10 @@ export function FormDataTable(props: FormDataTableProps): React.ReactNode {
 
 function ScopedFormDataTable(props: FormDataTableProps): React.ReactNode {
 	const {
-		schemaName, searchCommand: _command, searchName: _name, fields: _fields, transformItems, enableSettings,
-		fillerColumnMinWidth, ...providerProps
+		schemaName, searchCommand: _command, searchName: _name, fields: _fields, includeArchived: _archived,
+		transformItems, enableSettings, fillerColumnMinWidth, ...providerProps
 	} = props;
-	const updateMode = useResourceFormView()?.updateMode ?? true;
+	const updateMode = (useResourceFormView()?.updateMode ?? true) && props.updateMode !== false;
 	const search = useFormDataTableSearch(props);
 	const { pack, searchData } = search;
 	const relatedSchemas = useTableRelatedSchemas(
@@ -86,7 +88,7 @@ function ScopedFormDataTable(props: FormDataTableProps): React.ReactNode {
 	return (
 		<ExcelDataTable.Provider
 			{...providerProps}
-			capabilities={formDataTableCapabilities(updateMode, props.capabilities)}
+			updateMode={updateMode}
 			testId={testId}
 			tableName={schemaName}
 			modelSchema={pack.modelSchema}
@@ -137,10 +139,10 @@ function renderSettingsButton(): React.ReactNode {
 }
 
 function useFormDataTableSearch(props: FormDataTableProps) {
-	const { schemaName, fields, newRowSearchField, searchName } = props;
+	const { schemaName, fields, newRowSearchField, searchName, includeArchived } = props;
 	const initialRequest = React.useMemo(
-		() => formDataTableRequest(fields, newRowSearchField, searchName),
-		[fields, newRowSearchField, searchName],
+		() => formDataTableRequest(fields, newRowSearchField, searchName, includeArchived),
+		[fields, newRowSearchField, searchName, includeArchived],
 	);
 	return useResourceSearch({
 		schemaName,

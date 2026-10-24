@@ -4,8 +4,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { emptyDrafts, grantKey } from './permissionDrafts';
 import {
-	ACTION_FIELD, allActionsFirst, DRAFT_ROW_FLAG, isDraftRow, mergeDraftRows, RESOURCE_FIELD, rowRefOf, toDraftGrant,
-	toDraftRow,
+	ACTION_FIELD, allActionsFirst, DRAFT_ROW_FLAG, isDraftRow, isEditedRow, mergeDraftRows, RESOURCE_FIELD, rowRefOf,
+	toDraftGrant, toDraftRow,
 } from './permissionTable';
 
 import type { DraftGrant } from './permissionDrafts';
@@ -69,6 +69,19 @@ describe('mergeDraftRows', () => {
 		const drafts = { ...emptyDrafts(ROLE), added: [readGrant, allGrant] };
 		const ids = mergeDraftRows(saved, drafts).map(row => row.id);
 		expect(ids).toEqual(['ent-1', 'ent-2', toDraftRow(readGrant).id, toDraftRow(allGrant).id]);
+	});
+});
+
+describe('isEditedRow', () => {
+	it('marks a saved row with a drafted description, which survives a table remount', () => {
+		const drafts = { ...emptyDrafts(ROLE), updated: { 'ent-2': 'Write products' } };
+		expect(saved.map(row => isEditedRow(row, drafts))).toEqual([false, true]);
+	});
+
+	it('leaves a draft grant to the "New" badge', () => {
+		const row = toDraftRow(readGrant);
+		const drafts = { ...emptyDrafts(ROLE), added: [readGrant], updated: { [String(row.id)]: 'x' } };
+		expect(isEditedRow(row, drafts)).toBe(false);
 	});
 });
 

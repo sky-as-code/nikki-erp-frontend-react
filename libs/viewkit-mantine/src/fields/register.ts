@@ -65,8 +65,8 @@ function registerValueRenderers(registry: IViewRegistry): void {
 	});
 
 	registry.registerFieldRenderer(FIELD_RENDERER_MONEY, (spec) => {
-		const { currencyField } = moneySpecSchema.parse(spec);
-		return new MoneyValueFieldRenderer(currencyField);
+		const { currencyField, blankAsZero } = moneySpecSchema.parse(spec);
+		return new MoneyValueFieldRenderer(currencyField, blankAsZero);
 	});
 
 	registry.registerFieldRenderer(FIELD_RENDERER_ENUM, (spec) => {

@@ -6,7 +6,7 @@ import React from 'react';
 import { useCommand } from '../../hookhoc/useCommand';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
-import { ExcelDataTable } from '../ExcelDataTable';
+import { ExcelDataTable, mergeSearchGraphs } from '../ExcelDataTable';
 import { LoadingState } from '../Loading';
 
 import type { SearchData, SearchItem, SelectionMode } from '../ExcelDataTable';
@@ -40,6 +40,12 @@ export type RelationPickerModalProps = {
 	selectedIds?: string[],
 	/** Fired with the rows the user confirmed via Apply. The modal closes itself afterwards. */
 	onSelect: (items: SearchItem[]) => void,
+	/**
+	 * A condition every search of the picker is ANDed with, e.g. to leave out records the caller
+	 * already holds or to keep to one parent's children. It narrows the user's filters, never shows
+	 * in them, and cannot be removed from the picker.
+	 */
+	baseGraph?: dyn.SearchGraph,
 	testId?: string,
 };
 
@@ -70,7 +76,8 @@ export function RelationPickerModal(props: RelationPickerModalProps): React.Reac
 	const { pack } = useDynamicModel(destSchemaName);
 	const modelSchema = pack?.modelSchema;
 	const [pendingItems, setPendingItems] = React.useState<SearchItem[]>([]);
-	const { searchData, searchRequest, setSearchRequest } = usePickerSearch(destSchemaName, props.opened);
+	const picker = usePickerSearch(destSchemaName, props.opened, props.baseGraph);
+	const { searchData, searchRequest, setSearchRequest } = picker;
 	// Without this the table falls back to the raw field name.
 	const translateFieldName = React.useCallback(
 		(field: string): string => localize(modelSchema?.fields[field]?.label) || field,
@@ -152,7 +159,9 @@ type PickerSearch = {
 };
 
 /** Runs the referenced schema's paged search while the picker is open. */
-function usePickerSearch(destSchemaName: string, opened: boolean): PickerSearch {
+function usePickerSearch(
+	destSchemaName: string, opened: boolean, baseGraph: dyn.SearchGraph | undefined,
+): PickerSearch {
 	const searchCommandName = destSchemaName ? dyn.resourceCommands(destSchemaName).SEARCH : '';
 	const search = useCommand<dyn.RestSearchResponse<SearchItem>>(searchCommandName);
 	const publish = search.publish;
@@ -183,13 +192,16 @@ function usePickerSearch(destSchemaName: string, opened: boolean): PickerSearch 
 			publishedKeyRef.current = null;
 			return;
 		}
-		const key = `${destSchemaName}|${JSON.stringify(searchRequest)}`;
+		const request = baseGraph
+			? { ...searchRequest, graph: mergeSearchGraphs(baseGraph, searchRequest.graph) }
+			: searchRequest;
+		const key = `${destSchemaName}|${JSON.stringify(request)}`;
 		if (publishedKeyRef.current === key) {
 			return;
 		}
 		publishedKeyRef.current = key;
-		void publish(searchRequest);
-	}, [publish, opened, destSchemaName, searchRequest]);
+		void publish(request);
+	}, [publish, opened, destSchemaName, searchRequest, baseGraph]);
 
 	// Held across pending requests so paging does not blank the table back to a spinner, the same
 	// reason `useResourceSearch` caches its last result.

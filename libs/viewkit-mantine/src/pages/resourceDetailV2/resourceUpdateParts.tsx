@@ -1,4 +1,5 @@
 import { Alert, Badge, Group } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { translateClientError } from '@nikkierp/common/types';
 // The wrapper rather than Mantine's Button: it carries the `locked` state, and the design system
@@ -12,12 +13,13 @@ import {
 	IconAlertCircle, IconChevronRight, IconDeviceFloppy, IconPencil, IconPlus, IconX,
 } from '@tabler/icons-react';
 import React from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { useResourceUpdateContext } from './resourceUpdateContext';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import { resolveActionCode, StandardActionCode, useActionLock } from '../../permissions';
 import { ActionPromptModal } from '../resourceDetail/ActionPromptModal';
+import { ComponentContextualAction } from '../resourceDetail/ComponentContextualAction';
 import {
 	useResourceDetailSchemaName, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
 } from '../resourceDetail/ResourceDetailProvider';
@@ -197,7 +199,7 @@ function ResourceDetailExtraActionButtons({
 }
 
 /**
- * One contextual action, in whichever of its two shapes the page authored.
+ * One contextual action, in whichever of its three shapes the page authored.
  *
  * The split is a hooks requirement, not a style choice: the command variant calls `useCommand`
  * and the link variant `useRoutePathHref`, and neither may be called conditionally.
@@ -211,6 +213,9 @@ function ResourceDetailExtraActionButton({
 	resource: Record<string, unknown>,
 	disabled?: boolean,
 }): React.ReactNode {
+	if (action.component) {
+		return isActionVisible(action, resource) ? <ComponentContextualAction action={action} /> : null;
+	}
 	if (action.routePath) {
 		return <ResourceDetailLinkActionButton actionKey={actionKey} action={action} disabled={disabled} />;
 	}
@@ -280,6 +285,7 @@ function ResourceDetailCommandActionButton({
 	// renders only for the former, so the fallback is unreachable rather than a default.
 	const command = useCommand(action.command ?? '');
 	const { refresh } = useResourceUpdateContext();
+	const onSucceeded = useActionSuccess(action);
 	// Above the early return: hooks cannot be called conditionally.
 	const [promptOpen, setPromptOpen] = React.useState(false);
 	const lock = useActionLock(useResourceDetailSchemaName(), resolveActionCode(action));
@@ -297,6 +303,9 @@ function ResourceDetailCommandActionButton({
 		void command.publish({ ...request, ...values }).then(response => {
 			if (!isPublishRejected(response)) {
 				setPromptOpen(false);
+				if (onSucceeded(response)) {
+					return;
+				}
 			}
 			// Refresh either way: a rejected action may still have changed the record's etag, and
 			// delete and archive already do this. Without it the pane keeps showing the old status
@@ -337,6 +346,27 @@ function ResourceDetailCommandActionButton({
 			<ActionRefusalAlert clientErrors={command.clientErrors} actionKey={actionKey} />
 		</>
 	);
+}
+
+/**
+ * What a successful action does besides refreshing: the notice it declares, and, for an action that
+ * creates another record of this resource, opening that record. True when the page navigated away,
+ * so there is nothing left to refresh.
+ */
+function useActionSuccess(action: ResourceDetailExtraAction): (response: unknown) => boolean {
+	const t = useTranslate(useResourceDetailTranslationNs());
+	const navigate = useNavigate();
+	return (response) => {
+		if (action.successNotice) {
+			notifications.show({ color: 'green', message: t(action.successNotice) });
+		}
+		const createdId = (response as { result?: { data?: { id?: unknown } } } | null)?.result?.data?.id;
+		if (action.openResult && typeof createdId === 'string' && createdId !== '') {
+			navigate(`../${createdId}`, { relative: 'path' });
+			return true;
+		}
+		return false;
+	};
 }
 
 /**
@@ -397,9 +427,11 @@ function hasMatchingExtraAction(
 		return false;
 	}
 
-	return Object.values(contextualActions).some(
-		action => !action.condition || evaluateCondition(action.condition, resource),
-	);
+	return Object.values(contextualActions).some(action => isActionVisible(action, resource));
+}
+
+function isActionVisible(action: ResourceDetailExtraAction, resource: Record<string, unknown>): boolean {
+	return !action.condition || evaluateCondition(action.condition, resource);
 }
 
 function buildDefaultMutateRequest(resource: Record<string, unknown>): dyn.RestMutateOneRequest | null {

@@ -4,12 +4,14 @@ import { IconPlus } from '@tabler/icons-react';
 import React from 'react';
 import { useWatch } from 'react-hook-form';
 
+import { EmptyActionColumnCell } from './actionColumns/ActionColumnCell';
 import { useExcelDataTableContext } from './context';
+import { EmptySortHandleCell } from './manualSort/ManualSort';
 import classes from './NewRow.module.css';
 import { buildNewRowPayload, findNewRowConfigProblems, resolveNewRowColumns, splitNewRowErrors } from './newRowModel';
 import { useNewRowSearch } from './newRowSearch';
 import { EditRowActions } from './rowActions';
-import { readRowKey } from './rowKeys';
+import { isPopupEnterForRow, readRowKey } from './rowKeys';
 import { RowLoading } from './RowLoading';
 import { ROW_SELECT_DEFAULTS } from './rowSelectDefaults';
 import { useColumnCount } from './tableLayout';
@@ -119,20 +121,22 @@ function ignoreSubmit(): void {
 
 function InsertCells({ runtime, onAdded }: { runtime: FormProviderRenderProps, onAdded: () => void }) {
 	const t = useTranslate('common');
-	const { fields, newRow, modelSchema, indexColumnVisible, editing, isLoading, tid } = useExcelDataTableContext();
+	const context = useExcelDataTableContext();
+	const { fields, newRow, modelSchema, indexColumnVisible, editing, isLoading, tid } = context;
 	const columns = React.useMemo(
 		() => resolveNewRowColumns(modelSchema, fields, newRow), [modelSchema, fields, newRow],
 	);
 	const submit = useNewRowAdd({ runtime, columns, t, onAdded });
 	const busy = submit.isSubmitting || isLoading;
-	const rowRef = useFirstInputFocus();
-	const onKeyDown = useInsertRowKeys(busy, submit.add, editing.stopCreate);
+	const rowRef = useFirstInputFocus(busy);
+	const { onKeyDown, onKeyDownCapture } = useInsertRowKeys(busy, submit.add, editing.stopCreate);
 	return (
 		<SelectDefaultsContext.Provider value={ROW_SELECT_DEFAULTS}>
 			<MantineTable.Tr
 				ref={rowRef}
 				tabIndex={-1}
 				onKeyDown={onKeyDown}
+				onKeyDownCapture={onKeyDownCapture}
 				aria-label={t('datatable.newLine', { defaultValue: 'New line' })}
 				{...tid.attrs('newRow')}
 			>
@@ -141,9 +145,16 @@ function InsertCells({ runtime, onAdded }: { runtime: FormProviderRenderProps, o
 						<IconPlus size={14} aria-hidden />
 					</MantineTable.Td>
 				) : null}
-				{fields.map(field => (
-					<NewRowCell key={field} field={field} columns={columns} runtime={runtime} disabled={busy} />
-				))}
+				{context.manualSort.enabled ? <EmptySortHandleCell /> : null}
+				{context.columns.map(column => (column.kind === 'action' ? <EmptyActionColumnCell key={column.key} /> : (
+					<NewRowCell
+						key={column.key}
+						field={column.field}
+						columns={columns}
+						runtime={runtime}
+						disabled={busy}
+					/>
+				)))}
 				<InsertRowActions submit={submit} busy={busy} />
 			</MantineTable.Tr>
 		</SelectDefaultsContext.Provider>
@@ -169,7 +180,19 @@ function InsertRowActions({ submit, busy }: { submit: NewRowAdd, busy: boolean }
 
 /** Enter adds and Escape discards, for keys pressed in the row's own inputs (see `rowKeyIntent`). */
 function useInsertRowKeys(busy: boolean, add: () => Promise<void>, discard: () => void) {
-	return (event: React.KeyboardEvent<HTMLTableRowElement>) => {
+	const confirm = () => {
+		if (!busy) {
+			void add();
+		}
+	};
+	const onKeyDownCapture = (event: React.KeyboardEvent<HTMLTableRowElement>) => {
+		if (isPopupEnterForRow(event)) {
+			event.preventDefault();
+			event.stopPropagation();
+			confirm();
+		}
+	};
+	const onKeyDown = (event: React.KeyboardEvent<HTMLTableRowElement>) => {
 		const intent = readRowKey(event);
 		if (intent === 'discard') {
 			event.preventDefault();
@@ -177,23 +200,31 @@ function useInsertRowKeys(busy: boolean, add: () => Promise<void>, discard: () =
 		}
 		else if (intent === 'confirm') {
 			event.preventDefault();
-			if (!busy) {
-				void add();
-			}
+			confirm();
 		}
 	};
+	return { onKeyDown, onKeyDownCapture };
 }
 
 /**
  * Focus goes into the first input when the row opens: the row's own Enter and Escape only see keys
  * from inside it, and the click that opened it left focus on a button that no longer exists.
+ *
+ * The row a successful Add remounts usually opens while the refresh it started is loading, with its
+ * inputs disabled, where focus cannot land. So the focus waits for the row to be ready, once: a
+ * later load must not pull focus back from wherever the user moved it.
  */
-function useFirstInputFocus(): React.RefObject<HTMLTableRowElement | null> {
+function useFirstInputFocus(busy: boolean): React.RefObject<HTMLTableRowElement | null> {
 	const rowRef = React.useRef<HTMLTableRowElement | null>(null);
+	const pending = React.useRef(true);
 	React.useEffect(() => {
+		if (busy || !pending.current) {
+			return;
+		}
+		pending.current = false;
 		const input = rowRef.current?.querySelector<HTMLElement>(FOCUSABLE_INPUT);
 		(input ?? rowRef.current)?.focus();
-	}, []);
+	}, [busy]);
 	return rowRef;
 }
 
@@ -268,7 +299,7 @@ type NewRowAddDeps = {
 };
 
 function useNewRowAdd({ runtime, columns, t, onAdded }: NewRowAddDeps) {
-	const { refresh, locks, modelSchema } = useExcelDataTableContext();
+	const { refresh, locks, modelSchema, changes } = useExcelDataTableContext();
 	const write = useNewRowWrite(t);
 	const [isSubmitting, setSubmitting] = React.useState(false);
 	const [errors, setErrors] = React.useState<ClientErrorItem[]>([]);
@@ -283,15 +314,17 @@ function useNewRowAdd({ runtime, columns, t, onAdded }: NewRowAddDeps) {
 		}
 		setSubmitting(true);
 		setErrors([]);
+		changes.beginCreate();
 		const clientErrors = await write(collected.payload);
 		setSubmitting(false);
 		if (clientErrors) {
+			changes.cancelCreate();
 			setErrors(showServerErrors(runtime, columns, clientErrors));
 			return;
 		}
 		onAdded();
 		refresh();
-	}, [columns, locks.create.locked, modelSchema, onAdded, refresh, runtime, t, write]);
+	}, [changes, columns, locks.create.locked, modelSchema, onAdded, refresh, runtime, t, write]);
 	return { isSubmitting, errors, add };
 }
 

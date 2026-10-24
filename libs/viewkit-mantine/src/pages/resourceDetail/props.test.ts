@@ -34,6 +34,20 @@ describe('resourceDetailExtraActionSchema', () => {
 		})).toThrow();
 	});
 
+	it('accepts a component action naming a registered renderer', () => {
+		const action = resourceDetailExtraActionSchema.parse({
+			label: 'a.b', component: 'nikkierp.inventory.components.templateResolveVariant.v1',
+		});
+
+		expect(action.component).toBe('nikkierp.inventory.components.templateResolveVariant.v1');
+	});
+
+	it('rejects a component action that also publishes', () => {
+		expect(() => resourceDetailExtraActionSchema.parse({
+			label: 'a.b', command: 'some.command', component: 'some.component.v1',
+		})).toThrow();
+	});
+
 	it('rejects an action that does neither', () => {
 		expect(() => resourceDetailExtraActionSchema.parse({ label: 'a.b' })).toThrow();
 	});
@@ -74,5 +88,13 @@ describe('ownPropertySectionSchema', () => {
 
 	it('rejects a span other than full', () => {
 		expect(() => ownPropertySectionSchema.parse({ fields: ['name'], span: 'half' })).toThrow();
+	});
+
+	it('takes a locked field as the record flag that unlocks it plus a hint key', () => {
+		const lockedFields = { mode: { unless: 'can_change_mode', hint: 'mode_locked_hint' } };
+
+		expect(ownPropertySectionSchema.parse({ fields: ['mode'], lockedFields }).lockedFields).toEqual(lockedFields);
+		expect(() => ownPropertySectionSchema.parse({ fields: ['mode'], lockedFields: { mode: { unless: 'x' } } }))
+			.toThrow();
 	});
 });

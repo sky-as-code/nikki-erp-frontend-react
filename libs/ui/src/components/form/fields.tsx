@@ -8,6 +8,7 @@ import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
+import { useCreateDefault } from './createDefault';
 import { DateTimeInputField, ReadOnlyTextField, TimeInputField } from './dateTimeFields';
 import { fieldErrorText } from './fieldErrors';
 import { FieldLabelProvider, useFieldLabelHidden } from './fieldLabelContext';
@@ -48,6 +49,7 @@ function AutoFieldControl(props: AutoFieldProps) {
 	const fieldDef = getFieldDef(props.name);
 	const ref = React.useRef<HTMLInputElement | null>(null);
 	const exclusiveDisabledBy = useExclusiveBlocker(props.name);
+	useCreateDefault(props.name);
 
 	if (!fieldDef) {
 		console.warn(`Unrecognized field: ${props.name}`);

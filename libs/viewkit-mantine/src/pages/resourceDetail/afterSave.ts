@@ -61,6 +61,12 @@ export type UpdatePayloadContributor = {
 	build: () => Record<string, unknown> | undefined,
 	/** Called once an update that carried this contribution has succeeded. */
 	onSaved?: () => void,
+	/**
+	 * Asked before the request carrying this contribution is sent, with the whole request. Resolving
+	 * `false` cancels the save and keeps the form in edit mode, e.g. when the user declines a
+	 * preview of what the write would do.
+	 */
+	confirm?: (request: Record<string, unknown>) => Promise<boolean>,
 };
 
 export type RegisterUpdatePayload = (contributor: UpdatePayloadContributor) => () => void;
@@ -68,6 +74,8 @@ export type RegisterUpdatePayload = (contributor: UpdatePayloadContributor) => (
 export type UpdatePayloadContributions = {
 	payload: Record<string, unknown>,
 	notifySaved: () => void,
+	/** Every contributing section's `confirm`, in turn; `false` as soon as one declines. */
+	confirm: (request: Record<string, unknown>) => Promise<boolean>,
 };
 
 export function useUpdatePayloadContributors(): {
@@ -108,6 +116,14 @@ export function collectContributions(contributors: UpdatePayloadContributor[]): 
 	return {
 		payload,
 		notifySaved: () => contributing.forEach(contributor => contributor.onSaved?.()),
+		confirm: async (request) => {
+			for (const contributor of contributing) {
+				if (contributor.confirm && !(await contributor.confirm(request))) {
+					return false;
+				}
+			}
+			return true;
+		},
 	};
 }
 

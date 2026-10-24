@@ -101,6 +101,20 @@ describe('ExcelDataTable index cell', () => {
 	});
 });
 
+describe('ExcelDataTable without selection', () => {
+	it('selects nothing in none mode: index cell, drag, data cell, Space or arrows', () => {
+		renderTable('none');
+		pressIndex('a');
+		fireEvent.pointerDown(indexCell('b'), { button: 0, pointerId: 1 });
+		fireEvent.pointerEnter(indexCell('c'), { pointerId: 1 });
+		fireEvent.pointerUp(document, { pointerId: 1 });
+		fireEvent.mouseDown(dataCell('d'), { button: 0 });
+		fireEvent.keyDown(indexCell('b'), { key: ' ' });
+		fireEvent.keyDown(dataCell('d'), { key: 'ArrowDown' });
+		expect(selectedIds()).toEqual([]);
+	});
+});
+
 describe('ExcelDataTable index drag', () => {
 	it('selects the range dragged over and shrinks when dragging back', () => {
 		renderTable();

@@ -1,14 +1,18 @@
 import React from 'react';
 
+import type { TableColumn } from './actionColumns/actionColumnsModel';
+import type { ActionColumnLocks } from './actionColumns/useActionColumnLocks';
 import type { CapabilityLocks } from './capabilities';
+import type { ChangeIndicator } from './changeIndicator/changeIndicator';
 import type { useColumnWidthsState } from './columnWidths';
 import type { FilterTree } from './filter/filterTree';
 import type { FilterState } from './filter/useFilterState';
+import type { ManualSortApi } from './rowFeatures';
 import type { SelectionMode, SelectionState } from './selectionModel';
 import type { ExcelDataTableTestIds } from './testIds';
 import type {
 	ExcelDataTableCapability, ExcelViewMode, NewRowFieldEditor, NewRowSource, RowId, RowsDeletedSink, RowValuesSink,
-	SearchData, SearchItem,
+	SearchData, SearchItem, UpdateScope,
 } from './types';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { FieldRendererMap } from '@nikkierp/viewengine/core';
@@ -122,8 +126,18 @@ export type ExcelDataTableContextValue = {
 	canUpdateRows: boolean,
 	sinks: RowWriteSinks,
 	newRow: NewRowConfig,
+	/** Per-column editors replacing the row editor's `AutoField` (the Provider's `rowFieldEditors`). */
+	rowFieldEditors: Record<string, NewRowFieldEditor>,
 	/** The Provider's `btnDeleteLabel`: a translation key, or the default "Delete" when absent. */
 	btnDeleteLabel: string | undefined,
+	updateScope: UpdateScope,
+	/** `updateScope='table'` and the table may update rows: every row renders its editors at once. */
+	tableEditing: boolean,
+	/** The displayed columns between the index/handle columns and the built-in action column. */
+	columns: TableColumn[],
+	actionColumnLocks: ActionColumnLocks,
+	manualSort: ManualSortApi,
+	changes: ChangeIndicator,
 	refresh: () => void,
 	translationNs: string | undefined,
 	translateFieldName: (field: string) => string,

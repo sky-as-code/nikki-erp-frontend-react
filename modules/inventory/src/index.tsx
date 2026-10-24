@@ -45,6 +45,7 @@ import { buildStockTransferPages } from './pages/stockTransfer';
 import { buildStorageCategoryPages } from './pages/storageCategory';
 import { buildSupplyRelationPages } from './pages/supplyRelation';
 import { buildWarehousePages } from './pages/warehouse';
+import { contributeInventoryViewKit } from './viewkit/kit';
 
 
 function Main(props: MicroAppProps) {
@@ -66,6 +67,7 @@ const bundle: MicroAppBundle = {
 		// No `registerReducer`: inventory keeps its state in its own store (`./store`), and
 		// reaches the Shell only through the command and event buses.
 		registerModelSchemas();
+		contributeInventoryViewKit(host.viewEngine);
 		host.menuRegistry.register(buildInventoryMenu(slug));
 		registerProductCategoryCommands(host.commandBus);
 		registerBrandCommands(host.commandBus);

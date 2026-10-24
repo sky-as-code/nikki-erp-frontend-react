@@ -28,8 +28,6 @@ export type ProductVariant = {
 	sku?: string,
 	primary_barcode?: string,
 	status?: ProductVariantStatus,
-	/** False while the variant is only implied by its template's attributes. See BR §8.3. */
-	is_materialized?: boolean,
 	archive_source?: ArchiveSource,
 	variant_image_file_key?: string | null,
 	variant_image_url?: string | null,

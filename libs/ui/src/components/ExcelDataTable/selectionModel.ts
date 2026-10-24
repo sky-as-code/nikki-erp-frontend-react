@@ -20,8 +20,11 @@ export type SelectionState = {
  */
 export type SelectionModifiers = { ctrl?: boolean, shift?: boolean };
 
-/** `single` keeps at most one row selected. */
-export type SelectionMode = 'single' | 'multiple';
+/**
+ * `single` keeps at most one row selected. `none` selects nothing: clicks, the index cell, the
+ * arrow keys and select-all are inert, for a table whose rows are only edited in place.
+ */
+export type SelectionMode = 'single' | 'multiple' | 'none';
 
 /** Whether a drag over index cells adds its range to the selection or takes it out. */
 export type DragMode = 'add' | 'remove';
@@ -45,6 +48,9 @@ export function selectOnly(id: RowId): SelectionState {
 
 /** A selection preset by the caller, e.g. the value a picker opens on. */
 export function seedSelection(ids: RowId[], mode: SelectionMode = 'multiple'): SelectionState {
+	if (mode === 'none') {
+		return emptySelection();
+	}
 	const seeded = mode === 'single' ? ids.slice(0, 1) : ids;
 	const last = seeded.length > 0 ? seeded[seeded.length - 1] : null;
 	return { ids: seeded, anchorId: seeded[0] ?? null, lastId: last };

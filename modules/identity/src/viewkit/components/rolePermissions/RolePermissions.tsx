@@ -1,4 +1,4 @@
-import { Alert, Badge, Box, Group, Text } from '@mantine/core';
+import { Alert, Box } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { GRANT_FIELD_EDITORS, GrantEditorContext, TEST_ID_PREFIX } from './grantEditors';
 import { entitlementErrors } from './permissionDrafts';
 import {
-	ACTION_FIELD, DESCRIPTION_FIELD, isDraftRow, mergeDraftRows, PERMISSION_FIELDS, PERMISSION_ORDER, RESOURCE_FIELD,
+	ACTION_FIELD, DESCRIPTION_FIELD, isDraftRow, isEditedRow, mergeDraftRows, PERMISSION_FIELDS, PERMISSION_ORDER,
 	rowRefOf, toDraftGrant,
 } from './permissionTable';
 import { usePermissionDraftState } from './rolePermissionsData';
@@ -45,9 +45,11 @@ export const rolePermissionsRenderer: IComponentRenderer<Record<string, never>> 
 };
 
 /**
- * The role's entitlements. In update mode the table's insert row, row edits (description only) and
- * row deletes only draft changes: added rows show as "New", deleted saved rows disappear, and all
- * of it rides the role's own update request on Save. Cancel or a successful Save discards the drafts.
+ * The role's entitlements. In update mode every row edits inline (`updateScope='table'`; only the
+ * description is updatable) and the insert row stays below them. Each write only drafts a change:
+ * the table badges added rows "New" and edited ones "Changed", a deleted saved row disappears, and
+ * all of it rides the role's own update request on Save. Cancel or a successful Save discards the
+ * drafts, which brings deleted rows back.
  */
 function RolePermissionsSection(): React.ReactNode {
 	const t = useTranslate([IAM_MODULE, 'common']);
@@ -63,9 +65,13 @@ function RolePermissionsSection(): React.ReactNode {
 					fields={PERMISSION_FIELDS}
 					transformItems={section.transformItems}
 					capabilities={CAPABILITIES}
+					updateScope='table'
+					enableChangeIndicator
+					isNewRow={isDraftRow}
+					isChangedRow={section.isChangedRow}
 					indexColumnVisible={false}
 					newRowPrompt={t('role_permission_addEntitlement', { defaultValue: 'Add new entitlement' })}
-					newRowFieldEditors={GRANT_FIELD_EDITORS}
+					fieldEditors={GRANT_FIELD_EDITORS}
 					onCreated={section.onCreated}
 					onUpdated={section.onUpdated}
 					onDeleted={section.onDeleted}
@@ -83,7 +89,8 @@ function RolePermissionsSection(): React.ReactNode {
 
 function usePermissionSection() {
 	const roleId = useParams().id ?? '';
-	const updateMode = useResourceFormView()?.updateMode ?? false;
+	// The same default as FormDataTable's: outside a form view the table is in update mode.
+	const updateMode = useResourceFormView()?.updateMode ?? true;
 	const baseGraph = React.useMemo(
 		(): dyn.SearchGraph => ({ if: ['role_id', '=', roleId], order: PERMISSION_ORDER }), [roleId],
 	);
@@ -100,8 +107,10 @@ function usePermissionSection() {
 		saved.current = items as RoleEntitlement[];
 		return mergeDraftRows(items, drafts);
 	}, [drafts]);
+	// Drafts outlive the table's own change tracking, which a remount (a reload) resets.
+	const isChangedRow = React.useCallback((row: SearchItem) => isEditedRow(row, drafts), [drafts]);
 	return {
-		baseGraph, bridge, loadCount, transformItems,
+		baseGraph, bridge, loadCount, transformItems, isChangedRow,
 		...useDraftSinks(draftState, bridge),
 		fieldRenderers: usePermissionRenderers(),
 	};
@@ -133,26 +142,16 @@ function useDraftSinks(draftState: PermissionDraftState, bridge: React.RefObject
 	return { onCreated, onUpdated, onDeleted };
 }
 
-/** `resource_id` badges a draft row as "New"; `action_id` reads `null` as "All" actions. */
+/** `action_id` reads `null` as "All" actions. */
 function usePermissionRenderers(): FieldRendererMap {
 	const t = useTranslate(IAM_MODULE);
 	const allLabel = t('role_permission_all');
-	const newLabel = t('role_permission_new');
 	return React.useMemo(() => ({
-		[RESOURCE_FIELD]: {
-			render: text => text,
-			renderRaw: (_raw, text, record) => (isDraftRow(record) ? (
-				<Group gap='xs' wrap='nowrap'>
-					<Text size='sm' truncate>{text}</Text>
-					<Badge size='xs' variant='light' {...testAttrs(TEST_ID_PREFIX, 'new')}>{newLabel}</Badge>
-				</Group>
-			) : text),
-		},
 		[ACTION_FIELD]: {
 			render: text => text,
 			renderRaw: (raw, text) => (raw == null || raw === '' ? allLabel : text),
 		},
-	}), [allLabel, newLabel]);
+	}), [allLabel]);
 }
 
 /**

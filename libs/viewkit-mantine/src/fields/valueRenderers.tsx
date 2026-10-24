@@ -19,6 +19,8 @@ export const moneySpecSchema = z.object({
 	 * Omitted or empty, the amount is in the user's default currency.
 	 */
 	currencyField: z.string().min(1).optional(),
+	/** Shows a blank amount as 0, for a field whose NULL means "nothing added" (an extra price). */
+	blankAsZero: z.boolean().optional(),
 }).strict();
 
 export const enumSpecSchema = z.object({
@@ -60,19 +62,20 @@ export class FloatFieldRenderer implements IFieldRenderer {
 export class MoneyValueFieldRenderer implements IFieldRenderer {
 	public readonly align: CellAlignment = 'right';
 
-	public constructor(private readonly currencyField?: string) {}
+	public constructor(private readonly currencyField?: string, private readonly blankAsZero = false) {}
 
 	public render(rawValue: string, _translatedValue: string): React.ReactNode {
 		return this.renderRaw(rawValue);
 	}
 
 	public renderRaw(rawValue: unknown, _textValue?: string, record?: Record<string, unknown>): React.ReactNode {
-		if (isBlank(rawValue)) {
+		if (isBlank(rawValue) && !this.blankAsZero) {
 			return '';
 		}
+		const amount = isBlank(rawValue) ? 0 : rawValue as string | number;
 		const code = this.currencyField ? record?.[this.currencyField] : undefined;
 		const currency = typeof code === 'string' && code !== '' ? { code } : undefined;
-		return <MoneyRenderer rawValue={rawValue as string | number} currency={currency} />;
+		return <MoneyRenderer rawValue={amount} currency={currency} />;
 	}
 }
 

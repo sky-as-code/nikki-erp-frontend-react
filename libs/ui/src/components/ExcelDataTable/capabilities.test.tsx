@@ -22,6 +22,12 @@ describe('resolveCapabilities', () => {
 		expect(resolveCapabilities({ capabilities: [], updateCommand: 'products.update' })).toEqual([]);
 	});
 
+	it('is read-only out of update mode, whatever else is given', () => {
+		expect(resolveCapabilities({ updateMode: false, capabilities: ['create', 'update'] })).toEqual([]);
+		expect(resolveCapabilities({ updateMode: false, updateCommand: 'products.update' })).toEqual([]);
+		expect(resolveCapabilities({ updateMode: true, capabilities: ['delete'] })).toEqual(['delete']);
+	});
+
 	it('orders and de-duplicates the declared capabilities', () => {
 		expect(resolveCapabilities({ capabilities: ['delete', 'create', 'delete'] })).toEqual(['create', 'delete']);
 	});

@@ -1,7 +1,8 @@
-import { resolveActionCode, StandardActionCode } from '../../permissions';
+import { actionRequirement, resolveActionCode, StandardActionCode } from '../../permissions';
 
 import type { ResourceListV2Props } from './props';
 import type { LockableAction } from '../../permissions';
+import type { EntitlementRequirement } from '@nikkierp/common/entitlements';
 import type { TranslateFn } from '@nikkierp/ui/i18n';
 
 
@@ -85,4 +86,24 @@ export function selectionModeOf(action: ResourceListAction): 'single' | 'multipl
 		return undefined;
 	}
 	return action.supportMultiple ? 'multiple' : 'single';
+}
+
+/**
+ * The list's inline row editing: one row at a time, and locked — not withdrawn — by the schema's
+ * update entitlement (or the page's `updateActionCode` on `updateActionResource`), as every other
+ * entitlement lock renders. A page without `updateCommand` edits no rows and asks nothing.
+ */
+export function listRowUpdateProps(params: ResourceListV2Props): {
+	updateCommand?: string, updateScope: 'row', updateEntitlement?: EntitlementRequirement,
+} {
+	if (!params.updateCommand) {
+		return { updateScope: 'row' };
+	}
+	return {
+		updateCommand: params.updateCommand,
+		updateScope: 'row',
+		updateEntitlement: actionRequirement(
+			params.updateActionResource ?? params.schemaName, params.updateActionCode ?? StandardActionCode.Update,
+		),
+	};
 }

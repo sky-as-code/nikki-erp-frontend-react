@@ -46,7 +46,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 			centered
 		>
 			<Stack gap='md'>
-				<Text>{message}</Text>
+				{/* A div, so a message may be a block (a list, a table) rather than one sentence. */}
+				<Text component='div'>{message}</Text>
 				<Group justify='flex-end'>
 					<Button variant='outline' onClick={onClose} color='gray' {...testAttrs(prefix, 'cancel')}>
 						{cancelLabel || t('nikki.general.actions.cancel')}

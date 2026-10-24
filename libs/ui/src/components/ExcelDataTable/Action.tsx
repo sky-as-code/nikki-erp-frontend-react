@@ -93,8 +93,22 @@ export async function publishActionCommand(
 	t: ClientErrorTranslator,
 	refresh: () => void,
 ): Promise<void> {
+	return publishTableCommand(commandBus, command, { ids }, t, refresh);
+}
+
+/**
+ * {@link publishActionCommand} with any payload, e.g. one row as an action column's `action`
+ * publishes it.
+ */
+export async function publishTableCommand(
+	commandBus: Pick<ICommandBus, 'publish'>,
+	command: string,
+	payload: unknown,
+	t: ClientErrorTranslator,
+	refresh: () => void,
+): Promise<void> {
 	try {
-		const response = await commandBus.publish({ name: command, payload: { ids } });
+		const response = await commandBus.publish({ name: command, payload });
 		if (response.error) {
 			notifyActionFailed(t, response.error);
 		}

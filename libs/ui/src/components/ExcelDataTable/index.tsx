@@ -16,11 +16,14 @@ import { ViewModeButton, ViewModeButtons } from './ViewMode';
 
 
 export * from './Action';
+export * from './actionColumns/actionColumnsModel';
+export * from './actionColumns/useActionColumnLocks';
 export * from './Actions';
 export * from './actionsContext';
 export * from './capabilities';
 export * from './cells/cellRenderers';
 export * from './cells/cellValues';
+export * from './changeIndicator/changeIndicator';
 export * from './clipboard';
 export * from './context';
 export * from './editModel';
@@ -32,11 +35,13 @@ export * from './filter/useFilterState';
 export * from './FilterButton';
 export * from './FilterPane';
 export * from './ForViewMode';
+export * from './manualSort/manualSortModel';
 export * from './NewRow';
 export * from './newRowModel';
 export * from './Pagination';
 export * from './Provider';
 export * from './rowActions';
+export * from './rowFeatures';
 export * from './selectionModel';
 export * from './SettingsButton';
 export * from './settings/SettingsModal';
@@ -47,6 +52,7 @@ export * from './testIds';
 export * from './Title';
 export * from './Toolbar';
 export * from './types';
+export * from './updateScope/tableScopeModel';
 export * from './useIsCompact';
 export * from './ViewMode';
 

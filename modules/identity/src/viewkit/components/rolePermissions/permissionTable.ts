@@ -39,6 +39,11 @@ export function isDraftRow(item: SearchItem | Record<string, unknown> | undefine
 	return item?.[DRAFT_ROW_FLAG] === true;
 }
 
+/** A saved row whose description has an unsaved edit: the table badges it "Changed". */
+export function isEditedRow(item: SearchItem, drafts: PermissionDrafts): boolean {
+	return !isDraftRow(item) && typeof item.id === 'string' && item.id in drafts.updated;
+}
+
 /** The row a draft grant shows as; its id stays stable while the draft lives. */
 export function toDraftRow(grant: DraftGrant): SearchItem {
 	return {

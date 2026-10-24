@@ -20,6 +20,7 @@ export type FilterConditionTreeProps = {
 	fields: string[],
 	modelSchema?: dyn.ModelSchema,
 	translateFieldName: (field: string) => string,
+	translateEnumValue?: (field: string, value: string) => string,
 	tid: ExcelDataTableTestIds,
 };
 
@@ -68,6 +69,7 @@ export function FilterConditionTree(props: FilterConditionTreeProps): React.Reac
 					fields={props.fields}
 					modelSchema={props.modelSchema}
 					translateFieldName={props.translateFieldName}
+					translateEnumValue={props.translateEnumValue}
 					errorReason={issueById.get(row.node.id)}
 					onPatch={onPatch}
 					onSubmit={onRowSubmit}

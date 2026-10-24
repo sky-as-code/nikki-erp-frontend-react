@@ -210,3 +210,51 @@
 		opacity: 1;
 	}
 }
+
+/* The manual sort column: a label-less grip per row, header and filter cells left blank. */
+.sortHandleCell {
+	padding: 0;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.sortHandle {
+	align-items: center;
+	color: var(--mantine-color-dimmed);
+	cursor: move;
+	display: inline-flex;
+	justify-content: center;
+	touch-action: none;
+	user-select: none;
+}
+
+.sortHandle[data-disabled='true'] {
+	cursor: not-allowed;
+	opacity: 0.4;
+}
+
+/* The slot a dragged row will drop into: one empty, outlined cell across the whole row. */
+.sortPlaceholder {
+	background-color: var(--nikki-color-table-bg-selected);
+	outline: 1px dashed var(--nikki-color-table-border-selected);
+	outline-offset: -1px;
+}
+
+/* What follows the pointer while a row is dragged: the row's first value beside a grip. */
+.sortDragOverlay {
+	align-items: center;
+	background-color: var(--mantine-color-body);
+	border: 1px solid var(--nikki-color-table-border-selected);
+	border-radius: var(--mantine-radius-sm);
+	box-shadow: var(--mantine-shadow-sm);
+	cursor: move;
+	display: flex;
+	gap: 0.5rem;
+	max-width: 20rem;
+	padding: 0.25rem 0.5rem;
+	width: max-content;
+}
+
+.actionColumnCell {
+	vertical-align: middle;
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildRowUpdatePayload, isRowCreatableField, isRowEditableField } from './editModel';
+import { buildRowUpdatePayload, isRowCreatableField, isRowEditableField, restrictEditableFields, rowFormData } from './editModel';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -85,5 +85,37 @@ describe('buildRowUpdatePayload', () => {
 	// reporting a concurrency problem for a no-op would be noise.
 	it('reports unchanged before it reports a missing etag', () => {
 		expect(buildRowUpdatePayload({ name: 'Old' }, {}, { id: '01H' }, ['name']).refusal).toBe('unchanged');
+	});
+});
+
+describe('rowFormData', () => {
+	// The row is validated on its editable columns only, so the payload is built from the form's
+	// values for those columns: a required parent id the list never projected must not block it.
+	it('keeps only the editable columns', () => {
+		const values = { name: { 'en-US': 'Navy' }, code: 'blue', attribute_id: undefined, org_id: undefined };
+
+		expect(rowFormData(values, ['name', 'code'])).toEqual({ name: { 'en-US': 'Navy' }, code: 'blue' });
+	});
+
+	it('leaves a cleared column out, so the update sends it as null', () => {
+		const values = { name: { 'en-US': 'Navy' }, color_hex: '' };
+		const data = rowFormData(values, ['name', 'color_hex']);
+		const built = buildRowUpdatePayload(
+			data, { name: { 'en-US': true }, color_hex: true }, { id: '01H', etag: '7' }, ['name', 'color_hex'], values,
+		);
+
+		expect(data).toEqual({ name: { 'en-US': 'Navy' } });
+		expect(built.payload).toEqual({ id: '01H', etag: '7', name: { 'en-US': 'Navy' }, color_hex: null });
+	});
+});
+
+describe('restrictEditableFields', () => {
+	it('leaves only the named fields editable, and the insert row as it was', () => {
+		const restricted = restrictEditableFields(schema, ['status']);
+
+		expect(isRowEditableField(restricted, 'status')).toBe(true);
+		expect(isRowEditableField(restricted, 'name')).toBe(false);
+		expect(isRowCreatableField(restricted, 'name')).toBe(true);
+		expect(restrictEditableFields(schema, undefined)).toBe(schema);
 	});
 });

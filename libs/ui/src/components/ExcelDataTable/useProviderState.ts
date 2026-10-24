@@ -122,14 +122,17 @@ export function useSelectionState(
 		onSelectionChange?.(state.ids.map(id => itemsById.get(id)).filter((item): item is SearchItem => !!item));
 	}, [itemsById, onSelectionChange, state.ids]);
 
-	const gestures = useSelectionGestures(state, setState, order, mode, isFrozen);
+	// `none` reuses the frozen path for every gesture, but leaves `isEnabled` alone: the table is
+	// not frozen, its rows simply never become a selection.
+	const isInert = isFrozen || mode === 'none';
+	const gestures = useSelectionGestures(state, setState, order, mode, isInert);
 	const move = React.useCallback((delta: number) => {
-		if (!isFrozen) {
+		if (!isInert) {
 			setState(prev => moveSelection(prev, order, delta));
 		}
-	}, [isFrozen, order]);
+	}, [isInert, order]);
 	const clear = React.useCallback(() => setState(emptySelection()), []);
-	const toggleAll = useToggleAll(setState, order, isFrozen || mode === 'single');
+	const toggleAll = useToggleAll(setState, order, isInert || mode === 'single');
 
 	return React.useMemo(
 		() => ({ ...state, ...gestures, move, clear, toggleAll, isEnabled: !isFrozen, mode, order, itemsById }),

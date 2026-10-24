@@ -358,10 +358,13 @@ function createNumberLikeSchema(dataType: ModelSchemaFieldDataType): z.ZodTypeAn
 				dataType.options,
 			));
 		case 'int64':
-		case 'decimal':
 			return acceptNumericString(
 				applyNumericRangeOptions(createNumberSchema(), dataType.options),
 			);
+		case 'decimal':
+			return submitDecimalAsString(acceptNumericString(
+				applyNumericRangeOptions(createNumberSchema(), dataType.options),
+			));
 		default:
 			return null;
 	}
@@ -385,6 +388,22 @@ function acceptNumericString(schema: z.ZodTypeAny): z.ZodTypeAny {
 			: value),
 		schema,
 	);
+}
+
+/**
+ * A decimal is validated as a number but submitted as the string the user typed: the server's
+ * decimal type refuses a JSON number on purpose, since parsing one goes through a float64 and can
+ * round. A number already in the form (a default, say) is stringified.
+ */
+function submitDecimalAsString(numberSchema: z.ZodTypeAny): z.ZodTypeAny {
+	return z.any().superRefine((value, ctx) => {
+		const checked = numberSchema.safeParse(value);
+		if (!checked.success) {
+			for (const issue of checked.error.issues) {
+				ctx.addIssue({ code: 'custom', message: issue.message, path: issue.path, input: value });
+			}
+		}
+	}).transform(value => (typeof value === 'string' ? value.trim() : String(value)));
 }
 
 function applyFieldRule(fieldSchema: z.ZodTypeAny, fieldRule: ModelSchemaFieldRule): z.ZodTypeAny {
