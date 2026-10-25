@@ -139,7 +139,7 @@ function useFeedConnection(
 			stream = new NotificationStream({
 				orgId,
 				baseUrl: api.defaultBaseUrl,
-				getAccessToken: api.getAccessToken,
+				ensureSession: api.ensureSession,
 				onNotification: accept,
 				onStatus: next => { if (!cancelled) setStatus(next); },
 			});

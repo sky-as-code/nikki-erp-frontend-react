@@ -54,7 +54,7 @@ async function collect(chunks: string[]): Promise<NotificationItem[]> {
 		stream = new NotificationStream({
 			orgId: 'org-1',
 			baseUrl: 'https://example.test/api',
-			getAccessToken: () => 'token',
+			ensureSession: () => true,
 			onNotification: notification => received.push(notification),
 			onStatus: status => {
 				// 'reconnecting' means the stubbed body is exhausted and the loop is going round
@@ -132,7 +132,7 @@ describe('NotificationStream', () => {
 });
 
 describe('NotificationStream reconnect', () => {
-	it('sends the bearer token and resumes from the last sequence on reconnect', async () => {
+	it('sends the session cookie, no token, and resumes from the last sequence on reconnect', async () => {
 		const fetchMock = vi.fn()
 			.mockImplementationOnce(() => Promise.resolve({ ok: true, status: 200, body: bodyOf([line(11)]) }))
 			.mockImplementation(() => Promise.resolve({ ok: true, status: 200, body: bodyOf([]) }));
@@ -145,7 +145,7 @@ describe('NotificationStream reconnect', () => {
 			stream = new NotificationStream({
 				orgId: 'org-1',
 				baseUrl: 'https://example.test/api/',
-				getAccessToken: () => 'the-token',
+				ensureSession: () => true,
 				onNotification: () => { /* asserted through the request below */ },
 				onStatus: status => {
 					if (status !== 'reconnecting') return;
@@ -163,10 +163,41 @@ describe('NotificationStream reconnect', () => {
 		const [firstUrl, firstInit] = fetchMock.mock.calls[0];
 		expect(String(firstUrl)).toContain('org_id=org-1');
 		expect(String(firstUrl)).not.toContain('after_seq');
-		expect(firstInit.headers.Authorization).toBe('Bearer the-token');
+		expect(firstInit.headers.Authorization).toBeUndefined();
+		expect(firstInit.credentials).toBe('same-origin');
 
 		// The whole point of the cursor: the second attempt asks only for what came after 11.
 		const [secondUrl] = fetchMock.mock.calls[1];
 		expect(String(secondUrl)).toContain('after_seq=11');
 	}, 10_000);
+});
+
+describe('NotificationStream session', () => {
+	it('refreshes the session on a 401 and reconnects without backing off', async () => {
+		const fetchMock = vi.fn()
+			.mockImplementationOnce(() => Promise.resolve({ ok: false, status: 401, body: null }))
+			.mockImplementation(() => Promise.resolve({ ok: true, status: 200, body: bodyOf([line(1)]) }));
+		vi.stubGlobal('fetch', fetchMock);
+		const ensureSession = vi.fn(() => true);
+
+		const received: number[] = [];
+		await new Promise<void>(resolve => {
+			const stream = new NotificationStream({
+				orgId: 'org-1',
+				baseUrl: '/api',
+				ensureSession,
+				onNotification: notification => {
+					received.push(notification.stream_seq);
+					stream.close();
+					resolve();
+				},
+			});
+			stream.start();
+		});
+
+		expect(ensureSession).toHaveBeenCalledWith({ force: true });
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(String(fetchMock.mock.calls[0][0])).toMatch(/^\/api\//);
+		expect(received).toEqual([1]);
+	});
 });

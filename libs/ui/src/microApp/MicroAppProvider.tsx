@@ -54,9 +54,7 @@ export const MicroAppProvider: React.FC<MicroAppProviderProps> = (props) => {
 	// If domType=SHARED, this will do nothing because Shell already did it.
 	RequestMaker.initDefault({
 		baseUrl: props.config?.apiBaseUrl ?? props.api.defaultBaseUrl,
-		auth: {
-			getToken: props.api.getAccessToken,
-		},
+		ensureSession: props.api.ensureSession,
 	});
 	// Same distinction: ISOLATED gets its own copy of the module and installs the
 	// host's bus; SHARED already sees the Shell's instance, so this is a no-op.

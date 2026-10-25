@@ -127,6 +127,24 @@ export class RestApi {
 	}
 
 	/**
+	 * `GET {resource}/meta/schema_graph`: this resource's schema and the schema of every resource its
+	 * edges point at, gathered by the BFF in one round trip. Only for a top-level resource; a nested
+	 * one has no single schema name in its path for the BFF to resolve.
+	 */
+	public getSchemaGraph(params?: RestGetSchemaGraphRequest): Promise<RequestResult<RestGetSchemaGraphResponse>> {
+		const restPath = this._getBasePath();
+		return this._opts.requestMaker!.get<RestGetSchemaGraphResponse>(`${restPath}/meta/schema_graph`, {
+			searchParams: params?.org_id ? { org_id: params.org_id } : undefined,
+			dedupKey: `GET/${restPath}/meta/schema_graph/${params?.org_id ?? ''}`,
+		});
+	}
+
+	/** Whether {@link getSchemaGraph} can address this resource. */
+	public get isTopLevel(): boolean {
+		return !this._opts.primaryResourcePath;
+	}
+
+	/**
 	 * Evaluates one function-kind computed field against a model the user is still editing.
 	 *
 	 * A read computes these fields from rows that exist; a form needs the same answer before a
@@ -350,6 +368,16 @@ export type RestGetOneResponse<T extends Record<string, any>, TFieldName extends
 };
 
 export type RestGetModelSchemaResponse = ModelSchema;
+
+export type RestGetSchemaGraphRequest = {
+	org_id?: string,
+};
+
+export type RestGetSchemaGraphResponse = {
+	schema: ModelSchema,
+	/** Keyed by the target schema's name; one entry per distinct edge target. */
+	edges: Record<string, ModelSchema>,
+};
 
 export type RestComputeFieldRequest = {
 	/** The unsaved model to compute against; the server needs no stored row. */

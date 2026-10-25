@@ -23,7 +23,9 @@ export type EdgeLabelFields = {
  *
  * `isReady` exists so the detail fetch can wait. The schemas resolve asynchronously — a
  * cross-module one can even trigger a micro-app load — so firing the request before they land
- * would fetch without labels and then refetch with them, visibly repainting the form.
+ * would fetch without labels and then refetch with them, visibly repainting the form. The root
+ * schema's own load (`meta/schema_graph`) normally seeded every edge target already, so the wait is
+ * a cache read; the per-edge lookup remains for schemas the graph could not answer.
  */
 export function useEdgeLabelFields(schema: dyn.ModelSchema | undefined): EdgeLabelFields {
 	const commandBus = useCommandBus();

@@ -7,10 +7,6 @@ import * as t from '../types';
  * This strategy invokes NikkiERP Authenticate Module.
  */
 export class NikkiAuthenticateStrategy implements t.ISignInStrategy {
-	public get tokenType(): string {
-		return 'Bearer';
-	}
-
 	public async startSignIn(params: t.StartSignInParams): Promise<t.StartSignInResult> {
 		const request: StartSignInApiRequest = {
 			principal_type: params.principalType,
@@ -40,46 +36,30 @@ export class NikkiAuthenticateStrategy implements t.ISignInStrategy {
 		}));
 		return {
 			done: response.done,
-			data: response.data ? {
-				accessToken: response.data.access_token,
-				accessTokenExpiresAt: response.data.access_token_expires_at,
-				refreshToken: response.data.refresh_token,
-				refreshTokenExpiresAt: response.data.refresh_token_expires_at,
-			} : undefined,
+			data: response.data ? toSession(response.data) : undefined,
 			nextStep: response.next_step,
 		};
 	}
 
-	public async refreshSession(params: t.RefreshTokenParams): Promise<t.AuthenticatedSession> {
-		const request: RefreshSessionApiRequest = {
-			refresh_token: params.refreshToken,
-		};
-		const response = api.unwrapResult(await api.post<RefreshSessionApiResponse>('v1/iam/signin/refresh', {
-			json: request,
-			noAuth: true,
-		}));
-		return {
-			accessToken: response.access_token,
-			accessTokenExpiresAt: response.access_token_expires_at,
-			refreshToken: response.refresh_token,
-			refreshTokenExpiresAt: response.refresh_token_expires_at,
-		};
+	/** The BFF reads the refresh cookie, rotates both cookies and answers with their new expiries. */
+	public async refreshSession(): Promise<t.AuthenticatedSession> {
+		const response = api.unwrapResult(
+			await api.post<SessionExpiryApiResponse>('v1/iam/signin/refresh', { noAuth: true }),
+		);
+		return toSession(response);
 	}
 
-	// public onAuthenticated(callback: AuthenticatedCallback): void {
-	// 	callback({
-	// 		accessToken: randomString(10),
-	// 		accessTokenExpiresAt: Date.now() + 1000 * 60 * 60 * 24,
-	// 	} as AuthenticatedSession);
-	// }
-
-	/**
-	 * Client-side only. The backend has no sign-out endpoint, and its tokens are stateless JWTs that
-	 * nothing could revoke; the caller discards them.
-	 */
-	public signOut(): Promise<void> {
-		return Promise.resolve();
+	/** Clears both cookies. The tokens are stateless JWTs nothing could revoke, so that is all it can do. */
+	public async signOut(): Promise<void> {
+		api.unwrapResult(await api.post<void>('v1/iam/signin/signout', { noAuth: true }));
 	}
+}
+
+function toSession(response: SessionExpiryApiResponse): t.AuthenticatedSession {
+	return {
+		accessTokenExpiresAt: response.access_token_expires_at,
+		refreshTokenExpiresAt: response.refresh_token_expires_at,
+	};
 }
 
 type StartSignInApiRequest = {
@@ -103,17 +83,11 @@ type SignInApiRequest = {
 
 type SignInApiResponse = {
 	done: boolean,
-	data?: RefreshSessionApiResponse,
+	data?: SessionExpiryApiResponse,
 	next_step?: string,
 };
 
-type RefreshSessionApiRequest = {
-	refresh_token: string,
-};
-
-type RefreshSessionApiResponse = {
-	access_token: string,
+type SessionExpiryApiResponse = {
 	access_token_expires_at: string,
-	refresh_token?: string,
-	refresh_token_expires_at?: string,
+	refresh_token_expires_at: string,
 };

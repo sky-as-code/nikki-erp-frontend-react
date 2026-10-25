@@ -2,6 +2,9 @@ export type EnvVars = {
 	/**
 	 * Base URL for all API calls made by the microfrontend (MFE) Shell.
 	 * While some MFE Modules may have their own API URLs, some may reuse this API URL.
+	 *
+	 * A same-origin path such as `/api`, served by the web BFF: the session lives in httpOnly cookies
+	 * scoped to it, which an absolute backend URL on another origin would never receive.
 	 */
 	BASE_API_URL: string,
 

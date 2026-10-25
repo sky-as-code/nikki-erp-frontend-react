@@ -31,11 +31,11 @@ describe('shellStore slices', () => {
 	});
 
 	it('keeps the non-thunk auth helpers off the slice', () => {
-		// `ensureAccessToken` and friends run outside React and outside Redux, so they stay
+		// `ensureSession` and friends run outside React and outside Redux, so they stay
 		// module functions and must not become thunks.
 		const auth = shellStore.getState()[AUTH_SLICE] as Record<string, unknown>;
 
-		expect(auth).not.toHaveProperty('ensureAccessToken');
+		expect(auth).not.toHaveProperty('ensureSession');
 		expect(auth).not.toHaveProperty('isAuthenticated');
 	});
 

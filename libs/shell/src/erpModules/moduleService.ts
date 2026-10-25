@@ -7,6 +7,26 @@ import { MODULE_SCHEMA_NAME } from '../constants';
 import type { ServiceResult } from '@nikkierp/common/commandBus';
 
 
+let seededModules: t.SearchModuleResponse | null = null;
+
+/**
+ * Hands the next `listAll` the modules the session bootstrap already read, so the dispatch
+ * `ShellRoutes` makes on mount costs no second request. Later calls search as before.
+ */
+export function seedModules(items: t.Module[]): void {
+	const sorted = [...items].sort((left, right) => left.name.localeCompare(right.name));
+	seededModules = {
+		items: sorted, total: sorted.length, page: 0, size: sorted.length,
+		desired_fields: [], masked_fields: [], schema_etag: '',
+	};
+}
+
+function takeSeededModules(): t.SearchModuleResponse | null {
+	const seeded = seededModules;
+	seededModules = null;
+	return seeded;
+}
+
 /**
  * Reads over `essential_module_metadata`; the Shell never mutates it.
  *
@@ -32,6 +52,8 @@ export class ModuleService extends StoreCrudServiceBase {
 	 */
 	@storeAsyncMethod
 	public listAll(): Promise<ServiceResult<t.SearchModuleResponse>> {
+		const seeded = takeSeededModules();
+		if (seeded) return Promise.resolve({ data: seeded, clientErrors: [] });
 		return this.search({ fields: ['*'], page: 0, size: 500, graph: { order: [['name', 'asc']] } });
 	}
 }

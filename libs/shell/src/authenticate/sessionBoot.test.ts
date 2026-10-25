@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { TokenObj } from './types';
 import { shellStore } from '../appState/shellStore';
+
+import type { SessionExpiry } from './types';
 
 
 /**
@@ -42,16 +43,19 @@ async function importAuth() {
 	return { authModule, NikkiAuthenticateStrategy };
 }
 
-function tokenStorage(token: TokenObj | null) {
+function sessionStorageOf(expiry: SessionExpiry | null) {
 	return {
-		getToken: () => token,
-		setToken: vi.fn(),
+		get: () => expiry,
+		set: vi.fn(),
 		clear: vi.fn(),
 	} as any;
 }
 
-// Beyond `ensureAccessToken`'s refresh margin, so no refresh is attempted.
-const validToken = new TokenObj('access-1', Date.now() + 3_600_000);
+// Beyond `ensureSession`'s refresh margin, so no refresh is attempted.
+const validSession: SessionExpiry = {
+	accessExpiresAt: Date.now() + 3_600_000,
+	refreshExpiresAt: Date.now() + 7_200_000,
+};
 
 /** The server's wire shape — `toUserContext` maps snake_case across, so send that. */
 const userContextPayload = {
@@ -74,11 +78,21 @@ const userContextPayload = {
 	system_settings: { app_name: 'Nikki' },
 };
 
+const bootstrapPayload = {
+	context: userContextPayload,
+	languages: { items: [{ iso_code: 'en', name: 'English' }], default_iso_code: 'en' },
+	modules: [],
+};
+
+function respond(url: string): unknown {
+	return url === 'v1/iam/me/bootstrap' ? bootstrapPayload : userContextPayload;
+}
+
 
 describe('session boot writes the gates the Shell renders on', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		getUserContextResponse.mockResolvedValue(userContextPayload);
+		getUserContextResponse.mockImplementation(async (url: string) => respond(url));
 		restoreSession.mockReset();
 	});
 
@@ -86,8 +100,7 @@ describe('session boot writes the gates the Shell renders on', () => {
 		const { authModule } = await importAuth();
 		authModule.initAuthService({
 			strategy: { refreshSession: restoreSession } as any,
-			accessTokenStorage: tokenStorage(null),
-			refreshTokenStorage: tokenStorage(null),
+			sessionStorage: sessionStorageOf(null),
 		});
 
 		const restored = await authModule.authService.restoreAuthSession();
@@ -104,8 +117,7 @@ describe('session boot writes the gates the Shell renders on', () => {
 		const { SLICE_NAME: USER_CONTEXT_SLICE } = await import('../userContext/types');
 		authModule.initAuthService({
 			strategy: { refreshSession: restoreSession } as any,
-			accessTokenStorage: tokenStorage(validToken),
-			refreshTokenStorage: tokenStorage(validToken),
+			sessionStorage: sessionStorageOf(validSession),
 		});
 
 		const restored = await authModule.authService.restoreAuthSession();
@@ -134,15 +146,14 @@ describe('session boot writes the gates the Shell renders on', () => {
 		// If settle were to land first, `PrivateLayout` would see a truthy `restore.data`
 		// with a false `isAuthenticated` and would neither render nor redirect.
 		let contextStatusWhenSettled: string | null = null;
-		getUserContextResponse.mockImplementation(async () => {
+		getUserContextResponse.mockImplementation(async (url: string) => {
 			await Promise.resolve();
-			return userContextPayload;
+			return respond(url);
 		});
 
 		authModule.initAuthService({
 			strategy: { refreshSession: restoreSession } as any,
-			accessTokenStorage: tokenStorage(validToken),
-			refreshTokenStorage: tokenStorage(validToken),
+			sessionStorage: sessionStorageOf(validSession),
 		});
 
 		// Latch on the *first* sign of settling, pending included: the gate opens on
@@ -160,5 +171,37 @@ describe('session boot writes the gates the Shell renders on', () => {
 		unsubscribe();
 
 		expect(contextStatusWhenSettled).toBe('fulfilled');
+	});
+});
+
+describe('session boot reads the bootstrap once', () => {
+	it('seeds the user context from the bootstrap instead of a second request', async () => {
+		getUserContextResponse.mockReset();
+		getUserContextResponse.mockImplementation(async (url: string) => respond(url));
+		const { authModule } = await importAuth();
+		authModule.initAuthService({
+			strategy: { refreshSession: restoreSession } as any,
+			sessionStorage: sessionStorageOf(validSession),
+		});
+
+		await authModule.authService.restoreAuthSession();
+
+		expect(getUserContextResponse.mock.calls.map(call => call[0])).toEqual(['v1/iam/me/bootstrap']);
+	});
+
+	it('falls back to the single context read when the bootstrap fails', async () => {
+		getUserContextResponse.mockReset();
+		getUserContextResponse.mockImplementation(async (url: string) => {
+			if (url === 'v1/iam/me/bootstrap') throw new Error('bff down');
+			return userContextPayload;
+		});
+		const { authModule } = await importAuth();
+		authModule.initAuthService({
+			strategy: { refreshSession: restoreSession } as any,
+			sessionStorage: sessionStorageOf(validSession),
+		});
+
+		expect(await authModule.authService.restoreAuthSession()).toBe(true);
+		expect(getUserContextResponse.mock.calls.map(call => call[0])).toEqual(['v1/iam/me/bootstrap', 'v1/iam/me/context']);
 	});
 });

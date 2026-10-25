@@ -12,7 +12,8 @@ import { dottedEdgeNames, relationDestSchemaName } from './fieldPaths';
  * data type and filter input all have to come from that resource's schema — the list's own
  * `fields` map is flat and has no entry for it. Only the edges actually named are fetched, and
  * each one only once: `publishGetSchema` reads through the shared registry cache, so a schema a
- * sibling page already loaded costs nothing.
+ * sibling page already loaded costs nothing. Loading the root schema through the registry fetches
+ * `meta/schema_graph`, which seeds every edge target, so normally these cost no request at all.
  *
  * Empty while the requests are in flight, so callers must treat a miss as "not yet", not as "no
  * such field", and keep their existing fallback.

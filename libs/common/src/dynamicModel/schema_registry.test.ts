@@ -120,3 +120,57 @@ describe('SchemaRegistry owner-load bookkeeping', () => {
 		expect(loader).not.toHaveBeenCalled();
 	});
 });
+
+describe('SchemaRegistry schema graph', () => {
+	function schemaOf(name: string): ModelSchema {
+		return { name, fields: {}, etag: `etag-${name}` } as unknown as ModelSchema;
+	}
+
+	function graphRequestMaker(get: ReturnType<typeof vi.fn>): RequestMaker {
+		return { get } as unknown as RequestMaker;
+	}
+
+	it('loads the root through meta/schema_graph and seeds the edge targets', async () => {
+		const get = vi.fn(async (url: string) => (url.endsWith('/meta/schema_graph')
+			? { data: { schema: schemaOf('inventory_product'), edges: { essential_uom: schemaOf('essential_uom') } }, clientErrors: [] }
+			: { data: null, clientErrors: [] }));
+		schemaRegistry.register([
+			{ schemaName: 'inventory_product', resourcePath: 'v1/inventory/inventory_product', requestMaker: graphRequestMaker(get) },
+			{ schemaName: 'essential_uom', resourcePath: 'v1/essential/essential_uom', requestMaker: graphRequestMaker(get) },
+		]);
+
+		const root = await schemaRegistry.get('inventory_product');
+		const edge = await schemaRegistry.get('essential_uom');
+
+		expect(root?.modelSchema.name).toBe('inventory_product');
+		expect(edge?.modelSchema.etag).toBe('etag-essential_uom');
+		expect(get).toHaveBeenCalledOnce();
+	});
+
+	it('falls back to meta/schema when the graph is unavailable', async () => {
+		const get = vi.fn(async (url: string) => (url.endsWith('/meta/schema_graph')
+			? { data: null, clientErrors: [{ type: 'business', key: 'common:err_not_found', message: 'nope' }] }
+			: { data: schemaOf(SCHEMA_NAME), clientErrors: [] }));
+		schemaRegistry.register([{
+			schemaName: SCHEMA_NAME, resourcePath: `v1/essential/${SCHEMA_NAME}`, requestMaker: graphRequestMaker(get),
+		}]);
+
+		const pack = await schemaRegistry.get(SCHEMA_NAME);
+
+		expect(pack?.modelSchema.name).toBe(SCHEMA_NAME);
+		expect(get.mock.calls.map(call => call[0])).toEqual([
+			`v1/essential/${SCHEMA_NAME}/meta/schema_graph`, `v1/essential/${SCHEMA_NAME}/meta/schema`,
+		]);
+	});
+
+	it('holds a seed for a schema registered later', async () => {
+		const get = vi.fn();
+		schemaRegistry.seed([schemaOf(SCHEMA_NAME)]);
+		schemaRegistry.register([{
+			schemaName: SCHEMA_NAME, resourcePath: `v1/essential/${SCHEMA_NAME}`, requestMaker: graphRequestMaker(get),
+		}]);
+
+		expect((await schemaRegistry.get(SCHEMA_NAME))?.modelSchema.name).toBe(SCHEMA_NAME);
+		expect(get).not.toHaveBeenCalled();
+	});
+});

@@ -201,6 +201,11 @@ export type MicroAppRoutingOptions = {
 };
 
 export type MicroAppApiOptions = {
+	/** A path such as `/api`: the BFF serves the API same-origin, so the session cookies go along. */
 	defaultBaseUrl: string,
-	getAccessToken: () => Promise<string>,
+	/**
+	 * Resolves whether the session is usable, refreshing its cookies first when they lapse soon;
+	 * `force` refreshes regardless, for a raw `fetch` the server just refused with 401.
+	 */
+	ensureSession: (options?: { force?: boolean }) => Promise<boolean>,
 };
