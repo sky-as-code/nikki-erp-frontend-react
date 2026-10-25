@@ -1,9 +1,10 @@
-import { Box, Group, Modal, Stack, Tabs, Text } from '@mantine/core';
+import { Box, Group, Stack, Tabs, Text } from '@mantine/core';
 import React from 'react';
 
 import { FieldPicker } from './FieldPicker';
 import { useTranslate } from '../../../i18n';
 import { Button } from '../../Button';
+import { Modal } from '../../Modal/Modal';
 import { Select } from '../../Select';
 import { useExcelDataTableContext } from '../context';
 import classes from '../ExcelDataTable.module.css';

@@ -5,6 +5,7 @@ import React from 'react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { SearchableSelect } from './SearchableSelect';
+import { InlineControlsScope } from '../Input/inlineControls';
 
 
 const items = [{ value: 'a', label: 'Alpha' }, { value: 'b', label: 'Beta' }];
@@ -97,5 +98,28 @@ describe('SearchableSelect search box', () => {
 		expect(screen.queryByTestId('t.select.search')).toBeNull();
 		expect(screen.queryByTestId('t.select.searchSeparator')).toBeNull();
 		expect(screen.getByText('Item 0')).not.toBeNull();
+	});
+});
+
+describe('SearchableSelect form field option size', () => {
+	function openFormField(inline: boolean): HTMLElement {
+		const select = <SearchableSelect items={items} variant='input' formField testId='t.select' />;
+		render(
+			<MantineProvider env='test'>
+				{inline ? <InlineControlsScope>{select}</InlineControlsScope> : select}
+			</MantineProvider>,
+		);
+		fireEvent.click(screen.getByTestId('t.select.trigger'));
+		return screen.getByText('Alpha').closest<HTMLElement>('.mantine-Combobox-dropdown')!;
+	}
+
+	it('lists its options at the form text size', () => {
+		const dropdown = openFormField(false);
+		expect(dropdown.style.getPropertyValue('--combobox-option-fz')).toBe('var(--mantine-font-size-md)');
+	});
+
+	it('lists them at the small row text size inside an inline-controls scope', () => {
+		const dropdown = openFormField(true);
+		expect(dropdown.style.getPropertyValue('--combobox-option-fz')).toBe('var(--mantine-font-size-sm)');
 	});
 });

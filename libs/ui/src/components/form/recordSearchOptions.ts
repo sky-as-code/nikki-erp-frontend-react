@@ -12,12 +12,6 @@ import type { ClientErrorItem } from '@nikkierp/common/types';
 
 
 const SEARCH_DEBOUNCE_MS = 300;
-/**
- * What `useLocalize` returns for a LangJson carrying no entry for the active language. i18n is
- * configured without a fallback language so gaps are visible, but a field description is the wrong
- * place to surface one — an empty description reads better than a placeholder token.
- */
-const MISSING_TRANSLATION = '$missing.translation';
 /** `*` is the contains operator; see `SearchOperator` in `@nikkierp/common/dynamicModel`. */
 const CONTAINS = '*';
 
@@ -153,8 +147,7 @@ function displayValue(value: unknown, localize: LocalizeFn): string {
 		return '';
 	}
 	if (typeof value === 'object') {
-		const localized = localize(value as dyn.ModelSchemaLangJson);
-		return localized === MISSING_TRANSLATION ? '' : localized;
+		return localize(value as dyn.ModelSchemaLangJson);
 	}
 	return String(value);
 }

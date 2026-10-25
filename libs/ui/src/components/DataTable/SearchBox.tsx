@@ -1,6 +1,6 @@
 import {
-	ActionIcon, Box, Button, ButtonGroup, Checkbox, Divider, Group, Modal, Paper, Pill, Select,
-	Stack, TagsInput, Text, UnstyledButton,
+	ActionIcon, Box, Button, ButtonGroup, Checkbox, Divider, Group, Paper, Pill, Stack,
+	TagsInput, Text, UnstyledButton,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { testAttrs } from '@nikkierp/common/utils';
@@ -12,6 +12,8 @@ import React from 'react';
 
 import classes from './SearchBox.module.css';
 import { TranslateFn, useTranslate } from '../../i18n';
+import { Modal } from '../Modal/Modal';
+import { Select } from '../Select';
 
 import type { TestIdAttributes } from '@nikkierp/common/utils';
 
@@ -105,9 +107,6 @@ function SearchBoxBody({ fields, sortableFields, orderBy, onApplyOrderBy }: Omit
 const defaultFilters = ['Goods or Combo or Services', 'Name does not contain rein'];
 
 const sortSelectComboboxProps = { width: 250, position: 'bottom-start' as const };
-const sortSelectStyles = {
-	input: { height: '2rem', minHeight: '2rem', width: '200px' },
-};
 
 function buildFieldOptions(fields: string[], t: TranslateFn) {
 	return [{ value: '', label: `- ${t('form.selectOnePrompt', { item: 'field' })} -` }, ...fields.map(field => ({ value: field, label: field }))];
@@ -315,8 +314,7 @@ function SortFieldDirectionRow({
 				value={selectedField}
 				onChange={onFieldChange}
 				comboboxProps={sortSelectComboboxProps}
-				size='md'
-				styles={sortSelectStyles}
+				w={200}
 				{...tid('sortField', rank)}
 			/>
 			<SortDirectionButtonGroup

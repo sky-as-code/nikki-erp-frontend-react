@@ -1,5 +1,4 @@
 export * from './Breadcrumbs';
-export * from './MultiLangInputModal';
 export * from './Button';
 export * from './ErrorBoundary/ErrorBoundary';
 export * from './ErrorState';
@@ -14,6 +13,7 @@ export * from './NotFound';
 export * from './SearchableSelect';
 export * from './Select';
 export * from './Table';
+export * from './translatable';
 export * from './tableHeader';
 export * from './NotFound';
 export * from './Unauthorized';

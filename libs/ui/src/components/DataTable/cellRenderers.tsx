@@ -2,7 +2,7 @@ import { Checkbox } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
-import { JsonLangText } from '../../i18n';
+import { TranslatableText } from '../translatable/TranslatableText';
 
 import type { TranslateFn } from '../../i18n';
 import type { IFieldRenderer } from '@nikkierp/viewengine/core';
@@ -99,7 +99,7 @@ export class JsonLangCellRenderer implements DataTypeCellRenderer {
 	}
 
 	public render(rawValue: unknown, _textValue: string): React.ReactNode {
-		return <JsonLangText langJson={toLangJson(rawValue)} />;
+		return <TranslatableText langJson={toLangJson(rawValue)} />;
 	}
 }
 

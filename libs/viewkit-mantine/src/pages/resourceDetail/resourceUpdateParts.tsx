@@ -55,7 +55,6 @@ export function CreateActionButton({ disabled = false }: { disabled?: boolean })
 			lockedMissing={lock.missing}
 			leftSection={<IconPlus size={16} />}
 			variant='outline'
-			size='compact-md'
 			{...tid('action', 'create')}
 		>
 			{t('action.create')}
@@ -145,7 +144,6 @@ function PrimaryActionButtons({
 			<>
 				<Button
 					variant='outline'
-					size='compact-md'
 					onClick={() => (onCancel ? onCancel() : setUpdateMode(false))}
 					leftSection={<IconX size={16} />}
 					{...tid('action', 'cancel')}
@@ -154,7 +152,6 @@ function PrimaryActionButtons({
 				</Button>
 				<Button
 					variant='filled'
-					size='compact-md'
 					leftSection={<IconDeviceFloppy size={16} />}
 					onClick={onSaveClick}
 					disabled={isLoading}
@@ -177,7 +174,6 @@ function PrimaryActionButtons({
 			lockedMissing={updateLock.missing}
 			leftSection={<IconPencil size={16} />}
 			variant='filled'
-			size='compact-md'
 			{...tid('action', 'update')}
 		>
 			{t('action.update')}
@@ -269,7 +265,6 @@ function ResourceDetailLinkActionButton({
 			component={Link}
 			to={href}
 			variant='outline'
-			size='compact-md'
 			disabled={disabled}
 			locked={lock.locked}
 			lockedMissing={lock.missing}
@@ -326,7 +321,6 @@ function ResourceDetailCommandActionButton({
 		<>
 			<Button
 				variant='outline'
-				size='compact-md'
 				disabled={disabled || command.isPending}
 				loading={command.isPending}
 				locked={lock.locked}

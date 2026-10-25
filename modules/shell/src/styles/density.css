@@ -1,0 +1,98 @@
+/*
+ * Density tokens (setting `essential.density`, applied by the Shell's `ApplyStoredDensity` as
+ * `<html data-nikki-density='spacious|compact'>`).
+ *
+ * Compact is the default: `:root` carries its values, so a missing attribute (before the user's
+ * settings load, or a user who never chose) reads as compact. Spacious is the look the application
+ * had before density existed: every spacious value restates what Mantine 9.1 rendered for it.
+ *
+ * Density changes spacing only. No token here may touch a font size: compact packs the same text
+ * into tighter boxes. Components read these tokens directly through `styles`/`classNames`, never
+ * through the Mantine `size` prop, because Mantine sets its own size variables inline.
+ *
+ * The `var(--nikki-..., <fallback>)` fallbacks in the libraries keep the spacious values on purpose:
+ * they apply only where this stylesheet is not loaded (unit tests, a library used outside the Shell),
+ * and there they reproduce stock Mantine sizing rather than a density nobody selected.
+ */
+@layer nikki {
+	:root,
+	html[data-nikki-density='compact'] {
+		--nikki-control-height: calc(1.625rem * var(--mantine-scale));
+		--nikki-control-padding-x: calc(0.5rem * var(--mantine-scale));
+		--nikki-form-control-height: calc(2.125rem * var(--mantine-scale));
+		--nikki-control-height-inline: calc(1.375rem * var(--mantine-scale));
+		--nikki-menu-item-padding-y: calc(var(--mantine-spacing-xs) / 3);
+		--nikki-menu-dropdown-padding: 2px;
+		--nikki-section-header-padding-y: 0rem;
+		--nikki-section-padding: 0.5rem;
+		--nikki-section-gap: 0.25rem;
+		--nikki-table-cell-padding-y: calc(0.25rem * var(--mantine-scale));
+		--nikki-form-block-gap: 0.75rem;
+		--nikki-field-gap: 0.75rem;
+		--nikki-page-header-gap: 0.5rem;
+	}
+
+	html[data-nikki-density='spacious'] {
+		/* Buttons, textboxes and selects: `--input-height-xs`, the height the `Input` wrapper pins. */
+		--nikki-control-height: calc(1.875rem * var(--mantine-scale));
+		/* Mantine's `--button-padding-x-compact-md`, the `Button` wrapper's default size. */
+		--nikki-control-padding-x: calc(0.625rem * var(--mantine-scale));
+		/*
+		 * Form and page-body fields (`AutoField`, `LangJsonField`, the date fields): Mantine's
+		 * `--input-height-md` (42px). Restated rather than referenced: Mantine declares it on the input
+		 * wrapper only, so it does not resolve here.
+		 */
+		--nikki-form-control-height: calc(2.625rem * var(--mantine-scale));
+		/* Inputs inside an ExcelDataTable row in insert or edit mode. */
+		--nikki-control-height-inline: calc(1.625rem * var(--mantine-scale));
+		/* Mantine's `Menu.Item`: `calc(var(--mantine-spacing-xs) / 1.5)`. */
+		--nikki-menu-item-padding-y: calc(var(--mantine-spacing-xs) / 1.5);
+		/* Mantine's `Menu.Dropdown`. */
+		--nikki-menu-dropdown-padding: 4px;
+		/* Collapsible section headers carry no padding of their own today. */
+		--nikki-section-header-padding-y: 0rem;
+		/* `PaperWithBorder`'s `p-4`. */
+		--nikki-section-padding: 1rem;
+		/* The `mb='0.5rem'` every section card set below itself. */
+		--nikki-section-gap: 0.5rem;
+		/* Mantine's `Table` default `verticalSpacing` (7px); list tables pass none. */
+		--nikki-table-cell-padding-y: calc(0.4375rem * var(--mantine-scale));
+		--nikki-form-block-gap: 1.5rem;
+		--nikki-field-gap: 1.5rem;
+		/* The detail page header's `rowSpacing='md'` and the create form's `py-4` Save row. */
+		--nikki-page-header-gap: var(--mantine-spacing-md);
+	}
+
+	/*
+	 * Mantine's menus carry no size prop worth threading through every call site, so they are
+	 * styled here by their static class names. This layer outranks `mantine`, and a caller's own
+	 * `p`/`py` is inline, so it still wins.
+	 */
+	.mantine-Menu-item {
+		padding-block: var(--nikki-menu-item-padding-y);
+	}
+
+	.mantine-Menu-dropdown {
+		padding: var(--nikki-menu-dropdown-padding);
+	}
+
+	/*
+	 * The inline-controls scope: an ExcelDataTable row in insert or edit mode (`INLINE_CONTROLS_ATTRS`
+	 * in `@nikkierp/ui`). Density-aware controls only ever read `--nikki-control-height` (form fields
+	 * `--nikki-form-control-height`), so remapping both here shrinks inputs and buttons alike. Their
+	 * text drops to the small size too, which the table row can afford; this is the one size change
+	 * here, and it is the scope's, not density's.
+	 * Only buttons at the `Button` wrapper's default size are touched: an explicit size keeps its font.
+	 * A portalled dropdown is outside this scope, so the row also provides `InlineControlsScope` and
+	 * form fields there pass `size='sm'`, which sizes their options to match.
+	 */
+	[data-nikki-inline-controls] {
+		--nikki-control-height: var(--nikki-control-height-inline);
+		--nikki-form-control-height: var(--nikki-control-height-inline);
+	}
+
+	[data-nikki-inline-controls] .mantine-Input-input,
+	[data-nikki-inline-controls] .mantine-Button-root[data-size='compact-md'] {
+		font-size: var(--mantine-font-size-sm);
+	}
+}

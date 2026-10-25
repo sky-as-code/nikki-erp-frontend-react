@@ -7,6 +7,8 @@ import HttpBackend, { HttpBackendOptions } from 'i18next-http-backend';
 import * as React from 'react';
 import { initReactI18next, useTranslation } from 'react-i18next';
 
+import { resolveLangJson } from '../components/translatable/langJson';
+
 
 export default i18next;
 
@@ -208,11 +210,9 @@ export function useLocalize(moduleName?: string): LocalizeFn {
 		if (typeof langJson === 'string') {
 			return trans.t(langJson, translateOpts);
 		}
-		const transKey = langJson[dyn.LangJsonRefKey];
-		if (!transKey) {
-			return langJson[trans.i18n.language] ?? '$missing.translation';
-		}
-		return trans.t(transKey, translateOpts);
+		// A `$ref` always wins, even untranslated: i18next then returns the key, which names the
+		// label better than texts the schema may not even carry.
+		return resolveLangJson(langJson, trans.i18n.language, key => trans.t(key, translateOpts));
 	};
 }
 
@@ -255,5 +255,3 @@ export function useLocaleCollator(): (a: string, b: string) => number {
 		return (a: string, b: string) => collator.compare(a, b);
 	}, [language]);
 }
-
-export { JsonLangText } from './JsonLangText';

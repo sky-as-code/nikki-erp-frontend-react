@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 
 import { useActiveOrg } from './activeOrg';
 import { selectMyOrgs } from './orgSelectors';
-import { ThemeMode, UserContextOrg } from './types';
+import { DEFAULT_LOCAL_SETTINGS, Density, LocalSettings, ThemeMode, UserContextOrg } from './types';
 import { UserContextService, userContextService } from './userContextService';
 
 
@@ -41,30 +41,48 @@ export function useLocalSettings() {
 }
 
 /**
+ * The stored local settings and a writer that changes some of them.
+ *
+ * The set command replaces the stored value outright, so every writer sends the whole object with
+ * its own change applied; a partial payload would blank the fields it does not name.
+ */
+function useLocalSettingsPatch(): {
+	current: LocalSettings,
+	patch: (change: Partial<LocalSettings>) => void,
+} {
+	const { result, dispatchMethod } = useSetLocalSettings();
+	const stored = result.data as LocalSettings | null | undefined;
+	const patch = useCallback(
+		(change: Partial<LocalSettings>) => dispatchMethod({ ...DEFAULT_LOCAL_SETTINGS, ...stored, ...change }),
+		[dispatchMethod, stored],
+	);
+	return { current: { ...DEFAULT_LOCAL_SETTINGS, ...stored }, patch };
+}
+
+/**
  * The user's theme mode and the one way to change it.
  *
  * Writes the Shell's local settings, never Mantine directly: `ApplyStoredTheme` applies them, and a
  * scheme set on Mantine alone was overridden by the stale local value on the next boot.
  */
 export function useThemeMode(): { themeMode: ThemeMode, setThemeMode: (mode: ThemeMode) => void } {
-	const { result, dispatchMethod } = useSetLocalSettings();
-	const languageCode = result.data?.languageCode ?? null;
-	const setThemeMode = useCallback(
-		(themeMode: ThemeMode) => dispatchMethod({ languageCode, themeMode }),
-		[dispatchMethod, languageCode],
-	);
-	return { themeMode: result.data?.themeMode ?? 'auto', setThemeMode };
+	const { current, patch } = useLocalSettingsPatch();
+	const setThemeMode = useCallback((themeMode: ThemeMode) => patch({ themeMode }), [patch]);
+	return { themeMode: current.themeMode, setThemeMode };
+}
+
+/** The user's density and the one way to change it; `ApplyStoredDensity` applies it. */
+export function useDensity(): { density: Density, setDensity: (density: Density) => void } {
+	const { current, patch } = useLocalSettingsPatch();
+	const setDensity = useCallback((density: Density) => patch({ density }), [patch]);
+	return { density: current.density, setDensity };
 }
 
 /** The user's display language and the one way to change it; see `ApplyStoredLanguage`. */
 export function useLanguageCode(): { languageCode: string | null, setLanguageCode: (code: string) => void } {
-	const { result, dispatchMethod } = useSetLocalSettings();
-	const themeMode = result.data?.themeMode ?? 'auto';
-	const setLanguageCode = useCallback(
-		(languageCode: string) => dispatchMethod({ languageCode, themeMode }),
-		[dispatchMethod, themeMode],
-	);
-	return { languageCode: result.data?.languageCode ?? null, setLanguageCode };
+	const { current, patch } = useLocalSettingsPatch();
+	const setLanguageCode = useCallback((languageCode: string) => patch({ languageCode }), [patch]);
+	return { languageCode: current.languageCode, setLanguageCode };
 }
 
 export function useFirstOrgSlug() {

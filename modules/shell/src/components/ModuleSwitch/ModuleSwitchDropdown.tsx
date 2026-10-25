@@ -50,6 +50,7 @@ export function ModuleSwitchDropdown(props: ModuleSwitchDropdownProps): React.Re
 			dropdownWidth={props.dropdownWidth}
 			items={items}
 			testId='shell.moduleSwitch'
+			shortcut='M'
 			value={moduleSlug ?? ''}
 			onChange={handleModuleChange}
 		/>

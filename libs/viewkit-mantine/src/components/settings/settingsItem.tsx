@@ -74,6 +74,7 @@ function SettingsItem({ props }: { props: SettingsItemProps }): React.ReactNode 
 						item={item}
 						value={value}
 						options={data.options[props.name]}
+						labelKey={props.labelKey}
 						onChange={next => data.setDraft(level, props.name, next)}
 					/>
 					{lockKey != null ? (

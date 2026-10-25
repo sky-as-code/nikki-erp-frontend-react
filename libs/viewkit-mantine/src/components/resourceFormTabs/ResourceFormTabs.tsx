@@ -45,7 +45,7 @@ function ResourceFormTabs({ props, runtime }: {
 	const prefix = props.testId ?? 'ui.resourceFormTabs';
 
 	return (
-		<Stack component={PaperWithBorder} gap='xs' mb='0.5rem' {...componentAttrs(RESOURCE_FORM_TABS)}>
+		<Stack component={PaperWithBorder} gap='xs' {...componentAttrs(RESOURCE_FORM_TABS)}>
 			<Group gap='xs' align='center'>
 				<ActionIcon
 					variant='subtle'

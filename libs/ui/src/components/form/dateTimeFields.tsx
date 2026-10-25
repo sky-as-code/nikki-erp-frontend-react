@@ -9,6 +9,8 @@ import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
 import { useFieldTestAttrs } from './formTestIds';
 import { ReadOnlyBooleanSwitch } from './ReadOnlyBooleanSwitch';
+import { useFormInputSize } from '../Input/inlineControls';
+import { formInputProps } from '../Input/inputDensity';
 
 import type { LocalizeFn } from '../../i18n';
 
@@ -40,6 +42,7 @@ export function DateTimeInputField(props: DateTimeFieldProps<DateTimePickerProps
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading } = useFormField();
 	const fieldAttrs = useFieldTestAttrs(name);
+	const size = useFormInputSize();
 
 	if (!fieldData) {
 		return null;
@@ -68,9 +71,8 @@ export function DateTimeInputField(props: DateTimeFieldProps<DateTimePickerProps
 						onDropdownClose={field.onBlur}
 						disabled={modelLoading}
 						placeholder={t(fieldData.placeholder)}
-						size='md'
 						{...fieldAttrs}
-						{...props.inputProps}
+						{...formInputProps(props.inputProps, size)}
 					/>
 				)}
 			/>
@@ -84,6 +86,7 @@ export function TimeInputField(props: DateTimeFieldProps<InputProps>) {
 	const fieldData = useFieldData(name);
 	const { control, modelValue, modelLoading } = useFormField();
 	const fieldAttrs = useFieldTestAttrs(name);
+	const size = useFormInputSize();
 
 	if (!fieldData) {
 		return null;
@@ -108,9 +111,8 @@ export function TimeInputField(props: DateTimeFieldProps<InputProps>) {
 						onChange={event => field.onChange(event.currentTarget.value || undefined)}
 						onBlur={field.onBlur}
 						disabled={modelLoading}
-						size='md'
 						{...fieldAttrs}
-						{...(props.inputProps as any)}
+						{...formInputProps(props.inputProps as any, size)}
 					/>
 				)}
 			/>
@@ -174,14 +176,10 @@ export function ReadOnlyTextField(props: { name: string, localize: LocalizeFn })
  */
 function displayReadOnlyValue(value: unknown, localize: LocalizeFn): string {
 	if (value !== null && typeof value === 'object') {
-		const localized = localize(value as any);
-		return localized === MISSING_TRANSLATION ? '' : localized;
+		return localize(value as any);
 	}
 	return String(value);
 }
-
-/** What `useLocalize` hands back for a LangJson carrying no entry for the active language. */
-const MISSING_TRANSLATION = '$missing.translation';
 
 function extractDataTypeName(fieldDef: { data_type: unknown }): string | undefined {
 	const dataType = fieldDef.data_type as string | { name?: string } | undefined;

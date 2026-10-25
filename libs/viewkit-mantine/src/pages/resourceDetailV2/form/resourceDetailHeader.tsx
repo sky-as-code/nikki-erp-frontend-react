@@ -1,4 +1,5 @@
 import { dirtyFieldUpdateValue, useCrudFormRuntime } from '@nikkierp/ui/components/form';
+import { ShortcutSequence } from '@nikkierp/ui/shortcuts';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import React from 'react';
 import { z } from 'zod';
@@ -46,6 +47,12 @@ export const resourceDetailHeaderV2Renderer: IComponentRenderer<ResourceDetailHe
 		return <ResourceDetailHeader {...props} />;
 	},
 };
+
+/**
+ * Below the title row and the action row: Mantine's `md` in spacious, tighter in compact. Wrapped in
+ * `calc()` so Mantine's spacing resolver passes it through whole rather than splitting it on commas.
+ */
+const HEADER_ROW_SPACING = 'calc(var(--nikki-page-header-gap, var(--mantine-spacing-md)))';
 
 function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode {
 	const { schemaPack, translationNs, testId } = useResourceDetailContext();
@@ -122,23 +129,25 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 				titleLvl1={props.titleLvl1 ?? context.titleLvl1}
 				titleLvl2={props.titleLvl2 ?? context.titleLvl2}
 				backLinkTitle={backLinkTitle && modelSchema ? { linkHref: backLinkTitle.linkHref } : undefined}
+				// Every button of the bar is `Alt+Shift+n` in the order shown: Create is 1 in read mode,
+				// Discard 1 and Save 2 in update mode. The back link and Close sit outside it.
 				actions={(
-					<>
-						{context.commands.create ? (
-							<CreateActionButton disabled={context.isReading || context.isWriting} />
-						) : null}
+					<ShortcutSequence prefix='Shift+' max={9}>
 						<ResourceActionBar
+							createAction={context.commands.create ? (
+								<CreateActionButton disabled={context.isReading || context.isWriting} />
+							) : null}
 							onSaveClick={onSaveClick}
 							onCancel={onCancel}
 							isLoading={formRuntime?.isLoading ?? false}
 							updateMode={updateMode}
 							setUpdateMode={setUpdateMode}
 						/>
-					</>
+					</ShortcutSequence>
 				)}
 				leading={thumbnail ? <ResourceThumbnail spec={thumbnail} /> : undefined}
 				trailing={<SplitPaneCloseButton />}
-				rowSpacing='md'
+				rowSpacing={HEADER_ROW_SPACING}
 			/>
 		</PageHeaderProvider>
 	);

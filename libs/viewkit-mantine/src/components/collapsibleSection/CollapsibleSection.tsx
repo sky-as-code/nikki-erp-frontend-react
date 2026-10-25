@@ -4,6 +4,7 @@ import { useTranslate } from '@nikkierp/ui/i18n';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
+import clsx from 'clsx';
 import React from 'react';
 
 import classes from './CollapsibleSection.module.css';
@@ -44,7 +45,7 @@ function CollapsibleSection({ props, runtime }: {
 		: children;
 
 	return (
-		<Stack component={PaperWithBorder} gap='xs' mb='0.5rem' {...componentAttrs(COLLAPSIBLE_SECTION)}>
+		<Stack component={PaperWithBorder} gap='xs' {...componentAttrs(COLLAPSIBLE_SECTION)}>
 			{props.collapsible || props.header != null ? (
 				<SectionHeader
 					header={props.header}
@@ -89,12 +90,13 @@ function SectionHeader({ header, translationNs, collapsible, expanded, onToggle,
 	const title = header != null ? <Title order={4}>{t(header)}</Title> : null;
 
 	if (!collapsible) {
-		return <Group gap='xs'>{title}</Group>;
+		return <Group gap='xs' className={classes.sectionHeader}>{title}</Group>;
 	}
 
 	return (
 		<UnstyledButton
-			className={classes.collapsibleHeader} onClick={onToggle} aria-expanded={expanded}
+			className={clsx(classes.sectionHeader, classes.collapsibleHeader)}
+			onClick={onToggle} aria-expanded={expanded}
 			{...testAttrs(testId ?? 'ui.collapsibleSection', header, 'toggle')}
 		>
 			<Group gap='xs'>

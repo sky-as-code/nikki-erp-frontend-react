@@ -1,5 +1,6 @@
 import { ColorInput, Group, Tooltip } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { withInputDensity } from '@nikkierp/ui/components';
 import { AutoField } from '@nikkierp/ui/components/form';
 import { useClientErrorTranslate, useTranslate } from '@nikkierp/ui/i18n';
 import { IconAlertCircle } from '@tabler/icons-react';
@@ -19,6 +20,9 @@ import type { NewRowFieldEditor, NewRowFieldEditorProps } from '@nikkierp/ui/com
  */
 export const ColorDisplayContext = React.createContext(false);
 
+/** No `size`: the row's inline-controls scope sizes the box, like every other input in it. */
+const COLOR_INPUT_CLASS_NAMES = withInputDensity({});
+
 /**
  * `#RRGGBB` picker, enabled only while the attribute's display type is Color. Under any other
  * display type the stored colour is kept and shown, but not edited: it is meaningless there.
@@ -33,7 +37,7 @@ function ColorHexEditor({ field, form }: NewRowFieldEditorProps): React.ReactNod
 		<Tooltip label={t('product_attribute_values_colorOnlyForColorDisplay')} disabled={isColor} withinPortal>
 			<div>
 				<ColorInput
-					size='xs'
+					classNames={COLOR_INPUT_CLASS_NAMES}
 					format='hex'
 					value={value}
 					onChange={next => input.onChange(next === '' ? null : next)}

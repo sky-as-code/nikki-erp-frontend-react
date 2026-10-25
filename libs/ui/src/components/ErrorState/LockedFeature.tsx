@@ -1,4 +1,4 @@
-import { Button, Group, Modal, Stack, Text } from '@mantine/core';
+import { Button, Group, Stack, Text } from '@mantine/core';
 import { EventBus } from '@nikkierp/common/eventBus';
 import { PERMISSION_DENIED_TOPIC, type PermissionDeniedEvent } from '@nikkierp/common/service';
 import { testAttrs } from '@nikkierp/common/utils';
@@ -7,6 +7,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { InsufficientPermissionContent } from './InsufficientPermission';
+import { Modal } from '../Modal/Modal';
 
 
 export type LockedFeatureModalProps = {

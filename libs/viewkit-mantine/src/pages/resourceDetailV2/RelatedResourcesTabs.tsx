@@ -19,6 +19,7 @@ import { useResourceSearch } from '../../data/useResourceSearch';
 import { useTableRelatedSchemas, useTranslateFieldName } from '../../data/useTableFieldLabels';
 import { useTableActionLocks } from '../../permissions';
 import { resourceTestIdPrefix } from '../../testIds';
+import { useDefaultTableHotKeys } from '../resourceSplitView/splitViewContext';
 
 import type { RelatedResource } from './props';
 import type { InterpolateResult } from '../../data/interpolate';
@@ -47,7 +48,7 @@ export function RelatedResourcesTabs(props: RelatedResourcesTabsProps): React.Re
 		return null;
 	}
 	return (
-		<Stack component={PaperWithBorder} gap='xs' mb='0.5rem'>
+		<Stack component={PaperWithBorder} gap='xs'>
 			<UnstyledButton
 				className={classes.collapsibleHeader}
 				onClick={onToggle}
@@ -153,6 +154,7 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 	);
 	const translateFieldName = useTranslateFieldName(resource.translationNs, pack?.modelSchema, relatedSchemas);
 	const emptyMessage = useTranslatedKey(resource.translationNs, resource.emptyMessage);
+	const enableHotKeys = useDefaultTableHotKeys();
 
 	// Compact, not the full refusal page: this tab is one section of the detail page.
 	if (search.refused) {
@@ -179,6 +181,7 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 			buildLinkHref={editing ? undefined : buildLinkHref}
 			fieldRenderers={fieldRenderers}
 			emptyMessage={emptyMessage}
+			enableHotKeys={enableHotKeys}
 			{...assignment}
 		>
 			{/* The same xs spacing the list page puts between its toolbar and the table; the header
@@ -194,7 +197,7 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 					<ExcelDataTable.TableHeader enableColumnFilters={false} />
 					<ExcelDataTable.Table className='max-h-[480px]' />
 				</div>
-				<ExcelDataTable.Toolbar right={<ExcelDataTable.Pagination />} />
+				<ExcelDataTable.Toolbar right={<ExcelDataTable.Pagination enableHotKeys={false} />} />
 			</Stack>
 		</ExcelDataTable.Provider>
 	);
@@ -241,6 +244,7 @@ function RelatedActions({ resource, graph, editing }: {
 						? t(resource.viewAllLabel)
 						: t('datatable.viewAll', { defaultValue: 'View all' })}
 					href={viewAllHrefOf(viewAllHref, resource.viewAllFiltered ? graph : undefined)}
+					type={resource.viewAllType}
 					testId='viewAll'
 				/>
 			) : null}

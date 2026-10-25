@@ -20,7 +20,11 @@ export type EditRowActionsProps = {
 	discardTestId?: TestIdAttributes,
 };
 
-/** The confirm/discard pair an editing or inserting row shows in the filler column, both in the default colour. */
+/**
+ * The confirm/discard pair an editing or inserting row shows in the filler column, both in the
+ * default colour. Like every button here it takes no `size`: the row's inline-controls scope
+ * (`INLINE_CONTROLS_ATTRS`) sizes it with the inputs beside it.
+ */
 export function EditRowActions({
 	mode, onConfirm, onDiscard, busy = false, confirmTestId, discardTestId,
 }: EditRowActionsProps): React.ReactElement {
@@ -32,7 +36,6 @@ export function EditRowActions({
 		<Group gap='xs' wrap='nowrap'>
 			<Button
 				variant='default'
-				size='xs'
 				leftSection={<IconCheck size={14} />}
 				disabled={busy}
 				onClick={onConfirm}
@@ -42,7 +45,6 @@ export function EditRowActions({
 			</Button>
 			<Button
 				variant='default'
-				size='xs'
 				leftSection={<IconX size={14} />}
 				onClick={onDiscard}
 				{...discardTestId}
@@ -70,7 +72,6 @@ export function DeleteRowAction({
 	return (
 		<Button
 			variant='default'
-			size='xs'
 			leftSection={<IconTrash size={14} />}
 			disabled={disabled}
 			locked={locked}
@@ -97,7 +98,6 @@ export function EditRowAction({
 	return (
 		<Button
 			variant='default'
-			size='xs'
 			leftSection={<IconPencil size={14} />}
 			disabled={disabled}
 			locked={locked}

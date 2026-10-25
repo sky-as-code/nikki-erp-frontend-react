@@ -1,6 +1,6 @@
-import { Center, Group, Image, Modal, Stack, Text } from '@mantine/core';
+import { Center, Group, Image, Stack, Text } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
-import { Button } from '@nikkierp/ui/components';
+import { Button, Modal } from '@nikkierp/ui/components';
 import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
 import React from 'react';
 

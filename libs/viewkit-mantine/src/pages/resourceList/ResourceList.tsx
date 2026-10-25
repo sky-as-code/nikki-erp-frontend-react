@@ -92,6 +92,7 @@ function ResourceListView({ params, routePath }: ResourceListViewProps): React.R
 				buildLinkHref={buildLinkHref}
 				allowColumnResizing
 				actions={gatedActions}
+				enableHotKeys={params.enableHotKeys}
 				hasFixHeader
 				sortableFields={searchData.desired_fields}
 				orderBy={getSearchRequestOrderBy(searchRequest)}

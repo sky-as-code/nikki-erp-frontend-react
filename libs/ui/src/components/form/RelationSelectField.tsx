@@ -85,6 +85,7 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 							// An input, not a filled button: this stands in for a form field and
 							// must match the inputs beside it, not paint in the theme's accent.
 							variant='input'
+							formField
 							// A table row's select opens wider than its cell; a form field matches its input.
 							dropdownWidth={contentWidthDropdown ? undefined : 'target'}
 							value={(field.value as string) ?? null}

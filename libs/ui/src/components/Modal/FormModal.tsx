@@ -1,6 +1,7 @@
-import { Modal, Title } from '@mantine/core';
+import { Title } from '@mantine/core';
 import React from 'react';
 
+import { Modal } from './Modal';
 import { ModelSchema } from '../../model';
 import { FormFieldProvider, FormStyleProvider } from '../form';
 

@@ -56,7 +56,7 @@ function handleGetLocalSettings(): ServiceResult<LocalSettings | null> {
 async function handleSetLocalSettings(command: Command): Promise<ServiceResult<LocalSettings>> {
 	const payload = command.payload as LocalSettings | undefined;
 	if (!payload) {
-		throw new Error(`${USER_CONTEXT_COMMANDS.SET_LOCAL_SETTINGS} requires { languageCode, themeMode }.`);
+		throw new Error(`${USER_CONTEXT_COMMANDS.SET_LOCAL_SETTINGS} requires { languageCode, themeMode, density }.`);
 	}
 	return ok(await dispatchServiceMethod<LocalSettings>(userContextService.setLocalSettings, payload));
 }
@@ -64,8 +64,8 @@ async function handleSetLocalSettings(command: Command): Promise<ServiceResult<L
 /**
  * Refetches the user context after something changed what it reports -- a Settings save, chiefly.
  *
- * `getUserContext` re-mirrors the server's language and theme into local settings, which
- * `ApplyStoredTheme`, `ApplyStoredLanguage` and the format defaults read; the event wakes the
+ * `getUserContext` re-mirrors the server's language, theme and density into local settings, which
+ * `ApplyStoredTheme`, `ApplyStoredDensity`, `ApplyStoredLanguage` and the format defaults read; the event wakes the
  * appliers whose React tree did not see the store write.
  */
 async function handleRefresh(): Promise<ServiceResult<UserContext>> {

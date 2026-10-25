@@ -1,4 +1,4 @@
-import { Button as MantineButton, Menu } from '@mantine/core';
+import { Menu } from '@mantine/core';
 import { IconDots, IconX } from '@tabler/icons-react';
 import React from 'react';
 
@@ -49,9 +49,8 @@ function DeselectButton({ count, compact }: { count: number, compact: boolean })
 	const t = useTranslate('common');
 	const { selection, tid } = useExcelDataTableContext();
 	return (
-		<MantineButton
+		<Button
 			variant='light'
-			size='compact-md'
 			onClick={selection.clear}
 			rightSection={<IconX size={14} />}
 			aria-label={t('datatable.deselect', { defaultValue: 'Deselect' })}
@@ -63,7 +62,7 @@ function DeselectButton({ count, compact }: { count: number, compact: boolean })
 			  * "Đã chọn 3".
 			  */}
 			{compact ? count : t('datatable.selected', { count, defaultValue: '{{count}} selected' })}
-		</MantineButton>
+		</Button>
 	);
 }
 

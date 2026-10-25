@@ -9,7 +9,7 @@ import * as c from '../constants';
 import { ProductTemplateCommands } from '../features/productTemplate/commands';
 import { ProductVariantCommands } from '../features/productVariant/commands';
 import { StockProductConfigCommands } from '../features/stockProductConfig/commands';
-import { TEMPLATE_RESOLVE_VARIANT, templateAttributesNode } from '../viewkit/props';
+import { templateAttributesNode } from '../viewkit/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -123,8 +123,7 @@ function buildTemplateAttributesSection(): ComponentNode {
  * Copy creates a new template with the active configuration (no stock, SKUs or variants), and
  * asserts `copy` besides the create it performs; on success it says so and opens the copy. Re-sync
  * re-runs the variant reconcile of the saved configuration, asserting `generate_variants`. Resolve
- * variant is the view kit's own dialog (one value per variant-creating attribute of the saved
- * configuration), locking itself on `generate_variants` and hidden in update mode.
+ * variant is not here: it sits in the Attributes table's toolbar, beside the lines it acts on.
  */
 function buildTemplateContextualActions() {
 	return {
@@ -143,10 +142,6 @@ function buildTemplateContextualActions() {
 			label: 'actions.resync_variants',
 			command: ProductTemplateCommands.GENERATE_VARIANTS,
 			actionCode: 'generate_variants',
-		},
-		resolveVariant: {
-			label: 'product_template_config_resolve',
-			component: TEMPLATE_RESOLVE_VARIANT,
 		},
 	};
 }
@@ -244,6 +239,7 @@ function buildTemplateResources() {
 			showViewAll: true,
 			viewAllFiltered: true,
 			viewAllLabel: 'product_template_config_viewVariants',
+			viewAllType: 'link' as const,
 		},
 		{
 			label: 'product_template_sections_vendor_prices',

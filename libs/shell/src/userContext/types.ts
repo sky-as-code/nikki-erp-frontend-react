@@ -15,6 +15,27 @@ export const ACTIVE_ORG_STORAGE_KEY = `shell:userContext:activeOrgId`;
  */
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
+/**
+ * How tightly controls, rows and fields are packed (backend setting `essential.density`).
+ *
+ * `compact` is the default, here and in the backend; `spacious` is the look the application had
+ * before density existed. Density changes spacing only, through the `--nikki-*` tokens in the Shell's
+ * `density.css`; it never changes text size. Not to be confused with the narrow-screen
+ * `useIsCompact`.
+ */
+export type Density = 'spacious' | 'compact';
+
+/** The `<html>` attribute `ApplyStoredDensity` writes and `density.css` reads. */
+export const DENSITY_ATTRIBUTE = 'data-nikki-density';
+
+/** The density of a user who never chose one, matching the backend default and `density.css`. */
+export const DEFAULT_DENSITY: Density = 'compact';
+
+/** Narrows an unknown value to a `Density`, falling back to {@link DEFAULT_DENSITY}. */
+export function toDensity(value: unknown): Density {
+	return value === 'spacious' || value === 'compact' ? value : DEFAULT_DENSITY;
+}
+
 export type GetUserContextResponse = {
 	id: string,
 	avatar_url: string | null,
@@ -56,6 +77,8 @@ export type GetUserContextResponse = {
 		supported_languages: string[],
 		timezone: string,
 		theme_mode: ThemeMode,
+		/** Optional: a backend that predates the setting does not send it. */
+		density?: Density,
 	},
 	system_settings: {
 		app_name: string,
@@ -94,6 +117,7 @@ export type AccountSettings = {
 	supportedLanguages: string[],
 	timezone: string,
 	themeMode: ThemeMode,
+	density: Density,
 };
 
 /**
@@ -141,6 +165,7 @@ export function toUserContext(response: GetUserContextResponse): UserContext {
 			supportedLanguages: response.account_settings.supported_languages,
 			timezone: response.account_settings.timezone,
 			themeMode: response.account_settings.theme_mode,
+			density: toDensity(response.account_settings.density),
 		},
 		systemSettings: {
 			appName: response.system_settings.app_name,
@@ -179,7 +204,15 @@ export type Language = {
 export type LocalSettings = {
 	languageCode: string | null,
 	themeMode: ThemeMode,
+	density: Density,
 };
+
+/**
+ * What applies before anything is stored. `auto` rather than `light`: it is what the backend
+ * defaults to, and it defers to the device instead of overriding a user whose system is set to dark
+ * before their stored choice loads.
+ */
+export const DEFAULT_LOCAL_SETTINGS: LocalSettings = { languageCode: null, themeMode: 'auto', density: DEFAULT_DENSITY };
 
 /**
  * Published after the Shell's mirrored settings are written from outside its React tree -- a

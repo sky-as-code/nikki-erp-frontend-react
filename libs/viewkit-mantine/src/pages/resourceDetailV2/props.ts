@@ -51,6 +51,11 @@ export const relatedResourceSchema = resourceTablePropsSchema.extend({
 	 * as the list's `?initialGraph=`, e.g. a template's variants rather than every variant.
 	 */
 	viewAllFiltered: z.boolean().optional(),
+	/**
+	 * How "View all" renders: `action_link` (the default) a link button, `link` a text link for a
+	 * navigation that should not read as an action. `action` would have no click to fire.
+	 */
+	viewAllType: z.enum(['action_link', 'link']).optional(),
 	assignment: relatedAssignmentSchema.optional(),
 }).strict();
 

@@ -15,6 +15,7 @@ import { isRowDeleteDisabled, isRowDeleteShown, isRowEditShown } from './rowDele
 import { useSelectOnlyPress } from './rowPress';
 import { rowIdOf } from './types';
 import { useRowDelete } from './useRowDelete';
+import { INLINE_CONTROLS_ATTRS } from '../Input/inputDensity';
 
 import type { RowId, SearchItem } from './types';
 
@@ -111,6 +112,7 @@ export function RowActionsCell({ item, rowId, isSelected, children }: RowActions
 				wrap='nowrap'
 				className={clsx(classes.rowActions, { [classes.rowActionsVisible]: isSelected || updateScope === 'table' })}
 				onMouseDown={event => event.stopPropagation()}
+				{...INLINE_CONTROLS_ATTRS}
 			>
 				{showEdit ? <RowEditButton rowId={rowId} /> : null}
 				{showDelete ? <RowDeleteButton item={item} rowId={rowId} /> : null}

@@ -51,6 +51,11 @@ export const resourceListPropsSchema = z.object({
 	/** Map of field name -> serializable renderer spec, resolved at render time. */
 	fieldRenderers: z.record(z.string(), fieldRendererSpecSchema).optional(),
 	/**
+	 * Off to keep the table's filter toggle (`Alt+/`) and pagination (`Alt+P`, `Alt+←`/`Alt+→`) free
+	 * of shortcuts. Absent means on.
+	 */
+	enableHotKeys: z.boolean().optional(),
+	/**
 	 * `{module}.{component}` prefix for the `data-testid` of every element this page renders.
 	 * Derived from the route and schema name when omitted, so most pages need not set it.
 	 */

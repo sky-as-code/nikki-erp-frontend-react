@@ -6,7 +6,7 @@ import React from 'react';
 import { fieldsToWrite, isTextEntryElement, sentValueKey } from './tableScopeModel';
 import { useSchemaLocalize, useTranslate } from '../../../i18n';
 import { CrudFormProvider } from '../../form';
-import { SelectDefaultsContext } from '../../SearchableSelect/dropdownWidth';
+import { INLINE_CONTROLS_ATTRS } from '../../Input/inputDensity';
 import { ActionColumnCell } from '../actionColumns/ActionColumnCell';
 import { BadgedValue, RowActionsCell, RowNumberCell } from '../BodyRow';
 import { CellContent } from '../cells/CellContent';
@@ -14,11 +14,11 @@ import { useChangeBadgeSlot } from '../changeIndicator/RowChangeBadge';
 import { useExcelDataTableContext } from '../context';
 import { buildRowUpdatePayload, isRowEditableField, rowFormData } from '../editModel';
 import classes from '../ExcelDataTable.module.css';
+import { InlineRowScope } from '../InlineRowScope';
 import { SortHandleCell, useSortableRowProps } from '../manualSort/ManualSort';
 import { EditingInput, REFUSAL_TEXT, RowErrors } from '../RowEditor';
 import { readRowKey } from '../rowKeys';
 import { RowLoading } from '../RowLoading';
-import { ROW_SELECT_DEFAULTS } from '../rowSelectDefaults';
 import { useRowUpdateWrite } from '../rowUpdateWrite';
 
 import type { FormProviderRenderProps } from '../../form';
@@ -77,13 +77,14 @@ function TableScopeCells({ item, rowId, rowNumber, runtime }: TableScopeCellsPro
 		sortableProps.ref?.(element);
 	};
 	return (
-		<SelectDefaultsContext.Provider value={ROW_SELECT_DEFAULTS}>
+		<InlineRowScope>
 			<MantineTable.Tr
 				{...sortableProps}
 				ref={setRowRef}
 				onKeyDown={onKeyDown}
 				aria-selected={isSelected}
 				className={classes.bodyRow}
+				{...INLINE_CONTROLS_ATTRS}
 				{...tid.row(rowId)}
 			>
 				{indexColumnVisible ? (
@@ -113,7 +114,7 @@ function TableScopeCells({ item, rowId, rowNumber, runtime }: TableScopeCellsPro
 					<RowErrors errors={write.errors.filter(error => !error.field)} />
 				</RowActionsCell>
 			</MantineTable.Tr>
-		</SelectDefaultsContext.Provider>
+		</InlineRowScope>
 	);
 }
 

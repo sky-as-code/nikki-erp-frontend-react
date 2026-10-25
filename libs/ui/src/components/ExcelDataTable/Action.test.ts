@@ -1,7 +1,7 @@
 import { ClientErrorItem } from '@nikkierp/common/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getActionStateProps, isActionVisible, publishActionCommand } from './Action';
+import { getActionStateProps, isActionVisible, publishActionCommand, resolveActionType } from './Action';
 
 
 const notice = vi.hoisted(() => ({
@@ -30,6 +30,22 @@ describe('isActionVisible', () => {
 		expect(isActionVisible('multiple', 0)).toBe(false);
 		expect(isActionVisible('multiple', 1)).toBe(true);
 		expect(isActionVisible('multiple', 5)).toBe(true);
+	});
+});
+
+describe('resolveActionType', () => {
+	it('defaults to a link button with an href, else a button', () => {
+		expect(resolveActionType({ href: 'new' })).toBe('action_link');
+		expect(resolveActionType({})).toBe('action');
+	});
+
+	it('keeps an explicit type, and turns a link type without an href into a button', () => {
+		expect(resolveActionType({ type: 'link', href: 'variants' })).toBe('link');
+		expect(resolveActionType({ type: 'action', href: 'new' })).toBe('action');
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+		expect(resolveActionType({ type: 'link' })).toBe('action');
+		expect(resolveActionType({ type: 'action_link' })).toBe('action');
+		warn.mockRestore();
 	});
 });
 

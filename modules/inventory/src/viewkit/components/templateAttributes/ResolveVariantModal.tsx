@@ -1,11 +1,10 @@
-import { Alert, Group, Modal, Stack, Text } from '@mantine/core';
+import { Alert, Group, Stack, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { Button, LinkButton, Select } from '@nikkierp/ui/components';
+import { Button, LinkButton, Modal, Select } from '@nikkierp/ui/components';
+import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
 import { useCommand } from '@nikkierp/ui/hookhoc';
-import { ComponentAnchor } from '@nikkierp/viewengine/render';
 import { useActionLock, useResourceBaseHref, useResourceFormView } from '@nikkierp/viewkit-mantine';
 import React from 'react';
-import { z } from 'zod';
 
 import { useAttributeCatalogue } from './attributeCatalogue';
 import { useTemplateRecord } from './configDraftState';
@@ -14,14 +13,12 @@ import { configFromRecord } from './templateConfigDrafts';
 import { useSectionText } from './useSectionText';
 import { PRODUCT_TEMPLATE_SCHEMA_NAME } from '../../../constants';
 import { ProductTemplateCommands } from '../../../features/productTemplate/commands';
-import { TEMPLATE_RESOLVE_VARIANT } from '../../ids';
 
 import type { AttributeCatalogue } from './attributeCatalogue';
 import type { TemplateRecord } from './configDraftState';
 import type { SectionText } from './sectionText';
 import type { AttributeLineDraft } from './templateConfigDrafts';
 import type { ResolveSelectionRequest, ResolveSelectionResponse } from '../../../features/productTemplate/types';
-import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
 /** The backend action a resolve that may create the variant asserts (a plain lookup needs only read). */
@@ -31,26 +28,12 @@ const RESOLVABLE_MODES = new Set(['instant', 'dynamic']);
 type ActionProps = { label: string };
 
 /**
- * A `component` contextual action of the template detail: it sits in the page's actions row, beside
- * Copy and Re-sync, and the page passes its translated label.
+ * The left toolbar of the Attributes table, holding Resolve variant beside the lines it acts on.
+ * It reads the SAVED configuration off the record, so it shows only for a saved template with at
+ * least one saved line, and not while the form is edited: a resolve then would act on lines other
+ * than the ones on screen.
  */
-export const templateResolveVariantRenderer: IComponentRenderer<ActionProps> = {
-	type: TEMPLATE_RESOLVE_VARIANT,
-	propsSchema: z.object({ label: z.string() }).strict(),
-	render(props) {
-		return (
-			<ComponentAnchor id={TEMPLATE_RESOLVE_VARIANT}>
-				<ResolveVariantAction label={props.label} />
-			</ComponentAnchor>
-		);
-	},
-};
-
-/**
- * Reads the SAVED configuration off the record, so it is hidden while the form is edited: a resolve
- * then would act on lines other than the ones on screen.
- */
-function ResolveVariantAction({ label }: ActionProps): React.ReactNode {
+export function ResolveVariantToolbar(): React.ReactNode {
 	const record = useTemplateRecord();
 	const updateMode = useResourceFormView()?.updateMode ?? false;
 	const text = useSectionText();
@@ -58,10 +41,19 @@ function ResolveVariantAction({ label }: ActionProps): React.ReactNode {
 	const lines = React.useMemo(() => configFromRecord(configuration).lines, [configuration]);
 	const attributeIds = React.useMemo(() => [...new Set(lines.map(line => line.attributeId))], [lines]);
 	const catalogue = useAttributeCatalogue(attributeIds);
-	if (!record || updateMode) {
+	if (!record || updateMode || lines.length === 0) {
 		return null;
 	}
-	return <ResolveVariantButton record={record} lines={lines} catalogue={catalogue} text={text} label={label} />;
+	const button = (
+		<ResolveVariantButton
+			record={record}
+			lines={lines}
+			catalogue={catalogue}
+			text={text}
+			label={text.t('product_template_config_resolve')}
+		/>
+	);
+	return <ExcelDataTable.Toolbar left={button} />;
 }
 
 type ResolveProps = {
@@ -84,7 +76,6 @@ function ResolveVariantButton({ label, ...props }: ResolveProps & ActionProps): 
 		<>
 			<Button
 				variant='outline'
-				size='compact-md'
 				locked={lock.locked}
 				lockedMissing={lock.missing}
 				disabled={lines.length === 0}

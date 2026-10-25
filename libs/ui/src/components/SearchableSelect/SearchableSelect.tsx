@@ -24,6 +24,10 @@ import { useTranslation } from 'react-i18next';
 import { useDropdownWidthProps } from './dropdownWidth';
 import { DEFAULT_MAX_OPTIONS, limitOptions } from './optionLimit';
 import { useShowLockedFeature } from '../ErrorState';
+import { useFormInputSize } from '../Input/inlineControls';
+import { withFormInputDensity, withInputDensity } from '../Input/inputDensity';
+
+import type { FormInputSize } from '../Input/inputDensity';
 
 
 export type SearchableSelectItem = {
@@ -61,6 +65,12 @@ export type SearchableSelectProps = {
 	triggerComponent?: typeof Button,
 	/** How the closed control paints. Defaults to `button`. See {@link SearchableSelectVariant}. */
 	variant?: SearchableSelectVariant,
+	/**
+	 * The `input` variant stands in for a form field: it takes the form field's height
+	 * (`--nikki-form-control-height`) and text size, and its options match that text. Without it the
+	 * control matches the `Input` and `Select` wrappers instead.
+	 */
+	formField?: boolean,
 	unselectedPlaceholder?: string,
 	value?: string | null,
 	onChange?: (value: string) => void,
@@ -143,6 +153,9 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 	}, [activeValue, props.items]);
 
 	const widthProps = useDropdownWidthProps(props.dropdownWidth);
+	const formSize = useFormInputSize();
+	// The options follow the text of the control, which Mantine's `Combobox` derives from `size`.
+	const size = props.formField ? formSize : undefined;
 	const options = renderOptions(
 		props.items, search, activeValue, props.testId, props.maxOptions ?? DEFAULT_MAX_OPTIONS,
 	);
@@ -153,8 +166,8 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 
 	const control = (
 		<Combobox
-			size='md'
 			store={combobox}
+			size={size}
 			withinPortal={true}
 			{...widthProps} {...props.comboboxProps}
 			onOptionSubmit={(val) => {
@@ -174,6 +187,7 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 				combobox={combobox}
 				triggerComponent={props.triggerComponent}
 				variant={props.variant}
+				size={size}
 				unselectedPlaceholder={props.unselectedPlaceholder}
 				disabled={props.disabled}
 				onClear={onClear}
@@ -279,10 +293,17 @@ type ComboboxTargetProps = {
 	unselectedPlaceholder?: string,
 	disabled?: boolean,
 	variant?: SearchableSelectVariant,
+	/** Set for a form field: its text size, with the form field's height. */
+	size?: FormInputSize,
 	/** Set only when the control may be cleared; shown while a value is picked. */
 	onClear?: () => void,
 	testId?: string,
 };
+
+/** Sized like the `Input` and `Select` wrappers, so the control matches the inputs beside it. */
+const INPUT_DENSITY_CLASS_NAMES = withInputDensity({});
+/** Sized like the form fields (`formInputProps`), for a select standing in for one. */
+const FORM_INPUT_DENSITY_CLASS_NAMES = withFormInputDensity({});
 
 const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 	const { value, combobox } = props;
@@ -299,7 +320,8 @@ const ComboboxTarget: FC<ComboboxTargetProps> = (props) => {
 					component='button'
 					type='button'
 					pointer
-					size='md'
+					size={props.size}
+					classNames={props.size ? FORM_INPUT_DENSITY_CLASS_NAMES : INPUT_DENSITY_CLASS_NAMES}
 					rightSection={onClear
 						? <ClearMark onClear={onClear} testId={props.testId} />
 						: <Combobox.Chevron />}

@@ -36,6 +36,15 @@ export function useCanClosePane(): boolean {
 	return isSecondary && isPrimaryOpen;
 }
 
+/**
+ * Whether a table in this subtree should take the list keys (`Alt+/`, `Alt+P`, `Alt+←`/`Alt+→`) by
+ * default. Not in a detail pane shown beside its list: the list already owns them there, and a
+ * table mounting later in the pane would otherwise win them.
+ */
+export function useDefaultTableHotKeys(): boolean {
+	return !useCanClosePane();
+}
+
 
 export type SplitViewPrimaryState = {
 	/**

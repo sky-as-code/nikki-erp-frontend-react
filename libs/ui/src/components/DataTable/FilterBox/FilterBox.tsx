@@ -13,6 +13,8 @@ export type FilterBoxProps = {
 	activeCount: number,
 	expanded: boolean,
 	onToggle: () => void,
+	/** Off to drop the button's `Alt+/`; defaults to on. */
+	enableHotKeys?: boolean,
 	tid: DataTableTestIds,
 };
 
@@ -27,6 +29,7 @@ export type FilterBoxProps = {
 export function FilterBox(props: FilterBoxProps): React.ReactNode {
 	const t = useTranslate('common');
 	const hasFilters = props.activeCount > 0;
+	const shortcut = (props.enableHotKeys ?? true) ? '/' : undefined;
 
 	return (
 		<Box className='relative grow basis-0'>
@@ -34,6 +37,7 @@ export function FilterBox(props: FilterBoxProps): React.ReactNode {
 				<Button
 					variant={props.expanded || hasFilters ? 'light' : 'default'}
 					onClick={props.onToggle}
+					shortcut={shortcut}
 					leftSection={hasFilters
 						? <Badge size='sm' circle variant='filled'>{props.activeCount}</Badge>
 						: <IconFilter size={16} />}

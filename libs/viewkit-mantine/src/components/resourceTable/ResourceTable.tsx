@@ -84,6 +84,7 @@ function ResourceTable({ params }: { params: ResourceTableProps }): React.ReactN
 				fieldRenderer={fieldRenderer}
 				buildLinkHref={buildLinkHref}
 				actions={actions}
+				enableHotKeys={params.enableHotKeys}
 				sortableFields={searchData.desired_fields}
 				orderBy={getSearchRequestOrderBy(searchRequest)}
 				translationNs={params.translationNs}

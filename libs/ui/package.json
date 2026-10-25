@@ -106,6 +106,7 @@
 		"./menu": "./src/menu/index.ts",
 		"./microApp": "./src/microApp/index.ts",
 		"./model": "./src/model/index.ts",
+		"./shortcuts": "./src/shortcuts/index.ts",
 		"./theme": "./src/theme/index.ts",
 		"./types": "./src/types/index.ts",
 		"./vite": "./src/vite/index.ts",

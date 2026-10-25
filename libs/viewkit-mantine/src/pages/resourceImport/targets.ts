@@ -1,14 +1,8 @@
 import { findRelationBySrcField, LangJsonRefKey } from '@nikkierp/common/dynamicModel';
+import { resolveLangJson, SYSTEM_DEFAULT_LANGUAGE } from '@nikkierp/ui/components';
 
 import type { ModelSchema, ModelSchemaField } from '@nikkierp/common/dynamicModel';
 
-
-/**
- * The language a field label falls back to before the raw field name. The client has no tenant
- * default language (i18n deliberately declares no `fallbackLng`), so the platform default is the
- * one language every schema label is guaranteed to carry.
- */
-export const DEFAULT_LANGUAGE = 'en-US';
 
 /** The field every import must map when the schema declares it (deduplication key). */
 export const EXTERNAL_ID_FIELD = 'external_id';
@@ -58,7 +52,7 @@ export function isMandatoryTarget(field: ModelSchemaField): boolean {
 }
 
 /**
- * Current language → default language → raw field name. A `$ref` label is a translation key and
+ * Current language → default language → any text → raw field name. A `$ref` label is a translation key and
  * resolves through the translator instead, with the field name as the last resort.
  */
 export function resolveFieldLabel(field: ModelSchemaField, language: string, translate: TranslateKeyFn): string {
@@ -68,7 +62,7 @@ export function resolveFieldLabel(field: ModelSchemaField, language: string, tra
 		const translated = translate(ref);
 		return translated && translated !== ref ? translated : field.name;
 	}
-	return label[language] || label[DEFAULT_LANGUAGE] || field.name;
+	return resolveLangJson(label, language) || field.name;
 }
 
 /** Every text a header may use for this field, in the order the requirement resolves labels. */
@@ -77,7 +71,7 @@ export function fieldMatchKeys(field: ModelSchemaField, language: string, transl
 	const ref = label[LangJsonRefKey];
 	const candidates = ref
 		? [translate(ref), field.name]
-		: [label[language], label[DEFAULT_LANGUAGE], field.name];
+		: [label[language], label[SYSTEM_DEFAULT_LANGUAGE], field.name];
 	const keys: string[] = [];
 	for (const candidate of candidates) {
 		const key = normalizeMatchKey(candidate);

@@ -1,5 +1,7 @@
-import { Loader, Modal, Stack, Text, Title } from '@mantine/core';
+import { Loader, Stack, Text, Title } from '@mantine/core';
 import React from 'react';
+
+import { Modal } from './Modal';
 
 
 export interface DetailModalProps {

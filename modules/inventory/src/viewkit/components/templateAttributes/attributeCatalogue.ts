@@ -1,3 +1,4 @@
+import { resolveLangJson } from '@nikkierp/ui/components';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import React from 'react';
 
@@ -129,7 +130,7 @@ function toValue(item: Record<string, unknown>): CatalogueValue {
 	};
 }
 
-/** A `langjson` name in the active language, else in any language it has, else the code. */
+/** A `langjson` name by {@link resolveLangJson}, else `fallback` (the code). */
 export function localizedName(raw: unknown, language: string, fallback: string): string {
 	if (typeof raw === 'string' && raw !== '') {
 		return raw;
@@ -137,7 +138,5 @@ export function localizedName(raw: unknown, language: string, fallback: string):
 	if (raw === null || typeof raw !== 'object') {
 		return fallback;
 	}
-	const names = raw as Record<string, unknown>;
-	const label = names[language] ?? Object.values(names).find(value => typeof value === 'string' && value !== '');
-	return typeof label === 'string' && label !== '' ? label : fallback;
+	return resolveLangJson(raw as dyn.ModelSchemaLangJson, language) || fallback;
 }

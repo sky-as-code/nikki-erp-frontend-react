@@ -12,6 +12,16 @@ import type { ColumnWidths } from './types';
 
 
 /**
+ * The cell padding of both `<table>`s, from the density token `--nikki-table-cell-padding-y`.
+ * Mantine writes `--table-vertical-spacing` inline from `verticalSpacing`; a `vars` resolver is
+ * merged after it. The fallback is Mantine's default (7px), for where the Shell's tokens are not loaded.
+ */
+export function tableDensityVars() {
+	const padding = 'var(--nikki-table-cell-padding-y, calc(0.4375rem * var(--mantine-scale)))';
+	return { table: { '--table-vertical-spacing': padding } };
+}
+
+/**
  * `TableHeader` and `Table` are two `<table>`s. They line up because both are `table-layout:
  * fixed` with this same `<colgroup>` and the same width rule: the column widths alone decide
  * the layout, so identical inputs give identical columns. `fields` are the column keys: fields and

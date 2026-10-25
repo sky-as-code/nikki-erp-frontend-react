@@ -1,9 +1,15 @@
 import { NumberInput, Switch } from '@mantine/core';
-import { Input, Select } from '@nikkierp/ui/components';
+import { Input, Select, withInputDensity } from '@nikkierp/ui/components';
 import React from 'react';
+
+import { useEnumSettingOptions } from './enumSettingOptions';
 
 import type { SettingItemData, SettingOption } from './settingsDataContext';
 import type { ModelSchemaFieldDataTypeName } from '@nikkierp/common/dynamicModel';
+
+
+/** The same box as the `Input` and `Select` wrappers beside it; `@nikkierp/ui` has no NumberInput one. */
+const NUMBER_INPUT_CLASS_NAMES = withInputDensity({});
 
 
 export type SettingControlProps = {
@@ -13,6 +19,8 @@ export type SettingControlProps = {
 	onChange: (value: unknown) => void,
 	/** Labelled choices from the owning module; when present they win over the declared type. */
 	options?: SettingOption[],
+	/** The item's label key; the fallback prefix of an enum value's translation key. */
+	labelKey?: string,
 };
 
 /**
@@ -27,8 +35,9 @@ export type SettingControlProps = {
  * `allow_override` together. It is never re-derived here: a locked setting shown as editable
  * lets a user submit a change the server then refuses.
  */
-export function SettingControl({ item, value, onChange, options }: SettingControlProps): React.ReactNode {
+export function SettingControl({ item, value, onChange, options, labelKey }: SettingControlProps): React.ReactNode {
 	const disabled = !item.editable;
+	const enumOptions = useEnumSettingOptions(item, labelKey);
 	if (options) {
 		return (
 			<Select
@@ -57,7 +66,7 @@ export function SettingControl({ item, value, onChange, options }: SettingContro
 		return (
 			<NumberInput
 				w={220}
-				size='sm'
+				classNames={NUMBER_INPUT_CLASS_NAMES}
 				value={typeof value === 'number' ? value : ''}
 				disabled={disabled}
 				allowDecimal={typeName === 'decimal'}
@@ -75,7 +84,7 @@ export function SettingControl({ item, value, onChange, options }: SettingContro
 		return (
 			<Select
 				w={220}
-				data={enumOptions(dataType?.options?.enumValues)}
+				data={withCurrentValue(enumOptions, value)}
 				value={typeof value === 'string' ? value : null}
 				disabled={disabled}
 				onChange={next => onChange(next)}
@@ -92,18 +101,6 @@ export function SettingControl({ item, value, onChange, options }: SettingContro
 			onChange={event => onChange(event.currentTarget.value)}
 		/>
 	);
-}
-
-/**
- * The declared choices for an enum setting.
- *
- * `enumValues` is typed `unknown` on the schema, so it is narrowed rather than cast: a
- * declaration that is not a list of strings yields an empty select instead of throwing inside
- * the renderer.
- */
-function enumOptions(enumValues: unknown): string[] {
-	if (!Array.isArray(enumValues)) return [];
-	return enumValues.filter((entry): entry is string => typeof entry === 'string');
 }
 
 /**

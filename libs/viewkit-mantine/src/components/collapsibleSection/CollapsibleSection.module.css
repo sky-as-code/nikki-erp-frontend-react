@@ -2,3 +2,8 @@
 	cursor: pointer;
 	user-select: none;
 }
+
+/* Density-aware (see the Shell's `styles/density.css`); spacious adds no padding. */
+.sectionHeader {
+	padding-block: var(--nikki-section-header-padding-y, 0);
+}

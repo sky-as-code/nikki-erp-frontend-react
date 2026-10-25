@@ -17,6 +17,8 @@ import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
 import { LangJsonField } from './LangJsonField';
 import { RelationSelectField } from './RelationSelectField';
 import { LocalizeFn, TranslateFn } from '../../i18n';
+import { useFormInputSize } from '../Input/inlineControls';
+import { formInputProps } from '../Input/inputDensity';
 
 
 export type AutoFieldProps = {
@@ -192,14 +194,16 @@ function renderIdentityOrTemporalField(args: IdentityOrTemporalArgs): React.Reac
  * `{module}.{component}` prefix that keeps two forms on one page apart.
  *
  * An explicit `data-testid` in `inputProps` still wins — it is spread after.
+ *
+ * It is also where a field gets the form input size (see {@link formInputProps}).
  */
 function useDefaultInputProps(inputProps?: Partial<InputProps>, fieldName?: string): Partial<InputProps> {
 	const fieldAttrs = useFieldTestAttrs(fieldName);
+	const size = useFormInputSize();
 	return React.useMemo(() => ({
-		size: 'md' as const,
 		...fieldAttrs,
-		...inputProps,
-	}), [fieldAttrs, inputProps]);
+		...formInputProps(inputProps, size),
+	}), [fieldAttrs, inputProps, size]);
 }
 
 function useAutoFocus(

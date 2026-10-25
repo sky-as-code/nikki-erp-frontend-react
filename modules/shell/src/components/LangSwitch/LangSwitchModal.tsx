@@ -1,4 +1,4 @@
-import { Box, Flex, Modal, Radio, Stack, Text } from '@mantine/core';
+import { Box, Flex, Radio, Stack, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useIsAuthenticated } from '@nikkierp/shell/authenticate';
@@ -6,6 +6,7 @@ import { useShellCommand } from '@nikkierp/shell/commandBus';
 import { useUIState } from '@nikkierp/shell/contexts';
 import { useEnabledLanguages } from '@nikkierp/shell/languages';
 import { useLanguageCode } from '@nikkierp/shell/userContext';
+import { Modal } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { forwardRef, useCallback, useImperativeHandle } from 'react';
 import { useTranslation } from 'react-i18next';

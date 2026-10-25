@@ -92,6 +92,11 @@ export const resourceTablePropsSchema = z.object({
 	/** Toolbar actions appended after Refresh. */
 	extraActions: z.array(resourceTableActionSchema).default([]),
 	/**
+	 * Off to keep the table's filter toggle (`Alt+/`) and pagination (`Alt+P`, `Alt+←`/`Alt+→`) free
+	 * of shortcuts. Absent means on; turn it off when the host page already has a table owning them.
+	 */
+	enableHotKeys: z.boolean().optional(),
+	/**
 	 * `{module}.{component}` prefix for the `data-testid` of every element this table renders.
 	 * Derived from the schema name when omitted. Set it when a page embeds two tables of the same
 	 * schema, which would otherwise collide.

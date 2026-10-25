@@ -21,7 +21,7 @@ import { buildWarehousePages } from './warehouse';
 import * as c from '../constants';
 import { ProductTemplateCommands } from '../features/productTemplate/commands';
 import { ProductTemplateAttributeValueCommands } from '../features/productTemplateAttributeValue/commands';
-import { ATTRIBUTE_VALUES, TEMPLATE_ATTRIBUTES, TEMPLATE_RESOLVE_VARIANT } from '../viewkit/ids';
+import { ATTRIBUTE_VALUES, TEMPLATE_ATTRIBUTES } from '../viewkit/ids';
 
 import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
 import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
@@ -285,14 +285,11 @@ describe('Product template attribute configuration', () => {
 		});
 	});
 
-	/** SFB-001: Resolve variant sits with Copy and Re-sync, as the kit's own component. */
-	it('puts Resolve variant among the contextual actions, as the kit component', () => {
+	/** SFB-001 / IUX-001: Resolve variant left the page header for the Attributes table's toolbar. */
+	it('keeps only Copy and Re-sync among the contextual actions', () => {
 		const { contextualActions } = detailProps();
 
-		expect(Object.keys(contextualActions)).toEqual(['copy', 'resyncVariants', 'resolveVariant']);
-		expect(contextualActions.resolveVariant).toEqual({
-			label: 'product_template_config_resolve', component: TEMPLATE_RESOLVE_VARIANT,
-		});
+		expect(Object.keys(contextualActions)).toEqual(['copy', 'resyncVariants']);
 	});
 
 	/** SFB-002: "View variants" is the Variants tab's own link, filtered to the template. */
@@ -306,6 +303,7 @@ describe('Product template attribute configuration', () => {
 			showViewAll: true,
 			viewAllFiltered: true,
 			viewAllLabel: 'product_template_config_viewVariants',
+			viewAllType: 'link',
 		});
 	});
 });
