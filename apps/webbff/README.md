@@ -88,7 +88,7 @@ Resolution order (first value wins): process env → `{NIKKI_BFF_CLIENT_ROOT_PAT
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `NIKKI_PUBLIC_*` | `ROOT_DOMAIN`, `ROOT_PATH`, `MAPLIBRE_GL_API_KEY` | Sent to the browser (`/api/v0/config`, `window.__CLIENT_CONFIG__`) without the prefix. `BASE_API_URL` is always `/api`: a configured value is ignored with a warning, because session cookies only reach the BFF |
+| `NIKKI_PUBLIC_*` | `ROOT_DOMAIN`, `ROOT_PATH`, `MAPLIBRE_GL_API_KEY` | Sent to the browser (`/api/v0/config`, `window.__CLIENT_CONFIG__`) without the prefix. `BASE_API_URL` is not read from the environment: it is the hard-coded `/api`, because session cookies only reach the BFF |
 | `NODE_ENV` | `local` | `local` = Vite middleware; anything else = static files |
 | `NIKKI_BFF_CLIENT_ROOT_PATH` | set by the `dev` scripts | Folder holding the frontend `index.html` (sources locally, `dist` otherwise) |
 | `NIKKI_BFF_HTTP_PORT` / `NIKKI_BFF_HTTP_HOST` | `3000` / all interfaces | HTTP listener |
@@ -96,8 +96,8 @@ Resolution order (first value wins): process env → `{NIKKI_BFF_CLIENT_ROOT_PAT
 | `NIKKI_BFF_UPSTREAM_BASE_URL` | `https://cityboi.extapi-local.coremart.local:4433` | Business service base URL (may carry a path prefix). Required |
 | `NIKKI_BFF_UPSTREAM_FORWARD_HOST` | `false` | Forward the browser `Host` upstream |
 | `NIKKI_BFF_UPSTREAM_TIMEOUT_MS` | `30000` | Max wait for upstream response headers (a stream may last longer) |
-| `NIKKI_BFF_UPSTREAM_CA_FILE` | empty | Comma-separated PEM files trusted for the upstream; relative paths resolve against this package folder |
-| `NIKKI_BFF_UPSTREAM_CLIENT_CERT_FILE` / `_KEY_FILE` | empty | Client certificate for upstream mTLS |
+| `NIKKI_BFF_UPSTREAM_CA_FILE` | empty | Comma-separated PEM files trusted for the upstream; relative paths resolve against the client root |
+| `NIKKI_BFF_UPSTREAM_CLIENT_CERT_FILE` / `_KEY_FILE` | empty | Client certificate for upstream mTLS; relative paths resolve against the client root |
 | `NIKKI_BFF_UPSTREAM_TLS_INSECURE` | `true` in `.env.default`, unset in Docker | Skip upstream certificate verification (logs a warning). Never in production |
 | `NIKKI_BFF_COOKIE_SECURE` | `auto` | `auto` = `Secure` when `NIKKI_BFF_HTTPS_ENABLED=true`; or `true`/`false` |
 | `NIKKI_BFF_CORS_ORIGINS` | empty | Comma-separated origins allowed cross-origin with credentials (dev only). Empty = same-origin only |
@@ -106,7 +106,7 @@ Resolution order (first value wins): process env → `{NIKKI_BFF_CLIENT_ROOT_PAT
 is signed by the intermediate `coremart-server-ca-nonprod`, itself signed by `coremart-root-ca-nonprod`, both in the
 backend repo under `scripts/cert/pki/{server-ca,root-ca}/`. That repo is a separate checkout with no fixed location
 relative to this one, so the default is `NIKKI_BFF_UPSTREAM_TLS_INSECURE=true`. To verify instead, list both CA files
-(Node needs the whole chain) with absolute paths in `.env.local` — see `.env.sample`.
+(Node needs the whole chain) with absolute paths, or paths relative to the client root, in `.env.local` — see `.env.sample`.
 
 ## Scripts
 

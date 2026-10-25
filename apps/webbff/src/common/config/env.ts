@@ -30,7 +30,7 @@ export function loadAppConfig(): AppConfig {
 		clientRootPath,
 		clientConfig: Object.freeze(parseClientConfig(nodeEnv)),
 		http,
-		upstream: parseUpstream(),
+		upstream: parseUpstream(clientRootPath),
 		cookie: parseCookie(http.httpsEnabled),
 		corsOrigins: splitList(getBffVar('CORS_ORIGINS')),
 	});
@@ -39,23 +39,15 @@ export function loadAppConfig(): AppConfig {
 export function parseClientConfig(nodeEnv: string): Record<string, string> {
 	const clientConfig: Record<string, string> = {};
 	for (const [key, value] of Object.entries(process.env)) {
-		if (key.startsWith(FE_PREFIX)) {
-			clientConfig[key.substring(FE_PREFIX.length)] = value ?? '';
+		const configKey = key.substring(FE_PREFIX.length);
+		if (key.startsWith(FE_PREFIX) && configKey !== 'BASE_API_URL') {
+			clientConfig[configKey] = value ?? '';
 		}
 	}
-	clientConfig['BASE_API_URL'] = enforceBffApiBaseUrl(clientConfig['BASE_API_URL']);
+	// Not configurable: session cookies are scoped to the BFF's own /api path, so the browser must call it.
+	clientConfig['BASE_API_URL'] = BFF_API_BASE_URL;
 	clientConfig['APP_ENV'] = nodeEnv;
 	return clientConfig;
-}
-
-// Session cookies are host-only and scoped to the BFF's /api path, so a browser that calls the business
-// service directly (e.g. a leftover absolute URL in a personal .env.local) can never authenticate.
-function enforceBffApiBaseUrl(configured: string | undefined): string {
-	if (configured && configured !== BFF_API_BASE_URL) {
-		console.warn(`WARNING: ${FE_PREFIX}BASE_API_URL=${configured} is ignored; `
-			+ `the browser always calls the BFF at ${BFF_API_BASE_URL}`);
-	}
-	return BFF_API_BASE_URL;
 }
 
 function parseHttpServer(clientRootPath: string): HttpServerConfig {
@@ -73,7 +65,7 @@ function parseHttpServer(clientRootPath: string): HttpServerConfig {
 	};
 }
 
-function parseUpstream(): UpstreamConfig {
+function parseUpstream(clientRootPath: string): UpstreamConfig {
 	const timeout = Number(getBffVar('UPSTREAM_TIMEOUT_MS'));
 	const certFile = getBffVar('UPSTREAM_CLIENT_CERT_FILE');
 	const keyFile = getBffVar('UPSTREAM_CLIENT_KEY_FILE');
@@ -82,9 +74,9 @@ function parseUpstream(): UpstreamConfig {
 		forwardHost: getBffVar('UPSTREAM_FORWARD_HOST') === 'true',
 		timeoutMs: timeout > 0 ? timeout : DEFAULT_UPSTREAM_TIMEOUT_MS,
 		tls: {
-			caFiles: splitList(getBffVar('UPSTREAM_CA_FILE')).map((file) => resolvePath(PACKAGE_ROOT, file)),
-			clientCertFile: certFile ? resolvePath(PACKAGE_ROOT, certFile) : undefined,
-			clientKeyFile: keyFile ? resolvePath(PACKAGE_ROOT, keyFile) : undefined,
+			caFiles: splitList(getBffVar('UPSTREAM_CA_FILE')).map((file) => resolvePath(clientRootPath, file)),
+			clientCertFile: certFile ? resolvePath(clientRootPath, certFile) : undefined,
+			clientKeyFile: keyFile ? resolvePath(clientRootPath, keyFile) : undefined,
 			insecure: getBffVar('UPSTREAM_TLS_INSECURE') === 'true',
 		},
 	};
