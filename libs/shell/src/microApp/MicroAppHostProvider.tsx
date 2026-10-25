@@ -10,7 +10,7 @@ import { contributeMantineViewKit } from '@nikkierp/viewkit-mantine';
 import React, { useMemo, useState } from 'react';
 
 import { registerReducerFactory } from '../appState/store';
-import { ensureAccessToken } from '../authenticate/authService';
+import { ensureSession } from '../authenticate/authService';
 import { createShellCommandBus, ShellCommandRegistrar } from '../commandBus';
 import { useShellEnvVars } from '../config';
 import { shellEventBus } from '../eventBus';
@@ -87,7 +87,7 @@ export function MicroAppHostProvider(
 		host: services.host,
 		api: {
 			defaultBaseUrl: envVars.BASE_API_URL,
-			getAccessToken: ensureAccessToken,
+			ensureSession: ensureSession,
 		},
 	}), [services, envVars.BASE_API_URL]);
 

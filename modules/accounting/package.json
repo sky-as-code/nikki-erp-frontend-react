@@ -5,8 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"clean": "rimraf dist",
-		"dev": "bash -c \"NIKKI_BFF_HTTP_PORT=3005 NIKKI_BFF_CLIENT_ROOT_PATH=$(realpath .) ts-node ../../apps/shellbff/src/server.ts\"",
-		"dev:dist": "bash -c \"NODE_ENV=production NIKKI_BFF_HTTP_PORT=3005 NIKKI_BFF_CLIENT_ROOT_PATH=$(realpath ./dist) ts-node ../../apps/shellbff/src/server.ts\"",
+		"dev": "bash -c \"NIKKI_BFF_HTTP_PORT=3005 NIKKI_BFF_CLIENT_ROOT_PATH=$(realpath .) ts-node ../../apps/webbff/src/main.ts\"",
+		"dev:dist": "bash -c \"NODE_ENV=production NIKKI_BFF_HTTP_PORT=3005 NIKKI_BFF_CLIENT_ROOT_PATH=$(realpath ./dist) ts-node ../../apps/webbff/src/main.ts\"",
 		"build": "pnpm clean && tsc && vite build",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",

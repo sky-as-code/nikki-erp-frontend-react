@@ -9,8 +9,11 @@ export type StreamOptions = {
 	/** The organization whose notifications this stream carries. */
 	orgId: string,
 
-	/** Resolves the current access token, refreshing it first when it has expired. */
-	getAccessToken: () => Promise<string> | string,
+	/**
+	 * Refreshes the session cookies when they lapse soon, or regardless with `force`. The browser
+	 * sends the cookies itself; this only makes sure they are current before connecting.
+	 */
+	ensureSession: (options?: { force?: boolean }) => Promise<boolean> | boolean,
 
 	/** The API base URL the Shell handed the micro-app. */
 	baseUrl: string,
@@ -32,9 +35,9 @@ const RETRY_MAX_MS = 30_000;
  * Reads the NDJSON notification stream.
  *
  * It uses `fetch` directly rather than the shared `RequestMaker`: that one is built on ky, which
- * parses a whole response body, and this response never completes. It also cannot be an
- * `EventSource` — that API sends no `Authorization` header, and this deployment authenticates with
- * a bearer token and has no auth cookie to fall back on.
+ * parses a whole response body, and this response never completes. It is not an `EventSource`
+ * either: the session cookie would travel with one, but it cannot react to a 401 by refreshing the
+ * session first, and it cannot send the `Accept` the server streams NDJSON for.
  *
  * Everything `EventSource` would have given for free is therefore hand-written here: reconnection,
  * backoff, and resuming from the last sequence actually processed.
@@ -46,6 +49,7 @@ export class NotificationStream {
 	#closed = false;
 	#retryMs = RETRY_BASE_MS;
 	#retryTimer: ReturnType<typeof setTimeout> | null = null;
+	#refreshedAfterRefusal = false;
 
 	/**
 	 * The highest sequence handed to the caller. It is what the server replays from after a
@@ -90,7 +94,8 @@ export class NotificationStream {
 		while (!this.#closed) {
 			try {
 				this.#options.onStatus?.(this.#lastSeq == null ? 'connecting' : 'reconnecting');
-				await this.#connectOnce();
+				const refused = await this.#connectOnce();
+				if (refused && await this.#refreshAfterRefusal()) continue;
 
 				// A clean end of body is still a disconnect: the server shut down, or a proxy
 				// closed an idle connection. Reconnect rather than going quiet.
@@ -104,22 +109,32 @@ export class NotificationStream {
 		}
 	}
 
-	async #connectOnce(): Promise<void> {
+	/**
+	 * The access cookie lapsed under the stream: refresh it and reconnect at once, since waiting
+	 * out a backoff would not help. Once per refusal streak, so a server that keeps refusing a
+	 * freshly refreshed session falls back to the backoff instead of a tight loop.
+	 */
+	async #refreshAfterRefusal(): Promise<boolean> {
+		if (this.#refreshedAfterRefusal) return false;
+		this.#refreshedAfterRefusal = true;
+		return Boolean(await this.#options.ensureSession({ force: true }));
+	}
+
+	/** Resolves `true` when the server refused the session, so the caller can refresh and retry. */
+	async #connectOnce(): Promise<boolean> {
+		await this.#options.ensureSession();
 		const abort = new AbortController();
 		this.#abort = abort;
 
 		const response = await fetch(this.#streamUrl(), {
 			method: 'GET',
-			headers: {
-				Accept: 'application/x-ndjson',
-				Authorization: `Bearer ${await this.#options.getAccessToken()}`,
-			},
+			headers: { Accept: 'application/x-ndjson' },
+			credentials: 'same-origin',
 			signal: abort.signal,
 		});
 
+		if (response.status === 401) return true;
 		if (!response.ok || !response.body) {
-			// 401 lands here too. The next attempt re-reads the token, which by then has been
-			// refreshed, so an expired token costs one reconnect rather than the whole stream.
 			throw new Error(`notification stream failed: ${response.status}`);
 		}
 
@@ -127,8 +142,10 @@ export class NotificationStream {
 		// Only after a successful connect: resetting on the attempt would turn a server that
 		// accepts and immediately drops into a tight reconnect loop.
 		this.#retryMs = RETRY_BASE_MS;
+		this.#refreshedAfterRefusal = false;
 
 		await this.#readBody(response.body);
+		return false;
 	}
 
 	/**

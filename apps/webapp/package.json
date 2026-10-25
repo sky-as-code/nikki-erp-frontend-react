@@ -5,7 +5,7 @@
 	"version": "0.0.0",
 	"scripts": {
 		"clean": "rimraf dist",
-		"dev": "bash -c \"NIKKI_BFF_CLIENT_ROOT_PATH=$(realpath .) ts-node ../shellbff/src/server.ts\"",
+		"dev": "bash -c \"NIKKI_BFF_CLIENT_ROOT_PATH=$(realpath .) ts-node ../webbff/src/main.ts\"",
 		"build": "npm run clean && npm run build:client && npm run build:server",
 		"build:client": "tsc && vite build --outDir dist",
 		"build:server": "tsc -p tsconfig.server.json",

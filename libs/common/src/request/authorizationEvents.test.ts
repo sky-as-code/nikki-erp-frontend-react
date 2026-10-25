@@ -17,7 +17,7 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 function newRequestMaker(): RequestMaker {
-	return new RequestMaker({ baseUrl: 'https://example.test', auth: { getToken: async () => 'token' } });
+	return new RequestMaker({ baseUrl: 'https://example.test', ensureSession: async () => true });
 }
 
 /**

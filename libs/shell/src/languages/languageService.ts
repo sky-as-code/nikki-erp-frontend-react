@@ -14,7 +14,7 @@ type LanguageRow = {
 	name: string,
 };
 
-type ListEnabledLanguagesResponse = {
+export type ListEnabledLanguagesResponse = {
 	items: LanguageRow[],
 	/** What a user reads when neither they nor their organization chose a language. */
 	default_iso_code: string,
@@ -41,4 +41,31 @@ export function toEnabledLanguages(response: ListEnabledLanguagesResponse | null
 		languages: (response?.items ?? []).map(row => ({ isoCode: row.iso_code, name: row.name })),
 		defaultIsoCode: response?.default_iso_code || null,
 	};
+}
+
+let cached: Promise<EnabledLanguages | null> | null = null;
+
+/** The enabled languages, read once per session and shared by every picker. */
+export function loadEnabledLanguagesOnce(): Promise<EnabledLanguages | null> {
+	if (!cached) {
+		cached = fetchEnabledLanguages()
+			.then(result => toEnabledLanguages(result.data))
+			.then(nonEmpty)
+			.catch(() => null);
+		// A failed or empty read is not cached, so the next mount tries again.
+		void cached.then(loaded => {
+			if (!loaded) cached = null;
+		});
+	}
+	return cached;
+}
+
+/** Fills the cache from the session bootstrap, which read the same list in its one round trip. */
+export function seedEnabledLanguages(response: ListEnabledLanguagesResponse): void {
+	const loaded = nonEmpty(toEnabledLanguages(response));
+	if (loaded) cached = Promise.resolve(loaded);
+}
+
+function nonEmpty(loaded: EnabledLanguages): EnabledLanguages | null {
+	return loaded.languages.length > 0 ? loaded : null;
 }

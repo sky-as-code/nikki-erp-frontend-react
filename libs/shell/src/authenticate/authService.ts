@@ -5,6 +5,7 @@ import {
 
 import * as t from './types';
 import { shellStore } from '../appState/shellStore';
+import { loadSessionBootstrap } from '../userContext/sessionBootstrap';
 import { userContextService } from '../userContext/userContextService';
 
 
@@ -17,82 +18,126 @@ export type SessionState = 'active' | 'none';
 
 export type InitAuthServiceParams = {
 	strategy: t.ISignInStrategy,
-	accessTokenStorage: t.ITokenStorage,
-	refreshTokenStorage: t.ITokenStorage,
+	sessionStorage: t.ISessionStorage,
+};
+
+export type EnsureSessionOptions = {
+	/** Refreshes even when the stored expiry says the access cookie is still good. */
+	force?: boolean,
 };
 
 // Module-level rather than instance fields: the helpers below are called from outside
 // React and outside Redux (`RequestMaker.initDefault`, `useApiOptions`), where there is
 // no dispatch and no way to reach the service instance.
 let strategy: t.ISignInStrategy;
-let accessTokenStorage: t.ITokenStorage;
-let refreshTokenStorage: t.ITokenStorage;
+let expiryStorage: t.ISessionStorage;
 let refreshInFlight: Promise<boolean> | null = null;
+/** The access cookie's lifetime as last issued; unknown until this tab signs in or refreshes. */
+let accessTtlMs: number | null = null;
+let keepAliveTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
- * Refreshes this long before expiry, so a token that passes the client check is not refused by
+ * Refreshes this long before expiry, so a cookie that passes the client check is not refused by
  * the server a moment later -- which would send the user to `/signin` for no reason.
  */
 const ACCESS_TOKEN_REFRESH_MARGIN_MS = 30_000;
+const KEEP_ALIVE_MIN_INTERVAL_MS = 30_000;
 
 
 export function initAuthService(params: InitAuthServiceParams): void {
 	strategy = params.strategy;
-	accessTokenStorage = params.accessTokenStorage;
-	refreshTokenStorage = params.refreshTokenStorage;
+	expiryStorage = params.sessionStorage;
+	refreshInFlight = null;
+	accessTtlMs = null;
 }
 
 // These are reachable over the command bus, which is registered before
 // `initAuthService` has necessarily run, so each tolerates an uninitialized storage
 // rather than throwing at a caller that only asked whether a session exists.
 export function getSessionExpiresAt(): Date | null {
-	return accessTokenStorage?.getToken()?.expiresAt ?? null;
-}
-
-export function getAccessToken(): string | null {
-	return accessTokenStorage?.getToken()?.token ?? null;
+	const expiry = expiryStorage?.get();
+	return expiry ? new Date(expiry.accessExpiresAt) : null;
 }
 
 export function clearAuthSession(): void {
-	accessTokenStorage?.clear();
-	refreshTokenStorage?.clear();
+	expiryStorage?.clear();
 	markSession('none');
 }
 
 /**
- * Whether a usable session exists: a live access token, or a refresh token to get one.
+ * Whether a usable session exists: a live access cookie, or a refresh cookie to get one.
  *
  * Not for render gating -- storage is invisible to React. Components use `useIsAuthenticated`.
  */
 export function isAuthenticated(): boolean {
-	const accessObj = accessTokenStorage?.getToken();
-	const refreshObj = refreshTokenStorage?.getToken();
-	return Boolean((accessObj && !accessObj.isExpired) || (refreshObj && !refreshObj.isExpired));
+	const expiry = expiryStorage?.get();
+	return Boolean(expiry && (!hasLapsed(expiry.accessExpiresAt, 0) || !hasLapsed(expiry.refreshExpiresAt, 0)));
 }
 
 /**
- * A valid access token, refreshing it first if it has expired.
+ * Whether the access cookie is usable, refreshing it first when it lapses within the margin.
  *
- * `RequestMaker` calls this for every request, so it must stay a plain function: it runs
+ * `RequestMaker` awaits this before every request, so it must stay a plain function: it runs
  * outside React and has no dispatch to reach a thunk with.
  */
-export async function ensureAccessToken(): Promise<string> {
-	const accessObj = accessTokenStorage.getToken();
-	if (accessObj && !accessObj.isExpiringWithin(ACCESS_TOKEN_REFRESH_MARGIN_MS)) {
-		return accessObj.token;
+export async function ensureSession(options: EnsureSessionOptions = {}): Promise<boolean> {
+	const expiry = expiryStorage?.get() ?? null;
+	if (!options.force && expiry && !hasLapsed(expiry.accessExpiresAt, ACCESS_TOKEN_REFRESH_MARGIN_MS)) {
+		return true;
 	}
 	try {
-		const restored = await refreshOnce();
-		return restored ? getAccessToken()! : '';
+		return await refreshOnce();
 	}
 	catch (error) {
-		// A transient refresh failure inside the margin: the current token still works.
-		if (accessObj && !accessObj.isExpired) return accessObj.token;
+		// A transient refresh failure inside the margin: the current cookie still works.
+		if (expiry && !hasLapsed(expiry.accessExpiresAt, 0)) return true;
 		throw error;
 	}
 }
 
-/** Every request racing past an expired token shares one refresh call. */
+/**
+ * Keeps an idle tab's session sliding: without requests nothing would refresh, and the refresh
+ * cookie would lapse under a user who merely left the page open. Returns the stop function.
+ */
+export function startSessionKeepAlive(): () => void {
+	stopSessionKeepAlive();
+	scheduleKeepAlive();
+	return stopSessionKeepAlive;
+}
+
+export function stopSessionKeepAlive(): void {
+	if (keepAliveTimer) clearTimeout(keepAliveTimer);
+	keepAliveTimer = null;
+}
+
+/** Half the access lifetime, so one tick always lands before it lapses; never tighter than the floor. */
+export function keepAliveIntervalMs(ttlMs: number | null): number {
+	return Math.max(KEEP_ALIVE_MIN_INTERVAL_MS, Math.floor((ttlMs ?? 0) / 2));
+}
+
+function scheduleKeepAlive(): void {
+	const expiry = expiryStorage?.get();
+	const intervalMs = keepAliveIntervalMs(accessTtlMs ?? (expiry ? expiry.accessExpiresAt - Date.now() : null));
+	keepAliveTimer = setTimeout(() => {
+		void keepAliveTick(intervalMs).finally(() => {
+			if (keepAliveTimer) scheduleKeepAlive();
+		});
+	}, intervalMs);
+}
+
+/** Refreshes now when the access cookie would lapse before the next tick. */
+async function keepAliveTick(intervalMs: number): Promise<void> {
+	const expiry = expiryStorage?.get();
+	if (!expiry || hasLapsed(expiry.refreshExpiresAt, 0)) return;
+	const lapsesBeforeNextTick = hasLapsed(expiry.accessExpiresAt, intervalMs + ACCESS_TOKEN_REFRESH_MARGIN_MS);
+	await ensureSession({ force: lapsesBeforeNextTick }).catch(() => false);
+}
+
+function hasLapsed(expiresAt: number, marginMs: number): boolean {
+	return expiresAt - marginMs < Date.now();
+}
+
+/** Every request racing past a lapsing cookie shares one refresh call. */
 function refreshOnce(): Promise<boolean> {
 	refreshInFlight ??= restoreSession().finally(() => {
 		refreshInFlight = null;
@@ -102,18 +147,18 @@ function refreshOnce(): Promise<boolean> {
 
 /** A thrown error is a technical failure, not a refusal, so it leaves the session state alone. */
 async function restoreSession(): Promise<boolean> {
-	const refreshObj = refreshTokenStorage.getToken();
-	if (!refreshObj || refreshObj.isExpired) {
+	const expiry = expiryStorage?.get();
+	if (!expiry || hasLapsed(expiry.refreshExpiresAt, 0)) {
 		markSession('none');
 		return false;
 	}
 	try {
-		onSignInSuccess(await strategy.refreshSession({ refreshToken: refreshObj.token }));
+		onSignInSuccess(await strategy.refreshSession());
 		return true;
 	}
 	catch (error) {
 		if (ClientErrors.containsAuthorizationError(error)) {
-			markSession('none');
+			clearAuthSession();
 			return false;
 		}
 		throw error;
@@ -121,17 +166,16 @@ async function restoreSession(): Promise<boolean> {
 }
 
 function onSignInSuccess(session: t.AuthenticatedSession): void {
-	accessTokenStorage.setToken(new t.TokenObj(session.accessToken, session.accessTokenExpiresAt));
-	if (session.refreshToken) {
-		refreshTokenStorage.setToken(new t.TokenObj(session.refreshToken, session.refreshTokenExpiresAt!));
-	}
+	const accessExpiresAt = new Date(session.accessTokenExpiresAt).getTime();
+	expiryStorage.set({ accessExpiresAt, refreshExpiresAt: new Date(session.refreshTokenExpiresAt).getTime() });
+	accessTtlMs = accessExpiresAt - Date.now();
 	markSession('active');
 }
 
 /**
- * Tokens live in storage, which React cannot observe, so every change in whether a session
- * exists is also dispatched. `useIsAuthenticated` reads this rather than the token: an expired
- * access token is not a lost session -- the next request refreshes it -- only a failed refresh is.
+ * The cookies are invisible to script and storage to React, so every change in whether a session
+ * exists is also dispatched. `useIsAuthenticated` reads this rather than the expiry: a lapsed access
+ * cookie is not a lost session -- the next request refreshes it -- only a failed refresh is.
  */
 function markSession(state: SessionState): void {
 	if (authService.readSessionState() === state) return;
@@ -159,31 +203,32 @@ export class AuthService {
 		const result = await strategy.continueSignIn(params);
 		if (result?.done) {
 			onSignInSuccess(result.data!);
+			await loadSessionBootstrap();
 			await dispatchServiceMethod(userContextService.getUserContext);
 		}
 		return result;
 	}
 
 	@storeAsyncMethod
-	public async refreshSession(params: t.RefreshTokenParams): Promise<t.AuthenticatedSession> {
-		const result = await strategy.refreshSession(params);
+	public async refreshSession(): Promise<t.AuthenticatedSession> {
+		const result = await strategy.refreshSession();
 		onSignInSuccess(result);
 		return result;
 	}
 
-	/** The local session is cleared even when the strategy fails: a user who asked to leave must be signed out. */
+	/**
+	 * The server call is awaited so its cookie-clearing response lands before the caller navigates
+	 * away, but never allowed to fail the sign-out: a user who asked to leave must be signed out.
+	 */
 	@storeAsyncMethod
 	public async signOut(): Promise<void> {
-		try {
-			await strategy.signOut();
-		}
-		finally {
-			clearAuthSession();
-		}
+		stopSessionKeepAlive();
+		await strategy.signOut().catch(() => undefined);
+		clearAuthSession();
 	}
 
 	/**
-	 * Restores a session from the stored refresh token, then settles.
+	 * Restores a session from the refresh cookie, then settles.
 	 *
 	 * Both steps are dispatched, not called: the Shell gates its entire render tree on
 	 * `settleSession`'s slice data, so a direct call leaves the app blank forever.
@@ -196,12 +241,15 @@ export class AuthService {
 	 */
 	@storeAsyncMethod
 	public async restoreAuthSession(): Promise<boolean> {
-		const accessToken = await ensureAccessToken();
-		if (!accessToken) {
+		const hasSession = await ensureSession();
+		if (!hasSession) {
 			await dispatchServiceMethod(this.settleSession);
 			return false;
 		}
 
+		// One round trip for the context, the languages and the modules; it seeds the context
+		// the dispatch below reads, so the gate still opens on `getUserContext` as before.
+		await loadSessionBootstrap();
 		await dispatchServiceMethod(userContextService.getUserContext);
 		await dispatchServiceMethod(this.settleSession);
 
@@ -219,7 +267,7 @@ export class AuthService {
 		return true;
 	}
 
-	/** Written by the token helpers above, not by callers. */
+	/** Written by the session helpers above, not by callers. */
 	@storeSyncMethod
 	public setSessionState(state: SessionState): SessionState {
 		return state;

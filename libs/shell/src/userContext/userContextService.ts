@@ -50,6 +50,22 @@ function buildInitialState() {
 	};
 }
 
+let seededUserContext: GetUserContextResponse | null = null;
+
+/**
+ * Hands the next `getUserContext` a context the session bootstrap already read, so the dispatch
+ * that opens the Shell's gate costs no second request. Later dispatches fetch as before.
+ */
+export function seedUserContext(data: GetUserContextResponse): void {
+	seededUserContext = data;
+}
+
+function takeSeededUserContext(): GetUserContextResponse | null {
+	const seeded = seededUserContext;
+	seededUserContext = null;
+	return seeded;
+}
+
 /** The signed-in user, their organizations, and their account/local settings. */
 @storeService(SLICE_NAME, shellStore, { initialState: buildInitialState() })
 export class UserContextService {
@@ -64,7 +80,8 @@ export class UserContextService {
 	 */
 	@storeAsyncMethod
 	public async getUserContext(): Promise<UserContext> {
-		const data = request.unwrapResult(await request.get<GetUserContextResponse>('v1/iam/me/context'));
+		const data = takeSeededUserContext()
+			?? request.unwrapResult(await request.get<GetUserContextResponse>('v1/iam/me/context'));
 		const userContext = toUserContext(data);
 		await dispatchServiceMethod(this.setLocalSettings, {
 			languageCode: userContext.accountSettings.language.isoCode,

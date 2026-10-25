@@ -11,16 +11,17 @@ export type { Input, Options } from 'ky';
 
 
 export type RequestMakerOts = {
+	/** A path such as `/api` when served by the BFF; the session cookies are then same-origin. */
 	baseUrl: string,
-	auth: {
-		// Default is 'Bearer'.
-		tokenType?: string,
-		getToken: () => Promise<string>,
-	},
+	/**
+	 * Awaited before every request not marked `noAuth`, so an access cookie about to lapse is
+	 * refreshed first. The browser attaches the cookie itself; no token ever reaches script.
+	 */
+	ensureSession?: () => Promise<unknown>,
 };
 
 export type RequestOptions = Options & {
-	// If true, the request will not include the Authorization header
+	// If true, the request does not wait for the session to be ensured first.
 	noAuth?: boolean,
 	dedupKey?: string,
 };
@@ -120,7 +121,7 @@ export class RequestMaker {
 	public constructor(opts: RequestMakerOts) {
 		if (this.#api) return;
 
-		const { tokenType = 'Bearer', getToken } = opts.auth || {};
+		const { ensureSession } = opts;
 
 		this.#api = kyLib.create({
 			prefixUrl: opts.baseUrl,
@@ -131,19 +132,18 @@ export class RequestMaker {
 			// Explicit: ky retries idempotent 5xx twice by default, tripling failure latency.
 			// A technical failure surfaces immediately instead.
 			retry: 0,
+			credentials: 'same-origin',
 			hooks: {
 				beforeRequest: [
-					async (request: KyRequest, options: RequestOptions) => {
+					async (_request: KyRequest, options: RequestOptions) => {
 						if (!options.noAuth) {
-							const token = await getToken();
-							request.headers.set('Authorization', `${tokenType} ${token}`);
+							await ensureSession?.();
 						}
 					},
 				],
 				// Every refusal is announced here, whatever made the call: a typed service, a command
 				// handler posting to a custom route, or a raw `ky()` download that never parses the body.
 				afterResponse: [announceRefusal],
-				// afterResponse: [this._refreshTokenInterceptor(opts)],
 			},
 		});
 	}
@@ -176,38 +176,6 @@ export class RequestMaker {
 	public head<T>(url: Input, options?: RequestOptions): Promise<RequestResult<T>> {
 		return this._send<T>('head', url, options);
 	}
-
-	// private _refreshTokenInterceptor(opts: RequestMakerOts) {
-	// 	const { tokenType = 'Bearer', getToken, restoreSession, clearSession } = opts.auth || {};
-
-	// 	return async (request: KyRequest, options: Options, response: Response) => {
-	// 		if (!getToken || !restoreSession || response.status !== 401 || this.isRetried) {
-	// 			this.isRetried = false;
-	// 			return response;
-	// 		}
-
-	// 		try {
-	// 			const restored = await restoreSession();
-	// 			this.isRetried = true;
-	// 			if (!restored) {
-	// 				throw new Error('Refresh token unavailable');
-	// 			}
-
-	// 			const token = getToken();
-	// 			if (!token) {
-	// 				throw new Error('Access token unavailable after refresh');
-	// 			}
-
-	// 			request.headers.set('Authorization', `${tokenType} ${token}`);
-	// 			return this.api!(request, options);
-	// 		}
-	// 		catch {
-	// 			this.isRetried = false;
-	// 			clearSession?.();
-	// 			return response;
-	// 		}
-	// 	};
-	// }
 
 	private async _send<T>(method: keyof KyInstance, url: Input, options?: RequestOptions): Promise<RequestResult<T>> {
 		if (!this.#api) throw new Error('Must call initRequestMaker() before sending requests');

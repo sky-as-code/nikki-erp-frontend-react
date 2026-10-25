@@ -19,7 +19,7 @@ function jsonResponse(status: number, body: unknown): Response {
 function newRequestMaker(): RequestMaker {
 	return new RequestMaker({
 		baseUrl: 'https://example.test',
-		auth: { getToken: async () => 'token' },
+		ensureSession: async () => true,
 	});
 }
 
@@ -154,7 +154,7 @@ describe('RequestMaker multipart bodies', () => {
 
 		const sent = fetchMock.mock.calls[0][0] as Request;
 		expect(sent.headers.get('Content-Type')).toMatch(/^multipart\/form-data; boundary=/);
-		expect(sent.headers.get('Authorization')).toBe('Bearer token');
+		expect(sent.headers.get('Authorization')).toBeNull();
 	});
 
 	it('keeps the JSON content type for a JSON body', async () => {
@@ -164,5 +164,39 @@ describe('RequestMaker multipart bodies', () => {
 
 		const sent = fetchMock.mock.calls[0][0] as Request;
 		expect(sent.headers.get('Content-Type')).toBe('application/json');
+	});
+});
+
+describe('RequestMaker session', () => {
+	let fetchMock: ReturnType<typeof vi.fn>;
+
+	beforeEach(() => {
+		fetchMock = vi.fn().mockImplementation(async () => jsonResponse(200, { ok: true }));
+		vi.stubGlobal('fetch', fetchMock);
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it('ensures the session before sending, and sends cookies rather than a token', async () => {
+		const ensureSession = vi.fn(async () => true);
+		const maker = new RequestMaker({ baseUrl: 'https://example.test/api', ensureSession });
+
+		await maker.get('v1/things');
+
+		const sent = fetchMock.mock.calls[0][0] as Request;
+		expect(ensureSession).toHaveBeenCalledOnce();
+		expect(sent.headers.get('Authorization')).toBeNull();
+		expect(sent.credentials).toBe('same-origin');
+	});
+
+	it('skips the session for a noAuth request', async () => {
+		const ensureSession = vi.fn(async () => true);
+		const maker = new RequestMaker({ baseUrl: 'https://example.test/api', ensureSession });
+
+		await maker.post('v1/iam/signin/start', { json: {}, noAuth: true });
+
+		expect(ensureSession).not.toHaveBeenCalled();
 	});
 });

@@ -20,6 +20,8 @@ export class SchemaRegistry {
 	#ownerLoader?: SchemaOwnerLoader;
 	#inflightLoads: Map<string, Promise<'loaded' | 'unknown'>> = new Map();
 	#attempted: Set<string> = new Set();
+	/** Schemas another response already carried, held until their owner registers them. */
+	#seeds: Map<string, ModelSchema> = new Map();
 
 	public register(opts: SchemaRegisterOptions[]): void {
 		opts.forEach(opt => {
@@ -40,6 +42,7 @@ export class SchemaRegistry {
 		this.#registry.clear();
 		this.#inflightLoads.clear();
 		this.#attempted.clear();
+		this.#seeds.clear();
 		this.#ownerLoader = undefined;
 	}
 
@@ -98,12 +101,28 @@ export class SchemaRegistry {
 		return promise;
 	}
 
-	/** Clears cached schema data and fetches a fresh {@link SchemaPack}. */
+	/**
+	 * Caches schemas a response already carried, so a later `get` costs no request. A schema already
+	 * loaded or loading keeps what it has: the seed is never fresher than a fetch of its own.
+	 */
+	public seed(schemas: ModelSchema[]): void {
+		for (const schema of schemas) {
+			if (schema?.name && !this.#registry.get(schema.name)?.modelSchema) {
+				this.#seeds.set(schema.name, schema);
+			}
+		}
+	}
+
+	/**
+	 * Clears cached schema data and fetches a fresh {@link SchemaPack}.
+	 *
+	 * Only this schema: a changed etag says nothing about the schemas its edges point at.
+	 */
 	public async refresh(schemaName: string): Promise<SchemaPack | null> {
 		const item = this.#registry.get(schemaName);
 		if (!item) return null;
-		item.modelSchema = undefined;
-		item.validationSchema = undefined;
+		this.#seeds.delete(schemaName);
+		this.#setSchema(item, this.#loadSingle(item));
 		return this.get(schemaName);
 	}
 
@@ -111,18 +130,46 @@ export class SchemaRegistry {
 		const item = this.#registry.get(schemaName);
 		if (!item) return null;
 		if (item.modelSchema) return item;
-		item.modelSchema = item.restApi.getModelSchema().then(({ data, clientErrors }) => {
-			if (!data) {
-				const reason = clientErrors.map(it => it.message).join('; ') || 'no response body';
-				throw new Error(`Failed to fetch model schema '${schemaName}': ${reason}`);
-			}
-			if (data.name !== schemaName) {
-				throw new Error(`Registered schema name '${schemaName}' does not match the response name '${data.name}'`);
-			}
-			return data;
-		});
-		item.validationSchema = item.modelSchema.then(buildValidationSchema);
+		const seeded = this.#seeds.get(schemaName);
+		this.#seeds.delete(schemaName);
+		this.#setSchema(item, seeded ? Promise.resolve(seeded) : this.#loadWithGraph(item));
 		return item;
+	}
+
+	#setSchema(item: RegistryItem, modelSchema: Promise<ModelSchema>): void {
+		item.modelSchema = modelSchema;
+		item.validationSchema = modelSchema.then(buildValidationSchema);
+	}
+
+	/**
+	 * One `meta/schema_graph` request answers this schema and seeds every edge target, which a list
+	 * or detail page asks for right after. Falls back to `meta/schema` when the graph is unavailable
+	 * -- a nested resource, or an API host without the BFF -- so it is never worse than before.
+	 */
+	async #loadWithGraph(item: RegistryItem): Promise<ModelSchema> {
+		if (item.restApi.isTopLevel) {
+			const graph = await item.restApi.getSchemaGraph().catch(() => null);
+			const root = graph?.data?.schema;
+			if (root?.name === item.schemaName) {
+				this.seed(Object.values(graph!.data!.edges ?? {}));
+				return root;
+			}
+		}
+		return this.#loadSingle(item);
+	}
+
+	async #loadSingle(item: RegistryItem): Promise<ModelSchema> {
+		const { data, clientErrors } = await item.restApi.getModelSchema();
+		if (!data) {
+			const reason = clientErrors.map(it => it.message).join('; ') || 'no response body';
+			throw new Error(`Failed to fetch model schema '${item.schemaName}': ${reason}`);
+		}
+		if (data.name !== item.schemaName) {
+			throw new Error(
+				`Registered schema name '${item.schemaName}' does not match the response name '${data.name}'`,
+			);
+		}
+		return data;
 	}
 }
 

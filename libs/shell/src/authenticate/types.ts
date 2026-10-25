@@ -1,22 +1,18 @@
-export const ErrRefreshTokenExpired = new Error('Refresh token expired');
-
-
 export const SLICE_NAME = 'shell.authenticate';
 
 export interface ISignInStrategy {
 	// Commence the sign in process. Each strategy implementation can have its own request and response definitions.
 	startSignIn(params: StartSignInParams): Promise<StartSignInResult>;
 	continueSignIn(params: SignInParams): Promise<SignInResult>;
-	// onAuthenticated(callback: AuthenticatedCallback): void;
-	refreshSession(params: RefreshTokenParams): Promise<AuthenticatedSession>;
+	/** Rotates the session cookies; the refresh cookie travels on its own, so there is nothing to send. */
+	refreshSession(): Promise<AuthenticatedSession>;
 	signOut(): Promise<void>;
 }
 
+/** What the BFF tells the browser about a session: only when its cookies lapse, never the tokens. */
 export type AuthenticatedSession = {
-	accessToken: string,
 	accessTokenExpiresAt: string,
-	refreshToken?: string,
-	refreshTokenExpiresAt?: string,
+	refreshTokenExpiresAt: string,
 };
 
 export type SignInResult = {
@@ -44,40 +40,14 @@ export type SignInParams = {
 	passwords: Record<string, unknown>,
 };
 
-export type RefreshTokenParams = {
-	refreshToken: string,
+/** Epoch milliseconds. Not secret: the cookies they describe are httpOnly. */
+export type SessionExpiry = {
+	accessExpiresAt: number,
+	refreshExpiresAt: number,
 };
 
-export type AuthenticatedCallback = (session: AuthenticatedSession) => void;
-
-export class TokenObj {
-	#token: string;
-	#expiresAt: Date;
-
-	public constructor(token: string, expiresAt: string | number) {
-		this.#token = token;
-		this.#expiresAt = new Date(expiresAt);
-	}
-
-	public get isExpired(): boolean {
-		return this.isExpiringWithin(0);
-	}
-
-	public isExpiringWithin(marginMs: number): boolean {
-		return this.#expiresAt.getTime() - marginMs < Date.now();
-	}
-
-	public get token(): string {
-		return this.#token;
-	}
-
-	public get expiresAt(): Date {
-		return this.#expiresAt;
-	}
-};
-
-export interface ITokenStorage {
-	getToken(): TokenObj | null;
-	setToken(token: TokenObj): void;
+export interface ISessionStorage {
+	get(): SessionExpiry | null;
+	set(expiry: SessionExpiry): void;
 	clear(): void;
 }

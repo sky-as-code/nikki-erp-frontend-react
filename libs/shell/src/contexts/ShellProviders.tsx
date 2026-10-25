@@ -18,9 +18,9 @@ import { SHELL_STORE_NAME, shellStore } from '../appState/shellStore';
 import { store } from '../appState/store';
 import { useIsSessionSettled } from '../authenticate';
 import { useTryRestoreSession } from '../authenticate/authHooks';
-import { initAuthService, ensureAccessToken } from '../authenticate/authService';
+import { ensureSession, initAuthService, startSessionKeepAlive } from '../authenticate/authService';
+import { removeLegacyTokenKeys, SessionExpiryLocalStorage } from '../authenticate/sessionExpiryStorage';
 import { NikkiAuthenticateStrategy } from '../authenticate/strategies';
-import { TokenLocalStorage } from '../authenticate/tokenStorage';
 import { ShellCommandRegistrar } from '../commandBus';
 import { setEnvVarsAction } from '../config/shellConfigSlice';
 import { shellEventBus } from '../eventBus';
@@ -73,24 +73,18 @@ function initServices(props: ShellProvidersProps): void {
 	// paint too late.
 	shellStore.dispatch(setEnvVarsAction(props.envVars as ShellEnvVars));
 
-	const signInStrategy = new NikkiAuthenticateStrategy();
-	// localStorage, like the refresh token: a menu item opened in a new tab must start signed in, and
-	// sessionStorage is empty in every new tab.
-	const accessTokenStorage = new TokenLocalStorage('nikki_access_token');
-	const refreshTokenStorage = new TokenLocalStorage('nikki_refresh_token');
-
+	removeLegacyTokenKeys();
 	initAuthService({
-		strategy: signInStrategy,
-		accessTokenStorage: accessTokenStorage,
-		refreshTokenStorage: refreshTokenStorage,
+		strategy: new NikkiAuthenticateStrategy(),
+		sessionStorage: new SessionExpiryLocalStorage(),
 	});
+	// For the page's lifetime, like the services above; sign-out stops it.
+	startSessionKeepAlive();
 
 	const envVars = props.envVars as ShellEnvVars;
 	RequestMaker.initDefault({
 		baseUrl: envVars.BASE_API_URL,
-		auth: {
-			getToken: ensureAccessToken,
-		},
+		ensureSession: ensureSession,
 	});
 }
 
