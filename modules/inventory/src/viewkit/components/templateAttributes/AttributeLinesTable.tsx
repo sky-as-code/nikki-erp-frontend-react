@@ -10,6 +10,7 @@ import {
 	LINE_TABLE_SCHEMA, linesToRows, MODE_FIELD, readNewLine, rowsToSearchData, VALUES_FIELD,
 } from './attributeLineRows';
 import { LINE_FIELD_EDITORS, LineEditorContext, ModeBadge, NEW_LINE_FIELD_EDITORS } from './lineEditors';
+import { ResolveVariantToolbar } from './ResolveVariantModal';
 import { attributeLabel, TEST_ID_PREFIX, valueLabel } from './sectionText';
 import { addLineWith, removeLine, reorderLines } from './templateConfigDrafts';
 import {
@@ -102,6 +103,7 @@ export function AttributeLinesTable(props: LinesTableProps): React.ReactNode {
 				emptyMessage={text.t('product_template_config_empty')}
 				{...sinks.writes}
 			>
+				<ResolveVariantToolbar />
 				<div>
 					<ExcelDataTable.TableHeader enableColumnFilters={false} />
 					<ExcelDataTable.Table />

@@ -1,7 +1,7 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { LocalizedDateTime, LocalizedNumber } from '@nikkierp/ui/components';
+import { TranslatableText } from '@nikkierp/ui/components';
 import { getDecimalScale, toLangJson } from '@nikkierp/ui/components/ExcelDataTable';
-import { JsonLangText } from '@nikkierp/ui/i18n';
 import React from 'react';
 
 import type { LocalizeFn } from '@nikkierp/ui/i18n';
@@ -33,7 +33,7 @@ export function renderDisplayFieldValue(
 	}
 	const typeName = getFieldDataTypeName(fieldSchema);
 	if (typeName === 'nikkiLangJson') {
-		return <JsonLangText langJson={toLangJson(fieldValue)} />;
+		return <TranslatableText langJson={toLangJson(fieldValue)} />;
 	}
 	if (localize && typeName === 'enumString' && typeof fieldValue === 'string' && fieldValue !== '') {
 		return renderEnumValue(fieldValue, fieldSchema!, localize);

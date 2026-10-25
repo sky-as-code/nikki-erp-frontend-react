@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { propagateCurrentLangToEmpty } from './MultiLangInputModal';
+import { propagateCurrentLangToEmpty } from './langJson';
 
 
 const LANGUAGES = ['en-US', 'vi-VN'];

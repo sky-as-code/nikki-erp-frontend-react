@@ -9,6 +9,3 @@ export const ATTRIBUTE_VALUES = 'nikkierp.inventory.components.attributeValues.v
 
 /** The template detail's Attributes section: attribute lines and exclusions, saved with the template. */
 export const TEMPLATE_ATTRIBUTES = 'nikkierp.inventory.components.templateAttributes.v1';
-
-/** The template detail's "Resolve variant" action, rendered among the page's contextual actions. */
-export const TEMPLATE_RESOLVE_VARIANT = 'nikkierp.inventory.components.templateResolveVariant.v1';

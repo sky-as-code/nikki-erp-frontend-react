@@ -1,15 +1,14 @@
 import { Anchor, Group, Table as MantineTable, Text, Tooltip } from '@mantine/core';
 import { commandAttrs } from '@nikkierp/viewengine/core';
-import { IconLock } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import { LockedAnchor } from './LockedAnchor';
 import { actionLockKey } from './useActionColumnLocks';
 import { useTranslate } from '../../../i18n';
 import { useCommandBus } from '../../../microApp/MicroAppProvider';
 import { Button, LinkButton } from '../../Button';
-import { useShowLockedFeature } from '../../ErrorState';
 import { publishTableCommand } from '../Action';
 import { useExcelDataTableContext } from '../context';
 import classes from '../ExcelDataTable.module.css';
@@ -114,28 +113,6 @@ function EnabledControl({ columnKey, action, item, rowId, lock }: RowActionContr
 	return lock?.locked
 		? <LockedAnchor label={action.label} missing={lock.missing} testId={testId} />
 		: <Anchor component={Link} to={href} size='xs' {...testId}>{action.label}</Anchor>;
-}
-
-/** A link the caller may not follow: dimmed with a lock, and a click explains the refusal. */
-function LockedAnchor({ label, missing, testId }: {
-	label: string, missing: string[], testId: Record<string, string>,
-}): React.ReactNode {
-	const showLocked = useShowLockedFeature();
-	return (
-		<Anchor
-			component='button'
-			type='button'
-			size='xs'
-			c='dimmed'
-			data-locked='true'
-			className='inline-flex items-center gap-1'
-			onClick={() => showLocked(missing)}
-			{...testId}
-		>
-			{label}
-			<IconLock size={12} aria-hidden />
-		</Anchor>
-	);
 }
 
 /** Publishes `command` with the row as payload; failures go to the Shell Notices, then the table refreshes. */

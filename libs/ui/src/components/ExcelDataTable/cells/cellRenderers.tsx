@@ -2,11 +2,11 @@ import { Badge, Switch } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
-import { JsonLangText } from '../../../i18n';
 import { normalizeBooleanValue } from '../../form/ReadOnlyBooleanSwitch';
 import { LocalizedDateTime } from '../../Localized/LocalizedDateTime';
 import { LocalizedMoney } from '../../Localized/LocalizedMoney';
 import { LocalizedNumber } from '../../Localized/LocalizedNumber';
+import { TranslatableText } from '../../translatable/TranslatableText';
 
 import type { TranslateFn } from '../../../i18n';
 import type { DateTimeKind } from '../../Localized/localizedFormat';
@@ -211,7 +211,7 @@ export class JsonLangCellRenderer implements DataTypeCellRenderer {
 	}
 
 	public render(rawValue: unknown, _textValue: string): React.ReactNode {
-		return <JsonLangText langJson={toLangJson(rawValue)} />;
+		return <TranslatableText langJson={toLangJson(rawValue)} />;
 	}
 }
 

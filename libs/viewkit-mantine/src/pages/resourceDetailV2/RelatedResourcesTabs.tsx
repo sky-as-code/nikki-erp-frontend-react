@@ -244,6 +244,7 @@ function RelatedActions({ resource, graph, editing }: {
 						? t(resource.viewAllLabel)
 						: t('datatable.viewAll', { defaultValue: 'View all' })}
 					href={viewAllHrefOf(viewAllHref, resource.viewAllFiltered ? graph : undefined)}
+					type={resource.viewAllType}
 					testId='viewAll'
 				/>
 			) : null}

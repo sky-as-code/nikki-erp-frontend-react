@@ -176,14 +176,10 @@ export function ReadOnlyTextField(props: { name: string, localize: LocalizeFn })
  */
 function displayReadOnlyValue(value: unknown, localize: LocalizeFn): string {
 	if (value !== null && typeof value === 'object') {
-		const localized = localize(value as any);
-		return localized === MISSING_TRANSLATION ? '' : localized;
+		return localize(value as any);
 	}
 	return String(value);
 }
-
-/** What `useLocalize` hands back for a LangJson carrying no entry for the active language. */
-const MISSING_TRANSLATION = '$missing.translation';
 
 function extractDataTypeName(fieldDef: { data_type: unknown }): string | undefined {
 	const dataType = fieldDef.data_type as string | { name?: string } | undefined;

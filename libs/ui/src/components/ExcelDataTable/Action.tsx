@@ -1,4 +1,4 @@
-import { Loader, Menu, Tooltip } from '@mantine/core';
+import { Anchor, Loader, Menu, Tooltip } from '@mantine/core';
 import { notifyClientErrors, showShellNotice } from '@nikkierp/common/service';
 import { escapeHtml } from '@nikkierp/common/utils';
 import { commandAttrs } from '@nikkierp/viewengine/core';
@@ -6,6 +6,7 @@ import { IconDots, IconRefresh } from '@tabler/icons-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import { LockedAnchor } from './actionColumns/LockedAnchor';
 import { ActionsContext, useActionsContext } from './actionsContext';
 import { useExcelDataTableContext } from './context';
 import { useTranslate } from '../../i18n';
@@ -13,7 +14,7 @@ import { useCommandBus } from '../../microApp/MicroAppProvider';
 import { Button, LinkButton } from '../Button';
 import { useLockedItemProps } from '../ErrorState';
 
-import type { SearchItem } from './types';
+import type { ActionColumnActionType, SearchItem } from './types';
 import type { ButtonProps, LockedProps } from '../Button';
 import type { ICommandBus } from '@nikkierp/common/commandBus';
 import type { ClientErrorTranslator } from '@nikkierp/common/types';
@@ -28,6 +29,12 @@ export type ActionProps = LockedProps & {
 	iconOnly?: boolean,
 	/** Navigates instead of publishing; relative paths resolve against the current route. */
 	href?: string,
+	/**
+	 * `action`: a `Button` firing `onClick`/`command`. `action_link`: a `LinkButton` to `href`.
+	 * `link`: a text `Anchor` to `href`, for a navigation that should not read as an action.
+	 * Defaults to `action_link` with an `href`, else `action`. Ignored inside a menu.
+	 */
+	type?: ActionColumnActionType,
 	/** Published as `{name, payload: {ids}}`, then the table refreshes. */
 	command?: string,
 	onClick?: (selectedItems: SearchItem[]) => void,
@@ -65,6 +72,23 @@ export function getActionStateProps(
 		'aria-busy': loading || undefined,
 		...(dimmed ? { color: 'gray', c: 'dimmed', 'data-dimmed': 'true' } : {}),
 	};
+}
+
+/**
+ * The control an action renders as in the bar. A link type with no `href` has nowhere to go, so it
+ * falls back to a button, warning the developer who configured it.
+ */
+export function resolveActionType({ type, href }: Pick<ActionProps, 'type' | 'href'>): ActionColumnActionType {
+	if (!type) {
+		return href ? 'action_link' : 'action';
+	}
+	if (type !== 'action' && !href) {
+		if (import.meta.env.DEV) {
+			console.warn(`An ExcelDataTable action of type '${type}' needs an href; rendering a button.`);
+		}
+		return 'action';
+	}
+	return type;
 }
 
 /**
@@ -172,10 +196,38 @@ function ActionButton(props: TriggerProps) {
 	// An icon-only button carries its label in the tooltip and `aria-label`; every other button
 	// shows the text, with the icon beside it via `leftSection`.
 	const content = iconOnly ? (props.loading ? <Loader size='xs' /> : icon) : label;
-	const button = href
-		? <LinkButton to={href} {...shared}>{content}</LinkButton>
+	const type = resolveActionType(props);
+	if (type === 'link') {
+		return <ActionAnchor {...props} href={href!} content={content} />;
+	}
+	const button = type === 'action_link'
+		? <LinkButton to={href!} {...shared}>{content}</LinkButton>
 		: <Button onClick={onTrigger} {...shared}>{content}</Button>;
 	return iconOnly ? <Tooltip label={label}>{button}</Tooltip> : button;
+}
+
+/** A `link` action: plain text that navigates, with a lock that explains itself when locked. */
+function ActionAnchor(props: TriggerProps & { href: string, content: React.ReactNode }) {
+	const { tid } = useExcelDataTableContext();
+	const { label, icon, iconOnly = false, href, content, locked, lockedMissing } = props;
+	const testId = tid.action(props) as Record<string, string>;
+	const text = iconOnly ? content : <>{icon}{label}</>;
+	const anchor = locked
+		? <LockedAnchor label={text} missing={lockedMissing ?? []} testId={testId} size='sm' />
+		: (
+			<Anchor
+				component={Link}
+				to={href}
+				size='sm'
+				className='inline-flex items-center gap-1'
+				aria-label={iconOnly ? label : undefined}
+				{...commandAttrs(props.command)}
+				{...testId}
+			>
+				{text}
+			</Anchor>
+		);
+	return iconOnly ? <Tooltip label={label}>{anchor}</Tooltip> : anchor;
 }
 
 function ActionMenuItem(props: TriggerProps) {

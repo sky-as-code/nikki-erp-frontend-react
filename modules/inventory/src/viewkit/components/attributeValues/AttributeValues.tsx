@@ -1,5 +1,6 @@
 import { Alert, Badge, ColorSwatch, Group, Stack, Switch, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { resolveLangJson } from '@nikkierp/ui/components';
 import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
 import { useClientErrorTranslate, useI18n, useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
@@ -204,7 +205,6 @@ function useValueRenderers(): FieldRendererMap {
 	}), [archived, language]);
 }
 
-/** A `langjson` name in the active language, else in any language it has. */
 function nameText(raw: unknown, language: string): string {
 	if (typeof raw === 'string') {
 		return raw;
@@ -212,9 +212,7 @@ function nameText(raw: unknown, language: string): string {
 	if (raw === null || typeof raw !== 'object') {
 		return '';
 	}
-	const names = raw as Record<string, unknown>;
-	const label = names[language] ?? Object.values(names).find(value => typeof value === 'string');
-	return typeof label === 'string' ? label : '';
+	return resolveLangJson(raw as dyn.ModelSchemaLangJson, language);
 }
 
 /**

@@ -1,6 +1,6 @@
 import { Anchor } from '@mantine/core';
+import { TranslatableText } from '@nikkierp/ui/components';
 import { toLangJson } from '@nikkierp/ui/components/ExcelDataTable';
-import { JsonLangText } from '@nikkierp/ui/i18n';
 import { useMicroAppManager } from '@nikkierp/ui/microApp';
 import React from 'react';
 import { Link } from 'react-router';
@@ -43,7 +43,7 @@ export function EdgeFieldValue({
 
 	// A record label may be a LangJson document, so it is localized rather than interpolated.
 	const text = typeof display.label === 'object'
-		? <JsonLangText langJson={toLangJson(display.label)} />
+		? <TranslatableText langJson={toLangJson(display.label)} />
 		: String(display.label);
 
 	if (display.kind === 'text') {

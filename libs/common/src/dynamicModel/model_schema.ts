@@ -1,18 +1,8 @@
 import { z } from 'zod';
 
+import { createLangJsonSchema, isLangJsonEmpty } from './langJsonValidation';
+import { ErrorKeys } from './validationErrorKeys';
 
-const ErrorKeys = {
-	invalidDataType: 'err_invalid_data_type',
-	missingRequiredField: 'err_missing_required_field',
-	formatMismatch: 'err_format_mismatch',
-	invalidEmail: 'err_invalid_email',
-	invalidUrl: 'err_invalid_url',
-	invalidStringPattern: 'err_invalid_string_pattern',
-	invalidStringLength: 'err_invalid_string_length',
-	invalidNumberRange: 'err_invalid_number_range',
-	notOneOf: 'err_not_one_of',
-	invalidArrayLength: 'err_invalid_array_length',
-} as const;
 
 export type ModelSchema = {
 	name: string,
@@ -276,7 +266,7 @@ function buildFieldSchema(fieldDef: ModelSchemaField): z.ZodTypeAny {
 		return applyOptionalRule(fieldSchema);
 	}
 
-	return applyRequiredRule(fieldSchema);
+	return applyRequiredRule(fieldSchema, dataType.name === 'nikkiLangJson' ? isLangJsonEmpty : isNilOrEmpty);
 }
 
 function createSchemaByDataType(dataType: ModelSchemaFieldDataType): z.ZodTypeAny {
@@ -290,9 +280,7 @@ function createSchemaByDataType(dataType: ModelSchemaFieldDataType): z.ZodTypeAn
 		case 'nikkiDateTime':
 			return createDateTimeSchema();
 		case 'nikkiLangJson':
-			return z.record(createStringSchema(), createStringSchema()).or(
-				z.record(z.string(), z.string()),
-			);
+			return createLangJsonSchema(dataType.options);
 		case 'enumString':
 			return createEnumStringSchema(dataType.options);
 		case 'jsonmap':
@@ -543,8 +531,10 @@ function isBlank(value: unknown): boolean {
 	return Array.isArray(value) && value.length === 0;
 }
 
-function applyRequiredRule(fieldSchema: z.ZodTypeAny): z.ZodTypeAny {
-	return z.any().refine((value) => !isNilOrEmpty(value), ErrorKeys.missingRequiredField).pipe(fieldSchema);
+function applyRequiredRule(
+	fieldSchema: z.ZodTypeAny, isEmpty: (value: unknown) => boolean,
+): z.ZodTypeAny {
+	return z.any().refine((value) => !isEmpty(value), ErrorKeys.missingRequiredField).pipe(fieldSchema);
 }
 
 function isNilOrEmpty(value: unknown): boolean {

@@ -3,6 +3,7 @@ import React from 'react';
 
 import { applyCustomRenderer, findDefaultRenderer, renderDefaultByDataType, renderEnumBadge } from './cellRenderers';
 import i18next, { schemaModuleName } from '../../../i18n';
+import { resolveLangJson } from '../../translatable/langJson';
 import { ENUM_DATA_TYPES, getFieldSchema } from '../filter/filterModel';
 
 import type { CellAlignment } from './cellRenderers';
@@ -111,25 +112,15 @@ export function translateSchemaRef(key: string, schemaName: string): string | un
 }
 
 /**
- * A lang-json value (`essential_uom.name`, a field label) as text: its `$ref` translation when
- * there is one, else the active language, else any language it has — a label in the wrong
- * language still names the record better than its id does.
+ * A lang-json value (`essential_uom.name`, a field label) as text, by {@link resolveLangJson};
+ * undefined when it has none, so a caller can fall back to the record id or field name.
  */
 export function localizeLangJson(
 	langJson: dyn.ModelSchemaLangJson,
 	language: string | undefined,
 	translateRef?: (key: string) => string | undefined,
 ): string | undefined {
-	const refKey = langJson[dyn.LangJsonRefKey];
-	const translated = refKey ? translateRef?.(refKey) : undefined;
-	if (translated) {
-		return translated;
-	}
-	const preferred = language ? langJson[language] : undefined;
-	if (preferred) {
-		return preferred;
-	}
-	return Object.entries(langJson).find(([key, text]) => key !== dyn.LangJsonRefKey && Boolean(text))?.[1];
+	return resolveLangJson(langJson, language, translateRef) || undefined;
 }
 
 export function getCellAlignment(
