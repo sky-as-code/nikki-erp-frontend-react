@@ -7,6 +7,7 @@ import type { AppConfig, CookieConfig, HttpServerConfig, UpstreamConfig } from '
 
 const FE_PREFIX = 'NIKKI_PUBLIC_';
 const BFF_PREFIX = 'NIKKI_BFF_';
+export const BFF_API_BASE_URL = '/api';
 const PACKAGE_ROOT = path.resolve(__dirname, '..', '..', '..');
 const DEFAULT_UPSTREAM_TIMEOUT_MS = 30000;
 
@@ -42,8 +43,19 @@ export function parseClientConfig(nodeEnv: string): Record<string, string> {
 			clientConfig[key.substring(FE_PREFIX.length)] = value ?? '';
 		}
 	}
+	clientConfig['BASE_API_URL'] = enforceBffApiBaseUrl(clientConfig['BASE_API_URL']);
 	clientConfig['APP_ENV'] = nodeEnv;
 	return clientConfig;
+}
+
+// Session cookies are host-only and scoped to the BFF's /api path, so a browser that calls the business
+// service directly (e.g. a leftover absolute URL in a personal .env.local) can never authenticate.
+function enforceBffApiBaseUrl(configured: string | undefined): string {
+	if (configured && configured !== BFF_API_BASE_URL) {
+		console.warn(`WARNING: ${FE_PREFIX}BASE_API_URL=${configured} is ignored; `
+			+ `the browser always calls the BFF at ${BFF_API_BASE_URL}`);
+	}
+	return BFF_API_BASE_URL;
 }
 
 function parseHttpServer(clientRootPath: string): HttpServerConfig {

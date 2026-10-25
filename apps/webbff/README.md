@@ -88,7 +88,7 @@ Resolution order (first value wins): process env → `{NIKKI_BFF_CLIENT_ROOT_PAT
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `NIKKI_PUBLIC_*` | `BASE_API_URL=/api`, `ROOT_DOMAIN`, `ROOT_PATH`, `MAPLIBRE_GL_API_KEY` | Sent to the browser (`/api/v0/config`, `window.__CLIENT_CONFIG__`) without the prefix |
+| `NIKKI_PUBLIC_*` | `ROOT_DOMAIN`, `ROOT_PATH`, `MAPLIBRE_GL_API_KEY` | Sent to the browser (`/api/v0/config`, `window.__CLIENT_CONFIG__`) without the prefix. `BASE_API_URL` is always `/api`: a configured value is ignored with a warning, because session cookies only reach the BFF |
 | `NODE_ENV` | `local` | `local` = Vite middleware; anything else = static files |
 | `NIKKI_BFF_CLIENT_ROOT_PATH` | set by the `dev` scripts | Folder holding the frontend `index.html` (sources locally, `dist` otherwise) |
 | `NIKKI_BFF_HTTP_PORT` / `NIKKI_BFF_HTTP_HOST` | `3000` / all interfaces | HTTP listener |

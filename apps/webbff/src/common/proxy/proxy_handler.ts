@@ -1,10 +1,11 @@
+import { BFF_API_BASE_URL } from '../config/env';
 import { sendNotFound } from '../http/errors';
 
 import type { Container } from '../ioc/container';
 import type { RequestHandler } from 'express';
 
 
-export const API_PREFIX = '/api';
+export const API_PREFIX = BFF_API_BASE_URL;
 // `/api/v0` belongs to the BFF itself (frontend-coupled, versionless) and is never forwarded.
 const VERSIONED_PATH = /^\/v[1-9][0-9]*\//;
 const DOT_SEGMENT = /^(\.|\.\.)$/;
