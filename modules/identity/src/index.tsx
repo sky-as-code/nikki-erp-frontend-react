@@ -1,5 +1,5 @@
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
-import { MenuIndexRedirect } from '@nikkierp/ui/menu';
+import { MenuIndexRedirect, menuItemsOf } from '@nikkierp/ui/menu';
 import {
 	defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps, MicroAppProvider,
 } from '@nikkierp/ui/microApp';
@@ -70,7 +70,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildRoleAssignmentPages(),
 	], []);
 
-	const indexElement = <MenuIndexRedirect items={buildIdentityMenu(props.slug).items} />;
+	const indexElement = <MenuIndexRedirect items={menuItemsOf(buildIdentityMenu(props.slug))} />;
 
 	return (
 		<ViewEngineRouter

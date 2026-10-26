@@ -45,8 +45,11 @@ export type Module = {
 	version: string,
 	/** The module ships a frontend micro-app; only these appear on Module Home. */
 	has_ui: boolean,
-	/** Prefix of the module's resource codes (`vdmc` for vendingmachine); decides module access. */
-	model_prefix?: string,
+	/**
+	 * Prefixes of the module's resource codes (`['vdmc']` for vendingmachine, `['inventory',
+	 * 'purchase', 'sales']` for commerce); decides module access.
+	 */
+	model_prefixes?: string[],
 	/** Null on rows synced before the column existed; read those as `foundation`. */
 	category?: ModuleCategoryCode | null,
 	/** Hard-coded `true` by the backend for now; there is no toggle yet. */

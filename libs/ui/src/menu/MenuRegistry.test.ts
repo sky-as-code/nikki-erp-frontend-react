@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { createMenuRegistry } from './MenuRegistry';
+import { menuItemsOf } from './ribbon';
 import { MenuConflictError, MenuContribution } from './types';
 
 
@@ -29,7 +30,7 @@ describe('MenuRegistry', () => {
 		registry.register(contribution('iam', 3));
 		registry.register(contribution('drive', 1));
 
-		expect(registry.getMenu('iam')?.items).toHaveLength(3);
+		expect(menuItemsOf(registry.getMenu('iam')!)).toHaveLength(3);
 	});
 
 	it('throws on duplicate registration without override', () => {
@@ -45,7 +46,7 @@ describe('MenuRegistry', () => {
 		registry.register(contribution('iam', 1));
 		registry.register(contribution('iam', 4), { override: true });
 
-		expect(registry.getMenu('iam')?.items).toHaveLength(4);
+		expect(menuItemsOf(registry.getMenu('iam')!)).toHaveLength(4);
 		expect(warn).toHaveBeenCalled();
 		warn.mockRestore();
 	});
@@ -99,5 +100,18 @@ describe('MenuRegistry subscriptions', () => {
 		expect(registry.describe()).toEqual({
 			modules: [{ slug: 'iam', translationNs: 'iam', itemCount: 2 }],
 		});
+	});
+
+	it('stores a ribbon frozen and describes it by tab count', () => {
+		const registry = createMenuRegistry();
+		registry.register({
+			slug: 'commerce',
+			translationNs: 'commerce',
+			type: 'ribbon',
+			tabs: [{ labelKey: 'a', blocks: [] }, { labelKey: 'b', blocks: [] }],
+		});
+
+		expect(Object.isFrozen(registry.getMenu('commerce'))).toBe(true);
+		expect(registry.describe().modules[0].itemCount).toBe(2);
 	});
 });

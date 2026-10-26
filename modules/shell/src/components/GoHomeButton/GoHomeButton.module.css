@@ -1,0 +1,21 @@
+.goHomeButton {
+	transition: transform 0.2s ease-out;
+}
+
+.goHomeButton:active {
+	transform: scale(0.9);
+}
+
+.goHomeButtonClick {
+	animation: click-pulse 0.5s ease-out;
+}
+
+@keyframes click-pulse {
+	from {
+		transform: rotateY(0deg);
+	}
+
+	to {
+		transform: rotateY(180deg);
+	}
+}

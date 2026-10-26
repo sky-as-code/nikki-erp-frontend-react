@@ -13,7 +13,7 @@ export type FilterState = {
 export type ModuleCardItem = {
 	slug: string,
 	name: string,
-	modelPrefix?: string,
+	modelPrefixes?: string[],
 	category: ModuleCategoryCode,
 	isOrphaned: boolean,
 	isEnabled: boolean,
@@ -32,7 +32,7 @@ export type CompareFn = (a: string, b: string) => number;
 
 export type ModuleCardContext = {
 	translateName: (module: Module) => string,
-	canAccess: (module: Pick<Module, 'name' | 'model_prefix'>) => boolean,
+	canAccess: (module: Pick<Module, 'name' | 'model_prefixes'>) => boolean,
 };
 
 export const DEFAULT_MODULE_CATEGORY: ModuleCategoryCode = 'foundation';
@@ -52,7 +52,7 @@ export function toModuleCardItems(modules: Module[], context: ModuleCardContext)
 			const base = {
 				slug: module.name,
 				name: context.translateName(module),
-				modelPrefix: module.model_prefix,
+				modelPrefixes: module.model_prefixes,
 				category: module.category ?? DEFAULT_MODULE_CATEGORY,
 				isOrphaned: module.is_orphaned,
 				isEnabled: module.is_enabled,

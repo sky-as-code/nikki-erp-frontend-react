@@ -26,6 +26,14 @@ describe('canAccessModule', () => {
 		expect(canAccessModule('vdmc', contextWith(['update:vdmc_kiosks:org/01ABC']))).toBe(true);
 	});
 
+	it('grants a module owning several prefixes when any one matches', () => {
+		const prefixes = ['inventory', 'purchase', 'sales'];
+		expect(canAccessModule(prefixes, contextWith(['read:sales_order:org']))).toBe(true);
+		expect(canAccessModule(prefixes, contextWith(['read:inventory_brand:org']))).toBe(true);
+		expect(canAccessModule(prefixes, contextWith(['read:iam_user:org']))).toBe(false);
+		expect(canAccessModule([], contextWith(['read:iam_user:org']))).toBe(false);
+	});
+
 	it('requires the separator after the prefix', () => {
 		expect(canAccessModule('iam', contextWith(['read:iamx_foo:tenant']))).toBe(false);
 	});

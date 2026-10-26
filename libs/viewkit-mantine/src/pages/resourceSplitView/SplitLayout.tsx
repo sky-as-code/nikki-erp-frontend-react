@@ -1,3 +1,4 @@
+import { useMediaQuery } from '@mantine/hooks';
 import clsx from 'clsx';
 import React from 'react';
 
@@ -7,6 +8,12 @@ import classes from './SplitLayout.module.css';
 const DEFAULT_RATIO = 0.25;
 const DEFAULT_MIN_RATIO = 0.25;
 const DEFAULT_MAX_RATIO = 0.5;
+
+/**
+ * Screens that show one pane at a time: below the Shell's mobile cut-off (Mantine `md`, 62em), and a
+ * tablet held upright up to iPad Pro portrait (1024px), where two panes would each be too narrow.
+ */
+export const SINGLE_PANE_MEDIA_QUERY = '(max-width: 62em), (orientation: portrait) and (max-width: 64em)';
 
 
 export type RenderPrimaryParams = {
@@ -35,6 +42,9 @@ export function SplitLayout(props: SplitLayoutProps): React.ReactNode {
 	} = props;
 	const containerRef = React.useRef<HTMLDivElement | null>(null);
 	const openState = useSecondaryOpenState(props);
+	const isSinglePane = useMediaQuery(SINGLE_PANE_MEDIA_QUERY) ?? false;
+	// The list stays mounted while hidden, so it keeps its scroll, filters and selection for the way back.
+	const isPrimaryHidden = isSinglePane && openState.isOpen;
 	const drag = useSplitterDrag({
 		containerRef,
 		initialRatio: props.defaultRatio ?? DEFAULT_RATIO,
@@ -48,19 +58,23 @@ export function SplitLayout(props: SplitLayoutProps): React.ReactNode {
 		isSecondaryOpen: openState.isOpen,
 	}) : null;
 	const secondaryNode = secondaryOpen ? props.renderSecondary() : null;
-	const primaryWidth = openState.isOpen ? `${drag.ratio * 100}%` : '100%';
-	const secondaryWidth = openState.isOpen ? `${(1 - drag.ratio) * 100}%` : '0%';
+	const ratio = isPrimaryHidden ? 0 : drag.ratio;
+	const primaryWidth = openState.isOpen ? `${ratio * 100}%` : '100%';
+	const secondaryWidth = openState.isOpen ? `${(1 - ratio) * 100}%` : '0%';
 	const paneTransition = drag.isDragging ? 'none' : undefined;
 
 	return (
 		<div ref={containerRef} className={clsx(classes.container, 'flex')}>
 			{primaryNode ? (
 				<>
-					<div className={classes.pane} style={{ width: primaryWidth, transition: paneTransition }}>
+					<div
+						className={clsx(classes.pane, isPrimaryHidden && classes.paneHidden)}
+						style={{ width: primaryWidth, transition: paneTransition }}
+					>
 						{primaryNode}
 					</div>
 					<SplitterBar
-						visible={openState.isOpen}
+						visible={openState.isOpen && !isPrimaryHidden}
 						isDragging={drag.isDragging}
 						handleProps={drag.handleProps}
 					/>

@@ -25,14 +25,62 @@ export type MenuItem = {
 	items?: MenuItem[],
 };
 
-/** One micro-app's whole menu, keyed by the slug the host registered it under. */
-export type MenuContribution = {
+type MenuContributionBase = {
 	/** Micro-app slug; also the `/{orgSlug}/{slug}` URL segment. Registry key. */
 	slug: string,
-	/** i18n namespace every `labelKey` in `items` is resolved against. */
+	/** i18n namespace every label and title key in the contribution is resolved against. */
 	translationNs: string,
+};
+
+/**
+ * The traditional menu bar: top-level entries with nested groups. The default when `type` is omitted.
+ * It keeps the plain name because every module menu but a ribbon's is one; registry and Shell take
+ * {@link AnyMenuContribution}.
+ */
+export type MenuContribution = MenuContributionBase & {
+	type?: 'traditional',
 	items: MenuItem[],
 };
+
+/** A ribbon entry that navigates. */
+export type RibbonLinkItem = {
+	labelKey: string,
+	link: string,
+	/** Same contract as {@link MenuItem.requiredEntitlements}: locked, never hidden. */
+	requiredEntitlements?: EntitlementRequirementInput[],
+};
+
+/** A ribbon entry that opens a list of links. */
+export type RibbonDropdownItem = {
+	labelKey: string,
+	items: RibbonLinkItem[],
+};
+
+export type RibbonItem = RibbonLinkItem | RibbonDropdownItem;
+
+/** A titled group of items inside a tab. */
+export type RibbonBlock = {
+	titleKey: string,
+	items: RibbonItem[],
+};
+
+export type RibbonTab = {
+	labelKey: string,
+	blocks: RibbonBlock[],
+};
+
+export type RibbonBlockTitlePosition = 'top' | 'bottom';
+
+/** An Office-style ribbon: tabs, each a row of titled blocks of items. */
+export type RibbonMenuContribution = MenuContributionBase & {
+	type: 'ribbon',
+	tabs: RibbonTab[],
+	/** Where a block's title sits relative to its items. Defaults to `'bottom'`. */
+	blockTitlePosition?: RibbonBlockTitlePosition,
+};
+
+/** One micro-app's whole menu, of either type, keyed by the slug the host registered it under. */
+export type AnyMenuContribution = MenuContribution | RibbonMenuContribution;
 
 export type MenuRegisterOptions = {
 	/** Explicit opt-in to replace an existing contribution for the same slug. */
@@ -45,13 +93,13 @@ export type MenuRegistryManifest = {
 
 /** Write face, handed to micro-apps through `HostServices`. */
 export interface IMenuWriter {
-	register(contribution: MenuContribution, opts?: MenuRegisterOptions): void;
+	register(contribution: AnyMenuContribution, opts?: MenuRegisterOptions): void;
 	unregister(slug: string): void;
 }
 
 /** Read face, used by the Shell's menu bar. */
 export interface IMenuReader {
-	getMenu(slug?: string | null): MenuContribution | undefined;
+	getMenu(slug?: string | null): AnyMenuContribution | undefined;
 	subscribe(listener: () => void): () => void;
 	describe(): MenuRegistryManifest;
 }

@@ -29,16 +29,16 @@ const THEMES: { labelKey: string, value: ThemeMode, icon: React.ReactNode }[] = 
 
 const DENSITIES: { labelKey: string, descriptionKey: string, value: Density, icon: React.ReactNode }[] = [
 	{
-		labelKey: 'density.spacious',
-		descriptionKey: 'density.spacious.description',
-		value: 'spacious',
-		icon: <IconBaselineDensityMedium size={30} />,
-	},
-	{
 		labelKey: 'density.compact',
 		descriptionKey: 'density.compact.description',
 		value: 'compact',
 		icon: <IconBaselineDensitySmall size={30} />,
+	},
+	{
+		labelKey: 'density.spacious',
+		descriptionKey: 'density.spacious.description',
+		value: 'spacious',
+		icon: <IconBaselineDensityMedium size={30} />,
 	},
 ];
 

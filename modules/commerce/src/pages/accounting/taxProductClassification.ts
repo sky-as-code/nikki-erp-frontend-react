@@ -1,0 +1,82 @@
+// Proxy copy of `nikkierp/modules/accounting/src/pages/taxProductClassification.ts`; keep in step. Commerce registers nothing for these schemas:
+// the accounting micro-app stays in the host and is lazy-loaded to serve them.
+import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
+import {
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+} from '@nikkierp/viewkit-mantine/props';
+
+import * as c from '../../constants/accounting';
+import { TaxProductClassificationCommands } from '../../features/accounting/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
+
+
+/**
+ * Tax product classifications: what a product is for tax purposes.
+ *
+ * Rules test the classification rather than the product itself, which is what keeps a tax rule from
+ * having to know the product catalogue (BR-TAX-ESS-025).
+ */
+export function buildTaxProductClassificationPages(): PageNode[] {
+	const splitView = resourceSplitViewProps({
+		primary: buildListProps(),
+		secondary: buildDetailProps(),
+	});
+
+	return [definePage({
+		routePath: 'accounting_tax_product_classification',
+		template: splitView.template,
+		props: splitView.props,
+	})];
+}
+
+function buildListProps() {
+	return resourceListV2Props({
+		schemaName: c.TAX_PRODUCT_CLASSIFICATION_SCHEMA_NAME,
+		translationNs: c.ACCOUNTING_MODULE,
+		linkField: 'id',
+		searchCommand: TaxProductClassificationCommands.SEARCH,
+		createEnabled: true,
+		deleteCommand: TaxProductClassificationCommands.DELETE,
+		archiveCommand: TaxProductClassificationCommands.SET_IS_ARCHIVED,
+		updateSaveCommand: TaxProductClassificationCommands.UPDATE,
+		updateCommand: TaxProductClassificationCommands.UPDATE,
+	});
+}
+
+function buildDetailProps() {
+	return resourceDetailV2Props({
+		schemaName: c.TAX_PRODUCT_CLASSIFICATION_SCHEMA_NAME,
+		translationNs: c.ACCOUNTING_MODULE,
+		titleLvl1: { schemaField: 'name' },
+		titleLvl2: { schemaField: 'code' },
+		backLinkTitle: { linkHref: '../' },
+		standardActionCommands: {
+			getById: TaxProductClassificationCommands.GET_BY_ID,
+			create: TaxProductClassificationCommands.CREATE,
+			update: TaxProductClassificationCommands.UPDATE,
+			delete: TaxProductClassificationCommands.DELETE,
+			archive: TaxProductClassificationCommands.SET_IS_ARCHIVED,
+		},
+		createNodes: [buildFieldsSection()],
+		childrenNodes: [buildFieldsSection()],
+	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks. */
+function buildFieldsSection(): ComponentNode {
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
+		translationNs: c.ACCOUNTING_MODULE,
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.generalInformation',
+			fields: ['code', 'name', 'jurisdiction_id', 'external_code', 'description', 'org_id'],
+		}),
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['is_archived', 'created_at', 'updated_at'],
+		}),
+	]);
+}

@@ -40,10 +40,13 @@ function makeSchemaOwnerLoader(manager: MicroAppManager): SchemaOwnerLoader {
 
 function makeModuleLoader(manager: MicroAppManager): ModuleLoader {
 	return async function loadModule(moduleName: string) {
-		if (!manager.isRegistered(moduleName)) {
+		// A command's module segment is a schema prefix, which need not be the slug: `inventory.*`
+		// commands are served by the `commerce` micro-app.
+		const slug = manager.resolveSlug(moduleName);
+		if (!slug) {
 			return 'not_registered';
 		}
-		await manager.ensureLoaded(moduleName);
+		await manager.ensureLoaded(slug);
 		return 'loaded';
 	};
 }

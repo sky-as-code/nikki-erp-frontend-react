@@ -4,9 +4,9 @@ import { useShellMenu } from '@nikkierp/shell/microApp';
 import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { useHasEntitlement, useLockedItemProps } from '@nikkierp/ui/components';
 import { TranslateFn, useTranslate } from '@nikkierp/ui/i18n';
-import { MenuItem } from '@nikkierp/ui/menu';
+import { isRibbonMenu, MenuItem, menuItemsOf } from '@nikkierp/ui/menu';
 import {
-	ShortcutSequence, type ShortcutSpec, toAriaKeyShortcuts, useSequenceShortcut, useShortcut,
+	ShortcutSequence, type ShortcutSpec, toAriaKeyShortcuts, useShortcut,
 } from '@nikkierp/ui/shortcuts';
 import { IconChevronDown, IconDots } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -21,6 +21,8 @@ import {
 } from './helper';
 import classes from './MenuBar.module.css';
 import { MenuMeasureRow, useMenuOverflow } from './menuOverflow';
+import { RibbonMenuBar } from './ribbon/RibbonMenuBar';
+import { useNumberedEntry } from './useNumberedEntry';
 import { VerticalMenuBar } from './VerticalMenuBar';
 
 
@@ -46,21 +48,28 @@ export function MenuBar({ mode = 'horizontal' }: MenuBarProps): React.ReactNode 
 	const pathPrefix = `/${moduleSlug}`;
 
 	const getPath = (link: string): string => getPathWithPrefix(link, pathPrefix);
+	// A ribbon is re-shaped into an item tree for the drawer; the registry entry is frozen, so this
+	// runs once per contribution.
+	const items = React.useMemo(() => (menu ? menuItemsOf(menu) : []), [menu]);
 
 	// The active module has not registered a menu (not loaded yet, or contributes none).
-	if (!menu || menu.items.length === 0) {
+	if (!menu || items.length === 0) {
 		return null;
 	}
 
 	if (mode === 'vertical') {
 		return (
 			<VerticalMenuBar
-				items={menu.items}
+				items={items}
 				pathPrefix={pathPrefix}
 				currentPath={location.pathname}
 				t={t}
 			/>
 		);
+	}
+
+	if (isRibbonMenu(menu)) {
+		return <RibbonMenuBar menu={menu} currentPath={location.pathname} pathPrefix={pathPrefix} t={t} />;
 	}
 
 	return (
@@ -261,16 +270,6 @@ function HorizontalMenuItem({ item, isActive, to, t }: {
 			{t(item.labelKey)}
 		</Button>
 	);
-}
-
-/**
- * Joins the bar's sequence, so the shown top-level entries answer `Alt+1` … `Alt+9` in visual
- * order. Entries pushed into the overflow menu unmount from the row and so lose their number.
- */
-function useNumberedEntry<T extends HTMLElement>(): { ref: React.RefObject<T | null>, 'aria-keyshortcuts'?: string } {
-	const ref = React.useRef<T>(null);
-	const spec = useSequenceShortcut(ref, { mode: 'click' });
-	return { ref, 'aria-keyshortcuts': toAriaKeyShortcuts(spec) };
 }
 
 function MenuItemRenderer({

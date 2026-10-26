@@ -1,24 +1,29 @@
 import {
-	Button, Divider, Drawer, Flex, Stack,
+	Box, Button, Divider, Drawer, Flex, Group, Stack,
 } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { IconApps, IconMenu2, IconX } from '@tabler/icons-react';
-import React, { useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { IconMenu2, IconX } from '@tabler/icons-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router';
 
 import { MENU_BAR_TEST_ID } from './helper';
 import { MenuBar } from './MenuBar';
+import { GoHomeButton } from '../GoHomeButton';
+import { ModuleSwitchDropdown } from '../ModuleSwitch';
 import { ThemeSwitchModal } from '../ThemeSwitch';
 
 
 
 
 export const MenuBarDrawer: React.FC = () => {
-	const navigate = useNavigate();
+	const { pathname } = useLocation();
 	const [drawerOpened, setDrawerOpened] = useState(false);
 	const themeModeModalRef = useRef<any>(null);
-	const { t } = useTranslation();
+	const isRootPath = pathname === '/';
+
+	// Any navigation from inside -- a menu link, the module switch, all apps -- lands the user on the
+	// new page rather than leaving the drawer over it.
+	useEffect(() => setDrawerOpened(false), [pathname]);
 
 	return (
 		<>
@@ -49,21 +54,14 @@ export const MenuBarDrawer: React.FC = () => {
 					</Flex>
 					<Drawer.Body>
 						<Stack gap={0}>
-							<Button
-								variant='subtle' justify='flex-start' fullWidth
-								px={12} py={8}
-								c='var(--mantine-color-gray-7)'
-								fw={500} fz={15} radius='md'
-								styles={{ inner: { justifyContent: 'flex-start' } }}
-								onClick={() => {
-									setDrawerOpened(false);
-									navigate('/');
-								}}
-								leftSection={<IconApps size={20} />}
-								{...testAttrs(MENU_BAR_TEST_ID, 'allApps')}
-							>
-								{t('nikki.shell.menuBar.allApps')}
-							</Button>
+							<Group gap='xs' wrap='nowrap' align='center'>
+								<GoHomeButton testId={`${MENU_BAR_TEST_ID}.allApps`} />
+								{!isRootPath && (
+									<Box flex={1} miw={0}>
+										<ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />
+									</Box>
+								)}
+							</Group>
 							<Divider my={8} />
 							<MenuBar mode='vertical' />
 						</Stack>

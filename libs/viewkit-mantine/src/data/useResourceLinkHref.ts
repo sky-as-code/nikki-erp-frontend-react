@@ -115,7 +115,7 @@ export function buildResourceBaseHref(
 	if (!routePath) {
 		return undefined;
 	}
-	// A leading slash names the module itself: `/purchase/purchase_vendor_product_price`. Needed
+	// A leading slash names the module itself: `/commerce/purchase_vendor_product_price`. Needed
 	// wherever a page embeds a table of a schema another module owns, since the bare form is
 	// resolved against the *current* module and could only ever reach that module's own pages.
 	if (routePath.startsWith('/')) {

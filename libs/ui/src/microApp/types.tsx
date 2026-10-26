@@ -69,14 +69,17 @@ export type MicroAppMetadata = {
 	dependsOn?: MicroAppSlug[],
 
 	/**
-	 * The prefix this micro-app's schema names carry, when it differs from `slug`.
+	 * The prefix (or prefixes) this micro-app's schema names carry, when it differs from `slug`.
 	 *
 	 * A schema name is `{prefix}_{entity}` and module names carry no underscore, so the prefix is
 	 * the segment before the first `_`. Declare this only where it is not the slug: the
 	 * vending-machine app is served under the URL-friendly slug `vendingmachine` while its schemas
-	 * are `vdmc_*`.
+	 * are `vdmc_*`; `commerce` owns `inventory_*`, `purchase_*` and `sales_*`.
+	 *
+	 * A prefix is also the first segment of the micro-app's command names (`inventory.*`), so the
+	 * Shell resolves both schema owners and lazily loaded commands through it.
 	 */
-	schemaPrefix?: string,
+	schemaPrefix?: string | string[],
 };
 
 /**

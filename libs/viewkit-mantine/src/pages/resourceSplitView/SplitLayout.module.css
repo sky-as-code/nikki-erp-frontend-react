@@ -30,6 +30,10 @@
 	transition: width 250ms ease;
 }
 
+.paneHidden {
+	display: none;
+}
+
 .splitter {
 	flex: 0 0 auto;
 	width: 8px;
