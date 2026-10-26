@@ -2,7 +2,7 @@ import { ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { salesFulfillmentRequestService } from './salesFulfillmentRequestService';
-import { SALES_FULFILLMENT_REQUEST_SCHEMA_NAME, SALES_MODULE } from '../../constants';
+import { SALES_FULFILLMENT_REQUEST_SCHEMA_NAME, SALES_MODULE } from '../../../constants/sales';
 
 
 export const SalesFulfillmentRequestCommands = Object.freeze(resourceCommands(SALES_FULFILLMENT_REQUEST_SCHEMA_NAME));

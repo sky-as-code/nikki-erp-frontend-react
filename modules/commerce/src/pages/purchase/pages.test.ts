@@ -6,7 +6,7 @@ import { buildAgreementPages } from './agreement';
 import { buildConfigurationPages } from './configuration';
 import { buildPurchaseOrderPages } from './purchaseOrder';
 import { buildVendorProductPricePages } from './vendorProductPrice';
-import * as c from '../constants';
+import * as c from '../../constants/purchase';
 
 import type { PageNode } from '@nikkierp/viewengine/metadata';
 import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';

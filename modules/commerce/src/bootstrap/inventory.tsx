@@ -1,109 +1,84 @@
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
-import { MenuIndexRedirect } from '@nikkierp/ui/menu';
-import { defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps } from '@nikkierp/ui/microApp';
-import { MicroAppProvider } from '@nikkierp/ui/microApp';
-import { ViewEngineRouter } from '@nikkierp/viewkit-mantine';
-import React from 'react';
 
-import * as c from './constants';
-import { registerBrandCommands } from './features/brand/commands';
-import { registerInventoryLocationCommands } from './features/inventoryLocation/commands';
-import { registerProductAttributeCommands } from './features/productAttribute/commands';
-import { registerProductAttributeValueCommands } from './features/productAttributeValue/commands';
-import { registerProductCategoryCommands } from './features/productCategory/commands';
-import { registerProductStockCommands } from './features/productStock/commands';
-import { registerProductTemplateCommands } from './features/productTemplate/commands';
-import { registerProductTemplateAttributeCommands } from './features/productTemplateAttribute/commands';
-import { registerProductTemplateAttributeValueCommands } from './features/productTemplateAttributeValue/commands';
-import { registerProductVariantCommands } from './features/productVariant/commands';
-import { registerPutawayRuleCommands } from './features/putawayRule/commands';
-import { registerStockMoveCommands } from './features/stockMove/commands';
-import { registerStockMoveLineCommands } from './features/stockMoveLine/commands';
-import { registerStockOperationTypeCommands } from './features/stockOperationType/commands';
-import { registerStockProductConfigCommands } from './features/stockProductConfig/commands';
-import { registerStockQuantCommands } from './features/stockQuant/commands';
-import { registerStockReservationCommands } from './features/stockReservation/commands';
-import { registerStockScrapCommands } from './features/stockScrap/commands';
-import { registerStockTransferCommands } from './features/stockTransfer/commands';
-import { registerStorageCategoryCommands } from './features/storageCategory/commands';
-import { registerSupplyRelationCommands } from './features/supplyRelation/commands';
-import { registerWarehouseCommands } from './features/warehouse/commands';
-import { buildInventoryMenu } from './menu';
-import { buildBrandPages } from './pages/brand';
-import { buildInventoryLocationPages } from './pages/inventoryLocation';
-import { buildProductAttributePages } from './pages/productAttribute';
-import { buildProductAttributeValuePages } from './pages/productAttributeValue';
-import { buildProductCategoryPages } from './pages/productCategory';
-import { buildProductTemplatePages } from './pages/productTemplate';
-import { buildProductTemplateAttributeValuePages } from './pages/productTemplateAttributeValue';
-import { buildProductVariantPages } from './pages/productVariant';
-import { buildPutawayRulePages } from './pages/putawayRule';
-import { buildStockQuantPages } from './pages/stockQuant';
-import { buildStockReservationPages } from './pages/stockReservation';
-import { buildStockScrapPages } from './pages/stockScrap';
-import { buildStockTransferPages } from './pages/stockTransfer';
-import { buildStorageCategoryPages } from './pages/storageCategory';
-import { buildSupplyRelationPages } from './pages/supplyRelation';
-import { buildWarehousePages } from './pages/warehouse';
-import { contributeInventoryViewKit } from './viewkit/kit';
+import * as c from '../constants/inventory';
+import { registerBrandCommands } from '../features/inventory/brand/commands';
+import { registerInventoryLocationCommands } from '../features/inventory/inventoryLocation/commands';
+import { registerProductAttributeCommands } from '../features/inventory/productAttribute/commands';
+import { registerProductAttributeValueCommands } from '../features/inventory/productAttributeValue/commands';
+import { registerProductCategoryCommands } from '../features/inventory/productCategory/commands';
+import { registerProductStockCommands } from '../features/inventory/productStock/commands';
+import { registerProductTemplateCommands } from '../features/inventory/productTemplate/commands';
+import { registerProductTemplateAttributeCommands } from '../features/inventory/productTemplateAttribute/commands';
+import { registerProductTemplateAttributeValueCommands } from '../features/inventory/productTemplateAttributeValue/commands';
+import { registerProductVariantCommands } from '../features/inventory/productVariant/commands';
+import { registerPutawayRuleCommands } from '../features/inventory/putawayRule/commands';
+import { registerStockMoveCommands } from '../features/inventory/stockMove/commands';
+import { registerStockMoveLineCommands } from '../features/inventory/stockMoveLine/commands';
+import { registerStockOperationTypeCommands } from '../features/inventory/stockOperationType/commands';
+import { registerStockProductConfigCommands } from '../features/inventory/stockProductConfig/commands';
+import { registerStockQuantCommands } from '../features/inventory/stockQuant/commands';
+import { registerStockReservationCommands } from '../features/inventory/stockReservation/commands';
+import { registerStockScrapCommands } from '../features/inventory/stockScrap/commands';
+import { registerStockTransferCommands } from '../features/inventory/stockTransfer/commands';
+import { registerStorageCategoryCommands } from '../features/inventory/storageCategory/commands';
+import { registerSupplyRelationCommands } from '../features/inventory/supplyRelation/commands';
+import { registerWarehouseCommands } from '../features/inventory/warehouse/commands';
+import { buildBrandPages } from '../pages/inventory/brand';
+import { buildInventoryLocationPages } from '../pages/inventory/inventoryLocation';
+import { buildProductAttributePages } from '../pages/inventory/productAttribute';
+import { buildProductAttributeValuePages } from '../pages/inventory/productAttributeValue';
+import { buildProductCategoryPages } from '../pages/inventory/productCategory';
+import { buildProductTemplatePages } from '../pages/inventory/productTemplate';
+import { buildProductTemplateAttributeValuePages } from '../pages/inventory/productTemplateAttributeValue';
+import { buildProductVariantPages } from '../pages/inventory/productVariant';
+import { buildPutawayRulePages } from '../pages/inventory/putawayRule';
+import { buildStockQuantPages } from '../pages/inventory/stockQuant';
+import { buildStockReservationPages } from '../pages/inventory/stockReservation';
+import { buildStockScrapPages } from '../pages/inventory/stockScrap';
+import { buildStockTransferPages } from '../pages/inventory/stockTransfer';
+import { buildStorageCategoryPages } from '../pages/inventory/storageCategory';
+import { buildSupplyRelationPages } from '../pages/inventory/supplyRelation';
+import { buildWarehousePages } from '../pages/inventory/warehouse';
+import { contributeInventoryViewKit } from '../viewkit/inventory/kit';
+
+import type { HostServices } from '@nikkierp/ui/microApp';
+import type { PageNode } from '@nikkierp/viewengine/metadata';
 
 
-function Main(props: MicroAppProps) {
-	return (
-		<MicroAppProvider {...props}>
-			<MicroAppInner {...props} />
-		</MicroAppProvider>
-	);
+/** Everything `inventory` contributes to the host when the commerce bundle initialises. */
+export function registerInventory(host: HostServices): void {
+	// No `registerReducer`: inventory keeps its state in its own store (`../store/inventory`), and
+	// reaches the Shell only through the command and event buses.
+	registerModelSchemas();
+	contributeInventoryViewKit(host.viewEngine);
+	registerProductCategoryCommands(host.commandBus);
+	registerBrandCommands(host.commandBus);
+	registerProductAttributeCommands(host.commandBus);
+	registerProductAttributeValueCommands(host.commandBus);
+	registerProductTemplateCommands(host.commandBus);
+	registerProductTemplateAttributeCommands(host.commandBus);
+	registerProductTemplateAttributeValueCommands(host.commandBus);
+	registerProductVariantCommands(host.commandBus);
+	registerInventoryLocationCommands(host.commandBus);
+	registerWarehouseCommands(host.commandBus);
+	registerStorageCategoryCommands(host.commandBus);
+	registerSupplyRelationCommands(host.commandBus);
+	registerPutawayRuleCommands(host.commandBus);
+	registerStockOperationTypeCommands(host.commandBus);
+	registerStockQuantCommands(host.commandBus);
+	// After the quant registration: both name the quant resource, and this one deliberately
+	// does not re-register the CRUD service that one installs.
+	registerProductStockCommands(host.commandBus);
+	registerStockTransferCommands(host.commandBus);
+	registerStockMoveCommands(host.commandBus);
+	registerStockMoveLineCommands(host.commandBus);
+	registerStockScrapCommands(host.commandBus);
+	registerStockReservationCommands(host.commandBus);
+	registerStockProductConfigCommands(host.commandBus);
 }
 
-const bundle: MicroAppBundle = {
-	init({ htmlTag, slug, host }) {
-		const domType = MicroAppDomType.SHARED;
-		defineWebComponent(Main, {
-			htmlTag,
-			domType,
-		});
-
-		// No `registerReducer`: inventory keeps its state in its own store (`./store`), and
-		// reaches the Shell only through the command and event buses.
-		registerModelSchemas();
-		contributeInventoryViewKit(host.viewEngine);
-		host.menuRegistry.register(buildInventoryMenu(slug));
-		registerProductCategoryCommands(host.commandBus);
-		registerBrandCommands(host.commandBus);
-		registerProductAttributeCommands(host.commandBus);
-		registerProductAttributeValueCommands(host.commandBus);
-		registerProductTemplateCommands(host.commandBus);
-		registerProductTemplateAttributeCommands(host.commandBus);
-		registerProductTemplateAttributeValueCommands(host.commandBus);
-		registerProductVariantCommands(host.commandBus);
-		registerInventoryLocationCommands(host.commandBus);
-		registerWarehouseCommands(host.commandBus);
-		registerStorageCategoryCommands(host.commandBus);
-		registerSupplyRelationCommands(host.commandBus);
-		registerPutawayRuleCommands(host.commandBus);
-		registerStockOperationTypeCommands(host.commandBus);
-		registerStockQuantCommands(host.commandBus);
-		// After the quant registration: both name the quant resource, and this one deliberately
-		// does not re-register the CRUD service that one installs.
-		registerProductStockCommands(host.commandBus);
-		registerStockTransferCommands(host.commandBus);
-		registerStockMoveCommands(host.commandBus);
-		registerStockMoveLineCommands(host.commandBus);
-		registerStockScrapCommands(host.commandBus);
-		registerStockReservationCommands(host.commandBus);
-		registerStockProductConfigCommands(host.commandBus);
-
-		return {
-			domType,
-		};
-	},
-};
-
-export default bundle;
-
-function MicroAppInner(props: MicroAppProps): React.ReactNode {
-	const pages = React.useMemo(() => [
+export function buildInventoryPages(): PageNode[] {
+	return [
 		...buildProductTemplatePages(),
 		...buildProductVariantPages(),
 		...buildProductCategoryPages(),
@@ -120,16 +95,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildStockTransferPages(),
 		...buildStockScrapPages(),
 		...buildStockReservationPages(),
-	], []);
-
-	const indexElement = <MenuIndexRedirect items={buildInventoryMenu(props.slug).items} />;
-
-	return (
-		<ViewEngineRouter
-			microAppProps={props}
-			engineProps={{ pages, indexElement }}
-		/>
-	);
+	];
 }
 
 function registerModelSchemas(): void {

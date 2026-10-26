@@ -1,7 +1,7 @@
 import { StoreCrudServiceBase, storeService } from '@nikkierp/ui/appState/store';
 
-import * as c from '../../constants';
-import { salesStore } from '../../store';
+import * as c from '../../../constants/sales';
+import { salesStore } from '../../../store/sales';
 
 
 /** Read-only over HTTP, like the fulfilment request itself. */

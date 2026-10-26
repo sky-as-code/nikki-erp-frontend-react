@@ -1,10 +1,10 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import { resourceListV2Props } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
+import * as c from '../../constants/inventory';
 import {
 	ProductTemplateAttributeValueCommands,
-} from '../features/productTemplateAttributeValue/commands';
+} from '../../features/inventory/productTemplateAttributeValue/commands';
 
 
 /** The one field the junction's update accepts; the selection rides the template's own save. */

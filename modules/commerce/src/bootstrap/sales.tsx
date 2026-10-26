@@ -1,116 +1,91 @@
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
-import { MenuIndexRedirect } from '@nikkierp/ui/menu';
-import { defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps } from '@nikkierp/ui/microApp';
-import { MicroAppProvider } from '@nikkierp/ui/microApp';
-import { ViewEngineRouter } from '@nikkierp/viewkit-mantine';
-import React from 'react';
 
-import * as c from './constants';
-import { registerSalesBillCommands } from './features/salesBill/commands';
-import { registerSalesBillLineCommands } from './features/salesBillLine/commands';
-import { registerSalesBillRelationCommands } from './features/salesBillRelation/commands';
-import { registerSalesChannelCommands } from './features/salesChannel/commands';
-import { registerSalesComboCommands } from './features/salesCombo/commands';
-import { registerSalesComboComponentCommands } from './features/salesComboComponent/commands';
-import { registerSalesFiscalRequestCommands } from './features/salesFiscalRequest/commands';
-import { registerSalesFulfillmentRequestCommands } from './features/salesFulfillmentRequest/commands';
-import { registerSalesFulfillmentRequestLineCommands } from './features/salesFulfillmentRequestLine/commands';
-import { registerSalesManualDiscountCommands } from './features/salesManualDiscount/commands';
-import { registerSalesOrderCommands } from './features/salesOrder/commands';
-import { registerSalesOrderAdjustmentCommands } from './features/salesOrderAdjustment/commands';
-import { registerSalesOrderEventCommands } from './features/salesOrderEvent/commands';
-import { registerSalesOrderFulfillmentCommands } from './features/salesOrderFulfillment/commands';
-import { registerSalesOrderFulfillmentItemCommands } from './features/salesOrderFulfillmentItem/commands';
-import { registerSalesOrderLineCommands } from './features/salesOrderLine/commands';
-import { registerSalesOrderLineComponentCommands } from './features/salesOrderLineComponent/commands';
-import { registerSalesPaymentCommands } from './features/salesPayment/commands';
-import { registerSalesPointCommands } from './features/salesPoint/commands';
-import { registerSalesPricelistCommands } from './features/salesPricelist/commands';
-import { registerSalesPricelistItemCommands } from './features/salesPricelistItem/commands';
-import { registerSalesPromotionConditionGroupCommands } from './features/salesPromotionConditionGroup/commands';
-import { registerSalesPromotionProgramCommands } from './features/salesPromotionProgram/commands';
-import { registerSalesPromotionRewardCommands } from './features/salesPromotionReward/commands';
-import { registerSalesQuotationCommands } from './features/salesQuotation/commands';
-import { registerSalesQuotationLineCommands } from './features/salesQuotationLine/commands';
-import { registerSalesReturnCommands } from './features/salesReturn/commands';
-import { registerSalesVoucherCodeCommands } from './features/salesVoucherCode/commands';
-import { registerSalesVoucherRedemptionCommands } from './features/salesVoucherRedemption/commands';
-import { buildSalesMenu } from './menu';
-import { buildSalesBillPages } from './pages/salesBill';
-import { buildSalesChannelPages } from './pages/salesChannel';
-import { buildSalesComboPages } from './pages/salesCombo';
-import { buildSalesFiscalRequestPages } from './pages/salesFiscalRequest';
-import { buildSalesOrderPages } from './pages/salesOrder';
-import { buildSalesPaymentPages } from './pages/salesPayment';
-import { buildSalesPointPages } from './pages/salesPoint';
-import { buildSalesPricelistPages } from './pages/salesPricelist';
-import { buildSalesPromotionProgramPages } from './pages/salesPromotionProgram';
-import { buildSalesQuotationPages } from './pages/salesQuotation';
-import { buildSalesReturnPages } from './pages/salesReturn';
-import { buildSalesVoucherCodePages } from './pages/salesVoucherCode';
+import * as c from '../constants/sales';
+import { registerSalesBillCommands } from '../features/sales/salesBill/commands';
+import { registerSalesBillLineCommands } from '../features/sales/salesBillLine/commands';
+import { registerSalesBillRelationCommands } from '../features/sales/salesBillRelation/commands';
+import { registerSalesChannelCommands } from '../features/sales/salesChannel/commands';
+import { registerSalesComboCommands } from '../features/sales/salesCombo/commands';
+import { registerSalesComboComponentCommands } from '../features/sales/salesComboComponent/commands';
+import { registerSalesFiscalRequestCommands } from '../features/sales/salesFiscalRequest/commands';
+import { registerSalesFulfillmentRequestCommands } from '../features/sales/salesFulfillmentRequest/commands';
+import { registerSalesFulfillmentRequestLineCommands } from '../features/sales/salesFulfillmentRequestLine/commands';
+import { registerSalesManualDiscountCommands } from '../features/sales/salesManualDiscount/commands';
+import { registerSalesOrderCommands } from '../features/sales/salesOrder/commands';
+import { registerSalesOrderAdjustmentCommands } from '../features/sales/salesOrderAdjustment/commands';
+import { registerSalesOrderEventCommands } from '../features/sales/salesOrderEvent/commands';
+import { registerSalesOrderFulfillmentCommands } from '../features/sales/salesOrderFulfillment/commands';
+import { registerSalesOrderFulfillmentItemCommands } from '../features/sales/salesOrderFulfillmentItem/commands';
+import { registerSalesOrderLineCommands } from '../features/sales/salesOrderLine/commands';
+import { registerSalesOrderLineComponentCommands } from '../features/sales/salesOrderLineComponent/commands';
+import { registerSalesPaymentCommands } from '../features/sales/salesPayment/commands';
+import { registerSalesPointCommands } from '../features/sales/salesPoint/commands';
+import { registerSalesPricelistCommands } from '../features/sales/salesPricelist/commands';
+import { registerSalesPricelistItemCommands } from '../features/sales/salesPricelistItem/commands';
+import { registerSalesPromotionConditionGroupCommands } from '../features/sales/salesPromotionConditionGroup/commands';
+import { registerSalesPromotionProgramCommands } from '../features/sales/salesPromotionProgram/commands';
+import { registerSalesPromotionRewardCommands } from '../features/sales/salesPromotionReward/commands';
+import { registerSalesQuotationCommands } from '../features/sales/salesQuotation/commands';
+import { registerSalesQuotationLineCommands } from '../features/sales/salesQuotationLine/commands';
+import { registerSalesReturnCommands } from '../features/sales/salesReturn/commands';
+import { registerSalesVoucherCodeCommands } from '../features/sales/salesVoucherCode/commands';
+import { registerSalesVoucherRedemptionCommands } from '../features/sales/salesVoucherRedemption/commands';
+import { buildSalesBillPages } from '../pages/sales/salesBill';
+import { buildSalesChannelPages } from '../pages/sales/salesChannel';
+import { buildSalesComboPages } from '../pages/sales/salesCombo';
+import { buildSalesFiscalRequestPages } from '../pages/sales/salesFiscalRequest';
+import { buildSalesOrderPages } from '../pages/sales/salesOrder';
+import { buildSalesPaymentPages } from '../pages/sales/salesPayment';
+import { buildSalesPointPages } from '../pages/sales/salesPoint';
+import { buildSalesPricelistPages } from '../pages/sales/salesPricelist';
+import { buildSalesPromotionProgramPages } from '../pages/sales/salesPromotionProgram';
+import { buildSalesQuotationPages } from '../pages/sales/salesQuotation';
+import { buildSalesReturnPages } from '../pages/sales/salesReturn';
+import { buildSalesVoucherCodePages } from '../pages/sales/salesVoucherCode';
+
+import type { HostServices } from '@nikkierp/ui/microApp';
+import type { PageNode } from '@nikkierp/viewengine/metadata';
 
 
-function Main(props: MicroAppProps) {
-	return (
-		<MicroAppProvider {...props}>
-			<MicroAppInner {...props} />
-		</MicroAppProvider>
-	);
+/** Everything `sales` contributes to the host when the commerce bundle initialises. */
+export function registerSales(host: HostServices): void {
+	// No `registerReducer`: this module keeps its state in its own store (`../store/sales`).
+	registerModelSchemas();
+	// Ordered referenced-before-referencing, matching `registerModelSchemas` below: setup, then
+	// pricing, then the documents that resolve through both.
+	registerSalesChannelCommands(host.commandBus);
+	registerSalesPointCommands(host.commandBus);
+	registerSalesPricelistCommands(host.commandBus);
+	registerSalesPricelistItemCommands(host.commandBus);
+	registerSalesPromotionProgramCommands(host.commandBus);
+	registerSalesPromotionConditionGroupCommands(host.commandBus);
+	registerSalesPromotionRewardCommands(host.commandBus);
+	registerSalesComboCommands(host.commandBus);
+	registerSalesComboComponentCommands(host.commandBus);
+	registerSalesVoucherCodeCommands(host.commandBus);
+	registerSalesVoucherRedemptionCommands(host.commandBus);
+	registerSalesQuotationCommands(host.commandBus);
+	registerSalesQuotationLineCommands(host.commandBus);
+	registerSalesOrderCommands(host.commandBus);
+	registerSalesOrderLineCommands(host.commandBus);
+	registerSalesOrderLineComponentCommands(host.commandBus);
+	registerSalesOrderAdjustmentCommands(host.commandBus);
+	registerSalesOrderEventCommands(host.commandBus);
+	registerSalesOrderFulfillmentCommands(host.commandBus);
+	registerSalesOrderFulfillmentItemCommands(host.commandBus);
+	registerSalesManualDiscountCommands(host.commandBus);
+	registerSalesBillCommands(host.commandBus);
+	registerSalesBillLineCommands(host.commandBus);
+	registerSalesBillRelationCommands(host.commandBus);
+	registerSalesPaymentCommands(host.commandBus);
+	registerSalesFulfillmentRequestCommands(host.commandBus);
+	registerSalesFulfillmentRequestLineCommands(host.commandBus);
+	registerSalesFiscalRequestCommands(host.commandBus);
+	registerSalesReturnCommands(host.commandBus);
 }
 
-const bundle: MicroAppBundle = {
-	init({ htmlTag, slug, host }) {
-		const domType = MicroAppDomType.SHARED;
-		defineWebComponent(Main, {
-			htmlTag,
-			domType,
-		});
-
-		// No `registerReducer`: this module keeps its state in its own store (`./store`).
-		registerModelSchemas();
-		host.menuRegistry.register(buildSalesMenu(slug));
-		// Ordered referenced-before-referencing, matching `registerModelSchemas` below: setup, then
-		// pricing, then the documents that resolve through both.
-		registerSalesChannelCommands(host.commandBus);
-		registerSalesPointCommands(host.commandBus);
-		registerSalesPricelistCommands(host.commandBus);
-		registerSalesPricelistItemCommands(host.commandBus);
-		registerSalesPromotionProgramCommands(host.commandBus);
-		registerSalesPromotionConditionGroupCommands(host.commandBus);
-		registerSalesPromotionRewardCommands(host.commandBus);
-		registerSalesComboCommands(host.commandBus);
-		registerSalesComboComponentCommands(host.commandBus);
-		registerSalesVoucherCodeCommands(host.commandBus);
-		registerSalesVoucherRedemptionCommands(host.commandBus);
-		registerSalesQuotationCommands(host.commandBus);
-		registerSalesQuotationLineCommands(host.commandBus);
-		registerSalesOrderCommands(host.commandBus);
-		registerSalesOrderLineCommands(host.commandBus);
-		registerSalesOrderLineComponentCommands(host.commandBus);
-		registerSalesOrderAdjustmentCommands(host.commandBus);
-		registerSalesOrderEventCommands(host.commandBus);
-		registerSalesOrderFulfillmentCommands(host.commandBus);
-		registerSalesOrderFulfillmentItemCommands(host.commandBus);
-		registerSalesManualDiscountCommands(host.commandBus);
-		registerSalesBillCommands(host.commandBus);
-		registerSalesBillLineCommands(host.commandBus);
-		registerSalesBillRelationCommands(host.commandBus);
-		registerSalesPaymentCommands(host.commandBus);
-		registerSalesFulfillmentRequestCommands(host.commandBus);
-		registerSalesFulfillmentRequestLineCommands(host.commandBus);
-		registerSalesFiscalRequestCommands(host.commandBus);
-		registerSalesReturnCommands(host.commandBus);
-
-		return {
-			domType,
-		};
-	},
-};
-
-export default bundle;
-
-function MicroAppInner(props: MicroAppProps): React.ReactNode {
-	const pages = React.useMemo(() => [
+export function buildSalesPages(): PageNode[] {
+	return [
 		...buildSalesOrderPages(),
 		...buildSalesQuotationPages(),
 		...buildSalesBillPages(),
@@ -123,16 +98,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildSalesVoucherCodePages(),
 		...buildSalesChannelPages(),
 		...buildSalesPointPages(),
-	], []);
-
-	const indexElement = <MenuIndexRedirect items={buildSalesMenu(props.slug).items} />;
-
-	return (
-		<ViewEngineRouter
-			microAppProps={props}
-			engineProps={{ pages, indexElement }}
-		/>
-	);
+	];
 }
 
 /**

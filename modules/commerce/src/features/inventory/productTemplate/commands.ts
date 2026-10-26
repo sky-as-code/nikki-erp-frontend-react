@@ -3,7 +3,7 @@ import { registerCrudService, registerSchemaModule, resourceCommands } from '@ni
 
 import { productTemplateService } from './productTemplateService';
 import * as t from './types';
-import { INVENTORY_MODULE, PRODUCT_TEMPLATE_SCHEMA_NAME } from '../../constants';
+import { INVENTORY_MODULE, PRODUCT_TEMPLATE_SCHEMA_NAME } from '../../../constants/inventory';
 
 
 const PREFIX = `${INVENTORY_MODULE}.${PRODUCT_TEMPLATE_SCHEMA_NAME}`;

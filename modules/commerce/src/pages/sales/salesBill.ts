@@ -3,12 +3,12 @@ import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { SalesBillCommands } from '../features/salesBill/commands';
-import { SalesBillLineCommands } from '../features/salesBillLine/commands';
-import { SalesBillRelationCommands } from '../features/salesBillRelation/commands';
-import { SalesFiscalRequestCommands } from '../features/salesFiscalRequest/commands';
-import { SalesPaymentCommands } from '../features/salesPayment/commands';
+import * as c from '../../constants/sales';
+import { SalesBillCommands } from '../../features/sales/salesBill/commands';
+import { SalesBillLineCommands } from '../../features/sales/salesBillLine/commands';
+import { SalesBillRelationCommands } from '../../features/sales/salesBillRelation/commands';
+import { SalesFiscalRequestCommands } from '../../features/sales/salesFiscalRequest/commands';
+import { SalesPaymentCommands } from '../../features/sales/salesPayment/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 

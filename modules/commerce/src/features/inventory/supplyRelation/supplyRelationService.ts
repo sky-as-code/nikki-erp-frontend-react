@@ -1,7 +1,7 @@
 import { StoreCrudServiceBase, storeService } from '@nikkierp/ui/appState/store';
 
-import { INVENTORY_MODULE, SUPPLY_RELATION_SCHEMA_NAME } from '../../constants';
-import { inventoryStore } from '../../store';
+import { INVENTORY_MODULE, SUPPLY_RELATION_SCHEMA_NAME } from '../../../constants/inventory';
+import { inventoryStore } from '../../../store/inventory';
 
 
 /** CRUD over `inventory_warehouse_supply_relation`. Which warehouse may resupply which. Topology only: it starts no transfer. */

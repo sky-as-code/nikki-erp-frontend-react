@@ -23,18 +23,18 @@ describe('buildResourceBaseHref', () => {
 	});
 
 	/**
-	 * A page embedding a table of a schema another module owns — the product template's vendor
-	 * prices, owned by `purchase`. The bare form resolves against the current module, so it could
+	 * A page embedding a table of a schema another module owns — e.g. a vending machine page listing
+	 * vendor prices, owned by `commerce`. The bare form resolves against the current module, so it could
 	 * only ever reach that module's own pages.
 	 */
 	it('takes a leading slash as naming the module, not the current one', () => {
-		expect(buildResourceBaseHref('inventory', '/purchase/purchase_vendor_product_price'))
-			.toBe('/purchase/purchase_vendor_product_price');
+		expect(buildResourceBaseHref('vendingmachine', '/commerce/purchase_vendor_product_price'))
+			.toBe('/commerce/purchase_vendor_product_price');
 	});
 
 	it('resolves an absolute path even before the current module is known', () => {
-		expect(buildResourceBaseHref(undefined, '/purchase/purchase_vendor_product_price'))
-			.toBe('/purchase/purchase_vendor_product_price');
+		expect(buildResourceBaseHref(undefined, '/commerce/purchase_vendor_product_price'))
+			.toBe('/commerce/purchase_vendor_product_price');
 	});
 });
 

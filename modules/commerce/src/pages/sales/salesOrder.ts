@@ -3,14 +3,14 @@ import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { SalesFulfillmentRequestCommands } from '../features/salesFulfillmentRequest/commands';
-import { SalesOrderCommands } from '../features/salesOrder/commands';
-import { SalesOrderAdjustmentCommands } from '../features/salesOrderAdjustment/commands';
-import { SalesOrderEventCommands } from '../features/salesOrderEvent/commands';
-import { SalesOrderFulfillmentCommands } from '../features/salesOrderFulfillment/commands';
-import { SalesOrderFulfillmentItemCommands } from '../features/salesOrderFulfillmentItem/commands';
-import { SalesOrderLineCommands } from '../features/salesOrderLine/commands';
+import * as c from '../../constants/sales';
+import { SalesFulfillmentRequestCommands } from '../../features/sales/salesFulfillmentRequest/commands';
+import { SalesOrderCommands } from '../../features/sales/salesOrder/commands';
+import { SalesOrderAdjustmentCommands } from '../../features/sales/salesOrderAdjustment/commands';
+import { SalesOrderEventCommands } from '../../features/sales/salesOrderEvent/commands';
+import { SalesOrderFulfillmentCommands } from '../../features/sales/salesOrderFulfillment/commands';
+import { SalesOrderFulfillmentItemCommands } from '../../features/sales/salesOrderFulfillmentItem/commands';
+import { SalesOrderLineCommands } from '../../features/sales/salesOrderLine/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -177,9 +177,9 @@ function buildSalesOrderKioskFulfillmentResources() {
 			fields: ['product_variant_id', 'ordered_qty', 'fulfilled_qty', 'refunded_qty', 'item_status',
 				'source_location_id', 'inventory_reservation_ref'],
 			linkField: 'inventory_reservation_ref',
-			// A leading slash names the inventory module absolutely; without it the link would
-			// resolve against this module, which has no such page.
-			linkRoutePath: '/inventory/inventory_stock_reservation',
+			// A leading slash names the owning module absolutely, so the link keeps working
+			// wherever this section is embedded.
+			linkRoutePath: '/commerce/inventory_stock_reservation',
 		},
 	];
 }

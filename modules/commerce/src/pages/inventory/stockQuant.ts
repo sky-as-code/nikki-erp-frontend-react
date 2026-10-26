@@ -4,8 +4,8 @@ import {
 	resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { StockQuantCommands } from '../features/stockQuant/commands';
+import * as c from '../../constants/inventory';
+import { StockQuantCommands } from '../../features/inventory/stockQuant/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 

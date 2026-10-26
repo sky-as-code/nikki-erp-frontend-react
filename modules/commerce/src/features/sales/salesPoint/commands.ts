@@ -2,7 +2,7 @@ import { Command, ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { PointActionRequest, salesPointService } from './salesPointService';
-import { SALES_MODULE, SALES_POINT_SCHEMA_NAME } from '../../constants';
+import { SALES_MODULE, SALES_POINT_SCHEMA_NAME } from '../../../constants/sales';
 
 
 const PREFIX = `${SALES_MODULE}.${SALES_POINT_SCHEMA_NAME}`;

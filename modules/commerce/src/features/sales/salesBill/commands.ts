@@ -5,7 +5,7 @@ import {
 	BillActionRequest, MergeBillsRequest, RecordPaymentRequest, salesBillService, SplitBillPart,
 	SplitBillRequest,
 } from './salesBillService';
-import { SALES_BILL_SCHEMA_NAME, SALES_MODULE } from '../../constants';
+import { SALES_BILL_SCHEMA_NAME, SALES_MODULE } from '../../../constants/sales';
 
 
 const PREFIX = `${SALES_MODULE}.${SALES_BILL_SCHEMA_NAME}`;

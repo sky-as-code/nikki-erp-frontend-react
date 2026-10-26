@@ -12,7 +12,7 @@ import {
 } from './lineOptions';
 import { attributeLabel, MODE_COLORS, TEST_ID_PREFIX, valueLabel } from './sectionText';
 import { BROWSE_ALL, renderValueOption } from './valueOption';
-import { PRODUCT_ATTRIBUTE_SCHEMA_NAME, PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME } from '../../../constants';
+import { PRODUCT_ATTRIBUTE_SCHEMA_NAME, PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME } from '../../../../constants/inventory';
 
 import type { AttributeCatalogue } from './attributeCatalogue';
 import type { SectionText } from './sectionText';

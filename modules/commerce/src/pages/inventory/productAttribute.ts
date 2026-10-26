@@ -3,10 +3,10 @@ import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { ProductAttributeCommands } from '../features/productAttribute/commands';
-import { ProductAttributeValueCommands } from '../features/productAttributeValue/commands';
-import { attributeValuesNode } from '../viewkit/props';
+import * as c from '../../constants/inventory';
+import { ProductAttributeCommands } from '../../features/inventory/productAttribute/commands';
+import { ProductAttributeValueCommands } from '../../features/inventory/productAttributeValue/commands';
+import { attributeValuesNode } from '../../viewkit/inventory/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 

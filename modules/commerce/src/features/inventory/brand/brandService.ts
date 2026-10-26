@@ -1,7 +1,7 @@
 import { StoreCrudServiceBase, storeService } from '@nikkierp/ui/appState/store';
 
-import { BRAND_SCHEMA_NAME, INVENTORY_MODULE } from '../../constants';
-import { inventoryStore } from '../../store';
+import { BRAND_SCHEMA_NAME, INVENTORY_MODULE } from '../../../constants/inventory';
+import { inventoryStore } from '../../../store/inventory';
 
 
 /** CRUD over `inventory_brand`. The engine serves every operation this needs. */

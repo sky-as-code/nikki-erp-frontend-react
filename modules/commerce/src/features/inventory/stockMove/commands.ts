@@ -2,7 +2,7 @@ import { ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { stockMoveService } from './stockMoveService';
-import { INVENTORY_MODULE, STOCK_MOVE_SCHEMA_NAME } from '../../constants';
+import { INVENTORY_MODULE, STOCK_MOVE_SCHEMA_NAME } from '../../../constants/inventory';
 
 
 /**

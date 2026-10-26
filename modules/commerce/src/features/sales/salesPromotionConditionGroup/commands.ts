@@ -2,7 +2,7 @@ import { ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { salesPromotionConditionGroupService } from './salesPromotionConditionGroupService';
-import { SALES_PROMOTION_CONDITION_GROUP_SCHEMA_NAME, SALES_MODULE } from '../../constants';
+import { SALES_PROMOTION_CONDITION_GROUP_SCHEMA_NAME, SALES_MODULE } from '../../../constants/sales';
 
 
 export const SalesPromotionConditionGroupCommands = Object.freeze(

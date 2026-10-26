@@ -2,8 +2,8 @@ import { ServiceResult } from '@nikkierp/common/commandBus';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { StoreCrudServiceBase, storeService } from '@nikkierp/ui/appState/store';
 
-import * as c from '../../constants';
-import { salesStore } from '../../store';
+import * as c from '../../../constants/sales';
+import { salesStore } from '../../../store/sales';
 
 
 /**

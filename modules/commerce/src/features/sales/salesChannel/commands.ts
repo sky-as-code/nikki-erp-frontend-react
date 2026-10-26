@@ -4,7 +4,7 @@ import { registerCrudService, registerSchemaModule, resourceCommands } from '@ni
 import {
 	ChannelActionRequest, ChannelPaymentMethodRequest, ResolveChannelRequest, salesChannelService,
 } from './salesChannelService';
-import { SALES_CHANNEL_SCHEMA_NAME, SALES_MODULE } from '../../constants';
+import { SALES_CHANNEL_SCHEMA_NAME, SALES_MODULE } from '../../../constants/sales';
 
 
 const PREFIX = `${SALES_MODULE}.${SALES_CHANNEL_SCHEMA_NAME}`;

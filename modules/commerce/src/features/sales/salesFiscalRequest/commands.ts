@@ -4,7 +4,7 @@ import { registerCrudService, registerSchemaModule, resourceCommands } from '@ni
 import {
 	FiscalBuyer, RequestInvoiceRequest, salesFiscalRequestService,
 } from './salesFiscalRequestService';
-import { SALES_FISCAL_REQUEST_SCHEMA_NAME, SALES_MODULE } from '../../constants';
+import { SALES_FISCAL_REQUEST_SCHEMA_NAME, SALES_MODULE } from '../../../constants/sales';
 
 
 const PREFIX = `${SALES_MODULE}.${SALES_FISCAL_REQUEST_SCHEMA_NAME}`;

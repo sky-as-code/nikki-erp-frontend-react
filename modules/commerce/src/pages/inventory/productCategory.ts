@@ -4,10 +4,10 @@ import {
 	resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { ProductCategoryCommands } from '../features/productCategory/commands';
-import { ProductTemplateCommands } from '../features/productTemplate/commands';
-import { PutawayRuleCommands } from '../features/putawayRule/commands';
+import * as c from '../../constants/inventory';
+import { ProductCategoryCommands } from '../../features/inventory/productCategory/commands';
+import { ProductTemplateCommands } from '../../features/inventory/productTemplate/commands';
+import { PutawayRuleCommands } from '../../features/inventory/putawayRule/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 

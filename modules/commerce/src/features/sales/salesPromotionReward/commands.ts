@@ -2,7 +2,7 @@ import { ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { salesPromotionRewardService } from './salesPromotionRewardService';
-import { SALES_PROMOTION_REWARD_SCHEMA_NAME, SALES_MODULE } from '../../constants';
+import { SALES_PROMOTION_REWARD_SCHEMA_NAME, SALES_MODULE } from '../../../constants/sales';
 
 
 export const SalesPromotionRewardCommands = Object.freeze(resourceCommands(SALES_PROMOTION_REWARD_SCHEMA_NAME));

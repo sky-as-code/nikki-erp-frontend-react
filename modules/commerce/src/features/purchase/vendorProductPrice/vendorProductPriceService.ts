@@ -1,7 +1,7 @@
 import { StoreCrudServiceBase, storeService } from '@nikkierp/ui/appState/store';
 
-import { PURCHASE_MODULE, VENDOR_PRODUCT_PRICE_SCHEMA_NAME } from '../../constants';
-import { purchaseStore } from '../../store';
+import { PURCHASE_MODULE, VENDOR_PRODUCT_PRICE_SCHEMA_NAME } from '../../../constants/purchase';
+import { purchaseStore } from '../../../store/purchase';
 
 
 /**

@@ -2,8 +2,8 @@ import { resolveLangJson } from '@nikkierp/ui/components';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import React from 'react';
 
-import { ProductAttributeCommands } from '../../../features/productAttribute/commands';
-import { ProductAttributeValueCommands } from '../../../features/productAttributeValue/commands';
+import { ProductAttributeCommands } from '../../../../features/inventory/productAttribute/commands';
+import { ProductAttributeValueCommands } from '../../../../features/inventory/productAttributeValue/commands';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 

@@ -2,7 +2,7 @@ import { ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { putawayRuleService } from './putawayRuleService';
-import { INVENTORY_MODULE, PUTAWAY_RULE_SCHEMA_NAME } from '../../constants';
+import { INVENTORY_MODULE, PUTAWAY_RULE_SCHEMA_NAME } from '../../../constants/inventory';
 
 
 /**

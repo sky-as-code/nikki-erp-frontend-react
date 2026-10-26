@@ -5,7 +5,7 @@ import React from 'react';
 
 import { needsConfirmation } from './configPreview';
 import { buildConfigContribution, configFromRecord, isEtagMismatch } from './templateConfigDrafts';
-import { ProductTemplateCommands } from '../../../features/productTemplate/commands';
+import { ProductTemplateCommands } from '../../../../features/inventory/productTemplate/commands';
 
 import type { ConfigPreview } from './configPreview';
 import type { SentConfigRows, TemplateConfigDraft } from './templateConfigDrafts';

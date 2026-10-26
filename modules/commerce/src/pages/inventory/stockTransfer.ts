@@ -3,10 +3,10 @@ import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { StockMoveCommands } from '../features/stockMove/commands';
-import { StockMoveLineCommands } from '../features/stockMoveLine/commands';
-import { StockTransferCommands } from '../features/stockTransfer/commands';
+import * as c from '../../constants/inventory';
+import { StockMoveCommands } from '../../features/inventory/stockMove/commands';
+import { StockMoveLineCommands } from '../../features/inventory/stockMoveLine/commands';
+import { StockTransferCommands } from '../../features/inventory/stockTransfer/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 

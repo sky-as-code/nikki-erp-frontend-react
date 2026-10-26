@@ -5,7 +5,7 @@ import {
 	CreateAlternativeRequest, MergeOrdersRequest, OrderActionRequest, purchaseOrderService,
 	ReasonedActionRequest,
 } from './purchaseOrderService';
-import { PURCHASE_MODULE, PURCHASE_ORDER_SCHEMA_NAME } from '../../constants';
+import { PURCHASE_MODULE, PURCHASE_ORDER_SCHEMA_NAME } from '../../../constants/purchase';
 
 
 const PREFIX = `${PURCHASE_MODULE}.${PURCHASE_ORDER_SCHEMA_NAME}`;

@@ -2,8 +2,8 @@ import { ServiceResult } from '@nikkierp/common/commandBus';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { StoreCrudServiceBase, storeService } from '@nikkierp/ui/appState/store';
 
-import { INVENTORY_MODULE, STOCK_RESERVATION_SCHEMA_NAME } from '../../constants';
-import { inventoryStore } from '../../store';
+import { INVENTORY_MODULE, STOCK_RESERVATION_SCHEMA_NAME } from '../../../constants/inventory';
+import { inventoryStore } from '../../../store/inventory';
 
 
 /**

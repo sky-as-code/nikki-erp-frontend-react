@@ -2,7 +2,7 @@ import { ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { salesBillRelationService } from './salesBillRelationService';
-import { SALES_BILL_RELATION_SCHEMA_NAME, SALES_MODULE } from '../../constants';
+import { SALES_BILL_RELATION_SCHEMA_NAME, SALES_MODULE } from '../../../constants/sales';
 
 
 export const SalesBillRelationCommands = Object.freeze(resourceCommands(SALES_BILL_RELATION_SCHEMA_NAME));

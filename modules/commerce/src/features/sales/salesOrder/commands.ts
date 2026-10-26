@@ -5,7 +5,7 @@ import {
 	ApplyVoucherRequest, CreateOrderRequest, ManualDiscountRequest, NotedActionRequest, OrderActionRequest,
 	ReasonedActionRequest, RevokeManualDiscountRequest, salesOrderService,
 } from './salesOrderService';
-import { SALES_MODULE, SALES_ORDER_SCHEMA_NAME } from '../../constants';
+import { SALES_MODULE, SALES_ORDER_SCHEMA_NAME } from '../../../constants/sales';
 
 
 const PREFIX = `${SALES_MODULE}.${SALES_ORDER_SCHEMA_NAME}`;

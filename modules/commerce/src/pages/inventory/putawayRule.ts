@@ -3,8 +3,8 @@ import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { PutawayRuleCommands } from '../features/putawayRule/commands';
+import * as c from '../../constants/inventory';
+import { PutawayRuleCommands } from '../../features/inventory/putawayRule/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 

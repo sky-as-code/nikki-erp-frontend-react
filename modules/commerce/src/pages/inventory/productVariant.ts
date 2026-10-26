@@ -4,11 +4,11 @@ import {
 	resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { ProductVariantCommands } from '../features/productVariant/commands';
-import { PutawayRuleCommands } from '../features/putawayRule/commands';
-import { StockMoveCommands } from '../features/stockMove/commands';
-import { StockQuantCommands } from '../features/stockQuant/commands';
+import * as c from '../../constants/inventory';
+import { ProductVariantCommands } from '../../features/inventory/productVariant/commands';
+import { PutawayRuleCommands } from '../../features/inventory/putawayRule/commands';
+import { StockMoveCommands } from '../../features/inventory/stockMove/commands';
+import { StockQuantCommands } from '../../features/inventory/stockQuant/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 

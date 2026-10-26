@@ -5,11 +5,11 @@ import {
 	resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { ProductTemplateCommands } from '../features/productTemplate/commands';
-import { ProductVariantCommands } from '../features/productVariant/commands';
-import { StockProductConfigCommands } from '../features/stockProductConfig/commands';
-import { templateAttributesNode } from '../viewkit/props';
+import * as c from '../../constants/inventory';
+import { ProductTemplateCommands } from '../../features/inventory/productTemplate/commands';
+import { ProductVariantCommands } from '../../features/inventory/productVariant/commands';
+import { StockProductConfigCommands } from '../../features/inventory/stockProductConfig/commands';
+import { templateAttributesNode } from '../../viewkit/inventory/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -257,11 +257,11 @@ function buildTemplateResources() {
 			// prices every variant that has none of its own.
 			initialGraph: { if: ['product_template_id', '=', '${id}'] },
 			linkField: 'id',
-			// The row links into the `purchase` module, which owns this schema; `linkRoutePath`
-			// is resolved against the *current* module, so the module segment is named here.
+			// The row links to the purchase page of the `commerce` module, which owns this schema.
+			// Named absolutely so the link keeps working wherever this section is embedded.
 			// Pre-existing defect: this read `vendor_product_prices`, a path `inventory` never
 			// registered, so every row linked to a 404.
-			linkRoutePath: '/purchase/purchase_vendor_product_price',
+			linkRoutePath: '/commerce/purchase_vendor_product_price',
 		},
 		buildTemplateInventoryResource(),
 		buildInventoryUomResource(),

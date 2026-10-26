@@ -15,7 +15,7 @@ import { attributeLabel, TEST_ID_PREFIX, valueLabel } from './sectionText';
 import { addLineWith, removeLine, reorderLines } from './templateConfigDrafts';
 import {
 	PRODUCT_ATTRIBUTE_SCHEMA_NAME, PRODUCT_ATTRIBUTE_UPDATE_VALUE_ACTION, PRODUCT_TEMPLATE_SCHEMA_NAME,
-} from '../../../constants';
+} from '../../../../constants/inventory';
 
 import type { AttributeCatalogue } from './attributeCatalogue';
 import type { SectionText } from './sectionText';

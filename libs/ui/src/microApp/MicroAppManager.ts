@@ -86,9 +86,20 @@ export class MicroAppManager {
 		if (separatorIdx <= 0) {
 			return undefined;
 		}
-		const prefix = schemaName.slice(0, separatorIdx);
+		return this.findSlugByPrefix(schemaName.slice(0, separatorIdx));
+	}
+
+	/**
+	 * The micro-app a command's module segment names: the slug itself when registered, otherwise
+	 * the micro-app declaring it as a schema prefix (`inventory.*` commands belong to `commerce`).
+	 */
+	public resolveSlug(moduleName: string): MicroAppSlug | undefined {
+		return this.isRegistered(moduleName) ? moduleName : this.findSlugByPrefix(moduleName);
+	}
+
+	private findSlugByPrefix(prefix: string): MicroAppSlug | undefined {
 		for (const [slug, app] of this.registeredApps) {
-			if ((app.schemaPrefix ?? slug) === prefix) {
+			if (schemaPrefixesOf(app).includes(prefix)) {
 				return slug;
 			}
 		}
@@ -259,4 +270,12 @@ function delay(ms: number): Promise<void> {
 
 function isPromise<T = any>(value: T | Promise<T>): value is Promise<T> {
 	return value instanceof Promise;
+}
+
+/** The declared schema prefixes, or the slug when none is declared. */
+function schemaPrefixesOf(app: MicroAppMetadata): readonly string[] {
+	if (app.schemaPrefix === undefined) {
+		return [app.slug];
+	}
+	return Array.isArray(app.schemaPrefix) ? app.schemaPrefix : [app.schemaPrefix];
 }

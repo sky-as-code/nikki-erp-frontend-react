@@ -1,84 +1,50 @@
 import { schemaRegistry } from '@nikkierp/common/dynamicModel';
-import { MenuIndexRedirect } from '@nikkierp/ui/menu';
-import { defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps } from '@nikkierp/ui/microApp';
-import { MicroAppProvider } from '@nikkierp/ui/microApp';
-import { ViewEngineRouter } from '@nikkierp/viewkit-mantine';
-import React from 'react';
 
-import * as c from './constants';
-import { registerAgreementCommands } from './features/agreement/commands';
-import { registerAgreementLineCommands } from './features/agreementLine/commands';
-import { registerAuditEventCommands } from './features/auditEvent/commands';
-import { registerConfigurationCommands } from './features/configuration/commands';
-import { registerPurchaseOrderCommands } from './features/purchaseOrder/commands';
-import { registerPurchaseOrderLineCommands } from './features/purchaseOrderLine/commands';
-import { registerVendorProductPriceCommands } from './features/vendorProductPrice/commands';
-import { buildPurchaseMenu } from './menu';
-import { buildAgreementPages } from './pages/agreement';
-import { buildConfigurationPages } from './pages/configuration';
-import { buildPurchaseOrderPages } from './pages/purchaseOrder';
-import { buildVendorProductPricePages } from './pages/vendorProductPrice';
+import * as c from '../constants/purchase';
+import { registerAgreementCommands } from '../features/purchase/agreement/commands';
+import { registerAgreementLineCommands } from '../features/purchase/agreementLine/commands';
+import { registerAuditEventCommands } from '../features/purchase/auditEvent/commands';
+import { registerConfigurationCommands } from '../features/purchase/configuration/commands';
+import { registerPurchaseOrderCommands } from '../features/purchase/purchaseOrder/commands';
+import { registerPurchaseOrderLineCommands } from '../features/purchase/purchaseOrderLine/commands';
+import { registerVendorProductPriceCommands } from '../features/purchase/vendorProductPrice/commands';
+import { buildAgreementPages } from '../pages/purchase/agreement';
+import { buildConfigurationPages } from '../pages/purchase/configuration';
+import { buildPurchaseOrderPages } from '../pages/purchase/purchaseOrder';
+import { buildVendorProductPricePages } from '../pages/purchase/vendorProductPrice';
+
+import type { HostServices } from '@nikkierp/ui/microApp';
+import type { PageNode } from '@nikkierp/viewengine/metadata';
 
 
-function Main(props: MicroAppProps) {
-	return (
-		<MicroAppProvider {...props}>
-			<MicroAppInner {...props} />
-		</MicroAppProvider>
-	);
+/** Everything `purchase` contributes to the host when the commerce bundle initialises. */
+export function registerPurchase(host: HostServices): void {
+	// No `registerReducer`: this module keeps its state in its own store (`../store/purchase`), and
+	// reaches the Shell only through the command and event buses.
+	registerModelSchemas();
+	// Configuration first: it is read on every order confirmation, and registering it before
+	// the documents that consult it keeps this list in the same order as `registerModelSchemas`
+	// — referenced before referencing — which makes a missing entry obvious side by side.
+	registerConfigurationCommands(host.commandBus);
+	// Vendor prices before the documents that resolve through them, same rule as configuration:
+	// a purchase order line records which quote it was priced from.
+	registerVendorProductPriceCommands(host.commandBus);
+	registerAgreementCommands(host.commandBus);
+	registerAgreementLineCommands(host.commandBus);
+	registerPurchaseOrderCommands(host.commandBus);
+	registerPurchaseOrderLineCommands(host.commandBus);
+	registerAuditEventCommands(host.commandBus);
 }
 
-const bundle: MicroAppBundle = {
-	init({ htmlTag, slug, host }) {
-		const domType = MicroAppDomType.SHARED;
-		defineWebComponent(Main, {
-			htmlTag,
-			domType,
-		});
-
-		// No `registerReducer`: this module keeps its state in its own store (`./store`), and
-		// reaches the Shell only through the command and event buses.
-		registerModelSchemas();
-		host.menuRegistry.register(buildPurchaseMenu(slug));
-		// Configuration first: it is read on every order confirmation, and registering it before
-		// the documents that consult it keeps this list in the same order as `registerModelSchemas`
-		// — referenced before referencing — which makes a missing entry obvious side by side.
-		registerConfigurationCommands(host.commandBus);
-		// Vendor prices before the documents that resolve through them, same rule as configuration:
-		// a purchase order line records which quote it was priced from.
-		registerVendorProductPriceCommands(host.commandBus);
-		registerAgreementCommands(host.commandBus);
-		registerAgreementLineCommands(host.commandBus);
-		registerPurchaseOrderCommands(host.commandBus);
-		registerPurchaseOrderLineCommands(host.commandBus);
-		registerAuditEventCommands(host.commandBus);
-
-		return {
-			domType,
-		};
-	},
-};
-
-export default bundle;
-
-function MicroAppInner(props: MicroAppProps): React.ReactNode {
+export function buildPurchasePages(): PageNode[] {
 	// `buildPurchaseOrderPages` returns TWO pages, not one: requests for quotation and committed
 	// orders are two routes onto the same resource, distinguished by a status filter (PUR-R1).
-	const pages = React.useMemo(() => [
+	return [
 		...buildPurchaseOrderPages(),
 		...buildAgreementPages(),
 		...buildConfigurationPages(),
 		...buildVendorProductPricePages(),
-	], []);
-
-	const indexElement = <MenuIndexRedirect items={buildPurchaseMenu(props.slug).items} />;
-
-	return (
-		<ViewEngineRouter
-			microAppProps={props}
-			engineProps={{ pages, indexElement }}
-		/>
-	);
+	];
 }
 
 /**

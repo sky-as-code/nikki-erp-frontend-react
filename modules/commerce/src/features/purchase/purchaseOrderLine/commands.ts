@@ -2,7 +2,7 @@ import { ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { purchaseOrderLineService } from './purchaseOrderLineService';
-import { PURCHASE_ORDER_LINE_SCHEMA_NAME, PURCHASE_MODULE } from '../../constants';
+import { PURCHASE_ORDER_LINE_SCHEMA_NAME, PURCHASE_MODULE } from '../../../constants/purchase';
 
 
 /**

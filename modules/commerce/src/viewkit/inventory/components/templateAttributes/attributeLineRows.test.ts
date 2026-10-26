@@ -103,11 +103,11 @@ describe('Configure on an attribute line', () => {
 		expect(column.actions[0].href?.(rows[0])).toBe(configureHref('l1'));
 	});
 
-	it('opens the inventory extra-price list of that line, whichever module shows the template', () => {
+	it('opens the commerce extra-price list of that line, whichever module shows the template', () => {
 		const href = configureHref('l1');
 		const [path, query] = href.split('?');
 
-		expect(path).toBe('/inventory/inventory_product_template_attribute_value');
+		expect(path).toBe('/commerce/inventory_product_template_attribute_value');
 		expect(JSON.parse(new URLSearchParams(query).get('initialGraph') ?? '')).toEqual({
 			if: ['template_attribute_id', '=', 'l1'], order: [['sequence', 'asc']],
 		});

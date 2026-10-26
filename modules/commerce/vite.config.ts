@@ -13,7 +13,7 @@ export default defineConfig({
 		outDir: 'dist',
 		lib: {
 			entry: path.resolve(__dirname, 'src/index.tsx'),
-			fileName: 'nikkiapp-purchase-[hash]',
+			fileName: 'nikkiapp-commerce-[hash]',
 			formats: ['es'],
 		},
 		rollupOptions: {

@@ -1,7 +1,7 @@
 import { StoreCrudServiceBase, storeService } from '@nikkierp/ui/appState/store';
 
-import { INVENTORY_MODULE, PUTAWAY_RULE_SCHEMA_NAME } from '../../constants';
-import { inventoryStore } from '../../store';
+import { INVENTORY_MODULE, PUTAWAY_RULE_SCHEMA_NAME } from '../../../constants/inventory';
+import { inventoryStore } from '../../../store/inventory';
 
 
 /** CRUD over `inventory_putaway_rule`. Where arriving goods should be put. It answers the question and moves nothing. */

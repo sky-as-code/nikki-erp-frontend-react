@@ -4,7 +4,7 @@ import { productStockService } from './productStockService';
 import {
 	StockByLocationRequest, TemplateSummaryRequest, VariantSummariesRequest, VariantSummaryRequest,
 } from './types';
-import { INVENTORY_MODULE, STOCK_QUANT_SCHEMA_NAME } from '../../constants';
+import { INVENTORY_MODULE, STOCK_QUANT_SCHEMA_NAME } from '../../../constants/inventory';
 
 
 const PREFIX = `${INVENTORY_MODULE}.${STOCK_QUANT_SCHEMA_NAME}`;

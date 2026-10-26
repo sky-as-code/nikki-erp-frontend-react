@@ -108,8 +108,8 @@ export function isChangedLineRow(saved: TemplateConfigDraft, draft: TemplateConf
 	return !!line && isLineChanged(saved, line);
 }
 
-/** The extra-price list of one saved line, in the inventory module whichever module shows the template. */
-export const EXTRA_PRICE_ROUTE = '/inventory/inventory_product_template_attribute_value';
+/** The extra-price list of one saved line, in the commerce module whichever module shows the template. */
+export const EXTRA_PRICE_ROUTE = '/commerce/inventory_product_template_attribute_value';
 
 export function configureHref(lineId: string): string {
 	const graph = { if: ['template_attribute_id', '=', lineId], order: [['sequence', 'asc']] };

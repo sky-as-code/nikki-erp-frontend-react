@@ -14,7 +14,7 @@ import { buildSalesPromotionProgramPages } from './salesPromotionProgram';
 import { buildSalesQuotationPages } from './salesQuotation';
 import { buildSalesReturnPages } from './salesReturn';
 import { buildSalesVoucherCodePages } from './salesVoucherCode';
-import * as c from '../constants';
+import * as c from '../../constants/sales';
 
 import type { PageNode } from '@nikkierp/viewengine/metadata';
 import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';

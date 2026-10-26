@@ -2,7 +2,7 @@ import { ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { productTemplateAttributeValueService } from './productTemplateAttributeValueService';
-import { INVENTORY_MODULE, PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME } from '../../constants';
+import { INVENTORY_MODULE, PRODUCT_TEMPLATE_ATTRIBUTE_VALUE_SCHEMA_NAME } from '../../../constants/inventory';
 
 
 /**

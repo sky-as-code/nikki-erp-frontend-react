@@ -11,14 +11,14 @@ import { useTemplateRecord } from './configDraftState';
 import { attributeLabel, TEST_ID_PREFIX, valueLabel } from './sectionText';
 import { configFromRecord } from './templateConfigDrafts';
 import { useSectionText } from './useSectionText';
-import { PRODUCT_TEMPLATE_SCHEMA_NAME } from '../../../constants';
-import { ProductTemplateCommands } from '../../../features/productTemplate/commands';
+import { PRODUCT_TEMPLATE_SCHEMA_NAME } from '../../../../constants/inventory';
+import { ProductTemplateCommands } from '../../../../features/inventory/productTemplate/commands';
 
 import type { AttributeCatalogue } from './attributeCatalogue';
 import type { TemplateRecord } from './configDraftState';
 import type { SectionText } from './sectionText';
 import type { AttributeLineDraft } from './templateConfigDrafts';
-import type { ResolveSelectionRequest, ResolveSelectionResponse } from '../../../features/productTemplate/types';
+import type { ResolveSelectionRequest, ResolveSelectionResponse } from '../../../../features/inventory/productTemplate/types';
 
 
 /** The backend action a resolve that may create the variant asserts (a plain lookup needs only read). */

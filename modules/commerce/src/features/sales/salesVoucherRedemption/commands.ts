@@ -2,7 +2,7 @@ import { ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { salesVoucherRedemptionService } from './salesVoucherRedemptionService';
-import { SALES_VOUCHER_REDEMPTION_SCHEMA_NAME, SALES_MODULE } from '../../constants';
+import { SALES_VOUCHER_REDEMPTION_SCHEMA_NAME, SALES_MODULE } from '../../../constants/sales';
 
 
 export const SalesVoucherRedemptionCommands = Object.freeze(resourceCommands(SALES_VOUCHER_REDEMPTION_SCHEMA_NAME));

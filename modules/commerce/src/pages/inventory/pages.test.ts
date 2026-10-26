@@ -18,10 +18,10 @@ import { buildStockTransferPages } from './stockTransfer';
 import { buildStorageCategoryPages } from './storageCategory';
 import { buildSupplyRelationPages } from './supplyRelation';
 import { buildWarehousePages } from './warehouse';
-import * as c from '../constants';
-import { ProductTemplateCommands } from '../features/productTemplate/commands';
-import { ProductTemplateAttributeValueCommands } from '../features/productTemplateAttributeValue/commands';
-import { ATTRIBUTE_VALUES, TEMPLATE_ATTRIBUTES } from '../viewkit/ids';
+import * as c from '../../constants/inventory';
+import { ProductTemplateCommands } from '../../features/inventory/productTemplate/commands';
+import { ProductTemplateAttributeValueCommands } from '../../features/inventory/productTemplateAttributeValue/commands';
+import { ATTRIBUTE_VALUES, TEMPLATE_ATTRIBUTES } from '../../viewkit/inventory/ids';
 
 import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
 import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';

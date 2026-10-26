@@ -3,8 +3,8 @@ import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { StockScrapCommands } from '../features/stockScrap/commands';
+import * as c from '../../constants/inventory';
+import { StockScrapCommands } from '../../features/inventory/stockScrap/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 

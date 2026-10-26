@@ -3,9 +3,9 @@ import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
-import * as c from '../constants';
-import { SalesPromotionProgramCommands } from '../features/salesPromotionProgram/commands';
-import { SalesPromotionRewardCommands } from '../features/salesPromotionReward/commands';
+import * as c from '../../constants/sales';
+import { SalesPromotionProgramCommands } from '../../features/sales/salesPromotionProgram/commands';
+import { SalesPromotionRewardCommands } from '../../features/sales/salesPromotionReward/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 

@@ -6,8 +6,8 @@ import * as t from './types';
 import {
 	DUPLICATE_TEMPLATE_PATH, GENERATE_VARIANTS_PATH, INVENTORY_MODULE, PREVIEW_ATTRIBUTE_CONFIGURATION_PATH,
 	PRODUCT_TEMPLATE_SCHEMA_NAME, RESOLVE_SELECTION_PATH,
-} from '../../constants';
-import { inventoryStore } from '../../store';
+} from '../../../constants/inventory';
+import { inventoryStore } from '../../../store/inventory';
 
 
 /**

@@ -2,8 +2,8 @@ import { ServiceResult } from '@nikkierp/common/commandBus';
 import { StoreCrudServiceBase, storeAsyncMethod, storeService } from '@nikkierp/ui/appState/store';
 
 import * as t from './types';
-import { INVENTORY_MODULE, PRODUCT_VARIANT_RESOURCE_PATH, PRODUCT_VARIANT_SCHEMA_NAME } from '../../constants';
-import { inventoryStore } from '../../store';
+import { INVENTORY_MODULE, PRODUCT_VARIANT_RESOURCE_PATH, PRODUCT_VARIANT_SCHEMA_NAME } from '../../../constants/inventory';
+import { inventoryStore } from '../../../store/inventory';
 import { apiGet } from '../http';
 
 

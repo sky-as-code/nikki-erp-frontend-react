@@ -36,10 +36,13 @@ const microApps: MicroAppMetadata[] = [
 		htmlTag: 'nikkiapp-accounting',
 	},
 	{
-		slug: 'inventory',
-		basePath: 'inventory',
-		bundleUrl: () => import('@nikkierp/microapp-inventory'),
-		htmlTag: 'nikkiapp-inventory',
+		// One micro-app for three schema prefixes: commands are named `inventory.*`, `purchase.*` and
+		// `sales.*`, so the Shell needs every prefix to route them here (see `schemaPrefix`).
+		slug: 'commerce',
+		basePath: 'commerce',
+		bundleUrl: () => import('@nikkierp/microapp-commerce'),
+		htmlTag: 'nikkiapp-commerce',
+		schemaPrefix: ['inventory', 'purchase', 'sales'],
 	},
 	{
 		slug: 'notification',
@@ -52,12 +55,6 @@ const microApps: MicroAppMetadata[] = [
 		basePath: 'paymentinvoice',
 		bundleUrl: () => import('@nikkierp/microapp-paymentinvoice'),
 		htmlTag: 'nikkiapp-paymentinvoice',
-	},
-	{
-		slug: 'purchase',
-		basePath: 'purchase',
-		bundleUrl: () => import('@nikkierp/microapp-purchase'),
-		htmlTag: 'nikkiapp-purchase',
 	},
 	{
 		slug: 'settings',

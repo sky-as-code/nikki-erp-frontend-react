@@ -1,7 +1,7 @@
 import { useClientErrorTranslate, useI18n, useTranslate } from '@nikkierp/ui/i18n';
 import React from 'react';
 
-import { INVENTORY_MODULE } from '../../../constants';
+import { INVENTORY_MODULE } from '../../../../constants/inventory';
 
 import type { SectionText } from './sectionText';
 

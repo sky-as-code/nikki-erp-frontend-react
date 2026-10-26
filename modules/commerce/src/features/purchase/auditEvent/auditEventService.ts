@@ -1,7 +1,7 @@
 import { StoreCrudServiceBase, storeService } from '@nikkierp/ui/appState/store';
 
-import { AUDIT_EVENT_SCHEMA_NAME, PURCHASE_MODULE } from '../../constants';
-import { purchaseStore } from '../../store';
+import { AUDIT_EVENT_SCHEMA_NAME, PURCHASE_MODULE } from '../../../constants/purchase';
+import { purchaseStore } from '../../../store/purchase';
 
 
 /**

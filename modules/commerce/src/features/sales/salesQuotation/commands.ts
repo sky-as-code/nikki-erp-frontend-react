@@ -4,7 +4,7 @@ import { registerCrudService, registerSchemaModule, resourceCommands } from '@ni
 import {
 	ConvertQuotationRequest, QuotationActionRequest, salesQuotationService,
 } from './salesQuotationService';
-import { SALES_MODULE, SALES_QUOTATION_SCHEMA_NAME } from '../../constants';
+import { SALES_MODULE, SALES_QUOTATION_SCHEMA_NAME } from '../../../constants/sales';
 
 
 const PREFIX = `${SALES_MODULE}.${SALES_QUOTATION_SCHEMA_NAME}`;

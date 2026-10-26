@@ -3,7 +3,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { stockScrapService } from './stockScrapService';
-import { INVENTORY_MODULE, STOCK_SCRAP_SCHEMA_NAME } from '../../constants';
+import { INVENTORY_MODULE, STOCK_SCRAP_SCHEMA_NAME } from '../../../constants/inventory';
 
 
 const PREFIX = `${INVENTORY_MODULE}.${STOCK_SCRAP_SCHEMA_NAME}`;

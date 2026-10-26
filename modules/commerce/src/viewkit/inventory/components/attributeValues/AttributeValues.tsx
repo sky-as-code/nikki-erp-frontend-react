@@ -17,7 +17,7 @@ import {
 } from './attributeValueDrafts';
 import { useValueDraftState } from './attributeValuesData';
 import { ColorDisplayContext, VALUE_FIELD_EDITORS, ValueRowErrorsContext } from './valueEditors';
-import { INVENTORY_MODULE, PRODUCT_ATTRIBUTE_SCHEMA_NAME, PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME } from '../../../constants';
+import { INVENTORY_MODULE, PRODUCT_ATTRIBUTE_SCHEMA_NAME, PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME } from '../../../../constants/inventory';
 import { ATTRIBUTE_VALUES } from '../../ids';
 
 import type { ValueErrors } from './attributeValueDrafts';

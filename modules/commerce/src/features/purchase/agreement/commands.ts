@@ -2,7 +2,7 @@ import { Command, ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { AgreementActionRequest, agreementService, ReasonedAgreementRequest } from './agreementService';
-import { AGREEMENT_SCHEMA_NAME, PURCHASE_MODULE } from '../../constants';
+import { AGREEMENT_SCHEMA_NAME, PURCHASE_MODULE } from '../../../constants/purchase';
 
 
 const PREFIX = `${PURCHASE_MODULE}.${AGREEMENT_SCHEMA_NAME}`;

@@ -2,7 +2,7 @@ import { Command, ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
 import { ReleaseReservationRequest, stockReservationService } from './stockReservationService';
-import { INVENTORY_MODULE, STOCK_RESERVATION_SCHEMA_NAME } from '../../constants';
+import { INVENTORY_MODULE, STOCK_RESERVATION_SCHEMA_NAME } from '../../../constants/inventory';
 
 
 const PREFIX = `${INVENTORY_MODULE}.${STOCK_RESERVATION_SCHEMA_NAME}`;

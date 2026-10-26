@@ -8,7 +8,7 @@ import React from 'react';
 import { useController } from 'react-hook-form';
 
 import { COLOR_FIELD, NAME_FIELD } from './attributeValueDrafts';
-import { INVENTORY_MODULE } from '../../../constants';
+import { INVENTORY_MODULE } from '../../../../constants/inventory';
 
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { NewRowFieldEditor, NewRowFieldEditorProps } from '@nikkierp/ui/components/ExcelDataTable';
