@@ -1,10 +1,13 @@
-import { MenuIndexRedirect } from '@nikkierp/ui/menu';
+import { MenuIndexRedirect, menuItemsOf } from '@nikkierp/ui/menu';
 import { defineWebComponent, MicroAppBundle, MicroAppDomType, MicroAppProps } from '@nikkierp/ui/microApp';
 import { MicroAppProvider } from '@nikkierp/ui/microApp';
 import { ViewEngineRouter } from '@nikkierp/viewkit-mantine';
 import React from 'react';
 
+import { buildAccountingPages, preloadAccounting } from './bootstrap/accounting';
+import { buildEssentialPages } from './bootstrap/essential';
 import { buildInventoryPages, registerInventory } from './bootstrap/inventory';
+import { buildPaymentInvoicePages } from './bootstrap/paymentinvoice';
 import { buildPurchasePages, registerPurchase } from './bootstrap/purchase';
 import { buildSalesPages, registerSales } from './bootstrap/sales';
 import { buildCommerceMenu } from './menu';
@@ -32,6 +35,7 @@ const bundle: MicroAppBundle = {
 		registerInventory(host);
 		registerPurchase(host);
 		registerSales(host);
+		preloadAccounting();
 
 		return {
 			domType,
@@ -46,9 +50,12 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 		...buildInventoryPages(),
 		...buildPurchasePages(),
 		...buildSalesPages(),
+		...buildPaymentInvoicePages(),
+		...buildAccountingPages(),
+		...buildEssentialPages(),
 	], []);
 
-	const indexElement = <MenuIndexRedirect items={buildCommerceMenu(props.slug).items} />;
+	const indexElement = <MenuIndexRedirect items={menuItemsOf(buildCommerceMenu(props.slug))} />;
 
 	return (
 		<ViewEngineRouter
