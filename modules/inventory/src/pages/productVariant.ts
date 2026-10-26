@@ -161,8 +161,8 @@ function buildProductVariantFieldsSection(): ComponentNode {
 		}),
 		resourceFileFieldNode({
 			field: 'variant_image',
-			urlField: 'variant_image_url',
-			label: 'fields.variant_image_file_key',
+			pathField: 'variant_image_file_path',
+			label: 'fields.variant_image_file_path',
 		}),
 		// archive_source is what lets unarchiving a template restore only the variants it
 		// took down, so it is shown rather than hidden. See BR Â§8.9.

@@ -16,7 +16,7 @@ It replaces `shellbff` for the React tree (`shellbff` stays for the Vue tree) an
 
 | Prefix | Meaning |
 |---|---|
-| `/api/v0/**` | **Frontend-coupled, versionless** BFF APIs. The BFF and its frontend consumer always change together in the same release, so they carry no version. Never forwarded upstream. Today: `GET /api/v0/config`. |
+| `/api/v0/**` | **Frontend-coupled, versionless** BFF APIs. The BFF and its frontend consumer always change together in the same release, so they carry no version. Never forwarded upstream. Today: `GET /api/v0/config`, the file field routes (module `storage`). |
 | `/api/v{n}/**` (n ≥ 1) | Business APIs, **mirroring the business service paths**. Either plain proxy (the default) or a module router (accumulation of several upstream calls, or changed behaviour such as the signin cookie endpoints). The frontend cannot tell which. |
 | other `/api/**` | 404 with the backend error array `[{type:'business',key:'common:err_not_found',message}]`. |
 | anything else | Frontend hosting (assets, then `index.html`). |
@@ -128,7 +128,7 @@ src/main.ts                     bootstrap: config → container → app → list
 src/app.ts                      assembly: CSRF guard, /api/v0, module routers (extension point), generic proxy, hosting
 src/common/config/              env chain and typed AppConfig
 src/common/ioc/container.ts     Container: config, logger, upstream client, session cookies
-src/common/http/                UpstreamClient (forward + requestJson), header allowlists, error-array helpers
+src/common/http/                UpstreamClient (forward + pipeTo + requestJson), header allowlists, error-array helpers
 src/common/proxy/               generic streaming proxy
 src/common/session/             session cookies, CSRF guard
 src/hosting/                    Vite middleware, static files, index.html
@@ -195,3 +195,25 @@ target schema name is `dest_schema_name`. **No module key is serialized** for a 
 4. The prefix before the first `_` (`iam_users` → `iam`). A name with no prefix is unresolvable → `failed_edges`.
 
 A new module whose schema prefix differs from its module key needs an entry in `PREFIX_MODULE_KEYS`.
+
+## Module `storage` — resource file fields
+
+`src/modules/storage/` (factory `storageRouterFactory`, base path `/api/v0`) attaches a file to a resource's
+`<field>_file_path`. Files live in the business service's IT Storage (`/v1/itstorage`); a resource only stores
+the file's path, and the browser displays it through `/api/v1/itstorage/files/download?path=…` (generic proxy).
+
+| Endpoint | Behaviour |
+|---|---|
+| `POST\|PUT /api/v0/:module/:schema/:id/files/:field?etag=&org_id=` | Streams the browser's multipart **unparsed and unbuffered** (`upstream.pipeTo`, its `content-type`/boundary unchanged) to `POST /v1/itstorage/files/upload`, then `PATCH /v1/:module/:schema/:id` with `{<field>_file_path, etag, org_id}`. Answers the update result. If the update fails (non-2xx or unreachable), the uploaded file is deleted best-effort (`DELETE /v1/itstorage/files/:file_id?org_id=`) and the update error is returned. A refused upload is returned as-is. |
+| `DELETE /api/v0/:module/:schema/:id/files/:field?etag=&org_id=` | `PATCH /v1/:module/:schema/:id` with `{<field>_file_path: null, etag, org_id}`; the backend deletes the old file after commit. |
+
+- **`etag` and `org_id` travel in the query string**, not the form: the multipart is never parsed (no body
+  parser on these routes), so the BFF cannot read text parts without buffering the upload. Missing `etag` →
+  400 `common:err_malformed_request` before any upstream call. The form itself carries Storage's own parts
+  (`org_id`, `name`, `mime_type`, `size_bytes`, then `file` last).
+- `:module` is the module key the browser already has in the resource path (`RestApi`'s `resourcePath`), so no
+  key resolution is needed; `:module`, `:schema`, `:field` must match `^[a-z0-9_]+$`, else 404.
+- The update is `PATCH`, the resource engine's JSON update (`ActionTypeUpdatePatch`); `PUT` would be a replace.
+- The upstream upload is aborted when the browser disconnects. Its response timeout starts once the body is sent,
+  so a slow upload is not cut off by `NIKKI_BFF_UPSTREAM_TIMEOUT_MS`.
+- Every answer is `Cache-Control: no-store`; unreachable upstream → 502 `common:err_upstream_unavailable`.

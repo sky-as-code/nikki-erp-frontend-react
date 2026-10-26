@@ -50,25 +50,32 @@ export class RestApi {
 		});
 	}
 
+	/**
+	 * Attaches a file to `<field>_file_path` through the BFF's `v0/.../files/:field` route, which streams
+	 * the form to Storage and then updates the record. The BFF never parses the form, so `etag` and
+	 * `org_id` travel in the query string; the form holds Storage's own parts, `file` last.
+	 */
 	public uploadFile(request: RestUploadFileRequest): Promise<RequestResult<RestMutateResponse>> {
+		const { file } = request;
 		const form = new FormData();
-		form.append('file', request.file, request.file.name);
-		if (request.etag) form.append('etag', request.etag);
 		if (request.org_id) form.append('org_id', request.org_id);
-		const url = `${this._getBasePath()}/${request.id}/files/${request.field}`;
+		form.append('name', file.name);
+		form.append('mime_type', file.type || 'application/octet-stream');
+		form.append('size_bytes', String(file.size));
+		form.append('file', file, file.name);
+		const url = this._fileFieldPath(request);
+		const options = { body: form, searchParams: fileFieldSearchParams(request) };
 		const maker = this._opts.requestMaker!;
 		return request.replace
-			? maker.put<RestMutateResponse>(url, { body: form })
-			: maker.post<RestMutateResponse>(url, { body: form });
+			? maker.put<RestMutateResponse>(url, options)
+			: maker.post<RestMutateResponse>(url, options);
 	}
 
+	/** Clears `<field>_file_path`; the backend deletes the old file. */
 	public deleteFile(request: RestDeleteFileRequest): Promise<RequestResult<RestMutateResponse>> {
-		const searchParams: Record<string, string> = {};
-		if (request.etag) searchParams.etag = request.etag;
-		if (request.org_id) searchParams.org_id = request.org_id;
-		return this._opts.requestMaker!.delete<RestMutateResponse>(
-			`${this._getBasePath()}/${request.id}/files/${request.field}`, { searchParams },
-		);
+		return this._opts.requestMaker!.delete<RestMutateResponse>(this._fileFieldPath(request), {
+			searchParams: fileFieldSearchParams(request),
+		});
 	}
 
 	public delete(request: RestDeleteRequest, primaryResourceId?: string): Promise<RequestResult<RestDeleteResponse>> {
@@ -221,6 +228,14 @@ export class RestApi {
 		return this._opts.requestMaker!.patch<RestMutateResponse>(`${restPath}/${id}`, { json: body });
 	}
 
+	private _fileFieldPath(request: { id: string, field: string }): string {
+		if (!this.isTopLevel) {
+			throw new Error('File fields are served for top-level resources only');
+		}
+		const bffPath = this._getBasePath().replace(/^\/?v\d+\//, 'v0/');
+		return `${bffPath}/${request.id}/files/${request.field}`;
+	}
+
 	private _getBasePath(primaryResourceId?: string): string {
 		if (this._opts.primaryResourcePath) {
 			if (!primaryResourceId) { throw new Error('primaryResourceId is required'); }
@@ -247,6 +262,13 @@ export class RestApi {
 		return searchParams;
 	}
 
+}
+
+function fileFieldSearchParams(request: { etag?: string, org_id?: string }): Record<string, string> {
+	const searchParams: Record<string, string> = {};
+	if (request.etag) searchParams.etag = request.etag;
+	if (request.org_id) searchParams.org_id = request.org_id;
+	return searchParams;
 }
 
 // In `fields`, every readable field of the root record, combinable with edge paths. The backend
@@ -305,6 +327,7 @@ export type RestImportMapping = {
 
 export type RestUploadFileRequest = {
 	id: string,
+	/** The field's base name: `avatar` writes `avatar_file_path`. */
 	field: string,
 	file: File,
 	replace: boolean,

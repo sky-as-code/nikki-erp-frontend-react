@@ -1,4 +1,5 @@
 import { FileInput, Group, Image, Stack, Text } from '@mantine/core';
+import { storageFileUrlOf } from '@nikkierp/common/request';
 import { Button } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
@@ -44,7 +45,7 @@ function ResourceFileField({ props }: { props: ResourceFileFieldProps }): React.
 	const view = useResourceFormView();
 
 	const resource = updateContext?.resource;
-	const existingUrl = readString(resource, props.urlField);
+	const existingUrl = storageFileUrlOf(resource?.[props.pathField]);
 	const isCreate = Boolean(createContext && !updateContext);
 	const editable = isCreate || Boolean(view?.updateMode && updateContext?.commands.update);
 	const registerAfterSave = updateContext?.registerAfterSave ?? createContext?.registerAfterSave;

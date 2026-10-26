@@ -208,8 +208,8 @@ function buildProductTemplatePhysicalColumns(): ComponentNode[] {
 		}),
 		resourceFileFieldNode({
 			field: 'default_image',
-			urlField: 'default_image_url',
-			label: 'fields.default_image_file_key',
+			pathField: 'default_image_file_path',
+			label: 'fields.default_image_file_path',
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',

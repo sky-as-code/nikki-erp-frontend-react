@@ -2,7 +2,9 @@ import express, { type ErrorRequestHandler, type RequestHandler, type Response }
 
 import { createBootstrapService } from './bootstrap_service';
 import { createSigninService } from './signin_service';
-import { buildErrors, sendErrors, sendUpstreamUnavailable, UpstreamUnavailableError } from '../../common/http/errors';
+import {
+	buildErrors, ERR_MALFORMED_REQUEST, sendErrors, sendUpstreamUnavailable, UpstreamUnavailableError,
+} from '../../common/http/errors';
 
 import type { BootstrapService } from './bootstrap_service';
 import type { IamResult } from './iam_result';
@@ -12,7 +14,7 @@ import type { ModuleRouter, ModuleRouterFactory } from '../index';
 
 
 export const IAM_BASE_PATH = '/api/v1/iam';
-export const ERR_MALFORMED_REQUEST = 'common:err_malformed_request';
+export { ERR_MALFORMED_REQUEST };
 
 export interface IamRouterDeps {
 	readonly signin: SigninService;

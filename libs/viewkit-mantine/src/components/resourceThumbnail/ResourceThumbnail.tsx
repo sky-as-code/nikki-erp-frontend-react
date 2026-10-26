@@ -1,4 +1,5 @@
 import { Center, Image, UnstyledButton } from '@mantine/core';
+import { storageFileUrlOf } from '@nikkierp/common/request';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { IconPencil, IconPhoto } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -89,7 +90,7 @@ function useStagedThumbnail(
 		setRemoved(false);
 	}, [resource, updateMode]);
 
-	const fileUrl = readString(resource, spec.urlField);
+	const fileUrl = storageFileUrlOf(resource?.[spec.pathField]);
 	const fallbackUrl = readString(resource, spec.fallbackUrlField);
 	const apply = React.useCallback((edit: ThumbnailEdit) => {
 		setFile(edit.file);

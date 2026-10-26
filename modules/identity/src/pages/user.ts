@@ -41,7 +41,7 @@ function buildUserListProps() {
 			{ label: 'action.delete', command: UserCommands.DELETE, supportMultiple: true, requireSelection: true },
 		],
 		fieldRenderers: {
-			avatar_url: { renderer: 'avatar', urlField: 'avatar_file_url' },
+			avatar_url: { renderer: 'avatar', pathField: 'avatar_file_path' },
 			status: {
 				renderer: 'badge',
 				prefix: 'status.',
@@ -66,7 +66,7 @@ function buildUserDetailProps() {
 		titleLvl2: { schemaField: 'email' },
 		backLinkTitle: { linkHref: '../' },
 		// `avatar_url` is an older plain URL column, shown until a photo is uploaded.
-		thumbnail: { field: 'avatar', urlField: 'avatar_file_url', fallbackUrlField: 'avatar_url' },
+		thumbnail: { field: 'avatar', pathField: 'avatar_file_path', fallbackUrlField: 'avatar_url' },
 		allStatuses: [
 			{ value: 'draft', label: 'status.draft', color: 'grape' },
 			{ value: 'invited', label: 'status.invited', color: 'indigo' },

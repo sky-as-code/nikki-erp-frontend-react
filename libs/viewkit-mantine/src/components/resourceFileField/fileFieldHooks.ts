@@ -15,8 +15,8 @@ export type PendingFile = {
 
 /**
  * Registers the staged file of one file field with the page's after-save step: once the record
- * is saved, a new file is uploaded (or replaces the old one) and a removal clears it, through the
- * resource's `:id/files/:field` routes. Shared by every editor of a file field.
+ * is saved, a new file is uploaded to Storage and attached (or replaces the old one) and a removal
+ * clears it, through the BFF's `v0/.../:id/files/:field` route. Shared by every editor of a file field.
  */
 export function useFileFieldAfterSave(
 	field: string,
