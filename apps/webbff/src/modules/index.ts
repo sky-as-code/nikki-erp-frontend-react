@@ -1,5 +1,6 @@
 import { dynamicResourceRouterFactory } from './dynamicresource/router';
 import { iamRouterFactory } from './iam/router';
+import { resourceFormsRouterFactory } from './resourceforms/router';
 
 import type { Container } from '../common/ioc/container';
 import type { Router } from 'express';
@@ -22,4 +23,5 @@ export type ModuleRouterFactory = (container: Container) => ModuleRouter;
 export const moduleRouterFactories: readonly ModuleRouterFactory[] = [
 	iamRouterFactory,
 	dynamicResourceRouterFactory,
+	resourceFormsRouterFactory,
 ];

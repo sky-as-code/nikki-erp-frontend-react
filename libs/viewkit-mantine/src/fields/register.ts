@@ -28,8 +28,8 @@ export const translatedSpecSchema = z.object({
  */
 export function registerFieldRenderers(registry: IViewRegistry): void {
 	registry.registerFieldRenderer(FIELD_RENDERER_AVATAR, (spec) => {
-		const { urlField } = avatarSpecSchema.parse(spec);
-		return new AvatarFieldRenderer(urlField);
+		const { fileIdField } = avatarSpecSchema.parse(spec);
+		return new AvatarFieldRenderer(fileIdField);
 	});
 
 	registry.registerFieldRenderer(FIELD_RENDERER_BADGE, (spec) => {

@@ -7,6 +7,7 @@ import { ACCESS_TOKEN_HEADER, buildForwardedHeaders, filterRequestHeaders, filte
 
 import type { UpstreamConfig } from '../config/types';
 import type { Logger } from '../logging/logger';
+import type { Readable } from 'node:stream';
 import type { TLSSocket } from 'node:tls';
 
 
@@ -16,6 +17,30 @@ export interface ForwardOptions {
 	/** Upstream path including the query string, e.g. `/v1/iam/iam_user?page=0`. */
 	readonly upstreamPath: string;
 	readonly accessToken?: string;
+}
+
+export interface PipeToOptions {
+	/** Upstream path including the query string, e.g. `/v1/itstorage/files/upload`. */
+	readonly upstreamPath: string;
+	/** Defaults to the incoming request's method. */
+	readonly method?: string;
+	readonly accessToken?: string;
+	/** Aborts the upstream call, e.g. when the browser disconnects. */
+	readonly signal?: AbortSignal;
+}
+
+export interface StreamToOptions {
+	/** Upstream path including the query string, e.g. `/v1/itstorage/files/upload`. */
+	readonly upstreamPath: string;
+	/** Defaults to `POST`. */
+	readonly method?: string;
+	/** The body's own content type, e.g. a multipart type with its boundary. */
+	readonly contentType: string;
+	readonly accessToken?: string;
+	/** Browser request whose allowlisted headers, Host and forwarding info are carried over (body headers excepted). */
+	readonly incomingReq?: IncomingMessage;
+	/** Aborts the upstream call, e.g. when the browser disconnects. */
+	readonly signal?: AbortSignal;
 }
 
 export interface RequestJsonOptions {
@@ -37,6 +62,16 @@ export interface UpstreamJsonResponse<T> {
 export interface UpstreamClient {
 	/** Streams `req` to the upstream and the upstream response back to `res`, without buffering. */
 	forward(req: IncomingMessage, res: http.ServerResponse, options: ForwardOptions): void;
+	/**
+	 * Streams the body of `req` to the upstream unbuffered, with its own body headers (a multipart boundary
+	 * survives), and resolves with the parsed upstream answer. Rejects with `UpstreamUnavailableError`.
+	 */
+	pipeTo<T = unknown>(req: IncomingMessage, options: PipeToOptions): Promise<UpstreamJsonResponse<T>>;
+	/**
+	 * Streams a body the BFF generates (chunked, unbuffered) to the upstream and resolves with the parsed answer.
+	 * Rejects with `UpstreamUnavailableError`, also when aborted.
+	 */
+	streamTo<T = unknown>(body: Readable, options: StreamToOptions): Promise<UpstreamJsonResponse<T>>;
 	/** Buffered JSON call for accumulation endpoints. Rejects with `UpstreamUnavailableError` on network errors. */
 	requestJson<T = unknown>(
 		method: string, path: string, options?: RequestJsonOptions,
@@ -60,6 +95,8 @@ export function createUpstreamClient(config: UpstreamConfig, logger: Logger): Up
 	const transport = { config, agent, isHttps, logger };
 	return {
 		forward: (req, res, options) => forward(transport, req, res, options),
+		pipeTo: (req, options) => pipeTo(transport, req, options),
+		streamTo: (body, options) => streamTo(transport, body, options),
 		requestJson: (method, path, options) => requestJson(transport, method, path, options ?? {}),
 	};
 }
@@ -108,8 +145,17 @@ function describeIncoming(incoming: IncomingMessage) {
 	};
 }
 
+type OpenRequestExtras = {
+	readonly signal?: AbortSignal;
+	/**
+	 * Starts the response timeout once the body is sent rather than at once: a large upload takes longer to send
+	 * than the upstream is given to answer.
+	 */
+	readonly timeoutAfterBody?: boolean;
+};
+
 function openRequest(
-	transport: Transport, method: string, path: string, headers: OutgoingHttpHeaders,
+	transport: Transport, method: string, path: string, headers: OutgoingHttpHeaders, extras: OpenRequestExtras = {},
 ): http.ClientRequest {
 	const { baseUrl } = transport.config;
 	const options: http.RequestOptions = {
@@ -120,14 +166,31 @@ function openRequest(
 		path: joinUpstreamPath(baseUrl, path),
 		headers,
 		agent: transport.agent,
+		signal: extras.signal,
 	};
 	const request = transport.isHttps ? https.request(options) : http.request(options);
+	if (extras.timeoutAfterBody) {
+		let responded = false;
+		request.once('response', () => {
+			responded = true;
+		});
+		request.once('finish', () => !responded && armResponseTimeout(transport, request));
+	}
+	else {
+		armResponseTimeout(transport, request);
+	}
+	return request;
+}
+
+function armResponseTimeout(transport: Transport, request: http.ClientRequest): void {
+	if (request.destroyed) {
+		return;
+	}
 	const timer = setTimeout(() => {
 		request.destroy(new UpstreamUnavailableError(`Upstream did not respond within ${transport.config.timeoutMs}ms`));
 	}, transport.config.timeoutMs);
 	request.once('response', () => clearTimeout(timer));
 	request.once('close', () => clearTimeout(timer));
-	return request;
 }
 
 function forward(transport: Transport, req: IncomingMessage, res: http.ServerResponse, options: ForwardOptions): void {
@@ -153,6 +216,52 @@ function forward(transport: Transport, req: IncomingMessage, res: http.ServerRes
 		}
 	});
 	req.pipe(upstreamReq);
+}
+
+function pipeTo<T>(
+	transport: Transport, req: IncomingMessage, options: PipeToOptions,
+): Promise<UpstreamJsonResponse<T>> {
+	const headers: OutgoingHttpHeaders = {
+		...buildHeaders(transport, req, true, options.accessToken),
+		accept: 'application/json',
+	};
+	const method = options.method ?? req.method ?? 'POST';
+	return new Promise((resolve, reject) => {
+		const request = openRequest(transport, method, options.upstreamPath, headers, {
+			signal: options.signal,
+			timeoutAfterBody: true,
+		});
+		request.on('response', (response) => collectJson<T>(response).then(resolve, reject));
+		request.on('error', (err) => reject(asUnavailable(err)));
+		req.on('error', (err) => request.destroy(err));
+		req.pipe(request);
+	});
+}
+
+function streamTo<T>(
+	transport: Transport, body: Readable, options: StreamToOptions,
+): Promise<UpstreamJsonResponse<T>> {
+	const headers: OutgoingHttpHeaders = {
+		...buildHeaders(transport, options.incomingReq, false, options.accessToken),
+		accept: 'application/json',
+		'content-type': options.contentType,
+	};
+	return new Promise((resolve, reject) => {
+		const request = openRequest(transport, options.method ?? 'POST', options.upstreamPath, headers, {
+			signal: options.signal,
+			timeoutAfterBody: true,
+		});
+		request.on('response', (response) => collectJson<T>(response).then((answer) => {
+			// An answer before the whole body (e.g. a refused upload) ends the call; the rest is the caller's to drop.
+			if (!request.writableFinished) {
+				request.destroy();
+			}
+			resolve(answer);
+		}, reject));
+		request.on('error', (err) => reject(asUnavailable(err)));
+		body.on('error', (err) => request.destroy(err));
+		body.pipe(request);
+	});
 }
 
 function requestJson<T>(

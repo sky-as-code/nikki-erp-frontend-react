@@ -29,8 +29,9 @@ export type ProductVariant = {
 	primary_barcode?: string,
 	status?: ProductVariantStatus,
 	archive_source?: ArchiveSource,
-	variant_image_file_key?: string | null,
-	variant_image_url?: string | null,
+	preview_image_file_id?: string | null,
+	/** The template's image, shown while the variant has none of its own. */
+	product_template_preview_image_file_id?: string | null,
 	weight?: string,
 	length?: string,
 	width?: string,

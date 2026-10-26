@@ -66,6 +66,7 @@ export { useDetailSavePayload } from './pages/resourceDetail/savePayloadContext'
 export type { DetailSavePayload } from './pages/resourceDetail/savePayloadContext';
 /** A detail form's embedded table: all rows, row writes offered only while the form is updated. */
 export { FormDataTable } from './components/formDataTable/FormDataTable';
+export { useObjectPreviewUrl } from './components/resourceFileField/fileFieldHooks';
 export type { FormDataTableProps } from './components/formDataTable/FormDataTable';
 export type { UpdatePayloadContributor } from './pages/resourceDetail/afterSave';
 export type { ActionLock, LockableAction, UngatedAction } from './permissions';

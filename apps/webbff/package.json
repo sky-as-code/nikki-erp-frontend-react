@@ -12,6 +12,7 @@
 		"start": "node dist/main.js"
 	},
 	"dependencies": {
+		"busboy": "~1.6.0",
 		"compression": "~1.8.1",
 		"cookie": "~1.1.1",
 		"cors": "~2.8.5",
@@ -19,6 +20,7 @@
 		"express": "~5.1.0"
 	},
 	"devDependencies": {
+		"@types/busboy": "~1.5.5",
 		"@types/compression": "~1.8.1",
 		"@types/cors": "~2.8.19",
 		"@types/express": "~5.0.4",

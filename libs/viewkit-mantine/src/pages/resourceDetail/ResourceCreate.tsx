@@ -5,7 +5,7 @@ import { MetaComponent } from '@nikkierp/viewengine/render';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import { notifyAfterSaveFailure, useAfterSaveHooks } from './afterSave';
+import { notifyAfterSaveFailure, useAfterSaveHooks, useFileFieldContributors, withFileFields } from './afterSave';
 import {
 	ResourceCreateContext, ResourceCreateContextValue, useCreateServerErrors, useResourceCreateContext,
 } from './resourceCreateContext';
@@ -46,12 +46,14 @@ export function ResourceCreateProvider(
 	const runAfterSave = afterSave.run;
 	const navigate = useNavigate();
 	const { bindServerErrorSink, routeServerErrors } = useCreateServerErrors();
+	const fileFields = useFileFieldContributors();
+	const collectFileFields = fileFields.collect;
 	const onSubmit = React.useCallback(
 		async (data: Record<string, any>) => {
 			if (!props.commands.create) {
 				return;
 			}
-			const response = await publishCreate(data);
+			const response = await publishCreate(withFileFields(data, collectFileFields()));
 			const created = response.result?.data;
 			const clientErrors = response.result?.clientErrors ?? [];
 			if (clientErrors.length > 0) {
@@ -69,7 +71,7 @@ export function ResourceCreateProvider(
 			}
 			navigate(`../${created.id}`, { relative: 'path', replace: true });
 		},
-		[publishCreate, props.commands.create, runAfterSave, navigate, routeServerErrors],
+		[publishCreate, props.commands.create, runAfterSave, navigate, routeServerErrors, collectFileFields],
 	);
 
 	const value = React.useMemo(
@@ -81,11 +83,13 @@ export function ResourceCreateProvider(
 			onSubmit,
 			isSubmitting: createCmd.isPending || afterSave.isRunning,
 			registerAfterSave: afterSave.register,
+			registerFileField: fileFields.register,
 			bindServerErrorSink,
 		}),
 		[
 			props.commands, props.titleLvl1, props.backLinkTitle, props.createNodes,
 			onSubmit, createCmd.isPending, afterSave.isRunning, afterSave.register, bindServerErrorSink,
+			fileFields.register,
 		],
 	);
 

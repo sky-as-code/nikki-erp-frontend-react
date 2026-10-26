@@ -35,8 +35,7 @@ export type ProductTemplate = {
 	description?: dyn.ModelSchemaLangJson,
 	sales_description?: dyn.ModelSchemaLangJson,
 	purchase_description?: dyn.ModelSchemaLangJson,
-	default_image_file_key?: string | null,
-	default_image_url?: string | null,
+	preview_image_file_id?: string | null,
 	default_weight?: string,
 	default_length?: string,
 	default_width?: string,
@@ -116,10 +115,13 @@ export type GenerateVariantsResponse = {
 	unchanged_count: number,
 };
 
-/** `POST product_template/:id/copy`: the copy's name is optional, the source's name plus a suffix otherwise. */
-export type CopyTemplateRequest = { id: string, name?: dyn.ModelSchemaLangJson };
+/**
+ * `POST product_template/:id/duplicate`: the duplicate's name is optional, the source's name plus a suffix
+ * otherwise.
+ */
+export type DuplicateTemplateRequest = { id: string, name?: dyn.ModelSchemaLangJson };
 
-export type CopyTemplateResponse = { id: string, etag: string, created_at: string };
+export type DuplicateTemplateResponse = { id: string, etag: string, created_at: string };
 
 export type PreviewAttributeConfigurationRequest = {
 	id: string,

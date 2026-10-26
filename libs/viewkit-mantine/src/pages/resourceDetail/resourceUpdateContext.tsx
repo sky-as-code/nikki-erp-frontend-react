@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { RegisterAfterSave, RegisterUpdatePayload } from './afterSave';
+import type { RegisterAfterSave, RegisterFileField, RegisterUpdatePayload } from './afterSave';
 import type {
 	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
@@ -45,6 +45,9 @@ export type ResourceUpdateContextValue = {
 	registerAfterSave: RegisterAfterSave,
 	hasPendingAfterSave: () => boolean,
 	submitAfterSaveOnly: () => Promise<boolean>,
+	/** A file field's staged edit, sent in the update request itself (multipart when a file is chosen). */
+	registerFileField: RegisterFileField,
+	hasPendingFiles: () => boolean,
 	/** Optional because only the v2 update provider merges contributions into its request. */
 	registerUpdatePayload?: RegisterUpdatePayload,
 	hasPendingUpdatePayload?: () => boolean,

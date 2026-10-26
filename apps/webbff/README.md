@@ -8,7 +8,9 @@ It replaces `shellbff` for the React tree (`shellbff` stays for the Vue tree) an
    `window.__CLIENT_CONFIG__ = {...}` (every `NIKKI_PUBLIC_*` variable without its prefix, plus `APP_ENV`).
 2. **Proxies the business API** — every `/api/v{n}/**` (n ≥ 1) request is forwarded verbatim to the upstream
    (`/api/v1/iam/iam_user?x=1` → `{UPSTREAM}/v1/iam/iam_user?x=1`), bodies streamed both ways (NDJSON, multipart,
-   xlsx downloads work unbuffered). The upstream call is aborted when the browser disconnects.
+   xlsx downloads work unbuffered). The upstream call is aborted when the browser disconnects. The one rewrite is a
+   resource create/update sent as multipart: its files are streamed to IT Storage and the write goes on as JSON
+   (module `resourceforms`).
 3. **Owns the session cookies** — the browser never sees a token. The access token travels in the httpOnly
    `nikki_at` cookie and is sent upstream as `X-NIKKI-ACCESSTOKEN`.
 
@@ -128,7 +130,7 @@ src/main.ts                     bootstrap: config → container → app → list
 src/app.ts                      assembly: CSRF guard, /api/v0, module routers (extension point), generic proxy, hosting
 src/common/config/              env chain and typed AppConfig
 src/common/ioc/container.ts     Container: config, logger, upstream client, session cookies
-src/common/http/                UpstreamClient (forward + requestJson), header allowlists, error-array helpers
+src/common/http/                UpstreamClient (forward + pipeTo + streamTo + requestJson), header allowlists, error arrays
 src/common/proxy/               generic streaming proxy
 src/common/session/             session cookies, CSRF guard
 src/hosting/                    Vite middleware, static files, index.html
@@ -195,3 +197,34 @@ target schema name is `dest_schema_name`. **No module key is serialized** for a 
 4. The prefix before the first `_` (`iam_users` → `iam`). A name with no prefix is unresolvable → `failed_edges`.
 
 A new module whose schema prefix differs from its module key needs an entry in `PREFIX_MODULE_KEYS`.
+
+## Module `resourceforms` — resource writes with files
+
+`src/modules/resourceforms/` (factory `resourceFormsRouterFactory`, base path `/api/v1`) lets a resource form save its
+fields and its files in **one** request. A resource stores a file by id in a `<name>_file_id` field (marked
+`metadata.file_field` in `meta/schema`); the file itself lives in the business service's IT Storage
+(`/v1/itstorage`), and the browser displays it through `/api/v1/itstorage/files/:id/download` (generic proxy, Range
+supported).
+
+| Endpoint | Behaviour |
+|---|---|
+| `POST /api/v1/:module/:schema` (create), `PATCH /api/v1/:module/:schema/:id` (update), `multipart/form-data` only | Reads the form with `busboy` as it arrives. Part `payload` must come **first**: the JSON body, `org_id` and `etag` included, plus `__file_sizes: {<field>: bytes}`. Each following part is one file named by its `<name>_file_id` field (with a filename and content type). Each file is streamed, unbuffered, into a generated Storage form (`org_id`, `name`, `mime_type`, `size_bytes` from `__file_sizes`, then `file`) posted to `POST /v1/itstorage/files/upload` (`upstream.streamTo`); the returned `id` is set into the payload. Once the form is read, the payload minus `__file_sizes` goes to `POST\|PATCH /v1/:module/:schema[/:id]` as JSON (`requestJson`) and the upstream answer is relayed (status and body). |
+
+- **Everything else falls through** to the generic proxy: a JSON body (the usual write, a cleared file being `null`
+  in it), any other method or path, and `:module === 'itstorage'`, whose own multipart routes are proxied as they are.
+  `:module`, `:schema` must match `^[a-z0-9_]+$` and `:id` `^[A-Za-z0-9_-]+$`, else the request falls through too.
+- **Malformed form** → 400 `common:err_malformed_request`, before any upstream call when detectable: `payload`
+  missing, not first, sent twice or not a JSON object; a file part not named `<name>_file_id`, repeated, or without
+  its `__file_sizes` entry (Storage reserves quota from the declared size before the bytes arrive).
+- **Failure:** the first failure wins and aborts the other in-flight uploads; the rest of the browser's form is
+  still read (and discarded) so the answer reaches it. A refused upload is returned with its status and body (e.g.
+  413 quota exceeded); an upload answering 2xx without an `id`, or unreachable, is 502
+  `common:err_upstream_unavailable`; the record is then never written. There is **no rollback**: a file already
+  uploaded stays `pending` and Storage's lifecycle rule expires it. A file becomes `in_use` only when the record's
+  write that references it commits.
+- **Disconnect:** the in-flight uploads are aborted. Each upload's response timeout starts once its body is sent,
+  so a slow upload is not cut off by `NIKKI_BFF_UPSTREAM_TIMEOUT_MS`.
+- No body parser on these routes, and every BFF answer is `Cache-Control: no-store`. The CSRF guard applies as on
+  every `/api` write.
+- Client side: `RestApi.create/update(request, primaryResourceId, files)` (`@nikkierp/common/dynamicModel`) builds
+  this form when `files` is non-empty, and sends JSON otherwise.

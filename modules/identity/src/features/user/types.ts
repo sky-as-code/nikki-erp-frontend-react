@@ -1,9 +1,8 @@
 export type User = {
 	id: string,
 	avatar_url?: string,
-	avatar_file_key?: string,
-	/** Presigned on every read from `avatar_file_key`; never sent back. */
-	avatar_file_url?: string,
+	/** Storage file id of the uploaded photo; display it with `storageFileUrl`. */
+	avatar_file_id?: string | null,
 	display_name?: string,
 	email?: string,
 	status?: UserStatus,

@@ -1,6 +1,6 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailV2Props, resourceFileFieldNode, resourceFormColumnNode, resourceImportProps,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps,
 	resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
@@ -105,6 +105,12 @@ function buildProductVariantDetailProps() {
 		titleLvl1: { schemaField: 'product_template_name' },
 		titleLvl2: { schemaField: 'sku' },
 		backLinkTitle: { linkHref: '../' },
+		// A variant without an image of its own shows its template's.
+		thumbnail: {
+			field: 'preview_image',
+			fileIdField: 'preview_image_file_id',
+			fallbackFileIdField: 'product_template_preview_image_file_id',
+		},
 		fieldRenderers: buildProductVariantDetailRenderers(),
 		standardActionCommands: {
 			getById: ProductVariantCommands.GET_BY_ID,
@@ -158,11 +164,6 @@ function buildProductVariantFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.dimensions',
 			fields: ['weight', 'length', 'width', 'height'],
-		}),
-		resourceFileFieldNode({
-			field: 'variant_image',
-			urlField: 'variant_image_url',
-			label: 'fields.variant_image_file_key',
 		}),
 		// archive_source is what lets unarchiving a template restore only the variants it
 		// took down, so it is shown rather than hidden. See BR Â§8.9.

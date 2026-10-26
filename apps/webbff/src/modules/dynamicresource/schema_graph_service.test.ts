@@ -52,6 +52,8 @@ function fakeUpstream(replies: Record<string, Reply>): { upstream: UpstreamClien
 	const calls: string[] = [];
 	const upstream: UpstreamClient = {
 		forward: () => undefined,
+		pipeTo: () => Promise.reject(new Error('unused')),
+		streamTo: () => Promise.reject(new Error('unused')),
 		requestJson: async <T>(_method: string, path: string) => {
 			calls.push(path);
 			const reply = replies[path.split('?', 1)[0]] ?? { status: 404, headers: {}, body: [] };

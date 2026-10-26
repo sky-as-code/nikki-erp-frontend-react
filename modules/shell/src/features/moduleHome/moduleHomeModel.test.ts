@@ -86,7 +86,9 @@ describe('sortModuleItems', () => {
 });
 
 describe('groupModuleItems', () => {
-	const labels = { foundation: 'Foundation', coremart: 'Core Mart', coreparking: 'Core Parking' };
+	const labels = {
+		foundation: 'Foundation', itinfra: 'IT Infrastructure', coremart: 'Core Mart', coreparking: 'Core Parking',
+	};
 	const items = [
 		cardOf('vm', { name: 'Vending', category: 'coremart' }),
 		cardOf('iam', { name: 'Identity' }),

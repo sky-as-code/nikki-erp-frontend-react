@@ -44,16 +44,16 @@ import type * as dyn from '@nikkierp/common/dynamicModel';
 export abstract class StoreCrudServiceBase extends CrudServiceBase {
 	@storeAsyncMethod
 	public override create(
-		request: dyn.RestCreateRequest, primaryResourceId?: string,
+		request: dyn.RestCreateRequest, primaryResourceId?: string, files?: dyn.RestFiles,
 	): Promise<ServiceResult<dyn.RestCreateResponse>> {
-		return super.create(request, primaryResourceId);
+		return super.create(request, primaryResourceId, files);
 	}
 
 	@storeAsyncMethod
 	public override update(
-		request: dyn.RestUpdateRequest, primaryResourceId?: string,
+		request: dyn.RestUpdateRequest, primaryResourceId?: string, files?: dyn.RestFiles,
 	): Promise<ServiceResult<dyn.RestMutateResponse>> {
-		return super.update(request, primaryResourceId);
+		return super.update(request, primaryResourceId, files);
 	}
 
 	@storeAsyncMethod

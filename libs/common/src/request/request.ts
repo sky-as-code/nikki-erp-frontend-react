@@ -114,7 +114,13 @@ export class RequestMaker {
 		RequestMaker._default = new RequestMaker(opts);
 	}
 
+	/** The default instance's base URL, `''` before {@link initDefault}. */
+	public static defaultBaseUrl(): string {
+		return RequestMaker._default?.baseUrl ?? '';
+	}
+
 	#api: KyInstance | null = null;
+	public readonly baseUrl: string = '';
 
 	#dedupMap: Map<string, Promise<any>> = new Map();
 
@@ -122,6 +128,7 @@ export class RequestMaker {
 		if (this.#api) return;
 
 		const { ensureSession } = opts;
+		this.baseUrl = opts.baseUrl;
 
 		this.#api = kyLib.create({
 			prefixUrl: opts.baseUrl,

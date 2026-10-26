@@ -24,7 +24,12 @@ function fakeContainer(): Container {
 	return {
 		config: {} as Container['config'],
 		logger: { ...createConsoleLogger(), warn: () => undefined },
-		upstream: { forward: () => undefined, requestJson: () => Promise.reject(new Error('unused')) },
+		upstream: {
+			forward: () => undefined,
+			pipeTo: () => Promise.reject(new Error('unused')),
+			streamTo: () => Promise.reject(new Error('unused')),
+			requestJson: () => Promise.reject(new Error('unused')),
+		},
 		sessionCookies: createSessionCookies({ secure: false }),
 	};
 }

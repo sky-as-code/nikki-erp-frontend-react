@@ -4,7 +4,7 @@ import { StoreCrudServiceBase, storeAsyncMethod, storeService } from '@nikkierp/
 
 import * as t from './types';
 import {
-	COPY_TEMPLATE_PATH, GENERATE_VARIANTS_PATH, INVENTORY_MODULE, PREVIEW_ATTRIBUTE_CONFIGURATION_PATH,
+	DUPLICATE_TEMPLATE_PATH, GENERATE_VARIANTS_PATH, INVENTORY_MODULE, PREVIEW_ATTRIBUTE_CONFIGURATION_PATH,
 	PRODUCT_TEMPLATE_SCHEMA_NAME, RESOLVE_SELECTION_PATH,
 } from '../../constants';
 import { inventoryStore } from '../../store';
@@ -57,11 +57,14 @@ export class ProductTemplateService extends StoreCrudServiceBase {
 		return this.postAction<unknown>(`${id}/${PREVIEW_ATTRIBUTE_CONFIGURATION_PATH}`, body);
 	}
 
-	/** Copies a template with its active configuration; stock, history, SKUs and variants are not copied. */
+	/**
+	 * Duplicates a template with its active configuration and its own copy of the preview image; stock,
+	 * history, SKUs and variants are not duplicated.
+	 */
 	@storeAsyncMethod
-	public copyTemplate(request: t.CopyTemplateRequest): Promise<ServiceResult<t.CopyTemplateResponse>> {
+	public duplicateTemplate(request: t.DuplicateTemplateRequest): Promise<ServiceResult<t.DuplicateTemplateResponse>> {
 		const body = request.name === undefined ? {} : { name: request.name };
-		return this.postAction<t.CopyTemplateResponse>(`${request.id}/${COPY_TEMPLATE_PATH}`, body);
+		return this.postAction<t.DuplicateTemplateResponse>(`${request.id}/${DUPLICATE_TEMPLATE_PATH}`, body);
 	}
 
 	/**

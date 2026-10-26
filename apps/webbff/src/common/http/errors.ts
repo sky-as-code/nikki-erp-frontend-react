@@ -14,6 +14,7 @@ export interface BackendError {
 
 export const ERR_UPSTREAM_UNAVAILABLE = 'common:err_upstream_unavailable';
 export const ERR_NOT_FOUND = 'common:err_not_found';
+export const ERR_MALFORMED_REQUEST = 'common:err_malformed_request';
 
 export class UpstreamUnavailableError extends Error {
 	constructor(message: string, options?: ErrorOptions) {

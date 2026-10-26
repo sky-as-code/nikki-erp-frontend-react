@@ -1,1 +1,3 @@
-export * from './request';export * from './authorizationEvents';
+export * from './request';
+export * from './storageFile';
+export * from './authorizationEvents';

@@ -1,65 +1,31 @@
-import { unwrapResult } from '@nikkierp/common/request';
 import React from 'react';
 
-import type { RegisterAfterSave, SavedRecord } from '../../pages/resourceDetail/afterSave';
-import type { SchemaPack } from '@nikkierp/common/dynamicModel';
+import type { RegisterFileField, StagedFile } from '../../pages/resourceDetail/afterSave';
 
 
-/** A file staged on a detail page, applied by the page's after-save step. */
-export type PendingFile = {
-	file: File | null,
-	removed: boolean,
-	hadFile: boolean,
-	orgId?: string,
-};
+/** The staged edit of a file field: a chosen file wins; a removal counts only when a file is stored. */
+export function toStagedFile(file: File | null, removed: boolean, hadFile: boolean): StagedFile | undefined {
+	if (file) {
+		return { file };
+	}
+	return removed && hadFile ? { removed: true } : undefined;
+}
 
 /**
- * Registers the staged file of one file field with the page's after-save step: once the record
- * is saved, a new file is uploaded (or replaces the old one) and a removal clears it, through the
- * resource's `:id/files/:field` routes. Shared by every editor of a file field.
+ * Registers a file field with the detail form, which sends its staged edit in the record's own create
+ * or update request (multipart when a file is chosen, `null` when removed). Shared by every editor of
+ * a file field.
  */
-export function useFileFieldAfterSave(
-	field: string,
-	registerAfterSave: RegisterAfterSave | undefined,
-	schemaPack: SchemaPack | null,
-	pending: PendingFile,
+export function useFileFieldContribution(
+	fileIdField: string, register: RegisterFileField | undefined, staged: StagedFile | undefined,
 ): void {
-	const pendingRef = React.useRef<PendingFile>(pending);
-	pendingRef.current = pending;
+	const stagedRef = React.useRef(staged);
+	stagedRef.current = staged;
 
-	React.useEffect(() => {
-		if (!registerAfterSave || !schemaPack) {
-			return undefined;
-		}
-		return registerAfterSave(async (saved: SavedRecord) => {
-			const current = pendingRef.current;
-			const orgId = (typeof saved.values.org_id === 'string' ? saved.values.org_id : undefined) ?? current.orgId;
-			if (current.file) {
-				const result = await schemaPack.restApi.uploadFile({
-					id: saved.id,
-					field,
-					file: current.file,
-					replace: current.hadFile,
-					etag: saved.etag,
-					org_id: orgId,
-				});
-				return unwrapResult(result)?.etag;
-			}
-			if (current.removed && current.hadFile) {
-				const result = await schemaPack.restApi.deleteFile({
-					id: saved.id,
-					field,
-					etag: saved.etag,
-					org_id: orgId,
-				});
-				return unwrapResult(result)?.etag;
-			}
-			return saved.etag;
-		}, () => {
-			const current = pendingRef.current;
-			return Boolean(current.file) || (current.removed && current.hadFile);
-		});
-	}, [registerAfterSave, schemaPack, field]);
+	React.useEffect(
+		() => register?.({ field: fileIdField, staged: () => stagedRef.current }),
+		[register, fileIdField],
+	);
 }
 
 /** An object URL for a local file, revoked when the file changes or the caller unmounts. */

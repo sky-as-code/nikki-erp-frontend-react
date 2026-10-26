@@ -1,10 +1,11 @@
 import { FileInput, Group, Image, Stack, Text } from '@mantine/core';
+import { storageFileUrlOf } from '@nikkierp/common/request';
 import { Button } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
 import React from 'react';
 
-import { useFileFieldAfterSave, useObjectPreviewUrl } from './fileFieldHooks';
+import { toStagedFile, useFileFieldContribution, useObjectPreviewUrl } from './fileFieldHooks';
 import { resourceFileFieldPropsSchema } from './props';
 import { RESOURCE_FILE_FIELD } from '../../ids';
 import { ResourceCreateContext } from '../../pages/resourceDetail/resourceCreateContext';
@@ -30,13 +31,8 @@ export const resourceFileFieldRenderer: IComponentRenderer<ResourceFileFieldProp
 	},
 };
 
-function readString(record: Record<string, unknown> | undefined, key: string): string | null {
-	const value = record?.[key];
-	return typeof value === 'string' && value !== '' ? value : null;
-}
-
 function ResourceFileField({ props }: { props: ResourceFileFieldProps }): React.ReactNode {
-	const { schemaPack, translationNs } = useResourceDetailContext();
+	const { translationNs } = useResourceDetailContext();
 	const t = useTranslate(translationNs);
 	const testAttrs = useResourceDetailTestAttrs();
 	const updateContext = React.useContext(ResourceUpdateContext);
@@ -44,10 +40,10 @@ function ResourceFileField({ props }: { props: ResourceFileFieldProps }): React.
 	const view = useResourceFormView();
 
 	const resource = updateContext?.resource;
-	const existingUrl = readString(resource, props.urlField);
+	const existingUrl = storageFileUrlOf(resource?.[props.fileIdField]);
 	const isCreate = Boolean(createContext && !updateContext);
 	const editable = isCreate || Boolean(view?.updateMode && updateContext?.commands.update);
-	const registerAfterSave = updateContext?.registerAfterSave ?? createContext?.registerAfterSave;
+	const registerFileField = updateContext?.registerFileField ?? createContext?.registerFileField;
 
 	const [file, setFile] = React.useState<File | null>(null);
 	const [removed, setRemoved] = React.useState(false);
@@ -58,12 +54,7 @@ function ResourceFileField({ props }: { props: ResourceFileFieldProps }): React.
 		setRemoved(false);
 	}, [resource, view?.updateMode]);
 
-	useFileFieldAfterSave(props.field, registerAfterSave, schemaPack, {
-		file,
-		removed,
-		hadFile: Boolean(existingUrl),
-		orgId: readString(resource, 'org_id') ?? undefined,
-	});
+	useFileFieldContribution(props.fileIdField, registerFileField, toStagedFile(file, removed, Boolean(existingUrl)));
 
 	const selectFile = (next: File | null) => {
 		if (next && next.size > props.maxBytes) {

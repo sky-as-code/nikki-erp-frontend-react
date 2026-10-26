@@ -23,7 +23,7 @@ export const ProductTemplateCommands = Object.freeze({
 	GENERATE_VARIANTS: `${PREFIX}.generate_variants`,
 	RESOLVE_SELECTION: `${PREFIX}.resolve_selection`,
 	PREVIEW_ATTRIBUTE_CONFIGURATION: `${PREFIX}.preview_attribute_configuration`,
-	COPY: `${PREFIX}.copy`,
+	DUPLICATE: `${PREFIX}.duplicate`,
 } as const);
 
 /**
@@ -50,19 +50,19 @@ export function registerProductTemplateCommands(bus: ICommandBus): () => void {
 				payload<t.PreviewAttributeConfigurationRequest>(cmd),
 			),
 		),
-		// The detail's contextual action publishes `{id, etag, ...prompt}`; the copy needs no etag.
+		// The detail's contextual action publishes `{id, etag, ...prompt}`; the duplicate needs no etag.
 		bus.subscribe(
-			ProductTemplateCommands.COPY,
-			cmd => productTemplateService.copyTemplate(copyRequest(payload<Record<string, unknown>>(cmd))),
+			ProductTemplateCommands.DUPLICATE,
+			cmd => productTemplateService.duplicateTemplate(duplicateRequest(payload<Record<string, unknown>>(cmd))),
 		),
 	];
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
 }
 
-function copyRequest(values: Record<string, unknown>): t.CopyTemplateRequest {
+function duplicateRequest(values: Record<string, unknown>): t.DuplicateTemplateRequest {
 	const name = values.name;
 	const hasName = name != null && name !== '' && !(typeof name === 'object' && Object.keys(name).length === 0);
-	return { id: String(values.id ?? ''), ...(hasName ? { name: name as t.CopyTemplateRequest['name'] } : {}) };
+	return { id: String(values.id ?? ''), ...(hasName ? { name: name as t.DuplicateTemplateRequest['name'] } : {}) };
 }
 
 function payload<TPayload>(command: Command): TPayload {

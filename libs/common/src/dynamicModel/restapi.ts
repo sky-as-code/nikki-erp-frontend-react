@@ -24,9 +24,12 @@ export class RestApi {
 		}
 	}
 
-	public create(request: RestCreateRequest, primaryResourceId?: string): Promise<RequestResult<RestCreateResponse>> {
+	/** With `files`, one multipart request through the BFF, which uploads them and sets their ids. */
+	public create(
+		request: RestCreateRequest, primaryResourceId?: string, files?: RestFiles,
+	): Promise<RequestResult<RestCreateResponse>> {
 		const restPath = this._getBasePath(primaryResourceId);
-		return this._opts.requestMaker!.post<RestCreateResponse>(restPath, { json: request });
+		return this._opts.requestMaker!.post<RestCreateResponse>(restPath, writeBody(request, files));
 	}
 
 	/** `POST {resource}/bulk`: many records under one permission check and one transaction. */
@@ -48,27 +51,6 @@ export class RestApi {
 			body: form,
 			searchParams: request.org_id ? { org_id: request.org_id } : undefined,
 		});
-	}
-
-	public uploadFile(request: RestUploadFileRequest): Promise<RequestResult<RestMutateResponse>> {
-		const form = new FormData();
-		form.append('file', request.file, request.file.name);
-		if (request.etag) form.append('etag', request.etag);
-		if (request.org_id) form.append('org_id', request.org_id);
-		const url = `${this._getBasePath()}/${request.id}/files/${request.field}`;
-		const maker = this._opts.requestMaker!;
-		return request.replace
-			? maker.put<RestMutateResponse>(url, { body: form })
-			: maker.post<RestMutateResponse>(url, { body: form });
-	}
-
-	public deleteFile(request: RestDeleteFileRequest): Promise<RequestResult<RestMutateResponse>> {
-		const searchParams: Record<string, string> = {};
-		if (request.etag) searchParams.etag = request.etag;
-		if (request.org_id) searchParams.org_id = request.org_id;
-		return this._opts.requestMaker!.delete<RestMutateResponse>(
-			`${this._getBasePath()}/${request.id}/files/${request.field}`, { searchParams },
-		);
 	}
 
 	public delete(request: RestDeleteRequest, primaryResourceId?: string): Promise<RequestResult<RestDeleteResponse>> {
@@ -213,12 +195,13 @@ export class RestApi {
 		return this._opts.requestMaker!.post<RestMutateResponse>(`${restPath}/${id}/archived`, { json: body });
 	}
 
+	/** With `files`, one multipart request through the BFF, which uploads them and sets their ids. */
 	public update(
-		request: RestUpdateRequest, primaryResourceId?: string,
+		request: RestUpdateRequest, primaryResourceId?: string, files?: RestFiles,
 	): Promise<RequestResult<RestMutateResponse>> {
 		const restPath = this._getBasePath(primaryResourceId);
 		const { id, ...body } = request;
-		return this._opts.requestMaker!.patch<RestMutateResponse>(`${restPath}/${id}`, { json: body });
+		return this._opts.requestMaker!.patch<RestMutateResponse>(`${restPath}/${id}`, writeBody(body, files));
 	}
 
 	private _getBasePath(primaryResourceId?: string): string {
@@ -247,6 +230,27 @@ export class RestApi {
 		return searchParams;
 	}
 
+}
+
+/** The BFF's multipart part carrying the JSON body; it must come before the files. */
+export const RESOURCE_FORM_PAYLOAD_PART = 'payload';
+/** Payload key telling the BFF each file's size, which Storage's quota check needs before the bytes. */
+export const RESOURCE_FORM_FILE_SIZES_KEY = '__file_sizes';
+
+/**
+ * JSON when no file is chosen; otherwise the BFF's resource form: part `payload` first (the body plus
+ * `__file_sizes`), then one part per file named by its `<name>_file_id` field.
+ */
+function writeBody(body: Record<string, any>, files?: RestFiles): { json: Record<string, any> } | { body: FormData } {
+	const entries = Object.entries(files ?? {});
+	if (entries.length === 0) {
+		return { json: body };
+	}
+	const sizes = Object.fromEntries(entries.map(([field, file]) => [field, file.size]));
+	const form = new FormData();
+	form.append(RESOURCE_FORM_PAYLOAD_PART, JSON.stringify({ ...body, [RESOURCE_FORM_FILE_SIZES_KEY]: sizes }));
+	entries.forEach(([field, file]) => form.append(field, file, file.name));
+	return { body: form };
 }
 
 // In `fields`, every readable field of the root record, combinable with edge paths. The backend
@@ -303,21 +307,8 @@ export type RestImportMapping = {
 	columns: RestImportColumnMapping[],
 };
 
-export type RestUploadFileRequest = {
-	id: string,
-	field: string,
-	file: File,
-	replace: boolean,
-	etag?: string,
-	org_id?: string,
-};
-
-export type RestDeleteFileRequest = {
-	id: string,
-	field: string,
-	etag?: string,
-	org_id?: string,
-};
+/** Files chosen for a create or update, keyed by their `<name>_file_id` field. */
+export type RestFiles = Record<string, File>;
 
 export type RestImportRequest = {
 	file: File,

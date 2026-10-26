@@ -25,9 +25,9 @@ export class OrgService extends StoreCrudServiceBase {
 	/** A new org is not listed until it is ready, so the switch is told then: see {@link reportOrgStatus}. */
 	@storeAsyncMethod
 	public override async create(
-		request: dyn.RestCreateRequest, primaryResourceId?: string,
+		request: dyn.RestCreateRequest, primaryResourceId?: string, files?: dyn.RestFiles,
 	): Promise<ServiceResult<dyn.RestCreateResponse>> {
-		const result = await super.create(request, primaryResourceId);
+		const result = await super.create(request, primaryResourceId, files);
 		if (result.clientErrors.length === 0 && result.data?.id) {
 			awaitingReady.add(result.data.id);
 		}
@@ -36,9 +36,9 @@ export class OrgService extends StoreCrudServiceBase {
 
 	@storeAsyncMethod
 	public override async update(
-		request: dyn.RestUpdateRequest, primaryResourceId?: string,
+		request: dyn.RestUpdateRequest, primaryResourceId?: string, files?: dyn.RestFiles,
 	): Promise<ServiceResult<dyn.RestMutateResponse>> {
-		return publishOrgsChangedOnSuccess(await super.update(request, primaryResourceId));
+		return publishOrgsChangedOnSuccess(await super.update(request, primaryResourceId, files));
 	}
 
 	@storeAsyncMethod

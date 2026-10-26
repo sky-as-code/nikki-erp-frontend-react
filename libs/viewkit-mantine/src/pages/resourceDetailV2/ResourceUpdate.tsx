@@ -11,7 +11,9 @@ import { HideWhenNotFound, ResourceNotFound } from './ResourceNotFound';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
 import { useEdgeLabelFields } from '../../data/useEdgeLabelFields';
 import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_V2 } from '../../ids';
-import { useUpdateAfterSave, useUpdatePayloadContributors } from '../resourceDetail/afterSave';
+import {
+	useFileFieldContributors, useUpdateAfterSave, useUpdatePayloadContributors, withFileFields,
+} from '../resourceDetail/afterSave';
 import { useResourceDetailContext } from '../resourceDetail/ResourceDetailProvider';
 
 import type { ResourceThumbnailSpec } from '../../components/resourceThumbnail/props';
@@ -94,6 +96,9 @@ export function ResourceUpdateProvider(
 	const runAfterUpdate = afterSave.runAfterUpdate;
 	const payloadContributors = useUpdatePayloadContributors();
 	const collectContributions = payloadContributors.collect;
+	const {
+		register: registerFileField, hasPending: hasPendingFiles, collect: collectFileFields,
+	} = useFileFieldContributors();
 	const [updateMode, setUpdateMode] = React.useState(false);
 
 	// Refreshes only on success: a refetch would wipe the edits to correct. A section may decline the save.
@@ -102,7 +107,7 @@ export function ResourceUpdateProvider(
 		const contributions = collectContributions();
 		const request = { ...data, ...contributions.payload };
 		if (!(await contributions.confirm(request))) return false;
-		const response = await publishUpdate(request);
+		const response = await publishUpdate(withFileFields(request, collectFileFields()));
 		const succeeded = response.error == null && (response.result?.clientErrors.length ?? 0) === 0;
 		if (succeeded) {
 			contributions.notifySaved();
@@ -111,7 +116,7 @@ export function ResourceUpdateProvider(
 		}
 		// Reported back so the action bar leaves edit mode only on success, keeping rejected input on screen.
 		return succeeded;
-	}, [publishUpdate, commands.update, refresh, runAfterUpdate, collectContributions]);
+	}, [publishUpdate, commands.update, refresh, runAfterUpdate, collectContributions, collectFileFields]);
 
 	const value = React.useMemo(
 		(): ResourceUpdateContextValue => ({
@@ -137,6 +142,7 @@ export function ResourceUpdateProvider(
 			registerAfterSave: afterSave.register,
 			hasPendingAfterSave: afterSave.hasPending,
 			submitAfterSaveOnly: afterSave.submitAfterSaveOnly,
+			registerFileField, hasPendingFiles,
 			registerUpdatePayload: payloadContributors.register,
 			hasPendingUpdatePayload: payloadContributors.hasPending,
 			updateMode, setUpdateMode,
@@ -147,7 +153,8 @@ export function ResourceUpdateProvider(
 			props.allStatuses, props.currentStatus, props.contextualActions,
 			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.thumbnail, props.childrenNodes,
 			afterSave.register, afterSave.hasPending, afterSave.isRunning, afterSave.submitAfterSaveOnly,
-			payloadContributors.register, payloadContributors.hasPending, updateMode,
+			registerFileField, hasPendingFiles, payloadContributors.register, payloadContributors.hasPending,
+			updateMode,
 		],
 	);
 

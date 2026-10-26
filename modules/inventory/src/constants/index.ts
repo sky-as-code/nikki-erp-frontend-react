@@ -87,4 +87,4 @@ export const STOCK_PRODUCT_CONFIG_RESOURCE_PATH = `v1/inventory/${STOCK_PRODUCT_
 export const GENERATE_VARIANTS_PATH = 'generate_variants';
 export const RESOLVE_SELECTION_PATH = 'resolve_selection';
 export const PREVIEW_ATTRIBUTE_CONFIGURATION_PATH = 'preview_attribute_configuration';
-export const COPY_TEMPLATE_PATH = 'copy';
+export const DUPLICATE_TEMPLATE_PATH = 'duplicate';

@@ -24,8 +24,11 @@ export type ModuleExistsResponse = dyn.RestExistsResponse;
 export type UpdateModuleRequest = dyn.RestUpdateRequest;
 export type UpdateModuleResponse = dyn.RestMutateResponse;
 
-/** Which product a module ships with; `essential_module_metadata.category`. */
-export type ModuleCategoryCode = 'foundation' | 'coremart' | 'coreparking';
+/**
+ * Which product a module ships with; `essential_module_metadata.category`. `itinfra` modules
+ * (IT Storage) have no UI, so Module Home does not list them today.
+ */
+export type ModuleCategoryCode = 'foundation' | 'itinfra' | 'coremart' | 'coreparking';
 
 export type ModuleLabelRef = {
 	$ref: string,
