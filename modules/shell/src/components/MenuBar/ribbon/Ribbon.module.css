@@ -1,0 +1,96 @@
+.tabStrip {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+}
+
+.tabSelected {
+	color: var(--mantine-color-blue-6) !important;
+	box-shadow: inset 0 -2px 0 var(--mantine-color-blue-6);
+	border-radius: 0;
+}
+
+.panel {
+	position: relative;
+	display: flex;
+	padding: 4px calc(var(--mantine-spacing-md) + 32px) 4px var(--mantine-spacing-md);
+	border-top: 1px solid var(--mantine-color-default-border);
+	background: var(--nikki-color-page-surface);
+}
+
+/* Floats over the page under the header row instead of taking layout space. */
+.panelFloating {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	left: 0;
+	border-bottom: 1px solid var(--mantine-color-default-border);
+	box-shadow: var(--mantine-shadow-md);
+}
+
+.blocks {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.blocksCollapsed {
+	gap: var(--mantine-spacing-xs);
+	align-items: center;
+}
+
+.block {
+	display: flex;
+	flex-direction: column;
+	flex: none;
+	padding: 0 var(--mantine-spacing-xs);
+	border-right: 1px solid var(--mantine-color-default-border);
+}
+
+.block:last-child {
+	border-right: none;
+}
+
+.blockTitleTop {
+	flex-direction: column-reverse;
+}
+
+.blockItems {
+	display: flex;
+	flex: 1;
+	gap: 2px;
+}
+
+.column {
+	display: flex;
+	flex-direction: column;
+}
+
+.blockTitle {
+	padding: 2px 0;
+	font-size: var(--mantine-font-size-xs);
+	color: var(--mantine-color-dimmed);
+	text-align: center;
+	white-space: nowrap;
+}
+
+.item {
+	flex: none;
+}
+
+.measureRow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: flex;
+	width: max-content;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.toggle {
+	position: absolute;
+	right: var(--mantine-spacing-xs);
+	bottom: 4px;
+}

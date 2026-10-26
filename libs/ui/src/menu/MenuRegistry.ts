@@ -1,5 +1,6 @@
+import { isRibbonMenu } from './ribbon';
 import {
-	IMenuRegistry, MenuConflictError, MenuContribution, MenuRegisterOptions, MenuRegistryManifest,
+	AnyMenuContribution, IMenuRegistry, MenuConflictError, MenuRegisterOptions, MenuRegistryManifest,
 } from './types';
 
 
@@ -16,10 +17,10 @@ import {
  * re-register. `unregister` exists for tests, devtools and a future hot-unload path.
  */
 export class MenuRegistry implements IMenuRegistry {
-	readonly #menus = new Map<string, MenuContribution>();
+	readonly #menus = new Map<string, AnyMenuContribution>();
 	readonly #listeners = new Set<() => void>();
 
-	public register(contribution: MenuContribution, opts?: MenuRegisterOptions): void {
+	public register(contribution: AnyMenuContribution, opts?: MenuRegisterOptions): void {
 		const slug = contribution?.slug;
 		if (!slug) {
 			throw new Error('MenuRegistry.register requires a non-empty slug.');
@@ -42,7 +43,7 @@ export class MenuRegistry implements IMenuRegistry {
 		}
 	}
 
-	public getMenu(slug?: string | null): MenuContribution | undefined {
+	public getMenu(slug?: string | null): AnyMenuContribution | undefined {
 		return slug ? this.#menus.get(slug) : undefined;
 	}
 
@@ -61,7 +62,7 @@ export class MenuRegistry implements IMenuRegistry {
 		const modules = Array.from(this.#menus.values()).map(menu => ({
 			slug: menu.slug,
 			translationNs: menu.translationNs,
-			itemCount: menu.items.length,
+			itemCount: isRibbonMenu(menu) ? menu.tabs.length : menu.items.length,
 		}));
 		return { modules };
 	}

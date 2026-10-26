@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IMenuReader, MenuContribution } from './types';
+import { AnyMenuContribution, IMenuReader } from './types';
 
 
 /**
@@ -12,7 +12,7 @@ import { IMenuReader, MenuContribution } from './types';
  * Never map or translate inside the snapshot — that allocates a new value per call
  * and makes `useSyncExternalStore` loop.
  */
-export function useMenuContribution(registry: IMenuReader, slug?: string | null): MenuContribution | undefined {
+export function useMenuContribution(registry: IMenuReader, slug?: string | null): AnyMenuContribution | undefined {
 	const getSnapshot = React.useCallback(() => registry.getMenu(slug), [registry, slug]);
 	return React.useSyncExternalStore(registry.subscribe, getSnapshot, getSnapshot);
 }

@@ -1,6 +1,6 @@
 import { CommandBus, ICommandBus } from '@nikkierp/common/commandBus';
 import { IEventBus } from '@nikkierp/common/eventBus';
-import { createMenuRegistry, IMenuRegistry, MenuContribution, useMenuContribution } from '@nikkierp/ui/menu';
+import { AnyMenuContribution, createMenuRegistry, IMenuRegistry, useMenuContribution } from '@nikkierp/ui/menu';
 import {
 	HostServices, MicroAppHostContext, MicroAppHostContextValue, MicroAppManager, MicroAppMetadata,
 	useMicroAppHostContext,
@@ -35,7 +35,7 @@ export const useShellEventBus = (): IEventBus => useMicroAppHostContext().host.e
  * guarantees it reads the *host's* registry rather than constructing its own, which would
  * be invisible to every micro-app.
  */
-export function useShellMenu(slug?: string | null): MenuContribution | undefined {
+export function useShellMenu(slug?: string | null): AnyMenuContribution | undefined {
 	return useMenuContribution(useShellMenuRegistry(), slug);
 }
 
