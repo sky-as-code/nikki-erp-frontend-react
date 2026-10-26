@@ -7,19 +7,16 @@ export type StorageFileUrlOptions = {
 };
 
 /**
- * The URL that displays or downloads a stored file by its `*_file_path`, through the BFF, which
- * adds the session; Storage checks the reader's permission on every request.
+ * The URL that displays or downloads a stored file by its id (a record's `*_file_id`), through the
+ * BFF, which adds the session; Storage checks the reader's permission on every request.
  */
-export function storageFileUrl(path: string, options: StorageFileUrlOptions = {}): string {
+export function storageFileUrl(fileId: string, options: StorageFileUrlOptions = {}): string {
 	const baseUrl = RequestMaker.defaultBaseUrl().replace(/\/+$/, '');
-	const query = new URLSearchParams({ path });
-	if (options.download) {
-		query.set('download', '1');
-	}
-	return `${baseUrl}/v1/itstorage/files/download?${query.toString()}`;
+	const query = options.download ? '?download=1' : '';
+	return `${baseUrl}/v1/itstorage/files/${encodeURIComponent(fileId)}/download${query}`;
 }
 
-/** {@link storageFileUrl} for a path read off a record, null when the record holds none. */
-export function storageFileUrlOf(path: unknown, options?: StorageFileUrlOptions): string | null {
-	return typeof path === 'string' && path !== '' ? storageFileUrl(path, options) : null;
+/** {@link storageFileUrl} for a file id read off a record, null when the record holds none. */
+export function storageFileUrlOf(fileId: unknown, options?: StorageFileUrlOptions): string | null {
+	return typeof fileId === 'string' && fileId !== '' ? storageFileUrl(fileId, options) : null;
 }

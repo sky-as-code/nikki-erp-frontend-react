@@ -27,6 +27,7 @@ function fakeContainer(): Container {
 		upstream: {
 			forward: () => undefined,
 			pipeTo: () => Promise.reject(new Error('unused')),
+			streamTo: () => Promise.reject(new Error('unused')),
 			requestJson: () => Promise.reject(new Error('unused')),
 		},
 		sessionCookies: createSessionCookies({ secure: false }),

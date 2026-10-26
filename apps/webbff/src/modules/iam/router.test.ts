@@ -33,6 +33,7 @@ function fakeUpstream(replies: Record<string, Reply>, calls: Call[]): UpstreamCl
 	return {
 		forward: () => undefined,
 		pipeTo: () => Promise.reject(new Error('unused')),
+		streamTo: () => Promise.reject(new Error('unused')),
 		requestJson: async <T>(method: string, path: string, options?: RequestJsonOptions) => {
 			calls.push({ method, path, options });
 			const reply = replies[path];

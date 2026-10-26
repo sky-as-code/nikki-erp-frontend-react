@@ -1,5 +1,8 @@
 import { notifications } from '@mantine/notifications';
+import { withResourceFiles } from '@nikkierp/common/dynamicModel';
 import React from 'react';
+
+import type { RestFiles } from '@nikkierp/common/dynamicModel';
 
 
 export type SavedRecord = {
@@ -125,6 +128,77 @@ export function collectContributions(contributors: UpdatePayloadContributor[]): 
 			return true;
 		},
 	};
+}
+
+/** A file field's edit, staged until the record's own Save: a new file to send, or the stored one cleared. */
+export type StagedFile = { file: File } | { removed: true };
+
+/** A file field taking part in the record's create or update request. */
+export type FileFieldContributor = {
+	/** The record field holding the file id, e.g. `avatar_file_id`. */
+	field: string,
+	/** The staged edit, or `undefined` while the field is untouched. */
+	staged: () => StagedFile | undefined,
+};
+
+export type RegisterFileField = (contributor: FileFieldContributor) => () => void;
+
+export type FileFieldContributions = {
+	/** New files keyed by field: they turn the request into the BFF's multipart resource form. */
+	files: RestFiles,
+	/** Cleared fields, sent as `null` in the JSON payload. */
+	cleared: Record<string, null>,
+};
+
+/**
+ * The file fields of a detail form. Their staged edits travel in the record's own create or update:
+ * no separate upload, and no second request after the save.
+ */
+export function useFileFieldContributors(): {
+	register: RegisterFileField,
+	hasPending: () => boolean,
+	collect: () => FileFieldContributions,
+} {
+	const contributorsRef = React.useRef(new Set<FileFieldContributor>());
+
+	const register = React.useCallback<RegisterFileField>((contributor) => {
+		contributorsRef.current.add(contributor);
+		return () => {
+			contributorsRef.current.delete(contributor);
+		};
+	}, []);
+
+	const hasPending = React.useCallback(
+		() => [...contributorsRef.current].some(contributor => contributor.staged() !== undefined),
+		[],
+	);
+
+	const collect = React.useCallback(() => collectFileFields([...contributorsRef.current]), []);
+
+	return { register, hasPending, collect };
+}
+
+/** Exported for tests: splits the staged edits into files to send and fields to clear. */
+export function collectFileFields(contributors: FileFieldContributor[]): FileFieldContributions {
+	const files: RestFiles = {};
+	const cleared: Record<string, null> = {};
+	contributors.forEach(contributor => {
+		const staged = contributor.staged();
+		if (staged && 'file' in staged) {
+			files[contributor.field] = staged.file;
+		}
+		else if (staged) {
+			cleared[contributor.field] = null;
+		}
+	});
+	return { files, cleared };
+}
+
+/** The create or update command payload carrying the staged file edits. */
+export function withFileFields<TRequest extends Record<string, any>>(
+	request: TRequest, contributions: FileFieldContributions,
+): TRequest {
+	return withResourceFiles({ ...request, ...contributions.cleared }, contributions.files);
 }
 
 export function notifyAfterSaveFailure(error: unknown): void {

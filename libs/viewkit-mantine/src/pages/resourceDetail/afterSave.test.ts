@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { collectContributions } from './afterSave';
+import { collectContributions, collectFileFields, withFileFields } from './afterSave';
+import { toStagedFile } from '../../components/resourceFileField/fileFieldHooks';
 
 
 describe('collectContributions', () => {
@@ -44,5 +45,28 @@ describe('collectContributions', () => {
 		expect(idle).not.toHaveBeenCalled();
 		expect(never).not.toHaveBeenCalled();
 		await expect(collectContributions([{ build: () => ({ key: 1 }) }]).confirm({})).resolves.toBe(true);
+	});
+});
+
+describe('collectFileFields', () => {
+	const file = new File(['x'], 'a.png');
+
+	it('sends chosen files as files and removals as null, skipping untouched fields', () => {
+		const contributions = collectFileFields([
+			{ field: 'avatar_file_id', staged: () => ({ file }) },
+			{ field: 'header_logo_file_id', staged: () => ({ removed: true }) },
+			{ field: 'footer_logo_file_id', staged: () => undefined },
+		]);
+		expect(contributions).toEqual({ files: { avatar_file_id: file }, cleared: { header_logo_file_id: null } });
+		expect(withFileFields({ id: 'U1' }, contributions)).toEqual({
+			id: 'U1', header_logo_file_id: null, __files: { avatar_file_id: file },
+		});
+	});
+
+	it('stages a removal only when a file is stored', () => {
+		expect(toStagedFile(file, true, true)).toEqual({ file });
+		expect(toStagedFile(null, true, true)).toEqual({ removed: true });
+		expect(toStagedFile(null, true, false)).toBeUndefined();
+		expect(toStagedFile(null, false, true)).toBeUndefined();
 	});
 });

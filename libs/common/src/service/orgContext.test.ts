@@ -106,7 +106,7 @@ describe('CrudServiceBase', () => {
 		await service.create({ name: 'a' });
 
 		expect(restApi.search).toHaveBeenCalledWith({ page: 0, org_id: CURRENT_ORG }, undefined);
-		expect(restApi.create).toHaveBeenCalledWith({ name: 'a', org_id: CURRENT_ORG }, undefined);
+		expect(restApi.create).toHaveBeenCalledWith({ name: 'a', org_id: CURRENT_ORG }, undefined, undefined);
 	});
 
 	it('scopes a custom action body through withCurrentOrg', async () => {

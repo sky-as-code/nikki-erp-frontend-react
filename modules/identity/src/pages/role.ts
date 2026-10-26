@@ -121,7 +121,7 @@ function buildAssignmentResources() {
 			searchCommand: UserCommands.SEARCH,
 			initialGraph: { if: ['roles', 'linked', '${id}'] },
 			fields: ['avatar_url', 'display_name', 'email'],
-			fieldRenderers: { avatar_url: { renderer: 'avatar', pathField: 'avatar_file_path' } },
+			fieldRenderers: { avatar_url: { renderer: 'avatar', fileIdField: 'avatar_file_id' } },
 			linkField: 'id',
 			linkRoutePath: 'iam_user',
 			assignment: {

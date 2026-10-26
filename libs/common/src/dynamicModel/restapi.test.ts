@@ -7,32 +7,44 @@ import type { RequestMaker } from '../request/request';
 
 function fakeMaker() {
 	const ok = () => Promise.resolve({ data: { etag: 'e2' }, clientErrors: [] });
-	return { post: vi.fn(ok), put: vi.fn(ok), delete: vi.fn(ok) };
+	return { post: vi.fn(ok), patch: vi.fn(ok) };
 }
 
 function newApi(maker: ReturnType<typeof fakeMaker>): RestApi {
 	return new RestApi({ resourcePath: 'v1/iam/iam_user', requestMaker: maker as unknown as RequestMaker });
 }
 
-describe('RestApi file fields', () => {
-	it('uploads to the BFF route with etag and org in the query and the file as the last part', async () => {
-		const maker = fakeMaker();
-		const file = new File(['png'], 'a.png', { type: 'image/png' });
-		await newApi(maker).uploadFile({ id: 'U1', field: 'avatar', file, replace: true, etag: 'E1', org_id: 'O1' });
+type FormCall = [string, { body: FormData }];
 
-		expect(maker.put).toHaveBeenCalledOnce();
-		type PutCall = [string, { body: FormData, searchParams: unknown }];
-		const [url, options] = maker.put.mock.calls[0] as unknown as PutCall;
-		expect(url).toBe('v0/iam/iam_user/U1/files/avatar');
-		expect(options.searchParams).toEqual({ etag: 'E1', org_id: 'O1' });
-		expect([...options.body.keys()]).toEqual(['org_id', 'name', 'mime_type', 'size_bytes', 'file']);
-		expect(options.body.get('size_bytes')).toBe('3');
+describe('RestApi writes with files', () => {
+	it('sends JSON when no file is chosen', async () => {
+		const maker = fakeMaker();
+		await newApi(maker).update({ id: 'U1', etag: 'E1', avatar_file_id: null }, undefined, {});
+
+		expect(maker.patch).toHaveBeenCalledWith('v1/iam/iam_user/U1', { json: { etag: 'E1', avatar_file_id: null } });
 	});
 
-	it('clears a file through DELETE on the same route', async () => {
+	it('sends the payload part first, with the file sizes, then each file under its field', async () => {
 		const maker = fakeMaker();
-		await newApi(maker).deleteFile({ id: 'U1', field: 'avatar', etag: 'E1' });
+		const file = new File(['png'], 'a.png', { type: 'image/png' });
+		await newApi(maker).update({ id: 'U1', etag: 'E1', org_id: 'O1' }, undefined, { avatar_file_id: file });
 
-		expect(maker.delete).toHaveBeenCalledWith('v0/iam/iam_user/U1/files/avatar', { searchParams: { etag: 'E1' } });
+		const [url, options] = maker.patch.mock.calls[0] as unknown as FormCall;
+		expect(url).toBe('v1/iam/iam_user/U1');
+		expect([...options.body.keys()]).toEqual(['payload', 'avatar_file_id']);
+		expect(JSON.parse(options.body.get('payload') as string)).toEqual({
+			etag: 'E1', org_id: 'O1', __file_sizes: { avatar_file_id: 3 },
+		});
+		expect((options.body.get('avatar_file_id') as File).name).toBe('a.png');
+	});
+
+	it('creates through the same multipart form', async () => {
+		const maker = fakeMaker();
+		const file = new File(['x'], 'm.mp4', { type: 'video/mp4' });
+		await newApi(maker).create({ name: 'M' }, undefined, { media_file_id: file });
+
+		const [url, options] = maker.post.mock.calls[0] as unknown as FormCall;
+		expect(url).toBe('v1/iam/iam_user');
+		expect([...options.body.keys()]).toEqual(['payload', 'media_file_id']);
 	});
 });

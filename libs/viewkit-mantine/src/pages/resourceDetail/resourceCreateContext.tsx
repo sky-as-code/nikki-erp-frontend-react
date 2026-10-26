@@ -5,7 +5,7 @@ import React from 'react';
 import { publishServerErrors } from './publishServerErrors';
 import { useResourceDetailTranslationNs } from './ResourceDetailProvider';
 
-import type { RegisterAfterSave, RegisterUpdatePayload } from './afterSave';
+import type { RegisterAfterSave, RegisterFileField, RegisterUpdatePayload } from './afterSave';
 import type { LinkSpec, ResourceDetailStandardActionCommands, SchemaFieldSpec } from './props';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -23,6 +23,8 @@ export type ResourceCreateContextValue = {
 	onSubmit: (data: Record<string, any>) => void,
 	isSubmitting: boolean,
 	registerAfterSave: RegisterAfterSave,
+	/** A file field's staged edit, sent in the create request itself (multipart when a file is chosen). */
+	registerFileField: RegisterFileField,
 	/**
 	 * v2 only: adds keys to the create request itself, for a section whose rows must be created in
 	 * the same write as the record (e.g. an attribute's values). Same contract as the update one.

@@ -65,7 +65,7 @@ describe('IAM page metadata', () => {
 		const props = page.props as { primary: { props: { fieldRenderers: Record<string, unknown> } } };
 
 		expect(props.primary.props.fieldRenderers).toEqual({
-			avatar_url: { renderer: 'avatar', pathField: 'avatar_file_path' },
+			avatar_url: { renderer: 'avatar', fileIdField: 'avatar_file_id' },
 			status: {
 				renderer: 'badge',
 				prefix: 'status.',
@@ -136,7 +136,7 @@ describe('IAM role page metadata', () => {
 		const [users, groups] = (page.props as { secondary: { props: Detail } }).secondary.props.relatedResources;
 
 		expect(users.fields).toEqual(['avatar_url', 'display_name', 'email']);
-		expect(users.fieldRenderers).toEqual({ avatar_url: { renderer: 'avatar', pathField: 'avatar_file_path' } });
+		expect(users.fieldRenderers).toEqual({ avatar_url: { renderer: 'avatar', fileIdField: 'avatar_file_id' } });
 		expect(groups.fields).toEqual(['name']);
 	});
 

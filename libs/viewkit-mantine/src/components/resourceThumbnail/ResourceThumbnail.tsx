@@ -11,7 +11,7 @@ import {
 	useResourceDetailContext, useResourceDetailTestAttrs,
 } from '../../pages/resourceDetail/ResourceDetailProvider';
 import { useResourceUpdateContext } from '../../pages/resourceDetail/resourceUpdateContext';
-import { useFileFieldAfterSave, useObjectPreviewUrl } from '../resourceFileField/fileFieldHooks';
+import { toStagedFile, useFileFieldContribution, useObjectPreviewUrl } from '../resourceFileField/fileFieldHooks';
 import { useResourceFormView } from '../resourceFormViewContext';
 
 import type { ResourceThumbnailSpec } from './props';
@@ -25,18 +25,18 @@ function readString(record: Record<string, unknown> | undefined, key: string | u
 
 /**
  * The photo of the record a detail page shows, left of its titles. In view mode a click enlarges
- * it; in update mode an overlay opens the upload dialog, and the choice is applied by the page's
- * Save through the same after-save step as `ResourceFileField`.
+ * it; in update mode an overlay opens the upload dialog, and the choice is sent with the page's
+ * Save, in the record's own update request, like `ResourceFileField`'s.
  */
 export function ResourceThumbnail({ spec }: { spec: ResourceThumbnailSpec }): React.ReactNode {
-	const { schemaPack, translationNs } = useResourceDetailContext();
+	const { translationNs } = useResourceDetailContext();
 	const t = useTranslate(translationNs);
 	const testAttrs = useResourceDetailTestAttrs();
 	const context = useResourceUpdateContext();
 	const view = useResourceFormView();
 	const staged = useStagedThumbnail(spec, context.resource, view?.updateMode);
 
-	useFileFieldAfterSave(spec.field, context.registerAfterSave, schemaPack, staged.pending);
+	useFileFieldContribution(spec.fileIdField, context.registerFileField, staged.pending);
 
 	const editable = Boolean(view?.updateMode && context.commands.update);
 	const [dialog, setDialog] = React.useState<'view' | 'edit' | null>(null);
@@ -90,8 +90,9 @@ function useStagedThumbnail(
 		setRemoved(false);
 	}, [resource, updateMode]);
 
-	const fileUrl = storageFileUrlOf(resource?.[spec.pathField]);
-	const fallbackUrl = readString(resource, spec.fallbackUrlField);
+	const fileUrl = storageFileUrlOf(resource?.[spec.fileIdField]);
+	const fallbackUrl = (spec.fallbackFileIdField ? storageFileUrlOf(resource?.[spec.fallbackFileIdField]) : null)
+		?? readString(resource, spec.fallbackUrlField);
 	const apply = React.useCallback((edit: ThumbnailEdit) => {
 		setFile(edit.file);
 		setRemoved(edit.removed);
@@ -100,11 +101,6 @@ function useStagedThumbnail(
 	return {
 		shownUrl: localUrl ?? (removed ? fallbackUrl : fileUrl ?? fallbackUrl),
 		apply,
-		pending: {
-			file,
-			removed,
-			hadFile: Boolean(fileUrl),
-			orgId: readString(resource, 'org_id') ?? undefined,
-		},
+		pending: toStagedFile(file, removed, Boolean(fileUrl)),
 	};
 }

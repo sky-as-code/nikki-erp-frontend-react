@@ -1,8 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
 	clearCrudServices, registerCrudService, registerGenericResourceCommands, resolveService,
-	resourceCommand,
+	resourceCommand, withResourceFiles,
 } from './resourceCommands';
 import { createCommandBus } from '../commandBus';
 import { ok } from '../commandBus/types';
@@ -80,5 +80,28 @@ describe('generic resource commands', () => {
 		});
 
 		expect(response.result?.data).toEqual({ items: ['role-service'] });
+	});
+});
+
+describe('resource write commands with files', () => {
+	it('splits the files off the payload and hands them to the service', async () => {
+		const bus = createCommandBus();
+		registerGenericResourceCommands(bus);
+		const update = vi.fn(async () => ok({ etag: 'e2' }));
+		registerCrudService('iam_user', { update } as unknown as CrudServiceBase);
+		const file = new File(['x'], 'a.png');
+
+		await bus.publish({
+			name: resourceCommand('iam_user', 'update'),
+			payload: withResourceFiles({ id: 'U1', etag: 'E1' }, { avatar_file_id: file }),
+		});
+
+		expect(update).toHaveBeenCalledWith({ id: 'U1', etag: 'E1' }, undefined, { avatar_file_id: file });
+	});
+
+	it('leaves a payload without files untouched', () => {
+		const payload = { id: 'U1' };
+		expect(withResourceFiles(payload, {})).toBe(payload);
+		expect(withResourceFiles(payload, undefined)).toBe(payload);
 	});
 });

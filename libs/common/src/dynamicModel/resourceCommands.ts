@@ -1,6 +1,8 @@
 import { Command, CommandHandler, ICommandBus, ServiceResult } from '../commandBus';
 import { CrudServiceBase, GenericCrudService } from '../service/crudServiceBase';
 
+import type { RestFiles } from './restapi';
+
 
 /**
  * Namespace of the schema-driven CRUD commands.
@@ -56,6 +58,28 @@ export function resourceCommands(schemaName: string): Readonly<ResourceCommandNa
 		MANAGE_M2M: resourceCommand(schemaName, 'manage_m2m'),
 		COMPUTE_FIELD: resourceCommand(schemaName, 'compute_field'),
 	});
+}
+
+/**
+ * Payload key of a create or update command carrying files, keyed by their `<name>_file_id` field. The
+ * handlers split it off and pass it to the service, which sends them in the same request as the record.
+ */
+export const RESOURCE_FILES_KEY = '__files';
+
+/** A create or update command payload with `files` attached; unchanged when there are none. */
+export function withResourceFiles<TPayload extends Record<string, any>>(
+	payload: TPayload, files: RestFiles | undefined,
+): TPayload {
+	return files && Object.keys(files).length > 0 ? { ...payload, [RESOURCE_FILES_KEY]: files } : payload;
+}
+
+/** Splits {@link RESOURCE_FILES_KEY} off a command payload. */
+export function splitResourceFiles(payload: Record<string, any>): [Record<string, any>, RestFiles | undefined] {
+	if (!(RESOURCE_FILES_KEY in payload)) {
+		return [payload, undefined];
+	}
+	const { [RESOURCE_FILES_KEY]: files, ...rest } = payload;
+	return [rest, files as RestFiles];
 }
 
 const services = new Map<string, CrudServiceBase>();
@@ -215,9 +239,9 @@ export function registerResourceCommands(bus: ICommandBus, descriptor: ResourceD
 	const { service } = descriptor;
 	const names = buildResourceCommandNames(descriptor);
 	const byName: Record<string, CommandHandler> = {
-		CREATE: cmd => service.create(payloadOf(cmd)),
+		CREATE: cmd => runAction(service, 'create', payloadOf(cmd)),
 		DELETE: cmd => service.delete(payloadOf(cmd)),
-		UPDATE: cmd => service.update(payloadOf(cmd)),
+		UPDATE: cmd => runAction(service, 'update', payloadOf(cmd)),
 		GET_BY_ID: cmd => service.getById(payloadOf(cmd)),
 		SEARCH: cmd => service.search(payloadOf(cmd)),
 		EXISTS: cmd => service.exists(payloadOf(cmd)),
@@ -241,8 +265,8 @@ function runAction(
 	service: CrudServiceBase, action: ResourceAction, payload: any,
 ): Promise<ServiceResult<unknown>> {
 	switch (action) {
-		case 'create': return service.create(payload);
-		case 'update': return service.update(payload);
+		case 'create': return service.create(...withFilesArgs(payload));
+		case 'update': return service.update(...withFilesArgs(payload));
 		case 'delete': return service.delete(payload);
 		case 'set_is_archived': return service.setIsArchived(payload);
 		case 'manage_m2m': return service.manageM2m(payload, payload.path);
@@ -255,4 +279,9 @@ function runAction(
 		// stays one-per-schema rather than one-per-field.
 		case 'compute_field': return service.computeField(payload, payload.field);
 	}
+}
+
+function withFilesArgs(payload: Record<string, any>): [any, undefined, RestFiles | undefined] {
+	const [request, files] = splitResourceFiles(payload);
+	return [request, undefined, files];
 }

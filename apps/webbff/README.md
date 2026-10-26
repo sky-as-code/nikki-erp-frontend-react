@@ -8,7 +8,9 @@ It replaces `shellbff` for the React tree (`shellbff` stays for the Vue tree) an
    `window.__CLIENT_CONFIG__ = {...}` (every `NIKKI_PUBLIC_*` variable without its prefix, plus `APP_ENV`).
 2. **Proxies the business API** — every `/api/v{n}/**` (n ≥ 1) request is forwarded verbatim to the upstream
    (`/api/v1/iam/iam_user?x=1` → `{UPSTREAM}/v1/iam/iam_user?x=1`), bodies streamed both ways (NDJSON, multipart,
-   xlsx downloads work unbuffered). The upstream call is aborted when the browser disconnects.
+   xlsx downloads work unbuffered). The upstream call is aborted when the browser disconnects. The one rewrite is a
+   resource create/update sent as multipart: its files are streamed to IT Storage and the write goes on as JSON
+   (module `resourceforms`).
 3. **Owns the session cookies** — the browser never sees a token. The access token travels in the httpOnly
    `nikki_at` cookie and is sent upstream as `X-NIKKI-ACCESSTOKEN`.
 
@@ -16,7 +18,7 @@ It replaces `shellbff` for the React tree (`shellbff` stays for the Vue tree) an
 
 | Prefix | Meaning |
 |---|---|
-| `/api/v0/**` | **Frontend-coupled, versionless** BFF APIs. The BFF and its frontend consumer always change together in the same release, so they carry no version. Never forwarded upstream. Today: `GET /api/v0/config`, the file field routes (module `storage`). |
+| `/api/v0/**` | **Frontend-coupled, versionless** BFF APIs. The BFF and its frontend consumer always change together in the same release, so they carry no version. Never forwarded upstream. Today: `GET /api/v0/config`. |
 | `/api/v{n}/**` (n ≥ 1) | Business APIs, **mirroring the business service paths**. Either plain proxy (the default) or a module router (accumulation of several upstream calls, or changed behaviour such as the signin cookie endpoints). The frontend cannot tell which. |
 | other `/api/**` | 404 with the backend error array `[{type:'business',key:'common:err_not_found',message}]`. |
 | anything else | Frontend hosting (assets, then `index.html`). |
@@ -128,7 +130,7 @@ src/main.ts                     bootstrap: config → container → app → list
 src/app.ts                      assembly: CSRF guard, /api/v0, module routers (extension point), generic proxy, hosting
 src/common/config/              env chain and typed AppConfig
 src/common/ioc/container.ts     Container: config, logger, upstream client, session cookies
-src/common/http/                UpstreamClient (forward + pipeTo + requestJson), header allowlists, error-array helpers
+src/common/http/                UpstreamClient (forward + pipeTo + streamTo + requestJson), header allowlists, error arrays
 src/common/proxy/               generic streaming proxy
 src/common/session/             session cookies, CSRF guard
 src/hosting/                    Vite middleware, static files, index.html
@@ -196,24 +198,33 @@ target schema name is `dest_schema_name`. **No module key is serialized** for a 
 
 A new module whose schema prefix differs from its module key needs an entry in `PREFIX_MODULE_KEYS`.
 
-## Module `storage` — resource file fields
+## Module `resourceforms` — resource writes with files
 
-`src/modules/storage/` (factory `storageRouterFactory`, base path `/api/v0`) attaches a file to a resource's
-`<field>_file_path`. Files live in the business service's IT Storage (`/v1/itstorage`); a resource only stores
-the file's path, and the browser displays it through `/api/v1/itstorage/files/download?path=…` (generic proxy).
+`src/modules/resourceforms/` (factory `resourceFormsRouterFactory`, base path `/api/v1`) lets a resource form save its
+fields and its files in **one** request. A resource stores a file by id in a `<name>_file_id` field (marked
+`metadata.file_field` in `meta/schema`); the file itself lives in the business service's IT Storage
+(`/v1/itstorage`), and the browser displays it through `/api/v1/itstorage/files/:id/download` (generic proxy, Range
+supported).
 
 | Endpoint | Behaviour |
 |---|---|
-| `POST\|PUT /api/v0/:module/:schema/:id/files/:field?etag=&org_id=` | Streams the browser's multipart **unparsed and unbuffered** (`upstream.pipeTo`, its `content-type`/boundary unchanged) to `POST /v1/itstorage/files/upload`, then `PATCH /v1/:module/:schema/:id` with `{<field>_file_path, etag, org_id}`. Answers the update result. If the update fails (non-2xx or unreachable), the uploaded file is deleted best-effort (`DELETE /v1/itstorage/files/:file_id?org_id=`) and the update error is returned. A refused upload is returned as-is. |
-| `DELETE /api/v0/:module/:schema/:id/files/:field?etag=&org_id=` | `PATCH /v1/:module/:schema/:id` with `{<field>_file_path: null, etag, org_id}`; the backend deletes the old file after commit. |
+| `POST /api/v1/:module/:schema` (create), `PATCH /api/v1/:module/:schema/:id` (update), `multipart/form-data` only | Reads the form with `busboy` as it arrives. Part `payload` must come **first**: the JSON body, `org_id` and `etag` included, plus `__file_sizes: {<field>: bytes}`. Each following part is one file named by its `<name>_file_id` field (with a filename and content type). Each file is streamed, unbuffered, into a generated Storage form (`org_id`, `name`, `mime_type`, `size_bytes` from `__file_sizes`, then `file`) posted to `POST /v1/itstorage/files/upload` (`upstream.streamTo`); the returned `id` is set into the payload. Once the form is read, the payload minus `__file_sizes` goes to `POST\|PATCH /v1/:module/:schema[/:id]` as JSON (`requestJson`) and the upstream answer is relayed (status and body). |
 
-- **`etag` and `org_id` travel in the query string**, not the form: the multipart is never parsed (no body
-  parser on these routes), so the BFF cannot read text parts without buffering the upload. Missing `etag` →
-  400 `common:err_malformed_request` before any upstream call. The form itself carries Storage's own parts
-  (`org_id`, `name`, `mime_type`, `size_bytes`, then `file` last).
-- `:module` is the module key the browser already has in the resource path (`RestApi`'s `resourcePath`), so no
-  key resolution is needed; `:module`, `:schema`, `:field` must match `^[a-z0-9_]+$`, else 404.
-- The update is `PATCH`, the resource engine's JSON update (`ActionTypeUpdatePatch`); `PUT` would be a replace.
-- The upstream upload is aborted when the browser disconnects. Its response timeout starts once the body is sent,
+- **Everything else falls through** to the generic proxy: a JSON body (the usual write, a cleared file being `null`
+  in it), any other method or path, and `:module === 'itstorage'`, whose own multipart routes are proxied as they are.
+  `:module`, `:schema` must match `^[a-z0-9_]+$` and `:id` `^[A-Za-z0-9_-]+$`, else the request falls through too.
+- **Malformed form** → 400 `common:err_malformed_request`, before any upstream call when detectable: `payload`
+  missing, not first, sent twice or not a JSON object; a file part not named `<name>_file_id`, repeated, or without
+  its `__file_sizes` entry (Storage reserves quota from the declared size before the bytes arrive).
+- **Failure:** the first failure wins and aborts the other in-flight uploads; the rest of the browser's form is
+  still read (and discarded) so the answer reaches it. A refused upload is returned with its status and body (e.g.
+  413 quota exceeded); an upload answering 2xx without an `id`, or unreachable, is 502
+  `common:err_upstream_unavailable`; the record is then never written. There is **no rollback**: a file already
+  uploaded stays `pending` and Storage's lifecycle rule expires it. A file becomes `in_use` only when the record's
+  write that references it commits.
+- **Disconnect:** the in-flight uploads are aborted. Each upload's response timeout starts once its body is sent,
   so a slow upload is not cut off by `NIKKI_BFF_UPSTREAM_TIMEOUT_MS`.
-- Every answer is `Cache-Control: no-store`; unreachable upstream → 502 `common:err_upstream_unavailable`.
+- No body parser on these routes, and every BFF answer is `Cache-Control: no-store`. The CSRF guard applies as on
+  every `/api` write.
+- Client side: `RestApi.create/update(request, primaryResourceId, files)` (`@nikkierp/common/dynamicModel`) builds
+  this form when `files` is non-empty, and sends JSON otherwise.

@@ -5,7 +5,7 @@ import { MetaComponent } from '@nikkierp/viewengine/render';
 import React from 'react';
 import { useParams } from 'react-router';
 
-import { useUpdateAfterSave } from './afterSave';
+import { useFileFieldContributors, useUpdateAfterSave, withFileFields } from './afterSave';
 import { useResourceDetailContext } from './ResourceDetailProvider';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
 import { useEdgeLabelFields } from '../../data/useEdgeLabelFields';
@@ -80,6 +80,8 @@ export function ResourceUpdateProvider(
 	const resource = getByIdCmd.data?.item as Record<string, unknown> | undefined;
 	const afterSave = useUpdateAfterSave(id, resource, refresh);
 	const runAfterUpdate = afterSave.runAfterUpdate;
+	const fileFields = useFileFieldContributors();
+	const collectFileFields = fileFields.collect;
 
 	/**
 	 * Refreshes only on success. A failed save must NOT re-fetch: that would replace
@@ -88,7 +90,7 @@ export function ResourceUpdateProvider(
 	 */
 	const onSubmit = React.useCallback(async (data: Record<string, any>): Promise<boolean> => {
 		if (!commands.update) return false;
-		const response = await publishUpdate(data);
+		const response = await publishUpdate(withFileFields(data, collectFileFields()));
 		const succeeded = response.error == null && (response.result?.clientErrors.length ?? 0) === 0;
 		if (succeeded) {
 			await runAfterUpdate(response.result?.data?.etag, data);
@@ -97,7 +99,7 @@ export function ResourceUpdateProvider(
 		// Reported back so the action bar can leave edit mode only on success: a rejected save has
 		// to keep the user's input on screen, since that is exactly what they need to correct.
 		return succeeded;
-	}, [publishUpdate, commands.update, refresh, runAfterUpdate]);
+	}, [publishUpdate, commands.update, refresh, runAfterUpdate, collectFileFields]);
 
 	const value = React.useMemo(
 		(): ResourceUpdateContextValue => ({
@@ -121,6 +123,8 @@ export function ResourceUpdateProvider(
 			registerAfterSave: afterSave.register,
 			hasPendingAfterSave: afterSave.hasPending,
 			submitAfterSaveOnly: afterSave.submitAfterSaveOnly,
+			registerFileField: fileFields.register,
+			hasPendingFiles: fileFields.hasPending,
 		}),
 		[
 			commands, resource, edgeLabels.destSchemas, getByIdCmd.isPending, updateCmd.isPending,
@@ -129,6 +133,7 @@ export function ResourceUpdateProvider(
 			props.allStatuses, props.currentStatus, props.contextualActions,
 			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.childrenNodes, afterSave.register,
 			afterSave.hasPending, afterSave.isRunning, afterSave.submitAfterSaveOnly,
+			fileFields.register, fileFields.hasPending,
 		],
 	);
 

@@ -9,33 +9,33 @@ import type { IFieldRenderer } from '@nikkierp/viewengine/core';
 export const avatarSpecSchema = z.object({
 	renderer: z.literal('avatar'),
 	/**
-	 * A sibling field of the row holding the preferred image's stored file path, e.g.
-	 * `avatar_file_path`, displayed through Storage's download URL. The column's own value is the
+	 * A sibling field of the row holding the preferred image's stored file id, e.g.
+	 * `avatar_file_id`, displayed through Storage's download URL. The column's own value is the
 	 * fallback when the row has none, and Mantine's placeholder is the fallback after that, also
 	 * when an image fails to load.
 	 */
-	pathField: z.string().min(1).optional(),
+	fileIdField: z.string().min(1).optional(),
 }).strict();
 
 export type AvatarSpec = z.infer<typeof avatarSpecSchema>;
 
 export class AvatarFieldRenderer implements IFieldRenderer {
-	public constructor(private readonly pathField?: string) {}
+	public constructor(private readonly fileIdField?: string) {}
 
 	public render(rawValue: string, _: string): React.ReactNode {
 		return renderAvatar(rawValue);
 	}
 
 	public renderRaw(rawValue: unknown, _textValue: string, record?: Record<string, unknown>): React.ReactNode {
-		return renderAvatar(pickAvatarSrc(this.pathField, rawValue, record));
+		return renderAvatar(pickAvatarSrc(this.fileIdField, rawValue, record));
 	}
 }
 
 /** The download URL of the row's stored file when it has one, else the column's own value. */
 export function pickAvatarSrc(
-	pathField: string | undefined, rawValue: unknown, record?: Record<string, unknown>,
+	fileIdField: string | undefined, rawValue: unknown, record?: Record<string, unknown>,
 ): string | undefined {
-	const preferred = pathField ? storageFileUrlOf(record?.[pathField]) : null;
+	const preferred = fileIdField ? storageFileUrlOf(record?.[fileIdField]) : null;
 	return preferred ?? nonEmptyString(rawValue);
 }
 

@@ -24,9 +24,12 @@ export class RestApi {
 		}
 	}
 
-	public create(request: RestCreateRequest, primaryResourceId?: string): Promise<RequestResult<RestCreateResponse>> {
+	/** With `files`, one multipart request through the BFF, which uploads them and sets their ids. */
+	public create(
+		request: RestCreateRequest, primaryResourceId?: string, files?: RestFiles,
+	): Promise<RequestResult<RestCreateResponse>> {
 		const restPath = this._getBasePath(primaryResourceId);
-		return this._opts.requestMaker!.post<RestCreateResponse>(restPath, { json: request });
+		return this._opts.requestMaker!.post<RestCreateResponse>(restPath, writeBody(request, files));
 	}
 
 	/** `POST {resource}/bulk`: many records under one permission check and one transaction. */
@@ -47,34 +50,6 @@ export class RestApi {
 		return this._opts.requestMaker!.post<RestBulkCreateResponse>(`${restPath}/import`, {
 			body: form,
 			searchParams: request.org_id ? { org_id: request.org_id } : undefined,
-		});
-	}
-
-	/**
-	 * Attaches a file to `<field>_file_path` through the BFF's `v0/.../files/:field` route, which streams
-	 * the form to Storage and then updates the record. The BFF never parses the form, so `etag` and
-	 * `org_id` travel in the query string; the form holds Storage's own parts, `file` last.
-	 */
-	public uploadFile(request: RestUploadFileRequest): Promise<RequestResult<RestMutateResponse>> {
-		const { file } = request;
-		const form = new FormData();
-		if (request.org_id) form.append('org_id', request.org_id);
-		form.append('name', file.name);
-		form.append('mime_type', file.type || 'application/octet-stream');
-		form.append('size_bytes', String(file.size));
-		form.append('file', file, file.name);
-		const url = this._fileFieldPath(request);
-		const options = { body: form, searchParams: fileFieldSearchParams(request) };
-		const maker = this._opts.requestMaker!;
-		return request.replace
-			? maker.put<RestMutateResponse>(url, options)
-			: maker.post<RestMutateResponse>(url, options);
-	}
-
-	/** Clears `<field>_file_path`; the backend deletes the old file. */
-	public deleteFile(request: RestDeleteFileRequest): Promise<RequestResult<RestMutateResponse>> {
-		return this._opts.requestMaker!.delete<RestMutateResponse>(this._fileFieldPath(request), {
-			searchParams: fileFieldSearchParams(request),
 		});
 	}
 
@@ -220,20 +195,13 @@ export class RestApi {
 		return this._opts.requestMaker!.post<RestMutateResponse>(`${restPath}/${id}/archived`, { json: body });
 	}
 
+	/** With `files`, one multipart request through the BFF, which uploads them and sets their ids. */
 	public update(
-		request: RestUpdateRequest, primaryResourceId?: string,
+		request: RestUpdateRequest, primaryResourceId?: string, files?: RestFiles,
 	): Promise<RequestResult<RestMutateResponse>> {
 		const restPath = this._getBasePath(primaryResourceId);
 		const { id, ...body } = request;
-		return this._opts.requestMaker!.patch<RestMutateResponse>(`${restPath}/${id}`, { json: body });
-	}
-
-	private _fileFieldPath(request: { id: string, field: string }): string {
-		if (!this.isTopLevel) {
-			throw new Error('File fields are served for top-level resources only');
-		}
-		const bffPath = this._getBasePath().replace(/^\/?v\d+\//, 'v0/');
-		return `${bffPath}/${request.id}/files/${request.field}`;
+		return this._opts.requestMaker!.patch<RestMutateResponse>(`${restPath}/${id}`, writeBody(body, files));
 	}
 
 	private _getBasePath(primaryResourceId?: string): string {
@@ -264,11 +232,25 @@ export class RestApi {
 
 }
 
-function fileFieldSearchParams(request: { etag?: string, org_id?: string }): Record<string, string> {
-	const searchParams: Record<string, string> = {};
-	if (request.etag) searchParams.etag = request.etag;
-	if (request.org_id) searchParams.org_id = request.org_id;
-	return searchParams;
+/** The BFF's multipart part carrying the JSON body; it must come before the files. */
+export const RESOURCE_FORM_PAYLOAD_PART = 'payload';
+/** Payload key telling the BFF each file's size, which Storage's quota check needs before the bytes. */
+export const RESOURCE_FORM_FILE_SIZES_KEY = '__file_sizes';
+
+/**
+ * JSON when no file is chosen; otherwise the BFF's resource form: part `payload` first (the body plus
+ * `__file_sizes`), then one part per file named by its `<name>_file_id` field.
+ */
+function writeBody(body: Record<string, any>, files?: RestFiles): { json: Record<string, any> } | { body: FormData } {
+	const entries = Object.entries(files ?? {});
+	if (entries.length === 0) {
+		return { json: body };
+	}
+	const sizes = Object.fromEntries(entries.map(([field, file]) => [field, file.size]));
+	const form = new FormData();
+	form.append(RESOURCE_FORM_PAYLOAD_PART, JSON.stringify({ ...body, [RESOURCE_FORM_FILE_SIZES_KEY]: sizes }));
+	entries.forEach(([field, file]) => form.append(field, file, file.name));
+	return { body: form };
 }
 
 // In `fields`, every readable field of the root record, combinable with edge paths. The backend
@@ -325,22 +307,8 @@ export type RestImportMapping = {
 	columns: RestImportColumnMapping[],
 };
 
-export type RestUploadFileRequest = {
-	id: string,
-	/** The field's base name: `avatar` writes `avatar_file_path`. */
-	field: string,
-	file: File,
-	replace: boolean,
-	etag?: string,
-	org_id?: string,
-};
-
-export type RestDeleteFileRequest = {
-	id: string,
-	field: string,
-	etag?: string,
-	org_id?: string,
-};
+/** Files chosen for a create or update, keyed by their `<name>_file_id` field. */
+export type RestFiles = Record<string, File>;
 
 export type RestImportRequest = {
 	file: File,

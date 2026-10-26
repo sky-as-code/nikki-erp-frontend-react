@@ -1,7 +1,7 @@
 import { resourceCommands } from '@nikkierp/common/dynamicModel';
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailV2Props, resourceFileFieldNode, resourceFormColumnNode, resourceImportProps,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps,
 	resourceListV2Props, resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
@@ -92,6 +92,7 @@ function buildProductTemplateDetailProps() {
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'short_name' },
 		backLinkTitle: { linkHref: '../' },
+		thumbnail: { field: 'preview_image', fileIdField: 'preview_image_file_id' },
 		fieldRenderers: buildProductTemplateDetailRenderers(),
 		standardActionCommands: {
 			getById: ProductTemplateCommands.GET_BY_ID,
@@ -120,22 +121,23 @@ function buildTemplateAttributesSection(): ComponentNode {
 }
 
 /**
- * Copy creates a new template with the active configuration (no stock, SKUs or variants), and
- * asserts `copy` besides the create it performs; on success it says so and opens the copy. Re-sync
+ * Duplicate creates a new template with the active configuration (no stock, SKUs or variants) and its
+ * own copy of the preview image, and asserts `duplicate` besides the create it performs; on success it
+ * says so and opens the duplicate. Re-sync
  * re-runs the variant reconcile of the saved configuration, asserting `generate_variants`. Resolve
  * variant is not here: it sits in the Attributes table's toolbar, beside the lines it acts on.
  */
 function buildTemplateContextualActions() {
 	return {
-		copy: {
-			label: 'actions.copy',
-			command: ProductTemplateCommands.COPY,
-			actionCode: 'copy',
+		duplicate: {
+			label: 'actions.duplicate',
+			command: ProductTemplateCommands.DUPLICATE,
+			actionCode: 'duplicate',
 			prompt: {
-				title: 'product_template_copyTitle',
+				title: 'product_template_duplicateTitle',
 				fields: [{ name: 'name', required: false }],
 			},
-			successNotice: 'product_template_copied',
+			successNotice: 'product_template_duplicated',
 			openResult: true,
 		},
 		resyncVariants: {
@@ -205,11 +207,6 @@ function buildProductTemplatePhysicalColumns(): ComponentNode[] {
 			// Defaults a variant inherits when it sets no value of its own. See BR Â§6.4.
 			header: 'form.dimensions',
 			fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
-		}),
-		resourceFileFieldNode({
-			field: 'default_image',
-			pathField: 'default_image_file_path',
-			label: 'fields.default_image_file_path',
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',

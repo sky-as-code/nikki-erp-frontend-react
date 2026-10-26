@@ -46,21 +46,23 @@ export abstract class CrudServiceBase {
 		this.#eventBus = opts.eventBus;
 	}
 
+	/** `files`, keyed by their `<name>_file_id` field, travel in the same request; see `RestApi.create`. */
 	public create(
-		request: dyn.RestCreateRequest, primaryResourceId?: string,
+		request: dyn.RestCreateRequest, primaryResourceId?: string, files?: dyn.RestFiles,
 	): Promise<ServiceResult<dyn.RestCreateResponse>> {
 		return this.emitEvent(
 			'create', () => this.withSchema(async schema =>
-				schema.restApi.create(await this.withOrgScope(schema, request), primaryResourceId)),
+				schema.restApi.create(await this.withOrgScope(schema, request), primaryResourceId, files)),
 		);
 	}
 
+	/** `files`, keyed by their `<name>_file_id` field, travel in the same request; see `RestApi.update`. */
 	public update(
-		request: dyn.RestUpdateRequest, primaryResourceId?: string,
+		request: dyn.RestUpdateRequest, primaryResourceId?: string, files?: dyn.RestFiles,
 	): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.emitEvent(
 			'update', () => this.withSchema(async schema =>
-				schema.restApi.update(await this.withOrgScope(schema, request), primaryResourceId)),
+				schema.restApi.update(await this.withOrgScope(schema, request), primaryResourceId, files)),
 		);
 	}
 

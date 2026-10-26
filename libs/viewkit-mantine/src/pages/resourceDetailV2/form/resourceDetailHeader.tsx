@@ -154,13 +154,14 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 }
 
 /**
- * The save for a form whose own fields are untouched: a section's update-payload contribution
- * (sent as `{id, etag, ...contribution}`), else the after-save hooks alone, else nothing (`null`).
+ * The save for a form whose own fields are untouched: a section's update-payload contribution or a
+ * staged file (sent as `{id, etag, ...contribution}` plus the files), else the after-save hooks alone,
+ * else nothing (`null`).
  */
 function saveWithoutFieldChanges(
 	context: ResourceUpdateContextValue, resource: Record<string, unknown> | undefined,
 ): Promise<boolean> | null {
-	if (context.hasPendingUpdatePayload?.()) {
+	if (context.hasPendingUpdatePayload?.() || context.hasPendingFiles()) {
 		const id = resource?.id;
 		const etag = resource?.etag;
 		if (typeof id !== 'string' || typeof etag !== 'string') {

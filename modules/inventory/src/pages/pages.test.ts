@@ -273,11 +273,11 @@ describe('Product template attribute configuration', () => {
 	});
 
 	/** The codes are copied from the application service's AssertAction calls. */
-	it('offers copy (with a name prompt) and re-sync, locked on the codes the backend asserts', () => {
+	it('offers duplicate (with a name prompt) and re-sync, locked on the codes the backend asserts', () => {
 		const { contextualActions } = detailProps();
 
-		expect(contextualActions.copy).toMatchObject({
-			command: ProductTemplateCommands.COPY, actionCode: 'copy',
+		expect(contextualActions.duplicate).toMatchObject({
+			command: ProductTemplateCommands.DUPLICATE, actionCode: 'duplicate',
 			prompt: { fields: [{ name: 'name', required: false }] },
 		});
 		expect(contextualActions.resyncVariants).toMatchObject({
@@ -286,10 +286,10 @@ describe('Product template attribute configuration', () => {
 	});
 
 	/** SFB-001 / IUX-001: Resolve variant left the page header for the Attributes table's toolbar. */
-	it('keeps only Copy and Re-sync among the contextual actions', () => {
+	it('keeps only Duplicate and Re-sync among the contextual actions', () => {
 		const { contextualActions } = detailProps();
 
-		expect(Object.keys(contextualActions)).toEqual(['copy', 'resyncVariants']);
+		expect(Object.keys(contextualActions)).toEqual(['duplicate', 'resyncVariants']);
 	});
 
 	/** SFB-002: "View variants" is the Variants tab's own link, filtered to the template. */
