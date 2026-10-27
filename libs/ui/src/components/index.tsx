@@ -4,7 +4,7 @@ export * from './ErrorBoundary/ErrorBoundary';
 export * from './ErrorState';
 export * from './form';
 export * from './Input';
-export * from './hoc';
+export * from './Link';
 export * from './Loading';
 export * from './Localized';
 export * from './Modal';

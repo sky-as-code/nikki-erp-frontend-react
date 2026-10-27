@@ -1,4 +1,6 @@
-import { ActionIcon, Anchor, Group, Stack, Text, Title } from '@mantine/core';
+import { ActionIcon, Group, Stack, Title } from '@mantine/core';
+import { capitalizeWords } from '@nikkierp/common/utils';
+import { Breadcrumbs, useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
 import { Button } from '@nikkierp/ui/components';
 import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
@@ -7,7 +9,6 @@ import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconChevronDown, IconChevronRight, IconDeviceFloppy } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
-import { Link } from 'react-router';
 
 import { useDetailFieldDisplay } from './detailFieldDisplay';
 import { isBlockVisible } from './fieldVisibility';
@@ -40,37 +41,20 @@ export function ResourceCreateHeader(headerProps: ResourceCreateHeaderProps = {}
 	const tid = useResourceDetailTestAttrs();
 	const modelSchema = schemaPack?.modelSchema;
 	const resourceName = localize(modelSchema?.label, { count: 99 });
-	const showBackLinkTitle = Boolean(backLinkTitle && modelSchema);
+	// "New brand" takes the list name's capitalisation, in the crumb and in the tab title alike.
+	const title = titleLvl1 ? capitalizeWords(t('form.newResource', { resource: resourceName })) : undefined;
+	const rootParent = backLinkTitle && modelSchema ? { to: backLinkTitle.linkHref, label: resourceName } : undefined;
+	useBreadcrumbsNode({ title });
 
 	return (
 		<Group gap={4} justify='space-between' align='flex-start' wrap='nowrap' className='w-full'>
-			<Stack gap={4}>
-				{/*
-				 * One row, `{link} > {title}`, matching `PageHeader`'s title row on the update page:
-				 * both are the same page in the reader's mind, and stacking the link *under* the
-				 * title here made the two look like different screens.
-				 */}
-				<Group gap='xs' align='center'>
-					{showBackLinkTitle ? (
-						<Anchor
-							component={Link}
-							to={backLinkTitle!.linkHref}
-							relative='path'
-							size='md'
-							className='capitalize'
-							{...tid('breadcrumb')}
-						>
-							{resourceName}
-						</Anchor>
-					) : null}
-					{showBackLinkTitle && titleLvl1 ? <Text c='dimmed'>{'>'}</Text> : null}
-					{titleLvl1 ? (
-						<Title order={3}>
-							<span className='capitalize'>{t('form.newResource', { resource: resourceName })}</span>
-						</Title>
-					) : null}
-				</Group>
-			</Stack>
+			{/* The same breadcrumb row as the update page's header: both are one page in the reader's mind. */}
+			<Breadcrumbs
+				lastNodeLabel={title ?? ''}
+				rootParent={rootParent}
+				className='min-w-0 flex-1'
+				{...tid('breadcrumb')}
+			/>
 			<SplitPaneCloseButton />
 		</Group>
 	);

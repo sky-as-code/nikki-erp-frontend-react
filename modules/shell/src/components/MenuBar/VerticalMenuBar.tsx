@@ -1,9 +1,9 @@
 import { NavLink, Stack } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { Link } from '@nikkierp/ui/components';
 import { TranslateFn } from '@nikkierp/ui/i18n';
 import { MenuItem } from '@nikkierp/ui/menu';
 import React from 'react';
-import { Link } from 'react-router';
 
 import {
 	getPathWithPrefix,
@@ -99,6 +99,7 @@ const VerticalMenuItem: React.FC<VerticalMenuItemProps> = ({
 			<NavLink
 				{...navLinkProps}
 				component={Link}
+				isHistoryRoot
 				to={getPathWithPrefix(item.link, pathPrefix)}
 			>
 				{children}

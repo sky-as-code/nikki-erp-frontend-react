@@ -59,7 +59,7 @@ export { findUngatedActions, useTableActionLocks } from './permissions';
  * For a module's own section on a resource detail page: the record, its edit mode, and the hook
  * that folds the section's drafts into the page's single update request.
  */
-export { useResourceUpdateContext } from './pages/resourceDetail/resourceUpdateContext';
+export { useOptionalResourceUpdateContext, useResourceUpdateContext } from './pages/resourceDetail/resourceUpdateContext';
 export type { ResourceUpdateContextValue } from './pages/resourceDetail/resourceUpdateContext';
 export { useResourceFormView } from './components/resourceFormViewContext';
 export { useDetailSavePayload } from './pages/resourceDetail/savePayloadContext';

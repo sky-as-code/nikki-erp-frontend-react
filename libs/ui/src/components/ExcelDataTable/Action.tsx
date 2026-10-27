@@ -4,7 +4,6 @@ import { escapeHtml } from '@nikkierp/common/utils';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconDots, IconRefresh } from '@tabler/icons-react';
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 import { LockedAnchor } from './actionColumns/LockedAnchor';
 import { ActionsContext, useActionsContext } from './actionsContext';
@@ -13,8 +12,10 @@ import { useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
 import { Button, LinkButton } from '../Button';
 import { useLockedItemProps } from '../ErrorState';
+import { Link } from '../Link/Link';
 
 import type { ActionColumnActionType, SearchItem } from './types';
+import type { LinkMode } from '../../breadcrumbs/trail';
 import type { ButtonProps, LockedProps } from '../Button';
 import type { ICommandBus } from '@nikkierp/common/commandBus';
 import type { ClientErrorTranslator } from '@nikkierp/common/types';
@@ -29,6 +30,13 @@ export type ActionProps = LockedProps & {
 	iconOnly?: boolean,
 	/** Navigates instead of publishing; relative paths resolve against the current route. */
 	href?: string,
+	/** The `href` starts a new breadcrumb trail, e.g. a Create action. */
+	isHistoryRoot?: boolean,
+	/**
+	 * How the `href` joins the breadcrumb trail (`append` for a drill-down such as "View variants");
+	 * defaults to the enclosing `LinkModeScope`. `isHistoryRoot` wins over it.
+	 */
+	navMode?: LinkMode,
 	/**
 	 * `action`: a `Button` firing `onClick`/`command`. `action_link`: a `LinkButton` to `href`.
 	 * `link`: a text `Anchor` to `href`, for a navigation that should not read as an action.
@@ -201,7 +209,11 @@ function ActionButton(props: TriggerProps) {
 		return <ActionAnchor {...props} href={href!} content={content} />;
 	}
 	const button = type === 'action_link'
-		? <LinkButton to={href!} {...shared}>{content}</LinkButton>
+		? (
+			<LinkButton to={href!} isHistoryRoot={props.isHistoryRoot} mode={props.navMode} {...shared}>
+				{content}
+			</LinkButton>
+		)
 		: <Button onClick={onTrigger} {...shared}>{content}</Button>;
 	return iconOnly ? <Tooltip label={label}>{button}</Tooltip> : button;
 }
@@ -218,6 +230,8 @@ function ActionAnchor(props: TriggerProps & { href: string, content: React.React
 			<Anchor
 				component={Link}
 				to={href}
+				isHistoryRoot={props.isHistoryRoot}
+				mode={props.navMode}
 				size='sm'
 				className='inline-flex items-center gap-1'
 				aria-label={iconOnly ? label : undefined}
@@ -238,7 +252,14 @@ function ActionMenuItem(props: TriggerProps) {
 	// A navigating entry is a real link so it stays middle-clickable; the locked props spread last
 	// because their onClick cancels the navigation.
 	if (props.href) {
-		return <Menu.Item component={Link} to={props.href} {...shared} {...lockedProps}>{props.label}</Menu.Item>;
+		return (
+			<Menu.Item
+				component={Link} to={props.href} isHistoryRoot={props.isHistoryRoot} mode={props.navMode}
+				{...shared} {...lockedProps}
+			>
+				{props.label}
+			</Menu.Item>
+		);
 	}
 	return <Menu.Item onClick={props.onTrigger} {...shared} {...lockedProps}>{props.label}</Menu.Item>;
 }

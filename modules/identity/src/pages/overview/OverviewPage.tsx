@@ -9,7 +9,6 @@
 // 	Title,
 // 	ThemeIcon,
 // } from '@mantine/core';
-// import { withWindowTitle } from '@nikkierp/ui/components';
 // import { useMicroAppDispatch, useMicroAppSelector } from '@nikkierp/ui/microApp';
 // import { IconBuilding, IconHierarchy, IconShield, IconUsers } from '@tabler/icons-react';
 // import React from 'react';
@@ -252,4 +251,3 @@
 // 	);
 // };
 
-// export const OverviewPage: React.FC = withWindowTitle('Overview', OverviewPageBody);

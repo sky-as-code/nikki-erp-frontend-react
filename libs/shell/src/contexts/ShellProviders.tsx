@@ -3,6 +3,7 @@ import { IEventBus } from '@nikkierp/common/eventBus';
 import { RequestMaker } from '@nikkierp/common/request';
 import { SESSION_AUTHORIZATION_ERROR_TOPIC } from '@nikkierp/common/service';
 import { ModuleStoreProvider, useServiceLayer } from '@nikkierp/ui/appState/store';
+import { NavHistoryProvider } from '@nikkierp/ui/breadcrumbs';
 import { FormatDefaultsProvider } from '@nikkierp/ui/components';
 import i18n, { initI18n } from '@nikkierp/ui/i18n';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
@@ -26,7 +27,7 @@ import { setEnvVarsAction } from '../config/shellConfigSlice';
 import { shellEventBus } from '../eventBus';
 import { MicroAppHostProvider } from '../microApp';
 import {
-	NavigateEventPayload, routingService, SHELL_EVENTS, useCurrentStoredPath,
+	NavigateEventPayload, routingService, SHELL_EVENTS, shellNodeLabelResolver, useCurrentStoredPath,
 } from '../routing';
 import { ShellEnvVars } from '../types';
 import { useGetUserContext, useLocalSettings } from '../userContext';
@@ -123,7 +124,9 @@ function InnerShellProviders(props: ShellProvidersProps): React.ReactNode {
 			<ApplyStoredLanguage />
 			<FormatDefaultsProvider value={formatDefaultsOf(getUserCxt.data?.accountSettings)}>
 				<MicroAppHostProvider microApps={props.microApps} extraRegistrars={props.extraRegistrars}>
-					{props.children}
+					<NavHistoryProvider resolveNodeLabel={shellNodeLabelResolver}>
+						{props.children}
+					</NavHistoryProvider>
 				</MicroAppHostProvider>
 			</FormatDefaultsProvider>
 		</I18nextProvider>

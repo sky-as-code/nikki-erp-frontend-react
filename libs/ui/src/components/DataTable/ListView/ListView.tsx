@@ -5,11 +5,12 @@ import {
 } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
-import { Link, useResolvedPath } from 'react-router-dom';
+import { useResolvedPath } from 'react-router-dom';
 
 import { getColumnStyle, getColumnWidth, rowNumberColumnWidth } from './columnWidths';
 import classes from './ListView.module.css';
 import { useTranslate } from '../../../i18n';
+import { Link } from '../../Link/Link';
 import {
 	getCellText, getCellValue, getFieldSchema, getRowNumber, isArrayField, renderDataCellContent,
 	shouldUseSingleLineEllipsis,

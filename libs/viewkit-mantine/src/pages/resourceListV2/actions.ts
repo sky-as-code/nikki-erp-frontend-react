@@ -21,6 +21,8 @@ export type ResourceListAction = {
 	/** Explicit backend action code; see `resolveActionCode`. */
 	actionCode?: string,
 	href?: string,
+	/** The `href` starts a new breadcrumb trail (Create). */
+	isHistoryRoot?: boolean,
 	requireSelection?: boolean,
 	supportMultiple?: boolean,
 	collapsed?: boolean,
@@ -38,7 +40,9 @@ export function buildResourceListActions(
 	if (params.createEnabled && baseHref) {
 		// Absolute: the list renders both at `/{org}/{module}/{page}` and, in a split view, at
 		// `/{org}/{module}/{page}/:id`, so a relative href lands elsewhere.
-		actions.push({ kind: 'link', label: t('action.create'), testId: 'create', href: `${baseHref}/new` });
+		actions.push({
+			kind: 'link', label: t('action.create'), testId: 'create', href: `${baseHref}/new`, isHistoryRoot: true,
+		});
 	}
 	if (params.importEnabled && baseHref) {
 		actions.push({ kind: 'link', label: t('action.import'), testId: 'import', href: `${baseHref}/import` });

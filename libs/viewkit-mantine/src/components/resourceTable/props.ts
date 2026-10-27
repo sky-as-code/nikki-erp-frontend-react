@@ -13,6 +13,13 @@ const graphValueSchema: z.ZodType<unknown> = z.lazy(() => z.union([
 ]));
 
 export const initialGraphSchema = z.record(z.string(), graphValueSchema);
+
+/**
+ * How a link a page spec declares joins the breadcrumb trail, `LinkMode` of `@nikkierp/ui/breadcrumbs`:
+ * `append` goes deeper (a record's related list, "View variants"), `sibling` moves sideways and
+ * replaces the last crumb when the target is next to it, `root` starts a new trail.
+ */
+export const navModeSchema = z.enum(['sibling', 'append', 'root']);
 export type InitialGraph = z.infer<typeof initialGraphSchema>;
 
 /**
@@ -29,6 +36,8 @@ export const resourceTableActionSchema = z.object({
 	command: z.string().min(1).optional(),
 	/** Link target, resolved path-relative to the current URL. */
 	routePath: z.string().min(1).optional(),
+	/** How `routePath` joins the breadcrumb trail; absent follows the enclosing scope. */
+	navMode: navModeSchema.optional(),
 	/**
 	 * The backend action code this entry performs, or a `routePath` leads to, when no command verb names it
 	 * (`confirm`, `do_scrap`, `create_return`). Copy it from the application service's
@@ -89,6 +98,11 @@ export const resourceTablePropsSchema = z.object({
 	 * it has. Has no effect without `linkRoutePath`, which names the page to open.
 	 */
 	showViewAll: z.boolean().default(false),
+	/**
+	 * How "View all" joins the breadcrumb trail. `append` by default: the list opened from a record's
+	 * table is a drill-down, shown after the record (`Products / Shipping Carton / Product Variant`).
+	 */
+	viewAllNavMode: navModeSchema.default('append'),
 	/** Toolbar actions appended after Refresh. */
 	extraActions: z.array(resourceTableActionSchema).default([]),
 	/**

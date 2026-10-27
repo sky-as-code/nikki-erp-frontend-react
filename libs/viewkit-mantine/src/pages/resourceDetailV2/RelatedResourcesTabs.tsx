@@ -1,5 +1,6 @@
 import { Alert, Collapse, Group, Stack, Tabs, Title, UnstyledButton } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { LinkModeScope } from '@nikkierp/ui/breadcrumbs';
 import { InsufficientPermissionContent, LoadingState } from '@nikkierp/ui/components';
 import { ExcelDataTable, withLeadingField } from '@nikkierp/ui/components/ExcelDataTable';
 import { useTranslate } from '@nikkierp/ui/i18n';
@@ -47,37 +48,40 @@ export function RelatedResourcesTabs(props: RelatedResourcesTabsProps): React.Re
 	if (resources.length === 0) {
 		return null;
 	}
+	// A record's related lists lead deeper, not sideways: their links append to the trail.
 	return (
-		<Stack component={PaperWithBorder} gap='xs'>
-			<UnstyledButton
-				className={classes.collapsibleHeader}
-				onClick={onToggle}
-				aria-expanded={expanded}
-				{...testAttrs('ui.relatedResources', 'toggle')}
-			>
-				<Group gap='xs'>
-					{expanded ? <IconChevronDown size={18} /> : <IconChevronRight size={18} />}
-					<Title order={4}>
-						{t(header ?? 'datatable.relatedResources', { defaultValue: 'Related resources' })}
-					</Title>
-				</Group>
-			</UnstyledButton>
-			{/*
-				`Collapse` mounts its children even while collapsed -- it animates height -- so the
-				`hasExpanded` latch, not `Collapse`, is what keeps the tables from searching on page
-				load. Once opened the tabs stay mounted, so collapsing never discards tab or page state.
-			*/}
-			{hasExpanded ? (
-				<Collapse expanded={expanded}>
-					{notice ? (
-						<Alert color='blue' icon={<IconInfoCircle />} mb='xs' {...testAttrs('ui.relatedResources', 'notice')}>
-							{t(notice)}
-						</Alert>
-					) : null}
-					<RelatedResourcesTabList resources={resources} />
-				</Collapse>
-			) : null}
-		</Stack>
+		<LinkModeScope mode='append'>
+			<Stack component={PaperWithBorder} gap='xs'>
+				<UnstyledButton
+					className={classes.collapsibleHeader}
+					onClick={onToggle}
+					aria-expanded={expanded}
+					{...testAttrs('ui.relatedResources', 'toggle')}
+				>
+					<Group gap='xs'>
+						{expanded ? <IconChevronDown size={18} /> : <IconChevronRight size={18} />}
+						<Title order={4}>
+							{t(header ?? 'datatable.relatedResources', { defaultValue: 'Related resources' })}
+						</Title>
+					</Group>
+				</UnstyledButton>
+				{/*
+					`Collapse` mounts its children even while collapsed -- it animates height -- so the
+					`hasExpanded` latch, not `Collapse`, is what keeps the tables from searching on page
+					load. Once opened the tabs stay mounted, so collapsing never discards tab or page state.
+				*/}
+				{hasExpanded ? (
+					<Collapse expanded={expanded}>
+						{notice ? (
+							<Alert color='blue' icon={<IconInfoCircle />} mb='xs' {...testAttrs('ui.relatedResources', 'notice')}>
+								{t(notice)}
+							</Alert>
+						) : null}
+						<RelatedResourcesTabList resources={resources} />
+					</Collapse>
+				) : null}
+			</Stack>
+		</LinkModeScope>
 	);
 }
 
@@ -245,6 +249,7 @@ function RelatedActions({ resource, graph, editing }: {
 						: t('datatable.viewAll', { defaultValue: 'View all' })}
 					href={viewAllHrefOf(viewAllHref, resource.viewAllFiltered ? graph : undefined)}
 					type={resource.viewAllType}
+					navMode={resource.viewAllNavMode}
 					testId='viewAll'
 				/>
 			) : null}
@@ -253,6 +258,7 @@ function RelatedActions({ resource, graph, editing }: {
 					key={`${index}:${action.testId ?? action.command ?? action.routePath}`}
 					label={t(action.label)}
 					href={action.routePath}
+					navMode={action.navMode}
 					command={action.command}
 					testId={action.testId ?? action.routePath}
 					selectionMode={action.requireSelection ? (action.supportMultiple ? 'multiple' : 'single') : undefined}

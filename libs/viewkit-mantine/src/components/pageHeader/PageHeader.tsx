@@ -1,5 +1,6 @@
 import { Anchor, getSpacing, Group, Stack, Text, Title } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { Breadcrumbs, useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { componentAttrs } from '@nikkierp/viewengine/core';
@@ -55,14 +56,20 @@ export type PageHeaderViewProps = PageHeaderProps & Partial<ComponentAttributes>
 	 * row's height is what the spacer reserves, so neither box may grow.
 	 */
 	rowSpacing?: MantineSpacing,
+	/**
+	 * Renders the title row as `Breadcrumbs`: `backLinkTitle` becomes the implicit list parent shown
+	 * when nothing precedes the page, `titleLvl1` the last crumb, which also titles the browser tab.
+	 * It also registers the page as a breadcrumb node (`useBreadcrumbsNode`); without it the page is none.
+	 */
+	breadcrumbs?: boolean,
 };
 
 /**
  * `data-component` arrives as a prop rather than being hard-coded, because this view is shared:
  * `resource_detail_header` renders it too and must name its own contribution, not this one.
  *
- * Layout is three rows: `{backLinkTitle link} > {titleLvl1}`, then `titleLvl2`, then `actions`
- * alone.
+ * Layout is three rows: `{backLinkTitle link} > {titleLvl1}` (or the breadcrumbs, with `breadcrumbs`), then
+ * `titleLvl2`, then `actions` alone.
  *
  * The titles and the actions row are **siblings, not nested in a shared wrapper**, and that is
  * load-bearing. `actions` is `position: sticky`, and a sticky element is clamped to its parent's
@@ -73,7 +80,7 @@ export type PageHeaderViewProps = PageHeaderProps & Partial<ComponentAttributes>
  * there is anything left to scroll.
  */
 export function PageHeader({
-	titleLvl1, titleLvl2, backLinkTitle, actions, trailing, leading, rowSpacing, ...attrs
+	titleLvl1, titleLvl2, backLinkTitle, actions, trailing, leading, rowSpacing, breadcrumbs, ...attrs
 }: PageHeaderViewProps): React.ReactNode {
 	const context = usePageHeader();
 	const hasTitleRow = Boolean(backLinkTitle) || Boolean(titleLvl1);
@@ -88,10 +95,13 @@ export function PageHeader({
 				gap={4} justify='space-between' align='flex-start' wrap='nowrap' className='w-full' mb={rowSpacing}
 				{...attrs}
 			>
-				<Group gap='md' align='center' wrap='nowrap'>
+				<Group gap='md' align='center' wrap='nowrap' className={breadcrumbs ? 'min-w-0 flex-1' : undefined}>
 					{leading}
-					<Stack gap={4}>
-						{hasTitleRow ? (
+					<Stack gap={4} className={breadcrumbs ? 'min-w-0 flex-1' : undefined}>
+						{hasTitleRow && breadcrumbs ? (
+							<HeaderBreadcrumbs titleLvl1={titleLvl1} backLinkTitle={backLinkTitle} context={context} />
+						) : null}
+						{hasTitleRow && !breadcrumbs ? (
 							<Group gap='xs' align='center'>
 								{backLinkTitle ? <TitleLink spec={backLinkTitle} context={context} /> : null}
 								{backLinkTitle && titleLvl1 ? <Text c='dimmed'>{'/'}</Text> : null}
@@ -133,6 +143,61 @@ export function PageHeader({
 }
 
 type SpecProps<TSpec> = { spec: TSpec, context: PageHeaderContextValue | null };
+
+type HeaderBreadcrumbsProps = Pick<PageHeaderProps, 'titleLvl1' | 'backLinkTitle'> & {
+	context: PageHeaderContextValue | null,
+};
+
+function HeaderBreadcrumbs({ titleLvl1, backLinkTitle, context }: HeaderBreadcrumbsProps): React.ReactNode {
+	const parent = useHeaderParent(backLinkTitle, context);
+	useBreadcrumbsNode({ title: useTitleSpecText(titleLvl1, context) });
+	// A record title before the record arrives: the crumb shows its skeleton rather than an empty heading.
+	const isPending = Boolean(titleLvl1 && 'schemaField' in titleLvl1 && !context?.record);
+
+	return (
+		<Breadcrumbs
+			lastNodeLabel={titleLvl1 && !isPending ? <TitleText spec={titleLvl1} context={context} /> : undefined}
+			rootParent={parent}
+			{...testAttrs(context?.testId, 'header', 'breadcrumbs')}
+		/>
+	);
+}
+
+/** What `TitleLink` used to show, as the list the page belongs to; its label defaults to the schema's plural. */
+function useHeaderParent(
+	spec: PageHeaderLinkSpec | undefined, context: PageHeaderContextValue | null,
+): { to: string, label: string } | undefined {
+	const t = useTranslate(context?.translationNs ?? '');
+	const localize = useLocalize(context?.translationNs ?? '');
+	const resolved = useRoutePathHref(spec?.linkHref);
+	if (!spec || !resolved) {
+		return undefined;
+	}
+	const label = spec.textKey ? t(spec.textKey) : localize(context?.modelSchema?.label, { count: 99 });
+	return label ? { to: resolved, label } : undefined;
+}
+
+/** `titleLvl1` as plain text for the browser tab; `undefined` until a record title has a record. */
+function useTitleSpecText(
+	spec: PageHeaderTitleSpec | undefined, context: PageHeaderContextValue | null,
+): string | undefined {
+	const t = useTranslate(context?.translationNs ?? '');
+	const localize = useLocalize(context?.translationNs ?? '');
+	if (!spec) {
+		return undefined;
+	}
+	if ('text' in spec) {
+		return spec.text;
+	}
+	if ('textKey' in spec) {
+		return t(spec.textKey, context?.titleParams);
+	}
+	const value: unknown = context?.record?.[spec.schemaField];
+	if (typeof value === 'string' || typeof value === 'number') {
+		return String(value);
+	}
+	return value && typeof value === 'object' ? localize(value as Record<string, string>) || undefined : undefined;
+}
 
 function TitleText({ spec, context }: SpecProps<PageHeaderTitleSpec>): React.ReactNode {
 	const t = useTranslate(context?.translationNs ?? '');

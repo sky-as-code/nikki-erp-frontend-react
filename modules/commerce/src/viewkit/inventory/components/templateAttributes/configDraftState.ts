@@ -1,6 +1,6 @@
 import { notifications } from '@mantine/notifications';
 import { useCommand } from '@nikkierp/ui/hookhoc';
-import { useResourceUpdateContext } from '@nikkierp/viewkit-mantine';
+import { useOptionalResourceUpdateContext } from '@nikkierp/viewkit-mantine';
 import React from 'react';
 
 import { needsConfirmation } from './configPreview';
@@ -23,9 +23,12 @@ export type TemplateRecord = {
 
 /** The saved template, read off the update page: its configuration, etag and reload. */
 export function useTemplateRecord(): TemplateRecord | undefined {
-	const { resource, refresh } = useResourceUpdateContext();
+	// `undefined` on the create page, which renders the Attributes table (and its toolbar) too.
+	const update = useOptionalResourceUpdateContext();
+	const resource = update?.resource;
+	const refresh = update?.refresh;
 	return React.useMemo((): TemplateRecord | undefined => (
-		typeof resource?.id === 'string' && typeof resource.etag === 'string'
+		refresh && typeof resource?.id === 'string' && typeof resource.etag === 'string'
 			? { id: resource.id, etag: resource.etag, configuration: resource.attribute_configuration, refresh }
 			: undefined
 	), [resource, refresh]);

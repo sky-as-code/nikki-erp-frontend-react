@@ -1,4 +1,3 @@
-// import { withWindowTitle } from '@nikkierp/ui/components';
 // import { useMicroAppDispatch } from '@nikkierp/ui/microApp';
 // import React from 'react';
 // import { useTranslation } from 'react-i18next';
@@ -33,7 +32,6 @@
 // 	);
 // }
 
-// export const UserListPage: React.FC = withWindowTitle('User List', UserListPageBody);
 
 
 // function useUserListHandlers() {

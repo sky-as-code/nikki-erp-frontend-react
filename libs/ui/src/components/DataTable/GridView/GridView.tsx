@@ -1,11 +1,12 @@
 import { Anchor, Card, Group, SimpleGrid, Stack, Text } from '@mantine/core';
 import clsx from 'clsx';
 import React from 'react';
-import { Link, useResolvedPath } from 'react-router-dom';
+import { useResolvedPath } from 'react-router-dom';
 
 import classes from './GridView.module.css';
 import { getThumbnailInitials, resolveThumbnailField } from './thumbnail';
 import { useTranslate } from '../../../i18n';
+import { Link } from '../../Link/Link';
 import { getCellText, getCellValue, getFieldSchema, getRowNumber, renderDataCellContent } from '../cellValues';
 import sharedClasses from '../DataTable.module.css';
 import { useDataTableContext } from '../DataTableContext';

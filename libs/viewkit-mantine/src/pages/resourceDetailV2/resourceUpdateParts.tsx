@@ -4,7 +4,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import { translateClientError } from '@nikkierp/common/types';
 // The wrapper rather than Mantine's Button: it carries the `locked` state, and the design system
 // prefers it wherever one exists.
-import { Button } from '@nikkierp/ui/components';
+import { Button, Link } from '@nikkierp/ui/components';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
@@ -13,7 +13,7 @@ import {
 	IconAlertCircle, IconChevronRight, IconDeviceFloppy, IconPencil, IconPlus, IconX,
 } from '@tabler/icons-react';
 import React from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import { useResourceUpdateContext } from './resourceUpdateContext';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
@@ -41,6 +41,7 @@ export function CreateActionButton({ disabled = false }: { disabled?: boolean })
 			component={Link}
 			to='../new'
 			relative='path'
+			isHistoryRoot
 			disabled={disabled}
 			locked={lock.locked}
 			lockedMissing={lock.missing}

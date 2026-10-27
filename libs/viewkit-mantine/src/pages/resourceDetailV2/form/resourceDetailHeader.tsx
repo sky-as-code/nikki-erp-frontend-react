@@ -125,7 +125,7 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 	return (
 		<PageHeaderProvider value={headerContext}>
 			<PageHeader
-				{...componentAttrs(RESOURCE_DETAIL_HEADER_V2)}
+				{...componentAttrs(RESOURCE_DETAIL_HEADER_V2)} breadcrumbs
 				titleLvl1={props.titleLvl1 ?? context.titleLvl1}
 				titleLvl2={props.titleLvl2 ?? context.titleLvl2}
 				backLinkTitle={backLinkTitle && modelSchema ? { linkHref: backLinkTitle.linkHref } : undefined}

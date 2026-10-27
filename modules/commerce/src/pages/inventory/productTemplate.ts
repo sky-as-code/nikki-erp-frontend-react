@@ -237,6 +237,8 @@ function buildTemplateResources() {
 			viewAllFiltered: true,
 			viewAllLabel: 'product_template_config_viewVariants',
 			viewAllType: 'link' as const,
+			// The variant list follows this template in the breadcrumbs: `… / Shipping Carton / Product Variant`.
+			viewAllNavMode: 'append' as const,
 		},
 		{
 			label: 'product_template_sections_vendor_prices',
