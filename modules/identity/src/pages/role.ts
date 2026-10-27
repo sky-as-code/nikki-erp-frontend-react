@@ -6,6 +6,7 @@ import {
 import * as c from '../constants';
 import { GroupCommands } from '../features/group/commands';
 import { RoleCommands } from '../features/role/commands';
+import { ServiceCommands } from '../features/service/commands';
 import { UserCommands } from '../features/user/commands';
 import { rolePermissionsNode } from '../viewkit/props';
 
@@ -92,7 +93,7 @@ function buildRoleFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
+			fields: ['created_at', 'created_by', 'updated_at'],
 		}),
 	]);
 }
@@ -108,8 +109,8 @@ function buildRolePermissionSection(): ComponentNode {
 /**
  * The backend exposes no `/roles/:id/users`; assignment is read through the generic
  * search with the `linked` edge operator, from the principal's side. `roles` is the
- * inverse edge on both iam_user and iam_group. It is written through the role-side
- * `manage_users` / `manage_groups`, which assert what the principal side asserts.
+ * inverse edge on iam_user, iam_service and iam_group. It is written through the role-side
+ * `manage_users` / `manage_services` / `manage_groups`, which assert what the principal side asserts.
  */
 function buildAssignmentResources() {
 	return [
@@ -120,8 +121,8 @@ function buildAssignmentResources() {
 			translationNs: c.IAM_MODULE,
 			searchCommand: UserCommands.SEARCH,
 			initialGraph: { if: ['roles', 'linked', '${id}'] },
-			fields: ['avatar_url', 'display_name', 'email'],
-			fieldRenderers: { avatar_url: { renderer: 'avatar', fileIdField: 'avatar_file_id' } },
+			fields: ['avatar_file_id', 'display_name', 'email'],
+			fieldRenderers: { avatar_file_id: { renderer: 'avatar', fileIdField: 'avatar_file_id' } },
 			linkField: 'id',
 			linkRoutePath: 'iam_user',
 			assignment: {
@@ -133,6 +134,7 @@ function buildAssignmentResources() {
 				btnDeleteLabel: 'common:action.unassign',
 			},
 		},
+		assignedServicesResource(),
 		{
 			label: 'role_sections_assignedGroups',
 			emptyMessage: 'role_assign_emptyGroups',
@@ -152,6 +154,29 @@ function buildAssignmentResources() {
 			},
 		},
 	];
+}
+
+/** Services share the user junction; the role side reads them through `iam_service.roles` and writes them apart. */
+function assignedServicesResource() {
+	return {
+		label: 'role_sections_assignedServices',
+		emptyMessage: 'role_assign_emptyServices',
+		schemaName: c.SERVICE_SCHEMA_NAME,
+		translationNs: c.IAM_MODULE,
+		searchCommand: ServiceCommands.SEARCH,
+		initialGraph: { if: ['roles', 'linked', '${id}'] },
+		fields: ['display_name'],
+		linkField: 'id',
+		linkRoutePath: 'iam_service',
+		assignment: {
+			...assignmentLock(c.SERVICE_SCHEMA_NAME),
+			pickerSchemaName: c.SERVICE_SCHEMA_NAME,
+			manageCommand: RoleCommands.MANAGE_SERVICES,
+			newRowPrompt: 'role_assign_newService',
+			newRowSearchField: 'display_name',
+			btnDeleteLabel: 'common:action.unassign',
+		},
+	};
 }
 
 /** The assert never names an org, so only a tenant grant satisfies it — as on the principal pages. */

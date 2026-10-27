@@ -5,7 +5,7 @@
  * mirror. Keep them identical: what the UI shows and what the API allows must not disagree.
  */
 
-import { buildExpression, omnipotentExpression, ResourceScope, WILDCARD } from './expression';
+import { buildExpression, buildFieldExpression, omnipotentExpression, ResourceScope, WILDCARD } from './expression';
 
 /**
  * What is known about the *caller*, as opposed to `Perm`, which describes the record being reached
@@ -27,6 +27,8 @@ export type EvalContext = {
 export type Perm = {
 	actionCode: string,
 	resourceCode: string,
+	/** Narrows the question to one field of the resource; empty or absent means the whole resource. */
+	fieldName?: string,
 	scope: string,
 	/** The org the record belongs to. Required to answer an org-scoped question. */
 	orgId?: string | null,
@@ -34,7 +36,8 @@ export type Perm = {
 	orgUnitId?: string | null,
 	/**
 	 * Whether the record is the caller's own. Callers whose scope is private must set it; leaving
-	 * it false means "not the caller's record", which denies.
+	 * it false means "not the caller's record", which denies. At any other scope it lets a private
+	 * grant answer too.
 	 */
 	isRecordOwnedByCaller?: boolean,
 };
@@ -48,10 +51,18 @@ function belongsToOrgUnit(evalCtx: EvalContext, orgUnitId?: string | null): bool
 }
 
 /**
- * The four wildcard combinations at one scope, widest last so a reader sees exact-first ordering.
+ * The wildcard combinations at one scope, widest last so a reader sees exact-first ordering: the
+ * field-level ones (if any), then the four resource-level ones. A field grant never carries a
+ * resource wildcard.
  */
 function scopeVariants(required: Perm, scope: string, scopeId?: string | null): string[] {
+	const field = required.fieldName ?? '';
+	const fieldVariants = field === '' ? [] : [
+		buildFieldExpression(required.actionCode, required.resourceCode, field, scope, scopeId),
+		buildFieldExpression(WILDCARD, required.resourceCode, field, scope, scopeId),
+	];
 	return [
+		...fieldVariants,
 		buildExpression(required.actionCode, required.resourceCode, scope, scopeId),
 		buildExpression(WILDCARD, required.resourceCode, scope, scopeId),
 		buildExpression(required.actionCode, WILDCARD, scope, scopeId),
@@ -127,6 +138,11 @@ export function candidateExpressions(required: Perm, evalCtx: EvalContext): stri
 			// private grant answers.
 			candidates.push(...scopeVariants(required, ResourceScope.Private, null));
 			break;
+	}
+
+	// A private grant answers for the caller's own record whatever scope it is checked at.
+	if (required.isRecordOwnedByCaller && required.scope !== ResourceScope.Private) {
+		candidates.push(...scopeVariants(required, ResourceScope.Private, null));
 	}
 
 	return dedupe(candidates);

@@ -17,11 +17,11 @@ import { useNavigate } from 'react-router';
 
 import { useResourceUpdateContext } from './resourceUpdateContext';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
-import { resolveActionCode, StandardActionCode, useActionLock } from '../../permissions';
+import { resolveActionCode, StandardActionCode, useActionLock, useAnyFieldActionLock } from '../../permissions';
 import { ActionPromptModal } from '../resourceDetail/ActionPromptModal';
 import { ComponentContextualAction } from '../resourceDetail/ComponentContextualAction';
 import {
-	useResourceDetailSchemaName, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
+	useResourceDetailContext, useResourceDetailSchemaName, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
 } from '../resourceDetail/ResourceDetailProvider';
 import { ResourceDetailOverflowMenu } from '../resourceDetail/resourceOverflowMenu';
 
@@ -147,8 +147,11 @@ function PrimaryActionButtons({
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const tid = useResourceDetailTestAttrs();
 	// Gating the entry point rather than Save: a caller who may not update should not be able to
-	// enter update mode at all, and Save inside it would then always be reachable.
-	const updateLock = useActionLock(useResourceDetailSchemaName(), StandardActionCode.Update);
+	// enter update mode at all, and Save inside it would then always be reachable. A grant on any
+	// one field opens it; the fields the caller may not update then render locked.
+	const { schemaPack } = useResourceDetailContext();
+	const schemaFields = React.useMemo(() => Object.keys(schemaPack?.modelSchema?.fields ?? {}), [schemaPack]);
+	const updateLock = useAnyFieldActionLock(useResourceDetailSchemaName(), StandardActionCode.Update, schemaFields);
 	if (!updateCommand) {
 		return null;
 	}

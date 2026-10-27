@@ -2,6 +2,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
 import { applyCustomRenderer, findDefaultRenderer, renderDefaultByDataType, renderEnumBadge } from './cellRenderers';
+import { isEdgeMasked } from './maskedFields';
 import i18next, { schemaModuleName } from '../../../i18n';
 import { resolveLangJson } from '../../translatable/langJson';
 import { ENUM_DATA_TYPES, getFieldSchema } from '../filter/filterModel';
@@ -12,9 +13,16 @@ import type { SearchItem } from '../types';
 import type { IFieldRenderer } from '@nikkierp/viewengine/core';
 
 
-export function getCellText(item: SearchItem, field: string, maskedFields: string[]): string {
-	if (maskedFields.includes(field)) {
-		return '********';
+export const MASKED_TEXT = '********';
+
+/**
+ * A cell as plain text (clipboard, column widths, tooltips): `********` for a field the server masked, or a dotted
+ * field reaching through a masked edge, whose value is null on the record.
+ */
+export function getCellText(item: SearchItem, field: string, maskedFields: string[] | null | undefined): string {
+	const masked = maskedFields ?? [];
+	if (masked.includes(field) || (field.includes('.') && isEdgeMasked(masked, field.split('.', 1)[0]))) {
+		return MASKED_TEXT;
 	}
 	return String(getCellValue(item, field) ?? '');
 }
@@ -67,15 +75,15 @@ export function getFieldDataTypeName(
  * The label of the record an edge-id column points at, when the row carries the edge object.
  *
  * A foreign-key column (`product_template_id`) shows its target's `record_label_field` rather
- * than the id, provided the search selected `product_template.{label}`. The resource list, its
- * related-record tabs and the detail page select it for every to-one edge (`withEdgeLabels` on
- * `useResourceSearch`, `useEdgeLabelFields`); without it, the id itself is all there is to show.
+ * than the id, provided the search selected `product_template.{label}`. The BFF's labelled list
+ * (`withEdgeLabels` on `useResourceSearch`) selects it for every to-one edge and names the label
+ * field per edge in `edge_labels`; without it, the id itself is all there is to show.
  */
 export function resolveEdgeLabel(
 	item: SearchItem | undefined,
 	field: string,
 	modelSchema: dyn.ModelSchema | undefined,
-	relatedSchemas: Record<string, dyn.ModelSchema>,
+	edgeLabels: Record<string, string> | undefined,
 	language?: string,
 	translateRef: SchemaRefTranslator = translateSchemaRef,
 ): string | undefined {
@@ -83,7 +91,7 @@ export function resolveEdgeLabel(
 	if (!relation) {
 		return undefined;
 	}
-	const labelField = relatedSchemas[relation.dest_schema_name]?.record_label_field;
+	const labelField = edgeLabels?.[relation.edge];
 	if (!labelField) {
 		return undefined;
 	}

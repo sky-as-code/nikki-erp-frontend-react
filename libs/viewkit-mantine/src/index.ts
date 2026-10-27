@@ -13,8 +13,6 @@ export { PageHeader } from './components/pageHeader/PageHeader';
 export type { PageHeaderViewProps } from './components/pageHeader/PageHeader';
 export { PageHeaderProvider } from './components/pageHeader/pageHeaderContext';
 export type { PageHeaderContextValue } from './components/pageHeader/pageHeaderContext';
-export { ResourceList } from './pages/resourceList/ResourceList';
-export { ResourceDetail } from './pages/resourceDetail/ResourceDetail';
 export { SplitViewBody } from './pages/resourceSplitView/SplitViewBody';
 export { SplitLayout } from './pages/resourceSplitView/SplitLayout';
 
@@ -55,12 +53,15 @@ export {
 	actionRequirement, commandActionCode, resolveActionCode, StandardActionCode, useActionLock, useActionLocks,
 } from './permissions';
 export { findUngatedActions, useTableActionLocks } from './permissions';
+export { useAnyFieldActionLock, useFieldLock, useFieldLocks } from './permissions';
 /**
  * For a module's own section on a resource detail page: the record, its edit mode, and the hook
  * that folds the section's drafts into the page's single update request.
  */
 export { useOptionalResourceUpdateContext, useResourceUpdateContext } from './pages/resourceDetail/resourceUpdateContext';
 export type { ResourceUpdateContextValue } from './pages/resourceDetail/resourceUpdateContext';
+export { useOptionalResourceCreateContext } from './pages/resourceDetail/resourceCreateContext';
+export type { ResourceCreateContextValue } from './pages/resourceDetail/resourceCreateContext';
 export { useResourceFormView } from './components/resourceFormViewContext';
 export { useDetailSavePayload } from './pages/resourceDetail/savePayloadContext';
 export type { DetailSavePayload } from './pages/resourceDetail/savePayloadContext';

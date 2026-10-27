@@ -12,11 +12,11 @@ import { describe, expect, it } from 'vitest';
 
 import { candidateExpressions } from './candidates';
 import {
-	buildExpression, isKnownScope, omnipotentExpression, parseExpression, ResourceScope,
+	buildExpression, buildFieldExpression, isKnownScope, omnipotentExpression, parseExpression, ResourceScope,
 } from './expression';
 import {
-	checkEntitlements, hasEntitlement, requirementFromExpression, requirementToExpression,
-	type EntitlementContext, type EntitlementRequirement,
+	checkAnyFieldEntitlement, checkEntitlements, checkFieldEntitlements, grantedFields, hasEntitlement,
+	requirementFromExpression, requirementToExpression, type EntitlementContext, type EntitlementRequirement,
 } from './guard';
 
 
@@ -155,6 +155,24 @@ describe('parity with requestguard/parity_test.go', () => {
 			expected: false,
 		},
 		{
+			name: "a private grant answers an org question about the caller's own record",
+			grants: ['update:iam_user:private'],
+			required: req('update', 'iam_user', ResourceScope.Org, { orgId: ORG1, isRecordOwnedByCaller: true }),
+			expected: true,
+		},
+		{
+			name: "a private grant does not answer an org question about another's record",
+			grants: ['update:iam_user:private'],
+			required: req('update', 'iam_user', ResourceScope.Org, { orgId: ORG1 }),
+			expected: false,
+		},
+		{
+			name: "a private field grant answers a tenant field question about the caller's own record",
+			grants: ['read:iam_user.email:private'],
+			required: req('read', 'iam_user', ResourceScope.Tenant, { field: 'email', isRecordOwnedByCaller: true }),
+			expected: true,
+		},
+		{
 			name: 'a narrower grant does not satisfy a wider requirement',
 			grants: ['create:iam_user:org/ORG1'],
 			required: req('create', 'iam_user', ResourceScope.Tenant),
@@ -164,6 +182,43 @@ describe('parity with requestguard/parity_test.go', () => {
 			name: 'the wrong action denies',
 			grants: ['view:iam_user:tenant'],
 			required: req('delete', 'iam_user', ResourceScope.Tenant),
+			expected: false,
+		},
+		{
+			name: 'a resource grant answers a field question',
+			grants: ['update:iam_user:tenant'],
+			required: req('update', 'iam_user', ResourceScope.Tenant, { field: 'display_name' }),
+			expected: true,
+		},
+		{
+			name: 'a field grant answers its own field',
+			grants: ['update:iam_user.display_name:tenant'],
+			required: req('update', 'iam_user', ResourceScope.Tenant, { field: 'display_name' }),
+			expected: true,
+		},
+		{
+			name: 'a field grant does not answer another field',
+			grants: ['update:iam_user.display_name:tenant'],
+			required: req('update', 'iam_user', ResourceScope.Tenant, { field: 'email' }),
+			expected: false,
+		},
+		{
+			name: 'a field grant does not answer the whole resource',
+			grants: ['update:iam_user.display_name:tenant'],
+			required: req('update', 'iam_user', ResourceScope.Tenant),
+			expected: false,
+		},
+		{
+			name: "an org field grant answers a member's field question",
+			grants: ['read:iam_user.email:org'],
+			required: req('read', 'iam_user', ResourceScope.Org, { orgId: ORG1, field: 'email' }),
+			ctx: { userOrgIds: [ORG1] },
+			expected: true,
+		},
+		{
+			name: "a private field grant denies someone else's record",
+			grants: ['read:iam_user.email:private'],
+			required: req('read', 'iam_user', ResourceScope.Private, { field: 'email' }),
 			expected: false,
 		},
 		{
@@ -201,14 +256,22 @@ describe('parseExpression', () => {
 	it('round-trips a valid expression', () => {
 		const parsed = parseExpression('create:iam_user:org/ORG1');
 		expect(parsed).toEqual({
-			actionCode: 'create', resourceCode: 'iam_user', scope: 'org', scopeId: 'ORG1',
+			actionCode: 'create', resourceCode: 'iam_user', fieldName: '', scope: 'org', scopeId: 'ORG1',
 		});
 	});
 
 	it('accepts the omnipotent expression', () => {
 		expect(parseExpression('*:*:*')).toEqual({
-			actionCode: '*', resourceCode: '*', scope: '*',
+			actionCode: '*', resourceCode: '*', fieldName: '', scope: '*',
 		});
+	});
+
+	it('round-trips a field-level expression', () => {
+		expect(parseExpression('update:iam_user.display_name:tenant')).toEqual({
+			actionCode: 'update', resourceCode: 'iam_user', fieldName: 'display_name', scope: 'tenant',
+		});
+		expect(buildFieldExpression('update', 'iam_user', 'display_name', ResourceScope.Org, ORG1))
+			.toBe('update:iam_user.display_name:org/ORG1');
 	});
 
 	it.each([
@@ -220,6 +283,12 @@ describe('parseExpression', () => {
 		['wildcard scope without wildcard action', 'create:*:*'],
 		['empty scope id', 'create:iam_user:org/'],
 		['overlong segment', `read:${'a'.repeat(129)}:tenant`],
+		['empty field', 'read:iam_user.:tenant'],
+		['field of no resource', 'read:.display_name:tenant'],
+		['field of any resource', 'read:*.display_name:tenant'],
+		['wildcard field', 'read:iam_user.*:tenant'],
+		['nested field', 'read:iam_user.a.b:tenant'],
+		['non-snake field', 'read:iam_user.Display-Name:tenant'],
 	])('rejects %s', (_name, expr) => {
 		expect(parseExpression(expr)).toBeNull();
 	});
@@ -247,6 +316,18 @@ describe('candidateExpressions', () => {
 		expect(candidates).toEqual([
 			'*:*:*',
 			'create:iam_user:tenant', '*:iam_user:tenant', 'create:*:tenant', '*:*:tenant',
+		]);
+	});
+
+	it('answers a field question with the field grants, then the resource-level ones', () => {
+		const candidates = candidateExpressions(
+			{ actionCode: 'update', resourceCode: 'iam_user', fieldName: 'display_name', scope: ResourceScope.Tenant },
+			{ userOrgIds: [] },
+		);
+		expect(candidates).toEqual([
+			'*:*:*',
+			'update:iam_user.display_name:tenant', '*:iam_user.display_name:tenant',
+			'update:iam_user:tenant', '*:iam_user:tenant', 'update:*:tenant', '*:*:tenant',
 		]);
 	});
 
@@ -287,7 +368,39 @@ describe('checkEntitlements', () => {
 	});
 });
 
+describe('field-level checks', () => {
+	const update = req('update', 'iam_user', ResourceScope.Tenant);
+	const fields = ['display_name', 'email', 'status'];
+
+	it('lets a resource grant cover every field', () => {
+		const ctx = context(['update:iam_user:tenant']);
+		expect(checkFieldEntitlements(update, fields, ctx)).toEqual({ allowed: true, missing: [] });
+		expect(grantedFields(update, fields, ctx)).toEqual(fields);
+	});
+
+	it('names every field a field-only caller lacks, sorted', () => {
+		const ctx = context(['update:iam_user.display_name:tenant']);
+		expect(checkFieldEntitlements(update, ['status', 'display_name', 'email'], ctx)).toEqual({
+			allowed: false, missing: ['update:iam_user.email:tenant', 'update:iam_user.status:tenant'],
+		});
+		expect(grantedFields(update, fields, ctx)).toEqual(['display_name']);
+	});
+
+	it('gates the action on the resource or any one field', () => {
+		expect(checkAnyFieldEntitlement(update, fields, context(['update:iam_user.email:tenant'])).allowed).toBe(true);
+		expect(checkAnyFieldEntitlement(update, fields, context(['update:iam_user.other:tenant']))).toEqual({
+			allowed: false, missing: ['update:iam_user:tenant'],
+		});
+	});
+});
+
 describe('requirementFromExpression', () => {
+	it('keeps the field of a field-level literal', () => {
+		const requirement = requirementFromExpression('update:iam_user.display_name:tenant');
+		expect(requirement).toMatchObject({ resource: 'iam_user', field: 'display_name' });
+		expect(requirementToExpression(requirement!)).toBe('update:iam_user.display_name:tenant');
+	});
+
 	it('parses a literal into a requirement and back', () => {
 		const requirement = requirementFromExpression('update:products:org/ORG1');
 		expect(requirement).toMatchObject({ action: 'update', resource: 'products', scope: 'org', orgId: ORG1 });

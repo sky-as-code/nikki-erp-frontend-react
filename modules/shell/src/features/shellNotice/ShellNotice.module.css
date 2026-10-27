@@ -1,5 +1,7 @@
 /* Above Mantine modals (200), popovers (300) and its toasts (400): an async outcome can land while a modal is open. */
 .container {
+	/* Below the Shell header and a pinned ribbon, which the header publishes; 0 outside the Shell. */
+	top: calc(var(--nikki-header-bottom, 0px) + 1rem);
 	z-index: 1000;
 }
 

@@ -9,12 +9,14 @@
  */
 
 import { candidateExpressions, type EvalContext, type Perm } from './candidates';
-import { buildExpression, parseExpression, ResourceScope } from './expression';
+import { buildFieldExpression, parseExpression, ResourceScope } from './expression';
 
 /** A permission a feature requires, as declared at a call site. */
 export type EntitlementRequirement = {
 	action: string,
 	resource: string,
+	/** One field of the resource; absent for a resource-level requirement. */
+	field?: string,
 	scope: string,
 	orgId?: string | null,
 	orgUnitId?: string | null,
@@ -39,6 +41,7 @@ function toPerm(requirement: EntitlementRequirement): Perm {
 	return {
 		actionCode: requirement.action,
 		resourceCode: requirement.resource,
+		fieldName: requirement.field,
 		scope: requirement.scope,
 		orgId: requirement.orgId,
 		orgUnitId: requirement.orgUnitId,
@@ -53,7 +56,9 @@ export function requirementToExpression(requirement: EntitlementRequirement): st
 		: requirement.scope === ResourceScope.OrgUnit
 			? requirement.orgUnitId
 			: null;
-	return buildExpression(requirement.action, requirement.resource, requirement.scope, scopeId);
+	return buildFieldExpression(
+		requirement.action, requirement.resource, requirement.field ?? '', requirement.scope, scopeId,
+	);
 }
 
 /** Whether the caller holds one requirement. */
@@ -92,6 +97,49 @@ export function checkEntitlements(
 }
 
 /**
+ * Field-level checks, mirroring `field_permission.go`. Grants are additive: a resource grant covers
+ * every field, a field grant (`update:iam_user.display_name:tenant`) covers its field alone.
+ * `requirement.field` is ignored; the fields are passed separately.
+ */
+export function checkFieldEntitlements(
+	requirement: EntitlementRequirement, fields: readonly string[], context: EntitlementContext,
+): EntitlementDecision {
+	const resourceLevel = { ...requirement, field: undefined };
+	if (hasEntitlement(resourceLevel, context)) {
+		return { allowed: true, missing: [] };
+	}
+	const missing = [...new Set(fields)].sort()
+		.map(field => ({ ...resourceLevel, field }))
+		.filter(fieldLevel => !hasEntitlement(fieldLevel, context))
+		.map(requirementToExpression);
+	return { allowed: missing.length === 0, missing };
+}
+
+/** The fields the caller holds the requirement on, in input order. */
+export function grantedFields(
+	requirement: EntitlementRequirement, fields: readonly string[], context: EntitlementContext,
+): string[] {
+	const resourceLevel = { ...requirement, field: undefined };
+	if (hasEntitlement(resourceLevel, context)) {
+		return [...fields];
+	}
+	return fields.filter(field => hasEntitlement({ ...resourceLevel, field }, context));
+}
+
+/**
+ * The action gate of a field-aware operation (built-in create, read, update): the resource grant,
+ * or a grant on at least one field. A refusal names the resource-level expression.
+ */
+export function checkAnyFieldEntitlement(
+	requirement: EntitlementRequirement, fields: readonly string[], context: EntitlementContext,
+): EntitlementDecision {
+	const resourceLevel = { ...requirement, field: undefined };
+	const allowed = hasEntitlement(resourceLevel, context)
+		|| fields.some(field => hasEntitlement({ ...resourceLevel, field }, context));
+	return { allowed, missing: allowed ? [] : [requirementToExpression(resourceLevel)] };
+}
+
+/**
  * Parses a literal like `update:products:org` into a requirement, so a call site may declare one
  * either way. Returns null if the literal is malformed, which callers should treat as "not
  * granted" rather than silently ignoring.
@@ -105,6 +153,7 @@ export function requirementFromExpression(expr: string): EntitlementRequirement 
 	return {
 		action: parsed.actionCode,
 		resource: parsed.resourceCode,
+		field: parsed.fieldName === '' ? undefined : parsed.fieldName,
 		scope: parsed.scope,
 		orgId: parsed.scope === ResourceScope.Org ? scopeId : undefined,
 		orgUnitId: parsed.scope === ResourceScope.OrgUnit ? scopeId : undefined,

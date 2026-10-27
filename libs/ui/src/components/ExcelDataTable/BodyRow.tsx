@@ -229,7 +229,7 @@ type DataCellProps = {
 function DataCell({ field, item, rowId, href, isSelected, withBadge }: DataCellProps) {
 	const { tid } = useExcelDataTableContext();
 	const resolved = useResolvedPath(href ?? '.');
-	const { content, text, fieldSchema, renderer } = useCellDisplay(item, field);
+	const { content, text, fieldSchema, renderer, locked } = useCellDisplay(item, field);
 	const useEllipsis = shouldUseSingleLineEllipsis(text) && !isArrayField(fieldSchema);
 	// A plain click selects the row *and* follows the link, which is what opens the detail pane
 	// beside the list in a split view. Selecting without navigating left the click looking dead on
@@ -238,7 +238,7 @@ function DataCell({ field, item, rowId, href, isSelected, withBadge }: DataCellP
 	// A modified click selects nothing and is left to the browser, which is what keeps Ctrl/Cmd
 	// "open in a new tab" working from a cell.
 	const onMouseDown = useSelectOnlyPress(rowId);
-	const value = href ? (
+	const value = href && !locked ? (
 		<Anchor component={Link} to={resolved.pathname} className={classes.cellLink} tabIndex={-1}>
 			{content}
 		</Anchor>

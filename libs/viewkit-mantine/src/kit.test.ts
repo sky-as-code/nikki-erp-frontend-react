@@ -12,11 +12,12 @@ const DECLARED_IDS = Object.entries(ids)
 
 const TEMPLATE_IDS = DECLARED_IDS.filter(id => id.includes('.pages.templates.'));
 /**
- * `resourceFormTabs.tab` is declared but has no renderer and no caller: tabs are passed to
- * `resourceFormTabs` as props, not placed as nodes. Left out rather than asserted, so this test
- * stays strict about the ids that are meant to be placeable.
+ * Left out rather than asserted, so this test stays strict about the ids that are meant to be
+ * placeable as they are: `resourceFormTabs.tab` has no renderer and no caller (tabs are passed to
+ * `resourceFormTabs` as props), and `resourceForm.column.v1` is only an authoring id that the
+ * detail template retargets to `resourceForm.column.v2` before render.
  */
-const UNREGISTERED_IDS: string[] = [ids.RESOURCE_FORM_TABS_TAB];
+const UNREGISTERED_IDS: string[] = [ids.RESOURCE_FORM_TABS_TAB, ids.RESOURCE_FORM_COLUMN];
 
 const COMPONENT_IDS = DECLARED_IDS
 	.filter(id => id.includes('.components.'))

@@ -10,6 +10,7 @@ import { IconLock } from '@tabler/icons-react';
 import React, { useRef } from 'react';
 
 import { passwordSchema } from './passwordSchema';
+import { SignInClientErrors } from './SignInClientErrors';
 import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
 
 
@@ -24,7 +25,7 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 	const formRef = useRef<HTMLFormElement>(null);
 	const { data: startSignInData } = useStartSignIn();
 	const { dispatchMethod: continueSignIn, result } = useServiceLayer(authService.continueSignIn);
-	const { isPending: isLoading } = result;
+	const { isPending: isLoading, clientErrors } = result;
 	const localize = useLocalize('common');
 
 	const handleSubmit = async (data: { password: string }) => {
@@ -44,7 +45,7 @@ export function PasswordStep({ onBack, ref, isActive = false }: SignInStepProps)
 						<form ref={formRef} onSubmit={formHandleSubmit(handleSubmit)} noValidate>
 							<PasswordStepFormContent
 								onBack={onBack!} ref={ref}
-								isActive={isActive} isLoading={isLoading}
+								isActive={isActive} isLoading={isLoading} clientErrors={clientErrors}
 							/>
 						</form>
 					)}
@@ -66,6 +67,7 @@ function PasswordStepFormContent(props: PasswordStepFormContentProps): React.Rea
 					leftSection: <IconLock size={20} />,
 				}}
 			/>
+			<SignInClientErrors errors={props.clientErrors ?? []} testId={SIGN_IN_PASSWORD_TEST_ID} />
 			<Text size='md' c='dimmed'>Test password: <code>Passwo0rd123</code></Text>
 
 			{props.isActive && (

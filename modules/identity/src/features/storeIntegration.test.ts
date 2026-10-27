@@ -5,6 +5,7 @@ import { identityStore } from '../store';
 import { groupService } from './group/groupService';
 import { orgService } from './organization/orgService';
 import { RoleService, roleService } from './role/roleService';
+import { serviceService } from './service/serviceService';
 import { userService } from './user/userService';
 
 
@@ -17,7 +18,7 @@ describe('identity module store', () => {
 		const state = identityStore.getState();
 
 		expect(Object.keys(state).sort()).toEqual(
-			['GroupService', 'OrgService', 'RoleService', 'UserService', '__moduleStore'],
+			['GroupService', 'OrgService', 'RoleService', 'ServiceService', 'UserService', '__moduleStore'],
 		);
 	});
 
@@ -54,6 +55,8 @@ describe('identity module store', () => {
 		expect(readStoreMethodTag(groupService.getById)?.sliceName).toBe('GroupService');
 		expect(readStoreMethodTag(orgService.getBySlug)?.sliceName).toBe('OrgService');
 		expect(readStoreMethodTag(roleService.manageUsers)?.sliceName).toBe('RoleService');
+		expect(readStoreMethodTag(roleService.manageServices)?.sliceName).toBe('RoleService');
+		expect(readStoreMethodTag(serviceService.getById)?.sliceName).toBe('ServiceService');
 	});
 
 	it('keeps the singletons usable as plain services for the command bus', () => {

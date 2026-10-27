@@ -5,6 +5,7 @@ import { buildIdentityMenu } from './menu';
 import { buildGroupPages } from './pages/group';
 import { buildOrganizationPages } from './pages/organization';
 import { buildRolePages } from './pages/role';
+import { buildServicePages } from './pages/service';
 import { buildUserPages } from './pages/user';
 
 
@@ -20,7 +21,10 @@ describe('buildIdentityMenu', () => {
 
 	it('links only to declared routes', () => {
 		const routes = new Set(
-			[...buildUserPages(), ...buildGroupPages(), ...buildOrganizationPages(), ...buildRolePages()]
+			[
+				...buildUserPages(), ...buildServicePages(), ...buildGroupPages(), ...buildOrganizationPages(),
+				...buildRolePages(),
+			]
 				.map(page => page.routePath),
 		);
 		const links = menu.tabs.flatMap(tab => tab.blocks.flatMap(block => block.items.flatMap(item => (
@@ -28,6 +32,12 @@ describe('buildIdentityMenu', () => {
 		))));
 
 		expect(links.filter(link => !routes.has(link.replace(/^\//, '')))).toEqual([]);
+	});
+
+	it('lists services beside users', () => {
+		const items = menu.tabs[0].blocks[0].items;
+
+		expect(items.map(item => ('link' in item ? item.link : undefined))).toEqual(['/iam_user', '/iam_service', '/iam_group']);
 	});
 
 	it('opens the module on users', () => {

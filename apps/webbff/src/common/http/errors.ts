@@ -15,6 +15,7 @@ export interface BackendError {
 export const ERR_UPSTREAM_UNAVAILABLE = 'common:err_upstream_unavailable';
 export const ERR_NOT_FOUND = 'common:err_not_found';
 export const ERR_MALFORMED_REQUEST = 'common:err_malformed_request';
+export const ERR_UNAUTHENTICATED = 'common:err_unauthenticated';
 
 export class UpstreamUnavailableError extends Error {
 	constructor(message: string, options?: ErrorOptions) {
@@ -42,4 +43,8 @@ export function sendUpstreamUnavailable(res: ServerResponse): void {
 
 export function sendNotFound(res: ServerResponse): void {
 	sendErrors(res, 404, buildErrors('business', ERR_NOT_FOUND, 'The desired data could not be found'));
+}
+
+export function sendUnauthenticated(res: ServerResponse): void {
+	sendErrors(res, 401, buildErrors('authorization', ERR_UNAUTHENTICATED, 'The session is missing or has expired'));
 }

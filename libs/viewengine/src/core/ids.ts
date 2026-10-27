@@ -1,6 +1,6 @@
 /**
  * Contribution ids are `{vendor}.{kit}.{kind}.{name}.v{major}`, e.g.
- *   `nikkierp.mantine.pages.templates.resourceList.v1`
+ *   `nikkierp.mantine.pages.templates.resourceList.v2`
  *   `acme.crm.components.dealPipeline.v1`
  *
  * The engine parses only `{vendor}` (segment 0) to apply the conflict policy;

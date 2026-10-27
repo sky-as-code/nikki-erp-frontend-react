@@ -20,7 +20,7 @@ const PREFIX = `${IAM_MODULE}.${ROLE_SCHEMA_NAME}`;
  *
  * The rest are not CRUD over `iam_role`: `DESCRIBE` reads a role-assignment endpoint the dynamic
  * schema cannot express, and the `MANAGE_*` commands are many-to-many writes whose sub-path is
- * fixed, so callers need send no `path`. `MANAGE_USERS` / `MANAGE_GROUPS` take
+ * fixed, so callers need send no `path`. `MANAGE_USERS` / `MANAGE_SERVICES` / `MANAGE_GROUPS` take
  * `{id, add?, remove?}` with `id` the role. The `SEARCH_*` reads feed the pickers of the role's
  * Entitlements section; its writes ride `UPDATE` as an `entitlements: {add, remove, update}` delta.
  */
@@ -28,6 +28,7 @@ export const RoleCommands = Object.freeze({
 	...resourceCommands(ROLE_SCHEMA_NAME),
 	DESCRIBE: `${PREFIX}.describe_roles`,
 	MANAGE_USERS: `${PREFIX}.manage_role_users`,
+	MANAGE_SERVICES: `${PREFIX}.manage_role_services`,
 	MANAGE_GROUPS: `${PREFIX}.manage_role_groups`,
 	SEARCH_GRANTABLE_RESOURCES: `${PREFIX}.search_grantable_resources`,
 	SEARCH_RESOURCE_ACTIONS: `${PREFIX}.search_resource_actions`,
@@ -46,6 +47,10 @@ export function registerRoleCommands(bus: ICommandBus): () => void {
 		bus.subscribe(RoleCommands.DESCRIBE, cmd => describeRoles(payload<DescribeRolesRequest>(cmd))),
 		bus.subscribe(
 			RoleCommands.MANAGE_USERS, cmd => roleService.manageUsers(payload<t.ManageRolePrincipalsRequest>(cmd)),
+		),
+		bus.subscribe(
+			RoleCommands.MANAGE_SERVICES,
+			cmd => roleService.manageServices(payload<t.ManageRolePrincipalsRequest>(cmd)),
 		),
 		bus.subscribe(
 			RoleCommands.MANAGE_GROUPS, cmd => roleService.manageGroups(payload<t.ManageRolePrincipalsRequest>(cmd)),

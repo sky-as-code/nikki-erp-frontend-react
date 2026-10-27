@@ -71,13 +71,10 @@ export type PageHeaderViewProps = PageHeaderProps & Partial<ComponentAttributes>
  * Layout is three rows: `{backLinkTitle link} > {titleLvl1}` (or the breadcrumbs, with `breadcrumbs`), then
  * `titleLvl2`, then `actions` alone.
  *
- * The titles and the actions row are **siblings, not nested in a shared wrapper**, and that is
- * load-bearing. `actions` is `position: sticky`, and a sticky element is clamped to its parent's
- * box — wrapping both rows in one `Stack` would make that parent end where the header ends, giving
- * the toolbar zero travel and scrolling it away with the titles. As direct children of the page's
- * scroll container (`PageContainer`, which emits the only scrolling box on the page), the sticky
- * row's containing block is the full page instead, so it stays pinned to the top for as long as
- * there is anything left to scroll.
+ * The actions row pins once the titles scroll away. It is `position: fixed`, not sticky, because the
+ * view engine's `display: contents` anchors would give a sticky row zero travel. `usePinnedToolbar`
+ * measures where it goes: the top of the box the page scrolls in, and never above the Shell header,
+ * so a pinned ribbon keeps it in sight.
  */
 export function PageHeader({
 	titleLvl1, titleLvl2, backLinkTitle, actions, trailing, leading, rowSpacing, breadcrumbs, ...attrs

@@ -224,15 +224,24 @@ export function useLocalize(moduleName?: string): LocalizeFn {
  * for `essential_uom` opened from an inventory page — must therefore localize against `essential`,
  * not `inventory`, or every key misses and renders as its raw name.
  *
- * The module is the schema-name prefix, by the `{module}_{entity}` convention. i18next loads the
- * namespace on demand, so naming one the page never used is enough to fetch it.
+ * The module is the one the schema was registered under, else the schema-name prefix by the
+ * `{module}_{entity}` convention. i18next loads the namespace on demand, so naming one the page
+ * never used is enough to fetch it.
  */
 export function useSchemaLocalize(schemaName: string): LocalizeFn {
 	return useLocalize(schemaModuleName(schemaName));
 }
 
-/** The translation namespace of the module owning `schemaName`, by the `{module}_{entity}` convention. */
+/**
+ * The translation namespace of the module owning `schemaName`. The registry comes first because the
+ * prefix is not always the module: `vdmc_themes` belongs to `vendingmachine`, and asking for `vdmc`
+ * is a 400.
+ */
 export function schemaModuleName(schemaName: string): string | undefined {
+	const registered = dyn.schemaModuleOf(schemaName);
+	if (registered) {
+		return registered;
+	}
 	const separatorIdx = schemaName.indexOf('_');
 	return separatorIdx > 0 ? schemaName.slice(0, separatorIdx) : undefined;
 }

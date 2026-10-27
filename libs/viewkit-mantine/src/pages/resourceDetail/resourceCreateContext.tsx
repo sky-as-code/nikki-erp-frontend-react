@@ -50,6 +50,11 @@ export function useResourceCreateContext(): ResourceCreateContextValue {
 	return value;
 }
 
+/** For a module's own section that serves both form modes: `undefined` outside a create form. */
+export function useOptionalResourceCreateContext(): ResourceCreateContextValue | undefined {
+	return React.useContext(ResourceCreateContext);
+}
+
 /**
  * The create provider's side of the server-error routing: `routeServerErrors` publishes the
  * non-field rejections to the Shell Notice stack and hands the field ones to the bound form.

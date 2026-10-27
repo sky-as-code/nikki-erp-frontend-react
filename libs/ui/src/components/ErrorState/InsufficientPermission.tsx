@@ -50,9 +50,6 @@ export function InsufficientPermissionPage(props: InsufficientPermissionPageProp
 
 	return (
 		<ErrorStatePage
-			code='403'
-			colorFrom='red'
-			colorTo='orange'
 			icon={<IconLock size={80} stroke={1.5} style={{ color: 'var(--mantine-color-red-6)', opacity: 0.8 }} />}
 			title={translate('insufficient_permission_title')}
 			message={<InsufficientPermissionContent missing={props.missing} />}

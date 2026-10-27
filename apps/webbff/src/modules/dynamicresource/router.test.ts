@@ -4,6 +4,7 @@ import express from 'express';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { dynamicResourceRouterFactory } from './router';
+import { createSchemaCache } from '../../common/cache/schema_cache';
 import { UpstreamUnavailableError } from '../../common/http/errors';
 import { createConsoleLogger } from '../../common/logging/logger';
 import { createSessionCookies } from '../../common/session/cookies';
@@ -13,6 +14,7 @@ import type { Container } from '../../common/ioc/container';
 import type { AddressInfo } from 'node:net';
 
 
+const SESSION = { cookie: 'nikki_at=tok' };
 let server: http.Server | undefined;
 
 afterEach(() => {
@@ -31,6 +33,7 @@ function fakeContainer(): Container {
 			requestJson: () => Promise.reject(new Error('unused')),
 		},
 		sessionCookies: createSessionCookies({ secure: false }),
+		schemaCache: createSchemaCache({ ttlMs: 0 }),
 	};
 }
 
@@ -68,16 +71,23 @@ describe('dynamicResourceRouterFactory', () => {
 	it('passes a root failure through with its status and body', async () => {
 		const failure: SchemaGraphResult = { status: 403, body: [{ type: 'authorization', key: 'k', message: 'm' }] };
 		const baseUrl = await startApp(async () => failure);
-		const res = await fetch(`${baseUrl}/api/v1/iam/iam_users/meta/schema_graph`);
+		const res = await fetch(`${baseUrl}/api/v1/iam/iam_users/meta/schema_graph`, { headers: SESSION });
 		expect(res.status).toBe(403);
 		expect(await res.json()).toEqual(failure.body);
 	});
 
 	it('answers 502 when the upstream is unreachable', async () => {
 		const baseUrl = await startApp(() => Promise.reject(new UpstreamUnavailableError('down')));
-		const res = await fetch(`${baseUrl}/api/v1/iam/iam_users/meta/schema_graph`);
+		const res = await fetch(`${baseUrl}/api/v1/iam/iam_users/meta/schema_graph`, { headers: SESSION });
 		expect(res.status).toBe(502);
 		expect((await res.json())[0].key).toBe('common:err_upstream_unavailable');
+	});
+
+	it('answers 401 without the access-token cookie, before any (cached) lookup', async () => {
+		const baseUrl = await startApp(() => Promise.reject(new Error('must not be called')));
+		const res = await fetch(`${baseUrl}/api/v1/iam/iam_users/meta/schema_graph`);
+		expect(res.status).toBe(401);
+		expect((await res.json())[0].key).toBe('common:err_unauthenticated');
 	});
 
 	it.each(['/api/v1/IAM/iam_users/meta/schema_graph', '/api/v1/iam/iam-users/meta/schema_graph',

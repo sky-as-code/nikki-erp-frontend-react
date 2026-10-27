@@ -1,6 +1,7 @@
 import {
 	Box, Divider, Flex, Group,
 } from '@mantine/core';
+import { usePublishHeaderBottom } from '@nikkierp/ui/menu';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
 import clsx from 'clsx';
 import React from 'react';
@@ -21,6 +22,8 @@ export const Header: React.FC = () => {
 	const { pathname } = useLocation();
 	const isRootPath = pathname === '/';
 	const [panelSlot, setPanelSlot] = React.useState<HTMLDivElement | null>(null);
+	const [header, setHeader] = React.useState<HTMLDivElement | null>(null);
+	usePublishHeaderBottom(header);
 
 	// Only the row is 50px: a pinned ribbon grows the header below it, and the page under the
 	// header (a flex-1 sibling in PrivateLayout) gives up that height.

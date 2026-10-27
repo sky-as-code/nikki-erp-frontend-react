@@ -6,7 +6,7 @@ import { IAM_MODULE, ROLE_SCHEMA_NAME } from '../../constants';
 import { identityStore } from '../../store';
 
 
-export type RolePrincipalsAction = 'manage_users' | 'manage_groups';
+export type RolePrincipalsAction = 'manage_users' | 'manage_services' | 'manage_groups';
 
 /**
  * `manageM2m` appends its path to the schema's base path (`v1/iam/iam_role`), so the role id goes
@@ -24,7 +24,7 @@ export function toManagePrincipalsCall(request: t.ManageRolePrincipalsRequest, a
 	return { path: `${encodeURIComponent(request.id)}/${action}`, body };
 }
 
-/** CRUD over `iam_role`, plus its many-to-many endpoints (users, groups). */
+/** CRUD over `iam_role`, plus its many-to-many endpoints (users, services, groups). */
 @storeService('RoleService', identityStore)
 export class RoleService extends StoreCrudServiceBase {
 	public constructor() {
@@ -36,6 +36,14 @@ export class RoleService extends StoreCrudServiceBase {
 		request: t.ManageRolePrincipalsRequest,
 	): Promise<ServiceResult<t.ManageRolePrincipalsResponse>> {
 		return this.managePrincipals(request, 'manage_users');
+	}
+
+	/** `iam_role/:id/manage_services`: the same junction as users, under its own route and permission. */
+	@storeAsyncMethod
+	public manageServices(
+		request: t.ManageRolePrincipalsRequest,
+	): Promise<ServiceResult<t.ManageRolePrincipalsResponse>> {
+		return this.managePrincipals(request, 'manage_services');
 	}
 
 	@storeAsyncMethod

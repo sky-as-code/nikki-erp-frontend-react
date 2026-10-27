@@ -5,15 +5,13 @@ import { excelDataTableBodyPropsSchema } from './components/excelDataTableBody/p
 import { pageHeaderPropsSchema } from './components/pageHeader/props';
 import { resourceFileFieldPropsSchema } from './components/resourceFileField/props';
 import { resourceFormTabsPropsSchema } from './components/resourceFormTabs/props';
-import { resourceTablePropsSchema } from './components/resourceTable/props';
 import { settingsItemPropsSchema, settingsSectionPropsSchema } from './components/settings/props';
 import { tabCollapsibleSectionPropsSchema } from './components/tabCollapsibleSection/props';
-import { COLLAPSIBLE_SECTION, EXCEL_DATA_TABLE_BODY, PAGE_HEADER, RESOURCE_DETAIL_TEMPLATE, RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_FILE_FIELD, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_GENERIC_PAGE_TEMPLATE, RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE, RESOURCE_TABLE, SETTINGS_ITEM, SETTINGS_SECTION, TAB_COLLAPSIBLE_SECTION } from './ids';
-import { ownPropertySectionSchema, resourceDetailPropsSchema } from './pages/resourceDetail/props';
+import { COLLAPSIBLE_SECTION, EXCEL_DATA_TABLE_BODY, PAGE_HEADER, RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_FILE_FIELD, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_GENERIC_PAGE_TEMPLATE, RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE, SETTINGS_ITEM, SETTINGS_SECTION, TAB_COLLAPSIBLE_SECTION } from './ids';
+import { ownPropertySectionSchema } from './pages/resourceDetail/props';
 import { resourceDetailV2PropsSchema } from './pages/resourceDetailV2/props';
 import { resourceGenericPagePropsSchema } from './pages/resourceGenericPage/props';
 import { resourceImportPropsSchema } from './pages/resourceImport/props';
-import { resourceListPropsSchema } from './pages/resourceList/props';
 import { resourceListV2PropsSchema } from './pages/resourceListV2/props';
 import { resourceSplitViewPropsSchema } from './pages/resourceSplitView/props';
 
@@ -22,21 +20,16 @@ import type { ExcelDataTableBodyPropsInput } from './components/excelDataTableBo
 import type { PageHeaderPropsInput } from './components/pageHeader/props';
 import type { ResourceFileFieldPropsInput } from './components/resourceFileField/props';
 import type { ResourceFormTabsPropsInput } from './components/resourceFormTabs/props';
-import type { ResourceTablePropsInput } from './components/resourceTable/props';
 import type {
 	SettingsItemPropsInput, SettingsSectionPropsInput,
 } from './components/settings/props';
 import type { TabCollapsibleSectionPropsInput } from './components/tabCollapsibleSection/props';
 import type { OwnPropertySectionInput } from './pages/resourceDetail/props';
-import type {
-	ResourceDetailProps, ResourceDetailPropsInput,
-} from './pages/resourceDetail/props';
 import type { ResourceDetailV2Props, ResourceDetailV2PropsInput } from './pages/resourceDetailV2/props';
 import type {
 	ResourceGenericPageProps, ResourceGenericPagePropsInput,
 } from './pages/resourceGenericPage/props';
 import type { ResourceImportProps, ResourceImportPropsInput } from './pages/resourceImport/props';
-import type { ResourceListProps, ResourceListPropsInput } from './pages/resourceList/props';
 import type { ResourceListV2Props, ResourceListV2PropsInput } from './pages/resourceListV2/props';
 import type { ResourceSplitViewProps } from './pages/resourceSplitView/props';
 import type { ComponentNode, TemplateRef } from '@nikkierp/viewengine/metadata';
@@ -52,24 +45,9 @@ import type { ComponentNode, TemplateRef } from '@nikkierp/viewengine/metadata';
  *
  * Each builder parses eagerly, so a bad page fails where it is authored rather
  * than at render time, and returns a `JSON.stringify`-able object.
- *
- * @deprecated Renders the legacy `DataTable`. Use `resourceListV2Props` (ExcelDataTable); this
- * stays only for the coremart pages not yet migrated.
  */
-export function resourceListProps(input: ResourceListPropsInput): TemplateRef<ResourceListProps> {
-	return { template: RESOURCE_LIST_TEMPLATE, props: resourceListPropsSchema.parse(input) };
-}
-
 export function resourceListV2Props(input: ResourceListV2PropsInput): TemplateRef<ResourceListV2Props> {
 	return { template: RESOURCE_LIST_V2_TEMPLATE, props: resourceListV2PropsSchema.parse(input) };
-}
-
-/**
- * @deprecated Its related tables are the legacy `resourceTableNode`. Use `resourceDetailV2Props`
- * with `relatedResources`; this stays only for the coremart pages not yet migrated.
- */
-export function resourceDetailProps(input: ResourceDetailPropsInput): TemplateRef<ResourceDetailProps> {
-	return { template: RESOURCE_DETAIL_TEMPLATE, props: resourceDetailPropsSchema.parse(input) };
 }
 
 export function resourceDetailV2Props(input: ResourceDetailV2PropsInput): TemplateRef<ResourceDetailV2Props> {
@@ -100,24 +78,10 @@ export function resourceGenericPageProps(
 }
 
 export function resourceSplitViewProps(input: {
-	primary: TemplateRef<ResourceListProps> | TemplateRef<ResourceListV2Props>,
-	secondary: TemplateRef<ResourceDetailProps> | TemplateRef<ResourceDetailV2Props>,
+	primary: TemplateRef<ResourceListV2Props>,
+	secondary: TemplateRef<ResourceDetailV2Props>,
 }): TemplateRef<ResourceSplitViewProps> {
 	return { template: RESOURCE_SPLIT_VIEW_TEMPLATE, props: resourceSplitViewPropsSchema.parse(input) };
-}
-
-/**
- * A related-records table node, for a resource detail page's `childrenNodes`.
- * Returns a `ComponentNode` rather than a `TemplateRef` — `childrenNodes` takes
- * component nodes, not nested templates.
- *
- * @deprecated Renders the legacy `DataTable`. Use `relatedResources` on `resourceDetailV2Props`.
- */
-export function resourceTableNode(input: ResourceTablePropsInput): ComponentNode {
-	return defineComponent({
-		component: RESOURCE_TABLE,
-		props: resourceTablePropsSchema.parse(input) as Record<string, unknown>,
-	});
 }
 
 /**

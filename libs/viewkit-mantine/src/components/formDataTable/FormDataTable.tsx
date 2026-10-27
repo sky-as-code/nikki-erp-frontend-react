@@ -77,7 +77,7 @@ function ScopedFormDataTable(props: FormDataTableProps): React.ReactNode {
 	const search = useFormDataTableSearch(props);
 	const { pack, searchData } = search;
 	const relatedSchemas = useTableRelatedSchemas(
-		pack?.modelSchema, searchData?.desired_fields, search.edgeLabelSchemas,
+		pack?.modelSchema, searchData?.desired_fields,
 	);
 	const data = React.useMemo(
 		() => (searchData && transformItems ? { ...searchData, items: transformItems(searchData.items) } : searchData),

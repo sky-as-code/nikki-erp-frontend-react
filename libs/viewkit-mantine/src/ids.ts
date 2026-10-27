@@ -12,11 +12,9 @@
  */
 export const MANTINE_VIEW_KIT_ID = 'nikkierp.mantine';
 
-export const RESOURCE_LIST_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceList.v1';
-/** The v1 list on the composable `ExcelDataTable`; same props plus `updateCommand` and `viewModes`. */
+/** The resource list on the composable `ExcelDataTable`, with `updateCommand` and `viewModes`. */
 export const RESOURCE_LIST_V2_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceList.v2';
-export const RESOURCE_DETAIL_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceDetails.v1';
-/** The v1 detail plus a related-resources tab section, each tab an `ExcelDataTable`. */
+/** The resource detail, with a related-resources tab section, each tab an `ExcelDataTable`. */
 export const RESOURCE_DETAIL_V2_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceDetails.v2';
 export const RESOURCE_SPLIT_VIEW_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceSplitView.v1';
 export const RESOURCE_IMPORT_TEMPLATE = 'nikkierp.mantine.pages.templates.resourceImport.v1';
@@ -29,26 +27,19 @@ export const RESOURCE_GENERIC_PAGE_TEMPLATE = 'nikkierp.mantine.pages.templates.
 
 export const PAGE_HEADER = 'nikkierp.mantine.components.pageHeader.v1';
 export const COLLAPSIBLE_SECTION = 'nikkierp.mantine.components.collapsibleSection.v1';
-export const RESOURCE_TABLE = 'nikkierp.mantine.components.resourceTable.v1';
 /**
  * `ExcelDataTable`'s row body, so a list template's `list` view mode is a node like any other and
  * a page can swap in its own. Valid only inside an `ExcelDataTable.Provider`, which the enclosing
  * template mounts — it reads every row, column and selection off that context.
  */
 export const EXCEL_DATA_TABLE_BODY = 'nikkierp.mantine.components.excelDataTable.tableBody.v1';
-export const RESOURCE_DETAIL_HEADER = 'nikkierp.mantine.components.resourceDetail.header.v1';
-export const RESOURCE_FORM = 'nikkierp.mantine.components.resourceForm.v1';
 export const RESOURCE_FORM_COLUMN = 'nikkierp.mantine.components.resourceForm.column.v1';
 export const RESOURCE_FILE_FIELD = 'nikkierp.mantine.components.resourceForm.fileField.v1';
-export const RESOURCE_CREATE_HEADER = 'nikkierp.mantine.components.resourceCreate.header.v1';
-export const RESOURCE_CREATE_FORM = 'nikkierp.mantine.components.resourceCreate.form.v1';
 
 /**
- * The v2 form components, registered alongside the v1 set rather than replacing it.
- *
- * A component renderer is registered once per kit, so v1 and v2 cannot share one id and still
- * render different parts. The detail v2 template emits these ids instead, which is what lets it
- * own its own form behaviour without touching a v1 page.
+ * The detail template's form components. Pages author columns with the `.v1` `RESOURCE_FORM_COLUMN`
+ * id, which the detail template retargets to `RESOURCE_FORM_COLUMN_V2`. Nothing renders the `.v1` id
+ * itself, so a column is valid only inside a detail template's `createNodes` / `childrenNodes`.
  */
 export const RESOURCE_DETAIL_HEADER_V2 = 'nikkierp.mantine.components.resourceDetail.header.v2';
 export const RESOURCE_FORM_V2 = 'nikkierp.mantine.components.resourceForm.v2';

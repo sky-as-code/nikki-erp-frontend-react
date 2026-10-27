@@ -13,8 +13,8 @@ import { useAssignmentWriteProps } from './RelatedAssignment';
 import { ResourceUpdateContext } from './resourceUpdateContext';
 import classes from '../../components/collapsibleSection/CollapsibleSection.module.css';
 import { PaperWithBorder } from '../../components/paperWithBorder';
-import { useInterpolatedGraph } from '../../components/resourceTable/ResourceTable';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
+import { useInterpolatedGraph } from '../../data/useInterpolatedGraph';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { useTableRelatedSchemas, useTranslateFieldName } from '../../data/useTableFieldLabels';
@@ -154,7 +154,7 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 	const editing = useIsFormEditing();
 	const testId = resourceTestIdPrefix({ testId: resource.testId, schemaName: resource.schemaName, part: 'Table' });
 	const relatedSchemas = useTableRelatedSchemas(
-		pack?.modelSchema, searchData?.desired_fields, search.edgeLabelSchemas,
+		pack?.modelSchema, searchData?.desired_fields,
 	);
 	const translateFieldName = useTranslateFieldName(resource.translationNs, pack?.modelSchema, relatedSchemas);
 	const emptyMessage = useTranslatedKey(resource.translationNs, resource.emptyMessage);

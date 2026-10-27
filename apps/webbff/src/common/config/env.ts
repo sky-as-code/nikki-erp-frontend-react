@@ -10,6 +10,7 @@ const BFF_PREFIX = 'NIKKI_BFF_';
 export const BFF_API_BASE_URL = '/api';
 const PACKAGE_ROOT = path.resolve(__dirname, '..', '..', '..');
 const DEFAULT_UPSTREAM_TIMEOUT_MS = 30000;
+const DEFAULT_SCHEMA_CACHE_TTL_MINS = 30;
 
 export function loadAppConfig(): AppConfig {
 	const clientRootPath = getBffVar('CLIENT_ROOT_PATH');
@@ -33,6 +34,7 @@ export function loadAppConfig(): AppConfig {
 		upstream: parseUpstream(clientRootPath),
 		cookie: parseCookie(http.httpsEnabled),
 		corsOrigins: splitList(getBffVar('CORS_ORIGINS')),
+		schemaCacheTtlMins: parseSchemaCacheTtlMins(getBffVar('SCHEMA_CACHE_TTL_MINS')),
 	});
 }
 
@@ -80,6 +82,12 @@ function parseUpstream(clientRootPath: string): UpstreamConfig {
 			insecure: getBffVar('UPSTREAM_TLS_INSECURE') === 'true',
 		},
 	};
+}
+
+/** A positive integer number of minutes; anything else (unset, zero, negative, fractional, text) is the default. */
+export function parseSchemaCacheTtlMins(value: string): number {
+	const minutes = Number(value);
+	return value.trim() !== '' && Number.isInteger(minutes) && minutes > 0 ? minutes : DEFAULT_SCHEMA_CACHE_TTL_MINS;
 }
 
 export function parseCookieSecure(value: string, httpsEnabled: boolean): boolean {

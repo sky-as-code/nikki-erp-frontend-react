@@ -112,7 +112,7 @@ function buildStockScrapFieldsSection(): ComponentNode {
 			// move_id is the audit trail from the document to the stock it removed; both are
 			// written by Do Scrap and by nothing else.
 			header: 'form.audit',
-			fields: ['move_id', 'completed_at', 'created_at', 'updated_at'],
+			fields: ['move_id', 'completed_at', 'created_at', 'created_by', 'updated_at'],
 		}),
 	]);
 }

@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { BadgeFieldRenderer, MoneyFieldRenderer } from './cellRenderers';
 import {
-	getCellAlignment, getCellText, getCellValue, getFieldSchema, localizeLangJson, renderDataCellContent,
+	getCellAlignment, getCellText, getCellValue, getFieldSchema, localizeLangJson, MASKED_TEXT, renderDataCellContent,
 	resolveEdgeLabel,
 } from './cellValues';
+import { maskedFieldMissing } from './maskedFields';
 import { schemaNamespaces, translateSchemaFieldName } from '../fieldLabels';
 
 import type { TranslateFn } from '../../../i18n';
@@ -90,15 +91,17 @@ describe('getFieldSchema', () => {
 });
 
 describe('resolveEdgeLabel', () => {
+	const edgeLabels = { product_template: 'name' };
+
 	it('shows the target record label for a foreign-key column when the edge object is present', () => {
 		const row = { product_template_id: '01H', product_template: { name: 'Coca Cola' } };
-		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, related)).toBe('Coca Cola');
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, edgeLabels)).toBe('Coca Cola');
 	});
 
 	it('localizes a lang-json label, falling back to another language before giving up', () => {
 		const row = { product_template_id: '01H', product_template: { name: { 'en-US': 'Cola', 'vi-VN': 'Nước ngọt' } } };
-		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, related, 'vi-VN')).toBe('Nước ngọt');
-		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, related, 'fr-FR')).toBe('Cola');
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, edgeLabels, 'vi-VN')).toBe('Nước ngọt');
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, edgeLabels, 'fr-FR')).toBe('Cola');
 	});
 
 	it('translates a `$ref` record label against the module owning the edge schema', () => {
@@ -108,22 +111,22 @@ describe('resolveEdgeLabel', () => {
 			calls.push(`${schemaName}:${key}`);
 			return key === 'tpl.cola' ? 'Cô-ca' : undefined;
 		};
-		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, related, 'vi-VN', translate)).toBe('Cô-ca');
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, edgeLabels, 'vi-VN', translate)).toBe('Cô-ca');
 		expect(calls).toEqual(['inventory_product_template:tpl.cola']);
 	});
 
 	it('falls back to the texts of a `$ref` record label whose key is not translated', () => {
 		const row = { product_template_id: '01H', product_template: { name: { $ref: 'tpl.cola', 'en-US': 'Cola' } } };
-		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, related, 'vi-VN', () => undefined))
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, edgeLabels, 'vi-VN', () => undefined))
 			.toBe('Cola');
 	});
 
-	it('is undefined when the column is not a foreign key, the schema is missing or the edge was not selected', () => {
+	it('is undefined when the column is not a foreign key, no label field is named or the edge was not selected', () => {
 		const row = { product_template_id: '01H' };
-		expect(resolveEdgeLabel(row, 'sku', variantSchema, related)).toBeUndefined();
-		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, {})).toBeUndefined();
-		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, related)).toBeUndefined();
-		expect(resolveEdgeLabel(row, 'product_template_id', undefined, related)).toBeUndefined();
+		expect(resolveEdgeLabel(row, 'sku', variantSchema, edgeLabels)).toBeUndefined();
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, undefined)).toBeUndefined();
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, edgeLabels)).toBeUndefined();
+		expect(resolveEdgeLabel(row, 'product_template_id', undefined, { product_template: 'name' })).toBeUndefined();
 	});
 });
 
@@ -231,5 +234,38 @@ describe('translateSchemaFieldName', () => {
 		expect(schemaNamespaces(entitlementSchema, { ...related, iam_resource: templateSchema })).toEqual([
 			'iam', 'inventory',
 		]);
+	});
+});
+
+describe('masked cells', () => {
+	const userSchema = {
+		name: 'iam_user',
+		fields: {},
+		to_relations: [
+			{ edge: 'org_unit', src_field: 'org_unit_id', dest_schema_name: 'iam_orgunit', relation_type: 'many:one' },
+		],
+	} as unknown as dyn.ModelSchema;
+
+	it('locks a masked field on its own field-level grant', () => {
+		expect(maskedFieldMissing(userSchema, 'email', ['email'])).toEqual(['read:iam_user.email:org']);
+	});
+
+	it('locks a dotted field and the foreign key whose edge is masked, on the destination read grant', () => {
+		expect(maskedFieldMissing(userSchema, 'org_unit.name', ['org_unit.name'])).toEqual(['read:iam_orgunit:org']);
+		expect(maskedFieldMissing(userSchema, 'org_unit.code', ['org_unit'])).toEqual(['read:iam_orgunit:org']);
+		expect(maskedFieldMissing(userSchema, 'org_unit_id', ['org_unit.name'])).toEqual(['read:iam_orgunit:org']);
+	});
+
+	it('leaves unmasked fields alone', () => {
+		expect(maskedFieldMissing(userSchema, 'email', [])).toBeNull();
+		expect(maskedFieldMissing(userSchema, 'org_unit_id', ['org_unitx'])).toBeNull();
+		expect(maskedFieldMissing(userSchema, 'email', null)).toBeNull();
+		expect(maskedFieldMissing(undefined, 'email', ['email'])).toBeNull();
+	});
+
+	it('keeps text for the clipboard: masked fields and fields through a masked edge read as stars', () => {
+		expect(getCellText({ email: null }, 'email', ['email'])).toBe(MASKED_TEXT);
+		expect(getCellText({ org_unit: null }, 'org_unit.code', ['org_unit.name'])).toBe(MASKED_TEXT);
+		expect(getCellText({ org_unit_id: 'O1' }, 'org_unit_id', ['org_unit.name'])).toBe('O1');
 	});
 });

@@ -1,5 +1,9 @@
 .header {
 	position: relative;
+	/*
+	 * Above the pinned page toolbar (app - 10) and below modal dialogs (modal): the header and both
+	 * ribbon modes share this stacking context, so a floating ribbon panel covers the toolbar.
+	 */
 	z-index: var(--mantine-z-index-app);
 	flex: none;
 }

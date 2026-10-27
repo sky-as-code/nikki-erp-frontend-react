@@ -39,6 +39,13 @@ describe('resourceListV2PropsSchema', () => {
 		expect(parsed.viewModes).toHaveLength(2);
 	});
 
+	it('accepts a static graph beside the editable initial graph', () => {
+		const parsed = resourceListV2PropsSchema.parse({
+			...base, staticGraph: { if: ['type', '=', 'user'] }, initialGraph: { if: ['status', '=', 'active'] },
+		});
+		expect(parsed.staticGraph).toEqual({ if: ['type', '=', 'user'] });
+	});
+
 	it('rejects unknown keys and an empty view mode list', () => {
 		expect(() => resourceListV2PropsSchema.parse({ ...base, archiveComand: 'x' })).toThrow();
 		expect(() => resourceListV2PropsSchema.parse({ ...base, viewModes: [] })).toThrow();

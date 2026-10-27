@@ -5,8 +5,9 @@
  * agree — a permission system whose "can I?" and "may I?" answers differ is a security defect,
  * not an inconsistency — so `expression.test.ts` mirrors the Go table tests case for case.
  *
- * Shape: `{action}:{resource}:{scope}[/{scopeId}]`, where action and resource may be the wildcard
- * `*`, and only the org / orgunit scopes carry an id.
+ * Shape: `{action}:{resource}[.{field}]:{scope}[/{scopeId}]`, where action and resource may be the
+ * wildcard `*`, the optional field narrows the grant to one field of a named resource, and only the
+ * org / orgunit scopes carry an id.
  */
 
 /** Matches any action or any resource. */
@@ -17,6 +18,12 @@ export const WILDCARD = '*';
  * identifiers and scope ids are ULIDs.
  */
 const MAX_SEGMENT_LENGTH = 128;
+
+/** Splits a field-level resource segment `{resource}.{field}`. */
+export const FIELD_SEPARATOR = '.';
+
+/** A field name is one snake-case identifier: no wildcard, no second separator. */
+const FIELD_NAME_PATTERN = /^[a-z0-9_]+$/;
 
 export const ResourceScope = {
 	Tenant: 'tenant',
@@ -37,6 +44,8 @@ export function isKnownScope(scope: string): scope is ResourceScope {
 export type ParsedExpression = {
 	actionCode: string,
 	resourceCode: string,
+	/** Empty for a resource-level expression. */
+	fieldName: string,
 	scope: string,
 	scopeId?: string,
 };
@@ -48,11 +57,23 @@ export type ParsedExpression = {
 export function buildExpression(
 	actionCode: string, resourceCode: string, scope: string, scopeId?: string | null,
 ): string {
+	return buildFieldExpression(actionCode, resourceCode, '', scope, scopeId);
+}
+
+/** `buildExpression` for a field-level grant, mirroring Go's `BuildFieldExpression`. */
+export function buildFieldExpression(
+	actionCode: string, resourceCode: string, fieldName: string, scope: string, scopeId?: string | null,
+): string {
 	const action = actionCode === '' ? WILDCARD : actionCode;
-	const resource = resourceCode === '' ? WILDCARD : resourceCode;
+	const resource = resourceSegment(resourceCode === '' ? WILDCARD : resourceCode, fieldName);
 	return scopeId
 		? `${action}:${resource}:${scope}/${scopeId}`
 		: `${action}:${resource}:${scope}`;
+}
+
+/** The middle segment: the resource code, followed by the field name when there is one. */
+export function resourceSegment(resourceCode: string, fieldName: string): string {
+	return fieldName === '' ? resourceCode : `${resourceCode}${FIELD_SEPARATOR}${fieldName}`;
 }
 
 /** Grants everything, everywhere: the only expression whose scope segment is a wildcard. */
@@ -85,14 +106,17 @@ export function parseExpression(expr: string): ParsedExpression | null {
 		if (action !== WILDCARD || resource !== WILDCARD) {
 			return null;
 		}
-		return { actionCode: WILDCARD, resourceCode: WILDCARD, scope: WILDCARD };
+		return { actionCode: WILDCARD, resourceCode: WILDCARD, fieldName: '', scope: WILDCARD };
 	}
 
+	const target = splitResourceSegment(resource);
+	if (target == null) {
+		return null;
+	}
+	const base = { actionCode: action, ...target };
 	const separatorAt = scopeSegment.indexOf('/');
 	if (separatorAt < 0) {
-		return isKnownScope(scopeSegment)
-			? { actionCode: action, resourceCode: resource, scope: scopeSegment }
-			: null;
+		return isKnownScope(scopeSegment) ? { ...base, scope: scopeSegment } : null;
 	}
 
 	const scope = scopeSegment.slice(0, separatorAt);
@@ -105,7 +129,20 @@ export function parseExpression(expr: string): ParsedExpression | null {
 		return null;
 	}
 
-	return { actionCode: action, resourceCode: resource, scope, scopeId };
+	return { ...base, scope, scopeId };
+}
+
+function splitResourceSegment(segment: string): { resourceCode: string, fieldName: string } | null {
+	const separatorAt = segment.indexOf(FIELD_SEPARATOR);
+	if (separatorAt < 0) {
+		return { resourceCode: segment, fieldName: '' };
+	}
+	const resourceCode = segment.slice(0, separatorAt);
+	const fieldName = segment.slice(separatorAt + 1);
+	if (resourceCode === '' || resourceCode === WILDCARD || !FIELD_NAME_PATTERN.test(fieldName)) {
+		return null;
+	}
+	return { resourceCode, fieldName };
 }
 
 /**
@@ -116,7 +153,9 @@ export function parseExpression(expr: string): ParsedExpression | null {
 export function toDisplayedEntitlements(expressions: string[]): string[] {
 	const displayed = expressions.map(expr => {
 		const parsed = parseExpression(expr);
-		return parsed ? buildExpression(parsed.actionCode, parsed.resourceCode, parsed.scope) : expr;
+		return parsed
+			? buildFieldExpression(parsed.actionCode, parsed.resourceCode, parsed.fieldName, parsed.scope)
+			: expr;
 	});
 	return [...new Set(displayed)];
 }

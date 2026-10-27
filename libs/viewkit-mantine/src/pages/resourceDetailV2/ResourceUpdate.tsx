@@ -5,12 +5,13 @@ import { MetaComponent } from '@nikkierp/viewengine/render';
 import React from 'react';
 import { useParams } from 'react-router';
 
+import { updatablePayload } from './fieldLocks';
 import { toV2FormNodes } from './formNodes';
 import { useRecordLoadErrors } from './loadErrors';
 import { HideWhenNotFound, ResourceNotFound } from './ResourceNotFound';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
-import { useEdgeLabelFields } from '../../data/useEdgeLabelFields';
 import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_V2 } from '../../ids';
+import { StandardActionCode, useFieldLocks } from '../../permissions';
 import {
 	useFileFieldContributors, useUpdateAfterSave, useUpdatePayloadContributors, withFileFields,
 } from '../resourceDetail/afterSave';
@@ -67,30 +68,21 @@ export function ResourceUpdateProvider(
 	const publishGet = getByIdCmd.publish;
 	const publishUpdate = updateCmd.publish;
 
-	// Selecting each to-one edge's label field turns `uom_id` into a `uom: {id, name}` object on
-	// the response, so the view form can show the name and link to the record. The server adds the
-	// edge's own id to the projection for free, so no second request is needed to build the href.
-	const edgeLabels = useEdgeLabelFields(schemaPack?.modelSchema);
-	// Joined to a string because `schemaPack` is a new object on every etag check, so depending
-	// on it directly would re-issue the detail request on each one.
-	const edgeFieldKey = edgeLabels.fields.join(',');
-
+	// The BFF's labelled detail (`with_edge_labels`, `RestApi.getByIdLabelled`) selects `*` plus each to-one edge's
+	// label field, turning `uom_id` into a `uom: {id, name}` object the view form shows and links, and names the
+	// label fields in `meta.edge_labels`. One request, no edge schema lookups in the browser.
 	const refresh = React.useCallback(() => {
-		// Waiting on `isReady` rather than fetching twice: the edge schemas resolve asynchronously
-		// and a first request without them would be replaced by a second with them, repainting the
-		// form in front of the user.
-		if (commands.getById && id && id !== 'new' && edgeLabels.isReady) {
-			// A listed `fields` replaces the server's default projection, so the edges travel with
-			// `ALL_FIELDS` to keep the record's own columns.
-			const edgeFields = edgeFieldKey ? edgeFieldKey.split(',') : [];
-			const fields = edgeFields.length > 0 ? [dyn.ALL_FIELDS, ...edgeFields] : undefined;
-			void publishGet(fields ? { id, fields } : { id });
+		if (commands.getById && id && id !== 'new') {
+			void publishGet({ id, with_edge_labels: true });
 		}
-	}, [publishGet, commands.getById, id, edgeLabels.isReady, edgeFieldKey]);
+	}, [publishGet, commands.getById, id]);
 
 	React.useEffect(() => { refresh(); }, [refresh]);
 
 	const resource = getByIdCmd.data?.item as Record<string, unknown> | undefined;
+	const maskedFields = getByIdCmd.data?.meta?.masked_fields ?? undefined;
+	const edgeLabels = getByIdCmd.data?.meta?.edge_labels ?? noEdgeLabels;
+	const toUpdatable = useUpdatablePayload(schemaPack, maskedFields);
 	const notFound = useRecordLoadErrors(getByIdCmd.clientErrors);
 	const afterSave = useUpdateAfterSave(id, resource, refresh);
 	const runAfterUpdate = afterSave.runAfterUpdate;
@@ -107,7 +99,7 @@ export function ResourceUpdateProvider(
 		const contributions = collectContributions();
 		const request = { ...data, ...contributions.payload };
 		if (!(await contributions.confirm(request))) return false;
-		const response = await publishUpdate(withFileFields(request, collectFileFields()));
+		const response = await publishUpdate(toUpdatable(withFileFields(request, collectFileFields())));
 		const succeeded = response.error == null && (response.result?.clientErrors.length ?? 0) === 0;
 		if (succeeded) {
 			contributions.notifySaved();
@@ -116,13 +108,14 @@ export function ResourceUpdateProvider(
 		}
 		// Reported back so the action bar leaves edit mode only on success, keeping rejected input on screen.
 		return succeeded;
-	}, [publishUpdate, commands.update, refresh, runAfterUpdate, collectContributions, collectFileFields]);
+	}, [publishUpdate, commands.update, refresh, runAfterUpdate, collectContributions, collectFileFields, toUpdatable]);
 
 	const value = React.useMemo(
 		(): ResourceUpdateContextValue => ({
 			commands,
 			resource,
-			edgeSchemas: edgeLabels.destSchemas,
+			maskedFields,
+			edgeLabels,
 			isReading: getByIdCmd.isPending,
 			isWriting: updateCmd.isPending || afterSave.isRunning,
 			refresh,
@@ -148,7 +141,7 @@ export function ResourceUpdateProvider(
 			updateMode, setUpdateMode,
 		}),
 		[
-			commands, resource, edgeLabels.destSchemas, getByIdCmd.isPending, updateCmd.isPending,
+			commands, resource, maskedFields, edgeLabels, getByIdCmd.isPending, updateCmd.isPending,
 			refresh, onSubmit, updateCmd.clientErrors, updateCmd.error, getByIdCmd.error, notFound,
 			props.allStatuses, props.currentStatus, props.contextualActions,
 			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.thumbnail, props.childrenNodes,
@@ -162,6 +155,26 @@ export function ResourceUpdateProvider(
 		<ResourceUpdateContext.Provider value={value}>
 			{props.children}
 		</ResourceUpdateContext.Provider>
+	);
+}
+
+/**
+ * Narrows an update request to what the caller may write: a caller holding only field-level update
+ * grants would otherwise be refused (403) for every untouched field the form sends back.
+ */
+const noEdgeLabels: Record<string, string> = {};
+
+function useUpdatablePayload(
+	schemaPack: ReturnType<typeof useResourceDetailContext>['schemaPack'], maskedFields: string[] | undefined,
+): (payload: Record<string, any>) => Record<string, any> {
+	const modelSchema = schemaPack?.modelSchema;
+	const fieldNames = React.useMemo(() => Object.keys(modelSchema?.fields ?? {}), [modelSchema]);
+	const updateLocks = useFieldLocks(schemaPack?.schemaName ?? null, fieldNames, StandardActionCode.Update);
+	return React.useCallback(
+		(payload: Record<string, any>) => updatablePayload(
+			payload, new Set(fieldNames), updateLocks, maskedFields ?? [],
+		),
+		[fieldNames, updateLocks, maskedFields],
 	);
 }
 

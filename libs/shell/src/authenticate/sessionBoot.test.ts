@@ -60,7 +60,7 @@ const validSession: SessionExpiry = {
 /** The server's wire shape — `toUserContext` maps snake_case across, so send that. */
 const userContextPayload = {
 	id: 'u1',
-	avatar_url: null,
+	avatar_file_id: null,
 	display_name: 'A B',
 	email: 'a@b.c',
 	entitlements: [],

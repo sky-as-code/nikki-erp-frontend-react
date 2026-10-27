@@ -1,3 +1,4 @@
+import { HEADER_RESIZE_EVENT, readHeaderBottom } from '@nikkierp/ui/menu';
 import React from 'react';
 
 
@@ -59,16 +60,18 @@ function measurePin(row: HTMLElement, sentinel: HTMLElement, scrollers: HTMLElem
 	// Resolved per measure, not once: which ancestor clips depends on how much content has loaded,
 	// and the row must align to whichever box is clipping right now.
 	const clipper = findClippingBox(scrollers);
-	const boundaryTop = clipper ? clipper.getBoundingClientRect().top : 0;
-	const isPinned = sentinel.getBoundingClientRect().bottom <= boundaryTop;
 	const box = clipper?.getBoundingClientRect();
+	// Never above the Shell header: with no clipping box yet (the record still loading) the viewport
+	// top would put the row over a pinned ribbon, and a ribbon that just grew moves the box late.
+	const boundaryTop = Math.max(box?.top ?? 0, readHeaderBottom());
+	const isPinned = sentinel.getBoundingClientRect().bottom <= boundaryTop;
 
 	return {
 		isPinned,
 		placeholderHeight: row.offsetHeight,
 		geometry: box
-			? { top: box.top, left: box.left, width: box.width }
-			: { top: 0, left: 0, width: window.innerWidth },
+			? { top: boundaryTop, left: box.left, width: box.width }
+			: { top: boundaryTop, left: 0, width: window.innerWidth },
 	};
 }
 
@@ -121,6 +124,8 @@ export function usePinnedToolbar(enabled: boolean): PinnedToolbarState {
 		scrollers.forEach(el => el.addEventListener('scroll', measure, { passive: true }));
 		window.addEventListener('scroll', measure, { passive: true });
 		window.addEventListener('resize', measure);
+		// The Shell header grows when the ribbon is pinned or switches tab, without any scroll.
+		window.addEventListener(HEADER_RESIZE_EVENT, measure);
 		// Content above the toolbar can change height without any scroll — a section collapsing, a
 		// record loading in — which moves the boundary the pin decision is made against.
 		const observer = new ResizeObserver(measure);
@@ -132,6 +137,7 @@ export function usePinnedToolbar(enabled: boolean): PinnedToolbarState {
 			scrollers.forEach(el => el.removeEventListener('scroll', measure));
 			window.removeEventListener('scroll', measure);
 			window.removeEventListener('resize', measure);
+			window.removeEventListener(HEADER_RESIZE_EVENT, measure);
 			observer.disconnect();
 		};
 	}, [enabled]);

@@ -14,6 +14,11 @@ describe('toDisplayedEntitlements', () => {
 		])).toEqual(['delete:iam_user:org', 'create:iam_user:tenant']);
 	});
 
+	it('keeps the field of a field-level expression', () => {
+		expect(toDisplayedEntitlements(['update:iam_user.display_name:org/ORG1']))
+			.toEqual(['update:iam_user.display_name:org']);
+	});
+
 	it('keeps a malformed string verbatim', () => {
 		expect(toDisplayedEntitlements(['not an expression'])).toEqual(['not an expression']);
 	});

@@ -24,6 +24,8 @@ export type ResourceCreateProps = {
 	titleLvl1?: SchemaFieldSpec,
 	backLinkTitle?: LinkSpec,
 	createNodes?: ComponentNode[],
+	/** Merged under the form's values into every create request. */
+	createDefaults?: Record<string, unknown>,
 };
 
 /**
@@ -59,7 +61,9 @@ export function ResourceCreateProvider(
 				return;
 			}
 			const contributions = collectContributions();
-			const request = withFileFields({ ...data, ...contributions.payload }, collectFileFields());
+			const request = withFileFields(
+				{ ...props.createDefaults, ...data, ...contributions.payload }, collectFileFields(),
+			);
 			const response = await publishCreate(request);
 			const created = response.result?.data;
 			const clientErrors = response.result?.clientErrors ?? [];
@@ -80,8 +84,8 @@ export function ResourceCreateProvider(
 			navigate(`../${created.id}`, { relative: 'path', replace: true });
 		},
 		[
-			publishCreate, props.commands.create, runAfterSave, navigate, routeServerErrors, collectContributions,
-			collectFileFields,
+			publishCreate, props.commands.create, props.createDefaults, runAfterSave, navigate, routeServerErrors,
+			collectContributions, collectFileFields,
 		],
 	);
 

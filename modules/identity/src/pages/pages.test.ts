@@ -7,6 +7,7 @@ import { buildGroupPages } from './group';
 import { buildOrganizationPages } from './organization';
 import { buildRolePages } from './role';
 import { buildRoleAssignmentPages } from './roleAssignment';
+import { buildServicePages } from './service';
 import { buildUserPages } from './user';
 import { ROLE_PERMISSIONS } from '../viewkit/ids';
 
@@ -17,6 +18,7 @@ import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
 
 const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'user', build: buildUserPages },
+	{ name: 'service', build: buildServicePages },
 	{ name: 'group', build: buildGroupPages },
 	{ name: 'organization', build: buildOrganizationPages },
 	{ name: 'role', build: buildRolePages },
@@ -65,7 +67,7 @@ describe('IAM page metadata', () => {
 		const props = page.props as { primary: { props: { fieldRenderers: Record<string, unknown> } } };
 
 		expect(props.primary.props.fieldRenderers).toEqual({
-			avatar_url: { renderer: 'avatar', fileIdField: 'avatar_file_id' },
+			avatar_file_id: { renderer: 'avatar', fileIdField: 'avatar_file_id' },
 			status: {
 				renderer: 'badge',
 				prefix: 'status.',
@@ -78,7 +80,7 @@ describe('IAM page metadata', () => {
 		const routePaths = buildRoleAssignmentPages().map(page => page.routePath);
 
 		// The stage lives in React state, so neither page contributes a `/:step` segment.
-		expect(routePaths).toEqual(['iam_user/:id/roles', 'iam_group/:id/roles']);
+		expect(routePaths).toEqual(['iam_user/:id/roles', 'iam_service/:id/roles', 'iam_group/:id/roles']);
 	});
 
 	// The same many-to-many edge read from the role side, with the assignment wizard reached from
@@ -86,6 +88,10 @@ describe('IAM page metadata', () => {
 	// `${id}` is interpolated from the route at render time.
 	it.each([
 		{ name: 'user', build: buildUserPages, label: 'user_sections_assignedRoles', edge: 'assigned_users', principal: 'iam_user' },
+		{
+			name: 'service', build: buildServicePages, label: 'service_sections_assignedRoles', edge: 'assigned_users',
+			principal: 'iam_service',
+		},
 		{ name: 'group', build: buildGroupPages, label: 'group_sections_assignedRoles', edge: 'assigned_groups', principal: 'iam_group' },
 	])('$name detail page lists assigned roles as a related resource', ({ build, label, edge, principal }) => {
 		const [page] = build();
@@ -104,6 +110,53 @@ describe('IAM page metadata', () => {
 	});
 });
 
+type PrincipalSplit = {
+	primary: {
+		props: { schemaName: string, staticGraph?: unknown, label?: string, fieldRenderers?: Record<string, unknown> },
+	},
+	secondary: {
+		props: {
+			schemaName: string, createDefaults?: unknown, thumbnail?: unknown, titleLvl2?: unknown,
+			createNodes: unknown[], childrenNodes: unknown[],
+		},
+	},
+};
+
+describe('IAM principal pages', () => {
+	// Users and services are separate backend resources: each page set reads its own schema, and neither
+	// pins or stamps a `type`, which only the backend knows about.
+	it.each([
+		{ build: buildUserPages, route: 'iam_user', schema: 'iam_user', label: 'user', avatar: true },
+		{ build: buildServicePages, route: 'iam_service', schema: 'iam_service', label: 'service', avatar: false },
+	])('$route reads $schema without knowing about type', ({ build, route, schema, label, avatar }) => {
+		const [page] = build();
+		const props = page.props as PrincipalSplit;
+
+		expect(page.routePath).toBe(route);
+		expect(props.primary.props.schemaName).toBe(schema);
+		expect(props.secondary.props.schemaName).toBe(schema);
+		expect(props.primary.props.staticGraph).toBeUndefined();
+		expect(props.primary.props.label).toBe(label);
+		expect(props.secondary.props.createDefaults).toBeUndefined();
+		expect(JSON.stringify(page)).not.toContain('["type",');
+		expect(Boolean(props.secondary.props.thumbnail)).toBe(avatar);
+		expect('avatar_file_id' in (props.primary.props.fieldRenderers ?? {})).toBe(avatar);
+		expect(JSON.stringify(props.secondary.props.createNodes).includes('avatar_file_id')).toBe(avatar);
+		expect(collectFormFields(props.secondary.props.childrenNodes)).toEqual(
+			expect.arrayContaining(['created_at', 'created_by', 'updated_at']),
+		);
+	});
+
+	it('service pages show no email, which a service does not have', () => {
+		const [page] = buildServicePages();
+		const props = page.props as PrincipalSplit;
+
+		expect(props.secondary.props.titleLvl2).toBeUndefined();
+		expect(collectFormFields(props.secondary.props.childrenNodes)).not.toContain('email');
+		expect(collectFormFields(props.secondary.props.createNodes)).not.toContain('email');
+	});
+});
+
 describe('IAM role page metadata', () => {
 	it('role list leaves boolean columns to the built-in Switch renderer', () => {
 		const [page] = buildRolePages();
@@ -116,7 +169,10 @@ describe('IAM role page metadata', () => {
 	// `manage_role_assignments` on the principal with no org, which only a tenant grant satisfies.
 	it.each([
 		{ tab: 0, principal: 'iam_user', command: 'iam.iam_role.manage_role_users', prompt: 'role_assign_newUser' },
-		{ tab: 1, principal: 'iam_group', command: 'iam.iam_role.manage_role_groups', prompt: 'role_assign_newGroup' },
+		{
+			tab: 1, principal: 'iam_service', command: 'iam.iam_role.manage_role_services', prompt: 'role_assign_newService',
+		},
+		{ tab: 2, principal: 'iam_group', command: 'iam.iam_role.manage_role_groups', prompt: 'role_assign_newGroup' },
 	])('role detail tab $tab assigns $principal through $command', ({ tab, principal, command, prompt }) => {
 		const [page] = buildRolePages();
 		type Detail = { relatedResources: RelatedResource[], relatedResourcesNotice?: string };
@@ -133,10 +189,14 @@ describe('IAM role page metadata', () => {
 	it('role detail tabs request their own columns, not the schema defaults', () => {
 		const [page] = buildRolePages();
 		type Detail = { relatedResources: RelatedResource[] };
-		const [users, groups] = (page.props as { secondary: { props: Detail } }).secondary.props.relatedResources;
+		const detail = (page.props as { secondary: { props: Detail } }).secondary.props;
+		const [users, services, groups] = detail.relatedResources;
 
-		expect(users.fields).toEqual(['avatar_url', 'display_name', 'email']);
-		expect(users.fieldRenderers).toEqual({ avatar_url: { renderer: 'avatar', fileIdField: 'avatar_file_id' } });
+		expect(users.fields).toEqual(['avatar_file_id', 'display_name', 'email']);
+		expect(users.fieldRenderers).toEqual({ avatar_file_id: { renderer: 'avatar', fileIdField: 'avatar_file_id' } });
+		expect(services.schemaName).toBe('iam_service');
+		expect(services.fields).toEqual(['display_name']);
+		expect(services.initialGraph).toEqual({ if: ['roles', 'linked', '${id}'] });
 		expect(groups.fields).toEqual(['name']);
 	});
 
