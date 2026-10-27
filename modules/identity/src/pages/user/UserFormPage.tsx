@@ -1,5 +1,4 @@
 // import { Stack, Title } from '@mantine/core';
-// import { withWindowTitle } from '@nikkierp/ui/components';
 // import React from 'react';
 // import { useTranslation } from 'react-i18next';
 // import { useNavigate, useParams } from 'react-router';
@@ -51,4 +50,3 @@
 // 	);
 // };
 
-// export const UserFormPage = withWindowTitle('User', UserFormPageBody);

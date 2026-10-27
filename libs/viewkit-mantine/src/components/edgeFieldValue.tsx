@@ -1,9 +1,8 @@
 import { Anchor } from '@mantine/core';
-import { TranslatableText } from '@nikkierp/ui/components';
+import { Link, TranslatableText } from '@nikkierp/ui/components';
 import { toLangJson } from '@nikkierp/ui/components/ExcelDataTable';
 import { useMicroAppManager } from '@nikkierp/ui/microApp';
 import React from 'react';
-import { Link } from 'react-router';
 
 import { edgeDisplay } from '../data/edgeLabelFields';
 import { readFieldValue } from '../data/fieldPaths';
@@ -49,5 +48,5 @@ export function EdgeFieldValue({
 	if (display.kind === 'text') {
 		return text;
 	}
-	return <Anchor component={Link} to={display.href}>{text}</Anchor>;
+	return <Anchor component={Link} to={display.href} mode='append'>{text}</Anchor>;
 }

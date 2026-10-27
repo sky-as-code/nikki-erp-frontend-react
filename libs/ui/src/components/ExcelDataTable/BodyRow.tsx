@@ -1,7 +1,7 @@
 import { Anchor, Group, Table as MantineTable } from '@mantine/core';
 import clsx from 'clsx';
 import React from 'react';
-import { Link, useResolvedPath } from 'react-router-dom';
+import { useResolvedPath } from 'react-router-dom';
 
 import { ActionColumnCell } from './actionColumns/ActionColumnCell';
 import { useCellDisplay } from './cells/CellContent';
@@ -16,6 +16,7 @@ import { useSelectOnlyPress } from './rowPress';
 import { rowIdOf } from './types';
 import { useRowDelete } from './useRowDelete';
 import { INLINE_CONTROLS_ATTRS } from '../Input/inputDensity';
+import { Link } from '../Link/Link';
 
 import type { RowId, SearchItem } from './types';
 

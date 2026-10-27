@@ -2,7 +2,7 @@ import { Button, ButtonProps, Group, Menu } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useShellMenu } from '@nikkierp/shell/microApp';
 import { useActiveOrgModule } from '@nikkierp/shell/routing';
-import { useHasEntitlement, useLockedItemProps } from '@nikkierp/ui/components';
+import { Link, useHasEntitlement, useLockedItemProps } from '@nikkierp/ui/components';
 import { TranslateFn, useTranslate } from '@nikkierp/ui/i18n';
 import { isRibbonMenu, MenuItem, menuItemsOf } from '@nikkierp/ui/menu';
 import {
@@ -11,7 +11,7 @@ import {
 import { IconChevronDown, IconDots } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
-import { Link, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
 
 import {
 	getPathWithPrefix,
@@ -263,6 +263,7 @@ function HorizontalMenuItem({ item, isActive, to, t }: {
 			px={'xs'}
 			{...buttonProps(isActive, item.labelKey)}
 			component={Link}
+			isHistoryRoot
 			to={to}
 			{...lockedProps}
 			{...entryShortcut}
@@ -303,6 +304,7 @@ function MenuItemRenderer({
 					{item.link ? (
 						<Menu.Sub.Item
 							component={Link}
+							isHistoryRoot
 							to={getPath(item.link)}
 							{...itemProps(isActive || hasActiveChild, item.labelKey)}
 						>
@@ -338,6 +340,7 @@ function MenuItemRenderer({
 		return (
 			<Menu.Item
 				component={Link}
+				isHistoryRoot
 				to={getPath(item.link)}
 				{...itemProps(isActive, item.labelKey)}
 				{...lockedProps}

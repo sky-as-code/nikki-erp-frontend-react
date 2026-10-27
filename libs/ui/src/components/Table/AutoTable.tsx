@@ -2,10 +2,10 @@ import { Anchor, Loader, Table, TableProps } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { testAttrs } from '@nikkierp/common/utils';
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
 
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { useLocalize, useTranslate } from '../../i18n';
+import { Link } from '../Link/Link';
 import { LoadingState } from '../Loading';
 
 

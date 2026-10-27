@@ -64,6 +64,7 @@ function GenericPageHeader(
 				titleLvl2={props.titleLvl2}
 				backLinkTitle={backLinkTitle}
 				actions={children?.length ? <MetaComponent node={children} /> : undefined}
+				breadcrumbs
 			/>
 		</PageHeaderProvider>
 	);

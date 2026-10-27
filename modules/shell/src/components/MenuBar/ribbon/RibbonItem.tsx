@@ -1,13 +1,12 @@
 import { Button, ButtonProps, Menu } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { useHasEntitlement, useLockedItemProps } from '@nikkierp/ui/components';
+import { Link, useHasEntitlement, useLockedItemProps } from '@nikkierp/ui/components';
 import {
 	isRibbonDropdown, RibbonBlock, RibbonDropdownItem, RibbonItem, RibbonLinkItem,
 } from '@nikkierp/ui/menu';
 import { IconChevronDown } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
-import { Link } from 'react-router';
 
 import classes from './Ribbon.module.css';
 import { useRibbonContext } from './ribbonContext';
@@ -81,6 +80,7 @@ function RibbonLinkButton({ item }: { item: RibbonLinkItem }): React.ReactNode {
 		<Button
 			{...ribbonButtonProps(isActive, 'ribbonItem', item.labelKey)}
 			component={Link}
+			isHistoryRoot
 			to={getPathWithPrefix(item.link, pathPrefix)}
 			onClick={onNavigate}
 			{...lockedProps}
@@ -115,6 +115,7 @@ function RibbonMenuLink({ link }: { link: RibbonLinkItem }): React.ReactNode {
 	return (
 		<Menu.Item
 			component={Link}
+			isHistoryRoot
 			to={getPathWithPrefix(link.link, pathPrefix)}
 			onClick={onNavigate}
 			{...menuItemProps(isPathActiveWithPrefix(link.link, currentPath, pathPrefix), link.labelKey)}

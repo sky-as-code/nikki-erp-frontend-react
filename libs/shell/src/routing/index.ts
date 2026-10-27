@@ -1,3 +1,4 @@
+export * from './nodeLabelResolver';
 export * from './routingCommands';
 export * from './routingHooks';
 export * from './routingService';

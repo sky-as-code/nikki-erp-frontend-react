@@ -43,3 +43,11 @@ export function escapeHtml(value: string): string {
 		.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 		.replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 }
+
+/**
+ * Upper-cases the first letter of every word, as CSS `text-transform: capitalize` renders it, for
+ * text CSS cannot reach: the browser tab title, a label stored for later.
+ */
+export function capitalizeWords(value: string): string {
+	return value.replace(/(^|[\s(/-])(\p{Ll})/gu, (_, boundary: string, letter: string) => boundary + letter.toUpperCase());
+}

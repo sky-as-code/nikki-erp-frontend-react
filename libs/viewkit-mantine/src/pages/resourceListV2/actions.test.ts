@@ -27,6 +27,7 @@ describe('buildResourceListActions', () => {
 		]);
 		expect(actions.find(a => a.command === 'arc')?.collapsed).toBe(true);
 		expect(actions.find(a => a.testId === 'create')?.href).toBe('/base/new');
+		expect(actions.find(a => a.testId === 'create')?.isHistoryRoot).toBe(true);
 	});
 
 	// `iam_user` declares delete in both `deleteCommand` and `extraActions`, which rendered two

@@ -1,3 +1,5 @@
+import { useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
+import { useTranslate } from '@nikkierp/ui/i18n';
 import { defineComponent } from '@nikkierp/viewengine/metadata';
 import { MetaComponent } from '@nikkierp/viewengine/render';
 import { PageContainer } from '@nikkierp/viewkit-mantine';
@@ -25,6 +27,7 @@ import type { ComponentNode } from '@nikkierp/viewengine/metadata';
  */
 export function TaxSimulatorPage({ props }: { props: TaxSimulatorProps }): React.ReactNode {
 	const state = useTaxSimulator(props);
+	useBreadcrumbsNode({ title: useTranslate(props.translationNs)(props.titleKey) });
 
 	const nodes = React.useMemo(() => buildNodes(props), [props]);
 

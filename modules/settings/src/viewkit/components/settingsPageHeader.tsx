@@ -38,6 +38,7 @@ function SettingsPageHeader(): React.ReactNode {
 			titleLvl1={{ text: t(params.titleKey) }}
 			rowSpacing='md'
 			actions={<SettingsSaveAction />}
+			breadcrumbs
 			{...componentAttrs(SETTINGS_PAGE_TITLE)}
 			{...testAttrs('settings.page')}
 		/>

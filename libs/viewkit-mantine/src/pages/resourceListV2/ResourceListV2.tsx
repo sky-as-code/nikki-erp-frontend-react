@@ -1,4 +1,6 @@
 import { Paper } from '@mantine/core';
+import { testAttrs } from '@nikkierp/common/utils';
+import { Breadcrumbs, normalizePath, useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
 import { LoadingState, Unauthorized } from '@nikkierp/ui/components';
 import { ExcelDataTable, isActionVisible, mergeSearchGraphs } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
@@ -8,7 +10,7 @@ import {
 	IconArchive, IconLayoutGrid, IconList, IconPlus, IconTrash, IconUpload, IconX,
 } from '@tabler/icons-react';
 import React from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 
 import { buildResourceListActions, listActionCode, listRowUpdateProps, selectionModeOf } from './actions';
 import classes from './ResourceListV2.module.css';
@@ -109,6 +111,7 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 				fieldRenderers={fieldRenderers}
 			>
 				<div className={classes.stickyPanel}>
+					<ListBreadcrumbs params={params} schema={pack.modelSchema} listPath={baseHref} testId={testId} />
 					<ExcelDataTable.Toolbar
 						left={(
 							<>
@@ -202,6 +205,29 @@ function ClosePaneButton(): React.ReactNode {
 	);
 }
 
+type ListBreadcrumbsProps = {
+	params: ResourceListV2Props,
+	schema: dyn.ModelSchema,
+	listPath: string | undefined,
+	testId: string | undefined,
+};
+
+/**
+ * Where the user came from, above the toolbar: the toolbar title already names this list, so the
+ * list's own node is hidden. It titles the tab only while the list is the page: in a split view
+ * the record beside it owns the title.
+ */
+function ListBreadcrumbs({ params, schema, listPath, testId }: ListBreadcrumbsProps): React.ReactNode {
+	const lc = useLocalize(params.translationNs);
+	const { pathname } = useLocation();
+	const isCurrentPage = Boolean(listPath) && normalizePath(pathname) === normalizePath(listPath!);
+	useBreadcrumbsNode({
+		title: schema.label ? lc(schema.label, { count: 99 }) : undefined,
+		capitalizeTitle: true, nodePath: listPath, enabled: isCurrentPage,
+	});
+	return listPath ? <Breadcrumbs hideLastNode nodePath={listPath} {...testAttrs(testId, 'breadcrumbs')} /> : null;
+}
+
 function ListActions({ actions }: { actions: ResourceListAction[] }): React.ReactNode {
 	const { selection } = ExcelDataTable.useContext();
 	const inline = actions.filter(action => !action.collapsed);
@@ -244,6 +270,7 @@ function ListAction({ action }: { action: ResourceListAction }): React.ReactNode
 			label={action.label ?? ''}
 			icon={action.testId ? listActionIcons[action.testId] : undefined}
 			href={action.href}
+			isHistoryRoot={action.isHistoryRoot}
 			command={action.command}
 			selectionMode={selectionModeOf(action)}
 			testId={action.testId}

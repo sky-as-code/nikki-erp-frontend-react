@@ -68,3 +68,11 @@ export function useResourceUpdateContext(): ResourceUpdateContextValue {
 	}
 	return value;
 }
+
+/**
+ * The update context, or `undefined` outside an update page: for a component the create page renders
+ * too, such as a custom block declared once for both.
+ */
+export function useOptionalResourceUpdateContext(): ResourceUpdateContextValue | undefined {
+	return React.useContext(ResourceUpdateContext);
+}

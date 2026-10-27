@@ -1,8 +1,7 @@
 import { Anchor, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { ModuleIcon } from '@nikkierp/ui/components';
+import { Link, ModuleIcon } from '@nikkierp/ui/components';
 import { FC } from 'react';
-import { Link } from 'react-router';
 
 import { ModuleEntryMenu, moduleEntryClasses as classes, useModuleEntry } from '../ModuleEntry';
 
@@ -19,7 +18,7 @@ export const ModuleRow: FC<{ module: ModuleCardItem }> = ({ module }) => {
 	return (
 		<div className={entry.wrapperClassName}>
 			<Anchor
-				component={Link} to={entry.targetPath}
+				component={Link} isHistoryRoot to={entry.targetPath}
 				className={classes.rowAnchor} underline='never'
 				{...testAttrs(TEST_ID, module.slug)}
 			>

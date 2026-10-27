@@ -2,13 +2,13 @@ import { Anchor, Group, Table as MantineTable, Text, Tooltip } from '@mantine/co
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import clsx from 'clsx';
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 import { LockedAnchor } from './LockedAnchor';
 import { actionLockKey } from './useActionColumnLocks';
 import { useTranslate } from '../../../i18n';
 import { useCommandBus } from '../../../microApp/MicroAppProvider';
 import { Button, LinkButton } from '../../Button';
+import { Link } from '../../Link/Link';
 import { publishTableCommand } from '../Action';
 import { useExcelDataTableContext } from '../context';
 import classes from '../ExcelDataTable.module.css';

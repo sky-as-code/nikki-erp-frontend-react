@@ -1,7 +1,8 @@
 import { Button, useMantineTheme } from '@mantine/core';
 import { ORG_HOME_PATH } from '@nikkierp/shell/constants';
+import { useWindowTitle } from '@nikkierp/ui/breadcrumbs';
 import { ErrorStatePage, errorStateGradient } from '@nikkierp/ui/components';
-import { useWindowTitleI18n } from '@nikkierp/ui/hookhoc';
+import { useTranslate } from '@nikkierp/ui/i18n';
 import { IconArrowLeft, IconHome, IconMoodSad } from '@tabler/icons-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +10,7 @@ import { useNavigate } from 'react-router';
 
 
 export function NotFoundPage(): React.ReactNode {
-	useWindowTitleI18n('page_not_found');
+	useWindowTitle(useTranslate('common')('page_not_found'));
 
 	const theme = useMantineTheme();
 	const { t: translate } = useTranslation();

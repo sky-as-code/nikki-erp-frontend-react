@@ -304,6 +304,7 @@ describe('Product template attribute configuration', () => {
 			viewAllFiltered: true,
 			viewAllLabel: 'product_template_config_viewVariants',
 			viewAllType: 'link',
+			viewAllNavMode: 'append',
 		});
 	});
 });
