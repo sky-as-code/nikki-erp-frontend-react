@@ -98,6 +98,7 @@ Resolution order (first value wins): process env → `{NIKKI_BFF_CLIENT_ROOT_PAT
 | `NIKKI_BFF_UPSTREAM_BASE_URL` | `https://cityboi.extapi-local.coremart.local:4433` | Business service base URL (may carry a path prefix). Required |
 | `NIKKI_BFF_UPSTREAM_FORWARD_HOST` | `false` | Forward the browser `Host` upstream |
 | `NIKKI_BFF_UPSTREAM_TIMEOUT_MS` | `30000` | Max wait for upstream response headers (a stream may last longer) |
+| `NIKKI_BFF_SCHEMA_CACHE_TTL_MINS` | `30` | Minutes an upstream `meta/schema` answer and a complete schema graph stay in the BFF's memory (see *Schema cache*). A positive integer, anything else is `30` |
 | `NIKKI_BFF_UPSTREAM_CA_FILE` | empty | Comma-separated PEM files trusted for the upstream; relative paths resolve against the client root |
 | `NIKKI_BFF_UPSTREAM_CLIENT_CERT_FILE` / `_KEY_FILE` | empty | Client certificate for upstream mTLS; relative paths resolve against the client root |
 | `NIKKI_BFF_UPSTREAM_TLS_INSECURE` | `true` in `.env.default`, unset in Docker | Skip upstream certificate verification (logs a warning). Never in production |
@@ -129,13 +130,15 @@ Every React package's `dev` script boots this BFF with `ts-node .../webbff/src/m
 src/main.ts                     bootstrap: config → container → app → listen
 src/app.ts                      assembly: CSRF guard, /api/v0, module routers (extension point), generic proxy, hosting
 src/common/config/              env chain and typed AppConfig
-src/common/ioc/container.ts     Container: config, logger, upstream client, session cookies
+src/common/ioc/container.ts     Container: config, logger, upstream client, session cookies, schema cache
+src/common/cache/               SchemaCache: in-memory TTL cache with in-flight de-duplication
 src/common/http/                UpstreamClient (forward + pipeTo + streamTo + requestJson), header allowlists, error arrays
 src/common/proxy/               generic streaming proxy
 src/common/session/             session cookies, CSRF guard
 src/hosting/                    Vite middleware, static files, index.html
 src/api/v0/                     versionless frontend-coupled APIs
-src/modules/<module>/           module routers, named after the business service module
+src/modules/<module>/           module routers, named after the business service module (or the BFF feature:
+                                resourceview, resourceforms)
 ```
 
 Inversion of control without a library: `createContainer(config)` builds every shared dependency once behind an
@@ -172,7 +175,32 @@ so a list or detail page needs one request instead of one per edge.
 3. The distinct `dest_schema_name` of every entry in `to_relations` and `from_relations`, the root itself excluded,
    are fetched the same way in parallel (at most 6 at once).
 4. `200 {schema, edges: {<dest_schema_name>: <schema>}, failed_edges: string[]}`, `Cache-Control: no-store`
-   (schemas carry their own `etag` and the client caches them).
+   towards the browser (the BFF caches for every caller, and schemas carry their own `etag` the client keeps).
+5. No `nikki_at` cookie → 401 `common:err_unauthenticated`, checked before any lookup, cached or not.
+
+### Schema cache
+
+`container.schemaCache` (`src/common/cache/schema_cache.ts`) holds two kinds of entries for
+`NIKKI_BFF_SCHEMA_CACHE_TTL_MINS` minutes, both keyed by `{module}/{schema}` only:
+
+- `schema:{module}/{schema}` — one upstream `meta/schema` body (2xx and a JSON object only).
+- `graph:{module}/{schema}` — a whole schema graph, composed from cached schemas; a graph with a non-empty
+  `failed_edges` is not cached (its successful schemas are).
+
+The key carries no caller, org or query: the business service's `meta/schema` asserts authentication only, and its
+answer (`ToSimplized()`, labels as full LangJson) does not depend on who asks or on `?org_id=`. **Never add a
+permission check to `meta/schema` upstream** — a cached schema would leak past it. Concurrent misses of a key share
+one upstream load; a rejected load (unreachable) or a refused value (non-2xx) is never stored, and a caller that
+joined such a load runs its own instead, so one caller's expired token does not fail another's request. The
+cache is per process and lost on restart; a schema change upstream shows after at most the TTL. Tests replace it
+through `createContainer(config, { schemaCache })`.
+
+**Accepted residual risk.** A cache hit answers without calling the business service, so the only check left is the
+presence of the `nikki_at` cookie. That cookie is set with `expires` = the access token's `access_token_expires_at`
+(`src/common/session/cookies.ts`, httpOnly, `SameSite=Strict`), so the browser stops sending it when the token
+expires and a hit cannot outlive the session. Residuals: a hand-crafted cookie is not validated on a pure cache hit
+(it obtains schemas, never data — every data request is validated upstream), and an unparsable expiry
+(`parseExpiry`) yields a session cookie that lives until the browser closes.
 
 **Addition to the plan contract:** `failed_edges` (always present, sorted) names the edge targets whose fetch failed
 for any reason (non-2xx, unreachable, non-object body, no resolvable module key). They are absent from `edges`; one
@@ -197,6 +225,37 @@ target schema name is `dest_schema_name`. **No module key is serialized** for a 
 4. The prefix before the first `_` (`iam_users` → `iam`). A name with no prefix is unresolvable → `failed_edges`.
 
 A new module whose schema prefix differs from its module key needs an entry in `PREFIX_MODULE_KEYS`.
+
+## Module `resourceview` — labelled list and detail reads
+
+`src/modules/resourceview/` (factory `resourceViewRouterFactory`, base path `/api/v1`, registered **first** in
+`modules/index.ts`, before every router matching `/api/v1/:module/:schema/...`) serves the reads of the React
+lists and detail pages, so the browser never fetches an edge's schema to show a related record's label.
+
+| Endpoint | Upstream |
+|---|---|
+| `GET /api/v1/list/{path}` | `GET /v1/{path}` (a search), `{path}` = `{module}/{schema}` or `{module}/{primary}/{id}/{sub}` |
+| `GET /api/v1/detail/{path}/{id}` | `GET /v1/{path}/{id}` (a get-by-id) |
+
+1. Segments are validated like the proxy's paths, more strictly: schema segments `^[a-z0-9_]+$`, id segments
+   `^[A-Za-z0-9_-]+$`, so no dot segment or encoded slash passes; any other shape → 404 `common:err_not_found`.
+   No `nikki_at` cookie → 401 `common:err_unauthenticated` (the schema graph may be a cache hit).
+2. The schema read is the last schema segment (`sub` on a nested path, module key from
+   `module_key_resolver.ts`); its schema graph comes from the shared cache (module `dynamicresource`).
+3. `fields` gets the label of every to-one edge (`many:one`/`one:one` with a `src_field`) whose foreign key is
+   selected and whose destination declares a `record_label_field`, as `{edge}.{label}`. Base: the request's
+   `fields`, else `default_search_fields`, else `*` (list) / `*` (detail). `edge_label_fields.ts` is the port of
+   the former browser-side `edgeLabelFields.ts`. Nothing to add → the query is forwarded untouched.
+4. Forwarded with `upstream.requestJson`, the cookie token and the allowlisted headers. A non-2xx answer passes
+   through with its status and body; unreachable → 502 `common:err_upstream_unavailable`.
+5. On 2xx the added names leave `desired_fields` (a masked one stays in `masked_fields`, which is how the
+   browser learns the edge is locked) and `edge_labels: {<edge>: <label field>}` is added — top level on a
+   list, in `meta` on a detail. `Cache-Control: no-store`.
+6. A graph that cannot be had (a nested resource with no top-level `meta/schema`, a refusal) leaves the read
+   as sent, with `edge_labels: {}`.
+
+Client side: `RestApi.searchLabelled` / `getByIdLabelled`, or the `with_edge_labels` request flag
+(`@nikkierp/common/dynamicModel`).
 
 ## Module `resourceforms` — resource writes with files
 

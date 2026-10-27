@@ -9,6 +9,11 @@ describe('toManagePrincipalsCall', () => {
 			.toEqual({ path: 'R1/manage_users', body: { add: ['U1'] } });
 	});
 
+	it('reaches iam_role/:id/manage_services for services, which share the user junction', () => {
+		expect(toManagePrincipalsCall({ id: 'R1', add: ['S1'] }, 'manage_services'))
+			.toEqual({ path: 'R1/manage_services', body: { add: ['S1'] } });
+	});
+
 	it('sends a remove-only delta without an empty add', () => {
 		expect(toManagePrincipalsCall({ id: 'R1', add: [], remove: ['G1', 'G2'] }, 'manage_groups'))
 			.toEqual({ path: 'R1/manage_groups', body: { remove: ['G1', 'G2'] } });

@@ -2,6 +2,7 @@ import { componentNodeSchema } from '@nikkierp/viewengine/schema';
 import { z } from 'zod';
 
 import { excelDataTableBodyPropsSchema } from '../../components/excelDataTableBody/props';
+import { initialGraphSchema } from '../../components/resourceTable/props';
 import { EXCEL_DATA_TABLE_BODY } from '../../ids';
 import { resourceListPropsSchema } from '../resourceList/props';
 
@@ -48,6 +49,17 @@ export function defaultListViewMode(): ResourceListV2ViewModeInput {
  * is inherited, so a misspelled key still fails at authoring time.
  */
 export const resourceListV2PropsSchema = resourceListPropsSchema.extend({
+	/**
+	 * Search graph ANDed into every request and never shown in the filter panel, so the user cannot
+	 * widen the list past it — e.g. two pages over one schema (`iam_user` humans vs. services).
+	 * Unlike `initialGraph`, which only seeds editable conditions. `${today}` resolves as there.
+	 */
+	staticGraph: initialGraphSchema.optional(),
+	/**
+	 * i18n key of the list's title and breadcrumb, pluralised by `count` and translated with
+	 * `translationNs`, for a page that lists a subset under its own name. Absent, the schema label.
+	 */
+	label: z.string().min(1).optional(),
 	/** Publishes an inline row update `{id, etag?, ...changedFields}`; enables edit mode when set. */
 	updateCommand: z.string().min(1).optional(),
 	/**

@@ -12,6 +12,7 @@ import React from 'react';
 
 import { emailSchema } from './emailSchema';
 import classes from './SignIn.module.css';
+import { SignInClientErrors } from './SignInClientErrors';
 import { BaseFormContentProps, SignInStepProps } from './SignInStep.types';
 
 
@@ -22,7 +23,7 @@ const SIGN_IN_EMAIL_TEST_ID = 'shell.signInEmail';
 export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 	const formRef = React.useRef<HTMLFormElement>(null);
 	const { dispatchMethod: startSignIn, result } = useServiceLayer(authService.startSignIn);
-	const { isSuccess, isPending: isLoading } = result;
+	const { isSuccess, isPending: isLoading, clientErrors } = result;
 	const localize = useLocalize('common');
 
 	React.useEffect(() => {
@@ -53,7 +54,9 @@ export function EmailStep({ onNext, ref, isActive = false }: SignInStepProps) {
 				<AdhocFormProvider formVariant='create' modelSchema={emailSchema} localize={localize}>
 					{({ handleSubmit }) => (
 						<form ref={formRef} onSubmit={handleSubmit(handleNext)} noValidate>
-							<EmailStepFormContent ref={ref} isActive={isActive} isLoading={isLoading} />
+							<EmailStepFormContent
+								ref={ref} isActive={isActive} isLoading={isLoading} clientErrors={clientErrors}
+							/>
 						</form>
 					)}
 				</AdhocFormProvider>
@@ -75,6 +78,7 @@ function EmailStepFormContent(props: BaseFormContentProps): React.ReactNode {
 					leftSection: <IconMail size={20} />,
 				}}
 			/>
+			<SignInClientErrors errors={props.clientErrors ?? []} testId={SIGN_IN_EMAIL_TEST_ID} />
 			<Text size='md' c='dimmed'>
 				Domain admin: <code>nguyen.van.an@nikki.com</code><br/>
 				Identity readonly: <code>tran.thi.binh@nikki.com</code>

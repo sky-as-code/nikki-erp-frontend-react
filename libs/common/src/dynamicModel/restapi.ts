@@ -1,8 +1,13 @@
 import { RequestMaker } from '../request/request';
 
 import type { ModelSchema } from './model_schema';
+import type { SearchGraph } from './searchGraph';
 import type { RequestResult } from '../request/request';
 
+
+export type {
+	OrderBy, SearchCondition, SearchGraph, SearchNode, SearchOperator, SearchOrder,
+} from './searchGraph';
 
 export type RestApiOptions = {
 	requestMaker?: RequestMaker,
@@ -65,11 +70,27 @@ export class RestApi {
 		});
 	}
 
+	/** With `with_edge_labels`, the BFF's labelled read instead: see {@link getByIdLabelled}. */
 	public getById(
 		request: RestGetByIdRequest, primaryResourceId?: string,
 	): Promise<RequestResult<RestGetOneResponse<any>>> {
-		const restPath = this._getBasePath(primaryResourceId);
-		const { id, ...rest } = request;
+		return request.with_edge_labels
+			? this.getByIdLabelled(request, primaryResourceId)
+			: this._getById(this._getBasePath(primaryResourceId), request);
+	}
+
+	/**
+	 * `GET /api/v1/detail/{path}/{id}`: the BFF adds the label of every to-one edge to `fields` (default `*`) and
+	 * names each edge's label field in `meta.edge_labels`; the added selections are not in `meta.desired_fields`.
+	 */
+	public getByIdLabelled(
+		request: RestGetByIdRequest, primaryResourceId?: string,
+	): Promise<RequestResult<RestGetOneResponse<any>>> {
+		return this._getById(labelledPath('detail', this._getBasePath(primaryResourceId)), request);
+	}
+
+	private _getById(restPath: string, request: RestGetByIdRequest): Promise<RequestResult<RestGetOneResponse<any>>> {
+		const { id, with_edge_labels: _labelled, ...rest } = request;
 		const keyFields = Object.values(rest).join('/');
 		const dedupKey = `GET/${restPath}/${id}/${keyFields}/${rest.fields?.join(',')}`;
 		return this._opts.requestMaker!.get<RestGetOneResponse<any>>(`${restPath}/${id}`, {
@@ -147,8 +168,28 @@ export class RestApi {
 		return this._opts.requestMaker!.post<RestMutateResponse>(`${restPath}/${path}`, { json: request });
 	}
 
+	/** With `with_edge_labels`, the BFF's labelled list instead: see {@link searchLabelled}. */
 	public search(
 		request: RestSearchRequest, primaryResourceId?: string,
+	): Promise<RequestResult<RestSearchResponse<any>>> {
+		return request.with_edge_labels
+			? this.searchLabelled(request, primaryResourceId)
+			: this._search(this._getBasePath(primaryResourceId), request);
+	}
+
+	/**
+	 * `GET /api/v1/list/{path}`: the BFF adds the label of every to-one edge whose foreign key the request selects
+	 * (base: `fields`, else `default_search_fields`, else `*`) and names each edge's label field in `edge_labels`;
+	 * the added selections are not in `desired_fields`.
+	 */
+	public searchLabelled(
+		request: RestSearchRequest, primaryResourceId?: string,
+	): Promise<RequestResult<RestSearchResponse<any>>> {
+		return this._search(labelledPath('list', this._getBasePath(primaryResourceId)), request);
+	}
+
+	private _search(
+		restPath: string, { with_edge_labels: _labelled, ...request }: RestSearchRequest,
 	): Promise<RequestResult<RestSearchResponse<any>>> {
 		if (request.size === 0) {
 			return Promise.resolve<RequestResult<RestSearchResponse<any>>>({
@@ -164,7 +205,6 @@ export class RestApi {
 				clientErrors: [],
 			});
 		}
-		const restPath = this._getBasePath(primaryResourceId);
 		const dedupKey = [
 			'GET',
 			restPath,
@@ -230,6 +270,18 @@ export class RestApi {
 		return searchParams;
 	}
 
+}
+
+/**
+ * `v1/iam/iam_user` → `v1/list/iam/iam_user`: the BFF's labelled read of the same business-service path
+ * (`/api/v1/{list|detail}/{path}`).
+ */
+export function labelledPath(kind: 'list' | 'detail', restPath: string): string {
+	const separatorIdx = restPath.indexOf('/');
+	if (separatorIdx < 0) {
+		return `${kind}/${restPath}`;
+	}
+	return `${restPath.slice(0, separatorIdx)}/${kind}/${restPath.slice(separatorIdx + 1)}`;
 }
 
 /** The BFF's multipart part carrying the JSON body; it must come before the files. */
@@ -343,6 +395,8 @@ export type RestGetByIdRequest = RequestWithFields & {
 	id: string,
 	/** Scopes the read to one organization, where the resource is org-owned. */
 	org_id?: string,
+	/** Client-side only: read through the BFF's `detail/` route, which adds the to-one edge labels. */
+	with_edge_labels?: boolean,
 };
 
 type ModelSchemaFieldName = ModelSchema['fields'][string]['name'];
@@ -351,6 +405,8 @@ export type RestGetOneMeta<TFieldName extends string = ModelSchemaFieldName> = {
 	desired_fields: TFieldName[],
 	masked_fields: TFieldName[] | null,
 	schema_etag: string,
+	/** `{<edge>: <label field>}`, set by the BFF's labelled read (`with_edge_labels`). */
+	edge_labels?: Record<string, string>,
 };
 
 export type RestGetOneResponse<T extends Record<string, any>, TFieldName extends string = ModelSchemaFieldName> = {
@@ -391,58 +447,6 @@ export type RestSetIsArchivedRequest = {
 	is_archived: boolean,
 };
 
-/**
- * A single condition, as the positional tuple the backend expects.
- * The operator may take more than one value, hence the rest element.
- */
-export type SearchCondition = [string, SearchOperator, ...unknown[]]; // i.e: ['field1', '=', 'value1']
-
-/**
- * `if`, `and`, `or` are mutually exclusive.
- * The key is `if`, not `condition`: it must match the backend's JSON tag.
- */
-export type SearchGraph = {
-	if?: SearchCondition,
-	and?: SearchNode[],
-	or?: SearchNode[],
-	order?: OrderBy, // i.e: [['field1', 'asc'], ['field2', 'desc']]
-};
-
-export type OrderBy = Array<[string, SearchOrder]>;
-
-/**
- * `if`, `and`, `or` are mutually exclusive.
- */
-export type SearchNode = {
-	if?: SearchCondition,
-	and?: SearchNode[],
-	or?: SearchNode[],
-};
-
-export type SearchOperator =
-	'='      // Equals
-	| '!='   // NotEquals
-	| '>'    // GreaterThan
-	| '>='   // GreaterEqual
-	| '<'    // LessThan
-	| '<='   // LessEqual
-	| '*'    // Contains
-	| '!*'   // NotContains
-	| '^'    // StartsWith
-	| '!^'   // NotStartsWith
-	| '$'    // EndsWith
-	| '!$'   // NotEndsWith
-	| 'in'   // In
-	| 'not_in' // NotIn
-	| 'is_set' // IsSet
-	| 'not_set' // IsNotSet
-	// Linked / NotLinked: only for graph conditions on a many edge (one:many, many:many).
-	// Field is the edge name (no dot). Value is the peer / child row primary key to test linkage.
-	| 'linked'
-	| 'not_linked';
-
-export type SearchOrder = 'asc' | 'desc';
-
 export type RestSearchRequest = RequestWithFields & {
 	page?: number,
 	size?: number,
@@ -461,6 +465,8 @@ export type RestSearchRequest = RequestWithFields & {
 	 * `SearchQuery.IncludeArchived`.
 	 */
 	include_archived?: boolean,
+	/** Client-side only: search through the BFF's `list/` route, which adds the to-one edge labels. */
+	with_edge_labels?: boolean,
 };
 
 export type RestSearchResponse<T extends Record<string, any>> = {
@@ -471,6 +477,8 @@ export type RestSearchResponse<T extends Record<string, any>> = {
 	desired_fields: string[],
 	masked_fields: string[],
 	schema_etag: string,
+	/** `{<edge>: <label field>}`, set by the BFF's labelled read (`with_edge_labels`). */
+	edge_labels?: Record<string, string>,
 };
 
 export type RestUpdateRequest = Record<string, any> & RestMutateOneRequest;

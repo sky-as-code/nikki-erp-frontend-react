@@ -1,5 +1,5 @@
 import { isSuccess, upstreamResult } from './iam_result';
-import { buildErrors, ERR_UPSTREAM_UNAVAILABLE } from '../../common/http/errors';
+import { buildErrors, ERR_UNAUTHENTICATED, ERR_UPSTREAM_UNAVAILABLE } from '../../common/http/errors';
 
 import type { IamResult } from './iam_result';
 import type { UpstreamClient, UpstreamJsonResponse } from '../../common/http/upstream_client';
@@ -7,7 +7,7 @@ import type { SessionTokens } from '../../common/session/cookies';
 import type { IncomingMessage } from 'node:http';
 
 
-export const ERR_UNAUTHENTICATED = 'common:err_unauthenticated';
+export { ERR_UNAUTHENTICATED };
 const UPSTREAM_CONTINUE_PATH = '/v1/iam/signin/continue';
 const UPSTREAM_REFRESH_PATH = '/v1/iam/signin/refresh';
 

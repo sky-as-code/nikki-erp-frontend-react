@@ -57,6 +57,7 @@ function buildConfig(upstreamPort: number): AppConfig {
 		},
 		cookie: { secure: false },
 		corsOrigins: [],
+		schemaCacheTtlMins: 30,
 	};
 }
 

@@ -30,9 +30,6 @@ export const Unauthorized: React.FC<UnauthorizedProps> = ({ onGoHome, onGoBack, 
 
 	return (
 		<ErrorStatePage
-			code='403'
-			colorFrom='red'
-			colorTo='orange'
 			icon={<IconLock size={80} stroke={1.5} style={{ color: theme.colors.red[6], opacity: 0.8 }} />}
 			title={translate('unauthorized_title')}
 			message={missing && missing.length > 0

@@ -85,7 +85,7 @@ function buildStorageCategoryFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
+			fields: ['created_at', 'created_by', 'updated_at'],
 		}),
 	]);
 }

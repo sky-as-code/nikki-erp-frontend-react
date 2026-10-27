@@ -6,7 +6,6 @@ import type {
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './props';
 import type { ResourceThumbnailSpec } from '../../components/resourceThumbnail/props';
-import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -15,12 +14,15 @@ export type ResourceUpdateContextValue = {
 	commands: ResourceDetailStandardActionCommands,
 	resource?: Record<string, unknown>,
 	/**
-	 * The schemas this resource's to-one edges point at, keyed by name.
-	 *
-	 * Resolved once by the provider to build the detail fetch's `fields`, and shared here so the
-	 * read-mode fields can render each edge's label without fetching them a second time.
+	 * Fields the server blanked in `resource` because the caller may not read them
+	 * (`meta.masked_fields`): rendered locked, and never sent back on save.
 	 */
-	edgeSchemas: Record<string, dyn.ModelSchema>,
+	maskedFields?: string[],
+	/**
+	 * `{<edge>: <label field>}` from the BFF's labelled detail (`meta.edge_labels`): which field of
+	 * each to-one edge object on `resource` is its label. Empty until the record loads.
+	 */
+	edgeLabels: Record<string, string>,
 	isReading: boolean,
 	isWriting: boolean,
 	refresh: () => void,

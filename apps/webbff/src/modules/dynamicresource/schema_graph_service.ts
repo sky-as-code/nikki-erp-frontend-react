@@ -1,5 +1,6 @@
 import { resolveModuleKey } from './module_key_resolver';
 
+import type { SchemaCache } from '../../common/cache/schema_cache';
 import type { UpstreamClient } from '../../common/http/upstream_client';
 import type { IncomingMessage } from 'node:http';
 
@@ -30,7 +31,11 @@ export interface SchemaGraphResult {
 }
 
 export interface SchemaGraphService {
-	/** Rejects with `UpstreamUnavailableError` only when the root schema cannot be fetched. */
+	/**
+	 * Rejects with `UpstreamUnavailableError` only when the root schema cannot be fetched. Schemas and complete
+	 * graphs (no `failed_edges`) come from the shared cache, keyed by `{module}/{schema}` only: the business
+	 * service's `meta/schema` answer is the same for every authenticated caller and query.
+	 */
 	fetchGraph(request: SchemaGraphRequest): Promise<SchemaGraphResult>;
 }
 
@@ -39,25 +44,32 @@ export type EdgeTarget = { readonly schemaName: string; readonly moduleKey?: str
 type SchemaRelation = { readonly dest_schema_name?: unknown; readonly module_key?: unknown };
 
 
+type GraphDeps = {
+	readonly upstream: UpstreamClient;
+	readonly cache: SchemaCache;
+	readonly concurrency: number;
+};
+
 export function createSchemaGraphService(
-	upstream: UpstreamClient, concurrency: number = DEFAULT_CONCURRENCY,
+	upstream: UpstreamClient, cache: SchemaCache, concurrency: number = DEFAULT_CONCURRENCY,
 ): SchemaGraphService {
+	const deps: GraphDeps = { upstream, cache, concurrency };
 	return {
-		fetchGraph: (request) => fetchGraph(upstream, concurrency, request),
+		fetchGraph: (request) => cache.getOrLoad(
+			`graph:${request.moduleKey}/${request.schemaName}`, () => loadGraph(deps, request), isCompleteGraph,
+		),
 	};
 }
 
-async function fetchGraph(
-	upstream: UpstreamClient, concurrency: number, request: SchemaGraphRequest,
-): Promise<SchemaGraphResult> {
-	const root = await fetchSchema(upstream, request, request.moduleKey, request.schemaName);
+async function loadGraph(deps: GraphDeps, request: SchemaGraphRequest): Promise<SchemaGraphResult> {
+	const root = await fetchSchema(deps, request, request.moduleKey, request.schemaName);
 	if (!isSuccess(root.status)) {
 		return root;
 	}
 	const edges: Record<string, unknown> = {};
 	const failedEdges: string[] = [];
-	await mapWithConcurrency(collectEdgeTargets(root.body, request), concurrency, async (target) => {
-		const edge = await fetchEdgeSchema(upstream, request, target);
+	await mapWithConcurrency(collectEdgeTargets(root.body, request), deps.concurrency, async (target) => {
+		const edge = await fetchEdgeSchema(deps, request, target);
 		if (edge === undefined) {
 			failedEdges.push(target.schemaName);
 			return;
@@ -68,27 +80,38 @@ async function fetchGraph(
 	return { status: 200, body };
 }
 
-async function fetchSchema(
-	upstream: UpstreamClient, request: SchemaGraphRequest, moduleKey: string, schemaName: string,
+function isCompleteGraph(result: SchemaGraphResult): boolean {
+	return result.status === 200 && (result.body as SchemaGraphBody).failed_edges.length === 0;
+}
+
+function fetchSchema(
+	deps: GraphDeps, request: SchemaGraphRequest, moduleKey: string, schemaName: string,
 ): Promise<SchemaGraphResult> {
-	const query = request.query ? `?${request.query}` : '';
-	const path = `/v1/${encodeURIComponent(moduleKey)}/${encodeURIComponent(schemaName)}/meta/schema${query}`;
-	const response = await upstream.requestJson('GET', path, {
-		accessToken: request.accessToken,
-		incomingReq: request.incomingReq,
-	});
-	return { status: response.status, body: response.body };
+	const load = async (): Promise<SchemaGraphResult> => {
+		const query = request.query ? `?${request.query}` : '';
+		const path = `/v1/${encodeURIComponent(moduleKey)}/${encodeURIComponent(schemaName)}/meta/schema${query}`;
+		const response = await deps.upstream.requestJson('GET', path, {
+			accessToken: request.accessToken,
+			incomingReq: request.incomingReq,
+		});
+		return { status: response.status, body: response.body };
+	};
+	return deps.cache.getOrLoad(`schema:${moduleKey}/${schemaName}`, load, isSchemaResult);
+}
+
+function isSchemaResult(result: SchemaGraphResult): boolean {
+	return isSuccess(result.status) && isObject(result.body);
 }
 
 /** An edge schema, or undefined when it cannot be fetched for any reason (no module key, status, network). */
 async function fetchEdgeSchema(
-	upstream: UpstreamClient, request: SchemaGraphRequest, target: EdgeTarget,
+	deps: GraphDeps, request: SchemaGraphRequest, target: EdgeTarget,
 ): Promise<unknown> {
 	if (!target.moduleKey) {
 		return undefined;
 	}
 	try {
-		const result = await fetchSchema(upstream, request, target.moduleKey, target.schemaName);
+		const result = await fetchSchema(deps, request, target.moduleKey, target.schemaName);
 		return isSuccess(result.status) && isObject(result.body) ? result.body : undefined;
 	}
 	catch {

@@ -50,12 +50,14 @@ export const ResourceListV2 = React.memo(ResourceListV2View);
  */
 function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): React.ReactNode {
 	const bgColor = usePaperBgColor();
-	const lc = useLocalize(params.translationNs);
+	const listTitle = useListTitle(params);
 	// Both namespaces: the standard action labels live in `common`, while a page's own extra
 	// actions name keys in its module. A single namespace leaves one of the two rendering raw keys.
 	const t = useTranslate([params.translationNs, 'common']);
 	const fieldRenderers = useFieldRenderers(params.fieldRenderers);
 	const pageGraph = useResolvedInitialGraph(params.initialGraph);
+	// Seeds the table with `userRequest` below, or the static graph would echo back as an editable condition.
+	const staticGraph = useResolvedInitialGraph(params.staticGraph);
 	const urlGraph = useUrlSearchGraph();
 	// ANDed rather than substituted: a link that narrows the list must not silently widen past
 	// the scope the page itself declared. Both halves stay editable in the panel.
@@ -64,11 +66,11 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 	// from the table settings, never the page's.
 	const search = useResourceSearch({
 		schemaName: params.schemaName, searchCommand: params.searchCommand, initialRequest: INITIAL_REQUEST,
-		withEdgeLabels: true,
+		withEdgeLabels: true, baseGraph: staticGraph,
 	});
 	const { pack, searchData } = search;
 	const relatedSchemas = useTableRelatedSchemas(
-		pack?.modelSchema, searchData?.desired_fields, search.edgeLabelSchemas,
+		pack?.modelSchema, searchData?.desired_fields,
 	);
 	const buildLinkHref = useResourceLinkHref(params.linkField, routePath);
 	const baseHref = useResourceBaseHref(routePath);
@@ -93,7 +95,7 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 				relatedSchemas={relatedSchemas}
 				data={searchData}
 				isLoading={search.isPending}
-				initialSearchRequest={search.searchRequest}
+				initialSearchRequest={search.userRequest}
 				onSearchRequestChange={search.onSearchRequestChange}
 				initialGraph={graph}
 				orderBy={getSearchRequestOrderBy(search.searchRequest)}
@@ -116,7 +118,7 @@ function ResourceListV2View({ params, routePath }: ResourceListV2ViewProps): Rea
 						left={(
 							<>
 								<ExcelDataTable.Title
-									render={ctx => lc(pack.modelSchema.label, { count: ctx.data.total })}
+									render={ctx => listTitle(pack.modelSchema, ctx.data.total)}
 								/>
 								<ExcelDataTable.Actions><ListActions actions={gatedActions} /></ExcelDataTable.Actions>
 							</>
@@ -218,11 +220,11 @@ type ListBreadcrumbsProps = {
  * the record beside it owns the title.
  */
 function ListBreadcrumbs({ params, schema, listPath, testId }: ListBreadcrumbsProps): React.ReactNode {
-	const lc = useLocalize(params.translationNs);
+	const listTitle = useListTitle(params);
 	const { pathname } = useLocation();
 	const isCurrentPage = Boolean(listPath) && normalizePath(pathname) === normalizePath(listPath!);
 	useBreadcrumbsNode({
-		title: schema.label ? lc(schema.label, { count: 99 }) : undefined,
+		title: listTitle(schema, 99) || undefined,
 		capitalizeTitle: true, nodePath: listPath, enabled: isCurrentPage,
 	});
 	return listPath ? <Breadcrumbs hideLastNode nodePath={listPath} {...testAttrs(testId, 'breadcrumbs')} /> : null;
@@ -310,6 +312,18 @@ function ViewModes({ params }: { params: ResourceListV2Props }): React.ReactNode
 			))}
 		</ExcelDataTable.ViewModeButtons>
 	);
+}
+
+/** The list's title for `count` records: the page's own `label` key, else the schema label. */
+function useListTitle(params: ResourceListV2Props): (schema: dyn.ModelSchema, count: number) => string {
+	const lc = useLocalize(params.translationNs);
+	const t = useTranslate(params.translationNs);
+	return React.useCallback((schema, count) => {
+		if (params.label) {
+			return t(params.label, { count });
+		}
+		return schema.label ? lc(schema.label, { count }) : '';
+	}, [params.label, lc, t]);
 }
 
 /**

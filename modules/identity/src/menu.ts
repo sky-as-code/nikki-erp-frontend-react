@@ -19,6 +19,7 @@ const TABS: RibbonTab[] = [
 				titleKey: 'menu.users',
 				items: [
 					{ labelKey: 'menu.users', link: '/iam_user' },
+					{ labelKey: 'menu.services', link: '/iam_service' },
 					{ labelKey: 'menu.groups', link: '/iam_group' },
 				],
 			},

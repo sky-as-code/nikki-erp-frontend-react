@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFileFieldNode, resourceFormColumnNode, resourceListV2Props,
+	resourceSplitViewProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -29,6 +30,7 @@ function buildUserListProps() {
 	return resourceListV2Props({
 		schemaName: c.USER_SCHEMA_NAME,
 		translationNs: c.IAM_MODULE,
+		label: 'user',
 		linkField: 'id',
 		searchCommand: UserCommands.SEARCH,
 		createEnabled: true,
@@ -41,7 +43,7 @@ function buildUserListProps() {
 			{ label: 'action.delete', command: UserCommands.DELETE, supportMultiple: true, requireSelection: true },
 		],
 		fieldRenderers: {
-			avatar_url: { renderer: 'avatar', fileIdField: 'avatar_file_id' },
+			avatar_file_id: { renderer: 'avatar', fileIdField: 'avatar_file_id' },
 			status: {
 				renderer: 'badge',
 				prefix: 'status.',
@@ -65,8 +67,7 @@ function buildUserDetailProps() {
 		titleLvl1: { schemaField: 'display_name' },
 		titleLvl2: { schemaField: 'email' },
 		backLinkTitle: { linkHref: '../' },
-		// `avatar_url` is an older plain URL column, shown until a photo is uploaded.
-		thumbnail: { field: 'avatar', fileIdField: 'avatar_file_id', fallbackUrlField: 'avatar_url' },
+		thumbnail: { field: 'avatar', fileIdField: 'avatar_file_id' },
 		allStatuses: [
 			{ value: 'draft', label: 'status.draft', color: 'grape' },
 			{ value: 'invited', label: 'status.invited', color: 'indigo' },
@@ -81,26 +82,34 @@ function buildUserDetailProps() {
 			delete: UserCommands.DELETE,
 			archive: UserCommands.SET_IS_ARCHIVED,
 		},
-		contextualActions: {
-			activate: {
-				label: 'action.activate',
-				command: UserCommands.ACTIVATE,
-				condition: { field: 'status', operator: 'not_equal', value: 'active' },
-			},
-			suspend: {
-				label: 'action.suspend',
-				command: UserCommands.SUSPEND,
-				condition: { field: 'status', operator: 'equal', value: 'active' },
-			},
-		},
-		createNodes: [buildUserFieldsSection()],
-		childrenNodes: [buildUserFieldsSection()],
+		contextualActions: buildStatusActions(),
+		createNodes: [buildUserFieldsSection(true)],
+		childrenNodes: [buildUserFieldsSection(false)],
 		relatedResources: buildAssignedRoleResources(),
 	});
 }
 
-/** Shared by both form modes: the resource's own fields, as titled blocks. */
-function buildUserFieldsSection(): ComponentNode {
+function buildStatusActions() {
+	return {
+		activate: {
+			label: 'action.activate',
+			command: UserCommands.ACTIVATE,
+			condition: { field: 'status', operator: 'not_equal' as const, value: 'active' },
+		},
+		suspend: {
+			label: 'action.suspend',
+			command: UserCommands.SUSPEND,
+			condition: { field: 'status', operator: 'equal' as const, value: 'active' },
+		},
+	};
+}
+
+/**
+ * Shared by both form modes: the resource's own fields, as titled blocks. The photo picker is a
+ * create-only block: an existing record changes its photo through the header thumbnail. `created_by`
+ * reads as the creator's display name through its `created_by_user` edge.
+ */
+function buildUserFieldsSection(withAvatarPicker: boolean): ComponentNode {
 	return collapsibleSectionNode({
 		layout: 'formBlocks',
 		translationNs: c.IAM_MODULE,
@@ -110,9 +119,12 @@ function buildUserFieldsSection(): ComponentNode {
 			header: 'form.generalInformation',
 			fields: ['display_name', 'email'],
 		}),
+		...(withAvatarPicker
+			? [resourceFileFieldNode({ field: 'avatar', fileIdField: 'avatar_file_id', label: 'fields.avatar_file_id' })]
+			: []),
 		resourceFormColumnNode({
-			header: 'form.security',
-			fields: ['created_at', 'updated_at'],
+			header: 'form.audit',
+			fields: ['created_at', 'created_by', 'updated_at'],
 		}),
 	]);
 }
@@ -132,7 +144,7 @@ function buildAssignedRoleResources() {
 			initialGraph: { if: ['assigned_users', 'linked', '${id}'] },
 			linkField: 'id',
 			linkRoutePath: 'iam_role',
-			// Path-relative to `/{org}/{module}/iam_user/:id`, i.e. the assignment wizard for this user.
+			// Path-relative to `/{org}/{module}/iam_user/:id`, i.e. the assignment wizard.
 			extraActions: [{
 				label: 'assignment.manageRoles', routePath: 'roles',
 				actionCode: 'manage_role_assignments', actionResource: c.USER_SCHEMA_NAME, actionScope: 'tenant' as const,

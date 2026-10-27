@@ -74,7 +74,7 @@ function buildFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',
-			fields: ['display_sequence', 'is_archived', 'created_at', 'updated_at'],
+			fields: ['display_sequence', 'is_archived', 'created_at', 'created_by', 'updated_at'],
 		}),
 	]);
 }

@@ -33,4 +33,6 @@ export interface AppConfig {
 	readonly upstream: UpstreamConfig;
 	readonly cookie: CookieConfig;
 	readonly corsOrigins: readonly string[];
+	/** Lifetime of a cached upstream schema or schema graph. */
+	readonly schemaCacheTtlMins: number;
 }

@@ -113,6 +113,11 @@ export function registerSchemaModule(schemaName: string, moduleName: string): vo
 	schemaModules.set(schemaName, moduleName);
 }
 
+/** The module a schema was registered under, or `undefined` before its owner has loaded. */
+export function schemaModuleOf(schemaName: string): string | undefined {
+	return schemaModules.get(schemaName);
+}
+
 /**
  * The service the generic handler will use for `schemaName`. Exported for tests, which assert that
  * a fallback never displaces a service the owning module registers later.

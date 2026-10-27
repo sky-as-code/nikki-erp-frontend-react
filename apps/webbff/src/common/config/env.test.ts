@@ -2,7 +2,7 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { BFF_API_BASE_URL, loadAppConfig, parseClientConfig } from './env';
+import { BFF_API_BASE_URL, loadAppConfig, parseClientConfig, parseSchemaCacheTtlMins } from './env';
 
 
 const CLIENT_ROOT = path.resolve('client-root-fixture');
@@ -59,5 +59,16 @@ describe('loadAppConfig upstream TLS files', () => {
 		expect(tls.caFiles).toEqual([]);
 		expect(tls.clientCertFile).toBe(absolute);
 		expect(tls.clientKeyFile).toBeUndefined();
+	});
+});
+
+describe('parseSchemaCacheTtlMins', () => {
+	it('accepts a positive integer number of minutes', () => {
+		expect(parseSchemaCacheTtlMins('5')).toBe(5);
+		expect(parseSchemaCacheTtlMins(' 120 ')).toBe(120);
+	});
+
+	it.each(['', '0', '-3', '1.5', 'abc'])('falls back to 30 for %j', (value) => {
+		expect(parseSchemaCacheTtlMins(value)).toBe(30);
 	});
 });

@@ -30,10 +30,9 @@ function render(linkHref?: string): string {
 }
 
 describe('ResourceNotFound', () => {
-	it('renders the 404 state with a Go back link to the list by default', () => {
+	it('renders the not-found state with a Go back link to the list by default', () => {
 		const html = render();
 		expect(html).toContain('data-testid="roleDetail.notFound"');
-		expect(html).toContain('404');
 		expect(html).toContain('page_not_found');
 		expect(html).toContain('unauthorized_go_back');
 		// `'../'` resolves path-relative against `/identity/roles/missing`.

@@ -30,7 +30,12 @@
 	top: var(--nikki-page-toolbar-top, 0);
 	left: var(--nikki-page-toolbar-left, 0);
 	width: var(--nikki-page-toolbar-width, 100%);
-	z-index: 200;
+	/*
+	 * The Shell's stack, lowest first: page content (at most app - 20), this toolbar, the header with
+	 * its pinned or floating ribbon (app), then modal dialogs (modal). Below the header so a floating
+	 * ribbon panel opens over the toolbar; above anything sticky inside the page.
+	 */
+	z-index: calc(var(--mantine-z-index-app) - 10);
 	/*
 	 * Opaque, not transparent. The row is `fixed`, so the page keeps scrolling underneath it — with
 	 * no background of its own the content below reads straight through the buttons. The colour is set

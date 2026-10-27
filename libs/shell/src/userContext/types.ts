@@ -38,7 +38,8 @@ export function toDensity(value: unknown): Density {
 
 export type GetUserContextResponse = {
 	id: string,
-	avatar_url: string | null,
+	/** IT Storage file id of the uploaded avatar; resolve with `storageFileUrlOf`. */
+	avatar_file_id: string | null,
 	display_name: string,
 	email: string,
 	entitlements: string[],
@@ -87,7 +88,7 @@ export type GetUserContextResponse = {
 
 export type UserContext = {
 	id: string,
-	avatarUrl: string | null,
+	avatarFileId: string | null,
 	displayName: string,
 	email: string,
 	entitlements: string[],
@@ -139,7 +140,7 @@ export type SystemSettings = {
 export function toUserContext(response: GetUserContextResponse): UserContext {
 	return {
 		id: response.id,
-		avatarUrl: response.avatar_url,
+		avatarFileId: response.avatar_file_id,
 		displayName: response.display_name,
 		email: response.email,
 		entitlements: response.entitlements,

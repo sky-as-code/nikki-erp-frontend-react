@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 
 import { buildPartialSavePayload, collectColumnFields } from './resourceDetailHeader';
 import {
-	COLLAPSIBLE_SECTION, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_TABLE,
+	COLLAPSIBLE_SECTION, EXCEL_DATA_TABLE_BODY, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS,
 	TAB_COLLAPSIBLE_SECTION,
-} from '../ids';
+} from '../../../ids';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -78,7 +78,7 @@ describe('resource detail save scoping', () => {
 		 */
 		it('ignores nodes that are not form columns', () => {
 			const nodes = [section([defineComponent({
-				component: RESOURCE_TABLE,
+				component: EXCEL_DATA_TABLE_BODY,
 				props: { fields: ['not_mine'] },
 			})])];
 

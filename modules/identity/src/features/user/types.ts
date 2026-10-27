@@ -1,6 +1,5 @@
 export type User = {
 	id: string,
-	avatar_url?: string,
 	/** Storage file id of the uploaded photo; display it with `storageFileUrl`. */
 	avatar_file_id?: string | null,
 	display_name?: string,

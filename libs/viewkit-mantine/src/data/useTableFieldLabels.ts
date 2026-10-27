@@ -9,16 +9,15 @@ import type * as dyn from '@nikkierp/common/dynamicModel';
 
 /**
  * The schemas a table reads related fields from: the destinations of the dotted columns the
- * search returned (from `default_search_fields` or the user's saved columns), plus those of every
- * foreign key whose label the search selected.
+ * search returned (from `default_search_fields` or the user's saved columns), read from the
+ * registry the schema graph seeded. Edge-id columns need none: the BFF's labelled list names
+ * their label field in `edge_labels`.
  */
 export function useTableRelatedSchemas(
 	schema: dyn.ModelSchema | undefined,
 	desiredFields: string[] | undefined,
-	edgeLabelSchemas: Record<string, dyn.ModelSchema>,
 ): Record<string, dyn.ModelSchema> {
-	const dottedSchemas = useRelatedSchemas(schema, desiredFields);
-	return React.useMemo(() => ({ ...edgeLabelSchemas, ...dottedSchemas }), [edgeLabelSchemas, dottedSchemas]);
+	return useRelatedSchemas(schema, desiredFields);
 }
 
 /**

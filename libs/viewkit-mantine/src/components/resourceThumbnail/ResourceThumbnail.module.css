@@ -1,6 +1,6 @@
 /*
- * The square photo left of a detail page's titles. The overlay is only rendered in update mode,
- * where clicking anywhere on the photo opens the upload dialog.
+ * The square photo left of a detail page's titles. The overlay is only rendered in update mode and
+ * shown on hover or keyboard focus: a pencil opening the upload dialog, or a lock explaining the refusal.
  */
 .frame {
 	position: relative;
@@ -30,6 +30,13 @@
 	justify-content: center;
 	color: var(--mantine-color-white);
 	background-color: color-mix(in srgb, var(--mantine-color-black) 45%, transparent);
+	opacity: 0;
+	transition: opacity 120ms ease;
+}
+
+.frame:hover .overlay,
+.frame:focus-visible .overlay {
+	opacity: 1;
 }
 
 .preview {

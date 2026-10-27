@@ -19,7 +19,7 @@ export function ShellNoticeContainer({ store = shellNoticeStore }: ShellNoticeCo
 	return (
 		<div
 			className={clsx(
-				'pointer-events-none fixed top-4 left-1/2 flex -translate-x-1/2 flex-col gap-3',
+				'pointer-events-none fixed left-1/2 flex -translate-x-1/2 flex-col gap-3',
 				'w-[min(32rem,calc(100vw-2rem))]',
 				classes.container,
 			)}

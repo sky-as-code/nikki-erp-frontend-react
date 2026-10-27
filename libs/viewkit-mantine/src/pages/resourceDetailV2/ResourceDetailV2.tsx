@@ -57,6 +57,7 @@ function ResourceDetailV2View({ params, childrenNodes }: ResourceDetailV2ViewPro
 							titleLvl1={params.titleLvl1}
 							backLinkTitle={params.backLinkTitle}
 							createNodes={params.createNodes}
+							createDefaults={params.createDefaults}
 						/>
 					) : (
 						<ResourceUpdate

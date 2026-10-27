@@ -14,6 +14,8 @@ export type LockedFeatureModalProps = {
 	opened: boolean,
 	onClose: () => void,
 	missing: string[],
+	/** Explains what was refused, above the list of missing entitlements (e.g. a locked field). */
+	message?: string,
 	testId?: string,
 };
 
@@ -41,6 +43,7 @@ export function LockedFeatureModal(props: LockedFeatureModalProps): React.ReactE
 			{...testAttrs(prefix, 'modal')}
 		>
 			<Stack gap='md'>
+				{props.message ? <Text {...testAttrs(prefix, 'message')}>{props.message}</Text> : null}
 				<InsufficientPermissionContent missing={props.missing} />
 				<Group justify='flex-end'>
 					<Button variant='outline' color='gray' onClick={props.onClose} {...testAttrs(prefix, 'close')}>
@@ -53,8 +56,8 @@ export function LockedFeatureModal(props: LockedFeatureModalProps): React.ReactE
 }
 
 type LockedFeatureContextValue = {
-	/** Opens the refusal for the given entitlements. */
-	show: (missing: string[]) => void,
+	/** Opens the refusal for the given entitlements, optionally explaining what was refused. */
+	show: (missing: string[], message?: string) => void,
 };
 
 const LockedFeatureContext = React.createContext<LockedFeatureContextValue | null>(null);
@@ -66,10 +69,10 @@ const LockedFeatureContext = React.createContext<LockedFeatureContextValue | nul
  * context is preferable to `useState` in every gated Button, MenuItem and Select.
  */
 export function LockedFeatureProvider(props: { children: React.ReactNode }): React.ReactElement {
-	const [missing, setMissing] = React.useState<string[] | null>(null);
+	const [refusal, setRefusal] = React.useState<{ missing: string[], message?: string } | null>(null);
 
 	const value = React.useMemo<LockedFeatureContextValue>(
-		() => ({ show: entitlements => setMissing(entitlements) }),
+		() => ({ show: (missing, message) => setRefusal({ missing, message }) }),
 		[],
 	);
 
@@ -82,7 +85,7 @@ export function LockedFeatureProvider(props: { children: React.ReactNode }): Rea
 	React.useEffect(
 		() => EventBus.instance?.subscribe(
 			PERMISSION_DENIED_TOPIC,
-			(event: PermissionDeniedEvent) => setMissing(event.entitlements),
+			(event: PermissionDeniedEvent) => setRefusal({ missing: event.entitlements }),
 		),
 		[],
 	);
@@ -91,9 +94,10 @@ export function LockedFeatureProvider(props: { children: React.ReactNode }): Rea
 		<LockedFeatureContext.Provider value={value}>
 			{props.children}
 			<LockedFeatureModal
-				opened={missing != null}
-				onClose={() => setMissing(null)}
-				missing={missing ?? []}
+				opened={refusal != null}
+				onClose={() => setRefusal(null)}
+				missing={refusal?.missing ?? []}
+				message={refusal?.message}
 			/>
 		</LockedFeatureContext.Provider>
 	);
@@ -105,7 +109,7 @@ export function LockedFeatureProvider(props: { children: React.ReactNode }): Rea
  * Returns a no-op when no provider is mounted, so a component using it still renders — a missing
  * provider must not crash a page, it just means the click does nothing visible.
  */
-export function useShowLockedFeature(): (missing: string[]) => void {
+export function useShowLockedFeature(): (missing: string[], message?: string) => void {
 	const context = React.useContext(LockedFeatureContext);
 	return context?.show ?? noop;
 }

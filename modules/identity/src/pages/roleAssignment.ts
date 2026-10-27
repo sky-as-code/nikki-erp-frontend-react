@@ -3,6 +3,7 @@ import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import * as c from '../constants';
 import { GroupCommands } from '../features/group/commands';
 import { RoleCommands } from '../features/role/commands';
+import { ServiceCommands } from '../features/service/commands';
 import { UserCommands } from '../features/user/commands';
 import { roleAssignmentProps } from '../viewkit/props';
 
@@ -19,6 +20,13 @@ export function buildRoleAssignmentPages(): PageNode[] {
 			getPrincipalCommand: UserCommands.GET_BY_ID,
 			assignedRolesCommand: UserCommands.SEARCH_ASSIGNED_ROLES,
 			saveCommand: UserCommands.MANAGE_ROLE_ASSIGNMENTS,
+		}),
+		buildPage('iam_service/:id/roles', {
+			principalSchemaName: c.SERVICE_SCHEMA_NAME,
+			principalDisplayField: 'display_name',
+			getPrincipalCommand: ServiceCommands.GET_BY_ID,
+			assignedRolesCommand: ServiceCommands.SEARCH_ASSIGNED_ROLES,
+			saveCommand: ServiceCommands.MANAGE_ROLE_ASSIGNMENTS,
 		}),
 		buildPage('iam_group/:id/roles', {
 			principalSchemaName: c.GROUP_SCHEMA_NAME,
@@ -45,7 +53,7 @@ function buildPage(routePath: string, principal: PrincipalConfig): PageNode {
 		titleKey: 'assignment.rolesOf',
 		roleSearchCommand: RoleCommands.SEARCH,
 		describeCommand: RoleCommands.DESCRIBE,
-		// Up one URL segment from `{iam_user|iam_group}/:id/roles`, i.e. back to the detail page.
+		// Up one URL segment from `{iam_user|iam_service|iam_group}/:id/roles`, i.e. back to the detail page.
 		// `ViewEngineRouter` registers every page as its own flat route, so React Router's
 		// default route-relative `'..'` would pop the whole route and land on the module root;
 		// the template navigates with `{ relative: 'path' }` instead.

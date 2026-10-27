@@ -149,7 +149,8 @@ describe('permission column labels', () => {
 		},
 		to_relations: [{ edge: 'resource', src_field: 'resource_id', dest_schema_name: 'iam_resource' }],
 	} as unknown as dyn.ModelSchema;
-	const related = { iam_resource: { name: 'iam_resource', record_label_field: 'name' } as dyn.ModelSchema };
+	// What the BFF's labelled list names for the table (`edge_labels`).
+	const edgeLabels = { resource: 'name' };
 	const translateRef = (key: string) => (i18next.exists(key, { ns: 'iam' }) ? i18next.t(key, { ns: 'iam' }) : undefined);
 
 	beforeAll(async () => {
@@ -176,7 +177,7 @@ describe('permission column labels', () => {
 	});
 
 	it('resolves a draft row edge label like a saved one', () => {
-		const label = resolveEdgeLabel(toDraftRow(readGrant), RESOURCE_FIELD, entitlementSchema, related, 'en-US');
+		const label = resolveEdgeLabel(toDraftRow(readGrant), RESOURCE_FIELD, entitlementSchema, edgeLabels, 'en-US');
 		expect(label).toBe('Inventory Product');
 	});
 });

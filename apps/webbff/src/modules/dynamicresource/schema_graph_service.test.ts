@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { collectEdgeTargets, createSchemaGraphService, mapWithConcurrency } from './schema_graph_service';
+import { createSchemaCache } from '../../common/cache/schema_cache';
 import { UpstreamUnavailableError } from '../../common/http/errors';
 
 import type { UpstreamClient, UpstreamJsonResponse } from '../../common/http/upstream_client';
@@ -70,6 +71,10 @@ function ok(body: unknown): UpstreamJsonResponse<unknown> {
 	return { status: 200, headers: {}, body };
 }
 
+function noCache() {
+	return createSchemaCache({ ttlMs: 0 });
+}
+
 const request = { moduleKey: 'vendingmachine', schemaName: 'vdmc_kiosks', query: 'org_id=o1', accessToken: 'tok' };
 
 describe('collectEdgeTargets', () => {
@@ -100,7 +105,7 @@ describe('SchemaGraphService', () => {
 			replies[`/v1/${moduleKey}/${name}/meta/schema`] = ok(edgeSchema(name));
 		}
 		const { upstream, calls } = fakeUpstream(replies);
-		const result = await createSchemaGraphService(upstream).fetchGraph(request);
+		const result = await createSchemaGraphService(upstream, noCache()).fetchGraph(request);
 		expect(result.status).toBe(200);
 		expect(result.body).toEqual({
 			schema: kioskSchema,
@@ -119,7 +124,7 @@ describe('SchemaGraphService', () => {
 			'/v1/vendingmachine/vdmc_kiosk_models/meta/schema': ok(edgeSchema('vdmc_kiosk_models')),
 			'/v1/vendingmachine/vdmc_kiosk_connections/meta/schema': ok('not json'),
 		});
-		const result = await createSchemaGraphService(upstream).fetchGraph(request);
+		const result = await createSchemaGraphService(upstream, noCache()).fetchGraph(request);
 		expect(result.status).toBe(200);
 		expect(result.body).toMatchObject({
 			edges: { vdmc_kiosk_models: edgeSchema('vdmc_kiosk_models') },
@@ -130,16 +135,65 @@ describe('SchemaGraphService', () => {
 	it('returns a failing root response as-is without fetching edges', async () => {
 		const body = [{ type: 'authorization', key: 'common:err_unauthenticated', message: 'no' }];
 		const { upstream, calls } = fakeUpstream({ [ROOT_PATH]: { status: 401, headers: {}, body } });
-		const result = await createSchemaGraphService(upstream).fetchGraph(request);
+		const result = await createSchemaGraphService(upstream, noCache()).fetchGraph(request);
 		expect(result).toEqual({ status: 401, body });
 		expect(calls).toEqual([`${ROOT_PATH}?org_id=o1`]);
 	});
 
 	it('rejects when the root schema is unreachable', async () => {
 		const { upstream } = fakeUpstream({ [ROOT_PATH]: new UpstreamUnavailableError('down') });
-		await expect(createSchemaGraphService(upstream).fetchGraph(request)).rejects.toBeInstanceOf(
+		await expect(createSchemaGraphService(upstream, noCache()).fetchGraph(request)).rejects.toBeInstanceOf(
 			UpstreamUnavailableError,
 		);
+	});
+});
+
+describe('SchemaGraphService cache', () => {
+	const edgeNames = ['iam_organizations', 'vdmc_kiosk_models', 'vdmc_playlists', 'vdmc_kiosk_events',
+		'vdmc_kiosk_connections'];
+
+	function allReplies(): Record<string, Reply> {
+		const replies: Record<string, Reply> = { [ROOT_PATH]: ok(kioskSchema) };
+		for (const name of edgeNames) {
+			const moduleKey = name.startsWith('iam_') ? 'iam' : 'vendingmachine';
+			replies[`/v1/${moduleKey}/${name}/meta/schema`] = ok(edgeSchema(name));
+		}
+		return replies;
+	}
+
+	it('serves a complete graph from the cache, whatever the query and token', async () => {
+		const { upstream, calls } = fakeUpstream(allReplies());
+		const service = createSchemaGraphService(upstream, createSchemaCache({ ttlMs: 60_000 }));
+		const first = await service.fetchGraph(request);
+		const second = await service.fetchGraph({ ...request, query: 'org_id=o2', accessToken: 'other' });
+		expect(second).toEqual(first);
+		expect(calls).toHaveLength(6);
+	});
+
+	it('shares one upstream load between concurrent callers', async () => {
+		const { upstream, calls } = fakeUpstream(allReplies());
+		const service = createSchemaGraphService(upstream, createSchemaCache({ ttlMs: 60_000 }));
+		await Promise.all([service.fetchGraph(request), service.fetchGraph(request)]);
+		expect(calls).toHaveLength(6);
+	});
+
+	it('does not cache a graph with failed edges, but reuses its cached schemas', async () => {
+		const replies = allReplies();
+		replies['/v1/vendingmachine/vdmc_playlists/meta/schema'] = new UpstreamUnavailableError('down');
+		const { upstream, calls } = fakeUpstream(replies);
+		const service = createSchemaGraphService(upstream, createSchemaCache({ ttlMs: 60_000 }));
+		await service.fetchGraph(request);
+		await service.fetchGraph(request);
+		expect(calls).toHaveLength(7);
+		expect(calls[6]).toContain('/vdmc_playlists/meta/schema');
+	});
+
+	it('never caches a failing root', async () => {
+		const { upstream, calls } = fakeUpstream({ [ROOT_PATH]: { status: 401, headers: {}, body: [] } });
+		const service = createSchemaGraphService(upstream, createSchemaCache({ ttlMs: 60_000 }));
+		await service.fetchGraph(request);
+		await service.fetchGraph(request);
+		expect(calls).toHaveLength(2);
 	});
 });
 

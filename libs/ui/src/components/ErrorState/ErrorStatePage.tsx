@@ -10,11 +10,6 @@ import React from 'react';
  * `actions` rather than this component reaching for the store.
  */
 export type ErrorStatePageProps = {
-	/** The large status number, e.g. `404`. */
-	code: string,
-	/** Mantine palette name used for the gradient and the icon, e.g. `'blue'`. */
-	colorFrom: string,
-	colorTo: string,
 	icon: React.ReactNode,
 	title: string,
 	/** A string, or richer content such as the entitlement list of a permission refusal. */
@@ -24,30 +19,9 @@ export type ErrorStatePageProps = {
 };
 
 export function ErrorStatePage(props: ErrorStatePageProps): React.ReactElement {
-	const theme = useMantineTheme();
-	const gradient = `linear-gradient(135deg, ${theme.colors[props.colorFrom][6]} 0%, ${theme.colors[props.colorTo][6]} 100%)`;
-
 	return (
 		<Center h='100%' data-testid={props.testId}>
 			<Stack align='center' gap='lg' p={{ base: 'md', sm: 'xl' }}>
-				<Stack align='center' gap={0}>
-					<Title
-						order={1}
-						size='8rem'
-						fw={900}
-						style={{
-							background: gradient,
-							WebkitBackgroundClip: 'text',
-							WebkitTextFillColor: 'transparent',
-							backgroundClip: 'text',
-							lineHeight: 1,
-							fontFamily: 'Space Grotesk, sans-serif',
-						}}
-					>
-						{props.code}
-					</Title>
-				</Stack>
-
 				{props.icon}
 
 				<Stack align='center' gap='xs'>
@@ -69,7 +43,7 @@ export function ErrorStatePage(props: ErrorStatePageProps): React.ReactElement {
 	);
 }
 
-/** The gradient used on the primary action, so a caller's button matches the heading. */
+/** The gradient a caller puts on its primary action, in the palette of its icon. */
 export function errorStateGradient(theme: ReturnType<typeof useMantineTheme>, from: string, to: string): string {
 	return `linear-gradient(135deg, ${theme.colors[from][6]} 0%, ${theme.colors[to][6]} 100%)`;
 }

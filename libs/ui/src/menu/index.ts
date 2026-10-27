@@ -1,4 +1,7 @@
 export { findFirstMenuLink } from './firstMenuLink';
+export {
+	HEADER_BOTTOM_CSS_VAR, HEADER_RESIZE_EVENT, readHeaderBottom, usePublishHeaderBottom,
+} from './headerOffset';
 export { MenuIndexRedirect } from './MenuIndexRedirect';
 export { createMenuRegistry, MenuRegistry } from './MenuRegistry';
 export { isRibbonDropdown, isRibbonMenu, menuItemsOf, ribbonToMenuItems } from './ribbon';

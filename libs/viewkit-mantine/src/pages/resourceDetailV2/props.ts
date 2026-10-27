@@ -62,6 +62,11 @@ export const relatedResourceSchema = resourceTablePropsSchema.extend({
 export const resourceDetailV2PropsSchema = resourceDetailPropsSchema.extend({
 	/** A photo of the record shown left of the header titles; editable in update mode. */
 	thumbnail: resourceThumbnailSpecSchema.optional(),
+	/**
+	 * Values the create request always carries, with no input in the form — e.g. `{type: 'user'}`
+	 * for a page that creates one kind of a shared schema. A form value of the same key wins.
+	 */
+	createDefaults: z.record(z.string(), z.unknown()).optional(),
 	relatedResources: z.array(relatedResourceSchema).default([]),
 	/** i18n key for the section heading, translated with the page's `translationNs`. */
 	relatedResourcesHeader: z.string().min(1).optional(),

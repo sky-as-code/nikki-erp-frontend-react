@@ -3,21 +3,14 @@ import { VIEW_ENGINE_API_VERSION } from '@nikkierp/viewengine/core';
 import { collapsibleSectionRenderer } from './components/collapsibleSection/CollapsibleSection';
 import { excelDataTableBodyRenderer } from './components/excelDataTableBody/ExcelDataTableBody';
 import { pageHeaderRenderer } from './components/pageHeader/PageHeader';
-import { resourceCreateFormRenderer } from './components/resourceCreateForm';
-import { resourceCreateHeaderRenderer } from './components/resourceCreateHeader';
-import { resourceDetailHeaderRenderer } from './components/resourceDetailHeader';
 import { resourceFileFieldRenderer } from './components/resourceFileField/ResourceFileField';
-import { resourceFormRenderer } from './components/resourceForm';
-import { resourceFormColumnRenderer } from './components/resourceFormColumn';
 import { resourceFormTabsRenderer } from './components/resourceFormTabs/ResourceFormTabs';
 import { resourceSplitViewRenderer } from './components/resourceSplitView';
-import { resourceTableRenderer } from './components/resourceTable/ResourceTable';
 import { settingsItemRenderer } from './components/settings/settingsItem';
 import { settingsSectionRenderer } from './components/settings/settingsSection';
 import { tabCollapsibleSectionRenderer } from './components/tabCollapsibleSection/TabCollapsibleSection';
 import { registerFieldRenderers } from './fields/register';
 import { MANTINE_VIEW_KIT_ID } from './ids';
-import { resourceDetailTemplate } from './pages/resourceDetail/template';
 import { resourceCreateFormV2Renderer } from './pages/resourceDetailV2/form/resourceCreateForm';
 import { resourceCreateHeaderV2Renderer } from './pages/resourceDetailV2/form/resourceCreateHeader';
 import { resourceDetailHeaderV2Renderer } from './pages/resourceDetailV2/form/resourceDetailHeader';
@@ -29,7 +22,6 @@ import { resourceGenericPageTemplate } from './pages/resourceGenericPage/templat
 import { importActionsRenderer } from './pages/resourceImport/ImportActions';
 import { importBodyRenderer } from './pages/resourceImport/ImportBody';
 import { resourceImportTemplate } from './pages/resourceImport/template';
-import { resourceListTemplate } from './pages/resourceList/template';
 import { resourceListV2Template } from './pages/resourceListV2/template';
 import { resourceSplitViewTemplate } from './pages/resourceSplitView/template';
 
@@ -49,9 +41,7 @@ export const mantineViewKit: IViewKit = {
 	engineApiVersions: [VIEW_ENGINE_API_VERSION],
 
 	contribute(registry) {
-		registry.registerPageTemplate(resourceListTemplate);
 		registry.registerPageTemplate(resourceListV2Template);
-		registry.registerPageTemplate(resourceDetailTemplate);
 		registry.registerPageTemplate(resourceDetailV2Template);
 		registry.registerPageTemplate(resourceSplitViewTemplate);
 		registry.registerPageTemplate(resourceImportTemplate);
@@ -60,24 +50,16 @@ export const mantineViewKit: IViewKit = {
 		registry.registerComponentRenderer(pageHeaderRenderer);
 		registry.registerComponentRenderer(collapsibleSectionRenderer);
 		registry.registerComponentRenderer(tabCollapsibleSectionRenderer);
-		registry.registerComponentRenderer(resourceTableRenderer);
 		registry.registerComponentRenderer(excelDataTableBodyRenderer);
 		registry.registerComponentRenderer(resourceFileFieldRenderer);
-		registry.registerComponentRenderer(resourceDetailHeaderRenderer);
-		registry.registerComponentRenderer(resourceFormRenderer);
 		registry.registerComponentRenderer(settingsSectionRenderer);
 		registry.registerComponentRenderer(settingsItemRenderer);
-		registry.registerComponentRenderer(resourceFormColumnRenderer);
 		registry.registerComponentRenderer(resourceFormTabsRenderer);
-		registry.registerComponentRenderer(resourceCreateHeaderRenderer);
-		// The v2 form set, registered beside v1 so the detail v2 template can own its own form
-		// behaviour without altering a page still on v1.
 		registry.registerComponentRenderer(resourceDetailHeaderV2Renderer);
 		registry.registerComponentRenderer(resourceFormV2Renderer);
 		registry.registerComponentRenderer(resourceFormColumnV2Renderer);
 		registry.registerComponentRenderer(resourceCreateHeaderV2Renderer);
 		registry.registerComponentRenderer(resourceCreateFormV2Renderer);
-		registry.registerComponentRenderer(resourceCreateFormRenderer);
 		registry.registerComponentRenderer(resourceSplitViewRenderer);
 		registry.registerComponentRenderer(genericPageHeaderRenderer);
 		registry.registerComponentRenderer(importActionsRenderer);

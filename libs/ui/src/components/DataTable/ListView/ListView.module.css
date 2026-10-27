@@ -29,7 +29,8 @@ td.selectedCell {
 	left: auto;
 	right: auto;
 	bottom: auto;
-	z-index: 200;
+	/* Page content: below the pinned page toolbar (app - 10) and the Shell header (app). */
+	z-index: calc(var(--mantine-z-index-app) - 20);
 }
 
 .fillerColumn {

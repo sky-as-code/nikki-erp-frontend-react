@@ -12,6 +12,11 @@ describe('resourceDetailV2PropsSchema', () => {
 		expect(parsed.standardActionCommands).toEqual({});
 	});
 
+	it('accepts create defaults', () => {
+		const parsed = resourceDetailV2PropsSchema.parse({ ...base, createDefaults: { type: 'service' } });
+		expect(parsed.createDefaults).toEqual({ type: 'service' });
+	});
+
 	it('accepts related resources with the embedded table props and a label', () => {
 		const parsed = resourceDetailV2PropsSchema.parse({
 			...base,

@@ -20,9 +20,6 @@ export function NotFoundPage(): React.ReactNode {
 
 	return (
 		<ErrorStatePage
-			code='404'
-			colorFrom='blue'
-			colorTo='cyan'
 			icon={<IconMoodSad size={80} stroke={1.5} style={{ color: theme.colors.blue[6], opacity: 0.8 }} />}
 			title={translate('page_not_found')}
 			message={translate('not_found_hint')}

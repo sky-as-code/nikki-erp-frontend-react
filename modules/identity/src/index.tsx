@@ -10,12 +10,14 @@ import * as c from './constants';
 import { registerGroupCommands } from './features/group/commands';
 import { registerOrganizationCommands } from './features/organization/commands';
 import { registerRoleCommands } from './features/role/commands';
+import { registerServiceCommands } from './features/service/commands';
 import { registerUserCommands } from './features/user/commands';
 import { buildIdentityMenu } from './menu';
 import { buildGroupPages } from './pages/group';
 import { buildOrganizationPages } from './pages/organization';
 import { buildRolePages } from './pages/role';
 import { buildRoleAssignmentPages } from './pages/roleAssignment';
+import { buildServicePages } from './pages/service';
 import { SettingsWidget } from './pages/SettingsWidget';
 import { buildUserPages } from './pages/user';
 import { contributeIdentityViewKit } from './viewkit/kit';
@@ -43,6 +45,7 @@ const bundle: MicroAppBundle = {
 		contributeIdentityViewKit(host.viewEngine);
 		host.menuRegistry.register(buildIdentityMenu(slug));
 		registerUserCommands(host.commandBus);
+		registerServiceCommands(host.commandBus);
 		registerGroupCommands(host.commandBus);
 		registerOrganizationCommands(host.commandBus);
 		registerRoleCommands(host.commandBus);
@@ -64,6 +67,7 @@ const WIDGETS: WidgetDefinition[] = [
 function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	const pages = React.useMemo(() => [
 		...buildUserPages(),
+		...buildServicePages(),
 		...buildGroupPages(),
 		...buildOrganizationPages(),
 		...buildRolePages(),
@@ -88,6 +92,7 @@ function registerModelSchemas(): void {
 		c.ORG_UNIT_SCHEMA_NAME,
 		c.ROLE_SCHEMA_NAME,
 		c.USER_SCHEMA_NAME,
+		c.SERVICE_SCHEMA_NAME,
 		c.ENTITLEMENT_SCHEMA_NAME,
 		c.RESOURCE_SCHEMA_NAME,
 		c.ACTION_SCHEMA_NAME,

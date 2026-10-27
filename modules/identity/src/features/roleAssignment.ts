@@ -6,8 +6,8 @@ import * as c from '../constants';
 import { Role } from './role/types';
 
 
-/** A principal that can hold roles. The two flows differ only in this segment of the path. */
-export type PrincipalKind = 'users' | 'groups';
+/** A principal that can hold roles. The flows differ only in this segment of the path. */
+export type PrincipalKind = 'users' | 'services' | 'groups';
 
 export type SearchAssignedRolesRequest = dyn.RestSearchRequest & { id: string };
 export type SearchAssignedRolesResponse = dyn.RestSearchResponse<Role>;
@@ -44,7 +44,7 @@ export type DescribeRolesResponse = { items: DescribedRole[] };
 /** Matches `DescribeRolesMaxIds` in the backend role commands; exceeding it is a 400. */
 export const DESCRIBE_ROLES_MAX_IDS = 20;
 
-/** `GET /v1/iam/{iam_user|iam_group}/:id/roles` — the roles currently assigned to one principal. */
+/** `GET /v1/iam/{iam_user|iam_service|iam_group}/:id/roles` — the roles currently assigned to one principal. */
 export function searchAssignedRoles(
 	kind: PrincipalKind, request: SearchAssignedRolesRequest,
 ): Promise<ServiceResult<SearchAssignedRolesResponse>> {
@@ -55,7 +55,7 @@ export function searchAssignedRoles(
 }
 
 /**
- * `POST /v1/iam/{iam_user|iam_group}/:id/manage_roles` — applies an add/remove delta.
+ * `POST /v1/iam/{iam_user|iam_service|iam_group}/:id/manage_roles` — applies an add/remove delta.
  *
  * `manageM2m` appends its second argument to the schema's own resource path, so the principal
  * id goes there: the principal schema owns the route, not the role schema.
@@ -70,8 +70,14 @@ export function manageRoleAssignments(
 	);
 }
 
+const PRINCIPAL_SCHEMA_NAMES: Readonly<Record<PrincipalKind, string>> = {
+	users: c.USER_SCHEMA_NAME,
+	services: c.SERVICE_SCHEMA_NAME,
+	groups: c.GROUP_SCHEMA_NAME,
+};
+
 function principalSchemaName(kind: PrincipalKind): string {
-	return kind === 'users' ? c.USER_SCHEMA_NAME : c.GROUP_SCHEMA_NAME;
+	return PRINCIPAL_SCHEMA_NAMES[kind];
 }
 
 /**
