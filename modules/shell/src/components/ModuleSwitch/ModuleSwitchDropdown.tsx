@@ -9,7 +9,7 @@ import { useMemo } from 'react';
 import { sharedStateService } from '../../features/sharedState';
 
 
-export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'> & {
+export type ModuleSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth' | 'targetClass'> & {
 	hideIfEmpty: boolean,
 };
 

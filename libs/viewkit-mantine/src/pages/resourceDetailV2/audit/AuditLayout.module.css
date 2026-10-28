@@ -1,0 +1,49 @@
+.layout {
+	display: flex;
+	align-items: flex-start;
+}
+
+/* The left parent: every section, full width while the panel is closed. */
+.left {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+/*
+ * The right parent opens by width. It clips while it moves, and its content keeps the final width
+ * throughout, so the history does not reflow on every frame of the transition.
+ */
+.right {
+	flex: 0 0 auto;
+	width: 0;
+	opacity: 0;
+	overflow: hidden;
+	transition: width 200ms ease, opacity 200ms ease;
+}
+
+.rightShown {
+	width: 26rem;
+	opacity: 1;
+}
+
+/* The gap to the sections is padding, so a closed panel leaves none behind. */
+.rightInner {
+	box-sizing: border-box;
+	width: 26rem;
+	padding-left: var(--nikki-section-gap, 0.5rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.right {
+		transition: none;
+	}
+}
+
+.changeList {
+	margin: 0;
+	padding-left: 1.25rem;
+}
+
+.changeLine {
+	overflow-wrap: anywhere;
+}

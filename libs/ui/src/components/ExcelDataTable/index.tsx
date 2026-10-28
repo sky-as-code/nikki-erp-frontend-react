@@ -24,6 +24,7 @@ export * from './capabilities';
 export * from './cells/cellRenderers';
 export * from './cells/cellValues';
 export * from './cells/maskedFields';
+export * from './cells/MaskedCellLock';
 export * from './changeIndicator/changeIndicator';
 export * from './clipboard';
 export * from './context';

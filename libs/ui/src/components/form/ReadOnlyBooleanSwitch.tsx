@@ -20,11 +20,15 @@ export function ReadOnlyBooleanSwitch(props: ReadOnlyBooleanSwitchProps): React.
 			readOnly
 			tabIndex={-1}
 			size='md'
+			styles={READ_ONLY_SWITCH_STYLES}
 			checked={normalizeBooleanValue(props.value)}
 			onChange={noop}
 		/>
 	);
 }
+
+/** The theme gives every switch the hand cursor; a frozen one cannot be clicked, so it keeps the arrow. */
+export const READ_ONLY_SWITCH_STYLES = { track: { cursor: 'default' } } as const;
 
 function noop(): void {}
 

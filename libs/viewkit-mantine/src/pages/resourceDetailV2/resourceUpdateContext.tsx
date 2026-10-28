@@ -12,4 +12,4 @@ export {
 	ResourceUpdateContext, useResourceUpdateContext,
 } from '../resourceDetail/resourceUpdateContext';
 
-export type { ResourceUpdateContextValue } from '../resourceDetail/resourceUpdateContext';
+export type { ResourceUpdateContextValue, StatusPlacement } from '../resourceDetail/resourceUpdateContext';

@@ -75,6 +75,8 @@ function buildUserDetailProps() {
 			{ value: 'suspended', label: 'status.suspended', color: 'orange' },
 		],
 		currentStatus: { schemaField: 'status' },
+		// In General Information rather than the toolbar, so the status reads beside the user's name.
+		statusPlacement: 'firstSection',
 		standardActionCommands: {
 			getById: UserCommands.GET_BY_ID,
 			create: UserCommands.CREATE,
@@ -106,8 +108,8 @@ function buildStatusActions() {
 
 /**
  * Shared by both form modes: the resource's own fields, as titled blocks. The photo picker is a
- * create-only block: an existing record changes its photo through the header thumbnail. `created_by`
- * reads as the creator's display name through its `created_by_user` edge.
+ * create-only block: an existing record changes its photo through the header thumbnail. The author
+ * is shown by the Audit panel's History, not by a `created_by` field.
  */
 function buildUserFieldsSection(withAvatarPicker: boolean): ComponentNode {
 	return collapsibleSectionNode({
@@ -124,7 +126,7 @@ function buildUserFieldsSection(withAvatarPicker: boolean): ComponentNode {
 			: []),
 		resourceFormColumnNode({
 			header: 'form.audit',
-			fields: ['created_at', 'created_by', 'updated_at'],
+			fields: ['created_at', 'updated_at'],
 		}),
 	]);
 }

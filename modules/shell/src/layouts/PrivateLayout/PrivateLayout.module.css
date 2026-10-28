@@ -1,4 +1,8 @@
 .header {
+	/* Fixed so the ribbon panel below can line its first block up with the first tab. */
+	--shell-org-switch-width: 170px;
+	--shell-module-switch-width: 160px;
+
 	position: relative;
 	/*
 	 * Above the pinned page toolbar (app - 10) and below modal dialogs (modal): the header and both
@@ -12,4 +16,29 @@
 	gap: var(--mantine-spacing-md);
 	/* box-shadow: 1px 1px 3px 0px light-dark(rgba(0, 0, 0, 0.12), var(--mantine-color-dark-2));
 	border-bottom: 1px solid light-dark(rgba(0, 0, 0, 0.12), var(--mantine-color-dark-2)); */
+}
+
+/* A switch longer than its fixed width ends in an ellipsis; the full name is its title. */
+.orgSwitch,
+.moduleSwitch {
+	flex: none;
+}
+
+.orgSwitch {
+	width: var(--shell-org-switch-width);
+}
+
+.moduleSwitch {
+	width: var(--shell-module-switch-width);
+}
+
+.orgSwitch :global(.mantine-Button-inner),
+.moduleSwitch :global(.mantine-Button-inner) {
+	justify-content: space-between;
+}
+
+.orgSwitch :global(.mantine-Button-label),
+.moduleSwitch :global(.mantine-Button-label) {
+	flex: 1;
+	min-width: 0;
 }

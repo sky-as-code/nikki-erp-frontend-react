@@ -39,9 +39,11 @@ export const Header: React.FC = () => {
 						<Flex gap={'xs'} h='100%' align='center' flex={1} miw={0}>
 							<GoHomeButton testId='shell.header.allApps' />
 							<Flex gap={'xs'} align='center' h='100%' flex={1} miw={0}>
-								<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} />
+								<OrgSwitchDropdown hideIfEmpty dropdownWidth={300} targetClass={classes.orgSwitch} />
 								{!isRootPath && <>
-									<ModuleSwitchDropdown hideIfEmpty dropdownWidth={300} />
+									<ModuleSwitchDropdown
+										hideIfEmpty dropdownWidth={300} targetClass={classes.moduleSwitch}
+									/>
 									<Divider orientation='vertical' h={'100%'}/>
 									<MenuBar />
 								</>}

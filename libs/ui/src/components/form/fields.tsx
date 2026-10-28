@@ -15,6 +15,7 @@ import { FieldLabelProvider, useFieldLabelHidden } from './fieldLabelContext';
 import { useFieldData, useFormField, useFormStyle } from './formContext';
 import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
 import { LangJsonField } from './LangJsonField';
+import { isLongTextField, LongTextInput } from './longText';
 import { RelationSelectField } from './RelationSelectField';
 import { LocalizeFn, TranslateFn } from '../../i18n';
 import { useFormInputSize } from '../Input/inlineControls';
@@ -394,6 +395,13 @@ export function TextInputField(props: TextInputFieldProps) {
 	}
 
 	const defaultValue = modelValue?.[name];
+	const registerResult = register(name);
+	const registerRef = (element: HTMLInputElement | null) => {
+		if (typeof registerResult.ref === 'function') {
+			registerResult.ref(element);
+		}
+		ref.current = element;
+	};
 
 	return (
 		<BaseFieldWrapper
@@ -402,31 +410,41 @@ export function TextInputField(props: TextInputFieldProps) {
 			isRequired={fieldData.isRequired}
 			error={fieldErrorText(t, fieldData)}
 		>
-			<Input
-				id={inputId}
-				type={type}
-				{...(() => {
-					const registerResult = register(name);
-					return {
-						...registerResult,
-						ref: (e: HTMLInputElement | null) => {
-							if (typeof registerResult.ref === 'function') {
-								registerResult.ref(e);
-							}
-							ref.current = e;
-						},
-					};
-				})()}
-				defaultValue={defaultValue}
-				error={fieldData.error}
-				disabled={modelLoading}
-				placeholder={t(fieldData.placeholder)}
-				withAria={false}
-				{...htmlProps}
-				{...defaultInputProps}
-			/>
+			{type === 'text' && isLongTextField(fieldData.fieldDef) ? (
+				<LongTextInput
+					id={inputId}
+					{...registerResult}
+					ref={registerRef as unknown as React.Ref<HTMLTextAreaElement>}
+					defaultValue={defaultValue}
+					error={fieldData.error}
+					disabled={modelLoading}
+					placeholder={t(fieldData.placeholder)}
+					size={defaultInputProps.size}
+					{...fieldTestAttrsOf(defaultInputProps)}
+				/>
+			) : (
+				<Input
+					id={inputId}
+					type={type}
+					{...registerResult}
+					ref={registerRef}
+					defaultValue={defaultValue}
+					error={fieldData.error}
+					disabled={modelLoading}
+					placeholder={t(fieldData.placeholder)}
+					withAria={false}
+					{...htmlProps}
+					{...defaultInputProps}
+				/>
+			)}
 		</BaseFieldWrapper>
 	);
+}
+
+/** The `data-testid` the field's default input props carry, for an input that takes no density classes. */
+function fieldTestAttrsOf(props: Partial<InputProps>): Record<string, unknown> {
+	const testId = (props as Record<string, unknown>)['data-testid'];
+	return testId === undefined ? {} : { 'data-testid': testId };
 }
 
 export type PasswordInputFieldProps = BaseInputProps<InputProps>;

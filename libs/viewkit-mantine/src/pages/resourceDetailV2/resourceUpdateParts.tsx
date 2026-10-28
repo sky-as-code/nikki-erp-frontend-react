@@ -1,4 +1,4 @@
-import { Alert, Badge, Divider, Group } from '@mantine/core';
+import { Alert, Divider, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { translateClientError } from '@nikkierp/common/types';
@@ -10,12 +10,15 @@ import { useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { evaluateCondition } from '@nikkierp/viewengine/metadata';
 import {
-	IconAlertCircle, IconChevronRight, IconDeviceFloppy, IconPencil, IconPlus, IconX,
+	IconAlertCircle, IconDeviceFloppy, IconPencil, IconPlus, IconX,
 } from '@tabler/icons-react';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
+import { AuditToggleButton } from './audit/AuditToggleButton';
+import { RecordStatusFlow } from './form/resourceStatusStrip';
 import { useResourceUpdateContext } from './resourceUpdateContext';
+import { ToolbarCompactProvider, useToolbarButtonContent, useToolbarCompactMeasure } from './toolbarCompact';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import { resolveActionCode, StandardActionCode, useActionLock, useAnyFieldActionLock } from '../../permissions';
 import { ActionPromptModal } from '../resourceDetail/ActionPromptModal';
@@ -26,9 +29,7 @@ import {
 import { ResourceDetailOverflowMenu } from '../resourceDetail/resourceOverflowMenu';
 
 
-import type {
-	ResourceDetailContextualActions, ResourceDetailExtraAction, StatusOption,
-} from '../resourceDetail/props';
+import type { ResourceDetailContextualActions, ResourceDetailExtraAction } from '../resourceDetail/props';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 
 
@@ -36,6 +37,7 @@ export function CreateActionButton({ disabled = false }: { disabled?: boolean })
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const tid = useResourceDetailTestAttrs();
 	const lock = useActionLock(useResourceDetailSchemaName(), StandardActionCode.Create);
+	const content = useToolbarButtonContent(<IconPlus size={16} />, t('action.create'));
 	return (
 		<Button
 			component={Link}
@@ -45,12 +47,10 @@ export function CreateActionButton({ disabled = false }: { disabled?: boolean })
 			disabled={disabled}
 			locked={lock.locked}
 			lockedMissing={lock.missing}
-			leftSection={<IconPlus size={16} />}
 			variant='outline'
 			{...tid('action', 'create')}
-		>
-			{t('action.create')}
-		</Button>
+			{...content}
+		/>
 	);
 }
 
@@ -69,8 +69,10 @@ export type ResourceActionBarProps = {
  * The page-level action bar, rendered once in the header rather than inside the (possibly
  * collapsed) form section.
  *
- * Read mode: Create, a separator, Update, contextual actions, overflow menu, then the status flow.
- * Update mode: Discard and Save alone, so nothing else can be started over unsaved edits.
+ * Read mode: Create, a separator, Update, contextual actions, overflow menu; on the right the status
+ * flow and the Audit toggle.
+ * Update mode: Discard and Save alone, so nothing else can be started over unsaved edits; on the
+ * right only the Audit toggle, which changes no data.
  */
 export function ResourceActionBar({
 	createAction, onSaveClick, onCancel, isLoading, updateMode, setUpdateMode,
@@ -87,12 +89,40 @@ export function ResourceActionBar({
 		/>
 	);
 
-	if (updateMode) {
-		return <Group gap='xs' align='center' className='flex-1'>{primaryActions}</Group>;
-	}
 	return (
-		<ReadModeActionBar createAction={createAction} primaryActions={primaryActions} isLoading={isLoading} />
+		<ActionRow>
+			{updateMode ? (
+				<>
+					<LeftToolbar>{primaryActions}</LeftToolbar>
+					<RightToolbar />
+				</>
+			) : (
+				<ReadModeActionBar createAction={createAction} primaryActions={primaryActions} isLoading={isLoading} />
+			)}
+		</ActionRow>
 	);
+}
+
+/**
+ * The action row: the left toolbar takes whatever width the right one leaves, and the row's own
+ * measured width decides whether the icon buttons go compact (`toolbarCompact.tsx`).
+ */
+function ActionRow({ children }: { children: React.ReactNode }): React.ReactNode {
+	const { ref, compact } = useToolbarCompactMeasure();
+	return (
+		<ToolbarCompactProvider compact={compact}>
+			<Group
+				ref={ref} gap='xs' justify='space-between' wrap='nowrap' align='center' className='min-w-0 flex-1'
+				data-compact={compact ? 'true' : undefined}
+			>
+				{children}
+			</Group>
+		</ToolbarCompactProvider>
+	);
+}
+
+function LeftToolbar({ children }: { children: React.ReactNode }): React.ReactNode {
+	return <Group gap='xs' align='center' wrap='wrap' className='min-w-0 flex-1'>{children}</Group>;
 }
 
 function ReadModeActionBar({ createAction, primaryActions, isLoading }: {
@@ -100,17 +130,15 @@ function ReadModeActionBar({ createAction, primaryActions, isLoading }: {
 	primaryActions: React.ReactNode,
 	isLoading: boolean,
 }): React.ReactNode {
-	const { allStatuses, currentStatus, contextualActions, commands, resource } = useResourceUpdateContext();
-	const curStatusField = currentStatus?.schemaField;
-	const status = curStatusField ? resource?.[curStatusField] : null;
+	const { contextualActions, commands, resource } = useResourceUpdateContext();
 	const hasVisibleContextualActions = resource != null && hasMatchingExtraAction(contextualActions, resource);
 	const hasOverflowMenu = Boolean(commands.delete || commands.archive) && resource != null;
 	// The status flow sits apart on the right, so it does not count as something the separator divides.
 	const hasActionsAfterCreate = Boolean(commands.update) || hasVisibleContextualActions || hasOverflowMenu;
 
 	return (
-		<Group justify='space-between' wrap='wrap' className='flex-1'>
-			<Group gap='xs' align='center'>
+		<>
+			<LeftToolbar>
 				{createAction}
 				{createAction && hasActionsAfterCreate ? <Divider orientation='vertical' my={4} /> : null}
 				{primaryActions}
@@ -122,8 +150,23 @@ function ReadModeActionBar({ createAction, primaryActions, isLoading }: {
 					/>
 				) : null}
 				{hasOverflowMenu ? <ResourceDetailOverflowMenu resource={resource} disabled={isLoading} /> : null}
-			</Group>
-			<StatusFlow statuses={allStatuses ?? []} current={status as string | null} />
+			</LeftToolbar>
+			<RightToolbar withStatusFlow />
+		</>
+	);
+}
+
+/**
+ * The right half of the action row, its buttons flush right: the status flow (read mode, unless the
+ * page moved it into its first section) and the Audit toggle (both modes).
+ */
+function RightToolbar({ withStatusFlow = false }: { withStatusFlow?: boolean }): React.ReactNode {
+	const { statusPlacement = 'toolbar' } = useResourceUpdateContext();
+	const tid = useResourceDetailTestAttrs();
+	return (
+		<Group gap='xs' align='center' justify='flex-end' wrap='wrap' className='min-w-0 shrink' {...tid('rightToolbar')}>
+			{withStatusFlow && statusPlacement === 'toolbar' ? <RecordStatusFlow /> : null}
+			<AuditToggleButton />
 		</Group>
 	);
 }
@@ -152,6 +195,8 @@ function PrimaryActionButtons({
 	const { schemaPack } = useResourceDetailContext();
 	const schemaFields = React.useMemo(() => Object.keys(schemaPack?.modelSchema?.fields ?? {}), [schemaPack]);
 	const updateLock = useAnyFieldActionLock(useResourceDetailSchemaName(), StandardActionCode.Update, schemaFields);
+	// Discard and Save keep their labels: alone in the row with the Audit toggle, they always fit.
+	const updateContent = useToolbarButtonContent(<IconPencil size={16} />, t('action.update'));
 	if (!updateCommand) {
 		return null;
 	}
@@ -189,12 +234,10 @@ function PrimaryActionButtons({
 			disabled={isLoading}
 			locked={updateLock.locked}
 			lockedMissing={updateLock.missing}
-			leftSection={<IconPencil size={16} />}
 			variant='filled'
 			{...tid('action', 'update')}
-		>
-			{t('action.update')}
-		</Button>
+			{...updateContent}
+		/>
 	);
 }
 
@@ -461,29 +504,4 @@ function buildDefaultMutateRequest(resource: Record<string, unknown>): dyn.RestM
 		return null;
 	}
 	return { id, etag };
-}
-
-
-function StatusFlow({
-	statuses, current,
-}: {
-	statuses: StatusOption[],
-	current?: string | null,
-}): React.ReactNode {
-	const t = useTranslate(useResourceDetailTranslationNs());
-	if (statuses.length === 0) {
-		return null;
-	}
-	return (
-		<Group gap={4} wrap='wrap'>
-			{statuses.map((status, idx) => (
-				<React.Fragment key={status.value}>
-					{idx > 0 ? <IconChevronRight size={14} /> : null}
-					<Badge variant='filled' color={status.value === current ? status.color : 'gray'}>
-						{t(status.label)}
-					</Badge>
-				</React.Fragment>
-			))}
-		</Group>
-	);
 }

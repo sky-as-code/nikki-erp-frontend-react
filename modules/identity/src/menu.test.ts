@@ -34,10 +34,12 @@ describe('buildIdentityMenu', () => {
 		expect(links.filter(link => !routes.has(link.replace(/^\//, '')))).toEqual([]);
 	});
 
-	it('lists services beside users', () => {
+	it('lists user accounts, user groups, then service accounts', () => {
 		const items = menu.tabs[0].blocks[0].items;
 
-		expect(items.map(item => ('link' in item ? item.link : undefined))).toEqual(['/iam_user', '/iam_service', '/iam_group']);
+		expect(items.map(item => ('link' in item ? item.link : undefined))).toEqual(['/iam_user', '/iam_group', '/iam_service']);
+		expect(items.map(item => item.labelKey))
+			.toEqual(['menu.user_accounts', 'menu.user_groups', 'menu.service_accounts']);
 	});
 
 	it('opens the module on users', () => {

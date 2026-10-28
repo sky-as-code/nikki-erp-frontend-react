@@ -47,6 +47,16 @@ export const RESOURCE_FORM_COLUMN_V2 = 'nikkierp.mantine.components.resourceForm
 export const RESOURCE_CREATE_HEADER_V2 = 'nikkierp.mantine.components.resourceCreate.header.v2';
 export const RESOURCE_CREATE_FORM_V2 = 'nikkierp.mantine.components.resourceCreate.form.v2';
 export const RESOURCE_SPLIT_VIEW = 'nikkierp.mantine.components.resourceSplitView.v1';
+/**
+ * The detail template's body below the header: its sections in a left parent, and the Audit panel
+ * (History, Comments) the header's toggle opens beside them. Only the template places it.
+ */
+export const RESOURCE_DETAIL_AUDIT_LAYOUT = 'nikkierp.mantine.components.resourceDetail.auditLayout.v1';
+/**
+ * The record's status flow as a full row of a `formBlocks` section, for a page whose
+ * `statusPlacement` is `firstSection`. Valid only inside the detail template's update tree.
+ */
+export const RESOURCE_DETAIL_STATUS_STRIP = 'nikkierp.mantine.components.resourceDetail.statusStrip.v1';
 
 /**
  * The header of a `resourceGenericPage`: the resource-detail header's layout and back link,
