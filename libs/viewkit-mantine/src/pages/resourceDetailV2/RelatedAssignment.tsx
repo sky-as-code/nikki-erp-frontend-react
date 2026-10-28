@@ -8,6 +8,7 @@ import { useParams } from 'react-router';
 import {
 	assignmentSearchField, buildAssignPayload, buildRemovePayload, commandFailureMessage, pickedRecordId,
 } from './assignmentPayloads';
+import { ResourceUpdateContext } from './resourceUpdateContext';
 import { actionRequirement } from '../../permissions';
 
 import type { ManageDelta } from './assignmentPayloads';
@@ -69,9 +70,10 @@ function assignmentEntitlements(assignment: RelatedAssignment, schemaName: strin
 	return { createEntitlement: requirement, deleteEntitlement: requirement };
 }
 
-/** Publishes one delta; a failure sends the notice and resolves false. */
+/** Publishes one delta; a failure sends the notice and resolves false, a success reloads the History tab. */
 function usePublishDelta(command: string | undefined) {
 	const commandBus = useCommandBus();
+	const bumpHistory = React.useContext(ResourceUpdateContext)?.bumpHistory;
 	return React.useCallback(async (payload: ManageDelta): Promise<boolean> => {
 		if (!command || (payload.add?.length ?? 0) + (payload.remove?.length ?? 0) === 0) {
 			return false;
@@ -87,6 +89,7 @@ function usePublishDelta(command: string | undefined) {
 			notifyAssignmentError(failure);
 			return false;
 		}
+		bumpHistory?.();
 		return true;
-	}, [command, commandBus]);
+	}, [command, commandBus, bumpHistory]);
 }

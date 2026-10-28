@@ -7,8 +7,9 @@ import { resourceFileFieldPropsSchema } from './components/resourceFileField/pro
 import { resourceFormTabsPropsSchema } from './components/resourceFormTabs/props';
 import { settingsItemPropsSchema, settingsSectionPropsSchema } from './components/settings/props';
 import { tabCollapsibleSectionPropsSchema } from './components/tabCollapsibleSection/props';
-import { COLLAPSIBLE_SECTION, EXCEL_DATA_TABLE_BODY, PAGE_HEADER, RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_FILE_FIELD, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_GENERIC_PAGE_TEMPLATE, RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE, SETTINGS_ITEM, SETTINGS_SECTION, TAB_COLLAPSIBLE_SECTION } from './ids';
+import { COLLAPSIBLE_SECTION, EXCEL_DATA_TABLE_BODY, PAGE_HEADER, RESOURCE_DETAIL_STATUS_STRIP, RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_FILE_FIELD, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_GENERIC_PAGE_TEMPLATE, RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE, SETTINGS_ITEM, SETTINGS_SECTION, TAB_COLLAPSIBLE_SECTION } from './ids';
 import { ownPropertySectionSchema } from './pages/resourceDetail/props';
+import { resourceStatusStripPropsSchema } from './pages/resourceDetailV2/form/resourceStatusStripProps';
 import { resourceDetailV2PropsSchema } from './pages/resourceDetailV2/props';
 import { resourceGenericPagePropsSchema } from './pages/resourceGenericPage/props';
 import { resourceImportPropsSchema } from './pages/resourceImport/props';
@@ -25,6 +26,7 @@ import type {
 } from './components/settings/props';
 import type { TabCollapsibleSectionPropsInput } from './components/tabCollapsibleSection/props';
 import type { OwnPropertySectionInput } from './pages/resourceDetail/props';
+import type { ResourceStatusStripPropsInput } from './pages/resourceDetailV2/form/resourceStatusStripProps';
 import type { ResourceDetailV2Props, ResourceDetailV2PropsInput } from './pages/resourceDetailV2/props';
 import type {
 	ResourceGenericPageProps, ResourceGenericPagePropsInput,
@@ -174,6 +176,17 @@ export function resourceFileFieldNode(input: ResourceFileFieldPropsInput): Compo
 	return defineComponent({
 		component: RESOURCE_FILE_FIELD,
 		props: resourceFileFieldPropsSchema.parse(input) as Record<string, unknown>,
+	});
+}
+
+/**
+ * The record's status flow as a full row of a `formBlocks` section. The detail template places it
+ * itself for `statusPlacement: 'firstSection'`; a page needs this only to put the strip elsewhere.
+ */
+export function resourceStatusStripNode(input: ResourceStatusStripPropsInput = {}): ComponentNode {
+	return defineComponent({
+		component: RESOURCE_DETAIL_STATUS_STRIP,
+		props: resourceStatusStripPropsSchema.parse(input) as Record<string, unknown>,
 	});
 }
 

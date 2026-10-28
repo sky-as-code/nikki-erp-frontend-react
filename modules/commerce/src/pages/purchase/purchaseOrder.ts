@@ -180,8 +180,7 @@ function buildPurchaseOrderFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',
-			fields: ['is_locked', 'vendor_acknowledged', 'sourcing_group_id', 'created_at', 'created_by',
-				'updated_at'],
+			fields: ['is_locked', 'vendor_acknowledged', 'sourcing_group_id', 'created_at', 'updated_at'],
 		}),
 	]);
 }

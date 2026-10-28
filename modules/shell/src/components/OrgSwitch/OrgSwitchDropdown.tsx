@@ -19,7 +19,7 @@ import { sharedStateService } from '../../features/sharedState';
  */
 const ORG_LIST_PATH = '/iam/iam_org';
 
-export type OrgSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth'> & {
+export type OrgSwitchDropdownProps = Pick<FlatSearchableSelectProps, 'dropdownWidth' | 'targetClass'> & {
 	hideIfEmpty: boolean,
 };
 

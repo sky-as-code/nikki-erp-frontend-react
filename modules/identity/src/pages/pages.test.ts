@@ -117,7 +117,7 @@ type PrincipalSplit = {
 	secondary: {
 		props: {
 			schemaName: string, createDefaults?: unknown, thumbnail?: unknown, titleLvl2?: unknown,
-			createNodes: unknown[], childrenNodes: unknown[],
+			createNodes: unknown[], childrenNodes: unknown[], statusPlacement?: string,
 		},
 	},
 };
@@ -142,9 +142,18 @@ describe('IAM principal pages', () => {
 		expect(Boolean(props.secondary.props.thumbnail)).toBe(avatar);
 		expect('avatar_file_id' in (props.primary.props.fieldRenderers ?? {})).toBe(avatar);
 		expect(JSON.stringify(props.secondary.props.createNodes).includes('avatar_file_id')).toBe(avatar);
-		expect(collectFormFields(props.secondary.props.childrenNodes)).toEqual(
-			expect.arrayContaining(['created_at', 'created_by', 'updated_at']),
-		);
+		const auditFields = collectFormFields(props.secondary.props.childrenNodes);
+		expect(auditFields).toEqual(expect.arrayContaining(['created_at', 'updated_at']));
+		// The Audit panel's History names the author; created_by is a bare id with no label to show.
+		expect(auditFields).not.toContain('created_by');
+	});
+
+	it('the user page shows its status in General Information; the service page keeps the toolbar default', () => {
+		const user = buildUserPages()[0].props as PrincipalSplit;
+		const service = buildServicePages()[0].props as PrincipalSplit;
+
+		expect(user.secondary.props.statusPlacement).toBe('firstSection');
+		expect(service.secondary.props.statusPlacement).toBe('toolbar');
 	});
 
 	it('service pages show no email, which a service does not have', () => {

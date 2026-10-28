@@ -3,20 +3,24 @@ import { useCommand } from '@nikkierp/ui/hookhoc';
 import { defineComponent } from '@nikkierp/viewengine/metadata';
 import { MetaComponent } from '@nikkierp/viewengine/render';
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useParams } from 'react-router';
 
+import { useAuditOpen } from './audit/auditOpenStorage';
 import { updatablePayload } from './fieldLocks';
 import { toV2FormNodes } from './formNodes';
 import { useRecordLoadErrors } from './loadErrors';
 import { HideWhenNotFound, ResourceNotFound } from './ResourceNotFound';
 import { ResourceUpdateContext, ResourceUpdateContextValue, useResourceUpdateContext } from './resourceUpdateContext';
-import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_V2 } from '../../ids';
+import { withStatusStrip } from './statusPlacement';
+import { RESOURCE_DETAIL_AUDIT_LAYOUT, RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_V2 } from '../../ids';
 import { StandardActionCode, useFieldLocks } from '../../permissions';
 import {
 	useFileFieldContributors, useUpdateAfterSave, useUpdatePayloadContributors, withFileFields,
 } from '../resourceDetail/afterSave';
 import { useResourceDetailContext } from '../resourceDetail/ResourceDetailProvider';
 
+import type { StatusPlacement } from './resourceUpdateContext';
 import type { ResourceThumbnailSpec } from '../../components/resourceThumbnail/props';
 import type {
 	LinkSpec, ResourceDetailContextualActions,
@@ -34,6 +38,7 @@ export type ResourceUpdateProps = {
 	titleLvl2?: SchemaFieldSpec,
 	backLinkTitle?: LinkSpec,
 	thumbnail?: ResourceThumbnailSpec,
+	statusPlacement?: StatusPlacement,
 	childrenNodes?: ComponentNode[],
 	/**
 	 * Page sections rendered after the update tree, inside its context, and only while the record
@@ -51,9 +56,34 @@ export function ResourceUpdate({ children, ...props }: ResourceUpdateProps): Rea
 	return (
 		<ResourceUpdateProvider {...props}>
 			<ResourceUpdateContent />
-			<HideWhenNotFound>{children}</HideWhenNotFound>
+			<HideWhenNotFound><AfterSections>{children}</AfterSections></HideWhenNotFound>
 		</ResourceUpdateProvider>
 	);
+}
+
+const AfterSectionsSlotContext = React.createContext<HTMLElement | null>(null);
+
+/**
+ * Renders the page's own sections (the related tabs) into the audit layout's left parent, after the
+ * form's sections, so the Audit panel opens beside them too. A portal moves only the DOM: the React
+ * tree, and with it every context, stays where it is, outside the form. Nothing renders until the
+ * layout has mounted its slot, so the tabs mount once rather than once here and again there.
+ */
+function AfterSections({ children }: { children: React.ReactNode }): React.ReactNode {
+	const slot = React.useContext(AfterSectionsSlotContext);
+	return slot ? createPortal(children, slot) : null;
+}
+
+/**
+ * The Audit panel's open state, remembered for every detail page, and the element the layout offers
+ * {@link AfterSections}.
+ */
+function useAuditPanelState() {
+	const [auditOpen, setAuditOpen] = useAuditOpen();
+	const [afterSectionsSlot, setAfterSectionsSlot] = React.useState<HTMLElement | null>(null);
+	const [historyVersion, setHistoryVersion] = React.useState(0);
+	const bumpHistory = React.useCallback(() => setHistoryVersion(version => version + 1), []);
+	return { auditOpen, setAuditOpen, afterSectionsSlot, setAfterSectionsSlot, historyVersion, bumpHistory };
 }
 
 /** Fetches the resource and provides {@link ResourceUpdateContext} to its subtree. */
@@ -92,6 +122,9 @@ export function ResourceUpdateProvider(
 		register: registerFileField, hasPending: hasPendingFiles, collect: collectFileFields,
 	} = useFileFieldContributors();
 	const [updateMode, setUpdateMode] = React.useState(false);
+	const {
+		auditOpen, setAuditOpen, afterSectionsSlot, setAfterSectionsSlot, historyVersion, bumpHistory,
+	} = useAuditPanelState();
 
 	// Refreshes only on success: a refetch would wipe the edits to correct. A section may decline the save.
 	const onSubmit = React.useCallback(async (data: Record<string, any>): Promise<boolean> => {
@@ -131,6 +164,7 @@ export function ResourceUpdateProvider(
 			titleLvl2: props.titleLvl2,
 			backLinkTitle: props.backLinkTitle,
 			thumbnail: props.thumbnail,
+			statusPlacement: props.statusPlacement,
 			childrenNodes: props.childrenNodes,
 			registerAfterSave: afterSave.register,
 			hasPendingAfterSave: afterSave.hasPending,
@@ -139,21 +173,24 @@ export function ResourceUpdateProvider(
 			registerUpdatePayload: payloadContributors.register,
 			hasPendingUpdatePayload: payloadContributors.hasPending,
 			updateMode, setUpdateMode,
+			auditOpen, setAuditOpen, setAfterSectionsSlot, historyVersion, bumpHistory,
 		}),
 		[
 			commands, resource, maskedFields, edgeLabels, getByIdCmd.isPending, updateCmd.isPending,
 			refresh, onSubmit, updateCmd.clientErrors, updateCmd.error, getByIdCmd.error, notFound,
-			props.allStatuses, props.currentStatus, props.contextualActions,
+			props.allStatuses, props.currentStatus, props.contextualActions, props.statusPlacement,
 			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.thumbnail, props.childrenNodes,
 			afterSave.register, afterSave.hasPending, afterSave.isRunning, afterSave.submitAfterSaveOnly,
 			registerFileField, hasPendingFiles, payloadContributors.register, payloadContributors.hasPending,
-			updateMode,
+			updateMode, auditOpen, setAuditOpen, historyVersion, bumpHistory,
 		],
 	);
 
 	return (
 		<ResourceUpdateContext.Provider value={value}>
-			{props.children}
+			<AfterSectionsSlotContext.Provider value={afterSectionsSlot}>
+				{props.children}
+			</AfterSectionsSlotContext.Provider>
 		</ResourceUpdateContext.Provider>
 	);
 }
@@ -222,8 +259,16 @@ function buildUpdateNodes(context: ResourceUpdateContextValue): ComponentNode[] 
 				// used to have to open its own `RESOURCE_FORM`/`CrudFormProvider` to reach a form
 				// runtime here, which left it with a second, disconnected form instance — invisible
 				// to the header's now-relocated Save/Cancel/updateMode. Rendering them here instead
-				// means one shared `CrudFormProvider` for the whole page, header included.
-				...(toV2FormNodes(context.childrenNodes) ?? []),
+				// means one shared `CrudFormProvider` for the whole page, header included. The audit
+				// layout around them is the left parent the Audit panel opens beside.
+				defineComponent({
+					component: RESOURCE_DETAIL_AUDIT_LAYOUT,
+					children: withStatusStrip(
+						toV2FormNodes(context.childrenNodes) ?? [],
+						context.statusPlacement,
+						(context.allStatuses ?? []).length > 0,
+					),
+				}),
 			],
 		}),
 	];

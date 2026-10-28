@@ -65,6 +65,7 @@ function buildServiceDetailProps() {
 			{ value: 'suspended', label: 'status.suspended', color: 'orange' },
 		],
 		currentStatus: { schemaField: 'status' },
+		statusPlacement: 'firstSection',
 		standardActionCommands: {
 			getById: ServiceCommands.GET_BY_ID,
 			create: ServiceCommands.CREATE,
@@ -97,7 +98,7 @@ function buildServiceFieldsSection(): ComponentNode {
 		header: 'form.generalInformation',
 	}, [
 		resourceFormColumnNode({ header: 'form.generalInformation', fields: ['display_name'] }),
-		resourceFormColumnNode({ header: 'form.audit', fields: ['created_at', 'created_by', 'updated_at'] }),
+		resourceFormColumnNode({ header: 'form.audit', fields: ['created_at', 'updated_at'] }),
 	]);
 }
 

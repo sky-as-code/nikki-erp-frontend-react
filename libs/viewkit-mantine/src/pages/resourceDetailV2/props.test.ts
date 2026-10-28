@@ -12,6 +12,13 @@ describe('resourceDetailV2PropsSchema', () => {
 		expect(parsed.standardActionCommands).toEqual({});
 	});
 
+	it('places the status flow in the toolbar unless the page names its first section', () => {
+		expect(resourceDetailV2PropsSchema.parse(base).statusPlacement).toBe('toolbar');
+		expect(resourceDetailV2PropsSchema.parse({ ...base, statusPlacement: 'firstSection' }).statusPlacement)
+			.toBe('firstSection');
+		expect(() => resourceDetailV2PropsSchema.parse({ ...base, statusPlacement: 'header' })).toThrow();
+	});
+
 	it('accepts create defaults', () => {
 		const parsed = resourceDetailV2PropsSchema.parse({ ...base, createDefaults: { type: 'service' } });
 		expect(parsed.createDefaults).toEqual({ type: 'service' });

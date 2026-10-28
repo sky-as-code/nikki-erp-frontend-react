@@ -10,10 +10,19 @@
 	border-radius: 0;
 }
 
+/*
+ * The left padding lines the first block's item text up with the first tab's text. It walks the
+ * header row: its own padding (md), the 26px launcher, the fixed-width org and module switches,
+ * the 1px divider and the four xs gaps between them, then the tab's xs padding, less the block's
+ * and the item's own xs padding.
+ */
 .panel {
 	position: relative;
 	display: flex;
-	padding: 4px calc(var(--mantine-spacing-md) + 32px) 4px var(--mantine-spacing-md);
+	--ribbon-switches-width: calc(var(--shell-org-switch-width) + var(--shell-module-switch-width));
+
+	padding: 4px calc(var(--mantine-spacing-md) + 32px) 4px
+		calc(var(--mantine-spacing-md) + 26px + var(--ribbon-switches-width) + 1px + 3 * var(--mantine-spacing-xs));
 	border-top: 1px solid var(--mantine-color-default-border);
 	background: var(--nikki-color-page-surface);
 }

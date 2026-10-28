@@ -2,7 +2,7 @@ import { Badge, Switch } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
-import { normalizeBooleanValue } from '../../form/ReadOnlyBooleanSwitch';
+import { normalizeBooleanValue, READ_ONLY_SWITCH_STYLES } from '../../form/ReadOnlyBooleanSwitch';
 import { LocalizedDateTime } from '../../Localized/LocalizedDateTime';
 import { LocalizedMoney } from '../../Localized/LocalizedMoney';
 import { LocalizedNumber } from '../../Localized/LocalizedNumber';
@@ -144,7 +144,9 @@ export class BooleanCellRenderer implements DataTypeCellRenderer {
 	}
 
 	public render(rawValue: unknown, _textValue: string): React.ReactNode {
-		return <Switch readOnly checked={normalizeBooleanValue(rawValue)} tabIndex={-1} />;
+		return (
+			<Switch readOnly checked={normalizeBooleanValue(rawValue)} tabIndex={-1} styles={READ_ONLY_SWITCH_STYLES} />
+		);
 	}
 }
 

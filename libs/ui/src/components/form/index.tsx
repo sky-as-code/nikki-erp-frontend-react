@@ -4,6 +4,7 @@ export * from './fieldLabelContext';
 export * from './formContext';
 export * from './formTestIds';
 export * from './LangJsonField';
+export * from './longText';
 export * from './RelationPickerModal';
 export * from './recordSearchOptions';
 export * from './RelationSelectField';

@@ -59,7 +59,25 @@ export type ResourceUpdateContextValue = {
 	 */
 	updateMode?: boolean,
 	setUpdateMode?: React.Dispatch<React.SetStateAction<boolean>>,
+	/** v2 only: where the status flow renders, in the header's right toolbar or atop the first section. */
+	statusPlacement?: StatusPlacement,
+	/** v2 only: whether the Audit panel is open beside the sections; the toolbar toggle and its X set it. */
+	auditOpen?: boolean,
+	setAuditOpen?: React.Dispatch<React.SetStateAction<boolean>>,
+	/**
+	 * v2 only: bumped by a write that does not refetch the record, such as a related-tab assignment,
+	 * so the History tab still reloads.
+	 */
+	historyVersion?: number,
+	bumpHistory?: () => void,
+	/**
+	 * v2 only: the element after the sections, inside the left parent, that the page's own sections
+	 * (the related tabs) are portalled into, so the Audit panel sits beside them too.
+	 */
+	setAfterSectionsSlot?: (element: HTMLElement | null) => void,
 };
+
+export type StatusPlacement = 'toolbar' | 'firstSection';
 
 export const ResourceUpdateContext = React.createContext<ResourceUpdateContextValue | undefined>(undefined);
 

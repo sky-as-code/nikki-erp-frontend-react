@@ -82,6 +82,12 @@ export const resourceDetailV2PropsSchema = resourceDetailPropsSchema.extend({
 	 * shape; a field not editable in the current mode renders read-only, and an empty one as `-`.
 	 */
 	stableFieldLayout: z.boolean().optional(),
+	/**
+	 * Where the `allStatuses` flow renders on an existing record: `toolbar`, in the header's right
+	 * toolbar (read mode only), or `firstSection`, as the first full-width row of the first section
+	 * (every mode).
+	 */
+	statusPlacement: z.enum(['toolbar', 'firstSection']).default('toolbar'),
 }).strict();
 
 export type RelatedResource = z.infer<typeof relatedResourceSchema>;
