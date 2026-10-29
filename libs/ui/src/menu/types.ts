@@ -23,6 +23,11 @@ export type MenuItem = {
 	 */
 	requiredEntitlements?: EntitlementRequirementInput[],
 	items?: MenuItem[],
+	/**
+	 * Ribbon only: the entry takes a column of its own at the left of its block (see
+	 * {@link RibbonLinkItem.rowspan}). A traditional menu ignores it.
+	 */
+	rowspan?: boolean,
 };
 
 type MenuContributionBase = {

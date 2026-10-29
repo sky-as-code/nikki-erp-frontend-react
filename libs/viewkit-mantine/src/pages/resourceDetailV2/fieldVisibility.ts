@@ -1,4 +1,10 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
+import { evaluateCondition } from '@nikkierp/viewengine/metadata';
+
+import { parseInlineRowItem } from '../resourceDetail/formColumnFields';
+
+import type { FormColumnField } from '../resourceDetail/formColumnFields';
+import type { OwnPropertySection } from '../resourceDetail/props';
 
 
 export type FieldVisibilityMode = 'create' | 'update' | 'read';
@@ -109,4 +115,60 @@ export function isBlockVisible(
 	stableFieldLayout = false,
 ): boolean {
 	return hasVisibleField(modelSchema, fields, stableFieldLayout ? 'read' : mode);
+}
+
+export type VisibleWhen = OwnPropertySection['visibleWhen'];
+
+/**
+ * Whether `field` passes its `visibleWhen` rule against `values`: no rule means shown, and a list of
+ * conditions must all hold. Unlike the schema rules above this one reads the record (or, while
+ * editing, the live form), so a field comes and goes as the value it depends on changes.
+ */
+export function isFieldShownByCondition(
+	visibleWhen: VisibleWhen, field: string, values: Record<string, unknown>,
+): boolean {
+	const rule = visibleWhen?.[field];
+	if (!rule) {
+		return true;
+	}
+	const conditions = Array.isArray(rule) ? rule : [rule];
+	return conditions.every(condition => evaluateCondition(condition, values));
+}
+
+/** The top-level fields the `visibleWhen` conditions read: what a form must watch to keep them live. */
+export function visibleWhenSourceFields(visibleWhen: VisibleWhen): string[] {
+	const fields = Object.values(visibleWhen ?? {})
+		.flatMap(rule => (Array.isArray(rule) ? rule : [rule]))
+		.map(condition => condition.field.split('.')[0]);
+	return [...new Set(fields)].sort();
+}
+
+/**
+ * A block's `fields` without the ones whose `visibleWhen` fails. Inside an inline row only the
+ * `@@field` item goes; a row left with none of its fields is dropped whole, since its text would
+ * then label nothing.
+ */
+export function applyVisibleWhen(
+	fields: readonly FormColumnField[], visibleWhen: VisibleWhen, values: Record<string, unknown>,
+): FormColumnField[] {
+	if (!visibleWhen) {
+		return [...fields];
+	}
+	const shown = (name: string) => isFieldShownByCondition(visibleWhen, name, values);
+	return fields.flatMap((entry): FormColumnField[] => {
+		if (typeof entry === 'string') {
+			return shown(entry) ? [entry] : [];
+		}
+		const kept = entry.filter(item => {
+			const name = inlineFieldName(item);
+			return name === undefined || shown(name);
+		});
+		const hasField = (row: string[]) => row.some(item => inlineFieldName(item) !== undefined);
+		return hasField(entry) && !hasField(kept) ? [] : [kept];
+	});
+}
+
+function inlineFieldName(item: string): string | undefined {
+	const parsed = parseInlineRowItem(item);
+	return parsed.kind === 'field' ? parsed.name : undefined;
 }

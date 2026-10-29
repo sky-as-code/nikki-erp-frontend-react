@@ -72,7 +72,9 @@ describe('buildCommerceMenu', () => {
 		const routes = new Set(
 			allPages().map(page => page.routePath),
 		);
-		const unresolved = ribbonLinks(menu).filter(link => !routes.has(link.replace(/^\//, '')));
+		// A link may carry a query string, and open a page's create route (`/new`).
+		const routeOf = (link: string) => link.replace(/^\//, '').replace(/\?.*$/, '').replace(/\/new$/, '');
+		const unresolved = ribbonLinks(menu).filter(link => !routes.has(routeOf(link)));
 
 		expect(unresolved).toEqual([]);
 	});
@@ -81,6 +83,26 @@ describe('buildCommerceMenu', () => {
 		const routes = allPages().map(page => page.routePath);
 
 		expect(routes.filter((route, index) => routes.indexOf(route) !== index)).toEqual([]);
+	});
+
+	it('starts a transfer per operation from a rowspan dropdown, and lists transfers per operation', () => {
+		const stock = menu.tabs[0].blocks.find(block => block.titleKey === 'inventory_menu_stock');
+		const [newTransfer, transfers] = stock?.items ?? [];
+
+		expect(newTransfer).toMatchObject({ labelKey: 'inventory_menu_newTransfer', rowspan: true });
+		expect(isRibbonDropdown(newTransfer) ? newTransfer.items.map(link => link.link) : []).toEqual([
+			`/inventory_stock_transfer/new?field_data=${encodeURIComponent('{"operation_code":"incoming"}')}`,
+			`/inventory_stock_transfer/new?field_data=${encodeURIComponent('{"operation_code":"outgoing"}')}`,
+			`/inventory_stock_transfer/new?field_data=${encodeURIComponent('{"operation_code":"internal"}')}`,
+			'/inventory_stock_transfer/new',
+		]);
+		expect(transfers.rowspan).toBeUndefined();
+		expect(isRibbonDropdown(transfers) ? transfers.items.map(link => link.link) : []).toEqual([
+			`/inventory_stock_transfer?initialGraph=${encodeURIComponent('{"if":["operation_code","=","incoming"]}')}`,
+			`/inventory_stock_transfer?initialGraph=${encodeURIComponent('{"if":["operation_code","=","outgoing"]}')}`,
+			`/inventory_stock_transfer?initialGraph=${encodeURIComponent('{"if":["operation_code","=","internal"]}')}`,
+			'/inventory_stock_transfer',
+		]);
 	});
 
 	it('opens the module on the first inventory link', () => {

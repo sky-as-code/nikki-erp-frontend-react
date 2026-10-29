@@ -16,6 +16,7 @@ import { SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
 import { DEFAULT_MAX_OPTIONS } from '../SearchableSelect/optionLimit';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 
+import type { RecordSearchScope } from './recordSearchOptions';
 import type { LocalizeFn } from '../../i18n';
 import type { SearchItem, SelectionMode } from '../ExcelDataTable';
 
@@ -32,6 +33,13 @@ export type RelationSelectFieldProps = {
 	 */
 	exclusiveDisabledBy?: string,
 };
+
+/**
+ * Per-field narrowing of the relation selects below it, by form field name: what the typed term
+ * matches and which records may be offered at all. Absent, a select searches its target schema's
+ * record label over every record. The picker modal browses within the same `graph`.
+ */
+export const RelationSearchScopeContext = React.createContext<Record<string, RecordSearchScope>>({});
 
 /**
  * Picks a related record for a `ulid` foreign-key field, searching the target resource through the
@@ -119,6 +127,7 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 								destSchemaName={options.destSchemaName}
 								selectionMode={options.selectionMode}
 								selectedIds={field.value ? [String(field.value)] : []}
+								baseGraph={options.scopeGraph}
 								testId={fieldTestId}
 								onSelect={(items: SearchItem[]) => {
 									field.onChange(String(items[0].id));
@@ -142,6 +151,7 @@ type RelationOptions = {
 	destSchemaName: string,
 	/** How many referenced records the field holds, from its relation's cardinality. */
 	selectionMode: SelectionMode,
+	scopeGraph?: dyn.SearchGraph,
 };
 
 /**
@@ -157,7 +167,8 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 		? dyn.findRelationBySrcField(crudSchema.modelSchema, fieldName)
 		: undefined;
 	const destSchemaName = relation?.dest_schema_name ?? '';
-	const search = useRecordSearchOptions(destSchemaName, term, localize);
+	const scope = React.useContext(RelationSearchScopeContext)[fieldName];
+	const search = useRecordSearchOptions(destSchemaName, term, localize, undefined, scope);
 	const { labelField, subLabelField, options: pageOptions } = search;
 	const selectedId = useWatch({ control, name: fieldName }) as string | undefined;
 	const offPageOption = useSelectedLabel({
@@ -173,6 +184,7 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 		selectedLabel: data.find(option => option.value === selectedId)?.label,
 		destSchemaName,
 		selectionMode: relationSelectionMode(relation),
+		scopeGraph: scope?.graph,
 	};
 }
 

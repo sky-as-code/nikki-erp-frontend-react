@@ -35,19 +35,20 @@ function buildInventoryLocationListProps() {
 		updateCommand: InventoryLocationCommands.UPDATE,
 		fieldRenderers: {
 			// Only `internal` holds company-owned stock, so the colours separate it from the
-			// counterparty and virtual locations rather than giving each usage its own hue.
-			location_usage: {
+			// counterparty and virtual locations rather than giving each type its own hue.
+			location_type: {
 				renderer: 'badge',
 				colorMap: {
 					internal: 'green',
+					group: 'gray',
 					customer: 'blue',
 					vendor: 'indigo',
 					inventory_loss: 'orange',
+					production: 'violet',
 					scrap: 'red',
 					transit: 'gray',
-					virtual: 'gray',
 				},
-				prefix: 'location_usage.',
+				prefix: 'location_type.',
 			},
 			// Suspended is a temporary lock rather than a retirement, so it reads as a warning
 			// rather than an error: the location is still there and still holds whatever it held.
@@ -97,7 +98,7 @@ function buildInventoryLocationFieldsSection(): ComponentNode {
 			// warehouse_id is inherited from the parent location by the backend (null for a vendor,
 			// customer or shared transit location), so it is shown but never edited.
 			header: 'form.locationTopology',
-			fields: ['location_usage', 'purpose', 'parent_location_id', 'warehouse_id'],
+			fields: ['location_type', 'parent_location_id', 'warehouse_id'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.storagePolicy',

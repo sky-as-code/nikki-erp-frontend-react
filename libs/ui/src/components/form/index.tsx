@@ -12,6 +12,7 @@ export * from './resourceCodeField';
 export * from './updatePayload';
 export * from './ReadOnlyBooleanSwitch';
 export * from './useComputedField';
+export * from './useWatchedFormValues';
 export * from './validation';
 export * from './FormContainer';
 export * from './FormActions';

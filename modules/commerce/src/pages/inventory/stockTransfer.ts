@@ -4,9 +4,8 @@ import {
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/inventory';
-import { StockMoveCommands } from '../../features/inventory/stockMove/commands';
-import { StockMoveLineCommands } from '../../features/inventory/stockMoveLine/commands';
 import { StockTransferCommands } from '../../features/inventory/stockTransfer/commands';
+import { stockTransferMovesNode } from '../../viewkit/inventory/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -63,7 +62,8 @@ function buildStockTransferDetailProps() {
 		schemaName: c.STOCK_TRANSFER_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'transfer_number' },
-		titleLvl2: { schemaField: 'status' },
+		// The operation (Receipt, Delivery, ...) says what the transfer is; the status strip says how far it got.
+		titleLvl2: { schemaField: 'operation_type_id' },
 		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: StockTransferCommands.GET_BY_ID,
@@ -72,54 +72,74 @@ function buildStockTransferDetailProps() {
 			delete: StockTransferCommands.DELETE,
 		},
 		contextualActions: buildMovementActions(),
-		createNodes: [buildStockTransferFieldsSection()],
-		childrenNodes: [buildStockTransferFieldsSection()],
-		relatedResources: buildMovementResources(),
+		createNodes: buildStockTransferSections(),
+		childrenNodes: buildStockTransferSections(),
 	});
 }
 
-/** Shared by both form modes: the resource's own fields, as titled blocks. */
+/** Shared by both form modes: the transfer's own fields, its policies, then its moves. */
+function buildStockTransferSections(): ComponentNode[] {
+	return [buildStockTransferFieldsSection(), buildStockTransferPoliciesSection(), buildStockTransferMovesSection()];
+}
+
 function buildStockTransferFieldsSection(): ComponentNode {
 	return collapsibleSectionNode({
 		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
 		header: 'form.generalInformation',
-	}, [...buildStockTransferDocumentColumns(), ...buildStockTransferTimelineColumns()]);
-}
-
-function buildStockTransferDocumentColumns(): ComponentNode[] {
-	return [
+	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
 			fields: [
-				'transfer_number', 'operation_type_id', 'operation_code', 'status',
-				'origin_reference', 'note', 'org_id',
+				'transfer_number', 'operation_code', 'operation_type_id', 'status', 'origin_reference', 'note',
 			],
+			// The code picks the operation: on create the backend resolves the org's operation type
+			// for it when none is chosen, so the select only offers the types of the chosen code.
+			readOnlyFields: ['operation_code'],
+			relationSearch: {
+				operation_type_id: { matchFormFields: { operation_code: 'operation_code' } },
+			},
 		}),
 		resourceFormColumnNode({
 			header: 'form.movement',
 			fields: ['source_location_id', 'destination_location_id', 'priority'],
 		}),
 		resourceFormColumnNode({
-			header: 'form.stockPolicies',
-			// Snapshots taken at create time, shown so a reader can see what this transfer will do
-			// rather than what its operation type currently says (BR Â§4.2.3.4).
-			fields: ['reservation_method', 'backorder_policy', 'shipping_policy'],
-		}),
-	];
-}
-
-function buildStockTransferTimelineColumns(): ComponentNode[] {
-	return [
-		resourceFormColumnNode({
 			header: 'form.scheduling',
 			fields: ['scheduled_at', 'deadline_at', 'completed_at'],
+		}),
+	]);
+}
+
+function buildStockTransferPoliciesSection(): ComponentNode {
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
+		translationNs: c.INVENTORY_MODULE,
+		header: 'form.policies',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.stockPolicies',
+			// Snapshots taken at create time, shown so a reader can see what this transfer will do
+			// rather than what its operation type currently says (BR §4.2.3.4).
+			fields: ['reservation_method', 'backorder_policy', 'shipping_policy'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.backorder',
 			fields: ['backorder_of_id', 'return_of_id', 'chain_group_id'],
 		}),
-	];
+	]);
+}
+
+/**
+ * The moves, edited inline and saved with the transfer in one request while it is a draft. A
+ * section of the form, not a related-resources tab: those are read-only and update-mode only. Move
+ * lines are not shown: the reservation engine writes them.
+ */
+function buildStockTransferMovesSection(): ComponentNode {
+	return collapsibleSectionNode({
+		translationNs: c.INVENTORY_MODULE,
+		header: 'form.moves',
+	}, [stockTransferMovesNode()]);
 }
 
 /**
@@ -182,39 +202,4 @@ function buildMovementActions() {
 			condition: { field: 'status', operator: 'equal' as const, value: 'done' },
 		},
 	};
-}
-
-/**
- * The transfer's moves and their execution lines, as related-records tables.
- *
- * Both are filtered by the current route param, the same pattern as the product template's
- * variants table. Move lines are read-only: they are written by the reservation engine, and
- * letting a user edit an allocation would need the release-and-re-reserve flow of BR Â§4.2.5.4.
- *
- * Neither links to a Moves page, because there is none: a move has no life outside the transfer
- * that carries it. They link to the *product* instead, which is the question a reader of a
- * transfer line actually has â€” "what is this thing?" â€” and completes the navigation in the
- * direction Stock â†’ Product (CR Â§17).
- */
-function buildMovementResources() {
-	return [
-		{
-			label: 'form.moves',
-			schemaName: c.STOCK_MOVE_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: StockMoveCommands.SEARCH,
-			initialGraph: { if: ['transfer_id', '=', '${id}'] },
-			linkField: 'product_variant_id',
-			linkRoutePath: 'inventory_product_variant',
-		},
-		{
-			label: 'form.moveLines',
-			schemaName: c.STOCK_MOVE_LINE_SCHEMA_NAME,
-			translationNs: c.INVENTORY_MODULE,
-			searchCommand: StockMoveLineCommands.SEARCH,
-			initialGraph: { if: ['transfer_id', '=', '${id}'] },
-			linkField: 'product_variant_id',
-			linkRoutePath: 'inventory_product_variant',
-		},
-	];
 }

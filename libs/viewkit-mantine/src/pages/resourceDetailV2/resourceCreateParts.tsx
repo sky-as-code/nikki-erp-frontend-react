@@ -12,7 +12,7 @@ import React from 'react';
 
 import { useDetailFieldDisplay } from './detailFieldDisplay';
 import { isBlockVisible } from './fieldVisibility';
-import { FieldGroupVertical } from './ownPropertiesBlock';
+import { FieldGroupVertical, useVisibleBlockFields } from './ownPropertiesBlock';
 import { useResourceCreateContext } from './resourceCreateContext';
 import classes from './ResourceDetail.module.css';
 import { formBlockSpanClass } from '../../components/formBlockSpan';
@@ -160,10 +160,11 @@ export function ResourceCreateBlock({
 	const { stableFieldLayout } = useDetailFieldDisplay();
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const modelSchema = schemaPack?.modelSchema;
+	const fields = useVisibleBlockFields(block, 'create', NO_RECORD);
 
 	// A header over nothing reads as a broken section, so a block whose fields all filter out is
 	// dropped along with its title.
-	if (!modelSchema || !isBlockVisible(modelSchema, columnFieldNames(block.fields), 'create', stableFieldLayout)) {
+	if (!modelSchema || !isBlockVisible(modelSchema, columnFieldNames(fields), 'create', stableFieldLayout)) {
 		return null;
 	}
 
@@ -171,11 +172,12 @@ export function ResourceCreateBlock({
 		<Stack gap='sm' className={clsx(classes.formBlock, formBlockSpanClass(block))}>
 			{block.header && block.showTitle ? <Title order={4}>{t(block.header)}</Title> : null}
 			<FieldGroupVertical
-				fields={block.fields ?? []}
+				fields={fields}
 				isLoading={isLoading}
 				modelSchema={modelSchema}
 				fieldValues={NO_RECORD}
 				mode='create'
+				relationSearch={block.relationSearch}
 			/>
 		</Stack>
 	);

@@ -5,12 +5,8 @@ import * as dyn from '@nikkierp/common/dynamicModel';
  * Where stock is held. Only `internal` locations hold company-owned stock; the rest are the
  * counterparties and virtual locations that give a movement its opposite side. See BR §4.2.
  */
-export type InventoryLocationUsage =
-	'internal' | 'customer' | 'vendor' | 'inventory_loss' | 'scrap' | 'transit' | 'virtual';
-
-/** What a location is used for inside its warehouse. Null for a location outside any warehouse. */
-export type InventoryLocationPurpose =
-	'storage' | 'receiving' | 'quality' | 'picking' | 'packing' | 'output' | 'other';
+export type InventoryLocationType =
+	'internal' | 'group' | 'customer' | 'vendor' | 'inventory_loss' | 'production' | 'scrap' | 'transit';
 
 export type InventoryLocationRemovalStrategy =
 	'fifo' | 'lifo' | 'fefo' | 'closest' | 'least_packages';
@@ -26,8 +22,7 @@ export type InventoryLocation = {
 	name?: string,
 	/** The full path through the location tree, derived by the backend; the record label. */
 	canonical_name?: string,
-	location_usage?: InventoryLocationUsage,
-	purpose?: InventoryLocationPurpose,
+	location_type?: InventoryLocationType,
 	/**
 	 * Inherited from the parent location by the backend. Null when the location belongs to no
 	 * warehouse, which is normal for the external ones.

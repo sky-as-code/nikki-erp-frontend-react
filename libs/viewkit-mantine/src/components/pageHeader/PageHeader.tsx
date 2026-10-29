@@ -1,6 +1,9 @@
 import { Anchor, getSpacing, Group, Stack, Text, Title } from '@mantine/core';
+import * as dyn from '@nikkierp/common/dynamicModel';
 import { testAttrs } from '@nikkierp/common/utils';
 import { Breadcrumbs, useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
+import { TranslatableText } from '@nikkierp/ui/components';
+import { toLangJson } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { componentAttrs } from '@nikkierp/viewengine/core';
@@ -13,9 +16,12 @@ import classes from './PageHeader.module.css';
 import { PageHeaderContextValue, usePageHeader } from './pageHeaderContext';
 import { pageHeaderPropsSchema, PageHeaderLinkSpec, PageHeaderProps, PageHeaderTitleSpec } from './props';
 import { usePinnedToolbar } from './usePinnedToolbar';
+import { edgeDisplay } from '../../data/edgeDisplay';
+import { readFieldValue } from '../../data/fieldPaths';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import { PAGE_HEADER } from '../../ids';
 import { useDetailFieldDisplay } from '../../pages/resourceDetailV2/detailFieldDisplay';
+import { ResourceUpdateContext } from '../../pages/resourceDetailV2/resourceUpdateContext';
 import { renderDisplayFieldValue } from '../fieldValue';
 
 import type { MantineSpacing } from '@mantine/core';
@@ -200,12 +206,27 @@ function TitleText({ spec, context }: SpecProps<PageHeaderTitleSpec>): React.Rea
 	const t = useTranslate(context?.translationNs ?? '');
 	const localize = useLocalize(context?.translationNs ?? '');
 	const { fieldRenderers } = useDetailFieldDisplay();
+	const edgeLabels = React.useContext(ResourceUpdateContext)?.edgeLabels;
 
 	if ('text' in spec) {
 		return spec.text;
 	}
 	if ('textKey' in spec) {
 		return t(spec.textKey, context?.titleParams);
+	}
+	// A foreign key titles the page by the record it points at (an operation type's name), as the
+	// read-mode field shows it, never by its id. Plain text: a title is not a link.
+	const relation = context?.modelSchema
+		? dyn.findRelationBySrcField(context.modelSchema, spec.schemaField)
+		: undefined;
+	if (relation) {
+		const edge = readFieldValue(context?.record, relation.edge) as Record<string, unknown> | null;
+		const display = edgeDisplay(relation, edgeLabels?.[relation.edge], edge, undefined);
+		if (display.kind !== 'fallback') {
+			return typeof display.label === 'object'
+				? <TranslatableText langJson={toLangJson(display.label)} />
+				: String(display.label);
+		}
 	}
 	// A schema-field title on a page with no record yet renders empty rather than throwing:
 	// the header paints before the fetch resolves, every time. An enum value is translated as

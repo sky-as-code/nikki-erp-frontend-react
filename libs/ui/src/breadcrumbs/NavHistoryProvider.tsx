@@ -108,7 +108,8 @@ function deriveEntryTrail(previous: TrailNode[], location: Location, navType: Na
 	return applyLink(base, target, readNavMode(location.state) ?? 'sibling');
 }
 
-function readNavMode(state: unknown): LinkMode | undefined {
+/** How the navigation that produced `state` joins the trail, as its link tagged it; `undefined` when untagged. */
+export function readNavMode(state: unknown): LinkMode | undefined {
 	const mode = state && typeof state === 'object' ? (state as { navMode?: unknown }).navMode : undefined;
 	return mode === 'root' || mode === 'append' || mode === 'sibling' ? mode : undefined;
 }

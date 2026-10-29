@@ -3,7 +3,9 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import { toDisplayedEntitlements } from '@nikkierp/common/entitlements';
 import { FieldLabelText, localizeFieldDescription, useShowLockedFeature } from '@nikkierp/ui/components';
 import { maskedFieldMissing } from '@nikkierp/ui/components/ExcelDataTable';
-import { AutoField, ReadOnlyBooleanSwitch, useComputedField } from '@nikkierp/ui/components/form';
+import {
+	AutoField, ReadOnlyBooleanSwitch, RelationSearchScopeContext, useComputedField, useWatchedFormValues,
+} from '@nikkierp/ui/components/form';
 import { type LocalizeFn, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconLock } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -11,8 +13,9 @@ import React from 'react';
 
 import { useDetailFieldDisplay } from './detailFieldDisplay';
 import { fieldLockView, type FieldLockView } from './fieldLocks';
-import { fieldPresentation, isBlockVisible } from './fieldVisibility';
+import { applyVisibleWhen, fieldPresentation, isBlockVisible, visibleWhenSourceFields } from './fieldVisibility';
 import { InlineFieldRow } from './inlineFieldRow';
+import { useRelationSearchScopes } from './relationSearchScope';
 import classes from './ResourceDetail.module.css';
 import { ResourceUpdateContext } from './resourceUpdateContext';
 import { EdgeFieldValue } from '../../components/edgeFieldValue';
@@ -42,10 +45,11 @@ export function OwnPropertiesBlock({
 	const modelSchema = schemaPack?.modelSchema;
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const mode = updateMode ? 'update' : 'read';
+	const fields = useVisibleBlockFields(block, mode, fieldValues);
 
 	// A header over nothing reads as a broken section, so a block whose fields all filter out is
 	// dropped along with its title.
-	if (!modelSchema || !isBlockVisible(modelSchema, columnFieldNames(block.fields), mode, stableFieldLayout)) {
+	if (!modelSchema || !isBlockVisible(modelSchema, columnFieldNames(fields), mode, stableFieldLayout)) {
 		return null;
 	}
 
@@ -53,17 +57,38 @@ export function OwnPropertiesBlock({
 		<Stack gap='sm' className={clsx(classes.formBlock, formBlockSpanClass(block))}>
 			{block.header && block.showTitle ? <Title order={5} className='uppercase'>{t(block.header)}</Title> : null}
 			<FieldGroupVertical
-				fields={block.fields ?? []}
+				fields={fields}
 				isLoading={isLoading}
 				modelSchema={modelSchema}
 				fieldValues={fieldValues}
 				mode={mode}
 				lockedFields={block.lockedFields}
 				readOnlyFields={block.readOnlyFields}
+				relationSearch={block.relationSearch}
 			/>
 		</Stack>
 	);
 }
+
+/**
+ * The block's `fields` less those whose `visibleWhen` fails: tested against the record in read
+ * mode, and against the live form while editing, so a field shows the moment its condition holds.
+ */
+export function useVisibleBlockFields(
+	block: OwnPropertySection, mode: FieldVisibilityMode, record: Record<string, unknown>,
+): FormColumnField[] {
+	const { fields, visibleWhen } = block;
+	const sources = React.useMemo(() => visibleWhenSourceFields(visibleWhen), [visibleWhen]);
+	const live = useWatchedFormValues(mode === 'read' ? noFields : sources);
+	return React.useMemo(() => {
+		if (!visibleWhen) {
+			return fields ?? noFields;
+		}
+		return applyVisibleWhen(fields ?? noFields, visibleWhen, live ? { ...record, ...live } : record);
+	}, [fields, visibleWhen, record, live]);
+}
+
+const noFields: string[] = [];
 
 type LockedFields = OwnPropertySection['lockedFields'];
 
@@ -82,7 +107,7 @@ export function lockedFieldHint(
  * reshuffle the moment Update is pressed. With `stableFieldLayout` create mode does the same.
  */
 export function FieldGroupVertical({
-	fields, isLoading, modelSchema, fieldValues, mode, lockedFields, readOnlyFields,
+	fields, isLoading, modelSchema, fieldValues, mode, lockedFields, readOnlyFields, relationSearch,
 }: {
 	fields: FormColumnField[],
 	isLoading: boolean,
@@ -91,8 +116,10 @@ export function FieldGroupVertical({
 	mode: FieldVisibilityMode,
 	lockedFields?: LockedFields,
 	readOnlyFields?: string[],
+	relationSearch?: OwnPropertySection['relationSearch'],
 }): React.ReactNode {
 	const { stableFieldLayout } = useDetailFieldDisplay();
+	const searchScopes = useRelationSearchScopes(relationSearch, mode);
 	const fieldNames = React.useMemo(() => columnFieldNames(fields), [fields]);
 	const lockOf = useFieldLockViews(fieldNames, mode, modelSchema);
 	const renderField = (field: string, labelHidden: boolean): React.ReactNode => {
@@ -126,7 +153,7 @@ export function FieldGroupVertical({
 			</Stack>
 		);
 	};
-	return (
+	const body = (
 		<div className={classes.formFieldWrapper}>
 			{fields.map((entry, index) => (typeof entry === 'string'
 				? <React.Fragment key={entry}>{renderField(entry, false)}</React.Fragment>
@@ -134,6 +161,9 @@ export function FieldGroupVertical({
 			))}
 		</div>
 	);
+	return searchScopes
+		? <RelationSearchScopeContext.Provider value={searchScopes}>{body}</RelationSearchScopeContext.Provider>
+		: body;
 }
 
 /**
