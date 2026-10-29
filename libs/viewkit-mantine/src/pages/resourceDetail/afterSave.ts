@@ -81,12 +81,23 @@ export type UpdatePayloadContributions = {
 	confirm: (request: Record<string, unknown>) => Promise<boolean>,
 };
 
+/** The top-level request key a server error's `field` path (`values.2.name`, `lines[0]`) belongs to. */
+export function rootFieldOf(field: string): string {
+	return field.split(/[.[]/, 1)[0];
+}
+
 export function useUpdatePayloadContributors(): {
 	register: RegisterUpdatePayload,
 	hasPending: () => boolean,
 	collect: () => UpdatePayloadContributions,
+	/**
+	 * Whether a server error's `field` lies under a key a section contributed to the last request:
+	 * that section shows the error on its own rows, so it is not the form's nor the error modal's.
+	 */
+	ownsErrorField: (field: string) => boolean,
 } {
 	const contributorsRef = React.useRef(new Set<UpdatePayloadContributor>());
+	const sentKeysRef = React.useRef<ReadonlySet<string>>(new Set());
 
 	const register = React.useCallback<RegisterUpdatePayload>((contributor) => {
 		contributorsRef.current.add(contributor);
@@ -100,9 +111,14 @@ export function useUpdatePayloadContributors(): {
 		[],
 	);
 
-	const collect = React.useCallback(() => collectContributions([...contributorsRef.current]), []);
+	const collect = React.useCallback(() => {
+		const contributions = collectContributions([...contributorsRef.current]);
+		sentKeysRef.current = new Set(Object.keys(contributions.payload));
+		return contributions;
+	}, []);
+	const ownsErrorField = React.useCallback((field: string) => sentKeysRef.current.has(rootFieldOf(field)), []);
 
-	return { register, hasPending, collect };
+	return { register, hasPending, collect, ownsErrorField };
 }
 
 /** Exported for tests: merges every pending contribution and notifies only those that sent one. */

@@ -66,7 +66,7 @@ describe('isRenderableFieldType', () => {
 	// and a case missing from here hides a field that would have rendered.
 	const renderable: ModelSchemaFieldDataTypeName[] = [
 		'boolean', 'decimal', 'email', 'int32', 'nikkiDate', 'nikkiDateTime', 'nikkiLangJson',
-		'nikkiSlug', 'nikkiTime', 'secret', 'string', 'ulid',
+		'nikkiResourceCode', 'nikkiSlug', 'nikkiTime', 'secret', 'string', 'ulid',
 	];
 	const notRenderable: ModelSchemaFieldDataTypeName[] = [
 		'enumInt32', 'int64', 'jsonmap', 'model', 'nikkiEtag', 'nikkiLangCode',
@@ -282,5 +282,24 @@ describe('buildValidationSchema: decimals', () => {
 
 	it('leaves a blank optional decimal out', () => {
 		expect(buildValidationSchema(formSchema).safeParse({ price: '' }).data).toEqual({});
+	});
+});
+
+describe('buildValidationSchema: resource codes', () => {
+	const formSchema = schema({
+		fields: {
+			code: {
+				...field('code', 'nikkiResourceCode'),
+				data_type: { name: 'nikkiResourceCode', options: { length: [1, 5] } },
+			} as ModelSchemaField,
+		},
+	});
+
+	it('accepts uppercase letters, digits and hyphens', () => {
+		expect(buildValidationSchema(formSchema).safeParse({ code: 'WH-A1' }).success).toBe(true);
+	});
+
+	it.each(['wh-a1', 'WH_A1', 'WH A', 'WH-A12'])('refuses %s', code => {
+		expect(buildValidationSchema(formSchema).safeParse({ code }).success).toBe(false);
 	});
 });

@@ -56,6 +56,11 @@ export function useResourceDetailContext(): ResourceDetailContextValue {
 	return value;
 }
 
+/** For a component that also renders off a detail page: `undefined` outside `ResourceDetailProvider`. */
+export function useOptionalResourceDetailContext(): ResourceDetailContextValue | undefined {
+	return React.useContext(ResourceDetailContext);
+}
+
 export function useResourceDetailTranslationNs(): string {
 	return useResourceDetailContext().translationNs;
 }

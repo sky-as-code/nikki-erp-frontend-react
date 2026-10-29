@@ -10,7 +10,7 @@ import {
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
-const column = (fields: string[]): ComponentNode => defineComponent({
+const column = (fields: (string | string[])[]): ComponentNode => defineComponent({
 	component: RESOURCE_FORM_COLUMN,
 	props: { fields },
 });
@@ -88,7 +88,14 @@ describe('resource detail save scoping', () => {
 		it('tolerates a column with no fields', () => {
 			expect(collectColumnFields([section([defineComponent({
 				component: RESOURCE_FORM_COLUMN,
-			})])])).toEqual([{}]);
+			})])])).toEqual([{ fields: [] }]);
+		});
+
+		/** An inline row's `@@` items are fields the form owns; its text items are not. */
+		it('flattens inline rows to the fields they render', () => {
+			const nodes = [section([column(['name', ['$$form.parent', '@@parent_id', 'at', '@@position']])])];
+
+			expect(collectColumnFields(nodes)).toEqual([{ fields: ['name', 'parent_id', 'position'] }]);
 		});
 	});
 

@@ -1,6 +1,6 @@
 import { Paper } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { Breadcrumbs, normalizePath, useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
+import { Breadcrumbs, normalizePath, readNavMode, useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
 import { LoadingState, Unauthorized } from '@nikkierp/ui/components';
 import { ExcelDataTable, isActionVisible, mergeSearchGraphs } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
@@ -40,8 +40,36 @@ export type ResourceListV2ViewProps = {
 };
 
 const INITIAL_REQUEST = { page: 0, size: 0, search_name: 'default' };
+/** A link's search graph that seeds the filter panel (see `useUrlSearchGraph`). */
+const URL_GRAPH_PARAM = 'initialGraph';
 
-export const ResourceListV2 = React.memo(ResourceListV2View);
+export const ResourceListV2 = React.memo(ResourceListV2Seeded);
+
+/**
+ * The table reads its `initialGraph` seed once, on mount, so a link opening this same list with
+ * another seed (the ribbon's Receipts, then Deliveries, then All) remounts the view to re-seed it.
+ */
+function ResourceListV2Seeded(props: ResourceListV2ViewProps): React.ReactNode {
+	return <ResourceListV2View key={useUrlGraphSeedKey(props.routePath)} {...props} />;
+}
+
+/**
+ * Changes when a navigation brings a new `?initialGraph=`, or none at all from a menu (a history
+ * root) to the list's own path. Opening a row drops the query string too, but neither from a menu
+ * nor onto the list path, so the list keeps its filters; so does a Create, which goes to `new`.
+ */
+function useUrlGraphSeedKey(routePath: string): string {
+	const location = useLocation();
+	const raw = new URLSearchParams(location.search).get(URL_GRAPH_PARAM);
+	const [key, setKey] = React.useState(raw ?? '');
+	const ontoList = location.pathname.replace(/\/+$/, '').endsWith(`/${routePath}`);
+	const next = raw ?? (ontoList && readNavMode(location.state) === 'root' ? '' : key);
+	if (next !== key) {
+		// Derived during render, so the stale seed never paints.
+		setKey(next);
+	}
+	return next;
+}
 
 /**
  * The v1 list on the composable table: a sticky panel (toolbar, filter panel, header) over a
@@ -335,7 +363,7 @@ function useListTitle(params: ResourceListV2Props): (schema: dyn.ModelSchema, co
 function useUrlSearchGraph(): dyn.SearchGraph | undefined {
 	const [searchParams] = useSearchParams();
 	return React.useMemo(
-		() => parseSearchGraphParam(searchParams.get('initialGraph')),
+		() => parseSearchGraphParam(searchParams.get(URL_GRAPH_PARAM)),
 		[searchParams],
 	);
 }

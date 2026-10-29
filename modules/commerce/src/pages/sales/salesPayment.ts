@@ -81,8 +81,7 @@ function buildSalesPaymentFieldsSection(): ComponentNode {
 			header: 'form.other_information',
 			// Cash carries no external transaction id, so it has no replay protection and a
 			// double-tap records twice. That is a property of cash, not a gap here.
-			fields: ['external_transaction_id', 'provider_reference', 'paid_at', 'org_id',
-				'created_at', 'updated_at'],
+			fields: ['external_transaction_id', 'provider_reference', 'paid_at', 'org_id'],
 		}),
 	]);
 }

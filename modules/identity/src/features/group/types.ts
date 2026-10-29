@@ -4,7 +4,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 export type Group = {
 	id: string,
 	name?: dyn.ModelSchemaLangJson,
-	description?: dyn.ModelSchemaLangJson,
+	description?: string,
 	owner_id?: string,
 	etag?: string,
 	created_at?: string,

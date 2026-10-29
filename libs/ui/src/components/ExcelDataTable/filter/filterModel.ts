@@ -36,7 +36,7 @@ export type FilterClause = {
 };
 
 const TEXT_DATA_TYPES: ReadonlySet<dyn.ModelSchemaFieldDataTypeName> = new Set([
-	'email', 'nikkiLangCode', 'nikkiSlug', 'phone', 'string', 'ulid', 'url', 'uuid',
+	'email', 'nikkiLangCode', 'nikkiResourceCode', 'nikkiSlug', 'phone', 'string', 'ulid', 'url', 'uuid',
 ]);
 
 const NUMBER_DATA_TYPES: ReadonlySet<dyn.ModelSchemaFieldDataTypeName> = new Set([

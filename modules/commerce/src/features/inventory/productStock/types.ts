@@ -57,7 +57,7 @@ export type WarehouseStockRow = {
 
 export type LocationStockRow = {
 	locationId: string,
-	locationCode?: string,
+	locationCanonicalName?: string,
 	locationName?: string,
 
 	/** Carried so a suspended location can be badged rather than hidden (TS-PROD-05). */

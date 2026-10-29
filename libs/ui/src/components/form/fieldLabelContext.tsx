@@ -29,3 +29,21 @@ export function FieldLabelProvider({ labelHidden, children }: FieldLabelProvider
 export function useFieldLabelHidden(): boolean {
 	return React.useContext(FieldLabelContext).labelHidden;
 }
+
+/**
+ * The localized description of the field `AutoField` is rendering, read by `BaseFieldWrapper` for
+ * its label's `?` mark. A context for the same reason as `FieldLabelContext`: every field
+ * component would otherwise have to resolve and forward it.
+ */
+const FieldDescriptionContext = React.createContext<string>('');
+
+export function FieldDescriptionProvider({ description, children }: {
+	description: string,
+	children: React.ReactNode,
+}): React.ReactNode {
+	return <FieldDescriptionContext.Provider value={description}>{children}</FieldDescriptionContext.Provider>;
+}
+
+export function useFieldDescription(): string {
+	return React.useContext(FieldDescriptionContext);
+}

@@ -63,6 +63,17 @@ describe('server field errors', () => {
 		const nameInput = view.container.querySelector('input[name="name"]') as HTMLInputElement;
 		expect(nameInput.getAttribute('aria-invalid')).not.toBe('true');
 	});
+
+	it('returns an error for a field the form does not show, as field-less', async () => {
+		const hiddenItem = new ClientErrorItem({
+			field: 'id', key: 'common:resource_in_use', message: 'In use', type: 'business',
+		});
+		const { view, unattached } = renderWithServerErrors([hiddenItem]);
+		await act(async () => {
+			fireEvent.click(view.getByText('Apply'));
+		});
+		expect(unattached()).toEqual([hiddenItem]);
+	});
 });
 
 describe('fieldErrorText', () => {

@@ -1,6 +1,6 @@
 import { defineComponent } from '@nikkierp/viewengine/metadata';
 
-import { ATTRIBUTE_VALUES, TEMPLATE_ATTRIBUTES } from './ids';
+import { ATTRIBUTE_VALUES, STOCK_TRANSFER_MOVES, TEMPLATE_ATTRIBUTES } from './ids';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -19,6 +19,14 @@ export function attributeValuesNode(): ComponentNode {
  */
 export function templateAttributesNode(): ComponentNode {
 	return defineComponent({ component: TEMPLATE_ATTRIBUTES });
+}
+
+/**
+ * The transfer's moves, edited inline while it is a draft and saved with the transfer's own create
+ * or update. It belongs in both `createNodes` and `childrenNodes`.
+ */
+export function stockTransferMovesNode(): ComponentNode {
+	return defineComponent({ component: STOCK_TRANSFER_MOVES });
 }
 
 export * from './ids';

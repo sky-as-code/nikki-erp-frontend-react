@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { notifyClientErrors, showShellNotice } from './shellNotice';
+import { CLIENT_ERROR_MODAL_TOPIC, notifyClientErrors, showClientErrorModal, showShellNotice } from './shellNotice';
 import { CommandBus } from '../commandBus';
 import { ClientErrorItem } from '../types';
 
 import type { ICommandBus } from '../commandBus';
+import type { IEventBus } from '../eventBus';
 
 
 function installBus(response: unknown): ReturnType<typeof vi.fn> {
@@ -77,5 +78,28 @@ describe('notifyClientErrors', () => {
 		expect(() => notifyClientErrors(translate, [item('business')])).not.toThrow();
 		await vi.waitFor(() => expect(logged).toHaveBeenCalled());
 		logged.mockRestore();
+	});
+});
+
+describe('showClientErrorModal', () => {
+	const translate = vi.fn((key: string) => `T(${key})`);
+	const errorItem = (type: string, key: string) => new ClientErrorItem({ type, key, message: 'fallback' });
+
+	function eventBus(): { bus: IEventBus, publish: ReturnType<typeof vi.fn> } {
+		const publish = vi.fn();
+		return { bus: { publish } as unknown as IEventBus, publish };
+	}
+
+	it('publishes the translated messages, skipping authorization errors', () => {
+		const { bus, publish } = eventBus();
+		showClientErrorModal(translate, [errorItem('business', 'a:x'), errorItem('authorization', 'a:y')], bus);
+		expect(publish).toHaveBeenCalledWith(CLIENT_ERROR_MODAL_TOPIC, { messages: ['T(a:x)'] });
+	});
+
+	it('publishes nothing when no message is left', () => {
+		const { bus, publish } = eventBus();
+		showClientErrorModal(translate, [errorItem('authorization', 'a:y')], bus);
+		showClientErrorModal(translate, [], bus);
+		expect(publish).not.toHaveBeenCalled();
 	});
 });

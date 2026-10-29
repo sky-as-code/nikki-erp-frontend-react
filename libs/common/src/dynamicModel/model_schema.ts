@@ -101,6 +101,7 @@ export type ModelSchemaFieldDataTypeName =
 	| 'nikkiEtag'
 	| 'nikkiLangCode'
 	| 'nikkiLangJson'
+	| 'nikkiResourceCode'
 	| 'nikkiSlug'
 	| 'nikkiTime'
 	| 'phone'
@@ -130,6 +131,8 @@ export type FieldDataTypeOptName = 'enumValues'
 /** Localized UI strings (e.g. labels) keyed by locale tag. */
 export type ModelSchemaLangJson = Record<string, string>;
 export const LangJsonRefKey = '$ref';
+
+export const ResourceCodePattern = /^[A-Z0-9-]+$/;
 
 export function newLangJsonRef(ref: string): ModelSchemaLangJson {
 	return { [LangJsonRefKey]: ref };
@@ -177,7 +180,7 @@ export function findExclusiveGroupPeers(modelSchema: ModelSchema, fieldName: str
  */
 const RENDERABLE_DATA_TYPES: ReadonlySet<ModelSchemaFieldDataTypeName> = new Set([
 	'boolean', 'decimal', 'email', 'enumString', 'int32', 'nikkiDate', 'nikkiDateTime',
-	'nikkiLangJson', 'nikkiSlug', 'nikkiTime', 'secret', 'string', 'ulid',
+	'nikkiLangJson', 'nikkiResourceCode', 'nikkiSlug', 'nikkiTime', 'secret', 'string', 'ulid',
 ]);
 
 /** Whether a form can render an input for this field, as opposed to leaving an empty slot. */
@@ -316,6 +319,11 @@ function createSimpleSchemaByDataType(dataType: ModelSchemaFieldDataType): z.Zod
 		case 'nikkiSlug':
 			return applyStringLengthOptions(
 				createStringSchema().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, ErrorKeys.invalidDataType),
+				dataType.options,
+			);
+		case 'nikkiResourceCode':
+			return applyStringLengthOptions(
+				createStringSchema().regex(ResourceCodePattern, ErrorKeys.invalidResourceCode),
 				dataType.options,
 			);
 		case 'phone':

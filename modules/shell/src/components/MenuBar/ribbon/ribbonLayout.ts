@@ -8,11 +8,22 @@ export const RIBBON_ROWS_PER_COLUMN = 3;
 
 export type RibbonLayout = 'full' | 'collapsed';
 
-/** Splits a block's items into columns of at most `rowsPerColumn`, keeping their order. */
-export function groupRibbonColumns<T>(items: readonly T[], rowsPerColumn = RIBBON_ROWS_PER_COLUMN): T[][] {
-	const columns: T[][] = [];
-	for (let i = 0; i < items.length; i += rowsPerColumn) {
-		columns.push(items.slice(i, i + rowsPerColumn));
+export function isRibbonRowspan(item: RibbonItem): boolean {
+	return item.rowspan === true;
+}
+
+/**
+ * Splits a block's items into columns of at most `rowsPerColumn`: first one column per item that
+ * `spansRows`, in declaration order, then the others in their order. A block never exceeds
+ * `rowsPerColumn` rows.
+ */
+export function groupRibbonColumns<T>(
+	items: readonly T[], rowsPerColumn = RIBBON_ROWS_PER_COLUMN, spansRows: (item: T) => boolean = () => false,
+): T[][] {
+	const columns: T[][] = items.filter(spansRows).map(item => [item]);
+	const stacked = items.filter(item => !spansRows(item));
+	for (let i = 0; i < stacked.length; i += rowsPerColumn) {
+		columns.push(stacked.slice(i, i + rowsPerColumn));
 	}
 	return columns;
 }

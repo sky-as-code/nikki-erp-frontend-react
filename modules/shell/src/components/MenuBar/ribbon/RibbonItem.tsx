@@ -24,7 +24,7 @@ export function RibbonItemView({ item }: { item: RibbonItem }): React.ReactNode 
 export function RibbonMeasureItem({ item }: { item: RibbonItem }): React.ReactNode {
 	const { t } = useRibbonContext();
 	return (
-		<Button {...ribbonButtonProps(false)} tabIndex={-1} rightSection={dropdownChevron(item)}>
+		<Button {...ribbonButtonProps(false, item)} tabIndex={-1} rightSection={dropdownChevron(item)}>
 			{t(item.labelKey)}
 		</Button>
 	);
@@ -39,7 +39,7 @@ export function CollapsedBlockMenu({ block }: { block: RibbonBlock }): React.Rea
 		<Menu position='bottom-start' trigger='click'>
 			<Menu.Target>
 				<Button
-					{...ribbonButtonProps(isActive, 'ribbonBlock', block.titleKey)}
+					{...ribbonButtonProps(isActive, undefined, 'ribbonBlock', block.titleKey)}
 					rightSection={<IconChevronDown size={12} />}
 				>
 					{t(block.titleKey)}
@@ -78,7 +78,7 @@ function RibbonLinkButton({ item }: { item: RibbonLinkItem }): React.ReactNode {
 
 	return (
 		<Button
-			{...ribbonButtonProps(isActive, 'ribbonItem', item.labelKey)}
+			{...ribbonButtonProps(isActive, item, 'ribbonItem')}
 			component={Link}
 			isHistoryRoot
 			to={getPathWithPrefix(item.link, pathPrefix)}
@@ -97,7 +97,7 @@ function RibbonDropdownButton({ item }: { item: RibbonDropdownItem }): React.Rea
 	return (
 		<Menu position='bottom-start' trigger='click'>
 			<Menu.Target>
-				<Button {...ribbonButtonProps(isActive, 'ribbonItem', item.labelKey)} rightSection={dropdownChevron(item)}>
+				<Button {...ribbonButtonProps(isActive, item, 'ribbonItem')} rightSection={dropdownChevron(item)}>
 					{t(item.labelKey)}
 				</Button>
 			</Menu.Target>
@@ -137,7 +137,8 @@ function dropdownChevron(item: RibbonItem): React.ReactNode {
 	return isRibbonDropdown(item) ? <IconChevronDown size={12} /> : undefined;
 }
 
-function ribbonButtonProps(isActive: boolean, kind?: string, key?: string): ButtonProps {
+function ribbonButtonProps(isActive: boolean, item?: RibbonItem, kind?: string, key?: string): ButtonProps {
+	const rowspan = item?.rowspan === true;
 	return {
 		variant: 'subtle',
 		c: 'var(--text-color)',
@@ -145,9 +146,10 @@ function ribbonButtonProps(isActive: boolean, kind?: string, key?: string): Butt
 		px: 'xs',
 		fz: 'sm',
 		fw: 'normal',
-		justify: 'flex-start',
-		className: clsx(classes.item, { [menuClasses.activeMenuItem]: isActive }),
-		...(kind ? testAttrs(MENU_BAR_TEST_ID, kind, key) : {}),
+		justify: rowspan ? 'center' : 'flex-start',
+		h: rowspan ? 'auto' : undefined,
+		className: clsx(classes.item, { [classes.itemRowspan]: rowspan, [menuClasses.activeMenuItem]: isActive }),
+		...(kind ? testAttrs(MENU_BAR_TEST_ID, kind, key ?? item?.labelKey) : {}),
 	};
 }
 

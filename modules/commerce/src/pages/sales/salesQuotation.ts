@@ -93,7 +93,7 @@ function buildSalesQuotationFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['converted_sales_order_id', 'org_id', 'created_at', 'updated_at'],
+			fields: ['converted_sales_order_id', 'org_id'],
 		}),
 	]);
 }

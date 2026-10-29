@@ -97,9 +97,5 @@ function buildOrganizationFieldsSection(): ComponentNode {
 			header: 'form.contact',
 			fields: ['address', 'phone_number'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }

@@ -1,28 +1,34 @@
 import { ActionIcon, Group, Stack, Text, Title } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { toDisplayedEntitlements } from '@nikkierp/common/entitlements';
-import { useShowLockedFeature } from '@nikkierp/ui/components';
+import { FieldLabelText, localizeFieldDescription, useShowLockedFeature } from '@nikkierp/ui/components';
 import { maskedFieldMissing } from '@nikkierp/ui/components/ExcelDataTable';
-import { AutoField, ReadOnlyBooleanSwitch, useComputedField } from '@nikkierp/ui/components/form';
-import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import {
+	AutoField, ReadOnlyBooleanSwitch, RelationSearchScopeContext, useComputedField, useWatchedFormValues,
+} from '@nikkierp/ui/components/form';
+import { type LocalizeFn, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconLock } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 
 import { useDetailFieldDisplay } from './detailFieldDisplay';
 import { fieldLockView, type FieldLockView } from './fieldLocks';
-import { fieldPresentation, isBlockVisible } from './fieldVisibility';
+import { applyVisibleWhen, fieldPresentation, isBlockVisible, visibleWhenSourceFields } from './fieldVisibility';
+import { InlineFieldRow } from './inlineFieldRow';
+import { useRelationSearchScopes } from './relationSearchScope';
 import classes from './ResourceDetail.module.css';
 import { ResourceUpdateContext } from './resourceUpdateContext';
 import { EdgeFieldValue } from '../../components/edgeFieldValue';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
 import { formBlockSpanClass } from '../../components/formBlockSpan';
 import { StandardActionCode, useFieldLocks } from '../../permissions';
+import { columnFieldNames } from '../resourceDetail/formColumnFields';
 import {
 	useResourceDetailContext, useResourceDetailSchemaName, useResourceDetailTranslationNs,
 } from '../resourceDetail/ResourceDetailProvider';
 
 import type { FieldVisibilityMode } from './fieldVisibility';
+import type { FormColumnField } from '../resourceDetail/formColumnFields';
 import type { OwnPropertySection } from '../resourceDetail/props';
 
 
@@ -39,10 +45,11 @@ export function OwnPropertiesBlock({
 	const modelSchema = schemaPack?.modelSchema;
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const mode = updateMode ? 'update' : 'read';
+	const fields = useVisibleBlockFields(block, mode, fieldValues);
 
 	// A header over nothing reads as a broken section, so a block whose fields all filter out is
 	// dropped along with its title.
-	if (!modelSchema || !isBlockVisible(modelSchema, block.fields ?? [], mode, stableFieldLayout)) {
+	if (!modelSchema || !isBlockVisible(modelSchema, columnFieldNames(fields), mode, stableFieldLayout)) {
 		return null;
 	}
 
@@ -50,17 +57,38 @@ export function OwnPropertiesBlock({
 		<Stack gap='sm' className={clsx(classes.formBlock, formBlockSpanClass(block))}>
 			{block.header && block.showTitle ? <Title order={5} className='uppercase'>{t(block.header)}</Title> : null}
 			<FieldGroupVertical
-				fields={block.fields ?? []}
+				fields={fields}
 				isLoading={isLoading}
 				modelSchema={modelSchema}
 				fieldValues={fieldValues}
 				mode={mode}
 				lockedFields={block.lockedFields}
 				readOnlyFields={block.readOnlyFields}
+				relationSearch={block.relationSearch}
 			/>
 		</Stack>
 	);
 }
+
+/**
+ * The block's `fields` less those whose `visibleWhen` fails: tested against the record in read
+ * mode, and against the live form while editing, so a field shows the moment its condition holds.
+ */
+export function useVisibleBlockFields(
+	block: OwnPropertySection, mode: FieldVisibilityMode, record: Record<string, unknown>,
+): FormColumnField[] {
+	const { fields, visibleWhen } = block;
+	const sources = React.useMemo(() => visibleWhenSourceFields(visibleWhen), [visibleWhen]);
+	const live = useWatchedFormValues(mode === 'read' ? noFields : sources);
+	return React.useMemo(() => {
+		if (!visibleWhen) {
+			return fields ?? noFields;
+		}
+		return applyVisibleWhen(fields ?? noFields, visibleWhen, live ? { ...record, ...live } : record);
+	}, [fields, visibleWhen, record, live]);
+}
+
+const noFields: string[] = [];
 
 type LockedFields = OwnPropertySection['lockedFields'];
 
@@ -79,51 +107,63 @@ export function lockedFieldHint(
  * reshuffle the moment Update is pressed. With `stableFieldLayout` create mode does the same.
  */
 export function FieldGroupVertical({
-	fields, isLoading, modelSchema, fieldValues, mode, lockedFields, readOnlyFields,
+	fields, isLoading, modelSchema, fieldValues, mode, lockedFields, readOnlyFields, relationSearch,
 }: {
-	fields: string[],
+	fields: FormColumnField[],
 	isLoading: boolean,
 	modelSchema: dyn.ModelSchema,
 	fieldValues: Record<string, unknown>,
 	mode: FieldVisibilityMode,
 	lockedFields?: LockedFields,
 	readOnlyFields?: string[],
+	relationSearch?: OwnPropertySection['relationSearch'],
 }): React.ReactNode {
 	const { stableFieldLayout } = useDetailFieldDisplay();
-	const lockOf = useFieldLockViews(fields, mode, modelSchema);
-	return (
+	const searchScopes = useRelationSearchScopes(relationSearch, mode);
+	const fieldNames = React.useMemo(() => columnFieldNames(fields), [fields]);
+	const lockOf = useFieldLockViews(fieldNames, mode, modelSchema);
+	const renderField = (field: string, labelHidden: boolean): React.ReactNode => {
+		const presentation = readOnlyFields?.includes(field) && mode === 'update'
+			? 'readonly'
+			: fieldPresentation(modelSchema, field, mode, stableFieldLayout);
+		if (presentation === 'hidden') {
+			return null;
+		}
+		const fieldLock = lockOf(field, presentation === 'input');
+		if (fieldLock) {
+			return (
+				<LockedFieldValue field={field} modelSchema={modelSchema} lock={fieldLock} labelHidden={labelHidden} />
+			);
+		}
+		if (presentation === 'readonly') {
+			return (
+				<ReadOnlyFieldValue
+					field={field} modelSchema={modelSchema} fieldValues={fieldValues} labelHidden={labelHidden}
+				/>
+			);
+		}
+		const lockHint = lockedFieldHint(lockedFields, field, mode, fieldValues);
+		return (
+			<Stack gap={4}>
+				<AutoField
+					name={field} labelHidden={labelHidden || undefined}
+					inputProps={{ disabled: isLoading || lockHint !== undefined }}
+				/>
+				{lockHint ? <LockedFieldHint hint={lockHint} /> : null}
+			</Stack>
+		);
+	};
+	const body = (
 		<div className={classes.formFieldWrapper}>
-			{fields.map(field => {
-				const presentation = readOnlyFields?.includes(field) && mode === 'update'
-					? 'readonly'
-					: fieldPresentation(modelSchema, field, mode, stableFieldLayout);
-				if (presentation === 'hidden') {
-					return null;
-				}
-				const fieldLock = lockOf(field, presentation === 'input');
-				if (fieldLock) {
-					return <LockedFieldValue key={field} field={field} modelSchema={modelSchema} lock={fieldLock} />;
-				}
-				if (presentation === 'readonly') {
-					return (
-						<ReadOnlyFieldValue
-							key={field}
-							field={field}
-							modelSchema={modelSchema}
-							fieldValues={fieldValues}
-						/>
-					);
-				}
-				const lockHint = lockedFieldHint(lockedFields, field, mode, fieldValues);
-				return (
-					<Stack key={field} gap={4}>
-						<AutoField name={field} inputProps={{ disabled: isLoading || lockHint !== undefined }} />
-						{lockHint ? <LockedFieldHint hint={lockHint} /> : null}
-					</Stack>
-				);
-			})}
+			{fields.map((entry, index) => (typeof entry === 'string'
+				? <React.Fragment key={entry}>{renderField(entry, false)}</React.Fragment>
+				: <InlineFieldRow key={`row-${index}`} items={entry} renderField={field => renderField(field, true)} />
+			))}
 		</div>
 	);
+	return searchScopes
+		? <RelationSearchScopeContext.Provider value={searchScopes}>{body}</RelationSearchScopeContext.Provider>
+		: body;
 }
 
 /**
@@ -159,11 +199,12 @@ function useFieldLockViews(
  * learns the field exists and what grant opens it.
  */
 function LockedFieldValue({
-	field, modelSchema, lock,
+	field, modelSchema, lock, labelHidden,
 }: {
 	field: string,
 	modelSchema: dyn.ModelSchema,
 	lock: FieldLockView,
+	labelHidden?: boolean,
 }): React.ReactNode {
 	const localize = useLocalize(useResourceDetailTranslationNs());
 	const t = useTranslate(useResourceDetailTranslationNs());
@@ -176,7 +217,7 @@ function LockedFieldValue({
 	};
 	return (
 		<Stack gap={4}>
-			<Text size='md' fw='600'>{fieldDef ? localize(fieldDef.label) : field}</Text>
+			{labelHidden ? null : <FieldLabelValue field={field} fieldDef={fieldDef} localize={localize} />}
 			<Group>
 				<ActionIcon
 					variant='subtle'
@@ -211,11 +252,13 @@ function LockedFieldHint({ hint }: { hint: string }): React.ReactNode {
  * is indistinguishable from a field that does not exist.
  */
 function ReadOnlyFieldValue({
-	field, modelSchema, fieldValues,
+	field, modelSchema, fieldValues, labelHidden,
 }: {
 	field: string,
 	modelSchema: dyn.ModelSchema,
 	fieldValues: Record<string, unknown>,
+	/** In an inline row the surrounding text names the value, so only the value shows. */
+	labelHidden?: boolean,
 }): React.ReactNode {
 	const localize = useLocalize(useResourceDetailTranslationNs());
 	// Called before the early return, since hooks cannot be skipped. It no-ops for every field
@@ -241,7 +284,7 @@ function ReadOnlyFieldValue({
 	if (fieldDef.data_type?.name === 'boolean') {
 		return (
 			<Stack gap={4}>
-				<Text size='md' fw='600'>{localize(fieldDef.label)}</Text>
+				{labelHidden ? null : <FieldLabelValue field={field} fieldDef={fieldDef} localize={localize} />}
 				<ReadOnlyBooleanSwitch value={rawValue} />
 			</Stack>
 		);
@@ -253,7 +296,7 @@ function ReadOnlyFieldValue({
 
 	return (
 		<Stack gap={4}>
-			<Text size='md' fw='600'>{localize(fieldDef.label)}</Text>
+			{labelHidden ? null : <FieldLabelValue field={field} fieldDef={fieldDef} localize={localize} />}
 			<Text size='md' component='div'>
 				{relation ? (
 					<EdgeFieldValue
@@ -265,6 +308,22 @@ function ReadOnlyFieldValue({
 				) : plainValue}
 			</Text>
 		</Stack>
+	);
+}
+
+/** The label of a read-only or locked field, with the same description mark as an input's label. */
+function FieldLabelValue({ field, fieldDef, localize }: {
+	field: string,
+	fieldDef: dyn.ModelSchemaField | undefined,
+	localize: LocalizeFn,
+}): React.ReactNode {
+	return (
+		<Text size='md' fw='600'>
+			<FieldLabelText
+				label={fieldDef ? localize(fieldDef.label) : field}
+				description={localizeFieldDescription(localize, fieldDef?.description)}
+			/>
+		</Text>
 	);
 }
 

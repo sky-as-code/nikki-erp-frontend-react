@@ -17,6 +17,16 @@ const CONTAINS = '*';
 
 export type RecordOption = { value: string, label: string };
 
+/**
+ * Narrows a record search below what the target schema alone would offer. `searchField` is matched
+ * against the typed term instead of the schema's `record_label_field` — needed when the label is a
+ * `function` computed field the server cannot filter on. `graph` is ANDed into every request.
+ */
+export type RecordSearchScope = {
+	searchField?: string,
+	graph?: dyn.SearchNode,
+};
+
 export type RecordSearchOptions = {
 	/** One page of matches for the debounced term, sorted by the label the reader sees. */
 	options: RecordOption[],
@@ -36,6 +46,7 @@ export type RecordSearchOptions = {
  */
 export function useRecordSearchOptions(
 	destSchemaName: string, term: string, localize: LocalizeFn, pageSize: number = searchPageSize(),
+	scope?: RecordSearchScope,
 ): RecordSearchOptions {
 	const targetPack = useDynamicModel(destSchemaName);
 	const targetSchema = targetPack.pack?.modelSchema;
@@ -46,6 +57,8 @@ export function useRecordSearchOptions(
 	// fallback for `labelField` and be immediately re-issued with the real one.
 	const search = useSearchPage({
 		destSchemaName: targetSchema ? destSchemaName : '', term: debouncedTerm, labelField, subLabelField, pageSize,
+		searchField: scope?.searchField ?? labelField,
+		scopeGraph: scope?.graph,
 	});
 	const compareLocalized = useLocaleCollator();
 	// Sorted here rather than by the server, which stores the label as a LangJson and so cannot
@@ -82,10 +95,14 @@ type SearchPageQuery = {
 	subLabelField?: string,
 	/** The select's `maxOptions` as a page size (`searchPageSize`). */
 	pageSize: number,
+	searchField: string,
+	scopeGraph?: dyn.SearchNode,
 };
 
 function useSearchPage(query: SearchPageQuery): SearchPageResult {
-	const { destSchemaName, term, labelField, subLabelField, pageSize } = query;
+	const { destSchemaName, term, labelField, subLabelField, pageSize, searchField, scopeGraph } = query;
+	// Keyed by content: a caller rebuilding an equal scope on every render must not re-search.
+	const scopeKey = scopeGraph ? JSON.stringify(scopeGraph) : '';
 	const command = destSchemaName ? dyn.resourceCommands(destSchemaName).SEARCH : '';
 	const search = useCommand<dyn.RestSearchResponse<Record<string, any>>>(command);
 	const publish = search.publish;
@@ -103,10 +120,9 @@ function useSearchPage(query: SearchPageQuery): SearchPageResult {
 			page: 0,
 			size: pageSize,
 			fields,
-			// Searching by id would be a prefix match on an opaque ULID, which no user types.
-			graph: term && labelField !== 'id' ? { if: [labelField, CONTAINS, term] } : undefined,
+			graph: searchGraphOf(term, searchField, scopeKey ? JSON.parse(scopeKey) as dyn.SearchNode : undefined),
 		} satisfies dyn.RestSearchRequest);
-	}, [publish, destSchemaName, term, labelField, subLabelField, pageSize]);
+	}, [publish, destSchemaName, term, labelField, subLabelField, pageSize, searchField, scopeKey]);
 
 	React.useEffect(() => {
 		if (search.data?.items) {
@@ -120,6 +136,20 @@ function useSearchPage(query: SearchPageQuery): SearchPageResult {
 		loadError: search.error ? String(search.error) : undefined,
 		clientErrors: search.clientErrors,
 	};
+}
+
+/** The typed term as a `contains` condition, ANDed with the scope when there is one. */
+export function searchGraphOf(
+	term: string, searchField: string, scope: dyn.SearchNode | undefined,
+): dyn.SearchGraph | undefined {
+	// Searching by id would be a prefix match on an opaque ULID, which no user types.
+	const byTerm: dyn.SearchNode | undefined = term && searchField !== 'id'
+		? { if: [searchField, CONTAINS, term] }
+		: undefined;
+	if (byTerm && scope) {
+		return { and: [byTerm, scope] };
+	}
+	return byTerm ?? scope;
 }
 
 export function toRecordOption(

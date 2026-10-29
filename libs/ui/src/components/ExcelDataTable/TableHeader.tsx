@@ -6,6 +6,7 @@ import React from 'react';
 import { getFieldSchema } from './cells/cellValues';
 import { useExcelDataTableContext } from './context';
 import classes from './ExcelDataTable.module.css';
+import { useSchemaFieldDescriptionTranslator } from './fieldLabels';
 import { ColumnFilterRow } from './filter/ColumnFilterRow';
 import { getFilterInputKind, isSortableFieldName } from './filter/filterModel';
 import { selectionStateOf } from './selectionModel';
@@ -15,6 +16,7 @@ import {
 import { tableScopeAttrs } from './tableScope';
 import { useEnumValueLabel } from './useEnumValueLabel';
 import { useTranslate } from '../../i18n';
+import { ColumnHeaderLabel } from '../fieldDescription';
 
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
@@ -72,7 +74,8 @@ export function TableHeader(props: TableHeaderProps) {
 type HeaderLabelsRowProps = Pick<TableHeaderProps, 'renderFillerColumnHeader'> & { allowColumnResizing: boolean };
 
 function HeaderLabelsRow({ allowColumnResizing, renderFillerColumnHeader }: HeaderLabelsRowProps) {
-	const { columns, indexColumnVisible, manualSort, tid } = useExcelDataTableContext();
+	const { columns, indexColumnVisible, manualSort, tid, modelSchema, relatedSchemas } = useExcelDataTableContext();
+	const describeField = useSchemaFieldDescriptionTranslator(modelSchema, relatedSchemas);
 	const sort = useHeaderSort();
 	const resize = useColumnResize();
 	const filler = renderFillerColumnHeader?.();
@@ -95,6 +98,7 @@ function HeaderLabelsRow({ allowColumnResizing, renderFillerColumnHeader }: Head
 				<ColumnHeader
 					key={column.key}
 					field={column.field}
+					description={describeField(column.field)}
 					sortDirection={sort.orderMap.get(column.field)}
 					sortable={sort.sortableFields.has(column.field)}
 					onSort={sort.onSort}
@@ -197,6 +201,8 @@ function ConnectedColumnFilterRow() {
 
 type ColumnHeaderProps = {
 	field: string,
+	/** The field's schema description, shown after a 1s hover on the label; '' for none. */
+	description: string,
 	sortDirection?: dyn.SearchOrder,
 	sortable: boolean,
 	onSort: (field: string, direction: dyn.SearchOrder) => void,
@@ -210,7 +216,11 @@ function ColumnHeader(props: ColumnHeaderProps) {
 	return (
 		<Table.Th className={classes.headerCell} {...tid.sort(props.field)}>
 			<Group justify='space-between' gap={1} wrap='nowrap' className='overflow-hidden'>
-				<span className='overflow-hidden text-ellipsis whitespace-nowrap'>{translateFieldName(props.field)}</span>
+				<ColumnHeaderLabel
+					label={translateFieldName(props.field)}
+					description={props.description}
+					className='overflow-hidden text-ellipsis whitespace-nowrap'
+				/>
 				<Group gap={2} wrap='nowrap' className='flex-shrink-0'>
 					{props.sortable ? <ColumnHeaderMenu {...props} /> : null}
 					{props.sortDirection === 'asc' ? <IconTriangleFilled size={8} /> : null}

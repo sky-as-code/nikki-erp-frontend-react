@@ -102,9 +102,5 @@ function buildVendorProductPriceFieldsSection(): ComponentNode {
 			header: 'form.vendor_reference',
 			fields: ['vendor_product_code', 'vendor_product_name'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }

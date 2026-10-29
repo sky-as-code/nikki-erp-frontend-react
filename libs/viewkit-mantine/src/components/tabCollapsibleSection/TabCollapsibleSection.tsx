@@ -8,6 +8,7 @@ import React from 'react';
 
 import { tabCollapsibleSectionPropsSchema, TabCollapsibleSectionProps } from './props';
 import { TAB_COLLAPSIBLE_SECTION } from '../../ids';
+import { useSectionTitle } from '../../pages/resourceDetail/sectionTitle';
 import classes from '../collapsibleSection/CollapsibleSection.module.css';
 import layoutClasses from '../formBlockLayout.module.css';
 import { PaperWithBorder } from '../paperWithBorder';
@@ -44,8 +45,9 @@ function TabCollapsibleSection({ props }: { props: TabCollapsibleSectionProps })
 	const showSectionTitle = props.header != null
 		&& (props.titleVisibility === 'show' || (props.titleVisibility === 'auto' && !showTabs));
 
-	const sectionTitle = showSectionTitle && props.header != null
-		? <Title order={4}>{t(props.header)}</Title>
+	const headerText = useSectionTitle(props.header, t);
+	const sectionTitle = showSectionTitle && headerText != null
+		? <Title order={4}>{headerText}</Title>
 		: null;
 
 	const body = (

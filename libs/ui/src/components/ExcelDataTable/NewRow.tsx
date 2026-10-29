@@ -1,4 +1,5 @@
 import { Table as MantineTable, Text } from '@mantine/core';
+import { showClientErrorModal } from '@nikkierp/common/service';
 import { ClientErrorItem } from '@nikkierp/common/types';
 import { IconPlus } from '@tabler/icons-react';
 import React from 'react';
@@ -319,7 +320,7 @@ function useNewRowAdd({ runtime, columns, t, onAdded }: NewRowAddDeps) {
 		setSubmitting(false);
 		if (clientErrors) {
 			changes.cancelCreate();
-			setErrors(showServerErrors(runtime, columns, clientErrors));
+			showServerErrors(runtime, columns, clientErrors, t);
 			return;
 		}
 		onAdded();
@@ -330,13 +331,12 @@ function useNewRowAdd({ runtime, columns, t, onAdded }: NewRowAddDeps) {
 
 type NewRowAdd = ReturnType<typeof useNewRowAdd>;
 
-/** Field rejections land on their inputs; the rest are returned to show beside the buttons. */
+/** Field rejections land on their inputs; the rest open the error modal. */
 function showServerErrors(
-	runtime: FormProviderRenderProps, columns: NewRowColumns, clientErrors: ClientErrorItem[],
-): ClientErrorItem[] {
+	runtime: FormProviderRenderProps, columns: NewRowColumns, clientErrors: ClientErrorItem[], t: TranslateFn,
+): void {
 	const split = splitNewRowErrors(clientErrors, [...columns.autoFields, ...columns.editorFields]);
-	runtime.setServerErrors(split.attached);
-	return split.unattached;
+	showClientErrorModal(t, [...split.unattached, ...runtime.setServerErrors(split.attached)]);
 }
 
 type CollectedPayload = { payload: Record<string, unknown>, errors?: undefined } | { errors: ClientErrorItem[] };

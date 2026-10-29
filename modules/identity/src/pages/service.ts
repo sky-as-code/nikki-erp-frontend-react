@@ -98,7 +98,6 @@ function buildServiceFieldsSection(): ComponentNode {
 		header: 'form.generalInformation',
 	}, [
 		resourceFormColumnNode({ header: 'form.generalInformation', fields: ['display_name'] }),
-		resourceFormColumnNode({ header: 'form.audit', fields: ['created_at', 'updated_at'] }),
 	]);
 }
 

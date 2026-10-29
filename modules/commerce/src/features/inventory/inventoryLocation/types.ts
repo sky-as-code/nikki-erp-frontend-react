@@ -5,12 +5,8 @@ import * as dyn from '@nikkierp/common/dynamicModel';
  * Where stock is held. Only `internal` locations hold company-owned stock; the rest are the
  * counterparties and virtual locations that give a movement its opposite side. See BR §4.2.
  */
-export type InventoryLocationUsage =
-	'internal' | 'customer' | 'vendor' | 'inventory_loss' | 'scrap' | 'transit' | 'virtual';
-
-/** What a location is used for inside its warehouse. Null for a location outside any warehouse. */
-export type InventoryLocationPurpose =
-	'storage' | 'receiving' | 'quality' | 'picking' | 'packing' | 'output' | 'other';
+export type InventoryLocationType =
+	'internal' | 'group' | 'customer' | 'vendor' | 'inventory_loss' | 'production' | 'scrap' | 'transit';
 
 export type InventoryLocationRemovalStrategy =
 	'fifo' | 'lifo' | 'fefo' | 'closest' | 'least_packages';
@@ -23,15 +19,16 @@ export type InventoryLocationStatus = 'active' | 'suspended';
 
 export type InventoryLocation = {
 	id: string,
-	code?: string,
-	name?: dyn.ModelSchemaLangJson,
-	location_usage?: InventoryLocationUsage,
-	purpose?: InventoryLocationPurpose,
-	/** Null when the location belongs to no warehouse, which is normal for the external ones. */
+	name?: string,
+	/** The full path through the location tree, derived by the backend; the record label. */
+	canonical_name?: string,
+	location_type?: InventoryLocationType,
+	/**
+	 * Inherited from the parent location by the backend. Null when the location belongs to no
+	 * warehouse, which is normal for the external ones.
+	 */
 	warehouse_id?: string,
 	parent_location_id?: string,
-	/** Derived from the tree by the backend; never edited directly. */
-	complete_path?: string,
 	hierarchy_depth?: number,
 	barcode?: string,
 	storage_category_id?: string,
@@ -39,7 +36,7 @@ export type InventoryLocation = {
 	is_replenishment_destination?: boolean,
 	is_system_generated?: boolean,
 	status?: InventoryLocationStatus,
-	description?: dyn.ModelSchemaLangJson,
+	description?: string,
 	org_id?: string,
 	is_archived?: boolean,
 	etag?: string,

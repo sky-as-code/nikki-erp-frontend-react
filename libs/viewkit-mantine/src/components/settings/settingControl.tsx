@@ -1,15 +1,11 @@
-import { NumberInput, Switch } from '@mantine/core';
-import { Input, Select, withInputDensity } from '@nikkierp/ui/components';
+import { Switch } from '@mantine/core';
+import { Input, LocalizedNumberInput, Select } from '@nikkierp/ui/components';
 import React from 'react';
 
 import { useEnumSettingOptions } from './enumSettingOptions';
 
 import type { SettingItemData, SettingOption } from './settingsDataContext';
 import type { ModelSchemaFieldDataTypeName } from '@nikkierp/common/dynamicModel';
-
-
-/** The same box as the `Input` and `Select` wrappers beside it; `@nikkierp/ui` has no NumberInput one. */
-const NUMBER_INPUT_CLASS_NAMES = withInputDensity({});
 
 
 export type SettingControlProps = {
@@ -64,9 +60,8 @@ export function SettingControl({ item, value, onChange, options, labelKey }: Set
 
 	if (typeName === 'int32' || typeName === 'int64' || typeName === 'decimal') {
 		return (
-			<NumberInput
+			<LocalizedNumberInput
 				w={220}
-				classNames={NUMBER_INPUT_CLASS_NAMES}
 				value={typeof value === 'number' ? value : ''}
 				disabled={disabled}
 				allowDecimal={typeName === 'decimal'}

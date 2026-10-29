@@ -2,6 +2,7 @@
 import kyLib, { HTTPError } from 'ky';
 
 import { announceAuthorizationErrors } from './authorizationEvents';
+import { announceServerError, isServerErrorStatus, ServerFailureError } from './serverErrorEvents';
 import { ClientErrorItem, ClientErrors } from '../types/common';
 
 import type { KyInstance, Input, Options, KyRequest } from 'ky';
@@ -100,6 +101,11 @@ async function announceRefusal(_request: KyRequest, _options: unknown, response:
 	}
 }
 
+/** Announces a 5xx so the Shell shows its general notice; the caller still gets the thrown error. */
+function announceServerFailure(_request: KyRequest, _options: unknown, response: Response): void {
+	announceServerError(response);
+}
+
 export class RequestMaker {
 	private static _default: RequestMaker = null!;
 
@@ -148,9 +154,9 @@ export class RequestMaker {
 						}
 					},
 				],
-				// Every refusal is announced here, whatever made the call: a typed service, a command
-				// handler posting to a custom route, or a raw `ky()` download that never parses the body.
-				afterResponse: [announceRefusal],
+				// Every refusal and server failure is announced here, whatever made the call: a typed service,
+				// a command handler posting to a custom route, or a raw `ky()` download that never parses the body.
+				afterResponse: [announceRefusal, announceServerFailure],
 			},
 		});
 	}
@@ -232,9 +238,11 @@ export class RequestMaker {
 		if (response.status >= 400 && response.status < 500 && ClientErrors.canConvert(body)) {
 			return clientErrorResult<T>(ClientErrors.from(body).items);
 		}
-		throw new Error(
-			`Server responded with ${response.status} and an unrecognized error format: ${JSON.stringify(body)}`,
-		);
+		const message = `Server responded with ${response.status} and an unrecognized error format: `
+			+ JSON.stringify(body);
+		throw isServerErrorStatus(response.status)
+			? new ServerFailureError(response.status, message)
+			: new Error(message);
 	}
 
 	/** Reads the body once, as JSON when possible and as text otherwise. */

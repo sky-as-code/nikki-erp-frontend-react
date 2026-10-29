@@ -84,7 +84,7 @@ function buildSalesFiscalRequestFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['original_fiscal_request_id', 'buyer_snapshot', 'org_id', 'created_at'],
+			fields: ['original_fiscal_request_id', 'buyer_snapshot', 'org_id'],
 		}),
 	]);
 }

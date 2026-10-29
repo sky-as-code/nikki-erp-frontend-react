@@ -1,4 +1,5 @@
 import { Table as MantineTable } from '@mantine/core';
+import { showClientErrorModal } from '@nikkierp/common/service';
 import { ClientErrorItem } from '@nikkierp/common/types';
 import clsx from 'clsx';
 import React from 'react';
@@ -196,7 +197,8 @@ function useTableScopeWrite(
 		const clientErrors = await write(built.payload);
 		if (clientErrors) {
 			changed.forEach(field => sent.current.delete(field));
-			setErrors(setServerErrors(clientErrors));
+			setErrors([]);
+			showClientErrorModal(t, setServerErrors(clientErrors));
 			return;
 		}
 		setErrors([]);

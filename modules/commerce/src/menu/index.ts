@@ -88,12 +88,19 @@ function toRibbonBlock(group: MenuItem): RibbonBlock {
 
 function toRibbonItem(item: MenuItem): RibbonItem {
 	return item.items
-		? { labelKey: item.labelKey, items: item.items.map(toRibbonLink) }
+		? { labelKey: item.labelKey, items: item.items.map(toRibbonLink), ...rowspanOf(item) }
 		: toRibbonLink(item);
 }
 
 function toRibbonLink(item: MenuItem): RibbonLinkItem {
-	return { labelKey: item.labelKey, link: item.link ?? '/', requiredEntitlements: item.requiredEntitlements };
+	return {
+		labelKey: item.labelKey, link: item.link ?? '/', requiredEntitlements: item.requiredEntitlements, ...rowspanOf(item),
+	};
+}
+
+/** Only when set, so an ordinary entry keeps its exact shape. */
+function rowspanOf(item: MenuItem): { rowspan?: boolean } {
+	return item.rowspan ? { rowspan: true } : {};
 }
 
 function prefixLabelKeys(subModule: string, items: MenuItem[]): MenuItem[] {

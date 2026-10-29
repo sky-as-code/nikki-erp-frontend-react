@@ -1,4 +1,5 @@
 import { Anchor, Loader, Menu, Tooltip } from '@mantine/core';
+import { isAnnouncedServerFailure } from '@nikkierp/common/request';
 import { notifyClientErrors, showShellNotice } from '@nikkierp/common/service';
 import { escapeHtml } from '@nikkierp/common/utils';
 import { commandAttrs } from '@nikkierp/viewengine/core';
@@ -156,6 +157,9 @@ export async function publishTableCommand(
 
 function notifyActionFailed(t: ClientErrorTranslator, error: unknown): void {
 	console.error('Table action failed', error);
+	if (isAnnouncedServerFailure(error)) {
+		return;
+	}
 	showShellNotice('error', escapeHtml(t('common:datatable.actionFailed', {}))).catch((noticeError: unknown) => {
 		console.error('Failed to show the Shell Notice', noticeError);
 	});

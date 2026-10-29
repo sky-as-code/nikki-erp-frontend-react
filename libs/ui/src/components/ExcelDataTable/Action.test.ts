@@ -1,3 +1,4 @@
+import { ServerFailureError } from '@nikkierp/common/request';
 import { ClientErrorItem } from '@nikkierp/common/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -123,5 +124,17 @@ describe('publishActionCommand', () => {
 		const bus = busReturning({ result: null, error: new Error('x') });
 		await publishActionCommand(bus, 'cmd', [], () => '<b>failed</b>', vi.fn());
 		expect(notice.showShellNotice).toHaveBeenCalledWith('error', '&lt;b&gt;failed&lt;/b&gt;');
+	});
+});
+
+describe('publishActionCommand on a server failure', () => {
+	it('leaves a 5xx to the Shell notice the request layer already raised', async () => {
+		vi.clearAllMocks();
+		vi.spyOn(console, 'error').mockImplementation(() => undefined);
+		const publish = vi.fn(() => Promise.resolve({ result: null, error: new ServerFailureError(500, 'down') }));
+		const refresh = vi.fn();
+		await publishActionCommand({ publish } as never, 'cmd', ['1'], vi.fn(() => 'x'), refresh);
+		expect(notice.showShellNotice).not.toHaveBeenCalled();
+		expect(refresh).toHaveBeenCalledOnce();
 	});
 });

@@ -61,6 +61,17 @@ function applySeparators(parts: Intl.NumberFormatPart[], opts?: LocalizedNumberO
 	}).join('');
 }
 
+export type NumberSeparators = { decimal: string, thousands: string };
+
+/** The separators a number input types and shows: the language record's where it sets them, else `Intl`'s. */
+export function resolveNumberSeparators(locale: string, opts?: LocalizedNumberOptions): NumberSeparators {
+	const parts = new Intl.NumberFormat(locale).formatToParts(1234567.5);
+	return {
+		decimal: opts?.decimalSeparator ?? parts.find(part => part.type === 'decimal')?.value ?? '.',
+		thousands: opts?.thousandsSeparator ?? parts.find(part => part.type === 'group')?.value ?? ',',
+	};
+}
+
 export function formatLocalizedNumber(raw: RawValue, locale: string, opts?: LocalizedNumberOptions): string {
 	const value = parseRawNumber(raw);
 	if (value === null) {

@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { fieldPresentation, hasVisibleField, isBlockVisible, isFieldVisible } from './fieldVisibility';
+import {
+	applyVisibleWhen, fieldPresentation, hasVisibleField, isBlockVisible, isFieldShownByCondition, isFieldVisible,
+	visibleWhenSourceFields,
+} from './fieldVisibility';
 
+import type { VisibleWhen } from './fieldVisibility';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 
@@ -157,5 +161,58 @@ describe('isBlockVisible', () => {
 
 	it('still drops a stable block whose fields the schema does not define', () => {
 		expect(isBlockVisible(roleSchema, ['nope'], 'update', true)).toBe(false);
+	});
+});
+
+const flowRules: VisibleWhen = {
+	receiving_location_id: { field: 'incoming_flow', operator: 'in', value: ['two_step', 'three_step'] },
+	quality_location_id: [
+		{ field: 'incoming_flow', operator: 'equal', value: 'three_step' },
+		{ field: 'parent.kind', operator: 'exists' },
+	],
+};
+
+describe('isFieldShownByCondition', () => {
+	it('shows a field that has no rule', () => {
+		expect(isFieldShownByCondition(flowRules, 'name', {})).toBe(true);
+		expect(isFieldShownByCondition(undefined, 'name', {})).toBe(true);
+	});
+
+	it('follows a single condition', () => {
+		expect(isFieldShownByCondition(flowRules, 'receiving_location_id', { incoming_flow: 'two_step' })).toBe(true);
+		expect(isFieldShownByCondition(flowRules, 'receiving_location_id', { incoming_flow: 'one_step' })).toBe(false);
+	});
+
+	it('requires every condition of a list', () => {
+		const values = { incoming_flow: 'three_step', parent: { kind: 'x' } };
+		expect(isFieldShownByCondition(flowRules, 'quality_location_id', values)).toBe(true);
+		expect(isFieldShownByCondition(flowRules, 'quality_location_id', { incoming_flow: 'three_step' })).toBe(false);
+	});
+});
+
+describe('visibleWhenSourceFields', () => {
+	it('lists each top-level field a condition reads, once', () => {
+		expect(visibleWhenSourceFields(flowRules)).toEqual(['incoming_flow', 'parent']);
+		expect(visibleWhenSourceFields(undefined)).toEqual([]);
+	});
+});
+
+describe('applyVisibleWhen', () => {
+	it('drops plain fields whose condition fails', () => {
+		const fields = ['incoming_flow', 'receiving_location_id', 'quality_location_id'];
+		expect(applyVisibleWhen(fields, flowRules, { incoming_flow: 'one_step' })).toEqual(['incoming_flow']);
+		expect(applyVisibleWhen(fields, flowRules, { incoming_flow: 'two_step' }))
+			.toEqual(['incoming_flow', 'receiving_location_id']);
+	});
+
+	it('drops a failing @@field from an inline row, and the row once none is left', () => {
+		const rows = [['$$form.input', '@@receiving_location_id', 'and', '@@quality_location_id'], ['$$form.note']];
+		expect(applyVisibleWhen(rows, flowRules, { incoming_flow: 'two_step' }))
+			.toEqual([['$$form.input', '@@receiving_location_id', 'and'], ['$$form.note']]);
+		expect(applyVisibleWhen(rows, flowRules, { incoming_flow: 'one_step' })).toEqual([['$$form.note']]);
+	});
+
+	it('leaves the fields alone without rules', () => {
+		expect(applyVisibleWhen(['a', ['@@b']], undefined, {})).toEqual(['a', ['@@b']]);
 	});
 });

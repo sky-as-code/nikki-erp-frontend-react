@@ -7,7 +7,7 @@ import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconArchive, IconArchiveOff, IconDots, IconTrash } from '@tabler/icons-react';
 import React from 'react';
 
-import { notifyServerError } from './publishServerErrors';
+import { publishServerErrors } from './publishServerErrors';
 import {
 	useResourceDetailSchemaName, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
 } from './ResourceDetailProvider';
@@ -123,16 +123,16 @@ function useOverflowLocks(commands: ResourceDetailStandardActionCommands) {
 
 /**
  * Runs `onSuccess` only after a write that went through. A refusal (`resource_in_use` when the
- * record is still referenced) is published to the Shell Notice stack instead: it used to be
- * dropped, so the menu closed and nothing happened.
+ * record is still referenced) opens the error modal instead: it used to be dropped, so the menu
+ * closed and nothing happened.
  */
 function onWriteSettled(
 	response: CommandBusResponse<unknown>, t: ClientErrorTranslator, onSuccess: () => void,
 ): void {
 	const clientErrors = response.result?.clientErrors ?? [];
 	if (clientErrors.length > 0) {
-		// Delete and archive take no form input, so even a field-scoped item goes to the notice.
-		clientErrors.forEach(item => notifyServerError(t, item));
+		// Delete and archive take no form input, so even a field-scoped item goes to the modal.
+		publishServerErrors(t, clientErrors);
 		return;
 	}
 	if (response.error == null) {

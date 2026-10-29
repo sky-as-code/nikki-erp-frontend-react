@@ -20,10 +20,20 @@ export type WarehouseStatus = 'active' | 'suspended';
 export type Warehouse = {
 	id: string,
 	code?: string,
-	name?: dyn.ModelSchemaLangJson,
+	name?: string,
 	warehouse_role?: WarehouseRole,
-	/** Organisational only. Stock at the parent is not stock at the child. */
-	parent_warehouse_id?: string,
+	/** Created with the warehouse and managed by it; every location of the warehouse hangs under it. */
+	root_location_id?: string,
+	/** The managed `Stock` child of the root, where goods are held. Created with the warehouse. */
+	stock_location_id?: string,
+	/**
+	 * The flow stops, managed by the warehouse: created when a flow first uses one, archived (the
+	 * reference kept) when the flow stops using it, unarchived when it is chosen again.
+	 */
+	receiving_location_id?: string,
+	quality_location_id?: string,
+	packing_location_id?: string,
+	output_location_id?: string,
 	address?: string,
 	manager_user_id?: string,
 	incoming_flow?: WarehouseFlow,

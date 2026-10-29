@@ -88,7 +88,7 @@ function buildSalesVoucherCodeFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['is_archived', 'org_id', 'created_at', 'updated_at'],
+			fields: ['is_archived', 'org_id'],
 		}),
 	]);
 }

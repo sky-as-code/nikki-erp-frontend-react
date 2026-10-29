@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import React from 'react';
 
 import { NoticeStack } from './NoticeStack';
+import { useServerErrorNotice } from './serverErrorNotice';
 import classes from './ShellNotice.module.css';
 import { ShellNoticeStore, shellNoticeStore } from './shellNoticeStore';
 
@@ -11,9 +12,13 @@ export type ShellNoticeContainerProps = {
 	store?: ShellNoticeStore,
 };
 
-/** Center-top surface for async-action notices; the error stack sits above the info stack. */
+/**
+ * Center-top surface for async-action notices; the error stack sits above the info stack. It also
+ * shows the general notice for a server failure (`SERVER_ERROR_TOPIC`).
+ */
 export function ShellNoticeContainer({ store = shellNoticeStore }: ShellNoticeContainerProps): React.ReactNode {
 	const { info, error } = React.useSyncExternalStore(store.subscribe, store.getSnapshot);
+	useServerErrorNotice(store);
 	if (!info.length && !error.length) return null;
 
 	return (

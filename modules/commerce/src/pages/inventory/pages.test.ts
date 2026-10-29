@@ -21,7 +21,7 @@ import { buildWarehousePages } from './warehouse';
 import * as c from '../../constants/inventory';
 import { ProductTemplateCommands } from '../../features/inventory/productTemplate/commands';
 import { ProductTemplateAttributeValueCommands } from '../../features/inventory/productTemplateAttributeValue/commands';
-import { ATTRIBUTE_VALUES, TEMPLATE_ATTRIBUTES } from '../../viewkit/inventory/ids';
+import { ATTRIBUTE_VALUES, STOCK_TRANSFER_MOVES, TEMPLATE_ATTRIBUTES } from '../../viewkit/inventory/ids';
 
 import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
 import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
@@ -527,21 +527,27 @@ describe('Stock transfer page', () => {
 		expect(actions.validate.condition?.value).not.toContain('done');
 	});
 
-	/**
-	 * The related tables filter by the current transfer. A literal `${id}` reaching the backend
-	 * would match nothing, and the wrong operator would be rejected outright.
-	 */
-	it('filters the moves and lines by the transfer id', () => {
-		const [page] = buildStockTransferPages();
-		const tables = relatedTables(page);
+	it('lays out the transfer as fields, Policies, then the Moves section, with no related tabs', () => {
+		const { createNodes, childrenNodes, titleLvl2 } = fieldsDetailProps(buildStockTransferPages()[0]);
 
-		expect(tables.map(table => table.schemaName)).toEqual([
-			c.STOCK_MOVE_SCHEMA_NAME,
-			c.STOCK_MOVE_LINE_SCHEMA_NAME,
-		]);
-		for (const table of tables) {
-			expect(table.initialGraph).toEqual({ if: ['transfer_id', '=', '${id}'] });
+		expect(titleLvl2).toEqual({ schemaField: 'operation_type_id' });
+		expect(relatedTables(buildStockTransferPages()[0])).toEqual([]);
+		for (const nodes of [createNodes, childrenNodes]) {
+			expect(nodes.map(node => node.props?.header)).toEqual(['form.generalInformation', 'form.policies', 'form.moves']);
+			expect(formBlocks(nodes[0])[0].fields).not.toContain('org_id');
+			expect(formBlocks(nodes[1]).map(block => block.header)).toEqual(['form.stockPolicies', 'form.backorder']);
+			expect(nodes[2].children?.map(child => child.component)).toEqual([STOCK_TRANSFER_MOVES]);
 		}
+	});
+
+	it('edits the operation code on create only and offers the operation types of that code', () => {
+		const { childrenNodes } = fieldsDetailProps(buildStockTransferPages()[0]);
+		const general = childrenNodes[0].children?.[0];
+
+		expect(general?.props?.readOnlyFields).toEqual(['operation_code']);
+		expect(general?.props?.relationSearch).toEqual({
+			operation_type_id: { matchFormFields: { operation_code: 'operation_code' } },
+		});
 	});
 
 	it('binds the page to the backend stock transfer schema', () => {
@@ -665,5 +671,68 @@ describe('Template attribute value page', () => {
 
 		expect(props?.initialGraph).toEqual({ order: [['sequence', 'asc']] });
 		expect(props?.fieldRenderers).toEqual({ sales_price_extra: { renderer: 'money', blankAsZero: true } });
+	});
+});
+
+type FieldsDetailProps = { createNodes: ComponentNode[], childrenNodes: ComponentNode[], titleLvl2: unknown };
+
+function fieldsDetailProps(page: PageNode): FieldsDetailProps {
+	return (page.props as { secondary: { props: FieldsDetailProps } }).secondary.props;
+}
+
+function formBlocks(node: ComponentNode): { header: unknown, fields: unknown }[] {
+	return (node.children ?? []).map(child => ({ header: child.props?.header, fields: child.props?.fields }));
+}
+
+describe('Warehouse and location detail layout', () => {
+	it('lays out the warehouse as Identification, Contact, then a Warehouse flows section', () => {
+		const { createNodes, childrenNodes } = fieldsDetailProps(buildWarehousePages()[0]);
+
+		for (const nodes of [createNodes, childrenNodes]) {
+			expect(nodes[0].props).toMatchObject({ header: 'form.generalInformation' });
+			expect(formBlocks(nodes[0])).toEqual([
+				{ header: 'form.identification', fields: ['code', 'name', 'warehouse_role', 'status', 'root_location_id'] },
+				{ header: 'form.contactInformation', fields: ['manager_user_id', 'address', 'notes'] },
+			]);
+			expect(nodes[1].props).toMatchObject({ header: 'form.warehouseFlows', collapsible: true });
+			expect(formBlocks(nodes[1])).toEqual([
+				{ header: undefined, fields: ['incoming_flow', 'receiving_location_id', 'quality_location_id'] },
+				{ header: undefined, fields: ['outgoing_flow', 'packing_location_id', 'output_location_id'] },
+				{ header: undefined, fields: ['stock_location_id'] },
+			]);
+		}
+	});
+
+	it('shows each flow stop only while the selected flow uses it', () => {
+		const { childrenNodes } = fieldsDetailProps(buildWarehousePages()[0]);
+		const [incoming, outgoing] = childrenNodes[1].children ?? [];
+
+		expect(incoming.props?.visibleWhen).toEqual({
+			receiving_location_id: { field: 'incoming_flow', operator: 'in', value: ['two_step', 'three_step'] },
+			quality_location_id: { field: 'incoming_flow', operator: 'equal', value: 'three_step' },
+		});
+		expect(outgoing.props?.visibleWhen).toEqual({
+			packing_location_id: { field: 'outgoing_flow', operator: 'equal', value: 'three_step' },
+			output_location_id: { field: 'outgoing_flow', operator: 'in', value: ['two_step', 'three_step'] },
+		});
+	});
+
+	it('titles a location by its canonical name and drops code and complete_path', () => {
+		const props = fieldsDetailProps(buildInventoryLocationPages()[0]);
+
+		expect(props.titleLvl2).toEqual({ schemaField: 'canonical_name' });
+		for (const nodes of [props.createNodes, props.childrenNodes]) {
+			expect(formBlocks(nodes[0])).toEqual([
+				{ header: 'form.identification', fields: ['name', 'status', 'description', 'barcode'] },
+				{
+					header: 'form.locationTopology',
+					fields: ['location_type', 'parent_location_id', 'warehouse_id'],
+				},
+				{
+					header: 'form.storagePolicy',
+					fields: ['is_replenishment_destination', 'storage_category_id', 'removal_strategy'],
+				},
+			]);
+		}
 	});
 });

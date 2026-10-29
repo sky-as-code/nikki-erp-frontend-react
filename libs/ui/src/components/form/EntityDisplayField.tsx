@@ -53,7 +53,6 @@ export function EntityDisplayField<TEntity>({
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={localize(fieldData.label)}
-			description={localize(fieldData.description as any)}
 			isRequired={fieldData.isRequired}
 			error={fieldErrorText(localize, fieldData)}
 		>

@@ -10,6 +10,11 @@ import { Input } from '../Input';
 import type { ExcelDataTableContextValue } from './context';
 
 
+/** A page number is digits only; an `<input type=number>` would also take `e`, signs and decimals. */
+function toPageDigits(text: string): string {
+	return text.replace(/\D/g, '');
+}
+
 /**
  * `[<] [1]/10 [>]`; on a compact screen only the Prev/Next pair, as one button group.
  *
@@ -36,7 +41,7 @@ export function Pagination(props: { enableHotKeys?: boolean }) {
 			{prev}
 			<Input
 				value={state.pageInput}
-				onChange={event => state.setPageInput(event.currentTarget.value)}
+				onChange={event => state.setPageInput(toPageDigits(event.currentTarget.value))}
 				onBlur={state.commitPageChange}
 				onKeyDown={(event) => {
 					if (event.key === 'Enter') {
@@ -46,7 +51,7 @@ export function Pagination(props: { enableHotKeys?: boolean }) {
 				}}
 				w={50}
 				classNames={{ input: 'text-center' }}
-				type='number'
+				inputMode='numeric'
 				shortcut={enableHotKeys ? 'P' : undefined}
 				{...tid.pageInput()}
 			/>

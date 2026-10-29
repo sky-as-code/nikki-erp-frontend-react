@@ -10,4 +10,5 @@ export const ErrorKeys = {
 	invalidNumberRange: 'err_invalid_number_range',
 	notOneOf: 'err_not_one_of',
 	invalidArrayLength: 'err_invalid_array_length',
+	invalidResourceCode: 'err_invalid_resource_code',
 } as const;

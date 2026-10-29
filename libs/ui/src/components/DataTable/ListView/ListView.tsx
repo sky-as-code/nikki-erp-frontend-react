@@ -10,6 +10,8 @@ import { useResolvedPath } from 'react-router-dom';
 import { getColumnStyle, getColumnWidth, rowNumberColumnWidth } from './columnWidths';
 import classes from './ListView.module.css';
 import { useTranslate } from '../../../i18n';
+import { useSchemaFieldDescriptionTranslator } from '../../ExcelDataTable/fieldLabels';
+import { ColumnHeaderLabel } from '../../fieldDescription';
 import { Link } from '../../Link/Link';
 import {
 	getCellText, getCellValue, getFieldSchema, getRowNumber, isArrayField, renderDataCellContent,
@@ -198,7 +200,10 @@ function ColumnHeaderMenu(props: ColumnHeaderMenuProps): React.ReactNode {
 }
 
 function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
-	const { tid } = useDataTableContext();
+	const { tid, settings } = useDataTableContext();
+	const describeField = useSchemaFieldDescriptionTranslator(
+		settings.modelSchema, settings.relatedSchemas ?? noRelatedSchemas,
+	);
 	return (
 		<Table.Th
 			style={getColumnStyle(props.width)}
@@ -206,7 +211,11 @@ function ColumnHeader(props: ColumnHeaderProps): React.ReactNode {
 			{...tid.sort(props.field)}
 		>
 			<Group justify='space-between' gap={1} wrap='nowrap' className='overflow-hidden'>
-				<span className='overflow-hidden text-ellipsis whitespace-nowrap'>{props.translateFieldName(props.field)}</span>
+				<ColumnHeaderLabel
+					label={props.translateFieldName(props.field)}
+					description={describeField(props.field)}
+					className='overflow-hidden text-ellipsis whitespace-nowrap'
+				/>
 				<Group gap={2} wrap='nowrap' className='flex-shrink-0'>
 					{props.sortable ? (
 						<ColumnHeaderMenu
@@ -325,6 +334,8 @@ function ListViewHead(): React.ReactNode {
 		</Table.Thead>
 	);
 }
+
+const noRelatedSchemas: Record<string, dyn.ModelSchema> = {};
 
 type RowNumberCellProps = {
 	rowIndex: number,

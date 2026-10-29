@@ -9,6 +9,7 @@ import { PutawayRuleCommands } from '../../features/inventory/putawayRule/comman
 import { SupplyRelationCommands } from '../../features/inventory/supplyRelation/commands';
 import { WarehouseCommands } from '../../features/inventory/warehouse/commands';
 
+import type { WarehouseFlow } from '../../features/inventory/warehouse/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
@@ -75,8 +76,8 @@ function buildWarehouseDetailProps() {
 			delete: WarehouseCommands.DELETE,
 			archive: WarehouseCommands.SET_IS_ARCHIVED,
 		},
-		createNodes: [buildWarehouseFieldsSection()],
-		childrenNodes: [buildWarehouseFieldsSection()],
+		createNodes: [buildWarehouseFieldsSection(), buildWarehouseFlowsSection()],
+		childrenNodes: [buildWarehouseFieldsSection(), buildWarehouseFlowsSection()],
 		relatedResources: buildWarehouseResources(),
 	});
 }
@@ -89,25 +90,50 @@ function buildWarehouseFieldsSection(): ComponentNode {
 		header: 'form.generalInformation',
 	}, [
 		resourceFormColumnNode({
-			header: 'form.generalInformation',
-			fields: ['code', 'name', 'warehouse_role', 'parent_warehouse_id', 'status', 'org_id'],
-		}),
-		resourceFormColumnNode({
-			// Flows are policy: changing one provisions the locations the new shape needs and
-			// creates no movement, so they sit apart from the descriptive fields above.
-			header: 'form.warehouseFlows',
-			fields: ['incoming_flow', 'outgoing_flow'],
+			header: 'form.identification',
+			fields: ['code', 'name', 'warehouse_role', 'status', 'root_location_id'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.contactInformation',
-			fields: ['address', 'manager_user_id', 'notes'],
-		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
+			fields: ['manager_user_id', 'address', 'notes'],
 		}),
 	]);
 }
+
+/**
+ * Flows are policy: changing one provisions the stop locations the new shape needs (archiving the
+ * ones it no longer uses) and creates no movement. Each flow sits over the stops it uses; the
+ * location fields are auto-generated, so create mode hides them and update mode shows them as text.
+ */
+function buildWarehouseFlowsSection(): ComponentNode {
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
+		translationNs: c.INVENTORY_MODULE,
+		header: 'form.warehouseFlows',
+	}, [
+		resourceFormColumnNode({
+			fields: ['incoming_flow', 'receiving_location_id', 'quality_location_id'],
+			visibleWhen: {
+				receiving_location_id: { field: 'incoming_flow', operator: 'in', value: MULTI_STEP_FLOWS },
+				quality_location_id: { field: 'incoming_flow', operator: 'equal', value: THREE_STEP_FLOW },
+			},
+		}),
+		resourceFormColumnNode({
+			fields: ['outgoing_flow', 'packing_location_id', 'output_location_id'],
+			visibleWhen: {
+				packing_location_id: { field: 'outgoing_flow', operator: 'equal', value: THREE_STEP_FLOW },
+				output_location_id: { field: 'outgoing_flow', operator: 'in', value: MULTI_STEP_FLOWS },
+			},
+		}),
+		resourceFormColumnNode({
+			// Every flow ends in, or starts from, Stock.
+			fields: ['stock_location_id'],
+		}),
+	]);
+}
+
+const MULTI_STEP_FLOWS: WarehouseFlow[] = ['two_step', 'three_step'];
+const THREE_STEP_FLOW: WarehouseFlow = 'three_step';
 
 /**
  * The three sets of records that hang off a warehouse.

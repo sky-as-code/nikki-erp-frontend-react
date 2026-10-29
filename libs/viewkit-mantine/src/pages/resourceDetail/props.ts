@@ -19,7 +19,12 @@ export const ownPropertySectionSchema = z.object({
 	 * namespace.
 	 */
 	header: z.string().min(1).optional(),
-	fields: z.array(z.string()).optional(),
+	/**
+	 * Field names, top to bottom. A nested array is one inline row: `$$ns:key` / `$$key` renders
+	 * translated text (namespace defaults to the page's `translationNs`), `@@field` renders that
+	 * field's input (its value in read mode), anything else renders as literal text.
+	 */
+	fields: z.array(z.union([z.string(), z.array(z.string())])).optional(),
 	/**
 	 * Whether `header` also prints above the block's fields. Defaults to `false`: a block used as a
 	 * `tabCollapsibleSection` tab already shows its title in the tab control, so printing it again
@@ -45,6 +50,28 @@ export const ownPropertySectionSchema = z.object({
 	 * owns the change: in update mode they render as read-only text, like a server-owned field.
 	 */
 	readOnlyFields: z.array(z.string()).optional(),
+	/**
+	 * v2 only. Fields shown only while a condition on the record holds: `{ field: condition }`, where
+	 * a list of conditions must all hold. Read mode tests the record; update and create test the live
+	 * form, so a field appears the moment the value it depends on changes. Applies to `@@field` items
+	 * of inline rows too. Hiding is presentation only: a hidden field keeps its value.
+	 */
+	visibleWhen: z.record(
+		z.string(),
+		z.union([conditionExpressionSchema, z.array(conditionExpressionSchema).min(1)]),
+	).optional(),
+	/**
+	 * v2 only. Narrows a relation select of this block: `{ field: { searchField?, matchFormFields? } }`.
+	 * `searchField` is the target-schema field the typed term matches instead of its record label
+	 * (needed when that label is a `function` computed field). `matchFormFields` is
+	 * `{ targetField: formField }`: while the form's `formField` holds a value, only target records
+	 * whose `targetField` equals it are offered; an empty source narrows nothing. Presentation only:
+	 * the server validates the reference either way.
+	 */
+	relationSearch: z.record(z.string(), z.object({
+		searchField: z.string().min(1).optional(),
+		matchFormFields: z.record(z.string(), z.string().min(1)).optional(),
+	}).strict()).optional(),
 });
 
 /**

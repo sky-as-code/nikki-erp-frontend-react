@@ -78,10 +78,6 @@ function buildProductCategoryFieldsSection(): ComponentNode {
 			header: 'form.generalInformation',
 			fields: ['name', 'description', 'parent_category_id', 'display_order'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }
 

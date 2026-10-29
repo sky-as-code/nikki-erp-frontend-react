@@ -91,10 +91,6 @@ function buildRoleFieldsSection(): ComponentNode {
 			header: 'form.requestSettings',
 			fields: ['is_private', 'is_requestable', 'is_required_comment', 'is_required_attachment'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }
 

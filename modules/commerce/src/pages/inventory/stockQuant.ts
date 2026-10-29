@@ -114,10 +114,6 @@ function buildStockQuantCountingColumns(): ComponentNode[] {
 				'next_count_date', 'last_count_date', 'count_assigned_user_id',
 			],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	];
 }
 

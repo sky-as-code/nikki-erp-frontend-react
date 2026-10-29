@@ -53,6 +53,7 @@ export function ResourceCreateProvider(
 	const { bindServerErrorSink, routeServerErrors } = useCreateServerErrors();
 	const payloadContributors = useUpdatePayloadContributors();
 	const collectContributions = payloadContributors.collect;
+	const ownsErrorField = payloadContributors.ownsErrorField;
 	const fileFields = useFileFieldContributors();
 	const collectFileFields = fileFields.collect;
 	const onSubmit = React.useCallback(
@@ -68,7 +69,7 @@ export function ResourceCreateProvider(
 			const created = response.result?.data;
 			const clientErrors = response.result?.clientErrors ?? [];
 			if (clientErrors.length > 0) {
-				routeServerErrors(clientErrors);
+				routeServerErrors(clientErrors, ownsErrorField);
 				return;
 			}
 			if (response.error != null || !created?.id) {
@@ -85,7 +86,7 @@ export function ResourceCreateProvider(
 		},
 		[
 			publishCreate, props.commands.create, props.createDefaults, runAfterSave, navigate, routeServerErrors,
-			collectContributions, collectFileFields,
+			collectContributions, collectFileFields, ownsErrorField,
 		],
 	);
 

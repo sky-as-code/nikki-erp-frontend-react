@@ -35,19 +35,20 @@ function buildInventoryLocationListProps() {
 		updateCommand: InventoryLocationCommands.UPDATE,
 		fieldRenderers: {
 			// Only `internal` holds company-owned stock, so the colours separate it from the
-			// counterparty and virtual locations rather than giving each usage its own hue.
-			location_usage: {
+			// counterparty and virtual locations rather than giving each type its own hue.
+			location_type: {
 				renderer: 'badge',
 				colorMap: {
 					internal: 'green',
+					group: 'gray',
 					customer: 'blue',
 					vendor: 'indigo',
 					inventory_loss: 'orange',
+					production: 'violet',
 					scrap: 'red',
 					transit: 'gray',
-					virtual: 'gray',
 				},
-				prefix: 'location_usage.',
+				prefix: 'location_type.',
 			},
 			// Suspended is a temporary lock rather than a retirement, so it reads as a warning
 			// rather than an error: the location is still there and still holds whatever it held.
@@ -68,7 +69,7 @@ function buildInventoryLocationDetailProps() {
 		schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
-		titleLvl2: { schemaField: 'code' },
+		titleLvl2: { schemaField: 'canonical_name' },
 		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: InventoryLocationCommands.GET_BY_ID,
@@ -90,23 +91,18 @@ function buildInventoryLocationFieldsSection(): ComponentNode {
 		header: 'form.generalInformation',
 	}, [
 		resourceFormColumnNode({
-			header: 'form.generalInformation',
-			fields: ['code', 'name', 'location_usage', 'status', 'description', 'org_id'],
+			header: 'form.identification',
+			fields: ['name', 'status', 'description', 'barcode'],
 		}),
 		resourceFormColumnNode({
-			// Where the location sits: which warehouse owns it (null for a vendor, customer or
-			// shared transit location), its parent, and what it is used for inside the warehouse.
-			// complete_path is derived, so it is shown but never edited.
+			// warehouse_id is inherited from the parent location by the backend (null for a vendor,
+			// customer or shared transit location), so it is shown but never edited.
 			header: 'form.locationTopology',
-			fields: ['warehouse_id', 'parent_location_id', 'purpose', 'complete_path', 'barcode'],
+			fields: ['location_type', 'parent_location_id', 'warehouse_id'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.storagePolicy',
-			fields: ['storage_category_id', 'removal_strategy', 'is_replenishment_destination'],
-		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
+			fields: ['is_replenishment_destination', 'storage_category_id', 'removal_strategy'],
 		}),
 	]);
 }

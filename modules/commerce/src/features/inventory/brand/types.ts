@@ -6,7 +6,7 @@ export type Brand = {
 	id: string,
 	code?: string,
 	name?: dyn.ModelSchemaLangJson,
-	description?: dyn.ModelSchemaLangJson,
+	description?: string,
 	website?: string,
 	logo_id?: string,
 	country_id?: string,

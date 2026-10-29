@@ -81,7 +81,7 @@ function buildSalesPointFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['org_id', 'created_at', 'updated_at'],
+			fields: ['org_id'],
 		}),
 	]);
 }

@@ -210,7 +210,7 @@ function buildProductTemplatePhysicalColumns(): ComponentNode[] {
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',
-			fields: ['status', 'created_at', 'updated_at'],
+			fields: ['status'],
 		}),
 	];
 }

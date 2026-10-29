@@ -1,6 +1,20 @@
 import type { MenuContribution, MenuItem } from '@nikkierp/ui/menu';
 
 
+type OperationCode = 'incoming' | 'outgoing' | 'internal';
+
+const TRANSFER_LIST = '/inventory_stock_transfer';
+
+/** The transfer create page with its operation pre-filled (`?field_data=`); the backend picks the operation type. */
+function newTransferLink(code: OperationCode): string {
+	return `${TRANSFER_LIST}/new?field_data=${encodeURIComponent(JSON.stringify({ operation_code: code }))}`;
+}
+
+/** The transfer list with an editable filter on the operation (`?initialGraph=`), not a fixed scope. */
+function transferListLink(code: OperationCode): string {
+	return `${TRANSFER_LIST}?initialGraph=${encodeURIComponent(JSON.stringify({ if: ['operation_code', '=', code] }))}`;
+}
+
 /**
  * Keys live in the `inventory` namespace, alongside the module's other labels.
  *
@@ -25,7 +39,26 @@ const ITEMS: MenuItem[] = [
 		// Stock carries no Products entry — product management has one home, above.
 		labelKey: 'menu_stock',
 		items: [
-			{ labelKey: 'menu_stockTransfers', link: '/inventory_stock_transfer' },
+			{
+				// Its own ribbon column: starting a transfer is what the Stock block is mostly for.
+				labelKey: 'menu_newTransfer',
+				rowspan: true,
+				items: [
+					{ labelKey: 'menu_newReceipt', link: newTransferLink('incoming') },
+					{ labelKey: 'menu_newDelivery', link: newTransferLink('outgoing') },
+					{ labelKey: 'menu_newInternal', link: newTransferLink('internal') },
+					{ labelKey: 'menu_newOtherTransfer', link: `${TRANSFER_LIST}/new` },
+				],
+			},
+			{
+				labelKey: 'menu_stockTransfers',
+				items: [
+					{ labelKey: 'menu_receipts', link: transferListLink('incoming') },
+					{ labelKey: 'menu_deliveries', link: transferListLink('outgoing') },
+					{ labelKey: 'menu_internalTransfers', link: transferListLink('internal') },
+					{ labelKey: 'menu_allTransfers', link: TRANSFER_LIST },
+				],
+			},
 			{ labelKey: 'menu_stockBalance', link: '/inventory_stock_quant' },
 			// The cycle-count worklist is the balance list filtered by next_count_date, so it is a
 			// second entry point into an existing page rather than a page of its own (BR §4.2.8).

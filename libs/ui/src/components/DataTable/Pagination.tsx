@@ -10,6 +10,11 @@ import { Input } from '../Input';
 import type { DataTableContextValue } from './DataTableContext';
 
 
+/** A page number is digits only; an `<input type=number>` would also take `e`, signs and decimals. */
+function toPageDigits(text: string): string {
+	return text.replace(/\D/g, '');
+}
+
 /**
  * The prev/next pair around the page box, reading `[<] [1]/10 [>]`; `Alt+←`, `Alt+P`, `Alt+→` unless
  * the table's `enableHotKeys` is off.
@@ -35,7 +40,7 @@ export function Pagination(): React.ReactNode {
 			</Button>
 			<Input
 				value={paginationState.pageInput}
-				onChange={event => paginationState.setPageInput(event.currentTarget.value)}
+				onChange={event => paginationState.setPageInput(toPageDigits(event.currentTarget.value))}
 				onBlur={paginationState.commitPageChange}
 				onKeyDown={(event) => {
 					if (event.key === 'Enter') {
@@ -44,7 +49,7 @@ export function Pagination(): React.ReactNode {
 					}
 				}}
 				w={50} classNames={{ input: 'text-center' }}
-				type='number'
+				inputMode='numeric'
 				shortcut={hotKey('P')}
 				{...context.tid.pageInput()}
 			/>

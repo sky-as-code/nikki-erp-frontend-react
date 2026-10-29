@@ -9,3 +9,6 @@ export const ATTRIBUTE_VALUES = 'nikkierp.inventory.components.attributeValues.v
 
 /** The template detail's Attributes section: attribute lines and exclusions, saved with the template. */
 export const TEMPLATE_ATTRIBUTES = 'nikkierp.inventory.components.templateAttributes.v1';
+
+/** The transfer detail's Moves section: the transfer's moves, saved with the transfer while it is a draft. */
+export const STOCK_TRANSFER_MOVES = 'nikkierp.inventory.components.stockTransferMoves.v1';

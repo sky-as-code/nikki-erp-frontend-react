@@ -86,6 +86,16 @@ describe('ownPropertySectionSchema', () => {
 		expect(ownPropertySectionSchema.parse({ fields: ['name'], span: 'full' }).span).toBe('full');
 	});
 
+	it('accepts inline rows mixed with field names', () => {
+		const fields = ['name', ['$$form.parent', '@@parent_id', 'of', '@@warehouse_id']];
+
+		expect(ownPropertySectionSchema.parse({ fields }).fields).toEqual(fields);
+	});
+
+	it('rejects an inline row nested deeper than one level', () => {
+		expect(() => ownPropertySectionSchema.parse({ fields: [['@@name', ['@@code']]] })).toThrow();
+	});
+
 	it('rejects a span other than full', () => {
 		expect(() => ownPropertySectionSchema.parse({ fields: ['name'], span: 'half' })).toThrow();
 	});
@@ -96,5 +106,23 @@ describe('ownPropertySectionSchema', () => {
 		expect(ownPropertySectionSchema.parse({ fields: ['mode'], lockedFields }).lockedFields).toEqual(lockedFields);
 		expect(() => ownPropertySectionSchema.parse({ fields: ['mode'], lockedFields: { mode: { unless: 'x' } } }))
 			.toThrow();
+	});
+
+	it('takes visibleWhen as one condition or a list that must all hold', () => {
+		const visibleWhen = {
+			receiving_location_id: { field: 'incoming_flow', operator: 'in', value: ['two_step', 'three_step'] },
+			quality_location_id: [
+				{ field: 'incoming_flow', operator: 'equal', value: 'three_step' },
+				{ field: 'is_archived', operator: 'not_equal', value: true },
+			],
+		};
+
+		expect(ownPropertySectionSchema.parse({ fields: ['name'], visibleWhen }).visibleWhen).toEqual(visibleWhen);
+	});
+
+	it('rejects a visibleWhen with an unknown operator or an empty list', () => {
+		const badOperator = { code: { field: 'kind', operator: 'like', value: 'x' } };
+		expect(() => ownPropertySectionSchema.parse({ fields: ['code'], visibleWhen: badOperator })).toThrow();
+		expect(() => ownPropertySectionSchema.parse({ fields: ['code'], visibleWhen: { code: [] } })).toThrow();
 	});
 });

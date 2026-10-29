@@ -3,8 +3,10 @@ import { CrudFormProvider, FormStyleProvider, FormTestIdProvider } from '@nikkie
 import { useLocalize } from '@nikkierp/ui/i18n';
 import { ComponentAnchor, MetaComponent } from '@nikkierp/viewengine/render';
 import React from 'react';
+import { useSearchParams } from 'react-router';
 import { z } from 'zod';
 
+import { FIELD_DATA_PARAM, parseFieldDataParam, pickSchemaFieldValues } from '../../../data/fieldDataParam';
 import { RESOURCE_CREATE_FORM_V2 } from '../../../ids';
 import {
 	useResourceDetailContext, useResourceDetailTranslationNs,
@@ -12,6 +14,7 @@ import {
 import { BindCreateServerErrors, useResourceCreateContext } from '../resourceCreateContext';
 import { ResourceCreateSaveBar } from '../resourceCreateParts';
 
+import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
@@ -40,16 +43,18 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 	const orgScoped = Boolean(
 		schemaPack && modelSchema && isOrgScoped(schemaPack, modelSchema.name),
 	);
-	const createDefaults = useResolvedOrgId(orgScoped);
+	const orgSeed = useResolvedOrgId(orgScoped);
+	const fieldData = useFieldDataSeed(modelSchema);
 
 	// For an org-scoped resource, hold the form back until the active org is known: mounting it
 	// with no `org_id` seed lets validation fail on a field the user cannot see, which silently
 	// blocks Save. A resource that needs no seed renders straight away.
-	if (!modelSchema || (orgScoped && createDefaults === undefined)) {
+	if (!modelSchema || (orgScoped && orgSeed === undefined)) {
 		return null;
 	}
 
-	const modelValue = createDefaults ?? undefined;
+	// The org seed goes last: the active org is not something a link may choose.
+	const modelValue = fieldData || orgSeed ? { ...fieldData, ...orgSeed } : undefined;
 
 	return (
 		<FormStyleProvider layout='onecol'>
@@ -72,6 +77,22 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 				</CrudFormProvider>
 			</FormTestIdProvider>
 		</FormStyleProvider>
+	);
+}
+
+/**
+ * The form values a `?field_data=` link pre-fills, limited to the model's own fields. They are form
+ * values, not request defaults, so the inputs show them and submit validation checks them; the
+ * page's `createDefaults` still merge under them at submit.
+ */
+export function useFieldDataSeed(
+	modelSchema: Pick<dyn.ModelSchema, 'fields'> | undefined,
+): Record<string, unknown> | undefined {
+	const [searchParams] = useSearchParams();
+	const raw = searchParams.get(FIELD_DATA_PARAM);
+	return React.useMemo(
+		() => (modelSchema ? pickSchemaFieldValues(parseFieldDataParam(raw), modelSchema) : undefined),
+		[raw, modelSchema],
 	);
 }
 

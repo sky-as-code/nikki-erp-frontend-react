@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { findActiveRibbonTab, groupRibbonColumns, pickRibbonLayout } from './ribbonLayout';
+import { findActiveRibbonTab, groupRibbonColumns, isRibbonRowspan, pickRibbonLayout } from './ribbonLayout';
 
 import type { RibbonTab } from '@nikkierp/ui/menu';
 
@@ -17,6 +17,25 @@ describe('groupRibbonColumns', () => {
 
 	it('honours another row count', () => {
 		expect(groupRibbonColumns(['a', 'b', 'c'], 2)).toEqual([['a', 'b'], ['c']]);
+	});
+
+	it('gives each rowspan item its own leading column, in declaration order', () => {
+		const items = [
+			{ labelKey: 'a', link: '/a' },
+			{ labelKey: 'big1', link: '/b1', rowspan: true },
+			{ labelKey: 'b', link: '/b' },
+			{ labelKey: 'big2', link: '/b2', rowspan: true },
+		];
+		const labels = groupRibbonColumns(items, 3, isRibbonRowspan).map(column => column.map(item => item.labelKey));
+		expect(labels).toEqual([['big1'], ['big2'], ['a', 'b']]);
+	});
+
+	it('never stacks more than three rows, rowspan items or not', () => {
+		const items = Array.from({ length: 8 }, (_unused, index) => ({ labelKey: `i${index}`, rowspan: index === 5 }));
+		const columns = groupRibbonColumns(items, 3, item => item.rowspan);
+		expect(columns[0].map(item => item.labelKey)).toEqual(['i5']);
+		expect(columns.every(column => column.length <= 3)).toBe(true);
+		expect(columns.flat()).toHaveLength(8);
 	});
 });
 

@@ -14,8 +14,17 @@ import type { UseFormReturn } from 'react-hook-form';
 export const SERVER_ERROR_TYPE = 'server';
 
 /**
- * Routes each server error to its form field, returning the ones that have no field to attach to
- * (anonymous business and authorization failures), which the caller must render form-level.
+ * Whether an input for `field` is mounted. An error set on a field the form does not show would
+ * never be seen, so it is treated as field-less.
+ */
+export function isFieldOnForm(form: UseFormReturn<any>, field: string): boolean {
+	return form.control._names.mount.has(field);
+}
+
+/**
+ * Routes each server error to its form field, returning the ones that have no input to attach to
+ * (anonymous business and authorization failures, or a field the form does not show), which the
+ * caller shows in the error modal (`showClientErrorModal`).
  *
  * The message is translated here, with `vars`, because a field renderer only has the message
  * string: re-translating a sentence would make i18next read any `:` in it as a namespace separator.
@@ -25,7 +34,7 @@ export function applyServerErrors(
 ): ClientErrorItem[] {
 	const unattached: ClientErrorItem[] = [];
 	clientErrors.forEach(item => {
-		if (item.field) {
+		if (item.field && isFieldOnForm(form, item.field)) {
 			form.setError(item.field, { type: SERVER_ERROR_TYPE, message: translateClientError(translate, item) });
 		}
 		else {

@@ -209,10 +209,6 @@ function buildSalesOrderFieldsSection(): ComponentNode {
 			header: 'form.totals',
 			fields: ['subtotal', 'discount_total', 'tax_total', 'grand_total'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.other_information',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }
 
