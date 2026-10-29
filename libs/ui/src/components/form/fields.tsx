@@ -1,5 +1,5 @@
 import {
-	ActionIcon, Grid, Input, NumberInput, Select, Switch, Text, VisuallyHidden, InputProps, NumberInputProps,
+	ActionIcon, Grid, Input, Select, Switch, Text, VisuallyHidden, InputProps, NumberInputProps,
 } from '@mantine/core';
 import { DateInput, DateInputProps, DateTimePickerProps } from '@mantine/dates';
 import { useId } from '@mantine/hooks';
@@ -17,10 +17,14 @@ import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
 import { LangJsonField } from './LangJsonField';
 import { isLongTextField, LongTextInput } from './longText';
 import { RelationSelectField } from './RelationSelectField';
+import { ResourceCodeField } from './resourceCodeField';
 import { LocalizeFn, TranslateFn } from '../../i18n';
 import { FieldLabelText, localizeFieldDescription } from '../fieldDescription';
 import { useFormInputSize } from '../Input/inlineControls';
 import { formInputProps } from '../Input/inputDensity';
+import { LocalizedNumberInput } from '../LocalizedNumberInput';
+
+import type { MaskInputProps } from '../MaskInput';
 
 
 export type AutoFieldProps = {
@@ -165,6 +169,11 @@ function renderIdentityOrTemporalField(args: IdentityOrTemporalArgs): React.Reac
 				ref={args.ref ?? fallbackRef}
 				localize={localize}
 				scale={fieldDef.data_type.options?.scale as number | undefined}
+			/>;
+		case 'nikkiResourceCode':
+			return <ResourceCodeField
+				name={args.name} localize={localize} ref={args.ref ?? fallbackRef}
+				inputProps={args.inputProps as Partial<MaskInputProps>}
 			/>;
 		case 'ulid':
 			return <UlidField
@@ -549,7 +558,8 @@ export function NumberInputField(props: NumberInputFieldProps) {
 				render={({ field }) => {
 					const value = field.value !== undefined ? field.value : defaultValue;
 					return (
-						<NumberInput
+						<LocalizedNumberInput
+							allowDecimal={false}
 							id={inputId}
 							error={fieldErrorText(t, fieldData)}
 							value={typeof value === 'number' ? value : undefined}
@@ -563,7 +573,7 @@ export function NumberInputField(props: NumberInputFieldProps) {
 							disabled={modelLoading}
 							placeholder={fieldData.placeholder ? t(fieldData.placeholder) : undefined}
 							{...htmlProps}
-							{...(defaultInputProps as NumberInputProps)}
+							{...(defaultInputProps as Partial<NumberInputProps>)}
 						/>
 					);
 				}}
@@ -618,7 +628,7 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 				render={({ field }) => {
 					const value = field.value !== undefined ? field.value : defaultValue;
 					return (
-						<NumberInput
+						<LocalizedNumberInput
 							id={inputId}
 							error={fieldErrorText(t, fieldData)}
 							value={value ?? ''}
@@ -635,7 +645,7 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 							decimalScale={scale}
 							placeholder={fieldData.placeholder ? t(fieldData.placeholder) : undefined}
 							{...htmlProps}
-							{...(defaultInputProps as NumberInputProps)}
+							{...(defaultInputProps as Partial<NumberInputProps>)}
 						/>
 					);
 				}}

@@ -172,6 +172,7 @@ export function ResourceUpdateProvider(
 			registerFileField, hasPendingFiles,
 			registerUpdatePayload: payloadContributors.register,
 			hasPendingUpdatePayload: payloadContributors.hasPending,
+			ownsSaveErrorField: payloadContributors.ownsErrorField,
 			updateMode, setUpdateMode,
 			auditOpen, setAuditOpen, setAfterSectionsSlot, historyVersion, bumpHistory,
 		}),
@@ -182,6 +183,7 @@ export function ResourceUpdateProvider(
 			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.thumbnail, props.childrenNodes,
 			afterSave.register, afterSave.hasPending, afterSave.isRunning, afterSave.submitAfterSaveOnly,
 			registerFileField, hasPendingFiles, payloadContributors.register, payloadContributors.hasPending,
+			payloadContributors.ownsErrorField,
 			updateMode, auditOpen, setAuditOpen, historyVersion, bumpHistory,
 		],
 	);

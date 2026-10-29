@@ -1,27 +1,27 @@
-import { notifyClientErrors } from '@nikkierp/common/service';
+import { showClientErrorModal } from '@nikkierp/common/service';
 
 import type { ClientErrorItem, ClientErrorTranslator } from '@nikkierp/common/types';
 
 
+/** Lands the server errors it can on their form inputs and returns the rest; a form runtime's `setServerErrors`. */
+export type ServerErrorSink = (clientErrors: ClientErrorItem[]) => ClientErrorItem[];
+
+/** Whether a section of the page shows the errors under this `field` itself (`ownsErrorField`). */
+export type SectionErrorOwner = (field: string) => boolean;
+
 /**
- * Sends every server error that has no `field` to the Shell Notice stack as an `error` notice and
- * returns the field-scoped ones, which the caller attaches to its form inputs.
+ * Lands each server error on its input through `attach`, and shows the rest in one error modal:
+ * those with no `field`, and those naming a field the form does not show. With no form to attach
+ * to (`attach` unset), every error goes to the modal. Errors a section shows itself are skipped.
  *
  * Authorization errors are not shown: the request layer already raised its modal for them.
  */
-export function publishServerErrors(t: ClientErrorTranslator, errors: ClientErrorItem[]): ClientErrorItem[] {
-	const fieldItems: ClientErrorItem[] = [];
-	for (const item of errors) {
-		if (item.field) {
-			fieldItems.push(item);
-			continue;
-		}
-		notifyServerError(t, item);
+export function publishServerErrors(
+	t: ClientErrorTranslator, errors: ClientErrorItem[], attach?: ServerErrorSink, sectionOwns?: SectionErrorOwner,
+): void {
+	const unowned = sectionOwns ? errors.filter(item => !item.field || !sectionOwns(item.field)) : errors;
+	if (unowned.length === 0) {
+		return;
 	}
-	return fieldItems;
-}
-
-/** Sends one server error to the Shell Notice stack, whether or not it names a field. */
-export function notifyServerError(t: ClientErrorTranslator, item: ClientErrorItem): void {
-	notifyClientErrors(t, [item]);
+	showClientErrorModal(t, attach ? attach(unowned) : unowned);
 }

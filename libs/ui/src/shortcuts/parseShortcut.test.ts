@@ -55,10 +55,11 @@ describe('matchesShortcut', () => {
 
 describe('labels', () => {
 	it.each([
-		['Shift+1', '⇧1'],
+		['Shift+1', '⇧ 1'],
 		['/', '/'],
 		['ArrowLeft', '←'],
-		['Ctrl+Shift+k', 'Ctrl+⇧K'],
+		['Ctrl+Shift+k', '⌃ ⇧ K'],
+		['Ctrl+2', '⌃ 2'],
 	])('formats %s as %s', (spec, label) => {
 		expect(formatShortcutLabel(parseShortcut(spec)!)).toBe(label);
 	});

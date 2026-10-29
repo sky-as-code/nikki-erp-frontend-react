@@ -93,9 +93,9 @@ export function matchesShortcut(parsed: ParsedShortcut, event: KeyboardEvent): b
 		&& event.code === parsed.code;
 }
 
-/** Keycap text: `⇧1`, `Ctrl+⇧K`, `/`, `←`. Alt is left out — it is the key being held. */
+/** Keycap text: `⇧ 1`, `⌃ ⇧ K`, `/`, `←`. Alt is left out — it is the key being held. */
 export function formatShortcutLabel(parsed: ParsedShortcut): string {
-	return `${parsed.ctrl ? 'Ctrl+' : ''}${parsed.shift ? '⇧' : ''}${parsed.keyLabel}`;
+	return [parsed.ctrl && '⌃', parsed.shift && '⇧', parsed.keyLabel].filter(Boolean).join(' ');
 }
 
 /** The value for a control's `aria-keyshortcuts`, e.g. `Alt+Shift+1`. */

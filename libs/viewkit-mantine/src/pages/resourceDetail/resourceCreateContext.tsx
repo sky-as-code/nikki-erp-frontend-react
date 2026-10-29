@@ -7,12 +7,12 @@ import { useResourceDetailTranslationNs } from './ResourceDetailProvider';
 
 import type { RegisterAfterSave, RegisterFileField, RegisterUpdatePayload } from './afterSave';
 import type { LinkSpec, ResourceDetailStandardActionCommands, SchemaFieldSpec } from './props';
+import type { SectionErrorOwner, ServerErrorSink } from './publishServerErrors';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
-/** Attaches field-scoped rejections to the mounted form; the form runtime's `setServerErrors`. */
-export type ServerErrorSink = (clientErrors: ClientErrorItem[]) => ClientErrorItem[];
+export type { ServerErrorSink } from './publishServerErrors';
 
 export type ResourceCreateContextValue = {
 	commands: ResourceDetailStandardActionCommands,
@@ -56,12 +56,12 @@ export function useOptionalResourceCreateContext(): ResourceCreateContextValue |
 }
 
 /**
- * The create provider's side of the server-error routing: `routeServerErrors` publishes the
- * non-field rejections to the Shell Notice stack and hands the field ones to the bound form.
+ * The create provider's side of the server-error routing: `routeServerErrors` hands the rejections
+ * to the bound form and shows the ones it cannot place in the error modal.
  */
 export function useCreateServerErrors(): {
 	bindServerErrorSink: ResourceCreateContextValue['bindServerErrorSink'],
-	routeServerErrors: (clientErrors: ClientErrorItem[]) => void,
+	routeServerErrors: (clientErrors: ClientErrorItem[], sectionOwns?: SectionErrorOwner) => void,
 } {
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const sinkRef = React.useRef<ServerErrorSink | null>(null);
@@ -73,8 +73,8 @@ export function useCreateServerErrors(): {
 			}
 		};
 	}, []);
-	const routeServerErrors = React.useCallback((clientErrors: ClientErrorItem[]) => {
-		sinkRef.current?.(publishServerErrors(t, clientErrors));
+	const routeServerErrors = React.useCallback((clientErrors: ClientErrorItem[], sectionOwns?: SectionErrorOwner) => {
+		publishServerErrors(t, clientErrors, sinkRef.current ?? undefined, sectionOwns);
 	}, [t]);
 	return { bindServerErrorSink, routeServerErrors };
 }

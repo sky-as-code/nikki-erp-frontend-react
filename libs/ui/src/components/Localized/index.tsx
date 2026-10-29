@@ -4,6 +4,6 @@ export * from './LocalizedMoney';
 export * from './LocalizedNumber';
 export {
 	EMPTY_VALUE, currencySymbolPosition, formatLocalizedDateTime, formatLocalizedMoney,
-	formatLocalizedNumber, inferDateTimeKind, parseRawNumber,
+	formatLocalizedNumber, inferDateTimeKind, parseRawNumber, resolveNumberSeparators,
 } from './localizedFormat';
-export type { DateTimeKind, LocalizedNumberOptions, RawValue } from './localizedFormat';
+export type { DateTimeKind, LocalizedNumberOptions, NumberSeparators, RawValue } from './localizedFormat';

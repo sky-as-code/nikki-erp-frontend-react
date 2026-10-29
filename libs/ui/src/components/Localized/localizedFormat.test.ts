@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	EMPTY_VALUE, currencySymbolPosition, formatLocalizedDateTime, formatLocalizedMoney,
-	formatLocalizedNumber, inferDateTimeKind, parseRawNumber,
+	formatLocalizedNumber, inferDateTimeKind, parseRawNumber, resolveNumberSeparators,
 } from './localizedFormat';
 
 
@@ -138,5 +138,17 @@ describe('language-record separator overrides', () => {
 		});
 
 		expect(plain(formatted)).toBe('₫1.234,50');
+	});
+});
+
+describe('resolveNumberSeparators', () => {
+	it('takes the locale separators from Intl', () => {
+		expect(resolveNumberSeparators('en-US')).toEqual({ decimal: '.', thousands: ',' });
+		expect(resolveNumberSeparators('vi-VN')).toEqual({ decimal: ',', thousands: '.' });
+	});
+
+	it('prefers the language record separators', () => {
+		const separators = resolveNumberSeparators('en-US', { decimalSeparator: ',', thousandsSeparator: ' ' });
+		expect(separators).toEqual({ decimal: ',', thousands: ' ' });
 	});
 });

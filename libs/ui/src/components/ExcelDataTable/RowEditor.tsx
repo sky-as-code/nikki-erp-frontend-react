@@ -1,4 +1,5 @@
 import { Table as MantineTable, Text } from '@mantine/core';
+import { showClientErrorModal } from '@nikkierp/common/service';
 import { ClientErrorItem } from '@nikkierp/common/types';
 import clsx from 'clsx';
 import React from 'react';
@@ -148,8 +149,9 @@ function useRowSave({ item, runtime, submit, editing, t }: RowSaveDeps): () => P
 			return;
 		}
 		if (!(await submit.onSubmit(built.payload))) {
-			// Field-level rejections land on their inputs; the rest show beside the buttons.
-			submit.setErrors(setServerErrors(submit.lastErrorsRef.current));
+			// Field-level rejections land on their inputs; the rest open the error modal.
+			submit.setErrors([]);
+			showClientErrorModal(t, setServerErrors(submit.lastErrorsRef.current));
 		}
 	}, [dirtyFields, editing, item, runtime, setServerErrors, submit, t]);
 }

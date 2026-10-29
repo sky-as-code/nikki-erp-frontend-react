@@ -4,7 +4,7 @@ import {
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications, notifications as notif } from '@mantine/notifications';
-import { LockedFeatureProvider } from '@nikkierp/ui/components';
+import { LockedFeatureProvider, ServerErrorModalHost } from '@nikkierp/ui/components';
 import { ShortcutOverlay } from '@nikkierp/ui/shortcuts';
 import { SyncedMantineProvider, usePaperBgColor } from '@nikkierp/ui/theme';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -35,6 +35,7 @@ export const UIProviders: React.FC<UIProvidersProps> = ({ children }) => {
 							locked control can only refuse one thing at a time. */}
 						<LockedFeatureProvider>
 							{children}
+							<ServerErrorModalHost />
 						</LockedFeatureProvider>
 					</UIStateProvider>
 				</ModalsProvider>

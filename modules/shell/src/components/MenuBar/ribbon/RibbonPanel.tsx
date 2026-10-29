@@ -10,7 +10,7 @@ import classes from './Ribbon.module.css';
 import { useRibbonContext } from './ribbonContext';
 import { RibbonDisplayMode } from './ribbonDisplayMode';
 import { CollapsedBlockMenu, RibbonItemView, RibbonMeasureItem } from './RibbonItem';
-import { groupRibbonColumns, pickRibbonLayout, RibbonLayout } from './ribbonLayout';
+import { groupRibbonColumns, isRibbonRowspan, pickRibbonLayout, RIBBON_ROWS_PER_COLUMN, RibbonLayout } from './ribbonLayout';
 import { MENU_BAR_TEST_ID } from '../helper';
 
 
@@ -65,8 +65,11 @@ function RibbonBlockView({ block, titlePosition, measuring }: {
 			{...(measuring ? {} : testAttrs(MENU_BAR_TEST_ID, 'ribbonBlock', block.titleKey))}
 		>
 			<div className={classes.blockItems}>
-				{groupRibbonColumns(block.items).map((column, index) => (
-					<div key={index} className={classes.column}>
+				{groupRibbonColumns(block.items, RIBBON_ROWS_PER_COLUMN, isRibbonRowspan).map((column, index) => (
+					<div
+						key={index}
+						className={clsx(classes.column, isRibbonRowspan(column[0]) && classes.columnRowspan)}
+					>
 						{column.map(item => <Item key={item.labelKey} item={item} />)}
 					</div>
 				))}

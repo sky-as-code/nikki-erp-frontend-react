@@ -145,18 +145,18 @@ describe('ShortcutOverlay', () => {
 		document.body.appendChild(button);
 		registry.register(button, 'Shift+1', { disabled: true });
 		render(<ShortcutOverlay registry={registry} />);
-		expect(screen.queryByText('⇧1')).toBeNull();
+		expect(screen.queryByText('⇧ 1')).toBeNull();
 
 		act(() => {
 			pressAlt('keydown');
 		});
-		const keycap = screen.getByText('⇧1');
+		const keycap = screen.getByText('⇧ 1');
 		expect(keycap.parentElement?.hasAttribute('data-disabled')).toBe(true);
 
 		act(() => {
 			pressAlt('keyup');
 		});
-		expect(screen.queryByText('⇧1')).toBeNull();
+		expect(screen.queryByText('⇧ 1')).toBeNull();
 		registry.dispose();
 		button.remove();
 	});

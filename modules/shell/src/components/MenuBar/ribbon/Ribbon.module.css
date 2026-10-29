@@ -76,6 +76,14 @@
 	flex-direction: column;
 }
 
+/*
+ * As tall as a full column even when the block's other columns are shorter: RIBBON_ROWS_PER_COLUMN
+ * xs buttons, at Mantine's xs button height of 30px (its own variable is scoped to the button).
+ */
+.columnRowspan {
+	min-height: calc(3 * 1.875rem * var(--mantine-scale));
+}
+
 .blockTitle {
 	padding: 2px 0;
 	font-size: var(--mantine-font-size-xs);
@@ -86,6 +94,10 @@
 
 .item {
 	flex: none;
+}
+
+.itemRowspan {
+	flex: 1;
 }
 
 .measureRow {

@@ -48,12 +48,22 @@ export type RibbonLinkItem = {
 	link: string,
 	/** Same contract as {@link MenuItem.requiredEntitlements}: locked, never hidden. */
 	requiredEntitlements?: EntitlementRequirementInput[],
+	/**
+	 * Takes a column of its own at the left of its block, spanning all its rows, with the label centred.
+	 * Several such items keep their declaration order; the rest of the block fills columns after them.
+	 */
+	rowspan?: boolean,
 };
 
 /** A ribbon entry that opens a list of links. */
 export type RibbonDropdownItem = {
 	labelKey: string,
 	items: RibbonLinkItem[],
+	/**
+	 * Takes a column of its own at the left of its block, spanning all its rows, with the label centred.
+	 * Several such items keep their declaration order; the rest of the block fills columns after them.
+	 */
+	rowspan?: boolean,
 };
 
 export type RibbonItem = RibbonLinkItem | RibbonDropdownItem;

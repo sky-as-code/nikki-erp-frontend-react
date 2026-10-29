@@ -83,15 +83,15 @@ function FormErrorDebugPanel(): React.ReactNode {
 }
 
 /**
- * Routes the last save's rejections: field-scoped items onto their inputs, the rest to the Shell
- * Notice stack.
+ * Routes the last save's rejections: items naming an input on the form onto it, the rest to the
+ * error modal.
  *
  * Lives inside `CrudFormProvider` because `setServerErrors` needs the form runtime. Each rejection
  * is routed once: a re-render, a language switch or a StrictMode effect replay must not publish the
  * same notice again.
  */
 function ServerErrorRouter(): null {
-	const { saveClientErrors } = useResourceUpdateContext();
+	const { saveClientErrors, ownsSaveErrorField } = useResourceUpdateContext();
 	const setServerErrors = useCrudFormRuntime()?.setServerErrors;
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const routedRef = React.useRef<unknown>(null);
@@ -101,8 +101,8 @@ function ServerErrorRouter(): null {
 			return;
 		}
 		routedRef.current = saveClientErrors;
-		setServerErrors(publishServerErrors(t, saveClientErrors));
-	}, [saveClientErrors, setServerErrors, t]);
+		publishServerErrors(t, saveClientErrors, setServerErrors, ownsSaveErrorField);
+	}, [saveClientErrors, setServerErrors, t, ownsSaveErrorField]);
 
 	return null;
 }

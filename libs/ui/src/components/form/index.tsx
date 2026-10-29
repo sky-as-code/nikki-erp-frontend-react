@@ -8,6 +8,7 @@ export * from './longText';
 export * from './RelationPickerModal';
 export * from './recordSearchOptions';
 export * from './RelationSelectField';
+export * from './resourceCodeField';
 export * from './updatePayload';
 export * from './ReadOnlyBooleanSwitch';
 export * from './useComputedField';

@@ -10,6 +10,7 @@ import React from 'react';
 import classes from './CollapsibleSection.module.css';
 import { collapsibleSectionPropsSchema, CollapsibleSectionProps } from './props';
 import { COLLAPSIBLE_SECTION } from '../../ids';
+import { useSectionTitle } from '../../pages/resourceDetail/sectionTitle';
 import layoutClasses from '../formBlockLayout.module.css';
 import { PaperWithBorder } from '../paperWithBorder';
 
@@ -87,7 +88,8 @@ function SectionHeader({ header, translationNs, collapsible, expanded, onToggle,
 }): React.ReactNode {
 	// The schema guarantees a namespace wherever a header exists, so this never resolves blank.
 	const t = useTranslate(translationNs);
-	const title = header != null ? <Title order={4}>{t(header)}</Title> : null;
+	const text = useSectionTitle(header, t);
+	const title = text != null ? <Title order={4}>{text}</Title> : null;
 
 	if (!collapsible) {
 		return <Group gap='xs' className={classes.sectionHeader}>{title}</Group>;

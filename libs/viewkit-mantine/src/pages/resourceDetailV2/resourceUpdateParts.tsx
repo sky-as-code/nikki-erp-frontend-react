@@ -1,7 +1,7 @@
-import { Alert, Divider, Group } from '@mantine/core';
+import { Divider, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import * as dyn from '@nikkierp/common/dynamicModel';
-import { translateClientError } from '@nikkierp/common/types';
+import { showClientErrorModal } from '@nikkierp/common/service';
 // The wrapper rather than Mantine's Button: it carries the `locked` state, and the design system
 // prefers it wherever one exists.
 import { Button, Link } from '@nikkierp/ui/components';
@@ -9,9 +9,7 @@ import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { evaluateCondition } from '@nikkierp/viewengine/metadata';
-import {
-	IconAlertCircle, IconDeviceFloppy, IconPencil, IconPlus, IconX,
-} from '@tabler/icons-react';
+import { IconDeviceFloppy, IconPencil, IconPlus, IconX } from '@tabler/icons-react';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
@@ -30,7 +28,6 @@ import { ResourceDetailOverflowMenu } from '../resourceDetail/resourceOverflowMe
 
 
 import type { ResourceDetailContextualActions, ResourceDetailExtraAction } from '../resourceDetail/props';
-import type { ClientErrorItem } from '@nikkierp/common/types';
 
 
 export function CreateActionButton({ disabled = false }: { disabled?: boolean }): React.ReactNode {
@@ -365,6 +362,9 @@ function ResourceDetailCommandActionButton({
 			return;
 		}
 		void command.publish({ ...request, ...values }).then(response => {
+			// A refusal is a business answer the operator has to act on ("this quotation lapsed and must
+			// be re-quoted"), so it is shown, not dropped; the dialog stays open behind it.
+			showClientErrorModal(t, response.result?.clientErrors ?? []);
 			if (!isPublishRejected(response)) {
 				setPromptOpen(false);
 				if (onSucceeded(response)) {
@@ -406,7 +406,6 @@ function ResourceDetailCommandActionButton({
 					onSubmit={publish}
 				/>
 			) : null}
-			<ActionRefusalAlert clientErrors={command.clientErrors} actionKey={actionKey} />
 		</>
 	);
 }
@@ -430,42 +429,6 @@ function useActionSuccess(action: ResourceDetailExtraAction): (response: unknown
 		}
 		return false;
 	};
-}
-
-/**
- * Shows why an action was refused.
- *
- * Without this the refusal is silent: the publish handler keeps the dialog open and refreshes, but
- * the server's explanation is dropped, so a user who presses Confirm on an order that cannot be
- * confirmed sees nothing happen at all. A refusal is a business answer the operator has to act on —
- * "this quotation lapsed and must be re-quoted" tells them what to do next — so it is shown rather
- * than logged.
- *
- * Translates the `key` with its `vars` and falls back to the server's `message`, the same order the
- * save path uses: an untranslated key would otherwise render as raw `sales:...` text on screen.
- */
-function ActionRefusalAlert({ clientErrors, actionKey }: {
-	clientErrors: ClientErrorItem[],
-	actionKey: string,
-}): React.ReactNode {
-	const t = useTranslate(useResourceDetailTranslationNs());
-	const tid = useResourceDetailTestAttrs();
-	if (clientErrors.length === 0) {
-		return null;
-	}
-	return (
-		<Alert
-			variant='light'
-			color='red'
-			icon={<IconAlertCircle />}
-			mt='xs'
-			{...tid('action', actionKey, 'refusal')}
-		>
-			{clientErrors.map((item, index) => (
-				<div key={index}>{translateClientError(t, item)}</div>
-			))}
-		</Alert>
-	);
 }
 
 /**

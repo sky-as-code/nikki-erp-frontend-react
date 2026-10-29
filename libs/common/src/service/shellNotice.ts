@@ -1,7 +1,9 @@
 import { CommandBus } from '../commandBus';
+import { EventBus } from '../eventBus';
 import { ClientErrorItem, translateClientError } from '../types';
 import { escapeHtml } from '../utils/string';
 
+import type { IEventBus } from '../eventBus';
 import type { ClientErrorTranslator } from '../types';
 
 
@@ -52,5 +54,33 @@ export function notifyClientErrors(t: ClientErrorTranslator, errors: ClientError
 		showShellNotice('error', escapeHtml(translateClientError(t, item))).catch((error: unknown) => {
 			console.error('Failed to show the Shell Notice', error);
 		});
+	}
+}
+
+/**
+ * Published to open the error modal the Shell mounts once (`ServerErrorModalHost` in
+ * `@nikkierp/ui/components`), the same way `PERMISSION_DENIED_TOPIC` opens the locked-feature one.
+ */
+export const CLIENT_ERROR_MODAL_TOPIC = 'shell:client_error:modal';
+
+/** Payload of {@link CLIENT_ERROR_MODAL_TOPIC}: messages already translated by the caller. */
+export type ClientErrorModalEvent = {
+	messages: string[],
+};
+
+/**
+ * Shows server rejections that have no input to land on — an empty `field`, or a field the form
+ * does not show — in a modal, translated with the caller's namespaces. Authorization errors are
+ * skipped, as in {@link notifyClientErrors}: the locked-feature modal already explains them.
+ */
+export function showClientErrorModal(
+	t: ClientErrorTranslator, errors: ClientErrorItem[], bus: IEventBus | null | undefined = EventBus.instance,
+): void {
+	const messages = errors
+		.filter(item => !ClientErrorItem.isAuthorizationError(item))
+		.map(item => translateClientError(t, item))
+		.filter(message => message.trim() !== '');
+	if (messages.length > 0) {
+		bus?.publish(CLIENT_ERROR_MODAL_TOPIC, { messages } satisfies ClientErrorModalEvent);
 	}
 }
