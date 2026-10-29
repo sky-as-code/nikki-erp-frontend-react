@@ -114,7 +114,11 @@ async function selectEdgeLabels(graphs: SchemaGraphService, request: ResourceVie
 		return NO_SELECTION;
 	}
 	const schema = body.schema as ViewSchema;
-	const edges = (isObject(body.edges) ? body.edges : {}) as Record<string, ViewSchema>;
+	// The graph does not repeat the root under `edges`, so a self edge (`parent_location`) resolves to the root schema.
+	const edges = {
+		[request.target.schemaName]: schema,
+		...(isObject(body.edges) ? body.edges : {}),
+	} as Record<string, ViewSchema>;
 	const requested = request.query.getAll('fields').filter((field) => field !== '');
 	const base = requested.length > 0 ? requested : defaultBase(request.target.kind, schema);
 	return withEdgeLabelFields(base, schema, edges);

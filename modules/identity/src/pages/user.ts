@@ -124,10 +124,6 @@ function buildUserFieldsSection(withAvatarPicker: boolean): ComponentNode {
 		...(withAvatarPicker
 			? [resourceFileFieldNode({ field: 'avatar', fileIdField: 'avatar_file_id', label: 'fields.avatar_file_id' })]
 			: []),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }
 

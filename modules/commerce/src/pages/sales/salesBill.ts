@@ -100,7 +100,7 @@ function buildSalesBillFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['settled_at', 'cancelled_at', 'org_id', 'created_at', 'updated_at'],
+			fields: ['settled_at', 'cancelled_at', 'org_id'],
 		}),
 	]);
 }

@@ -11,13 +11,14 @@ import { Controller, useWatch } from 'react-hook-form';
 import { useCreateDefault } from './createDefault';
 import { DateTimeInputField, ReadOnlyTextField, TimeInputField } from './dateTimeFields';
 import { fieldErrorText } from './fieldErrors';
-import { FieldLabelProvider, useFieldLabelHidden } from './fieldLabelContext';
+import { FieldDescriptionProvider, FieldLabelProvider, useFieldDescription, useFieldLabelHidden } from './fieldLabelContext';
 import { useFieldData, useFormField, useFormStyle } from './formContext';
 import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
 import { LangJsonField } from './LangJsonField';
 import { isLongTextField, LongTextInput } from './longText';
 import { RelationSelectField } from './RelationSelectField';
 import { LocalizeFn, TranslateFn } from '../../i18n';
+import { FieldLabelText, localizeFieldDescription } from '../fieldDescription';
 import { useFormInputSize } from '../Input/inlineControls';
 import { formInputProps } from '../Input/inputDensity';
 
@@ -30,21 +31,24 @@ export type AutoFieldProps = {
 	ref?: React.RefObject<any>,
 	translate?: TranslateFn,
 	/**
-	 * Hides the label row (and description) while keeping the label for screen readers; errors
+	 * Hides the label row (and its description mark) while keeping the label for screen readers; errors
 	 * still show below the input. Unset inherits an enclosing `FieldLabelProvider`, else shown.
 	 */
 	labelHidden?: boolean,
 };
 
 export function AutoField(props: AutoFieldProps) {
-	if (props.labelHidden === undefined) {
-		return <AutoFieldControl {...props} />;
-	}
-	return (
-		<FieldLabelProvider labelHidden={props.labelHidden}>
+	const { getFieldDef, localize } = useFormField();
+	const description = localizeFieldDescription(localize, getFieldDef(props.name)?.description);
+	const control = (
+		<FieldDescriptionProvider description={description}>
 			<AutoFieldControl {...props} />
-		</FieldLabelProvider>
+		</FieldDescriptionProvider>
 	);
+	if (props.labelHidden === undefined) {
+		return control;
+	}
+	return <FieldLabelProvider labelHidden={props.labelHidden}>{control}</FieldLabelProvider>;
 }
 
 function AutoFieldControl(props: AutoFieldProps) {
@@ -286,7 +290,6 @@ function usePasswordToggle(
 type BaseFieldWrapperProps = {
 	inputId: string,
 	label: string,
-	description?: string,
 	isRequired: boolean,
 	error: string | undefined,
 	children: React.ReactNode,
@@ -299,14 +302,15 @@ type BaseFieldWrapperProps = {
 };
 
 export function BaseFieldWrapper({
-	inputId, label, description, isRequired, error, children, ariaProps,
+	inputId, label, isRequired, error, children, ariaProps,
 }: BaseFieldWrapperProps) {
 	const formStyle = useFormStyle();
 	const labelHidden = useFieldLabelHidden();
 	const twoColumnLayout = formStyle?.layout === 'twocol';
 	const descriptionId = useId();
 	const errorId = useId();
-	const shownDescription = labelHidden ? undefined : description;
+	const description = useFieldDescription();
+	const shownDescription = labelHidden ? undefined : description || undefined;
 
 	const ariaDescribedBy = React.useMemo(() => {
 		const ids: string[] = [];
@@ -324,7 +328,11 @@ export function BaseFieldWrapper({
 		'aria-invalid': error ? true : undefined,
 	}), [labelId, ariaDescribedBy, isRequired, error]);
 
-	const fieldLabel = <FieldLabel inputId={inputId} labelId={labelId} label={label} isRequired={isRequired} />;
+	const fieldLabel = (
+		<FieldLabel
+			inputId={inputId} labelId={labelId} label={label} description={shownDescription} isRequired={isRequired}
+		/>
+	);
 	const control = (
 		<>
 			{React.cloneElement(children as React.ReactElement, {
@@ -340,7 +348,7 @@ export function BaseFieldWrapper({
 		<Grid grow gap={0}>
 			<Grid.Col span={twoColumnLayout ? 4 : 12}>
 				{fieldLabel}
-				{shownDescription && <Input.Description id={descriptionId}>{shownDescription}</Input.Description>}
+				{shownDescription && <VisuallyHidden id={descriptionId}>{shownDescription}</VisuallyHidden>}
 			</Grid.Col>
 			<Grid.Col span={twoColumnLayout ? 8 : 12}>
 				{control}
@@ -349,12 +357,12 @@ export function BaseFieldWrapper({
 	);
 }
 
-type FieldLabelProps = { inputId: string, labelId: string, label: string, isRequired: boolean };
+type FieldLabelProps = { inputId: string, labelId: string, label: string, description?: string, isRequired: boolean };
 
-function FieldLabel({ inputId, labelId, label, isRequired }: FieldLabelProps) {
+function FieldLabel({ inputId, labelId, label, description, isRequired }: FieldLabelProps) {
 	return (
 		<Input.Label htmlFor={inputId} id={labelId}>
-			{label}
+			<FieldLabelText label={label} description={description} />
 			{isRequired && <Text component='span' c='red' ml={4}>*</Text>}
 		</Input.Label>
 	);

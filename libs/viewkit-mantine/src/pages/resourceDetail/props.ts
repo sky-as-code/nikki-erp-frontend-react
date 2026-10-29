@@ -19,7 +19,12 @@ export const ownPropertySectionSchema = z.object({
 	 * namespace.
 	 */
 	header: z.string().min(1).optional(),
-	fields: z.array(z.string()).optional(),
+	/**
+	 * Field names, top to bottom. A nested array is one inline row: `$$ns:key` / `$$key` renders
+	 * translated text (namespace defaults to the page's `translationNs`), `@@field` renders that
+	 * field's input (its value in read mode), anything else renders as literal text.
+	 */
+	fields: z.array(z.union([z.string(), z.array(z.string())])).optional(),
 	/**
 	 * Whether `header` also prints above the block's fields. Defaults to `false`: a block used as a
 	 * `tabCollapsibleSection` tab already shows its title in the tab control, so printing it again

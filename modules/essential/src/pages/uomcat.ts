@@ -69,10 +69,6 @@ function buildUomCatFieldsSection(): ComponentNode {
 			header: 'form.generalInformation',
 			fields: ['name', 'reference_uom_id', 'org_id'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }
 

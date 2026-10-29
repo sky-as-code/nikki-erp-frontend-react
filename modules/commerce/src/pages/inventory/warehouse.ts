@@ -89,8 +89,8 @@ function buildWarehouseFieldsSection(): ComponentNode {
 		header: 'form.generalInformation',
 	}, [
 		resourceFormColumnNode({
-			header: 'form.generalInformation',
-			fields: ['code', 'name', 'warehouse_role', 'parent_warehouse_id', 'status', 'org_id'],
+			header: 'form.identification',
+			fields: ['code', 'name', 'warehouse_role', 'status', 'root_location_id'],
 		}),
 		resourceFormColumnNode({
 			// Flows are policy: changing one provisions the locations the new shape needs and
@@ -100,11 +100,7 @@ function buildWarehouseFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.contactInformation',
-			fields: ['address', 'manager_user_id', 'notes'],
-		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
+			fields: ['manager_user_id', 'address', 'notes'],
 		}),
 	]);
 }

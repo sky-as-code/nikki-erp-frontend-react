@@ -95,7 +95,7 @@ function buildConfigurationFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['po_modification_policy', 'org_id', 'created_at', 'updated_at'],
+			fields: ['po_modification_policy', 'org_id'],
 		}),
 	]);
 }

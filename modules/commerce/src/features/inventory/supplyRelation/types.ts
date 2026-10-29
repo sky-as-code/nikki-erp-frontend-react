@@ -4,10 +4,6 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 /**
  * A declared resupply route. It states which warehouse may restock which and nothing more:
  * no stock is reserved and no transfer is created until the Stock movement engine makes one.
- *
- * Independent of the warehouse hierarchy: `parent_warehouse_id` says which warehouse system a
- * site belongs to, while this says who is allowed to restock it. They are usually the same
- * warehouse and need not be.
  */
 export type SupplyRelation = {
 	id: string,

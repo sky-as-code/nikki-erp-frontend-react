@@ -83,9 +83,5 @@ function buildStorageCategoryFieldsSection(): ComponentNode {
 			header: 'form.storagePolicy',
 			fields: ['max_weight', 'allow_new_item_policy'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }

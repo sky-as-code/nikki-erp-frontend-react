@@ -37,6 +37,9 @@ import type { ResourceSplitViewProps } from './pages/resourceSplitView/props';
 import type { ComponentNode, TemplateRef } from '@nikkierp/viewengine/metadata';
 
 
+export { columnFieldNames } from './pages/resourceDetail/formColumnFields';
+export type { FormColumnField } from './pages/resourceDetail/formColumnFields';
+
 /**
  * Typed authoring helpers for this kit's page templates.
  *

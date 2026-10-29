@@ -24,3 +24,8 @@
 .formBlock {
 	margin-top: var(--mantine-spacing-sm);
 }
+
+/* An inline row of a form column reads as one sentence, so it takes the whole grid row. */
+.inlineFieldRow {
+	grid-column: 1 / -1;
+}

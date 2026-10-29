@@ -169,7 +169,7 @@ function buildProductVariantFieldsSection(): ComponentNode {
 		// took down, so it is shown rather than hidden. See BR Â§8.9.
 		resourceFormColumnNode({
 			header: 'form.audit',
-			fields: ['status', 'archive_source', 'created_at', 'updated_at'],
+			fields: ['status', 'archive_source'],
 		}),
 	]);
 }

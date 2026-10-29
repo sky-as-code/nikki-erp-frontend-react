@@ -83,9 +83,5 @@ function buildUomFieldsSection(): ComponentNode {
 			header: 'form.conversion',
 			fields: ['uom_type', 'factor', 'rounding'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }

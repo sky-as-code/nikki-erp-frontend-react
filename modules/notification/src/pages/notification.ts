@@ -61,7 +61,7 @@ function buildNotificationFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['title', 'message', 'severity', 'created_at', 'expires_at'],
+			fields: ['title', 'message', 'severity', 'expires_at'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.source',

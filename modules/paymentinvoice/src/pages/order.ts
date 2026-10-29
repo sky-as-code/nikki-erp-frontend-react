@@ -112,10 +112,6 @@ function buildOrderFieldsSection(): ComponentNode {
 			// Whatever the paying method needed at order time, plus the gateway's own replies.
 			fields: ['metadata'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }
 

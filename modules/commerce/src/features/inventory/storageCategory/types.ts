@@ -11,7 +11,7 @@ export type StorageCategory = {
 	/** Null means unlimited. What is currently stored lives in Stock, never here. */
 	max_weight?: string,
 	allow_new_item_policy?: AllowNewItemPolicy,
-	description?: dyn.ModelSchemaLangJson,
+	description?: string,
 	org_id?: string,
 	is_archived?: boolean,
 	etag?: string,

@@ -2,6 +2,7 @@ export * from './Breadcrumbs';
 export * from './Button';
 export * from './ErrorBoundary/ErrorBoundary';
 export * from './ErrorState';
+export * from './fieldDescription';
 export * from './form';
 export * from './Input';
 export * from './Link';

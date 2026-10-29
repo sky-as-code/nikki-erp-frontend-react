@@ -72,9 +72,5 @@ function buildProductAttributeValueFieldsSection(): ComponentNode {
 			header: 'form.sales',
 			fields: ['price_extra'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }

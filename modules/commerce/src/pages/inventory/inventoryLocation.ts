@@ -68,7 +68,7 @@ function buildInventoryLocationDetailProps() {
 		schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
-		titleLvl2: { schemaField: 'code' },
+		titleLvl2: { schemaField: 'canonical_name' },
 		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: InventoryLocationCommands.GET_BY_ID,
@@ -90,23 +90,18 @@ function buildInventoryLocationFieldsSection(): ComponentNode {
 		header: 'form.generalInformation',
 	}, [
 		resourceFormColumnNode({
-			header: 'form.generalInformation',
-			fields: ['code', 'name', 'location_usage', 'status', 'description', 'org_id'],
+			header: 'form.identification',
+			fields: ['name', 'status', 'description', 'barcode'],
 		}),
 		resourceFormColumnNode({
-			// Where the location sits: which warehouse owns it (null for a vendor, customer or
-			// shared transit location), its parent, and what it is used for inside the warehouse.
-			// complete_path is derived, so it is shown but never edited.
+			// warehouse_id is inherited from the parent location by the backend (null for a vendor,
+			// customer or shared transit location), so it is shown but never edited.
 			header: 'form.locationTopology',
-			fields: ['warehouse_id', 'parent_location_id', 'purpose', 'complete_path', 'barcode'],
+			fields: ['location_usage', 'purpose', 'parent_location_id', 'warehouse_id'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.storagePolicy',
-			fields: ['storage_category_id', 'removal_strategy', 'is_replenishment_destination'],
-		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
+			fields: ['is_replenishment_destination', 'storage_category_id', 'removal_strategy'],
 		}),
 	]);
 }

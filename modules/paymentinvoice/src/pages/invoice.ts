@@ -102,10 +102,6 @@ function buildInvoiceFieldsSection(): ComponentNode {
 			// them on update, so showing them cannot let anyone write one.
 			fields: ['currency_id', 'subtotal_amount', 'tax_amount', 'total_amount'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }
 

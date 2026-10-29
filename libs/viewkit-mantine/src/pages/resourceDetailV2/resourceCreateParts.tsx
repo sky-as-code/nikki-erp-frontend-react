@@ -17,6 +17,7 @@ import { useResourceCreateContext } from './resourceCreateContext';
 import classes from './ResourceDetail.module.css';
 import { formBlockSpanClass } from '../../components/formBlockSpan';
 import { StandardActionCode, useActionLock } from '../../permissions';
+import { columnFieldNames } from '../resourceDetail/formColumnFields';
 import {
 	useResourceDetailContext, useResourceDetailSchemaName, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
 } from '../resourceDetail/ResourceDetailProvider';
@@ -162,7 +163,7 @@ export function ResourceCreateBlock({
 
 	// A header over nothing reads as a broken section, so a block whose fields all filter out is
 	// dropped along with its title.
-	if (!modelSchema || !isBlockVisible(modelSchema, block.fields ?? [], 'create', stableFieldLayout)) {
+	if (!modelSchema || !isBlockVisible(modelSchema, columnFieldNames(block.fields), 'create', stableFieldLayout)) {
 		return null;
 	}
 

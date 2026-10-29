@@ -112,10 +112,6 @@ function buildProductAttributeFieldsSection(): ComponentNode {
 			header: 'form.usage',
 			fields: ['current_template_usage_count', 'historical_template_usage_count'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }
 

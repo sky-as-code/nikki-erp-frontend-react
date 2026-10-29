@@ -119,10 +119,6 @@ function buildStockTransferTimelineColumns(): ComponentNode[] {
 			header: 'form.backorder',
 			fields: ['backorder_of_id', 'return_of_id', 'chain_group_id'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	];
 }
 

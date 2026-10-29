@@ -8,7 +8,7 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 export type ProductCategory = {
 	id: string,
 	name?: dyn.ModelSchemaLangJson,
-	description?: dyn.ModelSchemaLangJson,
+	description?: string,
 	parent_category_id?: string,
 	display_order?: number,
 	canonical_name?: dyn.ModelSchemaLangJson,

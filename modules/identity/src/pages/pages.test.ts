@@ -142,10 +142,11 @@ describe('IAM principal pages', () => {
 		expect(Boolean(props.secondary.props.thumbnail)).toBe(avatar);
 		expect('avatar_file_id' in (props.primary.props.fieldRenderers ?? {})).toBe(avatar);
 		expect(JSON.stringify(props.secondary.props.createNodes).includes('avatar_file_id')).toBe(avatar);
-		const auditFields = collectFormFields(props.secondary.props.childrenNodes);
-		expect(auditFields).toEqual(expect.arrayContaining(['created_at', 'updated_at']));
-		// The Audit panel's History names the author; created_by is a bare id with no label to show.
-		expect(auditFields).not.toContain('created_by');
+		// Audit fields are the Audit panel's, not the form's: no block lists them.
+		const formFields = collectFormFields(props.secondary.props.childrenNodes);
+		expect(formFields).not.toContain('created_at');
+		expect(formFields).not.toContain('updated_at');
+		expect(formFields).not.toContain('created_by');
 	});
 
 	it('the user page shows its status in General Information; the service page keeps the toolbar default', () => {

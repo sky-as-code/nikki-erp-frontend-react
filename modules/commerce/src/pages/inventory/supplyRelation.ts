@@ -70,9 +70,5 @@ function buildSupplyRelationFieldsSection(): ComponentNode {
 				'source_warehouse_id', 'destination_warehouse_id', 'priority', 'is_default', 'org_id',
 			],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }

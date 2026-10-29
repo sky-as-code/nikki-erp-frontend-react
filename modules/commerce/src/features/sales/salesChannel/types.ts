@@ -10,7 +10,9 @@ export type SalesChannel = {
 	code?: string,
 	name?: string,
 	description?: string,
-	managed_by_module?: string,
+	/** `<module>/<schema>` of the owner, e.g. `vendingmachine/vdmc_kiosk`, or `system`. */
+	managed_by_type?: string,
+	managed_by_id?: string,
 	status?: string,
 	is_system?: string,
 	org_id?: string,

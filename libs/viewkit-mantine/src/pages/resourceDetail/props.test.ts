@@ -86,6 +86,16 @@ describe('ownPropertySectionSchema', () => {
 		expect(ownPropertySectionSchema.parse({ fields: ['name'], span: 'full' }).span).toBe('full');
 	});
 
+	it('accepts inline rows mixed with field names', () => {
+		const fields = ['name', ['$$form.parent', '@@parent_id', 'of', '@@warehouse_id']];
+
+		expect(ownPropertySectionSchema.parse({ fields }).fields).toEqual(fields);
+	});
+
+	it('rejects an inline row nested deeper than one level', () => {
+		expect(() => ownPropertySectionSchema.parse({ fields: [['@@name', ['@@code']]] })).toThrow();
+	});
+
 	it('rejects a span other than full', () => {
 		expect(() => ownPropertySectionSchema.parse({ fields: ['name'], span: 'half' })).toThrow();
 	});

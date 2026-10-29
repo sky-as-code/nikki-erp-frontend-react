@@ -88,9 +88,5 @@ function buildPutawayRuleFieldsSection(): ComponentNode {
 			header: 'form.matchingCriteria',
 			fields: ['storage_category_id', 'product_id', 'product_category_id', 'package_type_id'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }

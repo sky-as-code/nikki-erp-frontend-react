@@ -10,6 +10,7 @@ import { useResourceFormView } from '../../../components/resourceFormViewContext
 import { resourceThumbnailSpecSchema } from '../../../components/resourceThumbnail/props';
 import { ResourceThumbnail } from '../../../components/resourceThumbnail/ResourceThumbnail';
 import { RESOURCE_DETAIL_HEADER_V2, RESOURCE_FORM_COLUMN, RESOURCE_FORM_COLUMN_V2 } from '../../../ids';
+import { columnFieldNames } from '../../resourceDetail/formColumnFields';
 import { linkSpecSchema, schemaFieldSpecSchema } from '../../resourceDetail/props';
 import { useResourceDetailContext } from '../../resourceDetail/ResourceDetailProvider';
 import { SplitPaneCloseButton } from '../../resourceDetail/SplitPaneCloseButton';
@@ -204,7 +205,7 @@ export function collectColumnFields(nodes: ComponentNode[]): { fields?: string[]
 			// `resourceFormColumnNode()` builder emits, while the rendered tree carries the v2 id
 			// `toV2FormNodes` swapped in.
 			if (node.component === RESOURCE_FORM_COLUMN_V2 || node.component === RESOURCE_FORM_COLUMN) {
-				out.push((node.props ?? {}) as { fields?: string[] });
+				out.push({ fields: columnFieldNames((node.props as { fields?: unknown[] } | undefined)?.fields) });
 			}
 			const formFields = (node.props as { formFields?: unknown } | undefined)?.formFields;
 			if (Array.isArray(formFields)) {

@@ -112,7 +112,6 @@ export function EntitySelectField<TEntity>({
 		<BaseFieldWrapper
 			inputId={inputId}
 			label={localize(fieldData.label)}
-			description={localize(fieldData.description)}
 			isRequired={fieldData.isRequired}
 			error={fieldErrorText(localize, fieldData)}
 		>

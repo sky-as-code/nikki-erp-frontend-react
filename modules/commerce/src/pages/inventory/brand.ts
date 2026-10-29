@@ -72,10 +72,6 @@ function buildBrandFieldsSection(): ComponentNode {
 			header: 'form.identification',
 			fields: ['website', 'logo_id', 'country_id'],
 		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['created_at', 'updated_at'],
-		}),
 	]);
 }
 

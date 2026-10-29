@@ -23,15 +23,17 @@ export type InventoryLocationStatus = 'active' | 'suspended';
 
 export type InventoryLocation = {
 	id: string,
-	code?: string,
-	name?: dyn.ModelSchemaLangJson,
+	name?: string,
+	/** The full path through the location tree, derived by the backend; the record label. */
+	canonical_name?: string,
 	location_usage?: InventoryLocationUsage,
 	purpose?: InventoryLocationPurpose,
-	/** Null when the location belongs to no warehouse, which is normal for the external ones. */
+	/**
+	 * Inherited from the parent location by the backend. Null when the location belongs to no
+	 * warehouse, which is normal for the external ones.
+	 */
 	warehouse_id?: string,
 	parent_location_id?: string,
-	/** Derived from the tree by the backend; never edited directly. */
-	complete_path?: string,
 	hierarchy_depth?: number,
 	barcode?: string,
 	storage_category_id?: string,
@@ -39,7 +41,7 @@ export type InventoryLocation = {
 	is_replenishment_destination?: boolean,
 	is_system_generated?: boolean,
 	status?: InventoryLocationStatus,
-	description?: dyn.ModelSchemaLangJson,
+	description?: string,
 	org_id?: string,
 	is_archived?: boolean,
 	etag?: string,

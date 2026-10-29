@@ -667,3 +667,47 @@ describe('Template attribute value page', () => {
 		expect(props?.fieldRenderers).toEqual({ sales_price_extra: { renderer: 'money', blankAsZero: true } });
 	});
 });
+
+type FieldsDetailProps = { createNodes: ComponentNode[], childrenNodes: ComponentNode[], titleLvl2: unknown };
+
+function fieldsDetailProps(page: PageNode): FieldsDetailProps {
+	return (page.props as { secondary: { props: FieldsDetailProps } }).secondary.props;
+}
+
+function formBlocks(node: ComponentNode): { header: unknown, fields: unknown }[] {
+	return (node.children ?? []).map(child => ({ header: child.props?.header, fields: child.props?.fields }));
+}
+
+describe('Warehouse and location detail layout', () => {
+	it('lays out the warehouse as Identification, Flows, Contact, with no parent warehouse', () => {
+		const { createNodes, childrenNodes } = fieldsDetailProps(buildWarehousePages()[0]);
+
+		for (const nodes of [createNodes, childrenNodes]) {
+			expect(nodes[0].props).toMatchObject({ header: 'form.generalInformation' });
+			expect(formBlocks(nodes[0])).toEqual([
+				{ header: 'form.identification', fields: ['code', 'name', 'warehouse_role', 'status', 'root_location_id'] },
+				{ header: 'form.warehouseFlows', fields: ['incoming_flow', 'outgoing_flow'] },
+				{ header: 'form.contactInformation', fields: ['manager_user_id', 'address', 'notes'] },
+			]);
+		}
+	});
+
+	it('titles a location by its canonical name and drops code and complete_path', () => {
+		const props = fieldsDetailProps(buildInventoryLocationPages()[0]);
+
+		expect(props.titleLvl2).toEqual({ schemaField: 'canonical_name' });
+		for (const nodes of [props.createNodes, props.childrenNodes]) {
+			expect(formBlocks(nodes[0])).toEqual([
+				{ header: 'form.identification', fields: ['name', 'status', 'description', 'barcode'] },
+				{
+					header: 'form.locationTopology',
+					fields: ['location_usage', 'purpose', 'parent_location_id', 'warehouse_id'],
+				},
+				{
+					header: 'form.storagePolicy',
+					fields: ['is_replenishment_destination', 'storage_category_id', 'removal_strategy'],
+				},
+			]);
+		}
+	});
+});

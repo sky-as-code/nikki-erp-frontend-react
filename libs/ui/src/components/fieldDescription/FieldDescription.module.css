@@ -1,0 +1,11 @@
+.mark {
+	margin-inline-start: 2px;
+	color: var(--mantine-primary-color-filled);
+	font-weight: 600;
+	cursor: help;
+}
+
+/* Enum descriptions list one value per line ("\n* value: meaning"). */
+.tooltip {
+	white-space: pre-line;
+}

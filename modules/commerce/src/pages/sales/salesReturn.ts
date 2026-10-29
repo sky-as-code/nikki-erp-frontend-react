@@ -126,7 +126,7 @@ function buildSalesReturnFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.other_information',
 			fields: ['inventory_return_status', 'fiscal_adjustment_status', 'inventory_reference',
-				'failure_reason', 'org_id', 'created_at', 'updated_at'],
+				'failure_reason', 'org_id'],
 		}),
 	]);
 }

@@ -15,7 +15,7 @@ export type PaymentMethod = {
 	adapter_code?: string,
 
 	name?: dyn.ModelSchemaLangJson,
-	description?: dyn.ModelSchemaLangJson,
+	description?: string,
 	currency_id?: string,
 
 	/** Per-method bounds on what may be collected, as decimal strings. */

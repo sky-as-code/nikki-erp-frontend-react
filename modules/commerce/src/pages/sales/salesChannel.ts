@@ -58,12 +58,12 @@ function buildSalesChannelDetailProps() {
 			update: SalesChannelCommands.UPDATE,
 		},
 		contextualActions: buildSalesChannelActions(),
-		createNodes: [buildSalesChannelFieldsSection()],
-		childrenNodes: [buildSalesChannelFieldsSection()],
+		createNodes: [buildSalesChannelFieldsSection(false)],
+		childrenNodes: [buildSalesChannelFieldsSection(true)],
 	});
 }
 
-function buildSalesChannelFieldsSection(): ComponentNode {
+function buildSalesChannelFieldsSection(isUpdate: boolean): ComponentNode {
 	return collapsibleSectionNode({
 		layout: 'formBlocks',
 		translationNs: c.SALES_MODULE,
@@ -79,7 +79,9 @@ function buildSalesChannelFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['managed_by_module', 'is_system', 'org_id', 'created_at', 'updated_at'],
+			// Ownership is set by the module that provisions the channel, never by hand, so it is
+			// only shown once the channel exists (`no_update` keeps it read-only there).
+			fields: [...(isUpdate ? ['managed_by_type'] : []), 'is_system', 'org_id'],
 		}),
 	]);
 }
