@@ -131,7 +131,7 @@ function ResourceDetailHeader(props: ResourceDetailHeaderProps): React.ReactNode
 				titleLvl2={props.titleLvl2 ?? context.titleLvl2}
 				backLinkTitle={backLinkTitle && modelSchema ? { linkHref: backLinkTitle.linkHref } : undefined}
 				// Every button of the bar is `Alt+Shift+n` in the order shown: Create is 1 in read mode,
-				// Discard 1 and Save 2 in update mode. The back link and Close sit outside it.
+				// Save 1 and Discard 2 in update mode. The back link and Close sit outside it.
 				actions={(
 					<ShortcutSequence prefix='Shift+' max={9}>
 						<ResourceActionBar

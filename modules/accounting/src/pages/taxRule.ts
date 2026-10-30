@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -10,6 +11,13 @@ import { TaxRuleResultCommands } from '../features/taxRuleResult/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: { draft: 'gray', published: 'green', withdrawn: 'orange' },
+	prefix: 'lifecycle_status.',
+} as const;
 
 /**
  * Tax rules: which taxes apply to a transaction context.
@@ -43,11 +51,7 @@ function buildListProps() {
 		archiveCommand: TaxRuleCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: TaxRuleCommands.UPDATE,
 		fieldRenderers: {
-			lifecycle_status: {
-				renderer: 'badge',
-				colorMap: { draft: 'gray', published: 'green', withdrawn: 'orange' },
-				prefix: 'lifecycle_status.',
-			},
+			lifecycle_status: STATUS_BADGE,
 		},
 	});
 }
@@ -56,6 +60,7 @@ function buildDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.TAX_RULE_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
+		...statusStripProps(STATUS_BADGE, 'lifecycle_status'),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
 		backLinkTitle: { linkHref: '../' },
@@ -85,7 +90,7 @@ function buildFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['code', 'name', 'jurisdiction_id', 'org_id'],
+			fields: ['code', 'name', 'jurisdiction_id'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.calculation',

@@ -98,13 +98,13 @@ export function ResourceCreateSaveBar(): React.ReactNode {
 }
 
 /**
- * The sticky row a create form's Save sits in. Its buttons are numbered `Alt+Shift+n` like the
- * update page's action bar, so Save is `Alt+Shift+1`; the collapse toggle is no `Button` and
- * takes no number.
+ * The row a create form's Save sits in, pinned with the breadcrumbs by the form's `PinnedBlock`. Its
+ * buttons are numbered `Alt+Shift+n` like the update page's action bar, so Save is `Alt+Shift+1`; the
+ * collapse toggle is no `Button` and takes no number.
  */
 function CreateBar({ children }: { children: React.ReactNode }): React.ReactNode {
 	return (
-		<Group gap='xs' align='center' className={clsx('sticky top-0', classes.createBar, classes.bgBodyColor)}>
+		<Group gap='xs' align='center' className={classes.createBar}>
 			<ShortcutSequence prefix='Shift+' max={9}>{children}</ShortcutSequence>
 		</Group>
 	);

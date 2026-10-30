@@ -6,8 +6,9 @@ import React from 'react';
 import { useSearchParams } from 'react-router';
 import { z } from 'zod';
 
+import { PinnedBlock } from '../../../components/pageHeader/PinnedBlock';
 import { FIELD_DATA_PARAM, parseFieldDataParam, pickSchemaFieldValues } from '../../../data/fieldDataParam';
-import { RESOURCE_CREATE_FORM_V2 } from '../../../ids';
+import { RESOURCE_CREATE_FORM_V2, RESOURCE_CREATE_HEADER_V2 } from '../../../ids';
 import {
 	useResourceDetailContext, useResourceDetailTranslationNs,
 } from '../../resourceDetail/ResourceDetailProvider';
@@ -16,6 +17,7 @@ import { ResourceCreateSaveBar } from '../resourceCreateParts';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 export const resourceCreateFormPropsSchema = z.object({}).strict();
@@ -49,8 +51,9 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 	// For an org-scoped resource, hold the form back until the active org is known: mounting it
 	// with no `org_id` seed lets validation fail on a field the user cannot see, which silently
 	// blocks Save. A resource that needs no seed renders straight away.
+	const [headerNodes, bodyNodes] = splitHeaderNodes(runtime.children);
 	if (!modelSchema || (orgScoped && orgSeed === undefined)) {
-		return null;
+		return modelSchema ? <PinnedBlock><MetaComponent node={headerNodes} /></PinnedBlock> : null;
 	}
 
 	// The org seed goes last: the active org is not something a link may choose.
@@ -72,12 +75,24 @@ function ResourceCreateForm({ runtime }: { runtime: ComponentRenderRuntime }): R
 					 * arbitrary node tree with no section guaranteed to host Save.
 					 */}
 					<BindCreateServerErrors />
-					<ResourceCreateSaveBar />
-					<MetaComponent node={runtime.children} />
+					<PinnedBlock>
+						<MetaComponent node={headerNodes} />
+						<ResourceCreateSaveBar />
+					</PinnedBlock>
+					<MetaComponent node={bodyNodes} />
 				</CrudFormProvider>
 			</FormTestIdProvider>
 		</FormStyleProvider>
 	);
+}
+
+/** The create header pins with the Save row, so it is split off the form's children and rendered with it. */
+function splitHeaderNodes(children: ComponentNode[] | undefined): [ComponentNode[], ComponentNode[]] {
+	const nodes = children ?? [];
+	return [
+		nodes.filter(node => node.component === RESOURCE_CREATE_HEADER_V2),
+		nodes.filter(node => node.component !== RESOURCE_CREATE_HEADER_V2),
+	];
 }
 
 /**

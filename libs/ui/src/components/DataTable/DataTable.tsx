@@ -1,5 +1,5 @@
 import {
-	Box, Button, Group, Select, Stack, Tabs, Text,
+	Box, Button, Group, Stack, Tabs, Text,
 } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { escapeHtml } from '@nikkierp/common/utils';
@@ -21,6 +21,7 @@ import { ViewModeToggle } from './ViewModeToggle';
 import { useTranslate } from '../../i18n';
 import { Button as UiButton } from '../Button';
 import { Modal } from '../Modal/Modal';
+import { Select } from '../Select';
 
 import type { DataTableTestIds } from './testIds';
 import type {
@@ -636,6 +637,7 @@ function TableSettingsPanel(props: {
 			<Stack gap='xs'>
 				<Text size='sm' fw={500}>{t('datatable.pageSize')}</Text>
 				<Select
+					size='sm'
 					allowDeselect={false}
 					data={pageSizeSelectData}
 					onChange={value => {

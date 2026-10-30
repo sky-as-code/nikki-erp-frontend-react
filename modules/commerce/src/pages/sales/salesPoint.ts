@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/sales';
@@ -8,6 +9,13 @@ import { SalesPointCommands } from '../../features/sales/salesPoint/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: { active: 'green', suspended: 'orange' },
+	prefix: 'status.',
+} as const;
 
 /**
  * `sales_channel_id` is immutable once set: every order rung up here records that channel, so moving
@@ -36,11 +44,7 @@ function buildSalesPointListProps() {
 		updateCommand: SalesPointCommands.UPDATE,
 		createEnabled: true,
 		fieldRenderers: {
-			status: {
-				renderer: 'badge',
-				colorMap: { active: 'green', suspended: 'orange' },
-				prefix: 'status.',
-			},
+			status: STATUS_BADGE,
 		},
 	});
 }
@@ -49,6 +53,7 @@ function buildSalesPointDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_POINT_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -78,10 +83,6 @@ function buildSalesPointFieldsSection(): ComponentNode {
 			// How another module names this point. Unique within the channel, which makes it an
 			// idempotency handle for provisioning.
 			fields: ['external_reference_id', 'external_reference_type'],
-		}),
-		resourceFormColumnNode({
-			header: 'form.other_information',
-			fields: ['org_id'],
 		}),
 	]);
 }

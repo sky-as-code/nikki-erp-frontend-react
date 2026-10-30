@@ -1,4 +1,3 @@
-import { Select } from '@mantine/core';
 import { useId } from '@mantine/hooks';
 import React from 'react';
 import { Controller } from 'react-hook-form';
@@ -9,6 +8,9 @@ import { BaseFieldWrapper } from './fields';
 import { useFormField, useFieldData } from './formContext';
 import { useFieldTestAttrs } from './formTestIds';
 import { useLocalize } from '../../i18n';
+import { Select } from '../Select';
+
+import type { SelectProps } from '../Select';
 
 
 export interface SelectOption {
@@ -33,7 +35,7 @@ export interface EntitySelectFieldProps<TEntity> {
 	onChange?: (value: string | undefined) => void;
 
 	// Select props
-	selectProps?: Partial<React.ComponentPropsWithoutRef<typeof Select>>;
+	selectProps?: Partial<SelectProps>;
 }
 
 function buildSelectOptions<TEntity>(
@@ -131,6 +133,8 @@ export function EntitySelectField<TEntity>({
 							onChange?.(newValue as any);
 						}}
 						onBlur={field.onBlur}
+						// Mantine's own sm box, as before the wrapper: these authorize forms predate the density tokens.
+						size='sm'
 						searchable
 						clearable={!fieldData.isRequired}
 						required={fieldData.isRequired}

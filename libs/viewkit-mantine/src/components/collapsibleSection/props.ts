@@ -1,3 +1,4 @@
+import { componentNodeSchema } from '@nikkierp/viewengine/schema';
 import { z } from 'zod';
 
 
@@ -30,6 +31,12 @@ const baseSchema = z.object({
 	 * appended, so several sections on one page stay distinct without setting this.
 	 */
 	testId: z.string().min(1).optional(),
+	/**
+	 * A node shown at the header's right end, outside the collapse toggle (a click on it never
+	 * collapses the block): as wide as its content, flush right, and on a line of its own, still flush
+	 * right, once it no longer fits beside the title. The detail template puts the status strip here.
+	 */
+	rightSegment: componentNodeSchema.optional(),
 }).strict();
 
 /**

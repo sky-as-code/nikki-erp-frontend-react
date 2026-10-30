@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/sales';
@@ -9,6 +10,19 @@ import { SalesQuotationLineCommands } from '../../features/sales/salesQuotationL
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		draft: 'gray',
+		sent: 'blue',
+		accepted: 'green',
+		expired: 'orange',
+		cancelled: 'red',
+	},
+	prefix: 'quotation_status.',
+} as const;
 
 /**
  * A quotation is not a draft order: it has its own numbering, because one that never converts would
@@ -37,17 +51,7 @@ function buildSalesQuotationListProps() {
 		fieldRenderers: {
 			// `expired` is orange, not grey: a lapsed offer may still be reissued, where a
 			// cancelled one was deliberately withdrawn.
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					draft: 'gray',
-					sent: 'blue',
-					accepted: 'green',
-					expired: 'orange',
-					cancelled: 'red',
-				},
-				prefix: 'quotation_status.',
-			},
+			status: STATUS_BADGE,
 		},
 	});
 }
@@ -56,6 +60,7 @@ function buildSalesQuotationDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_QUOTATION_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'quotation_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -93,7 +98,7 @@ function buildSalesQuotationFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['converted_sales_order_id', 'org_id'],
+			fields: ['converted_sales_order_id'],
 		}),
 	]);
 }

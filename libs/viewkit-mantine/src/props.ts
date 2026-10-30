@@ -38,6 +38,8 @@ import type { ComponentNode, TemplateRef } from '@nikkierp/viewengine/metadata';
 
 
 export { columnFieldNames } from './pages/resourceDetail/formColumnFields';
+export { statusStripProps } from './pages/resourceDetailV2/statusStripProps';
+export type { StatusBadgeSpec, StatusStripProps } from './pages/resourceDetailV2/statusStripProps';
 export type { FormColumnField } from './pages/resourceDetail/formColumnFields';
 
 /**

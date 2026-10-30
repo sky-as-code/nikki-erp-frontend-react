@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/sales';
@@ -8,6 +9,18 @@ import { SalesFiscalRequestCommands } from '../../features/sales/salesFiscalRequ
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		pending: 'orange',
+		issued: 'green',
+		failed: 'red',
+		cancelled: 'gray',
+	},
+	prefix: 'fiscal_status.',
+} as const;
 
 /**
  * The row is written before the provider is called: a timeout after the provider issued the invoice
@@ -36,16 +49,7 @@ function buildSalesFiscalRequestListProps() {
 		searchCommand: SalesFiscalRequestCommands.SEARCH,
 		createEnabled: false,
 		fieldRenderers: {
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					pending: 'orange',
-					issued: 'green',
-					failed: 'red',
-					cancelled: 'gray',
-				},
-				prefix: 'fiscal_status.',
-			},
+			status: STATUS_BADGE,
 		},
 	});
 }
@@ -54,6 +58,7 @@ function buildSalesFiscalRequestDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_FISCAL_REQUEST_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'provider_reference' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -84,7 +89,7 @@ function buildSalesFiscalRequestFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['original_fiscal_request_id', 'buyer_snapshot', 'org_id'],
+			fields: ['original_fiscal_request_id', 'buyer_snapshot'],
 		}),
 	]);
 }

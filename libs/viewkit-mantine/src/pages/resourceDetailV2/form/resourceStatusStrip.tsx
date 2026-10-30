@@ -16,22 +16,23 @@ import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
 /**
- * The status flow as the first, full-width row of a `formBlocks` section. The template inserts it
- * there when the page sets `statusPlacement: 'firstSection'`; the header's toolbar then shows none.
+ * The status flow as the first, full-width row of a `formBlocks` section (`statusPlacement:
+ * 'firstSection'`), or inline as the first section header's right segment (`'firstSectionHeader'`).
+ * The template inserts it; the header's toolbar then shows none.
  */
 export const resourceStatusStripRenderer: IComponentRenderer<ResourceStatusStripProps> = {
 	type: RESOURCE_DETAIL_STATUS_STRIP,
 	propsSchema: resourceStatusStripPropsSchema,
-	render() {
-		return <ResourceStatusStrip />;
+	render(props) {
+		return <ResourceStatusStrip inline={props.inline} />;
 	},
 };
 
-function ResourceStatusStrip(): React.ReactNode {
+function ResourceStatusStrip({ inline }: { inline: boolean }): React.ReactNode {
 	const tid = useResourceDetailTestAttrs();
 	return (
 		<div
-			className={layoutClasses.formBlockFullRow}
+			className={inline ? undefined : layoutClasses.formBlockFullRow}
 			{...componentAttrs(RESOURCE_DETAIL_STATUS_STRIP)}
 			{...tid('statusStrip')}
 		>

@@ -67,7 +67,7 @@ function buildUomCatFieldsSection(): ComponentNode {
 			// BR-UOM-ESS-003: the Reference UoM is a property of the category, and every factor
 			// in the category is expressed relative to it.
 			header: 'form.generalInformation',
-			fields: ['name', 'reference_uom_id', 'org_id'],
+			fields: ['name', 'reference_uom_id'],
 		}),
 	]);
 }

@@ -3,6 +3,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/paymentinvoice';
@@ -11,6 +12,22 @@ import { TransactionCommands } from '../../features/paymentinvoice/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		pending: 'gray',
+		processing: 'blue',
+		payment_success: 'green',
+		payment_failed: 'red',
+		canceled: 'gray',
+		refund_success: 'orange',
+		refund_failed: 'red',
+		expired: 'gray',
+	},
+	prefix: 'order_status.',
+} as const;
 
 export function buildOrderPages(): PageNode[] {
 	const splitView = resourceSplitViewProps({
@@ -45,20 +62,7 @@ function buildOrderListProps() {
 			// The colours track how far the money got: grey while nothing has happened, blue in
 			// flight, green once collected, red when it was refused, and neutral once the order
 			// is history. Refunded is deliberately not green â€” the money went back.
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					pending: 'gray',
-					processing: 'blue',
-					payment_success: 'green',
-					payment_failed: 'red',
-					canceled: 'gray',
-					refund_success: 'orange',
-					refund_failed: 'red',
-					expired: 'gray',
-				},
-				prefix: 'order_status.',
-			},
+			status: STATUS_BADGE,
 			last_sync_status: {
 				renderer: 'badge',
 				colorMap: { success: 'green', failure: 'red' },
@@ -72,6 +76,7 @@ function buildOrderDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.ORDER_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'order_id' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -97,7 +102,7 @@ function buildOrderFieldsSection(): ComponentNode {
 			// order_id is what the ordering system quotes; order_code is what the gateway knows
 			// the order by. They are different strings and both are shown, because a support
 			// conversation may start from either.
-			fields: ['order_id', 'order_code', 'source', 'status', 'content', 'org_id'],
+			fields: ['order_id', 'order_code', 'source', 'status', 'content'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.money',

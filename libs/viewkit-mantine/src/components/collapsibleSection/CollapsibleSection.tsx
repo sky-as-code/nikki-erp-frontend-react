@@ -15,6 +15,7 @@ import layoutClasses from '../formBlockLayout.module.css';
 import { PaperWithBorder } from '../paperWithBorder';
 
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 /**
@@ -55,7 +56,10 @@ function CollapsibleSection({ props, runtime }: {
 					expanded={expanded}
 					onToggle={() => setExpanded(prev => !prev)}
 					testId={props.testId}
+					rightSegment={props.rightSegment}
 				/>
+			) : props.rightSegment ? (
+				<div className={classes.rightSegment}><MetaComponent node={props.rightSegment} /></div>
 			) : null}
 			{props.collapsible ? (
 				<Collapse
@@ -78,26 +82,44 @@ function CollapsibleSection({ props, runtime }: {
 	);
 }
 
-function SectionHeader({ header, translationNs, collapsible, expanded, onToggle, testId }: {
+type SectionHeaderProps = {
 	header?: string,
 	translationNs: string,
 	collapsible: boolean,
 	expanded: boolean,
 	onToggle: () => void,
 	testId?: string,
-}): React.ReactNode {
+	rightSegment?: ComponentNode,
+};
+
+/** The title (the toggle, when collapsible) and, beside it, the right segment, which never toggles. */
+function SectionHeader({ rightSegment, ...props }: SectionHeaderProps): React.ReactNode {
+	if (!rightSegment) {
+		return <SectionTitle {...props} />;
+	}
+	return (
+		<div className={classes.headerRow}>
+			<SectionTitle {...props} className={classes.headerMain} />
+			<div className={classes.rightSegment}><MetaComponent node={rightSegment} /></div>
+		</div>
+	);
+}
+
+function SectionTitle({ header, translationNs, collapsible, expanded, onToggle, testId, className }:
+	Omit<SectionHeaderProps, 'rightSegment'> & { className?: string },
+): React.ReactNode {
 	// The schema guarantees a namespace wherever a header exists, so this never resolves blank.
 	const t = useTranslate(translationNs);
 	const text = useSectionTitle(header, t);
 	const title = text != null ? <Title order={4}>{text}</Title> : null;
 
 	if (!collapsible) {
-		return <Group gap='xs' className={classes.sectionHeader}>{title}</Group>;
+		return <Group gap='xs' className={clsx(classes.sectionHeader, className)}>{title}</Group>;
 	}
 
 	return (
 		<UnstyledButton
-			className={clsx(classes.sectionHeader, classes.collapsibleHeader)}
+			className={clsx(classes.sectionHeader, classes.collapsibleHeader, className)}
 			onClick={onToggle} aria-expanded={expanded}
 			{...testAttrs(testId ?? 'ui.collapsibleSection', header, 'toggle')}
 		>

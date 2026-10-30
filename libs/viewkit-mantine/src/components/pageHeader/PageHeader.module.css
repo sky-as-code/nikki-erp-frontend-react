@@ -1,15 +1,33 @@
 /*
- * The page's action toolbar, pinned to the top of the content area once the titles scroll past.
+ * The page's whole header (titles, subtitle, actions row), pinned to the top of the content area as
+ * soon as the page scrolls.
  *
  * `fixed`, not `sticky`, and that is not a preference. Every renderer in the view engine is wrapped
  * in a `display: contents` carrier (`ComponentAnchor`), and such an element still forms the
- * containing block for a sticky descendant while having zero height — so a sticky toolbar gets zero
- * travel and scrolls away with the header no matter which ancestor actually scrolls. Fixed escapes
- * that by resolving against the viewport instead.
+ * containing block for a sticky descendant while having zero height — so a sticky header gets zero
+ * travel and scrolls away no matter which ancestor actually scrolls. Fixed escapes that by resolving
+ * against the viewport instead.
  *
- * The trade-off fixed brings is that the row leaves the flow, so `.pinnedSpacer` reserves its
+ * The trade-off fixed brings is that the band leaves the flow, so `.pinSlot` reserves its content's
  * height and `--nikki-page-toolbar-*` carry the geometry measured from the live layout.
  */
+
+/* The in-flow box: one flex item of the page, whatever it holds, so the page's gap is not doubled. */
+.pinSlot {
+	flex: none;
+}
+
+/*
+ * The header's rows. Spaced by the gap of the page's `Stack` they used to sit in directly (Mantine
+ * publishes it as the inherited `--stack-gap`), so wrapping them changes no spacing: 0 on the detail
+ * page, whose rows carry their own margins, `md` on a generic page.
+ */
+.pinContent {
+	display: flex;
+	flex-direction: column;
+	gap: var(--stack-gap, 0);
+}
+
 .actionsRow {
 	display: flex;
 	align-items: center;
@@ -31,23 +49,18 @@
 	left: var(--nikki-page-toolbar-left, 0);
 	width: var(--nikki-page-toolbar-width, 100%);
 	/*
-	 * The Shell's stack, lowest first: page content (at most app - 20), this toolbar, the header with
-	 * its pinned or floating ribbon (app), then modal dialogs (modal). Below the header so a floating
-	 * ribbon panel opens over the toolbar; above anything sticky inside the page.
+	 * The Shell's stack, lowest first: page content (at most app - 20), this header, the Shell header
+	 * with its pinned or floating ribbon (app), then modal dialogs (modal). Below the Shell header so a
+	 * floating ribbon panel opens over it; above anything sticky inside the page.
 	 */
 	z-index: calc(var(--mantine-z-index-app) - 10);
 	/*
-	 * Opaque, not transparent. The row is `fixed`, so the page keeps scrolling underneath it — with
-	 * no background of its own the content below reads straight through the buttons. The colour is set
-	 * inline from `usePaperBgColor()`, so it matches the page container in both schemes.
+	 * Opaque, not transparent. The band is `fixed`, so the page keeps scrolling underneath it — with
+	 * no background of its own the content below reads straight through. The colour is set inline from
+	 * `usePaperBgColor()`, so it matches the page container in both schemes.
 	 */
 	padding-left: var(--mantine-spacing-md);
 	padding-right: var(--mantine-spacing-md);
 	padding-bottom: var(--mantine-spacing-xs);
 	box-shadow: 0 1px 0 0 var(--mantine-color-default-border);
-}
-
-/* Holds the pinned row's place in the flow so the content below does not jump up by its height. */
-.pinnedSpacer {
-	flex: none;
 }

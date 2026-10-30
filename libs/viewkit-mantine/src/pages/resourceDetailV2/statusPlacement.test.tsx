@@ -47,6 +47,16 @@ describe('withStatusStrip', () => {
 		expect(section.children).toHaveLength(1);
 	});
 
+	it('puts an inline strip in the first section header for firstSectionHeader', () => {
+		const [first, ...rest] = withStatusStrip([section, section], 'firstSectionHeader', true);
+		const rightSegment = first.props?.rightSegment as { component: string, props: { inline: boolean } };
+		expect(rightSegment.component).toBe(RESOURCE_DETAIL_STATUS_STRIP);
+		expect(rightSegment.props.inline).toBe(true);
+		expect(first.children).toEqual(section.children);
+		expect(rest).toEqual([section]);
+		expect(section.props).toEqual({});
+	});
+
 	it('puts the strip before a first node that is not a section', () => {
 		const tabs = defineComponent({ component: RESOURCE_FORM_TABS, props: {} });
 		const nodes = withStatusStrip([tabs], 'firstSection', true);
@@ -78,14 +88,16 @@ describe('status placement', () => {
 		expect(toolbar.textContent).toBe('Audit');
 	});
 
-	it('leaves the toolbar to the toggle when the page moves the strip into its first section', () => {
-		renderActionBar('firstSection');
-		expect(screen.getByTestId(byTestId('rightToolbar')).textContent).toBe('Audit');
-	});
+	it.each(['firstSection', 'firstSectionHeader'] as const)(
+		'leaves the toolbar to the toggle when the page moves the strip to %s', placement => {
+			renderActionBar(placement);
+			expect(screen.getByTestId(byTestId('rightToolbar')).textContent).toBe('Audit');
+		},
+	);
 
 	it('renders the strip as a full row, the current status marked', () => {
 		renderInDetailPage(
-			<>{resourceStatusStripRenderer.render({}, {} as never)}</>,
+			<>{resourceStatusStripRenderer.render({ inline: false }, {} as never)}</>,
 			{ allStatuses: TEST_STATUSES, currentStatus: { schemaField: 'status' }, statusPlacement: 'firstSection' },
 		);
 		const strip = screen.getByTestId(byTestId('statusStrip'));

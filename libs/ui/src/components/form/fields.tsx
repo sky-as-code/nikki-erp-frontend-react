@@ -1,5 +1,5 @@
 import {
-	ActionIcon, Grid, Input, Select, Switch, Text, VisuallyHidden, InputProps, NumberInputProps,
+	ActionIcon, Grid, Input, Switch, Text, VisuallyHidden, InputProps, NumberInputProps,
 } from '@mantine/core';
 import { DateInput, DateInputProps, DateTimePickerProps } from '@mantine/dates';
 import { useId } from '@mantine/hooks';
@@ -10,6 +10,7 @@ import { Controller, useWatch } from 'react-hook-form';
 
 import { useCreateDefault } from './createDefault';
 import { DateTimeInputField, ReadOnlyTextField, TimeInputField } from './dateTimeFields';
+import { storedDateToPicker } from './dateTimeValues';
 import { fieldErrorText } from './fieldErrors';
 import { FieldDescriptionProvider, FieldLabelProvider, useFieldDescription, useFieldLabelHidden } from './fieldLabelContext';
 import { useFieldData, useFormField, useFormStyle } from './formContext';
@@ -23,8 +24,10 @@ import { FieldLabelText, localizeFieldDescription } from '../fieldDescription';
 import { useFormInputSize } from '../Input/inlineControls';
 import { formInputProps } from '../Input/inputDensity';
 import { LocalizedNumberInput } from '../LocalizedNumberInput';
+import { Select } from '../Select';
 
 import type { MaskInputProps } from '../MaskInput';
+import type { SelectProps as SelectWrapperProps } from '../Select';
 
 
 export type AutoFieldProps = {
@@ -145,7 +148,7 @@ function AutoFieldControl(props: AutoFieldProps) {
 	}
 }
 
-type SelectProps = React.ComponentPropsWithoutRef<typeof Select>;
+type SelectProps = SelectWrapperProps;
 
 type IdentityOrTemporalArgs = AutoFieldProps & {
 	fieldDef: dyn.ModelSchemaField,
@@ -687,18 +690,8 @@ export function DateInputField(props: DateInputFieldProps) {
 				control={control}
 				defaultValue={defaultValue}
 				render={({ field }) => {
-					let dateValue: Date | null = null;
-					const valueToUse = field.value !== undefined ? field.value : defaultValue;
-
-					if (valueToUse) {
-						if (valueToUse instanceof Date) {
-							dateValue = valueToUse;
-						}
-						else if (typeof valueToUse === 'string') {
-							dateValue = new Date(valueToUse);
-						}
-					}
-
+					// The date string itself: `new Date('YYYY-MM-DD')` is UTC midnight, the day before west of UTC.
+					const dateValue = storedDateToPicker(field.value !== undefined ? field.value : defaultValue);
 					return (
 						<DateInput
 							id={inputId}

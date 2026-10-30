@@ -69,6 +69,7 @@ function buildOrganizationDetailProps() {
 			{ value: 'deleted', label: 'status.deleted', color: 'red' },
 		],
 		currentStatus: { schemaField: 'status' },
+		statusPlacement: 'firstSectionHeader',
 		standardActionCommands: {
 			getById: OrganizationCommands.GET_BY_ID,
 			create: OrganizationCommands.CREATE,

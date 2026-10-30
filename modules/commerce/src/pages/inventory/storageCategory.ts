@@ -75,7 +75,7 @@ function buildStorageCategoryFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['code', 'name', 'description', 'org_id'],
+			fields: ['code', 'name', 'description'],
 		}),
 		resourceFormColumnNode({
 			// Capacity is a limit, not a reading: what is currently stored depends on actual

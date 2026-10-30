@@ -3,6 +3,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/accounting';
@@ -10,6 +11,13 @@ import { TaxRoundingPolicyCommands } from '../../features/accounting/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: { draft: 'gray', published: 'green', withdrawn: 'orange' },
+	prefix: 'lifecycle_status.',
+} as const;
 
 /**
  * Tax rounding policies: how a computed amount is rounded, and whether per line or per document.
@@ -44,11 +52,7 @@ function buildListProps() {
 		fieldRenderers: {
 			// Draft is invisible to the engine, published is what prices a transaction, withdrawn is
 			// retired but still readable. Three states with three consequences, so three colours.
-			lifecycle_status: {
-				renderer: 'badge',
-				colorMap: { draft: 'gray', published: 'green', withdrawn: 'orange' },
-				prefix: 'lifecycle_status.',
-			},
+			lifecycle_status: STATUS_BADGE,
 			rounding_scope: {
 				renderer: 'badge',
 				colorMap: { line: 'blue', document: 'violet' },
@@ -62,6 +66,7 @@ function buildDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.TAX_ROUNDING_POLICY_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
+		...statusStripProps(STATUS_BADGE, 'lifecycle_status'),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
 		backLinkTitle: { linkHref: '../' },
@@ -87,7 +92,7 @@ function buildFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['code', 'name', 'jurisdiction_id', 'currency_code', 'org_id'],
+			fields: ['code', 'name', 'jurisdiction_id', 'currency_code'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.calculation',

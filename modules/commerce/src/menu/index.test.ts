@@ -105,6 +105,14 @@ describe('buildCommerceMenu', () => {
 		]);
 	});
 
+	it('links the stock operation types from Inventory > Configuration', () => {
+		const configuration = menu.tabs[0].blocks.find(block => block.titleKey === 'inventory_menu_configuration');
+
+		expect(configuration?.items).toContainEqual(
+			expect.objectContaining({ labelKey: 'inventory_menu_operationTypes', link: '/inventory_stock_operation_type' }),
+		);
+	});
+
 	it('opens the module on the first inventory link', () => {
 		expect(findFirstMenuLink(menuItemsOf(menu))).toBe('/inventory_product_template');
 	});

@@ -15,6 +15,8 @@ import { useNewRowSearch } from './newRowSearch';
 import { EditRowActions } from './rowActions';
 import { isPopupEnterForRow, readRowKey } from './rowKeys';
 import { RowLoading } from './RowLoading';
+import { groupWithSubAdded, newGroupOf, rowSpanInsertFields } from './rowSpan/rowSpanModel';
+import { useRowUpdateWrite } from './rowUpdateWrite';
 import { useColumnCount } from './tableLayout';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
@@ -24,6 +26,7 @@ import { INLINE_CONTROLS_ATTRS } from '../Input/inputDensity';
 import { SearchableSelect } from '../SearchableSelect';
 
 import type { NewRowColumns } from './newRowModel';
+import type { RowId, SearchItem } from './types';
 import type { FormProviderRenderProps } from '../form';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -48,7 +51,7 @@ export function NewRow(): React.ReactNode {
 	if (!capabilities.includes('create') || !modelSchema) {
 		return null;
 	}
-	return editing.creating
+	return editing.creating && editing.createTarget === null
 		? <InsertRow key={generation} modelSchema={modelSchema} onAdded={() => setGeneration(count => count + 1)} />
 		: <AddLineRow />;
 }
@@ -96,21 +99,30 @@ function AddLineRow() {
 	);
 }
 
+/** A grouped table's sub-row insert line: the group it adds to, whose own fields seed the form. */
+export type InsertTarget = { groupId: RowId, group: SearchItem, seed: Record<string, unknown> };
+
+type InsertRowProps = { modelSchema: dyn.ModelSchema, onAdded: () => void, target?: InsertTarget };
+
 /**
  * A create form of its own, so the detail form's field inputs and validation apply unchanged. Its
  * `onSubmit` is never reached: the row validates only the columns it shows (see `useNewRowAdd`).
+ * With a `target` it is a grouped table's sub-row insert line, the same machinery on the nested columns.
  */
-function InsertRow({ modelSchema, onAdded }: { modelSchema: dyn.ModelSchema, onAdded: () => void }) {
+export function InsertRow({ modelSchema, onAdded, target }: InsertRowProps) {
+	const { rowFormSchema } = useExcelDataTableContext();
 	const localize = useSchemaLocalize(modelSchema.name);
 	return (
 		<CrudFormProvider
 			schemaName={modelSchema.name}
+			modelSchema={rowFormSchema}
 			formVariant='create'
 			localize={localize}
+			modelValue={target?.seed}
 			onSubmit={ignoreSubmit}
 			loadingFallback={<RowLoading />}
 		>
-			{runtime => <InsertCells runtime={runtime} onAdded={onAdded} />}
+			{runtime => <InsertCells runtime={runtime} onAdded={onAdded} target={target} />}
 		</CrudFormProvider>
 	);
 }
@@ -119,17 +131,19 @@ function ignoreSubmit(): void {
 	// The insert row never submits through the form; `useNewRowAdd` writes instead.
 }
 
-function InsertCells({ runtime, onAdded }: { runtime: FormProviderRenderProps, onAdded: () => void }) {
+type InsertCellsProps = { runtime: FormProviderRenderProps, onAdded: () => void, target?: InsertTarget };
+
+function InsertCells({ runtime, onAdded, target }: InsertCellsProps) {
 	const t = useTranslate('common');
-	const context = useExcelDataTableContext();
-	const { fields, newRow, modelSchema, indexColumnVisible, editing, isLoading, tid } = context;
-	const columns = React.useMemo(
-		() => resolveNewRowColumns(modelSchema, fields, newRow), [modelSchema, fields, newRow],
-	);
-	const submit = useNewRowAdd({ runtime, columns, t, onAdded });
+	const { fields, newRow, modelSchema, editing, isLoading, tid, rowSpan } = useExcelDataTableContext();
+	const columns = React.useMemo(() => resolveNewRowColumns(
+		modelSchema, rowSpan ? rowSpanInsertFields(fields, rowSpan.config, Boolean(target)) : fields, newRow,
+	), [modelSchema, fields, newRow, rowSpan, target]);
+	const submit = useNewRowAdd({ runtime, columns, t, onAdded, target });
 	const busy = submit.isSubmitting || isLoading;
 	const rowRef = useFirstInputFocus(busy);
 	const { onKeyDown, onKeyDownCapture } = useInsertRowKeys(busy, submit.add, editing.stopCreate);
+	const cells = { columns, runtime, busy, submit };
 	return (
 		<InlineRowScope>
 			<MantineTable.Tr
@@ -139,36 +153,69 @@ function InsertCells({ runtime, onAdded }: { runtime: FormProviderRenderProps, o
 				onKeyDownCapture={onKeyDownCapture}
 				aria-label={t('datatable.newLine', { defaultValue: 'New line' })}
 				{...INLINE_CONTROLS_ATTRS}
-				{...tid.attrs('newRow')}
+				{...(target ? tid.attrs('row', target.groupId, 'newSubRow') : tid.attrs('newRow'))}
 			>
-				{indexColumnVisible ? (
-					<MantineTable.Td className={classes.indexCell}>
-						<IconPlus size={14} aria-hidden />
-					</MantineTable.Td>
-				) : null}
-				{context.manualSort.enabled ? <EmptySortHandleCell /> : null}
-				{context.columns.map(column => (column.kind === 'action' ? <EmptyActionColumnCell key={column.key} /> : (
-					<NewRowCell
-						key={column.key}
-						field={column.field}
-						columns={columns}
-						runtime={runtime}
-						disabled={busy}
-					/>
-				)))}
-				<InsertRowActions submit={submit} busy={busy} />
+				{target ? <SubRowInsertCells {...cells} /> : <MainInsertCells {...cells} />}
 			</MantineTable.Tr>
 		</InlineRowScope>
 	);
 }
 
-function InsertRowActions({ submit, busy }: { submit: NewRowAdd, busy: boolean }) {
+type InsertCellsContentProps = {
+	columns: NewRowColumns,
+	runtime: FormProviderRenderProps,
+	busy: boolean,
+	submit: NewRowAdd,
+};
+
+function MainInsertCells({ columns, runtime, busy, submit }: InsertCellsContentProps) {
+	const context = useExcelDataTableContext();
+	return (
+		<>
+			{context.indexColumnVisible ? (
+				<MantineTable.Td className={classes.indexCell}>
+					<IconPlus size={14} aria-hidden />
+				</MantineTable.Td>
+			) : null}
+			{context.manualSort.enabled ? <EmptySortHandleCell /> : null}
+			{context.columns.map(column => (column.kind === 'action' ? <EmptyActionColumnCell key={column.key} /> : (
+				<NewRowCell
+					key={column.key}
+					field={column.field}
+					columns={columns}
+					runtime={runtime}
+					disabled={busy}
+				/>
+			)))}
+			<InsertRowActions submit={submit} busy={busy} />
+		</>
+	);
+}
+
+/**
+ * The nested columns' inputs and, in the sub-row actions column, Add / Discard. Every other cell of
+ * the line is covered by its group's spanning cells (§5.11), so it renders none of them.
+ */
+function SubRowInsertCells({ columns, runtime, busy, submit }: InsertCellsContentProps) {
+	const { rowSpan } = useExcelDataTableContext();
+	return (
+		<>
+			{rowSpan?.config.nestedFields.map(field => (
+				<NewRowCell key={field} field={field} columns={columns} runtime={runtime} disabled={busy} />
+			))}
+			<InsertRowActions submit={submit} busy={busy} compact />
+		</>
+	);
+}
+
+function InsertRowActions({ submit, busy, compact }: { submit: NewRowAdd, busy: boolean, compact?: boolean }) {
 	const { editing, tid } = useExcelDataTableContext();
 	return (
 		<MantineTable.Td className={classes.actionsCell}>
 			<EditRowActions
 				mode='create'
 				busy={busy}
+				compact={compact}
 				onConfirm={() => void submit.add()}
 				onDiscard={editing.stopCreate}
 				confirmTestId={tid.newRowAdd()}
@@ -297,15 +344,18 @@ type NewRowAddDeps = {
 	t: TranslateFn,
 	/** Called after a successful write: the caller opens the next, empty insert row. */
 	onAdded: () => void,
+	target?: InsertTarget,
 };
 
-function useNewRowAdd({ runtime, columns, t, onAdded }: NewRowAddDeps) {
+function useNewRowAdd({ runtime, columns, t, onAdded, target }: NewRowAddDeps) {
 	const { refresh, locks, modelSchema, changes } = useExcelDataTableContext();
-	const write = useNewRowWrite(t);
+	const write = useNewRowWrite(t, target);
+	// A sub-row is an update of its group, so the sub-row line answers to the update lock.
+	const lock = target ? locks.update : locks.create;
 	const [isSubmitting, setSubmitting] = React.useState(false);
 	const [errors, setErrors] = React.useState<ClientErrorItem[]>([]);
 	const add = React.useCallback(async () => {
-		if (locks.create.locked) {
+		if (lock.locked) {
 			return;
 		}
 		const collected = await collectPayload(runtime, columns, modelSchema, t);
@@ -325,7 +375,7 @@ function useNewRowAdd({ runtime, columns, t, onAdded }: NewRowAddDeps) {
 		}
 		onAdded();
 		refresh();
-	}, [changes, columns, locks.create.locked, modelSchema, onAdded, refresh, runtime, t, write]);
+	}, [changes, columns, lock.locked, modelSchema, onAdded, refresh, runtime, t, write]);
 	return { isSubmitting, errors, add };
 }
 
@@ -357,11 +407,21 @@ async function collectPayload(
 	return { payload };
 }
 
-/** Resolves the write's client errors, `[]` for a refusal the page reports itself, or `null` on success. */
-function useNewRowWrite(t: TranslateFn): (payload: Record<string, unknown>) => Promise<ClientErrorItem[] | null> {
-	const { sinks } = useExcelDataTableContext();
+/**
+ * Resolves the write's client errors, `[]` for a refusal the page reports itself, or `null` on success.
+ * A grouped table writes whole groups (§5.11): the main line creates one, a sub-row line updates its group.
+ */
+function useNewRowWrite(
+	t: TranslateFn, target: InsertTarget | undefined,
+): (payload: Record<string, unknown>) => Promise<ClientErrorItem[] | null> {
+	const { sinks, rowSpan } = useExcelDataTableContext();
+	const updateWrite = useRowUpdateWrite();
 	const commandBus = useCommandBus();
-	return React.useCallback(async (payload) => {
+	return React.useCallback(async (values) => {
+		if (rowSpan && target) {
+			return updateWrite(groupWithSubAdded(target.group, values, rowSpan.config));
+		}
+		const payload = rowSpan ? newGroupOf(values, rowSpan.config) : values;
 		if (sinks.createCommand) {
 			const response = await commandBus.publish<unknown>({ name: sinks.createCommand, payload });
 			const clientErrors = response.result?.clientErrors ?? [];
@@ -376,7 +436,7 @@ function useNewRowWrite(t: TranslateFn): (payload: Record<string, unknown>) => P
 			return (await sinks.onCreated(payload)) === false ? [] : null;
 		}
 		return [];
-	}, [commandBus, sinks, t]);
+	}, [commandBus, rowSpan, sinks, t, target, updateWrite]);
 }
 
 function rowError(key: string, message: string, type: 'validation' | 'business'): ClientErrorItem {

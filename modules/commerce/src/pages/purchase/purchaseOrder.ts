@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/purchase';
@@ -10,6 +11,19 @@ import { PurchaseOrderLineCommands } from '../../features/purchase/purchaseOrder
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		rfq: 'gray',
+		rfq_sent: 'blue',
+		to_approve: 'orange',
+		purchase_order: 'green',
+		cancelled: 'red',
+	},
+	prefix: 'status.',
+} as const;
 
 /**
  * Two routes onto ONE resource (PUR-R1).
@@ -103,17 +117,7 @@ function buildOrderListProps(initialGraph: Record<string, unknown>, mergeable: b
 			// The colours track how far the commitment got: grey while it is only a request, blue
 			// once it is with the vendor, orange while it waits on an approver, green once the
 			// business has committed, red when it was called off.
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					rfq: 'gray',
-					rfq_sent: 'blue',
-					to_approve: 'orange',
-					purchase_order: 'green',
-					cancelled: 'red',
-				},
-				prefix: 'status.',
-			},
+			status: STATUS_BADGE,
 			priority: {
 				renderer: 'badge',
 				colorMap: { normal: 'gray', urgent: 'red' },
@@ -134,6 +138,7 @@ function buildOrderDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.PURCHASE_ORDER_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -161,7 +166,7 @@ function buildPurchaseOrderFieldsSection(): ComponentNode {
 			// `code` is allocated by the backend; `vendor_reference` is the vendor's own number for
 			// the same document. A support conversation may start from either.
 			fields: ['code', 'status', 'vendor_id', 'vendor_reference', 'buyer_id', 'currency_id',
-				'priority', 'org_id'],
+				'priority'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.terms',

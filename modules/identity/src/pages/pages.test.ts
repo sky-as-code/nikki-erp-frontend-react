@@ -149,12 +149,12 @@ describe('IAM principal pages', () => {
 		expect(formFields).not.toContain('created_by');
 	});
 
-	it('the user page shows its status in General Information; the service page keeps the toolbar default', () => {
+	it('the user and service pages show their status in the General Information header', () => {
 		const user = buildUserPages()[0].props as PrincipalSplit;
 		const service = buildServicePages()[0].props as PrincipalSplit;
 
-		expect(user.secondary.props.statusPlacement).toBe('firstSection');
-		expect(service.secondary.props.statusPlacement).toBe('toolbar');
+		expect(user.secondary.props.statusPlacement).toBe('firstSectionHeader');
+		expect(service.secondary.props.statusPlacement).toBe('firstSectionHeader');
 	});
 
 	it('service pages show no email, which a service does not have', () => {

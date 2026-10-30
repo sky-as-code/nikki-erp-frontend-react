@@ -6,6 +6,12 @@ import type { MantineSpacing } from '@mantine/core';
 
 
 /**
+ * The space between a page's last block and the window bottom. A list page's table body ends on the
+ * same token (`ExcelDataTableBody.module.css`), so both templates leave the same gap.
+ */
+export const PAGE_BOTTOM_GAP = 'var(--nikki-page-bottom-gap, var(--mantine-spacing-md))';
+
+/**
  * The page shell every full-width page renders into.
  *
  * Absolutely positioned against the shell's content area rather than laid out in flow: the
@@ -32,7 +38,8 @@ export function PageContainer(
 	return (
 		<Stack
 			bg={bgColor}
-			className='absolute inset-0 p-0 m-0 px-4 pb-4 flex overflow-auto'
+			className='absolute inset-0 p-0 m-0 px-4 flex overflow-auto'
+			style={{ paddingBottom: PAGE_BOTTOM_GAP }}
 			gap={gap}
 		>
 			{children}

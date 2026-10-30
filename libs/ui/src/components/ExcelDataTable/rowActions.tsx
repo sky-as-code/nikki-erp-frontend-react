@@ -16,6 +16,8 @@ export type EditRowActionsProps = {
 	onDiscard: () => void,
 	/** Blocks the confirm while a write or a load is in flight; discarding stays possible. */
 	busy?: boolean,
+	/** Icons only, the labels as `aria-label` and tooltip: for a narrow column (a grouped table's sub-row line). */
+	compact?: boolean,
 	confirmTestId?: TestIdAttributes,
 	discardTestId?: TestIdAttributes,
 };
@@ -26,30 +28,34 @@ export type EditRowActionsProps = {
  * (`INLINE_CONTROLS_ATTRS`) sizes it with the inputs beside it.
  */
 export function EditRowActions({
-	mode, onConfirm, onDiscard, busy = false, confirmTestId, discardTestId,
+	mode, onConfirm, onDiscard, busy = false, compact = false, confirmTestId, discardTestId,
 }: EditRowActionsProps): React.ReactElement {
 	const t = useTranslate('common');
 	const confirmLabel = mode === 'create'
 		? t('action.add', { defaultValue: 'Add' })
 		: t('action.save', { defaultValue: 'Save' });
+	const discardLabel = t('datatable.discardChanges', { defaultValue: 'Discard changes' });
+	const labelProps = (label: string) => (compact ? { 'aria-label': label, title: label } : {});
 	return (
 		<Group gap='xs' wrap='nowrap'>
 			<Button
 				variant='default'
-				leftSection={<IconCheck size={14} />}
+				leftSection={compact ? undefined : <IconCheck size={14} />}
 				disabled={busy}
 				onClick={onConfirm}
+				{...labelProps(confirmLabel)}
 				{...confirmTestId}
 			>
-				{confirmLabel}
+				{compact ? <IconCheck size={14} aria-hidden /> : confirmLabel}
 			</Button>
 			<Button
 				variant='default'
-				leftSection={<IconX size={14} />}
+				leftSection={compact ? undefined : <IconX size={14} />}
 				onClick={onDiscard}
+				{...labelProps(discardLabel)}
 				{...discardTestId}
 			>
-				{t('datatable.discardChanges', { defaultValue: 'Discard changes' })}
+				{compact ? <IconX size={14} aria-hidden /> : discardLabel}
 			</Button>
 		</Group>
 	);

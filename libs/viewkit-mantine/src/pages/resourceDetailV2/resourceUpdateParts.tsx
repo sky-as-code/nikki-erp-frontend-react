@@ -192,8 +192,9 @@ function PrimaryActionButtons({
 	const { schemaPack } = useResourceDetailContext();
 	const schemaFields = React.useMemo(() => Object.keys(schemaPack?.modelSchema?.fields ?? {}), [schemaPack]);
 	const updateLock = useAnyFieldActionLock(useResourceDetailSchemaName(), StandardActionCode.Update, schemaFields);
-	// Discard and Save keep their labels: alone in the row with the Audit toggle, they always fit.
-	const updateContent = useToolbarButtonContent(<IconPencil size={16} />, t('action.update'));
+	// Save and Discard keep their labels: alone in the row with the Audit toggle, they always fit. Save comes
+	// first, as the primary action leads the row on every page.
+	const updateContent = useToolbarButtonContent(<IconPencil size={16} />, t('action.edit'));
 	if (!updateCommand) {
 		return null;
 	}
@@ -201,14 +202,6 @@ function PrimaryActionButtons({
 	if (updateMode) {
 		return (
 			<>
-				<Button
-					variant='outline'
-					onClick={() => (onCancel ? onCancel() : setUpdateMode(false))}
-					leftSection={<IconX size={16} />}
-					{...tid('action', 'cancel')}
-				>
-					{t('action.discard')}
-				</Button>
 				<Button
 					variant='filled'
 					leftSection={<IconDeviceFloppy size={16} />}
@@ -220,6 +213,14 @@ function PrimaryActionButtons({
 					{...tid('action', 'save')}
 				>
 					{t('action.save')}
+				</Button>
+				<Button
+					variant='outline'
+					onClick={() => (onCancel ? onCancel() : setUpdateMode(false))}
+					leftSection={<IconX size={16} />}
+					{...tid('action', 'cancel')}
+				>
+					{t('action.discard')}
 				</Button>
 			</>
 		);

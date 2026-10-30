@@ -67,7 +67,7 @@ function buildSupplyRelationFieldsSection(): ComponentNode {
 			// actually happens the Stock movement engine creates the movement.
 			header: 'form.generalInformation',
 			fields: [
-				'source_warehouse_id', 'destination_warehouse_id', 'priority', 'is_default', 'org_id',
+				'source_warehouse_id', 'destination_warehouse_id', 'priority', 'is_default',
 			],
 		}),
 	]);

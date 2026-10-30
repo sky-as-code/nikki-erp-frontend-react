@@ -4,7 +4,8 @@ import {
 	addMove, buildMovesContribution, emptyMoveDrafts, moveDraftsFor, removeMove, updateMove,
 } from './moveDrafts';
 
-import type { MoveDrafts, MoveFields, SaveMode, SentRows } from './moveDrafts';
+import type { MoveDrafts, SaveMode, SentRows } from './moveDrafts';
+import type { SearchItem } from '@nikkierp/ui/components/ExcelDataTable';
 import type { DetailSavePayload } from '@nikkierp/viewkit-mantine';
 
 
@@ -12,8 +13,9 @@ export type MoveDraftState = {
 	drafts: MoveDrafts,
 	/** The rows behind the last contribution's lists, for mapping that save's errors. */
 	sent: React.RefObject<SentRows | null>,
-	add: (values: MoveFields) => void,
-	update: (values: MoveFields) => void,
+	add: (values: Record<string, unknown>) => void,
+	/** `original`: the group as read, for a saved move's first edit. */
+	update: (values: Record<string, unknown>, original: SearchItem | undefined) => void,
 	remove: (item: Record<string, unknown>) => void,
 };
 
@@ -50,9 +52,10 @@ export function useMoveDraftState(args: {
 	return {
 		drafts,
 		sent,
-		add: values => setState(addMove(drafts, values)),
-		update: values => setState(updateMove(drafts, values)),
-		remove: item => setState(removeMove(drafts, item)),
+		// Functional: two writes in one tick (a pick that also clears a dependent field) must both land.
+		add: values => setState(prev => addMove(moveDraftsFor(prev, transferId), values)),
+		update: (values, original) => setState(prev => updateMove(moveDraftsFor(prev, transferId), values, original)),
+		remove: item => setState(prev => removeMove(moveDraftsFor(prev, transferId), item)),
 	};
 }
 

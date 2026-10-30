@@ -75,7 +75,7 @@ function buildPutawayRuleFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['code', 'warehouse_id', 'priority', 'org_id'],
+			fields: ['code', 'warehouse_id', 'priority'],
 		}),
 		resourceFormColumnNode({
 			// Where goods arrive and where the rule sends them. Both must be in the warehouse

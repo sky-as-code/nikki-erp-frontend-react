@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/sales';
@@ -12,6 +13,13 @@ import { SalesPaymentCommands } from '../../features/sales/salesPayment/commands
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: { open: 'blue', settled: 'green', cancelled: 'gray' },
+	prefix: 'status.',
+} as const;
 
 /**
  * One order can carry several bills, and every order line's quantity must be allocated exactly
@@ -39,11 +47,7 @@ function buildSalesBillListProps() {
 		// A bill created here would carry no allocations and so bill for nothing.
 		createEnabled: false,
 		fieldRenderers: {
-			status: {
-				renderer: 'badge',
-				colorMap: { open: 'blue', settled: 'green', cancelled: 'gray' },
-				prefix: 'status.',
-			},
+			status: STATUS_BADGE,
 			payment_status: {
 				renderer: 'badge',
 				colorMap: {
@@ -64,6 +68,7 @@ function buildSalesBillDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_BILL_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'bill_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -100,7 +105,7 @@ function buildSalesBillFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['settled_at', 'cancelled_at', 'org_id'],
+			fields: ['settled_at', 'cancelled_at'],
 		}),
 	]);
 }

@@ -4,6 +4,9 @@ import { useId } from '@mantine/hooks';
 import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
+import {
+	inputTimeToModel, pickerDateTimeToIso, storedTimeToInput,
+} from './dateTimeValues';
 import { fieldErrorText } from './fieldErrors';
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
@@ -66,7 +69,8 @@ export function DateTimeInputField(props: DateTimeFieldProps<DateTimePickerProps
 					<DateTimePicker
 						id={inputId}
 						value={toDate(field.value !== undefined ? field.value : defaultValue)}
-						onChange={value => field.onChange(value || undefined)}
+						// The picker answers its local 'YYYY-MM-DD HH:mm:ss'; the model wants RFC3339 UTC.
+						onChange={value => field.onChange(pickerDateTimeToIso(value))}
 						// The picker moves focus into its dropdown; leaving it is closing the dropdown.
 						onDropdownClose={field.onBlur}
 						disabled={modelLoading}
@@ -87,6 +91,7 @@ export function TimeInputField(props: DateTimeFieldProps<InputProps>) {
 	const { control, modelValue, modelLoading } = useFormField();
 	const fieldAttrs = useFieldTestAttrs(name);
 	const size = useFormInputSize();
+	const withSeconds = Boolean((props.inputProps as { withSeconds?: boolean } | undefined)?.withSeconds);
 
 	if (!fieldData) {
 		return null;
@@ -107,8 +112,8 @@ export function TimeInputField(props: DateTimeFieldProps<InputProps>) {
 				render={({ field }) => (
 					<TimeInput
 						id={inputId}
-						value={(field.value as string) ?? ''}
-						onChange={event => field.onChange(event.currentTarget.value || undefined)}
+						value={storedTimeToInput(field.value, withSeconds)}
+						onChange={event => field.onChange(inputTimeToModel(event.currentTarget.value))}
 						onBlur={field.onBlur}
 						disabled={modelLoading}
 						{...fieldAttrs}

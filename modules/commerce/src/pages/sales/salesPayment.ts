@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/sales';
@@ -8,6 +9,19 @@ import { SalesPaymentCommands } from '../../features/sales/salesPayment/commands
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		pending: 'orange',
+		authorized: 'blue',
+		captured: 'green',
+		failed: 'red',
+		cancelled: 'gray',
+	},
+	prefix: 'payment_state.',
+} as const;
 
 /**
  * Read-only: a payment is recorded through a bill's `pay` action, which applies gates a plain create
@@ -36,17 +50,7 @@ function buildSalesPaymentListProps() {
 		searchCommand: SalesPaymentCommands.SEARCH,
 		createEnabled: false,
 		fieldRenderers: {
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					pending: 'orange',
-					authorized: 'blue',
-					captured: 'green',
-					failed: 'red',
-					cancelled: 'gray',
-				},
-				prefix: 'payment_state.',
-			},
+			status: STATUS_BADGE,
 		},
 	});
 }
@@ -55,6 +59,7 @@ function buildSalesPaymentDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_PAYMENT_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'payment_method_code_snapshot' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -81,7 +86,7 @@ function buildSalesPaymentFieldsSection(): ComponentNode {
 			header: 'form.other_information',
 			// Cash carries no external transaction id, so it has no replay protection and a
 			// double-tap records twice. That is a property of cash, not a gap here.
-			fields: ['external_transaction_id', 'provider_reference', 'paid_at', 'org_id'],
+			fields: ['external_transaction_id', 'provider_reference', 'paid_at'],
 		}),
 	]);
 }

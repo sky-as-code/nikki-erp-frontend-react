@@ -1,8 +1,10 @@
-import { Group, Text, Select, Box, UnstyledButton } from '@mantine/core';
+import { Group, Text, Box, UnstyledButton } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { IconChevronLeft, IconChevronRight, IconProps } from '@tabler/icons-react';
 import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { Select } from '../Select';
 
 
 export type PageSizeOption = { value: string, label: string };

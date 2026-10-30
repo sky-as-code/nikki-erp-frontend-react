@@ -1,4 +1,3 @@
-import { Select } from '@mantine/core';
 import { useId } from '@mantine/hooks';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
@@ -19,9 +18,9 @@ import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 import type { RecordSearchScope } from './recordSearchOptions';
 import type { LocalizeFn } from '../../i18n';
 import type { SearchItem, SelectionMode } from '../ExcelDataTable';
+import type { SelectProps } from '../Select';
 
 
-type SelectProps = React.ComponentPropsWithoutRef<typeof Select>;
 
 export type RelationSelectFieldProps = {
 	name: string,
@@ -207,11 +206,21 @@ type SelectedLabelOptions = {
 	localize: LocalizeFn,
 };
 
+/**
+ * The record a `GET_BY_ID` answered: the response wraps it as `{item, meta}`. Reading the wrapper as
+ * the record labelled every off-page selection "undefined" (its missing `id`).
+ */
+export function fetchedRecordOf(
+	data: dyn.RestGetOneResponse<Record<string, any>> | null | undefined,
+): Record<string, any> | undefined {
+	return data?.item ?? undefined;
+}
+
 /** The option for an already-selected record the current search page does not include. */
 function useSelectedLabel(opts: SelectedLabelOptions): { value: string, label: string } | undefined {
 	const { destSchemaName, selectedId, isOnPage } = opts;
 	const command = destSchemaName ? dyn.resourceCommands(destSchemaName).GET_BY_ID : '';
-	const getById = useCommand<Record<string, any>>(command);
+	const getById = useCommand<dyn.RestGetOneResponse<Record<string, any>>>(command);
 	const publish = getById.publish;
 	// Ids already looked up, so a re-render or a new search page never refetches the same record.
 	const resolved = React.useRef(new Map<string, string>());
@@ -222,7 +231,7 @@ function useSelectedLabel(opts: SelectedLabelOptions): { value: string, label: s
 			return;
 		}
 		void publish({ id: selectedId }).then(response => {
-			const record = response.result?.data;
+			const record = fetchedRecordOf(response.result?.data);
 			if (record) {
 				resolved.current.set(
 					selectedId, recordLabelOf(record, opts.labelField, opts.subLabelField, opts.localize),

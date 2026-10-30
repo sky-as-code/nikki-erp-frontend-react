@@ -13,23 +13,33 @@ import { publishTableCommand } from '../Action';
 import { useExcelDataTableContext } from '../context';
 import classes from '../ExcelDataTable.module.css';
 import { useSelectOnlyPress } from '../rowPress';
+import { rowSpanAttrs } from '../rowSpan/rowSpanModel';
 
 import type { CapabilityLock } from '../capabilities';
+import type { CellSpan } from '../rowSpan/rowSpanModel';
 import type { ActionColumn, ActionColumnAction, RowId, SearchItem } from '../types';
 
 
-type ActionColumnCellProps = { column: ActionColumn, item: SearchItem, rowId: RowId, isSelected: boolean };
+type ActionColumnCellProps = {
+	column: ActionColumn,
+	item: SearchItem,
+	rowId: RowId,
+	isSelected: boolean,
+	/** A grouped table's group cell spans the group's rows (§5.11). */
+	span?: CellSpan,
+};
 
 /**
  * A custom action column's cell: its controls in list order. Like the built-in action column, a
  * press on the cell selects the row and a press on a control does not; its keys and double-clicks
  * stay here, so Enter on a control never opens the row editor.
  */
-export function ActionColumnCell({ column, item, rowId, isSelected }: ActionColumnCellProps): React.ReactNode {
+export function ActionColumnCell({ column, item, rowId, isSelected, span }: ActionColumnCellProps): React.ReactNode {
 	const { actionColumnLocks } = useExcelDataTableContext();
 	const onMouseDown = useSelectOnlyPress(rowId);
 	return (
 		<MantineTable.Td
+			{...(span ? rowSpanAttrs(span) : {})}
 			className={clsx(classes.actionColumnCell, { [classes.selectedCell]: isSelected })}
 			onMouseDown={onMouseDown}
 			onKeyDown={event => event.stopPropagation()}

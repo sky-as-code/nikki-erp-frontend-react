@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/inventory';
@@ -8,6 +9,13 @@ import { StockScrapCommands } from '../../features/inventory/stockScrap/commands
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: { draft: 'gray', done: 'red' },
+	prefix: 'scrap_status.',
+} as const;
 
 /**
  * Stock scrap: the document that writes goods off to a scrap location.
@@ -43,11 +51,7 @@ function buildStockScrapListProps() {
 		fieldRenderers: {
 			// Grey while it is only a plan, red once the goods are gone: a done scrap is the one
 			// state that cannot be walked back.
-			status: {
-				renderer: 'badge',
-				colorMap: { draft: 'gray', done: 'red' },
-				prefix: 'scrap_status.',
-			},
+			status: STATUS_BADGE,
 		},
 	});
 }
@@ -56,6 +60,7 @@ function buildStockScrapDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.STOCK_SCRAP_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'scrap_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -89,7 +94,7 @@ function buildStockScrapFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['scrap_number', 'status', 'origin_reference', 'transfer_id', 'note', 'org_id'],
+			fields: ['scrap_number', 'status', 'origin_reference', 'transfer_id', 'note'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.scrapDetails',

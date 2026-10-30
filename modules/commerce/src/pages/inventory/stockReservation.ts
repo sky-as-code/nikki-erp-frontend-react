@@ -106,7 +106,7 @@ function buildStockReservationFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.source',
 			fields: ['source_module', 'source_type', 'source_id', 'source_line_id', 'source_revision',
-				'idempotency_key', 'request_fingerprint', 'org_id'],
+				'idempotency_key', 'request_fingerprint'],
 		}),
 	]);
 }

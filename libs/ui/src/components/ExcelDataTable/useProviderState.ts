@@ -234,6 +234,7 @@ function useToggleAll(
 export function useEditingState(isLoading: boolean): EditingApi {
 	const [rowId, setRowId] = React.useState<RowId | null>(null);
 	const [creating, setCreating] = React.useState(false);
+	const [createTarget, setCreateTarget] = React.useState<RowId | null>(null);
 	const wasLoading = React.useRef(isLoading);
 	React.useEffect(() => {
 		if (wasLoading.current && !isLoading) {
@@ -249,13 +250,15 @@ export function useEditingState(isLoading: boolean): EditingApi {
 		},
 		stop: () => setRowId(null),
 		creating,
-		startCreate: () => {
+		createTarget,
+		startCreate: (target: RowId | null = null) => {
 			setRowId(null);
+			setCreateTarget(target);
 			setCreating(true);
 		},
 		stopCreate: () => setCreating(false),
 		isActive: rowId !== null || creating,
-	}), [rowId, creating]);
+	}), [rowId, creating, createTarget]);
 }
 
 export function isEditedRowDeselected(rowId: RowId | null, selectedIds: RowId[]): boolean {

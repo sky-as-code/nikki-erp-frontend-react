@@ -64,7 +64,7 @@ function buildProductAttributeValueFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['attribute_id', 'name', 'code', 'sequence', 'org_id'],
+			fields: ['attribute_id', 'name', 'code', 'sequence'],
 		}),
 		resourceFormColumnNode({
 			// price_extra is added to the template's price when this value is chosen, which is

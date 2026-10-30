@@ -75,8 +75,8 @@ function buildUserDetailProps() {
 			{ value: 'suspended', label: 'status.suspended', color: 'orange' },
 		],
 		currentStatus: { schemaField: 'status' },
-		// In General Information rather than the toolbar, so the status reads beside the user's name.
-		statusPlacement: 'firstSection',
+		// In General Information's header rather than the toolbar, as on every detail page with a status.
+		statusPlacement: 'firstSectionHeader',
 		standardActionCommands: {
 			getById: UserCommands.GET_BY_ID,
 			create: UserCommands.CREATE,

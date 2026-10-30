@@ -82,7 +82,7 @@ function buildVendorProductPriceFieldsSection(): ComponentNode {
 			// covers every variant of the template — and separating the two would hide that they are
 			// one decision.
 			header: 'form.other_information',
-			fields: ['vendor_id', 'product_template_id', 'product_variant_id', 'org_id'],
+			fields: ['vendor_id', 'product_template_id', 'product_variant_id'],
 		}),
 		resourceFormColumnNode({
 			// The four fields that make a price a price. A number without its unit, its currency and

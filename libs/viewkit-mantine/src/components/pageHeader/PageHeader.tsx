@@ -5,17 +5,15 @@ import { Breadcrumbs, useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
 import { TranslatableText } from '@nikkierp/ui/components';
 import { toLangJson } from '@nikkierp/ui/components/ExcelDataTable';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
-import { usePaperBgColor } from '@nikkierp/ui/theme';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
-import clsx from 'clsx';
 import React from 'react';
 import { Link } from 'react-router';
 
 import classes from './PageHeader.module.css';
 import { PageHeaderContextValue, usePageHeader } from './pageHeaderContext';
+import { PinnedBlock } from './PinnedBlock';
 import { pageHeaderPropsSchema, PageHeaderLinkSpec, PageHeaderProps, PageHeaderTitleSpec } from './props';
-import { usePinnedToolbar } from './usePinnedToolbar';
 import { edgeDisplay } from '../../data/edgeDisplay';
 import { readFieldValue } from '../../data/fieldPaths';
 import { useRoutePathHref } from '../../data/useResourceLinkHref';
@@ -50,7 +48,7 @@ export const pageHeaderRenderer: IComponentRenderer<PageHeaderProps> = {
 };
 
 export type PageHeaderViewProps = PageHeaderProps & Partial<ComponentAttributes> & {
-	/** Rendered as the header's own row, below the titles. Sticks to the top of the page on scroll. */
+	/** Rendered as the header's own row, below the titles. With it, the whole header pins on scroll. */
 	actions?: React.ReactNode,
 	/** Rendered flush right, opposite the titles. */
 	trailing?: React.ReactNode,
@@ -58,8 +56,7 @@ export type PageHeaderViewProps = PageHeaderProps & Partial<ComponentAttributes>
 	leading?: React.ReactNode,
 	/**
 	 * Space below the title row and below the actions row, for a page whose `PageContainer` has no
-	 * gap of its own. A margin, not padding: the title row is the pinning sentinel and the actions
-	 * row's height is what the spacer reserves, so neither box may grow.
+	 * gap of its own. Inside the pinned block, so the height it reserves includes it.
 	 */
 	rowSpacing?: MantineSpacing,
 	/**
@@ -77,24 +74,21 @@ export type PageHeaderViewProps = PageHeaderProps & Partial<ComponentAttributes>
  * Layout is three rows: `{backLinkTitle link} > {titleLvl1}` (or the breadcrumbs, with `breadcrumbs`), then
  * `titleLvl2`, then `actions` alone.
  *
- * The actions row pins once the titles scroll away. It is `position: fixed`, not sticky, because the
- * view engine's `display: contents` anchors would give a sticky row zero travel. `usePinnedToolbar`
- * measures where it goes: the top of the box the page scrolls in, and never above the Shell header,
- * so a pinned ribbon keeps it in sight.
+ * A header with actions pins whole (titles, subtitle and actions) as soon as the page scrolls, through
+ * `PinnedBlock`. It is `position: fixed`, not sticky, because the view engine's `display: contents`
+ * anchors would give a sticky block zero travel. `usePinnedBlock` measures where it goes: the top of
+ * the box the page scrolls in, and never above the Shell header, so a pinned ribbon keeps it in sight.
  */
 export function PageHeader({
 	titleLvl1, titleLvl2, backLinkTitle, actions, trailing, leading, rowSpacing, breadcrumbs, ...attrs
 }: PageHeaderViewProps): React.ReactNode {
 	const context = usePageHeader();
 	const hasTitleRow = Boolean(backLinkTitle) || Boolean(titleLvl1);
-	const toolbar = usePinnedToolbar(Boolean(actions));
-	const bg = usePaperBgColor();
 	const rowMargin = rowSpacing === undefined ? undefined : getSpacing(rowSpacing);
 
 	return (
-		<>
+		<PinnedBlock enabled={Boolean(actions)}>
 			<Group
-				ref={toolbar.sentinelRef}
 				gap={4} justify='space-between' align='flex-start' wrap='nowrap' className='w-full' mb={rowSpacing}
 				{...attrs}
 			>
@@ -119,29 +113,9 @@ export function PageHeader({
 				{trailing}
 			</Group>
 			{actions ? (
-				<>
-					<div
-						ref={toolbar.rowRef}
-						className={clsx(classes.actionsRow, { [classes.pinned]: toolbar.isPinned })}
-						style={{
-							backgroundColor: bg,
-							marginBottom: rowMargin,
-							...(toolbar.isPinned ? toolbar.pinnedStyle : {}),
-						}}
-					>
-						{actions}
-					</div>
-					{/* Reserves the row's height once it leaves the flow, so the content below does
-					    not jump up by exactly that much at the moment it pins. */}
-					{toolbar.isPinned ? (
-						<div
-							className={classes.pinnedSpacer}
-							style={{ height: toolbar.placeholderHeight, marginBottom: rowMargin }}
-						/>
-					) : null}
-				</>
+				<div className={classes.actionsRow} style={{ marginBottom: rowMargin }}>{actions}</div>
 			) : null}
-		</>
+		</PinnedBlock>
 	);
 }
 
