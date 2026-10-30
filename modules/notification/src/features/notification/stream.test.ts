@@ -201,3 +201,125 @@ describe('NotificationStream session', () => {
 		expect(received).toEqual([1]);
 	});
 });
+
+/** A body that emits the given chunks and then stays open, like a live stream with no news. */
+function openBodyOf(chunks: string[], onCancel: () => void): ReadableStream<Uint8Array> {
+	const encoder = new TextEncoder();
+	return new ReadableStream({
+		start(controller) {
+			chunks.forEach(chunk => controller.enqueue(encoder.encode(chunk)));
+		},
+		cancel: onCancel,
+	});
+}
+
+function flush(): Promise<void> {
+	return new Promise(resolve => setTimeout(resolve, 0));
+}
+
+// `close()` must be final wherever the loop happens to be awaiting. Each leak these guard against
+// holds one of the browser's six HTTP/1.1 connections per host until the tab is closed.
+describe('NotificationStream close', () => {
+	it('does not connect when closed while the session is being ensured', async () => {
+		const fetchMock = vi.fn();
+		vi.stubGlobal('fetch', fetchMock);
+		let releaseSession: (value: boolean) => void = () => { /* replaced below */ };
+		const session = new Promise<boolean>(resolve => { releaseSession = resolve; });
+		const onNotification = vi.fn();
+
+		const stream = new NotificationStream({
+			orgId: 'org-1', baseUrl: '/api', ensureSession: () => session, onNotification,
+		});
+		stream.start();
+		stream.close();
+		releaseSession(true);
+		await flush();
+
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(onNotification).not.toHaveBeenCalled();
+	});
+
+	it('delivers nothing after being closed mid-read and cancels the body', async () => {
+		const onCancel = vi.fn();
+		const fetchMock = vi.fn().mockImplementation(() => Promise.resolve({
+			ok: true, status: 200, body: openBodyOf([line(1) + line(2)], onCancel),
+		}));
+		vi.stubGlobal('fetch', fetchMock);
+		const received: number[] = [];
+
+		const stream = new NotificationStream({
+			orgId: 'org-1',
+			baseUrl: '/api',
+			ensureSession: () => true,
+			onNotification: notification => {
+				received.push(notification.stream_seq);
+				stream.close();
+			},
+		});
+		stream.start();
+		await flush();
+		await flush();
+
+		// Both lines arrived in one chunk; the second must not reach a caller that has closed.
+		expect(received).toEqual([1]);
+		expect(onCancel).toHaveBeenCalled();
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+	});
+
+});
+
+describe('NotificationStream close timing', () => {
+	it('ends the loop when closed during the backoff', async () => {
+		vi.useFakeTimers();
+		try {
+			const fetchMock = vi.fn().mockImplementation(() => Promise.resolve({ ok: false, status: 503, body: null }));
+			vi.stubGlobal('fetch', fetchMock);
+			const statuses: string[] = [];
+
+			const stream = new NotificationStream({
+				orgId: 'org-1', baseUrl: '/api', ensureSession: () => true, onNotification: () => { /* none */ },
+				onStatus: status => statuses.push(status),
+			});
+			stream.start();
+			await vi.advanceTimersByTimeAsync(0);
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+
+			stream.close();
+			await vi.advanceTimersByTimeAsync(60_000);
+
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+			expect(statuses.at(-1)).toBe('closed');
+		}
+		finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('reports closed once however often it is closed', () => {
+		vi.stubGlobal('fetch', vi.fn(() => new Promise(() => { /* never answers */ })));
+		const onStatus = vi.fn();
+
+		const stream = new NotificationStream({
+			orgId: 'org-1', baseUrl: '/api', ensureSession: () => true, onNotification: () => { /* none */ }, onStatus,
+		});
+		stream.close();
+		stream.close();
+
+		expect(onStatus.mock.calls.filter(([status]) => status === 'closed')).toHaveLength(1);
+	});
+
+	it('resumes after the initial sequence on its first connect', async () => {
+		const fetchMock = vi.fn<(url: string) => Promise<never>>(() => new Promise(() => { /* stays connecting */ }));
+		vi.stubGlobal('fetch', fetchMock);
+
+		const stream = new NotificationStream({
+			orgId: 'org-1', baseUrl: '/api', ensureSession: () => true, onNotification: () => { /* none */ },
+			initialLastSeq: 42,
+		});
+		stream.start();
+		await flush();
+		stream.close();
+
+		expect(String(fetchMock.mock.calls[0][0])).toContain('after_seq=42');
+	});
+});
