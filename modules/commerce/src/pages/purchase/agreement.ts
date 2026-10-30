@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/purchase';
@@ -10,6 +11,18 @@ import { PurchaseOrderCommands } from '../../features/purchase/purchaseOrder/com
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		draft: 'gray',
+		confirmed: 'green',
+		closed: 'blue',
+		cancelled: 'red',
+	},
+	prefix: 'agreement_status.',
+} as const;
 
 /**
  * Purchase agreements: blanket orders and reusable templates, on one page.
@@ -50,16 +63,7 @@ function buildAgreementListProps() {
 		fieldRenderers: {
 			// Closed and cancelled are deliberately different colours: a closed agreement ran its
 			// course and the orders drawn against it stand, where a cancelled one was called off.
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					draft: 'gray',
-					confirmed: 'green',
-					closed: 'blue',
-					cancelled: 'red',
-				},
-				prefix: 'agreement_status.',
-			},
+			status: STATUS_BADGE,
 			agreement_type: {
 				renderer: 'badge',
 				colorMap: { blanket_order: 'indigo', purchase_template: 'gray' },
@@ -73,6 +77,7 @@ function buildAgreementDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.AGREEMENT_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -101,7 +106,7 @@ function buildAgreementFieldsSection(): ComponentNode {
 			// `vendor_id` is optional here, unlike on an order: a template may be drafted before
 			// anyone has chosen who to buy from.
 			fields: ['code', 'reference', 'agreement_type', 'status', 'vendor_id', 'buyer_id',
-				'currency_id', 'org_id'],
+				'currency_id'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.terms',

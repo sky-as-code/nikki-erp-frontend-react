@@ -1,8 +1,8 @@
 import { resourceCommands } from '@nikkierp/common/dynamicModel';
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
-	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps,
-	resourceListV2Props, resourceSplitViewProps,
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props,
+	resourceSplitViewProps, statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/inventory';
@@ -17,6 +17,13 @@ import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 /** No currency field of its own: amounts are in the organization's currency. */
 const MONEY_RENDERER = { renderer: 'money' };
 const FLOAT_RENDERER = { renderer: 'float' };
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'enum',
+	colorMap: { draft: 'gray', active: 'green', discontinued: 'red' },
+	prefix: 'template_status.',
+} as const;
 
 export function buildProductTemplatePages(): PageNode[] {
 	const splitView = resourceSplitViewProps({
@@ -59,11 +66,7 @@ function buildProductTemplateListProps() {
 
 function buildProductTemplateEnumRenderers() {
 	return {
-		status: {
-			renderer: 'enum',
-			colorMap: { draft: 'gray', active: 'green', discontinued: 'red' },
-			prefix: 'template_status.',
-		},
+		status: STATUS_BADGE,
 		product_type: {
 			renderer: 'enum',
 			colorMap: { goods: 'blue', service: 'violet' },
@@ -89,6 +92,7 @@ function buildProductTemplateDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'short_name' },
 		backLinkTitle: { linkHref: '../' },

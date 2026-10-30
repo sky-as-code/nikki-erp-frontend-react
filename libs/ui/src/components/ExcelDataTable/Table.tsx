@@ -9,6 +9,7 @@ import classes from './ExcelDataTable.module.css';
 import { ManualSortArea, ManualSortRow } from './manualSort/ManualSort';
 import { NewRow } from './NewRow';
 import { EditingRow } from './RowEditor';
+import { SubRowInsertAfter } from './rowSpan/RowSpanCells';
 import {
 	tableDensityVars, TableGeometryColGroup, useBodyScrollSync, useColumnCount, useTableGeometry,
 } from './tableLayout';
@@ -31,7 +32,7 @@ export type TableProps = {
  * vertical scrolling belongs to it, and its horizontal position is mirrored into the header.
  */
 export function Table({ className, emptyText }: TableProps) {
-	const { data, isLoading, selection, tid, scopeId, emptyMessage } = useExcelDataTableContext();
+	const { data, isLoading, selection, tid, scopeId, emptyMessage, rowSpan } = useExcelDataTableContext();
 	const scroller = useBodyScrollSync();
 	const geometry = useTableGeometry();
 	const columnCount = useColumnCount();
@@ -53,7 +54,10 @@ export function Table({ className, emptyText }: TableProps) {
 					<TableGeometryColGroup geometry={geometry} />
 					<MantineTable.Tbody>
 						{data.items.map((item, rowIndex) => (
-							<SortableBodyRow key={rowIdOf(item, rowIndex)} item={item} rowIndex={rowIndex} />
+							<React.Fragment key={rowIdOf(item, rowIndex)}>
+								<SortableBodyRow item={item} rowIndex={rowIndex} />
+								{rowSpan ? <SubRowInsertAfter rowId={rowIdOf(item, rowIndex)} /> : null}
+							</React.Fragment>
 						))}
 						{showEmpty ? (
 							<MantineTable.Tr>

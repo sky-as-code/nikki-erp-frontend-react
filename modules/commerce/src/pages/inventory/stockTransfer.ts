@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/inventory';
@@ -9,6 +10,20 @@ import { stockTransferMovesNode } from '../../viewkit/inventory/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		draft: 'gray',
+		waiting: 'yellow',
+		confirmed: 'blue',
+		ready: 'green',
+		done: 'teal',
+		cancelled: 'red',
+	},
+	prefix: 'transfer_status.',
+} as const;
 
 export function buildStockTransferPages(): PageNode[] {
 	const splitView = resourceSplitViewProps({
@@ -36,18 +51,7 @@ function buildStockTransferListProps() {
 			// The colours track how far a transfer has got and whether it can still be acted on:
 			// grey while it is only a plan, blue once it is committed, green when the stock is
 			// accounted for, and neutral once it is history.
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					draft: 'gray',
-					waiting: 'yellow',
-					confirmed: 'blue',
-					ready: 'green',
-					done: 'teal',
-					cancelled: 'red',
-				},
-				prefix: 'transfer_status.',
-			},
+			status: STATUS_BADGE,
 			operation_code: {
 				renderer: 'badge',
 				colorMap: { incoming: 'green', outgoing: 'orange', internal: 'blue' },
@@ -61,6 +65,7 @@ function buildStockTransferDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.STOCK_TRANSFER_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'transfer_number' },
 		// The operation (Receipt, Delivery, ...) says what the transfer is; the status strip says how far it got.
 		titleLvl2: { schemaField: 'operation_type_id' },
@@ -72,14 +77,21 @@ function buildStockTransferDetailProps() {
 			delete: StockTransferCommands.DELETE,
 		},
 		contextualActions: buildMovementActions(),
-		createNodes: buildStockTransferSections(),
-		childrenNodes: buildStockTransferSections(),
+		createNodes: buildStockTransferSections('create'),
+		childrenNodes: buildStockTransferSections('detail'),
 	});
 }
 
-/** Shared by both form modes: the transfer's own fields, its policies, then its moves. */
-function buildStockTransferSections(): ComponentNode[] {
-	return [buildStockTransferFieldsSection(), buildStockTransferPoliciesSection(), buildStockTransferMovesSection()];
+/**
+ * Shared by both form modes: the transfer's own fields, its policies, then its moves. The policies are
+ * snapshots a reader of an existing transfer rarely needs, so its detail page opens them collapsed.
+ */
+function buildStockTransferSections(page: 'create' | 'detail'): ComponentNode[] {
+	return [
+		buildStockTransferFieldsSection(),
+		buildStockTransferPoliciesSection(page === 'create'),
+		buildStockTransferMovesSection(),
+	];
 }
 
 function buildStockTransferFieldsSection(): ComponentNode {
@@ -111,11 +123,12 @@ function buildStockTransferFieldsSection(): ComponentNode {
 	]);
 }
 
-function buildStockTransferPoliciesSection(): ComponentNode {
+function buildStockTransferPoliciesSection(expanded: boolean): ComponentNode {
 	return collapsibleSectionNode({
 		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
 		header: 'form.policies',
+		expanded,
 	}, [
 		resourceFormColumnNode({
 			header: 'form.stockPolicies',

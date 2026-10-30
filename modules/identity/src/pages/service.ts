@@ -65,7 +65,7 @@ function buildServiceDetailProps() {
 			{ value: 'suspended', label: 'status.suspended', color: 'orange' },
 		],
 		currentStatus: { schemaField: 'status' },
-		statusPlacement: 'firstSection',
+		statusPlacement: 'firstSectionHeader',
 		standardActionCommands: {
 			getById: ServiceCommands.GET_BY_ID,
 			create: ServiceCommands.CREATE,

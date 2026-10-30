@@ -20,9 +20,15 @@ import { SortHandleCell, useSortableRowProps } from '../manualSort/ManualSort';
 import { EditingInput, REFUSAL_TEXT, RowErrors } from '../RowEditor';
 import { readRowKey } from '../rowKeys';
 import { RowLoading } from '../RowLoading';
+import { BlankCell, SubRowActionsCell, useRowSpanCells } from '../rowSpan/RowSpanCells';
+import {
+	groupUpdateOf, ROW_SPAN_FILLER_CELL, ROW_SPAN_INDEX_CELL, rowSpanAttrs, SUB_ROW_ACTIONS_KEY,
+} from '../rowSpan/rowSpanModel';
 import { useRowUpdateWrite } from '../rowUpdateWrite';
 
 import type { FormProviderRenderProps } from '../../form';
+import type { TableColumn } from '../actionColumns/actionColumnsModel';
+import type { CellSpan } from '../rowSpan/rowSpanModel';
 import type { RowId, SearchItem } from '../types';
 
 
@@ -36,7 +42,7 @@ export type TableScopeRowProps = { item: SearchItem, rowId: RowId, rowNumber: nu
  * focused field. Each row hosts its own form, seeded from the row, as the row editor does.
  */
 export function TableScopeRow({ item, rowId, rowNumber }: TableScopeRowProps): React.ReactNode {
-	const { modelSchema } = useExcelDataTableContext();
+	const { modelSchema, rowFormSchema } = useExcelDataTableContext();
 	const localize = useSchemaLocalize(modelSchema?.name ?? '');
 	if (!modelSchema) {
 		return null;
@@ -44,6 +50,7 @@ export function TableScopeRow({ item, rowId, rowNumber }: TableScopeRowProps): R
 	return (
 		<CrudFormProvider
 			schemaName={modelSchema.name}
+			modelSchema={rowFormSchema}
 			formVariant='update'
 			localize={localize}
 			modelValue={item}
@@ -73,6 +80,8 @@ function TableScopeCells({ item, rowId, rowNumber, runtime }: TableScopeCellsPro
 	const onKeyDown = useTableScopeKeys(runtime, write.flush);
 	const sortableProps = useSortableRowProps();
 	const isSelected = selection.ids.includes(rowId);
+	const cells = useRowSpanCells(rowId);
+	const rowErrors = <RowErrors errors={write.errors.filter(error => !error.field)} />;
 	const setRowRef = (element: HTMLTableRowElement | null) => {
 		rowRef.current = element;
 		sortableProps.ref?.(element);
@@ -88,35 +97,66 @@ function TableScopeCells({ item, rowId, rowNumber, runtime }: TableScopeCellsPro
 				{...INLINE_CONTROLS_ATTRS}
 				{...tid.row(rowId)}
 			>
-				{indexColumnVisible ? (
-					<RowNumberCell item={item} rowId={rowId} rowNumber={rowNumber} isSelected={isSelected} />
-				) : null}
-				{context.manualSort.enabled ? <SortHandleCell rowId={rowId} /> : null}
-				{columns.map(column => (column.kind === 'action' ? (
-					<ActionColumnCell
-						key={column.key}
-						column={column.column}
+				{indexColumnVisible && !cells.spanOf(ROW_SPAN_INDEX_CELL).skip ? (
+					<RowNumberCell
 						item={item}
 						rowId={rowId}
+						rowNumber={rowNumber}
 						isSelected={isSelected}
+						span={cells.spanOf(ROW_SPAN_INDEX_CELL)}
 					/>
-				) : (
-					<TableScopeCell
+				) : null}
+				{context.manualSort.enabled ? <SortHandleCell rowId={rowId} /> : null}
+				{columns.map(column => (
+					<TableScopeColumnCell
 						key={column.key}
-						field={column.field}
+						column={column}
+						span={cells.spanOf(column.key)}
 						item={item}
 						rowId={rowId}
 						runtime={runtime}
-						editable={editableFields.includes(column.field)}
+						editable={column.kind === 'field' && editableFields.includes(column.field)}
 						onLeave={write.flush}
+						isSelected={isSelected}
+						rowErrors={rowErrors}
 					/>
-				)))}
-				<RowActionsCell item={item} rowId={rowId} isSelected={isSelected}>
-					<RowErrors errors={write.errors.filter(error => !error.field)} />
-				</RowActionsCell>
+				))}
+				{cells.spanOf(ROW_SPAN_FILLER_CELL).skip ? null : (
+					<RowActionsCell
+						item={item}
+						rowId={rowId}
+						isSelected={isSelected}
+						span={cells.spanOf(ROW_SPAN_FILLER_CELL)}
+					>
+						{cells.place ? null : rowErrors}
+					</RowActionsCell>
+				)}
 			</MantineTable.Tr>
 		</InlineRowScope>
 	);
+}
+
+type TableScopeColumnCellProps = Omit<TableScopeCellProps, 'field'> & {
+	column: TableColumn,
+	isSelected: boolean,
+	rowErrors: React.ReactNode,
+};
+
+/** One column's cell: an action column's, the sub-row actions, a blank or skipped grouped cell, or a field. */
+function TableScopeColumnCell({ column, isSelected, rowErrors, ...cell }: TableScopeColumnCellProps): React.ReactNode {
+	const { span, item, rowId } = cell;
+	if (span.skip) {
+		return null;
+	}
+	if (span.blank) {
+		return <BlankCell />;
+	}
+	if (column.key === SUB_ROW_ACTIONS_KEY) {
+		return <SubRowActionsCell rowId={rowId}>{rowErrors}</SubRowActionsCell>;
+	}
+	return column.kind === 'action'
+		? <ActionColumnCell column={column.column} item={item} rowId={rowId} isSelected={isSelected} span={span} />
+		: <TableScopeCell field={column.field} {...cell} />;
 }
 
 type TableScopeCellProps = {
@@ -126,10 +166,13 @@ type TableScopeCellProps = {
 	runtime: FormProviderRenderProps,
 	editable: boolean,
 	onLeave: () => void,
+	span: CellSpan,
 };
 
 /** Focus leaving the cell — not moving within it, nor into its portalled dropdown — writes the row. */
-function TableScopeCell({ field, item, rowId, runtime, editable, onLeave }: TableScopeCellProps): React.ReactNode {
+function TableScopeCell(
+	{ field, item, rowId, runtime, editable, onLeave, span }: TableScopeCellProps,
+): React.ReactNode {
 	const { tid, rowFieldEditors } = useExcelDataTableContext();
 	const withBadge = useChangeBadgeSlot() === field;
 	const onBlur = (event: React.FocusEvent<HTMLTableCellElement>) => {
@@ -145,6 +188,7 @@ function TableScopeCell({ field, item, rowId, runtime, editable, onLeave }: Tabl
 		<MantineTable.Td
 			className={clsx(editable && classes.editingCell)}
 			data-field={field}
+			{...rowSpanAttrs(span)}
 			onBlur={editable ? onBlur : undefined}
 			{...tid.rowEditInput(rowId, field)}
 		>
@@ -164,9 +208,10 @@ type TableScopeWrite = { flush: () => void, errors: ClientErrorItem[] };
 function useTableScopeWrite(
 	item: SearchItem, runtime: FormProviderRenderProps, editableFields: string[],
 ): TableScopeWrite {
-	const { changes, sinks, refresh } = useExcelDataTableContext();
+	const { changes, sinks, refresh, rowSpan } = useExcelDataTableContext();
 	const t = useTranslate('common');
 	const write = useRowUpdateWrite();
+	const place = rowSpan?.places.get(item.id as RowId);
 	const [errors, setErrors] = React.useState<ClientErrorItem[]>([]);
 	const sent = React.useRef(new Map<string, string>());
 	const itemKey = JSON.stringify(item);
@@ -194,7 +239,10 @@ function useTableScopeWrite(
 			return;
 		}
 		changed.forEach(field => sent.current.set(field, sentValueKey(form.getValues(field))));
-		const clientErrors = await write(built.payload);
+		// A grouped table's row writes its whole group, re-nested (§5.11).
+		const clientErrors = await write(
+			place && rowSpan ? groupUpdateOf(place, built.payload, rowSpan.config) : built.payload,
+		);
 		if (clientErrors) {
 			changed.forEach(field => sent.current.delete(field));
 			setErrors([]);
@@ -206,7 +254,7 @@ function useTableScopeWrite(
 		if (sinks.updateCommand) {
 			refresh();
 		}
-	}, [changes, editableFields, form, item, refresh, setServerErrors, sinks.updateCommand, t, write]);
+	}, [changes, editableFields, form, item, place, refresh, rowSpan, setServerErrors, sinks.updateCommand, t, write]);
 	const flush = React.useCallback(() => void writeChanged(), [writeChanged]);
 	return { flush, errors };
 }

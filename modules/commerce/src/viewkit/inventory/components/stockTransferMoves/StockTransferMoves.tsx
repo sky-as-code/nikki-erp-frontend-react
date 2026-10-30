@@ -1,54 +1,51 @@
 import { Alert, Stack } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { RelationSearchScopeContext, useCrudFormRuntime } from '@nikkierp/ui/components/form';
+import { useHasEntitlement } from '@nikkierp/ui/components';
+import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
+import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
 import { useClientErrorTranslate, useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
-import {
-	actionRequirement, FormDataTable, useDetailSavePayload, useResourceFormView,
-} from '@nikkierp/viewkit-mantine';
+import { actionRequirement, useDetailSavePayload, useResourceFormView } from '@nikkierp/viewkit-mantine';
 import React from 'react';
 import { useWatch } from 'react-hook-form';
 import { useParams } from 'react-router';
 import { z } from 'zod';
 
-import {
-	isDraftMoveRow, isEditedMoveRow, mapMoveErrors, mergeDraftMoveRows, MOVE_COLUMNS, VARIANT_FIELD,
-} from './moveDrafts';
+import { useSavedMoveGroups } from './moveData';
+import { isDraftMoveRow, isEditedMoveRow, mapMoveErrors, mergeDraftMoveRows, withTemplateRule } from './moveDrafts';
 import { useMoveDraftState } from './moveDraftState';
-import { INVENTORY_MODULE, STOCK_MOVE_SCHEMA_NAME } from '../../../../constants/inventory';
+import { MOVE_FIELD_EDITORS, MOVES_TEST_ID_PREFIX } from './moveEditors';
+import {
+	ATTRIBUTES_FIELD, MOVE_EDGE_LABELS, MOVE_GROUP_COLUMNS, MOVE_GROUP_SCHEMA, TEMPLATE_FIELD, withMoveLabels,
+} from './moveGroups';
+import { MoveOptionsContext, useMoveOptionLoaders } from './moveOptions';
+import {
+	INVENTORY_MODULE, PRODUCT_TEMPLATE_SCHEMA_NAME, STOCK_MOVE_SCHEMA_NAME,
+} from '../../../../constants/inventory';
 import { STOCK_TRANSFER_MOVES } from '../../ids';
+import { useAttributeCatalogue } from '../templateAttributes/attributeCatalogue';
 
 import type { MoveErrors } from './moveDrafts';
 import type { MoveDraftState } from './moveDraftState';
-import type * as dyn from '@nikkierp/common/dynamicModel';
 import type { ClientErrorItem } from '@nikkierp/common/types';
-import type { ExcelDataTableCapability, SearchItem } from '@nikkierp/ui/components/ExcelDataTable';
-import type { RecordSearchScope } from '@nikkierp/ui/components/form';
+import type { EntitlementRequirementInput } from '@nikkierp/ui/components';
+import type { ExcelDataTableCapability, SearchData, SearchItem } from '@nikkierp/ui/components/ExcelDataTable';
 import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 import type { DetailSavePayload } from '@nikkierp/viewkit-mantine';
 import type { Control } from 'react-hook-form';
 
 
-const TEST_ID_PREFIX = 'inventory.stockTransferMoves';
 const CAPABILITIES: ExcelDataTableCapability[] = ['create', 'update', 'delete'];
-const MOVE_ORDER: dyn.OrderBy = [['sequence', 'asc']];
-/** A new transfer has no moves yet. Every row has an id, so this matches nothing. */
-const NO_SAVED_MOVES: dyn.SearchGraph = { if: ['id', 'not_set'] };
 const STATUS_FIELD = 'status';
 const DRAFT_STATUS = 'draft';
-
-/**
- * A variant's record label is a function-computed display name the server cannot filter on; the
- * user looks a product up by its template's name, which is.
- */
-const MOVE_SEARCH_SCOPES: Record<string, RecordSearchScope> = {
-	[VARIANT_FIELD]: { searchField: 'product_template_name' },
-};
+const NO_ATTRIBUTES: string[] = [];
 
 /** The moves ride the transfer's own write; the backend also asserts the matching move action. */
 const CREATE_REQUIREMENT = actionRequirement(STOCK_MOVE_SCHEMA_NAME, 'create');
 const UPDATE_REQUIREMENT = actionRequirement(STOCK_MOVE_SCHEMA_NAME, 'update');
 const DELETE_REQUIREMENT = actionRequirement(STOCK_MOVE_SCHEMA_NAME, 'delete');
+/** A move named by template and attributes may materialize a variant, which the backend also asserts. */
+const GENERATE_REQUIREMENT = actionRequirement(PRODUCT_TEMPLATE_SCHEMA_NAME, 'generate_variants');
 
 export const stockTransferMovesRenderer: IComponentRenderer<Record<string, never>> = {
 	type: STOCK_TRANSFER_MOVES,
@@ -75,11 +72,11 @@ function StockTransferMovesGuard(): React.ReactNode {
 type SectionProps = { save: DetailSavePayload, control: Control<any> };
 
 /**
- * The transfer's moves. While the form is created or updated, and only while the transfer is a
- * draft, every row edits inline and each write only drafts a change: added rows show "New", edited
- * ones "Changed", a deleted saved move leaves the view, and all of it rides the transfer's own
- * create or update request on Save, in one transaction. Cancel or a successful Save discards the
- * drafts; a rejected save keeps them and lists every error above the table.
+ * The transfer's moves, one group per move: its product template spanning the attribute values that
+ * pick the variant, with its demand and unit. While the form is created or updated, and only while the
+ * transfer is a draft, every group edits inline and each write only drafts a change; all of it rides
+ * the transfer's own create or update request on Save, in one transaction, and the backend resolves or
+ * materializes each move's variant. Cancel or a successful Save discards the drafts and re-reads.
  */
 function StockTransferMovesSection({ save, control }: SectionProps): React.ReactNode {
 	const t = useTranslate([INVENTORY_MODULE, 'common']);
@@ -87,57 +84,74 @@ function StockTransferMovesSection({ save, control }: SectionProps): React.React
 	// The backend refuses a change to the moves once the transfer has left draft.
 	const editable = save.mode === 'create' || status === DRAFT_STATUS;
 	const section = useMovesSection(save);
+	const loaders = useMoveOptionLoaders();
+	const locks = useWriteRequirements();
 	return (
-		<Stack gap='xs' {...testAttrs(TEST_ID_PREFIX)}>
+		<Stack gap='xs' {...testAttrs(MOVES_TEST_ID_PREFIX)}>
 			<MoveSaveErrors errors={section.errors} rowLabel={section.rowLabel} />
-			<RelationSearchScopeContext.Provider value={MOVE_SEARCH_SCOPES}>
-				<FormDataTable
+			<MoveOptionsContext.Provider value={loaders}>
+				<ExcelDataTable.Provider
 					key={section.loadCount}
-					schemaName={STOCK_MOVE_SCHEMA_NAME}
-					baseGraph={section.baseGraph}
-					fields={MOVE_COLUMNS}
-					transformItems={section.transformItems}
+					tableName='stockTransferMoves'
+					modelSchema={MOVE_GROUP_SCHEMA}
+					data={section.data}
+					isLoading={section.isLoading}
+					rowSpanField={TEMPLATE_FIELD}
+					rowSingleField={ATTRIBUTES_FIELD}
+					indexColumnVisible={false}
+					selectionMode='none'
 					capabilities={editable ? CAPABILITIES : []}
-					updateMode={editable ? undefined : false}
+					updateMode={editable && section.updateMode}
 					updateScope='table'
 					enableChangeIndicator
 					isNewRow={isDraftMoveRow}
 					isChangedRow={section.isChangedRow}
-					newRowPrompt={t('stock_transfer_moves_add', { defaultValue: 'Add a move' })}
+					fieldEditors={MOVE_FIELD_EDITORS}
+					newRowPrompt={t('stock_transfer_moves_add_product', { defaultValue: 'Add new product' })}
+					subRowPrompt={t('stock_transfer_moves_add_attribute', { defaultValue: 'Add attribute' })}
 					onCreated={section.onCreated}
 					onUpdated={section.onUpdated}
 					onDeleted={section.onDeleted}
-					createEntitlement={CREATE_REQUIREMENT}
-					updateEntitlement={UPDATE_REQUIREMENT}
-					deleteEntitlement={DELETE_REQUIREMENT}
+					{...locks}
 					emptyMessage={t('stock_transfer_moves_empty', { defaultValue: 'No moves yet' })}
-					testId={TEST_ID_PREFIX}
-				/>
-			</RelationSearchScopeContext.Provider>
+					testId={MOVES_TEST_ID_PREFIX}
+
+				>
+					<ExcelDataTable.TableHeader enableColumnFilters={false} />
+					<ExcelDataTable.Table />
+				</ExcelDataTable.Provider>
+			</MoveOptionsContext.Provider>
 		</Stack>
 	);
+}
+
+/**
+ * A template-form move needs `generate_variants` on templates as well as the move grant, so without
+ * it adding and changing moves render locked on that grant; removing a move does not need it.
+ */
+function useWriteRequirements(): Record<'createEntitlement' | 'updateEntitlement' | 'deleteEntitlement',
+	EntitlementRequirementInput> {
+	const decision = useHasEntitlement([GENERATE_REQUIREMENT]);
+	const canGenerate = decision.isPending || decision.results[0]?.allowed !== false;
+	return {
+		createEntitlement: canGenerate ? CREATE_REQUIREMENT : GENERATE_REQUIREMENT,
+		updateEntitlement: canGenerate ? UPDATE_REQUIREMENT : GENERATE_REQUIREMENT,
+		deleteEntitlement: DELETE_REQUIREMENT,
+	};
 }
 
 function useMovesSection(save: DetailSavePayload) {
 	const routeId = useParams().id ?? '';
 	const transferId = save.mode === 'create' ? '' : routeId;
 	const updateMode = useResourceFormView()?.updateMode ?? true;
-	// A save re-reads the rows: the table remounts and runs its search again.
+	// A save re-reads the rows: the table remounts and the moves are read again.
 	const [loadCount, setLoadCount] = React.useState(0);
-	const baseGraph = React.useMemo((): dyn.SearchGraph => (transferId
-		? { if: ['transfer_id', '=', transferId], order: MOVE_ORDER }
-		: NO_SAVED_MOVES), [transferId]);
+	const saved = useSavedMoveGroups(transferId, loadCount);
 	const draftState = useMoveDraftState({
 		transferId, save, updateMode, onSaved: () => setLoadCount(count => count + 1),
 	});
 	const { drafts, sent } = draftState;
-	// The rows as last shown, so an error can name the line it points at; removed ones by id.
-	const shownRows = React.useRef<string[]>([]);
-	const transformItems = React.useCallback((items: SearchItem[]) => {
-		const rows = mergeDraftMoveRows(items, drafts);
-		shownRows.current = rows.map(row => String(row.id));
-		return rows;
-	}, [drafts]);
+	const rows = useShownGroups(saved, draftState);
 	const isChangedRow = React.useCallback((row: SearchItem) => isEditedMoveRow(row, drafts), [drafts]);
 	// `sent` is written by the save's build, just before the request whose errors arrive here.
 	const errors = React.useMemo(
@@ -145,32 +159,51 @@ function useMovesSection(save: DetailSavePayload) {
 		[save.saveClientErrors, updateMode, sent],
 	);
 	const rowLabel = React.useCallback((rowId: string): number | undefined => {
-		const index = shownRows.current.indexOf(rowId);
+		const index = rows.items.findIndex(row => String(row.id) === rowId);
 		return index >= 0 ? index + 1 : undefined;
-	}, []);
-	return { baseGraph, loadCount, transformItems, isChangedRow, errors, rowLabel, ...useDraftSinks(draftState) };
+	}, [rows.items]);
+	return {
+		loadCount, updateMode, data: rows.data, isLoading: saved.isLoading, isChangedRow, errors, rowLabel,
+		...useDraftSinks(draftState, rows.items, saved.groups),
+	};
+}
+
+/** The saved groups with their drafts merged, labelled for read cells, as the table's data. */
+function useShownGroups(saved: ReturnType<typeof useSavedMoveGroups>, draftState: MoveDraftState) {
+	const catalogue = useAttributeCatalogue(NO_ATTRIBUTES);
+	const { drafts } = draftState;
+	const items = React.useMemo(() => withMoveLabels(mergeDraftMoveRows(saved.groups, drafts), {
+		templateNames: saved.templateNames,
+		attributeNames: new Map([...catalogue.attributes].map(([id, attribute]) => [id, attribute.name])),
+	}), [saved.groups, saved.templateNames, drafts, catalogue.attributes]);
+	const data = React.useMemo((): SearchData => ({
+		items, total: items.length, page: 0, size: Math.max(items.length, 1), desired_fields: MOVE_GROUP_COLUMNS,
+		masked_fields: [], schema_etag: '', edge_labels: { ...MOVE_EDGE_LABELS, ...saved.edgeLabels },
+	} as SearchData), [items, saved.edgeLabels]);
+	return { items, data };
 }
 
 const NO_ERRORS: MoveErrors = { byRow: {}, general: [] };
 
-/** The table's row writes, as drafts. */
-function useDraftSinks(draftState: MoveDraftState) {
+/** The table's group writes, as drafts. Another template drops the group's attributes. */
+function useDraftSinks(draftState: MoveDraftState, shown: SearchItem[], savedGroups: SearchItem[]) {
 	const onCreated = (values: Record<string, unknown>): boolean => {
 		draftState.add(values);
 		return true;
 	};
 	const onUpdated = (values: Record<string, unknown>): boolean => {
-		draftState.update(values);
+		const previous = shown.find(group => group.id === values.id);
+		draftState.update(withTemplateRule(values, previous), savedGroups.find(group => group.id === values.id));
 		return true;
 	};
-	// The table deletes one row at a time.
+	// The table deletes one group at a time.
 	const onDeleted = (items: SearchItem[]) => items.forEach(item => draftState.remove(item));
 	return { onCreated, onUpdated, onDeleted };
 }
 
 /**
- * Every rejection of the delta, row errors named by their line. The page's own error area cannot show
- * them: it pins field errors on the inputs of that name, and no input is named `moves.*`.
+ * Every rejection of the delta, group errors named by their line. The page's own error area cannot
+ * show them: it pins field errors on the inputs of that name, and no input is named `moves.*`.
  */
 function MoveSaveErrors({ errors, rowLabel }: {
 	errors: MoveErrors,
@@ -193,7 +226,7 @@ function MoveSaveErrors({ errors, rowLabel }: {
 		return null;
 	}
 	return (
-		<Alert variant='light' color='red' {...testAttrs(TEST_ID_PREFIX, 'errors')}>
+		<Alert variant='light' color='red' {...testAttrs(MOVES_TEST_ID_PREFIX, 'errors')}>
 			{lines.map((line, index) => <div key={index}>{line}</div>)}
 		</Alert>
 	);

@@ -8,6 +8,7 @@ import type { useColumnWidthsState } from './columnWidths';
 import type { FilterTree } from './filter/filterTree';
 import type { FilterState } from './filter/useFilterState';
 import type { ManualSortApi } from './rowFeatures';
+import type { RowSpanApi } from './rowSpan/useRowSpan';
 import type { SelectionMode, SelectionState } from './selectionModel';
 import type { ExcelDataTableTestIds } from './testIds';
 import type {
@@ -53,7 +54,9 @@ export type EditingApi = {
 	stop: () => void,
 	/** The insert row is open; unlike a row edit, a finished load does not close it. */
 	creating: boolean,
-	startCreate: () => void,
+	/** Which insert line is open: `null` the table's own, a group id that group's sub-row line (§5.11). */
+	createTarget: RowId | null,
+	startCreate: (target?: RowId | null) => void,
 	stopCreate: () => void,
 	/** A row is being edited or inserted: selection and the table's keys are frozen. */
 	isActive: boolean,
@@ -150,6 +153,10 @@ export type ExcelDataTableContextValue = {
 	scopeId: string,
 	/** The Provider's `emptyMessage`, its default already applied. */
 	emptyMessage: string,
+	/** The grouped layout (`rowSpanField` + `rowSingleField`, §5.11); `null` for a flat table. */
+	rowSpan: RowSpanApi | null,
+	/** The schema row forms edit against without fetching it by name; set for a grouped table only. */
+	rowFormSchema: dyn.ModelSchema | undefined,
 };
 
 export const ExcelDataTableContext = React.createContext<ExcelDataTableContextValue | null>(null);

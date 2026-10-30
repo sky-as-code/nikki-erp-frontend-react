@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/inventory';
@@ -12,6 +13,16 @@ import { WarehouseCommands } from '../../features/inventory/warehouse/commands';
 import type { WarehouseFlow } from '../../features/inventory/warehouse/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		active: 'green',
+		suspended: 'orange',
+	},
+	prefix: 'warehouse_status.',
+} as const;
 
 export function buildWarehousePages(): PageNode[] {
 	const splitView = resourceSplitViewProps({
@@ -40,14 +51,7 @@ function buildWarehouseListProps() {
 		fieldRenderers: {
 			// Suspended is a temporary close rather than a retirement, so it reads as a warning
 			// rather than an error: the warehouse is expected back.
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					active: 'green',
-					suspended: 'orange',
-				},
-				prefix: 'warehouse_status.',
-			},
+			status: STATUS_BADGE,
 			warehouse_role: {
 				renderer: 'badge',
 				colorMap: {
@@ -66,6 +70,7 @@ function buildWarehouseDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.WAREHOUSE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
 		backLinkTitle: { linkHref: '../' },

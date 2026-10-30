@@ -1,3 +1,4 @@
+import { defineComponent } from '@nikkierp/viewengine/metadata';
 import { describe, expect, it } from 'vitest';
 
 import { collapsibleSectionPropsSchema } from './props';
@@ -67,5 +68,18 @@ describe('collapsibleSectionPropsSchema', () => {
 
 		expect(result).not.toBeInstanceOf(Promise);
 		expect((result as { issues?: unknown }).issues).toBeUndefined();
+	});
+});
+
+describe('collapsibleSectionPropsSchema rightSegment', () => {
+	it('accepts a right header segment node and survives the render-time re-parse', () => {
+		const props = collapsibleSectionPropsSchema.parse({
+			header: 'a.b', translationNs: 'iam',
+			rightSegment: defineComponent({ component: 'strip', props: { inline: true } }),
+		});
+
+		expect(props.rightSegment?.component).toBe('strip');
+		expect(collapsibleSectionPropsSchema.parse(props)).toEqual(props);
+		expect(() => collapsibleSectionPropsSchema.parse({ rightSegment: 'strip' })).toThrow();
 	});
 });

@@ -8,6 +8,7 @@ import { useSchemaFieldNameTranslator } from './fieldLabels';
 import { filterTreeToGraph } from './filter/filterGraph';
 import { useApplyFilters, useFilterState } from './filter/useFilterState';
 import { useManualSortDrag, useRowFeatures } from './rowFeatures';
+import { useProviderRowSpan } from './rowSpan/useRowSpan';
 import { useTableScope } from './tableScope';
 import { excelDataTableTestIds } from './testIds';
 import { useContainerWidthState, useIsCompact } from './useIsCompact';
@@ -106,19 +107,15 @@ function useSeededSearchRequest(
 }
 
 export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
-	const { data, isLoading = false } = props;
-	const filters = useFilterState({
-		baseGraph: props.baseGraph,
-		initialGraph: props.initialGraph ?? props.initialSearchRequest?.graph,
-		fallbackOrderBy: props.orderBy,
-	});
-	const { searchRequest, setSearchRequest } = useSearchRequestState(
-		data, useSeededSearchRequest(props, filters), props.onSearchRequestChange, props.pageSize,
-	);
-	const applyFilters = useApplyFilters(filters, setSearchRequest);
+	const { isLoading = false } = props;
+	const { filters, searchRequest, setSearchRequest, applyFilters } = useSearchState(props);
+	const tableName = props.tableName ?? props.modelSchema?.name ?? 'table';
+	const rows = useRowCapabilities(props, tableName);
+	const grouped = useProviderRowSpan({ props, modelSchema: props.modelSchema, data: props.data, tableName, rows });
+	const { data, rowSpan } = grouped;
 	const editing = useEditingState(isLoading);
 	const drag = useManualSortDrag();
-	const selection = useTableSelection(props, editing, drag);
+	const selection = useTableSelection(props, data.items, editing, drag);
 	const emptyMessage = useEmptyMessage(props.emptyMessage);
 	const scopeId = useTableScope(editing.isActive, selection);
 	const { viewMode, setViewMode } = useViewModeState(props.initialViewMode, props.allowedViewModes);
@@ -128,13 +125,13 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 	const scrollSync = React.useRef<ScrollSyncRefs>({ header: null, body: null });
 	const container = useContainerWidthState();
 	const isCompact = useIsCompact(container.width);
-	const tableName = props.tableName ?? props.modelSchema?.name ?? 'table';
-	const modelSchema = useEditableSchema(props.modelSchema, props.editableFields);
+	const modelSchema = useEditableSchema(grouped.modelSchema, props.editableFields);
 	const tid = React.useMemo(() => excelDataTableTestIds(props.testId, tableName), [props.testId, tableName]);
-	const schemaFieldName = useSchemaFieldNameTranslator(props.modelSchema, props.relatedSchemas ?? emptySchemas);
-	const rows = useRowCapabilities(props, tableName);
+	const schemaFieldName = useSchemaFieldNameTranslator(grouped.modelSchema, props.relatedSchemas ?? emptySchemas);
 	const fields = useDisplayedFields(data.desired_fields, props.newRowSearchField);
-	const features = useRowFeatures(props, { data, fields, isLoading, rows, editing, searchRequest, drag, tableName });
+	const features = useRowFeatures(
+		grouped.featureProps, { data, fields, isLoading, rows, editing, searchRequest, drag, tableName },
+	);
 
 	const value = React.useMemo<ExcelDataTableContextValue>(() => ({
 		tableName,
@@ -162,8 +159,11 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		updateCommand: props.updateCommand,
 		...rows,
 		...features,
-		// Table scope has no row editor: a double-click or Enter must not open one.
-		canUpdateRows: rows.canUpdateRows && rows.updateScope === 'row',
+		// Table scope has no row editor, nor has a grouped table: a double-click or Enter must not open one.
+		canUpdateRows: rows.canUpdateRows && rows.updateScope === 'row' && !rowSpan,
+		rowSpan,
+		// A grouped table's flat schema exists only here, so its row forms must not fetch one by name.
+		rowFormSchema: rowSpan ? modelSchema : undefined,
 		refresh: props.onRefresh ?? noopRefresh,
 		translationNs: props.translationNs,
 		translateFieldName: props.translateFieldName ?? schemaFieldName,
@@ -178,7 +178,7 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		filterPane, fields, columnWidths, props.indexColumnVisible, props.enableHotKeys, props.updateCommand,
 		rows, features, props.onRefresh, props.translationNs,
 		props.translateFieldName, schemaFieldName, props.buildLinkHref, props.fieldRenderers, tid, scopeId,
-		emptyMessage,
+		emptyMessage, rowSpan,
 	]);
 
 	return (
@@ -186,6 +186,19 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 			{props.children}
 		</ExcelDataTableContext.Provider>
 	);
+}
+
+function useSearchState(props: ExcelDataTableProviderProps) {
+	const filters = useFilterState({
+		baseGraph: props.baseGraph,
+		initialGraph: props.initialGraph ?? props.initialSearchRequest?.graph,
+		fallbackOrderBy: props.orderBy,
+	});
+	const { searchRequest, setSearchRequest } = useSearchRequestState(
+		props.data, useSeededSearchRequest(props, filters), props.onSearchRequestChange, props.pageSize,
+	);
+	const applyFilters = useApplyFilters(filters, setSearchRequest);
+	return { filters, searchRequest, setSearchRequest, applyFilters };
 }
 
 /** The schema the rows edit against: `editableFields`, when given, is all an inline update offers. */
@@ -196,9 +209,11 @@ function useEditableSchema(modelSchema: dyn.ModelSchema | undefined, editableFie
 }
 
 /** The insert row and a handle drag both freeze selection; the drag cleared it when it started. */
-function useTableSelection(props: ExcelDataTableProviderProps, editing: EditingApi, drag: ManualSortDrag) {
+function useTableSelection(
+	props: ExcelDataTableProviderProps, items: SearchItem[], editing: EditingApi, drag: ManualSortDrag,
+) {
 	const isFrozen = editing.creating || drag.activeId !== null;
-	const selection = useSelectionState(props.data.items, props.onSelectionChange, isFrozen, {
+	const selection = useSelectionState(items, props.onSelectionChange, isFrozen, {
 		mode: props.selectionMode, initialSelectedIds: props.initialSelectedIds,
 	});
 	useDiscardEditOnSelectionChange(editing, selection.ids);

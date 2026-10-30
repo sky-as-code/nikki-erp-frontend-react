@@ -10,6 +10,17 @@ import type { OwnPropertySection } from '../resourceDetail/props';
 export type FieldVisibilityMode = 'create' | 'update' | 'read';
 
 /**
+ * Fields no detail form ever shows, in any mode, whatever a page lists. `org_id` is the active
+ * organization: the page is already scoped to it, the create form seeds it (`resourceCreateForm`)
+ * and a save keeps it as an addressing field (`fieldLocks.ts`), so on screen it is only an id.
+ */
+const NEVER_SHOWN_FIELDS: ReadonlySet<string> = new Set(['org_id']);
+
+export function isNeverShownField(fieldName: string): boolean {
+	return NEVER_SHOWN_FIELDS.has(fieldName);
+}
+
+/**
  * Whether a field will actually put something on screen in this mode.
  *
  * The rules differ per mode because the modes render through different components: the two form
@@ -25,7 +36,7 @@ export function isFieldVisible(
 	mode: FieldVisibilityMode,
 ): boolean {
 	const fieldDef = modelSchema.fields[fieldName];
-	if (!fieldDef) {
+	if (!fieldDef || isNeverShownField(fieldName)) {
 		return false;
 	}
 
@@ -92,7 +103,7 @@ export function fieldPresentation(
 	mode: FieldVisibilityMode,
 	stableFieldLayout = false,
 ): FieldPresentation {
-	if (!modelSchema.fields[fieldName]) {
+	if (!modelSchema.fields[fieldName] || isNeverShownField(fieldName)) {
 		return 'hidden';
 	}
 	if (mode === 'read') {

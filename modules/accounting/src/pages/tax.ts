@@ -97,7 +97,7 @@ function buildFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['code', 'name', 'tax_kind', 'invoice_label', 'description', 'org_id'],
+			fields: ['code', 'name', 'tax_kind', 'invoice_label', 'description'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',

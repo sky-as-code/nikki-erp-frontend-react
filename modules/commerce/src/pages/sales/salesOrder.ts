@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/sales';
@@ -17,6 +18,19 @@ import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 /** Amounts are in the order's own currency, which sets the decimal places shown. */
 const SALES_ORDER_MONEY_RENDERER = { renderer: 'money', currencyField: 'currency_code' };
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'enum',
+	colorMap: {
+		draft: 'gray',
+		confirmed: 'blue',
+		processing: 'indigo',
+		completed: 'green',
+		cancelled: 'red',
+	},
+	prefix: 'status.',
+} as const;
 
 /**
  * The sales order. One route, not two: unlike purchase's RFQ/PO pair, a Sales quotation is a
@@ -73,17 +87,7 @@ function buildSalesOrderMoneyRenderers() {
  */
 function buildSalesOrderStatusRenderers() {
 	return {
-		status: {
-			renderer: 'enum',
-			colorMap: {
-				draft: 'gray',
-				confirmed: 'blue',
-				processing: 'indigo',
-				completed: 'green',
-				cancelled: 'red',
-			},
-			prefix: 'status.',
-		},
+		status: STATUS_BADGE,
 		payment_status: {
 			renderer: 'enum',
 			colorMap: {
@@ -126,6 +130,7 @@ function buildSalesOrderDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_ORDER_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'order_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },

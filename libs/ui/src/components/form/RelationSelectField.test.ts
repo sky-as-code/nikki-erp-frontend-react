@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { relationSelectionMode } from './RelationSelectField';
+import { fetchedRecordOf, relationSelectionMode } from './RelationSelectField';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -22,5 +22,14 @@ describe('relationSelectionMode', () => {
 
 	it('defaults to one record while the relation is unresolved', () => {
 		expect(relationSelectionMode(undefined)).toBe('single');
+	});
+});
+
+describe('fetchedRecordOf', () => {
+	it('unwraps the record a get-by-id answered, so an off-page selection is labelled by it', () => {
+		const item = { id: 'T1', name: 'Robot Mixed Template' };
+
+		expect(fetchedRecordOf({ item, meta: {} } as never)).toBe(item);
+		expect(fetchedRecordOf(null)).toBeUndefined();
 	});
 });

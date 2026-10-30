@@ -73,7 +73,7 @@ function buildUomFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['name', 'symbol', 'category_id', 'org_id'],
+			fields: ['name', 'symbol', 'category_id'],
 		}),
 		resourceFormColumnNode({
 			// BR-UOM-ESS-016: the factor and the rounding precision are independent concepts,

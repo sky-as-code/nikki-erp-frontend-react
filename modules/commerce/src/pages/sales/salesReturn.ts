@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/sales';
@@ -8,6 +9,19 @@ import { SalesReturnCommands } from '../../features/sales/salesReturn/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		draft: 'gray',
+		approved: 'blue',
+		processing: 'indigo',
+		completed: 'green',
+		cancelled: 'red',
+	},
+	prefix: 'status.',
+} as const;
 
 /**
  * The refund request. A request is raised from an order (a cancelled paid order raises one on its
@@ -38,17 +52,7 @@ function buildSalesReturnListProps() {
 		// Raised from the order's own action, which is what ties a request to its lines.
 		createEnabled: false,
 		fieldRenderers: {
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					draft: 'gray',
-					approved: 'blue',
-					processing: 'indigo',
-					completed: 'green',
-					cancelled: 'red',
-				},
-				prefix: 'status.',
-			},
+			status: STATUS_BADGE,
 		},
 	});
 }
@@ -57,6 +61,7 @@ function buildSalesReturnDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_RETURN_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'return_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -126,7 +131,7 @@ function buildSalesReturnFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.other_information',
 			fields: ['inventory_return_status', 'fiscal_adjustment_status', 'inventory_reference',
-				'failure_reason', 'org_id'],
+				'failure_reason'],
 		}),
 	]);
 }

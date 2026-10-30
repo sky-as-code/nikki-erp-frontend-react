@@ -69,7 +69,7 @@ function buildNotificationFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.distribution',
-			fields: ['distribution_mode', 'requested_channels', 'org_id'],
+			fields: ['distribution_mode', 'requested_channels'],
 		}),
 	]);
 }

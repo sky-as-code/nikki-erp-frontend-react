@@ -32,6 +32,7 @@ import { buildProductTemplatePages } from '../pages/inventory/productTemplate';
 import { buildProductTemplateAttributeValuePages } from '../pages/inventory/productTemplateAttributeValue';
 import { buildProductVariantPages } from '../pages/inventory/productVariant';
 import { buildPutawayRulePages } from '../pages/inventory/putawayRule';
+import { buildStockOperationTypePages } from '../pages/inventory/stockOperationType';
 import { buildStockQuantPages } from '../pages/inventory/stockQuant';
 import { buildStockReservationPages } from '../pages/inventory/stockReservation';
 import { buildStockScrapPages } from '../pages/inventory/stockScrap';
@@ -91,6 +92,7 @@ export function buildInventoryPages(): PageNode[] {
 		...buildStorageCategoryPages(),
 		...buildSupplyRelationPages(),
 		...buildPutawayRulePages(),
+		...buildStockOperationTypePages(),
 		...buildStockQuantPages(),
 		...buildStockTransferPages(),
 		...buildStockScrapPages(),
@@ -144,8 +146,6 @@ function registerModelSchemas(): void {
 		schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
 		resourcePath: c.PUTAWAY_RULE_RESOURCE_PATH,
 	}, {
-		// No page of its own yet, but registered so that a relation select pointing at an
-		// operation type can already resolve it.
 		schemaName: c.STOCK_OPERATION_TYPE_SCHEMA_NAME,
 		resourcePath: c.STOCK_OPERATION_TYPE_RESOURCE_PATH,
 	}, {

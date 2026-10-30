@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/inventory';
@@ -8,6 +9,16 @@ import { InventoryLocationCommands } from '../../features/inventory/inventoryLoc
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		active: 'green',
+		suspended: 'orange',
+	},
+	prefix: 'location_status.',
+} as const;
 
 export function buildInventoryLocationPages(): PageNode[] {
 	const splitView = resourceSplitViewProps({
@@ -52,14 +63,7 @@ function buildInventoryLocationListProps() {
 			},
 			// Suspended is a temporary lock rather than a retirement, so it reads as a warning
 			// rather than an error: the location is still there and still holds whatever it held.
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					active: 'green',
-					suspended: 'orange',
-				},
-				prefix: 'location_status.',
-			},
+			status: STATUS_BADGE,
 		},
 	});
 }
@@ -68,6 +72,7 @@ function buildInventoryLocationDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'canonical_name' },
 		backLinkTitle: { linkHref: '../' },

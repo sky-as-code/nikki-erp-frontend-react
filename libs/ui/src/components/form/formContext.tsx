@@ -202,10 +202,15 @@ export type CrudFormProviderProps = Omit<BaseFormProviderProps, 'children'> & {
 	 * `<div>` is not allowed (a table row) passes markup that fits there.
 	 */
 	loadingFallback?: React.ReactNode,
+	/**
+	 * A schema that exists only in the browser (a grouped table's flat rows): the form edits and
+	 * validates against it instead of fetching `schemaName`, and is ready at once.
+	 */
+	modelSchema?: dyn.ModelSchema,
 };
 
 export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode {
-	const { pack: schemaPack } = useDynamicModel(props.schemaName);
+	const schemaPack = useFormSchemaPack(props.schemaName, props.modelSchema);
 	const modelValue = props.modelValue ?? null;
 
 	const form = useForm({
@@ -305,6 +310,18 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 		</FormFieldContext.Provider>
 	) : (props.loadingFallback ?? <LoadingState />);
 };
+
+function useFormSchemaPack(schemaName: string, localSchema: dyn.ModelSchema | undefined): dyn.SchemaPack | null {
+	const { pack } = useDynamicModel(localSchema ? '' : schemaName);
+	const localPack = React.useMemo(() => (localSchema ? {
+		schemaName: localSchema.name,
+		modelSchema: localSchema,
+		validationSchema: dyn.buildValidationSchema(localSchema),
+		// No resource behind it: the form reads `modelSchema` and the name only.
+		restApi: undefined as unknown as dyn.SchemaPack['restApi'],
+	} : null), [localSchema]);
+	return localPack ?? pack;
+}
 
 export type AdhocFormProviderProps = BaseFormProviderProps & {
 	formVariant: FormVariant,

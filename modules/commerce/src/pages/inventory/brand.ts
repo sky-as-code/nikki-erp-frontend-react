@@ -66,7 +66,7 @@ function buildBrandFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['name', 'code', 'description', 'org_id'],
+			fields: ['name', 'code', 'description'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.identification',

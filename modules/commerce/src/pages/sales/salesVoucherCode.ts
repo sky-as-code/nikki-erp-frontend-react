@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/sales';
@@ -9,6 +10,13 @@ import { SalesVoucherRedemptionCommands } from '../../features/sales/salesVouche
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: { active: 'green', disabled: 'gray', exhausted: 'orange' },
+	prefix: 'status.',
+} as const;
 
 /**
  * `usage_count` is maintained by redemption, not written here. The limit is enforced by a
@@ -38,11 +46,7 @@ function buildSalesVoucherCodeListProps() {
 		createEnabled: true,
 		archiveCommand: SalesVoucherCodeCommands.SET_IS_ARCHIVED,
 		fieldRenderers: {
-			status: {
-				renderer: 'badge',
-				colorMap: { active: 'green', disabled: 'gray', exhausted: 'orange' },
-				prefix: 'status.',
-			},
+			status: STATUS_BADGE,
 		},
 	});
 }
@@ -51,6 +55,7 @@ function buildSalesVoucherCodeDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_VOUCHER_CODE_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -88,7 +93,7 @@ function buildSalesVoucherCodeFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['is_archived', 'org_id'],
+			fields: ['is_archived'],
 		}),
 	]);
 }

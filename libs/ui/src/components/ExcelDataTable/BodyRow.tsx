@@ -13,11 +13,16 @@ import { SortHandleCell, useSortableRowProps } from './manualSort/ManualSort';
 import { DeleteRowAction, EditRowAction } from './rowActions';
 import { isRowDeleteDisabled, isRowDeleteShown, isRowEditShown } from './rowDeleteModel';
 import { useSelectOnlyPress } from './rowPress';
+import { BlankCell, SubRowActionsCell, useRowSpanCells } from './rowSpan/RowSpanCells';
+import {
+	ROW_SPAN_FILLER_CELL, ROW_SPAN_INDEX_CELL, rowSpanAttrs, SUB_ROW_ACTIONS_KEY,
+} from './rowSpan/rowSpanModel';
 import { rowIdOf } from './types';
 import { useRowDelete } from './useRowDelete';
 import { INLINE_CONTROLS_ATTRS } from '../Input/inputDensity';
 import { Link } from '../Link/Link';
 
+import type { CellSpan } from './rowSpan/rowSpanModel';
 import type { RowId, SearchItem } from './types';
 
 
@@ -32,6 +37,7 @@ export function BodyRow({ item, rowIndex }: BodyRowProps) {
 	const isSelected = selection.ids.includes(rowId);
 	const sortableProps = useSortableRowProps();
 	const badgeSlot = useChangeBadgeSlot();
+	const cells = useRowSpanCells(rowId);
 	const linkHref = buildLinkHref?.(item);
 	const onDoubleClick = () => {
 		if (canUpdateRows && !editing.creating && selection.ids.length <= 1) {
@@ -46,30 +52,54 @@ export function BodyRow({ item, rowIndex }: BodyRowProps) {
 			className={classes.bodyRow}
 			{...tid.row(rowId)}
 		>
-			{indexColumnVisible ? (
-				<RowNumberCell item={item} rowId={rowId} rowNumber={rowNumber} isSelected={isSelected} />
+			{indexColumnVisible && !cells.spanOf(ROW_SPAN_INDEX_CELL).skip ? (
+				<RowNumberCell
+					item={item}
+					rowId={rowId}
+					rowNumber={rowNumber}
+					isSelected={isSelected}
+					span={cells.spanOf(ROW_SPAN_INDEX_CELL)}
+				/>
 			) : null}
 			{context.manualSort.enabled ? <SortHandleCell rowId={rowId} /> : null}
-			{columns.map(column => (column.kind === 'action' ? (
-				<ActionColumnCell
-					key={column.key}
-					column={column.column}
+			{columns.map((column) => {
+				const span = cells.spanOf(column.key);
+				if (span.skip || span.blank) {
+					return span.skip ? null : <BlankCell key={column.key} />;
+				}
+				if (column.key === SUB_ROW_ACTIONS_KEY) {
+					return <SubRowActionsCell key={column.key} rowId={rowId} />;
+				}
+				return column.kind === 'action' ? (
+					<ActionColumnCell
+						key={column.key}
+						column={column.column}
+						item={item}
+						rowId={rowId}
+						isSelected={isSelected}
+						span={span}
+					/>
+				) : (
+					<DataCell
+						key={column.key}
+						field={column.field}
+						item={item}
+						rowId={rowId}
+						href={linkHref}
+						isSelected={isSelected}
+						withBadge={badgeSlot === column.key}
+						span={span}
+					/>
+				);
+			})}
+			{cells.spanOf(ROW_SPAN_FILLER_CELL).skip ? null : (
+				<RowActionsCell
 					item={item}
 					rowId={rowId}
 					isSelected={isSelected}
+					span={cells.spanOf(ROW_SPAN_FILLER_CELL)}
 				/>
-			) : (
-				<DataCell
-					key={column.key}
-					field={column.field}
-					item={item}
-					rowId={rowId}
-					href={linkHref}
-					isSelected={isSelected}
-					withBadge={badgeSlot === column.key}
-				/>
-			)))}
-			<RowActionsCell item={item} rowId={rowId} isSelected={isSelected} />
+			)}
 		</MantineTable.Tr>
 	);
 }
@@ -80,6 +110,8 @@ type RowActionsCellProps = {
 	isSelected: boolean,
 	/** Shown under the buttons, e.g. a table-scope row's write errors. */
 	children?: React.ReactNode,
+	/** In a grouped table, the group's cell: spanning its rows, its Delete deleting the group (§5.11). */
+	span?: CellSpan,
 };
 
 /**
@@ -88,15 +120,17 @@ type RowActionsCellProps = {
  * delete never re-selects. Its keys and double-clicks stay here: Enter on a button must not also
  * open the row editor. In table scope there is no row editor, and Delete is always shown.
  */
-export function RowActionsCell({ item, rowId, isSelected, children }: RowActionsCellProps) {
-	const { capabilities, updateScope } = useExcelDataTableContext();
+export function RowActionsCell({ item, rowId, isSelected, children, span }: RowActionsCellProps) {
+	const { capabilities, updateScope, rowSpan } = useExcelDataTableContext();
 	const onMouseDown = useSelectOnlyPress(rowId);
+	const place = rowSpan?.places.get(rowId);
 	const cellClass = clsx('align-middle', { [classes.selectedCell]: isSelected });
-	const showEdit = updateScope === 'row' && isRowEditShown(capabilities);
+	const showEdit = updateScope === 'row' && isRowEditShown(capabilities) && !rowSpan;
 	const showDelete = isRowDeleteShown(capabilities);
+	const spanAttrs = span ? rowSpanAttrs(span) : {};
 	if (!showEdit && !showDelete) {
 		return (
-			<MantineTable.Td className={cellClass} onMouseDown={onMouseDown} aria-hidden={!children}>
+			<MantineTable.Td className={cellClass} onMouseDown={onMouseDown} aria-hidden={!children} {...spanAttrs}>
 				{children}
 			</MantineTable.Td>
 		);
@@ -104,6 +138,7 @@ export function RowActionsCell({ item, rowId, isSelected, children }: RowActions
 	return (
 		<MantineTable.Td
 			className={cellClass}
+			{...spanAttrs}
 			onMouseDown={onMouseDown}
 			onKeyDown={event => event.stopPropagation()}
 			onDoubleClick={event => event.stopPropagation()}
@@ -116,7 +151,7 @@ export function RowActionsCell({ item, rowId, isSelected, children }: RowActions
 				{...INLINE_CONTROLS_ATTRS}
 			>
 				{showEdit ? <RowEditButton rowId={rowId} /> : null}
-				{showDelete ? <RowDeleteButton item={item} rowId={rowId} /> : null}
+				{showDelete ? <RowDeleteButton item={place?.group ?? item} rowId={place?.groupId ?? rowId} /> : null}
 			</Group>
 			{children}
 		</MantineTable.Td>
@@ -158,7 +193,7 @@ function RowDeleteButton({ item, rowId }: { item: SearchItem, rowId: RowId }) {
 	);
 }
 
-type RowNumberCellProps = { item: SearchItem, rowId: RowId, rowNumber: number, isSelected: boolean };
+type RowNumberCellProps = { item: SearchItem, rowId: RowId, rowNumber: number, isSelected: boolean, span?: CellSpan };
 
 /**
  * The gray handle, the one cell that deselects: a press toggles its row and starts a drag over the
@@ -168,7 +203,7 @@ type RowNumberCellProps = { item: SearchItem, rowId: RowId, rowNumber: number, i
  * Pointer capture would hold `pointerenter` back from every other cell, which is what the drag
  * listens to. Mouse input is never captured implicitly, but touch and pen are, so it is released.
  */
-export function RowNumberCell({ item, rowId, rowNumber, isSelected }: RowNumberCellProps) {
+export function RowNumberCell({ item, rowId, rowNumber, isSelected, span }: RowNumberCellProps) {
 	const { selection, tid } = useExcelDataTableContext();
 	const withBadge = useChangeBadgeSlot() === CHANGE_BADGE_INDEX_SLOT;
 	const onPointerDown = (event: React.PointerEvent<HTMLTableCellElement>) => {
@@ -201,6 +236,7 @@ export function RowNumberCell({ item, rowId, rowNumber, isSelected }: RowNumberC
 			onKeyDown={onKeyDown}
 			tabIndex={-1}
 			aria-label={`Row ${rowNumber}`}
+			{...(span ? rowSpanAttrs(span) : {})}
 			{...tid.rowSelect(rowId)}
 		>
 			{withBadge ? <IndexWithBadge item={item} rowId={rowId} rowNumber={rowNumber} /> : rowNumber}
@@ -224,9 +260,10 @@ type DataCellProps = {
 	href?: string,
 	isSelected: boolean,
 	withBadge: boolean,
+	span: CellSpan,
 };
 
-function DataCell({ field, item, rowId, href, isSelected, withBadge }: DataCellProps) {
+function DataCell({ field, item, rowId, href, isSelected, withBadge, span }: DataCellProps) {
 	const { tid } = useExcelDataTableContext();
 	const resolved = useResolvedPath(href ?? '.');
 	const { content, text, fieldSchema, renderer, locked } = useCellDisplay(item, field);
@@ -246,6 +283,7 @@ function DataCell({ field, item, rowId, href, isSelected, withBadge }: DataCellP
 	return (
 		<MantineTable.Td
 			onMouseDown={onMouseDown}
+			{...rowSpanAttrs(span)}
 			title={useEllipsis ? text : undefined}
 			className={clsx({
 				[classes.selectedCell]: isSelected,

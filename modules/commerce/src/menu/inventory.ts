@@ -91,6 +91,8 @@ const ITEMS: MenuItem[] = [
 			{ labelKey: 'menu_productCategories', link: '/inventory_product_category' },
 			{ labelKey: 'menu_brands', link: '/inventory_brand' },
 			{ labelKey: 'menu_attributes', link: '/inventory_product_attribute' },
+			// How each kind of transfer behaves: its defaults and the policies a transfer copies.
+			{ labelKey: 'menu_operationTypes', link: '/inventory_stock_operation_type' },
 		],
 	},
 	// Units of measure are configured in the Essential module (BR-UOM-ESS-022,

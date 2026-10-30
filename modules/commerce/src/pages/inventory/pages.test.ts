@@ -11,6 +11,7 @@ import { buildProductTemplatePages } from './productTemplate';
 import { buildProductTemplateAttributeValuePages } from './productTemplateAttributeValue';
 import { buildProductVariantPages } from './productVariant';
 import { buildPutawayRulePages } from './putawayRule';
+import { buildStockOperationTypePages } from './stockOperationType';
 import { buildStockQuantPages } from './stockQuant';
 import { buildStockReservationPages } from './stockReservation';
 import { buildStockScrapPages } from './stockScrap';
@@ -40,6 +41,7 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'storageCategory', build: buildStorageCategoryPages },
 	{ name: 'supplyRelation', build: buildSupplyRelationPages },
 	{ name: 'putawayRule', build: buildPutawayRulePages },
+	{ name: 'stockOperationType', build: buildStockOperationTypePages },
 	{ name: 'stockQuant', build: buildStockQuantPages },
 	{ name: 'stockTransfer', build: buildStockTransferPages },
 	{ name: 'stockScrap', build: buildStockScrapPages },
@@ -92,7 +94,7 @@ describe('Inventory page metadata', () => {
 			'inventory_product_category', 'inventory_product_category/import',
 			'inventory_brand', 'inventory_product_attribute', 'inventory_product_attribute_value', 'inventory_product_template_attribute_value',
 			'inventory_location', 'inventory_warehouse', 'inventory_storage_category', 'inventory_warehouse_supply_relation', 'inventory_putaway_rule',
-			'inventory_stock_quant', 'stock_balance_counts_due', 'inventory_stock_transfer',
+			'inventory_stock_operation_type', 'inventory_stock_quant', 'stock_balance_counts_due', 'inventory_stock_transfer',
 			'inventory_stock_scrap', 'inventory_stock_reservation',
 		]);
 		for (const routePath of routePaths) {
@@ -540,6 +542,13 @@ describe('Stock transfer page', () => {
 		}
 	});
 
+	it('opens Policies collapsed on the detail page and expanded on create', () => {
+		const { createNodes, childrenNodes } = fieldsDetailProps(buildStockTransferPages()[0]);
+
+		expect(createNodes[1].props?.expanded).toBe(true);
+		expect(childrenNodes[1].props?.expanded).toBe(false);
+	});
+
 	it('edits the operation code on create only and offers the operation types of that code', () => {
 		const { childrenNodes } = fieldsDetailProps(buildStockTransferPages()[0]);
 		const general = childrenNodes[0].children?.[0];
@@ -732,6 +741,47 @@ describe('Warehouse and location detail layout', () => {
 					header: 'form.storagePolicy',
 					fields: ['is_replenishment_destination', 'storage_category_id', 'removal_strategy'],
 				},
+			]);
+		}
+	});
+});
+
+describe('Stock operation type page', () => {
+	it('binds the page to the backend stock operation type schema', () => {
+		const [page] = buildStockOperationTypePages();
+		const props = page.props as { primary: { props: { schemaName: string } } };
+
+		expect(page.routePath).toBe('inventory_stock_operation_type');
+		expect(props.primary.props.schemaName).toBe(c.STOCK_OPERATION_TYPE_SCHEMA_NAME);
+	});
+
+	it('renders the operation and its three policies as translated badges', () => {
+		const [page] = buildStockOperationTypePages();
+		const props = page.props as { primary: { props: { fieldRenderers: Record<string, { prefix?: string }> } } };
+		const prefixes = Object.fromEntries(
+			Object.entries(props.primary.props.fieldRenderers).map(([field, renderer]) => [field, renderer.prefix]),
+		);
+
+		expect(prefixes).toEqual({
+			operation_code: 'operation_code.',
+			reservation_method: 'reservation_method.',
+			backorder_policy: 'backorder_policy.',
+			shipping_policy: 'shipping_policy.',
+		});
+	});
+
+	it('lays out the type as identity, default locations, reservation and policies, without org_id', () => {
+		const { createNodes, childrenNodes } = fieldsDetailProps(buildStockOperationTypePages()[0]);
+
+		for (const nodes of [createNodes, childrenNodes]) {
+			expect(formBlocks(nodes[0])).toEqual([
+				{ header: 'form.generalInformation', fields: ['code', 'name', 'operation_code'] },
+				{
+					header: 'form.defaultLocations',
+					fields: ['default_source_location_id', 'default_destination_location_id'],
+				},
+				{ header: 'form.reservation', fields: ['reservation_method', 'reserve_before_days'] },
+				{ header: 'form.policies', fields: ['backorder_policy', 'shipping_policy'] },
 			]);
 		}
 	});

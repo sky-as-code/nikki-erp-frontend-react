@@ -84,10 +84,11 @@ export const resourceDetailV2PropsSchema = resourceDetailPropsSchema.extend({
 	stableFieldLayout: z.boolean().optional(),
 	/**
 	 * Where the `allStatuses` flow renders on an existing record: `toolbar`, in the header's right
-	 * toolbar (read mode only), or `firstSection`, as the first full-width row of the first section
-	 * (every mode).
+	 * toolbar (read mode only); `firstSection`, as the first full-width row of the first section; or
+	 * `firstSectionHeader`, as the right segment of the first section's header (both every mode).
+	 * `statusStripProps()` picks `firstSectionHeader`.
 	 */
-	statusPlacement: z.enum(['toolbar', 'firstSection']).default('toolbar'),
+	statusPlacement: z.enum(['toolbar', 'firstSection', 'firstSectionHeader']).default('toolbar'),
 }).strict();
 
 export type RelatedResource = z.infer<typeof relatedResourceSchema>;

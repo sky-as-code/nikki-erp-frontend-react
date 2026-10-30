@@ -61,7 +61,7 @@ export type ResourceUpdateContextValue = {
 	 */
 	updateMode?: boolean,
 	setUpdateMode?: React.Dispatch<React.SetStateAction<boolean>>,
-	/** v2 only: where the status flow renders, in the header's right toolbar or atop the first section. */
+	/** v2 only: where the status flow renders: the header's right toolbar, atop the first section or in its header. */
 	statusPlacement?: StatusPlacement,
 	/** v2 only: whether the Audit panel is open beside the sections; the toolbar toggle and its X set it. */
 	auditOpen?: boolean,
@@ -79,7 +79,7 @@ export type ResourceUpdateContextValue = {
 	setAfterSectionsSlot?: (element: HTMLElement | null) => void,
 };
 
-export type StatusPlacement = 'toolbar' | 'firstSection';
+export type StatusPlacement = 'toolbar' | 'firstSection' | 'firstSectionHeader';
 
 export const ResourceUpdateContext = React.createContext<ResourceUpdateContextValue | undefined>(undefined);
 

@@ -3,6 +3,7 @@ import React from 'react';
 import { useHasEntitlement } from '../PermissionGuard/entitlementContext';
 
 import type { NewRowConfig, RowWriteSinks } from './context';
+import type { ExcelDataTableRowSpanProps } from './rowSpan/useRowSpan';
 import type {
 	ActionColumn, ExcelDataTableCapability, NewRowFieldEditor, NewRowSource, RowsDeletedSink, RowValuesSink, SearchItem,
 	UpdateScope,
@@ -190,8 +191,8 @@ export type ExcelDataTableRowWriteProps = {
 	rowFieldEditors?: Record<string, NewRowFieldEditor>,
 };
 
-/** Row features beside the writes: manual sort, action columns, and change badges. */
-export type ExcelDataTableRowFeatureProps = {
+/** Row features beside the writes: manual sort, action columns, change badges, and grouped rows (§5.11). */
+export type ExcelDataTableRowFeatureProps = ExcelDataTableRowSpanProps & {
 	/**
 	 * A drag handle column right after the index column. The table never writes the order: a drop
 	 * calls `onManualSort` with every displayed row id in the new order, and the host maps it to

@@ -30,7 +30,7 @@ export type ResourceCreateProps = {
 
 /**
  * Provides {@link ResourceCreateContext} and renders the create component tree
- * (`resource_create__header` + `resource_create__form` wrapping the page's `createNodes`)
+ * (`resource_create__form` wrapping `resource_create__header` and the page's `createNodes`)
  * through the component registry.
  */
 export function ResourceCreate(props: ResourceCreateProps): React.ReactNode {
@@ -131,15 +131,21 @@ function ResourceCreateContent(): React.ReactNode {
 	return <MetaComponent node={nodes} />;
 }
 
+/**
+ * The header is the form's first child, not its sibling: it pins together with the form's Save row,
+ * which needs the form runtime, so both must render inside the form.
+ */
 function buildCreateNodes(context: ResourceCreateContextValue): ComponentNode[] {
 	return [
 		defineComponent({
-			component: RESOURCE_CREATE_HEADER_V2,
-			props: { titleLvl1: context.titleLvl1, backLinkTitle: context.backLinkTitle },
-		}),
-		defineComponent({
 			component: RESOURCE_CREATE_FORM_V2,
-			children: toV2FormNodes(context.createNodes) ?? [],
+			children: [
+				defineComponent({
+					component: RESOURCE_CREATE_HEADER_V2,
+					props: { titleLvl1: context.titleLvl1, backLinkTitle: context.backLinkTitle },
+				}),
+				...(toV2FormNodes(context.createNodes) ?? []),
+			],
 		}),
 	];
 }

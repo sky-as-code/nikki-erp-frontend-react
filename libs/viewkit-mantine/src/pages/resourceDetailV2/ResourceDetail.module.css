@@ -2,10 +2,6 @@
 	border: 1px solid var(--mantine-color-default-border);
 }
 
-.bgBodyColor {
-	background-color: var(--mantine-color-body);
-}
-
 /* The create form's pinned Save row: its band follows density like the update page's header rows. */
 .createBar {
 	padding-block: var(--nikki-page-header-gap, var(--mantine-spacing-md));

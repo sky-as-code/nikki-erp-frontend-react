@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/sales';
@@ -8,6 +9,13 @@ import { SalesChannelCommands } from '../../features/sales/salesChannel/commands
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: { active: 'green', suspended: 'orange' },
+	prefix: 'status.',
+} as const;
 
 /**
  * `code` is immutable once set — a till names it to open a sale, so changing it would orphan every
@@ -36,11 +44,7 @@ function buildSalesChannelListProps() {
 		updateCommand: SalesChannelCommands.UPDATE,
 		createEnabled: true,
 		fieldRenderers: {
-			status: {
-				renderer: 'badge',
-				colorMap: { active: 'green', suspended: 'orange' },
-				prefix: 'status.',
-			},
+			status: STATUS_BADGE,
 		},
 	});
 }
@@ -49,6 +53,7 @@ function buildSalesChannelDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_CHANNEL_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -81,7 +86,7 @@ function buildSalesChannelFieldsSection(isUpdate: boolean): ComponentNode {
 			header: 'form.other_information',
 			// Ownership is set by the module that provisions the channel, never by hand, so it is
 			// only shown once the channel exists (`no_update` keeps it read-only there).
-			fields: [...(isUpdate ? ['managed_by_type'] : []), 'is_system', 'org_id'],
+			fields: [...(isUpdate ? ['managed_by_type'] : []), 'is_system'],
 		}),
 	]);
 }

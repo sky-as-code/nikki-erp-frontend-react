@@ -38,6 +38,16 @@ const roleSchema = {
 	},
 } as unknown as dyn.ModelSchema;
 
+describe('org_id', () => {
+	it('is never shown, in any mode or presentation', () => {
+		for (const mode of ['create', 'update', 'read'] as const) {
+			expect(isFieldVisible(roleSchema, 'org_id', mode)).toBe(false);
+			expect(fieldPresentation(roleSchema, 'org_id', mode, true)).toBe('hidden');
+		}
+		expect(isBlockVisible(roleSchema, ['org_id'], 'read')).toBe(false);
+	});
+});
+
 describe('isFieldVisible', () => {
 	it('hides a field the schema does not define, in every mode', () => {
 		expect(isFieldVisible(roleSchema, 'nope', 'create')).toBe(false);
@@ -48,7 +58,6 @@ describe('isFieldVisible', () => {
 	it('shows ordinary editable fields in both form modes', () => {
 		for (const mode of ['create', 'update'] as const) {
 			expect(isFieldVisible(roleSchema, 'name', mode)).toBe(true);
-			expect(isFieldVisible(roleSchema, 'org_id', mode)).toBe(true);
 			expect(isFieldVisible(roleSchema, 'owner_user_id', mode)).toBe(true);
 		}
 	});

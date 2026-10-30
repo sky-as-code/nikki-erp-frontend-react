@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -8,6 +9,13 @@ import { TaxRateVersionCommands } from '../features/taxRateVersion/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: { draft: 'gray', published: 'green', withdrawn: 'orange' },
+	prefix: 'lifecycle_status.',
+} as const;
 
 /**
  * Tax rates: the rate or fixed amount of a tax over one effective period.
@@ -43,11 +51,7 @@ function buildListProps() {
 		archiveCommand: TaxRateVersionCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: TaxRateVersionCommands.UPDATE,
 		fieldRenderers: {
-			lifecycle_status: {
-				renderer: 'badge',
-				colorMap: { draft: 'gray', published: 'green', withdrawn: 'orange' },
-				prefix: 'lifecycle_status.',
-			},
+			lifecycle_status: STATUS_BADGE,
 		},
 	});
 }
@@ -56,6 +60,7 @@ function buildDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.TAX_RATE_VERSION_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
+		...statusStripProps(STATUS_BADGE, 'lifecycle_status'),
 		titleLvl1: { schemaField: 'tax_id' },
 		titleLvl2: { schemaField: 'lifecycle_status' },
 		backLinkTitle: { linkHref: '../' },
@@ -81,7 +86,7 @@ function buildFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['tax_id', 'description', 'org_id'],
+			fields: ['tax_id', 'description'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.calculation',

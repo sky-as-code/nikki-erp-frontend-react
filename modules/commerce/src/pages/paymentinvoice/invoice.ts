@@ -3,6 +3,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../../constants/paymentinvoice';
@@ -11,6 +12,18 @@ import { InvoiceLineCommands } from '../../features/paymentinvoice/commands';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'badge',
+	colorMap: {
+		draft: 'gray',
+		issued: 'blue',
+		paid: 'green',
+		void: 'red',
+	},
+	prefix: 'invoice_status.',
+} as const;
 
 export function buildInvoicePages(): PageNode[] {
 	const splitView = resourceSplitViewProps({
@@ -46,16 +59,7 @@ function buildInvoiceListProps() {
 		fieldRenderers: {
 			// Grey while it is only a draft, blue once it is a document, green when the money has
 			// arrived, red once it has been struck out.
-			status: {
-				renderer: 'badge',
-				colorMap: {
-					draft: 'gray',
-					issued: 'blue',
-					paid: 'green',
-					void: 'red',
-				},
-				prefix: 'invoice_status.',
-			},
+			status: STATUS_BADGE,
 		},
 	});
 }
@@ -64,6 +68,7 @@ function buildInvoiceDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.INVOICE_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
+		...statusStripProps(STATUS_BADGE),
 		// A draft has no number, so the partner is the heading that always says something. The
 		// number appears in the form below once the invoice is issued.
 		titleLvl1: { schemaField: 'partner_name' },
@@ -91,7 +96,7 @@ function buildInvoiceFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['number', 'status', 'issued_at', 'order_id', 'note', 'org_id'],
+			fields: ['number', 'status', 'issued_at', 'order_id', 'note'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.partner',

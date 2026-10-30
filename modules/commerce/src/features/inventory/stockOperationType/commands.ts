@@ -14,10 +14,8 @@ export const StockOperationTypeCommands = Object.freeze(
 );
 
 /**
- * Registers the stock operation type service.
- *
- * The resource has no page of its own yet — nothing consumes an operation type until transfers
- * exist — but it is registered so that a relation select pointing at it can already resolve.
+ * Registers the stock operation type service, used by its own pages and by the transfer's
+ * relation select.
  */
 export function registerStockOperationTypeCommands(_bus: ICommandBus): () => void {
 	registerSchemaModule(STOCK_OPERATION_TYPE_SCHEMA_NAME, INVENTORY_MODULE);

@@ -13,7 +13,9 @@ import React from 'react';
 
 import { useDetailFieldDisplay } from './detailFieldDisplay';
 import { fieldLockView, type FieldLockView } from './fieldLocks';
-import { applyVisibleWhen, fieldPresentation, isBlockVisible, visibleWhenSourceFields } from './fieldVisibility';
+import {
+	applyVisibleWhen, fieldPresentation, isBlockVisible, isNeverShownField, visibleWhenSourceFields,
+} from './fieldVisibility';
 import { InlineFieldRow } from './inlineFieldRow';
 import { useRelationSearchScopes } from './relationSearchScope';
 import classes from './ResourceDetail.module.css';
@@ -123,7 +125,7 @@ export function FieldGroupVertical({
 	const fieldNames = React.useMemo(() => columnFieldNames(fields), [fields]);
 	const lockOf = useFieldLockViews(fieldNames, mode, modelSchema);
 	const renderField = (field: string, labelHidden: boolean): React.ReactNode => {
-		const presentation = readOnlyFields?.includes(field) && mode === 'update'
+		const presentation = readOnlyFields?.includes(field) && mode === 'update' && !isNeverShownField(field)
 			? 'readonly'
 			: fieldPresentation(modelSchema, field, mode, stableFieldLayout);
 		if (presentation === 'hidden') {

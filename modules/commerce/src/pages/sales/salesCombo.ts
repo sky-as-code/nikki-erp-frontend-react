@@ -79,7 +79,7 @@ function buildSalesComboFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',
-			fields: ['is_archived', 'org_id'],
+			fields: ['is_archived'],
 		}),
 	]);
 }

@@ -94,7 +94,7 @@ function buildProductAttributeFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['name', 'code', 'sequence', 'org_id'],
+			fields: ['name', 'code', 'sequence'],
 		}),
 		resourceFormColumnNode({
 			// variant_creation_mode decides whether this attribute's values produce variants at
