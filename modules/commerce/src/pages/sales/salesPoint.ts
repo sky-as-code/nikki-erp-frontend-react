@@ -53,7 +53,11 @@ function buildSalesPointDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_POINT_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['suspended'],
+		}),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -76,7 +80,7 @@ function buildSalesPointFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.point',
-			fields: ['sales_channel_id', 'name', 'code', 'status'],
+			fields: ['sales_channel_id', 'name', 'code'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.external',

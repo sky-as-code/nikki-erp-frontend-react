@@ -51,10 +51,10 @@ function buildStockReservationDetailProps() {
 		titleLvl2: { schemaField: 'effective_status' },
 		backLinkTitle: { linkHref: '../' },
 		allStatuses: [
-			{ value: 'active', label: 'reservation_status.active', color: 'green' },
-			{ value: 'consumed', label: 'reservation_status.consumed', color: 'blue' },
-			{ value: 'released', label: 'reservation_status.released', color: 'gray' },
-			{ value: 'expired', label: 'reservation_status.expired', color: 'orange' },
+			{ value: 'active', label: 'reservation_status.active' },
+			{ value: 'consumed', label: 'reservation_status.consumed' },
+			{ value: 'released', label: 'reservation_status.released', alternativeEnd: true },
+			{ value: 'expired', label: 'reservation_status.expired', alternativeEnd: true },
 		],
 		currentStatus: { schemaField: 'effective_status' },
 		standardActionCommands: {
@@ -100,7 +100,7 @@ function buildStockReservationFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.lifecycle',
-			fields: ['status', 'effective_status', 'reserved_until', 'release_reason', 'released_at',
+			fields: ['effective_status', 'reserved_until', 'release_reason', 'released_at',
 				'expiry_recorded_at'],
 		}),
 		resourceFormColumnNode({

@@ -5,10 +5,15 @@ import { z } from 'zod';
 export const schemaFieldSpecSchema = z.object({ schemaField: z.string().min(1) });
 export const linkSpecSchema = z.object({ linkHref: z.string() });
 
+/**
+ * One step of a detail page's status flow. No colour: the flow marks only the current step, in the
+ * primary colour; status colours belong to the list's badges.
+ */
 export const statusOptionSchema = z.object({
 	value: z.string(),
 	label: z.string(),
-	color: z.string(),
+	/** A state reached instead of finishing the flow (cancelled, rejected, …): shown apart from the steps. */
+	alternativeEnd: z.boolean().optional(),
 });
 
 export const ownPropertySectionSchema = z.object({
@@ -32,10 +37,12 @@ export const ownPropertySectionSchema = z.object({
 	 */
 	showTitle: z.boolean().default(true),
 	/**
-	 * `full` gives the block a row of its own in a `formBlocks` grid, and lets its fields spread
-	 * across that row. Omitted, the block takes one grid cell.
+	 * Whether the block shares a row of the form panel with its neighbours (the default). `false`
+	 * gives it a row of its own, its fields spread across that row.
 	 */
-	span: z.enum(['full']).optional(),
+	isFluid: z.boolean().default(true),
+	/** Whether the panel draws the separator between this block and the one before it. Defaults to `true`. */
+	showSeparator: z.boolean().default(true),
 	/**
 	 * v2 only. Fields the record itself says may no longer change: in update mode `field` renders as a
 	 * disabled input with `hint` (an i18n key in the page's namespace) under it whenever the record's

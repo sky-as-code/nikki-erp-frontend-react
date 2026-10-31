@@ -1,0 +1,102 @@
+/*
+ * The frame every collapsible section shares, whatever its layout: the bordered panel and its header.
+ * Spacing follows density (the Shell's `styles/density.css`); the fallbacks are the spacious values.
+ */
+.panel {
+	container: form-panel / inline-size;
+	margin-bottom: var(--nikki-section-gap, 0.5rem);
+	background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+	border-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+/*
+ * The header has no padding of its own: the toggle and the right segment carry it, so the toggle's
+ * hover fill reaches the panel's border. Rounded like the panel and clipped, so the fill keeps the
+ * panel's corners.
+ */
+.header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	overflow: clip;
+	border-radius: inherit;
+	border-bottom: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+
+	&:not(.headerCollapsed) {
+		border-bottom-right-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+}
+
+.headerCollapsed {
+	border-bottom-color: transparent;
+}
+
+/* The toggle takes what the right segment leaves, but never less than half the row; past that the segment wraps. */
+.main {
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 50%;
+	margin: 0;
+	font-size: var(--mantine-font-size-lg);
+	font-weight: 600;
+	line-height: 28px;
+	letter-spacing: -0.01em;
+	color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-dark-0));
+}
+
+.toggle {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	gap: var(--mantine-spacing-xs);
+	min-width: 0;
+	padding: var(--nikki-panel-padding-y, 1rem) var(--nikki-panel-padding-x, 1.5rem);
+	font: inherit;
+	letter-spacing: inherit;
+	color: inherit;
+}
+
+.toggleButton {
+	cursor: pointer;
+	user-select: none;
+
+	&:hover {
+		background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+	}
+
+	/* Inset: the header clips anything drawn outside it. */
+	&:focus-visible {
+		outline: 2px solid var(--mantine-color-blue-6);
+		outline-offset: -2px;
+	}
+}
+
+.titleText {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.chevron {
+	flex: none;
+	color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+	transition: transform 150ms ease;
+
+	.headerCollapsed & {
+		transform: rotate(-90deg);
+	}
+}
+
+.rightSegment {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	max-width: 100%;
+	margin-left: auto;
+	padding: var(--nikki-panel-padding-y, 1rem) var(--nikki-panel-padding-x, 1.5rem);
+}
+
+/* The body of a section whose children are not form panel sections (a table, a widget, prose). */
+.body {
+	padding: var(--nikki-panel-padding-y, 1rem) var(--nikki-panel-padding-x, 1.5rem);
+}

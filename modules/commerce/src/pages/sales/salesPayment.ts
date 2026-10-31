@@ -59,7 +59,11 @@ function buildSalesPaymentDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_PAYMENT_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['failed', 'cancelled'],
+		}),
 		titleLvl1: { schemaField: 'payment_method_code_snapshot' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -80,7 +84,7 @@ function buildSalesPaymentFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.payment',
 			fields: ['sales_bill_id', 'payment_method_id', 'payment_method_code_snapshot',
-				'amount', 'currency_code', 'status'],
+				'amount', 'currency_code'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',

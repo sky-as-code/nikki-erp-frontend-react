@@ -60,7 +60,10 @@ function buildStockScrapDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.STOCK_SCRAP_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+		}),
 		titleLvl1: { schemaField: 'scrap_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -94,7 +97,7 @@ function buildStockScrapFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['scrap_number', 'status', 'origin_reference', 'transfer_id', 'note'],
+			fields: ['scrap_number', 'origin_reference', 'transfer_id', 'note'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.scrapDetails',

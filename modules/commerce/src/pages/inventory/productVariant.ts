@@ -105,7 +105,10 @@ function buildProductVariantDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+		}),
 		titleLvl1: { schemaField: 'product_template_name' },
 		titleLvl2: { schemaField: 'sku' },
 		backLinkTitle: { linkHref: '../' },

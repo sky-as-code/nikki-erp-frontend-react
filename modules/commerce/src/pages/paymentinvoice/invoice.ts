@@ -68,7 +68,11 @@ function buildInvoiceDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.INVOICE_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['void'],
+		}),
 		// A draft has no number, so the partner is the heading that always says something. The
 		// number appears in the form below once the invoice is issued.
 		titleLvl1: { schemaField: 'partner_name' },
@@ -96,7 +100,7 @@ function buildInvoiceFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['number', 'status', 'issued_at', 'order_id', 'note'],
+			fields: ['number', 'issued_at', 'order_id', 'note'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.partner',

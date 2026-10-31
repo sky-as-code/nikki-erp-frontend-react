@@ -1,12 +1,14 @@
 import type { StatusOption } from '../resourceDetail/props';
 
 
-/** The part of a list's `badge` field renderer the status strip needs. */
-export type StatusBadgeSpec = {
-	/** Status value → Mantine colour, in the order the strip shows the statuses. */
-	colorMap: Record<string, string>,
+/** The statuses of a detail page's flow. */
+export type StatusStripSpec = {
+	/** Every status value, in the order of the flow. */
+	statuses: readonly string[],
 	/** Translation key prefix: a status's label is `{prefix}{value}`. */
 	prefix: string,
+	/** Statuses reached instead of finishing the flow (cancelled, rejected, …), shown apart from the steps. */
+	alternativeEnds?: readonly string[],
 };
 
 export type StatusStripProps = {
@@ -16,15 +18,18 @@ export type StatusStripProps = {
 };
 
 /**
- * A detail page's status strip props, derived from the badge renderer its list already declares
- * for the same field: one colour map for both, so the strip's badges read like the list's. Spread
- * into `resourceDetailV2Props`; a page that wants another placement overrides `statusPlacement`
- * after the spread.
+ * A detail page's status strip props. A page that also lists the field as a badge passes the
+ * badge's own order and prefix (`statuses: Object.keys(STATUS_BADGE.colorMap)`), so both read the
+ * same statuses; the strip takes no colours. Spread into `resourceDetailV2Props`; a page that wants
+ * another placement overrides `statusPlacement` after the spread.
  */
-export function statusStripProps(badge: StatusBadgeSpec, schemaField = 'status'): StatusStripProps {
+export function statusStripProps(spec: StatusStripSpec, schemaField = 'status'): StatusStripProps {
+	const alternativeEnds = new Set(spec.alternativeEnds);
 	return {
-		allStatuses: Object.entries(badge.colorMap).map(([value, color]) => ({
-			value, color, label: `${badge.prefix}${value}`,
+		allStatuses: spec.statuses.map(value => ({
+			value,
+			label: `${spec.prefix}${value}`,
+			...(alternativeEnds.has(value) ? { alternativeEnd: true } : {}),
 		})),
 		currentStatus: { schemaField },
 		statusPlacement: 'firstSectionHeader',

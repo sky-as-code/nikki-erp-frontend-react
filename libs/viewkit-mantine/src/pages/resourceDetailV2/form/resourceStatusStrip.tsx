@@ -1,17 +1,14 @@
-import { Badge, Group } from '@mantine/core';
-import { useTranslate } from '@nikkierp/ui/i18n';
 import { componentAttrs } from '@nikkierp/viewengine/core';
-import { IconChevronRight } from '@tabler/icons-react';
 import React from 'react';
 
 import { resourceStatusStripPropsSchema } from './resourceStatusStripProps';
-import layoutClasses from '../../../components/formBlockLayout.module.css';
+import { StatusStepper } from './statusStepper';
+import { formPanelSectionClass } from '../../../components/formPanel/sectionClass';
 import { RESOURCE_DETAIL_STATUS_STRIP } from '../../../ids';
-import { useResourceDetailTestAttrs, useResourceDetailTranslationNs } from '../../resourceDetail/ResourceDetailProvider';
+import { useResourceDetailTestAttrs } from '../../resourceDetail/ResourceDetailProvider';
 import { useResourceUpdateContext } from '../resourceUpdateContext';
 
 import type { ResourceStatusStripProps } from './resourceStatusStripProps';
-import type { StatusOption } from '../../resourceDetail/props';
 import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 
 
@@ -32,7 +29,7 @@ function ResourceStatusStrip({ inline }: { inline: boolean }): React.ReactNode {
 	const tid = useResourceDetailTestAttrs();
 	return (
 		<div
-			className={inline ? undefined : layoutClasses.formBlockFullRow}
+			className={inline ? undefined : formPanelSectionClass({ isFluid: false })}
 			{...componentAttrs(RESOURCE_DETAIL_STATUS_STRIP)}
 			{...tid('statusStrip')}
 		>
@@ -41,33 +38,10 @@ function ResourceStatusStrip({ inline }: { inline: boolean }): React.ReactNode {
 	);
 }
 
-/** The flow of the page's `allStatuses`, the record's `currentStatus` highlighted. */
+/** The stepper of the page's `allStatuses`, the record's `currentStatus` the current step. */
 export function RecordStatusFlow(): React.ReactNode {
 	const { allStatuses, currentStatus, resource } = useResourceUpdateContext();
 	const field = currentStatus?.schemaField;
 	const status = field ? resource?.[field] : null;
-	return <StatusFlow statuses={allStatuses ?? []} current={typeof status === 'string' ? status : null} />;
-}
-
-function StatusFlow({ statuses, current }: { statuses: StatusOption[], current?: string | null }): React.ReactNode {
-	const t = useTranslate(useResourceDetailTranslationNs());
-	if (statuses.length === 0) {
-		return null;
-	}
-	return (
-		<Group gap={4} wrap='wrap'>
-			{statuses.map((status, idx) => (
-				<React.Fragment key={status.value}>
-					{idx > 0 ? <IconChevronRight size={14} /> : null}
-					<Badge
-						variant='filled'
-						color={status.value === current ? status.color : 'gray'}
-						data-current={status.value === current ? 'true' : undefined}
-					>
-						{t(status.label)}
-					</Badge>
-				</React.Fragment>
-			))}
-		</Group>
-	);
+	return <StatusStepper statuses={allStatuses ?? []} current={typeof status === 'string' ? status : null} />;
 }

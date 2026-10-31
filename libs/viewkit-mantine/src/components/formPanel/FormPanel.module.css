@@ -1,0 +1,58 @@
+/*
+ * The resource form panel's body; the frame and header are the shared `SectionShell.module.css`.
+ * Breakpoints are container queries on the panel (`form-panel`): >= 1100px sections sit in a row,
+ * below that they stack; < 640px the header shows the compact status.
+ * Spacing follows density (the Shell's `styles/density.css`); the fallbacks are the spacious values.
+ */
+
+/*
+ * Sections separate by a border on the section itself, so the direction switches with CSS alone.
+ * Every section draws both a top and a left border, pulled 1px outward; this box clips the outer
+ * edge, so only the borders *between* sections show -- stacked or in a row, whatever the order.
+ * (`ComponentAnchor` wrappers are `display: contents`, so sibling selectors cannot do this.)
+ */
+.sections {
+	display: flex;
+	flex-direction: column;
+	overflow: clip;
+}
+
+.sections .section {
+	min-width: 0;
+	margin-top: -1px;
+	margin-left: -1px;
+	padding: var(--nikki-panel-padding-y, 1rem) var(--nikki-panel-padding-x, 1.5rem);
+	border-top: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+	border-left: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+}
+
+/* A tab's wrapper in `tab_collapsible_section`: its columns are sections of the row, as if it were not there. */
+.contents {
+	display: contents;
+}
+
+/* A section that is not fluid (`isFluid: false`, the status strip's `firstSection` row): a row of its own. */
+.sections .fullRow {
+	flex-basis: 100%;
+}
+
+/* `showSeparator: false`: no border, and so no pull outward either. */
+.sections .noSeparator {
+	margin-top: 0;
+	margin-left: 0;
+	border: 0;
+}
+
+@container form-panel (min-width: 1100px) {
+	.sections {
+		flex-flow: row wrap;
+	}
+
+	.sections .section {
+		flex: 1 1 0;
+	}
+
+	.sections .fullRow {
+		flex: 1 0 100%;
+	}
+}

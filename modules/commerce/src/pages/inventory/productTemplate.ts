@@ -92,7 +92,10 @@ function buildProductTemplateDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.PRODUCT_TEMPLATE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+		}),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'short_name' },
 		backLinkTitle: { linkHref: '../' },

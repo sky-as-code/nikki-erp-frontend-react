@@ -39,7 +39,7 @@ import type { ComponentNode, TemplateRef } from '@nikkierp/viewengine/metadata';
 
 export { columnFieldNames } from './pages/resourceDetail/formColumnFields';
 export { statusStripProps } from './pages/resourceDetailV2/statusStripProps';
-export type { StatusBadgeSpec, StatusStripProps } from './pages/resourceDetailV2/statusStripProps';
+export type { StatusStripProps, StatusStripSpec } from './pages/resourceDetailV2/statusStripProps';
 export type { FormColumnField } from './pages/resourceDetail/formColumnFields';
 
 /**
@@ -168,7 +168,7 @@ export function tabCollapsibleSectionNode(input: TabCollapsibleSectionPropsInput
  * instead of reusing the page's one form.
  *
  * Wrap a group of these in `collapsibleSectionNode({ layout: 'formBlocks' })` to lay them out
- * side by side; without that grid each column spans the full section width.
+ * side by side; `isFluid: false` gives one a row of its own, `showSeparator: false` drops its separator.
  */
 export function resourceFormColumnNode(input: OwnPropertySectionInput): ComponentNode {
 	return defineComponent({

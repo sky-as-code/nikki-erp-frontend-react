@@ -130,7 +130,11 @@ function buildSalesOrderDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_ORDER_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['cancelled'],
+		}),
 		titleLvl1: { schemaField: 'order_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -201,7 +205,7 @@ function buildSalesOrderFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.order',
-			fields: ['order_number', 'status', 'sales_channel_id', 'sales_point_id',
+			fields: ['order_number', 'sales_channel_id', 'sales_point_id',
 				'customer_reference', 'currency_code'],
 		}),
 		resourceFormColumnNode({

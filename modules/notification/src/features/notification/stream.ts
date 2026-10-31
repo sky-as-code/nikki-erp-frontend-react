@@ -23,6 +23,18 @@ export type StreamOptions = {
 
 	/** Called when the connection state changes, for a UI that shows it. */
 	onStatus?: (status: StreamStatus) => void,
+
+	/**
+	 * The sequence to resume after on the first connect. A tab taking over a shared stream passes
+	 * the last sequence the tabs saw, so the handover neither repeats nor skips a notification.
+	 */
+	initialLastSeq?: number | null,
+
+	/**
+	 * Called whenever the server sends anything, heartbeats included. Driven by the network, not
+	 * a timer, so it keeps firing in a background tab whose timers the browser throttles.
+	 */
+	onActivity?: () => void,
 };
 
 export type StreamStatus = 'connecting' | 'open' | 'reconnecting' | 'closed';
@@ -49,6 +61,7 @@ export class NotificationStream {
 	#closed = false;
 	#retryMs = RETRY_BASE_MS;
 	#retryTimer: ReturnType<typeof setTimeout> | null = null;
+	#retryResolve: (() => void) | null = null;
 	#refreshedAfterRefusal = false;
 
 	/**
@@ -60,6 +73,7 @@ export class NotificationStream {
 
 	public constructor(options: StreamOptions) {
 		this.#options = options;
+		this.#lastSeq = options.initialLastSeq ?? null;
 	}
 
 	/** Opens the stream and keeps it open until `close()`. Safe to call once. */
@@ -75,11 +89,16 @@ export class NotificationStream {
 	 * connection for a client that is gone, until its own heartbeat write fails.
 	 */
 	public close(): void {
+		if (this.#closed) return;
 		this.#closed = true;
 		if (this.#retryTimer) {
 			clearTimeout(this.#retryTimer);
 			this.#retryTimer = null;
 		}
+		// Settles a pending backoff so the loop sees `#closed` and ends, instead of waiting forever
+		// on a timer that will never fire.
+		this.#retryResolve?.();
+		this.#retryResolve = null;
 		this.#abort?.abort();
 		this.#abort = null;
 		this.#options.onStatus?.('closed');
@@ -117,12 +136,16 @@ export class NotificationStream {
 	async #refreshAfterRefusal(): Promise<boolean> {
 		if (this.#refreshedAfterRefusal) return false;
 		this.#refreshedAfterRefusal = true;
-		return Boolean(await this.#options.ensureSession({ force: true }));
+		const refreshed = Boolean(await this.#options.ensureSession({ force: true }));
+		return refreshed && !this.#closed;
 	}
 
 	/** Resolves `true` when the server refused the session, so the caller can refresh and retry. */
 	async #connectOnce(): Promise<boolean> {
 		await this.#options.ensureSession();
+		// `close()` during the await above had no fetch to abort yet. Connecting now would open a
+		// response nobody reads, holding one of the browser's few connections per host for good.
+		if (this.#closed) return false;
 		const abort = new AbortController();
 		this.#abort = abort;
 
@@ -161,9 +184,12 @@ export class NotificationStream {
 		let buffer = '';
 
 		try {
-			for (;;) {
+			// `#closed` is checked before each read as well as after: a caller that closes from
+			// inside `onNotification` must not leave this loop parked on a read nobody wants.
+			while (!this.#closed) {
 				const { done, value } = await reader.read();
-				if (done) return;
+				if (done || this.#closed) return;
+				this.#options.onActivity?.();
 
 				buffer += decoder.decode(value, { stream: true });
 
@@ -191,6 +217,8 @@ export class NotificationStream {
 			// connection is still deliverable.
 			return;
 		}
+
+		if (this.#closed) return;
 
 		// A heartbeat carries no sequence and means nothing to the user.
 		if (event.type === STREAM_EVENT_HEARTBEAT) return;
@@ -222,7 +250,12 @@ export class NotificationStream {
 		this.#retryMs = Math.min(this.#retryMs * 2, RETRY_MAX_MS);
 
 		return new Promise(resolve => {
-			this.#retryTimer = setTimeout(resolve, delay);
+			this.#retryResolve = resolve;
+			this.#retryTimer = setTimeout(() => {
+				this.#retryTimer = null;
+				this.#retryResolve = null;
+				resolve();
+			}, delay);
 		});
 	}
 }

@@ -1,0 +1,113 @@
+/*
+ * Light workflow status: sentence-case steps, a thin arrow icon between them, only the current step highlighted
+ * (primary blue fills, borders and icons; its text stays gray-9 for contrast). Muted text is gray-7:
+ * gray-6 fails 4.5:1 on white, so it colours icons only.
+ */
+.root {
+	min-width: 0;
+	font-size: var(--mantine-font-size-sm);
+	line-height: 20px;
+}
+
+.steps {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	row-gap: 4px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.step {
+	display: flex;
+	align-items: center;
+}
+
+.arrow {
+	flex: none;
+	color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+}
+
+.endSeparator {
+	width: 1px;
+	height: 16px;
+	margin-inline: 8px;
+	background-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	/* Pulled toward the arrows on each side: the pill's own padding is space enough. */
+	margin-inline: calc(var(--mantine-spacing-xs) / -2);
+	padding: 1px 8px;
+	border: 1px solid transparent;
+	border-radius: var(--mantine-radius-xl);
+	white-space: nowrap;
+	color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+}
+
+.current .pill {
+	/* Its fill would cover the neighbouring arrows if it were pulled toward them too. */
+	margin-inline: 0;
+	background-color: light-dark(var(--mantine-color-blue-0), var(--mantine-color-dark-5));
+	border-color: light-dark(var(--mantine-color-blue-3), var(--mantine-color-blue-8));
+	font-weight: 500;
+	color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-dark-0));
+}
+
+.mutedIcon {
+	flex: none;
+	color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
+}
+
+.currentIcon {
+	flex: none;
+	color: light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-4));
+}
+
+.compact {
+	display: none;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.compactText {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+}
+
+.segments {
+	display: flex;
+	gap: 2px;
+}
+
+.segment {
+	flex: 1 1 0;
+	min-width: 8px;
+	height: 4px;
+	border-radius: var(--mantine-radius-xl);
+	background-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.segment.filled {
+	background-color: light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-4));
+}
+
+/*
+ * The compact form only inside a form panel under 640px (the toolbar placement has no such
+ * container, so it keeps the full stepper). An unknown status renders no compact form: keep the steps.
+ */
+@container form-panel (max-width: 639px) {
+	.root:has(.compact) .full {
+		display: none;
+	}
+
+	.compact {
+		display: flex;
+	}
+}

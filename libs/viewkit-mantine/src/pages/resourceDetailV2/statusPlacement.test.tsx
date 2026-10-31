@@ -88,6 +88,17 @@ describe('status placement', () => {
 		expect(toolbar.textContent).toBe('Audit');
 	});
 
+	it('labels Save and Discard while the row is wide enough, like Create and Edit', () => {
+		renderInDetailPage(
+			<ResourceActionBar
+				onSaveClick={() => undefined} isLoading={false} updateMode setUpdateMode={() => undefined}
+			/>,
+			{ commands: { getById: 'iam.iam_user.get_by_id', update: 'iam.iam_user.update' } },
+		);
+		expect(screen.getByTestId(byTestId('action', 'save')).textContent).toBe('test:action.save');
+		expect(screen.getByTestId(byTestId('action', 'cancel')).textContent).toBe('test:action.discard');
+	});
+
 	it.each(['firstSection', 'firstSectionHeader'] as const)(
 		'leaves the toolbar to the toggle when the page moves the strip to %s', placement => {
 			renderActionBar(placement);

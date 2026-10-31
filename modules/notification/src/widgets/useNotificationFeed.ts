@@ -4,8 +4,9 @@ import React from 'react';
 
 import { BELL_PAGE_SIZE } from '../constants';
 import { inboxService } from '../features/notification/inboxService';
-import { NotificationStream } from '../features/notification/stream';
+import { acquireSharedStream } from '../features/notification/sharedStream';
 
+import type { SharedStreamHandle } from '../features/notification/sharedStream';
 import type { StreamStatus } from '../features/notification/stream';
 import type { NotificationItem } from '../features/notification/types';
 import type { MicroAppApiOptions } from '@nikkierp/ui/microApp';
@@ -47,7 +48,7 @@ export function useNotificationFeed(enabled: boolean = true): NotificationFeed {
 		)));
 		state.setUnreadCount(count => Math.max(0, count - 1));
 
-		void inboxService.markRead(orgId, [notificationId]);
+		void markReadAndTell(state, orgId, [notificationId]);
 	}, [state]);
 
 	const markAllRead = React.useCallback(() => {
@@ -60,7 +61,7 @@ export function useNotificationFeed(enabled: boolean = true): NotificationFeed {
 		state.setItems(current => current.map(asRead));
 		state.setUnreadCount(0);
 
-		void inboxService.markRead(orgId, unreadIds);
+		void markReadAndTell(state, orgId, unreadIds);
 	}, [state]);
 
 	const reload = React.useCallback(() => setReloadToken(token => token + 1), []);
@@ -78,12 +79,22 @@ export function useNotificationFeed(enabled: boolean = true): NotificationFeed {
 
 type FeedState = ReturnType<typeof useFeedState>;
 
+/**
+ * Marks read on the server, then tells the other bells. Only after the server agreed: they answer
+ * by refetching their unread count, which must already reflect this change.
+ */
+async function markReadAndTell(state: FeedState, orgId: string, notificationIds: string[]): Promise<void> {
+	const result = await inboxService.markRead(orgId, notificationIds);
+	if (result.clientErrors.length === 0) state.streamRef.current?.publishRead(notificationIds);
+}
+
 function useFeedState() {
 	const [items, setItems] = React.useState<NotificationItem[]>([]);
 	const [unreadCount, setUnreadCount] = React.useState(0);
 	const [status, setStatus] = React.useState<StreamStatus>('connecting');
 	const [failed, setFailed] = React.useState(false);
 	const orgIdRef = React.useRef<string | null>(null);
+	const streamRef = React.useRef<SharedStreamHandle | null>(null);
 
 	/** Merges an arriving notification, newest first, without duplicating one already shown. */
 	const accept = React.useCallback((incoming: NotificationItem) => {
@@ -95,12 +106,26 @@ function useFeedState() {
 		if (!incoming.is_read) setUnreadCount(count => count + 1);
 	}, []);
 
+	/**
+	 * Another bell marked these read. The items are updated in place, but the count is refetched:
+	 * it covers notifications beyond the loaded page, so subtracting what is visible would drift.
+	 */
+	const acceptRead = React.useCallback((notificationIds: string[]) => {
+		const ids = new Set(notificationIds);
+		setItems(current => current.map(item => (ids.has(item.notification_id) ? asRead(item) : item)));
+		const orgId = orgIdRef.current;
+		if (!orgId) return;
+		void inboxService.getUnreadCount(orgId).then(unread => {
+			if (unread.clientErrors.length === 0) setUnreadCount(unread.data?.count ?? 0);
+		});
+	}, []);
+
 	return React.useMemo(
 		() => ({
 			items, setItems, unreadCount, setUnreadCount,
-			status, setStatus, failed, setFailed, orgIdRef, accept,
+			status, setStatus, failed, setFailed, orgIdRef, streamRef, accept, acceptRead,
 		}),
-		[items, unreadCount, status, failed, accept],
+		[items, unreadCount, status, failed, accept, acceptRead],
 	);
 }
 
@@ -114,7 +139,7 @@ function useFeedState() {
 function useFeedConnection(
 	api: MicroAppApiOptions, state: FeedState, reloadToken: number, enabled: boolean,
 ): void {
-	const { accept, setStatus, setFailed, setItems, setUnreadCount, orgIdRef } = state;
+	const { accept, acceptRead, setStatus, setFailed, setItems, setUnreadCount, orgIdRef, streamRef } = state;
 
 	React.useEffect(() => {
 		if (!enabled) {
@@ -122,7 +147,7 @@ function useFeedConnection(
 			return;
 		}
 		let cancelled = false;
-		let stream: NotificationStream | null = null;
+		let stream: SharedStreamHandle | null = null;
 
 		async function connect(): Promise<void> {
 			const orgId = await getCurrentOrgId();
@@ -136,44 +161,64 @@ function useFeedConnection(
 			}
 			orgIdRef.current = orgId;
 
-			stream = new NotificationStream({
+			// Shared with the other bells of this tab and, through a leader tab, of the browser.
+			stream = acquireSharedStream(
 				orgId,
-				baseUrl: api.defaultBaseUrl,
-				ensureSession: api.ensureSession,
-				onNotification: accept,
-				onStatus: next => { if (!cancelled) setStatus(next); },
-			});
-			stream.start();
+				{ baseUrl: api.defaultBaseUrl, ensureSession: api.ensureSession },
+				{
+					onNotification: accept,
+					onStatus: next => { if (!cancelled) setStatus(next); },
+					onRead: acceptRead,
+				},
+			);
+			streamRef.current = stream;
 
-			const [inbox, unread] = await Promise.all([
-				inboxService.getInbox(orgId, { limit: BELL_PAGE_SIZE }),
-				inboxService.getUnreadCount(orgId),
-			]);
-			if (cancelled) return;
-
-			if (inbox.clientErrors.length > 0 || unread.clientErrors.length > 0) {
-				setFailed(true);
-				return;
-			}
-			setFailed(false);
-			// Merged rather than replaced: the stream may already have delivered something newer
-			// than this page, and overwriting would drop it.
-			setItems(current => mergeNewestFirst(current, inbox.data?.items ?? []));
-			setUnreadCount(unread.data?.count ?? 0);
+			await loadFirstPage(orgId, { setFailed, setItems, setUnreadCount }, stream, () => cancelled);
 		}
 
 		void connect().catch(() => { if (!cancelled) setFailed(true); });
 
 		return () => {
 			cancelled = true;
-			// Without this the backend keeps a response open for a browser that has navigated
-			// away, until its own heartbeat write fails.
-			stream?.close();
+			// The last release ends the stream; without it the backend keeps a response open for a
+			// browser that has navigated away, until its own heartbeat write fails.
+			stream?.release();
+			if (streamRef.current === stream) streamRef.current = null;
 		};
 		// `state` is deliberately not a dependency: it changes on every notification, and
 		// depending on it would tear down and reopen the stream each time one arrived. The
 		// setters it destructures are stable, so this list is complete in practice.
-	}, [accept, api, reloadToken, enabled, orgIdRef, setFailed, setItems, setStatus, setUnreadCount]);
+	}, [
+		accept, acceptRead, api, reloadToken, enabled, orgIdRef, streamRef,
+		setFailed, setItems, setStatus, setUnreadCount,
+	]);
+}
+
+async function loadFirstPage(
+	orgId: string,
+	setters: Pick<FeedState, 'setFailed' | 'setItems' | 'setUnreadCount'>,
+	stream: SharedStreamHandle,
+	isCancelled: () => boolean,
+): Promise<void> {
+	const [inbox, unread] = await Promise.all([
+		inboxService.getInbox(orgId, { limit: BELL_PAGE_SIZE }),
+		inboxService.getUnreadCount(orgId),
+	]);
+	if (isCancelled()) return;
+
+	if (inbox.clientErrors.length > 0 || unread.clientErrors.length > 0) {
+		setters.setFailed(true);
+		return;
+	}
+	setters.setFailed(false);
+	const items = inbox.data?.items ?? [];
+	// What the page shows is already delivered. A tab that takes the stream over before any live
+	// notification arrived would otherwise connect without `after_seq` and miss the handover gap.
+	if (items.length > 0) stream.noteSeen(Math.max(...items.map(item => item.stream_seq)));
+	// Merged rather than replaced: the stream may already have delivered something newer than
+	// this page, and overwriting would drop it.
+	setters.setItems(current => mergeNewestFirst(current, items));
+	setters.setUnreadCount(unread.data?.count ?? 0);
 }
 
 function asRead(item: NotificationItem): NotificationItem {

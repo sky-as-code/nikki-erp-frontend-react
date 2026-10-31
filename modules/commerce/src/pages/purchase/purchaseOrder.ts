@@ -138,7 +138,11 @@ function buildOrderDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.PURCHASE_ORDER_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['cancelled'],
+		}),
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -165,7 +169,7 @@ function buildPurchaseOrderFieldsSection(): ComponentNode {
 			header: 'form.generalInformation',
 			// `code` is allocated by the backend; `vendor_reference` is the vendor's own number for
 			// the same document. A support conversation may start from either.
-			fields: ['code', 'status', 'vendor_id', 'vendor_reference', 'buyer_id', 'currency_id',
+			fields: ['code', 'vendor_id', 'vendor_reference', 'buyer_id', 'currency_id',
 				'priority'],
 		}),
 		resourceFormColumnNode({

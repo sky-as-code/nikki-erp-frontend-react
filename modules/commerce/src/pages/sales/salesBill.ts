@@ -68,7 +68,11 @@ function buildSalesBillDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_BILL_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['cancelled'],
+		}),
 		titleLvl1: { schemaField: 'bill_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -96,7 +100,7 @@ function buildSalesBillFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.bill',
-			fields: ['bill_number', 'sales_order_id', 'status', 'payment_status',
+			fields: ['bill_number', 'sales_order_id', 'payment_status',
 				'currency_code'],
 		}),
 		resourceFormColumnNode({

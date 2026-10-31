@@ -61,7 +61,11 @@ function buildSalesReturnDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_RETURN_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['cancelled'],
+		}),
 		titleLvl1: { schemaField: 'return_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -121,7 +125,7 @@ function buildSalesReturnFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.return',
-			fields: ['return_number', 'sales_order_id', 'status', 'return_type', 'refund_reason',
+			fields: ['return_number', 'sales_order_id', 'return_type', 'refund_reason',
 				'refund_status', 'refund_total', 'locked_refund_amount', 'reason'],
 		}),
 		resourceFormColumnNode({

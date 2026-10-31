@@ -68,7 +68,7 @@ export type ResourceActionBarProps = {
  *
  * Read mode: Create, a separator, Update, contextual actions, overflow menu; on the right the status
  * flow and the Audit toggle.
- * Update mode: Discard and Save alone, so nothing else can be started over unsaved edits; on the
+ * Update mode: Save and Discard alone, so nothing else can be started over unsaved edits; on the
  * right only the Audit toggle, which changes no data.
  */
 export function ResourceActionBar({
@@ -102,7 +102,7 @@ export function ResourceActionBar({
 
 /**
  * The action row: the left toolbar takes whatever width the right one leaves, and the row's own
- * measured width decides whether the icon buttons go compact (`toolbarCompact.tsx`).
+ * measured width decides whether the icon buttons go compact (`toolbarCompact.tsx`), in both modes.
  */
 function ActionRow({ children }: { children: React.ReactNode }): React.ReactNode {
 	const { ref, compact } = useToolbarCompactMeasure();
@@ -192,9 +192,10 @@ function PrimaryActionButtons({
 	const { schemaPack } = useResourceDetailContext();
 	const schemaFields = React.useMemo(() => Object.keys(schemaPack?.modelSchema?.fields ?? {}), [schemaPack]);
 	const updateLock = useAnyFieldActionLock(useResourceDetailSchemaName(), StandardActionCode.Update, schemaFields);
-	// Save and Discard keep their labels: alone in the row with the Audit toggle, they always fit. Save comes
-	// first, as the primary action leads the row on every page.
+	// Save comes first, as the primary action leads the row on every page.
 	const updateContent = useToolbarButtonContent(<IconPencil size={16} />, t('action.edit'));
+	const saveContent = useToolbarButtonContent(<IconDeviceFloppy size={16} />, t('action.save'));
+	const discardContent = useToolbarButtonContent(<IconX size={16} />, t('action.discard'));
 	if (!updateCommand) {
 		return null;
 	}
@@ -204,24 +205,20 @@ function PrimaryActionButtons({
 			<>
 				<Button
 					variant='filled'
-					leftSection={<IconDeviceFloppy size={16} />}
 					onClick={onSaveClick}
 					disabled={isLoading}
 					loading={isLoading}
 					type='submit'
 					{...commandAttrs(updateCommand)}
 					{...tid('action', 'save')}
-				>
-					{t('action.save')}
-				</Button>
+					{...saveContent}
+				/>
 				<Button
 					variant='outline'
 					onClick={() => (onCancel ? onCancel() : setUpdateMode(false))}
-					leftSection={<IconX size={16} />}
 					{...tid('action', 'cancel')}
-				>
-					{t('action.discard')}
-				</Button>
+					{...discardContent}
+				/>
 			</>
 		);
 	}

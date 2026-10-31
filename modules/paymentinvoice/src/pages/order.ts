@@ -74,7 +74,11 @@ function buildOrderDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.ORDER_SCHEMA_NAME,
 		translationNs: c.PAYMENTINVOICE_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['payment_failed', 'canceled', 'refund_failed', 'expired'],
+		}),
 		titleLvl1: { schemaField: 'order_id' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -100,7 +104,7 @@ function buildOrderFieldsSection(): ComponentNode {
 			// order_id is what the ordering system quotes; order_code is what the gateway knows
 			// the order by. They are different strings and both are shown, because a support
 			// conversation may start from either.
-			fields: ['order_id', 'order_code', 'source', 'status', 'content'],
+			fields: ['order_id', 'order_code', 'source', 'content'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.money',

@@ -53,7 +53,11 @@ function buildSalesChannelDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_CHANNEL_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['suspended'],
+		}),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -80,7 +84,7 @@ function buildSalesChannelFieldsSection(isUpdate: boolean): ComponentNode {
 			// is how a kiosk network loses the channel its tills are configured with.
 			// The two automation flags are snapshotted onto every order this channel takes at
 			// create; changing them here never reaches an existing order.
-			fields: ['code', 'name', 'description', 'status', 'auto_confirm_order', 'auto_confirm_refund'],
+			fields: ['code', 'name', 'description', 'auto_confirm_order', 'auto_confirm_refund'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.other_information',

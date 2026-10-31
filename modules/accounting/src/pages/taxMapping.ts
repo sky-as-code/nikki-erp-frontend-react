@@ -59,7 +59,10 @@ function buildDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.TAX_MAPPING_SCHEMA_NAME,
 		translationNs: c.ACCOUNTING_MODULE,
-		...statusStripProps(STATUS_BADGE, 'lifecycle_status'),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+		}, 'lifecycle_status'),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
 		backLinkTitle: { linkHref: '../' },
@@ -94,7 +97,7 @@ function buildFieldsSection(): ComponentNode {
 		}),
 		resourceFormColumnNode({
 			header: 'form.lifecycle',
-			fields: ['lifecycle_status', 'version_no', 'supersedes_mapping_id'],
+			fields: ['version_no', 'supersedes_mapping_id'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.audit',

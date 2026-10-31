@@ -60,7 +60,11 @@ function buildSalesQuotationDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_QUOTATION_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['expired', 'cancelled'],
+		}),
 		titleLvl1: { schemaField: 'quotation_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -84,7 +88,7 @@ function buildSalesQuotationFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.quotation',
-			fields: ['quotation_number', 'status', 'sales_channel_id', 'sales_point_id',
+			fields: ['quotation_number', 'sales_channel_id', 'sales_point_id',
 				'customer_reference', 'currency_code'],
 		}),
 		resourceFormColumnNode({

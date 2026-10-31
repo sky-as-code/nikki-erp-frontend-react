@@ -5,12 +5,13 @@ import { statusStripProps } from './statusStripProps';
 
 
 describe('statusStripProps', () => {
-	const badge = { colorMap: { draft: 'gray', done: 'teal' }, prefix: 'transfer_status.' };
+	const badge = { statuses: ['draft', 'done', 'cancelled'], prefix: 'transfer_status.', alternativeEnds: ['cancelled'] };
 
-	it('lists the badge statuses in colour-map order, labelled by the badge prefix', () => {
+	it('lists the statuses in order, labelled by the prefix, alternative ends marked, without colours', () => {
 		expect(statusStripProps(badge).allStatuses).toEqual([
-			{ value: 'draft', color: 'gray', label: 'transfer_status.draft' },
-			{ value: 'done', color: 'teal', label: 'transfer_status.done' },
+			{ value: 'draft', label: 'transfer_status.draft' },
+			{ value: 'done', label: 'transfer_status.done' },
+			{ value: 'cancelled', label: 'transfer_status.cancelled', alternativeEnd: true },
 		]);
 	});
 

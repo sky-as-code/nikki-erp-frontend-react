@@ -1,17 +1,16 @@
-import { Collapse, Group, SegmentedControl, Stack, Title, UnstyledButton } from '@mantine/core';
+import { Collapse, Paper, SegmentedControl } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
-import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import React from 'react';
 
 import { tabCollapsibleSectionPropsSchema, TabCollapsibleSectionProps } from './props';
 import { TAB_COLLAPSIBLE_SECTION } from '../../ids';
 import { useSectionTitle } from '../../pages/resourceDetail/sectionTitle';
-import classes from '../collapsibleSection/CollapsibleSection.module.css';
-import layoutClasses from '../formBlockLayout.module.css';
-import { PaperWithBorder } from '../paperWithBorder';
+import { SectionHeader } from '../collapsibleSection/SectionHeader';
+import shellClasses from '../collapsibleSection/SectionShell.module.css';
+import panelClasses from '../formPanel/FormPanel.module.css';
 
 import type { IComponentRenderer } from '@nikkierp/viewengine/core';
 
@@ -46,15 +45,14 @@ function TabCollapsibleSection({ props }: { props: TabCollapsibleSectionProps })
 		&& (props.titleVisibility === 'show' || (props.titleVisibility === 'auto' && !showTabs));
 
 	const headerText = useSectionTitle(props.header, t);
-	const sectionTitle = showSectionTitle && headerText != null
-		? <Title order={4}>{headerText}</Title>
-		: null;
+	const sectionTitle = showSectionTitle ? headerText : null;
+	const titleId = React.useId();
 
 	const body = (
-		<div className={layoutClasses.formBlockWrapper}>
+		<div className={panelClasses.sections}>
 			{props.tabs.map(tab => (
 				<div
-					key={tab.key}
+					key={tab.key} className={panelClasses.contents}
 					style={showTabs && active !== ALL_TAB && active !== tab.key ? { display: 'none' } : undefined}
 				>
 					<MetaComponent node={tab.content} />
@@ -64,22 +62,16 @@ function TabCollapsibleSection({ props }: { props: TabCollapsibleSectionProps })
 	);
 
 	return (
-		<Stack component={PaperWithBorder} gap='xs' {...componentAttrs(TAB_COLLAPSIBLE_SECTION)}>
-			<Group gap='xs' align='center' wrap='wrap' className={classes.sectionHeader}>
-				{props.collapsible ? (
-					<UnstyledButton
-						className={classes.collapsibleHeader}
-						onClick={() => setExpanded(prev => !prev)}
-						aria-expanded={expanded}
-						{...testAttrs(testIdPrefix, props.header, 'toggle')}
-					>
-						<Group gap='xs'>
-							{expanded ? <IconChevronDown size={18} /> : <IconChevronRight size={18} />}
-							{sectionTitle}
-						</Group>
-					</UnstyledButton>
-				) : sectionTitle}
-				{showTabs ? (
+		<Paper
+			withBorder radius='md' className={shellClasses.panel}
+			aria-labelledby={sectionTitle != null ? titleId : undefined}
+			{...componentAttrs(TAB_COLLAPSIBLE_SECTION)}
+		>
+			{props.collapsible || sectionTitle != null || showTabs ? <SectionHeader
+				title={sectionTitle} titleId={titleId} collapsible={props.collapsible}
+				expanded={expanded} onToggle={() => setExpanded(prev => !prev)}
+				toggleAttrs={testAttrs(testIdPrefix, props.header, 'toggle')}
+				rightSegment={showTabs ? (
 					<SegmentedControl
 						value={active}
 						onChange={setActive}
@@ -90,19 +82,16 @@ function TabCollapsibleSection({ props }: { props: TabCollapsibleSectionProps })
 						{...testAttrs(testIdPrefix, 'blockVisibility')}
 					/>
 				) : null}
-			</Group>
+			/> : null}
 			{props.collapsible ? (
 				<Collapse
 					expanded={expanded}
 					transitionDuration={props.transitionDuration}
 					transitionTimingFunction={props.transitionTimingFunction}
-					className={layoutClasses.containerInlineSize}
 				>
 					{body}
 				</Collapse>
-			) : (
-				<div className={layoutClasses.containerInlineSize}>{body}</div>
-			)}
-		</Stack>
+			) : body}
+		</Paper>
 	);
 }
