@@ -29,6 +29,12 @@ export type StreamOptions = {
 	 * the last sequence the tabs saw, so the handover neither repeats nor skips a notification.
 	 */
 	initialLastSeq?: number | null,
+
+	/**
+	 * Called whenever the server sends anything, heartbeats included. Driven by the network, not
+	 * a timer, so it keeps firing in a background tab whose timers the browser throttles.
+	 */
+	onActivity?: () => void,
 };
 
 export type StreamStatus = 'connecting' | 'open' | 'reconnecting' | 'closed';
@@ -183,6 +189,7 @@ export class NotificationStream {
 			while (!this.#closed) {
 				const { done, value } = await reader.read();
 				if (done || this.#closed) return;
+				this.#options.onActivity?.();
 
 				buffer += decoder.decode(value, { stream: true });
 

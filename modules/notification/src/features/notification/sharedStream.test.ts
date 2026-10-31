@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { SharedStreamRegistry } from './sharedStream';
+import { LEADER_STALE_MS, SharedStreamRegistry } from './sharedStream';
 
-import type { ChannelLike, LockManagerLike, SharedStreamDeps, SharedStreamListener } from './sharedStream';
+import type {
+	ChannelLike, LifecycleTarget, LockManagerLike, SharedStreamDeps, SharedStreamListener,
+} from './sharedStream';
 import type { NotificationItem } from './types';
 
 
@@ -19,58 +21,96 @@ function item(seq: number): NotificationItem {
 	};
 }
 
-/** The browser's lock manager in miniature: one holder per name, waiters served in order. */
+/**
+ * The browser's lock manager in miniature: one holder per name, waiters served in order, and
+ * `steal` granting at once while the robbed holder's request rejects (its callback runs on).
+ */
 class FakeLocks implements LockManagerLike {
 	readonly #queues = new Map<string, Array<() => void>>();
-	readonly #held = new Set<string>();
+	readonly #held = new Map<string, { reject: (error: unknown) => void }>();
 
-	public request(name: string, options: { signal: AbortSignal }, callback: () => Promise<void>): Promise<unknown> {
+	public request(
+		name: string, options: { signal?: AbortSignal, steal?: boolean }, callback: () => Promise<void>,
+	): Promise<unknown> {
 		return new Promise((resolve, reject) => {
+			const holder = { reject };
 			const grant = () => {
-				this.#held.add(name);
+				this.#held.set(name, holder);
 				void callback().finally(() => {
-					this.#held.delete(name);
-					this.#queues.get(name)?.shift()?.();
+					if (this.#held.get(name) === holder) {
+						this.#held.delete(name);
+						this.#queues.get(name)?.shift()?.();
+					}
 					resolve(undefined);
 				});
 			};
+			if (options.steal) {
+				this.#held.get(name)?.reject(new DOMException('stolen', 'AbortError'));
+				grant();
+				return;
+			}
 			if (!this.#held.has(name)) {
 				grant();
 				return;
 			}
-			const queue = this.#queues.get(name) ?? [];
-			queue.push(grant);
-			this.#queues.set(name, queue);
-			options.signal.addEventListener('abort', () => {
-				const index = queue.indexOf(grant);
-				if (index >= 0) queue.splice(index, 1);
-				reject(new DOMException('aborted', 'AbortError'));
-			});
+			this.#enqueue(name, grant, options.signal, reject);
+		});
+	}
+
+	#enqueue(name: string, grant: () => void, signal: AbortSignal | undefined, reject: (error: unknown) => void): void {
+		const queue = this.#queues.get(name) ?? [];
+		queue.push(grant);
+		this.#queues.set(name, queue);
+		signal?.addEventListener('abort', () => {
+			const index = queue.indexOf(grant);
+			if (index >= 0) queue.splice(index, 1);
+			reject(new DOMException('aborted', 'AbortError'));
 		});
 	}
 }
 
+type ChannelNetwork = {
+	create: (name: string) => ChannelLike,
+
+	/** Silences the next channel created, like the code of a tab frozen without notice. */
+	muteNext: () => void,
+};
+
 /** Channels that, like BroadcastChannel, deliver to every other channel of the same name. */
-function channelNetwork(): (name: string) => ChannelLike {
+function channelNetwork(): ChannelNetwork {
 	const members = new Set<{ name: string, channel: ChannelLike }>();
-	return name => {
+	const muted = new Set<ChannelLike>();
+	let muteNext = false;
+	const create = (name: string) => {
 		const member = {
 			name,
 			channel: {
 				onmessage: null,
 				postMessage: (message: unknown) => {
+					if (muted.has(member.channel)) return;
 					members.forEach(other => {
-						if (other !== member && other.name === name) {
-							const event = { data: structuredClone(message) } as MessageEvent;
-							queueMicrotask(() => other.channel.onmessage?.(event));
-						}
+						if (other === member || other.name !== name || muted.has(other.channel)) return;
+						const event = { data: structuredClone(message) } as MessageEvent;
+						queueMicrotask(() => other.channel.onmessage?.(event));
 					});
 				},
 				close: () => { members.delete(member); },
 			} as ChannelLike,
 		};
 		members.add(member);
+		if (muteNext) muted.add(member.channel);
+		muteNext = false;
 		return member.channel;
+	};
+	return { create, muteNext: () => { muteNext = true; } };
+}
+
+/** A `document` stand-in that the test fires Page Lifecycle events on. */
+function lifecycle() {
+	const target = new EventTarget();
+	return {
+		target: target as LifecycleTarget,
+		fire: (type: 'freeze' | 'resume') => target.dispatchEvent(new Event(type)),
 	};
 }
 
@@ -106,7 +146,7 @@ function flush(): Promise<void> {
 
 function setup() {
 	const locks = new FakeLocks();
-	const createChannel = channelNetwork();
+	const network = channelNetwork();
 	const bodies: Array<ReturnType<typeof liveBody>> = [];
 	const fetchMock = vi.fn().mockImplementation(() => {
 		const live = liveBody();
@@ -114,8 +154,10 @@ function setup() {
 		return Promise.resolve({ ok: true, status: 200, body: live.body });
 	});
 	vi.stubGlobal('fetch', fetchMock);
-	const deps: SharedStreamDeps = { baseUrl: '/api', ensureSession: () => true, locks, createChannel };
-	return { deps, fetchMock, bodies };
+	const deps: SharedStreamDeps = {
+		baseUrl: '/api', ensureSession: () => true, locks, createChannel: network.create, lifecycle: null,
+	};
+	return { deps, fetchMock, bodies, network };
 }
 
 afterEach(() => {
@@ -235,5 +277,109 @@ describe('SharedStreamRegistry read sync', () => {
 		handle.release();
 		siblingHandle.release();
 		otherHandle.release();
+	});
+});
+
+describe('SharedStreamRegistry handover gaps', () => {
+	it('resumes a takeover after the newest sequence a bell already showed', async () => {
+		const { deps, fetchMock } = setup();
+
+		const handleA = new SharedStreamRegistry().acquire('org-1', deps, listener());
+		const handleB = new SharedStreamRegistry().acquire('org-1', deps, listener());
+		await flush();
+		// No live notification yet: only the loaded inbox page tells tab B where the stream stood.
+		handleB.noteSeen(12);
+		handleA.release();
+		await flush();
+
+		expect(String(fetchMock.mock.calls[1][0])).toContain('after_seq=12');
+		handleB.release();
+	});
+
+	it('hands the stream over when the leader tab is about to be frozen', async () => {
+		const { deps, fetchMock } = setup();
+		const pageA = lifecycle();
+
+		const handleA = new SharedStreamRegistry().acquire('org-1', { ...deps, lifecycle: pageA.target }, listener());
+		const handleB = new SharedStreamRegistry().acquire('org-1', deps, listener());
+		await flush();
+		const leaderSignal: AbortSignal = fetchMock.mock.calls[0][1].signal;
+
+		pageA.fire('freeze');
+		await flush();
+		expect(leaderSignal.aborted).toBe(true);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+
+		// Back from the freeze, tab A queues again rather than opening a second stream.
+		pageA.fire('resume');
+		await flush();
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+
+		handleB.release();
+		await flush();
+		expect(fetchMock).toHaveBeenCalledTimes(3);
+		handleA.release();
+	});
+
+	it('does not let a frozen follower win the lock', async () => {
+		const { deps, fetchMock } = setup();
+		const pageB = lifecycle();
+
+		const handleA = new SharedStreamRegistry().acquire('org-1', deps, listener());
+		const handleB = new SharedStreamRegistry().acquire('org-1', { ...deps, lifecycle: pageB.target }, listener());
+		await flush();
+
+		pageB.fire('freeze');
+		handleA.release();
+		await flush();
+
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		pageB.fire('resume');
+		await flush();
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		handleB.release();
+	});
+});
+
+describe('SharedStreamRegistry silent leader', () => {
+	const timers = { toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] as const };
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('steals the lock from a leader that went silent, resuming after the last sequence', async () => {
+		vi.useFakeTimers({ toFake: [...timers.toFake] });
+		const { deps, fetchMock, network } = setup();
+
+		// Tab A's channel goes mute: a leader frozen without a `freeze` event relays nothing.
+		network.muteNext();
+		const handleA = new SharedStreamRegistry().acquire('org-1', deps, listener());
+		const handleB = new SharedStreamRegistry().acquire('org-1', deps, listener());
+		await vi.advanceTimersByTimeAsync(0);
+		handleB.noteSeen(4);
+		const robbedSignal: AbortSignal = fetchMock.mock.calls[0][1].signal;
+
+		await vi.advanceTimersByTimeAsync(LEADER_STALE_MS + 1);
+
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(String(fetchMock.mock.calls[1][0])).toContain('after_seq=4');
+		// The robbed leader stops streaming as soon as it can run again.
+		expect(robbedSignal.aborted).toBe(true);
+		handleA.release();
+		handleB.release();
+	});
+
+	it('leaves a leader that keeps pulsing alone', async () => {
+		vi.useFakeTimers({ toFake: [...timers.toFake] });
+		const { deps, fetchMock } = setup();
+
+		const handleA = new SharedStreamRegistry().acquire('org-1', deps, listener());
+		const handleB = new SharedStreamRegistry().acquire('org-1', deps, listener());
+		await vi.advanceTimersByTimeAsync(LEADER_STALE_MS * 3);
+
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		handleA.release();
+		handleB.release();
 	});
 });

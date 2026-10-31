@@ -173,7 +173,7 @@ function useFeedConnection(
 			);
 			streamRef.current = stream;
 
-			await loadFirstPage(orgId, { setFailed, setItems, setUnreadCount }, () => cancelled);
+			await loadFirstPage(orgId, { setFailed, setItems, setUnreadCount }, stream, () => cancelled);
 		}
 
 		void connect().catch(() => { if (!cancelled) setFailed(true); });
@@ -197,6 +197,7 @@ function useFeedConnection(
 async function loadFirstPage(
 	orgId: string,
 	setters: Pick<FeedState, 'setFailed' | 'setItems' | 'setUnreadCount'>,
+	stream: SharedStreamHandle,
 	isCancelled: () => boolean,
 ): Promise<void> {
 	const [inbox, unread] = await Promise.all([
@@ -210,9 +211,13 @@ async function loadFirstPage(
 		return;
 	}
 	setters.setFailed(false);
+	const items = inbox.data?.items ?? [];
+	// What the page shows is already delivered. A tab that takes the stream over before any live
+	// notification arrived would otherwise connect without `after_seq` and miss the handover gap.
+	if (items.length > 0) stream.noteSeen(Math.max(...items.map(item => item.stream_seq)));
 	// Merged rather than replaced: the stream may already have delivered something newer than
 	// this page, and overwriting would drop it.
-	setters.setItems(current => mergeNewestFirst(current, inbox.data?.items ?? []));
+	setters.setItems(current => mergeNewestFirst(current, items));
 	setters.setUnreadCount(unread.data?.count ?? 0);
 }
 
