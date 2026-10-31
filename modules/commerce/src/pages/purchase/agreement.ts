@@ -77,7 +77,11 @@ function buildAgreementDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.AGREEMENT_SCHEMA_NAME,
 		translationNs: c.PURCHASE_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['cancelled'],
+		}),
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -105,7 +109,7 @@ function buildAgreementFieldsSection(): ComponentNode {
 			header: 'form.generalInformation',
 			// `vendor_id` is optional here, unlike on an order: a template may be drafted before
 			// anyone has chosen who to buy from.
-			fields: ['code', 'reference', 'agreement_type', 'status', 'vendor_id', 'buyer_id',
+			fields: ['code', 'reference', 'agreement_type', 'vendor_id', 'buyer_id',
 				'currency_id'],
 		}),
 		resourceFormColumnNode({

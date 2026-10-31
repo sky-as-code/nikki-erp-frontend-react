@@ -1,4 +1,4 @@
-import { ActionIcon, Group, Stack, Title } from '@mantine/core';
+import { ActionIcon, Group } from '@mantine/core';
 import { capitalizeWords } from '@nikkierp/common/utils';
 import { Breadcrumbs, useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
 import { Button } from '@nikkierp/ui/components';
@@ -7,15 +7,14 @@ import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { ShortcutSequence } from '@nikkierp/ui/shortcuts';
 import { commandAttrs } from '@nikkierp/viewengine/core';
 import { IconChevronDown, IconChevronRight, IconDeviceFloppy } from '@tabler/icons-react';
-import clsx from 'clsx';
 import React from 'react';
 
 import { useDetailFieldDisplay } from './detailFieldDisplay';
 import { isBlockVisible } from './fieldVisibility';
+import { FormSection } from './formSection';
 import { FieldGroupVertical, useVisibleBlockFields } from './ownPropertiesBlock';
 import { useResourceCreateContext } from './resourceCreateContext';
 import classes from './ResourceDetail.module.css';
-import { formBlockSpanClass } from '../../components/formBlockSpan';
 import { StandardActionCode, useActionLock } from '../../permissions';
 import { columnFieldNames } from '../resourceDetail/formColumnFields';
 import {
@@ -169,8 +168,7 @@ export function ResourceCreateBlock({
 	}
 
 	return (
-		<Stack gap='sm' className={clsx(classes.formBlock, formBlockSpanClass(block))}>
-			{block.header && block.showTitle ? <Title order={4}>{t(block.header)}</Title> : null}
+		<FormSection block={block} title={block.header && block.showTitle ? t(block.header) : undefined}>
 			<FieldGroupVertical
 				fields={fields}
 				isLoading={isLoading}
@@ -179,7 +177,7 @@ export function ResourceCreateBlock({
 				mode='create'
 				relationSearch={block.relationSearch}
 			/>
-		</Stack>
+		</FormSection>
 	);
 }
 

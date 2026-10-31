@@ -70,7 +70,11 @@ function buildWarehouseDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.WAREHOUSE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['suspended'],
+		}),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
 		backLinkTitle: { linkHref: '../' },
@@ -96,7 +100,7 @@ function buildWarehouseFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.identification',
-			fields: ['code', 'name', 'warehouse_role', 'status', 'root_location_id'],
+			fields: ['code', 'name', 'warehouse_role', 'root_location_id'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.contactInformation',

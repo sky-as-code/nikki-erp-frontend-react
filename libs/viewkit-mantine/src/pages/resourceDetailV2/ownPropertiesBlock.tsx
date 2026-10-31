@@ -1,4 +1,4 @@
-import { ActionIcon, Group, Stack, Text, Title } from '@mantine/core';
+import { ActionIcon, Group, Stack, Text } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { toDisplayedEntitlements } from '@nikkierp/common/entitlements';
 import { FieldLabelText, localizeFieldDescription, useShowLockedFeature } from '@nikkierp/ui/components';
@@ -8,7 +8,6 @@ import {
 } from '@nikkierp/ui/components/form';
 import { type LocalizeFn, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconLock } from '@tabler/icons-react';
-import clsx from 'clsx';
 import React from 'react';
 
 import { useDetailFieldDisplay } from './detailFieldDisplay';
@@ -16,13 +15,11 @@ import { fieldLockView, type FieldLockView } from './fieldLocks';
 import {
 	applyVisibleWhen, fieldPresentation, isBlockVisible, isNeverShownField, visibleWhenSourceFields,
 } from './fieldVisibility';
-import { InlineFieldRow } from './inlineFieldRow';
+import { FieldPair, FieldRuns, fieldValueClass, FormSection } from './formSection';
 import { useRelationSearchScopes } from './relationSearchScope';
-import classes from './ResourceDetail.module.css';
 import { ResourceUpdateContext } from './resourceUpdateContext';
 import { EdgeFieldValue } from '../../components/edgeFieldValue';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
-import { formBlockSpanClass } from '../../components/formBlockSpan';
 import { StandardActionCode, useFieldLocks } from '../../permissions';
 import { columnFieldNames } from '../resourceDetail/formColumnFields';
 import {
@@ -56,8 +53,7 @@ export function OwnPropertiesBlock({
 	}
 
 	return (
-		<Stack gap='sm' className={clsx(classes.formBlock, formBlockSpanClass(block))}>
-			{block.header && block.showTitle ? <Title order={5} className='uppercase'>{t(block.header)}</Title> : null}
+		<FormSection block={block} title={block.header && block.showTitle ? t(block.header) : undefined}>
 			<FieldGroupVertical
 				fields={fields}
 				isLoading={isLoading}
@@ -68,7 +64,7 @@ export function OwnPropertiesBlock({
 				readOnlyFields={block.readOnlyFields}
 				relationSearch={block.relationSearch}
 			/>
-		</Stack>
+		</FormSection>
 	);
 }
 
@@ -124,7 +120,9 @@ export function FieldGroupVertical({
 	const searchScopes = useRelationSearchScopes(relationSearch, mode);
 	const fieldNames = React.useMemo(() => columnFieldNames(fields), [fields]);
 	const lockOf = useFieldLockViews(fieldNames, mode, modelSchema);
+	const semantic = mode === 'read';
 	const renderField = (field: string, labelHidden: boolean): React.ReactNode => {
+		const asTerm = semantic && !labelHidden;
 		const presentation = readOnlyFields?.includes(field) && mode === 'update' && !isNeverShownField(field)
 			? 'readonly'
 			: fieldPresentation(modelSchema, field, mode, stableFieldLayout);
@@ -134,13 +132,16 @@ export function FieldGroupVertical({
 		const fieldLock = lockOf(field, presentation === 'input');
 		if (fieldLock) {
 			return (
-				<LockedFieldValue field={field} modelSchema={modelSchema} lock={fieldLock} labelHidden={labelHidden} />
+				<LockedFieldValue
+					field={field} modelSchema={modelSchema} lock={fieldLock} labelHidden={labelHidden} asTerm={asTerm}
+				/>
 			);
 		}
 		if (presentation === 'readonly') {
 			return (
 				<ReadOnlyFieldValue
-					field={field} modelSchema={modelSchema} fieldValues={fieldValues} labelHidden={labelHidden}
+					field={field} modelSchema={modelSchema} fieldValues={fieldValues}
+					labelHidden={labelHidden} asTerm={asTerm}
 				/>
 			);
 		}
@@ -155,14 +156,7 @@ export function FieldGroupVertical({
 			</Stack>
 		);
 	};
-	const body = (
-		<div className={classes.formFieldWrapper}>
-			{fields.map((entry, index) => (typeof entry === 'string'
-				? <React.Fragment key={entry}>{renderField(entry, false)}</React.Fragment>
-				: <InlineFieldRow key={`row-${index}`} items={entry} renderField={field => renderField(field, true)} />
-			))}
-		</div>
-	);
+	const body = <FieldRuns fields={fields} semantic={semantic} renderField={renderField} />;
 	return searchScopes
 		? <RelationSearchScopeContext.Provider value={searchScopes}>{body}</RelationSearchScopeContext.Provider>
 		: body;
@@ -201,12 +195,13 @@ function useFieldLockViews(
  * learns the field exists and what grant opens it.
  */
 function LockedFieldValue({
-	field, modelSchema, lock, labelHidden,
+	field, modelSchema, lock, labelHidden, asTerm,
 }: {
 	field: string,
 	modelSchema: dyn.ModelSchema,
 	lock: FieldLockView,
 	labelHidden?: boolean,
+	asTerm: boolean,
 }): React.ReactNode {
 	const localize = useLocalize(useResourceDetailTranslationNs());
 	const t = useTranslate(useResourceDetailTranslationNs());
@@ -218,8 +213,10 @@ function LockedFieldValue({
 		showLocked(lock.missing, t(messageKey, { expression }));
 	};
 	return (
-		<Stack gap={4}>
-			{labelHidden ? null : <FieldLabelValue field={field} fieldDef={fieldDef} localize={localize} />}
+		<FieldPair
+			asTerm={asTerm}
+			label={labelHidden ? null : <FieldLabelValue field={field} fieldDef={fieldDef} localize={localize} />}
+		>
 			<Group>
 				<ActionIcon
 					variant='subtle'
@@ -232,7 +229,7 @@ function LockedFieldValue({
 					<IconLock size={16} />
 				</ActionIcon>
 			</Group>
-		</Stack>
+		</FieldPair>
 	);
 }
 
@@ -254,13 +251,15 @@ function LockedFieldHint({ hint }: { hint: string }): React.ReactNode {
  * is indistinguishable from a field that does not exist.
  */
 function ReadOnlyFieldValue({
-	field, modelSchema, fieldValues, labelHidden,
+	field, modelSchema, fieldValues, labelHidden, asTerm,
 }: {
 	field: string,
 	modelSchema: dyn.ModelSchema,
 	fieldValues: Record<string, unknown>,
 	/** In an inline row the surrounding text names the value, so only the value shows. */
 	labelHidden?: boolean,
+	/** Read mode: a `dt`/`dd` pair of the column's `dl`. */
+	asTerm: boolean,
 }): React.ReactNode {
 	const localize = useLocalize(useResourceDetailTranslationNs());
 	// Called before the early return, since hooks cannot be skipped. It no-ops for every field
@@ -282,14 +281,10 @@ function ReadOnlyFieldValue({
 	if (!fieldDef) {
 		return null;
 	}
+	const label = labelHidden ? null : <FieldLabelValue field={field} fieldDef={fieldDef} localize={localize} />;
 	// A boolean is a switch in both modes, so flipping into update mode does not change its look.
 	if (fieldDef.data_type?.name === 'boolean') {
-		return (
-			<Stack gap={4}>
-				{labelHidden ? null : <FieldLabelValue field={field} fieldDef={fieldDef} localize={localize} />}
-				<ReadOnlyBooleanSwitch value={rawValue} />
-			</Stack>
-		);
+		return <FieldPair asTerm={asTerm} label={label}><ReadOnlyBooleanSwitch value={rawValue} /></FieldPair>;
 	}
 
 	const plainValue = hasDisplayableValue(rawValue)
@@ -297,19 +292,16 @@ function ReadOnlyFieldValue({
 		: emptyFieldPlaceholder;
 
 	return (
-		<Stack gap={4}>
-			{labelHidden ? null : <FieldLabelValue field={field} fieldDef={fieldDef} localize={localize} />}
-			<Text size='md' component='div'>
-				{relation ? (
-					<EdgeFieldValue
-						relation={relation}
-						labelField={edgeLabels[relation.edge]}
-						fieldValues={fieldValues}
-						fallback={plainValue}
-					/>
-				) : plainValue}
-			</Text>
-		</Stack>
+		<FieldPair asTerm={asTerm} label={label} valueClassName={fieldValueClass(fieldDef)}>
+			{relation ? (
+				<EdgeFieldValue
+					relation={relation}
+					labelField={edgeLabels[relation.edge]}
+					fieldValues={fieldValues}
+					fallback={plainValue}
+				/>
+			) : plainValue}
+		</FieldPair>
 	);
 }
 
@@ -320,12 +312,11 @@ function FieldLabelValue({ field, fieldDef, localize }: {
 	localize: LocalizeFn,
 }): React.ReactNode {
 	return (
-		<Text size='md' fw='600'>
-			<FieldLabelText
-				label={fieldDef ? localize(fieldDef.label) : field}
-				description={localizeFieldDescription(localize, fieldDef?.description)}
-			/>
-		</Text>
+		<FieldLabelText
+			label={fieldDef ? localize(fieldDef.label) : field}
+			description={localizeFieldDescription(localize, fieldDef?.description)}
+			announce
+		/>
 	);
 }
 

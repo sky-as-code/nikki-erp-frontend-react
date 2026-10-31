@@ -60,9 +60,9 @@ function buildServiceDetailProps() {
 		titleLvl1: { schemaField: 'display_name' },
 		backLinkTitle: { linkHref: '../' },
 		allStatuses: [
-			{ value: 'draft', label: 'status.draft', color: 'grape' },
-			{ value: 'active', label: 'status.active', color: 'green' },
-			{ value: 'suspended', label: 'status.suspended', color: 'orange' },
+			{ value: 'draft', label: 'status.draft' },
+			{ value: 'active', label: 'status.active' },
+			{ value: 'suspended', label: 'status.suspended', alternativeEnd: true },
 		],
 		currentStatus: { schemaField: 'status' },
 		statusPlacement: 'firstSectionHeader',

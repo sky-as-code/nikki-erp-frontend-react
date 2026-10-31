@@ -1,18 +1,18 @@
-import { Alert, Collapse, Group, Stack, Tabs, Title, UnstyledButton } from '@mantine/core';
+import { Alert, Collapse, Paper, Stack, Tabs } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { LinkModeScope } from '@nikkierp/ui/breadcrumbs';
 import { InsufficientPermissionContent, LoadingState } from '@nikkierp/ui/components';
 import { ExcelDataTable, withLeadingField } from '@nikkierp/ui/components/ExcelDataTable';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { useFieldRenderers } from '@nikkierp/viewengine/render';
-import { IconChevronDown, IconChevronRight, IconInfoCircle } from '@tabler/icons-react';
+import { IconInfoCircle } from '@tabler/icons-react';
 import React from 'react';
 
 import { assignmentSearchField } from './assignmentPayloads';
 import { useAssignmentWriteProps } from './RelatedAssignment';
 import { ResourceUpdateContext } from './resourceUpdateContext';
-import classes from '../../components/collapsibleSection/CollapsibleSection.module.css';
-import { PaperWithBorder } from '../../components/paperWithBorder';
+import { SectionHeader } from '../../components/collapsibleSection/SectionHeader';
+import shellClasses from '../../components/collapsibleSection/SectionShell.module.css';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
 import { useInterpolatedGraph } from '../../data/useInterpolatedGraph';
 import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
@@ -41,6 +41,7 @@ export function RelatedResourcesTabs(props: RelatedResourcesTabsProps): React.Re
 	const t = useTranslate(translationNs);
 	const [expanded, setExpanded] = React.useState(false);
 	const [hasExpanded, setHasExpanded] = React.useState(false);
+	const titleId = React.useId();
 	const onToggle = React.useCallback(() => {
 		setExpanded(prev => !prev);
 		setHasExpanded(true);
@@ -51,20 +52,12 @@ export function RelatedResourcesTabs(props: RelatedResourcesTabsProps): React.Re
 	// A record's related lists lead deeper, not sideways: their links append to the trail.
 	return (
 		<LinkModeScope mode='append'>
-			<Stack component={PaperWithBorder} gap='xs'>
-				<UnstyledButton
-					className={classes.collapsibleHeader}
-					onClick={onToggle}
-					aria-expanded={expanded}
-					{...testAttrs('ui.relatedResources', 'toggle')}
-				>
-					<Group gap='xs'>
-						{expanded ? <IconChevronDown size={18} /> : <IconChevronRight size={18} />}
-						<Title order={4}>
-							{t(header ?? 'datatable.relatedResources', { defaultValue: 'Related resources' })}
-						</Title>
-					</Group>
-				</UnstyledButton>
+			<Paper withBorder radius='md' className={shellClasses.panel} aria-labelledby={titleId}>
+				<SectionHeader
+					title={t(header ?? 'datatable.relatedResources', { defaultValue: 'Related resources' })}
+					titleId={titleId} collapsible expanded={expanded} onToggle={onToggle}
+					toggleAttrs={testAttrs('ui.relatedResources', 'toggle')}
+				/>
 				{/*
 					`Collapse` mounts its children even while collapsed -- it animates height -- so the
 					`hasExpanded` latch, not `Collapse`, is what keeps the tables from searching on page
@@ -72,15 +65,17 @@ export function RelatedResourcesTabs(props: RelatedResourcesTabsProps): React.Re
 				*/}
 				{hasExpanded ? (
 					<Collapse expanded={expanded}>
-						{notice ? (
-							<Alert color='blue' icon={<IconInfoCircle />} mb='xs' {...testAttrs('ui.relatedResources', 'notice')}>
-								{t(notice)}
-							</Alert>
-						) : null}
-						<RelatedResourcesTabList resources={resources} />
+						<div className={shellClasses.body}>
+							{notice ? (
+								<Alert color='blue' icon={<IconInfoCircle />} mb='xs' {...testAttrs('ui.relatedResources', 'notice')}>
+									{t(notice)}
+								</Alert>
+							) : null}
+							<RelatedResourcesTabList resources={resources} />
+						</div>
 					</Collapse>
 				) : null}
-			</Stack>
+			</Paper>
 		</LinkModeScope>
 	);
 }

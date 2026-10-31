@@ -81,9 +81,12 @@ describe('ownPropertySectionSchema', () => {
 		expect(block.showTitle).toBe(true);
 	});
 
-	it('takes one grid cell unless told to span the row', () => {
-		expect(ownPropertySectionSchema.parse({ fields: ['name'] }).span).toBeUndefined();
-		expect(ownPropertySectionSchema.parse({ fields: ['name'], span: 'full' }).span).toBe('full');
+	it('is fluid and separated unless told otherwise', () => {
+		const block = ownPropertySectionSchema.parse({ fields: ['name'] });
+		expect(block.isFluid).toBe(true);
+		expect(block.showSeparator).toBe(true);
+		const own = ownPropertySectionSchema.parse({ fields: ['note'], isFluid: false, showSeparator: false });
+		expect([own.isFluid, own.showSeparator]).toEqual([false, false]);
 	});
 
 	it('accepts inline rows mixed with field names', () => {
@@ -94,10 +97,6 @@ describe('ownPropertySectionSchema', () => {
 
 	it('rejects an inline row nested deeper than one level', () => {
 		expect(() => ownPropertySectionSchema.parse({ fields: [['@@name', ['@@code']]] })).toThrow();
-	});
-
-	it('rejects a span other than full', () => {
-		expect(() => ownPropertySectionSchema.parse({ fields: ['name'], span: 'half' })).toThrow();
 	});
 
 	it('takes a locked field as the record flag that unlocks it plus a hint key', () => {

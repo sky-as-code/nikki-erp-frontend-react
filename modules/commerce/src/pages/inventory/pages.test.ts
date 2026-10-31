@@ -532,11 +532,13 @@ describe('Stock transfer page', () => {
 	it('lays out the transfer as fields, Policies, then the Moves section, with no related tabs', () => {
 		const { createNodes, childrenNodes, titleLvl2 } = fieldsDetailProps(buildStockTransferPages()[0]);
 
-		expect(titleLvl2).toEqual({ schemaField: 'operation_type_id' });
+		expect(titleLvl2).toEqual({ schemaField: 'operation_code' });
 		expect(relatedTables(buildStockTransferPages()[0])).toEqual([]);
 		for (const nodes of [createNodes, childrenNodes]) {
 			expect(nodes.map(node => node.props?.header)).toEqual(['form.generalInformation', 'form.policies', 'form.moves']);
 			expect(formBlocks(nodes[0])[0].fields).not.toContain('org_id');
+			expect(nodes[0].children?.at(-1)?.props).toMatchObject({ fields: ['note'], isFluid: false, showSeparator: false });
+			expect(formBlocks(nodes[0])[0].fields).not.toContain('status');
 			expect(formBlocks(nodes[1]).map(block => block.header)).toEqual(['form.stockPolicies', 'form.backorder']);
 			expect(nodes[2].children?.map(child => child.component)).toEqual([STOCK_TRANSFER_MOVES]);
 		}
@@ -700,7 +702,7 @@ describe('Warehouse and location detail layout', () => {
 		for (const nodes of [createNodes, childrenNodes]) {
 			expect(nodes[0].props).toMatchObject({ header: 'form.generalInformation' });
 			expect(formBlocks(nodes[0])).toEqual([
-				{ header: 'form.identification', fields: ['code', 'name', 'warehouse_role', 'status', 'root_location_id'] },
+				{ header: 'form.identification', fields: ['code', 'name', 'warehouse_role', 'root_location_id'] },
 				{ header: 'form.contactInformation', fields: ['manager_user_id', 'address', 'notes'] },
 			]);
 			expect(nodes[1].props).toMatchObject({ header: 'form.warehouseFlows', collapsible: true });
@@ -732,7 +734,7 @@ describe('Warehouse and location detail layout', () => {
 		expect(props.titleLvl2).toEqual({ schemaField: 'canonical_name' });
 		for (const nodes of [props.createNodes, props.childrenNodes]) {
 			expect(formBlocks(nodes[0])).toEqual([
-				{ header: 'form.identification', fields: ['name', 'status', 'description', 'barcode'] },
+				{ header: 'form.identification', fields: ['name', 'description', 'barcode'] },
 				{
 					header: 'form.locationTopology',
 					fields: ['location_type', 'parent_location_id', 'warehouse_id'],

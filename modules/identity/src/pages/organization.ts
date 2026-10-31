@@ -64,9 +64,9 @@ function buildOrganizationDetailProps() {
 		titleLvl2: { schemaField: 'slug' },
 		backLinkTitle: { linkHref: '../' },
 		allStatuses: [
-			{ value: 'provisioning', label: 'status.provisioning', color: 'yellow' },
-			{ value: 'ready', label: 'status.ready', color: 'green' },
-			{ value: 'deleted', label: 'status.deleted', color: 'red' },
+			{ value: 'provisioning', label: 'status.provisioning' },
+			{ value: 'ready', label: 'status.ready' },
+			{ value: 'deleted', label: 'status.deleted', alternativeEnd: true },
 		],
 		currentStatus: { schemaField: 'status' },
 		statusPlacement: 'firstSectionHeader',

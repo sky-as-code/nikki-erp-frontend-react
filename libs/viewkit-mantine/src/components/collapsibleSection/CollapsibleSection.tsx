@@ -1,21 +1,18 @@
-import { Collapse, Group, Stack, Title, UnstyledButton } from '@mantine/core';
+import { Collapse, Paper } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
-import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
-import clsx from 'clsx';
 import React from 'react';
 
-import classes from './CollapsibleSection.module.css';
 import { collapsibleSectionPropsSchema, CollapsibleSectionProps } from './props';
+import { SectionHeader } from './SectionHeader';
+import classes from './SectionShell.module.css';
 import { COLLAPSIBLE_SECTION } from '../../ids';
 import { useSectionTitle } from '../../pages/resourceDetail/sectionTitle';
-import layoutClasses from '../formBlockLayout.module.css';
-import { PaperWithBorder } from '../paperWithBorder';
+import { FormPanel } from '../formPanel/FormPanel';
 
 import type { ComponentRenderRuntime, IComponentRenderer } from '@nikkierp/viewengine/core';
-import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
 /**
@@ -25,12 +22,15 @@ import type { ComponentNode } from '@nikkierp/viewengine/metadata';
  *
  * It touches no form context, so it is safe anywhere in a page tree — including as the section a
  * resource detail page wraps its `resource_form__column`s in, which is what `layout: 'formBlocks'`
- * is for.
+ * is for. Both layouts share the frame and header (`SectionHeader`); only the body differs.
  */
 export const collapsibleSectionRenderer: IComponentRenderer<CollapsibleSectionProps> = {
 	type: COLLAPSIBLE_SECTION,
 	propsSchema: collapsibleSectionPropsSchema,
 	render(props, runtime) {
+		if (props.layout === 'formBlocks') {
+			return <FormPanel props={props} runtime={runtime} />;
+		}
 		return <CollapsibleSection props={props} runtime={runtime} />;
 	},
 };
@@ -40,93 +40,36 @@ function CollapsibleSection({ props, runtime }: {
 	runtime: ComponentRenderRuntime,
 }): React.ReactNode {
 	const [expanded, setExpanded] = React.useState(props.expanded);
-	const formBlocks = props.layout === 'formBlocks';
-	const children = <MetaComponent node={runtime.children} />;
-	const body = formBlocks
-		? <div className={layoutClasses.formBlockWrapper}>{children}</div>
-		: children;
+	const titleId = React.useId();
+	// The schema guarantees a namespace wherever a header exists, so this never resolves blank.
+	const t = useTranslate(props.translationNs ?? '');
+	const title = useSectionTitle(props.header, t);
+	const hasHeader = props.collapsible || title != null || props.rightSegment != null;
+	const body = <div className={classes.body}><MetaComponent node={runtime.children} /></div>;
 
 	return (
-		<Stack component={PaperWithBorder} gap='xs' {...componentAttrs(COLLAPSIBLE_SECTION)}>
-			{props.collapsible || props.header != null ? (
+		<Paper
+			withBorder radius='md' className={classes.panel}
+			aria-labelledby={title != null ? titleId : undefined}
+			{...componentAttrs(COLLAPSIBLE_SECTION)}
+		>
+			{hasHeader ? (
 				<SectionHeader
-					header={props.header}
-					translationNs={props.translationNs ?? ''}
-					collapsible={props.collapsible}
-					expanded={expanded}
-					onToggle={() => setExpanded(prev => !prev)}
-					testId={props.testId}
-					rightSegment={props.rightSegment}
+					title={title} titleId={titleId} collapsible={props.collapsible}
+					expanded={expanded} onToggle={() => setExpanded(prev => !prev)}
+					toggleAttrs={testAttrs(props.testId ?? 'ui.collapsibleSection', props.header, 'toggle')}
+					rightSegment={props.rightSegment ? <MetaComponent node={props.rightSegment} /> : null}
 				/>
-			) : props.rightSegment ? (
-				<div className={classes.rightSegment}><MetaComponent node={props.rightSegment} /></div>
 			) : null}
 			{props.collapsible ? (
 				<Collapse
 					expanded={expanded}
 					transitionDuration={props.transitionDuration}
 					transitionTimingFunction={props.transitionTimingFunction}
-					// The grid's container query measures the nearest `container-type` ancestor, so
-					// under `formBlocks` that element must be the collapse body -- the section's own
-					// content box -- and not something further out that includes the page's chrome.
-					className={formBlocks ? layoutClasses.containerInlineSize : undefined}
 				>
 					{body}
 				</Collapse>
-			) : formBlocks ? (
-				<div className={layoutClasses.containerInlineSize}>{body}</div>
-			) : (
-				body
-			)}
-		</Stack>
-	);
-}
-
-type SectionHeaderProps = {
-	header?: string,
-	translationNs: string,
-	collapsible: boolean,
-	expanded: boolean,
-	onToggle: () => void,
-	testId?: string,
-	rightSegment?: ComponentNode,
-};
-
-/** The title (the toggle, when collapsible) and, beside it, the right segment, which never toggles. */
-function SectionHeader({ rightSegment, ...props }: SectionHeaderProps): React.ReactNode {
-	if (!rightSegment) {
-		return <SectionTitle {...props} />;
-	}
-	return (
-		<div className={classes.headerRow}>
-			<SectionTitle {...props} className={classes.headerMain} />
-			<div className={classes.rightSegment}><MetaComponent node={rightSegment} /></div>
-		</div>
-	);
-}
-
-function SectionTitle({ header, translationNs, collapsible, expanded, onToggle, testId, className }:
-	Omit<SectionHeaderProps, 'rightSegment'> & { className?: string },
-): React.ReactNode {
-	// The schema guarantees a namespace wherever a header exists, so this never resolves blank.
-	const t = useTranslate(translationNs);
-	const text = useSectionTitle(header, t);
-	const title = text != null ? <Title order={4}>{text}</Title> : null;
-
-	if (!collapsible) {
-		return <Group gap='xs' className={clsx(classes.sectionHeader, className)}>{title}</Group>;
-	}
-
-	return (
-		<UnstyledButton
-			className={clsx(classes.sectionHeader, classes.collapsibleHeader, className)}
-			onClick={onToggle} aria-expanded={expanded}
-			{...testAttrs(testId ?? 'ui.collapsibleSection', header, 'toggle')}
-		>
-			<Group gap='xs'>
-				{expanded ? <IconChevronDown size={18} /> : <IconChevronRight size={18} />}
-				{title}
-			</Group>
-		</UnstyledButton>
+			) : body}
+		</Paper>
 	);
 }

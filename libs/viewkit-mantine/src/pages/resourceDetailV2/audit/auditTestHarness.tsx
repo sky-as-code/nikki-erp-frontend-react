@@ -41,8 +41,8 @@ export const TEST_RELATED_SCHEMAS = {
 } as unknown as Record<string, dyn.ModelSchema>;
 
 export const TEST_STATUSES = [
-	{ value: 'active', label: 'status.active', color: 'green' },
-	{ value: 'suspended', label: 'status.suspended', color: 'orange' },
+	{ value: 'active', label: 'status.active' },
+	{ value: 'suspended', label: 'status.suspended', alternativeEnd: true },
 ];
 
 const noop = (): void => undefined;

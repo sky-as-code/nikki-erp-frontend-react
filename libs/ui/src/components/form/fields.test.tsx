@@ -25,7 +25,7 @@ describe('BaseFieldWrapper label visibility', () => {
 	it('renders the label row with a description mark by default', () => {
 		const html = renderWrapper(undefined);
 		expect(html).toContain('id="qty-label"');
-		expect(html).toMatch(/id="qty-label".*data-testid="fieldDescription.mark"[^>]*>\?<\/sup>/);
+		expect(html).toMatch(/id="qty-label".*data-testid="fieldDescription.mark"[^>]*><svg/);
 		expect(html).toContain('mantine-Grid-root');
 	});
 

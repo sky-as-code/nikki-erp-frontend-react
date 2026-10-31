@@ -58,7 +58,11 @@ function buildSalesFiscalRequestDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_FISCAL_REQUEST_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['failed', 'cancelled'],
+		}),
 		titleLvl1: { schemaField: 'provider_reference' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -78,7 +82,7 @@ function buildSalesFiscalRequestFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.request',
-			fields: ['sales_bill_id', 'intent', 'status', 'requested_at', 'issued_at'],
+			fields: ['sales_bill_id', 'intent', 'requested_at', 'issued_at'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.provider',

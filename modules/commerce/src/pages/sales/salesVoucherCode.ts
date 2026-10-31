@@ -55,7 +55,11 @@ function buildSalesVoucherCodeDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.SALES_VOUCHER_CODE_SCHEMA_NAME,
 		translationNs: c.SALES_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['disabled'],
+		}),
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
@@ -79,7 +83,7 @@ function buildSalesVoucherCodeFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.voucher',
-			fields: ['code', 'sales_promotion_program_id', 'status'],
+			fields: ['code', 'sales_promotion_program_id'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.usage',

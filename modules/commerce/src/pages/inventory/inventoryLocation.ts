@@ -72,7 +72,11 @@ function buildInventoryLocationDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.INVENTORY_LOCATION_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['suspended'],
+		}),
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'canonical_name' },
 		backLinkTitle: { linkHref: '../' },
@@ -97,7 +101,7 @@ function buildInventoryLocationFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.identification',
-			fields: ['name', 'status', 'description', 'barcode'],
+			fields: ['name', 'description', 'barcode'],
 		}),
 		resourceFormColumnNode({
 			// warehouse_id is inherited from the parent location by the backend (null for a vendor,

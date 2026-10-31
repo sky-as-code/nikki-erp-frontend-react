@@ -10,8 +10,11 @@
  * `--input-height-xs` pin did. The fallback keeps that look where the Shell's tokens are not loaded.
  *
  * Multiline inputs size to their content and unstyled ones carry no padding: both are left alone.
+ * A date picker is the exception: Mantine marks its wrapper multiline (a range may wrap), but its
+ * value is one line in a `button`, so it sizes like any input -- else it stayed at Mantine's height.
  */
-.wrapper:not([data-multiline]) {
+.wrapper:not([data-multiline]),
+.wrapper[data-multiline]:has(> button.input) {
 	--nikki-input-height: var(--nikki-control-height, calc(1.875rem * var(--mantine-scale)));
 	--nikki-input-inner-height: calc(var(--nikki-input-height) - calc(0.125rem * var(--mantine-scale)));
 	--input-size: var(--nikki-input-height);
@@ -20,12 +23,14 @@
 	--input-right-section-size: var(--input-right-section-width, var(--nikki-input-inner-height));
 }
 
-.wrapper:not([data-multiline], [data-variant='unstyled']) {
+.wrapper:not([data-multiline], [data-variant='unstyled']),
+.wrapper[data-multiline]:has(> button.input):not([data-variant='unstyled']) {
 	--input-padding: calc(var(--nikki-input-height) / 3);
 }
 
 /* The input's own floor is `min-height: var(--input-height)`, still Mantine's inline value. */
-.wrapper:not([data-multiline]) > .input {
+.wrapper:not([data-multiline]) > .input,
+.wrapper[data-multiline] > button.input {
 	min-height: var(--nikki-input-height);
 }
 
@@ -33,7 +38,8 @@
  * Form fields (`withFormInputDensity`): the same rules, from the form token. The fallback is read
  * here on the wrapper, where Mantine declares `--input-height-md`, so it holds without the Shell.
  */
-.wrapper.form:not([data-multiline]) {
+.wrapper.form:not([data-multiline]),
+.wrapper.form[data-multiline]:has(> button.input) {
 	--nikki-input-height: var(--nikki-form-control-height, var(--input-height-md));
 }
 

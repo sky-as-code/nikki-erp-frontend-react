@@ -30,6 +30,8 @@
 		--nikki-form-block-gap: 0.75rem;
 		--nikki-field-gap: 0.75rem;
 		--nikki-page-header-gap: 0.5rem;
+		--nikki-panel-padding-x: 1rem;
+		--nikki-panel-padding-y: 0.75rem;
 	}
 
 	html[data-nikki-density='spacious'] {
@@ -61,6 +63,9 @@
 		--nikki-field-gap: 1.5rem;
 		/* The detail page header's `rowSpacing='md'` and the create form's `py-4` Save row. */
 		--nikki-page-header-gap: var(--mantine-spacing-md);
+		/* The resource form panel's header and sections (the 16px / 24px of its design). */
+		--nikki-panel-padding-x: 1.5rem;
+		--nikki-panel-padding-y: var(--mantine-spacing-md);
 	}
 
 	/*

@@ -69,10 +69,10 @@ function buildUserDetailProps() {
 		backLinkTitle: { linkHref: '../' },
 		thumbnail: { field: 'avatar', fileIdField: 'avatar_file_id' },
 		allStatuses: [
-			{ value: 'draft', label: 'status.draft', color: 'grape' },
-			{ value: 'invited', label: 'status.invited', color: 'indigo' },
-			{ value: 'active', label: 'status.active', color: 'green' },
-			{ value: 'suspended', label: 'status.suspended', color: 'orange' },
+			{ value: 'draft', label: 'status.draft' },
+			{ value: 'invited', label: 'status.invited' },
+			{ value: 'active', label: 'status.active' },
+			{ value: 'suspended', label: 'status.suspended', alternativeEnd: true },
 		],
 		currentStatus: { schemaField: 'status' },
 		// In General Information's header rather than the toolbar, as on every detail page with a status.

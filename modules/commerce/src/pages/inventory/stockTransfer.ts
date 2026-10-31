@@ -65,10 +65,14 @@ function buildStockTransferDetailProps() {
 	return resourceDetailV2Props({
 		schemaName: c.STOCK_TRANSFER_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
-		...statusStripProps(STATUS_BADGE),
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+			alternativeEnds: ['cancelled'],
+		}),
 		titleLvl1: { schemaField: 'transfer_number' },
-		// The operation (Receipt, Delivery, ...) says what the transfer is; the status strip says how far it got.
-		titleLvl2: { schemaField: 'operation_type_id' },
+		// The operation (Receipt, Delivery, Internal) says what the transfer is; the status strip says how far it got.
+		titleLvl2: { schemaField: 'operation_code' },
 		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: StockTransferCommands.GET_BY_ID,
@@ -103,7 +107,7 @@ function buildStockTransferFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
 			fields: [
-				'transfer_number', 'operation_code', 'operation_type_id', 'status', 'origin_reference', 'note',
+				'transfer_number', 'operation_code', 'operation_type_id', 'origin_reference',
 			],
 			// The code picks the operation: on create the backend resolves the org's operation type
 			// for it when none is chosen, so the select only offers the types of the chosen code.
@@ -119,6 +123,10 @@ function buildStockTransferFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.scheduling',
 			fields: ['scheduled_at', 'deadline_at', 'completed_at'],
+		}),
+		// Free text on a row of its own under the columns; its field label already says "Note".
+		resourceFormColumnNode({
+			fields: ['note'], isFluid: false, showSeparator: false, showTitle: false,
 		}),
 	]);
 }
