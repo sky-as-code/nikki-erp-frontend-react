@@ -7,8 +7,9 @@ import { useTranslation } from 'react-i18next';
 
 import * as c from '../constants';
 import { buildEssentialSettingsNodes } from './settings';
+import { searchTimezones } from '../features/timezone';
 
-import type { SettingOption } from '@nikkierp/viewkit-mantine';
+import type { SettingOption, SettingOptionSearch } from '@nikkierp/viewkit-mantine';
 import type { SettingLevel } from '@nikkierp/viewkit-mantine/props';
 
 
@@ -33,6 +34,7 @@ export function SettingsWidget(): React.ReactNode {
 	const nodes = React.useMemo(() => buildEssentialSettingsNodes(), []);
 	const [reloadKey, setReloadKey] = React.useState(0);
 	const { options, displayDefaults } = useLanguageChoices();
+	const searchOptions = useTimezoneSearch();
 
 	return (
 		<SettingsDataProvider
@@ -40,6 +42,7 @@ export function SettingsWidget(): React.ReactNode {
 			moduleKey={c.ESSENTIAL_MODULE}
 			levels={LEVELS}
 			options={options}
+			searchOptions={searchOptions}
 			displayDefaults={displayDefaults}
 		>
 			<Stack gap='xl'>
@@ -73,7 +76,7 @@ function useLanguageChoices(): {
 	const defaultLanguage = useDefaultLanguage();
 
 	return React.useMemo(() => {
-		const choices = languages.map(language => ({ value: language.isoCode, label: language.name }));
+		const choices = languages.map(language => ({ value: language.localeCode, label: language.name }));
 		return {
 			options: { language: choices, system_language: choices },
 			displayDefaults: {
@@ -82,4 +85,14 @@ function useLanguageChoices(): {
 			},
 		};
 	}, [languages, languageCode, defaultLanguage]);
+}
+
+/** Both timezone settings pick from the server's catalogue, labelled in the language on screen. */
+function useTimezoneSearch(): Record<string, SettingOptionSearch> {
+	const { i18n } = useTranslation();
+	const languageCode = i18n.language;
+	return React.useMemo(() => {
+		const search: SettingOptionSearch = keyword => searchTimezones(keyword, languageCode);
+		return { timezone: search, system_timezone: search };
+	}, [languageCode]);
 }

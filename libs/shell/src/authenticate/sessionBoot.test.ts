@@ -67,9 +67,9 @@ const userContextPayload = {
 	orgs: [],
 	account_settings: {
 		language: {
-			id: 'l1', name: 'English', iso_code: 'en', direction: 'ltr',
-			decimal_separator: '.', thousands_separator: ',', date_format: 'DD/MM/YYYY',
-			time_format: 'HH:mm', short_time_format: 'HH:mm', first_day_of_week: 'monday',
+			id: 'l1', name: 'English', locale_code: 'en', direction: 'ltr',
+			decimal_separator: '.', thousands_separator: ',', grouping: '[3,0]', date_format: '%d/%m/%Y',
+			time_format: '%H:%M', short_time_format: '%H:%M', first_day_of_week: 'monday',
 		},
 		supported_languages: ['en'],
 		timezone: 'UTC',
@@ -80,7 +80,7 @@ const userContextPayload = {
 
 const bootstrapPayload = {
 	context: userContextPayload,
-	languages: { items: [{ iso_code: 'en', name: 'English' }], default_iso_code: 'en' },
+	languages: { items: [{ locale_code: 'en', name: 'English' }], default_locale_code: 'en' },
 	modules: [],
 };
 

@@ -6,14 +6,16 @@ import { useParams } from 'react-router-dom';
  * Builds `/{moduleSlug}/{routePath}` for the current module,
  * or `undefined` while any of them is unknown.
  *
- * `routePath` is the *target* page segment, which is not always the current one.
+ * `routePath` is the *target* page segment, which is not always the current one. Its `:param`
+ * segments are filled from the current route, so a nested page
+ * (`inventory_stock_transfer/:transfer_id/inventory_stock_move`) links to its own records.
  */
 export function useResourceBaseHref(routePath: string | undefined): string | undefined {
-	const { moduleSlug } = useParams();
+	const params = useParams();
 
 	return React.useMemo(
-		() => buildResourceBaseHref(moduleSlug, routePath),
-		[moduleSlug, routePath],
+		() => buildResourceBaseHref(params.moduleSlug, fillRouteParams(routePath, params)),
+		[params, routePath],
 	);
 }
 

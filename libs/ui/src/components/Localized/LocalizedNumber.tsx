@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { useFormatDefaults, useFormatLocale } from './formatDefaults';
 import { formatLocalizedNumber } from './localizedFormat';
+import { useValueFormatDefaults } from '../valueRenderers/useValueFormatDefaults';
 
 import type { LocalizedNumberOptions, RawValue } from './localizedFormat';
 
@@ -14,15 +14,16 @@ export type LocalizedNumberProps = LocalizedNumberOptions & {
 	className?: string,
 };
 
-/** Renders a number with the locale's grouping and decimal separators. */
+/** Renders a number with the language record's grouping and separators, else the locale's. */
 export function LocalizedNumber({
-	value, locale, fractionDigits, decimalSeparator, thousandsSeparator, className,
+	value, locale, fractionDigits, decimalSeparator, thousandsSeparator, grouping, className,
 }: LocalizedNumberProps) {
-	const defaults = useFormatDefaults();
-	const text = formatLocalizedNumber(value, useFormatLocale(locale), {
+	const defaults = useValueFormatDefaults();
+	const text = formatLocalizedNumber(value, locale ?? defaults.locale, {
 		fractionDigits,
 		decimalSeparator: decimalSeparator ?? defaults.decimalSeparator,
 		thousandsSeparator: thousandsSeparator ?? defaults.thousandsSeparator,
+		grouping: grouping ?? defaults.grouping,
 	});
 	return <span className={className}>{text}</span>;
 }

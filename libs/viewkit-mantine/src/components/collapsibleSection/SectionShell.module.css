@@ -32,11 +32,11 @@
 	border-bottom-color: transparent;
 }
 
-/* The toggle takes what the right segment leaves, but never less than half the row; past that the segment wraps. */
+/* The toggle takes what the right segment leaves, but never less than a third of the row; past that the segment wraps. */
 .main {
 	display: flex;
 	flex: 1 1 auto;
-	min-width: 50%;
+	min-width: 33%;
 	margin: 0;
 	font-size: var(--mantine-font-size-lg);
 	font-weight: 600;

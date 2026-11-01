@@ -152,3 +152,50 @@ describe('resolveNumberSeparators', () => {
 		expect(separators).toEqual({ decimal: ',', thousands: ' ' });
 	});
 });
+
+describe('record grouping and patterns', () => {
+	it('groups numbers and money with the record grouping', () => {
+		expect(formatLocalizedNumber('12345678', 'en-US', { grouping: [3, 2, -1] })).toBe('123,45,678');
+		expect(formatLocalizedNumber('1234567.5', 'vi-VN', { grouping: [3, 0] })).toBe('1.234.567,5');
+		expect(formatLocalizedNumber('1234567', 'en-US', { grouping: [] })).toBe('1234567');
+		expect(formatLocalizedNumber('-106500', 'en-US', { grouping: [3, 2, -1] })).toBe('-1,06,500');
+		expect(plain(formatLocalizedMoney('106500', 'en-US', '$', { grouping: [3, 2, -1] }))).toBe('$1,06,500');
+		expect(formatLocalizedNumber('1234567', 'en-US', { grouping: [3, 0], thousandsSeparator: ' ' }))
+			.toBe('1 234 567');
+	});
+
+	it('formats dates, times and timestamps with the record patterns', () => {
+		const patterns = { dateFormat: '%d/%m/%Y', timeFormat: '%H:%M:%S', shortTimeFormat: '%H:%M' };
+		expect(formatLocalizedDateTime('2026-11-01', 'en-US', 'date', patterns)).toBe('01/11/2026');
+		expect(formatLocalizedDateTime('14:05:09', 'en-US', 'time', patterns)).toBe('14:05:09');
+		expect(formatLocalizedDateTime('14:05', 'en-US', 'time', patterns)).toBe('14:05');
+		const local = new Date(2026, 10, 1, 14, 5).toISOString();
+		expect(formatLocalizedDateTime(local, 'en-US', 'datetime', patterns)).toBe('01/11/2026 14:05');
+	});
+
+	it('falls back to the locale default when a pattern cannot be converted', () => {
+		const patterns = { dateFormat: '%D' };
+		expect(formatLocalizedDateTime('2026-11-01', 'en-US', 'date', patterns))
+			.toBe(formatLocalizedDateTime('2026-11-01', 'en-US', 'date'));
+	});
+});
+
+describe('formatLocalizedMoney with the currency symbol position', () => {
+	const nbsp = ' ';
+	const vnSeparators = { decimalSeparator: ',', thousandsSeparator: '.' };
+
+	it('writes the symbol after the amount when the currency says so, whatever the locale', () => {
+		expect(formatLocalizedMoney('15000', 'en-US', '₫', { fractionDigits: 0, symbolPosition: 'after', ...vnSeparators }))
+			.toBe(`15.000${nbsp}₫`);
+	});
+
+	it('writes the symbol before the amount, sign first', () => {
+		expect(formatLocalizedMoney('-15', 'vi-VN', '$', { fractionDigits: 2, symbolPosition: 'before' }))
+			.toMatch(/^-\$15[.,]00$/);
+	});
+
+	it('spaces a letter code from the digits', () => {
+		expect(formatLocalizedMoney('15', 'en-US', 'VND', { fractionDigits: 0, symbolPosition: 'before' }))
+			.toBe(`VND${nbsp}15`);
+	});
+});

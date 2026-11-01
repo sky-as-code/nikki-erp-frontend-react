@@ -2,6 +2,7 @@ import { EnumRenderer, FloatRenderer, IntegerRenderer, MoneyRenderer } from '@ni
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 
+import { RadioFieldRenderer } from './radio';
 import { registerFieldRenderers } from './register';
 import {
 	EnumFieldRenderer, FloatFieldRenderer, IntegerFieldRenderer, MoneyValueFieldRenderer,
@@ -32,6 +33,15 @@ describe('registered value renderers', () => {
 		expect(build({ renderer: 'money', currencyField: 'currency_code' })).toBeInstanceOf(MoneyValueFieldRenderer);
 		expect(build({ renderer: 'enum', colorMap: { done: 'green' }, prefix: 'status.' }))
 			.toBeInstanceOf(EnumFieldRenderer);
+	});
+
+	it('builds the radio renderer: an enum badge when read, radios when edited', () => {
+		const renderer = build({ renderer: 'radio', colorMap: { goods: 'blue' }, prefix: 'product_type.' });
+
+		expect(renderer).toBeInstanceOf(RadioFieldRenderer);
+		expect(renderer.translationKey?.('goods')).toBe('product_type.goods');
+		const input = renderer.renderInput?.('product_type', { disabled: true }) as Element<{ name: string, disabled: boolean }>;
+		expect(input.props).toEqual({ name: 'product_type', disabled: true });
 	});
 
 	it('rejects unknown spec options', () => {

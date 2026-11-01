@@ -4,7 +4,7 @@ import { RequestMaker } from '@nikkierp/common/request';
 import { SESSION_AUTHORIZATION_ERROR_TOPIC } from '@nikkierp/common/service';
 import { ModuleStoreProvider, useServiceLayer } from '@nikkierp/ui/appState/store';
 import { NavHistoryProvider } from '@nikkierp/ui/breadcrumbs';
-import { FormatDefaultsProvider } from '@nikkierp/ui/components';
+import { FormatDefaultsProvider, toFormatDefaults } from '@nikkierp/ui/components';
 import i18n, { initI18n } from '@nikkierp/ui/i18n';
 import { MicroAppMetadata } from '@nikkierp/ui/microApp';
 import React from 'react';
@@ -134,36 +134,12 @@ function InnerShellProviders(props: ShellProvidersProps): React.ReactNode {
 }
 
 /**
- * Turns the account settings into the formatting rules every `Localized*` component reads.
- *
- * The separators are passed through only when they disagree with what `Intl` already produces for
- * the locale, so a language record that matches its locale's conventions — both of the ones shipped
- * today — costs nothing, and only a customized record overrides.
+ * Turns the account settings into the formatting rules every `Localized*` component reads: the
+ * same mapping a micro-app's own copy of `@nikkierp/ui` makes over the command bus
+ * (`toFormatDefaults`), since a micro-app renders in its own React root this provider never reaches.
  */
 function formatDefaultsOf(settings?: AccountSettings): FormatDefaults {
-	if (!settings) {
-		return {};
-	}
-	const locale = settings.language.isoCode;
-	const intlSeparators = separatorsOf(locale);
-	return {
-		locale,
-		decimalSeparator: differing(settings.language.decimalSeparator, intlSeparators.decimal),
-		thousandsSeparator: differing(settings.language.thousandsSeparator, intlSeparators.group),
-		currency: settings.currency,
-	};
-}
-
-function differing(recorded: string | undefined, intl: string): string | undefined {
-	return recorded && recorded !== intl ? recorded : undefined;
-}
-
-function separatorsOf(locale: string): { decimal: string, group: string } {
-	const parts = new Intl.NumberFormat(locale).formatToParts(1234.5);
-	return {
-		decimal: parts.find(part => part.type === 'decimal')?.value ?? '.',
-		group: parts.find(part => part.type === 'group')?.value ?? ',',
-	};
+	return settings ? toFormatDefaults({ accountSettings: settings }) : {};
 }
 
 function fullPath(location: Location): string {

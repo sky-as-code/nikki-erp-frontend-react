@@ -1,6 +1,8 @@
 import { defineComponent } from '@nikkierp/viewengine/metadata';
 
-import { ATTRIBUTE_VALUES, STOCK_TRANSFER_MOVES, TEMPLATE_ATTRIBUTES } from './ids';
+import {
+	ATTRIBUTE_VALUES, STOCK_TRANSFER_ALL_MOVES, STOCK_TRANSFER_MOVES, TEMPLATE_ATTRIBUTES, TEMPLATE_ATTRIBUTES_HEADER,
+} from './ids';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -21,12 +23,22 @@ export function templateAttributesNode(): ComponentNode {
 	return defineComponent({ component: TEMPLATE_ATTRIBUTES });
 }
 
+/** Resolve variants and "All attributes", for the Attributes section header's `rightSegment`. */
+export function templateAttributesHeaderNode(): ComponentNode {
+	return defineComponent({ component: TEMPLATE_ATTRIBUTES_HEADER });
+}
+
 /**
  * The transfer's moves, edited inline while it is a draft and saved with the transfer's own create
  * or update. It belongs in both `createNodes` and `childrenNodes`.
  */
 export function stockTransferMovesNode(): ComponentNode {
 	return defineComponent({ component: STOCK_TRANSFER_MOVES });
+}
+
+/** "All moves", for the Moves section header's `rightSegment`; hidden while the transfer is edited. */
+export function stockTransferAllMovesNode(): ComponentNode {
+	return defineComponent({ component: STOCK_TRANSFER_ALL_MOVES });
 }
 
 export * from './ids';

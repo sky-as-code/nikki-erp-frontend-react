@@ -84,7 +84,7 @@ export class UserContextService {
 			?? request.unwrapResult(await request.get<GetUserContextResponse>('v1/iam/me/context'));
 		const userContext = toUserContext(data);
 		await dispatchServiceMethod(this.setLocalSettings, {
-			languageCode: userContext.accountSettings.language.isoCode,
+			languageCode: userContext.accountSettings.language.localeCode,
 			themeMode: userContext.accountSettings.themeMode,
 			density: userContext.accountSettings.density,
 		});

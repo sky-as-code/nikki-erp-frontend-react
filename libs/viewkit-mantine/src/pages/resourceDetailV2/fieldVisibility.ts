@@ -155,9 +155,9 @@ export function visibleWhenSourceFields(visibleWhen: VisibleWhen): string[] {
 }
 
 /**
- * A block's `fields` without the ones whose `visibleWhen` fails. Inside an inline row only the
- * `@@field` item goes; a row left with none of its fields is dropped whole, since its text would
- * then label nothing.
+ * A block's `fields` without the ones whose `visibleWhen` fails. Inside a field group display only
+ * the `@@field` item goes, with its width; a group left with none of its fields is dropped whole,
+ * label included, since its text would then label nothing.
  */
 export function applyVisibleWhen(
 	fields: readonly FormColumnField[], visibleWhen: VisibleWhen, values: Record<string, unknown>,
@@ -170,12 +170,17 @@ export function applyVisibleWhen(
 		if (typeof entry === 'string') {
 			return shown(entry) ? [entry] : [];
 		}
-		const kept = entry.filter(item => {
+		const keptIndexes = entry.fields.flatMap((item, index) => {
 			const name = inlineFieldName(item);
-			return name === undefined || shown(name);
+			return name === undefined || shown(name) ? [index] : [];
 		});
-		const hasField = (row: string[]) => row.some(item => inlineFieldName(item) !== undefined);
-		return hasField(entry) && !hasField(kept) ? [] : [kept];
+		const hasField = (items: string[]) => items.some(item => inlineFieldName(item) !== undefined);
+		const kept = keptIndexes.map(index => entry.fields[index]);
+		if (hasField(entry.fields) && !hasField(kept)) {
+			return [];
+		}
+		const widths = entry.widths && keptIndexes.map(index => entry.widths?.[index]);
+		return [{ ...entry, fields: kept, ...(widths ? { widths } : {}) }];
 	});
 }
 

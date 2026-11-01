@@ -9,7 +9,7 @@ import * as c from '../../constants/inventory';
 import { ProductTemplateCommands } from '../../features/inventory/productTemplate/commands';
 import { ProductVariantCommands } from '../../features/inventory/productVariant/commands';
 import { StockProductConfigCommands } from '../../features/inventory/stockProductConfig/commands';
-import { templateAttributesNode } from '../../viewkit/inventory/props';
+import { templateAttributesHeaderNode, templateAttributesNode } from '../../viewkit/inventory/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -17,6 +17,10 @@ import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 /** No currency field of its own: amounts are in the organization's currency. */
 const MONEY_RENDERER = { renderer: 'money' };
 const FLOAT_RENDERER = { renderer: 'float' };
+/** A unit reads as its symbol (`kg`, `Chai`) rather than its name; the select still lists names to pick from. */
+const UOM_SYMBOL_RENDERER = { renderer: 'fieldText', field: 'uom_symbol' } as const;
+
+const PRODUCT_TYPE_BADGE = { colorMap: { goods: 'blue', service: 'violet' }, prefix: 'product_type.' };
 
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
@@ -67,24 +71,22 @@ function buildProductTemplateListProps() {
 function buildProductTemplateEnumRenderers() {
 	return {
 		status: STATUS_BADGE,
-		product_type: {
-			renderer: 'enum',
-			colorMap: { goods: 'blue', service: 'violet' },
-			prefix: 'product_type.',
-		},
+		product_type: { renderer: 'enum', ...PRODUCT_TYPE_BADGE },
 	};
 }
 
 function buildProductTemplateDetailRenderers() {
 	return {
 		...buildProductTemplateEnumRenderers(),
+		// Edited as radios; read mode keeps the list's badge.
+		product_type: { renderer: 'radio', ...PRODUCT_TYPE_BADGE },
 		base_sales_price: MONEY_RENDERER,
-		min_variant_cost: MONEY_RENDERER,
-		max_variant_cost: MONEY_RENDERER,
+		cost: MONEY_RENDERER,
 		default_weight: FLOAT_RENDERER,
 		default_length: FLOAT_RENDERER,
 		default_width: FLOAT_RENDERER,
 		default_height: FLOAT_RENDERER,
+		uom_id: UOM_SYMBOL_RENDERER,
 	};
 }
 
@@ -124,6 +126,8 @@ function buildTemplateAttributesSection(): ComponentNode {
 	return collapsibleSectionNode({
 		translationNs: c.INVENTORY_MODULE,
 		header: 'product_template_sections_attributes',
+		expanded: false,
+		rightSegment: templateAttributesHeaderNode(),
 	}, [templateAttributesNode()]);
 }
 
@@ -155,7 +159,10 @@ function buildTemplateContextualActions() {
 	};
 }
 
-/** Shared by both form modes: the resource's own fields, as titled blocks. */
+/**
+ * Shared by both form modes: the resource's own fields, as blocks. `status` is not among them: the
+ * status strip shows it and owns its changes.
+ */
 function buildProductTemplateFieldsSection(): ComponentNode {
 	return collapsibleSectionNode({
 		layout: 'formBlocks',
@@ -170,40 +177,36 @@ function buildProductTemplateFieldsSection(): ComponentNode {
 
 function buildProductTemplateIdentityColumns(): ComponentNode[] {
 	return [
+		// A row of its own and untitled: the product type decides what the rest of the form means.
+		resourceFormColumnNode({ showTitle: false, isFluid: false, fields: ['product_type', 'is_combo'] }),
 		resourceFormColumnNode({
 			header: 'form.identification',
-			fields: ['name', 'short_name', 'product_type', 'is_combo', 'category_id', 'brand_id'],
+			fields: ['name', 'short_name', 'category_id', 'brand_id'],
 		}),
 	];
 }
 
+/** Both prices read "<amount> per <unit>": the one `uom_id`, shown twice, bound to one value. */
 function buildProductTemplateCommercialColumns(): ComponentNode[] {
 	return [
 		resourceFormColumnNode({
 			// sale_ok and purchase_ok decide which business processes may reference the product,
 			// which is what makes them belong beside their descriptions rather than in general
-			// information. See BR Â§2.4.
+			// information. See BR §2.4.
 			header: 'form.sales',
-			fields: ['sale_ok', 'sales_description', 'base_sales_price'],
+			fields: [
+				'sale_ok',
+				{ label: 'fields.base_sales_price', fields: ['@@base_sales_price', '$$common:per', '@@uom_id'] },
+				'sales_description',
+			],
 		}),
 		resourceFormColumnNode({
 			header: 'form.purchasing',
-			fields: ['purchase_ok', 'uom_id', 'purchase_description'],
-		}),
-		resourceFormColumnNode({
-			// The template holds no cost of its own, deliberately: cost belongs to the variant,
-			// because two variants of one product routinely cost different amounts. What the
-			// template can honestly show is the RANGE across its variants, so these two fields
-			// together read as "60,000 - 100,000" when they differ and as one figure when they
-			// agree.
-			//
-			// Both are computed and virtual, so they render read-only here and are dropped from
-			// the create form entirely — a product with no variants yet has no range to show.
-			// That is the same treatment created_at and updated_at get, and it needs no
-			// page-side flag because there is none to give: read-only comes from the backend
-			// schema's field metadata.
-			header: 'form.costing',
-			fields: ['min_variant_cost', 'max_variant_cost'],
+			fields: [
+				'purchase_ok',
+				{ label: 'fields.cost', fields: ['@@cost', '$$common:per', '@@uom_id'] },
+				'purchase_description',
+			],
 		}),
 	];
 }
@@ -211,13 +214,15 @@ function buildProductTemplateCommercialColumns(): ComponentNode[] {
 function buildProductTemplatePhysicalColumns(): ComponentNode[] {
 	return [
 		resourceFormColumnNode({
-			// Defaults a variant inherits when it sets no value of its own. See BR Â§6.4.
+			// Defaults a variant inherits when it sets no value of its own. See BR §6.4. The units are
+			// the organization's default weight and length units, read-only here.
 			header: 'form.dimensions',
-			fields: ['default_weight', 'default_length', 'default_width', 'default_height'],
-		}),
-		resourceFormColumnNode({
-			header: 'form.audit',
-			fields: ['status'],
+			fields: [
+				{ label: 'fields.default_weight', fields: ['@@default_weight', '@@weight_uom_symbol'] },
+				{ label: 'fields.default_length', fields: ['@@default_length', '@@dimension_uom_symbol'] },
+				{ label: 'fields.default_width', fields: ['@@default_width', '@@dimension_uom_symbol'] },
+				{ label: 'fields.default_height', fields: ['@@default_height', '@@dimension_uom_symbol'] },
+			],
 		}),
 	];
 }

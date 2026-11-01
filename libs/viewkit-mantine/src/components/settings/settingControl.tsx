@@ -3,8 +3,9 @@ import { Input, LocalizedNumberInput, Select } from '@nikkierp/ui/components';
 import React from 'react';
 
 import { useEnumSettingOptions } from './enumSettingOptions';
+import { RemoteSearchSetting } from './remoteSearchSetting';
 
-import type { SettingItemData, SettingOption } from './settingsDataContext';
+import type { SettingItemData, SettingOption, SettingOptionSearch } from './settingsDataContext';
 import type { ModelSchemaFieldDataTypeName } from '@nikkierp/common/dynamicModel';
 
 
@@ -15,6 +16,8 @@ export type SettingControlProps = {
 	onChange: (value: unknown) => void,
 	/** Labelled choices from the owning module; when present they win over the declared type. */
 	options?: SettingOption[],
+	/** A server-side search from the owning module; wins over `options`. */
+	search?: SettingOptionSearch,
 	/** The item's label key; the fallback prefix of an enum value's translation key. */
 	labelKey?: string,
 };
@@ -31,9 +34,14 @@ export type SettingControlProps = {
  * `allow_override` together. It is never re-derived here: a locked setting shown as editable
  * lets a user submit a change the server then refuses.
  */
-export function SettingControl({ item, value, onChange, options, labelKey }: SettingControlProps): React.ReactNode {
+export function SettingControl(
+	{ item, value, onChange, options, search, labelKey }: SettingControlProps,
+): React.ReactNode {
 	const disabled = !item.editable;
 	const enumOptions = useEnumSettingOptions(item, labelKey);
+	if (search) {
+		return <RemoteSearchSetting value={value} disabled={disabled} search={search} onChange={onChange} />;
+	}
 	if (options) {
 		return (
 			<Select

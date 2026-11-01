@@ -1,4 +1,7 @@
+import { formatStrftime } from '@nikkierp/ui/components';
+
 import type { ResourceHistoryItem } from '@nikkierp/common/service';
+import type { DateTimePatterns } from '@nikkierp/ui/components';
 
 
 export type HistoryDayGroup = {
@@ -43,9 +46,13 @@ export function historyEntryContent(item: ResourceHistoryItem): HistoryEntryCont
 /**
  * Splits a newest-first list into one group per calendar day, in the viewer's time zone. An entry
  * with an unreadable timestamp joins the day before it rather than opening a divider of its own.
+ * The divider reads in the language record's date format, else the locale's medium date.
  */
-export function groupHistoryByDay(items: ResourceHistoryItem[], locale: string): HistoryDayGroup[] {
-	const dayFormat = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
+export function groupHistoryByDay(
+	items: ResourceHistoryItem[], locale: string, patterns?: DateTimePatterns,
+): HistoryDayGroup[] {
+	const intlDay = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
+	const dayLabel = (date: Date): string => formatStrftime(date, patterns?.dateFormat, locale) ?? intlDay.format(date);
 	const groups: HistoryDayGroup[] = [];
 	for (const item of items) {
 		const date = new Date(item.created_at);
@@ -56,18 +63,22 @@ export function groupHistoryByDay(items: ResourceHistoryItem[], locale: string):
 			last.items.push(item);
 			continue;
 		}
-		groups.push({ dayKey, label: isValid ? dayFormat.format(date) : '', items: [item] });
+		groups.push({ dayKey, label: isValid ? dayLabel(date) : '', items: [item] });
 	}
 	return groups;
 }
 
-/** The time of day an entry happened, e.g. "10:32 AM"; empty for an unreadable timestamp. */
-export function formatHistoryTime(createdAt: string, locale: string): string {
+/**
+ * The time of day an entry happened in the language record's short time format, else the locale's
+ * ("10:32 AM"); empty for an unreadable timestamp.
+ */
+export function formatHistoryTime(createdAt: string, locale: string, patterns?: DateTimePatterns): string {
 	const date = new Date(createdAt);
 	if (Number.isNaN(date.getTime())) {
 		return '';
 	}
-	return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(date);
+	return formatStrftime(date, patterns?.shortTimeFormat, locale)
+		?? new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(date);
 }
 
 function localDayKey(date: Date): string {

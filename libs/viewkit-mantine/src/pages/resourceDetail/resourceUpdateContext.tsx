@@ -5,6 +5,7 @@ import type {
 	LinkSpec, ResourceDetailContextualActions,
 	ResourceDetailStandardActionCommands, SchemaFieldSpec, StatusOption,
 } from './props';
+import type { ParentResourceSpec } from '../../components/pageHeader/parentResource';
 import type { ResourceThumbnailSpec } from '../../components/resourceThumbnail/props';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -41,6 +42,8 @@ export type ResourceUpdateContextValue = {
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	backLinkTitle?: LinkSpec,
+	/** v2 only: the record a nested page hangs under, shown before the list on a trail of the record alone. */
+	parentResource?: ParentResourceSpec,
 	/** v2 only: the photo the header shows left of the titles. */
 	thumbnail?: ResourceThumbnailSpec,
 	childrenNodes?: ComponentNode[],

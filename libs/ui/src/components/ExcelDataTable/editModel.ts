@@ -26,9 +26,12 @@ export function restrictEditableFields(
 /**
  * Whether a column takes an input in inline update mode. Mirrors the detail form's update-mode
  * visibility: keys, auto-generated, computed and `no_update` fields are shown as text; so is any
- * column reached through an edge (`edge.field`), which belongs to another record.
+ * column reached through an edge (`edge.field`), which belongs to another record. A column with its own editor
+ * (`hasEditor`) needs no renderable data type: the editor owns its value (a `model` list, …).
  */
-export function isRowEditableField(modelSchema: dyn.ModelSchema | undefined, field: string): boolean {
+export function isRowEditableField(
+	modelSchema: dyn.ModelSchema | undefined, field: string, hasEditor = false,
+): boolean {
 	if (!modelSchema || field.includes('.')) {
 		return false;
 	}
@@ -39,7 +42,7 @@ export function isRowEditableField(modelSchema: dyn.ModelSchema | undefined, fie
 	if (fieldDef.no_update || fieldDef.is_edge_model) {
 		return false;
 	}
-	return dyn.isRenderableFieldType(fieldDef);
+	return hasEditor || dyn.isRenderableFieldType(fieldDef);
 }
 
 /**

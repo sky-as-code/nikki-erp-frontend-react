@@ -21,6 +21,7 @@ import { registerTaxRuleCommands } from './features/taxRule/commands';
 import { registerTaxRuleConditionCommands } from './features/taxRuleCondition/commands';
 import { registerTaxRuleResultCommands } from './features/taxRuleResult/commands';
 import { buildAccountingMenu } from './menu';
+import { SettingsWidget } from './pages/SettingsWidget';
 import { buildTaxPages } from './pages/tax';
 import { buildTaxGroupPages } from './pages/taxGroup';
 import { buildTaxJurisdictionPages } from './pages/taxJurisdiction';
@@ -31,6 +32,8 @@ import { buildTaxRoundingPolicyPages } from './pages/taxRoundingPolicy';
 import { buildTaxRulePages } from './pages/taxRule';
 import { buildTaxSimulatorPages } from './pages/taxSimulator';
 import { contributeAccountingViewKit } from './viewkit/kit';
+
+import type { WidgetDefinition } from '@nikkierp/viewkit-mantine';
 
 
 function Main(props: MicroAppProps) {
@@ -89,6 +92,11 @@ const bundle: MicroAppBundle = {
 
 export default bundle;
 
+/** Mounted by the Settings module under its Accounting pane; the name is the contract. */
+const WIDGETS: WidgetDefinition[] = [
+	{ name: 'pages.settings', Component: SettingsWidget },
+];
+
 function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	const pages = React.useMemo(() => [
 		...buildTaxJurisdictionPages(),
@@ -107,7 +115,7 @@ function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	return (
 		<ViewEngineRouter
 			microAppProps={props}
-			engineProps={{ pages, indexElement }}
+			engineProps={{ pages, indexElement, widgets: WIDGETS }}
 		/>
 	);
 }

@@ -48,6 +48,9 @@ export type SettingOption = {
 	label: string,
 };
 
+/** Answers the choices matching a keyword, for a catalogue the server filters. */
+export type SettingOptionSearch = (keyword: string) => Promise<SettingOption[]>;
+
 type GetSettingsResponse = {
 	module_key: string,
 	/** The scope the caller is reading as. See `SettingsDataContextValue.ownerType`. */
@@ -90,11 +93,14 @@ export type SettingsDataContextValue = {
 	loadError: string | null,
 	/** Labelled choices by setting name; see `SettingsDataProviderProps.options`. */
 	options: Record<string, SettingOption[]>,
+	/** Server-filtered choices by setting name; see `SettingsDataProviderProps.searchOptions`. */
+	searchOptions: Record<string, SettingOptionSearch>,
 	/** Shown values for unstored settings, keyed like `items`; see the provider prop. */
 	displayDefaults: Record<string, unknown>,
 };
 
 const NO_OPTIONS: Record<string, SettingOption[]> = {};
+const NO_SEARCH_OPTIONS: Record<string, SettingOptionSearch> = {};
 const NO_DEFAULTS: Record<string, unknown> = {};
 
 const SettingsDataContext = React.createContext<SettingsDataContextValue | null>(null);
@@ -130,6 +136,11 @@ export type SettingsDataProviderProps = React.PropsWithChildren & {
 	 */
 	options?: Record<string, SettingOption[]>,
 	/**
+	 * A server-side search for a setting, by name, when its choices are too many to load at once --
+	 * the IANA timezones, the currency catalogue. Wins over `options` for the same name.
+	 */
+	searchOptions?: Record<string, SettingOptionSearch>,
+	/**
 	 * What to show, keyed `{level}:{name}`, for a setting the owner has never stored. Display only:
 	 * it creates no draft, so it is never sent unless the user picks it.
 	 */
@@ -146,7 +157,10 @@ export type SettingsDataProviderProps = React.PropsWithChildren & {
  * only thing protecting it.
  */
 export function SettingsDataProvider(
-	{ children, moduleKey, levels, options = NO_OPTIONS, displayDefaults = NO_DEFAULTS }: SettingsDataProviderProps,
+	{
+		children, moduleKey, levels, options = NO_OPTIONS, searchOptions = NO_SEARCH_OPTIONS,
+		displayDefaults = NO_DEFAULTS,
+	}: SettingsDataProviderProps,
 ): React.ReactNode {
 	const commandBus = useCommandBus();
 	const [items, setItems] = React.useState<Map<string, SettingItemData>>(() => new Map());
@@ -235,11 +249,11 @@ export function SettingsDataProvider(
 	const value = React.useMemo<SettingsDataContextValue>(
 		() => ({
 			items, drafts, setDraft, overrideDrafts, setOverrideDraft,
-			ownerType, hiddenLevels, isLoading, loadError, options, displayDefaults,
+			ownerType, hiddenLevels, isLoading, loadError, options, searchOptions, displayDefaults,
 		}),
 		[
 			items, drafts, setDraft, overrideDrafts, setOverrideDraft, ownerType, hiddenLevels, isLoading, loadError,
-			options, displayDefaults,
+			options, searchOptions, displayDefaults,
 		],
 	);
 

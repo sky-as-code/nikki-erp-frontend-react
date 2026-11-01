@@ -3,14 +3,19 @@ import { z } from 'zod';
 
 import {
 	FIELD_RENDERER_ATTRIBUTE_PILLS, FIELD_RENDERER_AVATAR, FIELD_RENDERER_BADGE, FIELD_RENDERER_ENUM,
-	FIELD_RENDERER_FLOAT, FIELD_RENDERER_INTEGER, FIELD_RENDERER_MONEY, FIELD_RENDERER_TRANSLATED,
+	FIELD_RENDERER_FIELD_TEXT, FIELD_RENDERER_FLOAT, FIELD_RENDERER_INTEGER, FIELD_RENDERER_MONEY,
+	FIELD_RENDERER_NUMBER_GROUPING, FIELD_RENDERER_RADIO, FIELD_RENDERER_STRFTIME_FORMAT, FIELD_RENDERER_TRANSLATED,
 } from '../ids';
 import { attributePillsSpecSchema, AttributePillsFieldRenderer } from './attributePills';
 import { AvatarFieldRenderer, avatarSpecSchema } from './avatar';
 import { badgeSpecSchema } from './badge';
 import {
+	NumberGroupingFieldRenderer, numberGroupingSpecSchema, StrftimeFormatFieldRenderer, strftimeFormatSpecSchema,
+} from './formatPattern';
+import { RadioFieldRenderer, radioSpecSchema } from './radio';
+import {
 	EnumFieldRenderer, enumSpecSchema, FloatFieldRenderer, floatSpecSchema, IntegerFieldRenderer,
-	integerSpecSchema, MoneyValueFieldRenderer, moneySpecSchema,
+	FieldTextRenderer, fieldTextSpecSchema, integerSpecSchema, MoneyValueFieldRenderer, moneySpecSchema,
 } from './valueRenderers';
 
 import type { IViewRegistry } from '@nikkierp/viewengine/core';
@@ -69,8 +74,32 @@ function registerValueRenderers(registry: IViewRegistry): void {
 		return new MoneyValueFieldRenderer(currencyField, blankAsZero);
 	});
 
+	registry.registerFieldRenderer(FIELD_RENDERER_FIELD_TEXT, (spec) => {
+		const { field } = fieldTextSpecSchema.parse(spec);
+		return new FieldTextRenderer(field);
+	});
+
 	registry.registerFieldRenderer(FIELD_RENDERER_ENUM, (spec) => {
 		const { colorMap, prefix } = enumSpecSchema.parse(spec);
 		return new EnumFieldRenderer(colorMap, prefix);
+	});
+
+	registry.registerFieldRenderer(FIELD_RENDERER_RADIO, (spec) => {
+		const { colorMap, prefix } = radioSpecSchema.parse(spec);
+		return new RadioFieldRenderer(colorMap, prefix);
+	});
+
+	registerFormatPatternRenderers(registry);
+}
+
+function registerFormatPatternRenderers(registry: IViewRegistry): void {
+	registry.registerFieldRenderer(FIELD_RENDERER_STRFTIME_FORMAT, (spec) => {
+		strftimeFormatSpecSchema.parse(spec);
+		return new StrftimeFormatFieldRenderer();
+	});
+
+	registry.registerFieldRenderer(FIELD_RENDERER_NUMBER_GROUPING, (spec) => {
+		numberGroupingSpecSchema.parse(spec);
+		return new NumberGroupingFieldRenderer();
 	});
 }

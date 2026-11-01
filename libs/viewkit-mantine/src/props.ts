@@ -168,7 +168,7 @@ export function tabCollapsibleSectionNode(input: TabCollapsibleSectionPropsInput
  * instead of reusing the page's one form.
  *
  * Wrap a group of these in `collapsibleSectionNode({ layout: 'formBlocks' })` to lay them out
- * side by side; `isFluid: false` gives one a row of its own, `showSeparator: false` drops its separator.
+ * side by side; `isFluid: false` gives one a row of its own.
  */
 export function resourceFormColumnNode(input: OwnPropertySectionInput): ComponentNode {
 	return defineComponent({

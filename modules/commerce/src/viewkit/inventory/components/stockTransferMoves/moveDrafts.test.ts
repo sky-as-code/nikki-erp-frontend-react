@@ -77,7 +77,7 @@ describe('transfer move drafts', () => {
 		expect(removeMove(drafts, { id: 'draft:1' }).added).toEqual([]);
 	});
 
-	it('shows saved groups with their edits, without the removed ones, then the drafts', () => {
+	it('shows saved moves with their edits, without the removed ones, then the drafts', () => {
 		let drafts = addMove(emptyMoveDrafts('X'), { product_template_id: 'T3', demand_quantity: '1' });
 		drafts = updateMove(drafts, { ...saved[0], demand_quantity: '9' }, saved[0]);
 		drafts = removeMove(drafts, saved[1]);
@@ -86,7 +86,8 @@ describe('transfer move drafts', () => {
 
 		expect(rows.map(row => [row.id, row.demand_quantity])).toEqual([['M1', '9'], ['draft:1', '1']]);
 		expect(rows[1]).toMatchObject({ attributes: [], $draft: true, etag: 'draft' });
-		expect(isEditedMoveRow({ id: 'M1:0', __row_span_group: 'M1' }, drafts)).toBe(true);
+		expect(isEditedMoveRow({ id: 'M1' }, drafts)).toBe(true);
+		expect(isEditedMoveRow({ id: 'draft:1' }, drafts)).toBe(false);
 	});
 
 	it('pins each moves error, nested attribute paths included, on the group it came from', () => {

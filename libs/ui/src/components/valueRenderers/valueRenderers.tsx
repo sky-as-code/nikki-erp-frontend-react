@@ -4,6 +4,8 @@ import React from 'react';
 import { useValueFormatDefaults } from './useValueFormatDefaults';
 import { formatLocalizedMoney, formatLocalizedNumber, parseRawNumber } from '../Localized/localizedFormat';
 
+import type { SymbolPosition } from '../Localized/localizedFormat';
+
 import type { FormatDefaults } from '../Localized/formatDefaults';
 import type { RawValue } from '../Localized/localizedFormat';
 
@@ -20,6 +22,8 @@ export type FloatRendererProps = {
 	precision?: number,
 	/** Marks the number as money, placed where the locale puts its currency. */
 	currencySymbol?: string,
+	/** Overrides the locale's placement of `currencySymbol`. */
+	symbolPosition?: SymbolPosition,
 };
 
 export type MoneyCurrency = {
@@ -27,6 +31,8 @@ export type MoneyCurrency = {
 	symbol?: string,
 	/** Omitted, taken from the user's default currency when the codes match, else the system default. */
 	decimalPlaces?: number,
+	/** Omitted, taken from the user's default currency when the codes match, else the locale's. */
+	symbolPosition?: SymbolPosition,
 };
 
 export type MoneyRendererProps = { rawValue: RawValue, currency?: MoneyCurrency };
@@ -42,7 +48,9 @@ export function IntegerRenderer({ rawValue }: IntegerRendererProps) {
 	return <FloatRenderer rawValue={rawValue} precision={0} />;
 }
 
-export function FloatRenderer({ rawValue, precision = DEFAULT_FLOAT_PRECISION, currencySymbol }: FloatRendererProps) {
+export function FloatRenderer(
+	{ rawValue, precision = DEFAULT_FLOAT_PRECISION, currencySymbol, symbolPosition }: FloatRendererProps,
+) {
 	const defaults = useValueFormatDefaults();
 	if (parseRawNumber(rawValue) === null) {
 		return <span>{EMPTY_RENDERED_VALUE}</span>;
@@ -51,9 +59,10 @@ export function FloatRenderer({ rawValue, precision = DEFAULT_FLOAT_PRECISION, c
 		fractionDigits: precision,
 		decimalSeparator: defaults.decimalSeparator,
 		thousandsSeparator: defaults.thousandsSeparator,
+		grouping: defaults.grouping,
 	};
 	const text = currencySymbol
-		? formatLocalizedMoney(rawValue, defaults.locale, currencySymbol, options)
+		? formatLocalizedMoney(rawValue, defaults.locale, currencySymbol, { ...options, symbolPosition })
 		: formatLocalizedNumber(rawValue, defaults.locale, options);
 	return <span>{text}</span>;
 }
@@ -70,6 +79,7 @@ export function MoneyRenderer({ rawValue, currency }: MoneyRendererProps) {
 			rawValue={rawValue}
 			precision={resolved?.decimalPlaces ?? DEFAULT_FLOAT_PRECISION}
 			currencySymbol={resolved ? resolved.symbol || resolved.code : undefined}
+			symbolPosition={resolved?.symbolPosition}
 		/>
 	);
 }
@@ -89,6 +99,7 @@ export function resolveMoneyCurrency(
 			code: currency.code,
 			symbol: currency.symbol || fallback.symbol,
 			decimalPlaces: currency.decimalPlaces ?? fallback.decimalPlaces,
+			symbolPosition: currency.symbolPosition ?? fallback.symbolPosition,
 		};
 	}
 	return currency;

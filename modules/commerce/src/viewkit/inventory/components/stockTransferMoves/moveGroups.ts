@@ -10,21 +10,20 @@ export const VALUE_FIELD = 'product_attribute_value_id';
 export const QUANTITY_FIELD = 'demand_quantity';
 export const UOM_FIELD = 'uom_id';
 
-/** The table's columns, in order; `attributes` expands in place to Attribute | Value. */
+/** The table's columns, in order: one row per move, its attribute values one cell of badges. */
 export const MOVE_GROUP_COLUMNS = [TEMPLATE_FIELD, ATTRIBUTES_FIELD, QUANTITY_FIELD, UOM_FIELD];
 
 /** Where each column's label comes from in a read row (`{edge}.{field}`), as `edge_labels` names it. */
 export const MOVE_EDGE_LABELS: Record<string, string> = {
 	product_template: 'name',
 	uom: 'name',
-	product_attribute: 'name',
-	product_attribute_value: 'name',
 };
 
 /**
  * One move as the table edits it: a product template and one value per variant-generating attribute,
  * which the backend resolves (or creates) into the move's variant, with its demand and unit. No backend
- * schema has this shape, so it lives here; its `$ref` labels resolve in the inventory namespace.
+ * schema has this shape, so it lives here; its `$ref` labels resolve in the inventory namespace. The
+ * `attributes` list is edited by its own cell editor (the attributes modal), never by `AutoField`.
  */
 export const MOVE_GROUP_SCHEMA = rowSpanSchemaFromJson({
 	name: 'inventory_stock_transfer_move_group',
@@ -36,7 +35,7 @@ export const MOVE_GROUP_SCHEMA = rowSpanSchemaFromJson({
 			is_required_for_create: true,
 		},
 		{
-			name: ATTRIBUTES_FIELD,
+			name: ATTRIBUTES_FIELD, label: { $ref: 'fields.attributes' },
 			data_type: 'model',
 			fields: [
 				{ name: ATTRIBUTE_FIELD, label: { $ref: 'fields.attribute_id' }, data_type: 'ulid' },
@@ -54,11 +53,31 @@ export const MOVE_GROUP_SCHEMA = rowSpanSchemaFromJson({
 			name: QUANTITY_FIELD, label: { $ref: 'fields.demand_quantity' },
 			data_type: { name: 'decimal', options: { scale: 4 } }, is_required_for_create: true,
 		},
-		{ name: UOM_FIELD, label: { $ref: 'fields.uom_id' }, data_type: 'ulid' },
+		// "Unit", not the field's "Unit of measure": the column shows the unit's name.
+		{ name: UOM_FIELD, label: { $ref: 'fields.uom_name' }, data_type: 'ulid' },
 	],
 	edges_to: [
 		{ edge: 'product_template', dest_schema: 'inventory_product_template', key_map: { [TEMPLATE_FIELD]: 'id' } },
 		{ edge: 'uom', dest_schema: 'essential_uom', key_map: { [UOM_FIELD]: 'id' } },
+	],
+});
+
+/** The attributes modal's rows: one attribute and its value each. */
+export const ATTRIBUTE_ROW_COLUMNS = [ATTRIBUTE_FIELD, VALUE_FIELD];
+
+export const ATTRIBUTE_ROW_SCHEMA = rowSpanSchemaFromJson({
+	name: 'inventory_stock_transfer_move_attribute',
+	fields: [
+		{ name: 'id', data_type: 'ulid', is_primary_key: true },
+		{ name: 'etag', data_type: 'string', is_auto_generated: true },
+		{
+			name: ATTRIBUTE_FIELD, label: { $ref: 'fields.attribute_id' }, data_type: 'ulid',
+			is_required_for_create: true,
+		},
+		{
+			name: VALUE_FIELD, label: { $ref: 'fields.attribute_value_id' }, data_type: 'ulid',
+			is_required_for_create: true,
+		},
 	],
 });
 
@@ -75,7 +94,7 @@ export type MoveAttribute = Record<string, unknown> & {
 	[VALUE_FIELD]?: string | null,
 };
 
-/** A saved variant's attribute values, as the table's sub-rows: catalogue attribute and value ids, value name kept. */
+/** A saved variant's attribute values: catalogue attribute and value ids, the value's name kept for its badge. */
 export function attributesByVariant(variantValues: SearchItem[]): Map<string, MoveAttribute[]> {
 	const out = new Map<string, MoveAttribute[]>();
 	for (const item of variantValues) {
@@ -95,7 +114,7 @@ export function attributesByVariant(variantValues: SearchItem[]): Map<string, Mo
 	return out;
 }
 
-/** The saved moves as groups, in `sequence` order: template from the variant, attributes from the second read. */
+/** The saved moves as rows, in `sequence` order: template from the variant, attributes from the second read. */
 export function groupSavedMoves(moves: SearchItem[], variantValues: SearchItem[]): SearchItem[] {
 	const attributes = attributesByVariant(variantValues);
 	return [...moves]
@@ -117,7 +136,7 @@ export type MoveLabels = {
 	attributeNames: Map<string, unknown>,
 };
 
-/** Puts the template and attribute names where a read cell looks for them (`product_template.name`, …). */
+/** Puts the template and attribute names where a read cell or badge looks for them (`product_template.name`, …). */
 export function withMoveLabels(groups: SearchItem[], labels: MoveLabels): SearchItem[] {
 	return groups.map(group => ({
 		...group,

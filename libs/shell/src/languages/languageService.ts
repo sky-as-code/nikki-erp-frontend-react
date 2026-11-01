@@ -5,24 +5,24 @@ import type { RequestResult } from '@nikkierp/common/request';
 
 /** One language a user may pick: the `essential_languages` rows marked `is_enabled`. */
 export type EnabledLanguage = {
-	isoCode: string,
+	localeCode: string,
 	name: string,
 };
 
 type LanguageRow = {
-	iso_code: string,
+	locale_code: string,
 	name: string,
 };
 
 export type ListEnabledLanguagesResponse = {
 	items: LanguageRow[],
 	/** What a user reads when neither they nor their organization chose a language. */
-	default_iso_code: string,
+	default_locale_code: string,
 };
 
 export type EnabledLanguages = {
 	languages: EnabledLanguage[],
-	defaultIsoCode: string | null,
+	defaultLocaleCode: string | null,
 };
 
 /**
@@ -38,8 +38,8 @@ export function fetchEnabledLanguages(): Promise<RequestResult<ListEnabledLangua
 
 export function toEnabledLanguages(response: ListEnabledLanguagesResponse | null): EnabledLanguages {
 	return {
-		languages: (response?.items ?? []).map(row => ({ isoCode: row.iso_code, name: row.name })),
-		defaultIsoCode: response?.default_iso_code || null,
+		languages: (response?.items ?? []).map(row => ({ localeCode: row.locale_code, name: row.name })),
+		defaultLocaleCode: response?.default_locale_code || null,
 	};
 }
 

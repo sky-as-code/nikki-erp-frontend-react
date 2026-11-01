@@ -4,7 +4,7 @@ export * from './ids';
 export * from './standardSchema';
 
 export type { RenderResult } from './renderResult';
-export type { FieldRendererFactory, FieldRendererMap, IFieldRenderer } from './IFieldRenderer';
+export type { FieldInputOptions, FieldRendererFactory, FieldRendererMap, IFieldRenderer } from './IFieldRenderer';
 export type { ComponentRenderRuntime, IComponentRenderer } from './IComponentRenderer';
 export type { IPageTemplate, PageRenderRuntime } from './IPageTemplate';
 export type {

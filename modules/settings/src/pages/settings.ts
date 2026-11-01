@@ -23,6 +23,7 @@ export function buildSettingsPages(): PageNode[] {
 		panes: [
 			{ slug: 'essential', labelKey: 'pane.general', levels: ['user', 'org'] },
 			{ slug: 'iam', labelKey: 'pane.security', levels: ['tenant'] },
+			{ slug: 'accounting', labelKey: 'pane.accounting', levels: ['tenant', 'org'] },
 		],
 	});
 

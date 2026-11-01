@@ -164,19 +164,28 @@ function buildProductVariantFieldsSection(): ComponentNode {
 		// list, and these are only the inputs to it.
 		resourceFormColumnNode({
 			header: 'form.pricing',
-			fields: ['cost', 'product_template_base_sales_price', 'effective_base_sales_price'],
+			fields: [
+				{ fields: ['@@cost', '$$common:per', '@@product_template_uom_symbol'] },
+				{ fields: ['@@product_template_base_sales_price', '$$common:per', '@@product_template_uom_symbol'] },
+				{ fields: ['@@effective_base_sales_price', '$$common:per', '@@product_template_uom_symbol'] },
+			],
 		}),
 		// Left empty, each of these inherits the template's default. Null means "inherited",
 		// never zero. See BR Â§6.4.
 		resourceFormColumnNode({
 			header: 'form.dimensions',
-			fields: ['weight', 'length', 'width', 'height'],
+			fields: [
+				{ fields: ['@@weight', '@@weight_uom_symbol'] },
+				{ fields: ['@@length', '@@dimension_uom_symbol'] },
+				{ fields: ['@@width', '@@dimension_uom_symbol'] },
+				{ fields: ['@@height', '@@dimension_uom_symbol'] },
+			],
 		}),
 		// archive_source is what lets unarchiving a template restore only the variants it
-		// took down, so it is shown rather than hidden. See BR Â§8.9.
+		// took down, so it is shown rather than hidden; `status` is the status strip's. See BR Â§8.9.
 		resourceFormColumnNode({
 			header: 'form.audit',
-			fields: ['status', 'archive_source'],
+			fields: ['archive_source'],
 		}),
 	]);
 }
@@ -227,10 +236,10 @@ function buildVariantInventoryResource() {
 	};
 }
 
-/** How the variant has moved, open and completed alike. */
+/** The variant's moves, open and completed alike; each row opens the stock transfer that carries it. */
 function buildVariantMovementsResource() {
 	return {
-		label: 'product_variant_sections_movements',
+		label: 'product_variant_sections_stock_transfers',
 		schemaName: c.STOCK_MOVE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		searchCommand: StockMoveCommands.SEARCH,

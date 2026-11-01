@@ -1,0 +1,6 @@
+/* The currency marker beside a money amount: a segment of the input, never per page. */
+.segment {
+	padding-inline: var(--mantine-spacing-xs);
+	color: var(--mantine-color-dimmed);
+	white-space: nowrap;
+}

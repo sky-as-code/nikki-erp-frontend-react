@@ -2,9 +2,11 @@ export const ESSENTIAL_MODULE = 'essential';
 
 // These must match the backend Go constants verbatim — `SchemaRegistry` rejects a schema whose
 // response name differs, which leaves the page loading forever. See
-// backend .../modules/essential/domain/models/{uom,uomcat}.go.
+// backend .../modules/essential/domain/models/{uom,uomcat,language}.go.
 export const UOM_SCHEMA_NAME = 'essential_uom';
 export const UOMCAT_SCHEMA_NAME = 'essential_uomcat';
+export const LANGUAGE_SCHEMA_NAME = 'essential_language';
+export const CURRENCY_SCHEMA_NAME = 'essential_currency';
 
 /**
  * The dynamic resource engine serves a resource at `/v1/{module}/{schema_name}`, so the path
@@ -12,3 +14,11 @@ export const UOMCAT_SCHEMA_NAME = 'essential_uomcat';
  */
 export const UOM_RESOURCE_PATH = `v1/essential/${UOM_SCHEMA_NAME}`;
 export const UOMCAT_RESOURCE_PATH = `v1/essential/${UOMCAT_SCHEMA_NAME}`;
+export const LANGUAGE_RESOURCE_PATH = `v1/essential/${LANGUAGE_SCHEMA_NAME}`;
+export const CURRENCY_RESOURCE_PATH = `v1/essential/${CURRENCY_SCHEMA_NAME}`;
+
+/** The currency list's route inside this micro-app; Settings › Accounting links to it. */
+export const CURRENCY_ROUTE = CURRENCY_SCHEMA_NAME;
+
+/** The hardcoded timezone catalogue (`GET ?keyword=&language_code=`); not a dynamic resource. */
+export const TIMEZONES_PATH = 'v1/essential/timezones';

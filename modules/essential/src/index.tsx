@@ -13,9 +13,13 @@ import { Link } from 'react-router';
 
 import { reducer } from './appState';
 import * as c from './constants';
+import { registerCurrencyCommands } from './features/currency/commands';
+import { registerLanguageCommands } from './features/language/commands';
 import { registerUomCommands } from './features/uom/commands';
 import { registerUomCatCommands } from './features/uomcat/commands';
 import { buildEssentialMenu } from './menu';
+import { buildCurrencyPages } from './pages/currency';
+import { buildLanguagePages } from './pages/language';
 import { ModuleManagementPage } from './pages/ModuleManagement';
 import { OrgHomePage } from './pages/OrgHomePage';
 import { SettingsWidget } from './pages/SettingsWidget';
@@ -41,7 +45,8 @@ function Main(props: MicroAppProps) {
 function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	const engine = useViewEngine();
 	const pages = React.useMemo(
-		() => [...buildUomPages(), ...buildUomCatPages()].map(page => compilePage(page, engine)),
+		() => [...buildUomPages(), ...buildUomCatPages(), ...buildLanguagePages(), ...buildCurrencyPages()]
+			.map(page => compilePage(page, engine)),
 		[engine],
 	);
 
@@ -100,6 +105,8 @@ const bundle: MicroAppBundle = {
 		host.menuRegistry.register(buildEssentialMenu(slug));
 		registerUomCommands(host.commandBus);
 		registerUomCatCommands(host.commandBus);
+		registerLanguageCommands(host.commandBus);
+		registerCurrencyCommands(host.commandBus);
 
 		return {
 			domType,
@@ -116,5 +123,11 @@ function registerModelSchemas(): void {
 	}, {
 		schemaName: c.UOMCAT_SCHEMA_NAME,
 		resourcePath: c.UOMCAT_RESOURCE_PATH,
+	}, {
+		schemaName: c.LANGUAGE_SCHEMA_NAME,
+		resourcePath: c.LANGUAGE_RESOURCE_PATH,
+	}, {
+		schemaName: c.CURRENCY_SCHEMA_NAME,
+		resourcePath: c.CURRENCY_RESOURCE_PATH,
 	}]);
 }

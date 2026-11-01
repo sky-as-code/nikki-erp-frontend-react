@@ -8,6 +8,7 @@ import { RelatedResourcesTabs } from './RelatedResourcesTabs';
 import { ResourceCreate } from './ResourceCreate';
 import { ResourceUpdate } from './ResourceUpdate';
 import { PageContainer } from '../../components/PageContainer';
+import { parentResourceSpecOf } from '../../components/pageHeader/parentResource';
 import { resourceTestIdPrefix } from '../../testIds';
 import { ResourceDetailProvider } from '../resourceDetail/ResourceDetailProvider';
 
@@ -34,6 +35,10 @@ function ResourceDetailV2View({ params, childrenNodes }: ResourceDetailV2ViewPro
 	const createMode = id === 'new';
 	const commands = params.standardActionCommands;
 	const nodes = childrenNodes ?? params.childrenNodes;
+	const parentResource = React.useMemo(
+		() => parentResourceSpecOf({ parentLink: params.parentLink, parentResource: params.parentResource }),
+		[params.parentLink, params.parentResource],
+	);
 	const testId = resourceTestIdPrefix({
 		testId: params.testId,
 		routePath: usePageContext()?.routePath,
@@ -68,6 +73,7 @@ function ResourceDetailV2View({ params, childrenNodes }: ResourceDetailV2ViewPro
 							titleLvl1={params.titleLvl1}
 							titleLvl2={params.titleLvl2}
 							backLinkTitle={params.backLinkTitle}
+							parentResource={parentResource}
 							thumbnail={params.thumbnail}
 							statusPlacement={params.statusPlacement}
 							childrenNodes={nodes}

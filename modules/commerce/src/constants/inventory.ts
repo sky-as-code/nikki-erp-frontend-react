@@ -35,6 +35,13 @@ export const STOCK_MOVE_SCHEMA_NAME = 'inventory_stock_move';
 export const STOCK_MOVE_LINE_SCHEMA_NAME = 'inventory_stock_move_line';
 export const STOCK_MOVE_DEPENDENCY_SCHEMA_NAME = 'inventory_stock_move_dependency';
 
+/**
+ * The move and move line pages hang under their transfer (and move). The parents are never `:id`: the split
+ * view appends its own `/:id?` for the record shown.
+ */
+export const STOCK_MOVE_ROUTE_PATH = `${STOCK_TRANSFER_SCHEMA_NAME}/:transfer_id/${STOCK_MOVE_SCHEMA_NAME}`;
+export const STOCK_MOVE_LINE_ROUTE_PATH = `${STOCK_MOVE_ROUTE_PATH}/:move_id/${STOCK_MOVE_LINE_SCHEMA_NAME}`;
+
 // Stock corrections. See backend .../modules/inventory/domain/models/stock_scrap.go.
 export const STOCK_SCRAP_SCHEMA_NAME = 'inventory_stock_scrap';
 

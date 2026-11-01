@@ -5,6 +5,7 @@ import { SyncedMantineProvider } from '@nikkierp/ui/theme';
 import { ViewEngineRouter } from '@nikkierp/viewkit-mantine';
 import React from 'react';
 
+import { buildEssentialPages } from './bootstrap/essential';
 import { registerSettingsCommands } from './features/settings';
 import { buildSettingsMenu } from './menu';
 import { buildSettingsPages } from './pages/settings';
@@ -25,10 +26,11 @@ function Main(props: MicroAppProps) {
  * The settings page is a compiled view-engine page like any other: the rail and the pane are
  * registered contributions of this module's own kit (`./viewkit`), and the page itself is plain
  * JSON metadata. Only the *contents* of the right pane belong to another module, and those
- * arrive through `LazyMicroWidget` rather than through this router.
+ * arrive through `LazyMicroWidget` rather than through this router. The Languages pages are
+ * essential's, proxied (`./bootstrap/essential`).
  */
 function MicroAppInner(props: MicroAppProps): React.ReactNode {
-	const pages = React.useMemo(() => buildSettingsPages(), []);
+	const pages = React.useMemo(() => [...buildSettingsPages(), ...buildEssentialPages()], []);
 
 	return (
 		<ViewEngineRouter

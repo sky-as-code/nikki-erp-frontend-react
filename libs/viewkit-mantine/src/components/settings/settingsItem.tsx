@@ -6,6 +6,7 @@ import React from 'react';
 
 import { settingsItemPropsSchema, SettingsItemProps } from './props';
 import { SettingControl } from './settingControl';
+import { SettingLink } from './settingLink';
 import { defaultSettingDescriptionKey, useSettingsSectionContext } from './settingsContext';
 import { itemKey, useSettingsData } from './settingsDataContext';
 import { SETTINGS_ITEM } from '../../ids';
@@ -65,6 +66,10 @@ function SettingsItem({ props }: { props: SettingsItemProps }): React.ReactNode 
 			<Stack gap={2} style={{ flex: 1 }}>
 				<Text fw={500}>{t(props.labelKey)}</Text>
 				<Text size='sm' c='dimmed'>{t(descriptionKey)}</Text>
+				{/* Hidden while the pane has unsaved edits: following it would discard them. */}
+				{props.link && !data?.drafts.size ? (
+					<SettingLink link={props.link} label={t(props.link.labelKey)} name={props.name} />
+				) : null}
 			</Stack>
 			{item != null && data != null ? (
 				// The caption sits beside the control, not under the label: it explains why *this
@@ -74,6 +79,7 @@ function SettingsItem({ props }: { props: SettingsItemProps }): React.ReactNode 
 						item={item}
 						value={value}
 						options={data.options[props.name]}
+						search={data.searchOptions[props.name]}
 						labelKey={props.labelKey}
 						onChange={next => data.setDraft(level, props.name, next)}
 					/>

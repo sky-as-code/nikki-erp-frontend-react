@@ -4,6 +4,7 @@ import { useId } from '@mantine/hooks';
 import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
+import { useDatePickerFormat } from './datePickerFormat';
 import {
 	inputTimeToModel, pickerDateTimeToIso, storedTimeToInput,
 } from './dateTimeValues';
@@ -46,6 +47,7 @@ export function DateTimeInputField(props: DateTimeFieldProps<DateTimePickerProps
 	const { control, modelValue, modelLoading } = useFormField();
 	const fieldAttrs = useFieldTestAttrs(name);
 	const size = useFormInputSize();
+	const pickerFormat = useDatePickerFormat(true);
 
 	if (!fieldData) {
 		return null;
@@ -75,6 +77,7 @@ export function DateTimeInputField(props: DateTimeFieldProps<DateTimePickerProps
 						onDropdownClose={field.onBlur}
 						disabled={modelLoading}
 						placeholder={t(fieldData.placeholder)}
+						{...pickerFormat}
 						{...fieldAttrs}
 						{...formInputProps(props.inputProps, size)}
 					/>

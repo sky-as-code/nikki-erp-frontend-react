@@ -29,10 +29,10 @@ function useLoadedLanguages(): EnabledLanguages | null {
 export function useEnabledLanguages(): EnabledLanguage[] {
 	const supported: string[] | undefined = useAccountSettings()?.supportedLanguages;
 	const loaded = useLoadedLanguages();
-	return loaded?.languages ?? (supported ?? []).map(code => ({ isoCode: code, name: code }));
+	return loaded?.languages ?? (supported ?? []).map(code => ({ localeCode: code, name: code }));
 }
 
 /** The system default language -- what applies when neither a user nor their organization chose. */
 export function useDefaultLanguage(): string | null {
-	return useLoadedLanguages()?.defaultIsoCode ?? null;
+	return useLoadedLanguages()?.defaultLocaleCode ?? null;
 }

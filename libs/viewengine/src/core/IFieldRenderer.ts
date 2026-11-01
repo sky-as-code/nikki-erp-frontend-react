@@ -25,7 +25,20 @@ export interface IFieldRenderer {
 
 	/** When set, the value is translated with this key before `render` runs. */
 	translationKey?(value: string): string;
+
+	/**
+	 * The edit-mode input of the field, for a renderer that owns how its value is typed too (a format
+	 * pattern with a live example). A form surface that honours it renders this instead of the data
+	 * type's default input; one that does not keeps the default. The input binds to the enclosing form
+	 * by `field` name.
+	 */
+	renderInput?(field: string, options: FieldInputOptions): RenderResult;
 }
+
+/** What a form surface tells {@link IFieldRenderer.renderInput} about the input's state. */
+export type FieldInputOptions = {
+	disabled?: boolean,
+};
 
 export type FieldRendererMap = Record<string, IFieldRenderer>;
 

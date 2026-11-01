@@ -62,6 +62,16 @@ export const settingsItemPropsSchema = z.object({
 	 * declared data type.
 	 */
 	renderer: z.string().min(1).optional(),
+	/**
+	 * A link under the label to the page that manages what this setting picks from -- "Manage
+	 * currencies" under a currency setting. `moduleSlug` and `path` name a page of any micro-app;
+	 * the active organization is prefixed when it is followed.
+	 */
+	link: z.object({
+		labelKey: z.string().min(1),
+		moduleSlug: z.string().min(1),
+		path: z.string().min(1),
+	}).strict().optional(),
 }).strict();
 
 export type SettingsItemProps = z.output<typeof settingsItemPropsSchema>;

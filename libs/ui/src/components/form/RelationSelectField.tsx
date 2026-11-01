@@ -4,6 +4,7 @@ import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
 import { fieldErrorText } from './fieldErrors';
+import { fieldOccurrenceTestSegment, useFieldOccurrenceIndex } from './fieldOccurrence';
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
 import { useFormTestIdPrefix } from './formTestIds';
@@ -61,7 +62,10 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 	const [isPickerOpen, setIsPickerOpen] = React.useState(false);
 	const options = useRelationOptions(name, term, localize);
 	const testIdPrefix = useFormTestIdPrefix();
-	const fieldTestId = testIdPrefix ? `${testIdPrefix}.field.${name}` : undefined;
+	const copySegment = fieldOccurrenceTestSegment(useFieldOccurrenceIndex(name));
+	const fieldTestId = testIdPrefix
+		? [testIdPrefix, 'field', name, copySegment].filter(Boolean).join('.')
+		: undefined;
 	const t = useTranslate('common');
 	const { contentWidthDropdown } = React.useContext(SelectDefaultsContext);
 	const isDisabled = Boolean(

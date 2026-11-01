@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { useI18n } from '../../i18n';
+import type { SymbolPosition } from './localizedFormat';
+import type { DigitGrouping } from './numberGrouping';
+import type { WeekDayIndex } from './strftime';
 
 
 /**
@@ -8,23 +10,32 @@ import { useI18n } from '../../i18n';
  * organization's currency, both as the user-context endpoint reports them.
  *
  * The shape is declared here rather than imported from the shell because this library sits below
- * it — the shell fills the provider in, and a page that renders one of these components outside a
- * shell still formats correctly on `Intl` defaults.
+ * it — the shell fills the provider in (`toFormatDefaults`), a micro-app's root reads the same over the
+ * bus (`useValueFormatDefaults`), and a page rendered outside a shell still formats on `Intl` defaults.
  */
 export type FormatDefaults = {
 	/** BCP 47 tag of the acting user's language, e.g. `en-US`. */
 	locale?: string,
 	/**
-	 * Separators from the language record. They are supplied only when they disagree with what
-	 * `Intl` produces for `locale`: for the languages shipped today the two agree, so this is the
-	 * seam for a tenant who customizes their language record rather than a routine override.
+	 * Separators from the language record, overriding `Intl`'s for `locale`. An empty thousands
+	 * separator is a choice (no glyph between groups), not a missing value.
 	 */
 	decimalSeparator?: string,
 	thousandsSeparator?: string,
+	/** The record's digit grouping, parsed (`[3,0]`); see `DigitGrouping`. */
+	grouping?: DigitGrouping,
+	/** strftime patterns of the record: `%m/%d/%Y`, `%H:%M:%S`, `%H:%M`. */
+	dateFormat?: string,
+	timeFormat?: string,
+	shortTimeFormat?: string,
+	/** The record's first day of the week as a date picker takes it, 0 = Sunday. */
+	firstDayOfWeek?: WeekDayIndex,
 	currency?: {
 		code: string,
 		symbol: string,
 		decimalPlaces: number,
+		/** The currency's placement of its symbol; absent leaves it to the locale. */
+		symbolPosition?: SymbolPosition,
 	},
 };
 
@@ -39,19 +50,6 @@ export function FormatDefaultsProvider({ value, children }: {
 
 export function useFormatDefaults(): FormatDefaults {
 	return React.useContext(FormatDefaultsContext);
-}
-
-/**
- * The locale every `Localized*` component formats in: an explicit prop, else the user's language
- * record, else the UI language.
- *
- * The UI language is the last resort rather than the first because the two can legitimately differ
- * — a user reading the interface in English may still want their own number and date conventions.
- */
-export function useFormatLocale(explicit?: string): string {
-	const defaults = useFormatDefaults();
-	const i18n = useI18n();
-	return explicit ?? defaults.locale ?? i18n.language;
 }
 
 /**

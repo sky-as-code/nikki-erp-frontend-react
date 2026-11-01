@@ -4,6 +4,7 @@ export * from './ErrorBoundary/ErrorBoundary';
 export * from './ErrorState';
 export * from './fieldDescription';
 export * from './form';
+export * from './formatPattern';
 export * from './Input';
 export * from './Link';
 export * from './Loading';

@@ -130,15 +130,17 @@ function ReadModeActionBar({ createAction, primaryActions, isLoading }: {
 	const { contextualActions, commands, resource } = useResourceUpdateContext();
 	const hasVisibleContextualActions = resource != null && hasMatchingExtraAction(contextualActions, resource);
 	const hasOverflowMenu = Boolean(commands.delete || commands.archive) && resource != null;
-	// The status flow sits apart on the right, so it does not count as something the separator divides.
-	const hasActionsAfterCreate = Boolean(commands.update) || hasVisibleContextualActions || hasOverflowMenu;
+	// Create and Edit form one group; the status flow sits apart on the right, so it does not count as something
+	// the separator divides.
+	const hasRecordActions = Boolean(createAction) || Boolean(commands.update);
+	const hasActionsAfterRecordActions = hasVisibleContextualActions || hasOverflowMenu;
 
 	return (
 		<>
 			<LeftToolbar>
 				{createAction}
-				{createAction && hasActionsAfterCreate ? <Divider orientation='vertical' my={4} /> : null}
 				{primaryActions}
+				{hasRecordActions && hasActionsAfterRecordActions ? <Divider orientation='vertical' my={4} /> : null}
 				{hasVisibleContextualActions ? (
 					<ResourceDetailExtraActionButtons
 						contextualActions={contextualActions}

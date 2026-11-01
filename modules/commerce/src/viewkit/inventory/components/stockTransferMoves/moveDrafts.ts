@@ -1,5 +1,3 @@
-import { ROW_SPAN_GROUP_KEY } from '@nikkierp/ui/components/ExcelDataTable';
-
 import { ATTRIBUTE_FIELD, ATTRIBUTES_FIELD, QUANTITY_FIELD, TEMPLATE_FIELD, UOM_FIELD, VALUE_FIELD } from './moveGroups';
 
 import type { MoveAttribute } from './moveGroups';
@@ -70,18 +68,13 @@ export function moveDraftsFor(state: MoveDrafts, transferId: string): MoveDrafts
 	return state.transferId === transferId ? state : emptyMoveDrafts(transferId);
 }
 
-/** The group a table row stands for: a flat sub-row names it, a group is itself. */
-function groupIdOf(row: Record<string, unknown> | undefined): string {
-	return String(row?.[ROW_SPAN_GROUP_KEY] ?? row?.id ?? '');
-}
-
 export function isDraftMoveRow(row: Record<string, unknown> | undefined): boolean {
 	return row?.[DRAFT_ROW_FLAG] === true;
 }
 
 /** A saved move with an unsaved edit: the table badges it "Changed", also after it remounts. */
 export function isEditedMoveRow(row: Record<string, unknown> | undefined, drafts: MoveDrafts): boolean {
-	const id = groupIdOf(row);
+	const id = String(row?.id ?? '');
 	return drafts.updated.some(update => update.id === id);
 }
 

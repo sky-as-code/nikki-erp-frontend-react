@@ -214,14 +214,28 @@ describe('applyVisibleWhen', () => {
 			.toEqual(['incoming_flow', 'receiving_location_id']);
 	});
 
-	it('drops a failing @@field from an inline row, and the row once none is left', () => {
-		const rows = [['$$form.input', '@@receiving_location_id', 'and', '@@quality_location_id'], ['$$form.note']];
+	it('drops a failing @@field from a group, and the group once none is left', () => {
+		const rows = [
+			{ fields: ['$$form.input', '@@receiving_location_id', 'and', '@@quality_location_id'] },
+			{ fields: ['$$form.note'] },
+		];
 		expect(applyVisibleWhen(rows, flowRules, { incoming_flow: 'two_step' }))
-			.toEqual([['$$form.input', '@@receiving_location_id', 'and'], ['$$form.note']]);
-		expect(applyVisibleWhen(rows, flowRules, { incoming_flow: 'one_step' })).toEqual([['$$form.note']]);
+			.toEqual([{ fields: ['$$form.input', '@@receiving_location_id', 'and'] }, { fields: ['$$form.note'] }]);
+		expect(applyVisibleWhen(rows, flowRules, { incoming_flow: 'one_step' })).toEqual([{ fields: ['$$form.note'] }]);
+	});
+
+	it('keeps a group label and its widths aligned with the fields left', () => {
+		const group = {
+			label: 'form.locations',
+			fields: ['@@receiving_location_id', 'and', '@@quality_location_id'],
+			widths: ['10rem', null, '12rem'],
+		};
+		expect(applyVisibleWhen([group], flowRules, { incoming_flow: 'two_step' }))
+			.toEqual([{ label: 'form.locations', fields: ['@@receiving_location_id', 'and'], widths: ['10rem', null] }]);
+		expect(applyVisibleWhen([group], flowRules, { incoming_flow: 'one_step' })).toEqual([]);
 	});
 
 	it('leaves the fields alone without rules', () => {
-		expect(applyVisibleWhen(['a', ['@@b']], undefined, {})).toEqual(['a', ['@@b']]);
+		expect(applyVisibleWhen(['a', { fields: ['@@b'] }], undefined, {})).toEqual(['a', { fields: ['@@b'] }]);
 	});
 });

@@ -33,7 +33,7 @@ export const LangSwitchDropdown: React.FC = () => {
 		<Menu shadow='md' width={170} position='bottom-end'>
 			<Menu.Target>
 				<Button px={'xs'} variant='default' h={35} {...testAttrs(TEST_ID, 'trigger')}>
-					<Box w={24} h={20} p={0} mx={3}><LanguageIcon isoCode={current} /></Box>
+					<Box w={24} h={20} p={0} mx={3}><LanguageIcon localeCode={current} /></Box>
 					<IconChevronDown size={14} color='var(--mantine-color-dimmed)' />
 				</Button>
 			</Menu.Target>
@@ -41,14 +41,14 @@ export const LangSwitchDropdown: React.FC = () => {
 			<Menu.Dropdown>
 				{languages.map(language => (
 					<Menu.Item
-						key={language.isoCode}
-						onClick={() => setLanguageCode(language.isoCode)}
-						leftSection={<LanguageIcon isoCode={language.isoCode} />}
-						rightSection={language.isoCode === current ? <IconCheck size={16} /> : null}
-						fw={language.isoCode === current ? 700 : undefined}
-						aria-current={language.isoCode === current ? 'true' : undefined}
-						data-selected={language.isoCode === current ? 'true' : undefined}
-						{...testAttrs(TEST_ID, 'option', language.isoCode)}
+						key={language.localeCode}
+						onClick={() => setLanguageCode(language.localeCode)}
+						leftSection={<LanguageIcon localeCode={language.localeCode} />}
+						rightSection={language.localeCode === current ? <IconCheck size={16} /> : null}
+						fw={language.localeCode === current ? 700 : undefined}
+						aria-current={language.localeCode === current ? 'true' : undefined}
+						data-selected={language.localeCode === current ? 'true' : undefined}
+						{...testAttrs(TEST_ID, 'option', language.localeCode)}
 					>
 						{language.name}
 					</Menu.Item>
@@ -58,7 +58,7 @@ export const LangSwitchDropdown: React.FC = () => {
 	);
 };
 
-function LanguageIcon({ isoCode }: { isoCode: string }): React.ReactNode {
-	const icon = ICONS[isoCode];
-	return icon ? <Image width={20} height={20} fit='contain' src={icon} alt={isoCode} /> : null;
+function LanguageIcon({ localeCode }: { localeCode: string }): React.ReactNode {
+	const icon = ICONS[localeCode];
+	return icon ? <Image width={20} height={20} fit='contain' src={icon} alt={localeCode} /> : null;
 }

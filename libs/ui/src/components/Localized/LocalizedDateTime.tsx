@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { useFormatLocale } from './formatDefaults';
 import { formatLocalizedDateTime } from './localizedFormat';
+import { useValueFormatDefaults } from '../valueRenderers/useValueFormatDefaults';
 
 import type { DateTimeKind, RawValue } from './localizedFormat';
 
@@ -16,8 +16,12 @@ export type LocalizedDateTimeProps = {
 	className?: string,
 };
 
-/** Renders a date, time or timestamp in the locale's order and separators. */
+/**
+ * Renders a date, time or timestamp with the language record's strftime formats, else in the
+ * locale's order and separators.
+ */
 export function LocalizedDateTime({ value, locale, kind, className }: LocalizedDateTimeProps) {
-	const text = formatLocalizedDateTime(value, useFormatLocale(locale), kind);
+	const defaults = useValueFormatDefaults();
+	const text = formatLocalizedDateTime(value, locale ?? defaults.locale, kind, defaults);
 	return <span className={className}>{text}</span>;
 }

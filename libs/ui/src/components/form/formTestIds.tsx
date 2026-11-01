@@ -1,6 +1,8 @@
 import { testAttrs } from '@nikkierp/common/utils';
 import React from 'react';
 
+import { fieldOccurrenceTestSegment, useFieldOccurrenceIndex } from './fieldOccurrence';
+
 import type { TestIdAttributes } from '@nikkierp/common/utils';
 
 
@@ -37,18 +39,20 @@ export function useFormTestIdPrefix(): string | undefined {
  */
 export function useFieldTestAttrs(fieldName: string | undefined): TestIdAttributes {
 	const prefix = useFormTestIdPrefix();
+	const copy = fieldOccurrenceTestSegment(useFieldOccurrenceIndex(fieldName));
 	return React.useMemo(
-		() => (fieldName ? testAttrs(prefix ?? 'form', 'field', fieldName) : {}),
-		[prefix, fieldName],
+		() => (fieldName ? testAttrs(prefix ?? 'form', 'field', fieldName, copy) : {}),
+		[prefix, fieldName, copy],
 	);
 }
 
 /** `data-testid` for a control that belongs to a field but is not the input itself. */
 export function useFieldPartTestAttrs(fieldName: string | undefined, part: string): TestIdAttributes {
 	const prefix = useFormTestIdPrefix();
+	const copy = fieldOccurrenceTestSegment(useFieldOccurrenceIndex(fieldName));
 	return React.useMemo(
-		() => (fieldName ? testAttrs(prefix ?? 'form', 'field', fieldName, part) : {}),
-		[prefix, fieldName, part],
+		() => (fieldName ? testAttrs(prefix ?? 'form', 'field', fieldName, copy, part) : {}),
+		[prefix, fieldName, copy, part],
 	);
 }
 

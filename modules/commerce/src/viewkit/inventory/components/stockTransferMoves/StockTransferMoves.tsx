@@ -5,22 +5,23 @@ import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
 import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
 import { useClientErrorTranslate, useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
-import { actionRequirement, useDetailSavePayload, useResourceFormView } from '@nikkierp/viewkit-mantine';
+import {
+	actionRequirement, useDetailSavePayload, useResourceFormView, useRoutePathHref,
+} from '@nikkierp/viewkit-mantine';
 import React from 'react';
 import { useWatch } from 'react-hook-form';
 import { useParams } from 'react-router';
 import { z } from 'zod';
 
+import { MOVE_FIELD_EDITORS, MOVE_FIELD_RENDERERS } from './moveAttributes';
 import { useSavedMoveGroups } from './moveData';
 import { isDraftMoveRow, isEditedMoveRow, mapMoveErrors, mergeDraftMoveRows, withTemplateRule } from './moveDrafts';
 import { useMoveDraftState } from './moveDraftState';
-import { MOVE_FIELD_EDITORS, MOVES_TEST_ID_PREFIX } from './moveEditors';
-import {
-	ATTRIBUTES_FIELD, MOVE_EDGE_LABELS, MOVE_GROUP_COLUMNS, MOVE_GROUP_SCHEMA, TEMPLATE_FIELD, withMoveLabels,
-} from './moveGroups';
+import { MOVES_TEST_ID_PREFIX } from './moveEditors';
+import { MOVE_EDGE_LABELS, MOVE_GROUP_COLUMNS, MOVE_GROUP_SCHEMA, withMoveLabels } from './moveGroups';
 import { MoveOptionsContext, useMoveOptionLoaders } from './moveOptions';
 import {
-	INVENTORY_MODULE, PRODUCT_TEMPLATE_SCHEMA_NAME, STOCK_MOVE_SCHEMA_NAME,
+	INVENTORY_MODULE, PRODUCT_TEMPLATE_SCHEMA_NAME, STOCK_MOVE_SCHEMA_NAME, STOCK_TRANSFER_SCHEMA_NAME,
 } from '../../../../constants/inventory';
 import { STOCK_TRANSFER_MOVES } from '../../ids';
 import { useAttributeCatalogue } from '../templateAttributes/attributeCatalogue';
@@ -39,6 +40,10 @@ const CAPABILITIES: ExcelDataTableCapability[] = ['create', 'update', 'delete'];
 const STATUS_FIELD = 'status';
 const DRAFT_STATUS = 'draft';
 const NO_ATTRIBUTES: string[] = [];
+/** From the transfer detail's own route (`…/:id`), so `:id` is the transfer. */
+// Absolute, naming Commerce, so a move row still reaches Inventory's own move page when another
+// module (Vending Machine) renders this node on its proxy transfer page.
+const MOVE_LIST_ROUTE_PATH = `/commerce/${STOCK_TRANSFER_SCHEMA_NAME}/:id/${STOCK_MOVE_SCHEMA_NAME}`;
 
 /** The moves ride the transfer's own write; the backend also asserts the matching move action. */
 const CREATE_REQUIREMENT = actionRequirement(STOCK_MOVE_SCHEMA_NAME, 'create');
@@ -72,9 +77,9 @@ function StockTransferMovesGuard(): React.ReactNode {
 type SectionProps = { save: DetailSavePayload, control: Control<any> };
 
 /**
- * The transfer's moves, one group per move: its product template spanning the attribute values that
- * pick the variant, with its demand and unit. While the form is created or updated, and only while the
- * transfer is a draft, every group edits inline and each write only drafts a change; all of it rides
+ * The transfer's moves, one row per move: its product template, the attribute values that pick the variant
+ * (badges, configured in a modal), its demand and unit. While the form is created or updated, and only while
+ * the transfer is a draft, every row edits inline and each write only drafts a change; all of it rides
  * the transfer's own create or update request on Save, in one transaction, and the backend resolves or
  * materializes each move's variant. Cancel or a successful Save discards the drafts and re-reads.
  */
@@ -86,6 +91,7 @@ function StockTransferMovesSection({ save, control }: SectionProps): React.React
 	const section = useMovesSection(save);
 	const loaders = useMoveOptionLoaders();
 	const locks = useWriteRequirements();
+	const buildLinkHref = useMoveLinkHref(editable && section.updateMode);
 	return (
 		<Stack gap='xs' {...testAttrs(MOVES_TEST_ID_PREFIX)}>
 			<MoveSaveErrors errors={section.errors} rowLabel={section.rowLabel} />
@@ -94,10 +100,9 @@ function StockTransferMovesSection({ save, control }: SectionProps): React.React
 					key={section.loadCount}
 					tableName='stockTransferMoves'
 					modelSchema={MOVE_GROUP_SCHEMA}
+					localModelSchema
 					data={section.data}
 					isLoading={section.isLoading}
-					rowSpanField={TEMPLATE_FIELD}
-					rowSingleField={ATTRIBUTES_FIELD}
 					indexColumnVisible={false}
 					selectionMode='none'
 					capabilities={editable ? CAPABILITIES : []}
@@ -107,15 +112,15 @@ function StockTransferMovesSection({ save, control }: SectionProps): React.React
 					isNewRow={isDraftMoveRow}
 					isChangedRow={section.isChangedRow}
 					fieldEditors={MOVE_FIELD_EDITORS}
+					fieldRenderers={MOVE_FIELD_RENDERERS}
+					buildLinkHref={buildLinkHref}
 					newRowPrompt={t('stock_transfer_moves_add_product', { defaultValue: 'Add new product' })}
-					subRowPrompt={t('stock_transfer_moves_add_attribute', { defaultValue: 'Add attribute' })}
 					onCreated={section.onCreated}
 					onUpdated={section.onUpdated}
 					onDeleted={section.onDeleted}
 					{...locks}
 					emptyMessage={t('stock_transfer_moves_empty', { defaultValue: 'No moves yet' })}
 					testId={MOVES_TEST_ID_PREFIX}
-
 				>
 					<ExcelDataTable.TableHeader enableColumnFilters={false} />
 					<ExcelDataTable.Table />
@@ -123,6 +128,20 @@ function StockTransferMovesSection({ save, control }: SectionProps): React.React
 			</MoveOptionsContext.Provider>
 		</Stack>
 	);
+}
+
+/**
+ * A saved move's row links to its detail page, under the transfer. None while the moves are edited (following
+ * it would discard the edits) and none for a drafted move, which has no page yet.
+ */
+function useMoveLinkHref(editing: boolean): ((row: SearchItem) => string) | undefined {
+	const baseHref = useRoutePathHref(MOVE_LIST_ROUTE_PATH);
+	return React.useMemo(() => {
+		if (editing || !baseHref) {
+			return undefined;
+		}
+		return (row: SearchItem) => (isDraftMoveRow(row) ? '' : `${baseHref}/${encodeURIComponent(String(row.id))}`);
+	}, [editing, baseHref]);
 }
 
 /**
@@ -168,7 +187,7 @@ function useMovesSection(save: DetailSavePayload) {
 	};
 }
 
-/** The saved groups with their drafts merged, labelled for read cells, as the table's data. */
+/** The saved moves with their drafts merged, labelled for read cells, as the table's data. */
 function useShownGroups(saved: ReturnType<typeof useSavedMoveGroups>, draftState: MoveDraftState) {
 	const catalogue = useAttributeCatalogue(NO_ATTRIBUTES);
 	const { drafts } = draftState;
@@ -185,7 +204,7 @@ function useShownGroups(saved: ReturnType<typeof useSavedMoveGroups>, draftState
 
 const NO_ERRORS: MoveErrors = { byRow: {}, general: [] };
 
-/** The table's group writes, as drafts. Another template drops the group's attributes. */
+/** The table's move writes, as drafts. Another template drops the move's attributes. */
 function useDraftSinks(draftState: MoveDraftState, shown: SearchItem[], savedGroups: SearchItem[]) {
 	const onCreated = (values: Record<string, unknown>): boolean => {
 		draftState.add(values);
@@ -196,13 +215,13 @@ function useDraftSinks(draftState: MoveDraftState, shown: SearchItem[], savedGro
 		draftState.update(withTemplateRule(values, previous), savedGroups.find(group => group.id === values.id));
 		return true;
 	};
-	// The table deletes one group at a time.
+	// The table deletes one move at a time.
 	const onDeleted = (items: SearchItem[]) => items.forEach(item => draftState.remove(item));
 	return { onCreated, onUpdated, onDeleted };
 }
 
 /**
- * Every rejection of the delta, group errors named by their line. The page's own error area cannot
+ * Every rejection of the delta, move errors named by their line. The page's own error area cannot
  * show them: it pins field errors on the inputs of that name, and no input is named `moves.*`.
  */
 function MoveSaveErrors({ errors, rowLabel }: {

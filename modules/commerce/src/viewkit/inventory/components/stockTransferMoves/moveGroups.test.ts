@@ -1,7 +1,6 @@
-import { flattenRowSpanItems, resolveRowSpanConfig } from '@nikkierp/ui/components/ExcelDataTable';
 import { describe, expect, it } from 'vitest';
 
-import { groupSavedMoves, MOVE_GROUP_SCHEMA, templateIdsOf, withMoveLabels } from './moveGroups';
+import { groupSavedMoves, MOVE_GROUP_COLUMNS, MOVE_GROUP_SCHEMA, templateIdsOf, withMoveLabels } from './moveGroups';
 import { toAttributeOptions, toValueOptions } from './moveOptions';
 
 
@@ -22,7 +21,7 @@ const variantValues = [
 	{ product_variant_id: 'V2', template_attribute_value: null },
 ];
 
-describe('saved moves as groups', () => {
+describe('saved moves as rows', () => {
 	it('groups each move with its variant template and catalogue attribute values, in sequence order', () => {
 		const groups = groupSavedMoves(moves, variantValues);
 
@@ -46,15 +45,10 @@ describe('saved moves as groups', () => {
 		expect(group.attributes[0].product_attribute).toEqual({ name: 'Color' });
 	});
 
-	it('is a valid grouped table schema: two moves of one template stay two groups', () => {
-		const { config, problems } = resolveRowSpanConfig(MOVE_GROUP_SCHEMA, 'product_template_id', 'attributes');
-
-		expect(problems).toEqual([]);
-		expect(config?.nestedFields).toEqual(['product_attribute_id', 'product_attribute_value_id']);
-		expect(config?.nestedRelations.map(relation => relation.dest_schema_name))
-			.toEqual(['inventory_product_attribute', 'inventory_product_attribute_value']);
-		const flat = flattenRowSpanItems(groupSavedMoves(moves, variantValues), config!);
-		expect(flat.groups.map(group => group.groupId)).toEqual(['M1', 'M2']);
+	it('is a flat table: Product, Attributes, Demand quantity, Unit, one row per move', () => {
+		expect(MOVE_GROUP_COLUMNS).toEqual(['product_template_id', 'attributes', 'demand_quantity', 'uom_id']);
+		expect(MOVE_GROUP_SCHEMA.fields.uom_id.label).toEqual({ $ref: 'fields.uom_name' });
+		expect(groupSavedMoves(moves, variantValues).map(row => row.id)).toEqual(['M1', 'M2']);
 	});
 });
 

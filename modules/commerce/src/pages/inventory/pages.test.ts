@@ -11,6 +11,8 @@ import { buildProductTemplatePages } from './productTemplate';
 import { buildProductTemplateAttributeValuePages } from './productTemplateAttributeValue';
 import { buildProductVariantPages } from './productVariant';
 import { buildPutawayRulePages } from './putawayRule';
+import { buildStockMovePages } from './stockMove';
+import { buildStockMoveLinePages } from './stockMoveLine';
 import { buildStockOperationTypePages } from './stockOperationType';
 import { buildStockQuantPages } from './stockQuant';
 import { buildStockReservationPages } from './stockReservation';
@@ -22,7 +24,9 @@ import { buildWarehousePages } from './warehouse';
 import * as c from '../../constants/inventory';
 import { ProductTemplateCommands } from '../../features/inventory/productTemplate/commands';
 import { ProductTemplateAttributeValueCommands } from '../../features/inventory/productTemplateAttributeValue/commands';
-import { ATTRIBUTE_VALUES, STOCK_TRANSFER_MOVES, TEMPLATE_ATTRIBUTES } from '../../viewkit/inventory/ids';
+import {
+	ATTRIBUTE_VALUES, STOCK_TRANSFER_ALL_MOVES, STOCK_TRANSFER_MOVES, TEMPLATE_ATTRIBUTES,
+} from '../../viewkit/inventory/ids';
 
 import type { ComponentNode, PageNode } from '@nikkierp/viewengine/metadata';
 import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
@@ -44,6 +48,8 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'stockOperationType', build: buildStockOperationTypePages },
 	{ name: 'stockQuant', build: buildStockQuantPages },
 	{ name: 'stockTransfer', build: buildStockTransferPages },
+	{ name: 'stockMove', build: buildStockMovePages },
+	{ name: 'stockMoveLine', build: buildStockMoveLinePages },
 	{ name: 'stockScrap', build: buildStockScrapPages },
 	{ name: 'stockReservation', build: buildStockReservationPages },
 ];
@@ -85,7 +91,7 @@ describe('Inventory page metadata', () => {
 	 * nothing checks that one resolves to a declared route, so the exact list is pinned here:
 	 * a rename that misses the menu shows up as a dead link only at runtime.
 	 */
-	it('registers one route per resource, all snake_case, plus the import pilot pages', () => {
+	it('registers one route per resource, all snake_case, plus the import pilot and nested pages', () => {
 		const routePaths = allPages.flatMap(({ build }) => build().map(page => page.routePath));
 
 		expect(routePaths).toEqual([
@@ -95,10 +101,12 @@ describe('Inventory page metadata', () => {
 			'inventory_brand', 'inventory_product_attribute', 'inventory_product_attribute_value', 'inventory_product_template_attribute_value',
 			'inventory_location', 'inventory_warehouse', 'inventory_storage_category', 'inventory_warehouse_supply_relation', 'inventory_putaway_rule',
 			'inventory_stock_operation_type', 'inventory_stock_quant', 'stock_balance_counts_due', 'inventory_stock_transfer',
+			c.STOCK_MOVE_ROUTE_PATH, c.STOCK_MOVE_LINE_ROUTE_PATH,
 			'inventory_stock_scrap', 'inventory_stock_reservation',
 		]);
 		for (const routePath of routePaths) {
-			expect(routePath).toMatch(/^[a-z][a-z0-9_]*(\/import)?$/);
+			// A nested page alternates `{resource}/:{parent}_id` segments.
+			expect(routePath).toMatch(/^[a-z][a-z0-9_]*(\/import|(\/:[a-z_]+_id\/[a-z][a-z0-9_]*)*)$/);
 		}
 	});
 
@@ -170,7 +178,7 @@ describe('Inventory list and detail templates', () => {
 			.map(({ name }) => name);
 
 		expect(noInlineEdit.sort()).toEqual([
-			'stockQuant', 'stockReservation', 'stockScrap', 'stockTransfer',
+			'stockMove', 'stockMoveLine', 'stockQuant', 'stockReservation', 'stockScrap', 'stockTransfer',
 		]);
 	});
 });
@@ -308,6 +316,52 @@ describe('Product template attribute configuration', () => {
 			viewAllType: 'link',
 			viewAllNavMode: 'append',
 		});
+	});
+});
+
+describe('Product template form layout', () => {
+	function templateDetail() {
+		return fieldsDetailProps(buildProductTemplatePages()[0]) as FieldsDetailProps & {
+			fieldRenderers: Record<string, { renderer?: string }>,
+		};
+	}
+
+	/** INV-005..009: prices per unit, cost on the template, units beside the dimensions, no status block. */
+	it('lays out product type, sales, purchasing and dimensions with no costing or status block', () => {
+		const { createNodes, childrenNodes } = templateDetail();
+
+		for (const nodes of [createNodes, childrenNodes]) {
+			expect(formBlocks(nodes[0])).toEqual([
+				{ header: undefined, fields: ['product_type', 'is_combo'] },
+				{ header: 'form.identification', fields: ['name', 'short_name', 'category_id', 'brand_id'] },
+				{ header: 'form.sales', fields: [
+					'sale_ok',
+					{ label: 'fields.base_sales_price', fields: ['@@base_sales_price', '$$common:per', '@@uom_id'] },
+					'sales_description',
+				] },
+				{ header: 'form.purchasing', fields: [
+					'purchase_ok',
+					{ label: 'fields.cost', fields: ['@@cost', '$$common:per', '@@uom_id'] },
+					'purchase_description',
+				] },
+				{ header: 'form.dimensions', fields: [
+					{ label: 'fields.default_weight', fields: ['@@default_weight', '@@weight_uom_symbol'] },
+					{ label: 'fields.default_length', fields: ['@@default_length', '@@dimension_uom_symbol'] },
+					{ label: 'fields.default_width', fields: ['@@default_width', '@@dimension_uom_symbol'] },
+					{ label: 'fields.default_height', fields: ['@@default_height', '@@dimension_uom_symbol'] },
+				] },
+			]);
+			expect(nodes[0].children?.[0].props).toMatchObject({ showTitle: false, isFluid: false });
+			expect(nodes[1].props).toMatchObject({ expanded: false });
+		}
+	});
+
+	it('edits the product type as radios and shows the cost as money', () => {
+		const { fieldRenderers } = templateDetail();
+
+		expect(fieldRenderers.product_type).toMatchObject({ renderer: 'radio', prefix: 'product_type.' });
+		expect(fieldRenderers.cost).toEqual({ renderer: 'money' });
+		expect(fieldRenderers).not.toHaveProperty('min_variant_cost');
 	});
 });
 
@@ -537,7 +591,7 @@ describe('Stock transfer page', () => {
 		for (const nodes of [createNodes, childrenNodes]) {
 			expect(nodes.map(node => node.props?.header)).toEqual(['form.generalInformation', 'form.policies', 'form.moves']);
 			expect(formBlocks(nodes[0])[0].fields).not.toContain('org_id');
-			expect(nodes[0].children?.at(-1)?.props).toMatchObject({ fields: ['note'], isFluid: false, showSeparator: false });
+			expect(nodes[0].children?.at(-1)?.props).toMatchObject({ fields: ['note'], isFluid: false });
 			expect(formBlocks(nodes[0])[0].fields).not.toContain('status');
 			expect(formBlocks(nodes[1]).map(block => block.header)).toEqual(['form.stockPolicies', 'form.backorder']);
 			expect(nodes[2].children?.map(child => child.component)).toEqual([STOCK_TRANSFER_MOVES]);
@@ -567,6 +621,65 @@ describe('Stock transfer page', () => {
 
 		expect(props.primary.props.schemaName).toBe('inventory_stock_transfer');
 		expect(props.primary.props.schemaName).toBe(c.STOCK_TRANSFER_SCHEMA_NAME);
+	});
+
+	it('lists the operation as plain translated text, not a badge', () => {
+		type ListProps = { primary: { props: { fieldRenderers: Record<string, unknown> } } };
+		const props = buildStockTransferPages()[0].props as ListProps;
+
+		expect(props.primary.props.fieldRenderers.operation_code)
+			.toEqual({ renderer: 'translated', prefix: 'operation_code.' });
+	});
+
+	it('puts "All moves" at the Moves section header', () => {
+		const { childrenNodes } = fieldsDetailProps(buildStockTransferPages()[0]);
+
+		const rightSegment = childrenNodes[2].props?.rightSegment as ComponentNode | undefined;
+
+		expect(rightSegment?.component).toBe(STOCK_TRANSFER_ALL_MOVES);
+	});
+});
+
+describe('Stock move and move line pages', () => {
+	type SplitProps = {
+		primary: { props: { staticGraph?: unknown, createEnabled?: boolean } },
+		secondary: { props: { standardActionCommands: Record<string, string>, allStatuses?: unknown[] } },
+	};
+
+	it('nests the moves under their transfer and the lines under their move', () => {
+		expect(buildStockMovePages()[0].routePath).toBe('inventory_stock_transfer/:transfer_id/inventory_stock_move');
+		expect(buildStockMoveLinePages()[0].routePath)
+			.toBe('inventory_stock_transfer/:transfer_id/inventory_stock_move/:move_id/inventory_stock_move_line');
+	});
+
+	it('scopes each list to its parent from the route, and binds no write', () => {
+		const move = buildStockMovePages()[0].props as SplitProps;
+		const line = buildStockMoveLinePages()[0].props as SplitProps;
+
+		expect(move.primary.props.staticGraph).toMatchObject({ if: ['transfer_id', '=', '${transfer_id}'] });
+		expect(line.primary.props.staticGraph).toEqual({ if: ['move_id', '=', '${move_id}'] });
+		for (const props of [move, line]) {
+			expect(props.primary.props.createEnabled).toBe(false);
+			expect(Object.keys(props.secondary.props.standardActionCommands)).toEqual(['getById']);
+		}
+	});
+
+	it('gives the move a status strip and the line, which has no status, none', () => {
+		expect((buildStockMovePages()[0].props as SplitProps).secondary.props.allStatuses).toHaveLength(7);
+		expect((buildStockMoveLinePages()[0].props as SplitProps).secondary.props.allStatuses).toBeUndefined();
+	});
+
+	it('lists the lines of the move with an "All move lines" link to the nested list', () => {
+		const [lines] = relatedTables(buildStockMovePages()[0]);
+
+		expect(lines).toMatchObject({
+			label: 'form.move_lines',
+			schemaName: c.STOCK_MOVE_LINE_SCHEMA_NAME,
+			initialGraph: { if: ['move_id', '=', '${id}'] },
+			linkRoutePath: 'inventory_stock_transfer/:transfer_id/inventory_stock_move/:id/inventory_stock_move_line',
+			showViewAll: true,
+			viewAllLabel: 'stock_move_all_move_lines',
+		});
 	});
 });
 
@@ -757,13 +870,17 @@ describe('Stock operation type page', () => {
 		expect(props.primary.props.schemaName).toBe(c.STOCK_OPERATION_TYPE_SCHEMA_NAME);
 	});
 
-	it('renders the operation and its three policies as translated badges', () => {
+	it('renders the operation and its three policies as translated plain text', () => {
 		const [page] = buildStockOperationTypePages();
-		const props = page.props as { primary: { props: { fieldRenderers: Record<string, { prefix?: string }> } } };
+		const props = page.props as {
+			primary: { props: { fieldRenderers: Record<string, { renderer: string, prefix?: string }> } },
+		};
+		const renderers = Object.values(props.primary.props.fieldRenderers);
 		const prefixes = Object.fromEntries(
 			Object.entries(props.primary.props.fieldRenderers).map(([field, renderer]) => [field, renderer.prefix]),
 		);
 
+		expect(renderers.every(renderer => renderer.renderer === 'translated')).toBe(true);
 		expect(prefixes).toEqual({
 			operation_code: 'operation_code.',
 			reservation_method: 'reservation_method.',
@@ -777,7 +894,7 @@ describe('Stock operation type page', () => {
 
 		for (const nodes of [createNodes, childrenNodes]) {
 			expect(formBlocks(nodes[0])).toEqual([
-				{ header: 'form.generalInformation', fields: ['code', 'name', 'operation_code'] },
+				{ header: 'form.generalInformation', fields: ['name', 'operation_code'] },
 				{
 					header: 'form.defaultLocations',
 					fields: ['default_source_location_id', 'default_destination_location_id'],
