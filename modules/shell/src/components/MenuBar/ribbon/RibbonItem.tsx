@@ -1,12 +1,14 @@
 import { Button, ButtonProps, Menu } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { Link, useHasEntitlement, useLockedItemProps } from '@nikkierp/ui/components';
+import { stripTranslationTags } from '@nikkierp/ui/i18n';
 import {
 	isRibbonDropdown, RibbonBlock, RibbonDropdownItem, RibbonItem, RibbonLinkItem,
 } from '@nikkierp/ui/menu';
 import { IconChevronDown } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
+import { Trans } from 'react-i18next';
 
 import classes from './Ribbon.module.css';
 import { useRibbonContext } from './ribbonContext';
@@ -22,10 +24,9 @@ export function RibbonItemView({ item }: { item: RibbonItem }): React.ReactNode 
 
 /** The item as it lays out, without links, menus, test ids or entitlement lookups: for measuring. */
 export function RibbonMeasureItem({ item }: { item: RibbonItem }): React.ReactNode {
-	const { t } = useRibbonContext();
 	return (
 		<Button {...ribbonButtonProps(false, item)} tabIndex={-1} rightSection={dropdownChevron(item)}>
-			{t(item.labelKey)}
+			<RibbonLabel labelKey={item.labelKey} />
 		</Button>
 	);
 }
@@ -42,7 +43,7 @@ export function CollapsedBlockMenu({ block }: { block: RibbonBlock }): React.Rea
 					{...ribbonButtonProps(isActive, undefined, 'ribbonBlock', block.titleKey)}
 					rightSection={<IconChevronDown size={12} />}
 				>
-					{t(block.titleKey)}
+					{stripTranslationTags(t(block.titleKey))}
 				</Button>
 			</Menu.Target>
 			<Menu.Dropdown className={menuClasses.menuDropdown} {...RIBBON_DROPDOWN_PROPS}>
@@ -61,7 +62,7 @@ function CollapsedDropdownSub({ item }: { item: RibbonDropdownItem }): React.Rea
 		<Menu.Sub>
 			<Menu.Sub.Target>
 				<Menu.Sub.Item {...menuItemProps(isRibbonItemActive(item, currentPath, pathPrefix), item.labelKey)}>
-					{t(item.labelKey)}
+					{stripTranslationTags(t(item.labelKey))}
 				</Menu.Sub.Item>
 			</Menu.Sub.Target>
 			<Menu.Sub.Dropdown {...RIBBON_DROPDOWN_PROPS}>
@@ -72,7 +73,7 @@ function CollapsedDropdownSub({ item }: { item: RibbonDropdownItem }): React.Rea
 }
 
 function RibbonLinkButton({ item }: { item: RibbonLinkItem }): React.ReactNode {
-	const { currentPath, pathPrefix, t, onNavigate } = useRibbonContext();
+	const { currentPath, pathPrefix, onNavigate } = useRibbonContext();
 	const lockedProps = useLockedEntryProps(item.requiredEntitlements);
 	const isActive = isPathActiveWithPrefix(item.link, currentPath, pathPrefix);
 
@@ -85,20 +86,20 @@ function RibbonLinkButton({ item }: { item: RibbonLinkItem }): React.ReactNode {
 			onClick={onNavigate}
 			{...lockedProps}
 		>
-			{t(item.labelKey)}
+			<RibbonLabel labelKey={item.labelKey} />
 		</Button>
 	);
 }
 
 function RibbonDropdownButton({ item }: { item: RibbonDropdownItem }): React.ReactNode {
-	const { currentPath, pathPrefix, t } = useRibbonContext();
+	const { currentPath, pathPrefix } = useRibbonContext();
 	const isActive = isRibbonItemActive(item, currentPath, pathPrefix);
 
 	return (
 		<Menu position='bottom-start' trigger='click'>
 			<Menu.Target>
 				<Button {...ribbonButtonProps(isActive, item, 'ribbonItem')} rightSection={dropdownChevron(item)}>
-					{t(item.labelKey)}
+					<RibbonLabel labelKey={item.labelKey} />
 				</Button>
 			</Menu.Target>
 			<Menu.Dropdown className={menuClasses.menuDropdown} {...RIBBON_DROPDOWN_PROPS}>
@@ -121,9 +122,19 @@ function RibbonMenuLink({ link }: { link: RibbonLinkItem }): React.ReactNode {
 			{...menuItemProps(isPathActiveWithPrefix(link.link, currentPath, pathPrefix), link.labelKey)}
 			{...lockedProps}
 		>
-			{t(link.labelKey)}
+			{stripTranslationTags(t(link.labelKey))}
 		</Menu.Item>
 	);
+}
+
+/**
+ * A ribbon button's label, its basic HTML tags rendered (`New<br/>stock transfer` on two lines) by
+ * `<Trans>`, which keeps `br`, `strong`, `i` and `p` without `dangerouslySetInnerHTML`. The span gives
+ * the `<br>` a block to break in: the button's label box is a flex row, where a `<br>` breaks nothing.
+ */
+function RibbonLabel({ labelKey }: { labelKey: string }): React.ReactNode {
+	const { t } = useRibbonContext();
+	return <span className={classes.itemLabel}><Trans t={t} i18nKey={labelKey} /></span>;
 }
 
 /** Locked, never hidden: the same rule as the traditional menu bar. */

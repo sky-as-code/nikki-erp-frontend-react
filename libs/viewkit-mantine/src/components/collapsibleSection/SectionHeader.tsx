@@ -1,4 +1,5 @@
 import { Title, UnstyledButton } from '@mantine/core';
+import { FieldDescriptionMark } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { IconChevronDown } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -13,6 +14,8 @@ export type SectionHeaderProps = {
 	title: React.ReactNode | null | undefined,
 	/** The h2's id, for the section's `aria-labelledby`. */
 	titleId?: string,
+	/** Translated text behind the `(i)` mark after the title; ignored without a title. */
+	description?: string,
 	collapsible: boolean,
 	expanded: boolean,
 	onToggle: () => void,
@@ -39,7 +42,12 @@ export function SectionHeader(props: SectionHeaderProps): React.ReactNode {
 	const content = (
 		<>
 			{props.collapsible ? <IconChevronDown size={18} aria-hidden='true' className={classes.chevron} /> : null}
-			{hasTitle ? <span className={classes.titleText}>{props.title}</span> : null}
+			{hasTitle ? (
+				<span className={classes.titleText}>
+					{props.title}
+					<SectionDescriptionMark description={props.description} title={props.title} />
+				</span>
+			) : null}
 		</>
 	);
 	const inner = props.collapsible ? (
@@ -59,5 +67,23 @@ export function SectionHeader(props: SectionHeaderProps): React.ReactNode {
 			) : props.collapsible ? <div className={classes.main}>{inner}</div> : null}
 			{props.rightSegment ? <div className={classes.rightSegment}>{props.rightSegment}</div> : null}
 		</div>
+	);
+}
+
+/**
+ * The mark sits inside the collapse toggle, and its dialog is a portal whose events still bubble
+ * through the React tree: a click on either must not collapse the section.
+ */
+function SectionDescriptionMark({ description, title }: {
+	description: string | undefined,
+	title: React.ReactNode,
+}): React.ReactNode {
+	if (!description) {
+		return null;
+	}
+	return (
+		<span onClick={event => event.stopPropagation()}>
+			<FieldDescriptionMark description={description} label={title} />
+		</span>
 	);
 }

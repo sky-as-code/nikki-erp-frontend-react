@@ -76,7 +76,7 @@ function buildProductCategoryFieldsSection(): ComponentNode {
 			// The backend rejects a category that is its own ancestor; the generated form cannot
 			// express that, so `product_category.cycle` is what the user sees on save.
 			header: 'form.generalInformation',
-			fields: ['name', 'description', 'parent_category_id', 'display_order'],
+			fields: ['name', 'description', 'parent_category_id', 'display_order', 'force_removal_strategy'],
 		}),
 	]);
 }

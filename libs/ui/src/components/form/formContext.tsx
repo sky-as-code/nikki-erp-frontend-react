@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
-import { useForm, type UseFormReturn } from 'react-hook-form';
+import { useForm, useWatch, type UseFormReturn } from 'react-hook-form';
 
 import { SERVER_ERROR_TYPE, useServerErrorSetter } from './fieldErrors';
 import { FieldOccurrenceScope, useFieldOccurrenceIndex } from './fieldOccurrence';
@@ -69,8 +69,11 @@ export function useFormField() {
 };
 
 export function useFieldData(fieldName: string) {
-	const { errors, getFieldDef, formVariant, crudSchema } = useFormField();
+	const { errors, getFieldDef, formVariant, crudSchema, adhocSchema, control } = useFormField();
 	const fieldDef = getFieldDef(fieldName);
+	const conditionallyRequired = useConditionallyRequired(
+		fieldName, crudSchema?.modelSchema ?? adhocSchema?.modelSchema, control,
+	);
 	// A field shown more than once on the form shows its error on the first copy only.
 	const isCopy = useFieldOccurrenceIndex(fieldName) > 0;
 
@@ -81,7 +84,7 @@ export function useFieldData(fieldName: string) {
 	const label = fieldDef.label;
 	const description = fieldDef.description ? fieldDef.description : undefined;
 	const placeholder = fieldDef.placeholder ? fieldDef.placeholder : undefined;
-	const isRequired = Boolean((fieldDef as any)['is_required_for_' + formVariant]);
+	const isRequired = dyn.isFieldRequiredFor(fieldDef, formVariant) || conditionallyRequired;
 	const fieldError = isCopy ? undefined : errors[fieldName];
 	const rawError = fieldError?.message as string | undefined;
 	const isServerError = fieldError?.type === SERVER_ERROR_TYPE;
@@ -98,6 +101,19 @@ export function useFieldData(fieldName: string) {
 		fieldDef,
 		schemaName: crudSchema?.schemaName,
 	};
+}
+
+/** Whether the live value of a source field makes `fieldName` required (`required_fields`). */
+function useConditionallyRequired(
+	fieldName: string, modelSchema: dyn.ModelSchema | undefined, control: FormFieldContextValue['control'],
+): boolean {
+	const sources = React.useMemo(() => dyn.conditionalSourceFields(modelSchema), [modelSchema]);
+	const live = useWatch({ control, name: sources, disabled: sources.length === 0 }) as unknown[] | undefined;
+	if (sources.length === 0 || !Array.isArray(live)) {
+		return false;
+	}
+	const values = Object.fromEntries(sources.map((source, index) => [source, live[index]]));
+	return dyn.conditionalFieldRules(modelSchema, values).required.has(fieldName);
 }
 
 export type FormStyleProviderProps = React.PropsWithChildren & {
@@ -214,10 +230,11 @@ export type CrudFormProviderProps = Omit<BaseFormProviderProps, 'children'> & {
 
 export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode {
 	const schemaPack = useFormSchemaPack(props.schemaName, props.modelSchema);
+	const validationSchema = useVariantValidationSchema(schemaPack, props.formVariant);
 	const modelValue = props.modelValue ?? null;
 
 	const form = useForm({
-		resolver: schemaPack ? zodResolver(schemaPack.validationSchema) : undefined,
+		resolver: validationSchema ? zodResolver(validationSchema) : undefined,
 		defaultValues: modelValue || {},
 		mode: 'onBlur',
 		reValidateMode: 'onBlur',
@@ -326,6 +343,18 @@ function useFormSchemaPack(schemaName: string, localSchema: dyn.ModelSchema | un
 	return localPack ?? pack;
 }
 
+/** The pack caches the update form's (stricter) schema; a create form validates only what create requires. */
+function useVariantValidationSchema(
+	pack: dyn.SchemaPack | null, variant: FormVariant,
+): dyn.ModelValidationSchema | null {
+	return React.useMemo(() => {
+		if (!pack) {
+			return null;
+		}
+		return variant === 'create' ? dyn.buildValidationSchema(pack.modelSchema, 'create') : pack.validationSchema;
+	}, [pack, variant]);
+}
+
 export type AdhocFormProviderProps = BaseFormProviderProps & {
 	formVariant: FormVariant,
 	modelSchema: dyn.ModelSchema,
@@ -336,7 +365,10 @@ export type AdhocFormProviderProps = BaseFormProviderProps & {
 
 export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNode {
 	const { modelLoading = false } = props;
-	const zodSchema = React.useMemo(() => dyn.buildValidationSchema(props.modelSchema), [props.modelSchema]);
+	const zodSchema = React.useMemo(
+		() => dyn.buildValidationSchema(props.modelSchema, props.formVariant),
+		[props.modelSchema, props.formVariant],
+	);
 
 	const form = useForm({
 		resolver: zodResolver(zodSchema),

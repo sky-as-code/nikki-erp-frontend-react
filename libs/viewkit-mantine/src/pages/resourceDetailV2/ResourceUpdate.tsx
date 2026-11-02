@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 import { useParams } from 'react-router';
 
 import { useAuditOpen } from './audit/auditOpenStorage';
+import { dottedColumnFields } from './dottedFields';
 import { updatablePayload } from './fieldLocks';
 import { toV2FormNodes } from './formNodes';
 import { useRecordLoadErrors } from './loadErrors';
@@ -102,12 +103,15 @@ export function ResourceUpdateProvider(
 
 	// The BFF's labelled detail (`with_edge_labels`, `RestApi.getByIdLabelled`) selects `*` plus each to-one edge's
 	// label field, turning `uom_id` into a `uom: {id, name}` object the view form shows and links, and names the
-	// label fields in `meta.edge_labels`. One request, no edge schema lookups in the browser.
+	// label fields in `meta.edge_labels`. One request, no edge schema lookups in the browser. A column's `edge.leaf`
+	// fields join `*` in `fields=`; the BFF labels a dotted foreign key too.
+	const dottedFields = React.useMemo(() => dottedColumnFields(props.childrenNodes).join(','), [props.childrenNodes]);
 	const refresh = React.useCallback(() => {
 		if (commands.getById && id && id !== 'new') {
-			void publishGet({ id, with_edge_labels: true });
+			const fields = dottedFields ? { fields: ['*', ...dottedFields.split(',')] } : {};
+			void publishGet({ id, with_edge_labels: true, ...fields });
 		}
-	}, [publishGet, commands.getById, id]);
+	}, [publishGet, commands.getById, id, dottedFields]);
 
 	React.useEffect(() => { refresh(); }, [refresh]);
 

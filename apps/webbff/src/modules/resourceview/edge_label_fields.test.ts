@@ -67,3 +67,34 @@ describe('withEdgeLabelFields', () => {
 		expect(withEdgeLabelFields(['*'], userSchema, {}).added).toEqual([]);
 	});
 });
+
+describe('withEdgeLabelFields: a dotted foreign key', () => {
+	const kiosk: ViewSchema = {
+		fields: { setting_id: { name: 'setting_id' } },
+		to_relations: [
+			{ edge: 'setting', src_field: 'setting_id', dest_schema_name: 'vdmc_kiosk_settings', relation_type: 'many:one' },
+		],
+	};
+	const kioskDests: Record<string, ViewSchema> = {
+		vdmc_kiosk_settings: {
+			record_label_field: 'name',
+			to_relations: [
+				{ edge: 'theme_setting', src_field: 'theme_id', dest_schema_name: 'vdmc_themes', relation_type: 'many:one' },
+			],
+		},
+		vdmc_themes: { record_label_field: 'name' },
+	};
+
+	it('adds the label of the record a dotted foreign key points at, keyed by its edge path', () => {
+		expect(withEdgeLabelFields(['*', 'setting.theme_id', 'setting.ui_mode'], kiosk, kioskDests)).toEqual({
+			fields: ['*', 'setting.theme_id', 'setting.ui_mode', 'setting.name', 'setting.theme_setting.name'],
+			added: ['setting.name', 'setting.theme_setting.name'],
+			edgeLabels: { setting: 'name', 'setting.theme_setting': 'name' },
+		});
+	});
+
+	it('skips one whose destination the graph does not carry', () => {
+		const { vdmc_themes: _themes, ...withoutThemes } = kioskDests;
+		expect(withEdgeLabelFields(['setting.theme_id'], kiosk, withoutThemes).added).toEqual([]);
+	});
+});

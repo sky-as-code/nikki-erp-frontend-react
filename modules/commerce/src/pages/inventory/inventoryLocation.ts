@@ -101,7 +101,7 @@ function buildInventoryLocationFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.identification',
-			fields: ['name', 'description', 'barcode'],
+			fields: ['name', 'barcode', 'description'],
 		}),
 		resourceFormColumnNode({
 			// warehouse_id is inherited from the parent location by the backend (null for a vendor,

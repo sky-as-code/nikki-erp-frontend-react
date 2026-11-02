@@ -1,3 +1,4 @@
+export * from './conditionalFields';
 export * from './model_schema';
 export * from './resourceCommands';
 export * from './restapi';

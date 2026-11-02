@@ -3,7 +3,7 @@ import { testAttrs } from '@nikkierp/common/utils';
 import { useShellMenu } from '@nikkierp/shell/microApp';
 import { useActiveOrgModule } from '@nikkierp/shell/routing';
 import { Link, useHasEntitlement, useLockedItemProps } from '@nikkierp/ui/components';
-import { TranslateFn, useTranslate } from '@nikkierp/ui/i18n';
+import { stripTranslationTags, TranslateFn, useTranslate } from '@nikkierp/ui/i18n';
 import { isRibbonMenu, MenuItem, menuItemsOf } from '@nikkierp/ui/menu';
 import {
 	ShortcutSequence, type ShortcutSpec, toAriaKeyShortcuts, useShortcut,
@@ -220,7 +220,7 @@ function NavMenu({
 					{...entryShortcut}
 					rightSection={<IconChevronDown size={14} />}
 				>
-					{t(item.labelKey)}
+					{stripTranslationTags(t(item.labelKey))}
 				</Button>
 			</Menu.Target>
 
@@ -268,7 +268,7 @@ function HorizontalMenuItem({ item, isActive, to, t }: {
 			{...lockedProps}
 			{...entryShortcut}
 		>
-			{t(item.labelKey)}
+			{stripTranslationTags(t(item.labelKey))}
 		</Button>
 	);
 }
@@ -308,13 +308,13 @@ function MenuItemRenderer({
 							to={getPath(item.link)}
 							{...itemProps(isActive || hasActiveChild, item.labelKey)}
 						>
-							{t(item.labelKey)}
+							{stripTranslationTags(t(item.labelKey))}
 						</Menu.Sub.Item>
 					) : (
 						<Menu.Sub.Item
 							{...itemProps(hasActiveChild, item.labelKey)}
 						>
-							{t(item.labelKey)}
+							{stripTranslationTags(t(item.labelKey))}
 						</Menu.Sub.Item>
 					)}
 				</Menu.Sub.Target>
@@ -345,14 +345,14 @@ function MenuItemRenderer({
 				{...itemProps(isActive, item.labelKey)}
 				{...lockedProps}
 			>
-				{t(item.labelKey)}
+				{stripTranslationTags(t(item.labelKey))}
 			</Menu.Item>
 		);
 	}
 
 	return (
 		<Menu.Item {...itemProps(isActive, item.labelKey)} {...lockedProps}>
-			{t(item.labelKey)}
+			{stripTranslationTags(t(item.labelKey))}
 		</Menu.Item>
 	);
 }

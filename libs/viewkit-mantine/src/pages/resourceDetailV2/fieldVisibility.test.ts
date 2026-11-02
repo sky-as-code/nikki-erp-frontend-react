@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	applyVisibleWhen, fieldPresentation, hasVisibleField, isBlockVisible, isFieldShownByCondition, isFieldVisible,
-	visibleWhenSourceFields,
+	applyConditionalHiding, applyVisibleWhen, fieldPresentation, hasVisibleField, isBlockVisible,
+	isFieldShownByCondition, isFieldVisible, visibleWhenSourceFields,
 } from './fieldVisibility';
 
 import type { VisibleWhen } from './fieldVisibility';
@@ -241,5 +241,17 @@ describe('applyVisibleWhen', () => {
 
 	it('leaves the fields alone without rules', () => {
 		expect(applyVisibleWhen(['a', { fields: ['@@b'] }], undefined, {})).toEqual(['a', { fields: ['@@b'] }]);
+	});
+});
+
+describe('applyConditionalHiding', () => {
+	it('drops hidden fields, and a field group left with none', () => {
+		const fields = ['name', 'barcode', { label: 'x', fields: ['@@removal_strategy', 'text'] }];
+		expect(applyConditionalHiding(fields, new Set(['removal_strategy']))).toEqual(['name', 'barcode']);
+	});
+
+	it('drops the block once every field is hidden', () => {
+		const shown = applyConditionalHiding(['description'], new Set(['description']));
+		expect(isBlockVisible(roleSchema, shown as string[], 'read', true)).toBe(false);
 	});
 });

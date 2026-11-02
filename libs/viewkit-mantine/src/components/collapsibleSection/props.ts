@@ -5,7 +5,12 @@ import { z } from 'zod';
 const baseSchema = z.object({
 	/** i18n key for an optional title. The title is what a reader clicks to collapse the block. */
 	header: z.string().min(1).optional(),
-	/** Namespace `header` is resolved against. Required whenever `header` is set. */
+	/**
+	 * i18n key (in `translationNs`) of a description shown as an `(i)` mark after the title, with the
+	 * same hover card and click-to-dialog as a field description. Needs a `header` to sit beside.
+	 */
+	description: z.string().min(1).optional(),
+	/** Namespace `header` and `description` are resolved against. Required whenever `header` is set. */
 	translationNs: z.string().min(1).optional(),
 	/**
 	 * Whether the block can be collapsed at all. Defaults to `true`: the toggle caret renders
@@ -54,6 +59,12 @@ export const collapsibleSectionPropsSchema = baseSchema
 			ctx.addIssue({
 				code: 'custom', path: ['translationNs'],
 				message: '`translationNs` does nothing without a `header`',
+			});
+		}
+		if (val.description != null && val.header == null) {
+			ctx.addIssue({
+				code: 'custom', path: ['description'],
+				message: '`description` needs a `header` to sit beside',
 			});
 		}
 	});

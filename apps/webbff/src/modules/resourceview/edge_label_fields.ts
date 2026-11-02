@@ -7,30 +7,30 @@
 export const ALL_FIELDS = '*';
 
 export type SchemaRelation = {
-	readonly edge?: unknown;
-	readonly src_field?: unknown;
-	readonly dest_schema_name?: unknown;
-	readonly relation_type?: unknown;
+	readonly edge?: unknown,
+	readonly src_field?: unknown,
+	readonly dest_schema_name?: unknown,
+	readonly relation_type?: unknown,
 };
 
 /** The part of a business-service `meta/schema` body this module reads. */
 export type ViewSchema = {
-	readonly fields?: Record<string, { readonly name?: unknown; readonly is_edge_model?: unknown }>;
-	readonly to_relations?: readonly SchemaRelation[];
-	readonly default_search_fields?: readonly string[];
-	readonly record_label_field?: unknown;
+	readonly fields?: Record<string, { readonly name?: unknown, readonly is_edge_model?: unknown }>,
+	readonly to_relations?: readonly SchemaRelation[],
+	readonly default_search_fields?: readonly string[],
+	readonly record_label_field?: unknown,
 };
 
 /** A to-one edge, its foreign key, and the destination schema its label comes from. */
-export type ToOneEdge = { readonly edge: string; readonly srcField: string; readonly destSchemaName: string };
+export type ToOneEdge = { readonly edge: string, readonly srcField: string, readonly destSchemaName: string };
 
 export type EdgeLabelSelection = {
 	/** The `fields` to send upstream. */
-	readonly fields: string[];
+	readonly fields: string[],
 	/** The selections the caller did not ask for, to strip from `desired_fields`. */
-	readonly added: string[];
+	readonly added: string[],
 	/** `{<edge>: <label field>}` for every edge whose label the response carries. */
-	readonly edgeLabels: Record<string, string>;
+	readonly edgeLabels: Record<string, string>,
 };
 
 /**
@@ -78,13 +78,41 @@ export function withEdgeLabelFields(
 		if (!selected.has(target.srcField) || !isName(labelField)) {
 			continue;
 		}
-		const selection = `${target.edge}.${labelField}`;
-		edgeLabels[target.edge] = labelField;
+		addLabel(target.edge, labelField);
+	}
+	for (const nested of nestedForeignKeys(base, schema, destSchemas)) {
+		addLabel(nested.path, nested.labelField);
+	}
+	return { fields: [...base, ...added], added, edgeLabels };
+
+	function addLabel(edgePath: string, labelField: string): void {
+		const selection = `${edgePath}.${labelField}`;
+		edgeLabels[edgePath] = labelField;
 		if (!selected.has(selection) && !added.includes(selection)) {
 			added.push(selection);
 		}
 	}
-	return { fields: [...base, ...added], added, edgeLabels };
+}
+
+/**
+ * The to-one edges one level down that a dotted selection's foreign key names: `setting.theme_id` (the kiosk's
+ * template's theme) brings `setting.theme_setting` with its destination's label field, keyed by that dotted edge path.
+ * Only destinations the root's schema graph carries resolve (the graph holds the root's direct edge targets).
+ */
+function nestedForeignKeys(
+	base: readonly string[], schema: ViewSchema, destSchemas: Record<string, ViewSchema | undefined>,
+): { path: string, labelField: string }[] {
+	const rootEdges = new Map(toOneEdges(schema).map((edge) => [edge.edge, edge.destSchemaName]));
+	return base.flatMap((field) => {
+		const [edge, leaf, ...rest] = field.split('.');
+		const destName = rootEdges.get(edge);
+		if (!leaf || rest.length > 0 || !destName) {
+			return [];
+		}
+		const nested = toOneEdges(destSchemas[destName]).find((candidate) => candidate.srcField === leaf);
+		const labelField = nested && destSchemas[nested.destSchemaName]?.record_label_field;
+		return nested && isName(labelField) ? [{ path: `${edge}.${nested.edge}`, labelField }] : [];
+	});
 }
 
 function isName(value: unknown): value is string {

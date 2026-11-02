@@ -13,15 +13,19 @@ import { IconLock } from '@tabler/icons-react';
 import React from 'react';
 
 import { useDetailFieldDisplay } from './detailFieldDisplay';
+import { isDottedField } from './dottedFields';
 import { fieldLockView, type FieldLockView } from './fieldLocks';
 import {
-	applyVisibleWhen, fieldPresentation, isBlockVisible, isNeverShownField, visibleWhenSourceFields,
+	applyConditionalHiding, applyVisibleWhen, fieldPresentation, isBlockVisible, isNeverShownField,
+	visibleWhenSourceFields,
 } from './fieldVisibility';
 import { FieldPair, FieldRuns, fieldValueClass, FormSection } from './formSection';
 import { useRelationSearchScopes } from './relationSearchScope';
 import { ResourceUpdateContext } from './resourceUpdateContext';
 import { EdgeFieldValue } from '../../components/edgeFieldValue';
 import { renderDisplayFieldValue } from '../../components/fieldValue';
+import { readFieldValue, relationDestSchemaName, resolveSchemaField } from '../../data/fieldPaths';
+import { useRelatedSchemas } from '../../data/useRelatedSchemas';
 import { StandardActionCode, useFieldLocks } from '../../permissions';
 import { columnFieldNames } from '../resourceDetail/formColumnFields';
 import {
@@ -56,7 +60,10 @@ export function OwnPropertiesBlock({
 	}
 
 	return (
-		<FormSection block={block} title={block.header && block.showTitle ? t(block.header) : undefined}>
+		<FormSection
+			block={block} title={block.header && block.showTitle ? t(block.header) : undefined}
+			description={block.description ? t(block.description) : undefined}
+		>
 			<FieldGroupVertical
 				fields={fields}
 				isLoading={isLoading}
@@ -72,21 +79,26 @@ export function OwnPropertiesBlock({
 }
 
 /**
- * The block's `fields` less those whose `visibleWhen` fails: tested against the record in read
- * mode, and against the live form while editing, so a field shows the moment its condition holds.
+ * The block's `fields` less those whose `visibleWhen` fails or that a source field's
+ * `required_fields`/`optional_fields` hide: tested against the record in read mode, and against
+ * the live form while editing, so a field shows the moment its condition holds.
  */
 export function useVisibleBlockFields(
 	block: OwnPropertySection, mode: FieldVisibilityMode, record: Record<string, unknown>,
 ): FormColumnField[] {
 	const { fields, visibleWhen } = block;
-	const sources = React.useMemo(() => visibleWhenSourceFields(visibleWhen), [visibleWhen]);
+	const modelSchema = useResourceDetailContext().schemaPack?.modelSchema;
+	const sources = React.useMemo(
+		() => [...new Set([...visibleWhenSourceFields(visibleWhen), ...dyn.conditionalSourceFields(modelSchema)])]
+			.sort(),
+		[visibleWhen, modelSchema],
+	);
 	const live = useWatchedFormValues(mode === 'read' ? noFields : sources);
 	return React.useMemo(() => {
-		if (!visibleWhen) {
-			return fields ?? noFields;
-		}
-		return applyVisibleWhen(fields ?? noFields, visibleWhen, live ? { ...record, ...live } : record);
-	}, [fields, visibleWhen, record, live]);
+		const values = live ? { ...record, ...live } : record;
+		const shown = visibleWhen ? applyVisibleWhen(fields ?? noFields, visibleWhen, values) : fields ?? noFields;
+		return applyConditionalHiding(shown, dyn.conditionalFieldRules(modelSchema, values).hidden);
+	}, [fields, visibleWhen, record, live, modelSchema]);
 }
 
 const noFields: string[] = [];
@@ -121,7 +133,7 @@ export function FieldGroupVertical({
 }): React.ReactNode {
 	const { stableFieldLayout, fieldRenderers } = useDetailFieldDisplay();
 	const searchScopes = useRelationSearchScopes(relationSearch, mode);
-	const fieldNames = React.useMemo(() => columnFieldNames(fields), [fields]);
+	const fieldNames = React.useMemo(() => columnFieldNames(fields).filter(name => !isDottedField(name)), [fields]);
 	const lockOf = useFieldLockViews(fieldNames, mode, modelSchema);
 	const semantic = mode === 'read';
 	const localize = useLocalize(useResourceDetailTranslationNs());
@@ -142,6 +154,14 @@ export function FieldGroupVertical({
 			return (
 				<LockedFieldValue
 					field={field} modelSchema={modelSchema} lock={fieldLock} labelHidden={labelHidden} asTerm={asTerm}
+				/>
+			);
+		}
+		if (presentation === 'readonly' && isDottedField(field)) {
+			return (
+				<DottedFieldValue
+					field={field} modelSchema={modelSchema} fieldValues={fieldValues}
+					labelHidden={labelHidden} asTerm={asTerm}
 				/>
 			);
 		}
@@ -224,7 +244,8 @@ function LockedFieldValue({
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const showLocked = useShowLockedFeature();
 	const copy = fieldOccurrenceTestSegment(useFieldOccurrence(field));
-	const fieldDef = modelSchema.fields[field];
+	const related = useRelatedSchemas(modelSchema, isDottedField(field) ? [field] : undefined);
+	const fieldDef = resolveSchemaField(modelSchema, field, name => related[name]);
 	const messageKey = lock.kind === 'read' ? 'permission.field_read_locked' : 'permission.field_update_locked';
 	const onClick = (): void => {
 		const expression = toDisplayedEntitlements(lock.missing).join(', ');
@@ -269,11 +290,15 @@ function LockedFieldHint({ hint }: { hint: string }): React.ReactNode {
  * is indistinguishable from a field that does not exist.
  */
 function ReadOnlyFieldValue({
-	field, modelSchema, fieldValues, labelHidden, asTerm,
+	field, modelSchema, fieldValues, labelHidden, asTerm, edgeLabels: ownEdgeLabels, computedField,
 }: {
 	field: string,
 	modelSchema: dyn.ModelSchema,
 	fieldValues: Record<string, unknown>,
+	/** The edge labels of `fieldValues`, for a nested record; else the detail read's. */
+	edgeLabels?: Record<string, string>,
+	/** The form field a live recompute is keyed by, when not `field` itself. */
+	computedField?: string,
 	/** In an inline row the surrounding text names the value, so only the value shows. */
 	labelHidden?: boolean,
 	/** Read mode: a `dt`/`dd` pair of the column's `dl`. */
@@ -282,9 +307,10 @@ function ReadOnlyFieldValue({
 	const localize = useLocalize(useResourceDetailTranslationNs());
 	// Called before the early return, since hooks cannot be skipped. It no-ops for every field
 	// that is not function-computed with a declared dependency.
-	const computed = useComputedField(field);
+	const computed = useComputedField(computedField ?? field);
 	// Optional: a create form with a stable layout renders read-only fields too, and has no record.
-	const edgeLabels = React.useContext(ResourceUpdateContext)?.edgeLabels ?? noEdgeLabels;
+	const contextEdgeLabels = React.useContext(ResourceUpdateContext)?.edgeLabels ?? noEdgeLabels;
+	const edgeLabels = ownEdgeLabels ?? contextEdgeLabels;
 	const { fieldRenderers } = useDetailFieldDisplay();
 	const fieldDef = modelSchema.fields[field];
 	// A foreign key resolves to the relation it owns the key for, the same dispatch edit mode
@@ -321,6 +347,40 @@ function ReadOnlyFieldValue({
 				/>
 			) : plainValue}
 		</FieldPair>
+	);
+}
+
+/**
+ * An `edge.leaf` field: the leaf of the record a to-one edge points at, read-only in every mode, as the detail read
+ * nested it (`{ setting: { ui_mode } }`). A foreign-key leaf shows its record's label, keyed `edge.leafEdge` in the
+ * read's `edge_labels`. Blank until the destination schema has loaded.
+ */
+function DottedFieldValue({
+	field, modelSchema, fieldValues, labelHidden, asTerm,
+}: {
+	field: string,
+	modelSchema: dyn.ModelSchema,
+	fieldValues: Record<string, unknown>,
+	labelHidden?: boolean,
+	asTerm: boolean,
+}): React.ReactNode {
+	const [edge, leaf] = [field.slice(0, field.indexOf('.')), field.slice(field.indexOf('.') + 1)];
+	const related = useRelatedSchemas(modelSchema, [field]);
+	const destSchema = related[relationDestSchemaName(modelSchema, edge) ?? ''];
+	const allLabels = React.useContext(ResourceUpdateContext)?.edgeLabels ?? noEdgeLabels;
+	const nestedLabels = React.useMemo(() => Object.fromEntries(Object.entries(allLabels)
+		.filter(([path]) => path.startsWith(`${edge}.`))
+		.map(([path, labelField]) => [path.slice(edge.length + 1), labelField])), [allLabels, edge]);
+	if (!destSchema) {
+		return null;
+	}
+	const nested = readFieldValue(fieldValues, edge);
+	return (
+		<ReadOnlyFieldValue
+			field={leaf} modelSchema={destSchema} computedField={field} edgeLabels={nestedLabels}
+			fieldValues={(nested && typeof nested === 'object' ? nested : {}) as Record<string, unknown>}
+			labelHidden={labelHidden} asTerm={asTerm}
+		/>
 	);
 }
 

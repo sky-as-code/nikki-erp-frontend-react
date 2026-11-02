@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { withConditionalRequired } from './conditionalFields';
 import { createLangJsonSchema, isLangJsonEmpty } from './langJsonValidation';
 import { ErrorKeys } from './validationErrorKeys';
 
@@ -59,6 +60,14 @@ export type ModelSchemaField = {
 	is_sortable?: boolean,
 	is_required_for_create?: boolean,
 	is_required_for_update?: boolean,
+	/**
+	 * On an `enumString` source field: per value, the fields that become required (and the only ones
+	 * shown, with `optional_fields`'s and the always-required) while the source holds it. See
+	 * `conditionalFields.ts`.
+	 */
+	required_fields?: Record<string, string[]>,
+	/** Like `required_fields`, but the listed fields are only shown, never required. */
+	optional_fields?: Record<string, string[]>,
 	is_primary_key?: boolean,
 	/**
 	 * The server owns this field's meaning: a primary, versioning or tenant key, or a foreign
@@ -232,15 +241,29 @@ export type ModelSchemaFieldRule = [string, unknown];
  */
 export type ModelValidationSchema = z.ZodType<Record<string, unknown>, any, any>;
 
-export function buildValidationSchema(modelSchema: ModelSchema): ModelValidationSchema {
+export type FormRequirementVariant = 'create' | 'update';
+
+/**
+ * Whether a form must have `fieldDef` filled: a create form what the server requires on create, an edit
+ * form that too (the record keeps it) plus what it requires on update. Both the required mark and the
+ * client validation read this, so they never disagree.
+ */
+export function isFieldRequiredFor(fieldDef: ModelSchemaField, variant: FormRequirementVariant): boolean {
+	return Boolean(fieldDef.is_required_for_create || (variant === 'update' && fieldDef.is_required_for_update));
+}
+
+/** `variant` defaults to `update`, the stricter set, for callers that validate outside a create form. */
+export function buildValidationSchema(
+	modelSchema: ModelSchema, variant: FormRequirementVariant = 'update',
+): ModelValidationSchema {
 	const shape: Record<string, z.ZodTypeAny> = {};
 	Object.entries(modelSchema.fields).forEach(([fieldName, fieldDef]) => {
-		shape[fieldName] = buildFieldSchema(fieldDef);
+		shape[fieldName] = buildFieldSchema(fieldDef, variant);
 	});
 	// Blank optional fields parse to `undefined`, which zod still emits as a present key. Dropping
 	// those keys keeps them out of the request body entirely, so the server sees a field the user
 	// left alone as absent rather than as an explicit empty value.
-	return z.object(shape).transform(omitUndefined);
+	return withConditionalRequired(z.object(shape).transform(omitUndefined), modelSchema);
 }
 
 function omitUndefined(parsed: Record<string, unknown>): Record<string, unknown> {
@@ -254,13 +277,13 @@ function omitUndefined(parsed: Record<string, unknown>): Record<string, unknown>
 }
 
 
-function buildFieldSchema(fieldDef: ModelSchemaField): z.ZodTypeAny {
+function buildFieldSchema(fieldDef: ModelSchemaField, variant: FormRequirementVariant): z.ZodTypeAny {
 	// The form loads the whole record, virtual fields included, but never submits one. A read-back
 	// shape the client does not model must not be able to block a save the user cannot even see.
 	if (fieldDef.is_virtual) {
 		return z.any().optional();
 	}
-	const isRequired = fieldDef.is_required_for_create || fieldDef.is_required_for_update;
+	const isRequired = isFieldRequiredFor(fieldDef, variant);
 	const dataType = extractFieldDataType(fieldDef);
 	let fieldSchema = createSchemaByDataType(dataType);
 	const hasDefaultValue = fieldDef.default_value != null;

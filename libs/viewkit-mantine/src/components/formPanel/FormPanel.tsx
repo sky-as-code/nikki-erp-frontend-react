@@ -3,6 +3,7 @@ import { testAttrs } from '@nikkierp/common/utils';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
+import clsx from 'clsx';
 import React from 'react';
 
 import classes from './FormPanel.module.css';
@@ -38,13 +39,14 @@ export function FormPanel({ props, runtime }: {
 
 	return (
 		<Paper
-			withBorder radius='md' className={shellClasses.panel}
+			withBorder radius='md' className={clsx(shellClasses.panel, classes.formPanel)}
 			aria-labelledby={title != null ? titleId : undefined}
 			{...componentAttrs(COLLAPSIBLE_SECTION)}
 		>
 			{hasHeader ? (
 				<SectionHeader
 					title={title} titleId={titleId} collapsible={props.collapsible}
+					description={props.description ? t(props.description) : undefined}
 					expanded={expanded} onToggle={() => setExpanded(prev => !prev)}
 					toggleAttrs={testAttrs(props.testId ?? 'ui.collapsibleSection', props.header, 'toggle')}
 					rightSegment={props.rightSegment ? <MetaComponent node={props.rightSegment} /> : null}

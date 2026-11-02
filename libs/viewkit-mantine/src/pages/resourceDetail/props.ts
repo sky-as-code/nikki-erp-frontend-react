@@ -48,6 +48,11 @@ export const ownPropertySectionSchema = z.object({
 	 */
 	header: z.string().min(1).optional(),
 	/**
+	 * Optional i18n key (in the page's `translationNs`) of a description shown as an `(i)` mark after
+	 * the printed title, like a field description. Shows only where the title does.
+	 */
+	description: z.string().min(1).optional(),
+	/**
 	 * Field names, top to bottom. An object `{ label?, fields, widths?, isFullRow? }` is a field group
 	 * display: its `fields` items on one row under `label` (default: the first field's schema label).
 	 * An item is `@@field` (that field's input, its value in read mode), `$$ns:key` / `$$key`

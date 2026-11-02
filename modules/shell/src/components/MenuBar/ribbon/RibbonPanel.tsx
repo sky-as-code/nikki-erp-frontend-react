@@ -1,5 +1,6 @@
 import { ActionIcon, Tooltip } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { stripTranslationTags } from '@nikkierp/ui/i18n';
 import { RibbonBlock, RibbonBlockTitlePosition, RibbonTab } from '@nikkierp/ui/menu';
 import { IconChevronUp, IconPin } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -74,7 +75,7 @@ function RibbonBlockView({ block, titlePosition, measuring }: {
 					</div>
 				))}
 			</div>
-			<div className={classes.blockTitle}>{t(block.titleKey)}</div>
+			<div className={classes.blockTitle}>{stripTranslationTags(t(block.titleKey))}</div>
 		</div>
 	);
 }

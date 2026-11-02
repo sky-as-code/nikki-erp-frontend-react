@@ -1,5 +1,5 @@
 import { Button, Group } from '@mantine/core';
-import { TranslateFn } from '@nikkierp/ui/i18n';
+import { stripTranslationTags, TranslateFn } from '@nikkierp/ui/i18n';
 import { MenuItem } from '@nikkierp/ui/menu';
 import { IconChevronDown, IconDots } from '@tabler/icons-react';
 import React from 'react';
@@ -97,7 +97,7 @@ export function MenuMeasureRow({ items, buttonProps, t, measureRef }: {
 					tabIndex={-1}
 					rightSection={item.items ? <IconChevronDown size={14} /> : undefined}
 				>
-					{t(item.labelKey)}
+					{stripTranslationTags(t(item.labelKey))}
 				</Button>
 			))}
 			<Button {...buttonProps} tabIndex={-1} rightSection={<IconChevronDown size={14} />}>

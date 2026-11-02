@@ -56,6 +56,7 @@ function CollapsibleSection({ props, runtime }: {
 			{hasHeader ? (
 				<SectionHeader
 					title={title} titleId={titleId} collapsible={props.collapsible}
+					description={props.description ? t(props.description) : undefined}
 					expanded={expanded} onToggle={() => setExpanded(prev => !prev)}
 					toggleAttrs={testAttrs(props.testId ?? 'ui.collapsibleSection', props.header, 'toggle')}
 					rightSegment={props.rightSegment ? <MetaComponent node={props.rightSegment} /> : null}

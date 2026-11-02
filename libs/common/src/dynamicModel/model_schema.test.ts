@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	buildValidationSchema, findComputedDependency, findExclusiveGroupPeers, findRelationBySrcField,
-	isFieldFilterable, isFieldSortable, isRenderableFieldType,
+	isFieldFilterable, isFieldRequiredFor, isFieldSortable, isRenderableFieldType,
 } from './model_schema';
 
 import type { ModelSchema, ModelSchemaField, ModelSchemaFieldDataTypeName } from './model_schema';
@@ -148,6 +148,24 @@ describe('buildValidationSchema: blank optional fields', () => {
 		const parsed = buildValidationSchema(formSchema).safeParse({ name: '' });
 
 		expect(parsed.success).toBe(false);
+	});
+});
+
+describe('required fields by form variant', () => {
+	const onCreate = field('on_create', 'string', { is_required_for_create: true });
+	const onUpdate = field('on_update', 'string', { is_required_for_update: true });
+	const formSchema = schema({ fields: { on_create: onCreate, on_update: onUpdate } });
+
+	it('requires on create only what create requires', () => {
+		expect(isFieldRequiredFor(onCreate, 'create')).toBe(true);
+		expect(isFieldRequiredFor(onUpdate, 'create')).toBe(false);
+		expect(buildValidationSchema(formSchema, 'create').safeParse({ on_create: 'a' }).success).toBe(true);
+	});
+
+	it('requires on update what either create or update requires', () => {
+		expect(isFieldRequiredFor(onCreate, 'update')).toBe(true);
+		expect(isFieldRequiredFor(onUpdate, 'update')).toBe(true);
+		expect(buildValidationSchema(formSchema).safeParse({ on_create: 'a' }).success).toBe(false);
 	});
 });
 

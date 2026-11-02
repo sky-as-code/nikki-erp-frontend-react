@@ -205,7 +205,10 @@ export function ResourceCreateBlock({
 	}
 
 	return (
-		<FormSection block={block} title={block.header && block.showTitle ? t(block.header) : undefined}>
+		<FormSection
+			block={block} title={block.header && block.showTitle ? t(block.header) : undefined}
+			description={block.description ? t(block.description) : undefined}
+		>
 			<FieldGroupVertical
 				fields={fields}
 				isLoading={isLoading}

@@ -83,3 +83,11 @@ describe('collapsibleSectionPropsSchema rightSegment', () => {
 		expect(() => collapsibleSectionPropsSchema.parse({ rightSegment: 'strip' })).toThrow();
 	});
 });
+
+describe('collapsibleSectionPropsSchema: description', () => {
+	it('accepts a description beside a header, and rejects one without', () => {
+		expect(collapsibleSectionPropsSchema.parse({ header: 'a.b', description: 'a.c', translationNs: 'iam' }).description)
+			.toBe('a.c');
+		expect(() => collapsibleSectionPropsSchema.parse({ description: 'a.c' })).toThrow();
+	});
+});

@@ -1,4 +1,5 @@
 import { Stack, Title } from '@mantine/core';
+import { FieldDescriptionMark } from '@nikkierp/ui/components';
 import { isLongTextField } from '@nikkierp/ui/components/form';
 import clsx from 'clsx';
 import React from 'react';
@@ -14,9 +15,11 @@ import type * as dyn from '@nikkierp/common/dynamicModel';
 
 
 /** One form column as a section of the form panel: an h3 title over its fields. */
-export function FormSection({ block, title, children }: {
+export function FormSection({ block, title, description, children }: {
 	block: FormPanelSectionLayout,
 	title: string | undefined,
+	/** Translated text behind the `(i)` mark after the title; ignored without a title. */
+	description?: string,
 	children: React.ReactNode,
 }): React.ReactNode {
 	const titleId = React.useId();
@@ -25,7 +28,12 @@ export function FormSection({ block, title, children }: {
 			className={clsx(classes.formBlock, formPanelSectionClass(block))}
 			aria-labelledby={title ? titleId : undefined}
 		>
-			{title ? <Title order={3} id={titleId} className={classes.sectionTitle}>{title}</Title> : null}
+			{title ? (
+				<Title order={3} id={titleId} className={classes.sectionTitle}>
+					{title}
+					<FieldDescriptionMark description={description} label={title} />
+				</Title>
+			) : null}
 			{children}
 		</section>
 	);

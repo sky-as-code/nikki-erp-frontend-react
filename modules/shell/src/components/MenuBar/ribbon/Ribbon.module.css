@@ -100,6 +100,18 @@
 	flex: 1;
 }
 
+/*
+ * A translated label may break onto a second line (`<br/>`), which only a rowspan item has the height
+ * for; its lines centre like its single line does.
+ */
+.itemLabel {
+	line-height: 1.25;
+}
+
+.itemRowspan .itemLabel {
+	text-align: center;
+}
+
 .measureRow {
 	position: absolute;
 	top: 0;

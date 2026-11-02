@@ -10,6 +10,9 @@ import { initReactI18next, useTranslation } from 'react-i18next';
 import { resolveLangJson } from '../components/translatable/langJson';
 
 
+export { stripTranslationTags } from './translationTags';
+
+
 export default i18next;
 
 /**

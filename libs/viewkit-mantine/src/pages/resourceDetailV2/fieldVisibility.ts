@@ -1,6 +1,7 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { evaluateCondition } from '@nikkierp/viewengine/metadata';
 
+import { isDottedField } from './dottedFields';
 import { parseInlineRowItem } from '../resourceDetail/formColumnFields';
 
 import type { FormColumnField } from '../resourceDetail/formColumnFields';
@@ -35,6 +36,10 @@ export function isFieldVisible(
 	fieldName: string,
 	mode: FieldVisibilityMode,
 ): boolean {
+	// An `edge.leaf` field is read-only text from the detail read: there is no record to read it from on create.
+	if (isDottedField(fieldName)) {
+		return mode !== 'create';
+	}
 	const fieldDef = modelSchema.fields[fieldName];
 	if (!fieldDef || isNeverShownField(fieldName)) {
 		return false;
@@ -105,6 +110,9 @@ export function fieldPresentation(
 	mode: FieldVisibilityMode,
 	stableFieldLayout = false,
 ): FieldPresentation {
+	if (isDottedField(fieldName)) {
+		return mode === 'create' ? 'hidden' : 'readonly';
+	}
 	if (!modelSchema.fields[fieldName] || isNeverShownField(fieldName)) {
 		return 'hidden';
 	}
@@ -156,18 +164,34 @@ export function visibleWhenSourceFields(visibleWhen: VisibleWhen): string[] {
 	return [...new Set(fields)].sort();
 }
 
-/**
- * A block's `fields` without the ones whose `visibleWhen` fails. Inside a field group display only
- * the `@@field` item goes, with its width; a group left with none of its fields is dropped whole,
- * label included, since its text would then label nothing.
- */
+/** A block's `fields` without the ones whose `visibleWhen` fails (see `filterBlockFields`). */
 export function applyVisibleWhen(
 	fields: readonly FormColumnField[], visibleWhen: VisibleWhen, values: Record<string, unknown>,
 ): FormColumnField[] {
 	if (!visibleWhen) {
 		return [...fields];
 	}
-	const shown = (name: string) => isFieldShownByCondition(visibleWhen, name, values);
+	return filterBlockFields(fields, name => isFieldShownByCondition(visibleWhen, name, values));
+}
+
+/**
+ * A block's `fields` without those the source fields' `required_fields`/`optional_fields` hide
+ * (`conditionalFieldRules`), after `visibleWhen`. Read mode passes the record, the form modes the
+ * live values, so the block follows the dropdown as it changes.
+ */
+export function applyConditionalHiding(
+	fields: readonly FormColumnField[], hidden: ReadonlySet<string>,
+): FormColumnField[] {
+	return hidden.size === 0 ? [...fields] : filterBlockFields(fields, name => !hidden.has(name));
+}
+
+/**
+ * Inside a field group display only the `@@field` item goes, with its width; a group left with none
+ * of its fields is dropped whole, label included, since its text would then label nothing.
+ */
+function filterBlockFields(
+	fields: readonly FormColumnField[], shown: (name: string) => boolean,
+): FormColumnField[] {
 	return fields.flatMap((entry): FormColumnField[] => {
 		if (typeof entry === 'string') {
 			return shown(entry) ? [entry] : [];

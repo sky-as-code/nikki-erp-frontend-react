@@ -1,7 +1,7 @@
 import { NavLink, Stack } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { Link } from '@nikkierp/ui/components';
-import { TranslateFn } from '@nikkierp/ui/i18n';
+import { stripTranslationTags, TranslateFn } from '@nikkierp/ui/i18n';
 import { MenuItem } from '@nikkierp/ui/menu';
 import React from 'react';
 
@@ -79,7 +79,7 @@ const VerticalMenuItem: React.FC<VerticalMenuItemProps> = ({
 		: undefined;
 
 	const navLinkProps = {
-		label: t(item.labelKey),
+		label: stripTranslationTags(t(item.labelKey)),
 		active: hasActiveChild || isActive,
 		defaultOpened: hasActiveChild,
 		childrenOffset: 24,

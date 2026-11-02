@@ -4,6 +4,7 @@ import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { renderInDetailPage } from '../../pages/resourceDetailV2/audit/auditTestHarness';
+import { FormSection } from '../../pages/resourceDetailV2/formSection';
 import { collapsibleSectionRenderer } from '../collapsibleSection/CollapsibleSection';
 import { collapsibleSectionPropsSchema } from '../collapsibleSection/props';
 import { SectionHeader } from '../collapsibleSection/SectionHeader';
@@ -64,6 +65,35 @@ describe('form panel', () => {
 		renderPanel({ layout: 'stack' });
 		const toggle = screen.getByRole('button', { name: 'test:form.movement' });
 		expect(toggle.closest('h2')).not.toBeNull();
+	});
+
+	it('shows the description mark after the title, inside the toggle', () => {
+		renderPanel({ description: 'form.movementHelp' });
+		const toggle = screen.getByRole('button', { name: 'test:form.movement' });
+		expect(toggle.contains(screen.getByTestId('fieldDescription.mark'))).toBe(true);
+	});
+
+	it('opens the description without collapsing the section', async () => {
+		renderPanel({ description: 'form.movementHelp' });
+		const toggle = screen.getByRole('button', { name: 'test:form.movement' });
+		fireEvent.click(screen.getByTestId('fieldDescription.mark'));
+		const dialog = await screen.findByRole('dialog');
+		expect(dialog.textContent).toContain('test:form.movementHelp');
+		fireEvent.click(dialog);
+		expect(toggle.getAttribute('aria-expanded')).toBe('true');
+	});
+
+	it('renders no mark without a description', () => {
+		renderPanel();
+		expect(screen.queryByTestId('fieldDescription.mark')).toBeNull();
+	});
+
+	it('shows a column block description beside its title', () => {
+		renderInDetailPage(
+			<FormSection block={{ isFluid: true }} title='Stock' description='Where the stock sits'>{null}</FormSection>,
+		);
+		const title = screen.getByRole('heading', { level: 3 });
+		expect(title.contains(screen.getByTestId('fieldDescription.mark'))).toBe(true);
 	});
 
 	it('renders no collapse button when not collapsible', () => {

@@ -1,6 +1,6 @@
 import { Button, ButtonProps, Group, Menu } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { TranslateFn } from '@nikkierp/ui/i18n';
+import { stripTranslationTags, TranslateFn } from '@nikkierp/ui/i18n';
 import { RibbonMenuContribution, RibbonTab } from '@nikkierp/ui/menu';
 import { ShortcutSequence } from '@nikkierp/ui/shortcuts';
 import { IconChevronDown, IconDots } from '@tabler/icons-react';
@@ -191,7 +191,7 @@ function RibbonTabButton({ tab, isSelected, isExpanded, onClick }: {
 			aria-pressed={isSelected}
 			onClick={onClick}
 		>
-			{t(tab.labelKey)}
+			{stripTranslationTags(t(tab.labelKey))}
 		</Button>
 	);
 }
@@ -219,7 +219,7 @@ function TabOverflowMenu({ tabs, firstHidden, activeIndex, onSelect }: {
 						className={clsx({ [menuClasses.activeMenuItem]: firstHidden + offset === activeIndex })}
 						{...testAttrs(MENU_BAR_TEST_ID, 'ribbonTab', tab.labelKey)}
 					>
-						{t(tab.labelKey)}
+						{stripTranslationTags(t(tab.labelKey))}
 					</Menu.Item>
 				))}
 			</Menu.Dropdown>
