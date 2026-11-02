@@ -11,8 +11,8 @@ const fieldOf = (name: string, options?: Record<string, unknown>, isArray = fals
 
 describe('autoInputWidthOf', () => {
 	it('keeps numbers short', () => {
-		expect(autoInputWidthOf(fieldOf('int32'))).toBe('10rem');
-		expect(autoInputWidthOf(fieldOf('decimal', { scale: 6 }))).toBe('11rem');
+		expect(autoInputWidthOf(fieldOf('int32'))).toBe('7rem');
+		expect(autoInputWidthOf(fieldOf('decimal', { scale: 6 }))).toBe('8.5rem');
 	});
 
 	it('sizes a string by its maximum length, and lets long text fill its track', () => {

@@ -17,7 +17,7 @@ export const UOMCAT_RESOURCE_PATH = `v1/essential/${UOMCAT_SCHEMA_NAME}`;
 export const LANGUAGE_RESOURCE_PATH = `v1/essential/${LANGUAGE_SCHEMA_NAME}`;
 export const CURRENCY_RESOURCE_PATH = `v1/essential/${CURRENCY_SCHEMA_NAME}`;
 
-/** The currency list's route inside this micro-app; Settings › Accounting links to it. */
+/** The currency pages' route segment; Settings mounts them under `essential/`, where Settings › Accounting links. */
 export const CURRENCY_ROUTE = CURRENCY_SCHEMA_NAME;
 
 /** The hardcoded timezone catalogue (`GET ?keyword=&language_code=`); not a dynamic resource. */

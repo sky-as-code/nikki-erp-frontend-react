@@ -20,7 +20,7 @@ const FLOAT_RENDERER = { renderer: 'float' };
 /** A unit reads as its symbol (`kg`, `Chai`) rather than its name; the select still lists names to pick from. */
 const UOM_SYMBOL_RENDERER = { renderer: 'fieldText', field: 'uom_symbol' } as const;
 
-const PRODUCT_TYPE_BADGE = { colorMap: { goods: 'blue', service: 'violet' }, prefix: 'product_type.' };
+const PRODUCT_TYPE_PREFIX = 'product_type.';
 
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
@@ -71,15 +71,15 @@ function buildProductTemplateListProps() {
 function buildProductTemplateEnumRenderers() {
 	return {
 		status: STATUS_BADGE,
-		product_type: { renderer: 'enum', ...PRODUCT_TYPE_BADGE },
+		product_type: { renderer: 'translated', prefix: PRODUCT_TYPE_PREFIX },
 	};
 }
 
 function buildProductTemplateDetailRenderers() {
 	return {
 		...buildProductTemplateEnumRenderers(),
-		// Edited as radios; read mode keeps the list's badge.
-		product_type: { renderer: 'radio', ...PRODUCT_TYPE_BADGE },
+		// Edited as radios; read mode is plain text like the list.
+		product_type: { renderer: 'radio', prefix: PRODUCT_TYPE_PREFIX },
 		base_sales_price: MONEY_RENDERER,
 		cost: MONEY_RENDERER,
 		default_weight: FLOAT_RENDERER,

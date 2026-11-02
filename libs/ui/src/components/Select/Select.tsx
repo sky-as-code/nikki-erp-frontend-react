@@ -3,7 +3,7 @@ import React from 'react';
 
 import { useAutoSelectItem } from './autoSelectItem';
 import { withInputDensity } from '../Input/inputDensity';
-import { contentWidthComboboxProps, SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
+import { dropdownWidthProps } from '../SearchableSelect/dropdownWidth';
 
 import type { SelectProps as MantineSelectProps } from '@mantine/core';
 
@@ -26,17 +26,17 @@ export type SelectProps<Value extends string = string> = MantineSelectProps<Valu
  * as a bug. A caller passing its own `size` gets that size's own height, again like {@link Input}.
  *
  * The dropdown is portalled and bottom-start aligned by default: a select inside a scrolling,
- * height-capped pane would otherwise clip its own menu against the pane's overflow.
+ * height-capped pane would otherwise clip its own menu against the pane's overflow. It is as wide
+ * as its longest option, never narrower than the control ({@link dropdownWidthProps}).
  */
 export function Select<Value extends string = string>(
 	{ size, style, classNames, comboboxProps, autoSelectItem = false, ...rest }: SelectProps<Value>,
 ): React.ReactElement {
-	const { contentWidthDropdown } = React.useContext(SelectDefaultsContext);
 	const auto = useAutoSelectItem({
 		enabled: autoSelectItem, value: rest.value, defaultValue: rest.defaultValue,
 		data: rest.data, onChange: rest.onChange,
 	});
-	const widthProps = contentWidthDropdown && comboboxProps?.width === undefined ? contentWidthComboboxProps : {};
+	const widthProps = dropdownWidthProps(comboboxProps?.width);
 	return (
 		<MantineSelect
 			size={size ?? 'sm'}

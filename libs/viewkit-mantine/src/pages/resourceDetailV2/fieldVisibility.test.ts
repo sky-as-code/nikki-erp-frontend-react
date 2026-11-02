@@ -31,6 +31,7 @@ const roleSchema = {
 		assigned_users: field('assigned_users', 'model', { is_edge_model: true, is_computed: true }),
 		// Copied from a related record on read; read-only, but not server-owned.
 		owner_name: field('owner_name', 'string', { is_computed: true, is_virtual: true }),
+		is_active: field('is_active', 'boolean', { is_computed: true, is_virtual: true, metadata: { writable: true } }),
 		// Writable at create, frozen afterwards: the server rejects an update to it.
 		reference_code: field('reference_code', 'string', { no_update: true }),
 		// An enum carrying no values renders nothing, in any mode.
@@ -81,6 +82,9 @@ describe('isFieldVisible', () => {
 	it('never offers a computed field, whose value the server refuses to accept', () => {
 		expect(isFieldVisible(roleSchema, 'owner_name', 'create')).toBe(false);
 		expect(isFieldVisible(roleSchema, 'owner_name', 'update')).toBe(false);
+		// A computed field the server declares writable (an org's activation) is an input.
+		expect(isFieldVisible(roleSchema, 'is_active', 'create')).toBe(true);
+		expect(isFieldVisible(roleSchema, 'is_active', 'update')).toBe(true);
 	});
 
 	// A foreign key is flagged system because the server owns its meaning, but choosing the

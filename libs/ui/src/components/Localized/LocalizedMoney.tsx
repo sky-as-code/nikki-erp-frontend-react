@@ -27,7 +27,7 @@ export type LocalizedMoneyProps = LocalizedNumberProps & {
  */
 export function LocalizedMoney({
 	value, locale, fractionDigits, decimalSeparator, thousandsSeparator, grouping, currencySymbol, symbolPosition,
-	className,
+	compact, className,
 }: LocalizedMoneyProps) {
 	const defaults = useValueFormatDefaults();
 	const marker = currencySymbol ?? currencyMarkerOf(defaults.currency) ?? '';
@@ -37,6 +37,7 @@ export function LocalizedMoney({
 		thousandsSeparator: thousandsSeparator ?? defaults.thousandsSeparator,
 		grouping: grouping ?? defaults.grouping,
 		symbolPosition: symbolPosition ?? defaults.currency?.symbolPosition,
+		compact,
 	});
 	return <span className={className}>{text}</span>;
 }

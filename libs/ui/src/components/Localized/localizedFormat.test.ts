@@ -199,3 +199,30 @@ describe('formatLocalizedMoney with the currency symbol position', () => {
 			.toBe(`VND${nbsp}15`);
 	});
 });
+
+describe('compact number and money formats', () => {
+	const vn = { decimalSeparator: ',', thousandsSeparator: '.' };
+	const nbsp = ' ';
+
+	it('abbreviates with K, M and B, one fraction digit at most', () => {
+		expect(formatLocalizedNumber('999', 'en-US', { compact: true })).toBe('999');
+		expect(formatLocalizedNumber('1500', 'en-US', { compact: true })).toBe('1.5K');
+		expect(formatLocalizedNumber('950000', 'en-US', { compact: true })).toBe('950K');
+		expect(formatLocalizedNumber('2000000', 'en-US', { compact: true })).toBe('2M');
+		expect(formatLocalizedNumber('3250000000', 'en-US', { compact: true })).toBe('3.3B');
+	});
+
+	it('moves to the next letter rather than printing 1000K', () => {
+		expect(formatLocalizedNumber('999950', 'en-US', { compact: true })).toBe('1M');
+	});
+
+	it('keeps the same letters and the language separators in vi-VN, sign first', () => {
+		expect(formatLocalizedNumber('-1500000', 'vi-VN', { compact: true, ...vn })).toBe('-1,5M');
+	});
+
+	it('places the currency marker as the currency says', () => {
+		expect(formatLocalizedMoney('1500000', 'vi-VN', '₫', { compact: true, symbolPosition: 'after', ...vn }))
+			.toBe(`1,5M${nbsp}₫`);
+		expect(formatLocalizedMoney('2300', 'en-US', '$', { compact: true, symbolPosition: 'before' })).toBe('$2.3K');
+	});
+});

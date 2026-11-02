@@ -5,14 +5,14 @@ import { findUngatedActions } from '@nikkierp/viewkit-mantine/actionCodes';
 import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
-import { buildEssentialPages, LANGUAGES_ROUTE } from '../bootstrap/essential';
+import { buildEssentialPages, CURRENCIES_ROUTE, LANGUAGES_ROUTE } from '../bootstrap/essential';
 import { buildSettingsMenu } from '../menu';
 
 import type { TemplateRef } from '@nikkierp/viewengine/metadata';
 
 
 /**
- * The Languages pages are a copy of essential's page metadata, read here as text so nothing is
+ * The Languages and Currencies pages are a copy of essential's page metadata, read here as text so nothing is
  * imported across the module boundary. A copy that drifts from its owner keeps compiling and only
  * shows up as a page that publishes a command or names a field the owner no longer has.
  */
@@ -24,19 +24,19 @@ function read(path: string): string {
 }
 
 /** The file without its proxy note and with relative imports normalised to the owner's layout. */
-function normalise(text: string): string {
+function normalise(text: string, resource: string): string {
 	return text
 		.replace(/^\/\/ Proxy copy of .*\n(\/\/ .*\n)?/, '')
 		.replace("from '../../constants/essential'", "from '../constants'")
-		.replace("from '../../features/essential/commands'", "from '../features/language/commands'");
+		.replace("from '../../features/essential/commands'", `from '../features/${resource}/commands'`);
 }
 
 describe('proxy of essential', () => {
-	it('pages/essential/language.ts matches the owner page', () => {
-		const copy = read(resolve(SETTINGS_SRC, 'pages/essential/language.ts'));
-		const original = read(resolve(MODULES_DIR, 'essential/src/pages/language.ts'));
+	it.each(['language', 'currency'])('pages/essential/%s.ts matches the owner page', (resource) => {
+		const copy = read(resolve(SETTINGS_SRC, `pages/essential/${resource}.ts`));
+		const original = read(resolve(MODULES_DIR, `essential/src/pages/${resource}.ts`));
 
-		expect(normalise(copy)).toBe(normalise(original));
+		expect(normalise(copy, resource)).toBe(normalise(original, resource));
 	});
 
 	it('constants match the owner constants', () => {
@@ -46,11 +46,13 @@ describe('proxy of essential', () => {
 		expect(copy).toBe(original);
 	});
 
-	it('the copied command-name object still exists in the owner', () => {
-		const owner = read(resolve(MODULES_DIR, 'essential/src/features/language/commands.ts'));
+	it.each([['language', 'LanguageCommands'], ['currency', 'CurrencyCommands']])(
+		'the copied command-name object of %s still exists in the owner', (resource, name) => {
+			const owner = read(resolve(MODULES_DIR, `essential/src/features/${resource}/commands.ts`));
 
-		expect(owner).toContain('export const LanguageCommands = ');
-	});
+			expect(owner).toContain(`export const ${name} = `);
+		},
+	);
 
 	it('registers nothing for the owner: no schemas, services, handlers or stores', () => {
 		for (const file of ['bootstrap/essential.ts', 'features/essential/commands.ts']) {
@@ -63,11 +65,12 @@ describe('proxy of essential', () => {
 });
 
 describe('Languages pages', () => {
-	it('mounts one split view at the settings languages route', () => {
+	it('mounts one split view each at the settings languages and currencies routes', () => {
 		const pages = buildEssentialPages();
 		const { primary, secondary } = pages[0]!.props as { primary: TemplateRef, secondary: TemplateRef };
 
-		expect(pages.map(page => page.routePath)).toEqual([LANGUAGES_ROUTE]);
+		expect(pages.map(page => page.routePath)).toEqual([LANGUAGES_ROUTE, CURRENCIES_ROUTE]);
+		expect(CURRENCIES_ROUTE).toBe('essential/essential_currency');
 		expect(primary.template).toBe(RESOURCE_LIST_V2_TEMPLATE);
 		expect(secondary.template).toBe(RESOURCE_DETAIL_V2_TEMPLATE);
 	});
@@ -93,12 +96,13 @@ describe('Languages pages', () => {
 });
 
 describe('buildSettingsMenu', () => {
-	it('links General settings to the index and Translations to the Languages page', () => {
+	it('links General settings to the index, Currencies and Translations to their pages', () => {
 		const menu = buildSettingsMenu('settings');
 
 		expect(menu.translationNs).toBe('settings');
 		expect('items' in menu ? menu.items : []).toEqual([
 			{ labelKey: 'settings.menu.general', link: '/' },
+			{ labelKey: 'settings.menu.currencies', link: '/essential/essential_currency' },
 			{
 				labelKey: 'settings.menu.translations',
 				items: [{ labelKey: 'settings.menu.languages', link: '/languages' }],

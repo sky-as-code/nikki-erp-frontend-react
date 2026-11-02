@@ -65,6 +65,9 @@ export async function currentOrgSearchParams(): Promise<string[][]> {
  */
 export function isOrgScoped(schema: SchemaPack, schemaName: string): boolean {
 	if (ORG_SCOPE_OPT_OUT.has(schemaName)) return false;
+	// Read from the schema, not only the owner's service: a proxy page can reach the resource
+	// through the generic fallback before the owning micro-app has registered its service.
+	if (schema.modelSchema.is_org_bound) return true;
 	return ORG_ID_FIELD in schema.modelSchema.fields;
 }
 
@@ -82,9 +85,9 @@ export function isOrgScoped(schema: SchemaPack, schemaName: string): boolean {
  * none.
  */
 export async function withOrgId<TRequest extends object>(
-	request: TRequest, schema: SchemaPack, schemaName: string,
+	request: TRequest, schema: SchemaPack, schemaName: string, orgBound = false,
 ): Promise<TRequest> {
-	if (!isOrgScoped(schema, schemaName)) return request;
+	if (!orgBound && !isOrgScoped(schema, schemaName)) return request;
 	if (ORG_ID_FIELD in request && (request as Record<string, unknown>)[ORG_ID_FIELD] != null) {
 		return request;
 	}

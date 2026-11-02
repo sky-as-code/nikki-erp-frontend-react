@@ -5,11 +5,11 @@ import * as c from '../constants';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
-/** The Essential currency list the system currency picks from; see `essential/src/constants`. */
+/** The currency list the system currency picks from, mounted by Settings; see `settings/src/bootstrap/essential.ts`. */
 const MANAGE_CURRENCIES_LINK = {
 	labelKey: 'accounting.settings.manageCurrencies',
-	moduleSlug: 'essential',
-	path: 'essential_currency',
+	moduleSlug: 'settings',
+	path: 'essential/essential_currency',
 };
 
 /**

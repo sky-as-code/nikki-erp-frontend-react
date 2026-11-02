@@ -1,18 +1,5 @@
-import React from 'react';
-
 import type { ComboboxProps, PopoverWidth } from '@mantine/core';
 
-
-export type SelectDefaults = {
-	/**
-	 * Lets the dropdown grow to its longest option instead of matching the control: a select in a
-	 * narrow table cell would otherwise clip long labels such as a user's display name.
-	 */
-	contentWidthDropdown?: boolean,
-};
-
-/** Defaults for every `SearchableSelect` and `Select` below it; an explicit width still wins. */
-export const SelectDefaultsContext = React.createContext<SelectDefaults>({});
 
 /** No wider than this, nor than the room beside the control. */
 const MAX_DROPDOWN_WIDTH = '32rem';
@@ -37,8 +24,10 @@ export const contentWidthComboboxProps: Pick<ComboboxProps, 'width' | 'middlewar
 	},
 };
 
-/** The dropdown width a select uses: its own `width` when given, else the content width if enabled. */
-export function useDropdownWidthProps(width: PopoverWidth | undefined): Pick<ComboboxProps, 'width' | 'middlewares'> {
-	const { contentWidthDropdown } = React.useContext(SelectDefaultsContext);
-	return width === undefined && contentWidthDropdown ? contentWidthComboboxProps : { width };
+/**
+ * The dropdown width a select uses: its own `width` when given, else the content width, so a select
+ * narrower than its labels (a unit beside a price, a table cell) never clips its options.
+ */
+export function dropdownWidthProps(width: PopoverWidth | undefined): Pick<ComboboxProps, 'width' | 'middlewares'> {
+	return width === undefined ? contentWidthComboboxProps : { width };
 }

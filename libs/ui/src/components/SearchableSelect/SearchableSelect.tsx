@@ -21,7 +21,7 @@ import { IconChevronDown, IconLock } from '@tabler/icons-react';
 import React, { FC, JSX, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useDropdownWidthProps } from './dropdownWidth';
+import { dropdownWidthProps } from './dropdownWidth';
 import { DEFAULT_MAX_OPTIONS, limitOptions } from './optionLimit';
 import { useShowLockedFeature } from '../ErrorState';
 import { useFormInputSize } from '../Input/inlineControls';
@@ -152,7 +152,7 @@ export const SearchableSelect: FC<SearchableSelectProps> = (rawProps) => {
 		setActiveItem(selectedItem);
 	}, [activeValue, props.items]);
 
-	const widthProps = useDropdownWidthProps(props.dropdownWidth);
+	const widthProps = dropdownWidthProps(props.dropdownWidth);
 	const formSize = useFormInputSize();
 	// The options follow the text of the control, which Mantine's `Combobox` derives from `size`.
 	const size = props.formField ? formSize : undefined;

@@ -16,7 +16,7 @@ export type LocalizedNumberProps = LocalizedNumberOptions & {
 
 /** Renders a number with the language record's grouping and separators, else the locale's. */
 export function LocalizedNumber({
-	value, locale, fractionDigits, decimalSeparator, thousandsSeparator, grouping, className,
+	value, locale, fractionDigits, decimalSeparator, thousandsSeparator, grouping, compact, className,
 }: LocalizedNumberProps) {
 	const defaults = useValueFormatDefaults();
 	const text = formatLocalizedNumber(value, locale ?? defaults.locale, {
@@ -24,6 +24,7 @@ export function LocalizedNumber({
 		decimalSeparator: decimalSeparator ?? defaults.decimalSeparator,
 		thousandsSeparator: thousandsSeparator ?? defaults.thousandsSeparator,
 		grouping: grouping ?? defaults.grouping,
+		compact,
 	});
 	return <span className={className}>{text}</span>;
 }

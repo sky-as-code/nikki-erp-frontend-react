@@ -6,11 +6,16 @@ import { z } from 'zod';
 import type { FieldInputOptions, IFieldRenderer } from '@nikkierp/viewengine/core';
 
 
-export const integerSpecSchema = z.object({ renderer: z.literal('integer') }).strict();
+/** `compact` abbreviates large values with `K` / `M` / `B`, the same letters in every language. */
+export const integerSpecSchema = z.object({
+	renderer: z.literal('integer'),
+	compact: z.boolean().optional(),
+}).strict();
 
 export const floatSpecSchema = z.object({
 	renderer: z.literal('float'),
 	precision: z.number().int().min(0).max(20).optional(),
+	compact: z.boolean().optional(),
 }).strict();
 
 /**
@@ -45,6 +50,7 @@ export const moneySpecSchema = z.object({
 	currencyField: z.string().min(1).optional(),
 	/** Shows a blank amount as 0, for a field whose NULL means "nothing added" (an extra price). */
 	blankAsZero: z.boolean().optional(),
+	compact: z.boolean().optional(),
 }).strict();
 
 export const enumSpecSchema = z.object({
@@ -64,18 +70,22 @@ function isBlank(rawValue: unknown): boolean {
 export class IntegerFieldRenderer implements IFieldRenderer {
 	public readonly align: CellAlignment = 'right';
 
+	public constructor(private readonly compact = false) {}
+
 	public render(rawValue: string, _translatedValue: string): React.ReactNode {
-		return isBlank(rawValue) ? '' : <IntegerRenderer rawValue={rawValue} />;
+		return isBlank(rawValue) ? '' : <IntegerRenderer rawValue={rawValue} compact={this.compact} />;
 	}
 }
 
 export class FloatFieldRenderer implements IFieldRenderer {
 	public readonly align: CellAlignment = 'right';
 
-	public constructor(private readonly precision?: number) {}
+	public constructor(private readonly precision?: number, private readonly compact = false) {}
 
 	public render(rawValue: string, _translatedValue: string): React.ReactNode {
-		return isBlank(rawValue) ? '' : <FloatRenderer rawValue={rawValue} precision={this.precision} />;
+		return isBlank(rawValue)
+			? ''
+			: <FloatRenderer rawValue={rawValue} precision={this.precision} compact={this.compact} />;
 	}
 }
 
@@ -86,7 +96,9 @@ export class FloatFieldRenderer implements IFieldRenderer {
 export class MoneyValueFieldRenderer implements IFieldRenderer {
 	public readonly align: CellAlignment = 'right';
 
-	public constructor(private readonly currencyField?: string, private readonly blankAsZero = false) {}
+	public constructor(
+		private readonly currencyField?: string, private readonly blankAsZero = false, private readonly compact = false,
+	) {}
 
 	public render(rawValue: string, _translatedValue: string): React.ReactNode {
 		return this.renderRaw(rawValue);
@@ -99,7 +111,7 @@ export class MoneyValueFieldRenderer implements IFieldRenderer {
 		const amount = isBlank(rawValue) ? 0 : rawValue as string | number;
 		const code = this.currencyField ? record?.[this.currencyField] : undefined;
 		const currency = typeof code === 'string' && code !== '' ? { code } : undefined;
-		return <MoneyRenderer rawValue={amount} currency={currency} />;
+		return <MoneyRenderer rawValue={amount} currency={currency} compact={this.compact} />;
 	}
 
 	/** Edited with the system currency as a segment, on the side the currency writes it. */

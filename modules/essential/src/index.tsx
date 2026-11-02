@@ -18,7 +18,6 @@ import { registerLanguageCommands } from './features/language/commands';
 import { registerUomCommands } from './features/uom/commands';
 import { registerUomCatCommands } from './features/uomcat/commands';
 import { buildEssentialMenu } from './menu';
-import { buildCurrencyPages } from './pages/currency';
 import { buildLanguagePages } from './pages/language';
 import { ModuleManagementPage } from './pages/ModuleManagement';
 import { OrgHomePage } from './pages/OrgHomePage';
@@ -45,7 +44,8 @@ function Main(props: MicroAppProps) {
 function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	const engine = useViewEngine();
 	const pages = React.useMemo(
-		() => [...buildUomPages(), ...buildUomCatPages(), ...buildLanguagePages(), ...buildCurrencyPages()]
+		// The currency pages are mounted by Settings only (`settings/essential/essential_currency`).
+		() => [...buildUomPages(), ...buildUomCatPages(), ...buildLanguagePages()]
 			.map(page => compilePage(page, engine)),
 		[engine],
 	);

@@ -4,9 +4,9 @@ import React from 'react';
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
 
-/** Room for a quantity or price with its separators, and a currency segment, with little leeway. */
-const NUMBER_WIDTH = '10rem';
-const DECIMAL_WIDTH = '11rem';
+/** Room for a quantity or price up to the billions with its separators, and a currency segment, no more. */
+const NUMBER_WIDTH = '7rem';
+const DECIMAL_WIDTH = '8.5rem';
 /** A code or symbol (≤ 10 characters), and a short label (≤ 50). Longer text takes the whole track. */
 const SHORT_TEXT_WIDTH = '8rem';
 const MEDIUM_TEXT_WIDTH = '16rem';

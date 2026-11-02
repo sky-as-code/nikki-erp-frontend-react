@@ -74,11 +74,7 @@ export const COMPLETE_VARIANTS = { if: ['variant_kind', '=', 'complete'] };
 function buildProductVariantEnumRenderers() {
 	return {
 		// The base label names what it waits for, so it is not read as a sellable product.
-		variant_kind: {
-			renderer: 'enum',
-			colorMap: { complete: 'green', base: 'orange' },
-			prefix: 'variant_kind_label.',
-		},
+		variant_kind: { renderer: 'translated', prefix: 'variant_kind_label.' },
 		status: STATUS_BADGE,
 		archive_source: {
 			renderer: 'enum',
@@ -109,7 +105,7 @@ function buildProductVariantDetailProps() {
 			statuses: Object.keys(STATUS_BADGE.colorMap),
 			prefix: STATUS_BADGE.prefix,
 		}),
-		titleLvl1: { schemaField: 'product_template_name' },
+		titleLvl1: { schemaField: 'display_name' },
 		titleLvl2: { schemaField: 'sku' },
 		backLinkTitle: { linkHref: '../' },
 		// A variant without an image of its own shows its template's.
@@ -141,7 +137,7 @@ function buildProductVariantFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.identification',
-			fields: ['sku', 'primary_barcode', 'combination_key', 'product_template_id'],
+			fields: ['sku', 'display_name', 'primary_barcode', 'product_template_id'],
 		}),
 		// A base holds the instant values only; its completes add the dynamic ones and link back.
 		resourceFormColumnNode({

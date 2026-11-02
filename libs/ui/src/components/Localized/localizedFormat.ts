@@ -23,6 +23,12 @@ export type LocalizedNumberOptions = {
 	 * the integer digits are grouped here instead, with `thousandsSeparator` or the locale's glyph.
 	 */
 	grouping?: DigitGrouping,
+	/**
+	 * Abbreviates large amounts with `K` (thousand), `M` (million) or `B` (billion), the same letters
+	 * in every language, keeping at most one fraction digit: `1.5M`, `1,5M ₫`, `$2.3K`. Smaller
+	 * amounts print as usual.
+	 */
+	compact?: boolean,
 };
 
 /** strftime patterns from the user's language record (`%d/%m/%Y`, `%H:%M:%S`, `%H:%M`). */
@@ -113,6 +119,9 @@ export function formatLocalizedNumber(raw: RawValue, locale: string, opts?: Loca
 		return EMPTY_VALUE;
 	}
 	const digits = resolveFractionDigits(raw, opts);
+	if (opts?.compact) {
+		return `${value < 0 ? '-' : ''}${compactAmount(Math.abs(value), locale, digits, opts)}`;
+	}
 	const parts = formatNumberParts(value, locale, {
 		minimumFractionDigits: digits,
 		maximumFractionDigits: digits,
@@ -142,8 +151,16 @@ export function formatLocalizedMoney(
 		return EMPTY_VALUE;
 	}
 	const digits = resolveFractionDigits(raw, opts);
+	if (opts?.compact) {
+		const position = opts.symbolPosition ?? (currencySymbolPosition(locale) === 'prefix' ? 'before' : 'after');
+		return placeSymbol(value, compactAmount(Math.abs(value), locale, digits, opts), currencySymbol, position);
+	}
 	if (opts?.symbolPosition && currencySymbol) {
-		return placeSymbol(value, locale, currencySymbol, opts.symbolPosition, digits, opts);
+		const amount = applySeparators(formatNumberParts(Math.abs(value), locale, {
+			minimumFractionDigits: digits,
+			maximumFractionDigits: digits,
+		}, opts), opts);
+		return placeSymbol(value, amount, currencySymbol, opts.symbolPosition);
 	}
 	const parts = formatNumberParts(value, locale, {
 		style: 'currency',
@@ -164,20 +181,46 @@ const NBSP = '\u00A0';
  * The amount with the symbol where the currency puts it, the sign first: `-$15.00`, `-15.000 ₫`. A
  * symbol made of letters (a bare code such as `VND`) is spaced from the digits on either side.
  */
-function placeSymbol(
-	value: number, locale: string, symbol: string, position: SymbolPosition, digits: number,
-	opts: LocalizedNumberOptions,
-): string {
-	const amount = applySeparators(formatNumberParts(Math.abs(value), locale, {
-		minimumFractionDigits: digits,
-		maximumFractionDigits: digits,
-	}, opts), opts);
+function placeSymbol(value: number, amount: string, symbol: string, position: SymbolPosition): string {
 	const sign = value < 0 ? '-' : '';
+	if (!symbol) {
+		return `${sign}${amount}`;
+	}
 	if (position === 'before') {
 		const gap = /\p{L}$/u.test(symbol) ? NBSP : '';
 		return `${sign}${symbol}${gap}${amount}`;
 	}
 	return `${sign}${amount}${NBSP}${symbol}`;
+}
+
+/** Thresholds of the compact format, largest first; the letters are the same in every language. */
+const COMPACT_STEPS: ReadonlyArray<readonly [number, string]> = [[1e9, 'B'], [1e6, 'M'], [1e3, 'K']];
+const COMPACT_FRACTION_DIGITS = 1;
+
+/**
+ * A non-negative amount abbreviated by the largest step it reaches, one fraction digit at most and
+ * trailing zeros dropped (`1.5M`, `2K`). Rounding up to a full step moves to the next one
+ * (`999,950` reads `1M`, not `1000K`). Below the smallest step the amount keeps its own digits.
+ */
+function compactAmount(abs: number, locale: string, digits: number, opts?: LocalizedNumberOptions): string {
+	const factor = 10 ** COMPACT_FRACTION_DIGITS;
+	const reached = COMPACT_STEPS.findIndex(([threshold]) => abs >= threshold);
+	if (reached === -1) {
+		return applySeparators(formatNumberParts(abs, locale, {
+			minimumFractionDigits: digits,
+			maximumFractionDigits: digits,
+		}, opts), opts);
+	}
+	let index = reached;
+	let scaled = Math.round((abs / COMPACT_STEPS[index][0]) * factor) / factor;
+	if (scaled >= 1000 && index > 0) {
+		index -= 1;
+		scaled = Math.round((abs / COMPACT_STEPS[index][0]) * factor) / factor;
+	}
+	return applySeparators(formatNumberParts(scaled, locale, {
+		minimumFractionDigits: 0,
+		maximumFractionDigits: COMPACT_FRACTION_DIGITS,
+	}, opts), opts) + COMPACT_STEPS[index][1];
 }
 
 /** Whether the locale writes the currency symbol before or after the amount. */

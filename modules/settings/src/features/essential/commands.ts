@@ -1,6 +1,6 @@
 import { resourceCommands } from '@nikkierp/common/dynamicModel';
 
-import { LANGUAGE_SCHEMA_NAME } from '../../constants/essential';
+import { CURRENCY_SCHEMA_NAME, LANGUAGE_SCHEMA_NAME } from '../../constants/essential';
 
 
 /**
@@ -10,4 +10,8 @@ import { LANGUAGE_SCHEMA_NAME } from '../../constants/essential';
  */
 export const LanguageCommands = Object.freeze({
 	...resourceCommands(LANGUAGE_SCHEMA_NAME),
+} as const);
+
+export const CurrencyCommands = Object.freeze({
+	...resourceCommands(CURRENCY_SCHEMA_NAME),
 } as const);

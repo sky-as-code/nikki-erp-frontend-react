@@ -6,3 +6,5 @@ export {
 export type { UserSettingsLanguage, UserSettingsResponse, ValueRenderersConfig } from './valueRendererSettings';
 export { useValueFormatDefaults } from './useValueFormatDefaults';
 export type { ResolvedFormatDefaults } from './useValueFormatDefaults';
+export { useLocalizedFormatters } from './useLocalizedFormatters';
+export type { FormatterOptions, LocalizedFormatters } from './useLocalizedFormatters';

@@ -19,6 +19,11 @@ export type CrudServiceOptions = {
 	schemaName: string,
 	/** Defaults to the host bus installed by the Shell. Injectable for tests. */
 	eventBus?: IEventBus,
+	/**
+	 * A tenant-wide catalogue the backend answers per organization (`IsOrgBound`: currencies,
+	 * languages). Its schema has no `org_id` column, yet every request must name the current org.
+	 */
+	orgBound?: boolean,
 };
 
 /** Mutations emit `{module}:{schema}:{action}`; reads emit nothing. */
@@ -39,11 +44,13 @@ export abstract class CrudServiceBase {
 	protected readonly moduleName: string;
 	protected readonly schemaName: string;
 	readonly #eventBus?: IEventBus;
+	readonly #orgBound: boolean;
 
 	public constructor(opts: CrudServiceOptions) {
 		this.moduleName = opts.moduleName;
 		this.schemaName = opts.schemaName;
 		this.#eventBus = opts.eventBus;
+		this.#orgBound = opts.orgBound ?? false;
 	}
 
 	/** `files`, keyed by their `<name>_file_id` field, travel in the same request; see `RestApi.create`. */
@@ -172,7 +179,7 @@ export abstract class CrudServiceBase {
 	protected withOrgScope<TRequest extends object>(
 		schema: dyn.SchemaPack, request: TRequest,
 	): Promise<TRequest> {
-		return withOrgId(request, schema, this.schemaName);
+		return withOrgId(request, schema, this.schemaName, this.#orgBound);
 	}
 
 	/**

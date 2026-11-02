@@ -15,7 +15,7 @@ const SYMBOL_POSITION_BADGE = {
 	prefix: 'symbol_position.',
 } as const;
 
-/** The currency catalogue, served at `essential_currency`; Settings › Accounting links here. */
+/** The currency catalogue, mounted by Settings at `essential/essential_currency`; Settings › Accounting links there. */
 export function buildCurrencyPages(routePath = c.CURRENCY_ROUTE): PageNode[] {
 	const splitView = resourceSplitViewProps({
 		primary: buildCurrencyListProps(),
@@ -36,6 +36,8 @@ function buildCurrencyListProps() {
 		translationNs: c.ESSENTIAL_MODULE,
 		linkField: 'id',
 		searchCommand: CurrencyCommands.SEARCH,
+		// The currencies the organization uses first, then by code.
+		initialGraph: { order: [['is_active', 'desc'], ['code', 'asc']] },
 		createEnabled: true,
 		// A currency amounts were recorded in stays readable, so it is archived rather than deleted.
 		archiveCommand: CurrencyCommands.SET_IS_ARCHIVED,
@@ -62,7 +64,7 @@ function buildCurrencyDetailProps() {
 	});
 }
 
-/** Odoo's layout: identity and naming, then how amounts are rounded and how they are written. */
+/** One section: identity and naming, then how amounts are rounded and how they are written. */
 function buildCurrencySections(): ComponentNode[] {
 	return [
 		collapsibleSectionNode({
@@ -72,21 +74,13 @@ function buildCurrencySections(): ComponentNode[] {
 		}, [
 			resourceFormColumnNode({ fields: ['code', 'name', 'is_active'] }),
 			resourceFormColumnNode({ fields: ['symbol', 'currency_unit_label', 'currency_subunit_label'] }),
-		]),
-		collapsibleSectionNode({
-			layout: 'formBlocks',
-			translationNs: c.ESSENTIAL_MODULE,
-			header: 'form.priceAccuracy',
-		}, [
 			// decimal_places follows rounding on the server and is never written by a client.
-			resourceFormColumnNode({ fields: ['rounding', 'decimal_places'], readOnlyFields: ['decimal_places'] }),
-		]),
-		collapsibleSectionNode({
-			layout: 'formBlocks',
-			translationNs: c.ESSENTIAL_MODULE,
-			header: 'form.display',
-		}, [
-			resourceFormColumnNode({ fields: ['symbol_position'] }),
+			resourceFormColumnNode({
+				header: 'form.priceAccuracy',
+				fields: ['rounding', 'decimal_places'],
+				readOnlyFields: ['decimal_places'],
+			}),
+			resourceFormColumnNode({ header: 'form.display', fields: ['symbol_position'] }),
 		]),
 	];
 }

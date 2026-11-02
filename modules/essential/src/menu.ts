@@ -18,7 +18,6 @@ const ITEMS: MenuItem[] = [
 			{ labelKey: 'menu_uomCategories', link: '/essential_uomcat' },
 		],
 	},
-	{ labelKey: 'menu_currencies', link: '/essential_currency' },
 ];
 
 export function buildEssentialMenu(slug: string): MenuContribution {

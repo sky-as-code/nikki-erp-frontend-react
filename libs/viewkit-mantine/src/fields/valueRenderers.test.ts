@@ -35,11 +35,12 @@ describe('registered value renderers', () => {
 			.toBeInstanceOf(EnumFieldRenderer);
 	});
 
-	it('builds the radio renderer: an enum badge when read, radios when edited', () => {
-		const renderer = build({ renderer: 'radio', colorMap: { goods: 'blue' }, prefix: 'product_type.' });
+	it('builds the radio renderer: plain text when read, radios when edited', () => {
+		const renderer = build({ renderer: 'radio', prefix: 'product_type.' });
 
 		expect(renderer).toBeInstanceOf(RadioFieldRenderer);
 		expect(renderer.translationKey?.('goods')).toBe('product_type.goods');
+		expect(renderer.render('goods', 'Goods')).toBe('Goods');
 		const input = renderer.renderInput?.('product_type', { disabled: true }) as Element<{ name: string, disabled: boolean }>;
 		expect(input.props).toEqual({ name: 'product_type', disabled: true });
 	});

@@ -60,18 +60,18 @@ export function registerFieldRenderers(registry: IViewRegistry): void {
 
 function registerValueRenderers(registry: IViewRegistry): void {
 	registry.registerFieldRenderer(FIELD_RENDERER_INTEGER, (spec) => {
-		integerSpecSchema.parse(spec);
-		return new IntegerFieldRenderer();
+		const { compact } = integerSpecSchema.parse(spec);
+		return new IntegerFieldRenderer(compact);
 	});
 
 	registry.registerFieldRenderer(FIELD_RENDERER_FLOAT, (spec) => {
-		const { precision } = floatSpecSchema.parse(spec);
-		return new FloatFieldRenderer(precision);
+		const { precision, compact } = floatSpecSchema.parse(spec);
+		return new FloatFieldRenderer(precision, compact);
 	});
 
 	registry.registerFieldRenderer(FIELD_RENDERER_MONEY, (spec) => {
-		const { currencyField, blankAsZero } = moneySpecSchema.parse(spec);
-		return new MoneyValueFieldRenderer(currencyField, blankAsZero);
+		const { currencyField, blankAsZero, compact } = moneySpecSchema.parse(spec);
+		return new MoneyValueFieldRenderer(currencyField, blankAsZero, compact);
 	});
 
 	registry.registerFieldRenderer(FIELD_RENDERER_FIELD_TEXT, (spec) => {
@@ -85,8 +85,8 @@ function registerValueRenderers(registry: IViewRegistry): void {
 	});
 
 	registry.registerFieldRenderer(FIELD_RENDERER_RADIO, (spec) => {
-		const { colorMap, prefix } = radioSpecSchema.parse(spec);
-		return new RadioFieldRenderer(colorMap, prefix);
+		const { prefix } = radioSpecSchema.parse(spec);
+		return new RadioFieldRenderer(prefix);
 	});
 
 	registerFormatPatternRenderers(registry);

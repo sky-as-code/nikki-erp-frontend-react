@@ -33,6 +33,8 @@ function buildLanguageListProps() {
 		translationNs: c.ESSENTIAL_MODULE,
 		linkField: 'id',
 		searchCommand: LanguageCommands.SEARCH,
+		// The languages the organization uses first, then by locale code.
+		initialGraph: { order: [['is_active', 'desc'], ['locale_code', 'asc']] },
 		createEnabled: true,
 		deleteCommand: LanguageCommands.DELETE,
 	});
@@ -71,7 +73,7 @@ function buildLanguageFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['name', 'locale_code', 'direction', 'is_enabled'],
+			fields: ['name', 'locale_code', 'direction', 'is_active', 'public_use'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.formats',

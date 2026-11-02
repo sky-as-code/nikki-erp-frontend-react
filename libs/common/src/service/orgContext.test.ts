@@ -114,3 +114,16 @@ describe('CrudServiceBase', () => {
 			.toEqual({ kiosk_id: 'k1', org_id: CURRENT_ORG });
 	});
 });
+
+describe('withOrgId for an org-bound catalogue', () => {
+	it('names the current org although the schema has no org_id column', async () => {
+		expect(await withOrgId({ page: 0 }, unscoped, SCHEMA_NAME, true)).toEqual({ page: 0, org_id: CURRENT_ORG });
+	});
+
+	it('names the current org when the served schema is flagged, whichever service sends it', async () => {
+		const flagged = schemaPack({ name: {} });
+		flagged.modelSchema.is_org_bound = true;
+
+		expect(await withOrgId({ page: 0 }, flagged, SCHEMA_NAME)).toEqual({ page: 0, org_id: CURRENT_ORG });
+	});
+});

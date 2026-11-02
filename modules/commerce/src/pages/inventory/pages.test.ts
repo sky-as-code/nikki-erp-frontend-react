@@ -238,11 +238,7 @@ describe('Product template detail sections', () => {
 				colorMap: { draft: 'gray', active: 'green', discontinued: 'red' },
 				prefix: 'template_status.',
 			},
-			product_type: {
-				renderer: 'enum',
-				colorMap: { goods: 'blue', service: 'violet' },
-				prefix: 'product_type.',
-			},
+			product_type: { renderer: 'translated', prefix: 'product_type.' },
 			base_sales_price: { renderer: 'money' },
 		});
 	});

@@ -64,7 +64,9 @@ export function isFieldVisible(
 	// so offering a field would invite a value it discards. Keyed off `is_computed` rather than
 	// `is_system_field`, which means "the server owns this field's meaning" and so covers the
 	// foreign keys a create form must still let the user pick.
-	if (fieldDef.is_computed) {
+	// The exception is a field the server declares writable (`metadata.writable`): it computes the
+	// value on read and stores what a write sends elsewhere -- an org's activation of a currency.
+	if (fieldDef.is_computed && fieldDef.metadata?.writable !== true) {
 		return false;
 	}
 	// The server refuses an update to this field, so update mode shows it rather than offering an
