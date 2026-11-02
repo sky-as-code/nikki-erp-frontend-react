@@ -13,9 +13,12 @@ import { useIsCompact, useMeasuredWidth } from '../components/ExcelDataTable/use
 import { Link } from '../components/Link/Link';
 
 import type { Crumb } from './buildCrumbs';
+import type { TrailParent } from './trail';
 
 
 export type BreadcrumbsFontSize = 'body' | 'h2' | 'h3' | 'h4';
+
+export type BreadcrumbsRootParent = { to: string, label?: string, parent?: BreadcrumbsRootParent };
 
 export type BreadcrumbsProps = {
 	separator?: string,
@@ -36,9 +39,10 @@ export type BreadcrumbsProps = {
 	/**
 	 * The list a detail page belongs to, shown before it when nothing else is: `Brands / Brand B`
 	 * on a pasted URL. `to` resolves path-relative to the page, like the old back link did. Its label
-	 * is a list name, capitalised like the list's own title.
+	 * is a list name, capitalised like the list's own title. Its own `parent` (a nested page's owning
+	 * record) is shown before it: `Stock Transfer / Stock Moves / Move M1`.
 	 */
-	rootParent?: { to: string, label?: string },
+	rootParent?: BreadcrumbsRootParent,
 	className?: string,
 	'data-testid'?: string,
 };
@@ -81,20 +85,33 @@ export function Breadcrumbs({
 	);
 }
 
-function useRootParent(ownPath: string, rootParent: BreadcrumbsProps['rootParent']): { path: string, label?: string } | undefined {
+/**
+ * Each level resolved against the node, not the route match, so `'../'` means "the list above this record"
+ * wherever in the route tree the header renders.
+ */
+function resolveRootParent(rootParent: BreadcrumbsRootParent | undefined, ownPath: string): TrailParent | undefined {
+	if (!rootParent) {
+		return undefined;
+	}
+	return {
+		path: resolveRootParentPath(rootParent.to, ownPath),
+		label: rootParent.label && capitalizeWords(rootParent.label),
+		parent: resolveRootParent(rootParent.parent, ownPath),
+	};
+}
+
+/** Where a root-parent crumb `to` leads from the page at `ownPath`; also for code that leaves the page without it. */
+export function resolveRootParentPath(to: string, ownPath: string): string {
+	return normalizePath(resolvePath(to, ownPath).pathname);
+}
+
+function useRootParent(ownPath: string, rootParent: BreadcrumbsRootParent | undefined): TrailParent | undefined {
 	const setNodeInfo = useSetNodeInfo();
-	const parentTo = rootParent?.to;
-	const parentLabel = rootParent?.label;
-	// Resolved against the node, not the route match, so `'../'` means "the list above this record"
-	// wherever in the route tree the header renders.
-	const parent = React.useMemo(() => (
-		parentTo === undefined
-			? undefined
-			: {
-				path: normalizePath(resolvePath(parentTo, ownPath).pathname),
-				label: parentLabel && capitalizeWords(parentLabel),
-			}
-	), [parentTo, parentLabel, ownPath]);
+	// Callers build the object inline: keyed by its content, not its identity.
+	const key = JSON.stringify(rootParent ?? null);
+	const parent = React.useMemo(
+		() => resolveRootParent(JSON.parse(key) as BreadcrumbsRootParent | null ?? undefined, ownPath), [key, ownPath],
+	);
 
 	React.useEffect(() => {
 		if (parent?.label) {

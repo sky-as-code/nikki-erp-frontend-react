@@ -31,6 +31,7 @@ const roleSchema = {
 		assigned_users: field('assigned_users', 'model', { is_edge_model: true, is_computed: true }),
 		// Copied from a related record on read; read-only, but not server-owned.
 		owner_name: field('owner_name', 'string', { is_computed: true, is_virtual: true }),
+		is_active: field('is_active', 'boolean', { is_computed: true, is_virtual: true, metadata: { writable: true } }),
 		// Writable at create, frozen afterwards: the server rejects an update to it.
 		reference_code: field('reference_code', 'string', { no_update: true }),
 		// An enum carrying no values renders nothing, in any mode.
@@ -81,6 +82,9 @@ describe('isFieldVisible', () => {
 	it('never offers a computed field, whose value the server refuses to accept', () => {
 		expect(isFieldVisible(roleSchema, 'owner_name', 'create')).toBe(false);
 		expect(isFieldVisible(roleSchema, 'owner_name', 'update')).toBe(false);
+		// A computed field the server declares writable (an org's activation) is an input.
+		expect(isFieldVisible(roleSchema, 'is_active', 'create')).toBe(true);
+		expect(isFieldVisible(roleSchema, 'is_active', 'update')).toBe(true);
 	});
 
 	// A foreign key is flagged system because the server owns its meaning, but choosing the
@@ -214,14 +218,28 @@ describe('applyVisibleWhen', () => {
 			.toEqual(['incoming_flow', 'receiving_location_id']);
 	});
 
-	it('drops a failing @@field from an inline row, and the row once none is left', () => {
-		const rows = [['$$form.input', '@@receiving_location_id', 'and', '@@quality_location_id'], ['$$form.note']];
+	it('drops a failing @@field from a group, and the group once none is left', () => {
+		const rows = [
+			{ fields: ['$$form.input', '@@receiving_location_id', 'and', '@@quality_location_id'] },
+			{ fields: ['$$form.note'] },
+		];
 		expect(applyVisibleWhen(rows, flowRules, { incoming_flow: 'two_step' }))
-			.toEqual([['$$form.input', '@@receiving_location_id', 'and'], ['$$form.note']]);
-		expect(applyVisibleWhen(rows, flowRules, { incoming_flow: 'one_step' })).toEqual([['$$form.note']]);
+			.toEqual([{ fields: ['$$form.input', '@@receiving_location_id', 'and'] }, { fields: ['$$form.note'] }]);
+		expect(applyVisibleWhen(rows, flowRules, { incoming_flow: 'one_step' })).toEqual([{ fields: ['$$form.note'] }]);
+	});
+
+	it('keeps a group label and its widths aligned with the fields left', () => {
+		const group = {
+			label: 'form.locations',
+			fields: ['@@receiving_location_id', 'and', '@@quality_location_id'],
+			widths: ['10rem', null, '12rem'],
+		};
+		expect(applyVisibleWhen([group], flowRules, { incoming_flow: 'two_step' }))
+			.toEqual([{ label: 'form.locations', fields: ['@@receiving_location_id', 'and'], widths: ['10rem', null] }]);
+		expect(applyVisibleWhen([group], flowRules, { incoming_flow: 'one_step' })).toEqual([]);
 	});
 
 	it('leaves the fields alone without rules', () => {
-		expect(applyVisibleWhen(['a', ['@@b']], undefined, {})).toEqual(['a', ['@@b']]);
+		expect(applyVisibleWhen(['a', { fields: ['@@b'] }], undefined, {})).toEqual(['a', { fields: ['@@b'] }]);
 	});
 });

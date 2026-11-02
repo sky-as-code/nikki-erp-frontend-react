@@ -178,6 +178,11 @@ export type ExcelDataTableRowWriteProps = {
 	/** Replaces the insert button's default "Add a line" label. */
 	newRowPrompt?: string,
 	/**
+	 * `true`: the "No data" row and an "Add a line" button that opens the insert row. Default `false`:
+	 * the insert row is always open, and its Discard only clears what was typed.
+	 */
+	showNewRowBtn?: boolean,
+	/**
 	 * Per-column editors for both the insert row and the row editor (either scope). The specific
 	 * `newRowFieldEditors` / `rowFieldEditors` override it per field. Declare the map at module level.
 	 */
@@ -276,6 +281,7 @@ function useRowWriteSinks(props: ExcelDataTableRowWriteProps): RowWriteSinks {
 function useNewRowConfig(props: ExcelDataTableRowWriteProps): NewRowConfig {
 	const source = props.newRowSource ?? 'user-input';
 	const { newRowResourceSchema, newRowSearchField, newRowSearchCommand, newRowPrompt } = props;
+	const showButton = props.showNewRowBtn ?? false;
 	const fieldEditors = useMergedEditors(props.fieldEditors, props.newRowFieldEditors);
 	return React.useMemo(() => ({
 		source,
@@ -283,6 +289,7 @@ function useNewRowConfig(props: ExcelDataTableRowWriteProps): NewRowConfig {
 		searchField: newRowSearchField,
 		searchCommand: newRowSearchCommand,
 		prompt: newRowPrompt,
+		showButton,
 		fieldEditors,
-	}), [source, newRowResourceSchema, newRowSearchField, newRowSearchCommand, newRowPrompt, fieldEditors]);
+	}), [source, newRowResourceSchema, newRowSearchField, newRowSearchCommand, newRowPrompt, showButton, fieldEditors]);
 }

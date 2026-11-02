@@ -56,24 +56,27 @@ export type GetUserContextResponse = {
 		language: {
 			id: string,
 			name: string,
-			iso_code: string,
+			locale_code: string,
 			direction: string,
 			decimal_separator: string,
 			thousands_separator: string,
+			/** JSON integer array, e.g. `[3,0]` (see `DigitGrouping` in `@nikkierp/ui`). */
+			grouping: string,
 			date_format: string,
 			time_format: string,
 			short_time_format: string,
 			first_day_of_week: string,
 		},
 		/**
-		 * The organization's `default_currency`, resolved against the currency catalogue. Absent
-		 * when the organization has not set one: there is no safe default, so the backend omits
-		 * the key rather than guessing.
+		 * Accounting's system currency (the organization's, else the tenant's), resolved against the
+		 * currency catalogue. Absent when neither is set: there is no safe default, so the backend
+		 * omits the key rather than guessing.
 		 */
 		currency?: {
 			code: string,
 			symbol: string,
 			decimal_places: number,
+			symbol_position?: 'before' | 'after',
 		},
 		supported_languages: string[],
 		timezone: string,
@@ -105,10 +108,11 @@ export type AccountSettings = {
 	language: {
 		id: string,
 		name: string,
-		isoCode: string,
+		localeCode: string,
 		direction: string,
 		decimalSeparator: string,
 		thousandsSeparator: string,
+		grouping: string,
 		dateFormat: string,
 		timeFormat: string,
 		shortTimeFormat: string,
@@ -131,6 +135,8 @@ export type Currency = {
 	code: string,
 	symbol: string,
 	decimalPlaces: number,
+	/** Where the currency writes its symbol; absent leaves it to the locale. */
+	symbolPosition?: 'before' | 'after',
 };
 
 export type SystemSettings = {
@@ -153,10 +159,11 @@ export function toUserContext(response: GetUserContextResponse): UserContext {
 			language: {
 				id: response.account_settings.language.id,
 				name: response.account_settings.language.name,
-				isoCode: response.account_settings.language.iso_code,
+				localeCode: response.account_settings.language.locale_code,
 				direction: response.account_settings.language.direction,
 				decimalSeparator: response.account_settings.language.decimal_separator,
 				thousandsSeparator: response.account_settings.language.thousands_separator,
+				grouping: response.account_settings.language.grouping,
 				dateFormat: response.account_settings.language.date_format,
 				timeFormat: response.account_settings.language.time_format,
 				shortTimeFormat: response.account_settings.language.short_time_format,
@@ -179,6 +186,7 @@ function toCurrency(src: GetUserContextResponse['account_settings']['currency'])
 		code: src.code,
 		symbol: src.symbol,
 		decimalPlaces: src.decimal_places,
+		symbolPosition: src.symbol_position,
 	};
 }
 
@@ -192,10 +200,11 @@ export type UserContextOrg = {
 export type Language = {
 	id: string,
 	name: string,
-	isoCode: string,
+	localeCode: string,
 	direction: string,
 	decimalSeparator: string,
 	thousandsSeparator: string,
+	grouping: string,
 	dateFormat: string,
 	timeFormat: string,
 	shortTimeFormat: string,

@@ -11,6 +11,10 @@ import { TransactionCommands } from '../features/transaction/commands';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** The record names its currency by id, not code, so amounts read in the default currency. */
+const MONEY_RENDERER = { renderer: 'money' };
+const ORDER_AMOUNT_RENDERERS = { amount: MONEY_RENDERER, refund_amount: MONEY_RENDERER };
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
 	renderer: 'badge',
@@ -66,6 +70,7 @@ function buildOrderListProps() {
 				colorMap: { success: 'green', failure: 'red' },
 				prefix: 'sync_status.',
 			},
+			...ORDER_AMOUNT_RENDERERS,
 		},
 	});
 }
@@ -82,6 +87,7 @@ function buildOrderDetailProps() {
 		titleLvl1: { schemaField: 'order_id' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: ORDER_AMOUNT_RENDERERS,
 		standardActionCommands: {
 			getById: OrderCommands.GET_BY_ID,
 			update: OrderCommands.UPDATE,
@@ -176,6 +182,7 @@ function buildTransactionResources() {
 			translationNs: c.PAYMENTINVOICE_MODULE,
 			searchCommand: TransactionCommands.SEARCH,
 			initialGraph: { if: ['order_id', '=', '${id}'] },
+			fieldRenderers: { amount: MONEY_RENDERER },
 		},
 	];
 }

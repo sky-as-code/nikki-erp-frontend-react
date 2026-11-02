@@ -16,6 +16,29 @@ export const statusOptionSchema = z.object({
 	alternativeEnd: z.boolean().optional(),
 });
 
+const cssWidth = /^\d+(\.\d+)?(px|rem|em|ch|%)$/;
+
+/**
+ * A field group display of a form column's `fields` (see `FieldGroupDisplay`). `widths` parallels
+ * `fields`, so it may not be longer, and a width may only size a `@@field` item.
+ */
+export const fieldGroupDisplaySchema = z.object({
+	label: z.string().min(1).optional(),
+	fields: z.array(z.string()).min(1),
+	widths: z.array(z.string().regex(cssWidth).nullish()).optional(),
+	isFullRow: z.boolean().optional(),
+}).strict().superRefine((group, ctx) => {
+	const widths = group.widths ?? [];
+	if (widths.length > group.fields.length) {
+		ctx.addIssue({ code: 'custom', path: ['widths'], message: '`widths` is longer than `fields`' });
+	}
+	widths.forEach((width, index) => {
+		if (width && !group.fields[index]?.startsWith('@@')) {
+			ctx.addIssue({ code: 'custom', path: ['widths', index], message: 'a width may only size a `@@field` item' });
+		}
+	});
+});
+
 export const ownPropertySectionSchema = z.object({
 	/**
 	 * Optional i18n key for the block's title. A block that is already introduced by its
@@ -25,11 +48,14 @@ export const ownPropertySectionSchema = z.object({
 	 */
 	header: z.string().min(1).optional(),
 	/**
-	 * Field names, top to bottom. A nested array is one inline row: `$$ns:key` / `$$key` renders
-	 * translated text (namespace defaults to the page's `translationNs`), `@@field` renders that
-	 * field's input (its value in read mode), anything else renders as literal text.
+	 * Field names, top to bottom. An object `{ label?, fields, widths?, isFullRow? }` is a field group
+	 * display: its `fields` items on one row under `label` (default: the first field's schema label).
+	 * An item is `@@field` (that field's input, its value in read mode), `$$ns:key` / `$$key`
+	 * (translated text, namespace defaulting to the page's `translationNs`) or literal text;
+	 * `widths[i]` sizes item `i`. One schema field may appear more than once; every copy edits the
+	 * same form value.
 	 */
-	fields: z.array(z.union([z.string(), z.array(z.string())])).optional(),
+	fields: z.array(z.union([z.string(), fieldGroupDisplaySchema])).optional(),
 	/**
 	 * Whether `header` also prints above the block's fields. Defaults to `false`: a block used as a
 	 * `tabCollapsibleSection` tab already shows its title in the tab control, so printing it again
@@ -41,8 +67,6 @@ export const ownPropertySectionSchema = z.object({
 	 * gives it a row of its own, its fields spread across that row.
 	 */
 	isFluid: z.boolean().default(true),
-	/** Whether the panel draws the separator between this block and the one before it. Defaults to `true`. */
-	showSeparator: z.boolean().default(true),
 	/**
 	 * v2 only. Fields the record itself says may no longer change: in update mode `field` renders as a
 	 * disabled input with `hint` (an i18n key in the page's namespace) under it whenever the record's
@@ -186,6 +210,12 @@ export const resourceDetailPropsSchema = z.object({
 	titleLvl1: schemaFieldSpecSchema.optional(),
 	titleLvl2: schemaFieldSpecSchema.optional(),
 	backLinkTitle: linkSpecSchema.optional(),
+	/**
+	 * A nested page's owning record, path-relative to the record (`'../../'`), and its schema name. With both,
+	 * a trail of the record alone shows `{parent schema label} / {list} / {record}`.
+	 */
+	parentLink: z.string().min(1).optional(),
+	parentResource: z.string().min(1).optional(),
 	allStatuses: z.array(statusOptionSchema).optional(),
 	currentStatus: schemaFieldSpecSchema.optional(),
 	contextualActions: z.record(z.string(), resourceDetailExtraActionSchema).optional(),

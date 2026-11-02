@@ -32,6 +32,8 @@ import { buildProductTemplatePages } from '../pages/inventory/productTemplate';
 import { buildProductTemplateAttributeValuePages } from '../pages/inventory/productTemplateAttributeValue';
 import { buildProductVariantPages } from '../pages/inventory/productVariant';
 import { buildPutawayRulePages } from '../pages/inventory/putawayRule';
+import { buildStockMovePages } from '../pages/inventory/stockMove';
+import { buildStockMoveLinePages } from '../pages/inventory/stockMoveLine';
 import { buildStockOperationTypePages } from '../pages/inventory/stockOperationType';
 import { buildStockQuantPages } from '../pages/inventory/stockQuant';
 import { buildStockReservationPages } from '../pages/inventory/stockReservation';
@@ -95,6 +97,8 @@ export function buildInventoryPages(): PageNode[] {
 		...buildStockOperationTypePages(),
 		...buildStockQuantPages(),
 		...buildStockTransferPages(),
+		...buildStockMovePages(),
+		...buildStockMoveLinePages(),
 		...buildStockScrapPages(),
 		...buildStockReservationPages(),
 	];
@@ -155,8 +159,7 @@ function registerModelSchemas(): void {
 		schemaName: c.STOCK_TRANSFER_SCHEMA_NAME,
 		resourcePath: c.STOCK_TRANSFER_RESOURCE_PATH,
 	}, {
-		// Moves and their lines have no page of their own: they are reached as related records of
-		// the transfer that owns them, through the same registered schema.
+		// Moves and their lines have read-only pages nested under the transfer that owns them.
 		schemaName: c.STOCK_MOVE_SCHEMA_NAME,
 		resourcePath: c.STOCK_MOVE_RESOURCE_PATH,
 	}, {

@@ -1,5 +1,8 @@
 import { CommandBus } from '@nikkierp/common/commandBus';
 
+import { parseGrouping } from '../Localized/numberGrouping';
+import { weekDayIndexOf } from '../Localized/strftime';
+
 import type { FormatDefaults } from '../Localized/formatDefaults';
 
 
@@ -13,10 +16,23 @@ export type ValueRenderersConfig = {
 /** The slice of the Shell's `UserContext` the renderers read; declared here since `ui` sits below the Shell. */
 export type UserSettingsResponse = {
 	accountSettings?: {
-		language?: { isoCode?: string, decimalSeparator?: string, thousandsSeparator?: string },
-		currency?: { code: string, symbol: string, decimalPlaces: number },
+		language?: UserSettingsLanguage,
+		currency?: { code: string, symbol: string, decimalPlaces: number, symbolPosition?: 'before' | 'after' },
 	},
 } | null;
+
+/** The language record as the Shell maps it (`AccountSettings.language`). */
+export type UserSettingsLanguage = {
+	localeCode?: string,
+	decimalSeparator?: string,
+	thousandsSeparator?: string,
+	/** JSON integer array, e.g. `[3,0]`. */
+	grouping?: string,
+	dateFormat?: string,
+	timeFormat?: string,
+	shortTimeFormat?: string,
+	firstDayOfWeek?: string,
+};
 
 let userSettingsCommand = DEFAULT_USER_SETTINGS_COMMAND;
 let cached: Promise<FormatDefaults> | undefined;
@@ -72,13 +88,20 @@ async function loadFormatDefaults(): Promise<FormatDefaults> {
 
 export function toFormatDefaults(context: UserSettingsResponse): FormatDefaults {
 	const settings = context?.accountSettings;
-	if (!settings?.language?.isoCode) {
+	const language = settings?.language;
+	if (!language?.localeCode) {
 		return {};
 	}
 	return {
-		locale: settings.language.isoCode,
-		decimalSeparator: settings.language.decimalSeparator || undefined,
-		thousandsSeparator: settings.language.thousandsSeparator || undefined,
-		currency: settings.currency,
+		locale: language.localeCode,
+		decimalSeparator: language.decimalSeparator || undefined,
+		// An empty thousands separator is a choice (no glyph between groups), not a missing value.
+		thousandsSeparator: language.thousandsSeparator ?? undefined,
+		grouping: parseGrouping(language.grouping),
+		dateFormat: language.dateFormat || undefined,
+		timeFormat: language.timeFormat || undefined,
+		shortTimeFormat: language.shortTimeFormat || undefined,
+		firstDayOfWeek: weekDayIndexOf(language.firstDayOfWeek),
+		currency: settings?.currency,
 	};
 }

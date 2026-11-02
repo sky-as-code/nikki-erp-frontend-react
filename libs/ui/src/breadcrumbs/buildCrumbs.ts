@@ -31,9 +31,9 @@ export function buildCrumbs({ trail, nodePath, lastNodeLabel, rootParent, hideLa
 	nodes.forEach((node, i) => {
 		const isLast = i === nodes.length - 1;
 		const parent = i === 0 ? ((isLast ? rootParent : undefined) ?? node.parent) : undefined;
-		if (parent && parent.path !== node.path) {
+		for (const ancestor of parentChain(parent).filter(entry => entry.path !== node.path)) {
 			crumbs.push({
-				key: `parent:${parent.path}`, href: parent.path, label: parent.label, isHistoryRoot: true,
+				key: `parent:${ancestor.path}`, href: ancestor.path, label: ancestor.label, isHistoryRoot: true,
 			});
 		}
 		crumbs.push({
@@ -43,6 +43,15 @@ export function buildCrumbs({ trail, nodePath, lastNodeLabel, rootParent, hideLa
 		});
 	});
 	return hideLastNode ? crumbs.slice(0, -1) : crumbs;
+}
+
+/** `parent` and its own parents, the outermost first. */
+function parentChain(parent: TrailParent | undefined): TrailParent[] {
+	const chain: TrailParent[] = [];
+	for (let entry = parent; entry; entry = entry.parent) {
+		chain.unshift(entry);
+	}
+	return chain;
 }
 
 function visibleNodes(trail: TrailNode[], nodePath: string): TrailNode[] {

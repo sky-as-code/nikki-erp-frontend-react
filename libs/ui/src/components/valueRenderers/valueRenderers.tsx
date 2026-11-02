@@ -5,6 +5,7 @@ import { useValueFormatDefaults } from './useValueFormatDefaults';
 import { formatLocalizedMoney, formatLocalizedNumber, parseRawNumber } from '../Localized/localizedFormat';
 
 import type { FormatDefaults } from '../Localized/formatDefaults';
+import type { SymbolPosition } from '../Localized/localizedFormat';
 import type { RawValue } from '../Localized/localizedFormat';
 
 
@@ -13,13 +14,21 @@ export const EMPTY_RENDERED_VALUE = '-';
 
 export const DEFAULT_FLOAT_PRECISION = 2;
 
-export type IntegerRendererProps = { rawValue: RawValue };
+export type IntegerRendererProps = {
+	rawValue: RawValue,
+	/** `K` / `M` / `B` abbreviation; see `LocalizedNumberOptions.compact`. */
+	compact?: boolean,
+};
 
 export type FloatRendererProps = {
 	rawValue: RawValue,
 	precision?: number,
 	/** Marks the number as money, placed where the locale puts its currency. */
 	currencySymbol?: string,
+	/** Overrides the locale's placement of `currencySymbol`. */
+	symbolPosition?: SymbolPosition,
+	/** `K` / `M` / `B` abbreviation; see `LocalizedNumberOptions.compact`. */
+	compact?: boolean,
 };
 
 export type MoneyCurrency = {
@@ -27,9 +36,11 @@ export type MoneyCurrency = {
 	symbol?: string,
 	/** Omitted, taken from the user's default currency when the codes match, else the system default. */
 	decimalPlaces?: number,
+	/** Omitted, taken from the user's default currency when the codes match, else the locale's. */
+	symbolPosition?: SymbolPosition,
 };
 
-export type MoneyRendererProps = { rawValue: RawValue, currency?: MoneyCurrency };
+export type MoneyRendererProps = { rawValue: RawValue, currency?: MoneyCurrency, compact?: boolean };
 
 export type EnumRendererProps = {
 	rawValue: RawValue,
@@ -38,11 +49,13 @@ export type EnumRendererProps = {
 	label?: React.ReactNode,
 };
 
-export function IntegerRenderer({ rawValue }: IntegerRendererProps) {
-	return <FloatRenderer rawValue={rawValue} precision={0} />;
+export function IntegerRenderer({ rawValue, compact }: IntegerRendererProps) {
+	return <FloatRenderer rawValue={rawValue} precision={0} compact={compact} />;
 }
 
-export function FloatRenderer({ rawValue, precision = DEFAULT_FLOAT_PRECISION, currencySymbol }: FloatRendererProps) {
+export function FloatRenderer(
+	{ rawValue, precision = DEFAULT_FLOAT_PRECISION, currencySymbol, symbolPosition, compact }: FloatRendererProps,
+) {
 	const defaults = useValueFormatDefaults();
 	if (parseRawNumber(rawValue) === null) {
 		return <span>{EMPTY_RENDERED_VALUE}</span>;
@@ -51,9 +64,11 @@ export function FloatRenderer({ rawValue, precision = DEFAULT_FLOAT_PRECISION, c
 		fractionDigits: precision,
 		decimalSeparator: defaults.decimalSeparator,
 		thousandsSeparator: defaults.thousandsSeparator,
+		grouping: defaults.grouping,
+		compact,
 	};
 	const text = currencySymbol
-		? formatLocalizedMoney(rawValue, defaults.locale, currencySymbol, options)
+		? formatLocalizedMoney(rawValue, defaults.locale, currencySymbol, { ...options, symbolPosition })
 		: formatLocalizedNumber(rawValue, defaults.locale, options);
 	return <span>{text}</span>;
 }
@@ -62,7 +77,7 @@ export function FloatRenderer({ rawValue, precision = DEFAULT_FLOAT_PRECISION, c
  * A money amount: a {@link FloatRenderer} whose precision and marker come from the currency. The
  * marker falls back to the code because the currency catalogue seeds no symbols.
  */
-export function MoneyRenderer({ rawValue, currency }: MoneyRendererProps) {
+export function MoneyRenderer({ rawValue, currency, compact }: MoneyRendererProps) {
 	const defaults = useValueFormatDefaults();
 	const resolved = resolveMoneyCurrency(currency, defaults.currency);
 	return (
@@ -70,6 +85,8 @@ export function MoneyRenderer({ rawValue, currency }: MoneyRendererProps) {
 			rawValue={rawValue}
 			precision={resolved?.decimalPlaces ?? DEFAULT_FLOAT_PRECISION}
 			currencySymbol={resolved ? resolved.symbol || resolved.code : undefined}
+			symbolPosition={resolved?.symbolPosition}
+			compact={compact}
 		/>
 	);
 }
@@ -89,6 +106,7 @@ export function resolveMoneyCurrency(
 			code: currency.code,
 			symbol: currency.symbol || fallback.symbol,
 			decimalPlaces: currency.decimalPlaces ?? fallback.decimalPlaces,
+			symbolPosition: currency.symbolPosition ?? fallback.symbolPosition,
 		};
 	}
 	return currency;

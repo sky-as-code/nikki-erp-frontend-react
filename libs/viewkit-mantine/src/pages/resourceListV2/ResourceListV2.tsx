@@ -10,15 +10,16 @@ import {
 	IconArchive, IconLayoutGrid, IconList, IconPlus, IconTrash, IconUpload, IconX,
 } from '@tabler/icons-react';
 import React from 'react';
-import { useLocation, useSearchParams } from 'react-router';
+import { useLocation, useParams, useSearchParams } from 'react-router';
 
 import { buildResourceListActions, listActionCode, listRowUpdateProps, selectionModeOf } from './actions';
 import classes from './ResourceListV2.module.css';
 import { getViewModeIcon } from './viewModeIcons';
+import { parentResourceSpecOf, useParentResourceCrumb } from '../../components/pageHeader/parentResource';
 import { interpolateParams } from '../../data/interpolate';
 import { parseSearchGraphParam } from '../../data/searchGraphParam';
 import { getSearchRequestOrderBy } from '../../data/searchRequest';
-import { useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
+import { fillRouteParams, useResourceBaseHref, useResourceLinkHref } from '../../data/useResourceLinkHref';
 import { useResourceSearch } from '../../data/useResourceSearch';
 import { useTableRelatedSchemas, useTranslateFieldName } from '../../data/useTableFieldLabels';
 import { EXCEL_DATA_TABLE_BODY } from '../../ids';
@@ -60,9 +61,12 @@ function ResourceListV2Seeded(props: ResourceListV2ViewProps): React.ReactNode {
  */
 function useUrlGraphSeedKey(routePath: string): string {
 	const location = useLocation();
+	const params = useParams();
 	const raw = new URLSearchParams(location.search).get(URL_GRAPH_PARAM);
 	const [key, setKey] = React.useState(raw ?? '');
-	const ontoList = location.pathname.replace(/\/+$/, '').endsWith(`/${routePath}`);
+	// A nested list (`parent/:parent_id/child`) is compared by its filled path.
+	const listPath = fillRouteParams(routePath, params) ?? routePath;
+	const ontoList = location.pathname.replace(/\/+$/, '').endsWith(`/${listPath}`);
 	const next = raw ?? (ontoList && readNavMode(location.state) === 'root' ? '' : key);
 	if (next !== key) {
 		// Derived during render, so the stale seed never paints.
@@ -245,17 +249,20 @@ type ListBreadcrumbsProps = {
 /**
  * Where the user came from, above the toolbar: the toolbar title already names this list, so the
  * list's own node is hidden. It titles the tab only while the list is the page: in a split view
- * the record beside it owns the title.
+ * the record beside it owns the title. A nested list with no trail before it shows its owning record.
  */
 function ListBreadcrumbs({ params, schema, listPath, testId }: ListBreadcrumbsProps): React.ReactNode {
 	const listTitle = useListTitle(params);
 	const { pathname } = useLocation();
 	const isCurrentPage = Boolean(listPath) && normalizePath(pathname) === normalizePath(listPath!);
+	const parent = useParentResourceCrumb(parentResourceSpecOf(params));
 	useBreadcrumbsNode({
 		title: listTitle(schema, 99) || undefined,
 		capitalizeTitle: true, nodePath: listPath, enabled: isCurrentPage,
 	});
-	return listPath ? <Breadcrumbs hideLastNode nodePath={listPath} {...testAttrs(testId, 'breadcrumbs')} /> : null;
+	return listPath ? (
+		<Breadcrumbs hideLastNode nodePath={listPath} rootParent={parent} {...testAttrs(testId, 'breadcrumbs')} />
+	) : null;
 }
 
 function ListActions({ actions }: { actions: ResourceListAction[] }): React.ReactNode {
@@ -369,12 +376,14 @@ function useUrlSearchGraph(): dyn.SearchGraph | undefined {
 }
 
 /** The same `${name}` substitution v1 does, with `${today}` as the one dynamic value a static graph can need. */
+/** The page's graph with `${today}` and the route's params (`${transfer_id}` of a nested list) filled in. */
 function useResolvedInitialGraph(initialGraph: ResourceListV2Props['initialGraph']): dyn.SearchGraph | undefined {
 	const today = new Date().toISOString().slice(0, 10);
+	const params = useParams();
 	return React.useMemo(
 		() => (initialGraph === undefined
 			? undefined
-			: interpolateParams(initialGraph, { today }).value as dyn.SearchGraph),
-		[initialGraph, today],
+			: interpolateParams(initialGraph, { ...params, today }).value as dyn.SearchGraph),
+		[initialGraph, today, params],
 	);
 }

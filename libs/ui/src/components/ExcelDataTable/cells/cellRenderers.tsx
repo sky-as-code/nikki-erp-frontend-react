@@ -71,17 +71,24 @@ export class MoneyFieldRenderer implements IFieldRenderer {
 	public readonly align: CellAlignment = 'right';
 	#symbol: string | undefined;
 	#fractionDigits: number | undefined;
+	#compact: boolean;
 
-	constructor(currencySymbol?: string, fractionDigits?: number) {
+	constructor(currencySymbol?: string, fractionDigits?: number, compact = false) {
 		this.#symbol = currencySymbol;
 		this.#fractionDigits = fractionDigits;
+		this.#compact = compact;
 	}
 
 	public render(rawValue: string, _translatedValue: string): React.ReactNode {
 		if (rawValue === '') {
 			return '';
 		}
-		return <LocalizedMoney value={rawValue} currencySymbol={this.#symbol} fractionDigits={this.#fractionDigits} />;
+		return (
+			<LocalizedMoney
+				value={rawValue} currencySymbol={this.#symbol} fractionDigits={this.#fractionDigits}
+				compact={this.#compact}
+			/>
+		);
 	}
 }
 

@@ -4,6 +4,7 @@ import React from 'react';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 
 import { SERVER_ERROR_TYPE, useServerErrorSetter } from './fieldErrors';
+import { FieldOccurrenceScope, useFieldOccurrenceIndex } from './fieldOccurrence';
 import { useDynamicModel } from '../../hookhoc/useDynamicModel';
 import { LocalizeFn } from '../../i18n';
 import { LoadingState } from '../Loading';
@@ -70,6 +71,8 @@ export function useFormField() {
 export function useFieldData(fieldName: string) {
 	const { errors, getFieldDef, formVariant, crudSchema } = useFormField();
 	const fieldDef = getFieldDef(fieldName);
+	// A field shown more than once on the form shows its error on the first copy only.
+	const isCopy = useFieldOccurrenceIndex(fieldName) > 0;
 
 	if (!fieldDef) {
 		return null;
@@ -79,7 +82,7 @@ export function useFieldData(fieldName: string) {
 	const description = fieldDef.description ? fieldDef.description : undefined;
 	const placeholder = fieldDef.placeholder ? fieldDef.placeholder : undefined;
 	const isRequired = Boolean((fieldDef as any)['is_required_for_' + formVariant]);
-	const fieldError = errors[fieldName];
+	const fieldError = isCopy ? undefined : errors[fieldName];
 	const rawError = fieldError?.message as string | undefined;
 	const isServerError = fieldError?.type === SERVER_ERROR_TYPE;
 	// Extract translation key from $ref format if present; a server message is already final text.
@@ -305,7 +308,7 @@ export function CrudFormProvider(props: CrudFormProviderProps): React.ReactNode 
 			}}
 		>
 			<CrudFormRuntimeContext.Provider value={runtime}>
-				{content}
+				<FieldOccurrenceScope>{content}</FieldOccurrenceScope>
 			</CrudFormRuntimeContext.Provider>
 		</FormFieldContext.Provider>
 	) : (props.loadingFallback ?? <LoadingState />);
@@ -377,7 +380,7 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 				getFieldDef: (fieldName) => props.modelSchema.fields[fieldName],
 			}}
 		>
-			{props.modelLoading ? <LoadingState /> : props.children({
+			{props.modelLoading ? <LoadingState /> : <FieldOccurrenceScope>{props.children({
 				handleSubmit: handleSubmit as any,
 				// This provider has no `onSubmit` of its own to report failure, so a completed
 				// submit is always reported as success.
@@ -395,7 +398,7 @@ export function AdhocFormProvider(props: AdhocFormProviderProps): React.ReactNod
 				errors,
 				dirtyFields,
 				setServerErrors,
-			})}
+			})}</FieldOccurrenceScope>}
 		</FormFieldContext.Provider>
 	);
 };

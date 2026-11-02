@@ -4,6 +4,7 @@ import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
 import { fieldErrorText } from './fieldErrors';
+import { fieldOccurrenceTestSegment, useFieldOccurrenceIndex } from './fieldOccurrence';
 import { BaseFieldWrapper } from './fields';
 import { useFieldData, useFormField } from './formContext';
 import { useFormTestIdPrefix } from './formTestIds';
@@ -11,7 +12,6 @@ import { recordLabelOf, useRecordSearchOptions } from './recordSearchOptions';
 import { RelationPickerModal } from './RelationPickerModal';
 import { useCommand } from '../../hookhoc/useCommand';
 import { useTranslate } from '../../i18n';
-import { SelectDefaultsContext } from '../SearchableSelect/dropdownWidth';
 import { DEFAULT_MAX_OPTIONS } from '../SearchableSelect/optionLimit';
 import { SearchableSelect } from '../SearchableSelect/SearchableSelect';
 
@@ -61,9 +61,11 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 	const [isPickerOpen, setIsPickerOpen] = React.useState(false);
 	const options = useRelationOptions(name, term, localize);
 	const testIdPrefix = useFormTestIdPrefix();
-	const fieldTestId = testIdPrefix ? `${testIdPrefix}.field.${name}` : undefined;
+	const copySegment = fieldOccurrenceTestSegment(useFieldOccurrenceIndex(name));
+	const fieldTestId = testIdPrefix
+		? [testIdPrefix, 'field', name, copySegment].filter(Boolean).join('.')
+		: undefined;
 	const t = useTranslate('common');
-	const { contentWidthDropdown } = React.useContext(SelectDefaultsContext);
 	const isDisabled = Boolean(
 		modelLoading || props.inputProps?.disabled
 		|| props.exclusiveDisabledBy || options.loadError,
@@ -93,8 +95,6 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 							// must match the inputs beside it, not paint in the theme's accent.
 							variant='input'
 							formField
-							// A table row's select opens wider than its cell; a form field matches its input.
-							dropdownWidth={contentWidthDropdown ? undefined : 'target'}
 							value={(field.value as string) ?? null}
 							onChange={val => field.onChange(val === '' ? undefined : val)}
 							// Null, not undefined: an update must tell the server to clear the reference.

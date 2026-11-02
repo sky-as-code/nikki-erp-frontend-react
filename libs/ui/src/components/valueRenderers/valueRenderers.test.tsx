@@ -33,7 +33,7 @@ function fakeBus(data: unknown): ICommandBus {
 
 const USER_CONTEXT = {
 	accountSettings: {
-		language: { isoCode: 'en-US', decimalSeparator: '.', thousandsSeparator: ',' },
+		language: { localeCode: 'en-US', decimalSeparator: '.', thousandsSeparator: ',' },
 		currency: { code: 'USD', symbol: '$', decimalPlaces: 2 },
 	},
 };

@@ -10,6 +10,9 @@ import { SalesPaymentCommands } from '../../features/sales/salesPayment/commands
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** The payment's own currency sets the decimal places shown. */
+const AMOUNT_RENDERER = { renderer: 'money', currencyField: 'currency_code' };
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
 	renderer: 'badge',
@@ -51,6 +54,7 @@ function buildSalesPaymentListProps() {
 		createEnabled: false,
 		fieldRenderers: {
 			status: STATUS_BADGE,
+			amount: AMOUNT_RENDERER,
 		},
 	});
 }
@@ -67,6 +71,7 @@ function buildSalesPaymentDetailProps() {
 		titleLvl1: { schemaField: 'payment_method_code_snapshot' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: { amount: AMOUNT_RENDERER },
 		standardActionCommands: {
 			getById: SalesPaymentCommands.GET_BY_ID,
 		},

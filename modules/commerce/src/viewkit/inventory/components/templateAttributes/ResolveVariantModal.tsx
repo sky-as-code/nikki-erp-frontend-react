@@ -1,7 +1,6 @@
 import { Alert, Group, Stack, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
 import { Button, LinkButton, Modal, Select } from '@nikkierp/ui/components';
-import { ExcelDataTable } from '@nikkierp/ui/components/ExcelDataTable';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useActionLock, useResourceBaseHref, useResourceFormView } from '@nikkierp/viewkit-mantine';
 import React from 'react';
@@ -28,12 +27,11 @@ const RESOLVABLE_MODES = new Set(['instant', 'dynamic']);
 type ActionProps = { label: string };
 
 /**
- * The left toolbar of the Attributes table, holding Resolve variant beside the lines it acts on.
- * It reads the SAVED configuration off the record, so it shows only for a saved template with at
- * least one saved line, and not while the form is edited: a resolve then would act on lines other
- * than the ones on screen.
+ * Resolve variant, in the Attributes section header. It reads the SAVED configuration off the record, so it
+ * shows only for a saved template with at least one saved line, and not while the form is edited: a resolve
+ * then would act on lines other than the ones on screen.
  */
-export function ResolveVariantToolbar(): React.ReactNode {
+export function ResolveVariantAction(): React.ReactNode {
 	const record = useTemplateRecord();
 	const updateMode = useResourceFormView()?.updateMode ?? false;
 	const text = useSectionText();
@@ -44,16 +42,15 @@ export function ResolveVariantToolbar(): React.ReactNode {
 	if (!record || updateMode || lines.length === 0) {
 		return null;
 	}
-	const button = (
+	return (
 		<ResolveVariantButton
 			record={record}
 			lines={lines}
 			catalogue={catalogue}
 			text={text}
-			label={text.t('product_template_config_resolve')}
+			label={text.t('product_template_config_resolveVariant', { defaultValue: 'Resolve variant' })}
 		/>
 	);
-	return <ExcelDataTable.Toolbar left={button} />;
 }
 
 type ResolveProps = {
@@ -76,6 +73,7 @@ function ResolveVariantButton({ label, ...props }: ResolveProps & ActionProps): 
 		<>
 			<Button
 				variant='outline'
+				size='compact-sm'
 				locked={lock.locked}
 				lockedMissing={lock.missing}
 				disabled={lines.length === 0}

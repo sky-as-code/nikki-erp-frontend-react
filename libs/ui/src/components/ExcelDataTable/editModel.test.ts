@@ -30,6 +30,18 @@ describe('isRowEditableField', () => {
 		}
 		expect(isRowEditableField(undefined, 'name')).toBe(false);
 	});
+
+	it('takes a field of no renderable type when a column editor owns it, never a key or no_update field', () => {
+		const withList = {
+			...schema,
+			fields: { ...schema.fields, tags: { name: 'tags', data_type: { name: 'model' } } },
+		} as unknown as dyn.ModelSchema;
+
+		expect(isRowEditableField(withList, 'tags')).toBe(false);
+		expect(isRowEditableField(withList, 'tags', true)).toBe(true);
+		expect(isRowEditableField(withList, 'id', true)).toBe(false);
+		expect(isRowEditableField(withList, 'code', true)).toBe(false);
+	});
 });
 
 describe('isRowCreatableField', () => {

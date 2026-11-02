@@ -1,5 +1,5 @@
 import { useTranslate } from '@nikkierp/ui/i18n';
-import { IconArrowRight, IconBan, IconCheck, IconCircleCheckFilled } from '@tabler/icons-react';
+import { IconArrowRight, IconBan, IconCheck } from '@tabler/icons-react';
 import clsx from 'clsx';
 import React from 'react';
 
@@ -12,7 +12,7 @@ import type { StatusOption } from '../../resourceDetail/props';
 type StepState = 'done' | 'current' | 'upcoming';
 
 /**
- * A record's status flow: the linear steps, done ones checked and the current one highlighted in
+ * A record's status flow: the linear steps, done ones checked and the current one highlighted (unchecked) in
  * the primary colour, arrows between them, then the alternative ends (Cancelled, …) apart from the flow. Inside a form
  * panel under 640px wide it shows a compact "Step x of y" instead (pure CSS, see the module).
  */
@@ -82,9 +82,6 @@ function StepIcon({ state, alternativeEnd }: { state: StepState, alternativeEnd?
 	const className = state === 'current' ? classes.currentIcon : classes.mutedIcon;
 	if (alternativeEnd) {
 		return <IconBan size={14} aria-hidden='true' className={className} />;
-	}
-	if (state === 'current') {
-		return <IconCircleCheckFilled size={14} aria-hidden='true' className={className} />;
 	}
 	return state === 'done' ? <IconCheck size={14} aria-hidden='true' className={className} /> : null;
 }

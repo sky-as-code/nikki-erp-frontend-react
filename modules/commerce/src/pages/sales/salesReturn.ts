@@ -10,6 +10,10 @@ import { SalesReturnCommands } from '../../features/sales/salesReturn/commands';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** No currency field of its own: amounts are in the organization's currency. */
+const MONEY_RENDERER = { renderer: 'money' };
+const REFUND_RENDERERS = { refund_total: MONEY_RENDERER, locked_refund_amount: MONEY_RENDERER };
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
 	renderer: 'badge',
@@ -53,6 +57,7 @@ function buildSalesReturnListProps() {
 		createEnabled: false,
 		fieldRenderers: {
 			status: STATUS_BADGE,
+			...REFUND_RENDERERS,
 		},
 	});
 }
@@ -69,6 +74,7 @@ function buildSalesReturnDetailProps() {
 		titleLvl1: { schemaField: 'return_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: REFUND_RENDERERS,
 		standardActionCommands: {
 			getById: SalesReturnCommands.GET_BY_ID,
 		},

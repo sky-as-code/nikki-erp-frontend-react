@@ -1,5 +1,7 @@
 import { Alert, Badge, Group, Stack, Table, Text } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
+import { LocalizedMoney, LocalizedNumber } from '@nikkierp/ui/components';
+import { useLocalizedFormatters } from '@nikkierp/ui/components/valueRenderers';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
 import { IconAlertTriangle } from '@tabler/icons-react';
@@ -35,6 +37,7 @@ const STATUS_COLOURS: Record<string, string> = {
 function TaxSimulatorResult(): React.ReactNode {
 	const { params, state } = useTaxSimulatorContext();
 	const translate = useTranslate(params.translationNs);
+	const formatters = useLocalizedFormatters();
 
 	if (state.error) {
 		return (
@@ -68,9 +71,9 @@ function TaxSimulatorResult(): React.ReactNode {
 				</Badge>
 				<Text size='sm' c='dimmed'>
 					{translate('tax.totals', {
-						excluded: calculation.total_excluded,
-						tax: calculation.total_tax,
-						included: calculation.total_included,
+						excluded: formatters.money(calculation.total_excluded),
+						tax: formatters.money(calculation.total_tax),
+						included: formatters.money(calculation.total_included),
 					})}
 				</Text>
 			</Group>
@@ -148,13 +151,12 @@ function LineOutcome({ line, translate }: {
 						</Table.Td>
 						<Table.Td>{translate(`calculation_type.${component.calculation_type}`)}</Table.Td>
 						{/*
-						  * Every figure is printed exactly as the backend sent it. They arrive as
-						  * strings and are never parsed into a JS number, which could not hold them
-						  * exactly — the whole reason the contract is string-typed end to end.
+						  * The figures arrive as strings and stay strings in the state: only their
+						  * display is localized, the rate keeping the fraction digits it was sent with.
 						  */}
-						<Table.Td>{component.rate}</Table.Td>
-						<Table.Td>{component.taxable_base}</Table.Td>
-						<Table.Td>{component.tax_amount}</Table.Td>
+						<Table.Td><LocalizedNumber value={component.rate} /></Table.Td>
+						<Table.Td><LocalizedMoney value={component.taxable_base} /></Table.Td>
+						<Table.Td><LocalizedMoney value={component.tax_amount} /></Table.Td>
 						<Table.Td>
 							<Text size='xs' c='dimmed'>{component.legal_reference ?? ''}</Text>
 						</Table.Td>

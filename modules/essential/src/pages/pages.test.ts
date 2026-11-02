@@ -2,6 +2,7 @@ import { findUngatedActions } from '@nikkierp/viewkit-mantine/actionCodes';
 import { RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE } from '@nikkierp/viewkit-mantine/ids';
 import { describe, expect, it } from 'vitest';
 
+import { buildCurrencyPages } from './currency';
 import { buildUomPages } from './uom';
 import { buildUomCatPages } from './uomcat';
 
@@ -12,6 +13,7 @@ import type { RelatedResource } from '@nikkierp/viewkit-mantine/props';
 const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'uom', build: buildUomPages },
 	{ name: 'uomcat', build: buildUomCatPages },
+	{ name: 'currency', build: buildCurrencyPages },
 ];
 
 describe('Essential page metadata', () => {

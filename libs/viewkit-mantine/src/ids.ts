@@ -116,8 +116,15 @@ export const FIELD_RENDERER_BADGE = 'badge';
 export const FIELD_RENDERER_TRANSLATED = 'translated';
 /** A decimal shown as money with a page-declared currency symbol; the schema has no money type. */
 export const FIELD_RENDERER_MONEY = 'money';
+export const FIELD_RENDERER_FIELD_TEXT = 'fieldText';
 export const FIELD_RENDERER_INTEGER = 'integer';
 export const FIELD_RENDERER_FLOAT = 'float';
 /** A filled badge with a translated label, coloured per value. */
 export const FIELD_RENDERER_ENUM = 'enum';
+/** An enum shown as the `enum` badge, edited as one radio per value (side by side from `sm`). */
+export const FIELD_RENDERER_RADIO = 'radio';
 export const FIELD_RENDERER_ATTRIBUTE_PILLS = 'attributePills';
+/** A strftime date/time pattern shown with what it prints today; its input adds the directive help. */
+export const FIELD_RENDERER_STRFTIME_FORMAT = 'strftimeFormat';
+/** A digit grouping (`[3,0]`) shown with a sample number grouped by it. */
+export const FIELD_RENDERER_NUMBER_GROUPING = 'numberGrouping';

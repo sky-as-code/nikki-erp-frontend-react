@@ -9,12 +9,16 @@ import React from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 
 import { useCreateDefault } from './createDefault';
+import segmentClasses from './currencySegment.module.css';
+import { useDatePickerFormat } from './datePickerFormat';
 import { DateTimeInputField, ReadOnlyTextField, TimeInputField } from './dateTimeFields';
 import { storedDateToPicker } from './dateTimeValues';
 import { fieldErrorText } from './fieldErrors';
 import { FieldDescriptionProvider, FieldLabelProvider, useFieldDescription, useFieldLabelHidden } from './fieldLabelContext';
+import { FieldOccurrenceProvider, useFieldHasCopies, useFieldOccurrence } from './fieldOccurrence';
 import { useFieldData, useFormField, useFormStyle } from './formContext';
 import { useFieldPartTestAttrs, useFieldTestAttrs } from './formTestIds';
+import { AutoWidthBox } from './inputWidth';
 import { LangJsonField } from './LangJsonField';
 import { isLongTextField, LongTextInput } from './longText';
 import { RelationSelectField } from './RelationSelectField';
@@ -42,15 +46,25 @@ export type AutoFieldProps = {
 	 * still show below the input. Unset inherits an enclosing `FieldLabelProvider`, else shown.
 	 */
 	labelHidden?: boolean,
+	/**
+	 * Replaces the data type's input with a page-chosen one (e.g. a format-pattern input), keeping
+	 * everything around it: the field's occurrence, description, hidden label and `no_update` rule.
+	 */
+	renderControl?: (props: AutoFieldProps) => React.ReactNode,
 };
 
 export function AutoField(props: AutoFieldProps) {
 	const { getFieldDef, localize } = useFormField();
 	const description = localizeFieldDescription(localize, getFieldDef(props.name)?.description);
+	const occurrence = useFieldOccurrence(props.name);
 	const control = (
-		<FieldDescriptionProvider description={description}>
-			<AutoFieldControl {...props} />
-		</FieldDescriptionProvider>
+		<AutoWidthBox fieldDef={getFieldDef(props.name)}>
+			<FieldOccurrenceProvider name={props.name} index={occurrence}>
+				<FieldDescriptionProvider description={description}>
+					<AutoFieldControl {...props} />
+				</FieldDescriptionProvider>
+			</FieldOccurrenceProvider>
+		</AutoWidthBox>
 	);
 	if (props.labelHidden === undefined) {
 		return control;
@@ -74,6 +88,9 @@ function AutoFieldControl(props: AutoFieldProps) {
 	// would invite a change that silently fails to save.
 	if (formVariant === 'update' && fieldDef.no_update) {
 		return <ReadOnlyTextField name={props.name} localize={localize} />;
+	}
+	if (props.renderControl) {
+		return props.renderControl(props);
 	}
 
 	const identityOrTemporal = renderIdentityOrTemporalField({
@@ -399,12 +416,13 @@ export type TextInputFieldProps = BaseInputProps<InputProps> & {
 };
 
 export function TextInputField(props: TextInputFieldProps) {
-	const { name, type, autoFocused, inputProps, htmlProps, ref } = props;
+	const { name, autoFocused, inputProps, ref } = props;
 	const t = props.localize;
 	const inputId = useId();
 	const fieldData = useFieldData(name);
-	const { register, modelValue, modelLoading, formVariant } = useFormField();
+	const { formVariant } = useFormField();
 	const defaultInputProps = useDefaultInputProps(inputProps, name);
+	const hasCopies = useFieldHasCopies(name);
 	useAutoFocus(autoFocused, ref, formVariant);
 
 	// Hooks stay above the guard: a field the current record has no data for must render nothing
@@ -414,15 +432,6 @@ export function TextInputField(props: TextInputFieldProps) {
 		return null;
 	}
 
-	const defaultValue = modelValue?.[name];
-	const registerResult = register(name);
-	const registerRef = (element: HTMLInputElement | null) => {
-		if (typeof registerResult.ref === 'function') {
-			registerResult.ref(element);
-		}
-		ref.current = element;
-	};
-
 	return (
 		<BaseFieldWrapper
 			inputId={inputId}
@@ -430,35 +439,80 @@ export function TextInputField(props: TextInputFieldProps) {
 			isRequired={fieldData.isRequired}
 			error={fieldErrorText(t, fieldData)}
 		>
-			{type === 'text' && isLongTextField(fieldData.fieldDef) ? (
-				<LongTextInput
-					id={inputId}
-					{...registerResult}
-					ref={registerRef as unknown as React.Ref<HTMLTextAreaElement>}
-					defaultValue={defaultValue}
-					error={fieldData.error}
-					disabled={modelLoading}
-					placeholder={t(fieldData.placeholder)}
-					size={defaultInputProps.size}
-					{...fieldTestAttrsOf(defaultInputProps)}
-				/>
-			) : (
-				<Input
-					id={inputId}
-					type={type}
-					{...registerResult}
-					ref={registerRef}
-					defaultValue={defaultValue}
-					error={fieldData.error}
-					disabled={modelLoading}
-					placeholder={t(fieldData.placeholder)}
-					withAria={false}
-					{...htmlProps}
-					{...defaultInputProps}
-				/>
-			)}
+			<TextInputControl
+				{...props} inputId={inputId} fieldData={fieldData} defaultInputProps={defaultInputProps}
+				controlled={hasCopies}
+			/>
 		</BaseFieldWrapper>
 	);
+}
+
+type TextInputControlProps = TextInputFieldProps & {
+	inputId: string,
+	fieldData: NonNullable<ReturnType<typeof useFieldData>>,
+	defaultInputProps: Partial<InputProps>,
+	/** Bind through a `Controller`: the form shows the field more than once, and every copy shows every keystroke. */
+	controlled: boolean,
+};
+
+type TextInputBinding = {
+	name: string,
+	ref?: React.Ref<HTMLInputElement> | ((element: HTMLInputElement | null) => void),
+	value?: unknown,
+	defaultValue?: unknown,
+	onChange: (...event: any[]) => unknown,
+	onBlur: (...event: any[]) => unknown,
+};
+
+/**
+ * The binding of a `TextInputField`'s input: `register` normally, or a `Controller` while the form shows
+ * the field more than once — a registered input's value is read from the one element react-hook-form
+ * holds a ref to. The aria props `BaseFieldWrapper` clones onto it pass through to the input.
+ */
+function TextInputControl({ controlled, ...props }: TextInputControlProps) {
+	const { register, control, modelValue } = useFormField();
+	if (!controlled) {
+		const binding = { ...register(props.name), defaultValue: modelValue?.[props.name] };
+		return <TextInputElement {...props} binding={binding} />;
+	}
+	return (
+		<Controller
+			name={props.name}
+			control={control}
+			render={({ field }) => <TextInputElement {...props} binding={{ ...field, value: field.value ?? '' }} />}
+		/>
+	);
+}
+
+function TextInputElement(props: Omit<TextInputControlProps, 'controlled'> & { binding: TextInputBinding }) {
+	const {
+		type, htmlProps, ref, inputId, fieldData, defaultInputProps, binding, localize: t,
+		name: _name, autoFocused: _autoFocused, inputProps: _inputProps, ...ariaProps
+	} = props;
+	const { modelLoading } = useFormField();
+	const { ref: bindingRef, value, defaultValue, ...handlers } = binding;
+	const inputRef = (element: HTMLInputElement | null) => {
+		if (typeof bindingRef === 'function') {
+			bindingRef(element);
+		}
+		ref.current = element;
+	};
+	const valueProps = value === undefined ? { defaultValue: defaultValue as string } : { value: value as string };
+	const shared = {
+		id: inputId, ...ariaProps, ...handlers, ...valueProps, error: fieldData.error, disabled: modelLoading,
+		placeholder: t(fieldData.placeholder),
+	};
+	if (type === 'text' && isLongTextField(fieldData.fieldDef)) {
+		return (
+			<LongTextInput
+				{...shared}
+				ref={inputRef as unknown as React.Ref<HTMLTextAreaElement>}
+				size={defaultInputProps.size}
+				{...fieldTestAttrsOf(defaultInputProps)}
+			/>
+		);
+	}
+	return <Input {...shared} type={type} ref={inputRef} withAria={false} {...htmlProps} {...defaultInputProps} />;
 }
 
 /** The `data-testid` the field's default input props carry, for an input that takes no density classes. */
@@ -588,7 +642,11 @@ export function NumberInputField(props: NumberInputFieldProps) {
 export type DecimalInputFieldProps = BaseInputProps<NumberInputProps> & {
 	/** Digits after the decimal point the schema allows, from `data_type.options.scale`. */
 	scale?: number,
+	/** A currency marker shown as a segment on its side of the amount; see `MoneyInputField`. */
+	currencySegment?: CurrencySegment,
 };
+
+export type CurrencySegment = { marker: string, position: 'before' | 'after' };
 
 /**
  * A `decimal` is carried as a **string** end to end, never as a JavaScript number.
@@ -599,7 +657,7 @@ export type DecimalInputFieldProps = BaseInputProps<NumberInputProps> & {
  * blank out a string value and drop the user's edit.
  */
 export function DecimalInputField(props: DecimalInputFieldProps) {
-	const { name, autoFocused, inputProps, htmlProps, ref, scale } = props;
+	const { name, autoFocused, inputProps, htmlProps, ref, scale, currencySegment } = props;
 	const t = props.localize;
 	const inputId = useId();
 	const fieldData = useFieldData(name);
@@ -646,6 +704,7 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 							}}
 							disabled={modelLoading}
 							decimalScale={scale}
+							{...currencySegmentProps(currencySegment)}
 							placeholder={fieldData.placeholder ? t(fieldData.placeholder) : undefined}
 							{...htmlProps}
 							{...(defaultInputProps as Partial<NumberInputProps>)}
@@ -655,6 +714,17 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 			/>
 		</BaseFieldWrapper>
 	);
+}
+
+/** The marker as a left or right section, sized to its text rather than to an icon slot. */
+export function currencySegmentProps(segment: CurrencySegment | undefined): Partial<NumberInputProps> {
+	if (!segment || !segment.marker) {
+		return {};
+	}
+	const section = <span className={segmentClasses.segment}>{segment.marker}</span>;
+	return segment.position === 'before'
+		? { leftSection: section, leftSectionWidth: 'auto', leftSectionPointerEvents: 'none' }
+		: { rightSection: section, rightSectionWidth: 'auto', rightSectionPointerEvents: 'none' };
 }
 
 export type DateInputFieldProps = BaseInputProps<DateInputProps>;
@@ -667,6 +737,7 @@ export function DateInputField(props: DateInputFieldProps) {
 	const { control, modelValue, modelLoading, formVariant } = useFormField();
 
 	const defaultInputProps = useDefaultInputProps(inputProps as Partial<InputProps>, name);
+	const pickerFormat = useDatePickerFormat(false);
 	useAutoFocusById(autoFocused, inputId, formVariant);
 
 	// Hooks stay above the guard: a field the current record has no data for must render nothing
@@ -702,6 +773,7 @@ export function DateInputField(props: DateInputFieldProps) {
 							disabled={modelLoading}
 							placeholder={t(fieldData.placeholder)}
 							ref={ref}
+							{...pickerFormat}
 							{...htmlProps}
 							{...(defaultInputProps as DateInputProps)}
 						/>

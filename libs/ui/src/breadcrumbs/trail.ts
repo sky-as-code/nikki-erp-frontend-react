@@ -13,6 +13,8 @@ export type LinkMode = 'sibling' | 'append' | 'root';
 export type TrailParent = {
 	path: string,
 	label?: string,
+	/** The parent's own parent, shown before it: the record a nested list hangs under (`Stock Transfer / Stock Moves`). */
+	parent?: TrailParent,
 };
 
 export type TrailNode = {

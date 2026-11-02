@@ -12,7 +12,6 @@ export type StockBackorderPolicy = 'ask' | 'always' | 'never';
 
 export type StockOperationType = {
 	id: string,
-	code?: string,
 	name?: dyn.ModelSchemaLangJson,
 	operation_code?: StockOperationCode,
 	reservation_method?: StockReservationMethod,

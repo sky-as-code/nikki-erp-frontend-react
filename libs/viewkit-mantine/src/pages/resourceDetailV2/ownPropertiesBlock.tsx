@@ -1,10 +1,12 @@
 import { ActionIcon, Group, Stack, Text } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { toDisplayedEntitlements } from '@nikkierp/common/entitlements';
+import { joinTestId } from '@nikkierp/common/utils';
 import { FieldLabelText, localizeFieldDescription, useShowLockedFeature } from '@nikkierp/ui/components';
 import { maskedFieldMissing } from '@nikkierp/ui/components/ExcelDataTable';
 import {
-	AutoField, ReadOnlyBooleanSwitch, RelationSearchScopeContext, useComputedField, useWatchedFormValues,
+	AutoField, fieldOccurrenceTestSegment, ReadOnlyBooleanSwitch, RelationSearchScopeContext, useComputedField,
+	useFieldOccurrence, useWatchedFormValues,
 } from '@nikkierp/ui/components/form';
 import { type LocalizeFn, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { IconLock } from '@tabler/icons-react';
@@ -29,6 +31,7 @@ import {
 import type { FieldVisibilityMode } from './fieldVisibility';
 import type { FormColumnField } from '../resourceDetail/formColumnFields';
 import type { OwnPropertySection } from '../resourceDetail/props';
+import type { IFieldRenderer } from '@nikkierp/viewengine/core';
 
 
 export function OwnPropertiesBlock({
@@ -116,11 +119,16 @@ export function FieldGroupVertical({
 	readOnlyFields?: string[],
 	relationSearch?: OwnPropertySection['relationSearch'],
 }): React.ReactNode {
-	const { stableFieldLayout } = useDetailFieldDisplay();
+	const { stableFieldLayout, fieldRenderers } = useDetailFieldDisplay();
 	const searchScopes = useRelationSearchScopes(relationSearch, mode);
 	const fieldNames = React.useMemo(() => columnFieldNames(fields), [fields]);
 	const lockOf = useFieldLockViews(fieldNames, mode, modelSchema);
 	const semantic = mode === 'read';
+	const localize = useLocalize(useResourceDetailTranslationNs());
+	const labelOf = (field: string): string => {
+		const label = modelSchema.fields[field]?.label;
+		return label ? localize(label) : field;
+	};
 	const renderField = (field: string, labelHidden: boolean): React.ReactNode => {
 		const asTerm = semantic && !labelHidden;
 		const presentation = readOnlyFields?.includes(field) && mode === 'update' && !isNeverShownField(field)
@@ -146,20 +154,29 @@ export function FieldGroupVertical({
 			);
 		}
 		const lockHint = lockedFieldHint(lockedFields, field, mode, fieldValues);
+		const disabled = isLoading || lockHint !== undefined;
 		return (
 			<Stack gap={4}>
 				<AutoField
-					name={field} labelHidden={labelHidden || undefined}
-					inputProps={{ disabled: isLoading || lockHint !== undefined }}
+					name={field} labelHidden={labelHidden || undefined} inputProps={{ disabled }}
+					renderControl={pageInputOf(fieldRenderers?.[field], disabled)}
 				/>
 				{lockHint ? <LockedFieldHint hint={lockHint} /> : null}
 			</Stack>
 		);
 	};
-	const body = <FieldRuns fields={fields} semantic={semantic} renderField={renderField} />;
+	const body = <FieldRuns fields={fields} semantic={semantic} renderField={renderField} labelOf={labelOf} />;
 	return searchScopes
 		? <RelationSearchScopeContext.Provider value={searchScopes}>{body}</RelationSearchScopeContext.Provider>
 		: body;
+}
+
+/** The page's own input for a field whose `fieldRenderers` entry renders one (`renderInput`). */
+function pageInputOf(
+	renderer: IFieldRenderer | undefined, disabled: boolean,
+): ((props: { name: string }) => React.ReactNode) | undefined {
+	const renderInput = renderer?.renderInput?.bind(renderer);
+	return renderInput ? props => renderInput(props.name, { disabled }) : undefined;
 }
 
 /**
@@ -206,6 +223,7 @@ function LockedFieldValue({
 	const localize = useLocalize(useResourceDetailTranslationNs());
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const showLocked = useShowLockedFeature();
+	const copy = fieldOccurrenceTestSegment(useFieldOccurrence(field));
 	const fieldDef = modelSchema.fields[field];
 	const messageKey = lock.kind === 'read' ? 'permission.field_read_locked' : 'permission.field_update_locked';
 	const onClick = (): void => {
@@ -224,7 +242,7 @@ function LockedFieldValue({
 					aria-label={t(messageKey, { expression: toDisplayedEntitlements(lock.missing).join(', ') })}
 					onClick={onClick}
 					data-locked='true'
-					data-testid={`resourceForm.fieldLock.${field}`}
+					data-testid={joinTestId('resourceForm.fieldLock', field, copy)}
 				>
 					<IconLock size={16} />
 				</ActionIcon>
@@ -293,7 +311,8 @@ function ReadOnlyFieldValue({
 
 	return (
 		<FieldPair asTerm={asTerm} label={label} valueClassName={fieldValueClass(fieldDef)}>
-			{relation ? (
+			{/* A page renderer for the field wins over the relation's label: the page chose how it reads. */}
+			{relation && !fieldRenderers?.[field] ? (
 				<EdgeFieldValue
 					relation={relation}
 					labelField={edgeLabels[relation.edge]}

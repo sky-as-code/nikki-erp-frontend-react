@@ -24,6 +24,8 @@ export const relatedAssignmentSchema = z.object({
 	actionScope: z.enum(['tenant', 'org', 'orgunit', 'private']).optional(),
 	/** i18n key of the insert button's label, translated with the tab's `translationNs`. */
 	newRowPrompt: z.string().min(1).optional(),
+	/** The table's `showNewRowBtn`: an "Add a line" button opens the insert row. Default: always open. */
+	showNewRowBtn: z.boolean().optional(),
 	/**
 	 * The column the insert row's record picker sits in, moved first. Defaults to the tab's first
 	 * field; name the record-label column when the first one is narrow (an avatar).

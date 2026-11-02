@@ -127,7 +127,7 @@ function patchTrail(trail: TrailNode[], path: string, patch: NodeInfoPatch): Tra
 			parent: patch.parent ?? node.parent,
 		};
 		const same = merged.registered === node.registered && merged.label === node.label
-			&& merged.parent?.path === node.parent?.path && merged.parent?.label === node.parent?.label;
+			&& JSON.stringify(merged.parent) === JSON.stringify(node.parent);
 		changed ||= !same;
 		return same ? node : merged;
 	});

@@ -56,6 +56,12 @@ export const resourceListV2PropsSchema = resourceListPropsSchema.extend({
 	 */
 	staticGraph: initialGraphSchema.optional(),
 	/**
+	 * A nested page's owning record, path-relative to the list (`'../'`), and its schema name. With both, a
+	 * breadcrumb trail of the list alone shows `{parent schema label}` linked to it.
+	 */
+	parentLink: z.string().min(1).optional(),
+	parentResource: z.string().min(1).optional(),
+	/**
 	 * i18n key of the list's title and breadcrumb, pluralised by `count` and translated with
 	 * `translationNs`, for a page that lists a subset under its own name. Absent, the schema label.
 	 */

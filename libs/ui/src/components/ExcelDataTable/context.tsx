@@ -80,6 +80,8 @@ export type NewRowConfig = {
 	searchCommand: string | undefined,
 	/** Replaces the idle insert button's default label. */
 	prompt: string | undefined,
+	/** The Provider's `showNewRowBtn`, default applied: off, the insert row is always open. */
+	showButton: boolean,
 	fieldEditors: Record<string, NewRowFieldEditor>,
 };
 

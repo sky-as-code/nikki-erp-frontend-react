@@ -1,6 +1,7 @@
 import { Grid, Group, Stack, TextInput } from '@mantine/core';
 import { testAttrs } from '@nikkierp/common/utils';
-import { Button, Select } from '@nikkierp/ui/components';
+import { Button, LocalizedNumberInput, Select } from '@nikkierp/ui/components';
+import { MoneyInput } from '@nikkierp/ui/components/form';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';
 import { useActionLock } from '@nikkierp/viewkit-mantine';
@@ -144,6 +145,25 @@ function DocumentFields({ state, translate }: SectionProps): React.ReactNode {
 	);
 }
 
+type AmountKind = 'quantity' | 'money';
+
+/** A numeric input bound to one input; the value stays a string, as the request sends it. */
+function AmountField({ name, labelKey, kind, state, translate }: SectionProps & {
+	name: keyof SimulatorInput,
+	labelKey: string,
+	kind: AmountKind,
+}): React.ReactNode {
+	const Input = kind === 'money' ? MoneyInput : LocalizedNumberInput;
+	return (
+		<Input
+			label={translate(labelKey)}
+			value={state.input[name]}
+			onChange={value => state.setField(name, String(value))}
+			{...testAttrs('accounting', 'taxSimulator', name)}
+		/>
+	);
+}
+
 /** Who is trading, and where — the facts a rule condition may test. */
 function PartyFields({ state, translate }: SectionProps): React.ReactNode {
 	const fields: { name: keyof SimulatorInput, labelKey: string }[] = [
@@ -182,18 +202,22 @@ function LineFields({ state, translate }: SectionProps): React.ReactNode {
 				/>
 			</Grid.Col>
 			<Grid.Col span={{ base: 12, md: 4 }}>
-				<Field name='quantity' labelKey='fields.quantity' state={state} translate={translate} />
+				<AmountField
+					name='quantity' labelKey='fields.quantity' kind='quantity' state={state} translate={translate}
+				/>
 			</Grid.Col>
 			<Grid.Col span={{ base: 12, md: 4 }}>
-				<Field name='unitPrice' labelKey='fields.unit_price' state={state} translate={translate} />
+				<AmountField
+					name='unitPrice' labelKey='fields.unit_price' kind='money' state={state} translate={translate}
+				/>
 			</Grid.Col>
 			<Grid.Col span={{ base: 12, md: 4 }}>
 				{/*
 				  * Left blank, quantity times price is used. Filled in, it wins: Sales computes the
 				  * base net of discount and Tax takes it as given rather than deriving it.
 				  */}
-				<Field
-					name='commercialBaseAmount' labelKey='fields.commercial_base_amount'
+				<AmountField
+					name='commercialBaseAmount' labelKey='fields.commercial_base_amount' kind='money'
 					state={state} translate={translate}
 				/>
 			</Grid.Col>

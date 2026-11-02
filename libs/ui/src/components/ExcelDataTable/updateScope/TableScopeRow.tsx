@@ -70,9 +70,10 @@ type TableScopeCellsProps = TableScopeRowProps & { runtime: FormProviderRenderPr
 
 function TableScopeCells({ item, rowId, rowNumber, runtime }: TableScopeCellsProps): React.ReactNode {
 	const context = useExcelDataTableContext();
-	const { columns, fields, modelSchema, selection, indexColumnVisible, tid } = context;
+	const { columns, fields, modelSchema, selection, indexColumnVisible, tid, rowFieldEditors } = context;
 	const editableFields = React.useMemo(
-		() => fields.filter(field => isRowEditableField(modelSchema, field)), [fields, modelSchema],
+		() => fields.filter(field => isRowEditableField(modelSchema, field, Boolean(rowFieldEditors[field]))),
+		[fields, modelSchema, rowFieldEditors],
 	);
 	const rowRef = React.useRef<HTMLTableRowElement | null>(null);
 	const write = useTableScopeWrite(item, runtime, editableFields);

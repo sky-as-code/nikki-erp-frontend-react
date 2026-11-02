@@ -6,6 +6,7 @@ import React from 'react';
 import { InlineFieldRow } from './inlineFieldRow';
 import classes from './ResourceDetail.module.css';
 import { formPanelSectionClass } from '../../components/formPanel/sectionClass';
+import { columnFieldNames } from '../resourceDetail/formColumnFields';
 
 import type { FormPanelSectionLayout } from '../../components/formPanel/sectionClass';
 import type { FormColumnField } from '../resourceDetail/formColumnFields';
@@ -33,49 +34,54 @@ export function FormSection({ block, title, children }: {
 export type RenderField = (field: string, labelHidden: boolean) => React.ReactNode;
 
 /**
- * A column's fields. In read mode they are `dl` pairs: each run of plain fields one `dl`, an inline
- * row between the runs (a sentence, not a label-value pair). Editing keeps one grid of inputs.
+ * A column's fields: one grid of inputs when editing, one `dl` of label-value pairs in read mode,
+ * field group displays included (each is a labelled pair too). A field listed twice renders twice,
+ * each copy under its own React key. `labelOf` names a group without a `label` after its first field.
  */
-export function FieldRuns({ fields, semantic, renderField }: {
+export function FieldRuns({ fields, semantic, renderField, labelOf }: {
 	fields: FormColumnField[],
 	semantic: boolean,
 	renderField: RenderField,
+	labelOf?: (field: string) => string,
 }): React.ReactNode {
-	const renderEntry = (entry: FormColumnField, index: number): React.ReactNode => (typeof entry === 'string'
-		? <React.Fragment key={entry}>{renderField(entry, false)}</React.Fragment>
-		: <InlineFieldRow key={`row-${index}`} items={entry} renderField={field => renderField(field, true)} />
-	);
+	const keys = entryKeys(fields);
+	const renderEntry = (entry: FormColumnField, index: number): React.ReactNode => {
+		if (typeof entry === 'string') {
+			return <React.Fragment key={keys[index]}>{renderField(entry, false)}</React.Fragment>;
+		}
+		const first = columnFieldNames([entry])[0];
+		return (
+			<InlineFieldRow
+				key={keys[index]} group={entry} asTerm={semantic}
+				fallbackLabel={first && labelOf ? labelOf(first) : first}
+				renderField={field => renderField(field, true)}
+			/>
+		);
+	};
 	if (!semantic) {
 		return <div className={classes.fieldGrid}>{fields.map(renderEntry)}</div>;
 	}
 	return (
 		<div className={classes.fieldRuns}>
-			{splitRuns(fields).map((run, index) => (Array.isArray(run)
-				? <dl key={`run-${index}`} className={classes.fieldGrid}>{run.map(renderEntry)}</dl>
-				: renderEntry(run.row, index)
-			))}
+			<dl className={classes.fieldGrid}>{fields.map(renderEntry)}</dl>
 		</div>
 	);
 }
 
-type FieldRun = string[] | { row: Exclude<FormColumnField, string> };
-
-function splitRuns(fields: FormColumnField[]): FieldRun[] {
-	const runs: FieldRun[] = [];
-	for (const entry of fields) {
+/**
+ * A React key per entry: a field's name, then `name#2`, `name#3`, … for its later copies; a field
+ * group display by its position.
+ */
+export function entryKeys(fields: readonly FormColumnField[]): string[] {
+	const seen = new Map<string, number>();
+	return fields.map((entry, index) => {
 		if (typeof entry !== 'string') {
-			runs.push({ row: entry });
-			continue;
+			return `row-${index}`;
 		}
-		const last = runs.at(-1);
-		if (Array.isArray(last)) {
-			last.push(entry);
-		}
-		else {
-			runs.push([entry]);
-		}
-	}
-	return runs;
+		const count = (seen.get(entry) ?? 0) + 1;
+		seen.set(entry, count);
+		return count === 1 ? entry : `${entry}#${count}`;
+	});
 }
 
 /** A field's label over its value: a `dt`/`dd` pair inside a `dl`, plain boxes elsewhere. */

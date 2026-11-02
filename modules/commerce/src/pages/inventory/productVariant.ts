@@ -58,15 +58,31 @@ function buildProductVariantListProps() {
 		// attributes and is never transacted. The condition seeds the filter panel, where it is
 		// switched to Base, or dropped for All.
 		initialGraph: COMPLETE_VARIANTS,
-		fieldRenderers: {
-			attribute_summary: { renderer: 'attributePills' },
-			...buildProductVariantEnumRenderers(),
-			effective_base_sales_price: MONEY_RENDERER,
-			cost: MONEY_RENDERER,
-			on_hand_quantity: FLOAT_RENDERER,
-		},
+		fieldRenderers: buildProductVariantFieldRenderers(),
 	});
 }
+
+/**
+ * How a variant row reads wherever variants are listed: this list and the template's Variants and
+ * Inventory tabs.
+ */
+export function buildProductVariantFieldRenderers() {
+	return {
+		attribute_summary: { renderer: 'attributePills' },
+		...buildProductVariantEnumRenderers(),
+		cost: MONEY_RENDERER,
+		effective_base_sales_price: MONEY_RENDERER,
+		on_hand_quantity: FLOAT_RENDERER,
+		reserved_quantity: FLOAT_RENDERER,
+		available_quantity: FLOAT_RENDERER,
+	};
+}
+
+/** The variant list's default columns less the template name, for a table that already sits on the template. */
+export const TEMPLATE_VARIANT_FIELDS = [
+	'sku', 'attribute_summary', 'effective_base_sales_price', 'cost', 'on_hand_quantity',
+	'product_template_uom_name', 'status',
+];
 
 /** The list's default filter, exported for its test. */
 export const COMPLETE_VARIANTS = { if: ['variant_kind', '=', 'complete'] };
@@ -74,11 +90,7 @@ export const COMPLETE_VARIANTS = { if: ['variant_kind', '=', 'complete'] };
 function buildProductVariantEnumRenderers() {
 	return {
 		// The base label names what it waits for, so it is not read as a sellable product.
-		variant_kind: {
-			renderer: 'enum',
-			colorMap: { complete: 'green', base: 'orange' },
-			prefix: 'variant_kind_label.',
-		},
+		variant_kind: { renderer: 'translated', prefix: 'variant_kind_label.' },
 		status: STATUS_BADGE,
 		archive_source: {
 			renderer: 'enum',
@@ -109,7 +121,7 @@ function buildProductVariantDetailProps() {
 			statuses: Object.keys(STATUS_BADGE.colorMap),
 			prefix: STATUS_BADGE.prefix,
 		}),
-		titleLvl1: { schemaField: 'product_template_name' },
+		titleLvl1: { schemaField: 'display_name' },
 		titleLvl2: { schemaField: 'sku' },
 		backLinkTitle: { linkHref: '../' },
 		// A variant without an image of its own shows its template's.
@@ -119,6 +131,8 @@ function buildProductVariantDetailProps() {
 			fallbackFileIdField: 'product_template_preview_image_file_id',
 		},
 		fieldRenderers: buildProductVariantDetailRenderers(),
+		// Create shows the same blocks as edit; a field it cannot take renders as read-only `-`.
+		stableFieldLayout: true,
 		standardActionCommands: {
 			getById: ProductVariantCommands.GET_BY_ID,
 			create: ProductVariantCommands.CREATE,
@@ -141,7 +155,7 @@ function buildProductVariantFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.identification',
-			fields: ['sku', 'primary_barcode', 'combination_key', 'product_template_id'],
+			fields: ['sku', 'display_name', 'primary_barcode', 'product_template_id'],
 		}),
 		// A base holds the instant values only; its completes add the dynamic ones and link back.
 		resourceFormColumnNode({
@@ -164,19 +178,28 @@ function buildProductVariantFieldsSection(): ComponentNode {
 		// list, and these are only the inputs to it.
 		resourceFormColumnNode({
 			header: 'form.pricing',
-			fields: ['cost', 'product_template_base_sales_price', 'effective_base_sales_price'],
+			fields: [
+				{ fields: ['@@cost', '$$common:per', '@@product_template_uom_symbol'] },
+				{ fields: ['@@product_template_base_sales_price', '$$common:per', '@@product_template_uom_symbol'] },
+				{ fields: ['@@effective_base_sales_price', '$$common:per', '@@product_template_uom_symbol'] },
+			],
 		}),
 		// Left empty, each of these inherits the template's default. Null means "inherited",
 		// never zero. See BR Â§6.4.
 		resourceFormColumnNode({
 			header: 'form.dimensions',
-			fields: ['weight', 'length', 'width', 'height'],
+			fields: [
+				{ fields: ['@@weight', '@@weight_uom_symbol'] },
+				{ fields: ['@@length', '@@dimension_uom_symbol'] },
+				{ fields: ['@@width', '@@dimension_uom_symbol'] },
+				{ fields: ['@@height', '@@dimension_uom_symbol'] },
+			],
 		}),
 		// archive_source is what lets unarchiving a template restore only the variants it
-		// took down, so it is shown rather than hidden. See BR Â§8.9.
+		// took down, so it is shown rather than hidden; `status` is the status strip's. See BR Â§8.9.
 		resourceFormColumnNode({
 			header: 'form.audit',
-			fields: ['status', 'archive_source'],
+			fields: ['archive_source'],
 		}),
 	]);
 }
@@ -221,16 +244,21 @@ function buildVariantInventoryResource() {
 			'location_id', 'on_hand_quantity', 'reserved_quantity',
 			'available_quantity', 'base_uom_id', 'lot_ref',
 		],
+		fieldRenderers: {
+			on_hand_quantity: FLOAT_RENDERER,
+			reserved_quantity: FLOAT_RENDERER,
+			available_quantity: FLOAT_RENDERER,
+		},
 		linkField: 'id',
 		linkRoutePath: 'inventory_stock_quant',
 		testId: 'inventory.variantInventory',
 	};
 }
 
-/** How the variant has moved, open and completed alike. */
+/** The variant's moves, open and completed alike; each row opens the stock transfer that carries it. */
 function buildVariantMovementsResource() {
 	return {
-		label: 'product_variant_sections_movements',
+		label: 'product_variant_sections_stock_transfers',
 		schemaName: c.STOCK_MOVE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		searchCommand: StockMoveCommands.SEARCH,
@@ -239,6 +267,7 @@ function buildVariantMovementsResource() {
 			'status', 'demand_quantity', 'source_location_id',
 			'destination_location_id', 'scheduled_at',
 		],
+		fieldRenderers: { demand_quantity: FLOAT_RENDERER },
 		// Rows point at the transfer that carries them: a move has no page of its own,
 		// and the transfer is the document a user acts on.
 		linkField: 'transfer_id',

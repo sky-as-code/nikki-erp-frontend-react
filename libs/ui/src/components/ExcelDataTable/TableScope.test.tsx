@@ -142,7 +142,6 @@ describe('ExcelDataTable updateScope=table writes and modes', () => {
 	it('turns an added line into an ordinary editable row', async () => {
 		render(<StatefulHost {...tableScope} capabilities={['update', 'create']} fieldEditors={textEditors} />);
 		await rowsReady();
-		fireEvent.click(screen.getByTestId('t.table.addLine'));
 		const newName = await screen.findByTestId('t.table.newRow.input.name');
 		const input = newName.querySelector('input') as HTMLInputElement;
 		fireEvent.change(input, { target: { value: 'Delta' } });

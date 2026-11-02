@@ -33,33 +33,17 @@ function buildStockOperationTypeListProps() {
 		archiveCommand: StockOperationTypeCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: StockOperationTypeCommands.UPDATE,
 		updateCommand: StockOperationTypeCommands.UPDATE,
-		fieldRenderers: buildStockOperationTypeBadges(),
+		fieldRenderers: buildStockOperationTypeTexts(),
 	});
 }
 
-/** The four policies are enums: each value reads as a translated badge. */
-function buildStockOperationTypeBadges() {
+/** The operation and its three policies are enums: each value reads as its translation, in plain text. */
+function buildStockOperationTypeTexts() {
 	return {
-		operation_code: {
-			renderer: 'badge',
-			colorMap: { incoming: 'green', outgoing: 'orange', internal: 'blue' },
-			prefix: 'operation_code.',
-		},
-		reservation_method: {
-			renderer: 'badge',
-			colorMap: { at_confirmation: 'teal', manual: 'gray', before_scheduled_date: 'indigo' },
-			prefix: 'reservation_method.',
-		},
-		backorder_policy: {
-			renderer: 'badge',
-			colorMap: { ask: 'yellow', always: 'blue', never: 'red' },
-			prefix: 'backorder_policy.',
-		},
-		shipping_policy: {
-			renderer: 'badge',
-			colorMap: { partial: 'cyan', all_at_once: 'violet' },
-			prefix: 'shipping_policy.',
-		},
+		operation_code: { renderer: 'translated', prefix: 'operation_code.' },
+		reservation_method: { renderer: 'translated', prefix: 'reservation_method.' },
+		backorder_policy: { renderer: 'translated', prefix: 'backorder_policy.' },
+		shipping_policy: { renderer: 'translated', prefix: 'shipping_policy.' },
 	} as const;
 }
 
@@ -68,7 +52,6 @@ function buildStockOperationTypeDetailProps() {
 		schemaName: c.STOCK_OPERATION_TYPE_SCHEMA_NAME,
 		translationNs: c.INVENTORY_MODULE,
 		titleLvl1: { schemaField: 'name' },
-		titleLvl2: { schemaField: 'code' },
 		backLinkTitle: { linkHref: '../' },
 		standardActionCommands: {
 			getById: StockOperationTypeCommands.GET_BY_ID,
@@ -94,7 +77,7 @@ function buildStockOperationTypeFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['code', 'name', 'operation_code'],
+			fields: ['name', 'operation_code'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.defaultLocations',

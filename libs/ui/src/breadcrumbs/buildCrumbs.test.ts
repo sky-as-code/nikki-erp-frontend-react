@@ -18,6 +18,21 @@ describe('buildCrumbs', () => {
 		expect(crumbs[1].href).toBeUndefined();
 	});
 
+	it('puts the owning record of a nested page before its list parent, both linked as history roots', () => {
+		const transfer = { path: '/commerce/inventory_stock_transfer/T1', label: 'Stock Transfer' };
+		const moves = { path: '/commerce/inventory_stock_transfer/T1/inventory_stock_move', label: 'Stock Moves', parent: transfer };
+		const move = `${moves.path}/M1`;
+		const crumbs = buildCrumbs({ trail: [{ path: move }], nodePath: move, lastNodeLabel: 'Coffee', rootParent: moves });
+
+		expect(labels(crumbs)).toEqual(['Stock Transfer', 'Stock Moves', 'Coffee']);
+		expect(crumbs.slice(0, 2).map(crumb => [crumb.href, crumb.isHistoryRoot])).toEqual([
+			[transfer.path, true], [moves.path, true],
+		]);
+		expect(labels(buildCrumbs({
+			trail: [{ path: moves.path }], nodePath: moves.path, rootParent: transfer, hideLastNode: true,
+		}))).toEqual(['Stock Transfer']);
+	});
+
 	it('uses the parent stored on the first node when the page is deeper', () => {
 		const trail = [{ ...brandB, parent: brands }, product];
 		expect(labels(buildCrumbs({ trail, nodePath: product.path }))).toEqual(['Brands', 'Brand B', 'Product P']);

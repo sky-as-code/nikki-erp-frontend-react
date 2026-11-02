@@ -14,6 +14,12 @@ import { SalesPaymentCommands } from '../../features/sales/salesPayment/commands
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** Amounts are in the document's own currency, which sets the decimal places shown. */
+const DOC_MONEY_RENDERER = { renderer: 'money', currencyField: 'currency_code' };
+/** A line row carries no currency code, so its amounts read in the default currency. */
+const ROW_MONEY_RENDERER = { renderer: 'money' };
+const FLOAT_RENDERER = { renderer: 'float' };
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
 	renderer: 'badge',
@@ -76,6 +82,12 @@ function buildSalesBillDetailProps() {
 		titleLvl1: { schemaField: 'bill_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: {
+			subtotal: DOC_MONEY_RENDERER,
+			discount_total: DOC_MONEY_RENDERER,
+			tax_total: DOC_MONEY_RENDERER,
+			total_amount: DOC_MONEY_RENDERER,
+		},
 		standardActionCommands: {
 			getById: SalesBillCommands.GET_BY_ID,
 			update: SalesBillCommands.UPDATE,
@@ -162,6 +174,12 @@ function buildSalesBillLinesResource() {
 		initialGraph: { if: ['sales_bill_id', '=', '${id}'] },
 		fields: ['sales_order_line_id', 'quantity', 'allocated_net_amount',
 			'allocated_tax_amount', 'allocated_total_amount'],
+		fieldRenderers: {
+			quantity: FLOAT_RENDERER,
+			allocated_net_amount: ROW_MONEY_RENDERER,
+			allocated_tax_amount: ROW_MONEY_RENDERER,
+			allocated_total_amount: ROW_MONEY_RENDERER,
+		},
 	};
 }
 
@@ -179,6 +197,7 @@ function buildSalesBillPaymentsResource() {
 		fields: ['paid_at', 'payment_method_code_snapshot', 'amount', 'currency_code',
 			'status', 'external_transaction_id'],
 		fieldRenderers: {
+			amount: DOC_MONEY_RENDERER,
 			status: {
 				renderer: 'badge',
 				colorMap: {

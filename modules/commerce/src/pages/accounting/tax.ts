@@ -13,6 +13,12 @@ import { TaxRateVersionCommands } from '../../features/accounting/commands';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** A rate is a percentage (8 means 8%); a fixed amount is in the version's own currency. */
+const RATE_RENDERERS = {
+	rate: { renderer: 'float', precision: 2 },
+	fixed_amount: { renderer: 'money', currencyField: 'currency_code' },
+};
+
 /**
  * Taxes: the stable business identity quoted on an invoice and in law.
  *
@@ -146,6 +152,7 @@ function buildRateVersionsResource() {
 		fields: ['version_no', 'rate', 'fixed_amount', 'currency_code', 'lifecycle_status',
 			'effective_from', 'effective_to'],
 		fieldRenderers: {
+			...RATE_RENDERERS,
 			lifecycle_status: { renderer: 'translated', prefix: 'lifecycle_status.' },
 		},
 	};

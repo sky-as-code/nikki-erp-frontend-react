@@ -32,6 +32,11 @@ export type ExcelDataTableProviderProps = ExcelDataTableRowWriteProps & ExcelDat
 	/** Names the table in test ids (`ui.{tableName}`) when no `testId` is given. */
 	tableName?: string,
 	modelSchema?: dyn.ModelSchema,
+	/**
+	 * `modelSchema` is declared by the page and has no backend counterpart (a section's own row shape), so the
+	 * row forms use it as given instead of fetching a schema of that name. A grouped table always does.
+	 */
+	localModelSchema?: boolean,
 	/** Schemas reached through an edge, keyed by schema name, for columns named `edge.field`. */
 	relatedSchemas?: Record<string, dyn.ModelSchema>,
 	data: SearchData,
@@ -162,8 +167,8 @@ export function ExcelDataTableProvider(props: ExcelDataTableProviderProps) {
 		// Table scope has no row editor, nor has a grouped table: a double-click or Enter must not open one.
 		canUpdateRows: rows.canUpdateRows && rows.updateScope === 'row' && !rowSpan,
 		rowSpan,
-		// A grouped table's flat schema exists only here, so its row forms must not fetch one by name.
-		rowFormSchema: rowSpan ? modelSchema : undefined,
+		// A grouped table's flat schema, like a local one, exists only here: its row forms must not fetch one by name.
+		rowFormSchema: rowSpan || props.localModelSchema ? modelSchema : undefined,
 		refresh: props.onRefresh ?? noopRefresh,
 		translationNs: props.translationNs,
 		translateFieldName: props.translateFieldName ?? schemaFieldName,

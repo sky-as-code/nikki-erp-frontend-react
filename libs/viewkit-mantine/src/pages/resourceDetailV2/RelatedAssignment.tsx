@@ -56,7 +56,7 @@ export function useAssignmentWriteProps(resource: RelatedResource): ExcelDataTab
 			capabilities: ['create', 'delete'], onCreated, onDeleted,
 			...assignmentEntitlements(assignment, resource.schemaName),
 			newRowSource: 'server-resource', newRowResourceSchema: assignment.pickerSchemaName,
-			newRowSearchField: searchField, newRowPrompt: prompt,
+			newRowSearchField: searchField, newRowPrompt: prompt, showNewRowBtn: assignment.showNewRowBtn,
 			btnDeleteLabel: assignment.btnDeleteLabel ?? 'common:action.unassign',
 		};
 	}, [assignment, resource.schemaName, onCreated, onDeleted, searchField, prompt]);

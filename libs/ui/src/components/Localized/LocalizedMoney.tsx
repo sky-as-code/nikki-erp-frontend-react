@@ -1,8 +1,10 @@
 import React from 'react';
 
-import { currencyMarkerOf, useFormatDefaults, useFormatLocale } from './formatDefaults';
+import { currencyMarkerOf } from './formatDefaults';
 import { formatLocalizedMoney } from './localizedFormat';
+import { useValueFormatDefaults } from '../valueRenderers/useValueFormatDefaults';
 
+import type { SymbolPosition } from './localizedFormat';
 import type { LocalizedNumberProps } from './LocalizedNumber';
 
 
@@ -15,6 +17,8 @@ export type LocalizedMoneyProps = LocalizedNumberProps & {
 	 * still renders — as a plain number, which is better than one marked in the wrong currency.
 	 */
 	currencySymbol?: string,
+	/** Where the symbol goes; defaults to the user's currency's own placement, then the locale's. */
+	symbolPosition?: SymbolPosition,
 };
 
 /**
@@ -22,14 +26,18 @@ export type LocalizedMoneyProps = LocalizedNumberProps & {
  * the locale's position. Both share `formatLocalizedNumber`'s parsing and fraction-digit rules.
  */
 export function LocalizedMoney({
-	value, locale, fractionDigits, decimalSeparator, thousandsSeparator, currencySymbol, className,
+	value, locale, fractionDigits, decimalSeparator, thousandsSeparator, grouping, currencySymbol, symbolPosition,
+	compact, className,
 }: LocalizedMoneyProps) {
-	const defaults = useFormatDefaults();
+	const defaults = useValueFormatDefaults();
 	const marker = currencySymbol ?? currencyMarkerOf(defaults.currency) ?? '';
-	const text = formatLocalizedMoney(value, useFormatLocale(locale), marker, {
+	const text = formatLocalizedMoney(value, locale ?? defaults.locale, marker, {
 		fractionDigits: fractionDigits ?? defaults.currency?.decimalPlaces,
 		decimalSeparator: decimalSeparator ?? defaults.decimalSeparator,
 		thousandsSeparator: thousandsSeparator ?? defaults.thousandsSeparator,
+		grouping: grouping ?? defaults.grouping,
+		symbolPosition: symbolPosition ?? defaults.currency?.symbolPosition,
+		compact,
 	});
 	return <span className={className}>{text}</span>;
 }

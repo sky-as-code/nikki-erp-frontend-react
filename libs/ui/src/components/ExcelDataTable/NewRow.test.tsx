@@ -6,6 +6,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
 	makeData, MultiSelectEditor, polyfillDom, renderTable, SelectEditor, StatefulHost, TableHarness, textEditors,
 } from './tableTestHarness';
+import { EntitlementProvider } from '../PermissionGuard/entitlementContext';
 
 import type { NewRowFieldEditor } from './types';
 
@@ -39,7 +40,6 @@ afterEach(cleanup);
 const nameInput = () => screen.getByTestId('t.table.newRow.input.name').querySelector('input') as HTMLInputElement;
 
 async function openInsertRow(): Promise<void> {
-	fireEvent.click(screen.getByTestId('t.table.addLine'));
 	await screen.findByTestId('t.table.newRow');
 }
 
@@ -58,12 +58,85 @@ async function highlightFirstOption(select: HTMLInputElement): Promise<void> {
 	await waitFor(() => expect(document.querySelector('[data-combobox-selected]')).not.toBeNull());
 }
 
-describe('ExcelDataTable insert row', () => {
-	it('focuses its first input when it opens', async () => {
-		renderTable({ capabilities: ['create'], onCreated: () => undefined, fieldEditors: textEditors });
+describe('ExcelDataTable insert row, always open (default)', () => {
+	const createProps = { onCreated: () => undefined, fieldEditors: textEditors };
+
+	it('shows the insert row on an empty table, without "No data" or an Add a line button', async () => {
+		renderTable({ ...createProps, capabilities: ['create'], data: makeData([]) });
 		await openInsertRow();
+		expect(screen.queryByTestId('t.table.empty')).toBeNull();
+		expect(screen.queryByTestId('t.table.addLine')).toBeNull();
+	});
+
+	it('takes no focus on mount', async () => {
+		renderTable({ ...createProps, capabilities: ['create'] });
+		await openInsertRow();
+		expect(document.activeElement).not.toBe(nameInput());
+	});
+
+	it.each([
+		['Discard', () => fireEvent.click(screen.getByTestId('t.table.newRow.discard'))],
+		['Escape', () => fireEvent.keyDown(nameInput(), { key: 'Escape' })],
+	])('clears the inputs on %s and keeps the row open', async (_, discard) => {
+		renderTable({ ...createProps, capabilities: ['create'] });
+		await openInsertRow();
+		fireEvent.change(nameInput(), { target: { value: 'Delta' } });
+		discard();
+		await waitFor(() => expect(nameInput().value).toBe(''));
+		expect(screen.getByTestId('t.table.newRow')).toBeTruthy();
+	});
+
+	it('renders a locked create with its Add locked, and adds nothing', async () => {
+		const onCreated = vi.fn();
+		render(
+			<EntitlementProvider value={{ context: { entitlements: [], userOrgIds: [] } }}>
+				<TableHarness
+					capabilities={['create']}
+					onCreated={onCreated}
+					fieldEditors={textEditors}
+					createEntitlement='create:test_line:tenant'
+				/>
+			</EntitlementProvider>,
+		);
+		await openInsertRow();
+		expect(screen.getByTestId('t.table.newRow.add').getAttribute('data-locked')).toBe('true');
+		fireEvent.change(nameInput(), { target: { value: 'Delta' } });
+		fireEvent.keyDown(nameInput(), { key: 'Enter' });
+		await act(async () => undefined);
+		expect(onCreated).not.toHaveBeenCalled();
+	});
+
+	it('renders nothing for a table that cannot create', () => {
+		renderTable({ data: makeData([]) });
+		expect(screen.queryByTestId('t.table.newRow')).toBeNull();
+		expect(screen.getByTestId('t.table.empty')).toBeTruthy();
+	});
+});
+
+describe('ExcelDataTable insert row behind the Add a line button (showNewRowBtn)', () => {
+	it('keeps "No data" and the button, and focuses the first input when the row opens', async () => {
+		renderTable({
+			capabilities: ['create'], onCreated: () => undefined, fieldEditors: textEditors, showNewRowBtn: true,
+			data: makeData([]),
+		});
+		expect(screen.getByTestId('t.table.empty')).toBeTruthy();
+		expect(screen.queryByTestId('t.table.newRow')).toBeNull();
+		fireEvent.click(screen.getByTestId('t.table.addLine'));
+		await screen.findByTestId('t.table.newRow');
 		await waitFor(() => expect(document.activeElement).toBe(nameInput()));
 	});
+
+	it('closes the row on Discard', async () => {
+		renderTable({ capabilities: ['create'], onCreated: () => undefined, fieldEditors: textEditors, showNewRowBtn: true });
+		fireEvent.click(screen.getByTestId('t.table.addLine'));
+		await screen.findByTestId('t.table.newRow');
+		fireEvent.click(screen.getByTestId('t.table.newRow.discard'));
+		await waitFor(() => expect(screen.queryByTestId('t.table.newRow')).toBeNull());
+		expect(screen.getByTestId('t.table.addLine')).toBeTruthy();
+	});
+});
+
+describe('ExcelDataTable insert row', () => {
 
 	it('adds on Enter, then opens a fresh insert row with its first input focused', async () => {
 		const writes: unknown[] = [];

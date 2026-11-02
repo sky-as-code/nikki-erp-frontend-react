@@ -67,7 +67,7 @@ function LangSwitcher(): React.ReactNode {
 	const persistLanguage = usePersistLanguage();
 	// Derived from i18n on every render, never held in state: the selection must name the language
 	// the interface is actually shown in, whoever changed it.
-	const current = languages.find(language => language.isoCode === i18n.language)?.isoCode ?? null;
+	const current = languages.find(language => language.localeCode === i18n.language)?.localeCode ?? null;
 
 	const handleChange = (code: string) => {
 		if (code === current) return;
@@ -87,12 +87,12 @@ function LangSwitcher(): React.ReactNode {
 					<Radio.Card
 						className={classes.root}
 						radius='md'
-						value={language.isoCode}
-						key={language.isoCode}
-						{...testAttrs(TEST_ID, 'option', language.isoCode)}
+						value={language.localeCode}
+						key={language.localeCode}
+						{...testAttrs(TEST_ID, 'option', language.localeCode)}
 					>
 						<Flex wrap='nowrap' align='center' justify='flex-start'>
-							<Box mr='md' fz={24} lh='24px'>{FLAGS[language.isoCode] ?? ''}</Box>
+							<Box mr='md' fz={24} lh='24px'>{FLAGS[language.localeCode] ?? ''}</Box>
 							<Text w='100%' className={classes.label}>{language.name}</Text>
 							<Radio.Indicator />
 						</Flex>

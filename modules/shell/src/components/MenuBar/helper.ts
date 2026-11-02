@@ -21,13 +21,18 @@ export function isPathActive(link: string, currentPath: string): boolean {
 	const normalizedLink = normalizePath(link);
 	const normalizedCurrentPath = normalizePath(currentPath);
 
-	if (normalizedLink === normalizedCurrentPath) return true;
+	// A module's index link (`/` → `/{slug}/`) is active on `/{slug}` itself, but not on its subpages.
+	if (withoutTrailingSlash(normalizedLink) === withoutTrailingSlash(normalizedCurrentPath)) return true;
 
 	if (normalizedCurrentPath.startsWith(normalizedLink) && normalizedLink !== '/') {
 		const nextChar = normalizedCurrentPath[normalizedLink.length];
 		return nextChar === undefined || nextChar === '/' || nextChar === '?';
 	}
 	return false;
+}
+
+function withoutTrailingSlash(path: string): string {
+	return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
 }
 
 // Check if any nested item is active

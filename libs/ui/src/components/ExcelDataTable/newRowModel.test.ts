@@ -30,6 +30,7 @@ function config(overrides: Partial<NewRowConfig> = {}): NewRowConfig {
 		searchField: undefined,
 		searchCommand: undefined,
 		prompt: undefined,
+		showButton: false,
 		fieldEditors: {},
 		...overrides,
 	};

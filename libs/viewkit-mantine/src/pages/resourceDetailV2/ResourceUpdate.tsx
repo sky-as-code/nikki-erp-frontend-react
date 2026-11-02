@@ -21,6 +21,7 @@ import {
 import { useResourceDetailContext } from '../resourceDetail/ResourceDetailProvider';
 
 import type { StatusPlacement } from './resourceUpdateContext';
+import type { ParentResourceSpec } from '../../components/pageHeader/parentResource';
 import type { ResourceThumbnailSpec } from '../../components/resourceThumbnail/props';
 import type {
 	LinkSpec, ResourceDetailContextualActions,
@@ -37,6 +38,7 @@ export type ResourceUpdateProps = {
 	titleLvl1?: SchemaFieldSpec,
 	titleLvl2?: SchemaFieldSpec,
 	backLinkTitle?: LinkSpec,
+	parentResource?: ParentResourceSpec,
 	thumbnail?: ResourceThumbnailSpec,
 	statusPlacement?: StatusPlacement,
 	childrenNodes?: ComponentNode[],
@@ -163,6 +165,7 @@ export function ResourceUpdateProvider(
 			titleLvl1: props.titleLvl1,
 			titleLvl2: props.titleLvl2,
 			backLinkTitle: props.backLinkTitle,
+			parentResource: props.parentResource,
 			thumbnail: props.thumbnail,
 			statusPlacement: props.statusPlacement,
 			childrenNodes: props.childrenNodes,
@@ -180,7 +183,8 @@ export function ResourceUpdateProvider(
 			commands, resource, maskedFields, edgeLabels, getByIdCmd.isPending, updateCmd.isPending,
 			refresh, onSubmit, updateCmd.clientErrors, updateCmd.error, getByIdCmd.error, notFound,
 			props.allStatuses, props.currentStatus, props.contextualActions, props.statusPlacement,
-			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.thumbnail, props.childrenNodes,
+			props.titleLvl1, props.titleLvl2, props.backLinkTitle, props.parentResource, props.thumbnail,
+			props.childrenNodes,
 			afterSave.register, afterSave.hasPending, afterSave.isRunning, afterSave.submitAfterSaveOnly,
 			registerFileField, hasPendingFiles, payloadContributors.register, payloadContributors.hasPending,
 			payloadContributors.ownsErrorField,

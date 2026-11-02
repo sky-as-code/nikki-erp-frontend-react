@@ -18,6 +18,9 @@ import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 /** Amounts are in the order's own currency, which sets the decimal places shown. */
 const SALES_ORDER_MONEY_RENDERER = { renderer: 'money', currencyField: 'currency_code' };
+/** A line or adjustment row carries no currency code, so its amounts read in the default currency. */
+const ROW_MONEY_RENDERER = { renderer: 'money' };
+const FLOAT_RENDERER = { renderer: 'float' };
 
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
@@ -185,6 +188,11 @@ function buildSalesOrderKioskFulfillmentResources() {
 			initialGraph: { if: ['fulfillment.sales_order_id', '=', '${id}'] },
 			fields: ['product_variant_id', 'ordered_qty', 'fulfilled_qty', 'refunded_qty', 'item_status',
 				'source_location_id', 'inventory_reservation_ref'],
+			fieldRenderers: {
+				ordered_qty: FLOAT_RENDERER,
+				fulfilled_qty: FLOAT_RENDERER,
+				refunded_qty: FLOAT_RENDERER,
+			},
 			linkField: 'inventory_reservation_ref',
 			// A leading slash names the owning module absolutely, so the link keeps working
 			// wherever this section is embedded.
@@ -352,6 +360,12 @@ function buildSalesOrderLinesResource() {
 				},
 				prefix: 'line_type.',
 			},
+			ordered_quantity: FLOAT_RENDERER,
+			effective_unit_price: ROW_MONEY_RENDERER,
+			discount_amount: ROW_MONEY_RENDERER,
+			net_amount: ROW_MONEY_RENDERER,
+			tax_amount: ROW_MONEY_RENDERER,
+			final_amount: ROW_MONEY_RENDERER,
 		},
 	};
 }
@@ -383,6 +397,8 @@ function buildSalesOrderAdjustmentsResource() {
 				},
 				prefix: 'adjustment_type.',
 			},
+			base_amount: ROW_MONEY_RENDERER,
+			adjustment_amount: ROW_MONEY_RENDERER,
 		},
 	};
 }

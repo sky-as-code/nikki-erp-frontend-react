@@ -1,6 +1,6 @@
 import { Alert, Center, Divider, Loader, Stack, Text } from '@mantine/core';
 import { translateClientError } from '@nikkierp/common/types';
-import { Button, useFormatLocale } from '@nikkierp/ui/components';
+import { Button, useValueFormatDefaults } from '@nikkierp/ui/components';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { IconAlertCircle, IconHistory, IconMessageCircle } from '@tabler/icons-react';
 import React from 'react';
@@ -46,8 +46,11 @@ export function HistoryTab(): React.ReactNode {
 }
 
 function HistoryDays({ history }: { history: ResourceHistoryState }): React.ReactNode {
-	const locale = useFormatLocale();
-	const groups = React.useMemo(() => groupHistoryByDay(history.items, locale), [history.items, locale]);
+	const formats = useValueFormatDefaults();
+	const { locale, dateFormat } = formats;
+	const groups = React.useMemo(
+		() => groupHistoryByDay(history.items, locale, { dateFormat }), [history.items, locale, dateFormat],
+	);
 	const relatedSchemas = useHistoryRelatedSchemas(history);
 	return (
 		<HistoryRelatedSchemasProvider value={relatedSchemas}>

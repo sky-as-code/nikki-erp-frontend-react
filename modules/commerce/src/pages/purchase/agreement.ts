@@ -12,6 +12,10 @@ import { PurchaseOrderCommands } from '../../features/purchase/purchaseOrder/com
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** The document names a currency by id, not code, so amounts read in the default currency. */
+const MONEY_RENDERER = { renderer: 'money' };
+const FLOAT_RENDERER = { renderer: 'float' };
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
 	renderer: 'badge',
@@ -204,6 +208,7 @@ function buildAgreementLinesResource() {
 		initialGraph: { if: ['purchase_agreement_id', '=', '${id}'] },
 		fields: ['sequence', 'product_variant_id', 'description', 'quantity', 'uom_id',
 			'unit_price'],
+		fieldRenderers: { quantity: FLOAT_RENDERER, unit_price: MONEY_RENDERER },
 	};
 }
 
@@ -237,6 +242,7 @@ function buildDrawnOrdersResource() {
 				},
 				prefix: 'status.',
 			},
+			total_amount: MONEY_RENDERER,
 		},
 	};
 }

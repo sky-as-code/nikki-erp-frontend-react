@@ -9,7 +9,8 @@ import type { LockedProps } from '../Button';
 import type { TestIdAttributes } from '@nikkierp/common/utils';
 
 
-export type EditRowActionsProps = {
+/** `locked` / `lockedMissing` lock the confirm only: discarding what was typed needs no permission. */
+export type EditRowActionsProps = LockedProps & {
 	/** `create` confirms with Add (insert row), `update` with Save (row editor). */
 	mode: 'create' | 'update',
 	onConfirm: () => void,
@@ -28,7 +29,7 @@ export type EditRowActionsProps = {
  * (`INLINE_CONTROLS_ATTRS`) sizes it with the inputs beside it.
  */
 export function EditRowActions({
-	mode, onConfirm, onDiscard, busy = false, compact = false, confirmTestId, discardTestId,
+	mode, onConfirm, onDiscard, busy = false, compact = false, locked, lockedMissing, confirmTestId, discardTestId,
 }: EditRowActionsProps): React.ReactElement {
 	const t = useTranslate('common');
 	const confirmLabel = mode === 'create'
@@ -42,6 +43,8 @@ export function EditRowActions({
 				variant='default'
 				leftSection={compact ? undefined : <IconCheck size={14} />}
 				disabled={busy}
+				locked={locked}
+				lockedMissing={lockedMissing}
 				onClick={onConfirm}
 				{...labelProps(confirmLabel)}
 				{...confirmTestId}

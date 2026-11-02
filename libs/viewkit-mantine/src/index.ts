@@ -19,7 +19,7 @@ export { SplitLayout } from './pages/resourceSplitView/SplitLayout';
 // The settings pane's runtime half. A module's `pages.settings` widget wraps its nodes in the
 // provider and renders the save bar; the item renderers read the values from that context.
 export { SettingsDataProvider, useSettingsData } from './components/settings/settingsDataContext';
-export type { SettingOption } from './components/settings/settingsDataContext';
+export type { SettingOption, SettingOptionSearch } from './components/settings/settingsDataContext';
 export type {
 	SettingItemData, SettingsDataContextValue, SettingsDataProviderProps,
 } from './components/settings/settingsDataContext';

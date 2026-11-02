@@ -84,7 +84,16 @@
 	grid-column: 1 / -1;
 }
 
-/* An inline row of a form column reads as one sentence, so it takes the whole grid row. */
-.inlineFieldRow {
+/* A field group display sits in one track of the grid; `isFullRow` gives it the whole row. */
+.fieldGroup {
+	min-width: 0;
+}
+
+.fullRow {
 	grid-column: 1 / -1;
+}
+
+/* An item boxed to its declared width; its input fills the box. */
+.sizedGroupItem {
+	flex: none;
 }

@@ -10,6 +10,9 @@ import { SalesPromotionRewardCommands } from '../../features/sales/salesPromotio
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** A percentage or an amount, by reward type, so a plain two-decimal number fits both. */
+const REWARD_VALUE_RENDERER = { renderer: 'float', precision: 2 };
+
 /**
  * One engine serves automatic, conditional and voucher-activated programs: the activation type is
  * data, not three implementations. `stack_policy` and `exclusive_group` decide what may combine
@@ -113,6 +116,7 @@ function buildSalesPromotionRewardsResources() {
 			searchCommand: SalesPromotionRewardCommands.SEARCH,
 			initialGraph: { if: ['sales_promotion_program_id', '=', '${id}'] },
 			fields: ['sequence', 'reward_type', 'value', 'target_scope'],
+			fieldRenderers: { value: REWARD_VALUE_RENDERER },
 		},
 	];
 }

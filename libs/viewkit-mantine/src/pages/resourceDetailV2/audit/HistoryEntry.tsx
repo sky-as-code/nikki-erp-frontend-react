@@ -1,6 +1,6 @@
 import { Avatar, Group, Stack, Text } from '@mantine/core';
 import { storageFileUrlOf } from '@nikkierp/common/request';
-import { formatLocalizedDateTime, useFormatLocale } from '@nikkierp/ui/components';
+import { formatLocalizedDateTime, useValueFormatDefaults } from '@nikkierp/ui/components';
 import { MaskedCellLock, maskedFieldMissing } from '@nikkierp/ui/components/ExcelDataTable';
 import { schemaModuleName, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import React from 'react';
@@ -61,12 +61,13 @@ function ActorAvatar({ item }: { item: ResourceHistoryItem }): React.ReactNode {
 
 function ActorLine({ item }: { item: ResourceHistoryItem }): React.ReactNode {
 	const name = useActorName(item);
-	const locale = useFormatLocale();
+	const formats = useValueFormatDefaults();
+	const fullTime = formatLocalizedDateTime(item.created_at, formats.locale, undefined, formats);
 	return (
 		<Group gap='xs' wrap='nowrap' className='min-w-0'>
 			<Text size='sm' fw={600} truncate>{name}</Text>
-			<Text size='xs' c='dimmed' title={formatLocalizedDateTime(item.created_at, locale)}>
-				{formatHistoryTime(item.created_at, locale)}
+			<Text size='xs' c='dimmed' title={fullTime}>
+				{formatHistoryTime(item.created_at, formats.locale, formats)}
 			</Text>
 		</Group>
 	);

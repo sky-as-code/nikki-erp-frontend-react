@@ -12,6 +12,15 @@ import { PurchaseOrderLineCommands } from '../../features/purchase/purchaseOrder
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** The document names a currency by id, not code, so amounts read in the default currency. */
+const MONEY_RENDERER = { renderer: 'money' };
+const FLOAT_RENDERER = { renderer: 'float' };
+const ORDER_TOTAL_RENDERERS = {
+	untaxed_amount: MONEY_RENDERER,
+	tax_amount: MONEY_RENDERER,
+	total_amount: MONEY_RENDERER,
+};
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
 	renderer: 'badge',
@@ -123,6 +132,7 @@ function buildOrderListProps(initialGraph: Record<string, unknown>, mergeable: b
 				colorMap: { normal: 'gray', urgent: 'red' },
 				prefix: 'priority.',
 			},
+			...ORDER_TOTAL_RENDERERS,
 		},
 	});
 }
@@ -146,6 +156,7 @@ function buildOrderDetailProps() {
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: ORDER_TOTAL_RENDERERS,
 		standardActionCommands: {
 			getById: PurchaseOrderCommands.GET_BY_ID,
 			create: PurchaseOrderCommands.CREATE,
@@ -439,6 +450,12 @@ function buildLinesResource() {
 				},
 				prefix: 'line_type.',
 			},
+			quantity: FLOAT_RENDERER,
+			unit_price: MONEY_RENDERER,
+			discount_percent: { renderer: 'float', precision: 2 },
+			subtotal: MONEY_RENDERER,
+			tax_amount: MONEY_RENDERER,
+			total: MONEY_RENDERER,
 		},
 	};
 }

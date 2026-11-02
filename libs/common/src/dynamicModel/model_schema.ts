@@ -26,6 +26,11 @@ export type ModelSchema = {
 	 * actually renders.
 	 */
 	default_search_fields?: string[],
+	/**
+	 * A tenant-wide catalogue the backend answers per organization (`IsOrgBound`): no `org_id`
+	 * column, yet every request names the current org. Absent on every other schema.
+	 */
+	is_org_bound?: boolean,
 	label?: ModelSchemaLangJson,
 	to_relations?: ModelSchemaRelation[],
 	from_relations?: ModelSchemaRelation[],
@@ -68,6 +73,11 @@ export type ModelSchemaField = {
 	default_value?: unknown,
 	/** How a computed value arrives, and what to watch to recompute it. Absent when not computed. */
 	computed?: ModelSchemaComputed,
+	/**
+	 * Field flags the server declares (`file_field`, `track_history`, ...). `writable` marks a
+	 * computed field the server accepts in a write anyway: an org's activation of a catalogue entry.
+	 */
+	metadata?: Record<string, unknown>,
 };
 
 /**

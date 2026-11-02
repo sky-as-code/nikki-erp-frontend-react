@@ -81,18 +81,38 @@ describe('ownPropertySectionSchema', () => {
 		expect(block.showTitle).toBe(true);
 	});
 
-	it('is fluid and separated unless told otherwise', () => {
-		const block = ownPropertySectionSchema.parse({ fields: ['name'] });
-		expect(block.isFluid).toBe(true);
-		expect(block.showSeparator).toBe(true);
-		const own = ownPropertySectionSchema.parse({ fields: ['note'], isFluid: false, showSeparator: false });
-		expect([own.isFluid, own.showSeparator]).toEqual([false, false]);
+	it('is fluid unless told otherwise', () => {
+		expect(ownPropertySectionSchema.parse({ fields: ['name'] }).isFluid).toBe(true);
+		expect(ownPropertySectionSchema.parse({ fields: ['note'], isFluid: false }).isFluid).toBe(false);
 	});
 
-	it('accepts inline rows mixed with field names', () => {
+	it('rejects a bare array: an inline row is a field group display', () => {
 		const fields = ['name', ['$$form.parent', '@@parent_id', 'of', '@@warehouse_id']];
 
-		expect(ownPropertySectionSchema.parse({ fields }).fields).toEqual(fields);
+		expect(() => ownPropertySectionSchema.parse({ fields })).toThrow();
+	});
+
+	it('accepts a field group display, label and isFullRow optional', () => {
+		const price = { label: 'fields.list_price', fields: ['@@list_price', '$$common:per', '@@uom_id'] };
+		const bare = { fields: ['@@weight', '@@weight_uom_symbol'], isFullRow: true };
+
+		expect(ownPropertySectionSchema.parse({ fields: ['name', price, bare] }).fields).toEqual(['name', price, bare]);
+		expect(() => ownPropertySectionSchema.parse({ fields: [{ label: 'fields.x' }] })).toThrow();
+		expect(() => ownPropertySectionSchema.parse({ fields: [{ label: '', fields: ['@@x'] }] })).toThrow();
+		expect(() => ownPropertySectionSchema.parse({ fields: [{ ...price, extra: true }] })).toThrow();
+		expect(() => ownPropertySectionSchema.parse({ fields: [{ label: 'x', field: ['@@x'] }] })).toThrow();
+	});
+
+	it('keeps widths parallel to fields and on @@ items only', () => {
+		const parse = (widths: unknown[]) => ownPropertySectionSchema.parse({
+			fields: [{ fields: ['@@price', '$$common:per', '@@uom_id'], widths }],
+		});
+
+		expect(() => parse(['8rem', null, '120px'])).not.toThrow();
+		expect(() => parse(['8rem', undefined])).not.toThrow();
+		expect(() => parse(['8rem', null, null, '1rem'])).toThrow();
+		expect(() => parse([null, '2rem'])).toThrow();
+		expect(() => parse(['wide'])).toThrow();
 	});
 
 	it('rejects an inline row nested deeper than one level', () => {

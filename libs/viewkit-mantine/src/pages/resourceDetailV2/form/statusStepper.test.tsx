@@ -46,6 +46,12 @@ describe('StatusStepper', () => {
 		expect(compact()).toBe('Step 2 of 3 · test:ready');
 	});
 
+	it('draws no check icon on the current step', () => {
+		const { container } = renderStepper('ready');
+		const current = container.querySelector('nav li[aria-current="step"]');
+		expect(current?.querySelector('svg:not(.tabler-icon-arrow-right)')).toBeNull();
+	});
+
 	it('separates the linear steps by hidden arrows', () => {
 		const { container } = renderStepper('ready');
 		const arrows = container.querySelectorAll('nav svg.tabler-icon-arrow-right[aria-hidden="true"]');

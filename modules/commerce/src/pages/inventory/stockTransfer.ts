@@ -6,7 +6,7 @@ import {
 
 import * as c from '../../constants/inventory';
 import { StockTransferCommands } from '../../features/inventory/stockTransfer/commands';
-import { stockTransferMovesNode } from '../../viewkit/inventory/props';
+import { stockTransferAllMovesNode, stockTransferMovesNode } from '../../viewkit/inventory/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -52,11 +52,7 @@ function buildStockTransferListProps() {
 			// grey while it is only a plan, blue once it is committed, green when the stock is
 			// accounted for, and neutral once it is history.
 			status: STATUS_BADGE,
-			operation_code: {
-				renderer: 'badge',
-				colorMap: { incoming: 'green', outgoing: 'orange', internal: 'blue' },
-				prefix: 'operation_code.',
-			},
+			operation_code: { renderer: 'translated', prefix: 'operation_code.' },
 		},
 	});
 }
@@ -124,9 +120,9 @@ function buildStockTransferFieldsSection(): ComponentNode {
 			header: 'form.scheduling',
 			fields: ['scheduled_at', 'deadline_at', 'completed_at'],
 		}),
-		// Free text on a row of its own under the columns; its field label already says "Note".
+		// A block in the grid like the others, untitled: its field label already says "Note".
 		resourceFormColumnNode({
-			fields: ['note'], isFluid: false, showSeparator: false, showTitle: false,
+			fields: ['note'], showTitle: false,
 		}),
 	]);
 }
@@ -154,12 +150,13 @@ function buildStockTransferPoliciesSection(expanded: boolean): ComponentNode {
 /**
  * The moves, edited inline and saved with the transfer in one request while it is a draft. A
  * section of the form, not a related-resources tab: those are read-only and update-mode only. Move
- * lines are not shown: the reservation engine writes them.
+ * lines are not shown here: the reservation engine writes them, and each move's page lists its own.
  */
 function buildStockTransferMovesSection(): ComponentNode {
 	return collapsibleSectionNode({
 		translationNs: c.INVENTORY_MODULE,
 		header: 'form.moves',
+		rightSegment: stockTransferAllMovesNode(),
 	}, [stockTransferMovesNode()]);
 }
 

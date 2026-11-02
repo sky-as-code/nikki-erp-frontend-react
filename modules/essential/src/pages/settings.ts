@@ -36,7 +36,6 @@ export function buildEssentialSettingsNodes(): ComponentNode[] {
 			children: [
 				settingsItemNode({ name: 'system_language', labelKey: 'settings.systemLanguage' }),
 				settingsItemNode({ name: 'system_timezone', labelKey: 'settings.systemTimezone' }),
-				settingsItemNode({ name: 'default_currency', labelKey: 'settings.defaultCurrency' }),
 			],
 		}),
 	];

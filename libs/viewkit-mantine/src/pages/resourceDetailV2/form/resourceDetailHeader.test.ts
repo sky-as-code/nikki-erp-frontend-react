@@ -7,10 +7,11 @@ import {
 	TAB_COLLAPSIBLE_SECTION,
 } from '../../../ids';
 
+import type { FormColumnField } from '../../resourceDetail/formColumnFields';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
-const column = (fields: (string | string[])[]): ComponentNode => defineComponent({
+const column = (fields: FormColumnField[]): ComponentNode => defineComponent({
 	component: RESOURCE_FORM_COLUMN,
 	props: { fields },
 });
@@ -91,9 +92,9 @@ describe('resource detail save scoping', () => {
 			})])])).toEqual([{ fields: [] }]);
 		});
 
-		/** An inline row's `@@` items are fields the form owns; its text items are not. */
-		it('flattens inline rows to the fields they render', () => {
-			const nodes = [section([column(['name', ['$$form.parent', '@@parent_id', 'at', '@@position']])])];
+		/** A field group's `@@` items are fields the form owns; its text items are not. */
+		it('flattens field groups to the fields they render', () => {
+			const nodes = [section([column(['name', { fields: ['$$form.parent', '@@parent_id', 'at', '@@position'] }])])];
 
 			expect(collectColumnFields(nodes)).toEqual([{ fields: ['name', 'parent_id', 'position'] }]);
 		});
@@ -126,6 +127,16 @@ describe('resource detail save scoping', () => {
 			);
 
 			expect(payload).toEqual({ id: 'r1', etag: 'e1', code: 'C2' });
+		});
+
+		it('sends a field shown more than once on the form once', () => {
+			const price = { label: 'fields.list_price', fields: ['@@list_price', '$$common:per', '@@uom_id'] };
+			const cost = { label: 'fields.cost', fields: ['@@cost', '$$common:per', '@@uom_id'] };
+			const columns = collectColumnFields([section([column([price, cost]), column(['uom_id'])])]);
+
+			expect(columns).toEqual([{ fields: ['list_price', 'uom_id', 'cost'] }, { fields: ['uom_id'] }]);
+			const payload = buildPartialSavePayload({ uom_id: 'U2', cost: '1' }, columns, { uom_id: true }, resource);
+			expect(payload).toEqual({ id: 'r1', etag: 'e1', uom_id: 'U2' });
 		});
 
 		/** Without an etag the server cannot check the optimistic lock, so there is nothing to send. */

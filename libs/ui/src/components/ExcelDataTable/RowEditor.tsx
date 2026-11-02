@@ -44,7 +44,7 @@ export const REFUSAL_TEXT: Record<Exclude<RowUpdateRefusal, 'unchanged'>, string
  * detail form's field inputs and validation apply unchanged. Selecting another row discards it.
  */
 export function EditingRow({ item, rowId, rowNumber }: EditingRowProps) {
-	const { modelSchema } = useExcelDataTableContext();
+	const { modelSchema, rowFormSchema } = useExcelDataTableContext();
 	const localize = useSchemaLocalize(modelSchema?.name ?? '');
 	const submit = useRowSubmit(item);
 	if (!modelSchema) {
@@ -53,6 +53,7 @@ export function EditingRow({ item, rowId, rowNumber }: EditingRowProps) {
 	return (
 		<CrudFormProvider
 			schemaName={modelSchema.name}
+			modelSchema={rowFormSchema}
 			formVariant='update'
 			localize={localize}
 			modelValue={item}
@@ -80,13 +81,14 @@ type RowSubmit = ReturnType<typeof useRowSubmit>;
  * edit mode and refreshes, failure keeps the inputs.
  */
 function useRowSubmit(item: SearchItem) {
-	const { editing, refresh, modelSchema, fields, changes } = useExcelDataTableContext();
+	const { editing, refresh, modelSchema, fields, changes, rowFieldEditors } = useExcelDataTableContext();
 	const [isSubmitting, setSubmitting] = React.useState(false);
 	const [errors, setErrors] = React.useState<ClientErrorItem[]>([]);
 	// Read by `save` right after the submit resolves, before the state write has re-rendered.
 	const lastErrorsRef = React.useRef<ClientErrorItem[]>([]);
 	const editableFields = React.useMemo(
-		() => fields.filter(field => isRowEditableField(modelSchema, field)), [fields, modelSchema],
+		() => fields.filter(field => isRowEditableField(modelSchema, field, Boolean(rowFieldEditors[field]))),
+		[fields, modelSchema, rowFieldEditors],
 	);
 	const write = useRowUpdateWrite();
 	const onSubmit = React.useCallback(async (data: Record<string, unknown>): Promise<boolean> => {
