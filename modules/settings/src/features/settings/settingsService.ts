@@ -1,6 +1,7 @@
 import * as request from '@nikkierp/common/request';
 import { storeAsyncMethod, storeService } from '@nikkierp/ui/appState/store';
 
+import { resolveSettingsOrgId } from './orgScope';
 import { settingsStore } from '../../store';
 
 import type {
@@ -10,6 +11,7 @@ import type { ServiceResult } from '@nikkierp/common/commandBus';
 
 
 const SLICE_NAME = 'SettingsService';
+const ORG_ID_FIELD = 'org_id';
 
 /**
  * Reads and writes one module's settings at one level.
@@ -23,22 +25,27 @@ const SLICE_NAME = 'SettingsService';
  * is a path segment rather than a payload field so that a caller holding org permission cannot
  * reach the tenant level by sending a different string.
  *
- * The owner is never sent. The backend derives it from the token (the user, their acting org, or
- * the tenant constraint), so a request carries only the module key.
+ * The owner is derived by the backend from the token (the user, or the tenant constraint), except at
+ * the org level, where a user may belong to several orgs: there the org the UI is showing is sent as
+ * `org_id`, exactly as on every org-scoped resource, and the backend checks membership.
  */
 @storeService(SLICE_NAME, settingsStore)
 export class SettingsService {
 
 	@storeAsyncMethod
 	public async getSettings(req: GetSettingsRequest): Promise<ServiceResult<GetSettingsResponse>> {
-		return request.get<GetSettingsResponse>(settingsPath(req.level, req.moduleKey));
+		const orgId = await resolveSettingsOrgId(req);
+		return request.get<GetSettingsResponse>(settingsPath(req.level, req.moduleKey), {
+			searchParams: orgId ? [[ORG_ID_FIELD, orgId]] : [],
+		});
 	}
 
 	@storeAsyncMethod
 	public async setSettings(req: SetSettingsRequest): Promise<ServiceResult<SetSettingsResponse>> {
+		const orgId = await resolveSettingsOrgId(req);
 		return request.patch<SetSettingsResponse>(moduleSettingsPath(req.level, req.moduleKey), {
 			// Only the changed items. See `SetSettingsRequest.items`.
-			json: { items: req.items },
+			json: orgId ? { items: req.items, [ORG_ID_FIELD]: orgId } : { items: req.items },
 		});
 	}
 }

@@ -43,6 +43,11 @@ export type GetSettingsRequest = {
 	level: SettingLevel,
 	/** The module whose settings are read. Equal to that module's micro-app slug. */
 	moduleKey: string,
+	/**
+	 * The organization an `org`-level read acts for. Omitted, the Shell's current org is sent; other
+	 * levels ignore it. See `resolveSettingsOrgId`.
+	 */
+	orgId?: string | null,
 };
 
 export type GetSettingsResponse = {
@@ -66,6 +71,8 @@ export type SetSettingsRequest = {
 	 * never touched gets clobbered. Sending the whole pane would make every save a collision.
 	 */
 	items: SetSettingItem[],
+	/** The organization an `org`-level write acts for; as `GetSettingsRequest.orgId`. */
+	orgId?: string | null,
 };
 
 export type SetSettingsResponse = {

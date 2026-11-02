@@ -53,6 +53,10 @@ export {
 	actionRequirement, commandActionCode, resolveActionCode, StandardActionCode, useActionLock, useActionLocks,
 } from './permissions';
 export { findUngatedActions, useTableActionLocks } from './permissions';
+export {
+	DETAIL_TOOLBAR_COMPACT_PX, ToolbarCompactProvider,
+	useToolbarButtonContent, useToolbarCompact, useToolbarCompactMeasure,
+} from './pages/resourceDetailV2/toolbarCompact';
 export { useAnyFieldActionLock, useFieldLock, useFieldLocks } from './permissions';
 /**
  * For a module's own section on a resource detail page: the record, its edit mode, and the hook
