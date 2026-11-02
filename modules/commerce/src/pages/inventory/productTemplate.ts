@@ -5,6 +5,7 @@ import {
 	resourceSplitViewProps, statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
+import { buildProductVariantFieldRenderers, TEMPLATE_VARIANT_FIELDS } from './productVariant';
 import * as c from '../../constants/inventory';
 import { ProductTemplateCommands } from '../../features/inventory/productTemplate/commands';
 import { ProductVariantCommands } from '../../features/inventory/productVariant/commands';
@@ -242,6 +243,9 @@ function buildTemplateResources() {
 			translationNs: c.INVENTORY_MODULE,
 			searchCommand: ProductVariantCommands.SEARCH,
 			initialGraph: { if: ['product_template_id', '=', '${id}'] },
+			// Explicit, or the server's default columns bring "Product name": the template this page is.
+			fields: TEMPLATE_VARIANT_FIELDS,
+			fieldRenderers: buildProductVariantFieldRenderers(),
 			linkField: 'id',
 			linkRoutePath: 'inventory_product_variant',
 			// "View variants": the variant list filtered to this template, hidden in update mode.
@@ -270,6 +274,7 @@ function buildTemplateResources() {
 			// view. Filtered by template rather than variant because a template-wide quote
 			// prices every variant that has none of its own.
 			initialGraph: { if: ['product_template_id', '=', '${id}'] },
+			fieldRenderers: { unit_price: MONEY_RENDERER, min_quantity: FLOAT_RENDERER },
 			linkField: 'id',
 			// The row links to the purchase page of the `commerce` module, which owns this schema.
 			// Named absolutely so the link keeps working wherever this section is embedded.
@@ -333,6 +338,7 @@ function buildTemplateInventoryResource() {
 		searchCommand: ProductVariantCommands.SEARCH,
 		initialGraph: { if: ['product_template_id', '=', '${id}'] },
 		fields: ['sku', 'combination_key', 'status'],
+		fieldRenderers: buildProductVariantFieldRenderers(),
 		linkField: 'id',
 		linkRoutePath: 'inventory_product_variant',
 		// A second variants table on one page, so it needs its own testId prefix to avoid

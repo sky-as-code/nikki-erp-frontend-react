@@ -23,7 +23,7 @@ export function templateAttributesNode(): ComponentNode {
 	return defineComponent({ component: TEMPLATE_ATTRIBUTES });
 }
 
-/** Resolve variants and "All attributes", for the Attributes section header's `rightSegment`. */
+/** Resolve variant and "All attributes", for the Attributes section header's `rightSegment`. */
 export function templateAttributesHeaderNode(): ComponentNode {
 	return defineComponent({ component: TEMPLATE_ATTRIBUTES_HEADER });
 }

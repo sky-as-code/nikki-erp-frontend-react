@@ -9,6 +9,15 @@ import { StockReservationCommands } from '../../features/inventory/stockReservat
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+const FLOAT_RENDERER = { renderer: 'float' };
+const RESERVATION_QUANTITY_RENDERERS = {
+	quantity: FLOAT_RENDERER,
+	consumed_quantity: FLOAT_RENDERER,
+	released_quantity: FLOAT_RENDERER,
+	remaining_quantity: FLOAT_RENDERER,
+	effective_reserved_quantity: FLOAT_RENDERER,
+};
+
 /**
  * Stock reservation: a quantity of one variant committed at one warehouse to one demand line, with
  * no location chosen (CR-INV-SALES-WH-RESERVATION §4.2).
@@ -39,7 +48,7 @@ function buildStockReservationListProps() {
 		linkField: 'id',
 		searchCommand: StockReservationCommands.SEARCH,
 		createEnabled: false,
-		fieldRenderers: buildStatusRenderers(),
+		fieldRenderers: { ...buildStatusRenderers(), ...RESERVATION_QUANTITY_RENDERERS },
 	});
 }
 
@@ -50,6 +59,7 @@ function buildStockReservationDetailProps() {
 		titleLvl1: { schemaField: 'source_id' },
 		titleLvl2: { schemaField: 'effective_status' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: { ...buildStatusRenderers(), ...RESERVATION_QUANTITY_RENDERERS },
 		allStatuses: [
 			{ value: 'active', label: 'reservation_status.active' },
 			{ value: 'consumed', label: 'reservation_status.consumed' },

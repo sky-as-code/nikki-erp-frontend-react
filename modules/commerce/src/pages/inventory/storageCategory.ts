@@ -9,6 +9,8 @@ import { StorageCategoryCommands } from '../../features/inventory/storageCategor
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+const FLOAT_RENDERER = { renderer: 'float' };
+
 export function buildStorageCategoryPages(): PageNode[] {
 	const splitView = resourceSplitViewProps({
 		primary: buildStorageCategoryListProps(),
@@ -34,6 +36,7 @@ function buildStorageCategoryListProps() {
 		updateSaveCommand: StorageCategoryCommands.UPDATE,
 		updateCommand: StorageCategoryCommands.UPDATE,
 		fieldRenderers: {
+			max_weight: FLOAT_RENDERER,
 			allow_new_item_policy: {
 				renderer: 'badge',
 				colorMap: {
@@ -54,6 +57,7 @@ function buildStorageCategoryDetailProps() {
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: { max_weight: FLOAT_RENDERER },
 		standardActionCommands: {
 			getById: StorageCategoryCommands.GET_BY_ID,
 			create: StorageCategoryCommands.CREATE,

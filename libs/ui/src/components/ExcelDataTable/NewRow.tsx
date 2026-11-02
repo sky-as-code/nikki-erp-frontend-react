@@ -40,20 +40,40 @@ const FOCUSABLE_INPUT = [
 type TranslateFn = ReturnType<typeof useTranslate>;
 
 /**
- * The table's last row when rows can be created: `[+ Add a line]` until clicked, then an input per
- * creatable column with Add / Discard in the filler cell. Rendered by `Table` after the data rows.
- * A successful Add opens a fresh, empty insert row in its place; only Discard closes it.
+ * The table's last row when rows can be created: an input per creatable column with Add / Discard in
+ * the filler cell. Rendered by `Table` after the data rows. A successful Add opens a fresh, empty
+ * insert row in its place. With `showNewRowBtn` the row hides behind `[+ Add a line]` and Discard
+ * closes it; without, the row is always open and Discard only clears it.
  */
 export function NewRow(): React.ReactNode {
-	const { capabilities, editing, modelSchema } = useExcelDataTableContext();
+	const { capabilities, editing, modelSchema, newRow } = useExcelDataTableContext();
 	const [generation, setGeneration] = React.useState(0);
 	useNewRowConfigCheck();
 	if (!capabilities.includes('create') || !modelSchema) {
 		return null;
 	}
+	const remount = () => setGeneration(count => count + 1);
+	if (!newRow.showButton) {
+		// Focus only follows a user's Add or Discard: on mount it would steal focus from the page.
+		return (
+			<InsertRow
+				key={generation}
+				modelSchema={modelSchema}
+				onAdded={remount}
+				onDiscard={remount}
+				autoFocus={generation > 0}
+			/>
+		);
+	}
 	return editing.creating && editing.createTarget === null
-		? <InsertRow key={generation} modelSchema={modelSchema} onAdded={() => setGeneration(count => count + 1)} />
+		? <InsertRow key={generation} modelSchema={modelSchema} onAdded={remount} />
 		: <AddLineRow />;
+}
+
+/** The insert row is always open (no `showNewRowBtn`), so the table shows no "No data" row. */
+export function useInsertRowAlwaysOpen(): boolean {
+	const { capabilities, modelSchema, newRow } = useExcelDataTableContext();
+	return capabilities.includes('create') && Boolean(modelSchema) && !newRow.showButton;
 }
 
 function useNewRowConfigCheck(): void {
@@ -102,14 +122,22 @@ function AddLineRow() {
 /** A grouped table's sub-row insert line: the group it adds to, whose own fields seed the form. */
 export type InsertTarget = { groupId: RowId, group: SearchItem, seed: Record<string, unknown> };
 
-type InsertRowProps = { modelSchema: dyn.ModelSchema, onAdded: () => void, target?: InsertTarget };
+type InsertRowProps = {
+	modelSchema: dyn.ModelSchema,
+	onAdded: () => void,
+	/** Replaces closing the row (`editing.stopCreate`); the always-open row clears itself instead. */
+	onDiscard?: () => void,
+	/** Default `true`: the first input takes focus once the row is ready. */
+	autoFocus?: boolean,
+	target?: InsertTarget,
+};
 
 /**
  * A create form of its own, so the detail form's field inputs and validation apply unchanged. Its
  * `onSubmit` is never reached: the row validates only the columns it shows (see `useNewRowAdd`).
  * With a `target` it is a grouped table's sub-row insert line, the same machinery on the nested columns.
  */
-export function InsertRow({ modelSchema, onAdded, target }: InsertRowProps) {
+export function InsertRow({ modelSchema, target, ...behaviour }: InsertRowProps) {
 	const { rowFormSchema } = useExcelDataTableContext();
 	const localize = useSchemaLocalize(modelSchema.name);
 	return (
@@ -122,7 +150,7 @@ export function InsertRow({ modelSchema, onAdded, target }: InsertRowProps) {
 			onSubmit={ignoreSubmit}
 			loadingFallback={<RowLoading />}
 		>
-			{runtime => <InsertCells runtime={runtime} onAdded={onAdded} target={target} />}
+			{runtime => <InsertCells runtime={runtime} target={target} {...behaviour} />}
 		</CrudFormProvider>
 	);
 }
@@ -131,9 +159,9 @@ function ignoreSubmit(): void {
 	// The insert row never submits through the form; `useNewRowAdd` writes instead.
 }
 
-type InsertCellsProps = { runtime: FormProviderRenderProps, onAdded: () => void, target?: InsertTarget };
+type InsertCellsProps = Omit<InsertRowProps, 'modelSchema'> & { runtime: FormProviderRenderProps };
 
-function InsertCells({ runtime, onAdded, target }: InsertCellsProps) {
+function InsertCells({ runtime, onAdded, onDiscard, autoFocus = true, target }: InsertCellsProps) {
 	const t = useTranslate('common');
 	const { fields, newRow, modelSchema, editing, isLoading, tid, rowSpan } = useExcelDataTableContext();
 	const columns = React.useMemo(() => resolveNewRowColumns(
@@ -141,9 +169,12 @@ function InsertCells({ runtime, onAdded, target }: InsertCellsProps) {
 	), [modelSchema, fields, newRow, rowSpan, target]);
 	const submit = useNewRowAdd({ runtime, columns, t, onAdded, target });
 	const busy = submit.isSubmitting || isLoading;
-	const rowRef = useFirstInputFocus(busy);
-	const { onKeyDown, onKeyDownCapture } = useInsertRowKeys(busy, submit.add, editing.stopCreate);
-	const cells = { columns, runtime, busy, submit };
+	const rowRef = useFirstInputFocus(busy, autoFocus);
+	const discard = onDiscard ?? editing.stopCreate;
+	// The always-open row stays beside an open row editor; its Add waits for that edit to finish.
+	const blocked = busy || editing.rowId !== null;
+	const { onKeyDown, onKeyDownCapture } = useInsertRowKeys(blocked, submit.add, discard);
+	const cells = { columns, runtime, busy, blocked, submit, discard };
 	return (
 		<InlineRowScope>
 			<MantineTable.Tr
@@ -165,10 +196,13 @@ type InsertCellsContentProps = {
 	columns: NewRowColumns,
 	runtime: FormProviderRenderProps,
 	busy: boolean,
+	/** Busy, or another row is being edited: the confirm is off, the inputs are not. */
+	blocked: boolean,
 	submit: NewRowAdd,
+	discard: () => void,
 };
 
-function MainInsertCells({ columns, runtime, busy, submit }: InsertCellsContentProps) {
+function MainInsertCells({ columns, runtime, busy, ...actions }: InsertCellsContentProps) {
 	const context = useExcelDataTableContext();
 	return (
 		<>
@@ -187,7 +221,7 @@ function MainInsertCells({ columns, runtime, busy, submit }: InsertCellsContentP
 					disabled={busy}
 				/>
 			)))}
-			<InsertRowActions submit={submit} busy={busy} />
+			<InsertRowActions {...actions} />
 		</>
 	);
 }
@@ -196,28 +230,32 @@ function MainInsertCells({ columns, runtime, busy, submit }: InsertCellsContentP
  * The nested columns' inputs and, in the sub-row actions column, Add / Discard. Every other cell of
  * the line is covered by its group's spanning cells (§5.11), so it renders none of them.
  */
-function SubRowInsertCells({ columns, runtime, busy, submit }: InsertCellsContentProps) {
+function SubRowInsertCells({ columns, runtime, busy, ...actions }: InsertCellsContentProps) {
 	const { rowSpan } = useExcelDataTableContext();
 	return (
 		<>
 			{rowSpan?.config.nestedFields.map(field => (
 				<NewRowCell key={field} field={field} columns={columns} runtime={runtime} disabled={busy} />
 			))}
-			<InsertRowActions submit={submit} busy={busy} compact />
+			<InsertRowActions {...actions} compact />
 		</>
 	);
 }
 
-function InsertRowActions({ submit, busy, compact }: { submit: NewRowAdd, busy: boolean, compact?: boolean }) {
-	const { editing, tid } = useExcelDataTableContext();
+type InsertRowActionsProps = { submit: NewRowAdd, blocked: boolean, discard: () => void, compact?: boolean };
+
+function InsertRowActions({ submit, blocked, discard, compact }: InsertRowActionsProps) {
+	const { tid } = useExcelDataTableContext();
 	return (
 		<MantineTable.Td className={classes.actionsCell}>
 			<EditRowActions
 				mode='create'
-				busy={busy}
+				busy={blocked}
 				compact={compact}
+				locked={submit.lock.locked}
+				lockedMissing={submit.lock.missing}
 				onConfirm={() => void submit.add()}
-				onDiscard={editing.stopCreate}
+				onDiscard={discard}
 				confirmTestId={tid.newRowAdd()}
 				discardTestId={tid.newRowDiscard()}
 			/>
@@ -262,9 +300,9 @@ function useInsertRowKeys(busy: boolean, add: () => Promise<void>, discard: () =
  * inputs disabled, where focus cannot land. So the focus waits for the row to be ready, once: a
  * later load must not pull focus back from wherever the user moved it.
  */
-function useFirstInputFocus(busy: boolean): React.RefObject<HTMLTableRowElement | null> {
+function useFirstInputFocus(busy: boolean, enabled: boolean): React.RefObject<HTMLTableRowElement | null> {
 	const rowRef = React.useRef<HTMLTableRowElement | null>(null);
-	const pending = React.useRef(true);
+	const pending = React.useRef(enabled);
 	React.useEffect(() => {
 		if (busy || !pending.current) {
 			return;
@@ -376,7 +414,7 @@ function useNewRowAdd({ runtime, columns, t, onAdded, target }: NewRowAddDeps) {
 		onAdded();
 		refresh();
 	}, [changes, columns, lock.locked, modelSchema, onAdded, refresh, runtime, t, write]);
-	return { isSubmitting, errors, add };
+	return { isSubmitting, errors, add, lock };
 }
 
 type NewRowAdd = ReturnType<typeof useNewRowAdd>;

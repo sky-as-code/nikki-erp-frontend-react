@@ -622,3 +622,40 @@ describe('Reprice action', () => {
 		expect(c.REPRICE_PATH).toBe('reprice');
 	});
 });
+
+/** F2-004: numbers in page metadata go through the shared locale-aware renderers. */
+describe('Purchase numeric renderers', () => {
+	const cases: [string, () => PageNode[], string, unknown][] = [
+		['purchase order', buildPurchaseOrderPages, 'total_amount', { renderer: 'money' }],
+		['purchase order line', buildPurchaseOrderPages, 'discount_percent', { renderer: 'float', precision: 2 }],
+		['agreement line', buildAgreementPages, 'unit_price', { renderer: 'money' }],
+		['vendor product price', buildVendorProductPricePages, 'min_quantity', { renderer: 'float' }],
+	];
+
+	it.each(cases)('formats the %s numbers', (_name, build, field, spec) => {
+		const renderers = build().flatMap(page => numericRenderersOf(page, field));
+
+		expect(renderers).toContainEqual(spec);
+	});
+});
+
+/** Every renderer spec any table or form of the page declares for `field`. */
+function numericRenderersOf(page: PageNode, field: string): unknown[] {
+	const found: unknown[] = [];
+	const walk = (value: unknown): void => {
+		if (Array.isArray(value)) {
+			value.forEach(walk);
+			return;
+		}
+		if (value === null || typeof value !== 'object') {
+			return;
+		}
+		const renderers = (value as { fieldRenderers?: Record<string, unknown> }).fieldRenderers;
+		if (renderers?.[field]) {
+			found.push(renderers[field]);
+		}
+		Object.values(value).forEach(walk);
+	};
+	walk(page.props);
+	return found;
+}

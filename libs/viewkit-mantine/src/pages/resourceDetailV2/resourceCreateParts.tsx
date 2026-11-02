@@ -1,13 +1,16 @@
 import { ActionIcon, Group } from '@mantine/core';
 import { capitalizeWords } from '@nikkierp/common/utils';
-import { Breadcrumbs, useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
+import {
+	Breadcrumbs, normalizePath, resolveRootParentPath, useBreadcrumbsNode, useTrailNavigate,
+} from '@nikkierp/ui/breadcrumbs';
 import { Button } from '@nikkierp/ui/components';
 import { useCrudFormRuntime } from '@nikkierp/ui/components/form';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { ShortcutSequence } from '@nikkierp/ui/shortcuts';
 import { commandAttrs } from '@nikkierp/viewengine/core';
-import { IconChevronDown, IconChevronRight, IconDeviceFloppy } from '@tabler/icons-react';
+import { IconChevronDown, IconChevronRight, IconDeviceFloppy, IconX } from '@tabler/icons-react';
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 
 import { useDetailFieldDisplay } from './detailFieldDisplay';
 import { isBlockVisible } from './fieldVisibility';
@@ -21,6 +24,7 @@ import {
 	useResourceDetailContext, useResourceDetailSchemaName, useResourceDetailTestAttrs, useResourceDetailTranslationNs,
 } from '../resourceDetail/ResourceDetailProvider';
 import { SplitPaneCloseButton } from '../resourceDetail/SplitPaneCloseButton';
+import { useCanClosePane } from '../resourceSplitView/splitViewContext';
 
 import type { LinkSpec, OwnPropertySection, SchemaFieldSpec } from '../resourceDetail/props';
 
@@ -92,8 +96,40 @@ export function ResourceCreateSaveBar(): React.ReactNode {
 			>
 				{t('action.save')}
 			</Button>
+			<CreateDiscardButton />
 		</CreateBar>
 	);
+}
+
+// The breadcrumb shows no root parent without `backLinkTitle`, yet every create route sits one segment under its list.
+const DEFAULT_DISCARD_HREF = '../';
+
+/** Leaves the unsaved create page for the breadcrumb's root parent, or closes the split pane it sits in. */
+function CreateDiscardButton(): React.ReactNode {
+	const t = useTranslate(useResourceDetailTranslationNs());
+	const tid = useResourceDetailTestAttrs();
+	const discard = useCreateDiscard();
+	return (
+		<Button variant='outline' leftSection={<IconX size={16} />} onClick={discard} {...tid('action', 'discard')}>
+			{t('action.discard')}
+		</Button>
+	);
+}
+
+function useCreateDiscard(): () => void {
+	const { backLinkTitle } = useResourceCreateContext();
+	const canClosePane = useCanClosePane();
+	const navigate = useTrailNavigate();
+	const { pathname } = useLocation();
+	return React.useCallback(() => {
+		if (canClosePane) {
+			// As `SplitPaneCloseButton`: dropping the `new` segment returns the split view to its list.
+			navigate('..', { relative: 'path' });
+			return;
+		}
+		const linkHref = backLinkTitle?.linkHref ?? DEFAULT_DISCARD_HREF;
+		navigate(resolveRootParentPath(linkHref, normalizePath(pathname)), { isHistoryRoot: true });
+	}, [backLinkTitle, canClosePane, navigate, pathname]);
 }
 
 /**
@@ -145,6 +181,7 @@ export function ResourceCreateActionBar({
 			>
 				{t('action.save')}
 			</Button>
+			<CreateDiscardButton />
 		</CreateBar>
 	);
 }

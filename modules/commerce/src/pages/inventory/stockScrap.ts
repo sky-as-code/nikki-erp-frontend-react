@@ -10,6 +10,8 @@ import { StockScrapCommands } from '../../features/inventory/stockScrap/commands
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+const FLOAT_RENDERER = { renderer: 'float' };
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
 	renderer: 'badge',
@@ -52,6 +54,7 @@ function buildStockScrapListProps() {
 			// Grey while it is only a plan, red once the goods are gone: a done scrap is the one
 			// state that cannot be walked back.
 			status: STATUS_BADGE,
+			quantity: FLOAT_RENDERER,
 		},
 	});
 }
@@ -67,6 +70,7 @@ function buildStockScrapDetailProps() {
 		titleLvl1: { schemaField: 'scrap_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: { quantity: FLOAT_RENDERER },
 		standardActionCommands: {
 			getById: StockScrapCommands.GET_BY_ID,
 			create: StockScrapCommands.CREATE,

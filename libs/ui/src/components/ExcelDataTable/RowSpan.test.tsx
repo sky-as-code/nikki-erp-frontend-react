@@ -193,7 +193,6 @@ describe('ExcelDataTable row span (table scope)', () => {
 
 	it('adds a group from the main insert row with its own fields and no sub-row', async () => {
 		const onWrite = renderHost();
-		fireEvent.click(await screen.findByTestId('t.table.addLine'));
 		await screen.findByTestId('t.table.newRow.input.template');
 		expect(byId('newRow.input.attr')).toBeNull();
 		fireEvent.change(input('newRow.input.template'), { target: { value: 'T3' } });

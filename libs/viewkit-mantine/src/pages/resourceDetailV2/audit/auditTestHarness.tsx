@@ -82,7 +82,7 @@ function StatefulUpdateContext({ overrides, children }: {
 }
 
 /** jsdom has no `matchMedia`, which Mantine's color scheme and media hooks read. */
-function polyfillMatchMedia(): void {
+export function polyfillMatchMedia(): void {
 	window.matchMedia ??= (query: string) => ({
 		matches: false, media: query, onchange: null, addListener: () => undefined, removeListener: () => undefined,
 		addEventListener: () => undefined, removeEventListener: () => undefined, dispatchEvent: () => false,

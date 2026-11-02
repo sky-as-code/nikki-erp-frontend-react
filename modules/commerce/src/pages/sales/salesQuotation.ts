@@ -11,6 +11,12 @@ import { SalesQuotationLineCommands } from '../../features/sales/salesQuotationL
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** Amounts are in the document's own currency, which sets the decimal places shown. */
+const DOC_MONEY_RENDERER = { renderer: 'money', currencyField: 'currency_code' };
+/** A line row carries no currency code, so its amounts read in the default currency. */
+const ROW_MONEY_RENDERER = { renderer: 'money' };
+const FLOAT_RENDERER = { renderer: 'float' };
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
 	renderer: 'badge',
@@ -68,6 +74,12 @@ function buildSalesQuotationDetailProps() {
 		titleLvl1: { schemaField: 'quotation_number' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: {
+			subtotal: DOC_MONEY_RENDERER,
+			discount_total: DOC_MONEY_RENDERER,
+			tax_total: DOC_MONEY_RENDERER,
+			grand_total: DOC_MONEY_RENDERER,
+		},
 		standardActionCommands: {
 			getById: SalesQuotationCommands.GET_BY_ID,
 			create: SalesQuotationCommands.CREATE,
@@ -172,6 +184,14 @@ function buildSalesQuotationLinesResources() {
 			initialGraph: { if: ['sales_quotation_id', '=', '${id}'] },
 			fields: ['line_number', 'product_name_snapshot', 'quantity', 'uom_id',
 				'unit_price', 'discount_amount', 'net_amount', 'tax_amount', 'final_amount'],
+			fieldRenderers: {
+				quantity: FLOAT_RENDERER,
+				unit_price: ROW_MONEY_RENDERER,
+				discount_amount: ROW_MONEY_RENDERER,
+				net_amount: ROW_MONEY_RENDERER,
+				tax_amount: ROW_MONEY_RENDERER,
+				final_amount: ROW_MONEY_RENDERER,
+			},
 		},
 	];
 }

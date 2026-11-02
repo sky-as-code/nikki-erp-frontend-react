@@ -27,11 +27,11 @@ const RESOLVABLE_MODES = new Set(['instant', 'dynamic']);
 type ActionProps = { label: string };
 
 /**
- * Resolve variants, in the Attributes section header. It reads the SAVED configuration off the record, so it
+ * Resolve variant, in the Attributes section header. It reads the SAVED configuration off the record, so it
  * shows only for a saved template with at least one saved line, and not while the form is edited: a resolve
  * then would act on lines other than the ones on screen.
  */
-export function ResolveVariantsAction(): React.ReactNode {
+export function ResolveVariantAction(): React.ReactNode {
 	const record = useTemplateRecord();
 	const updateMode = useResourceFormView()?.updateMode ?? false;
 	const text = useSectionText();
@@ -48,7 +48,7 @@ export function ResolveVariantsAction(): React.ReactNode {
 			lines={lines}
 			catalogue={catalogue}
 			text={text}
-			label={text.t('product_template_config_resolveVariants', { defaultValue: 'Resolve variants' })}
+			label={text.t('product_template_config_resolveVariant', { defaultValue: 'Resolve variant' })}
 		/>
 	);
 }

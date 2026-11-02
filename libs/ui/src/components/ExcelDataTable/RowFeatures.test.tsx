@@ -75,7 +75,9 @@ describe('ExcelDataTable manual sort', () => {
 	});
 
 	it('locks the handle while the insert row is open', async () => {
-		renderTable({ ...sortable, capabilities: ['update', 'create'], onCreated: vi.fn(), fieldEditors: textEditors });
+		renderTable({
+			...sortable, capabilities: ['update', 'create'], onCreated: vi.fn(), fieldEditors: textEditors, showNewRowBtn: true,
+		});
 		expect(handle('a').getAttribute('data-disabled')).toBeNull();
 		fireEvent.click(screen.getByTestId('t.table.addLine'));
 		await screen.findByTestId('t.table.newRow');
@@ -227,7 +229,6 @@ describe('ExcelDataTable change indicator', () => {
 		fireEvent.change(input, { target: { value: 'Alpha 2' } });
 		fireEvent.keyDown(input, { key: 'Enter' });
 		expect((await screen.findByTestId('t.table.row.a.change')).textContent).toBe('Changed');
-		fireEvent.click(screen.getByTestId('t.table.addLine'));
 		const newName = (await screen.findByTestId('t.table.newRow.input.name')).querySelector('input') as HTMLInputElement;
 		fireEvent.change(newName, { target: { value: 'Delta' } });
 		fireEvent.keyDown(newName, { key: 'Enter' });

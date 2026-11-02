@@ -10,6 +10,10 @@ import { SalesComboComponentCommands } from '../../features/sales/salesComboComp
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** No currency field of its own: amounts are in the organization's currency. */
+const MONEY_RENDERER = { renderer: 'money' };
+const FLOAT_RENDERER = { renderer: 'float' };
+
 /**
  * `combo_price` is independent and never derived from the components. Component allocation is an
  * output, computed to spread that price for tax and returns, never an input to it.
@@ -36,6 +40,7 @@ function buildSalesComboListProps() {
 		updateCommand: SalesComboCommands.UPDATE,
 		createEnabled: true,
 		archiveCommand: SalesComboCommands.SET_IS_ARCHIVED,
+		fieldRenderers: { combo_price: MONEY_RENDERER },
 	});
 }
 
@@ -46,6 +51,7 @@ function buildSalesComboDetailProps() {
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: { combo_price: MONEY_RENDERER },
 		standardActionCommands: {
 			getById: SalesComboCommands.GET_BY_ID,
 			create: SalesComboCommands.CREATE,
@@ -95,6 +101,7 @@ function buildSalesComboComponentsResources() {
 			initialGraph: { if: ['sales_combo_id', '=', '${id}'] },
 			fields: ['product_variant_id', 'quantity', 'uom_id', 'is_required',
 				'selection_group'],
+			fieldRenderers: { quantity: FLOAT_RENDERER },
 		},
 	];
 }

@@ -9,6 +9,9 @@ import { VendorProductPriceCommands } from '../../features/purchase/vendorProduc
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** A price names its currency by id, not code, so it reads in the default currency. */
+const PRICE_RENDERERS = { unit_price: { renderer: 'money' }, min_quantity: { renderer: 'float' } };
+
 /**
  * Vendor product prices: what each supplier is currently asking for a product.
  *
@@ -45,6 +48,7 @@ function buildVendorProductPriceListProps() {
 		archiveCommand: VendorProductPriceCommands.SET_IS_ARCHIVED,
 		updateSaveCommand: VendorProductPriceCommands.UPDATE,
 		updateCommand: VendorProductPriceCommands.UPDATE,
+		fieldRenderers: PRICE_RENDERERS,
 	});
 }
 
@@ -57,6 +61,7 @@ function buildVendorProductPriceDetailProps() {
 		titleLvl1: { schemaField: 'unit_price' },
 		titleLvl2: { schemaField: 'vendor_id' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: PRICE_RENDERERS,
 		standardActionCommands: {
 			getById: VendorProductPriceCommands.GET_BY_ID,
 			create: VendorProductPriceCommands.CREATE,

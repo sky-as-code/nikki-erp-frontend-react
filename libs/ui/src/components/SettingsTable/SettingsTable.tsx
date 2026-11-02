@@ -3,9 +3,9 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import clsx from 'clsx';
 import React from 'react';
 
-import { applyCustomRenderer } from './cellRenderers';
 import classes from './SettingsTable.module.css';
 import { TranslateFn, useTranslate } from '../../i18n';
+import { applyCustomRenderer } from '../ExcelDataTable/cells/cellRenderers';
 
 import type { FieldRendererMap } from '@nikkierp/viewengine/core';
 

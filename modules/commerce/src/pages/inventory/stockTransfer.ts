@@ -120,9 +120,9 @@ function buildStockTransferFieldsSection(): ComponentNode {
 			header: 'form.scheduling',
 			fields: ['scheduled_at', 'deadline_at', 'completed_at'],
 		}),
-		// Free text on a row of its own under the columns; its field label already says "Note".
+		// A block in the grid like the others, untitled: its field label already says "Note".
 		resourceFormColumnNode({
-			fields: ['note'], isFluid: false, showTitle: false,
+			fields: ['note'], showTitle: false,
 		}),
 	]);
 }

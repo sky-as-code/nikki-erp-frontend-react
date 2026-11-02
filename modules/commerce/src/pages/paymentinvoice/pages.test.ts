@@ -340,3 +340,39 @@ function findNonPlainValue(value: unknown, path: string): string | null {
 	}
 	return null;
 }
+
+/** F2-004: numbers in page metadata go through the shared locale-aware renderers. */
+describe('Payment & Invoice numeric renderers', () => {
+	const cases: [string, () => PageNode[], string, unknown][] = [
+		['invoice', buildInvoicePages, 'total_amount', { renderer: 'money' }],
+		['invoice line', buildInvoicePages, 'tax_rate_percent', { renderer: 'float', precision: 2 }],
+		['order', buildOrderPages, 'refund_amount', { renderer: 'money' }],
+	];
+
+	it.each(cases)('formats the %s numbers', (_name, build, field, spec) => {
+		const renderers = build().flatMap(page => numericRenderersOf(page, field));
+
+		expect(renderers).toContainEqual(spec);
+	});
+});
+
+/** Every renderer spec any table or form of the page declares for `field`. */
+function numericRenderersOf(page: PageNode, field: string): unknown[] {
+	const found: unknown[] = [];
+	const walk = (value: unknown): void => {
+		if (Array.isArray(value)) {
+			value.forEach(walk);
+			return;
+		}
+		if (value === null || typeof value !== 'object') {
+			return;
+		}
+		const renderers = (value as { fieldRenderers?: Record<string, unknown> }).fieldRenderers;
+		if (renderers?.[field]) {
+			found.push(renderers[field]);
+		}
+		Object.values(value).forEach(walk);
+	};
+	walk(page.props);
+	return found;
+}

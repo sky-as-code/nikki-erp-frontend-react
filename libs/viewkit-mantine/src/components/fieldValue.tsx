@@ -4,6 +4,9 @@ import { TranslatableText } from '@nikkierp/ui/components';
 import { getDecimalScale, toLangJson } from '@nikkierp/ui/components/ExcelDataTable';
 import React from 'react';
 
+import { MoneyValueFieldRenderer } from '../fields/valueRenderers';
+
+import type { LocalizedFormatters } from '@nikkierp/ui/components/valueRenderers';
 import type { LocalizeFn } from '@nikkierp/ui/i18n';
 import type { IFieldRenderer } from '@nikkierp/viewengine/core';
 
@@ -77,6 +80,28 @@ function translateOrRaw(key: string, rawValue: string, localize: LocalizeFn): st
  */
 function renderEnumValue(fieldValue: string, fieldSchema: dyn.ModelSchemaField, localize: LocalizeFn): string {
 	return translateOrRaw(`${fieldSchema.name}.${fieldValue}`, fieldValue, localize);
+}
+
+/**
+ * A numeric value as text, for a surface that takes a string (the tab title): money when the page renders
+ * the field as money, else a number with the schema's decimal scale. `undefined` for anything else.
+ */
+export function formatNumericFieldText(
+	fieldValue: unknown,
+	fieldSchema: dyn.ModelSchemaField | undefined,
+	formatters: LocalizedFormatters,
+	fieldRenderer?: IFieldRenderer,
+): string | undefined {
+	const typeName = getFieldDataTypeName(fieldSchema);
+	const isNumeric = typeof fieldValue === 'number'
+		|| (typeof fieldValue === 'string' && fieldValue !== '' && typeName !== null && NUMBER_TYPES.has(typeName));
+	if (!isNumeric) {
+		return undefined;
+	}
+	if (fieldRenderer instanceof MoneyValueFieldRenderer) {
+		return formatters.money(fieldValue);
+	}
+	return formatters.number(fieldValue, { fractionDigits: getDecimalScale(fieldSchema) });
 }
 
 export function formatFieldValue(fieldValue: unknown): string {

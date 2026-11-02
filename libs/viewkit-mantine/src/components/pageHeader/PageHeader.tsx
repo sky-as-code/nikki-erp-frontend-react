@@ -4,6 +4,7 @@ import { testAttrs } from '@nikkierp/common/utils';
 import { Breadcrumbs, useBreadcrumbsNode } from '@nikkierp/ui/breadcrumbs';
 import { TranslatableText } from '@nikkierp/ui/components';
 import { toLangJson } from '@nikkierp/ui/components/ExcelDataTable';
+import { useLocalizedFormatters } from '@nikkierp/ui/components/valueRenderers';
 import { useLocalize, useTranslate } from '@nikkierp/ui/i18n';
 import { componentAttrs } from '@nikkierp/viewengine/core';
 import { MetaComponent } from '@nikkierp/viewengine/render';
@@ -21,7 +22,7 @@ import { useRoutePathHref } from '../../data/useResourceLinkHref';
 import { PAGE_HEADER } from '../../ids';
 import { useDetailFieldDisplay } from '../../pages/resourceDetailV2/detailFieldDisplay';
 import { ResourceUpdateContext } from '../../pages/resourceDetailV2/resourceUpdateContext';
-import { renderDisplayFieldValue } from '../fieldValue';
+import { formatNumericFieldText, renderDisplayFieldValue } from '../fieldValue';
 
 import type { ParentResourceSpec } from './parentResource';
 import type { MantineSpacing } from '@mantine/core';
@@ -172,6 +173,8 @@ function useTitleSpecText(
 ): string | undefined {
 	const t = useTranslate(context?.translationNs ?? '');
 	const localize = useLocalize(context?.translationNs ?? '');
+	const formatters = useLocalizedFormatters();
+	const { fieldRenderers } = useDetailFieldDisplay();
 	if (!spec) {
 		return undefined;
 	}
@@ -182,8 +185,13 @@ function useTitleSpecText(
 		return t(spec.textKey, context?.titleParams);
 	}
 	const value: unknown = context?.record?.[spec.schemaField];
-	if (typeof value === 'string' || typeof value === 'number') {
-		return String(value);
+	const fieldSchema = context?.modelSchema?.fields[spec.schemaField];
+	const numeric = formatNumericFieldText(value, fieldSchema, formatters, fieldRenderers?.[spec.schemaField]);
+	if (numeric !== undefined) {
+		return numeric;
+	}
+	if (typeof value === 'string') {
+		return value;
 	}
 	return value && typeof value === 'object' ? localize(value as Record<string, string>) || undefined : undefined;
 }

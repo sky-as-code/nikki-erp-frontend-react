@@ -94,10 +94,15 @@ function resolveRootParent(rootParent: BreadcrumbsRootParent | undefined, ownPat
 		return undefined;
 	}
 	return {
-		path: normalizePath(resolvePath(rootParent.to, ownPath).pathname),
+		path: resolveRootParentPath(rootParent.to, ownPath),
 		label: rootParent.label && capitalizeWords(rootParent.label),
 		parent: resolveRootParent(rootParent.parent, ownPath),
 	};
+}
+
+/** Where a root-parent crumb `to` leads from the page at `ownPath`; also for code that leaves the page without it. */
+export function resolveRootParentPath(to: string, ownPath: string): string {
+	return normalizePath(resolvePath(to, ownPath).pathname);
 }
 
 function useRootParent(ownPath: string, rootParent: BreadcrumbsRootParent | undefined): TrailParent | undefined {

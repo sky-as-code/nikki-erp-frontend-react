@@ -97,7 +97,7 @@
 		"./assets/*": "./src/assets/*",
 		"./breadcrumbs": "./src/breadcrumbs/index.ts",
 		"./components/form": "./src/components/form/index.tsx",
-		"./components/DataTable": "./src/components/DataTable/index.tsx",
+		"./components/SettingsTable": "./src/components/SettingsTable/index.tsx",
 		"./components/ExcelDataTable": "./src/components/ExcelDataTable/index.tsx",
 		"./components": "./src/components/index.tsx",
 		"./components/valueRenderers": "./src/components/valueRenderers/index.ts",

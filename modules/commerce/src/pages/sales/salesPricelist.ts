@@ -10,6 +10,11 @@ import { SalesPricelistItemCommands } from '../../features/sales/salesPricelistI
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** An item row carries no currency code, so its price reads in the default currency. */
+const MONEY_RENDERER = { renderer: 'money' };
+const FLOAT_RENDERER = { renderer: 'float' };
+const RATE_RENDERER = { renderer: 'float', precision: 2 };
+
 /**
  * Specificity beats priority: a point-scoped list wins over a channel-scoped one whatever their
  * priorities say. Priority only breaks ties within a scope.
@@ -119,6 +124,9 @@ function buildSalesPricelistItemsResources() {
 			fields: ['sequence', 'applies_to', 'product_variant_id', 'min_quantity',
 				'calculation_method', 'price', 'discount_percent', 'valid_from', 'valid_to'],
 			fieldRenderers: {
+				min_quantity: FLOAT_RENDERER,
+				price: MONEY_RENDERER,
+				discount_percent: RATE_RENDERER,
 				applies_to: {
 					renderer: 'badge',
 					colorMap: {

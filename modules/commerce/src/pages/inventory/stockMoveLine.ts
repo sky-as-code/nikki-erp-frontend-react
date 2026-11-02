@@ -9,6 +9,9 @@ import { StockMoveLineCommands } from '../../features/inventory/stockMoveLine/co
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+const FLOAT_RENDERER = { renderer: 'float' };
+const MOVE_LINE_RENDERERS = { quantity: FLOAT_RENDERER, base_quantity: FLOAT_RENDERER };
+
 /**
  * A move's lines, under the move: `inventory_stock_transfer/{id}/inventory_stock_move/{id}/inventory_stock_move_line`.
  *
@@ -34,6 +37,7 @@ function buildStockMoveLineListProps() {
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
 		searchCommand: StockMoveLineCommands.SEARCH,
+		fieldRenderers: MOVE_LINE_RENDERERS,
 		createEnabled: false,
 		// The route's move; locked, so the list never widens past it.
 		staticGraph: { if: ['move_id', '=', '${move_id}'] },
@@ -50,6 +54,7 @@ function buildStockMoveLineDetailProps() {
 		titleLvl1: { schemaField: 'product_variant_id' },
 		titleLvl2: { schemaField: 'move_id' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: MOVE_LINE_RENDERERS,
 		parentLink: '../../',
 		parentResource: c.STOCK_MOVE_SCHEMA_NAME,
 		standardActionCommands: { getById: StockMoveLineCommands.GET_BY_ID },

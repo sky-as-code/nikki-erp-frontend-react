@@ -11,6 +11,14 @@ import { InvoiceLineCommands } from '../features/invoiceLine/commands';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** The record names its currency by id, not code, so amounts read in the default currency. */
+const MONEY_RENDERER = { renderer: 'money' };
+const INVOICE_TOTAL_RENDERERS = {
+	subtotal_amount: MONEY_RENDERER,
+	tax_amount: MONEY_RENDERER,
+	total_amount: MONEY_RENDERER,
+};
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
 	renderer: 'badge',
@@ -58,6 +66,7 @@ function buildInvoiceListProps() {
 			// Grey while it is only a draft, blue once it is a document, green when the money has
 			// arrived, red once it has been struck out.
 			status: STATUS_BADGE,
+			...INVOICE_TOTAL_RENDERERS,
 		},
 	});
 }
@@ -76,6 +85,7 @@ function buildInvoiceDetailProps() {
 		titleLvl1: { schemaField: 'partner_name' },
 		titleLvl2: { schemaField: 'status' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: INVOICE_TOTAL_RENDERERS,
 		standardActionCommands: {
 			getById: InvoiceCommands.GET_BY_ID,
 			create: InvoiceCommands.CREATE,
@@ -153,6 +163,12 @@ function buildLineResources() {
 			translationNs: c.PAYMENTINVOICE_MODULE,
 			searchCommand: InvoiceLineCommands.SEARCH,
 			initialGraph: { if: ['invoice_id', '=', '${id}'] },
+			fieldRenderers: {
+				quantity: { renderer: 'float' },
+				unit_price: MONEY_RENDERER,
+				tax_rate_percent: { renderer: 'float', precision: 2 },
+				amount: MONEY_RENDERER,
+			},
 		},
 	];
 }

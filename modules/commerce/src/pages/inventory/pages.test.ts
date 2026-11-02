@@ -380,6 +380,14 @@ describe('Product variant kinds', () => {
 
 		expect(fields).toEqual(expect.arrayContaining(['variant_kind', 'base_variant_id', 'is_transaction_eligible']));
 	});
+
+	/** F2-001: create and edit share one layout; an uneditable field shows as text, not a gap. */
+	it('keeps the variant form layout stable across create and edit', () => {
+		const [page] = buildProductVariantPages();
+		const detail = (page.props as { secondary: { props: { stableFieldLayout?: boolean } } }).secondary.props;
+
+		expect(detail.stableFieldLayout).toBe(true);
+	});
 });
 
 describe('Product stock integration', () => {
@@ -587,7 +595,9 @@ describe('Stock transfer page', () => {
 		for (const nodes of [createNodes, childrenNodes]) {
 			expect(nodes.map(node => node.props?.header)).toEqual(['form.generalInformation', 'form.policies', 'form.moves']);
 			expect(formBlocks(nodes[0])[0].fields).not.toContain('org_id');
-			expect(nodes[0].children?.at(-1)?.props).toMatchObject({ fields: ['note'], isFluid: false });
+			// F2-005: the note is an ordinary (fluid) block in the grid, untitled.
+			expect(nodes[0].children?.at(-1)?.props).toMatchObject({ fields: ['note'], showTitle: false });
+			expect(nodes[0].children?.at(-1)?.props?.isFluid).not.toBe(false);
 			expect(formBlocks(nodes[0])[0].fields).not.toContain('status');
 			expect(formBlocks(nodes[1]).map(block => block.header)).toEqual(['form.stockPolicies', 'form.backorder']);
 			expect(nodes[2].children?.map(child => child.component)).toEqual([STOCK_TRANSFER_MOVES]);
@@ -680,6 +690,34 @@ describe('Stock move and move line pages', () => {
 });
 
 /** The related-resource tabs of a split view's detail pane. */
+describe('Product template Variants tab', () => {
+	/** F2-003: the tab sits on the template, so it drops "Product name" and formats its numbers. */
+	it('lists the variant columns without the template name, with numeric renderers', () => {
+		const [variants, vendorPrices] = relatedTables(buildProductTemplatePages()[0]);
+
+		expect(variants.fields).toEqual([
+			'sku', 'attribute_summary', 'effective_base_sales_price', 'cost', 'on_hand_quantity',
+			'product_template_uom_name', 'status',
+		]);
+		expect(variants.fieldRenderers).toMatchObject({
+			cost: { renderer: 'money' },
+			effective_base_sales_price: { renderer: 'money' },
+			on_hand_quantity: { renderer: 'float' },
+		});
+		expect(vendorPrices.fieldRenderers).toEqual({
+			unit_price: { renderer: 'money' },
+			min_quantity: { renderer: 'float' },
+		});
+	});
+
+	it('formats the quantities of the variant stock tabs', () => {
+		const [quants, moves] = relatedTables(buildProductVariantPages()[0]);
+
+		expect(quants.fieldRenderers?.available_quantity).toEqual({ renderer: 'float' });
+		expect(moves.fieldRenderers?.demand_quantity).toEqual({ renderer: 'float' });
+	});
+});
+
 function relatedTables(page: PageNode): RelatedResource[] {
 	const props = page.props as { secondary?: { props?: { relatedResources?: RelatedResource[] } } };
 	return props.secondary?.props?.relatedResources ?? [];
@@ -901,3 +939,44 @@ describe('Stock operation type page', () => {
 		}
 	});
 });
+
+/** F2-004: numbers in page metadata go through the shared locale-aware renderers. */
+describe('Inventory numeric renderers', () => {
+	const cases: [string, () => PageNode[], string, unknown][] = [
+		['stock quant', buildStockQuantPages, 'available_quantity', { renderer: 'float' }],
+		['stock move', buildStockMovePages, 'demand_quantity', { renderer: 'float' }],
+		['stock move line', buildStockMoveLinePages, 'quantity', { renderer: 'float' }],
+		['stock reservation', buildStockReservationPages, 'remaining_quantity', { renderer: 'float' }],
+		['stock scrap', buildStockScrapPages, 'quantity', { renderer: 'float' }],
+		['attribute value', buildProductAttributeValuePages, 'price_extra', { renderer: 'money', blankAsZero: true }],
+		['template attribute value', buildProductTemplateAttributeValuePages, 'sales_price_extra', { renderer: 'money', blankAsZero: true }],
+		['storage category', buildStorageCategoryPages, 'max_weight', { renderer: 'float' }],
+	];
+
+	it.each(cases)('formats the %s numbers', (_name, build, field, spec) => {
+		const renderers = build().flatMap(page => numericRenderersOf(page, field));
+
+		expect(renderers).toContainEqual(spec);
+	});
+});
+
+/** Every renderer spec any table or form of the page declares for `field`. */
+function numericRenderersOf(page: PageNode, field: string): unknown[] {
+	const found: unknown[] = [];
+	const walk = (value: unknown): void => {
+		if (Array.isArray(value)) {
+			value.forEach(walk);
+			return;
+		}
+		if (value === null || typeof value !== 'object') {
+			return;
+		}
+		const renderers = (value as { fieldRenderers?: Record<string, unknown> }).fieldRenderers;
+		if (renderers?.[field]) {
+			found.push(renderers[field]);
+		}
+		Object.values(value).forEach(walk);
+	};
+	walk(page.props);
+	return found;
+}

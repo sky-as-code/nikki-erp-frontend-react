@@ -9,6 +9,9 @@ import { ProductAttributeValueCommands } from '../../features/inventory/productA
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** A blank extra adds nothing to the template's price, so it reads as 0. */
+const PRICE_EXTRA_RENDERERS = { price_extra: { renderer: 'money', blankAsZero: true } };
+
 export function buildProductAttributeValuePages(): PageNode[] {
 	const splitView = resourceSplitViewProps({
 		primary: buildProductAttributeValueListProps(),
@@ -28,6 +31,7 @@ function buildProductAttributeValueListProps() {
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
 		searchCommand: ProductAttributeValueCommands.SEARCH,
+		fieldRenderers: PRICE_EXTRA_RENDERERS,
 		createEnabled: true,
 		deleteCommand: ProductAttributeValueCommands.DELETE,
 		archiveCommand: ProductAttributeValueCommands.SET_IS_ARCHIVED,
@@ -43,6 +47,7 @@ function buildProductAttributeValueDetailProps() {
 		titleLvl1: { schemaField: 'name' },
 		titleLvl2: { schemaField: 'code' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: PRICE_EXTRA_RENDERERS,
 		standardActionCommands: {
 			getById: ProductAttributeValueCommands.GET_BY_ID,
 			create: ProductAttributeValueCommands.CREATE,

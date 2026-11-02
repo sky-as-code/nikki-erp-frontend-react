@@ -11,6 +11,13 @@ import { StockMoveLineCommands } from '../../features/inventory/stockMoveLine/co
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+const FLOAT_RENDERER = { renderer: 'float' };
+const MOVE_QUANTITY_RENDERERS = {
+	demand_quantity: FLOAT_RENDERER,
+	base_demand_quantity: FLOAT_RENDERER,
+	remaining_quantity: FLOAT_RENDERER,
+};
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 export const MOVE_STATUS_BADGE = {
 	renderer: 'badge',
@@ -57,7 +64,7 @@ function buildStockMoveListProps() {
 		createEnabled: false,
 		// The route's transfer; locked, so the list never widens past it.
 		staticGraph: { if: ['transfer_id', '=', '${transfer_id}'], order: [['sequence', 'asc']] },
-		fieldRenderers: { status: MOVE_STATUS_BADGE },
+		fieldRenderers: { status: MOVE_STATUS_BADGE, ...MOVE_QUANTITY_RENDERERS },
 		// Opened on its own (a pasted URL), the trail starts at the transfer it belongs to.
 		parentLink: '../',
 		parentResource: c.STOCK_TRANSFER_SCHEMA_NAME,
@@ -77,6 +84,7 @@ function buildStockMoveDetailProps() {
 		titleLvl1: { schemaField: 'product_variant_id' },
 		titleLvl2: { schemaField: 'transfer_id' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: MOVE_QUANTITY_RENDERERS,
 		parentLink: '../../',
 		parentResource: c.STOCK_TRANSFER_SCHEMA_NAME,
 		// getById only: an Edit here would bypass the transfer's draft rule and variant resolution.
@@ -122,6 +130,7 @@ function buildMoveLinesResource() {
 		],
 		linkField: 'id',
 		linkRoutePath: MOVE_LINES_ROUTE_PATH,
+		fieldRenderers: { quantity: FLOAT_RENDERER },
 		showViewAll: true,
 		// The nested list is already this move's lines: no `?initialGraph=` to carry.
 		viewAllFiltered: false,

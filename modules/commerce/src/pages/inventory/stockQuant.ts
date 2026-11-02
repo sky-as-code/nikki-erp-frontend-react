@@ -10,6 +10,15 @@ import { StockQuantCommands } from '../../features/inventory/stockQuant/commands
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+const FLOAT_RENDERER = { renderer: 'float' };
+const QUANT_RENDERERS = {
+	on_hand_quantity: FLOAT_RENDERER,
+	reserved_quantity: FLOAT_RENDERER,
+	available_quantity: FLOAT_RENDERER,
+	counted_quantity: FLOAT_RENDERER,
+	count_snapshot_quantity: FLOAT_RENDERER,
+};
+
 /**
  * Stock balance is a read-only view.
  *
@@ -54,6 +63,7 @@ function buildStockQuantListProps(overrides?: { initialGraph?: InitialGraph }) {
 		// No createEnabled, deleteCommand or archiveCommand: every write is refused server-side,
 		// and the resource has no is_archived column to archive against.
 		createEnabled: false,
+		fieldRenderers: QUANT_RENDERERS,
 		...overrides,
 	});
 }
@@ -65,6 +75,7 @@ function buildStockQuantDetailProps() {
 		titleLvl1: { schemaField: 'product_variant_id' },
 		titleLvl2: { schemaField: 'location_id' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: QUANT_RENDERERS,
 		// getById only. Naming an update or delete command here would render actions the engine
 		// answers with a business violation.
 		standardActionCommands: {

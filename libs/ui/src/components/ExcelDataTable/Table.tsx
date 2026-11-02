@@ -7,7 +7,7 @@ import { getRowNumber } from './cells/cellValues';
 import { useExcelDataTableContext } from './context';
 import classes from './ExcelDataTable.module.css';
 import { ManualSortArea, ManualSortRow } from './manualSort/ManualSort';
-import { NewRow } from './NewRow';
+import { NewRow, useInsertRowAlwaysOpen } from './NewRow';
 import { EditingRow } from './RowEditor';
 import { SubRowInsertAfter } from './rowSpan/RowSpanCells';
 import {
@@ -38,7 +38,8 @@ export function Table({ className, emptyText }: TableProps) {
 	const columnCount = useColumnCount();
 	const onKeyDown = useTableKeyboard();
 	useFocusAfterEditing();
-	const showEmpty = data.items.length === 0 && !isLoading;
+	const insertRowAlwaysOpen = useInsertRowAlwaysOpen();
+	const showEmpty = data.items.length === 0 && !isLoading && !insertRowAlwaysOpen;
 	return (
 		<div
 			ref={scroller.ref}

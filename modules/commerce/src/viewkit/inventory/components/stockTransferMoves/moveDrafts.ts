@@ -1,6 +1,5 @@
-import { ATTRIBUTE_FIELD, ATTRIBUTES_FIELD, QUANTITY_FIELD, TEMPLATE_FIELD, UOM_FIELD, VALUE_FIELD } from './moveGroups';
+import { QUANTITY_FIELD, UOM_FIELD, VARIANT_FIELD } from './moveGroups';
 
-import type { MoveAttribute } from './moveGroups';
 import type { ClientErrorItem } from '@nikkierp/common/types';
 import type { SearchItem } from '@nikkierp/ui/components/ExcelDataTable';
 
@@ -15,10 +14,9 @@ const DRAFT_ID_PREFIX = 'draft:';
 /** A table-scope write refuses a row without an etag; a draft has none, and its edits never reach the server as such. */
 const DRAFT_ETAG = 'draft';
 
-/** A move in the template form: the template, its attribute values, the demand and the unit. */
+/** A move as drafted: its variant, demand and unit. */
 export type MoveFields = {
-	[TEMPLATE_FIELD]?: unknown,
-	[ATTRIBUTES_FIELD]?: MoveAttribute[],
+	[VARIANT_FIELD]?: unknown,
 	[QUANTITY_FIELD]?: unknown,
 	[UOM_FIELD]?: unknown,
 };
@@ -78,34 +76,13 @@ export function isEditedMoveRow(row: Record<string, unknown> | undefined, drafts
 	return drafts.updated.some(update => update.id === id);
 }
 
-function pickAttributes(raw: unknown): MoveAttribute[] {
-	return (Array.isArray(raw) ? raw as MoveAttribute[] : []).map(attribute => ({
-		[ATTRIBUTE_FIELD]: attribute[ATTRIBUTE_FIELD] ?? null,
-		[VALUE_FIELD]: attribute[VALUE_FIELD] ?? null,
-	}));
-}
-
 /** Only the fields a delta row may carry. A cleared unit is `null`: the move then takes the variant's. */
 export function pickMoveFields(values: Record<string, unknown>): MoveFields {
 	const out: MoveFields = {};
-	if (values[TEMPLATE_FIELD] !== undefined) out[TEMPLATE_FIELD] = values[TEMPLATE_FIELD];
-	if (values[ATTRIBUTES_FIELD] !== undefined) out[ATTRIBUTES_FIELD] = pickAttributes(values[ATTRIBUTES_FIELD]);
+	if (values[VARIANT_FIELD] !== undefined) out[VARIANT_FIELD] = values[VARIANT_FIELD];
 	if (values[QUANTITY_FIELD] !== undefined) out[QUANTITY_FIELD] = values[QUANTITY_FIELD];
 	if (values[UOM_FIELD] !== undefined) out[UOM_FIELD] = values[UOM_FIELD] === '' ? null : values[UOM_FIELD];
 	return out;
-}
-
-/**
- * A group write as the table sends it, with the rule the attribute pickers rely on: another template
- * drops the group's attributes, which belonged to the old one.
- */
-export function withTemplateRule(
-	values: Record<string, unknown>, previous: SearchItem | undefined,
-): Record<string, unknown> {
-	if (!previous || values[TEMPLATE_FIELD] === previous[TEMPLATE_FIELD]) {
-		return values;
-	}
-	return { ...values, [ATTRIBUTES_FIELD]: [] };
 }
 
 export function addMove(drafts: MoveDrafts, values: Record<string, unknown>): MoveDrafts {
@@ -156,32 +133,21 @@ export function removeMove(drafts: MoveDrafts, item: Record<string, unknown>): M
 
 const sameJson = (left: unknown, right: unknown) => JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
 
-/** A new move, always in the template form. An unset unit is left out: the move then takes the variant's. */
+/** A new move, named by its variant. An unset unit is left out: the move then takes the variant's. */
 function addEntry(fields: MoveFields): Record<string, unknown> {
 	const entry: Record<string, unknown> = {
-		[TEMPLATE_FIELD]: fields[TEMPLATE_FIELD], [ATTRIBUTES_FIELD]: fields[ATTRIBUTES_FIELD] ?? [],
-		[QUANTITY_FIELD]: fields[QUANTITY_FIELD],
+		[VARIANT_FIELD]: fields[VARIANT_FIELD], [QUANTITY_FIELD]: fields[QUANTITY_FIELD],
 	};
 	if (fields[UOM_FIELD] != null) entry[UOM_FIELD] = fields[UOM_FIELD];
 	return entry;
 }
 
-/**
- * An edit of a saved move: the demand and unit when they changed, and the template form only when the
- * template or an attribute did — that is what makes the backend resolve (and maybe replace) the variant.
- * `null` when nothing differs from what was read.
- */
+/** An edit of a saved move: each field that differs from what was read; `null` when none does. */
 function updateEntry(update: MoveUpdate): Record<string, unknown> | null {
 	const { fields, original } = update;
 	const entry: Record<string, unknown> = {};
-	for (const field of [QUANTITY_FIELD, UOM_FIELD] as const) {
+	for (const field of [VARIANT_FIELD, QUANTITY_FIELD, UOM_FIELD] as const) {
 		if (field in fields && !sameJson(fields[field], original[field])) entry[field] = fields[field];
-	}
-	const template = fields[TEMPLATE_FIELD] ?? original[TEMPLATE_FIELD];
-	const attributes = fields[ATTRIBUTES_FIELD] ?? original[ATTRIBUTES_FIELD] ?? [];
-	if (!sameJson(template, original[TEMPLATE_FIELD]) || !sameJson(attributes, original[ATTRIBUTES_FIELD] ?? [])) {
-		entry[TEMPLATE_FIELD] = template;
-		entry[ATTRIBUTES_FIELD] = attributes;
 	}
 	return Object.keys(entry).length > 0 ? { id: update.id, etag: update.etag, ...entry } : null;
 }
@@ -208,24 +174,34 @@ export function buildMovesContribution(drafts: MoveDrafts, mode: SaveMode): Move
 	};
 }
 
-/** The saved groups not removed, with their drafted edits, then the drafts in the order added. */
+/**
+ * The saved groups not removed, with their drafted edits, then the drafts in the order added. A saved
+ * move given another variant drops the read label of the old one.
+ */
 export function mergeDraftMoveRows(groups: SearchItem[], drafts: MoveDrafts): SearchItem[] {
 	const saved = groups
 		.filter(group => !drafts.removed.includes(group.id))
-		.map(group => {
+		.map((group) => {
 			const update = drafts.updated.find(entry => entry.id === group.id);
-			return update ? { ...group, ...update.fields } : group;
+			if (!update) {
+				return group;
+			}
+			const merged: SearchItem = { ...group, ...update.fields };
+			if (!sameJson(merged[VARIANT_FIELD], group[VARIANT_FIELD])) {
+				delete merged.product_variant;
+			}
+			return merged;
 		});
 	return [...saved, ...drafts.added.map(toDraftRow)];
 }
 
 function toDraftRow(draft: DraftMove): SearchItem {
-	return { [ATTRIBUTES_FIELD]: [], ...draft.fields, id: draft.key, etag: DRAFT_ETAG, [DRAFT_ROW_FLAG]: true };
+	return { ...draft.fields, id: draft.key, etag: DRAFT_ETAG, [DRAFT_ROW_FLAG]: true };
 }
 
 /**
  * The save's rejections addressed to the delta, each pinned on the group it came from:
- * `moves.add[1].attributes[0].product_attribute_value_id` is the second drafted group,
+ * `moves.add[1].product_variant_id` is the second drafted group,
  * `moves.update[0].id` the first edited saved one, `moves.remove[2]` the third removed one.
  */
 export function mapMoveErrors(clientErrors: ClientErrorItem[], sent: SentRows | null): MoveErrors {

@@ -2,7 +2,7 @@ import { Stack, Text, TextInput } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { TablePagination } from '@nikkierp/ui/components';
-import { SettingsTable } from '@nikkierp/ui/components/DataTable';
+import { SettingsTable } from '@nikkierp/ui/components/SettingsTable';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { ComponentAnchor } from '@nikkierp/viewengine/render';

@@ -58,15 +58,31 @@ function buildProductVariantListProps() {
 		// attributes and is never transacted. The condition seeds the filter panel, where it is
 		// switched to Base, or dropped for All.
 		initialGraph: COMPLETE_VARIANTS,
-		fieldRenderers: {
-			attribute_summary: { renderer: 'attributePills' },
-			...buildProductVariantEnumRenderers(),
-			effective_base_sales_price: MONEY_RENDERER,
-			cost: MONEY_RENDERER,
-			on_hand_quantity: FLOAT_RENDERER,
-		},
+		fieldRenderers: buildProductVariantFieldRenderers(),
 	});
 }
+
+/**
+ * How a variant row reads wherever variants are listed: this list and the template's Variants and
+ * Inventory tabs.
+ */
+export function buildProductVariantFieldRenderers() {
+	return {
+		attribute_summary: { renderer: 'attributePills' },
+		...buildProductVariantEnumRenderers(),
+		cost: MONEY_RENDERER,
+		effective_base_sales_price: MONEY_RENDERER,
+		on_hand_quantity: FLOAT_RENDERER,
+		reserved_quantity: FLOAT_RENDERER,
+		available_quantity: FLOAT_RENDERER,
+	};
+}
+
+/** The variant list's default columns less the template name, for a table that already sits on the template. */
+export const TEMPLATE_VARIANT_FIELDS = [
+	'sku', 'attribute_summary', 'effective_base_sales_price', 'cost', 'on_hand_quantity',
+	'product_template_uom_name', 'status',
+];
 
 /** The list's default filter, exported for its test. */
 export const COMPLETE_VARIANTS = { if: ['variant_kind', '=', 'complete'] };
@@ -115,6 +131,8 @@ function buildProductVariantDetailProps() {
 			fallbackFileIdField: 'product_template_preview_image_file_id',
 		},
 		fieldRenderers: buildProductVariantDetailRenderers(),
+		// Create shows the same blocks as edit; a field it cannot take renders as read-only `-`.
+		stableFieldLayout: true,
 		standardActionCommands: {
 			getById: ProductVariantCommands.GET_BY_ID,
 			create: ProductVariantCommands.CREATE,
@@ -226,6 +244,11 @@ function buildVariantInventoryResource() {
 			'location_id', 'on_hand_quantity', 'reserved_quantity',
 			'available_quantity', 'base_uom_id', 'lot_ref',
 		],
+		fieldRenderers: {
+			on_hand_quantity: FLOAT_RENDERER,
+			reserved_quantity: FLOAT_RENDERER,
+			available_quantity: FLOAT_RENDERER,
+		},
 		linkField: 'id',
 		linkRoutePath: 'inventory_stock_quant',
 		testId: 'inventory.variantInventory',
@@ -244,6 +267,7 @@ function buildVariantMovementsResource() {
 			'status', 'demand_quantity', 'source_location_id',
 			'destination_location_id', 'scheduled_at',
 		],
+		fieldRenderers: { demand_quantity: FLOAT_RENDERER },
 		// Rows point at the transfer that carries them: a move has no page of its own,
 		// and the transfer is the document a user acts on.
 		linkField: 'transfer_id',

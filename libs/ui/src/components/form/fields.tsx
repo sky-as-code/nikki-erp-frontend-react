@@ -704,7 +704,7 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 							}}
 							disabled={modelLoading}
 							decimalScale={scale}
-							{...segmentProps(currencySegment)}
+							{...currencySegmentProps(currencySegment)}
 							placeholder={fieldData.placeholder ? t(fieldData.placeholder) : undefined}
 							{...htmlProps}
 							{...(defaultInputProps as Partial<NumberInputProps>)}
@@ -717,7 +717,7 @@ export function DecimalInputField(props: DecimalInputFieldProps) {
 }
 
 /** The marker as a left or right section, sized to its text rather than to an icon slot. */
-function segmentProps(segment: CurrencySegment | undefined): Partial<NumberInputProps> {
+export function currencySegmentProps(segment: CurrencySegment | undefined): Partial<NumberInputProps> {
 	if (!segment || !segment.marker) {
 		return {};
 	}

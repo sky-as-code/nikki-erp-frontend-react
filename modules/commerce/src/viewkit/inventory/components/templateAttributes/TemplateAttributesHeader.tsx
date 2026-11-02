@@ -7,7 +7,7 @@ import React from 'react';
 import { useParams } from 'react-router';
 import { z } from 'zod';
 
-import { ResolveVariantsAction } from './ResolveVariantModal';
+import { ResolveVariantAction } from './ResolveVariantModal';
 import { TEST_ID_PREFIX } from './sectionText';
 import { useSectionText } from './useSectionText';
 import { PRODUCT_ATTRIBUTE_SCHEMA_NAME } from '../../../../constants/inventory';
@@ -28,11 +28,11 @@ export const templateAttributesHeaderRenderer: IComponentRenderer<Record<string,
 	},
 };
 
-/** The Attributes section header's right segment: Resolve variants, then "All attributes". */
+/** The Attributes section header's right segment: Resolve variant, then "All attributes". */
 function TemplateAttributesHeader(): React.ReactNode {
 	return (
 		<Group gap='xs' wrap='nowrap'>
-			<ResolveVariantsAction />
+			<ResolveVariantAction />
 			<AllAttributesLink />
 		</Group>
 	);

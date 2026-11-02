@@ -7,7 +7,7 @@ import React from 'react';
 import { useParams } from 'react-router';
 import { z } from 'zod';
 
-import { MOVES_TEST_ID_PREFIX } from './moveEditors';
+import { MOVES_TEST_ID_PREFIX } from './moveGroups';
 import { INVENTORY_MODULE, STOCK_MOVE_SCHEMA_NAME, STOCK_TRANSFER_SCHEMA_NAME } from '../../../../constants/inventory';
 import { STOCK_TRANSFER_ALL_MOVES } from '../../ids';
 

@@ -12,6 +12,12 @@ import { TaxRateVersionCommands } from '../../features/accounting/commands';
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
 
+/** A rate is a percentage (8 means 8%); a fixed amount is in the version's own currency. */
+const RATE_RENDERERS = {
+	rate: { renderer: 'float', precision: 2 },
+	fixed_amount: { renderer: 'money', currencyField: 'currency_code' },
+};
+
 /** One colour map for the list badge and the detail status strip, so both read alike. */
 const STATUS_BADGE = {
 	renderer: 'badge',
@@ -54,6 +60,7 @@ function buildListProps() {
 		updateSaveCommand: TaxRateVersionCommands.UPDATE,
 		fieldRenderers: {
 			lifecycle_status: STATUS_BADGE,
+			...RATE_RENDERERS,
 		},
 	});
 }
@@ -69,6 +76,7 @@ function buildDetailProps() {
 		titleLvl1: { schemaField: 'tax_id' },
 		titleLvl2: { schemaField: 'lifecycle_status' },
 		backLinkTitle: { linkHref: '../' },
+		fieldRenderers: RATE_RENDERERS,
 		standardActionCommands: {
 			getById: TaxRateVersionCommands.GET_BY_ID,
 			create: TaxRateVersionCommands.CREATE,
